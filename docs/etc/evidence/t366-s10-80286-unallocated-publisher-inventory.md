@@ -23,3 +23,9 @@ Any reached fallback result is added to `elapsed_ticks` after successful
 instruction refresh. These are CPU source-ledger rows, not device-time rows.
 Their receiver is the complete 80286 successful-retirement source ledger; no
 S10 timing value is allocated.
+
+## Verification
+
+`verify_t366_s10_80286_unallocated_publishers.cmake` passed against the source
+tree, and the configured `run-current-smokes` gate, documentation-governance
+check, and `git diff --check` passed. The audit changes no runtime behavior.

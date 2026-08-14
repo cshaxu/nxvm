@@ -2,28 +2,10 @@
 
 ## Current Work
 
-**Active implementation packet:** M5 T366 S10, 80286 unallocated-timing audit.
-
-## M5 T366 S10 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner: repository owner; persistent M5 L3 direction and accepted S9 transfer authorize the selected 80286 publisher audit. The owner's 2026-08-14 confirmation also authorizes a bounded reference-baseline clarification: Model 339/Type 3, 8 MHz, Rev.3 ROM slots, 512 KB planar RAM, 101-key keyboard, CGA, and a named 3.5-inch 1.44 MB field-upgrade drive, with no fixed disk and no 1 MB expansion. No exception. |
-| Objective | Inventory every successful 80286 path that emits `CORE_MACHINE_SOURCE_UNALLOCATED_TICKS`, classify its opcode/prefix/form origin and create a mechanical closure check. |
-| Non-goals | No guessed timing values, opcode semantic change, physical-time claim, device/bus timing or source import. |
-| Reference Baseline | S9 proves those one-tick values enter elapsed time; T363/T360 timing inventory and 80286 ledger smoke retain the existing classifier boundary. T366 S2 remains the exact Model 339 baseline authority; its named field-upgrade drive is not a factory component and its absent MFM/ST-506 route is distinct from the current ATA/HDC model. |
-| Candidate Proposal | [Bus-Timed PC/AT Operation](../proposals/m5-bus-timed-pcat-operation.md). |
-| Files And ABI Surface | Timing classifier, a static verifier or focused audit proof, CMake, evidence/history/current packet, and the candidate proposal only where needed to prevent an ATA/HDC-to-IBM-MFM baseline misstatement. |
-| Applicable Rules | Execution evidence/sweep, one retirement publisher, C11 cohesion, source policy and documentation indexing apply; no waiver. |
-| Verification | Mechanical audit must identify all 80286 unallocated successful-publisher sites and focused proof must retain their observed behavior; run affected tests, current gate, documentation governance and diff check. |
-| Expected Markers | New S10 audit marker plus existing timing/current-gate markers. |
-| Asset Needs | Repository and public Intel sources only; no ROM/media. |
-| Reporting Requirements | Report every hit, its receiver, whether behavior changes, and final evidence. |
-| Stop Conditions | Stop if a hit cannot be tied to a successful-retirement route or requires an unapproved source assumption. |
-| Exit Criteria | Every selected 80286 one-tick successful path is mechanically enumerated and assigned to a precise next receiver. |
-| Original Owner Request | Reach L3 only through complete source-backed timing, not fallback values. |
-| Similar-Issue Sweep | Search all timing classifiers, fallback constants, timing tests, verifier inventory and elapsed-tick publishers; classify every hit. |
+T366 S10 is accepted at `cc4c9987`. The next T366 S may admit one narrowly
+source-backed 80286 successful-retirement timing family; it must not revive an
+8 MHz physical-time or device-timing claim before the remaining CPU ledger is
+closed.
 
 ## Current Technical Baseline
 
@@ -44,7 +26,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T366 S9 | Accepted at `16609f35`: successful unallocated 80286 timing publishers prevent an 8 MHz physical-time claim. [Non-admission evidence](../etc/evidence/t366-s9-physical-time-nonadmission.md). CPU timing closure, physical time and device timing remain transfers. |
+| T366 S10 | Accepted at `cc4c9987`: the direct prefix and default 80286 one-tick publishers are inventoried, while a static check proves every control/stack lookup form has a 80286 ledger row. [Inventory evidence](../etc/evidence/t366-s10-80286-unallocated-publisher-inventory.md). The next receiver is source-backed CPU-ledger closure; physical time and device timing remain transfers. |
 | T365 | Closed at `febc9352`: IBM PC/AT parity/I/O-check NMI sources cannot be selected without a profile input, status/latch/clear and lifecycle contract; CPU and CMOS remain delivery/mask only. [Closure audit](../etc/evidence/t365-s2-pcat-nmi-nonadmission-closure-audit.md). Blocks physical/cycle-exact L3 closure; no synthetic source. |
 | T364 | Closed at `7d574ae3`: all selected PC/AT components, ports/routes and lifecycle/timing owners are inventoried; optional and physical gaps retain exact Queue/TODO receivers. [Closure audit](../etc/evidence/t364-s2-pcat-device-completeness-closure-audit.md). No model-L3 claim. |
 | T363 | Closed at `312ef2f9`: all 256 primary and 256 secondary dispatch slots have one source-backed successful-retirement owner or an exact explicit receiver; inventory and 246/246 current-gate passed. [Closure audit](../etc/evidence/t363-s7-complete-instruction-timing-closure-audit.md). No physical/cycle-exact L3 claim. |

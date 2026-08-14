@@ -19,6 +19,7 @@ principal documents named in [docs/README.md](../README.md).
 | `evidence/t366-s7-model-339-firmware-fdc-topology.md` | Verification owner | T366 S7 Model 339 abstract Rev.3 firmware slot and field-upgrade FDC topology proof. Retain with T366 history at task closure. |
 | `evidence/t366-s8-fdc-service-timing-nonadmission.md` | Verification owner | T366 S8 FDC clock-domain non-admission and exact later receiver. Retain with T366 history at task closure. |
 | `evidence/t366-s9-physical-time-nonadmission.md` | Verification owner | T366 S9 physical-time non-admission caused by successful unallocated 80286 timing publishers. Retain with T366 history at task closure. |
+| `evidence/t366-s10-80286-unallocated-publisher-inventory.md` | Verification owner | T366 S10 direct 80286 fallback-publisher inventory and control/stack ledger-coverage static proof. Retain with T366 history at task closure. |
 | `evidence/t333-s1-interactive-input-inventory.md` | Verification owner | T333 S1 retained Console/debugger direct-input inventory and S2 boundary. Retire into the T333 history record when the task closes. |
 | `evidence/t333-s2-interactive-input-repair.md` | Verification owner | T333 S2 owner-local interactive-input repair and static/build evidence. Retire into the T333 history record when the task closes. |
 | `evidence/t333-s3-interactive-input-proof.md` | Verification owner | T333 S3 owner-separated EOF/allocation-failure smoke design and expected proof. Retire into the T333 history record when the task closes. |

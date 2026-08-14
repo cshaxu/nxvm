@@ -92,3 +92,12 @@ S9 finds that successful unallocated 80286 cost publishers prevent `elapsed_tick
 from denoting a physical 8 MHz clock. Its [non-admission evidence](../etc/evidence/t366-s9-physical-time-nonadmission.md)
 transfers that prerequisite to complete CPU timing closure.
 S9 is accepted at `16609f35`.
+
+### S10: 80286 unallocated-publisher audit
+
+S10 inventories the direct prefix and default successful-retirement one-tick
+publishers, and adds a static check that every control/stack lookup form exists
+in the 80286 ledger. Its [inventory evidence](../etc/evidence/t366-s10-80286-unallocated-publisher-inventory.md)
+assigns the remaining fallback receiver to source-backed CPU-ledger closure;
+it makes no timing allocation or physical-time claim. S10 is accepted at
+`cc4c9987`.
