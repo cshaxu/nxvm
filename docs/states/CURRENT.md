@@ -2,24 +2,9 @@
 
 ## Current Work
 
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | T366 S16, numbered implementation subtask; P1 is one complete implementation/evidence delivery and must be pushed before coordinator review. |
-| Admission And Approval | The owner approved continued work toward comprehensive L3 closure on 2026-08-14. The accepted T366 scope and its source-backed CPU-ledger prerequisite admit the next determinate 80286 successful-retirement row. This S allocates only unprefixed `D7 XLAT`; no exception is requested. |
-| Objective | Publish the primary-source 80286 five-clock cost for a successful, unprefixed `XLAT` through the existing instruction-retirement timing owner, with focused regression and durable evidence. |
-| Non-goals | No XLAT semantic repair, prefix timing, segmentation/fault-delivery timing, memory/bus wait, physical-time, device, 8086/80186/80386, x87, or ABI work. A faulting XLAT does not receive this success-path cost. |
-| Reference Baseline | `4ada28cd` (accepted T366 S15); [T366 proposal](../proposals/m5-bus-timed-pcat-operation.md), [S10 inventory](../etc/evidence/t366-s10-80286-unallocated-publisher-inventory.md), and [S15 timing evidence](../etc/evidence/t366-s15-80286-flags-control-timing.md). |
-| Candidate Proposal | [Bus-timed PC/AT operation](../proposals/m5-bus-timed-pcat-operation.md), limited to its complete source-backed 80286 prerequisite. |
-| Files And ABI Surface | Private 80286 classifier in `src/core/machine/machine.c`; focused `tests/machine/core_machine_80286_instruction_timing_ledger_smoke.c`; T366 evidence/index/history/status. No public header, ABI, device, or composition surface changes. |
-| Applicable Rules | [Execution](../rules/EXECUTION.md): complete P, pushed before review, source/evidence and similar-issue sweep. [Architecture](../rules/ARCHITECTURE.md): retain the one retirement owner and no parallel timing path. [Coding](../rules/CODING.md): use the owner-local classifier and existing test boundary. [Documentation](../rules/DOCUMENT.md): state only current, sourced status. [Source policy](../etc/operations/policy/source-policy.md): historical documentation is evidence only; no external code, firmware, or media is imported. |
-| Verification | Focused 80286 timing-ledger smoke proves `D7` retires at five ticks; run `cmake --build build/mingw-gcc-x64 --target core-machine-80286-instruction-timing-ledger-smoke` and execute it; run configured `run-current-smokes`; run documentation governance and `git diff --check`. Review the classifier, test, evidence, index, and packet against this brief before P1. |
-| Expected Markers | Existing smoke marker `M5:T357:S6:80286-INSTRUCTION-TIMING-LEDGER:OK`; source evidence explicitly records `XLAT = 5` in both 80286 modes. |
-| Asset Needs | No guest media, ROM, binary, local path, external source import, or reference-emulator output. The AMD 80286 instruction summary is read-only primary documentation. |
-| Reporting Requirements | Report admission confirmation, source determination, implementation/test progress, P1 commit/push and evidence, then coordinator acceptance or one consolidated corrective brief. |
-| Stop Conditions | Stop and return to coordination if the source value is ambiguous, `D7` is intercepted by another timing owner, success/fault publication cannot be distinguished, scope needs a semantic repair, or a required gate cannot be run. |
-| Exit Criteria | One pushed P proves only successful unprefixed `D7 XLAT` publishes five ticks through the existing owner; source/sweep/transfers are recorded; all required checks pass; no public or device behavior changes. |
-| Original Owner Request | Continue implementing the planned work until L3 timing fidelity is comprehensively closed before Windows 3.1; use 86Box/MAME/PCjs only as secondary behavior cross-checks where authoritative manuals do not determine instruction timing. |
-| Similar-Issue Sweep | Audit `D7`, prefix dispatch, XLAT execution, primary/control-stack classifiers, all CPU-profile classifiers, 80286 fallback/default routing, and focused timing coverage. Confirm only unprefixed successful 80286 `D7` is allocated; retain prefixes, delivery/fault, other profiles, memory/bus service and physical time at their named receivers. |
+T366 S16 is accepted at `ac5d6ec6`. The next T366 S must select the next
+source-determinate 80286 successful-retirement family; physical-time and
+device-timing claims remain blocked by the wider CPU ledger.
 
 ## Current Technical Baseline
 
@@ -40,7 +25,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T366 S15 | Accepted at `9e6813b9`: successful unprefixed `CMC/STC/CLD/STD/CLI/STI` publish fixed 80286 table costs; prefix, x87 and delivery timing remain transferred. [Timing evidence](../etc/evidence/t366-s15-80286-flags-control-timing.md). No physical-time or device-timing claim. |
+| T366 S16 | Accepted at `ac5d6ec6`: successful unprefixed `XLAT` publishes its fixed five-clock 80286 table cost through the existing retirement owner. Prefix, fault/delivery, bus and physical-time timing remain transferred. [Timing evidence](../etc/evidence/t366-s16-80286-xlat-timing.md). |
 | T365 | Closed at `febc9352`: IBM PC/AT parity/I/O-check NMI sources cannot be selected without a profile input, status/latch/clear and lifecycle contract; CPU and CMOS remain delivery/mask only. [Closure audit](../etc/evidence/t365-s2-pcat-nmi-nonadmission-closure-audit.md). Blocks physical/cycle-exact L3 closure; no synthetic source. |
 | T364 | Closed at `7d574ae3`: all selected PC/AT components, ports/routes and lifecycle/timing owners are inventoried; optional and physical gaps retain exact Queue/TODO receivers. [Closure audit](../etc/evidence/t364-s2-pcat-device-completeness-closure-audit.md). No model-L3 claim. |
 | T363 | Closed at `312ef2f9`: all 256 primary and 256 secondary dispatch slots have one source-backed successful-retirement owner or an exact explicit receiver; inventory and 246/246 current-gate passed. [Closure audit](../etc/evidence/t363-s7-complete-instruction-timing-closure-audit.md). No physical/cycle-exact L3 claim. |

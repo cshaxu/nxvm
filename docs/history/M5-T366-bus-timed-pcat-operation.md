@@ -137,3 +137,10 @@ S15 assigns source-backed fixed costs to successful unprefixed
 `CMC/STC/CLD/STD/CLI/STI` through the existing retirement owner. Its [timing evidence](../etc/evidence/t366-s15-80286-flags-control-timing.md)
 retains CLC/HLT and prefix, x87, and delivery boundaries. S15 is accepted at
 `9e6813b9`.
+
+### S16: 80286 XLAT timing
+
+S16 gives successful unprefixed `D7 XLAT` its five-clock 80286 source-table
+cost through the existing retirement publisher. Its [timing evidence](../etc/evidence/t366-s16-80286-xlat-timing.md)
+records the source, semantic/publication proof and boundary transfers. S16 is
+accepted at `ac5d6ec6`.

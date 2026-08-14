@@ -27,4 +27,6 @@ device behavior changes.
 The focused `core-machine-80286-instruction-timing-ledger-smoke` passed and
 emitted `M5:T357:S6:80286-INSTRUCTION-TIMING-LEDGER:OK`. The configured
 `run-current-smokes` gate passed. Documentation governance and `git diff
---check` are recorded with the implementation delivery and acceptance review.
+--check` passed. Coordinator review of implementation `ac5d6ec6` confirmed
+that the private 80286 classifier is the sole added publisher and that the
+focused proof covers successful XLAT execution and publication.
