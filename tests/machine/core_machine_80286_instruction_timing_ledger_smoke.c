@@ -120,7 +120,9 @@ static C_INT timing_80286_memory(C_VOID)
     static const type_unsigned_8 indexed_odd_read[] = { 0x8bu, 0x4au, 0x01u };
     static const type_unsigned_8 moffs_read[] = { 0xa1u, 0x01u, 0x10u };
     static const type_unsigned_8 moffs_write[] = { 0xa3u, 0x01u, 0x10u };
+    static const type_unsigned_8 xlat[] = { 0xd7u };
     const type_unsigned_16 value = 0x5aa5u;
+    const type_unsigned_8 xlat_value = 0xa5u;
     timing_80286_state state = { 0u, 0u, 0u };
     core_machine *machine = STD_NULL;
     C_INT failed = !timing_80286_prepare(&machine, &state);
@@ -146,6 +148,13 @@ static C_INT timing_80286_memory(C_VOID)
     if (!failed) failed |= !timing_80286_load(machine, moffs_write,
         sizeof(moffs_write)) || ((machine->executor_cpu.data.ax = value), 0) ||
         !timing_80286_run(machine, &state, 1u, 5u);
+    if (!failed) failed |= !timing_80286_load(machine, xlat, sizeof(xlat)) ||
+        ((machine->executor_cpu.data.bx = 0x1000u),
+            (machine->executor_cpu.data.al = 1u), 0) ||
+        core_machine_memory_write(machine, 0x1001u, &xlat_value,
+            sizeof(xlat_value)) != TYPE_STATUS_OK ||
+        !timing_80286_run(machine, &state, 1u, 5u) ||
+        machine->executor_cpu.data.al != xlat_value;
     core_machine_destroy(machine);
     return failed;
 }
