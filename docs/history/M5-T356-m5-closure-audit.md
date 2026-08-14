@@ -22,3 +22,10 @@ and cycle-exact selected-profile candidates, and records why corpus-gated
 peripherals remain TODO rather than speculative implementation work.  The
 [receiver plan](../etc/evidence/t356-s2-receiver-plan.md) retains every S1
 deferred row.
+
+## S3 delivery pending acceptance
+
+S3's [final reconciliation](../etc/evidence/t356-s3-m5-closure-reconciliation.md)
+rejects M5 closure: selected L3 is accepted, but instruction timing, bus
+availability/wait states and cycle-exact profile work remain ordered, unbuilt
+M5 receivers.  T356 may close as an audit only while M5 remains open.

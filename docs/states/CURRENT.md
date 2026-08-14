@@ -2,7 +2,29 @@
 
 ## Current Work
 
-**Active.** M5 T356 remains open between accepted subtasks.
+**Active.** M5 T356 S3 performs the final M5 closure audit and records whether
+M5 can close; it does not implement, weaken, or discard open dependencies.
+
+## M5 T356 S3 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner approved the holistic device/L3 program on 2026-08-13. Accepted S1/S2 through `6bfd2a7a` require a final truthfulness audit before M5 closure can be considered. |
+| Objective | Re-run the complete owner/evidence/debt/Queue closure sweep, verify every T356 S1 residual has a finite receiver, determine M5 closure eligibility, and close T356 with an explicit M5 decision. |
+| Non-goals | No device/timing/runtime implementation, no M5 closure unless every requirement is proven, no media/corpus access, no Windows claim, x87 work, M6 admission, rule change, or debt deletion. |
+| Reference Baseline | `6bfd2a7a` on `master`, accepted T356 S2 timing/device receiver plan. |
+| Candidate Proposal | [M5 closure audit](../proposals/m5-closure-audit.md); [S1 ledger](../etc/evidence/t356-s1-m5-device-l3-closure-ledger.md); [S2 receiver plan](../etc/evidence/t356-s2-receiver-plan.md); [M5 roadmap](../design/ROADMAP.md). |
+| Files And ABI Surface | Documentation/evidence/history/proposal/Queue/CURRENT only. No source, CMake, runtime, current-gate, ABI, media, or product change. |
+| Applicable Rules | Task Reading Set; execution lifecycle and task closure audit; documentation rules; architecture ownership/dependency rules; source policy. |
+| Verification | Re-run source/owner/current-gate/debt/Queue/proposal/history sweep; compare every row against S1/S2; validate all links, latest-task status topology, governance and diff check; prove or reject M5 closure using the roadmap completion standard. |
+| Expected Markers | One final T356 reconciliation record; all residuals classified; governance and Queue-link checks pass; explicit M5-open or M5-close decision. |
+| Asset Needs | None. Do not access guest media, external source, firmware, or compatibility corpus. |
+| Reporting Requirements | Record every closed/accepted owner, every queued timing receiver, every retained corpus-gated TODO, M5/M6 dependency decision, proposal retention, and reason M5 may or may not close. |
+| Stop Conditions | Stop for owner decision if the audit identifies a contradiction requiring runtime implementation, an unavailable primary contract/corpus, an unowned dependency, or a product-scope decision that cannot be transferred precisely. |
+| Exit Criteria | T356 closes only after one final ledger has no unclassified row, the Queue is ordered and linked, all open M5 dependencies are retained, and the M5 decision is truthful; M5 remains open if any required implementation is merely planned. |
+| Original Owner Request | Fully and stably implement every high-value device and complete L3 timing before deciding the next program phase. |
+| Similar-Issue Sweep | Recheck all S1 ledger modules, S2 proposals/receivers, TODO priorities, current capability baseline, T346--T355 evidence, Queue/history topology, M5 roadmap requirements, M6 boundary, and current-gate discovery. |
 
 ## Current Technical Baseline
 
