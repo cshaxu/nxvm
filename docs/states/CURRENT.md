@@ -2,28 +2,10 @@
 
 ## Current Work
 
-**Active implementation packet:** M5 T366 S6, Model 339 CGA display boundary.
-
-## M5 T366 S6 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner: repository owner. Approval: persistent M5 L3 direction, the approved 2026-08-14 Model 339 Type 3 baseline, and accepted S5 transfer. Scope: remove retained EGA-only surface from the selected Model 339 session while preserving the generic default PC/AT EGA path. No exception is approved. |
-| Objective | Make EGA configuration and port registration explicit and optional; select the existing CGA VADP text/graphics, CRTC, mode, color and status surface for Model 339; retain the generic profile's EGA controller/aperture behavior. |
-| Non-goals | Do not claim exhaustive IBM CGA electrical/raster timing, external IBM firmware/ROM, MDA/Hercules/VGA, an EGA adapter on Model 339, MFM/ST-506, FDC service timing, I/O-channel check, bus waits, arbitration, refresh or physical/cycle timing. Do not change existing CGA mode semantics beyond topology selection. |
-| Reference Baseline | T366 S2 selects IBM CGA 1501981; S5 at `fd920773` makes Model 339 selectable but records its inherited EGA-derived VADP surface as a blocking transfer. `vadp` already owns CGA capture/ports and EGA state, while `core_machine_configure_display` currently requires/configures EGA unconditionally. |
-| Candidate Proposal | [Bus-Timed PC/AT Operation](../proposals/m5-bus-timed-pcat-operation.md), selected-device/profile readiness before bus availability. |
-| Files And ABI Surface | Expected: display/profile configuration that can declare optional EGA, VADP registration boundary, session composition selection, focused tests/CMake registration, current packet, indexed evidence and T366 history. Public contracts expose only a declarative optional capability; no mutable VADP state is exposed. |
-| Applicable Rules | Execution packet/evidence/acceptance and similar-issue sweep; architecture gives VADP one display owner and composition one topology selector; coding C11/cohesive registration/no device mirror; documentation indexed evidence/status-only packet; source policy bars vendor ROM/media. All apply; no waiver. |
-| Verification | Focused proof must create default and Model 339 sessions, prove Model 339 retains CGA CRTC/mode/color/status ports and CGA frame capture while EGA attribute/sequencer/graphics ports and A0000 aperture are absent, and prove default EGA ports/aperture remain. Run affected CGA/EGA/profile tests, current smoke gate, documentation governance and `git diff --check`. |
-| Expected Markers | New focused proof emits `M5:T366:S6:MODEL339-CGA-TOPOLOGY:OK`; existing CGA/EGA and current-gate markers remain successful. |
-| Asset Needs | None; repository-authored code and fixtures only. No vendor ROM, media, image, hash or local path. |
-| Reporting Requirements | Report the VADP registration decision, selected/absent port and aperture surfaces, retained default proof and final pushed evidence/transfers. |
-| Stop Conditions | Stop if Model 339 selection requires parallel VADP state, a vendor ROM, uncertain CGA/EGA port identity, or an unbounded display timing claim. |
-| Exit Criteria | Model 339 has only the selected CGA display topology and the default session retains EGA; one VADP owner controls both configurations, and every timing/firmware/display breadth gap remains explicitly transferred. |
-| Original Owner Request | Use IBM CGA 1501981 for the late IBM PC/AT 5170 Model 339 / Type 3 baseline, preserve the separate generic product profile, and reach L3 through explicit bounded device contracts rather than a misleading blended machine. |
-| Similar-Issue Sweep | Inspect all VADP port registrations, EGA aperture/provider operations, display configuration validation, profile leaves, session setup/reset/capture and CGA/EGA tests. Repair the shared registration owner or transfer any unselected display adapter/path to its exact later receiver. |
+T366 S6 is accepted at `dd464d74`. The next T366 S must bind the selected
+Model 339 firmware identity and 1.44 MB field-upgrade FDC topology, or make an
+exact evidence-backed transfer, before it may allocate device service timing or
+bus availability.
 
 ## Current Technical Baseline
 
@@ -44,6 +26,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T366 S6 | Accepted at `dd464d74`: Model 339 selects one CGA-only VADP topology with VADP-owned B8000h VRAM, while generic PC/AT retains its EGA ports and aperture. [Topology evidence](../etc/evidence/t366-s6-model-339-cga-topology.md). IBM ROM, exhaustive CGA timing, FDC/MFM-ST-506 and bus timing remain transfers. |
 | T366 S5 | Accepted at `fd920773`: explicit session selection fixes Model 339 to 80286/512 KB planar parity/no ATA-HDC while retaining the generic 80386/ATA profile. [Composition evidence](../etc/evidence/t366-s5-model-339-composition.md). IBM CGA display separation, IBM ROM, MFM/ST-506 and timing remain transfers. |
 | T365 | Closed at `febc9352`: IBM PC/AT parity/I/O-check NMI sources cannot be selected without a profile input, status/latch/clear and lifecycle contract; CPU and CMOS remain delivery/mask only. [Closure audit](../etc/evidence/t365-s2-pcat-nmi-nonadmission-closure-audit.md). Blocks physical/cycle-exact L3 closure; no synthetic source. |
 | T364 | Closed at `7d574ae3`: all selected PC/AT components, ports/routes and lifecycle/timing owners are inventoried; optional and physical gaps retain exact Queue/TODO receivers. [Closure audit](../etc/evidence/t364-s2-pcat-device-completeness-closure-audit.md). No model-L3 claim. |

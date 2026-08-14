@@ -66,3 +66,6 @@ S6 selects the existing CGA VADP surface and owner-local VRAM for the 512 KB
 Model 339 while making EGA registration optional for the retained default
 profile. Its [topology evidence](../etc/evidence/t366-s6-model-339-cga-topology.md)
 records the focused isolation proof and remaining display/timing transfers.
+S6 is accepted at `dd464d74`; IBM ROM identity, exhaustive CGA timing, the
+1.44 MB field-upgrade FDC topology, MFM/ST-506 and bus timing remain later
+transfers.
