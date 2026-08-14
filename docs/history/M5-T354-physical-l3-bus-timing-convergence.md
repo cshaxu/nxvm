@@ -34,3 +34,10 @@ the equal-due readiness callback advances/refreshes FDC then HDC.  The focused
 [competition evidence](../etc/evidence/t354-s3-competition.md) proves that
 ordering and transfers reset, trace-consumer, and final selected-L3 closure to
 S4.
+
+S4 is delivered pending acceptance.  Its
+[selected-L3 closure audit](../etc/evidence/t354-s4-selected-l3-closure.md)
+proves transaction cancellation before reset, trace continuity after reset,
+and a fresh post-reset CPU commit/retire sequence.  It reconciles retained
+firmware/DOS consumers without treating them as a timing oracle, and records
+all unmodeled physical timing and Windows readiness as explicit transfers.

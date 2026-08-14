@@ -2,7 +2,29 @@
 
 ## Current Work
 
-**Active.** M5 T354 remains open between accepted subtasks.
+**Active.** M5 T354 S4 closes selected L3 transaction lifecycle, trace, and
+firmware/DOS-consumer boundaries without promoting unsupported physical timing.
+
+## M5 T354 S4 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner approved holistic CPU-external device/L3 completion on 2026-08-13. T354 S3 is accepted at `8d29e836` / `3d7aaca1`; this final S receives only lifecycle and truthful selected-L3 closure. |
+| Objective | Close every S2/S3 selected transaction state through cold/session reset, cancellation, trace binding and observation, and retained firmware/DOS consumer proof; publish a final ledger that separates selected L3 from unselected physical fidelity. |
+| Non-goals | No invented latency, generic bus facade, instruction-internal continuation, host time, Windows installation/readiness claim, controller command rewrite, prefetch/pipeline, pin/analog waveform, or unselected device timing. |
+| Reference Baseline | `3d7aaca1` on `master`, T354 S3 accepted deterministic CPU/DMA/controller competition. |
+| Candidate Proposal | [M5 physical L3 bus-timing convergence](../proposals/m5-l3-bus-timing-convergence.md), S4; accepted [S1 ledger](../etc/evidence/t354-s1-l3-transaction-timing-ledger.md), [S2 owner](../etc/evidence/t354-s2-transaction-owner.md), and [S3 competition](../etc/evidence/t354-s3-competition.md) evidence. |
+| Files And ABI Surface | Only core-local lifecycle/trace code if a reproduced defect requires it, focused owner smoke, CMake, indexed evidence, history, CURRENT, Queue/TODO transfers as proved necessary. No public/profile/provider ABI change. |
+| Applicable Rules | `docs/README.md` Task Reading Set; `docs/rules/EXECUTION.md` closure and mechanism-defect lifecycle; architecture/coding/source/documentation rules; accepted T346--T354 evidence. |
+| Verification | Sweep transaction initialization/bind/reset/cancel/finalize, machine cold/session reset, timeline rearm, trace provider binding/unbinding, selected CPU/DMA traces, retained FDC/ATA/PIC consumers, firmware and DOS current-gate consumers. Add focused lifecycle proof when existing evidence leaves a named S1 obligation open. Run fresh configuration, exact registration, governance, diff check, and full current gate. |
+| Expected Markers | New S4 lifecycle marker only if direct proof is needed; retained transaction/timeline/storage/firmware/DOS markers; governance and full current gate. |
+| Asset Needs | Repository sources and accepted evidence only. No firmware/media import, host capture, or external source import. |
+| Reporting Requirements | Record each selected state owner, reset/cancel order, trace persistence or removal, consumer proof, no-leak result, and precise transfer of physical/non-selected fidelity. |
+| Stop Conditions | Stop for owner decision if truthful closure requires a wait duration, public API/ABI change, instruction suspension, generic controller/bus rewrite, external media, or reopening accepted device semantics without a reproduced shared defect. |
+| Exit Criteria | Every selected S1 ledger row is immediate, deterministically ordered, or explicitly transferred; reset/cancel/trace has no leak; selected firmware/DOS consumers remain green; no false cycle-exact or Windows readiness claim remains. |
+| Original Owner Request | Holistically complete CPU-external chips, buses, devices, and ports to stable reliable selected L3 before choosing the next product step; do not use a Windows run as a substitute for architecture. |
+| Similar-Issue Sweep | Include core transaction state, machine/session reset, trace API, timeline/clock reset and rearm, CPU/DMA/FDC/ATA/PIC consumers, firmware capability, current DOS storage/timer/video/input consumers, and all S1 transfer rows. |
 
 ## Current Technical Baseline
 
