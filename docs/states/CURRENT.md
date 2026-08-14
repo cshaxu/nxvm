@@ -2,29 +2,8 @@
 
 ## Current Work
 
-**Active.** M5 T358 S4 audits paging and linear-memory access from translation
-validation through `#PF` delivery and access publication.
-
-## M5 T358 S4 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner approved execution of the ordered Queue through L3 closure on 2026-08-14. Single-agent continuation follows accepted T358 S1--S3 and Td S87 handoff. |
-| Objective | Audit the 80386 paging and linear-memory mechanism as one decision-to-publication route: page walk, PDE/PTE permission and A/D updates, CR2 and `#PF` producer/delivery state, cross-page transaction cancellation, and every adopted real/protected/VM86 caller. Repair only reproduced accidental construction divergence. Also make the default current-gate reproducible by isolating the independently reproduced host-thread timer smoke scheduling failure without changing guest timer behavior. |
-| Non-goals | PAE, large pages, persistent TLB or `INVLPG` behavior, paging-policy expansion, VME/PVI, debugger raw-control mutation, physical wait/bus timing, device timing, host time, numerical x87, or Windows compatibility. The added CTest isolation may not alter timer logic, guest ticks, device ownership, or test assertions. |
-| Reference Baseline | `1d5655b1` / current task artifact `vm-0-5-0358`. |
-| Candidate Proposal | [Cross-mode mechanism coherence](../proposals/m5-cross-mode-mechanism-coherence.md), retained [T311 paging boundary](../history/M5-T311-paging-boundary-family.md), and current [Queue](QUEUE.md). |
-| Files And ABI Surface | Existing private CPU translation, logical memory, execution-finalization, and adopted instruction callers; CMake CTest scheduling metadata for the existing timer firmware smoke; owner paging evidence, task history/status, and current artifact only. No public CPU, memory, pager, debugger, provider, or device ABI. |
-| Applicable Rules | Task Reading Set, execution, architecture, coding, documentation, and source/research policy; one checked translation/transaction owner, validation before A/D or guest-data publication, and explicit Intel-required mode/permission differences. |
-| Verification | Enumerate translation/page-walk, logical read/write, preview, instruction fetch, data/stack/string, and exception-finalizer callers. For each classify permissions, A/D and CR2 mutation, fault delivery, and commit/cancellation. Reproduce any divergence with focused variants; run the owner paging marker, retained delivery/VM86 markers, the timer smoke alone and repeated default parallel current gates, governance, artifact rebuild/hash, and diff checks. |
-| Expected Markers | Retained `M5:T258:S2:I386-PAGING:OK`, `M5:T311:S3:PAGING-PERMISSIONS:OK`, `M5:T311:S4:CROSS-PAGE:OK`, `M5:T320:S1:VM86-DELIVERY:OK`, and rebuilt `vm-0-5-0358` artifact. |
-| Asset Needs | Intel 80386 paging and page-fault authority plus project-owned synthetic page tables, GDT/IDT/TSS fixtures only; no guest media, firmware, or external-source import. |
-| Reporting Requirements | One complete P1 only: caller/write ledger, reproduced outcomes, every in-scope repair and similar-issue sweep, focused and retained markers, full gate, artifact hash, commit, and push. Do not report a single permission bit, fault vector, or page-crossing probe as delivery. |
-| Stop Conditions | Stop and split if the correction needs TLB/INVLPG or PAE/large-page semantics, a public paging/debugger/provider interface, physical bus/device timing, VME/PVI policy, a timer-runtime behavioral change, or a new paging-policy decision rather than a shared-mechanism inconsistency; record exact callers and transfer. |
-| Exit Criteria | Every adopted translation and linear-memory caller has one classified validation-to-publication contract; every reproduced accidental divergence is repaired and swept; Intel-required permission/mode distinctions are retained; default parallel current-gate scheduling is reproducible without changing timer runtime behavior; all gates pass and excluded paging state-machine work remains transferred. |
-| Original Owner Request | Continue the ordered Queue holistically until L3 closure audit, avoiding symptom-patch tactics. |
-| Similar-Issue Sweep | Search tracked production translation, logical-memory, `#PF`/CR2, A/D, preview, and execution-finalizer paths plus their current-gate owners; inspect all current host-thread firmware smokes for an equivalent CTest scheduling contract; classify every hit as repaired, covered common owner, Intel-required difference, or explicit Queue/TODO transfer before closure. |
+**Open.** M5 T358 S4 is accepted; the next cross-mode mechanism requires a
+separately admitted continuation packet.
 
 ## Current Technical Baseline
 
@@ -45,7 +24,7 @@ validation through `#PF` delivery and access publication.
 
 | Task | Compact result |
 | --- | --- |
-| T358 S2 | Accepted I/O-permission and exception/IRQ-entry coherence across real, protected, and VM86 paths; repaired 80286 protected `#SS/#TS` vector classification, proved 16-bit error frames, retained distinct frame layouts, passed 240 current-gate tests, and rebuilt `vm-0-5-0358`. [History](../history/M5-T358-cross-mode-mechanism-coherence.md) |
+| T358 S4 | Accepted paging and linear-memory coherence: one translation/A-D/CR2 publication ledger across guest, fetch, descriptor and transition callers; no duplicate walker or A/D publisher; host-thread current smokes are CTest-serialized to eliminate a reproduced guest-independent pause-watchdog flake. Two parallel 240-test gates and the `vm-0-5-0358` artifact SHA remained stable. [History](../history/M5-T358-cross-mode-mechanism-coherence.md) |
 | T357 | Closed finite source-backed 8086/80186/80286/80386 instruction timing at one successful-retirement publisher: selected form ledgers, 80386 protected/VM86 ordinary I/O, Appendix-B `NOP = 3` consumer reconciliation, 240 current-gate tests, and artifact SHA-256 `83A249015C03CF875896A440D5B43A430C2D875A63F0BE4B9709014A753CAD95`. Unselected forms, waits, physical bus/prefetch, device latency and cycle-exact work remain explicit transfers. [Closure audit](../etc/evidence/t357-s8-cross-profile-closure-audit.md). |
 | T356 | Closed the M5 closure audit with an explicit M5-open decision: all selected device owners are evidenced, but instruction timing, bus availability/wait states and selected-profile cycle exactness remain ordered implementation prerequisites; corpus-gated peripheral, storage and product boundaries remain explicit transfers. [History](../history/M5-T356-m5-closure-audit.md). |
 | T355 | Closed the bounded Windows 3.x readiness map: an opt-in BYOB HDD/INT13 checkpoint passed, all four probes remain host-observation/non-current, T347/T354 storage/L3 is a verified prerequisite, and all display, input, NMI, physical-timing, Setup, and compatibility breadth remains explicitly transferred. [History](../history/M5-T355-windows-3x-readiness-map.md). |

@@ -50,8 +50,24 @@ changed. The accepted current-gate result is 240/240 passing and the developer
 artifact SHA-256 remains
 `59FAC0E73FED23BA47F3F25C1946C8D2949CFB186C480CE9841588E47E754E2E`.
 
+## Accepted S4 Progress
+
+S4 was accepted at `d55c99f4`. Its [paging and linear-memory ledger](../etc/evidence/t358-s4-paging-linear-coherence.md)
+maps page-walk validation, the sole A/D publisher, cross-page cancellation,
+guest operands, instruction fetch, system-transition callers, and test/debug
+linear access. No second walker, direct A/D writer, or guest bypass was found.
+The retained 80386 permission differences and zero-byte segment feasibility
+checks remain intentional.
+
+S4 also reconciles a reproducible current-gate host-scheduling flake without
+changing guest behavior: all seven current host-thread lifecycle smokes are
+`RUN_SERIAL` under CTest, with an assertion that each remains in the canonical
+gate. Two fresh parallel current-gate runs passed 240/240. The active developer
+artifact SHA-256 remains
+`59FAC0E73FED23BA47F3F25C1946C8D2949CFB186C480CE9841588E47E754E2E`.
+
 ## Remaining Scope
 
-T358 retains its proposal order: paging and linear memory, then shared
-prefix/LOCK/width/string classifiers. These are separate admitted S units;
+T358 retains its proposal order: shared prefix/LOCK/width/string classifiers.
+This is a separately admitted S unit;
 T358 does not claim VME/PVI, device behavior, bus timing, or x87 execution.
