@@ -2,29 +2,8 @@
 
 ## Current Work
 
-M5 T352 S2 - selected VADP register, CRTC, raster, and retrace lifecycle
-reconciliation (Single-Session Mode).
-
-## M5 T352 S2 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner approved continuous holistic device/L3 implementation on 2026-08-13; T352 S1 accepted at `6e68050b`, whose ledger assigns this exact selected register/raster mechanism. |
-| Objective | Reconcile selected CGA/EGA-visible VADP CRTC/register, status/retrace, reset/finalize, and deterministic-raster lifecycle: one state owner, every selected writer/reader, masks/index/flip-flop semantics, phase/reset behavior, and source-to-snapshot publication boundary. Repair only a reproduced mechanism defect. |
-| Non-goals | No selected CGA/EGA mode/aperture/pixel implementation, VGA/VBE/SVGA, composite/light-pen, firmware feature, host cadence/renderer, generic timeline refactor, Windows runtime, or unselected controller register semantics. |
-| Reference Baseline | `6e68050b`; [T352 S1 ledger](../etc/evidence/t352-s1-digital-video-ledger.md); T314 CRTC bound closure; T346 S5 deterministic VADP timeline evidence; existing VADP text/status, EGA controller/CRTC, and ROM/DOS display tests. |
-| Candidate Proposal | [PC/AT digital video completeness](../proposals/m5-vadp-digital-video-completeness.md). |
-| Files And ABI Surface | Expected: `vadp.c`/private VADP state only if a reproduced defect requires it; focused existing/new owner smoke, evidence, Current/history. No public display snapshot, profile/host, firmware, CMake topology, or artifact version change unless a focused test needs existing-target registration. |
-| Applicable Rules | VADP owns mutable display register/raster state; CRTC array index predicate and constant bound assertions remain mandatory; status reads reset only the selected attribute flip-flop; timeline owns VADP advance order; copied snapshots cannot let consumers mutate VADP; variants share one validation/publication path unless their selected hardware layout differs. |
-| Verification | Audit all VADP CRTC/status/mode/color/sequencer/graphics/attribute callbacks and masks, CRTC consumers, reset/configuration/finalize, timeline advance, and snapshot dirty/publication readers. Add or strengthen focused proof for selected index/mask/readback, attribute-status flip-flop, display-enable/retrace phase and reset, same-tick deterministic advance, dirty/copy isolation, and failure/nonpublication where applicable. Run focused owners, governance, diff check, and full current gate. |
-| Expected Markers | Retain `M5:T314:S2:EGA-CRTC-BOUNDARY:OK`, VADP text/status, EGA controller/port, and `M5:T346:S5:INPUT-DISPLAY-TIMELINE:OK`; add a new S2 marker only if no existing owner can express the full cross-register lifecycle. |
-| Asset Needs | Existing sources/evidence and IBM CGA/EGA technical-reference tables recorded in S1; no imported code, firmware, guest media, host capture, or renderer asset. |
-| Reporting Requirements | Record callback/consumer/reset/timeline/snapshot inventory, source-to-proof matrix, reproduced defect and caller sweep if any, exact selected/unselected register boundary, validation, and transfers to S3--S5. |
-| Stop Conditions | Stop for a required new profile/host/firmware ABI, an unselected register/mode dependency, a generic memory/timeline defect, an ambiguous IBM register semantic, a copied-frame format change, or a need to implement mode/aperture behavior assigned to S3/S4. Transfer or seek owner approval rather than broaden S2. |
-| Exit Criteria | Every selected register/CRTC/raster/retrace/reset/timeline row has one truthful VADP owner and focused proof; no stale dual writer, unsafe CRTC indexing, unmasked selected write, incorrect status flip-flop/phase/reset behavior, or consumer mutation remains; all other mode/aperture work is explicitly retained for S3/S4/S5. |
-| Original Owner Request | Make CPU/fpu-external core-machine devices, chips, buses, and ports comprehensive and stable at deterministic L3 before choosing a Windows execution route. |
-| Similar-Issue Sweep | Sweep all VADP callback functions and masks, `crtc[]` readers, initialization/configuration/reset/finalize, machine timeline callback and reset scheduling, snapshot/dirtiness/copy consumers, profile configuration, QDCGA/ROM writers, and VADP/CGA/EGA/timeline tests. |
+M5 T352 remains open. S2 is accepted; S3 selected CGA mode, aperture, and
+copied-frame reconciliation is the next bounded subtask.
 
 ## Current Technical Baseline
 
@@ -45,7 +24,7 @@ reconciliation (Single-Session Mode).
 
 | Task | Compact result |
 | --- | --- |
-| T352 S1 | Accepted the selected digital CGA/EGA VADP state ledger: one owner map for registers, apertures, raster, timeline, copied frame, consumers, lifecycle, and every S2--S5/TODO transfer. [Evidence](../etc/evidence/t352-s1-digital-video-ledger.md). |
+| T352 S2 | Accepted selected VADP callback/CRTC/raster lifecycle: one owner, guarded/masked selected state, status flip-flop/phase/reset/timeline proof, and no reproduced mechanism defect. [Evidence](../etc/evidence/t352-s2-vadp-register-raster.md). |
 | T351 | Closed selected IBM-PC/AT 8042 controller, AT keyboard, and compatible three-byte AUX at deterministic L3: one FIFO, controller/keyboard/AUX head promotion, IRQ1/IRQ12 source lifecycle, delayed/reset/finalize, copied ingress, and exact advanced-AUX/NMI/port-61 transfers. `vm-0-5-0351` SHA-256 `C20F4B631F8E63DD4D963C2F85E69D735EC05793B3DCC0C2AC11E65FA6D3FB9C`; 228 current-gate tests passed. [History](../history/M5-T351-kbc-aux-completeness.md). |
 | T350 | Closed the selected PC/AT signal graph: retained 8254/IRQ0 and MC146818/CMOS/IRQ8 owners now have focused lifecycle proof; RTC alarm and IRQF defects are repaired; speaker/PPI and parity/I/O-channel NMI remain exact corpus/contract-gated TODO transfers. 228 current-gate tests passed. [History](../history/M5-T350-pcat-platform-signals.md). |
 | T349 | Closed PC/AT dual-8259A command/priority/cascade, OCW3 poll/status/special-mask/SFNM, and retained edge/level producer lifecycle; physical INTA spurious behavior transfers only to L3 bus timing. 226 current-gate tests passed. [History](../history/M5-T349-pcat-pic-compliance.md). |
