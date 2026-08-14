@@ -23,3 +23,11 @@ contract, validates that contract before core-machine publication, and proves
 every leaf against the frozen registry plus every selected IRQ/DMA binding.
 Its [evidence](../etc/evidence/t353-s2-profile-topology-contract.md) retains
 ATA feature semantics as one source and leaves no selected sparse range claim.
+
+S3 is accepted at `149ff080`. Its
+[admission decision](../etc/evidence/t353-s3-pcat-peripheral-admission-decision.md)
+audits repository-held DOS/Windows probes, media policy, frozen topology, and
+the retained PIT/RTC/NMI records. No named corpus and no selected channel-2 or
+port-`61h` hardware contract exist, so it makes no peripheral claim or code
+change. Port-`61h` PPI/speaker, parity/I/O-channel NMI, and serial/parallel/game
+interfaces retain their separate exact TODO receivers and admission conditions.

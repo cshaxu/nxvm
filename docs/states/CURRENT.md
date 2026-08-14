@@ -2,30 +2,9 @@
 
 ## Current Work
 
-**Active.** M5 T353 S3 determines whether a corpus-backed PC/AT
-system-control/PPI/speaker receiver is admissible; absent that proof, it
-records the exact existing transfer without adding a placeholder device.
-
-## M5 T353 S3 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner approved T353's proposed S3 sequence and its corpus-gated boundary on 2026-08-13. This S admits only the evidence decision authorized by the T353 proposal; no peripheral implementation is approved without the named corpus and hardware contract it requires. |
-| Objective | Determine whether repository-held DOS or Windows corpus evidence and a documented PC/AT contract justify selecting one system-control/PPI/speaker receiver; if not, preserve an exact no-owner transfer that prevents a fabricated port-`61h` device claim. |
-| Non-goals | No PPI, speaker, port `61h`, parity/I/O-channel NMI, serial, parallel, game-port, host-audio, generic port-bus, firmware, or Windows-readiness implementation; no external media acquisition or third-party-source import. |
-| Reference Baseline | `de208d81` on `master`, after T353 S2's accepted exact PC/AT topology contract. |
-| Candidate Proposal | [M5 PC/AT port topology and selected peripheral completion](../proposals/m5-pcat-port-topology-and-peripherals.md), S3. |
-| Files And ABI Surface | `docs/states/CURRENT.md`, one indexed `docs/etc/evidence/t353-s3-*.md` record, and only a necessary exact TODO/history link. No production, CMake, test, profile, port-registration, or ABI surface may change. |
-| Applicable Rules | `docs/README.md` Task Reading Set; `docs/rules/EXECUTION.md` S/P lifecycle and actual-change review; `docs/rules/DOCUMENT.md` authority/index/debt boundary; `docs/etc/operations/policy/source-policy.md` corpus and source boundary; T353 proposal's S3 and non-goals. |
-| Verification | Search the repository's committed source, tests, probes, evidence, profile leaves, and current media classification for a named DOS/Windows port-`61h` need and for a documented 8253 channel-2/port-`61h` contract; trace actual profile and core port registrations; verify the selected result is represented by exactly one Queue/TODO receiver and no unapproved provider is added. Run documentation governance and `git diff --check`. |
-| Expected Markers | `Documentation governance checks passed`; no runtime marker is applicable because no device or test is admitted. |
-| Asset Needs | Repository-held sources, probes, and indexed evidence only. No guest media, firmware, local image, external source, or host-audio asset is requested or consumed. |
-| Reporting Requirements | Record the corpus/contract inventory, exact port-registration result, decision, and future admission condition in indexed evidence; report a material corpus discovery before implementation. This single session must complete and push the implementation P, then independently re-read the actual change as coordinator before a governance P. |
-| Stop Conditions | Stop for owner direction if a named repository corpus demonstrably requires port `61h` or a PPI/speaker device, if a redistributable hardware/manual contract requires external research, or if a truthful result needs any production/profile/port-registration change. Do not silently expand this documentation-only S. |
-| Exit Criteria | Every repository-held corpus/probe and current topology source is classified; one of: (a) named corpus plus hardware contract yields a separately approved implementation S, or (b) no qualifying corpus yields an indexed exact no-owner transfer to the existing PPI/speaker TODO with its admission conditions intact. No unsupported peripheral claim or unowned port leaf remains. |
-| Original Owner Request | Continue the CPU-external PC/AT device/L3 program holistically, complete selected high-value devices before Windows execution, and use evidence rather than speculative peripheral additions. |
-| Similar-Issue Sweep | Classify the related port-`61h`/PPI/speaker, parity/I/O-channel NMI, serial, parallel, and game-port gaps. Confirm each has one existing bounded TODO receiver and that none is falsely implied by the default PC/AT profile or KBC envelope. |
+**Active.** T353 remains open between accepted subtasks. S4 will prove that the
+selected PC/AT topology stays coherent through session reset, deterministic
+timeline service, and firmware-visible composition before the task closes.
 
 ## Current Technical Baseline
 
@@ -46,7 +25,7 @@ records the exact existing transfer without adding a placeholder device.
 
 | Task | Compact result |
 | --- | --- |
-| T353 S2 | Accepted S1's selected PC/AT ledger and the S2 single port-leaf/named-route contract: 75 exact directional leaves cover dual DMA, `92h`, sparse KBC/VADP/FDC, and ATA; validation precedes core publication; routing proves IRQ0/1/6/8/12/14 and FDC DMA2 against actual bindings. 230 current-gate tests passed. [S1 evidence](../etc/evidence/t353-s1-pcat-port-topology-ledger.md), [S2 evidence](../etc/evidence/t353-s2-profile-topology-contract.md). |
+| T353 S3 | Accepted S1's selected PC/AT ledger, S2's exact 75-leaf/named-route contract, and S3's repository-corpus decision: no port-`61h` PPI/speaker corpus or hardware contract exists, so its exact `TODO(Medium)` receiver and the separate NMI and optional-interface receivers remain authoritative. 230 current-gate tests passed. [S1](../etc/evidence/t353-s1-pcat-port-topology-ledger.md), [S2](../etc/evidence/t353-s2-profile-topology-contract.md), [S3](../etc/evidence/t353-s3-pcat-peripheral-admission-decision.md). |
 | T352 | Closed selected digital CGA/EGA: one VADP owner for registers, apertures, raster, planar state, reset, and capture; deterministic VADP-after-KBC timing and copied session/mailbox composition; `vm-0-5-0352` SHA-256 `37A00874C05FB402151AF1A77BD28796D03B2A738D6F3EC08761E4541F2D6BB4`; 229 current-gate tests passed. [History](../history/M5-T352-vadp-digital-video-completeness.md). |
 | T351 | Closed selected IBM-PC/AT 8042 controller, AT keyboard, and compatible three-byte AUX at deterministic L3: one FIFO, controller/keyboard/AUX head promotion, IRQ1/IRQ12 source lifecycle, delayed/reset/finalize, copied ingress, and exact advanced-AUX/NMI/port-61 transfers. 228 current-gate tests passed. [History](../history/M5-T351-kbc-aux-completeness.md). |
 | T350 | Closed the selected PC/AT signal graph: retained 8254/IRQ0 and MC146818/CMOS/IRQ8 owners now have focused lifecycle proof; RTC alarm and IRQF defects are repaired; speaker/PPI and parity/I/O-channel NMI remain exact corpus/contract-gated TODO transfers. 228 current-gate tests passed. [History](../history/M5-T350-pcat-platform-signals.md). |
