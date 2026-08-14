@@ -2,8 +2,29 @@
 
 ## Current Work
 
-**Idle.** T363 is closed; the next ordered Queue candidate requires separate
-owner-approved admission.
+**Active.** M5 T364 S1 inventories every selected PC/AT device, chip, port,
+route, lifecycle and timing owner before any later NMI or bus-time allocation.
+
+## M5 T364 S1 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New |
+| Admission And Approval | The owner directed implementation of the next Queue task on 2026-08-14 after accepting T363. This is the ordered PC/AT completeness-audit candidate; Git pushes are permitted. |
+| Objective | Produce one complete selected-PC/AT hardware completeness ledger covering CPU-visible buses/ports, PIC/PIT/RTC, DMA, KBC/AUX/PPI/NMI, VADP, FDC/ATA, memory/ROM, IRQ/DRQ/reset routes and selected optional-interface dispositions. |
+| Non-goals | No device implementation, no NMI source selection, no bus waits/service duration, no firmware/media import, no host backend, no Windows claim, and no physical/cycle-exact claim. |
+| Reference Baseline | `838080b1` / `vm-0-5-0362`; T346--T354 component evidence, T353 PC/AT topology closure, T363 timing closure, and the Queue proposal. |
+| Candidate Proposal | [PC/AT device, chip, port, and bus completeness audit](../proposals/m5-pcat-device-completeness-audit.md). |
+| Files And ABI Surface | Indexed T364 evidence, task history and status only unless a verified inventory defect requires later admission. No public ABI. |
+| Applicable Rules | Task Reading Set; Execution source/evidence/closure rules; Documentation topology; Architecture ownership and source/research policy. Code rules are not triggered unless later implementation is admitted. |
+| Verification | Source/route/lifecycle/consumer/gap sweep across selected core and VM composition, all retained evidence and Queue/TODO receivers; documentation governance and diff check. |
+| Expected Markers | T364 S1 selected-PC/AT completeness ledger marker and retained topology/transaction markers. |
+| Asset Needs | Existing read-only primary-source provenance only; no retained download, code, firmware or guest media. |
+| Reporting Requirements | State each selected/absent/incomplete component, its contract and owner, exact gap and earliest receiver; separately identify the NMI-source prerequisite. |
+| Stop Conditions | Stop and transfer any controller lacking a primary contract, selected corpus, or single lifecycle/timing owner; never synthesize a device or source. |
+| Exit Criteria | One indexed ledger classifies every selected component and optional-interface absence with no unclassified route, timing owner, lifecycle or gap; all receivers are Queue/TODO linked. |
+| Original Owner Request | Begin implementing the next ordered Queue task after the complete instruction-timing corpus. |
+| Similar-Issue Sweep | Search core/VM devices, port registration, profile topology, IRQ/DRQ/NMI/reset routes, transaction/timeline owners, tests, prior evidence, Queue and TODO. |
 
 ## Current Technical Baseline
 

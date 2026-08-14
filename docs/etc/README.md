@@ -128,6 +128,7 @@ principal documents named in [docs/README.md](../README.md).
 | `evidence/t363-s5-secondary-prefix-reconciliation.md` | Verification owner | T363 S5 80386 secondary-integer and prefix/width source-owner reconciliation with privileged and physical transfers. Retain with T363 history at task closure. |
 | `evidence/t363-s6-privileged-reconciliation.md` | Verification owner | T363 S6 privileged/system source-owner reconciliation with 80286, delivery, and physical transfers retained explicitly. Retain with T363 history at task closure. |
 | `evidence/t363-s7-complete-instruction-timing-closure-audit.md` | Verification owner | T363 task-level complete instruction-retirement timing corpus allocation, receiver, verification, and no-L3-overclaim closure audit. Retain with T363 history. |
+| `evidence/t364-s1-pcat-device-completeness-ledger.md` | Verification owner | T364 S1 selected PC/AT component, port/route, lifecycle/timing-owner, absence, and earliest-receiver ledger. Retain with T364 history at task closure. |
 | `operations/` | Execution, source, and release owners | Toolchain, policy, templates, release procedure, and closure material. |
 | `research/` | Source owner | Provenance, external references, and non-product research. |
 | `history/` | Documentation owner | Read-only legacy and M5 migration/roadmap evidence. |
