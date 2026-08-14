@@ -573,7 +573,7 @@ static const core_machine_source_repeat_timing_contract
 #define CORE_MACHINE_80386_JCC_NOT_TAKEN_TICKS 3u
 #define CORE_MACHINE_80386_JCC_TAKEN_TICKS 7u
 #define CORE_MACHINE_SOURCE_UNALLOCATED_TICKS 1u
-#define CORE_MACHINE_80386_SOURCE_MAXIMUM_TICKS 46u
+#define CORE_MACHINE_80386_SOURCE_MAXIMUM_TICKS 106u
 #define CORE_MACHINE_8086_JCC_NOT_TAKEN_TICKS 4u
 #define CORE_MACHINE_8086_JCC_TAKEN_TICKS 16u
 #define CORE_MACHINE_8086_SEGMENT_OVERRIDE_TICKS 2u
@@ -2185,6 +2185,12 @@ static C_INT core_machine_80386_dynamic_multiply_cost(core_machine *machine,
         multiplier = data->cimm;
         operand_bytes = 1u;
         signed_multiplier = TYPE_TRUE;
+    } else if (opcode == 0x0fu && prefixes + 2u < data->oplen &&
+        data->opcodes[prefixes + 1u] == 0xafu) {
+        multiplier = data->crm;
+        signed_multiplier = TYPE_TRUE;
+        memory_multiplier = core_machine_source_timing_modrm_is_memory(data,
+            prefixes + 1u);
     } else {
         return 0;
     }
@@ -2196,6 +2202,106 @@ static C_INT core_machine_80386_dynamic_multiply_cost(core_machine *machine,
     *out_ticks = magnitude == 0u ? 9u : (scale < 3u ? 3u : scale) + 6u;
     if (memory_multiplier) *out_ticks += 3u;
     return 1;
+}
+
+/* Intel 80386 PRM section 17.2.2.3 supplies the fixed secondary-form rows
+ * below.  The dynamic IMUL early-out remains in the dedicated helper above;
+ * both helpers consume the decoder's completed operand capture after the one
+ * successful-retirement publisher, never a handler-local timing decision. */
+static type_unsigned_64 core_machine_80386_timing_zero_scan_count(
+    type_unsigned_64 value, type_unsigned_8 operand_bytes, C_INT reverse)
+{
+    type_unsigned_64 mask;
+    type_unsigned_64 bit;
+    type_unsigned_64 count = 0u;
+    type_unsigned_8 bits;
+
+    bits = (type_unsigned_8)(operand_bytes * 8u);
+    mask = operand_bytes == 4u ? UINT32_MAX : UINT16_MAX;
+    value &= mask;
+    if (value == 0u) return bits;
+    bit = reverse ? UINT64_C(1) << (bits - 1u) : 1u;
+    while ((value & bit) == 0u) {
+        ++count;
+        bit = reverse ? bit >> 1u : bit << 1u;
+    }
+    return count;
+}
+
+static C_INT core_machine_80386_secondary_source_instruction_cost(
+    core_machine *machine, type_unsigned_64 *out_ticks)
+{
+    const t_cpuins_data *data;
+    core_machine_cpu_instruction_lexeme lexeme;
+    type_unsigned_32 prefixes;
+    type_unsigned_8 opcode;
+    type_unsigned_8 secondary;
+    type_unsigned_8 extension;
+    type_unsigned_8 operand_bytes;
+    type_unsigned_32 fallthrough;
+    C_INT memory;
+
+    if (machine == STD_NULL || out_ticks == STD_NULL ||
+        machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_80386) return 0;
+    data = &machine->executor_cpu_instructions.data;
+    prefixes = core_machine_instruction_prefix_count(data);
+    if (prefixes + 1u >= data->oplen ||
+        !core_machine_80386_timing_has_source_prefixes(data, prefixes)) {
+        return 0;
+    }
+    opcode = data->opcodes[prefixes];
+    if (opcode != 0x0fu) return 0;
+    secondary = data->opcodes[prefixes + 1u];
+    operand_bytes = data->oldcpu.data.cs.seg.exec.defsize ? 4u : 2u;
+    if (data->prefix_oprsize) operand_bytes = operand_bytes == 4u ? 2u : 4u;
+
+    if (secondary >= 0x80u && secondary <= 0x8fu) {
+        fallthrough = data->oldcpu.data.eip + prefixes + 2u + operand_bytes;
+        if (!data->oldcpu.data.cs.seg.exec.defsize) fallthrough &= 0xffffu;
+        if (machine->executor_cpu.data.eip == fallthrough) {
+            *out_ticks = CORE_MACHINE_80386_JCC_NOT_TAKEN_TICKS;
+        } else if (core_machine_cpu_execution_preview_lexeme(
+                &machine->executor_cpu_execution, &lexeme) && lexeme.available) {
+            *out_ticks = CORE_MACHINE_80386_JCC_TAKEN_TICKS +
+                lexeme.component_count;
+        } else {
+            *out_ticks = CORE_MACHINE_SOURCE_UNALLOCATED_TICKS;
+        }
+        return 1;
+    }
+    if (secondary < 0xa3u || prefixes + 2u >= data->oplen) return 0;
+    memory = core_machine_source_timing_modrm_is_memory(data, prefixes + 1u);
+    extension = (data->opcodes[prefixes + 2u] >> 3u) & 7u;
+    switch (secondary) {
+    case 0xa3u:
+        *out_ticks = memory ? 12u : 3u;
+        return 1;
+    case 0xabu: case 0xb3u: case 0xbbu:
+        *out_ticks = memory ? 13u : 6u;
+        return 1;
+    case 0xbau:
+        if (extension == 4u) {
+            *out_ticks = memory ? 6u : 3u;
+            return 1;
+        }
+        if (extension >= 5u) {
+            *out_ticks = memory ? 8u : 6u;
+            return 1;
+        }
+        return 0;
+    case 0xa4u: case 0xa5u: case 0xacu: case 0xadu:
+        *out_ticks = memory ? 7u : 3u;
+        return 1;
+    case 0xb6u: case 0xb7u: case 0xbeu: case 0xbfu:
+        *out_ticks = memory ? 6u : 3u;
+        return 1;
+    case 0xbcu: case 0xbdu:
+        *out_ticks = 10u + 3u * core_machine_80386_timing_zero_scan_count(
+            data->crm, operand_bytes, secondary == 0xbdu);
+        return 1;
+    default:
+        return 0;
+    }
 }
 
 static C_INT core_machine_80286_source_instruction_cost(core_machine *machine,
@@ -2407,6 +2513,9 @@ static C_INT core_machine_instruction_cost(core_machine *machine,
         return 1;
     }
     if (core_machine_80386_dynamic_multiply_cost(machine, out_ticks)) {
+        return 1;
+    }
+    if (core_machine_80386_secondary_source_instruction_cost(machine, out_ticks)) {
         return 1;
     }
     if (core_machine_primary_source_instruction_cost(machine, out_ticks)) {

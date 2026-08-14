@@ -266,8 +266,8 @@ static C_INT t359_s2_test_group3_rows(C_VOID)
     const t359_s2_word_seed seed = {
         0u, 1u, 0u, 1u, 0x1000u, TYPE_TRUE
     };
-    const core_machine_run_budget insufficient = { 1u, 45u };
-    const core_machine_run_budget sufficient = { 1u, 46u };
+    const core_machine_run_budget insufficient = { 1u, 105u };
+    const core_machine_run_budget sufficient = { 1u, 106u };
     t359_s2_timing_state state = { 0u };
     core_machine_run_result result;
     core_machine *machine = STD_NULL;

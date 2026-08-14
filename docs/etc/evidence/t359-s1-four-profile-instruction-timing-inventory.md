@@ -76,11 +76,11 @@ form matrix as a timing allocation.
 | `0F 01 /0`--`/6` | 80286 | receiver | S6 table/control and privilege/fault timing |
 | `0F 02`, `0F 03`, `0F 06` | 80286 | receiver | S6 descriptor-query/CLTS timing |
 | `0F 20`--`26` | 80386 | receiver | S6 control/debug/test-register timing |
-| `0F 80`--`8F` | 80386 | receiver | S4 near-branch/lexeme timing |
-| `0F 90`--`9F` | 80386 | receiver | S2 condition/FLAGS timing |
-| `0F A0/A1/A3/A4/A5/A8/A9/AB/AC/AD/AF` | 80386 | receiver | S4 nonprivileged integer, FS/GS, bit, double-shift, and IMUL timing |
-| `0F B2`--`B7`, `0F BB`--`BF` | 80386 | receiver | S4 far-load, bit, scan, and MOVX timing |
-| `0F BA /4`--`/7` | 80386 | receiver; `/0`--`/3` rejected | S4 bit-immediate timing |
+| `0F 80`--`8F` | 80386 | selected for successful near-branch lexical outcomes | S5 secondary source ledger; physical prefetch remains transferred |
+| `0F 90`--`9F` | 80386 | selected for the retained S2 register/memory rows | S2 primary-shape source owner, retained by S5 |
+| `0F A3/A4/A5/AB/AC/AD/AF` | 80386 | selected | S5 bit/double-shift/two-operand-IMUL ledger; FS/GS remains S6 |
+| `0F B3/B6/B7/BB`--`BF` | 80386 | selected except `B2/B4/B5` far-load forms | S5 bit/scan/MOVX ledger; far-load remains S6 |
+| `0F BA /4`--`/7` | 80386 | selected; `/0`--`/3` rejected | S5 bit-immediate source ledger |
 | all other `0F` bytes or invalid listed extensions | profile-dependent | rejected | No successful-retirement timing row |
 
 ## Classifier, mode, and publication inventory

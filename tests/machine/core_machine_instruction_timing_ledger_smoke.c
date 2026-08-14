@@ -272,8 +272,8 @@ static C_INT timing_ledger_test_unavailable_and_fault(C_VOID)
 static C_INT timing_ledger_test_budget_overflow_and_reset(C_VOID)
 {
     static const type_unsigned_8 nop[] = { 0x90u };
-    const core_machine_run_budget insufficient = { 1u, 26u };
-    const core_machine_run_budget sufficient = { 1u, 46u };
+    const core_machine_run_budget insufficient = { 1u, 105u };
+    const core_machine_run_budget sufficient = { 1u, 106u };
     core_machine_run_result result;
     timing_ledger_state state = { 0u, 0u, 0u };
     core_machine *machine = STD_NULL;

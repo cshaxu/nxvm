@@ -12,8 +12,11 @@ set(t359_s3_ledger
     "${PROJECT_SOURCE_DIR}/docs/etc/evidence/t359-s3-four-profile-control-stack-source-ledger.md")
 set(t359_s4_ledger
     "${PROJECT_SOURCE_DIR}/docs/etc/evidence/t359-s4-four-profile-string-io-source-ledger.md")
+set(t359_s5_ledger
+    "${PROJECT_SOURCE_DIR}/docs/etc/evidence/t359-s5-80386-secondary-source-ledger.md")
 foreach(t359_file IN ITEMS "${t359_source}" "${t359_machine}" "${t359_inventory}"
-    "${t359_s2_ledger}" "${t359_s3_ledger}" "${t359_s4_ledger}")
+    "${t359_s2_ledger}" "${t359_s3_ledger}" "${t359_s4_ledger}"
+    "${t359_s5_ledger}")
     if(NOT EXISTS "${t359_file}")
         message(FATAL_ERROR "T359 timing inventory input is missing: ${t359_file}")
     endif()
@@ -24,6 +27,7 @@ file(READ "${t359_inventory}" t359_inventory_text)
 file(READ "${t359_s2_ledger}" t359_s2_ledger_text)
 file(READ "${t359_s3_ledger}" t359_s3_ledger_text)
 file(READ "${t359_s4_ledger}" t359_s4_ledger_text)
+file(READ "${t359_s5_ledger}" t359_s5_ledger_text)
 
 function(t359_require text pattern description)
     if(NOT "${text}" MATCHES "${pattern}")
@@ -77,7 +81,7 @@ foreach(t359_anchor IN ITEMS
     "0F 80`--`8F"
     "0F 90`--`9F"
     "0F BA /4`--`/7"
-    "0F B2`--`B7"
+    "0F B3/B6/B7/BB`--`BF"
     "S2 -- arithmetic, FLAGS, data and ModRM/EA source matrix"
     "S3 -- control and stack source matrix"
     "S4 -- string, repeat and ordinary-I/O source matrix"
@@ -193,6 +197,36 @@ foreach(t359_s4_ledger_anchor IN ITEMS
     "T360")
     t359_require("${t359_s4_ledger_text}" "${t359_s4_ledger_anchor}"
         "S4 source ledger is missing ${t359_s4_ledger_anchor}")
+endforeach()
+
+# S5 allocates secondary integer forms at the same publisher while retaining
+# S2's dynamic IMUL peer.  These anchors make the secondary encoding outcome
+# classifier and its maximum/preflight boundary mechanically visible.
+foreach(t359_s5_anchor IN ITEMS
+    "core_machine_80386_secondary_source_instruction_cost"
+    "core_machine_80386_timing_zero_scan_count"
+    "CORE_MACHINE_80386_SOURCE_MAXIMUM_TICKS 106u"
+    "0xafu")
+    t359_require("${t359_machine_text}" "${t359_s5_anchor}"
+        "missing S5 secondary timing anchor ${t359_s5_anchor}")
+endforeach()
+string(FIND "${t359_machine_text}"
+    "if (core_machine_80386_secondary_source_instruction_cost(machine, out_ticks))"
+    t359_s5_publisher)
+if(t359_s5_publisher LESS 0 OR t359_s5_publisher GREATER t359_s2_legacy_publisher)
+    message(FATAL_ERROR
+        "T359 S5 secondary classifier must precede the unallocated legacy receiver")
+endif()
+foreach(t359_s5_ledger_anchor IN ITEMS
+    "## Allocated successful rows"
+    "0F 80`--`8F"
+    "0F BA /4"
+    "0F AF"
+    "10\\+3n"
+    "## Source and mode dispositions"
+    "T360")
+    t359_require("${t359_s5_ledger_text}" "${t359_s5_ledger_anchor}"
+        "S5 source ledger is missing ${t359_s5_ledger_anchor}")
 endforeach()
 
 message(STATUS "T359 four-profile instruction timing inventory passed.")
