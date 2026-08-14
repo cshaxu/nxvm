@@ -2,7 +2,8 @@
 
 ## Current Work
 
-**Idle.**
+**Idle.** T361 is closed. The next M5 candidate remains the unnumbered
+Intel-constrained legacy timing-model normalization proposal.
 
 ## Current Technical Baseline
 
@@ -33,6 +34,12 @@
 | T354 | Closed selected L3 bus timing: core-local checked CPU/DMA transaction begin/commit/cancel trace, deterministic CPU-retire then DMA/PIT/PIC then FDC/HDC ordering, reset cancellation/trace continuity, and retained firmware/DOS consumers. Exact bus cycles, pin waveforms, physical wait tables, host time, and Windows readiness remain explicit transfers. 234 current-gate tests passed. [History](../history/M5-T354-physical-l3-bus-timing-convergence.md). |
 
 ## Recent Governance
+
+- **M5 Td S90:** made completed PC/AT device-service timing an explicit
+  prerequisite of selected-profile model-L3 phase refinement; retained the
+  established Queue order and withdrew the unstarted T362 preparation.
+  Documentation governance and diff check passed; Td work has no runtime,
+  artifact, or task-activation change.
 
 - **M5 Td S89:** converted the remaining primary-source and PC/AT NMI debt
   into three bounded proposals; ordered authority review before the complete
@@ -76,11 +83,3 @@
   audit reconfirmed its claim was no longer true. Physical wait/cycle fidelity
   remains in the existing bus-timed and cycle-exact debt entries. Documentation
   governance and diff check passed; Td work has no runtime change.
-
-- **M5 Td S83:** corrected the NXVM self-sibling instruction in `AGENTS.md`;
-  renamed the VM-platform injected test macro to
-  `VM_PLATFORM_TEST_FAILURE_STAGE` across CMake, implementation, and smoke
-  sources; and aligned CMake's project identity and diagnostics with NXVM.
-  Documentation self-test, default governance check, exact macro/search audit,
-  and diff check passed. Td work has no intended runtime or artifact behavior
-  change.

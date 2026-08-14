@@ -9,12 +9,13 @@ alone. Without physical measurement it must not claim physical cycle exactness.
 
 ## Required scope
 
-After instruction-timed execution and bus-timed PC/AT operation, select one
-profile, source-labelled CPU timing model, prefetch assumptions, bus phase
-model and device microstates. Establish a single phase/ownership representation that composes
-CPU execution, memory/I/O wait, DMA arbitration, interrupt acknowledgement,
-PIT/RTC clocks, selected storage readiness and reset.  Explain every retained
-difference from actual hardware as a named profile boundary.
+Only after instruction-timed execution, bus-timed PC/AT operation, and the
+PC/AT device service-timing corpus have completed, select one profile,
+source-labelled CPU timing model, prefetch assumptions, bus phase model, and
+device microstates. Establish a single phase/ownership representation that
+composes CPU execution, memory/I/O wait, DMA arbitration, interrupt
+acknowledgement, PIT/RTC clocks, selected storage readiness, and reset. Explain
+every retained difference from actual hardware as a named profile boundary.
 
 ## Non-goals and stop conditions
 
