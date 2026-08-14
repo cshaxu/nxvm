@@ -44,6 +44,19 @@ inventory verifier, documentation governance, and 241/241 current-gate tests
 passed.  The rebuilt developer artifact is `build/output/nxvm_0_5_0359.exe`,
 SHA-256 `2D91DCD23488FD86E64B1EB5126C27DE293183619F7841C96E447FBA63E15904`.
 
+### S3: Four-profile control and stack timing
+
+S3 is accepted at `a33d9d31`/`c69852cd`, with acceptance closure
+`89ec6b81`. Its
+[source ledger](../etc/evidence/t359-s3-four-profile-control-stack-source-ledger.md)
+adds the private control/stack classifier at the same successful-retirement
+publisher. It allocates selected real-mode transfer, stack, loop, HLT,
+software-interrupt, and same-level-return rows, while transferring protected
+and cross-privilege transitions, task/VM86 delivery, physical timing, and
+source conflicts. The retained owner marker, inventory verifier, documentation
+governance, and 242/242 current-gate tests passed; the artifact SHA-256 is
+recorded in that ledger.
+
 ### S4: Four-profile string, repeat, and ordinary-I/O timing
 
 S4 is accepted at `5b78ec92`. Its

@@ -16,9 +16,11 @@ set(t359_s5_ledger
     "${PROJECT_SOURCE_DIR}/docs/etc/evidence/t359-s5-80386-secondary-source-ledger.md")
 set(t359_s6_ledger
     "${PROJECT_SOURCE_DIR}/docs/etc/evidence/t359-s6-privileged-source-ledger.md")
+set(t359_s7_audit
+    "${PROJECT_SOURCE_DIR}/docs/etc/evidence/t359-s7-complete-instruction-timing-closure-audit.md")
 foreach(t359_file IN ITEMS "${t359_source}" "${t359_machine}" "${t359_inventory}"
     "${t359_s2_ledger}" "${t359_s3_ledger}" "${t359_s4_ledger}"
-    "${t359_s5_ledger}" "${t359_s6_ledger}")
+    "${t359_s5_ledger}" "${t359_s6_ledger}" "${t359_s7_audit}")
     if(NOT EXISTS "${t359_file}")
         message(FATAL_ERROR "T359 timing inventory input is missing: ${t359_file}")
     endif()
@@ -31,6 +33,7 @@ file(READ "${t359_s3_ledger}" t359_s3_ledger_text)
 file(READ "${t359_s4_ledger}" t359_s4_ledger_text)
 file(READ "${t359_s5_ledger}" t359_s5_ledger_text)
 file(READ "${t359_s6_ledger}" t359_s6_ledger_text)
+file(READ "${t359_s7_audit}" t359_s7_audit_text)
 
 function(t359_require text pattern description)
     if(NOT "${text}" MATCHES "${pattern}")
@@ -264,6 +267,23 @@ foreach(t359_s6_ledger_anchor IN ITEMS
     "Cycle-exact selected-profile receiver")
     t359_require("${t359_s6_ledger_text}" "${t359_s6_ledger_anchor}"
         "S6 source ledger is missing ${t359_s6_ledger_anchor}")
+endforeach()
+
+# S7 is audit-only: it binds every residual transfer to the next mechanism
+# owner and verifies that the successful-retirement publisher stayed unique.
+foreach(t359_s7_anchor IN ITEMS
+    "## Mechanical closure sweep"
+    "core_machine_instruction_cost"
+    "## Receiver reconciliation"
+    "## Exact transfers"
+    "T360 four-profile Intel timing source reconciliation"
+    "Cycle-exact selected profile"
+    "Bus-timed PC/AT operation"
+    "PC/AT device service-timing corpus"
+    "Broaden present x87 TODO"
+    "no second elapsed-tick publisher")
+    t359_require("${t359_s7_audit_text}" "${t359_s7_anchor}"
+        "S7 closure audit is missing ${t359_s7_anchor}")
 endforeach()
 
 message(STATUS "T359 four-profile instruction timing inventory passed.")
