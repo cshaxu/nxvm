@@ -13,6 +13,11 @@ typedef struct t359_s3_timing_state {
 
 typedef C_INT (*t359_s3_setup)(core_machine *machine, C_VOID *opaque);
 
+typedef struct t359_s3_interrupt_setup {
+    type_unsigned_8 vector;
+    C_INT set_overflow;
+} t359_s3_interrupt_setup;
+
 static C_VOID t359_s3_timing_reset(C_VOID *opaque)
 {
     t359_s3_timing_state *state = (t359_s3_timing_state *)opaque;
@@ -112,13 +117,17 @@ static C_INT t359_s3_seed_transfer(core_machine *machine, C_VOID *opaque)
 
 static C_INT t359_s3_seed_interrupt(core_machine *machine, C_VOID *opaque)
 {
+    const t359_s3_interrupt_setup *setup =
+        (const t359_s3_interrupt_setup *)opaque;
     const type_unsigned_16 offset = 0xfff5u;
     const type_unsigned_16 segment = 0xf000u;
     const type_unsigned_8 nop = 0x90u;
-    const type_unsigned_32 vector = 0x20u * 4u;
+    type_unsigned_32 vector;
 
-    (C_VOID)opaque;
-    return machine != STD_NULL &&
+    if (machine == STD_NULL || setup == STD_NULL) return 0;
+    vector = (type_unsigned_32)setup->vector * 4u;
+    if (setup->set_overflow) machine->executor_cpu.data.eflags |= VCPU_EFLAGS_OF;
+    return
         core_machine_memory_write(machine, vector, &offset,
             sizeof(offset)) == TYPE_STATUS_OK &&
         core_machine_memory_write(machine, vector + sizeof(offset), &segment,
@@ -339,24 +348,43 @@ static C_INT t359_s3_test_far_direct(core_machine_cpu_profile profile,
 
 static C_INT t359_s3_test_real_interrupt_rows(core_machine_cpu_profile profile,
     type_unsigned_64 int_ticks, type_unsigned_64 into_clear_ticks,
+    type_unsigned_64 int3_ticks, type_unsigned_64 into_taken_ticks,
     type_unsigned_64 iret_ticks)
 {
     static const type_unsigned_8 int_immediate[] = { 0xcdu, 0x20u };
+    static const type_unsigned_8 int3[] = { 0xccu };
     static const type_unsigned_8 into_clear[] = { 0xceu };
+    static const type_unsigned_8 into_taken[] = { 0xceu };
     static const type_unsigned_8 iret[] = { 0xcfu };
+    static const t359_s3_interrupt_setup int_setup = { 0x20u, 0 };
+    static const t359_s3_interrupt_setup int3_setup = { 0x03u, 0 };
+    static const t359_s3_interrupt_setup into_setup = { 0x04u, 1 };
     t359_s3_timing_state state = { 0u };
     core_machine *machine = STD_NULL;
     C_INT failed = !t359_s3_prepare(profile, &machine, &state);
 
     if (!failed) {
         failed |= !t359_s3_run(machine, int_immediate, sizeof(int_immediate),
-            int_ticks, &state, t359_s3_seed_interrupt, STD_NULL) ||
+            int_ticks, &state, t359_s3_seed_interrupt, (C_VOID *)&int_setup) ||
+            machine->executor_cpu.data.cs.selector != 0xf000u ||
+            machine->executor_cpu.data.ip != 0xfff5u;
+    }
+    if (!failed) {
+        failed |= !t359_s3_run(machine, int3, sizeof(int3), int3_ticks, &state,
+            t359_s3_seed_interrupt, (C_VOID *)&int3_setup) ||
             machine->executor_cpu.data.cs.selector != 0xf000u ||
             machine->executor_cpu.data.ip != 0xfff5u;
     }
     if (!failed) {
         failed |= !t359_s3_run(machine, into_clear, sizeof(into_clear),
             into_clear_ticks, &state, STD_NULL, STD_NULL);
+    }
+    if (!failed) {
+        failed |= !t359_s3_run(machine, into_taken, sizeof(into_taken),
+            into_taken_ticks, &state, t359_s3_seed_interrupt,
+            (C_VOID *)&into_setup) ||
+            machine->executor_cpu.data.cs.selector != 0xf000u ||
+            machine->executor_cpu.data.ip != 0xfff5u;
     }
     if (!failed) {
         failed |= !t359_s3_run(machine, iret, sizeof(iret), iret_ticks,
@@ -403,13 +431,13 @@ C_INT main(C_INT argc, C_CHAR **argv)
         return 13;
     }
     if (t359_s3_test_real_interrupt_rows(CORE_MACHINE_CPU_PROFILE_8086,
-            51u, 4u, 24u)) return 14;
+            51u, 4u, 52u, 53u, 24u)) return 14;
     if (t359_s3_test_real_interrupt_rows(CORE_MACHINE_CPU_PROFILE_80186,
-            47u, 4u, 28u)) return 15;
+            47u, 4u, 45u, 48u, 28u)) return 15;
     if (t359_s3_test_real_interrupt_rows(CORE_MACHINE_CPU_PROFILE_80286,
-            24u, 3u, 18u)) return 16;
+            24u, 3u, 24u, 25u, 18u)) return 16;
     if (t359_s3_test_real_interrupt_rows(CORE_MACHINE_CPU_PROFILE_80386,
-            37u, 3u, 22u)) return 17;
+            37u, 3u, 33u, 35u, 22u)) return 17;
     STD_PRINTF("M5:T359:S3:CONTROL-STACK-TIMING:OK\n");
     return 0;
 }

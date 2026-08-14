@@ -55,8 +55,8 @@ prefix legality, mode, privilege outcome, branch outcome, and stack form once.
 It consumes existing 8086/80186 EA and odd-word additions, 80286 preview byte
 count, and 80386 lexeme components.  The owner smoke proves direct and
 indirect transfer, register/memory stack forms, all four profile rows,
-PUSHA/POPA/ENTER/LEAVE, taken/not-taken loop control, HLT, real-mode `INT`,
-non-taken `INTO`, real-mode same-level `IRET`, provider elapsed publication,
+PUSHA/POPA/ENTER/LEAVE, taken/not-taken loop control, HLT, real-mode
+`INT`/`INT3`, taken and non-taken `INTO`, real-mode same-level `IRET`, provider elapsed publication,
 and no one-tick receiver for those representatives.  The retained T357 ledger
 smoke remains the fault/reset zero-publication proof.
 

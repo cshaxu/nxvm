@@ -30,7 +30,7 @@ stack-transfer timing mechanism.
 
 - **Current developer artifact:** T359 S3 `vm-0-5-0359` /
   `build/output/nxvm_0_5_0359.exe` as
-  `AC1A4A30CAB8ED63E436FB52FD4B97F1AA28E6DBB0EDFA593B600B5B61A743A4`.
+  `9A4327ACCFBC28A15F1E55B57DC283FEB4D0F70455817E4284D0FDCD671F961C`.
 - **T285 display implementation:** `INT 10h` mode `10h` /
   `EGA-640x350x16-direct` has a VADP-owned planar frame path and copied-frame
   consumer boundary; mode 0Dh remains a separate retained path.
