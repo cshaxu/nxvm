@@ -39,7 +39,21 @@ artifact is `build/output/nxvm_0_5_0358.exe`, SHA-256
 
 ## Remaining Scope
 
-T358 retains its proposal order: exception/IRQ delivery; segment, descriptor,
-table, task, and return transitions; paging and linear memory; and shared
-prefix/LOCK/width/string classifiers.  These are separate admitted S units;
-S1 does not claim VME/PVI, device behavior, bus timing, or x87 execution.
+## Accepted S3 Progress
+
+S3 was accepted at `14212791`. Its [selector and transition
+ledger](../etc/evidence/t358-s3-selector-transition-coherence.md) maps every
+current selector/cache materialization route from validation through
+publication. It found no remaining construction divergence: separate real,
+protected, VM86, 286/386 TSS, gate, and IRET layouts are retained only where
+Intel requires them. It reconciles the two outer-return owner smokes with the
+accepted S2 80286 `#SS` vector-12 delivery contract; no production path
+changed. The accepted current-gate result is 240/240 passing and the developer
+artifact SHA-256 remains
+`59FAC0E73FED23BA47F3F25C1946C8D2949CFB186C480CE9841588E47E754E2E`.
+
+## Remaining Scope
+
+T358 retains its proposal order: paging and linear memory, then shared
+prefix/LOCK/width/string classifiers. These are separate admitted S units;
+T358 does not claim VME/PVI, device behavior, bus timing, or x87 execution.
