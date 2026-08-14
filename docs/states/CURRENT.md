@@ -2,29 +2,8 @@
 
 ## Current Work
 
-**Active.** M5 T359 S6 privileged-form timing and corpus reconciliation is
-admitted in single-session mode.
-
-## M5 T359 S6 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner-approved M5 L3 timing program; T359 is the latest open numeric task and S6 is the next unused subtask after accepted S5. Scope is the T359 proposal's ordered S6 unit. |
-| Objective | Reconcile every T359 80286/80386 privileged, selector/table, control/debug/test, task, FS/GS and VM86 timing receiver into either a source-backed successful-retirement row owned by one private classifier or a precise T360 transfer. |
-| Non-goals | No semantic CPU repair; no exception/IRQ/NMI/task/VM86 delivery-cycle allocation; no bus, wait/HOLD, prefetch/cache, x87, host-time, or Windows claim; no inferred midpoint for incomplete/conflicting source. |
-| Reference Baseline | `fa02c334fe3366c25e4e5761673f011f0c1e8eb4`, `vm-0-5-0359`, and accepted S1--S5 inventory/history evidence. |
-| Candidate Proposal | [Complete instruction-timing corpus](../proposals/m5-complete-instruction-timing-corpus.md), ordered unit S6; primary authority is the Intel 80286/80386 programmer reference material recorded by the source ledger. |
-| Files And ABI Surface | Expected: `src/core/machine/machine.c`, a T359 S6 owner smoke and CMake registration, `cmake/verify_t359_instruction_timing_inventory.cmake`, the S1 inventory, new indexed S6 evidence, T359 history, and this packet. No public ABI or decoder/handler ownership change without a packet revision. |
-| Applicable Rules | `docs/rules/ARCHITECTURE.md` sole mutable timing owner and shared-variant publication; `docs/rules/CODING.md` C11/project types and owner-local helper; `docs/rules/EXECUTION.md` source/evidence, actual-change review, artifact and closure rules; source policy applies to external manual research. |
-| Verification | Mechanically enumerate all S6 receivers against dispatch/metadata; ledger every row with source page/form, classifier disposition, mode/prefix/fault boundary and T360 receiver where not allocated; focused source-timing smoke; timing inventory verifier; documentation governance; diff check; full current-gate. Rebuild/copy the T359 artifact only if a runnable path changes. |
-| Expected Markers | `M5:T359:S6:PRIVILEGED-TIMING:OK`; `T359 four-profile instruction timing inventory passed.`; full current-gate passes. |
-| Asset Needs | No guest media, firmware, external executable, source import, or runtime dependency. Manual pages are research/provenance only. |
-| Reporting Requirements | Record the primary page/form source, all classifier callers and success/fault publication boundary, the per-receiver allocation or T360 transfer, focused and full-gate result, and any source conflict. Report a material source/ownership conflict before broadening scope. |
-| Stop Conditions | Stop and transfer if a numeric row depends on exception/IRQ/NMI/task/VM86 delivery, a physical transaction/wait/prefetch/cache contract, an unmodelled descriptor or paging outcome, or a source conflict requiring a new source policy decision. Do not alter decoder, semantic handlers, shared delivery, task, or bus owners without revised approval. |
-| Exit Criteria | Every S6 receiver named by the S1 inventory has a source-backed classifier row with focused evidence or an exact T360 transfer; no successful rejected/fault/delivery path receives invented instruction time; one publisher remains; all required gates pass; history and index preserve the source ledger. |
-| Original Owner Request | Execute the current Queue through a comprehensive source-backed L3 timing model, then perform the L3 closure audit; keep the work holistic and do not replace manual authority with convenient opcode batches. |
-| Similar-Issue Sweep | Sweep all `0F` system dispatches, FS/GS and full-pointer secondary forms, control/debug/test moves, selector/table/task forms, and their real/protected/ordinary-VM86/prefix/LOCK success versus zero-publication outcomes; compare every receiver with S1 inventory and transfer any delivery-dependent variant together. |
+**Active.** M5 T359 remains open between accepted S units; no implementation may
+start until the next packet is admitted.
 
 ## Current Technical Baseline
 
@@ -45,7 +24,7 @@ admitted in single-session mode.
 
 | Task | Compact result |
 | --- | --- |
-| T359 S5 | Accepted one private 80386 secondary-integer classifier at the successful-retirement publisher. It allocates near `Jcc`, bit test/modify, double shifts, two-operand `IMUL`, bit scan, and `MOVZX`/`MOVSX`; retains S2 `SETcc`; lifts the correct maximum preflight to 106 for 32-bit zero `BSR`; and transfers privileged forms, physical timing, and source conflicts. [Evidence](../etc/evidence/t359-s5-80386-secondary-source-ledger.md). |
+| T359 S6 | Accepted a private 80386 privileged-form classifier at the successful-retirement publisher. It allocates fixed successful rows for ARPL; selector/table/MSW forms; LAR/CLTS; CR/DR/TR; FS/GS stack operations; and LSS/LFS/LGS, while transferring 80286 Appendix-B normalization, granular LSL, all delivery/fault and physical timing to T360 or cycle-exact receivers. [Evidence](../etc/evidence/t359-s6-privileged-source-ledger.md). |
 | T358 | Closed cross-mode mechanism coherence: reconciled I/O permission, exception/IRQ entry, selector/task/return transition, paging/linear access, and prefix/LOCK/width/string classifiers; repaired 80286 delivery, LOCK group legality, and repeated-width preview divergence; passed 240 current-gate tests. [Closure audit](../etc/evidence/t358-cross-mode-mechanism-closure-audit.md). |
 | T357 | Closed finite source-backed 8086/80186/80286/80386 instruction timing at one successful-retirement publisher: selected form ledgers, 80386 protected/VM86 ordinary I/O, Appendix-B `NOP = 3` consumer reconciliation, 240 current-gate tests, and artifact SHA-256 `83A249015C03CF875896A440D5B43A430C2D875A63F0BE4B9709014A753CAD95`. Unselected forms, waits, physical bus/prefetch, device latency and cycle-exact work remain explicit transfers. [Closure audit](../etc/evidence/t357-s8-cross-profile-closure-audit.md). |
 | T356 | Closed the M5 closure audit with an explicit M5-open decision: all selected device owners are evidenced, but instruction timing, bus availability/wait states and selected-profile cycle exactness remain ordered implementation prerequisites; corpus-gated peripheral, storage and product boundaries remain explicit transfers. [History](../history/M5-T356-m5-closure-audit.md). |

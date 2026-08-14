@@ -89,3 +89,25 @@ conflicts remain S6/T360 transfers. The inventory verifier, documentation
 governance, and 244/244 current-gate tests passed. The rebuilt artifact is
 `build/output/nxvm_0_5_0359.exe`, SHA-256
 `CB9AC61ABF122C726D493F88D76721B26A88B581538988C496B26B5969E85538`.
+
+### S6: 80286/80386 privileged-form timing reconciliation
+
+S6 is accepted at `43e6b74d`. Its
+[privileged-form ledger](../etc/evidence/t359-s6-privileged-source-ledger.md)
+adds one private 80386 classifier at the successful-retirement publisher for
+fixed source rows: ARPL; selector/table and MSW forms; LAR and CLTS; CR, DR,
+and TR moves; FS/GS stack forms; and LSS/LFS/LGS. The classifier uses only
+the completed decoder capture and pre-retirement mode/privilege state. It
+does not modify handlers, decoding, descriptor state, delivery, or bus
+ownership, and assigns no successful time to rejected, faulting, or delivery
+paths.
+
+The ledger explicitly transfers every 80286 Appendix-B form, descriptor-
+granular LSL, unselected mode/prefix outcomes, task and delivery transitions,
+and physical timing to T360 or the later cycle-exact/bus receivers. The
+focused smoke proves representative fixed forms plus rejected LOCK zero
+publication; retained owner smokes preserve the corresponding semantic
+coverage. The inventory verifier, documentation governance, and 245/245
+current-gate tests passed. The rebuilt developer artifact is
+`build/output/nxvm_0_5_0359.exe`, SHA-256
+`65823D830715FC8925DBD810C2BCDEC3AEEB654D3B6B96BB022870ABF9B6783D`.
