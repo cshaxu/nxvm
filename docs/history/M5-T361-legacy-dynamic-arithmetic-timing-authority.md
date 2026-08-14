@@ -18,3 +18,10 @@ The only lawful next path is an owner decision: retain the transfer pending new
 primary material, or approve the bounded real-hardware observation contract
 specified by S1. Focused legacy timing smokes and 245/245 current-gate tests
 passed; S1 makes no runtime, ABI, artifact, L3, or cycle-exact change.
+
+### S2: Owner-approved external cross-reference research
+
+S2 is active.  The owner authorized a bounded non-importing review of Bochs,
+PCjs, PC110-EMU, and public technical material.  Its result and exact source
+boundary are recorded in the
+[cross-reference evidence](../etc/evidence/t361-s2-legacy-dynamic-arithmetic-cross-reference.md).
