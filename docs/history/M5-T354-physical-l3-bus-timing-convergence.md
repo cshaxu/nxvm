@@ -8,11 +8,11 @@ deterministic order from selected transaction availability and from unselected
 physical fidelity. It must not use Windows readiness or guessed delays as a
 timing oracle.
 
-## S1 Delivery
+## Accepted Progress
 
-S1 delivers a
+S1 is accepted at `e9a259db`. Its
 [transaction and timing ledger](../etc/evidence/t354-s1-l3-transaction-timing-ledger.md)
-that maps every selected CPU, DMA, controller, session and trace boundary. It
+maps every selected CPU, DMA, controller, session and trace boundary. It
 identifies one repeated construction: executing CPU and DMA paths directly
 call memory/port owners without a shared availability-to-commit boundary,
 while the existing `core_machine_bus_*` API is stopped/paused-only and is not
