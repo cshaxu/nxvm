@@ -2,29 +2,7 @@
 
 ## Current Work
 
-**Active.** M5 T355 S2 establishes an explicit opt-in BYOB checkpoint harness
-for the retained HDD/INT13 observation; it does not run Windows Setup.
-
-## M5 T355 S2 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner approved continued holistic device/L3 completion and readiness-map work on 2026-08-13. S1 accepted at `8568f9e4` / `20a52a06` allocates this harness boundary. |
-| Objective | Make one retained HDD/INT13 checkpoint explicitly opt-in, BYOB-configured, reproducibly invocable, and isolated from current-gate semantics without changing guest time or importing media. |
-| Non-goals | No Setup execution, Windows compatibility claim, media copy/hash/path persistence, core CPU/device/timing change, current-gate registration, generic test runner, or host-time-as-guest-time behavior. |
-| Reference Baseline | `20a52a06` on `master`, accepted T355 S1 readiness ledger. |
-| Candidate Proposal | [Windows 3.x readiness map](../proposals/m5-windows-3x-readiness-map.md); [S1 ledger](../etc/evidence/t355-s1-readiness-ledger.md); [source policy](../etc/operations/policy/source-policy.md). |
-| Files And ABI Surface | CMake opt-in checkpoint wiring, existing owner probe only if a bounded contract defect reproduces, indexed evidence/history/CURRENT. No core/profile/provider ABI or current-gate partition change. |
-| Applicable Rules | Task Reading Set; execution lifecycle; source policy; architecture/coding rules for CMake/probe change; documentation rules. The harness must preserve owner-local media configuration and host/guest boundary. |
-| Verification | Sweep all Windows probe registrations and media variables; prove the selected target is absent from current-gate, rejects missing opt-in media configuration deterministically, forwards only configured BYOB input, and leaves no path/media content in Git. Run configuration, focused harness check without media execution, governance, diff check, and current gate. |
-| Expected Markers | A named opt-in readiness-checkpoint target/check, unchanged current-gate partition, governance and full current gate. |
-| Asset Needs | No media access for implementation verification. A future owner-supplied local HDD is required only for S3 execution. |
-| Reporting Requirements | Record target, configuration variable, invocation form, absent-media outcome, current-gate exclusion, host-observation boundary, and every untouched probe. |
-| Stop Conditions | Stop for owner decision if correct wiring requires reading/copying media, hardcoding a local path/hash, altering current-gate, changing guest timing/device state, or creating a generic host runner. |
-| Exit Criteria | One bounded opt-in checkpoint can be invoked only with explicitly supplied local media, is mechanically outside current-gate, and creates no media/provenance or guest-time side effect. |
-| Original Owner Request | Fully and stably implement high-value devices and selected L3 before using a Windows consumer to decide subsequent work. |
-| Similar-Issue Sweep | Include all Windows probe targets, all CMake media-target lists, fixture documentation, source policy, host-thread/sleep calls, and current-gate partition verification. |
+**Active.** M5 T355 remains open between accepted subtasks.
 
 ## Current Technical Baseline
 
@@ -45,7 +23,7 @@ for the retained HDD/INT13 observation; it does not run Windows Setup.
 
 | Task | Compact result |
 | --- | --- |
-| T355 S1 | Accepted a source/provenance readiness ledger: every retained Windows probe is non-current and host-observation-bound; T347/T354 storage is a regression prerequisite, not a missing feature; S2 receives a reproducible checkpoint/provenance harness before any guest run. [Evidence](../etc/evidence/t355-s1-readiness-ledger.md). |
+| T355 S2 | Accepted one opt-in BYOB HDD/INT13 checkpoint harness: it rejects absent or nonexistent input before probe execution, stays outside current-gate, records no media provenance, and leaves all Windows execution to S3. Configuration, governance, and 234 current-gate tests passed. [Evidence](../etc/evidence/t355-s2-opt-in-checkpoint-harness.md). |
 | T354 | Closed selected L3 bus timing: core-local checked CPU/DMA transaction begin/commit/cancel trace, deterministic CPU-retire then DMA/PIT/PIC then FDC/HDC ordering, reset cancellation/trace continuity, and retained firmware/DOS consumers. Exact bus cycles, pin waveforms, physical wait tables, host time, and Windows readiness remain explicit transfers. 234 current-gate tests passed. [History](../history/M5-T354-physical-l3-bus-timing-convergence.md). |
 | T353 | Closed selected PC/AT topology: the default profile's 75 exact directional leaves and five named routes validate before core publication, remain exact through session reset and deterministic-L3 rearm, and have firmware-visible reset proof. Optional PPI/speaker, NMI, and interface breadth remain corpus-gated TODO transfers; physical bus timing transfers to the next L3 package. 231 current-gate tests passed. [History](../history/M5-T353-pcat-port-topology-and-peripherals.md). |
 | T352 | Closed selected digital CGA/EGA: one VADP owner for registers, apertures, raster, planar state, reset, and capture; deterministic VADP-after-KBC timing and copied session/mailbox composition; `vm-0-5-0352` SHA-256 `37A00874C05FB402151AF1A77BD28796D03B2A738D6F3EC08761E4541F2D6BB4`; 229 current-gate tests passed. [History](../history/M5-T352-vadp-digital-video-completeness.md). |
