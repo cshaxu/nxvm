@@ -2,29 +2,8 @@
 
 ## Current Work
 
-M5 T352 S1 - selected PC/AT digital-video state ledger
-(Single-Session Mode).
-
-## M5 T352 S1 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | New |
-| Admission And Approval | Owner approved continuous, holistic device/L3 implementation on 2026-08-13 and authorized the next Queue candidate after T351 closure. |
-| Objective | Establish the complete selected digital CGA/EGA manual-to-source-to-proof ledger: every VADP register, CRTC/raster/retrace state, aperture/mode interpretation, timeline event, copied-frame publication, reset/finalize edge, consumer, and proof row receives one S2--S5 owner or an exact later transfer. |
-| Non-goals | No production behavior change, renderer rewrite, VGA/VBE/SVGA, composite simulation, host pacing/GPU work, firmware, Windows execution, or unselected display feature. |
-| Reference Baseline | `861b943e` / T351 closed; T346 deterministic L3 closure; current VADP/CGA/EGA port, memory, raster, ROM/DOS, and copied-frame smoke evidence; [digital-video proposal](../proposals/m5-vadp-digital-video-completeness.md). |
-| Candidate Proposal | [PC/AT digital video completeness](../proposals/m5-vadp-digital-video-completeness.md). |
-| Files And ABI Surface | Expected: T352 S1 evidence, its index row, T352 history progress, and Current only. No production, CMake, public ABI, copied-frame format, host boundary, firmware, or artifact version change. |
-| Applicable Rules | Task Reading Set; VADP is the sole display-state owner; copied presentation receives immutable/copy publication; deterministic timeline owns readiness/order; equivalent variants share validation/publication unless a real selected hardware difference exists; source policy before new manual research. |
-| Verification | Build a finite selected state matrix with source/manual authority, implementation owner, writers/readers, reset/finalize/timeline behavior, current focused proof, missing evidence, receiver, and precise admission condition. Sweep VADP, ports, video RAM, CRTC, raster, BIOS mode writers, timeline, display consumers, CMake current tests, Queue, TODO, and T346/T351 transfers. Run documentation governance and diff check. |
-| Expected Markers | Ledger-only S1: retain existing CGA/EGA/VADP/raster/DOS/timeline markers; add no runtime marker. |
-| Asset Needs | Existing repository sources, indexed project evidence, and authorized primary manual research only if needed; no firmware, guest media, host capture, or imported code. |
-| Reporting Requirements | Record the selected hardware matrix, every owner/reader/writer/proof/transfer disposition, candidate S2--S5 boundaries, source provenance, and every owner decision required before implementation. |
-| Stop Conditions | Stop for an ambiguous selected display matrix, an unlicensed/source-policy-blocked manual, a required host/firmware/product ABI decision, a generic timeline/PIC/memory defect, or a missing consumer contract that cannot be truthfully assigned. Request owner decision or create a precise transfer rather than infer support. |
-| Exit Criteria | A complete, non-overlapping selected digital-video state ledger exists; every row has one implementation receiver or exact deferred owner; S2--S5 are dependency-ordered and bounded; no mode/port/raster fix is admitted by convenience. |
-| Original Owner Request | Make CPU/fpu-external core-machine devices, chips, buses, and ports comprehensive and stable at deterministic L3 before choosing a Windows execution route. |
-| Similar-Issue Sweep | Inspect all VADP state structs/helpers, port and memory handlers, CRTC/raster calculations, mode/ROM writers, machine timeline callbacks, copied-frame consumers, reset/finalize paths, display tests, and existing video/TODO/Queue evidence. |
+M5 T352 remains open. S1 is accepted; S2 register/CRTC/raster/retrace lifecycle
+reconciliation is the next bounded subtask.
 
 ## Current Technical Baseline
 
@@ -45,6 +24,7 @@ M5 T352 S1 - selected PC/AT digital-video state ledger
 
 | Task | Compact result |
 | --- | --- |
+| T352 S1 | Accepted the selected digital CGA/EGA VADP state ledger: one owner map for registers, apertures, raster, timeline, copied frame, consumers, lifecycle, and every S2--S5/TODO transfer. [Evidence](../etc/evidence/t352-s1-digital-video-ledger.md). |
 | T351 | Closed selected IBM-PC/AT 8042 controller, AT keyboard, and compatible three-byte AUX at deterministic L3: one FIFO, controller/keyboard/AUX head promotion, IRQ1/IRQ12 source lifecycle, delayed/reset/finalize, copied ingress, and exact advanced-AUX/NMI/port-61 transfers. `vm-0-5-0351` SHA-256 `C20F4B631F8E63DD4D963C2F85E69D735EC05793B3DCC0C2AC11E65FA6D3FB9C`; 228 current-gate tests passed. [History](../history/M5-T351-kbc-aux-completeness.md). |
 | T350 | Closed the selected PC/AT signal graph: retained 8254/IRQ0 and MC146818/CMOS/IRQ8 owners now have focused lifecycle proof; RTC alarm and IRQF defects are repaired; speaker/PPI and parity/I/O-channel NMI remain exact corpus/contract-gated TODO transfers. 228 current-gate tests passed. [History](../history/M5-T350-pcat-platform-signals.md). |
 | T349 | Closed PC/AT dual-8259A command/priority/cascade, OCW3 poll/status/special-mask/SFNM, and retained edge/level producer lifecycle; physical INTA spurious behavior transfers only to L3 bus timing. 226 current-gate tests passed. [History](../history/M5-T349-pcat-pic-compliance.md). |

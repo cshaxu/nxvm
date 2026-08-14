@@ -19,7 +19,7 @@ candidates proceed.
 
 ## Accepted Progress
 
-S1 delivery establishes
+S1 is accepted at `c71c72da`: it establishes
 the selected IBM CGA/EGA digital state graph, one VADP/timeline/copied-frame
 owner map, exact S2--S5 receivers, and named TODO/Queue transfers.  Its
 [ledger](../etc/evidence/t352-s1-digital-video-ledger.md) is the required
