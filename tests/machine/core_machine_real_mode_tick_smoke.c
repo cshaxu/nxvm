@@ -63,24 +63,24 @@ C_INT main(C_VOID)
     C_INT failed = 0;
 
     failed |= core_machine_real_mode_tick_case("mov", mov_ax, sizeof(mov_ax),
-        CORE_MACHINE_CPU_PROFILE_8086, TYPE_STATUS_OK, CORE_MACHINE_STOP_BUDGET,
+        CORE_MACHINE_CPU_PROFILE_80186, TYPE_STATUS_OK, CORE_MACHINE_STOP_BUDGET,
         1u, 2u);
     failed |= core_machine_real_mode_tick_case("out", out_80, sizeof(out_80),
-        CORE_MACHINE_CPU_PROFILE_8086, TYPE_STATUS_OK, CORE_MACHINE_STOP_BUDGET,
+        CORE_MACHINE_CPU_PROFILE_80186, TYPE_STATUS_OK, CORE_MACHINE_STOP_BUDGET,
         1u, 2u);
     failed |= core_machine_real_mode_tick_case("int", int_20, sizeof(int_20),
-        CORE_MACHINE_CPU_PROFILE_8086, TYPE_STATUS_OK, CORE_MACHINE_STOP_BUDGET,
+        CORE_MACHINE_CPU_PROFILE_80186, TYPE_STATUS_OK, CORE_MACHINE_STOP_BUDGET,
         1u, 2u);
     failed |= core_machine_real_mode_tick_case("segment-prefix", prefixed_nop,
         sizeof(prefixed_nop),
-        CORE_MACHINE_CPU_PROFILE_8086, TYPE_STATUS_OK, CORE_MACHINE_STOP_BUDGET,
+        CORE_MACHINE_CPU_PROFILE_80186, TYPE_STATUS_OK, CORE_MACHINE_STOP_BUDGET,
         1u, 2u);
     failed |= core_machine_real_mode_tick_case("hlt", halt, sizeof(halt),
-        CORE_MACHINE_CPU_PROFILE_8086, TYPE_STATUS_OK,
+        CORE_MACHINE_CPU_PROFILE_80186, TYPE_STATUS_OK,
         CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT, 1u, 2u);
     failed |= core_machine_real_mode_tick_case("operand-size-prefix",
         operand_size_prefix,
-        sizeof(operand_size_prefix), CORE_MACHINE_CPU_PROFILE_8086,
+        sizeof(operand_size_prefix), CORE_MACHINE_CPU_PROFILE_80186,
         TYPE_STATUS_FAULT, CORE_MACHINE_STOP_FAULT, 0u, 0u);
     if (failed) return 1;
     STD_PRINTF("M5:T218:S2:REAL-MODE-TICKS:OK\n");

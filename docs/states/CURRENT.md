@@ -2,15 +2,35 @@
 
 ## Current Work
 
-**Active.** M5 T357 remains open after accepting S3; the next source-backed
-timing-ledger packet must cover the transferred 8086, 80186, and 80286 rows or
-a further bounded 80386 transfer.
+**Active.** M5 T357 S4 allocates the selected 8086 source-timing ledger
+(Single-Session Mode).
+
+## M5 T357 S4 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner approved completion of T357 on 2026-08-13. S4 is the next bounded source-ledger packet under accepted M5 T357, limited to the 8086 rows explicitly listed below. No rule exception is approved. |
+| Objective | Replace the retained synthetic compatibility cadence for the selected 8086 corpus with immutable, source-backed 8086 form costs at the one existing CPU-retirement publication point. Preserve explicit fallback for every unallocated 8086 form. |
+| Non-goals | Do not allocate 80186, 80286, or further 80386 rows; do not model 8088, prefetch depletion, wait states, HOLD/DMA arbitration, device latency, exact exception/IRQ cycles, bus phases, cache, x87, host time, or Windows behavior. Do not modify `docs/rules/`. |
+| Reference Baseline | `4afb2847` / `vm-0-5-0357`, with accepted S1--S3 evidence in `docs/etc/evidence/t357-s1-instruction-timing-contract.md`, `t357-s2-cpu-timing-preview-plan.md`, and `t357-s3-80386-instruction-timing-ledger.md`. |
+| Candidate Proposal | [Instruction-timed execution](../proposals/m5-instruction-timed-execution.md), [T357 task record](../history/M5-T357-instruction-timed-execution.md), and the retained Intel 8086 reference identified by S1. |
+| Files And ABI Surface | Expected changes are private `src/core/machine/machine.c` timing ownership, an 8086 owner smoke and its target registration, T357 evidence/index/current/history facts as needed. No public ABI, CPU execution API, device contract, or production timing writer may be added. |
+| Applicable Rules | Read and apply the Task Reading Set, `docs/rules/EXECUTION.md`, `CONTRIBUTING.md`, architecture/coding authorities, documentation rules at closure, and the source/research policy. One elapsed-tick writer and post-refresh/pre-publication timing boundary remain mandatory. |
+| Verification | Prove exact 8086 values for `NOP`, `CLC`, immediate/register/direct-memory/moffs `MOV`, single and bounded `REP MOVSB`, short `Jcc` taken/not-taken, immediate/DX `IN`/`OUT`, one single segment-override memory `MOV`, and odd-word additions where the chosen source row requires them. Prove selected values ignore legacy timing configuration; unallocated 8086 forms retain a stable explicit fallback; selected faults/stops publish no cost; reset/budget/overflow and scheduler/provider publication remain deterministic. Configure, focused smoke, documentation governance, diff check, and full current-gate must pass. |
+| Expected Markers | New owner smoke marker `M5:T357:S4:8086-INSTRUCTION-TIMING-LEDGER:OK`; all existing timing markers and the full current-gate remain green. |
+| Asset Needs | Intel 8086 Family User's Manual, Table 2-20 and Table 2-21 only as a read-only primary research source. No external source, firmware, guest media, or local path enters the repository. |
+| Reporting Requirements | Before implementation, confirm the source rows and classification boundary or report a material objection. The implementation P includes source-to-form evidence, exact commands/results, changed surface, similar-issue sweep, artifact result, and explicit transfer of unallocated rows. This single-session continuation documents its actual-change review and does not claim independent review before governance closure. |
+| Stop Conditions | Stop for owner direction if a selected value depends on an unmodelled prefetch, bus, device, or interrupt/fault-delivery condition rather than the cited source row; if producing it requires a second elapsed-time writer or a public mutable ledger; or if source evidence cannot distinguish the selected 8086 row. Transfer that row rather than guessing. |
+| Exit Criteria | The listed 8086 rows have cited source values and executable focused proof; the one private owner selects them only for the 8086 profile after successful refresh; no selected 8086 value derives from compatibility configuration; selected failure/no-publication and reset/budget/overflow proofs pass; all unallocated 8086 forms have a stable visible transfer policy; full current-gate and closure audit pass; 80186/80286 and remaining 80386 rows are explicitly transferred. |
+| Original Owner Request | Complete T357, which establishes profile-aware instruction-form guest time as the physical-L3 prerequisite without misrepresenting bus or cycle-exact timing. |
+| Similar-Issue Sweep | Sweep all `cpu_profile` timing branches, source-ledger lookup paths, `maximum_instruction_ticks` derivation, legacy timing configuration paths, elapsed-tick writers/readers, and selected timing smokes. Every early-profile timing branch is either S4-owned, explicitly retained as compatibility pending its own primary source, or transferred to later T357 S evidence. |
 
 ## Current Technical Baseline
 
 - **Current developer artifact:** T357 selects `vm-0-5-0357` /
-  `build/output/nxvm_0_5_0357.exe`; S3 rebuilt it as
-  `12921803AAC84B617326A832654BB5E27D4C2DF6E016B9D6FCF7278C651999CC`.
+  `build/output/nxvm_0_5_0357.exe`; S4 rebuilt it as
+  `DCAA7143AF6A53D75FA3F3FD72E8BA65682C95DAC539747A71E8AF0BCC90E926`.
 - **T285 display implementation:** `INT 10h` mode `10h` /
   `EGA-640x350x16-direct` has a VADP-owned planar frame path and copied-frame
   consumer boundary; mode 0Dh remains a separate retained path.

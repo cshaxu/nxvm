@@ -204,6 +204,26 @@ typedef struct core_machine_source_timing_entry {
     type_unsigned_8 ticks;
 } core_machine_source_timing_entry;
 
+/* Intel 8086 Family User's Manual, Tables 2-20 and 2-21.  The selected
+ * memory rows receive the table's EA, segment-override, and odd-word
+ * additions below; prefetch and bus availability remain outside this owner. */
+static const core_machine_source_timing_entry
+    core_machine_8086_source_timing_ledger[] = {
+    { CORE_MACHINE_SOURCE_TIMING_NOP, 3u },
+    { CORE_MACHINE_SOURCE_TIMING_CLC, 2u },
+    { CORE_MACHINE_SOURCE_TIMING_MOV_IMMEDIATE, 4u },
+    { CORE_MACHINE_SOURCE_TIMING_MOV_REGISTER_REGISTER, 2u },
+    { CORE_MACHINE_SOURCE_TIMING_MOV_RM_REGISTER, 9u },
+    { CORE_MACHINE_SOURCE_TIMING_MOV_REGISTER_RM, 8u },
+    { CORE_MACHINE_SOURCE_TIMING_MOV_MOFFS_READ, 10u },
+    { CORE_MACHINE_SOURCE_TIMING_MOV_MOFFS_WRITE, 10u },
+    { CORE_MACHINE_SOURCE_TIMING_MOVSB, 18u },
+    { CORE_MACHINE_SOURCE_TIMING_IN_IMMEDIATE, 10u },
+    { CORE_MACHINE_SOURCE_TIMING_IN_DX, 8u },
+    { CORE_MACHINE_SOURCE_TIMING_OUT_IMMEDIATE, 10u },
+    { CORE_MACHINE_SOURCE_TIMING_OUT_DX, 8u }
+};
+
 /* Intel 80386 PRM section 17.2.2.3 selected rows.  These are core clocks
  * under the manual's prefetched/no-wait/no-HOLD assumptions; they are not
  * device service, bus arbitration, or host-time values. */
@@ -228,21 +248,46 @@ static const core_machine_source_timing_entry
 #define CORE_MACHINE_80386_JCC_TAKEN_TICKS 7u
 #define CORE_MACHINE_80386_REP_MOVSB_SETUP_TICKS 5u
 #define CORE_MACHINE_80386_REP_MOVSB_ITERATION_TICKS 4u
-#define CORE_MACHINE_80386_SOURCE_UNALLOCATED_TICKS 1u
+#define CORE_MACHINE_SOURCE_UNALLOCATED_TICKS 1u
 #define CORE_MACHINE_80386_SOURCE_MAXIMUM_TICKS 22u
+#define CORE_MACHINE_8086_REP_MOVSB_SETUP_TICKS 9u
+#define CORE_MACHINE_8086_REP_MOVSB_ITERATION_TICKS 17u
+#define CORE_MACHINE_8086_JCC_NOT_TAKEN_TICKS 4u
+#define CORE_MACHINE_8086_JCC_TAKEN_TICKS 16u
+#define CORE_MACHINE_8086_SEGMENT_OVERRIDE_TICKS 2u
+#define CORE_MACHINE_8086_ODD_WORD_TICKS 4u
+#define CORE_MACHINE_8086_SOURCE_MAXIMUM_TICKS 27u
 
 static type_unsigned_64 core_machine_source_timing_lookup(
+    const core_machine_source_timing_entry *ledger, STD_SIZE_T ledger_entries,
     core_machine_source_timing_form form)
 {
     STD_SIZE_T index;
 
-    for (index = 0u; index < sizeof(core_machine_80386_source_timing_ledger) /
-            sizeof(core_machine_80386_source_timing_ledger[0]); ++index) {
-        if (core_machine_80386_source_timing_ledger[index].form == form) {
-            return core_machine_80386_source_timing_ledger[index].ticks;
+    for (index = 0u; index < ledger_entries; ++index) {
+        if (ledger[index].form == form) {
+            return ledger[index].ticks;
         }
     }
-    return CORE_MACHINE_80386_SOURCE_UNALLOCATED_TICKS;
+    return CORE_MACHINE_SOURCE_UNALLOCATED_TICKS;
+}
+
+static type_unsigned_64 core_machine_8086_source_timing_lookup(
+    core_machine_source_timing_form form)
+{
+    return core_machine_source_timing_lookup(
+        core_machine_8086_source_timing_ledger,
+        sizeof(core_machine_8086_source_timing_ledger) /
+            sizeof(core_machine_8086_source_timing_ledger[0]), form);
+}
+
+static type_unsigned_64 core_machine_80386_source_timing_lookup(
+    core_machine_source_timing_form form)
+{
+    return core_machine_source_timing_lookup(
+        core_machine_80386_source_timing_ledger,
+        sizeof(core_machine_80386_source_timing_ledger) /
+            sizeof(core_machine_80386_source_timing_ledger[0]), form);
 }
 
 static C_INT core_machine_source_timing_modrm_is_memory(
@@ -253,18 +298,16 @@ static C_INT core_machine_source_timing_modrm_is_memory(
 }
 
 static type_unsigned_64 core_machine_source_timing_rep_movsb(
-    core_machine *machine, const t_cpuins_data *data)
+    core_machine *machine, const t_cpuins_data *data,
+    type_unsigned_64 setup_ticks, type_unsigned_64 iteration_ticks)
 {
     type_unsigned_32 count = data->prefix_addrsize ? data->oldcpu.data.ecx :
         data->oldcpu.data.cx;
     C_INT continuing = machine->source_repeat_active &&
         machine->source_repeat_cs == data->oldcpu.data.cs.selector &&
         machine->source_repeat_eip == data->oldcpu.data.eip;
-    type_unsigned_64 ticks = count == 0u ?
-        CORE_MACHINE_80386_REP_MOVSB_SETUP_TICKS : continuing ?
-        CORE_MACHINE_80386_REP_MOVSB_ITERATION_TICKS :
-        CORE_MACHINE_80386_REP_MOVSB_SETUP_TICKS +
-            CORE_MACHINE_80386_REP_MOVSB_ITERATION_TICKS;
+    type_unsigned_64 ticks = count == 0u ? setup_ticks : continuing ?
+        iteration_ticks : setup_ticks + iteration_ticks;
 
     machine->source_repeat_active = count != 0u &&
         machine->executor_cpu.data.eip == data->oldcpu.data.eip;
@@ -275,7 +318,166 @@ static type_unsigned_64 core_machine_source_timing_rep_movsb(
     return ticks;
 }
 
-static C_INT core_machine_source_instruction_cost(core_machine *machine,
+static C_INT core_machine_8086_timing_has_segment_override(
+    const t_cpuins_data *data, type_unsigned_32 prefixes)
+{
+    if (prefixes != 1u) return 0;
+    switch (data->opcodes[0]) {
+    case 0x26u: case 0x2eu: case 0x36u: case 0x3eu:
+        return 1;
+    default:
+        return 0;
+    }
+}
+
+static type_unsigned_64 core_machine_8086_timing_effective_address(
+    const t_cpuins_data *data, type_unsigned_32 opcode_index)
+{
+    type_unsigned_8 modrm;
+    type_unsigned_8 mode;
+    type_unsigned_8 rm;
+
+    if (opcode_index + 1u >= data->oplen) return 0u;
+    modrm = data->opcodes[opcode_index + 1u];
+    mode = modrm >> 6u;
+    rm = modrm & 7u;
+    if (mode == 3u) return 0u;
+    if (mode == 0u) {
+        switch (rm) {
+        case 0u: case 2u: return 7u;
+        case 1u: case 3u: return 8u;
+        case 4u: case 5u: case 7u: return 5u;
+        case 6u: return 6u;
+        default: return 0u;
+        }
+    }
+    switch (rm) {
+    case 0u: case 2u: return 11u;
+    case 1u: case 3u: return 12u;
+    default: return 9u;
+    }
+}
+
+static type_unsigned_64 core_machine_8086_timing_odd_word(
+    const t_cpuins_data *data)
+{
+    return data->mrm.rsreg != STD_NULL &&
+        ((data->mrm.rsreg->base + data->mrm.offset) & 1u) != 0u ?
+        CORE_MACHINE_8086_ODD_WORD_TICKS : 0u;
+}
+
+static C_INT core_machine_8086_source_instruction_cost(core_machine *machine,
+    type_unsigned_64 *out_ticks)
+{
+    const t_cpuins_data *data = &machine->executor_cpu_instructions.data;
+    type_unsigned_32 prefixes = core_machine_instruction_prefix_count(data);
+    type_unsigned_8 opcode;
+    type_unsigned_32 fallthrough;
+    C_INT segment_override;
+    type_unsigned_64 memory_ticks;
+
+    if (out_ticks == STD_NULL) return 0;
+    if (prefixes >= data->oplen) {
+        machine->source_repeat_active = TYPE_FALSE;
+        *out_ticks = 0u;
+        return 1;
+    }
+    opcode = data->opcodes[prefixes];
+    if (data->prefix_rep != PREFIX_REP_NONE && opcode == 0xa4u) {
+        *out_ticks = core_machine_source_timing_rep_movsb(machine, data,
+            CORE_MACHINE_8086_REP_MOVSB_SETUP_TICKS,
+            CORE_MACHINE_8086_REP_MOVSB_ITERATION_TICKS);
+        return 1;
+    }
+    machine->source_repeat_active = TYPE_FALSE;
+    segment_override = core_machine_8086_timing_has_segment_override(data,
+        prefixes);
+    if (prefixes != 0u && !segment_override) {
+        *out_ticks = CORE_MACHINE_SOURCE_UNALLOCATED_TICKS;
+        return 1;
+    }
+    if (opcode >= 0x70u && opcode <= 0x7fu && prefixes == 0u) {
+        fallthrough = TYPE_MASK_UNSIGNED_16(data->oldcpu.data.eip + 2u);
+        *out_ticks = machine->executor_cpu.data.eip == fallthrough ?
+            CORE_MACHINE_8086_JCC_NOT_TAKEN_TICKS :
+            CORE_MACHINE_8086_JCC_TAKEN_TICKS;
+        return 1;
+    }
+    switch (opcode) {
+    case 0x90u:
+        if (prefixes != 0u) break;
+        *out_ticks = core_machine_8086_source_timing_lookup(
+            CORE_MACHINE_SOURCE_TIMING_NOP);
+        return 1;
+    case 0xf8u:
+        if (prefixes != 0u) break;
+        *out_ticks = core_machine_8086_source_timing_lookup(
+            CORE_MACHINE_SOURCE_TIMING_CLC);
+        return 1;
+    case 0x88u: case 0x89u: case 0x8au: case 0x8bu:
+        if (!data->flagMem) {
+            if (prefixes != 0u) break;
+            *out_ticks = core_machine_8086_source_timing_lookup(
+                CORE_MACHINE_SOURCE_TIMING_MOV_REGISTER_REGISTER);
+            return 1;
+        }
+        memory_ticks = core_machine_8086_timing_effective_address(data, prefixes);
+        if (memory_ticks == 0u) break;
+        *out_ticks = core_machine_8086_source_timing_lookup(
+            opcode == 0x88u || opcode == 0x89u ?
+            CORE_MACHINE_SOURCE_TIMING_MOV_RM_REGISTER :
+            CORE_MACHINE_SOURCE_TIMING_MOV_REGISTER_RM) + memory_ticks +
+            (segment_override ? CORE_MACHINE_8086_SEGMENT_OVERRIDE_TICKS : 0u) +
+            ((opcode == 0x89u || opcode == 0x8bu) ?
+                core_machine_8086_timing_odd_word(data) : 0u);
+        return 1;
+    case 0xa0u: case 0xa1u: case 0xa2u: case 0xa3u:
+        *out_ticks = core_machine_8086_source_timing_lookup(
+            opcode == 0xa0u || opcode == 0xa1u ?
+            CORE_MACHINE_SOURCE_TIMING_MOV_MOFFS_READ :
+            CORE_MACHINE_SOURCE_TIMING_MOV_MOFFS_WRITE) +
+            (segment_override ? CORE_MACHINE_8086_SEGMENT_OVERRIDE_TICKS : 0u) +
+            ((opcode == 0xa1u || opcode == 0xa3u) ?
+                core_machine_8086_timing_odd_word(data) : 0u);
+        return 1;
+    case 0xa4u:
+        if (prefixes != 0u) break;
+        *out_ticks = core_machine_8086_source_timing_lookup(
+            CORE_MACHINE_SOURCE_TIMING_MOVSB);
+        return 1;
+    case 0xe4u: case 0xe5u:
+        if (prefixes != 0u) break;
+        *out_ticks = core_machine_8086_source_timing_lookup(
+            CORE_MACHINE_SOURCE_TIMING_IN_IMMEDIATE);
+        return 1;
+    case 0xecu: case 0xedu:
+        if (prefixes != 0u) break;
+        *out_ticks = core_machine_8086_source_timing_lookup(
+            CORE_MACHINE_SOURCE_TIMING_IN_DX);
+        return 1;
+    case 0xe6u: case 0xe7u:
+        if (prefixes != 0u) break;
+        *out_ticks = core_machine_8086_source_timing_lookup(
+            CORE_MACHINE_SOURCE_TIMING_OUT_IMMEDIATE);
+        return 1;
+    case 0xeeu: case 0xefu:
+        if (prefixes != 0u) break;
+        *out_ticks = core_machine_8086_source_timing_lookup(
+            CORE_MACHINE_SOURCE_TIMING_OUT_DX);
+        return 1;
+    default:
+        if (opcode >= 0xb0u && opcode <= 0xbfu && prefixes == 0u) {
+            *out_ticks = core_machine_8086_source_timing_lookup(
+                CORE_MACHINE_SOURCE_TIMING_MOV_IMMEDIATE);
+            return 1;
+        }
+        break;
+    }
+    *out_ticks = CORE_MACHINE_SOURCE_UNALLOCATED_TICKS;
+    return 1;
+}
+
+static C_INT core_machine_80386_source_instruction_cost(core_machine *machine,
     type_unsigned_64 *out_ticks)
 {
     const t_cpuins_data *data = &machine->executor_cpu_instructions.data;
@@ -292,12 +494,14 @@ static C_INT core_machine_source_instruction_cost(core_machine *machine,
     }
     opcode = data->opcodes[prefixes];
     if (data->prefix_rep == PREFIX_REP_REPZ && opcode == 0xa4u) {
-        *out_ticks = core_machine_source_timing_rep_movsb(machine, data);
+        *out_ticks = core_machine_source_timing_rep_movsb(machine, data,
+            CORE_MACHINE_80386_REP_MOVSB_SETUP_TICKS,
+            CORE_MACHINE_80386_REP_MOVSB_ITERATION_TICKS);
         return 1;
     }
     machine->source_repeat_active = TYPE_FALSE;
     if (prefixes != 0u) {
-        *out_ticks = CORE_MACHINE_80386_SOURCE_UNALLOCATED_TICKS;
+        *out_ticks = CORE_MACHINE_SOURCE_UNALLOCATED_TICKS;
         return 1;
     }
     if (opcode >= 0x70u && opcode <= 0x7fu) {
@@ -310,73 +514,73 @@ static C_INT core_machine_source_instruction_cost(core_machine *machine,
             *out_ticks = CORE_MACHINE_80386_JCC_TAKEN_TICKS +
                 lexeme.component_count;
         } else {
-            *out_ticks = CORE_MACHINE_80386_SOURCE_UNALLOCATED_TICKS;
+            *out_ticks = CORE_MACHINE_SOURCE_UNALLOCATED_TICKS;
         }
         return 1;
     }
     switch (opcode) {
     case 0x90u:
-        *out_ticks = core_machine_source_timing_lookup(
+        *out_ticks = core_machine_80386_source_timing_lookup(
             CORE_MACHINE_SOURCE_TIMING_NOP);
         return 1;
     case 0xf8u:
-        *out_ticks = core_machine_source_timing_lookup(
+        *out_ticks = core_machine_80386_source_timing_lookup(
             CORE_MACHINE_SOURCE_TIMING_CLC);
         return 1;
     case 0x88u: case 0x89u:
-        *out_ticks = core_machine_source_timing_lookup(
+        *out_ticks = core_machine_80386_source_timing_lookup(
             core_machine_source_timing_modrm_is_memory(data, prefixes) ?
             CORE_MACHINE_SOURCE_TIMING_MOV_RM_REGISTER :
             CORE_MACHINE_SOURCE_TIMING_MOV_REGISTER_REGISTER);
         return 1;
     case 0x8au: case 0x8bu:
-        *out_ticks = core_machine_source_timing_lookup(
+        *out_ticks = core_machine_80386_source_timing_lookup(
             core_machine_source_timing_modrm_is_memory(data, prefixes) ?
             CORE_MACHINE_SOURCE_TIMING_MOV_REGISTER_RM :
             CORE_MACHINE_SOURCE_TIMING_MOV_REGISTER_REGISTER);
         return 1;
     case 0xa0u: case 0xa1u:
-        *out_ticks = core_machine_source_timing_lookup(
+        *out_ticks = core_machine_80386_source_timing_lookup(
             CORE_MACHINE_SOURCE_TIMING_MOV_MOFFS_READ);
         return 1;
     case 0xa2u: case 0xa3u:
-        *out_ticks = core_machine_source_timing_lookup(
+        *out_ticks = core_machine_80386_source_timing_lookup(
             CORE_MACHINE_SOURCE_TIMING_MOV_MOFFS_WRITE);
         return 1;
     case 0xa4u:
-        *out_ticks = core_machine_source_timing_lookup(
+        *out_ticks = core_machine_80386_source_timing_lookup(
             CORE_MACHINE_SOURCE_TIMING_MOVSB);
         return 1;
     case 0xe4u: case 0xe5u:
         if ((machine->executor_cpu.data.cr0 & VCPU_CR0_PE) != 0u) break;
-        *out_ticks = core_machine_source_timing_lookup(
+        *out_ticks = core_machine_80386_source_timing_lookup(
             CORE_MACHINE_SOURCE_TIMING_IN_IMMEDIATE);
         return 1;
     case 0xecu: case 0xedu:
         if ((machine->executor_cpu.data.cr0 & VCPU_CR0_PE) != 0u) break;
-        *out_ticks = core_machine_source_timing_lookup(
+        *out_ticks = core_machine_80386_source_timing_lookup(
             CORE_MACHINE_SOURCE_TIMING_IN_DX);
         return 1;
     case 0xe6u: case 0xe7u:
         if ((machine->executor_cpu.data.cr0 & VCPU_CR0_PE) != 0u) break;
-        *out_ticks = core_machine_source_timing_lookup(
+        *out_ticks = core_machine_80386_source_timing_lookup(
             CORE_MACHINE_SOURCE_TIMING_OUT_IMMEDIATE);
         return 1;
     case 0xeeu: case 0xefu:
         if ((machine->executor_cpu.data.cr0 & VCPU_CR0_PE) != 0u) break;
-        *out_ticks = core_machine_source_timing_lookup(
+        *out_ticks = core_machine_80386_source_timing_lookup(
             CORE_MACHINE_SOURCE_TIMING_OUT_DX);
         return 1;
     default:
         if (opcode >= 0xb0u && opcode <= 0xbfu) {
-            *out_ticks = core_machine_source_timing_lookup(
+            *out_ticks = core_machine_80386_source_timing_lookup(
                 CORE_MACHINE_SOURCE_TIMING_MOV_IMMEDIATE);
         } else {
-            *out_ticks = CORE_MACHINE_80386_SOURCE_UNALLOCATED_TICKS;
+            *out_ticks = CORE_MACHINE_SOURCE_UNALLOCATED_TICKS;
         }
         return 1;
     }
-    *out_ticks = CORE_MACHINE_80386_SOURCE_UNALLOCATED_TICKS;
+    *out_ticks = CORE_MACHINE_SOURCE_UNALLOCATED_TICKS;
     return 1;
 }
 
@@ -437,8 +641,11 @@ static C_INT core_machine_instruction_cost(core_machine *machine,
     type_unsigned_64 *out_ticks)
 {
     if (machine == STD_NULL || out_ticks == STD_NULL) return 0;
+    if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_8086) {
+        return core_machine_8086_source_instruction_cost(machine, out_ticks);
+    }
     if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80386) {
-        return core_machine_source_instruction_cost(machine, out_ticks);
+        return core_machine_80386_source_instruction_cost(machine, out_ticks);
     }
     return core_machine_compatibility_instruction_cost(machine, out_ticks);
 }
@@ -1365,9 +1572,14 @@ static type_status core_machine_create_internal(
     }
     core_machine_resolve_instruction_timing(&machine->instruction_timing,
         &config->instruction_timing, config->ticks_per_instruction);
-    machine->maximum_instruction_ticks = machine->cpu_profile ==
-        CORE_MACHINE_CPU_PROFILE_80386 ? CORE_MACHINE_80386_SOURCE_MAXIMUM_TICKS :
-        core_machine_instruction_maximum_ticks(&machine->instruction_timing);
+    if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_8086) {
+        machine->maximum_instruction_ticks = CORE_MACHINE_8086_SOURCE_MAXIMUM_TICKS;
+    } else if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80386) {
+        machine->maximum_instruction_ticks = CORE_MACHINE_80386_SOURCE_MAXIMUM_TICKS;
+    } else {
+        machine->maximum_instruction_ticks = core_machine_instruction_maximum_ticks(
+            &machine->instruction_timing);
+    }
     if (core_machine_clock_domain_initialize(&machine->dma_clock,
             &config->clock_plan.dma) != TYPE_STATUS_OK ||
         core_machine_clock_domain_initialize(&machine->pit_clock,

@@ -46,7 +46,7 @@ static C_INT timing_prepare(core_machine **out_machine,
     timing_port_state *port_state)
 {
     const core_machine_config config = {
-        .cpu_profile = CORE_MACHINE_CPU_PROFILE_8086,
+        .cpu_profile = CORE_MACHINE_CPU_PROFILE_80186,
         .ticks_per_instruction = 1u,
         .instruction_timing = { 10u, 2u, 7u, 3u, 5u, 4u }
     };
