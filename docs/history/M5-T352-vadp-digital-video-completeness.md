@@ -37,3 +37,10 @@ reset, and ROM-writer boundary.  Its
 [evidence](../etc/evidence/t352-s3-cga-digital-path.md) retains graphics CRTC
 page/geometry breadth as an exact digital-CGA TODO instead of adding a
 speculative text-start-address shortcut.
+
+S4 delivery reconciles the selected EGA planar mechanism: one VADP owner for
+configuration, indexed registers, aperture, latches, planes, selected 320/640
+capture, reset, and copied output.  It adds reset/re-arm/cleared-plane and
+captured-value isolation proof without conflating the real 320 and mode-10
+layouts.  S5 retains cross-mode/timeline/presentation composition and task
+artifact closure.

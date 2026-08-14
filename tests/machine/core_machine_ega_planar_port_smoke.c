@@ -35,6 +35,10 @@ C_INT main(C_VOID)
     t_vadp vadp;
     type_unsigned_8 value = 0u;
     core_machine_display_snapshot snapshot;
+    core_machine_display_kind copied_kind;
+    type_unsigned_8 copied_pixel_zero;
+    type_unsigned_8 copied_pixel_two;
+    type_unsigned_32 copied_palette_fifteen;
     C_INT failed = 0;
 
     STD_MEMSET(&memory, 0, sizeof(memory));
@@ -75,6 +79,10 @@ C_INT main(C_VOID)
         snapshot.pixel_width != 320u || snapshot.pixel_height != 200u ||
         snapshot.pixels[0] != 15u || snapshot.pixels[1] != 0u ||
         snapshot.pixels[2] != 15u || snapshot.palette_rgb[15] != 0xffffffu;
+    copied_kind = snapshot.kind;
+    copied_pixel_zero = snapshot.pixels[0];
+    copied_pixel_two = snapshot.pixels[2];
+    copied_palette_fifteen = snapshot.palette_rgb[15];
 
     core_machine_port_write(&port, 0x03c4u, 2u);
     core_machine_port_write(&port, 0x03c5u, 0x02u);
@@ -105,6 +113,22 @@ C_INT main(C_VOID)
         0x00008000u);
     failed |= !core_machine_ega_planar_read(&memory, 0x000a0000u, &value) ||
         value != 0u;
+
+    /* Reset clears the transient planar store; a guest mode write re-arms it. */
+    core_machine_vadp_reset(&vadp);
+    core_machine_port_write(&port, 0x03ceu, 6u);
+    core_machine_port_write(&port, 0x03cfu, 0x05u);
+    failed |= !core_machine_vadp_ega_aperture_contains(&vadp, 0x000a0000u,
+        0x00010000u);
+    failed |= !core_machine_ega_planar_read(&memory, 0x000a0000u, &value) ||
+        value != 0u;
+    STD_MEMSET(&snapshot, 0, sizeof(snapshot));
+    failed |= !core_machine_vadp_capture_snapshot(&vadp, &memory, &snapshot) ||
+        snapshot.kind != CORE_MACHINE_DISPLAY_KIND_EGA_320X200X16 ||
+        snapshot.pixels[0] != 0u || !snapshot.buffer_changed;
+    failed |= copied_kind != CORE_MACHINE_DISPLAY_KIND_EGA_320X200X16 ||
+        copied_pixel_zero != 15u || copied_pixel_two != 15u ||
+        copied_palette_fifteen != 0xffffffu;
 
     core_machine_vadp_finalize(&vadp);
     core_machine_memory_finalize(&memory);
