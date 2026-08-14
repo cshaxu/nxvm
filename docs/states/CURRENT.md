@@ -2,24 +2,9 @@
 
 ## Current Work
 
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | T366 S17, numbered continuation implementation subtask; P1 is one complete pushed implementation/evidence delivery. |
-| Admission And Approval | The owner approved continued work toward comprehensive L3 closure on 2026-08-14. T366's CPU-ledger prerequisite admits the next determinate, successful 80286 form family: unprefixed `9E SAHF` and `9F LAHF`. No exception is requested. |
-| Objective | Publish the fixed two-clock 80286 source value for successful unprefixed LAHF/SAHF through the existing retirement owner, with focused proof and durable evidence. |
-| Non-goals | No FLAGS semantic repair, prefix/fault/delivery timing, memory/bus wait, physical time, device timing, other CPU profile, x87, or ABI work. Faulting paths receive no success-path cost. |
-| Reference Baseline | `c2b64f3d` (accepted T366 S16); [T366 proposal](../proposals/m5-bus-timed-pcat-operation.md), [S15 evidence](../etc/evidence/t366-s15-80286-flags-control-timing.md), [S16 evidence](../etc/evidence/t366-s16-80286-xlat-timing.md), and the existing LAHF/SAHF semantic smoke. |
-| Candidate Proposal | [Bus-timed PC/AT operation](../proposals/m5-bus-timed-pcat-operation.md), restricted to its source-backed 80286 successful-retirement prerequisite. |
-| Files And ABI Surface | Private `machine.c` 80286 classifier, focused timing-ledger smoke, T366 evidence/index/history/status. No public header, ABI, device, composition, or execution-semantics surface changes. |
-| Applicable Rules | [Execution](../rules/EXECUTION.md): complete pushed P and similar-issue sweep. [Architecture](../rules/ARCHITECTURE.md): retain one retirement owner. [Coding](../rules/CODING.md): use owner-local classifier/test paths. [Documentation](../rules/DOCUMENT.md): truthful current status. [Source policy](../etc/operations/policy/source-policy.md): read-only documentation, no imported code/assets. |
-| Verification | P1 omitted the packet-required focused AH/FLAGS assertions and is not accepted. P2 adds that one consolidated correction: the focused smoke proves `9E` and `9F` each retire at two ticks and retain expected FLAGS/AH semantics; rerun its target/executable, `run-current-smokes`, documentation governance and `git diff --check`; review all changed files before acceptance. |
-| Expected Markers | `M5:T357:S6:80286-INSTRUCTION-TIMING-LEDGER:OK`; source evidence states LAHF and SAHF are two clocks in both 80286 modes. |
-| Asset Needs | No guest media, ROM, binary, local path, external source import, or emulator output. AMD's 80286 instruction summary is read-only primary documentation. |
-| Reporting Requirements | Report source determination, implementation/test progress, P1 push/evidence, and acceptance or one consolidated corrective brief. |
-| Stop Conditions | Stop if source value/mode scope is ambiguous, a higher timing owner intercepts either opcode, success cannot be separated from a fault, semantics need repair, or a required gate cannot run. |
-| Exit Criteria | A pushed P proves only successful unprefixed 80286 LAHF/SAHF publish two ticks through the existing owner; source/sweep/transfers are recorded; all checks pass; no public/device behavior changes. |
-| Original Owner Request | Continue planned work until comprehensive L3 timing fidelity closes before Windows 3.1; use 86Box/MAME/PCjs only when primary sources fail to determine timing. |
-| Similar-Issue Sweep | Audit `9E/9F` dispatch/handlers, primary/control-stack and all profile classifiers, 80286 fallback/default routing, existing semantic/fault coverage and focused timing proof. Retain prefixes, delivery/faults, other profiles, bus/device service and physical time at their named receivers. |
+T366 S17 is accepted at `7d9e27be`. The next T366 S must select the next
+source-determinate 80286 successful-retirement family; physical-time and
+device-timing claims remain blocked by the wider CPU ledger.
 
 ## Current Technical Baseline
 
@@ -40,7 +25,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T366 S16 | Accepted at `ac5d6ec6`: successful unprefixed `XLAT` publishes its fixed five-clock 80286 table cost through the existing retirement owner. Prefix, fault/delivery, bus and physical-time timing remain transferred. [Timing evidence](../etc/evidence/t366-s16-80286-xlat-timing.md). |
+| T366 S17 | Accepted at `7d9e27be`: successful unprefixed `LAHF`/`SAHF` publish fixed two-clock 80286 table costs through the existing retirement owner; focused AH/FLAGS semantics are retained. Prefix, fault/delivery, bus and physical-time timing remain transferred. [Timing evidence](../etc/evidence/t366-s17-80286-lahf-sahf-timing.md). |
 | T365 | Closed at `febc9352`: IBM PC/AT parity/I/O-check NMI sources cannot be selected without a profile input, status/latch/clear and lifecycle contract; CPU and CMOS remain delivery/mask only. [Closure audit](../etc/evidence/t365-s2-pcat-nmi-nonadmission-closure-audit.md). Blocks physical/cycle-exact L3 closure; no synthetic source. |
 | T364 | Closed at `7d574ae3`: all selected PC/AT components, ports/routes and lifecycle/timing owners are inventoried; optional and physical gaps retain exact Queue/TODO receivers. [Closure audit](../etc/evidence/t364-s2-pcat-device-completeness-closure-audit.md). No model-L3 claim. |
 | T363 | Closed at `312ef2f9`: all 256 primary and 256 secondary dispatch slots have one source-backed successful-retirement owner or an exact explicit receiver; inventory and 246/246 current-gate passed. [Closure audit](../etc/evidence/t363-s7-complete-instruction-timing-closure-audit.md). No physical/cycle-exact L3 claim. |

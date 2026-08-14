@@ -144,3 +144,11 @@ S16 gives successful unprefixed `D7 XLAT` its five-clock 80286 source-table
 cost through the existing retirement publisher. Its [timing evidence](../etc/evidence/t366-s16-80286-xlat-timing.md)
 records the source, semantic/publication proof and boundary transfers. S16 is
 accepted at `ac5d6ec6`.
+
+### S17: 80286 LAHF/SAHF timing
+
+S17 gives successful unprefixed `9E SAHF` and `9F LAHF` their fixed two-clock
+80286 source-table costs through the existing retirement publisher. P2 adds
+the packet-required focused AH/FLAGS proof. Its [timing evidence](../etc/evidence/t366-s17-80286-lahf-sahf-timing.md)
+records the correction, source and boundary transfers. S17 is accepted at
+`7d9e27be`.

@@ -30,4 +30,6 @@ packet-required focused AH/FLAGS checks. P2 adds that one consolidated proof.
 The focused `core-machine-80286-instruction-timing-ledger-smoke` passed and
 emitted `M5:T357:S6:80286-INSTRUCTION-TIMING-LEDGER:OK`; the configured
 `run-current-smokes` gate passed. Documentation governance and `git diff
---check` are recorded with P2 delivery and acceptance review.
+--check` passed. Coordinator review of P2 `7d9e27be` confirms the one
+retirement-owner timing change remains bounded and the new direct checks cover
+both time publication and AH/FLAGS preservation/transfer.
