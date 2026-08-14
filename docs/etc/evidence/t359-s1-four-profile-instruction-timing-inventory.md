@@ -40,7 +40,7 @@ extensions are rejected rather than folded into the group.
 | `27/2F/37/3F` | 8086 | receiver | S2 decimal/ASCII adjustment timing |
 | `40`--`4F`, `50`--`5F` | 8086 | receiver | S2 register arithmetic; S3 stack timing |
 | `60/61`, `62`, `68`--`6F`, `C0/C1`, `C8/C9` | 80186 | receiver; rejected on 8086 | S2 arithmetic/BOUND; S3 stack/control; S4 strings; exact source conflicts transfer to T360 |
-| `63` | 80286 | receiver; rejected below 80286 | S6 protected descriptor/privilege timing |
+| `63` | 80286 | selected only for 80386 protected non-VM86 successful register/memory `ARPL`; 80286 remains receiver; rejected below 80286 | S6 privileged ledger; 80286 source reconciliation transfers to T360 |
 | `64/65`, `66/67` | 80386 | receiver; rejected below 80386 | S4 string/I-O width selection; S5 remaining prefix/width matrix |
 | `70`--`7F` short `Jcc` | 8086 | selected for unprefixed taken/not-taken only; every other legal variant receiver | T357 S3--S6; S3 completes branch/lexeme timing |
 | `80/81/83 /0`--`/7`; `82`; `84/85`; `86/87` | 8086 | receiver; `82` rejected | S2 immediate-ALU, TEST, XCHG and LOCK-aware memory timing |
@@ -72,14 +72,16 @@ form matrix as a timing allocation.
 
 | Exact secondary form | Minimum profile | Current disposition | Timing mechanism receiver |
 | --- | --- | --- | --- |
-| `0F 00 /0`--`/5` | 80286 | receiver | S6 selector/table system timing |
-| `0F 01 /0`--`/6` | 80286 | receiver | S6 table/control and privilege/fault timing |
-| `0F 02`, `0F 03`, `0F 06` | 80286 | receiver | S6 descriptor-query/CLTS timing |
-| `0F 20`--`26` | 80386 | receiver | S6 control/debug/test-register timing |
+| `0F 00 /0`--`/5` | 80286 | selected only for fixed 80386 protected non-VM86 successful rows; 80286 remains receiver | S6 privileged ledger; T360 for 80286 Appendix-B normalization |
+| `0F 01 /0`--`/6` | 80286 | selected only for fixed 80386 successful table/MSW rows; 80286 remains receiver | S6 privileged ledger; delivery/fault and 80286 Appendix-B normalization transfer to T360/cycle-exact receiver |
+| `0F 02`, `0F 03`, `0F 06` | 80286 | selected for fixed 80386 `LAR`/`CLTS`; `LSL` and every 80286 form remain receiver | S6 privileged ledger; descriptor-granularity and 80286 Appendix-B normalization transfer to T360 |
+| `0F 20`--`26` | 80386 | selected for valid CPL0/real register-direct CR/DR/TR successful rows; rejected forms and non-success outcomes remain zero publication | S6 privileged ledger; delivery and physical receiver transfers retained |
 | `0F 80`--`8F` | 80386 | selected for successful near-branch lexical outcomes | S5 secondary source ledger; physical prefetch remains transferred |
 | `0F 90`--`9F` | 80386 | selected for the retained S2 register/memory rows | S2 primary-shape source owner, retained by S5 |
-| `0F A3/A4/A5/AB/AC/AD/AF` | 80386 | selected | S5 bit/double-shift/two-operand-IMUL ledger; FS/GS remains S6 |
-| `0F B3/B6/B7/BB`--`BF` | 80386 | selected except `B2/B4/B5` far-load forms | S5 bit/scan/MOVX ledger; far-load remains S6 |
+| `0F A0/A1/A8/A9` | 80386 | selected for fixed successful FS/GS stack rows | S6 privileged ledger; delivery/fault outcomes transfer later |
+| `0F A3/A4/A5/AB/AC/AD/AF` | 80386 | selected | S5 bit/double-shift/two-operand-IMUL ledger |
+| `0F B2/B4/B5` | 80386 | selected for fixed successful LSS/LFS/LGS real/protected rows | S6 privileged ledger; descriptor/fault outcomes transfer later |
+| `0F B3/B6/B7/BB`--`BF` except `B4/B5` | 80386 | selected | S5 bit/scan/MOVX ledger; `B2/B4/B5` are S6 |
 | `0F BA /4`--`/7` | 80386 | selected; `/0`--`/3` rejected | S5 bit-immediate source ledger |
 | all other `0F` bytes or invalid listed extensions | profile-dependent | rejected | No successful-retirement timing row |
 

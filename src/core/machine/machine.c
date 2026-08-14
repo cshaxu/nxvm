@@ -2304,6 +2304,169 @@ static C_INT core_machine_80386_secondary_source_instruction_cost(
     }
 }
 
+/* Intel 80386 PRM section 17.2.2.3 gives the fixed successful-retirement
+ * rows below for the system forms whose timing does not depend on a later
+ * delivery, task switch, or descriptor-dependent outcome.  This keeps the
+ * source row at the sole publisher: handlers, decoder, and delivery owners do
+ * not acquire a second clock policy. */
+static C_INT core_machine_80386_privileged_source_instruction_cost(
+    core_machine *machine, type_unsigned_64 *out_ticks)
+{
+    const t_cpuins_data *data;
+    type_unsigned_32 prefixes;
+    type_unsigned_8 opcode;
+    type_unsigned_8 secondary;
+    type_unsigned_8 modrm;
+    type_unsigned_8 extension;
+    C_INT memory;
+    C_INT protected_mode;
+
+    if (machine == STD_NULL || out_ticks == STD_NULL ||
+        machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_80386) return 0;
+    data = &machine->executor_cpu_instructions.data;
+    prefixes = core_machine_instruction_prefix_count(data);
+    if (prefixes >= data->oplen || data->flagLock ||
+        !core_machine_80386_timing_has_source_prefixes(data, prefixes)) {
+        return 0;
+    }
+    opcode = data->opcodes[prefixes];
+    protected_mode = core_machine_control_stack_is_protected(data);
+
+    if (opcode == 0x63u) {
+        if (!protected_mode || (data->oldcpu.data.eflags & VCPU_EFLAGS_VM) != 0u ||
+            prefixes + 1u >= data->oplen) return 0;
+        *out_ticks = core_machine_source_timing_modrm_is_memory(data, prefixes) ?
+            21u : 20u;
+        return 1;
+    }
+    if (opcode != 0x0fu) return 0;
+    if (prefixes + 1u >= data->oplen) return 0;
+    secondary = data->opcodes[prefixes + 1u];
+    if (secondary == 0x06u) {
+        if ((data->oldcpu.data.eflags & VCPU_EFLAGS_VM) != 0u ||
+            (protected_mode && data->oldcpu.data.cs.dpl != 0u)) return 0;
+        *out_ticks = 5u;
+        return 1;
+    }
+    if (secondary == 0xa0u || secondary == 0xa8u) {
+        *out_ticks = 2u;
+        return 1;
+    }
+    if (secondary == 0xa1u || secondary == 0xa9u) {
+        if ((data->oldcpu.data.eflags & VCPU_EFLAGS_VM) != 0u) return 0;
+        *out_ticks = protected_mode ? 21u : 7u;
+        return 1;
+    }
+    if (secondary == 0xb2u || secondary == 0xb4u || secondary == 0xb5u) {
+        if (!protected_mode) {
+            *out_ticks = 7u;
+            return 1;
+        }
+        if ((data->oldcpu.data.eflags & VCPU_EFLAGS_VM) != 0u) return 0;
+        *out_ticks = secondary == 0xb2u ? 22u : 25u;
+        return 1;
+    }
+    if (prefixes + 2u >= data->oplen) return 0;
+    modrm = data->opcodes[prefixes + 2u];
+    extension = (modrm >> 3u) & 7u;
+    memory = (modrm >> 6u) != 3u;
+
+    switch (secondary) {
+    case 0x00u:
+        if (!protected_mode || (data->oldcpu.data.eflags & VCPU_EFLAGS_VM) != 0u) {
+            return 0;
+        }
+        switch (extension) {
+        case 0u:
+            *out_ticks = 2u;
+            return 1;
+        case 1u:
+            *out_ticks = memory ? 27u : 23u;
+            return 1;
+        case 2u:
+            *out_ticks = 20u;
+            return 1;
+        case 3u:
+            *out_ticks = memory ? 27u : 23u;
+            return 1;
+        case 4u:
+            *out_ticks = memory ? 11u : 10u;
+            return 1;
+        case 5u:
+            *out_ticks = memory ? 16u : 15u;
+            return 1;
+        default:
+            return 0;
+        }
+    case 0x01u:
+        switch (extension) {
+        case 0u: case 1u:
+            if (memory) {
+                *out_ticks = 9u;
+                return 1;
+            }
+            return 0;
+        case 2u: case 3u:
+            if ((data->oldcpu.data.eflags & VCPU_EFLAGS_VM) != 0u ||
+                (protected_mode && data->oldcpu.data.cs.dpl != 0u) || !memory) {
+                return 0;
+            }
+            *out_ticks = 11u;
+            return 1;
+        case 4u:
+            *out_ticks = protected_mode ? 2u : (memory ? 3u : 2u);
+            return 1;
+        case 6u:
+            if ((data->oldcpu.data.eflags & VCPU_EFLAGS_VM) != 0u ||
+                (protected_mode && data->oldcpu.data.cs.dpl != 0u)) return 0;
+            *out_ticks = memory ? 13u : 10u;
+            return 1;
+        default:
+            return 0;
+        }
+    case 0x02u:
+        if (!protected_mode || (data->oldcpu.data.eflags & VCPU_EFLAGS_VM) != 0u) {
+            return 0;
+        }
+        *out_ticks = memory ? 16u : 15u;
+        return 1;
+    case 0x20u:
+        if ((data->oldcpu.data.eflags & VCPU_EFLAGS_VM) != 0u ||
+            (protected_mode && data->oldcpu.data.cs.dpl != 0u) || memory ||
+            (extension != 0u && extension != 2u && extension != 3u)) return 0;
+        *out_ticks = 6u;
+        return 1;
+    case 0x21u:
+        if ((data->oldcpu.data.eflags & VCPU_EFLAGS_VM) != 0u ||
+            (protected_mode && data->oldcpu.data.cs.dpl != 0u) || memory ||
+            (extension != 0u && extension != 1u && extension != 2u &&
+             extension != 3u && extension != 6u && extension != 7u)) return 0;
+        *out_ticks = extension <= 3u ? 22u : 14u;
+        return 1;
+    case 0x22u:
+        if ((data->oldcpu.data.eflags & VCPU_EFLAGS_VM) != 0u ||
+            (protected_mode && data->oldcpu.data.cs.dpl != 0u) || memory ||
+            (extension != 0u && extension != 2u && extension != 3u)) return 0;
+        *out_ticks = extension == 0u ? 10u : (extension == 2u ? 4u : 5u);
+        return 1;
+    case 0x23u:
+        if ((data->oldcpu.data.eflags & VCPU_EFLAGS_VM) != 0u ||
+            (protected_mode && data->oldcpu.data.cs.dpl != 0u) || memory ||
+            (extension != 0u && extension != 1u && extension != 2u &&
+             extension != 3u && extension != 6u && extension != 7u)) return 0;
+        *out_ticks = extension <= 3u ? 22u : 16u;
+        return 1;
+    case 0x24u: case 0x26u:
+        if ((data->oldcpu.data.eflags & VCPU_EFLAGS_VM) != 0u ||
+            (protected_mode && data->oldcpu.data.cs.dpl != 0u) || memory ||
+            (extension != 6u && extension != 7u)) return 0;
+        *out_ticks = 12u;
+        return 1;
+    default:
+        return 0;
+    }
+}
+
 static C_INT core_machine_80286_source_instruction_cost(core_machine *machine,
     type_unsigned_64 *out_ticks)
 {
@@ -2516,6 +2679,9 @@ static C_INT core_machine_instruction_cost(core_machine *machine,
         return 1;
     }
     if (core_machine_80386_secondary_source_instruction_cost(machine, out_ticks)) {
+        return 1;
+    }
+    if (core_machine_80386_privileged_source_instruction_cost(machine, out_ticks)) {
         return 1;
     }
     if (core_machine_primary_source_instruction_cost(machine, out_ticks)) {

@@ -14,9 +14,11 @@ set(t359_s4_ledger
     "${PROJECT_SOURCE_DIR}/docs/etc/evidence/t359-s4-four-profile-string-io-source-ledger.md")
 set(t359_s5_ledger
     "${PROJECT_SOURCE_DIR}/docs/etc/evidence/t359-s5-80386-secondary-source-ledger.md")
+set(t359_s6_ledger
+    "${PROJECT_SOURCE_DIR}/docs/etc/evidence/t359-s6-privileged-source-ledger.md")
 foreach(t359_file IN ITEMS "${t359_source}" "${t359_machine}" "${t359_inventory}"
     "${t359_s2_ledger}" "${t359_s3_ledger}" "${t359_s4_ledger}"
-    "${t359_s5_ledger}")
+    "${t359_s5_ledger}" "${t359_s6_ledger}")
     if(NOT EXISTS "${t359_file}")
         message(FATAL_ERROR "T359 timing inventory input is missing: ${t359_file}")
     endif()
@@ -28,6 +30,7 @@ file(READ "${t359_s2_ledger}" t359_s2_ledger_text)
 file(READ "${t359_s3_ledger}" t359_s3_ledger_text)
 file(READ "${t359_s4_ledger}" t359_s4_ledger_text)
 file(READ "${t359_s5_ledger}" t359_s5_ledger_text)
+file(READ "${t359_s6_ledger}" t359_s6_ledger_text)
 
 function(t359_require text pattern description)
     if(NOT "${text}" MATCHES "${pattern}")
@@ -227,6 +230,40 @@ foreach(t359_s5_ledger_anchor IN ITEMS
     "T360")
     t359_require("${t359_s5_ledger_text}" "${t359_s5_ledger_anchor}"
         "S5 source ledger is missing ${t359_s5_ledger_anchor}")
+endforeach()
+
+# S6 allocates only fixed 80386 successful system rows.  The source ledger
+# names the 80286, descriptor-granularity, and delivery transfers explicitly,
+# so a future change cannot turn them into an undocumented one-tick fallback.
+foreach(t359_s6_anchor IN ITEMS
+    "core_machine_80386_privileged_source_instruction_cost"
+    "case 0x00u"
+    "case 0x01u"
+    "case 0x20u"
+    "case 0x26u"
+    "secondary == 0xb5u")
+    t359_require("${t359_machine_text}" "${t359_s6_anchor}"
+        "missing S6 privileged timing anchor ${t359_s6_anchor}")
+endforeach()
+string(FIND "${t359_machine_text}"
+    "if (core_machine_80386_privileged_source_instruction_cost(machine, out_ticks))"
+    t359_s6_publisher)
+if(t359_s6_publisher LESS 0 OR t359_s6_publisher GREATER t359_s2_primary_publisher)
+    message(FATAL_ERROR
+        "T359 S6 privileged classifier must precede the primary and unallocated receivers")
+endif()
+foreach(t359_s6_ledger_anchor IN ITEMS
+    "## Allocated 80386 successful rows"
+    "0F 00 /0"
+    "0F 01 /0"
+    "0F 20/22"
+    "0F B2"
+    "## Reconciled transfers"
+    "80286"
+    "T360"
+    "Cycle-exact selected-profile receiver")
+    t359_require("${t359_s6_ledger_text}" "${t359_s6_ledger_anchor}"
+        "S6 source ledger is missing ${t359_s6_ledger_anchor}")
 endforeach()
 
 message(STATUS "T359 four-profile instruction timing inventory passed.")
