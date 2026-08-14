@@ -33,8 +33,8 @@ own manual/probe contract; completing one does not imply board-wide parity.
 
 Closed proposal reference:
 [Instruction-timed execution](../proposals/m5-instruction-timed-execution.md)
-is closed as T357 and retained as its finite source-ledger and transfer record,
-not as a candidate.
+is closed and retained as its finite source-ledger and transfer record, not as
+a candidate.
 
 [L3 bus-timing convergence](../proposals/m5-l3-bus-timing-convergence.md)
 is closed and retained as the selected-L3 admission and transfer record, not
