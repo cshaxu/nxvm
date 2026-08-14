@@ -2,8 +2,7 @@
 
 ## Current Work
 
-**Idle.** M5 T357 is closed; Cross-Mode Mechanism Coherence is the next M5
-candidate before bus-timed PC/AT work.
+**Idle.**
 
 ## Current Technical Baseline
 
@@ -34,6 +33,14 @@ candidate before bus-timed PC/AT work.
 | T350 | Closed the selected PC/AT signal graph: retained 8254/IRQ0 and MC146818/CMOS/IRQ8 owners now have focused lifecycle proof; RTC alarm and IRQF defects are repaired; speaker/PPI and parity/I/O-channel NMI remain exact corpus/contract-gated TODO transfers. 228 current-gate tests passed. [History](../history/M5-T350-pcat-platform-signals.md). |
 
 ## Recent Governance
+
+- **M5 Td S87:** reordered M5 around four-profile timing authority,
+  device/chip/port/bus completeness, bus availability, service timing,
+  cycle-exact selected-profile work, and L3 closure before final BYOB Windows
+  3.1 Standard/386 Enhanced lifecycle proof. M6 now follows the M5 closure
+  decision. T358 S1 remains owner-suspended in a preserved local stash and
+  must be explicitly resumed. Documentation governance and diff check passed;
+  Td work has no runtime change.
 
 - **M5 Td S86:** replaced the completed instruction-timing TODO with ordered
   candidates for the remaining full instruction corpus and the independent
@@ -80,9 +87,3 @@ candidate before bus-timed PC/AT work.
   80386DX form, 80386DX state, 80386DX audit, and cross-profile closure
   candidates; added the corresponding unnumbered proposals. Documentation
   governance and diff check passed. Td work has no runtime or artifact change.
-
-- **M5 Td S79:** reordered the M5 CPU-completeness program around a
-  four-profile audit, shared delivery foundations, 8086/80186, 80286, and
-  80386DX closure candidates, then cross-profile verification. Each candidate
-  has a linked unnumbered proposal; no implementation task was allocated.
-  Documentation governance, Queue-link verification, and diff check passed.

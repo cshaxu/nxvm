@@ -33,26 +33,28 @@ implementation plan for core convergence.
 
 ## M5: Converge Core And NXVM
 
-Complete the shared-core/NXVM boundary and the PC/AT fidelity required for
-evidence-led DOS and early Windows research. The completed device-timing
-program establishes deterministic L3 event-and-bus ordering for the selected
-PC/AT device corpus; controller service durations, general wait states,
-cycle-exact behavior, and unselected peripherals remain separately admitted
-work. Prove that a second policy-free
-consumer can use core without making mantle, DOS, or NXVDM a current runtime.
-Before M6 admission, carry the owner-approved Intel 80386DX
-architecture-completeness program through its evidence-led Queue sequence.
-That program has two complementary closure views: instruction-form coverage and
-architecture-state closure. The former reconciles each assigned Intel form with
-focused evidence; the latter closes the state transitions that make forms
-compose (real/protected/VM86 execution, privilege and exception delivery,
-paging, and system state). A completed opcode slice cannot by itself close a
-CPU family or stage. The program does not make an 80387 implementation or
-Windows-compatibility claim.
+Complete the shared-core/NXVM boundary and the selected PC/AT machine to
+source-backed L3 timing: every selected device, chip, port, bus route, reset,
+IRQ/DRQ lifecycle, availability/wait state, and cross-device event order has
+one owner and a declared timing contract. Carry the Intel 8086, 80186, 80286,
+and 80386DX form/state program through its evidence-led Queue sequence before
+using a guest operating system as validation. That program has complementary
+instruction-form and architecture-state closure views; it includes
+real/protected/VM86 transitions, privilege/exception delivery, paging, and
+remaining system state. A completed opcode slice never closes a CPU family,
+device, or stage by itself, and M5 makes no 80387 claim.
+
+After the selected-machine L3 closure audit accepts those prerequisites, M5
+ends with an approved BYOB Windows 3.1 corpus: Standard Mode and 386 Enhanced
+Mode must each install, start normally, reach a named ready checkpoint, and
+shut down normally. These are final compatibility consumers, not substitutes
+for device/timing evidence. Windows media is never committed or made a default
+dependency.
 
 ## M6: Build Mantle
 
-Implement the neutral VDM session foundation over core, including the bounded
+Only after M5's L3 and Windows closure decision, implement the neutral VDM
+session foundation over core, including the bounded
 adapter capability required for the owned runtime and separately admitted
 external runtime implementations.
 
@@ -70,9 +72,8 @@ experience.
 
 ## M9 And Later: Compatibility And Web Delivery
 
-Advance evidence-led Windows 3.1 Standard Mode and 386 Enhanced Mode support,
-then Windows 95 readiness only after its required CPU, profile, device, timing,
-and corpus gates. Admit a WASM core/mantle target and TypeScript web product
+Advance Windows 95 readiness only after its required CPU, profile, device,
+timing, and corpus gates. Admit a WASM core/mantle target and TypeScript web product
 layer through the same host-boundary, asset, and reproducibility rules. Future
 external runtime support remains separately admitted and never silently becomes
 the default backend or release dependency.

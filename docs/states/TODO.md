@@ -176,16 +176,13 @@ admissions, not the default definition of NXVM completion.
   from port 61h, bypass the core mask, or refactor generic CPU delivery without
   a reproduced shared defect. See [T350 S4 evidence](../etc/evidence/t350-s4-pcat-nmi-decision.md).
 
-- [ ] **Bus-timed PC/AT operation (`TODO(High)`).** T354 closes selected L3:
-  checked CPU/DMA transaction publication, deterministic CPU/DMA/PIT/PIC/FDC/HDC
-  visibility, reset cancellation, and trace proof. A later task may model
-  remaining memory/I/O wait states, physical CPU bus ownership, and
-  device-specific timing only through a primary-contract or corpus-driven
-  admission; it must not reinterpret T354's synchronous selected boundary as
-  a cycle or pin waveform claim.
-- [ ] **Cycle-exact profiles (`TODO(High)`).** Only where a profile genuinely
-  requires it, model clock phases, prefetch/bus behavior, and device
-  microstates without silently changing the retained executor.
+- [ ] **Unselected PC/AT physical timing (`TODO(Medium)`).** The M5 Queue now
+  owns selected bus timing, device-service timing, and cycle-exact work through
+  its linked proposals. Retain only timing outside those selected corpus and
+  profile contracts here: analog/pin-level behavior, unsupported peripherals,
+  and a historical clone without an approved primary contract. Admit one
+  boundary only after the M5 L3 audit records why it is not part of the chosen
+  machine profile; do not create a second bus or device-timing owner.
 
 ## Architecture And Portability Debt
 

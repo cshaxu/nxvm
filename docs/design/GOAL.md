@@ -9,11 +9,12 @@ compatibility claims or implementation instructions.
    it able to select reproducible machine profiles. The target family includes
    default PC/AT, Compaq DeskPro 386 informed by PCjs behavior research, and
    IBM PC 110 with its separately evidenced hardware requirements.
-2. **Windows compatibility progression.** Make the shared machine foundation
-   capable of evidence-backed Windows 3.1 Standard Mode and 386 Enhanced Mode,
-   then pursue Windows 95 as a longer-horizon compatibility target. Each claim
-   is gated by an owned corpus rather than an aspirational CPU label or boot
-   attempt.
+2. **M5 L3 and Windows completion.** Finish M5 with source-backed L3 timing
+   for the selected PC/AT device corpus, then make that profile capable of
+   evidence-backed Windows 3.1 Standard Mode and 386 Enhanced Mode install,
+   normal start, named ready checkpoint, and normal shutdown. Each claim is
+   gated by an owned corpus rather than an aspirational CPU label or boot
+   attempt. Windows 95 remains a longer-horizon compatibility target.
 3. **Multi-runtime VDM foundation.** Make the NXVM-derived `core` and `mantle` able to support
    the owned DOS/VDM implementation and separately admitted external VDM or
    DOS implementations. The owned path remains the default; an external

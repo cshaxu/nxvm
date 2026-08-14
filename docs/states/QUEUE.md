@@ -21,17 +21,24 @@ together with the [80386DX admission policy](../proposals/m5-80386dx-candidate-p
 are shared planning references for the corresponding candidates below; they do
 not allocate a numeric task.
 
-After the CPU-profile program and the deterministic PC/AT device/L3 foundation
-close, the following device-completeness sequence consumes those results.  It
-precedes Windows readiness because readiness must not be used to hide known
-controller-service and chipset gaps.  Each candidate remains bounded by its
-own manual/probe contract; completing one does not imply board-wide parity.
+M5 first closes architecture coherence and every selected PC/AT hardware
+owner to an evidence-backed L3 model.  Windows 3.1 is deliberately the final,
+lowest-priority consumer: it must expose a remaining gap, never hide one.
+Each candidate has a bounded primary-manual/probe contract; completing one
+does not silently upgrade a different device, profile, or Windows mode.
 
 1. [Cross-mode mechanism coherence](../proposals/m5-cross-mode-mechanism-coherence.md).
 1. [Complete instruction-timing corpus](../proposals/m5-complete-instruction-timing-corpus.md).
+1. [Four-profile Intel timing source reconciliation](../proposals/m5-four-profile-timing-source-reconciliation.md).
+1. [PC/AT device, chip, port, and bus completeness audit](../proposals/m5-pcat-device-completeness-audit.md).
 1. [Bus-timed PC/AT operation](../proposals/m5-bus-timed-pcat-operation.md).
-1. [80286 Appendix-B timing source reconciliation](../proposals/m5-80286-appendix-b-source-reconciliation.md).
+1. [PC/AT device service-timing corpus](../proposals/m5-device-service-timing-corpus.md).
 1. [Cycle-exact selected profile](../proposals/m5-cycle-exact-selected-profile.md).
+1. [M5 L3 machine closure audit](../proposals/m5-l3-machine-closure-audit.md).
+1. [Windows 3.1 BYOB lifecycle harness](../proposals/m5-windows31-byob-lifecycle-harness.md).
+1. [Windows 3.1 Standard Mode lifecycle](../proposals/m5-windows31-standard-mode-lifecycle.md).
+1. [Windows 3.1 386 Enhanced Mode lifecycle](../proposals/m5-windows31-enhanced-mode-lifecycle.md).
+1. [M5 final L3 and Windows closure audit](../proposals/m5-final-l3-windows-closure-audit.md).
 
 Closed proposal reference:
 [Instruction-timed execution](../proposals/m5-instruction-timed-execution.md)
@@ -45,7 +52,8 @@ as a candidate.
 ## M6 Candidates
 
 The [M6 mantle experiment program](../proposals/m6-mantle-program.md) applies
-to every candidate in this section.
+to every candidate in this section. These candidates are not eligible until
+the M5 final L3-and-Windows closure audit accepts the selected profile.
 
 1. [Pre-decode transition gateway and mantle probe](../proposals/m6-predecode-transition-gateway.md).
 1. [Ordinary-RAM transaction for staged runtime input](../proposals/m6-ordinary-ram-transaction.md).
