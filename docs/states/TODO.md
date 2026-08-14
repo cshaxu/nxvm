@@ -165,17 +165,6 @@ transaction checkpoints. This is the project's L3 event-and-bus contract, not
 cycle-exact hardware timing. These entries remain deferred compatibility
 admissions, not the default definition of NXVM completion.
 
-- [ ] **FDC/ATA command-service timing (`TODO(High)`).** T346 S4 moves RTC
-  advancement and FDC media-generation observation to deterministic due events,
-  but the 8272A final-command path and ATA PIO command/sector paths still
-  complete synchronously and can publish DMA/DRQ/IRQ in the issuing port
-  transaction. Admit one storage-service state-machine task only with primary
-  controller contracts and deterministic probes for command acceptance,
-  pending/busy visibility, media-provider result, abort/reset cancellation,
-  DRQ/DMA/IRQ ordering, and per-command completion. Preserve the S4 timeline
-  owner; do not insert arbitrary delay constants, use host I/O timing, or add
-  a second controller scheduler.
-
 - [ ] **PC/AT NMI source ownership (`TODO(Medium)`).** T350 S4 reconfirms that
   RTC periodic/update conditions publish IRQ8, while the CMOS index-port bit
   only controls the existing architected NMI mask; no parity or I/O-channel

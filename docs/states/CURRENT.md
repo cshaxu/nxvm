@@ -2,8 +2,8 @@
 
 ## Current Work
 
-**Idle.** M5 T354 selected L3 bus-timing convergence is closed; the next
-device or product-readiness candidate requires a separately admitted packet.
+**Idle.** T354 selected L3 closure is current; the next device or
+product-readiness candidate requires a separately admitted packet.
 
 ## Current Technical Baseline
 
@@ -34,6 +34,12 @@ device or product-readiness candidate requires a separately admitted packet.
 | T347 | Closed retained PC/AT FDC and ATA PIO service timing: pending command/data states, reset/control/media cancellation, one FDC-then-ATA readiness owner, trace order, focused VM/DOS/HDD evidence, and 222 current-gate tests passed. [History](../history/M5-T347-storage-controller-service-timing.md). |
 
 ## Recent Governance
+
+- **M5 Td S84:** retired the stale FDC/ATA command-service TODO after the
+  accepted T347 pending-command/readiness-service closure and T354 consumer
+  audit reconfirmed its claim was no longer true. Physical wait/cycle fidelity
+  remains in the existing bus-timed and cycle-exact debt entries. Documentation
+  governance and diff check passed; Td work has no runtime change.
 
 - **M5 Td S83:** corrected the NXVM self-sibling instruction in `AGENTS.md`;
   renamed the VM-platform injected test macro to
@@ -82,9 +88,3 @@ device or product-readiness candidate requires a separately admitted packet.
   matrix as explicitly historical/non-current evidence; and corrected the
   stale T330 closure summary. Documentation governance and diff check passed.
   Td work has no runtime or artifact change.
-
-- **M5 Td S75:** reconciled Queue state with recorded closures: removed only
-  the T323 protection/privilege, T325 paging, T328 legacy LOCK, and T330
-  transition-unification candidates; retained the remaining candidate order.
-  Documentation governance and diff check passed. Td work has no runtime or
-  artifact change.
