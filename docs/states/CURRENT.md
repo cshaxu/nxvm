@@ -2,8 +2,29 @@
 
 ## Current Work
 
-**Idle.** M5 T359 is closed; the next Queue candidate requires a separately
-admitted packet.
+**Active.** M5 T360 S1 four-profile source-authority and consumer inventory is
+admitted in single-session mode.
+
+## M5 T360 S1 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New |
+| Admission And Approval | Owner-approved ordered single-agent Queue execution after T359 closed at `e870bc88`; T360 is the next candidate and starts at S1. |
+| Objective | Establish the authoritative four-profile timing-source baseline: enumerate each current selected T359 timing consumer, its exact 8086/80186/80286/80386 manual edition/table/prose reference, known range or contradiction shape, and its bounded T360 reconciliation owner. Produce the non-overlapping S2+ execution breakdown from this inventory. |
+| Non-goals | No runtime clock allocation or source-code change; no semantic CPU repair; no bus/wait/HOLD/prefetch/cache/device timing; no secondary-emulator authority; no x87, Windows, or cycle-exact claim. |
+| Reference Baseline | `e870bc88`, `vm-0-5-0359`, T359 S7 closure audit, the T359 S2--S6 ledgers, and the Queue's Four-profile Intel timing source reconciliation proposal. |
+| Candidate Proposal | [Four-profile Intel timing source reconciliation](../proposals/m5-four-profile-timing-source-reconciliation.md), with T359's [closure audit](../etc/evidence/t359-s7-complete-instruction-timing-closure-audit.md) as the transfer record. |
+| Files And ABI Surface | Audit/documentation only: new indexed T360 S1 source-authority/consumer inventory, T360 history, CURRENT, Queue link validation, and any exact TODO transfer needed for an unresolvable authority gap. No `src/`, CMake runtime target, artifact, public ABI, or timing value change. |
+| Applicable Rules | Task Reading Set; `EXECUTION.md` source/evidence and task-breakdown rules; `DOCUMENT.md` state/history/index topology; source policy; T359 closure's sole-publisher and explicit-transfer boundary. |
+| Verification | Read every cited primary manual/table and retained T359 source ledger; mechanically enumerate current timing consumers and T359 transfers; classify each as fixed, range/formula-needed, table/prose conflict, edition/stepping ambiguity, or physical/delivery exclusion; verify one named next receiver per unresolved class; documentation governance and diff check. |
+| Expected Markers | An indexed `M5:T360:S1` source-authority/consumer inventory; documentation governance passes; no runtime/artifact delta. |
+| Asset Needs | Intel manuals as research/provenance only; no imported code, guest media, firmware, external executable, or runtime dependency. |
+| Reporting Requirements | Record profile/edition, exact form, source location, current timing consumer, conflict class, evidence confidence, and next S/TODO receiver. State whether the existing 80286 NOP table/prose decision is reaffirmed or requires a source-policy stop. |
+| Stop Conditions | Stop before an allocation if primary evidence cannot identify the relevant processor edition/form, if two primary documents conflict without a stated precedence, or if the work would require a runtime/timing-code change. Record a precise TODO or later S instead of averaging or relying on Bochs/PCjs. |
+| Exit Criteria | Every selected T359 source row and every T359 transfer has a profile-specific authority/disposition; the 80286 NOP conflict is explicitly classified; later T360 S units are bounded and non-overlapping; no runtime claim is added; governance passes. |
+| Original Owner Request | Execute the Queue toward a comprehensive, source-backed L3 model with holistic mechanism planning; Intel manuals are the north star and external emulators are only non-authoritative research aids. |
+| Similar-Issue Sweep | Sweep all T359 ledgers, T357 timing evidence, `machine.c` timing consumers, source references, Queue and TODO entries for profile leakage, table/prose conflicts, range-to-fixed substitutions, borrowed later-profile rows, and undocumented source editions. |
 
 ## Current Technical Baseline
 
