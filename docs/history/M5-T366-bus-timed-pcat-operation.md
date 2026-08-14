@@ -81,6 +81,6 @@ unallocated and transfer to later T366 work.
 
 ### S8: FDC service-timing non-admission
 
-S8 finds that the retained readiness tick has no µPD765 clock-domain conversion.
+S8 finds that the retained readiness tick has no uPD765 clock-domain conversion.
 Its [non-admission evidence](../etc/evidence/t366-s8-fdc-service-timing-nonadmission.md)
 transfers all numeric FDC service timing to the next T366 S.

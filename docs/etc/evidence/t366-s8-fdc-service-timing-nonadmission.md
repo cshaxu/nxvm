@@ -2,10 +2,10 @@
 
 `core_machine_readiness_tick` invokes `core_machine_fdc_advance` once per
 project timeline tick. That tick is CPU-retirement time, not a declared
-µPD765 controller-clock domain. Consequently it cannot faithfully allocate the
-µPD765 SRT (1--16 ms), HLT (2--254 ms), or HUT (16--240 ms) quantities.
+uPD765 controller-clock domain. Consequently it cannot faithfully allocate the
+uPD765 SRT (1--16 ms), HLT (2--254 ms), or HUT (16--240 ms) quantities.
 
-The [µPD765A documentation](https://cpctech.cpcwiki.de/docs/upd765a/necfdc.htm)
+The [uPD765A documentation](https://cpctech.cpcwiki.de/docs/upd765a/necfdc.htm)
 defines those timers at an 8 MHz controller clock and defines seek/recalibrate
 completion through IRQ plus Sense Interrupt Status. The [IBM PC/AT Technical
 Reference](https://www.bitsavers.org/pdf/ibm/pc/at/6139362_PC_AT_Technical_Reference_Sep85.pdf)

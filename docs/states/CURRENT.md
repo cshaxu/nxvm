@@ -10,9 +10,9 @@
 | --- | --- |
 | Identifier Mode | Continuation |
 | Admission And Approval | Owner: repository owner; persistent M5 L3 direction and accepted S7 authorize the selected Model 339 FDC service boundary. No exception. |
-| Objective | Give µPD765-style reset, seek/recalibrate completion, IRQ visibility and Sense-Interrupt consumption one source-labelled guest-time contract for the selected FDC route. |
+| Objective | Give uPD765-style reset, seek/recalibrate completion, IRQ visibility and Sense-Interrupt consumption one source-labelled guest-time contract for the selected FDC route. |
 | Non-goals | No guessed rotational/read-write data-rate, DMA byte cadence, BIOS/ROM behavior, MFM/ST-506, ATA, bus wait, arbitration or cycle claim. |
-| Reference Baseline | IBM AT reference assigns Diskette Controller IRQ6; selected profile fixes DMA2. µPD765 documentation defines programmable SRT/HLT/HUT and seek/recalibrate interrupt behavior; existing FDC advances only by untimed calls. |
+| Reference Baseline | IBM AT reference assigns Diskette Controller IRQ6; selected profile fixes DMA2. uPD765 documentation defines programmable SRT/HLT/HUT and seek/recalibrate interrupt behavior; existing FDC advances only by untimed calls. |
 | Candidate Proposal | [Bus-Timed PC/AT Operation](../proposals/m5-bus-timed-pcat-operation.md). |
 | Files And ABI Surface | FDC owner/configuration, profile composition, focused proof, evidence/history/current packet only; no vendor assets. |
 | Applicable Rules | Execution evidence/sweep, architecture single FDC owner, coding cohesive C11 owner-local state, source policy and document indexing all apply; no waiver. |
