@@ -2,29 +2,8 @@
 
 ## Current Work
 
-M5 T352 S4 - selected EGA planar mode, aperture, and copied-frame reconciliation
-(Single-Session Mode).
-
-## M5 T352 S4 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner approved continuous holistic device/L3 implementation on 2026-08-13; T352 S1--S3 accepted at `6e68050b`, `0914e475`, and `30dec326`; S1 assigns selected EGA planar rows to this S. |
-| Objective | Reconcile selected EGA planar registration, sequencer/graphics/attribute state, A0000 aperture/latch/read-write behavior, direct `320x200x16` and mode-10h `640x350x16` geometry/stride/start, palette/display-enable, reset/finalize, and copied indexed-frame publication. Repair an identified shared planar mechanism only after complete caller/reader/validation-to-publication sweep. |
-| Non-goals | No VGA/VBE/SVGA, unselected EGA BIOS mode table/text compatibility, composite, host renderer/pacing, public snapshot format, firmware expansion, generic RAM/provider framework, broad CRTC semantics, Windows execution, or x87. |
-| Reference Baseline | `30dec326`; [T352 S1 ledger](../etc/evidence/t352-s1-digital-video-ledger.md), [S2 lifecycle](../etc/evidence/t352-s2-vadp-register-raster.md), T314 CRTC bound, T334 registration transaction, T285 mode-10 direct path, and current EGA planar/controller/ROM/DOS tests. |
-| Candidate Proposal | [PC/AT digital video completeness](../proposals/m5-vadp-digital-video-completeness.md). |
-| Files And ABI Surface | Expected: private VADP planar mechanism, focused owner smoke/evidence/history/Current only if needed. No public display/profile/platform ABI, external source import, generic provider API, second VRAM state, or artifact identity change. |
-| Applicable Rules | One VADP owner retains plane/latch/register/aperture/dirty/snapshot state; coupled provider/observer registration remains failure-atomic; selected modes share planar validation/publication only where layout permits; CRTC offset remains its one bounded state source; copied indexed snapshots are value output only; reset/finalize preserve topology but release/clear transient storage deterministically. |
-| Verification | Sweep planar configure/register/reset/finalize, provider/query/read/write/latch/masks, sequencer/graphics/attribute callbacks, active aperture selection, selected 320/640 capture geometry/palette/CRTC readers, profile/ROM mode writers, and snapshot consumers. Prove plane read/write/latch/mask, aperture map/nonpublication, selected mode switch/stride/start/palette/display-enable, registration failure/retry, reset/finalize, copied-frame nonaliasing, and retained VM/DOS path. Run focused/system/DOS owners, governance, diff check, and full current gate. |
-| Expected Markers | Retain EGA sequencer/controller/planar/CRTC/mode-10/registration/ROM/DOS markers; add an S4 owner marker only if no existing focused owner can prove the full selected shared mechanism. |
-| Asset Needs | Existing sources, project evidence, and IBM EGA register/mode tables recorded in S1; no new firmware/media, host capture, third-party implementation, or host renderer asset. |
-| Reporting Requirements | Record selected planar state matrix, caller/writer/reader/reset sweep, actual defect and impacted callers if any, exact mode/geometry proof, current tests, unselected EGA/VGA transfers, and S5 composition requirements. |
-| Stop Conditions | Stop for a generic memory/provider/timeline defect, public copied-frame/profile/host ABI change, a required unselected EGA/VGA feature, ambiguous register/geometry rule, firmware/Windows requirement, or need for a second planar owner. Transfer or seek approval rather than broaden S4. |
-| Exit Criteria | Every selected EGA planar registration/register/aperture/latch/mode/palette/geometry/copy/reset row has one VADP owner and direct proof; no partial shared-mechanism repair, stale plane/latch/copy state, incorrect selected geometry, or unclassified writer remains; unselected EGA/VGA breadth is explicitly transferred. |
-| Original Owner Request | Make CPU/fpu-external core-machine devices, chips, buses, and ports comprehensive and stable at deterministic L3 before choosing a Windows execution route. |
-| Similar-Issue Sweep | Sweep all VADP planar/latch/provider/observer/configure/reset/finalize/capture helpers, selected EGA controller/CRTC/ROM/profile writers, machine memory and timeline integration, VM copied-display consumers, EGA core/system/DOS tests, T314/T334/T285 evidence, Queue, and TODO transfers. |
+M5 T352 remains open. S4 is accepted; S5 cross-mode, reset, timeline, and
+copied-presentation composition is the next bounded subtask.
 
 ## Current Technical Baseline
 
@@ -45,7 +24,7 @@ M5 T352 S4 - selected EGA planar mode, aperture, and copied-frame reconciliation
 
 | Task | Compact result |
 | --- | --- |
-| T352 S3 | Accepted selected CGA text/320x200x4/mode-06h path: one VADP owner for ports, interleaved B8000 decode, palette, CRTC text interaction, reset, copied frame, and an exact graphics-CRTC breadth transfer. [Evidence](../etc/evidence/t352-s3-cga-digital-path.md). |
+| T352 S4 | Accepted selected EGA planar path: one VADP owner for registration, indexed controllers, aperture/latches/planes, 320 and mode-10 capture, reset/re-arm, and copied output. [Evidence](../etc/evidence/t352-s4-ega-planar-path.md). |
 | T351 | Closed selected IBM-PC/AT 8042 controller, AT keyboard, and compatible three-byte AUX at deterministic L3: one FIFO, controller/keyboard/AUX head promotion, IRQ1/IRQ12 source lifecycle, delayed/reset/finalize, copied ingress, and exact advanced-AUX/NMI/port-61 transfers. `vm-0-5-0351` SHA-256 `C20F4B631F8E63DD4D963C2F85E69D735EC05793B3DCC0C2AC11E65FA6D3FB9C`; 228 current-gate tests passed. [History](../history/M5-T351-kbc-aux-completeness.md). |
 | T350 | Closed the selected PC/AT signal graph: retained 8254/IRQ0 and MC146818/CMOS/IRQ8 owners now have focused lifecycle proof; RTC alarm and IRQF defects are repaired; speaker/PPI and parity/I/O-channel NMI remain exact corpus/contract-gated TODO transfers. 228 current-gate tests passed. [History](../history/M5-T350-pcat-platform-signals.md). |
 | T349 | Closed PC/AT dual-8259A command/priority/cascade, OCW3 poll/status/special-mask/SFNM, and retained edge/level producer lifecycle; physical INTA spurious behavior transfers only to L3 bus timing. 226 current-gate tests passed. [History](../history/M5-T349-pcat-pic-compliance.md). |
