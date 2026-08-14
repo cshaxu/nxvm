@@ -2,9 +2,28 @@
 
 ## Current Work
 
-T366 S7 is accepted at `553cd6d6`. The next T366 S must establish the selected
-FDC service-timing contract or make an exact source-backed transfer before any
-bus-availability allocation.
+**Active implementation packet:** M5 T366 S8, Model 339 FDC command-service timing.
+
+## M5 T366 S8 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner: repository owner; persistent M5 L3 direction and accepted S7 authorize the selected Model 339 FDC service boundary. No exception. |
+| Objective | Give µPD765-style reset, seek/recalibrate completion, IRQ visibility and Sense-Interrupt consumption one source-labelled guest-time contract for the selected FDC route. |
+| Non-goals | No guessed rotational/read-write data-rate, DMA byte cadence, BIOS/ROM behavior, MFM/ST-506, ATA, bus wait, arbitration or cycle claim. |
+| Reference Baseline | IBM AT reference assigns Diskette Controller IRQ6; selected profile fixes DMA2. µPD765 documentation defines programmable SRT/HLT/HUT and seek/recalibrate interrupt behavior; existing FDC advances only by untimed calls. |
+| Candidate Proposal | [Bus-Timed PC/AT Operation](../proposals/m5-bus-timed-pcat-operation.md). |
+| Files And ABI Surface | FDC owner/configuration, profile composition, focused proof, evidence/history/current packet only; no vendor assets. |
+| Applicable Rules | Execution evidence/sweep, architecture single FDC owner, coding cohesive C11 owner-local state, source policy and document indexing all apply; no waiver. |
+| Verification | Prove source-to-config-to-phase mapping, reset and seek/recalibrate pending/completion/IRQ/Sense transitions in guest time; run focused FDC/profile/session tests, current gate, documentation governance and diff check. |
+| Expected Markers | New S8 FDC-service marker plus existing current-gate markers. |
+| Asset Needs | Public IBM/NEC documentation only; no ROM/media/download. |
+| Reporting Requirements | State clock conversion, timed commands, unallocated data-transfer timing and final evidence. |
+| Stop Conditions | Stop and transfer if a source cannot establish a project-time conversion or needs vendor firmware/media. |
+| Exit Criteria | Selected command-completion visibility has one reproducible bounded timing owner; all wider FDC service timing is explicit transfer. |
+| Original Owner Request | Reach L3 through exact selected-device contracts, using 86Box/MAME only as cross-check where authorities give no determinate timing. |
+| Similar-Issue Sweep | Inspect every FDC advance caller, phase transition, IRQ/DRQ/reset path and profile route; repair shared owner or transfer excluded path. |
 
 ## Current Technical Baseline
 
