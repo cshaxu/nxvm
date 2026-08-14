@@ -2,9 +2,30 @@
 
 ## Current Work
 
-**Active.** T353 remains open between accepted subtasks. S4 will prove that the
-selected PC/AT topology stays coherent through session reset, deterministic
-timeline service, and firmware-visible composition before the task closes.
+**Active.** M5 T353 S4 composes the selected PC/AT topology through session
+creation/reset, deterministic timeline service, and firmware-visible state
+before the task-level closure audit.
+
+## M5 T353 S4 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner approved T353's proposed S4 sequence and the CPU-external selected-device/L3 completion direction on 2026-08-13. This S may repair only a reproduced selected-topology composition, reset, timeline, or firmware-visible defect after a full owner/caller sweep. |
+| Objective | Prove that the accepted default PC/AT directional-port and named-route contract is preserved through ordinary VM-session creation and reset, core deterministic-L3 timeline rearming, and firmware-visible reset state; close T353 only if no selected composition defect remains. |
+| Non-goals | No new peripheral, PPI/speaker, NMI producer, serial/parallel/game interface, host passthrough, physical bus wait state, INTA waveform, controller-duration, cycle-exact timing, firmware feature, Windows execution claim, or generic port-bus framework. |
+| Reference Baseline | `8a68e861` on `master`, after T353 S3's accepted no-owner peripheral decision. |
+| Candidate Proposal | [M5 PC/AT port topology and selected peripheral completion](../proposals/m5-pcat-port-topology-and-peripherals.md), S4. |
+| Files And ABI Surface | Expected: one owner-local VM/session smoke, its CMake target/current-gate registration, T353 evidence/index/history/current closure. Production changes only for a reproduced selected composition/reset/timeline/firmware defect, with all writers/readers/registration/reset/finalize consumers swept. No public ABI change. |
+| Applicable Rules | `docs/README.md` Task Reading Set; `docs/rules/EXECUTION.md` S/P lifecycle, mechanism defect and task closure audit; `docs/rules/ARCHITECTURE.md` single ownership/composition boundary; `docs/rules/CODING.md` test boundary; `docs/rules/DOCUMENT.md` current/history/evidence topology; T353 proposal; T346 deterministic-L3 and T353 S1--S3 evidence. |
+| Verification | New focused owner smoke must create an ordinary session; compare every selected profile leaf and all named route bindings to the frozen core both before and after session reset; prove sparse non-leaves remain absent; mutate reset-owned selected state then reset and prove reset/firmware restoration, reset vector, timeline `now`/pending-event rearm, and no stale topology publication. Configure, exact current-gate discovery, focused marker, documentation governance, diff check, and full current gate must pass. |
+| Expected Markers | New `M5:T353:S4:PCAT-COMPOSITION:OK`; exact `current.vm-pcat-composition-s4-smoke`; `Documentation governance checks passed`; full current gate passes. |
+| Asset Needs | No external asset, guest media, firmware image, or external source. The committed default profile and generated firmware path are the only inputs. |
+| Reporting Requirements | Record the initial/reset topology, route, timeline, firmware-visible, and sparse-port proof; state every reset/finalize/caller sweep result and each unchanged transfer. This single session must push one complete implementation P before independently reviewing actual changes as coordinator. |
+| Stop Conditions | Stop for owner direction if a proof requires an unselected peripheral, an external corpus, a physical timing model, a generic session/port abstraction, or a shared core/firmware lifecycle change whose full caller/failure sweep exceeds the selected topology boundary. |
+| Exit Criteria | The focused proof covers creation and reset lifecycle of every selected leaf/route, selected mutable reset state, deterministic timeline rearm, firmware-visible reset vector, and sparse-port absence; any reproduced in-scope defect is repaired with mechanism evidence; full gates pass; all remaining optional/per-physical-timing gaps are explicitly transferred; then T353 receives a task-level closure audit. |
+| Original Owner Request | Continue the CPU-external PC/AT device/L3 program holistically, reach a stable reliable selected L3 machine before deciding the next package, and avoid speculative peripherals or Windows as a shortcut. |
+| Similar-Issue Sweep | Review VM session initialization, reset callback, provider lifecycle reset/finalize, profile firmware reset, core cold reset, profile leaf/route validation, FDC/HDC/CMOS/VADP/KBC/DMA/PIC/PIT bindings, and timeline rearm. Classify physical bus timing and optional peripherals only as transfers. |
 
 ## Current Technical Baseline
 

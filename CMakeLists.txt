@@ -73,6 +73,9 @@ target_link_libraries(vm-default-pc-at-profile-smoke PRIVATE vm-profile)
 add_executable(vm-pcat-topology-s2-smoke
     tests/machine/vm_pcat_topology_s2_smoke.c)
 target_link_libraries(vm-pcat-topology-s2-smoke PRIVATE vm-composition)
+add_executable(vm-pcat-composition-s4-smoke
+    tests/machine/vm_pcat_composition_s4_smoke.c)
+target_link_libraries(vm-pcat-composition-s4-smoke PRIVATE vm-composition)
 add_executable(vm-hdc-port-smoke tests/machine/vm_hdc_port_smoke.c)
 target_link_libraries(vm-hdc-port-smoke PRIVATE vm-composition)
 add_executable(vm-media-provider-smoke tests/machine/vm_media_provider_smoke.c)
@@ -644,6 +647,7 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(core-machine PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-default-pc-at-profile-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-pcat-topology-s2-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(vm-pcat-composition-s4-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-hdc-port-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-hdc-hdd-boot-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-default-pc-at-apply-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
@@ -1619,6 +1623,7 @@ target_link_libraries(vdm-minimal-presentation-smoke PRIVATE
 set(PROJECT_CURRENT_SMOKE_TARGETS
     vm-default-pc-at-profile-smoke
     vm-pcat-topology-s2-smoke
+    vm-pcat-composition-s4-smoke
     vm-fdc-dma-boundary-smoke
     vm-hdc-port-smoke
     vm-media-provider-smoke
