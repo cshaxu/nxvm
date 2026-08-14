@@ -2,29 +2,7 @@
 
 ## Current Work
 
-**Active.** M5 T355 S1 audits the Windows 3.x readiness boundary and existing
-checkpoint evidence; it does not execute Setup or claim compatibility.
-
-## M5 T355 S1 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | New |
-| Admission And Approval | Owner approved continued holistic device/L3 completion and the next readiness-map decision on 2026-08-13. This S is audit-only. |
-| Objective | Produce one source/provenance/device/timing readiness ledger for existing Windows checkpoint probes and select the earliest real receiver without executing guest Setup. |
-| Non-goals | No Setup run, media import/copy/hash change, Windows compatibility claim, x87 execution, CPU-form repair, host-time model, device implementation, or rule change. |
-| Reference Baseline | `324b41c1` on `master`, corrected readiness proposal and accepted selected-L3 closure. |
-| Candidate Proposal | [Windows 3.x readiness map](../proposals/m5-windows-3x-readiness-map.md); [T354 selected-L3 closure](../history/M5-T354-physical-l3-bus-timing-convergence.md); [current runtime media](../etc/evidence/fixtures/current-runtime-media.md). |
-| Files And ABI Surface | Focused indexed evidence, T355 history, proposal refinement if required, CMake/probe source audit only, CURRENT, Queue/TODO transfers. No runtime or ABI change. |
-| Applicable Rules | Task Reading Set; execution lifecycle; documentation rules; source/research policy for existing Microsoft-media provenance. Architecture/coding rules apply to audit classification only; no code change is allowed. |
-| Verification | Sweep all `vm_windows31_*` probes, CMake target/test/media routing, fixture record, CPU/profile selection, checkpoint labels, host-time calls, and retained device/L3 evidence. Prove every row from current source/evidence and run governance/diff check. |
-| Expected Markers | T355 S1 readiness-ledger evidence, documentation governance, diff check. |
-| Asset Needs | Existing repository source and approved local-media metadata only; no guest execution or new asset access. |
-| Reporting Requirements | Record probe purpose, execution status, media/provenance boundary, required CPU/device/timing behavior, host dependency, confidence, and exact task/TODO receiver for every gap. |
-| Stop Conditions | Stop for owner direction if audit requires reading/running unapproved media, changing a probe, using a host observation as architecture authority, or selecting a device feature without a source/corpus contract. |
-| Exit Criteria | One complete readiness ledger classifies every existing probe and prerequisite; no stale blocker remains; next receiver is ordered by evidence and does not rely on Windows execution. |
-| Original Owner Request | Fully and stably implement high-value devices and selected L3 before using a Windows consumer to decide subsequent work. |
-| Similar-Issue Sweep | Include T346--T354 evidence, all Windows probe sources, CMake registration/labels, approved media metadata, CPU closure transfers, and device/timing TODO entries. |
+**Active.** M5 T355 remains open between accepted subtasks.
 
 ## Current Technical Baseline
 
@@ -45,6 +23,7 @@ checkpoint evidence; it does not execute Setup or claim compatibility.
 
 | Task | Compact result |
 | --- | --- |
+| T355 S1 | Accepted a source/provenance readiness ledger: every retained Windows probe is non-current and host-observation-bound; T347/T354 storage is a regression prerequisite, not a missing feature; S2 receives a reproducible checkpoint/provenance harness before any guest run. [Evidence](../etc/evidence/t355-s1-readiness-ledger.md). |
 | T354 | Closed selected L3 bus timing: core-local checked CPU/DMA transaction begin/commit/cancel trace, deterministic CPU-retire then DMA/PIT/PIC then FDC/HDC ordering, reset cancellation/trace continuity, and retained firmware/DOS consumers. Exact bus cycles, pin waveforms, physical wait tables, host time, and Windows readiness remain explicit transfers. 234 current-gate tests passed. [History](../history/M5-T354-physical-l3-bus-timing-convergence.md). |
 | T353 | Closed selected PC/AT topology: the default profile's 75 exact directional leaves and five named routes validate before core publication, remain exact through session reset and deterministic-L3 rearm, and have firmware-visible reset proof. Optional PPI/speaker, NMI, and interface breadth remain corpus-gated TODO transfers; physical bus timing transfers to the next L3 package. 231 current-gate tests passed. [History](../history/M5-T353-pcat-port-topology-and-peripherals.md). |
 | T352 | Closed selected digital CGA/EGA: one VADP owner for registers, apertures, raster, planar state, reset, and capture; deterministic VADP-after-KBC timing and copied session/mailbox composition; `vm-0-5-0352` SHA-256 `37A00874C05FB402151AF1A77BD28796D03B2A738D6F3EC08761E4541F2D6BB4`; 229 current-gate tests passed. [History](../history/M5-T352-vadp-digital-video-completeness.md). |

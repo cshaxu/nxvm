@@ -10,7 +10,7 @@ the specification for CPU, device, or timing behavior.
 
 ## Accepted Progress
 
-S1 is delivered pending acceptance.  Its
+S1 was accepted at `8568f9e4`.  Its
 [readiness ledger](../etc/evidence/t355-s1-readiness-ledger.md) classifies all
 four retained Windows probe sources as non-current, host-observation tools and
 allocates a reproducible checkpoint/provenance harness before any guest run.
