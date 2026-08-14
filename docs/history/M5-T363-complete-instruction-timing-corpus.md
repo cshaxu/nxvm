@@ -49,3 +49,12 @@ confirms complete selected primitive, REP/restart and ordinary-I/O ownership,
 with one restart-safe publisher and explicit 80286 `REP LODS` and physical/
 provider receivers. The focused smoke and 246/246 current-gate suite passed.
 S5 may reconcile only 80386 secondary integer and prefix/width timing.
+
+### S5: 80386 secondary integer and prefix/width source matrix
+
+S5 is accepted at `0e521db7`. Its
+[reconciliation](../etc/evidence/t363-s5-secondary-prefix-reconciliation.md)
+confirms the selected non-privileged `0F` integer forms, their legal
+prefix/width variants, and their 106-clock preflight boundary retain one
+source-backed publisher. S6 may reconcile only privileged/table/control/debug
+and task timing forms.
