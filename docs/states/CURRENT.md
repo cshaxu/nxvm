@@ -2,28 +2,9 @@
 
 ## Current Work
 
-**Active implementation packet:** M5 T366 S15, 80286 FLAGS-control timing.
-
-## M5 T366 S15 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner: repository owner; persistent M5 L3 direction, accepted S14 transfer, and the owner's instruction to continue authorize this source-determinate 80286 timing-family repair. No exception. |
-| Objective | Give successful unprefixed 80286 `CMC`, `STC`, `CLD`, `STD`, `CLI`, and `STI` their Appendix-B fixed retirement costs. |
-| Non-goals | No `CLC`/`HLT` rework, WAIT, LOCK/prefix, x87, IRQ/NMI delivery, interrupt-shadow scheduling, opcode semantic change, physical-time, device/bus timing, firmware/media or source import. |
-| Reference Baseline | The AMD/Intel 80286 summary gives `CMC`, `STC`, `CLD`, `STD` = 2; `CLI` = 3; and `STI` = 2 clocks in both real and protected virtual-address columns. Existing `CLC` and `HLT` owners remain separate. |
-| Candidate Proposal | [Bus-Timed PC/AT Operation](../proposals/m5-bus-timed-pcat-operation.md). |
-| Files And ABI Surface | Private 80286 timing classifier, 80286 timing-ledger smoke, focused evidence/history/current packet and documentation index only; no public ABI. |
-| Applicable Rules | Execution evidence/sweep, one successful-retirement publisher, core ownership, C11 cohesion, source policy and documentation indexing apply; no waiver. |
-| Verification | Prove each selected opcode retires at its fixed cost and publishes its existing flag state; retain CLC/HLT, prefix and delivery boundaries; run focused smoke, S10 static check, current gate, documentation governance and diff check. |
-| Expected Markers | Existing 80286 instruction-timing-ledger and S10 audit markers plus current-gate markers. |
-| Asset Needs | Public Intel/AMD documentation and repository tests only; no ROM, media, firmware or third-party source. |
-| Reporting Requirements | State source rows, exact opcode coverage, excluded delivery/prefix behavior, sweep result and final evidence. |
-| Stop Conditions | Stop and transfer if a selected opcode cannot complete through the existing successful-retirement path without an IRQ/NMI delivery assumption. |
-| Exit Criteria | Every selected successful unprefixed FLAGS-control instruction publishes its source-backed cost through the sole retirement path; delivery remains separately transferred. |
-| Original Owner Request | Reach L3 only through complete source-backed timing, using reference emulators only when authorities lack determinate values. |
-| Similar-Issue Sweep | Inspect `F5`, `F8`--`FD`, `F4`, `F0`, `9B`, prefix/delivery paths, timing classifier fallbacks and 80286 tests; fix only selected successful FLAGS-control forms and record exclusions. |
+T366 S15 is accepted at `9e6813b9`. The next T366 S must select the next
+source-determinate 80286 successful-retirement family; physical-time and
+device-timing claims remain blocked by the wider CPU ledger.
 
 ## Current Technical Baseline
 
@@ -44,7 +25,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T366 S14 | Accepted at `9c437f8b`: valid `C0`--`C1` and `D2`--`D3` Group-2 forms publish source `5+n`/`8+n+EA` costs from masked pre-execution count capture; `/6` remains undefined. [Timing evidence](../etc/evidence/t366-s14-80286-group2-count-timing.md). No physical-time or device-timing claim. |
+| T366 S15 | Accepted at `9e6813b9`: successful unprefixed `CMC/STC/CLD/STD/CLI/STI` publish fixed 80286 table costs; prefix, x87 and delivery timing remain transferred. [Timing evidence](../etc/evidence/t366-s15-80286-flags-control-timing.md). No physical-time or device-timing claim. |
 | T365 | Closed at `febc9352`: IBM PC/AT parity/I/O-check NMI sources cannot be selected without a profile input, status/latch/clear and lifecycle contract; CPU and CMOS remain delivery/mask only. [Closure audit](../etc/evidence/t365-s2-pcat-nmi-nonadmission-closure-audit.md). Blocks physical/cycle-exact L3 closure; no synthetic source. |
 | T364 | Closed at `7d574ae3`: all selected PC/AT components, ports/routes and lifecycle/timing owners are inventoried; optional and physical gaps retain exact Queue/TODO receivers. [Closure audit](../etc/evidence/t364-s2-pcat-device-completeness-closure-audit.md). No model-L3 claim. |
 | T363 | Closed at `312ef2f9`: all 256 primary and 256 secondary dispatch slots have one source-backed successful-retirement owner or an exact explicit receiver; inventory and 246/246 current-gate passed. [Closure audit](../etc/evidence/t363-s7-complete-instruction-timing-closure-audit.md). No physical/cycle-exact L3 claim. |

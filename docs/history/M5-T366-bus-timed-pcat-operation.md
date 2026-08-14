@@ -130,3 +130,10 @@ S14 closes valid `C0`--`C1` and `D2`--`D3` Group-2 forms with masked count
 capture and the `5+n`/`8+n+EA` source formulas, while retaining `/6` as an
 undefined opcode. Its [timing evidence](../etc/evidence/t366-s14-80286-group2-count-timing.md)
 records the decoder-capture boundary and sweep. S14 is accepted at `9c437f8b`.
+
+### S15: 80286 FLAGS-control timing
+
+S15 assigns source-backed fixed costs to successful unprefixed
+`CMC/STC/CLD/STD/CLI/STI` through the existing retirement owner. Its [timing evidence](../etc/evidence/t366-s15-80286-flags-control-timing.md)
+retains CLC/HLT and prefix, x87, and delivery boundaries. S15 is accepted at
+`9e6813b9`.
