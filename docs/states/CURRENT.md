@@ -2,9 +2,29 @@
 
 ## Current Work
 
-**Active.** T353 remains open between accepted subtasks; S2 will replace the
-ambiguous range-only declaration with one selected, direction-aware topology
-contract before changing any controller behavior.
+M5 T353 S2 - selected PC/AT direction-aware port and route topology
+(Single-Session Mode).
+
+## M5 T353 S2 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner approved continuous holistic device/L3 implementation on 2026-08-13; accepted T353 S1 ledger `a95f6bd3` identifies this S2's common topology-contract repair, including the discovered selected KBC/AUX IRQ12 route. |
+| Objective | Replace the default PC/AT profile's overloaded contiguous-range assumption with one direction-aware selected port-leaf and multi-source route contract; make VM composition validate and consume that contract before controller registration, covering complete dual-DMA leaves, memory-owned `92h`, sparse KBC/VADP/FDC leaves, ATA's existing feature-bearing descriptor, and selected IRQ0/1/6/8/12/14 plus FDC DMA2. |
+| Non-goals | No new hardware controller, generic port framework, host passthrough, port-61 PPI/speaker, serial/parallel/game/MIDI/network/SCSI/PCI/ISA-PnP, VGA/VBE, changed port-dispatch ABI, changed controller command semantics, physical bus timing, Windows corpus, or x87. |
+| Reference Baseline | `656ce7f9`; [S1 topology ledger](../etc/evidence/t353-s1-pcat-port-topology-ledger.md), [T353 proposal](../proposals/m5-pcat-port-topology-and-peripherals.md), T346--T352 evidence, default-profile/session/core registration routes, and IBM PC/AT/Intel 8237A references already recorded by S1. |
+| Candidate Proposal | [PC/AT port topology and selected peripheral completion](../proposals/m5-pcat-port-topology-and-peripherals.md). |
+| Files And ABI Surface | Expected: default PC/AT profile descriptor/header, VM-session composition and its focused profile/session tests, topology evidence/history/Current, and CMake only if a new focused owner smoke is required. No core port-dispatch public ABI or controller register behavior change. |
+| Applicable Rules | The profile is the single composition-topology declaration; every selected port leaf, direction, IRQ/DMA route, and lifecycle has one owner; composition validates before publication; core remains the only port/timeline/controller owner; equivalent declared variants share one validation mechanism; missing peripherals retain exact transfers. |
+| Verification | Sweep every descriptor consumer and every core registration leaf. Add focused proof that default profile leaves/directions correspond to the frozen VM-session port registry, sparse leaves are not asserted as providers, ATA retains feature/width validation, and IRQ0/1/6/8/12/14 plus DMA2 topology is explicit. Prove invalid/missing/duplicate topology is rejected before controller registration without stale session publication. Run configure, focused profile/session/controller gates, governance, diff check, and full current gate. |
+| Expected Markers | Retain default-profile, VM-session initialization, port-assembly, controller-authority, DMA/RTC, FDC/HDC, KBC/AUX, and topology markers; add one topology marker only for the new focused proof. |
+| Asset Needs | Existing source and S1 documentation research only; no firmware/media download, third-party source import, host device, or Windows corpus. |
+| Reporting Requirements | Record the exact old-to-new declaration mapping, every consumer and registration leaf, route source ownership, validation/publication boundary, default and invalid topology proof, and every excluded peripheral transfer. |
+| Stop Conditions | Stop for a needed core port-dispatch ABI/framework change, controller behavior/IRQ ownership defect outside declaration/composition, unselected device implementation, ambiguity in the PC/AT route contract, host passthrough, firmware/media dependency, or source import. Record/transfer rather than broaden. |
+| Exit Criteria | One default-profile mechanism represents every selected registered port leaf with direction and every selected route source; composition consumes/validates it before controller publication; no profile row claims sparse/unregistered leaves; ATA's special semantic fields remain single-source rather than duplicated; focused default/negative/session lifecycle proof and full gate pass. |
+| Original Owner Request | Make CPU/fpu-external core-machine devices, chips, buses, and ports comprehensive and stable at deterministic L3 before choosing a Windows execution route. |
+| Similar-Issue Sweep | Sweep all default-profile descriptor fields/finders, session storage and machine-device consumers, core `*_initialize`/`configure_*` port registration leaves, KBC keyboard/AUX sources, FDC/HDC/DMA/RTC/VADP/PIC/PIT routes, profile/session/port/controller tests, S1 evidence, Queue, and TODO. |
 
 ## Current Technical Baseline
 

@@ -6,9 +6,12 @@ C_INT main(C_VOID)
 {
     const vm_profile_default_pc_at_descriptor *profile =
         vm_profile_default_pc_at_descriptor_get();
-    const vm_profile_default_pc_at_port_range *cmos_ports;
-    const vm_profile_default_pc_at_port_range *fdc_ports;
+    const vm_profile_default_pc_at_port_leaf *cmos_index;
+    const vm_profile_default_pc_at_port_leaf *cmos_data;
+    const vm_profile_default_pc_at_port_leaf *fdc_data;
+    const vm_profile_default_pc_at_port_leaf *memory_control;
     const vm_profile_default_pc_at_route *fdc_route;
+    const vm_profile_default_pc_at_route *aux_route;
 
     if (profile == STD_NULL ||
         STD_STRCMP(profile->identity, "default-pc-at") != 0 ||
@@ -41,19 +44,30 @@ C_INT main(C_VOID)
         profile->cmos.base_memory_kib != 0x027fu ||
         profile->cmos.fixed_disk_type != 0xf0u ||
         profile->cmos.fixed_disk_type_extended_0 != 0x2fu ||
-        profile->firmware_service_count != 14u) return 1;
+        profile->firmware_service_count != 14u ||
+        !vm_profile_default_pc_at_descriptor_is_valid(profile)) return 1;
 
-    cmos_ports = vm_profile_default_pc_at_port_range_find(profile,
-        VM_PROFILE_DEFAULT_PC_AT_DEVICE_CMOS);
-    fdc_ports = vm_profile_default_pc_at_port_range_find(profile,
-        VM_PROFILE_DEFAULT_PC_AT_DEVICE_FDC);
+    cmos_index = vm_profile_default_pc_at_port_leaf_find(profile,
+        VM_PROFILE_DEFAULT_PC_AT_DEVICE_CMOS, 0x0070u);
+    cmos_data = vm_profile_default_pc_at_port_leaf_find(profile,
+        VM_PROFILE_DEFAULT_PC_AT_DEVICE_CMOS, 0x0071u);
+    fdc_data = vm_profile_default_pc_at_port_leaf_find(profile,
+        VM_PROFILE_DEFAULT_PC_AT_DEVICE_FDC, 0x03f5u);
+    memory_control = vm_profile_default_pc_at_port_leaf_find(profile,
+        VM_PROFILE_DEFAULT_PC_AT_DEVICE_MEMORY_CONTROL, 0x0092u);
     fdc_route = vm_profile_default_pc_at_route_find(profile,
-        VM_PROFILE_DEFAULT_PC_AT_DEVICE_FDC);
-    if (cmos_ports == STD_NULL || cmos_ports->first != 0x0070u ||
-        cmos_ports->last != 0x0071u || fdc_ports == STD_NULL ||
-        fdc_ports->first != 0x03f2u || fdc_ports->last != 0x03f7u ||
+        VM_PROFILE_DEFAULT_PC_AT_ROUTE_FDC_IRQ6_DMA2);
+    aux_route = vm_profile_default_pc_at_route_find(profile,
+        VM_PROFILE_DEFAULT_PC_AT_ROUTE_KBC_AUX_IRQ12);
+    if (cmos_index == STD_NULL || cmos_index->read || !cmos_index->write ||
+        cmos_data == STD_NULL || !cmos_data->read || !cmos_data->write ||
+        fdc_data == STD_NULL || !fdc_data->read || !fdc_data->write ||
+        memory_control == STD_NULL || !memory_control->read ||
+        !memory_control->write ||
         fdc_route == STD_NULL || fdc_route->irq != 6u ||
-        fdc_route->dma_channel != 2u) return 1;
+        fdc_route->dma_channel != 2u || aux_route == STD_NULL ||
+        aux_route->irq != 12u || aux_route->dma_channel !=
+        VM_PROFILE_DEFAULT_PC_AT_NO_DMA_CHANNEL) return 1;
 
     puts("M5:T208:S2:DEFAULT-PC-AT-PROFILE:OK");
     return 0;

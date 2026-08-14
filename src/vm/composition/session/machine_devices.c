@@ -18,7 +18,10 @@ C_VOID vm_session_machine_devices_initialize_media(vm_session *session)
 
 static type_status vm_session_machine_devices_configure_fdc(vm_session *session)
 {
-    const vm_profile_default_pc_at_port_range *ports;
+    const vm_profile_default_pc_at_port_leaf *dor_port;
+    const vm_profile_default_pc_at_port_leaf *status_port;
+    const vm_profile_default_pc_at_port_leaf *data_port;
+    const vm_profile_default_pc_at_port_leaf *control_port;
     const vm_profile_default_pc_at_route *route;
     const core_machine_fdc_drive_bindings drives = {
         {VM_SESSION_MEDIA_FDD_ID, CORE_MACHINE_MEDIA_ID_INVALID,
@@ -29,21 +32,28 @@ static type_status vm_session_machine_devices_configure_fdc(vm_session *session)
     if (session == STD_NULL || session->core_machine == STD_NULL) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
-    ports = vm_profile_default_pc_at_port_range_find(session->profile,
-        VM_PROFILE_DEFAULT_PC_AT_DEVICE_FDC);
+    dor_port = vm_profile_default_pc_at_port_leaf_at(session->profile,
+        VM_PROFILE_DEFAULT_PC_AT_DEVICE_FDC, 0u);
+    status_port = vm_profile_default_pc_at_port_leaf_at(session->profile,
+        VM_PROFILE_DEFAULT_PC_AT_DEVICE_FDC, 1u);
+    data_port = vm_profile_default_pc_at_port_leaf_at(session->profile,
+        VM_PROFILE_DEFAULT_PC_AT_DEVICE_FDC, 2u);
+    control_port = vm_profile_default_pc_at_port_leaf_at(session->profile,
+        VM_PROFILE_DEFAULT_PC_AT_DEVICE_FDC, 3u);
     route = vm_profile_default_pc_at_route_find(session->profile,
-        VM_PROFILE_DEFAULT_PC_AT_DEVICE_FDC);
-    if (ports == STD_NULL || route == STD_NULL || ports->last - ports->first != 5u) {
+        VM_PROFILE_DEFAULT_PC_AT_ROUTE_FDC_IRQ6_DMA2);
+    if (dor_port == STD_NULL || status_port == STD_NULL || data_port == STD_NULL ||
+        control_port == STD_NULL || route == STD_NULL) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
     topology.media_registry = &session->media_registry;
     topology.drives = drives;
     topology.dma_request = session->fdc_dma_request;
-    topology.config.dor_port = ports->first;
-    topology.config.status_port = ports->first + 2u;
-    topology.config.data_port = ports->first + 3u;
-    topology.config.direction_port = ports->last;
-    topology.config.control_port = ports->last;
+    topology.config.dor_port = dor_port->port;
+    topology.config.status_port = status_port->port;
+    topology.config.data_port = data_port->port;
+    topology.config.direction_port = control_port->port;
+    topology.config.control_port = control_port->port;
     topology.config.irq = route->irq;
     topology.config.dma_channel = route->dma_channel;
     return core_machine_configure_fdc(session->core_machine, &topology);
@@ -57,13 +67,7 @@ static type_status vm_session_machine_devices_configure_hdc(vm_session *session)
     if (session == STD_NULL || session->profile == STD_NULL ||
         session->core_machine == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
     ports = &session->profile->hdc_pio;
-    if (ports->data_port != 0x01f0u || ports->error_features_port != 0x01f1u ||
-        ports->status_command_port != 0x01f7u ||
-        ports->alternate_status_device_control_port != 0x03f6u ||
-        ports->irq != 14u || ports->dma_channel !=
-        VM_PROFILE_DEFAULT_PC_AT_NO_DMA_CHANNEL || ports->data_width_bits != 16u ||
-        ports->register_width_bits != 8u || !ports->lba28_supported ||
-        ports->slave_present || ports->secondary_channel_present) {
+    if (!vm_profile_default_pc_at_descriptor_is_valid(session->profile)) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
     topology.media_registry = &session->media_registry;
@@ -85,7 +89,11 @@ static type_status vm_session_machine_devices_configure_hdc(vm_session *session)
 
 type_status vm_session_machine_devices_configure_controllers(vm_session *session)
 {
-    type_status status = vm_session_machine_devices_configure_fdc(session);
+    type_status status;
+
+    if (session == STD_NULL || !vm_profile_default_pc_at_descriptor_is_valid(
+            session->profile)) return TYPE_STATUS_INVALID_ARGUMENT;
+    status = vm_session_machine_devices_configure_fdc(session);
 
     if (status != TYPE_STATUS_OK) return status;
     return vm_session_machine_devices_configure_hdc(session);

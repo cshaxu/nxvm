@@ -19,19 +19,29 @@ typedef enum vm_profile_default_pc_at_device_role {
     VM_PROFILE_DEFAULT_PC_AT_DEVICE_VADP_ATTRIBUTE,
     VM_PROFILE_DEFAULT_PC_AT_DEVICE_CMOS,
     VM_PROFILE_DEFAULT_PC_AT_DEVICE_FDC,
-    VM_PROFILE_DEFAULT_PC_AT_DEVICE_HDC
+    VM_PROFILE_DEFAULT_PC_AT_DEVICE_HDC,
+    VM_PROFILE_DEFAULT_PC_AT_DEVICE_MEMORY_CONTROL
 } vm_profile_default_pc_at_device_role;
 
 #define VM_PROFILE_DEFAULT_PC_AT_NO_DMA_CHANNEL 0xffu
 
-typedef struct vm_profile_default_pc_at_port_range {
+typedef struct vm_profile_default_pc_at_port_leaf {
     vm_profile_default_pc_at_device_role device;
-    type_unsigned_16 first;
-    type_unsigned_16 last;
-} vm_profile_default_pc_at_port_range;
+    type_unsigned_16 port;
+    type_bool read;
+    type_bool write;
+} vm_profile_default_pc_at_port_leaf;
+
+typedef enum vm_profile_default_pc_at_route_source {
+    VM_PROFILE_DEFAULT_PC_AT_ROUTE_PIT_IRQ0,
+    VM_PROFILE_DEFAULT_PC_AT_ROUTE_KBC_KEYBOARD_IRQ1,
+    VM_PROFILE_DEFAULT_PC_AT_ROUTE_KBC_AUX_IRQ12,
+    VM_PROFILE_DEFAULT_PC_AT_ROUTE_CMOS_IRQ8,
+    VM_PROFILE_DEFAULT_PC_AT_ROUTE_FDC_IRQ6_DMA2
+} vm_profile_default_pc_at_route_source;
 
 typedef struct vm_profile_default_pc_at_route {
-    vm_profile_default_pc_at_device_role device;
+    vm_profile_default_pc_at_route_source source;
     type_unsigned_8 irq;
     type_unsigned_8 dma_channel;
 } vm_profile_default_pc_at_route;
@@ -113,8 +123,8 @@ typedef struct vm_profile_default_pc_at_descriptor {
     STD_SIZE_T default_memory_bytes;
     vm_profile_default_pc_at_rom_mapping rom;
     vm_profile_default_pc_at_cmos_defaults cmos;
-    const vm_profile_default_pc_at_port_range *port_ranges;
-    STD_SIZE_T port_range_count;
+    const vm_profile_default_pc_at_port_leaf *port_leaves;
+    STD_SIZE_T port_leaf_count;
     const vm_profile_default_pc_at_route *routes;
     STD_SIZE_T route_count;
     vm_profile_default_pc_at_hdc_pio hdc_pio;
@@ -124,12 +134,18 @@ typedef struct vm_profile_default_pc_at_descriptor {
 
 const vm_profile_default_pc_at_descriptor *
 vm_profile_default_pc_at_descriptor_get(C_VOID);
-const vm_profile_default_pc_at_port_range *
-vm_profile_default_pc_at_port_range_find(
+const vm_profile_default_pc_at_port_leaf *
+vm_profile_default_pc_at_port_leaf_find(
     const vm_profile_default_pc_at_descriptor *descriptor,
-    vm_profile_default_pc_at_device_role device);
+    vm_profile_default_pc_at_device_role device, type_unsigned_16 port);
+const vm_profile_default_pc_at_port_leaf *
+vm_profile_default_pc_at_port_leaf_at(
+    const vm_profile_default_pc_at_descriptor *descriptor,
+    vm_profile_default_pc_at_device_role device, STD_SIZE_T ordinal);
 const vm_profile_default_pc_at_route *vm_profile_default_pc_at_route_find(
     const vm_profile_default_pc_at_descriptor *descriptor,
-    vm_profile_default_pc_at_device_role device);
+    vm_profile_default_pc_at_route_source source);
+C_INT vm_profile_default_pc_at_descriptor_is_valid(
+    const vm_profile_default_pc_at_descriptor *descriptor);
 
 #endif

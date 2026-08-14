@@ -154,16 +154,17 @@ static C_INT verify_controller_failure(
     const vm_profile_default_pc_at_descriptor *source)
 {
     vm_profile_default_pc_at_descriptor profile = *source;
-    vm_profile_default_pc_at_port_range ranges[16];
+    vm_profile_default_pc_at_port_leaf leaves[96];
     STD_SIZE_T index;
 
-    if (source->port_range_count > sizeof(ranges) / sizeof(ranges[0])) return 1;
-    STD_MEMCPY(ranges, source->port_ranges,
-        source->port_range_count * sizeof(ranges[0]));
-    for (index = 0u; index < source->port_range_count; ++index) {
-        if (ranges[index].device == VM_PROFILE_DEFAULT_PC_AT_DEVICE_FDC) {
-            ranges[index].last = ranges[index].first + 4u;
-            profile.port_ranges = ranges;
+    if (source->port_leaf_count > sizeof(leaves) / sizeof(leaves[0])) return 1;
+    STD_MEMCPY(leaves, source->port_leaves,
+        source->port_leaf_count * sizeof(leaves[0]));
+    for (index = 0u; index < source->port_leaf_count; ++index) {
+        if (leaves[index].device == VM_PROFILE_DEFAULT_PC_AT_DEVICE_FDC &&
+            leaves[index].port == 0x03f5u) {
+            leaves[index].write = TYPE_FALSE;
+            profile.port_leaves = leaves;
             return verify_failure(&profile);
         }
     }

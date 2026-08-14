@@ -85,6 +85,13 @@ static C_INT vm_session_materialize_profile_core_config(vm_session *session)
     return 1;
 }
 
+static const vm_profile_default_pc_at_port_leaf *
+vm_session_profile_port_leaf(const vm_profile_default_pc_at_descriptor *profile,
+    vm_profile_default_pc_at_device_role device, STD_SIZE_T ordinal)
+{
+    return vm_profile_default_pc_at_port_leaf_at(profile, device, ordinal);
+}
+
 static C_VOID vm_session_apply_core_config_overrides(vm_session *session,
     const vm_session_config *config)
 {
@@ -146,11 +153,16 @@ C_VOID vm_session_set_boot_hdd(vm_session *session, C_INT enabled)
 
 type_status vm_session_storage_initialize(vm_session *machine)
 {
-    const vm_profile_default_pc_at_port_range *attribute_ports;
-    const vm_profile_default_pc_at_port_range *sequencer_ports;
-    const vm_profile_default_pc_at_port_range *graphics_ports;
-    const vm_profile_default_pc_at_port_range *crtc_ports;
-    const vm_profile_default_pc_at_port_range *cmos_ports;
+    const vm_profile_default_pc_at_port_leaf *attribute_first;
+    const vm_profile_default_pc_at_port_leaf *attribute_last;
+    const vm_profile_default_pc_at_port_leaf *sequencer_first;
+    const vm_profile_default_pc_at_port_leaf *sequencer_last;
+    const vm_profile_default_pc_at_port_leaf *graphics_first;
+    const vm_profile_default_pc_at_port_leaf *graphics_last;
+    const vm_profile_default_pc_at_port_leaf *crtc_first;
+    const vm_profile_default_pc_at_port_leaf *crtc_last;
+    const vm_profile_default_pc_at_port_leaf *cmos_first;
+    const vm_profile_default_pc_at_port_leaf *cmos_last;
     const vm_profile_default_pc_at_route *cmos_route;
     const vm_profile_default_pc_at_route *fdc_route;
     core_machine_display_config display_config;
@@ -164,47 +176,61 @@ type_status vm_session_storage_initialize(vm_session *machine)
     if (machine->profile == STD_NULL) {
         machine->profile = vm_profile_default_pc_at_descriptor_get();
     }
-    if (machine->profile == STD_NULL) return TYPE_STATUS_INVALID_STATE;
+    if (!vm_profile_default_pc_at_descriptor_is_valid(machine->profile)) {
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
     status = core_machine_create(&machine->core_machine_config,
         &machine->core_machine);
     if (status != TYPE_STATUS_OK) return status;
     core_machine_display_provider_slot_initialize(&machine->display_provider);
     vm_session_bind_display(machine);
-    attribute_ports = vm_profile_default_pc_at_port_range_find(machine->profile,
-        VM_PROFILE_DEFAULT_PC_AT_DEVICE_VADP_ATTRIBUTE);
-    sequencer_ports = vm_profile_default_pc_at_port_range_find(machine->profile,
-        VM_PROFILE_DEFAULT_PC_AT_DEVICE_VADP_SEQUENCER);
-    graphics_ports = vm_profile_default_pc_at_port_range_find(machine->profile,
-        VM_PROFILE_DEFAULT_PC_AT_DEVICE_VADP_GRAPHICS);
-    crtc_ports = vm_profile_default_pc_at_port_range_find(machine->profile,
-        VM_PROFILE_DEFAULT_PC_AT_DEVICE_VADP);
-    cmos_ports = vm_profile_default_pc_at_port_range_find(machine->profile,
-        VM_PROFILE_DEFAULT_PC_AT_DEVICE_CMOS);
+    attribute_first = vm_session_profile_port_leaf(machine->profile,
+        VM_PROFILE_DEFAULT_PC_AT_DEVICE_VADP_ATTRIBUTE, 0u);
+    attribute_last = vm_session_profile_port_leaf(machine->profile,
+        VM_PROFILE_DEFAULT_PC_AT_DEVICE_VADP_ATTRIBUTE, 1u);
+    sequencer_first = vm_session_profile_port_leaf(machine->profile,
+        VM_PROFILE_DEFAULT_PC_AT_DEVICE_VADP_SEQUENCER, 0u);
+    sequencer_last = vm_session_profile_port_leaf(machine->profile,
+        VM_PROFILE_DEFAULT_PC_AT_DEVICE_VADP_SEQUENCER, 1u);
+    graphics_first = vm_session_profile_port_leaf(machine->profile,
+        VM_PROFILE_DEFAULT_PC_AT_DEVICE_VADP_GRAPHICS, 0u);
+    graphics_last = vm_session_profile_port_leaf(machine->profile,
+        VM_PROFILE_DEFAULT_PC_AT_DEVICE_VADP_GRAPHICS, 1u);
+    crtc_first = vm_session_profile_port_leaf(machine->profile,
+        VM_PROFILE_DEFAULT_PC_AT_DEVICE_VADP, 0u);
+    crtc_last = vm_session_profile_port_leaf(machine->profile,
+        VM_PROFILE_DEFAULT_PC_AT_DEVICE_VADP, 4u);
+    cmos_first = vm_session_profile_port_leaf(machine->profile,
+        VM_PROFILE_DEFAULT_PC_AT_DEVICE_CMOS, 0u);
+    cmos_last = vm_session_profile_port_leaf(machine->profile,
+        VM_PROFILE_DEFAULT_PC_AT_DEVICE_CMOS, 1u);
     cmos_route = vm_profile_default_pc_at_route_find(machine->profile,
-        VM_PROFILE_DEFAULT_PC_AT_DEVICE_CMOS);
+        VM_PROFILE_DEFAULT_PC_AT_ROUTE_CMOS_IRQ8);
     fdc_route = vm_profile_default_pc_at_route_find(machine->profile,
-        VM_PROFILE_DEFAULT_PC_AT_DEVICE_FDC);
-    if (attribute_ports == STD_NULL || sequencer_ports == STD_NULL ||
-        graphics_ports == STD_NULL || crtc_ports == STD_NULL ||
-        cmos_ports == STD_NULL || cmos_route == STD_NULL || fdc_route == STD_NULL) {
+        VM_PROFILE_DEFAULT_PC_AT_ROUTE_FDC_IRQ6_DMA2);
+    if (attribute_first == STD_NULL || attribute_last == STD_NULL ||
+        sequencer_first == STD_NULL || sequencer_last == STD_NULL ||
+        graphics_first == STD_NULL || graphics_last == STD_NULL ||
+        crtc_first == STD_NULL || crtc_last == STD_NULL || cmos_first == STD_NULL ||
+        cmos_last == STD_NULL || cmos_route == STD_NULL || fdc_route == STD_NULL) {
         vm_session_storage_rollback(machine);
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
     display_config.text_timing = machine->profile->cga_text_timing;
     display_config.ega_sequencer = machine->profile->ega_sequencer;
     display_config.ega_controllers = machine->profile->ega_controllers;
-    display_config.ports.attribute_first = attribute_ports->first;
-    display_config.ports.attribute_last = attribute_ports->last;
-    display_config.ports.sequencer_first = sequencer_ports->first;
-    display_config.ports.sequencer_last = sequencer_ports->last;
-    display_config.ports.graphics_first = graphics_ports->first;
-    display_config.ports.graphics_last = graphics_ports->last;
-    display_config.ports.crtc_first = crtc_ports->first;
-    display_config.ports.crtc_last = crtc_ports->last;
+    display_config.ports.attribute_first = attribute_first->port;
+    display_config.ports.attribute_last = attribute_last->port;
+    display_config.ports.sequencer_first = sequencer_first->port;
+    display_config.ports.sequencer_last = sequencer_last->port;
+    display_config.ports.graphics_first = graphics_first->port;
+    display_config.ports.graphics_last = graphics_last->port;
+    display_config.ports.crtc_first = crtc_first->port;
+    display_config.ports.crtc_last = crtc_last->port;
     display_config.provider = &machine->display_provider;
     dma_wiring.fdc_channel = fdc_route->dma_channel;
-    rtc_cmos_config.index_port = cmos_ports->first;
-    rtc_cmos_config.data_port = cmos_ports->last;
+    rtc_cmos_config.index_port = cmos_first->port;
+    rtc_cmos_config.data_port = cmos_last->port;
     rtc_cmos_config.irq = cmos_route->irq;
     rtc_cmos_config.nmi_mask_bit = 0x80u;
     rtc_cmos_config.ticks_per_second = machine->profile->rtc_ticks_per_second;
