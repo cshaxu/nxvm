@@ -37,6 +37,18 @@ successful-retirement elapsed-tick publisher.  The Appendix-B `NOP = 3`
 allocation is authoritative for this ledger, while its conflict with manual
 prose is an explicit later reconciliation debt.
 
+## Accepted S7 Progress
+
+S7 closes S3's retained selected 80386 ordinary port-I/O transfer. It adds
+Appendix-B protected and permission-map allocations for immediate/DX `IN` and
+`OUT`, retains real-mode values in S3's ledger, and keeps the one
+post-refresh successful-retirement publisher. The shared permission-map owner
+now admits permitted VM86 I/O through the existing busy 32-bit TSS map;
+ordinary and string I/O permit/deny vectors prove that no second owner or
+provider interface was introduced. The same acceptance sweep reconciles every
+current 80286 `NOP` time consumer with the authoritative three-clock value
+without changing device clock domains.
+
 ## Intended Task Closure
 
 T357 closes only after the selected corpus advances guest time from the single
