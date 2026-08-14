@@ -2,29 +2,8 @@
 
 ## Current Work
 
-**Active.** M5 T356 S3 performs the final M5 closure audit and records whether
-M5 can close; it does not implement, weaken, or discard open dependencies.
-
-## M5 T356 S3 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner approved the holistic device/L3 program on 2026-08-13. Accepted S1/S2 through `6bfd2a7a` require a final truthfulness audit before M5 closure can be considered. |
-| Objective | Re-run the complete owner/evidence/debt/Queue closure sweep, verify every T356 S1 residual has a finite receiver, determine M5 closure eligibility, and close T356 with an explicit M5 decision. |
-| Non-goals | No device/timing/runtime implementation, no M5 closure unless every requirement is proven, no media/corpus access, no Windows claim, x87 work, M6 admission, rule change, or debt deletion. |
-| Reference Baseline | `6bfd2a7a` on `master`, accepted T356 S2 timing/device receiver plan. |
-| Candidate Proposal | [M5 closure audit](../proposals/m5-closure-audit.md); [S1 ledger](../etc/evidence/t356-s1-m5-device-l3-closure-ledger.md); [S2 receiver plan](../etc/evidence/t356-s2-receiver-plan.md); [M5 roadmap](../design/ROADMAP.md). |
-| Files And ABI Surface | Documentation/evidence/history/proposal/Queue/CURRENT only. No source, CMake, runtime, current-gate, ABI, media, or product change. |
-| Applicable Rules | Task Reading Set; execution lifecycle and task closure audit; documentation rules; architecture ownership/dependency rules; source policy. |
-| Verification | Re-run source/owner/current-gate/debt/Queue/proposal/history sweep; compare every row against S1/S2; validate all links, latest-task status topology, governance and diff check; prove or reject M5 closure using the roadmap completion standard. |
-| Expected Markers | One final T356 reconciliation record; all residuals classified; governance and Queue-link checks pass; explicit M5-open or M5-close decision. |
-| Asset Needs | None. Do not access guest media, external source, firmware, or compatibility corpus. |
-| Reporting Requirements | Record every closed/accepted owner, every queued timing receiver, every retained corpus-gated TODO, M5/M6 dependency decision, proposal retention, and reason M5 may or may not close. |
-| Stop Conditions | Stop for owner decision if the audit identifies a contradiction requiring runtime implementation, an unavailable primary contract/corpus, an unowned dependency, or a product-scope decision that cannot be transferred precisely. |
-| Exit Criteria | T356 closes only after one final ledger has no unclassified row, the Queue is ordered and linked, all open M5 dependencies are retained, and the M5 decision is truthful; M5 remains open if any required implementation is merely planned. |
-| Original Owner Request | Fully and stably implement every high-value device and complete L3 timing before deciding the next program phase. |
-| Similar-Issue Sweep | Recheck all S1 ledger modules, S2 proposals/receivers, TODO priorities, current capability baseline, T346--T355 evidence, Queue/history topology, M5 roadmap requirements, M6 boundary, and current-gate discovery. |
+**Idle.** T356 is closed; M5 remains open and instruction-timed execution is
+the next queued prerequisite for full L3.
 
 ## Current Technical Baseline
 
@@ -45,7 +24,7 @@ M5 can close; it does not implement, weaken, or discard open dependencies.
 
 | Task | Compact result |
 | --- | --- |
-| T356 S2 | Accepted the complete receiver plan: instruction costs precede bus availability/wait states, which precede one selected cycle-exact profile; every corpus-gated peripheral, storage, product and x87 boundary remains an explicit TODO/Queue transfer. [Evidence](../etc/evidence/t356-s2-receiver-plan.md). |
+| T356 | Closed the M5 closure audit with an explicit M5-open decision: all selected device owners are evidenced, but instruction timing, bus availability/wait states and selected-profile cycle exactness remain ordered implementation prerequisites; corpus-gated peripheral, storage and product boundaries remain explicit transfers. [History](../history/M5-T356-m5-closure-audit.md). |
 | T355 | Closed the bounded Windows 3.x readiness map: an opt-in BYOB HDD/INT13 checkpoint passed, all four probes remain host-observation/non-current, T347/T354 storage/L3 is a verified prerequisite, and all display, input, NMI, physical-timing, Setup, and compatibility breadth remains explicitly transferred. [History](../history/M5-T355-windows-3x-readiness-map.md). |
 | T354 | Closed selected L3 bus timing: core-local checked CPU/DMA transaction begin/commit/cancel trace, deterministic CPU-retire then DMA/PIT/PIC then FDC/HDC ordering, reset cancellation/trace continuity, and retained firmware/DOS consumers. Exact bus cycles, pin waveforms, physical wait tables, host time, and Windows readiness remain explicit transfers. 234 current-gate tests passed. [History](../history/M5-T354-physical-l3-bus-timing-convergence.md). |
 | T353 | Closed selected PC/AT topology: the default profile's 75 exact directional leaves and five named routes validate before core publication, remain exact through session reset and deterministic-L3 rearm, and have firmware-visible reset proof. Optional PPI/speaker, NMI, and interface breadth remain corpus-gated TODO transfers; physical bus timing transfers to the next L3 package. 231 current-gate tests passed. [History](../history/M5-T353-pcat-port-topology-and-peripherals.md). |
@@ -53,7 +32,6 @@ M5 can close; it does not implement, weaken, or discard open dependencies.
 | T351 | Closed selected IBM-PC/AT 8042 controller, AT keyboard, and compatible three-byte AUX at deterministic L3: one FIFO, controller/keyboard/AUX head promotion, IRQ1/IRQ12 source lifecycle, delayed/reset/finalize, copied ingress, and exact advanced-AUX/NMI/port-61 transfers. 228 current-gate tests passed. [History](../history/M5-T351-kbc-aux-completeness.md). |
 | T350 | Closed the selected PC/AT signal graph: retained 8254/IRQ0 and MC146818/CMOS/IRQ8 owners now have focused lifecycle proof; RTC alarm and IRQF defects are repaired; speaker/PPI and parity/I/O-channel NMI remain exact corpus/contract-gated TODO transfers. 228 current-gate tests passed. [History](../history/M5-T350-pcat-platform-signals.md). |
 | T349 | Closed PC/AT dual-8259A command/priority/cascade, OCW3 poll/status/special-mask/SFNM, and retained edge/level producer lifecycle; physical INTA spurious behavior transfers only to L3 bus timing. 226 current-gate tests passed. [History](../history/M5-T349-pcat-pic-compliance.md). |
-| T348 | Closed PC/AT dual-8237A DMA topology, page/word layout, request/cascade/EOP, validation-before-publication, M2M lifecycle, and FDC crossing bounce path; 223 current-gate tests passed. [History](../history/M5-T348-pcat-dma-completeness.md). |
 
 ## Recent Governance
 

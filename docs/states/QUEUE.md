@@ -27,7 +27,6 @@ precedes Windows readiness because readiness must not be used to hide known
 controller-service and chipset gaps.  Each candidate remains bounded by its
 own manual/probe contract; completing one does not imply board-wide parity.
 
-1. [M5 closure audit](../proposals/m5-closure-audit.md).
 1. [Instruction-timed execution](../proposals/m5-instruction-timed-execution.md).
 1. [Bus-timed PC/AT operation](../proposals/m5-bus-timed-pcat-operation.md).
 1. [Cycle-exact selected profile](../proposals/m5-cycle-exact-selected-profile.md).
