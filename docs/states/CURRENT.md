@@ -2,29 +2,8 @@
 
 ## Current Work
 
-**Active.** M5 T358 S1 reconciles the shared I/O-permission mechanism across
-real, protected, and VM86 execution before bus-timed PC/AT work.
-
-## M5 T358 S1 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | New |
-| Admission And Approval | Owner approved the next queued task on 2026-08-13. Single-agent execution. |
-| Objective | Establish one evidence-backed I/O-permission decision boundary for ordinary `IN`/`OUT` and string `INS`/`OUTS` across real mode, protected mode at permitted and restricted privilege, TSS I/O-map permit/deny, and VM86; repair only a reproduced shared-mechanism defect. |
-| Non-goals | Exception/IRQ frame or stack-transition redesign; segment, task, paging, VME/PVI, x87, generic provider ABI, device behavior, bus timing, or a broad instruction-family rewrite. |
-| Reference Baseline | `9f82715f` (T357 closure baseline). |
-| Candidate Proposal | [Cross-mode mechanism coherence](../proposals/m5-cross-mode-mechanism-coherence.md). |
-| Files And ABI Surface | The shared I/O permission owner and its ordinary/string callers, owner-bound tests and evidence, CMake current artifact identity, and this packet; no public provider ABI or new production-test interface without a separately admitted decision. |
-| Applicable Rules | Task Reading Set, execution, architecture, coding, documentation, and source/research policy; preserve project type vocabulary, target-local strict compilation, and test-only fixture boundaries. |
-| Verification | A decision-to-commit ledger must trace classification, permission check, provider side effect, exception production/delivery boundary, and architectural publication for real mode, protected allowed/restricted, TSS-map permit/deny, and VM86. Exercise ordinary and string callers, exact no-publication on deny/fault, and full current gate, documentation governance, artifact build/hash, and diff checks. |
-| Expected Markers | `M5:T358:S1:IO-PERMISSION:OK`; full current-gate and current developer artifact `vm-0-5-0358`. |
-| Asset Needs | Intel 80386 privilege/I/O-map authority and project-owned deterministic providers only; no guest media, firmware, or external-source import. |
-| Reporting Requirements | One complete P1 only: mechanism map, caller/write/fault sweep, exact test evidence, any repair rationale, all verification output, and commit/push. Do not report partial vectors as delivery. |
-| Stop Conditions | Stop and split if correctness requires a provider ABI, TSS-layout contract, generic exception/interrupt delivery, or architectural state transition outside this I/O permission owner; record the precise boundary and affected callers. |
-| Exit Criteria | One shared decision boundary is evidenced for both ordinary and string I/O in every admitted mode/permission outcome; any defect is repaired without widening interfaces; all required gates and the task artifact pass; remaining exception/IRQ, segment/task, paging, and prefix mechanisms remain explicitly transferred. |
-| Original Owner Request | Continue the ordered L3-completeness Queue after T357, with a holistic rather than symptom-patch implementation approach. |
-| Similar-Issue Sweep | Enumerate every caller of the selected permission owner and classify real/protected/VM86 outcomes before changing code; do not infer completeness from a single opcode family. |
+**Open.** M5 T358 S1 is accepted; the next cross-mode mechanism requires a
+separately admitted continuation packet.
 
 ## Current Technical Baseline
 
@@ -45,6 +24,7 @@ real, protected, and VM86 execution before bus-timed PC/AT work.
 
 | Task | Compact result |
 | --- | --- |
+| T358 S1 | Accepted one shared I/O-permission decision boundary for ordinary and string I/O across real, protected, TSS-map, and VM86 outcomes; repaired legacy word-`OUT` checked propagation, expanded caller proof, passed 240 current-gate tests, and recorded the `vm-0-5-0358` artifact. [History](../history/M5-T358-cross-mode-mechanism-coherence.md) |
 | T357 | Closed finite source-backed 8086/80186/80286/80386 instruction timing at one successful-retirement publisher: selected form ledgers, 80386 protected/VM86 ordinary I/O, Appendix-B `NOP = 3` consumer reconciliation, 240 current-gate tests, and artifact SHA-256 `83A249015C03CF875896A440D5B43A430C2D875A63F0BE4B9709014A753CAD95`. Unselected forms, waits, physical bus/prefetch, device latency and cycle-exact work remain explicit transfers. [Closure audit](../etc/evidence/t357-s8-cross-profile-closure-audit.md). |
 | T356 | Closed the M5 closure audit with an explicit M5-open decision: all selected device owners are evidenced, but instruction timing, bus availability/wait states and selected-profile cycle exactness remain ordered implementation prerequisites; corpus-gated peripheral, storage and product boundaries remain explicit transfers. [History](../history/M5-T356-m5-closure-audit.md). |
 | T355 | Closed the bounded Windows 3.x readiness map: an opt-in BYOB HDD/INT13 checkpoint passed, all four probes remain host-observation/non-current, T347/T354 storage/L3 is a verified prerequisite, and all display, input, NMI, physical-timing, Setup, and compatibility breadth remains explicitly transferred. [History](../history/M5-T355-windows-3x-readiness-map.md). |
