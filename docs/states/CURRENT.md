@@ -2,29 +2,8 @@
 
 ## Current Work
 
-**Active.** M5 T364 S2 performs the task-level PC/AT completeness closure
-audit; it allocates no device, route or timing value.
-
-## M5 T364 S2 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | The owner directed current-Queue execution through L3 work on 2026-08-14. T364 S1 was accepted at `664861cb`; its ledger admits this audit-only closure unit. Git pushes are permitted. |
-| Objective | Independently review the T364 component ledger against selected profile leaves/routes, core owners, lifecycle/timeline evidence, Queue/TODO receivers and task history; close T364 only if no selected component remains unclassified. |
-| Non-goals | No device or source selection, no NMI producer, no bus/service timing, no firmware/media import, no host backend and no physical/cycle-exact claim. |
-| Reference Baseline | `664861cb` / `vm-0-5-0362`; [T364 S1 ledger](../etc/evidence/t364-s1-pcat-device-completeness-ledger.md), T353--T354 evidence, Queue and TODO. |
-| Candidate Proposal | [PC/AT device, chip, port, and bus completeness audit](../proposals/m5-pcat-device-completeness-audit.md). |
-| Files And ABI Surface | Evidence/history/status only. No public ABI or runnable path. |
-| Applicable Rules | Task Reading Set; Execution task-closure/evidence rules; Documentation topology; Architecture ownership and source/research policy. |
-| Verification | Recheck complete component, port, IRQ/DRQ/reset, timeline/lifecycle, optional-absence and receiver matrix; documentation governance and diff check. |
-| Expected Markers | T364 S2 closure-audit marker and retained topology/transaction evidence. |
-| Asset Needs | No new assets or research; use retained primary-source provenance only. |
-| Reporting Requirements | State component coverage, exact residual receivers, closure decision and no-L3-overclaim boundary. |
-| Stop Conditions | Stop without closure if any selected component, route, lifecycle/timing owner, primary contract or receiver is unclassified or misleading. |
-| Exit Criteria | Complete selected-PC/AT inventory, all gaps truthfully transferred, history/status closed and governance/diff checks pass. |
-| Original Owner Request | Begin and continue the ordered Queue work toward comprehensive L3 precision. |
-| Similar-Issue Sweep | Recheck core/VM component sources, port leaves, IRQ/DRQ/NMI/reset routes, timeline/transaction owners, retained evidence, Queue and TODO. |
+**Idle.** T364 is closed; the next ordered Queue candidate requires separate
+owner-approved admission.
 
 ## Current Technical Baseline
 
@@ -45,7 +24,7 @@ audit; it allocates no device, route or timing value.
 
 | Task | Compact result |
 | --- | --- |
-| T364 S1 | Accepted at `df97131a`: the selected PC/AT component/port/route/lifecycle/timing-owner inventory is complete; absent PPI, NMI and optional interfaces retain exact receivers. [Ledger](../etc/evidence/t364-s1-pcat-device-completeness-ledger.md). |
+| T364 | Closed at `7d574ae3`: all selected PC/AT components, ports/routes and lifecycle/timing owners are inventoried; optional and physical gaps retain exact Queue/TODO receivers. [Closure audit](../etc/evidence/t364-s2-pcat-device-completeness-closure-audit.md). No model-L3 claim. |
 | T363 | Closed at `312ef2f9`: all 256 primary and 256 secondary dispatch slots have one source-backed successful-retirement owner or an exact explicit receiver; inventory and 246/246 current-gate passed. [Closure audit](../etc/evidence/t363-s7-complete-instruction-timing-closure-audit.md). No physical/cycle-exact L3 claim. |
 | T362 | Closed at `316c2334`: S1--S2 normalize every eligible 80186 immediate-IMUL source row in one private direct/constrained model table; S3 resolves stale full-gate verifier assumptions and records 246/246 current-gate tests. [Closure audit](../etc/evidence/t362-s3-legacy-timing-normalization-closure-audit.md). Model-L3 only; no physical/cycle-exact claim. |
 | T361 | Closed at `a5442d96`: S1--S3 established the source-labelled 8086/80186 allocation and synchronous-fault publication boundary; S4 retained Intel 210498-005 Appendix-B `90 NOP = 3` after a page/context and consumer audit. Immediate-IMUL normalization transfers to the first Queue candidate. [S4 evidence](../etc/evidence/t361-s4-80286-nop-source-consumer-audit.md). No physical or cycle-exact claim. |
