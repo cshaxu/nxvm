@@ -2,8 +2,29 @@
 
 ## Current Work
 
-**Idle.** T364 is closed; the next ordered Queue candidate requires separate
-owner-approved admission.
+**Active.** M5 T365 S1 audits and selects one documented PC/AT NMI source
+contract before any producer or delivery change.
+
+## M5 T365 S1 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New |
+| Admission And Approval | The owner directed continued ordered L3 implementation on 2026-08-14. T364 was closed at `52a501b9`; the next Queue candidate is PC/AT NMI source ownership. Git pushes are permitted. |
+| Objective | Audit IBM PC/AT parity and I/O-channel-check NMI candidates against the selected profile, existing mask/delivery path, lifecycle and test surfaces; select a source only if assertion, latch/clear, mask, reset and deterministic visibility are fully contractible. |
+| Non-goals | No synthetic RTC/PIC NMI, port-61 implementation, generic NMI-delivery redesign, host fault source, bus cycles, firmware/media import, or physical/cycle-exact claim. |
+| Reference Baseline | `52a501b9` / `vm-0-5-0362`; T350 platform signals/NMI decision, T364 closure audit, IBM PC/AT reference provenance, current CPU NMI delivery and CMOS mask paths. |
+| Candidate Proposal | [PC/AT NMI source ownership](../proposals/m5-pcat-nmi-source-ownership.md). |
+| Files And ABI Surface | NMI source ledger, history/status and only later private core/profile paths if a source is admitted. No public ABI. |
+| Applicable Rules | Task Reading Set; Execution source/evidence/artifact rules; Architecture one producer/lifecycle owner; Coding rules if implementation is admitted; Documentation and source/research policy. |
+| Verification | Source-to-route/latch/mask/reset matrix; current NMI/CMOS/profile/timeline/test sweep; focused proof and full gate only if runtime changes; governance and diff check. |
+| Expected Markers | T365 S1 NMI-source decision marker and retained CPU-delivery/CMOS-mask markers. |
+| Asset Needs | Read-only IBM PC/AT primary-source provenance and existing project evidence; no retained download, firmware, media or third-party code. |
+| Reporting Requirements | State selected or non-admitted source, complete contract or exact blocker/receiver, every delivery/mask boundary and the next S receiver. |
+| Stop Conditions | Stop without implementation if no candidate supplies a selected profile input, latch/clear semantics, deterministic source lifecycle or reset contract; retain a truthful receiver rather than synthesize hardware. |
+| Exit Criteria | One documented source is either fully selected with an implementation plan or explicitly non-admitted with a complete evidence-backed receiver; no RTC/PIC/port-61 substitution. |
+| Original Owner Request | Continue ordered Queue implementation toward comprehensive L3 precision. |
+| Similar-Issue Sweep | Search NMI, parity, channel-check, port 61, CMOS mask, CPU pending/delivery, profile routes, reset/finalize, timeline, tests, Queue and TODO. |
 
 ## Current Technical Baseline
 
