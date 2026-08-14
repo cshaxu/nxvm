@@ -3322,7 +3322,6 @@ static type_status core_machine_planar_parity_port_write(C_VOID *owner,
     if ((machine->planar_parity_port_b & 0x04u) == 0u) {
         machine->planar_parity_latched = TYPE_FALSE;
         machine->planar_parity_nmi_signaled = TYPE_FALSE;
-        machine->executor_cpu.data.flagNMI = TYPE_FALSE;
     } else {
         core_machine_planar_parity_refresh_nmi(machine);
     }
