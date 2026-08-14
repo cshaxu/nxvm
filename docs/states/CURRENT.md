@@ -2,29 +2,8 @@
 
 ## Current Work
 
-**Active.** M5 T365 S1 audits and selects one documented PC/AT NMI source
-contract before any producer or delivery change.
-
-## M5 T365 S1 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | New |
-| Admission And Approval | The owner directed continued ordered L3 implementation on 2026-08-14. T364 was closed at `52a501b9`; the next Queue candidate is PC/AT NMI source ownership. Git pushes are permitted. |
-| Objective | Audit IBM PC/AT parity and I/O-channel-check NMI candidates against the selected profile, existing mask/delivery path, lifecycle and test surfaces; select a source only if assertion, latch/clear, mask, reset and deterministic visibility are fully contractible. |
-| Non-goals | No synthetic RTC/PIC NMI, port-61 implementation, generic NMI-delivery redesign, host fault source, bus cycles, firmware/media import, or physical/cycle-exact claim. |
-| Reference Baseline | `52a501b9` / `vm-0-5-0362`; T350 platform signals/NMI decision, T364 closure audit, IBM PC/AT reference provenance, current CPU NMI delivery and CMOS mask paths. |
-| Candidate Proposal | [PC/AT NMI source ownership](../proposals/m5-pcat-nmi-source-ownership.md). |
-| Files And ABI Surface | NMI source ledger, history/status and only later private core/profile paths if a source is admitted. No public ABI. |
-| Applicable Rules | Task Reading Set; Execution source/evidence/artifact rules; Architecture one producer/lifecycle owner; Coding rules if implementation is admitted; Documentation and source/research policy. |
-| Verification | Source-to-route/latch/mask/reset matrix; current NMI/CMOS/profile/timeline/test sweep; focused proof and full gate only if runtime changes; governance and diff check. |
-| Expected Markers | T365 S1 NMI-source decision marker and retained CPU-delivery/CMOS-mask markers. |
-| Asset Needs | Read-only IBM PC/AT primary-source provenance and existing project evidence; no retained download, firmware, media or third-party code. |
-| Reporting Requirements | State selected or non-admitted source, complete contract or exact blocker/receiver, every delivery/mask boundary and the next S receiver. |
-| Stop Conditions | Stop without implementation if no candidate supplies a selected profile input, latch/clear semantics, deterministic source lifecycle or reset contract; retain a truthful receiver rather than synthesize hardware. |
-| Exit Criteria | One documented source is either fully selected with an implementation plan or explicitly non-admitted with a complete evidence-backed receiver; no RTC/PIC/port-61 substitution. |
-| Original Owner Request | Continue ordered Queue implementation toward comprehensive L3 precision. |
-| Similar-Issue Sweep | Search NMI, parity, channel-check, port 61, CMOS mask, CPU pending/delivery, profile routes, reset/finalize, timeline, tests, Queue and TODO. |
+**Active.** M5 T365 remains open between accepted S units; its non-admission
+closure audit is being prepared.
 
 ## Current Technical Baseline
 
@@ -45,6 +24,7 @@ contract before any producer or delivery change.
 
 | Task | Compact result |
 | --- | --- |
+| T365 S1 | Accepted at `6b922ba1`: IBM documents parity/I/O-check NMI sources, but no selected profile source contract exists; CPU/CMOS remain delivery/mask only. [Decision](../etc/evidence/t365-s1-pcat-nmi-source-decision.md). |
 | T364 | Closed at `7d574ae3`: all selected PC/AT components, ports/routes and lifecycle/timing owners are inventoried; optional and physical gaps retain exact Queue/TODO receivers. [Closure audit](../etc/evidence/t364-s2-pcat-device-completeness-closure-audit.md). No model-L3 claim. |
 | T363 | Closed at `312ef2f9`: all 256 primary and 256 secondary dispatch slots have one source-backed successful-retirement owner or an exact explicit receiver; inventory and 246/246 current-gate passed. [Closure audit](../etc/evidence/t363-s7-complete-instruction-timing-closure-audit.md). No physical/cycle-exact L3 claim. |
 | T362 | Closed at `316c2334`: S1--S2 normalize every eligible 80186 immediate-IMUL source row in one private direct/constrained model table; S3 resolves stale full-gate verifier assumptions and records 246/246 current-gate tests. [Closure audit](../etc/evidence/t362-s3-legacy-timing-normalization-closure-audit.md). Model-L3 only; no physical/cycle-exact claim. |
@@ -52,7 +32,6 @@ contract before any producer or delivery change.
 | T360 | Closed four-profile timing source reconciliation: primary-authority inventory, owner-selected 80286 NOP table precedence, exact legacy range transfer, contextual classifier audit, and final source/receiver closure. 245/245 current-gate tests passed; no L3 or cycle-exact claim. [Closure audit](../etc/evidence/t360-s5-four-profile-timing-source-closure-audit.md). |
 | T359 | Closed its bounded four-profile instruction-retirement corpus: S1 inventory plus S2--S6 source classifiers use one successful-retirement publisher; S7 verifies all unallocated rows transfer to T360, bus/service, cycle-exact, or x87/VME receivers. 245/245 current-gate tests passed. No L3 or cycle-exact claim is made. [Closure audit](../etc/evidence/t359-s7-complete-instruction-timing-closure-audit.md). |
 | T358 | Closed cross-mode mechanism coherence: reconciled I/O permission, exception/IRQ entry, selector/task/return transition, paging/linear access, and prefix/LOCK/width/string classifiers; repaired 80286 delivery, LOCK group legality, and repeated-width preview divergence; passed 240 current-gate tests. [Closure audit](../etc/evidence/t358-cross-mode-mechanism-closure-audit.md). |
-| T357 | Closed finite source-backed 8086/80186/80286/80386 instruction timing at one successful-retirement publisher: selected form ledgers, 80386 protected/VM86 ordinary I/O, Appendix-B `NOP = 3` consumer reconciliation, 240 current-gate tests, and artifact SHA-256 `83A249015C03CF875896A440D5B43A430C2D875A63F0BE4B9709014A753CAD95`. Unselected forms, waits, physical bus/prefetch, device latency and cycle-exact work remain explicit transfers. [Closure audit](../etc/evidence/t357-s8-cross-profile-closure-audit.md). |
 
 ## Recent Governance
 

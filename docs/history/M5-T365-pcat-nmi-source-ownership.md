@@ -12,3 +12,8 @@ delivery contract is shown; otherwise it retains a precise non-admission.
 
 S1 audits parity and I/O-channel-check candidates, CPU delivery, CMOS masking,
 profile routes, reset and deterministic visibility before allocating a source.
+
+S1 is accepted at `6b922ba1`. Its
+[source decision](../etc/evidence/t365-s1-pcat-nmi-source-decision.md)
+records that no candidate can be selected without fabricating a board contract.
+S2 may only close the task's non-admission and must retain the receiver.
