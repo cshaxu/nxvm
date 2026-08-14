@@ -59,6 +59,12 @@ set(project_t344_retained_sources
     "tests/machine/core_machine_real_mode_corpus_smoke.c"
     "tests/machine/core_machine_real_mode_tick_smoke.c"
     "tests/machine/core_machine_rtc_cmos_s3_smoke.c"
+    "tests/machine/core_machine_t359_s2_timing_smoke.c"
+    "tests/machine/core_machine_t359_s3_timing_smoke.c"
+    "tests/machine/core_machine_t359_s4_timing_smoke.c"
+    "tests/machine/core_machine_t359_s5_timing_smoke.c"
+    "tests/machine/core_machine_t359_s6_timing_smoke.c"
+    "tests/machine/core_machine_legacy_timing_normalization_s2_smoke.c"
     "tests/machine/core_machine_verr_verw_s58_smoke.c"
     "tests/machine/core_mantle_shape_smoke.c"
     "tests/machine/cpu_fault_diagnostic_smoke.c"
@@ -67,12 +73,12 @@ set(project_t344_retained_sources
 set(project_t344_inventory ${project_t344_migrated_sources}
     ${project_t344_retained_sources})
 list(LENGTH project_t344_inventory project_t344_inventory_count)
-if(NOT project_t344_inventory_count EQUAL 60)
-    message(FATAL_ERROR "T344 fixture-shape inventory must contain 60 direct constructors.")
+if(NOT project_t344_inventory_count EQUAL 66)
+    message(FATAL_ERROR "T344 fixture-shape inventory must contain 66 direct constructors.")
 endif()
 list(REMOVE_DUPLICATES project_t344_inventory)
 list(LENGTH project_t344_inventory project_t344_unique_count)
-if(NOT project_t344_unique_count EQUAL 60)
+if(NOT project_t344_unique_count EQUAL 66)
     message(FATAL_ERROR "T344 fixture-shape inventory contains a duplicate source.")
 endif()
 
@@ -89,8 +95,8 @@ foreach(project_t344_source IN LISTS project_t344_machine_sources)
 endforeach()
 list(SORT project_t344_direct_sources)
 list(LENGTH project_t344_direct_sources project_t344_direct_count)
-if(NOT project_t344_direct_count EQUAL 60)
-    message(FATAL_ERROR "T344 expected 60 direct machine constructors, found ${project_t344_direct_count}.")
+if(NOT project_t344_direct_count EQUAL 66)
+    message(FATAL_ERROR "T344 expected 66 direct machine constructors, found ${project_t344_direct_count}.")
 endif()
 foreach(project_t344_source IN LISTS project_t344_direct_sources)
     list(FIND project_t344_inventory "${project_t344_source}" project_t344_index)
@@ -109,4 +115,4 @@ foreach(project_t344_source IN LISTS project_t344_migrated_sources)
     endif()
 endforeach()
 
-message(STATUS "T344 historical fixture shapes passed: 60 direct constructors, 22 shared tails, 38 retained shapes.")
+message(STATUS "T344 historical fixture shapes passed: 66 direct constructors, 22 shared tails, 44 retained shapes.")

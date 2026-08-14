@@ -27,7 +27,8 @@ file(STRINGS "${PROJECT_T344_CTEST_TEST_FILE}" project_t344_ctest_lines)
 set(project_t344_registered_targets)
 set(project_t344_labeled_targets)
 foreach(project_t344_line IN LISTS project_t344_ctest_lines)
-    if(project_t344_line MATCHES "^add_test\\(\"current\\.([^\"]+)\"")
+    if(project_t344_line MATCHES
+            "^add_test\\(\\[=\\[current\\.([^]]+)\\]=\\]")
         set(project_t344_target "${CMAKE_MATCH_1}")
         list(FIND project_t344_registered_targets "${project_t344_target}"
             project_t344_registration_index)
@@ -36,6 +37,29 @@ foreach(project_t344_line IN LISTS project_t344_ctest_lines)
                 "T344 CTest current registration is duplicated: ${project_t344_target}")
         endif()
         list(APPEND project_t344_registered_targets "${project_t344_target}")
+    elseif(project_t344_line MATCHES "^add_test\\(\"current\\.([^\"]+)\"")
+        set(project_t344_target "${CMAKE_MATCH_1}")
+        list(FIND project_t344_registered_targets "${project_t344_target}"
+            project_t344_registration_index)
+        if(NOT project_t344_registration_index EQUAL -1)
+            message(FATAL_ERROR
+                "T344 CTest current registration is duplicated: ${project_t344_target}")
+        endif()
+        list(APPEND project_t344_registered_targets "${project_t344_target}")
+    elseif(project_t344_line MATCHES
+            "^set_tests_properties\\(\\[=\\[current\\.([^]]+)\\]=\\] PROPERTIES.*LABELS \"([^\"]*)\"")
+        set(project_t344_target "${CMAKE_MATCH_1}")
+        set(project_t344_labels "${CMAKE_MATCH_2}")
+        list(FIND project_t344_labels "current-gate" project_t344_label_index)
+        if(NOT project_t344_label_index EQUAL -1)
+            list(FIND project_t344_labeled_targets "${project_t344_target}"
+                project_t344_labeled_index)
+            if(NOT project_t344_labeled_index EQUAL -1)
+                message(FATAL_ERROR
+                    "T344 CTest current label is duplicated: ${project_t344_target}")
+            endif()
+            list(APPEND project_t344_labeled_targets "${project_t344_target}")
+        endif()
     elseif(project_t344_line MATCHES
             "^set_tests_properties\\(\"current\\.([^\"]+)\" PROPERTIES.*LABELS \"([^\"]*)\"")
         set(project_t344_target "${CMAKE_MATCH_1}")
