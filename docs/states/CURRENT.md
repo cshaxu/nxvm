@@ -2,9 +2,24 @@
 
 ## Current Work
 
-T366 S17 is accepted at `7d9e27be`. The next T366 S must select the next
-source-determinate 80286 successful-retirement family; physical-time and
-device-timing claims remain blocked by the wider CPU ledger.
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | T366 S18, numbered continuation implementation subtask; P1 is one complete pushed implementation/evidence delivery. |
+| Admission And Approval | The owner approved continued L3 work on 2026-08-14. T366 admits the determinate unprefixed 80286 `8C MOV Sreg,r16` success path. No exception is requested. |
+| Objective | Publish the two-clock 80286 cost for successful unprefixed, legal register-direct `8C` forms through the existing retirement owner. |
+| Non-goals | No segment-register semantic repair, invalid encoding, `8E` selector load, `8C` memory/EA cost, prefix/fault/delivery timing, bus/physical time, other profile, device, x87 or ABI work. |
+| Reference Baseline | `49e00aa0` (accepted T366 S17), [T366 proposal](../proposals/m5-bus-timed-pcat-operation.md), [S10 inventory](../etc/evidence/t366-s10-80286-unallocated-publisher-inventory.md), and existing segment-MOV semantic smoke. |
+| Candidate Proposal | [Bus-timed PC/AT operation](../proposals/m5-bus-timed-pcat-operation.md), limited to source-backed 80286 successful retirement. |
+| Files And ABI Surface | Private 80286 classifier, focused timing-ledger smoke, T366 evidence/index/history/status; no public or device surface changes. |
+| Applicable Rules | [Execution](../rules/EXECUTION.md): complete pushed P and sweep. [Architecture](../rules/ARCHITECTURE.md): one retirement publisher. [Coding](../rules/CODING.md): owner-local classifier/test. [Documentation](../rules/DOCUMENT.md): truthful state. [Source policy](../etc/operations/policy/source-policy.md): documentation only, no import/assets. |
+| Verification | Focused timing smoke proves valid `8C` register forms retire at two ticks with transferred selector values; run focused target, `run-current-smokes`, governance and `git diff --check`; review changed files before P1. |
+| Expected Markers | `M5:T357:S6:80286-INSTRUCTION-TIMING-LEDGER:OK`; AMD 80286 table reports `8C` register `2`, memory `3*`, in both modes. |
+| Asset Needs | No guest media, ROM, binary, path, external source import or emulator output. AMD primary table is read-only evidence. |
+| Reporting Requirements | Report source/scope determination, test progress, P1 push/evidence and acceptance or consolidated corrective brief. |
+| Stop Conditions | Stop if legal direct `8C` forms cannot be isolated, a higher owner intercepts them, a semantic repair is needed, or a gate cannot run. |
+| Exit Criteria | One pushed P proves only valid unprefixed 80286 register-direct `8C` successful retirement publishes two ticks; transfers and checks are recorded. |
+| Original Owner Request | Continue until comprehensive L3 closure before Windows 3.1; use secondary emulators only if primary material cannot determine timing. |
+| Similar-Issue Sweep | Audit `8C` dispatch/handler, primary/control-stack and profile classifiers, direct fallback, valid/invalid register encodings, memory forms and current semantic proof. Retain invalid, memory/EA, `8E`, prefix/delivery, other-profile and physical/device receivers. |
 
 ## Current Technical Baseline
 

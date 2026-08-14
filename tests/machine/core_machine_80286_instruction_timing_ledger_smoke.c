@@ -141,6 +141,22 @@ static C_INT timing_80286_lahf_sahf(C_VOID)
     return failed;
 }
 
+static C_INT timing_80286_sreg_store(C_VOID)
+{
+    static const type_unsigned_8 store_ds_ax[] = { 0x8cu, 0xd8u };
+    timing_80286_state state = { 0u, 0u, 0u };
+    core_machine *machine = STD_NULL;
+    C_INT failed = !timing_80286_prepare(&machine, &state);
+
+    if (!failed) failed |= !timing_80286_load(machine, store_ds_ax,
+        sizeof(store_ds_ax)) || ((machine->executor_cpu.data.eax =
+        0xaabb0000u), (machine->executor_cpu.data.ds.selector = 0x1357u), 0) ||
+        !timing_80286_run(machine, &state, 1u, 2u) ||
+        machine->executor_cpu.data.eax != 0xaabb1357u;
+    core_machine_destroy(machine);
+    return failed;
+}
+
 static C_INT timing_80286_memory(C_VOID)
 {
     static const type_unsigned_8 direct_read[] = { 0x8bu, 0x0eu, 0x00u, 0x10u };
@@ -354,6 +370,7 @@ C_INT main(C_VOID)
         timing_80286_case(immediate, sizeof(immediate), 2u) ||
         timing_80286_case(registers, sizeof(registers), 2u)) return 1;
     if (timing_80286_lahf_sahf()) return 5;
+    if (timing_80286_sreg_store()) return 6;
     if (timing_80286_memory()) return 2;
     if (timing_80286_control_ports()) return 3;
     if (timing_80286_boundaries()) return 4;
