@@ -24,6 +24,11 @@ explicit unsupported-form fallback. Its focused proof covers fault/stop,
 reset, budget, overflow, and scheduler publication; 80186, 80286, and
 unallocated 80386 rows remain separate source-ledger transfers.
 
+S5 added the selected 80186 Table 1-16 ledger. It shares only the genuine
+16-bit construction with 8086 while retaining independent source values for
+`MOV`, moffs, Jcc, `REP MOVSB`, and `OUT`; 80286 remains the compatibility
+profile until its own source-ledger packet.
+
 ## Intended Task Closure
 
 T357 closes only after the selected corpus advances guest time from the single
