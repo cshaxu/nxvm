@@ -109,6 +109,7 @@ principal documents named in [docs/README.md](../README.md).
 | `evidence/t359-s6-privileged-source-ledger.md` | Verification owner | T359 S6 80286/80386 privileged-form source ledger, one successful-retirement classifier, and exact T360/cycle-exact transfer boundary. Retain with T359 history at task closure. |
 | `evidence/t359-s7-complete-instruction-timing-closure-audit.md` | Verification owner | T359 S7 whole-corpus closure audit: selected source owners, one publisher, exact T360/physical/cycle-exact/x87 transfers, and no-L3-overclaim decision. Retain with T359 history. |
 | `evidence/t360-s1-four-profile-source-authority-consumer-inventory.md` | Verification owner | T360 S1 Intel-manual edition, timing-consumer, conflict and later-subtask inventory. It is authority reconciliation evidence, not a timing table. |
+| `evidence/t360-s2-80286-nop-authority-precedence.md` | Verification owner | T360 S2 primary-source precedence, current `NOP = 3` consumer sweep, and bounded table/prose revisit transfer. Retain with T360 history at task closure. |
 | `operations/` | Execution, source, and release owners | Toolchain, policy, templates, release procedure, and closure material. |
 | `research/` | Source owner | Provenance, external references, and non-product research. |
 | `history/` | Documentation owner | Read-only legacy and M5 migration/roadmap evidence. |

@@ -165,6 +165,17 @@ transaction checkpoints. This is the project's L3 event-and-bus contract, not
 cycle-exact hardware timing. These entries remain deferred compatibility
 admissions, not the default definition of NXVM completion.
 
+- [ ] **80286 NOP table/prose source conflict (`TODO(Medium)`).** T360 S2
+  retains the formal Appendix-B opcode-clock row, `NOP = 3`, because the owner
+  directs that a supported Appendix-B row wins over conflicting prose. The
+  same 210498-005 manual prose describes two clocks. Re-admit only with a
+  primary-source edition/page/semantic-context review, a complete sweep of the
+  80286 source ledger, classifier routes, timing smokes, and downstream
+  scheduler/device consumers, and an explicit retain-or-revise decision. Do
+  not average values, replace the row from prose alone, use host benchmarks or
+  secondary emulators as authority, or change a timing value outside that
+  source-backed admission.
+
 - [ ] **PC/AT NMI source ownership (`TODO(Medium)`).** T350 S4 reconfirms that
   RTC periodic/update conditions publish IRQ8, while the CMOS index-port bit
   only controls the existing architected NMI mask; no parity or I/O-channel
