@@ -118,6 +118,7 @@ principal documents named in [docs/README.md](../README.md).
 | `evidence/t361-s3-synchronous-fault-retirement-audit.md` | Verification owner | T361 S3 model-derived dynamic-arithmetic and synchronous-fault execution-round audit. Retain with T361 history at task closure. |
 | `evidence/t361-s4-80286-nop-source-consumer-audit.md` | Verification owner | T361 S4 Intel 210498-005 page/context decision, single-owner consumer sweep, and resolved 80286 `NOP` source-conflict record. Retain with T361 history at task closure. |
 | `evidence/t362-s1-legacy-timing-normalization-ledger.md` | Verification owner | T362 S1 Intel/MAME source-domain, accounting-boundary, normalization-eligibility, and fallback-owner ledger. Retain with T362 history at task closure. |
+| `evidence/t362-s2-legacy-timing-normalization-acceptance.md` | Verification owner | T362 S2 private immediate-IMUL normalization table, regression, artifact, and S3-handoff acceptance record. Retain with T362 history at task closure. |
 | `operations/` | Execution, source, and release owners | Toolchain, policy, templates, release procedure, and closure material. |
 | `research/` | Source owner | Provenance, external references, and non-product research. |
 | `history/` | Documentation owner | Read-only legacy and M5 migration/roadmap evidence. |

@@ -2,29 +2,30 @@
 
 ## Current Work
 
-**Active.** M5 T362 S2 centralizes the eligible 80186 immediate-IMUL timing
-model and its regression corpus.
+**Active.** M5 T362 S3 independently audits the completed immediate-IMUL
+normalization allocation and closes the task only if its residual transfers
+and current-gate evidence are complete.
 
-## M5 T362 S2 Packet
+## M5 T362 S3 Packet
 
 | Field | Required record |
 | --- | --- |
 | Identifier Mode | Continuation |
-| Admission And Approval | The owner directed current-Queue execution through complete instruction timing on 2026-08-14. T362 S1 was accepted at `09dbc685`; its bounded S2 implementation is approved by the active proposal and ledger. Git pushes are permitted. |
-| Objective | Replace the three scoped 80186 immediate-IMUL one-tick transfers with one private profile-local model table that records raw MAME scalar, Intel bounds, and direct/constrained selected CPU clocks; update the dedicated regression corpus and prove the single successful-retirement publisher. |
-| Non-goals | No change to 8086 or Group-3 rows, 80286/80386 timing, unsupported prefix routing, exception delivery, bus/prefetch/device/service time, public ABI, external code import, physical measurement, or cycle-exact claim. |
-| Reference Baseline | `09dbc685` / `vm-0-5-0359`; T362 S1 [ledger](../etc/evidence/t362-s1-legacy-timing-normalization-ledger.md) and [normalization proposal](../proposals/m5-intel-constrained-legacy-timing-normalization.md). |
+| Admission And Approval | The owner directed current-Queue execution through complete instruction timing on 2026-08-14. T362 S2 implementation is accepted at `94e970a6`; this independent S3 closure audit is required by the approved proposal. Git pushes are permitted. |
+| Objective | Audit all T361-transferred dynamic-arithmetic forms, the four-row 80186 immediate-IMUL allocation, residual fallback receivers, successful-retirement ownership, records, artifact identity, and full current gate; close T362 only when each remains accounted. |
+| Non-goals | No new timing allocation, no change to 8086/Group-3 rows or 80286/80386 timing, no unsupported-prefix routing, exception-delivery, bus/prefetch/device/service change, public ABI, external import, measurement, or physical/cycle-exact claim. |
+| Reference Baseline | `94e970a6` / `vm-0-5-0362`; T362 [S1 ledger](../etc/evidence/t362-s1-legacy-timing-normalization-ledger.md), [S2 acceptance](../etc/evidence/t362-s2-legacy-timing-normalization-acceptance.md), and [normalization proposal](../proposals/m5-intel-constrained-legacy-timing-normalization.md). |
 | Candidate Proposal | [Intel-constrained legacy timing-model normalization](../proposals/m5-intel-constrained-legacy-timing-normalization.md). |
-| Files And ABI Surface | Private `src/core/machine/machine.c` model helper, dedicated legacy dynamic-arithmetic smoke/CMake registration, evidence/history/status, developer artifact and SHA-256 record. No public header or ABI. |
-| Applicable Rules | Task Reading Set; Execution P/closure, similar-issue, artifact, and full-gate rules; Architecture single-owner/source-admission invariants; Coding source/test rules; Documentation boundaries; source/research policy. One successful-retirement publisher and CPU-versus-machine ownership remain mandatory. |
-| Verification | Prove 69 register lower clamp 25 to 29, 69 memory direct 32, 6B register direct 22, 6B memory upper clamp 29 to 24; segment-prefix/memory ownership, no double EA/odd-word charge, profile rejection, divide fault nonpublication, focused smoke, static source sweep, documentation governance, diff check, developer artifact build/hash, and full current gate. |
-| Expected Markers | `M5:T362:S2:LEGACY-TIMING-NORMALIZATION:OK` plus retained fault and current-gate markers. |
+| Files And ABI Surface | Audit/evidence/history/status only unless an audit finding requires an explicitly admitted corrective S. No planned public header or ABI change. |
+| Applicable Rules | Task Reading Set; Execution P/closure, similar-issue, artifact, full-gate, Architecture single-owner/source-admission, Coding source/test, Documentation, and source/research rules. CPU-versus-machine and successful-retirement ownership remain mandatory. |
+| Verification | Reconcile all 8086 and 80186 T361 rows against S1/S2, independently prove 69/6B register/memory consumers and residual fallback receivers, run focused smoke/static sweep/documentation governance/diff check/artifact identity/full current gate. |
+| Expected Markers | `M5:T362:S2:LEGACY-TIMING-NORMALIZATION:OK` and retained current-gate markers. |
 | Asset Needs | Existing local source, T362 evidence, read-only cited manual/MAME revisions; no retained download, third-party source, media, or protected binary. |
-| Reporting Requirements | Report the central table shape before implementation completion, identify every changed fallback and no-op direct row, and record artifact identity, tests, source provenance, and remaining S3 audit work. |
-| Stop Conditions | Stop if a selected value needs a second publisher, a public interface, a machine/bus owner, a source import, or an accounting change beyond S1. Retain an explicit transfer rather than synthesizing an unsupported prefix or form. |
-| Exit Criteria | All four immediate forms have exactly one centralized selected value and provenance, qualifying one-tick fallbacks are gone, focused tests prove both clamp bounds/direct cases and publication boundaries, the artifact/full gate pass, and records make no physical/cycle-exact claim. |
+| Reporting Requirements | Produce a closure audit naming each allocated and retained row, exact artifact identity, all gates, any variance, and the next Queue candidate. |
+| Stop Conditions | Stop and admit a corrective S if an audit needs new allocation, a second publisher, public interface, machine/bus owner, source import, or accounting change. |
+| Exit Criteria | The four immediate rows have one central allocation/provenance, all prior qualifying one-tick fallbacks are absent, residual transfers are explicit, artifact/full gate pass, and closure makes no physical/cycle-exact claim. |
 | Original Owner Request | Execute the current Queue through complete instruction timing, using Intel first and 86Box/MAME/PCjs only as applicable model sources where primary timing is non-deterministic. |
-| Similar-Issue Sweep | Search production source, tests, CMake and records for the immediate-IMUL forms and one-tick transfers; verify every 69/6B register/memory route reaches the single private model table and that unrelated unallocated routes retain their owners. |
+| Similar-Issue Sweep | Search production source, tests, CMake and records for all T361 forms, immediate-IMUL encodings, one-tick transfers, central-table consumers, and source-retirement publishers; classify every hit as allocated or explicitly retained. |
 
 ## Current Technical Baseline
 
@@ -46,6 +47,7 @@ model and its regression corpus.
 | Task | Compact result |
 | --- | --- |
 | T362 S1 | Accepted at `ba5a1221`: Intel Table 1-16 and same-profile MAME i186 scalars establish direct or constrained dispositions for every immediate-IMUL route, with no double EA/odd-word ownership. [Ledger](../etc/evidence/t362-s1-legacy-timing-normalization-ledger.md). No physical or cycle-exact claim. |
+| T362 S2 | Accepted at `94e970a6`: one private 80186 immediate-IMUL table removes the three eligible one-tick fallbacks, preserves the existing successful-retirement publisher, and passes its focused regression; S3 independently audits closure. [Acceptance](../etc/evidence/t362-s2-legacy-timing-normalization-acceptance.md). |
 | T361 | Closed at `a5442d96`: S1--S3 established the source-labelled 8086/80186 allocation and synchronous-fault publication boundary; S4 retained Intel 210498-005 Appendix-B `90 NOP = 3` after a page/context and consumer audit. Immediate-IMUL normalization transfers to the first Queue candidate. [S4 evidence](../etc/evidence/t361-s4-80286-nop-source-consumer-audit.md). No physical or cycle-exact claim. |
 | T360 | Closed four-profile timing source reconciliation: primary-authority inventory, owner-selected 80286 NOP table precedence, exact legacy range transfer, contextual classifier audit, and final source/receiver closure. 245/245 current-gate tests passed; no L3 or cycle-exact claim. [Closure audit](../etc/evidence/t360-s5-four-profile-timing-source-closure-audit.md). |
 | T359 | Closed its bounded four-profile instruction-retirement corpus: S1 inventory plus S2--S6 source classifiers use one successful-retirement publisher; S7 verifies all unallocated rows transfer to T360, bus/service, cycle-exact, or x87/VME receivers. 245/245 current-gate tests passed. No L3 or cycle-exact claim is made. [Closure audit](../etc/evidence/t359-s7-complete-instruction-timing-closure-audit.md). |
