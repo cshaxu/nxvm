@@ -7613,6 +7613,8 @@ type_bool core_machine_cpu_instruction_lexeme_scan(
     type_unsigned_8 immediate;
     type_bool extended = TYPE_FALSE;
     type_bool lock_prefix = TYPE_FALSE;
+    type_bool operand_size_prefix = TYPE_FALSE;
+    type_bool address_size_prefix = TYPE_FALSE;
     core_machine_cpu_instruction_metadata metadata;
 
     if (out_lexeme == STD_NULL) return TYPE_FALSE;
@@ -7638,11 +7640,13 @@ type_bool core_machine_cpu_instruction_lexeme_scan(
         type_unsigned_8 prefix_index;
 
         for (prefix_index = 0u; prefix_index < index - 1u; ++prefix_index) {
-            if (bytes[prefix_index] == 0x66u) operand_bytes =
-                operand_bytes == 2u ? 4u : 2u;
-            if (bytes[prefix_index] == 0x67u) address_bytes =
-                address_bytes == 2u ? 4u : 2u;
+            if (bytes[prefix_index] == 0x66u) operand_size_prefix = TYPE_TRUE;
+            if (bytes[prefix_index] == 0x67u) address_size_prefix = TYPE_TRUE;
         }
+        if (operand_size_prefix)
+            operand_bytes = code_32 ? 2u : 4u;
+        if (address_size_prefix)
+            address_bytes = code_32 ? 2u : 4u;
     }
     if (opcode == 0x0fu) {
         if (profile < CORE_MACHINE_CPU_PROFILE_80286 || index >= available_bytes ||
@@ -15068,11 +15072,15 @@ static C_VOID PREFIX_LOCK(core_machine_cpu_execution_context *context)
         case 0x31: /* XOR */
         case 0x86:
         case 0x87: /* XCHG */
-        case 0xf6:
-        case 0xf7: /* NOT, NEG */
         case 0xfe:
-        case 0xff: /* DEC, INC */
-            instruction_state.data.flagLock = TYPE_TRUE;
+            TYPE_TRACE_BLOCK_BEGIN("opcode(0xfe)");
+            TYPE_TRACE_CHECK_RETURN(_s_read_cs(context, ceip,
+                TYPE_REFERENCE_OF(modrm), 1));
+            if (_GetModRM_REG(modrm) <= 1u)
+                instruction_state.data.flagLock = TYPE_TRUE;
+            else
+                TYPE_TRACE_CHECK_RETURN(_SetExcept_UD(0));
+            TYPE_TRACE_BLOCK_END;
             break;
         case 0x80:
         case 0x81:
@@ -15094,12 +15102,20 @@ static C_VOID PREFIX_LOCK(core_machine_cpu_execution_context *context)
             TYPE_TRACE_CHECK_RETURN(_s_read_cs(context, ceip, TYPE_REFERENCE_OF(opcode_0f), 1));
             switch (opcode_0f)
             {
-            case 0xa3: /* BT */
             case 0xab: /* BTS */
             case 0xb3: /* BTR */
             case 0xbb: /* BTC */
-            case 0xba:
                 instruction_state.data.flagLock = TYPE_TRUE;
+                break;
+            case 0xba:
+                TYPE_TRACE_BLOCK_BEGIN("opcode_0f(0xba)");
+                TYPE_TRACE_CHECK_RETURN(_s_read_cs(context, ceip + 1u,
+                    TYPE_REFERENCE_OF(modrm), 1));
+                if (_GetModRM_REG(modrm) >= 5u)
+                    instruction_state.data.flagLock = TYPE_TRUE;
+                else
+                    TYPE_TRACE_CHECK_RETURN(_SetExcept_UD(0));
+                TYPE_TRACE_BLOCK_END;
                 break;
             default:
                 TYPE_TRACE_BLOCK_BEGIN("opcode_0f");
@@ -15107,6 +15123,27 @@ static C_VOID PREFIX_LOCK(core_machine_cpu_execution_context *context)
                 TYPE_TRACE_BLOCK_END;
                 break;
             }
+            TYPE_TRACE_BLOCK_END;
+            break;
+        case 0xf6:
+        case 0xf7:
+            TYPE_TRACE_BLOCK_BEGIN("opcode(0xf6/0xf7)");
+            TYPE_TRACE_CHECK_RETURN(_s_read_cs(context, ceip,
+                TYPE_REFERENCE_OF(modrm), 1));
+            if (_GetModRM_REG(modrm) == 2u || _GetModRM_REG(modrm) == 3u)
+                instruction_state.data.flagLock = TYPE_TRUE;
+            else
+                TYPE_TRACE_CHECK_RETURN(_SetExcept_UD(0));
+            TYPE_TRACE_BLOCK_END;
+            break;
+        case 0xff:
+            TYPE_TRACE_BLOCK_BEGIN("opcode(0xff)");
+            TYPE_TRACE_CHECK_RETURN(_s_read_cs(context, ceip,
+                TYPE_REFERENCE_OF(modrm), 1));
+            if (_GetModRM_REG(modrm) <= 1u)
+                instruction_state.data.flagLock = TYPE_TRUE;
+            else
+                TYPE_TRACE_CHECK_RETURN(_SetExcept_UD(0));
             TYPE_TRACE_BLOCK_END;
             break;
         default:

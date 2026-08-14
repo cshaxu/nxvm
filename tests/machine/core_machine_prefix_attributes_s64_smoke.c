@@ -114,6 +114,19 @@ static C_INT prefix_attributes_s64_gprs_same_except_eax(const t_cpu *before,
         before->data.edi == after->data.edi;
 }
 
+static C_INT prefix_attributes_s64_gprs_same(const t_cpu *before,
+    const t_cpu *after)
+{
+    return before->data.eax == after->data.eax &&
+        before->data.ebx == after->data.ebx &&
+        before->data.ecx == after->data.ecx &&
+        before->data.edx == after->data.edx &&
+        before->data.esp == after->data.esp &&
+        before->data.ebp == after->data.ebp &&
+        before->data.esi == after->data.esi &&
+        before->data.edi == after->data.edi;
+}
+
 static C_INT prefix_attributes_s64_gprs_same_except_ecx_edi(
     const t_cpu *before, const t_cpu *after)
 {
@@ -462,6 +475,153 @@ static C_INT prefix_attributes_s64_test_attributes_and_lock(C_VOID)
     return !failed;
 }
 
+static C_INT prefix_attributes_s64_test_lock_group_legality(C_VOID)
+{
+    static const type_unsigned_8 forms[][7] = {
+        { 0xf0u, 0x0fu, 0xa3u, 0x06u, 0x00u, 0x01u, 0u },
+        { 0xf0u, 0x0fu, 0xbau, 0x26u, 0x00u, 0x01u, 0u },
+        { 0xf0u, 0xf6u, 0x06u, 0x00u, 0x01u, 0x01u, 0u },
+        { 0xf0u, 0xf7u, 0x06u, 0x00u, 0x01u, 0x01u, 0u },
+        { 0xf0u, 0xfeu, 0x16u, 0x00u, 0x01u, 0u, 0u },
+        { 0xf0u, 0xffu, 0x16u, 0x00u, 0x01u, 0u, 0u }
+    };
+    static const STD_SIZE_T lengths[] = { 6u, 7u, 6u, 7u, 5u, 5u };
+    type_unsigned_8 form;
+
+    for (form = 0u; form != sizeof(forms) / sizeof(forms[0]); ++form) {
+        prefix_attributes_s64_machine state;
+        core_machine_cpu_diagnostic diagnostic;
+        t_cpu before;
+        t_cpu after;
+        type_status status;
+        type_unsigned_16 image = 0x1234u;
+        C_INT failed = !prefix_attributes_s64_prepare(
+            CORE_MACHINE_CPU_PROFILE_80386, &state);
+
+        if (!failed) {
+            before = state.machine->executor_cpu;
+            failed |= core_machine_memory_write(state.machine, 0x0100u,
+                &image, sizeof(image)) != TYPE_STATUS_OK ||
+                !test_core_machine_fixture_preflight_real_ud_terminal(
+                    state.machine) || !prefix_attributes_s64_run(&state,
+                    forms[form], lengths[form], 1u, &after, &diagnostic,
+                    &status) || status != TYPE_STATUS_FAULT ||
+                !diagnostic.first_fault.valid || !TYPE_GET_BIT(
+                    diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_UD) ||
+                !prefix_attributes_s64_cpu_same(&before, &after) ||
+                core_machine_memory_read_physical(&state.machine->executor_memory,
+                    0x0100u, (type_virtual_address)&image, sizeof(image)) !=
+                    TYPE_STATUS_OK || image != 0x1234u;
+        }
+        core_machine_destroy(state.machine);
+        if (failed) {
+            return 0;
+        }
+    }
+    return 1;
+}
+
+static C_INT prefix_attributes_s64_test_lock_group_writes(C_VOID)
+{
+    static const type_unsigned_8 forms[][5] = {
+        { 0xf0u, 0xf6u, 0x16u, 0x00u, 0x01u },
+        { 0xf0u, 0xf7u, 0x1eu, 0x00u, 0x01u },
+        { 0xf0u, 0xffu, 0x06u, 0x00u, 0x01u }
+    };
+    static const type_unsigned_16 expected[] = {
+        0x12cbu, 0xedccu, 0x1235u
+    };
+    type_unsigned_8 form;
+
+    for (form = 0u; form != sizeof(forms) / sizeof(forms[0]); ++form) {
+        prefix_attributes_s64_machine state;
+        core_machine_cpu_diagnostic diagnostic;
+        t_cpu before;
+        t_cpu after;
+        type_status status;
+        type_unsigned_16 image = 0x1234u;
+        C_INT failed = !prefix_attributes_s64_prepare(
+            CORE_MACHINE_CPU_PROFILE_80386, &state);
+
+        if (!failed) {
+            before = state.machine->executor_cpu;
+            failed |= core_machine_memory_write(state.machine, 0x0100u,
+                &image, sizeof(image)) != TYPE_STATUS_OK ||
+                !prefix_attributes_s64_run(&state, forms[form],
+                    sizeof(forms[form]), 1u, &after, &diagnostic, &status) ||
+                status != TYPE_STATUS_OK || diagnostic.first_fault.valid ||
+                after.data.eip != sizeof(forms[form]) ||
+                !prefix_attributes_s64_gprs_same(&before, &after) ||
+                !prefix_attributes_s64_sregs_same(&before, &after) ||
+                core_machine_memory_read_physical(&state.machine->executor_memory,
+                    0x0100u, (type_virtual_address)&image, sizeof(image)) !=
+                    TYPE_STATUS_OK || image != expected[form];
+        }
+        core_machine_destroy(state.machine);
+        if (failed) {
+            return 0;
+        }
+    }
+    return 1;
+}
+
+static C_INT prefix_attributes_s64_test_repeated_width_prefixes(C_VOID)
+{
+    static const type_unsigned_8 operand_code[] = {
+        0x66u, 0x66u, 0xb8u, 0x78u, 0x56u, 0x34u, 0x12u
+    };
+    static const type_unsigned_8 address_code[] = {
+        0x67u, 0x67u, 0x8au, 0x06u
+    };
+    prefix_attributes_s64_machine state;
+    core_machine_cpu_diagnostic diagnostic;
+    t_cpu before;
+    t_cpu after;
+    type_status status;
+    type_unsigned_8 selected = 0x5au;
+    type_unsigned_8 unselected = 0x3cu;
+    C_INT failed = !prefix_attributes_s64_prepare(
+        CORE_MACHINE_CPU_PROFILE_80386, &state);
+
+    if (!failed) {
+        before = state.machine->executor_cpu;
+        failed |= !prefix_attributes_s64_run(&state, operand_code,
+            sizeof(operand_code), 1u, &after, &diagnostic, &status) ||
+            status != TYPE_STATUS_OK || diagnostic.first_fault.valid ||
+            after.data.eip != sizeof(operand_code) ||
+            after.data.eax != 0x12345678u ||
+            !prefix_attributes_s64_gprs_same_except_eax(&before, &after) ||
+            after.data.eflags != before.data.eflags ||
+            !prefix_attributes_s64_sregs_same(&before, &after);
+    }
+    core_machine_destroy(state.machine);
+    if (failed) {
+        return 0;
+    }
+
+    failed = !prefix_attributes_s64_prepare(CORE_MACHINE_CPU_PROFILE_80386,
+        &state);
+    if (!failed) {
+        state.machine->executor_cpu.data.eax = 0xaabbcc00u;
+        state.machine->executor_cpu.data.esi = 0x00010100u;
+        before = state.machine->executor_cpu;
+        failed |= core_machine_memory_write(state.machine, 0x00010100u,
+            &selected, sizeof(selected)) != TYPE_STATUS_OK ||
+            core_machine_memory_write(state.machine, 0x0100u, &unselected,
+                sizeof(unselected)) != TYPE_STATUS_OK ||
+            !prefix_attributes_s64_run(&state, address_code,
+                sizeof(address_code), 1u, &after, &diagnostic, &status) ||
+            status != TYPE_STATUS_OK || diagnostic.first_fault.valid ||
+            after.data.eip != sizeof(address_code) ||
+            after.data.eax != 0xaabbcc5au ||
+            !prefix_attributes_s64_gprs_same_except_eax(&before, &after) ||
+            after.data.eflags != before.data.eflags ||
+            !prefix_attributes_s64_sregs_same(&before, &after);
+    }
+    core_machine_destroy(state.machine);
+    return !failed;
+}
+
 static C_INT prefix_attributes_s64_test_fixed_segment_and_register(C_VOID)
 {
     static const type_unsigned_8 fixed_segment[] = { 0x26u, 0xa4u };
@@ -751,6 +911,18 @@ C_INT main(C_VOID)
     }
     if (!prefix_attributes_s64_test_attributes_and_lock()) {
         STD_FPRINTF(STD_STDERR, "S64 attribute/LOCK failed\n");
+        return 1;
+    }
+    if (!prefix_attributes_s64_test_lock_group_legality()) {
+        STD_FPRINTF(STD_STDERR, "S64 LOCK group legality failed\n");
+        return 1;
+    }
+    if (!prefix_attributes_s64_test_lock_group_writes()) {
+        STD_FPRINTF(STD_STDERR, "S64 LOCK group writes failed\n");
+        return 1;
+    }
+    if (!prefix_attributes_s64_test_repeated_width_prefixes()) {
+        STD_FPRINTF(STD_STDERR, "S64 repeated width-prefix failed\n");
         return 1;
     }
     if (!prefix_attributes_s64_test_fixed_segment_and_register()) {

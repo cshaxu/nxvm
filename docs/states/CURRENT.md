@@ -2,8 +2,29 @@
 
 ## Current Work
 
-**Open.** M5 T358 S4 is accepted; the next cross-mode mechanism requires a
-separately admitted continuation packet.
+**Active.** M5 T358 S5 audits shared prefix, `LOCK`, operand/address-width,
+and string-repeat classification through handler execution and publication.
+
+## M5 T358 S5 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner approved ordered single-agent execution of M5 Queue work on 2026-08-14. This is the final mechanism unit of already open T358 after accepted S1--S4. |
+| Objective | Establish one decision-to-publication ledger for instruction-prefix classification: repeated segment, `F2`/`F3`, `66`, `67`, and `F0 LOCK`; trace each shared classifier into representative ordinary and string handlers, and repair only a reproduced mismatch between classification, handler execution, fault ordering, or publication. |
+| Non-goals | No opcode-family breadth closure, global prefix-policy rewrite, VME/PVI, 486+ prefix behavior, numerical x87, physical bus/prefetch timing, device timing, host scheduling, or Windows claim. Do not flatten Intel-required per-instruction prefix validity, fixed-segment string semantics, or 16/32-bit layout differences. |
+| Reference Baseline | `213d1904` / current task artifact `vm-0-5-0358`. |
+| Candidate Proposal | [Cross-mode mechanism coherence](../proposals/m5-cross-mode-mechanism-coherence.md) and [Queue](QUEUE.md). |
+| Files And ABI Surface | Private CPU decode/classifier and instruction-state paths, adopted handler tests/evidence, status/history, and current artifact only. No public CPU, provider, device, debugger, or test-support ABI. |
+| Applicable Rules | Task Reading Set, execution, architecture, coding, documentation, and source/research policy; one prefix decision owner, handler compatibility with decoded state, validation before guest/external publication, and explicit Intel-required profile/form differences. |
+| Verification | Inventory prefix lexing, profile gates, prefix-state writers, `LOCK` validity decision, operand/address-size selectors, and every `prefix_rep` loop owner. For each classify last-prefix semantics, mode/profile disposition, fault/publication boundary, and handler consumer. Re-run retained S64 prefix owner plus representative ordinary, string, protected, VM86, and pending-IRQ owners; add focused proof only for a reproduced gap; run full current gate, governance, artifact rebuild/hash, and diff checks. |
+| Expected Markers | Retained `M5:T316:S64:PREFIX-ATTRIBUTES:OK`, current ordinary/string owner markers, and rebuilt `vm-0-5-0358` artifact. |
+| Asset Needs | Intel 80386 instruction-prefix, LOCK, string, and operand/address-size authority plus project-owned synthetic fixtures only; no guest media, firmware, or external-source import. |
+| Reporting Requirements | One complete P1 only: classifier/caller ledger, all reproduced outcomes, every in-scope repair and similar-issue sweep, retained/focused markers, full gate, artifact hash, commit, and push. Do not report a single opcode vector, prefix spelling, or registration as delivery. |
+| Stop Conditions | Stop and split if a correction requires an opcode-family semantic redesign, a public decoder/provider API, VME/PVI or later-CPU policy, physical prefetch/bus timing, device behavior, or an Intel-source ambiguity that cannot be resolved within the 80386 authority; record exact owner and transfer. |
+| Exit Criteria | Every shared prefix-state producer and classified handler consumer has one decision-to-publication contract; any reproduced accidental divergence is repaired and caller-swept; Intel-required form/profile differences remain explicit; retained prefix evidence is reconciled rather than duplicated; all gates pass and excluded timing/state-machine work is transferred. |
+| Original Owner Request | Continue the ordered Queue holistically through L3 closure, avoiding symptom-patch tactics and preserving true architectural distinctions. |
+| Similar-Issue Sweep | Search all prefix lexeme, state, `LOCK`, width, repeat, and string-loop owners plus their instruction-family callers and current-gate tests; classify every hit as common owner, repaired divergence, Intel-required difference, or Queue/TODO transfer before closure. |
 
 ## Current Technical Baseline
 

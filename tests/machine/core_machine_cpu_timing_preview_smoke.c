@@ -36,6 +36,12 @@ static C_INT preview_test_layouts(C_VOID)
         0x0fu, 0xa4u, 0xc1u, 0x05u
     };
     static const type_unsigned_8 rep_movsb[] = { 0xf3u, 0xa4u };
+    static const type_unsigned_8 repeated_operand_prefix[] = {
+        0x66u, 0x66u, 0xb8u, 0x78u, 0x56u, 0x34u, 0x12u
+    };
+    static const type_unsigned_8 repeated_address_prefix[] = {
+        0x67u, 0x67u, 0x8au, 0x06u
+    };
 
     return preview_expect(nop, sizeof(nop), CORE_MACHINE_CPU_PROFILE_8086,
         TYPE_FALSE, 1u, 1u) &&
@@ -50,7 +56,11 @@ static C_INT preview_test_layouts(C_VOID)
         preview_expect(shld_imm8, sizeof(shld_imm8),
             CORE_MACHINE_CPU_PROFILE_80386, TYPE_TRUE, 4u, 4u) &&
         preview_expect(rep_movsb, sizeof(rep_movsb),
-            CORE_MACHINE_CPU_PROFILE_80386, TYPE_TRUE, 2u, 2u);
+            CORE_MACHINE_CPU_PROFILE_80386, TYPE_TRUE, 2u, 2u) &&
+        preview_expect(repeated_operand_prefix, sizeof(repeated_operand_prefix),
+            CORE_MACHINE_CPU_PROFILE_80386, TYPE_FALSE, 7u, 4u) &&
+        preview_expect(repeated_address_prefix, sizeof(repeated_address_prefix),
+            CORE_MACHINE_CPU_PROFILE_80386, TYPE_FALSE, 4u, 4u);
 }
 
 static C_INT preview_test_unavailable(C_VOID)
