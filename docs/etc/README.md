@@ -81,6 +81,7 @@ principal documents named in [docs/README.md](../README.md).
 | `evidence/t352-s5-display-composition.md` | Verification owner | T352 S5 selected cross-mode/reset/timeline/mailbox composition, artifact, and task-closure evidence. Retain with T352 history at task closure. |
 | `evidence/t353-s1-pcat-port-topology-ledger.md` | Verification owner | T353 S1 selected PC/AT profile-to-composition-to-core port, route, lifecycle, and receiver ledger. Retain with T353 history at task closure. |
 | `evidence/t353-s2-profile-topology-contract.md` | Verification owner | T353 S2 selected direction-aware PC/AT port-leaf, route, validation, and session-registry proof. Retain with T353 history at task closure. |
+| `evidence/t353-s3-pcat-peripheral-admission-decision.md` | Verification owner | T353 S3 repository corpus/contract audit and exact no-owner transfer for port-`61h` PPI/speaker and related optional PC/AT interfaces. Retain with T353 history at task closure. |
 | `operations/` | Execution, source, and release owners | Toolchain, policy, templates, release procedure, and closure material. |
 | `research/` | Source owner | Provenance, external references, and non-product research. |
 | `history/` | Documentation owner | Read-only legacy and M5 migration/roadmap evidence. |
