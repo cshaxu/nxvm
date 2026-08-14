@@ -34,8 +34,8 @@ as Windows compatibility evidence.
 | Subtask | Bounded outcome |
 | --- | --- |
 | S1 | Audit the existing checkpoint/probe sources, CMake media routing, permitted local-media record, CPU/profile/device/L3 prerequisites, and every probe's host-time or provenance boundary. Produce a single readiness ledger and ordered receivers; do not execute Setup or change runtime behavior. |
-| S2 | Admit only the highest evidence-backed core/device blocker from S1. Repair its complete owner, lifecycle, visibility, reset, and focused proof boundary; do not use guest success as the specification. |
-| S3 | Re-run the approved bounded checkpoint that consumes S2, classify the first remaining block or stable checkpoint, and transfer every non-selected dependency precisely. |
+| S2 | Establish one explicit BYOB checkpoint command for the retained HDD/INT13 consumer. It must reject missing local configuration before media access and remain outside current-gate; it does not run Setup or alter core timing. |
+| S3 | Re-run only the approved bounded checkpoint that consumes S2, classify the first remaining block or stable checkpoint, and transfer every non-selected dependency precisely. |
 | S4 | Close the map by reconciling the ledger, media/provenance boundary, retained current-gate consumers, and deferred device/product work. It may not claim installation, Standard Mode, Enhanced Mode, or broad compatibility unless separately admitted. |
 
 S1 treats existing Windows probes as evidence artifacts, not as an authority to

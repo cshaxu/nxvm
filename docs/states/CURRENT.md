@@ -2,7 +2,29 @@
 
 ## Current Work
 
-**Active.** M5 T355 remains open between accepted subtasks.
+**Active.** M5 T355 S2 establishes an explicit opt-in BYOB checkpoint harness
+for the retained HDD/INT13 observation; it does not run Windows Setup.
+
+## M5 T355 S2 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner approved continued holistic device/L3 completion and readiness-map work on 2026-08-13. S1 accepted at `8568f9e4` / `20a52a06` allocates this harness boundary. |
+| Objective | Make one retained HDD/INT13 checkpoint explicitly opt-in, BYOB-configured, reproducibly invocable, and isolated from current-gate semantics without changing guest time or importing media. |
+| Non-goals | No Setup execution, Windows compatibility claim, media copy/hash/path persistence, core CPU/device/timing change, current-gate registration, generic test runner, or host-time-as-guest-time behavior. |
+| Reference Baseline | `20a52a06` on `master`, accepted T355 S1 readiness ledger. |
+| Candidate Proposal | [Windows 3.x readiness map](../proposals/m5-windows-3x-readiness-map.md); [S1 ledger](../etc/evidence/t355-s1-readiness-ledger.md); [source policy](../etc/operations/policy/source-policy.md). |
+| Files And ABI Surface | CMake opt-in checkpoint wiring, existing owner probe only if a bounded contract defect reproduces, indexed evidence/history/CURRENT. No core/profile/provider ABI or current-gate partition change. |
+| Applicable Rules | Task Reading Set; execution lifecycle; source policy; architecture/coding rules for CMake/probe change; documentation rules. The harness must preserve owner-local media configuration and host/guest boundary. |
+| Verification | Sweep all Windows probe registrations and media variables; prove the selected target is absent from current-gate, rejects missing opt-in media configuration deterministically, forwards only configured BYOB input, and leaves no path/media content in Git. Run configuration, focused harness check without media execution, governance, diff check, and current gate. |
+| Expected Markers | A named opt-in readiness-checkpoint target/check, unchanged current-gate partition, governance and full current gate. |
+| Asset Needs | No media access for implementation verification. A future owner-supplied local HDD is required only for S3 execution. |
+| Reporting Requirements | Record target, configuration variable, invocation form, absent-media outcome, current-gate exclusion, host-observation boundary, and every untouched probe. |
+| Stop Conditions | Stop for owner decision if correct wiring requires reading/copying media, hardcoding a local path/hash, altering current-gate, changing guest timing/device state, or creating a generic host runner. |
+| Exit Criteria | One bounded opt-in checkpoint can be invoked only with explicitly supplied local media, is mechanically outside current-gate, and creates no media/provenance or guest-time side effect. |
+| Original Owner Request | Fully and stably implement high-value devices and selected L3 before using a Windows consumer to decide subsequent work. |
+| Similar-Issue Sweep | Include all Windows probe targets, all CMake media-target lists, fixture documentation, source policy, host-thread/sleep calls, and current-gate partition verification. |
 
 ## Current Technical Baseline
 

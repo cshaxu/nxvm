@@ -2156,6 +2156,20 @@ set(PROJECT_M1_FDD_SMOKE_IMAGE "${PROJECT_ASSETS_ROOT}/fdd-msdos500.img" CACHE F
     "Owner-provided historical M1 DOS 5 FDD image for legacy smoke coverage")
 set(PROJECT_HDD_SMOKE_IMAGE "${PROJECT_ASSETS_ROOT}/hdd.img" CACHE FILEPATH
     "Owner-provided HDD image for current runtime smoke coverage")
+set(PROJECT_WINDOWS31_CHECKPOINT_HDD_IMAGE "" CACHE FILEPATH
+    "Owner-supplied local HDD image for the opt-in Windows readiness checkpoint")
+
+# T355 S2 keeps the retained Windows HDD/INT13 observation explicitly outside
+# the current gate.  The runner validates this opt-in input before it can
+# execute the host-side diagnostic probe.
+add_custom_target(run-windows31-hdd-checkpoint
+    COMMAND "${CMAKE_COMMAND}"
+        "-DPROJECT_T355_CHECKPOINT_EXECUTABLE:FILEPATH=$<TARGET_FILE:vm-windows31-hdd-admission-probe>"
+        "-DPROJECT_WINDOWS31_CHECKPOINT_HDD_IMAGE:FILEPATH=${PROJECT_WINDOWS31_CHECKPOINT_HDD_IMAGE}"
+        -P "${CMAKE_SOURCE_DIR}/cmake/run_windows31_hdd_checkpoint.cmake"
+    DEPENDS vm-windows31-hdd-admission-probe
+    COMMENT "Running the opt-in owner-supplied Windows readiness HDD checkpoint"
+    VERBATIM)
 
 function(project_add_current_smoke_test target)
     if(NOT TARGET ${target})
