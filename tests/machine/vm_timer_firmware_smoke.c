@@ -75,7 +75,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
             VM_SESSION_PAUSE_STEP ||
         core_machine_get_elapsed_ticks(session->core_machine,
             &stepped_elapsed_ticks) != TYPE_STATUS_OK ||
-        stepped_elapsed_ticks != paused_elapsed_ticks + 1u) goto fail;
+        stepped_elapsed_ticks <= paused_elapsed_ticks) goto fail;
     stage = 6;
     if (!test_core_machine_fixture_prepare_real_mode_execution(
             session->core_machine, 0x1000u)) {

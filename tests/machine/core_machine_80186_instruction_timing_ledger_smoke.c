@@ -190,11 +190,11 @@ static C_INT timing_80186_control_ports(C_VOID)
 static C_INT timing_80186_boundaries(C_VOID)
 {
     static const type_unsigned_8 nop[] = { 0x90u };
-    static const type_unsigned_8 unallocated[] = { 0x31u, 0xc0u };
+    static const type_unsigned_8 unallocated[] = { 0xd0u, 0xc0u };
     static const type_unsigned_8 fault[] = { 0x66u, 0x90u };
     static const type_unsigned_8 maximum[] = { 0x26u, 0x89u, 0x8bu, 0x00u, 0x10u };
     const core_machine_run_budget one = { 1u, 0u };
-    const core_machine_run_budget insufficient = { 1u, 26u };
+    const core_machine_run_budget insufficient = { 1u, 18u };
     core_machine_run_result result;
     timing_80186_state state = { 0u, 0u, 0u };
     core_machine *machine = STD_NULL;
@@ -245,9 +245,10 @@ C_INT main(C_VOID)
     if (timing_80186_case(nop, sizeof(nop), 3u) ||
         timing_80186_case(clc, sizeof(clc), 2u) ||
         timing_80186_case(immediate, sizeof(immediate), 4u) ||
-        timing_80186_case(registers, sizeof(registers), 2u) ||
-        timing_80186_memory() || timing_80186_control_ports() ||
-        timing_80186_boundaries()) return 1;
+        timing_80186_case(registers, sizeof(registers), 2u)) return 1;
+    if (timing_80186_memory()) return 2;
+    if (timing_80186_control_ports()) return 3;
+    if (timing_80186_boundaries()) return 4;
     STD_PRINTF("M5:T357:S5:80186-INSTRUCTION-TIMING-LEDGER:OK\n");
     return 0;
 }

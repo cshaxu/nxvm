@@ -255,7 +255,35 @@ typedef enum core_machine_source_timing_form {
     CORE_MACHINE_SOURCE_TIMING_GROUP3_DIV,
     CORE_MACHINE_SOURCE_TIMING_GROUP3_IDIV,
     CORE_MACHINE_SOURCE_TIMING_IMUL_IMMEDIATE,
-    CORE_MACHINE_SOURCE_TIMING_SETCC
+    CORE_MACHINE_SOURCE_TIMING_SETCC,
+    CORE_MACHINE_SOURCE_TIMING_CALL_NEAR_DIRECT,
+    CORE_MACHINE_SOURCE_TIMING_CALL_NEAR_REGISTER,
+    CORE_MACHINE_SOURCE_TIMING_CALL_NEAR_MEMORY,
+    CORE_MACHINE_SOURCE_TIMING_CALL_FAR_DIRECT,
+    CORE_MACHINE_SOURCE_TIMING_CALL_FAR_MEMORY,
+    CORE_MACHINE_SOURCE_TIMING_JMP_DIRECT,
+    CORE_MACHINE_SOURCE_TIMING_JMP_REGISTER,
+    CORE_MACHINE_SOURCE_TIMING_JMP_MEMORY,
+    CORE_MACHINE_SOURCE_TIMING_JMP_FAR_DIRECT,
+    CORE_MACHINE_SOURCE_TIMING_JMP_FAR_MEMORY,
+    CORE_MACHINE_SOURCE_TIMING_RET_NEAR,
+    CORE_MACHINE_SOURCE_TIMING_RET_NEAR_IMMEDIATE,
+    CORE_MACHINE_SOURCE_TIMING_PUSH_REGISTER,
+    CORE_MACHINE_SOURCE_TIMING_PUSH_MEMORY,
+    CORE_MACHINE_SOURCE_TIMING_PUSH_IMMEDIATE,
+    CORE_MACHINE_SOURCE_TIMING_POP_REGISTER,
+    CORE_MACHINE_SOURCE_TIMING_POP_MEMORY,
+    CORE_MACHINE_SOURCE_TIMING_PUSHA,
+    CORE_MACHINE_SOURCE_TIMING_POPA,
+    CORE_MACHINE_SOURCE_TIMING_PUSHF,
+    CORE_MACHINE_SOURCE_TIMING_POPF,
+    CORE_MACHINE_SOURCE_TIMING_ENTER_LEVEL_ZERO,
+    CORE_MACHINE_SOURCE_TIMING_ENTER_LEVEL_ONE,
+    CORE_MACHINE_SOURCE_TIMING_LEAVE,
+    CORE_MACHINE_SOURCE_TIMING_HLT,
+    CORE_MACHINE_SOURCE_TIMING_INT3,
+    CORE_MACHINE_SOURCE_TIMING_INT_IMMEDIATE,
+    CORE_MACHINE_SOURCE_TIMING_IRET
 } core_machine_source_timing_form;
 
 typedef struct core_machine_source_timing_entry {
@@ -280,7 +308,29 @@ static const core_machine_source_timing_entry
     { CORE_MACHINE_SOURCE_TIMING_IN_IMMEDIATE, 10u },
     { CORE_MACHINE_SOURCE_TIMING_IN_DX, 8u },
     { CORE_MACHINE_SOURCE_TIMING_OUT_IMMEDIATE, 10u },
-    { CORE_MACHINE_SOURCE_TIMING_OUT_DX, 8u }
+    { CORE_MACHINE_SOURCE_TIMING_OUT_DX, 8u },
+    { CORE_MACHINE_SOURCE_TIMING_CALL_NEAR_DIRECT, 19u },
+    { CORE_MACHINE_SOURCE_TIMING_CALL_NEAR_REGISTER, 16u },
+    { CORE_MACHINE_SOURCE_TIMING_CALL_NEAR_MEMORY, 21u },
+    { CORE_MACHINE_SOURCE_TIMING_CALL_FAR_DIRECT, 28u },
+    { CORE_MACHINE_SOURCE_TIMING_CALL_FAR_MEMORY, 37u },
+    { CORE_MACHINE_SOURCE_TIMING_JMP_DIRECT, 15u },
+    { CORE_MACHINE_SOURCE_TIMING_JMP_REGISTER, 11u },
+    { CORE_MACHINE_SOURCE_TIMING_JMP_MEMORY, 18u },
+    { CORE_MACHINE_SOURCE_TIMING_JMP_FAR_DIRECT, 15u },
+    { CORE_MACHINE_SOURCE_TIMING_JMP_FAR_MEMORY, 24u },
+    { CORE_MACHINE_SOURCE_TIMING_RET_NEAR, 8u },
+    { CORE_MACHINE_SOURCE_TIMING_RET_NEAR_IMMEDIATE, 12u },
+    { CORE_MACHINE_SOURCE_TIMING_PUSH_REGISTER, 11u },
+    { CORE_MACHINE_SOURCE_TIMING_PUSH_MEMORY, 16u },
+    { CORE_MACHINE_SOURCE_TIMING_POP_REGISTER, 8u },
+    { CORE_MACHINE_SOURCE_TIMING_POP_MEMORY, 17u },
+    { CORE_MACHINE_SOURCE_TIMING_PUSHF, 10u },
+    { CORE_MACHINE_SOURCE_TIMING_POPF, 8u },
+    { CORE_MACHINE_SOURCE_TIMING_HLT, 2u },
+    { CORE_MACHINE_SOURCE_TIMING_INT3, 52u },
+    { CORE_MACHINE_SOURCE_TIMING_INT_IMMEDIATE, 51u },
+    { CORE_MACHINE_SOURCE_TIMING_IRET, 24u }
 };
 
 /* Intel iAPX 86/88/186/188 User's Manual, Table 1-16: parenthesized
@@ -300,7 +350,34 @@ static const core_machine_source_timing_entry
     { CORE_MACHINE_SOURCE_TIMING_IN_IMMEDIATE, 10u },
     { CORE_MACHINE_SOURCE_TIMING_IN_DX, 8u },
     { CORE_MACHINE_SOURCE_TIMING_OUT_IMMEDIATE, 9u },
-    { CORE_MACHINE_SOURCE_TIMING_OUT_DX, 7u }
+    { CORE_MACHINE_SOURCE_TIMING_OUT_DX, 7u },
+    { CORE_MACHINE_SOURCE_TIMING_CALL_NEAR_DIRECT, 14u },
+    { CORE_MACHINE_SOURCE_TIMING_CALL_NEAR_REGISTER, 13u },
+    { CORE_MACHINE_SOURCE_TIMING_CALL_NEAR_MEMORY, 19u },
+    { CORE_MACHINE_SOURCE_TIMING_CALL_FAR_DIRECT, 23u },
+    { CORE_MACHINE_SOURCE_TIMING_CALL_FAR_MEMORY, 38u },
+    { CORE_MACHINE_SOURCE_TIMING_JMP_DIRECT, 13u },
+    { CORE_MACHINE_SOURCE_TIMING_JMP_REGISTER, 11u },
+    { CORE_MACHINE_SOURCE_TIMING_JMP_MEMORY, 17u },
+    { CORE_MACHINE_SOURCE_TIMING_JMP_FAR_DIRECT, 13u },
+    { CORE_MACHINE_SOURCE_TIMING_JMP_FAR_MEMORY, 26u },
+    { CORE_MACHINE_SOURCE_TIMING_RET_NEAR, 16u },
+    { CORE_MACHINE_SOURCE_TIMING_RET_NEAR_IMMEDIATE, 18u },
+    { CORE_MACHINE_SOURCE_TIMING_PUSH_REGISTER, 10u },
+    { CORE_MACHINE_SOURCE_TIMING_PUSH_MEMORY, 16u },
+    { CORE_MACHINE_SOURCE_TIMING_POP_REGISTER, 10u },
+    { CORE_MACHINE_SOURCE_TIMING_POP_MEMORY, 20u },
+    { CORE_MACHINE_SOURCE_TIMING_PUSHA, 36u },
+    { CORE_MACHINE_SOURCE_TIMING_POPA, 51u },
+    { CORE_MACHINE_SOURCE_TIMING_PUSHF, 9u },
+    { CORE_MACHINE_SOURCE_TIMING_POPF, 8u },
+    { CORE_MACHINE_SOURCE_TIMING_ENTER_LEVEL_ZERO, 15u },
+    { CORE_MACHINE_SOURCE_TIMING_ENTER_LEVEL_ONE, 25u },
+    { CORE_MACHINE_SOURCE_TIMING_LEAVE, 8u },
+    { CORE_MACHINE_SOURCE_TIMING_HLT, 2u },
+    { CORE_MACHINE_SOURCE_TIMING_INT3, 45u },
+    { CORE_MACHINE_SOURCE_TIMING_INT_IMMEDIATE, 47u },
+    { CORE_MACHINE_SOURCE_TIMING_IRET, 28u }
 };
 
 /* Intel 80286/80287 Programmer's Reference Manual, Appendix B.  The owner
@@ -320,7 +397,35 @@ static const core_machine_source_timing_entry
     { CORE_MACHINE_SOURCE_TIMING_IN_IMMEDIATE, 5u },
     { CORE_MACHINE_SOURCE_TIMING_IN_DX, 5u },
     { CORE_MACHINE_SOURCE_TIMING_OUT_IMMEDIATE, 3u },
-    { CORE_MACHINE_SOURCE_TIMING_OUT_DX, 3u }
+    { CORE_MACHINE_SOURCE_TIMING_OUT_DX, 3u },
+    { CORE_MACHINE_SOURCE_TIMING_CALL_NEAR_DIRECT, 7u },
+    { CORE_MACHINE_SOURCE_TIMING_CALL_NEAR_REGISTER, 7u },
+    { CORE_MACHINE_SOURCE_TIMING_CALL_NEAR_MEMORY, 11u },
+    { CORE_MACHINE_SOURCE_TIMING_CALL_FAR_DIRECT, 13u },
+    { CORE_MACHINE_SOURCE_TIMING_CALL_FAR_MEMORY, 16u },
+    { CORE_MACHINE_SOURCE_TIMING_JMP_DIRECT, 7u },
+    { CORE_MACHINE_SOURCE_TIMING_JMP_REGISTER, 7u },
+    { CORE_MACHINE_SOURCE_TIMING_JMP_MEMORY, 11u },
+    { CORE_MACHINE_SOURCE_TIMING_JMP_FAR_DIRECT, 11u },
+    { CORE_MACHINE_SOURCE_TIMING_JMP_FAR_MEMORY, 15u },
+    { CORE_MACHINE_SOURCE_TIMING_RET_NEAR, 11u },
+    { CORE_MACHINE_SOURCE_TIMING_RET_NEAR_IMMEDIATE, 11u },
+    { CORE_MACHINE_SOURCE_TIMING_PUSH_REGISTER, 3u },
+    { CORE_MACHINE_SOURCE_TIMING_PUSH_MEMORY, 5u },
+    { CORE_MACHINE_SOURCE_TIMING_PUSH_IMMEDIATE, 3u },
+    { CORE_MACHINE_SOURCE_TIMING_POP_REGISTER, 5u },
+    { CORE_MACHINE_SOURCE_TIMING_POP_MEMORY, 5u },
+    { CORE_MACHINE_SOURCE_TIMING_PUSHA, 17u },
+    { CORE_MACHINE_SOURCE_TIMING_POPA, 19u },
+    { CORE_MACHINE_SOURCE_TIMING_PUSHF, 3u },
+    { CORE_MACHINE_SOURCE_TIMING_POPF, 5u },
+    { CORE_MACHINE_SOURCE_TIMING_ENTER_LEVEL_ZERO, 11u },
+    { CORE_MACHINE_SOURCE_TIMING_ENTER_LEVEL_ONE, 15u },
+    { CORE_MACHINE_SOURCE_TIMING_LEAVE, 8u },
+    { CORE_MACHINE_SOURCE_TIMING_HLT, 2u },
+    { CORE_MACHINE_SOURCE_TIMING_INT3, 23u },
+    { CORE_MACHINE_SOURCE_TIMING_INT_IMMEDIATE, 23u },
+    { CORE_MACHINE_SOURCE_TIMING_IRET, 17u }
 };
 
 /* Intel 80386 PRM section 17.2.2.3 selected rows.  These are core clocks
@@ -348,7 +453,34 @@ static const core_machine_source_timing_entry
     { CORE_MACHINE_SOURCE_TIMING_OUT_IMMEDIATE_PROTECTED, 4u },
     { CORE_MACHINE_SOURCE_TIMING_OUT_IMMEDIATE_PERMISSION, 24u },
     { CORE_MACHINE_SOURCE_TIMING_OUT_DX_PROTECTED, 5u },
-    { CORE_MACHINE_SOURCE_TIMING_OUT_DX_PERMISSION, 25u }
+    { CORE_MACHINE_SOURCE_TIMING_OUT_DX_PERMISSION, 25u },
+    { CORE_MACHINE_SOURCE_TIMING_CALL_NEAR_DIRECT, 7u },
+    { CORE_MACHINE_SOURCE_TIMING_CALL_NEAR_REGISTER, 7u },
+    { CORE_MACHINE_SOURCE_TIMING_CALL_NEAR_MEMORY, 10u },
+    { CORE_MACHINE_SOURCE_TIMING_CALL_FAR_DIRECT, 17u },
+    { CORE_MACHINE_SOURCE_TIMING_CALL_FAR_MEMORY, 22u },
+    { CORE_MACHINE_SOURCE_TIMING_JMP_DIRECT, 7u },
+    { CORE_MACHINE_SOURCE_TIMING_JMP_REGISTER, 7u },
+    { CORE_MACHINE_SOURCE_TIMING_JMP_MEMORY, 10u },
+    { CORE_MACHINE_SOURCE_TIMING_JMP_FAR_DIRECT, 12u },
+    { CORE_MACHINE_SOURCE_TIMING_JMP_FAR_MEMORY, 17u },
+    { CORE_MACHINE_SOURCE_TIMING_RET_NEAR, 10u },
+    { CORE_MACHINE_SOURCE_TIMING_RET_NEAR_IMMEDIATE, 10u },
+    { CORE_MACHINE_SOURCE_TIMING_PUSH_REGISTER, 2u },
+    { CORE_MACHINE_SOURCE_TIMING_PUSH_MEMORY, 5u },
+    { CORE_MACHINE_SOURCE_TIMING_PUSH_IMMEDIATE, 2u },
+    { CORE_MACHINE_SOURCE_TIMING_POP_REGISTER, 4u },
+    { CORE_MACHINE_SOURCE_TIMING_POP_MEMORY, 5u },
+    { CORE_MACHINE_SOURCE_TIMING_PUSHA, 18u },
+    { CORE_MACHINE_SOURCE_TIMING_POPA, 24u },
+    { CORE_MACHINE_SOURCE_TIMING_PUSHF, 4u },
+    { CORE_MACHINE_SOURCE_TIMING_POPF, 5u },
+    { CORE_MACHINE_SOURCE_TIMING_ENTER_LEVEL_ZERO, 10u },
+    { CORE_MACHINE_SOURCE_TIMING_ENTER_LEVEL_ONE, 12u },
+    { CORE_MACHINE_SOURCE_TIMING_LEAVE, 4u },
+    { CORE_MACHINE_SOURCE_TIMING_HLT, 5u },
+    { CORE_MACHINE_SOURCE_TIMING_INT_IMMEDIATE, 37u },
+    { CORE_MACHINE_SOURCE_TIMING_IRET, 22u }
 };
 
 #define CORE_MACHINE_80386_JCC_NOT_TAKEN_TICKS 3u
@@ -1347,6 +1479,348 @@ static C_INT core_machine_primary_source_instruction_cost(
     return 1;
 }
 
+/* Control and stack rows are selected after a successful instruction refresh.
+ * The decoder capture supplies the executed shape, oldcpu supplies the source
+ * mode, and the post-refresh CPU supplies the published transfer outcome.
+ * No handler owns a clock; paths needing a gate, privilege change, task switch
+ * or exception delivery deliberately remain outside this classifier. */
+static type_unsigned_64 core_machine_control_stack_source_lookup(
+    const core_machine *machine, core_machine_source_timing_form form)
+{
+    if (machine == STD_NULL) return CORE_MACHINE_SOURCE_UNALLOCATED_TICKS;
+    switch (machine->cpu_profile) {
+    case CORE_MACHINE_CPU_PROFILE_8086:
+        return core_machine_source_timing_lookup(
+            core_machine_8086_source_timing_ledger,
+            sizeof(core_machine_8086_source_timing_ledger) /
+                sizeof(core_machine_8086_source_timing_ledger[0]), form);
+    case CORE_MACHINE_CPU_PROFILE_80186:
+        return core_machine_source_timing_lookup(
+            core_machine_80186_source_timing_ledger,
+            sizeof(core_machine_80186_source_timing_ledger) /
+                sizeof(core_machine_80186_source_timing_ledger[0]), form);
+    case CORE_MACHINE_CPU_PROFILE_80286:
+        return core_machine_80286_source_timing_lookup(form);
+    case CORE_MACHINE_CPU_PROFILE_80386:
+        return core_machine_80386_source_timing_lookup(form);
+    default:
+        return CORE_MACHINE_SOURCE_UNALLOCATED_TICKS;
+    }
+}
+
+static C_INT core_machine_control_stack_is_protected(
+    const t_cpuins_data *data)
+{
+    return data != STD_NULL && (data->oldcpu.data.cr0 & VCPU_CR0_PE) != 0u &&
+        (data->oldcpu.data.eflags & VCPU_EFLAGS_VM) == 0u;
+}
+
+static C_INT core_machine_control_stack_next_term(core_machine *machine,
+    type_unsigned_64 *out_ticks)
+{
+    core_machine_cpu_instruction_lexeme lexeme;
+
+    if (machine == STD_NULL || out_ticks == STD_NULL) return 0;
+    if (machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_80286 &&
+        machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_80386) {
+        *out_ticks = 0u;
+        return 1;
+    }
+    if (!core_machine_cpu_execution_preview_lexeme(
+            &machine->executor_cpu_execution, &lexeme) || !lexeme.available) {
+        return 0;
+    }
+    *out_ticks = machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 ?
+        lexeme.byte_count : lexeme.component_count;
+    return 1;
+}
+
+static C_INT core_machine_control_stack_prefixes_are_source_backed(
+    const core_machine *machine, const t_cpuins_data *data,
+    type_unsigned_32 prefixes)
+{
+    C_INT segment_override;
+
+    if (machine == STD_NULL || data == STD_NULL) return 0;
+    if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80386) {
+        return core_machine_80386_timing_has_source_prefixes(data, prefixes) &&
+            !data->flagLock;
+    }
+    segment_override = core_machine_8086_timing_has_segment_override(data,
+        prefixes);
+    return prefixes == 0u || segment_override;
+}
+
+static C_INT core_machine_control_stack_add_next_term(core_machine *machine,
+    type_unsigned_64 base_ticks, type_unsigned_64 *out_ticks)
+{
+    type_unsigned_64 next_ticks;
+
+    if (out_ticks == STD_NULL ||
+        !core_machine_control_stack_next_term(machine, &next_ticks) ||
+        !core_machine_add_ticks(&base_ticks, next_ticks)) {
+        return 0;
+    }
+    *out_ticks = base_ticks;
+    return 1;
+}
+
+static type_unsigned_64 core_machine_control_stack_memory_additions(
+    const core_machine *machine, const t_cpuins_data *data,
+    type_unsigned_32 prefixes, type_unsigned_8 word_transfers)
+{
+    type_unsigned_64 ticks = 0u;
+
+    if (machine == STD_NULL || data == STD_NULL) return 0u;
+    if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_8086 ||
+        machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80186) {
+        ticks = core_machine_8086_timing_effective_address(data, prefixes) +
+            (type_unsigned_64)word_transfers *
+                core_machine_8086_timing_odd_word(data);
+        if (core_machine_8086_timing_has_segment_override(data, prefixes)) {
+            ticks += CORE_MACHINE_8086_SEGMENT_OVERRIDE_TICKS;
+        }
+    } else if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286) {
+        ticks = core_machine_80286_timing_effective_address(data, prefixes) +
+            (type_unsigned_64)word_transfers *
+                core_machine_80286_timing_odd_word(data);
+    }
+    return ticks;
+}
+
+static C_INT core_machine_control_stack_source_instruction_cost(
+    core_machine *machine, type_unsigned_64 *out_ticks)
+{
+    const t_cpuins_data *data;
+    type_unsigned_32 prefixes;
+    type_unsigned_8 opcode;
+    type_unsigned_8 extension;
+    type_unsigned_64 ticks;
+    C_INT memory;
+    C_INT protected_mode;
+    C_INT same_privilege;
+
+    if (machine == STD_NULL || out_ticks == STD_NULL) return 0;
+    data = &machine->executor_cpu_instructions.data;
+    prefixes = core_machine_instruction_prefix_count(data);
+    if (prefixes >= data->oplen ||
+        !core_machine_control_stack_prefixes_are_source_backed(machine, data,
+            prefixes)) {
+        return 0;
+    }
+    opcode = data->opcodes[prefixes];
+    protected_mode = core_machine_control_stack_is_protected(data);
+    same_privilege = !protected_mode ||
+        data->oldcpu.data.cs.dpl == machine->executor_cpu.data.cs.dpl;
+    memory = core_machine_source_timing_modrm_is_memory(data, prefixes);
+    extension = prefixes + 1u < data->oplen ?
+        (data->opcodes[prefixes + 1u] >> 3u) & 7u : 8u;
+
+    switch (opcode) {
+    case 0xe8u:
+        return core_machine_control_stack_add_next_term(machine,
+            core_machine_control_stack_source_lookup(machine,
+                CORE_MACHINE_SOURCE_TIMING_CALL_NEAR_DIRECT), out_ticks);
+    case 0x9au:
+        if (!same_privilege || protected_mode) return 0;
+        ticks = core_machine_control_stack_source_lookup(machine,
+            CORE_MACHINE_SOURCE_TIMING_CALL_FAR_DIRECT);
+        return core_machine_control_stack_add_next_term(machine, ticks, out_ticks);
+    case 0xe9u: case 0xebu:
+        return core_machine_control_stack_add_next_term(machine,
+            core_machine_control_stack_source_lookup(machine,
+                CORE_MACHINE_SOURCE_TIMING_JMP_DIRECT), out_ticks);
+    case 0xeau:
+        if (!same_privilege || protected_mode) return 0;
+        ticks = core_machine_control_stack_source_lookup(machine,
+            CORE_MACHINE_SOURCE_TIMING_JMP_FAR_DIRECT);
+        return core_machine_control_stack_add_next_term(machine, ticks, out_ticks);
+    case 0xc2u:
+        return core_machine_control_stack_add_next_term(machine,
+            core_machine_control_stack_source_lookup(machine,
+                CORE_MACHINE_SOURCE_TIMING_RET_NEAR_IMMEDIATE), out_ticks);
+    case 0xc3u:
+        return core_machine_control_stack_add_next_term(machine,
+            core_machine_control_stack_source_lookup(machine,
+                CORE_MACHINE_SOURCE_TIMING_RET_NEAR), out_ticks);
+    case 0x50u: case 0x51u: case 0x52u: case 0x53u:
+    case 0x54u: case 0x55u: case 0x56u: case 0x57u:
+        *out_ticks = core_machine_control_stack_source_lookup(machine,
+            CORE_MACHINE_SOURCE_TIMING_PUSH_REGISTER);
+        return 1;
+    case 0x58u: case 0x59u: case 0x5au: case 0x5bu:
+    case 0x5cu: case 0x5du: case 0x5eu: case 0x5fu:
+        *out_ticks = core_machine_control_stack_source_lookup(machine,
+            CORE_MACHINE_SOURCE_TIMING_POP_REGISTER);
+        return 1;
+    case 0x60u:
+        *out_ticks = core_machine_control_stack_source_lookup(machine,
+            CORE_MACHINE_SOURCE_TIMING_PUSHA);
+        return machine->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80186;
+    case 0x61u:
+        *out_ticks = core_machine_control_stack_source_lookup(machine,
+            CORE_MACHINE_SOURCE_TIMING_POPA);
+        return machine->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80186;
+    case 0x68u: case 0x6au:
+        *out_ticks = core_machine_control_stack_source_lookup(machine,
+            CORE_MACHINE_SOURCE_TIMING_PUSH_IMMEDIATE);
+        return machine->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80186;
+    case 0x8fu:
+        if (extension != 0u) return 0;
+        *out_ticks = core_machine_control_stack_source_lookup(machine, memory ?
+            CORE_MACHINE_SOURCE_TIMING_POP_MEMORY :
+            CORE_MACHINE_SOURCE_TIMING_POP_REGISTER);
+        if (memory) {
+            *out_ticks += core_machine_control_stack_memory_additions(machine,
+                data, prefixes, 2u);
+        }
+        return 1;
+    case 0x9cu:
+        *out_ticks = core_machine_control_stack_source_lookup(machine,
+            CORE_MACHINE_SOURCE_TIMING_PUSHF);
+        return 1;
+    case 0x9du:
+        *out_ticks = core_machine_control_stack_source_lookup(machine,
+            CORE_MACHINE_SOURCE_TIMING_POPF);
+        return 1;
+    case 0xc8u:
+        if (machine->cpu_profile < CORE_MACHINE_CPU_PROFILE_80186) return 0;
+        extension = data->opcodes[data->oplen - 1u] & 0x1fu;
+        if (extension == 0u) {
+            *out_ticks = core_machine_control_stack_source_lookup(machine,
+                CORE_MACHINE_SOURCE_TIMING_ENTER_LEVEL_ZERO);
+        } else if (extension == 1u) {
+            *out_ticks = core_machine_control_stack_source_lookup(machine,
+                CORE_MACHINE_SOURCE_TIMING_ENTER_LEVEL_ONE);
+        } else {
+            ticks = machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 ?
+                12u + 4u * extension : 15u + 4u * (extension - 1u);
+            *out_ticks = ticks;
+        }
+        return 1;
+    case 0xc9u:
+        *out_ticks = core_machine_control_stack_source_lookup(machine,
+            CORE_MACHINE_SOURCE_TIMING_LEAVE);
+        return machine->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80186;
+    case 0xe0u: case 0xe1u: case 0xe2u: case 0xe3u:
+        if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80386) {
+            ticks = opcode == 0xe3u ?
+                (machine->executor_cpu.data.eip == data->oldcpu.data.eip +
+                    prefixes + 2u ? 5u : 9u) : 11u;
+            return core_machine_control_stack_add_next_term(machine, ticks,
+                out_ticks);
+        }
+        if (opcode == 0xe3u) {
+            *out_ticks = machine->executor_cpu.data.eip ==
+                TYPE_MASK_UNSIGNED_16(data->oldcpu.data.eip + prefixes + 2u) ?
+                (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 ? 4u :
+                    machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80186 ? 5u :
+                    6u) : (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 ?
+                    8u : 18u);
+        } else {
+            C_INT taken = machine->executor_cpu.data.eip !=
+                TYPE_MASK_UNSIGNED_16(data->oldcpu.data.eip + prefixes + 2u);
+            if (opcode == 0xe2u) {
+                *out_ticks = taken ? (machine->cpu_profile ==
+                    CORE_MACHINE_CPU_PROFILE_80286 ? 8u :
+                    machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80186 ? 15u :
+                    17u) : (machine->cpu_profile ==
+                    CORE_MACHINE_CPU_PROFILE_80286 ? 4u : 5u);
+            } else if (opcode == 0xe1u) {
+                *out_ticks = taken ? (machine->cpu_profile ==
+                    CORE_MACHINE_CPU_PROFILE_80286 ? 8u :
+                    machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80186 ? 16u :
+                    18u) : (machine->cpu_profile ==
+                    CORE_MACHINE_CPU_PROFILE_80286 ? 4u : 6u);
+            } else {
+                *out_ticks = taken ? (machine->cpu_profile ==
+                    CORE_MACHINE_CPU_PROFILE_80286 ? 8u :
+                    machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80186 ? 16u :
+                    19u) : (machine->cpu_profile ==
+                    CORE_MACHINE_CPU_PROFILE_80286 ? 4u : 5u);
+            }
+        }
+        return 1;
+    case 0xf4u:
+        *out_ticks = core_machine_control_stack_source_lookup(machine,
+            CORE_MACHINE_SOURCE_TIMING_HLT);
+        return 1;
+    case 0xccu: case 0xcdu:
+        if (!same_privilege) return 0;
+        if (protected_mode) return 0;
+        *out_ticks = core_machine_control_stack_source_lookup(machine,
+            opcode == 0xccu ? CORE_MACHINE_SOURCE_TIMING_INT3 :
+            CORE_MACHINE_SOURCE_TIMING_INT_IMMEDIATE);
+        return machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 ?
+            core_machine_control_stack_add_next_term(machine, *out_ticks,
+                out_ticks) : 1;
+    case 0xceu:
+        if ((data->oldcpu.data.eflags & VCPU_EFLAGS_OF) == 0u) {
+            *out_ticks = machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 ||
+                machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80386 ? 3u : 4u;
+            return 1;
+        }
+        if (!same_privilege) return 0;
+        if (protected_mode) return 0;
+        if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80386) {
+            *out_ticks = 35u;
+        } else if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286) {
+            *out_ticks = 24u;
+        } else {
+            *out_ticks = machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80186 ?
+                48u : 53u;
+        }
+        return machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 ?
+            core_machine_control_stack_add_next_term(machine, *out_ticks,
+                out_ticks) : 1;
+    case 0xcfu:
+        if (!same_privilege) return 0;
+        if (protected_mode) return 0;
+        *out_ticks = core_machine_control_stack_source_lookup(machine,
+            CORE_MACHINE_SOURCE_TIMING_IRET);
+        return machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 ?
+            core_machine_control_stack_add_next_term(machine, *out_ticks,
+                out_ticks) : 1;
+    case 0xffu:
+        if (extension == 2u || extension == 4u) {
+            *out_ticks = core_machine_control_stack_source_lookup(machine,
+                memory ? (extension == 2u ? CORE_MACHINE_SOURCE_TIMING_CALL_NEAR_MEMORY :
+                    CORE_MACHINE_SOURCE_TIMING_JMP_MEMORY) :
+                (extension == 2u ? CORE_MACHINE_SOURCE_TIMING_CALL_NEAR_REGISTER :
+                    CORE_MACHINE_SOURCE_TIMING_JMP_REGISTER));
+            if (memory) {
+                *out_ticks += core_machine_control_stack_memory_additions(
+                    machine, data, prefixes, extension == 2u ? 2u : 1u);
+            }
+            return core_machine_control_stack_add_next_term(machine, *out_ticks,
+                out_ticks);
+        }
+        if (extension == 3u || extension == 5u) {
+            if (!memory || !same_privilege || protected_mode) return 0;
+            *out_ticks = core_machine_control_stack_source_lookup(machine,
+                extension == 3u ? CORE_MACHINE_SOURCE_TIMING_CALL_FAR_MEMORY :
+                CORE_MACHINE_SOURCE_TIMING_JMP_FAR_MEMORY);
+            *out_ticks += core_machine_control_stack_memory_additions(machine,
+                data, prefixes, extension == 3u ? 4u : 2u);
+            return core_machine_control_stack_add_next_term(machine, *out_ticks,
+                out_ticks);
+        }
+        if (extension == 6u) {
+            *out_ticks = core_machine_control_stack_source_lookup(machine,
+                memory ? CORE_MACHINE_SOURCE_TIMING_PUSH_MEMORY :
+                CORE_MACHINE_SOURCE_TIMING_PUSH_REGISTER);
+            if (memory) {
+                *out_ticks += core_machine_control_stack_memory_additions(
+                    machine, data, prefixes, 2u);
+            }
+            return 1;
+        }
+        return 0;
+    default:
+        return 0;
+    }
+}
+
 static type_unsigned_64 core_machine_80386_timing_signed_magnitude(
     type_unsigned_64 value, type_unsigned_8 bytes)
 {
@@ -1703,6 +2177,9 @@ static C_INT core_machine_instruction_cost(core_machine *machine,
         return 1;
     }
     if (core_machine_primary_source_instruction_cost(machine, out_ticks)) {
+        return 1;
+    }
+    if (core_machine_control_stack_source_instruction_cost(machine, out_ticks)) {
         return 1;
     }
     if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_8086) {

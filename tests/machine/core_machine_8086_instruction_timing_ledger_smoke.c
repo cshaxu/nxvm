@@ -260,13 +260,12 @@ static C_INT timing_8086_test_control_repeat_and_ports(C_VOID)
 
 static C_INT timing_8086_test_fallback_fault_budget_and_overflow(C_VOID)
 {
-    static const type_unsigned_8 unallocated[] = { 0x31u, 0xc0u };
+    static const type_unsigned_8 unallocated[] = { 0xd0u, 0xc0u };
     static const type_unsigned_8 fault[] = { 0x66u, 0x90u };
     static const type_unsigned_8 maximum[] = { 0x26u, 0x89u, 0x8bu, 0x00u, 0x10u };
     static const type_unsigned_8 nop[] = { 0x90u };
     const core_machine_run_budget one = { 1u, 0u };
     const core_machine_run_budget insufficient = { 1u, 26u };
-    const core_machine_run_budget sufficient = { 1u, 27u };
     core_machine_run_result result;
     timing_8086_state state = { 0u, 0u, 0u };
     core_machine *machine = STD_NULL;
@@ -313,7 +312,7 @@ static C_INT timing_8086_test_fallback_fault_budget_and_overflow(C_VOID)
         failed |= !timing_8086_load(machine, nop, sizeof(nop));
         machine->elapsed_ticks = UINT64_MAX - 2u;
         state.advanced_ticks = 0u;
-        failed |= core_machine_run(machine, sufficient, &result) != TYPE_STATUS_FAULT ||
+        failed |= core_machine_run(machine, one, &result) != TYPE_STATUS_FAULT ||
             result.reason != CORE_MACHINE_STOP_FAULT || result.executed != 0u ||
             result.ticks != 0u || result.elapsed_ticks != UINT64_MAX - 2u ||
             machine->elapsed_ticks != UINT64_MAX - 2u || state.advanced_ticks != 0u;

@@ -56,7 +56,7 @@ C_INT main(C_VOID)
 {
     static const type_unsigned_8 mov_ax[] = { 0xb8u, 0x34u, 0x12u };
     static const type_unsigned_8 out_80[] = { 0xe6u, 0x80u };
-    static const type_unsigned_8 int_20[] = { 0xcdu, 0x20u };
+    static const type_unsigned_8 int_20[] = { 0xcdu, 0x20u, 0x90u };
     static const type_unsigned_8 prefixed_nop[] = { 0x26u, 0x90u };
     static const type_unsigned_8 halt[] = { 0xf4u };
     static const type_unsigned_8 operand_size_prefix[] = { 0x66u, 0x90u };
@@ -70,14 +70,14 @@ C_INT main(C_VOID)
         1u, 3u);
     failed |= core_machine_real_mode_tick_case("int", int_20, sizeof(int_20),
         CORE_MACHINE_CPU_PROFILE_80286, TYPE_STATUS_OK, CORE_MACHINE_STOP_BUDGET,
-        1u, 1u);
+        1u, 25u);
     failed |= core_machine_real_mode_tick_case("segment-prefix", prefixed_nop,
         sizeof(prefixed_nop),
         CORE_MACHINE_CPU_PROFILE_80286, TYPE_STATUS_OK, CORE_MACHINE_STOP_BUDGET,
         1u, 1u);
     failed |= core_machine_real_mode_tick_case("hlt", halt, sizeof(halt),
         CORE_MACHINE_CPU_PROFILE_80286, TYPE_STATUS_OK,
-        CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT, 1u, 1u);
+        CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT, 1u, 2u);
     failed |= core_machine_real_mode_tick_case("operand-size-prefix",
         operand_size_prefix,
         sizeof(operand_size_prefix), CORE_MACHINE_CPU_PROFILE_80286,

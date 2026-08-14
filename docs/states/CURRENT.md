@@ -2,13 +2,35 @@
 
 ## Current Work
 
-**Active.** M5 T359 remains open between accepted subtasks.
+**Active.** M5 T359 S3 allocates the source-backed four-profile control and
+stack-transfer timing mechanism.
+
+## M5 T359 S3 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner approved ordered single-agent execution of the M5 Queue through L3 closure on 2026-08-14. T359 S2 was accepted at `21642c2b`; its transfer record and the S1 inventory admit the next mechanism unit. |
+| Objective | Replace the one-tick transfer only for source-backed, non-privileged control and stack forms with one private four-profile outcome/stack classifier at the successful-retirement publisher: near/far direct and indirect `CALL`/`JMP`, near `RET`, direct register/memory `PUSH`/`POP`, `PUSHA`/`POPA`, `PUSHF`/`POPF`, `ENTER`/`LEAVE`, `LOOP`/`JCXZ`, `HLT`, and source-backed software `INT`/`INTO`/same-level `IRET` forms where their delivery path has an exact primary row. |
+| Non-goals | No string/repeat or ordinary-I/O rows (S4); no 80386 secondary integer/prefix-width matrix (S5); no selector/table/control/debug/task, call-gate, outer-CPL, VM86 transition, NMI, or generic exception-delivery timing (S6 or physical receiver); no x87, physical waits/HOLD/DMA/prefetch/cache/pin timing, device latency, public ABI, or Intel-undefined state timing. |
+| Reference Baseline | `21642c2b` / current task artifact `vm-0-5-0359`. |
+| Candidate Proposal | [Complete instruction-timing corpus](../proposals/m5-complete-instruction-timing-corpus.md), [S1 inventory](../etc/evidence/t359-s1-four-profile-instruction-timing-inventory.md), [S2 ledger](../etc/evidence/t359-s2-four-profile-arithmetic-data-source-ledger.md), and [Queue](QUEUE.md). |
+| Files And ABI Surface | Private timing classification in `src/core/machine/machine.c`, existing decoder/lexeme/stack outcome inspection, owner smoke and source ledger evidence, CMake current-gate registration, task history/status, and current artifact. No provider/device/public ABI/generic scheduler or exception-delivery mechanism change. |
+| Applicable Rules | Task Reading Set, execution, architecture, coding, documentation, and source/research policy; one post-refresh successful-retirement publisher; source-selected outcome/stack forms rather than handler-local clocks; exact stack/return publication and defined-state evidence; caller/write/fault sweep; Appendix-B precedence; transfer any privileged or physical dependency rather than infer clocks. |
+| Verification | Build an exact Intel source-to-form ledger for all admitted profiles and real/protected/ordinary-VM86 dispositions. Prove direct/indirect, taken/not-taken, return/stack width, operand/address prefix, legal LOCK/prefix, stack data/result, EIP, defined FLAGS, restart/fault zero-cost, preflight maximum, reset/repeat/provider publication, and no admitted successful form reaches the one-tick receiver. Prove every excluded cross-privilege/exception path is transferred. Run focused owner and retained markers, inventory verifier, full current-gate, governance, artifact target/hash, and diff checks. |
+| Expected Markers | Existing T357 ledger markers; a new T359 S3 control-stack timing marker; `verify-t359-instruction-timing-inventory`; rebuilt `vm-0-5-0359` artifact. |
+| Asset Needs | Intel 8086 Tables 2-20/2-21, iAPX 86/88/186/188 Table 1-16, 80286/80287 PRM Appendix B, and 80386 PRM section 17.2.2.3/table 8-1 and exact instruction pages; project-owned source/tests only. No Bochs/PCjs code, firmware, guest media, or third-party source import. |
+| Reporting Requirements | One complete P1 only: source ledger, all admitted mechanism implementation/proof, caller/write/failure sweep, source conflict/physical transfers, current-gate, artifact hash, commit, and push. Do not deliver a single transfer opcode, stack form, or profile as a partial P. |
+| Stop Conditions | Stop for owner direction if an admitted form lacks an exact primary row, the row depends on physical or exception-delivery timing, a semantic defect requires a generic stack/exception mechanism change, or an unselected cross-privilege/VM86/table/task transition is needed. Record exact forms and transfer; do not infer clocks. |
+| Exit Criteria | Every S3 form has an exact source-backed profile/mode/variant disposition and shares one truthful control/stack outcome mechanism where semantics match; string/repeat/I-O, 80386 secondary, and privileged/physical dependencies are transferred to S4--S7, T360, or later Queue receivers; no one-tick fallback remains for an admitted successful form; all required checks pass. |
+| Original Owner Request | Execute the current Queue until a comprehensive L3 timing closure audit, with holistic mechanism planning rather than patch-on-patch clock additions. |
+| Similar-Issue Sweep | Search all control-transfer, stack, interrupt-return, HLT, LOOP and group `FF` handlers; metadata/profile gates; prefix/LOCK classifier; stack read/write and instruction-outcome helpers; timing maxima and publisher; current control/stack tests; T357/T359 evidence, Queue, and TODO. Classify each hit as S3-owned, S4--S7, T360 source conflict, or physical receiver. |
 
 ## Current Technical Baseline
 
-- **Current developer artifact:** T359 S2 `vm-0-5-0359` /
+- **Current developer artifact:** T359 S3 `vm-0-5-0359` /
   `build/output/nxvm_0_5_0359.exe` as
-  `2D91DCD23488FD86E64B1EB5126C27DE293183619F7841C96E447FBA63E15904`.
+  `AC1A4A30CAB8ED63E436FB52FD4B97F1AA28E6DBB0EDFA593B600B5B61A743A4`.
 - **T285 display implementation:** `INT 10h` mode `10h` /
   `EGA-640x350x16-direct` has a VADP-owned planar frame path and copied-frame
   consumer boundary; mode 0Dh remains a separate retained path.

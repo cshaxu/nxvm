@@ -8,8 +8,10 @@ set(t359_inventory
     "${PROJECT_SOURCE_DIR}/docs/etc/evidence/t359-s1-four-profile-instruction-timing-inventory.md")
 set(t359_s2_ledger
     "${PROJECT_SOURCE_DIR}/docs/etc/evidence/t359-s2-four-profile-arithmetic-data-source-ledger.md")
+set(t359_s3_ledger
+    "${PROJECT_SOURCE_DIR}/docs/etc/evidence/t359-s3-four-profile-control-stack-source-ledger.md")
 foreach(t359_file IN ITEMS "${t359_source}" "${t359_machine}" "${t359_inventory}"
-    "${t359_s2_ledger}")
+    "${t359_s2_ledger}" "${t359_s3_ledger}")
     if(NOT EXISTS "${t359_file}")
         message(FATAL_ERROR "T359 timing inventory input is missing: ${t359_file}")
     endif()
@@ -18,6 +20,7 @@ file(READ "${t359_source}" t359_source_text)
 file(READ "${t359_machine}" t359_machine_text)
 file(READ "${t359_inventory}" t359_inventory_text)
 file(READ "${t359_s2_ledger}" t359_s2_ledger_text)
+file(READ "${t359_s3_ledger}" t359_s3_ledger_text)
 
 function(t359_require text pattern description)
     if(NOT "${text}" MATCHES "${pattern}")
@@ -121,5 +124,37 @@ t359_require("${t359_s2_ledger_text}" "## Dynamic-form disposition"
     "S2 source ledger is missing dynamic-form disposition")
 t359_require("${t359_s2_ledger_text}" "T360"
     "S2 source ledger is missing range-form transfer")
+
+# S3 keeps control/stack timing at the same successful-retirement publisher.
+# These encoding-shape anchors prevent a later handler-local clock from
+# returning an admitted control form to the generic one-tick receiver.
+foreach(t359_s3_anchor IN ITEMS
+    "CORE_MACHINE_SOURCE_TIMING_CALL_NEAR_DIRECT"
+    "CORE_MACHINE_SOURCE_TIMING_CALL_FAR_MEMORY"
+    "CORE_MACHINE_SOURCE_TIMING_JMP_FAR_MEMORY"
+    "CORE_MACHINE_SOURCE_TIMING_PUSH_MEMORY"
+    "CORE_MACHINE_SOURCE_TIMING_ENTER_LEVEL_ZERO"
+    "CORE_MACHINE_SOURCE_TIMING_INT_IMMEDIATE"
+    "core_machine_control_stack_source_instruction_cost"
+    "core_machine_control_stack_memory_additions")
+    t359_require("${t359_machine_text}" "${t359_s3_anchor}"
+        "missing S3 classifier anchor ${t359_s3_anchor}")
+endforeach()
+string(FIND "${t359_machine_text}"
+    "if (core_machine_control_stack_source_instruction_cost(machine, out_ticks))"
+    t359_s3_primary_publisher)
+if(t359_s3_primary_publisher LESS 0 OR
+    t359_s3_primary_publisher GREATER t359_s2_legacy_publisher)
+    message(FATAL_ERROR
+        "T359 S3 control/stack classifier must precede the unallocated legacy receiver")
+endif()
+foreach(t359_s3_ledger_anchor IN ITEMS
+    "## Normalized successful forms"
+    "## Disposition and transfers"
+    "same privilege only"
+    "T360")
+    t359_require("${t359_s3_ledger_text}" "${t359_s3_ledger_anchor}"
+        "S3 source ledger is missing ${t359_s3_ledger_anchor}")
+endforeach()
 
 message(STATUS "T359 four-profile instruction timing inventory passed.")

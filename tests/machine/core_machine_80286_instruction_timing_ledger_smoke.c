@@ -199,7 +199,7 @@ static C_INT timing_80286_control_ports(C_VOID)
 static C_INT timing_80286_boundaries(C_VOID)
 {
     static const type_unsigned_8 nop[] = { 0x90u };
-    static const type_unsigned_8 unallocated[] = { 0x31u, 0xc0u };
+    static const type_unsigned_8 unallocated[] = { 0xd0u, 0xc0u };
     static const type_unsigned_8 fault[] = { 0x66u, 0x90u };
     static const type_unsigned_8 maximum[] = { 0xf3u, 0xa4u };
     static const type_unsigned_8 source[] = { 0x78u };
@@ -258,9 +258,10 @@ C_INT main(C_VOID)
     if (timing_80286_case(nop, sizeof(nop), 3u) ||
         timing_80286_case(clc, sizeof(clc), 2u) ||
         timing_80286_case(immediate, sizeof(immediate), 2u) ||
-        timing_80286_case(registers, sizeof(registers), 2u) ||
-        timing_80286_memory() || timing_80286_control_ports() ||
-        timing_80286_boundaries()) return 1;
+        timing_80286_case(registers, sizeof(registers), 2u)) return 1;
+    if (timing_80286_memory()) return 2;
+    if (timing_80286_control_ports()) return 3;
+    if (timing_80286_boundaries()) return 4;
     STD_PRINTF("M5:T357:S6:80286-INSTRUCTION-TIMING-LEDGER:OK\n");
     return 0;
 }

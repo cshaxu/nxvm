@@ -198,13 +198,13 @@ C_INT main(C_VOID)
     failed |= timing_case(memory_mov, sizeof(memory_mov), 1u, 5u);
     failed |= timing_case(out_port, sizeof(out_port), 1u, 3u);
     failed |= timing_case(in_port, sizeof(in_port), 1u, 5u);
-    failed |= timing_case(taken_branch, sizeof(taken_branch), 2u, 8u);
-    failed |= timing_case(not_taken_branch, sizeof(not_taken_branch), 2u, 4u);
-    failed |= timing_case(rep_movsb, sizeof(rep_movsb), 4u, 19u);
-    failed |= timing_test_quantum_and_reset();
-    failed |= timing_test_fault();
-    failed |= timing_test_stop();
     if (failed) return 1;
+    if (timing_case(taken_branch, sizeof(taken_branch), 2u, 9u)) return 2;
+    if (timing_case(not_taken_branch, sizeof(not_taken_branch), 2u, 5u)) return 3;
+    if (timing_case(rep_movsb, sizeof(rep_movsb), 4u, 19u)) return 4;
+    if (timing_test_quantum_and_reset()) return 5;
+    if (timing_test_fault()) return 6;
+    if (timing_test_stop()) return 7;
     STD_PRINTF("M5:T265:S3:INSTRUCTION-TIMING:OK\n");
     return 0;
 }

@@ -256,7 +256,7 @@ static C_INT timing_s7_test_permission_strings(C_VOID)
 static C_INT timing_s7_test_permission_budget(C_VOID)
 {
     const core_machine_run_budget insufficient = { 1u, 26u };
-    const core_machine_run_budget sufficient = { 1u, 27u };
+    const core_machine_run_budget sufficient = { 1u, 46u };
     core_machine_run_result result;
     timing_s7_state state = { 0u, 0u, 0u };
     core_machine *machine = STD_NULL;

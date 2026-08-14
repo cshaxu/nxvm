@@ -32,16 +32,18 @@ C_INT main(C_VOID)
         TYPE_STATUS_OK;
     failed |= core_machine_memory_write(machine, 0xfffffff1u, &nop, sizeof(nop)) !=
         TYPE_STATUS_OK;
+    failed |= core_machine_memory_write(machine, 0xfffffff2u, &nop, sizeof(nop)) !=
+        TYPE_STATUS_OK;
     failed |= core_machine_run(machine, budget, &result) != TYPE_STATUS_OK;
     failed |= result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 2u ||
         result.ticks != 6u || result.elapsed_ticks != 6u;
     failed |= core_machine_capture_observation(machine, &observation) != TYPE_STATUS_OK;
     failed |= observation.elapsed_ticks != 6u;
     budget.instructions = 1u;
-    budget.ticks = 9u;
+    budget.ticks = 28u;
     failed |= core_machine_run(machine, budget, &result) != TYPE_STATUS_OK;
     failed |= result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 1u ||
-        result.ticks != 1u || result.elapsed_ticks != 7u;
+        result.ticks != 3u || result.elapsed_ticks != 9u;
     failed |= machine_time_expect(core_machine_reset(machine));
     failed |= machine_time_expect(core_machine_get_elapsed_ticks(machine, &elapsed));
     failed |= elapsed != 0u;
