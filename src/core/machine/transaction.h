@@ -1,0 +1,63 @@
+#ifndef CORE_MACHINE_TRANSACTION_H
+#define CORE_MACHINE_TRANSACTION_H
+
+#include "type.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+typedef enum core_machine_transaction_owner {
+    CORE_MACHINE_TRANSACTION_OWNER_NONE = 0,
+    CORE_MACHINE_TRANSACTION_OWNER_CPU,
+    CORE_MACHINE_TRANSACTION_OWNER_DMA
+} core_machine_transaction_owner;
+
+typedef enum core_machine_transaction_kind {
+    CORE_MACHINE_TRANSACTION_CPU_MEMORY_READ = 1,
+    CORE_MACHINE_TRANSACTION_CPU_MEMORY_WRITE,
+    CORE_MACHINE_TRANSACTION_CPU_PORT_READ,
+    CORE_MACHINE_TRANSACTION_CPU_PORT_WRITE,
+    CORE_MACHINE_TRANSACTION_DMA_MEMORY_READ,
+    CORE_MACHINE_TRANSACTION_DMA_MEMORY_WRITE,
+    CORE_MACHINE_TRANSACTION_DMA_MEMORY_COPY
+} core_machine_transaction_kind;
+
+typedef enum core_machine_transaction_phase {
+    CORE_MACHINE_TRANSACTION_PHASE_BEGIN = 1,
+    CORE_MACHINE_TRANSACTION_PHASE_COMMIT,
+    CORE_MACHINE_TRANSACTION_PHASE_CANCEL
+} core_machine_transaction_phase;
+
+typedef C_VOID (*core_machine_transaction_trace_callback)(C_VOID *context,
+    core_machine_transaction_owner owner, core_machine_transaction_kind kind,
+    core_machine_transaction_phase phase, type_unsigned_32 address,
+    type_unsigned_32 value, type_unsigned_32 detail);
+
+typedef struct core_machine_transaction_state {
+    core_machine_transaction_owner owner;
+    core_machine_transaction_kind kind;
+    type_unsigned_32 address;
+    type_unsigned_32 value;
+    type_unsigned_32 detail;
+    type_unsigned_64 committed_count;
+    type_unsigned_64 cancelled_count;
+    core_machine_transaction_trace_callback trace;
+    C_VOID *trace_context;
+} core_machine_transaction_state;
+
+C_VOID core_machine_transaction_initialize(core_machine_transaction_state *state);
+C_VOID core_machine_transaction_reset(core_machine_transaction_state *state);
+C_VOID core_machine_transaction_bind_trace(core_machine_transaction_state *state,
+    core_machine_transaction_trace_callback callback, C_VOID *context);
+type_status core_machine_transaction_begin(core_machine_transaction_state *state,
+    core_machine_transaction_owner owner, core_machine_transaction_kind kind,
+    type_unsigned_32 address, type_unsigned_32 value, type_unsigned_32 detail);
+C_VOID core_machine_transaction_commit(core_machine_transaction_state *state);
+C_VOID core_machine_transaction_cancel(core_machine_transaction_state *state);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif

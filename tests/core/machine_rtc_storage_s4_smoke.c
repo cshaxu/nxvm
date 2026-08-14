@@ -4,7 +4,7 @@
 #include "../support/core_machine_cpu_fixture.h"
 
 typedef struct readiness_trace_probe {
-    core_machine_trace_event events[24];
+    core_machine_trace_event events[32];
     type_unsigned_32 count;
 } readiness_trace_probe;
 
@@ -13,7 +13,7 @@ static C_VOID readiness_trace(C_VOID *opaque,
 {
     readiness_trace_probe *probe = (readiness_trace_probe *)opaque;
 
-    if (probe != STD_NULL && probe->count < 24u) {
+    if (probe != STD_NULL && probe->count < 32u) {
         probe->events[probe->count++] = *event;
     }
 }
@@ -51,6 +51,17 @@ static C_INT readiness_expect_chain(const readiness_trace_probe *probe)
     return due_tick != 3u || phase != 0u;
 }
 
+static C_INT readiness_has_event(const readiness_trace_probe *probe,
+    core_machine_trace_event_type type)
+{
+    type_unsigned_32 index;
+
+    for (index = 0u; index < probe->count; ++index) {
+        if (probe->events[index].type == type) return 1;
+    }
+    return 0;
+}
+
 C_INT main(C_VOID)
 {
     core_machine *machine = STD_NULL;
@@ -77,7 +88,7 @@ C_INT main(C_VOID)
     failed |= !failed && core_machine_configure_rtc_cmos(machine, &rtc_config) !=
         TYPE_STATUS_OK;
     failed |= !failed && test_core_machine_fixture_register_reset_mapping(machine,
-        0xfffffff0u, 0x000ffff0u, 1u) != TYPE_STATUS_OK;
+        0xfffffff0u, 0x000ffff0u, 16u) != TYPE_STATUS_OK;
     failed |= !failed && core_machine_freeze_execution_providers(machine) !=
         TYPE_STATUS_OK;
     failed |= !failed && core_machine_reset(machine) != TYPE_STATUS_OK;
@@ -99,7 +110,7 @@ C_INT main(C_VOID)
     failed |= !failed && (observation.now != 2u || observation.pending_events != 3u ||
         observation.next_sequence != 9u);
     failed |= !failed && (probe.count < 5u ||
-        probe.events[0].type != CORE_MACHINE_TRACE_CPU_RETIRE ||
+        !readiness_has_event(&probe, CORE_MACHINE_TRACE_CPU_RETIRE) ||
         readiness_expect_chain(&probe) ||
         probe.events[probe.count - 1u].type != CORE_MACHINE_TRACE_RUN_BOUNDARY);
     failed |= !failed && core_machine_reset(machine) != TYPE_STATUS_OK;

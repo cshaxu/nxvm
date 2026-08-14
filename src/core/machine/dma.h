@@ -17,6 +17,7 @@ extern "C"
     typedef type_unsigned_8 t_page;
     typedef struct t_latch t_latch;
     typedef struct t_ram t_ram;
+    typedef struct core_machine_transaction_state core_machine_transaction_state;
     typedef C_VOID (*core_machine_dma_device_provider)(C_VOID *owner, t_latch *latch);
 
     typedef struct core_machine_dma_channel_provider {
@@ -171,6 +172,10 @@ extern "C"
     C_VOID core_machine_dma_advance(t_latch *latch, t_dma *primary,
                                     t_dma *secondary, t_ram *ram,
                                     type_unsigned_64 elapsed_ticks);
+    C_VOID core_machine_dma_advance_transaction(t_latch *latch,
+        t_dma *primary, t_dma *secondary, t_ram *ram,
+        core_machine_transaction_state *transaction,
+        type_unsigned_64 elapsed_ticks);
     type_status core_machine_dma_bind_channel(t_latch *latch, t_dma *primary,
         t_dma *secondary, type_unsigned_8 channel,
         const core_machine_dma_channel_provider *provider, C_VOID *device_owner,

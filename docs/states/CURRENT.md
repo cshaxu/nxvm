@@ -2,7 +2,29 @@
 
 ## Current Work
 
-**Active.** M5 T354 remains open between accepted subtasks.
+**Active.** M5 T354 S2 reconciles the selected CPU/DMA transaction ownership
+boundary before controller-specific competition work.
+
+## M5 T354 S2 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner approved the holistic CPU-external device/L3 completion direction on 2026-08-13. T354 S1 is accepted at `e9a259db` / `e2b10cdd` and allocates the repeated CPU/DMA direct transaction construction to this S. |
+| Objective | Establish one bounded core-owned selected CPU/DMA transaction availability, ownership, commit, cancellation, reset, and trace boundary, using only the hardware/corpus contract necessary for deterministic selected L3. |
+| Non-goals | No guessed wait-state table, generic port facade, public debugger/configuration API timing, controller command rewrite, physical waveform/cycle claim, host clock, unselected peripheral, Windows run, or external source import. |
+| Reference Baseline | `e2b10cdd` on `master`, T354 S1 ledger acceptance. |
+| Candidate Proposal | [M5 physical L3 bus-timing convergence](../proposals/m5-l3-bus-timing-convergence.md), S2; [T354 S1 ledger](../etc/evidence/t354-s1-l3-transaction-timing-ledger.md). |
+| Files And ABI Surface | Core-local transaction owner and only the CPU/DMA execution bindings/readers/writers it proves necessary; focused owner smoke, CMake registration, indexed evidence, task history, and CURRENT. No public VM/profile/provider ABI or stopped/paused API contract change. |
+| Applicable Rules | `docs/README.md` Task Reading Set; `docs/rules/EXECUTION.md` mechanism-defect lifecycle; `docs/rules/ARCHITECTURE.md` core ownership; `docs/rules/CODING.md`; source policy; Intel 8237A and IBM PC/AT primary timing references; T346--T354 evidence. |
+| Verification | Sweep CPU physical-memory/port access, instruction-retirement scheduler, DMA ordinary/M2M paths, timeline callbacks, reset/finalize, trace, and all relevant focused tests. Prove deterministic owner selection, no partial publication on denied/cancelled work, reset cancellation, trace order, and no regression to stopped/paused APIs. Run focused owner tests, fresh configuration, documentation governance, diff check, and full current gate. |
+| Expected Markers | New focused transaction owner marker; `Documentation governance checks passed`; full current gate passes. |
+| Asset Needs | Repository sources plus permitted Intel 8237A and IBM PC/AT technical-reference metadata. No firmware, guest media, host capture, or external source import. |
+| Reporting Requirements | Record the manual-to-mechanism justification, every CPU/DMA reader/writer and transition, exact validation-to-commit/cancel/reset/trace contract, timing units and deliberately unmodeled duration, and any caller requiring a distinct receiver. |
+| Stop Conditions | Stop for owner direction if a truthful implementation requires instruction-internal continuation, a public CPU/provider ABI change, a controller-local duration assumption, or a generic port/memory bus abstraction beyond the selected CPU/DMA boundary. |
+| Exit Criteria | Every selected CPU/DMA execution access is either routed through one common bounded owner or proven to remain deliberately immediate under it; owner selection and commit/cancel/reset/trace semantics have focused proof; no per-device delay counter, duplicated bus truth, partial visibility, or unallocated caller remains. |
+| Original Owner Request | Holistically complete CPU-external chips, buses, devices, and ports to stable reliable selected L3 before choosing the next product step; do not use a Windows run as a substitute for the architecture. |
+| Similar-Issue Sweep | Include CPU fetch/data/I/O helpers, DMA ordinary/M2M access, retirement and timeline ordering, PIC/FDC/ATA service boundaries, trace, cold/session reset, immutable memory/A20, and stopped/paused bus APIs. |
 
 ## Current Technical Baseline
 

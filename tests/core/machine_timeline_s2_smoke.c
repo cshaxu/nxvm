@@ -12,7 +12,7 @@ typedef struct timeline_probe {
 } timeline_probe;
 
 typedef struct timeline_trace_probe {
-    core_machine_trace_event events[12];
+    core_machine_trace_event events[16];
     type_unsigned_32 count;
 } timeline_trace_probe;
 
@@ -21,9 +21,20 @@ static C_VOID timeline_trace(C_VOID *opaque,
 {
     timeline_trace_probe *probe = (timeline_trace_probe *)opaque;
 
-    if (probe != STD_NULL && probe->count < 12u) {
+    if (probe != STD_NULL && probe->count < 16u) {
         probe->events[probe->count++] = *event;
     }
+}
+
+static const core_machine_trace_event *timeline_find_trace_event(
+    const timeline_trace_probe *probe, core_machine_trace_event_type type)
+{
+    type_unsigned_32 index;
+
+    for (index = 0u; index < probe->count; ++index) {
+        if (probe->events[index].type == type) return &probe->events[index];
+    }
+    return STD_NULL;
 }
 
 static C_VOID timeline_record(timeline_probe *probe, type_unsigned_8 value)
@@ -77,7 +88,7 @@ static C_INT timeline_machine_contract(C_VOID)
     trace.context = &trace_probe;
     failed |= core_machine_create(&config, &machine) != TYPE_STATUS_OK;
     failed |= test_core_machine_fixture_register_reset_mapping(machine, 0xfffffff0u,
-        0x000ffff0u, 1u) != TYPE_STATUS_OK;
+        0x000ffff0u, 16u) != TYPE_STATUS_OK;
     failed |= core_machine_freeze_execution_providers(machine) != TYPE_STATUS_OK;
     failed |= core_machine_reset(machine) != TYPE_STATUS_OK;
     failed |= core_machine_memory_write(machine, 0xfffffff0u, &nop, 1u) !=
@@ -89,31 +100,29 @@ static C_INT timeline_machine_contract(C_VOID)
         TYPE_STATUS_OK;
     failed |= observation.now != 1u || observation.pending_events != 3u ||
         observation.next_sequence != 6u;
-    failed |= trace_probe.count < 5u ||
-        trace_probe.events[0].type != CORE_MACHINE_TRACE_CPU_RETIRE ||
-        trace_probe.events[0].elapsed_ticks != 1u ||
-        trace_probe.events[0].timeline_ticks != 0u ||
-        trace_probe.events[0].value != 1u ||
-        trace_probe.events[1].type != CORE_MACHINE_TRACE_DMA_ADVANCE ||
-        trace_probe.events[1].elapsed_ticks != 1u ||
-        trace_probe.events[1].timeline_ticks != 1u ||
-        trace_probe.events[1].value != 1u ||
-        trace_probe.events[2].type != CORE_MACHINE_TRACE_PIT_ADVANCE ||
-        trace_probe.events[2].elapsed_ticks != 1u ||
-        trace_probe.events[2].timeline_ticks != 1u ||
-        trace_probe.events[2].value != 1u ||
-        trace_probe.events[3].type != CORE_MACHINE_TRACE_PIC_REFRESH ||
-        trace_probe.events[3].elapsed_ticks != 1u ||
-        trace_probe.events[3].timeline_ticks != 1u ||
-        trace_probe.events[trace_probe.count - 1u].type !=
-            CORE_MACHINE_TRACE_RUN_BOUNDARY ||
-        trace_probe.events[trace_probe.count - 1u].elapsed_ticks != 1u ||
-        trace_probe.events[trace_probe.count - 1u].timeline_ticks != 1u ||
-        trace_probe.events[0].sequence >= trace_probe.events[1].sequence ||
-        trace_probe.events[1].sequence >= trace_probe.events[2].sequence ||
-        trace_probe.events[2].sequence >= trace_probe.events[3].sequence ||
-        trace_probe.events[3].sequence >=
-            trace_probe.events[trace_probe.count - 1u].sequence;
+    {
+        const core_machine_trace_event *retire = timeline_find_trace_event(
+            &trace_probe, CORE_MACHINE_TRACE_CPU_RETIRE);
+        const core_machine_trace_event *dma = timeline_find_trace_event(
+            &trace_probe, CORE_MACHINE_TRACE_DMA_ADVANCE);
+        const core_machine_trace_event *pit = timeline_find_trace_event(
+            &trace_probe, CORE_MACHINE_TRACE_PIT_ADVANCE);
+        const core_machine_trace_event *pic = timeline_find_trace_event(
+            &trace_probe, CORE_MACHINE_TRACE_PIC_REFRESH);
+        const core_machine_trace_event *boundary = timeline_find_trace_event(
+            &trace_probe, CORE_MACHINE_TRACE_RUN_BOUNDARY);
+
+        failed |= retire == STD_NULL || dma == STD_NULL || pit == STD_NULL ||
+            pic == STD_NULL || boundary == STD_NULL || retire->elapsed_ticks != 1u ||
+            retire->timeline_ticks != 0u || retire->value != 1u ||
+            dma->elapsed_ticks != 1u || dma->timeline_ticks != 1u ||
+            dma->value != 1u || pit->elapsed_ticks != 1u ||
+            pit->timeline_ticks != 1u || pit->value != 1u ||
+            pic->elapsed_ticks != 1u || pic->timeline_ticks != 1u ||
+            boundary->elapsed_ticks != 1u || boundary->timeline_ticks != 1u ||
+            retire->sequence >= dma->sequence || dma->sequence >= pit->sequence ||
+            pit->sequence >= pic->sequence || pic->sequence >= boundary->sequence;
+    }
     core_machine_destroy(machine);
     return failed;
 }

@@ -18,11 +18,15 @@ static C_VOID input_display_trace(C_VOID *opaque,
     }
 }
 
-static C_INT input_display_expect_event(const input_display_trace_probe *probe,
-    type_unsigned_32 index, core_machine_trace_event_type type)
+static const core_machine_trace_event *input_display_find_event(
+    const input_display_trace_probe *probe, core_machine_trace_event_type type)
 {
-    return probe->events[index].type != type ||
-        probe->events[index].timeline_ticks != 1u;
+    type_unsigned_32 index;
+
+    for (index = 0u; index < probe->count; ++index) {
+        if (probe->events[index].type == type) return &probe->events[index];
+    }
+    return STD_NULL;
 }
 
 C_INT main(C_VOID)
@@ -40,7 +44,7 @@ C_INT main(C_VOID)
     config.ticks_per_instruction = 1u;
     failed |= core_machine_create(&config, &machine) != TYPE_STATUS_OK;
     failed |= !failed && test_core_machine_fixture_register_reset_mapping(machine,
-        0xfffffff0u, 0x000ffff0u, 1u) != TYPE_STATUS_OK;
+        0xfffffff0u, 0x000ffff0u, 16u) != TYPE_STATUS_OK;
     failed |= !failed && core_machine_freeze_execution_providers(machine) !=
         TYPE_STATUS_OK;
     failed |= !failed && core_machine_reset(machine) != TYPE_STATUS_OK;
@@ -55,17 +59,35 @@ C_INT main(C_VOID)
         &observation) != TYPE_STATUS_OK;
     failed |= !failed && (observation.now != 1u || observation.pending_events != 3u ||
         observation.next_sequence != 6u);
-    failed |= !failed && (probe.count != 12u ||
-        probe.events[0].type != CORE_MACHINE_TRACE_CPU_RETIRE ||
-        input_display_expect_event(&probe, 4u, CORE_MACHINE_TRACE_FDC_ADVANCE) ||
-        input_display_expect_event(&probe, 5u, CORE_MACHINE_TRACE_FDC_REFRESH) ||
-        input_display_expect_event(&probe, 6u, CORE_MACHINE_TRACE_HDC_ADVANCE) ||
-        input_display_expect_event(&probe, 7u, CORE_MACHINE_TRACE_HDC_REFRESH) ||
-        input_display_expect_event(&probe, 9u, CORE_MACHINE_TRACE_KBC_ADVANCE) ||
-        input_display_expect_event(&probe, 10u, CORE_MACHINE_TRACE_VADP_ADVANCE) ||
-        probe.events[9].sequence >= probe.events[10].sequence ||
-        probe.events[10].sequence >= probe.events[11].sequence ||
-        probe.events[11].type != CORE_MACHINE_TRACE_RUN_BOUNDARY);
+    {
+        const core_machine_trace_event *retire = input_display_find_event(&probe,
+            CORE_MACHINE_TRACE_CPU_RETIRE);
+        const core_machine_trace_event *fdc = input_display_find_event(&probe,
+            CORE_MACHINE_TRACE_FDC_ADVANCE);
+        const core_machine_trace_event *fdc_refresh = input_display_find_event(&probe,
+            CORE_MACHINE_TRACE_FDC_REFRESH);
+        const core_machine_trace_event *hdc = input_display_find_event(&probe,
+            CORE_MACHINE_TRACE_HDC_ADVANCE);
+        const core_machine_trace_event *hdc_refresh = input_display_find_event(&probe,
+            CORE_MACHINE_TRACE_HDC_REFRESH);
+        const core_machine_trace_event *kbc = input_display_find_event(&probe,
+            CORE_MACHINE_TRACE_KBC_ADVANCE);
+        const core_machine_trace_event *vadp = input_display_find_event(&probe,
+            CORE_MACHINE_TRACE_VADP_ADVANCE);
+        const core_machine_trace_event *boundary = input_display_find_event(&probe,
+            CORE_MACHINE_TRACE_RUN_BOUNDARY);
+
+        failed |= !failed && (retire == STD_NULL || fdc == STD_NULL ||
+            fdc_refresh == STD_NULL || hdc == STD_NULL || hdc_refresh == STD_NULL ||
+            kbc == STD_NULL || vadp == STD_NULL || boundary == STD_NULL ||
+            fdc->timeline_ticks != 1u || fdc_refresh->timeline_ticks != 1u ||
+            hdc->timeline_ticks != 1u || hdc_refresh->timeline_ticks != 1u ||
+            kbc->timeline_ticks != 1u || vadp->timeline_ticks != 1u ||
+            retire->sequence >= fdc->sequence || fdc->sequence >= fdc_refresh->sequence ||
+            fdc_refresh->sequence >= hdc->sequence || hdc->sequence >=
+            hdc_refresh->sequence || hdc_refresh->sequence >= kbc->sequence ||
+            kbc->sequence >= vadp->sequence || vadp->sequence >= boundary->sequence);
+    }
     failed |= !failed && core_machine_reset(machine) != TYPE_STATUS_OK;
     failed |= !failed && core_machine_get_timeline_observation(machine,
         &observation) != TYPE_STATUS_OK;

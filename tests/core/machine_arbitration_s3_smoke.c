@@ -4,7 +4,7 @@
 #include "../support/core_machine_cpu_fixture.h"
 
 typedef struct arbitration_trace_probe {
-    core_machine_trace_event events[32];
+    core_machine_trace_event events[64];
     type_unsigned_32 count;
 } arbitration_trace_probe;
 
@@ -13,7 +13,7 @@ static C_VOID arbitration_trace(C_VOID *opaque,
 {
     arbitration_trace_probe *probe = (arbitration_trace_probe *)opaque;
 
-    if (probe != STD_NULL && probe->count < 32u) {
+    if (probe != STD_NULL && probe->count < 64u) {
         probe->events[probe->count++] = *event;
     }
 }
@@ -47,6 +47,16 @@ static C_INT arbitration_expect_chain(const arbitration_trace_probe *probe)
     return due_tick != 4u || phase != 0u;
 }
 
+static C_INT arbitration_has_cpu_retire(const arbitration_trace_probe *probe)
+{
+    type_unsigned_32 index;
+
+    for (index = 0u; index < probe->count; ++index) {
+        if (probe->events[index].type == CORE_MACHINE_TRACE_CPU_RETIRE) return 1;
+    }
+    return 0;
+}
+
 C_INT main(C_VOID)
 {
     core_machine *machine = STD_NULL;
@@ -62,7 +72,7 @@ C_INT main(C_VOID)
     config.ticks_per_instruction = 3u;
     failed |= core_machine_create(&config, &machine) != TYPE_STATUS_OK;
     failed |= test_core_machine_fixture_register_reset_mapping(machine, 0xfffffff0u,
-        0x000ffff0u, 1u) != TYPE_STATUS_OK;
+        0x000ffff0u, 16u) != TYPE_STATUS_OK;
     failed |= core_machine_freeze_execution_providers(machine) != TYPE_STATUS_OK;
     failed |= core_machine_reset(machine) != TYPE_STATUS_OK;
     failed |= core_machine_memory_write(machine, 0xfffffff0u, &nop, 1u) !=
@@ -75,8 +85,7 @@ C_INT main(C_VOID)
         TYPE_STATUS_OK;
     failed |= observation.now != 3u || observation.pending_events != 3u ||
         observation.next_sequence != 12u;
-    failed |= probe.count < 5u ||
-        probe.events[0].type != CORE_MACHINE_TRACE_CPU_RETIRE ||
+    failed |= probe.count < 5u || !arbitration_has_cpu_retire(&probe) ||
         arbitration_expect_chain(&probe) ||
         probe.events[probe.count - 1u].type != CORE_MACHINE_TRACE_RUN_BOUNDARY;
     failed |= core_machine_reset(machine) != TYPE_STATUS_OK;

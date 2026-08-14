@@ -102,6 +102,7 @@ typedef struct t_cpuins t_cpuins;
 typedef struct t_ram t_ram;
 typedef struct t_port t_port;
 typedef struct t_pic t_pic;
+typedef struct core_machine_transaction_state core_machine_transaction_state;
 typedef struct core_machine_cpu_execution_context
     core_machine_cpu_execution_context;
 typedef C_VOID (*core_machine_cpu_instruction_handler)(
@@ -145,6 +146,7 @@ struct core_machine_cpu_execution_context {
     t_cpuins *instructions;
     t_ram *memory;
     t_port *port;
+    core_machine_transaction_state *transaction;
     t_pic *pic_master;
     t_pic *pic_slave;
     type_trace *trace;
@@ -174,6 +176,9 @@ C_VOID core_machine_cpu_execution_context_bind_diagnostic_provider(
     C_VOID *provider_context);
 C_VOID core_machine_cpu_execution_context_bind_fpu(
     core_machine_cpu_execution_context *context, core_machine_fpu *fpu);
+C_VOID core_machine_cpu_execution_context_bind_transaction(
+    core_machine_cpu_execution_context *context,
+    core_machine_transaction_state *transaction);
 type_bool core_machine_cpu_execution_load_segment(
     core_machine_cpu_execution_context *context, t_cpu_data_sreg *rsreg,
     type_unsigned_16 selector);

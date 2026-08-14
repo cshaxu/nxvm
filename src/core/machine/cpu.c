@@ -6,6 +6,8 @@
 
 #include "core/machine/cpu_instructions.h"
 
+#include "core/machine/transaction.h"
+
 #include "core/machine/cpu.h"
 
 #define cpu_state (*context->cpu)
@@ -20,6 +22,7 @@ C_VOID core_machine_cpu_execution_context_initialize(
     context->instructions = instructions;
     context->memory = memory;
     context->port = port;
+    context->transaction = STD_NULL;
     context->pic_master = STD_NULL;
     context->pic_slave = STD_NULL;
     if (context->trace == STD_NULL) {
@@ -55,6 +58,13 @@ C_VOID core_machine_cpu_execution_context_bind_fpu(
     core_machine_cpu_execution_context *context, core_machine_fpu *fpu)
 {
     if (context != STD_NULL) context->fpu = fpu;
+}
+
+C_VOID core_machine_cpu_execution_context_bind_transaction(
+    core_machine_cpu_execution_context *context,
+    core_machine_transaction_state *transaction)
+{
+    if (context != STD_NULL) context->transaction = transaction;
 }
 
 const C_CHAR *core_machine_cpu_profile_name(core_machine_cpu_profile profile)

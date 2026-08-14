@@ -3,6 +3,8 @@
 #include "core/machine/memory.h"
 #include "core/machine/pic.h"
 
+#include "core/machine/transaction.h"
+
 #include "core/machine/cpu_instructions.h"
 
 #define cpu_state (*context->cpu)
@@ -69,16 +71,36 @@ static C_VOID _kma_write_ref(core_machine_cpu_execution_context *context, type_v
 static C_VOID _kma_read_physical(core_machine_cpu_execution_context *context, type_unsigned_32 physical, type_virtual_address rdata, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("_kma_read_physical");
-    TYPE_TRACE_CHECK_RETURN(core_machine_memory_read_physical(context->memory, physical, rdata,
-                                                              byte));
+    if (context->transaction != STD_NULL && core_machine_transaction_begin(
+            context->transaction, CORE_MACHINE_TRANSACTION_OWNER_CPU,
+            CORE_MACHINE_TRANSACTION_CPU_MEMORY_READ, physical, byte, 0u) !=
+            TYPE_STATUS_OK) {
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(physical));
+    }
+    if (core_machine_memory_read_physical(context->memory, physical, rdata,
+            byte) != TYPE_STATUS_OK) {
+        core_machine_transaction_cancel(context->transaction);
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(physical));
+    }
+    core_machine_transaction_commit(context->transaction);
     TYPE_TRACE_CALL_END;
 }
 /* write content to physical */
 static C_VOID _kma_write_physical(core_machine_cpu_execution_context *context, type_unsigned_32 physical, type_virtual_address rdata, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("_kma_write_physical");
-    TYPE_TRACE_CHECK_RETURN(core_machine_memory_write_physical(context->memory, physical, rdata,
-                                                               byte));
+    if (context->transaction != STD_NULL && core_machine_transaction_begin(
+            context->transaction, CORE_MACHINE_TRANSACTION_OWNER_CPU,
+            CORE_MACHINE_TRANSACTION_CPU_MEMORY_WRITE, physical, byte, 0u) !=
+            TYPE_STATUS_OK) {
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(physical));
+    }
+    if (core_machine_memory_write_physical(context->memory, physical, rdata,
+            byte) != TYPE_STATUS_OK) {
+        core_machine_transaction_cancel(context->transaction);
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(physical));
+    }
+    core_machine_transaction_commit(context->transaction);
     TYPE_TRACE_CALL_END;
 }
 typedef struct t_kma_linear_translation {
@@ -1720,7 +1742,17 @@ static C_VOID _p_input(core_machine_cpu_execution_context *context, type_unsigne
 {
     TYPE_TRACE_CALL_BEGIN("_p_input");
     TYPE_TRACE_CHECK_RETURN(_kpa_test_mode(context, portid, byte));
+    if (byte != 1u && byte != 2u && byte != 4u) {
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(byte));
+    }
+    if (context->transaction != STD_NULL && core_machine_transaction_begin(
+            context->transaction, CORE_MACHINE_TRANSACTION_OWNER_CPU,
+            CORE_MACHINE_TRANSACTION_CPU_PORT_READ, portid, byte, 0u) !=
+            TYPE_STATUS_OK) {
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(portid));
+    }
     if (core_machine_port_execute_read(context->port, portid) != TYPE_STATUS_OK) {
+        core_machine_transaction_cancel(context->transaction);
         TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(portid));
     }
     switch (byte)
@@ -1750,6 +1782,7 @@ static C_VOID _p_input(core_machine_cpu_execution_context *context, type_unsigne
         break;
     }
     instruction_state.data.flagIgnore = TYPE_TRUE;
+    core_machine_transaction_commit(context->transaction);
     TYPE_TRACE_CALL_END;
 }
 static C_VOID _p_output(core_machine_cpu_execution_context *context, type_unsigned_16 portid, type_virtual_address rdata, type_unsigned_8 byte)
@@ -1782,10 +1815,18 @@ static C_VOID _p_output(core_machine_cpu_execution_context *context, type_unsign
         TYPE_TRACE_BLOCK_END;
         break;
     }
+    if (context->transaction != STD_NULL && core_machine_transaction_begin(
+            context->transaction, CORE_MACHINE_TRANSACTION_OWNER_CPU,
+            CORE_MACHINE_TRANSACTION_CPU_PORT_WRITE, portid, byte, 0u) !=
+            TYPE_STATUS_OK) {
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(portid));
+    }
     if (core_machine_port_execute_write(context->port, portid) != TYPE_STATUS_OK) {
+        core_machine_transaction_cancel(context->transaction);
         TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(portid));
     }
     instruction_state.data.flagIgnore = TYPE_TRUE;
+    core_machine_transaction_commit(context->transaction);
     TYPE_TRACE_CALL_END;
 }
 
