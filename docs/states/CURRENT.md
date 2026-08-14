@@ -2,9 +2,29 @@
 
 ## Current Work
 
-**Active.** M5 T357 remains open after accepting S6; the next packet must cover
-the remaining selected 80386 source-backed rows or the final cross-profile
-closure audit.
+**Active.** M5 T357 S7 allocates the remaining selected 80386 port-I/O timing
+rows and repairs the shared VM86 permission-map admission defect they expose.
+
+## M5 T357 S7 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner-approved T357 continuation, expanded on 2026-08-13 after reproducing the shared VM86 I/O-permission defect: S7 closes only the selected 80386 ordinary `IN`/`OUT` mode rows explicitly transferred by S3, and repairs their one shared permission-map owner for VM86. |
+| Objective | Allocate the 80386 Appendix-B/PRM successful timing rows for all selected immediate/DX `IN`/`OUT` forms at the existing post-refresh retirement publisher, and make VM86 consult the existing TSS I/O permission map through that same owner. |
+| Non-goals | Do not allocate near/`JCXZ` branches, other string forms, arbitrary CPU timing rows, memory wait states, prefetch, bus/HOLD/DMA, device latency, fault/interrupt cycles, x87, VME/PVI, host time, or Windows behavior. These are not in T357's selected finite corpus and remain explicit later timing-corpus or physical-timing transfers. |
+| Reference Baseline | `27478a6b` / `vm-0-5-0357`, accepted S1--S6 evidence, and Intel 80386 PRM `IN`/`OUT` opcode tables. |
+| Candidate Proposal | [Instruction-timed execution](../proposals/m5-instruction-timed-execution.md) and [T357 task record](../history/M5-T357-instruction-timed-execution.md). |
+| Files And ABI Surface | Private 80386 timing classification; the existing private TSS I/O-permission owner; owner smoke/target and focused existing I/O-string smoke; evidence/index/current/history only. No public ABI, provider ABI, TSS layout, second permission owner, or second time writer. |
+| Applicable Rules | Apply Task Reading Set and execution/coding/architecture/documentation/source-policy authorities. Preserve one post-refresh/pre-publication elapsed-tick owner, one I/O-permission owner, and permission/fault atomicity. Where Appendix B gives a selected timing row it controls; record any conflicting prose for later TODO review. |
+| Verification | Prove immediate/DX `IN`/`OUT` selected real, protected `CPL <= IOPL`, protected permission-map, and ordinary VM86 permission-map success rows; prove ordinary and string I/O VM86 bitmap permit/deny through the same owner; exact source costs, provider result, no selected timing on denied faults, fallback isolation, reset/budget/overflow/deterministic publication, and full current-gate. |
+| Expected Markers | A focused `M5:T357:S7:80386-PROTECTED-IO-TIMING:OK` marker and full current-gate remain green. |
+| Asset Needs | Read-only Intel 80386 PRM `IN` and `OUT` tables. No external material enters the repository. |
+| Reporting Requirements | Record Appendix-B/PRM real/`pm` source rows, CPL/IOPL and permission-map classifications, the VM86 defect/reproducer and ordinary/string caller sweep, selected/unselected boundary, commands/results, artifact, and actual-change review before closure. |
+| Stop Conditions | Stop if repair requires a TSS-layout, provider-ABI, generic fault-delivery, or second time-writer/public-contract change; if a successful source row cannot be distinguished from permission validation; or if Appendix B lacks the selected row and conflicts with the main text. Record the latter as TODO and transfer rather than guess. |
+| Exit Criteria | Every selected real/protected/ordinary-VM86 successful `IN`/`OUT` class is source-backed and focused-proven; denied cases publish no successful cost; S3's selected-I/O transfer is closed; later non-selected branch/string/CPU rows are explicitly transferred; no selected value derives from compatibility configuration. |
+| Original Owner Request | Complete T357 as a profile-aware instruction-form timing prerequisite without claiming bus or cycle-exact timing. |
+| Similar-Issue Sweep | Sweep all 80386 selected port opcodes, real/protected/VM86 classification, post-refresh timing selection, I/O permission callers, maximum/budget paths, elapsed writers/readers, current timing smokes, and every S3 selected-I/O transfer. |
 
 ## Current Technical Baseline
 

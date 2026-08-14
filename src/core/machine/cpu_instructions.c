@@ -1708,7 +1708,7 @@ _______todo _kpa_test_iomap(core_machine_cpu_execution_context *context, type_un
     if (byte != 1u && byte != 2u && byte != 4u) {
         TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(byte));
     }
-    if (_GetEFLAGS_VM || context->cpu_profile < CORE_MACHINE_CPU_PROFILE_80386 ||
+    if (context->cpu_profile < CORE_MACHINE_CPU_PROFILE_80386 ||
         !cpu_state.data.tr.flagValid ||
         cpu_state.data.tr.sys.type != VCPU_DESC_SYS_TYPE_TSS_32_BUSY) {
         TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(0));

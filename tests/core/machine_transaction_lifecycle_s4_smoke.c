@@ -103,7 +103,7 @@ C_INT main(C_VOID)
         TYPE_STATUS_OK;
     failed |= core_machine_run(machine, budget, &result) != TYPE_STATUS_OK;
     failed |= result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 1u ||
-        result.elapsed_ticks != 1u;
+        result.elapsed_ticks != 3u;
     failed |= !lifecycle_find_transaction(&probe,
         CORE_MACHINE_TRACE_TRANSACTION_BEGIN,
         CORE_MACHINE_TRANSACTION_OWNER_CPU,

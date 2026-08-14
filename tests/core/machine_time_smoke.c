@@ -37,11 +37,11 @@ C_INT main(C_VOID)
         result.ticks != 6u || result.elapsed_ticks != 6u;
     failed |= core_machine_capture_observation(machine, &observation) != TYPE_STATUS_OK;
     failed |= observation.elapsed_ticks != 6u;
-    budget.instructions = 0u;
-    budget.ticks = 3u;
+    budget.instructions = 1u;
+    budget.ticks = 9u;
     failed |= core_machine_run(machine, budget, &result) != TYPE_STATUS_OK;
     failed |= result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 1u ||
-        result.ticks != 3u || result.elapsed_ticks != 9u;
+        result.ticks != 1u || result.elapsed_ticks != 7u;
     failed |= machine_time_expect(core_machine_reset(machine));
     failed |= machine_time_expect(core_machine_get_elapsed_ticks(machine, &elapsed));
     failed |= elapsed != 0u;

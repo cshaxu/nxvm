@@ -136,8 +136,8 @@ C_INT main(C_VOID)
     failed |= single.count != RATIONAL_CLOCK_STEPS ||
         reset.count != RATIONAL_CLOCK_STEPS ||
         split.count != RATIONAL_CLOCK_STEPS ||
-        single.ticks[0] != 2u || single.ticks[1] != 1u ||
-        single.ticks[2] != 2u || single.ticks[3] != 1u ||
+        single.ticks[0] != 5u || single.ticks[1] != 4u ||
+        single.ticks[2] != 5u || single.ticks[3] != 4u ||
         STD_MEMCMP(reset.ticks, single.ticks, sizeof(single.ticks)) != 0 ||
         STD_MEMCMP(reset.ticks, split.ticks, sizeof(single.ticks)) != 0;
 

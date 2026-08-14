@@ -53,7 +53,7 @@ C_INT main(C_VOID)
     budget.ticks = 0u;
     failed |= core_machine_run(machine, budget, &result) != TYPE_STATUS_OK;
     failed |= result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 1u ||
-        result.ticks != 2u || result.elapsed_ticks != 2u ||
+        result.ticks != 3u || result.elapsed_ticks != 3u ||
         provider_probe.refreshes != 1u;
 
     core_machine_destroy(machine);

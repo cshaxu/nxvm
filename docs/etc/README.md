@@ -100,6 +100,7 @@ principal documents named in [docs/README.md](../README.md).
 | `evidence/t357-s4-8086-instruction-timing-ledger.md` | Verification owner | T357 S4 selected-8086 source-clock ledger, Table 2-20/2-21 additions, retirement owner, compatibility transfer, and focused proof. Retain with T357 history at task closure. |
 | `evidence/t357-s5-80186-instruction-timing-ledger.md` | Verification owner | T357 S5 selected-80186 Table 1-16 ledger, shared 16-bit construction with profile-local source contracts, compatibility transfer, and focused proof. Retain with T357 history at task closure. |
 | `evidence/t357-s6-80286-instruction-timing-ledger.md` | Verification owner | T357 S6 selected-80286 Appendix-B ledger, distinct EA/odd-word construction, explicit Appendix-B source-selection rule, focused proof, and timing transfers. Retain with T357 history at task closure. |
+| `evidence/t357-s7-80386-protected-io-timing.md` | Verification owner | T357 S7 Appendix-B selected protected/permission-map ordinary port-I/O ledger, VM86 shared-owner repair, focused proof, and timing transfers. Retain with T357 history at task closure. |
 | `operations/` | Execution, source, and release owners | Toolchain, policy, templates, release procedure, and closure material. |
 | `research/` | Source owner | Provenance, external references, and non-product research. |
 | `history/` | Documentation owner | Read-only legacy and M5 migration/roadmap evidence. |

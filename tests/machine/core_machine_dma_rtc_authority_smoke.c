@@ -99,11 +99,11 @@ int main(C_VOID)
     if (core_machine_memory_write(machine, 0xfffffff0u, program, sizeof(program)) !=
             TYPE_STATUS_OK || core_machine_run(machine, budget, &result) !=
             TYPE_STATUS_OK || result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
-        result.ticks != 2u) {
+        result.ticks != 4u) {
         failed = 1;
         stage = 3;
     } else if (core_machine_dma_rtc_cmos_read(machine,
-            CORE_MACHINE_RTC_SECOND) != 0x02u) {
+            CORE_MACHINE_RTC_SECOND) != 0x04u) {
         failed = 1;
         stage = 4;
     } else if (!(interrupt_pending = core_machine_pic_scan_interrupt(

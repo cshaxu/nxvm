@@ -19,9 +19,14 @@ static C_INT timing_checkpoint_run(core_machine *machine,
         return 1;
     }
     for (index = 0u; index < CHECKPOINTS; ++index) {
+        type_unsigned_64 ticks = index < 16u ? 3u : 1u;
+        type_unsigned_64 elapsed = index < 16u ?
+            (type_unsigned_64)(index + 1u) * 3u :
+            48u + (type_unsigned_64)(index - 15u);
+
         if (core_machine_run(machine, budget, &result) != TYPE_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 1u ||
-            result.ticks != 1u || result.elapsed_ticks != index + 1u) {
+            result.ticks != ticks || result.elapsed_ticks != elapsed) {
             STD_FPRINTF(STD_STDERR,
                 "T221 run failed index=%u reason=%d executed=%llu ticks=%llu elapsed=%llu\n",
                 index, (C_INT)result.reason, (unsigned long long)result.executed,
@@ -54,8 +59,8 @@ C_INT main(C_VOID)
     failed |= STD_MEMCMP(first, second, sizeof(first)) != 0;
 
     failed |= first[0u] != 0x01u || first[46u] != 0x01u ||
-        first[47u] != 0u || first[54u] != 0u || first[55u] != 0x08u ||
-        first[62u] != 0x08u || first[63u] != 0x01u;
+        first[47u] != 0x01u || first[54u] != 0x01u || first[55u] != 0x01u ||
+        first[62u] != 0x01u || first[63u] != 0x01u;
 
     if (failed) {
         STD_FPRINTF(STD_STDERR,

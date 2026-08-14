@@ -4,7 +4,7 @@
 #include "../support/core_machine_cpu_fixture.h"
 
 typedef struct input_display_trace_probe {
-    core_machine_trace_event events[16];
+    core_machine_trace_event events[40];
     type_unsigned_32 count;
 } input_display_trace_probe;
 
@@ -13,7 +13,8 @@ static C_VOID input_display_trace(C_VOID *opaque,
 {
     input_display_trace_probe *probe = (input_display_trace_probe *)opaque;
 
-    if (probe != STD_NULL && probe->count < 16u) {
+    if (probe != STD_NULL && probe->count <
+        sizeof(probe->events) / sizeof(probe->events[0])) {
         probe->events[probe->count++] = *event;
     }
 }
@@ -55,11 +56,11 @@ C_INT main(C_VOID)
         TYPE_STATUS_OK;
     failed |= !failed && core_machine_run(machine, budget, &result) != TYPE_STATUS_OK;
     failed |= !failed && (result.reason != CORE_MACHINE_STOP_BUDGET ||
-        result.elapsed_ticks != 1u);
+        result.elapsed_ticks != 3u);
     failed |= !failed && core_machine_get_timeline_observation(machine,
         &observation) != TYPE_STATUS_OK;
-    failed |= !failed && (observation.now != 1u || observation.pending_events != 3u ||
-        observation.next_sequence != 6u);
+    failed |= !failed && (observation.now != 3u || observation.pending_events != 3u ||
+        observation.next_sequence != 12u);
     {
         const core_machine_trace_event *retire = input_display_find_event(&probe,
             CORE_MACHINE_TRACE_CPU_RETIRE);

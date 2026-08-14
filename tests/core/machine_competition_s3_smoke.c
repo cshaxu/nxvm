@@ -126,7 +126,7 @@ C_INT main(C_VOID)
     failed |= core_machine_set_trace_provider(machine, &trace) != TYPE_STATUS_OK;
     failed |= core_machine_run(machine, budget, &result) != TYPE_STATUS_OK;
     failed |= result.reason != CORE_MACHINE_STOP_BUDGET ||
-        result.executed != 1u || result.elapsed_ticks != 1u;
+        result.executed != 1u || result.elapsed_ticks != 3u;
     failed |= core_machine_memory_read(machine, 0x11234u, &byte, 1u) !=
         TYPE_STATUS_OK || byte != 0xa5u;
     failed |= !competition_find_transaction(&probe,

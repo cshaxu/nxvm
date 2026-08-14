@@ -4,7 +4,7 @@
 #include "../support/core_machine_cpu_fixture.h"
 
 typedef struct readiness_trace_probe {
-    core_machine_trace_event events[32];
+    core_machine_trace_event events[40];
     type_unsigned_32 count;
 } readiness_trace_probe;
 
@@ -13,7 +13,8 @@ static C_VOID readiness_trace(C_VOID *opaque,
 {
     readiness_trace_probe *probe = (readiness_trace_probe *)opaque;
 
-    if (probe != STD_NULL && probe->count < 32u) {
+    if (probe != STD_NULL && probe->count <
+        sizeof(probe->events) / sizeof(probe->events[0])) {
         probe->events[probe->count++] = *event;
     }
 }
@@ -48,7 +49,7 @@ static C_INT readiness_expect_chain(const readiness_trace_probe *probe)
             }
         }
     }
-    return due_tick != 3u || phase != 0u;
+    return due_tick != 4u || phase != 0u;
 }
 
 static C_INT readiness_has_event(const readiness_trace_probe *probe,
@@ -104,12 +105,12 @@ C_INT main(C_VOID)
         TYPE_STATUS_OK;
     failed |= !failed && core_machine_run(machine, budget, &result) != TYPE_STATUS_OK;
     failed |= !failed && (result.reason != CORE_MACHINE_STOP_BUDGET ||
-        result.elapsed_ticks != 2u ||
-        machine->shared_rtc.calendar.second != 2u);
+        result.elapsed_ticks != 3u ||
+        machine->shared_rtc.calendar.second != 3u);
     failed |= !failed && core_machine_get_timeline_observation(machine,
         &observation) != TYPE_STATUS_OK;
-    failed |= !failed && (observation.now != 2u || observation.pending_events != 3u ||
-        observation.next_sequence != 9u);
+    failed |= !failed && (observation.now != 3u || observation.pending_events != 3u ||
+        observation.next_sequence != 12u);
     failed |= !failed && (probe.count < 5u ||
         !readiness_has_event(&probe, CORE_MACHINE_TRACE_CPU_RETIRE) ||
         readiness_expect_chain(&probe) ||

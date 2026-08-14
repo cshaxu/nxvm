@@ -226,6 +226,15 @@ if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
         -Wall -Wextra -Wpedantic -Werror)
 endif()
 
+add_executable(core-machine-80386-protected-io-timing-smoke
+    tests/machine/core_machine_80386_protected_io_timing_smoke.c)
+target_link_libraries(core-machine-80386-protected-io-timing-smoke PRIVATE
+    core-machine)
+if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
+    target_compile_options(core-machine-80386-protected-io-timing-smoke PRIVATE
+        -Wall -Wextra -Wpedantic -Werror)
+endif()
+
 add_executable(core-machine-real-mode-corpus-smoke
     tests/machine/core_machine_real_mode_corpus_smoke.c)
 target_link_libraries(core-machine-real-mode-corpus-smoke PRIVATE core-machine)
@@ -1705,6 +1714,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     core-machine-8086-instruction-timing-ledger-smoke
     core-machine-80186-instruction-timing-ledger-smoke
     core-machine-80286-instruction-timing-ledger-smoke
+    core-machine-80386-protected-io-timing-smoke
     core-machine-real-mode-corpus-smoke
     core-machine-real-mode-386-address-smoke
     core-machine-operand-address-smoke

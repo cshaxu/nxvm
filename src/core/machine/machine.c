@@ -196,7 +196,15 @@ typedef enum core_machine_source_timing_form {
     CORE_MACHINE_SOURCE_TIMING_IN_IMMEDIATE,
     CORE_MACHINE_SOURCE_TIMING_IN_DX,
     CORE_MACHINE_SOURCE_TIMING_OUT_IMMEDIATE,
-    CORE_MACHINE_SOURCE_TIMING_OUT_DX
+    CORE_MACHINE_SOURCE_TIMING_OUT_DX,
+    CORE_MACHINE_SOURCE_TIMING_IN_IMMEDIATE_PROTECTED,
+    CORE_MACHINE_SOURCE_TIMING_IN_IMMEDIATE_PERMISSION,
+    CORE_MACHINE_SOURCE_TIMING_IN_DX_PROTECTED,
+    CORE_MACHINE_SOURCE_TIMING_IN_DX_PERMISSION,
+    CORE_MACHINE_SOURCE_TIMING_OUT_IMMEDIATE_PROTECTED,
+    CORE_MACHINE_SOURCE_TIMING_OUT_IMMEDIATE_PERMISSION,
+    CORE_MACHINE_SOURCE_TIMING_OUT_DX_PROTECTED,
+    CORE_MACHINE_SOURCE_TIMING_OUT_DX_PERMISSION
 } core_machine_source_timing_form;
 
 typedef struct core_machine_source_timing_entry {
@@ -281,7 +289,15 @@ static const core_machine_source_timing_entry
     { CORE_MACHINE_SOURCE_TIMING_IN_IMMEDIATE, 12u },
     { CORE_MACHINE_SOURCE_TIMING_IN_DX, 13u },
     { CORE_MACHINE_SOURCE_TIMING_OUT_IMMEDIATE, 10u },
-    { CORE_MACHINE_SOURCE_TIMING_OUT_DX, 11u }
+    { CORE_MACHINE_SOURCE_TIMING_OUT_DX, 11u },
+    { CORE_MACHINE_SOURCE_TIMING_IN_IMMEDIATE_PROTECTED, 6u },
+    { CORE_MACHINE_SOURCE_TIMING_IN_IMMEDIATE_PERMISSION, 26u },
+    { CORE_MACHINE_SOURCE_TIMING_IN_DX_PROTECTED, 7u },
+    { CORE_MACHINE_SOURCE_TIMING_IN_DX_PERMISSION, 27u },
+    { CORE_MACHINE_SOURCE_TIMING_OUT_IMMEDIATE_PROTECTED, 4u },
+    { CORE_MACHINE_SOURCE_TIMING_OUT_IMMEDIATE_PERMISSION, 24u },
+    { CORE_MACHINE_SOURCE_TIMING_OUT_DX_PROTECTED, 5u },
+    { CORE_MACHINE_SOURCE_TIMING_OUT_DX_PERMISSION, 25u }
 };
 
 #define CORE_MACHINE_80386_JCC_NOT_TAKEN_TICKS 3u
@@ -289,7 +305,7 @@ static const core_machine_source_timing_entry
 #define CORE_MACHINE_80386_REP_MOVSB_SETUP_TICKS 5u
 #define CORE_MACHINE_80386_REP_MOVSB_ITERATION_TICKS 4u
 #define CORE_MACHINE_SOURCE_UNALLOCATED_TICKS 1u
-#define CORE_MACHINE_80386_SOURCE_MAXIMUM_TICKS 22u
+#define CORE_MACHINE_80386_SOURCE_MAXIMUM_TICKS 27u
 #define CORE_MACHINE_8086_REP_MOVSB_SETUP_TICKS 9u
 #define CORE_MACHINE_8086_REP_MOVSB_ITERATION_TICKS 17u
 #define CORE_MACHINE_8086_JCC_NOT_TAKEN_TICKS 4u
@@ -362,6 +378,30 @@ static type_unsigned_64 core_machine_80386_source_timing_lookup(
         core_machine_80386_source_timing_ledger,
         sizeof(core_machine_80386_source_timing_ledger) /
             sizeof(core_machine_80386_source_timing_ledger[0]), form);
+}
+
+static C_INT core_machine_80386_timing_uses_permission_map(
+    const t_cpuins_data *data)
+{
+    type_unsigned_32 iopl;
+
+    if ((data->oldcpu.data.cr0 & VCPU_CR0_PE) == 0u) return 0;
+    iopl = (data->oldcpu.data.eflags & VCPU_EFLAGS_IOPL) >> 12u;
+    return (data->oldcpu.data.eflags & VCPU_EFLAGS_VM) != 0u ||
+        data->oldcpu.data.cs.dpl > iopl;
+}
+
+static type_unsigned_64 core_machine_80386_source_timing_port_cost(
+    const t_cpuins_data *data, core_machine_source_timing_form real_form,
+    core_machine_source_timing_form protected_form,
+    core_machine_source_timing_form permission_form)
+{
+    if ((data->oldcpu.data.cr0 & VCPU_CR0_PE) == 0u) {
+        return core_machine_80386_source_timing_lookup(real_form);
+    }
+    return core_machine_80386_source_timing_lookup(
+        core_machine_80386_timing_uses_permission_map(data) ?
+        permission_form : protected_form);
 }
 
 static C_INT core_machine_source_timing_modrm_is_memory(
@@ -779,24 +819,28 @@ static C_INT core_machine_80386_source_instruction_cost(core_machine *machine,
             CORE_MACHINE_SOURCE_TIMING_MOVSB);
         return 1;
     case 0xe4u: case 0xe5u:
-        if ((machine->executor_cpu.data.cr0 & VCPU_CR0_PE) != 0u) break;
-        *out_ticks = core_machine_80386_source_timing_lookup(
-            CORE_MACHINE_SOURCE_TIMING_IN_IMMEDIATE);
+        *out_ticks = core_machine_80386_source_timing_port_cost(data,
+            CORE_MACHINE_SOURCE_TIMING_IN_IMMEDIATE,
+            CORE_MACHINE_SOURCE_TIMING_IN_IMMEDIATE_PROTECTED,
+            CORE_MACHINE_SOURCE_TIMING_IN_IMMEDIATE_PERMISSION);
         return 1;
     case 0xecu: case 0xedu:
-        if ((machine->executor_cpu.data.cr0 & VCPU_CR0_PE) != 0u) break;
-        *out_ticks = core_machine_80386_source_timing_lookup(
-            CORE_MACHINE_SOURCE_TIMING_IN_DX);
+        *out_ticks = core_machine_80386_source_timing_port_cost(data,
+            CORE_MACHINE_SOURCE_TIMING_IN_DX,
+            CORE_MACHINE_SOURCE_TIMING_IN_DX_PROTECTED,
+            CORE_MACHINE_SOURCE_TIMING_IN_DX_PERMISSION);
         return 1;
     case 0xe6u: case 0xe7u:
-        if ((machine->executor_cpu.data.cr0 & VCPU_CR0_PE) != 0u) break;
-        *out_ticks = core_machine_80386_source_timing_lookup(
-            CORE_MACHINE_SOURCE_TIMING_OUT_IMMEDIATE);
+        *out_ticks = core_machine_80386_source_timing_port_cost(data,
+            CORE_MACHINE_SOURCE_TIMING_OUT_IMMEDIATE,
+            CORE_MACHINE_SOURCE_TIMING_OUT_IMMEDIATE_PROTECTED,
+            CORE_MACHINE_SOURCE_TIMING_OUT_IMMEDIATE_PERMISSION);
         return 1;
     case 0xeeu: case 0xefu:
-        if ((machine->executor_cpu.data.cr0 & VCPU_CR0_PE) != 0u) break;
-        *out_ticks = core_machine_80386_source_timing_lookup(
-            CORE_MACHINE_SOURCE_TIMING_OUT_DX);
+        *out_ticks = core_machine_80386_source_timing_port_cost(data,
+            CORE_MACHINE_SOURCE_TIMING_OUT_DX,
+            CORE_MACHINE_SOURCE_TIMING_OUT_DX_PROTECTED,
+            CORE_MACHINE_SOURCE_TIMING_OUT_DX_PERMISSION);
         return 1;
     default:
         if (opcode >= 0xb0u && opcode <= 0xbfu) {
