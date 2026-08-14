@@ -1351,6 +1351,14 @@ add_executable(vm-ega-planar-system-smoke
     tests/machine/vm_ega_planar_system_smoke.c
 )
 target_link_libraries(vm-ega-planar-system-smoke PRIVATE vm-composition)
+add_executable(vm-display-composition-s5-smoke
+    tests/machine/vm_display_composition_s5_smoke.c
+)
+target_link_libraries(vm-display-composition-s5-smoke PRIVATE vm-composition)
+if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
+    target_compile_options(vm-display-composition-s5-smoke PRIVATE
+        -Wall -Wextra -Wpedantic -Werror)
+endif()
 add_executable(vm-ega-sequencer-system-smoke
     tests/machine/vm_ega_sequencer_system_smoke.c
 )
@@ -1767,6 +1775,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     vm-ega-sequencer-system-smoke
     vm-ega-controller-system-smoke
     vm-ega-planar-system-smoke
+    vm-display-composition-s5-smoke
     vm-rom-ega-int10-system-smoke
     vm-rom-text-write-char-smoke
     vm-rom-int13-hdd-type-smoke
@@ -2274,8 +2283,8 @@ function(add_current_vm_artifact target version)
             "${CMAKE_SOURCE_DIR}/build/output/${task_artifact_filename}")
 endfunction()
 
-set(PROJECT_CURRENT_VM_ARTIFACT_TARGET vm-0-5-0351)
-add_current_vm_artifact(vm-0-5-0351 "0.5.0351")
+set(PROJECT_CURRENT_VM_ARTIFACT_TARGET vm-0-5-0352)
+add_current_vm_artifact(vm-0-5-0352 "0.5.0352")
 option(PROJECT_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
 

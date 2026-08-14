@@ -2,14 +2,35 @@
 
 ## Current Work
 
-M5 T352 remains open. S4 is accepted; S5 cross-mode, reset, timeline, and
-copied-presentation composition is the next bounded subtask.
+M5 T352 S5 - selected digital-video composition, artifact, and closure
+(Single-Session Mode).
+
+## M5 T352 S5 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner approved continuous holistic device/L3 implementation on 2026-08-13; T352 S1--S4 are accepted at `6e68050b`, `0914e475`, `30dec326`, and `8a374fcd`; S1 assigns selected cross-mode/reset/timeline/copy composition and artifact closure to S5. |
+| Objective | Compose the selected text/CGA/EGA VADP state graph and prove mode transition, reset/re-arm, deterministic VADP timeline placement, and copied core-to-presentation publication have no stale frame or host mutation path; build and hash-verify the current developer artifact, reconcile every remaining selected ledger row, and close T352 or transfer it precisely. |
+| Non-goals | No VGA/VBE/SVGA, unselected EGA or CGA CRTC/mode breadth, composite, host renderer cadence/event-loop policy, firmware expansion, generic mailbox API change, public display/profile ABI change, Windows execution, or x87. |
+| Reference Baseline | `8a374fcd`; [T352 proposal](../proposals/m5-vadp-digital-video-completeness.md), [S1 ledger](../etc/evidence/t352-s1-digital-video-ledger.md), S2--S4 evidence, T346 S5 timeline boundary, current session display/mailbox and VADP tests. |
+| Candidate Proposal | [PC/AT digital video completeness](../proposals/m5-vadp-digital-video-completeness.md). |
+| Files And ABI Surface | Expected: focused composition smoke, private VADP/session display implementation only if a reproduced defect requires it, evidence/history/Current, and CMake artifact identity. No platform renderer, mailbox/public display ABI, profile/ROM API, generic timeline, or host-event-loop redesign. |
+| Applicable Rules | VADP remains the sole guest display-state owner; CGA/EGA layout branches remain separate only for their real format differences; deterministic timeline advances VADP after KBC; core snapshot and presentation mailbox are value-copy boundaries; reset cancels/reschedules guest callbacks and clears transient display state without host mutation. |
+| Verification | Sweep VADP mode writers/capture/reset, `core_machine_peripheral_tick`, session capture/publish/mode notification, mailbox publish/capture/finalize, and platform consumers. Prove text-to-CGA-to-EGA-to-reset/re-arm composition, captured and mailbox frame isolation, no stale dimensions/pixels/palette, VADP-after-KBC deterministic trace order and reset rescheduling, artifact SHA, retained core/VM/ROM/DOS display proofs, governance, diff check, and full current gate. |
+| Expected Markers | Retain T346 input/display timeline plus selected CGA/EGA/core/VM/ROM/DOS markers; add one S5 composition marker only if no retained owner proves cross-mode and mailbox isolation together. |
+| Asset Needs | Existing project source/evidence, current developer build, and already admitted firmware/media tests only; no new guest media, source import, host capture, or renderer asset. |
+| Reporting Requirements | Record cross-mode writer/reader/copy/reset/timeline matrix, actual defect and caller sweep if any, artifact identity/SHA, exact transfer of unselected modes and host timing, focused/system/DOS evidence, and T352 closure audit. |
+| Stop Conditions | Stop for a public mailbox/renderer/profile ABI change, generic timeline defect outside VADP placement, required unselected EGA/VGA/CRTC feature, host scheduling policy, firmware/Windows dependency, or ambiguity about selected display ownership; transfer rather than broaden. |
+| Exit Criteria | Every selected S1 digital-video row is accepted or has one exact later receiver; mode/reset/copy/timeline composition has direct proof with no stale or aliased frame state; the current developer artifact is built and hash-verified; T352 history/proposal/Queue/Current agree on closure and transfers. |
+| Original Owner Request | Make CPU/fpu-external core-machine devices, chips, buses, and ports comprehensive and stable at deterministic L3 before choosing a Windows execution route. |
+| Similar-Issue Sweep | Sweep VADP capture/reset/finalize and all selected mode writers; machine peripheral/reset/timeline paths; session display capture/publish/mode callback; mailbox/platform consumers; display core/VM/ROM/DOS tests; T346 evidence; T352 ledger/history/proposal/Queue/TODO and artifact inputs. |
 
 ## Current Technical Baseline
 
-- **Current developer artifact:** T351 selects `vm-0-5-0351` /
-  `build/output/nxvm_0_5_0351.exe`; its closure-build SHA-256 is
-  `C20F4B631F8E63DD4D963C2F85E69D735EC05793B3DCC0C2AC11E65FA6D3FB9C`.
+- **Current developer artifact:** T352 selects `vm-0-5-0352` /
+  `build/output/nxvm_0_5_0352.exe`; its closure-build SHA-256 is
+  `37A00874C05FB402151AF1A77BD28796D03B2A738D6F3EC08761E4541F2D6BB4`.
 - **T285 display implementation:** `INT 10h` mode `10h` /
   `EGA-640x350x16-direct` has a VADP-owned planar frame path and copied-frame
   consumer boundary; mode 0Dh remains a separate retained path.
@@ -25,7 +46,7 @@ copied-presentation composition is the next bounded subtask.
 | Task | Compact result |
 | --- | --- |
 | T352 S4 | Accepted selected EGA planar path: one VADP owner for registration, indexed controllers, aperture/latches/planes, 320 and mode-10 capture, reset/re-arm, and copied output. [Evidence](../etc/evidence/t352-s4-ega-planar-path.md). |
-| T351 | Closed selected IBM-PC/AT 8042 controller, AT keyboard, and compatible three-byte AUX at deterministic L3: one FIFO, controller/keyboard/AUX head promotion, IRQ1/IRQ12 source lifecycle, delayed/reset/finalize, copied ingress, and exact advanced-AUX/NMI/port-61 transfers. `vm-0-5-0351` SHA-256 `C20F4B631F8E63DD4D963C2F85E69D735EC05793B3DCC0C2AC11E65FA6D3FB9C`; 228 current-gate tests passed. [History](../history/M5-T351-kbc-aux-completeness.md). |
+| T351 | Closed selected IBM-PC/AT 8042 controller, AT keyboard, and compatible three-byte AUX at deterministic L3: one FIFO, controller/keyboard/AUX head promotion, IRQ1/IRQ12 source lifecycle, delayed/reset/finalize, copied ingress, and exact advanced-AUX/NMI/port-61 transfers. 228 current-gate tests passed. [History](../history/M5-T351-kbc-aux-completeness.md). |
 | T350 | Closed the selected PC/AT signal graph: retained 8254/IRQ0 and MC146818/CMOS/IRQ8 owners now have focused lifecycle proof; RTC alarm and IRQF defects are repaired; speaker/PPI and parity/I/O-channel NMI remain exact corpus/contract-gated TODO transfers. 228 current-gate tests passed. [History](../history/M5-T350-pcat-platform-signals.md). |
 | T349 | Closed PC/AT dual-8259A command/priority/cascade, OCW3 poll/status/special-mask/SFNM, and retained edge/level producer lifecycle; physical INTA spurious behavior transfers only to L3 bus timing. 226 current-gate tests passed. [History](../history/M5-T349-pcat-pic-compliance.md). |
 | T348 | Closed PC/AT dual-8237A DMA topology, page/word layout, request/cascade/EOP, validation-before-publication, M2M lifecycle, and FDC crossing bounce path; 223 current-gate tests passed. [History](../history/M5-T348-pcat-dma-completeness.md). |

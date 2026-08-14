@@ -44,3 +44,8 @@ capture, reset, and copied output.  It adds reset/re-arm/cleared-plane and
 captured-value isolation proof without conflating the real 320 and mode-10
 layouts.  S5 retains cross-mode/timeline/presentation composition and task
 artifact closure.
+
+S5 delivery composes text, selected CGA, selected EGA, reset/re-arm, retained
+VADP timeline placement, and the copied session-to-mailbox boundary.  It also
+builds the T352 developer artifact.  The detailed state/result matrix is
+retained in the S5 evidence pending task acceptance.
