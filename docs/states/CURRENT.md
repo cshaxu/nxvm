@@ -2,8 +2,29 @@
 
 ## Current Work
 
-**Active.** M5 T364 remains open between accepted S units; its task-level
-closure audit is being prepared.
+**Active.** M5 T364 S2 performs the task-level PC/AT completeness closure
+audit; it allocates no device, route or timing value.
+
+## M5 T364 S2 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | The owner directed current-Queue execution through L3 work on 2026-08-14. T364 S1 was accepted at `664861cb`; its ledger admits this audit-only closure unit. Git pushes are permitted. |
+| Objective | Independently review the T364 component ledger against selected profile leaves/routes, core owners, lifecycle/timeline evidence, Queue/TODO receivers and task history; close T364 only if no selected component remains unclassified. |
+| Non-goals | No device or source selection, no NMI producer, no bus/service timing, no firmware/media import, no host backend and no physical/cycle-exact claim. |
+| Reference Baseline | `664861cb` / `vm-0-5-0362`; [T364 S1 ledger](../etc/evidence/t364-s1-pcat-device-completeness-ledger.md), T353--T354 evidence, Queue and TODO. |
+| Candidate Proposal | [PC/AT device, chip, port, and bus completeness audit](../proposals/m5-pcat-device-completeness-audit.md). |
+| Files And ABI Surface | Evidence/history/status only. No public ABI or runnable path. |
+| Applicable Rules | Task Reading Set; Execution task-closure/evidence rules; Documentation topology; Architecture ownership and source/research policy. |
+| Verification | Recheck complete component, port, IRQ/DRQ/reset, timeline/lifecycle, optional-absence and receiver matrix; documentation governance and diff check. |
+| Expected Markers | T364 S2 closure-audit marker and retained topology/transaction evidence. |
+| Asset Needs | No new assets or research; use retained primary-source provenance only. |
+| Reporting Requirements | State component coverage, exact residual receivers, closure decision and no-L3-overclaim boundary. |
+| Stop Conditions | Stop without closure if any selected component, route, lifecycle/timing owner, primary contract or receiver is unclassified or misleading. |
+| Exit Criteria | Complete selected-PC/AT inventory, all gaps truthfully transferred, history/status closed and governance/diff checks pass. |
+| Original Owner Request | Begin and continue the ordered Queue work toward comprehensive L3 precision. |
+| Similar-Issue Sweep | Recheck core/VM component sources, port leaves, IRQ/DRQ/NMI/reset routes, timeline/transaction owners, retained evidence, Queue and TODO. |
 
 ## Current Technical Baseline
 
