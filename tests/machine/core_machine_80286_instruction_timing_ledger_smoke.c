@@ -293,11 +293,23 @@ C_INT main(C_VOID)
 {
     static const type_unsigned_8 nop[] = { 0x90u };
     static const type_unsigned_8 clc[] = { 0xf8u };
+    static const type_unsigned_8 cmc[] = { 0xf5u };
+    static const type_unsigned_8 stc[] = { 0xf9u };
+    static const type_unsigned_8 cld[] = { 0xfcu };
+    static const type_unsigned_8 std[] = { 0xfdu };
+    static const type_unsigned_8 cli[] = { 0xfau };
+    static const type_unsigned_8 sti[] = { 0xfbu };
     static const type_unsigned_8 immediate[] = { 0xb8u, 0x34u, 0x12u };
     static const type_unsigned_8 registers[] = { 0x8bu, 0xc1u };
 
     if (timing_80286_case(nop, sizeof(nop), 3u) ||
         timing_80286_case(clc, sizeof(clc), 2u) ||
+        timing_80286_case(cmc, sizeof(cmc), 2u) ||
+        timing_80286_case(stc, sizeof(stc), 2u) ||
+        timing_80286_case(cld, sizeof(cld), 2u) ||
+        timing_80286_case(std, sizeof(std), 2u) ||
+        timing_80286_case(cli, sizeof(cli), 3u) ||
+        timing_80286_case(sti, sizeof(sti), 2u) ||
         timing_80286_case(immediate, sizeof(immediate), 2u) ||
         timing_80286_case(registers, sizeof(registers), 2u)) return 1;
     if (timing_80286_memory()) return 2;

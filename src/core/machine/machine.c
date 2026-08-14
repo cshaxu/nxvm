@@ -2657,6 +2657,15 @@ static C_INT core_machine_80286_source_instruction_cost(core_machine *machine,
         *out_ticks = core_machine_80286_source_timing_lookup(
             CORE_MACHINE_SOURCE_TIMING_CLC);
         return 1;
+    case 0xf5u: case 0xf9u: case 0xfcu: case 0xfdu:
+        *out_ticks = 2u;
+        return 1;
+    case 0xfau:
+        *out_ticks = 3u;
+        return 1;
+    case 0xfbu:
+        *out_ticks = 2u;
+        return 1;
     case 0x88u: case 0x89u: case 0x8au: case 0x8bu:
         if (!data->flagMem) {
             *out_ticks = core_machine_80286_source_timing_lookup(
