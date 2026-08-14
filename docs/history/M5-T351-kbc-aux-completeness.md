@@ -47,3 +47,27 @@ delay, reset/finalize, copied guest ingress, and full-FIFO atomicity. Its
 [AUX evidence](../etc/evidence/t351-s4-aux-device.md) transfers wheel, scaling,
 remote/read-data, resend/error, and capture behavior to the bounded advanced
 AUX TODO rather than calling them PC/AT behavior.
+
+S5 is accepted at `8ede1ea6`: it composes those accepted state machines in one
+fixture, proving controller/keyboard/AUX FIFO-head promotion, source-IRQ
+eligibility and release, delayed controller ordering behind an existing head,
+and reset/finalize lifecycle release.  Its
+[combined evidence](../etc/evidence/t351-s5-kbc-lifecycle.md) retains the
+separate T346 equal-tick and copied-ingress owners instead of duplicating their
+mechanisms.
+
+## Closure
+
+T351 closes the selected PC/AT 8042 controller, AT keyboard, and compatible
+three-byte AUX device graph at deterministic L3.  It retains one guest-visible
+FIFO and source-owned IRQ1/IRQ12 eligibility, with controller, keyboard, and
+AUX protocol variants sharing promotion, reset, and finalize ownership.  The
+T351 developer artifact is `vm-0-5-0351` /
+`build/output/nxvm_0_5_0351.exe`, SHA-256
+`C20F4B631F8E63DD4D963C2F85E69D735EC05793B3DCC0C2AC11E65FA6D3FB9C`.
+
+Advanced wheel identification, scaling, remote/read-data, resend/error, and
+capture remain the exact `TODO(Medium) Advanced 8042 AUX protocol` receiver.
+Port-61/PPI and parity/I/O-channel NMI remain the independent T350 transfers.
+This closure makes no host-passthrough, firmware, x87, or Windows-runtime
+claim.

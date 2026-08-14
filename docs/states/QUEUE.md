@@ -27,7 +27,6 @@ precedes Windows readiness because readiness must not be used to hide known
 controller-service and chipset gaps.  Each candidate remains bounded by its
 own manual/probe contract; completing one does not imply board-wide parity.
 
-1. [PC/AT 8042 and AUX completeness](../proposals/m5-kbc-aux-completeness.md).
 1. [PC/AT digital video completeness](../proposals/m5-vadp-digital-video-completeness.md).
 1. [PC/AT port topology and selected peripheral completion](../proposals/m5-pcat-port-topology-and-peripherals.md).
 1. [L3 bus-timing convergence](../proposals/m5-l3-bus-timing-convergence.md).
