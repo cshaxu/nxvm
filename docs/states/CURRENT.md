@@ -36,6 +36,11 @@ separately admitted continuation packet.
 
 ## Recent Governance
 
+- **M5 Td S87:** reconciled the T358 continuation handoff: removed the
+  duplicate empty history heading, retained the approved Queue order, and
+  restored compact open-T358 status. Documentation governance and diff check
+  passed; Td work has no runtime or artifact change.
+
 - **M5 Td S87:** reordered M5 around four-profile timing authority,
   device/chip/port/bus completeness, bus availability, service timing,
   cycle-exact selected-profile work, and L3 closure before final BYOB Windows
@@ -83,9 +88,3 @@ separately admitted continuation packet.
   the 80386DX form closure; current proposals and T339 transfer ledgers name
   T328, T341, and T342 truthfully. Documentation governance and diff check
   passed. Td work has no runtime or artifact change.
-
-- **M5 Td S80:** reordered the four-profile CPU-completeness Queue into
-  dependency-bounded 8086/80186, 80286 descriptor-transfer, 80286 `LOCK`,
-  80386DX form, 80386DX state, 80386DX audit, and cross-profile closure
-  candidates; added the corresponding unnumbered proposals. Documentation
-  governance and diff check passed. Td work has no runtime or artifact change.

@@ -37,8 +37,6 @@ The accepted current-gate result is 240/240 passing.  The active developer
 artifact is `build/output/nxvm_0_5_0358.exe`, SHA-256
 `59FAC0E73FED23BA47F3F25C1946C8D2949CFB186C480CE9841588E47E754E2E`.
 
-## Remaining Scope
-
 ## Accepted S3 Progress
 
 S3 was accepted at `14212791`. Its [selector and transition
