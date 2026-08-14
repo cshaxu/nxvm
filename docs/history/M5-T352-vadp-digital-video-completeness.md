@@ -24,3 +24,9 @@ the selected IBM CGA/EGA digital state graph, one VADP/timeline/copied-frame
 owner map, exact S2--S5 receivers, and named TODO/Queue transfers.  Its
 [ledger](../etc/evidence/t352-s1-digital-video-ledger.md) is the required
 admission boundary for every later T352 display change.
+
+S2 delivery audits the selected VADP register/CRTC/raster lifecycle and finds
+no reproduced mechanism defect: existing owners cover index/mask validation,
+status flip-flop reset, phase/reset behavior, timeline advance, and copied
+consumer isolation.  Its [evidence](../etc/evidence/t352-s2-vadp-register-raster.md)
+retains selected CGA/EGA mode/aperture work for S3/S4 and composition for S5.
