@@ -14,3 +14,9 @@ reference-exhausted results without claiming physical or cycle-exact timing.
 
 S1 is active. It inventories Intel domains, candidate model scalars, accounting
 boundaries, and every transferred fallback before any runtime allocation.
+
+S1 is accepted at `ba5a1221`. Its
+[ledger](../etc/evidence/t362-s1-legacy-timing-normalization-ledger.md)
+establishes the exact Intel domains, MAME i186 register/memory scalar boundary,
+and the two direct plus two constrained immediate-IMUL dispositions. S2 owns
+the centralized allocation and regression corpus.

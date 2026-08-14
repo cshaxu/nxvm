@@ -2,29 +2,9 @@
 
 ## Current Work
 
-**Active.** M5 T362 S1 is the source-domain and normalization ledger for the
-remaining legacy dynamic-arithmetic timing routes.
-
-## M5 T362 S1 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | New |
-| Admission And Approval | The owner explicitly directed execution of the current Queue through the complete instruction-timing corpus on 2026-08-14. This admits Queue's first candidate after Td S90 withdrew earlier unstarted preparation. Git pushes are permitted. |
-| Objective | Establish a form-by-form eligibility ledger for Intel-constrained legacy timing normalization: Intel bounds, exact profile/form, external scalar/revision, EA/prefix/odd-word accounting basis, raw and normalized value, and direct/clamped/reference-exhausted disposition. |
-| Non-goals | No runtime allocation, timing-value change, fallback removal, CPU/machine boundary change, bus/prefetch/device/service timing, physical measurement, cross-profile borrowing, third-party source import, 80286/80386 allocation, or cycle-exact claim. |
-| Reference Baseline | `1484a7fa` / `vm-0-5-0359`; [Intel-constrained normalization proposal](../proposals/m5-intel-constrained-legacy-timing-normalization.md), T361 S1--S3 evidence, and the current 8086/80186 timing ledgers. |
-| Candidate Proposal | [Intel-constrained legacy timing-model normalization](../proposals/m5-intel-constrained-legacy-timing-normalization.md). |
-| Files And ABI Surface | Research/evidence, T362 history, `docs/states/CURRENT.md`, and source/test inventory only. No runtime source, public ABI, build target, dependency, firmware, media, or artifact change. |
-| Applicable Rules | Task Reading Set; Execution packet/P/closure and similar-issue rules; Documentation authority boundaries; source/research policy; Architecture source-admission and single-owner invariants. Coding rules are not triggered because S1 makes no code change. |
-| Verification | Enumerate all transferred T361 forms, verify primary Intel row/range and MAME/86Box/PCjs applicability, distinguish scalar accounting from machine/bus components, record lower/upper clamp eligibility, sweep current one-tick fallbacks, and run documentation governance plus diff check. |
-| Expected Markers | No new runtime marker; the durable `T362 S1` evidence ledger identifies every scoped form and its disposition. |
-| Asset Needs | Read-only T361 evidence, Intel manuals, and referenced implementation revisions; no retained download, guest media, protected binary, hardware measurement, or source import. |
-| Reporting Requirements | Report the eligibility matrix before any allocation proposal. Record every rejected reference and exact reason, and identify whether S2 can implement central allocation without a scope revision. |
-| Stop Conditions | Stop a row as reference-exhausted if exact profile/form, Intel range, source revision, or accounting basis is unproven. Stop the S if an eligible row requires a machine/bus/device owner or a broader CPU refactor. Do not infer a scalar, midpoint, or cross-generation substitute. |
-| Exit Criteria | Durable evidence covers every scoped form and fallback, names all source/revision/accounting comparisons, distinguishes direct/clamped/reference-exhausted outcomes, and gives a bounded S2 implementation surface or a precise transfer. |
-| Original Owner Request | Execute the current Queue through complete instruction timing; use Intel manuals first and 86Box/MAME/PCjs only where their applicable model evidence fills a non-deterministic primary record. |
-| Similar-Issue Sweep | Search all tracked machine source, timing smokes, CMake, T361 evidence, and current documentation for legacy Group-3/immediate-IMUL dynamic forms and `CORE_MACHINE_SOURCE_UNALLOCATED_TICKS`; classify each matching fallback and its owner. |
+**Active.** M5 T362 remains open between accepted S units. S1 accepted the
+immediate-IMUL source-domain ledger; the centralized profile-local allocation
+and regression corpus is the next admissible S.
 
 ## Current Technical Baseline
 
@@ -45,6 +25,7 @@ remaining legacy dynamic-arithmetic timing routes.
 
 | Task | Compact result |
 | --- | --- |
+| T362 S1 | Accepted at `ba5a1221`: Intel Table 1-16 and same-profile MAME i186 scalars establish direct or constrained dispositions for every immediate-IMUL route, with no double EA/odd-word ownership. [Ledger](../etc/evidence/t362-s1-legacy-timing-normalization-ledger.md). No physical or cycle-exact claim. |
 | T361 | Closed at `a5442d96`: S1--S3 established the source-labelled 8086/80186 allocation and synchronous-fault publication boundary; S4 retained Intel 210498-005 Appendix-B `90 NOP = 3` after a page/context and consumer audit. Immediate-IMUL normalization transfers to the first Queue candidate. [S4 evidence](../etc/evidence/t361-s4-80286-nop-source-consumer-audit.md). No physical or cycle-exact claim. |
 | T360 | Closed four-profile timing source reconciliation: primary-authority inventory, owner-selected 80286 NOP table precedence, exact legacy range transfer, contextual classifier audit, and final source/receiver closure. 245/245 current-gate tests passed; no L3 or cycle-exact claim. [Closure audit](../etc/evidence/t360-s5-four-profile-timing-source-closure-audit.md). |
 | T359 | Closed its bounded four-profile instruction-retirement corpus: S1 inventory plus S2--S6 source classifiers use one successful-retirement publisher; S7 verifies all unallocated rows transfer to T360, bus/service, cycle-exact, or x87/VME receivers. 245/245 current-gate tests passed. No L3 or cycle-exact claim is made. [Closure audit](../etc/evidence/t359-s7-complete-instruction-timing-closure-audit.md). |
