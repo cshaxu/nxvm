@@ -14826,8 +14826,10 @@ static C_VOID OUT_I8_EAX(core_machine_cpu_execution_context *context)
     else
     {
         cpu_state.data.ip++;
-        _d_imm(context, 1);
-        _p_output(context, TYPE_MASK_UNSIGNED_8(instruction_state.data.cimm), TYPE_REFERENCE_OF(cpu_state.data.ax), 2);
+        TYPE_TRACE_CHECK_RETURN(_d_imm(context, 1));
+        TYPE_TRACE_CHECK_RETURN(_p_output(context,
+            TYPE_MASK_UNSIGNED_8(instruction_state.data.cimm),
+            TYPE_REFERENCE_OF(cpu_state.data.ax), 2));
     }
     TYPE_TRACE_CALL_END;
 }
@@ -15028,7 +15030,8 @@ static C_VOID OUT_DX_EAX(core_machine_cpu_execution_context *context)
     else
     {
         cpu_state.data.ip++;
-        _p_output(context, cpu_state.data.dx, TYPE_REFERENCE_OF(cpu_state.data.ax), 2);
+        TYPE_TRACE_CHECK_RETURN(_p_output(context, cpu_state.data.dx,
+            TYPE_REFERENCE_OF(cpu_state.data.ax), 2));
     }
     TYPE_TRACE_CALL_END;
 }

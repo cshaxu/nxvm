@@ -264,46 +264,54 @@ static C_INT port_io_s55_test_provider_error(C_VOID)
 {
     static const type_unsigned_8 in_code[] = { 0xe4u, 0x5au };
     static const type_unsigned_8 out_code[] = { 0xe7u, 0x5au };
+    static const core_machine_cpu_profile profiles[] = {
+        CORE_MACHINE_CPU_PROFILE_8086,
+        CORE_MACHINE_CPU_PROFILE_80386
+    };
+    STD_SIZE_T profile;
     type_unsigned_8 form;
 
-    for (form = 0u; form != 2u; ++form) {
-        port_io_s55_machine state;
-        core_machine_run_result result;
-        core_machine_cpu_diagnostic diagnostic;
-        t_cpu before;
-        t_cpu after;
-        type_status status;
-        const type_unsigned_8 *code = form == 0u ? in_code : out_code;
-        C_INT failed = !port_io_s55_prepare(&state,
-            CORE_MACHINE_CPU_PROFILE_80386);
+    for (profile = 0u; profile < sizeof(profiles) / sizeof(profiles[0]);
+        ++profile) {
+        for (form = 0u; form != 2u; ++form) {
+            port_io_s55_machine state;
+            core_machine_run_result result;
+            core_machine_cpu_diagnostic diagnostic;
+            t_cpu before;
+            t_cpu after;
+            type_status status;
+            const type_unsigned_8 *code = form == 0u ? in_code : out_code;
+            C_INT failed = !port_io_s55_prepare(&state,
+                profiles[profile]);
 
-        if (!failed) {
-            port_io_s55_seed(&state.machine->executor_cpu);
-            state.port.fail = 1;
-            before = state.machine->executor_cpu;
-            failed = core_machine_memory_write(state.machine, 0u, code, 2u) !=
-                TYPE_STATUS_OK;
             if (!failed) {
-                status = core_machine_run(state.machine,
-                    (core_machine_run_budget){ 1u, 0u }, &result);
-                after = test_core_machine_fixture_capture_cpu_after_run(
-                    state.machine);
-                failed = core_machine_get_cpu_diagnostic(state.machine,
-                    &diagnostic) != TYPE_STATUS_OK;
-                failed |= status != TYPE_STATUS_FAULT;
-                failed |= result.reason != CORE_MACHINE_STOP_FAULT;
-                failed |= !diagnostic.first_fault.valid;
-                failed |= after.data.eip != before.data.eip;
-                failed |= after.data.eax != before.data.eax;
-                failed |= after.data.eflags != before.data.eflags;
-                failed |= !port_io_s55_gprs_same_except_eax(&before, &after);
-                failed |= !port_io_s55_sregs_same(&before, &after);
-                failed |= state.port.reads != 0u || state.port.writes != 0u;
+                port_io_s55_seed(&state.machine->executor_cpu);
+                state.port.fail = 1;
+                before = state.machine->executor_cpu;
+                failed = core_machine_memory_write(state.machine, 0u, code, 2u) !=
+                    TYPE_STATUS_OK;
+                if (!failed) {
+                    status = core_machine_run(state.machine,
+                        (core_machine_run_budget){ 1u, 0u }, &result);
+                    after = test_core_machine_fixture_capture_cpu_after_run(
+                        state.machine);
+                    failed = core_machine_get_cpu_diagnostic(state.machine,
+                        &diagnostic) != TYPE_STATUS_OK;
+                    failed |= status != TYPE_STATUS_FAULT;
+                    failed |= result.reason != CORE_MACHINE_STOP_FAULT;
+                    failed |= !diagnostic.first_fault.valid;
+                    failed |= after.data.eip != before.data.eip;
+                    failed |= after.data.eax != before.data.eax;
+                    failed |= after.data.eflags != before.data.eflags;
+                    failed |= !port_io_s55_gprs_same_except_eax(&before, &after);
+                    failed |= !port_io_s55_sregs_same(&before, &after);
+                    failed |= state.port.reads != 0u || state.port.writes != 0u;
+                }
             }
+            core_machine_destroy(state.machine);
+            if (failed)
+                return 0;
         }
-        core_machine_destroy(state.machine);
-        if (failed)
-            return 0;
     }
     return 1;
 }

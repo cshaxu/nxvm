@@ -2,13 +2,35 @@
 
 ## Current Work
 
-**Idle.**
+**Active.** M5 T358 S1 reconciles the shared I/O-permission mechanism across
+real, protected, and VM86 execution before bus-timed PC/AT work.
+
+## M5 T358 S1 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New |
+| Admission And Approval | Owner approved the next queued task on 2026-08-13. Single-agent execution. |
+| Objective | Establish one evidence-backed I/O-permission decision boundary for ordinary `IN`/`OUT` and string `INS`/`OUTS` across real mode, protected mode at permitted and restricted privilege, TSS I/O-map permit/deny, and VM86; repair only a reproduced shared-mechanism defect. |
+| Non-goals | Exception/IRQ frame or stack-transition redesign; segment, task, paging, VME/PVI, x87, generic provider ABI, device behavior, bus timing, or a broad instruction-family rewrite. |
+| Reference Baseline | `9f82715f` (T357 closure baseline). |
+| Candidate Proposal | [Cross-mode mechanism coherence](../proposals/m5-cross-mode-mechanism-coherence.md). |
+| Files And ABI Surface | The shared I/O permission owner and its ordinary/string callers, owner-bound tests and evidence, CMake current artifact identity, and this packet; no public provider ABI or new production-test interface without a separately admitted decision. |
+| Applicable Rules | Task Reading Set, execution, architecture, coding, documentation, and source/research policy; preserve project type vocabulary, target-local strict compilation, and test-only fixture boundaries. |
+| Verification | A decision-to-commit ledger must trace classification, permission check, provider side effect, exception production/delivery boundary, and architectural publication for real mode, protected allowed/restricted, TSS-map permit/deny, and VM86. Exercise ordinary and string callers, exact no-publication on deny/fault, and full current gate, documentation governance, artifact build/hash, and diff checks. |
+| Expected Markers | `M5:T358:S1:IO-PERMISSION:OK`; full current-gate and current developer artifact `vm-0-5-0358`. |
+| Asset Needs | Intel 80386 privilege/I/O-map authority and project-owned deterministic providers only; no guest media, firmware, or external-source import. |
+| Reporting Requirements | One complete P1 only: mechanism map, caller/write/fault sweep, exact test evidence, any repair rationale, all verification output, and commit/push. Do not report partial vectors as delivery. |
+| Stop Conditions | Stop and split if correctness requires a provider ABI, TSS-layout contract, generic exception/interrupt delivery, or architectural state transition outside this I/O permission owner; record the precise boundary and affected callers. |
+| Exit Criteria | One shared decision boundary is evidenced for both ordinary and string I/O in every admitted mode/permission outcome; any defect is repaired without widening interfaces; all required gates and the task artifact pass; remaining exception/IRQ, segment/task, paging, and prefix mechanisms remain explicitly transferred. |
+| Original Owner Request | Continue the ordered L3-completeness Queue after T357, with a holistic rather than symptom-patch implementation approach. |
+| Similar-Issue Sweep | Enumerate every caller of the selected permission owner and classify real/protected/VM86 outcomes before changing code; do not infer completeness from a single opcode family. |
 
 ## Current Technical Baseline
 
-- **Current developer artifact:** T357 closed `vm-0-5-0357` /
-  `build/output/nxvm_0_5_0357.exe` as
-  `83A249015C03CF875896A440D5B43A430C2D875A63F0BE4B9709014A753CAD95`.
+- **Current developer artifact:** T358 S1 active `vm-0-5-0358` /
+  `build/output/nxvm_0_5_0358.exe` as
+  `5606F34537F86B11B3891980B77F8C48273F4F0903C7AB4EEE8F2DF5617D0181`.
 - **T285 display implementation:** `INT 10h` mode `10h` /
   `EGA-640x350x16-direct` has a VADP-owned planar frame path and copied-frame
   consumer boundary; mode 0Dh remains a separate retained path.
@@ -38,8 +60,8 @@
   device/chip/port/bus completeness, bus availability, service timing,
   cycle-exact selected-profile work, and L3 closure before final BYOB Windows
   3.1 Standard/386 Enhanced lifecycle proof. M6 now follows the M5 closure
-  decision. T358 S1 remains owner-suspended in a preserved local stash and
-  must be explicitly resumed. Documentation governance and diff check passed;
+  decision. T358 S1 was isolated during this Td delivery and is now restored
+  as the sole active packet. Documentation governance and diff check passed;
   Td work has no runtime change.
 
 - **M5 Td S86:** replaced the completed instruction-timing TODO with ordered

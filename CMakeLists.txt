@@ -2378,8 +2378,8 @@ function(add_current_vm_artifact target version)
             "${CMAKE_SOURCE_DIR}/build/output/${task_artifact_filename}")
 endfunction()
 
-set(PROJECT_CURRENT_VM_ARTIFACT_TARGET vm-0-5-0357)
-add_current_vm_artifact(vm-0-5-0357 "0.5.0357")
+set(PROJECT_CURRENT_VM_ARTIFACT_TARGET vm-0-5-0358)
+add_current_vm_artifact(vm-0-5-0358 "0.5.0358")
 option(PROJECT_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
 

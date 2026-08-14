@@ -110,6 +110,10 @@ static C_INT timing_s7_allow_permission(core_machine *machine, C_INT vm86,
     machine->executor_cpu.data.cs.selector = 0x001bu;
     machine->executor_cpu.data.cs.dpl = 3u;
     machine->executor_cpu.data.ss.dpl = 3u;
+    machine->executor_cpu.data.ds.selector = 0x0023u;
+    machine->executor_cpu.data.ds.dpl = 3u;
+    machine->executor_cpu.data.es.selector = 0x0023u;
+    machine->executor_cpu.data.es.dpl = 3u;
     machine->executor_cpu.data.tr.flagValid = TYPE_TRUE;
     machine->executor_cpu.data.tr.selector = 0x0028u;
     machine->executor_cpu.data.tr.base = TIMING_S7_TSS_BASE;
@@ -192,55 +196,58 @@ static C_INT timing_s7_test_denied(C_VOID)
     return !failed;
 }
 
-static C_INT timing_s7_test_vm86_strings(C_VOID)
+static C_INT timing_s7_test_permission_strings(C_VOID)
 {
     static const timing_s7_form forms[] = {
         { 0x6cu, 0u, 0u, 1 }, { 0x6eu, 0u, 0u, 0 }
     };
+    C_INT vm86;
     STD_SIZE_T index;
 
-    for (index = 0u; index < sizeof(forms) / sizeof(forms[0]); ++index) {
-        type_unsigned_8 bitmap;
+    for (vm86 = 0; vm86 != 2; ++vm86) {
+        for (index = 0u; index < sizeof(forms) / sizeof(forms[0]); ++index) {
+            type_unsigned_8 bitmap;
 
-        for (bitmap = 0u; bitmap != 2u; ++bitmap) {
-            timing_s7_state state = { 0u, 0u, 0u };
-            const core_machine_run_budget budget = { 1u, 0u };
-            core_machine_run_result result;
-            core_machine *machine = STD_NULL;
-            type_unsigned_8 source = 0x4au;
-            type_unsigned_8 destination = 0u;
-            C_INT failed = !timing_s7_prepare(&machine, &state) ||
-                !timing_s7_load(machine, forms[index].opcode) ||
-                !timing_s7_allow_permission(machine, 1, bitmap);
+            for (bitmap = 0u; bitmap != 2u; ++bitmap) {
+                timing_s7_state state = { 0u, 0u, 0u };
+                const core_machine_run_budget budget = { 1u, 0u };
+                core_machine_run_result result;
+                core_machine *machine = STD_NULL;
+                type_unsigned_8 source = 0x4au;
+                type_unsigned_8 destination = 0u;
+                C_INT failed = !timing_s7_prepare(&machine, &state) ||
+                    !timing_s7_load(machine, forms[index].opcode) ||
+                    !timing_s7_allow_permission(machine, vm86, bitmap);
 
-            if (!failed) {
-                machine->executor_cpu.data.edx = 0x00000080u;
-                machine->executor_cpu.data.esi = 0x00000200u;
-                machine->executor_cpu.data.edi = 0x00000100u;
-                failed |= core_machine_memory_write(machine, 0x0200u, &source,
-                    sizeof(source)) != TYPE_STATUS_OK;
+                if (!failed) {
+                    machine->executor_cpu.data.edx = 0x00000080u;
+                    machine->executor_cpu.data.esi = 0x00000200u;
+                    machine->executor_cpu.data.edi = 0x00000100u;
+                    failed |= core_machine_memory_write(machine, 0x0200u, &source,
+                        sizeof(source)) != TYPE_STATUS_OK;
+                }
+                if (!failed && bitmap == 0u) {
+                    failed |= core_machine_run(machine, budget, &result) != TYPE_STATUS_OK ||
+                        result.reason != CORE_MACHINE_STOP_BUDGET ||
+                        result.executed != 1u ||
+                        (forms[index].input ? state.reads != 1u || state.writes != 0u ||
+                            machine->executor_cpu.data.edi != 0x00000101u ||
+                            core_machine_memory_read(machine, 0x0100u, &destination,
+                                sizeof(destination)) != TYPE_STATUS_OK || destination != 0x5au :
+                            state.reads != 0u || state.writes != 1u ||
+                            machine->executor_cpu.data.esi != 0x00000201u);
+                }
+                if (!failed && bitmap != 0u) {
+                    failed |= core_machine_run(machine, budget, &result) != TYPE_STATUS_FAULT ||
+                        result.reason != CORE_MACHINE_STOP_FAULT || result.executed != 0u ||
+                        result.ticks != 0u || result.elapsed_ticks != 0u ||
+                        state.reads != 0u || state.writes != 0u ||
+                        machine->executor_cpu.data.esi != 0x00000200u ||
+                        machine->executor_cpu.data.edi != 0x00000100u;
+                }
+                core_machine_destroy(machine);
+                if (failed) return 0;
             }
-            if (!failed && bitmap == 0u) {
-                failed |= core_machine_run(machine, budget, &result) != TYPE_STATUS_OK ||
-                    result.reason != CORE_MACHINE_STOP_BUDGET ||
-                    result.executed != 1u ||
-                    (forms[index].input ? state.reads != 1u || state.writes != 0u ||
-                        machine->executor_cpu.data.edi != 0x00000101u ||
-                        core_machine_memory_read(machine, 0x0100u, &destination,
-                            sizeof(destination)) != TYPE_STATUS_OK || destination != 0x5au :
-                        state.reads != 0u || state.writes != 1u ||
-                        machine->executor_cpu.data.esi != 0x00000201u);
-            }
-            if (!failed && bitmap != 0u) {
-                failed |= core_machine_run(machine, budget, &result) != TYPE_STATUS_FAULT ||
-                    result.reason != CORE_MACHINE_STOP_FAULT || result.executed != 0u ||
-                    result.ticks != 0u || result.elapsed_ticks != 0u ||
-                    state.reads != 0u || state.writes != 0u ||
-                    machine->executor_cpu.data.esi != 0x00000200u ||
-                    machine->executor_cpu.data.edi != 0x00000100u;
-            }
-            core_machine_destroy(machine);
-            if (failed) return 0;
         }
     }
     return 1;
@@ -277,8 +284,10 @@ static C_INT timing_s7_test_permission_budget(C_VOID)
 C_INT main(C_VOID)
 {
     if (!timing_s7_test_success() || !timing_s7_test_denied() ||
-        !timing_s7_test_vm86_strings() || !timing_s7_test_permission_budget())
+        !timing_s7_test_permission_strings() ||
+        !timing_s7_test_permission_budget())
         return 1;
     STD_PRINTF("M5:T357:S7:80386-PROTECTED-IO-TIMING:OK\n");
+    STD_PRINTF("M5:T358:S1:IO-PERMISSION:OK\n");
     return 0;
 }
