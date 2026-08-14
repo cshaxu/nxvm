@@ -76,3 +76,5 @@ S7 declares the non-vendor Rev.3 firmware slot and the selected drive-A field
 upgrade while proving the existing FDC port, IRQ6 and DMA2 composition. Its
 [topology evidence](../etc/evidence/t366-s7-model-339-firmware-fdc-topology.md)
 records the source boundary and retained timing transfers.
+S7 is accepted at `553cd6d6`; firmware behavior and FDC service timing remain
+unallocated and transfer to later T366 work.

@@ -2,29 +2,9 @@
 
 ## Current Work
 
-**Active implementation packet:** M5 T366 S7, Model 339 firmware and FDC
-topology boundary.
-
-## M5 T366 S7 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner: repository owner. Approval: persistent M5 L3 direction, the approved 2026-08-14 late IBM PC/AT 5170 Model 339 / Type 3 baseline, and accepted T366 S6 transfer. Scope: bind the selected abstract Rev.3 BIOS slot and TEAC FD-235HF-A529 1.44 MB field-upgrade FDC topology to the Model 339 profile, or make an evidence-backed exact transfer. No exception is approved. |
-| Objective | Reconcile the selected profile's firmware-slot identity, no-vendor-ROM boundary, diskette drive geometry/type, FDC controller/ports, DMA channel 2, IRQ6, reset and lifecycle with one Model 339 configuration. Make the field upgrade explicit without treating it as factory hardware. |
-| Non-goals | Do not import, hash, catalogue or map IBM ROM bytes; do not claim BIOS behavior, firmware timing, exhaustive 765-family command timing, MFM/ST-506, ATA/HDC, serial/parallel cards, I/O-channel check, CGA raster timing, bus waits, arbitration, refresh or physical/cycle timing. Do not add a 1 MB memory expansion. |
-| Reference Baseline | T366 S2 fixes a late 8 MHz Model 339 Type 3 with 512 KB planar RAM, Rev.3 BIOS slot, IBM CGA and a TEAC 1.44 MB field upgrade. T366 S5 selects no ATA/HDC and S6 selects CGA-only topology. Existing generic FDC composition must be inspected rather than presumed to represent that field upgrade. |
-| Candidate Proposal | [Bus-Timed PC/AT Operation](../proposals/m5-bus-timed-pcat-operation.md), which requires selected diskette/FDC DMA-channel-2 topology before bus availability. |
-| Files And ABI Surface | Expected: profile descriptor/composition/FDC configuration only if the selected topology can be expressed honestly; focused proof/CMake registration; indexed evidence, T366 history and current packet. Firmware remains an abstract profile slot; no vendor asset or machine-local manifest enters the repository. |
-| Applicable Rules | Execution packet/evidence/acceptance and similar-issue sweep; source policy governs firmware and external reference research; architecture gives composition/profile one topology selector and FDC one controller owner; coding requires C11/cohesive lifecycle configuration; documentation requires indexed evidence/status-only packet. All apply; no waiver. |
-| Verification | Build a source-to-profile-to-composition ledger. Focused proof must distinguish Model 339 field-upgrade diskette/FDC selection from default composition and prove FDC port, IRQ6, DMA2 and reset/lifecycle ownership; run affected FDC/profile/session tests, current smoke gate, documentation governance and `git diff --check`. If source evidence is insufficient, prove the exact non-admission path and transfer it without a guessed topology. |
-| Expected Markers | A new focused S7 marker must identify the accepted profile/FDC boundary; existing FDC, session and current-gate markers remain successful. |
-| Asset Needs | Public manuals and technical references may be read under source policy; no firmware, guest media, ROM hash catalogue, downloads or machine-local paths may be committed. |
-| Reporting Requirements | Report authoritative source basis, field-upgrade versus factory distinction, firmware abstraction, selected FDC route/lifecycle, retained default proof, final pushed evidence and every transfer. |
-| Stop Conditions | Stop if the exact FDC/drive or firmware-slot contract cannot be supported without vendor assets, if generic FDC behavior would be misrepresented as IBM-specific timing, or if the selected upgrade conflicts with the Model 339 baseline. |
-| Exit Criteria | The selected Model 339 either owns an explicit non-vendor firmware slot and field-upgrade FDC topology with route/lifecycle proof, or has one exact evidence-backed transfer; no ATA/MFM or factory-upgrade claim leaks into the profile, and all timing breadth remains transferred. |
-| Original Owner Request | Use late Model 339 / Type 3 as the 286 L3 baseline: 8 MHz, Rev.3 BIOS 1985-11-15, 512 KB board memory, 101-key keyboard, IBM CGA, selected 1.44 MB post-sale upgrade, no initial fixed disk; leave MFM/ST-506 in TODO and do not describe current ATA/HDC as IBM MFM. |
-| Similar-Issue Sweep | Inspect all profile firmware declarations, diskette-drive configuration, FDC port/IRQ/DMA/reset and session lifecycle paths, default-versus-Model selection tests, and source/evidence wording. Repair one shared profile/composition owner or transfer each unsupported model-specific claim to the exact later receiver. |
+T366 S7 is accepted at `553cd6d6`. The next T366 S must establish the selected
+FDC service-timing contract or make an exact source-backed transfer before any
+bus-availability allocation.
 
 ## Current Technical Baseline
 
@@ -45,7 +25,7 @@ topology boundary.
 
 | Task | Compact result |
 | --- | --- |
-| T366 S6 | Accepted at `dd464d74`: Model 339 selects one CGA-only VADP topology with VADP-owned B8000h VRAM, while generic PC/AT retains its EGA ports and aperture. [Topology evidence](../etc/evidence/t366-s6-model-339-cga-topology.md). IBM ROM, exhaustive CGA timing, FDC/MFM-ST-506 and bus timing remain transfers. |
+| T366 S7 | Accepted at `553cd6d6`: Model 339 declares an abstract Rev.3 firmware slot and a non-factory 1.44 MB drive-A upgrade while retaining FDC IRQ6/DMA2 topology. [Topology evidence](../etc/evidence/t366-s7-model-339-firmware-fdc-topology.md). Service timing, MFM/ST-506 and bus timing remain transfers. |
 | T365 | Closed at `febc9352`: IBM PC/AT parity/I/O-check NMI sources cannot be selected without a profile input, status/latch/clear and lifecycle contract; CPU and CMOS remain delivery/mask only. [Closure audit](../etc/evidence/t365-s2-pcat-nmi-nonadmission-closure-audit.md). Blocks physical/cycle-exact L3 closure; no synthetic source. |
 | T364 | Closed at `7d574ae3`: all selected PC/AT components, ports/routes and lifecycle/timing owners are inventoried; optional and physical gaps retain exact Queue/TODO receivers. [Closure audit](../etc/evidence/t364-s2-pcat-device-completeness-closure-audit.md). No model-L3 claim. |
 | T363 | Closed at `312ef2f9`: all 256 primary and 256 secondary dispatch slots have one source-backed successful-retirement owner or an exact explicit receiver; inventory and 246/246 current-gate passed. [Closure audit](../etc/evidence/t363-s7-complete-instruction-timing-closure-audit.md). No physical/cycle-exact L3 claim. |
