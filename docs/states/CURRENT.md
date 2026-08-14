@@ -2,14 +2,35 @@
 
 ## Current Work
 
-**Open.** M5 T358 S1 is accepted; the next cross-mode mechanism requires a
-separately admitted continuation packet.
+**Active.** M5 T358 S2 audits and reconciles the shared exception and IRQ
+entry mechanism across real, protected, and VM86 execution.
+
+## M5 T358 S2 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner approved execution of the ordered Queue through L3 closure on 2026-08-14. Single-agent execution follows accepted T358 S1. |
+| Objective | Build one source-to-commit ledger for every currently delivered synchronous exception and hardware IRQ path from producer/classification through `ExecFinal`, serializer, frame/stack preflight, state publication, PIC acknowledgment, and diagnostic boundary; repair every reproduced accidental divergence within this shared entry mechanism. |
+| Non-goals | VME/PVI, 486+ extensions, numerical x87 behavior, task-gate/task-switch redesign, IRET return semantics, paging algorithm redesign, NMI/PIC policy redesign, device-side IRQ production, or physical interrupt/bus timing. |
+| Reference Baseline | `dce4b9fe` / current task artifact `vm-0-5-0358`. |
+| Candidate Proposal | [Cross-mode mechanism coherence](../proposals/m5-cross-mode-mechanism-coherence.md). |
+| Files And ABI Surface | Existing exception/IRQ execution-finalizer and serializer owners, every direct producer/caller, one owner-bound smoke and evidence ledger if existing evidence is insufficient, CMake current-gate/artifact wiring, and task history/status; no public CPU, PIC, provider, or TSS ABI. |
+| Applicable Rules | Task Reading Set, execution, architecture, coding, documentation, and source/research policy; preserve genuine 16-/32-bit frame/TSS layouts and maintain one validation-to-publication owner. |
+| Verification | Mechanically enumerate delivered exception masks and all `ExecInt` callers; prove real, protected same-CPL, protected outer-CPL, and VM86 applicable frame/restart/IF/TF/segment/stack outcomes, synchronous-fault priority over pending IRQ, and PIC acknowledge only after successful entry. Include failure preflight/nonpublication and retained full current gate, governance, artifact hash, and diff checks. |
+| Expected Markers | `M5:T358:S2:EXCEPTION-IRQ:OK`; full current-gate and rebuilt `vm-0-5-0358` artifact. |
+| Asset Needs | Intel 80386 exception/interrupt authority and project-owned synthetic IDT/TSS/PIC fixtures only; no guest media, firmware, or external-source import. |
+| Reporting Requirements | One complete P1 only: producer/caller/frame ledger, exact reproduced outcomes, every shared repair and similar-issue sweep, focused marker, full gate, artifact hash, commit, and push. Do not report an opcode-local or one-vector result as delivery. |
+| Stop Conditions | Stop and split if closure requires new PIC/NMI/device policy, task switching, inverse IRET, paging/TLB semantics, a public ABI, or a genuine Intel layout difference outside the entry owner; record the exact transfer and affected callers. |
+| Exit Criteria | All currently supported entry producers and hardware IRQ callers have one classified delivery contract with mode-appropriate frame and commit evidence; any accidental shared-owner divergence is repaired and swept; all required gates pass; excluded system mechanisms remain explicit transfers. |
+| Original Owner Request | Continue the ordered Queue holistically until L3 closure audit, avoiding symptom-patch tactics. |
+| Similar-Issue Sweep | Enumerate `ExecFinal` exception-mask branches, `_e_except_n`/`_e_intr_n` callers, real/protected serializers, and every PIC/NMI invocation before changing code; classify each as fixed, covered, Intel-required distinct layout, or explicit transfer. |
 
 ## Current Technical Baseline
 
-- **Current developer artifact:** T358 S1 active `vm-0-5-0358` /
+- **Current developer artifact:** T358 S2 active `vm-0-5-0358` /
   `build/output/nxvm_0_5_0358.exe` as
-  `5606F34537F86B11B3891980B77F8C48273F4F0903C7AB4EEE8F2DF5617D0181`.
+  `59FAC0E73FED23BA47F3F25C1946C8D2949CFB186C480CE9841588E47E754E2E`.
 - **T285 display implementation:** `INT 10h` mode `10h` /
   `EGA-640x350x16-direct` has a VADP-owned planar frame path and copied-frame
   consumer boundary; mode 0Dh remains a separate retained path.

@@ -17948,12 +17948,12 @@ static C_VOID ExecFinal(core_machine_cpu_execution_context *context)
             exception_deliverable = TYPE_TRUE;
         }
         else if (instruction_state.data.except == VCPUINS_EXCEPT_SS &&
-            context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
+            context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80286) {
             exception_vector = 0x0cu;
             exception_deliverable = TYPE_TRUE;
         }
         else if (instruction_state.data.except == VCPUINS_EXCEPT_TS &&
-            context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
+            context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80286) {
             exception_vector = 0x0au;
             exception_deliverable = TYPE_TRUE;
         }
