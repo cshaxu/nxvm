@@ -9,10 +9,10 @@ explicitly finite corpus.  It is not a bus model or a cycle-exact CPU claim.
 
 ## Accepted S1 Progress
 
-S1 is active.  It owns the source/form contract and exhaustive elapsed-time
-inventory required before timing implementation.  Its outcome must either
-provide an implementable selected corpus for S2 or transfer an unsupported
-reference/physical dependency precisely; it may not assign guessed values.
+S1 was accepted at `8e0841b6`.  Its [source/form contract](../etc/evidence/t357-s1-instruction-timing-contract.md)
+inventories the existing synthetic cadence and the sole retirement publication
+owner, identifies primary profile references and their assumptions, allocates
+the selected S2 corpus, and transfers physical timing dependencies precisely.
 
 ## Intended Task Closure
 
