@@ -25,9 +25,9 @@ entry point for the retained HDD/INT13 probe.  It is intentionally outside the
 current gate, rejects absent configuration before media access, and leaves the
 first actual owner-supplied checkpoint to S3.
 
-## S3 delivery pending acceptance
+## Accepted S3 progress
 
-S3 ran the single approved HDD/INT13 checkpoint and obtained a stable BIOS
+S3 was accepted at `b5e7d64c`.  It ran the single approved HDD/INT13 checkpoint and obtained a stable BIOS
 geometry/read result through the retained ATA readiness path.  Its detailed
 [checkpoint record](../etc/evidence/t355-s3-hdd-int13-checkpoint.md) makes no
 Windows boot or compatibility claim and transfers the complete map

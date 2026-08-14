@@ -2,29 +2,7 @@
 
 ## Current Work
 
-**Active.** M5 T355 S3 executes only the approved opt-in HDD/INT13 checkpoint
-and classifies its bounded outcome; it does not run Windows Setup.
-
-## M5 T355 S3 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner approved continued holistic device/L3 completion and readiness-map work on 2026-08-13. Accepted S1/S2 commits `20a52a06` / `9b14f9a4` allocate the first bounded BYOB checkpoint. |
-| Objective | Run exactly the accepted opt-in HDD/INT13 checkpoint with the approved owner-supplied local HDD, classify the stable checkpoint or first reproducible prerequisite failure, and transfer every unselected dependency truthfully. |
-| Non-goals | No Windows Setup, installation, Standard/Enhanced Mode, guest-media import/copy/commit, media-path/hash persistence, core timing change, generic runner, current-gate registration, or compatibility claim. |
-| Reference Baseline | `9b14f9a4` on `master`, accepted T355 S2 harness. |
-| Candidate Proposal | [Windows 3.x readiness map](../proposals/m5-windows-3x-readiness-map.md); [S1 ledger](../etc/evidence/t355-s1-readiness-ledger.md); [S2 harness evidence](../etc/evidence/t355-s2-opt-in-checkpoint-harness.md); [source policy](../etc/operations/policy/source-policy.md). |
-| Files And ABI Surface | Existing opt-in target and owner probe, T355 evidence/history/CURRENT only. No planned production, profile, provider, media, or current-gate change. |
-| Applicable Rules | Task Reading Set; execution lifecycle; source policy; architecture/coding rules for any bounded defect analysis; documentation rules. The local image remains owner supplied and no local path or binary content enters Git. |
-| Verification | Validate the configured local file only against the approved local-media record at execution time; invoke `run-windows31-hdd-checkpoint` once; retain only its marker/classification without path, bytes, or hash; run governance and diff checks. No current-gate run is needed unless source changes. |
-| Expected Markers | `M5:T287:S16:HDD-ADMISSION:OK` through `M5:T355:S2:WINDOWS31-HDD-CHECKPOINT:OK`, or one reproducible bounded failure classification with its owner/transfer. |
-| Asset Needs | The owner-approved local `runtime-hdd-ewin31-setup` image is required for this one execution and stays outside Git/releases. |
-| Reporting Requirements | Record the logical asset identity, approved size/hash comparison result without the local path, target invocation, checkpoint result, host-observation limitation, and every retained transfer. |
-| Stop Conditions | Stop for owner decision if execution requires media mutation, media persistence, a new host-time contract, unbounded Windows interaction, a generic runner, or a core/device repair beyond documenting the first classified failure. |
-| Exit Criteria | One approved local HDD/INT13 checkpoint is reproducibly classified with no media/provenance leakage and no claim beyond that checkpoint; any failure has a precise owner and Queue/TODO transfer. |
-| Original Owner Request | Fully and stably implement high-value devices and selected L3 before using a Windows consumer to decide subsequent work. |
-| Similar-Issue Sweep | Recheck all Windows probe registrations, all media variables, source-policy constraints, probe host-thread/sleep behavior, current-gate exclusion, and T347/T354 prerequisite evidence. |
+**Active.** M5 T355 remains open between accepted subtasks.
 
 ## Current Technical Baseline
 
@@ -45,7 +23,7 @@ and classifies its bounded outcome; it does not run Windows Setup.
 
 | Task | Compact result |
 | --- | --- |
-| T355 S2 | Accepted one opt-in BYOB HDD/INT13 checkpoint harness: it rejects absent or nonexistent input before probe execution, stays outside current-gate, records no media provenance, and leaves all Windows execution to S3. Configuration, governance, and 234 current-gate tests passed. [Evidence](../etc/evidence/t355-s2-opt-in-checkpoint-harness.md). |
+| T355 S3 | Accepted the single approved HDD/INT13 checkpoint: logical input identity matched the approved local-media record; BIOS geometry and MBR/VBR reads reached ATA in two commands; no Setup/boot claim, no repository media provenance, and S4 receives the full reconciliation. [Evidence](../etc/evidence/t355-s3-hdd-int13-checkpoint.md). |
 | T354 | Closed selected L3 bus timing: core-local checked CPU/DMA transaction begin/commit/cancel trace, deterministic CPU-retire then DMA/PIT/PIC then FDC/HDC ordering, reset cancellation/trace continuity, and retained firmware/DOS consumers. Exact bus cycles, pin waveforms, physical wait tables, host time, and Windows readiness remain explicit transfers. 234 current-gate tests passed. [History](../history/M5-T354-physical-l3-bus-timing-convergence.md). |
 | T353 | Closed selected PC/AT topology: the default profile's 75 exact directional leaves and five named routes validate before core publication, remain exact through session reset and deterministic-L3 rearm, and have firmware-visible reset proof. Optional PPI/speaker, NMI, and interface breadth remain corpus-gated TODO transfers; physical bus timing transfers to the next L3 package. 231 current-gate tests passed. [History](../history/M5-T353-pcat-port-topology-and-peripherals.md). |
 | T352 | Closed selected digital CGA/EGA: one VADP owner for registers, apertures, raster, planar state, reset, and capture; deterministic VADP-after-KBC timing and copied session/mailbox composition; `vm-0-5-0352` SHA-256 `37A00874C05FB402151AF1A77BD28796D03B2A738D6F3EC08761E4541F2D6BB4`; 229 current-gate tests passed. [History](../history/M5-T352-vadp-digital-video-completeness.md). |
