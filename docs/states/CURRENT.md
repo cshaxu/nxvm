@@ -2,8 +2,29 @@
 
 ## Current Work
 
-**Active.** M5 T357 remains open after accepting S7; the final cross-profile
-closure audit is next.
+**Active.** M5 T357 S8 performs the final finite-corpus cross-profile closure
+audit for instruction-timed execution.
+
+## M5 T357 S8 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner-approved completion of T357 after accepted S1--S7. |
+| Objective | Audit and close only the finite source-backed 8086, 80186, 80286, and 80386 instruction-timing corpus allocated by the T357 proposal; verify one successful-retirement publication owner and exact transfers for all non-corpus timing work. |
+| Non-goals | Do not add new opcode timing rows, alter instruction semantics, claim memory wait states, prefetch, bus/HOLD/DMA arbitration, device latency, fault/interrupt-cycle timing, x87, VME/PVI, host time, or cycle-exact/L3 completion. |
+| Reference Baseline | `91b3fb2d` / `vm-0-5-0357`, accepted T357 S1--S7 evidence, and the selected Intel 8086/80186/80286/80386 manual tables. |
+| Candidate Proposal | [Instruction-timed execution](../proposals/m5-instruction-timed-execution.md) and [T357 task record](../history/M5-T357-instruction-timed-execution.md). |
+| Files And ABI Surface | Audit evidence, task history, CURRENT, Queue/TODO transfer references if a verified omission requires them, and developer artifact metadata only. No runtime/API/ABI or broad timing-ledger change absent a newly approved corrective packet. |
+| Applicable Rules | Apply the Task Reading Set and execution/coding/architecture/documentation/source-policy authorities. Appendix-B selected values control; an actual table/prose conflict must remain a precise TODO revisit. |
+| Verification | Reconcile every allocated S1--S7 profile/form/mode row to its evidence and smoke; confirm the sole successful-retirement elapsed-tick publisher, source maximum/budget/fallback/reset/fault boundaries, current-gate, documentation governance, and developer artifact hash. |
+| Expected Markers | All focused T357 ledger markers and the full current-gate are green; one closure record identifies the finite corpus and explicit transfers. |
+| Asset Needs | Read-only retained Intel manual tables and locally recorded T357 evidence. No external asset enters the repository. |
+| Reporting Requirements | Record the row-by-row profile/mode closure, Appendix-B precedence/TODO disposition, artifact command/SHA-256, full-gate result, and every transferred timing category without claiming L3 cycle exactness. |
+| Stop Conditions | Stop if an allocated row lacks authority/evidence, an elapsed-time writer or source/config leakage is found, a transfer is unowned, or closure requires runtime repair; return that finding to its mechanism owner rather than closing T357. |
+| Exit Criteria | The finite corpus is fully accounted for across four profiles; S3/S6/S7 I/O and VM86 boundaries are reconciled; all non-selected timing remains explicitly transferred; the artifact and gates are verified; no completion language exceeds instruction-timed execution. |
+| Original Owner Request | Complete T357 as a profile-aware instruction-form timing prerequisite without claiming bus or cycle-exact timing. |
+| Similar-Issue Sweep | Sweep all T357 evidence, source-ledger forms and profile tables, timing consumers, fallback/max/budget paths, elapsed writers, Queue/TODO transfers, and the retained artifact process. |
 
 ## Current Technical Baseline
 
