@@ -25,3 +25,21 @@ The inventory gate, retained five timing-ledger markers, documentation
 governance, and 240/240 current-gate tests passed.  S2 next owns the combined
 arithmetic, FLAGS, data, and ModRM/EA source matrix; physical timing remains
 explicitly outside this task's form-cost owner.
+
+### S2: Four-profile arithmetic, FLAGS, data, and ModRM/EA timing
+
+S2 is accepted at `5e685e52`.  Its
+[source ledger](../etc/evidence/t359-s2-four-profile-arithmetic-data-source-ledger.md)
+adds one private normalized-encoding classifier before the retained profile
+fallback owners and keeps dynamic 80386 multiplication in its only required
+peer.  It allocates the admitted primary ALU, TEST/XCHG, adjustment/conversion,
+INC/DEC, Group 3, immediate-IMUL, selected MOV/LEA, and SETcc rows with
+four-profile source provenance.  The classifier distinguishes a word read
+from a word read-modify-write, and its maximum preflight is the documented
+80386 memory-IDIV 46-clock row.
+
+The source-only 8086/80186 range rows remain transferred to T360 rather than
+being approximated.  The owner smoke, retained timing-ledger smoke, strengthened
+inventory verifier, documentation governance, and 241/241 current-gate tests
+passed.  The rebuilt developer artifact is `build/output/nxvm_0_5_0359.exe`,
+SHA-256 `2D91DCD23488FD86E64B1EB5126C27DE293183619F7841C96E447FBA63E15904`.
