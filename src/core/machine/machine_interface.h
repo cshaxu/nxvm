@@ -31,6 +31,7 @@ typedef struct core_machine core_machine;
 #define CORE_MACHINE_RTC_BASEMEM_LSB 0x15u
 #define CORE_MACHINE_RTC_BASEMEM_MSB 0x16u
 #define CORE_MACHINE_RTC_TYPE_DISK_FIXED_EXTENDED_0 0x19u
+#define CORE_MACHINE_PC_AT_PORT_B 0x0061u
 
 /* A domain receives floor((phase + elapsed * numerator) / denominator)
  * ticks. All-zero is retained configuration shorthand for identity 1/1. */
@@ -111,6 +112,18 @@ typedef struct core_machine_rtc_cmos_config {
     core_machine_rtc_default_byte defaults[CORE_MACHINE_RTC_DEFAULT_COUNT];
     STD_SIZE_T default_count;
 } core_machine_rtc_cmos_config;
+
+typedef struct core_machine_planar_parity_config {
+    /* IBM PC/AT system-board port B; other mappings are not this controller. */
+    type_unsigned_16 port;
+} core_machine_planar_parity_config;
+
+typedef struct core_machine_planar_parity_observation {
+    C_INT configured;
+    C_INT enabled;
+    C_INT latched;
+    C_INT nmi_signaled;
+} core_machine_planar_parity_observation;
 
 /* The current DMA consumer is embedded core FDC storage; composition receives
  * only the resulting frozen request binding, never DMA controller storage. */
@@ -237,6 +250,11 @@ type_status core_machine_configure_dma(core_machine *machine,
     core_machine_dma_request_binding *out_fdc_request);
 type_status core_machine_configure_rtc_cmos(core_machine *machine,
     const core_machine_rtc_cmos_config *config);
+type_status core_machine_configure_planar_parity(core_machine *machine,
+    const core_machine_planar_parity_config *config);
+type_status core_machine_report_planar_parity_fault(core_machine *machine);
+type_status core_machine_get_planar_parity_observation(const core_machine *machine,
+    core_machine_planar_parity_observation *out_observation);
 type_status core_machine_configure_fdc(core_machine *machine,
     const core_machine_fdc_topology *topology);
 type_status core_machine_configure_hdc(core_machine *machine,

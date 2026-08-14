@@ -33,3 +33,12 @@ factory Model 339 claim. Its [profile lock](../etc/evidence/t366-s2-5170-profile
 corrects the stale 360 KB drive wording, names a repository-owned future probe
 corpus and MFM/ST-506 TODO receiver, and narrows the next S to the board
 memory-parity NMI lifecycle. It allocates no timing or runtime behavior.
+
+### S3: Model 339 planar-parity NMI lifecycle
+
+S3 adds an opt-in core owner for the selected system-board RAM-parity source.
+Only `61h` is accepted; its bit 7 reports the latch and bit 2 clears/re-enables
+the source. CMOS `70h` remains mask-only. The [lifecycle evidence](../etc/evidence/t366-s3-planar-parity-nmi.md)
+records focused producer proof and the retained cross-mode NMI consumer proof.
+It does not enable the generic default PC/AT profile, select I/O-channel check,
+or allocate timing.

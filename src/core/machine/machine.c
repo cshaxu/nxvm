@@ -3287,6 +3287,48 @@ static type_status core_machine_rtc_cmos_port_write(C_VOID *owner,
     return TYPE_STATUS_INVALID_ARGUMENT;
 }
 
+static C_VOID core_machine_planar_parity_refresh_nmi(core_machine *machine)
+{
+    if (machine != STD_NULL && machine->planar_parity_configured &&
+        machine->planar_parity_latched &&
+        (machine->planar_parity_port_b & 0x04u) != 0u &&
+        !machine->executor_cpu.data.flagMaskNMI &&
+        !machine->planar_parity_nmi_signaled) {
+        machine->executor_cpu.data.flagNMI = TYPE_TRUE;
+        machine->planar_parity_nmi_signaled = TYPE_TRUE;
+    }
+}
+
+static type_status core_machine_planar_parity_port_read(C_VOID *owner,
+    type_unsigned_16 port, type_unsigned_32 *out_value)
+{
+    core_machine *machine = (core_machine *)owner;
+
+    if (machine == STD_NULL || out_value == STD_NULL || !machine->planar_parity_configured ||
+        port != machine->planar_parity_config.port) return TYPE_STATUS_INVALID_ARGUMENT;
+    *out_value = (type_unsigned_32)(machine->planar_parity_port_b & 0x7fu) |
+        (machine->planar_parity_latched ? 0x80u : 0u);
+    return TYPE_STATUS_OK;
+}
+
+static type_status core_machine_planar_parity_port_write(C_VOID *owner,
+    type_unsigned_16 port, type_unsigned_32 value)
+{
+    core_machine *machine = (core_machine *)owner;
+
+    if (machine == STD_NULL || !machine->planar_parity_configured ||
+        port != machine->planar_parity_config.port) return TYPE_STATUS_INVALID_ARGUMENT;
+    machine->planar_parity_port_b = (type_unsigned_8)value;
+    if ((machine->planar_parity_port_b & 0x04u) == 0u) {
+        machine->planar_parity_latched = TYPE_FALSE;
+        machine->planar_parity_nmi_signaled = TYPE_FALSE;
+        machine->executor_cpu.data.flagNMI = TYPE_FALSE;
+    } else {
+        core_machine_planar_parity_refresh_nmi(machine);
+    }
+    return TYPE_STATUS_OK;
+}
+
 static const core_machine_port_provider core_machine_rtc_cmos_port_provider = {
     core_machine_rtc_cmos_port_read,
     core_machine_rtc_cmos_port_write
@@ -3391,6 +3433,53 @@ type_status core_machine_configure_rtc_cmos(core_machine *machine,
     }
     machine->rtc_cmos_config = *config;
     machine->rtc_cmos_configured = TYPE_TRUE;
+    return TYPE_STATUS_OK;
+}
+
+type_status core_machine_configure_planar_parity(core_machine *machine,
+    const core_machine_planar_parity_config *config)
+{
+    core_machine_port_provider provider = { core_machine_planar_parity_port_read,
+        core_machine_planar_parity_port_write };
+    core_machine_port_provider_entry *checkpoint;
+    type_status status;
+
+    if (!core_machine_configuration_is_open(machine) || machine->planar_parity_configured)
+        return TYPE_STATUS_INVALID_STATE;
+    if (config == STD_NULL || config->port != CORE_MACHINE_PC_AT_PORT_B ||
+        core_machine_port_has_read(&machine->executor_port,
+            config->port) || core_machine_port_has_write(&machine->executor_port,
+            config->port)) return TYPE_STATUS_INVALID_ARGUMENT;
+    checkpoint = core_machine_port_registration_begin(&machine->executor_port);
+    status = core_machine_install_port_provider(machine, config->port, config->port,
+        &provider, machine);
+    if (status != TYPE_STATUS_OK) {
+        core_machine_port_rollback_registration(&machine->executor_port, checkpoint);
+        return status;
+    }
+    machine->planar_parity_config = *config;
+    machine->planar_parity_port_b = 0x04u;
+    machine->planar_parity_configured = TYPE_TRUE;
+    return TYPE_STATUS_OK;
+}
+
+type_status core_machine_report_planar_parity_fault(core_machine *machine)
+{
+    if (machine == STD_NULL || !core_machine_mutable_operation_is_allowed(machine) ||
+        !machine->planar_parity_configured) return TYPE_STATUS_INVALID_STATE;
+    machine->planar_parity_latched = TYPE_TRUE;
+    core_machine_planar_parity_refresh_nmi(machine);
+    return TYPE_STATUS_OK;
+}
+
+type_status core_machine_get_planar_parity_observation(const core_machine *machine,
+    core_machine_planar_parity_observation *out_observation)
+{
+    if (machine == STD_NULL || out_observation == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    out_observation->configured = machine->planar_parity_configured;
+    out_observation->enabled = (machine->planar_parity_port_b & 0x04u) != 0u;
+    out_observation->latched = machine->planar_parity_latched;
+    out_observation->nmi_signaled = machine->planar_parity_nmi_signaled;
     return TYPE_STATUS_OK;
 }
 
@@ -3920,6 +4009,9 @@ static type_status core_machine_cold_reset(core_machine *machine)
     core_machine_dma_reset(&machine->shared_dma_latch,
         &machine->shared_dma_primary, &machine->shared_dma_secondary);
     if (machine->rtc_cmos_configured) core_machine_rtc_reset(&machine->shared_rtc);
+    machine->planar_parity_port_b = machine->planar_parity_configured ? 0x04u : 0u;
+    machine->planar_parity_latched = TYPE_FALSE;
+    machine->planar_parity_nmi_signaled = TYPE_FALSE;
     core_machine_fdc_reset(&machine->fdc);
     core_machine_hdc_reset(&machine->hdc);
     core_machine_pic_reset(&machine->shared_pic_master,
@@ -4216,6 +4308,7 @@ type_status core_machine_set_nmi_mask(core_machine *machine, C_INT masked)
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
     machine->executor_cpu.data.flagMaskNMI = masked ? TYPE_TRUE : TYPE_FALSE;
+    if (!masked) core_machine_planar_parity_refresh_nmi(machine);
     return TYPE_STATUS_OK;
 }
 

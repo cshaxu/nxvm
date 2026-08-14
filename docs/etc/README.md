@@ -12,6 +12,7 @@ principal documents named in [docs/README.md](../README.md).
 | `architecture/` | Architecture owner | Current detailed machine, profile, layout, and contract rationale. |
 | `requirements/` | Product and profile owners | Future DOS, NXVDM, and profile admissions. |
 | `evidence/` | Verification owner | Capability, verification, baseline, and fixture evidence. |
+| `evidence/t366-s3-planar-parity-nmi.md` | Verification owner | T366 S3 Model 339 planar-RAM-parity source, port `61h` latch/control, `70h` mask, reset, and consumer-proof boundary. Retain with T366 history at task closure. |
 | `evidence/t333-s1-interactive-input-inventory.md` | Verification owner | T333 S1 retained Console/debugger direct-input inventory and S2 boundary. Retire into the T333 history record when the task closes. |
 | `evidence/t333-s2-interactive-input-repair.md` | Verification owner | T333 S2 owner-local interactive-input repair and static/build evidence. Retire into the T333 history record when the task closes. |
 | `evidence/t333-s3-interactive-input-proof.md` | Verification owner | T333 S3 owner-separated EOF/allocation-failure smoke design and expected proof. Retire into the T333 history record when the task closes. |

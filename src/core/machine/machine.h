@@ -102,6 +102,11 @@ struct core_machine {
     type_bool dma_configured;
     core_machine_rtc_cmos_config rtc_cmos_config;
     type_bool rtc_cmos_configured;
+    core_machine_planar_parity_config planar_parity_config;
+    type_unsigned_8 planar_parity_port_b;
+    type_bool planar_parity_configured;
+    type_bool planar_parity_latched;
+    type_bool planar_parity_nmi_signaled;
     core_machine_fdc_topology fdc_topology;
     type_bool fdc_configured;
     core_machine_hdc_topology hdc_topology;
