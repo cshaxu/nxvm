@@ -123,3 +123,10 @@ valid memory addressing form through the existing Appendix-B EA helper. Its
 [timing evidence](../etc/evidence/t366-s13-80286-group2-ea-memory-timing.md)
 records complete memory coverage and the remaining count-form receiver. S13 is
 accepted at `56f21513`.
+
+### S14: 80286 Group-2 count-dependent timing
+
+S14 closes valid `C0`--`C1` and `D2`--`D3` Group-2 forms with masked count
+capture and the `5+n`/`8+n+EA` source formulas, while retaining `/6` as an
+undefined opcode. Its [timing evidence](../etc/evidence/t366-s14-80286-group2-count-timing.md)
+records the decoder-capture boundary and sweep. S14 is accepted at `9c437f8b`.

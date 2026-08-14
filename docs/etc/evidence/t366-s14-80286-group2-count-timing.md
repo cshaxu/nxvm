@@ -15,3 +15,9 @@ The sweep covers `C0`--`C1`, `D0`--`D3`, all valid Group-2 extensions, the
 executor's count masking, EA helper and fallback classifier. `D0`/`D1` retain
 S11--S13 values. `/6` remains undefined. No device, bus or physical-clock
 claim is made.
+
+## Verification
+
+The focused 80286 instruction-timing-ledger smoke, configured
+`run-current-smokes` gate, documentation-governance check, and `git diff
+--check` passed. The implementation changes no public ABI or device behavior.
