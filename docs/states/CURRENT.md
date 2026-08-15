@@ -6,7 +6,6 @@
 
 | Task | Compact progress |
 | --- | --- |
-| T376 S1 | Accepted P1 `0896739e`: raw-IMG sidecar inventory establishes VM FDD/media-save as the sole metadata and paired-persistence owner; core media ABI and T375 cadence stay unchanged. [Evidence](../etc/evidence/t376-s1-raw-img-sidecar-inventory.md). |
 
 ## Current Technical Baseline
 
@@ -27,6 +26,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T376 S1 | Accepted P1 `0896739e`: raw-IMG sidecar inventory establishes VM FDD/media-save as the sole metadata and paired-persistence owner; core media ABI and T375 cadence stay unchanged. [Evidence](../etc/evidence/t376-s1-raw-img-sidecar-inventory.md). |
 | T375 | Closed at `07484727`: board/device phase work accepts source-backed service and logical-order contracts, transfers raw-IMG fidelity and source-exhausted physical board phases, and **does not accept Model-339 L3**. [Closure audit](../etc/evidence/t375-s26-task-closure-transfer-audit.md). |
 | T374 | Closed at `f742433c`: S1--S19 complete the selected Model-339 functional closure and preserve raw-IMG 765 Deleted/Control-Mark/Scan as explicit TODO debt. Board/device timing, final Model-L3, DeskPro 386, PC/XT and Windows 3.1 remain open. [Closure audit](../etc/evidence/t374-s19-task-closure-audit.md). |
 | T373 | Closed at `06246a8e`: S1--S4 freeze the three-machine capability ledger and receivers. **5170, DeskPro Model 40 and PC/XT 5160-268 L3 are not ready.** [Closure audit](../etc/evidence/t373-s4-task-closure-audit.md). |
