@@ -2,35 +2,28 @@
 
 ## Current Work
 
-**No active implementation packet.** T381 closes with frozen YAML profile
-selection and a true zero-session Console; DeskPro 386 remains the next Queue
-candidate.
-
-| Task | Compact progress |
-| --- | --- |
-| T381 S1 | Closed at `9b6a86c6`: YAML profiles are frozen at startup and selected by file name; zero-session lifecycle, restricted Console mutation and the T381 artifact are proven. [Evidence](../etc/evidence/t381-s1-console-yaml-profiles.md). |
-
-<!-- T379 packet retired at task closure.
+T381 S2 is active solely to correct the task's closure-state, history, and
+archive consistency. It does not change the frozen YAML/Console behavior or
+admit the next Queue candidate.
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | New |
-| Admission And Approval | Owner's current goal limits work to full 5170 L3 before any DeskPro 386, 8088-XT or Windows work; T378 closed at `42f0402a`, making this Queue-head re-audit eligible. |
-| Objective | Independently repeat the frozen IBM PC/AT 5170 Model 339/Type 3 final L3 audit against the repaired production-input and current-gate baseline. |
-| Non-goals | No implementation repair, DeskPro/XT/Windows work, generic AT claim, MFM/ATA substitution, physical waveform claim, ROM/media import or silent exclusion of selected capability. |
-| Reference Baseline | T377 negative audit, T378 repair evidence, Model-339 re-audit proposal, T373--T376 selected ledger/functional/timing/raw-IMG evidence and current profile tests. |
-| Candidate Proposal | [IBM PC/AT 5170 Model-339 L3 re-audit](../history/M5-T379-model339-l3-reaudit-proposal.md). |
-| Files And ABI Surface | T379 history, audit evidence/index/current/queue status only; no source/runtime ABI change. |
-| Applicable Rules | Independent complete requirement/component matrix, native production-input and reset/cancellation replay, source-backed or explicitly bounded deterministic L3 contracts, no guessed scalar, current-gate truthfulness and visible ready/not-ready result. |
-| Verification | Re-run focused Model-339/FDC/input proof and full current gate; inspect all selected rows and T378 changes; run documentation governance and actual-diff review. |
-| Expected Markers | Model-339 composition/clock/CGA/FDC, native-input, raw-IMG/8272A and current-gate markers; no new behavior marker without a separately admitted repair. |
-| Asset Needs | None; external ROM/media remain outside Git and are not required for this audit. |
-| Reporting Requirements | Record fresh matrix, T378 regression disposition, factory-versus-aftermarket distinction, physical boundary/receiver disposition, full-gate result and final 5170 L3 ready/not-ready decision. |
-| Stop Conditions | Stop for owner direction if a selected functional/timing defect requires repair, a configuration change is needed, a timing claim lacks qualified evidence, or an external asset is required. |
-| Exit Criteria | T379 closes only after every selected Model-339 row is independently reconciled, current gate passes, and its ready/not-ready conclusion leaves no hidden receiver. |
-| Original Owner Request | Fully achieve 5170 L3, then stop before DeskPro 386, 8088-XT and Windows 3.1; do not replace native behavior with a test-only API. |
-| Similar-Issue Sweep | Recheck every selected CPU, bus, input, DMA/PIC/PIT/RTC, FDC/floppy, CGA, NMI/reset/cancellation and T378's shared production boundaries. |
--->
+| Identifier Mode | Corrective |
+| Admission And Approval | The owner approved on 2026-08-15 the governance-audit corrections without changing `docs/rules`; the audit identifies T381 as the most recently closed numeric task whose retained `T381 S1` progress row contradicts its closure prose and machine-readable state. |
+| Objective | Restore one truthful T381 closure: replace the stale open-subtask representation with a task-level closure record, retain a concise correction trail in T381 history, and remove no runtime evidence. |
+| Non-goals | No source, build, artifact, profile, YAML, Console, Queue, DeskPro, 8088-XT, Windows, `docs/rules`, or new behavioral work. No historical commit is rewritten. |
+| Reference Baseline | T381 S1 P1 `9b6a86c6`, its closure evidence and artifact record, P2 `e621a3c3`, the subsequent status-only P3--P6 commits, and the 2026-08-15 governance audit. |
+| Candidate Proposal | [T381 retained proposal](../history/M5-T381-nxvm-console-redesign-proposal.md). |
+| Files And ABI Surface | `docs/states/CURRENT.md` and `docs/history/M5-T381-nxvm-console-redesign.md` only; no runtime or ABI surface changes. |
+| Applicable Rules | `DOCUMENT.md` authority boundaries and task-level closure retention; `EXECUTION.md` corrective-S, P lifecycle, actual-change review, reporting, and Documentation Governance Gate requirements. No architecture, coding, source, or runtime rule applies because no such surface changes. |
+| Verification | Inspect P1--P6 actual diffs and retained T381 evidence; confirm the task-level state shape and T381 history; run the default Documentation Governance Gate and `git diff --check`; review the final actual diff. |
+| Expected Markers | Documentation Governance Gate succeeds; no runtime marker or artifact hash changes because the runnable path is unchanged. |
+| Asset Needs | None. |
+| Reporting Requirements | Record the erroneous retained progress shape, the immutable P1--P6 disposition, the corrected task-level state, verification results, and the unchanged T381 artifact boundary. |
+| Stop Conditions | Stop for owner direction if correcting the closure requires a rule change, runtime/build change, rewriting existing commits, or altering another task's historical record. |
+| Exit Criteria | CURRENT has no active packet and one T381 task-level closure row; T381 history distinguishes S1 delivery from this S2 governance correction; no `T381 S1` open-progress row remains; the documentation gate passes. |
+| Original Owner Request | Continue T381 S2 and later Td work to repair the governance audit findings, without modifying `docs/rules`. |
+| Similar-Issue Sweep | Documentation-only recurrence: inspect CURRENT and T381 history for all retained T381 state references, and inspect the P1--P6 diffs. Other audited state/Queue findings are explicitly transferred to the separately admitted follow-on Td. |
 
 ## Current Technical Baseline
 
