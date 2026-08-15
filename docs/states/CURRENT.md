@@ -6,27 +6,7 @@
 
 | Task | Compact progress |
 | --- | --- |
-
-## M5 T376 S1 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | New |
-| Admission And Approval | Owner-approved continuous M5 L3 implementation; T375 is closed and Queue places raw-IMG sidecar fidelity next before the final 5170 audit. |
-| Objective | Audit the existing raw-IMG/FDC/media-provider routes and produce the implementation-ready, owner-local sidecar lifecycle and command-gap contract for T376. |
-| Non-goals | No sidecar implementation, new image/container format, guest-media/ROM import, test-only media API, generic filesystem API, guessed FDC timing, or final 5170 L3 decision. |
-| Reference Baseline | T374 establishes address-mark metadata distinct from payload and ordinary raw IMG limits; T375 supplies the FDC byte/seek timing ledger; the approved raw-IMG sidecar proposal defines required capabilities. |
-| Candidate Proposal | [8272A raw-IMG sidecar fidelity closure](../proposals/m5-8272a-img-sidecar-fidelity-closure.md). |
-| Files And ABI Surface | Evidence/index/current/history only in S1; inspect `core/machine/media_interface.*`, `vm/machine/fdd.*`, `vm/machine/media_save.*`, FDC routes and their tests without changing production behavior. |
-| Applicable Rules | Execution lifecycle, architecture single-owner/failure boundary, coding no-test-only-contract rule, source policy, and raw-IMG/sidecar proposal limits. |
-| Verification | Record exact repository sweep commands and dispositions for provider ABI, FDD mount/save/remove, media atomic-save helper, FDC command dispatcher, and focused media/FDC tests; documentation governance passes. |
-| Expected Markers | `M5:T375:S26:TASK-CLOSURE-TRANSFER:OK`; `M5:T376:S1:RAW-IMG-SIDECAR-INVENTORY:OK`. |
-| Asset Needs | No external media or ROM is used, copied, or committed; existing source and tests are the sole S1 inputs. |
-| Reporting Requirements | State the one proposed production owner, state/rollback boundary, raw-only behavior, every implementation receiver, and any material objection before code work. |
-| Stop Conditions | Stop for owner direction if the existing provider cannot support an atomic media-pair lifecycle without a second format or if command requirements require a timing change outside accepted T375 rules. |
-| Exit Criteria | Indexed inventory/contract maps all relevant owner routes and proposed implementation subtasks, preserves raw IMG as payload-only and identifies no unowned/two-owner lifecycle path. |
-| Original Owner Request | Continue through L3 before Windows; retain pure IMG compatibility, avoid pure test APIs, and use 86Box/MAME/PCjs only as bounded secondary sources when authority is insufficient. |
-| Similar-Issue Sweep | Search all production and test uses of address-mark capability, provider query/read/write/format/flush, FDD insert/remove/save, atomic media save, and FDC Deleted/Scan dispatch; classify each hit. |
+| T376 S1 | Accepted P1 `0896739e`: raw-IMG sidecar inventory establishes VM FDD/media-save as the sole metadata and paired-persistence owner; core media ABI and T375 cadence stay unchanged. [Evidence](../etc/evidence/t376-s1-raw-img-sidecar-inventory.md). |
 
 ## Current Technical Baseline
 
