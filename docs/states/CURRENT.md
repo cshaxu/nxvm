@@ -2,27 +2,6 @@
 
 ## Current Work
 
-## M5 T374 S17 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation; T374 S16 is accepted and remains the sole compact progress row. |
-| Admission And Approval | The owner approved continued Model-339 selected-device functional closure before timing/L3. This S audits the selected AT keyboard/8042 and IRQ1 contract, selecting a later repair only if a concrete source-backed functional gap remains. |
-| Objective | Produce a source-labelled Model-339 8042/keyboard functional matrix covering ports `60h/64h`, status and buffers, controller/keyboard commands, error/reset behavior, translation, IRQ1 acknowledgement and firmware-visible consumption; explicitly exclude AUX/IRQ12. |
-| Non-goals | No AUX/mouse, generic KBC expansion, typematic or command-response duration, host capture change, ROM/media import, timing scalar, EGA/VGA change, Model-339 L3 claim or unrelated controller rewrite. |
-| Reference Baseline | T374 S1/S2/S3 KBC evidence; IBM March-1986 PC/AT Technical Reference keyboard-controller sections; `kbc.{c,h}`, selected Model-339 composition and KBC/keyboard focused tests. |
-| Candidate Proposal | [IBM PC/AT 5170 selected-device functional closure](../proposals/m5-5170-selected-device-functional-closure.md). |
-| Files And ABI Surface | Audit documentation, evidence/history/index/status; inspect KBC core, VM keyboard mapper, profile routes, firmware consumers and tests. No production change is pre-authorized. |
-| Applicable Rules | Task Reading Set; execution lifecycle/evidence/similar-issue rules; documentation/source policy. KBC owns controller state and IRQ publication; profile composition selects IRQ1 only for Model-339. |
-| Verification | Sweep KBC command/status/FIFO/reset/IRQ routes, profile bindings, firmware consumers and tests; cross-check primary documentation; replay selected KBC, mapper and Model-339 composition tests; run documentation governance and diff check. |
-| Expected Markers | Matrix names every selected functional route and gap/transfer; no AUX assertion becomes Model-339 evidence; focused no-media markers pass. |
-| Asset Needs | None. No ROM, firmware, guest media, external source, local asset copy or runtime artifact is allowed. |
-| Reporting Requirements | Record source boundary, command/state/IRQ owner sweep, focused replay, concrete next repair or transfer, pushed P1 and independent P2 acceptance. |
-| Stop Conditions | Stop and transfer if a gap needs timing inference, unsupported keyboard hardware detail, AUX scope, a shared owner outside T374 or an unapproved code repair. |
-| Exit Criteria | Selected controller/keyboard routes are classified with concrete owner, test and receiver evidence; all retained timing/AUX boundaries are explicit and documentation checks pass. |
-| Original Owner Request | Fully implement selected-machine functional gaps before timing/L3; preserve `.img`-only media with unsupported 765 Deleted/Scan fidelity in TODO; use external assets only outside Git; push completed work. |
-| Similar-Issue Sweep | Search every KBC command decode, queue/status bit, keyboard command, reset/IRQ source, profile route and firmware consumer; classify each production hit as selected, excluded or transferred. |
-
 ## Current Technical Baseline
 
 - **Current developer artifact:** T369 S4 `vm-0-5-0369` /
@@ -42,7 +21,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T374 S16 | P1 `c6137377` reconciles the default-EGA VADP `3D4h` declaration with actual write-only registration; default-PC/AT, Model-339 CGA and EGA regressions pass. [Repair evidence](../etc/evidence/t374-s16-default-ega-vadp-direction-repair.md). |
+| T374 S17 | P1 `b8272bf9` audits selected Model-339 8042/keyboard function, excludes AUX/IRQ12, and selects native Set-2/translation as the remaining concrete mechanism. [Audit evidence](../etc/evidence/t374-s17-model339-kbc-keyboard-functional-audit.md). |
 | T373 | Closed at `06246a8e`: S1--S4 freeze the three-machine source-labelled capability ledger and exact functional/timing/current-product receivers. **5170, DeskPro Model 40 and PC/XT 5160-268 L3 are not ready.** The next candidate is 5170 selected-device functional closure. [Closure audit](../etc/evidence/t373-s4-task-closure-audit.md). |
 | T372 | Closed at `3f56c72c`: S1--S8 establish that Model 339 has selected logical ownership and deterministic ordering, but lacks selected-device functional closure and source-backed board/phase timing. **5170 model-L3 is not ready.** [Closure audit](../etc/evidence/t372-s8-task-closure-transfer-audit.md). |
 | T370 | Closed at `77a73c04`: S1--S5 reconciled all selected Model-339 device-service owners and transferred unavailable duration to phase refinement; **5170 model-L3 is not ready**. [Closure audit](../etc/evidence/t370-s5-planar-cga-transfer-audit.md). |
