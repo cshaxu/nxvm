@@ -2,13 +2,8 @@
 
 ## Current Work
 
-**No active implementation packet.** Corrective T381 S2 restores the task-level
-closure state without altering the frozen YAML/Console delivery; DeskPro 386
-remains the next Queue candidate.
-
-| Task | Compact progress |
-| --- | --- |
-| T381 | Closed: S1 P1 `9b6a86c6` delivered the frozen YAML catalog and true zero-session Console; corrective S2 removed the stale open-progress representation without changing runtime evidence or the T381 artifact. [Evidence](../etc/evidence/t381-s1-console-yaml-profiles.md). |
+**Idle.** M5 Td S95 restored Queue to a short ordering/index surface without
+changing a candidate, proposal, rule, roadmap, runtime path, or artifact.
 
 ## Current Technical Baseline
 
@@ -29,7 +24,7 @@ remains the next Queue candidate.
 
 | Task | Compact result |
 | --- | --- |
-| T381 S1 | Closed at `9b6a86c6`: frozen YAML profile selection, zero-session lifecycle and bounded floppy mutation are proven. [Evidence](../etc/evidence/t381-s1-console-yaml-profiles.md). |
+| T381 | Closed: S1 P1 `9b6a86c6` delivered frozen YAML profile selection and the true zero-session Console; corrective S2 restored its task-level closure state without changing runtime evidence or the T381 artifact. [Evidence](../etc/evidence/t381-s1-console-yaml-profiles.md). |
 | T380 | Closed: strict Model-339 startup, 512 KB FDC/BDA repair, input/FDC current-gate recovery, and the owner-replayed DOS 5/HIMEM no-XMS path are verified. It does not claim DOS completion or 5170 L3 closure. [Evidence](../etc/evidence/t380-s2-model339-start-and-current-gate-recovery.md). |
 | T378 | Closed at `42f0402a`: production ingress proof and virtual-time ownership are corrected without a test-only API; Model-339 re-audit remains the sole L3 decision receiver. [Evidence](../etc/evidence/t378-s1-native-ingress-boundary-repair.md). |
 | T379 | Closed at `160a34e1`: independent re-audit accepts the frozen Model-339 deterministic L3 contract. [Audit](../etc/evidence/t379-s1-model339-final-reaudit.md). |
@@ -37,10 +32,11 @@ remains the next Queue candidate.
 | T376 | Closed at `991060a4`: raw-IMG sidecar persistence, selected 8272A command fidelity and malformed-sidecar rejection are proven; physical duplicate-CHRN representation remains explicitly outside pure raw-IMG support. [Closure audit](../etc/evidence/t376-s6-task-closure-audit.md). |
 | T375 | Closed at `07484727`: board/device phase work accepts source-backed service and logical-order contracts, transfers raw-IMG fidelity and source-exhausted physical board phases, and **does not accept Model-339 L3**. [Closure audit](../etc/evidence/t375-s26-task-closure-transfer-audit.md). |
 | T374 | Closed at `f742433c`: S1--S19 complete the selected Model-339 functional closure and preserve raw-IMG 765 Deleted/Control-Mark/Scan as explicit TODO debt. Board/device timing, final Model-L3, DeskPro 386, PC/XT and Windows 3.1 remain open. [Closure audit](../etc/evidence/t374-s19-task-closure-audit.md). |
-| T373 | Closed at `06246a8e`: S1--S4 freeze the three-machine capability ledger and receivers. **5170, DeskPro Model 40 and PC/XT 5160-268 L3 are not ready.** [Closure audit](../etc/evidence/t373-s4-task-closure-audit.md). |
 
 ## Recent Governance
 
+- **M5 Td S95 P1:** removed duplicate M5 technical narrative from Queue while
+  retaining all shared-context, candidate, and required proposal-index links.
 - **M5 Td S94 P1:** locks the DeskPro 386 Model 40 and PC/XT 5160-268
   baselines, establishes capability-ledger then functional-before-timing
   closure for all three machines, and retains external ROMs outside Git.
