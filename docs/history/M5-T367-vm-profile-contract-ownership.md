@@ -18,3 +18,5 @@ retains only generic CPU capability, decoder/execution and timing behavior.
 The one boundary requiring migration is the VM session's raw `--cpu` override
 into the materialized core configuration.  S2 must turn that into an explicit
 VM contract binding while preserving one shared executor and transaction path.
+S1 is accepted at `115f3f3b`; it changes no runtime behavior and makes no L3
+claim.

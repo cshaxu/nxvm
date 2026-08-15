@@ -2,26 +2,9 @@
 
 ## Current Work
 
-## M5 T367 S1 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | New; T367 S1 P1 is one complete pushed ownership-inventory/evidence delivery. |
-| Admission And Approval | The owner authorized continued L3 execution before Windows 3.1; T366 closed at `1f967f11`, satisfying this Queue candidate's admission dependency. |
-| Objective | Inventory every concrete CPU/machine-profile selection path and define the narrow migration boundary that leaves core with one injected CPU capability/timing contract. |
-| Non-goals | No runtime selector move, CPU semantic/timing value change, device/ROM/media change, concrete machine addition or L3 claim. |
-| Reference Baseline | `1f967f11`, [VM profile-contract ownership migration](../proposals/m5-vm-profile-contract-ownership.md), Queue, architecture and source layout. |
-| Candidate Proposal | [VM profile-contract ownership migration](../proposals/m5-vm-profile-contract-ownership.md). |
-| Files And ABI Surface | Ownership evidence/index/history/status only; no public or runtime surface change. |
-| Applicable Rules | Execution: new task packet and evidence. Documentation: truthful state/index. Architecture: inventory one shared core execution/transaction owner. Coding: no code change. Source policy: no import/assets. |
-| Verification | Repository selector/build/test/documentation inventory; receiver map; documentation governance and diff check. |
-| Expected Markers | One inventory names core/vm selectors, all four current CPU profiles, profile-local board selection and required regression owners. |
-| Asset Needs | No guest media, ROM, binary or imported source. |
-| Reporting Requirements | Report current ownership, migration seam, duplicate-executor risk and exact S2 receiver. |
-| Stop Conditions | Stop if an inventory finding requires a new semantic/timing decision or lacks a single owning receiver. |
-| Exit Criteria | Pushed inventory establishes a complete before-state and a bounded S2 migration plan without making a runtime change. |
-| Original Owner Request | Continue comprehensive L3 execution before Windows 3.1, following the Queue dependency chain. |
-| Similar-Issue Sweep | Search production, tests, build and docs for CPU profile enums, configuration selectors, profile switches, machine composition and timing publishers. |
+T367 remains open.  S1 is accepted; S2 must implement the bounded
+VM-owned contract binding identified by its inventory before the queued CPU,
+bus, device, phase and L3-audit receivers can rely on profile ownership.
 
 ## Current Technical Baseline
 
@@ -42,6 +25,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T367 S1 | Accepted at `115f3f3b`: the inventory proves concrete machine selection is already VM-owned and bounds S2 to the raw session CPU-override contract seam. It preserves one shared core executor/transaction owner and makes no CPU, bus, device or L3 completion claim. [Inventory](../etc/evidence/t367-s1-vm-profile-contract-inventory.md). |
 | T366 | Closed at `743edc18`: locks the Model 339 baseline, planar-parity NMI and selected topology, and accepts bounded 80286 source-retirement rows. Complete CPU retirement, bus availability, device service timing and profile-L3 closure transfer explicitly; **5170 model-L3 is not ready**. [Closure audit](../etc/evidence/t366-s32-closure-transfer-audit.md). |
 | T365 | Closed at `febc9352`: IBM PC/AT parity/I/O-check NMI sources cannot be selected without a profile input, status/latch/clear and lifecycle contract; CPU and CMOS remain delivery/mask only. [Closure audit](../etc/evidence/t365-s2-pcat-nmi-nonadmission-closure-audit.md). Blocks physical/cycle-exact L3 closure; no synthetic source. |
 | T364 | Closed at `7d574ae3`: all selected PC/AT components, ports/routes and lifecycle/timing owners are inventoried; optional and physical gaps retain exact Queue/TODO receivers. [Closure audit](../etc/evidence/t364-s2-pcat-device-completeness-closure-audit.md). No model-L3 claim. |
