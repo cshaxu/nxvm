@@ -15,6 +15,21 @@ adopts them.
 
 ## Hardware And Compatibility Debt
 
+- [ ] **8272A Deleted-Data media fidelity and Scan command routes (`TODO(Medium)`).**
+  Ordinary floppy `.img` remains NXVM's sole admitted exchange/persistence
+  format and contains sector payload only. Therefore Read Deleted Data, Write
+  Deleted and normal-read ST2 Control Mark distinction remain unsupported
+  despite the shared logical address-mark ABI. Re-admit that group only with
+  owner approval for an explicit fidelity format and lifecycle contract: stable
+  medium identity/version, import/export boundary, read-only behavior,
+  removal/reinsert semantics, cleanup and failure-atomic single- or multi-file
+  save behavior, plus the physical-media scope. Then bind it to the existing
+  provider contract and implement the documented FDC command/result paths with
+  focused regressions. The independently unfinished Scan family needs its own
+  command/transfer admission; this entry does not claim it requires metadata
+  persistence. Do not add an implicit sidecar, infer marks from bytes, or use
+  ordinary `.img` operation as a full-765 claim.
+
 - [ ] **Advanced 8042 AUX protocol (`TODO(Medium)`).** T267 adds bounded
   sample-rate, resolution, and `E9h` status through the existing IRQ12 path.
   Defer wheel IDs/sample-rate handshake, scaling effect, remote/read-data,

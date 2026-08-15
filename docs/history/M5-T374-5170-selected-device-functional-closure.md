@@ -87,3 +87,13 @@ adds a provider-owned normal/deleted logical-sector metadata capability,
 validated query/set operations and complete initializer migration.  Byte-only
 raw FDD/HDD images truthfully remain unsupported; a later FDC receiver may use
 the shared contract but must not invent raw-image persistence.
+
+### S10: raw-IMG address-mark support boundary
+
+S10's [raw-IMG address-mark boundary](../etc/evidence/t374-s10-raw-img-address-mark-boundary.md)
+records the owner decision to retain ordinary `.img` as the sole floppy
+exchange format and to admit neither a private container nor a sidecar. The
+Deleted Data and normal-read Control Mark form an explicit raw-media boundary;
+the independently unfinished Scan family remains deferred. Ordinary BIOS/DOS
+raw-sector behavior is unchanged. This does not close the FDC,
+selected-device, timing or Model-339 L3 work.

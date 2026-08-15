@@ -2,6 +2,27 @@
 
 ## Current Work
 
+## M5 T374 S10 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; T374 S9 is accepted and remains the sole compact progress row. |
+| Admission And Approval | The owner approved continued T374 functional closure before timing/L3. Accepted S8/S9 establish that Deleted Data needs provider-owned address-mark metadata and that byte-only raw FDD images must not claim it without persistence. |
+| Objective | Audit and select the smallest truthful lifecycle and persistence contract by which a VM raw floppy medium could retain per-logical-sector address-mark metadata across save, remove and reinsert, or establish the exact supported-surface removal required if no bounded representation is admissible. |
+| Non-goals | No FDC command implementation; no implicit sidecar, hidden host path, flux/index/CRC/GAP/IDAM model, physical timing, ROM/media import, ATA/HDC change, Scan/MT/SK/DTL repair, or Model-339 L3 claim. No external asset is read or modified. |
+| Reference Baseline | Accepted T374 S8/S9 evidence; VM `fdd.{h,c}` and `media_save.*`; atomic media-save test; media registry contract; source policy; selected 1.44 MB compatibility configuration. |
+| Candidate Proposal | [IBM PC/AT 5170 selected-device functional closure](../proposals/m5-5170-selected-device-functional-closure.md). |
+| Files And ABI Surface | Evidence/history/index/status only for this audit; read-only inspection includes VM FDD lifecycle/save path, media save helper, session media binding and relevant tests. A later implementation names any FDD state, owned sidecar/manifest format, lifecycle and test changes. |
+| Applicable Rules | `docs/README.md` Task Reading Set; `docs/rules/EXECUTION.md` lifecycle/evidence/similar-issue rules; `docs/rules/DOCUMENT.md`; `CONTRIBUTING.md`; source policy. Any later code change also requires architecture and coding rules. The media contract remains core-owned; persistence and local user-selected file identity remain VM-owned. |
+| Verification | Trace every FDD create/replace/insert/remove/finalize/save route and existing atomic-write helper; determine collision, failure-atomicity, read-only, stale metadata and identity behavior; identify every caller and fixture; run unchanged VM media-provider and FDC/Model-339 focused targets, documentation governance and `git diff --check`. |
+| Expected Markers | One explicit decision identifies metadata ownership, file identity, format/version, atomic write/rename collision, remove/reinsert, read-only and cleanup behavior; ordinary raw payload remains unchanged and unsupported until an admitted implementation proves the selected representation. |
+| Asset Needs | None. No ROM, firmware, guest image, user media, external source or local asset is opened, copied, written or committed. |
+| Reporting Requirements | Report the lifecycle matrix, selected or rejected representation, complete consumer/fixture sweep, focused baseline, pushed P1, coordinator acceptance and the exact next implementation receiver. |
+| Stop Conditions | Stop and transfer if a truthful format needs flux/physical address-ID modeling, requires committing guest media or host-local paths, cannot use existing atomic persistence safely, or would change the public raw-image contract without explicit owner approval. |
+| Exit Criteria | Evidence classifies every raw-FDD persistence/lifecycle route and selects a bounded implementation or explicit support-surface removal; focused baseline and documentation checks pass; no hidden sidecar, raw-byte inference, FDC semantic or L3 claim is introduced. |
+| Original Owner Request | Implement each selected machine's functional gaps before timing/L3 closure, keep ROM/media external to Git, and use Git-Bash CMake for builds. |
+| Similar-Issue Sweep | Search all FDD image filename, byte replacement, insert/remove/finalize, atomic save and session media binding routes, plus every raw-media fixture, so metadata cannot be persisted, discarded or re-associated through an unreviewed path. |
+
 ## Current Technical Baseline
 
 - **Current developer artifact:** T369 S4 `vm-0-5-0369` /
