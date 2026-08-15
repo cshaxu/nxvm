@@ -30,3 +30,5 @@ direct-core fixtures remain unchanged.  Its
 [binding evidence](../etc/evidence/t367-s2-vm-profile-contract-binding.md)
 records focused profile/session proof and the unrelated existing full-build
 blocker; it makes no timing, bus, device or L3 completion claim.
+S2 is accepted at `f60d87ea`; T367 is closed.  The profile ownership migration
+does not close any of the independently queued L3 receivers.
