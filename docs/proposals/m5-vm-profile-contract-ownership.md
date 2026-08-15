@@ -19,7 +19,7 @@ machine identity.
 - Make `vm/profile` and `vm/composition` select and bind the 8086, 80186,
   80286, 80386DX, and later 8088 contracts. Preserve existing CPU semantic and
   source-timing ledgers exactly during the migration.
-- Keep IBM 5170, Compaq DeskPro 386, and IBM 5150/XT board topology, firmware,
+- Keep IBM 5170, Compaq DeskPro 386 Model 40, and IBM PC/XT 5160-268 board topology, firmware,
   device, bus, and media choices exclusively in VM composition/profile code.
 - Prove that the resulting composition has one shared core execution and
   CPU/DMA transaction path, with no per-profile duplicate executor or timing

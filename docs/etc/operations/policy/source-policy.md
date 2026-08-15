@@ -64,12 +64,16 @@ research decision.
 ## Third-Party Firmware Images
 
 Award, Phoenix, IBM, Compaq, and other third-party firmware images are never
-committed, bundled, downloaded, listed in a project/release hash catalog, or
-made a default runtime dependency. A future external-ROM provider may read a
-user-supplied local bundle only after an owner-approved machine-profile design
-gate defines its manifest, validation, mapping, and legal boundary. A local
-manifest hash validates the owner's supplied file; it does not make a ROM
-redistributable or authorize copying vendor code.
+committed, bundled, listed in a project/release hash catalog, or made a default
+runtime dependency. With explicit owner authorization, they may be acquired,
+organized, and used only in an external owner-managed research archive. That
+local authorization does not make a vendor image redistributable, a repository
+asset, a project download mechanism, or a product dependency. A future
+external-ROM provider may read a user-supplied local bundle only after an
+owner-approved machine-profile design gate defines its manifest, validation,
+mapping, and legal boundary. A local manifest hash validates the owner's
+supplied file; it does not make a ROM redistributable or authorize copying
+vendor code.
 
 The approved profile-admission boundary requires a future BYOB manifest to
 name an explicit local path, profile ROM slot, exact size, SHA-256, requested

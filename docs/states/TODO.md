@@ -40,12 +40,13 @@ adopts them.
   probe corpus, and a decision whether its adapter-parity state produces
   I/O-channel-check NMI. Do not alias ATA registers, ATA media or ATA timing to
   IBM MFM, import firmware/media, or use a generic hard-disk backend as proof.
-- [ ] **Complete digital CGA (`TODO(Medium)`).** Keep it separate from EGA/VGA.
-  T254 admitted `640x200x2`; T266 closes the bounded 6845 text subset:
-  display-start/page, cursor address/shape/hidden state, and deterministic
-  display-enable/vertical-retrace. Deferred: additional 40/80-column geometry
-  breadth and light pen. Every admission retains one VADP owner, B8000h
-  mapping, copied-frame output, and port/memory/frame plus DOS-fixture evidence.
+- [ ] **Broaden digital CGA beyond the frozen supported surface (`TODO(Medium)`).**
+  The baseline-machine capability ledger, 5170 selected-device closure, and
+  current-product device closure own every CGA capability that remains publicly
+  supported. Retain only later geometry or light-pen breadth here. Every later
+  admission retains one VADP owner, B8000h mapping, copied-frame output, and
+  port/memory/frame plus DOS-fixture evidence; it may not use this debt entry
+  to leave an exposed CGA mode incomplete.
 - [ ] **Broaden digital EGA and admit VGA compatibility (`TODO(Medium)`).** T352
   closes only direct planar `320x200x16` and mode-10 `640x350x16` through one
   VADP owner. Admit the next adapter package only with a complete IBM EGA/VGA

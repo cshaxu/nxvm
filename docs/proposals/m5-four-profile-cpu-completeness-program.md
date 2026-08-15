@@ -84,8 +84,8 @@ not silently part of CPU-profile closure. Each remains external until a Queue
 candidate or TODO gives it a bounded owner and admission condition.
 
 The later 8088 CPU-profile candidate is deliberately separate from this
-four-profile instruction/form program. It follows the DeskPro 386 L3 audit,
+four-profile instruction/form program. It follows the DeskPro 386 Model 40 L3 audit,
 retains 8086 instruction semantics while adding the 8088 external bus and
-fetch/prefetch timing boundary required by the selected IBM 5150/XT machine,
+fetch/prefetch timing boundary required by the selected IBM PC/XT 5160-268 machine,
 and neither changes a completed 8086 row nor turns the four-profile semantic
 ledger into an inferred physical-machine claim.

@@ -4,7 +4,8 @@
 
 Make the explicit L3 admission decision before any Windows 3.1 harness,
 Standard Mode or 386 Enhanced Mode task may start.  This is the program-level
-gate after the 5170, DeskPro, 8088/5150/XT and current-product device closures.
+gate after the 5170, DeskPro Model 40, 8088/PC/XT 5160-268 and current-product
+device closures.
 
 ## Required scope
 
@@ -13,7 +14,7 @@ device capability.  Prove that the 80286, 80386 and 8088 CPU ledgers, board
 availability, service timing, event ordering, reset/cancellation paths and
 profile identities have source-backed or explicitly model-derived L3 evidence,
 with all reference-exhausted boundaries visible.  Decide whether the frozen
-DeskPro profile is admissible as a Windows compatibility consumer.
+DeskPro Model 40 profile is admissible as a Windows compatibility consumer.
 
 ## Non-goals and stop conditions
 

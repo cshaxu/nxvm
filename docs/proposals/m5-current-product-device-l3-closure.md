@@ -17,7 +17,8 @@ paths, the currently exposed CGA/EGA digital display paths, and the bounded
 KBC/AUX path with their port/memory/DMA/IRQ/reset and host-copy boundaries.
 For each supported capability, establish the source contract, command/service
 and availability timing, event order, cancellation/reset behavior, trace, and
-project-owned firmware/DOS consumer. Reuse the 5170, DeskPro, and 5150/XT
+project-owned firmware/DOS consumer. Reuse the 5170, DeskPro Model 40, and
+PC/XT 5160-268
 ledgers only after proving profile, device, and timing-accounting equivalence.
 
 Every entry in the refreshed inventory must be either L3-closed or removed from

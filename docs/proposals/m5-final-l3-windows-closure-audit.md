@@ -3,16 +3,17 @@
 ## Purpose
 
 Make the final M5 Windows decision only after the pre-Windows L3 admission
-audit accepts the 5170, DeskPro 386, 8088 CPU-profile, 5150/XT 8088 and
+audit accepts the 5170, DeskPro 386 Model 40, 8088 CPU-profile, PC/XT 5160-268
+and
 current-product device-capability evidence, and both Windows 3.1 lifecycle
 corpora are complete.
 
 ## Required scope
 
 Review the accepted pre-Windows admission, every Windows task history, frozen
-DeskPro identity, artifact and BYOB result.  Prove or reject the remaining
+DeskPro Model 40 identity, artifact and BYOB result. Prove or reject the remaining
 outcome: Windows 3.1 Standard plus 386 Enhanced Mode install, start and shut
-down normally through the approved harness on that frozen DeskPro profile.
+down normally through the approved harness on that frozen DeskPro Model 40 profile.
 Transfer unsupported Windows breadth explicitly; it cannot revise the L3
 admission decision.
 

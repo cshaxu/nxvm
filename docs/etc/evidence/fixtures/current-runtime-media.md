@@ -9,7 +9,7 @@ and excluded from releases. It is distinct from the historical M1 baseline in
 
 | Logical ID | Size (bytes) | SHA-256 | Declared role |
 | --- | ---: | --- | --- |
-| `runtime-fdd-msdos622` | 1,474,560 | `065038a5de3d64ebdf85477dd23778e27f6fa50647f335e54a1f3a2ae7e9437c` | Owner-declared MS-DOS 6.22 removable media for current runtime smoke input. |
+| `runtime-fdd-msdos500` | 1,474,560 | `fadeb3a27c6a0e1cf582dde0b9aecb7e5d30678f2f967f2f4562f167cc0cb1d5` | Owner-declared MS-DOS 5.00 removable media for current runtime smoke input. |
 | `runtime-hdd-ewin31-setup` | 51,609,600 | `61e5cdc0b76151cc65b73eb44094738b9de86052b1b07f20fc03205984cd77e1` | Owner-declared EWIN31 Setup hard-disk media for current runtime smoke input. |
 
 The local aliases `fdd.img` and `hdd.img` select this approved set. Aliases
@@ -26,20 +26,19 @@ run.
 
 ## Current Observation
 
-A fresh configured run first showed that ten FDD/DOS tests retain MS-DOS 5
-prompt/state contracts, including `vm-ata-pio-dos-smoke`. CMake now routes the
-nine FDD-only tests and ATA DOS smoke through `m1-fdd-msdos500`; ATA retains
-`runtime-hdd-ewin31-setup`. The current FDD remains the input for
-`vm-timer-firmware-smoke`, `vm-debug-pause-boundary-smoke`,
-`vm-unified-debug-backend-smoke`, and the current product-session smoke.
-
-With that contract routing, the retained current gate passes 145 of 145 tests.
-This evidence does not claim broad MS-DOS 6.22 guest compatibility or weaken
-any historical assertion.
+The former MS-DOS 6.22 FDD identity and its 145-of-145 gate observation are
+historical only; they do not establish a result for this changed current set.
+The current FDD now has the MS-DOS 5.00 identity above, while the current HDD
+retains `runtime-hdd-ewin31-setup`. The existing CMake aliases remain the
+operator-selected inputs for the current smoke routes. Focused FDD and current
+gate requalification are pending before a passing current-media claim may be
+made.
 
 ## Change Control
 
 A hash, size, or declared-purpose change creates a new candidate media set.
 It requires owner approval, an updated local-only record, and focused media
-smoke evidence before becoming the current set. It cannot silently overwrite
-the M1 MS-DOS 5 baseline or turn protected guest media into a repository asset.
+smoke evidence before becoming the current set. The smoke procedure must
+preserve an owner-supplied master image or use an owner-approved disposable
+copy. It cannot silently overwrite the M1 MS-DOS 5 baseline or turn protected
+guest media into a repository asset.

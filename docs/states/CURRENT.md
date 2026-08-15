@@ -32,6 +32,14 @@
 
 ## Recent Governance
 
+- **M5 Td S94 P1:** locks the DeskPro 386 Model 40 and PC/XT 5160-268
+  baselines, establishes the capability-ledger then functional-before-timing
+  closure sequence for all three machines, and adds their bounded proposals.
+  It records the changed owner media identity truthfully, retains external ROMs
+  outside Git, and removes closed T367/T368 work from future Queue positions.
+  Documentation governance and diff check passed; no runtime, artifact, or task
+  activation change.
+
 - **M5 Td S93 P1:** splits T366's transferred 80286 retirement ledger from
   5170 bus work; orders 5170 CPU, bus, device, phase and audit closure; and
   pre-splits DeskPro 386 into profile/CPU, board/device and audit candidates.
@@ -84,16 +92,3 @@
   secondary, privileged, and closure units follow as S5--S7. Documentation
   governance, the T359 inventory verifier, and diff check passed; Td work has
   no runtime or artifact change.
-
-- **M5 Td S87:** reconciled the T358 continuation handoff: removed the
-  duplicate empty history heading, retained the approved Queue order, and
-  restored compact open-T358 status. Documentation governance and diff check
-  passed; Td work has no runtime or artifact change.
-
-- **M5 Td S87:** reordered M5 around four-profile timing authority,
-  device/chip/port/bus completeness, bus availability, service timing,
-  cycle-exact selected-profile work, and L3 closure before final BYOB Windows
-  3.1 Standard/386 Enhanced lifecycle proof. M6 now follows the M5 closure
-  decision. T358 S1 was isolated during this Td delivery and is now restored
-  as the sole active packet. Documentation governance and diff check passed;
-  Td work has no runtime change.

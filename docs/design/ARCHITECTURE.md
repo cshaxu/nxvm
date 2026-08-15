@@ -58,11 +58,11 @@ address/operand width, protection or paging behavior, bus width, prefetch,
 availability/wait rules, and selected device topology.
 
 Equivalent profile routes reuse the core owner and transaction path. The IBM
-5150/XT 8088 profile reuses 8086-class instruction semantics but owns its
-distinct external-bus and prefetch/timing contract. It must not duplicate opcode
-execution or create another CPU/DMA memory-or-port transaction path. A 80286 or
-80386 profile similarly adds only its documented architectural and board-local
-differences through the same core ownership boundaries.
+PC/XT 5160-268 8088 profile reuses 8086-class instruction semantics but owns
+its distinct external-bus and prefetch/timing contract. It must not duplicate
+opcode execution or create another CPU/DMA memory-or-port transaction path. A
+80286 or 80386 profile similarly adds only its documented architectural and
+board-local differences through the same core ownership boundaries.
 
 ## Product And Host Boundary
 

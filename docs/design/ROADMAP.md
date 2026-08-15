@@ -34,11 +34,17 @@ implementation plan for core convergence.
 ## M5: Converge Core And NXVM
 
 Complete the shared-core/NXVM boundary through three source-backed L3 baseline
-machines: IBM PC/AT 5170 80286 first, then one exact Compaq DeskPro 386 80386
-configuration, and then a distinct 8088 CPU profile plus an IBM 5150/XT 8088
-(8086-class ISA) baseline. For each baseline, every selected device,
-chip, port, bus route, reset, IRQ/DRQ lifecycle, availability/wait state, and
-cross-device event order has one owner and a declared timing contract. Carry
+machines: IBM PC/AT 5170 Model 339/Type 3 80286 first, then the 1986 original
+Compaq DeskPro 386 Model 40 (DeskPro 386/16), and then a distinct 8088 CPU
+profile plus IBM PC/XT 5160-268 baseline. Before a machine's timing closure,
+the program freezes its selected capability set and closes the functional
+register/state, IRQ/DMA, reset, and ownership gaps for every selected device.
+It then closes that machine's board/device timing and makes a separate L3
+audit decision. Shared device semantics are repaired at their earliest owner;
+machine-local binding and timing remain profile-specific. For each baseline,
+every selected device, chip, port, bus route, reset, IRQ/DRQ lifecycle,
+availability/wait state, and cross-device event order has one owner and a
+declared timing contract. Carry
 the Intel 8086, 8088, 80186, 80286, and 80386DX form/state program through its
 evidence-led Queue sequence before using a guest operating system as
 validation. The 8088 profile retains 8086 instruction semantics but separately
@@ -55,11 +61,11 @@ I/O surface--to a declared profile-local L3 contract or removes it from the
 supported product surface; no supported capability may remain a
 compatibility-only exception.
 
-After the 5170, DeskPro 386, 5150/XT 8088 baseline-machine, and current-product
+After the 5170, DeskPro 386 Model 40, PC/XT 5160-268 8088 baseline-machine, and current-product
 device-capability L3 closure audits accept those prerequisites, a separate
-pre-Windows L3 admission audit must accept the frozen DeskPro profile. Only
+pre-Windows L3 admission audit must accept the frozen DeskPro Model 40 profile. Only
 then does M5 end with an approved BYOB Windows 3.1
-corpus on the frozen DeskPro 386:
+corpus on the frozen DeskPro 386 Model 40:
 Standard Mode and 386 Enhanced Mode must each install, start normally, reach a
 named ready checkpoint, and shut down normally. These are final compatibility
 consumers, not substitutes for device/timing evidence. Windows media is never
