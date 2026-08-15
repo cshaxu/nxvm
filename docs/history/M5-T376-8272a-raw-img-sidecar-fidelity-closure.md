@@ -16,3 +16,10 @@ S1 audits the existing provider, raw-IMG mount/save/remove, FDC command and
 atomic-persistence routes before implementation. It must produce an
 implementation-ready single-owner contract without a test-only media API or a
 second image format.
+
+### S2: FDD sidecar schema and paired persistence
+
+S2 implements the optional sidecar only at the VM FDD/media-save boundary. It
+must preserve ordinary raw IMG use, validate a bounded metadata schema before
+publishing media, and preserve the currently mounted guest-visible pair on any
+mount or save failure.

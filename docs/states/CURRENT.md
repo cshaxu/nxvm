@@ -2,10 +2,31 @@
 
 ## Current Work
 
-**Active: M5 T376 S1.**
+**Active: M5 T376 S2.**
 
 | Task | Compact progress |
 | --- | --- |
+
+## M5 T376 S2 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner-approved continuous M5 L3 implementation; accepted T376 S1 selects VM FDD/media-save as the sole sidecar and paired-persistence owner. |
+| Objective | Implement the optional raw-IMG same-basename sidecar lifecycle: bounded versioned metadata, mount validation, FDD address-mark state and failure-preserving raw-plus-sidecar persistence. |
+| Non-goals | No new image/container format, guest-media/ROM commit, generic filesystem API, test-only media operation, FDC Deleted/Scan command implementation, guessed timing, or final L3 decision. |
+| Reference Baseline | T376 S1 owner/lifecycle inventory, frozen core media address-mark ABI, existing VM FDD raw-image lifecycle and `vm_machine_media_save_atomically` behavior. |
+| Candidate Proposal | [8272A raw-IMG sidecar fidelity closure](../proposals/m5-8272a-img-sidecar-fidelity-closure.md). |
+| Files And ABI Surface | `vm/machine/fdd.*`, `vm/machine/media_save.*`, VM media regression and CMake registration, plus evidence/index/current/history. Core public media ABI must stay unchanged. |
+| Applicable Rules | One VM FDD owner, failure-atomic media-pair lifecycle, raw IMG payload-only compatibility, no test-only public contract, existing core provider and T375 cadence preservation. |
+| Verification | Focused VM media regression proves absent/valid/malformed/stale sidecar, mark persistence, read-only rejection, mount rollback and paired-save failure preservation; current GCC build/test and documentation governance pass. |
+| Expected Markers | `M5:T376:S1:RAW-IMG-SIDECAR-INVENTORY:OK`; `M5:T376:S2:RAW-IMG-SIDECAR-LIFECYCLE:OK`. |
+| Asset Needs | Tests generate only ignored temporary raw/sidecar files; no external ROM, guest media or third-party source is imported or committed. |
+| Reporting Requirements | Report schema, raw-only behavior, exact commit/rollback boundary, changed owner surface, focused proof and retained command receivers. |
+| Stop Conditions | Stop for owner direction if portable paired replacement cannot retain recovery semantics, if schema needs sector payload/second format, or if the frozen provider ABI cannot express the required lifecycle. |
+| Exit Criteria | FDD provider advertises/address-marks only for valid mounted sidecar-or-default mark state; ordinary raw IMG remains usable without a sidecar; all specified failure paths preserve guest-visible old media and focused regressions pass. |
+| Original Owner Request | Continue through L3 before Windows; retain pure IMG compatibility, avoid pure test APIs, and keep ROM/media external to Git. |
+| Similar-Issue Sweep | Inspect every FDD init/reset/finalize/replace/insert/remove/provider route, all media-save callers and VM media tests; classify HDD as single-file non-sidecar and leave it unchanged. |
 
 ## Current Technical Baseline
 

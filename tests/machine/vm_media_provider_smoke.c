@@ -9,6 +9,10 @@ static type_unsigned_8 vm_media_provider_fdd_image[80u * 2u * 18u * 512u];
 static const C_CHAR vm_media_provider_save_target[] = "vm_media_provider_t283.img";
 static const C_CHAR vm_media_provider_save_collision[] =
     "vm_media_provider_t283.img.ntvdm64.tmp.000";
+static const C_CHAR vm_media_provider_sidecar_image[] = "vm_media_provider_t376.img";
+static const C_CHAR vm_media_provider_sidecar_metadata[] = "vm_media_provider_t376.img.json";
+static const C_CHAR vm_media_provider_sidecar_backup_collision[] =
+    "vm_media_provider_t376.img.json.ntvdm64.bak";
 
 static C_INT vm_media_provider_write_byte_file(const C_CHAR *file_name, type_unsigned_8 byte)
 {
@@ -97,6 +101,7 @@ C_INT main(C_VOID)
     core_machine_media_address_mark mark;
     t_fdd fdd;
     t_fdd failed_fdd;
+    t_fdd stale_fdd;
     t_fdd null_fdd;
     t_hdd hdd;
     t_hdd null_hdd;
@@ -110,10 +115,13 @@ C_INT main(C_VOID)
     type_virtual_address fdd_image;
     type_virtual_address hdd_image;
     STD_FILE *temporary_image;
+    STD_FILE *stale_image;
+    C_INT stale_write_failed;
     C_INT failed = 0;
 
     vm_machine_fdd_initialize(&fdd);
     vm_machine_fdd_initialize(&failed_fdd);
+    vm_machine_fdd_initialize(&stale_fdd);
     vm_machine_fdd_finalize(&failed_fdd);
     vm_machine_hdd_initialize(&hdd);
     STD_MEMSET(&null_fdd, TYPE_ZERO_8, sizeof(null_fdd));
@@ -162,9 +170,10 @@ C_INT main(C_VOID)
         core_machine_media_query(&registry, 1u, &info, &result) != TYPE_STATUS_OK ||
         result != CORE_MACHINE_MEDIA_RESULT_OK || !info.present ||
         info.geometry.bytes_per_sector != 512u ||
-        (info.capabilities & CORE_MACHINE_MEDIA_CAPABILITY_ADDRESS_MARKS) != 0u ||
+        (info.capabilities & CORE_MACHINE_MEDIA_CAPABILITY_ADDRESS_MARKS) == 0u ||
         core_machine_media_get_address_mark(&registry, 1u, 0u, &mark,
-            &result) != TYPE_STATUS_OK || result != CORE_MACHINE_MEDIA_RESULT_UNSUPPORTED ||
+            &result) != TYPE_STATUS_OK || result != CORE_MACHINE_MEDIA_RESULT_OK ||
+        mark != CORE_MACHINE_MEDIA_ADDRESS_MARK_DATA ||
         core_machine_media_query(&registry, 2u, &info, &result) != TYPE_STATUS_OK ||
         result != CORE_MACHINE_MEDIA_RESULT_OK || info.geometry.cylinders != 2u ||
         (info.capabilities & CORE_MACHINE_MEDIA_CAPABILITY_ADDRESS_MARKS) != 0u ||
@@ -204,6 +213,37 @@ C_INT main(C_VOID)
             failed = 1;
         }
     }
+    if (!failed && (core_machine_media_set_address_mark(&registry, 1u, 0u,
+            CORE_MACHINE_MEDIA_ADDRESS_MARK_DELETED_DATA, &result) != TYPE_STATUS_OK ||
+        result != CORE_MACHINE_MEDIA_RESULT_OK || vm_machine_fdd_remove_for(&fdd,
+            vm_media_provider_sidecar_image) != TYPE_FALSE || fdd.connect.flagDiskExist ||
+        vm_machine_fdd_insert_for(&fdd, vm_media_provider_sidecar_image) != TYPE_FALSE ||
+        core_machine_media_get_address_mark(&registry, 1u, 0u, &mark,
+            &result) != TYPE_STATUS_OK || result != CORE_MACHINE_MEDIA_RESULT_OK ||
+        mark != CORE_MACHINE_MEDIA_ADDRESS_MARK_DELETED_DATA ||
+        vm_machine_fdd_read_byte(&fdd, 0u, 0u, 1u, 0u, &bytes[0]) != TYPE_FALSE ||
+        bytes[0] != 0x6cu)) {
+        failed = 1;
+    }
+    stale_image = STD_NULL;
+    stale_write_failed = TYPE_TRUE;
+    if (!failed && (stale_image = STD_FOPEN(vm_media_provider_sidecar_image, "r+b")) !=
+        STD_NULL) {
+        stale_write_failed = STD_FPUTC(0x6du, stale_image) == STD_EOF ||
+            STD_FCLOSE(stale_image) != 0;
+        stale_image = STD_NULL;
+    }
+    if (!failed && (stale_write_failed || vm_machine_fdd_insert_for(&stale_fdd,
+            vm_media_provider_sidecar_image) != TYPE_TRUE || stale_fdd.connect.flagDiskExist)) {
+        failed = 1;
+    }
+    if (!failed && (vm_media_provider_write_byte_file(
+            vm_media_provider_sidecar_backup_collision, 0x31u) ||
+        vm_machine_fdd_remove_for(&fdd, vm_media_provider_sidecar_image) != TYPE_TRUE ||
+        !fdd.connect.flagDiskExist)) {
+        failed = 1;
+    }
+    (C_VOID)STD_REMOVE(vm_media_provider_sidecar_backup_collision);
     fdd_generation = fdd.connect.media_generation;
     fdd_image = fdd.connect.pImgBase;
     if (!failed && (vm_machine_fdd_remove_for(&fdd, ".") != TYPE_TRUE ||
@@ -259,13 +299,18 @@ C_INT main(C_VOID)
     core_machine_media_registry_finalize(&registry);
     vm_machine_fdd_finalize(&fdd);
     vm_machine_fdd_finalize(&failed_fdd);
+    vm_machine_fdd_finalize(&stale_fdd);
     vm_machine_hdd_finalize(&hdd);
     (C_VOID)STD_REMOVE("vm_media_provider_t280.img");
+    (C_VOID)STD_REMOVE(vm_media_provider_sidecar_image);
+    (C_VOID)STD_REMOVE(vm_media_provider_sidecar_metadata);
+    (C_VOID)STD_REMOVE(vm_media_provider_sidecar_backup_collision);
     (C_VOID)STD_REMOVE(vm_media_provider_save_target);
     (C_VOID)STD_REMOVE(vm_media_provider_save_collision);
     if (failed) return 1;
     STD_PRINTF("M5:T272:S2:VM-MEDIA-PROVIDER:OK\n");
     STD_PRINTF("M5:T280:S2:ATOMIC-MEDIA:OK\n");
     STD_PRINTF("M5:T283:S6:ATOMIC-SAVE:OK\n");
+    STD_PRINTF("M5:T376:S2:RAW-IMG-SIDECAR-LIFECYCLE:OK\n");
     return 0;
 }
