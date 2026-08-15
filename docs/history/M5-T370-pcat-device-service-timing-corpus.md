@@ -45,3 +45,12 @@ keyboard command/FIFO/IRQ domain.
 
 S3 is accepted at `3d5cd542`; its terminal and reset proof is logical only and
 does not convert any FDC action into a device-duration claim.
+
+### S4: 8042/keyboard domain reconciliation
+
+S4 retains one KBC command/FIFO/IRQ/reset owner and confirms that the selected
+Model-339 descriptor deliberately supplies zero response and typematic delay
+fields.  The [reconciliation](../etc/evidence/t370-s4-kbc-keyboard-domain-reconciliation.md)
+therefore preserves protocol/lifecycle proof without converting KBC project
+ticks into controller or keyboard duration.  S5 receives planar-parity NMI,
+CGA/VADP visible-state/raster work and the task-level transfer audit.
