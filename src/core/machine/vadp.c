@@ -480,17 +480,26 @@ static type_unsigned_8 core_machine_vadp_status(const t_vadp *adapter)
 {
     type_unsigned_32 vertical_end;
     type_unsigned_32 display_end;
+    type_unsigned_8 status = 0u;
 
     if (adapter == STD_NULL) return 0u;
     vertical_end = adapter->data.text_timing.vertical_retrace_ticks;
     display_end = vertical_end + adapter->data.text_timing.active_display_ticks;
     if (adapter->data.raster_phase < vertical_end) {
-        return CORE_MACHINE_VADP_STATUS_VERTICAL_RETRACE;
+        status = CORE_MACHINE_VADP_STATUS_VERTICAL_RETRACE;
     }
-    if (adapter->data.raster_phase < display_end) {
-        return CORE_MACHINE_VADP_STATUS_DISPLAY_ENABLE;
+    /* CGA status bit 0 reports that buffer access can proceed without
+     * display interference. EGA retains its existing display-enable view. */
+    if (adapter->data.ega_controller_configured) {
+        if (adapter->data.raster_phase >= vertical_end &&
+            adapter->data.raster_phase < display_end) {
+            status |= CORE_MACHINE_VADP_STATUS_DISPLAY_ENABLE;
+        }
+    } else if (adapter->data.raster_phase < vertical_end ||
+        adapter->data.raster_phase >= display_end) {
+        status |= CORE_MACHINE_VADP_STATUS_DISPLAY_ENABLE;
     }
-    return 0u;
+    return status;
 }
 
 static C_VOID core_machine_vadp_write_crtc_index(t_port *port,

@@ -43,7 +43,7 @@ C_INT main(C_VOID)
     core_machine_vadp_reset(&vadp);
 
     initial_status = core_machine_port_read(&port, 0x03dau);
-    failed |= initial_status != 0x01u ||
+    failed |= initial_status != 0x00u ||
         core_machine_port_read(&port, 0x03dau) != initial_status;
 
     vadp_write_crtc(&port, 0x0au, 0xffu);
@@ -91,19 +91,20 @@ C_INT main(C_VOID)
         snapshot.characters[0] != 'W' || snapshot.characters[1] != 'R';
 
     core_machine_vadp_advance(&vadp, &memory, 2u);
-    failed |= core_machine_port_read(&port, 0x03dau) != 0x01u;
+    failed |= core_machine_port_read(&port, 0x03dau) != 0x00u;
     core_machine_vadp_advance(&vadp, &memory, 1u);
-    failed |= core_machine_port_read(&port, 0x03dau) != 0x00u ||
-        core_machine_port_read(&port, 0x03dau) != 0x00u;
+    failed |= core_machine_port_read(&port, 0x03dau) != 0x01u ||
+        core_machine_port_read(&port, 0x03dau) != 0x01u;
     core_machine_vadp_advance(&vadp, &memory, 2u);
-    failed |= core_machine_port_read(&port, 0x03dau) != 0x08u;
+    failed |= core_machine_port_read(&port, 0x03dau) != 0x09u;
     core_machine_vadp_advance(&vadp, &memory, 1u);
-    failed |= core_machine_port_read(&port, 0x03dau) != 0x01u;
+    failed |= core_machine_port_read(&port, 0x03dau) != 0x00u;
 
     core_machine_vadp_finalize(&vadp);
     core_machine_memory_finalize(&memory);
     core_machine_port_finalize(&port);
     if (failed) return 1;
     STD_PRINTF("M5:T266:S3:VADP-TEXT-STATUS:OK\n");
+    STD_PRINTF("M5:T375:S8:MODEL339-CGA-CLOCK-RECONCILIATION:OK\n");
     return 0;
 }
