@@ -2,27 +2,6 @@
 
 ## Current Work
 
-## M5 T369 S3 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation; T369 S2 accepted at `db87d791`. |
-| Admission And Approval | The owner-approved T369 package continues. S2 authorizes only a source-labelled logical 80286 HOLD/HLDA handoff at the existing shared CPU/DMA transaction boundary, not a Model 339 wait scalar, physical duration or waveform. |
-| Objective | Add one validation-to-publication lifecycle for pending selected DMA ownership: request, logical acknowledgement, same-owner DMA transaction, release/cancel/reset, and copied trace proof at the existing CPU-round/arbitration boundary. |
-| Non-goals | No per-access READY/wait value, instruction microstep/preemptive CPU resume, elapsed-tick charge, physical HOLD/HLDA/DACK/AEN/INTA waveform, FDC service duration, new device requestor, ATA/HDC route, or 5170-L3 claim. |
-| Reference Baseline | T369 S1/S2 evidence; Intel 210760-002 HOLD/HLDA semantics; T354 transaction lifecycle/competition tests; current `transaction.*`, `dma.*`, `machine.c` source and selected Model 339 descriptor. |
-| Candidate Proposal | [Bus-timed PC/AT operation](../proposals/m5-bus-timed-pcat-operation.md). |
-| Files And ABI Surface | `src/core/machine/transaction.[ch]`, `dma.[ch]`, `machine.c`, `trace_interface.h`, focused core smoke and CMake registration, S3 evidence/history/status/index. Internal core contracts may extend; no product/VM public interface or profile topology change. |
-| Applicable Rules | Architecture one-owner, validation-before-publication, no duplicate scheduler, lifecycle/reset/trace and copied-consumer invariants; coding test/ownership discipline; execution similar-issue and artifact rules; source policy. Existing CPU source retirement ticks remain the sole CPU time publisher. |
-| Verification | Focused hold lifecycle smoke plus existing transaction lifecycle and competition smokes; rebuild relevant targets; run static/similar-route sweep, documentation governance and diff check. Rebuild `nxvm_0_5_0369.exe`, record SHA-256/source commit/runtime identity in S3 evidence. |
-| Expected Markers | New `M5:T369:S3:PCAT-HOLD:OK`; retained `M5:T354:S3:COMPETITION:OK` and `M5:T354:S4:TRANSACTION-LIFECYCLE:OK`. Trace proves request < acknowledge < DMA begin < DMA commit < release, CPU transaction cannot begin while a DMA hold is active, and reset releases/cancels the handoff. |
-| Asset Needs | No ROM, guest media, third-party source, binary or raw trace. Project-authored fixture only; the developer artifact contains no protected material. |
-| Reporting Requirements | Distinguish logical safe-boundary handoff from physical latency; record every touched route and transfer; record artifact SHA/runtime identity; identify all unmodelled READY/wait/device/phase facts. |
-| Stop Conditions | Stop and revise the packet if implementation requires CPU microstep resumption, a second scheduler, changes to stopped/paused APIs, a timing scalar, a new public VM/product ABI, or a device-specific service model. |
-| Exit Criteria | P1 implements and proves exactly one shared logical DMA HOLD lifecycle with reset/cancel/trace coverage, produces the task artifact, and documents retained physical transfers. It must leave all board wait and 5170-L3 claims open. |
-| Original Owner Request | Continue in Queue order toward complete L3 before Windows 3.1; use named reference models only where authoritative manuals leave a range or no range, without treating them as IBM authority. |
-| Similar-Issue Sweep | Sweep every `core_machine_transaction_begin/commit/cancel` caller, DMA request/advance path, CPU memory/port helper, reset/finalize path, trace-event consumer and stopped/paused external API; each hit must preserve the shared hold invariant or be explicitly excluded. |
-
 ## Current Technical Baseline
 
 - **Current developer artifact:** T369 S3 `vm-0-5-0369` /
@@ -42,7 +21,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T369 S2 | Accepted at `a5d11c48`: source reconciliation proves a logical 80286 HOLD/HLDA handoff requirement but no Model 339 wait scalar. Current CPU/DMA scheduling has no handoff state, so S3 receives the shared execution-round/transaction mechanism; board waits, waveforms and device duration remain transferred. [Reconciliation](../etc/evidence/t369-s2-pcat-hold-availability-reconciliation.md). |
+| T369 S3 | P1 `12ac65ac` adds and proves one source-labelled logical 80286 DMA HOLD lifecycle at the shared arbitration boundary, with copied trace and reset release. It produces `nxvm_0_5_0369.exe`; board waits, physical waveforms, device service, remaining CPU work and 5170 L3 remain transferred. [S3 evidence](../etc/evidence/t369-s3-pcat-logical-hold-lifecycle.md). |
 | T368 | Closed at `4da84be8`: completes the source-labelled 80286 successful-retirement CPU ledger, with exact values or declared source-undefined transfers. The next Queue receiver is bus-timed PC/AT operation; CPU waits, bus/device timing and IBM 5170 L3 remain open. [Closure audit](../etc/evidence/t368-s7-80286-retirement-closure-audit.md). |
 | T367 | Closed at `f60d87ea`: concrete machine selection and CPU/timing contract binding are VM-owned; the default-PC/AT option path now selects a VM contract before the sole core materialization boundary, while Model 339 remains descriptor-selected. Focused profile/session regressions pass; an unrelated platform-request compile failure blocks a full-gate claim. No CPU-timing, bus, device or L3 receiver is closed. [Binding evidence](../etc/evidence/t367-s2-vm-profile-contract-binding.md). |
 | T366 | Closed at `743edc18`: locks the Model 339 baseline, planar-parity NMI and selected topology, and accepts bounded 80286 source-retirement rows. Complete CPU retirement, bus availability, device service timing and profile-L3 closure transfer explicitly; **5170 model-L3 is not ready**. [Closure audit](../etc/evidence/t366-s32-closure-transfer-audit.md). |

@@ -38,3 +38,13 @@ do not turn that boundary into a universal wait scalar. The accepted
 therefore assigns S3 one shared logical execution-round handoff mechanism and
 retains board waits, physical waveforms and device durations as explicit
 transfers.
+
+### S3: Logical DMA HOLD lifecycle
+
+S3 accepts P1 `12ac65ac`: the 80286 arbitration boundary now exposes one
+logical DMA request/acknowledge/same-owner-transaction/release lifecycle with
+reset and copied-trace proof.  It has no wait scalar, physical duration,
+waveform, FDC-service result or Model-339 L3 claim.  The retained artifact and
+all transfers are recorded in the [S3 evidence](../etc/evidence/t369-s3-pcat-logical-hold-lifecycle.md).
+The next work must be newly admitted from the T369 bus/phase receivers; T370
+continues to own selected device-service timing.
