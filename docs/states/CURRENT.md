@@ -2,6 +2,27 @@
 
 ## Current Work
 
+## M5 T369 S2 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; T369 S1 accepted at `2ca0c00a`. |
+| Admission And Approval | The owner-approved T369 bus-timed PC/AT package continues under the standing before-Windows L3 objective. S1's evidence permits only primary-board/CPU contract reconciliation; it did not approve a timing scalar or a secondary-model substitution. |
+| Objective | Recover and reconcile the selected IBM 5170 board's documented READY/HOLD/HLDA/DMA signal facts with Intel 80286 CPU semantics, then decide whether one source-labelled shared availability contract is implementable or must remain explicitly transferred. |
+| Non-goals | No guessed wait count, elapsed-clock conversion, copied reference-model code, ROM/media use, ATA/HDC admission, controller-service duration, physical waveform, resumable CPU rewrite, or 5170-L3 claim. |
+| Reference Baseline | T369 S1 ledger at `87460471`; T366 Model 339 lock; IBM September 1985/March 1986 technical references and IBM board diagrams; Intel 210760-002 80286 Hardware Reference; source policy. 86Box/MAME/PCjs may check an already-qualified fact only. |
+| Candidate Proposal | [Bus-timed PC/AT operation](../proposals/m5-bus-timed-pcat-operation.md). |
+| Files And ABI Surface | S2 evidence, T369 history and active packet/index only unless the sources prove a bounded shared contract. Any runtime change requires a packet revision naming `transaction.*`, `machine.c`, profile composition and focused tests before implementation. |
+| Applicable Rules | Execution evidence/objection/change-control rules; documentation boundaries; architecture one-owner, validation-to-publication and composition invariants; source-policy research/no-import rules. Unqualified timing sources are not implementation authority. |
+| Verification | Record exact document/page-or-section citations and a signal-to-current-route matrix; cross-check any fallback model against the locked profile; run documentation governance and `git diff --check`. If a code revision is justified, add targeted lifecycle/trace proof and build it under a revised packet. |
+| Expected Markers | Each of READY, HOLD, HLDA, DMA request/grant, FDC DRQ/DMA2 and logical INTA is either source-qualified with scope or has one exact transfer; no scalar is silently inferred from a signal name, minimum CPU bound or reference-model default. |
+| Asset Needs | No protected ROM, diagnostics disk, guest media, third-party source, binary, or trace. Read public documentation only; retain links and neutral conclusions, not copies. |
+| Reporting Requirements | Distinguish source facts, inference, current implementation, and non-admission; name the future S or TODO receiver for every missing fact and report whether S3 can be admitted. |
+| Stop Conditions | Stop implementation and record the transfer if IBM/Intel do not connect a selected board condition to an executable availability rule, or if a fallback model is configuration-incompatible. Pause for a packet revision if sources instead prove an implementation scope beyond the listed files. |
+| Exit Criteria | P1 contains an indexed source-to-signal reconciliation and an unambiguous decision: one bounded contract for S3, or no contract with a precise source/probe transfer. It makes no model-L3 claim. |
+| Original Owner Request | Continue comprehensive L3 execution in queue order before Windows 3.1; use 86Box/MAME/PCjs only as bounded fallback references where the authority does not determine timing. |
+| Similar-Issue Sweep | Sweep READY/HOLD/HLDA/DMA/INTA references across selected profile, CPU transaction, DMA, PIC, FDC and evidence sources; classify each hit as primary fact, secondary check, current-route fact, or transfer. |
+
 ## Current Technical Baseline
 
 - **Current developer artifact:** T362 S2 `vm-0-5-0362` /
