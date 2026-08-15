@@ -18,10 +18,12 @@ typedef struct t_port t_port;
 
 #define CORE_MACHINE_DEVICE_FDC "Intel 8272A"
 #define CORE_MACHINE_FDC_500K_BYTE_TICKS 128u
+#define CORE_MACHINE_FDC_SEEK_TRACK_TICKS 24000u
 
 typedef enum core_machine_fdc_phase {
     core_machine_fdc_PHASE_COMMAND = 0,
     core_machine_fdc_PHASE_PENDING_COMMAND,
+    core_machine_fdc_PHASE_PENDING_SEEK,
     core_machine_fdc_PHASE_EXECUTION_READ,
     core_machine_fdc_PHASE_EXECUTION_WRITE,
     core_machine_fdc_PHASE_EXECUTION_FORMAT,
@@ -52,6 +54,9 @@ typedef struct {
     type_unsigned_8 st0, st1, st2, st3; /* state registers */
     type_unsigned_8 pending_st1;
     type_unsigned_16 cylinder;
+    type_unsigned_16 drive_cylinder[CORE_MACHINE_FDC_DRIVE_COUNT];
+    type_unsigned_16 seek_target;
+    type_unsigned_64 seek_due_tick;
     type_unsigned_16 head;
     type_unsigned_16 sector;
     type_unsigned_16 eot;

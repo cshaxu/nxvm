@@ -2,11 +2,32 @@
 
 ## Current Work
 
-**Active: M5 T375 S20.**
+**Active: M5 T375 S21.**
 
 | Task | Compact progress |
 | --- | --- |
 | T375 S20 | Accepted P1 `f0dee629`: FDC-owned 500-kbit/s DMA2 byte gates now use elapsed machine ticks; focused proof covers 128-tick cadence, final IRQ6 ordering and DOR cancellation. [Evidence](../etc/evidence/t375-s20-fdc-dma-cadence.md). |
+
+## M5 T375 S21 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner-approved T375 Model-339 L3 continuation. S19 names the aftermarket TEAC FD-235HF-A540 and admits its nominal 3-ms track-to-track value as a source-labelled input. |
+| Objective | Gate FDC Seek and Recalibrate completion by the 24,000-tick per-track nominal movement interval, preserving the existing FDC IRQ6 and Sense-Interrupt owners. |
+| Non-goals | No exact motor, rotational, index, controller-command, reset, waveform or factory-configuration claim; no raw-IMG work or DMA redesign. |
+| Reference Baseline | S19 records TEAC FD-235HF-A540 nominal 3 ms per track and the Model-339 8-MHz tick conversion. S20 supplies timestamped FDC advancement. |
+| Candidate Proposal | [IBM PC/AT 5170 board and device phase-timing closure](../proposals/m5-5170-board-phase-timing-closure.md). |
+| Files And ABI Surface | FDC state/phase owner, machine readiness caller, retained FDC smoke, evidence/index and Current only. |
+| Applicable Rules | Execution lifecycle, architecture single FDC/DMA/IRQ owner, coding owner-local state, source policy and documentation rules. |
+| Verification | Focused FDC smoke proves zero-distance and multi-track completion timing, cylinder visibility, IRQ6/Sense Interrupt, reset cancellation; retained DMA smoke and documentation governance pass. |
+| Expected Markers | `M5:T375:S21:FDC-SEEK-CADENCE:OK` and retained FDC/DMA markers. |
+| Asset Needs | No runtime asset; S19 primary-drive source only. |
+| Reporting Requirements | Report implemented scope, source boundary, proof and transfers. |
+| Stop Conditions | Stop if a per-drive movement state requires a second owner or an unsupported exact completion claim. |
+| Exit Criteria | Seek/Recalibrate waits for the source-labelled nominal per-track deadline, owns no duplicate IRQ/DMA path, and cancellation prevents late completion. |
+| Original Owner Request | Continue full L3 implementation using reference emulators only as secondary sources and keeping 1.44 MB as an aftermarket route. |
+| Similar-Issue Sweep | Seek, recalibrate, Sense Interrupt, drive selection, DOR reset, finalize and FDC reset; transfer motor/rotation/timeout semantics. |
 
 ## Current Technical Baseline
 

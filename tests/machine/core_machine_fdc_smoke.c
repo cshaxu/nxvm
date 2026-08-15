@@ -122,6 +122,9 @@ static C_VOID core_machine_fdc_command(core_machine_fdc *fdc, t_port *port,
         core_machine_port_write(port, 0x03f5u, bytes[index]);
     }
     core_machine_fdc_advance(fdc);
+    if (fdc->data.phase == core_machine_fdc_PHASE_PENDING_SEEK) {
+        core_machine_fdc_advance_at(fdc, fdc->data.seek_due_tick);
+    }
 }
 
 static C_VOID core_machine_fdc_write_dma2(t_port *port, type_unsigned_16 address,
@@ -226,6 +229,24 @@ C_INT main(C_VOID)
                 failed |= fdc->connect.irq_source.asserted ||
                     !core_machine_fdc_read_result(fdc, port, result, 1u) ||
                     result[0] != 0x80u || fdc->data.phase != core_machine_fdc_PHASE_COMMAND;
+
+                /* Seek must retain the prior cylinder and IRQ state until the
+                   source-labelled 3-ms-per-track deadline has elapsed. */
+                core_machine_port_write(port, fdc_config.data_port, 0x0fu);
+                core_machine_port_write(port, fdc_config.data_port, 0x00u);
+                core_machine_port_write(port, fdc_config.data_port, 0x03u);
+                core_machine_fdc_advance_at(fdc, 100u);
+                failed |= fdc->data.phase != core_machine_fdc_PHASE_PENDING_SEEK ||
+                    fdc->data.cylinder != 0u || fdc->connect.irq_source.asserted ||
+                    fdc->data.seek_due_tick != 72100u;
+                core_machine_fdc_advance_at(fdc, 72099u);
+                failed |= fdc->data.phase != core_machine_fdc_PHASE_PENDING_SEEK ||
+                    fdc->connect.irq_source.asserted;
+                core_machine_fdc_advance_at(fdc, 72100u);
+                failed |= fdc->data.cylinder != 3u || !fdc->connect.irq_source.asserted;
+                core_machine_fdc_command(fdc, port, (const type_unsigned_8[]){0x08u}, 1u);
+                failed |= !core_machine_fdc_read_result(fdc, port, result, 2u) ||
+                    result[1] != 3u;
 
                 for (type_unsigned_32 index = 0u; index < sizeof(read_sector); ++index) {
                     core_machine_port_write(port, fdc_config.data_port, read_sector[index]);
@@ -347,5 +368,6 @@ C_INT main(C_VOID)
     puts("M5:T283:S2:CORE-FDC-MEDIA:OK");
     puts("M5:T347:S2:FDC-SERVICE:OK");
     puts("M5:T375:S20:FDC-DMA-CADENCE:OK");
+    puts("M5:T375:S21:FDC-SEEK-CADENCE:OK");
     return 0;
 }

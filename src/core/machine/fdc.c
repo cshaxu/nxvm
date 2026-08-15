@@ -35,6 +35,7 @@ static type_unsigned_8 core_machine_fdc_msr(const core_machine_fdc *fdc)
 {
     switch (fdc->data.phase) {
     case core_machine_fdc_PHASE_PENDING_COMMAND:
+    case core_machine_fdc_PHASE_PENDING_SEEK:
     case core_machine_fdc_PHASE_PENDING_COMPLETE:
         return VFDC_MSR_CB;
     case core_machine_fdc_PHASE_RESULT:
@@ -280,6 +281,17 @@ static C_VOID core_machine_fdc_complete_simple(core_machine_fdc *fdc, type_unsig
     core_machine_fdc_result_phase(fdc, 2u);
 }
 
+static C_VOID core_machine_fdc_begin_seek(core_machine_fdc *fdc, type_unsigned_16 target)
+{
+    type_unsigned_16 current = fdc->data.drive_cylinder[fdc->data.selected_drive];
+    type_unsigned_16 distance = current > target ? current - target : target - current;
+
+    fdc->data.seek_target = target;
+    fdc->data.seek_due_tick = fdc->data.elapsed_ticks +
+        (type_unsigned_64)distance * CORE_MACHINE_FDC_SEEK_TRACK_TICKS;
+    fdc->data.phase = core_machine_fdc_PHASE_PENDING_SEEK;
+}
+
 static C_INT core_machine_fdc_drive_ready(const core_machine_fdc *fdc)
 {
     return fdc->data.selected_drive == (fdc->data.dor & VFDC_DOR_DS) &&
@@ -518,13 +530,8 @@ static C_VOID core_machine_fdc_execute(core_machine_fdc *fdc)
         break;
     case core_machine_fdc_CMD_RECALIBRATE:
         fdc->data.selected_drive = fdc->data.cmd[1] & 0x03u;
-        fdc->data.cylinder = 0u; fdc->data.head = 0u; fdc->data.sector = 1u;
-        media_ok = core_machine_fdc_media_info(fdc, &info, &media_result);
-        core_machine_fdc_observe_drive(fdc, fdc->data.selected_drive);
-        core_machine_fdc_complete_simple(fdc, core_machine_fdc_ST0_NORMAL |
-            VFDC_ST0_SEEK_END | fdc->data.selected_drive, 0u);
-        core_machine_fdc_raise_irq(fdc);
-        core_machine_fdc_command_phase(fdc);
+        fdc->data.head = 0u; fdc->data.sector = 1u;
+        core_machine_fdc_begin_seek(fdc, 0u);
         break;
     case core_machine_fdc_CMD_SENSE_INTERRUPT:
         if (fdc->data.flagINTR) {
@@ -541,15 +548,8 @@ static C_VOID core_machine_fdc_execute(core_machine_fdc *fdc)
     case core_machine_fdc_CMD_SEEK:
         fdc->data.selected_drive = fdc->data.cmd[1] & 0x03u;
         fdc->data.head = (fdc->data.cmd[1] >> 2u) & 1u;
-        fdc->data.cylinder = fdc->data.cmd[2]; fdc->data.sector = 1u;
-        media_ok = core_machine_fdc_media_info(fdc, &info, &media_result);
-        core_machine_fdc_observe_drive(fdc, fdc->data.selected_drive);
-        core_machine_fdc_complete_simple(fdc, (core_machine_fdc_drive_ready(fdc) &&
-            media_ok && fdc->data.cylinder < info.geometry.cylinders ? core_machine_fdc_ST0_NORMAL :
-            core_machine_fdc_ST0_ABNORMAL) | VFDC_ST0_SEEK_END |
-            fdc->data.selected_drive, (type_unsigned_8)fdc->data.cylinder);
-        core_machine_fdc_raise_irq(fdc);
-        core_machine_fdc_command_phase(fdc);
+        fdc->data.sector = 1u;
+        core_machine_fdc_begin_seek(fdc, fdc->data.cmd[2]);
         break;
     case core_machine_fdc_CMD_READ_ID:
         fdc->data.selected_drive = fdc->data.cmd[1] & 0x03u;
@@ -766,6 +766,18 @@ C_VOID core_machine_fdc_advance_at(core_machine_fdc *fdc,
     fdc->data.elapsed_ticks = elapsed_ticks;
     if (fdc->data.phase == core_machine_fdc_PHASE_PENDING_COMMAND) {
         core_machine_fdc_execute(fdc);
+    } else if (fdc->data.phase == core_machine_fdc_PHASE_PENDING_SEEK &&
+        elapsed_ticks >= fdc->data.seek_due_tick) {
+        fdc->data.cylinder = fdc->data.seek_target;
+        fdc->data.drive_cylinder[fdc->data.selected_drive] = fdc->data.seek_target;
+        core_machine_fdc_observe_drive(fdc, fdc->data.selected_drive);
+        core_machine_fdc_complete_simple(fdc, core_machine_fdc_drive_ready(fdc) ?
+            core_machine_fdc_ST0_NORMAL | VFDC_ST0_SEEK_END |
+            fdc->data.selected_drive : core_machine_fdc_ST0_ABNORMAL |
+            VFDC_ST0_SEEK_END | fdc->data.selected_drive,
+            (type_unsigned_8)fdc->data.cylinder);
+        core_machine_fdc_raise_irq(fdc);
+        core_machine_fdc_command_phase(fdc);
     } else if (fdc->data.phase == core_machine_fdc_PHASE_PENDING_COMPLETE) {
         core_machine_fdc_set_result(fdc, fdc->data.pending_st1 == 0u ?
             core_machine_fdc_ST0_NORMAL : core_machine_fdc_ST0_ABNORMAL,
