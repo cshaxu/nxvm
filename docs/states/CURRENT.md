@@ -2,27 +2,6 @@
 
 ## Current Work
 
-## M5 T374 S16 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation; T374 remains the latest open numeric task, and accepted S15 identified a regression against accepted S12's retained default-EGA behavior claim. |
-| Admission And Approval | The owner approved continued selected-device functional closure before timing/L3. The coordinator admits this bounded T374 continuation to repair S12's concrete generic default-PC/AT VADP descriptor/handler contradiction without expanding capability. |
-| Objective | Make the default-PC/AT VADP port-leaf direction declaration agree with the actual configured handler surface: CRTC index `3D4h` remains write-only, while retained configured-EGA Mode/Color reads and Model-339 absent CGA reads remain correctly represented and tested. |
-| Non-goals | No EGA/VGA register, mode, CRTC, snapshot, timing, CGA geometry, profile topology, ROM/media, new port, open-bus emulation, ABI change, Model-339 L3 or current-product L3 claim. |
-| Reference Baseline | Accepted T374 S12/S14 evidence; S15 replay and regression diagnosis; VADP registration/configuration routes; default-PC/AT profile leaf contract; primary CRTC write-only port boundary already used by S11--S13. |
-| Candidate Proposal | [IBM PC/AT 5170 selected-device functional closure](../proposals/m5-5170-selected-device-functional-closure.md). |
-| Files And ABI Surface | `src/vm/profile/default_profile/pc_at_profile.c` plus cohesive default-PC/AT composition and existing CGA/EGA topology tests, T374 evidence/history/index/status. The descriptor direction data is the sole expected production repair; no public interface changes. |
-| Applicable Rules | Task Reading Set; execution corrective-S, evidence and similar-issue rules; architecture/coding/documentation rules; source policy. VADP owns registration and the VM profile owns its declared selectable port surface; their directions must agree. |
-| Verification | Sweep all VADP leaf-direction rows, VADP registration/configuration sites and `core_machine_port_has_read/write` tests; rebuild/replay default-PC/AT composition, Model-339 CGA topology, EGA CRTC boundary and focused CGA port tests; documentation governance and diff check. |
-| Expected Markers | The formerly failing default-PC/AT composition smoke passes; `3D4h` has no read handler in default EGA or Model-339 CGA; EGA Mode/Color retained reads and Model-339 write-only behavior continue to pass. |
-| Asset Needs | None. No ROM, firmware, guest media, source import, local asset copy or runtime artifact is allowed. |
-| Reporting Requirements | Record the exact descriptor/handler sweep, before/after failing/passing proof, retained EGA and Model-339 behavior, pushed P1, coordinator acceptance and unchanged timing/L3 transfers. |
-| Stop Conditions | Stop if reconciling declaration and handler requires a new EGA behavior, a public ABI change, an uncertain hardware read-value inference, or changes a Model-339 selected route. |
-| Exit Criteria | One descriptor truth matches actual VADP handlers, all affected default-EGA/CGA tests pass, the regression has a focused prevention proof, and no non-goal is introduced. |
-| Original Owner Request | Fully implement selected-machine functional gaps before timing/L3, use plain `.img` only with unsupported 765 Deleted/Scan fidelity remaining explicit TODO, preserve external assets outside Git, and push completed Git work. |
-| Similar-Issue Sweep | Enumerate every descriptor VADP leaf and every VADP registration/configuration route plus all direction assertions, classifying each mismatch as fixed or excluded by its configured profile. |
-
 ## Current Technical Baseline
 
 - **Current developer artifact:** T369 S4 `vm-0-5-0369` /
@@ -42,7 +21,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T374 S15 | P1 `d4d03b00` audits selected PIC/PIT/DMA/RTC function, preserves timing transfers, and identifies the default-EGA VADP direction regression for corrective repair. [Audit evidence](../etc/evidence/t374-s15-model339-platform-controller-functional-audit.md). |
+| T374 S16 | P1 `c6137377` reconciles the default-EGA VADP `3D4h` declaration with actual write-only registration; default-PC/AT, Model-339 CGA and EGA regressions pass. [Repair evidence](../etc/evidence/t374-s16-default-ega-vadp-direction-repair.md). |
 | T373 | Closed at `06246a8e`: S1--S4 freeze the three-machine source-labelled capability ledger and exact functional/timing/current-product receivers. **5170, DeskPro Model 40 and PC/XT 5160-268 L3 are not ready.** The next candidate is 5170 selected-device functional closure. [Closure audit](../etc/evidence/t373-s4-task-closure-audit.md). |
 | T372 | Closed at `3f56c72c`: S1--S8 establish that Model 339 has selected logical ownership and deterministic ordering, but lacks selected-device functional closure and source-backed board/phase timing. **5170 model-L3 is not ready.** [Closure audit](../etc/evidence/t372-s8-task-closure-transfer-audit.md). |
 | T370 | Closed at `77a73c04`: S1--S5 reconciled all selected Model-339 device-service owners and transferred unavailable duration to phase refinement; **5170 model-L3 is not ready**. [Closure audit](../etc/evidence/t370-s5-planar-cga-transfer-audit.md). |
