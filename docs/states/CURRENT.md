@@ -2,27 +2,6 @@
 
 ## Current Work
 
-## M5 T372 S7 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation; T372 S6 accepted at `471ac31a`. |
-| Admission And Approval | Owner directs that external reference use continue through bounded bridge differential debugging, not whole-machine 86Box startup; existing owner-local Bochs/Bochx material remains outside Git. |
-| Objective | Qualify the existing optional Bochx/Bochs paired-step path for one media-free, BIOS-free CPU-state microprobe, or record its exact non-admission, so it can support later divergence diagnosis without blocking L3 implementation. |
-| Non-goals | No 86Box execution, whole-machine boot, BIOS/ROM/guest-media use, imported Bochs-derived code, product/default-build dependency, device/platform oracle, timing scalar, hardware claim, or 5170 L3 closure. |
-| Reference Baseline | T372 S1--S6, differential-debug policy, Bochx local experiment gate, CPU verification detail, source-policy containment, and the owner-provided external Bochs/Bochx corpus. |
-| Candidate Proposal | [IBM PC/AT 5170 model-L3 closure audit](../proposals/m5-l3-machine-closure-audit.md). |
-| Files And ABI Surface | Ignored owner-local manifest, external reference source/patch/build/trace only; T372 evidence may describe neutral qualification result but never local paths, protected identifiers, hashes, source bytes, or generated traces. |
-| Applicable Rules | Differential-debug bounded-experiment and cleanup policy; owner-approved local research containment; source-policy provenance boundary; project-owned trace contract; documentation governance. |
-| Verification | Manifest schema and identity/budget validation; one bounded real-mode CPU microprobe feasibility check; instruction, wall-clock, no-progress, ring and raw-trace budget review; process cleanup; no-tracked-asset sweep; documentation governance. |
-| Expected Markers | No product marker/artifact; at most a local research manifest-check marker and neutral evidence; no external bridge in a default build and no timing or L3 result. |
-| Asset Needs | Existing owner-local Bochs 2.6-compatible source and historical Bochx patch corpus only; no firmware or guest media. |
-| Reporting Requirements | Report bridge feasibility, declared comparison boundary, containment and cleanup result; state that CPU stepping cannot validate POST, BIOS, disk, PIC/PIT, device initialization or platform timing. |
-| Stop Conditions | Stop on missing provenance/patch compatibility, inability to bound or clean the run, source/asset leakage, any need for firmware/media, or any attempt to treat the reference as a platform or timing oracle. |
-| Exit Criteria | P1 records a bounded bridge qualification/non-admission result, complete budget/cleanup disposition and exact later diagnostic use; all external material stays outside Git. |
-| Original Owner Request | Continue toward comprehensive L3 before Windows 3.1; use reference implementations through bridge-style differential debugging without making a whole-machine external emulator a blocker. |
-| Similar-Issue Sweep | Sweep bridge/default-build isolation, manifest provenance, all budgets, trace cleanup, CPU-versus-platform oracle boundary, local-path/hash leakage and every S1 physical residual. |
-
 ## Current Technical Baseline
 
 - **Current developer artifact:** T369 S4 `vm-0-5-0369` /
@@ -42,7 +21,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T372 S6 | P1 `9330c7f6` records non-admission of the external reference runtime after no usable end-to-end output; no trace, scalar or hardware claim is accepted. **5170 model-L3 remains open.** [Non-admission record](../etc/evidence/t372-s6-reference-runtime-nonadmission.md). |
+| T372 S7 | P1 `fb8f16fd` validates the isolated Bochx/Bochs bridge gate but rejects direct execution of its retired adapter; no external bridge, scalar or hardware claim is accepted. **5170 model-L3 remains open.** [Bridge qualification](../etc/evidence/t372-s7-bochx-bridge-qualification.md). |
 | T370 | Closed at `77a73c04`: S1--S5 reconciled all selected Model-339 device-service owners and transferred unavailable duration to phase refinement; **5170 model-L3 is not ready**. [Closure audit](../etc/evidence/t370-s5-planar-cga-transfer-audit.md). |
 | T369 | Closed at `08a64bea`: S1--S4 lock and audit the 5170 Model-339 bus-stage input, logical 80286 DMA handoff and selected FDC/PIC visibility. Board waits, physical waveforms, device service, phase refinement and final 5170 L3 remain exact ordered transfers; **5170 model-L3 is not ready**. [Closure audit](../etc/evidence/t369-s4-pcat-bus-stage-closure-audit.md). |
 | T368 | Closed at `4da84be8`: completes the source-labelled 80286 successful-retirement CPU ledger, with exact values or declared source-undefined transfers. The next Queue receiver is bus-timed PC/AT operation; CPU waits, bus/device timing and IBM 5170 L3 remain open. [Closure audit](../etc/evidence/t368-s7-80286-retirement-closure-audit.md). |

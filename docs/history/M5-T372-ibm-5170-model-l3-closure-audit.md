@@ -69,4 +69,5 @@ S7's [qualification record](../etc/evidence/t372-s7-bochx-bridge-qualification.m
 accepts the isolated bounded-experiment gate but finds that the historical
 paired-step adapter depends on retired NXVM interfaces.  A later optional
 developer-tool migration may restore it; no bridge execution, platform fact,
-timing scalar or Model-339 L3 claim is admitted here.
+timing scalar or Model-339 L3 claim is admitted here. S7 is accepted at
+`fb8f16fd`.
