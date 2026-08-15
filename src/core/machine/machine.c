@@ -2655,12 +2655,14 @@ static C_INT core_machine_80286_source_instruction_cost(core_machine *machine,
              ((data->opcodes[prefixes + 2u] >> 3u) & 7u) == 4u) ||
             (core_machine_control_stack_is_protected(data) &&
              ((data->opcodes[prefixes + 1u] == 0x00u &&
-               (((data->opcodes[prefixes + 2u] >> 3u) & 7u) == 4u ||
+               (((data->opcodes[prefixes + 2u] >> 3u) & 7u) <= 1u ||
+                ((data->opcodes[prefixes + 2u] >> 3u) & 7u) == 4u ||
                 ((data->opcodes[prefixes + 2u] >> 3u) & 7u) == 5u)) ||
               data->opcodes[prefixes + 1u] == 0x02u ||
               data->opcodes[prefixes + 1u] == 0x03u)))) {
-            *out_ticks = data->opcodes[prefixes + 1u] == 0x01u ?
-                (data->flagMem ? 3u : 2u) : (data->flagMem ? 16u : 14u);
+            *out_ticks = data->opcodes[prefixes + 1u] == 0x02u ||
+                data->opcodes[prefixes + 1u] == 0x03u ?
+                (data->flagMem ? 16u : 14u) : (data->flagMem ? 3u : 2u);
             return 1;
         }
         *out_ticks = CORE_MACHINE_SOURCE_UNALLOCATED_TICKS;

@@ -707,6 +707,45 @@ static C_INT timing_80286_smsw(C_VOID)
     return failed;
 }
 
+static C_INT timing_80286_sldt_str(C_VOID)
+{
+    static const type_unsigned_8 sldt_register[] = { 0x0fu,0x00u,0xc0u };
+    static const type_unsigned_8 str_direct[] = { 0x0fu,0x00u,0x0eu,0x00u,0x10u };
+    static const type_unsigned_8 sldt_indexed[] = { 0x0fu,0x00u,0x42u,0x01u };
+    type_unsigned_16 selector;
+    timing_80286_state state = { 0u, 0u, 0u };
+    core_machine *machine = STD_NULL;
+    C_INT failed = !timing_80286_prepare(&machine, &state) ||
+        !timing_80286_boot_protected(machine, &state);
+
+    if (!failed) failed |= core_machine_memory_write(machine, 0x2000u,
+        sldt_register, sizeof(sldt_register)) != TYPE_STATUS_OK ||
+        ((machine->executor_cpu.data.ldtr.selector = 0x0010u),
+        (machine->executor_cpu.data.eax = 0u), 0) ||
+        ((test_core_machine_fixture_resume_after_halt_at(machine, 0u)),
+        !timing_80286_run(machine, &state, 1u, 2u)) ||
+        (machine->executor_cpu.data.eax & 0xffffu) != 0x0010u;
+    if (!failed) failed |= core_machine_memory_write(machine, 0x2000u,
+        str_direct, sizeof(str_direct)) != TYPE_STATUS_OK ||
+        ((machine->executor_cpu.data.tr.selector = 0x0008u),
+        (machine->elapsed_ticks = 0u), (state.advanced_ticks = 0u), 0) ||
+        ((test_core_machine_fixture_resume_after_halt_at(machine, 0u)),
+        !timing_80286_run(machine, &state, 1u, 3u)) ||
+        core_machine_memory_read(machine, 0x4000u, &selector, sizeof(selector)) !=
+        TYPE_STATUS_OK || selector != 0x0008u;
+    if (!failed) failed |= core_machine_memory_write(machine, 0x2000u,
+        sldt_indexed, sizeof(sldt_indexed)) != TYPE_STATUS_OK ||
+        ((machine->executor_cpu.data.ldtr.selector = 0x0010u),
+        (machine->executor_cpu.data.ebp = 0x1000u),
+        (machine->executor_cpu.data.esi = 0u), (machine->elapsed_ticks = 0u),
+        (state.advanced_ticks = 0u), 0) || ((test_core_machine_fixture_resume_after_halt_at(
+        machine, 0u)), !timing_80286_run(machine, &state, 1u, 3u)) ||
+        core_machine_memory_read(machine, 0x4001u, &selector, sizeof(selector)) !=
+        TYPE_STATUS_OK || selector != 0x0010u;
+    core_machine_destroy(machine);
+    return failed;
+}
+
 static C_INT timing_80286_memory(C_VOID)
 {
     static const type_unsigned_8 direct_read[] = { 0x8bu, 0x0eu, 0x00u, 0x10u };
@@ -953,6 +992,7 @@ C_INT main(C_VOID)
     if (timing_80286_lar()) return 14;
     if (timing_80286_lsl()) return 15;
     if (timing_80286_smsw()) return 16;
+    if (timing_80286_sldt_str()) return 17;
     if (timing_80286_memory()) return 2;
     if (timing_80286_control_ports()) return 3;
     if (timing_80286_boundaries()) return 4;
