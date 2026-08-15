@@ -251,3 +251,4 @@ S29 assigns Appendix-B fixed register `2` and memory `3` clocks to successful
 unprefixed `0F 01 /4 SMSW r/m16` retirement in its documented real/protected
 modes.  Its [timing evidence](../etc/evidence/t366-s29-80286-smsw-timing.md)
 retains prefix, fault, delivery, bus and physical-time boundaries.
+S29 is accepted at `d65d92d8`.
