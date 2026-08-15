@@ -6,28 +6,7 @@
 
 | Task | Compact progress |
 | --- | --- |
-| T375 S21 | Accepted P1 `212306df`: FDC seek/recalibrate now retain per-drive position and delay IRQ6/Sense-Interrupt completion by 24,000 ticks per track. [Evidence](../etc/evidence/t375-s21-fdc-seek-cadence.md). |
-
-## M5 T375 S22 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner-approved T375 continuation; IBM PC/AT keyboard primary material provides default typematic values and +/-20 percent tolerance. |
-| Objective | Bind Model-339 only to IBM nominal 500-ms/10-cps typematic values and prove the resulting ticks lie inside the documented tolerance. |
-| Non-goals | No exact ACK latency, no generic PC/AT change, no host input delay, no 8042 clock claim, no final L3 claim. |
-| Reference Baseline | Model-339 descriptor currently leaves typematic zero; core KBC already owns delayed repeat. |
-| Candidate Proposal | [IBM PC/AT 5170 board and device phase-timing closure](../proposals/m5-5170-board-phase-timing-closure.md). |
-| Files And ABI Surface | Model-339 descriptor, profile smoke, evidence/index/current. |
-| Applicable Rules | Execution lifecycle, profile-local ownership, source-policy and documentation rules. |
-| Verification | Model-339 profile smoke proves 4,000,000 and 800,000 nominal ticks and their +/-20 percent bounds; documentation governance passes. |
-| Expected Markers | `M5:T375:S22:MODEL339-TYPEMATIC:OK`. |
-| Asset Needs | None. |
-| Reporting Requirements | Report nominal/range distinction and retained ACK boundary. |
-| Stop Conditions | Stop if a range is represented as an exact physical completion. |
-| Exit Criteria | Model-339 selects IBM nominal typematic only, preserves other profiles and zero ACK delay. |
-| Original Owner Request | Continue L3 accuracy with primary sources first and bounded reference use only. |
-| Similar-Issue Sweep | Default PC/AT, Model-339 contract copy, KBC initial/repeat/response fields and profile tests. |
+| T375 S22 | Accepted P1 `a1c67ed3`: Model-339 now binds IBM's nominal 500-ms/10-cps typematic values with retained +/-20-percent interpretation; command-response timing remains an upper-bound transfer. [Evidence](../etc/evidence/t375-s22-model339-typematic.md). |
 
 ## Current Technical Baseline
 
