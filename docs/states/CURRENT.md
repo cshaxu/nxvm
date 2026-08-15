@@ -2,6 +2,27 @@
 
 ## Current Work
 
+## M5 T374 S6 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; T374 remains the latest open numeric task and S6 follows accepted S5. |
+| Admission And Approval | The owner approved completing Model-339 selected-device functional gaps before timing/L3 closure and authorized continuing T374. S4/S5 establish the FDC controller contract and its ready-attention owner. |
+| Objective | Reconcile the complete 8272A/uPD765 command table against the current FDC dispatcher, selected Model-339 compatibility boundary and generic media contract; select the earliest source-backed repair or explicit prerequisite sequence for every absent or over-admitted command. |
+| Non-goals | No command implementation in this audit; no controller/drive timing, rotation, flux/index model, DMA service timing, board wait, media import, ROM, ATA/HDC, MFM/ST-506, EGA/VGA, AUX, generic-product support expansion, or Model-339 L3 claim. |
+| Reference Baseline | T374 S4/S5 FDC evidence; Intel 8272A and NEC uPD765 primary command tables; `core_machine_fdc_command_length()` and `core_machine_fdc_execute()`; core media provider capability/operation boundary; selected 1.44 MB compatibility remains aftermarket only. |
+| Candidate Proposal | [IBM PC/AT 5170 selected-device functional closure](../proposals/m5-5170-selected-device-functional-closure.md). |
+| Files And ABI Surface | Evidence/history/index and `docs/states/CURRENT.md` only for the audit P; FDC, media and profile code/tests are read-only inspection surfaces. A separately admitted repair packet names implementation files and ABI. |
+| Applicable Rules | `docs/README.md` Task Reading Set; `docs/rules/EXECUTION.md` implementation/P lifecycle, evidence and similar-issue rules; `docs/rules/DOCUMENT.md`; `CONTRIBUTING.md`; source policy. Architecture/coding authorities govern a later code change, not this documentation-only audit. |
+| Verification | Produce a command-table-to-dispatcher/media-capability matrix; inspect every `core_machine_fdc_command_length()`/execute case, invalid fallback, FDC config construction and relevant media operations; run unchanged focused FDC/Model-339 topology tests through Git-Bash CMake/Ninja; run documentation governance and `git diff --check`. |
+| Expected Markers | A source-labelled classification for every 8272A/uPD765 command: complete, source-compatible invalid, missing owner-local behavior, or blocked by an explicit media/profile prerequisite. No enhanced-controller command is silently attributed to Model 339. |
+| Asset Needs | None. Controller manuals are read only; no ROM, firmware, guest media, trace, external implementation or local asset is added. |
+| Reporting Requirements | Report command/owner disposition, profile-identity finding, selected repair or transfer, focused baseline replay, pushed P1, coordinator acceptance and next functional receiver. |
+| Stop Conditions | Stop and transfer if selected hardware cannot be identified to controller-command level, a command requires unadmitted media metadata/operation or profile-capability design, or source conflict remains. Do not implement a guessed subset. |
+| Exit Criteria | Evidence classifies every command and selects only an evidence-backed, bounded next receiver; unchanged focused regressions pass; no command/timing/L3 overclaim remains. |
+| Original Owner Request | Implement each selected machine's functional gaps before timing/L3 closure, treating exact documentation as authority and reference emulators only as fallback; use CMake through Git Bash for local builds. |
+| Similar-Issue Sweep | Compare all command opcodes, modifier-bit handling, result/IRQ/DRQ/reset paths, current `VERSION` behavior, every media provider operation/capability, descriptor bindings and tests so unsupported controller generation or command semantics cannot remain implicit. |
+
 ## Current Technical Baseline
 
 - **Current developer artifact:** T369 S4 `vm-0-5-0369` /

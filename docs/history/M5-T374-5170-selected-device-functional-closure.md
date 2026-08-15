@@ -56,3 +56,10 @@ edge reaches the existing IRQ6 / `Sense Interrupt Status` contract, and media
 generation remains DIR disk-change only. Focused FDC and Model-339 topology
 regressions pass. Controller/drive/board timing and remaining FDC commands
 remain open in T374 and the later timing candidate.
+
+### S6: FDC command-capability audit
+
+S6's [command-capability audit](../etc/evidence/t374-s6-fdc-command-capability-audit.md)
+classifies all fifteen 8272A commands and the current FDC dispatcher. It
+selects removal of the over-admitted enhanced `VERSION` command as S7, while
+recording Deleted/Scan and parameter/media gaps as explicit later T374 work.
