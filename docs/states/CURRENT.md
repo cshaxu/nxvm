@@ -2,28 +2,6 @@
 
 ## Current Work
 
-
-## M5 T374 S15 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation; T374 S14 is accepted and its compact progress row is the sole retained open-task state. |
-| Admission And Approval | The owner approved continued T374 functional closure before board timing/L3, with selected devices completed or explicitly transferred. This S audits only the selected Model-339 PIC, PIT, DMA and RTC/CMOS functional contract so the next repair is evidence-bounded. |
-| Objective | Produce one source-labelled Model-339 platform-controller functional matrix for PIC, PIT, DMA and RTC/CMOS: selected ports/registers, reset, command/error/state, IRQ/DRQ acknowledgement and firmware-visible route; identify the earliest concrete functional gap or truthfully transfer none. |
-| Non-goals | No controller timing value, arbitration/cadence/service phase, new device implementation, generic AT expansion, NMI source selection, ROM/media import, external firmware execution, full 5170/L3 assertion or unrelated device rewrite. |
-| Reference Baseline | T373 selected capability ledger; T374 S1 owner inventory; IBM PC/AT Technical Reference March 1986 selected controller/topology sections; current PIC/PIT/DMA/RTC owners and their focused proofs. |
-| Candidate Proposal | [IBM PC/AT 5170 selected-device functional closure](../proposals/m5-5170-selected-device-functional-closure.md). |
-| Files And ABI Surface | Documentation/evidence/history/status only unless the audit finds an owner-local functional defect and a revised packet admits a repair. Inspect `src/core/machine/{pic,pit,dma,rtc,machine}.{c,h}`, selected composition/firmware consumers and focused tests; no ABI change is pre-authorized. |
-| Applicable Rules | Task Reading Set; execution lifecycle/evidence/similar-issue rules; documentation rules; source policy for primary-reference research. Existing core owners retain register, lifecycle and publication ownership. |
-| Verification | Search all selected controller port, reset, IRQ/DRQ and firmware-consumer routes; classify every production hit; cross-check selected functional claims against the IBM reference; replay representative focused tests without media; run documentation governance and diff check. |
-| Expected Markers | A complete selected functional matrix names each owner, observable path and unclosed gap/transfer; test markers identify the retained proof; no unmeasured timing or unselected I/O source becomes implied support. |
-| Asset Needs | None. No ROM, firmware, guest media, source import, local asset copy or runtime artifact is allowed. |
-| Reporting Requirements | Record the exact manual/reference boundary, owner/caller sweep, focused replay, selected next repair or explicit transfer, pushed P1 and independent P2 acceptance. |
-| Stop Conditions | Stop and transfer if a claimed behavior needs unavailable authority, a shared lifecycle owner outside T374, a physical timing inference, or a material code repair before an evidence-backed packet revision. |
-| Exit Criteria | The selected PIC/PIT/DMA/RTC/CMOS functional surface is classified with concrete source and test routes, every gap has an earliest receiver, timing remains transferred, and documentation checks pass. |
-| Original Owner Request | Fully implement each chosen baseline machine's functional gaps before timing/L3; use sources responsibly, preserve external assets outside Git, and retain ordinary `.img` media with unsupported 765 fidelity explicitly in TODO. |
-| Similar-Issue Sweep | Sweep every selected controller's port registration, command/reset state, IRQ/DRQ publication and firmware consumer, plus all Model-339 composition bindings and focused tests; classify production hits as selected, excluded or transferred. |
-
 ## Current Technical Baseline
 
 - **Current developer artifact:** T369 S4 `vm-0-5-0369` /
@@ -43,7 +21,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T374 S14 | P1 `27ce858b` gates EGA-only CRTC `13h` from Model-339 CGA, retains EGA offset semantics and passes focused CGA/EGA proof. [Repair evidence](../etc/evidence/t374-s14-cga-ega-crtc-index-gate.md). |
+| T374 S15 | P1 `d4d03b00` audits selected PIC/PIT/DMA/RTC function, preserves timing transfers, and identifies the default-EGA VADP direction regression for corrective repair. [Audit evidence](../etc/evidence/t374-s15-model339-platform-controller-functional-audit.md). |
 | T373 | Closed at `06246a8e`: S1--S4 freeze the three-machine source-labelled capability ledger and exact functional/timing/current-product receivers. **5170, DeskPro Model 40 and PC/XT 5160-268 L3 are not ready.** The next candidate is 5170 selected-device functional closure. [Closure audit](../etc/evidence/t373-s4-task-closure-audit.md). |
 | T372 | Closed at `3f56c72c`: S1--S8 establish that Model 339 has selected logical ownership and deterministic ordering, but lacks selected-device functional closure and source-backed board/phase timing. **5170 model-L3 is not ready.** [Closure audit](../etc/evidence/t372-s8-task-closure-transfer-audit.md). |
 | T370 | Closed at `77a73c04`: S1--S5 reconciled all selected Model-339 device-service owners and transferred unavailable duration to phase refinement; **5170 model-L3 is not ready**. [Closure audit](../etc/evidence/t370-s5-planar-cga-transfer-audit.md). |
