@@ -2,27 +2,6 @@
 
 ## Current Work
 
-## M5 T375 S8 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner: user. Approval: persistent instruction to continue the approved L3 program, including use of 86Box/MAME/PCjs only as secondary sources when primary manuals leave a range or none. Scope is the selected Model-339 digital CGA clock/raster contract only. |
-| Objective | Reconcile primary IBM CGA/PC/AT documentation with the current VADP text/raster callback, determine whether a source-backed Model-339-compatible CGA time conversion and status/frame contract can be admitted, and implement it only if the complete selected behavior can be bounded. |
-| Non-goals | Do not infer physical CGA contention, composite/analog output, an unselected adapter, host display refresh, a generic AT video scalar, or a final L3 result. Do not turn reference implementation behavior into a board fact. |
-| Reference Baseline | T375 S1/S7 generic VADP-cadence finding, T374 selected CGA functional closure, the frozen Model-339 CGA-only topology, and the Model-339 board/phase proposal. |
-| Candidate Proposal | [M5 5170 board/phase timing closure](../proposals/m5-5170-board-phase-timing-closure.md). |
-| Files And ABI Surface | Primary-source/evidence record first; inspect Model-339 descriptor, VADP clock/raster/status implementation and focused CGA tests. Code and profile changes are admitted only by the source result and must use existing clock/time ownership. |
-| Applicable Rules | Source policy requires no unreviewed third-party import; IBM/manual facts lead. Architecture preserves core scheduler/VADP ownership and VM profile selection; coding forbids a device-local timer/test path; documentation indexes source and transfer evidence. No exception requested. |
-| Verification | Build a cited source-to-current-route matrix for oscillator, CRTC mode geometry, status/retrace and frame cadence; sweep all VADP advance/status/config consumers; if implementation is admitted, prove rational conversion/reset/status effects with focused tests. Otherwise prove a precise reference-exhausted transfer. Run documentation governance. |
-| Expected Markers | `M5:T375:S8:MODEL339-CGA-CLOCK-RECONCILIATION:OK` and documentation-governance success. |
-| Asset Needs | Consult public primary manuals only; no firmware, media, external source code or reference executable is imported. |
-| Reporting Requirements | Record edition/page/source status, model-versus-adapter boundary, current implementation mapping, exact admitted or rejected scalar, test evidence and remaining physical transfers. |
-| Stop Conditions | Stop before implementation if selected Model-339 adapter/monitor or source-to-core conversion cannot be bounded, or if a result requires a physical contention/waveform measurement or a scope/proposal change. |
-| Exit Criteria | CGA oscillator/raster/status facts and current routes are fully reconciled; any implementation has a source-backed owner/reset/proof; otherwise its explicit transfer names the missing fact; no generic or L3 claim is made. |
-| Original Owner Request | Continue toward comprehensive L3 before Windows 3.1, using 86Box/MAME/PCjs only as secondary cross-checks where primary authority is incomplete. |
-| Similar-Issue Sweep | Cover Model-339 versus default-PC/AT descriptors, VADP text/graphics/status/raster/reset/copy routes, clock-plan consumers, all tests and every direct advance/status call. |
-
 ## Current Technical Baseline
 
 - **Current developer artifact:** T369 S4 `vm-0-5-0369` /
@@ -42,7 +21,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T375 S7 | Accepted P1 `eba64b24`: complete callback/domain/service ledger confirms only PIT and RTC have Model-339 source conversions; generic cadence remains an explicit transfer rather than false timing. [Ledger](../etc/evidence/t375-s7-model339-callback-clock-ledger.md). |
+| T375 S8 | Accepted P1 `7f9200e7`: IBM CGA 3DA bit-0 buffer-access semantics are corrected without changing EGA behavior; full 6845 raster and source-derived CGA phase remain open. [Reconciliation](../etc/evidence/t375-s8-model339-cga-clock-reconciliation.md). |
 | T374 | Closed at `f742433c`: S1--S19 complete the selected Model-339 functional closure and preserve raw-IMG 765 Deleted/Control-Mark/Scan as explicit TODO debt. Board/device timing, final Model-L3, DeskPro 386, PC/XT and Windows 3.1 remain open. [Closure audit](../etc/evidence/t374-s19-task-closure-audit.md). |
 | T373 | Closed at `06246a8e`: S1--S4 freeze the three-machine source-labelled capability ledger and exact functional/timing/current-product receivers. **5170, DeskPro Model 40 and PC/XT 5160-268 L3 are not ready.** The next candidate is 5170 selected-device functional closure. [Closure audit](../etc/evidence/t373-s4-task-closure-audit.md). |
 | T372 | Closed at `3f56c72c`: S1--S8 establish that Model 339 has selected logical ownership and deterministic ordering, but lacks selected-device functional closure and source-backed board/phase timing. **5170 model-L3 is not ready.** [Closure audit](../etc/evidence/t372-s8-task-closure-transfer-audit.md). |
