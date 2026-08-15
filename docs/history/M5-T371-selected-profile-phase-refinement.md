@@ -29,6 +29,11 @@ assigns DMA/PIC/INTA composition to S3.
 S3 retains the single arbitration order and logical controller lifecycle while
 transferring physical waveforms and device-clock work to S4.
 
+### S4: selected device phase boundaries
+
+S4 retains device callback/lifecycle order and transfers all controller/board
+clock conversions to S5's replay and task transfer audit.
+
 S3 is accepted at `9c41623f`. S4 receives FDC, RTC, KBC, planar-parity and
 CGA/VADP device-clock and microstate boundaries.
 

@@ -2,6 +2,27 @@
 
 ## Current Work
 
+## M5 T371 S4 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; T371 S3 accepted at `c3b83629`. |
+| Admission And Approval | The owner-approved Model-339 phase-refinement program continues with S3's assigned selected-device microstate and clock-boundary audit. |
+| Objective | Reconcile FDC, RTC, KBC, planar-parity NMI and CGA/VADP command/state/reset/visible routes with their existing callback domains and identify every missing physical-clock mapping. |
+| Non-goals | No controller timer scalar, drive mechanics, keyboard serial delay, NMI propagation, CGA dot/retrace/contention value, device behavior change, second scheduler, 80386/8088 or Windows work. |
+| Reference Baseline | T370 device corpus, T371 S1--S3, Model-339 descriptor, FDC/RTC/KBC/VADP/NMI sources and selected IBM/Intel/Motorola/NEC authorities. |
+| Candidate Proposal | [Selected-profile model-L3 phase refinement](../proposals/m5-cycle-exact-selected-profile.md). |
+| Files And ABI Surface | S4 evidence, T371 history, Current status and evidence index only. Stop before source, ABI, CMake, test or runtime changes. |
+| Applicable Rules | One device owner/callback; source/latch/mask separation; copied display boundary; reset/finalize release; no host time; documentation/source-policy rules. |
+| Verification | Device callback/configuration/trace/reset sweep, source-to-domain matrix, selected focused-test review, documentation governance and diff check. |
+| Expected Markers | Existing FDC/RTC/KBC/parity/VADP smokes remain evidence; no new timing marker, artifact or L3 claim. |
+| Asset Needs | Public manuals and project-authored evidence only; no ROM, guest media, firmware, external code, binary or raw host trace. |
+| Reporting Requirements | State retained microstate order, every physical-clock gap and exact S5 replay/audit receiver. |
+| Stop Conditions | Stop if a result needs a guessed device rate, host pacing, new device path, second scheduler, public interface or physical-cycle claim. |
+| Exit Criteria | P1 commits an indexed selected-device phase-boundary reconciliation with exact S5 transfer and no runtime timing value. |
+| Original Owner Request | Continue in Queue order toward complete L3 before Windows 3.1; use named reference models only where authoritative manuals leave a range or no range, without treating them as IBM authority. |
+| Similar-Issue Sweep | Sweep FDC/RTC/KBC/VADP/parity initialize/advance/refresh/reset/finalize paths, Model-339 clock/config fields, timeline/trace consumers and device-focused tests. |
+
 ## Current Technical Baseline
 
 - **Current developer artifact:** T369 S4 `vm-0-5-0369` /
