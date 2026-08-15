@@ -183,3 +183,12 @@ the source-backed register `17` and memory `19 + EA + odd-word` construction.
 Its [timing evidence](../etc/evidence/t366-s21-80286-sreg-load-protected-timing.md)
 records the isolated descriptor context and retained fault boundary. S21 is
 accepted at `e71d2262`.
+
+### S22: 80286 LES/LDS timing
+
+S22 assigns the Appendix-B fixed seven-clock cost to successful unprefixed
+memory-form `C4/C5 LES/LDS r16,m16` retirement. Its
+[timing evidence](../etc/evidence/t366-s22-80286-les-lds-timing.md) proves
+real/protected direct and indexed odd/even pointer cases and retains register,
+prefix, selector/operand-fault, delivery, bus and physical-time boundaries.
+S22 is accepted at `1d3391bb`.

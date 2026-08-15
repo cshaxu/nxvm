@@ -22,3 +22,9 @@ window; the measurement counters are reset before each later case.
 The focused target emitted `M5:T357:S6:80286-INSTRUCTION-TIMING-LEDGER:OK`.
 The configured `run-current-smokes` gate, documentation governance and `git
 diff --check` passed before P1.
+
+Coordinator review of P1 `1d3391bb` confirms that the sole 80286 profile-local
+branch remains after the higher source owners and before the existing
+unallocated receiver. The `flagMem` guard and the retained LES/LDS semantic
+smokes keep non-memory forms, prefixes and every failed load outside the new
+successful-retirement clock row.
