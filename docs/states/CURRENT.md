@@ -2,27 +2,6 @@
 
 ## Current Work
 
-## M5 T375 S4 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation; T375 S3 is accepted in the compact progress row below. |
-| Admission And Approval | Owner: user, continuing the approved pre-Windows L3 program. T375 S3 identified and allocated this shared core repair; the existing T375 proposal permits shared semantic repairs at their earliest owner. |
-| Objective | Repair the shared core time-publication mechanism: a still-halted refresh must not retire retained instruction cost, and one explicit production operation must publish bounded virtual source ticks through the existing elapsed-time/scheduler path. |
-| Non-goals | No Model-339 composition source policy, host-clock conversion, run-loop pacing decision, CPU instruction-timing change, board wait/device scalar, device functional repair, raw-IMG sidecar work, ROM/media import, external-reference scalar, or final L3 claim. |
-| Reference Baseline | Accepted T375 S3 `9f6aab6d` / `4c1d98b7`, and accepted S2 Model-339 RTC/PIT profile contract. |
-| Candidate Proposal | [IBM PC/AT 5170 board and device phase-timing closure](../proposals/m5-5170-board-phase-timing-closure.md). |
-| Files And ABI Surface | `src/core/machine/machine.c`, `machine_interface.h`, possibly trace contract and one focused core-machine smoke/CMake target; indexed evidence and packet. One bounded core production operation is allowed; no test-only public API. |
-| Applicable Rules | `docs/rules/ARCHITECTURE.md`: core owns the sole mutable machine-time publisher and composition remains the future source-policy owner; evidence: one internal publication helper and no adapter guest mutation. `docs/rules/CODING.md`: explicit bounded operation and no duplicate test seam; evidence: public contract plus focused replay. `docs/rules/DOCUMENT.md`: indexed evidence only. `docs/rules/EXECUTION.md`: full P1 proof, review and acceptance. |
-| Verification | Add a focused replay proving HLT's second no-interrupt run publishes no instruction/time, explicit virtual source ticks advance the same scheduler/RTC/PIT path once, reset restores state, invalid/lifecycle inputs leave state unchanged, and existing rational-clock/timeline/HOLD focused tests still pass. Run documentation governance and `git diff --check`. |
-| Expected Markers | `M5:T375:S4:EXPLICIT-MACHINE-TIME:OK`, plus existing rational-clock, timeline and arbitration/HOLD markers. |
-| Asset Needs | No asset, host timer, ROM, media, binary, or third-party code required. |
-| Reporting Requirements | Report the precise public operation semantics, HLT correction, proof, and the explicit transfer of composition source/pacing policy. |
-| Stop Conditions | Stop and transfer if a source policy requires host-time conversion, if the existing scheduler cannot be reused without a second timing owner, if interrupt delivery requires a separate CPU timing decision, or if a compatible public operation cannot have bounded lifecycle semantics. |
-| Exit Criteria | A core production virtual-time operation is lifecycle/overflow validated and reuses the sole publication helper; a halted non-interrupt refresh publishes neither a retired instruction nor time; focused replay proves explicit scheduling/reset behavior and no test-only entry is added; Model-339 source policy remains visibly open. |
-| Original Owner Request | Owner-directed continuation: implement the current plan to full L3 precision and stop before Windows 3.1; use 86Box/MAME/PCjs only as secondary cross-checks when primary manuals do not determine an instruction timing. |
-| Similar-Issue Sweep | Inspect all `elapsed_ticks` writes, all scheduler calls, `core_machine_run` exit paths, lifecycle validation, trace publication, execution-provider time callback, CPU HLT/interrupt refresh, test fixtures and all core-machine public mutation operations. |
-
 ## Current Technical Baseline
 
 - **Current developer artifact:** T369 S4 `vm-0-5-0369` /
@@ -42,7 +21,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T375 S3 | Accepted P1 `9f6aab6d`: the audit proves HLT currently republishes retained instruction cost from the host loop; explicit production virtual-time publication is the next shared repair. [Inventory](../etc/evidence/t375-s3-model339-nonretirement-time-inventory.md). |
+| T375 S4 | Accepted P1 `91539339`: halted polling no longer re-retires instruction cost; one production virtual-time operation reuses the scheduler while Model-339 composition source policy remains open. [Evidence](../etc/evidence/t375-s4-explicit-machine-time.md). |
 | T374 | Closed at `f742433c`: S1--S19 complete the selected Model-339 functional closure and preserve raw-IMG 765 Deleted/Control-Mark/Scan as explicit TODO debt. Board/device timing, final Model-L3, DeskPro 386, PC/XT and Windows 3.1 remain open. [Closure audit](../etc/evidence/t374-s19-task-closure-audit.md). |
 | T373 | Closed at `06246a8e`: S1--S4 freeze the three-machine source-labelled capability ledger and exact functional/timing/current-product receivers. **5170, DeskPro Model 40 and PC/XT 5160-268 L3 are not ready.** The next candidate is 5170 selected-device functional closure. [Closure audit](../etc/evidence/t373-s4-task-closure-audit.md). |
 | T372 | Closed at `3f56c72c`: S1--S8 establish that Model 339 has selected logical ownership and deterministic ordering, but lacks selected-device functional closure and source-backed board/phase timing. **5170 model-L3 is not ready.** [Closure audit](../etc/evidence/t372-s8-task-closure-transfer-audit.md). |
