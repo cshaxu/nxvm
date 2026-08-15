@@ -62,6 +62,7 @@ struct vm_session {
     vm_session_fault_outcome fault_outcome;
     vm_session_control_state control;
     vm_session_config retained_config;
+    vm_session_virtual_time_source virtual_time_source;
     vm_session_boot_preference boot_preference;
     C_CHAR fdd_image_path[1024];
     C_CHAR hdd_image_path[1024];

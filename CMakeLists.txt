@@ -130,6 +130,9 @@ target_link_libraries(vm-session-profile-smoke PRIVATE vm-composition)
 add_executable(vm-session-reconfigure-smoke
     tests/products/nxvm_session_reconfigure_smoke.c)
 target_link_libraries(vm-session-reconfigure-smoke PRIVATE vm-composition)
+add_executable(vm-session-virtual-time-s6-smoke
+    tests/products/vm_session_virtual_time_s6_smoke.c)
+target_link_libraries(vm-session-virtual-time-s6-smoke PRIVATE vm-composition)
 
 target_link_libraries(core-machine-contract-smoke PRIVATE core-machine)
 
@@ -886,6 +889,7 @@ set(VM_COMPOSITION_SOURCES
     src/vm/composition/session/fault.c
     src/vm/composition/session/execution.c
     src/vm/composition/session/runner.c
+    src/vm/composition/session/virtual_time.c
     src/vm/composition/session/provider_lifecycle.c
     src/vm/composition/session/machine_devices.c
     src/vm/composition/session/profile_firmware.c
@@ -3150,6 +3154,7 @@ set(PROJECT_T345_S4_RESIDUAL_DIRECT_ENTRIES
     "vm-composition|src/vm/composition/session/fault.c|vm-composition"
     "vm-composition|src/vm/composition/session/execution.c|vm-composition"
     "vm-composition|src/vm/composition/session/runner.c|vm-composition"
+    "vm-composition|src/vm/composition/session/virtual_time.c|vm-composition"
     "vm-composition|src/vm/composition/session/provider_lifecycle.c|vm-composition"
     "vm-composition|src/vm/composition/session/machine_devices.c|vm-composition"
     "vm-composition|src/vm/composition/session/profile_firmware.c|vm-composition"

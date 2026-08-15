@@ -13,6 +13,18 @@ typedef enum vm_session_profile_kind {
     VM_SESSION_PROFILE_IBM_5170_MODEL_339
 } vm_session_profile_kind;
 
+/* Supplies source ticks already selected and converted by VM composition.
+ * The caller retains context ownership for the session lifetime. */
+typedef type_status (*vm_session_virtual_time_source_next)(C_VOID *context,
+    type_unsigned_64 *out_source_ticks);
+typedef C_VOID (*vm_session_virtual_time_source_reset)(C_VOID *context);
+
+typedef struct vm_session_virtual_time_source {
+    vm_session_virtual_time_source_next next;
+    vm_session_virtual_time_source_reset reset;
+    C_VOID *context;
+} vm_session_virtual_time_source;
+
 typedef struct vm_session_config {
     vm_session_profile_kind profile_kind;
     STD_SIZE_T memory_bytes;
@@ -23,6 +35,7 @@ typedef struct vm_session_config {
     C_INT boot_hdd;
     core_machine_cpu_profile cpu_profile;
     core_machine_fpu_profile fpu_profile;
+    const vm_session_virtual_time_source *virtual_time_source;
 } vm_session_config;
 
 typedef struct vm_session vm_session;

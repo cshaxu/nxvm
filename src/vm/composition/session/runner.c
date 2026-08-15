@@ -8,6 +8,7 @@
 #include "vm/composition/session/session.h"
 #include "vm/composition/session/control.h"
 #include "vm/composition/session/runner.h"
+#include "vm/composition/session/virtual_time.h"
 #include "vm/machine/debug.h"
 
 /* A normal quantum bounds host control latency without copying the text frame
@@ -80,8 +81,17 @@ C_VOID vm_session_runner_run(vm_session *session)
         if (result.reason == CORE_MACHINE_STOP_REQUESTED) {
             vm_session_control_stop(control);
         }
-        if (result.reason == CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) {
-            core_platform_sleep_milliseconds(1u);
+        if (result.reason == CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT &&
+            !STD_ATOMIC_LOAD(&control->stepRequested)) {
+            C_INT advanced = 0;
+            type_status time_status = vm_session_virtual_time_on_waiting(
+                session, &result, &advanced);
+
+            if (time_status != TYPE_STATUS_OK) {
+                vm_session_control_stop(control);
+            } else if (!advanced) {
+                core_platform_sleep_milliseconds(1u);
+            }
         }
         if (STD_ATOMIC_EXCHANGE(&control->stepRequested, TYPE_FALSE)) {
             vm_session_control_request_pause(control, VM_SESSION_PAUSE_STEP);

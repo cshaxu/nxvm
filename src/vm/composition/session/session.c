@@ -360,7 +360,17 @@ C_INT vm_session_create(const vm_session_config *config, vm_session **out_sessio
         return TYPE_STATUS_FAULT;
     }
     if (config != STD_NULL) {
+        if (config->virtual_time_source != STD_NULL &&
+            config->virtual_time_source->next == STD_NULL) {
+            STD_FREE(session);
+            return TYPE_STATUS_INVALID_ARGUMENT;
+        }
         session->retained_config = *config;
+        if (config->virtual_time_source != STD_NULL) {
+            session->virtual_time_source = *config->virtual_time_source;
+            session->retained_config.virtual_time_source =
+                &session->virtual_time_source;
+        }
         if (!session->profile->hdc_present && (config->hdd_image != STD_NULL ||
             config->create_hdd_cylinders != 0u || config->boot_hdd)) {
             STD_FREE(session);

@@ -2,6 +2,27 @@
 
 ## Current Work
 
+## M5 T375 S6 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner: user. Approval: persistent instruction to continue implementing the current L3 plan, reaffirmed in this session; scope limited to the S5-selected composition virtual-time boundary. No source/media exception is needed. |
+| Objective | Bind an injected, production VM-session virtual-time source to the Model-339 composition path, and use a nonzero source-tick batch only after the core reports `WAITING_FOR_INTERRUPT` while the runner remains active and not completing a single-step pause. |
+| Non-goals | Do not derive guest time from host sleep, add a platform monotonic clock, claim timer/phase/Model-339 L3 closure, change CPU-retirement accounting, or add a test-only public injection API. |
+| Reference Baseline | T375 S4 explicit core machine-time contract (`91539339`, accepted `2eedff53`) and T375 S5 source-policy selection (`5832334e`, accepted `d27b0e5a`). |
+| Candidate Proposal | [M5 5170 board/phase timing closure](../proposals/m5-5170-board-phase-timing-closure.md); S5 policy evidence selects the session-owned injected provider contract. |
+| Files And ABI Surface | `src/vm/composition/session/session_interface.h`, session storage, reset and runner paths, a composition-private virtual-time helper, focused product/composition smoke target, evidence index and CURRENT status only. The session configuration gains a production source descriptor; its caller-owned context must outlive the session. |
+| Applicable Rules | Architecture layering: source selection remains VM composition-owned and calls the core only through `core_machine_advance_time`; coding/lifecycle rules require explicit ownership, reset and failure behavior; source policy forbids host sleep as time. Evidence records the exact call gates and proof. No exception requested. |
+| Verification | Configure and build the focused smoke; prove a supplied nonzero batch reaches the core time API exactly once, zero/absent source does not advance, a reset invokes the provider rebase callback, and the runner-facing helper rejects a non-waiting result or inactive control state. Static runner review proves the single-step pause excludes source consumption. Run documentation governance. |
+| Expected Markers | `M5:T375:S6:VIRTUAL-TIME-SOURCE:OK` and documentation-governance success. |
+| Asset Needs | None. No ROM, guest medium, or host-duration source is used. |
+| Reporting Requirements | Record source lifetime, activation/reset/failure semantics, exact focused proof and remaining host-source transfer in indexed evidence. Report the implementation P and later independent acceptance P concisely. |
+| Stop Conditions | Stop for a required host-clock semantic decision, an ABI/lifetime conflict that cannot be bounded here, or a discovered need to change time authority beyond S5; otherwise transfer host source/rate policy to later S. |
+| Exit Criteria | A caller can configure a non-test-only session source; only active, non-step `WAITING_FOR_INTERRUPT` processing can consume it; one nonzero source batch calls core explicit time once; reset rebases it; defaults remain non-advancing; focused proof and governance pass; no L3 claim is made. |
+| Original Owner Request | Continue the current task plan toward L3, and specifically avoid pure test APIs when clarifying direct injection versus native input boundaries. |
+| Similar-Issue Sweep | Inspect all session creation paths, reset paths and runner wait branches; retain no alternate direct time advancement or host-sleep-derived guest clock. |
+
 ## Current Technical Baseline
 
 - **Current developer artifact:** T369 S4 `vm-0-5-0369` /
