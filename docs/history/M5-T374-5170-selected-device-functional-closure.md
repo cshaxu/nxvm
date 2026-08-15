@@ -126,3 +126,13 @@ unselected input path. It selects no synthetic register repair.
 S14's [index-gate evidence](../etc/evidence/t374-s14-cga-ega-crtc-index-gate.md)
 rejects EGA-only CRTC `13h` for Model-339 CGA while retaining the EGA offset
 route. Geometry, light pen and timing remain open.
+
+### S15: platform-controller functional audit
+
+S15's [platform-controller functional audit](../etc/evidence/t374-s15-model339-platform-controller-functional-audit.md)
+classifies the selected PIC, PIT, DMA and RTC/CMOS register, reset,
+IRQ/DRQ and firmware-consumer routes without assigning service timing. Its
+focused controller replay passes, while the generic default-PC/AT composition
+smoke exposes a VADP profile-leaf direction contradiction introduced by the
+accepted S12 preservation claim. The next bounded corrective S must reconcile
+that generic EGA descriptor/handler assertion; 5170 timing and L3 remain open.
