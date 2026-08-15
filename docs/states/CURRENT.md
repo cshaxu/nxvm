@@ -2,27 +2,6 @@
 
 ## Current Work
 
-## M5 T374 S1 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | New; T373 is closed and the owner-approved next Queue candidate is the IBM PC/AT 5170 selected-device functional closure. |
-| Admission And Approval | The owner approved continuing the ordered three-baseline L3 program in single-agent mode, with Model 339 selected-device functionality preceding board/device timing. |
-| Objective | Inventory the actual Model-339 selected-device production owners, registers/state machines, reset/error/cancellation paths, IRQ/DRQ routes, caller/consumer paths and focused tests; turn the T373 partial classifications into bounded implementation work without assigning timing. |
-| Non-goals | No implementation, timing scalar, board wait, generic PC/AT expansion, EGA/VGA, AUX/mouse, ATA/HDC, MFM/ST-506, ROM/media import, reference-emulator measurement, or Model-339 L3 claim. |
-| Reference Baseline | T373 S3 classified ledger; T373 S4 closure audit; [T374 proposal](../proposals/m5-5170-selected-device-functional-closure.md); Model-339 descriptor and T366--T372 transfer evidence. |
-| Candidate Proposal | [IBM PC/AT 5170 selected-device functional closure](../proposals/m5-5170-selected-device-functional-closure.md). |
-| Files And ABI Surface | T374 S1 inventory evidence, history progress, `docs/etc/README.md`, and `docs/states/CURRENT.md` only; read production/test/build sources but change no runtime, ABI, profile, test, ROM, or media surface. |
-| Applicable Rules | `docs/README.md` Task Reading Set; `docs/rules/EXECUTION.md` task/P lifecycle and evidence rules; `docs/rules/DOCUMENT.md`; `CONTRIBUTING.md`; `docs/design/ARCHITECTURE.md`; `docs/design/CODING.md`; `docs/rules/ARCHITECTURE.md`; `docs/rules/CODING.md`; source policy. |
-| Verification | Inspect the Model-339 descriptor, every selected core device owner and consumer route, existing focused tests and CMake registrations; perform static route/caller sweeps; produce a per-device register/state/reset/IRQ-DRQ/consumer/test/gap matrix and run documentation governance plus `git diff --check`. |
-| Expected Markers | One indexed, source-linked functional inventory identifies the earliest shared or profile-selected implementation owner for every Model-339 partial capability and separately lists timing-only questions for the later 5170 timing task. |
-| Asset Needs | None. Existing source, tests and retained documentation evidence only; external ROMs/media remain out of scope and unmodified. |
-| Reporting Requirements | Report initial owner-boundary confirmation, selected-surface inventory, every source/test gap, focused verification, pushed P1, coordinator acceptance and the next repair S. |
-| Stop Conditions | Stop and transfer if a missing function is not selected by Model 339, needs primary source selection not in the ledger, requires ROM/media, or is timing-only; do not infer a functional contract from a generic descriptor or test name. |
-| Exit Criteria | Every selected Model-339 capability has one concrete source owner, observable-state/route/test disposition and earliest functional receiver; generic-only capability is excluded; later timing questions are explicit; documentation checks pass. |
-| Original Owner Request | First implement each locked machine's required functional capability and only then its board/device timing and L3 audit, while preserving external ROM assets outside Git and stopping before Windows work. |
-| Similar-Issue Sweep | Search all production source, tests, CMake and retained Model-339 evidence for memory/ROM/reset, PIC/PIT/DMA/RTC/NMI, 8042/keyboard, FDC/IRQ6/DMA2, CGA/VADP, profile route and firmware-service owners; classify every hit as selected, generic-only, excluded, or a later timing receiver. |
-
 ## Current Technical Baseline
 
 - **Current developer artifact:** T369 S4 `vm-0-5-0369` /
@@ -42,6 +21,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T374 S1 | P1 `135edffc` and corrective P2 `894df9aa` inventory each selected Model-339 functional owner, route, focused proof boundary and timing handoff; P2 adds a fresh Ninja target rebuild/replay. The next S must choose an evidence-backed owner-local functional repair. [Inventory](../etc/evidence/t374-s1-model339-functional-owner-inventory.md). |
 | T373 | Closed at `06246a8e`: S1--S4 freeze the three-machine source-labelled capability ledger and exact functional/timing/current-product receivers. **5170, DeskPro Model 40 and PC/XT 5160-268 L3 are not ready.** The next candidate is 5170 selected-device functional closure. [Closure audit](../etc/evidence/t373-s4-task-closure-audit.md). |
 | T372 | Closed at `3f56c72c`: S1--S8 establish that Model 339 has selected logical ownership and deterministic ordering, but lacks selected-device functional closure and source-backed board/phase timing. **5170 model-L3 is not ready.** [Closure audit](../etc/evidence/t372-s8-task-closure-transfer-audit.md). |
 | T370 | Closed at `77a73c04`: S1--S5 reconciled all selected Model-339 device-service owners and transferred unavailable duration to phase refinement; **5170 model-L3 is not ready**. [Closure audit](../etc/evidence/t370-s5-planar-cga-transfer-audit.md). |
