@@ -2,9 +2,24 @@
 
 ## Current Work
 
-T366 S27 is accepted at `79ef50bb`. The next T366 S must select the next
-source-determinate 80286 successful-retirement family; physical-time and
-device-timing claims remain blocked by the wider CPU ledger.
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | T366 S28, numbered continuation implementation subtask; P1 is one complete pushed implementation/evidence delivery. |
+| Admission And Approval | The owner approved continued L3 work on 2026-08-14. T366 admits source-determinate successful protected 80286 `0F 03 /r LSL r16,r/m16` forms. |
+| Objective | Publish Intel Appendix-B fixed register 14 and memory 16 clock costs through the sole retirement owner. |
+| Non-goals | No 80386 LSL page-granularity form, real mode, prefix, memory fault, delivery, descriptor repair, bus/physical-time or device work. |
+| Reference Baseline | `92597092`, Intel 80286 Instruction Set Appendix B, and the T366 proposal. |
+| Candidate Proposal | [Bus-timed PC/AT operation](../proposals/m5-bus-timed-pcat-operation.md), limited to source-backed 80286 successful retirement. |
+| Files And ABI Surface | Private 80286 classifier, focused timing smoke, T366 evidence/index/history/status; no public or device surface changes. |
+| Applicable Rules | Execution: complete pushed P and sweep. Architecture: one retirement publisher. Coding: owner-local classifier. Documentation: truthful state. Source policy: read-only primary manual evidence; no import/assets. |
+| Verification | Focused protected register/direct/indexed LSL timing and selector-result outcomes; semantic smoke, current smokes, governance and diff check. |
+| Expected Markers | `M5:T357:S6:80286-INSTRUCTION-TIMING-LEDGER:OK`; Appendix B gives `14,mem=16`. |
+| Asset Needs | No guest media, ROM, binary or imported source. |
+| Reporting Requirements | Report source isolation, verification, pushed P and acceptance. |
+| Stop Conditions | Stop if an unmodeled success distinction, higher owner, semantic defect or unavailable gate appears. |
+| Exit Criteria | Pushed P proves only successful unprefixed protected LSL retirement publishes 14/16 ticks with transfers retained. |
+| Original Owner Request | Continue until comprehensive L3 closure before Windows 3.1; primary Intel authority first. |
+| Similar-Issue Sweep | Audit `INS_0F_03`, 80286-versus-80386 LSL context, mode/ModR/M/prefix legality, both selector results, timing classifiers and sole tick publisher. |
 
 ## Current Technical Baseline
 

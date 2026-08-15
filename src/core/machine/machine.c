@@ -2654,7 +2654,8 @@ static C_INT core_machine_80286_source_instruction_cost(core_machine *machine,
             data->oplen && ((data->opcodes[prefixes + 1u] == 0x00u &&
             (((data->opcodes[prefixes + 2u] >> 3u) & 7u) == 4u ||
              ((data->opcodes[prefixes + 2u] >> 3u) & 7u) == 5u)) ||
-            data->opcodes[prefixes + 1u] == 0x02u)) {
+            (data->opcodes[prefixes + 1u] == 0x02u ||
+             data->opcodes[prefixes + 1u] == 0x03u))) {
             *out_ticks = data->flagMem ? 16u : 14u;
             return 1;
         }
