@@ -13,3 +13,6 @@ substitutes an audit for missing source-backed phase implementation.
 S1's [matrix](../etc/evidence/t372-s1-model339-readiness-matrix.md) finds the
 selected baseline not ready: logical ownership/replay is evidenced, but every
 board-specific phase conversion remains unallocated.
+
+S1 is accepted at `67ec5177`. S2 must qualify primary-source gaps and any
+eligible same-profile reference-model observation before selecting a value.
