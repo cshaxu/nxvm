@@ -3,9 +3,9 @@
 This directory contains project-owned research glue only. It does not contain
 Bochs, Bochs-derived patches, BIOS files, guest media, generated traces, or a
 product bridge. The optional target is absent unless CMake receives
-`-DNTVDM64_ENABLE_BOCHX_RESEARCH=ON`.
+`-DPROJECT_ENABLE_BOCHX_RESEARCH=ON`.
 
-`ntvdm64-bochx-manifest-check` validates the required identity and budget fields
+`research-bochx-manifest-check` validates the required identity and budget fields
 for one bounded CPU experiment. A local manifest is ignored by Git and must
 name an owner-local Bochs 2.6 source root plus the historical Bochx patch ZIP.
 It checks that the source root identifies itself as Bochs 2.6 and that the

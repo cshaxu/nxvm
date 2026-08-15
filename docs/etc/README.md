@@ -71,6 +71,7 @@ principal documents named in [docs/README.md](../README.md).
 | `evidence/t372-s4-model339-primary-fact-ledger.md` | Verification owner | T372 S4 Type-3 and controller primary-fact ledger; no raw chip or interface fact is misrepresented as a Model-339 project-domain scalar. |
 | `evidence/t372-s5-local-rom-experiment-readiness.md` | Verification owner | T372 S5 owner-authorized local-ROM experiment readiness, external-asset containment and Model-339 configuration gate. |
 | `evidence/t372-s6-reference-runtime-nonadmission.md` | Verification owner | T372 S6 external reference-runtime configuration result and non-admission; no output, trace, scalar, or Model-339 L3 conclusion is accepted. |
+| `evidence/t372-s7-bochx-bridge-qualification.md` | Verification owner | T372 S7 bounded Bochx/Bochs bridge-gate qualification: the isolated manifest is valid, but the retired adapter is not currently executable or a platform/timing oracle. |
 | `evidence/t333-s1-interactive-input-inventory.md` | Verification owner | T333 S1 retained Console/debugger direct-input inventory and S2 boundary. Retire into the T333 history record when the task closes. |
 | `evidence/t333-s2-interactive-input-repair.md` | Verification owner | T333 S2 owner-local interactive-input repair and static/build evidence. Retire into the T333 history record when the task closes. |
 | `evidence/t333-s3-interactive-input-proof.md` | Verification owner | T333 S3 owner-separated EOF/allocation-failure smoke design and expected proof. Retire into the T333 history record when the task closes. |
