@@ -2,7 +2,26 @@
 
 ## Current Work
 
-**Idle.**
+## M5 T368 S1 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New; T367 closed at `bc1209d9`. |
+| Admission And Approval | The owner authorized continued L3 execution before Windows 3.1; the first incomplete Queue candidate follows closed T367. |
+| Objective | Establish the complete, source/form/context disposition of every still-successful 80286 retirement route before any PC/AT bus availability work. |
+| Non-goals | No bus/fetch/wait/DMA/device timing, physical-clock conversion, firmware/media import, board change or 5170 L3 claim. |
+| Reference Baseline | `bc1209d9`, [T366 closure audit](../etc/evidence/t366-s32-closure-transfer-audit.md), [80286 successful-retirement timing closure](../proposals/m5-80286-retirement-timing-closure.md). |
+| Candidate Proposal | [80286 successful-retirement timing closure](../proposals/m5-80286-retirement-timing-closure.md). |
+| Files And ABI Surface | Ledger/evidence/history/status and, only when a source-backed row is admitted, its existing private retirement classifier/test; no public ABI. |
+| Applicable Rules | Execution: new task packet/evidence. Architecture: one shared retirement publisher. Coding: source-backed values and fault boundaries. Documentation: exact transfers/no overclaim. Source policy: authority-led research only. |
+| Verification | Repository classifier/publisher sweep, source/form/context ledger, focused semantic/timing tests per admitted family, current gate when build health permits, governance and diff check. |
+| Expected Markers | Every remaining successful 80286 route has one exact source value, permitted same-profile model reduction, or one explicit admission receiver; no reached fallback remains silently one tick. |
+| Asset Needs | No guest media, ROM, binary or imported source. |
+| Reporting Requirements | Name all direct and fallback publishers, contexts and source authority; distinguish completed rows, unreduced ranges and external receivers. |
+| Stop Conditions | Stop a row when available authority cannot distinguish its successful context; transfer it once rather than invent a scalar. |
+| Exit Criteria | Pushed inventory proves a finite T368 mechanism plan and does not claim a physical 8 MHz clock or 5170 L3. |
+| Original Owner Request | Continue comprehensive L3 execution before Windows 3.1, following the Queue dependency chain. |
+| Similar-Issue Sweep | Sweep 80286 classifiers, default/prefix publishers, lookup fallback, control/system routes, source tables, focused ledger tests and verifier scripts. |
 
 ## Current Technical Baseline
 
