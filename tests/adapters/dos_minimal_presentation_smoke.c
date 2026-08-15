@@ -10,8 +10,8 @@ C_INT main(C_VOID)
     vdm_session *second = STD_NULL;
     vdm_presentation *first_presentation = STD_NULL;
     vdm_presentation *second_presentation = STD_NULL;
-    vdm_composition_input_event first_event = { 42u, 0x1cu };
-    vdm_composition_input_event second_event = { 43u, 0x32u };
+    vdm_composition_input_event first_event = { 42u, 0x5au };
+    vdm_composition_input_event second_event = { 43u, 0x3au };
     vdm_presentation_snapshot first_snapshot;
     vdm_presentation_snapshot second_snapshot;
     type_unsigned_32 key;

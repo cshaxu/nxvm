@@ -750,7 +750,8 @@ C_VOID core_machine_kbc_reset(t_kbc *controller)
     core_machine_pic_irq_source_deassert(&controller->connect.irq12_source);
     controller->data.command_byte = CORE_MACHINE_KBC_COMMAND_IRQ1 |
         CORE_MACHINE_KBC_COMMAND_IRQ12 |
-        CORE_MACHINE_KBC_COMMAND_SYSTEM;
+        CORE_MACHINE_KBC_COMMAND_SYSTEM |
+        CORE_MACHINE_KBC_COMMAND_TRANSLATION;
     controller->data.output_port = CORE_MACHINE_KBC_OUTPUT_RESET;
     controller->data.keyboard_enabled = TYPE_TRUE;
     controller->data.aux_enabled = TYPE_TRUE;

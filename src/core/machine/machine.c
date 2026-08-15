@@ -3708,6 +3708,72 @@ type_status core_machine_report_planar_parity_fault(core_machine *machine)
     return TYPE_STATUS_OK;
 }
 
+static type_status core_machine_absent_memory_read(C_VOID *owner,
+    type_unsigned_32 physical, type_virtual_address destination,
+    type_native_unsigned bytes)
+{
+    const core_machine_absent_memory *absent =
+        (const core_machine_absent_memory *)owner;
+
+    (C_VOID)physical;
+    if (absent == STD_NULL || !absent->configured || destination == 0u ||
+        bytes == 0u) return TYPE_STATUS_FAULT;
+    STD_MEMSET((C_VOID *)destination, absent->config.read_value, bytes);
+    return TYPE_STATUS_OK;
+}
+
+static type_status core_machine_absent_memory_write(C_VOID *owner,
+    type_unsigned_32 physical, type_virtual_address source,
+    type_native_unsigned bytes)
+{
+    const core_machine_absent_memory *absent =
+        (const core_machine_absent_memory *)owner;
+
+    (C_VOID)physical;
+    if (absent == STD_NULL || !absent->configured || source == 0u ||
+        bytes == 0u) return TYPE_STATUS_FAULT;
+    return TYPE_STATUS_OK;
+}
+
+static type_status core_machine_absent_memory_query(C_VOID *owner,
+    type_unsigned_32 physical, type_native_unsigned bytes,
+    core_machine_memory_access access)
+{
+    const core_machine_absent_memory *absent =
+        (const core_machine_absent_memory *)owner;
+
+    (C_VOID)physical;
+    if (absent == STD_NULL || !absent->configured || bytes == 0u ||
+        (access != CORE_MACHINE_MEMORY_ACCESS_READ &&
+        access != CORE_MACHINE_MEMORY_ACCESS_WRITE)) return TYPE_STATUS_FAULT;
+    return TYPE_STATUS_OK;
+}
+
+type_status core_machine_configure_absent_memory(core_machine *machine,
+    const core_machine_absent_memory_config *config)
+{
+    type_status status;
+
+    if (!core_machine_configuration_is_open(machine) ||
+        machine->absent_memory.configured) return TYPE_STATUS_INVALID_STATE;
+    if (config == STD_NULL || config->bytes == 0u ||
+        (type_unsigned_64)config->physical_start + config->bytes >
+            (type_unsigned_64)TYPE_MAX_UNSIGNED_32 + 1u) {
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
+    machine->absent_memory.config = *config;
+    machine->absent_memory.configured = TYPE_TRUE;
+    status = core_machine_memory_register_device_provider(&machine->executor_memory,
+        config->physical_start, config->bytes, core_machine_absent_memory_read,
+        core_machine_absent_memory_write, core_machine_absent_memory_query,
+        &machine->absent_memory);
+    if (status != TYPE_STATUS_OK) {
+        STD_MEMSET(&machine->absent_memory, 0, sizeof(machine->absent_memory));
+        return status;
+    }
+    return TYPE_STATUS_OK;
+}
+
 type_status core_machine_get_planar_parity_observation(const core_machine *machine,
     core_machine_planar_parity_observation *out_observation)
 {
@@ -4596,6 +4662,17 @@ type_status core_machine_keyboard_receive_native_byte(core_machine *machine,
         return TYPE_STATUS_INVALID_STATE;
     }
     return core_machine_kbc_submit_native_byte(&machine->shared_kbc, native_byte);
+}
+
+type_status core_machine_keyboard_get_native_scan_set(const core_machine *machine,
+    type_unsigned_8 *out_scan_set)
+{
+    if (machine == STD_NULL || out_scan_set == STD_NULL ||
+        machine->lifecycle == CORE_MACHINE_INITIALIZED) {
+        return TYPE_STATUS_INVALID_STATE;
+    }
+    *out_scan_set = machine->shared_kbc.data.scan_set;
+    return TYPE_STATUS_OK;
 }
 
 type_status core_machine_keyboard_receive_native_bytes(core_machine *machine,

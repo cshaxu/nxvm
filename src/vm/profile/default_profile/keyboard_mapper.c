@@ -1,5 +1,6 @@
 #include "type.h"
 
+#include "core/machine/kbc.h"
 #include "vm/profile/default_profile/keyboard_mapper.h"
 
 static type_unsigned_8 vm_profile_default_keyboard_map_ascii(type_unsigned_16 value)
@@ -60,8 +61,9 @@ static type_unsigned_8 vm_profile_default_keyboard_set1_to_set2(
     return *out_known ? map[set1] : 0u;
 }
 
-type_status vm_profile_default_keyboard_map_host_key(type_unsigned_16 host_scan_code,
-    type_unsigned_16 host_virtual_key, C_INT pressed,
+type_status vm_profile_default_keyboard_map_host_key_for_scan_set(
+    type_unsigned_16 host_scan_code, type_unsigned_16 host_virtual_key,
+    C_INT pressed, type_unsigned_8 native_scan_set,
     vm_profile_default_keyboard_sequence *out_sequence)
 {
     type_bool known;
@@ -69,9 +71,17 @@ type_status vm_profile_default_keyboard_map_host_key(type_unsigned_16 host_scan_
 
     if (out_sequence == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
     out_sequence->count = 0u;
-    /* Win32 identifies Pause by virtual key; Set 2 has only its make stream. */
+    /* Win32 identifies Pause by virtual key. */
     if (host_virtual_key == 0x13u) {
         if (!pressed) return TYPE_STATUS_OK;
+        if (native_scan_set == CORE_MACHINE_KBC_SCAN_SET_1) {
+            static const type_unsigned_8 pause_set1[] = {
+                0xe1u, 0x1du, 0x45u, 0xe1u, 0x9du, 0xc5u
+            };
+            STD_MEMCPY(out_sequence->bytes, pause_set1, sizeof(pause_set1));
+            out_sequence->count = sizeof(pause_set1);
+            return TYPE_STATUS_OK;
+        }
         out_sequence->bytes[0] = 0xe1u;
         out_sequence->bytes[1] = 0x14u;
         out_sequence->bytes[2] = 0x77u;
@@ -90,6 +100,14 @@ type_status vm_profile_default_keyboard_map_host_key(type_unsigned_16 host_scan_
         scan_code = vm_profile_default_keyboard_map_ascii(host_virtual_key);
         if (scan_code == 0u) return TYPE_STATUS_UNSUPPORTED;
     }
+    if (native_scan_set == CORE_MACHINE_KBC_SCAN_SET_1) {
+        if (!pressed) scan_code |= 0x80u;
+        if ((host_scan_code & 0x0100u) != 0u) {
+            out_sequence->bytes[out_sequence->count++] = 0xe0u;
+        }
+        out_sequence->bytes[out_sequence->count++] = scan_code;
+        return TYPE_STATUS_OK;
+    }
     scan_code = vm_profile_default_keyboard_set1_to_set2(scan_code, &known);
     if (!known) return TYPE_STATUS_UNSUPPORTED;
     /* Windows scan-code bit 8 identifies the E0-prefixed key variant. */
@@ -99,4 +117,12 @@ type_status vm_profile_default_keyboard_map_host_key(type_unsigned_16 host_scan_
     if (!pressed) out_sequence->bytes[out_sequence->count++] = 0xf0u;
     out_sequence->bytes[out_sequence->count++] = scan_code;
     return TYPE_STATUS_OK;
+}
+
+type_status vm_profile_default_keyboard_map_host_key(type_unsigned_16 host_scan_code,
+    type_unsigned_16 host_virtual_key, C_INT pressed,
+    vm_profile_default_keyboard_sequence *out_sequence)
+{
+    return vm_profile_default_keyboard_map_host_key_for_scan_set(host_scan_code,
+        host_virtual_key, pressed, CORE_MACHINE_KBC_SCAN_SET_2, out_sequence);
 }

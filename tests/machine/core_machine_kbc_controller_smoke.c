@@ -53,7 +53,7 @@ static C_INT core_machine_kbc_mixed_fifo_lifecycle(C_VOID)
     core_machine_port_write(&port, 0x0064u, 0x20u);
     core_machine_pic_refresh(&pic_master, &pic_slave);
     failed |= core_machine_pic_get_interrupt(&pic_master, &pic_slave) != 0x09u ||
-        core_machine_kbc_read_byte(&port, 0x0060u) != 0x1eu;
+        core_machine_kbc_read_byte(&port, 0x0060u) != 0x03u;
     core_machine_port_write(&port, 0x0020u, 0x20u);
     core_machine_pic_refresh(&pic_master, &pic_slave);
     failed |= core_machine_pic_get_interrupt(&pic_master, &pic_slave) != 0x74u ||
@@ -66,17 +66,17 @@ static C_INT core_machine_kbc_mixed_fifo_lifecycle(C_VOID)
         core_machine_kbc_read_byte(&port, 0x0060u) != 0x01u ||
         kbc.data.irq1_asserted || kbc.data.irq12_asserted ||
         (core_machine_kbc_read_byte(&port, 0x0064u) & VKBC_STATUS_AUX) != 0u ||
-        core_machine_kbc_read_byte(&port, 0x0060u) != 0x07u;
+        core_machine_kbc_read_byte(&port, 0x0060u) != 0x47u;
 
     core_machine_kbc_set_command_response_timing(&kbc, 2u);
     core_machine_port_write(&port, 0x0064u, 0x20u);
-    failed |= core_machine_kbc_submit_native_byte(&kbc, 0x30u) != TYPE_STATUS_OK;
+    failed |= core_machine_kbc_submit_native_byte(&kbc, 0x1eu) != TYPE_STATUS_OK;
     core_machine_kbc_advance(&kbc, 2u);
     core_machine_pic_refresh(&pic_master, &pic_slave);
     failed |= core_machine_pic_get_interrupt(&pic_master, &pic_slave) != 0x09u ||
-        core_machine_kbc_read_byte(&port, 0x0060u) != 0x30u;
+        core_machine_kbc_read_byte(&port, 0x0060u) != 0x03u;
     core_machine_port_write(&port, 0x0020u, 0x20u);
-    failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0x07u;
+    failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0x47u;
     core_machine_kbc_set_command_response_timing(&kbc, 0u);
 
     failed |= core_machine_kbc_submit_aux_report(&kbc, 2, 2, 0u) != TYPE_STATUS_OK;
@@ -84,7 +84,7 @@ static C_INT core_machine_kbc_mixed_fifo_lifecycle(C_VOID)
     failed |= kbc.data.fifo_count != 0u || kbc.data.irq1_asserted ||
         kbc.data.irq12_asserted || !kbc.data.keyboard_enabled ||
         !kbc.data.aux_enabled || !kbc.data.scanning_enabled;
-    failed |= core_machine_kbc_submit_native_byte(&kbc, 0x20u) != TYPE_STATUS_OK ||
+    failed |= core_machine_kbc_submit_native_byte(&kbc, 0x1eu) != TYPE_STATUS_OK ||
         !kbc.data.irq1_asserted;
     core_machine_kbc_finalize(&kbc);
     failed |= kbc.data.irq1_asserted || kbc.data.irq12_asserted;
@@ -152,6 +152,8 @@ C_INT main(C_VOID)
     core_machine_cpu_execution_context execution = {0};
     t_port port;
     C_INT failed = 0;
+    C_INT mixed_failed;
+    C_INT translation_failed;
     type_unsigned_8 index;
 
     core_machine_port_initialize(&port);
@@ -161,13 +163,15 @@ C_INT main(C_VOID)
         &memory, &execution);
     core_machine_kbc_initialize_pic(&port);
 
-    failed |= core_machine_kbc_mixed_fifo_lifecycle();
-    failed |= core_machine_kbc_set2_translation();
+    mixed_failed = core_machine_kbc_mixed_fifo_lifecycle();
+    translation_failed = core_machine_kbc_set2_translation();
+    failed |= mixed_failed;
+    failed |= translation_failed;
 
     failed |= core_machine_kbc_read_byte(&port, 0x0064u) != 0x14u;
     core_machine_port_write(&port, 0x0064u, 0x20u);
     failed |= (core_machine_kbc_read_byte(&port, 0x0064u) & VKBC_STATUS_OBF) == 0u;
-    failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0x07u;
+    failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0x47u;
     core_machine_port_write(&port, 0x0064u, 0x60u);
     core_machine_port_write(&port, 0x0060u, 0x01u);
     core_machine_port_write(&port, 0x0064u, 0x20u);
@@ -349,6 +353,8 @@ C_INT main(C_VOID)
         !core_machine_cpu_execution_consume_reset_request(&execution);
 
     core_machine_kbc_reset(&kbc);
+    core_machine_port_write(&port, 0x0064u, 0x60u);
+    core_machine_port_write(&port, 0x0060u, 0x07u);
     for (index = 0u; index < CORE_MACHINE_KBC_FIFO_CAPACITY; ++index) {
         failed |= core_machine_kbc_submit_native_byte(&kbc, index) != TYPE_STATUS_OK;
     }
@@ -368,7 +374,11 @@ C_INT main(C_VOID)
     core_machine_kbc_finalize(&kbc);
     core_machine_pic_finalize(&pic_master, &pic_slave);
     core_machine_port_finalize(&port);
-    if (failed) return 1;
+    if (failed) {
+        STD_FPRINTF(STD_STDERR, "M5:T380:S2:KBC:FAIL:mixed=%d:translation=%d\n",
+            mixed_failed, translation_failed);
+        return 1;
+    }
     STD_PRINTF("M5:T227:S3:KBC-CONTROLLER:OK\n");
     return 0;
 }

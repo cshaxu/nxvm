@@ -120,7 +120,7 @@ stc                         \n\
 jmp near $(label_int_40_end)\n\
 $(label_int_40_02_work):    \n\
 ; 8237A page registers do not carry across a 64KiB current-address wrap. \n\
-; Split crossing caller buffers through the reserved 9fc0h bounce page. \n\
+; Split crossing caller buffers through the profile-reserved bounce page. \n\
 push ax                           \n\
 push bx                           \n\
 push cx                           \n\

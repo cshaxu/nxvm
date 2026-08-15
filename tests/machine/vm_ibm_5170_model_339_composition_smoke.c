@@ -5,6 +5,7 @@
 #include "core/machine/port.h"
 #include "vm/composition/session/session.h"
 #include "vm/composition/session/session_interface.h"
+#include "vm/composition/session/lifecycle.h"
 #include "vm/profile/default_profile/pc_at_profile.h"
 
 static C_INT vm_profile_has_hdc_firmware(
@@ -29,8 +30,11 @@ static C_INT vm_model_339_selected_contract(C_VOID)
     };
     core_machine_cpu_profile cpu_profile;
     core_machine_planar_parity_observation parity;
+    core_machine_memory_route memory_route;
     vm_session *session = STD_NULL;
     STD_SIZE_T memory_bytes = 0u;
+    type_unsigned_8 before = 0u;
+    type_unsigned_8 after = 0u;
     C_INT failed = 0;
 
     if (profile == STD_NULL ||
@@ -48,14 +52,25 @@ static C_INT vm_model_339_selected_contract(C_VOID)
         vm_session_destroy(session);
         return 1;
     }
-    failed |= session->profile != profile ||
-        core_machine_get_cpu_profile(session->core_machine, &cpu_profile) !=
-            TYPE_STATUS_OK || cpu_profile != CORE_MACHINE_CPU_PROFILE_80286 ||
-        core_machine_get_memory_bytes(session->core_machine, &memory_bytes) !=
-            TYPE_STATUS_OK || memory_bytes != 512u * 1024u ||
-        core_machine_get_planar_parity_observation(session->core_machine,
-            &parity) != TYPE_STATUS_OK || !parity.configured || !parity.enabled ||
-        core_machine_port_has_read(&session->core_machine->executor_port, 0x01f0u) ||
+    vm_session_reset(session);
+    failed |= session->profile != profile;
+    failed |= core_machine_get_cpu_profile(session->core_machine, &cpu_profile) !=
+        TYPE_STATUS_OK || cpu_profile != CORE_MACHINE_CPU_PROFILE_80286;
+    failed |= core_machine_get_memory_bytes(session->core_machine, &memory_bytes) !=
+        TYPE_STATUS_OK || memory_bytes != 512u * 1024u;
+    failed |= core_machine_get_planar_parity_observation(session->core_machine,
+        &parity) != TYPE_STATUS_OK || !parity.configured || !parity.enabled;
+    failed |= core_machine_set_a20(session->core_machine, 1) != TYPE_STATUS_OK;
+    failed |= core_machine_memory_query(session->core_machine, 0x00100003u, 1u,
+        CORE_MACHINE_MEMORY_ACCESS_READ, &memory_route) != TYPE_STATUS_OK ||
+        memory_route != CORE_MACHINE_MEMORY_ROUTE_PROVIDER;
+    failed |= core_machine_memory_read(session->core_machine, 0x00100003u, &before,
+        sizeof(before)) != TYPE_STATUS_OK || before != 0xffu;
+    failed |= core_machine_memory_write(session->core_machine, 0x00100003u,
+        &(type_unsigned_8){0x5au}, sizeof(type_unsigned_8)) != TYPE_STATUS_OK;
+    failed |= core_machine_memory_read(session->core_machine, 0x00100003u, &after,
+        sizeof(after)) != TYPE_STATUS_OK || after != 0xffu;
+    failed |= core_machine_port_has_read(&session->core_machine->executor_port, 0x01f0u) ||
         core_machine_port_has_write(&session->core_machine->executor_port, 0x01f0u) ||
         vm_session_insert_hdd(session, "unavailable.img") == 0;
     vm_session_destroy(session);
@@ -104,5 +119,6 @@ C_INT main(C_VOID)
         vm_model_339_rejects_hdd_configuration() ||
         vm_default_profile_remains_ata()) return 1;
     STD_PRINTF("M5:T366:S5:MODEL339-COMPOSITION:OK\n");
+    STD_PRINTF("M5:T380:S2:MODEL339-NO-XMS-PROBE:OK\n");
     return 0;
 }

@@ -92,8 +92,8 @@ static C_INT preview_test_cpu_fetch_nonpublication(C_VOID)
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386
     };
     core_machine_cpu_instruction_lexeme lexeme;
-    core_machine_observation before;
-    core_machine_observation after;
+    core_machine_observation before = { 0 };
+    core_machine_observation after = { 0 };
     core_machine *machine = STD_NULL;
     type_unsigned_64 committed = 0u;
     type_unsigned_64 cancelled = 0u;
@@ -129,8 +129,8 @@ static C_INT preview_test_limited_fetch_nonpublication(C_VOID)
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386
     };
     core_machine_cpu_instruction_lexeme lexeme;
-    core_machine_observation before;
-    core_machine_observation after;
+    core_machine_observation before = { 0 };
+    core_machine_observation after = { 0 };
     core_machine *machine = STD_NULL;
     type_unsigned_64 committed = 0u;
     type_unsigned_64 cancelled = 0u;
@@ -168,8 +168,8 @@ static C_INT preview_test_taken_jcc_target(C_VOID)
     };
     const core_machine_run_budget budget = { 1u, 0u };
     core_machine_cpu_instruction_lexeme lexeme;
-    core_machine_observation before;
-    core_machine_observation after;
+    core_machine_observation before = { 0 };
+    core_machine_observation after = { 0 };
     core_machine_run_result result;
     core_machine *machine = STD_NULL;
     C_INT failed = core_machine_create(&config, &machine) != TYPE_STATUS_OK ||

@@ -148,6 +148,8 @@ static const vm_profile_default_pc_at_descriptor default_pc_at_descriptor = {
             0x08u, 0x09u, 0x0au, 0x0bu, 0x0cu, 0x0du, 0x0eu, 0x0fu,
             0x01u, 0x00u, 0x0fu, 0x00u, 0x00u } },
     16u * 1024u * 1024u,
+    TYPE_FALSE,
+    0x9fc0u,
     TYPE_TRUE,
     TYPE_FALSE,
     TYPE_TRUE,
@@ -196,6 +198,8 @@ static const vm_profile_default_pc_at_descriptor ibm_5170_model_339_descriptor =
             0x08u, 0x09u, 0x0au, 0x0bu, 0x0cu, 0x0du, 0x0eu, 0x0fu,
             0x01u, 0x00u, 0x0fu, 0x00u, 0x00u } },
     512u * 1024u,
+    TYPE_TRUE,
+    0x7000u,
     TYPE_FALSE,
     TYPE_TRUE,
     TYPE_FALSE,
@@ -244,6 +248,16 @@ static C_INT vm_profile_default_pc_at_fpu_profile_is_valid(
         profile == CORE_MACHINE_FPU_PROFILE_8087 ||
         profile == CORE_MACHINE_FPU_PROFILE_80287 ||
         profile == CORE_MACHINE_FPU_PROFILE_80387;
+}
+
+static C_INT vm_profile_default_pc_at_fdc_bounce_is_valid(
+    const vm_profile_default_pc_at_descriptor *descriptor)
+{
+    const STD_SIZE_T physical = (STD_SIZE_T)descriptor->fdc_bounce_segment << 4u;
+
+    return descriptor->fdc_bounce_segment != 0u && physical <=
+        descriptor->default_memory_bytes && 512u <=
+        descriptor->default_memory_bytes - physical;
 }
 
 C_INT vm_profile_default_pc_at_cpu_contract_select(
@@ -339,6 +353,8 @@ C_INT vm_profile_default_pc_at_descriptor_is_valid(
     if (descriptor == &ibm_5170_model_339_descriptor) {
         return descriptor->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 &&
             descriptor->default_memory_bytes == 512u * 1024u &&
+            descriptor->unpopulated_extended_memory &&
+            descriptor->fdc_bounce_segment == 0x7000u &&
             !descriptor->hdc_present && descriptor->planar_parity_present &&
             !descriptor->ega_present &&
             descriptor->cga_vram_present &&
@@ -353,7 +369,8 @@ C_INT vm_profile_default_pc_at_descriptor_is_valid(
             sizeof(ibm_5170_model_339_firmware_services) /
                 sizeof(ibm_5170_model_339_firmware_services[0]);
     }
-    if (descriptor == STD_NULL || descriptor->port_leaves == STD_NULL ||
+    if (descriptor == STD_NULL || !vm_profile_default_pc_at_fdc_bounce_is_valid(descriptor) ||
+        descriptor->port_leaves == STD_NULL ||
         descriptor->routes == STD_NULL || descriptor->port_leaf_count !=
         sizeof(default_pc_at_port_leaves) / sizeof(default_pc_at_port_leaves[0]) ||
         descriptor->route_count != sizeof(default_pc_at_routes) /

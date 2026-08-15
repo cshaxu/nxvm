@@ -180,6 +180,15 @@ static C_INT verify_hdc_failure(
     return verify_failure(&profile);
 }
 
+static C_INT verify_fdc_bounce_failure(
+    const vm_profile_default_pc_at_descriptor *source)
+{
+    vm_profile_default_pc_at_descriptor profile = *source;
+
+    profile.fdc_bounce_segment = (type_unsigned_16)(profile.default_memory_bytes >> 4u);
+    return verify_failure(&profile);
+}
+
 static C_INT verify_image_failure(
     const vm_profile_default_pc_at_descriptor *profile, const C_CHAR *fdd_image,
     const C_CHAR *hdd_image)
@@ -223,6 +232,7 @@ C_INT main(C_VOID)
         verify_core_failure(profile) != 0 ||
         verify_firmware_failure(profile) != 0 ||
         verify_controller_failure(profile) != 0 || verify_hdc_failure(profile) != 0 ||
+        verify_fdc_bounce_failure(profile) != 0 ||
         verify_image_failure(profile, "t332-missing-fdd.img", STD_NULL) != 0 ||
         verify_image_failure(profile, STD_NULL, "t332-missing-hdd.img") != 0 ||
         verify_recovery() != 0) {

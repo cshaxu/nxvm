@@ -2,16 +2,14 @@
 
 ## Current Work
 
-**No active implementation packet.** T380 closes the owner-approved retained
-Console profile-selection insertion. DeskPro 386, 8088-XT and Windows 3.1
-remain unstarted.
+**No active implementation packet.** T380 S2 closes after the owner-replayed
+Model-339 DOS 5/HIMEM path no longer reports `#CE(100003)`, its bounded
+no-XMS regression, the 250-test current gate, and all specialized gates pass.
+The result is not a claim of guest-OS completion or 5170 L3 closure.
 
 | Task | Compact progress |
 | --- | --- |
-| T380 | Closed at `987bdd96`: `SESSION OPEN` now discovers and selects the default PC/AT or strict Model-339 profile; named selection, state visibility and Model-339 constraint rejection are proven. [Evidence](../etc/evidence/t380-s1-session-profile-selection.md). |
-| T377 | Closed at `1cdd5110`: Model-339 is not L3-ready until the native input/global-gate repair and independent re-audit complete. [Audit](../etc/evidence/t377-s1-model339-final-l3-audit.md). |
-| T378 | Closed at `42f0402a`: native input proof, virtual-time dependency direction and affected gates are repaired; no Model-339 L3 decision is made. [Evidence](../etc/evidence/t378-s1-native-ingress-boundary-repair.md). |
-| T379 | Closed at `9099d11d`: independent full-gate and focused re-audit accepts the frozen Model-339 deterministic L3 contract. [Audit](../etc/evidence/t379-s1-model339-final-reaudit.md). |
+| T380 S2 | Closed: strict Model-339 startup, 512 KB FDC/BDA repair, input/FDC current-gate recovery, and the owner-replayed DOS 5/HIMEM no-XMS path are verified. [Evidence](../etc/evidence/t380-s2-model339-start-and-current-gate-recovery.md). |
 
 <!-- T379 packet retired at task closure.
 
@@ -37,9 +35,9 @@ remain unstarted.
 
 ## Current Technical Baseline
 
-- **Current developer artifact:** T380 S1 `vm-0-5-0380` /
-  `build/output/nxvm_0_5_0380.exe`; its SHA-256 and source commit are
-  recorded by the [T380 S1 evidence](../etc/evidence/t380-s1-session-profile-selection.md).
+- **Current developer artifact:** T380 S2 `vm-0-5-0380` /
+  `build/output/nxvm_0_5_0380.exe`; its SHA-256 and current-gate recovery
+  proof are recorded by the [T380 S2 evidence](../etc/evidence/t380-s2-model339-start-and-current-gate-recovery.md).
 - **T285 display implementation:** `INT 10h` mode `10h` /
   `EGA-640x350x16-direct` has a VADP-owned planar frame path and copied-frame
   consumer boundary; mode 0Dh remains a separate retained path.
@@ -54,7 +52,7 @@ remain unstarted.
 
 | Task | Compact result |
 | --- | --- |
-| T380 S1 | Accepted P2 `987bdd96`: retained Console profile discovery/selection is usable, selected-state proof is explicit, and Model-339 identity constraints remain enforced. [Evidence](../etc/evidence/t380-s1-session-profile-selection.md). |
+| T380 S2 | Closed: strict Model-339 startup, 512 KB FDC/BDA repair, input/FDC current-gate recovery, and the owner-replayed DOS 5/HIMEM no-XMS path are verified. It does not claim DOS completion or 5170 L3 closure. [Evidence](../etc/evidence/t380-s2-model339-start-and-current-gate-recovery.md). |
 | T378 | Closed at `42f0402a`: production ingress proof and virtual-time ownership are corrected without a test-only API; Model-339 re-audit remains the sole L3 decision receiver. [Evidence](../etc/evidence/t378-s1-native-ingress-boundary-repair.md). |
 | T379 | Closed at `160a34e1`: independent re-audit accepts the frozen Model-339 deterministic L3 contract. [Audit](../etc/evidence/t379-s1-model339-final-reaudit.md). |
 | T377 | Closed at `1cdd5110`: final audit rejects premature Model-339 L3 acceptance; its shared input/global-gate repair and independent re-audit successors are queued. [Audit](../etc/evidence/t377-s1-model339-final-l3-audit.md). |

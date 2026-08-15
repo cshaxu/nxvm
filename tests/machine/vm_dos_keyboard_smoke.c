@@ -122,6 +122,7 @@ static C_VOID vm_dos_keyboard_report_failure(const vm_session *session,
     type_unsigned_16 head = 0u;
     type_unsigned_16 tail = 0u;
     type_unsigned_8 video_mode = 0u;
+    type_unsigned_8 scan_set = 0u;
     type_unsigned_8 instructions[8] = { 0u };
     STD_SIZE_T cell;
     STD_SIZE_T index;
@@ -135,6 +136,8 @@ static C_VOID vm_dos_keyboard_report_failure(const vm_session *session,
         &video_mode, sizeof(video_mode));
     (C_VOID)core_machine_debug_read_memory(session->core_machine,
         state->cs_base + state->eip, instructions, sizeof(instructions));
+    (C_VOID)core_machine_keyboard_get_native_scan_set(session->core_machine,
+        &scan_set);
     (C_VOID)core_platform_presentation_mailbox_capture(
         &session->presentation_mailbox, &frame);
     STD_PRINTF("keyboard smoke timed out: BDA head=%04x tail=%04x\n", head, tail);
@@ -150,6 +153,7 @@ static C_VOID vm_dos_keyboard_report_failure(const vm_session *session,
         state->halted, instructions[0], instructions[1], instructions[2],
         instructions[3], instructions[4], instructions[5], instructions[6],
         instructions[7]);
+    STD_PRINTF("keyboard controller: scan_set=%u\n", scan_set);
 }
 
 C_INT main(C_INT argc, C_CHAR **argv)

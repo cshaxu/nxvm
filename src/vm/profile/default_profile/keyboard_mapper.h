@@ -16,5 +16,9 @@ typedef struct vm_profile_default_keyboard_sequence {
 type_status vm_profile_default_keyboard_map_host_key(type_unsigned_16 host_scan_code,
     type_unsigned_16 host_virtual_key, C_INT pressed,
     vm_profile_default_keyboard_sequence *out_sequence);
+type_status vm_profile_default_keyboard_map_host_key_for_scan_set(
+    type_unsigned_16 host_scan_code, type_unsigned_16 host_virtual_key,
+    C_INT pressed, type_unsigned_8 native_scan_set,
+    vm_profile_default_keyboard_sequence *out_sequence);
 
 #endif

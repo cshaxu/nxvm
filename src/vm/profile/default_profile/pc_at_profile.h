@@ -137,6 +137,9 @@ typedef struct vm_profile_default_pc_at_descriptor {
     core_machine_vadp_ega_sequencer_config ega_sequencer;
     core_machine_vadp_ega_controller_config ega_controllers;
     STD_SIZE_T default_memory_bytes;
+    type_bool unpopulated_extended_memory;
+    /* 8237A boundary-transfer workspace, expressed as a real-mode segment. */
+    type_unsigned_16 fdc_bounce_segment;
     type_bool hdc_present;
     type_bool planar_parity_present;
     type_bool ega_present;

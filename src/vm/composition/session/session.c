@@ -21,11 +21,14 @@ C_VOID vm_session_consume_request(
     if (session == STD_NULL || !session->active || request == STD_NULL) return;
     if (request->kind == VM_PLATFORM_REQUEST_KEY_EVENT) {
         vm_profile_default_keyboard_sequence sequence;
+        type_unsigned_8 native_scan_set;
 
-        if (vm_profile_default_keyboard_map_host_key(
+        if (core_machine_keyboard_get_native_scan_set(session->core_machine,
+                &native_scan_set) == TYPE_STATUS_OK &&
+            vm_profile_default_keyboard_map_host_key_for_scan_set(
                 request->data.key_event.scan_code,
-                request->data.key_event.virtual_key,
-                request->data.key_event.pressed, &sequence) ==
+                request->data.key_event.virtual_key, request->data.key_event.pressed,
+                native_scan_set, &sequence) ==
             TYPE_STATUS_OK) {
             (C_VOID)core_machine_keyboard_receive_native_bytes(session->core_machine,
                 sequence.bytes, sequence.count);
@@ -236,6 +239,18 @@ type_status vm_session_storage_initialize(vm_session *machine)
     status = core_machine_create(&machine->core_machine_config,
         &machine->core_machine);
     if (status != TYPE_STATUS_OK) return status;
+    if (machine->profile->unpopulated_extended_memory) {
+        const core_machine_absent_memory_config absent_memory = {
+            0x00100000u, 0x00f00000u, 0xffu
+        };
+
+        status = core_machine_configure_absent_memory(machine->core_machine,
+            &absent_memory);
+        if (status != TYPE_STATUS_OK) {
+            vm_session_storage_rollback(machine);
+            return status;
+        }
+    }
     if (machine->profile->planar_parity_present) {
         const core_machine_planar_parity_config parity = {
             CORE_MACHINE_PC_AT_PORT_B, machine->profile->default_memory_bytes

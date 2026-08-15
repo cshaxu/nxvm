@@ -70,6 +70,41 @@ static C_VOID vm_session_profile_firmware_add_interrupt(vm_session *session,
         length, vector);
 }
 
+/* The FDC service is one firmware program, but its DMA-boundary bounce page is
+ * profile-owned conventional memory.  Substitute only its two executable
+ * segment operands; the source remains one shared service rather than a
+ * Model-339-specific boot path. */
+static C_VOID vm_session_profile_firmware_add_fdc_interrupt(vm_session *session,
+    type_unsigned_16 offset, type_unsigned_8 vector)
+{
+    const C_CHAR *template = VFDC_INT_SOFT_FDD_40;
+    STD_SIZE_T length;
+    STD_SIZE_T index;
+    C_CHAR replacement[5];
+    C_CHAR *statement;
+    type_unsigned_8 *bytes;
+    type_unsigned_16 assembled;
+
+    if (session == STD_NULL || session->profile == STD_NULL ||
+        session->profile->fdc_bounce_segment == 0u) return;
+    if (STD_SNPRINTF(replacement, sizeof(replacement), "%04x",
+            session->profile->fdc_bounce_segment) != 4) return;
+    length = STD_STRLEN(template);
+    statement = (C_CHAR *)STD_MALLOC(length + 1u);
+    if (statement == STD_NULL) return;
+    STD_MEMCPY(statement, template, length + 1u);
+    for (index = 0u; index + 4u <= length; ++index) {
+        if (STD_MEMCMP(statement + index, "9fc0", 4u) == 0) {
+            STD_MEMCPY(statement + index, replacement, 4u);
+            index += 3u;
+        }
+    }
+    assembled = vm_session_profile_firmware_assemble(statement, &bytes);
+    STD_FREE(statement);
+    vm_profile_default_bios_add_interrupt_code_at(&session->default_bios, bytes,
+        assembled, offset, vector);
+}
+
 static C_VOID vm_session_profile_firmware_add_interrupt_at(vm_session *session,
     const C_CHAR *statement, type_unsigned_16 offset, type_unsigned_8 vector)
 {
@@ -141,8 +176,8 @@ static C_VOID vm_session_profile_firmware_apply(
         break;
     case VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_FDC_INT13:
     case VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_FDC_INT40:
-        vm_session_profile_firmware_add_interrupt_at(session,
-            VFDC_INT_SOFT_FDD_40, VBIOS_ADDR_FDC_SERVICE, vector);
+        vm_session_profile_firmware_add_fdc_interrupt(session,
+            VBIOS_ADDR_FDC_SERVICE, vector);
         break;
     case VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_HDC_INT13:
         vm_session_profile_firmware_add_interrupt(session,
@@ -190,6 +225,7 @@ type_status vm_session_profile_firmware_initialize(vm_session *session)
         }
     }
     vm_profile_default_bios_initialize(&session->default_bios);
+    session->default_bios.data.base_memory_kib = session->profile->cmos.base_memory_kib;
     vm_session_profile_firmware_add_interrupt(session, VBIOS_INT_SOFT_MISC_11,
         0x11u);
     vm_session_profile_firmware_add_interrupt(session, VBIOS_INT_SOFT_MISC_12,

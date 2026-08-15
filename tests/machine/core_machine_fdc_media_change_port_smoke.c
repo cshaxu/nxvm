@@ -11,6 +11,14 @@ typedef struct core_machine_fdc_change_media {
     type_bool present;
 } core_machine_fdc_change_media;
 
+static C_VOID core_machine_fdc_change_require(C_INT *failed,
+    C_INT *first_failure, C_INT step, C_INT condition)
+{
+    if (!condition) return;
+    *failed = 1;
+    if (*first_failure == 0) *first_failure = step;
+}
+
 static core_machine_media_result core_machine_fdc_change_query(C_VOID *context,
     core_machine_media_info *out_info)
 {
@@ -69,6 +77,9 @@ static C_VOID core_machine_fdc_change_command(core_machine_fdc *fdc, t_port *por
 
 static C_VOID core_machine_fdc_change_ack_irq(core_machine_fdc *fdc, t_port *port)
 {
+    if (fdc->data.phase == core_machine_fdc_PHASE_PENDING_SEEK) {
+        core_machine_fdc_advance_at(fdc, fdc->data.seek_due_tick);
+    }
     core_machine_fdc_change_command(fdc, port, (const type_unsigned_8[]){0x08u}, 1u);
     (C_VOID)core_machine_port_read(port, 0x03f5u);
     (C_VOID)core_machine_port_read(port, 0x03f5u);
@@ -108,6 +119,7 @@ int main(C_VOID)
     t_port *port;
     type_unsigned_8 status;
     C_INT failed = 0;
+    C_INT first_failure = 0;
 
     core_machine_media_registry_initialize(&media);
     if (core_machine_create(&config, &machine) != TYPE_STATUS_OK) failed = 1;
@@ -147,78 +159,100 @@ int main(C_VOID)
                     sizeof(specify_dma));
                 drive1.present = TYPE_FALSE;
                 core_machine_fdc_refresh(fdc);
-                failed |= !fdc->data.flagINTR || !fdc->connect.irq_source.asserted;
+                core_machine_fdc_change_require(&failed, &first_failure, 1,
+                    !fdc->data.flagINTR || !fdc->connect.irq_source.asserted);
                 core_machine_fdc_change_command(fdc, port, (const type_unsigned_8[]){0x08u}, 1u);
                 status = (type_unsigned_8)core_machine_port_read(port, 0x03f5u);
-                failed |= status != (core_machine_fdc_ST0_READY_CHANGE |
+                core_machine_fdc_change_require(&failed, &first_failure, 2,
+                    status != (core_machine_fdc_ST0_READY_CHANGE |
                     core_machine_fdc_ST0_NOT_READY | 1u) ||
                     core_machine_port_read(port, 0x03f5u) != 0u || fdc->data.flagINTR ||
-                    fdc->connect.irq_source.asserted;
+                    fdc->connect.irq_source.asserted);
                 drive1.present = TYPE_TRUE;
                 core_machine_fdc_refresh(fdc);
-                failed |= !fdc->data.flagINTR || !fdc->connect.irq_source.asserted;
+                core_machine_fdc_change_require(&failed, &first_failure, 3,
+                    !fdc->data.flagINTR || !fdc->connect.irq_source.asserted);
                 core_machine_fdc_change_ack_irq(fdc, port);
 
                 ++drive0.generation;
                 core_machine_fdc_refresh(fdc);
-                failed |= fdc->data.flagINTR || fdc->connect.irq_source.asserted;
+                core_machine_fdc_change_require(&failed, &first_failure, 4,
+                    fdc->data.flagINTR || fdc->connect.irq_source.asserted);
                 core_machine_port_write(port, 0x03f2u, 0x1cu);
                 core_machine_fdc_refresh(fdc);
-                failed |= (core_machine_port_read(port, 0x03f7u) & VFDC_DIR_DC) == 0u;
+                core_machine_fdc_change_require(&failed, &first_failure, 5,
+                    (core_machine_port_read(port, 0x03f7u) & VFDC_DIR_DC) == 0u);
                 core_machine_fdc_change_command(fdc, port, recalibrate_0,
                     sizeof(recalibrate_0));
                 core_machine_fdc_change_ack_irq(fdc, port);
                 core_machine_fdc_refresh(fdc);
-                failed |= (core_machine_port_read(port, 0x03f7u) & VFDC_DIR_DC) != 0u;
+                core_machine_fdc_change_require(&failed, &first_failure, 6,
+                    (core_machine_port_read(port, 0x03f7u) & VFDC_DIR_DC) != 0u);
 
                 ++drive1.generation;
                 core_machine_fdc_refresh(fdc);
                 core_machine_port_write(port, 0x03f2u, 0x2du);
                 core_machine_fdc_refresh(fdc);
-                failed |= (core_machine_port_read(port, 0x03f7u) & VFDC_DIR_DC) == 0u;
+                core_machine_fdc_change_require(&failed, &first_failure, 7,
+                    (core_machine_port_read(port, 0x03f7u) & VFDC_DIR_DC) == 0u);
                 drive1.present = TYPE_FALSE;
                 ++drive1.generation;
                 core_machine_fdc_refresh(fdc);
-                failed |= !fdc->data.flagINTR || !fdc->connect.irq_source.asserted;
+                core_machine_fdc_change_require(&failed, &first_failure, 8,
+                    !fdc->data.flagINTR || !fdc->connect.irq_source.asserted);
                 core_machine_fdc_change_ack_irq(fdc, port);
                 status = 0u;
                 core_machine_fdc_change_command(fdc, port, sense_1, sizeof(sense_1));
                 status = (type_unsigned_8)core_machine_port_read(port, 0x03f5u);
-                failed |= (core_machine_port_read(port, 0x03f7u) & VFDC_DIR_DC) == 0u ||
-                    status != 0x11u;
+                core_machine_fdc_change_require(&failed, &first_failure, 9,
+                    (core_machine_port_read(port, 0x03f7u) & VFDC_DIR_DC) == 0u ||
+                    status != 0x11u);
 
                 drive1.present = TYPE_TRUE;
                 core_machine_fdc_refresh(fdc);
-                failed |= !fdc->data.flagINTR || !fdc->connect.irq_source.asserted;
+                core_machine_fdc_change_require(&failed, &first_failure, 10,
+                    !fdc->data.flagINTR || !fdc->connect.irq_source.asserted);
                 core_machine_port_write(port, 0x03f2u, 0x00u);
-                failed |= fdc->data.flagINTR || fdc->connect.irq_source.asserted ||
-                    fdc->data.phase != core_machine_fdc_PHASE_COMMAND;
+                core_machine_fdc_change_require(&failed, &first_failure, 11,
+                    fdc->data.flagINTR || fdc->connect.irq_source.asserted ||
+                    fdc->data.phase != core_machine_fdc_PHASE_COMMAND);
                 core_machine_port_write(port, 0x03f2u, 0x1cu);
                 core_machine_fdc_change_command(fdc, port, specify_dma, sizeof(specify_dma));
                 core_machine_fdc_change_command(fdc, port, read_0, sizeof(read_0));
-                failed |= (dma->data.status & VDMA_STATUS_DRQ(2u)) == 0u;
+                core_machine_fdc_change_require(&failed, &first_failure, 12,
+                    (dma->data.status & VDMA_STATUS_DRQ(2u)) == 0u);
                 core_machine_port_write(port, 0x03f2u, 0x0cu);
-                failed |= (dma->data.status & VDMA_STATUS_DRQ(2u)) != 0u ||
-                    fdc->data.phase != core_machine_fdc_PHASE_COMMAND;
+                core_machine_fdc_change_require(&failed, &first_failure, 13,
+                    (dma->data.status & VDMA_STATUS_DRQ(2u)) != 0u ||
+                    fdc->data.phase != core_machine_fdc_PHASE_COMMAND);
                 core_machine_port_write(port, 0x03f2u, 0x1cu);
                 core_machine_fdc_change_command(fdc, port, read_0, sizeof(read_0));
-                failed |= (dma->data.status & VDMA_STATUS_DRQ(2u)) == 0u;
+                core_machine_fdc_change_require(&failed, &first_failure, 14,
+                    (dma->data.status & VDMA_STATUS_DRQ(2u)) == 0u);
                 core_machine_port_write(port, 0x03f2u, 0x00u);
-                failed |= (dma->data.status & VDMA_STATUS_DRQ(2u)) != 0u ||
+                core_machine_fdc_change_require(&failed, &first_failure, 15,
+                    (dma->data.status & VDMA_STATUS_DRQ(2u)) != 0u ||
                     fdc->data.flagINTR || fdc->connect.irq_source.asserted ||
-                    fdc->data.phase != core_machine_fdc_PHASE_COMMAND;
+                    fdc->data.phase != core_machine_fdc_PHASE_COMMAND);
                 core_machine_port_write(port, 0x03f2u, 0x1cu);
                 core_machine_fdc_change_command(fdc, port, recalibrate_0,
                     sizeof(recalibrate_0));
-                failed |= !fdc->data.flagINTR || !fdc->connect.irq_source.asserted;
+                core_machine_fdc_advance_at(fdc, fdc->data.seek_due_tick);
+                core_machine_fdc_change_require(&failed, &first_failure, 16,
+                    !fdc->data.flagINTR || !fdc->connect.irq_source.asserted);
                 core_machine_port_write(port, 0x03f2u, 0x00u);
-                failed |= fdc->data.flagINTR || fdc->connect.irq_source.asserted;
+                core_machine_fdc_change_require(&failed, &first_failure, 17,
+                    fdc->data.flagINTR || fdc->connect.irq_source.asserted);
             }
         }
     }
     core_machine_destroy(machine);
     core_machine_media_registry_finalize(&media);
-    if (failed) return 1;
+    if (failed) {
+        STD_FPRINTF(stderr, "M5:T380:S2:FDC-MEDIA-CHANGE:FAIL:step=%d\n",
+            first_failure);
+        return 1;
+    }
     puts("M5:T291:S1:FDC:PORT:OK");
     return 0;
 }

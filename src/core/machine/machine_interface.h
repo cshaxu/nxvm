@@ -128,6 +128,15 @@ typedef struct core_machine_planar_parity_observation {
     C_INT nmi_signaled;
 } core_machine_planar_parity_observation;
 
+/* A profile-selected, bounded unpopulated memory window. Reads return the
+ * declared fallback byte and writes are deliberately discarded; it never adds
+ * installed RAM. This is for board models, not a generic memory default. */
+typedef struct core_machine_absent_memory_config {
+    type_unsigned_32 physical_start;
+    STD_SIZE_T bytes;
+    type_unsigned_8 read_value;
+} core_machine_absent_memory_config;
+
 /* The current DMA consumer is embedded core FDC storage; composition receives
  * only the resulting frozen request binding, never DMA controller storage. */
 typedef struct core_machine_dma_wiring {
@@ -242,7 +251,10 @@ type_status core_machine_get_nmi_mask(const core_machine *machine,
     C_INT *out_masked);
 
 /* A serial byte received from the keyboard attached to this machine's 8042.
- * Product host adapters form the selected keyboard scan-set stream first. */
+ * Product host adapters query the selected scan set before forming this
+ * device-native stream. */
+type_status core_machine_keyboard_get_native_scan_set(const core_machine *machine,
+    type_unsigned_8 *out_scan_set);
 type_status core_machine_keyboard_receive_native_byte(core_machine *machine,
     type_unsigned_8 native_byte);
 type_status core_machine_keyboard_receive_native_bytes(core_machine *machine,
@@ -263,6 +275,8 @@ type_status core_machine_configure_rtc_cmos(core_machine *machine,
     const core_machine_rtc_cmos_config *config);
 type_status core_machine_configure_planar_parity(core_machine *machine,
     const core_machine_planar_parity_config *config);
+type_status core_machine_configure_absent_memory(core_machine *machine,
+    const core_machine_absent_memory_config *config);
 type_status core_machine_report_planar_parity_fault(core_machine *machine);
 type_status core_machine_get_planar_parity_observation(const core_machine *machine,
     core_machine_planar_parity_observation *out_observation);

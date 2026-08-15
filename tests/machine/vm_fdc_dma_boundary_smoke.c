@@ -88,6 +88,9 @@ C_INT main(C_VOID)
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
         .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
     };
+    const vm_session_config model_339_config = {
+        .profile_kind = VM_SESSION_PROFILE_IBM_5170_MODEL_339
+    };
     const core_machine_run_budget budget = { 64u, 0u };
     vm_session_config fixture_config = config;
     core_machine_run_result result;
@@ -96,9 +99,11 @@ C_INT main(C_VOID)
     type_unsigned_8 result_byte = 0u;
     type_unsigned_16 conventional_kb = 0u;
     type_unsigned_32 instruction;
+    C_INT stage = 0;
     C_INT passed = 0;
 
     if (!vm_fdc_boundary_write_fixture(path)) goto done;
+    stage = 1;
     fixture_config.fdd_image = path;
     if (vm_session_create(&fixture_config, &session) != TYPE_STATUS_OK ||
         session == STD_NULL) goto done;
@@ -116,10 +121,40 @@ C_INT main(C_VOID)
         VM_FDC_BOUNDARY_RAM_SIZE_ADDRESS, &conventional_kb,
         sizeof(conventional_kb)) == TYPE_STATUS_OK && conventional_kb == 0x027fu &&
         session->core_machine->shared_dma_primary.data.page[2u] == 0x09u;
+    stage = 2;
+    vm_session_destroy(session);
+    session = STD_NULL;
+    if (!passed) goto done;
+    fixture_config = model_339_config;
+    fixture_config.fdd_image = path;
+    result_byte = 0u;
+    conventional_kb = 0u;
+    if (vm_session_create(&fixture_config, &session) != TYPE_STATUS_OK ||
+        session == STD_NULL) goto done;
+    stage = 3;
+    for (instruction = 0u; instruction < VM_FDC_BOUNDARY_RUN_LIMIT;
+        instruction += budget.instructions) {
+        if (core_machine_run(session->core_machine, budget, &result) != TYPE_STATUS_OK ||
+            result.reason == CORE_MACHINE_STOP_FAULT || core_machine_memory_read(
+                session->core_machine, VM_FDC_BOUNDARY_RESULT_ADDRESS, &result_byte,
+                sizeof(result_byte)) != TYPE_STATUS_OK) {
+            goto done;
+        }
+        if (result_byte != 0u) break;
+    }
+    passed = result_byte == 0xa5u && core_machine_memory_read(session->core_machine,
+        VM_FDC_BOUNDARY_RAM_SIZE_ADDRESS, &conventional_kb,
+        sizeof(conventional_kb)) == TYPE_STATUS_OK && conventional_kb == 0x0200u &&
+        session->core_machine->shared_dma_primary.data.page[2u] == 0x07u;
 done:
     vm_session_destroy(session);
     if (path[0] != '\0') DeleteFileA(path);
-    if (!passed) return 1;
+    if (!passed) {
+        STD_PRINTF("M5:T380:S2:FDC-DMA-BOUNDARY:FAIL:%d:%02x:%04x\n", stage,
+            result_byte, conventional_kb);
+        return 1;
+    }
     STD_PRINTF("M5:T348:S4:FDC-DMA-BOUNDARY:OK\n");
+    STD_PRINTF("M5:T380:S2:MODEL339-512K-FDC-START:OK\n");
     return 0;
 }

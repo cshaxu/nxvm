@@ -84,6 +84,8 @@ static C_INT core_machine_fdc_topology_read_sector(core_machine_fdc *fdc, t_port
     core_machine_fdc_topology_command(fdc, port, command, sizeof(command));
     if (core_machine_port_read(port, 0x03f5u) != expected) return 0;
     for (index = 1u; index < 512u; ++index) {
+        core_machine_fdc_advance_at(fdc, fdc->data.elapsed_ticks +
+            CORE_MACHINE_FDC_500K_BYTE_TICKS);
         (C_VOID)core_machine_port_read(port, 0x03f5u);
     }
     return core_machine_fdc_topology_result(fdc, port, result, 7u) &&
@@ -116,8 +118,8 @@ int main(C_VOID)
     core_machine_dma_request_binding dma_request = {0};
     core_machine_fdc_topology topology = {0};
     core_machine *machine = STD_NULL;
-    core_machine_fdc *fdc;
-    t_port *port;
+    core_machine_fdc *fdc = STD_NULL;
+    t_port *port = STD_NULL;
     type_unsigned_8 result[7] = {0};
     C_INT failed = 0;
 
@@ -152,42 +154,47 @@ int main(C_VOID)
                     sizeof(specify_non_dma));
                 core_machine_fdc_topology_command(fdc, port, sense_drive,
                     sizeof(sense_drive));
-                failed |= !core_machine_fdc_topology_result(fdc, port, result, 1u) ||
+                failed |= (!core_machine_fdc_topology_result(fdc, port, result, 1u) ||
                     result[0] != 0x30u ||
                     !core_machine_fdc_topology_read_sector(fdc, port, 0u, 0xa1u, result) ||
-                    drive0.read_count != 512u || drive1.read_count != 0u;
+                    drive0.read_count != 512u || drive1.read_count != 0u) ? 0x10 : 0;
 
                 core_machine_port_write(port, 0x03f2u, 0x2du);
                 sense_drive[1] = 1u;
                 core_machine_fdc_topology_command(fdc, port, sense_drive,
                     sizeof(sense_drive));
-                failed |= !core_machine_fdc_topology_result(fdc, port, result, 1u) ||
+                failed |= (!core_machine_fdc_topology_result(fdc, port, result, 1u) ||
                     result[0] != 0x31u ||
                     !core_machine_fdc_topology_read_sector(fdc, port, 1u, 0xb2u, result) ||
-                    drive0.read_count != 512u || drive1.read_count != 512u;
+                    drive0.read_count != 512u || drive1.read_count != 512u) ? 0x20 : 0;
 
                 core_machine_fdc_topology_command(fdc, port,
                     (const type_unsigned_8[]){0xe6u, 0u, 0u, 0u, 1u, 2u, 1u, 0x1bu, 0xffu}, 9u);
-                failed |= !core_machine_fdc_topology_result(fdc, port, result, 7u) ||
+                failed |= (!core_machine_fdc_topology_result(fdc, port, result, 7u) ||
                     result[0] != core_machine_fdc_ST0_ABNORMAL || result[1] != 0x04u ||
-                    drive0.read_count != 512u || drive1.read_count != 512u;
+                    drive0.read_count != 512u || drive1.read_count != 512u) ? 0x40 : 0;
 
                 core_machine_port_write(port, 0x03f2u, 0x4eu);
                 sense_drive[1] = 2u;
                 core_machine_fdc_topology_command(fdc, port, sense_drive,
                     sizeof(sense_drive));
-                failed |= !core_machine_fdc_topology_result(fdc, port, result, 1u) ||
-                    result[0] != 0x12u;
+                failed |= (!core_machine_fdc_topology_result(fdc, port, result, 1u) ||
+                    result[0] != 0x12u) ? 0x80 : 0;
                 core_machine_fdc_topology_command(fdc, port, read_absent, sizeof(read_absent));
-                failed |= !core_machine_fdc_topology_result(fdc, port, result, 7u) ||
+                failed |= (!core_machine_fdc_topology_result(fdc, port, result, 7u) ||
                     result[0] != core_machine_fdc_ST0_ABNORMAL || result[1] != 0x04u ||
-                    drive0.read_count != 512u || drive1.read_count != 512u;
+                    drive0.read_count != 512u || drive1.read_count != 512u) ? 0x100 : 0;
             }
         }
     }
     core_machine_destroy(machine);
     core_machine_media_registry_finalize(&media);
-    if (failed) return 1;
+    if (failed) {
+        STD_FPRINTF(stderr, "M5:T380:S2:FDC-TOPOLOGY:FAIL:%x:reads=%u,%u:phase=%u\n",
+            failed, drive0.read_count, drive1.read_count,
+            fdc == STD_NULL ? 0u : fdc->data.phase);
+        return 1;
+    }
     puts("M5:T290:S1:FDC:PORT:OK");
     return 0;
 }

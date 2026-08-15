@@ -378,7 +378,12 @@ static C_INT core_machine_fdc_transfer_byte(core_machine_fdc *fdc, t_latch *latc
             return TYPE_TRUE;
         }
     }
+    /* Address marks are optional media metadata.  A provider which does not
+     * advertise them describes conventional Data-mark sectors, not an
+     * unreadable medium. */
+    mark = CORE_MACHINE_MEDIA_ADDRESS_MARK_DATA;
     if (fdc->data.byte_offset == 0u && !write_to_media &&
+        (info.capabilities & CORE_MACHINE_MEDIA_CAPABILITY_ADDRESS_MARKS) != 0u &&
         (core_machine_media_get_address_mark(fdc->connect.media_registry, media_id,
             logical_sector, &mark, &result) != TYPE_STATUS_OK ||
         result != CORE_MACHINE_MEDIA_RESULT_OK)) {
@@ -429,9 +434,11 @@ static C_INT core_machine_fdc_prepare_scan_sector(core_machine_fdc *fdc)
         }
         media_id = core_machine_fdc_selected_media_id(fdc);
         logical_sector = offset / info.geometry.bytes_per_sector;
-        if (core_machine_media_get_address_mark(fdc->connect.media_registry, media_id,
-            logical_sector, &mark, &result) != TYPE_STATUS_OK ||
-            result != CORE_MACHINE_MEDIA_RESULT_OK) {
+        mark = CORE_MACHINE_MEDIA_ADDRESS_MARK_DATA;
+        if ((info.capabilities & CORE_MACHINE_MEDIA_CAPABILITY_ADDRESS_MARKS) != 0u &&
+            (core_machine_media_get_address_mark(fdc->connect.media_registry, media_id,
+                logical_sector, &mark, &result) != TYPE_STATUS_OK ||
+            result != CORE_MACHINE_MEDIA_RESULT_OK)) {
             core_machine_fdc_complete_transfer(fdc, core_machine_fdc_ST1_NO_DATA);
             return TYPE_FALSE;
         }

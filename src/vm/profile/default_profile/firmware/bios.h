@@ -30,6 +30,7 @@ typedef struct {
 typedef struct {
     type_unsigned_16 buildCS;
     type_unsigned_16 buildIP;
+    type_unsigned_16 base_memory_kib;
 } t_bios_data;
 
 /* bios connections */

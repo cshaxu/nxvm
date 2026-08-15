@@ -64,6 +64,11 @@ typedef struct core_machine_immutable_rom_mapping {
     type_unsigned_8 *image;
 } core_machine_immutable_rom_mapping;
 
+typedef struct core_machine_absent_memory {
+    core_machine_absent_memory_config config;
+    type_bool configured;
+} core_machine_absent_memory;
+
 struct core_machine_firmware_context {
     core_machine *machine;
     C_INT active;
@@ -107,6 +112,7 @@ struct core_machine {
     type_bool planar_parity_configured;
     type_bool planar_parity_latched;
     type_bool planar_parity_nmi_signaled;
+    core_machine_absent_memory absent_memory;
     core_machine_fdc_topology fdc_topology;
     type_bool fdc_configured;
     core_machine_hdc_topology hdc_topology;
