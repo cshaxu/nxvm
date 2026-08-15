@@ -2,27 +2,6 @@
 
 ## Current Work
 
-## M5 T374 S12 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation; T374 S11 is accepted and remains the sole compact progress row. |
-| Admission And Approval | The owner approved continued selected-device closure before timing/L3; accepted S11 selects this exact CGA write-only port-read correction. |
-| Objective | Make the selected Model-339 CGA expose no read route for the write-only 6845 index `3D4h`, Mode `3D8h` and Color `3D9h`, while retaining valid data/status behavior and all selected snapshot paths. |
-| Non-goals | No full 6845 geometry implementation, port-value bus-float emulation, timing/cadence change, composite, EGA/VGA, ROM/media use, firmware redesign or L3 claim. |
-| Reference Baseline | Accepted T374 S11 audit; IBM PC Technical Reference CGA port directions; VADP port registration/read-write handlers; core CGA and Model-339 topology smoke tests. |
-| Candidate Proposal | [IBM PC/AT 5170 selected-device functional closure](../proposals/m5-5170-selected-device-functional-closure.md). |
-| Files And ABI Surface | `src/core/machine/vadp.c`; a cohesive core CGA port smoke; CMake registration if needed; T374 evidence/history/index/status. No display snapshot ABI change. |
-| Applicable Rules | Task Reading Set; execution lifecycle/evidence/similar-issue rules; architecture and coding rules; documentation rules; contributing; source policy. Core VADP owns port behavior and VM profile only selects its topology. |
-| Verification | Sweep every VADP port registration and every read/`has_read` use for `3D4h`, `3D8h`, `3D9h`; rebuild/run core CGA text/status/graphics/640 and Model-339 topology targets through Git-Bash CMake/Ninja; run documentation governance and diff check. |
-| Expected Markers | One new or extended CGA smoke proves the three ports lack read handlers, permitted `3D5h`/`3DAh` routes retain their current selected behavior, and all graphics/text/topology markers pass. |
-| Asset Needs | None. No ROM, firmware, guest media, external code or local asset is opened, copied, written or committed. |
-| Reporting Requirements | Report exact source correction, complete port/caller sweep, focused proof, pushed P1, coordinator acceptance and remaining CRTC-geometry transfer. |
-| Stop Conditions | Stop and transfer if the port framework cannot represent absent reads without a broader bus/open-bus contract, if a retained consumer depends on the invalid read, or if a repair changes unselected EGA/VGA behavior. |
-| Exit Criteria | The three write-only ports have no read route; permitted CGA port behavior and selected Model-339 topology regressions pass; all sweep hits are classified; no timing or L3 claim is introduced. |
-| Original Owner Request | Fully implement selected-machine functional gaps before timing/L3 while retaining a truthful raw-IMG media boundary and external assets outside Git. |
-| Similar-Issue Sweep | Search all VADP CRTC/Mode/Color registration and read handlers, all port reads and `has_read` assertions, all profile port maps, and all related tests so no invalid read route remains through another configuration. |
-
 ## Current Technical Baseline
 
 - **Current developer artifact:** T369 S4 `vm-0-5-0369` /
@@ -42,7 +21,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T374 S11 | P1 `1f7e5b15` classifies retained Model-339 digital-CGA routes and selects the write-only CGA port-read correction; full 6845 geometry and timing remain open. [Audit evidence](../etc/evidence/t374-s11-model339-cga-functional-audit.md). |
+| T374 S12 | P1 `27b46067` removes invalid Model-339 CGA reads at `3D4h`/`3D8h`/`3D9h`, retains valid routes and preserves EGA Mode/Color reads. [Repair evidence](../etc/evidence/t374-s12-cga-write-only-port-repair.md). |
 | T373 | Closed at `06246a8e`: S1--S4 freeze the three-machine source-labelled capability ledger and exact functional/timing/current-product receivers. **5170, DeskPro Model 40 and PC/XT 5160-268 L3 are not ready.** The next candidate is 5170 selected-device functional closure. [Closure audit](../etc/evidence/t373-s4-task-closure-audit.md). |
 | T372 | Closed at `3f56c72c`: S1--S8 establish that Model 339 has selected logical ownership and deterministic ordering, but lacks selected-device functional closure and source-backed board/phase timing. **5170 model-L3 is not ready.** [Closure audit](../etc/evidence/t372-s8-task-closure-transfer-audit.md). |
 | T370 | Closed at `77a73c04`: S1--S5 reconciled all selected Model-339 device-service owners and transferred unavailable duration to phase refinement; **5170 model-L3 is not ready**. [Closure audit](../etc/evidence/t370-s5-planar-cga-transfer-audit.md). |
