@@ -13,6 +13,7 @@ typedef struct core_machine_fdc_fixture_media {
     type_unsigned_32 read_count;
     type_unsigned_32 write_count;
     type_unsigned_32 format_count;
+    core_machine_media_address_mark mark;
     type_bool present;
     type_bool read_only;
     core_machine_media_result forced_read_result;
@@ -35,7 +36,8 @@ static core_machine_media_result core_machine_fdc_fixture_query(C_VOID *context,
     out_info->capabilities = CORE_MACHINE_MEDIA_CAPABILITY_REMOVABLE |
         CORE_MACHINE_MEDIA_CAPABILITY_GEOMETRY_KNOWN |
         CORE_MACHINE_MEDIA_CAPABILITY_CHANGE_DETECTABLE |
-        CORE_MACHINE_MEDIA_CAPABILITY_FORMATTABLE;
+        CORE_MACHINE_MEDIA_CAPABILITY_FORMATTABLE |
+        CORE_MACHINE_MEDIA_CAPABILITY_ADDRESS_MARKS;
     if (media->read_only) out_info->capabilities |= CORE_MACHINE_MEDIA_CAPABILITY_READ_ONLY;
     out_info->geometry.cylinders = 1u;
     out_info->geometry.heads = 1u;
@@ -103,14 +105,40 @@ static core_machine_media_result core_machine_fdc_fixture_format(C_VOID *context
     return CORE_MACHINE_MEDIA_RESULT_OK;
 }
 
+static core_machine_media_result core_machine_fdc_fixture_get_mark(C_VOID *context,
+    type_unsigned_64 logical_sector, core_machine_media_address_mark *out_mark)
+{
+    core_machine_fdc_fixture_media *media = context;
+
+    if (media == STD_NULL || out_mark == STD_NULL || !media->present)
+        return CORE_MACHINE_MEDIA_RESULT_ABSENT;
+    if (logical_sector != 0u) return CORE_MACHINE_MEDIA_RESULT_INVALID_RANGE;
+    *out_mark = media->mark;
+    return CORE_MACHINE_MEDIA_RESULT_OK;
+}
+
+static core_machine_media_result core_machine_fdc_fixture_set_mark(C_VOID *context,
+    type_unsigned_64 logical_sector, core_machine_media_address_mark mark)
+{
+    core_machine_fdc_fixture_media *media = context;
+
+    if (media == STD_NULL || !media->present) return CORE_MACHINE_MEDIA_RESULT_ABSENT;
+    if (media->read_only) return CORE_MACHINE_MEDIA_RESULT_READ_ONLY;
+    if (logical_sector != 0u || (mark != CORE_MACHINE_MEDIA_ADDRESS_MARK_DATA &&
+        mark != CORE_MACHINE_MEDIA_ADDRESS_MARK_DELETED_DATA))
+        return CORE_MACHINE_MEDIA_RESULT_INVALID_RANGE;
+    media->mark = mark;
+    return CORE_MACHINE_MEDIA_RESULT_OK;
+}
+
 static const core_machine_media_provider core_machine_fdc_fixture_provider = {
     core_machine_fdc_fixture_query,
     core_machine_fdc_fixture_read,
     core_machine_fdc_fixture_write,
     core_machine_fdc_fixture_format,
     STD_NULL,
-    STD_NULL,
-    STD_NULL
+    core_machine_fdc_fixture_get_mark,
+    core_machine_fdc_fixture_set_mark
 };
 
 static C_VOID core_machine_fdc_command(core_machine_fdc *fdc, t_port *port,
@@ -160,6 +188,12 @@ C_INT main(C_VOID)
     };
     static const type_unsigned_8 write_sector[] = {
         0xc5u, 0x00u, 0x00u, 0x00u, 0x01u, 0x02u, 0x01u, 0x1bu, 0xffu
+    };
+    static const type_unsigned_8 read_deleted_sector[] = {
+        0xecu, 0x00u, 0x00u, 0x00u, 0x01u, 0x02u, 0x01u, 0x1bu, 0xffu
+    };
+    static const type_unsigned_8 write_deleted_sector[] = {
+        0xc9u, 0x00u, 0x00u, 0x00u, 0x01u, 0x02u, 0x01u, 0x1bu, 0xffu
     };
     static const type_unsigned_8 format_track[] = {
         0x4du, 0x00u, 0x02u, 0x01u, 0x1bu, 0xa5u
@@ -280,6 +314,34 @@ C_INT main(C_VOID)
                 failed |= !core_machine_fdc_read_result(fdc, port, result, sizeof(result)) ||
                     result[0] != core_machine_fdc_ST0_NORMAL || fixture.read_count != 512u;
 
+                fixture.mark = CORE_MACHINE_MEDIA_ADDRESS_MARK_DELETED_DATA;
+                core_machine_fdc_command(fdc, port, read_sector, sizeof(read_sector));
+                for (type_unsigned_32 index = 0u; index < 512u; ++index) {
+                    (C_VOID)core_machine_port_read(port, fdc_config.data_port);
+                }
+                failed |= !core_machine_fdc_read_result(fdc, port, result, sizeof(result)) ||
+                    (result[2] & VFDC_ST2_CONTROL_MARK) == 0u;
+                core_machine_fdc_command(fdc, port, read_deleted_sector,
+                    sizeof(read_deleted_sector));
+                for (type_unsigned_32 index = 0u; index < 512u; ++index) {
+                    (C_VOID)core_machine_port_read(port, fdc_config.data_port);
+                }
+                failed |= !core_machine_fdc_read_result(fdc, port, result, sizeof(result)) ||
+                    (result[2] & VFDC_ST2_CONTROL_MARK) != 0u;
+
+                fixture.mark = CORE_MACHINE_MEDIA_ADDRESS_MARK_DATA;
+                core_machine_fdc_command(fdc, port, write_deleted_sector,
+                    sizeof(write_deleted_sector));
+                for (type_unsigned_32 index = 0u; index < 512u; ++index) {
+                    core_machine_port_write(port, fdc_config.data_port,
+                        index == 0u ? 0x6bu : 0u);
+                }
+                failed |= !core_machine_fdc_read_result(fdc, port, result, sizeof(result)) ||
+                    result[0] != core_machine_fdc_ST0_NORMAL ||
+                    fixture.mark != CORE_MACHINE_MEDIA_ADDRESS_MARK_DELETED_DATA ||
+                    fixture.bytes[0] != 0x6bu;
+
+                fixture.write_count = 0u;
                 core_machine_fdc_command(fdc, port, write_sector, sizeof(write_sector));
                 for (type_unsigned_32 index = 0u; index < 512u; ++index) {
                     core_machine_port_write(port, fdc_config.data_port,
@@ -397,5 +459,6 @@ C_INT main(C_VOID)
     puts("M5:T375:S20:FDC-DMA-CADENCE:OK");
     puts("M5:T375:S21:FDC-SEEK-CADENCE:OK");
     puts("M5:T375:S24:FDC-NDMA-CADENCE:OK");
+    puts("M5:T376:S3:8272A-DELETED-DATA:OK");
     return 0;
 }

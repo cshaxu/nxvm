@@ -19,6 +19,8 @@
 #define core_machine_fdc_CMD_READ_ID 0x0au
 #define core_machine_fdc_CMD_WRITE_DATA 0x05u
 #define core_machine_fdc_CMD_READ_DATA 0x06u
+#define core_machine_fdc_CMD_WRITE_DELETED_DATA 0x09u
+#define core_machine_fdc_CMD_READ_DELETED_DATA 0x0cu
 #define core_machine_fdc_CMD_FORMAT_TRACK 0x0du
 #define core_machine_fdc_CMD_READ_TRACK 0x02u
 
@@ -239,6 +241,7 @@ static C_VOID core_machine_fdc_cancel_execution(core_machine_fdc *fdc)
     fdc->data.ndma_byte_gate_pending = TYPE_FALSE;
     fdc->data.next_ndma_byte_tick = 0u;
     fdc->data.pending_st1 = 0u;
+    fdc->data.pending_st2 = 0u;
     fdc->data.transfer_remaining = 0u;
     fdc->data.byte_offset = 0u;
     fdc->data.format_headers_remaining = 0u;
@@ -261,6 +264,7 @@ static C_VOID core_machine_fdc_command_phase(core_machine_fdc *fdc)
     fdc->data.result_length = 0u;
     fdc->data.result_index = 0u;
     fdc->data.pending_st1 = 0u;
+    fdc->data.pending_st2 = 0u;
 }
 
 static C_VOID core_machine_fdc_result_phase(core_machine_fdc *fdc, type_unsigned_8 length)
@@ -338,6 +342,8 @@ static C_INT core_machine_fdc_transfer_byte(core_machine_fdc *fdc, t_latch *latc
     core_machine_media_result result;
     core_machine_media_id media_id;
     type_unsigned_64 offset;
+    type_unsigned_64 logical_sector;
+    core_machine_media_address_mark mark;
     if (fdc->data.transfer_remaining == 0u || !core_machine_fdc_drive_ready(fdc)) {
         core_machine_fdc_complete_transfer(fdc, core_machine_fdc_ST1_NO_DATA);
         return TYPE_TRUE;
@@ -349,6 +355,28 @@ static C_INT core_machine_fdc_transfer_byte(core_machine_fdc *fdc, t_latch *latc
         return TYPE_TRUE;
     }
     media_id = core_machine_fdc_selected_media_id(fdc);
+    logical_sector = offset / info.geometry.bytes_per_sector;
+    if (fdc->data.byte_offset == 0u && write_to_media) {
+        if (core_machine_media_set_address_mark(fdc->connect.media_registry, media_id,
+            logical_sector, fdc->data.transfer_write_deleted ?
+            CORE_MACHINE_MEDIA_ADDRESS_MARK_DELETED_DATA :
+            CORE_MACHINE_MEDIA_ADDRESS_MARK_DATA, &result) != TYPE_STATUS_OK ||
+            result != CORE_MACHINE_MEDIA_RESULT_OK) {
+            core_machine_fdc_complete_transfer(fdc, result == CORE_MACHINE_MEDIA_RESULT_READ_ONLY ?
+                core_machine_fdc_ST1_NOT_WRITABLE : core_machine_fdc_ST1_NO_DATA);
+            return TYPE_TRUE;
+        }
+    }
+    if (fdc->data.byte_offset == 0u && !write_to_media &&
+        (core_machine_media_get_address_mark(fdc->connect.media_registry, media_id,
+            logical_sector, &mark, &result) != TYPE_STATUS_OK ||
+        result != CORE_MACHINE_MEDIA_RESULT_OK)) {
+        core_machine_fdc_complete_transfer(fdc, core_machine_fdc_ST1_NO_DATA);
+        return TYPE_TRUE;
+    }
+    if (fdc->data.byte_offset == 0u && !write_to_media &&
+        ((mark == CORE_MACHINE_MEDIA_ADDRESS_MARK_DELETED_DATA) !=
+        fdc->data.transfer_expect_deleted)) fdc->data.pending_st2 |= VFDC_ST2_CONTROL_MARK;
     if (write_to_media) {
         if (core_machine_media_write_bytes(fdc->connect.media_registry,
             media_id, offset, &latch->data.byte, 1u, &result) !=
@@ -460,13 +488,16 @@ static type_unsigned_8 core_machine_fdc_command_length(type_unsigned_8 opcode)
     case core_machine_fdc_CMD_READ_ID: return 2u;
     case core_machine_fdc_CMD_WRITE_DATA:
     case core_machine_fdc_CMD_READ_DATA:
+    case core_machine_fdc_CMD_WRITE_DELETED_DATA:
+    case core_machine_fdc_CMD_READ_DELETED_DATA:
     case core_machine_fdc_CMD_READ_TRACK: return 9u;
     case core_machine_fdc_CMD_FORMAT_TRACK: return 6u;
     default: return 1u;
     }
 }
 
-static C_VOID core_machine_fdc_start_transfer(core_machine_fdc *fdc, C_INT write_to_media)
+static C_VOID core_machine_fdc_start_transfer(core_machine_fdc *fdc, C_INT write_to_media,
+    C_INT deleted_data)
 {
     type_unsigned_8 size = core_machine_fdc_sector_size(fdc->data.cmd[5]);
     core_machine_media_info info;
@@ -477,6 +508,8 @@ static C_VOID core_machine_fdc_start_transfer(core_machine_fdc *fdc, C_INT write
     fdc->data.sector = fdc->data.cmd[4];
     fdc->data.eot = fdc->data.cmd[6];
     fdc->data.byte_offset = 0u;
+    fdc->data.transfer_expect_deleted = !write_to_media && deleted_data;
+    fdc->data.transfer_write_deleted = write_to_media && deleted_data;
     if (size != 2u || (fdc->data.ccr != 0u && fdc->data.ccr != VFDC_CCR_DRC) ||
         !core_machine_fdc_drive_ready(fdc) ||
         !core_machine_fdc_media_info(fdc, &info, &result) ||
@@ -587,13 +620,19 @@ static C_VOID core_machine_fdc_execute(core_machine_fdc *fdc)
         }
         break;
     case core_machine_fdc_CMD_READ_DATA:
-        core_machine_fdc_start_transfer(fdc, TYPE_FALSE);
+        core_machine_fdc_start_transfer(fdc, TYPE_FALSE, TYPE_FALSE);
         break;
     case core_machine_fdc_CMD_READ_TRACK:
         core_machine_fdc_start_read_track(fdc);
         break;
     case core_machine_fdc_CMD_WRITE_DATA:
-        core_machine_fdc_start_transfer(fdc, TYPE_TRUE);
+        core_machine_fdc_start_transfer(fdc, TYPE_TRUE, TYPE_FALSE);
+        break;
+    case core_machine_fdc_CMD_READ_DELETED_DATA:
+        core_machine_fdc_start_transfer(fdc, TYPE_FALSE, TYPE_TRUE);
+        break;
+    case core_machine_fdc_CMD_WRITE_DELETED_DATA:
+        core_machine_fdc_start_transfer(fdc, TYPE_TRUE, TYPE_TRUE);
         break;
     case core_machine_fdc_CMD_FORMAT_TRACK:
         fdc->data.selected_drive = fdc->data.cmd[1] & 0x03u;
@@ -808,7 +847,7 @@ C_VOID core_machine_fdc_advance_at(core_machine_fdc *fdc,
     } else if (fdc->data.phase == core_machine_fdc_PHASE_PENDING_COMPLETE) {
         core_machine_fdc_set_result(fdc, fdc->data.pending_st1 == 0u ?
             core_machine_fdc_ST0_NORMAL : core_machine_fdc_ST0_ABNORMAL,
-            fdc->data.pending_st1, 0u);
+            fdc->data.pending_st1, fdc->data.pending_st2);
         core_machine_fdc_result_phase(fdc, 7u);
         core_machine_fdc_raise_irq(fdc);
     }

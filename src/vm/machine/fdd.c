@@ -308,7 +308,6 @@ static core_machine_media_result vm_machine_fdd_media_set_address_mark(
         return CORE_MACHINE_MEDIA_RESULT_INVALID_RANGE;
     TYPE_DEREFERENCE_UNSIGNED_8(fdd->connect.pAddressMarks + logical_sector) =
         mark == CORE_MACHINE_MEDIA_ADDRESS_MARK_DELETED_DATA;
-    ++fdd->connect.media_generation;
     return CORE_MACHINE_MEDIA_RESULT_OK;
 }
 

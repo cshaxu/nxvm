@@ -2,10 +2,31 @@
 
 ## Current Work
 
-**Active: M5 T376 S2.**
+**Active: M5 T376 S3.**
 
 | Task | Compact progress |
 | --- | --- |
+
+## M5 T376 S3 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner-approved continuous M5 L3 implementation; T376 S2 accepts the VM-side address-mark lifecycle required by deleted-data controller commands. |
+| Objective | Add documented 8272A Read Deleted Data, Write Deleted Data and ordinary-read Control-Mark behavior through the existing FDC transfer, DMA2, IRQ6, reset and T375 cadence owners. |
+| Non-goals | No Scan family, FDC filesystem path, test-only command API, raw image format change, new DMA engine, generic controller timing, or final L3 claim. |
+| Reference Baseline | T374 identifies Deleted Data/Control Mark semantics as metadata, T375 fixes 500-kbit/s byte cadence, and T376 S2 supplies VM FDD address-mark persistence. |
+| Candidate Proposal | [8272A raw-IMG sidecar fidelity closure](../proposals/m5-8272a-img-sidecar-fidelity-closure.md). |
+| Files And ABI Surface | `core/machine/fdc.*`, existing FDC media tests and evidence/index/current/history. No VM host API or core media ABI change. |
+| Applicable Rules | One FDC/DMA/IRQ owner, address marks from provider only, controller result bytes reflect documented operation, reset/cancel preserve existing lifecycle, and no guessed duration. |
+| Verification | Focused FDC tests cover normal/deleted read result distinction, deleted write persistence, DMA/non-DMA cadence and reset cancellation; current GCC build/test and documentation governance pass. |
+| Expected Markers | `M5:T376:S2:RAW-IMG-SIDECAR-LIFECYCLE:OK`; `M5:T376:S3:8272A-DELETED-DATA:OK`. |
+| Asset Needs | No ROM, guest media or external source import; test providers use project-owned in-memory media state. |
+| Reporting Requirements | Record opcode/result mapping, provider ownership, preservation of timing/IRQ/DMA routes, focused proof, and remaining Scan receiver. |
+| Stop Conditions | Stop for owner direction if documented results require a provider semantic absent from the frozen ABI or a timing change outside T375. |
+| Exit Criteria | Both deleted commands and normal-read Control Mark are guest-visible through existing controller routes, persisted marks round-trip through S2, regressions pass, and Scan remains explicit next work. |
+| Original Owner Request | Continue through L3 before Windows; retain raw IMG compatibility, avoid pure test APIs, and use authoritative controller behavior. |
+| Similar-Issue Sweep | Inspect every FDC opcode/length/execute/transfer/result path, media get/set-address-mark caller, DMA/non-DMA byte gate and reset/cancel route. |
 
 ## Current Technical Baseline
 

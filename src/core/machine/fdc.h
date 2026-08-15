@@ -53,6 +53,9 @@ typedef struct {
     type_unsigned_8 ret[7];
     type_unsigned_8 st0, st1, st2, st3; /* state registers */
     type_unsigned_8 pending_st1;
+    type_unsigned_8 pending_st2;
+    type_bool transfer_expect_deleted;
+    type_bool transfer_write_deleted;
     type_unsigned_16 cylinder;
     type_unsigned_16 drive_cylinder[CORE_MACHINE_FDC_DRIVE_COUNT];
     type_unsigned_16 seek_target;
@@ -144,6 +147,7 @@ typedef struct {
 /* status register 2 bits */
 #define VFDC_ST2_SCAN_MATCH    0x04
 #define VFDC_ST2_SCAN_MISMATCH 0x08
+#define VFDC_ST2_CONTROL_MARK  0x40
 
 /* status register 3 bit */
 #define VFDC_ST3_DS 0x03 /* drive select */

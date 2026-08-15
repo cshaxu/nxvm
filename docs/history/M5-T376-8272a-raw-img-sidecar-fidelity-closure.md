@@ -23,3 +23,9 @@ S2 implements the optional sidecar only at the VM FDD/media-save boundary. It
 must preserve ordinary raw IMG use, validate a bounded metadata schema before
 publishing media, and preserve the currently mounted guest-visible pair on any
 mount or save failure.
+
+### S3: Deleted-Data controller path
+
+S3 binds Read Deleted Data, Write Deleted Data and ordinary-read Control Mark
+result behavior to the existing FDC transfer owner and T375 cadence. It does
+not admit Scan commands.
