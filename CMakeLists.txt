@@ -658,6 +658,10 @@ add_executable(core-machine-trace-smoke
     tests/core/machine_trace_smoke.c
 )
 target_link_libraries(core-machine-trace-smoke PRIVATE core-machine)
+add_executable(core-machine-external-time-trace-s18-smoke
+    tests/core/machine_external_time_trace_s18_smoke.c
+)
+target_link_libraries(core-machine-external-time-trace-s18-smoke PRIVATE core-machine)
 
 add_executable(core-machine-debug-smoke
     tests/core/machine_debug_smoke.c

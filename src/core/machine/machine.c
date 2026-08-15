@@ -3210,6 +3210,9 @@ static type_status core_machine_publish_elapsed_ticks(core_machine *machine,
     if (cpu_retired) {
         core_machine_trace_record(machine, CORE_MACHINE_TRACE_CPU_RETIRE,
             core_machine_linear_pc(machine), (type_unsigned_32)elapsed_ticks, 0u);
+    } else {
+        core_machine_trace_record(machine, CORE_MACHINE_TRACE_EXTERNAL_TIME,
+            0u, (type_unsigned_32)elapsed_ticks, 0u);
     }
     core_machine_advance_scheduler(machine, elapsed_ticks);
     return TYPE_STATUS_OK;
