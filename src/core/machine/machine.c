@@ -2649,6 +2649,16 @@ static C_INT core_machine_80286_source_instruction_cost(core_machine *machine,
         return 1;
     }
     switch (opcode) {
+    case 0x0fu:
+        if (core_machine_control_stack_is_protected(data) && prefixes + 2u <
+            data->oplen && data->opcodes[prefixes + 1u] == 0x00u &&
+            (((data->opcodes[prefixes + 2u] >> 3u) & 7u) == 4u ||
+             ((data->opcodes[prefixes + 2u] >> 3u) & 7u) == 5u)) {
+            *out_ticks = data->flagMem ? 16u : 14u;
+            return 1;
+        }
+        *out_ticks = CORE_MACHINE_SOURCE_UNALLOCATED_TICKS;
+        return 1;
     case 0x90u:
         *out_ticks = core_machine_80286_source_timing_lookup(
             CORE_MACHINE_SOURCE_TIMING_NOP);
