@@ -2,27 +2,6 @@
 
 ## Current Work
 
-## M5 T369 S1 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | New; T368 is task-level closed at `4da84be8`, so T369 is the next numeric task and begins at S1. |
-| Admission And Approval | The owner authorized continued single-agent execution of the ordered M5 L3 plan before Windows 3.1. This packet admits the first Queue receiver, bus-timed PC/AT operation, with no exception to source, artifact, or protected-media rules. |
-| Objective | Produce the complete Model 339/Type 3 bus-fact and production-route ledger that allocates each CPU memory/I/O, DMA, PIC/INTA, FDC/DRQ and reset/trace fact to a bounded later S, an existing owner, or a precise transfer. |
-| Non-goals | No numeric wait value, physical clock conversion, speculative READY/HOLD/HLDA behavior, x87 change, controller-command rewrite, ATA/HDC reuse, ROM/media import, device-service or 5170-L3 claim. |
-| Reference Baseline | T366 Model 339 lock/NMI/route audits, T354 transaction lifecycle evidence, closed T368 CPU ledger, IBM 5170 Technical Reference, and owner-authorized 86Box/MAME/PCjs behavior leads only where the primary source is range-only or silent. |
-| Candidate Proposal | [Bus-timed PC/AT operation](../proposals/m5-bus-timed-pcat-operation.md). |
-| Files And ABI Surface | New T369 history and indexed S1 evidence; `docs/states/CURRENT.md` and `docs/etc/README.md`. Production source is read-only in S1; no ABI or product artifact changes. |
-| Applicable Rules | Execution evidence/closure and similar-issue rules; documentation authority boundaries; architecture one-owner/lifecycle rules; source-policy no-import and reference-provenance rules. S1 must not treat a secondary model as IBM timing authority. |
-| Verification | Repository-wide production route sweep with recorded `rg` queries; source/provenance matrix; documentation governance and `git diff --check`. No build/artifact claim is required because S1 changes no runtime path. |
-| Expected Markers | Every selected availability family has exactly one current owner and one S2-or-later receiver/disposition; every timing value is labelled primary, bounded-secondary, or transfer; no current ATA/HDC route is described as IBM MFM/ST-506. |
-| Asset Needs | No firmware, guest media, Microsoft binary, third-party source, trace, or machine-local path. Public documents and reference-source reading only. |
-| Reporting Requirements | Record the exact baseline facts, primary/secondary authority status, source/caller/write/reset/trace route, whether the fact can be measured without protected assets, and the stop/transfer decision for every selected family. |
-| Stop Conditions | Stop and transfer a family if the primary material does not identify it and no named comparable reference model can remain within a documented range; stop the whole S if the baseline facts conflict with T366. |
-| Exit Criteria | P1 supplies an indexed finite S1 ledger and T369 history progress. It must identify the first implementable availability mechanism without assigning a timing scalar or claiming 5170 L3. |
-| Original Owner Request | Continue the current task plan until comprehensive L3 precision is complete, before any Windows 3.1 task; use 86Box/MAME/PCjs only as bounded fallback references when authoritative manuals do not determine timing. |
-| Similar-Issue Sweep | Sweep all production CPU transaction begin/commit/cancel routes, DMA advance/transfer routes, PIC acknowledgement routes, selected FDC DRQ/readiness routes, Model 339 profile composition, reset, trace and direct external API routes; exclude debugger/stopped APIs only with their retained immediate boundary. |
-
 ## Current Technical Baseline
 
 - **Current developer artifact:** T362 S2 `vm-0-5-0362` /
@@ -42,6 +21,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T369 S1 | Accepted at `87460471`: completes the Model 339 primary/secondary source disposition and production-route inventory. It admits no timing scalar: IBM/Intel define topology and CPU signal boundaries, while the examined 86Box/MAME/PCjs models cannot establish a comparable board value. S2 is the source-and-contract receiver; no 5170 L3 claim. [Ledger](../etc/evidence/t369-s1-pcat-bus-fact-route-ledger.md). |
 | T368 | Closed at `4da84be8`: completes the source-labelled 80286 successful-retirement CPU ledger, with exact values or declared source-undefined transfers. The next Queue receiver is bus-timed PC/AT operation; CPU waits, bus/device timing and IBM 5170 L3 remain open. [Closure audit](../etc/evidence/t368-s7-80286-retirement-closure-audit.md). |
 | T367 | Closed at `f60d87ea`: concrete machine selection and CPU/timing contract binding are VM-owned; the default-PC/AT option path now selects a VM contract before the sole core materialization boundary, while Model 339 remains descriptor-selected. Focused profile/session regressions pass; an unrelated platform-request compile failure blocks a full-gate claim. No CPU-timing, bus, device or L3 receiver is closed. [Binding evidence](../etc/evidence/t367-s2-vm-profile-contract-binding.md). |
 | T366 | Closed at `743edc18`: locks the Model 339 baseline, planar-parity NMI and selected topology, and accepts bounded 80286 source-retirement rows. Complete CPU retirement, bus availability, device service timing and profile-L3 closure transfer explicitly; **5170 model-L3 is not ready**. [Closure audit](../etc/evidence/t366-s32-closure-transfer-audit.md). |

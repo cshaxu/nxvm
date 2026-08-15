@@ -22,3 +22,8 @@ route to its source status, availability/lifecycle owner, trace/reset behavior,
 and bounded later receiver. It distinguishes IBM primary evidence from allowed
 86Box, MAME and PCjs behavior leads, and leaves any value absent from both as
 an explicit transfer. S1 adds no runtime timing, artifact, or 5170-L3 claim.
+
+S1 is accepted at `87460471`. The next receiver is a bounded board-evidence
+and availability-contract reconciliation; it cannot invent a scalar from the
+current deterministic scheduling order or from a non-comparable emulator
+configuration.
