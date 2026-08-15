@@ -136,3 +136,11 @@ focused controller replay passes, while the generic default-PC/AT composition
 smoke exposes a VADP profile-leaf direction contradiction introduced by the
 accepted S12 preservation claim. The next bounded corrective S must reconcile
 that generic EGA descriptor/handler assertion; 5170 timing and L3 remain open.
+
+### S16: default-EGA VADP direction corrective repair
+
+S16's [direction-repair evidence](../etc/evidence/t374-s16-default-ega-vadp-direction-repair.md)
+changes only the default-PC/AT declaration for write-only CRTC-index port
+`3D4h`, bringing it into agreement with the retained VADP registration. The
+formerly failing default-PC/AT composition test and focused Model-339/EGA
+regressions pass. It adds no display capability or timing claim.
