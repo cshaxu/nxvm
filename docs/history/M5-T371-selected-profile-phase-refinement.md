@@ -39,6 +39,9 @@ clock conversions to S5's replay and task transfer audit.
 S5 composes retained timeline, transaction, competition and HOLD replay proof
 and transfers every physical boundary to the 5170 L3 closure audit.
 
+S5 is accepted at `d8c81c2b`. T371 is ready only to transfer its complete
+logical-phase evidence and residual physical gaps to that audit.
+
 S4 is accepted at `a2a28b2b`. S5 receives deterministic replay, copied trace,
 reset/cancellation and phase-transfer audit only.
 
