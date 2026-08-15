@@ -23,3 +23,6 @@ memory/I/O phase vocabulary with the same no-guessed-value constraint.
 S2 retains Appendix-B retirement facts and the one transaction vocabulary while
 rejecting a prefetch or board-wait conversion. Its [boundary record](../etc/evidence/t371-s2-cpu-bus-phase-boundary.md)
 assigns DMA/PIC/INTA composition to S3.
+
+S2 is accepted at `f0d7aeb5`. No source-supported Model-339 wait or prefetch
+value was found; S3 receives only logical DMA/PIC/INTA composition.

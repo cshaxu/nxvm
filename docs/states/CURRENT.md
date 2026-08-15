@@ -2,27 +2,6 @@
 
 ## Current Work
 
-## M5 T371 S2 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation; T371 S1 accepted at `d426f884`. |
-| Admission And Approval | The owner-approved Model-339 phase-refinement program continues with the S1-assigned CPU retirement, prefetch and memory/I/O boundary ledger. |
-| Objective | Reconcile accepted 80286 retirement timing with the current executor, prefetch and shared transaction boundaries; define only source-supported phase vocabulary and exact unavailable wait-state transfers. |
-| Non-goals | No numerical wait state, prefetch implementation, external bus behavior change, new trace ABI, physical-cycle claim, device microstate, 80386/8088 or Windows work. |
-| Reference Baseline | T368 CPU closure, T369 bus audit, T371 S1 ledger, Model-339 descriptor, executor/transaction source and Intel 80286/IBM PC/AT authorities. |
-| Candidate Proposal | [Selected-profile model-L3 phase refinement](../proposals/m5-cycle-exact-selected-profile.md). |
-| Files And ABI Surface | S2 evidence, T371 history, Current status and evidence index only. Stop before source, ABI, CMake, test or runtime changes. |
-| Applicable Rules | One successful-retirement publisher and transaction owner; source-labelled timing; no guessed board wait; copied trace and reset/cancellation boundaries; documentation/source-policy rules. |
-| Verification | Executor/transaction/prefetch/static sweep, source-to-vocabulary matrix, descriptor-consumer review, documentation governance and diff check. |
-| Expected Markers | Existing CPU/transaction smokes remain evidence; no new timing marker, artifact or L3 claim. |
-| Asset Needs | Public manuals and project-authored evidence only; no ROM, guest media, firmware, external code, binary or host trace. |
-| Reporting Requirements | Separate exact retirement facts from fetch/bus facts, identify every source gap and state the S3 receiver. |
-| Stop Conditions | Stop if a result needs a guessed READY value, undocumented prefetch policy, host clock, second transaction owner, public interface or physical-cycle claim. |
-| Exit Criteria | P1 commits an indexed CPU/bus phase-boundary reconciliation with exact S3 transfer and no runtime timing value. |
-| Original Owner Request | Continue in Queue order toward complete L3 before Windows 3.1; use named reference models only where authoritative manuals leave a range or no range, without treating them as IBM authority. |
-| Similar-Issue Sweep | Sweep executor retirement/publish, instruction timing tables, fetch/decode paths, transaction begin/commit/cancel, memory/port accessors, Model-339 clock config, trace consumers and focused CPU/transaction tests. |
-
 ## Current Technical Baseline
 
 - **Current developer artifact:** T369 S4 `vm-0-5-0369` /
@@ -42,7 +21,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T371 S1 | P1 `e230aceb` establishes the complete Model-339 phase owner/source ledger, retaining deterministic ordering and transferring every unqualified physical mapping to S2--S5. **5170 model-L3 remains open.** [S1 ledger](../etc/evidence/t371-s1-model339-phase-owner-ledger.md). |
+| T371 S2 | P1 `f0d7aeb5` retains source-backed 80286 retirement and transaction vocabulary while rejecting unsupported prefetch/READY/wait values; it transfers DMA/PIC/INTA composition to S3. **5170 model-L3 remains open.** [S2 boundary](../etc/evidence/t371-s2-cpu-bus-phase-boundary.md). |
 | T370 | Closed at `77a73c04`: S1--S5 reconciled all selected Model-339 device-service owners and transferred unavailable duration to phase refinement; **5170 model-L3 is not ready**. [Closure audit](../etc/evidence/t370-s5-planar-cga-transfer-audit.md). |
 | T369 | Closed at `08a64bea`: S1--S4 lock and audit the 5170 Model-339 bus-stage input, logical 80286 DMA handoff and selected FDC/PIC visibility. Board waits, physical waveforms, device service, phase refinement and final 5170 L3 remain exact ordered transfers; **5170 model-L3 is not ready**. [Closure audit](../etc/evidence/t369-s4-pcat-bus-stage-closure-audit.md). |
 | T368 | Closed at `4da84be8`: completes the source-labelled 80286 successful-retirement CPU ledger, with exact values or declared source-undefined transfers. The next Queue receiver is bus-timed PC/AT operation; CPU waits, bus/device timing and IBM 5170 L3 remain open. [Closure audit](../etc/evidence/t368-s7-80286-retirement-closure-audit.md). |
