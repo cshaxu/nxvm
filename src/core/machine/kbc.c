@@ -20,7 +20,9 @@
 #define CORE_MACHINE_KBC_IDENTIFY_1 0x83u
 #define CORE_MACHINE_KBC_RESEND 0xfeu
 #define CORE_MACHINE_KBC_ECHO 0xeeu
-#define CORE_MACHINE_KBC_DEFAULT_TYPEMATIC 0x20u
+#define CORE_MACHINE_KBC_DEFAULT_TYPEMATIC 0x2cu
+#define CORE_MACHINE_KBC_DEFAULT_DELAY_FACTOR 2u
+#define CORE_MACHINE_KBC_DEFAULT_RATE_UNITS 24u
 #define CORE_MACHINE_KBC_AUX_DEFAULT_RESOLUTION 2u
 #define CORE_MACHINE_KBC_AUX_DEFAULT_SAMPLE_RATE 100u
 #define CORE_MACHINE_KBC_AUX_STATUS_REPORTING 0x20u
@@ -129,10 +131,28 @@ static C_VOID core_machine_kbc_schedule_response_byte(t_kbc *controller,
     core_machine_kbc_schedule_response(controller, &value, 1u, origin);
 }
 
+static C_VOID core_machine_kbc_apply_typematic_timing(t_kbc *controller)
+{
+    type_unsigned_32 delay_factor;
+    type_unsigned_32 rate_units;
+
+    if (controller == STD_NULL) return;
+    delay_factor = 1u + ((controller->data.typematic >> 5u) & 0x03u);
+    rate_units = (8u + (controller->data.typematic & 0x07u)) <<
+        ((controller->data.typematic >> 3u) & 0x03u);
+    controller->data.typematic_initial_ticks = (type_unsigned_32)(
+        ((type_unsigned_64)controller->data.typematic_nominal_initial_ticks *
+            delay_factor) / CORE_MACHINE_KBC_DEFAULT_DELAY_FACTOR);
+    controller->data.typematic_repeat_ticks = (type_unsigned_32)(
+        ((type_unsigned_64)controller->data.typematic_nominal_repeat_ticks *
+            rate_units) / CORE_MACHINE_KBC_DEFAULT_RATE_UNITS);
+}
+
 static C_VOID core_machine_kbc_set_typematic(t_kbc *controller, type_unsigned_8 value)
 {
     if (controller == STD_NULL) return;
     controller->data.typematic = value;
+    core_machine_kbc_apply_typematic_timing(controller);
 }
 
 static C_VOID core_machine_kbc_set_defaults(t_kbc *controller)
@@ -714,17 +734,17 @@ C_VOID core_machine_kbc_bind_core_services(t_kbc *controller, t_pic *pic_master,
 }
 C_VOID core_machine_kbc_reset(t_kbc *controller)
 {
-    type_unsigned_32 typematic_initial_ticks;
-    type_unsigned_32 typematic_repeat_ticks;
+    type_unsigned_32 typematic_nominal_initial_ticks;
+    type_unsigned_32 typematic_nominal_repeat_ticks;
     type_unsigned_32 command_response_ticks;
 
     if (controller == STD_NULL) return;
-    typematic_initial_ticks = controller->data.typematic_initial_ticks;
-    typematic_repeat_ticks = controller->data.typematic_repeat_ticks;
+    typematic_nominal_initial_ticks = controller->data.typematic_nominal_initial_ticks;
+    typematic_nominal_repeat_ticks = controller->data.typematic_nominal_repeat_ticks;
     command_response_ticks = controller->data.command_response_ticks;
     STD_MEMSET(&controller->data, TYPE_ZERO_8, sizeof(controller->data));
-    controller->data.typematic_initial_ticks = typematic_initial_ticks;
-    controller->data.typematic_repeat_ticks = typematic_repeat_ticks;
+    controller->data.typematic_nominal_initial_ticks = typematic_nominal_initial_ticks;
+    controller->data.typematic_nominal_repeat_ticks = typematic_nominal_repeat_ticks;
     controller->data.command_response_ticks = command_response_ticks;
     core_machine_pic_irq_source_deassert(&controller->connect.irq1_source);
     core_machine_pic_irq_source_deassert(&controller->connect.irq12_source);
@@ -791,8 +811,9 @@ C_VOID core_machine_kbc_set_typematic_timing(t_kbc *controller,
     type_unsigned_32 initial_ticks, type_unsigned_32 repeat_ticks)
 {
     if (controller == STD_NULL) return;
-    controller->data.typematic_initial_ticks = initial_ticks;
-    controller->data.typematic_repeat_ticks = repeat_ticks;
+    controller->data.typematic_nominal_initial_ticks = initial_ticks;
+    controller->data.typematic_nominal_repeat_ticks = repeat_ticks;
+    core_machine_kbc_apply_typematic_timing(controller);
 }
 
 C_VOID core_machine_kbc_set_command_response_timing(t_kbc *controller,

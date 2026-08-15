@@ -244,11 +244,20 @@ C_INT main(C_VOID)
     core_machine_port_write(&port, 0x0060u, 0x07u);
     failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0xfau ||
         kbc.data.led_state != 0x07u;
+    core_machine_kbc_set_typematic_timing(&kbc, 240u, 48u);
     core_machine_port_write(&port, 0x0060u, 0xf3u);
     failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0xfau;
     core_machine_port_write(&port, 0x0060u, 0x1fu);
     failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0xfau ||
-        kbc.data.typematic != 0x1fu;
+        kbc.data.typematic != 0x1fu ||
+        kbc.data.typematic_initial_ticks != 120u ||
+        kbc.data.typematic_repeat_ticks != 240u;
+    core_machine_port_write(&port, 0x0060u, 0xf3u);
+    failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0xfau;
+    core_machine_port_write(&port, 0x0060u, 0x2cu);
+    failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0xfau ||
+        kbc.data.typematic_initial_ticks != 240u ||
+        kbc.data.typematic_repeat_ticks != 48u;
 
     core_machine_kbc_set_typematic_timing(&kbc, 0u, 0u);
     failed |= core_machine_kbc_submit_native_byte(&kbc, 0x1eu) != TYPE_STATUS_OK;
@@ -283,7 +292,9 @@ C_INT main(C_VOID)
 
     core_machine_port_write(&port, 0x0060u, 0xf5u);
     failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0xfau ||
-        kbc.data.led_state != 0u || kbc.data.typematic != 0x20u ||
+        kbc.data.led_state != 0u || kbc.data.typematic != 0x2cu ||
+        kbc.data.typematic_initial_ticks != 3u ||
+        kbc.data.typematic_repeat_ticks != 2u ||
         kbc.data.scan_set != CORE_MACHINE_KBC_SCAN_SET_2 ||
         kbc.data.scanning_enabled || kbc.data.typematic_active ||
         core_machine_kbc_submit_native_byte(&kbc, 0x1eu) !=
@@ -294,12 +305,14 @@ C_INT main(C_VOID)
         core_machine_kbc_read_byte(&port, 0x0060u) != 0x1eu;
     core_machine_port_write(&port, 0x0060u, 0xf6u);
     failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0xfau ||
-        kbc.data.led_state != 0u || kbc.data.typematic != 0x20u ||
+        kbc.data.led_state != 0u || kbc.data.typematic != 0x2cu ||
+        kbc.data.typematic_initial_ticks != 3u ||
+        kbc.data.typematic_repeat_ticks != 2u ||
         !kbc.data.scanning_enabled;
     core_machine_port_write(&port, 0x0060u, 0xfdu);
     failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0xfau ||
         !kbc.data.scanning_enabled || kbc.data.led_state != 0u ||
-        kbc.data.typematic != 0x20u;
+        kbc.data.typematic != 0x2cu;
     core_machine_port_write(&port, 0x0060u, 0xfeu);
     failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0xfau;
     core_machine_port_write(&port, 0x0060u, 0xffu);

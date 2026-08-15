@@ -8,6 +8,27 @@
 | --- | --- |
 | T375 S22 | Accepted P1 `a1c67ed3`: Model-339 now binds IBM's nominal 500-ms/10-cps typematic values with retained +/-20-percent interpretation; command-response timing remains an upper-bound transfer. [Evidence](../etc/evidence/t375-s22-model339-typematic.md). |
 
+## M5 T375 S23 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner-approved continuing T375 L3 work; primary IBM PC/AT Technical Reference F3 definition exposes the default-parameter and runtime-decoding gap. |
+| Objective | Make valid AT-keyboard F3 parameters derive the active typematic delay/repeat cadence from the Model-339 nominal calibration, and restore the IBM 500-ms/10-cps default parameter. |
+| Non-goals | No exact keyboard oscillator claim, ACK completion claim, physical serial transmission model, host delay, generic AT profile timing change, or final L3 claim. |
+| Reference Baseline | S22 profile binds 4,000,000/800,000 nominal ticks, but KBC stores default `20h` and F3 only stores its byte without changing active timing. |
+| Candidate Proposal | [IBM PC/AT 5170 board and device phase-timing closure](../proposals/m5-5170-board-phase-timing-closure.md). |
+| Files And ABI Surface | KBC default/parameter decoder and internal state, controller smoke, Model-339 contract smoke, evidence/index/current. No new test-only or cross-module API. |
+| Applicable Rules | Execution lifecycle, one KBC owner, profile-local calibration, source-policy, architecture and coding rules, documentation rules. |
+| Verification | Controller smoke proves reset/F5/F6 default `2Ch` and F3 rate/delay change; Model-339 smoke proves 4,000,000/800,000 default cadence and a selected F3 derivation; documentation governance passes. |
+| Expected Markers | `M5:T227:S3:KBC-CONTROLLER:OK`; `M5:T375:S22:MODEL339-TYPEMATIC:OK`; `M5:T375:S23:KBC-F3-CADENCE:OK`. |
+| Asset Needs | None; primary reference is the already cited IBM Technical Reference. |
+| Reporting Requirements | Report the prior default/decode defect, the nominal-derived arithmetic, and the retained +/-20-percent and physical-clock boundaries. |
+| Stop Conditions | Stop if F3 ranges are represented as exact physical keyboard periods or if an invalid parameter protocol policy is invented without a source. |
+| Exit Criteria | Default state is `2Ch`; every valid F3 value updates active cadence from one preserved profile calibration; reset/default commands restore it; focused proofs pass. |
+| Original Owner Request | Continue L3 precision work and keep direct input as a native production boundary, not a test-only API. |
+| Similar-Issue Sweep | Search all typematic default, F3 parameter, reset/default, profile-calibration, timing setter, and proof sites; fix or classify every production hit. |
+
 ## Current Technical Baseline
 
 - **Current developer artifact:** T369 S4 `vm-0-5-0369` /

@@ -58,6 +58,15 @@ static C_INT vm_model_339_clock_contract_is_selected(C_VOID)
     failed |= session->core_machine->kbc_typematic_initial_ticks != 4000000u ||
         session->core_machine->kbc_typematic_repeat_ticks != 800000u ||
         session->core_machine->kbc_command_response_ticks != 0u;
+    failed |= session->core_machine->shared_kbc.data.typematic != 0x2cu ||
+        session->core_machine->shared_kbc.data.typematic_initial_ticks != 4000000u ||
+        session->core_machine->shared_kbc.data.typematic_repeat_ticks != 800000u;
+    core_machine_port_write(&session->core_machine->executor_port, 0x0060u, 0xf3u);
+    failed |= core_machine_port_read(&session->core_machine->executor_port, 0x0060u) != 0xfau;
+    core_machine_port_write(&session->core_machine->executor_port, 0x0060u, 0x7fu);
+    failed |= core_machine_port_read(&session->core_machine->executor_port, 0x0060u) != 0xfau ||
+        session->core_machine->shared_kbc.data.typematic_initial_ticks != 8000000u ||
+        session->core_machine->shared_kbc.data.typematic_repeat_ticks != 4000000u;
     failed |= core_machine_clock_domain_advance(&session->core_machine->pit_clock,
         4000000u) != 596591u ||
         core_machine_clock_domain_advance(&session->core_machine->rtc_clock,
@@ -65,6 +74,9 @@ static C_INT vm_model_339_clock_contract_is_selected(C_VOID)
         core_machine_clock_domain_advance(&session->core_machine->vadp_clock,
         1408u) != 315u;
     failed |= core_machine_reset(session->core_machine) != TYPE_STATUS_OK ||
+        session->core_machine->shared_kbc.data.typematic != 0x2cu ||
+        session->core_machine->shared_kbc.data.typematic_initial_ticks != 4000000u ||
+        session->core_machine->shared_kbc.data.typematic_repeat_ticks != 800000u ||
         core_machine_clock_domain_advance(&session->core_machine->pit_clock,
         4000000u) != 596591u ||
         core_machine_clock_domain_advance(&session->core_machine->rtc_clock,
@@ -82,5 +94,6 @@ C_INT main(C_VOID)
     STD_PRINTF("M5:T375:S2:MODEL339-CLOCK-CONTRACT:OK\n");
     STD_PRINTF("M5:T375:S13:MODEL339-CGA-REFERENCE-CONTRACT:OK\n");
     STD_PRINTF("M5:T375:S22:MODEL339-TYPEMATIC:OK\n");
+    STD_PRINTF("M5:T375:S23:KBC-F3-CADENCE:OK\n");
     return 0;
 }

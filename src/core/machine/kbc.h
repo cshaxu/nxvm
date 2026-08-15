@@ -96,6 +96,8 @@ typedef struct t_kbc_data {
     type_unsigned_8 delayed_response_index;
     type_unsigned_64 typematic_remaining_ticks;
     type_unsigned_64 response_remaining_ticks;
+    type_unsigned_32 typematic_nominal_initial_ticks;
+    type_unsigned_32 typematic_nominal_repeat_ticks;
     type_unsigned_32 typematic_initial_ticks;
     type_unsigned_32 typematic_repeat_ticks;
     type_unsigned_32 command_response_ticks;
