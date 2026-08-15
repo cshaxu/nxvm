@@ -26,4 +26,6 @@ behavior changes.
 The focused `core-machine-80286-instruction-timing-ledger-smoke` passed and
 emitted `M5:T357:S6:80286-INSTRUCTION-TIMING-LEDGER:OK`; the configured
 `run-current-smokes` gate passed. Documentation governance and `git diff
---check` are recorded with delivery and review.
+--check` passed. Coordinator review of P1 `ad1ed794` confirms that the existing
+EA/odd helpers remain the sole construction mechanism and focused proof covers
+all admitted direct/indexed parity cases.

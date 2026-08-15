@@ -160,3 +160,10 @@ two-clock source-table cost through the existing retirement publisher. Its
 [timing evidence](../etc/evidence/t366-s18-80286-sreg-store-timing.md) records
 the legal-encoding guard, selector-transfer proof and retained memory/load
 boundaries. S18 is accepted at `842848b8`.
+
+### S19: 80286 segment-register memory-store timing
+
+S19 extends `8C MOV Sreg,m16` to successful unprefixed legal memory forms
+using the source-backed `3 + EA + odd-word` construction. Its [timing evidence](../etc/evidence/t366-s19-80286-sreg-store-memory-timing.md)
+records direct/indexed parity proof and retained `8E`/invalid boundaries. S19
+is accepted at `ad1ed794`.
