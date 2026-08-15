@@ -24,4 +24,4 @@ finds no current numeric reference candidate: 86Box corroborates only the
 512-KB board limit, MAME's 8-MHz default retains incompatible memory and an
 undetermined ISA clock, and PCjs documents candidate controls but no
 revision-pinned complete observation.  Physical phase work therefore remains
-open; S2 makes no 5170 model-L3 claim.
+open; S2 is accepted at `8a5431fd` and makes no 5170 model-L3 claim.
