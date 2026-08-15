@@ -10,7 +10,9 @@ logical-sector range, advertised capability and callback availability before
 dispatching either operation.  A provider that does not advertise the
 capability, or advertises it without the relevant callback, returns the
 existing `UNSUPPORTED` media result.  No byte pattern, absent callback or
-FDC-local state is interpreted as a normal or deleted mark.
+FDC-local state is interpreted as a normal or deleted mark.  A provider that
+returns a value outside the two admitted classes is rejected as `PERMANENT`;
+the wrapper does not expose it to a consumer.
 
 The contract is owned by `core/machine/media_interface`; its mutable mark
 storage remains provider-owned.  The positive in-memory provider increments
@@ -30,6 +32,7 @@ Every `core_machine_media_provider` initializer was swept and migrated.
 | FDC core, topology and media-change fixtures | Explicitly supply no callbacks and do not advertise the capability because their existing behavior does not test Deleted Data. |
 | HDC and mantle-shape fixtures | Explicitly supply no callbacks and do not advertise the capability. |
 | Negative generic fixture | Advertises the capability while omitting callbacks, proving registry rejection is still `UNSUPPORTED`, rather than an implicit normal-data fallback. |
+| Invalid-mark generic fixture | Advertises a callback that returns an out-of-contract class, proving the shared wrapper rejects it as `PERMANENT`. |
 
 There are no other tracked production provider initializers.  The exact sweep
 query was `rg -n "core_machine_media_provider" --glob '!build/**' src tests
@@ -60,9 +63,13 @@ M5:T274:S2:MANTLE-SHAPE:OK
 M5:T366:S7:MODEL339-FIRMWARE-FDC-TOPOLOGY:OK
 ```
 
-The configured `current-gates-gcc` product gate also completed successfully
-through the same local Git-Bash CMake invocation.  Documentation governance
-and `git diff --check` pass for the final delivery.
+The post-correction configured `current-gates-gcc` invocation rebuilt the
+current-gate graph but failed at the unrelated
+`verify-t344-historical-fixture-shapes` static inventory: it expects 66 direct
+machine-constructor fixtures and currently finds 67.  S9 changes no
+`core_machine_create` call or T344 inventory file; the mismatch is recorded as
+separate verification debt rather than being hidden by the focused passes.
+Documentation governance and `git diff --check` pass for the final delivery.
 
 ## Boundary And Transfer
 

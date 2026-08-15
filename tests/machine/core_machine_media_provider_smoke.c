@@ -116,6 +116,19 @@ static core_machine_media_result core_machine_media_fixture_set_address_mark(
     return CORE_MACHINE_MEDIA_RESULT_OK;
 }
 
+static core_machine_media_result core_machine_media_fixture_get_invalid_address_mark(
+    C_VOID *context, type_unsigned_64 logical_sector,
+    core_machine_media_address_mark *out_mark)
+{
+    core_machine_media_result result = core_machine_media_fixture_get_address_mark(
+        context, logical_sector, out_mark);
+
+    if (result == CORE_MACHINE_MEDIA_RESULT_OK) {
+        *out_mark = (core_machine_media_address_mark)2;
+    }
+    return result;
+}
+
 C_INT main(C_VOID)
 {
     static const core_machine_media_provider provider = {
@@ -136,12 +149,23 @@ C_INT main(C_VOID)
         STD_NULL,
         STD_NULL
     };
+    static const core_machine_media_provider invalid_provider = {
+        core_machine_media_fixture_query,
+        core_machine_media_fixture_read,
+        core_machine_media_fixture_write,
+        core_machine_media_fixture_format,
+        core_machine_media_fixture_flush,
+        core_machine_media_fixture_get_invalid_address_mark,
+        core_machine_media_fixture_set_address_mark
+    };
     core_machine_media_registry registry;
     core_machine_media_fixture first = {{0}, {CORE_MACHINE_MEDIA_ADDRESS_MARK_DATA}, 7u, 0u, TYPE_TRUE, TYPE_FALSE,
         CORE_MACHINE_MEDIA_RESULT_OK};
     core_machine_media_fixture second = {{0}, {CORE_MACHINE_MEDIA_ADDRESS_MARK_DATA}, 3u, 0u, TYPE_FALSE, TYPE_FALSE,
         CORE_MACHINE_MEDIA_RESULT_OK};
     core_machine_media_fixture unsupported = {{0}, {CORE_MACHINE_MEDIA_ADDRESS_MARK_DATA}, 4u, 0u, TYPE_TRUE, TYPE_FALSE,
+        CORE_MACHINE_MEDIA_RESULT_OK};
+    core_machine_media_fixture invalid = {{0}, {CORE_MACHINE_MEDIA_ADDRESS_MARK_DATA}, 5u, 0u, TYPE_TRUE, TYPE_FALSE,
         CORE_MACHINE_MEDIA_RESULT_OK};
     core_machine_media_info info;
     core_machine_media_result result = CORE_MACHINE_MEDIA_RESULT_PERMANENT;
@@ -158,6 +182,8 @@ C_INT main(C_VOID)
         core_machine_media_registry_bind(&registry, 2u, &second, &provider) !=
             TYPE_STATUS_OK ||
         core_machine_media_registry_bind(&registry, 3u, &unsupported, &unsupported_provider) !=
+            TYPE_STATUS_OK ||
+        core_machine_media_registry_bind(&registry, 4u, &invalid, &invalid_provider) !=
             TYPE_STATUS_OK ||
         core_machine_media_registry_bind(&registry, 1u, &first, &provider) !=
             TYPE_STATUS_INVALID_ARGUMENT ||
@@ -182,7 +208,10 @@ C_INT main(C_VOID)
         mark != CORE_MACHINE_MEDIA_ADDRESS_MARK_DELETED_DATA ||
         core_machine_media_get_address_mark(&registry, 3u, 0u,
             &mark, &result) != TYPE_STATUS_OK ||
-        result != CORE_MACHINE_MEDIA_RESULT_UNSUPPORTED)) failed = 1;
+        result != CORE_MACHINE_MEDIA_RESULT_UNSUPPORTED ||
+        core_machine_media_get_address_mark(&registry, 4u, 0u,
+            &mark, &result) != TYPE_STATUS_OK ||
+        result != CORE_MACHINE_MEDIA_RESULT_PERMANENT)) failed = 1;
     if (!failed && (core_machine_media_write_sectors(&registry, 1u, 1u, 1u,
             bytes, &result) != TYPE_STATUS_OK || result != CORE_MACHINE_MEDIA_RESULT_OK ||
         core_machine_media_read_bytes(&registry, 1u, 4u, readback, sizeof(readback),

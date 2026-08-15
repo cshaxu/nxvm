@@ -256,6 +256,7 @@ type_status core_machine_media_get_address_mark(const core_machine_media_registr
     type_status status;
     type_unsigned_64 offset;
     type_unsigned_32 byte_count;
+    core_machine_media_address_mark mark;
 
     if (out_mark == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
     status = core_machine_media_get_sector_range(registry, id, logical_sector, 1u,
@@ -278,7 +279,14 @@ type_status core_machine_media_get_address_mark(const core_machine_media_registr
         return TYPE_STATUS_OK;
     }
     core_machine_media_set_result(out_result, binding->provider->get_address_mark(
-        binding->context, logical_sector, out_mark));
+        binding->context, logical_sector, &mark));
+    if (*out_result == CORE_MACHINE_MEDIA_RESULT_OK &&
+        mark != CORE_MACHINE_MEDIA_ADDRESS_MARK_DATA &&
+        mark != CORE_MACHINE_MEDIA_ADDRESS_MARK_DELETED_DATA) {
+        core_machine_media_set_result(out_result, CORE_MACHINE_MEDIA_RESULT_PERMANENT);
+        return TYPE_STATUS_OK;
+    }
+    if (*out_result == CORE_MACHINE_MEDIA_RESULT_OK) *out_mark = mark;
     return TYPE_STATUS_OK;
 }
 
