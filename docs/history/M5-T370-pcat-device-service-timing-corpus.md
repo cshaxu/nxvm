@@ -67,7 +67,5 @@ completes all four T370 device groups and transfers physical clocks, bus phase,
 controller microstates and final model readiness to the ordered phase and 5170
 audit candidates.
 
-S5 is accepted at `77a73c04`. T370 is closed: its retained proposal is
-[archived with this task](M5-T370-pcat-device-service-timing-corpus-proposal.md),
-and the Queue advances to selected-profile model-L3 phase refinement. This is
-not a claim that the IBM 5170 Model-339 baseline has reached L3.
+S5 is awaiting closure governance. Its device-group audit is complete, but
+this task remains open until the queue and final closure record are verified.
