@@ -2,27 +2,6 @@
 
 ## Current Work
 
-## M5 T374 S9 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation; T374 S8 is accepted and remains the sole compact progress row. |
-| Admission And Approval | The owner approved continuing T374 selected-machine functional closure before timing/L3. Accepted S8 selects a shared, profile-neutral address-mark contract as the prerequisite to FDC Deleted Data command work. |
-| Objective | Add the smallest truthful shared media ABI for a logical sector's normal/deleted address-mark class; migrate every provider initializer and provide deterministic capability/unsupported behavior without yet exposing an FDC Deleted Data command. |
-| Non-goals | No FDC command-dispatch or result-state change; no implicit support in raw `.img` providers; no sidecar/on-disk format; no flux/index/CRC/GAP/IDAM model, scan, MT/SK/DTL, controller/drive/DMA/board timing, ROM/media import, ATA/HDC behavior expansion, or Model-339 L3 claim. |
-| Reference Baseline | Accepted T374 S8 audit; Intel 8272A Deleted Data / ST2 Control Mark semantics; `media_interface.{h,c}`; VM FDD/HDD providers; all provider fixtures; FDC transfer/format owner read-only. |
-| Candidate Proposal | [IBM PC/AT 5170 selected-device functional closure](../proposals/m5-5170-selected-device-functional-closure.md). |
-| Files And ABI Surface | `src/core/machine/media_interface.{h,c}`; production FDD/HDD providers; every provider fixture and targeted media tests; T374 history/evidence/index/status. Do not alter `fdc.*` semantics in this S. |
-| Applicable Rules | `docs/README.md` Task Reading Set; `docs/rules/EXECUTION.md` lifecycle, similar-issue, artifact and evidence requirements; `docs/design/ARCHITECTURE.md`; `docs/design/CODING.md`; `docs/rules/ARCHITECTURE.md`; `docs/rules/CODING.md`; `docs/rules/DOCUMENT.md`; `CONTRIBUTING.md`; source policy. The shared core owns the contract; VM providers own their byte-image capability reports. |
-| Verification | Build and run updated media-provider, VM-media-provider, FDC core/topology/media-change and HDC smoke targets with Git-Bash CMake/Ninja; run the configured current product gate when the code change requires it; inspect all provider initializers and every new wrapper failure/result route; run documentation governance and `git diff --check`. |
-| Expected Markers | A provider explicitly advertises address-mark support or lacks it; every query/set validates media presence, range and capability; no absent callback, payload byte, FDC-local cache or raw-image path is interpreted as a deleted mark; focused tests emit existing markers plus a new deterministic address-mark marker. |
-| Asset Needs | None. No firmware, guest image, external source, trace or local asset is read, copied or committed. |
-| Reporting Requirements | Report the selected ABI, full initializer migration, raw FDD/HDD disposition, fixture proof, artifact/gate result, pushed P1, coordinator acceptance and the remaining FDC command receiver. |
-| Stop Conditions | Stop and transfer if the minimal contract cannot represent normal/deleted class without physical media modeling, if a raw-image provider would need an undeclared persistence format, if all fixtures cannot migrate atomically, or if source requires a result semantic outside this ABI. |
-| Exit Criteria | Every registered provider compiles against the new ABI and truthfully classifies support; one mutable fixture proves get/set/generation and one unsupported provider proves rejection; FDD/HDD raw providers remain unsupported; all named tests/gates pass; no FDC semantic, persistence or L3 overclaim is made. |
-| Original Owner Request | Finish the selected machine's functional gaps before its timing/L3 audit, use exact documentation as authority, preserve local assets without committing them, and use Git-Bash CMake for builds. |
-| Similar-Issue Sweep | Search all tracked source/tests for `core_machine_media_provider`, media capabilities/results and query/read/write/format wrappers; migrate every initializer and classify every consumer so no omitted ABI layout or implicit normal-mark assumption remains. |
-
 ## Current Technical Baseline
 
 - **Current developer artifact:** T369 S4 `vm-0-5-0369` /
@@ -42,7 +21,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T374 S8 | P1 `6a1dcf45` audits the 8272A Deleted Data address-mark contract, all provider/consumer migrations and raw-image persistence boundary; S9 owns the shared media ABI before any FDC route. [Audit evidence](../etc/evidence/t374-s8-fdc-deleted-media-contract-audit.md). |
+| T374 S9 | P1 `969c9431`, P2 `74cf5de1` and P3 `74aaad39` add and validate the provider-owned normal/deleted address-mark contract, retain raw FDD/HDD unsupported, and reconcile the full current-gate ledgers. [Contract evidence](../etc/evidence/t374-s9-media-address-mark-contract.md). |
 | T373 | Closed at `06246a8e`: S1--S4 freeze the three-machine source-labelled capability ledger and exact functional/timing/current-product receivers. **5170, DeskPro Model 40 and PC/XT 5160-268 L3 are not ready.** The next candidate is 5170 selected-device functional closure. [Closure audit](../etc/evidence/t373-s4-task-closure-audit.md). |
 | T372 | Closed at `3f56c72c`: S1--S8 establish that Model 339 has selected logical ownership and deterministic ordering, but lacks selected-device functional closure and source-backed board/phase timing. **5170 model-L3 is not ready.** [Closure audit](../etc/evidence/t372-s8-task-closure-transfer-audit.md). |
 | T370 | Closed at `77a73c04`: S1--S5 reconciled all selected Model-339 device-service owners and transferred unavailable duration to phase refinement; **5170 model-L3 is not ready**. [Closure audit](../etc/evidence/t370-s5-planar-cga-transfer-audit.md). |
