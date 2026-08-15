@@ -2,27 +2,6 @@
 
 ## Current Work
 
-## M5 T373 S3 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation; T373 remains the latest open numeric task and S3 follows accepted S2. |
-| Admission And Approval | The owner approved continued single-agent L3 work, three fixed machine identities, and functional-before-timing closure: IBM 5170 Model 339/Type 3, 1986 original Compaq DeskPro 386 Model 40, and IBM PC/XT 5160-268. |
-| Objective | Merge T373 S1 repository support inventory and S2 source-labelled BOM into one classified machine-to-capability ledger that records functional state, concrete gap, earliest functional receiver, and later timing/audit receiver for every selected or publicly exposed capability. |
-| Non-goals | No production implementation, machine-profile selection, source/ROM/media import, timing scalar, public-surface removal, or model-L3 claim. A source-unknown field remains unselected/unknown rather than being completed by inference. |
-| Reference Baseline | T373 S1 support inventory; T373 S2 BOM/source ledger; [capability-ledger proposal](../proposals/m5-baseline-device-capability-ledger.md); ordered M5 Queue; T372 closure transfer audit. |
-| Candidate Proposal | [Baseline-machine and supported-device capability ledger](../proposals/m5-baseline-device-capability-ledger.md). |
-| Files And ABI Surface | New T373 S3 classified-capability evidence, history progress, `docs/etc/README.md`, and `docs/states/CURRENT.md` only; no source, ABI, profile, build, ROM, or guest-media surface. |
-| Applicable Rules | `docs/README.md` Task Reading Set; `docs/rules/EXECUTION.md` continuation, evidence, P lifecycle and closure rules; `docs/rules/DOCUMENT.md`; `CONTRIBUTING.md`; `docs/etc/operations/policy/source-policy.md`. Architecture/coding rules are not applicable because S3 changes no production source or build. |
-| Verification | Reconcile every S1 support row and every S2 BOM row; for each selected/public capability classify complete, partial, empty, test-only, unsupported, removed, or source-unknown/unselected; name a concrete functional gap and the exact earliest Queue/TODO receiver plus timing/audit receiver; verify unknown fields receive no inferred profile. Run documentation governance and `git diff --check`. |
-| Expected Markers | One indexed ledger proves that the three baseline audits cannot confuse missing functionality with timing debt, and that generic EGA/ATA/AUX paths remain current-product debt rather than silently becoming baseline hardware. |
-| Asset Needs | None. Documentation evidence and already-indexed repository support evidence only; ROMs and guest media remain external owner-managed assets and are neither opened nor recorded. |
-| Reporting Requirements | Report classification boundary, each explicit unsupported or source-unknown selection, focused verification, pushed P1, and whether a further T373 closure audit is required. |
-| Stop Conditions | Stop and transfer if an owner must choose an unknown DeskPro/XT device, if a source conflict changes a locked identity, or if a classification needs a runtime/ROM/media probe; never claim an unselected device complete. |
-| Exit Criteria | The evidence covers all three baseline BOM rows and all retained product capabilities with status, gap, earliest functional receiver and later timing/audit receiver; all omitted devices have an explicit reason; documentation checks pass. |
-| Original Owner Request | Continue the ordered L3 program through all three baselines and current-product device closure, stopping before Windows 3.1; first establish each machine's required capability and implementation gap. |
-| Similar-Issue Sweep | Audit every S1 production-support row and S2 BOM field across CPU, memory/ROM/reset, PIC/PIT/DMA/RTC/NMI, input, storage, display, firmware and unimplemented peripheral families; classify each only once at its earliest owner and identify every current-product-only capability. |
-
 ## Current Technical Baseline
 
 - **Current developer artifact:** T369 S4 `vm-0-5-0369` /
@@ -42,7 +21,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T373 S2 | P1 `b2c7ba02` qualifies the source-labelled Model-339, DeskPro Model 40, and PC/XT 5160-268 BOM/unknown-field matrix. All unsupported machine facts remain unknown; S3 receives support-status classification and earliest functional/timing ownership. [BOM ledger](../etc/evidence/t373-s2-baseline-bom-source-ledger.md). |
+| T373 S3 | P1 `dbeeeb0b` reconciles the three-machine BOM and current product support into classification, concrete gaps and exact functional/timing receivers. No baseline capability is complete; a task-level closure audit remains. [Capability ledger](../etc/evidence/t373-s3-baseline-capability-classification.md). |
 | T372 | Closed at `3f56c72c`: S1--S8 establish that Model 339 has selected logical ownership and deterministic ordering, but lacks selected-device functional closure and source-backed board/phase timing. **5170 model-L3 is not ready.** [Closure audit](../etc/evidence/t372-s8-task-closure-transfer-audit.md). |
 | T370 | Closed at `77a73c04`: S1--S5 reconciled all selected Model-339 device-service owners and transferred unavailable duration to phase refinement; **5170 model-L3 is not ready**. [Closure audit](../etc/evidence/t370-s5-planar-cga-transfer-audit.md). |
 | T369 | Closed at `08a64bea`: S1--S4 lock and audit the 5170 Model-339 bus-stage input, logical 80286 DMA handoff and selected FDC/PIC visibility. Board waits, physical waveforms, device service, phase refinement and final 5170 L3 remain exact ordered transfers; **5170 model-L3 is not ready**. [Closure audit](../etc/evidence/t369-s4-pcat-bus-stage-closure-audit.md). |
