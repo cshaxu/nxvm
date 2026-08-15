@@ -2,7 +2,26 @@
 
 ## Current Work
 
-**Idle.**
+## M5 T375 S1 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New |
+| Admission And Approval | Owner approved continuing the ordered M5 program through complete L3 closure, with T375 next after T374; approval is retained in this conversation on 2026-08-15. The owner further requires 86Box/MAME/PCjs only as cross-checks where IBM/Intel authority gives a range or no timing, never as precise-machine authority; raw `.img` remains the sole admitted floppy format, with 765 Deleted/Control-Mark and Scan explicitly deferred. |
+| Objective | T375 is the next approved Queue candidate; S1 is its bounded timing-ledger and production-route audit before any timing repair. Produce a source-labelled Model-339 timing inventory that maps every T375 selected CPU/bus, DMA/HOLD, PIC/PIT/RTC, 8042/keyboard, FDC/floppy, CGA, NMI/reset and cross-device phase boundary to its sole production owner, primary-source/probe requirement, current evidence, and exact/range/reference-exhausted disposition. Select no scalar without that basis. |
+| Non-goals | No functional repair, generic-PC/AT substitution, fixed-disk/MFM or ATA route, factory claim for the aftermarket 1.44 MB drive, physical waveform/cycle-exact claim, host-time coupling, ROM/media import, reference-emulator authority, final Model-339 L3 decision, or closure of raw-IMG 765 Deleted/Control-Mark/Scan debt. |
+| Reference Baseline | IBM PC/AT 5170 Model 339 / Type 3, 8 MHz 80286, Rev.3 BIOS slot, 512 KB planar memory, 101-key AT keyboard, CGA, no fixed disk, planar-parity NMI, and aftermarket-only 1.44 MB drive. T368 closes only successful-retirement CPU rows; T369/T370/T372 and T374 close logical/function scopes and transfer board/device phase timing. |
+| Candidate Proposal | [IBM PC/AT 5170 board and device phase-timing closure](../proposals/m5-5170-board-phase-timing-closure.md); Queue position 1, preceding `m5-5170-final-l3-audit.md`. |
+| Files And ABI Surface | Audit `src/core/machine/{machine,transaction,dma,pic,pit,rtc,kbc,fdc,vadp}.{c,h}`, relevant VM Model-339 profile/composition routes, and focused tests/targets. S1 changes only durable evidence/status registration if required; it introduces no public ABI or production timing behavior. |
+| Applicable Rules | `docs/README.md` Task Reading Set; `CONTRIBUTING.md`; `docs/rules/EXECUTION.md` S/P lifecycle, source/evidence and closure rules; `docs/rules/DOCUMENT.md`; `docs/etc/operations/policy/source-policy.md`; `docs/design/{ROADMAP,ARCHITECTURE,CODING}.md`; `docs/rules/{ARCHITECTURE,CODING}.md`. Preserve one owner, one production transaction path, opaque public boundaries, source provenance, and no test-only public route. |
+| Verification | Complete route/search sweep; inspect each selected owner and relevant focused test; verify all claimed supporting documents are source-labelled; run documentation governance and `git diff --check`. If S1 adds no code, no full-build claim is required; known stale whole-build fixtures remain separately recorded. |
+| Expected Markers | `M5:T375:S1:MODEL339-TIMING-INVENTORY:OK` in durable evidence after reconciliation; any replayed existing markers must be reported exactly and not upgraded into timing proof. |
+| Asset Needs | Primary IBM PC/AT Technical Reference and Intel/component documentation may be consulted externally under source policy; local owner-managed ROMs/media remain external and uncommitted. 86Box/MAME/PCjs are permitted only named behaviour cross-checks after the primary-source disposition. |
+| Reporting Requirements | Confirm or raise a material objection before execution; report progress after route inventory and source-disposition sweep; final delivery links durable evidence, exact verification, every transfer, and states explicitly that Model-339 L3 remains open. |
+| Stop Conditions | Stop and return a finding to the earliest functional owner if an incomplete selected state/IRQ/DMA/reset/consumer route is discovered. Stop without a scalar when primary sources/probes do not support one; record range or reference-exhausted transfer. Pause for owner direction if a new asset format, ROM/media import, baseline change, or non-T375 capability is required. |
+| Exit Criteria | A complete selected-board timing ledger exists with route/owner/source/disposition for every required T375 boundary; functional defects, source-exhausted rows and final-audit inputs have named receivers; documentation verification passes; no Model-L3/cycle-exact claim is made. |
+| Original Owner Request | Owner requested that direct injection become an explicit test/native-input boundary, preferably with no test-only API; subsequent standing instruction: continue the approved task sequence until comprehensive L3 closure, with 86Box/MAME/PCjs as secondary cross-checks only, no ROM/media commits, and raw IMG-only floppy scope. |
+| Similar-Issue Sweep | Search all selected machine/controller timing publication, timeline/refresh/arbitration, test injection and profile routes for duplicate clocks, host-time coupling, generic-PC/AT fallback, unowned waits, stale direct keyboard injectors and consumer-specific timing. Classify every result as selected, excluded, or an explicit receiver. |
 
 ## Current Technical Baseline
 
