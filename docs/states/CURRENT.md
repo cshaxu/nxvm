@@ -2,27 +2,6 @@
 
 ## Current Work
 
-## M5 T374 S7 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation; T374 remains the latest open numeric task and S7 follows accepted S6. |
-| Admission And Approval | The owner approved selected-machine functional closure before timing/L3 and authorized continuing T374. S6's accepted 8272A command audit selects removal of the over-admitted enhanced `VERSION` response. |
-| Objective | Remove `10h VERSION` from the 8272A-compatible FDC command dispatcher so it reaches the existing one-byte, non-interrupting invalid-command ST0 `80h` path; prove no in-repository consumer depends on `90h`. |
-| Non-goals | No enhanced-controller profile, 82077 capability, new media contract, Deleted/Scan command implementation, modifier/sector-layout repair, DMA/timing change, ROM/media use, ATA/HDC, MFM/ST-506, EGA/VGA, AUX, or Model-339 L3 claim. |
-| Reference Baseline | T374 S6 command-capability audit; Intel 8272A command table and invalid-command contract; current FDC command length/execute default invalid owner; T374 focused FDC topology boundaries. |
-| Candidate Proposal | [IBM PC/AT 5170 selected-device functional closure](../proposals/m5-5170-selected-device-functional-closure.md). |
-| Files And ABI Surface | `src/core/machine/fdc.c`, cohesive FDC smoke, T374 evidence/history/index, and `docs/states/CURRENT.md`; no public header/ABI, descriptor, firmware, media or runtime configuration change. |
-| Applicable Rules | `docs/README.md` Task Reading Set; `docs/rules/EXECUTION.md` implementation/P lifecycle, evidence and similar-issue rules; `docs/rules/DOCUMENT.md`; `CONTRIBUTING.md`; `docs/design/ARCHITECTURE.md`; `docs/design/CODING.md`; `docs/rules/ARCHITECTURE.md`; `docs/rules/CODING.md`; source policy. The existing FDC invalid-result owner remains singular. |
-| Verification | Extend cohesive FDC smoke to issue `10h` and prove one result byte `80h`, no IRQ/DRQ and restored command phase; preserve existing invalid command behavior plus FDC media/topology/Model-339 regressions. Build/run through Git-Bash CMake/Ninja; run documentation governance and `git diff --check`. |
-| Expected Markers | `10h` has no explicit FDC command case and uses the existing default invalid-command result without a new branch, interface or profile capability. |
-| Asset Needs | None. Documentation is read only; no ROM, firmware, guest media, trace, external source or local asset is added. |
-| Reporting Requirements | Report command-owner confirmation, invalid-result/IRQ proof, command-case sweep, fresh build/replay, pushed P1, coordinator acceptance and remaining FDC receiver. |
-| Stop Conditions | Stop and transfer if an admitted profile/caller needs enhanced-controller `VERSION`, if command identity is contradicted by selected hardware evidence, or if removal requires a profile-capability design. Do not substitute an enhanced FDC. |
-| Exit Criteria | `10h` is source-compatible invalid on the selected 8272A surface; focused proof and all selected FDC/Model-339 regressions pass; absent commands and timing remain explicit transfers. |
-| Original Owner Request | Implement each selected machine's functional gaps before timing/L3 closure, treating exact documentation as authority and reference emulators only as fallback; use CMake through Git Bash for local builds. |
-| Similar-Issue Sweep | Inspect all FDC opcode cases, default result path, command-length determination, `90h` callers/tests and profile descriptor/controller identity; verify only documented 8272A commands remain explicit. |
-
 ## Current Technical Baseline
 
 - **Current developer artifact:** T369 S4 `vm-0-5-0369` /
@@ -42,7 +21,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T374 S6 | P1 `a9218996` classifies all 8272A FDC commands, selects removal of the over-admitted `VERSION` command, and records explicit Deleted/Scan/media receivers. [Audit evidence](../etc/evidence/t374-s6-fdc-command-capability-audit.md). |
+| T374 S7 | P1 `8fa179f9` restores the selected 8272A invalid-command response for `10h`; remaining documented commands and media semantics stay open. [Repair evidence](../etc/evidence/t374-s7-fdc-version-invalid-repair.md). |
 | T373 | Closed at `06246a8e`: S1--S4 freeze the three-machine source-labelled capability ledger and exact functional/timing/current-product receivers. **5170, DeskPro Model 40 and PC/XT 5160-268 L3 are not ready.** The next candidate is 5170 selected-device functional closure. [Closure audit](../etc/evidence/t373-s4-task-closure-audit.md). |
 | T372 | Closed at `3f56c72c`: S1--S8 establish that Model 339 has selected logical ownership and deterministic ordering, but lacks selected-device functional closure and source-backed board/phase timing. **5170 model-L3 is not ready.** [Closure audit](../etc/evidence/t372-s8-task-closure-transfer-audit.md). |
 | T370 | Closed at `77a73c04`: S1--S5 reconciled all selected Model-339 device-service owners and transferred unavailable duration to phase refinement; **5170 model-L3 is not ready**. [Closure audit](../etc/evidence/t370-s5-planar-cga-transfer-audit.md). |
