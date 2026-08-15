@@ -34,6 +34,9 @@ transferring physical waveforms and device-clock work to S4.
 S4 retains device callback/lifecycle order and transfers all controller/board
 clock conversions to S5's replay and task transfer audit.
 
+S4 is accepted at `a2a28b2b`. S5 receives deterministic replay, copied trace,
+reset/cancellation and phase-transfer audit only.
+
 S3 is accepted at `9c41623f`. S4 receives FDC, RTC, KBC, planar-parity and
 CGA/VADP device-clock and microstate boundaries.
 
