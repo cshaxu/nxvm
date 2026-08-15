@@ -31,3 +31,13 @@ subtasks; no whole-ledger or L3 claim is made.
 
 S2 is accepted at `5cf9f2df`; protected CPL0 LMSW is the immediate S3
 semantic-and-retirement receiver.
+
+### S3: LMSW context reconciliation
+
+S3 shows that the protected-LMSW `#GP` originated in a reused fixture: its
+prior real-mode direct form had set CR0.PE, while the subsequent bootstrap only
+reset segments and EIP.  The bootstrap now establishes CR0 as real-address
+state before loading the GDT and entering protected CPL0.  The existing
+Appendix-B register/memory `3/6` rows then retire; the executor's CPL check was
+not changed.  S3 is accepted at `e6b78987`; prefix/default successful routes
+remain the next T368 CPU receiver, and no 5170 L3 claim is made.

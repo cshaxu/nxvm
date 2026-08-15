@@ -2,26 +2,10 @@
 
 ## Current Work
 
-## M5 T368 S3 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation; T368 S2 accepted at `8ad79494`. |
-| Admission And Approval | The owner authorized continued L3 work; S2 isolated the protected CPL0 LMSW pre-retirement `#GP` as a finite semantic receiver. |
-| Objective | Establish why the focused 80286 CPL0 LMSW fixture faults before retirement, then retain only source-backed real/protected register and memory rows that demonstrably retire. |
-| Non-goals | No timing allocation for a fault, no prefix/default sweep, bus/device/physical-time work, profile/topology change or 5170 L3 claim. |
-| Reference Baseline | `8ad79494`, [S2 reconciliation](../etc/evidence/t368-s2-80286-system-context-reconciliation.md), Intel 210498-005 Appendix B, source policy and existing 80286 protected-mode evidence. |
-| Candidate Proposal | [80286 successful-retirement timing closure](../proposals/m5-80286-retirement-timing-closure.md). |
-| Files And ABI Surface | Existing 80286 executor/fixture/test and evidence/status/history only; no public ABI. |
-| Applicable Rules | Execution continuation/evidence; Intel authority first; one shared publisher; no invented fault timing; exact transfer records. |
-| Verification | Focused 80286 ledger test and relevant protected-mode regressions; documentation governance and diff check. |
-| Expected Markers | The fixture exposes an architectural CPL0 LMSW retirement or a precisely evidenced core semantic defect; neither a `#GP` nor an unverified scalar is published. |
-| Asset Needs | No guest media, ROM, binary or imported source. |
-| Reporting Requirements | Distinguish fixture state, architectural privilege result, successful retirement and Appendix-B timing context. |
-| Stop Conditions | Stop and transfer if protected state cannot be proven without broader, unapproved architectural work. |
-| Exit Criteria | Pushed P1/P2 leaves the protected LMSW result demonstrated or explicitly transferred, with only retiring rows admitted. |
-| Original Owner Request | Continue comprehensive L3 execution before Windows 3.1, following the Queue dependency chain. |
-| Similar-Issue Sweep | Inspect CPL source, descriptor/load path, resume helper, real/protected register and memory forms, and existing MSW semantic regressions. |
+T368 remains open. S3 is accepted: a reused LMSW fixture retained CR0.PE into
+the intended real-address bootstrap; it now establishes CR0 explicitly, and
+the already-accepted CPL0 LMSW `3/6` rows retire. Prefix/default CPU work,
+bus, device and 5170 L3 remain open.
 
 ## Current Technical Baseline
 
@@ -42,7 +26,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T368 S2 | Accepted at `5cf9f2df`: repairs the VERR/VERW `14/16` classifier route and stale LAR/SMSW fixture assumptions; observed protected LMSW faults before retirement and transfers to S3. Remaining prefix/default routes, bus, device and L3 work remain open. [Reconciliation](../etc/evidence/t368-s2-80286-system-context-reconciliation.md). |
+| T368 S3 | Accepted at `e6b78987`: the local protected-LMSW bootstrap now clears stale CR0.PE before real-mode setup; existing source-backed CPL0 `3/6` rows retire, with no executor change. Prefix/default routes, bus, device and L3 work remain open. [Reconciliation](../etc/evidence/t368-s3-80286-lmsw-context-reconciliation.md). |
 | T367 | Closed at `f60d87ea`: concrete machine selection and CPU/timing contract binding are VM-owned; the default-PC/AT option path now selects a VM contract before the sole core materialization boundary, while Model 339 remains descriptor-selected. Focused profile/session regressions pass; an unrelated platform-request compile failure blocks a full-gate claim. No CPU-timing, bus, device or L3 receiver is closed. [Binding evidence](../etc/evidence/t367-s2-vm-profile-contract-binding.md). |
 | T366 | Closed at `743edc18`: locks the Model 339 baseline, planar-parity NMI and selected topology, and accepts bounded 80286 source-retirement rows. Complete CPU retirement, bus availability, device service timing and profile-L3 closure transfer explicitly; **5170 model-L3 is not ready**. [Closure audit](../etc/evidence/t366-s32-closure-transfer-audit.md). |
 | T365 | Closed at `febc9352`: IBM PC/AT parity/I/O-check NMI sources cannot be selected without a profile input, status/latch/clear and lifecycle contract; CPU and CMOS remain delivery/mask only. [Closure audit](../etc/evidence/t365-s2-pcat-nmi-nonadmission-closure-audit.md). Blocks physical/cycle-exact L3 closure; no synthetic source. |
