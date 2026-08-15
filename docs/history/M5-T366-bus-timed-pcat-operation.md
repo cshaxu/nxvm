@@ -167,3 +167,11 @@ S19 extends `8C MOV Sreg,m16` to successful unprefixed legal memory forms
 using the source-backed `3 + EA + odd-word` construction. Its [timing evidence](../etc/evidence/t366-s19-80286-sreg-store-memory-timing.md)
 records direct/indexed parity proof and retained `8E`/invalid boundaries. S19
 is accepted at `ad1ed794`.
+
+### S20: 80286 real-mode segment-register load timing
+
+S20 gives successful unprefixed real-mode legal `8E MOV Sreg,r/m16` forms the
+source-backed register `2` and memory `5 + EA + odd-word` construction. Its
+[timing evidence](../etc/evidence/t366-s20-80286-sreg-load-real-timing.md)
+records all legal target, direct/indexed parity proof and the retained
+protected-mode descriptor-load boundary. S20 is accepted at `25d3a773`.

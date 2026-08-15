@@ -35,4 +35,7 @@ interrupt-shadow coverage.
 The focused `core-machine-80286-instruction-timing-ledger-smoke` passed and
 emitted `M5:T357:S6:80286-INSTRUCTION-TIMING-LEDGER:OK`. The configured
 `run-current-smokes` gate, documentation governance and `git diff --check`
-passed before P1.
+passed before P1. Coordinator review of P1 `25d3a773` confirms that the
+protected-mode predicate and legal-target guard exclude every transferred
+selector-load path, while focused proof covers every admitted real-mode target
+and memory parity construction.
