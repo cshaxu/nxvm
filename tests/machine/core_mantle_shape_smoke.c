@@ -60,6 +60,8 @@ static const core_machine_media_provider fixture_media_provider = {
     fixture_media_read,
     STD_NULL,
     STD_NULL,
+    STD_NULL,
+    STD_NULL,
     STD_NULL
 };
 

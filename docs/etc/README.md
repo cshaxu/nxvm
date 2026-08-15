@@ -207,6 +207,7 @@ principal documents named in [docs/README.md](../README.md).
 | `evidence/t366-s1-pcat-bus-profile-route-inventory.md` | Verification owner | T366 S1 selected-PC/AT board/profile source and CPU/DMA/device route inventory, with explicit non-admission pending an owner-selected physical target and corpus. Retain with T366 history while the task is open. |
 | `evidence/t366-s2-5170-profile-lock.md` | Verification owner | T366 S2 exact IBM 5170 Model 339/Type 3 field configuration, source boundary, non-asset ROM constraint, project-owned probe-corpus design, NMI handoff, MFM/ST-506 receiver and excluded-device receivers. Retain with T366 history while the task is open. |
 | `evidence/t374-s8-fdc-deleted-media-contract-audit.md` | Verification owner | T374 S8 8272A Deleted-Data address-mark contract, complete provider/consumer migration sweep, raw-image persistence boundary, and ordered shared-media/FDC receivers. Retain with T374 history while the task is open. |
+| `evidence/t374-s9-media-address-mark-contract.md` | Verification owner | T374 S9 shared normal/deleted logical-sector address-mark capability, provider migration, raw-image unsupported boundary, and focused proof. Retain with T374 history while the task is open. |
 | `operations/` | Execution, source, and release owners | Toolchain, policy, templates, release procedure, and closure material. |
 | `research/` | Source owner | Provenance, external references, and non-product research. |
 | `history/` | Documentation owner | Read-only legacy and M5 migration/roadmap evidence. |

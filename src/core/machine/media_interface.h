@@ -26,8 +26,14 @@ typedef enum core_machine_media_capability {
     CORE_MACHINE_MEDIA_CAPABILITY_FLUSHABLE = 0x0004u,
     CORE_MACHINE_MEDIA_CAPABILITY_GEOMETRY_KNOWN = 0x0008u,
     CORE_MACHINE_MEDIA_CAPABILITY_CHANGE_DETECTABLE = 0x0010u,
-    CORE_MACHINE_MEDIA_CAPABILITY_FORMATTABLE = 0x0020u
+    CORE_MACHINE_MEDIA_CAPABILITY_FORMATTABLE = 0x0020u,
+    CORE_MACHINE_MEDIA_CAPABILITY_ADDRESS_MARKS = 0x0040u
 } core_machine_media_capability;
+
+typedef enum core_machine_media_address_mark {
+    CORE_MACHINE_MEDIA_ADDRESS_MARK_DATA = 0,
+    CORE_MACHINE_MEDIA_ADDRESS_MARK_DELETED_DATA
+} core_machine_media_address_mark;
 
 typedef struct core_machine_media_geometry {
     type_unsigned_64 logical_sector_count;
@@ -55,6 +61,12 @@ typedef core_machine_media_result (*core_machine_media_format_provider)(
     C_VOID *context, type_unsigned_64 logical_sector, type_unsigned_32 sector_count, type_unsigned_8 fill);
 typedef core_machine_media_result (*core_machine_media_flush_provider)(
     C_VOID *context);
+typedef core_machine_media_result (*core_machine_media_get_address_mark_provider)(
+    C_VOID *context, type_unsigned_64 logical_sector,
+    core_machine_media_address_mark *out_mark);
+typedef core_machine_media_result (*core_machine_media_set_address_mark_provider)(
+    C_VOID *context, type_unsigned_64 logical_sector,
+    core_machine_media_address_mark mark);
 
 typedef struct core_machine_media_provider {
     core_machine_media_query_provider query;
@@ -62,6 +74,8 @@ typedef struct core_machine_media_provider {
     core_machine_media_write_provider write_bytes;
     core_machine_media_format_provider format_sectors;
     core_machine_media_flush_provider flush;
+    core_machine_media_get_address_mark_provider get_address_mark;
+    core_machine_media_set_address_mark_provider set_address_mark;
 } core_machine_media_provider;
 
 typedef struct core_machine_media_binding {
@@ -103,5 +117,11 @@ type_status core_machine_media_format_sectors(const core_machine_media_registry 
     type_unsigned_8 fill, core_machine_media_result *out_result);
 type_status core_machine_media_flush(const core_machine_media_registry *registry,
     core_machine_media_id id, core_machine_media_result *out_result);
+type_status core_machine_media_get_address_mark(const core_machine_media_registry *registry,
+    core_machine_media_id id, type_unsigned_64 logical_sector,
+    core_machine_media_address_mark *out_mark, core_machine_media_result *out_result);
+type_status core_machine_media_set_address_mark(const core_machine_media_registry *registry,
+    core_machine_media_id id, type_unsigned_64 logical_sector,
+    core_machine_media_address_mark mark, core_machine_media_result *out_result);
 
 #endif

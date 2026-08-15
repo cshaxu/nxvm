@@ -94,6 +94,7 @@ C_INT main(C_VOID)
     core_machine_media_registry registry;
     core_machine_media_info info;
     core_machine_media_result result;
+    core_machine_media_address_mark mark;
     t_fdd fdd;
     t_fdd failed_fdd;
     t_fdd null_fdd;
@@ -161,8 +162,15 @@ C_INT main(C_VOID)
         core_machine_media_query(&registry, 1u, &info, &result) != TYPE_STATUS_OK ||
         result != CORE_MACHINE_MEDIA_RESULT_OK || !info.present ||
         info.geometry.bytes_per_sector != 512u ||
+        (info.capabilities & CORE_MACHINE_MEDIA_CAPABILITY_ADDRESS_MARKS) != 0u ||
+        core_machine_media_get_address_mark(&registry, 1u, 0u, &mark,
+            &result) != TYPE_STATUS_OK || result != CORE_MACHINE_MEDIA_RESULT_UNSUPPORTED ||
         core_machine_media_query(&registry, 2u, &info, &result) != TYPE_STATUS_OK ||
-        result != CORE_MACHINE_MEDIA_RESULT_OK || info.geometry.cylinders != 2u) {
+        result != CORE_MACHINE_MEDIA_RESULT_OK || info.geometry.cylinders != 2u ||
+        (info.capabilities & CORE_MACHINE_MEDIA_CAPABILITY_ADDRESS_MARKS) != 0u ||
+        core_machine_media_set_address_mark(&registry, 2u, 0u,
+            CORE_MACHINE_MEDIA_ADDRESS_MARK_DELETED_DATA, &result) != TYPE_STATUS_OK ||
+        result != CORE_MACHINE_MEDIA_RESULT_UNSUPPORTED) {
         failed = 1;
     }
     if (!failed && (vm_media_provider_expect_null_backing(&registry, 3u,

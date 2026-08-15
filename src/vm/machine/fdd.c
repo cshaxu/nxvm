@@ -98,6 +98,8 @@ const core_machine_media_provider *vm_machine_fdd_media_provider(C_VOID)
         vm_machine_fdd_media_read,
         vm_machine_fdd_media_write,
         vm_machine_fdd_media_format,
+        STD_NULL,
+        STD_NULL,
         STD_NULL
     };
     return &provider;

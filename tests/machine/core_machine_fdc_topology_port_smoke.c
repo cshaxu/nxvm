@@ -47,6 +47,8 @@ static const core_machine_media_provider core_machine_fdc_topology_provider = {
     core_machine_fdc_topology_read,
     STD_NULL,
     STD_NULL,
+    STD_NULL,
+    STD_NULL,
     STD_NULL
 };
 

@@ -246,3 +246,75 @@ type_status core_machine_media_flush(const core_machine_media_registry *registry
         binding->provider->flush(binding->context));
     return TYPE_STATUS_OK;
 }
+
+type_status core_machine_media_get_address_mark(const core_machine_media_registry *registry,
+    core_machine_media_id id, type_unsigned_64 logical_sector,
+    core_machine_media_address_mark *out_mark, core_machine_media_result *out_result)
+{
+    const core_machine_media_binding *binding;
+    core_machine_media_info info;
+    type_status status;
+    type_unsigned_64 offset;
+    type_unsigned_32 byte_count;
+
+    if (out_mark == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    status = core_machine_media_get_sector_range(registry, id, logical_sector, 1u,
+        &offset, &byte_count, out_result);
+    (C_VOID)offset;
+    (C_VOID)byte_count;
+    if (status != TYPE_STATUS_OK || *out_result != CORE_MACHINE_MEDIA_RESULT_OK)
+        return status;
+    status = core_machine_media_query(registry, id, &info, out_result);
+    if (status != TYPE_STATUS_OK || *out_result != CORE_MACHINE_MEDIA_RESULT_OK)
+        return status;
+    if ((info.capabilities & CORE_MACHINE_MEDIA_CAPABILITY_ADDRESS_MARKS) == 0u) {
+        core_machine_media_set_result(out_result, CORE_MACHINE_MEDIA_RESULT_UNSUPPORTED);
+        return TYPE_STATUS_OK;
+    }
+    status = core_machine_media_get_binding(registry, id, &binding, out_result);
+    if (status != TYPE_STATUS_OK) return status;
+    if (binding->provider->get_address_mark == STD_NULL) {
+        core_machine_media_set_result(out_result, CORE_MACHINE_MEDIA_RESULT_UNSUPPORTED);
+        return TYPE_STATUS_OK;
+    }
+    core_machine_media_set_result(out_result, binding->provider->get_address_mark(
+        binding->context, logical_sector, out_mark));
+    return TYPE_STATUS_OK;
+}
+
+type_status core_machine_media_set_address_mark(const core_machine_media_registry *registry,
+    core_machine_media_id id, type_unsigned_64 logical_sector,
+    core_machine_media_address_mark mark, core_machine_media_result *out_result)
+{
+    const core_machine_media_binding *binding;
+    core_machine_media_info info;
+    type_status status;
+    type_unsigned_64 offset;
+    type_unsigned_32 byte_count;
+
+    if (mark != CORE_MACHINE_MEDIA_ADDRESS_MARK_DATA &&
+        mark != CORE_MACHINE_MEDIA_ADDRESS_MARK_DELETED_DATA)
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    status = core_machine_media_get_sector_range(registry, id, logical_sector, 1u,
+        &offset, &byte_count, out_result);
+    (C_VOID)offset;
+    (C_VOID)byte_count;
+    if (status != TYPE_STATUS_OK || *out_result != CORE_MACHINE_MEDIA_RESULT_OK)
+        return status;
+    status = core_machine_media_query(registry, id, &info, out_result);
+    if (status != TYPE_STATUS_OK || *out_result != CORE_MACHINE_MEDIA_RESULT_OK)
+        return status;
+    if ((info.capabilities & CORE_MACHINE_MEDIA_CAPABILITY_ADDRESS_MARKS) == 0u) {
+        core_machine_media_set_result(out_result, CORE_MACHINE_MEDIA_RESULT_UNSUPPORTED);
+        return TYPE_STATUS_OK;
+    }
+    status = core_machine_media_get_binding(registry, id, &binding, out_result);
+    if (status != TYPE_STATUS_OK) return status;
+    if (binding->provider->set_address_mark == STD_NULL) {
+        core_machine_media_set_result(out_result, CORE_MACHINE_MEDIA_RESULT_UNSUPPORTED);
+        return TYPE_STATUS_OK;
+    }
+    core_machine_media_set_result(out_result, binding->provider->set_address_mark(
+        binding->context, logical_sector, mark));
+    return TYPE_STATUS_OK;
+}

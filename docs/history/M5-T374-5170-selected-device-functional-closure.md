@@ -79,3 +79,11 @@ payload bytes.  It inventories every production and fixture provider, records
 the raw-image persistence limit, and assigns a shared media ABI receiver before
 any FDC command route can truthfully be added.  No synthetic disk encoding,
 functional-completion or L3 claim is made.
+
+### S9: shared media address-mark contract
+
+S9's [media address-mark contract evidence](../etc/evidence/t374-s9-media-address-mark-contract.md)
+adds a provider-owned normal/deleted logical-sector metadata capability,
+validated query/set operations and complete initializer migration.  Byte-only
+raw FDD/HDD images truthfully remain unsupported; a later FDC receiver may use
+the shared contract but must not invent raw-image persistence.

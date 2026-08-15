@@ -83,6 +83,8 @@ static const core_machine_media_provider core_machine_hdc_fixture_provider = {
     core_machine_hdc_fixture_read,
     core_machine_hdc_fixture_write,
     STD_NULL,
+    STD_NULL,
+    STD_NULL,
     STD_NULL
 };
 

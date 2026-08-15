@@ -51,6 +51,8 @@ static const core_machine_media_provider core_machine_fdc_change_provider = {
     core_machine_fdc_change_read,
     STD_NULL,
     STD_NULL,
+    STD_NULL,
+    STD_NULL,
     STD_NULL
 };
 
