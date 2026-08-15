@@ -149,6 +149,9 @@ target_link_libraries(core-machine-firmware-capability-smoke PRIVATE core-machin
 
 add_executable(core-machine-time-smoke tests/core/machine_time_smoke.c)
 target_link_libraries(core-machine-time-smoke PRIVATE core-machine)
+add_executable(core-machine-explicit-time-s4-smoke
+    tests/core/machine_explicit_time_s4_smoke.c)
+target_link_libraries(core-machine-explicit-time-s4-smoke PRIVATE core-machine)
 
 add_executable(core-machine-scheduler-smoke
     tests/core/machine_scheduler_smoke.c)

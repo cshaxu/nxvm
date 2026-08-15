@@ -228,6 +228,11 @@ type_status core_machine_run(
     core_machine_run_budget budget,
     core_machine_run_result *result);
 
+/* Composition publishes already-selected virtual source ticks here. This is
+ * machine time, never an implicit host-duration conversion or CPU retirement. */
+type_status core_machine_advance_time(core_machine *machine,
+    type_unsigned_64 source_ticks);
+
 type_status core_machine_request_stop(core_machine *machine);
 
 /* VM devices may request the architected NMI mask through this operation;

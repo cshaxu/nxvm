@@ -3199,6 +3199,22 @@ static C_VOID core_machine_advance_scheduler(core_machine *machine,
     }
 }
 
+static type_status core_machine_publish_elapsed_ticks(core_machine *machine,
+    type_unsigned_64 elapsed_ticks, type_bool cpu_retired)
+{
+    if (machine == STD_NULL || elapsed_ticks == 0u ||
+        UINT64_MAX - machine->elapsed_ticks < elapsed_ticks) {
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
+    machine->elapsed_ticks += elapsed_ticks;
+    if (cpu_retired) {
+        core_machine_trace_record(machine, CORE_MACHINE_TRACE_CPU_RETIRE,
+            core_machine_linear_pc(machine), (type_unsigned_32)elapsed_ticks, 0u);
+    }
+    core_machine_advance_scheduler(machine, elapsed_ticks);
+    return TYPE_STATUS_OK;
+}
+
 static C_INT core_machine_valid_cpu_profile(core_machine_cpu_profile profile)
 {
     return profile >= CORE_MACHINE_CPU_PROFILE_8086 &&
@@ -4440,25 +4456,36 @@ type_status core_machine_run(
                     machine->execution_provider_context);
             }
             core_machine_kbc_refresh(&machine->shared_kbc);
-            core_machine_cpu_execution_refresh(&machine->executor_cpu_execution);
-            if (machine->lifecycle == CORE_MACHINE_FAULTED) {
-                result->reason = CORE_MACHINE_STOP_FAULT;
-                result->linear_pc = core_machine_linear_pc(machine);
-                result->detail = machine->fault_detail;
-                result->elapsed_ticks = machine->elapsed_ticks;
-                return TYPE_STATUS_FAULT;
-            }
-            if (core_machine_cpu_execution_consume_instruction_fault_delivery(
-                    &machine->executor_cpu_execution)) {
-                /* The synchronous exception frame and vector are committed, but
-                 * the faulting instruction did not retire.  The handler starts
-                 * at the next public execution round, without publishing CPU
-                 * or device time for this faulting round. */
-                machine->lifecycle = CORE_MACHINE_PAUSED;
-                result->reason = CORE_MACHINE_STOP_BUDGET;
-                result->linear_pc = core_machine_linear_pc(machine);
-                result->elapsed_ticks = machine->elapsed_ticks;
-                return TYPE_STATUS_OK;
+            {
+                type_bool was_halted = machine->executor_cpu.data.flagHalt;
+
+                core_machine_cpu_execution_refresh(&machine->executor_cpu_execution);
+                if (machine->lifecycle == CORE_MACHINE_FAULTED) {
+                    result->reason = CORE_MACHINE_STOP_FAULT;
+                    result->linear_pc = core_machine_linear_pc(machine);
+                    result->detail = machine->fault_detail;
+                    result->elapsed_ticks = machine->elapsed_ticks;
+                    return TYPE_STATUS_FAULT;
+                }
+                if (core_machine_cpu_execution_consume_instruction_fault_delivery(
+                        &machine->executor_cpu_execution)) {
+                    /* The synchronous exception frame and vector are committed, but
+                     * the faulting instruction did not retire.  The handler starts
+                     * at the next public execution round, without publishing CPU
+                     * or device time for this faulting round. */
+                    machine->lifecycle = CORE_MACHINE_PAUSED;
+                    result->reason = CORE_MACHINE_STOP_BUDGET;
+                    result->linear_pc = core_machine_linear_pc(machine);
+                    result->elapsed_ticks = machine->elapsed_ticks;
+                    return TYPE_STATUS_OK;
+                }
+                if (was_halted && machine->executor_cpu.data.flagHalt) {
+                    machine->lifecycle = CORE_MACHINE_PAUSED;
+                    result->reason = CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
+                    result->linear_pc = core_machine_linear_pc(machine);
+                    result->elapsed_ticks = machine->elapsed_ticks;
+                    return TYPE_STATUS_OK;
+                }
             }
             {
                 type_unsigned_64 instruction_ticks;
@@ -4475,12 +4502,16 @@ type_status core_machine_run(
                 }
                 ++result->executed;
                 result->ticks += instruction_ticks;
-                machine->elapsed_ticks += instruction_ticks;
+                if (core_machine_publish_elapsed_ticks(machine,
+                        instruction_ticks, TYPE_TRUE) != TYPE_STATUS_OK) {
+                    (C_VOID)core_machine_report_fault(machine, 0x54494d45u);
+                    result->reason = CORE_MACHINE_STOP_FAULT;
+                    result->linear_pc = core_machine_linear_pc(machine);
+                    result->detail = machine->fault_detail;
+                    result->elapsed_ticks = machine->elapsed_ticks;
+                    return TYPE_STATUS_FAULT;
+                }
                 result->elapsed_ticks = machine->elapsed_ticks;
-                core_machine_trace_record(machine, CORE_MACHINE_TRACE_CPU_RETIRE,
-                    core_machine_linear_pc(machine),
-                    (type_unsigned_32)instruction_ticks, 0u);
-                core_machine_advance_scheduler(machine, instruction_ticks);
             }
             if (machine->executor_cpu.data.flagHalt) {
                 machine->lifecycle = CORE_MACHINE_PAUSED;
@@ -4509,6 +4540,17 @@ type_status core_machine_run(
             (type_unsigned_32)result->reason);
         return TYPE_STATUS_OK;
     }
+}
+
+type_status core_machine_advance_time(core_machine *machine,
+    type_unsigned_64 source_ticks)
+{
+    if (machine == STD_NULL || !core_machine_mutable_operation_is_allowed(machine) ||
+        (machine->lifecycle != CORE_MACHINE_STOPPED &&
+        machine->lifecycle != CORE_MACHINE_PAUSED)) {
+        return TYPE_STATUS_INVALID_STATE;
+    }
+    return core_machine_publish_elapsed_ticks(machine, source_ticks, TYPE_FALSE);
 }
 
 type_status core_machine_request_stop(core_machine *machine)
