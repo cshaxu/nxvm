@@ -7,27 +7,6 @@
 | Task | Compact progress |
 | --- | --- |
 
-## M5 T376 S3 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner-approved continuous M5 L3 implementation; T376 S2 accepts the VM-side address-mark lifecycle required by deleted-data controller commands. |
-| Objective | Add documented 8272A Read Deleted Data, Write Deleted Data and ordinary-read Control-Mark behavior through the existing FDC transfer, DMA2, IRQ6, reset and T375 cadence owners. |
-| Non-goals | No Scan family, FDC filesystem path, test-only command API, raw image format change, new DMA engine, generic controller timing, or final L3 claim. |
-| Reference Baseline | T374 identifies Deleted Data/Control Mark semantics as metadata, T375 fixes 500-kbit/s byte cadence, and T376 S2 supplies VM FDD address-mark persistence. |
-| Candidate Proposal | [8272A raw-IMG sidecar fidelity closure](../proposals/m5-8272a-img-sidecar-fidelity-closure.md). |
-| Files And ABI Surface | `core/machine/fdc.*`, existing FDC media tests and evidence/index/current/history. No VM host API or core media ABI change. |
-| Applicable Rules | One FDC/DMA/IRQ owner, address marks from provider only, controller result bytes reflect documented operation, reset/cancel preserve existing lifecycle, and no guessed duration. |
-| Verification | Focused FDC tests cover normal/deleted read result distinction, deleted write persistence, DMA/non-DMA cadence and reset cancellation; current GCC build/test and documentation governance pass. |
-| Expected Markers | `M5:T376:S2:RAW-IMG-SIDECAR-LIFECYCLE:OK`; `M5:T376:S3:8272A-DELETED-DATA:OK`. |
-| Asset Needs | No ROM, guest media or external source import; test providers use project-owned in-memory media state. |
-| Reporting Requirements | Record opcode/result mapping, provider ownership, preservation of timing/IRQ/DMA routes, focused proof, and remaining Scan receiver. |
-| Stop Conditions | Stop for owner direction if documented results require a provider semantic absent from the frozen ABI or a timing change outside T375. |
-| Exit Criteria | Both deleted commands and normal-read Control Mark are guest-visible through existing controller routes, persisted marks round-trip through S2, regressions pass, and Scan remains explicit next work. |
-| Original Owner Request | Continue through L3 before Windows; retain raw IMG compatibility, avoid pure test APIs, and use authoritative controller behavior. |
-| Similar-Issue Sweep | Inspect every FDC opcode/length/execute/transfer/result path, media get/set-address-mark caller, DMA/non-DMA byte gate and reset/cancel route. |
-
 ## Current Technical Baseline
 
 - **Current developer artifact:** T369 S4 `vm-0-5-0369` /
@@ -47,7 +26,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T376 S2 | Accepted P1 `d8ea9043`: VM FDD now owns strict raw-IMG sidecar mount/save lifecycle and provider address marks; paired persistence preserves the mounted media on failure. [Evidence](../etc/evidence/t376-s2-raw-img-sidecar-lifecycle.md). |
+| T376 S3 | Accepted P1 `707114ce`: 8272A Deleted-Data and Control-Mark behavior now uses the retained media, DMA, IRQ, reset and cadence owners; Scan remains next. [Evidence](../etc/evidence/t376-s3-8272a-deleted-data.md). |
 | T375 | Closed at `07484727`: board/device phase work accepts source-backed service and logical-order contracts, transfers raw-IMG fidelity and source-exhausted physical board phases, and **does not accept Model-339 L3**. [Closure audit](../etc/evidence/t375-s26-task-closure-transfer-audit.md). |
 | T374 | Closed at `f742433c`: S1--S19 complete the selected Model-339 functional closure and preserve raw-IMG 765 Deleted/Control-Mark/Scan as explicit TODO debt. Board/device timing, final Model-L3, DeskPro 386, PC/XT and Windows 3.1 remain open. [Closure audit](../etc/evidence/t374-s19-task-closure-audit.md). |
 | T373 | Closed at `06246a8e`: S1--S4 freeze the three-machine capability ledger and receivers. **5170, DeskPro Model 40 and PC/XT 5160-268 L3 are not ready.** [Closure audit](../etc/evidence/t373-s4-task-closure-audit.md). |
