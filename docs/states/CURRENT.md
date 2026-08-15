@@ -2,24 +2,9 @@
 
 ## Current Work
 
-| Field | Required record |
+| Task | Compact progress |
 | --- | --- |
-| Identifier Mode | Continuation: M5 T375 S12, the next unused subtask of the retained open T375 progress. |
-| Admission And Approval | Owner: repository user. Approval: continuing the approved L3 program after accepted S11. Scope: determine the frozen Model-339 digital-CGA adapter identity and its admissible primary/reference timing evidence before any physical-character-clock or contention implementation. |
-| Objective | Produce a source-labelled adapter identity and admissibility ledger that determines whether the current Model-339 profile can receive an exact CGA physical cadence from primary material or qualified 86Box/MAME/PCjs cross-checks. |
-| Non-goals | No timing scalar, default CRTC register table, VADP behavior change, ROM/media use, third-party source import, generic-AT substitution, EGA change, board-L3 claim or final adapter choice without evidence. |
-| Reference Baseline | T373 capability ledger, T374 selected CGA functional inventory, T375 S8/S10/S11 CGA evidence, frozen Model-339 profile and source/research policy. |
-| Candidate Proposal | [IBM PC/AT 5170 board and device phase-timing closure](../proposals/m5-5170-board-phase-timing-closure.md), CGA board/phase receiver. |
-| Files And ABI Surface | Evidence/index/CURRENT only unless the audit exposes a pre-existing documentation defect that can be repaired in scope. No product code, profile, fixture or public API. |
-| Applicable Rules | `docs/rules/EXECUTION.md`: continuation/complete P/review; `docs/rules/ARCHITECTURE.md`: no imported reference implementation or unqualified board fact; `docs/rules/DOCUMENT.md`: evidence/index/status; source policy: primary authority before reference cross-check, no third-party source import. No exception requested. |
-| Verification | Reproducible repository/reference inventory; primary-source identity matrix; qualified reference-model/version/configuration comparison; exact/range/unavailable disposition; documentation governance and diff check. |
-| Expected Markers | `M5:T375:S12:MODEL339-CGA-IDENTITY-LEDGER:OK`. |
-| Asset Needs | External documentation and read-only local 86Box/PCjs source only. No ROM, guest media, binary, trace or third-party source import. |
-| Reporting Requirements | Report whether the exact adapter is already frozen, what each source can establish, and the earliest bounded receiver or owner decision for every unavailable fact. |
-| Stop Conditions | Stop implementation and request owner direction if physical cadence requires an unselected adapter revision, an unqualified reference configuration, a default table, or a primary/reference conflict. |
-| Exit Criteria | The Model-339 CGA identity and timing-evidence eligibility are explicit; no unqualified reference value becomes a board fact; each unavailable fact has an exact later receiver or owner-decision gate. |
-| Original Owner Request | Continue the current L3 program through the selected 5170, DeskPro and XT baselines before Windows 3.1, using 86Box/MAME/PCjs as qualified references only when primary manuals do not determine timing. |
-| Similar-Issue Sweep | Sweep the profile, capability ledger, CGA functional/timing evidence and local 86Box/PCjs configuration/source labels for an implicit adapter identity, generic-AT substitution or unqualified timing value. |
+| T375 S12 | Accepted P1 `866edf89`: locks IBM CGA feature 4910 / part 1504910-compatible Model-339 identity and reference admissibility. No physical cadence is admitted: a bounded project-owned 86Box measurement contract is the next CGA receiver; MAME is unavailable. [Evidence](../etc/evidence/t375-s12-model339-cga-identity-ledger.md). |
 
 ## Current Technical Baseline
 
