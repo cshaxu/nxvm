@@ -50,3 +50,15 @@ owners do not own, and x87/WAIT/default or negative boundaries.  The static
 T366 S10 publisher inventory still passes.  S4 is accepted at `7dc3a9d9`;
 S5--S7 must resolve these receivers before T368 may close, and no 5170 L3
 claim is made.
+
+### S5: System-form timing reconciliation
+
+S5 reconciles Intel 210498-005 Appendix-B rows with successful executions for
+the remaining unprefixed system forms: `LLDT/LTR` register/memory `17/19`,
+`SGDT/LGDT` memory `11`, `SIDT/LIDT` memory `12`, and `CLTS` `2`. The
+[S5 evidence](../etc/evidence/t368-s5-80286-system-timing-reconciliation.md)
+records protected CPL0 selector fixtures, table/control post-state proof, the
+sole-publisher gate, and the focused semantic regressions. Fault, delivery,
+prefix, bus, device and physical-clock paths remain unallocated. S5 is
+accepted at `0e095fb2`; S6/S7 remain necessary before T368 can close, and
+there is no 5170 L3 claim.
