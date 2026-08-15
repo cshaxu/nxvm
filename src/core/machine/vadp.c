@@ -13,6 +13,16 @@
 #define CORE_MACHINE_VADP_DEFAULT_ACTIVE_DISPLAY_TICKS 48u
 #define CORE_MACHINE_VADP_DEFAULT_HORIZONTAL_BLANK_TICKS 8u
 #define CORE_MACHINE_VADP_DEFAULT_VERTICAL_RETRACE_TICKS 8u
+#define CORE_MACHINE_VADP_CRTC_HORIZONTAL_TOTAL 0x00u
+#define CORE_MACHINE_VADP_CRTC_HORIZONTAL_DISPLAYED 0x01u
+#define CORE_MACHINE_VADP_CRTC_HORIZONTAL_SYNC_POSITION 0x02u
+#define CORE_MACHINE_VADP_CRTC_SYNC_WIDTH 0x03u
+#define CORE_MACHINE_VADP_CRTC_VERTICAL_TOTAL 0x04u
+#define CORE_MACHINE_VADP_CRTC_VERTICAL_TOTAL_ADJUST 0x05u
+#define CORE_MACHINE_VADP_CRTC_VERTICAL_DISPLAYED 0x06u
+#define CORE_MACHINE_VADP_CRTC_VERTICAL_SYNC_POSITION 0x07u
+#define CORE_MACHINE_VADP_CRTC_INTERLACE_SKEW 0x08u
+#define CORE_MACHINE_VADP_CRTC_MAXIMUM_RASTER_ADDRESS 0x09u
 #define CORE_MACHINE_VADP_CRTC_CURSOR_TOP 0x0au
 #define CORE_MACHINE_VADP_CRTC_CURSOR_BOTTOM 0x0bu
 #define CORE_MACHINE_VADP_CRTC_START_HIGH 0x0cu
@@ -261,19 +271,73 @@ static type_status core_machine_vadp_ega_planar_query(C_VOID *owner,
     return TYPE_STATUS_OK;
 }
 
+static C_INT core_machine_vadp_cga_logical_raster_active(const t_vadp *adapter)
+{
+    return adapter != STD_NULL && !adapter->data.ega_controller_configured &&
+        adapter->data.crtc[CORE_MACHINE_VADP_CRTC_HORIZONTAL_DISPLAYED] != 0u &&
+        adapter->data.crtc[CORE_MACHINE_VADP_CRTC_VERTICAL_DISPLAYED] != 0u;
+}
+
+static type_unsigned_32 core_machine_vadp_cga_scanlines_per_row(const t_vadp *adapter)
+{
+    return (type_unsigned_32)adapter->data.crtc[
+        CORE_MACHINE_VADP_CRTC_MAXIMUM_RASTER_ADDRESS] + 1u;
+}
+
+static type_unsigned_32 core_machine_vadp_cga_logical_raster_period(const t_vadp *adapter)
+{
+    type_unsigned_32 rows = (type_unsigned_32)adapter->data.crtc[
+        CORE_MACHINE_VADP_CRTC_VERTICAL_TOTAL] + 1u;
+    type_unsigned_32 scanlines = rows * core_machine_vadp_cga_scanlines_per_row(adapter) +
+        adapter->data.crtc[CORE_MACHINE_VADP_CRTC_VERTICAL_TOTAL_ADJUST];
+
+    return scanlines * ((type_unsigned_32)adapter->data.crtc[
+        CORE_MACHINE_VADP_CRTC_HORIZONTAL_TOTAL] + 1u);
+}
+
+static type_unsigned_16 core_machine_vadp_text_columns(const t_vadp *adapter)
+{
+    type_unsigned_16 columns;
+
+    if (!core_machine_vadp_cga_logical_raster_active(adapter)) return adapter->data.columns;
+    columns = adapter->data.crtc[CORE_MACHINE_VADP_CRTC_HORIZONTAL_DISPLAYED];
+    return columns > CORE_MACHINE_DISPLAY_MAX_COLUMNS ? CORE_MACHINE_DISPLAY_MAX_COLUMNS :
+        columns;
+}
+
+static type_unsigned_16 core_machine_vadp_text_rows(const t_vadp *adapter)
+{
+    type_unsigned_16 rows;
+
+    if (!core_machine_vadp_cga_logical_raster_active(adapter)) return adapter->data.rows;
+    rows = adapter->data.crtc[CORE_MACHINE_VADP_CRTC_VERTICAL_DISPLAYED];
+    return rows > CORE_MACHINE_DISPLAY_MAX_ROWS ? CORE_MACHINE_DISPLAY_MAX_ROWS : rows;
+}
+
 static C_INT core_machine_vadp_supported_crtc_index(const t_vadp *adapter,
     type_unsigned_8 index)
 {
-    return adapter != STD_NULL && index < CORE_MACHINE_VADP_CRTC_REGISTER_COUNT &&
-        ((index >= CORE_MACHINE_VADP_CRTC_CURSOR_TOP &&
-        index <= CORE_MACHINE_VADP_CRTC_CURSOR_LOW) ||
-        (index == CORE_MACHINE_VADP_CRTC_OFFSET &&
-        adapter->data.ega_controller_configured));
+    if (adapter == STD_NULL || index >= CORE_MACHINE_VADP_CRTC_REGISTER_COUNT) return TYPE_FALSE;
+    if (!adapter->data.ega_controller_configured) {
+        return (index <= CORE_MACHINE_VADP_CRTC_VERTICAL_SYNC_POSITION ||
+            index == CORE_MACHINE_VADP_CRTC_MAXIMUM_RASTER_ADDRESS ||
+            (index >= CORE_MACHINE_VADP_CRTC_CURSOR_TOP &&
+            index <= CORE_MACHINE_VADP_CRTC_CURSOR_LOW));
+    }
+    return (index >= CORE_MACHINE_VADP_CRTC_CURSOR_TOP &&
+        index <= CORE_MACHINE_VADP_CRTC_CURSOR_LOW) || index == CORE_MACHINE_VADP_CRTC_OFFSET;
 }
 
 static type_unsigned_8 core_machine_vadp_crtc_mask(type_unsigned_8 index)
 {
     switch (index) {
+    case CORE_MACHINE_VADP_CRTC_VERTICAL_TOTAL:
+    case CORE_MACHINE_VADP_CRTC_VERTICAL_DISPLAYED:
+    case CORE_MACHINE_VADP_CRTC_VERTICAL_SYNC_POSITION:
+        return 0x7fu;
+    case CORE_MACHINE_VADP_CRTC_VERTICAL_TOTAL_ADJUST:
+    case CORE_MACHINE_VADP_CRTC_MAXIMUM_RASTER_ADDRESS:
+        return 0x1fu;
     case CORE_MACHINE_VADP_CRTC_CURSOR_TOP:
         return 0x3fu;
     case CORE_MACHINE_VADP_CRTC_CURSOR_BOTTOM:
@@ -483,6 +547,33 @@ static type_unsigned_8 core_machine_vadp_status(const t_vadp *adapter)
     type_unsigned_8 status = 0u;
 
     if (adapter == STD_NULL) return 0u;
+    if (core_machine_vadp_cga_logical_raster_active(adapter)) {
+        type_unsigned_32 horizontal_total = (type_unsigned_32)adapter->data.crtc[
+            CORE_MACHINE_VADP_CRTC_HORIZONTAL_TOTAL] + 1u;
+        type_unsigned_32 period = core_machine_vadp_cga_logical_raster_period(adapter);
+        type_unsigned_32 scanline;
+        type_unsigned_32 character;
+        type_unsigned_32 display_scanlines = (type_unsigned_32)adapter->data.crtc[
+            CORE_MACHINE_VADP_CRTC_VERTICAL_DISPLAYED] *
+            core_machine_vadp_cga_scanlines_per_row(adapter);
+        type_unsigned_32 vertical_sync_start = (type_unsigned_32)adapter->data.crtc[
+            CORE_MACHINE_VADP_CRTC_VERTICAL_SYNC_POSITION] *
+            core_machine_vadp_cga_scanlines_per_row(adapter);
+
+        if (!adapter->data.cga_logical_raster_started || period == 0u) {
+            return CORE_MACHINE_VADP_STATUS_DISPLAY_ENABLE;
+        }
+        scanline = (adapter->data.raster_phase % period) / horizontal_total;
+        character = (adapter->data.raster_phase % period) % horizontal_total;
+        if (scanline >= vertical_sync_start && scanline - vertical_sync_start < 16u) {
+            status |= CORE_MACHINE_VADP_STATUS_VERTICAL_RETRACE;
+        }
+        if (scanline >= display_scanlines || character >= adapter->data.crtc[
+                CORE_MACHINE_VADP_CRTC_HORIZONTAL_DISPLAYED]) {
+            status |= CORE_MACHINE_VADP_STATUS_DISPLAY_ENABLE;
+        }
+        return status;
+    }
     vertical_end = adapter->data.text_timing.vertical_retrace_ticks;
     display_end = vertical_end + adapter->data.text_timing.active_display_ticks;
     if (adapter->data.raster_phase < vertical_end) {
@@ -828,6 +919,8 @@ C_VOID core_machine_vadp_reset(t_vadp *adapter)
     core_machine_vadp_text_timing timing;
     core_machine_vadp_ega_sequencer_config ega_sequencer;
     core_machine_vadp_ega_controller_config ega_controller;
+    type_unsigned_8 crtc[CORE_MACHINE_VADP_CRTC_REGISTER_COUNT];
+    type_bool crtc_initialized;
     type_bool ega_sequencer_configured;
     type_bool ega_controller_configured;
     type_bool ega_planar_enabled;
@@ -846,6 +939,8 @@ C_VOID core_machine_vadp_reset(t_vadp *adapter)
     ega_controller_configured = adapter->data.ega_controller_configured;
     ega_planar_enabled = adapter->data.ega_planar_enabled;
     ega_planar_vram = adapter->data.ega_planar_vram;
+    crtc_initialized = adapter->data.crtc_initialized;
+    STD_MEMCPY(crtc, adapter->data.crtc, sizeof(crtc));
     if (ega_planar_vram != 0u) {
         STD_MEMSET((C_VOID *)ega_planar_vram, 0,
             CORE_MACHINE_VADP_EGA_PLANES * CORE_MACHINE_VADP_EGA_PLANE_BYTES);
@@ -857,8 +952,13 @@ C_VOID core_machine_vadp_reset(t_vadp *adapter)
     adapter->data.columns = 80u;
     adapter->data.rows = 25u;
     adapter->data.color_enabled = TYPE_TRUE;
-    adapter->data.crtc[CORE_MACHINE_VADP_CRTC_CURSOR_TOP] = 6u;
-    adapter->data.crtc[CORE_MACHINE_VADP_CRTC_CURSOR_BOTTOM] = 7u;
+    adapter->data.crtc_initialized = TYPE_TRUE;
+    if (!ega_controller_configured && crtc_initialized) {
+        STD_MEMCPY(adapter->data.crtc, crtc, sizeof(adapter->data.crtc));
+    } else {
+        adapter->data.crtc[CORE_MACHINE_VADP_CRTC_CURSOR_TOP] = 6u;
+        adapter->data.crtc[CORE_MACHINE_VADP_CRTC_CURSOR_BOTTOM] = 7u;
+    }
     adapter->data.ega_sequencer = ega_sequencer;
     adapter->data.ega_sequencer_configured = ega_sequencer_configured;
     core_machine_vadp_reset_sequencer(adapter);
@@ -867,6 +967,10 @@ C_VOID core_machine_vadp_reset(t_vadp *adapter)
     core_machine_vadp_reset_ega_controllers(adapter);
     adapter->data.ega_planar_enabled = ega_planar_enabled;
     adapter->data.ega_planar_vram = ega_planar_vram;
+    if (core_machine_vadp_cga_logical_raster_active(adapter)) {
+        adapter->data.raster_phase = 0u;
+        adapter->data.cga_logical_raster_started = TYPE_FALSE;
+    }
     adapter->data.dirty_generation = 1u;
 }
 
@@ -877,6 +981,19 @@ C_VOID core_machine_vadp_advance(t_vadp *adapter, t_ram *memory,
 
     (C_VOID)memory;
     if (adapter == STD_NULL) return;
+    if (core_machine_vadp_cga_logical_raster_active(adapter)) {
+        type_unsigned_32 phase;
+
+        period = core_machine_vadp_cga_logical_raster_period(adapter);
+        if (period == 0u) return;
+        phase = adapter->data.raster_phase % period;
+        if (!adapter->data.cga_logical_raster_started && elapsed_ticks >=
+            period - phase) {
+            adapter->data.cga_logical_raster_started = TYPE_TRUE;
+        }
+        adapter->data.raster_phase = (type_unsigned_32)((phase + elapsed_ticks % period) % period);
+        return;
+    }
     period = core_machine_vadp_raster_period(&adapter->data.text_timing);
     if (period == 0u) return;
     adapter->data.raster_phase = (type_unsigned_32)((adapter->data.raster_phase +
@@ -1015,6 +1132,8 @@ C_INT core_machine_vadp_capture_text_snapshot(t_vadp *adapter, t_ram *memory,
     type_unsigned_16 cursor;
     type_unsigned_16 relative_cursor;
     type_unsigned_16 start_byte;
+    type_unsigned_16 columns;
+    type_unsigned_16 rows;
     STD_SIZE_T visible_bytes;
     STD_SIZE_T first_bytes;
     type_unsigned_8 cells[CORE_MACHINE_DISPLAY_MAX_COLUMNS *
@@ -1023,13 +1142,15 @@ C_INT core_machine_vadp_capture_text_snapshot(t_vadp *adapter, t_ram *memory,
     C_INT cursor_changed;
     C_INT cursor_visible;
 
-    if (adapter == STD_NULL || memory == STD_NULL || out_snapshot == STD_NULL ||
-        adapter->data.columns == 0u || adapter->data.rows == 0u) return TYPE_FALSE;
+    if (adapter == STD_NULL || memory == STD_NULL || out_snapshot == STD_NULL) return TYPE_FALSE;
+    columns = core_machine_vadp_text_columns(adapter);
+    rows = core_machine_vadp_text_rows(adapter);
+    if (columns == 0u || rows == 0u) return TYPE_FALSE;
     STD_MEMSET(out_snapshot, 0, sizeof(*out_snapshot));
     out_snapshot->kind = CORE_MACHINE_DISPLAY_KIND_TEXT;
     start = core_machine_vadp_crtc_word(adapter, CORE_MACHINE_VADP_CRTC_START_HIGH);
     cursor = core_machine_vadp_crtc_word(adapter, CORE_MACHINE_VADP_CRTC_CURSOR_HIGH);
-    visible_bytes = (STD_SIZE_T)adapter->data.columns * adapter->data.rows * 2u;
+    visible_bytes = (STD_SIZE_T)columns * rows * 2u;
     start_byte = (type_unsigned_16)((start % (CORE_MACHINE_VADP_TEXT_BYTES / 2u)) * 2u);
     first_bytes = CORE_MACHINE_VADP_TEXT_BYTES - start_byte;
     if (first_bytes > visible_bytes) first_bytes = visible_bytes;
@@ -1041,8 +1162,8 @@ C_INT core_machine_vadp_capture_text_snapshot(t_vadp *adapter, t_ram *memory,
             visible_bytes - first_bytes) != TYPE_STATUS_OK)) {
         return TYPE_FALSE;
     }
-    out_snapshot->columns = adapter->data.columns;
-    out_snapshot->rows = adapter->data.rows;
+    out_snapshot->columns = columns;
+    out_snapshot->rows = rows;
     out_snapshot->cursor_top = adapter->data.crtc[
         CORE_MACHINE_VADP_CRTC_CURSOR_TOP] & 0x1fu;
     out_snapshot->cursor_bottom = adapter->data.crtc[
@@ -1051,21 +1172,21 @@ C_INT core_machine_vadp_capture_text_snapshot(t_vadp *adapter, t_ram *memory,
         (CORE_MACHINE_VADP_TEXT_BYTES / 2u));
     cursor_visible = (adapter->data.crtc[CORE_MACHINE_VADP_CRTC_CURSOR_TOP] &
         0x20u) == 0u && out_snapshot->cursor_top <= out_snapshot->cursor_bottom &&
-        relative_cursor < adapter->data.columns * adapter->data.rows;
+        relative_cursor < columns * rows;
     out_snapshot->cursor_visible = cursor_visible;
     if (cursor_visible) {
-        out_snapshot->cursor_x = (type_unsigned_8)(relative_cursor % adapter->data.columns);
-        out_snapshot->cursor_y = (type_unsigned_8)(relative_cursor / adapter->data.columns);
+        out_snapshot->cursor_x = (type_unsigned_8)(relative_cursor % columns);
+        out_snapshot->cursor_y = (type_unsigned_8)(relative_cursor / columns);
     }
     buffer_changed = !adapter->data.captured || adapter->data.captured_kind !=
         CORE_MACHINE_DISPLAY_KIND_TEXT || STD_MEMCMP(adapter->data.text_cells,
         cells, visible_bytes) != 0;
     if (buffer_changed) {
         STD_MEMCPY(adapter->data.text_cells, cells, visible_bytes);
-        for (row = 0u; row < adapter->data.rows; ++row) {
-            for (column = 0u; column < adapter->data.columns; ++column) {
+        for (row = 0u; row < rows; ++row) {
+            for (column = 0u; column < columns; ++column) {
                 type_unsigned_16 index = (type_unsigned_16)(row * CORE_MACHINE_DISPLAY_MAX_COLUMNS + column);
-                type_unsigned_16 cell = (type_unsigned_16)(row * adapter->data.columns + column);
+                type_unsigned_16 cell = (type_unsigned_16)(row * columns + column);
                 adapter->data.characters[index] = cells[(STD_SIZE_T)cell * 2u];
                 adapter->data.attributes[index] = cells[(STD_SIZE_T)cell * 2u + 1u];
             }

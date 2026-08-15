@@ -100,11 +100,52 @@ C_INT main(C_VOID)
     core_machine_vadp_advance(&vadp, &memory, 1u);
     failed |= core_machine_port_read(&port, 0x03dau) != 0x00u;
 
+    vadp_write_crtc(&port, 0x00u, 0x04u);
+    vadp_write_crtc(&port, 0x01u, 0x03u);
+    vadp_write_crtc(&port, 0x02u, 0x03u);
+    vadp_write_crtc(&port, 0x03u, 0x11u);
+    vadp_write_crtc(&port, 0x04u, 0xffu);
+    vadp_write_crtc(&port, 0x05u, 0xffu);
+    vadp_write_crtc(&port, 0x06u, 0xffu);
+    vadp_write_crtc(&port, 0x07u, 0xffu);
+    vadp_write_crtc(&port, 0x08u, 0xffu);
+    vadp_write_crtc(&port, 0x09u, 0xffu);
+    failed |= vadp_read_crtc(&port, 0x00u) != 0x04u ||
+        vadp_read_crtc(&port, 0x01u) != 0x03u ||
+        vadp_read_crtc(&port, 0x02u) != 0x03u ||
+        vadp_read_crtc(&port, 0x03u) != 0x11u ||
+        vadp_read_crtc(&port, 0x04u) != 0x7fu ||
+        vadp_read_crtc(&port, 0x05u) != 0x1fu ||
+        vadp_read_crtc(&port, 0x06u) != 0x7fu ||
+        vadp_read_crtc(&port, 0x07u) != 0x7fu ||
+        vadp_read_crtc(&port, 0x08u) != 0u ||
+        vadp_read_crtc(&port, 0x09u) != 0x1fu;
+    vadp_write_crtc(&port, 0x04u, 0x02u);
+    vadp_write_crtc(&port, 0x05u, 0x01u);
+    vadp_write_crtc(&port, 0x06u, 0x02u);
+    vadp_write_crtc(&port, 0x07u, 0x02u);
+    vadp_write_crtc(&port, 0x09u, 0x03u);
+    vadp_write_crtc(&port, 0x0cu, 0u);
+    vadp_write_crtc(&port, 0x0du, 0u);
+    vadp_write_crtc(&port, 0x0eu, 0u);
+    vadp_write_crtc(&port, 0x0fu, 0u);
+    core_machine_vadp_reset(&vadp);
+    failed |= core_machine_port_read(&port, 0x03dau) != 0x01u ||
+        !vadp_capture(&vadp, &memory, &snapshot) || snapshot.columns != 3u ||
+        snapshot.rows != 2u;
+    core_machine_vadp_advance(&vadp, &memory, 65u);
+    failed |= core_machine_port_read(&port, 0x03dau) != 0x00u;
+    core_machine_vadp_advance(&vadp, &memory, 3u);
+    failed |= core_machine_port_read(&port, 0x03dau) != 0x01u;
+    core_machine_vadp_advance(&vadp, &memory, 37u);
+    failed |= core_machine_port_read(&port, 0x03dau) != 0x09u;
+
     core_machine_vadp_finalize(&vadp);
     core_machine_memory_finalize(&memory);
     core_machine_port_finalize(&port);
     if (failed) return 1;
     STD_PRINTF("M5:T266:S3:VADP-TEXT-STATUS:OK\n");
     STD_PRINTF("M5:T375:S8:MODEL339-CGA-CLOCK-RECONCILIATION:OK\n");
+    STD_PRINTF("M5:T375:S11:CGA-LOGICAL-RASTER:OK\n");
     return 0;
 }

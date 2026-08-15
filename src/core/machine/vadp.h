@@ -65,6 +65,8 @@ typedef struct t_vadp_data {
     type_unsigned_64 captured_ega_dirty_generation;
     core_machine_vadp_text_timing text_timing;
     type_unsigned_32 raster_phase;
+    type_bool crtc_initialized;
+    type_bool cga_logical_raster_started;
     type_unsigned_16 columns;
     type_unsigned_16 rows;
     C_INT color_enabled;

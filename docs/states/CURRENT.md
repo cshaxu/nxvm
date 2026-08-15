@@ -2,9 +2,24 @@
 
 ## Current Work
 
-| Task | Compact progress |
+| Field | Required record |
 | --- | --- |
-| T375 S10 | Accepted P1 `2c1a9c6f`: primary MC6845 audit allocates a CGA logical-raster mechanism for non-interlaced R0--R7/R9 and retains physical clock/board timing as explicit transfer. [Evidence](../etc/evidence/t375-s10-crtc-raster-admission.md). |
+| Identifier Mode | Continuation: M5 T375 S11, the next unused subtask of the retained open T375 progress. |
+| Admission And Approval | Owner: repository user. Approval: continuation of the L3 program and accepted S10 allocation. Scope: implement the primary-source-supported non-interlaced CGA logical-raster mechanism only. |
+| Objective | Make CGA R0--R7/R9 storage, masks, logical character-clock/scan-line geometry, display/blank and vertical-sync state, reset behavior and text-snapshot dimensions observable through the single VADP owner. |
+| Non-goals | No R8 interlace/skew, light pen, source-to-character-clock conversion, new physical clock scalar, CGA default mode table, monitor/electrical waveform, ISA contention/waits, EGA semantic change, ROM/media/reference import, or Model-339 L3 claim. |
+| Reference Baseline | Accepted T375 S10 MC6845 admission, T375 S8 CGA status semantics, Motorola MC6845 data sheet, IBM CGA status contract, existing VADP/text-status tests. |
+| Candidate Proposal | [IBM PC/AT 5170 board and device phase-timing closure](../proposals/m5-5170-board-phase-timing-closure.md), its selected CGA device/phase receiver. |
+| Files And ABI Surface | Expected: `src/core/machine/{vadp.c,vadp.h,display_interface.h}` only if an owner-local observation requires it; focused VADP tests and CMake registration if necessary; evidence/index/CURRENT. No VM profile or public machine API unless essential to prove a bounded VADP behavior. |
+| Applicable Rules | `docs/rules/EXECUTION.md`: continuation/complete P/review; `docs/rules/ARCHITECTURE.md`: one VADP state owner and no second timer; `docs/rules/CODING.md`: bounded owner-local helpers/no test-only public contract; `docs/rules/DOCUMENT.md`: evidence/index/status. No exception requested. |
+| Verification | Focused VADP CRTC port/status/text snapshot proof must demonstrate masks, readback, configured geometry, active-display versus blank bit 0, logical vertical-sync bit 3, wrap/reset and EGA non-regression. Build/replay existing adjacent VADP proofs and documentation governance. |
+| Expected Markers | Existing VADP markers plus `M5:T375:S11:CGA-LOGICAL-RASTER:OK`. |
+| Asset Needs | None. No ROM, media, binary, third-party source or reference emulator. |
+| Reporting Requirements | Confirm source/owner boundary before implementation; report geometry mechanism and physical-timing transfer before P1; final report links proof/evidence/commit and retained boundary. |
+| Stop Conditions | Stop for owner direction if a required observable behavior needs R8, an unproven default register table, a physical rate conversion, or an EGA behavior change. |
+| Exit Criteria | R0--R7/R9 effects are source-labelled and observable only in the CGA non-interlaced logical-raster path; test coverage proves reset and adjacent EGA preservation; no physical timing claim is introduced; evidence and governance pass. |
+| Original Owner Request | Continue the current L3 program; implement source-supported device behavior while leaving uncertain physical timing explicit. |
+| Similar-Issue Sweep | Sweep all CRTC masks/index gates/readback/reset/advance/status/snapshot paths and both CGA/EGA callers/tests for duplicated geometry, stale synthetic state, or unintended controller-route change. |
 
 ## Current Technical Baseline
 
