@@ -2,10 +2,26 @@
 
 ## Current Work
 
-T368 remains open. S3 is accepted: a reused LMSW fixture retained CR0.PE into
-the intended real-address bootstrap; it now establishes CR0 explicitly, and
-the already-accepted CPL0 LMSW `3/6` rows retire. Prefix/default CPU work,
-bus, device and 5170 L3 remain open.
+## M5 T368 S4 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; T368 S3 accepted at `8c9672de`. |
+| Admission And Approval | The owner authorized continued L3 work; T368 S1--S3 leave successful prefix and final-default 80286 routes as the next finite CPU receiver. |
+| Objective | Build the exact source/form/context reachability ledger for every remaining 80286 successful prefix and final-default retirement route, separating existing owners, non-retirement, authority-backed candidates and one-time transfers. |
+| Non-goals | No scalar allocation without a source/form/context proof; no bus/device/physical-time work, profile/topology change or 5170 L3 claim. |
+| Reference Baseline | `8c9672de`, [S1 route inventory](../etc/evidence/t368-s1-80286-retirement-route-inventory.md), [S3 LMSW reconciliation](../etc/evidence/t368-s3-80286-lmsw-context-reconciliation.md), Intel 210498-005 and the source policy. |
+| Candidate Proposal | [80286 successful-retirement timing closure](../proposals/m5-80286-retirement-timing-closure.md). |
+| Files And ABI Surface | Classifier/static verifier, focused tests and evidence/status/history only; no public ABI. |
+| Applicable Rules | Execution continuation/evidence; Intel authority first; one shared publisher; no invented fault timing; exact transfer records. |
+| Verification | Static classifier/lookup coverage plus focused 80286 semantic/prefix tests as applicable; documentation governance and diff check. |
+| Expected Markers | Every potential unallocated 80286 success behind prefix/default anchors has one explicit disposition before a later S changes a classifier value. |
+| Asset Needs | No guest media, ROM, binary or imported source. |
+| Reporting Requirements | Preserve decoder-valid versus retired distinction, source edition/context, and every unresolved authority boundary. |
+| Stop Conditions | Stop and transfer a family if Intel authority cannot identify its successful context without unapproved research/model work. |
+| Exit Criteria | Pushed P1/P2 leaves a finite, verified source-led implementation sequence with no anonymous one-tick successful fallback. |
+| Original Owner Request | Continue comprehensive L3 execution before Windows 3.1, following the Queue dependency chain. |
+| Similar-Issue Sweep | Sweep all 80286 classifier returns, prefix classification, timing lookup coverage, opcode metadata, semantic tests and static verifier anchors. |
 
 ## Current Technical Baseline
 
