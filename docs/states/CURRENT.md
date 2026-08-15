@@ -2,6 +2,27 @@
 
 ## Current Work
 
+## M5 T374 S5 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; T374 remains the latest open numeric task and S5 follows accepted S4. |
+| Admission And Approval | The owner approved completing selected-machine functional gaps before timing/L3 closure and authorized continuing T374. S4 selected the source-determinate 8272A/uPD765 Ready-transition attention repair. |
+| Objective | At the existing FDC owner, detect a selected logical-drive Ready transition independently of media generation; publish the existing IRQ6/`flagINTR` path and source-defined ST0 attention state; have `Sense Interrupt Status` consume it; retain DIR disk-change behavior. |
+| Non-goals | No controller clock, polling interval, drive motor/settling/index behaviour, DMA service/grant timing, board wait, physical waveform, media import, new device profile, ATA/HDC, MFM/ST-506, EGA/VGA, AUX, or Model-339 L3 claim. No Read Deleted/Write Deleted/Scan implementation. |
+| Reference Baseline | T374 S4 FDC contract audit; Intel 8272A primary controller documentation (Ready polling, attention IRQ, ST0 `C0h` interrupt code and Not Ready indication); existing `core_machine_fdc` Ready predicate, IRQ owner, DOR reset and Sense-Interrupt path. |
+| Candidate Proposal | [IBM PC/AT 5170 selected-device functional closure](../proposals/m5-5170-selected-device-functional-closure.md). |
+| Files And ABI Surface | `src/core/machine/fdc.{c,h}`, cohesive FDC media-change smoke, T374 evidence/history/index, and `docs/states/CURRENT.md`; no new public interface, profile descriptor, ROM/media or runtime configuration. |
+| Applicable Rules | `docs/README.md` Task Reading Set; `docs/rules/EXECUTION.md` implementation/P lifecycle, evidence and similar-issue rules; `docs/rules/DOCUMENT.md`; `CONTRIBUTING.md`; `docs/design/ARCHITECTURE.md`; `docs/design/CODING.md`; `docs/rules/ARCHITECTURE.md`; `docs/rules/CODING.md`; source policy. The repair retains the single FDC state/IRQ owner and does not derive third-party source. |
+| Verification | Extend the FDC media-change smoke to prove: Ready transition after `Specify` raises IRQ6 exactly once; `Sense Interrupt Status` returns Ready-change ST0/PCN and clears the IRQ; media-generation-only change does not create attention; DOR reset clears pending attention; existing DIR disk-change, DMA cancellation and seek/recalibrate paths remain. Build/run focused FDC and Model-339 topology targets through Git-Bash CMake/Ninja; run documentation governance and `git diff --check`. |
+| Expected Markers | One per-drive observed-ready state is updated at initialization/reset/refresh; only an actual logical Ready edge publishes one existing FDC IRQ result. No duplicate PIC/IRQ owner, no mutation of transfer/DMA state, and no timing scalar. |
+| Asset Needs | None. Primary documentation is read only; no ROM, firmware, guest media, trace, third-party source or local asset is added. |
+| Reporting Requirements | Report owner-boundary confirmation, exact ST0/acknowledgement behavior, media-versus-Ready sweep, fresh build/replay, pushed P1, coordinator acceptance and next T374 functional receiver. |
+| Stop Conditions | Stop and transfer if attention ordering requires an unprovided controller clock/poll cadence, board signal mapping, multiple pending-interrupt queue, a profile-specific FDC identity, or a source conflict. Do not invent a timing interval or expand into unsupported commands. |
+| Exit Criteria | The source-defined Ready-transition attention state is observable once through IRQ6 and `Sense Interrupt Status`, clears through the existing owner/reset route, remains distinct from generation/DIR disk-change, and focused fresh regressions pass. |
+| Original Owner Request | Implement each selected machine's functional gaps before timing/L3 closure, treating exact documentation as authority and reference emulators only as fallback; use CMake through Git Bash for local builds. |
+| Similar-Issue Sweep | Inspect all FDC Ready/media queries, initialization/reset/finalize, DOR cancellation, IRQ/DRQ publication and all `Sense Interrupt Status` producers/consumers; prove no other caller publishes Ready attention or conflates it with media generation. |
+
 ## Current Technical Baseline
 
 - **Current developer artifact:** T369 S4 `vm-0-5-0369` /

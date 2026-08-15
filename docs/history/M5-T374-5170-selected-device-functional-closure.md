@@ -47,3 +47,12 @@ primary documentation and current FDC owner. It selects missing
 Ready-transition attention IRQ / `Sense Interrupt Status` delivery as the next
 bounded owner-local functional repair. It preserves disk-change versus Ready
 distinction and transfers physical signal, DMA and drive timing unchanged.
+
+### S5: FDC Ready-transition attention
+
+S5's [Ready-attention repair evidence](../etc/evidence/t374-s5-fdc-ready-attention-repair.md)
+records an owner-local 8272A/uPD765 Ready edge: `Specify` enables polling, an
+edge reaches the existing IRQ6 / `Sense Interrupt Status` contract, and media
+generation remains DIR disk-change only. Focused FDC and Model-339 topology
+regressions pass. Controller/drive/board timing and remaining FDC commands
+remain open in T374 and the later timing candidate.
