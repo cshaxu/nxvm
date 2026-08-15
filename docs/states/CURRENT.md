@@ -2,26 +2,11 @@
 
 ## Current Work
 
-## M5 T368 S6 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation; T368 S5 accepted at `32140e4e`. |
-| Admission And Approval | The owner authorized continued L3 work; S4/S5 leave legal successful 80286 prefix contexts as the next bounded CPU receiver. |
-| Objective | Reconcile legal, successfully retired 80286 prefix contexts with Intel authority and allocate only exact, reproducibly reachable rows through the sole publisher. |
-| Non-goals | No allocation for illegal/faulting prefix paths, x87/WAIT/default work, bus/device/physical time, profile/topology change or 5170 L3 claim. |
-| Reference Baseline | `32140e4e`, [S4 reachability](../etc/evidence/t368-s4-80286-prefix-default-reachability.md), Intel 210498-005 Appendix B, accepted T359/T366 prefix owners and source policy. |
-| Candidate Proposal | [80286 successful-retirement timing closure](../proposals/m5-80286-retirement-timing-closure.md). |
-| Files And ABI Surface | Existing 80286 prefix/classifier path, focused timing regressions and evidence/status/history only; no public ABI. |
-| Applicable Rules | Execution continuation/evidence; Intel authority first; one shared publisher; no invented prefix/fault timing; exact retained transfer. |
-| Verification | Prefix reachability/semantic and focused timing regressions; static publisher check, documentation governance and diff check. |
-| Expected Markers | Each allocated row has an Appendix-B context and a successful same-profile execution; authority-undefined legal contexts retain one named receiver. |
-| Asset Needs | No guest media, ROM, binary or imported source. |
-| Reporting Requirements | Record the complete legal 80286 prefix matrix, source form/context, execution evidence, allocations and every retained transfer. |
-| Stop Conditions | Stop and transfer a legal context if Intel does not determine its timing and same-profile reference-model work is not separately admitted. |
-| Exit Criteria | Pushed P1/P2 either resolves the reachable legal prefix rows or leaves a precise source-undefined receiver; S7 and all L3 work remain explicitly open. |
-| Original Owner Request | Continue comprehensive L3 execution before Windows 3.1, following the Queue dependency chain. |
-| Similar-Issue Sweep | Sweep prefix parsing, early prefix routing, 80286 primary/control/system classifiers, decoded flag metadata and all prefix timing regressions. |
+T368 remains open. S6 is accepted at `1366fcc2`: defined string/REP and
+already-admitted segment forms retain their existing owners; source-undefined
+successful prefix paths remain one explicit bus/phase transfer rather than an
+invented scalar. S7 receives x87/WAIT/default and negative-route
+reconciliation. No bus, device or 5170 L3 work is closed.
 
 ## Current Technical Baseline
 

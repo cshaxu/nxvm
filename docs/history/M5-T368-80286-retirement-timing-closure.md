@@ -62,3 +62,14 @@ sole-publisher gate, and the focused semantic regressions. Fault, delivery,
 prefix, bus, device and physical-clock paths remain unallocated. S5 is
 accepted at `0e095fb2`; S6/S7 remain necessary before T368 can close, and
 there is no 5170 L3 claim.
+
+### S6: Legal-prefix reachability
+
+S6 confirms that defined string/REP and already-admitted segment forms retain
+their source owners, while other successfully retired prefix contexts have no
+independent Intel 80286 CPU scalar. Its
+[prefix evidence](../etc/evidence/t368-s6-80286-prefix-reachability.md)
+retains them as one explicit bus/phase transfer rather than treating a prefix
+as a one-tick or physical-clock surcharge. S6 is accepted at `1366fcc2`; S7
+must still reconcile x87/WAIT/default and negative paths before T368 can
+close, and there is no 5170 L3 claim.
