@@ -31,3 +31,6 @@ that the descriptor ratios and RTC `ticks_per_second` lack a source-labelled
 physical conversion. The [reconciliation](../etc/evidence/t370-s2-pit-pic-rtc-domain-reconciliation.md)
 therefore transfers oscillator/INTA propagation and gives S3 the bounded
 dual-8237A/FDC controller-domain decision.
+
+S2 is accepted after `199e0ed2` restores the documentation gate. Its retained
+logical controller proof does not upgrade any project ratio to physical time.
