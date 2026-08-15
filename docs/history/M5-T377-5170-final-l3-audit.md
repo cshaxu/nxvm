@@ -24,3 +24,16 @@ the required transport ingress, which directly invalidates the selected
 Model-339 input path. Corrective P2 records the negative decision and ordered
 repair/re-audit receivers in [the independent final audit evidence](../etc/evidence/t377-s1-model339-final-l3-audit.md).
 No Model-339 L3 acceptance is made by this task.
+
+## Closure Audit
+
+T377 closes with the required evidence-backed **not-ready** decision. It
+re-read all selected CPU, memory/ROM, bus, DMA/PIC/PIT/RTC, input, FDC/floppy,
+CGA, NMI/reset/cancellation and cross-device rows; its focused replay passes.
+The configured current gate exposes a real selected-keyboard production defect,
+so the task neither hides it behind controller tests nor treats the other two
+global failures as an all-green result. The immediate queued repair owns the
+native input and dependency failures, and the following re-audit owns the next
+and only further Model-339 readiness decision. Physical-media and board-phase
+boundaries remain explicitly excluded. The task proposal is retained beside
+this record.

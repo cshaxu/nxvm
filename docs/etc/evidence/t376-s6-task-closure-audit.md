@@ -40,6 +40,6 @@ alter the runnable product artifact.
 T376 closes only the raw-IMG address-mark and selected 8272A command-fidelity
 scope. Physical CHRN duplication, sector search, rotational/index timing,
 CRC, weak-bit/flux behavior and board-level grant timing are not raw-IMG
-claims. The [IBM PC/AT 5170 final model-L3 audit](../../proposals/m5-5170-final-l3-audit.md)
-is now the Queue head and must make each residual row visible in its final
-ready/not-ready decision. This does not accept Model-339 L3.
+claims. The historical [IBM PC/AT 5170 final model-L3 audit](../../history/M5-T377-5170-final-l3-audit-proposal.md)
+closed not ready; its queued repair and re-audit successors must make each
+residual row visible in their next decision. This does not accept Model-339 L3.
