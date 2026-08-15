@@ -53,3 +53,12 @@ contains the owner-authorized external-ROM containment and Model-339
 configuration gate. It establishes no reference observation, scalar or L3
 claim; a later S must provision a revision-pinned reference runtime. S5 is
 accepted at `9198fda5`.
+
+### S6: reference-runtime non-admission
+
+S6's [non-admission record](../etc/evidence/t372-s6-reference-runtime-nonadmission.md)
+finds that the owner-authorized external reference runtime did not produce an
+observable end-to-end run for the selected configuration.  The owner directs
+that it no longer be used.  No trace, scalar, board fact, or Model-339 L3
+claim is admitted; existing primary-source and project-probe receivers remain
+open.

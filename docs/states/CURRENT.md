@@ -2,6 +2,27 @@
 
 ## Current Work
 
+## M5 T372 S6 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; T372 S5 accepted at `0f46655c`. |
+| Admission And Approval | Owner authorizes external ROM/media use in isolated local research and requires all such assets remain outside Git. |
+| Objective | Provision a revision-pinned external 86Box Model-339 experiment and prove or reject the complete no-HDC 8-MHz/512-KB/CGA/Rev.3/1.44-MB configuration before collecting any bounded primary-open observation. |
+| Non-goals | No repository ROM/media/tool import, default dependency, code change, unbounded trace, timing scalar, hardware-authority claim, 80386/8088 or Windows work. |
+| Reference Baseline | T372 S1--S5, Model-339 lock, owner ROM authorization, S2 configuration gate, S4 primary-fact ledger and 86Box public machine documentation. |
+| Candidate Proposal | [IBM PC/AT 5170 model-L3 closure audit](../proposals/m5-l3-machine-closure-audit.md). |
+| Files And ABI Surface | External research tool/configuration/traces only; T372 evidence/history/Current may record neutral readiness outcome, never protected filenames, paths, bytes or hashes. |
+| Applicable Rules | Owner-approved asset exception, source-policy containment, revision pinning, full selected-configuration proof, primary-source precedence, trace containment and documentation rules. |
+| Verification | Tool/revision record, all-field configuration checklist, no-HDC/ATA proof, no-tracked-asset sweep, bounded-observation feasibility and documentation governance. |
+| Expected Markers | No product marker/artifact or timing scalar; only a local experiment readiness outcome. |
+| Asset Needs | External 86Box runtime, owner-authorized IBM Rev.3 ROM and DOS/1.44-MB media, all outside this repository. |
+| Reporting Requirements | Record configuration proven/disproven/absent, tool revision class, trace containment and the exact primary-open boundary eligible for a next S; omit protected identifiers. |
+| Stop Conditions | Stop if 86Box cannot model the full tuple, ROM/media leaks into Git, the trace cannot be bounded, or output would be treated as a hardware measurement. |
+| Exit Criteria | P1 records a complete external configuration result and either admits one bounded observation plan or transfers the exact mismatch. |
+| Original Owner Request | Continue to comprehensive L3 before Windows 3.1; owner permits local ROM/media use but forbids repository commits. |
+| Similar-Issue Sweep | Sweep configuration fields, asset leakage, 86Box applicability, reference revision, trace bounds and each S1 physical residual. |
+
 ## Current Technical Baseline
 
 - **Current developer artifact:** T369 S4 `vm-0-5-0369` /
