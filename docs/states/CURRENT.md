@@ -2,31 +2,8 @@
 
 ## Current Work
 
-**Active: M5 T376 S4.**
-
-| Task | Compact progress |
-| --- | --- |
-
-## M5 T376 S4 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner-approved continuous M5 L3 implementation; accepted T376 S3 completes address-mark command routes and transfers only Scan. |
-| Objective | Implement 8272A Scan Equal, Scan Low-or-Equal and Scan High-or-Equal through one existing FDC transfer/cadence/IRQ/reset path. |
-| Non-goals | No new media format, filesystem API, test-only controller route, inferred address mark, second DMA engine, timing change, or final L3 decision. |
-| Reference Baseline | T376 S2 raw-IMG mark lifecycle, T376 S3 deleted-data transfer/result path, T375 byte/seek gates, and existing FDC ST2 scan bits. |
-| Candidate Proposal | [8272A raw-IMG sidecar fidelity closure](../proposals/m5-8272a-img-sidecar-fidelity-closure.md). |
-| Files And ABI Surface | `core/machine/fdc.*`, existing FDC smoke/evidence/index/current/history; no host-side interface or core media ABI change. |
-| Applicable Rules | One FDC transfer/DMA/IRQ owner, compare against guest-supplied bytes only, address marks through provider, existing cancellation and cadence invariant. |
-| Verification | Focused FDC smoke proves Equal/LE/GE match and mismatch ST2 results, byte cadence, IRQ result phase and DOR cancellation; build and governance pass. |
-| Expected Markers | `M5:T376:S3:8272A-DELETED-DATA:OK`; `M5:T376:S4:8272A-SCAN:OK`. |
-| Asset Needs | Project-owned fixture media only; no firmware, guest media or external source import. |
-| Reporting Requirements | Record opcode/compare/ST2 behavior, shared-owner proof, timing preservation, focused result and task-closure receiver. |
-| Stop Conditions | Stop for owner direction if scan requires a separate transfer or a provider capability absent from the frozen ABI. |
-| Exit Criteria | All Scan command families complete through current routes with verified result/cancel/timing behavior; only T376 task audit remains. |
-| Original Owner Request | Continue through L3 before Windows; retain raw IMG compatibility and do not invent test-only APIs. |
-| Similar-Issue Sweep | Inspect command decoding, command length, read/write DMA/non-DMA transfer, result/IRQ, reset/cancel and every existing ST2 consumer. |
+**No active implementation packet.** T376 remains open; only its task-level
+closure audit remains before the final Model-339 audit can be admitted.
 
 ## Current Technical Baseline
 
@@ -47,7 +24,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T376 S3 | Accepted P1 `707114ce`: 8272A Deleted-Data and Control-Mark behavior now uses the retained media, DMA, IRQ, reset and cadence owners; Scan remains next. [Evidence](../etc/evidence/t376-s3-8272a-deleted-data.md). |
+| T376 S4 | Accepted P1 `8ba77956`: 8272A Scan Equal/Low-or-Equal/High-or-Equal now use the retained media, DMA, IRQ, reset and cadence owners; the task-level closure audit remains. [Evidence](../etc/evidence/t376-s4-8272a-scan.md). |
 | T375 | Closed at `07484727`: board/device phase work accepts source-backed service and logical-order contracts, transfers raw-IMG fidelity and source-exhausted physical board phases, and **does not accept Model-339 L3**. [Closure audit](../etc/evidence/t375-s26-task-closure-transfer-audit.md). |
 | T374 | Closed at `f742433c`: S1--S19 complete the selected Model-339 functional closure and preserve raw-IMG 765 Deleted/Control-Mark/Scan as explicit TODO debt. Board/device timing, final Model-L3, DeskPro 386, PC/XT and Windows 3.1 remain open. [Closure audit](../etc/evidence/t374-s19-task-closure-audit.md). |
 | T373 | Closed at `06246a8e`: S1--S4 freeze the three-machine capability ledger and receivers. **5170, DeskPro Model 40 and PC/XT 5160-268 L3 are not ready.** [Closure audit](../etc/evidence/t373-s4-task-closure-audit.md). |
