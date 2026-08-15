@@ -6,28 +6,7 @@
 
 | Task | Compact progress |
 | --- | --- |
-| T375 S24 | Accepted P1 `b5b2a19a`: selected 500-kbit/s non-DMA FDC transfers now withhold MSR RQM for 128 ticks between bytes, sharing FDC ownership with the retained DMA gate. [Evidence](../etc/evidence/t375-s24-fdc-ndma-cadence.md). |
-
-## M5 T375 S25 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner-approved continuing Model-339 L3 work; the T375 proposal requires a selected-board timing ledger before final audit. |
-| Objective | Produce the current 80286/READY/DMA-HOLD/PIC-INTA/ISA/CGA board-phase ledger and classify every row as implemented, source-boundary, or receiver. |
-| Non-goals | No synthetic waits, cycle-exact claim, CPU/DMA implementation change, reference-emulator scalar, firmware/media import, or final L3 claim. |
-| Reference Baseline | T369/T371/T372 prove one deterministic logical transaction/arbitration graph but retain no selected Model-339 READY, HRQ/HLDA, DACK/AEN, INTA, RAM/ROM/ISA/CGA wait scalar. |
-| Candidate Proposal | [IBM PC/AT 5170 board and device phase-timing closure](../proposals/m5-5170-board-phase-timing-closure.md). |
-| Files And ABI Surface | Evidence/index/current only; the audit must not alter production behavior. |
-| Applicable Rules | Execution lifecycle, source-policy, documentation authority boundaries, one transaction/DMA/PIC owner, and no unqualified timing conversion. |
-| Verification | Static owner sweep records each production route and its exact source status; documentation governance passes. |
-| Expected Markers | `M5:T369:S3:PCAT-HOLD:OK`; `M5:T354:S4:TRANSACTION-LIFECYCLE:OK`; `M5:T375:S25:MODEL339-BUS-LEDGER:OK`. |
-| Asset Needs | None; existing primary/secondary provenance is read-only and no runtime capture is admitted. |
-| Reporting Requirements | Clearly distinguish logical lifecycle from physical phase; name every residual receiver and stop condition. |
-| Stop Conditions | Stop if absence of a selected board conversion is silently turned into a guessed wait value or an L3 claim. |
-| Exit Criteria | Ledger covers CPU fetch/memory/I/O, ROM/RAM/CGA/ISA availability, DMA HOLD/DACK/AEN, PIC INTA, reset, and their existing owner/proof/receiver status. |
-| Original Owner Request | Fully converge L3 before Windows, using 86Box/MAME/PCjs only as bounded secondary references after primary sources. |
-| Similar-Issue Sweep | Search transaction phases, DMA requests/grants, arbitration/readiness callbacks, PIC acknowledgement, memory/port providers, Model-339 profile clocks, and affected focused tests. |
+| T375 S25 | Accepted P1 `ec96f316`: source/status ledger confirms one logical transaction/DMA/PIC graph and names every unqualified Model-339 READY/HOLD/INTA/ISA/CGA boundary; no arbitrary wait is admitted. [Evidence](../etc/evidence/t375-s25-model339-bus-phase-ledger.md). |
 
 ## Current Technical Baseline
 
