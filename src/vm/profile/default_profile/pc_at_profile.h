@@ -110,6 +110,17 @@ typedef struct vm_profile_default_pc_at_firmware_service {
     type_unsigned_8 vector;
 } vm_profile_default_pc_at_firmware_service;
 
+typedef struct vm_profile_default_pc_at_cpu_contract {
+    core_machine_cpu_profile cpu_profile;
+    core_machine_fpu_profile fpu_profile;
+    type_unsigned_32 ticks_per_instruction;
+    core_machine_instruction_timing instruction_timing;
+    core_machine_clock_plan clock_plan;
+    type_unsigned_32 kbc_typematic_initial_ticks;
+    type_unsigned_32 kbc_typematic_repeat_ticks;
+    type_unsigned_32 kbc_command_response_ticks;
+} vm_profile_default_pc_at_cpu_contract;
+
 typedef struct vm_profile_default_pc_at_descriptor {
     const C_CHAR *identity;
     type_unsigned_32 compatibility_revision;
@@ -147,6 +158,11 @@ const vm_profile_default_pc_at_descriptor *
 vm_profile_default_pc_at_descriptor_get(C_VOID);
 const vm_profile_default_pc_at_descriptor *
 vm_profile_ibm_5170_model_339_descriptor_get(C_VOID);
+C_INT vm_profile_default_pc_at_cpu_contract_select(
+    const vm_profile_default_pc_at_descriptor *descriptor,
+    core_machine_cpu_profile requested_cpu,
+    core_machine_fpu_profile requested_fpu,
+    vm_profile_default_pc_at_cpu_contract *out_contract);
 const vm_profile_default_pc_at_port_leaf *
 vm_profile_default_pc_at_port_leaf_find(
     const vm_profile_default_pc_at_descriptor *descriptor,

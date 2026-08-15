@@ -2,9 +2,26 @@
 
 ## Current Work
 
-T367 remains open.  S1 is accepted; S2 must implement the bounded
-VM-owned contract binding identified by its inventory before the queued CPU,
-bus, device, phase and L3-audit receivers can rely on profile ownership.
+## M5 T367 S2 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; T367 S1 accepted at `6a86d51f`. |
+| Admission And Approval | The owner authorized continued L3 work before Windows 3.1; the accepted S1 inventory identifies one bounded VM contract-binding seam. |
+| Objective | Route every production session CPU selection through a VM-owned capability/timing contract before the existing single profile-to-core materialization path. |
+| Non-goals | No core decoder/executor/transaction move; no CPU semantic or timing-value change; no board/ROM/device/media addition; no L3 claim. |
+| Reference Baseline | `6a86d51f`, [S1 inventory](../etc/evidence/t367-s1-vm-profile-contract-inventory.md), [VM profile-contract ownership migration](../proposals/m5-vm-profile-contract-ownership.md). |
+| Candidate Proposal | [VM profile-contract ownership migration](../proposals/m5-vm-profile-contract-ownership.md). |
+| Files And ABI Surface | VM profile/session private contract helpers, focused product/profile tests, evidence/history/status; no public core ABI or machine profile identity. |
+| Applicable Rules | Execution: continuation evidence/acceptance. Architecture: one shared core execution and transaction owner. Coding: preserve internal contracts and test coverage. Documentation: truthful receiver/status records. Source policy: no import/assets. |
+| Verification | Focused profile/session products plus current smoke gate; documentation governance and diff check. |
+| Expected Markers | All 8086/80186/80286/80386 production CPU selections reach core only from a selected VM contract; unsupported selection fails before core creation; no duplicate execution/timing publisher. |
+| Asset Needs | No guest media, ROM, binary or imported source. |
+| Reporting Requirements | Record the contract owner, all caller migration, timing-preservation proof, core-boundary proof and residual receivers. |
+| Stop Conditions | Stop if retaining product behavior requires a source-timing decision, a concrete machine identity inferred from CPU alone, or a second execution/timing owner. |
+| Exit Criteria | Pushed P1/P2 evidence and gates prove VM contract selection owns all production CPU overrides while direct core fixtures remain intentionally generic. |
+| Original Owner Request | Continue comprehensive L3 execution before Windows 3.1, following the Queue dependency chain. |
+| Similar-Issue Sweep | Sweep all VM session config writes, descriptor CPU/timing fields, command-line selectors and focused product/profile consumers. |
 
 ## Current Technical Baseline
 

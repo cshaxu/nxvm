@@ -77,22 +77,24 @@ static C_INT vm_session_copy_path(C_CHAR *destination, STD_SIZE_T capacity,
     return 1;
 }
 
-static C_INT vm_session_materialize_profile_core_config(vm_session *session)
+static C_INT vm_session_materialize_profile_core_config(vm_session *session,
+    const vm_profile_default_pc_at_cpu_contract *contract)
 {
     const vm_profile_default_pc_at_descriptor *profile;
 
-    if (session == STD_NULL || session->profile == STD_NULL) return 0;
+    if (session == STD_NULL || session->profile == STD_NULL ||
+        contract == STD_NULL) return 0;
     profile = session->profile;
     session->core_machine_config = (core_machine_config) {
         .memory_bytes = profile->default_memory_bytes,
-        .cpu_profile = profile->cpu_profile,
-        .fpu_profile = profile->fpu_profile,
-        .ticks_per_instruction = profile->ticks_per_instruction,
-        .instruction_timing = profile->instruction_timing,
-        .clock_plan = profile->clock_plan,
-        .kbc_typematic_initial_ticks = profile->kbc_typematic_initial_ticks,
-        .kbc_typematic_repeat_ticks = profile->kbc_typematic_repeat_ticks,
-        .kbc_command_response_ticks = profile->kbc_command_response_ticks
+        .cpu_profile = contract->cpu_profile,
+        .fpu_profile = contract->fpu_profile,
+        .ticks_per_instruction = contract->ticks_per_instruction,
+        .instruction_timing = contract->instruction_timing,
+        .clock_plan = contract->clock_plan,
+        .kbc_typematic_initial_ticks = contract->kbc_typematic_initial_ticks,
+        .kbc_typematic_repeat_ticks = contract->kbc_typematic_repeat_ticks,
+        .kbc_command_response_ticks = contract->kbc_command_response_ticks
     };
     return 1;
 }
@@ -109,8 +111,26 @@ static C_VOID vm_session_apply_core_config_overrides(vm_session *session,
 {
     if (session == STD_NULL || config == STD_NULL) return;
     session->core_machine_config.memory_bytes = config->memory_bytes;
-    session->core_machine_config.cpu_profile = config->cpu_profile;
-    session->core_machine_config.fpu_profile = config->fpu_profile;
+}
+
+static C_INT vm_session_cpu_contract_select(const vm_session *session,
+    const vm_session_config *config,
+    vm_profile_default_pc_at_cpu_contract *out_contract)
+{
+    core_machine_cpu_profile cpu_profile;
+    core_machine_fpu_profile fpu_profile;
+
+    if (session == STD_NULL || session->profile == STD_NULL ||
+        out_contract == STD_NULL) return 0;
+    cpu_profile = session->profile->cpu_profile;
+    fpu_profile = session->profile->fpu_profile;
+    if (config != STD_NULL &&
+        session->profile == vm_profile_default_pc_at_descriptor_get()) {
+        cpu_profile = config->cpu_profile;
+        fpu_profile = config->fpu_profile;
+    }
+    return vm_profile_default_pc_at_cpu_contract_select(session->profile,
+        cpu_profile, fpu_profile, out_contract);
 }
 
 static C_VOID vm_session_storage_rollback(vm_session *machine)
@@ -319,6 +339,7 @@ C_VOID vm_session_storage_finalize(vm_session *machine)
 C_INT vm_session_create(const vm_session_config *config, vm_session **out_session)
 {
     vm_session *session;
+    vm_profile_default_pc_at_cpu_contract cpu_contract;
 
     if (out_session == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
     *out_session = STD_NULL;
@@ -330,7 +351,11 @@ C_INT vm_session_create(const vm_session_config *config, vm_session **out_sessio
         STD_FREE(session);
         return TYPE_STATUS_FAULT;
     }
-    if (!vm_session_materialize_profile_core_config(session)) {
+    if (!vm_session_cpu_contract_select(session, config, &cpu_contract)) {
+        STD_FREE(session);
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
+    if (!vm_session_materialize_profile_core_config(session, &cpu_contract)) {
         STD_FREE(session);
         return TYPE_STATUS_FAULT;
     }

@@ -12,6 +12,7 @@ C_INT main(C_VOID)
     const vm_profile_default_pc_at_port_leaf *memory_control;
     const vm_profile_default_pc_at_route *fdc_route;
     const vm_profile_default_pc_at_route *aux_route;
+    vm_profile_default_pc_at_cpu_contract contract;
 
     if (profile == STD_NULL ||
         STD_STRCMP(profile->identity, "default-pc-at") != 0 ||
@@ -46,6 +47,25 @@ C_INT main(C_VOID)
         profile->cmos.fixed_disk_type_extended_0 != 0x2fu ||
         profile->firmware_service_count != 14u ||
         !vm_profile_default_pc_at_descriptor_is_valid(profile)) return 1;
+
+    if (!vm_profile_default_pc_at_cpu_contract_select(profile,
+            CORE_MACHINE_CPU_PROFILE_DEFAULT, CORE_MACHINE_FPU_PROFILE_NONE,
+            &contract) || contract.cpu_profile != profile->cpu_profile ||
+        contract.fpu_profile != profile->fpu_profile ||
+        contract.ticks_per_instruction != profile->ticks_per_instruction ||
+        STD_MEMCMP(&contract.instruction_timing, &profile->instruction_timing,
+            sizeof(contract.instruction_timing)) != 0 ||
+        STD_MEMCMP(&contract.clock_plan, &profile->clock_plan,
+            sizeof(contract.clock_plan)) != 0 ||
+        !vm_profile_default_pc_at_cpu_contract_select(profile,
+            CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_FPU_PROFILE_8087,
+            &contract) || contract.cpu_profile != CORE_MACHINE_CPU_PROFILE_8086 ||
+        contract.fpu_profile != CORE_MACHINE_FPU_PROFILE_8087 ||
+        vm_profile_default_pc_at_cpu_contract_select(profile,
+            (core_machine_cpu_profile)0xffu, CORE_MACHINE_FPU_PROFILE_NONE,
+            &contract) || vm_profile_default_pc_at_cpu_contract_select(profile,
+            CORE_MACHINE_CPU_PROFILE_80386, (core_machine_fpu_profile)0xffu,
+            &contract)) return 1;
 
     cmos_index = vm_profile_default_pc_at_port_leaf_find(profile,
         VM_PROFILE_DEFAULT_PC_AT_DEVICE_CMOS, 0x0070u);

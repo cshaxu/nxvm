@@ -221,6 +221,50 @@ vm_profile_ibm_5170_model_339_descriptor_get(C_VOID)
     return &ibm_5170_model_339_descriptor;
 }
 
+static C_INT vm_profile_default_pc_at_cpu_profile_is_valid(
+    core_machine_cpu_profile profile)
+{
+    return profile == CORE_MACHINE_CPU_PROFILE_8086 ||
+        profile == CORE_MACHINE_CPU_PROFILE_80186 ||
+        profile == CORE_MACHINE_CPU_PROFILE_80286 ||
+        profile == CORE_MACHINE_CPU_PROFILE_80386;
+}
+
+static C_INT vm_profile_default_pc_at_fpu_profile_is_valid(
+    core_machine_fpu_profile profile)
+{
+    return profile == CORE_MACHINE_FPU_PROFILE_NONE ||
+        profile == CORE_MACHINE_FPU_PROFILE_8087 ||
+        profile == CORE_MACHINE_FPU_PROFILE_80287 ||
+        profile == CORE_MACHINE_FPU_PROFILE_80387;
+}
+
+C_INT vm_profile_default_pc_at_cpu_contract_select(
+    const vm_profile_default_pc_at_descriptor *descriptor,
+    core_machine_cpu_profile requested_cpu,
+    core_machine_fpu_profile requested_fpu,
+    vm_profile_default_pc_at_cpu_contract *out_contract)
+{
+    if (descriptor == STD_NULL || out_contract == STD_NULL ||
+        !vm_profile_default_pc_at_descriptor_is_valid(descriptor)) return 0;
+    if (requested_cpu == CORE_MACHINE_CPU_PROFILE_DEFAULT) {
+        requested_cpu = descriptor->cpu_profile;
+    }
+    if (!vm_profile_default_pc_at_cpu_profile_is_valid(requested_cpu) ||
+        !vm_profile_default_pc_at_fpu_profile_is_valid(requested_fpu)) return 0;
+    *out_contract = (vm_profile_default_pc_at_cpu_contract) {
+        requested_cpu,
+        requested_fpu,
+        descriptor->ticks_per_instruction,
+        descriptor->instruction_timing,
+        descriptor->clock_plan,
+        descriptor->kbc_typematic_initial_ticks,
+        descriptor->kbc_typematic_repeat_ticks,
+        descriptor->kbc_command_response_ticks
+    };
+    return 1;
+}
+
 const vm_profile_default_pc_at_port_leaf *
 vm_profile_default_pc_at_port_leaf_find(
     const vm_profile_default_pc_at_descriptor *descriptor,
