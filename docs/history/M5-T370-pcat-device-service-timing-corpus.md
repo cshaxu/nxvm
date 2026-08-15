@@ -19,3 +19,7 @@ S1's [owner ledger](../etc/evidence/t370-s1-pcat-device-service-owner-ledger.md)
 accepts no timing value. It assigns the four bounded device groups required
 before later implementation work and retains all physical-clock conversions as
 explicit transfers.
+
+S1 is accepted at `a3df36dd`. S2 is limited to PIT, PIC and RTC/CMOS
+command/event-domain reconciliation; it may not select a time conversion until
+the source, project clock and consumer boundary all agree.

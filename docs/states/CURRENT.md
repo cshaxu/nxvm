@@ -2,27 +2,6 @@
 
 ## Current Work
 
-## M5 T370 S1 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | New; T369 is closed at `f11a76ce` and the next approved Queue candidate is PC/AT device service timing. |
-| Admission And Approval | The owner-approved instruction to continue the ordered L3 program authorizes the next Queue candidate. This S admits inventory and primary-source reconciliation only; any device behavior change requires a later bounded S. |
-| Objective | Build a complete selected-Model-339 device-service ledger covering command acceptance, busy/ready state, DRQ/IRQ assertion and acknowledgement, data phase, reset/cancel, clock/timeline owner, current consumer proof and exact next receiver for PIT, PIC, RTC/CMOS, DMA, KBC/keyboard, planar parity/NMI, CGA/VADP and FDC. |
-| Non-goals | No timing scalar, timer conversion, physical waveform, host pacing, device implementation, ATA/HDC/MFM route, PPI/speaker, unselected ISA adapter, current-product device closure, phase refinement or 5170-L3 claim. |
-| Reference Baseline | T364 device completeness ledger; T366 selected Model-339/NMI/FDC non-admission; T369 bus-stage closure; T346--T354 transaction/timeline/device evidence; selected Model-339 descriptor and current device owners. |
-| Candidate Proposal | [PC/AT device service-timing corpus](../proposals/m5-device-service-timing-corpus.md). |
-| Files And ABI Surface | T370 history, S1 evidence, evidence index and Current status only. If a source/route audit finds a defect needing runtime change, stop and revise the packet before changing source, ABI or CMake. |
-| Applicable Rules | Architecture one-owner and composition boundaries; validation-before-publication; reset/cancellation and copied-consumer invariants; execution source policy, similar-issue sweep and documentation closure rules. Existing transaction/timeline and CPU-retirement publishers remain unchanged. |
-| Verification | Source-to-route ledger and static production/test sweep; provenance classification including primary manuals and permitted reference-model boundary; documentation governance and diff check. No developer artifact is manufactured by this inventory-only S. |
-| Expected Markers | Existing owner smokes remain named as evidence only; S1 adds no runtime marker and makes no timing claim. |
-| Asset Needs | No ROM, guest media, protected firmware, third-party code, binary, raw trace or host-captured media. Public documentation and project-authored evidence only. |
-| Reporting Requirements | List every selected device and all state-publication/reset routes; separate determinable source facts from unknown conversions; identify any comparable 86Box/MAME/PCjs use as cross-check only; name the next bounded receiver for every gap. |
-| Stop Conditions | Stop and revise if inventory requires a guessed duration, a selected controller/drive not in the baseline, a new public ABI, a parallel scheduler, or a device behavior repair. |
-| Exit Criteria | P1 commits an indexed, source-labelled complete service-owner ledger and records a bounded S2/S-later sequencing plan. It does not change runtime behavior, task artifact identity or 5170-L3 status. |
-| Original Owner Request | Continue in Queue order toward complete L3 before Windows 3.1; use named reference models only where authoritative manuals leave a range or no range, without treating them as IBM authority. |
-| Similar-Issue Sweep | Sweep all selected device constructors, port/memory leaves, timeline callbacks, IRQ/DRQ providers, transaction and DMA bindings, acknowledgement routes, reset/finalize paths, trace/copied consumers, Model-339 composition and focused owner tests; classify each hit or stop for a packet revision. |
-
 ## Current Technical Baseline
 
 - **Current developer artifact:** T369 S4 `vm-0-5-0369` /
@@ -42,6 +21,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T370 S1 | P1 `a3df36dd` records the complete selected-Model-339 device service owner/source/lifecycle ledger and bounded S2--S5 sequence. It allocates no timing scalar, device behavior, artifact or 5170-L3 claim. [S1 ledger](../etc/evidence/t370-s1-pcat-device-service-owner-ledger.md). |
 | T369 | Closed at `08a64bea`: S1--S4 lock and audit the 5170 Model-339 bus-stage input, logical 80286 DMA handoff and selected FDC/PIC visibility. Board waits, physical waveforms, device service, phase refinement and final 5170 L3 remain exact ordered transfers; **5170 model-L3 is not ready**. [Closure audit](../etc/evidence/t369-s4-pcat-bus-stage-closure-audit.md). |
 | T368 | Closed at `4da84be8`: completes the source-labelled 80286 successful-retirement CPU ledger, with exact values or declared source-undefined transfers. The next Queue receiver is bus-timed PC/AT operation; CPU waits, bus/device timing and IBM 5170 L3 remain open. [Closure audit](../etc/evidence/t368-s7-80286-retirement-closure-audit.md). |
 | T367 | Closed at `f60d87ea`: concrete machine selection and CPU/timing contract binding are VM-owned; the default-PC/AT option path now selects a VM contract before the sole core materialization boundary, while Model 339 remains descriptor-selected. Focused profile/session regressions pass; an unrelated platform-request compile failure blocks a full-gate claim. No CPU-timing, bus, device or L3 receiver is closed. [Binding evidence](../etc/evidence/t367-s2-vm-profile-contract-binding.md). |
