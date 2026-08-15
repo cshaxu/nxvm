@@ -2,31 +2,12 @@
 
 ## Current Work
 
-**Active: M5 T376 S6.**
+**No active implementation packet.** T376 is closed. The next ordered Queue
+candidate is the IBM PC/AT 5170 final model-L3 audit.
 
 | Task | Compact progress |
 | --- | --- |
-
-## M5 T376 S6 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner-approved continuous M5 L3 implementation; the owner's prior pure-IMG decision resolves S5's duplicate-CHRN stop by excluding non-representable physical-ID selection, while S5 identifies one in-scope malformed-sidecar regression gap. |
-| Objective | Prove malformed raw-IMG sidecar rejection through the existing VM FDD mount boundary, record the pure-raw physical-ID exclusion, and supply T376's remaining closure evidence. |
-| Non-goals | No new image format, CHRN/flux/CRC representation, production media API, host input route, FDC command change, physical timing claim, or Model-339 L3 decision. |
-| Reference Baseline | T376 S2 strict sidecar parser/lifecycle, T376 S5 reconciliation, owner-selected pure IMG boundary, and existing `vm-media-provider-smoke`. |
-| Candidate Proposal | [8272A raw-IMG sidecar fidelity closure](../proposals/m5-8272a-img-sidecar-fidelity-closure.md). |
-| Files And ABI Surface | Existing VM media-provider smoke, T376 evidence/history/index/current/proposal/queue closure records; no production ABI change. |
-| Applicable Rules | One production FDD mount owner, no test-only path, raw bytes remain independently usable, malformed metadata rejects before publication, and physical-ID capability remains visibly excluded. |
-| Verification | Focused VM media-provider smoke proves malformed sidecar rejects with candidate FDD absent and prior mount unchanged; replay FDC smoke, build, governance gate, proposal/queue/history links and clean worktree. |
-| Expected Markers | `M5:T376:S2:RAW-IMG-SIDECAR-LIFECYCLE:OK`; `M5:T376:S3:8272A-DELETED-DATA:OK`; `M5:T376:S4:8272A-SCAN:OK`; `M5:T376:S6:MALFORMED-SIDECAR:OK`. |
-| Asset Needs | Project-owned generated fixture only; no external ROM, guest media or third-party source. |
-| Reporting Requirements | Record malformed-input form, pre-publication failure proof, pure-IMG duplicate-CHRN exclusion, complete T376 matrix, task closure and next Queue receiver. |
-| Stop Conditions | Stop for owner direction if rejection requires a new sidecar syntax, a test-only production entry point, or any non-raw physical-sector representation. |
-| Exit Criteria | Malformed-sidecar rejection is directly proven, pure-IMG scope is accurately bounded, and T376 can close with its proposal retained in history and final Model-339 audit next. |
-| Original Owner Request | Continue through L3 before Windows; retain pure raw IMG compatibility, no test-only media API, and no false physical-media or L3 claim. |
-| Similar-Issue Sweep | Inspect all sidecar load failures, FDD insertion publication boundaries, existing generated-image cleanup, T376 requirements/evidence/index/history/proposal/queue links and every duplicate-CHRN claim. |
+| T376 | Closed after accepted P1 `5a7ea7ab`: raw-IMG sidecar persistence, selected 8272A command fidelity and malformed-sidecar rejection are proven; physical duplicate-CHRN representation remains explicitly outside pure raw-IMG support. [Closure audit](../etc/evidence/t376-s6-task-closure-audit.md). |
 
 ## Current Technical Baseline
 
@@ -47,7 +28,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T376 S5 | Accepted P1 `62e29252`: task audit proves raw-sidecar, Deleted-Data and Scan rows, but stops on duplicate-CHRN selection not representable by the approved pure raw-IMG model; owner decision required before final 5170 audit. [Audit](../etc/evidence/t376-s5-task-closure-audit.md). |
+| T376 S6 | Accepted P1 `5a7ea7ab`: malformed sidecar rejection completes the raw-only fidelity proof; task closure is recorded in Current Work and physical duplicate-CHRN representation remains excluded. [Closure audit](../etc/evidence/t376-s6-task-closure-audit.md). |
 | T375 | Closed at `07484727`: board/device phase work accepts source-backed service and logical-order contracts, transfers raw-IMG fidelity and source-exhausted physical board phases, and **does not accept Model-339 L3**. [Closure audit](../etc/evidence/t375-s26-task-closure-transfer-audit.md). |
 | T374 | Closed at `f742433c`: S1--S19 complete the selected Model-339 functional closure and preserve raw-IMG 765 Deleted/Control-Mark/Scan as explicit TODO debt. Board/device timing, final Model-L3, DeskPro 386, PC/XT and Windows 3.1 remain open. [Closure audit](../etc/evidence/t374-s19-task-closure-audit.md). |
 | T373 | Closed at `06246a8e`: S1--S4 freeze the three-machine capability ledger and receivers. **5170, DeskPro Model 40 and PC/XT 5160-268 L3 are not ready.** [Closure audit](../etc/evidence/t373-s4-task-closure-audit.md). |

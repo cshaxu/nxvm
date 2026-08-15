@@ -62,3 +62,12 @@ direct malformed-sidecar mount regression, then closes the task with its
 proposal retained in history. The next Queue receiver is the final Model-339
 audit, which must retain this physical-media exclusion and make its own
 ready/not-ready decision.
+
+## Closure
+
+T376 closes with the retained raw-IMG sidecar proposal. It accepts only the
+documented raw-payload/logical-position media capability and the selected
+8272A command paths. It does not accept physical duplicate-CHRN selection,
+flux/CRC/rotation behavior, board-level timing, Model-339 L3, or any broader
+device capability. The next ordered receiver is the IBM PC/AT 5170 final
+model-L3 audit.
