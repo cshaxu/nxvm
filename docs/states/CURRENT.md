@@ -2,9 +2,24 @@
 
 ## Current Work
 
-| Task | Compact progress |
+| Field | Required record |
 | --- | --- |
-| T375 S14 | Accepted P1 `cf9993a8`: primary versus qualified 86Box-v6.0 CGA phase crosswalk finds no admissible VADP logic repair. Default programming, reference-runtime trace, physical output and ISA timing remain open; 5170 L3 is not closed. [Evidence](../etc/evidence/t375-s14-model339-cga-phase-crosswalk.md). |
+| Identifier Mode | Continuation M5 T375 S15. |
+| Admission And Approval | The owner approved continued T375 execution, external owner-managed ROM research outside Git, and standing implementation/push authority. This S may derive a declarative hardware-state result from the owner-authorized IBM 5170 Rev.3 ROM observation but must not commit ROM bytes, paths, hashes, a ROM catalogue, or make the ROM a runtime dependency. |
+| Objective | Bind the selected IBM 5170 Model 339 firmware route to its observed Rev.3 80-column CGA CRTC default programming through the existing firmware port boundary. Keep generic default-PC/AT EGA behavior unchanged; prove exact selected CRTC state, BDA-visible 80-column text state, and retained adjacent EGA behavior. |
+| Non-goals | No ROM mapping/BYOB provider, ROM or guest-media import, generic profile alteration, factory claim beyond the selected Rev.3 abstract firmware slot, full INT 10h mode-table implementation, R8 interlace/skew support, physical CGA waveform/timing, ISA contention/snow, monitor output, test-only API, or 5170/M5 L3 claim. |
+| Reference Baseline | The Model-339 descriptor selects the abstract IBM 5170 Rev.3 slot; T375 S11 owns non-interlaced CRTC state, and S12--S14 establish selected CGA identity, constrained character cadence and phase crosswalk. Owner-authorized local Rev.3 firmware observation establishes the declarative default sequence; no firmware image enters NXVM. |
+| Candidate Proposal | [IBM PC/AT 5170 board and device phase-timing closure](../proposals/m5-5170-board-phase-timing-closure.md). |
+| Files And ABI Surface | Expected: `docs/states/CURRENT.md`, indexed evidence and `docs/etc/README.md`, `src/vm/profile/default_profile/firmware/context.h`, `src/vm/composition/session/session.c`, `src/vm/profile/default_profile/firmware/qdcga.c`, and the existing Model-339 CGA topology smoke. No public ABI or test-only capability. |
+| Applicable Rules | `docs/rules/EXECUTION.md`: active packet, pushed P1/review/P2 and actual-change inspection. `docs/rules/ARCHITECTURE.md`: VM composition supplies the selected firmware capability; QDCGA remains the existing firmware owner and VADP owns mutable registers. `docs/rules/CODING.md`: narrow owner-local context addition, no duplicate firmware route. `docs/rules/DOCUMENT.md`: Current is active authority and evidence is indexed. `docs/etc/operations/policy/source-policy.md`: firmware remains external and conclusions are neutral behavior only. |
+| Verification | Create Model-339 and generic sessions. Assert only Model-339 receives the selected R0--R7/R9/R10--R15 values through VADP's existing CRTC port route, retains BDA mode 3/80 columns/page/cursor behavior, and starts its logical raster; assert generic EGA topology/controller state stays unchanged. Replay Model-339 clock, VADP status, and adjacent EGA smokes; run documentation governance. |
+| Expected Markers | `M5:T375:S15:MODEL339-REV3-CGA-DEFAULTS:OK` plus retained topology, clock and VADP markers. |
+| Asset Needs | Owner-managed IBM 5170 Rev.3 ROM is read-only research only and remains outside Git. Do not commit its bytes, path, hash or download mechanism. |
+| Reporting Requirements | Report the selected-only firmware binding before implementation, push P1 with focused proof/evidence, independently review actual changes, then push P2 acceptance. State all retained physical/default-mode-table transfers. |
+| Stop Conditions | Stop and transfer if a default sequence cannot be distinguished from a generic virtual-BIOS behavior, depends on copied firmware/code, needs a new public/test interface, changes generic EGA, or requires a physical timing/monitor claim. |
+| Exit Criteria | Model-339-only declarative defaults pass focused selected/generic regressions; evidence records source containment and remaining boundaries; no external asset/dependency enters NXVM and documentation governance passes. |
+| Original Owner Request | Continue to comprehensive L3 before Windows 3.1; use authorized ROMs and secondary emulators only as bounded research inputs; preserve the no-test-API and external-asset boundaries. |
+| Similar-Issue Sweep | Sweep every QDCGA reset caller, firmware-context constructor, profile selector, CRTC port route, BDA writer, selected-model topology test and default EGA regression so no generic or second firmware source is created. |
 
 ## Current Technical Baseline
 

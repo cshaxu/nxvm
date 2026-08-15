@@ -38,6 +38,16 @@ static C_INT vm_model_339_cga_topology(C_VOID)
             &session->core_machine->executor_memory, &snapshot) ||
             snapshot.kind != CORE_MACHINE_DISPLAY_KIND_TEXT) << 10);
     if (!failed) {
+        static const type_unsigned_8 expected_crtc[] = {
+            0x71u, 0x50u, 0x5au, 0x0au, 0x1fu, 0x06u, 0x19u, 0x1cu,
+            0x00u, 0x07u, 0x06u, 0x07u, 0x00u, 0x00u, 0x01u, 0x90u
+        };
+        STD_SIZE_T index;
+
+        for (index = 0u; index < sizeof(expected_crtc); ++index) {
+            failed |= session->core_machine->shared_vadp.data.crtc[index] !=
+                expected_crtc[index];
+        }
         core_machine_port_write(&session->core_machine->executor_port,
             CORE_MACHINE_VADP_PORT_CRTC_INDEX, 0x13u);
         core_machine_port_write(&session->core_machine->executor_port,
@@ -74,5 +84,6 @@ C_INT main(C_VOID)
 {
     if (vm_model_339_cga_topology() || vm_default_ega_topology()) return 1;
     STD_PRINTF("M5:T366:S6:MODEL339-CGA-TOPOLOGY:OK\n");
+    STD_PRINTF("M5:T375:S15:MODEL339-REV3-CGA-DEFAULTS:OK\n");
     return 0;
 }

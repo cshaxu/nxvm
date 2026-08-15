@@ -326,7 +326,8 @@ type_status vm_session_storage_initialize(vm_session *machine)
     }
     core_machine_media_registry_initialize(&machine->media_registry);
     vm_profile_default_context_initialize(&machine->default_profile_context,
-        &machine->default_bios, &machine->media_registry, VM_SESSION_MEDIA_HDD_ID);
+        &machine->default_bios, &machine->media_registry, VM_SESSION_MEDIA_HDD_ID,
+        machine->profile->firmware_slot);
     core_platform_presentation_mailbox_initialize(&machine->presentation_mailbox);
     core_product_debug_context_initialize(&machine->debugger_context);
     machine->display_generation = 0u;
