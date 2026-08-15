@@ -6,28 +6,7 @@
 
 | Task | Compact progress |
 | --- | --- |
-| T375 S18 | Accepted P1 `8a4487e1`: explicit virtual-time publication emits a distinct core trace event; persistent replay and Model-339 physical timing remain open. [Evidence](../etc/evidence/t375-s18-external-time-trace.md). |
-
-## M5 T375 S19 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Project owner approved continuing the ordered L3 program, the Type-3 Model-339 aftermarket 1.44 MB compatibility route, and 86Box/MAME/PCjs only as secondary behavior references. The owner also approved use of local/external ROMs outside Git. This S admits no ROM, guest media, or external code. |
-| Objective | Establish the source-labelled FDC service-time inputs and reference-model crosswalk needed to replace the current one-readiness-tick pending-command/pending-completion progression with elapsed-time scheduling at the existing FDC owner. |
-| Non-goals | No claim that a 1.44 MB drive was factory-installed in Model 339; no unnamed replacement controller or drive; no import or transliteration of 86Box code; no physical waveform or IBM board scalar; no raw-IMG Deleted/Control-Mark/Scan repair; no final Model-339 L3 conclusion. |
-| Reference Baseline | Accepted T374 functional FDC closure, T375 S1 timing inventory, T375 S17 virtual-time batches, and T375 S18 external-time trace. Current `fdc.c` advances one pending command or completion per readiness timeline tick. |
-| Candidate Proposal | [IBM PC/AT 5170 board and device phase-timing closure](../proposals/m5-5170-board-phase-timing-closure.md). |
-| Files And ABI Surface | `docs/etc/evidence/t375-s19-fdc-service-time-crosswalk.md`, `docs/etc/README.md`, and this packet only for P1. No production ABI or runtime surface changes in this evidence S. A later S owns any elapsed-time FDC scheduler and its focused proof. |
-| Applicable Rules | `docs/rules/EXECUTION.md` lifecycle and P review; `docs/rules/DOCUMENT.md` authority/index topology; `docs/etc/operations/policy/source-policy.md` external-source containment. Architecture and coding rules are not triggered because P1 changes no code. |
-| Verification | Inspect every command service path and external 86Box v6.0 revision `4fef696a` FDC timer call without importing code; verify document links/index and run `tools/Verify-DocumentationGovernance.ps1 -RepositoryRoot .`. |
-| Expected Markers | `Documentation governance verification passed.` and `M5:T375:S19:FDC-SERVICE-CROSSWALK:OK` recorded in the evidence review. |
-| Asset Needs | Read-only external 86Box source at `O:\repos.external\86box-source`; no firmware, ROM, disk image, guest program, trace, or external binary is used or retained. |
-| Reporting Requirements | Report the crosswalk result, exact non-admissions, pushed P1, governance result, and whether the next S may implement an elapsed-time scheduler. |
-| Stop Conditions | Stop and return for owner direction if a required Model-339 board/controller/drive identity is missing for a proposed scalar, if the evidence would require importing protected material, or if a candidate conflicts with the fixed no-factory-1.44-MB boundary. |
-| Exit Criteria | Durable evidence distinguishes primary component facts from 86Box behavior, identifies every existing pending transition and its timing input or transfer, records the eligible subsequent scheduler scope, passes documentation governance, and contains no external source/media. |
-| Original Owner Request | Continue the current task toward full L3 accuracy; use 86Box/MAME/PCjs as reference behavior only where authoritative manuals give a range or no deterministic timing; keep the 1.44 MB route a documented aftermarket upgrade, with assets external to Git. |
-| Similar-Issue Sweep | Inspect FDC command acceptance, reset, seek/recalibrate, transfer/DRQ, completion/IRQ6, Ready polling, DMA2 handoff, and the HDC deferred-service contrast. Transfer all unmodelled mechanical/rotational and raw-format semantics instead of concealing them in a generic delay. |
+| T375 S19 | Accepted P1 `cb3ebb93`: names the aftermarket TEAC FD-235HF-A540 timing inputs, retains 86Box as a non-authoritative cross-check, and transfers elapsed-time FDC scheduling to the next S. [Evidence](../etc/evidence/t375-s19-fdc-service-time-crosswalk.md). |
 
 ## Current Technical Baseline
 
