@@ -32,6 +32,9 @@ static C_INT vm_model_339_clock_contract_is_selected(C_VOID)
         model_339->clock_plan.rtc.numerator != 64u ||
         model_339->clock_plan.rtc.denominator != 15625u ||
         model_339->clock_plan.rtc.reset_phase != 0u ||
+        model_339->clock_plan.vadp.numerator != 315u ||
+        model_339->clock_plan.vadp.denominator != 1408u ||
+        model_339->clock_plan.vadp.reset_phase != 0u ||
         model_339->rtc_ticks_per_second != 32768u ||
         generic->clock_plan.pit.numerator != 1u ||
         generic->clock_plan.pit.denominator != 4u ||
@@ -45,16 +48,23 @@ static C_INT vm_model_339_clock_contract_is_selected(C_VOID)
         session->core_machine->rtc_clock.numerator != 64u ||
         session->core_machine->rtc_clock.denominator != 15625u ||
         session->core_machine->rtc_clock.reset_phase != 0u ||
+        session->core_machine->vadp_clock.numerator != 315u ||
+        session->core_machine->vadp_clock.denominator != 1408u ||
+        session->core_machine->vadp_clock.reset_phase != 0u ||
         session->core_machine->shared_rtc.ticks_per_second != 32768u;
     failed |= core_machine_clock_domain_advance(&session->core_machine->pit_clock,
         4000000u) != 596591u ||
         core_machine_clock_domain_advance(&session->core_machine->rtc_clock,
-        15625u) != 64u;
+        15625u) != 64u ||
+        core_machine_clock_domain_advance(&session->core_machine->vadp_clock,
+        1408u) != 315u;
     failed |= core_machine_reset(session->core_machine) != TYPE_STATUS_OK ||
         core_machine_clock_domain_advance(&session->core_machine->pit_clock,
         4000000u) != 596591u ||
         core_machine_clock_domain_advance(&session->core_machine->rtc_clock,
-        15625u) != 64u;
+        15625u) != 64u ||
+        core_machine_clock_domain_advance(&session->core_machine->vadp_clock,
+        1408u) != 315u;
 
     vm_session_destroy(session);
     return failed;
@@ -64,5 +74,6 @@ C_INT main(C_VOID)
 {
     if (vm_model_339_clock_contract_is_selected()) return 1;
     STD_PRINTF("M5:T375:S2:MODEL339-CLOCK-CONTRACT:OK\n");
+    STD_PRINTF("M5:T375:S13:MODEL339-CGA-REFERENCE-CONTRACT:OK\n");
     return 0;
 }
