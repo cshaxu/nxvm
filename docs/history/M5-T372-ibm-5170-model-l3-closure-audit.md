@@ -45,3 +45,10 @@ documentation supplies no direct Model-339-to-project-clock conversion. No
 physical scalar or L3 claim is admitted; the next continuation must seek
 board-specific timing evidence or an authorized isolated experiment. S4 is
 accepted at `aa967d2c`.
+
+### S5: local-ROM experiment readiness
+
+S5's [readiness record](../etc/evidence/t372-s5-local-rom-experiment-readiness.md)
+contains the owner-authorized external-ROM containment and Model-339
+configuration gate. It establishes no reference observation, scalar or L3
+claim; a later S must provision a revision-pinned reference runtime.
