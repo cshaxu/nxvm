@@ -61,4 +61,4 @@ finds that the owner-authorized external reference runtime did not produce an
 observable end-to-end run for the selected configuration.  The owner directs
 that it no longer be used.  No trace, scalar, board fact, or Model-339 L3
 claim is admitted; existing primary-source and project-probe receivers remain
-open.
+open. S6 is accepted at `9330c7f6`.
