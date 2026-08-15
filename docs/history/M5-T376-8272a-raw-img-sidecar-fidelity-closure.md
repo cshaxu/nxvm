@@ -40,3 +40,15 @@ does not modify sector payload. Deleted-Data marks are queried through the
 frozen provider: an unskipped mark is reported through ST2 Control Mark and
 the `SK` command bit skips it without consuming comparison bytes. The S4
 evidence replays the retained 500-kbit/s byte gate and DOR cancellation.
+
+### S5: Task-closure audit
+
+S5 reconciles the actual S1--S4 history with the original proposal. The
+raw-sidecar lifecycle, Deleted-Data/Control-Mark and Scan rows are proven, but
+the proposed duplicate-CHRN selection regression is not representable by the
+current raw-IMG geometry-and-logical-sector model: that model has no CHRN ID
+record to duplicate or select. The owner-selected pure-IMG boundary forbids
+silently adding a second image format. T376 therefore remains open pending an
+owner decision to either exclude duplicate-CHRN selection from this raw-only
+task or admit a separate, non-raw representation task; it does not make a
+Model-339 L3 claim.

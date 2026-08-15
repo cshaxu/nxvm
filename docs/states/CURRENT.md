@@ -2,8 +2,31 @@
 
 ## Current Work
 
-**No active implementation packet.** T376 remains open; only its task-level
-closure audit remains before the final Model-339 audit can be admitted.
+**Active: M5 T376 S5.**
+
+| Task | Compact progress |
+| --- | --- |
+
+## M5 T376 S5 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner-approved continuous M5 L3 implementation; accepted T376 S4 completes the final functional FDC command route and transfers the T376 task audit only. |
+| Objective | Audit T376 against its approved raw-IMG sidecar, Deleted-Data/Control-Mark and Scan closure requirements; close only proven scope and transfer every remaining Model-339 boundary. |
+| Non-goals | No code behavior change, new media format, firmware/media import, physical FDC/board timing admission, final Model-339 L3 decision, or next-task implementation. |
+| Reference Baseline | T376 S1 inventory, S2 raw-sidecar lifecycle, S3 Deleted-Data evidence, S4 Scan evidence, current Queue/proposal, T375 transfer audit and current developer artifact. |
+| Candidate Proposal | [8272A raw-IMG sidecar fidelity closure](../proposals/m5-8272a-img-sidecar-fidelity-closure.md). |
+| Files And ABI Surface | T376 history/proposal/evidence/index, Queue, Current and task-status records only; no runtime ABI or source change. |
+| Applicable Rules | Compare actual committed change history with proposal scope, preserve one authority per document, move closed proposal to history, retain external assets outside Git, and make no broader L3 claim. |
+| Verification | Review P1/P2 history and changed files; replay focused T376 smoke and governance gate; verify artifact identity/SHA, proposal retention, queue transfer, documentation links and clean worktree. |
+| Expected Markers | `M5:T376:S2:RAW-IMG-SIDECAR-LIFECYCLE:OK`; `M5:T376:S3:8272A-DELETED-DATA:OK`; `M5:T376:S4:8272A-SCAN:OK`. |
+| Asset Needs | No new asset; the local T376 developer artifact is verification evidence only, and ROMs/guest media remain external. |
+| Reporting Requirements | Record proposal-requirement matrix, artifact/replay result, residual timing and Model-339 receivers, proposal retention and exact next Queue receiver. |
+| Stop Conditions | Stop for owner direction if a proposal requirement lacks proof, a remaining gap cannot be transferred through the stated queue/debt process, or closure would imply Model-339 L3. |
+| Exit Criteria | T376 is either closed with every scope row proven/transferred and proposal retained in history, or remains explicitly open with the unmet row and receiver recorded. |
+| Original Owner Request | Continue through L3 before Windows; preserve raw IMG compatibility, no test-only input/media API and no false complete claim. |
+| Similar-Issue Sweep | Audit all T376 S1--S4 evidence, code/tests/CMake artifact identity, Queue/proposal/history/index/current entries and every residual FDC/media claim. |
 
 ## Current Technical Baseline
 
