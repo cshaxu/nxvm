@@ -71,3 +71,14 @@ paired-step adapter depends on retired NXVM interfaces.  A later optional
 developer-tool migration may restore it; no bridge execution, platform fact,
 timing scalar or Model-339 L3 claim is admitted here. S7 is accepted at
 `fb8f16fd`.
+
+### S8: task closure and transfer audit
+
+S8's [closure matrix](../etc/evidence/t372-s8-task-closure-transfer-audit.md)
+reconciles every S1--S7 residual and closes T372 with the truthful result:
+**IBM PC/AT 5170 Model 339 L3 is not ready**. It transfers three-machine
+support classification to the capability ledger, selected-device function to
+the 5170 functional candidate, and board-local timing to the 5170 phase-timing
+candidate. The later final 5170 audit alone may make a ready/not-ready
+decision. No reference runtime, ROM/media asset, timing scalar, implementation,
+or Windows work is admitted.
