@@ -219,3 +219,4 @@ memory `11` clocks to successful unprefixed `63 /r ARPL r/m16,r16`
 retirement. Its [timing evidence](../etc/evidence/t366-s25-80286-arpl-timing.md)
 proves register/direct/indexed adjustment outcomes and retains real-mode,
 prefix, null-selector, fault, delivery, bus and physical-time boundaries.
+S25 is accepted at `f2e90047`.
