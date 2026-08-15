@@ -2,27 +2,6 @@
 
 ## Current Work
 
-## M5 T374 S19 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation; T374 S18 is accepted and is the sole retained compact progress row. |
-| Admission And Approval | The owner requested continued single-agent implementation toward all planned L3 work before Windows 3.1 and previously approved T374 selected-device functional closure, including raw-IMG-only floppy policy and the explicit unimplemented 765 Deleted/Scan transfer. S18 is accepted. This S is audit-only and may not absorb implementation work. |
-| Objective | Audit T374 against the Model-339 selected-device functional proposal: reconcile every selected platform, input, FDC/field-upgrade and CGA row to accepted S evidence; verify the raw-IMG 765 boundary and timing transfers; decide whether T374 may close without a Model-L3 claim. |
-| Non-goals | No runtime, API, firmware, ROM/media, test-fixture, Queue/proposal, device or timing modification; no L3 claim; no reopening unselected AUX, EGA/VGA, ATA/HDC, MFM/ST-506 or I/O-check NMI scope. |
-| Reference Baseline | T374 proposal; accepted S1--S18 history/evidence; frozen T373 Model-339 ledger; S10 raw-IMG decision; S18 boundary evidence; T375 timing candidate. |
-| Candidate Proposal | [IBM PC/AT 5170 selected-device functional closure](../proposals/m5-5170-selected-device-functional-closure.md). |
-| Files And ABI Surface | T374 history, supporting evidence/index and Current status only. No source, build artifact, external asset or public ABI change is admitted. |
-| Applicable Rules | Task Reading Set; execution closure/evidence/similar-issue rules; documentation rules. Verify actual accepted commits and evidence, preserve raw-media/TODO truth and one-current-status topology. |
-| Verification | Reconcile every proposal scope row to accepted evidence and code/proof boundary; sweep raw-IMG/Deleted/Scan, timing/L3 wording, selected-versus-excluded devices and T375 receiver; run documentation governance and diff check. |
-| Expected Markers | A finite T374 closure/transfer matrix distinguishes completed selected functionality, owner-approved raw-media exclusions, and the exact board/device phase-timing receiver; no unplanned functional gap remains hidden. |
-| Asset Needs | None. No ROM, firmware, guest media, external source import, local asset copy or runtime artifact is allowed. |
-| Reporting Requirements | Record original-request mapping, accepted commit/evidence index, deferred/unsupported reason and receiver, code-versus-document audit and independent acceptance. |
-| Stop Conditions | Stop if a selected functional gap lacks accepted repair or owner-approved explicit transfer, if source changes are needed, if any raw-media limitation is misrepresented as complete, or if closure would imply timing/L3. |
-| Exit Criteria | Every selected functional scope row is accepted or truthfully transferred under the owner-approved boundary, T374 closure introduces no L3 claim, and T375 remains the exact timing receiver. |
-| Original Owner Request | Fully implement selected-machine functional gaps before timing/L3, keep unsupported 765 Deleted/Scan fidelity explicit under `.img` media, preserve external assets outside Git and push completed work. |
-| Similar-Issue Sweep | Search all T374 evidence/history/proposal/Current references for selected functional gap, raw image, Deleted, Control Mark, Scan, command/error/reset/IRQ/DRQ, timing, L3, Model-339 and receiver wording. |
-
 ## Current Technical Baseline
 
 - **Current developer artifact:** T369 S4 `vm-0-5-0369` /
@@ -42,7 +21,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T374 S18 | P1 `5ad99179` establishes one production native-keyboard-byte boundary, Model-339 Set-2 default/Set-1 translation, and no test-only injector; focused KBC/VM/VDM proof passes. Full build retains two unrelated stale-fixture failures and external-media DOS paths remain non-pass evidence. [Boundary evidence](../etc/evidence/t374-s18-native-keyboard-input-boundary.md). |
+| T374 | Closed at `f742433c`: S1--S19 complete the selected Model-339 functional closure and preserve raw-IMG 765 Deleted/Control-Mark/Scan as explicit TODO debt. Board/device timing, final Model-L3, DeskPro 386, PC/XT and Windows 3.1 remain open. [Closure audit](../etc/evidence/t374-s19-task-closure-audit.md). |
 | T373 | Closed at `06246a8e`: S1--S4 freeze the three-machine source-labelled capability ledger and exact functional/timing/current-product receivers. **5170, DeskPro Model 40 and PC/XT 5160-268 L3 are not ready.** The next candidate is 5170 selected-device functional closure. [Closure audit](../etc/evidence/t373-s4-task-closure-audit.md). |
 | T372 | Closed at `3f56c72c`: S1--S8 establish that Model 339 has selected logical ownership and deterministic ordering, but lacks selected-device functional closure and source-backed board/phase timing. **5170 model-L3 is not ready.** [Closure audit](../etc/evidence/t372-s8-task-closure-transfer-audit.md). |
 | T370 | Closed at `77a73c04`: S1--S5 reconciled all selected Model-339 device-service owners and transferred unavailable duration to phase refinement; **5170 model-L3 is not ready**. [Closure audit](../etc/evidence/t370-s5-planar-cga-transfer-audit.md). |

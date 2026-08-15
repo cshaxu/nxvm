@@ -45,7 +45,6 @@ gap, never hide one.
 Each candidate has a bounded primary-manual/probe contract; completing one
 does not silently upgrade a different device, profile, or Windows mode.
 
-1. [IBM PC/AT 5170 selected-device functional closure](../proposals/m5-5170-selected-device-functional-closure.md).
 1. [IBM PC/AT 5170 board and device phase-timing closure](../proposals/m5-5170-board-phase-timing-closure.md).
 1. [IBM PC/AT 5170 final model-L3 audit](../proposals/m5-5170-final-l3-audit.md).
 1. [DeskPro 386 Model 40 profile and capability-gap audit](../proposals/m5-deskpro-386-model40-profile-capability-audit.md).
