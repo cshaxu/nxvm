@@ -2,6 +2,27 @@
 
 ## Current Work
 
+## M5 T374 S8 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; T374 remains the latest open numeric task and S8 follows accepted S7. |
+| Admission And Approval | The owner approved selected-machine functional closure before timing/L3 and authorized continuing T374. T374 S6 records that documented Read/Write Deleted require an explicit address-mark capability rather than ordinary sector I/O. |
+| Objective | Audit the minimum profile-neutral media contract needed for 8272A/uPD765 Deleted Data commands: determine metadata identity, read/write/format/reset/generation behavior, every provider/consumer impact, and a bounded implementation sequence without adding a synthetic disk encoding model. |
+| Non-goals | No interface or FDC code change in this audit; no flux/index/CRC/GAP model, physical timing, controller clock conversion, drive mechanics, media import, ROM, Scan implementation, MT/SK/DTL repair, ATA/HDC, MFM/ST-506, EGA/VGA, AUX, or Model-339 L3 claim. |
+| Reference Baseline | T374 S6 command audit; Intel 8272A Read/Write Deleted command descriptions and ST2 Control Mark semantics; `media_interface.{h,c}`, VM media provider and all registered provider fixtures; current FDC transfer/format owner. |
+| Candidate Proposal | [IBM PC/AT 5170 selected-device functional closure](../proposals/m5-5170-selected-device-functional-closure.md). |
+| Files And ABI Surface | Evidence/history/index and `docs/states/CURRENT.md` only for this audit P; `core/machine/media_interface.*`, `core/machine/fdc.*`, VM provider and provider tests are read-only inspection surfaces. A separately admitted repair names every affected provider/ABI surface. |
+| Applicable Rules | `docs/README.md` Task Reading Set; `docs/rules/EXECUTION.md` lifecycle, evidence and similar-issue rules; `docs/rules/DOCUMENT.md`; `CONTRIBUTING.md`; source policy. Architecture/coding authorities govern the later interface/implementation task, not this documentation-only audit. |
+| Verification | Build a provider/consumer/address-mark matrix; inspect all `core_machine_media_provider` initializers, media registry wrappers, FDC transfer/format routes and VM raw-image handling; run unchanged media-provider and focused FDC/Model-339 topology targets through Git-Bash CMake/Ninja; run documentation governance and `git diff --check`. |
+| Expected Markers | One bounded metadata owner and operation contract distinguishes a sector's address-mark class from its bytes, retains unsupported providers truthfully, and identifies every required migration. No caller infers deletedness from filler bytes or generation. |
+| Asset Needs | None. Controller documentation is read only; no ROM, firmware, guest media, trace, external implementation or local asset is added. |
+| Reporting Requirements | Report source/owner confirmation, complete provider/consumer sweep, selected contract/receiver sequence, unchanged replay, pushed P1, coordinator acceptance and next T374 functional receiver. |
+| Stop Conditions | Stop and transfer if deleted-data semantics require a flux/IDAM model beyond bounded logical-sector metadata, a provider cannot be migrated without changing unrelated product scope, or source conflict remains. Do not substitute ordinary data bytes for deleted markers. |
+| Exit Criteria | Evidence identifies the smallest truthful media contract and exact migration/repair sequence for Read/Write Deleted; every provider/consumer is classified; unchanged focused regressions pass; no synthetic controller/media or L3 claim is made. |
+| Original Owner Request | Implement each selected machine's functional gaps before timing/L3 closure, treating exact documentation as authority and reference emulators only as fallback; use CMake through Git Bash for local builds. |
+| Similar-Issue Sweep | Enumerate every provider initializer, query/byte/sector/format wrapper, raw-image media path, FDC command/format result route and test fixture to prevent a partial metadata ABI or duplicated deleted-data truth source. |
+
 ## Current Technical Baseline
 
 - **Current developer artifact:** T369 S4 `vm-0-5-0369` /

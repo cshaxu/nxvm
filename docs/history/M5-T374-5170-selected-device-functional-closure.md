@@ -70,3 +70,12 @@ S7's [invalid-command repair evidence](../etc/evidence/t374-s7-fdc-version-inval
 records removal of the non-8272A `10h`/`90h` response and focused proof that
 the existing invalid-command route now returns ST0 `80h` without IRQ. Remaining
 documented command and media semantics remain T374 work.
+
+### S8: FDC Deleted-Data media contract audit
+
+S8's [Deleted-Data media-contract audit](../etc/evidence/t374-s8-fdc-deleted-media-contract-audit.md)
+establishes that an 8272A deleted-data address mark is metadata distinct from
+payload bytes.  It inventories every production and fixture provider, records
+the raw-image persistence limit, and assigns a shared media ABI receiver before
+any FDC command route can truthfully be added.  No synthetic disk encoding,
+functional-completion or L3 claim is made.
