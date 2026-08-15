@@ -29,5 +29,8 @@ assigns DMA/PIC/INTA composition to S3.
 S3 retains the single arbitration order and logical controller lifecycle while
 transferring physical waveforms and device-clock work to S4.
 
+S3 is accepted at `9c41623f`. S4 receives FDC, RTC, KBC, planar-parity and
+CGA/VADP device-clock and microstate boundaries.
+
 S2 is accepted at `f0d7aeb5`. No source-supported Model-339 wait or prefetch
 value was found; S3 receives only logical DMA/PIC/INTA composition.
