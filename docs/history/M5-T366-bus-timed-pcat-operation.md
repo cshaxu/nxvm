@@ -228,3 +228,10 @@ unprefixed protected `0F 00 /4,/5 VERR/VERW r/m16` retirement. Its
 [timing evidence](../etc/evidence/t366-s26-80286-verr-verw-timing.md) retains
 mode, prefix, memory-fault, delivery, bus and physical-time boundaries.
 S26 is accepted at `42488be5`.
+
+### S27: 80286 LAR timing
+
+S27 assigns the Appendix-B fixed register `14` and memory `16` clocks to
+successful unprefixed protected `0F 02 /r LAR r16,r/m16` retirement.  Its
+[timing evidence](../etc/evidence/t366-s27-80286-lar-timing.md) retains
+mode, prefix, descriptor, fault, delivery, bus and physical-time boundaries.
