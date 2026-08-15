@@ -48,3 +48,12 @@ waveform, FDC-service result or Model-339 L3 claim.  The retained artifact and
 all transfers are recorded in the [S3 evidence](../etc/evidence/t369-s3-pcat-logical-hold-lifecycle.md).
 The next work must be newly admitted from the T369 bus/phase receivers; T370
 continues to own selected device-service timing.
+
+### S4: Bus-stage closure audit
+
+S4 audits the complete T369 S1--S3 route set and finds one owner for every
+implemented logical boundary, with every source-undefined physical fact
+transferred to the ordered device-service, phase and final-audit candidates.
+The [closure audit](../etc/evidence/t369-s4-pcat-bus-stage-closure-audit.md)
+retains the artifact identity and explicitly concludes that 5170 Model-339 L3
+is still open.

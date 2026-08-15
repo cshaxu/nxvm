@@ -2,6 +2,27 @@
 
 ## Current Work
 
+## M5 T369 S4 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; T369 S3 accepted at `037cf13b`. |
+| Admission And Approval | The owner-approved instruction to continue the ordered L3 program authorizes closure of the open T369 package. The audit may close only the source-labelled bus-stage scope or transfer an unresolved boundary; it may not claim 5170 L3. |
+| Objective | Audit T369 S1--S3 against its candidate scope: selected Model-339 input, CPU memory/port availability, logical DMA exclusion, selected FDC/PIC visibility, trace/reset lifecycle and exact downstream receivers. Close T369 only if every scoped boundary is implemented or explicitly transferred through the ordered Queue/TODO path. |
+| Non-goals | No new timing scalar, physical duration/waveform, CPU microstep/resume, device-service model, logical-to-physical INTA equivalence, new device/adapter, topology change, MFM/ATA change, or 5170-L3 claim. |
+| Reference Baseline | T369 S1/S2/S3 evidence and task record; T366 Model-339/NMI closure; T368 CPU ledger closure; T354 transaction/competition evidence; current Queue, TODO and the Model-339 descriptor/CPU-DMA-PIC-FDC routes. |
+| Candidate Proposal | [Bus-timed PC/AT operation](../proposals/m5-bus-timed-pcat-operation.md). |
+| Files And ABI Surface | Audit evidence, T369 history, Current status and evidence index only. If an unclassified production defect is found, stop and revise the packet before altering code or ABI. |
+| Applicable Rules | Documentation authority boundaries; execution closure, artifact, source-policy and similar-issue requirements; architecture one-owner, validation-before-publication and lifecycle/reset/trace invariants. Existing CPU source-retirement ticks remain the sole CPU-time publisher. |
+| Verification | Reinspect all S1--S3 evidence and actual production routes; rebuild `vm-0-5-0369`, verify the current artifact target, rerun the retained transaction/competition/lifecycle smokes, sweep transaction/DMA/PIC/FDC/reset/trace routes, run documentation governance and diff check. |
+| Expected Markers | Retain `M5:T354:S2:TRANSACTION:OK`, `M5:T354:S3:COMPETITION:OK`, `M5:T369:S3:PCAT-HOLD:OK`, `M5:T354:S4:TRANSACTION-LIFECYCLE:OK` and `M5:T197:S1:CURRENT-ARTIFACT-TARGET:vm-0-5-0369:OK`. |
+| Asset Needs | No ROM, guest media, third-party code, binary or raw trace. Existing public manuals and project-authored evidence only. |
+| Reporting Requirements | Map each required bus-stage boundary to implementation or a precise receiver; record artifact identity and source commit; distinguish logical ordering from physical timing; state explicitly whether T369 and 5170 L3 close. |
+| Stop Conditions | Stop and revise if the audit requires a new scheduler, CPU preemption, timing scalar, physical waveform assertion, device service behavior, public product/VM ABI, or an unclassified source/route repair. |
+| Exit Criteria | P1 produces an evidence-backed T369 closure/transfer audit, closes T369 only when its bounded bus-stage scope has one owner or exact receiver for every route, and leaves T370/phase/5170-L3 work explicit. It must not present a logical handoff or deterministic ordering as physical/cycle-exact timing. |
+| Original Owner Request | Continue in Queue order toward complete L3 before Windows 3.1; use named reference models only where authoritative manuals leave a range or no range, without treating them as IBM authority. |
+| Similar-Issue Sweep | Sweep Model-339 descriptor, CPU memory/port transaction helpers, transaction begin/commit/cancel/hold APIs, DMA request/advance, PIC refresh/acknowledgement, FDC request/advance/refresh, reset/finalize, trace consumers and stopped/paused external operations; classify every hit as retained owner, transfer or packet-revision blocker. |
+
 ## Current Technical Baseline
 
 - **Current developer artifact:** T369 S3 `vm-0-5-0369` /
