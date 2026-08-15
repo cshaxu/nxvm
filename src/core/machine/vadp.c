@@ -491,15 +491,6 @@ static type_unsigned_8 core_machine_vadp_status(const t_vadp *adapter)
     return 0u;
 }
 
-static C_VOID core_machine_vadp_read_crtc_index(t_port *port,
-    type_unsigned_16 port_id, C_VOID *owner)
-{
-    (C_VOID)port_id;
-    if (port != STD_NULL && owner != STD_NULL) {
-        port->data.ioByte = ((t_vadp *)owner)->data.crtc_index;
-    }
-}
-
 static C_VOID core_machine_vadp_write_crtc_index(t_port *port,
     type_unsigned_16 port_id, C_VOID *owner)
 {
@@ -770,20 +761,14 @@ static C_VOID core_machine_vadp_write_sequencer_data(t_port *port,
 
 static C_VOID core_machine_vadp_register_cga_ports(t_vadp *adapter, t_port *port)
 {
-    core_machine_port_add_read(port, CORE_MACHINE_VADP_PORT_CRTC_INDEX,
-        core_machine_vadp_read_crtc_index, adapter);
     core_machine_port_add_write(port, CORE_MACHINE_VADP_PORT_CRTC_INDEX,
         core_machine_vadp_write_crtc_index, adapter);
     core_machine_port_add_read(port, CORE_MACHINE_VADP_PORT_CRTC_DATA,
         core_machine_vadp_read_crtc_data, adapter);
     core_machine_port_add_write(port, CORE_MACHINE_VADP_PORT_CRTC_DATA,
         core_machine_vadp_write_crtc_data, adapter);
-    core_machine_port_add_read(port, CORE_MACHINE_VADP_PORT_MODE,
-        core_machine_vadp_read_mode, adapter);
     core_machine_port_add_write(port, CORE_MACHINE_VADP_PORT_MODE,
         core_machine_vadp_write_mode, adapter);
-    core_machine_port_add_read(port, CORE_MACHINE_VADP_PORT_COLOR,
-        core_machine_vadp_read_color, adapter);
     core_machine_port_add_write(port, CORE_MACHINE_VADP_PORT_COLOR,
         core_machine_vadp_write_color, adapter);
     core_machine_port_add_read(port, CORE_MACHINE_VADP_PORT_STATUS,
@@ -801,6 +786,10 @@ C_VOID core_machine_vadp_initialize(t_vadp *adapter, t_port *port)
 C_VOID core_machine_vadp_configure_ega_ports(t_vadp *adapter, t_port *port)
 {
     if (adapter == STD_NULL || port == STD_NULL) return;
+    core_machine_port_add_read(port, CORE_MACHINE_VADP_PORT_MODE,
+        core_machine_vadp_read_mode, adapter);
+    core_machine_port_add_read(port, CORE_MACHINE_VADP_PORT_COLOR,
+        core_machine_vadp_read_color, adapter);
     core_machine_port_add_write(port, CORE_MACHINE_VADP_PORT_ATTRIBUTE,
         core_machine_vadp_write_attribute, adapter);
     core_machine_port_add_read(port, CORE_MACHINE_VADP_PORT_ATTRIBUTE_DATA_READ,

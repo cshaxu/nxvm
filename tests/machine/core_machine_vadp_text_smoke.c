@@ -53,7 +53,6 @@ C_INT main(C_VOID)
     core_machine_vadp_write_crtc(&port, 0x0au, 2u);
     core_machine_vadp_write_crtc(&port, 0x0bu, 6u);
     core_machine_port_write(&port, 0x03d9u, 0x1eu);
-    failed |= core_machine_port_read(&port, 0x03d9u) != 0x1eu;
     status = core_machine_port_read(&port, 0x03dau);
     failed |= status != 0x01u || core_machine_port_read(&port, 0x03dau) != status;
     for (refresh = 0u; refresh < 2u * 6u; ++refresh) {
@@ -82,7 +81,8 @@ C_INT main(C_VOID)
 
     /* T228 admits 320x200x4; 640x200 remains outside the text controller. */
     core_machine_port_write(&port, 0x03d8u, 0x12u);
-    failed |= core_machine_port_read(&port, 0x03d8u) != 0x05u;
+    failed |= !core_machine_vadp_capture_text_snapshot(&vadp, &memory, &snapshot) ||
+        snapshot.kind != CORE_MACHINE_DISPLAY_KIND_TEXT;
 
     core_machine_vadp_finalize(&vadp);
     core_machine_memory_finalize(&memory);

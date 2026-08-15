@@ -17,22 +17,26 @@ static C_INT vm_model_339_cga_topology(C_VOID)
     C_INT failed = vm_session_create(&config, &session) != TYPE_STATUS_OK ||
         session == STD_NULL;
 
-    if (!failed) failed |= (!core_machine_port_has_read(
+    if (!failed) failed |= (core_machine_port_has_read(
         &session->core_machine->executor_port, CORE_MACHINE_VADP_PORT_CRTC_INDEX) << 1) |
-        (!core_machine_port_has_write(&session->core_machine->executor_port,
-            CORE_MACHINE_VADP_PORT_MODE) << 2) |
-        (!core_machine_port_has_read(&session->core_machine->executor_port,
-            CORE_MACHINE_VADP_PORT_STATUS) << 3) |
-        (core_machine_port_has_write(&session->core_machine->executor_port,
-            CORE_MACHINE_VADP_PORT_ATTRIBUTE) << 4) |
         (core_machine_port_has_read(&session->core_machine->executor_port,
-            CORE_MACHINE_VADP_PORT_SEQUENCER_INDEX) << 5) |
+            CORE_MACHINE_VADP_PORT_MODE) << 2) |
+        (core_machine_port_has_read(&session->core_machine->executor_port,
+            CORE_MACHINE_VADP_PORT_COLOR) << 3) |
+        (!core_machine_port_has_write(&session->core_machine->executor_port,
+            CORE_MACHINE_VADP_PORT_MODE) << 4) |
+        (!core_machine_port_has_read(&session->core_machine->executor_port,
+            CORE_MACHINE_VADP_PORT_STATUS) << 5) |
         (core_machine_port_has_write(&session->core_machine->executor_port,
-            CORE_MACHINE_VADP_PORT_GRAPHICS_DATA) << 6) |
-        (session->core_machine->shared_vadp.data.ega_sequencer_configured << 7) |
+            CORE_MACHINE_VADP_PORT_ATTRIBUTE) << 6) |
+        (core_machine_port_has_read(&session->core_machine->executor_port,
+            CORE_MACHINE_VADP_PORT_SEQUENCER_INDEX) << 7) |
+        (core_machine_port_has_write(&session->core_machine->executor_port,
+            CORE_MACHINE_VADP_PORT_GRAPHICS_DATA) << 8) |
+        (session->core_machine->shared_vadp.data.ega_sequencer_configured << 9) |
         ((!core_machine_vadp_capture_text_snapshot(&session->core_machine->shared_vadp,
             &session->core_machine->executor_memory, &snapshot) ||
-            snapshot.kind != CORE_MACHINE_DISPLAY_KIND_TEXT) << 8);
+            snapshot.kind != CORE_MACHINE_DISPLAY_KIND_TEXT) << 10);
     vm_session_destroy(session);
     return failed;
 }
@@ -46,9 +50,13 @@ static C_INT vm_default_ega_topology(C_VOID)
     if (!failed) failed |= (!core_machine_port_has_write(
         &session->core_machine->executor_port, CORE_MACHINE_VADP_PORT_ATTRIBUTE) << 1) |
         (!core_machine_port_has_read(&session->core_machine->executor_port,
-            CORE_MACHINE_VADP_PORT_SEQUENCER_INDEX) << 2) |
-        (!session->core_machine->shared_vadp.data.ega_sequencer_configured << 3) |
-        (!session->core_machine->shared_vadp.data.ega_controller_configured << 4);
+            CORE_MACHINE_VADP_PORT_MODE) << 2) |
+        (!core_machine_port_has_read(&session->core_machine->executor_port,
+            CORE_MACHINE_VADP_PORT_COLOR) << 3) |
+        (!core_machine_port_has_read(&session->core_machine->executor_port,
+            CORE_MACHINE_VADP_PORT_SEQUENCER_INDEX) << 4) |
+        (!session->core_machine->shared_vadp.data.ega_sequencer_configured << 5) |
+        (!session->core_machine->shared_vadp.data.ega_controller_configured << 6);
     vm_session_destroy(session);
     return failed;
 }

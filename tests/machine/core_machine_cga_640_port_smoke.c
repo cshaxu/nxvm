@@ -28,9 +28,7 @@ C_INT main(C_VOID)
     failed |= core_machine_memory_write_physical(&memory,
         CORE_MACHINE_VADP_VIDEO_BASE + 0x2000u, (type_virtual_address)&pixel,
         sizeof(pixel)) != TYPE_STATUS_OK;
-    failed |= core_machine_port_read(&port, 0x03d8u) != 0x1au ||
-        core_machine_port_read(&port, 0x03d9u) != 0x0cu ||
-        !core_machine_vadp_capture_snapshot(&vadp, &memory, &snapshot) ||
+    failed |= !core_machine_vadp_capture_snapshot(&vadp, &memory, &snapshot) ||
         snapshot.kind != CORE_MACHINE_DISPLAY_KIND_CGA_640X200X2 ||
         snapshot.pixel_width != 640u || snapshot.pixel_height != 200u ||
         snapshot.pixels[0] != 1u || snapshot.pixels[1] != 0u ||
@@ -40,7 +38,6 @@ C_INT main(C_VOID)
     status = core_machine_port_read(&port, 0x03dau);
     failed |= core_machine_port_read(&port, 0x03dau) != status;
     core_machine_port_write(&port, 0x03d8u, 0x12u);
-    failed |= core_machine_port_read(&port, 0x03d8u) != 0x1au;
     core_machine_port_write(&port, 0x03d8u, 0x05u);
     failed |= !core_machine_vadp_capture_snapshot(&vadp, &memory, &snapshot) ||
         snapshot.kind != CORE_MACHINE_DISPLAY_KIND_TEXT;

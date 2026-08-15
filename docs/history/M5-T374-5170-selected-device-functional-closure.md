@@ -105,3 +105,11 @@ classifies the selected digital-CGA VRAM, snapshot, port, reset and firmware
 consumer surface. It selects the incorrect read visibility of write-only CGA
 ports as S12's bounded repair, while transferring full 6845 geometry and all
 timing to later receivers.
+
+### S12: CGA write-only port repair
+
+S12's [write-only port repair evidence](../etc/evidence/t374-s12-cga-write-only-port-repair.md)
+removes invalid Model-339 reads of CGA `3D4h`, `3D8h` and `3D9h`, retains
+permitted `3D5h`/`3DAh` behavior, and preserves the unrelated EGA Mode/Color
+read route through EGA-only registration. Full 6845 and timing work remains
+open.
