@@ -42,7 +42,6 @@ does not silently upgrade a different device, profile, or Windows mode.
 
 1. [VM profile-contract ownership migration](../proposals/m5-vm-profile-contract-ownership.md).
 1. [80286 successful-retirement timing closure](../proposals/m5-80286-retirement-timing-closure.md).
-1. [Selected-profile model-L3 phase refinement](../proposals/m5-cycle-exact-selected-profile.md).
 1. [IBM PC/AT 5170 model-L3 closure audit](../proposals/m5-l3-machine-closure-audit.md).
 1. [DeskPro 386 profile and 80386 CPU closure](../proposals/m5-deskpro-386-profile-cpu-closure.md).
 1. [DeskPro 386 board bus and device timing closure](../proposals/m5-deskpro-386-bus-device-closure.md).

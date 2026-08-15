@@ -2,6 +2,27 @@
 
 ## Current Work
 
+## M5 T372 S1 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New; T371 phase-refinement evidence is complete and transfers to the next Queue audit. |
+| Admission And Approval | The owner-approved ordered L3 program continues with the IBM 5170 Model-339 closure-audit candidate after T368--T371. |
+| Objective | Build a component-by-component Model-339 L3 readiness matrix from CPU, bus, device, phase, reset, trace and profile evidence; classify every residual as proven, incomplete or exact receiver. |
+| Non-goals | No implementation repair, timing scalar, source import, physical-cycle claim, DeskPro/8088/Windows work or readiness declaration without complete evidence. |
+| Reference Baseline | T366--T371 histories/evidence, Model-339 descriptor, 5170 L3 closure-audit proposal, Queue and current TODO boundaries. |
+| Candidate Proposal | [IBM PC/AT 5170 model-L3 closure audit](../proposals/m5-l3-machine-closure-audit.md). |
+| Files And ABI Surface | T372 history, S1 evidence, Current status and evidence index only. Stop before source, ABI, CMake, test or runtime changes. |
+| Applicable Rules | Audit does not hide implementation; one owner per component; source-labelled model boundary; copied trace/reset lifecycle; documentation/source-policy rules. |
+| Verification | Complete component matrix, evidence-link and residual-receiver sweep, queue/TODO consistency, documentation governance and diff check. |
+| Expected Markers | Existing focused markers are evidence only; no new artifact, timing marker or L3-ready claim. |
+| Asset Needs | Public manuals and project-authored evidence only; no ROM, guest media, firmware, external code, binary or host trace. |
+| Reporting Requirements | State each component readiness result, every missing proof and exact corrective/transfer receiver; make no aggregate claim beyond the matrix. |
+| Stop Conditions | Stop if a missing requirement would be hidden, a logical trace relabelled physical, a new behavior admitted, or the audit attempts to close an implementation gap. |
+| Exit Criteria | P1 commits an indexed complete readiness matrix with an explicit preliminary ready/not-ready decision and exact next action. |
+| Original Owner Request | Continue in Queue order toward complete L3 before Windows 3.1; use named reference models only where authoritative manuals leave a range or no range, without treating them as IBM authority. |
+| Similar-Issue Sweep | Sweep all T366--T371 evidence, descriptor/profile composition, CPU/bus/device/reset/trace owners, Queue/TODO entries and every claim containing Model-339 or L3. |
+
 ## Current Technical Baseline
 
 - **Current developer artifact:** T369 S4 `vm-0-5-0369` /
@@ -21,7 +42,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T371 S5 | P1 `d8c81c2b` audits assembled logical replay, trace and reset/cancellation coverage, transferring every physical boundary to the 5170 L3 audit. **5170 model-L3 remains open.** [S5 audit](../etc/evidence/t371-s5-phase-replay-transfer-audit.md). |
+| T371 | Closed at `d8c81c2b`: S1--S5 establishes a deterministic logical phase foundation and transfers every physical board mapping to the 5170 L3 audit; **5170 model-L3 remains open.** [Closure audit](../etc/evidence/t371-s5-phase-replay-transfer-audit.md). |
 | T370 | Closed at `77a73c04`: S1--S5 reconciled all selected Model-339 device-service owners and transferred unavailable duration to phase refinement; **5170 model-L3 is not ready**. [Closure audit](../etc/evidence/t370-s5-planar-cga-transfer-audit.md). |
 | T369 | Closed at `08a64bea`: S1--S4 lock and audit the 5170 Model-339 bus-stage input, logical 80286 DMA handoff and selected FDC/PIC visibility. Board waits, physical waveforms, device service, phase refinement and final 5170 L3 remain exact ordered transfers; **5170 model-L3 is not ready**. [Closure audit](../etc/evidence/t369-s4-pcat-bus-stage-closure-audit.md). |
 | T368 | Closed at `4da84be8`: completes the source-labelled 80286 successful-retirement CPU ledger, with exact values or declared source-undefined transfers. The next Queue receiver is bus-timed PC/AT operation; CPU waits, bus/device timing and IBM 5170 L3 remain open. [Closure audit](../etc/evidence/t368-s7-80286-retirement-closure-audit.md). |
@@ -29,7 +50,6 @@
 | T366 | Closed at `743edc18`: locks the Model 339 baseline, planar-parity NMI and selected topology, and accepts bounded 80286 source-retirement rows. Complete CPU retirement, bus availability, device service timing and profile-L3 closure transfer explicitly; **5170 model-L3 is not ready**. [Closure audit](../etc/evidence/t366-s32-closure-transfer-audit.md). |
 | T365 | Closed at `febc9352`: IBM PC/AT parity/I/O-check NMI sources cannot be selected without a profile input, status/latch/clear and lifecycle contract; CPU and CMOS remain delivery/mask only. [Closure audit](../etc/evidence/t365-s2-pcat-nmi-nonadmission-closure-audit.md). Blocks physical/cycle-exact L3 closure; no synthetic source. |
 | T364 | Closed at `7d574ae3`: all selected PC/AT components, ports/routes and lifecycle/timing owners are inventoried; optional and physical gaps retain exact Queue/TODO receivers. [Closure audit](../etc/evidence/t364-s2-pcat-device-completeness-closure-audit.md). No model-L3 claim. |
-| T363 | Closed at `312ef2f9`: all 256 primary and 256 secondary dispatch slots have one source-backed successful-retirement owner or an exact explicit receiver; inventory and 246/246 current-gate passed. [Closure audit](../etc/evidence/t363-s7-complete-instruction-timing-closure-audit.md). No physical/cycle-exact L3 claim. |
 
 ## Recent Governance
 

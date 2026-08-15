@@ -48,9 +48,9 @@ interrupted instructions do not publish a successful-retirement source row.
 | 8086/80186 dynamic arithmetic ranges | `TODO(Medium)`: primary formula or separately approved observation contract, profile-local capture/rollback, complete form and consumer sweep. |
 | 80286 Appendix-B/prose `NOP` conflict | `TODO(Medium)`: edition/page/semantic-context review plus every classifier, smoke, scheduler and device consumer. |
 | 80286 system/descriptor forms and 80386 descriptor-granular `LSL` | Closed [instruction-timing corpus proposal](../../history/M5-T363-complete-instruction-timing-corpus-proposal.md): its profile-local form/context matrix and capture feasibility record remains available for historical audit. |
-| Memory/I/O waits, HOLD/DMA ownership, prefetch/cache/alignment and pin phases | T369 closes logical HOLD/DMA ownership; physical values transfer to [Cycle-exact selected profile](../../proposals/m5-cycle-exact-selected-profile.md). [Retained proposal](../../history/M5-T369-bus-timed-pcat-operation-proposal.md). |
+| Memory/I/O waits, HOLD/DMA ownership, prefetch/cache/alignment and pin phases | T369 closes logical HOLD/DMA ownership; physical values transfer to closed T371 [Cycle-exact selected profile](../../history/M5-T371-selected-profile-phase-refinement-proposal.md). [Retained proposal](../../history/M5-T369-bus-timed-pcat-operation-proposal.md). |
 | Device command and service latency | Closed T370 [PC/AT device service-timing corpus](../../history/M5-T370-pcat-device-service-timing-corpus-proposal.md). |
-| Exceptions, IRQ/NMI, task switch, outer-privilege/VM86 frames and rejected forms | Queue candidate [Cycle-exact selected profile](../../proposals/m5-cycle-exact-selected-profile.md); no synthetic successful-retirement clock. |
+| Exceptions, IRQ/NMI, task switch, outer-privilege/VM86 frames and rejected forms | Closed T371 [Cycle-exact selected profile](../../history/M5-T371-selected-profile-phase-refinement-proposal.md); no synthetic successful-retirement clock. |
 | x87 numeric execution/timing and VME/PVI | Their named TODO boundaries; neither is a T360 source-row receiver. |
 
 ## Sweep and verification conclusion
