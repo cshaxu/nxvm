@@ -2,9 +2,24 @@
 
 ## Current Work
 
-| Task | Compact progress |
+| Field | Required record |
 | --- | --- |
-| T375 S13 | Accepted P1 `9a4f33f1`: binds the selected Model-339 VADP clock to the constrained 86Box-v6.0 CGA reference cadence `315/1408`, with descriptor/session/reset proof. This is not a measured IBM board cadence or L3 closure; reference-runtime trace, default programming, contention and physical output remain open. [Evidence](../etc/evidence/t375-s13-model339-cga-reference-contract.md). |
+| Identifier Mode | Continuation M5 T375 S14. |
+| Admission And Approval | The owner approved continued T375 execution toward L3, authorized local 86Box reference research outside Git, and reaffirmed standing approval on 2026-08-15. This S admits only an owner-local audit and, if warranted, an existing-VADP-owner correction; external source, firmware, media, path, trace, and dependency containment remain mandatory. |
+| Objective | Reconcile the qualified 86Box-v6.0 IBM-CGA phase-state model against the primary MC6845/IBM logical CRTC contract already implemented by VADP. Produce a register/phase/status crosswalk and either repair one evidence-supported VADP logical-state defect or record that no correction is admitted. |
+| Non-goals | No whole-machine boot, reference-binary trace, code/ROM import, default CRTC programming, generic-AT change, selected-board cadence or physical waveform assertion, ISA contention/waits/snow, light-pen completion, R8 interlace/skew support, public or test-only API, or 5170/M5 L3 claim. |
+| Reference Baseline | T375 S11 owns primary-source non-interlaced MC6845 CRTC logic; T375 S12/S13 qualify 86Box v6.0 only as a constrained secondary IBM-CGA cross-check and bind its character cadence solely to the selected VADP clock. IBM CGA `3DAh` bit meanings remain primary. |
+| Candidate Proposal | [IBM PC/AT 5170 board and device phase-timing closure](../proposals/m5-5170-board-phase-timing-closure.md). |
+| Files And ABI Surface | Expected: `docs/states/CURRENT.md`, a new indexed evidence record under `docs/etc/evidence/`, `docs/etc/README.md`, and only if the crosswalk finds a bounded defect, `src/core/machine/vadp.c` plus its existing focused VADP test. No public ABI or new test-only capability. |
+| Applicable Rules | `docs/rules/EXECUTION.md`: one active packet, review of actual changes, sequential pushed P1 and P2. `docs/rules/ARCHITECTURE.md`: VADP remains sole mutable CGA-phase owner; research is not a dependency. `docs/rules/CODING.md`: no duplicate timer or test-only contract. `docs/rules/DOCUMENT.md`: Current is the only active contract and evidence is indexed. `docs/etc/operations/policy/source-policy.md`: external source stays outside NXVM and only neutral conclusions enter evidence. |
+| Verification | Compare CRTC write masks/readback, programmed/unprogrammed phase selection, displayed/horizontal-blank partition, vertical-sync transition, reset/restart and mode-control gating against primary requirements and constrained 86Box behavior. If corrected, replay `core-machine-vadp-text-status-smoke`, Model-339 clock smoke, and both adjacent EGA smokes; run documentation governance. |
+| Expected Markers | `M5:T375:S14:MODEL339-CGA-PHASE-CROSSWALK:OK`; retain existing VADP markers for any correction. |
+| Asset Needs | Read-only owner-managed 86Box v6.0 source only. No external binary output, ROM, media, asset path, hash catalogue, code, or trace is committed. |
+| Reporting Requirements | State the crosswalk disposition before a correction, deliver any pushed P1 with focused proof and indexed evidence, then independently inspect actual changes before P2 acceptance. State retained timing/L3 transfers explicitly. |
+| Stop Conditions | Stop with a transfer if the reference differs only in an unselected adapter option or physical model, conflicts with primary logical requirements, requires an external runtime trace, expands into default firmware programming or physical cadence, or would introduce an external dependency/test-only API. |
+| Exit Criteria | Indexed crosswalk completes every selected phase/status route; any admitted correction is owner-local with focused proof, otherwise the no-correction disposition and earliest receiver are explicit. No external asset/dependency enters NXVM and documentation governance passes. |
+| Original Owner Request | Continue current work toward complete L3 before Windows 3.1; use 86Box/MAME/PCjs as secondary references when primary manuals lack deterministic timing; bridge/differential work need not boot a full reference machine; no pure test API. |
+| Similar-Issue Sweep | Sweep all VADP CRTC writes/masks/readback, reset/advance/status/snapshot paths, Model-339 clock publication and adjacent EGA CRTC gates, ensuring no reference-specific physical assumption becomes a second phase owner. |
 
 ## Current Technical Baseline
 
