@@ -25,3 +25,12 @@ finds no current numeric reference candidate: 86Box corroborates only the
 undetermined ISA clock, and PCjs documents candidate controls but no
 revision-pinned complete observation.  Physical phase work therefore remains
 open; S2 is accepted at `8a5431fd` and makes no 5170 model-L3 claim.
+
+### S3: PCjs observation qualification
+
+S3's [qualification record](../etc/evidence/t372-s3-pcjs-observation-qualification.md)
+finds that public PCjs configuration documentation is insufficient for a
+revision-pinned, policy-compliant physical observation: runnable routes require
+third-party firmware and the field-upgrade path requires DOS/guest media.
+S3 stops before running or tracing PCjs and transfers physical evidence work
+to the next T372 continuation.
