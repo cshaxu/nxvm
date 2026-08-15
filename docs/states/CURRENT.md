@@ -2,31 +2,9 @@
 
 ## Current Work
 
-**Active: M5 T376 S5.**
-
-| Task | Compact progress |
-| --- | --- |
-
-## M5 T376 S5 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner-approved continuous M5 L3 implementation; accepted T376 S4 completes the final functional FDC command route and transfers the T376 task audit only. |
-| Objective | Audit T376 against its approved raw-IMG sidecar, Deleted-Data/Control-Mark and Scan closure requirements; close only proven scope and transfer every remaining Model-339 boundary. |
-| Non-goals | No code behavior change, new media format, firmware/media import, physical FDC/board timing admission, final Model-339 L3 decision, or next-task implementation. |
-| Reference Baseline | T376 S1 inventory, S2 raw-sidecar lifecycle, S3 Deleted-Data evidence, S4 Scan evidence, current Queue/proposal, T375 transfer audit and current developer artifact. |
-| Candidate Proposal | [8272A raw-IMG sidecar fidelity closure](../proposals/m5-8272a-img-sidecar-fidelity-closure.md). |
-| Files And ABI Surface | T376 history/proposal/evidence/index, Queue, Current and task-status records only; no runtime ABI or source change. |
-| Applicable Rules | Compare actual committed change history with proposal scope, preserve one authority per document, move closed proposal to history, retain external assets outside Git, and make no broader L3 claim. |
-| Verification | Review P1/P2 history and changed files; replay focused T376 smoke and governance gate; verify artifact identity/SHA, proposal retention, queue transfer, documentation links and clean worktree. |
-| Expected Markers | `M5:T376:S2:RAW-IMG-SIDECAR-LIFECYCLE:OK`; `M5:T376:S3:8272A-DELETED-DATA:OK`; `M5:T376:S4:8272A-SCAN:OK`. |
-| Asset Needs | No new asset; the local T376 developer artifact is verification evidence only, and ROMs/guest media remain external. |
-| Reporting Requirements | Record proposal-requirement matrix, artifact/replay result, residual timing and Model-339 receivers, proposal retention and exact next Queue receiver. |
-| Stop Conditions | Stop for owner direction if a proposal requirement lacks proof, a remaining gap cannot be transferred through the stated queue/debt process, or closure would imply Model-339 L3. |
-| Exit Criteria | T376 is either closed with every scope row proven/transferred and proposal retained in history, or remains explicitly open with the unmet row and receiver recorded. |
-| Original Owner Request | Continue through L3 before Windows; preserve raw IMG compatibility, no test-only input/media API and no false complete claim. |
-| Similar-Issue Sweep | Audit all T376 S1--S4 evidence, code/tests/CMake artifact identity, Queue/proposal/history/index/current entries and every residual FDC/media claim. |
+**No active implementation packet.** T376 remains open at its documented
+raw-IMG duplicate-CHRN stop condition; the next Queue candidate is not
+admissible until the owner resolves that boundary.
 
 ## Current Technical Baseline
 
@@ -47,7 +25,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T376 S4 | Accepted P1 `8ba77956`: 8272A Scan Equal/Low-or-Equal/High-or-Equal now use the retained media, DMA, IRQ, reset and cadence owners; the task-level closure audit remains. [Evidence](../etc/evidence/t376-s4-8272a-scan.md). |
+| T376 S5 | Accepted P1 `62e29252`: task audit proves raw-sidecar, Deleted-Data and Scan rows, but stops on duplicate-CHRN selection not representable by the approved pure raw-IMG model; owner decision required before final 5170 audit. [Audit](../etc/evidence/t376-s5-task-closure-audit.md). |
 | T375 | Closed at `07484727`: board/device phase work accepts source-backed service and logical-order contracts, transfers raw-IMG fidelity and source-exhausted physical board phases, and **does not accept Model-339 L3**. [Closure audit](../etc/evidence/t375-s26-task-closure-transfer-audit.md). |
 | T374 | Closed at `f742433c`: S1--S19 complete the selected Model-339 functional closure and preserve raw-IMG 765 Deleted/Control-Mark/Scan as explicit TODO debt. Board/device timing, final Model-L3, DeskPro 386, PC/XT and Windows 3.1 remain open. [Closure audit](../etc/evidence/t374-s19-task-closure-audit.md). |
 | T373 | Closed at `06246a8e`: S1--S4 freeze the three-machine capability ledger and receivers. **5170, DeskPro Model 40 and PC/XT 5160-268 L3 are not ready.** [Closure audit](../etc/evidence/t373-s4-task-closure-audit.md). |
