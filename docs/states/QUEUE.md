@@ -24,9 +24,8 @@ not allocate a numeric task.
 The [DeskPro 386 Model 40 closure context](../proposals/m5-80386-deskpro-386-l3-baseline.md)
 binds its five bounded candidates below without becoming a candidate itself.
 
-M5 first records the current IBM PC/AT 5170 audit outcome, freezes one
-machine-and-product capability ledger, and then closes the selected IBM PC/AT
-5170 80286 baseline to an evidence-backed, source-labelled model-L3
+M5 closes the selected IBM PC/AT 5170 80286 baseline to an evidence-backed,
+source-labelled model-L3
 representation. It next closes the 1986 original Compaq DeskPro 386 Model 40
 (DeskPro 386/16) 80386 baseline, admits a distinct 8088 CPU profile, and closes
 the IBM PC/XT 5160-268 8088 baseline. For each machine, profile/capability
@@ -46,7 +45,6 @@ gap, never hide one.
 Each candidate has a bounded primary-manual/probe contract; completing one
 does not silently upgrade a different device, profile, or Windows mode.
 
-1. [Baseline-machine and supported-device capability ledger](../proposals/m5-baseline-device-capability-ledger.md).
 1. [IBM PC/AT 5170 selected-device functional closure](../proposals/m5-5170-selected-device-functional-closure.md).
 1. [IBM PC/AT 5170 board and device phase-timing closure](../proposals/m5-5170-board-phase-timing-closure.md).
 1. [IBM PC/AT 5170 final model-L3 audit](../proposals/m5-5170-final-l3-audit.md).

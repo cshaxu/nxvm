@@ -8,7 +8,7 @@ with the current product support surface. It is an audit and allocation task:
 it may classify and transfer a capability, but it does not repair a device,
 assign a timing scalar, or make an L3-ready claim.
 
-## Active Progress
+## Accepted Work
 
 ### S1: current product-support and evidence inventory
 
