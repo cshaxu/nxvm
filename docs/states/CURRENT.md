@@ -2,24 +2,9 @@
 
 ## Current Work
 
-| Field | Required record |
+| Task | Compact progress |
 | --- | --- |
-| Identifier Mode | Continuation - M5 T375 S18. |
-| Admission And Approval | Owner-approved continuation of the L3 program. |
-| Objective | Record each explicit external virtual-time publication in the existing core machine trace, distinct from CPU retirement. |
-| Non-goals | No file recorder, replay player, host-clock policy, device mutation, or L3 closure. |
-| Reference Baseline | T375 S4-S7 and S17 retain one publication path and bounded Model-339 source batches. |
-| Candidate Proposal | [IBM PC/AT 5170 board and device phase-timing closure](../proposals/m5-5170-board-phase-timing-closure.md). |
-| Files And ABI Surface | Core trace enum and publication path plus focused trace proof; no new public mutable state. |
-| Applicable Rules | One core trace owner, no second recorder truth source, and normal execution/review lifecycle. |
-| Verification | Prove CPU retirement and explicit source batches emit distinct trace events with exact batch values and retained elapsed ordering. |
-| Expected Markers | `M5:T375:S18:EXTERNAL-TIME-TRACE:OK`. |
-| Asset Needs | None. |
-| Reporting Requirements | Record trace schema, event ordering, regression results, and replay/file-recording transfer. |
-| Stop Conditions | Stop if recording requires a second trace owner or unbounded raw artifact. |
-| Exit Criteria | The existing trace observes explicit source batches exactly once, focused proof passes, and remaining replay persistence is transferred. |
-| Original Owner Request | Continue complete L3 work before Windows 3.1 without test-only production APIs. |
-| Similar-Issue Sweep | Review all elapsed-time publishers and trace records for duplicate external-time representation. |
+| T375 S18 | Accepted P1 `8a4487e1`: explicit virtual-time publication now emits one distinct core trace event with its batch and post-publication elapsed tick; CPU-retire trace remains separate. Persistent recorder/replay and Model-339 physical timing remain open. [Evidence](../etc/evidence/t375-s18-external-time-trace.md). |
 
 ## Current Technical Baseline
 
