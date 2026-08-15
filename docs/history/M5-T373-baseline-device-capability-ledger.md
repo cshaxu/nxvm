@@ -21,3 +21,11 @@ Its [support inventory](../etc/evidence/t373-s1-current-support-inventory.md)
 distinguishes the generic 80386/EGA/ATA-capable PC/AT product descriptor from
 the Model-339 descriptor, and identifies unimplemented peripheral families and
 absent DeskPro/XT profiles without making a completeness or L3 claim.
+
+### S2: primary-source BOM qualification
+
+S2's [BOM and source ledger](../etc/evidence/t373-s2-baseline-bom-source-ledger.md)
+records only qualified machine identity, CPU, memory, firmware, input, storage
+and display facts for Model 339, DeskPro Model 40 and PC/XT 5160-268. It leaves
+every board/device field without a machine-specific primary fact unknown and
+transfers support-status classification to S3.
