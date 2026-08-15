@@ -899,6 +899,22 @@ static C_INT timing_80286_ldt_task_registers(C_VOID)
     return failed;
 }
 
+static C_INT timing_80286_fpu_interface_transfer(C_VOID)
+{
+    static const type_unsigned_8 fninit[] = { 0xdbu,0xe3u };
+    static const type_unsigned_8 fwait[] = { 0x9bu };
+    timing_80286_state state = { 0u, 0u, 0u };
+    core_machine *machine = STD_NULL;
+    C_INT failed = !timing_80286_prepare(&machine, &state);
+
+    if (!failed) failed |= !timing_80286_load(machine, fninit, sizeof(fninit)) ||
+        !timing_80286_run(machine, &state, 1u, 1u);
+    if (!failed) failed |= !timing_80286_load(machine, fwait, sizeof(fwait)) ||
+        !timing_80286_run(machine, &state, 1u, 1u);
+    core_machine_destroy(machine);
+    return failed;
+}
+
 static C_INT timing_80286_memory(C_VOID)
 {
     static const type_unsigned_8 direct_read[] = { 0x8bu, 0x0eu, 0x00u, 0x10u };
@@ -1149,6 +1165,7 @@ C_INT main(C_VOID)
     if (timing_80286_lmsw()) return 18;
     if (timing_80286_table_control()) return 19;
     if (timing_80286_ldt_task_registers()) return 20;
+    if (timing_80286_fpu_interface_transfer()) return 21;
     if (timing_80286_memory()) return 2;
     if (timing_80286_control_ports()) return 3;
     if (timing_80286_boundaries()) return 4;

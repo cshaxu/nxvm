@@ -2,11 +2,26 @@
 
 ## Current Work
 
-T368 remains open. S6 is accepted at `1366fcc2`: defined string/REP and
-already-admitted segment forms retain their existing owners; source-undefined
-successful prefix paths remain one explicit bus/phase transfer rather than an
-invented scalar. S7 receives x87/WAIT/default and negative-route
-reconciliation. No bus, device or 5170 L3 work is closed.
+## M5 T368 S7 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; T368 S6 accepted at `82923655`. |
+| Admission And Approval | The owner authorized continued L3 work; S4--S6 reduce the final 80286 CPU-ledger receiver to x87/WAIT/default and non-retiring paths. |
+| Objective | Reconcile 80286 `WAIT`/ESC interface disposition, default fallback and negative forms; rerun the whole 80286 publisher sweep and complete the T368 CPU-ledger closure audit. |
+| Non-goals | No x87 execution expansion, no allocation for delivered faults, no bus/device/physical time, profile/topology change or IBM 5170 L3 claim. |
+| Reference Baseline | `82923655`, S4--S6 evidence, Intel 210498-005 Appendix B, retained x87/WAIT provider tests, source policy and the existing x87 TODO admission boundary. |
+| Candidate Proposal | [80286 successful-retirement timing closure](../proposals/m5-80286-retirement-timing-closure.md). |
+| Files And ABI Surface | Focused 80286/x87/negative regression or existing owner proof, final evidence/status/history only; no public ABI. |
+| Applicable Rules | Execution closure audit/evidence; Intel authority first; one shared publisher; no invented coprocessor/fault timing; exact Queue/TODO transfer. |
+| Verification | 80286 timing ledger, x87 escape/interface regressions, static publisher check, documentation governance and diff check; record the known full-gate blocker without claiming it passed. |
+| Expected Markers | ESC/WAIT no-FPU and `#NM` paths remain non-retiring; no default successful 80286 fallback is unclassified; each remaining successful context has an accepted scalar or exact transfer. |
+| Asset Needs | No guest media, ROM, binary or imported source. |
+| Reporting Requirements | Record each default/negative/x87 route, its successful-retirement status, timing disposition, existing test owner and downstream admission condition. |
+| Stop Conditions | Stop and transfer if a purportedly successful x87/WAIT context lacks an approved execution/profile contract or Intel does not determine the required context. |
+| Exit Criteria | Pushed P1/P2 closes T368's CPU retirement ledger with all residual successful contexts allocated or exactly transferred; T368 must still state that bus/device/5170 L3 work is open. |
+| Original Owner Request | Continue comprehensive L3 execution before Windows 3.1, following the Queue dependency chain. |
+| Similar-Issue Sweep | Sweep all 80286 classifier fallbacks, `WAIT`, `FPU_ESCAPE`, FPU profile binding, exception-delivery publication and the focused negative regressions. |
 
 ## Current Technical Baseline
 
