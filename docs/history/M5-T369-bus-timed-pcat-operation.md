@@ -57,3 +57,10 @@ transferred to the ordered device-service, phase and final-audit candidates.
 The [closure audit](../etc/evidence/t369-s4-pcat-bus-stage-closure-audit.md)
 retains the artifact identity and explicitly concludes that 5170 Model-339 L3
 is still open.
+
+## Task Closure
+
+T369 closes at P1 `08a64bea` after the S4 audit confirms that every admitted
+logical bus-stage boundary has one owner or a precise downstream receiver. The
+[retained proposal](M5-T369-bus-timed-pcat-operation-proposal.md) preserves its
+original candidate context. This closure does not assert 5170 Model-339 L3.

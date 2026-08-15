@@ -79,7 +79,7 @@ form a second timing truth source.
 
 | Boundary | Receiver |
 | --- | --- |
-| Memory/I/O wait states, bus arbitration, HOLD, and DMA physical availability | Queued [bus-timed PC/AT operation](../../proposals/m5-bus-timed-pcat-operation.md). |
+| Memory/I/O wait states, bus arbitration, HOLD, and DMA physical availability | T369 closes logical availability only; physical values transfer to selected-profile phase refinement. [Retained proposal](../../history/M5-T369-bus-timed-pcat-operation-proposal.md). |
 | Prefetch, bus phases, exact interrupt/fault cycle costs, alignment/caching microstate, and pin waveforms | Queued [cycle-exact selected profile](../../proposals/m5-cycle-exact-selected-profile.md). |
 | x87 instruction/timing | Explicitly excluded by owner request. |
 | Unselected CPU forms | Later timing-corpus admission only if backed by exact primary rows; otherwise retain to the applicable future receiver. |

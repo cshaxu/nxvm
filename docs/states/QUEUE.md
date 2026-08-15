@@ -42,7 +42,6 @@ does not silently upgrade a different device, profile, or Windows mode.
 
 1. [VM profile-contract ownership migration](../proposals/m5-vm-profile-contract-ownership.md).
 1. [80286 successful-retirement timing closure](../proposals/m5-80286-retirement-timing-closure.md).
-1. [Bus-timed PC/AT operation](../proposals/m5-bus-timed-pcat-operation.md).
 1. [PC/AT device service-timing corpus](../proposals/m5-device-service-timing-corpus.md).
 1. [Selected-profile model-L3 phase refinement](../proposals/m5-cycle-exact-selected-profile.md).
 1. [IBM PC/AT 5170 model-L3 closure audit](../proposals/m5-l3-machine-closure-audit.md).

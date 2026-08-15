@@ -15,7 +15,7 @@ evidence.
 | Four CPU profiles and named state closure | T343 accepted form/state program. | Accepted baseline; no CPU-family re-opening in T356. |
 | Selected PC/AT devices and deterministic L3 | T346--T354 histories, S1 ledger, and 234 discovered current-gate tests. | Accepted only for selected event/transaction order. |
 | CPU instruction time | `clock.c` consumes executor elapsed ticks but no profile/form cost ledger exists. | Open: [instruction-timed execution](../../proposals/m5-instruction-timed-execution.md) is first receiver. |
-| PC/AT bus availability and wait states | T354 transactions are synchronous and traceable, not reservations/durations. | Open: [bus-timed PC/AT operation](../../proposals/m5-bus-timed-pcat-operation.md) depends on instruction timing. |
+| PC/AT bus availability and wait states | T354 transactions are synchronous and traceable, not reservations/durations. | T369 closes the logical availability stage; remaining physical values transfer to selected-profile phase refinement. [Retained proposal](../../history/M5-T369-bus-timed-pcat-operation-proposal.md). |
 | Cycle exactness | No phase, prefetch, bus ownership or device microstate representation exists. | Open: [cycle-exact selected profile](../../proposals/m5-cycle-exact-selected-profile.md) depends on both predecessors. |
 | Unselected PC/AT peripherals | NMI producer, PPI/speaker, serial/parallel/game and broader AUX/video remain corpus-gated TODO items. | Deliberately deferred; none is misrepresented as selected or implemented. |
 | Storage/media breadth | Selected FDC/ATA readiness is accepted; sparse/WASM backing, LBA48, extended IDE and broad errors remain TODO. | Deliberately deferred to its named high-priority backing admission. |
