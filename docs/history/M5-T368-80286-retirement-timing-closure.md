@@ -41,3 +41,12 @@ state before loading the GDT and entering protected CPL0.  The existing
 Appendix-B register/memory `3/6` rows then retire; the executor's CPL check was
 not changed.  S3 is accepted at `e6b78987`; prefix/default successful routes
 remain the next T368 CPU receiver, and no 5170 L3 claim is made.
+
+### S4: Prefix and default reachability
+
+S4 reduces the remaining one-tick possibilities to three finite receivers:
+successful residual 80286 system forms, legal prefixes that earlier timing
+owners do not own, and x87/WAIT/default or negative boundaries.  The static
+T366 S10 publisher inventory still passes.  S4 is accepted at `7dc3a9d9`;
+S5--S7 must resolve these receivers before T368 may close, and no 5170 L3
+claim is made.
