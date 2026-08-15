@@ -38,3 +38,12 @@ records the owner-local `F0h`--`FFh` command handling, preserving D1h's
 persistent output-port/A20 route and assigning no pulse duration. Fresh KBC,
 Model-339 composition and AUX regressions pass; other selected controller
 functional gaps remain in T374.
+
+### S4: FDC functional contract audit
+
+S4's [FDC functional contract audit](../etc/evidence/t374-s4-fdc-functional-contract-audit.md)
+reconciles the selected controller command/state surface against the uPD765
+primary documentation and current FDC owner. It selects missing
+Ready-transition attention IRQ / `Sense Interrupt Status` delivery as the next
+bounded owner-local functional repair. It preserves disk-change versus Ready
+distinction and transfers physical signal, DMA and drive timing unchanged.
