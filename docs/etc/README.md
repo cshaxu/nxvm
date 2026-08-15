@@ -218,6 +218,7 @@ principal documents named in [docs/README.md](../README.md).
 | `evidence/t374-s17-model339-kbc-keyboard-functional-audit.md` | Verification owner | T374 S17 Model-339 8042/101-key keyboard function matrix, IRQ1-only owner sweep, source boundary and native-Set-2/translation repair selection. Retain with T374 history. |
 | `evidence/t374-s18-native-keyboard-input-boundary.md` | Verification owner | T374 S18 native keyboard-to-8042 production boundary, Set-2/Set-1 translation scope, caller sweep and focused proof. Retain with T374 history. |
 | `evidence/t374-s19-task-closure-audit.md` | Verification owner | T374 S19 selected-device functional closure, raw-IMG 765 boundary, timing receiver and no-L3 audit. Retain with T374 history. |
+| `evidence/t375-s2-model339-rtc-pit-clock-contract.md` | Verification owner | T375 S2 primary-source Model-339 RTC/PIT rational clock contract, composition/reset proof, and retained board/phase transfer boundary. Retain while T375 is open. |
 | `evidence/t375-s1-model339-timing-inventory.md` | Verification owner | T375 S1 Model-339 source-labelled timing inventory, current generic-ratio audit, primary RTC repair selection, and bounded PIT/DMA/FDC/KBC/CGA receivers. Retain with active T375 history. |
 | `operations/` | Execution, source, and release owners | Toolchain, policy, templates, release procedure, and closure material. |
 | `research/` | Source owner | Provenance, external references, and non-product research. |

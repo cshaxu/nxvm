@@ -175,12 +175,15 @@ static const vm_profile_default_pc_at_descriptor ibm_5170_model_339_descriptor =
     CORE_MACHINE_FPU_PROFILE_NONE,
     1u,
     { 1u, 0u, 0u, 0u, 0u, 0u },
-    { { 1u, 1u, 0u }, { 1u, 4u, 0u }, { 1u, 1u, 0u }, { 1u, 1u, 0u },
-        { 1u, 1u, 0u }, { 1u, 1u, 0u } },
+    /* IBM 6280099, System Board 1-22 and 1-57: 8254 at 1.193182 MHz,
+     * RTC at 32.768 kHz. Ratios are to this profile's nominal 8 MHz CPU
+     * source; they do not model availability, waits, or host elapsed time. */
+    { { 1u, 1u, 0u }, { 596591u, 4000000u, 0u }, { 64u, 15625u, 0u },
+        { 1u, 1u, 0u }, { 1u, 1u, 0u }, { 1u, 1u, 0u } },
     0u,
     0u,
     0u,
-    50000u,
+    32768u,
     { 48u, 8u, 8u },
     { CORE_MACHINE_VADP_EGA_APERTURE_BASE, CORE_MACHINE_VADP_EGA_APERTURE_BYTES,
         0x03u, 0x00u, 0x0fu, 0x02u, TYPE_TRUE },

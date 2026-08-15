@@ -79,6 +79,9 @@ target_link_libraries(vm-pcat-composition-s4-smoke PRIVATE vm-composition)
 add_executable(vm-ibm-5170-model-339-composition-smoke
     tests/machine/vm_ibm_5170_model_339_composition_smoke.c)
 target_link_libraries(vm-ibm-5170-model-339-composition-smoke PRIVATE vm-composition)
+add_executable(vm-model-339-clock-contract-smoke
+    tests/machine/vm_model_339_clock_contract_smoke.c)
+target_link_libraries(vm-model-339-clock-contract-smoke PRIVATE vm-composition)
 add_executable(vm-ibm-5170-model-339-cga-topology-smoke
     tests/machine/vm_ibm_5170_model_339_cga_topology_smoke.c)
 target_link_libraries(vm-ibm-5170-model-339-cga-topology-smoke PRIVATE vm-composition)

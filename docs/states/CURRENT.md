@@ -2,6 +2,27 @@
 
 ## Current Work
 
+## M5 T375 S2 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; T375 S1 is accepted in the compact progress row below. |
+| Admission And Approval | Owner: user, continuing the owner-approved pre-Windows Model-339 L3 program and direct instruction to continue work; the T375 Queue candidate was admitted as T375 before S1. Scope is restricted to the primary-source-backed RTC and PIT clock relations allocated by S1. |
+| Objective | Replace the Model-339 descriptor's generic RTC and PIT cadence with rational clock-domain relations from its nominal 8 MHz CPU source, and align its RTC second divisor with IBM's selected 32.768-kHz base. Prove descriptor-to-composition propagation and deterministic reset-phase conversion without claiming board availability, host time, or final L3. |
+| Non-goals | No CPU wait/prefetch/RAM/ROM/ISA timing, DMA scalar, FDC/KBC/CGA scalar, IRQ/INTA waveform, HLT/external-unavailability clock redesign, device functional repair, raw-IMG sidecar work, ROM/media import, host-time coupling, or final 5170 L3 decision. |
+| Reference Baseline | Accepted T375 S1 `6ecfd316` / `4f4fa77f`; frozen Model 339: 8 MHz Type-3, Rev.3 BIOS configuration, 512 KiB, CGA, no fixed disk. IBM PC/AT Technical Reference March 1986, 6280099, System Board 1-22 and 1-57. |
+| Candidate Proposal | [IBM PC/AT 5170 board and device phase-timing closure](../proposals/m5-5170-board-phase-timing-closure.md). |
+| Files And ABI Surface | `src/vm/profile/default_profile/pc_at_profile.c`; profile/composition smoke and rational-clock test coverage; `docs/etc/evidence/`; `docs/etc/README.md`; this packet. No new public ABI or test-only API. |
+| Applicable Rules | `docs/rules/ARCHITECTURE.md`: one profile-to-core timing owner and no parallel device path; evidence: descriptor `clock_plan` remains the sole copied contract. `docs/rules/CODING.md`: bounded named constants and no test-only public surface; evidence: focused existing-owner tests. `docs/rules/DOCUMENT.md`: evidence is supporting only and indexed; evidence: indexed S2 record. `docs/rules/EXECUTION.md`: one bounded packet/P, source-labelled proof, self-review and independent acceptance. |
+| Verification | Build and run the focused default-profile, Model-339 composition, and rational-clock smoke targets; prove Model-339 values independently from the generic descriptor; run documentation governance, `git diff --check`, and changed-surface/similar-issue review. Record any unrelated full-build limitation truthfully. |
+| Expected Markers | Existing focused test markers plus `M5:T375:S2:MODEL339-CLOCK-CONTRACT:OK` from a new focused contract smoke. |
+| Asset Needs | No asset required. Research is documentary only; no firmware, ROM, media, binary, or third-party source may enter Git. |
+| Reporting Requirements | Report the source-labelled two-rate decision, code/test/evidence files, pushed P1, focused verification, and retained timing transfers. Report any material conflict before expanding scope. |
+| Stop Conditions | Stop and transfer if the profile contract cannot express a rational conversion without a second timing owner, if a source contradicts the selected rates, if a test requires host time or excessive full-machine replay, or if an unresolved functional defect appears. |
+| Exit Criteria | Model-339 alone exposes RTC `32768/8000000` (reduced rational form) and PIT `1193182/8000000` (reduced rational form), RTC uses 32768 source ticks per second, reset phase is deterministic, targeted propagation/conversion tests pass, evidence records source and limits, and all non-goals remain transferred. |
+| Original Owner Request | Owner-directed continuation: implement the current plan to full L3 precision and stop before Windows 3.1; 86Box/MAME/PCjs are only secondary behavior cross-checks when primary manuals do not determine an instruction timing. |
+| Similar-Issue Sweep | Inspect generic/default PC/AT and every clock-plan consumer/test. The generic profile must not inherit Model-339 board facts; DMA/FDC/KBC/VADP remain unchanged and S1-labelled reference-exhausted. Search for duplicated RTC/PIT divisors and parallel timing owners before delivery. |
+
 ## Current Technical Baseline
 
 - **Current developer artifact:** T369 S4 `vm-0-5-0369` /
