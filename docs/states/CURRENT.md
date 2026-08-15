@@ -2,27 +2,6 @@
 
 ## Current Work
 
-## M5 T375 S5 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation; T375 S4 is accepted in the compact progress row below. |
-| Admission And Approval | Owner: user, continuing the approved pre-Windows L3 program. T375 S4 explicitly transfers Model-339 composition source/pacing policy to this bounded S. |
-| Objective | Audit the VM composition/runner/platform timing facilities and select a deterministic, replayable Model-339 virtual-source-tick policy for HLT and non-retirement intervals. Define the exact source, conversion ownership, pause/reset behavior, lost-time behavior and proof needed for a later implementation S. |
-| Non-goals | No code or public API change in this S; no hidden host-duration-to-board-fact conversion, host-time claim, CPU timing change, board/device scalar, functional repair, raw-IMG sidecar work, ROM/media import, final L3 decision, or selection of another machine profile. |
-| Reference Baseline | Accepted T375 S1--S4 (`4f4fa77f`, `3ebbe698`, `4c1d98b7`, `2eedff53`), current VM runner and core explicit machine-time operation. |
-| Candidate Proposal | [IBM PC/AT 5170 board and device phase-timing closure](../proposals/m5-5170-board-phase-timing-closure.md). |
-| Files And ABI Surface | Read-only audit of VM runner/control/platform timing and core time interfaces; add indexed evidence and status only. |
-| Applicable Rules | `docs/rules/ARCHITECTURE.md`: product composition owns host policy while core owns machine mutation; evidence: one named adapter-to-composition-to-core route. `docs/rules/CODING.md`: no speculative duplicate clock facade. `docs/rules/DOCUMENT.md`: evidence is supporting material. `docs/rules/EXECUTION.md`: bounded audit and explicit later implementation receiver. |
-| Verification | Sweep host timing/sleep facilities, runner/control lifecycle transitions, core time callers and tests; run documentation governance and `git diff --check`. |
-| Expected Markers | `M5:T375:S5:MODEL339-VIRTUAL-TIME-POLICY:OK` in evidence. |
-| Asset Needs | No asset, ROM, media, binary or third-party code required. |
-| Reporting Requirements | Record the chosen policy and rejected alternatives, exact owner route, deterministic replay requirement, and the next implementation/proof boundary. |
-| Stop Conditions | Stop and transfer if the source requires an unbounded host timer, a new cross-module public clock facade without an owner, unrecorded nondeterminism, or an unsupported physical rate. |
-| Exit Criteria | Evidence selects one bounded source-policy contract or explicitly establishes a necessary owner decision, maps pause/reset/HLT/overflow/replay behavior, and allocates a single implementation S without misrepresenting host pacing as board timing. |
-| Original Owner Request | Owner-directed continuation: implement the current plan to full L3 precision and stop before Windows 3.1; use 86Box/MAME/PCjs only as secondary cross-checks when primary manuals do not determine an instruction timing. |
-| Similar-Issue Sweep | Inspect all sleep/wait/monotonic-clock calls, runner loops, platform run handles, control pause/reset paths, source tick fields, elapsed-time callers, trace/replay facilities and test fixtures. |
-
 ## Current Technical Baseline
 
 - **Current developer artifact:** T369 S4 `vm-0-5-0369` /
@@ -42,7 +21,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T375 S4 | Accepted P1 `91539339`: halted polling no longer re-retires instruction cost; one production virtual-time operation reuses the scheduler while Model-339 composition source policy remains open. [Evidence](../etc/evidence/t375-s4-explicit-machine-time.md). |
+| T375 S5 | Accepted P1 `5832334e`: Model-339 virtual source ticks must be an injected composition capability; host sleep is rejected as a timing source and S6 owns the binding/proof. [Policy](../etc/evidence/t375-s5-model339-virtual-time-policy.md). |
 | T374 | Closed at `f742433c`: S1--S19 complete the selected Model-339 functional closure and preserve raw-IMG 765 Deleted/Control-Mark/Scan as explicit TODO debt. Board/device timing, final Model-L3, DeskPro 386, PC/XT and Windows 3.1 remain open. [Closure audit](../etc/evidence/t374-s19-task-closure-audit.md). |
 | T373 | Closed at `06246a8e`: S1--S4 freeze the three-machine source-labelled capability ledger and exact functional/timing/current-product receivers. **5170, DeskPro Model 40 and PC/XT 5160-268 L3 are not ready.** The next candidate is 5170 selected-device functional closure. [Closure audit](../etc/evidence/t373-s4-task-closure-audit.md). |
 | T372 | Closed at `3f56c72c`: S1--S8 establish that Model 339 has selected logical ownership and deterministic ordering, but lacks selected-device functional closure and source-backed board/phase timing. **5170 model-L3 is not ready.** [Closure audit](../etc/evidence/t372-s8-task-closure-transfer-audit.md). |
