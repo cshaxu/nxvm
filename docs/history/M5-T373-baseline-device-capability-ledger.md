@@ -29,3 +29,12 @@ records only qualified machine identity, CPU, memory, firmware, input, storage
 and display facts for Model 339, DeskPro Model 40 and PC/XT 5160-268. It leaves
 every board/device field without a machine-specific primary fact unknown and
 transfers support-status classification to S3.
+
+### S3: classified capability and ownership ledger
+
+S3's [classified capability ledger](../etc/evidence/t373-s3-baseline-capability-classification.md)
+reconciles the S1 implementation inventory with the S2 machine BOM. It proves
+that no selected baseline capability is complete, distinguishes 5170's partial
+logical foundation from the empty DeskPro/XT compositions, and assigns every
+retained generic product capability to the current-product closure rather than
+to a baseline by inference. T373 still requires its task-level closure audit.
