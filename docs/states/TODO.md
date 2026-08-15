@@ -13,16 +13,6 @@ boundaries below. These entries remain unplanned until a later approved task
 adopts them.
 
 
-## Verification Debt
-
-- [ ] **T344 direct-constructor inventory reconciliation (`TODO(High)`).** The
-  configured current gate currently finds 67 `tests/machine` sources that call
-  `core_machine_create`, while `verify_t344_historical_fixture_shapes.cmake`
-  and its classified inventory still require 66.  Admit a narrowly scoped
-  verification task to identify the extra tracked fixture, classify it in the
-  historical shape inventory, and rerun the full current gate.  Do not weaken
-  the count, omit the fixture, or use unrelated product changes as proof.
-
 ## Hardware And Compatibility Debt
 
 - [ ] **Advanced 8042 AUX protocol (`TODO(Medium)`).** T267 adds bounded

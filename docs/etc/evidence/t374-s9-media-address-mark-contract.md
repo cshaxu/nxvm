@@ -63,13 +63,15 @@ M5:T274:S2:MANTLE-SHAPE:OK
 M5:T366:S7:MODEL339-FIRMWARE-FDC-TOPOLOGY:OK
 ```
 
-The post-correction configured `current-gates-gcc` invocation rebuilt the
-current-gate graph but failed at the unrelated
-`verify-t344-historical-fixture-shapes` static inventory: it expects 66 direct
-machine-constructor fixtures and currently finds 67.  S9 changes no
-`core_machine_create` call or T344 inventory file; the mismatch is recorded as
-separate verification debt rather than being hidden by the focused passes.
-Documentation governance and `git diff --check` pass for the final delivery.
+The post-correction configured `current-gates-gcc` invocation exposed a stale
+T344 static inventory: the tracked
+`core_machine_planar_parity_nmi_s3_smoke.c` fixture already called
+`core_machine_create` but was absent from the retained list.  The gate now
+classifies that existing T366 planar-parity fixture explicitly and requires 67
+rather than silently ignoring it.  The same full-gate replay reconciled the
+T359 receiver-name assertion and T345 retained-owner count with their current,
+fully classified ledgers.  `current-gates-gcc` now passes, as do documentation
+governance and `git diff --check`.
 
 ## Boundary And Transfer
 

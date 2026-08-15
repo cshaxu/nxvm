@@ -278,7 +278,7 @@ foreach(t359_s7_anchor IN ITEMS
     "## Exact transfers"
     "T360 four-profile Intel timing source reconciliation"
     "Cycle-exact selected profile"
-    "Bus-timed PC/AT operation"
+    "T369 logical HOLD/DMA ownership"
     "PC/AT device service-timing corpus"
     "Broaden present x87 TODO"
     "no second elapsed-tick publisher")

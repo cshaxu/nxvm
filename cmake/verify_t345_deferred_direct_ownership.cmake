@@ -132,14 +132,14 @@ list(LENGTH project_t345_s2_targets project_t345_s2_target_count)
 if(NOT project_t345_seen_count EQUAL project_t345_expected_count)
     message(FATAL_ERROR "T345 ownership matrix has ${project_t345_seen_count} rows; expected ${project_t345_expected_count}.")
 endif()
-if(NOT project_t345_owner_test_count EQUAL 134 OR
+if(NOT project_t345_owner_test_count EQUAL 138 OR
         NOT project_t345_embedded_count EQUAL 6 OR
         NOT project_t345_type_count EQUAL 1)
     message(FATAL_ERROR
         "Unexpected T345 ownership counts: tests=${project_t345_owner_test_count}, embedded=${project_t345_embedded_count}, type=${project_t345_type_count}.")
 endif()
-if(NOT project_t345_s2_target_count EQUAL 131)
-    message(FATAL_ERROR "T345 S2 target inventory has ${project_t345_s2_target_count} entries; expected 131.")
+if(NOT project_t345_s2_target_count EQUAL 135)
+    message(FATAL_ERROR "T345 S2 target inventory has ${project_t345_s2_target_count} entries; expected 135.")
 endif()
 list(LENGTH project_t345_s3_entries project_t345_s3_entry_count)
 if(NOT project_t345_safe_production_count EQUAL 2 OR
@@ -169,4 +169,4 @@ foreach(project_t345_s4_residual_key IN LISTS project_t345_s4_residual_keys)
         message(FATAL_ERROR "Unexpected T345 S4 residual entry: ${project_t345_s4_residual_key}")
     endif()
 endforeach()
-message(STATUS "T345 deferred ownership passed: ${project_t345_seen_count} rows (134 owner tests, 6 embedded production tests, 1 type foundation, 2 safely separable production, 46 mixed/inherited production, 52 exact residual production entries).")
+message(STATUS "T345 deferred ownership passed: ${project_t345_seen_count} rows (138 owner tests, 6 embedded production tests, 1 type foundation, 2 safely separable production, 46 mixed/inherited production, 52 exact residual production entries).")
