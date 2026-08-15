@@ -36,6 +36,9 @@ static C_INT vm_model_339_clock_contract_is_selected(C_VOID)
         model_339->clock_plan.vadp.denominator != 1408u ||
         model_339->clock_plan.vadp.reset_phase != 0u ||
         model_339->rtc_ticks_per_second != 32768u ||
+        model_339->kbc_typematic_initial_ticks != 4000000u ||
+        model_339->kbc_typematic_repeat_ticks != 800000u ||
+        model_339->kbc_command_response_ticks != 0u ||
         generic->clock_plan.pit.numerator != 1u ||
         generic->clock_plan.pit.denominator != 4u ||
         generic->clock_plan.rtc.numerator != 1u ||
@@ -52,6 +55,9 @@ static C_INT vm_model_339_clock_contract_is_selected(C_VOID)
         session->core_machine->vadp_clock.denominator != 1408u ||
         session->core_machine->vadp_clock.reset_phase != 0u ||
         session->core_machine->shared_rtc.ticks_per_second != 32768u;
+    failed |= session->core_machine->kbc_typematic_initial_ticks != 4000000u ||
+        session->core_machine->kbc_typematic_repeat_ticks != 800000u ||
+        session->core_machine->kbc_command_response_ticks != 0u;
     failed |= core_machine_clock_domain_advance(&session->core_machine->pit_clock,
         4000000u) != 596591u ||
         core_machine_clock_domain_advance(&session->core_machine->rtc_clock,
@@ -75,5 +81,6 @@ C_INT main(C_VOID)
     if (vm_model_339_clock_contract_is_selected()) return 1;
     STD_PRINTF("M5:T375:S2:MODEL339-CLOCK-CONTRACT:OK\n");
     STD_PRINTF("M5:T375:S13:MODEL339-CGA-REFERENCE-CONTRACT:OK\n");
+    STD_PRINTF("M5:T375:S22:MODEL339-TYPEMATIC:OK\n");
     return 0;
 }

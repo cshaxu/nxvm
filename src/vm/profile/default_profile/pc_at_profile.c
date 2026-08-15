@@ -182,8 +182,10 @@ static const vm_profile_default_pc_at_descriptor ibm_5170_model_339_descriptor =
      * waits, monitor output, or host elapsed time. */
     { { 1u, 1u, 0u }, { 596591u, 4000000u, 0u }, { 64u, 15625u, 0u },
         { 315u, 1408u, 0u }, { 1u, 1u, 0u }, { 1u, 1u, 0u } },
-    0u,
-    0u,
+    /* IBM 6280099 Keyboard: default 500 ms delay and 10 cps typematic,
+     * each with +/-20 percent tolerance. These are nominal Model-339 values. */
+    4000000u,
+    800000u,
     0u,
     32768u,
     { 48u, 8u, 8u },
