@@ -2,29 +2,13 @@
 
 ## Current Work
 
-## M5 T380 S1 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | New |
-| Admission And Approval | Owner approved this priority insertion on 2026-08-15: expose a chooser at `SESSION OPEN` so users need not remember internal profile names; T379 is closed and T380 is the next identifier. |
-| Objective | Make the retained NXVM Console visibly list its supported session profiles, let an optionless `SESSION OPEN` select one by short number, support direct `--profile` selection, and truthfully identify the chosen profile in session output. |
-| Non-goals | No profile/device/timing/firmware/ROM/media change; no external asset; no test-only API; no DeskPro, XT or Windows work; no change to the startup default session. |
-| Reference Baseline | T379 accepted Model-339 descriptor and constraints; current `core_product_session_command_execute`, VM session factory, retained Console input loop, profile selection smoke coverage and `m5-session-profile-selection` proposal. |
-| Candidate Proposal | [NXVM session profile selection](../proposals/m5-session-profile-selection.md). |
-| Files And ABI Surface | VM Console interaction, VM session-factory parsing and snapshot detail, focused product/session tests, CMake registration, proposal/history/evidence/current/queue records. Core stays profile-neutral and public cross-module interfaces may change only if a bounded necessity is proven. |
-| Applicable Rules | VM composition owns concrete profile choice; Console remains the retained interactive product surface; no test-only production API; Model-339 descriptor owns its strict identity; all mutable selection/configuration has one production path; source/coding/documentation/execution rules apply. |
-| Verification | Add deterministic console/provider tests for candidate display, numeric and named choice, default behavior, invalid choice and Model-339 override rejection; run focused profile/session/console smokes, `current-gates-gcc`, documentation governance, and actual-diff review. |
-| Expected Markers | A T380 session-profile selection marker; existing Model-339 composition/clock/profile markers; no new firmware or device marker. |
-| Asset Needs | None. Local ROMs and guest IMG files remain external and are not required to create or verify profiles. |
-| Reporting Requirements | Record the exact menu, accepted names/numbers, selected-session visibility, default compatibility, constraint rejection, test results and user-facing 5170 launch steps. |
-| Stop Conditions | Stop for owner direction if the desired interaction requires changing core's profile-neutral contract, exposes machine-local assets, changes a Model-339 identity constraint, or needs a broader UX/CLI redesign. |
-| Exit Criteria | An ordinary Console user can discover and select Model-339 without recalling its internal name; explicit selection is scriptable; generic default behavior is retained; descriptor constraints remain enforced; all required proof and review pass. |
-| Original Owner Request | Immediately insert a profile-selection task: `SESSION OPEN` should list candidate profiles and let the user choose, rather than requiring them to remember and type a specific profile name. |
-| Similar-Issue Sweep | Inspect every current `vm_session_config` construction, provider option parse path, Console session command/help/list output and profile-specific generic override route; repair the common session-selection mechanism or record any excluded production route. |
+**No active implementation packet.** T380 closes the owner-approved retained
+Console profile-selection insertion. DeskPro 386, 8088-XT and Windows 3.1
+remain unstarted.
 
 | Task | Compact progress |
 | --- | --- |
+| T380 | Closed at `987bdd96`: `SESSION OPEN` now discovers and selects the default PC/AT or strict Model-339 profile; named selection, state visibility and Model-339 constraint rejection are proven. [Evidence](../etc/evidence/t380-s1-session-profile-selection.md). |
 | T377 | Closed at `1cdd5110`: Model-339 is not L3-ready until the native input/global-gate repair and independent re-audit complete. [Audit](../etc/evidence/t377-s1-model339-final-l3-audit.md). |
 | T378 | Closed at `42f0402a`: native input proof, virtual-time dependency direction and affected gates are repaired; no Model-339 L3 decision is made. [Evidence](../etc/evidence/t378-s1-native-ingress-boundary-repair.md). |
 | T379 | Closed at `9099d11d`: independent full-gate and focused re-audit accepts the frozen Model-339 deterministic L3 contract. [Audit](../etc/evidence/t379-s1-model339-final-reaudit.md). |
@@ -70,6 +54,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T380 S1 | Accepted P2 `987bdd96`: retained Console profile discovery/selection is usable, selected-state proof is explicit, and Model-339 identity constraints remain enforced. [Evidence](../etc/evidence/t380-s1-session-profile-selection.md). |
 | T378 | Closed at `42f0402a`: production ingress proof and virtual-time ownership are corrected without a test-only API; Model-339 re-audit remains the sole L3 decision receiver. [Evidence](../etc/evidence/t378-s1-native-ingress-boundary-repair.md). |
 | T379 | Closed at `160a34e1`: independent re-audit accepts the frozen Model-339 deterministic L3 contract. [Audit](../etc/evidence/t379-s1-model339-final-reaudit.md). |
 | T377 | Closed at `1cdd5110`: final audit rejects premature Model-339 L3 acceptance; its shared input/global-gate repair and independent re-audit successors are queued. [Audit](../etc/evidence/t377-s1-model339-final-l3-audit.md). |

@@ -42,4 +42,4 @@ T380 builds `build/output/nxvm_0_5_0380.exe`.
 
 | SHA-256 | Source commit |
 | --- | --- |
-| `35B25B9497ADBFDE4B3E53FE9C78E2277732D9B8612A96EEE9A7F14E5F7C4D4A` | recorded by the implementation commit |
+| `35B25B9497ADBFDE4B3E53FE9C78E2277732D9B8612A96EEE9A7F14E5F7C4D4A` | P1 `f00478fb`; P2 `987bdd96` adds selection-state proof only |
