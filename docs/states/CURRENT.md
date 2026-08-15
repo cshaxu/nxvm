@@ -2,27 +2,6 @@
 
 ## Current Work
 
-## M5 T372 S3 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation; T372 S2 accepted at `36d23881`. |
-| Admission And Approval | The owner-approved Model-339 L3 audit continues.  The owner permits 86Box, MAME and PCjs as secondary sources only when primary manuals provide a range or no deterministic timing. |
-| Objective | Determine whether one revision-pinned, no-protected-media PCjs 5170 instance can exactly represent the locked Model-339 field configuration and support one reproducible observation design for a primary-source-open boundary. |
-| Non-goals | No copied reference code, ROM, firmware or guest media; no import, runtime dependency, timing implementation, guessed scalar, emulator-as-IBM-authority claim, MAME/86Box broad comparison, 80386/8088 or Windows work. |
-| Reference Baseline | T372 S1 readiness matrix, accepted S2 admissibility matrix, T366 Model-339 lock, source policy, IBM/Intel/controller manuals and PCjs public configuration documentation. |
-| Candidate Proposal | [IBM PC/AT 5170 model-L3 closure audit](../proposals/m5-l3-machine-closure-audit.md). |
-| Files And ABI Surface | S3 configuration/observation evidence, T372 history, Current status and evidence index only.  Stop before source, ABI, CMake, test or runtime changes. |
-| Applicable Rules | Primary-source precedence; S2's all-fields configuration gate; no external-source import; public/redistributable stimulus only; reproducible evidence; documentation/source-policy rules. |
-| Verification | Revision/machine/configuration matrix; protected-asset exclusion; public-stimulus feasibility; primary-gap applicability; documentation governance and diff check. |
-| Expected Markers | No runtime marker, artifact, committed capture, physical scalar or Model-L3 claim. |
-| Asset Needs | Public configuration documentation and, only if available without protected assets, an in-browser public diagnostic; no ROM, firmware, guest media, binary, source import or raw trace. |
-| Reporting Requirements | Record each Model-339 field as proven, disproven or absent; identify the one candidate observation and its primary gap, or the exact failed condition and subsequent receiver. |
-| Stop Conditions | Stop on any required configuration mismatch, unavailable immutable revision, protected asset, no public stimulus, absent primary-open boundary, or result that would claim a hardware measurement. |
-| Exit Criteria | P1 commits a configuration/observation qualification record that either admits one bounded PCjs observation design or proves why none is admissible; it must retain every unfilled physical boundary. |
-| Original Owner Request | Continue in Queue order toward complete L3 before Windows 3.1; 86Box/MAME/PCjs are preferred references only when authoritative IA manuals give ranges or no range. |
-| Similar-Issue Sweep | Review all locked Model-339 fields, each PCjs configuration control, protected-asset paths, all S1 residual groups, and S2's rejected 86Box/MAME alternatives. |
-
 ## Current Technical Baseline
 
 - **Current developer artifact:** T369 S4 `vm-0-5-0369` /
@@ -42,7 +21,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T372 S2 | P1 `8a5431fd` qualifies the primary-source and owner-authorized reference-model boundary: no current 86Box/MAME/PCjs configuration can contribute a Model-339 physical scalar; a later S needs a revision-pinned, fully matched observation. **5170 model-L3 remains open.** [Admissibility matrix](../etc/evidence/t372-s2-reference-model-admissibility.md). |
+| T372 S3 | P1 `ad90f474` qualifies PCjs's only promising configuration route: its public configuration controls cannot yield a revision-pinned, policy-compliant physical-timing observation without third-party firmware and guest media. **5170 model-L3 remains open.** [Qualification record](../etc/evidence/t372-s3-pcjs-observation-qualification.md). |
 | T370 | Closed at `77a73c04`: S1--S5 reconciled all selected Model-339 device-service owners and transferred unavailable duration to phase refinement; **5170 model-L3 is not ready**. [Closure audit](../etc/evidence/t370-s5-planar-cga-transfer-audit.md). |
 | T369 | Closed at `08a64bea`: S1--S4 lock and audit the 5170 Model-339 bus-stage input, logical 80286 DMA handoff and selected FDC/PIC visibility. Board waits, physical waveforms, device service, phase refinement and final 5170 L3 remain exact ordered transfers; **5170 model-L3 is not ready**. [Closure audit](../etc/evidence/t369-s4-pcat-bus-stage-closure-audit.md). |
 | T368 | Closed at `4da84be8`: completes the source-labelled 80286 successful-retirement CPU ledger, with exact values or declared source-undefined transfers. The next Queue receiver is bus-timed PC/AT operation; CPU waits, bus/device timing and IBM 5170 L3 remain open. [Closure audit](../etc/evidence/t368-s7-80286-retirement-closure-audit.md). |

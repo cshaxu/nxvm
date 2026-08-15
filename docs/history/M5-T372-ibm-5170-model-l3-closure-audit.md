@@ -33,4 +33,4 @@ finds that public PCjs configuration documentation is insufficient for a
 revision-pinned, policy-compliant physical observation: runnable routes require
 third-party firmware and the field-upgrade path requires DOS/guest media.
 S3 stops before running or tracing PCjs and transfers physical evidence work
-to the next T372 continuation.
+to the next T372 continuation. S3 is accepted at `ad90f474`.
