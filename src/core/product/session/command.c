@@ -94,7 +94,12 @@ C_INT core_product_session_command_execute(core_product_session_manager *manager
                 "Unable to open session.");
             return 0;
         }
-        STD_SNPRINTF(line, sizeof(line), "Opened session %u.", (unsigned int)id);
+        if (core_product_session_manager_select(manager, id) != TYPE_STATUS_OK) {
+            core_product_session_command_write(output, "Unable to select opened session.");
+            return 0;
+        }
+        STD_SNPRINTF(line, sizeof(line), "Opened and selected session %u.",
+            (unsigned int)id);
         core_product_session_command_write(output, line);
         return 1;
     }

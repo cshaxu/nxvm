@@ -13,6 +13,8 @@ typedef enum vm_session_profile_kind {
     VM_SESSION_PROFILE_IBM_5170_MODEL_339
 } vm_session_profile_kind;
 
+const C_CHAR *vm_session_profile_name(vm_session_profile_kind kind);
+
 /* Supplies source ticks already selected and converted by VM composition.
  * The caller retains context ownership for the session lifetime. */
 typedef vm_virtual_time_source vm_session_virtual_time_source;

@@ -2,8 +2,24 @@
 
 ## Current Work
 
-**No active implementation packet.** T379 closes the owner-selected 5170
-Model-339 L3 objective. DeskPro 386, 8088-XT and Windows 3.1 remain unstarted.
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New |
+| Admission And Approval | Owner approved this priority insertion on 2026-08-15: expose a chooser at `SESSION OPEN` so users need not remember internal profile names; T379 is closed and T380 is the next identifier. |
+| Objective | Make the retained NXVM Console visibly list its supported session profiles, let an optionless `SESSION OPEN` select one by short number, support direct `--profile` selection, and truthfully identify the chosen profile in session output. |
+| Non-goals | No profile/device/timing/firmware/ROM/media change; no external asset; no test-only API; no DeskPro, XT or Windows work; no change to the startup default session. |
+| Reference Baseline | T379 accepted Model-339 descriptor and constraints; current `core_product_session_command_execute`, VM session factory, retained Console input loop, profile selection smoke coverage and `m5-session-profile-selection` proposal. |
+| Candidate Proposal | [NXVM session profile selection](../proposals/m5-session-profile-selection.md). |
+| Files And ABI Surface | VM Console interaction, VM session-factory parsing and snapshot detail, focused product/session tests, CMake registration, proposal/history/evidence/current/queue records. Core stays profile-neutral and public cross-module interfaces may change only if a bounded necessity is proven. |
+| Applicable Rules | VM composition owns concrete profile choice; Console remains the retained interactive product surface; no test-only production API; Model-339 descriptor owns its strict identity; all mutable selection/configuration has one production path; source/coding/documentation/execution rules apply. |
+| Verification | Add deterministic console/provider tests for candidate display, numeric and named choice, default behavior, invalid choice and Model-339 override rejection; run focused profile/session/console smokes, `current-gates-gcc`, documentation governance, and actual-diff review. |
+| Expected Markers | A T380 session-profile selection marker; existing Model-339 composition/clock/profile markers; no new firmware or device marker. |
+| Asset Needs | None. Local ROMs and guest IMG files remain external and are not required to create or verify profiles. |
+| Reporting Requirements | Record the exact menu, accepted names/numbers, selected-session visibility, default compatibility, constraint rejection, test results and user-facing 5170 launch steps. |
+| Stop Conditions | Stop for owner direction if the desired interaction requires changing core's profile-neutral contract, exposes machine-local assets, changes a Model-339 identity constraint, or needs a broader UX/CLI redesign. |
+| Exit Criteria | An ordinary Console user can discover and select Model-339 without recalling its internal name; explicit selection is scriptable; generic default behavior is retained; descriptor constraints remain enforced; all required proof and review pass. |
+| Original Owner Request | Immediately insert a profile-selection task: `SESSION OPEN` should list candidate profiles and let the user choose, rather than requiring them to remember and type a specific profile name. |
+| Similar-Issue Sweep | Inspect every current `vm_session_config` construction, provider option parse path, Console session command/help/list output and profile-specific generic override route; repair the common session-selection mechanism or record any excluded production route. |
 
 | Task | Compact progress |
 | --- | --- |
@@ -35,9 +51,9 @@ Model-339 L3 objective. DeskPro 386, 8088-XT and Windows 3.1 remain unstarted.
 
 ## Current Technical Baseline
 
-- **Current developer artifact:** T376 S4 `vm-0-5-0376` /
-  `build/output/nxvm_0_5_0376.exe`; its SHA-256 and source commit are
-  recorded by this S4's acceptance record.
+- **Current developer artifact:** T380 S1 `vm-0-5-0380` /
+  `build/output/nxvm_0_5_0380.exe`; its SHA-256 and source commit are
+  recorded by the [T380 S1 evidence](../etc/evidence/t380-s1-session-profile-selection.md).
 - **T285 display implementation:** `INT 10h` mode `10h` /
   `EGA-640x350x16-direct` has a VADP-owned planar frame path and copied-frame
   consumer boundary; mode 0Dh remains a separate retained path.

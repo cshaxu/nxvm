@@ -43,6 +43,30 @@ static C_INT verify_open_profile(core_product_session_manager *manager,
             cpu_profile, CORE_MACHINE_FPU_PROFILE_NONE);
 }
 
+static C_INT verify_model_339_profile(core_product_session_manager *manager,
+    C_CHAR *profile_name, core_product_session_id expected_id)
+{
+    C_CHAR option_profile[] = "--profile";
+    C_CHAR option_cpu[] = "--cpu";
+    C_CHAR cpu_80286[] = "80286";
+    C_CHAR *arguments[] = { option_profile, profile_name };
+    C_CHAR *override_arguments[] = { option_profile, profile_name,
+        option_cpu, cpu_80286 };
+    const core_product_session_open_options options = { 2, arguments };
+    const core_product_session_open_options overrides = { 4, override_arguments };
+    C_VOID *opaque = STD_NULL;
+    core_product_session_id id;
+
+    return core_product_session_manager_open_with_options(manager, &options,
+            &id) != TYPE_STATUS_OK || id != expected_id ||
+        core_product_session_manager_select(manager, id) != TYPE_STATUS_OK ||
+        core_product_session_manager_borrow_selected(manager, &opaque) !=
+            TYPE_STATUS_OK || verify_profile((vm_session *)opaque,
+            CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_FPU_PROFILE_NONE) ||
+        core_product_session_manager_open_with_options(manager, &overrides,
+            &id) != TYPE_STATUS_INVALID_STATE;
+}
+
 C_INT main(C_VOID)
 {
     C_CHAR cpu_8086[] = "8086";
@@ -57,7 +81,9 @@ C_INT main(C_VOID)
     };
     core_product_session_provider provider;
     core_product_session_manager *manager = STD_NULL;
-    core_product_session_snapshot snapshots[5];
+    C_CHAR profile_model_339[] = "ibm-5170-model-339";
+    C_CHAR profile_model_339_number[] = "2";
+    core_product_session_snapshot snapshots[7];
     C_VOID *opaque = STD_NULL;
     vm_session *session;
     core_product_session_id id;
@@ -67,11 +93,14 @@ C_INT main(C_VOID)
     if (core_product_session_manager_create(&provider, &manager) != TYPE_STATUS_OK ||
         core_product_session_manager_list(manager, snapshots, 2u, &count) !=
             TYPE_STATUS_OK || count != 1u ||
-        STD_STRCMP(snapshots[0].details, "cpu=80386 fpu=none") ||
+        STD_STRCMP(snapshots[0].details,
+            "profile=default-pc-at cpu=80386 fpu=none") ||
         verify_open_profile(manager, cpu_8086, CORE_MACHINE_CPU_PROFILE_8086, 1u) ||
         verify_open_profile(manager, cpu_80186, CORE_MACHINE_CPU_PROFILE_80186, 2u) ||
         verify_open_profile(manager, cpu_80286, CORE_MACHINE_CPU_PROFILE_80286, 3u) ||
         verify_open_profile(manager, cpu_80386, CORE_MACHINE_CPU_PROFILE_80386, 4u) ||
+        verify_model_339_profile(manager, profile_model_339, 5u) ||
+        verify_model_339_profile(manager, profile_model_339_number, 6u) ||
         core_product_session_manager_select(manager, 1u) != TYPE_STATUS_OK ||
         core_product_session_manager_borrow_selected(manager, &opaque) !=
             TYPE_STATUS_OK) goto fail;
@@ -84,9 +113,12 @@ C_INT main(C_VOID)
         core_product_session_manager_open_with_options(manager, &select_fpu,
             &id) != TYPE_STATUS_INVALID_STATE ||
         core_product_session_manager_get_count(manager, &count) != TYPE_STATUS_OK ||
-        count != 5u || core_product_session_manager_list(manager, snapshots,
-            5u, &count) != TYPE_STATUS_OK ||
-        STD_STRCMP(snapshots[1].details, "cpu=8086 fpu=none")) goto fail;
+        count != 7u || core_product_session_manager_list(manager, snapshots,
+            7u, &count) != TYPE_STATUS_OK ||
+        STD_STRCMP(snapshots[1].details,
+            "profile=default-pc-at cpu=8086 fpu=none") ||
+        STD_STRCMP(snapshots[5].details,
+            "profile=ibm-5170-model-339 cpu=80286 fpu=none")) goto fail;
     core_product_session_manager_destroy(manager);
     STD_PRINTF("M5:T157:S1:SESSION-PROFILES:OK\n");
     return 0;

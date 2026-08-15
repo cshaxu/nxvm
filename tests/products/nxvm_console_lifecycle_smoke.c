@@ -31,12 +31,13 @@ C_INT main(C_VOID)
     core_product_session_manager *session_manager = STD_NULL;
     vm_product_console_machine_provider machine_provider;
     vm_product_console_context console_context;
+    core_product_session_snapshot snapshots[2];
     STD_FILE *input;
     C_INT saved_stdin;
 
     input = tmpfile();
     if (input == STD_NULL ||
-        STD_FPUTS("help\ninfo\nexit\n", input) < 0 ||
+        STD_FPUTS("session open\n2\nsession list\nhelp\ninfo\nexit\n", input) < 0 ||
         fflush(input) != 0 ||
         STD_FSEEK(input, 0L, STD_SEEK_SET) != 0) {
         if (input != STD_NULL) STD_FCLOSE(input);
@@ -63,6 +64,14 @@ C_INT main(C_VOID)
 
     TEST_CONSOLE_DUP2(saved_stdin, TEST_CONSOLE_FILENO(STD_STDIN));
     TEST_CONSOLE_CLOSE(saved_stdin);
+    if (core_product_session_manager_list(session_manager, snapshots, 2u,
+            &(STD_SIZE_T){0u}) != TYPE_STATUS_OK ||
+        STD_STRCMP(snapshots[1].details,
+            "profile=ibm-5170-model-339 cpu=80286 fpu=none")) {
+        STD_FCLOSE(input);
+        core_product_session_manager_destroy(session_manager);
+        return 1;
+    }
     STD_FCLOSE(input);
     core_product_session_manager_destroy(session_manager);
     puts("M5:T96:S1:CONSOLE-LIFECYCLE:OK");

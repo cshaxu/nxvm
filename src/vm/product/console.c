@@ -100,9 +100,11 @@ static C_VOID doHelp(vm_product_console_context *context)
         else if (!STD_STRCMP(argArray[1], "session"))
         {
             STD_PRINTF("Manage VM sessions\n");
-            STD_PRINTF("\nSESSION LIST | OPEN [--cpu <model>] [--fpu <model>] | SELECT <id> | CLOSE [id]\n");
+            STD_PRINTF("\nSESSION LIST | OPEN [--profile <name>] [--cpu <model>] [--fpu <model>] | SELECT <id> | CLOSE [id]\n");
             STD_PRINTF("  list:   show sessions; * marks the selected session\n");
-            STD_PRINTF("  open:   create one stopped session (default: 80386, no FPU)\n");
+            STD_PRINTF("  open:   show profile choices; press 1 or 2 (default: 1)\n");
+            STD_PRINTF("          profile: default-pc-at (1), ibm-5170-model-339 (2)\n");
+            STD_PRINTF("          --cpu/--fpu apply only to default-pc-at\n");
             STD_PRINTF("          cpu: 8086, 80186, 80286, 80386; fpu: none\n");
             STD_PRINTF("  select: choose the session for machine commands\n");
             STD_PRINTF("  close:  destroy one stopped session; the final session stays\n");
@@ -526,6 +528,45 @@ static C_VOID vm_product_console_write_line(C_VOID *opaque, const C_CHAR *line)
     STD_PRINTF("%s\n", line);
 }
 
+static const C_CHAR *vm_product_console_choose_profile(C_VOID)
+{
+    C_CHAR selection[32];
+    C_CHAR *cursor = selection;
+    C_CHAR choice;
+
+    STD_PRINTF("Available session profiles:\n");
+    STD_PRINTF("  1. default-pc-at       Configurable generic PC/AT (default)\n");
+    STD_PRINTF("  2. ibm-5170-model-339 IBM PC/AT 5170 Model 339/Type 3\n");
+    STD_PRINTF("Select profile [1]: ");
+    if (!vm_product_console_read_line(selection, sizeof(selection))) return STD_NULL;
+    while (*cursor != '\0' && STD_ISSPACE((C_UCHAR)*cursor)) ++cursor;
+    if (*cursor == '\0') return "default-pc-at";
+    choice = *cursor++;
+    while (*cursor != '\0' && STD_ISSPACE((C_UCHAR)*cursor)) ++cursor;
+    if (*cursor != '\0') {
+        STD_PRINTF("Unknown profile selection.\n");
+        return STD_NULL;
+    }
+    if (choice == '1') return "default-pc-at";
+    if (choice == '2') return "ibm-5170-model-339";
+    STD_PRINTF("Unknown profile selection.\n");
+    return STD_NULL;
+}
+
+static C_VOID vm_product_console_open_profile(vm_product_console_context *context)
+{
+    const C_CHAR *profile = vm_product_console_choose_profile();
+    C_CHAR option[] = "--profile";
+    C_CHAR *arguments[] = { "session", "open", option, (C_CHAR *)profile };
+    const core_product_session_output_provider output = {
+        vm_product_console_write_line, STD_NULL};
+
+    if (profile == STD_NULL) return;
+    if (context == STD_NULL) return;
+    (C_VOID)core_product_session_command_execute(context->session_manager, 4, arguments,
+        &output);
+}
+
 /* Executes commands */
 static C_VOID execute(vm_product_console_context *context)
 {
@@ -537,8 +578,12 @@ static C_VOID execute(vm_product_console_context *context)
     {
         const core_product_session_output_provider output = {
             vm_product_console_write_line, STD_NULL};
-        (C_VOID) core_product_session_command_execute(sessionManager,
-                                                      (C_INT)numArgs, argArray, &output);
+        if (numArgs == 2u && !STD_STRCMP(argArray[1], "open")) {
+            vm_product_console_open_profile(context);
+        } else {
+            (C_VOID)core_product_session_command_execute(sessionManager,
+                (C_INT)numArgs, argArray, &output);
+        }
     }
     else if (!STD_STRCMP(argArray[0], "test"))
     {

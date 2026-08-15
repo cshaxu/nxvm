@@ -63,6 +63,15 @@ vm_session_profile_select(vm_session_profile_kind kind)
     return STD_NULL;
 }
 
+const C_CHAR *vm_session_profile_name(vm_session_profile_kind kind)
+{
+    if (kind == VM_SESSION_PROFILE_DEFAULT_PC_AT) return "default-pc-at";
+    if (kind == VM_SESSION_PROFILE_IBM_5170_MODEL_339) {
+        return "ibm-5170-model-339";
+    }
+    return "unknown";
+}
+
 static C_INT vm_session_copy_path(C_CHAR *destination, STD_SIZE_T capacity,
     const C_CHAR *source)
 {
