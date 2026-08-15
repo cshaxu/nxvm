@@ -2,28 +2,13 @@
 
 ## Current Work
 
-T381 S2 is active solely to correct the task's closure-state, history, and
-archive consistency. It does not change the frozen YAML/Console behavior or
-admit the next Queue candidate.
+**No active implementation packet.** Corrective T381 S2 restores the task-level
+closure state without altering the frozen YAML/Console delivery; DeskPro 386
+remains the next Queue candidate.
 
-| Field | Required record |
+| Task | Compact progress |
 | --- | --- |
-| Identifier Mode | Corrective |
-| Admission And Approval | The owner approved on 2026-08-15 the governance-audit corrections without changing `docs/rules`; the audit identifies T381 as the most recently closed numeric task whose retained `T381 S1` progress row contradicts its closure prose and machine-readable state. |
-| Objective | Restore one truthful T381 closure: replace the stale open-subtask representation with a task-level closure record, retain a concise correction trail in T381 history, and remove no runtime evidence. |
-| Non-goals | No source, build, artifact, profile, YAML, Console, Queue, DeskPro, 8088-XT, Windows, `docs/rules`, or new behavioral work. No historical commit is rewritten. |
-| Reference Baseline | T381 S1 P1 `9b6a86c6`, its closure evidence and artifact record, P2 `e621a3c3`, the subsequent status-only P3--P6 commits, and the 2026-08-15 governance audit. |
-| Candidate Proposal | [T381 retained proposal](../history/M5-T381-nxvm-console-redesign-proposal.md). |
-| Files And ABI Surface | `docs/states/CURRENT.md` and `docs/history/M5-T381-nxvm-console-redesign.md` only; no runtime or ABI surface changes. |
-| Applicable Rules | `DOCUMENT.md` authority boundaries and task-level closure retention; `EXECUTION.md` corrective-S, P lifecycle, actual-change review, reporting, and Documentation Governance Gate requirements. No architecture, coding, source, or runtime rule applies because no such surface changes. |
-| Verification | Inspect P1--P6 actual diffs and retained T381 evidence; confirm the task-level state shape and T381 history; run the default Documentation Governance Gate and `git diff --check`; review the final actual diff. |
-| Expected Markers | Documentation Governance Gate succeeds; no runtime marker or artifact hash changes because the runnable path is unchanged. |
-| Asset Needs | None. |
-| Reporting Requirements | Record the erroneous retained progress shape, the immutable P1--P6 disposition, the corrected task-level state, verification results, and the unchanged T381 artifact boundary. |
-| Stop Conditions | Stop for owner direction if correcting the closure requires a rule change, runtime/build change, rewriting existing commits, or altering another task's historical record. |
-| Exit Criteria | CURRENT has no active packet and one T381 task-level closure row; T381 history distinguishes S1 delivery from this S2 governance correction; no `T381 S1` open-progress row remains; the documentation gate passes. |
-| Original Owner Request | Continue T381 S2 and later Td work to repair the governance audit findings, without modifying `docs/rules`. |
-| Similar-Issue Sweep | Documentation-only recurrence: inspect CURRENT and T381 history for all retained T381 state references, and inspect the P1--P6 diffs. Other audited state/Queue findings are explicitly transferred to the separately admitted follow-on Td. |
+| T381 | Closed: S1 P1 `9b6a86c6` delivered the frozen YAML catalog and true zero-session Console; corrective S2 removed the stale open-progress representation without changing runtime evidence or the T381 artifact. [Evidence](../etc/evidence/t381-s1-console-yaml-profiles.md). |
 
 ## Current Technical Baseline
 
