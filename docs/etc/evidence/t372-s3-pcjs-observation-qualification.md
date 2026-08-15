@@ -6,9 +6,11 @@ No PCjs observation is admitted. Public PCjs documentation establishes a
 candidate configuration vocabulary, not a compliant, revision-pinned
 physical-timing experiment for the selected Model-339 field configuration.
 The available runnable routes require third-party firmware and, for the
-field-upgrade floppy path, DOS/guest media. The source policy prohibits
-downloading, retaining, cataloguing, or making either a project research
-asset. S3 therefore stops before launching a machine or collecting a trace.
+field-upgrade floppy path, DOS/guest media. S3 had no separately authorized
+local-media research contract, so it stops before launching a machine or
+collecting a trace. The source policy classifies such media as separate local
+research inputs pending their own license review; it does not permit them in
+the repository, default build, or release.
 
 ## Locked-field qualification
 
@@ -16,7 +18,7 @@ asset. S3 therefore stops before launching a machine or collecting a trace.
 | --- | --- | --- |
 | Model 339 / Type 3, 8 MHz, 512 KB, Rev.3, enhanced keyboard | PCjs's 5170 documentation describes Models 319/339 with these identity fields. | Documented candidate only; the page is not an immutable machine-run configuration. |
 | CGA | PCjs exposes a `monitor="color"` chipset property. | Configurable candidate; no recorded instance ties it to every other selected field. |
-| 1.44 MB field upgrade | PCjs exposes a `1440` floppy value and states that it requires Rev.3 plus DOS 3.20 or later. | Not observable in S3: the required DOS path is protected guest media and the upgrade remains a field configuration, not a factory Model-339 fact. |
+| 1.44 MB field upgrade | PCjs exposes a `1440` floppy value and states that it requires Rev.3 plus DOS 3.20 or later. | Not observed in S3: the necessary local-media research contract had not been authorized. The upgrade remains a field configuration, not a factory Model-339 fact. |
 | No fixed disk/ATA | PCjs documents PC AT hard-drive types and its command-line utility creates/configures hard-disk images for `ibm5170`. | No public immutable no-disk run record was found. S3 does not infer absence merely because a configuration option might exist. |
 | Reference revision and trace | The public page identifies PCjs as a browser emulator and links its source, but provides no revision-pinned, whole-tuple run record. | Absent. No observation can be reproduced as required by S2. |
 | Physical boundary | The page exposes configuration, not READY/wait, DMA handshake, controller clock, CGA retrace, or reset-settle measurement. | Absent. A browser-emulator event would in any case be corroboration, never an IBM hardware measurement. |

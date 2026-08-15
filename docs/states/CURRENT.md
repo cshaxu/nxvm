@@ -2,6 +2,27 @@
 
 ## Current Work
 
+## M5 T372 S4 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; T372 S3 accepted at `fc4653a2`. |
+| Admission And Approval | The owner-approved Model-339 L3 audit continues. The owner permits 86Box, MAME and PCjs only after primary manuals leave an instruction-timing range or absence; T372 S2/S3 establishes that no reference-model scalar is currently admissible. |
+| Objective | Correct S3's overbroad local-guest-media classification, then extract and classify every deterministic timing/clock/phase fact available in the IBM 5170 Models 319/339 Type-3 and selected controller primary documentation, separating direct implementation candidates from ranged or source-absent boundaries. |
+| Non-goals | No reference emulator observation or local-media execution without a separate authorized research contract; no copied source/ROM/media, timing implementation, guessed conversion, board-measurement claim, broad clone comparison, 80386/8088 or Windows work. |
+| Reference Baseline | T372 S1--S3, T366 Model-339 lock, T369--T371 transfers, source policy, IBM Models 319/339 Technical Reference, IBM AT Technical Reference, Intel 80286/8237A, uPD765, MC146818 and 8042 documentation. |
+| Candidate Proposal | [IBM PC/AT 5170 model-L3 closure audit](../proposals/m5-l3-machine-closure-audit.md). |
+| Files And ABI Surface | S4 primary-fact ledger, corrective S3 evidence wording, T372 history, Current status and evidence index only. Stop before source, ABI, CMake, test or runtime changes. |
+| Applicable Rules | Primary-source precedence; source policy's local-research-input boundary; no inferred scalar; raw chip clocks are not project-clock conversions; no source import; reproducible citation/section provenance; documentation/source-policy rules. |
+| Verification | S3 policy-wording correction review, per-S1-group primary-source sweep, fact/domain/implementation-candidate matrix, source-policy review, exact transfer for ranges/absences, documentation governance and diff check. |
+| Expected Markers | No runtime marker, artifact, physical scalar, implementation, or Model-L3 claim. |
+| Asset Needs | Public primary manuals and citation notes only; no ROM, firmware, guest media, external source, binary or capture. |
+| Reporting Requirements | State the corrected local-media boundary; identify source/revision/section, exact fact and time domain, whether the fact maps directly to the selected profile, and each unfilled boundary's receiver. |
+| Stop Conditions | Stop if a fact requires an unstated board mapping, conflicts with selected Type-3 configuration, depends on protected assets, or would turn a chip specification into a Model-339 value without evidence. |
+| Exit Criteria | P1 corrects the S3 local-media statement and commits an indexed primary-fact ledger covering all S1 groups, admitting only direct source-labelled implementation candidates; all ranges and absences retain explicit transfers. |
+| Original Owner Request | Continue in Queue order toward complete L3 before Windows 3.1; use 86Box/MAME/PCjs only when authoritative IA manuals provide range or no deterministic instruction timing. |
+| Similar-Issue Sweep | Sweep all S1 residual groups, Type-3 board pages, each selected controller's clock/handshake/reset facts, every prior physical-time non-admission, and the S2/S3 reference exclusions. |
+
 ## Current Technical Baseline
 
 - **Current developer artifact:** T369 S4 `vm-0-5-0369` /
