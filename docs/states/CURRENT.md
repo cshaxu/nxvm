@@ -2,27 +2,6 @@
 
 ## Current Work
 
-## M5 T374 S4 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation; T374 remains the latest open numeric task and S4 follows accepted S3. |
-| Admission And Approval | The owner approved completing selected-machine functional gaps before timing/L3 closure and authorized continuing the T374 work; the T374 candidate admits an evidence-backed FDC functional-contract audit before any repair. |
-| Objective | Audit the selected Model-339 floppy-controller observable command, result, reset, IRQ/DRQ and media-state behavior against its primary controller documentation and current owner tests; select at most one determinate, owner-local non-timing repair, or record a bounded transfer if none is proved. |
-| Non-goals | No code repair unless a follow-on packet admits it; no motor/rotation/service duration, DMA-bus handshaking, board wait, mechanics model, external ROM/media use, ATA/HDC, MFM/ST-506, EGA/VGA, AUX, generic expansion, or Model-339 L3 claim. |
-| Reference Baseline | T374 S1 owner inventory; T374 S2/S3 accepted functional work; IBM PC/AT Model 339 selected 3.5-inch 1.44 MB field-upgrade boundary; source-labelled uPD765/8272 command documentation; `core_machine_fdc` owner and focused FDC/Model-339 topology tests. |
-| Candidate Proposal | [IBM PC/AT 5170 selected-device functional closure](../proposals/m5-5170-selected-device-functional-closure.md). |
-| Files And ABI Surface | Evidence/history/index and `docs/states/CURRENT.md` only for the audit P; current FDC source/tests are read-only inspection surface. A separately admitted repair packet names any implementation files and ABI surface. |
-| Applicable Rules | `docs/README.md` Task Reading Set; `docs/rules/EXECUTION.md` implementation/P lifecycle, evidence and similar-issue rules; `docs/rules/DOCUMENT.md`; `CONTRIBUTING.md`; source policy. `docs/design/ARCHITECTURE.md`, `docs/design/CODING.md`, `docs/rules/ARCHITECTURE.md`, and `docs/rules/CODING.md` govern any later repair, not this documentation-only audit. |
-| Verification | Record command-by-command source/current-owner comparison with direct sources; inspect every FDC command dispatcher route and existing focused test; build and run the unchanged focused FDC and Model-339 topology targets through Git-Bash CMake/Ninja; run documentation governance and `git diff --check`. |
-| Expected Markers | One source-labelled FDC functional contract identifies exact current coverage, one bounded repair candidate or an explicit no-repair transfer, and preserves the boundary between controller semantics and later bus/mechanical timing. |
-| Asset Needs | None. Documentation is read only; no ROM, firmware, guest media, trace, source import or local asset is added. |
-| Reporting Requirements | Report source/owner confirmation, selected repair or transfer, command/caller sweep, focused build/replay, pushed P1, coordinator acceptance, and the next T374 functional receiver. |
-| Stop Conditions | Stop and transfer if a source only provides timing/mechanical information, controller identity or command semantics conflict, a repair needs a board/DMA owner outside the FDC boundary, or no source-determinate functional gap remains. |
-| Exit Criteria | Durable evidence covers selected FDC command/state/reset/IRQ-DRQ surface and identifies a source-backed owner-local repair candidate or truthful transfer; focused unchanged tests pass; no functional-completeness or L3 claim is made. |
-| Original Owner Request | Implement each selected machine's functional gaps before timing/L3 closure, treating exact documentation as authority and reference emulators only as fallback; use CMake through Git Bash for local builds. |
-| Similar-Issue Sweep | Inspect every command dispatcher case, result/IRQ/DRQ completion route, reset/drive/media helper and FDC caller; distinguish shared controller semantics from 5170 board, DMA and mechanical timing receivers. |
-
 ## Current Technical Baseline
 
 - **Current developer artifact:** T369 S4 `vm-0-5-0369` /
@@ -42,7 +21,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T374 S3 | P1 `6869ced4` adds the primary-source 8042 F0h--FFh transient pulse-reset behavior through the existing KBC reset owner. Fresh KBC, Model-339 composition and AUX regressions pass; all pulse timing and remaining selected-device work stay open. [Repair evidence](../etc/evidence/t374-s3-8042-pulse-reset-repair.md). |
+| T374 S4 | P1 `70627f3c` audits selected 8272A/uPD765 FDC behavior and selects missing Ready-transition attention IRQ / Sense-Interrupt delivery as an owner-local repair; physical signal, DMA and drive timing remain open. [Audit evidence](../etc/evidence/t374-s4-fdc-functional-contract-audit.md). |
 | T373 | Closed at `06246a8e`: S1--S4 freeze the three-machine source-labelled capability ledger and exact functional/timing/current-product receivers. **5170, DeskPro Model 40 and PC/XT 5160-268 L3 are not ready.** The next candidate is 5170 selected-device functional closure. [Closure audit](../etc/evidence/t373-s4-task-closure-audit.md). |
 | T372 | Closed at `3f56c72c`: S1--S8 establish that Model 339 has selected logical ownership and deterministic ordering, but lacks selected-device functional closure and source-backed board/phase timing. **5170 model-L3 is not ready.** [Closure audit](../etc/evidence/t372-s8-task-closure-transfer-audit.md). |
 | T370 | Closed at `77a73c04`: S1--S5 reconciled all selected Model-339 device-service owners and transferred unavailable duration to phase refinement; **5170 model-L3 is not ready**. [Closure audit](../etc/evidence/t370-s5-planar-cga-transfer-audit.md). |
