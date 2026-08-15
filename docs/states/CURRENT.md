@@ -2,9 +2,26 @@
 
 ## Current Work
 
-T368 remains open. S2 is accepted: VERR/VERW has its accepted `14/16`
-route, while protected CPL0 LMSW currently faults before retirement and must be
-reconciled in S3 before that former timing claim can be retained.
+## M5 T368 S3 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; T368 S2 accepted at `8ad79494`. |
+| Admission And Approval | The owner authorized continued L3 work; S2 isolated the protected CPL0 LMSW pre-retirement `#GP` as a finite semantic receiver. |
+| Objective | Establish why the focused 80286 CPL0 LMSW fixture faults before retirement, then retain only source-backed real/protected register and memory rows that demonstrably retire. |
+| Non-goals | No timing allocation for a fault, no prefix/default sweep, bus/device/physical-time work, profile/topology change or 5170 L3 claim. |
+| Reference Baseline | `8ad79494`, [S2 reconciliation](../etc/evidence/t368-s2-80286-system-context-reconciliation.md), Intel 210498-005 Appendix B, source policy and existing 80286 protected-mode evidence. |
+| Candidate Proposal | [80286 successful-retirement timing closure](../proposals/m5-80286-retirement-timing-closure.md). |
+| Files And ABI Surface | Existing 80286 executor/fixture/test and evidence/status/history only; no public ABI. |
+| Applicable Rules | Execution continuation/evidence; Intel authority first; one shared publisher; no invented fault timing; exact transfer records. |
+| Verification | Focused 80286 ledger test and relevant protected-mode regressions; documentation governance and diff check. |
+| Expected Markers | The fixture exposes an architectural CPL0 LMSW retirement or a precisely evidenced core semantic defect; neither a `#GP` nor an unverified scalar is published. |
+| Asset Needs | No guest media, ROM, binary or imported source. |
+| Reporting Requirements | Distinguish fixture state, architectural privilege result, successful retirement and Appendix-B timing context. |
+| Stop Conditions | Stop and transfer if protected state cannot be proven without broader, unapproved architectural work. |
+| Exit Criteria | Pushed P1/P2 leaves the protected LMSW result demonstrated or explicitly transferred, with only retiring rows admitted. |
+| Original Owner Request | Continue comprehensive L3 execution before Windows 3.1, following the Queue dependency chain. |
+| Similar-Issue Sweep | Inspect CPL source, descriptor/load path, resume helper, real/protected register and memory forms, and existing MSW semantic regressions. |
 
 ## Current Technical Baseline
 

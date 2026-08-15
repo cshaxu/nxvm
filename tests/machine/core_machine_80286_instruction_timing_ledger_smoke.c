@@ -221,6 +221,7 @@ static C_INT timing_80286_boot_protected(core_machine *machine,
     static const type_unsigned_8 halt[] = { 0xf4u };
     core_machine_run_result result;
 
+    machine->executor_cpu.data.cr0 = 0u;
     return test_core_machine_fixture_reset_real_mode(machine) &&
         core_machine_memory_write(machine, 0x100u, gdt_pointer,
             sizeof(gdt_pointer)) == TYPE_STATUS_OK &&
