@@ -37,6 +37,7 @@ gap, never hide one.
 Each candidate has a bounded primary-manual/probe contract; completing one
 does not silently upgrade a different device, profile, or Windows mode.
 
+1. [VM profile-contract ownership migration](../proposals/m5-vm-profile-contract-ownership.md).
 1. [Bus-timed PC/AT operation](../proposals/m5-bus-timed-pcat-operation.md).
 1. [PC/AT device service-timing corpus](../proposals/m5-device-service-timing-corpus.md).
 1. [Selected-profile model-L3 phase refinement](../proposals/m5-cycle-exact-selected-profile.md).

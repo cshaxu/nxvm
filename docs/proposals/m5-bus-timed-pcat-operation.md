@@ -15,10 +15,12 @@ source lifecycle, before it allocates bus availability.
 PC/AT 5170 system-board revision and manual edition, CPU clock, motherboard
 RAM, ROM configuration, selected diskette-drive/FDC DMA-channel-2 path, every
 selected ISA adapter, and a project-owned firmware/DOS probe corpus. The
-locked Model 339/Type 3 configuration is 8 MHz, Rev.3 ROM slots, 512 KB planar
-RAM, 101-key keyboard, CGA, and a named 3.5-inch 1.44 MB field-upgrade drive;
-it has no fixed disk and no 1 MB expansion. The field upgrade is not a factory
-component. An unselected adapter cannot supply a timing value.
+locked configuration is IBM PC/AT 5170 Model 339 with the Type 3 system board:
+an 8 MHz 80286, Rev.3 BIOS slots dated 1985-11-15, 512 KB planar RAM, 101-key
+enhanced keyboard, IBM CGA, and one TEAC FD-235HF-A529 3.5-inch 1.44 MB
+field-upgrade drive. It has no fixed disk and no 1 MB expansion. The TEAC
+drive is a compatible post-market upgrade, not an IBM factory Model 339
+component or option. An unselected adapter cannot supply a timing value.
 
 **NMI-source stage.** After that lock, select one documented board parity or
 I/O-channel-check source and define its producer, latch/clear operation,
