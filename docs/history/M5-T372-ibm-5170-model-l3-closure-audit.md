@@ -16,3 +16,12 @@ board-specific phase conversion remains unallocated.
 
 S1 is accepted at `67ec5177`. S2 must qualify primary-source gaps and any
 eligible same-profile reference-model observation before selecting a value.
+
+### S2: reference-model admissibility
+
+S2's [admissibility matrix](../etc/evidence/t372-s2-reference-model-admissibility.md)
+finds no current numeric reference candidate: 86Box corroborates only the
+512-KB board limit, MAME's 8-MHz default retains incompatible memory and an
+undetermined ISA clock, and PCjs documents candidate controls but no
+revision-pinned complete observation.  Physical phase work therefore remains
+open; S2 makes no 5170 model-L3 claim.

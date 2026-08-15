@@ -66,6 +66,7 @@ principal documents named in [docs/README.md](../README.md).
 | `evidence/t371-s4-device-phase-boundaries.md` | Verification owner | T371 S4 selected-device callback, reset and physical-clock-boundary reconciliation. |
 | `evidence/t371-s5-phase-replay-transfer-audit.md` | Closure audit | T371 S5 deterministic replay, reset/cancellation and exact phase-transfer audit. |
 | `evidence/t372-s1-model339-readiness-matrix.md` | Verification owner | T372 S1 component-by-component IBM Model-339 L3 readiness matrix and exact residual phase boundaries. |
+| `evidence/t372-s2-reference-model-admissibility.md` | Verification owner | T372 S2 primary-source and owner-authorized 86Box/MAME/PCjs admissibility matrix; no incompatible reference configuration or scalar is admitted as a Model-339 board fact. |
 | `evidence/t333-s1-interactive-input-inventory.md` | Verification owner | T333 S1 retained Console/debugger direct-input inventory and S2 boundary. Retire into the T333 history record when the task closes. |
 | `evidence/t333-s2-interactive-input-repair.md` | Verification owner | T333 S2 owner-local interactive-input repair and static/build evidence. Retire into the T333 history record when the task closes. |
 | `evidence/t333-s3-interactive-input-proof.md` | Verification owner | T333 S3 owner-separated EOF/allocation-failure smoke design and expected proof. Retire into the T333 history record when the task closes. |

@@ -2,6 +2,27 @@
 
 ## Current Work
 
+## M5 T372 S2 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; T372 S1 accepted at `d0aeb1cb`. |
+| Admission And Approval | The owner-approved Model-339 L3 audit continues; the owner explicitly permits 86Box, MAME and PCjs only where primary manuals provide a range or no deterministic timing. |
+| Objective | Qualify or reject primary-source and same-profile reference-model evidence for the residual Model-339 physical boundaries, with configuration, observation and applicability criteria. |
+| Non-goals | No copied source, ROM/media import, reference emulator as IBM authority, timing implementation, guessed scalar, broad clone comparison, 80386/8088 or Windows work. |
+| Reference Baseline | T372 S1 matrix, T366 Model-339 lock, T369--T371 phase/device transfers, source policy, IBM/Intel/controller manuals and named reference models. |
+| Candidate Proposal | [IBM PC/AT 5170 model-L3 closure audit](../proposals/m5-l3-machine-closure-audit.md). |
+| Files And ABI Surface | S2 research evidence, T372 history, Current status and evidence index only. Stop before source, ABI, CMake, test or runtime changes. |
+| Applicable Rules | Primary source precedence; same-profile/range-or-absence reference limit; no external source import; reproducible evidence; documentation/source-policy rules. |
+| Verification | Authority/configuration/applicability matrix, source-policy review, reference-model scope sweep, documentation governance and diff check. |
+| Expected Markers | No runtime marker, artifact, timing value or L3 claim. |
+| Asset Needs | Public documentation and observation notes only; no ROM, firmware, guest media, external code, binaries or committed captures. |
+| Reporting Requirements | Name every admitted/rejected boundary, primary-source result, reference configuration limit and exact subsequent receiver. |
+| Stop Conditions | Stop if the selected model cannot be configuration-matched, a primary value is overridden, evidence depends on protected assets, or a result would claim hardware authority. |
+| Exit Criteria | P1 commits an indexed admissibility matrix that admits no value unless its source and configuration meet the stated rule. |
+| Original Owner Request | Continue in Queue order toward complete L3 before Windows 3.1; 86Box/MAME/PCjs are preferred references only when authoritative IA manuals give ranges or no range. |
+| Similar-Issue Sweep | Sweep every T372 residual boundary, named manual result, 86Box/MAME/PCjs machine configuration, source-policy restriction and downstream task/receiver. |
+
 ## Current Technical Baseline
 
 - **Current developer artifact:** T369 S4 `vm-0-5-0369` /
