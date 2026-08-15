@@ -24,9 +24,12 @@ its public session boundary while platform no longer depends on composition.
   persistence rather than incorrectly requiring a single-file save.
 - `vm-keyboard-host-ingress-smoke` and `vm-platform-win32-keyboard-scan-smoke`:
   passed.
-- Full current gate was replayed; all T378-owned checks pass. T345's temporary
-  count discrepancy was build-generation staleness and was not retained as a
-  source or ledger change after reconfiguration restored its 46/52 matrix.
+- Full current gate was replayed; all T378-owned checks pass. The new neutral
+  platform interface changes T345's generated direct-compilation classification:
+  `vm-platform/virtual_time.c` is retained explicitly as a mixed/inherited
+  production residual, and the verifier's source-of-truth counts are updated
+  to the regenerated 48/54 matrix. This is an ownership-ledger update, not a
+  behavioral or timing change.
 
 ## Transfer
 
