@@ -2,27 +2,6 @@
 
 ## Current Work
 
-## M5 T373 S1 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | New; T372 is the latest closed numeric task, so T373 S1 is the next numeric task and first subtask. |
-| Admission And Approval | The owner approved continued single-agent execution of the ordered L3 program through the pre-Windows boundary. Td S94 makes this candidate the first receiver after T372; no device or Windows implementation is authorized in this audit S. |
-| Objective | Inventory the repository's actual public/configurable device support, current tests/evidence, and existing machine-profile assumptions as the repository-side input to the three-baseline capability ledger. |
-| Non-goals | No device implementation, removal, timing scalar, public-surface expansion, ROM/media intake, reference-runtime execution, profile selection beyond the locked machine identities, or L3-ready conclusion. |
-| Reference Baseline | T372 S8 closure matrix; [baseline-machine and supported-device capability ledger proposal](../proposals/m5-baseline-device-capability-ledger.md); current source/build/test and evidence tree; selected 5170 Model 339/Type 3, DeskPro Model 40, and PC/XT 5160-268 identities. |
-| Candidate Proposal | [Baseline-machine and supported-device capability ledger](../proposals/m5-baseline-device-capability-ledger.md). |
-| Files And ABI Surface | New T373 evidence and history progress, `docs/etc/README.md`, and `docs/states/CURRENT.md` only; no production ABI, build, profile, or asset surface. |
-| Applicable Rules | `docs/README.md` Task Reading Set; `docs/rules/EXECUTION.md` new-task, audit, evidence, P lifecycle, and closure rules; `docs/rules/DOCUMENT.md`; `CONTRIBUTING.md`; `docs/etc/operations/policy/source-policy.md`; architecture/coding rules are not applicable because S1 changes no source or build. |
-| Verification | Sweep tracked production source, CMake/profile inputs, tests, public docs, current evidence and TODO with recorded `rg` queries; classify every discovered device route as current support, test-only, internal, or no longer present; run documentation governance and `git diff --check`. |
-| Expected Markers | One indexed repository-support inventory identifies every production device/configuration owner, user-visible/configurable route, relevant test/evidence coverage, and preliminary status without claiming machine membership or L3 completion. |
-| Asset Needs | None. Existing external BIOS/ROM and media remain outside Git; S1 neither downloads nor executes them. |
-| Reporting Requirements | Report the initial scope confirmation, support-inventory result, every ambiguous or unowned route, focused verification, pushed P1, and the next source-qualification receiver. |
-| Stop Conditions | Stop and transfer if classifying a route requires executing protected media, importing firmware, changing a profile, using an unqualified emulator observation, or repairing source; do not manufacture a support claim from test presence alone. |
-| Exit Criteria | An indexed inventory covers all tracked current product device/configuration routes and classifies each one with evidence; all unclear machine membership/timing questions transfer to later T373 source-qualification S; documentation checks pass. |
-| Original Owner Request | Continue the approved L3 sequence before Windows 3.1, beginning with a complete device-capability inventory rather than treating incomplete devices as timing-only work. |
-| Similar-Issue Sweep | Audit-only scope: search all tracked production source, CMake, tests, public docs, current evidence, Queue, and TODO for device/profile selectors, ports, controllers, media providers, display paths, input paths, and test-only shims; record every production hit or a bounded later receiver. |
-
 ## Current Technical Baseline
 
 - **Current developer artifact:** T369 S4 `vm-0-5-0369` /
@@ -42,6 +21,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T373 S1 | P1 `a3cc3c5f` inventories the actual default-PC/AT and Model-339 descriptors, product-visible device paths, absent peripheral families, and exact machine/product ledger receivers. No profile, device, timing, or L3 claim changes. [Support inventory](../etc/evidence/t373-s1-current-support-inventory.md). |
 | T372 | Closed at `3f56c72c`: S1--S8 establish that Model 339 has selected logical ownership and deterministic ordering, but lacks selected-device functional closure and source-backed board/phase timing. **5170 model-L3 is not ready.** [Closure audit](../etc/evidence/t372-s8-task-closure-transfer-audit.md). |
 | T370 | Closed at `77a73c04`: S1--S5 reconciled all selected Model-339 device-service owners and transferred unavailable duration to phase refinement; **5170 model-L3 is not ready**. [Closure audit](../etc/evidence/t370-s5-planar-cga-transfer-audit.md). |
 | T369 | Closed at `08a64bea`: S1--S4 lock and audit the 5170 Model-339 bus-stage input, logical 80286 DMA handoff and selected FDC/PIC visibility. Board waits, physical waveforms, device service, phase refinement and final 5170 L3 remain exact ordered transfers; **5170 model-L3 is not ready**. [Closure audit](../etc/evidence/t369-s4-pcat-bus-stage-closure-audit.md). |
