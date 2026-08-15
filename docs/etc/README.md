@@ -209,6 +209,7 @@ principal documents named in [docs/README.md](../README.md).
 | `evidence/t374-s8-fdc-deleted-media-contract-audit.md` | Verification owner | T374 S8 8272A Deleted-Data address-mark contract, complete provider/consumer migration sweep, raw-image persistence boundary, and ordered shared-media/FDC receivers. Retain with T374 history while the task is open. |
 | `evidence/t374-s9-media-address-mark-contract.md` | Verification owner | T374 S9 shared normal/deleted logical-sector address-mark capability, provider migration, raw-image unsupported boundary, and focused proof. Retain with T374 history while the task is open. |
 | `evidence/t374-s10-raw-img-address-mark-boundary.md` | Verification owner | T374 S10 owner-selected raw-IMG-only floppy boundary, complete persistence lifecycle sweep, and explicit deferred 765 Deleted/Control-Mark plus independently deferred Scan command work. Retain with T374 history while the task is open. |
+| `evidence/t374-s11-model339-cga-functional-audit.md` | Verification owner | T374 S11 selected digital-CGA port/mode/snapshot/consumer audit and bounded write-only port-read repair selection. Retain with T374 history while the task is open. |
 | `operations/` | Execution, source, and release owners | Toolchain, policy, templates, release procedure, and closure material. |
 | `research/` | Source owner | Provenance, external references, and non-product research. |
 | `history/` | Documentation owner | Read-only legacy and M5 migration/roadmap evidence. |

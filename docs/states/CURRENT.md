@@ -2,6 +2,27 @@
 
 ## Current Work
 
+## M5 T374 S11 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; T374 S10 is accepted and remains the sole compact progress row. |
+| Admission And Approval | The owner approved continued T374 selected-device functional closure before timing/L3, including the explicit S10 raw-IMG boundary. The T374 proposal requires functional closure of selected CGA before board timing. |
+| Objective | Audit the complete retained digital-CGA functional surface of the selected Model 339: mode/color/CRTC/status ports, B8000h layout, reset, snapshot and INT 10h consumer behavior; identify one concrete, evidence-backed next repair or explicit transfer. |
+| Non-goals | No timing/cadence/contention values, composite output, EGA/VGA behavior, external ROM or guest-media use, host renderer change, 765 work, or Model-339 L3 claim. No code change occurs in this audit. |
+| Reference Baseline | T374 S1 owner inventory; T366 S6 Model-339 CGA topology; `vadp.{h,c}`; retained CGA and VM system smoke routes; IBM CGA/PC-AT technical documentation as primary behavior authority. |
+| Candidate Proposal | [IBM PC/AT 5170 selected-device functional closure](../proposals/m5-5170-selected-device-functional-closure.md). |
+| Files And ABI Surface | Evidence/history/index/status only for this audit; read-only inspection of core VADP, profile composition, generated firmware INT 10h path and CGA/Model-339 tests. A later repair names its exact source and snapshot ABI surface. |
+| Applicable Rules | `docs/README.md` Task Reading Set; `docs/rules/EXECUTION.md` lifecycle/evidence/similar-issue rules; `docs/rules/DOCUMENT.md`; `CONTRIBUTING.md`; source policy. Architecture/coding authorities apply to a later code repair, not this audit. |
+| Verification | Build a port/register/mode/reset/snapshot/consumer matrix; sweep VADP production routes and all CGA tests; run unchanged core-CGA and Model-339 focused targets through Git-Bash CMake/Ninja; run documentation governance and `git diff --check`. |
+| Expected Markers | Every retained Model-339 CGA surface is classified present, partial, absent or excluded with one owner and test route; any functional gap has one earliest receiver and no timing value or EGA/VGA implication. |
+| Asset Needs | None. Documentation is read only; no ROM, firmware, guest media, source import or local asset is opened, copied, written or committed. |
+| Reporting Requirements | Report the full retained-CGA matrix, exact primary-source boundary, complete production/test sweep, focused baseline, pushed P1, coordinator acceptance and next repair/transfer. |
+| Stop Conditions | Stop and transfer if a functional conclusion requires unapproved physical video timing, composite modeling, a vendor ROM, protected media, or a public display ABI change beyond a bounded repair. |
+| Exit Criteria | Indexed evidence classifies all retained Model-339 CGA functional routes and selects exactly one bounded repair or explicit transfer; focused baseline and documentation checks pass; no code, timing or L3 claim is introduced. |
+| Original Owner Request | Fully implement selected-machine functional gaps before timing/L3, retain external media/ROMs outside Git, and continue toward the pre-Windows L3 program. |
+| Similar-Issue Sweep | Search all tracked VADP ports, CGA mode/color/status/CRTC handling, VRAM layout, reset, snapshot, profile composition, INT 10h and CGA test routes so one mode or consumer cannot be silently excluded. |
+
 ## Current Technical Baseline
 
 - **Current developer artifact:** T369 S4 `vm-0-5-0369` /

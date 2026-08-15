@@ -97,3 +97,11 @@ Deleted Data and normal-read Control Mark form an explicit raw-media boundary;
 the independently unfinished Scan family remains deferred. Ordinary BIOS/DOS
 raw-sector behavior is unchanged. This does not close the FDC,
 selected-device, timing or Model-339 L3 work.
+
+### S11: Model-339 CGA functional audit
+
+S11's [CGA functional audit](../etc/evidence/t374-s11-model339-cga-functional-audit.md)
+classifies the selected digital-CGA VRAM, snapshot, port, reset and firmware
+consumer surface. It selects the incorrect read visibility of write-only CGA
+ports as S12's bounded repair, while transferring full 6845 geometry and all
+timing to later receivers.
