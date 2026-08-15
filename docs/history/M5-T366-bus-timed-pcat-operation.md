@@ -277,3 +277,4 @@ the accepted Model 339 lock, planar-parity NMI and device-topology pre-audits,
 and 80286 timing rows.  Complete CPU retirement, bus availability, device
 service timing and later model-L3 work transfer to their exact Queue/TODO
 receivers.  **5170 model-L3 is not ready.**
+S32 is accepted at `743edc18`; T366 is closed without a 5170 L3 claim.
