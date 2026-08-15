@@ -244,3 +244,10 @@ successful unprefixed protected `0F 03 /r LSL r16,r/m16` retirement.  Its
 [timing evidence](../etc/evidence/t366-s28-80286-lsl-timing.md) retains
 mode, prefix, descriptor, fault, delivery, bus and physical-time boundaries.
 S28 is accepted at `00a0db54`.
+
+### S29: 80286 SMSW timing
+
+S29 assigns Appendix-B fixed register `2` and memory `3` clocks to successful
+unprefixed `0F 01 /4 SMSW r/m16` retirement in its documented real/protected
+modes.  Its [timing evidence](../etc/evidence/t366-s29-80286-smsw-timing.md)
+retains prefix, fault, delivery, bus and physical-time boundaries.

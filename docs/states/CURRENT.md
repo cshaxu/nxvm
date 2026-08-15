@@ -2,9 +2,24 @@
 
 ## Current Work
 
-T366 S28 is accepted at `00a0db54`. The next T366 S must select the next
-source-determinate 80286 successful-retirement family; physical-time and
-device-timing claims remain blocked by the wider CPU ledger.
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | T366 S29, numbered continuation implementation subtask; P1 is one complete pushed implementation/evidence delivery. |
+| Admission And Approval | The owner approved continued L3 work on 2026-08-14. T366 admits source-determinate successful 80286 `0F 01 /4 SMSW r/m16` forms in their documented real/protected modes. |
+| Objective | Publish Intel's fixed SMSW register 2 and memory 3 clock costs through the sole retirement owner. |
+| Non-goals | No LMSW, descriptor-table/system-register loads, prefix, operand fault, delivery, bus/physical-time or device work. |
+| Reference Baseline | `9f30ea38`, Intel 80286 Instruction Set Appendix B, and the T366 proposal. |
+| Candidate Proposal | [Bus-timed PC/AT operation](../proposals/m5-bus-timed-pcat-operation.md), limited to source-backed 80286 successful retirement. |
+| Files And ABI Surface | Private 80286 classifier, focused timing smoke, T366 evidence/index/history/status; no public or device surface changes. |
+| Applicable Rules | Execution: complete pushed P and sweep. Architecture: one retirement publisher. Coding: owner-local classifier. Documentation: truthful state. Source policy: read-only primary manual evidence; no import/assets. |
+| Verification | Focused real/protected register/direct/indexed SMSW timing and MSW result; semantic smoke, current smokes, governance and diff check. |
+| Expected Markers | `M5:T357:S6:80286-INSTRUCTION-TIMING-LEDGER:OK`; Intel table gives `2,mem=3`. |
+| Asset Needs | No guest media, ROM, binary or imported source. |
+| Reporting Requirements | Report source isolation, verification, pushed P and acceptance. |
+| Stop Conditions | Stop if mode, privilege, memory or timing ownership cannot be represented without guessing. |
+| Exit Criteria | Pushed P proves only unprefixed documented SMSW retirement publishes 2/3 ticks with transfers retained. |
+| Original Owner Request | Continue until comprehensive L3 closure before Windows 3.1; primary Intel authority first. |
+| Similar-Issue Sweep | Audit `INS_0F_01`, mode/ModR/M/prefix legality, real/protected forms, timing classifiers and sole tick publisher. |
 
 ## Current Technical Baseline
 
