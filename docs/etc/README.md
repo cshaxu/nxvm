@@ -12,6 +12,7 @@ principal documents named in [docs/README.md](../README.md).
 | `architecture/` | Architecture owner | Current detailed machine, profile, layout, and contract rationale. |
 | `requirements/` | Product and profile owners | Future DOS, NXVDM, and profile admissions. |
 | `evidence/` | Verification owner | Capability, verification, baseline, and fixture evidence. |
+| `evidence/t375-s19-fdc-service-time-crosswalk.md` | Verification owner | T375 S19 named aftermarket-drive primary timing crosswalk, 86Box secondary boundary, existing FDC owner sweep, and elapsed-time scheduler receiver. Retain while T375 remains open. |
 | `evidence/t375-s18-external-time-trace.md` | Verification owner | T375 S18 explicit virtual-time trace event, focused proof, and persistent replay transfer. Retain while T375 remains open. |
 | `evidence/t375-s17-model339-virtual-time.md` | Verification owner | T375 S17 Model-339 HLT virtual-time source binding, conversion/reset/default exclusion proof, and replay/board-timing transfer. Retain while T375 remains open. |
 | `evidence/t375-s16-pit-pic-reference-bridge.md` | Verification owner | T375 S16 bounded 86Box-v6 PIT/PIC IRQ0 reference bridge, normalized checkpoint comparison, raw-log cleanup, and remaining timing receivers. Retain while T375 remains open. |
