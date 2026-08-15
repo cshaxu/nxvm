@@ -2,27 +2,6 @@
 
 ## Current Work
 
-## M5 T370 S4 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation; T370 S3 accepted at `ba5801f0`. |
-| Admission And Approval | The owner-approved ordered L3 program continues. S3 authorizes only 8042/keyboard source, FIFO/IRQ lifecycle and timing-domain reconciliation; no response delay or behavior change is admitted. |
-| Objective | Audit selected PC/AT 8042/keyboard command acceptance, FIFO publication, IRQ1/IRQ12 visibility, response/typematic configuration, reset/finalize, trace/copy boundary and project-domain relation; distinguish controller protocol facts from uncalibrated tick parameters. |
-| Non-goals | No command-set expansion, AUX protocol expansion, host input timing, response/typematic scalar, controller clock conversion, port `61h` PPI/speaker, ATA/HDC/MFM work, physical IRQ/INTA waveform, phase refinement or 5170-L3 claim. |
-| Reference Baseline | T370 S1--S3, T351 controller/keyboard/AUX evidence, T366 Model-339 input, selected descriptor, current `kbc.c`/`machine.c` and focused KBC/keyboard tests; IBM PC/AT and Intel UPI-41/42 manuals. |
-| Candidate Proposal | [PC/AT device service-timing corpus](../proposals/m5-device-service-timing-corpus.md). |
-| Files And ABI Surface | S4 evidence, T370 history, Current status and evidence index only. Stop and revise before source, ABI, CMake or runtime behavior changes. |
-| Applicable Rules | One device/FIFO/IRQ owner; validated publication; reset/finalize source release; copied host boundary; source-policy and documentation rules. The project command/typematic tick fields are not a physical time source. |
-| Verification | Manual-to-route matrix, KBC/keyboard source/test sweep, descriptor timing-parameter audit, documentation governance and diff check. No runtime marker or artifact is manufactured by this reconciliation-only S. |
-| Expected Markers | Existing KBC/keyboard owner smokes remain evidence; S4 adds no marker, timing value or L3 claim. |
-| Asset Needs | No ROM, guest media, firmware, external code, binary, raw input trace or host capture. Public manuals and project-authored evidence only. |
-| Reporting Requirements | Map command/FIFO/IRQ/reset routes and every configurable delay field; identify source/board/domain gaps and reference-model limit; name S5 receiver. |
-| Stop Conditions | Stop and revise if a result needs a guessed delay, new input path, host pacing, controller behavior change, a second scheduler or public interface. |
-| Exit Criteria | P1 commits an indexed KBC/keyboard lifecycle/domain reconciliation with exact S5 transfer, retains no unsupported time conversion and leaves 5170-L3 open. |
-| Original Owner Request | Continue in Queue order toward complete L3 before Windows 3.1; use named reference models only where authoritative manuals leave a range or no range, without treating them as IBM authority. |
-| Similar-Issue Sweep | Sweep KBC command/data/FIFO/IRQ1/IRQ12/advance/reset/finalize paths, keyboard ingress/typematic/response routes, configuration and descriptor fields, timeline callback, trace consumers and focused tests; classify every hit or revise the packet. |
-
 ## Current Technical Baseline
 
 - **Current developer artifact:** T369 S4 `vm-0-5-0369` /
@@ -42,7 +21,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T370 S3 | P1 `3d5cd542` proves one FDC DRQ/DMA2/IRQ6 lifecycle and retains the absence of a uPD765-to-project-clock conversion. It transfers S4 to KBC/keyboard and leaves FDC service values unallocated. [S3 reconciliation](../etc/evidence/t370-s3-dma-fdc-domain-reconciliation.md). |
+| T370 S4 | P1 `12e77141` reconciles the selected 8042/keyboard command, FIFO, IRQ and reset owners, and confirms all three Model-339 KBC duration fields are zero rather than physical scalars. It transfers planar-parity NMI, CGA/VADP and the task transfer audit to S5; **5170 model-L3 remains open**. [S4 reconciliation](../etc/evidence/t370-s4-kbc-keyboard-domain-reconciliation.md). |
 | T369 | Closed at `08a64bea`: S1--S4 lock and audit the 5170 Model-339 bus-stage input, logical 80286 DMA handoff and selected FDC/PIC visibility. Board waits, physical waveforms, device service, phase refinement and final 5170 L3 remain exact ordered transfers; **5170 model-L3 is not ready**. [Closure audit](../etc/evidence/t369-s4-pcat-bus-stage-closure-audit.md). |
 | T368 | Closed at `4da84be8`: completes the source-labelled 80286 successful-retirement CPU ledger, with exact values or declared source-undefined transfers. The next Queue receiver is bus-timed PC/AT operation; CPU waits, bus/device timing and IBM 5170 L3 remain open. [Closure audit](../etc/evidence/t368-s7-80286-retirement-closure-audit.md). |
 | T367 | Closed at `f60d87ea`: concrete machine selection and CPU/timing contract binding are VM-owned; the default-PC/AT option path now selects a VM contract before the sole core materialization boundary, while Model 339 remains descriptor-selected. Focused profile/session regressions pass; an unrelated platform-request compile failure blocks a full-gate claim. No CPU-timing, bus, device or L3 receiver is closed. [Binding evidence](../etc/evidence/t367-s2-vm-profile-contract-binding.md). |

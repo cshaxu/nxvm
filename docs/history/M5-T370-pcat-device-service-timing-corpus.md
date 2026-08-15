@@ -54,3 +54,7 @@ fields.  The [reconciliation](../etc/evidence/t370-s4-kbc-keyboard-domain-reconc
 therefore preserves protocol/lifecycle proof without converting KBC project
 ticks into controller or keyboard duration.  S5 receives planar-parity NMI,
 CGA/VADP visible-state/raster work and the task-level transfer audit.
+
+S4 is accepted at `12e77141`. Its retained zero-delay configuration is an
+explicit non-admission of physical controller or keyboard duration, not a
+completed 5170 timing result.
