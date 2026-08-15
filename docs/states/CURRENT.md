@@ -2,27 +2,6 @@
 
 ## Current Work
 
-## M5 T375 S6 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner: user. Approval: persistent instruction to continue implementing the current L3 plan, reaffirmed in this session; scope limited to the S5-selected composition virtual-time boundary. No source/media exception is needed. |
-| Objective | Bind an injected, production VM-session virtual-time source to the Model-339 composition path, and use a nonzero source-tick batch only after the core reports `WAITING_FOR_INTERRUPT` while the runner remains active and not completing a single-step pause. |
-| Non-goals | Do not derive guest time from host sleep, add a platform monotonic clock, claim timer/phase/Model-339 L3 closure, change CPU-retirement accounting, or add a test-only public injection API. |
-| Reference Baseline | T375 S4 explicit core machine-time contract (`91539339`, accepted `2eedff53`) and T375 S5 source-policy selection (`5832334e`, accepted `d27b0e5a`). |
-| Candidate Proposal | [M5 5170 board/phase timing closure](../proposals/m5-5170-board-phase-timing-closure.md); S5 policy evidence selects the session-owned injected provider contract. |
-| Files And ABI Surface | `src/vm/composition/session/session_interface.h`, session storage, reset and runner paths, a composition-private virtual-time helper, focused product/composition smoke target, evidence index and CURRENT status only. The session configuration gains a production source descriptor; its caller-owned context must outlive the session. |
-| Applicable Rules | Architecture layering: source selection remains VM composition-owned and calls the core only through `core_machine_advance_time`; coding/lifecycle rules require explicit ownership, reset and failure behavior; source policy forbids host sleep as time. Evidence records the exact call gates and proof. No exception requested. |
-| Verification | Configure and build the focused smoke; prove a supplied nonzero batch reaches the core time API exactly once, zero/absent source does not advance, a reset invokes the provider rebase callback, and the runner-facing helper rejects a non-waiting result or inactive control state. Static runner review proves the single-step pause excludes source consumption. Run documentation governance. |
-| Expected Markers | `M5:T375:S6:VIRTUAL-TIME-SOURCE:OK` and documentation-governance success. |
-| Asset Needs | None. No ROM, guest medium, or host-duration source is used. |
-| Reporting Requirements | Record source lifetime, activation/reset/failure semantics, exact focused proof and remaining host-source transfer in indexed evidence. Report the implementation P and later independent acceptance P concisely. |
-| Stop Conditions | Stop for a required host-clock semantic decision, an ABI/lifetime conflict that cannot be bounded here, or a discovered need to change time authority beyond S5; otherwise transfer host source/rate policy to later S. |
-| Exit Criteria | A caller can configure a non-test-only session source; only active, non-step `WAITING_FOR_INTERRUPT` processing can consume it; one nonzero source batch calls core explicit time once; reset rebases it; defaults remain non-advancing; focused proof and governance pass; no L3 claim is made. |
-| Original Owner Request | Continue the current task plan toward L3, and specifically avoid pure test APIs when clarifying direct injection versus native input boundaries. |
-| Similar-Issue Sweep | Inspect all session creation paths, reset paths and runner wait branches; retain no alternate direct time advancement or host-sleep-derived guest clock. |
-
 ## Current Technical Baseline
 
 - **Current developer artifact:** T369 S4 `vm-0-5-0369` /
@@ -42,7 +21,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T375 S5 | Accepted P1 `5832334e`: Model-339 virtual source ticks must be an injected composition capability; host sleep is rejected as a timing source and S6 owns the binding/proof. [Policy](../etc/evidence/t375-s5-model339-virtual-time-policy.md). |
+| T375 S6 | Accepted P1 `4cc137f8`: VM session now owns an injected virtual-source descriptor that advances machine time only for active, non-step core waits; reset rebases it and host sleep remains non-temporal. [Binding evidence](../etc/evidence/t375-s6-model339-virtual-time-source-binding.md). |
 | T374 | Closed at `f742433c`: S1--S19 complete the selected Model-339 functional closure and preserve raw-IMG 765 Deleted/Control-Mark/Scan as explicit TODO debt. Board/device timing, final Model-L3, DeskPro 386, PC/XT and Windows 3.1 remain open. [Closure audit](../etc/evidence/t374-s19-task-closure-audit.md). |
 | T373 | Closed at `06246a8e`: S1--S4 freeze the three-machine source-labelled capability ledger and exact functional/timing/current-product receivers. **5170, DeskPro Model 40 and PC/XT 5160-268 L3 are not ready.** The next candidate is 5170 selected-device functional closure. [Closure audit](../etc/evidence/t373-s4-task-closure-audit.md). |
 | T372 | Closed at `3f56c72c`: S1--S8 establish that Model 339 has selected logical ownership and deterministic ordering, but lacks selected-device functional closure and source-backed board/phase timing. **5170 model-L3 is not ready.** [Closure audit](../etc/evidence/t372-s8-task-closure-transfer-audit.md). |
@@ -50,7 +29,6 @@
 | T369 | Closed at `08a64bea`: S1--S4 lock and audit the 5170 Model-339 bus-stage input, logical 80286 DMA handoff and selected FDC/PIC visibility. Board waits, physical waveforms, device service, phase refinement and final 5170 L3 remain exact ordered transfers; **5170 model-L3 is not ready**. [Closure audit](../etc/evidence/t369-s4-pcat-bus-stage-closure-audit.md). |
 | T368 | Closed at `4da84be8`: completes the source-labelled 80286 successful-retirement CPU ledger, with exact values or declared source-undefined transfers. The next Queue receiver is bus-timed PC/AT operation; CPU waits, bus/device timing and IBM 5170 L3 remain open. [Closure audit](../etc/evidence/t368-s7-80286-retirement-closure-audit.md). |
 | T367 | Closed at `f60d87ea`: concrete machine selection and CPU/timing contract binding are VM-owned; the default-PC/AT option path now selects a VM contract before the sole core materialization boundary, while Model 339 remains descriptor-selected. Focused profile/session regressions pass; an unrelated platform-request compile failure blocks a full-gate claim. No CPU-timing, bus, device or L3 receiver is closed. [Binding evidence](../etc/evidence/t367-s2-vm-profile-contract-binding.md). |
-| T366 | Closed at `743edc18`: locks the Model 339 baseline, planar-parity NMI and selected topology, and accepts bounded 80286 source-retirement rows. Complete CPU retirement, bus availability, device service timing and profile-L3 closure transfer explicitly; **5170 model-L3 is not ready**. [Closure audit](../etc/evidence/t366-s32-closure-transfer-audit.md). |
 
 ## Recent Governance
 
