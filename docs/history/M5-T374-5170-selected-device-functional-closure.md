@@ -30,3 +30,11 @@ compares each selected S1 owner with the Model-339 primary-document boundary.
 It selects the missing 8042 command-port `F0h`--`FFh` output-port pulse reset
 behavior as the first owner-local repair. The pulse duration remains timing
 work and no other output-port bit gains an invented consumer.
+
+### S3: 8042 output-port pulse reset
+
+S3's [pulse-reset repair evidence](../etc/evidence/t374-s3-8042-pulse-reset-repair.md)
+records the owner-local `F0h`--`FFh` command handling, preserving D1h's
+persistent output-port/A20 route and assigning no pulse duration. Fresh KBC,
+Model-339 composition and AUX regressions pass; other selected controller
+functional gaps remain in T374.

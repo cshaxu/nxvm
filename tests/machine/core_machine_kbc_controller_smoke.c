@@ -263,6 +263,14 @@ C_INT main(C_VOID)
     failed |= !memory.data.flagA20;
     core_machine_port_write(&port, 0x0064u, 0xd0u);
     failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0x03u;
+    core_machine_port_write(&port, 0x0064u, 0xffu);
+    failed |= core_machine_cpu_execution_consume_reset_request(&execution) ||
+        !memory.data.flagA20;
+    core_machine_port_write(&port, 0x0064u, 0xfeu);
+    failed |= !core_machine_cpu_execution_consume_reset_request(&execution) ||
+        !memory.data.flagA20;
+    core_machine_port_write(&port, 0x0064u, 0xd0u);
+    failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0x03u;
     core_machine_port_write(&port, 0x0064u, 0xd1u);
     core_machine_port_write(&port, 0x0060u, 0x00u);
     failed |= memory.data.flagA20 ||

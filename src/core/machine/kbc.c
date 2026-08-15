@@ -564,6 +564,14 @@ static C_VOID core_machine_kbc_write_command(t_port *port,
         controller->data.pending_write = CORE_MACHINE_KBC_PENDING_AUX_DEVICE;
         break;
     default:
+        /* IBM PC/AT 8042 commands F0h--FFh pulse output-port bits selected
+         * by zero command bits. Bit 0 is the reset line. The pulse must not
+         * overwrite the persistent D1h output-port/A20 state. Its duration
+         * belongs to the board timing contract, not this functional owner. */
+        if (command >= 0xf0u && (command & 0x01u) == 0u &&
+            controller->connect.execution != STD_NULL) {
+            core_machine_cpu_execution_request_reset(controller->connect.execution);
+        }
         break;
     }
     controller->data.input_buffer_full = TYPE_FALSE;
