@@ -217,6 +217,7 @@ principal documents named in [docs/README.md](../README.md).
 | `evidence/t374-s16-default-ega-vadp-direction-repair.md` | Verification owner | T374 S16 default-PC/AT VADP descriptor-direction correction, complete handler/leaf sweep and focused Model-339/EGA regression proof. Retain with T374 history while the task is open. |
 | `evidence/t374-s17-model339-kbc-keyboard-functional-audit.md` | Verification owner | T374 S17 Model-339 8042/101-key keyboard function matrix, IRQ1-only owner sweep, source boundary and native-Set-2/translation repair selection. Retain with T374 history while the task is open. |
 | `evidence/t374-s18-native-keyboard-input-boundary.md` | Verification owner | T374 S18 native keyboard-to-8042 production boundary, Set-2/Set-1 translation scope, caller sweep and focused proof. Retain with T374 history while the task is open. |
+| `evidence/t374-s19-task-closure-audit.md` | Verification owner | T374 S19 selected-device functional closure, raw-IMG 765 boundary, timing receiver and no-L3 audit. Retain with T374 history while the task is open. |
 | `operations/` | Execution, source, and release owners | Toolchain, policy, templates, release procedure, and closure material. |
 | `research/` | Source owner | Provenance, external references, and non-product research. |
 | `history/` | Documentation owner | Read-only legacy and M5 migration/roadmap evidence. |

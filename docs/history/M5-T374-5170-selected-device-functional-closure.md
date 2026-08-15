@@ -161,3 +161,11 @@ production operation. The VM host adapter emits Set 2; the KBC owns Set-2 to
 Set-1 translation, FIFO and IRQ1. It covers supported Set 1/2 selection,
 ordinary/extended make-break and the exact Pause stream. Timing, AUX/IRQ12,
 Set 3 and nonstandard streams remain excluded.
+
+### S19: selected-device functional closure audit
+
+S19's [closure audit](../etc/evidence/t374-s19-task-closure-audit.md)
+reconciles all Model-339 selected functional rows, preserves the owner-approved
+raw-IMG 765 Deleted/Control-Mark/Scan TODO boundary, and transfers only
+availability/service/board phase questions to T375. It makes no Model-L3
+claim.
