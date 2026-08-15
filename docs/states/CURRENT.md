@@ -2,27 +2,6 @@
 
 ## Current Work
 
-## M5 T374 S3 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation; T374 remains the latest open numeric task and S3 follows accepted S2. |
-| Admission And Approval | The owner approved the Model-339 primary-source 8042 pulse-reset repair selected by T374 S2, before board/device timing closure. |
-| Objective | Implement IBM 8042 command-port `F0h`--`FFh` output-port pulse semantics at the existing KBC owner: a command with bit 0 clear requests the existing CPU reset operation while preserving persistent output-port/A20 state; a bit-0-set command does not request reset. |
-| Non-goals | No pulse duration conversion, timing scalar, new reset vector policy, controller rewrite, external ROM/media use, AUX change, EGA/VGA, ATA/HDC, MFM/ST-506, generic PC/AT expansion, or Model-339 L3 claim. Other output-port pulse bits remain unobservable/no-op. |
-| Reference Baseline | T374 S2 functional contract; IBM PC/AT Technical Reference March 1986 (F0h--FFh pulse-output-port contract); `core_machine_kbc_apply_output_port()` existing D1h reset/A20 owner; T374 S1 focused test boundary. |
-| Candidate Proposal | [IBM PC/AT 5170 selected-device functional closure](../proposals/m5-5170-selected-device-functional-closure.md). |
-| Files And ABI Surface | `src/core/machine/kbc.c`, cohesive KBC smoke, T374 evidence/history/index, and `docs/states/CURRENT.md`; no public header/ABI, profile descriptor, media, firmware or runtime configuration change. |
-| Applicable Rules | `docs/README.md` Task Reading Set; `docs/rules/EXECUTION.md` implementation/P lifecycle, evidence and similar-issue rules; `docs/rules/DOCUMENT.md`; `CONTRIBUTING.md`; `docs/design/ARCHITECTURE.md`; `docs/design/CODING.md`; `docs/rules/ARCHITECTURE.md`; `docs/rules/CODING.md`; source policy. |
-| Verification | Add a focused KBC regression that proves FEh requests reset once, FFh requests none, output-port/A20 persist unchanged, and D0h/D1h plus existing keyboard/AUX behavior remain. Fresh-clean/rebuild the changed KBC target and selected Model-339 composition smoke through Git-Bash Ninja; run both and documentation governance plus `git diff --check`. |
-| Expected Markers | One owner-local command decode routes reset only through the existing KBC-to-execution boundary, with no duplicate reset path and no persistent mutation from a pulse command. |
-| Asset Needs | None. Primary documentation was read only; no ROM, firmware, media, trace, source import or local asset is added. |
-| Reporting Requirements | Report owner-boundary confirmation, repair/test result, similar-command sweep, fresh build/replay, pushed P1, coordinator acceptance and next Model-339 functional receiver. |
-| Stop Conditions | Stop if implementing pulse behavior requires a project duration, a reset-vector/triple-fault policy, a new board signal consumer, a generic device capability, or a primary-source conflict; transfer rather than infer. |
-| Exit Criteria | `F0h`--`FFh` command decoding satisfies the selected bit-0 reset/no-reset contract through the existing owner; no persistent A20/output-port mutation occurs; focused regression and fresh target rebuild pass; all non-goals remain intact. |
-| Original Owner Request | Implement the selected machine's functional gaps before timing/L3 closure, treating exact documentation as authority and reference emulators only as fallback. |
-| Similar-Issue Sweep | Inspect all command-port cases and every caller of `core_machine_kbc_apply_output_port()`/CPU reset request; verify that D1h retains its persistent-output contract, pulse commands gain only transient reset delivery, and no AUX/platform/firmware path duplicates the reset request. |
-
 ## Current Technical Baseline
 
 - **Current developer artifact:** T369 S4 `vm-0-5-0369` /
@@ -42,7 +21,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T374 S2 | P1 `e6b6bcc5` establishes the Model-339 primary functional contract and selects the 8042 F0h--FFh pulse-reset repair. The pulse duration is explicitly later timing work. [Contract matrix](../etc/evidence/t374-s2-model339-functional-contract-matrix.md). |
+| T374 S3 | P1 `6869ced4` adds the primary-source 8042 F0h--FFh transient pulse-reset behavior through the existing KBC reset owner. Fresh KBC, Model-339 composition and AUX regressions pass; all pulse timing and remaining selected-device work stay open. [Repair evidence](../etc/evidence/t374-s3-8042-pulse-reset-repair.md). |
 | T373 | Closed at `06246a8e`: S1--S4 freeze the three-machine source-labelled capability ledger and exact functional/timing/current-product receivers. **5170, DeskPro Model 40 and PC/XT 5160-268 L3 are not ready.** The next candidate is 5170 selected-device functional closure. [Closure audit](../etc/evidence/t373-s4-task-closure-audit.md). |
 | T372 | Closed at `3f56c72c`: S1--S8 establish that Model 339 has selected logical ownership and deterministic ordering, but lacks selected-device functional closure and source-backed board/phase timing. **5170 model-L3 is not ready.** [Closure audit](../etc/evidence/t372-s8-task-closure-transfer-audit.md). |
 | T370 | Closed at `77a73c04`: S1--S5 reconciled all selected Model-339 device-service owners and transferred unavailable duration to phase refinement; **5170 model-L3 is not ready**. [Closure audit](../etc/evidence/t370-s5-planar-cga-transfer-audit.md). |
