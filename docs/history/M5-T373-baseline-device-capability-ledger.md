@@ -38,3 +38,12 @@ that no selected baseline capability is complete, distinguishes 5170's partial
 logical foundation from the empty DeskPro/XT compositions, and assigns every
 retained generic product capability to the current-product closure rather than
 to a baseline by inference. T373 still requires its task-level closure audit.
+
+### S4: task-level closure audit
+
+S4's [closure audit](../etc/evidence/t373-s4-task-closure-audit.md) maps every
+proposal requirement to S1--S3 evidence and verifies the exact functional,
+timing, final-audit, current-product, or TODO receiver for every remaining
+gap. It concludes that T373 may close only as a planning/ownership task: no
+baseline has reached model-L3 and the next implementation receiver is the
+queued Model-339 selected-device functional closure.

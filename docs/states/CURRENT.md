@@ -2,6 +2,27 @@
 
 ## Current Work
 
+## M5 T373 S4 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; T373 remains the latest open numeric task and S4 follows accepted S3. |
+| Admission And Approval | The owner approved the ordered three-baseline, functional-before-timing L3 program and the capability-ledger candidate now under closure review. |
+| Objective | Perform T373's task-level closure audit: map every proposal requirement to S1--S3 evidence, confirm that all residual implementation work has an exact Queue/TODO receiver, and make a truthful close/not-close decision without converting a classified gap into an L3 claim. |
+| Non-goals | No device/profile implementation, new source research, timing value, ROM/media use, Queue reordering, or Windows work. An unresolved requirement stops closure rather than being papered over. |
+| Reference Baseline | [Capability-ledger proposal](../proposals/m5-baseline-device-capability-ledger.md); T373 S1 support inventory; T373 S2 BOM/source ledger; T373 S3 capability classification; M5 Queue and TODO. |
+| Candidate Proposal | [Baseline-machine and supported-device capability ledger](../proposals/m5-baseline-device-capability-ledger.md). |
+| Files And ABI Surface | New T373 S4 closure-audit evidence, history record, `docs/etc/README.md`, and `docs/states/CURRENT.md` only; no source, ABI, profile, build, ROM, media, Queue, or TODO mutation in P1. |
+| Applicable Rules | `docs/README.md` Task Reading Set; `docs/rules/EXECUTION.md` task closure, evidence, P lifecycle and role review; `docs/rules/DOCUMENT.md`; `CONTRIBUTING.md`; source policy's external-asset boundary. |
+| Verification | Inspect the proposal, all T373 evidence, current Queue and TODO receivers, and the actual P1 document changes; create a requirement-to-evidence/transfer matrix; run documentation governance and `git diff --check`. Coordinator P2 may close only if every in-scope gap is assigned and the final record remains non-L3. |
+| Expected Markers | One indexed closure audit answers every required-scope and evidence-standard clause, proves that no capability is silently unowned, and makes T373's result an explicit planning prerequisite rather than a machine-completion claim. |
+| Asset Needs | None. No ROM/media/download/reference runtime is required or admitted. |
+| Reporting Requirements | Report closure audit decision, exact accepted evidence, residual receivers, focused verification, pushed P1, coordinator acceptance/rejection, and the next candidate eligible for admission. |
+| Stop Conditions | Do not close if a requirement lacks evidence, a selected/public capability lacks a functional or timing receiver, a proposal/Queue link is stale, or an audit finding would require implementation. Transfer an implementation finding to its established receiver. |
+| Exit Criteria | Every T373 proposal clause maps to durable S1--S4 evidence and exact later receiver where work remains; no DeskPro/XT unknown has become inferred hardware; no current-product capability lacks a disposition; governance checks pass; the coordinator can truthfully close T373. |
+| Original Owner Request | Build the three-machine capability/deficit ledger first, then implement functional and L3 closure in Queue order before Windows 3.1. |
+| Similar-Issue Sweep | Recheck every classified selected baseline and current-product row against Queue/TODO: 5170 selected devices, DeskPro/XT profile composition, EGA/ATA/AUX, unsupported peripherals, external ROM/media, and MFM exclusion; each must have one stated disposition and no duplicate receiver. |
+
 ## Current Technical Baseline
 
 - **Current developer artifact:** T369 S4 `vm-0-5-0369` /
