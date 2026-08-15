@@ -388,6 +388,14 @@ C_INT vm_session_create(const vm_session_config *config, vm_session **out_sessio
             vm_session_apply_core_config_overrides(session, config);
         }
     }
+    if (session->profile == vm_profile_ibm_5170_model_339_descriptor_get() &&
+        session->virtual_time_source.next == STD_NULL &&
+        vm_platform_virtual_time_source_initialize(
+            &session->model_339_virtual_time_source, 8000000u,
+            &session->virtual_time_source) != TYPE_STATUS_OK) {
+        STD_FREE(session);
+        return TYPE_STATUS_FAULT;
+    }
     {
         type_status status = vm_session_initialize(session);
 

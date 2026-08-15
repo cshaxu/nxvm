@@ -133,6 +133,9 @@ target_link_libraries(vm-session-reconfigure-smoke PRIVATE vm-composition)
 add_executable(vm-session-virtual-time-s6-smoke
     tests/products/vm_session_virtual_time_s6_smoke.c)
 target_link_libraries(vm-session-virtual-time-s6-smoke PRIVATE vm-composition)
+add_executable(vm-model339-virtual-time-s17-smoke
+    tests/products/vm_model339_virtual_time_s17_smoke.c)
+target_link_libraries(vm-model339-virtual-time-s17-smoke PRIVATE vm-composition)
 
 target_link_libraries(core-machine-contract-smoke PRIVATE core-machine)
 
@@ -940,6 +943,7 @@ target_link_libraries(vm-platform-host-surface-smoke PRIVATE
 )
 set(VM_PLATFORM_SOURCES
     src/vm/platform/platform.c
+    src/vm/platform/virtual_time.c
     src/vm/platform/host_surface.c
     src/vm/platform/execution.c
     src/vm/platform/input_flush.c

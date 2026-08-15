@@ -2,9 +2,24 @@
 
 ## Current Work
 
-| Task | Compact progress |
+| Field | Required record |
 | --- | --- |
-| T375 S16 | Accepted P1 `d6b5f6b6`: bounded external 86Box v6 ROM-initialization bridge confirms the selected IRQ0 service ordering without a production correction; raw trace was deleted. It is a model cross-check, not physical timing or Model-339 L3 closure. [Evidence](../etc/evidence/t375-s16-pit-pic-reference-bridge.md). |
+| Identifier Mode | Continuation - M5 T375 S17. |
+| Admission And Approval | The owner directed continued implementation of the approved L3 program and approved the prior virtual-time source boundary. This S may add an owner-local VM-platform monotonic source for the selected Model-339 profile, but no host duration may enter core directly. |
+| Objective | Make Model-339 HLT waiting advance through the existing VM composition source boundary using a bounded, fractional-carry monotonic source at its declared nominal 8 MHz source rate. |
+| Non-goals | No change to core publication ownership, CPU retirement timing, device-specific service duration, host-time board-fact claim, default-PC/AT automatic source, ROM/media use, or Model-L3 closure. |
+| Reference Baseline | T375 S4-S6 explicit machine-time and source-binding contracts; Model-339's declared nominal 8 MHz CPU source and primary PIT/RTC conversions. |
+| Candidate Proposal | [IBM PC/AT 5170 board and device phase-timing closure](../proposals/m5-5170-board-phase-timing-closure.md). |
+| Files And ABI Surface | VM platform virtual-time implementation and private session storage may change. The existing public `vm_session_virtual_time_source` contract remains the sole composition-to-core route; no test-only API is allowed. |
+| Applicable Rules | Execution, architecture one-owner/no-platform-guest-mutation, coding public-boundary/test rules, and source policy apply. The source must be bounded, reset-rebased, and replay-observable through the existing source contract. |
+| Verification | Add focused Model-339 source conversion, fractional carry, first-sample, reset, default-profile exclusion, and HLT-to-IRQ0 lifecycle proof; run relevant existing virtual-time/PIT tests and documentation governance. |
+| Expected Markers | `M5:T375:S17:MODEL339-VIRTUAL-TIME:OK` and retained S4/S6 markers. |
+| Asset Needs | No external assets or media. |
+| Reporting Requirements | Record source rate, conversion/cap policy, reset and HLT lifecycle evidence, no-default leakage, any transfer, and review result. |
+| Stop Conditions | Stop if a required monotonic capability cannot stay VM-platform owned, if conversion must mutate a device directly, if deterministic record/replay requires a larger product admission, or if an unbounded host pause cannot be safely bounded. |
+| Exit Criteria | The selected profile supplies only bounded source batches through the existing path; reset and default exclusion are proven; focused tests and governance pass; P1/P2 record remaining physical-timing receivers. |
+| Original Owner Request | Continue the complete L3 implementation before Windows 3.1; do not use test-only input APIs or require whole-machine reference boots. |
+| Similar-Issue Sweep | Review all virtual-time-source construction/call/reset paths, platform time accesses, HLT waiting paths, profile selection, and default-PC/AT session construction. |
 
 ## Current Technical Baseline
 
