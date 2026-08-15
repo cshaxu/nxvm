@@ -2,6 +2,27 @@
 
 ## Current Work
 
+## M5 T370 S2 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; T370 S1 accepted at `990e31a3`. |
+| Admission And Approval | The owner-approved ordered L3 program continues. S1 authorizes a PIT/PIC/RTC source-and-domain reconciliation only; it does not authorize a timing value, clock conversion or device behavior change. |
+| Objective | Reconcile the selected PC/AT PIT IRQ0, dual-PIC logical acknowledgement and RTC/CMOS IRQ8 command/event contracts with current clock-domain, callback, trace, reset and copied-consumer routes; determine exactly which source facts can be represented now and which require a later conversion/model. |
+| Non-goals | No runtime timing scalar, PIT mode expansion, physical INTA, host time, RTC calendar change, new trace ABI, DMA/FDC/KBC/VADP work, ATA/HDC/MFM route, phase refinement or 5170-L3 claim. |
+| Reference Baseline | T370 S1 ledger; T349 PIC, T350 PIT/RTC and T369 bus-stage evidence; Intel 8254/8259A, Motorola MC146818A and IBM PC/AT technical references; current `pit.c`, `pic.c`, `rtc.c`, `machine.c` and focused owner tests. |
+| Candidate Proposal | [PC/AT device service-timing corpus](../proposals/m5-device-service-timing-corpus.md). |
+| Files And ABI Surface | S2 evidence, T370 history, Current status and evidence index only. Stop and revise before any source, ABI, CMake or timing-table edit. |
+| Applicable Rules | One-owner device lifecycle; validation-before-publication; reset/cancel and copied-consumer boundaries; source-policy and documentation rules. The deterministic timeline is not itself a physical time source. |
+| Verification | Primary-source fact table, production/test caller sweep, existing PIT/PIC/RTC smoke inventory, documentation governance and diff check. No task artifact or runtime marker is manufactured by this reconciliation-only S. |
+| Expected Markers | Existing device smokes remain evidence; S2 introduces no new marker and does not claim a frequency conversion. |
+| Asset Needs | No ROM, guest media, firmware, external code, binary, raw trace or host observation. Public manuals and project-authored evidence only. |
+| Reporting Requirements | Separate chip input/behavior facts from board wiring and project-domain conversion; map every event/ack/reset route; record reference-model exclusion or cross-check limit; name the exact S3 receiver. |
+| Stop Conditions | Stop and revise if a source fact requires a guessed tick ratio, host pacing, physical INTA assertion, changed device behavior, a second scheduler or a public interface. |
+| Exit Criteria | P1 commits an indexed PIT/PIC/RTC source-to-route/domain reconciliation with a bounded S3 receiver; it preserves all existing behavior and leaves 5170-L3 open. |
+| Original Owner Request | Continue in Queue order toward complete L3 before Windows 3.1; use named reference models only where authoritative manuals leave a range or no range, without treating them as IBM authority. |
+| Similar-Issue Sweep | Sweep PIT output/ports/reset, PIC source/select/ack/refresh/reset, RTC port/register-C/event/reset, machine arbitration/readiness callbacks, clock-domain configuration, trace consumers, selected Model-339 composition and all focused device tests; classify each hit or revise the packet. |
+
 ## Current Technical Baseline
 
 - **Current developer artifact:** T369 S4 `vm-0-5-0369` /

@@ -23,3 +23,11 @@ explicit transfers.
 S1 is accepted at `a3df36dd`. S2 is limited to PIT, PIC and RTC/CMOS
 command/event-domain reconciliation; it may not select a time conversion until
 the source, project clock and consumer boundary all agree.
+
+### S2: PIT/PIC/RTC domain reconciliation
+
+S2 retains the existing controller lifecycle and event ordering, but confirms
+that the descriptor ratios and RTC `ticks_per_second` lack a source-labelled
+physical conversion. The [reconciliation](../etc/evidence/t370-s2-pit-pic-rtc-domain-reconciliation.md)
+therefore transfers oscillator/INTA propagation and gives S3 the bounded
+dual-8237A/FDC controller-domain decision.
