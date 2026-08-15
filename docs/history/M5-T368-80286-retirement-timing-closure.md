@@ -17,3 +17,4 @@ separates accepted string/port, primary and control-stack rows from the
 remaining prefix, system-context and final-default fallback classes.  S2 must
 prove reachability and authority by source/form/context before admitting a
 new value; S1 makes no timing or L3 claim.
+S1 is accepted at `06b0098c`.

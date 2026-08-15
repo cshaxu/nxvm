@@ -2,26 +2,9 @@
 
 ## Current Work
 
-## M5 T368 S1 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | New; T367 closed at `bc1209d9`. |
-| Admission And Approval | The owner authorized continued L3 execution before Windows 3.1; the first incomplete Queue candidate follows closed T367. |
-| Objective | Establish the complete, source/form/context disposition of every still-successful 80286 retirement route before any PC/AT bus availability work. |
-| Non-goals | No bus/fetch/wait/DMA/device timing, physical-clock conversion, firmware/media import, board change or 5170 L3 claim. |
-| Reference Baseline | `bc1209d9`, [T366 closure audit](../etc/evidence/t366-s32-closure-transfer-audit.md), [80286 successful-retirement timing closure](../proposals/m5-80286-retirement-timing-closure.md). |
-| Candidate Proposal | [80286 successful-retirement timing closure](../proposals/m5-80286-retirement-timing-closure.md). |
-| Files And ABI Surface | Ledger/evidence/history/status and, only when a source-backed row is admitted, its existing private retirement classifier/test; no public ABI. |
-| Applicable Rules | Execution: new task packet/evidence. Architecture: one shared retirement publisher. Coding: source-backed values and fault boundaries. Documentation: exact transfers/no overclaim. Source policy: authority-led research only. |
-| Verification | Repository classifier/publisher sweep, source/form/context ledger, focused semantic/timing tests per admitted family, current gate when build health permits, governance and diff check. |
-| Expected Markers | Every remaining successful 80286 route has one exact source value, permitted same-profile model reduction, or one explicit admission receiver; no reached fallback remains silently one tick. |
-| Asset Needs | No guest media, ROM, binary or imported source. |
-| Reporting Requirements | Name all direct and fallback publishers, contexts and source authority; distinguish completed rows, unreduced ranges and external receivers. |
-| Stop Conditions | Stop a row when available authority cannot distinguish its successful context; transfer it once rather than invent a scalar. |
-| Exit Criteria | Pushed inventory proves a finite T368 mechanism plan and does not claim a physical 8 MHz clock or 5170 L3. |
-| Original Owner Request | Continue comprehensive L3 execution before Windows 3.1, following the Queue dependency chain. |
-| Similar-Issue Sweep | Sweep 80286 classifiers, default/prefix publishers, lookup fallback, control/system routes, source tables, focused ledger tests and verifier scripts. |
+T368 remains open.  S1 is accepted; S2 must turn its residual classifier
+classes into a source/form/context reachability table before assigning any new
+80286 successful-retirement value.
 
 ## Current Technical Baseline
 
@@ -42,6 +25,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T368 S1 | Accepted at `06b0098c`: records the sole post-refresh 80286 retirement publisher, its ordered classifier chain, and finite prefix/system/default fallback classes. No source value, physical clock, bus, device or L3 receiver is closed. [Route inventory](../etc/evidence/t368-s1-80286-retirement-route-inventory.md). |
 | T367 | Closed at `f60d87ea`: concrete machine selection and CPU/timing contract binding are VM-owned; the default-PC/AT option path now selects a VM contract before the sole core materialization boundary, while Model 339 remains descriptor-selected. Focused profile/session regressions pass; an unrelated platform-request compile failure blocks a full-gate claim. No CPU-timing, bus, device or L3 receiver is closed. [Binding evidence](../etc/evidence/t367-s2-vm-profile-contract-binding.md). |
 | T366 | Closed at `743edc18`: locks the Model 339 baseline, planar-parity NMI and selected topology, and accepts bounded 80286 source-retirement rows. Complete CPU retirement, bus availability, device service timing and profile-L3 closure transfer explicitly; **5170 model-L3 is not ready**. [Closure audit](../etc/evidence/t366-s32-closure-transfer-audit.md). |
 | T365 | Closed at `febc9352`: IBM PC/AT parity/I/O-check NMI sources cannot be selected without a profile input, status/latch/clear and lifecycle contract; CPU and CMOS remain delivery/mask only. [Closure audit](../etc/evidence/t365-s2-pcat-nmi-nonadmission-closure-audit.md). Blocks physical/cycle-exact L3 closure; no synthetic source. |
@@ -49,7 +33,6 @@
 | T363 | Closed at `312ef2f9`: all 256 primary and 256 secondary dispatch slots have one source-backed successful-retirement owner or an exact explicit receiver; inventory and 246/246 current-gate passed. [Closure audit](../etc/evidence/t363-s7-complete-instruction-timing-closure-audit.md). No physical/cycle-exact L3 claim. |
 | T362 | Closed at `316c2334`: S1--S2 normalize every eligible 80186 immediate-IMUL source row in one private direct/constrained model table; S3 resolves stale full-gate verifier assumptions and records 246/246 current-gate tests. [Closure audit](../etc/evidence/t362-s3-legacy-timing-normalization-closure-audit.md). Model-L3 only; no physical/cycle-exact claim. |
 | T361 | Closed at `a5442d96`: S1--S3 established the source-labelled 8086/80186 allocation and synchronous-fault publication boundary; S4 retained Intel 210498-005 Appendix-B `90 NOP = 3` after a page/context and consumer audit. Immediate-IMUL normalization transfers to the first Queue candidate. [S4 evidence](../etc/evidence/t361-s4-80286-nop-source-consumer-audit.md). No physical or cycle-exact claim. |
-| T360 | Closed four-profile timing source reconciliation: primary-authority inventory, owner-selected 80286 NOP table precedence, exact legacy range transfer, contextual classifier audit, and final source/receiver closure. 245/245 current-gate tests passed; no L3 or cycle-exact claim. [Closure audit](../etc/evidence/t360-s5-four-profile-timing-source-closure-audit.md). |
 
 ## Recent Governance
 
