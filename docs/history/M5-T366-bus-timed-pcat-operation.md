@@ -243,3 +243,4 @@ S28 assigns the Appendix-B fixed register `14` and memory `16` clocks to
 successful unprefixed protected `0F 03 /r LSL r16,r/m16` retirement.  Its
 [timing evidence](../etc/evidence/t366-s28-80286-lsl-timing.md) retains
 mode, prefix, descriptor, fault, delivery, bus and physical-time boundaries.
+S28 is accepted at `00a0db54`.

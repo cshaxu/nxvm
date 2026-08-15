@@ -2,24 +2,9 @@
 
 ## Current Work
 
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | T366 S28, numbered continuation implementation subtask; P1 is one complete pushed implementation/evidence delivery. |
-| Admission And Approval | The owner approved continued L3 work on 2026-08-14. T366 admits source-determinate successful protected 80286 `0F 03 /r LSL r16,r/m16` forms. |
-| Objective | Publish Intel Appendix-B fixed register 14 and memory 16 clock costs through the sole retirement owner. |
-| Non-goals | No 80386 LSL page-granularity form, real mode, prefix, memory fault, delivery, descriptor repair, bus/physical-time or device work. |
-| Reference Baseline | `92597092`, Intel 80286 Instruction Set Appendix B, and the T366 proposal. |
-| Candidate Proposal | [Bus-timed PC/AT operation](../proposals/m5-bus-timed-pcat-operation.md), limited to source-backed 80286 successful retirement. |
-| Files And ABI Surface | Private 80286 classifier, focused timing smoke, T366 evidence/index/history/status; no public or device surface changes. |
-| Applicable Rules | Execution: complete pushed P and sweep. Architecture: one retirement publisher. Coding: owner-local classifier. Documentation: truthful state. Source policy: read-only primary manual evidence; no import/assets. |
-| Verification | Focused protected register/direct/indexed LSL timing and selector-result outcomes; semantic smoke, current smokes, governance and diff check. |
-| Expected Markers | `M5:T357:S6:80286-INSTRUCTION-TIMING-LEDGER:OK`; Appendix B gives `14,mem=16`. |
-| Asset Needs | No guest media, ROM, binary or imported source. |
-| Reporting Requirements | Report source isolation, verification, pushed P and acceptance. |
-| Stop Conditions | Stop if an unmodeled success distinction, higher owner, semantic defect or unavailable gate appears. |
-| Exit Criteria | Pushed P proves only successful unprefixed protected LSL retirement publishes 14/16 ticks with transfers retained. |
-| Original Owner Request | Continue until comprehensive L3 closure before Windows 3.1; primary Intel authority first. |
-| Similar-Issue Sweep | Audit `INS_0F_03`, 80286-versus-80386 LSL context, mode/ModR/M/prefix legality, both selector results, timing classifiers and sole tick publisher. |
+T366 S28 is accepted at `00a0db54`. The next T366 S must select the next
+source-determinate 80286 successful-retirement family; physical-time and
+device-timing claims remain blocked by the wider CPU ledger.
 
 ## Current Technical Baseline
 
@@ -40,7 +25,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T366 S27 | Accepted at `79ef50bb`: successful unprefixed protected 80286 `LAR r16,r/m16` publishes source-backed fixed register/memory 14/16 ticks through the existing retirement owner. Real mode, prefix, descriptor, fault, delivery, bus and physical-time timing remain transferred. [Timing evidence](../etc/evidence/t366-s27-80286-lar-timing.md). |
+| T366 S28 | Accepted at `00a0db54`: successful unprefixed protected 80286 `LSL r16,r/m16` publishes source-backed fixed register/memory 14/16 ticks through the existing retirement owner. Real mode, prefix, descriptor, fault, delivery, bus and physical-time timing remain transferred. [Timing evidence](../etc/evidence/t366-s28-80286-lsl-timing.md). |
 | T365 | Closed at `febc9352`: IBM PC/AT parity/I/O-check NMI sources cannot be selected without a profile input, status/latch/clear and lifecycle contract; CPU and CMOS remain delivery/mask only. [Closure audit](../etc/evidence/t365-s2-pcat-nmi-nonadmission-closure-audit.md). Blocks physical/cycle-exact L3 closure; no synthetic source. |
 | T364 | Closed at `7d574ae3`: all selected PC/AT components, ports/routes and lifecycle/timing owners are inventoried; optional and physical gaps retain exact Queue/TODO receivers. [Closure audit](../etc/evidence/t364-s2-pcat-device-completeness-closure-audit.md). No model-L3 claim. |
 | T363 | Closed at `312ef2f9`: all 256 primary and 256 secondary dispatch slots have one source-backed successful-retirement owner or an exact explicit receiver; inventory and 246/246 current-gate passed. [Closure audit](../etc/evidence/t363-s7-complete-instruction-timing-closure-audit.md). No physical/cycle-exact L3 claim. |
