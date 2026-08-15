@@ -2,27 +2,6 @@
 
 ## Current Work
 
-## M5 T370 S5 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation; T370 S4 accepted at `3bc71b01`. |
-| Admission And Approval | The owner-approved ordered L3 program continues. S4 assigns only selected planar-parity NMI and CGA/VADP visible-state/raster reconciliation, followed by a truthful T370 transfer audit. |
-| Objective | Reconcile selected Model-339 planar-parity NMI source/latch/mask/reset route and CGA/VADP register, aperture, raster/status, copied-frame and lifecycle routes against their source/evidence boundaries; close T370 only if every selected device-service group has an exact remaining receiver and no physical-timing claim. |
-| Non-goals | No new NMI producer, port `61h` PPI/speaker behavior, I/O-channel-check/adapter parity, CGA feature expansion, dot-clock/scan cadence, display bus contention, host presentation timing, source scalar, phase refinement, ATA/HDC/MFM work or 5170-L3 claim. |
-| Reference Baseline | T370 S1--S4, T365 NMI decision, T366 Model-339 planar parity/composition/CGA topology, T352 VADP selected digital-display evidence, selected descriptor and current NMI/VADP routes; IBM PC/AT and CGA authorities. |
-| Candidate Proposal | [PC/AT device service-timing corpus](../proposals/m5-device-service-timing-corpus.md). |
-| Files And ABI Surface | S5 evidence, T370 history/proposal disposition, Queue/Current status and evidence index only. Stop and revise before source, ABI, CMake, test or runtime behavior changes. |
-| Applicable Rules | One source/latch/consumer owner; NMI mask is not a producer; VADP owns mutable display state and copied frames cross the host boundary; reset/finalize release publication; source-policy and documentation rules. Deterministic callback order is not physical device timing. |
-| Verification | Source-to-route and source-to-domain matrices; NMI/parity and VADP/CGA route/test sweep; selected-device ledger completion and transfer audit; documentation governance and diff check. No runtime marker or artifact is manufactured by this reconciliation-only S. |
-| Expected Markers | Existing planar-parity and VADP/CGA owner smokes remain evidence; S5 adds no timing value, marker, artifact or L3 claim. |
-| Asset Needs | No ROM, guest media, firmware, external code, binary, raw display trace or host capture. Public manuals and project-authored evidence only. |
-| Reporting Requirements | State exactly which source/topology facts are retained, which physical/device-time facts remain unadmitted, whether the four T370 device groups are reconciled, and all downstream receivers. |
-| Stop Conditions | Stop and revise if the result needs a synthetic NMI source, guessed CGA/KBC/controller time, host-clock pacing, new device path, second scheduler, broader adapter semantics or public interface. |
-| Exit Criteria | P1 commits an indexed S5 reconciliation and full T370 transfer audit. P2 accepts S5 and closes T370 only with the proposal/Queue/history disposition consistent and 5170 model-L3 explicitly open. |
-| Original Owner Request | Continue in Queue order toward complete L3 before Windows 3.1; use named reference models only where authoritative manuals leave a range or no range, without treating them as IBM authority. |
-| Similar-Issue Sweep | Sweep planar parity/NMI/port-`61h`/CMOS-mask/reset/finalize paths, VADP CGA register/aperture/raster/status/copy/reset paths, Model-339 profile composition, timeline/trace consumers, focused tests, Queue/TODO/history receivers and every T370 selected-device row. |
-
 ## Current Technical Baseline
 
 - **Current developer artifact:** T369 S4 `vm-0-5-0369` /
@@ -42,7 +21,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T370 S4 | P1 `12e77141` reconciles the selected 8042/keyboard command, FIFO, IRQ and reset owners, and confirms all three Model-339 KBC duration fields are zero rather than physical scalars. It transfers planar-parity NMI, CGA/VADP and the task transfer audit to S5; **5170 model-L3 remains open**. [S4 reconciliation](../etc/evidence/t370-s4-kbc-keyboard-domain-reconciliation.md). |
+| T370 | Closed at `77a73c04`: S1--S5 reconciles selected Model-339 device command/event, DRQ/IRQ, FIFO, NMI, display, reset and copied-consumer owners; every unavailable duration transfers to phase refinement. **5170 model-L3 is not ready.** [Closure audit](../etc/evidence/t370-s5-planar-cga-transfer-audit.md). |
 | T369 | Closed at `08a64bea`: S1--S4 lock and audit the 5170 Model-339 bus-stage input, logical 80286 DMA handoff and selected FDC/PIC visibility. Board waits, physical waveforms, device service, phase refinement and final 5170 L3 remain exact ordered transfers; **5170 model-L3 is not ready**. [Closure audit](../etc/evidence/t369-s4-pcat-bus-stage-closure-audit.md). |
 | T368 | Closed at `4da84be8`: completes the source-labelled 80286 successful-retirement CPU ledger, with exact values or declared source-undefined transfers. The next Queue receiver is bus-timed PC/AT operation; CPU waits, bus/device timing and IBM 5170 L3 remain open. [Closure audit](../etc/evidence/t368-s7-80286-retirement-closure-audit.md). |
 | T367 | Closed at `f60d87ea`: concrete machine selection and CPU/timing contract binding are VM-owned; the default-PC/AT option path now selects a VM contract before the sole core materialization boundary, while Model 339 remains descriptor-selected. Focused profile/session regressions pass; an unrelated platform-request compile failure blocks a full-gate claim. No CPU-timing, bus, device or L3 receiver is closed. [Binding evidence](../etc/evidence/t367-s2-vm-profile-contract-binding.md). |
