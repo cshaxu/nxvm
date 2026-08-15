@@ -581,7 +581,7 @@ static C_INT timing_80286_lar(C_VOID)
         (machine->executor_cpu.data.ecx = 0u), 0) ||
         ((test_core_machine_fixture_resume_after_halt_at(machine, 0u)),
         !timing_80286_run(machine, &state, 1u, 14u)) ||
-        (machine->executor_cpu.data.ecx & 0xffffu) != 0x9200u ||
+        (machine->executor_cpu.data.ecx & 0xffffu) != 0x9300u ||
         (machine->executor_cpu.data.eflags & VCPU_EFLAGS_ZF) == 0u;
     if (!failed) failed |= ((machine->executor_cpu.data.eax = 0x0018u),
         (machine->executor_cpu.data.ecx = 0x3456u),
@@ -596,7 +596,7 @@ static C_INT timing_80286_lar(C_VOID)
         ((machine->executor_cpu.data.ecx = 0u), (machine->elapsed_ticks = 0u),
         (state.advanced_ticks = 0u), 0) || ((test_core_machine_fixture_resume_after_halt_at(
         machine, 0u)), !timing_80286_run(machine, &state, 1u, 16u)) ||
-        (machine->executor_cpu.data.ecx & 0xffffu) != 0x9200u ||
+        (machine->executor_cpu.data.ecx & 0xffffu) != 0x9300u ||
         (machine->executor_cpu.data.eflags & VCPU_EFLAGS_ZF) == 0u;
     if (!failed) failed |= core_machine_memory_write(machine, 0x2000u, indexed,
         sizeof(indexed)) != TYPE_STATUS_OK || core_machine_memory_write(machine,
@@ -606,7 +606,7 @@ static C_INT timing_80286_lar(C_VOID)
         (machine->elapsed_ticks = 0u), (state.advanced_ticks = 0u), 0) ||
         ((test_core_machine_fixture_resume_after_halt_at(machine, 0u)),
         !timing_80286_run(machine, &state, 1u, 16u)) ||
-        (machine->executor_cpu.data.ecx & 0xffffu) != 0x9200u ||
+        (machine->executor_cpu.data.ecx & 0xffffu) != 0x9300u ||
         (machine->executor_cpu.data.eflags & VCPU_EFLAGS_ZF) == 0u;
     core_machine_destroy(machine);
     return failed;
@@ -671,19 +671,19 @@ static C_INT timing_80286_smsw(C_VOID)
     C_INT failed = !timing_80286_prepare(&machine, &state);
 
     if (!failed) failed |= !timing_80286_load(machine, register_form,
-        sizeof(register_form)) || ((machine->executor_cpu.data.cr0 = 0x000du),
+        sizeof(register_form)) || ((machine->executor_cpu.data.cr0 = 0x000cu),
         (machine->executor_cpu.data.eax = 0u), 0) || !timing_80286_run(machine,
-        &state, 1u, 2u) || (machine->executor_cpu.data.eax & 0xffffu) != 0x000du;
+        &state, 1u, 2u) || (machine->executor_cpu.data.eax & 0xffffu) != 0x000cu;
     if (!failed) failed |= !timing_80286_load(machine, direct, sizeof(direct)) ||
-        ((machine->executor_cpu.data.cr0 = 0x000du), 0) || !timing_80286_run(machine,
+        ((machine->executor_cpu.data.cr0 = 0x000cu), 0) || !timing_80286_run(machine,
         &state, 1u, 3u) || core_machine_memory_read(machine, 0x1000u, &msw,
-        sizeof(msw)) != TYPE_STATUS_OK || msw != 0x000du;
+        sizeof(msw)) != TYPE_STATUS_OK || msw != 0x000cu;
     if (!failed) failed |= !timing_80286_load(machine, indexed, sizeof(indexed)) ||
-        ((machine->executor_cpu.data.cr0 = 0x000du),
+        ((machine->executor_cpu.data.cr0 = 0x000cu),
         (machine->executor_cpu.data.ebp = 0x1000u),
         (machine->executor_cpu.data.esi = 0u), 0) || !timing_80286_run(machine,
         &state, 1u, 3u) || core_machine_memory_read(machine, 0x1001u, &msw,
-        sizeof(msw)) != TYPE_STATUS_OK || msw != 0x000du;
+        sizeof(msw)) != TYPE_STATUS_OK || msw != 0x000cu;
     if (!failed) failed |= !timing_80286_boot_protected(machine, &state) ||
         core_machine_memory_write(machine, 0x2000u, register_form,
         sizeof(register_form)) != TYPE_STATUS_OK || ((machine->executor_cpu.data.eax = 0u),

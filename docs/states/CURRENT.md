@@ -2,9 +2,26 @@
 
 ## Current Work
 
-T368 remains open.  S1 is accepted; S2 must turn its residual classifier
-classes into a source/form/context reachability table before assigning any new
-80286 successful-retirement value.
+## M5 T368 S2 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; T368 S1 accepted at `414fad28`. |
+| Admission And Approval | The owner authorized continued L3 work; S1 provides the required ordered classifier and publisher inventory. |
+| Objective | Prove the success/fault reachability and Intel source context of every residual 80286 prefix, system and final-default retirement route before assigning any timing value. |
+| Non-goals | No scalar allocation without authority, no bus/device/physical-time work, no profile/topology change and no 5170 L3 claim. |
+| Reference Baseline | `414fad28`, [S1 route inventory](../etc/evidence/t368-s1-80286-retirement-route-inventory.md), the source policy, T366 S10 and existing 80286 semantic evidence. |
+| Candidate Proposal | [80286 successful-retirement timing closure](../proposals/m5-80286-retirement-timing-closure.md). |
+| Files And ABI Surface | Source/form/context evidence/history/status only unless an existing exact source row can be safely admitted; no public ABI. |
+| Applicable Rules | Execution continuation/evidence. Source policy: Intel authority first and model fallback only under stated conditions. Architecture: one shared publisher. Coding: no invented fault timing. Documentation: precise transfers. |
+| Verification | Exhaustive source-path table cross-checked against decoder semantic evidence and focused existing 80286 ledger tests; documentation governance and diff check. |
+| Expected Markers | Each candidate return of `CORE_MACHINE_SOURCE_UNALLOCATED_TICKS` is classified as non-retiring, already preempted, exact-source eligible, source-range/model eligible, or one named transfer. |
+| Asset Needs | No guest media, ROM, binary or imported source. |
+| Reporting Requirements | Cite authority edition/context or state its absence; distinguish a decoder-valid form from successful retirement. |
+| Stop Conditions | Stop if the authority cannot distinguish the required successful state; retain an explicit receiver rather than allocating a scalar. |
+| Exit Criteria | Pushed P1/P2 gives the next implementation S only finite authority-backed successful rows and explicit residual transfers. |
+| Original Owner Request | Continue comprehensive L3 execution before Windows 3.1, following the Queue dependency chain. |
+| Similar-Issue Sweep | Sweep prefix legality, 0F/system metadata, existing semantic proofs, final classifier fallbacks, lookup coverage and fault-delivery tests. |
 
 ## Current Technical Baseline
 
