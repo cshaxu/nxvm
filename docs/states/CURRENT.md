@@ -2,9 +2,31 @@
 
 ## Current Work
 
-**No active implementation packet.** T376 remains open at its documented
-raw-IMG duplicate-CHRN stop condition; the next Queue candidate is not
-admissible until the owner resolves that boundary.
+**Active: M5 T376 S6.**
+
+| Task | Compact progress |
+| --- | --- |
+
+## M5 T376 S6 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner-approved continuous M5 L3 implementation; the owner's prior pure-IMG decision resolves S5's duplicate-CHRN stop by excluding non-representable physical-ID selection, while S5 identifies one in-scope malformed-sidecar regression gap. |
+| Objective | Prove malformed raw-IMG sidecar rejection through the existing VM FDD mount boundary, record the pure-raw physical-ID exclusion, and supply T376's remaining closure evidence. |
+| Non-goals | No new image format, CHRN/flux/CRC representation, production media API, host input route, FDC command change, physical timing claim, or Model-339 L3 decision. |
+| Reference Baseline | T376 S2 strict sidecar parser/lifecycle, T376 S5 reconciliation, owner-selected pure IMG boundary, and existing `vm-media-provider-smoke`. |
+| Candidate Proposal | [8272A raw-IMG sidecar fidelity closure](../proposals/m5-8272a-img-sidecar-fidelity-closure.md). |
+| Files And ABI Surface | Existing VM media-provider smoke, T376 evidence/history/index/current/proposal/queue closure records; no production ABI change. |
+| Applicable Rules | One production FDD mount owner, no test-only path, raw bytes remain independently usable, malformed metadata rejects before publication, and physical-ID capability remains visibly excluded. |
+| Verification | Focused VM media-provider smoke proves malformed sidecar rejects with candidate FDD absent and prior mount unchanged; replay FDC smoke, build, governance gate, proposal/queue/history links and clean worktree. |
+| Expected Markers | `M5:T376:S2:RAW-IMG-SIDECAR-LIFECYCLE:OK`; `M5:T376:S3:8272A-DELETED-DATA:OK`; `M5:T376:S4:8272A-SCAN:OK`; `M5:T376:S6:MALFORMED-SIDECAR:OK`. |
+| Asset Needs | Project-owned generated fixture only; no external ROM, guest media or third-party source. |
+| Reporting Requirements | Record malformed-input form, pre-publication failure proof, pure-IMG duplicate-CHRN exclusion, complete T376 matrix, task closure and next Queue receiver. |
+| Stop Conditions | Stop for owner direction if rejection requires a new sidecar syntax, a test-only production entry point, or any non-raw physical-sector representation. |
+| Exit Criteria | Malformed-sidecar rejection is directly proven, pure-IMG scope is accurately bounded, and T376 can close with its proposal retained in history and final Model-339 audit next. |
+| Original Owner Request | Continue through L3 before Windows; retain pure raw IMG compatibility, no test-only media API, and no false physical-media or L3 claim. |
+| Similar-Issue Sweep | Inspect all sidecar load failures, FDD insertion publication boundaries, existing generated-image cleanup, T376 requirements/evidence/index/history/proposal/queue links and every duplicate-CHRN claim. |
 
 ## Current Technical Baseline
 

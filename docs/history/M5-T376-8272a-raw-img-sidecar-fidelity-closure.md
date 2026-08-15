@@ -52,3 +52,13 @@ silently adding a second image format. T376 therefore remains open pending an
 owner decision to either exclude duplicate-CHRN selection from this raw-only
 task or admit a separate, non-raw representation task; it does not make a
 Model-339 L3 claim.
+
+### S6: malformed-sidecar proof and task closure
+
+The owner's prior pure-IMG decision resolves the S5 stop condition: the
+selected support surface stores sector payload and a logical-position mark
+only, and explicitly excludes physical duplicate-CHRN selection. S6 adds a
+direct malformed-sidecar mount regression, then closes the task with its
+proposal retained in history. The next Queue receiver is the final Model-339
+audit, which must retain this physical-media exclusion and make its own
+ready/not-ready decision.
