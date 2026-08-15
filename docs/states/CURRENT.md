@@ -2,7 +2,26 @@
 
 ## Current Work
 
-**Idle.**
+## M5 T367 S1 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New; T367 S1 P1 is one complete pushed ownership-inventory/evidence delivery. |
+| Admission And Approval | The owner authorized continued L3 execution before Windows 3.1; T366 closed at `1f967f11`, satisfying this Queue candidate's admission dependency. |
+| Objective | Inventory every concrete CPU/machine-profile selection path and define the narrow migration boundary that leaves core with one injected CPU capability/timing contract. |
+| Non-goals | No runtime selector move, CPU semantic/timing value change, device/ROM/media change, concrete machine addition or L3 claim. |
+| Reference Baseline | `1f967f11`, [VM profile-contract ownership migration](../proposals/m5-vm-profile-contract-ownership.md), Queue, architecture and source layout. |
+| Candidate Proposal | [VM profile-contract ownership migration](../proposals/m5-vm-profile-contract-ownership.md). |
+| Files And ABI Surface | Ownership evidence/index/history/status only; no public or runtime surface change. |
+| Applicable Rules | Execution: new task packet and evidence. Documentation: truthful state/index. Architecture: inventory one shared core execution/transaction owner. Coding: no code change. Source policy: no import/assets. |
+| Verification | Repository selector/build/test/documentation inventory; receiver map; documentation governance and diff check. |
+| Expected Markers | One inventory names core/vm selectors, all four current CPU profiles, profile-local board selection and required regression owners. |
+| Asset Needs | No guest media, ROM, binary or imported source. |
+| Reporting Requirements | Report current ownership, migration seam, duplicate-executor risk and exact S2 receiver. |
+| Stop Conditions | Stop if an inventory finding requires a new semantic/timing decision or lacks a single owning receiver. |
+| Exit Criteria | Pushed inventory establishes a complete before-state and a bounded S2 migration plan without making a runtime change. |
+| Original Owner Request | Continue comprehensive L3 execution before Windows 3.1, following the Queue dependency chain. |
+| Similar-Issue Sweep | Search production, tests, build and docs for CPU profile enums, configuration selectors, profile switches, machine composition and timing publishers. |
 
 ## Current Technical Baseline
 
