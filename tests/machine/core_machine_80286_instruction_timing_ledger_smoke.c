@@ -165,7 +165,12 @@ static C_INT timing_80286_memory(C_VOID)
     static const type_unsigned_8 moffs_read[] = { 0xa1u, 0x01u, 0x10u };
     static const type_unsigned_8 moffs_write[] = { 0xa3u, 0x01u, 0x10u };
     static const type_unsigned_8 xlat[] = { 0xd7u };
+    static const type_unsigned_8 sreg_store_even[] = { 0x8cu, 0x1eu, 0x00u, 0x10u };
+    static const type_unsigned_8 sreg_store_odd[] = { 0x8cu, 0x1eu, 0x01u, 0x10u };
+    static const type_unsigned_8 sreg_store_indexed[] = { 0x8cu, 0x5au, 0x01u };
     const type_unsigned_16 value = 0x5aa5u;
+    const type_unsigned_16 sreg_value = 0x1357u;
+    type_unsigned_16 sreg_read = 0u;
     const type_unsigned_8 xlat_value = 0xa5u;
     timing_80286_state state = { 0u, 0u, 0u };
     core_machine *machine = STD_NULL;
@@ -199,6 +204,23 @@ static C_INT timing_80286_memory(C_VOID)
             sizeof(xlat_value)) != TYPE_STATUS_OK ||
         !timing_80286_run(machine, &state, 1u, 5u) ||
         machine->executor_cpu.data.al != xlat_value;
+    if (!failed) failed |= !timing_80286_load(machine, sreg_store_even,
+        sizeof(sreg_store_even)) || ((machine->executor_cpu.data.ds.selector =
+        sreg_value), 0) || !timing_80286_run(machine, &state, 1u, 3u) ||
+        core_machine_memory_read(machine, 0x1000u, &sreg_read,
+            sizeof(sreg_read)) != TYPE_STATUS_OK || sreg_read != sreg_value;
+    if (!failed) failed |= !timing_80286_load(machine, sreg_store_odd,
+        sizeof(sreg_store_odd)) || ((machine->executor_cpu.data.ds.selector =
+        sreg_value), 0) || !timing_80286_run(machine, &state, 1u, 5u) ||
+        core_machine_memory_read(machine, 0x1001u, &sreg_read,
+            sizeof(sreg_read)) != TYPE_STATUS_OK || sreg_read != sreg_value;
+    if (!failed) failed |= !timing_80286_load(machine, sreg_store_indexed,
+        sizeof(sreg_store_indexed)) || ((machine->executor_cpu.data.ds.selector =
+        sreg_value), (machine->executor_cpu.data.bp = 0x1000u),
+        (machine->executor_cpu.data.si = 0u), 0) ||
+        !timing_80286_run(machine, &state, 1u, 6u) ||
+        core_machine_memory_read(machine, 0x1001u, &sreg_read,
+            sizeof(sreg_read)) != TYPE_STATUS_OK || sreg_read != sreg_value;
     core_machine_destroy(machine);
     return failed;
 }

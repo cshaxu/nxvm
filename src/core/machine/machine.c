@@ -2673,9 +2673,11 @@ static C_INT core_machine_80286_source_instruction_cost(core_machine *machine,
         *out_ticks = 2u;
         return 1;
     case 0x8cu:
-        if (!data->flagMem && prefixes + 1u < data->oplen &&
+        if (prefixes + 1u < data->oplen &&
             ((data->opcodes[prefixes + 1u] >> 3u) & 7u) <= 3u) {
-            *out_ticks = 2u;
+            *out_ticks = data->flagMem ? 3u +
+                core_machine_80286_timing_effective_address(data, prefixes) +
+                core_machine_80286_timing_odd_word(data) : 2u;
             return 1;
         }
         *out_ticks = CORE_MACHINE_SOURCE_UNALLOCATED_TICKS;

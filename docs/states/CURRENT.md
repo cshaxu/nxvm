@@ -2,9 +2,24 @@
 
 ## Current Work
 
-T366 S18 is accepted at `842848b8`. The next T366 S must select the next
-source-determinate 80286 successful-retirement family; physical-time and
-device-timing claims remain blocked by the wider CPU ledger.
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | T366 S19, numbered continuation implementation subtask; P1 is one complete pushed implementation/evidence delivery. |
+| Admission And Approval | The owner approved continued L3 work on 2026-08-14. T366 admits the determinate unprefixed legal 80286 `8C MOV Sreg,m16` success path. No exception is requested. |
+| Objective | Publish the primary-source `3 + EA + odd-word` cost for successful unprefixed legal memory `8C` forms through the existing retirement owner. |
+| Non-goals | No `8C` register revision, `8E` selector load, invalid/386-only encoding, prefix/fault/delivery timing, bus/physical time, other profile, device, x87 or ABI work. |
+| Reference Baseline | `df299cc1` (accepted T366 S18), [T366 proposal](../proposals/m5-bus-timed-pcat-operation.md), [S18 evidence](../etc/evidence/t366-s18-80286-sreg-store-timing.md), and [Intel 80286 clock-rule page](https://tv.manualsonline.com/manuals/mfg/intel/80286.html?p=216). |
+| Candidate Proposal | [Bus-timed PC/AT operation](../proposals/m5-bus-timed-pcat-operation.md), limited to source-backed 80286 successful retirement. |
+| Files And ABI Surface | Private 80286 classifier, focused timing-ledger smoke, T366 evidence/index/history/status; no public or device surface changes. |
+| Applicable Rules | [Execution](../rules/EXECUTION.md): complete pushed P and sweep. [Architecture](../rules/ARCHITECTURE.md): one retirement publisher. [Coding](../rules/CODING.md): existing owner-local EA/odd helper. [Documentation](../rules/DOCUMENT.md): truthful state. [Source policy](../etc/operations/policy/source-policy.md): documentation only, no import/assets. |
+| Verification | Focused timing smoke proves even direct, odd direct, and base+index+displacement odd `8C` stores and selector result; run focused target, `run-current-smokes`, governance and `git diff --check`; review changed files before P1. |
+| Expected Markers | `M5:T357:S6:80286-INSTRUCTION-TIMING-LEDGER:OK`; source gives 3 clocks memory base, plus one base/index/displacement and two per odd 16-bit operand. |
+| Asset Needs | No guest media, ROM, binary, path, external source import or emulator output. Intel/AMD historical documentation is read-only evidence. |
+| Reporting Requirements | Report source/EA determination, test progress, P1 push/evidence and acceptance or consolidated corrective brief. |
+| Stop Conditions | Stop if memory form/odd reference cannot be isolated, a higher owner intercepts it, helper cannot express source rule, semantic repair is needed, or a gate cannot run. |
+| Exit Criteria | A pushed P proves only valid unprefixed 80286 memory `8C` successful retirement publishes `3 + EA + odd-word`, with source/sweep/transfers/checks recorded. |
+| Original Owner Request | Continue until comprehensive L3 closure before Windows 3.1; use secondary emulators only if primary material cannot determine timing. |
+| Similar-Issue Sweep | Audit `8C` handler, direct/indexed memory decode, shared 80286 EA/odd helper, legal/invalid encodings, register form, `8E`, prefix/delivery and profile classifiers. Retain excluded paths at their named receivers. |
 
 ## Current Technical Baseline
 
