@@ -2,14 +2,16 @@
 
 ## Current Work
 
-**Active: M5 T379 S1.**
+**No active implementation packet.** T379 closes the owner-selected 5170
+Model-339 L3 objective. DeskPro 386, 8088-XT and Windows 3.1 remain unstarted.
 
 | Task | Compact progress |
 | --- | --- |
 | T377 | Closed at `1cdd5110`: Model-339 is not L3-ready until the native input/global-gate repair and independent re-audit complete. [Audit](../etc/evidence/t377-s1-model339-final-l3-audit.md). |
 | T378 | Closed at `42f0402a`: native input proof, virtual-time dependency direction and affected gates are repaired; no Model-339 L3 decision is made. [Evidence](../etc/evidence/t378-s1-native-ingress-boundary-repair.md). |
+| T379 | Closed at `9099d11d`: independent full-gate and focused re-audit accepts the frozen Model-339 deterministic L3 contract. [Audit](../etc/evidence/t379-s1-model339-final-reaudit.md). |
 
-## M5 T379 S1 Packet
+<!-- T379 packet retired at task closure.
 
 | Field | Required record |
 | --- | --- |
@@ -18,7 +20,7 @@
 | Objective | Independently repeat the frozen IBM PC/AT 5170 Model 339/Type 3 final L3 audit against the repaired production-input and current-gate baseline. |
 | Non-goals | No implementation repair, DeskPro/XT/Windows work, generic AT claim, MFM/ATA substitution, physical waveform claim, ROM/media import or silent exclusion of selected capability. |
 | Reference Baseline | T377 negative audit, T378 repair evidence, Model-339 re-audit proposal, T373--T376 selected ledger/functional/timing/raw-IMG evidence and current profile tests. |
-| Candidate Proposal | [IBM PC/AT 5170 Model-339 L3 re-audit](../proposals/m5-5170-model339-l3-reaudit.md). |
+| Candidate Proposal | [IBM PC/AT 5170 Model-339 L3 re-audit](../history/M5-T379-model339-l3-reaudit-proposal.md). |
 | Files And ABI Surface | T379 history, audit evidence/index/current/queue status only; no source/runtime ABI change. |
 | Applicable Rules | Independent complete requirement/component matrix, native production-input and reset/cancellation replay, source-backed or explicitly bounded deterministic L3 contracts, no guessed scalar, current-gate truthfulness and visible ready/not-ready result. |
 | Verification | Re-run focused Model-339/FDC/input proof and full current gate; inspect all selected rows and T378 changes; run documentation governance and actual-diff review. |
@@ -29,7 +31,7 @@
 | Exit Criteria | T379 closes only after every selected Model-339 row is independently reconciled, current gate passes, and its ready/not-ready conclusion leaves no hidden receiver. |
 | Original Owner Request | Fully achieve 5170 L3, then stop before DeskPro 386, 8088-XT and Windows 3.1; do not replace native behavior with a test-only API. |
 | Similar-Issue Sweep | Recheck every selected CPU, bus, input, DMA/PIC/PIT/RTC, FDC/floppy, CGA, NMI/reset/cancellation and T378's shared production boundaries. |
-| T378 | Closed after accepted P2 `c8298c21`: native input proof follows the production transport, virtual-time no longer depends on composition, and its gates pass. [Evidence](../etc/evidence/t378-s1-native-ingress-boundary-repair.md). |
+-->
 
 ## Current Technical Baseline
 
@@ -51,12 +53,12 @@
 | Task | Compact result |
 | --- | --- |
 | T378 | Closed at `42f0402a`: production ingress proof and virtual-time ownership are corrected without a test-only API; Model-339 re-audit remains the sole L3 decision receiver. [Evidence](../etc/evidence/t378-s1-native-ingress-boundary-repair.md). |
+| T379 S1 | Accepted P1 `9099d11d`: independent re-audit accepts the frozen Model-339 deterministic L3 contract. [Audit](../etc/evidence/t379-s1-model339-final-reaudit.md). |
 | T377 | Closed at `1cdd5110`: final audit rejects premature Model-339 L3 acceptance; its shared input/global-gate repair and independent re-audit successors are queued. [Audit](../etc/evidence/t377-s1-model339-final-l3-audit.md). |
 | T376 | Closed at `991060a4`: raw-IMG sidecar persistence, selected 8272A command fidelity and malformed-sidecar rejection are proven; physical duplicate-CHRN representation remains explicitly outside pure raw-IMG support. [Closure audit](../etc/evidence/t376-s6-task-closure-audit.md). |
 | T375 | Closed at `07484727`: board/device phase work accepts source-backed service and logical-order contracts, transfers raw-IMG fidelity and source-exhausted physical board phases, and **does not accept Model-339 L3**. [Closure audit](../etc/evidence/t375-s26-task-closure-transfer-audit.md). |
 | T374 | Closed at `f742433c`: S1--S19 complete the selected Model-339 functional closure and preserve raw-IMG 765 Deleted/Control-Mark/Scan as explicit TODO debt. Board/device timing, final Model-L3, DeskPro 386, PC/XT and Windows 3.1 remain open. [Closure audit](../etc/evidence/t374-s19-task-closure-audit.md). |
 | T373 | Closed at `06246a8e`: S1--S4 freeze the three-machine capability ledger and receivers. **5170, DeskPro Model 40 and PC/XT 5160-268 L3 are not ready.** [Closure audit](../etc/evidence/t373-s4-task-closure-audit.md). |
-| T372 | Closed at `3f56c72c`: Model 339 has selected logical ownership and deterministic ordering, but lacks selected-device functional closure and source-backed board/phase timing. [Closure audit](../etc/evidence/t372-s8-task-closure-transfer-audit.md). |
 
 ## Recent Governance
 

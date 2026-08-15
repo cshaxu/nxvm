@@ -17,3 +17,10 @@ and full-gate evidence, and makes the only current ready/not-ready decision.
 The independent result is [T379 S1](../etc/evidence/t379-s1-model339-final-reaudit.md):
 the selected Model-339 baseline is L3-ready under the declared deterministic
 event-and-bus contract. Task-level closure review remains pending.
+
+## Closure Audit
+
+T379 confirms the T378 production-boundary repair and fresh full/current plus
+focused replay. It accepts only the frozen deterministic Model-339 contract;
+physical and out-of-baseline limits remain explicit. The owner stopping point
+is reached, so no DeskPro, XT or Windows task is admitted.
