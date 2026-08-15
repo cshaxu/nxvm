@@ -15,18 +15,23 @@ foreach(source_text IN ITEMS "${input_header}" "${input_source}" "${lifecycle_so
     endif()
 endforeach()
 
-string(FIND "${win32_source}" "core_platform_input_source_submit"
+string(FIND "${win32_source}" "vm_platform_host_input_sink_submit"
     win32_submit_position)
 string(FIND "${win32_source}" "GetAsyncKeyState" win32_direct_position)
 if(win32_submit_position EQUAL -1 OR NOT win32_direct_position EQUAL -1)
     message(FATAL_ERROR "Win32 keyboard events bypass the transport ingress operation")
 endif()
 
+string(FIND "${lifecycle_source}" "core_platform_input_source_initialize"
+    source_position)
+string(FIND "${session_source}" "core_platform_input_source_submit"
+    ingress_position)
 string(FIND "${session_source}" "VM_PLATFORM_REQUEST_KEY_EVENT"
     request_position)
-string(FIND "${session_source}" "core_machine_keyboard_submit_scan_codes"
+string(FIND "${session_source}" "core_machine_keyboard_receive_native_bytes"
     consume_position)
-if(request_position EQUAL -1 OR consume_position EQUAL -1)
+if(source_position EQUAL -1 OR ingress_position EQUAL -1 OR
+        request_position EQUAL -1 OR consume_position EQUAL -1)
     message(FATAL_ERROR "Session no longer owns keyboard-event ingress consumption")
 endif()
 

@@ -6,8 +6,7 @@
 #include "core/machine/cpu_interface.h"
 #include "core/machine/fpu_interface.h"
 #include "core/platform/input_interface.h"
-
-
+#include "vm/platform/virtual_time_interface.h"
 
 typedef enum vm_session_profile_kind {
     VM_SESSION_PROFILE_DEFAULT_PC_AT,
@@ -16,15 +15,7 @@ typedef enum vm_session_profile_kind {
 
 /* Supplies source ticks already selected and converted by VM composition.
  * The caller retains context ownership for the session lifetime. */
-typedef type_status (*vm_session_virtual_time_source_next)(C_VOID *context,
-    type_unsigned_64 *out_source_ticks);
-typedef C_VOID (*vm_session_virtual_time_source_reset)(C_VOID *context);
-
-typedef struct vm_session_virtual_time_source {
-    vm_session_virtual_time_source_next next;
-    vm_session_virtual_time_source_reset reset;
-    C_VOID *context;
-} vm_session_virtual_time_source;
+typedef vm_virtual_time_source vm_session_virtual_time_source;
 
 typedef struct vm_session_config {
     vm_session_profile_kind profile_kind;

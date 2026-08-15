@@ -3142,6 +3142,7 @@ set(PROJECT_T345_S4_RESIDUAL_DIRECT_ENTRIES
     "vm-platform|src/vm/platform/host_surface.c|win32-platform"
     "vm-platform|src/vm/platform/execution.c|win32-platform"
     "vm-platform|src/vm/platform/input_flush.c|win32-platform"
+    "vm-platform|src/vm/platform/virtual_time.c|win32-platform"
     "vm-platform|src/vm/platform/win32/win32.c|win32-platform"
     "vm-platform|src/vm/platform/win32/w32cdisp.c|win32-platform"
     "vm-platform|src/vm/platform/win32/w32adisp.c|win32-platform"

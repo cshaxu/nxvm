@@ -98,7 +98,7 @@ static C_VOID vm_platform_virtual_time_source_reset(C_VOID *context)
 
 type_status vm_platform_virtual_time_source_initialize(
     vm_platform_virtual_time_source *source, type_unsigned_64 source_ticks_per_second,
-    vm_session_virtual_time_source *out_source)
+    vm_virtual_time_source *out_source)
 {
     if (source == STD_NULL || out_source == STD_NULL || source_ticks_per_second == 0u) {
         return TYPE_STATUS_INVALID_ARGUMENT;

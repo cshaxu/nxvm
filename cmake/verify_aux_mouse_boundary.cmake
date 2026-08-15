@@ -16,7 +16,7 @@ if(transport_position EQUAL -1 OR dispatch_position EQUAL -1)
     message(FATAL_ERROR "The host mouse transport surface is incomplete")
 endif()
 
-string(FIND "${win32_source}" "core_platform_input_source_submit"
+string(FIND "${win32_source}" "vm_platform_host_input_sink_submit"
     win32_submit_position)
 string(FIND "${win32app_source}" "vm_platform_win32_mouse_relative_for"
     win32app_submit_position)
@@ -33,11 +33,16 @@ foreach(source_text IN ITEMS "${win32_source}" "${win32app_source}" "${mapper_so
     endforeach()
 endforeach()
 
+string(FIND "${lifecycle_source}" "core_platform_input_source_initialize"
+    source_position)
+string(FIND "${session_source}" "core_platform_input_source_submit"
+    ingress_position)
 string(FIND "${lifecycle_source}" "VM_PLATFORM_REQUEST_MOUSE_EVENT"
     request_position)
-string(FIND "${session_source}" "core_machine_mouse_submit_relative"
+string(FIND "${session_source}" "core_machine_mouse_receive_relative"
     consume_position)
-if(request_position EQUAL -1 OR consume_position EQUAL -1)
+if(source_position EQUAL -1 OR ingress_position EQUAL -1 OR
+        request_position EQUAL -1 OR consume_position EQUAL -1)
     message(FATAL_ERROR "Session no longer owns mouse ingress consumption")
 endif()
 

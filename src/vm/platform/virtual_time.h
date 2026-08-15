@@ -3,7 +3,7 @@
 
 #include "type.h"
 
-#include "vm/composition/session/session_interface.h"
+#include "vm/platform/virtual_time_interface.h"
 
 typedef struct vm_platform_virtual_time_source {
     type_unsigned_64 last_units;
@@ -16,6 +16,6 @@ typedef struct vm_platform_virtual_time_source {
 
 type_status vm_platform_virtual_time_source_initialize(
     vm_platform_virtual_time_source *source, type_unsigned_64 source_ticks_per_second,
-    vm_session_virtual_time_source *out_source);
+    vm_virtual_time_source *out_source);
 
 #endif

@@ -144,14 +144,14 @@ endif()
 list(LENGTH project_t345_s3_entries project_t345_s3_entry_count)
 if(NOT project_t345_safe_production_count EQUAL 2 OR
         NOT project_t345_s3_entry_count EQUAL 3 OR
-        NOT project_t345_mixed_count EQUAL 46)
+        NOT project_t345_mixed_count EQUAL 48)
     message(FATAL_ERROR
         "Unexpected T345 S3 counts: safe=${project_t345_safe_production_count}, entries=${project_t345_s3_entry_count}, mixed=${project_t345_mixed_count}.")
 endif()
 list(LENGTH project_t345_expected_residual_keys project_t345_expected_residual_count)
 list(LENGTH project_t345_s4_residual_keys project_t345_s4_residual_count)
-if(NOT project_t345_expected_residual_count EQUAL 52 OR
-        NOT project_t345_s4_residual_count EQUAL 52)
+if(NOT project_t345_expected_residual_count EQUAL 54 OR
+        NOT project_t345_s4_residual_count EQUAL 54)
     message(FATAL_ERROR
         "Unexpected T345 S4 residual counts: expected=${project_t345_expected_residual_count}, actual=${project_t345_s4_residual_count}.")
 endif()

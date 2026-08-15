@@ -6,7 +6,7 @@ file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/fdd.c" fdd_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/hdd.c" hdd_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/media_save.c" save_source)
 
-foreach(source_name IN ITEMS fdd_source hdd_source)
+foreach(source_name IN ITEMS hdd_source)
     if(NOT "${${source_name}}" MATCHES "vm/machine/media_save.h" OR
         NOT "${${source_name}}" MATCHES "vm_machine_media_save_atomically")
         message(FATAL_ERROR "${source_name} bypasses VM atomic media persistence")
@@ -15,6 +15,15 @@ foreach(source_name IN ITEMS fdd_source hdd_source)
         message(FATAL_ERROR "${source_name} still truncates a media target directly")
     endif()
 endforeach()
+
+if(NOT "${fdd_source}" MATCHES "vm/machine/media_save.h" OR
+    NOT "${fdd_source}" MATCHES "vm_machine_media_save_pair_atomically")
+    message(FATAL_ERROR "fdd_source bypasses paired VM atomic media persistence")
+endif()
+string(FIND "${fdd_source}" "STD_FOPEN(file_name, \"wb\")" fdd_direct_position)
+if(NOT fdd_direct_position EQUAL -1)
+    message(FATAL_ERROR "fdd_source still truncates a media target directly")
+endif()
 
 foreach(required IN ITEMS "STD_FOPEN_EXCLUSIVE_WRITE" "STD_FWRITE" "STD_FCLOSE" "STD_RENAME_REPLACE"
     "STD_REMOVE")
