@@ -17,3 +17,9 @@ to a bounded later S.
 
 S1 is accepted at `e230aceb`. S2 receives CPU retirement/prefetch and
 memory/I/O phase vocabulary with the same no-guessed-value constraint.
+
+### S2: CPU and bus phase boundary
+
+S2 retains Appendix-B retirement facts and the one transaction vocabulary while
+rejecting a prefetch or board-wait conversion. Its [boundary record](../etc/evidence/t371-s2-cpu-bus-phase-boundary.md)
+assigns DMA/PIC/INTA composition to S3.

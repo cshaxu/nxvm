@@ -2,6 +2,27 @@
 
 ## Current Work
 
+## M5 T371 S2 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; T371 S1 accepted at `d426f884`. |
+| Admission And Approval | The owner-approved Model-339 phase-refinement program continues with the S1-assigned CPU retirement, prefetch and memory/I/O boundary ledger. |
+| Objective | Reconcile accepted 80286 retirement timing with the current executor, prefetch and shared transaction boundaries; define only source-supported phase vocabulary and exact unavailable wait-state transfers. |
+| Non-goals | No numerical wait state, prefetch implementation, external bus behavior change, new trace ABI, physical-cycle claim, device microstate, 80386/8088 or Windows work. |
+| Reference Baseline | T368 CPU closure, T369 bus audit, T371 S1 ledger, Model-339 descriptor, executor/transaction source and Intel 80286/IBM PC/AT authorities. |
+| Candidate Proposal | [Selected-profile model-L3 phase refinement](../proposals/m5-cycle-exact-selected-profile.md). |
+| Files And ABI Surface | S2 evidence, T371 history, Current status and evidence index only. Stop before source, ABI, CMake, test or runtime changes. |
+| Applicable Rules | One successful-retirement publisher and transaction owner; source-labelled timing; no guessed board wait; copied trace and reset/cancellation boundaries; documentation/source-policy rules. |
+| Verification | Executor/transaction/prefetch/static sweep, source-to-vocabulary matrix, descriptor-consumer review, documentation governance and diff check. |
+| Expected Markers | Existing CPU/transaction smokes remain evidence; no new timing marker, artifact or L3 claim. |
+| Asset Needs | Public manuals and project-authored evidence only; no ROM, guest media, firmware, external code, binary or host trace. |
+| Reporting Requirements | Separate exact retirement facts from fetch/bus facts, identify every source gap and state the S3 receiver. |
+| Stop Conditions | Stop if a result needs a guessed READY value, undocumented prefetch policy, host clock, second transaction owner, public interface or physical-cycle claim. |
+| Exit Criteria | P1 commits an indexed CPU/bus phase-boundary reconciliation with exact S3 transfer and no runtime timing value. |
+| Original Owner Request | Continue in Queue order toward complete L3 before Windows 3.1; use named reference models only where authoritative manuals leave a range or no range, without treating them as IBM authority. |
+| Similar-Issue Sweep | Sweep executor retirement/publish, instruction timing tables, fetch/decode paths, transaction begin/commit/cancel, memory/port accessors, Model-339 clock config, trace consumers and focused CPU/transaction tests. |
+
 ## Current Technical Baseline
 
 - **Current developer artifact:** T369 S4 `vm-0-5-0369` /
