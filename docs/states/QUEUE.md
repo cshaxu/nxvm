@@ -46,6 +46,8 @@ Each candidate has a bounded primary-manual/probe contract; completing one
 does not silently upgrade a different device, profile, or Windows mode.
 
 1. [IBM PC/AT 5170 final model-L3 audit](../proposals/m5-5170-final-l3-audit.md).
+1. [Model-339 preclosure input and global-gate repair](../proposals/m5-model339-preclosure-gate-repair.md).
+1. [IBM PC/AT 5170 Model-339 L3 re-audit](../proposals/m5-5170-model339-l3-reaudit.md).
 1. [DeskPro 386 Model 40 profile and capability-gap audit](../proposals/m5-deskpro-386-model40-profile-capability-audit.md).
 1. [DeskPro 386 Model 40 80386 CPU closure](../proposals/m5-deskpro-386-profile-cpu-closure.md).
 1. [DeskPro 386 Model 40 selected-device functional closure](../proposals/m5-deskpro-386-model40-device-functional-closure.md).

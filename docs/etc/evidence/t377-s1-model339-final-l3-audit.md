@@ -4,11 +4,14 @@
 
 ## Decision
 
-**Ready: the frozen IBM PC/AT 5170 Model 339/Type 3 baseline satisfies the
-project's declared L3 event-and-bus contract.**  This decision covers only
-the selected 8 MHz 80286, Rev.3 BIOS slot, 512 KB planar memory, CGA,
-AT keyboard, no-fixed-disk configuration.  Its optional 1.44 MB route is an
-aftermarket TEAC FD-235HF-A540 upgrade, not an original IBM factory claim.
+**Not ready: the frozen IBM PC/AT 5170 Model 339/Type 3 baseline cannot yet
+be accepted as L3.** The focused model evidence is sound, but the current full
+gate proves that the selected native keyboard-to-8042 production path bypasses
+its required transport ingress operation. A passing controller smoke does not
+compensate for that production-boundary failure. The selected configuration
+remains 8 MHz 80286, Rev.3 BIOS slot, 512 KB planar memory, CGA, AT keyboard
+and no fixed disk. Its optional 1.44 MB route is an aftermarket TEAC
+FD-235HF-A540 upgrade, not an original IBM factory claim.
 
 L3 here is deterministic event-and-bus timing, not physical cycle-exact or
 waveform emulation.  Consequently a source-exhausted physical boundary is
@@ -24,7 +27,7 @@ It is not evidence for a broader PC/AT, clone, MFM/ATA or Windows result.
 | 80286 instruction retirement and CPU time | T368 S7 accepted the source-labelled successful-retirement ledger; T375 S25 retains prefetch/READY/HOLD as no-synthetic-scalar boundaries. | Accepted at L3: retirement publishes the sole deterministic CPU time; physical occupancy is unclaimed. |
 | RAM, ROM, port and ISA transactions | T369/T372 transaction ownership and T375 S25 prove one transaction owner and no selected READY/RAM/ROM/ISA conversion. | Accepted at L3: validation/publication and order are deterministic; no electrical wait/phase claim is made. |
 | DMA, PIC, PIT and RTC/CMOS | T374 S15 functional closure; T375 S2, S16 and S25 bind rational RTC/PIT clocks, one logical DMA/PIC lifecycle and defined arbitration order. | Accepted; HRQ/HLDA/DACK/AEN/INTA propagation and pin spacing remain explicit physical exclusions. |
-| 8042, 101-key keyboard and IRQ1 | T374 S17--S18 functional/production-input boundary; T375 S22--S23 bind IBM typematic nominal/range and F3/default cadence. | Accepted; response delay remains an IBM upper-bound rather than a fabricated completion scalar, and electrical propagation is unclaimed. |
+| 8042, 101-key keyboard and IRQ1 | T374 S17--S18 functional/production-input boundary; T375 S22--S23 bind IBM typematic nominal/range and F3/default cadence. | **Not accepted:** the full gate proves Win32 keyboard events bypass the production transport ingress, so the declared native input boundary is not enforced. |
 | 8272A, FDC, DMA2/IRQ6 and factory floppy route | T374 S4--S10 functional closure; T375 S19--S21/S24 source-gated byte/seek/NDMA timing; T376 S2--S4/S6 raw sidecar, Deleted Data, Control Mark and Scan proof. | Accepted for ordinary raw IMG plus optional sidecar.  Physical CHRN duplication, encoded layout/CRC/flux, index/search phase, motor upper-bound completion and controller-to-grant electrical phase are explicitly unsupported, not silently emulated. |
 | Aftermarket 1.44 MB route | T373 S2/S3, T375 S19 and T376 evidence identify the TEAC 500-kbit/s/300-RPM route and raw-sidecar media boundary. | Accepted as an aftermarket compatibility condition only; no factory configuration or IBM-controller substitution is inferred. |
 | Digital CGA | T374 S11--S16 functional closure; T375 S8/S11--S15 binds CRTC/status/defaults and a qualified 86Box-derived VADP cadence only to the project clock domain. | Accepted at L3: logical raster/status/reset ordering is deterministic.  Adapter revision, ISA contention, snow, monitor and waveform claims remain excluded. |
@@ -66,31 +69,34 @@ through this audit.  A future request for physical timing, flux media,
 MFM/ST-506, ATA/HDC, I/O-check NMI, broader CGA fidelity or a different AT
 configuration requires its own capability selection and admission.  The
 later current-product device closure still owns retained EGA/VGA, ATA/HDC,
-AUX and other exposed non-Model-339 capability; this acceptance does not
-upgrade them.
+AUX and other exposed non-Model-339 capability; no Model-339 result upgrades
+them.
 
 ## Current-Gate Disposition
 
 The focused Model-339 and FDC replay above passed after rebuilding its targets.
 The configured full `current-gates-gcc` run did not complete cleanly because
-three pre-existing global checks fail outside this audit-only surface:
+three global checks fail:
 
 | Failing global check | Reported condition | T377 disposition |
 | --- | --- | --- |
-| `verify-keyboard-ingress-boundary` | Win32 keyboard events bypass the transport ingress operation. | Existing host-input boundary defect; do not treat this Model-339 audit as its repair or acceptance. |
-| `verify-aux-mouse-boundary` | Win32 mouse events bypass the platform transport. | Existing AUX/product-surface defect; AUX is not a selected Model-339 capability. |
-| `verify-dependency-dag` | `src/vm/platform/virtual_time.h|vm/composition` is a forbidden edge. | Existing dependency-policy defect; no T377 source file changes. |
+| `verify-keyboard-ingress-boundary` | Win32 keyboard events bypass the transport ingress operation. | Selected Model-339 native-input defect. The new **Model-339 preclosure gate repair** candidate is the earliest shared owner. |
+| `verify-aux-mouse-boundary` | Win32 mouse events bypass the platform transport. | The same candidate repairs the shared production-input boundary while retaining the Model-339 IRQ1-only selection. |
+| `verify-dependency-dag` | `src/vm/platform/virtual_time.h|vm/composition` is a forbidden edge. | The same candidate owns restoring the published composition boundary before an audit can claim a green current gate. |
 
 The documentation-governance failure first reported in this run was caused by
 nine retained recent task-level rows in `CURRENT.md`; S1 corrects that status
-retention error before its final governance replay.  The three code-gate
+retention error before its final governance replay. The three code-gate
 failures remain visible transfers and prevent T377 from claiming an all-green
-repository gate.
+repository gate. The repair candidate is immediately followed by a fresh
+Model-339 L3 re-audit; neither task may reuse this negative decision as an
+acceptance.
 
 ## Audit Result
 
-Every selected Model-339 requirement has one functional owner and a
-source-backed or explicitly bounded deterministic L3 timing contract.  No
-unselected capability was used to fill a gap and no bounded physical omission
-was described as implemented.  T377 may therefore close after the required
-full current gate, governance review and task-level closure audit.
+The audit confirms the CPU, board, FDC/raw-IMG and CGA records, and retains all
+physical boundaries truthfully. It nevertheless returns **not ready** because
+the selected keyboard production path fails the full current gate. The
+immediate repair candidate must restore the native input and dependency gates,
+then the fresh Model-339 re-audit must replay the entire matrix and make the
+only subsequent ready/not-ready decision.

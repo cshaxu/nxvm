@@ -18,7 +18,9 @@ and timing evidence against the original final-audit proposal. It must
 distinguish the factory configuration from the supported aftermarket 1.44 MB
 drive/raw-sidecar condition and retain physical-media/board-phase exclusions.
 
-S1's implementation record is [the independent final audit evidence](../etc/evidence/t377-s1-model339-final-l3-audit.md).
-It finds the frozen baseline L3-ready under the project's deterministic
-event-and-bus definition, with all physical and out-of-baseline limits retained
-as visible exclusions.  Coordinator review and task-level closure remain open.
+P1's preliminary ready conclusion was rejected in same-session coordinator
+review: its full-gate replay proves that native Win32 keyboard input bypasses
+the required transport ingress, which directly invalidates the selected
+Model-339 input path. Corrective P2 records the negative decision and ordered
+repair/re-audit receivers in [the independent final audit evidence](../etc/evidence/t377-s1-model339-final-l3-audit.md).
+No Model-339 L3 acceptance is made by this task.
