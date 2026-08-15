@@ -2,6 +2,27 @@
 
 ## Current Work
 
+## M5 T374 S2 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; T374 remains the latest open numeric task and S2 follows accepted S1. |
+| Admission And Approval | The owner approved continuing Model-339 functional closure before any board/device timing task, using primary IBM documentation and only bounded secondary/reference fallback where the primary material has no determinate behavior. |
+| Objective | Extract a source-labelled observable functional contract for Model-339's selected memory/ROM/reset/NMI, PIC/PIT/DMA/RTC, 8042 keyboard, FDC/1.44 MB field upgrade and CGA routes; compare it with the S1 owner inventory and select the earliest concrete functional repair. |
+| Non-goals | No timing scalar, board wait, reference-emulator-derived value, ROM/media import, generic AT expansion, ATA/HDC, MFM/ST-506, EGA/VGA, AUX/mouse, or L3 claim. |
+| Reference Baseline | T374 S1 owner inventory; [T374 proposal](../proposals/m5-5170-selected-device-functional-closure.md); IBM PC/AT Technical Reference primary documents already source-qualified by T366/T372; T373 model configuration and exclusion ledger. |
+| Candidate Proposal | [IBM PC/AT 5170 selected-device functional closure](../proposals/m5-5170-selected-device-functional-closure.md). |
+| Files And ABI Surface | T374 S2 source-contract/gap-selection evidence, history progress, `docs/etc/README.md`, and `docs/states/CURRENT.md` only; production/test/build source is inspected but unchanged. |
+| Applicable Rules | `docs/README.md` Task Reading Set; `docs/rules/EXECUTION.md` evidence, research, continuation and P lifecycle rules; `docs/rules/DOCUMENT.md`; `CONTRIBUTING.md`; source policy; architecture/coding authorities apply to the resulting repair selection but no production source changes in S2. |
+| Verification | Read source-qualified IBM technical-reference material for selected observable behavior; map each contract clause to S1 owner/test evidence; distinguish implemented, missing, source-exhausted and timing-only behavior; choose one earliest owner-local repair with an executable regression outline. Run documentation governance and `git diff --check`. |
+| Expected Markers | One indexed functional contract matrix prevents untested selected behavior from being mistaken for timing debt and names one concrete next repair with scope, source basis and test observable. |
+| Asset Needs | Public documentation read-only only. No firmware, ROM, guest media, trace or external executable is imported, stored or recorded as a project asset. |
+| Reporting Requirements | Report source boundary, contract/implementation comparison, source-exhausted items, selected repair, focused verification, pushed P1, coordinator acceptance and repair-S handoff. |
+| Stop Conditions | Stop and transfer any behavior without a primary contract, any timing-only observation, any device outside Model-339 selection, or any repair needing a profile decision/ROM/media. Do not fill a primary-source gap with an emulator value. |
+| Exit Criteria | Every selected S1 row has a source-labelled functional contract or source-exhausted disposition, an implementation comparison and timing separation; one smallest evidence-backed repair is selected with a precise owner and regression plan; checks pass. |
+| Original Owner Request | Fully implement selected machine functionality before its timing/L3 audit, using 86Box/MAME/PCjs only as bounded fallback when primary manuals do not determine a behavior. |
+| Similar-Issue Sweep | Compare all selected Model-339 owner rows from S1 against the same IBM primary source classes: ports/registers, reset/error/cancel, IRQ/DRQ acknowledgement, firmware consumers and state visibility. Classify every discrepancy as this repair, a later T374 repair, timing, or a transfer. |
+
 ## Current Technical Baseline
 
 - **Current developer artifact:** T369 S4 `vm-0-5-0369` /

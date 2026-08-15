@@ -22,3 +22,11 @@ maps every Model-339 selected component to its actual core/profile/session
 owner, observable route, focused test boundary, concrete functional gap and
 later timing handoff. It excludes generic ATA/EGA/AUX and no-fixed-disk MFM
 work without classifying any selected component complete.
+
+### S2: functional contract and repair selection
+
+S2's [functional contract matrix](../etc/evidence/t374-s2-model339-functional-contract-matrix.md)
+compares each selected S1 owner with the Model-339 primary-document boundary.
+It selects the missing 8042 command-port `F0h`--`FFh` output-port pulse reset
+behavior as the first owner-local repair. The pulse duration remains timing
+work and no other output-port bit gains an invented consumer.
