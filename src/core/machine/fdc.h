@@ -71,8 +71,10 @@ typedef struct {
     type_bool observed_ready[CORE_MACHINE_FDC_DRIVE_COUNT];
     type_bool ready_poll_enabled;
     type_bool dma_byte_gate_pending;
+    type_bool ndma_byte_gate_pending;
     type_unsigned_64 elapsed_ticks;
     type_unsigned_64 next_dma_byte_tick;
+    type_unsigned_64 next_ndma_byte_tick;
 } core_machine_fdc_data;
 
 typedef C_VOID (*core_machine_fdc_dma_request_operation)(C_VOID *owner,

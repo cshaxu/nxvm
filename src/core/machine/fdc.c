@@ -41,11 +41,11 @@ static type_unsigned_8 core_machine_fdc_msr(const core_machine_fdc *fdc)
     case core_machine_fdc_PHASE_RESULT:
         return VFDC_MSR_RQM | VFDC_MSR_DIO | VFDC_MSR_CB;
     case core_machine_fdc_PHASE_EXECUTION_READ:
-        return fdc->data.flagNDMA ? VFDC_MSR_RQM | VFDC_MSR_DIO |
+        return fdc->data.flagNDMA && !fdc->data.ndma_byte_gate_pending ? VFDC_MSR_RQM | VFDC_MSR_DIO |
             VFDC_MSR_NDM | VFDC_MSR_CB : VFDC_MSR_CB;
     case core_machine_fdc_PHASE_EXECUTION_WRITE:
     case core_machine_fdc_PHASE_EXECUTION_FORMAT:
-        return fdc->data.flagNDMA ? VFDC_MSR_RQM | VFDC_MSR_NDM |
+        return fdc->data.flagNDMA && !fdc->data.ndma_byte_gate_pending ? VFDC_MSR_RQM | VFDC_MSR_NDM |
             VFDC_MSR_CB : VFDC_MSR_CB;
     default:
         return VFDC_MSR_RQM;
@@ -204,6 +204,26 @@ static C_VOID core_machine_fdc_publish_due_dma_byte(core_machine_fdc *fdc)
     core_machine_fdc_request_assert(fdc);
 }
 
+static C_VOID core_machine_fdc_schedule_ndma_byte(core_machine_fdc *fdc)
+{
+    type_unsigned_64 ticks = core_machine_fdc_dma_byte_ticks(fdc);
+
+    if (fdc == STD_NULL || !fdc->data.flagNDMA || ticks == 0u ||
+        (fdc->data.phase != core_machine_fdc_PHASE_EXECUTION_READ &&
+        fdc->data.phase != core_machine_fdc_PHASE_EXECUTION_WRITE &&
+        fdc->data.phase != core_machine_fdc_PHASE_EXECUTION_FORMAT)) return;
+    fdc->data.next_ndma_byte_tick = fdc->data.elapsed_ticks + ticks;
+    fdc->data.ndma_byte_gate_pending = TYPE_TRUE;
+}
+
+static C_VOID core_machine_fdc_publish_due_ndma_byte(core_machine_fdc *fdc)
+{
+    if (fdc == STD_NULL || !fdc->data.ndma_byte_gate_pending ||
+        fdc->data.elapsed_ticks < fdc->data.next_ndma_byte_tick ||
+        !core_machine_fdc_execution_active(fdc)) return;
+    fdc->data.ndma_byte_gate_pending = TYPE_FALSE;
+}
+
 static C_VOID core_machine_fdc_raise_irq(core_machine_fdc *fdc)
 {
     if ((fdc->data.dor & VFDC_DOR_ENRQ) == 0u) return;
@@ -216,6 +236,8 @@ static C_VOID core_machine_fdc_cancel_execution(core_machine_fdc *fdc)
     core_machine_fdc_deassert_dma(fdc);
     fdc->data.dma_byte_gate_pending = TYPE_FALSE;
     fdc->data.next_dma_byte_tick = 0u;
+    fdc->data.ndma_byte_gate_pending = TYPE_FALSE;
+    fdc->data.next_ndma_byte_tick = 0u;
     fdc->data.pending_st1 = 0u;
     fdc->data.transfer_remaining = 0u;
     fdc->data.byte_offset = 0u;
@@ -631,9 +653,10 @@ static C_VOID core_machine_fdc_read_data(t_port *port, type_unsigned_16 id,
         fdc->connect.port->data.ioByte = fdc->data.ret[fdc->data.result_index++];
         if (fdc->data.result_index >= fdc->data.result_length) core_machine_fdc_command_phase(fdc);
     } else if (fdc->data.phase == core_machine_fdc_PHASE_EXECUTION_READ &&
-        fdc->data.flagNDMA) {
+        fdc->data.flagNDMA && !fdc->data.ndma_byte_gate_pending) {
         latch.data.byte = 0u;
         (C_VOID)core_machine_fdc_transfer_byte(fdc, &latch, TYPE_FALSE);
+        core_machine_fdc_schedule_ndma_byte(fdc);
         fdc->connect.port->data.ioByte = latch.data.byte;
     }
 }
@@ -670,13 +693,17 @@ static C_VOID core_machine_fdc_write_data(t_port *port, type_unsigned_16 id,
 {
     core_machine_fdc *fdc = owner; t_latch latch;
     (C_VOID)port; (C_VOID)id;
-    if (fdc->data.phase == core_machine_fdc_PHASE_EXECUTION_WRITE && fdc->data.flagNDMA) {
+    if (fdc->data.phase == core_machine_fdc_PHASE_EXECUTION_WRITE && fdc->data.flagNDMA &&
+        !fdc->data.ndma_byte_gate_pending) {
         latch.data.byte = fdc->connect.port->data.ioByte;
         (C_VOID)core_machine_fdc_transfer_byte(fdc, &latch, TYPE_TRUE);
+        core_machine_fdc_schedule_ndma_byte(fdc);
         return;
     }
-    if (fdc->data.phase == core_machine_fdc_PHASE_EXECUTION_FORMAT && fdc->data.flagNDMA) {
+    if (fdc->data.phase == core_machine_fdc_PHASE_EXECUTION_FORMAT && fdc->data.flagNDMA &&
+        !fdc->data.ndma_byte_gate_pending) {
         core_machine_fdc_format_byte(fdc, fdc->connect.port->data.ioByte);
+        core_machine_fdc_schedule_ndma_byte(fdc);
         return;
     }
     if (fdc->data.phase != core_machine_fdc_PHASE_COMMAND) return;
@@ -786,6 +813,7 @@ C_VOID core_machine_fdc_advance_at(core_machine_fdc *fdc,
         core_machine_fdc_raise_irq(fdc);
     }
     core_machine_fdc_publish_due_dma_byte(fdc);
+    core_machine_fdc_publish_due_ndma_byte(fdc);
 }
 
 C_VOID core_machine_fdc_refresh(core_machine_fdc *fdc)

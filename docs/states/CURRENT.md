@@ -8,6 +8,27 @@
 | --- | --- |
 | T375 S23 | Accepted P1 `83b05d66`: keyboard F3 now derives delay/repeat cadence from one nominal profile calibration, and reset/F5/F6 restore IBM's `2Ch` 500-ms/10-cps default. [Evidence](../etc/evidence/t375-s23-kbc-f3-cadence.md). |
 
+## M5 T375 S24 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner-approved continuing T375 L3 work; S19 establishes the selected 500-kbit/s byte interval and S20 leaves the equivalent non-DMA data-register path open. |
+| Objective | Apply the existing 128-tick 500-kbit/s byte-availability gate to selected non-DMA read, write, and format data-register transfers. |
+| Non-goals | No sector-search/index model, gap timing, spin-up completion time, 250-kbit/s timing, raw-IMG sidecar work, DMA redesign, host pacing, or final L3 claim. |
+| Reference Baseline | DMA data bytes withdraw/reassert DRQ through the 128-tick FDC gate; non-DMA `3F5h` reads/writes presently transfer immediately while MSR continuously exposes RQM. |
+| Candidate Proposal | [IBM PC/AT 5170 board and device phase-timing closure](../proposals/m5-5170-board-phase-timing-closure.md). |
+| Files And ABI Surface | FDC-local gate state/status/data-port logic, FDC smoke, evidence/index/current; no public or test-only API. |
+| Applicable Rules | One FDC owner, one DMA owner, profile/source-local timing, reset cancellation, architecture/coding/source-policy/documentation rules. |
+| Verification | FDC smoke proves first non-DMA byte is available, MSR withholds RQM at tick 127 after one byte, grants it at tick 128, and preserves result/IRQ6/reset plus DMA regressions. |
+| Expected Markers | `M5:T375:S20:FDC-DMA-CADENCE:OK`; `M5:T375:S21:FDC-SEEK-CADENCE:OK`; `M5:T375:S24:FDC-NDMA-CADENCE:OK`. |
+| Asset Needs | None; S19's named TEAC primary conversion supplies the 128-tick input. |
+| Reporting Requirements | Report unified FDC ownership, non-DMA MSR/RQM behavior, retained mechanical and media-format limits, and no new API. |
+| Stop Conditions | Stop if a status bit or gated port access is used to fabricate sector/rotation timing, or if DMA gets a second request path. |
+| Exit Criteria | In selected 500-kbit/s non-DMA execution, every successful byte transfer is followed by a 128-tick RQM absence; due time restores RQM; cancellation clears it; existing DMA behavior remains proven. |
+| Original Owner Request | Continue L3 precision toward all selected baseline machines before Windows, with primary sources first and no test-only input boundary. |
+| Similar-Issue Sweep | Cover read, write, format, MSR, transfer completion/error, reset/finalize, DMA gate, CCR selection, and all `3F5h` execution paths. |
+
 ## Current Technical Baseline
 
 - **Current developer artifact:** T369 S4 `vm-0-5-0369` /

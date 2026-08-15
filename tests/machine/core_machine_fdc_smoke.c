@@ -194,6 +194,7 @@ C_INT main(C_VOID)
     core_machine_fdc *fdc;
     t_port *port;
     type_unsigned_8 result[7];
+    type_unsigned_64 ndma_gate_tick;
     C_INT failed = 0;
 
     fixture.bytes[0] = 0x4au;
@@ -224,6 +225,7 @@ C_INT main(C_VOID)
                 core_machine_port_write(port, fdc_config.dor_port, 0x1cu);
                 core_machine_fdc_command(fdc, port, specify_non_dma,
                     sizeof(specify_non_dma));
+                core_machine_port_write(port, fdc_config.control_port, VFDC_CCR_DRC);
 
                 core_machine_fdc_command(fdc, port, (const type_unsigned_8[]){0x10u}, 1u);
                 failed |= fdc->connect.irq_source.asserted ||
@@ -339,6 +341,7 @@ C_INT main(C_VOID)
                 core_machine_port_write(port, fdc_config.dor_port, 0x1cu);
                 core_machine_fdc_command(fdc, port, specify_non_dma,
                     sizeof(specify_non_dma));
+                core_machine_port_write(port, fdc_config.control_port, VFDC_CCR_DRC);
 
                 fixture.forced_read_result = CORE_MACHINE_MEDIA_RESULT_INVALID_RANGE;
                 core_machine_fdc_command(fdc, port, read_sector, sizeof(read_sector));
@@ -356,6 +359,30 @@ C_INT main(C_VOID)
                 core_machine_fdc_command(fdc, port, read_sector, sizeof(read_sector));
                 failed |= !core_machine_fdc_read_result(fdc, port, result, sizeof(result)) ||
                     (result[1] & 0x04u) == 0u;
+
+                /* The same 500-kbit/s byte interval applies when the host
+                   services 3F5h directly rather than through DMA2. */
+                fixture.present = TYPE_TRUE;
+                fixture.read_count = 0u;
+                core_machine_port_write(port, fdc_config.control_port, 0u);
+                core_machine_fdc_command(fdc, port, specify_non_dma,
+                    sizeof(specify_non_dma));
+                core_machine_fdc_command(fdc, port, read_sector, sizeof(read_sector));
+                core_machine_fdc_advance_at(fdc, fdc->data.elapsed_ticks + 1u);
+                failed |= core_machine_port_read(port, fdc_config.data_port) != 0xa5u ||
+                    fixture.read_count != 1u || !fdc->data.ndma_byte_gate_pending;
+                ndma_gate_tick = fdc->data.next_ndma_byte_tick;
+                core_machine_fdc_advance_at(fdc, ndma_gate_tick - 1u);
+                failed |= (core_machine_port_read(port, fdc_config.status_port) & VFDC_MSR_RQM) != 0u ||
+                    fixture.read_count != 1u;
+                core_machine_fdc_advance_at(fdc, ndma_gate_tick);
+                failed |= (core_machine_port_read(port, fdc_config.status_port) &
+                    VFDC_MSR_ProcessRead) != VFDC_MSR_ProcessRead ||
+                    fdc->data.ndma_byte_gate_pending;
+                (C_VOID)core_machine_port_read(port, fdc_config.data_port);
+                failed |= fixture.read_count != 2u;
+                core_machine_port_write(port, fdc_config.dor_port, 0u);
+                failed |= fdc->data.ndma_byte_gate_pending;
             }
         }
     }
@@ -369,5 +396,6 @@ C_INT main(C_VOID)
     puts("M5:T347:S2:FDC-SERVICE:OK");
     puts("M5:T375:S20:FDC-DMA-CADENCE:OK");
     puts("M5:T375:S21:FDC-SEEK-CADENCE:OK");
+    puts("M5:T375:S24:FDC-NDMA-CADENCE:OK");
     return 0;
 }
