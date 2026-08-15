@@ -2,9 +2,24 @@
 
 ## Current Work
 
-| Task | Compact progress |
+| Field | Required record |
 | --- | --- |
-| T375 S9 | Accepted P2 `pending`: P1 `5bb44c03` separates VM host input from attached-device native input; no protocol or timing claim changed. [Evidence](../etc/evidence/t375-s9-input-boundary.md). |
+| Identifier Mode | Continuation: M5 T375 S10, the next unused subtask of the retained open T375 progress. |
+| Admission And Approval | Owner: repository user. Approval: continuing work toward the declared L3 closure goal, including the accepted T375 CGA transfer. Scope: a source-labelled 6845 logical-raster admission audit before any code change. |
+| Objective | Establish the exact R0--R9 register geometry/state-machine contract that the MC6845 primary material supports, compare it with current VADP and generated firmware, and allocate implementation versus source-exhausted physical-clock work. |
+| Non-goals | No VADP implementation, profile ratio, synthetic timing relabel, IBM-5170 board scalar, CGA contention/waveform, ROM/media use, source import, reference-emulator fact, or Model-339 L3 claim. |
+| Reference Baseline | T374 S13 CRTC register audit; T375 S8 CGA clock/status reconciliation; Motorola MC6845 data sheet; IBM CGA Options and Adapters reference; current VADP/firmware/profile route. |
+| Candidate Proposal | [IBM PC/AT 5170 board and device phase-timing closure](../proposals/m5-5170-board-phase-timing-closure.md), specifically its CGA timing and phase receiver. |
+| Files And ABI Surface | Audit evidence, `docs/etc/README.md`, and `CURRENT.md` only. No code, ABI, profile, test or CMake change is permitted. |
+| Applicable Rules | `docs/rules/EXECUTION.md`: continuation/evidence/transfer; `docs/rules/ARCHITECTURE.md`: one VADP owner and no fabricated board fact; `docs/rules/DOCUMENT.md`: evidence/index/status topology; source policy: documentation research only. No exception requested. |
+| Verification | Cross-check every R0--R9 unit/effect against the cited primary MC6845 record; sweep VADP support/masks/reset/advance/status/snapshot and generated firmware writes; run documentation governance. |
+| Expected Markers | `M5:T375:S10:CRTC-RASTER-ADMISSION:OK` in durable audit evidence only. |
+| Asset Needs | None. No ROM, media, binary, source import or reference-runtime observation. |
+| Reporting Requirements | Report the matrix and exact receiver separation before P1; final report records the accepted allocation and every remaining source boundary. |
+| Stop Conditions | Stop for owner direction if a logical mechanism requires a source-unsupported default mode table, if a physical source-tick conversion is necessary to express the contract, or if the audit discovers a non-CGA shared VADP behavior that cannot be separated without a broader admission. |
+| Exit Criteria | Evidence distinguishes source-supported logical CRTC effects from unproven board-clock/physical effects, names the single code owner and exact next implementation S, retains all unresolved timing as transfer, and passes governance. |
+| Original Owner Request | Continue the current L3 program; complete the remaining Model-339 timing work without fabricating unavailable hardware timing. |
+| Similar-Issue Sweep | Sweep R0--R9 register support, masks, reset values, CRTC firmware writes, VADP advance/status/snapshot consumers, profile timing values, and all CGA/EGA tests for hidden geometry or synthetic-phase assumptions. |
 
 ## Current Technical Baseline
 
