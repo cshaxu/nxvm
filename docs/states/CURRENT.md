@@ -2,26 +2,8 @@
 
 ## Current Work
 
-## M5 T372 S8 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation; T372 remains the latest open numeric task and S8 follows accepted S7. |
-| Admission And Approval | The owner approved continued single-agent work toward the queued L3 program, with T372's stated audit-only scope and no false Model-339 L3 claim. The approved Td S94 sequence requires this current-state audit to close before the capability ledger begins. |
-| Objective | Perform T372's task-level closure audit: reconcile S1--S7, make the required not-ready decision, and transfer every remaining Model-339 functional and board/phase-timing gap to the ordered post-T372 candidates. |
-| Non-goals | No source, runtime, CMake, ROM/media, reference-runtime, bridge, timing-scalar, device-functional, board-timing, final-5170-L3, DeskPro, XT, or Windows implementation; no reuse of 86Box as a blocking reference. |
-| Reference Baseline | `docs/history/M5-T372-ibm-5170-model-l3-closure-audit.md`; T372 S1--S7 evidence; the Model-339/Type-3 8 MHz/512 KB/CGA/no-fixed-disk profile; T372 current-state audit proposal; Td S94 Queue and Roadmap sequence. |
-| Candidate Proposal | [IBM PC/AT 5170 current-state closure audit](../proposals/m5-l3-machine-closure-audit.md), to be retained with T372 history at task closure; the next Queue candidate is the baseline-machine and supported-device capability ledger. |
-| Files And ABI Surface | T372 history, new indexed S8 closure evidence, `docs/etc/README.md`, `docs/states/{CURRENT,QUEUE}.md`, and proposal relocation only; no ABI or runtime surface. |
-| Applicable Rules | `docs/README.md` Task Reading Set; `docs/rules/EXECUTION.md` continuation, audit, P lifecycle, transfer, and closure rules; `docs/rules/DOCUMENT.md` authority/history/Queue/Current/index rules; `CONTRIBUTING.md`; source policy for contained external-reference conclusions. |
-| Verification | Re-read every T372 evidence record and relevant accepted T366--T371 closure transfer; map each Model-339 component to an exact next candidate; run documentation governance and `git diff --check`; inspect complete diff. |
-| Expected Markers | An S8 evidence matrix proves T372 cannot claim 5170 L3, has no hidden implementation, and transfers capability inventory/function gaps to the ledger/5170 functional candidate and timing gaps to the 5170 phase-timing candidate; Queue no longer lists closed T372. |
-| Asset Needs | None. Existing external ROM/media/reference runtime results are evidence boundaries only; no asset, local path, hash, trace, or configuration is added to Git. |
-| Reporting Requirements | Report confirmation, closure-audit result, all transfers, verification, pushed P1, coordinator acceptance/P2, and next Queue receiver. |
-| Stop Conditions | Stop on a finding that requires code, new timing evidence, a reference rerun, device implementation, a profile change, external asset intake, or a different receiver; report it for the next ordered task rather than expanding this audit. |
-| Exit Criteria | One indexed task-level S8 closure matrix maps every T372 residual to an ordered owner; T372 closes with a not-ready decision; its proposal is retained in history; Queue and Current accurately select the next capability-ledger candidate; documentation checks pass. |
-| Original Owner Request | Continue implementation through the approved L3 program, but do not enter Windows 3.1 work; retain the truth that T372 is an audit and 5170 L3 is not yet complete. |
-| Similar-Issue Sweep | Documentation/audit-only: sweep all T372 S1--S7 residual groups, T366--T371 transfer records, current Queue receivers, and current Model-339 statements for an omitted functional/timing gap or false L3-ready implication. |
+**Idle.** The next unnumbered candidate is the baseline-machine and
+supported-device capability ledger; it is not active until separately admitted.
 
 ## Current Technical Baseline
 
@@ -42,7 +24,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T372 S7 | P1 `fb8f16fd` validates the isolated Bochx/Bochs bridge gate but rejects direct execution of its retired adapter; no external bridge, scalar or hardware claim is accepted. **5170 model-L3 remains open.** [Bridge qualification](../etc/evidence/t372-s7-bochx-bridge-qualification.md). |
+| T372 | Closed at `3f56c72c`: S1--S8 establish that Model 339 has selected logical ownership and deterministic ordering, but lacks selected-device functional closure and source-backed board/phase timing. **5170 model-L3 is not ready.** [Closure audit](../etc/evidence/t372-s8-task-closure-transfer-audit.md). |
 | T370 | Closed at `77a73c04`: S1--S5 reconciled all selected Model-339 device-service owners and transferred unavailable duration to phase refinement; **5170 model-L3 is not ready**. [Closure audit](../etc/evidence/t370-s5-planar-cga-transfer-audit.md). |
 | T369 | Closed at `08a64bea`: S1--S4 lock and audit the 5170 Model-339 bus-stage input, logical 80286 DMA handoff and selected FDC/PIC visibility. Board waits, physical waveforms, device service, phase refinement and final 5170 L3 remain exact ordered transfers; **5170 model-L3 is not ready**. [Closure audit](../etc/evidence/t369-s4-pcat-bus-stage-closure-audit.md). |
 | T368 | Closed at `4da84be8`: completes the source-labelled 80286 successful-retirement CPU ledger, with exact values or declared source-undefined transfers. The next Queue receiver is bus-timed PC/AT operation; CPU waits, bus/device timing and IBM 5170 L3 remain open. [Closure audit](../etc/evidence/t368-s7-80286-retirement-closure-audit.md). |

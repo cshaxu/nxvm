@@ -46,7 +46,6 @@ gap, never hide one.
 Each candidate has a bounded primary-manual/probe contract; completing one
 does not silently upgrade a different device, profile, or Windows mode.
 
-1. [IBM PC/AT 5170 current-state closure audit](../proposals/m5-l3-machine-closure-audit.md).
 1. [Baseline-machine and supported-device capability ledger](../proposals/m5-baseline-device-capability-ledger.md).
 1. [IBM PC/AT 5170 selected-device functional closure](../proposals/m5-5170-selected-device-functional-closure.md).
 1. [IBM PC/AT 5170 board and device phase-timing closure](../proposals/m5-5170-board-phase-timing-closure.md).
@@ -69,7 +68,8 @@ does not silently upgrade a different device, profile, or Windows mode.
 1. [M5 final Windows closure audit](../proposals/m5-final-l3-windows-closure-audit.md).
 
 Closed proposal reference:
-The recently closed [VM profile-contract ownership migration](../proposals/m5-vm-profile-contract-ownership.md),
+The recently closed IBM PC/AT 5170 current-state closure audit,
+[VM profile-contract ownership migration](../proposals/m5-vm-profile-contract-ownership.md),
 [80286 successful-retirement timing closure](../proposals/m5-80286-retirement-timing-closure.md),
 timing normalization, instruction corpus, PC/AT completeness, NMI
 non-admission, and preparatory baseline work are retained in task history, not

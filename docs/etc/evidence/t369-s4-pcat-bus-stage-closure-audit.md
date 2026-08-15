@@ -62,7 +62,7 @@ artifact and contains no protected firmware or guest media.
 | --- | --- |
 | Model-339 READY/wait values for CPU memory, ROM, CGA, ISA and ports; maximum HOLD latency; physical HOLD/HLDA/DREQ/DACK/AEN/INTA behavior | Closed T371 [Selected-profile model-L3 phase refinement](../../history/M5-T371-selected-profile-phase-refinement-proposal.md). |
 | FDC/controller/TEAC command, DRQ-to-grant and mechanical service durations; selected device readiness timing | Closed T370 [PC/AT device service-timing corpus](../../history/M5-T370-pcat-device-service-timing-corpus-proposal.md); physical durations now transfer to phase refinement. |
-| Selected-profile phase integration and IBM PC/AT final model audit | The following phase-refinement and [5170 model-L3 closure audit](../../proposals/m5-l3-machine-closure-audit.md) candidates. |
+| Selected-profile phase integration and IBM PC/AT final model audit | The following phase-refinement and [5170 model-L3 closure audit](../../history/M5-T372-ibm-5170-model-l3-closure-audit-proposal.md) candidates. |
 | IBM fixed disk MFM/ST-506 controller/drive | Existing `TODO(Medium)` MFM/ST-506 admission; ATA/HDC is neither the Model-339 device nor its timing evidence. |
 | CPU source-range/external-bus facts outside accepted successful-retirement rows | The ordered CPU/bus closure candidates and their explicit source transfers. |
 

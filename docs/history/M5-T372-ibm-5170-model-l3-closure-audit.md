@@ -82,3 +82,7 @@ the 5170 functional candidate, and board-local timing to the 5170 phase-timing
 candidate. The later final 5170 audit alone may make a ready/not-ready
 decision. No reference runtime, ROM/media asset, timing scalar, implementation,
 or Windows work is admitted.
+
+S8 is accepted at `3f56c72c`; the task-level closure is recorded by the
+following governance delivery. Its first future receiver is the unnumbered
+baseline-machine and supported-device capability ledger candidate.
