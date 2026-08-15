@@ -2,27 +2,6 @@
 
 ## Current Work
 
-## M5 T370 S3 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation; T370 S2 accepted at `b5dc1573`. |
-| Admission And Approval | The owner-approved ordered L3 program continues. S2 authorizes only dual-8237A/FDC source, lifecycle and controller-domain reconciliation; a timing scalar or runtime behavior requires a later approved packet. |
-| Objective | Audit the selected FDC DMA2/IRQ6 path through dual-8237A request, grant, terminal/result, acknowledgement, cancellation, reset/finalize, trace and Model-339 composition; determine whether uPD765 service timers have a source-labelled mapping to an existing project domain. |
-| Non-goals | No new FDC command, media, drive, data rate, controller clock conversion, DRQ/IRQ delay, physical DACK/AEN/HLDA waveform, ATA/HDC/MFM route, source import, guest media, phase refinement or 5170-L3 claim. |
-| Reference Baseline | T370 S1/S2, T348 DMA lifecycle, T353 FDC topology, T366 uPD765 non-admission, T369 logical HOLD and selected Model-339 descriptor; Intel 8237A, NEC uPD765A and IBM PC/AT Technical Reference. |
-| Candidate Proposal | [PC/AT device service-timing corpus](../proposals/m5-device-service-timing-corpus.md). |
-| Files And ABI Surface | S3 evidence, T370 history, Current status and evidence index only. Stop and revise before any FDC/DMA/CMake/runtime/ABI edit. |
-| Applicable Rules | One owner for device state/request/publication; validation before DMA transaction publication; reset/finalize release; logical HOLD versus physical bus boundary; copied trace consumer; source-policy and documentation rules. |
-| Verification | Manual-to-route matrix, DMA/FDC source/test sweep, existing DMA/FDC/transaction/competition smoke inventory, documentation governance and diff check. No artifact or runtime marker is manufactured by this reconciliation-only S. |
-| Expected Markers | Existing DMA/FDC markers remain evidence only; S3 adds no marker or time conversion. |
-| Asset Needs | No ROM, guest media, firmware, third-party code, binary, raw trace or device capture. Public manuals and project-authored evidence only. |
-| Reporting Requirements | Separate 8237A/uPD765 protocol facts from board wiring and project-domain conversion; map every DRQ/IRQ/cancel/reset route; state whether reference models are comparable; name the exact S4 receiver. |
-| Stop Conditions | Stop and revise if an outcome requires a guessed delay, new device state, external capture, physical signal assertion, changed FDC/DMA behavior, another scheduler or public interface. |
-| Exit Criteria | P1 commits an indexed DMA/FDC service/domain reconciliation with a bounded S4 receiver, retains no unsupported controller conversion and leaves 5170-L3 open. |
-| Original Owner Request | Continue in Queue order toward complete L3 before Windows 3.1; use named reference models only where authoritative manuals leave a range or no range, without treating them as IBM authority. |
-| Similar-Issue Sweep | Sweep every DMA bind/request/assert/deassert/terminate/advance/reset/finalize call, FDC command/result/DRQ/IRQ/reset/finalize route, transaction/trace callback, Model-339 FDC composition and focused DMA/FDC/competition tests; classify each hit or revise the packet. |
-
 ## Current Technical Baseline
 
 - **Current developer artifact:** T369 S4 `vm-0-5-0369` /
@@ -42,7 +21,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T370 S2 | P1 `3bd10b84` plus documentation repair `199e0ed2` reconciles PIT/PIC/RTC source semantics with the selected descriptor domains. It confirms no source-backed physical conversion, preserves existing behavior and transfers S3 to DMA/FDC. [S2 reconciliation](../etc/evidence/t370-s2-pit-pic-rtc-domain-reconciliation.md). |
+| T370 S3 | P1 `3d5cd542` proves one FDC DRQ/DMA2/IRQ6 lifecycle and retains the absence of a uPD765-to-project-clock conversion. It transfers S4 to KBC/keyboard and leaves FDC service values unallocated. [S3 reconciliation](../etc/evidence/t370-s3-dma-fdc-domain-reconciliation.md). |
 | T369 | Closed at `08a64bea`: S1--S4 lock and audit the 5170 Model-339 bus-stage input, logical 80286 DMA handoff and selected FDC/PIC visibility. Board waits, physical waveforms, device service, phase refinement and final 5170 L3 remain exact ordered transfers; **5170 model-L3 is not ready**. [Closure audit](../etc/evidence/t369-s4-pcat-bus-stage-closure-audit.md). |
 | T368 | Closed at `4da84be8`: completes the source-labelled 80286 successful-retirement CPU ledger, with exact values or declared source-undefined transfers. The next Queue receiver is bus-timed PC/AT operation; CPU waits, bus/device timing and IBM 5170 L3 remain open. [Closure audit](../etc/evidence/t368-s7-80286-retirement-closure-audit.md). |
 | T367 | Closed at `f60d87ea`: concrete machine selection and CPU/timing contract binding are VM-owned; the default-PC/AT option path now selects a VM contract before the sole core materialization boundary, while Model 339 remains descriptor-selected. Focused profile/session regressions pass; an unrelated platform-request compile failure blocks a full-gate claim. No CPU-timing, bus, device or L3 receiver is closed. [Binding evidence](../etc/evidence/t367-s2-vm-profile-contract-binding.md). |

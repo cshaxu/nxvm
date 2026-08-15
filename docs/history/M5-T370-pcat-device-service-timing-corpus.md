@@ -42,3 +42,6 @@ timers have no source-labelled mapping to project elapsed ticks. Its
 [reconciliation](../etc/evidence/t370-s3-dma-fdc-domain-reconciliation.md)
 therefore transfers FDC physical service values and assigns S4 the 8042/
 keyboard command/FIFO/IRQ domain.
+
+S3 is accepted at `3d5cd542`; its terminal and reset proof is logical only and
+does not convert any FDC action into a device-duration claim.
