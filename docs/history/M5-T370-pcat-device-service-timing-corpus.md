@@ -58,3 +58,11 @@ CGA/VADP visible-state/raster work and the task-level transfer audit.
 S4 is accepted at `12e77141`. Its retained zero-delay configuration is an
 explicit non-admission of physical controller or keyboard duration, not a
 completed 5170 timing result.
+
+### S5: planar parity, CGA and task transfer audit
+
+S5 reconciles the selected planar-parity NMI and CGA/VADP lifecycle/topology
+owners without assigning device duration.  Its [transfer audit](../etc/evidence/t370-s5-planar-cga-transfer-audit.md)
+completes all four T370 device groups and transfers physical clocks, bus phase,
+controller microstates and final model readiness to the ordered phase and 5170
+audit candidates.

@@ -2,6 +2,27 @@
 
 ## Current Work
 
+## M5 T370 S5 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; T370 S4 accepted at `3bc71b01`. |
+| Admission And Approval | The owner-approved ordered L3 program continues. S4 assigns only selected planar-parity NMI and CGA/VADP visible-state/raster reconciliation, followed by a truthful T370 transfer audit. |
+| Objective | Reconcile selected Model-339 planar-parity NMI source/latch/mask/reset route and CGA/VADP register, aperture, raster/status, copied-frame and lifecycle routes against their source/evidence boundaries; close T370 only if every selected device-service group has an exact remaining receiver and no physical-timing claim. |
+| Non-goals | No new NMI producer, port `61h` PPI/speaker behavior, I/O-channel-check/adapter parity, CGA feature expansion, dot-clock/scan cadence, display bus contention, host presentation timing, source scalar, phase refinement, ATA/HDC/MFM work or 5170-L3 claim. |
+| Reference Baseline | T370 S1--S4, T365 NMI decision, T366 Model-339 planar parity/composition/CGA topology, T352 VADP selected digital-display evidence, selected descriptor and current NMI/VADP routes; IBM PC/AT and CGA authorities. |
+| Candidate Proposal | [PC/AT device service-timing corpus](../proposals/m5-device-service-timing-corpus.md). |
+| Files And ABI Surface | S5 evidence, T370 history/proposal disposition, Queue/Current status and evidence index only. Stop and revise before source, ABI, CMake, test or runtime behavior changes. |
+| Applicable Rules | One source/latch/consumer owner; NMI mask is not a producer; VADP owns mutable display state and copied frames cross the host boundary; reset/finalize release publication; source-policy and documentation rules. Deterministic callback order is not physical device timing. |
+| Verification | Source-to-route and source-to-domain matrices; NMI/parity and VADP/CGA route/test sweep; selected-device ledger completion and transfer audit; documentation governance and diff check. No runtime marker or artifact is manufactured by this reconciliation-only S. |
+| Expected Markers | Existing planar-parity and VADP/CGA owner smokes remain evidence; S5 adds no timing value, marker, artifact or L3 claim. |
+| Asset Needs | No ROM, guest media, firmware, external code, binary, raw display trace or host capture. Public manuals and project-authored evidence only. |
+| Reporting Requirements | State exactly which source/topology facts are retained, which physical/device-time facts remain unadmitted, whether the four T370 device groups are reconciled, and all downstream receivers. |
+| Stop Conditions | Stop and revise if the result needs a synthetic NMI source, guessed CGA/KBC/controller time, host-clock pacing, new device path, second scheduler, broader adapter semantics or public interface. |
+| Exit Criteria | P1 commits an indexed S5 reconciliation and full T370 transfer audit. P2 accepts S5 and closes T370 only with the proposal/Queue/history disposition consistent and 5170 model-L3 explicitly open. |
+| Original Owner Request | Continue in Queue order toward complete L3 before Windows 3.1; use named reference models only where authoritative manuals leave a range or no range, without treating them as IBM authority. |
+| Similar-Issue Sweep | Sweep planar parity/NMI/port-`61h`/CMOS-mask/reset/finalize paths, VADP CGA register/aperture/raster/status/copy/reset paths, Model-339 profile composition, timeline/trace consumers, focused tests, Queue/TODO/history receivers and every T370 selected-device row. |
+
 ## Current Technical Baseline
 
 - **Current developer artifact:** T369 S4 `vm-0-5-0369` /
