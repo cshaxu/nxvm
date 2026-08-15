@@ -261,12 +261,14 @@ static type_status core_machine_vadp_ega_planar_query(C_VOID *owner,
     return TYPE_STATUS_OK;
 }
 
-static C_INT core_machine_vadp_supported_crtc_index(type_unsigned_8 index)
+static C_INT core_machine_vadp_supported_crtc_index(const t_vadp *adapter,
+    type_unsigned_8 index)
 {
-    return index < CORE_MACHINE_VADP_CRTC_REGISTER_COUNT &&
+    return adapter != STD_NULL && index < CORE_MACHINE_VADP_CRTC_REGISTER_COUNT &&
         ((index >= CORE_MACHINE_VADP_CRTC_CURSOR_TOP &&
         index <= CORE_MACHINE_VADP_CRTC_CURSOR_LOW) ||
-        index == CORE_MACHINE_VADP_CRTC_OFFSET);
+        (index == CORE_MACHINE_VADP_CRTC_OFFSET &&
+        adapter->data.ega_controller_configured));
 }
 
 static type_unsigned_8 core_machine_vadp_crtc_mask(type_unsigned_8 index)
@@ -289,8 +291,8 @@ static type_unsigned_16 core_machine_vadp_crtc_word(const t_vadp *adapter,
 {
     type_unsigned_8 low_index = (type_unsigned_8)(high_index + 1u);
 
-    if (adapter == STD_NULL || !core_machine_vadp_supported_crtc_index(high_index) ||
-        !core_machine_vadp_supported_crtc_index(low_index)) {
+    if (adapter == STD_NULL || !core_machine_vadp_supported_crtc_index(adapter,
+            high_index) || !core_machine_vadp_supported_crtc_index(adapter, low_index)) {
         return 0u;
     }
     return (type_unsigned_16)(((type_unsigned_16)adapter->data.crtc[high_index] << 8) |
@@ -507,7 +509,7 @@ static C_VOID core_machine_vadp_read_crtc_data(t_port *port,
 
     (C_VOID)port_id;
     if (port == STD_NULL || adapter == STD_NULL) return;
-    port->data.ioByte = core_machine_vadp_supported_crtc_index(
+    port->data.ioByte = core_machine_vadp_supported_crtc_index(adapter,
         adapter->data.crtc_index) ?
         adapter->data.crtc[adapter->data.crtc_index] : 0u;
 }
@@ -519,7 +521,7 @@ static C_VOID core_machine_vadp_write_crtc_data(t_port *port,
 
     (C_VOID)port_id;
     if (port == STD_NULL || adapter == STD_NULL ||
-        !core_machine_vadp_supported_crtc_index(adapter->data.crtc_index)) {
+        !core_machine_vadp_supported_crtc_index(adapter, adapter->data.crtc_index)) {
         return;
     }
     {

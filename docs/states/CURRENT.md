@@ -2,6 +2,27 @@
 
 ## Current Work
 
+## M5 T374 S14 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; T374 S13 is accepted and remains the sole compact progress row. |
+| Admission And Approval | The owner approved continued selected-device functional closure before timing/L3; accepted S13 selects this exact Model-339 rejection of EGA-only CRTC index `13h`. |
+| Objective | Make CGA-only VADP reject CRTC index `13h` while retaining it for configured EGA, and prove that Model-339 cannot read, write or expose EGA offset state. |
+| Non-goals | No R0--R9 geometry/timing implementation, light pen, generic 6845 abstraction, snapshot ABI change, composite, ROM/media, EGA behavior regression or L3 claim. |
+| Reference Baseline | Accepted T374 S13 audit; IBM CGA 6845 R0--R17 table; VADP CRTC support/mask/word routes; retained EGA boundary and Model-339 topology tests. |
+| Candidate Proposal | [IBM PC/AT 5170 selected-device functional closure](../proposals/m5-5170-selected-device-functional-closure.md). |
+| Files And ABI Surface | `src/core/machine/vadp.{c,h}` as required; cohesive CGA/Model-339 and EGA tests; T374 evidence/history/index/status. No display snapshot ABI change. |
+| Applicable Rules | Task Reading Set; execution lifecycle/evidence/similar-issue rules; architecture/coding/documentation rules; contributing; source policy. Shared VADP owns the feature gate; configured EGA owns the EGA-only opening. |
+| Verification | Sweep every CRTC index support, mask, read/write and EGA configuration route; rebuild/run CGA, Model-339 and EGA CRTC boundary targets through Git-Bash CMake/Ninja; documentation governance and diff check. |
+| Expected Markers | CGA-only rejects `13h`; EGA retains its offset read/write route; no neighboring CGA cursor/start index changes; all focused markers pass. |
+| Asset Needs | None. No ROM, firmware, guest media, external code or local asset is opened, copied, written or committed. |
+| Reporting Requirements | Report feature-gate owner, full index/caller sweep, focused proof, pushed P1, coordinator acceptance and remaining geometry/timing transfer. |
+| Stop Conditions | Stop if index gating cannot distinguish configured EGA from CGA without public ABI change, if a retained CGA consumer uses `13h`, or if evidence requires timing inference. |
+| Exit Criteria | Model-339 rejects EGA-only `13h`, EGA retains it, all sweep hits are classified and checks pass; no timing/L3 claim is introduced. |
+| Original Owner Request | Fully implement selected-machine functional gaps before timing/L3, use primary references and preserve external assets outside Git. |
+| Similar-Issue Sweep | Search all CRTC index/mask/read/write/word and EGA configure/reset/test routes so EGA-only state cannot leak through a second shared-VADP path. |
+
 ## Current Technical Baseline
 
 - **Current developer artifact:** T369 S4 `vm-0-5-0369` /

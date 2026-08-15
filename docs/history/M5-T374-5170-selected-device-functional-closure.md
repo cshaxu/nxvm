@@ -120,3 +120,9 @@ S13's [6845 register audit](../etc/evidence/t374-s13-cga-6845-register-audit.md)
 classifies every CGA CRTC register: retained cursor/start routes are present,
 geometry/sync registers transfer to display timing, and light pen remains an
 unselected input path. It selects no synthetic register repair.
+
+### S14: CGA/EGA CRTC index gate
+
+S14's [index-gate evidence](../etc/evidence/t374-s14-cga-ega-crtc-index-gate.md)
+rejects EGA-only CRTC `13h` for Model-339 CGA while retaining the EGA offset
+route. Geometry, light pen and timing remain open.

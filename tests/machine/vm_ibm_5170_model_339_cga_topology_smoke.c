@@ -37,6 +37,15 @@ static C_INT vm_model_339_cga_topology(C_VOID)
         ((!core_machine_vadp_capture_text_snapshot(&session->core_machine->shared_vadp,
             &session->core_machine->executor_memory, &snapshot) ||
             snapshot.kind != CORE_MACHINE_DISPLAY_KIND_TEXT) << 10);
+    if (!failed) {
+        core_machine_port_write(&session->core_machine->executor_port,
+            CORE_MACHINE_VADP_PORT_CRTC_INDEX, 0x13u);
+        core_machine_port_write(&session->core_machine->executor_port,
+            CORE_MACHINE_VADP_PORT_CRTC_DATA, 0x28u);
+        failed |= session->core_machine->shared_vadp.data.crtc[0x13u] != 0u ||
+            core_machine_port_read(&session->core_machine->executor_port,
+                CORE_MACHINE_VADP_PORT_CRTC_DATA) != 0u;
+    }
     vm_session_destroy(session);
     return failed;
 }

@@ -212,6 +212,7 @@ principal documents named in [docs/README.md](../README.md).
 | `evidence/t374-s11-model339-cga-functional-audit.md` | Verification owner | T374 S11 selected digital-CGA port/mode/snapshot/consumer audit and bounded write-only port-read repair selection. Retain with T374 history while the task is open. |
 | `evidence/t374-s12-cga-write-only-port-repair.md` | Verification owner | T374 S12 selected CGA write-only port-direction correction, EGA preservation, caller sweep and focused proof. Retain with T374 history while the task is open. |
 | `evidence/t374-s13-cga-6845-register-audit.md` | Verification owner | T374 S13 IBM/Motorola CGA 6845 register matrix, selected cursor/start proof and geometry/light-pen transfer boundary. Retain with T374 history while the task is open. |
+| `evidence/t374-s14-cga-ega-crtc-index-gate.md` | Verification owner | T374 S14 Model-339 CGA rejection and EGA retention of CRTC index `13h`. Retain with T374 history while the task is open. |
 | `operations/` | Execution, source, and release owners | Toolchain, policy, templates, release procedure, and closure material. |
 | `research/` | Source owner | Provenance, external references, and non-product research. |
 | `history/` | Documentation owner | Read-only legacy and M5 migration/roadmap evidence. |
