@@ -26,7 +26,7 @@ firmware, device or timing behavior changed.
 ## Proof
 
 `vm-product-console-lifecycle-smoke` drives `SESSION OPEN`, selects `2`, then
-confirms the newly selected session reports
+confirms the newly selected session is selected and reports
 `profile=ibm-5170-model-339 cpu=80286 fpu=none`.  `vm-session-profile-smoke`
 proves both the name and numeric direct options, retained default profile
 output, and generic-override rejection.  The Model-339 composition smoke

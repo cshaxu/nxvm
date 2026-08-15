@@ -66,6 +66,7 @@ C_INT main(C_VOID)
     TEST_CONSOLE_CLOSE(saved_stdin);
     if (core_product_session_manager_list(session_manager, snapshots, 2u,
             &(STD_SIZE_T){0u}) != TYPE_STATUS_OK ||
+        !snapshots[1].selected ||
         STD_STRCMP(snapshots[1].details,
             "profile=ibm-5170-model-339 cpu=80286 fpu=none")) {
         STD_FCLOSE(input);
