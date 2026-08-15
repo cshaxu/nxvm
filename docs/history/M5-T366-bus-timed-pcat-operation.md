@@ -259,3 +259,4 @@ S30 assigns Appendix-B fixed register `2` and memory `3` clocks to successful
 unprefixed protected `0F 00 /0,/1 SLDT/STR r/m16` retirement.  Its
 [timing evidence](../etc/evidence/t366-s30-80286-sldt-str-timing.md) retains
 mode, prefix, fault, delivery, bus and physical-time boundaries.
+S30 is accepted at `86f19062`.
