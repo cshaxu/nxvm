@@ -207,6 +207,11 @@ C_INT main(C_VOID)
                 core_machine_fdc_command(fdc, port, specify_non_dma,
                     sizeof(specify_non_dma));
 
+                core_machine_fdc_command(fdc, port, (const type_unsigned_8[]){0x10u}, 1u);
+                failed |= fdc->connect.irq_source.asserted ||
+                    !core_machine_fdc_read_result(fdc, port, result, 1u) ||
+                    result[0] != 0x80u || fdc->data.phase != core_machine_fdc_PHASE_COMMAND;
+
                 for (type_unsigned_32 index = 0u; index < sizeof(read_sector); ++index) {
                     core_machine_port_write(port, fdc_config.data_port, read_sector[index]);
                 }

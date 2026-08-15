@@ -16,7 +16,6 @@
 #define core_machine_fdc_CMD_RECALIBRATE 0x07u
 #define core_machine_fdc_CMD_SENSE_INTERRUPT 0x08u
 #define core_machine_fdc_CMD_SEEK 0x0fu
-#define core_machine_fdc_CMD_VERSION 0x10u
 #define core_machine_fdc_CMD_READ_ID 0x0au
 #define core_machine_fdc_CMD_WRITE_DATA 0x05u
 #define core_machine_fdc_CMD_READ_DATA 0x06u
@@ -389,7 +388,6 @@ static type_unsigned_8 core_machine_fdc_command_length(type_unsigned_8 opcode)
     case core_machine_fdc_CMD_RECALIBRATE: return 2u;
     case core_machine_fdc_CMD_SENSE_INTERRUPT: return 1u;
     case core_machine_fdc_CMD_SEEK: return 3u;
-    case core_machine_fdc_CMD_VERSION: return 1u;
     case core_machine_fdc_CMD_READ_ID: return 2u;
     case core_machine_fdc_CMD_WRITE_DATA:
     case core_machine_fdc_CMD_READ_DATA:
@@ -517,10 +515,6 @@ static C_VOID core_machine_fdc_execute(core_machine_fdc *fdc)
             fdc->data.selected_drive, (type_unsigned_8)fdc->data.cylinder);
         core_machine_fdc_raise_irq(fdc);
         core_machine_fdc_command_phase(fdc);
-        break;
-    case core_machine_fdc_CMD_VERSION:
-        fdc->data.ret[0] = 0x90u;
-        core_machine_fdc_result_phase(fdc, 1u);
         break;
     case core_machine_fdc_CMD_READ_ID:
         fdc->data.selected_drive = fdc->data.cmd[1] & 0x03u;

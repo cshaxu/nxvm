@@ -63,3 +63,10 @@ S6's [command-capability audit](../etc/evidence/t374-s6-fdc-command-capability-a
 classifies all fifteen 8272A commands and the current FDC dispatcher. It
 selects removal of the over-admitted enhanced `VERSION` command as S7, while
 recording Deleted/Scan and parameter/media gaps as explicit later T374 work.
+
+### S7: FDC `VERSION` invalid correction
+
+S7's [invalid-command repair evidence](../etc/evidence/t374-s7-fdc-version-invalid-repair.md)
+records removal of the non-8272A `10h`/`90h` response and focused proof that
+the existing invalid-command route now returns ST0 `80h` without IRQ. Remaining
+documented command and media semantics remain T374 work.
