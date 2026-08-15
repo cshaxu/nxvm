@@ -235,3 +235,4 @@ S27 assigns the Appendix-B fixed register `14` and memory `16` clocks to
 successful unprefixed protected `0F 02 /r LAR r16,r/m16` retirement.  Its
 [timing evidence](../etc/evidence/t366-s27-80286-lar-timing.md) retains
 mode, prefix, descriptor, fault, delivery, bus and physical-time boundaries.
+S27 is accepted at `79ef50bb`.
