@@ -152,3 +152,11 @@ S17 gives successful unprefixed `9E SAHF` and `9F LAHF` their fixed two-clock
 the packet-required focused AH/FLAGS proof. Its [timing evidence](../etc/evidence/t366-s17-80286-lahf-sahf-timing.md)
 records the correction, source and boundary transfers. S17 is accepted at
 `7d9e27be`.
+
+### S18: 80286 segment-register store timing
+
+S18 gives successful unprefixed legal register-direct `8C MOV Sreg,r16` its
+two-clock source-table cost through the existing retirement publisher. Its
+[timing evidence](../etc/evidence/t366-s18-80286-sreg-store-timing.md) records
+the legal-encoding guard, selector-transfer proof and retained memory/load
+boundaries. S18 is accepted at `842848b8`.

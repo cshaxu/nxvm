@@ -28,4 +28,6 @@ changes.
 The focused `core-machine-80286-instruction-timing-ledger-smoke` passed and
 emitted `M5:T357:S6:80286-INSTRUCTION-TIMING-LEDGER:OK`; the configured
 `run-current-smokes` gate passed. Documentation governance and `git diff
---check` are recorded with delivery and review.
+--check` passed. Coordinator review of P1 `842848b8` confirms the private
+classifier publishes only the stated legal direct forms; focused proof covers
+both selector transfer and tick publication.

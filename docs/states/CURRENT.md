@@ -2,24 +2,9 @@
 
 ## Current Work
 
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | T366 S18, numbered continuation implementation subtask; P1 is one complete pushed implementation/evidence delivery. |
-| Admission And Approval | The owner approved continued L3 work on 2026-08-14. T366 admits the determinate unprefixed 80286 `8C MOV Sreg,r16` success path. No exception is requested. |
-| Objective | Publish the two-clock 80286 cost for successful unprefixed, legal register-direct `8C` forms through the existing retirement owner. |
-| Non-goals | No segment-register semantic repair, invalid encoding, `8E` selector load, `8C` memory/EA cost, prefix/fault/delivery timing, bus/physical time, other profile, device, x87 or ABI work. |
-| Reference Baseline | `49e00aa0` (accepted T366 S17), [T366 proposal](../proposals/m5-bus-timed-pcat-operation.md), [S10 inventory](../etc/evidence/t366-s10-80286-unallocated-publisher-inventory.md), and existing segment-MOV semantic smoke. |
-| Candidate Proposal | [Bus-timed PC/AT operation](../proposals/m5-bus-timed-pcat-operation.md), limited to source-backed 80286 successful retirement. |
-| Files And ABI Surface | Private 80286 classifier, focused timing-ledger smoke, T366 evidence/index/history/status; no public or device surface changes. |
-| Applicable Rules | [Execution](../rules/EXECUTION.md): complete pushed P and sweep. [Architecture](../rules/ARCHITECTURE.md): one retirement publisher. [Coding](../rules/CODING.md): owner-local classifier/test. [Documentation](../rules/DOCUMENT.md): truthful state. [Source policy](../etc/operations/policy/source-policy.md): documentation only, no import/assets. |
-| Verification | Focused timing smoke proves valid `8C` register forms retire at two ticks with transferred selector values; run focused target, `run-current-smokes`, governance and `git diff --check`; review changed files before P1. |
-| Expected Markers | `M5:T357:S6:80286-INSTRUCTION-TIMING-LEDGER:OK`; AMD 80286 table reports `8C` register `2`, memory `3*`, in both modes. |
-| Asset Needs | No guest media, ROM, binary, path, external source import or emulator output. AMD primary table is read-only evidence. |
-| Reporting Requirements | Report source/scope determination, test progress, P1 push/evidence and acceptance or consolidated corrective brief. |
-| Stop Conditions | Stop if legal direct `8C` forms cannot be isolated, a higher owner intercepts them, a semantic repair is needed, or a gate cannot run. |
-| Exit Criteria | One pushed P proves only valid unprefixed 80286 register-direct `8C` successful retirement publishes two ticks; transfers and checks are recorded. |
-| Original Owner Request | Continue until comprehensive L3 closure before Windows 3.1; use secondary emulators only if primary material cannot determine timing. |
-| Similar-Issue Sweep | Audit `8C` dispatch/handler, primary/control-stack and profile classifiers, direct fallback, valid/invalid register encodings, memory forms and current semantic proof. Retain invalid, memory/EA, `8E`, prefix/delivery, other-profile and physical/device receivers. |
+T366 S18 is accepted at `842848b8`. The next T366 S must select the next
+source-determinate 80286 successful-retirement family; physical-time and
+device-timing claims remain blocked by the wider CPU ledger.
 
 ## Current Technical Baseline
 
@@ -40,7 +25,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T366 S17 | Accepted at `7d9e27be`: successful unprefixed `LAHF`/`SAHF` publish fixed two-clock 80286 table costs through the existing retirement owner; focused AH/FLAGS semantics are retained. Prefix, fault/delivery, bus and physical-time timing remain transferred. [Timing evidence](../etc/evidence/t366-s17-80286-lahf-sahf-timing.md). |
+| T366 S18 | Accepted at `842848b8`: successful unprefixed legal register-direct `MOV Sreg,r16` publishes its fixed two-clock 80286 cost through the existing retirement owner. Memory/EA, `8E`, prefix, fault/delivery, bus and physical-time timing remain transferred. [Timing evidence](../etc/evidence/t366-s18-80286-sreg-store-timing.md). |
 | T365 | Closed at `febc9352`: IBM PC/AT parity/I/O-check NMI sources cannot be selected without a profile input, status/latch/clear and lifecycle contract; CPU and CMOS remain delivery/mask only. [Closure audit](../etc/evidence/t365-s2-pcat-nmi-nonadmission-closure-audit.md). Blocks physical/cycle-exact L3 closure; no synthetic source. |
 | T364 | Closed at `7d574ae3`: all selected PC/AT components, ports/routes and lifecycle/timing owners are inventoried; optional and physical gaps retain exact Queue/TODO receivers. [Closure audit](../etc/evidence/t364-s2-pcat-device-completeness-closure-audit.md). No model-L3 claim. |
 | T363 | Closed at `312ef2f9`: all 256 primary and 256 secondary dispatch slots have one source-backed successful-retirement owner or an exact explicit receiver; inventory and 246/246 current-gate passed. [Closure audit](../etc/evidence/t363-s7-complete-instruction-timing-closure-audit.md). No physical/cycle-exact L3 claim. |
