@@ -2,27 +2,6 @@
 
 ## Current Work
 
-## M5 T373 S2 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation; T373 remains the latest open numeric task and S2 follows accepted S1. |
-| Admission And Approval | The owner approved continued single-agent L3 work and locked IBM 5170 Model 339/Type 3, 1986 original Compaq DeskPro 386 Model 40, and IBM PC/XT 5160-268 as the three baseline identities. |
-| Objective | Qualify primary machine documentation and produce source-labelled bills of materials and unknown-field ledgers for all three locked baseline identities. |
-| Non-goals | No machine/profile code, device implementation, timing scalar, ROM/media import, clone substitution, generic PC inference, reference-emulator measurement, or L3 claim. |
-| Reference Baseline | T373 S1 support inventory; T372 S8 closure matrix; [capability-ledger proposal](../proposals/m5-baseline-device-capability-ledger.md); IBM Model-339 evidence; owner-locked DeskPro Model 40 and PC/XT 5160-268 identities. |
-| Candidate Proposal | [Baseline-machine and supported-device capability ledger](../proposals/m5-baseline-device-capability-ledger.md). |
-| Files And ABI Surface | New T373 S2 primary-source/BOM evidence, history progress, `docs/etc/README.md`, and `docs/states/CURRENT.md` only; no source, ABI, profile, build, ROM, or guest-media surface. |
-| Applicable Rules | `docs/README.md` Task Reading Set; `docs/rules/EXECUTION.md` continuation, research/evidence, P lifecycle and closure rules; `docs/rules/DOCUMENT.md`; `CONTRIBUTING.md`; `docs/etc/operations/policy/source-policy.md`; architecture/coding rules are not applicable because S2 changes no production source or build. |
-| Verification | Use primary IBM/Compaq materials where available; record title, edition/date, stable location, exact supported fact and non-fact for each BOM field; cross-check every stated profile field against S1 source support; run documentation governance and `git diff --check`. |
-| Expected Markers | One indexed three-machine BOM/unknown-field matrix names only documented facts, marks every unresolved field as unknown, and distinguishes Model-339's aftermarket 1.44 MB drive from factory configuration. |
-| Asset Needs | Read-only public documentation only. Required BIOS ROMs remain external owner-managed assets; no download, path, byte, hash, media, or executable reference runtime enters Git. |
-| Reporting Requirements | Report initial source-boundary confirmation, primary-source qualification, every source-exhausted field, focused verification, pushed P1, and the next functional-classification receiver. |
-| Stop Conditions | Stop and transfer when no primary source identifies a field, a source conflicts with the locked identity, a fact requires a ROM/media run, or a candidate is only a clone/emulator observation; do not fill an unknown with a default-PC/AT assumption. |
-| Exit Criteria | An indexed BOM/unknown-field ledger covers all three machines and maps each documented device to S1 support status or an absent/unknown receiver; source-exhausted fields are explicit; documentation checks pass. |
-| Original Owner Request | Continue the ordered L3 program with DeskPro Model 40 and PC/XT 5160-268 as fixed baselines, using ROMs only externally and never entering Windows work. |
-| Similar-Issue Sweep | Research/audit-only: sweep profile labels, CPU/clock, board/revision, memory, ROM, display, input, storage, DMA/PIC/PIT/RTC/NMI/reset facts and current-source assumptions for all three machines; every unsupported fact becomes unknown rather than inferred. |
-
 ## Current Technical Baseline
 
 - **Current developer artifact:** T369 S4 `vm-0-5-0369` /
@@ -42,7 +21,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T373 S1 | P1 `a3cc3c5f` inventories the actual default-PC/AT and Model-339 descriptors, product-visible device paths, absent peripheral families, and exact machine/product ledger receivers. No profile, device, timing, or L3 claim changes. [Support inventory](../etc/evidence/t373-s1-current-support-inventory.md). |
+| T373 S2 | P1 `b2c7ba02` qualifies the source-labelled Model-339, DeskPro Model 40, and PC/XT 5160-268 BOM/unknown-field matrix. All unsupported machine facts remain unknown; S3 receives support-status classification and earliest functional/timing ownership. [BOM ledger](../etc/evidence/t373-s2-baseline-bom-source-ledger.md). |
 | T372 | Closed at `3f56c72c`: S1--S8 establish that Model 339 has selected logical ownership and deterministic ordering, but lacks selected-device functional closure and source-backed board/phase timing. **5170 model-L3 is not ready.** [Closure audit](../etc/evidence/t372-s8-task-closure-transfer-audit.md). |
 | T370 | Closed at `77a73c04`: S1--S5 reconciled all selected Model-339 device-service owners and transferred unavailable duration to phase refinement; **5170 model-L3 is not ready**. [Closure audit](../etc/evidence/t370-s5-planar-cga-transfer-audit.md). |
 | T369 | Closed at `08a64bea`: S1--S4 lock and audit the 5170 Model-339 bus-stage input, logical 80286 DMA handoff and selected FDC/PIC visibility. Board waits, physical waveforms, device service, phase refinement and final 5170 L3 remain exact ordered transfers; **5170 model-L3 is not ready**. [Closure audit](../etc/evidence/t369-s4-pcat-bus-stage-closure-audit.md). |
