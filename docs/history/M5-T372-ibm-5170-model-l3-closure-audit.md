@@ -43,4 +43,5 @@ S4's [primary-fact ledger](../etc/evidence/t372-s4-model339-primary-fact-ledger.
 corrects the local-media boundary and confirms that Type-3 board and controller
 documentation supplies no direct Model-339-to-project-clock conversion. No
 physical scalar or L3 claim is admitted; the next continuation must seek
-board-specific timing evidence or an authorized isolated experiment.
+board-specific timing evidence or an authorized isolated experiment. S4 is
+accepted at `aa967d2c`.
