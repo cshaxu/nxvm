@@ -25,6 +25,9 @@ S2 checks the accepted 80286 system rows against their actual successful
 publisher route.  Its
 [reconciliation evidence](../etc/evidence/t368-s2-80286-system-context-reconciliation.md)
 repairs VERR/VERW's accidental SLDT/STR scalar route and stale LAR/SMSW
-fixture assumptions.  It transfers the observed protected-LMSW `#GP` before
+fixture assumptions.  It transfers the observed protected LMSW `#GP` before
 retirement to S3 and retains successful prefix/default work for later T368
 subtasks; no whole-ledger or L3 claim is made.
+
+S2 is accepted at `5cf9f2df`; protected CPL0 LMSW is the immediate S3
+semantic-and-retirement receiver.
