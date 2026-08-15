@@ -1,0 +1,24 @@
+# M5 T369: Bus-Timed PC/AT Operation
+
+## Task Record
+
+T369 consumes the closed T368 80286 successful-retirement CPU ledger and the
+T366 Model 339 Type 3 baseline. It owns the next bounded step toward the IBM
+PC/AT 5170 bus-availability model: CPU memory/I/O availability, named wait
+states, DMA exclusion, selected device readiness visibility, and their shared
+transaction lifecycle.
+
+It does not convert the existing deterministic timeline into a physical clock,
+does not select or emulate a fixed-disk adapter, and does not close 5170
+model-L3. The following device-service, phase-refinement and model-L3 audit
+candidates remain ordered receivers.
+
+## Active Progress
+
+### S1: Bus fact and production-route inventory
+
+S1 maps the locked Model 339/Type 3 facts and every relevant current production
+route to its source status, availability/lifecycle owner, trace/reset behavior,
+and bounded later receiver. It distinguishes IBM primary evidence from allowed
+86Box, MAME and PCjs behavior leads, and leaves any value absent from both as
+an explicit transfer. S1 adds no runtime timing, artifact, or 5170-L3 claim.
