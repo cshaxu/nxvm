@@ -2,9 +2,24 @@
 
 ## Current Work
 
-T366 S21 is accepted at `e71d2262`. The next T366 S must select the next
-source-determinate 80286 successful-retirement family; physical-time and
-device-timing claims remain blocked by the wider CPU ledger.
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | T366 S22, numbered continuation implementation subtask; P1 is one complete pushed implementation/evidence delivery. |
+| Admission And Approval | The owner approved continued L3 work on 2026-08-14. T366 admits only source-determinate, successful, unprefixed 80286 `C4/C5 LES/LDS r16,m16` retirement; no exception is requested. |
+| Objective | Publish the Intel Appendix-B fixed seven-clock cost for successful legal 80286 `LES`/`LDS` memory far-pointer loads through the existing retirement owner. |
+| Non-goals | No semantic repair; no register-direct, prefix, selector/operand fault, exception/delivery, bus/physical-time, other-profile, x87, ABI or device work. |
+| Reference Baseline | `4febd674` (accepted T366 S21), [T366 proposal](../proposals/m5-bus-timed-pcat-operation.md), [S21 evidence](../etc/evidence/t366-s21-80286-sreg-load-protected-timing.md), and Intel [80286/80287 Programmer's Reference Manual, Appendix B](https://bitsavers.org/components/intel/80286/210498-005_80286_and_80287_Programmers_Reference_Manual_1987.pdf). |
+| Candidate Proposal | [Bus-timed PC/AT operation](../proposals/m5-bus-timed-pcat-operation.md), limited to source-backed 80286 successful retirement. |
+| Files And ABI Surface | Private 80286 classifier, focused timing-ledger smoke, T366 evidence/index/history/status; no public or device surface changes. |
+| Applicable Rules | [Execution](../rules/EXECUTION.md): complete pushed P and sweep. [Architecture](../rules/ARCHITECTURE.md): one retirement publisher. [Coding](../rules/CODING.md): owner-local classifier and existing fixture. [Documentation](../rules/DOCUMENT.md): truthful state. [Source policy](../etc/operations/policy/source-policy.md): read-only manual evidence; no import/assets. |
+| Verification | Focused timing smoke proves `LES` and `LDS` successful direct and indexed odd/even memory loads in real and protected mode, with measurement reset after protected bootstrap; run focused target, `run-current-smokes`, governance and `git diff --check`; review changed files before P1. |
+| Expected Markers | `M5:T357:S6:80286-INSTRUCTION-TIMING-LEDGER:OK`; Appendix B gives `LES` and `LDS` 7 clocks with no stated EA, odd-word or mode addition for this successful subset. |
+| Asset Needs | No guest media, ROM, binary, path, external source import or emulator output. Intel historical documentation is read-only evidence. |
+| Reporting Requirements | Report candidate selection, source and semantic isolation, test progress, P1 push/evidence and acceptance or consolidated corrective brief. |
+| Stop Conditions | Stop if Appendix B has an unmodeled context distinction, legal successful memory form cannot be isolated, higher owner intercepts it, the existing semantic tests reveal a defect, or a gate cannot run. |
+| Exit Criteria | A pushed P proves only valid unprefixed successful 80286 `LES/LDS r16,m16` retirement publishes 7 ticks in isolated real/protected direct/indexed memory cases, with source/sweep/transfers/checks recorded. |
+| Original Owner Request | Continue until comprehensive L3 closure before Windows 3.1; use secondary emulators only if primary material cannot determine timing. |
+| Similar-Issue Sweep | Audit `C4/C5` handlers, metadata legality, real/protected success and fault tests, direct/indexed effective addressing, prefixes, all timing classifiers, and the sole elapsed-tick publisher. Retain excluded paths at their named receivers. |
 
 ## Current Technical Baseline
 
