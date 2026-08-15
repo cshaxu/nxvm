@@ -69,3 +69,5 @@ audit candidates.
 
 S5 is awaiting closure governance. Its device-group audit is complete, but
 this task remains open until the queue and final closure record are verified.
+
+T370 is closed after S5 governance: its retained proposal is archived beside this record, and physical-duration transfers advance to T371. This does not make the 5170 Model-339 L3-ready.
