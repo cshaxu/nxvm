@@ -3,9 +3,10 @@
 ## Purpose
 
 Make the final ready/not-ready decision for IBM PC/AT 5170 Model 339/Type 3
-only after its capability ledger, selected-device functional closure, and
-board/phase-timing closure complete. This is distinct from T372's current-state
-audit and may not absorb implementation.
+only after its capability ledger, selected-device functional closure,
+board/phase-timing closure, and 8272A raw-IMG sidecar fidelity closure complete.
+This is distinct from T372's current-state audit and may not absorb
+implementation.
 
 ## Required scope
 
@@ -13,8 +14,9 @@ Reconcile the frozen 8 MHz/Rev.3/512 KB/CGA/no-fixed-disk configuration's CPU,
 memory/ROM, bus, DMA, PIC/PIT/RTC, input, FDC/floppy, display, NMI, reset,
 cancellation, and deterministic ordering evidence. Identify each supported
 aftermarket 1.44 MB field-upgrade condition separately from the factory
-baseline. Prove that every selected capability is functionally complete and
-has a source-backed or explicitly bounded L3 timing contract.
+baseline, including the optional raw-IMG JSON-sidecar 8272A fidelity boundary.
+Prove that every selected capability is functionally complete and has a
+source-backed or explicitly bounded L3 timing contract.
 
 ## Non-goals and stop conditions
 
