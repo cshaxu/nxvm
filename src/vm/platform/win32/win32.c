@@ -27,7 +27,7 @@ C_VOID vm_platform_win32_keyboard_make_key_for(
     event.data.key.scan_code = scanCode;
     event.data.key.virtual_key = virtualKey;
     event.data.key.pressed = pressed;
-    (C_VOID)core_platform_input_source_submit(context->input_source, &event);
+    (C_VOID)vm_platform_host_input_sink_submit(&context->input_sink, &event);
 }
 
 C_VOID vm_platform_win32_mouse_relative_for(
@@ -41,7 +41,7 @@ C_VOID vm_platform_win32_mouse_relative_for(
     event.data.relative_mouse.delta_x = delta_x;
     event.data.relative_mouse.delta_y = delta_y;
     event.data.relative_mouse.buttons = buttons;
-    (C_VOID)core_platform_input_source_submit(context->input_source, &event);
+    (C_VOID)vm_platform_host_input_sink_submit(&context->input_sink, &event);
 }
 
 C_VOID vm_platform_win32_display_set_screen(WIN32_BOOL flagWindow,

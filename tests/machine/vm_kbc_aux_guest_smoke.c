@@ -131,7 +131,7 @@ C_INT main(C_VOID)
         event.data.relative_mouse.delta_x = 5;
         event.data.relative_mouse.delta_y = 3;
         event.data.relative_mouse.buttons = 0x01u;
-        if (core_platform_input_source_submit(&session->input_source, &event) !=
+        if (vm_session_submit_host_input(session, &event) !=
             TYPE_STATUS_OK) goto done;
     }
     if (!vm_kbc_aux_read_count(session, &count) || count != 1u) goto done;

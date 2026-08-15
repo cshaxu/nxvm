@@ -275,7 +275,7 @@ type_status vm_platform_win32app_run_handle_start(
     DWORD thread_id;
 
     if (context == STD_NULL || owner == STD_NULL || owner->active ||
-        context->execution == STD_NULL || context->input_source == STD_NULL) {
+        context->execution == STD_NULL || context->input_sink.submit == STD_NULL) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
     handle = (win32app_run_handle *)STD_CALLOC(1u, sizeof(*handle));

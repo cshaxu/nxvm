@@ -297,7 +297,7 @@ static C_VOID vm_platform_linuxcon_send_key(
     event.data.key.scan_code = scan;
     event.data.key.virtual_key = key;
     event.data.key.pressed = TYPE_TRUE;
-    (C_VOID)core_platform_input_source_submit(context->input_source, &event);
+    (C_VOID)vm_platform_host_input_sink_submit(&context->input_sink, &event);
 }
 
 static C_VOID vm_platform_linuxcon_make_key(linuxcon_run_handle *handle,
@@ -424,7 +424,7 @@ type_status vm_platform_linuxcon_run_handle_start(
     C_INT old_flip;
 
     if (context == STD_NULL || owner == STD_NULL || owner->active ||
-        context->execution == STD_NULL || context->input_source == STD_NULL) {
+        context->execution == STD_NULL || context->input_sink.submit == STD_NULL) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
     if (vm_platform_host_surface_lease_acquire(&linux_terminal_lease,

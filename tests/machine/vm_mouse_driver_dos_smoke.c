@@ -362,7 +362,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
     if (!vm_mouse_dos_run_until(session, VM_MOUSE_DOS_BOOT_BUDGET, 0u)) goto done;
     stage = 4;
     for (index = 0u; index < sizeof(command); ++index) {
-        if (core_machine_keyboard_submit_native_byte(session->core_machine,
+        if (core_machine_keyboard_receive_native_byte(session->core_machine,
                 command[index]) != TYPE_STATUS_OK) goto done;
     }
     if (!vm_mouse_dos_run_until(session, VM_MOUSE_DOS_RUN_BUDGET, 'S')) goto done;
@@ -376,7 +376,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
         event.data.relative_mouse.delta_x = 5;
         event.data.relative_mouse.delta_y = 3;
         event.data.relative_mouse.buttons = 0x01u;
-        if (core_platform_input_source_submit(&session->input_source, &event) !=
+        if (vm_session_submit_host_input(session, &event) !=
             TYPE_STATUS_OK) goto done;
     }
     vm_platform_request_transport_observe_execution_boundary(&session->request_transport);

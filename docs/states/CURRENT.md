@@ -2,6 +2,25 @@
 
 ## Current Work
 
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation: M5 T375 S9, the next unused subtask of the retained open T375 progress. |
+| Admission And Approval | Owner: repository user. Approval: the 2026-08-15 request to change the direct-injection API into explicit test/native-input boundaries while avoiding a test-only API. Scope: correct the production host/native input boundary and its test callers only. |
+| Objective | Make the VM host-input ingress and the core attached-device native-input ingress explicit, then migrate integration tests to the production boundary they model. |
+| Non-goals | No keyboard/AUX protocol, scan-set mapping, IRQ/FIFO, timing, ROM/media, platform UI, device capability, Model-339 L3, or new test-only public API. Do not add a compatibility alias that preserves an ambiguous direct-injection name. |
+| Reference Baseline | Accepted T374 S18 native-keyboard boundary evidence; accepted T375 S1--S8 timing progress; current `core_platform_input_source`, VM request transport, mapper, KBC and platform-adapter routes. |
+| Candidate Proposal | [IBM PC/AT 5170 board and device phase-timing closure](../proposals/m5-5170-board-phase-timing-closure.md), limited to the existing 8042/keyboard ingress ownership needed for its later timing work. |
+| Files And ABI Surface | Expected: `src/core/machine/machine_interface.h`, `src/core/machine/machine.c`, `src/vm/composition/session/{session_interface.h,session.h,session.c,lifecycle.c}`, affected VM/platform and machine tests, CMake registration only if a new focused smoke is required, `docs/etc/evidence/`, `docs/etc/README.md`, and `CURRENT.md`. Public names and callers may change only to make host versus attached-device semantics explicit. |
+| Applicable Rules | `docs/rules/EXECUTION.md`: continuation, one complete implementation P then review P, evidence and similar-issue sweep. `docs/rules/ARCHITECTURE.md`: one input owner/path, opaque bounded public operations and composition-only integration. `docs/rules/CODING.md`: no mirror test state or test-only public contract. `docs/rules/DOCUMENT.md`: packet/evidence/index/closure topology. No exception requested. |
+| Verification | Build and run focused core input-source, VM host-ingress, KBC/native-device, Model-339 composition and affected DOS/guest input regressions where their declared external assets are available; run documentation governance. Static sweep must show platform/integration tests no longer access `vm_session` internals merely to inject host input, and no old ambiguous native-input symbol remains. |
+| Expected Markers | Existing focused markers remain valid; add `M5:T375:S9:INPUT-BOUNDARY:OK` only if a new dedicated proof is needed. |
+| Asset Needs | None. No ROM, guest media, source import, reference emulator, or external binary is admitted. |
+| Reporting Requirements | Confirm the scope before implementation; report after the ingress/caller sweep and before the complete P; final delivery links evidence, exact focused result, commit, and remaining timing transfer. |
+| Stop Conditions | Stop for owner direction if preserving host behavior requires a test-only API, a platform adapter cannot use the shared production ingress, a public ABI break cannot be contained to repository callers, or the change would alter keyboard/AUX protocol or timing. |
+| Exit Criteria | One explicit production host-input operation is usable by host adapters and end-to-end tests; core native keyboard/mouse operations name attached-device ingress rather than generic injection; tests select the correct layer; no test-only API or duplicate guest-input path exists; focused proof and governance pass; evidence truthfully retains timing as open. |
+| Original Owner Request | "Change the direct-injection API into explicit test/native-input boundaries; preferably do not create a test-only API; determine the right design." |
+| Similar-Issue Sweep | Sweep every `core_machine_keyboard_submit_native*`, `core_machine_mouse_submit_relative`, `core_platform_input_source_submit`, `session->input_source`, `session->core_machine`, platform key/mouse adapter and VDM input caller. Classify each as host ingress, attached-device ingress, guest observation, or invalid bypass. |
+
 ## Current Technical Baseline
 
 - **Current developer artifact:** T369 S4 `vm-0-5-0369` /

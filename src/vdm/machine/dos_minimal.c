@@ -91,7 +91,7 @@ type_status vdm_machine_dos_minimal_submit_native_keyboard_byte(
     if (session == STD_NULL) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
-    status = core_machine_keyboard_submit_native_byte(session->machine, native_byte);
+    status = core_machine_keyboard_receive_native_byte(session->machine, native_byte);
     if (status == TYPE_STATUS_OK) {
         session->snapshot.keyboard_irq_pending = 1u;
     }

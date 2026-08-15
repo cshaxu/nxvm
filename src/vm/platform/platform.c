@@ -13,13 +13,14 @@
 C_VOID vm_platform_run_context_initialize(
     vm_platform_run_context *context,
     const vm_platform_execution_transport *execution,
-    core_platform_input_source *input_source,
+    const vm_platform_host_input_sink *input_sink,
     const core_platform_presentation_mailbox *presentation,
     const core_utils_wait_scope *wait_scope)
 {
     if (context == STD_NULL) return;
     context->execution = execution;
-    context->input_source = input_source;
+    context->input_sink = input_sink == STD_NULL ?
+        (vm_platform_host_input_sink){0} : *input_sink;
     context->presentation = presentation;
     context->wait_scope = wait_scope;
     vm_platform_host_surface_context_initialize(&context->console_surface,
@@ -32,6 +33,16 @@ C_VOID vm_platform_run_context_initialize(
     context->display_mode = VM_PLATFORM_DISPLAY_CONSOLE;
     context->auto_window_active = 0;
     context->auto_promotion_pending = 0;
+}
+
+type_status vm_platform_host_input_sink_submit(
+    const vm_platform_host_input_sink *sink,
+    const core_platform_input_event *event)
+{
+    if (sink == STD_NULL || sink->submit == STD_NULL) {
+        return TYPE_STATUS_INVALID_STATE;
+    }
+    return sink->submit(sink->context, event);
 }
 
 C_INT vm_platform_run_context_get_window_display(

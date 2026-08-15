@@ -185,7 +185,7 @@ static C_INT vm_fdc242_run_case(const vm_session_config *config,
     if (config == STD_NULL || out_result == STD_NULL || quantum == 0u ||
         vm_session_create(config, &session) != TYPE_STATUS_OK || session == STD_NULL ||
         !vm_fdc242_run_until(session, VM_FDC242_BOOT_BUDGET, quantum, 0u)) goto done;
-    for (index = 0u; index < sizeof(command); ++index) if (core_machine_keyboard_submit_native_byte(
+    for (index = 0u; index < sizeof(command); ++index) if (core_machine_keyboard_receive_native_byte(
         session->core_machine, command[index]) != TYPE_STATUS_OK) goto done;
     if (!vm_fdc242_run_until(session, VM_FDC242_RUN_BUDGET, quantum, 'O') ||
         core_machine_memory_read(session->core_machine, VM_FDC242_DMA_ADDRESS,

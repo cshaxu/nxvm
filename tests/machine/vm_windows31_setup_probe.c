@@ -89,7 +89,7 @@ static C_INT vm_t287_submit(const vm_session *session, const type_unsigned_8 *co
 
     if (session == STD_NULL || codes == STD_NULL) return 0;
     for (index = 0u; index < count; ++index) {
-        if (core_machine_keyboard_submit_native_byte(session->core_machine,
+        if (core_machine_keyboard_receive_native_byte(session->core_machine,
                 codes[index]) != TYPE_STATUS_OK) return 0;
         Sleep(25u);
     }

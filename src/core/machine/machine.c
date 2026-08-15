@@ -4584,7 +4584,7 @@ type_status core_machine_get_nmi_mask(const core_machine *machine,
     return TYPE_STATUS_OK;
 }
 
-type_status core_machine_keyboard_submit_native_byte(core_machine *machine,
+type_status core_machine_keyboard_receive_native_byte(core_machine *machine,
     type_unsigned_8 native_byte)
 {
     if (machine == STD_NULL || !core_machine_mutable_operation_is_allowed(machine) ||
@@ -4595,7 +4595,7 @@ type_status core_machine_keyboard_submit_native_byte(core_machine *machine,
     return core_machine_kbc_submit_native_byte(&machine->shared_kbc, native_byte);
 }
 
-type_status core_machine_keyboard_submit_native_bytes(core_machine *machine,
+type_status core_machine_keyboard_receive_native_bytes(core_machine *machine,
     const type_unsigned_8 *native_bytes, STD_SIZE_T count)
 {
     if (machine == STD_NULL || !core_machine_mutable_operation_is_allowed(machine) ||
@@ -4607,7 +4607,7 @@ type_status core_machine_keyboard_submit_native_bytes(core_machine *machine,
         count);
 }
 
-type_status core_machine_mouse_submit_relative(core_machine *machine,
+type_status core_machine_mouse_receive_relative(core_machine *machine,
     type_signed_16 delta_x, type_signed_16 delta_y, type_unsigned_8 buttons)
 {
     if (machine == STD_NULL || !core_machine_mutable_operation_is_allowed(machine) ||

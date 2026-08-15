@@ -5,6 +5,7 @@
 
 #include "core/machine/cpu_interface.h"
 #include "core/machine/fpu_interface.h"
+#include "core/platform/input_interface.h"
 
 
 
@@ -51,6 +52,10 @@ type_status vm_session_reconfigure_memory(vm_session *session,
     STD_SIZE_T memory_bytes);
 C_INT vm_session_insert_fdd(vm_session *session, const C_CHAR *path);
 C_INT vm_session_insert_hdd(vm_session *session, const C_CHAR *path);
+/* Production host-input ingress.  Events are copied into the session's
+ * ordered request transport; they do not mutate guest devices synchronously. */
+type_status vm_session_submit_host_input(vm_session *session,
+    const core_platform_input_event *event);
 C_INT vm_session_get_reset_vector(const vm_session *session,
     vm_session_reset_vector *out_vector);
 

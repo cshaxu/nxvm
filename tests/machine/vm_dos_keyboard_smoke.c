@@ -189,14 +189,14 @@ C_INT main(C_INT argc, C_CHAR **argv)
         goto fail;
     }
     if (vm_dos_keyboard_has_date_prompt(session)) {
-        if (core_machine_keyboard_submit_native_byte(session->core_machine, 0x5au) !=
+        if (core_machine_keyboard_receive_native_byte(session->core_machine, 0x5au) !=
             TYPE_STATUS_OK) goto fail;
         for (elapsed = 0u; elapsed < prompt_timeout; elapsed += 10u) {
             if (vm_dos_keyboard_has_time_prompt(session)) break;
             Sleep(10u);
         }
         if (elapsed == prompt_timeout ||
-            core_machine_keyboard_submit_native_byte(session->core_machine, 0x5au) !=
+            core_machine_keyboard_receive_native_byte(session->core_machine, 0x5au) !=
                 TYPE_STATUS_OK) goto fail;
         for (elapsed = 0u; elapsed < prompt_timeout; elapsed += 10u) {
             if (vm_dos_keyboard_has_prompt(session)) break;

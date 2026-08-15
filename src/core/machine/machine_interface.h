@@ -241,13 +241,14 @@ type_status core_machine_set_nmi_mask(core_machine *machine, C_INT masked);
 type_status core_machine_get_nmi_mask(const core_machine *machine,
     C_INT *out_masked);
 
-/* A real keyboard serial byte reaching the attached 8042.  Product host
- * adapters must form the selected keyboard scan-set stream before this call. */
-type_status core_machine_keyboard_submit_native_byte(core_machine *machine,
+/* A serial byte received from the keyboard attached to this machine's 8042.
+ * Product host adapters form the selected keyboard scan-set stream first. */
+type_status core_machine_keyboard_receive_native_byte(core_machine *machine,
     type_unsigned_8 native_byte);
-type_status core_machine_keyboard_submit_native_bytes(core_machine *machine,
+type_status core_machine_keyboard_receive_native_bytes(core_machine *machine,
     const type_unsigned_8 *native_bytes, STD_SIZE_T count);
-type_status core_machine_mouse_submit_relative(core_machine *machine,
+/* A relative report received from the machine's attached pointing device. */
+type_status core_machine_mouse_receive_relative(core_machine *machine,
     type_signed_16 delta_x, type_signed_16 delta_y, type_unsigned_8 buttons);
 
 type_status core_machine_capture_display_snapshot(const core_machine *machine,

@@ -119,6 +119,17 @@ static const core_platform_input_sink vm_session_input_sink = {
     vm_session_input_submit
 };
 
+static type_status vm_session_host_input_submit(C_VOID *context,
+    const core_platform_input_event *event)
+{
+    return vm_session_submit_host_input((vm_session *)context, event);
+}
+
+static const vm_platform_host_input_sink vm_session_host_input_sink = {
+    vm_session_host_input_submit,
+    STD_NULL
+};
+
 static C_INT vm_session_execution_is_running(C_VOID *context)
 {
     return vm_session_control_is_running(
@@ -248,6 +259,7 @@ type_status vm_session_resume(vm_session *machine) {
 
 type_status vm_session_initialize(vm_session *machine) {
     type_status status;
+    vm_platform_host_input_sink host_input_sink = vm_session_host_input_sink;
 
     if (machine == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
     if (machine->active) return TYPE_STATUS_INVALID_STATE;
@@ -271,8 +283,9 @@ type_status vm_session_initialize(vm_session *machine) {
         vm_session_consume_request, machine);
     core_platform_input_source_initialize(&machine->input_source,
         &vm_session_input_sink, machine);
+    host_input_sink.context = machine;
     vm_platform_run_context_initialize(&machine->platform_run_context,
-        &machine->execution_transport, &machine->input_source,
+        &machine->execution_transport, &host_input_sink,
         &machine->presentation_mailbox, &machine->wait_scope);
     vm_platform_run_handle_initialize(&machine->platform_run_handle);
     vm_session_start_outcome_clear(machine);

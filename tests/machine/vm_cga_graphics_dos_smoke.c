@@ -209,7 +209,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
     if (vm_session_create(&config, &session) != TYPE_STATUS_OK || session == STD_NULL ||
         !vm_cga_dos_run_until(session, VM_CGA_DOS_BOOT_BUDGET, 0)) goto done;
     for (index = 0u; index < sizeof(command); ++index) {
-        if (core_machine_keyboard_submit_native_byte(session->core_machine,
+        if (core_machine_keyboard_receive_native_byte(session->core_machine,
                 command[index]) != TYPE_STATUS_OK) goto done;
     }
     passed = vm_cga_dos_run_until(session, VM_CGA_DOS_RUN_BUDGET, 1);

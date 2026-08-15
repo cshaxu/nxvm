@@ -27,7 +27,7 @@ C_VOID vm_session_consume_request(
                 request->data.key_event.virtual_key,
                 request->data.key_event.pressed, &sequence) ==
             TYPE_STATUS_OK) {
-            (C_VOID)core_machine_keyboard_submit_native_bytes(session->core_machine,
+            (C_VOID)core_machine_keyboard_receive_native_bytes(session->core_machine,
                 sequence.bytes, sequence.count);
         }
     } else if (request->kind == VM_PLATFORM_REQUEST_MOUSE_EVENT) {
@@ -37,7 +37,7 @@ C_VOID vm_session_consume_request(
                 request->data.mouse_event.delta_x,
                 request->data.mouse_event.delta_y,
                 request->data.mouse_event.buttons, &report) == TYPE_STATUS_OK) {
-            (C_VOID)core_machine_mouse_submit_relative(session->core_machine,
+            (C_VOID)core_machine_mouse_receive_relative(session->core_machine,
                 report.delta_x, report.delta_y, report.buttons);
         }
     }
@@ -75,6 +75,13 @@ static C_INT vm_session_copy_path(C_CHAR *destination, STD_SIZE_T capacity,
     if (length >= capacity) return 0;
     STD_MEMCPY(destination, source, length + 1u);
     return 1;
+}
+
+type_status vm_session_submit_host_input(vm_session *session,
+    const core_platform_input_event *event)
+{
+    if (session == STD_NULL || !session->active) return TYPE_STATUS_INVALID_STATE;
+    return core_platform_input_source_submit(&session->input_source, event);
 }
 
 static C_INT vm_session_materialize_profile_core_config(vm_session *session,

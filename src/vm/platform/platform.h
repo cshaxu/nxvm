@@ -14,6 +14,14 @@ extern "C" {
 #include "core/utils/wait_provider.h"
 #include "vm/platform/execution.h"
 
+typedef type_status (*vm_platform_host_input_submit)(C_VOID *context,
+    const core_platform_input_event *event);
+
+typedef struct vm_platform_host_input_sink {
+    vm_platform_host_input_submit submit;
+    C_VOID *context;
+} vm_platform_host_input_sink;
+
 typedef enum vm_platform_display_mode {
     VM_PLATFORM_DISPLAY_CONSOLE,
     VM_PLATFORM_DISPLAY_WINDOW,
@@ -22,7 +30,7 @@ typedef enum vm_platform_display_mode {
 
 typedef struct vm_platform_run_context {
     const vm_platform_execution_transport *execution;
-    core_platform_input_source *input_source;
+    vm_platform_host_input_sink input_sink;
     const core_platform_presentation_mailbox *presentation;
     const core_utils_wait_scope *wait_scope;
     vm_platform_host_surface_context console_surface;
@@ -55,9 +63,12 @@ typedef struct vm_platform_run_handle {
 C_VOID vm_platform_run_context_initialize(
     vm_platform_run_context *context,
     const vm_platform_execution_transport *execution,
-    core_platform_input_source *input_source,
+    const vm_platform_host_input_sink *input_sink,
     const core_platform_presentation_mailbox *presentation,
     const core_utils_wait_scope *wait_scope);
+type_status vm_platform_host_input_sink_submit(
+    const vm_platform_host_input_sink *sink,
+    const core_platform_input_event *event);
 C_INT vm_platform_run_context_get_window_display(
     const vm_platform_run_context *context);
 C_INT vm_platform_run_context_get_display_mode(
