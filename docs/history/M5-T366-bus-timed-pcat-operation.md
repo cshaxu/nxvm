@@ -175,3 +175,11 @@ source-backed register `2` and memory `5 + EA + odd-word` construction. Its
 [timing evidence](../etc/evidence/t366-s20-80286-sreg-load-real-timing.md)
 records all legal target, direct/indexed parity proof and the retained
 protected-mode descriptor-load boundary. S20 is accepted at `25d3a773`.
+
+### S21: 80286 protected-mode segment-register load timing
+
+S21 gives successful unprefixed protected-mode legal `8E MOV Sreg,r/m16` forms
+the source-backed register `17` and memory `19 + EA + odd-word` construction.
+Its [timing evidence](../etc/evidence/t366-s21-80286-sreg-load-protected-timing.md)
+records the isolated descriptor context and retained fault boundary. S21 is
+accepted at `e71d2262`.

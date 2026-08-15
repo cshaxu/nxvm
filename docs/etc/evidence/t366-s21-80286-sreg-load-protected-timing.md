@@ -18,3 +18,6 @@ transferred.
 The focused target passed and emitted `M5:T357:S6:80286-INSTRUCTION-TIMING-LEDGER:OK`.
 The configured `run-current-smokes` gate, documentation governance and `git
 diff --check` passed before P1.
+Coordinator review of P1 `e71d2262` confirms the legal-target and protected-mode
+guards retain transferred paths while the fixture isolates every admitted
+direct/indexed parity construction.
