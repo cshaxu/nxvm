@@ -34,3 +34,11 @@ dual-8237A/FDC controller-domain decision.
 
 S2 is accepted after `199e0ed2` restores the documentation gate. Its retained
 logical controller proof does not upgrade any project ratio to physical time.
+
+### S3: Dual-8237A/FDC domain reconciliation
+
+S3 confirms the single FDC DRQ/DMA2/IRQ6 lifecycle and records that uPD765
+timers have no source-labelled mapping to project elapsed ticks. Its
+[reconciliation](../etc/evidence/t370-s3-dma-fdc-domain-reconciliation.md)
+therefore transfers FDC physical service values and assigns S4 the 8042/
+keyboard command/FIFO/IRQ domain.

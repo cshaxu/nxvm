@@ -2,6 +2,27 @@
 
 ## Current Work
 
+## M5 T370 S3 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; T370 S2 accepted at `b5dc1573`. |
+| Admission And Approval | The owner-approved ordered L3 program continues. S2 authorizes only dual-8237A/FDC source, lifecycle and controller-domain reconciliation; a timing scalar or runtime behavior requires a later approved packet. |
+| Objective | Audit the selected FDC DMA2/IRQ6 path through dual-8237A request, grant, terminal/result, acknowledgement, cancellation, reset/finalize, trace and Model-339 composition; determine whether uPD765 service timers have a source-labelled mapping to an existing project domain. |
+| Non-goals | No new FDC command, media, drive, data rate, controller clock conversion, DRQ/IRQ delay, physical DACK/AEN/HLDA waveform, ATA/HDC/MFM route, source import, guest media, phase refinement or 5170-L3 claim. |
+| Reference Baseline | T370 S1/S2, T348 DMA lifecycle, T353 FDC topology, T366 uPD765 non-admission, T369 logical HOLD and selected Model-339 descriptor; Intel 8237A, NEC uPD765A and IBM PC/AT Technical Reference. |
+| Candidate Proposal | [PC/AT device service-timing corpus](../proposals/m5-device-service-timing-corpus.md). |
+| Files And ABI Surface | S3 evidence, T370 history, Current status and evidence index only. Stop and revise before any FDC/DMA/CMake/runtime/ABI edit. |
+| Applicable Rules | One owner for device state/request/publication; validation before DMA transaction publication; reset/finalize release; logical HOLD versus physical bus boundary; copied trace consumer; source-policy and documentation rules. |
+| Verification | Manual-to-route matrix, DMA/FDC source/test sweep, existing DMA/FDC/transaction/competition smoke inventory, documentation governance and diff check. No artifact or runtime marker is manufactured by this reconciliation-only S. |
+| Expected Markers | Existing DMA/FDC markers remain evidence only; S3 adds no marker or time conversion. |
+| Asset Needs | No ROM, guest media, firmware, third-party code, binary, raw trace or device capture. Public manuals and project-authored evidence only. |
+| Reporting Requirements | Separate 8237A/uPD765 protocol facts from board wiring and project-domain conversion; map every DRQ/IRQ/cancel/reset route; state whether reference models are comparable; name the exact S4 receiver. |
+| Stop Conditions | Stop and revise if an outcome requires a guessed delay, new device state, external capture, physical signal assertion, changed FDC/DMA behavior, another scheduler or public interface. |
+| Exit Criteria | P1 commits an indexed DMA/FDC service/domain reconciliation with a bounded S4 receiver, retains no unsupported controller conversion and leaves 5170-L3 open. |
+| Original Owner Request | Continue in Queue order toward complete L3 before Windows 3.1; use named reference models only where authoritative manuals leave a range or no range, without treating them as IBM authority. |
+| Similar-Issue Sweep | Sweep every DMA bind/request/assert/deassert/terminate/advance/reset/finalize call, FDC command/result/DRQ/IRQ/reset/finalize route, transaction/trace callback, Model-339 FDC composition and focused DMA/FDC/competition tests; classify each hit or revise the packet. |
+
 ## Current Technical Baseline
 
 - **Current developer artifact:** T369 S4 `vm-0-5-0369` /
