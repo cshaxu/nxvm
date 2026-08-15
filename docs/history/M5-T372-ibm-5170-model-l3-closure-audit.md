@@ -51,4 +51,5 @@ accepted at `aa967d2c`.
 S5's [readiness record](../etc/evidence/t372-s5-local-rom-experiment-readiness.md)
 contains the owner-authorized external-ROM containment and Model-339
 configuration gate. It establishes no reference observation, scalar or L3
-claim; a later S must provision a revision-pinned reference runtime.
+claim; a later S must provision a revision-pinned reference runtime. S5 is
+accepted at `9198fda5`.

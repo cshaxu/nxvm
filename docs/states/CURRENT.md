@@ -2,27 +2,6 @@
 
 ## Current Work
 
-## M5 T372 S5 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation; T372 S4 accepted at `67ede958`. |
-| Admission And Approval | The owner explicitly authorizes local download and research use of ROMs from public sources and local external repositories, requires shared orderly storage outside this repository, and prohibits committing ROMs here. This is an owner-approved source-policy exception for isolated research assets only. |
-| Objective | Acquire and normalize the user-authorized IBM 5170 Rev.3 and useful AT-clone ROM research corpus outside the repository, then establish a reproducible, isolated Model-339 reference-experiment environment without publishing ROM bytes, paths, or asset catalogues in Git. |
-| Non-goals | No ROM/source/media commit, bundle, hash catalogue, default runtime dependency, product profile/ABI/runtime change, copied emulator source, timing scalar, hardware-authority claim, 80386/8088 or Windows work. |
-| Reference Baseline | T372 S1--S4, owner ROM authorization, source policy except as explicitly authorized for local research assets, T366 Model-339 lock, PCjs/86Box/MAME qualification records and primary timing ledger. |
-| Candidate Proposal | [IBM PC/AT 5170 model-L3 closure audit](../proposals/m5-l3-machine-closure-audit.md). |
-| Files And ABI Surface | Local external ROM corpus and uncommitted local experiment artifacts only; T372 evidence may record source class, provenance decision and experiment outcome but never ROM bytes, local path, filename, hash or catalogue. Stop before source, ABI, CMake, test or runtime changes. |
-| Applicable Rules | Owner-approved research-asset exception; no repository/default-release asset; provenance and license review; primary-source precedence; S2 whole-tuple configuration gate; reproducible experiment record without protected identifiers; documentation/source-policy rules. |
-| Verification | External asset directory safety check; source/provenance review; no-tracked-ROM/path/hash sweep; isolated experiment configuration checklist; documentation governance and diff check. |
-| Expected Markers | No runtime marker or developer artifact; local-only experiment observations may be summarized without protected material; no timing scalar or Model-L3 claim. |
-| Asset Needs | User-authorized ROMs and local DOS/1.44-MB boot media outside this repository; public clone-ROM sources; no asset copied into the worktree. |
-| Reporting Requirements | Report corpus readiness, provenance class, configuration completeness and experiment admissibility; do not reveal local paths, ROM names, byte content, hashes or downloadable asset links in committed docs. |
-| Stop Conditions | Stop on license/provenance uncertainty, an asset that cannot remain outside the repository, configuration mismatch, protected material appearing in Git, or an observation that would be misrepresented as IBM hardware authority. |
-| Exit Criteria | P1 records an asset-safe experiment-readiness decision and, if configuration is complete, an isolated observation plan; all protected identifiers remain outside Git and every unfilled physical boundary remains transferred. |
-| Original Owner Request | Continue in Queue order toward complete L3 before Windows 3.1; owner authorizes free local ROM use from the web or external repository, requires shared orderly asset storage outside Git, and forbids committing ROMs. |
-| Similar-Issue Sweep | Sweep every research-asset boundary, tracked-file/path/hash leakage, Model-339 configuration field, IBM Rev.3 and clone-ROM provenance class, PCjs/86Box/MAME applicability, and all S1 physical residuals. |
-
 ## Current Technical Baseline
 
 - **Current developer artifact:** T369 S4 `vm-0-5-0369` /
@@ -42,7 +21,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T372 S4 | P1 `aa967d2c` corrects the local-media policy boundary and exhausts the Type-3/controller primary facts: none maps to a Model-339 project-domain physical scalar. **5170 model-L3 remains open.** [Primary-fact ledger](../etc/evidence/t372-s4-model339-primary-fact-ledger.md). |
+| T372 S5 | P1 `9198fda5` prepares the owner-authorized external ROM corpus and configuration gate; no reference runtime or timing observation is yet admitted. **5170 model-L3 remains open.** [Experiment readiness](../etc/evidence/t372-s5-local-rom-experiment-readiness.md). |
 | T370 | Closed at `77a73c04`: S1--S5 reconciled all selected Model-339 device-service owners and transferred unavailable duration to phase refinement; **5170 model-L3 is not ready**. [Closure audit](../etc/evidence/t370-s5-planar-cga-transfer-audit.md). |
 | T369 | Closed at `08a64bea`: S1--S4 lock and audit the 5170 Model-339 bus-stage input, logical 80286 DMA handoff and selected FDC/PIC visibility. Board waits, physical waveforms, device service, phase refinement and final 5170 L3 remain exact ordered transfers; **5170 model-L3 is not ready**. [Closure audit](../etc/evidence/t369-s4-pcat-bus-stage-closure-audit.md). |
 | T368 | Closed at `4da84be8`: completes the source-labelled 80286 successful-retirement CPU ledger, with exact values or declared source-undefined transfers. The next Queue receiver is bus-timed PC/AT operation; CPU waits, bus/device timing and IBM 5170 L3 remain open. [Closure audit](../etc/evidence/t368-s7-80286-retirement-closure-audit.md). |
