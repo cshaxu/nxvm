@@ -2,9 +2,24 @@
 
 ## Current Work
 
-T366 S30 is accepted at `86f19062`. The next T366 S must select the next
-source-determinate 80286 successful-retirement family; physical-time and
-device-timing claims remain blocked by the wider CPU ledger.
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | T366 S31, numbered continuation implementation subtask; P1 is one complete pushed implementation/evidence delivery. |
+| Admission And Approval | The owner approved continued L3 work on 2026-08-14. T366 admits source-determinate successful documented 80286 `0F 01 /6 LMSW r/m16` forms. |
+| Objective | Publish Intel's fixed LMSW register 3 and memory 6 clock costs through the sole retirement owner. |
+| Non-goals | No SMSW, descriptor/table loads, prefix, privilege/operand fault, delivery, bus/physical-time or device work. |
+| Reference Baseline | `6f2abb46`, Intel 80286 Instruction Set Appendix B, and the T366 proposal. |
+| Candidate Proposal | [Bus-timed PC/AT operation](../proposals/m5-bus-timed-pcat-operation.md), limited to source-backed 80286 successful retirement. |
+| Files And ABI Surface | Private 80286 classifier, focused timing smoke, T366 evidence/index/history/status; no public or device surface changes. |
+| Applicable Rules | Execution: complete pushed P and sweep. Architecture: one retirement publisher. Coding: owner-local classifier. Documentation: truthful state. Source policy: read-only primary manual evidence; no import/assets. |
+| Verification | Focused real/protected CPL0 register/direct/indexed LMSW timing and MSW result; semantic smoke, current smokes, governance and diff check. |
+| Expected Markers | `M5:T357:S6:80286-INSTRUCTION-TIMING-LEDGER:OK`; Intel table gives `3,mem=6`. |
+| Asset Needs | No guest media, ROM, binary or imported source. |
+| Reporting Requirements | Report source isolation, verification, pushed P and acceptance. |
+| Stop Conditions | Stop if mode, privilege, memory or timing ownership cannot be represented without guessing. |
+| Exit Criteria | Pushed P proves only unprefixed documented LMSW retirement publishes 3/6 ticks with transfers retained. |
+| Original Owner Request | Continue until comprehensive L3 closure before Windows 3.1; primary Intel authority first. |
+| Similar-Issue Sweep | Audit `INS_0F_01`, mode/CPL/ModR/M/prefix legality, real/protected CPL0 forms, timing classifiers and sole tick publisher. |
 
 ## Current Technical Baseline
 

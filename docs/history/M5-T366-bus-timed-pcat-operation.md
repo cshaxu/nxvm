@@ -260,3 +260,10 @@ unprefixed protected `0F 00 /0,/1 SLDT/STR r/m16` retirement.  Its
 [timing evidence](../etc/evidence/t366-s30-80286-sldt-str-timing.md) retains
 mode, prefix, fault, delivery, bus and physical-time boundaries.
 S30 is accepted at `86f19062`.
+
+### S31: 80286 LMSW timing
+
+S31 assigns Appendix-B fixed register `3` and memory `6` clocks to successful
+unprefixed `0F 01 /6 LMSW r/m16` retirement in its documented real/protected
+CPL0 forms.  Its [timing evidence](../etc/evidence/t366-s31-80286-lmsw-timing.md)
+retains prefix, privilege, fault, delivery, bus and physical-time boundaries.
