@@ -2,16 +2,37 @@
 
 ## Current Work
 
-**Active: M5 T376 S3.**
+**Active: M5 T376 S4.**
 
 | Task | Compact progress |
 | --- | --- |
 
+## M5 T376 S4 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner-approved continuous M5 L3 implementation; accepted T376 S3 completes address-mark command routes and transfers only Scan. |
+| Objective | Implement 8272A Scan Equal, Scan Low-or-Equal and Scan High-or-Equal through one existing FDC transfer/cadence/IRQ/reset path. |
+| Non-goals | No new media format, filesystem API, test-only controller route, inferred address mark, second DMA engine, timing change, or final L3 decision. |
+| Reference Baseline | T376 S2 raw-IMG mark lifecycle, T376 S3 deleted-data transfer/result path, T375 byte/seek gates, and existing FDC ST2 scan bits. |
+| Candidate Proposal | [8272A raw-IMG sidecar fidelity closure](../proposals/m5-8272a-img-sidecar-fidelity-closure.md). |
+| Files And ABI Surface | `core/machine/fdc.*`, existing FDC smoke/evidence/index/current/history; no host-side interface or core media ABI change. |
+| Applicable Rules | One FDC transfer/DMA/IRQ owner, compare against guest-supplied bytes only, address marks through provider, existing cancellation and cadence invariant. |
+| Verification | Focused FDC smoke proves Equal/LE/GE match and mismatch ST2 results, byte cadence, IRQ result phase and DOR cancellation; build and governance pass. |
+| Expected Markers | `M5:T376:S3:8272A-DELETED-DATA:OK`; `M5:T376:S4:8272A-SCAN:OK`. |
+| Asset Needs | Project-owned fixture media only; no firmware, guest media or external source import. |
+| Reporting Requirements | Record opcode/compare/ST2 behavior, shared-owner proof, timing preservation, focused result and task-closure receiver. |
+| Stop Conditions | Stop for owner direction if scan requires a separate transfer or a provider capability absent from the frozen ABI. |
+| Exit Criteria | All Scan command families complete through current routes with verified result/cancel/timing behavior; only T376 task audit remains. |
+| Original Owner Request | Continue through L3 before Windows; retain raw IMG compatibility and do not invent test-only APIs. |
+| Similar-Issue Sweep | Inspect command decoding, command length, read/write DMA/non-DMA transfer, result/IRQ, reset/cancel and every existing ST2 consumer. |
+
 ## Current Technical Baseline
 
-- **Current developer artifact:** T369 S4 `vm-0-5-0369` /
-  `build/output/nxvm_0_5_0369.exe`; its SHA-256 and source commit are
-  recorded in the T369 S4 closure audit.
+- **Current developer artifact:** T376 S4 `vm-0-5-0376` /
+  `build/output/nxvm_0_5_0376.exe`; its SHA-256 and source commit are
+  recorded by this S4's acceptance record.
 - **T285 display implementation:** `INT 10h` mode `10h` /
   `EGA-640x350x16-direct` has a VADP-owned planar frame path and copied-frame
   consumer boundary; mode 0Dh remains a separate retained path.

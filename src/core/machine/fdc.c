@@ -21,12 +21,19 @@
 #define core_machine_fdc_CMD_READ_DATA 0x06u
 #define core_machine_fdc_CMD_WRITE_DELETED_DATA 0x09u
 #define core_machine_fdc_CMD_READ_DELETED_DATA 0x0cu
+#define core_machine_fdc_CMD_SCAN_EQUAL 0x11u
+#define core_machine_fdc_CMD_SCAN_LOW_OR_EQUAL 0x19u
+#define core_machine_fdc_CMD_SCAN_HIGH_OR_EQUAL 0x1du
 #define core_machine_fdc_CMD_FORMAT_TRACK 0x0du
 #define core_machine_fdc_CMD_READ_TRACK 0x02u
 
 #define core_machine_fdc_ST1_NO_DATA 0x04u
 #define core_machine_fdc_ST1_NOT_WRITABLE 0x02u
 #define core_machine_fdc_ST1_END_OF_CYLINDER 0x80u
+
+#define core_machine_fdc_SCAN_EQUAL 0u
+#define core_machine_fdc_SCAN_LOW_OR_EQUAL 1u
+#define core_machine_fdc_SCAN_HIGH_OR_EQUAL 2u
 
 static type_unsigned_8 core_machine_fdc_sector_size(type_unsigned_8 code)
 {
@@ -46,6 +53,7 @@ static type_unsigned_8 core_machine_fdc_msr(const core_machine_fdc *fdc)
         return fdc->data.flagNDMA && !fdc->data.ndma_byte_gate_pending ? VFDC_MSR_RQM | VFDC_MSR_DIO |
             VFDC_MSR_NDM | VFDC_MSR_CB : VFDC_MSR_CB;
     case core_machine_fdc_PHASE_EXECUTION_WRITE:
+    case core_machine_fdc_PHASE_EXECUTION_SCAN:
     case core_machine_fdc_PHASE_EXECUTION_FORMAT:
         return fdc->data.flagNDMA && !fdc->data.ndma_byte_gate_pending ? VFDC_MSR_RQM | VFDC_MSR_NDM |
             VFDC_MSR_CB : VFDC_MSR_CB;
@@ -191,6 +199,7 @@ static C_VOID core_machine_fdc_schedule_dma_byte(core_machine_fdc *fdc)
     if (fdc == STD_NULL || fdc->data.flagNDMA || ticks == 0u ||
         (fdc->data.phase != core_machine_fdc_PHASE_EXECUTION_READ &&
         fdc->data.phase != core_machine_fdc_PHASE_EXECUTION_WRITE &&
+        fdc->data.phase != core_machine_fdc_PHASE_EXECUTION_SCAN &&
         fdc->data.phase != core_machine_fdc_PHASE_EXECUTION_FORMAT)) return;
     core_machine_fdc_deassert_dma(fdc);
     fdc->data.next_dma_byte_tick = fdc->data.elapsed_ticks + ticks;
@@ -213,6 +222,7 @@ static C_VOID core_machine_fdc_schedule_ndma_byte(core_machine_fdc *fdc)
     if (fdc == STD_NULL || !fdc->data.flagNDMA || ticks == 0u ||
         (fdc->data.phase != core_machine_fdc_PHASE_EXECUTION_READ &&
         fdc->data.phase != core_machine_fdc_PHASE_EXECUTION_WRITE &&
+        fdc->data.phase != core_machine_fdc_PHASE_EXECUTION_SCAN &&
         fdc->data.phase != core_machine_fdc_PHASE_EXECUTION_FORMAT)) return;
     fdc->data.next_ndma_byte_tick = fdc->data.elapsed_ticks + ticks;
     fdc->data.ndma_byte_gate_pending = TYPE_TRUE;
@@ -252,6 +262,7 @@ static C_INT core_machine_fdc_execution_active(const core_machine_fdc *fdc)
     return fdc != STD_NULL && (fdc->data.phase == core_machine_fdc_PHASE_PENDING_COMMAND ||
         fdc->data.phase == core_machine_fdc_PHASE_EXECUTION_READ ||
         fdc->data.phase == core_machine_fdc_PHASE_EXECUTION_WRITE ||
+        fdc->data.phase == core_machine_fdc_PHASE_EXECUTION_SCAN ||
         fdc->data.phase == core_machine_fdc_PHASE_EXECUTION_FORMAT ||
         fdc->data.phase == core_machine_fdc_PHASE_PENDING_COMPLETE);
 }
@@ -400,6 +411,105 @@ static C_INT core_machine_fdc_transfer_byte(core_machine_fdc *fdc, t_latch *latc
     return TYPE_FALSE;
 }
 
+static C_INT core_machine_fdc_prepare_scan_sector(core_machine_fdc *fdc)
+{
+    core_machine_media_info info;
+    core_machine_media_result result;
+    core_machine_media_id media_id;
+    type_unsigned_64 offset;
+    type_unsigned_64 logical_sector;
+    core_machine_media_address_mark mark;
+
+    while (fdc->data.transfer_remaining != 0u) {
+        if (!core_machine_fdc_media_info(fdc, &info, &result) ||
+            fdc->data.sector > fdc->data.eot ||
+            !core_machine_fdc_media_offset(fdc, &info, &offset)) {
+            core_machine_fdc_complete_transfer(fdc, core_machine_fdc_ST1_END_OF_CYLINDER);
+            return TYPE_FALSE;
+        }
+        media_id = core_machine_fdc_selected_media_id(fdc);
+        logical_sector = offset / info.geometry.bytes_per_sector;
+        if (core_machine_media_get_address_mark(fdc->connect.media_registry, media_id,
+            logical_sector, &mark, &result) != TYPE_STATUS_OK ||
+            result != CORE_MACHINE_MEDIA_RESULT_OK) {
+            core_machine_fdc_complete_transfer(fdc, core_machine_fdc_ST1_NO_DATA);
+            return TYPE_FALSE;
+        }
+        if (mark != CORE_MACHINE_MEDIA_ADDRESS_MARK_DELETED_DATA ||
+            (fdc->data.cmd[0] & 0x20u) == 0u) {
+            if (mark == CORE_MACHINE_MEDIA_ADDRESS_MARK_DELETED_DATA) {
+                fdc->data.pending_st2 |= VFDC_ST2_CONTROL_MARK;
+            }
+            return TYPE_TRUE;
+        }
+        /* SK skips a Deleted-Data sector before it requests comparison bytes
+           from the host, but still advances through the selected EOT range. */
+        fdc->data.transfer_remaining -= 512u;
+        fdc->data.sector++;
+        fdc->data.scan_sector_satisfies = TYPE_TRUE;
+    }
+    fdc->data.pending_st2 |= VFDC_ST2_SCAN_MISMATCH;
+    core_machine_fdc_complete_transfer(fdc, 0u);
+    return TYPE_FALSE;
+}
+
+static C_VOID core_machine_fdc_scan_byte(core_machine_fdc *fdc,
+    type_unsigned_8 compare_byte)
+{
+    type_unsigned_8 media_byte;
+    core_machine_media_info info;
+    core_machine_media_result result;
+    core_machine_media_id media_id;
+    type_unsigned_64 offset;
+    C_INT byte_satisfies;
+
+    if (fdc->data.transfer_remaining == 0u || !core_machine_fdc_drive_ready(fdc)) {
+        core_machine_fdc_complete_transfer(fdc, core_machine_fdc_ST1_NO_DATA);
+        return;
+    }
+    if (!core_machine_fdc_media_info(fdc, &info, &result) ||
+        fdc->data.sector > fdc->data.eot ||
+        !core_machine_fdc_media_offset(fdc, &info, &offset)) {
+        core_machine_fdc_complete_transfer(fdc, core_machine_fdc_ST1_END_OF_CYLINDER);
+        return;
+    }
+    media_id = core_machine_fdc_selected_media_id(fdc);
+    if (core_machine_media_read_bytes(fdc->connect.media_registry, media_id, offset,
+        &media_byte, 1u, &result) != TYPE_STATUS_OK ||
+        result != CORE_MACHINE_MEDIA_RESULT_OK) {
+        core_machine_fdc_complete_transfer(fdc, core_machine_fdc_ST1_NO_DATA);
+        return;
+    }
+    byte_satisfies = compare_byte == 0xffu;
+    if (!byte_satisfies) {
+        switch (fdc->data.scan_mode) {
+        case core_machine_fdc_SCAN_EQUAL:
+            byte_satisfies = compare_byte == media_byte;
+            break;
+        case core_machine_fdc_SCAN_LOW_OR_EQUAL:
+            byte_satisfies = compare_byte <= media_byte;
+            break;
+        default:
+            byte_satisfies = compare_byte >= media_byte;
+            break;
+        }
+    }
+    if (!byte_satisfies) fdc->data.scan_sector_satisfies = TYPE_FALSE;
+    fdc->data.transfer_remaining--;
+    core_machine_fdc_advance_position(fdc);
+    if (fdc->data.byte_offset != 0u) return;
+    if (fdc->data.scan_sector_satisfies) {
+        fdc->data.pending_st2 |= VFDC_ST2_SCAN_MATCH;
+        core_machine_fdc_complete_transfer(fdc, 0u);
+    } else if (fdc->data.transfer_remaining == 0u) {
+        fdc->data.pending_st2 |= VFDC_ST2_SCAN_MISMATCH;
+        core_machine_fdc_complete_transfer(fdc, 0u);
+    } else {
+        fdc->data.scan_sector_satisfies = TYPE_TRUE;
+        (C_VOID)core_machine_fdc_prepare_scan_sector(fdc);
+    }
+}
+
 static C_VOID core_machine_fdc_format_byte(core_machine_fdc *fdc, type_unsigned_8 byte)
 {
     core_machine_media_info info;
@@ -452,6 +562,9 @@ static C_VOID core_machine_fdc_dma_write(C_VOID *owner, t_latch *latch)
     if (fdc->data.phase == core_machine_fdc_PHASE_EXECUTION_WRITE) {
         (C_VOID)core_machine_fdc_transfer_byte(fdc, latch, TYPE_TRUE);
         core_machine_fdc_schedule_dma_byte(fdc);
+    } else if (fdc->data.phase == core_machine_fdc_PHASE_EXECUTION_SCAN) {
+        core_machine_fdc_scan_byte(fdc, latch->data.byte);
+        core_machine_fdc_schedule_dma_byte(fdc);
     } else if (fdc->data.phase == core_machine_fdc_PHASE_EXECUTION_FORMAT) {
         core_machine_fdc_format_byte(fdc, latch->data.byte);
         core_machine_fdc_schedule_dma_byte(fdc);
@@ -464,6 +577,7 @@ static C_VOID core_machine_fdc_dma_terminal(C_VOID *owner, t_latch *latch)
     (C_VOID)latch;
     if (fdc != STD_NULL && (fdc->data.phase == core_machine_fdc_PHASE_EXECUTION_READ ||
         fdc->data.phase == core_machine_fdc_PHASE_EXECUTION_WRITE ||
+        fdc->data.phase == core_machine_fdc_PHASE_EXECUTION_SCAN ||
         fdc->data.phase == core_machine_fdc_PHASE_EXECUTION_FORMAT)) {
         core_machine_fdc_complete_transfer(fdc, fdc->data.transfer_remaining == 0u &&
             fdc->data.format_headers_remaining == 0u ? 0u : core_machine_fdc_ST1_NO_DATA);
@@ -490,14 +604,17 @@ static type_unsigned_8 core_machine_fdc_command_length(type_unsigned_8 opcode)
     case core_machine_fdc_CMD_READ_DATA:
     case core_machine_fdc_CMD_WRITE_DELETED_DATA:
     case core_machine_fdc_CMD_READ_DELETED_DATA:
+    case core_machine_fdc_CMD_SCAN_EQUAL:
+    case core_machine_fdc_CMD_SCAN_LOW_OR_EQUAL:
+    case core_machine_fdc_CMD_SCAN_HIGH_OR_EQUAL:
     case core_machine_fdc_CMD_READ_TRACK: return 9u;
     case core_machine_fdc_CMD_FORMAT_TRACK: return 6u;
     default: return 1u;
     }
 }
 
-static C_VOID core_machine_fdc_start_transfer(core_machine_fdc *fdc, C_INT write_to_media,
-    C_INT deleted_data)
+static C_VOID core_machine_fdc_start_transfer(core_machine_fdc *fdc,
+    core_machine_fdc_phase phase, C_INT deleted_data, type_unsigned_8 scan_mode)
 {
     type_unsigned_8 size = core_machine_fdc_sector_size(fdc->data.cmd[5]);
     core_machine_media_info info;
@@ -508,8 +625,12 @@ static C_VOID core_machine_fdc_start_transfer(core_machine_fdc *fdc, C_INT write
     fdc->data.sector = fdc->data.cmd[4];
     fdc->data.eot = fdc->data.cmd[6];
     fdc->data.byte_offset = 0u;
-    fdc->data.transfer_expect_deleted = !write_to_media && deleted_data;
-    fdc->data.transfer_write_deleted = write_to_media && deleted_data;
+    fdc->data.transfer_expect_deleted = phase == core_machine_fdc_PHASE_EXECUTION_READ &&
+        deleted_data;
+    fdc->data.transfer_write_deleted = phase == core_machine_fdc_PHASE_EXECUTION_WRITE &&
+        deleted_data;
+    fdc->data.scan_mode = scan_mode;
+    fdc->data.scan_sector_satisfies = TYPE_TRUE;
     if (size != 2u || (fdc->data.ccr != 0u && fdc->data.ccr != VFDC_CCR_DRC) ||
         !core_machine_fdc_drive_ready(fdc) ||
         !core_machine_fdc_media_info(fdc, &info, &result) ||
@@ -520,8 +641,9 @@ static C_VOID core_machine_fdc_start_transfer(core_machine_fdc *fdc, C_INT write
     }
     fdc->data.transfer_remaining = (type_unsigned_32)(fdc->data.eot -
         fdc->data.sector + 1u) * 512u;
-    fdc->data.phase = write_to_media ? core_machine_fdc_PHASE_EXECUTION_WRITE :
-        core_machine_fdc_PHASE_EXECUTION_READ;
+    fdc->data.phase = phase;
+    if (phase == core_machine_fdc_PHASE_EXECUTION_SCAN &&
+        !core_machine_fdc_prepare_scan_sector(fdc)) return;
     if (!fdc->data.flagNDMA && (fdc->data.dor & VFDC_DOR_ENRQ) != 0u) {
         core_machine_fdc_request_assert(fdc);
     }
@@ -620,19 +742,35 @@ static C_VOID core_machine_fdc_execute(core_machine_fdc *fdc)
         }
         break;
     case core_machine_fdc_CMD_READ_DATA:
-        core_machine_fdc_start_transfer(fdc, TYPE_FALSE, TYPE_FALSE);
+        core_machine_fdc_start_transfer(fdc, core_machine_fdc_PHASE_EXECUTION_READ,
+            TYPE_FALSE, 0u);
         break;
     case core_machine_fdc_CMD_READ_TRACK:
         core_machine_fdc_start_read_track(fdc);
         break;
     case core_machine_fdc_CMD_WRITE_DATA:
-        core_machine_fdc_start_transfer(fdc, TYPE_TRUE, TYPE_FALSE);
+        core_machine_fdc_start_transfer(fdc, core_machine_fdc_PHASE_EXECUTION_WRITE,
+            TYPE_FALSE, 0u);
         break;
     case core_machine_fdc_CMD_READ_DELETED_DATA:
-        core_machine_fdc_start_transfer(fdc, TYPE_FALSE, TYPE_TRUE);
+        core_machine_fdc_start_transfer(fdc, core_machine_fdc_PHASE_EXECUTION_READ,
+            TYPE_TRUE, 0u);
         break;
     case core_machine_fdc_CMD_WRITE_DELETED_DATA:
-        core_machine_fdc_start_transfer(fdc, TYPE_TRUE, TYPE_TRUE);
+        core_machine_fdc_start_transfer(fdc, core_machine_fdc_PHASE_EXECUTION_WRITE,
+            TYPE_TRUE, 0u);
+        break;
+    case core_machine_fdc_CMD_SCAN_EQUAL:
+        core_machine_fdc_start_transfer(fdc, core_machine_fdc_PHASE_EXECUTION_SCAN,
+            TYPE_FALSE, core_machine_fdc_SCAN_EQUAL);
+        break;
+    case core_machine_fdc_CMD_SCAN_LOW_OR_EQUAL:
+        core_machine_fdc_start_transfer(fdc, core_machine_fdc_PHASE_EXECUTION_SCAN,
+            TYPE_FALSE, core_machine_fdc_SCAN_LOW_OR_EQUAL);
+        break;
+    case core_machine_fdc_CMD_SCAN_HIGH_OR_EQUAL:
+        core_machine_fdc_start_transfer(fdc, core_machine_fdc_PHASE_EXECUTION_SCAN,
+            TYPE_FALSE, core_machine_fdc_SCAN_HIGH_OR_EQUAL);
         break;
     case core_machine_fdc_CMD_FORMAT_TRACK:
         fdc->data.selected_drive = fdc->data.cmd[1] & 0x03u;
@@ -736,6 +874,12 @@ static C_VOID core_machine_fdc_write_data(t_port *port, type_unsigned_16 id,
         !fdc->data.ndma_byte_gate_pending) {
         latch.data.byte = fdc->connect.port->data.ioByte;
         (C_VOID)core_machine_fdc_transfer_byte(fdc, &latch, TYPE_TRUE);
+        core_machine_fdc_schedule_ndma_byte(fdc);
+        return;
+    }
+    if (fdc->data.phase == core_machine_fdc_PHASE_EXECUTION_SCAN && fdc->data.flagNDMA &&
+        !fdc->data.ndma_byte_gate_pending) {
+        core_machine_fdc_scan_byte(fdc, fdc->connect.port->data.ioByte);
         core_machine_fdc_schedule_ndma_byte(fdc);
         return;
     }

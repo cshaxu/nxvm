@@ -195,6 +195,18 @@ C_INT main(C_VOID)
     static const type_unsigned_8 write_deleted_sector[] = {
         0xc9u, 0x00u, 0x00u, 0x00u, 0x01u, 0x02u, 0x01u, 0x1bu, 0xffu
     };
+    static const type_unsigned_8 scan_equal[] = {
+        0x11u, 0x00u, 0x00u, 0x00u, 0x01u, 0x02u, 0x01u, 0x1bu, 0xffu
+    };
+    static const type_unsigned_8 scan_low_or_equal[] = {
+        0x19u, 0x00u, 0x00u, 0x00u, 0x01u, 0x02u, 0x01u, 0x1bu, 0xffu
+    };
+    static const type_unsigned_8 scan_high_or_equal[] = {
+        0x1du, 0x00u, 0x00u, 0x00u, 0x01u, 0x02u, 0x01u, 0x1bu, 0xffu
+    };
+    static const type_unsigned_8 scan_equal_skip[] = {
+        0x31u, 0x00u, 0x00u, 0x00u, 0x01u, 0x02u, 0x01u, 0x1bu, 0xffu
+    };
     static const type_unsigned_8 format_track[] = {
         0x4du, 0x00u, 0x02u, 0x01u, 0x1bu, 0xa5u
     };
@@ -228,6 +240,7 @@ C_INT main(C_VOID)
     core_machine_fdc *fdc;
     t_port *port;
     type_unsigned_8 result[7];
+    type_unsigned_8 scan_dma[512];
     type_unsigned_64 ndma_gate_tick;
     C_INT failed = 0;
 
@@ -351,6 +364,60 @@ C_INT main(C_VOID)
                     result[0] != core_machine_fdc_ST0_NORMAL || fixture.write_count != 512u ||
                     fixture.bytes[0] != 0x5au;
 
+                /* Scan commands receive comparison bytes through the same
+                   host-to-controller path as a write, but never mutate media.
+                   FFh is the documented no-care compare byte. */
+                fixture.mark = CORE_MACHINE_MEDIA_ADDRESS_MARK_DATA;
+                core_machine_fdc_command(fdc, port, scan_equal, sizeof(scan_equal));
+                for (type_unsigned_32 index = 0u; index < 512u; ++index) {
+                    core_machine_port_write(port, fdc_config.data_port,
+                        index == 0u ? 0x5au : 0xffu);
+                }
+                failed |= !core_machine_fdc_read_result(fdc, port, result, sizeof(result)) ||
+                    (result[2] & (VFDC_ST2_SCAN_MATCH | VFDC_ST2_SCAN_MISMATCH)) !=
+                        VFDC_ST2_SCAN_MATCH || fixture.bytes[0] != 0x5au;
+                core_machine_fdc_command(fdc, port, scan_low_or_equal,
+                    sizeof(scan_low_or_equal));
+                for (type_unsigned_32 index = 0u; index < 512u; ++index) {
+                    core_machine_port_write(port, fdc_config.data_port,
+                        index == 0u ? 0x50u : 0xffu);
+                }
+                failed |= !core_machine_fdc_read_result(fdc, port, result, sizeof(result)) ||
+                    (result[2] & (VFDC_ST2_SCAN_MATCH | VFDC_ST2_SCAN_MISMATCH)) !=
+                        VFDC_ST2_SCAN_MATCH;
+                core_machine_fdc_command(fdc, port, scan_high_or_equal,
+                    sizeof(scan_high_or_equal));
+                for (type_unsigned_32 index = 0u; index < 512u; ++index) {
+                    core_machine_port_write(port, fdc_config.data_port,
+                        index == 0u ? 0x60u : 0xffu);
+                }
+                failed |= !core_machine_fdc_read_result(fdc, port, result, sizeof(result)) ||
+                    (result[2] & (VFDC_ST2_SCAN_MATCH | VFDC_ST2_SCAN_MISMATCH)) !=
+                        VFDC_ST2_SCAN_MATCH;
+                core_machine_fdc_command(fdc, port, scan_equal, sizeof(scan_equal));
+                for (type_unsigned_32 index = 0u; index < 512u; ++index) {
+                    core_machine_port_write(port, fdc_config.data_port,
+                        index == 0u ? 0x50u : 0xffu);
+                }
+                failed |= !core_machine_fdc_read_result(fdc, port, result, sizeof(result)) ||
+                    (result[2] & (VFDC_ST2_SCAN_MATCH | VFDC_ST2_SCAN_MISMATCH)) !=
+                        VFDC_ST2_SCAN_MISMATCH;
+                fixture.mark = CORE_MACHINE_MEDIA_ADDRESS_MARK_DELETED_DATA;
+                core_machine_fdc_command(fdc, port, scan_equal, sizeof(scan_equal));
+                for (type_unsigned_32 index = 0u; index < 512u; ++index) {
+                    core_machine_port_write(port, fdc_config.data_port,
+                        index == 0u ? 0x5au : 0xffu);
+                }
+                failed |= !core_machine_fdc_read_result(fdc, port, result, sizeof(result)) ||
+                    (result[2] & (VFDC_ST2_SCAN_MATCH | VFDC_ST2_CONTROL_MARK)) !=
+                        (VFDC_ST2_SCAN_MATCH | VFDC_ST2_CONTROL_MARK);
+                core_machine_fdc_command(fdc, port, scan_equal_skip,
+                    sizeof(scan_equal_skip));
+                failed |= !core_machine_fdc_read_result(fdc, port, result, sizeof(result)) ||
+                    (result[2] & (VFDC_ST2_SCAN_MATCH | VFDC_ST2_SCAN_MISMATCH |
+                    VFDC_ST2_CONTROL_MARK)) != VFDC_ST2_SCAN_MISMATCH;
+                fixture.mark = CORE_MACHINE_MEDIA_ADDRESS_MARK_DATA;
+
                 core_machine_fdc_command(fdc, port, format_track, sizeof(format_track));
                 core_machine_fdc_command(fdc, port, format_id, sizeof(format_id));
                 failed |= !core_machine_fdc_read_result(fdc, port, result, sizeof(result)) ||
@@ -400,6 +467,37 @@ C_INT main(C_VOID)
                 core_machine_port_write(port, fdc_config.dor_port, 0u);
                 failed |= core_machine_dma_has_pending_request(&machine->shared_dma_primary,
                     &machine->shared_dma_secondary) || fdc->data.dma_byte_gate_pending;
+
+                /* Scan consumes guest comparison bytes through DMA2's
+                   memory-to-device direction, then reports through the same
+                   seven-byte IRQ result phase. */
+                core_machine_port_write(port, fdc_config.dor_port, 0x1cu);
+                core_machine_fdc_command(fdc, port,
+                    (const type_unsigned_8[]){0x03u, 0xdfu, 0x02u}, 3u);
+                core_machine_port_write(port, fdc_config.control_port, 0u);
+                STD_MEMSET(scan_dma, 0xa5u, sizeof(scan_dma));
+                failed |= core_machine_memory_write_physical(&machine->executor_memory,
+                    0x0600u, (type_virtual_address)scan_dma, sizeof(scan_dma)) != TYPE_STATUS_OK;
+                core_machine_fdc_write_dma2(port, 0x0600u, 511u);
+                core_machine_port_write(port, 0x000bu, 0x4au);
+                core_machine_fdc_command(fdc, port, scan_equal, sizeof(scan_equal));
+                for (type_unsigned_32 index = 0u; index < sizeof(scan_dma); ++index) {
+                    core_machine_dma_advance(&machine->shared_dma_latch,
+                        &machine->shared_dma_primary, &machine->shared_dma_secondary,
+                        &machine->executor_memory, 1u);
+                    if (index + 1u < sizeof(scan_dma)) {
+                        core_machine_fdc_advance_at(fdc,
+                            fdc->data.elapsed_ticks + CORE_MACHINE_FDC_500K_BYTE_TICKS);
+                    }
+                }
+                failed |= fdc->data.phase != core_machine_fdc_PHASE_PENDING_COMPLETE ||
+                    fdc->data.dma_byte_gate_pending;
+                core_machine_fdc_advance(fdc);
+                failed |= !fdc->connect.irq_source.asserted ||
+                    !core_machine_fdc_read_result(fdc, port, result, sizeof(result)) ||
+                    (result[2] & (VFDC_ST2_SCAN_MATCH | VFDC_ST2_SCAN_MISMATCH)) !=
+                        VFDC_ST2_SCAN_MATCH;
+                core_machine_port_write(port, fdc_config.dor_port, 0u);
                 core_machine_port_write(port, fdc_config.dor_port, 0x1cu);
                 core_machine_fdc_command(fdc, port, specify_non_dma,
                     sizeof(specify_non_dma));
@@ -445,13 +543,28 @@ C_INT main(C_VOID)
                 failed |= fixture.read_count != 2u;
                 core_machine_port_write(port, fdc_config.dor_port, 0u);
                 failed |= fdc->data.ndma_byte_gate_pending;
+
+                /* Scan is host-to-controller execution too: its first byte
+                   establishes the same byte gate, and DOR reset cancels it. */
+                core_machine_port_write(port, fdc_config.dor_port, 0x1cu);
+                core_machine_fdc_command(fdc, port, specify_non_dma,
+                    sizeof(specify_non_dma));
+                core_machine_port_write(port, fdc_config.control_port, 0u);
+                core_machine_fdc_command(fdc, port, scan_equal, sizeof(scan_equal));
+                core_machine_port_write(port, fdc_config.data_port, 0x5au);
+                ndma_gate_tick = fdc->data.next_ndma_byte_tick;
+                failed |= !fdc->data.ndma_byte_gate_pending ||
+                    ndma_gate_tick != fdc->data.elapsed_ticks + 128u;
+                core_machine_port_write(port, fdc_config.dor_port, 0u);
+                failed |= fdc->data.phase != core_machine_fdc_PHASE_COMMAND ||
+                    fdc->data.ndma_byte_gate_pending;
             }
         }
     }
     core_machine_destroy(machine);
     core_machine_media_registry_finalize(&media);
     if (failed) {
-        STD_FPRINTF(STD_STDERR, "M5:T375:S20:FDC-DMA-CADENCE:FAIL %x\n", failed);
+        STD_FPRINTF(STD_STDERR, "M5:T376:S4:8272A-SCAN:FAIL %x\n", failed);
         return 1;
     }
     puts("M5:T283:S2:CORE-FDC-MEDIA:OK");
@@ -460,5 +573,6 @@ C_INT main(C_VOID)
     puts("M5:T375:S21:FDC-SEEK-CADENCE:OK");
     puts("M5:T375:S24:FDC-NDMA-CADENCE:OK");
     puts("M5:T376:S3:8272A-DELETED-DATA:OK");
+    puts("M5:T376:S4:8272A-SCAN:OK");
     return 0;
 }

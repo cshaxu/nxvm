@@ -29,3 +29,14 @@ mount or save failure.
 S3 binds Read Deleted Data, Write Deleted Data and ordinary-read Control Mark
 result behavior to the existing FDC transfer owner and T375 cadence. It does
 not admit Scan commands.
+
+### S4: Scan controller path
+
+S4 implements Scan Equal (`11h`), Scan Low-or-Equal (`19h`) and Scan
+High-or-Equal (`1Dh`) through the existing write-direction DMA2 and non-DMA
+`3F5h` transfer owners. It compares only guest-supplied bytes, ends on the
+first satisfying sector, records ST2 Scan Equal Hit or Scan Not Satisfied, and
+does not modify sector payload. Deleted-Data marks are queried through the
+frozen provider: an unskipped mark is reported through ST2 Control Mark and
+the `SK` command bit skips it without consuming comparison bytes. The S4
+evidence replays the retained 500-kbit/s byte gate and DOR cancellation.

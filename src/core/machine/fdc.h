@@ -26,6 +26,7 @@ typedef enum core_machine_fdc_phase {
     core_machine_fdc_PHASE_PENDING_SEEK,
     core_machine_fdc_PHASE_EXECUTION_READ,
     core_machine_fdc_PHASE_EXECUTION_WRITE,
+    core_machine_fdc_PHASE_EXECUTION_SCAN,
     core_machine_fdc_PHASE_EXECUTION_FORMAT,
     core_machine_fdc_PHASE_PENDING_COMPLETE,
     core_machine_fdc_PHASE_RESULT
@@ -56,6 +57,8 @@ typedef struct {
     type_unsigned_8 pending_st2;
     type_bool transfer_expect_deleted;
     type_bool transfer_write_deleted;
+    type_unsigned_8 scan_mode;
+    type_bool scan_sector_satisfies;
     type_unsigned_16 cylinder;
     type_unsigned_16 drive_cylinder[CORE_MACHINE_FDC_DRIVE_COUNT];
     type_unsigned_16 seek_target;
