@@ -26,7 +26,10 @@ typedef enum core_machine_transaction_kind {
 typedef enum core_machine_transaction_phase {
     CORE_MACHINE_TRANSACTION_PHASE_BEGIN = 1,
     CORE_MACHINE_TRANSACTION_PHASE_COMMIT,
-    CORE_MACHINE_TRANSACTION_PHASE_CANCEL
+    CORE_MACHINE_TRANSACTION_PHASE_CANCEL,
+    CORE_MACHINE_TRANSACTION_PHASE_HOLD_REQUEST,
+    CORE_MACHINE_TRANSACTION_PHASE_HOLD_ACKNOWLEDGE,
+    CORE_MACHINE_TRANSACTION_PHASE_HOLD_RELEASE
 } core_machine_transaction_phase;
 
 typedef C_VOID (*core_machine_transaction_trace_callback)(C_VOID *context,
@@ -42,6 +45,9 @@ typedef struct core_machine_transaction_state {
     type_unsigned_32 detail;
     type_unsigned_64 committed_count;
     type_unsigned_64 cancelled_count;
+    core_machine_transaction_owner hold_owner;
+    type_unsigned_32 hold_detail;
+    type_bool hold_acknowledged;
     core_machine_transaction_trace_callback trace;
     C_VOID *trace_context;
 } core_machine_transaction_state;
@@ -55,6 +61,13 @@ type_status core_machine_transaction_begin(core_machine_transaction_state *state
     type_unsigned_32 address, type_unsigned_32 value, type_unsigned_32 detail);
 C_VOID core_machine_transaction_commit(core_machine_transaction_state *state);
 C_VOID core_machine_transaction_cancel(core_machine_transaction_state *state);
+type_status core_machine_transaction_hold_request(
+    core_machine_transaction_state *state, core_machine_transaction_owner owner,
+    type_unsigned_32 detail);
+type_status core_machine_transaction_hold_acknowledge(
+    core_machine_transaction_state *state, core_machine_transaction_owner owner);
+C_VOID core_machine_transaction_hold_release(
+    core_machine_transaction_state *state, core_machine_transaction_owner owner);
 
 #ifdef __cplusplus
 }

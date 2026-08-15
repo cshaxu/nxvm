@@ -176,6 +176,8 @@ extern "C"
         t_dma *primary, t_dma *secondary, t_ram *ram,
         core_machine_transaction_state *transaction,
         type_unsigned_64 elapsed_ticks);
+    C_INT core_machine_dma_has_pending_request(const t_dma *primary,
+        const t_dma *secondary);
     type_status core_machine_dma_bind_channel(t_latch *latch, t_dma *primary,
         t_dma *secondary, type_unsigned_8 channel,
         const core_machine_dma_channel_provider *provider, C_VOID *device_owner,

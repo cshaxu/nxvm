@@ -47,6 +47,22 @@ static C_INT competition_find_event(const competition_probe *probe,
     return 0;
 }
 
+static C_INT competition_find_event_after(const competition_probe *probe,
+    core_machine_trace_event_type type, type_unsigned_32 start,
+    type_unsigned_32 *out_index)
+{
+    type_unsigned_32 index;
+
+    if (probe == STD_NULL || out_index == STD_NULL) return 0;
+    for (index = start; index < probe->count; ++index) {
+        if (probe->events[index].type == type) {
+            *out_index = index;
+            return 1;
+        }
+    }
+    return 0;
+}
+
 static C_INT competition_find_transaction(const competition_probe *probe,
     core_machine_trace_event_type phase, core_machine_transaction_owner owner,
     core_machine_transaction_kind kind, type_unsigned_32 *out_index)
@@ -105,6 +121,13 @@ C_INT main(C_VOID)
     type_unsigned_32 fdc_refresh;
     type_unsigned_32 hdc_advance;
     type_unsigned_32 hdc_refresh;
+    type_unsigned_32 hold_request;
+    type_unsigned_32 hold_acknowledge;
+    type_unsigned_32 hold_release;
+    type_unsigned_32 reset_hold_start;
+    type_unsigned_32 reset_hold_request;
+    type_unsigned_32 reset_hold_acknowledge;
+    type_unsigned_32 reset_hold_release;
     C_INT failed = 0;
 
     config.cpu_profile = CORE_MACHINE_CPU_PROFILE_80286;
@@ -116,6 +139,16 @@ C_INT main(C_VOID)
     failed |= core_machine_dma_bind_channel(&machine->shared_dma_latch,
         &machine->shared_dma_primary, &machine->shared_dma_secondary, 2u,
         &dma_provider, &source, &binding) != TYPE_STATUS_OK;
+    failed |= core_machine_transaction_hold_request(&machine->transaction,
+        CORE_MACHINE_TRANSACTION_OWNER_DMA, 0u) != TYPE_STATUS_OK;
+    failed |= core_machine_transaction_hold_acknowledge(&machine->transaction,
+        CORE_MACHINE_TRANSACTION_OWNER_DMA) != TYPE_STATUS_OK;
+    failed |= core_machine_transaction_begin(&machine->transaction,
+        CORE_MACHINE_TRANSACTION_OWNER_CPU,
+        CORE_MACHINE_TRANSACTION_CPU_MEMORY_READ, 0u, 0u, 0u) !=
+        TYPE_STATUS_INVALID_ARGUMENT;
+    core_machine_transaction_hold_release(&machine->transaction,
+        CORE_MACHINE_TRANSACTION_OWNER_DMA);
     failed |= core_machine_freeze_execution_providers(machine) != TYPE_STATUS_OK;
     failed |= core_machine_reset(machine) != TYPE_STATUS_OK;
     failed |= core_machine_memory_write(machine, 0xfffffff0u, &nop, 1u) !=
@@ -161,15 +194,41 @@ C_INT main(C_VOID)
         &hdc_advance);
     failed |= !competition_find_event(&probe, CORE_MACHINE_TRACE_HDC_REFRESH,
         &hdc_refresh);
+    failed |= !competition_find_event(&probe,
+        CORE_MACHINE_TRACE_TRANSACTION_HOLD_REQUEST, &hold_request);
+    failed |= !competition_find_event(&probe,
+        CORE_MACHINE_TRACE_TRANSACTION_HOLD_ACKNOWLEDGE, &hold_acknowledge);
+    failed |= !competition_find_event(&probe,
+        CORE_MACHINE_TRACE_TRANSACTION_HOLD_RELEASE, &hold_release);
     failed |= cpu_begin >= cpu_commit || cpu_commit >= cpu_retire ||
-        cpu_retire >= dma_begin || dma_begin >= dma_commit ||
+        cpu_retire >= hold_request || hold_request >= hold_acknowledge ||
+        hold_acknowledge >= dma_begin || dma_begin >= dma_commit ||
+        dma_commit >= hold_release ||
         dma_commit >= dma_advance || dma_advance >= pit_advance ||
         pit_advance >= pic_refresh || pic_refresh >= fdc_advance ||
         fdc_advance >= fdc_refresh || fdc_refresh >= hdc_advance ||
         hdc_advance >= hdc_refresh;
+    reset_hold_start = probe.count;
+    failed |= core_machine_transaction_hold_request(&machine->transaction,
+        CORE_MACHINE_TRANSACTION_OWNER_DMA, 0u) != TYPE_STATUS_OK;
+    failed |= core_machine_transaction_hold_acknowledge(&machine->transaction,
+        CORE_MACHINE_TRANSACTION_OWNER_DMA) != TYPE_STATUS_OK;
+    failed |= core_machine_reset(machine) != TYPE_STATUS_OK;
+    failed |= !competition_find_event_after(&probe,
+        CORE_MACHINE_TRACE_TRANSACTION_HOLD_REQUEST, reset_hold_start,
+        &reset_hold_request);
+    failed |= !competition_find_event_after(&probe,
+        CORE_MACHINE_TRACE_TRANSACTION_HOLD_ACKNOWLEDGE, reset_hold_start,
+        &reset_hold_acknowledge);
+    failed |= !competition_find_event_after(&probe,
+        CORE_MACHINE_TRACE_TRANSACTION_HOLD_RELEASE, reset_hold_start,
+        &reset_hold_release);
+    failed |= reset_hold_request >= reset_hold_acknowledge ||
+        reset_hold_acknowledge >= reset_hold_release;
 
     core_machine_destroy(machine);
     if (failed) return 1;
     STD_PRINTF("M5:T354:S3:COMPETITION:OK\n");
+    STD_PRINTF("M5:T369:S3:PCAT-HOLD:OK\n");
     return 0;
 }

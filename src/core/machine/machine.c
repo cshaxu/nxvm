@@ -3025,6 +3025,15 @@ static C_VOID core_machine_transaction_trace(C_VOID *opaque,
     case CORE_MACHINE_TRANSACTION_PHASE_CANCEL:
         type = CORE_MACHINE_TRACE_TRANSACTION_CANCEL;
         break;
+    case CORE_MACHINE_TRANSACTION_PHASE_HOLD_REQUEST:
+        type = CORE_MACHINE_TRACE_TRANSACTION_HOLD_REQUEST;
+        break;
+    case CORE_MACHINE_TRANSACTION_PHASE_HOLD_ACKNOWLEDGE:
+        type = CORE_MACHINE_TRACE_TRANSACTION_HOLD_ACKNOWLEDGE;
+        break;
+    case CORE_MACHINE_TRANSACTION_PHASE_HOLD_RELEASE:
+        type = CORE_MACHINE_TRACE_TRANSACTION_HOLD_RELEASE;
+        break;
     default:
         return;
     }
@@ -3063,9 +3072,25 @@ static C_VOID core_machine_arbitration_tick(C_VOID *opaque,
     }
     dma_ticks = core_machine_clock_domain_advance(&machine->dma_clock, 1u);
     pit_ticks = core_machine_clock_domain_advance(&machine->pit_clock, 1u);
-    core_machine_dma_advance_transaction(&machine->shared_dma_latch,
-        &machine->shared_dma_primary, &machine->shared_dma_secondary,
-        &machine->executor_memory, &machine->transaction, dma_ticks);
+    if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 &&
+        dma_ticks != 0u &&
+        core_machine_dma_has_pending_request(&machine->shared_dma_primary,
+            &machine->shared_dma_secondary) &&
+        core_machine_transaction_hold_request(&machine->transaction,
+            CORE_MACHINE_TRANSACTION_OWNER_DMA, 0u) == TYPE_STATUS_OK) {
+        if (core_machine_transaction_hold_acknowledge(&machine->transaction,
+                CORE_MACHINE_TRANSACTION_OWNER_DMA) == TYPE_STATUS_OK) {
+            core_machine_dma_advance_transaction(&machine->shared_dma_latch,
+                &machine->shared_dma_primary, &machine->shared_dma_secondary,
+                &machine->executor_memory, &machine->transaction, dma_ticks);
+        }
+        core_machine_transaction_hold_release(&machine->transaction,
+            CORE_MACHINE_TRANSACTION_OWNER_DMA);
+    } else {
+        core_machine_dma_advance_transaction(&machine->shared_dma_latch,
+            &machine->shared_dma_primary, &machine->shared_dma_secondary,
+            &machine->executor_memory, &machine->transaction, dma_ticks);
+    }
     if (dma_ticks != 0u) {
         core_machine_trace_record(machine, CORE_MACHINE_TRACE_DMA_ADVANCE,
             0u, (type_unsigned_32)dma_ticks, 0u);

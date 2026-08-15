@@ -715,6 +715,27 @@ static C_VOID core_machine_dma_advance_one(t_latch *latch, t_dma *primary,
     }
 }
 
+C_INT core_machine_dma_has_pending_request(const t_dma *primary,
+    const t_dma *secondary)
+{
+    type_unsigned_8 primary_requests;
+    type_unsigned_8 secondary_requests;
+
+    if (primary == STD_NULL || secondary == STD_NULL ||
+        TYPE_GET_BIT(secondary->data.command, VDMA_COMMAND_CTRL)) return 0;
+    if (TYPE_GET_BIT(secondary->data.isr, VDMA_ISR_IS)) return 1;
+    if (!TYPE_GET_BIT(primary->data.command, VDMA_COMMAND_CTRL) &&
+        TYPE_GET_BIT(primary->data.isr, VDMA_ISR_IS)) return 1;
+    primary_requests = TYPE_GET_BIT(primary->data.command, VDMA_COMMAND_CTRL) ?
+        TYPE_ZERO_8 : dma_pending_requests(primary);
+    secondary_requests = dma_pending_requests(secondary) &
+        (type_unsigned_8)~VDMA_REQUEST_DRQ(0);
+    if (primary_requests != TYPE_ZERO_8) {
+        TYPE_SET_BIT(secondary_requests, VDMA_REQUEST_DRQ(0));
+    }
+    return secondary_requests != TYPE_ZERO_8;
+}
+
 C_VOID core_machine_dma_advance(t_latch *latch, t_dma *primary,
     t_dma *secondary, t_ram *ram, type_unsigned_64 elapsed_ticks)
 {

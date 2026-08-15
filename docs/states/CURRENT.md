@@ -2,11 +2,32 @@
 
 ## Current Work
 
+## M5 T369 S3 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; T369 S2 accepted at `db87d791`. |
+| Admission And Approval | The owner-approved T369 package continues. S2 authorizes only a source-labelled logical 80286 HOLD/HLDA handoff at the existing shared CPU/DMA transaction boundary, not a Model 339 wait scalar, physical duration or waveform. |
+| Objective | Add one validation-to-publication lifecycle for pending selected DMA ownership: request, logical acknowledgement, same-owner DMA transaction, release/cancel/reset, and copied trace proof at the existing CPU-round/arbitration boundary. |
+| Non-goals | No per-access READY/wait value, instruction microstep/preemptive CPU resume, elapsed-tick charge, physical HOLD/HLDA/DACK/AEN/INTA waveform, FDC service duration, new device requestor, ATA/HDC route, or 5170-L3 claim. |
+| Reference Baseline | T369 S1/S2 evidence; Intel 210760-002 HOLD/HLDA semantics; T354 transaction lifecycle/competition tests; current `transaction.*`, `dma.*`, `machine.c` source and selected Model 339 descriptor. |
+| Candidate Proposal | [Bus-timed PC/AT operation](../proposals/m5-bus-timed-pcat-operation.md). |
+| Files And ABI Surface | `src/core/machine/transaction.[ch]`, `dma.[ch]`, `machine.c`, `trace_interface.h`, focused core smoke and CMake registration, S3 evidence/history/status/index. Internal core contracts may extend; no product/VM public interface or profile topology change. |
+| Applicable Rules | Architecture one-owner, validation-before-publication, no duplicate scheduler, lifecycle/reset/trace and copied-consumer invariants; coding test/ownership discipline; execution similar-issue and artifact rules; source policy. Existing CPU source retirement ticks remain the sole CPU time publisher. |
+| Verification | Focused hold lifecycle smoke plus existing transaction lifecycle and competition smokes; rebuild relevant targets; run static/similar-route sweep, documentation governance and diff check. Rebuild `nxvm_0_5_0369.exe`, record SHA-256/source commit/runtime identity in S3 evidence. |
+| Expected Markers | New `M5:T369:S3:PCAT-HOLD:OK`; retained `M5:T354:S3:COMPETITION:OK` and `M5:T354:S4:TRANSACTION-LIFECYCLE:OK`. Trace proves request < acknowledge < DMA begin < DMA commit < release, CPU transaction cannot begin while a DMA hold is active, and reset releases/cancels the handoff. |
+| Asset Needs | No ROM, guest media, third-party source, binary or raw trace. Project-authored fixture only; the developer artifact contains no protected material. |
+| Reporting Requirements | Distinguish logical safe-boundary handoff from physical latency; record every touched route and transfer; record artifact SHA/runtime identity; identify all unmodelled READY/wait/device/phase facts. |
+| Stop Conditions | Stop and revise the packet if implementation requires CPU microstep resumption, a second scheduler, changes to stopped/paused APIs, a timing scalar, a new public VM/product ABI, or a device-specific service model. |
+| Exit Criteria | P1 implements and proves exactly one shared logical DMA HOLD lifecycle with reset/cancel/trace coverage, produces the task artifact, and documents retained physical transfers. It must leave all board wait and 5170-L3 claims open. |
+| Original Owner Request | Continue in Queue order toward complete L3 before Windows 3.1; use named reference models only where authoritative manuals leave a range or no range, without treating them as IBM authority. |
+| Similar-Issue Sweep | Sweep every `core_machine_transaction_begin/commit/cancel` caller, DMA request/advance path, CPU memory/port helper, reset/finalize path, trace-event consumer and stopped/paused external API; each hit must preserve the shared hold invariant or be explicitly excluded. |
+
 ## Current Technical Baseline
 
-- **Current developer artifact:** T362 S2 `vm-0-5-0362` /
-  `build/output/nxvm_0_5_0362.exe`; its SHA-256 and source commit are
-  recorded in the T362 S2 acceptance evidence.
+- **Current developer artifact:** T369 S3 `vm-0-5-0369` /
+  `build/output/nxvm_0_5_0369.exe`; its SHA-256 and source commit are
+  recorded in the T369 S3 acceptance evidence.
 - **T285 display implementation:** `INT 10h` mode `10h` /
   `EGA-640x350x16-direct` has a VADP-owned planar frame path and copied-frame
   consumer boundary; mode 0Dh remains a separate retained path.
