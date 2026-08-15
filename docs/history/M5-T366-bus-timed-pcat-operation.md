@@ -211,3 +211,11 @@ in-range real/protected direct and indexed cases, including index/FLAGS
 preservation, and retains register `#UD`, out-of-range `#BR`, operand-fault,
 prefix, delivery, bus and physical-time boundaries.
 S24 is accepted at `03869c16`.
+
+### S25: 80286 ARPL timing
+
+S25 assigns the Appendix-B/errata fixed protected-mode register `10` and
+memory `11` clocks to successful unprefixed `63 /r ARPL r/m16,r16`
+retirement. Its [timing evidence](../etc/evidence/t366-s25-80286-arpl-timing.md)
+proves register/direct/indexed adjustment outcomes and retains real-mode,
+prefix, null-selector, fault, delivery, bus and physical-time boundaries.
