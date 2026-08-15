@@ -2,10 +2,24 @@
 
 ## Current Work
 
-T366 S20 is accepted at `25d3a773`. The next T366 S must either isolate the
-source-determinate protected-mode `8E` successful selector-load forms or select
-another source-determinate 80286 successful-retirement family; physical-time
-and device-timing claims remain blocked by the wider CPU ledger.
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | T366 S21, numbered continuation implementation subtask; P1 is one complete pushed implementation/evidence delivery. |
+| Admission And Approval | The owner approved continued L3 work on 2026-08-14. T366 admits only the source-determinate unprefixed legal protected-mode 80286 `8E MOV Sreg,r/m16` successful descriptor-load path. No exception is requested. |
+| Objective | Publish the primary-source protected-mode `17` register and `19 + EA + odd-word` memory costs for successful legal `8E` selector loads through the existing retirement owner. |
+| Non-goals | No real-mode `8E` revision, descriptor or selector fault timing, `MOV CS`/invalid/386-only encoding, prefix/delivery/interrupt-shadow timing, bus/physical time, other profile, device, x87 or ABI work. |
+| Reference Baseline | `b1fac6a2` (accepted T366 S20), [T366 proposal](../proposals/m5-bus-timed-pcat-operation.md), [S20 evidence](../etc/evidence/t366-s20-80286-sreg-load-real-timing.md), [AMD 80286 instruction summary](https://www.bitsavers.org/components/amd/x86/_dataSheets/1985_80286.pdf), and [Intel 80286 clock-rule page](https://tv.manualsonline.com/manuals/mfg/intel/80286.html?p=216). |
+| Candidate Proposal | [Bus-timed PC/AT operation](../proposals/m5-bus-timed-pcat-operation.md), limited to source-backed 80286 successful retirement. |
+| Files And ABI Surface | Private 80286 classifier, focused timing-ledger smoke and protected-mode fixture use, T366 evidence/index/history/status; no public or device surface changes. |
+| Applicable Rules | [Execution](../rules/EXECUTION.md): complete pushed P and sweep. [Architecture](../rules/ARCHITECTURE.md): one retirement publisher. [Coding](../rules/CODING.md): existing owner-local EA/odd helper and existing protected fixture. [Documentation](../rules/DOCUMENT.md): truthful state. [Source policy](../etc/operations/policy/source-policy.md): documentation only, no import/assets. |
+| Verification | Focused timing smoke boots a valid 80286 protected descriptor context, resets the measurement boundary after that boot, and proves successful legal direct and direct/indexed memory `8E` selector loads/ticks; run focused target, `run-current-smokes`, governance and `git diff --check`; review changed files before P1. |
+| Expected Markers | `M5:T357:S6:80286-INSTRUCTION-TIMING-LEDGER:OK`; source gives protected-mode 17 clocks register or 19 clocks memory base, plus one base/index/displacement and two per odd 16-bit memory operand. |
+| Asset Needs | No guest media, ROM, binary, path, external source import or emulator output. Intel/AMD historical documentation is read-only evidence. |
+| Reporting Requirements | Report protected-mode isolation, encoding/mode determination, test progress, P1 push/evidence and acceptance or consolidated corrective brief. |
+| Stop Conditions | Stop if a successful descriptor context cannot be isolated from setup cost, legal encoding or mode detection cannot be isolated, a higher owner intercepts it, helper cannot express source rule, semantic repair is needed, or a gate cannot run. |
+| Exit Criteria | A pushed P proves only valid unprefixed protected-mode 80286 `8E` successful retirement publishes `17` or `19 + EA + odd-word`, with source/sweep/transfers/checks recorded. |
+| Original Owner Request | Continue until comprehensive L3 closure before Windows 3.1; use secondary emulators only if primary material cannot determine timing. |
+| Similar-Issue Sweep | Audit `8E` handler, protected descriptor fixture, direct/indexed memory decode, shared 80286 EA/odd helper, legal/invalid encodings, real-mode `8E`, prefix/delivery and profile classifiers. Retain excluded paths at their named receivers. |
 
 ## Current Technical Baseline
 

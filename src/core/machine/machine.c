@@ -2685,11 +2685,12 @@ static C_INT core_machine_80286_source_instruction_cost(core_machine *machine,
     case 0x8eu:
         if (prefixes + 1u < data->oplen &&
             ((data->opcodes[prefixes + 1u] >> 3u) & 7u) != 1u &&
-            ((data->opcodes[prefixes + 1u] >> 3u) & 7u) <= 3u &&
-            !core_machine_control_stack_is_protected(data)) {
-            *out_ticks = data->flagMem ? 5u +
+            ((data->opcodes[prefixes + 1u] >> 3u) & 7u) <= 3u) {
+            *out_ticks = core_machine_control_stack_is_protected(data) ?
+                (data->flagMem ? 19u : 17u) : (data->flagMem ? 5u : 2u);
+            if (data->flagMem) *out_ticks +=
                 core_machine_80286_timing_effective_address(data, prefixes) +
-                core_machine_80286_timing_odd_word(data) : 2u;
+                core_machine_80286_timing_odd_word(data);
             return 1;
         }
         *out_ticks = CORE_MACHINE_SOURCE_UNALLOCATED_TICKS;
