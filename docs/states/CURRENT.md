@@ -2,9 +2,24 @@
 
 ## Current Work
 
-T366 S22 is accepted at `1d3391bb`. The next T366 S must select the next
-source-determinate 80286 successful-retirement family; physical-time and
-device-timing claims remain blocked by the wider CPU ledger.
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | T366 S23, numbered continuation implementation subtask; P1 is one complete pushed implementation/evidence delivery. |
+| Admission And Approval | The owner approved continued L3 work on 2026-08-14. T366 admits only source-determinate successful unprefixed 80286 legacy segment-register stack forms `06/07`, `0E`, `16/17`, and `1E/1F`; no exception is requested. |
+| Objective | Publish the Intel Appendix-B fixed three-clock PUSH-segment and five-clock POP-segment costs through the existing retirement owner. |
+| Non-goals | No semantic repair; no prefix, selector/stack fault, POP-SS interrupt-shadow, exception/delivery, bus/physical-time, other-profile, x87, ABI or device work. |
+| Reference Baseline | `61ab1d2d` (accepted T366 S22), [T366 proposal](../proposals/m5-bus-timed-pcat-operation.md), [S22 evidence](../etc/evidence/t366-s22-80286-les-lds-timing.md), and Intel [80286/80287 Programmer's Reference Manual, Appendix B](https://bitsavers.org/components/intel/80286/210498-005_80286_and_80287_Programmers_Reference_Manual_1987.pdf). |
+| Candidate Proposal | [Bus-timed PC/AT operation](../proposals/m5-bus-timed-pcat-operation.md), limited to source-backed 80286 successful retirement. |
+| Files And ABI Surface | Private 80286 classifier, focused timing-ledger smoke, T366 evidence/index/history/status; no public or device surface changes. |
+| Applicable Rules | [Execution](../rules/EXECUTION.md): complete pushed P and sweep. [Architecture](../rules/ARCHITECTURE.md): one retirement publisher. [Coding](../rules/CODING.md): owner-local classifier and existing segment-stack semantics. [Documentation](../rules/DOCUMENT.md): truthful state. [Source policy](../etc/operations/policy/source-policy.md): read-only manual evidence; no import/assets. |
+| Verification | Focused timing smoke proves all four successful segment PUSH forms and all three successful POP forms in real/protected mode, including stack image/selector results and reset measurement after protected bootstrap; run semantic segment-stack smoke, `run-current-smokes`, governance and `git diff --check`; review changed files before P1. |
+| Expected Markers | `M5:T357:S6:80286-INSTRUCTION-TIMING-LEDGER:OK` and `M5:T316:S46:LEGACY-SREG-STACK:OK`; Appendix B gives segment PUSH `3` and segment POP `5` clocks. |
+| Asset Needs | No guest media, ROM, binary, path, external source import or emulator output. Intel historical documentation is read-only evidence. |
+| Reporting Requirements | Report source/semantic isolation, test progress, P1 push/evidence and acceptance or consolidated corrective brief. |
+| Stop Conditions | Stop if Appendix B has an unmodeled mode/selector distinction, one successful form cannot be isolated, a higher owner intercepts it, the segment-stack smoke reveals a defect, or a gate cannot run. |
+| Exit Criteria | A pushed P proves only valid unprefixed successful 80286 legacy segment PUSH/POP retirement publishes 3/5 ticks in isolated real/protected cases, with source/sweep/transfers/checks recorded. |
+| Original Owner Request | Continue until comprehensive L3 closure before Windows 3.1; use secondary emulators only if primary material cannot determine timing. |
+| Similar-Issue Sweep | Audit all seven opcode handlers, metadata/profile legality, real/protected success and fault tests, POP-SS interrupt shadow, prefixes, all timing classifiers, and the sole elapsed-tick publisher. Retain excluded paths at their named receivers. |
 
 ## Current Technical Baseline
 

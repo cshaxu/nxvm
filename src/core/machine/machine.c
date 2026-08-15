@@ -2672,6 +2672,12 @@ static C_INT core_machine_80286_source_instruction_cost(core_machine *machine,
     case 0x9eu: case 0x9fu:
         *out_ticks = 2u;
         return 1;
+    case 0x06u: case 0x0eu: case 0x16u: case 0x1eu:
+        *out_ticks = 3u;
+        return 1;
+    case 0x07u: case 0x17u: case 0x1fu:
+        *out_ticks = 5u;
+        return 1;
     case 0x8cu:
         if (prefixes + 1u < data->oplen &&
             ((data->opcodes[prefixes + 1u] >> 3u) & 7u) <= 3u) {
