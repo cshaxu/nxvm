@@ -210,3 +210,4 @@ memory-form `62 /r BOUND r16,m16&m16` retirement. Its
 in-range real/protected direct and indexed cases, including index/FLAGS
 preservation, and retains register `#UD`, out-of-range `#BR`, operand-fault,
 prefix, delivery, bus and physical-time boundaries.
+S24 is accepted at `03869c16`.
