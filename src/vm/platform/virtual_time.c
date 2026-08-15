@@ -8,6 +8,8 @@
 #include <sys/time.h>
 #endif
 
+#define VM_PLATFORM_VIRTUAL_TIME_MAX_BATCH_TICKS 800000u
+
 static type_status vm_platform_virtual_time_read_units(type_unsigned_64 *out_units,
     type_unsigned_64 *out_units_per_second)
 {
@@ -72,7 +74,12 @@ static type_status vm_platform_virtual_time_source_next(C_VOID *context,
     if (ticks > UINT64_MAX - (partial_units / units_per_second)) return TYPE_STATUS_FAULT;
     ticks += partial_units / units_per_second;
     source->remainder = partial_units % units_per_second;
-    *out_source_ticks = ticks;
+    if (ticks > UINT64_MAX - source->pending_ticks) return TYPE_STATUS_FAULT;
+    source->pending_ticks += ticks;
+    *out_source_ticks = source->pending_ticks >
+        VM_PLATFORM_VIRTUAL_TIME_MAX_BATCH_TICKS ?
+        VM_PLATFORM_VIRTUAL_TIME_MAX_BATCH_TICKS : source->pending_ticks;
+    source->pending_ticks -= *out_source_ticks;
     return TYPE_STATUS_OK;
 }
 
@@ -84,6 +91,7 @@ static C_VOID vm_platform_virtual_time_source_reset(C_VOID *context)
     if (source == STD_NULL) return;
     source->last_units = 0u;
     source->remainder = 0u;
+    source->pending_ticks = 0u;
     source->units_per_second = 0u;
     source->initialized = TYPE_FALSE;
 }

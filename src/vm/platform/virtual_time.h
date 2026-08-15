@@ -8,6 +8,7 @@
 typedef struct vm_platform_virtual_time_source {
     type_unsigned_64 last_units;
     type_unsigned_64 remainder;
+    type_unsigned_64 pending_ticks;
     type_unsigned_64 units_per_second;
     type_unsigned_64 source_ticks_per_second;
     C_INT initialized;

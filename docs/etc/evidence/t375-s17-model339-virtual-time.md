@@ -7,9 +7,11 @@ source at its declared nominal 8 MHz source rate. It is installed only when no
 caller supplied source. Default PC/AT remains source-free.
 
 The platform source retains the prior counter unit, fractional conversion
-remainder, unit frequency, and initialized state. Its first sample and a reset
+remainder, pending source ticks, unit frequency, and initialized state. Its first sample and a reset
 sample return zero and establish a new baseline. Later samples convert elapsed
-monotonic units plus the retained remainder into source ticks; the existing
+monotonic units plus the retained remainder into source ticks. A single call
+publishes at most 800,000 ticks (100 ms at the selected rate); excess ticks
+remain pending for later waiting iterations. The existing
 `vm_session_virtual_time_on_waiting` path remains the only caller that can
 publish a nonzero batch through `core_machine_advance_time`.
 
