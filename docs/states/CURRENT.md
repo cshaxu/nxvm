@@ -2,9 +2,24 @@
 
 ## Current Work
 
-T366 S31 is accepted at `a139bcdb`. T366 is paused at the owner's request;
-no next subtask is active. Physical-time and device-timing claims remain blocked
-by the wider CPU ledger.
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | T366 S32, numbered continuation closure-audit subtask; P1 is one complete pushed audit/evidence delivery. |
+| Admission And Approval | The owner requested T366 completion and transfer/closure audit on 2026-08-14, expressly prohibiting a false 5170 L3 completion claim. |
+| Objective | Record completed 5170 baseline lock, NMI/device pre-audits and accepted 80286 timing rows; close T366 with exact CPU, bus, device and L3 receivers. |
+| Non-goals | No runtime code, timing allocation, Queue reordering, profile claim, guest corpus, or 5170 L3 completion. |
+| Reference Baseline | `34e457ca`, the T366 history/evidence, Bus-timed PC/AT proposal, Queue and TODO. |
+| Candidate Proposal | [Bus-timed PC/AT operation](../proposals/m5-bus-timed-pcat-operation.md), audited only; any later implementation requires a new approved task. |
+| Files And ABI Surface | T366 closure evidence/index/history/status only; no source, public interface, binary or profile change. |
+| Applicable Rules | Execution: closure audit and pushed P. Documentation: one truthful authority/state. Architecture/Coding: no applicability because no code or ownership mechanism changes. Source policy: read-only cited evidence, no import/assets. |
+| Verification | Repository evidence/commit sweep; receiver links; documentation governance and diff check. |
+| Expected Markers | T366 S2--S31 accepted commits/evidence are retained; audit states `5170 model-L3: not ready`. |
+| Asset Needs | No guest media, ROM, binary or imported source. |
+| Reporting Requirements | Report closed T366, accepted evidence, exact transfers and explicit non-L3 result. |
+| Stop Conditions | Stop if any completed claim lacks durable evidence or a remaining CPU/bus/device item has no exact receiver. |
+| Exit Criteria | Pushed audit gives every remaining CPU, bus/device and L3 requirement a receiver, and CURRENT records one task-level T366 closure without an L3 claim. |
+| Original Owner Request | Complete the open S and perform a truthful transfer/closure audit; do not claim 5170 L3 completed. |
+| Similar-Issue Sweep | Compare history S1--S31, profile/NMI/FDC/non-admission evidence, Queue, TODO and later L3 proposals for duplicate, lost or false-completion claims. |
 
 ## Current Technical Baseline
 

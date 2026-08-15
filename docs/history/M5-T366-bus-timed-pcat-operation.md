@@ -268,3 +268,12 @@ unprefixed `0F 01 /6 LMSW r/m16` retirement in its documented real/protected
 CPL0 forms.  Its [timing evidence](../etc/evidence/t366-s31-80286-lmsw-timing.md)
 retains prefix, privilege, fault, delivery, bus and physical-time boundaries.
 S31 is accepted at `a139bcdb`.
+
+### S32: Closure and transfer audit
+
+S32 closes T366 as a preparatory baseline and source-retirement task.  Its
+[closure audit](../etc/evidence/t366-s32-closure-transfer-audit.md) records
+the accepted Model 339 lock, planar-parity NMI and device-topology pre-audits,
+and 80286 timing rows.  Complete CPU retirement, bus availability, device
+service timing and later model-L3 work transfer to their exact Queue/TODO
+receivers.  **5170 model-L3 is not ready.**
