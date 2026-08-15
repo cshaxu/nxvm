@@ -2678,6 +2678,13 @@ static C_INT core_machine_80286_source_instruction_cost(core_machine *machine,
     case 0x07u: case 0x17u: case 0x1fu:
         *out_ticks = 5u;
         return 1;
+    case 0x62u:
+        if (data->flagMem) {
+            *out_ticks = 13u;
+            return 1;
+        }
+        *out_ticks = CORE_MACHINE_SOURCE_UNALLOCATED_TICKS;
+        return 1;
     case 0x8cu:
         if (prefixes + 1u < data->oplen &&
             ((data->opcodes[prefixes + 1u] >> 3u) & 7u) <= 3u) {

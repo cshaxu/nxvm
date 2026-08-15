@@ -201,3 +201,12 @@ segment-register `PUSH`/`POP` forms. Its
 all seven real/protected forms with stack-image/selector results and retains
 prefix, selector/stack-fault, POP-SS-shadow, delivery, bus and physical-time
 boundaries. S23 is accepted at `46190502`.
+
+### S24: 80286 BOUND timing
+
+S24 assigns the Appendix-B fixed thirteen-clock cost to successful unprefixed
+memory-form `62 /r BOUND r16,m16&m16` retirement. Its
+[timing evidence](../etc/evidence/t366-s24-80286-bound-timing.md) proves
+in-range real/protected direct and indexed cases, including index/FLAGS
+preservation, and retains register `#UD`, out-of-range `#BR`, operand-fault,
+prefix, delivery, bus and physical-time boundaries.
