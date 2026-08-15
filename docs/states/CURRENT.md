@@ -2,27 +2,6 @@
 
 ## Current Work
 
-## M5 T375 S3 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation; T375 S2 is accepted in the compact progress row below. |
-| Admission And Approval | Owner: user, continuing the approved pre-Windows Model-339 L3 program. T375 was admitted from the Queue; S1 explicitly transferred the retirement-only device-progress question to the next bounded phase-model work. |
-| Objective | Audit every current Model-339 machine-time publisher and consumer around HLT, interrupt waiting, externally unavailable CPU work, DMA/HOLD and reset. Establish whether the current API can represent physical-device progression without inventing host time, and select the smallest single-owner repair or explicit later receiver. |
-| Non-goals | No implementation in this S; no generic clock scalar, host-time coupling, CPU instruction timing change, board wait value, device functional repair, raw-IMG sidecar work, ROM/media import, external-reference scalar, final L3 audit, or claim that a successful-retirement tick is wall time. |
-| Reference Baseline | Accepted T375 S1/S2 (`4f4fa77f`, `3ebbe698`, `37c37ec3`); current `core_machine_run`, timeline, clock domains and accepted Model-339 RTC/PIT contract. |
-| Candidate Proposal | [IBM PC/AT 5170 board and device phase-timing closure](../proposals/m5-5170-board-phase-timing-closure.md). |
-| Files And ABI Surface | Read-only audit of `src/core/machine/machine.c`, timeline/clock/device owners, execution providers, profiles and existing focused tests; add one indexed evidence record and status update only. |
-| Applicable Rules | `docs/rules/ARCHITECTURE.md`: one mutable-time owner and no platform adapter guest mutation; evidence: full publisher/consumer map. `docs/rules/CODING.md`: no speculative API; evidence: a bounded repair selection rather than a parallel test seam. `docs/rules/DOCUMENT.md`: indexed supporting evidence only. `docs/rules/EXECUTION.md`: one bounded audit packet and explicit implementation receiver. |
-| Verification | Static publisher/consumer/caller sweep, deterministic existing HLT/interrupt/timeline test review, documentation governance and `git diff --check`. No executable claim unless a pre-existing focused target directly proves an audited fact. |
-| Expected Markers | `M5:T375:S3:MODEL339-NONRETIREMENT-TIME-INVENTORY:OK` in the evidence record. |
-| Asset Needs | No asset or external runtime required; no third-party source, firmware, ROM, or media enters Git. |
-| Reporting Requirements | Report the exact current behavior, all affected time consumers, chosen next implementation boundary, and the retained limitations without representing an audit as a repair. |
-| Stop Conditions | Stop and transfer if answering requires a host clock, source-derived board rate not present in the record, or a new public API beyond the candidate's current scope. |
-| Exit Criteria | Evidence identifies all machine-time publishers, proves or disproves device advancement for HLT/stop/fault/HOLD paths, distinguishes reset from elapsed progression, names one owner and a bounded later S for any repair, and leaves no unclassified parallel timing route. |
-| Original Owner Request | Owner-directed continuation: implement the current plan to full L3 precision and stop before Windows 3.1; use 86Box/MAME/PCjs only as secondary cross-checks when primary manuals do not determine an instruction timing. |
-| Similar-Issue Sweep | Inspect every `elapsed_ticks` mutation, scheduler advance, clock-domain advance, run result/stop reason, HLT/wait path, DMA/HOLD path, reset path, platform run loop and RTC/PIT/KBC/FDC/VADP consumer. |
-
 ## Current Technical Baseline
 
 - **Current developer artifact:** T369 S4 `vm-0-5-0369` /
@@ -42,7 +21,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T375 S2 | Accepted P1 `3ebbe698`: Model-339 alone now binds primary-source RTC/PIT rational clock relations and the 32.768-kHz RTC divisor; board availability, non-retirement progression and remaining device/phase timing remain open. [Clock contract](../etc/evidence/t375-s2-model339-rtc-pit-clock-contract.md). |
+| T375 S3 | Accepted P1 `9f6aab6d`: the audit proves HLT currently republishes retained instruction cost from the host loop; explicit production virtual-time publication is the next shared repair. [Inventory](../etc/evidence/t375-s3-model339-nonretirement-time-inventory.md). |
 | T374 | Closed at `f742433c`: S1--S19 complete the selected Model-339 functional closure and preserve raw-IMG 765 Deleted/Control-Mark/Scan as explicit TODO debt. Board/device timing, final Model-L3, DeskPro 386, PC/XT and Windows 3.1 remain open. [Closure audit](../etc/evidence/t374-s19-task-closure-audit.md). |
 | T373 | Closed at `06246a8e`: S1--S4 freeze the three-machine source-labelled capability ledger and exact functional/timing/current-product receivers. **5170, DeskPro Model 40 and PC/XT 5160-268 L3 are not ready.** The next candidate is 5170 selected-device functional closure. [Closure audit](../etc/evidence/t373-s4-task-closure-audit.md). |
 | T372 | Closed at `3f56c72c`: S1--S8 establish that Model 339 has selected logical ownership and deterministic ordering, but lacks selected-device functional closure and source-backed board/phase timing. **5170 model-L3 is not ready.** [Closure audit](../etc/evidence/t372-s8-task-closure-transfer-audit.md). |
