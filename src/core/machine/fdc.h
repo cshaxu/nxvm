@@ -17,6 +17,7 @@ typedef struct t_pic t_pic;
 typedef struct t_port t_port;
 
 #define CORE_MACHINE_DEVICE_FDC "Intel 8272A"
+#define CORE_MACHINE_FDC_500K_BYTE_TICKS 128u
 
 typedef enum core_machine_fdc_phase {
     core_machine_fdc_PHASE_COMMAND = 0,
@@ -64,6 +65,9 @@ typedef struct {
     type_bool media_changed[CORE_MACHINE_FDC_DRIVE_COUNT];
     type_bool observed_ready[CORE_MACHINE_FDC_DRIVE_COUNT];
     type_bool ready_poll_enabled;
+    type_bool dma_byte_gate_pending;
+    type_unsigned_64 elapsed_ticks;
+    type_unsigned_64 next_dma_byte_tick;
 } core_machine_fdc_data;
 
 typedef C_VOID (*core_machine_fdc_dma_request_operation)(C_VOID *owner,
@@ -207,6 +211,8 @@ const core_machine_dma_channel_provider *core_machine_fdc_dma_provider(C_VOID);
 C_VOID core_machine_fdc_initialize(core_machine_fdc *fdc);
 C_VOID core_machine_fdc_reset(core_machine_fdc *fdc);
 C_VOID core_machine_fdc_advance(core_machine_fdc *fdc);
+C_VOID core_machine_fdc_advance_at(core_machine_fdc *fdc,
+    type_unsigned_64 elapsed_ticks);
 C_VOID core_machine_fdc_refresh(core_machine_fdc *fdc);
 C_VOID core_machine_fdc_finalize(core_machine_fdc *fdc);
 C_VOID core_machine_fdc_print(const core_machine_fdc *fdc);

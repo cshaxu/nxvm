@@ -124,6 +124,19 @@ static C_VOID core_machine_fdc_command(core_machine_fdc *fdc, t_port *port,
     core_machine_fdc_advance(fdc);
 }
 
+static C_VOID core_machine_fdc_write_dma2(t_port *port, type_unsigned_16 address,
+    type_unsigned_16 count)
+{
+    core_machine_port_write(port, 0x000cu, 0u);
+    core_machine_port_write(port, 0x0004u, address & 0xffu);
+    core_machine_port_write(port, 0x0004u, address >> 8u);
+    core_machine_port_write(port, 0x0005u, count & 0xffu);
+    core_machine_port_write(port, 0x0005u, count >> 8u);
+    core_machine_port_write(port, 0x0081u, 0u);
+    core_machine_port_write(port, 0x000bu, 0x46u);
+    core_machine_port_write(port, 0x000au, 0x02u);
+}
+
 static C_INT core_machine_fdc_read_result(core_machine_fdc *fdc, t_port *port,
     type_unsigned_8 *result, STD_SIZE_T count)
 {
@@ -269,6 +282,43 @@ C_INT main(C_VOID)
                 core_machine_fdc_refresh(fdc);
                 failed |= (core_machine_port_read(port, fdc_config.direction_port) & VFDC_DIR_DC) == 0u;
 
+                /* A 500-kbit/s DMA transfer exposes one byte, withdraws DRQ,
+                   and cannot expose the next byte before its 128-tick gate. */
+                fixture.read_count = 0u;
+                core_machine_port_write(port, fdc_config.control_port, 0u);
+                core_machine_fdc_command(fdc, port,
+                    (const type_unsigned_8[]){0x03u, 0xdfu, 0x02u}, 3u);
+                core_machine_fdc_write_dma2(port, 0x0600u, 1u);
+                core_machine_fdc_command(fdc, port, read_sector, sizeof(read_sector));
+                core_machine_fdc_advance_at(fdc, 100u);
+                failed |= !core_machine_dma_has_pending_request(&machine->shared_dma_primary,
+                    &machine->shared_dma_secondary);
+                core_machine_dma_advance(&machine->shared_dma_latch,
+                    &machine->shared_dma_primary, &machine->shared_dma_secondary,
+                    &machine->executor_memory, 1u);
+                failed |= fixture.read_count != 1u ||
+                    core_machine_dma_has_pending_request(&machine->shared_dma_primary,
+                        &machine->shared_dma_secondary);
+                core_machine_fdc_advance_at(fdc, 227u);
+                failed |= core_machine_dma_has_pending_request(&machine->shared_dma_primary,
+                    &machine->shared_dma_secondary);
+                core_machine_fdc_advance_at(fdc, 228u);
+                failed |= !core_machine_dma_has_pending_request(&machine->shared_dma_primary,
+                    &machine->shared_dma_secondary);
+                core_machine_dma_advance(&machine->shared_dma_latch,
+                    &machine->shared_dma_primary, &machine->shared_dma_secondary,
+                    &machine->executor_memory, 1u);
+                failed |= fixture.read_count != 2u || fdc->data.phase !=
+                    core_machine_fdc_PHASE_PENDING_COMPLETE || fdc->connect.irq_source.asserted;
+                core_machine_fdc_advance_at(fdc, 229u);
+                failed |= !fdc->connect.irq_source.asserted;
+                core_machine_port_write(port, fdc_config.dor_port, 0u);
+                failed |= core_machine_dma_has_pending_request(&machine->shared_dma_primary,
+                    &machine->shared_dma_secondary) || fdc->data.dma_byte_gate_pending;
+                core_machine_port_write(port, fdc_config.dor_port, 0x1cu);
+                core_machine_fdc_command(fdc, port, specify_non_dma,
+                    sizeof(specify_non_dma));
+
                 fixture.forced_read_result = CORE_MACHINE_MEDIA_RESULT_INVALID_RANGE;
                 core_machine_fdc_command(fdc, port, read_sector, sizeof(read_sector));
                 (C_VOID)core_machine_port_read(port, fdc_config.data_port);
@@ -290,8 +340,12 @@ C_INT main(C_VOID)
     }
     core_machine_destroy(machine);
     core_machine_media_registry_finalize(&media);
-    if (failed) return 1;
+    if (failed) {
+        STD_FPRINTF(STD_STDERR, "M5:T375:S20:FDC-DMA-CADENCE:FAIL %x\n", failed);
+        return 1;
+    }
     puts("M5:T283:S2:CORE-FDC-MEDIA:OK");
     puts("M5:T347:S2:FDC-SERVICE:OK");
+    puts("M5:T375:S20:FDC-DMA-CADENCE:OK");
     return 0;
 }

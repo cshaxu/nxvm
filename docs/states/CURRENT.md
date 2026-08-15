@@ -2,11 +2,32 @@
 
 ## Current Work
 
-**Active: M5 T375 S19.**
+**Active: M5 T375 S20.**
 
 | Task | Compact progress |
 | --- | --- |
 | T375 S19 | Accepted P1 `cb3ebb93`: names the aftermarket TEAC FD-235HF-A540 timing inputs, retains 86Box as a non-authoritative cross-check, and transfers elapsed-time FDC scheduling to the next S. [Evidence](../etc/evidence/t375-s19-fdc-service-time-crosswalk.md). |
+
+## M5 T375 S20 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | The owner approved continuation toward full L3, selected the Model-339 aftermarket 1.44 MB route, and authorized secondary reference use. S19 accepts the TEAC FD-235HF-A540 500-kbit/s conversion input. |
+| Objective | Add FDC-owner elapsed-time gating for 500-kbit/s DMA data bytes so DRQ/DMA2 eligibility recurs no faster than 128 Model-339 machine ticks and completion IRQ6 follows the final gated byte. |
+| Non-goals | No unqualified command, seek, rotational, motor, reset or controller delay; no physical waveform, FDC controller clock conversion, raw-IMG metadata work, guest media, ROM, generic DMA rewrite, or Model-339 L3 claim. |
+| Reference Baseline | T375 S19 crosswalk: 500 kbit/s equals 16 us or 128 nominal 8-MHz ticks per byte. `machine.c` already publishes explicit virtual time and owns timeline order; `fdc.c` owns DMA request lifecycle, transfer byte and IRQ6 source. |
+| Candidate Proposal | [IBM PC/AT 5170 board and device phase-timing closure](../proposals/m5-5170-board-phase-timing-closure.md). |
+| Files And ABI Surface | `src/core/machine/fdc.[ch]`, `src/core/machine/machine.c`, focused FDC timing smoke and CMake registration, Current/evidence/index. The existing FDC owner gains an internal timestamped advance operation; no public test-only input API or duplicate DMA route. |
+| Applicable Rules | Execution lifecycle, architecture single-owner/one DMA transaction path, coding owner-local helper and no test-only public API, source policy boundary, and documentation/index rules. |
+| Verification | Build/run the focused FDC timing smoke, retained FDC and DMA smokes, and documentation governance. Prove first DMA byte is eligible, no second byte before 128 ticks, the next byte becomes eligible at its gate, DOR reset cancels a pending gate, and completion IRQ6 does not precede the final byte. |
+| Expected Markers | `M5:T375:S20:FDC-DMA-CADENCE:OK`, retained FDC/DMA markers, and `Documentation governance checks passed`. |
+| Asset Needs | No external runtime asset. S19's indexed TEAC primary source is a documentation reference only. |
+| Reporting Requirements | Report exact code ownership, focused results, push P1, review result, and all remaining FDC mechanical/command-time transfers. |
+| Stop Conditions | Stop if enforcing a byte gate requires a second DMA owner, a public test-only ingress, a source-incompatible rate, or an unbounded host-time path. |
+| Exit Criteria | Production FDC code uses the existing machine-time/timeline owner to gate each DMA byte; reset/media cancellation clears it; focused proof covers cadence and IRQ ordering; no unsupported delay is represented as an exact 5170 fact. |
+| Original Owner Request | Continue implementing L3; when authority lacks deterministic timing, use 86Box/MAME/PCjs only as bounded secondary references. Keep the 1.44 MB configuration a non-factory field upgrade. |
+| Similar-Issue Sweep | Sweep DMA read/write/terminal, non-DMA reads/writes, format, read-track, DOR reset, drive-not-ready, FDC reset/finalize, DMA reset and all machine callers. Apply the gate only to the source-backed 500-kbit/s DMA byte path; transfer other modes explicitly. |
 
 ## Current Technical Baseline
 

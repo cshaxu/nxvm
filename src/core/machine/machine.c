@@ -3128,7 +3128,7 @@ static C_VOID core_machine_readiness_tick(C_VOID *opaque,
     if (machine == STD_NULL) {
         return;
     }
-    core_machine_fdc_advance(&machine->fdc);
+    core_machine_fdc_advance_at(&machine->fdc, due_tick);
     core_machine_trace_record(machine, CORE_MACHINE_TRACE_FDC_ADVANCE,
         0u, 0u, 0u);
     core_machine_fdc_refresh(&machine->fdc);

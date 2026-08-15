@@ -165,12 +165,42 @@ static C_VOID core_machine_fdc_deassert_dma(core_machine_fdc *fdc)
     }
 }
 
+static C_INT core_machine_fdc_execution_active(const core_machine_fdc *fdc);
+
 static C_VOID core_machine_fdc_request_assert(core_machine_fdc *fdc)
 {
     if (fdc->connect.dma_request_assert != STD_NULL) {
         fdc->connect.dma_request_assert(fdc->connect.dma_request_owner,
             &fdc->connect.dma_request);
     }
+}
+
+static type_unsigned_64 core_machine_fdc_dma_byte_ticks(const core_machine_fdc *fdc)
+{
+    return fdc != STD_NULL && fdc->data.ccr == 0u ?
+        CORE_MACHINE_FDC_500K_BYTE_TICKS : 0u;
+}
+
+static C_VOID core_machine_fdc_schedule_dma_byte(core_machine_fdc *fdc)
+{
+    type_unsigned_64 ticks = core_machine_fdc_dma_byte_ticks(fdc);
+
+    if (fdc == STD_NULL || fdc->data.flagNDMA || ticks == 0u ||
+        (fdc->data.phase != core_machine_fdc_PHASE_EXECUTION_READ &&
+        fdc->data.phase != core_machine_fdc_PHASE_EXECUTION_WRITE &&
+        fdc->data.phase != core_machine_fdc_PHASE_EXECUTION_FORMAT)) return;
+    core_machine_fdc_deassert_dma(fdc);
+    fdc->data.next_dma_byte_tick = fdc->data.elapsed_ticks + ticks;
+    fdc->data.dma_byte_gate_pending = TYPE_TRUE;
+}
+
+static C_VOID core_machine_fdc_publish_due_dma_byte(core_machine_fdc *fdc)
+{
+    if (fdc == STD_NULL || !fdc->data.dma_byte_gate_pending ||
+        fdc->data.elapsed_ticks < fdc->data.next_dma_byte_tick ||
+        !core_machine_fdc_execution_active(fdc)) return;
+    fdc->data.dma_byte_gate_pending = TYPE_FALSE;
+    core_machine_fdc_request_assert(fdc);
 }
 
 static C_VOID core_machine_fdc_raise_irq(core_machine_fdc *fdc)
@@ -183,6 +213,8 @@ static C_VOID core_machine_fdc_raise_irq(core_machine_fdc *fdc)
 static C_VOID core_machine_fdc_cancel_execution(core_machine_fdc *fdc)
 {
     core_machine_fdc_deassert_dma(fdc);
+    fdc->data.dma_byte_gate_pending = TYPE_FALSE;
+    fdc->data.next_dma_byte_tick = 0u;
     fdc->data.pending_st1 = 0u;
     fdc->data.transfer_remaining = 0u;
     fdc->data.byte_offset = 0u;
@@ -347,6 +379,7 @@ static C_VOID core_machine_fdc_dma_read(C_VOID *owner, t_latch *latch)
     core_machine_fdc *fdc = owner;
     if (fdc != STD_NULL && fdc->data.phase == core_machine_fdc_PHASE_EXECUTION_READ) {
         (C_VOID)core_machine_fdc_transfer_byte(fdc, latch, TYPE_FALSE);
+        core_machine_fdc_schedule_dma_byte(fdc);
     }
 }
 
@@ -356,8 +389,10 @@ static C_VOID core_machine_fdc_dma_write(C_VOID *owner, t_latch *latch)
     if (fdc == STD_NULL) return;
     if (fdc->data.phase == core_machine_fdc_PHASE_EXECUTION_WRITE) {
         (C_VOID)core_machine_fdc_transfer_byte(fdc, latch, TYPE_TRUE);
+        core_machine_fdc_schedule_dma_byte(fdc);
     } else if (fdc->data.phase == core_machine_fdc_PHASE_EXECUTION_FORMAT) {
         core_machine_fdc_format_byte(fdc, latch->data.byte);
+        core_machine_fdc_schedule_dma_byte(fdc);
     }
 }
 
@@ -720,7 +755,15 @@ C_VOID core_machine_fdc_reset(core_machine_fdc *fdc)
 
 C_VOID core_machine_fdc_advance(core_machine_fdc *fdc)
 {
+    if (fdc == STD_NULL || fdc->data.elapsed_ticks == UINT64_MAX) return;
+    core_machine_fdc_advance_at(fdc, fdc->data.elapsed_ticks + 1u);
+}
+
+C_VOID core_machine_fdc_advance_at(core_machine_fdc *fdc,
+    type_unsigned_64 elapsed_ticks)
+{
     if (fdc == STD_NULL) return;
+    fdc->data.elapsed_ticks = elapsed_ticks;
     if (fdc->data.phase == core_machine_fdc_PHASE_PENDING_COMMAND) {
         core_machine_fdc_execute(fdc);
     } else if (fdc->data.phase == core_machine_fdc_PHASE_PENDING_COMPLETE) {
@@ -730,6 +773,7 @@ C_VOID core_machine_fdc_advance(core_machine_fdc *fdc)
         core_machine_fdc_result_phase(fdc, 7u);
         core_machine_fdc_raise_irq(fdc);
     }
+    core_machine_fdc_publish_due_dma_byte(fdc);
 }
 
 C_VOID core_machine_fdc_refresh(core_machine_fdc *fdc)
