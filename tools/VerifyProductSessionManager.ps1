@@ -9,11 +9,14 @@ $coreSession = Get-ChildItem (Join-Path $root 'src/core/product/session') -File 
 $source = Get-ChildItem (Join-Path $root 'src') -Recurse -File -Include '*.c','*.h'
 $failures = @()
 
-if ($manager -notmatch 'core_product_session_manager_create[\s\S]*core_product_session_manager_open\(manager, STD_NULL\)') {
-    $failures += 'manager create does not establish session 0 before success'
+if ($manager -match 'core_product_session_manager_create[\s\S]*core_product_session_manager_open\(manager, STD_NULL\)') {
+    $failures += 'manager create still establishes an implicit session'
 }
-if ($manager -notmatch 'manager->count <= 1u\) return TYPE_STATUS_INVALID_STATE') {
-    $failures += 'manager close does not reject the final session'
+if ($manager -notmatch 'core_product_session_id next_id') {
+    $failures += 'manager does not retain a monotonic session identifier source'
+}
+if ($manager -match 'manager->count <= 1u\) return TYPE_STATUS_INVALID_STATE') {
+    $failures += 'manager still rejects closing the final session'
 }
 if ($manager -match '(?m)^\s*static\s+(?!C_INT\s+core_product_session_manager_find)') {
     $failures += 'manager declares mutable static state'

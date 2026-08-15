@@ -56,7 +56,7 @@ int main(void)
     vm_platform_run_context_set_window_display(&session->platform_run_context,
         stage_uses_window(VM_PLATFORM_TEST_FAILURE_STAGE));
     vm_session_machine_provider_initialize(&machine_provider, session_manager);
-    vm_product_console_main(&console_context, &machine_provider, session_manager);
+    vm_product_console_main(&console_context, &machine_provider, session_manager, ".");
     fflush(STD_STDOUT);
     if (TEST_CONSOLE_DUP2(saved_stdout, TEST_CONSOLE_FILENO(STD_STDOUT)) < 0) goto done;
     TEST_CONSOLE_CLOSE(saved_stdout);

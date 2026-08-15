@@ -12,6 +12,7 @@ struct core_product_session_manager {
     core_product_session_provider provider;
     core_product_session_entry *entries;
     STD_SIZE_T count;
+    core_product_session_id next_id;
     core_product_session_id selected_id;
 };
 
@@ -36,8 +37,6 @@ type_status core_product_session_manager_create(
     core_product_session_manager **out_manager)
 {
     core_product_session_manager *manager;
-    type_status status;
-
     if (provider == STD_NULL || out_manager == STD_NULL ||
         provider->open == STD_NULL || provider->describe == STD_NULL ||
         provider->close == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
@@ -45,11 +44,6 @@ type_status core_product_session_manager_create(
     manager = (core_product_session_manager *)STD_CALLOC(1u, sizeof(*manager));
     if (manager == STD_NULL) return TYPE_STATUS_NO_MEMORY;
     manager->provider = *provider;
-    status = core_product_session_manager_open(manager, STD_NULL);
-    if (status != TYPE_STATUS_OK) {
-        STD_FREE(manager);
-        return status;
-    }
     *out_manager = manager;
     return TYPE_STATUS_OK;
 }
@@ -85,7 +79,7 @@ type_status core_product_session_manager_open_with_options(
     type_status status;
 
     if (manager == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
-    id = manager->count == 0u ? 0u : manager->entries[manager->count - 1u].id + 1u;
+    id = manager->next_id;
     status = manager->provider.open(manager->provider.context, id, options,
         &session);
     if (status != TYPE_STATUS_OK || session == STD_NULL) {
@@ -106,6 +100,7 @@ type_status core_product_session_manager_open_with_options(
     manager->entries[manager->count].id = id;
     manager->entries[manager->count].session = session;
     ++manager->count;
+    ++manager->next_id;
     if (manager->count == 1u) manager->selected_id = id;
     if (out_id != STD_NULL) *out_id = id;
     return TYPE_STATUS_OK;
@@ -118,8 +113,6 @@ type_status core_product_session_manager_close(
     type_status status;
 
     if (manager == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
-    /* A product-visible manager is never allowed to become empty. */
-    if (manager->count <= 1u) return TYPE_STATUS_INVALID_STATE;
     if (!core_product_session_manager_find(manager, id, &index)) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
@@ -131,7 +124,9 @@ type_status core_product_session_manager_close(
             (manager->count - index - 1u) * sizeof(*manager->entries));
     }
     --manager->count;
-    if (manager->selected_id == id) manager->selected_id = manager->entries[0].id;
+    if (manager->selected_id == id && manager->count != 0u) {
+        manager->selected_id = manager->entries[0].id;
+    }
     return TYPE_STATUS_OK;
 }
 
@@ -158,7 +153,7 @@ type_status core_product_session_manager_get_selected_id(
 type_status core_product_session_manager_get_count(
     const core_product_session_manager *manager, STD_SIZE_T *out_count)
 {
-    if (manager == STD_NULL || out_count == STD_NULL || manager->count == 0u) {
+    if (manager == STD_NULL || out_count == STD_NULL) {
         return TYPE_STATUS_INVALID_STATE;
     }
     *out_count = manager->count;

@@ -133,7 +133,7 @@ if(NOT project_t345_seen_count EQUAL project_t345_expected_count)
     message(FATAL_ERROR "T345 ownership matrix has ${project_t345_seen_count} rows; expected ${project_t345_expected_count}.")
 endif()
 if(NOT project_t345_owner_test_count EQUAL 138 OR
-        NOT project_t345_embedded_count EQUAL 6 OR
+        NOT project_t345_embedded_count EQUAL 7 OR
         NOT project_t345_type_count EQUAL 1)
     message(FATAL_ERROR
         "Unexpected T345 ownership counts: tests=${project_t345_owner_test_count}, embedded=${project_t345_embedded_count}, type=${project_t345_type_count}.")
@@ -144,14 +144,14 @@ endif()
 list(LENGTH project_t345_s3_entries project_t345_s3_entry_count)
 if(NOT project_t345_safe_production_count EQUAL 2 OR
         NOT project_t345_s3_entry_count EQUAL 3 OR
-        NOT project_t345_mixed_count EQUAL 48)
+        NOT project_t345_mixed_count EQUAL 49)
     message(FATAL_ERROR
         "Unexpected T345 S3 counts: safe=${project_t345_safe_production_count}, entries=${project_t345_s3_entry_count}, mixed=${project_t345_mixed_count}.")
 endif()
 list(LENGTH project_t345_expected_residual_keys project_t345_expected_residual_count)
 list(LENGTH project_t345_s4_residual_keys project_t345_s4_residual_count)
-if(NOT project_t345_expected_residual_count EQUAL 54 OR
-        NOT project_t345_s4_residual_count EQUAL 54)
+if(NOT project_t345_expected_residual_count EQUAL 56 OR
+        NOT project_t345_s4_residual_count EQUAL 56)
     message(FATAL_ERROR
         "Unexpected T345 S4 residual counts: expected=${project_t345_expected_residual_count}, actual=${project_t345_s4_residual_count}.")
 endif()

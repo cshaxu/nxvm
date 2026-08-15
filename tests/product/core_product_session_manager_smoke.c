@@ -47,16 +47,22 @@ C_INT main(C_VOID)
     STD_SIZE_T count;
 
     if (core_product_session_manager_create(&provider, &manager) != TYPE_STATUS_OK ||
-        core_product_session_manager_get_selected_id(manager, &id) != TYPE_STATUS_OK ||
-        id != 0u ||
+        core_product_session_manager_get_count(manager, &count) != TYPE_STATUS_OK ||
+        count != 0u ||
+        core_product_session_manager_get_selected_id(manager, &id) != TYPE_STATUS_INVALID_STATE ||
+        core_product_session_manager_open(manager, &id) != TYPE_STATUS_OK || id != 0u ||
+        core_product_session_manager_select(manager, 0u) != TYPE_STATUS_OK ||
+        core_product_session_manager_close(manager, 0u) != TYPE_STATUS_OK ||
+        core_product_session_manager_get_count(manager, &count) != TYPE_STATUS_OK ||
+        count != 0u ||
         core_product_session_manager_open(manager, &id) != TYPE_STATUS_OK || id != 1u ||
         core_product_session_manager_select(manager, 1u) != TYPE_STATUS_OK ||
         core_product_session_manager_close(manager, 1u) != TYPE_STATUS_OK ||
+        core_product_session_manager_open(manager, &id) != TYPE_STATUS_OK || id != 2u ||
         core_product_session_manager_get_selected_id(manager, &id) != TYPE_STATUS_OK ||
-        id != 0u ||
+        id != 2u ||
         core_product_session_manager_list(manager, &snapshot, 1u, &count) != TYPE_STATUS_OK ||
-        count != 1u || snapshot.id != 0u || !snapshot.selected ||
-        core_product_session_manager_close(manager, 0u) != TYPE_STATUS_INVALID_STATE) {
+        count != 1u || snapshot.id != 2u || !snapshot.selected) {
         core_product_session_manager_destroy(manager);
         return 1;
     }

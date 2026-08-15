@@ -100,12 +100,9 @@ static C_VOID doHelp(vm_product_console_context *context)
         else if (!STD_STRCMP(argArray[1], "session"))
         {
             STD_PRINTF("Manage VM sessions\n");
-            STD_PRINTF("\nSESSION LIST | OPEN [--profile <name>] [--cpu <model>] [--fpu <model>] | SELECT <id> | CLOSE [id]\n");
+            STD_PRINTF("\nSESSION LIST | OPEN | SELECT <id> | CLOSE [id]\n");
             STD_PRINTF("  list:   show sessions; * marks the selected session\n");
-            STD_PRINTF("  open:   show profile choices; press 1 or 2 (default: 1)\n");
-            STD_PRINTF("          profile: default-pc-at (1), ibm-5170-model-339 (2)\n");
-            STD_PRINTF("          --cpu/--fpu apply only to default-pc-at\n");
-            STD_PRINTF("          cpu: 8086, 80186, 80286, 80386; fpu: none\n");
+            STD_PRINTF("  open:   show the startup-frozen YAML profile file names\n");
             STD_PRINTF("  select: choose the session for machine commands\n");
             STD_PRINTF("  close:  destroy one stopped session; the final session stays\n");
             break;
@@ -130,33 +127,10 @@ static C_VOID doHelp(vm_product_console_context *context)
             STD_PRINTF("  stop:  close output file to finish recording\n");
             break;
         }
-        else if (!STD_STRCMP(argArray[1], "set"))
+        else if (!STD_STRCMP(argArray[1], "floppy"))
         {
-            STD_PRINTF("Change BIOS settings\n");
-            STD_PRINTF("\nSET <item> <value>\n");
-            STD_PRINTF("  available items and values\n");
-            STD_PRINTF("  boot   fdd, hdd\n");
-            break;
-        }
-        else if (!STD_STRCMP(argArray[1], "device"))
-        {
-            STD_PRINTF("Change VM devices\n");
-            STD_PRINTF("\nDEVICE ram <size>\n");
-            STD_PRINTF("  change memory size (KB)\n");
-            STD_PRINTF("\nDEVICE display console | window | auto\n");
-            STD_PRINTF("  change display type\n");
-            STD_PRINTF("\nDEVICE fdd create | (insert <file>) | (remove <file>)\n");
-            STD_PRINTF("  change floppy drive status:\n");
-            STD_PRINTF("  create: discard current floppy image\n");
-            STD_PRINTF("          and create a new one\n");
-            STD_PRINTF("  insert: load floppy image from file\n");
-            STD_PRINTF("  remove: remove floppy image and dump to file\n");
-            STD_PRINTF("\nDEVICE hdd (create [cyl <num>]) | (connect <file>) | (disconnect <file>)\n");
-            STD_PRINTF("  change hard disk drive status:\n");
-            STD_PRINTF("  create:     discard current hard disk image\n");
-            STD_PRINTF("              and create a new one of n cyls\n");
-            STD_PRINTF("  connect:    load hard disk image from file\n");
-            STD_PRINTF("  disconnect: remove hard disk image and dump to file\n");
+            STD_PRINTF("Change removable floppy media while stopped\n");
+            STD_PRINTF("\nFLOPPY INSERT <image> | EJECT\n");
             break;
         }
         else if (!STD_STRCMP(argArray[1], "start"))
@@ -195,8 +169,7 @@ static C_VOID doHelp(vm_product_console_context *context)
         STD_PRINTF("DEBUG   Launch hardware debugger\n");
         STD_PRINTF("RECORD  Record cpu status for each instruction\n");
         STD_PRINTF("\n");
-        STD_PRINTF("SET     Change BIOS settings\n");
-        STD_PRINTF("DEVICE  Change hardware parts\n");
+        STD_PRINTF("FLOPPY  Insert or eject removable floppy media\n");
         STD_PRINTF("\n");
         STD_PRINTF("START   Start virtual machine\n");
         STD_PRINTF("RESET   Reset virtual machine\n");
@@ -351,8 +324,31 @@ static C_VOID doSet(vm_product_console_context *context)
 }
 
 /* Set hardware connections */
-static C_VOID doDevice(vm_product_console_context *context)
+static C_VOID doFloppy(vm_product_console_context *context)
 {
+    if (numArgs == 3u && !STD_STRCMP(argArray[1], "insert")) {
+        if (machineProvider->is_running(machineProvider->context)) {
+            STD_PRINTF("Cannot change floppy media now.\n");
+        } else if (machineProvider->insert_fdd(machineProvider->context, argArray[2])) {
+            STD_PRINTF("Cannot read floppy disk from '%s'.\n", argArray[2]);
+        } else {
+            STD_PRINTF("Floppy disk inserted.\n");
+        }
+        return;
+    }
+    if (numArgs == 2u && !STD_STRCMP(argArray[1], "eject")) {
+        if (machineProvider->is_running(machineProvider->context)) {
+            STD_PRINTF("Cannot change floppy media now.\n");
+        } else if (machineProvider->remove_fdd(machineProvider->context, STD_NULL)) {
+            STD_PRINTF("Cannot eject floppy disk.\n");
+        } else {
+            STD_PRINTF("Floppy disk ejected.\n");
+        }
+        return;
+    }
+    STD_PRINTF("Usage: FLOPPY INSERT <image> | EJECT\n");
+    return;
+
     if (numArgs < 2)
     {
         GetHelp;
@@ -522,80 +518,158 @@ static C_VOID doTest(vm_product_console_context *context)
     machineProvider->debug(machineProvider->context);
 }
 
-static C_VOID vm_product_console_write_line(C_VOID *opaque, const C_CHAR *line)
-{
-    (C_VOID) opaque;
-    STD_PRINTF("%s\n", line);
-}
-
-static const C_CHAR *vm_product_console_choose_profile(C_VOID)
+static const vm_product_session_catalog_entry *vm_product_console_choose_profile(
+    const vm_product_console_context *context)
 {
     C_CHAR selection[32];
-    C_CHAR *cursor = selection;
-    C_CHAR choice;
+    STD_SIZE_T index;
+    C_INT choice;
 
-    STD_PRINTF("Available session profiles:\n");
-    STD_PRINTF("  1. default-pc-at       Configurable generic PC/AT (default)\n");
-    STD_PRINTF("  2. ibm-5170-model-339 IBM PC/AT 5170 Model 339/Type 3\n");
-    STD_PRINTF("Select profile [1]: ");
-    if (!vm_product_console_read_line(selection, sizeof(selection))) return STD_NULL;
-    while (*cursor != '\0' && STD_ISSPACE((C_UCHAR)*cursor)) ++cursor;
-    if (*cursor == '\0') return "default-pc-at";
-    choice = *cursor++;
-    while (*cursor != '\0' && STD_ISSPACE((C_UCHAR)*cursor)) ++cursor;
-    if (*cursor != '\0') {
-        STD_PRINTF("Unknown profile selection.\n");
+    if (context == STD_NULL || context->catalog.count == 0u) {
+        STD_PRINTF("No session configuration files found.\n");
         return STD_NULL;
     }
-    if (choice == '1') return "default-pc-at";
-    if (choice == '2') return "ibm-5170-model-339";
+    STD_PRINTF("Available session profiles:\n");
+    for (index = 0u; index < context->catalog.count; ++index) {
+        STD_PRINTF("  %u  %s\n", (unsigned int)(index + 1u),
+            context->catalog.entries[index].file_name);
+    }
+    STD_PRINTF("Select profile [1-%u, Enter to cancel]: ",
+        (unsigned int)context->catalog.count);
+    if (!vm_product_console_read_line(selection, sizeof(selection))) return STD_NULL;
+    if (selection[0] == '\n' || selection[0] == '\r' || selection[0] == '\0') return STD_NULL;
+    choice = STD_ATOI(selection);
+    if (choice > 0 && (STD_SIZE_T)choice <= context->catalog.count) {
+        return vm_product_session_catalog_get(&context->catalog,
+            (STD_SIZE_T)(choice - 1));
+    }
     STD_PRINTF("Unknown profile selection.\n");
     return STD_NULL;
 }
 
 static C_VOID vm_product_console_open_profile(vm_product_console_context *context)
 {
-    const C_CHAR *profile = vm_product_console_choose_profile();
+    const vm_product_session_catalog_entry *entry = vm_product_console_choose_profile(context);
     C_CHAR option[] = "--profile";
-    C_CHAR *arguments[] = { "session", "open", option, (C_CHAR *)profile };
-    const core_product_session_output_provider output = {
-        vm_product_console_write_line, STD_NULL};
+    C_CHAR option_fdd[] = "--fdd";
+    C_CHAR option_hdd[] = "--hdd";
+    C_CHAR option_boot[] = "--boot";
+    C_CHAR option_display[] = "--display";
+    C_CHAR option_cpu[] = "--cpu";
+    C_CHAR option_fpu[] = "--fpu";
+    C_CHAR option_memory[] = "--memory-kib";
+    C_CHAR memory[32];
+    C_CHAR *arguments[] = { option, STD_NULL,
+        option_fdd, STD_NULL, option_hdd, STD_NULL, option_boot, STD_NULL,
+        option_display, STD_NULL, STD_NULL, STD_NULL, STD_NULL, STD_NULL,
+        STD_NULL, STD_NULL };
+    core_product_session_id id;
+    type_status status;
+    C_INT argument_count = 10;
 
-    if (profile == STD_NULL) return;
-    if (context == STD_NULL) return;
-    (C_VOID)core_product_session_command_execute(context->session_manager, 4, arguments,
-        &output);
+    if (entry == STD_NULL || context == STD_NULL) return;
+    arguments[1] = (C_CHAR *)entry->profile;
+    arguments[3] = (C_CHAR *)(entry->floppy[0] ? entry->floppy : "null");
+    arguments[5] = (C_CHAR *)(entry->hard_disk[0] ? entry->hard_disk : "null");
+    arguments[7] = (C_CHAR *)entry->boot;
+    arguments[9] = (C_CHAR *)entry->display;
+    if (!STD_STRCMP(entry->profile, "default-pc-at")) {
+        arguments[argument_count++] = option_cpu;
+        arguments[argument_count++] = (C_CHAR *)(entry->cpu[0] ? entry->cpu : "80386");
+        arguments[argument_count++] = option_fpu;
+        arguments[argument_count++] = (C_CHAR *)(entry->fpu[0] ? entry->fpu : "none");
+        if (entry->memory_kib != 0u) {
+            if (STD_SNPRINTF(memory, sizeof(memory), "%u", (unsigned int)entry->memory_kib) < 0) return;
+            arguments[argument_count++] = option_memory;
+            arguments[argument_count++] = memory;
+        }
+    }
+    status = core_product_session_manager_open_with_options(context->session_manager,
+        &(core_product_session_open_options){ argument_count, arguments }, &id);
+    if (status != TYPE_STATUS_OK || core_product_session_manager_select(
+            context->session_manager, id) != TYPE_STATUS_OK) {
+        STD_PRINTF("Unable to open session.\n");
+        return;
+    }
+    machineProvider->set_display_mode(machineProvider->context,
+        !STD_STRCMP(entry->display, "window") ? VM_PRODUCT_CONSOLE_DISPLAY_WINDOW :
+        !STD_STRCMP(entry->display, "auto") ? VM_PRODUCT_CONSOLE_DISPLAY_AUTO :
+        VM_PRODUCT_CONSOLE_DISPLAY_CONSOLE);
+    STD_PRINTF("Opened and selected session %u.\n", (unsigned int)id);
+}
+
+static C_VOID vm_product_console_session(vm_product_console_context *context)
+{
+    core_product_session_id id;
+    STD_SIZE_T count;
+
+    if (context == STD_NULL || numArgs < 2u) { GetHelp; }
+    if (!STD_STRCMP(argArray[1], "open") && numArgs == 2u) {
+        vm_product_console_open_profile(context);
+        return;
+    }
+    if (!STD_STRCMP(argArray[1], "list") && numArgs == 2u) {
+        core_product_session_snapshot *snapshots;
+        STD_SIZE_T index;
+        if (core_product_session_manager_get_count(sessionManager, &count) != TYPE_STATUS_OK) return;
+        if (count == 0u) { STD_PRINTF("No sessions open.\n"); return; }
+        snapshots = (core_product_session_snapshot *)STD_CALLOC(count, sizeof(*snapshots));
+        if (snapshots == STD_NULL || core_product_session_manager_list(sessionManager,
+                snapshots, count, &count) != TYPE_STATUS_OK) { STD_FREE(snapshots); return; }
+        for (index = 0u; index < count; ++index) {
+            STD_PRINTF("%c %u %s\n", snapshots[index].selected ? '*' : ' ',
+                (unsigned int)snapshots[index].id, snapshots[index].details);
+        }
+        STD_FREE(snapshots);
+        return;
+    }
+    if (!STD_STRCMP(argArray[1], "select") && numArgs == 3u) {
+        C_INT parsed = STD_ATOI(argArray[2]);
+        if (parsed < 0 || core_product_session_manager_select(sessionManager,
+                (core_product_session_id)parsed) != TYPE_STATUS_OK) {
+            STD_PRINTF("Unknown session.\n");
+        } else STD_PRINTF("Selected session %u.\n", (unsigned int)parsed);
+        return;
+    }
+    if (!STD_STRCMP(argArray[1], "close") && (numArgs == 2u || numArgs == 3u)) {
+        if (numArgs == 2u) {
+            if (core_product_session_manager_get_selected_id(sessionManager, &id) != TYPE_STATUS_OK) {
+                STD_PRINTF("No session selected. Use SESSION OPEN.\n"); return;
+            }
+        } else {
+            C_INT parsed = STD_ATOI(argArray[2]);
+            if (parsed < 0) { STD_PRINTF("Unknown session.\n"); return; }
+            id = (core_product_session_id)parsed;
+        }
+        if (core_product_session_manager_close(sessionManager, id) != TYPE_STATUS_OK) {
+            STD_PRINTF("Unknown session.\n");
+        } else STD_PRINTF("Closed session %u.\n", (unsigned int)id);
+        return;
+    }
+    STD_PRINTF("Usage: SESSION LIST | OPEN | SELECT <id> | CLOSE [id]\n");
 }
 
 /* Executes commands */
 static C_VOID execute(vm_product_console_context *context)
 {
+    core_product_session_id selected;
     if (!argArray[0] || !STD_STRLEN(argArray[0]))
     {
         return;
     }
     else if (!STD_STRCMP(argArray[0], "session"))
     {
-        const core_product_session_output_provider output = {
-            vm_product_console_write_line, STD_NULL};
-        if (numArgs == 2u && !STD_STRCMP(argArray[1], "open")) {
-            vm_product_console_open_profile(context);
-        } else {
-            (C_VOID)core_product_session_command_execute(sessionManager,
-                (C_INT)numArgs, argArray, &output);
-        }
+        vm_product_console_session(context);
     }
-    else if (!STD_STRCMP(argArray[0], "test"))
+    else if (!STD_STRCMP(argArray[0], "help") || !STD_STRCMP(argArray[0], "exit"))
     {
-        doTest(context);
+        if (!STD_STRCMP(argArray[0], "help")) doHelp(context);
+        else doExit(context);
     }
-    else if (!STD_STRCMP(argArray[0], "help"))
+    else if (core_product_session_manager_get_selected_id(sessionManager, &selected) !=
+        TYPE_STATUS_OK)
     {
-        doHelp(context);
-    }
-    else if (!STD_STRCMP(argArray[0], "exit"))
-    {
-        doExit(context);
+        STD_PRINTF("No session selected. Use SESSION OPEN.\n");
     }
     else if (!STD_STRCMP(argArray[0], "info"))
     {
@@ -609,27 +683,9 @@ static C_VOID execute(vm_product_console_context *context)
     {
         doRecord(context);
     }
-    else if (!STD_STRCMP(argArray[0], "set"))
+    else if (!STD_STRCMP(argArray[0], "floppy"))
     {
-        doSet(context);
-    }
-    else if (!STD_STRCMP(argArray[0], "device"))
-    {
-        doDevice(context);
-    }
-    else if (!STD_STRCMP(argArray[0], "mode"))
-    {
-        if (!machineProvider->is_running(machineProvider->context))
-        {
-            vm_product_console_display_mode mode = machineProvider->get_display_mode(
-                machineProvider->context);
-            machineProvider->set_display_mode(machineProvider->context,
-                mode == VM_PRODUCT_CONSOLE_DISPLAY_CONSOLE ?
-                VM_PRODUCT_CONSOLE_DISPLAY_WINDOW :
-                mode == VM_PRODUCT_CONSOLE_DISPLAY_WINDOW ?
-                VM_PRODUCT_CONSOLE_DISPLAY_AUTO :
-                VM_PRODUCT_CONSOLE_DISPLAY_CONSOLE);
-        }
+        doFloppy(context);
     }
     else if (!STD_STRCMP(argArray[0], "start"))
     {
@@ -661,11 +717,13 @@ static C_VOID execute(vm_product_console_context *context)
 }
 
 /* Initializes console */
-static C_INT vm_product_console_initialize(vm_product_console_context *context)
+static C_INT vm_product_console_initialize(vm_product_console_context *context,
+    const C_CHAR *profile_directory)
 {
     argArray = (C_CHAR **)STD_MALLOC(CONSOLE_MAXNARG * sizeof(C_CHAR *));
     if (argArray == STD_NULL) return TYPE_FALSE;
     flagExit = 0;
+    vm_product_session_catalog_initialize(&context->catalog, profile_directory);
     return TYPE_TRUE;
 }
 
@@ -689,7 +747,8 @@ C_VOID vm_product_console_context_initialize(
 
 C_VOID vm_product_console_main(vm_product_console_context *context,
                                const vm_product_console_machine_provider *machine_provider,
-                               core_product_session_manager *session_manager)
+                               core_product_session_manager *session_manager,
+                               const C_CHAR *profile_directory)
 {
     if (context == STD_NULL || machine_provider == STD_NULL ||
         session_manager == STD_NULL)
@@ -697,8 +756,9 @@ C_VOID vm_product_console_main(vm_product_console_context *context,
     vm_product_console_context_initialize(context);
     machineProvider = machine_provider;
     sessionManager = session_manager;
-    if (!vm_product_console_initialize(context)) return;
-    STD_PRINTF("\nPlease enter 'HELP' for information.\n\n");
+    if (!vm_product_console_initialize(context, profile_directory)) return;
+    STD_PRINTF("\nType HELP for help.\n\n");
+    vm_product_console_open_profile(context);
     while (!flagExit)
     {
         STD_PRINTF("Console> ");

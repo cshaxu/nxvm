@@ -116,6 +116,9 @@ add_executable(vm-product-console-lifecycle-smoke
     tests/products/nxvm_console_lifecycle_smoke.c)
 target_link_libraries(vm-product-console-lifecycle-smoke PRIVATE
     vm-product vm-composition)
+add_executable(vm-product-session-catalog-smoke
+    tests/products/nxvm_session_catalog_smoke.c)
+target_link_libraries(vm-product-session-catalog-smoke PRIVATE vm-product)
 add_executable(vm-product-session-smoke tests/products/nxvm_session_smoke.c)
 target_link_libraries(vm-product-session-smoke PRIVATE vm-composition)
 add_executable(vm-session-initialization-atomicity-smoke
@@ -877,6 +880,7 @@ set(VM_RUNTIME_SOURCES
 
 set(VM_PRODUCT_SOURCES
     src/vm/product/console.c
+    src/vm/product/session_catalog.c
 )
 set(CORE_PRODUCT_DEBUG_SOURCES
     src/core/product/debug/debug_access.c
@@ -1089,6 +1093,7 @@ target_link_libraries(core-product-debug-input-failure-smoke PRIVATE
 add_executable(vm-product-console-input-failure-smoke
     tests/product/vm_product_console_input_failure_smoke.c
     src/vm/product/console.c
+    src/vm/product/session_catalog.c
 )
 target_include_directories(vm-product-console-input-failure-smoke PRIVATE
     "${CMAKE_SOURCE_DIR}/src"
@@ -2512,8 +2517,8 @@ function(add_current_vm_artifact target version)
             "${CMAKE_SOURCE_DIR}/build/output/${task_artifact_filename}")
 endfunction()
 
-set(PROJECT_CURRENT_VM_ARTIFACT_TARGET vm-0-5-0380)
-add_current_vm_artifact(vm-0-5-0380 "0.5.0380")
+set(PROJECT_CURRENT_VM_ARTIFACT_TARGET vm-0-5-0381)
+add_current_vm_artifact(vm-0-5-0381 "0.5.0381")
 option(PROJECT_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
 
@@ -3137,7 +3142,9 @@ set(PROJECT_T345_S4_RESIDUAL_DIRECT_ENTRIES
     "core-product-debug-input-failure-smoke|src/core/product/debug/debug.c|debug-input-failure"
     "core-product-debug-input-failure-smoke|src/core/product/debug/debug_access.c|debug-input-failure"
     "vm-product-console-input-failure-smoke|src/vm/product/console.c|console-input-failure"
+    "vm-product-console-input-failure-smoke|src/vm/product/session_catalog.c|console-input-failure"
     "vm-product|src/vm/product/console.c|console-product"
+    "vm-product|src/vm/product/session_catalog.c|console-product"
     "vm-platform|src/vm/platform/platform.c|win32-platform"
     "vm-platform|src/vm/platform/host_surface.c|win32-platform"
     "vm-platform|src/vm/platform/execution.c|win32-platform"

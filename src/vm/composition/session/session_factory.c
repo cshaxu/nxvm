@@ -79,6 +79,30 @@ static type_status vm_session_provider_parse_options(
             if (!vm_session_provider_parse_fpu(options->arguments[index + 1],
                     &config->fpu_profile)) return TYPE_STATUS_INVALID_ARGUMENT;
             has_generic_override = 1;
+        } else if (!STD_STRCMP(options->arguments[index], "--fdd")) {
+            config->fdd_image = !STD_STRCMP(options->arguments[index + 1], "null") ?
+                STD_NULL : options->arguments[index + 1];
+        } else if (!STD_STRCMP(options->arguments[index], "--hdd")) {
+            config->hdd_image = !STD_STRCMP(options->arguments[index + 1], "null") ?
+                STD_NULL : options->arguments[index + 1];
+        } else if (!STD_STRCMP(options->arguments[index], "--boot")) {
+            if (!STD_STRCMP(options->arguments[index + 1], "hard_disk")) {
+                config->boot_hdd = 1;
+            } else if (STD_STRCMP(options->arguments[index + 1], "floppy") &&
+                STD_STRCMP(options->arguments[index + 1], "rom")) {
+                return TYPE_STATUS_INVALID_ARGUMENT;
+            }
+        } else if (!STD_STRCMP(options->arguments[index], "--display")) {
+            if (STD_STRCMP(options->arguments[index + 1], "console") &&
+                STD_STRCMP(options->arguments[index + 1], "window") &&
+                STD_STRCMP(options->arguments[index + 1], "auto")) {
+                return TYPE_STATUS_INVALID_ARGUMENT;
+            }
+        } else if (!STD_STRCMP(options->arguments[index], "--memory-kib")) {
+            STD_SIZE_T kib = (STD_SIZE_T)STD_ATOI(options->arguments[index + 1]);
+            if (kib == 0u) return TYPE_STATUS_INVALID_ARGUMENT;
+            config->memory_bytes = kib << 10;
+            has_generic_override = 1;
         } else {
             return TYPE_STATUS_INVALID_ARGUMENT;
         }
