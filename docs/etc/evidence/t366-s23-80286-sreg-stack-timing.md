@@ -21,3 +21,7 @@ The focused timing and legacy semantic targets emitted
 `M5:T357:S6:80286-INSTRUCTION-TIMING-LEDGER:OK` and
 `M5:T316:S46:LEGACY-SREG-STACK:OK`. The configured `run-current-smokes` gate,
 documentation governance and `git diff --check` passed before P1.
+
+Coordinator review of P1 `46190502` confirms the new private branch is reached
+only after successful refresh, remains below all higher source owners, and does
+not alter the segment-stack handlers or their POP-SS shadow/fault contracts.
