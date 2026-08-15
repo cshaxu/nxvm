@@ -38,10 +38,14 @@ topology smoke asserts that EGA port/configuration paths are unavailable. AUX
 is a generic descriptor route and remains current-product work. IBM MFM/ST-506
 is neither descriptor nor core owner and remains the explicit TODO admission.
 
-## Focused Existing-Binary Replay
+## Focused Fresh Build And Replay
 
-The repository's existing `build/mingw-gcc-x64` binaries were replayed without
-media insertion or mutation. They reported success for:
+The PowerShell and direct Git-Bash command paths do not expose a `cmake`
+executable, but the existing `build/mingw-gcc-x64` Ninja build tree has a
+registered MinGW compiler command. Through Git Bash, the selected ten test
+targets were cleaned with Ninja and then rebuilt from source (111 reported
+build steps) before replay. No guest media was inserted or mutated. The fresh
+targets reported success for:
 
 ```text
 M5:T366:S5:MODEL339-COMPOSITION:OK
@@ -57,9 +61,10 @@ M5:T350:S3:RTC-CMOS:OK
 M5:T366:S4:PLANAR-MEMORY-PARITY:OK
 ```
 
-`cmake` is not on this shell's command path, so these are replay results of
-existing binaries rather than a fresh build proof. They are adequate for the
-inventory only and do not certify subsequent source changes.
+This is a focused fresh-build proof for the listed owner boundaries, not a
+full-suite, external-ROM, guest-media, timing, or L3 proof. Future source
+repairs must rebuild their changed targets and add their own focused
+regressions.
 
 ## Next Repair Boundary
 
