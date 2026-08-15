@@ -2,6 +2,27 @@
 
 ## Current Work
 
+## M5 T374 S13 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; T374 S12 is accepted and remains the sole compact progress row. |
+| Admission And Approval | The owner approved continuing selected-machine functional closure before timing/L3; S11/S12 establish retained CGA port direction and transfer full 6845 geometry/state work. |
+| Objective | Audit all IBM CGA 6845 register indices, writable masks, reset values, mode tables and observable geometry/state consumers against VADP; select one bounded non-timing repair or exact transfer. |
+| Non-goals | No raster/scanline timing, CRTC-derived physical cadence, composite, EGA/VGA change, ROM/media use, generic 6845 abstraction, or Model-339 L3 claim. No code change occurs in this audit. |
+| Reference Baseline | Accepted T374 S11/S12 evidence; IBM PC Technical Reference Color/Graphics Adapter 6845 table; VADP CRTC/reset/snapshot routes; generated text firmware and retained CGA tests. |
+| Candidate Proposal | [IBM PC/AT 5170 selected-device functional closure](../proposals/m5-5170-selected-device-functional-closure.md). |
+| Files And ABI Surface | Evidence/history/index/status only; read-only VADP, display snapshot, firmware, profile composition and CGA tests. A later repair names exact source/ABI/test surfaces. |
+| Applicable Rules | Task Reading Set; execution lifecycle/evidence/similar-issue rules; documentation rules; contributing; source policy. Architecture/coding rules apply to later implementation, not this audit. |
+| Verification | Produce index/mask/reset/mode/consumer matrix; sweep all CRTC index checks, masks, writes, reset values, snapshot fields, profile/firmware callers and tests; run unchanged focused CGA/Model-339 targets plus documentation governance and diff check. |
+| Expected Markers | Every 6845 index is classified implemented, inert, missing, hardware-timing-only or excluded with one owner/consumer disposition; exactly one repair or explicit transfer is selected without inventing timing. |
+| Asset Needs | None. Documentation is read only; no ROM, firmware, guest media, external code or local asset is opened, copied, written or committed. |
+| Reporting Requirements | Report primary-source matrix, full sweep, selected receiver, unchanged focused baseline, pushed P1 and coordinator acceptance. |
+| Stop Conditions | Stop and transfer if a register's effect cannot be separated from physical timing, requires undocumented hardware inference, changes snapshot ABI broadly, or needs a vendor ROM/media input. |
+| Exit Criteria | Indexed evidence covers all selected 6845 register/mode surfaces and chooses one bounded repair or transfer; checks pass; no code/timing/L3 claim is introduced. |
+| Original Owner Request | Fully implement selected-machine functional gaps before timing/L3, use primary references first and preserve external assets outside Git. |
+| Similar-Issue Sweep | Search all tracked CRTC index/mask/reset/mode/snapshot/firmware/profile/test routes so no implemented or omitted register behavior is silently outside the matrix. |
+
 ## Current Technical Baseline
 
 - **Current developer artifact:** T369 S4 `vm-0-5-0369` /

@@ -211,6 +211,7 @@ principal documents named in [docs/README.md](../README.md).
 | `evidence/t374-s10-raw-img-address-mark-boundary.md` | Verification owner | T374 S10 owner-selected raw-IMG-only floppy boundary, complete persistence lifecycle sweep, and explicit deferred 765 Deleted/Control-Mark plus independently deferred Scan command work. Retain with T374 history while the task is open. |
 | `evidence/t374-s11-model339-cga-functional-audit.md` | Verification owner | T374 S11 selected digital-CGA port/mode/snapshot/consumer audit and bounded write-only port-read repair selection. Retain with T374 history while the task is open. |
 | `evidence/t374-s12-cga-write-only-port-repair.md` | Verification owner | T374 S12 selected CGA write-only port-direction correction, EGA preservation, caller sweep and focused proof. Retain with T374 history while the task is open. |
+| `evidence/t374-s13-cga-6845-register-audit.md` | Verification owner | T374 S13 IBM/Motorola CGA 6845 register matrix, selected cursor/start proof and geometry/light-pen transfer boundary. Retain with T374 history while the task is open. |
 | `operations/` | Execution, source, and release owners | Toolchain, policy, templates, release procedure, and closure material. |
 | `research/` | Source owner | Provenance, external references, and non-product research. |
 | `history/` | Documentation owner | Read-only legacy and M5 migration/roadmap evidence. |

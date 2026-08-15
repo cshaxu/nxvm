@@ -113,3 +113,10 @@ removes invalid Model-339 reads of CGA `3D4h`, `3D8h` and `3D9h`, retains
 permitted `3D5h`/`3DAh` behavior, and preserves the unrelated EGA Mode/Color
 read route through EGA-only registration. Full 6845 and timing work remains
 open.
+
+### S13: CGA 6845 register audit
+
+S13's [6845 register audit](../etc/evidence/t374-s13-cga-6845-register-audit.md)
+classifies every CGA CRTC register: retained cursor/start routes are present,
+geometry/sync registers transfer to display timing, and light pen remains an
+unselected input path. It selects no synthetic register repair.
