@@ -2,10 +2,26 @@
 
 ## Current Work
 
-T368 remains open. S4 is accepted: residual paths are finite -- 80286 system
-forms, legal prefix contexts, and x87/WAIT/default/negative boundaries. S5
-receives system forms; S6 receives legal prefixes; S7 receives default and
-whole-ledger closure. No bus, device or 5170 L3 work is closed.
+## M5 T368 S5 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; T368 S4 accepted at `c7d27e46`. |
+| Admission And Approval | The owner authorized continued L3 work; S4 isolates five residual successful 80286 system families. |
+| Objective | Reconcile Intel-source timing and actual successful contexts for 80286 `LLDT/LTR`, `SGDT/SIDT`, `LGDT/LIDT`, and `CLTS`, then allocate only proven rows through the sole publisher. |
+| Non-goals | No allocation for privilege/fault/task delivery, no prefix/default work, no bus/device/physical-time work, profile/topology change or 5170 L3 claim. |
+| Reference Baseline | `c7d27e46`, [S4 reachability](../etc/evidence/t368-s4-80286-prefix-default-reachability.md), Intel 210498-005 Appendix B, existing T318/T319/T339 semantic evidence and source policy. |
+| Candidate Proposal | [80286 successful-retirement timing closure](../proposals/m5-80286-retirement-timing-closure.md). |
+| Files And ABI Surface | Existing 80286 classifier, focused system-form ledger tests and evidence/status/history only; no public ABI. |
+| Applicable Rules | Execution continuation/evidence; Intel authority first; one shared publisher; no invented fault timing; exact transfer records. |
+| Verification | Focused timing ledger plus relevant table/control/selector regressions; static publisher check, documentation governance and diff check. |
+| Expected Markers | Every admitted value names its Appendix-B form/context and a successful real or protected CPL0 execution; rejected or delivered forms publish no tick. |
+| Asset Needs | No guest media, ROM, binary or imported source. |
+| Reporting Requirements | Record exact manual context, memory/register constraints, mode/CPL semantics and every unresolved row. |
+| Stop Conditions | Stop and transfer a form if the available Intel authority cannot determine the successful context without unapproved model research. |
+| Exit Criteria | Pushed P1/P2 reconciles all five families or leaves a precise non-scalar receiver; prefix/default and L3 work remain explicitly open. |
+| Original Owner Request | Continue comprehensive L3 execution before Windows 3.1, following the Queue dependency chain. |
+| Similar-Issue Sweep | Sweep `INS_0F_00`, `INS_0F_01`, `INS_0F_06`, table/selector helpers, profile guards, timing classifier and the semantic regressions. |
 
 ## Current Technical Baseline
 

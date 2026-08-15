@@ -2652,6 +2652,30 @@ static C_INT core_machine_80286_source_instruction_cost(core_machine *machine,
     case 0x0fu:
         if (prefixes + 2u < data->oplen &&
             data->opcodes[prefixes + 1u] == 0x00u &&
+            (((data->opcodes[prefixes + 2u] >> 3u) & 7u) == 2u ||
+             ((data->opcodes[prefixes + 2u] >> 3u) & 7u) == 3u) &&
+            core_machine_control_stack_is_protected(data) &&
+            data->oldcpu.data.cs.dpl == 0u) {
+            *out_ticks = data->flagMem ? 19u : 17u;
+            return 1;
+        }
+        if (prefixes + 2u < data->oplen &&
+            data->opcodes[prefixes + 1u] == 0x01u && data->flagMem &&
+            (((data->opcodes[prefixes + 2u] >> 3u) & 7u) <= 3u) &&
+            (!core_machine_control_stack_is_protected(data) ||
+             data->oldcpu.data.cs.dpl == 0u)) {
+            *out_ticks = ((data->opcodes[prefixes + 2u] >> 3u) & 7u) == 0u ||
+                ((data->opcodes[prefixes + 2u] >> 3u) & 7u) == 2u ? 11u : 12u;
+            return 1;
+        }
+        if (prefixes + 1u < data->oplen && data->opcodes[prefixes + 1u] == 0x06u &&
+            (!core_machine_control_stack_is_protected(data) ||
+             data->oldcpu.data.cs.dpl == 0u)) {
+            *out_ticks = 2u;
+            return 1;
+        }
+        if (prefixes + 2u < data->oplen &&
+            data->opcodes[prefixes + 1u] == 0x00u &&
             ((((data->opcodes[prefixes + 2u] >> 3u) & 7u) == 4u) ||
              (((data->opcodes[prefixes + 2u] >> 3u) & 7u) == 5u)) &&
             core_machine_control_stack_is_protected(data)) {

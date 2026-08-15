@@ -235,6 +235,40 @@ static C_INT timing_80286_boot_protected(core_machine *machine,
         ((machine->elapsed_ticks = 0u), (state->advanced_ticks = 0u), 1);
 }
 
+static C_INT timing_80286_boot_protected_system(core_machine *machine,
+    timing_80286_state *state)
+{
+    static const type_unsigned_8 gdt_pointer[] = { 0x37u, 0u, 0u, 0x03u, 0u, 0u };
+    static const type_unsigned_8 gdt[] = {
+        0,0,0,0,0,0,0,0, 0xffu,0xffu,0,0x20u,0,0x9au,0,0,
+        0xffu,0xffu,0,0x30u,0,0x92u,0,0,
+        0xffu,0xffu,0,0x30u,0,0x12u,0,0,
+        0xffu,0xffu,0,0x30u,0,0x98u,0,0,
+        0x0fu,0,0,0x50u,0,0x82u,0,0,
+        0xffu,0xffu,0,0,0,0x89u,0,0
+    };
+    static const type_unsigned_8 boot[] = {
+        0x0fu,0x01u,0x16u,0x00u,0x01u, 0xb8u,0x01u,0u,
+        0x0fu,0x01u,0xf0u, 0xb8u,0x10u,0u, 0x8eu,0xd0u,
+        0x8eu,0xd8u, 0xeau,0u,0u,0x08u,0u
+    };
+    static const type_unsigned_8 halt[] = { 0xf4u };
+    core_machine_run_result result;
+
+    machine->executor_cpu.data.cr0 = 0u;
+    return test_core_machine_fixture_reset_real_mode(machine) &&
+        core_machine_memory_write(machine, 0x100u, gdt_pointer,
+            sizeof(gdt_pointer)) == TYPE_STATUS_OK &&
+        core_machine_memory_write(machine, 0x300u, gdt, sizeof(gdt)) ==
+            TYPE_STATUS_OK && core_machine_memory_write(machine, 0u, boot,
+            sizeof(boot)) == TYPE_STATUS_OK &&
+        core_machine_memory_write(machine, 0x2000u, halt, sizeof(halt)) ==
+            TYPE_STATUS_OK && core_machine_run(machine,
+            (core_machine_run_budget){64u, 0u}, &result) == TYPE_STATUS_OK &&
+        result.reason == CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT &&
+        ((machine->elapsed_ticks = 0u), (state->advanced_ticks = 0u), 1);
+}
+
 static C_INT timing_80286_sreg_load_protected(C_VOID)
 {
     static const type_unsigned_8 direct[] = { 0x8eu, 0xd8u };
@@ -785,6 +819,86 @@ static C_INT timing_80286_lmsw(C_VOID)
     return failed;
 }
 
+static C_INT timing_80286_table_control(C_VOID)
+{
+    static const type_unsigned_8 sgdt[] = { 0x0fu,0x01u,0x06u,0x00u,0x10u };
+    static const type_unsigned_8 sidt[] = { 0x0fu,0x01u,0x0eu,0x00u,0x10u };
+    static const type_unsigned_8 lgdt[] = { 0x0fu,0x01u,0x16u,0x00u,0x10u };
+    static const type_unsigned_8 lidt[] = { 0x0fu,0x01u,0x1eu,0x00u,0x10u };
+    static const type_unsigned_8 clts[] = { 0x0fu,0x06u };
+    static const type_unsigned_8 table[] = { 0x57u,0x13u,0x00u,0x34u,0x12u,0u };
+    timing_80286_state state = { 0u, 0u, 0u };
+    core_machine *machine = STD_NULL;
+    C_INT failed = !timing_80286_prepare(&machine, &state);
+
+    if (!failed) failed |= !timing_80286_load(machine, sgdt, sizeof(sgdt)) ||
+        ((machine->executor_cpu.data.gdtr.limit = 0x1357u),
+        (machine->executor_cpu.data.gdtr.base = 0x00123400u), 0) ||
+        !timing_80286_run(machine, &state, 1u, 11u);
+    if (!failed) failed |= !timing_80286_load(machine, sidt, sizeof(sidt)) ||
+        ((machine->executor_cpu.data.idtr.limit = 0x1357u),
+        (machine->executor_cpu.data.idtr.base = 0x00123400u), 0) ||
+        !timing_80286_run(machine, &state, 1u, 12u);
+    if (!failed) failed |= !timing_80286_load(machine, lgdt, sizeof(lgdt)) ||
+        core_machine_memory_write(machine, 0x1000u, table, sizeof(table)) !=
+            TYPE_STATUS_OK || !timing_80286_run(machine, &state, 1u, 11u) ||
+        machine->executor_cpu.data.gdtr.limit != 0x1357u ||
+        machine->executor_cpu.data.gdtr.base != 0x00123400u;
+    if (!failed) failed |= !timing_80286_load(machine, lidt, sizeof(lidt)) ||
+        core_machine_memory_write(machine, 0x1000u, table, sizeof(table)) !=
+            TYPE_STATUS_OK || !timing_80286_run(machine, &state, 1u, 12u) ||
+        machine->executor_cpu.data.idtr.limit != 0x1357u ||
+        machine->executor_cpu.data.idtr.base != 0x00123400u;
+    if (!failed) failed |= !timing_80286_load(machine, clts, sizeof(clts)) ||
+        ((machine->executor_cpu.data.cr0 = VCPU_CR0_TS), 0) ||
+        !timing_80286_run(machine, &state, 1u, 2u) ||
+        (machine->executor_cpu.data.cr0 & VCPU_CR0_TS) != 0u;
+    core_machine_destroy(machine);
+    return failed;
+}
+
+static C_INT timing_80286_ldt_task_registers(C_VOID)
+{
+    static const type_unsigned_8 lldt_register[] = { 0x0fu,0x00u,0xd0u };
+    static const type_unsigned_8 lldt_memory[] = { 0x0fu,0x00u,0x16u,0x00u,0x04u };
+    static const type_unsigned_8 ltr_register[] = { 0x0fu,0x00u,0xd8u };
+    static const type_unsigned_8 ltr_memory[] = { 0x0fu,0x00u,0x1eu,0x00u,0x04u };
+    const type_unsigned_16 ldt_selector = 0x0028u;
+    const type_unsigned_16 tss_selector = 0x0030u;
+    const type_unsigned_8 *forms[] = { lldt_register, lldt_memory,
+        ltr_register, ltr_memory };
+    const STD_SIZE_T sizes[] = { sizeof(lldt_register), sizeof(lldt_memory),
+        sizeof(ltr_register), sizeof(ltr_memory) };
+    const type_unsigned_16 selectors[] = { ldt_selector, ldt_selector,
+        tss_selector, tss_selector };
+    const type_unsigned_64 ticks[] = { 17u, 19u, 17u, 19u };
+    STD_SIZE_T index;
+    C_INT failed = 0;
+
+    for (index = 0u; index < sizeof(forms) / sizeof(forms[0]); ++index) {
+        timing_80286_state state = { 0u, 0u, 0u };
+        core_machine *machine = STD_NULL;
+
+        if (!timing_80286_prepare(&machine, &state) ||
+            !timing_80286_boot_protected_system(machine, &state)) {
+            core_machine_destroy(machine);
+            return 1;
+        }
+        failed |= core_machine_memory_write(machine, 0x2000u, forms[index],
+            sizes[index]) != TYPE_STATUS_OK ||
+            ((machine->executor_cpu.data.eax = selectors[index]), 0) ||
+            (index & 1u && core_machine_memory_write(machine, 0x3400u,
+                &selectors[index], sizeof(selectors[index])) != TYPE_STATUS_OK) ||
+            ((test_core_machine_fixture_resume_after_halt_at(machine, 0u)),
+            !timing_80286_run(machine, &state, 1u, ticks[index])) ||
+            (index < 2u ? machine->executor_cpu.data.ldtr.selector !=
+                ldt_selector : machine->executor_cpu.data.tr.selector !=
+                tss_selector);
+        core_machine_destroy(machine);
+    }
+    return failed;
+}
+
 static C_INT timing_80286_memory(C_VOID)
 {
     static const type_unsigned_8 direct_read[] = { 0x8bu, 0x0eu, 0x00u, 0x10u };
@@ -1033,6 +1147,8 @@ C_INT main(C_VOID)
     if (timing_80286_smsw()) return 16;
     if (timing_80286_sldt_str()) return 17;
     if (timing_80286_lmsw()) return 18;
+    if (timing_80286_table_control()) return 19;
+    if (timing_80286_ldt_task_registers()) return 20;
     if (timing_80286_memory()) return 2;
     if (timing_80286_control_ports()) return 3;
     if (timing_80286_boundaries()) return 4;
