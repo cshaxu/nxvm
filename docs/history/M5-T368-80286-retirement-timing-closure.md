@@ -73,3 +73,19 @@ retains them as one explicit bus/phase transfer rather than treating a prefix
 as a one-tick or physical-clock surcharge. S6 is accepted at `1366fcc2`; S7
 must still reconcile x87/WAIT/default and negative paths before T368 can
 close, and there is no 5170 L3 claim.
+
+### S7 and task closure: x87, WAIT and final fallback audit
+
+S7 proves that the selected no-FPU Model 339 successfully consumes `DB E3`
+and `9B`, but that both routes publish the explicit unallocated value rather
+than an invented 80286 scalar. Delivered `#NM`, `#MF`, `#UD`, profile
+rejection and invalid forms are non-retiring and publish no instruction timing.
+The [closure audit](../etc/evidence/t368-s7-80286-retirement-closure-audit.md)
+records the complete residual matrix, x87 TODO handoff, source-defined
+system/prefix owners and focused regression evidence.
+
+T368 is closed at `4da84be8`. It completes only the 80286
+successful-retirement CPU source ledger required before the queued bus-timed
+PC/AT operation. CPU memory/I/O waits, READY/HOLD/DMA, device service,
+prefetch, physical phase timing and the IBM 5170 L3 audit remain open; this
+task makes no complete 5170 L3 or whole-gate claim.

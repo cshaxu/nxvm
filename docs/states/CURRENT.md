@@ -2,26 +2,7 @@
 
 ## Current Work
 
-## M5 T368 S7 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation; T368 S6 accepted at `82923655`. |
-| Admission And Approval | The owner authorized continued L3 work; S4--S6 reduce the final 80286 CPU-ledger receiver to x87/WAIT/default and non-retiring paths. |
-| Objective | Reconcile 80286 `WAIT`/ESC interface disposition, default fallback and negative forms; rerun the whole 80286 publisher sweep and complete the T368 CPU-ledger closure audit. |
-| Non-goals | No x87 execution expansion, no allocation for delivered faults, no bus/device/physical time, profile/topology change or IBM 5170 L3 claim. |
-| Reference Baseline | `82923655`, S4--S6 evidence, Intel 210498-005 Appendix B, retained x87/WAIT provider tests, source policy and the existing x87 TODO admission boundary. |
-| Candidate Proposal | [80286 successful-retirement timing closure](../proposals/m5-80286-retirement-timing-closure.md). |
-| Files And ABI Surface | Focused 80286/x87/negative regression or existing owner proof, final evidence/status/history only; no public ABI. |
-| Applicable Rules | Execution closure audit/evidence; Intel authority first; one shared publisher; no invented coprocessor/fault timing; exact Queue/TODO transfer. |
-| Verification | 80286 timing ledger, x87 escape/interface regressions, static publisher check, documentation governance and diff check; record the known full-gate blocker without claiming it passed. |
-| Expected Markers | ESC/WAIT no-FPU and `#NM` paths remain non-retiring; no default successful 80286 fallback is unclassified; each remaining successful context has an accepted scalar or exact transfer. |
-| Asset Needs | No guest media, ROM, binary or imported source. |
-| Reporting Requirements | Record each default/negative/x87 route, its successful-retirement status, timing disposition, existing test owner and downstream admission condition. |
-| Stop Conditions | Stop and transfer if a purportedly successful x87/WAIT context lacks an approved execution/profile contract or Intel does not determine the required context. |
-| Exit Criteria | Pushed P1/P2 closes T368's CPU retirement ledger with all residual successful contexts allocated or exactly transferred; T368 must still state that bus/device/5170 L3 work is open. |
-| Original Owner Request | Continue comprehensive L3 execution before Windows 3.1, following the Queue dependency chain. |
-| Similar-Issue Sweep | Sweep all 80286 classifier fallbacks, `WAIT`, `FPU_ESCAPE`, FPU profile binding, exception-delivery publication and the focused negative regressions. |
+**Idle.** T368 is closed; the next Queue candidate has not yet been admitted.
 
 ## Current Technical Baseline
 
@@ -42,7 +23,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T368 S4 | Accepted at `7dc3a9d9`: establishes the finite residual 80286 prefix/default reachability ledger and ordered S5--S7 receivers. No new scalar, bus, device or L3 result is claimed. [Reachability](../etc/evidence/t368-s4-80286-prefix-default-reachability.md). |
+| T368 | Closed at `4da84be8`: completes the source-labelled 80286 successful-retirement CPU ledger, with exact values or declared source-undefined transfers. The next Queue receiver is bus-timed PC/AT operation; CPU waits, bus/device timing and IBM 5170 L3 remain open. [Closure audit](../etc/evidence/t368-s7-80286-retirement-closure-audit.md). |
 | T367 | Closed at `f60d87ea`: concrete machine selection and CPU/timing contract binding are VM-owned; the default-PC/AT option path now selects a VM contract before the sole core materialization boundary, while Model 339 remains descriptor-selected. Focused profile/session regressions pass; an unrelated platform-request compile failure blocks a full-gate claim. No CPU-timing, bus, device or L3 receiver is closed. [Binding evidence](../etc/evidence/t367-s2-vm-profile-contract-binding.md). |
 | T366 | Closed at `743edc18`: locks the Model 339 baseline, planar-parity NMI and selected topology, and accepts bounded 80286 source-retirement rows. Complete CPU retirement, bus availability, device service timing and profile-L3 closure transfer explicitly; **5170 model-L3 is not ready**. [Closure audit](../etc/evidence/t366-s32-closure-transfer-audit.md). |
 | T365 | Closed at `febc9352`: IBM PC/AT parity/I/O-check NMI sources cannot be selected without a profile input, status/latch/clear and lifecycle contract; CPU and CMOS remain delivery/mask only. [Closure audit](../etc/evidence/t365-s2-pcat-nmi-nonadmission-closure-audit.md). Blocks physical/cycle-exact L3 closure; no synthetic source. |
