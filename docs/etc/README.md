@@ -62,6 +62,7 @@ principal documents named in [docs/README.md](../README.md).
 | `evidence/t370-s5-planar-cga-transfer-audit.md` | Closure audit | T370 S5 selected planar-parity NMI and CGA/VADP reconciliation plus complete device-group transfer audit; retain with T370 history. |
 | `evidence/t371-s1-model339-phase-owner-ledger.md` | Verification owner | T371 S1 Model-339 phase owner, source-limit, trace and downstream-S ledger; retain with T371 history while the task is open. |
 | `evidence/t371-s2-cpu-bus-phase-boundary.md` | Verification owner | T371 S2 80286 retirement, fetch, memory/I/O and transaction phase-boundary reconciliation with no unsupported wait allocation. |
+| `evidence/t371-s3-dma-pic-phase-composition.md` | Verification owner | T371 S3 DMA/HOLD, PIT/PIC and logical-acknowledgement phase composition with physical waveforms retained as transfers. |
 | `evidence/t333-s1-interactive-input-inventory.md` | Verification owner | T333 S1 retained Console/debugger direct-input inventory and S2 boundary. Retire into the T333 history record when the task closes. |
 | `evidence/t333-s2-interactive-input-repair.md` | Verification owner | T333 S2 owner-local interactive-input repair and static/build evidence. Retire into the T333 history record when the task closes. |
 | `evidence/t333-s3-interactive-input-proof.md` | Verification owner | T333 S3 owner-separated EOF/allocation-failure smoke design and expected proof. Retire into the T333 history record when the task closes. |

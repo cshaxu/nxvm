@@ -2,6 +2,27 @@
 
 ## Current Work
 
+## M5 T371 S3 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; T371 S2 accepted at `a995f3b4`. |
+| Admission And Approval | The owner-approved Model-339 phase-refinement program continues with the S2-assigned DMA/HOLD, PIT/PIC and logical interrupt-acknowledgement composition audit. |
+| Objective | Reconcile one transaction/DMA/HOLD lifecycle, arbitration callback, PIT/PIC priority and logical acknowledgement into a source-labelled phase composition without assigning physical pin or wait duration. |
+| Non-goals | No HRQ/HLDA/DACK/AEN/INTA waveform, latency scalar, wait insertion, new scheduler/trace ABI, device microstate, 80386/8088 or Windows work. |
+| Reference Baseline | T369 logical HOLD audit, T370 PIT/PIC/device evidence, T371 S1/S2 records, transaction/DMA/PIT/PIC sources and Intel/IBM authorities. |
+| Candidate Proposal | [Selected-profile model-L3 phase refinement](../proposals/m5-cycle-exact-selected-profile.md). |
+| Files And ABI Surface | S3 evidence, T371 history, Current status and evidence index only. Stop before source, ABI, CMake, test or runtime changes. |
+| Applicable Rules | One transaction/arbitration/IRQ owner; copied trace; reset releases state; logical acknowledgement distinct from physical INTA; documentation/source-policy rules. |
+| Verification | DMA/HOLD/PIT/PIC static and focused-test sweep, source-to-phase matrix, reset/trace review, documentation governance and diff check. |
+| Expected Markers | Existing competition/arbitration/transaction markers remain evidence; no new marker, artifact or L3 claim. |
+| Asset Needs | Public manuals and project-authored evidence only; no ROM, guest media, firmware, external code, binary or raw host trace. |
+| Reporting Requirements | Record logical order and each unallocated physical boundary; identify the exact S4 receiver. |
+| Stop Conditions | Stop if a result needs a guessed arbitration latency, waveform, second transaction owner, physical-cycle claim or public interface. |
+| Exit Criteria | P1 commits an indexed DMA/PIC phase composition with exact S4 transfer and no runtime timing value. |
+| Original Owner Request | Continue in Queue order toward complete L3 before Windows 3.1; use named reference models only where authoritative manuals leave a range or no range, without treating them as IBM authority. |
+| Similar-Issue Sweep | Sweep transaction hold/reset, DMA request/service/terminal, arbitration callback, PIT output, PIC source/select/ack/EOI, trace consumers, Model-339 descriptor and competition/arbitration tests. |
+
 ## Current Technical Baseline
 
 - **Current developer artifact:** T369 S4 `vm-0-5-0369` /
