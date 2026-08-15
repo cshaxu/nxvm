@@ -19,4 +19,8 @@ or timing behavior may change.
 
 ## Closure Audit
 
-Pending S1 implementation, verification, and coordinator review.
+P1 `9b6a86c6` implements the frozen YAML catalog, zero-session lifecycle,
+strict Console command boundary and bounded floppy media flow.  Coordinator
+review confirms the sole core change remains in generic session-container
+semantics, no core-machine source changed, and the artifact/current/specialized
+gates pass.  T381 closes; its proposal is retained beside this record.

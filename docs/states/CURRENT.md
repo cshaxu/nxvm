@@ -2,29 +2,13 @@
 
 ## Current Work
 
-### S1: Frozen YAML session catalog and zero-session Console
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | New T381, S1; T380 is the latest closed numeric task. |
-| Admission And Approval | Owner approved the Queue-head NXVM Console redesign on 2026-08-15 and separately approved the sole necessary core exception after the pre-implementation audit: `core/product/session` may represent zero sessions, create no implicit session, and close the final session. |
-| Objective | Replace implicit default session creation with startup-frozen YAML session profiles beside NXVM, automatic startup `SESSION OPEN`, a true zero-session Console, and a selected-session-only command boundary. |
-| Non-goals | No core machine/device/CPU/memory/timing change; no profile topology change; no DeskPro/XT work; no BIOS/ROM selector, guest-media import, disk-format work, persistence, GUI, public process CLI, or third-party YAML runtime. The core exception is limited to generic session-manager empty-state semantics. |
-| Reference Baseline | T380 S2 `4bd5e2c4`, its recovery evidence, and the Queue-head Console redesign proposal. |
-| Candidate Proposal | [NXVM Console redesign and frozen YAML session profiles](../proposals/m5-nxvm-console-redesign.md). |
-| Files And ABI Surface | `src/vm/product/` Console/catalog owner, `src/vm/composition/session/` frozen-config construction/binding, `src/vm/main.c`, product/session tests and CMake registrations; the sole core surface may be `src/core/product/session/{manager.c,session_interface.h}` only as required for empty-manager semantics. No `src/core/machine/` change. |
-| Applicable Rules | Architecture one-owner/one-production-path and composition direction; coding bounded C11 interfaces and no test-only API; source policy boundary; execution artifact/evidence/closure; documentation truthfulness. The core exception must remain generic and must neither parse YAML nor select VM profiles. |
-| Verification | Product-facing tests prove retained banner/help then automatic chooser, filename-only sorted selection, no-file/cancel zero state, invalid-file containment, frozen snapshot behavior, YAML profile validation, selected-session command rejection, floppy-only stopped mutation, hard-disk immutability, and empty-manager lifecycle. Run focused tests, full current smokes, specialized gates, documentation governance, actual-diff audit, and emit T381 artifact. |
-| Expected Markers | New T381 Console/YAML catalog and zero-session markers; existing T380 profile and generic-session markers remain green. |
-| Asset Needs | Test-owned temporary text configuration and image-path strings only; no ROM, guest media, external source, local asset path, or protected binary is committed. |
-| Reporting Requirements | Record YAML subset/validation and path-resolution contract, catalog freeze boundary, every retained/removed command disposition, core exception proof, focused and full-gate results, artifact SHA-256, and an explicit statement that no machine/device contract changed. |
-| Stop Conditions | Stop for owner direction if a third-party parser/runtime, a public process CLI, external ROM/media, a profile-topology change, a core change beyond empty-manager semantics, or hard-disk hot-swap is needed. |
-| Exit Criteria | The YAML-driven zero-session interaction and its command/media restrictions are proven through production paths; the core manager exception is bounded and tested; all required gates pass; T381 evidence/history/current status and artifact are truthful; the completed P is committed and pushed. |
-| Original Owner Request | Owner requires YAML profiles displayed by file name, retained banner/help, automatic startup selection, zero sessions, global session commands plus HELP/EXIT only without selection, and no core changes except the later explicitly approved empty-session exception. |
-| Similar-Issue Sweep | Audit every Console command dispatch and every core session-manager caller for implicit session construction, final-session prohibition, or selected-session dereference; fix within scope or record a bounded transfer. |
+**No active implementation packet.** T381 closes with frozen YAML profile
+selection and a true zero-session Console; DeskPro 386 remains the next Queue
+candidate.
 
 | Task | Compact progress |
 | --- | --- |
+| T381 | Closed at `9b6a86c6`: YAML profiles are frozen at startup and selected by file name; zero-session lifecycle, restricted Console mutation and the T381 artifact are proven. [Evidence](../etc/evidence/t381-s1-console-yaml-profiles.md). |
 | T380 S2 | Closed: strict Model-339 startup, 512 KB FDC/BDA repair, input/FDC current-gate recovery, and the owner-replayed DOS 5/HIMEM no-XMS path are verified. [Evidence](../etc/evidence/t380-s2-model339-start-and-current-gate-recovery.md). |
 
 <!-- T379 packet retired at task closure.
