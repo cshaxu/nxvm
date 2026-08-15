@@ -6,7 +6,7 @@ Add an explicit 8088 CPU profile while retaining the existing 8086 profile.
 The 8088 shares the 8086 instruction-set semantics, but it owns a distinct
 external 8-bit data-bus, instruction-fetch/prefetch, and physical-transaction
 timing boundary required by the IBM 5150/XT baseline. This candidate follows
-the DeskPro 386 closure, precedes the 5150/XT machine closure, and does not
+the DeskPro 386 L3 audit, precedes the 5150/XT machine closure, and does not
 redefine the completed 8086 instruction ledger.
 
 ## Required scope

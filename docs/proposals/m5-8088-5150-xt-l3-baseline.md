@@ -3,7 +3,7 @@
 ## Purpose
 
 Establish one documented IBM 5150 or IBM XT 8088 baseline machine after the
-IBM PC/AT 5170 and DeskPro 386 closures and the separate 8088 CPU-profile
+IBM PC/AT 5170 and DeskPro 386 L3 audits and the separate 8088 CPU-profile
 closure, and before Windows 3.x work. The admitting task chooses
 one exact board revision, CPU clock, memory/ROM population, display adapter,
 storage path, and project-owned probe corpus; it must not merge PC and XT

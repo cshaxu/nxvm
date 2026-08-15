@@ -56,8 +56,9 @@ supported product surface; no supported capability may remain a
 compatibility-only exception.
 
 After the 5170, DeskPro 386, 5150/XT 8088 baseline-machine, and current-product
-device-capability L3 closure audits accept those prerequisites, M5 ends with
-an approved BYOB Windows 3.1
+device-capability L3 closure audits accept those prerequisites, a separate
+pre-Windows L3 admission audit must accept the frozen DeskPro profile. Only
+then does M5 end with an approved BYOB Windows 3.1
 corpus on the frozen DeskPro 386:
 Standard Mode and 386 Enhanced Mode must each install, start normally, reach a
 named ready checkpoint, and shut down normally. These are final compatibility

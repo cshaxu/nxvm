@@ -34,6 +34,14 @@
 
 ## Recent Governance
 
+- **M5 Td S93 P1:** splits T366's transferred 80286 retirement ledger from
+  5170 bus work; orders 5170 CPU, bus, device, phase and audit closure; and
+  pre-splits DeskPro 386 into profile/CPU, board/device and audit candidates.
+  A new pre-Windows L3 admission audit gates every Windows candidate. The
+  Roadmap, exact T366 receivers and downstream dependencies agree.
+  Documentation governance and diff check passed; no runtime, artifact or task
+  activation change.
+
 - **M5 Td S92 P1:** reconciled M5's executable Queue with closed T362--T365
   history; makes T366's profile-lock, selected-NMI-source, and bus-allocation
   order explicit; and adds a pre-Windows closure for every current-product

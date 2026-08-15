@@ -43,12 +43,13 @@ at its mechanism owner before profile-specific callers duplicate it.
 5. Cross-profile closure is last. It reconciles evidence; it does not perform
    missing implementation under a verification label.
 
-The Queue realizes this as five candidate packages: 80286 descriptor/transfer;
-80386DX form closure; 80386DX state closure; 80386DX audit; and final
-four-profile audit. T328 already closes the 8086/80186/80286 legacy `LOCK`
-policy, so it is retained evidence rather than a duplicate candidate. This prevents a broad
-"80386-complete" task from hiding dependencies between 16-bit protected
-construction, width-form behavior, and system-state delivery.
+The Queue realizes this through bounded profile-ledger candidates: the 80286
+successful-retirement closure, DeskPro 80386 CPU/state closure, their later
+machine-specific consumers, and explicit audits. T328 already closes the
+8086/80186/80286 legacy `LOCK` policy, so it is retained evidence rather than a
+duplicate candidate. This prevents a broad "80386-complete" task from hiding
+dependencies between 16-bit protected construction, width-form behavior, and
+system-state delivery.
 
 Within a candidate, admit a mechanism owner before isolated opcode symptoms:
 first map callers, state writes, validation/preflight, commit, rollback, and
@@ -83,7 +84,7 @@ not silently part of CPU-profile closure. Each remains external until a Queue
 candidate or TODO gives it a bounded owner and admission condition.
 
 The later 8088 CPU-profile candidate is deliberately separate from this
-four-profile instruction/form program. It follows the DeskPro 386 closure,
+four-profile instruction/form program. It follows the DeskPro 386 L3 audit,
 retains 8086 instruction semantics while adding the 8088 external bus and
 fetch/prefetch timing boundary required by the selected IBM 5150/XT machine,
 and neither changes a completed 8086 row nor turns the four-profile semantic

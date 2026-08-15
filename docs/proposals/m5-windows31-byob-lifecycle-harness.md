@@ -4,7 +4,8 @@
 
 Provide a legal, reproducible, owner-supplied Windows 3.1 observation harness
 only after the 5170, DeskPro 386, 5150/XT 8088 baseline-machine, and
-current-product device-capability L3 closures are accepted. Windows runs
+current-product device-capability L3 closures and the pre-Windows L3 admission
+audit are accepted. Windows runs
 against the frozen selected 80386 DeskPro 386 profile.
 
 ## Required scope

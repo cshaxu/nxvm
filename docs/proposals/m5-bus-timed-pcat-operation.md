@@ -4,30 +4,25 @@
 
 Extend the accepted T354 transaction owner from synchronous selected
 publication to the IBM PC/AT 5170 80286 baseline's bounded bus-availability
-model. This candidate begins only after instruction-timed execution supplies a
-guest-time contract. T366 first locks the exact baseline and corpus, then
-consumes T365's non-admission finding by implementing the selected board NMI
-source lifecycle, before it allocates bus availability.
+model.  It begins only after the transferred 80286 successful-retirement
+timing candidate closes.  T366 already locks the exact baseline and accepted
+the selected planar-parity/NMI lifecycle; this candidate consumes those facts
+without reopening CPU retirement timing or topology selection.
 
 ## Required scope
 
-**Profile-lock stage.** Before any timing allocation, record the exact IBM
-PC/AT 5170 system-board revision and manual edition, CPU clock, motherboard
-RAM, ROM configuration, selected diskette-drive/FDC DMA-channel-2 path, every
-selected ISA adapter, and a project-owned firmware/DOS probe corpus. The
-locked configuration is IBM PC/AT 5170 Model 339 with the Type 3 system board:
+**Accepted baseline input.** The locked configuration is IBM PC/AT 5170 Model
+339 with the Type 3 system board:
 an 8 MHz 80286, Rev.3 BIOS slots dated 1985-11-15, 512 KB planar RAM, 101-key
 enhanced keyboard, IBM CGA, and one TEAC FD-235HF-A529 3.5-inch 1.44 MB
 field-upgrade drive. It has no fixed disk and no 1 MB expansion. The TEAC
 drive is a compatible post-market upgrade, not an IBM factory Model 339
 component or option. An unselected adapter cannot supply a timing value.
 
-**NMI-source stage.** After that lock, select one documented board parity or
-I/O-channel-check source and define its producer, latch/clear operation,
-CMOS-mask interaction, reset/finalize ordering, deterministic visibility, and
-real/protected/ordinary-VM86 delivery proof. Do not allocate availability until
-this truthful interrupt-source set is established; RTC, CMOS, PIC and CPU
-delivery state remain non-producers.
+**Accepted NMI input.** T366's selected planar-memory parity source remains the
+only admitted board NMI producer, with its latch/clear, CMOS-mask and reset
+contract.  RTC, CMOS, PIC and CPU delivery state remain non-producers; an
+unselected adapter cannot supply an availability value.
 
 **Bus stage.** Define one owner
 for CPU memory/I/O availability, named memory and port wait states, DMA
