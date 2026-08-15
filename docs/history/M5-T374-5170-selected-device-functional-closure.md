@@ -152,3 +152,12 @@ classifies the selected command, FIFO, reset, IRQ1 and firmware-consumer
 routes, excludes AUX/IRQ12, and selects native Set-2 versus 8042 Set-1
 translation as the remaining concrete functional mechanism. Timing remains
 transferred.
+
+### S18: native keyboard input and 8042 translation
+
+S18's [native-input boundary evidence](../etc/evidence/t374-s18-native-keyboard-input-boundary.md)
+replaces generic direct scan-code submission with a real native-keyboard-byte
+production operation. The VM host adapter emits Set 2; the KBC owns Set-2 to
+Set-1 translation, FIFO and IRQ1. It covers supported Set 1/2 selection,
+ordinary/extended make-break and the exact Pause stream. Timing, AUX/IRQ12,
+Set 3 and nonstandard streams remain excluded.

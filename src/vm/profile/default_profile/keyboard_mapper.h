@@ -3,9 +3,10 @@
 
 #include "type.h"
 
-/* The profile maps one host transition into a bounded set-1 byte sequence.
- * The core KBC remains the sole guest-visible FIFO. */
-#define VM_PROFILE_DEFAULT_KEYBOARD_SEQUENCE_CAPACITY 6u
+/* The profile adapts one host transition into the selected keyboard's native
+ * Set-2 serial stream. The core KBC remains the sole guest-visible FIFO and
+ * performs any 8042 Set-2-to-Set-1 translation. */
+#define VM_PROFILE_DEFAULT_KEYBOARD_SEQUENCE_CAPACITY 8u
 
 typedef struct vm_profile_default_keyboard_sequence {
     type_unsigned_8 bytes[VM_PROFILE_DEFAULT_KEYBOARD_SEQUENCE_CAPACITY];

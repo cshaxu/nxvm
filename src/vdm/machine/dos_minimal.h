@@ -24,9 +24,9 @@ type_status vdm_machine_dos_minimal_reset(
 type_status vdm_machine_dos_minimal_tick(
     vdm_machine_dos_minimal *session,
     type_unsigned_32 ticks);
-type_status vdm_machine_dos_minimal_inject_key(
+type_status vdm_machine_dos_minimal_submit_native_keyboard_byte(
     vdm_machine_dos_minimal *session,
-    type_unsigned_8 scan_code);
+    type_unsigned_8 native_byte);
 type_status vdm_machine_dos_minimal_write_text(
     vdm_machine_dos_minimal *session,
     type_unsigned_16 cell,
@@ -46,4 +46,3 @@ C_VOID vdm_machine_dos_minimal_destroy(vdm_machine_dos_minimal *session);
 #endif
 
 #endif
-

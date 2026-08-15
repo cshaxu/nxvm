@@ -56,8 +56,8 @@ type_status vdm_presentation_apply_input(
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
     for (index = 0u; index < presentation->count; ++index) {
-        status = vdm_session_inject_key(
-            presentation->session, presentation->input[index].scan_code);
+        status = vdm_session_submit_native_keyboard_byte(
+            presentation->session, presentation->input[index].native_byte);
         if (status != TYPE_STATUS_OK) {
             return status;
         }
@@ -89,4 +89,3 @@ C_VOID vdm_presentation_destroy(
 {
     STD_FREE(presentation);
 }
-

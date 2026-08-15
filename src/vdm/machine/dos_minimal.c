@@ -82,16 +82,16 @@ type_status vdm_machine_dos_minimal_tick(
     return TYPE_STATUS_OK;
 }
 
-type_status vdm_machine_dos_minimal_inject_key(
+type_status vdm_machine_dos_minimal_submit_native_keyboard_byte(
     vdm_machine_dos_minimal *session,
-    type_unsigned_8 scan_code)
+    type_unsigned_8 native_byte)
 {
     type_status status;
 
     if (session == STD_NULL) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
-    status = core_machine_keyboard_submit_scan_code(session->machine, scan_code);
+    status = core_machine_keyboard_submit_native_byte(session->machine, native_byte);
     if (status == TYPE_STATUS_OK) {
         session->snapshot.keyboard_irq_pending = 1u;
     }
@@ -147,4 +147,3 @@ C_VOID vdm_machine_dos_minimal_destroy(vdm_machine_dos_minimal *session)
         STD_FREE(session);
     }
 }
-

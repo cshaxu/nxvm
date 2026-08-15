@@ -15,7 +15,8 @@ type_status vdm_session_create(
 type_status vdm_session_reset(
     vdm_session *session);
 C_VOID vdm_session_destroy(vdm_session *session);
-type_status vdm_session_inject_key(vdm_session *session, type_unsigned_8 scan_code);
+type_status vdm_session_submit_native_keyboard_byte(vdm_session *session,
+    type_unsigned_8 native_byte);
 type_status vdm_session_write_text(vdm_session *session, type_unsigned_16 cell,
     type_unsigned_8 character, type_unsigned_8 attribute);
 type_status vdm_session_get_snapshot(const vdm_session *session,

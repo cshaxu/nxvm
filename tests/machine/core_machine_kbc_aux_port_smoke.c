@@ -103,7 +103,7 @@ C_INT main(C_VOID)
     failed |= !take_aux_byte(&port, &master, &slave, 0xfau);
     failed |= core_machine_kbc_submit_aux_report(&kbc, 1, 1, 0u) !=
         TYPE_STATUS_INVALID_STATE;
-    failed |= core_machine_kbc_submit_scan_code(&kbc, 0x1eu) != TYPE_STATUS_OK;
+    failed |= core_machine_kbc_submit_native_byte(&kbc, 0x1eu) != TYPE_STATUS_OK;
     failed |= (read_port(&port, 0x0064u) & VKBC_STATUS_AUX) != 0u;
     core_machine_pic_refresh(&master, &slave);
     failed |= core_machine_pic_get_interrupt(&master, &slave) != 0x09u;
@@ -226,7 +226,7 @@ C_INT main(C_VOID)
         core_machine_kbc_submit_aux_report(&kbc, 1, 1, 0u) != TYPE_STATUS_OK ||
         !kbc.data.irq12_asserted;
     for (index = 0u; index < CORE_MACHINE_KBC_FIFO_CAPACITY - 3u; ++index) {
-        failed |= core_machine_kbc_submit_scan_code(&kbc, index) != TYPE_STATUS_OK;
+        failed |= core_machine_kbc_submit_native_byte(&kbc, index) != TYPE_STATUS_OK;
     }
     failed |= core_machine_kbc_submit_aux_report(&kbc, 2, 2, 1u) !=
         TYPE_STATUS_INVALID_STATE || kbc.data.fifo_count !=

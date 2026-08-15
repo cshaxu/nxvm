@@ -48,7 +48,7 @@ static C_INT core_machine_kbc_mixed_fifo_lifecycle(C_VOID)
     core_machine_port_write(&port, 0x00a0u, 0x20u);
     core_machine_port_write(&port, 0x0020u, 0x20u);
 
-    failed |= core_machine_kbc_submit_scan_code(&kbc, 0x1eu) != TYPE_STATUS_OK ||
+    failed |= core_machine_kbc_submit_native_byte(&kbc, 0x1eu) != TYPE_STATUS_OK ||
         core_machine_kbc_submit_aux_report(&kbc, 1, 1, 0x01u) != TYPE_STATUS_OK;
     core_machine_port_write(&port, 0x0064u, 0x20u);
     core_machine_pic_refresh(&pic_master, &pic_slave);
@@ -70,7 +70,7 @@ static C_INT core_machine_kbc_mixed_fifo_lifecycle(C_VOID)
 
     core_machine_kbc_set_command_response_timing(&kbc, 2u);
     core_machine_port_write(&port, 0x0064u, 0x20u);
-    failed |= core_machine_kbc_submit_scan_code(&kbc, 0x30u) != TYPE_STATUS_OK;
+    failed |= core_machine_kbc_submit_native_byte(&kbc, 0x30u) != TYPE_STATUS_OK;
     core_machine_kbc_advance(&kbc, 2u);
     core_machine_pic_refresh(&pic_master, &pic_slave);
     failed |= core_machine_pic_get_interrupt(&pic_master, &pic_slave) != 0x09u ||
@@ -84,12 +84,61 @@ static C_INT core_machine_kbc_mixed_fifo_lifecycle(C_VOID)
     failed |= kbc.data.fifo_count != 0u || kbc.data.irq1_asserted ||
         kbc.data.irq12_asserted || !kbc.data.keyboard_enabled ||
         !kbc.data.aux_enabled || !kbc.data.scanning_enabled;
-    failed |= core_machine_kbc_submit_scan_code(&kbc, 0x20u) != TYPE_STATUS_OK ||
+    failed |= core_machine_kbc_submit_native_byte(&kbc, 0x20u) != TYPE_STATUS_OK ||
         !kbc.data.irq1_asserted;
     core_machine_kbc_finalize(&kbc);
     failed |= kbc.data.irq1_asserted || kbc.data.irq12_asserted;
 
     core_machine_pic_finalize(&pic_master, &pic_slave);
+    core_machine_port_finalize(&port);
+    return failed;
+}
+
+static C_INT core_machine_kbc_set2_translation(C_VOID)
+{
+    static const type_unsigned_8 pause_set2[] = { 0xe1u, 0x14u, 0x77u,
+        0xe1u, 0xf0u, 0x14u, 0xf0u, 0x77u };
+    static const type_unsigned_8 pause_set1[] = { 0xe1u, 0x1du, 0x45u,
+        0xe1u, 0x9du, 0xc5u };
+    t_kbc kbc;
+    t_port port;
+    type_unsigned_8 index;
+    C_INT failed = 0;
+
+    core_machine_port_initialize(&port);
+    core_machine_kbc_initialize(&kbc, &port);
+    core_machine_port_write(&port, 0x0064u, 0x60u);
+    core_machine_port_write(&port, 0x0060u, 0x01u);
+    failed |= core_machine_kbc_submit_native_byte(&kbc, 0x1cu) != TYPE_STATUS_OK ||
+        core_machine_kbc_submit_native_byte(&kbc, 0xf0u) != TYPE_STATUS_OK ||
+        core_machine_kbc_submit_native_byte(&kbc, 0x1cu) != TYPE_STATUS_OK ||
+        core_machine_kbc_read_byte(&port, 0x0060u) != 0x1cu ||
+        core_machine_kbc_read_byte(&port, 0x0060u) != 0xf0u ||
+        core_machine_kbc_read_byte(&port, 0x0060u) != 0x1cu;
+    core_machine_port_write(&port, 0x0064u, 0x60u);
+    core_machine_port_write(&port, 0x0060u, 0x41u);
+    failed |= core_machine_kbc_submit_native_byte(&kbc, 0x1cu) != TYPE_STATUS_OK ||
+        core_machine_kbc_submit_native_byte(&kbc, 0xf0u) != TYPE_STATUS_OK ||
+        core_machine_kbc_submit_native_byte(&kbc, 0x1cu) != TYPE_STATUS_OK ||
+        core_machine_kbc_read_byte(&port, 0x0060u) != 0x1eu ||
+        core_machine_kbc_read_byte(&port, 0x0060u) != 0x9eu;
+    failed |= core_machine_kbc_submit_native_byte(&kbc, 0xe0u) != TYPE_STATUS_OK ||
+        core_machine_kbc_submit_native_byte(&kbc, 0x75u) != TYPE_STATUS_OK ||
+        core_machine_kbc_submit_native_byte(&kbc, 0xe0u) != TYPE_STATUS_OK ||
+        core_machine_kbc_submit_native_byte(&kbc, 0xf0u) != TYPE_STATUS_OK ||
+        core_machine_kbc_submit_native_byte(&kbc, 0x75u) != TYPE_STATUS_OK ||
+        core_machine_kbc_read_byte(&port, 0x0060u) != 0xe0u ||
+        core_machine_kbc_read_byte(&port, 0x0060u) != 0x48u ||
+        core_machine_kbc_read_byte(&port, 0x0060u) != 0xe0u ||
+        core_machine_kbc_read_byte(&port, 0x0060u) != 0xc8u;
+    for (index = 0u; index < sizeof(pause_set2); ++index) {
+        failed |= core_machine_kbc_submit_native_byte(&kbc, pause_set2[index]) !=
+            TYPE_STATUS_OK;
+    }
+    for (index = 0u; index < sizeof(pause_set1); ++index) {
+        failed |= core_machine_kbc_read_byte(&port, 0x0060u) != pause_set1[index];
+    }
+    core_machine_kbc_finalize(&kbc);
     core_machine_port_finalize(&port);
     return failed;
 }
@@ -113,6 +162,7 @@ C_INT main(C_VOID)
     core_machine_kbc_initialize_pic(&port);
 
     failed |= core_machine_kbc_mixed_fifo_lifecycle();
+    failed |= core_machine_kbc_set2_translation();
 
     failed |= core_machine_kbc_read_byte(&port, 0x0064u) != 0x14u;
     core_machine_port_write(&port, 0x0064u, 0x20u);
@@ -123,23 +173,23 @@ C_INT main(C_VOID)
     core_machine_port_write(&port, 0x0064u, 0x20u);
     failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0x01u;
     core_machine_port_write(&port, 0x0064u, 0x60u);
-    core_machine_port_write(&port, 0x0060u, 0x41u);
+    core_machine_port_write(&port, 0x0060u, 0x01u);
     core_machine_port_write(&port, 0x0064u, 0x20u);
-    failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0x41u ||
-        (kbc.data.command_byte & CORE_MACHINE_KBC_COMMAND_TRANSLATION) == 0u;
+    failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0x01u ||
+        (kbc.data.command_byte & CORE_MACHINE_KBC_COMMAND_TRANSLATION) != 0u;
 
     core_machine_port_write(&port, 0x0064u, 0xadu);
-    failed |= core_machine_kbc_submit_scan_code(&kbc, 0x1eu) !=
+    failed |= core_machine_kbc_submit_native_byte(&kbc, 0x1eu) !=
         TYPE_STATUS_INVALID_STATE;
     core_machine_port_write(&port, 0x0064u, 0xaeu);
-    failed |= core_machine_kbc_submit_scan_code(&kbc, 0x1eu) != TYPE_STATUS_OK;
+    failed |= core_machine_kbc_submit_native_byte(&kbc, 0x1eu) != TYPE_STATUS_OK;
     failed |= (pic_master.data.irr & VPIC_IRR_IRQ(1u)) == 0u;
     failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0x1eu;
     failed |= core_machine_pic_get_interrupt(&pic_master, &pic_slave) != 0x09u;
     core_machine_port_write(&port, 0x0020u, 0x20u);
 
-    failed |= core_machine_kbc_submit_scan_code(&kbc, 0x1eu) != TYPE_STATUS_OK;
-    failed |= core_machine_kbc_submit_scan_code(&kbc, 0x30u) != TYPE_STATUS_OK;
+    failed |= core_machine_kbc_submit_native_byte(&kbc, 0x1eu) != TYPE_STATUS_OK;
+    failed |= core_machine_kbc_submit_native_byte(&kbc, 0x30u) != TYPE_STATUS_OK;
     failed |= core_machine_pic_get_interrupt(&pic_master, &pic_slave) != 0x09u;
     failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0x1eu;
     core_machine_port_write(&port, 0x0020u, 0x20u);
@@ -157,13 +207,13 @@ C_INT main(C_VOID)
     failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0x55u ||
         kbc.data.keyboard_enabled ||
         (kbc.data.command_byte & CORE_MACHINE_KBC_COMMAND_DISABLE_KEYBOARD) == 0u ||
-        core_machine_kbc_submit_scan_code(&kbc, 0x1eu) !=
+        core_machine_kbc_submit_native_byte(&kbc, 0x1eu) !=
             TYPE_STATUS_INVALID_STATE ||
         (pic_master.data.irr & VPIC_IRR_IRQ(1u)) != 0u;
     core_machine_port_write(&port, 0x0064u, 0xaeu);
     failed |= !kbc.data.keyboard_enabled ||
         (kbc.data.command_byte & CORE_MACHINE_KBC_COMMAND_DISABLE_KEYBOARD) != 0u ||
-        core_machine_kbc_submit_scan_code(&kbc, 0x1eu) != TYPE_STATUS_OK ||
+        core_machine_kbc_submit_native_byte(&kbc, 0x1eu) != TYPE_STATUS_OK ||
         (pic_master.data.irr & VPIC_IRR_IRQ(1u)) == 0u ||
         core_machine_kbc_read_byte(&port, 0x0060u) != 0x1eu;
     core_machine_port_write(&port, 0x0020u, 0x20u);
@@ -175,12 +225,19 @@ C_INT main(C_VOID)
     core_machine_port_write(&port, 0x0060u, 0x00u);
     failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0xfau;
     failed |= core_machine_kbc_read_byte(&port, 0x0060u) !=
-        CORE_MACHINE_KBC_SCAN_SET_1;
+        CORE_MACHINE_KBC_SCAN_SET_2;
+    core_machine_port_write(&port, 0x0060u, 0xf0u);
+    failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0xfau;
+    core_machine_port_write(&port, 0x0060u, 0x01u);
+    failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0xfau ||
+        kbc.data.scan_set != CORE_MACHINE_KBC_SCAN_SET_1;
+    failed |= core_machine_kbc_submit_native_byte(&kbc, 0x1eu) != TYPE_STATUS_OK ||
+        core_machine_kbc_read_byte(&port, 0x0060u) != 0x1eu;
     core_machine_port_write(&port, 0x0060u, 0xf0u);
     failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0xfau;
     core_machine_port_write(&port, 0x0060u, 0x02u);
-    failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0xfeu ||
-        kbc.data.scan_set != CORE_MACHINE_KBC_SCAN_SET_1;
+    failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0xfau ||
+        kbc.data.scan_set != CORE_MACHINE_KBC_SCAN_SET_2;
 
     core_machine_port_write(&port, 0x0060u, 0xedu);
     failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0xfau;
@@ -194,13 +251,13 @@ C_INT main(C_VOID)
         kbc.data.typematic != 0x1fu;
 
     core_machine_kbc_set_typematic_timing(&kbc, 0u, 0u);
-    failed |= core_machine_kbc_submit_scan_code(&kbc, 0x1eu) != TYPE_STATUS_OK;
+    failed |= core_machine_kbc_submit_native_byte(&kbc, 0x1eu) != TYPE_STATUS_OK;
     failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0x1eu;
     core_machine_kbc_advance(&kbc, 1000000u);
     failed |= (core_machine_kbc_read_byte(&port, 0x0064u) & VKBC_STATUS_OBF) != 0u;
 
     core_machine_kbc_set_typematic_timing(&kbc, 3u, 2u);
-    failed |= core_machine_kbc_submit_scan_code(&kbc, 0x1eu) != TYPE_STATUS_OK;
+    failed |= core_machine_kbc_submit_native_byte(&kbc, 0x1eu) != TYPE_STATUS_OK;
     failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0x1eu;
     core_machine_kbc_advance(&kbc, 2u);
     failed |= (core_machine_kbc_read_byte(&port, 0x0064u) & VKBC_STATUS_OBF) != 0u;
@@ -208,8 +265,10 @@ C_INT main(C_VOID)
     failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0x1eu;
     core_machine_kbc_advance(&kbc, 2u);
     failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0x1eu;
-    failed |= core_machine_kbc_submit_scan_code(&kbc, 0x9eu) != TYPE_STATUS_OK;
-    failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0x9eu;
+    failed |= core_machine_kbc_submit_native_byte(&kbc, 0xf0u) != TYPE_STATUS_OK ||
+        core_machine_kbc_submit_native_byte(&kbc, 0x1eu) != TYPE_STATUS_OK;
+    failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0xf0u ||
+        core_machine_kbc_read_byte(&port, 0x0060u) != 0x1eu;
     core_machine_kbc_advance(&kbc, 8u);
     failed |= (core_machine_kbc_read_byte(&port, 0x0064u) & VKBC_STATUS_OBF) != 0u;
 
@@ -225,13 +284,13 @@ C_INT main(C_VOID)
     core_machine_port_write(&port, 0x0060u, 0xf5u);
     failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0xfau ||
         kbc.data.led_state != 0u || kbc.data.typematic != 0x20u ||
-        kbc.data.scan_set != CORE_MACHINE_KBC_SCAN_SET_1 ||
+        kbc.data.scan_set != CORE_MACHINE_KBC_SCAN_SET_2 ||
         kbc.data.scanning_enabled || kbc.data.typematic_active ||
-        core_machine_kbc_submit_scan_code(&kbc, 0x1eu) !=
+        core_machine_kbc_submit_native_byte(&kbc, 0x1eu) !=
             TYPE_STATUS_INVALID_STATE;
     core_machine_port_write(&port, 0x0060u, 0xf4u);
     failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0xfau ||
-        core_machine_kbc_submit_scan_code(&kbc, 0x1eu) != TYPE_STATUS_OK ||
+        core_machine_kbc_submit_native_byte(&kbc, 0x1eu) != TYPE_STATUS_OK ||
         core_machine_kbc_read_byte(&port, 0x0060u) != 0x1eu;
     core_machine_port_write(&port, 0x0060u, 0xf6u);
     failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0xfau ||
@@ -246,12 +305,12 @@ C_INT main(C_VOID)
     core_machine_port_write(&port, 0x0060u, 0xffu);
     failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0xfau ||
         core_machine_kbc_read_byte(&port, 0x0060u) != 0xaau ||
-        kbc.data.scan_set != CORE_MACHINE_KBC_SCAN_SET_1;
+        kbc.data.scan_set != CORE_MACHINE_KBC_SCAN_SET_2;
     core_machine_port_write(&port, 0x0060u, 0x00u);
     failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0xfeu;
     core_machine_port_write(&port, 0x0060u, 0xfeu);
     failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0xaau;
-    failed |= core_machine_kbc_submit_scan_code(&kbc, 0x1eu) != TYPE_STATUS_OK ||
+    failed |= core_machine_kbc_submit_native_byte(&kbc, 0x1eu) != TYPE_STATUS_OK ||
         core_machine_kbc_read_byte(&port, 0x0060u) != 0x1eu;
     core_machine_port_write(&port, 0x0064u, 0xd0u);
     failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0x01u;
@@ -276,10 +335,11 @@ C_INT main(C_VOID)
     failed |= memory.data.flagA20 ||
         !core_machine_cpu_execution_consume_reset_request(&execution);
 
+    core_machine_kbc_reset(&kbc);
     for (index = 0u; index < CORE_MACHINE_KBC_FIFO_CAPACITY; ++index) {
-        failed |= core_machine_kbc_submit_scan_code(&kbc, index) != TYPE_STATUS_OK;
+        failed |= core_machine_kbc_submit_native_byte(&kbc, index) != TYPE_STATUS_OK;
     }
-    failed |= core_machine_kbc_submit_scan_code(&kbc, 0xffu) !=
+    failed |= core_machine_kbc_submit_native_byte(&kbc, 0xffu) !=
         TYPE_STATUS_INVALID_STATE;
     /* A command reply behind rapid typeahead remains KBC-owned until the
      * guest drains FIFO space; it is never lost merely because output is full. */

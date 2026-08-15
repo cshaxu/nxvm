@@ -176,7 +176,7 @@ typedef struct vm_fdc242_result {
 static C_INT vm_fdc242_run_case(const vm_session_config *config,
     type_unsigned_32 quantum, vm_fdc242_result *out_result)
 {
-    static const type_unsigned_8 command[] = {0x21u,0x20u,0x2eu,0x03u,0x05u,0x03u,0x1cu};
+    static const type_unsigned_8 command[] = {0x2bu,0x23u,0x21u,0x1eu,0x25u,0x1eu,0x5au};
     vm_session *session = STD_NULL;
     type_unsigned_16 program_cs = 0u;
     STD_SIZE_T index;
@@ -185,7 +185,7 @@ static C_INT vm_fdc242_run_case(const vm_session_config *config,
     if (config == STD_NULL || out_result == STD_NULL || quantum == 0u ||
         vm_session_create(config, &session) != TYPE_STATUS_OK || session == STD_NULL ||
         !vm_fdc242_run_until(session, VM_FDC242_BOOT_BUDGET, quantum, 0u)) goto done;
-    for (index = 0u; index < sizeof(command); ++index) if (core_machine_keyboard_submit_scan_code(
+    for (index = 0u; index < sizeof(command); ++index) if (core_machine_keyboard_submit_native_byte(
         session->core_machine, command[index]) != TYPE_STATUS_OK) goto done;
     if (!vm_fdc242_run_until(session, VM_FDC242_RUN_BUDGET, quantum, 'O') ||
         core_machine_memory_read(session->core_machine, VM_FDC242_DMA_ADDRESS,

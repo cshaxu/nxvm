@@ -339,8 +339,8 @@ static C_INT vm_ata253_run_until(vm_session *session, type_unsigned_32 limit,
 
 C_INT main(C_INT argc, C_CHAR **argv)
 {
-    static const type_unsigned_8 command[] = { 0x1eu, 0x14u, 0x1eu, 0x03u, 0x06u,
-        0x04u, 0x1cu };
+    static const type_unsigned_8 command[] = { 0x1cu, 0x2cu, 0x1cu, 0x1eu, 0x2eu,
+        0x26u, 0x5au };
     vm_session_config config = {0};
     vm_session *session = STD_NULL;
     type_unsigned_8 *fdd_image = STD_NULL;
@@ -363,7 +363,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
     if (vm_session_create(&config, &session) != TYPE_STATUS_OK || session == STD_NULL ||
         !vm_ata253_run_until(session, VM_ATA253_BOOT_BUDGET, 0u)) goto done;
     for (index = 0u; index < sizeof(command); ++index) {
-        if (core_machine_keyboard_submit_scan_code(session->core_machine,
+        if (core_machine_keyboard_submit_native_byte(session->core_machine,
                 command[index]) != TYPE_STATUS_OK) goto done;
     }
     passed = vm_ata253_run_until(session, VM_ATA253_RUN_BUDGET, 'O');

@@ -21,6 +21,7 @@ typedef struct core_machine_cpu_execution_context
 #define CORE_MACHINE_KBC_FIFO_CAPACITY 64u
 #define CORE_MACHINE_KBC_RESPONSE_CAPACITY 4u
 #define CORE_MACHINE_KBC_SCAN_SET_1 1u
+#define CORE_MACHINE_KBC_SCAN_SET_2 2u
 
 #define CORE_MACHINE_KBC_COMMAND_TRANSLATION 0x40u
 #define CORE_MACHINE_KBC_COMMAND_IRQ12 0x02u
@@ -81,6 +82,10 @@ typedef struct t_kbc_data {
     type_unsigned_8 scan_set;
     type_unsigned_8 led_state;
     type_unsigned_8 typematic;
+    type_bool set2_break_pending;
+    type_bool set2_extended_pending;
+    type_unsigned_8 set2_pause_bytes[8];
+    type_unsigned_8 set2_pause_count;
     type_unsigned_8 last_keyboard_output_byte;
     type_unsigned_8 previous_keyboard_output_byte;
     type_bool keyboard_has_output;
@@ -122,9 +127,13 @@ C_VOID core_machine_kbc_set_typematic_timing(t_kbc *controller,
 C_VOID core_machine_kbc_set_command_response_timing(t_kbc *controller,
     type_unsigned_32 response_ticks);
 C_VOID core_machine_kbc_finalize(t_kbc *controller);
-type_status core_machine_kbc_submit_scan_code(t_kbc *controller, type_unsigned_8 scan_code);
-type_status core_machine_kbc_submit_scan_codes(t_kbc *controller,
-    const type_unsigned_8 *scan_codes, STD_SIZE_T count);
+/* Submit a byte emitted by the attached physical keyboard.  This is the
+ * production keyboard-to-controller boundary; it is not a guest-FIFO or test
+ * injection path. */
+type_status core_machine_kbc_submit_native_byte(t_kbc *controller,
+    type_unsigned_8 native_byte);
+type_status core_machine_kbc_submit_native_bytes(t_kbc *controller,
+    const type_unsigned_8 *native_bytes, STD_SIZE_T count);
 type_status core_machine_kbc_submit_aux_report(t_kbc *controller,
     type_signed_16 delta_x, type_signed_16 delta_y, type_unsigned_8 buttons);
 

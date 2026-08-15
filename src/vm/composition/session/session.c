@@ -27,7 +27,7 @@ C_VOID vm_session_consume_request(
                 request->data.key_event.virtual_key,
                 request->data.key_event.pressed, &sequence) ==
             TYPE_STATUS_OK) {
-            (C_VOID)core_machine_keyboard_submit_scan_codes(session->core_machine,
+            (C_VOID)core_machine_keyboard_submit_native_bytes(session->core_machine,
                 sequence.bytes, sequence.count);
         }
     } else if (request->kind == VM_PLATFORM_REQUEST_MOUSE_EVENT) {

@@ -191,8 +191,8 @@ static C_INT vm_cga_dos_run_until(vm_session *session, type_unsigned_32 limit,
 
 C_INT main(C_INT argc, C_CHAR **argv)
 {
-    static const type_unsigned_8 command[] = { 0x2eu, 0x22u, 0x1eu, 0x14u, 0x03u,
-        0x03u, 0x09u, 0x1cu };
+    static const type_unsigned_8 command[] = { 0x21u, 0x34u, 0x1cu, 0x2cu, 0x1eu,
+        0x1eu, 0x3eu, 0x5au };
     vm_session_config config = {0};
     vm_session *session = STD_NULL;
     type_unsigned_8 *image = STD_NULL;
@@ -209,7 +209,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
     if (vm_session_create(&config, &session) != TYPE_STATUS_OK || session == STD_NULL ||
         !vm_cga_dos_run_until(session, VM_CGA_DOS_BOOT_BUDGET, 0)) goto done;
     for (index = 0u; index < sizeof(command); ++index) {
-        if (core_machine_keyboard_submit_scan_code(session->core_machine,
+        if (core_machine_keyboard_submit_native_byte(session->core_machine,
                 command[index]) != TYPE_STATUS_OK) goto done;
     }
     passed = vm_cga_dos_run_until(session, VM_CGA_DOS_RUN_BUDGET, 1);

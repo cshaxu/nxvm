@@ -62,7 +62,7 @@ static C_INT vm_t287_submit(const vm_session *session, const type_unsigned_8 *co
 
     if (session == STD_NULL || codes == STD_NULL) return 0;
     for (index = 0u; index < count; ++index) {
-        if (core_machine_keyboard_submit_scan_code(session->core_machine,
+        if (core_machine_keyboard_submit_native_byte(session->core_machine,
                 codes[index]) != TYPE_STATUS_OK) return 0;
     }
     return 1;
@@ -136,8 +136,8 @@ C_INT main(C_INT argc, C_CHAR **argv)
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
         .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
     };
-    const type_unsigned_8 enter[] = {0x1cu};
-    const type_unsigned_8 select_c[] = {0x2eu, 0x2au, 0x27u, 0xaau, 0x1cu};
+    const type_unsigned_8 enter[] = {0x5au};
+    const type_unsigned_8 select_c[] = {0x21u, 0x12u, 0x2au, 0xf0u, 0x12u, 0x5au};
     HANDLE thread = STD_NULL;
     vm_session *session = STD_NULL;
     type_unsigned_8 hdd_count = 0u;

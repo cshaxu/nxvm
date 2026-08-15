@@ -4542,26 +4542,26 @@ type_status core_machine_get_nmi_mask(const core_machine *machine,
     return TYPE_STATUS_OK;
 }
 
-type_status core_machine_keyboard_submit_scan_code(core_machine *machine,
-    type_unsigned_8 scan_code)
+type_status core_machine_keyboard_submit_native_byte(core_machine *machine,
+    type_unsigned_8 native_byte)
 {
     if (machine == STD_NULL || !core_machine_mutable_operation_is_allowed(machine) ||
         machine->lifecycle == CORE_MACHINE_INITIALIZED ||
         machine->lifecycle == CORE_MACHINE_FAULTED) {
         return TYPE_STATUS_INVALID_STATE;
     }
-    return core_machine_kbc_submit_scan_code(&machine->shared_kbc, scan_code);
+    return core_machine_kbc_submit_native_byte(&machine->shared_kbc, native_byte);
 }
 
-type_status core_machine_keyboard_submit_scan_codes(core_machine *machine,
-    const type_unsigned_8 *scan_codes, STD_SIZE_T count)
+type_status core_machine_keyboard_submit_native_bytes(core_machine *machine,
+    const type_unsigned_8 *native_bytes, STD_SIZE_T count)
 {
     if (machine == STD_NULL || !core_machine_mutable_operation_is_allowed(machine) ||
         machine->lifecycle == CORE_MACHINE_INITIALIZED ||
         machine->lifecycle == CORE_MACHINE_FAULTED) {
         return TYPE_STATUS_INVALID_STATE;
     }
-    return core_machine_kbc_submit_scan_codes(&machine->shared_kbc, scan_codes,
+    return core_machine_kbc_submit_native_bytes(&machine->shared_kbc, native_bytes,
         count);
 }
 

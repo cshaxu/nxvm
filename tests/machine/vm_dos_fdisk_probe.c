@@ -57,7 +57,7 @@ static C_INT vm_t287_fdisk_submit(const vm_session *session, const type_unsigned
 
     if (session == STD_NULL || codes == STD_NULL) return 0;
     for (index = 0u; index < count; ++index) {
-        if (core_machine_keyboard_submit_scan_code(session->core_machine,
+        if (core_machine_keyboard_submit_native_byte(session->core_machine,
                 codes[index]) != TYPE_STATUS_OK) return 0;
     }
     return 1;
@@ -71,11 +71,11 @@ C_INT main(C_INT argc, C_CHAR **argv)
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
         .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
     };
-    const type_unsigned_8 enter[] = {0x1cu};
-    const type_unsigned_8 four_make[] = {0x05u};
-    const type_unsigned_8 four_break[] = {0x85u};
-    const type_unsigned_8 fdisk[] = {0x21u, 0xa1u, 0x20u, 0xa0u, 0x17u, 0x97u,
-        0x1fu, 0x9fu, 0x25u, 0xa5u, 0x1cu};
+    const type_unsigned_8 enter[] = {0x5au};
+    const type_unsigned_8 four_make[] = {0x25u};
+    const type_unsigned_8 four_break[] = {0xf0u, 0x25u};
+    const type_unsigned_8 fdisk[] = {0x2bu, 0xf0u, 0x2bu, 0x23u, 0xf0u, 0x23u,
+        0x43u, 0xf0u, 0x43u, 0x1bu, 0xf0u, 0x1bu, 0x42u, 0xf0u, 0x42u, 0x5au};
     HANDLE thread = STD_NULL;
     vm_session *session = STD_NULL;
     C_INT passed = 0;

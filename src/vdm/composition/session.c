@@ -51,9 +51,11 @@ C_VOID vdm_session_destroy(vdm_session *session)
     }
 }
 
-type_status vdm_session_inject_key(vdm_session *session, type_unsigned_8 scan_code)
+type_status vdm_session_submit_native_keyboard_byte(vdm_session *session,
+    type_unsigned_8 native_byte)
 { return session == STD_NULL ? TYPE_STATUS_INVALID_ARGUMENT :
-    vdm_machine_dos_minimal_inject_key(session->dos_minimal, scan_code); }
+    vdm_machine_dos_minimal_submit_native_keyboard_byte(session->dos_minimal,
+        native_byte); }
 type_status vdm_session_write_text(vdm_session *session, type_unsigned_16 cell,
     type_unsigned_8 character, type_unsigned_8 attribute)
 { return session == STD_NULL ? TYPE_STATUS_INVALID_ARGUMENT :
@@ -66,4 +68,3 @@ type_status vdm_session_port_read(vdm_session *session, type_unsigned_16 port,
     type_unsigned_32 *out_value)
 { return session == STD_NULL ? TYPE_STATUS_INVALID_ARGUMENT :
     vdm_machine_dos_minimal_port_read(session->dos_minimal, port, out_value); }
-
