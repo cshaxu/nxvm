@@ -14,3 +14,6 @@ S1 inventories every selected CPU, transaction, bus, device, trace and reset
 boundary before selecting a phase scalar or behavior. Its [ledger](../etc/evidence/t371-s1-model339-phase-owner-ledger.md)
 retains deterministic ordering but transfers every unqualified physical mapping
 to a bounded later S.
+
+S1 is accepted at `e230aceb`. S2 receives CPU retirement/prefetch and
+memory/I/O phase vocabulary with the same no-guessed-value constraint.

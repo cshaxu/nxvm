@@ -2,27 +2,6 @@
 
 ## Current Work
 
-## M5 T371 S1 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | New; T370 closure is accepted with this next Queue candidate's admission. |
-| Admission And Approval | The owner-approved ordered L3 program continues from completed 5170 CPU, bus and device-service prerequisites into the selected-profile phase-refinement candidate. |
-| Objective | Create a complete selected Model-339 phase/ownership/source ledger before admitting any phase model or timing behavior. |
-| Non-goals | No phase scalar, wait count, prefetch behavior, device microstate, host pacing, physical-cycle claim, 80386/8088 work, Windows work or runtime change. |
-| Reference Baseline | T366--T370 closure evidence, selected-profile phase-refinement proposal, Model-339 descriptor, transaction/timeline/trace owners and primary IBM/Intel authorities. |
-| Candidate Proposal | [Selected-profile model-L3 phase refinement](../proposals/m5-cycle-exact-selected-profile.md). |
-| Files And ABI Surface | T371 history, S1 evidence, Current status and evidence index only. Stop before source, ABI, CMake, test or runtime changes. |
-| Applicable Rules | One transaction/timeline/device owner; source-labelled model boundary; copied observation; reset/cancellation; documentation and source-policy rules. |
-| Verification | Complete phase-boundary owner/source/consumer matrix, source-limit classification, downstream-S allocation, documentation governance and diff check. |
-| Expected Markers | No new marker, artifact, runtime timing value or L3 claim. |
-| Asset Needs | Public manuals and project-authored evidence only; no ROM, guest media, firmware, external code, binary or raw host trace. |
-| Reporting Requirements | State the admissible phase surfaces, source gaps, reference-model eligibility and exact S receivers. |
-| Stop Conditions | Stop if any required phase needs guessed timing, an unselected device owner, a second scheduler, a physical-cycle claim or new public interface. |
-| Exit Criteria | P1 commits an indexed source/owner ledger with bounded S sequence; it leaves Model-339 L3 open. |
-| Original Owner Request | Continue in Queue order toward complete L3 before Windows 3.1; use named reference models only where authoritative manuals leave a range or no range, without treating them as IBM authority. |
-| Similar-Issue Sweep | Sweep CPU retirement, transaction, DMA/HOLD, PIC/INTA, memory/ROM/CGA/ISA availability, PIT/RTC/FDC/KBC/VADP phases, timeline/reset/trace, descriptor and focused tests. |
-
 ## Current Technical Baseline
 
 - **Current developer artifact:** T369 S4 `vm-0-5-0369` /
@@ -42,6 +21,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T371 S1 | P1 `e230aceb` establishes the complete Model-339 phase owner/source ledger, retaining deterministic ordering and transferring every unqualified physical mapping to S2--S5. **5170 model-L3 remains open.** [S1 ledger](../etc/evidence/t371-s1-model339-phase-owner-ledger.md). |
 | T370 | Closed at `77a73c04`: S1--S5 reconciled all selected Model-339 device-service owners and transferred unavailable duration to phase refinement; **5170 model-L3 is not ready**. [Closure audit](../etc/evidence/t370-s5-planar-cga-transfer-audit.md). |
 | T369 | Closed at `08a64bea`: S1--S4 lock and audit the 5170 Model-339 bus-stage input, logical 80286 DMA handoff and selected FDC/PIC visibility. Board waits, physical waveforms, device service, phase refinement and final 5170 L3 remain exact ordered transfers; **5170 model-L3 is not ready**. [Closure audit](../etc/evidence/t369-s4-pcat-bus-stage-closure-audit.md). |
 | T368 | Closed at `4da84be8`: completes the source-labelled 80286 successful-retirement CPU ledger, with exact values or declared source-undefined transfers. The next Queue receiver is bus-timed PC/AT operation; CPU waits, bus/device timing and IBM 5170 L3 remain open. [Closure audit](../etc/evidence/t368-s7-80286-retirement-closure-audit.md). |
