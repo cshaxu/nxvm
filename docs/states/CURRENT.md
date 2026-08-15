@@ -8,8 +8,7 @@ candidate.
 
 | Task | Compact progress |
 | --- | --- |
-| T381 | Closed at `9b6a86c6`: YAML profiles are frozen at startup and selected by file name; zero-session lifecycle, restricted Console mutation and the T381 artifact are proven. [Evidence](../etc/evidence/t381-s1-console-yaml-profiles.md). |
-| T381 | Closed at `9b6a86c6`: frozen YAML profile selection, zero-session lifecycle and bounded floppy mutation are proven. [Evidence](../etc/evidence/t381-s1-console-yaml-profiles.md). |
+| T381 S1 | Closed at `9b6a86c6`: YAML profiles are frozen at startup and selected by file name; zero-session lifecycle, restricted Console mutation and the T381 artifact are proven. [Evidence](../etc/evidence/t381-s1-console-yaml-profiles.md). |
 
 <!-- T379 packet retired at task closure.
 
