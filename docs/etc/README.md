@@ -215,6 +215,7 @@ principal documents named in [docs/README.md](../README.md).
 | `evidence/t374-s14-cga-ega-crtc-index-gate.md` | Verification owner | T374 S14 Model-339 CGA rejection and EGA retention of CRTC index `13h`. Retain with T374 history while the task is open. |
 | `evidence/t374-s15-model339-platform-controller-functional-audit.md` | Verification owner | T374 S15 source-labelled Model-339 PIC/PIT/DMA/RTC functional matrix, focused replay and default-EGA VADP profile-direction regression transfer. Retain with T374 history while the task is open. |
 | `evidence/t374-s16-default-ega-vadp-direction-repair.md` | Verification owner | T374 S16 default-PC/AT VADP descriptor-direction correction, complete handler/leaf sweep and focused Model-339/EGA regression proof. Retain with T374 history while the task is open. |
+| `evidence/t374-s17-model339-kbc-keyboard-functional-audit.md` | Verification owner | T374 S17 Model-339 8042/101-key keyboard function matrix, IRQ1-only owner sweep, source boundary and native-Set-2/translation repair selection. Retain with T374 history while the task is open. |
 | `operations/` | Execution, source, and release owners | Toolchain, policy, templates, release procedure, and closure material. |
 | `research/` | Source owner | Provenance, external references, and non-product research. |
 | `history/` | Documentation owner | Read-only legacy and M5 migration/roadmap evidence. |

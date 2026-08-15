@@ -144,3 +144,11 @@ changes only the default-PC/AT declaration for write-only CRTC-index port
 `3D4h`, bringing it into agreement with the retained VADP registration. The
 formerly failing default-PC/AT composition test and focused Model-339/EGA
 regressions pass. It adds no display capability or timing claim.
+
+### S17: 8042 and 101-key keyboard functional audit
+
+S17's [8042/keyboard audit](../etc/evidence/t374-s17-model339-kbc-keyboard-functional-audit.md)
+classifies the selected command, FIFO, reset, IRQ1 and firmware-consumer
+routes, excludes AUX/IRQ12, and selects native Set-2 versus 8042 Set-1
+translation as the remaining concrete functional mechanism. Timing remains
+transferred.
