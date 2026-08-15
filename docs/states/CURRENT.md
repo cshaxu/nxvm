@@ -2,9 +2,24 @@
 
 ## Current Work
 
-T366 S19 is accepted at `ad1ed794`. The next T366 S must select the next
-source-determinate 80286 successful-retirement family; physical-time and
-device-timing claims remain blocked by the wider CPU ledger.
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | T366 S20, numbered continuation implementation subtask; P1 is one complete pushed implementation/evidence delivery. |
+| Admission And Approval | The owner approved continued L3 work on 2026-08-14. T366 admits only the source-determinate unprefixed legal real-address-mode 80286 `8E MOV Sreg,r/m16` success path. No exception is requested. |
+| Objective | Publish the primary-source real-mode `2` register and `5 + EA + odd-word` memory costs for successful legal `8E` selector loads through the existing retirement owner. |
+| Non-goals | No protected-mode `17/19*` descriptor-load timing, `MOV CS`/invalid/386-only encoding, prefix/fault/delivery/interrupt-shadow timing, bus/physical time, other profile, device, x87 or ABI work. |
+| Reference Baseline | `b36e0db1` (accepted T366 S19), [T366 proposal](../proposals/m5-bus-timed-pcat-operation.md), [S19 evidence](../etc/evidence/t366-s19-80286-sreg-store-memory-timing.md), [AMD 80286 instruction summary](https://www.bitsavers.org/components/amd/x86/_dataSheets/1985_80286.pdf), and [Intel 80286 clock-rule page](https://tv.manualsonline.com/manuals/mfg/intel/80286.html?p=216). |
+| Candidate Proposal | [Bus-timed PC/AT operation](../proposals/m5-bus-timed-pcat-operation.md), limited to source-backed 80286 successful retirement. |
+| Files And ABI Surface | Private 80286 classifier, focused timing-ledger smoke, T366 evidence/index/history/status; no public or device surface changes. |
+| Applicable Rules | [Execution](../rules/EXECUTION.md): complete pushed P and sweep. [Architecture](../rules/ARCHITECTURE.md): one retirement publisher. [Coding](../rules/CODING.md): existing owner-local EA/odd helper. [Documentation](../rules/DOCUMENT.md): truthful state. [Source policy](../etc/operations/policy/source-policy.md): documentation only, no import/assets. |
+| Verification | Focused timing smoke proves real-mode ES/SS/DS legal selector load, direct even/odd and base+index+displacement memory values/ticks; run focused target, `run-current-smokes`, governance and `git diff --check`; review changed files before P1. |
+| Expected Markers | `M5:T357:S6:80286-INSTRUCTION-TIMING-LEDGER:OK`; source gives real-mode 2 clocks register or 5 clocks memory base, plus one base/index/displacement and two per odd 16-bit memory operand. |
+| Asset Needs | No guest media, ROM, binary, path, external source import or emulator output. Intel/AMD historical documentation is read-only evidence. |
+| Reporting Requirements | Report encoding/mode determination, test progress, P1 push/evidence and acceptance or consolidated corrective brief. |
+| Stop Conditions | Stop if legal encoding or mode detection cannot be isolated, a higher owner intercepts it, helper cannot express source rule, semantic repair is needed, or a gate cannot run. |
+| Exit Criteria | A pushed P proves only valid unprefixed real-mode 80286 `8E` successful retirement publishes `2` or `5 + EA + odd-word`, with source/sweep/transfers/checks recorded. |
+| Original Owner Request | Continue until comprehensive L3 closure before Windows 3.1; use secondary emulators only if primary material cannot determine timing. |
+| Similar-Issue Sweep | Audit `8E` handler, direct/indexed memory decode, shared 80286 EA/odd helper, legal/invalid encodings, `8C`, protected-mode selector load, prefix/delivery and profile classifiers. Retain excluded paths at their named receivers. |
 
 ## Current Technical Baseline
 

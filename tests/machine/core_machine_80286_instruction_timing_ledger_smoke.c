@@ -157,6 +157,54 @@ static C_INT timing_80286_sreg_store(C_VOID)
     return failed;
 }
 
+static C_INT timing_80286_sreg_load(C_VOID)
+{
+    static const type_unsigned_8 load_es_ax[] = { 0x8eu, 0xc0u };
+    static const type_unsigned_8 load_ss_ax[] = { 0x8eu, 0xd0u };
+    static const type_unsigned_8 load_ds_ax[] = { 0x8eu, 0xd8u };
+    static const type_unsigned_8 load_ds_even[] = { 0x8eu, 0x1eu, 0x00u, 0x10u };
+    static const type_unsigned_8 load_ds_odd[] = { 0x8eu, 0x1eu, 0x01u, 0x10u };
+    static const type_unsigned_8 load_ds_indexed[] = { 0x8eu, 0x5au, 0x01u };
+    const type_unsigned_16 selector = 0x1357u;
+    timing_80286_state state = { 0u, 0u, 0u };
+    core_machine *machine = STD_NULL;
+    C_INT failed = !timing_80286_prepare(&machine, &state);
+
+    if (!failed) failed |= !timing_80286_load(machine, load_es_ax,
+        sizeof(load_es_ax)) || ((machine->executor_cpu.data.eax =
+        0xaabb1357u), 0) || !timing_80286_run(machine, &state, 1u, 2u) ||
+        machine->executor_cpu.data.es.selector != selector ||
+        machine->executor_cpu.data.es.base != 0x13570u;
+    if (!failed) failed |= !timing_80286_load(machine, load_ss_ax,
+        sizeof(load_ss_ax)) || ((machine->executor_cpu.data.eax =
+        0xaabb1357u), 0) || !timing_80286_run(machine, &state, 1u, 2u) ||
+        machine->executor_cpu.data.ss.selector != selector ||
+        machine->executor_cpu.data.ss.base != 0x13570u;
+    if (!failed) failed |= !timing_80286_load(machine, load_ds_ax,
+        sizeof(load_ds_ax)) || ((machine->executor_cpu.data.eax =
+        0xaabb1357u), 0) || !timing_80286_run(machine, &state, 1u, 2u) ||
+        machine->executor_cpu.data.ds.selector != selector ||
+        machine->executor_cpu.data.ds.base != 0x13570u;
+    if (!failed) failed |= !timing_80286_load(machine, load_ds_even,
+        sizeof(load_ds_even)) || core_machine_memory_write(machine, 0x1000u,
+        &selector, sizeof(selector)) != TYPE_STATUS_OK ||
+        !timing_80286_run(machine, &state, 1u, 5u) ||
+        machine->executor_cpu.data.ds.selector != selector;
+    if (!failed) failed |= !timing_80286_load(machine, load_ds_odd,
+        sizeof(load_ds_odd)) || core_machine_memory_write(machine, 0x1001u,
+        &selector, sizeof(selector)) != TYPE_STATUS_OK ||
+        !timing_80286_run(machine, &state, 1u, 7u) ||
+        machine->executor_cpu.data.ds.selector != selector;
+    if (!failed) failed |= !timing_80286_load(machine, load_ds_indexed,
+        sizeof(load_ds_indexed)) || ((machine->executor_cpu.data.bp = 0x1000u),
+        (machine->executor_cpu.data.si = 0u), 0) || core_machine_memory_write(
+            machine, 0x1001u, &selector, sizeof(selector)) != TYPE_STATUS_OK ||
+        !timing_80286_run(machine, &state, 1u, 8u) ||
+        machine->executor_cpu.data.ds.selector != selector;
+    core_machine_destroy(machine);
+    return failed;
+}
+
 static C_INT timing_80286_memory(C_VOID)
 {
     static const type_unsigned_8 direct_read[] = { 0x8bu, 0x0eu, 0x00u, 0x10u };
@@ -393,6 +441,7 @@ C_INT main(C_VOID)
         timing_80286_case(registers, sizeof(registers), 2u)) return 1;
     if (timing_80286_lahf_sahf()) return 5;
     if (timing_80286_sreg_store()) return 6;
+    if (timing_80286_sreg_load()) return 7;
     if (timing_80286_memory()) return 2;
     if (timing_80286_control_ports()) return 3;
     if (timing_80286_boundaries()) return 4;
