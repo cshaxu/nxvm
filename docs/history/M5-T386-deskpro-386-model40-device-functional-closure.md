@@ -46,3 +46,10 @@ profile/session source graph. It confirms that the present descriptor is a
 closed default-PC/AT/Model-339 mechanism, not a neutral extension point, and
 that its generic firmware/ATA/EGA coupling makes early Model-40 publication
 false. Documentation governance and actual-change review passed.
+### S3: Shared Optional Second 8254
+
+S3 adds one shared-machine optional 8254 topology through the existing PIT
+mechanism, with separate `48h-4Bh` state/ports/lifetime and no output consumer.
+The [S3 evidence](../etc/evidence/t386-s3-second-pit-owner.md) retains its
+focused isolation proof and full current-gate result. Failsafe/NMI behavior,
+firmware binding and board timing transfer unchanged to S4/later work.

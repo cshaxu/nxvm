@@ -404,17 +404,28 @@ type_bool core_machine_pit_get_output(const t_pit *pit, type_unsigned_8 id)
     return pit != STD_NULL && id < 3u ? pit->data.flagOutput[id] : TYPE_FALSE;
 }
 
+C_VOID core_machine_pit_initialize_at(t_pit *pit, t_port *port,
+    type_unsigned_16 base_port)
+{
+    if (pit == STD_NULL || port == STD_NULL || base_port > 0xfffcu) return;
+    STD_MEMSET((C_VOID *)pit, TYPE_ZERO_8, sizeof(*pit));
+    core_machine_port_add_read(port, base_port, io_read_0040, pit);
+    core_machine_port_add_read(port, (type_unsigned_16)(base_port + 1u),
+        io_read_0041, pit);
+    core_machine_port_add_read(port, (type_unsigned_16)(base_port + 2u),
+        io_read_0042, pit);
+    core_machine_port_add_write(port, base_port, io_write_0040, pit);
+    core_machine_port_add_write(port, (type_unsigned_16)(base_port + 1u),
+        io_write_0041, pit);
+    core_machine_port_add_write(port, (type_unsigned_16)(base_port + 2u),
+        io_write_0042, pit);
+    core_machine_port_add_write(port, (type_unsigned_16)(base_port + 3u),
+        io_write_0043, pit);
+}
+
 C_VOID core_machine_pit_initialize(t_pit *pit, t_port *port)
 {
-    if (pit == STD_NULL || port == STD_NULL) return;
-    STD_MEMSET((C_VOID *)pit, TYPE_ZERO_8, sizeof(*pit));
-    core_machine_port_add_read(port, 0x0040, io_read_0040, pit);
-    core_machine_port_add_read(port, 0x0041, io_read_0041, pit);
-    core_machine_port_add_read(port, 0x0042, io_read_0042, pit);
-    core_machine_port_add_write(port, 0x0040, io_write_0040, pit);
-    core_machine_port_add_write(port, 0x0041, io_write_0041, pit);
-    core_machine_port_add_write(port, 0x0042, io_write_0042, pit);
-    core_machine_port_add_write(port, 0x0043, io_write_0043, pit);
+    core_machine_pit_initialize_at(pit, port, 0x0040u);
 }
 
 C_VOID core_machine_pit_reset(t_pit *pit)

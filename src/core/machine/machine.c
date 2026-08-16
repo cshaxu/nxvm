@@ -3096,6 +3096,9 @@ static C_VOID core_machine_arbitration_tick(C_VOID *opaque,
             0u, (type_unsigned_32)dma_ticks, 0u);
     }
     core_machine_pit_advance(&machine->shared_pit, pit_ticks);
+    if (machine->auxiliary_pit_configured) {
+        core_machine_pit_advance(&machine->auxiliary_pit, pit_ticks);
+    }
     if (pit_ticks != 0u) {
         core_machine_trace_record(machine, CORE_MACHINE_TRACE_PIT_ADVANCE,
             0u, (type_unsigned_32)pit_ticks, 0u);
@@ -4141,7 +4144,10 @@ static type_status core_machine_create_internal(
         !core_machine_valid_cpu_profile(
             core_machine_resolve_cpu_profile(config->cpu_profile)) ||
         !core_machine_valid_fpu_profile(config->fpu_profile) ||
-        !core_machine_clock_plan_is_valid(&config->clock_plan)) {
+        !core_machine_clock_plan_is_valid(&config->clock_plan) ||
+        (config->auxiliary_pit_present != TYPE_FALSE &&
+        config->auxiliary_pit_present != TYPE_TRUE) ||
+        (config->auxiliary_pit_present && config->auxiliary_pit_base_port > 0xfffcu)) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
 
@@ -4253,6 +4259,11 @@ static type_status core_machine_create_internal(
     core_machine_pic_irq_source_bind(&machine->shared_pit_irq0_source,
         &machine->shared_pic_master, &machine->shared_pic_slave, 0u);
     core_machine_pit_initialize(&machine->shared_pit, &machine->executor_port);
+    if (config->auxiliary_pit_present) {
+        core_machine_pit_initialize_at(&machine->auxiliary_pit,
+            &machine->executor_port, config->auxiliary_pit_base_port);
+        machine->auxiliary_pit_configured = TYPE_TRUE;
+    }
     core_machine_pit_set_output(&machine->shared_pit, 0,
         core_machine_pic_timer_output, &machine->shared_pit_irq0_source);
     core_machine_kbc_bind_core_services(&machine->shared_kbc,
@@ -4321,6 +4332,9 @@ static type_status core_machine_cold_reset(core_machine *machine)
     core_machine_pic_reset(&machine->shared_pic_master,
         &machine->shared_pic_slave);
     core_machine_pit_reset(&machine->shared_pit);
+    if (machine->auxiliary_pit_configured) {
+        core_machine_pit_reset(&machine->auxiliary_pit);
+    }
     core_machine_vadp_reset(&machine->shared_vadp);
 
     STD_ATOMIC_STORE(&machine->stop_requested, 0);
@@ -4736,6 +4750,9 @@ C_VOID core_machine_destroy(core_machine *machine)
         core_machine_pic_finalize(&machine->shared_pic_master,
             &machine->shared_pic_slave);
         core_machine_pit_finalize(&machine->shared_pit);
+        if (machine->auxiliary_pit_configured) {
+            core_machine_pit_finalize(&machine->auxiliary_pit);
+        }
         core_machine_vadp_finalize(&machine->shared_vadp);
         core_machine_cpu_execution_finalize(&machine->executor_cpu_execution);
         core_machine_port_finalize(&machine->executor_port);

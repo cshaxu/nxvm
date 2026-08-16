@@ -134,6 +134,8 @@ struct core_machine {
     t_pic shared_pic_slave;
     core_machine_pic_irq_source shared_pit_irq0_source;
     t_pit shared_pit;
+    t_pit auxiliary_pit;
+    type_bool auxiliary_pit_configured;
     t_latch shared_dma_latch;
     t_dma shared_dma_primary;
     t_dma shared_dma_secondary;

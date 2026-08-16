@@ -2,12 +2,26 @@
 
 ## Current Work
 
-**T386 open; S1--S2 accepted.** The selected-device [functional ledger](../etc/evidence/t386-s1-deskpro-functional-ledger.md)
-and [non-runnable carrier contract](../etc/evidence/t386-s2-model40-carrier-contract.md)
-now establish every Model-40 receiver and prohibit default PC/AT, ATA/HDC,
-generated firmware and IBM EGA substitution. The first source change is S3's
-shared second-PIT owner; no Model-40 catalog/YAML publication is permitted
-until S3--S6 all close.
+## M5 T386 S3 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | The owner approved continuous single-person execution of the ordered M5 Queue through Model-40 functional closure. T386 S1/S2 are accepted and identify the second 8254 at `48h-4Bh` as the first blocked selected-device owner. This continuation is admitted for that shared PIT capability and Model-40-private binding only. |
+| Objective | Implement one additional independently resettable/advanced 8254 instance in the shared machine owner, with an explicit configured I/O-port topology, no implicit IRQ/NMI consumer and no duplicate PIT implementation; establish the private Model-40 receiver for the documented `48h-4Bh` block. Prove primary and additional PIT state, ports and reset do not alias. |
+| Non-goals | No public Model-40 profile/YAML/catalog publication, firmware/ROM, 16 MHz board timing, service placement, failsafe NMI delivery, port-`61h` semantics, speaker/audio, generic-PC/AT or Model-339 topology change, storage, EGA, ATA/IBM-MFM substitution or L3 claim. |
+| Reference Baseline | Accepted T386 S1 functional ledger and S2 carrier contract; `core_machine_pit` and machine lifecycle/current time owner; T384 selected dual-8254 fact; architecture/coding rules; existing PIT reset/IRQ and current-gate tests. |
+| Candidate Proposal | [DeskPro 386 Model 40 selected-device functional closure](../proposals/m5-deskpro-386-model40-device-functional-closure.md). |
+| Files And ABI Surface | Expected shared-owner scope: `src/core/machine/pit.*`, `machine.*`/machine interface only if a bounded configuration operation is necessary, and focused core/VM product-profile tests; product composition may carry a private Model-40 receiver only. No public session/YAML ABI unless independently justified in the review. |
+| Applicable Rules | Architecture: one state/route owner, neutral core dependency flow and product-root composition; coding: C11, cohesive owner-local helpers and no duplicate PIT route; execution/document/source policy rules apply. No exception is requested. |
+| Verification | Add focused regression for configured additional PIT ports, independent count/output/reset and no primary-port alias; retain existing PIT and current-gate tests. Sweep every PIT initialize/advance/reset/finalize caller and every port-registration conflict path. Prove an unbound additional PIT cannot assert IRQ/NMI and that Model-339/default composition remains unchanged. |
+| Expected Markers | `M5:T386:S3:SECOND-PIT-OWNER:OK` and `M5:T386:S3:SECOND-PIT-ISOLATION:OK`. |
+| Asset Needs | No ROM, guest media, external source/code or protected asset. T384 primary evidence supplies only the selected port/topology fact. |
+| Reporting Requirements | Record configured port range, ownership/lifetime, advance/reset behavior, output-consumer rule, profile receiver and exact regression results. Transfer failsafe/NMI routing and board timing unchanged to S4/later board work. |
+| Stop Conditions | Stop and transfer if source review requires physical frequency/availability, a failsafe-NMI behavior decision, public profile publication, firmware analysis, unrecorded board facts, or a second machine time owner. |
+| Exit Criteria | The shared machine has one tested optional additional 8254 capability with no duplicated PIT logic, no primary alias and no implicit external signal; its Model-40 private receiver is documented, while all excluded NMI/timing/publication work remains transferred. |
+| Original Owner Request | Complete full DeskPro functionality before board timing/final L3, with a shared VADP core and no generic device substitution. |
+| Similar-Issue Sweep | Inspect all PIT state, port registration, time-advance, reset/finalize and output-binding owners plus all profile port routes. Fix the common owner or record an explicit receiver; do not add a Model-40-only PIT clone. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T382 S8 `vm-0-5-0382` /

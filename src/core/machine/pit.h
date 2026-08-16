@@ -89,6 +89,9 @@ typedef struct {
 #define VPIT_SB_OUT 0x80 /* state of out pin high(1) or low(0) */
 
 C_VOID core_machine_pit_initialize(t_pit *pit, t_port *port);
+/* One PIT mechanism may be composed at a documented four-port topology. */
+C_VOID core_machine_pit_initialize_at(t_pit *pit, t_port *port,
+    type_unsigned_16 base_port);
 C_VOID core_machine_pit_reset(t_pit *pit);
 C_VOID core_machine_pit_advance(t_pit *pit, type_unsigned_64 elapsed_ticks);
 C_VOID core_machine_pit_finalize(t_pit *pit);
