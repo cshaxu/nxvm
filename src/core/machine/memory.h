@@ -28,16 +28,6 @@ typedef C_VOID (*core_machine_memory_write_observer)(C_VOID *owner,
     type_unsigned_32 physical, type_native_unsigned bytes);
 typedef C_VOID (*core_machine_memory_parity_fault_observer)(C_VOID *owner);
 
-typedef type_status (*core_machine_memory_device_read)(C_VOID *owner,
-    type_unsigned_32 physical, type_virtual_address destination,
-    type_native_unsigned bytes);
-typedef type_status (*core_machine_memory_device_write)(C_VOID *owner,
-    type_unsigned_32 physical, type_virtual_address source,
-    type_native_unsigned bytes);
-typedef type_status (*core_machine_memory_device_query)(C_VOID *owner,
-    type_unsigned_32 physical, type_native_unsigned bytes,
-    core_machine_memory_access access);
-
 typedef struct {
     core_machine_memory_write_observer callback;
     C_VOID *owner;
@@ -45,7 +35,7 @@ typedef struct {
 
 #define CORE_MACHINE_MEMORY_MAPPING_CAPACITY 4u
 #define CORE_MACHINE_MEMORY_WRITE_OBSERVER_CAPACITY 4u
-#define CORE_MACHINE_MEMORY_DEVICE_PROVIDER_CAPACITY 5u
+#define CORE_MACHINE_MEMORY_DEVICE_PROVIDER_CAPACITY 8u
 
 typedef struct {
     type_unsigned_32 physical_start;
@@ -54,6 +44,7 @@ typedef struct {
     core_machine_memory_device_write write;
     core_machine_memory_device_query query;
     C_VOID *owner;
+    type_bool overlay;
 } core_machine_memory_device_provider;
 
 typedef struct {
@@ -117,7 +108,10 @@ type_status core_machine_memory_register_device_provider(t_ram *ram,
     type_unsigned_32 physical_start, STD_SIZE_T bytes,
     core_machine_memory_device_read read, core_machine_memory_device_write write,
     core_machine_memory_device_query query, C_VOID *owner);
-type_status core_machine_memory_register_device_provider_and_write_observer(
+type_status core_machine_memory_register_overlay_device_provider(t_ram *ram,
+    type_unsigned_32 physical_start, STD_SIZE_T bytes,
+    core_machine_memory_device_read read, core_machine_memory_device_write write,
+    core_machine_memory_device_query query, C_VOID *owner);type_status core_machine_memory_register_device_provider_and_write_observer(
     t_ram *ram, type_unsigned_32 physical_start, STD_SIZE_T bytes,
     core_machine_memory_device_read read, core_machine_memory_device_write write,
     core_machine_memory_device_query query, C_VOID *owner,

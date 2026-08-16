@@ -70,6 +70,7 @@ struct vm_session {
     vm_session_boot_preference boot_preference;
     C_INT model40_private;
     vm_profile_model40_external_rom model40_rom;
+    vm_profile_model40_d4_memory model40_d4_memory;
     C_CHAR fdd_image_path[1024];
     C_CHAR hdd_image_path[1024];
 };
