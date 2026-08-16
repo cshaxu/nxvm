@@ -211,7 +211,9 @@ Lifecycle** and the S contract; executor confirmation or objection, completion
 goal, reporting, self-review, and complete-P push; then coordinator
 actual-change review and the applicable P-lifecycle outcome. **Role authority**
 and the one-session/two-session review boundary above govern who performs those
-steps and whether the review is independent. A material objection pauses
+steps and whether the review is independent. One-session runs switch to the
+coordinator role for that review; a separate-session coordinator review is
+independent. A material objection pauses
 affected work pending coordinator direction and cannot be overridden by a
 request to continue. A mid-S handoff records the
 accepted brief, current evidence, unresolved objections, and worktree state

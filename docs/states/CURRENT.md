@@ -2,8 +2,8 @@
 
 ## Current Work
 
-**Idle.** M5 Td S96 made the Role cycle a concise reference sequence while
-retaining the existing lifecycle, authority, review, and objection requirements.
+**Idle.** M5 Td S97 makes the single-session coordinator switch and
+separate-session independent review visible in the concise Role cycle.
 
 ## Current Technical Baseline
 
@@ -35,6 +35,8 @@ retaining the existing lifecycle, authority, review, and objection requirements.
 
 ## Recent Governance
 
+- **M5 Td S97 P1:** added explicit single-/separate-session review navigation
+  without changing the lifecycle requirements.
 - **M5 Td S96 P1:** compressed duplicate Role cycle prose into references to
   its retained authorities without changing lifecycle requirements.
 - **M5 Td S95 P1:** removed duplicate M5 technical narrative from Queue while
