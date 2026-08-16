@@ -58,6 +58,26 @@ monitor, board-timing or L3 claim.
 
 ## Verification
 
-Focused S9--S12 CECG owner and Model-40 controls pass. The required serial
-current gate, documentation governance, and deferred direct-ownership
-verification are recorded with this S's P1 verification result.
+Focused S9--S12 CECG owner and Model-40 controls pass. The serial current gate
+completed 266 current-gate tests; its final log records 433.48 seconds of
+aggregate test time. Documentation governance passes for `vm-0-5-0382` and
+the deferred direct-ownership verifier reports 213 rows, 153 owner tests,
+7 embedded production tests, 1 type foundation, 2 safely separable production,
+50 mixed/inherited production entries and 57 exact residual entries.
+
+The repository's `current-gates-gcc` preset was attempted but its MSYS2 GCC
+16.2 host compiler exited without diagnostics while compiling unchanged
+`src/type.c`; it therefore is not used as source proof. The complete gate above
+ran in the existing working GCC tree, and the two S12 controls were rerun after
+the subsequent formatting-only commit.
+
+## Coordinator Acceptance
+
+P1 `6dfc3c62` and its formatting-only review repair `47dbaabc` are accepted
+after coordinator actual-change review. The review confirms that Model-40
+composition declares only the reset selection while VADP owns all mutable port
+routing and state; generic EGA has no CECG monochrome registration; the source
+contract does not justify `3x8/3x9` routing; two focused controls, the full
+current gate and governance evidence cover the admitted behavior. S12 is
+selected-device functional progress only. T386, firmware, physical board
+behavior, board timing and L3 closure remain open.
