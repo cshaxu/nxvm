@@ -2,18 +2,37 @@
 
 ## Current Work
 
-**T386 open; S1--S18 accepted.** S18 adds reusable VM device-profile
-floppy specifications over Core's neutral media contract. The private Model 40
-selects its 5.25-inch 1.2 MB drive while default PC/AT and Model 339 retain
-1.44 MB. Public YAML backbone/variant selection, remaining device work, board
-timing and the Model-40 L3 audit remain open.
+**T386 open; S1--S18 accepted; S19 active.** S19 corrects the S18 technical-
+baseline provenance record only: the accepted 0389 artifact and 273/273 serial
+gate replace stale S17/272 wording. It adds no runtime behavior, profile,
+artifact or L3 claim.
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation: M5 T386 S19. |
+| Admission And Approval | The owner authorized continued single-role governed DeskPro work. Coordinator discovery found S18's accepted CURRENT technical-baseline prose still said S17/272 while naming S18 artifact 0389; correct the truthful record only, with no exception. |
+| Objective | Correct S18 current-baseline provenance to name its S18 worktree, 273/273 serial current-gate and floppy device-profile proof. |
+| Non-goals | No source, build, artifact, test, profile, YAML, firmware, media, timing, device functionality or L3 change. |
+| Reference Baseline | Accepted T386 S18 P1 48820dd3 and P2 fa7b6e96; indexed S18 evidence; artifact hash 29A174DBC889A1220B0F4BD17805AAA78B326F01B31E5D68D5688F6B5DEC09E4. |
+| Candidate Proposal | docs/proposals/m5-deskpro-386-model40-device-functional-closure.md. |
+| Files And ABI Surface | docs/states/CURRENT.md and indexed S18 evidence only; no code or ABI surface. |
+| Applicable Rules | EXECUTION and DOCUMENT rules: CURRENT is sole current technical baseline and must truthfully agree with accepted artifact/evidence. |
+| Verification | Inspect accepted P1/P2, artifact SHA-256, current-gate evidence and exact diff; run documentation governance and coordinator actual-change review. |
+| Expected Markers | M5:T386:S19:BASELINE-PROVENANCE:OK. |
+| Asset Needs | None. |
+| Reporting Requirements | Record the correction and acceptance in S18 evidence; do not claim a new artifact or runtime verification. |
+| Stop Conditions | Stop if correction requires source/build behavior changes or contradicts accepted evidence. |
+| Exit Criteria | CURRENT names S18/0389/273 accurately, evidence records the corrective provenance result, docs gate and actual-diff review pass. |
+| Original Owner Request | Continue governed DeskPro functionality/L3 work with truthful evidence and architecture boundaries. |
+| Similar-Issue Sweep | Inspect all S18 CURRENT artifact/proof wording and evidence references; correct only the stale provenance statement. |
+
 ## Current Technical Baseline
 
 - **Current developer artifact:** T386 S18 `vm-0-5-0389` /
   `build/output/nxvm_0_5_0389.exe`, SHA-256
   `29A174DBC889A1220B0F4BD17805AAA78B326F01B31E5D68D5688F6B5DEC09E4`.
-  Built from the S17 worktree after its 272-test serial current-gate; the
-  dual-DMA mapping proof is retained in
+  Built from the S18 worktree after its 273-test serial current-gate; the
+  floppy device-profile proof is retained in
   [S18 evidence](../etc/evidence/t386-s18-model40-floppy-device-profile.md).
 - **Model-339 readiness:** T383 S1 accepts the current runnable source graph
   under the frozen deterministic event-and-bus L3 contract. This is only the

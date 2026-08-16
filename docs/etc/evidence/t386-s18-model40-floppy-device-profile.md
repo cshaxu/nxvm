@@ -80,3 +80,12 @@ unclassified existing CECG fixture. Dependency-DAG, artifact, documentation,
 focused tests and the serial **273/273** current gate pass. S18 is accepted as
 bounded DeskPro functional progress, not as a BIOS, public YAML variant,
 physical-media, service-timing, board-timing or L3 result. T386 remains open.
+## S19 Provenance Correction
+
+`M5:T386:S19:BASELINE-PROVENANCE:OK`
+
+The accepted S18 source, artifact hash and current-gate result were already
+correct here, but `CURRENT.md` retained stale S17/272 prose beside the S18
+artifact identity. T386 S19 corrects that one baseline sentence to S18/0389
+and 273/273. It changes no runtime source, artifact, verification result or
+S18 acceptance boundary.
