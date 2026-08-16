@@ -2,8 +2,8 @@
 
 ## Current Work
 
-**Idle.** M5 Td S98 makes the coordinator's actual-change review inputs,
-exit-criteria comparison, and executor-report boundary visible in Role cycle.
+**Idle.** M5 Td S99 compacted execution-governance prose in place without
+moving implementation rules to a design authority.
 
 ## Current Technical Baseline
 
@@ -38,6 +38,9 @@ exit-criteria comparison, and executor-report boundary visible in Role cycle.
 
 ## Recent Governance
 
+- **M5 Td S99 P1:** compacted documentation gates, closure evidence, artifact
+  identity, build hygiene, and recorder containment within Execution; design
+  authorities remain unchanged.
 - **M5 Td S98 P1:** made coordinator-review inputs, exit criteria, and the
   executor-report boundary explicit in Role cycle.
 - **M5 Td S97 P1:** added explicit single-/separate-session review navigation

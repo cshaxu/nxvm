@@ -355,127 +355,87 @@ does not create a task artifact or change the current artifact version.
 
 ## Documentation Governance Gate
 
-Every task closure and standalone `Td` closure runs:
+Every task and standalone `Td` closure runs:
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File tools/Verify-DocumentationGovernance.ps1 -RepositoryRoot .
 ```
 
-The default command composes two diagnostic scopes, either of which may be run
-independently while investigating a failure:
-
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File tools/Verify-DocumentationGovernance.ps1 -RepositoryRoot . -Scope Documentation
-powershell -NoProfile -ExecutionPolicy Bypass -File tools/Verify-DocumentationGovernance.ps1 -RepositoryRoot . -Scope GovernanceState
-```
-
-`Documentation` verifies topology, principal-document schemas, the Task
-Reading Set navigation, `etc/` index coverage, relative Markdown links,
-mojibake, and machine-local paths. `GovernanceState` verifies active-packet
-fields and identifier continuity, the sole `states/CURRENT.md` technical baseline,
-queue/debt boundaries, artifact identity, and capped Status summaries. The
-configured `current-gates-gcc` target runs the default combined check when
-PowerShell is available. A failure blocks closure until the documents are
-internally consistent. The gate verifies structural schemas, not semantic
-document ownership; the closure audit must still compare each changed document
-against the authority matrix in `docs/rules/DOCUMENT.md`.
-
-Status retention and closure-summary limits follow the
-[Documentation Rules](DOCUMENT.md).
+For diagnosis, run `-Scope Documentation` or `-Scope GovernanceState`
+separately. The first checks topology, document schemas, Reading-Set navigation,
+`etc/` indexing, links, mojibake, and machine-local paths; the second checks
+packet fields and identifiers, the sole `CURRENT.md` technical baseline,
+queue/debt boundaries, artifact identity, and capped Status summaries.
+`current-gates-gcc` runs the combined check when PowerShell is available.
+Failure blocks closure. This is a structural gate: closure review must still
+apply the [Documentation Rules](DOCUMENT.md) authority matrix and its status
+retention limits to every changed document.
 
 ## Milestone Closure Evidence
 
-Before an implementation milestone closes, its final verification record must
-map the current source graph to the roadmap exit conditions, applicable rules,
-open TODO deferrals, and current evidence. A historical passing task, a clean
-compile, or a fixture-only smoke cannot close a changed runnable path. A
-milestone-specific closure checklist may be indexed in `etc/` as supporting
-evidence, but it does not supersede this policy or the local architecture,
-coding, source, and execution authorities.
+Before an implementation milestone closes, final evidence maps the current
+source graph to roadmap exits, applicable rules, open TODO deferrals, and
+current evidence. An earlier pass, clean compile, or fixture-only smoke cannot
+close a changed runnable path. Supporting `etc/` checklists do not supersede
+the applicable architecture, coding, source, or execution authority.
 
-A configured smoke gate must state whether it builds, executes, or statically
-inspects its subject. A preset presented as a runtime gate must invoke its
-registered CTest cases and fail on their nonzero results; compiling smoke
-executables alone is build coverage, not smoke evidence. Source-shape and
-inventory checks remain explicit static gates rather than being described as
-runtime tests.
+Every configured gate identifies build, execution, or static inspection.
+A claimed runtime gate invokes its registered CTest cases and fails on nonzero
+results; compiling a smoke executable is build coverage only. Source-shape and
+inventory checks remain named static gates.
 
-Each completed implementation task that changes a runnable path must compile,
-verify, and copy one usable task-level local build output to the ignored
-`build/output/` directory. Every numeric implementation task uses its task
-identifier as the four-digit developer-artifact revision: task `T258` produces
-`0.5.0258`. This is an identity rule, not a sequence rule.
-All implementation subtasks rebuild their task-level artifact under that same
-revision; the source commit and recorded SHA-256 identify the exact build.
-Task numbers are never reused, so a completed task artifact version cannot
-collide with another task's version. The linear allocation rule above also
-prohibits creating task identifiers out of queue order.
+Each completed implementation task that changes a runnable path compiles,
+verifies, and copies one usable local developer artifact to ignored
+`build/output/`. Its four-digit revision is the numeric task identifier
+(`T258` is `0.5.0258`): it is an identity, not sequencing, rule. All its
+subtasks rebuild that revision; source commit plus SHA-256 identify the build.
+Identifiers are never reused or allocated out of queue order.
 
-Use `nxvm_0_5_NNNN.exe` for the bootable VM product or
-`nxvdm_0_5_NNNN.exe` for the DOS app-runner product. Every task record maps
-its task identifier to its allocated artifact revision. Earlier historical
-artifacts retain their recorded names and banners. They are evidence files, not
-CMake build targets: current source must never rebuild an old task/version
-name. The configured current-artifact target is the only product artifact
-target admitted to the active CMake graph.
-Record the artifact SHA-256, source commit, runtime identity/banner, and
-whether it is a baseline/developer artifact or a product artifact in the
-verification record. Smoke-test executables remain build-tree verification
-tools and are never copied as developer artifacts. Design-only tasks do not
-manufacture executables. Local artifacts are never release evidence, must not
-bundle protected media or Microsoft binaries, and may be replaced only by a
-newly verified build of the same named task.
+The executable is `nxvm_0_5_NNNN.exe` for the bootable VM or
+`nxvdm_0_5_NNNN.exe` for the DOS runner. Task records map identifier to
+revision; historical artifacts retain their names and banners but are evidence,
+never active CMake targets. The current-artifact target is the only admitted
+product artifact target. Record SHA-256, source commit, identity/banner, and
+baseline/developer/product kind. Smoke executables stay in the build tree;
+design-only work creates none. Local artifacts are not release evidence, carry
+no protected media or Microsoft binaries, and are replaced only by a newly
+verified build of the same named task.
 
 ## Build Tree Hygiene
 
-After every build, test, smoke run, sanitizer run, or failed verification,
-remove owned temporary build products as soon as they are no longer required
-by the active task or its immediate next task. `build/output/` is the sole
-preserved local artifact directory and retains verified task executables. All
-other build configuration trees, object files, generated test executables,
-logs, traces, sanitizer trees, and stale CMake/Ninja state are disposable
-unless an active subtask records why they are needed. Before recursive cleanup,
-verify the resolved target is below `build/`, exclude `build/output/`, and
-confirm no owned process still uses it.
+After every build, test, smoke, sanitizer, or failed verification, remove owned
+temporary products once the active or immediately next subtask no longer needs
+them. Only `build/output/` preserves verified task executables; configuration
+trees, objects, generated tests, logs, traces, sanitizer trees, and stale
+CMake/Ninja state are disposable unless the active subtask records a need.
+Before recursive cleanup, verify the resolved target is below `build/`, exclude
+`build/output/`, and stop every owned process using it.
 
-For a runnable artifact, the verification record also states the emitted runtime
-identity/banner and version. It must follow the task-version rules above;
-changing identity, version, or cutover state without an approved subtask and
-regression evidence is prohibited.
-
-For a legacy coupled system, first establish and record a runnable full-source
-baseline before subtractive refactoring. A baseline import may be isolated from
-the final module layout, but it cannot gain new product behavior or weaken
-source, asset, licensing, or test rules.
-
-Differential debugging is a bounded verification experiment. Its record names
-both implementations, inputs, event schema, checkpoints, comparison masks,
-instruction/time/no-progress budgets, and cleanup owner. It cannot become a
-runtime dependency or replace focused project-owned tests.
+Runnable evidence records the emitted identity/banner and version. Changing
+identity, version, or cutover state requires an approved subtask and regression
+evidence. For a legacy coupled system, record a runnable full-source baseline
+before subtractive refactoring; an isolated import gains neither behavior nor
+weaker source, asset, licensing, or test rules. Differential debugging is a
+bounded experiment: record both implementations, inputs, event schema,
+checkpoints, masks, instruction/time/no-progress budgets, and cleanup owner; it
+is neither a runtime dependency nor a substitute for focused owned tests.
 
 ## Recorder Trace Containment
 
-Raw instruction recording is an ignored, potentially unbounded diagnostic
-artifact. A recorder run is prohibited unless its subtask record declares a
-unique ignored output path, wall-clock, no-progress, and maximum-byte budget,
-the process-tree cleanup owner, and the checkpoint data to retain after the raw
-trace is deleted. The byte budget is a hard limit: a cooperative recorder must
-stop before it; otherwise the host harness monitors file growth and terminates
-the entire launched process tree at the first exceeded limit. A timeout alone
-is not sufficient.
+Raw instruction recording is ignored and potentially unbounded. A subtask must
+declare a unique ignored output path, wall-clock/no-progress/byte budgets,
+process-tree cleanup owner, and retained checkpoints before launch. Byte budget
+is hard: recorder stops before it, or the harness monitors growth and kills the
+whole launched process tree on first excess; timeout alone is insufficient.
 
-Use a fresh run-specific name under ignored `build/` or `artifacts/`; never
-reuse a trace path from an earlier run. Before launch, reserve at least twice
-the declared byte budget as free workspace space. After every completion,
-timeout, failure, or cancellation, the harness must wait for process exit,
-verify that the trace handle is closed, record the final size/checkpoint in the
-compact verification record, and delete the raw trace unless the approved
-subtask explicitly retains it for immediate diagnosis. The next recorder run is
-blocked while a prior owned process or trace remains.
-
-Legacy recorders without an in-process byte limit are diagnostic-only and must
-run through this monitored harness. Their raw output is never a fixture,
-baseline, release artifact, or committed evidence.
+Use a fresh name beneath ignored `build/` or `artifacts/`, reserve twice the
+byte budget before launch, and never reuse an earlier trace path. After any
+outcome, wait for exit, verify its handle is closed, record final
+size/checkpoint, and delete raw trace unless the approved subtask retains it
+for immediate diagnosis. Block the next run while an owned process or trace
+remains. A legacy recorder without an in-process cap is diagnostic-only through
+this harness; its raw output is never fixture, baseline, release artifact, or
+committed evidence.
 
 Do not advance a milestone merely because individual code exists. The roadmap
 owns milestone goal, scope, and exit conditions; its active subtask owns exact
