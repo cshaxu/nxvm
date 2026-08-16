@@ -27,10 +27,11 @@ static C_INT vm_model40_fdc_sense_reset(core_machine *machine,
 
 C_INT main(C_VOID)
 {
-    static type_unsigned_8 rom[VM_PROFILE_MODEL40_ROM_BYTES];
-    vm_profile_model40_external_rom invalid = { rom,
-        VM_PROFILE_MODEL40_ROM_BYTES - 1u };
-    vm_profile_model40_external_rom valid = { rom, sizeof(rom) };
+    static type_unsigned_8 even[VM_PROFILE_MODEL40_ROM_CHIP_BYTES];
+    static type_unsigned_8 odd[VM_PROFILE_MODEL40_ROM_CHIP_BYTES];
+    vm_profile_model40_external_rom invalid = { even, odd,
+        VM_PROFILE_MODEL40_ROM_CHIP_BYTES - 1u };
+    vm_profile_model40_external_rom valid = { even, odd, sizeof(even) };
     vm_session *session = STD_NULL;
     core_machine_cpu_profile cpu_profile;
     STD_SIZE_T memory_bytes;
@@ -42,7 +43,7 @@ C_INT main(C_VOID)
     type_unsigned_8 fifo_count;
     type_unsigned_8 index;
 
-    rom[0x1fff0u] = 0xa5u;
+    even[0x3ff8u] = 0xa5u;
 
     failed |= vm_session_create_model40_private(&invalid, &session) !=
         TYPE_STATUS_INVALID_ARGUMENT || session != STD_NULL;

@@ -100,6 +100,9 @@ target_link_libraries(vm-model40-cecg-s12-smoke PRIVATE vm-composition)
 add_executable(vm-model40-cecg-s13-smoke
     tests/machine/vm_model40_cecg_s13_smoke.c)
 target_link_libraries(vm-model40-cecg-s13-smoke PRIVATE vm-composition)
+add_executable(vm-model40-rom-layout-s14-smoke
+    tests/machine/vm_model40_rom_layout_s14_smoke.c)
+target_link_libraries(vm-model40-rom-layout-s14-smoke PRIVATE vm-composition)
 add_executable(vm-model-339-clock-contract-smoke
     tests/machine/vm_model_339_clock_contract_smoke.c)
 target_link_libraries(vm-model-339-clock-contract-smoke PRIVATE vm-composition)
@@ -1869,6 +1872,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     vm-model40-cecg-s11-smoke
     vm-model40-cecg-s12-smoke
     vm-model40-cecg-s13-smoke
+    vm-model40-rom-layout-s14-smoke
     vm-ibm-5170-model-339-cga-topology-smoke
     vm-ibm-5170-model-339-firmware-fdc-topology-smoke
     vm-fdc-dma-boundary-smoke
@@ -2631,8 +2635,8 @@ function(add_current_vm_artifact target version)
             "${CMAKE_SOURCE_DIR}/build/output/${task_artifact_filename}")
 endfunction()
 
-set(PROJECT_CURRENT_VM_ARTIFACT_TARGET vm-0-5-0382)
-add_current_vm_artifact(vm-0-5-0382 "0.5.0382")
+set(PROJECT_CURRENT_VM_ARTIFACT_TARGET vm-0-5-0386)
+add_current_vm_artifact(vm-0-5-0386 "0.5.0386")
 option(PROJECT_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
 
@@ -3175,10 +3179,10 @@ foreach(project_t345_target IN LISTS PROJECT_T344_CURRENT_GATE_TARGETS)
 endforeach()
 list(LENGTH PROJECT_T345_S2_OWNER_TEST_STRICT_TARGETS project_t345_s2_pure_count)
 list(LENGTH PROJECT_T345_S2_MIXED_OWNER_TEST_TARGETS project_t345_s2_mixed_count)
-if(NOT project_t345_s2_pure_count EQUAL 152 OR
+if(NOT project_t345_s2_pure_count EQUAL 153 OR
         NOT project_t345_s2_mixed_count EQUAL 3)
     message(FATAL_ERROR
-        "T345 S2 expected 152 pure and 3 mixed owner-test targets; found ${project_t345_s2_pure_count} pure and ${project_t345_s2_mixed_count} mixed.")
+        "T345 S2 expected 153 pure and 3 mixed owner-test targets; found ${project_t345_s2_pure_count} pure and ${project_t345_s2_mixed_count} mixed.")
 endif()
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     foreach(project_t345_target IN LISTS PROJECT_T345_S2_OWNER_TEST_STRICT_TARGETS)

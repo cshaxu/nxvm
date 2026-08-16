@@ -9,8 +9,9 @@
 
 C_INT main(C_VOID)
 {
-    static type_unsigned_8 rom[VM_PROFILE_MODEL40_ROM_BYTES];
-    vm_profile_model40_external_rom external_rom = { rom, sizeof(rom) };
+    static type_unsigned_8 even[VM_PROFILE_MODEL40_ROM_CHIP_BYTES];
+    static type_unsigned_8 odd[VM_PROFILE_MODEL40_ROM_CHIP_BYTES];
+    vm_profile_model40_external_rom external_rom = { even, odd, sizeof(even) };
     vm_session *session = STD_NULL;
     t_port *port;
     C_INT failed = 0;
