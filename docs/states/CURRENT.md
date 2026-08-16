@@ -2,13 +2,24 @@
 
 ## Current Work
 
-**T386 open; S1--S21 accepted.** S21 replaces the stale S15 planning view with
-the current Model-40 functional matrix: remaining functional receivers are
-D4/platform control, logical 1.2 MB FDC/media behavior, the fitted 40 MB
-controller/startup-media route, and CECG behavior. S20 remains a fixed
-CPU/memory/ROM/1.2-MB backbone; generic profile variants remain after the
-DeskPro L3 audit. No firmware execution, physical-media, board timing or L3
-claim is made. [S21 evidence](../etc/evidence/t386-s21-model40-current-functional-matrix.md).
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation -- M5 T386 S22; latest open T386 retains accepted S21 progress. |
+| Admission And Approval | Owner approved on 2026-08-16 to continue the original DeskPro 386 functional plan after the small S21 planning/proposal/Queue governance work. Scope is this bounded first D4/platform functional receiver; no exception to Core/VM ownership or source policy. |
+| Objective | Close the source-backed D4 memory-parity diagnostic and IOCHK functional mechanism: reusable Core memory-parity events carry the fault location to their selected owner; the Model-40 D4 memory carrier latches byte-lane diagnostic state, publishes selected IOCHK/NMI through the existing D4 platform owner, clears IOCHK on the documented covered-memory write, and implements diagnostic/control-register read/write/reset behavior. |
+| Non-goals | No D4-SKEY A20 interception, shutdown/program/power reset arbitration, physical reset pulse or bus timing, memory-cycle wait timing, firmware execution, generic variant schema, physical-media work, ROM/media import, or Board/L3 claim. Do not use a test-only injection API or reuse IBM planar port-B semantics. |
+| Reference Baseline | Accepted T386 S21 `7439b99d`; artifact remains `vm-0-5-0389` SHA-256 `B0B70FA0C0A304BA9D8E1F2ADECC0E32A547DABA3FE274513B5C9DFEBA8C9483`. Primary Compaq D3PE Processor Descriptions, 1987-01-05, inspected transiently from the owner-approved 1986 technical corpus; S4, S16 and S21 evidence constrain the existing source. |
+| Candidate Proposal | `docs/proposals/m5-deskpro-386-model40-device-functional-closure.md`, current S21 matrix D4/platform row. |
+| Files And ABI Surface | Expected: shared Core memory-parity callback/configuration owner and its callers/tests; `src/vm/profile/model40/model40.{c,h}` and Model-40 composition only as needed for the D4 carrier; focused Core/VM Model-40 tests and CMake registration; T386 evidence/index/history/CURRENT. No Console/YAML ABI or new public test operation. |
+| Applicable Rules | Task Reading Set; EXECUTION lifecycle, mechanism-defect, similar-sweep, artifact and closure rules; ARCHITECTURE shared-owner/opaque-boundary invariants; CODING C11/ASCII/cohesion/test-boundary rules; source policy transient-research/no-import rule; DOCUMENT at closure. |
+| Verification | Add focused regressions that corrupt selected normal-memory parity through the existing retained internal memory mechanism, prove lane status/IOCHK/NMI mask and release, control-write diagnostic clear, first covered-memory-write IOCHK clear, reset restoration, and IBM planar isolation. Run affected strict-owner/static gates, focused tests, serial current gate, documentation gate, diff check and actual-change review. |
+| Expected Markers | `M5:T386:S22:D4-PARITY-DIAGNOSTIC:OK`; `M5:T386:S22:D4-IOCHK-CLEAR:OK`; `M5:T386:S22:MEMORY-PARITY-OWNER:OK`. |
+| Asset Needs | Transient primary technical reference only. No firmware, guest-media, local asset path, vendor hash, source text, derived binary or third-party code enters Git. |
+| Reporting Requirements | Confirm the mechanism scope; report source-backed owner decision, Core/VM surface, regression/gate result, artifact identity and SKEY/reset transfer. Coordinator independently reviews all P changes before acceptance. |
+| Stop Conditions | Stop for a need to expose a test-only production API, a conflict with existing planar parity, a required physical timing inference, or an unproven memory-write/IOCHK relationship. Return SKEY/reset arbitration and physical timing to later T386/board receivers. |
+| Exit Criteria | One shared location-bearing parity event mechanism has one Core owner; Model-40 D4 uses it without an IBM parity fork; primary-defined diagnostic/control/IOCHK/reset behavior has regressions; selected non-D4 behavior remains unchanged; required gates pass; evidence records source boundary and remaining transfers. |
+| Original Owner Request | Owner-approved request, 2026-08-16: continue the original DeskPro 386 development plan after S21 planning/proposal/Queue governance. |
+| Similar-Issue Sweep | Sweep all Core memory-parity configuration/callback users, planar/D4 port-B/NMI paths, Model-40 D4 mappings and tests; disposition every location-bearing callback, reset and clear path. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T386 S20 `vm-0-5-0389` /

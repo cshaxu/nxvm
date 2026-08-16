@@ -24,10 +24,6 @@ typedef struct {
     type_native_unsigned bytes;
 } core_machine_memory_mapping;
 
-typedef C_VOID (*core_machine_memory_write_observer)(C_VOID *owner,
-    type_unsigned_32 physical, type_native_unsigned bytes);
-typedef C_VOID (*core_machine_memory_parity_fault_observer)(C_VOID *owner);
-
 typedef struct {
     core_machine_memory_write_observer callback;
     C_VOID *owner;

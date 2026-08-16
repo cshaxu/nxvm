@@ -339,7 +339,8 @@ type_status core_machine_memory_read_physical(t_ram *ram, type_unsigned_32 physi
         for (index = 0u; index < checked; ++index) {
             if (((type_unsigned_8 *)ram->connect.parity)[offset + index] !=
                 core_machine_memory_odd_parity(((type_unsigned_8 *)destination)[index])) {
-                ram->connect.parity_fault(ram->connect.parity_owner);
+                ram->connect.parity_fault(ram->connect.parity_owner,
+                    physical + (type_unsigned_32)index);
                 break;
             }
         }

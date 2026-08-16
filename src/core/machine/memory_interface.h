@@ -10,6 +10,12 @@ extern "C" {
 
 typedef struct core_machine core_machine;
 
+typedef C_VOID (*core_machine_memory_parity_fault_observer)(C_VOID *owner,
+    type_unsigned_32 physical);
+
+typedef C_VOID (*core_machine_memory_write_observer)(C_VOID *owner,
+    type_unsigned_32 physical, type_native_unsigned bytes);
+
 typedef enum core_machine_memory_access {
     CORE_MACHINE_MEMORY_ACCESS_READ = 0,
     CORE_MACHINE_MEMORY_ACCESS_WRITE
@@ -41,6 +47,11 @@ typedef struct core_machine_memory_device_callbacks {
 
 /* Configuration-only generic device registration.  Core owns checked routing;
  * the composition-owned callback context supplies all device semantics. */
+type_status core_machine_enable_memory_parity(core_machine *machine,
+    STD_SIZE_T bytes, core_machine_memory_parity_fault_observer fault, C_VOID *owner);
+
+type_status core_machine_register_memory_write_observer(core_machine *machine,
+    core_machine_memory_write_observer callback, C_VOID *owner);
 type_status core_machine_register_memory_device(core_machine *machine,
     type_unsigned_32 physical_start, STD_SIZE_T bytes,
     const core_machine_memory_device_callbacks *callbacks, C_VOID *owner);

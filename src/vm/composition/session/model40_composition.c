@@ -67,6 +67,8 @@ type_status vm_session_model40_storage_initialize(vm_session *session)
     rtc.defaults[5] = (core_machine_rtc_default_byte) { CORE_MACHINE_RTC_BASEMEM_MSB, 0x04u };
     rtc.default_count = CORE_MACHINE_RTC_DEFAULT_COUNT;
     status = core_machine_configure_d4_platform(session->core_machine, &d4);
+    if (status == TYPE_STATUS_OK) status = vm_profile_model40_d4_memory_enable_parity(
+        session->core_machine, &session->model40_d4_memory);
     if (status == TYPE_STATUS_OK) status = core_machine_configure_display(session->core_machine, &display);
     if (status == TYPE_STATUS_OK) status = core_machine_configure_dma(session->core_machine, &dma, &session->fdc_dma_request);
     if (status == TYPE_STATUS_OK) status = core_machine_configure_rtc_cmos(session->core_machine, &rtc);

@@ -3541,8 +3541,10 @@ static C_VOID core_machine_planar_parity_refresh_nmi(core_machine *machine)
     }
 }
 
-static C_VOID core_machine_planar_parity_memory_fault(C_VOID *owner)
+static C_VOID core_machine_planar_parity_memory_fault(C_VOID *owner,
+    type_unsigned_32 physical)
 {
+    (C_VOID)physical;
     (C_VOID)core_machine_report_planar_parity_fault((core_machine *)owner);
 }
 
@@ -3759,6 +3761,13 @@ type_status core_machine_configure_rtc_cmos(core_machine *machine,
     return TYPE_STATUS_OK;
 }
 
+type_status core_machine_enable_memory_parity(core_machine *machine,
+    STD_SIZE_T bytes, core_machine_memory_parity_fault_observer fault, C_VOID *owner)
+{
+    if (!core_machine_configuration_is_open(machine)) return TYPE_STATUS_INVALID_STATE;
+    return core_machine_memory_enable_parity(&machine->executor_memory, bytes,
+        fault, owner);
+}
 type_status core_machine_configure_planar_parity(core_machine *machine,
     const core_machine_planar_parity_config *config)
 {
@@ -3872,6 +3881,16 @@ static type_status core_machine_absent_memory_query(C_VOID *owner,
     if (absent == STD_NULL || !absent->configured || bytes == 0u ||
         (access != CORE_MACHINE_MEMORY_ACCESS_READ &&
         access != CORE_MACHINE_MEMORY_ACCESS_WRITE)) return TYPE_STATUS_FAULT;
+    return TYPE_STATUS_OK;
+}
+
+type_status core_machine_clear_d4_iochk_fault(core_machine *machine)
+{
+    if (machine == STD_NULL || !core_machine_mutable_operation_is_allowed(machine) ||
+        !machine->d4_platform_configured) return TYPE_STATUS_INVALID_STATE;
+    machine->d4_platform_iochk_latched = TYPE_FALSE;
+    if (!machine->d4_platform_failsafe_latched) machine->d4_platform_nmi_signaled = TYPE_FALSE;
+    core_machine_d4_platform_refresh_nmi(machine);
     return TYPE_STATUS_OK;
 }
 

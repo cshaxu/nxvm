@@ -309,6 +309,7 @@ type_status core_machine_configure_d4_platform(core_machine *machine,
 type_status core_machine_configure_absent_memory(core_machine *machine,
     const core_machine_absent_memory_config *config);
 type_status core_machine_report_planar_parity_fault(core_machine *machine);
+type_status core_machine_clear_d4_iochk_fault(core_machine *machine);
 type_status core_machine_report_d4_iochk_fault(core_machine *machine);
 type_status core_machine_get_planar_parity_observation(const core_machine *machine,
     core_machine_planar_parity_observation *out_observation);

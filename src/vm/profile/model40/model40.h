@@ -3,7 +3,7 @@
 
 #include "type.h"
 #include "core/machine/firmware_interface.h"
-#include "core/machine/memory_interface.h"
+#include "core/machine/machine_interface.h"
 
 #define VM_PROFILE_MODEL40_ROM_CHIP_BYTES (16u * 1024u)
 #define VM_PROFILE_MODEL40_ROM_LOGICAL_BYTES (2u * VM_PROFILE_MODEL40_ROM_CHIP_BYTES)
@@ -20,6 +20,8 @@
 typedef struct vm_profile_model40_d4_memory {
     type_unsigned_8 compatibility[VM_PROFILE_MODEL40_D4_COMPATIBILITY_BYTES];
     type_unsigned_8 control;
+    type_unsigned_8 parity_fault_mask;
+    core_machine *machine;
 } vm_profile_model40_d4_memory;
 typedef struct vm_profile_model40_external_rom {
     const type_unsigned_8 *even_bytes;
@@ -47,6 +49,8 @@ type_status vm_profile_model40_byob_manifest_load(
 const core_machine_firmware_provider *vm_profile_model40_firmware_provider(C_VOID);
 C_VOID vm_profile_model40_d4_memory_initialize(vm_profile_model40_d4_memory *memory);
 C_VOID vm_profile_model40_d4_memory_reset(vm_profile_model40_d4_memory *memory);
+type_status vm_profile_model40_d4_memory_enable_parity(core_machine *machine,
+    vm_profile_model40_d4_memory *memory);
 type_status vm_profile_model40_d4_memory_register(core_machine *machine,
     vm_profile_model40_d4_memory *memory);
 

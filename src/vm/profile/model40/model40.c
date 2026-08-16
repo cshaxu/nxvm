@@ -278,17 +278,34 @@ static type_status vm_profile_model40_d4_memory_query(C_VOID *opaque,
     return TYPE_STATUS_OK;
 }
 
+static C_VOID vm_profile_model40_d4_parity_fault(C_VOID *opaque,
+    type_unsigned_32 physical)
+{
+    vm_profile_model40_d4_memory *memory = (vm_profile_model40_d4_memory *)opaque;
+    if (memory == STD_NULL || memory->machine == STD_NULL) return;
+    memory->parity_fault_mask |= (type_unsigned_8)(1u << (physical & 3u));
+    (C_VOID)core_machine_report_d4_iochk_fault(memory->machine);
+}
+
+static C_VOID vm_profile_model40_d4_memory_write_observer(C_VOID *opaque,
+    type_unsigned_32 physical, type_native_unsigned bytes)
+{
+    vm_profile_model40_d4_memory *memory = (vm_profile_model40_d4_memory *)opaque;
+    (C_VOID)physical;
+    (C_VOID)bytes;
+    if (memory != STD_NULL && memory->machine != STD_NULL &&
+        memory->parity_fault_mask != 0u) {
+        (C_VOID)core_machine_clear_d4_iochk_fault(memory->machine);
+    }
+}
 static type_status vm_profile_model40_d4_control_read(C_VOID *opaque,
     type_unsigned_32 physical, type_virtual_address destination,
     type_native_unsigned bytes)
 {
-    (C_VOID)opaque;
-    if (physical != VM_PROFILE_MODEL40_D4_CONTROL_PHYSICAL || destination == 0u ||
-        bytes != 1u) return TYPE_STATUS_FAULT;
-    /* No D4 parity fault source is modelled here.  The selected 1 MiB board
-     * therefore reports all four parity bytes good, its 1 MiB jumper active,
-     * and no 512/640 KiB or 2 MiB option selection. */
-    *(type_unsigned_8 *)destination = 0xbfu;
+    vm_profile_model40_d4_memory *memory = (vm_profile_model40_d4_memory *)opaque;
+    if (memory == STD_NULL || physical != VM_PROFILE_MODEL40_D4_CONTROL_PHYSICAL ||
+        destination == 0u || bytes != 1u) return TYPE_STATUS_FAULT;
+    *(type_unsigned_8 *)destination = (type_unsigned_8)(0xbfu & ~memory->parity_fault_mask);
     return TYPE_STATUS_OK;
 }
 
@@ -301,6 +318,7 @@ static type_status vm_profile_model40_d4_control_write(C_VOID *opaque,
     if (memory == STD_NULL || physical != VM_PROFILE_MODEL40_D4_CONTROL_PHYSICAL ||
         source == 0u || bytes != 1u) return TYPE_STATUS_FAULT;
     memory->control = *(const type_unsigned_8 *)source | 0xfcu;
+    memory->parity_fault_mask = 0u;
     return TYPE_STATUS_OK;
 }
 
@@ -325,7 +343,10 @@ C_VOID vm_profile_model40_d4_memory_initialize(vm_profile_model40_d4_memory *mem
 
 C_VOID vm_profile_model40_d4_memory_reset(vm_profile_model40_d4_memory *memory)
 {
-    if (memory != STD_NULL) memory->control = 0xffu;
+    if (memory != STD_NULL) {
+        memory->control = 0xffu;
+        memory->parity_fault_mask = 0u;
+    }
 }
 
 type_status vm_profile_model40_d4_memory_register(core_machine *machine,
@@ -340,6 +361,7 @@ type_status vm_profile_model40_d4_memory_register(core_machine *machine,
     type_status status;
 
     if (machine == STD_NULL || memory == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    memory->machine = machine;
     status = core_machine_register_memory_device(machine,
         VM_PROFILE_MODEL40_D4_REPLACEMENT_START,
         VM_PROFILE_MODEL40_D4_REPLACEMENT_BYTES, &memory_callbacks, memory);
@@ -348,6 +370,19 @@ type_status vm_profile_model40_d4_memory_register(core_machine *machine,
         VM_PROFILE_MODEL40_D4_COMPATIBILITY_START,
         VM_PROFILE_MODEL40_D4_COMPATIBILITY_BYTES, &memory_callbacks, memory);
     if (status != TYPE_STATUS_OK) return status;
-    return core_machine_register_memory_device(machine,
+    status = core_machine_register_memory_device(machine,
         VM_PROFILE_MODEL40_D4_CONTROL_PHYSICAL, 1u, &control_callbacks, memory);
+    if (status != TYPE_STATUS_OK) return status;
+    return core_machine_register_memory_write_observer(machine,
+        vm_profile_model40_d4_memory_write_observer, memory);
+}
+
+type_status vm_profile_model40_d4_memory_enable_parity(core_machine *machine,
+    vm_profile_model40_d4_memory *memory)
+{
+    if (machine == STD_NULL || memory == STD_NULL || memory->machine != machine) {
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
+    return core_machine_enable_memory_parity(machine, 1024u * 1024u,
+        vm_profile_model40_d4_parity_fault, memory);
 }
