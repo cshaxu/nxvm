@@ -74,3 +74,19 @@ Coordinator review accepted P1/P2 after removal of unrelated encoding noise.
 Documentation governance, link/index checks and actual-change review pass; no
 runtime source, asset, artifact or L3 claim changes. T386 remains open for its
 four functional receivers.
+
+### S22: D4 Memory Parity Diagnostic And IOCHK
+
+S22 implements the source-bounded Model-40 D4 parity diagnostic and IOCHK
+mechanism. Core publishes one location-bearing parity event and invokes its
+write observer only for ordinary backing-RAM writes; the Model-40 D4 carrier
+latches byte lanes and the existing D4 platform owner publishes IOCHK/NMI.
+The accepted [S22 evidence](../etc/evidence/t386-s22-d4-parity-diagnostic.md)
+records the lane, mask/release, control/reset and planar-isolation regressions,
+the 276-test serial gate and the rebuilt `vm-0-5-0389` artifact.
+
+Coordinator review accepted P1 `edaf4a39` against the S22 packet, source-bound
+D4 contract, Core/VM ownership rules and actual diff. It confirms no test-only
+production operation, IBM parity fork, firmware/media import, timing claim or
+L3 claim. D4-SKEY/reset arbitration and the remaining FDC, fixed-disk and CECG
+functional receivers remain in T386 before its later board timing work.

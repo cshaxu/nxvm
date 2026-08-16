@@ -57,3 +57,13 @@ S makes no firmware-execution, physical-media, generic-variant or L3 claim.
 ## Verification And Acceptance
 
 The three focused regressions pass. `verify-current-specialized-gates` and the serial `run-current-smokes` gate pass with 276 registered current tests. `Verify-DocumentationGovernance.ps1` passes. The rebuilt current developer artifact is `vm-0-5-0389`, `build/output/nxvm_0_5_0389.exe`, SHA-256 `B7DC400F3E3A8857C4699EEB6349893F2B72C70607FC29BF2C02F6E1952B5D70`. Coordinator actual-change review and the compact CURRENT/history acceptance follow P1.
+
+## Coordinator Acceptance
+
+P1 `edaf4a39` was reviewed against the active S22 packet, the actual Core and
+Model-40 source changes, the focused and current-gate results, the rebuilt
+artifact and the documentation authority matrix. The Core callback has one
+owner, D4 retains only board-local state, the write-clear condition is limited
+to ordinary backing RAM, and the IBM planar consumer remains intact. S22 is
+accepted; T386 remains open for D4-SKEY/reset arbitration, FDC/media, fitted
+disk/startup media, CECG, then DeskPro board timing and L3 audit.

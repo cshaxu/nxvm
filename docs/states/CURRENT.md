@@ -2,32 +2,20 @@
 
 ## Current Work
 
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation -- M5 T386 S22; latest open T386 retains accepted S21 progress. |
-| Admission And Approval | Owner approved on 2026-08-16 to continue the original DeskPro 386 functional plan after the small S21 planning/proposal/Queue governance work. Scope is this bounded first D4/platform functional receiver; no exception to Core/VM ownership or source policy. |
-| Objective | Close the source-backed D4 memory-parity diagnostic and IOCHK functional mechanism: reusable Core memory-parity events carry the fault location to their selected owner; the Model-40 D4 memory carrier latches byte-lane diagnostic state, publishes selected IOCHK/NMI through the existing D4 platform owner, clears IOCHK on the documented covered-memory write, and implements diagnostic/control-register read/write/reset behavior. |
-| Non-goals | No D4-SKEY A20 interception, shutdown/program/power reset arbitration, physical reset pulse or bus timing, memory-cycle wait timing, firmware execution, generic variant schema, physical-media work, ROM/media import, or Board/L3 claim. Do not use a test-only injection API or reuse IBM planar port-B semantics. |
-| Reference Baseline | Accepted T386 S21 `7439b99d`; artifact remains `vm-0-5-0389` SHA-256 `B0B70FA0C0A304BA9D8E1F2ADECC0E32A547DABA3FE274513B5C9DFEBA8C9483`. Primary Compaq D3PE Processor Descriptions, 1987-01-05, inspected transiently from the owner-approved 1986 technical corpus; S4, S16 and S21 evidence constrain the existing source. |
-| Candidate Proposal | `docs/proposals/m5-deskpro-386-model40-device-functional-closure.md`, current S21 matrix D4/platform row. |
-| Files And ABI Surface | Expected: shared Core memory-parity callback/configuration owner and its callers/tests; `src/vm/profile/model40/model40.{c,h}` and Model-40 composition only as needed for the D4 carrier; focused Core/VM Model-40 tests and CMake registration; T386 evidence/index/history/CURRENT. No Console/YAML ABI or new public test operation. |
-| Applicable Rules | Task Reading Set; EXECUTION lifecycle, mechanism-defect, similar-sweep, artifact and closure rules; ARCHITECTURE shared-owner/opaque-boundary invariants; CODING C11/ASCII/cohesion/test-boundary rules; source policy transient-research/no-import rule; DOCUMENT at closure. |
-| Verification | Add focused regressions that corrupt selected normal-memory parity through the existing retained internal memory mechanism, prove lane status/IOCHK/NMI mask and release, control-write diagnostic clear, first covered-memory-write IOCHK clear, reset restoration, and IBM planar isolation. Run affected strict-owner/static gates, focused tests, serial current gate, documentation gate, diff check and actual-change review. |
-| Expected Markers | `M5:T386:S22:D4-PARITY-DIAGNOSTIC:OK`; `M5:T386:S22:D4-IOCHK-CLEAR:OK`; `M5:T386:S22:MEMORY-PARITY-OWNER:OK`. |
-| Asset Needs | Transient primary technical reference only. No firmware, guest-media, local asset path, vendor hash, source text, derived binary or third-party code enters Git. |
-| Reporting Requirements | Confirm the mechanism scope; report source-backed owner decision, Core/VM surface, regression/gate result, artifact identity and SKEY/reset transfer. Coordinator independently reviews all P changes before acceptance. |
-| Stop Conditions | Stop for a need to expose a test-only production API, a conflict with existing planar parity, a required physical timing inference, or an unproven memory-write/IOCHK relationship. Return SKEY/reset arbitration and physical timing to later T386/board receivers. |
-| Exit Criteria | One shared location-bearing parity event mechanism has one Core owner; Model-40 D4 uses it without an IBM parity fork; primary-defined diagnostic/control/IOCHK/reset behavior has regressions; selected non-D4 behavior remains unchanged; required gates pass; evidence records source boundary and remaining transfers. |
-| Original Owner Request | Owner-approved request, 2026-08-16: continue the original DeskPro 386 development plan after S21 planning/proposal/Queue governance. |
-| Similar-Issue Sweep | Sweep all Core memory-parity configuration/callback users, planar/D4 port-B/NMI paths, Model-40 D4 mappings and tests; disposition every location-bearing callback, reset and clear path. |
+**T386 open; S1--S22 accepted.** S22 adds the selected Model 40 D4
+memory-parity diagnostic and IOCHK functional path through a shared
+location-bearing Core parity mechanism. It proves lane status, NMI masking and
+release, ordinary-memory-write IOCHK clear, control/reset behavior, and IBM
+planar isolation. D4-SKEY/reset arbitration, the remaining selected FDC,
+fitted-disk and CECG functional work, board timing and Model-40 L3 remain open.
 ## Current Technical Baseline
 
-- **Current developer artifact:** T386 S20 `vm-0-5-0389` /
+- **Current developer artifact:** T386 S22 `vm-0-5-0389` /
   `build/output/nxvm_0_5_0389.exe`, SHA-256
-  `B0B70FA0C0A304BA9D8E1F2ADECC0E32A547DABA3FE274513B5C9DFEBA8C9483`.
-  Built from the accepted S20 source after its 275-test serial current-gate; the
-  constrained BYOB/backbone proof is retained in
-  [S20 evidence](../etc/evidence/t386-s20-model40-byob-profile.md).
+  `B7DC400F3E3A8857C4699EEB6349893F2B72C70607FC29BF2C02F6E1952B5D70`.
+  Rebuilt from accepted S22 source after its 276-test serial current-gate; the
+  D4 parity/IOCHK proof is retained in
+  [S22 evidence](../etc/evidence/t386-s22-d4-parity-diagnostic.md).
 - **Model-339 readiness:** T383 S1 accepts the current runnable source graph
   under the frozen deterministic event-and-bus L3 contract. This is only the
   selected Model 339 configuration and preserves every documented physical,
@@ -46,7 +34,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T386 S21 | Accepted: current Model-40 matrix truthfully separates the four remaining functional clusters from physical/timing debt, corrects S20 as a fixed backbone rather than generic variants, and transfers the cross-product contract to its queued post-DeskPro candidate. [Evidence](../etc/evidence/t386-s21-model40-current-functional-matrix.md). |
+| T386 S22 | Accepted: D4 lane-parity diagnostics and the logical IOCHK/NMI path now consume one location-bearing Core event owner; normal covered RAM writes clear IOCHK, and IBM planar parity remains isolated. D4-SKEY/reset arbitration, other functional receivers and timing remain open. [Evidence](../etc/evidence/t386-s22-d4-parity-diagnostic.md). |
 | T385 | Closed: the selected Model-40 80386DX-16 consumes the shared 80386 CPU/state/retirement owners without a DeskPro CPU fork; a clean current-source 251/251 gate passed, while functionality and board timing transfer unchanged. [Closure audit](../etc/evidence/t385-s1-task-closure-audit.md). |
 | T384 | Closed: the Model-40 capability audit freezes its original Compaq system board/storage ledger and owner-selected color EGA, keyboard and external-ROM constraint; its shared-VADP IBM/Compaq personality boundary transfers CPU, functional and timing work without making a runnable or L3 claim. [Closure audit](../etc/evidence/t384-s2-task-closure-audit.md). |
 | T383 | Closed: independent current-source replay accepts the frozen Model-339 deterministic L3 contract after T380's strict-start repair; 251/251 current gate and focused matrix are retained in [evidence](../etc/evidence/t383-s1-model339-current-source-reaudit.md). |
