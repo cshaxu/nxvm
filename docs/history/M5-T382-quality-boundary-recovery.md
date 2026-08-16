@@ -30,3 +30,9 @@ parallelism, or individual test timeout. The focused abnormal-child proof,
 full current gate, specialized gate, documentation governance, diff check,
 and task artifact record are retained in
 [T382 S1 evidence](../etc/evidence/t382-s1-current-gate-aggregate.md).
+
+## S2 Acceptance
+
+P3 `4482dac6` removes the post-return legacy Console block and its private
+provider-only callbacks. The retained Console command route and focused/full
+gate proof are recorded in [T382 S2 evidence](../etc/evidence/t382-s2-console-dead-code-retirement.md).

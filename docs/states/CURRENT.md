@@ -2,28 +2,7 @@
 
 ## Current Work
 
-**Active: M5 T382 S2.**
-
-## M5 T382 S2 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner: repository user. Approval: 2026-08-15 request to execute the queue's first code-quality-governance task in one-session dual-role mode. Approved scope: T382 S2 from the accepted quality-boundary proposal. No exception permits restoring retired Console commands or changing session/profile semantics. |
-| Objective | Remove the unreachable legacy `DEVICE` implementation and every now-unreferenced Console-provider route while retaining the frozen YAML session/profile and stopped-session floppy surface. |
-| Non-goals | Do not restore or alias `DEVICE`, `SET`, `MODE`, or `TEST`; do not change core session behavior, YAML schema, hardware/media behavior, or S3--S7 domains. |
-| Reference Baseline | T382 S1 P1 `8ab02ff5`, acceptance P2 `6adc1b3b`, and the retained S2 proposal contract. |
-| Candidate Proposal | [M5 quality-boundary recovery](../proposals/m5-quality-boundary-recovery.md), S2. |
-| Files And ABI Surface | Expected: `src/vm/product/console.c`, `console_machine_provider.h`, the VM Console adapter, and focused Console/product smoke sources. General VM session APIs remain outside the removal unless proven Console-only. |
-| Applicable Rules | `docs/rules/EXECUTION.md` lifecycle, P, similar-issue and build-hygiene rules; `docs/rules/ARCHITECTURE.md` single route/owner invariant; `docs/rules/CODING.md` cohesive owner and no duplicate abstraction rules; `docs/rules/DOCUMENT.md` evidence ownership. No exception requested. |
-| Verification | Console command/help/source sweep; retained Console lifecycle and input-failure smokes; focused session-catalog proof; fresh full current and specialized gates; documentation governance, diff check, artifact rebuild, and SHA-256. |
-| Expected Markers | Retained Console commands have one reachable dispatch route; no production `DEVICE`/`SET`/`MODE`/`TEST` legacy command route or dead provider helper remains; focused and current gates pass. |
-| Asset Needs | No new asset. Existing local smoke media remain optional and must retain diagnostic behavior. |
-| Reporting Requirements | Executor confirms the route inventory and reports focused proof before one complete pushed P. Coordinator then switches roles, inspects the pushed actual changes and sweep, and accepts/rejects through the next P. |
-| Stop Conditions | Stop for a retained non-Console caller of a proposed removal, any compatibility requirement to restore a retired command, a required API/ABI change outside the adapter, or an interaction with S3--S7; record the hit and request direction. |
-| Exit Criteria | The unreachable block and unreferenced Console-only routes are removed; all dispatch/help/failure/lifecycle callers are classified; focused proof, current gates, artifact/evidence, review, and governance closure are complete. |
-| Original Owner Request | Execute the first Queue code-quality-governance task under the latest governance rules in one-session dual-role mode. |
-| Similar-Issue Sweep | Search tracked production Console/product/VM adapter code, focused tests, help text, and interactive lifecycle callers for retired command names and Console-only provider hooks; remove or classify each production hit and preserve only separately owned general session APIs. |
+**M5 T382 remains open.** S1 and S2 are accepted; S3 is the next bounded unit.
 
 ## Current Technical Baseline
 
@@ -44,6 +23,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T382 S2 | Accepted: P3 `4482dac6` removes unreachable Console configuration routes and Console-only callbacks while preserving retained `FLOPPY` behavior; [evidence](../etc/evidence/t382-s2-console-dead-code-retirement.md). |
 | T382 S1 | Accepted: P1 `8ab02ff5` adds the owned Windows aggregate deadline, Job Object cleanup, abnormal-child proof, and current artifact `vm-0-5-0382`; [evidence](../etc/evidence/t382-s1-current-gate-aggregate.md). |
 | T381 | Closed: S1 P1 `9b6a86c6` delivered frozen YAML profile selection and the true zero-session Console; corrective S2 restored its task-level closure state without changing runtime evidence or the T381 artifact. [Evidence](../etc/evidence/t381-s1-console-yaml-profiles.md). |
 | T380 | Closed: strict Model-339 startup, 512 KB FDC/BDA repair, input/FDC current-gate recovery, and the owner-replayed DOS 5/HIMEM no-XMS path are verified. It does not claim DOS completion or 5170 L3 closure. [Evidence](../etc/evidence/t380-s2-model339-start-and-current-gate-recovery.md). |
