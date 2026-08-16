@@ -64,7 +64,7 @@ the existing composed EGA, ROM, and new D4 device graph without a hidden limit.
 - Serial `ctest -L current-gate --parallel 1` passes **271/271** tests.
 - The runnable developer artifact is `vm-0-5-0387`,
   `build/output/nxvm_0_5_0387.exe`, SHA-256
-  1F294C9D0A04D5F3E32F4C06DDD6E6CC6DD543F14E5807C5BB9C9075F446213E.
+  `1F294C9D0A04D5F3E32F4C06DDD6E6CC6DD543F14E5807C5BB9C9075F446213E`.
 - Applicable composition, ownership, artifact and documentation gates are
   recorded before P1 acceptance.
 ## Boundaries And Transfer
@@ -76,3 +76,26 @@ remains outside S16.  It does not model ROM shadowing/relocation, D4 RAM parity
 sources or diagnostic latches, IOCHK side effects, board decode timing, memory
 wait classes, physical bus behavior, or Model-40 L3.  Those transfer through
 the T386 functional and board-timing receivers.
+
+## Coordinator Acceptance
+
+P1 7c2f34f delivered the complete implementation, focused proof, artifact and
+evidence.  Coordinator review rejected its acceptance only because PowerShell
+had encoded Markdown backticks as control characters in the delivery evidence
+and the focused smoke retained a temporary failure print.  P2 9199ea07
+removes those delivery defects without changing the accepted mapping contract;
+its focused Core, Model-40 and immutable-ROM regressions pass, and the
+coordinator rechecked the pushed diff, control-character sweep and branch
+state.
+
+The coordinator reviewed the actual S16 source surface: Core contains only a
+generic configuration-time overlay registration and ordered checked dispatch;
+ordinary immutable ROM registration remains exclusive.  VM contains all Compaq
+addresses, D4 backing, diagnostic/control semantics, write protection and reset
+state.  The final artifact and 271/271 serial gate are from the reviewed source
+graph; composition, ownership, artifact and documentation gates pass.
+
+S16 is accepted as bounded Model-40 functional progress.  It does not claim
+firmware execution, full D4 diagnostics/parity, device completeness, board
+timing or DeskPro L3 closure.  T386 remains open for the next capability-ledger
+receiver.

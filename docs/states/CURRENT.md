@@ -2,30 +2,11 @@
 
 ## Current Work
 
-**T386 open; S1--S15 accepted; S16 active.** S16 reconciles the source-sensitive
-D4 memory/ROM decode before implementing any further firmware-visible Model-40
-function. It may change VM Model-40 composition and use an existing generic
-Core mapping capability; any new generic Core behavior requires a packet
-revision and evidence.
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation: M5 T386 S16. |
-| Admission And Approval | Owner approved continuing T386 functional closure under the capability-ledger-first plan and explicitly requires profile behavior in VM versus generic hardware capabilities in Core. S15 selected this bounded first functional receiver; no exception. |
-| Objective | Reconcile Compaq primary D4 ROM decode, E0000h RAM-replacement behavior, selected Rev-E two-chip carrier and 80386 reset alias; implement only the resulting source-supported Model-40 mapping and prove it with project-owned synthetic bytes. |
-| Non-goals | No public ROM loader/YAML/catalog entry, no real ROM/media/path/hash/manifest, no BIOS execution claim, no ROM shadowing or relocation state machine, no generic PC/AT mapping change, no board timing, no physical decode-waveform claim and no L3 claim. |
-| Reference Baseline | T384 S1 D4 BOM/memory ledger, T386 S14 private Rev-E carrier evidence, T386 S15 functional matrix at `6c50a9c4`, original Compaq D3PE/D4-SROMA primary material, and the DeskPro functional proposal. |
-| Candidate Proposal | `docs/proposals/m5-deskpro-386-model40-device-functional-closure.md` with `docs/proposals/m5-80386-deskpro-386-l3-baseline.md`. |
-| Files And ABI Surface | Model-40 addresses, register semantics, replacement selection and backing ownership remain in `src/vm/profile/model40/` and private Model-40 composition. S16 may add the smallest Core-owned generic, profile-consumable memory-device registration capability if the existing immutable-only surface is insufficient; it must contain no Compaq constants, policy or profile state. Focused synthetic mapping tests cover both boundaries. |
-| Applicable Rules | `docs/rules/EXECUTION.md`, architecture/coding rules, source policy, T384/S14/S15 evidence and VM-to-Core dependency direction. VM owns Model-40 chip organization, addresses and state; Core owns generic checked memory-device registration and dispatch without profile semantics. |
-| Verification | Inspect exact primary decode material transiently; record a source-labelled mapping decision or explicit configuration split; add focused low/top/replacement/immutability/reset proof; retain Model-40 S7--S15 controls; run serial current-gate, required ownership/composition/documentation gates, rebuild T386 artifact if runnable source changes, and coordinator actual-change review. |
-| Expected Markers | `M5:T386:S16:D4-ROM-MAP:OK`, `M5:T386:S16:D4-REPLACEMENT:OK`, and `M5:T386:S16:D4-RESET-ALIAS:OK`. |
-| Asset Needs | Primary board material and owner-managed Rev-E pair may be inspected transiently outside Git. Committed tests use only synthetic bytes; no vendor path, byte, hash, image, source text or catalogue enters the repository. |
-| Reporting Requirements | Report source decision before implementation, record every map/alias and excluded configuration in indexed evidence, push one complete implementation P with artifact/gates, then coordinator actual-change review and governance P. |
-| Stop Conditions | Stop and transfer if primary material cannot determine whether the Rev-E pair and 128 KiB board window are the same configuration, or if implementation requires ROM shadowing/relocation beyond the primary-supported replacement contract. A Core change must remain a generic registration/dispatch capability with no Compaq addresses, register bits, backing or policy; otherwise stop. Do not guess an overlay from an emulator or clone. |
-| Exit Criteria | The selected configuration has one primary-supported immutable mapping/replacement contract; every synthetic low/top/replacement/reset access has expected read/write behavior; other configuration remains explicit and unimplemented; no protected asset is tracked; all required controls/gates and coordinator review pass. |
-| Original Owner Request | Achieve complete DeskPro 386 Model 40 functionality and L3 timing under the approved queue, with a capability-ledger-first execution order and VM-owned profile details versus Core-owned generic hardware capabilities. |
-| Similar-Issue Sweep | Sweep all tracked Model-40 ROM constants/providers/tests, D4 memory-map references, generic immutable mapping call sites and historical conflicting T384/S7/S14 wording. Classify each as selected mapping, distinct configuration, or historical evidence; correct current source/evidence atomically and transfer any unresolved physical/shadowing behavior. |
+**T386 open; S1--S16 accepted.** S16 separates the primary D4 compatibility
+RAM/replacement map from the Rev-E two-chip ROM carrier, adds a generic
+Core-owned overlay-dispatch capability, and retains all Model-40 policy in VM.
+It is bounded functional progress only; firmware copy/parity, remaining devices,
+board timing and the Model-40 L3 audit remain open.
 ## Current Technical Baseline
 
 - **Current developer artifact:** T386 S16 `vm-0-5-0387` /
@@ -51,7 +32,7 @@ revision and evidence.
 
 | Task | Compact result |
 | --- | --- |
-| T386 S15 | Progress accepted: current-source functional ledger classifies every selected Model-40 component, identifies D4 ROM/replacement mapping as the next functional receiver, and preserves physical-media, firmware and timing boundaries. Documentation governance and actual-change review pass. [Evidence](../etc/evidence/t386-s15-model40-functional-ledger.md). |
+| T386 S16 | Accepted: primary-bounded D4 compatibility RAM, low-active replacement/write-protection control, selected diagnostic read, reset state and generic checked overlay dispatch are implemented with synthetic proof. D4 parity/firmware copy, remaining device functionality, board timing and L3 remain open. [Evidence](../etc/evidence/t386-s16-d4-memory-rom-map.md). |
 | T385 | Closed: the selected Model-40 80386DX-16 consumes the shared 80386 CPU/state/retirement owners without a DeskPro CPU fork; a clean current-source 251/251 gate passed, while functionality and board timing transfer unchanged. [Closure audit](../etc/evidence/t385-s1-task-closure-audit.md). |
 | T384 | Closed: the Model-40 capability audit freezes its original Compaq system board/storage ledger and owner-selected color EGA, keyboard and external-ROM constraint; its shared-VADP IBM/Compaq personality boundary transfers CPU, functional and timing work without making a runnable or L3 claim. [Closure audit](../etc/evidence/t384-s2-task-closure-audit.md). |
 | T383 | Closed: independent current-source replay accepts the frozen 5170 Model 339 deterministic-L3 contract after T380's strict-start repair; 251/251 current gate and focused matrix are retained in [evidence](../etc/evidence/t383-s1-model339-current-source-reaudit.md). |
