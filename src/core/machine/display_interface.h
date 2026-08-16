@@ -49,6 +49,10 @@ typedef struct core_machine_vadp_cecg_config {
     type_bool lightpen_switch_open;
     type_bool cpu_video_memory_disabled;
     type_bool color_io_base;
+    type_unsigned_8 sw1_closed_mask;
+    type_unsigned_8 clock_switch_select;
+    type_bool special_features_present;
+    type_bool vertical_retrace_irq_enabled;
 } core_machine_vadp_cecg_config;
 
 typedef struct core_machine_vadp_ega_controller_config {

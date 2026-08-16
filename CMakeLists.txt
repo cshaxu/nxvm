@@ -97,6 +97,9 @@ target_link_libraries(vm-model40-cecg-s11-smoke PRIVATE vm-composition)
 add_executable(vm-model40-cecg-s12-smoke
     tests/machine/vm_model40_cecg_s12_smoke.c)
 target_link_libraries(vm-model40-cecg-s12-smoke PRIVATE vm-composition)
+add_executable(vm-model40-cecg-s13-smoke
+    tests/machine/vm_model40_cecg_s13_smoke.c)
+target_link_libraries(vm-model40-cecg-s13-smoke PRIVATE vm-composition)
 add_executable(vm-model-339-clock-contract-smoke
     tests/machine/vm_model_339_clock_contract_smoke.c)
 target_link_libraries(vm-model-339-clock-contract-smoke PRIVATE vm-composition)
@@ -1579,6 +1582,10 @@ add_executable(core-machine-compaq-cecg-s12-smoke
     tests/machine/core_machine_compaq_cecg_s12_smoke.c
 )
 target_link_libraries(core-machine-compaq-cecg-s12-smoke PRIVATE core-machine)
+add_executable(core-machine-compaq-cecg-s13-smoke
+    tests/machine/core_machine_compaq_cecg_s13_smoke.c
+)
+target_link_libraries(core-machine-compaq-cecg-s13-smoke PRIVATE core-machine)
 add_executable(vm-ega-controller-system-smoke
     tests/machine/vm_ega_controller_system_smoke.c
 )
@@ -1861,6 +1868,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     vm-model40-cecg-s10-smoke
     vm-model40-cecg-s11-smoke
     vm-model40-cecg-s12-smoke
+    vm-model40-cecg-s13-smoke
     vm-ibm-5170-model-339-cga-topology-smoke
     vm-ibm-5170-model-339-firmware-fdc-topology-smoke
     vm-fdc-dma-boundary-smoke
@@ -2044,6 +2052,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     core-machine-compaq-cecg-s10-smoke
     core-machine-compaq-cecg-s11-smoke
     core-machine-compaq-cecg-s12-smoke
+    core-machine-compaq-cecg-s13-smoke
     vm-cga-graphics-system-smoke
     vm-cga-640-system-smoke
     vm-ega-sequencer-system-smoke
@@ -3166,10 +3175,10 @@ foreach(project_t345_target IN LISTS PROJECT_T344_CURRENT_GATE_TARGETS)
 endforeach()
 list(LENGTH PROJECT_T345_S2_OWNER_TEST_STRICT_TARGETS project_t345_s2_pure_count)
 list(LENGTH PROJECT_T345_S2_MIXED_OWNER_TEST_TARGETS project_t345_s2_mixed_count)
-if(NOT project_t345_s2_pure_count EQUAL 150 OR
+if(NOT project_t345_s2_pure_count EQUAL 152 OR
         NOT project_t345_s2_mixed_count EQUAL 3)
     message(FATAL_ERROR
-        "T345 S2 expected 150 pure and 3 mixed owner-test targets; found ${project_t345_s2_pure_count} pure and ${project_t345_s2_mixed_count} mixed.")
+        "T345 S2 expected 152 pure and 3 mixed owner-test targets; found ${project_t345_s2_pure_count} pure and ${project_t345_s2_mixed_count} mixed.")
 endif()
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     foreach(project_t345_target IN LISTS PROJECT_T345_S2_OWNER_TEST_STRICT_TARGETS)

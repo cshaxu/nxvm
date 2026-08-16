@@ -20,6 +20,7 @@ principal documents named in [docs/README.md](../README.md).
 | `evidence/t386-s10-cecg-feature-environment.md` | Verification owner | T386 S10 source-bounded CECG Feature Control to Environment state, reset and isolation proof. Retain with T386 progress. |
 | `evidence/t386-s11-cecg-cpu-video-gate.md` | Verification owner | T386 S11 source-bounded CECG CPU-video-memory decode gate, reset and isolation proof. Retain with T386 progress. |
 | `evidence/t386-s12-cecg-io-base.md` | Verification owner | T386 S12 source-bounded CECG color/monochrome I/O-base routing, reset and isolation proof. Retain with T386 progress. |
+| vidence/t386-s13-cecg-input-status-0.md | Verification owner | T386 S13 source-bounded CECG Input Status 0, SW1 selector, reset and isolation proof. Retain with T386 progress. |
 | `evidence/t382-s1-current-gate-aggregate.md` | Verification owner | T382 S1 aggregate CTest deadline, Job Object cleanup, abnormal-child proof, aggregate-entry sweep, and task artifact record. Retain with T382 history. |
 | `evidence/t382-s2-console-dead-code-retirement.md` | Verification owner | T382 S2 unreachable Console route and callback retirement, focused command sweep, regression proof, and task artifact record. Retain with T382 history. |
 | `evidence/t382-s3-memory-quantity-boundary.md` | Verification owner | T382 S3 checked KiB conversion owner, parser sweep, negative proof, and task artifact record. Retain with T382 history. |

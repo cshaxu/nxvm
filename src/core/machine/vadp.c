@@ -831,6 +831,26 @@ static C_VOID core_machine_vadp_write_compaq_miscellaneous_output(t_port *port,
     adapter->data.compaq_cpu_video_memory_disabled =
         (port->data.ioByte & 0x02u) != 0u;
     adapter->data.compaq_color_io_base = (port->data.ioByte & 0x01u) != 0u;
+    adapter->data.compaq_clock_switch_select = (port->data.ioByte >> 2u) & 0x03u;
+}
+
+static C_VOID core_machine_vadp_read_compaq_input_status_0(t_port *port,
+    type_unsigned_16 port_id, C_VOID *owner)
+{
+    const t_vadp *adapter = (const t_vadp *)owner;
+    type_unsigned_8 selected_switch;
+
+    (C_VOID)port_id;
+    if (port == STD_NULL || adapter == STD_NULL) return;
+    selected_switch = 4u - adapter->data.compaq_clock_switch_select;
+    port->data.ioByte = (adapter->data.cecg.sw1_closed_mask &
+        (1u << (selected_switch - 1u))) != 0u ? 0u : 0x10u;
+    if (!adapter->data.cecg.special_features_present) {
+        port->data.ioByte |= 0x60u;
+    }
+    if (!adapter->data.cecg.vertical_retrace_irq_enabled) {
+        port->data.ioByte |= 0x80u;
+    }
 }
 
 static C_VOID core_machine_vadp_write_compaq_feature_control(t_port *port,
@@ -1096,6 +1116,8 @@ type_status core_machine_vadp_configure_ega_personality(t_vadp *adapter,
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
     if (personality == CORE_MACHINE_VADP_EGA_PERSONALITY_COMPAQ_ENHANCED_COLOR) {
+        core_machine_port_add_read(port, CORE_MACHINE_VADP_PORT_COMPAQ_MISCELLANEOUS_OUTPUT,
+            core_machine_vadp_read_compaq_input_status_0, adapter);
         core_machine_port_add_read(port, CORE_MACHINE_VADP_PORT_COMPAQ_CONTROL_MODE,
             core_machine_vadp_read_compaq_control_mode, adapter);
         core_machine_port_add_write(port, CORE_MACHINE_VADP_PORT_COMPAQ_CONTROL_MODE,
@@ -1137,11 +1159,14 @@ type_status core_machine_vadp_configure_ega_personality(t_vadp *adapter,
     adapter->data.ega_personality = personality;
     if (personality == CORE_MACHINE_VADP_EGA_PERSONALITY_COMPAQ_ENHANCED_COLOR) {
         adapter->data.cecg = (core_machine_vadp_cecg_config) {
-            0x40u, 0x00u, 0x30u, 0x01u, TYPE_TRUE, TYPE_FALSE, TYPE_TRUE };
+            0x40u, 0x00u, 0x30u, 0x01u, TYPE_TRUE, TYPE_FALSE, TYPE_TRUE,
+            0x06u, 0x01u, TYPE_FALSE, TYPE_FALSE };
         adapter->data.compaq_control_mode = adapter->data.cecg.control_mode;
         adapter->data.compaq_cpu_video_memory_disabled =
             adapter->data.cecg.cpu_video_memory_disabled;
         adapter->data.compaq_color_io_base = adapter->data.cecg.color_io_base;
+        adapter->data.compaq_clock_switch_select =
+            adapter->data.cecg.clock_switch_select;
     }
     return TYPE_STATUS_OK;
 }
@@ -1150,7 +1175,8 @@ C_INT core_machine_vadp_cecg_config_is_valid(
     const core_machine_vadp_cecg_config *config)
 {
     return config != STD_NULL && (config->control_mode & 0xe0u) == 0x40u &&
-        (config->display_type & 0x44u) == 0u && config->initial_mode == 0x01u;
+        (config->display_type & 0x44u) == 0u && config->initial_mode == 0x01u &&
+        (config->sw1_closed_mask & 0xf0u) == 0u && config->clock_switch_select <= 3u;
 }
 
 type_status core_machine_vadp_configure_cecg(t_vadp *adapter,
@@ -1167,6 +1193,7 @@ type_status core_machine_vadp_configure_cecg(t_vadp *adapter,
     adapter->data.compaq_cpu_video_memory_disabled =
         config->cpu_video_memory_disabled;
     adapter->data.compaq_color_io_base = config->color_io_base;
+    adapter->data.compaq_clock_switch_select = config->clock_switch_select;
     adapter->data.compaq_feature_control = config->environment & 0x03u;
     return TYPE_STATUS_OK;
 }
@@ -1227,6 +1254,7 @@ C_VOID core_machine_vadp_reset(t_vadp *adapter)
     adapter->data.compaq_cpu_video_memory_disabled =
         cecg.cpu_video_memory_disabled;
     adapter->data.compaq_color_io_base = cecg.color_io_base;
+    adapter->data.compaq_clock_switch_select = cecg.clock_switch_select;
     adapter->data.ega_sequencer = ega_sequencer;
     adapter->data.ega_sequencer_configured = ega_sequencer_configured;
     core_machine_vadp_reset_sequencer(adapter);

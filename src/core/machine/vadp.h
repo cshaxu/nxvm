@@ -90,6 +90,7 @@ typedef struct t_vadp_data {
     type_unsigned_8 compaq_feature_control;
     type_bool compaq_cpu_video_memory_disabled;
     type_bool compaq_color_io_base;
+    type_unsigned_8 compaq_clock_switch_select;
     type_bool compaq_lightpen_latched;
     type_unsigned_64 dirty_generation;
     C_INT captured;
