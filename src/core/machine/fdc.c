@@ -718,7 +718,16 @@ static C_VOID core_machine_fdc_execute(core_machine_fdc *fdc)
         core_machine_fdc_begin_seek(fdc, 0u);
         break;
     case core_machine_fdc_CMD_SENSE_INTERRUPT:
-        if (fdc->data.flagINTR) {
+        if (fdc->data.reset_sense_count != 0u) {
+            type_unsigned_8 drive = (type_unsigned_8)(CORE_MACHINE_FDC_DRIVE_COUNT -
+                fdc->data.reset_sense_count);
+
+            fdc->data.ret[0] = core_machine_fdc_ST0_READY_CHANGE | drive;
+            fdc->data.ret[1] = (type_unsigned_8)fdc->data.drive_cylinder[drive];
+            fdc->data.reset_sense_count--;
+            fdc->data.flagINTR = TYPE_FALSE;
+            core_machine_pic_irq_source_deassert(&fdc->connect.irq_source);
+        } else if (fdc->data.flagINTR) {
             fdc->data.ret[0] = fdc->data.st0;
             fdc->data.ret[1] = (type_unsigned_8)fdc->data.cylinder;
             fdc->data.flagINTR = TYPE_FALSE;
@@ -857,6 +866,7 @@ static C_VOID core_machine_fdc_write_dor(t_port *port, type_unsigned_16 id,
 {
     core_machine_fdc *fdc = owner;
     type_unsigned_8 dor = fdc->connect.port->data.ioByte;
+    type_unsigned_8 old_dor = fdc->data.dor;
     (C_VOID)port; (C_VOID)id;
     if ((dor & VFDC_DOR_NRS) == 0u) {
         core_machine_pic_irq_source_deassert(&fdc->connect.irq_source);
@@ -864,6 +874,12 @@ static C_VOID core_machine_fdc_write_dor(t_port *port, type_unsigned_16 id,
         core_machine_fdc_reset_controller(fdc);
     }
     fdc->data.dor = dor;
+    if ((dor & VFDC_DOR_NRS) != 0u && (old_dor & VFDC_DOR_NRS) == 0u) {
+        core_machine_fdc_reset_controller(fdc);
+        fdc->data.dor = dor;
+        fdc->data.reset_sense_count = CORE_MACHINE_FDC_DRIVE_COUNT;
+        core_machine_fdc_raise_irq(fdc);
+    }
     core_machine_fdc_update_dir(fdc);
     if ((dor & VFDC_DOR_NRS) != 0u && core_machine_fdc_execution_active(fdc) &&
         !core_machine_fdc_drive_ready(fdc)) {

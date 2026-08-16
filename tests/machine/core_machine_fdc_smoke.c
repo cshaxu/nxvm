@@ -270,6 +270,14 @@ C_INT main(C_VOID)
                 failed |= 0x04;
             } else {
                 core_machine_port_write(port, fdc_config.dor_port, 0x1cu);
+                for (type_unsigned_8 reset_drive = 0u;
+                    reset_drive < CORE_MACHINE_FDC_DRIVE_COUNT; ++reset_drive) {
+                    core_machine_fdc_command(fdc, port,
+                        (const type_unsigned_8[]){0x08u}, 1u);
+                    failed |= !core_machine_fdc_read_result(fdc, port, result, 2u) ||
+                        result[0] != (core_machine_fdc_ST0_READY_CHANGE | reset_drive) ||
+                        result[1] != 0u || fdc->connect.irq_source.asserted;
+                }
                 core_machine_fdc_command(fdc, port, specify_non_dma,
                     sizeof(specify_non_dma));
                 core_machine_port_write(port, fdc_config.control_port, VFDC_CCR_DRC);
@@ -499,6 +507,14 @@ C_INT main(C_VOID)
                         VFDC_ST2_SCAN_MATCH;
                 core_machine_port_write(port, fdc_config.dor_port, 0u);
                 core_machine_port_write(port, fdc_config.dor_port, 0x1cu);
+                for (type_unsigned_8 reset_drive = 0u;
+                    reset_drive < CORE_MACHINE_FDC_DRIVE_COUNT; ++reset_drive) {
+                    core_machine_fdc_command(fdc, port,
+                        (const type_unsigned_8[]){0x08u}, 1u);
+                    failed |= !core_machine_fdc_read_result(fdc, port, result, 2u) ||
+                        result[0] != (core_machine_fdc_ST0_READY_CHANGE | reset_drive) ||
+                        result[1] != 0u || fdc->connect.irq_source.asserted;
+                }
                 core_machine_fdc_command(fdc, port, specify_non_dma,
                     sizeof(specify_non_dma));
                 core_machine_port_write(port, fdc_config.control_port, VFDC_CCR_DRC);
@@ -547,6 +563,14 @@ C_INT main(C_VOID)
                 /* Scan is host-to-controller execution too: its first byte
                    establishes the same byte gate, and DOR reset cancels it. */
                 core_machine_port_write(port, fdc_config.dor_port, 0x1cu);
+                for (type_unsigned_8 reset_drive = 0u;
+                    reset_drive < CORE_MACHINE_FDC_DRIVE_COUNT; ++reset_drive) {
+                    core_machine_fdc_command(fdc, port,
+                        (const type_unsigned_8[]){0x08u}, 1u);
+                    failed |= !core_machine_fdc_read_result(fdc, port, result, 2u) ||
+                        result[0] != (core_machine_fdc_ST0_READY_CHANGE | reset_drive) ||
+                        result[1] != 0u || fdc->connect.irq_source.asserted;
+                }
                 core_machine_fdc_command(fdc, port, specify_non_dma,
                     sizeof(specify_non_dma));
                 core_machine_port_write(port, fdc_config.control_port, 0u);

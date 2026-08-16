@@ -72,6 +72,8 @@ typedef struct {
     type_unsigned_8 format_id[4];
     type_unsigned_8 format_id_index;
     type_unsigned_8 selected_drive;
+    /* A DOR reset release reports one ready-change status for each FDC slot. */
+    type_unsigned_8 reset_sense_count;
     type_unsigned_64 observed_media_generation[CORE_MACHINE_FDC_DRIVE_COUNT];
     type_bool media_changed[CORE_MACHINE_FDC_DRIVE_COUNT];
     type_bool observed_ready[CORE_MACHINE_FDC_DRIVE_COUNT];

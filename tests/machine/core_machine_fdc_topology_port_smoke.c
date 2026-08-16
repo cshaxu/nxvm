@@ -120,6 +120,7 @@ int main(C_VOID)
     core_machine *machine = STD_NULL;
     core_machine_fdc *fdc = STD_NULL;
     type_unsigned_8 diagnostic_phase = 0u;
+    type_unsigned_8 reset_drive;
     t_port *port = STD_NULL;
     type_unsigned_8 result[7] = {0};
     C_INT failed = 0;
@@ -151,6 +152,21 @@ int main(C_VOID)
                 failed |= 0x04;
             } else {
                 core_machine_port_write(port, 0x03f2u, 0x1cu);
+                failed |= !fdc->connect.irq_source.asserted ? 0x08 : 0;
+                for (reset_drive = 0u; reset_drive < CORE_MACHINE_FDC_DRIVE_COUNT;
+                    ++reset_drive) {
+                    core_machine_fdc_topology_command(fdc, port,
+                        (const type_unsigned_8[]){0x08u}, 1u);
+                    failed |= (!core_machine_fdc_topology_result(fdc, port, result, 2u) ||
+                        result[0] != (core_machine_fdc_ST0_READY_CHANGE | reset_drive) ||
+                        result[1] != 0u || fdc->connect.irq_source.asserted) ? 0x08 : 0;
+                }
+                core_machine_port_write(port, 0x03f2u, 0x1cu);
+                core_machine_fdc_topology_command(fdc, port,
+                    (const type_unsigned_8[]){0x08u}, 1u);
+                failed |= (!core_machine_fdc_topology_result(fdc, port, result, 2u) ||
+                    result[0] != 0x80u || result[1] != 0u ||
+                    fdc->connect.irq_source.asserted) ? 0x08 : 0;
                 core_machine_fdc_topology_command(fdc, port, specify_non_dma,
                     sizeof(specify_non_dma));
                 core_machine_fdc_topology_command(fdc, port, sense_drive,

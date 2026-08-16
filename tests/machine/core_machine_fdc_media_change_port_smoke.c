@@ -85,6 +85,15 @@ static C_VOID core_machine_fdc_change_ack_irq(core_machine_fdc *fdc, t_port *por
     (C_VOID)core_machine_port_read(port, 0x03f5u);
 }
 
+static C_VOID core_machine_fdc_change_drain_reset(core_machine_fdc *fdc, t_port *port)
+{
+    type_unsigned_8 drive;
+
+    for (drive = 0u; drive < CORE_MACHINE_FDC_DRIVE_COUNT; ++drive) {
+        core_machine_fdc_change_ack_irq(fdc, port);
+    }
+}
+
 int main(C_VOID)
 {
     static const type_unsigned_8 recalibrate_0[] = {0x07u, 0x00u};
@@ -147,6 +156,7 @@ int main(C_VOID)
                 failed = 1;
             } else {
                 core_machine_port_write(port, 0x03f2u, 0x1cu);
+                core_machine_fdc_change_drain_reset(fdc, port);
                 core_machine_fdc_change_command(fdc, port, recalibrate_0,
                     sizeof(recalibrate_0));
                 core_machine_fdc_change_ack_irq(fdc, port);
@@ -217,6 +227,7 @@ int main(C_VOID)
                     fdc->data.flagINTR || fdc->connect.irq_source.asserted ||
                     fdc->data.phase != core_machine_fdc_PHASE_COMMAND);
                 core_machine_port_write(port, 0x03f2u, 0x1cu);
+                core_machine_fdc_change_drain_reset(fdc, port);
                 core_machine_fdc_change_command(fdc, port, specify_dma, sizeof(specify_dma));
                 core_machine_fdc_change_command(fdc, port, read_0, sizeof(read_0));
                 core_machine_fdc_change_require(&failed, &first_failure, 12,
@@ -226,6 +237,7 @@ int main(C_VOID)
                     (dma->data.status & VDMA_STATUS_DRQ(2u)) != 0u ||
                     fdc->data.phase != core_machine_fdc_PHASE_COMMAND);
                 core_machine_port_write(port, 0x03f2u, 0x1cu);
+                core_machine_fdc_change_drain_reset(fdc, port);
                 core_machine_fdc_change_command(fdc, port, read_0, sizeof(read_0));
                 core_machine_fdc_change_require(&failed, &first_failure, 14,
                     (dma->data.status & VDMA_STATUS_DRQ(2u)) == 0u);
@@ -235,6 +247,7 @@ int main(C_VOID)
                     fdc->data.flagINTR || fdc->connect.irq_source.asserted ||
                     fdc->data.phase != core_machine_fdc_PHASE_COMMAND);
                 core_machine_port_write(port, 0x03f2u, 0x1cu);
+                core_machine_fdc_change_drain_reset(fdc, port);
                 core_machine_fdc_change_command(fdc, port, recalibrate_0,
                     sizeof(recalibrate_0));
                 core_machine_fdc_advance_at(fdc, fdc->data.seek_due_tick);
