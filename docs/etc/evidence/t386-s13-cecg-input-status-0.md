@@ -64,3 +64,11 @@ remain in `TODO.md` and the T386 functional/board proposals.
 
 This is selected-device functional progress only. It makes no runnable public
 DeskPro profile, firmware, physical-board, board-timing or L3 claim.
+
+## P2 Corrective Formatting
+
+Coordinator review rejected P1 solely because the two new C controls and this
+evidence file lacked their required final newline. P2 restores that source and
+document format without changing code, test behavior, ownership, verification
+scope or transfer boundary. The focused S13 controls and the completed serial
+268/268 replay remain the behavioral evidence.
