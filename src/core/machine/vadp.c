@@ -785,12 +785,25 @@ static C_VOID core_machine_vadp_write_compaq_lightpen_latch_set(t_port *port,
     if (adapter != STD_NULL) adapter->data.compaq_lightpen_latched = TYPE_TRUE;
 }
 
+static C_VOID core_machine_vadp_write_compaq_feature_control(t_port *port,
+    type_unsigned_16 port_id, C_VOID *owner)
+{
+    t_vadp *adapter = (t_vadp *)owner;
+
+    (C_VOID)port_id;
+    if (port == STD_NULL || adapter == STD_NULL) return;
+    adapter->data.compaq_feature_control = port->data.ioByte & 0x03u;
+}
+
 static C_VOID core_machine_vadp_read_compaq_environment(t_port *port,
     type_unsigned_16 port_id, C_VOID *owner)
 {
     (C_VOID)port_id;
     if (port != STD_NULL && owner != STD_NULL) {
-        port->data.ioByte = ((const t_vadp *)owner)->data.cecg.environment;
+        const t_vadp *adapter = (const t_vadp *)owner;
+
+        port->data.ioByte = (adapter->data.cecg.environment & 0xfcu) |
+            adapter->data.compaq_feature_control;
     }
 }
 
@@ -1041,6 +1054,8 @@ type_status core_machine_vadp_configure_ega_personality(t_vadp *adapter,
             core_machine_vadp_write_compaq_lightpen_latch_reset, adapter);
         core_machine_port_add_write(port, CORE_MACHINE_VADP_PORT_COMPAQ_LIGHTPEN_LATCH_SET,
             core_machine_vadp_write_compaq_lightpen_latch_set, adapter);
+        core_machine_port_add_write(port, CORE_MACHINE_VADP_PORT_COMPAQ_FEATURE_CONTROL,
+            core_machine_vadp_write_compaq_feature_control, adapter);
         core_machine_port_add_read(port, CORE_MACHINE_VADP_PORT_COMPAQ_ENVIRONMENT,
             core_machine_vadp_read_compaq_environment, adapter);
         core_machine_port_add_read(port, CORE_MACHINE_VADP_PORT_COMPAQ_DISPLAY_TYPE,
@@ -1078,6 +1093,7 @@ type_status core_machine_vadp_configure_cecg(t_vadp *adapter,
     }
     adapter->data.cecg = *config;
     adapter->data.compaq_control_mode = config->control_mode;
+    adapter->data.compaq_feature_control = config->environment & 0x03u;
     return TYPE_STATUS_OK;
 }
 
@@ -1133,6 +1149,7 @@ C_VOID core_machine_vadp_reset(t_vadp *adapter)
     adapter->data.ega_personality = ega_personality;
     adapter->data.cecg = cecg;
     adapter->data.compaq_control_mode = cecg.control_mode;
+    adapter->data.compaq_feature_control = cecg.environment & 0x03u;
     adapter->data.ega_sequencer = ega_sequencer;
     adapter->data.ega_sequencer_configured = ega_sequencer_configured;
     core_machine_vadp_reset_sequencer(adapter);

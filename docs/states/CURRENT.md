@@ -2,7 +2,24 @@
 
 ## Current Work
 
-**T386 open; S1--S9 accepted.** The accepted [functional ledger](../etc/evidence/t386-s1-deskpro-functional-ledger.md), [non-runnable carrier contract](../etc/evidence/t386-s2-model40-carrier-contract.md), [second-PIT proof](../etc/evidence/t386-s3-second-pit-owner.md), [D4 platform-control proof](../etc/evidence/t386-s4-d4-platform-control.md), [S5 storage-controller contract](../etc/evidence/t386-s5-deskpro-storage-controller.md), [S6 Compaq EGA personality evidence](../etc/evidence/t386-s6-compaq-ega-personality.md), [S7 private composition evidence](../etc/evidence/t386-s7-private-model40-composition.md), [S8 integrated selected-device replay](../etc/evidence/t386-s8-model40-integration.md), and [S9 CECG control/static-configuration evidence](../etc/evidence/t386-s9-cecg-control-static-configuration.md) establish only the selected functional owners without early Model-40 publication or an L3 claim. S9 adds source-backed CECG control/latch/static configuration; P2 makes rejected CECG declarations failure-atomic. Firmware, physical media, board timing and L3 closure remain transferred.
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | `M5 T386 S10` -- Continuation. |
+| Admission And Approval | Owner-approved continuing DeskPro 386 functional and L3 programme, including the explicit core-generic / VM-profile boundary. S10 follows accepted S9 and adopts the next primary-determined CECG functional gap. |
+| Objective | Establish and implement the bounded CECG Feature Control (`3xAh`) to Environment (`7C6h`) state contract for the selected Model 40 color route, using the earliest shared VADP owner. |
+| Non-goals | No `3C2h` miscellaneous-output behavior, I/O-base switching, CPU video-memory gating, input-status-0 or live-video multiplexing, monitor/physical output, firmware/ROM import, board/raster timing, profile publication, IBM/generic EGA mutation, Windows or L3 claim. |
+| Reference Baseline | `c66cde8c` (T386 S9 accepted); Compaq *Enhanced Color Graphics Board / Color Monitor Technical Reference Guide* (December 1986), sections 4.1--4.2; T386 S6/S9 evidence; `TODO.md` CECG boundary; T386 functional and board proposals. |
+| Candidate Proposal | [DeskPro 386 Model 40 selected-device functional closure](../proposals/m5-deskpro-386-model40-device-functional-closure.md). |
+| Files And ABI Surface | Evidence/owned tests, existing shared VADP state/port owner, display declaration only if its reset default is required, and private Model-40 composition only for selected color-route binding. No public VM product interface, catalog or assets. |
+| Applicable Rules | `docs/design/ARCHITECTURE.md`, `docs/design/CODING.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`, `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, and `docs/etc/operations/policy/source-policy.md`; VADP owns generic device state/ports, Model-40 composition only selects board values. |
+| Verification | Make a source-to-observable table for Feature Control bits and Environment readback; add focused VADP and selected Model-40 controls covering color `3DAh` write, `7C6h` readback, reset restoration and generic-EGA isolation; run serial current gate and applicable governance checks. |
+| Expected Markers | `M5:T386:S10:CECG-FEATURE-ENVIRONMENT:OK`; any implementation marker must name its actual owner. |
+| Asset Needs | Transient primary documentation/research and project-owned synthetic fixtures only; no third-party source, firmware, guest media, local path or binary is copied, hashed or committed. |
+| Reporting Requirements | Report source-determined register semantics, implementation/evidence outcomes and every transfer; complete and push one P only after self-review, then conduct coordinator actual-change review. |
+| Stop Conditions | Stop and transfer an observable lacking a primary contract, requiring Special Features hardware, dynamic I/O routing, firmware, physical monitor behavior or board timing; do not infer from IBM EGA or copy emulator behavior. |
+| Exit Criteria | Color-route Feature Control writes affect only the source-defined Environment state; reset restores the declared state; generic EGA remains isolated; focused and required gates pass; all excluded behavior is explicitly transferred without a board-timing claim. |
+| Original Owner Request | Continue DeskPro 386 complete functional and L3 work under the stated boundary: profile/composition in `vm`; generic hardware capability in `core`. |
+| Similar-Issue Sweep | Sweep `3xAh`, `7C6h`, CECG environment/control state, color/monochrome status aliases, generic EGA paths, Model-40 composition, reset paths, tests, CMake and all CECG TODO/proposal/evidence records. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T382 S8 `vm-0-5-0382` /
