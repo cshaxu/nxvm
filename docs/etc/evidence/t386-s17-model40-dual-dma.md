@@ -67,3 +67,25 @@ HRQ/HLDA/DACK/AEN pin behavior, and expansion-card endpoint behavior transfer
 to the DeskPro board and device timing candidate. The selected 1.2 MB drive,
 remaining CECG behavior, D4 parity/firmware copy, reset arbitration and other
 ledgered device functional receivers remain open under T386.
+
+## Coordinator Acceptance
+
+P1 3aafba33 delivers the complete generic topology validation, explicit VM
+selection, dedicated Model-40 regression, artifact update and evidence. The
+coordinator rejected its initial acceptance only for a locally visible source
+formatting defect in the new smoke and its missing terminal newline. P2
+a616904b corrects only those delivery defects; it changes neither behavior nor
+scope.
+
+The coordinator reviewed the full P1--P2 source range and every changed
+production, test, build and documentation file. Core has only generic
+controller-count/cascade validation and no new Compaq policy. VM selects the
+generic topology without duplicating DMA state or transactions. The caller
+sweep covers every wiring initializer; the new smoke uses no production
+test-only API. Focused controls, the 272/272 serial current gate, artifact,
+T345 ownership and documentation governance all pass from the reviewed graph.
+
+S17 is accepted as bounded Model-40 functional progress. It does not claim
+DCLK or bus timing, expansion endpoint support, full selected-device
+completeness, firmware execution or DeskPro L3 closure. T386 remains open for
+the next functional ledger receiver.
