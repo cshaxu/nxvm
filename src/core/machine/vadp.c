@@ -744,6 +744,7 @@ static C_VOID core_machine_vadp_write_color(t_port *port,
         core_machine_vadp_mark_dirty(adapter);
     }
 }
+
 static C_VOID core_machine_vadp_read_status(t_port *port,
     type_unsigned_16 port_id, C_VOID *owner)
 {
