@@ -38,6 +38,18 @@ applicable rules, and split the work into bounded tasks with explicit exit
 criteria before implementation. Obtain approval before admitting the work to
 `states/CURRENT.md`; only that one active packet may execute.
 
+Use this entry table to select an existing path; it creates no additional
+authority or exception:
+
+| Situation | Permitted action | Required before execution or acceptance |
+| --- | --- | --- |
+| Discussion or read-only investigation | Explore, inspect, and ask questions. | No active packet or repository change; an owner request is required before change work is admitted. |
+| Approved new implementation | Admit `New` `T<n> S1`. | Owner approval, the next numeric identifier, an active packet, and its named proposal. |
+| Next step of the latest open implementation task | Admit `Continuation` `T<n> S<m>`. | Retained progress for that latest T, its next S identifier, and an active packet. |
+| Defect in the latest closed implementation task | Admit its narrow `Corrective` S, or a new T when outside that scope. | The corrective boundary, current evidence, active packet, and normal closure proof. |
+| Approved standalone governance or documentation | Admit `Td S<n>`. | Owner approval, the next Td identifier, an active packet, applicable gates, and actual-change review; it creates neither numeric T nor artifact baseline. |
+| Completed admitted S | Deliver one or more reviewable P commits. | Coordinator actual-change review, applicable verification, evidence/transfer update, and acceptance before closure. |
+
 During execution, the executor reports discovered repository issues. For a
 clear in-scope instance, the coordinator either revises the active packet/brief
 or admits a later subtask, then requires the similar-issue sweep; otherwise the
@@ -367,9 +379,11 @@ separately. The first checks topology, document schemas, Reading-Set navigation,
 packet fields and identifiers, the sole `CURRENT.md` technical baseline,
 queue/debt boundaries, artifact identity, and capped Status summaries.
 `current-gates-gcc` runs the combined check when PowerShell is available.
-Failure blocks closure. This is a structural gate: closure review must still
-apply the [Documentation Rules](DOCUMENT.md) authority matrix and its status
-retention limits to every changed document.
+Failure blocks closure. Passing this gate proves structural consistency only;
+it does not prove that Queue, history, baseline, evidence, and current runnable
+source truthfully agree. Coordinator closure review must inspect the actual
+changes and apply the [Documentation Rules](DOCUMENT.md) authority matrix and
+its status-retention limits to every changed document.
 
 ## Milestone Closure Evidence
 
