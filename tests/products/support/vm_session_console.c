@@ -58,8 +58,7 @@ vm_product_console_command vm_product_console_parse(const C_CHAR *line)
     if (vm_product_console_word(line, "RESUME")) return VM_PRODUCT_CONSOLE_RESUME;
     if (vm_product_console_word(line, "DEBUG")) return VM_PRODUCT_CONSOLE_DEBUG;
     if (vm_product_console_word(line, "EXIT")) return VM_PRODUCT_CONSOLE_EXIT;
-    if (vm_product_console_word(line, "DEVICE") ||
-        vm_product_console_word(line, "SET BOOT")) return VM_PRODUCT_CONSOLE_MEDIA;
+    if (vm_product_console_word(line, "FLOPPY")) return VM_PRODUCT_CONSOLE_MEDIA;
     return VM_PRODUCT_CONSOLE_INVALID;
 }
 

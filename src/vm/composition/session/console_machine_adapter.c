@@ -9,12 +9,10 @@
 #include "vm/composition/session/fault.h"
 #include "vm/composition/session/lifecycle.h"
 #include "vm/composition/session/machine_info.h"
-#include "core/machine/memory.h"
 #include "core/product/debug/debug.h"
 #include "core/product/session/session_interface.h"
 #include "vm/machine/debug.h"
 #include "vm/machine/fdd.h"
-#include "vm/machine/hdd.h"
 #include "vm/platform/platform.h"
 #include "vm/profile/default_profile/firmware/bios.h"
 
@@ -124,29 +122,6 @@ static C_VOID vm_session_machine_record_stop(C_VOID *context)
     if (session != STD_NULL) vm_machine_debug_record_stop(&session->debug);
 }
 
-static C_VOID vm_session_machine_boot_hdd(C_VOID *context, C_INT value)
-{
-    vm_session *session = vm_session_machine_borrow_selected(context);
-
-    if (session != STD_NULL) {
-        vm_session_set_boot_hdd(session, value);
-    }
-}
-
-static C_VOID vm_session_machine_memory(C_VOID *context, STD_SIZE_T bytes)
-{
-    vm_session *session = vm_session_machine_borrow_selected(context);
-
-    if (session != STD_NULL) (C_VOID)vm_session_reconfigure_memory(session, bytes);
-}
-
-static C_VOID vm_session_machine_create_fdd(C_VOID *context)
-{
-    vm_session *session = vm_session_machine_borrow_selected(context);
-
-    if (session != STD_NULL) vm_machine_fdd_create_for(&session->fdd);
-}
-
 static C_INT vm_session_machine_insert_fdd(C_VOID *context, const C_CHAR *path)
 {
     vm_session *session = vm_session_machine_borrow_selected(context);
@@ -159,31 +134,6 @@ static C_INT vm_session_machine_remove_fdd(C_VOID *context, const C_CHAR *path)
     vm_session *session = vm_session_machine_borrow_selected(context);
 
     return session != STD_NULL ? vm_machine_fdd_remove_for(&session->fdd, path) : -1;
-}
-
-static C_VOID vm_session_machine_create_hdd(C_VOID *context, type_unsigned_16 cylinders)
-{
-    vm_session *session = vm_session_machine_borrow_selected(context);
-
-    if (session != STD_NULL && session->profile != STD_NULL &&
-        session->profile->hdc_present) {
-        vm_machine_hdd_create(&session->hdd, cylinders);
-    }
-}
-
-static C_INT vm_session_machine_insert_hdd(C_VOID *context, const C_CHAR *path)
-{
-    vm_session *session = vm_session_machine_borrow_selected(context);
-
-    return session != STD_NULL ? vm_session_insert_hdd(session, path) : -1;
-}
-
-static C_INT vm_session_machine_remove_hdd(C_VOID *context, const C_CHAR *path)
-{
-    vm_session *session = vm_session_machine_borrow_selected(context);
-
-    return session != STD_NULL && session->profile != STD_NULL &&
-        session->profile->hdc_present ? vm_machine_hdd_remove(&session->hdd, path) : -1;
 }
 
 static type_status vm_session_machine_start(C_VOID *context)
@@ -226,14 +176,8 @@ static const vm_product_console_machine_provider vmSessionMachineProviderTemplat
     vm_session_machine_debug,
     vm_session_machine_record_start,
     vm_session_machine_record_stop,
-    vm_session_machine_boot_hdd,
-    vm_session_machine_memory,
-    vm_session_machine_create_fdd,
     vm_session_machine_insert_fdd,
     vm_session_machine_remove_fdd,
-    vm_session_machine_create_hdd,
-    vm_session_machine_insert_hdd,
-    vm_session_machine_remove_hdd,
     vm_session_machine_start,
     vm_session_machine_reset,
     vm_session_machine_stop,
