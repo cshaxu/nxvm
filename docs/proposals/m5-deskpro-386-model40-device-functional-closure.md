@@ -59,6 +59,47 @@ contract; no copied VADP core or IBM EGA default is permitted. IBM EGA remains
 outside this candidate and belongs solely to current-product device-capability
 L3 closure.
 
+## Accepted Progress And Remaining Receiver Order
+
+T386 S22 closes only the first D4/platform receiver: the D4 parity diagnostic,
+four-lane status latch and logical IOCHK/NMI publication now consume one
+location-bearing Core memory-parity event. It does not close the rest of the D4
+controller or any other selected device.
+
+The remaining functional work stays in this candidate and proceeds in this
+order, with each receiver admitted only after reviewing the preceding evidence:
+
+1. D4-SKEY A20 behavior and the selected shutdown/program/power plus 8042
+   reset-arbitration contract. It must reuse the existing Core A20/reset
+   mechanisms where their semantics match, leaving only Model-40 wiring/policy
+   at the VM profile carrier. It excludes reset pulse and bus-cycle timing.
+1. Selected 765A plus 1.2 MB raw-IMG logical command/state/error/recovery and
+   DMA2/IRQ6/BIOS-visible consumer proof. It must not enlarge raw IMG into a
+   flux/CRC/index/rotation/physical-CHRN format.
+1. Compaq Multipurpose Fixed Disk Controller and fitted 40 MB fixed startup
+   route: normal CHS/PIO/reset/error/IRQ14 behavior and one startup-frozen
+   external media contract, with no ATA/IBM-MFM substitution or runtime media
+   swap.
+1. Remaining source-backed CECG monitor, status, firmware-programming effect,
+   reset and isolation behavior, through the existing shared VADP personality
+   boundary rather than a copied EGA core.
+1. A T386 functional-closure audit only after those receivers have accepted
+   evidence. It must re-run the selected-device ledger, fixed-versus-external
+   declarations and timing handoff before T386 may transfer to DeskPro board
+   bus/device timing.
+
+This ordering introduces no numeric S allocation. It is a dependency order:
+D4 reset/A20 must resolve the selected control plane before consumer media
+replay; FDC and fixed-disk state machines then close independent storage
+routes; CECG completes the selected display contract; only the audit can
+transfer all selected functional rows to timing.
+
+The existing principal architecture and M5 Roadmap already state the necessary
+owner rule: reusable chips, controller mechanisms and generic device semantics
+belong to Core; VM device profiles own named hardware-capability contracts; the
+Model-40 backbone owns its historical combination and board constraints. This
+proposal applies that rule and does not create a second architecture authority
+or require an architecture-document amendment.
 ## Dependencies and verification
 
 Begin from the accepted T384 capability selection, T385 CPU closure, and T386
