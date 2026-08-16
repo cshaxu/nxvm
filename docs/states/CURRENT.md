@@ -2,7 +2,26 @@
 
 ## Current Work
 
-**Idle.**
+## M5 T385 S1 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New |
+| Admission And Approval | The owner approved continuous single-person execution of the ordered M5 Queue through the DeskPro/XT L3 program, and most recently confirmed the T384 Model-40 configuration and IBM/Compaq EGA ownership split. T384 is closed; this next ordered candidate is admitted only for its CPU boundary. |
+| Objective | Reconcile the selected 1986 DeskPro 386 Model 40 80386DX-16 CPU/state contract against the closed shared 80386 evidence and current source, then repair only a proven CPU/state or successful-retirement gap and record the resulting Model-40 CPU ledger. |
+| Non-goals | No machine/profile runtime composition, firmware execution, external-ROM manifest, memory/ROM mapping, EGA personality, keyboard/input, FDC/storage, PIC/DMA/PIT/RTC/NMI/reset binding, board/bus timing, clock/wait-state claim, x87, VME/PVI, Windows claim, or L3 decision. |
+| Reference Baseline | T384 S1/S2 Model-40 selection and transfer; the closed T340--T342 80386DX evidence; `80386-closure-map.md`; DeskPro CPU candidate and shared DeskPro closure context; Intel 80386 primary documentation and project-owned probes where a source-defined CPU distinction is observable. |
+| Candidate Proposal | [DeskPro 386 Model 40 80386 CPU closure](../proposals/m5-deskpro-386-profile-cpu-closure.md). |
+| Files And ABI Surface | Initial audit may change only `docs/states/CURRENT.md` and T385 evidence/history. Any later source repair requires an explicit packet revision naming its CPU owner, callers, tests and ABI surface; no product/core composition or device source is admitted by this packet. |
+| Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`, and `docs/etc/operations/policy/source-policy.md`; CPU changes, if justified, must preserve the shared core transaction/publication owner. No exception is requested. |
+| Verification | Build a source-labelled 80386DX-16 form/state matrix from the closure map and T340--T342; sweep decode, CPU profile gates, mode/paging/privilege/delivery/retirement publishers and their callers; distinguish CPU semantic evidence from later board timing; run focused existing or new project-owned CPU tests for every repaired/claimed row plus retained regressions; run the applicable current gate before acceptance. |
+| Expected Markers | `M5:T385:S1:DESKPRO-CPU-LEDGER:OK` and, if a repair is proven necessary, a source-owner-specific repair marker recorded in the revised packet and evidence. |
+| Asset Needs | No firmware, guest media, third-party source, emulator code or external-ROM asset is needed for the initial CPU audit. Primary Intel/Compaq documentation is research-only and is not imported. |
+| Reporting Requirements | Record the Model-40 CPU identity/clock boundary, every matrix row claimed complete or transferred, source/caller/publication findings, focused proof, retained regression result, and exact functional/timing receivers. Switch to coordinator review after one complete audit/repair P; do not treat a smoke count as CPU closure. |
+| Stop Conditions | Stop and revise or transfer if a required distinction depends on DeskPro device composition, firmware execution, physical clocking, waits/arbitration, an unselected corpus, VME/PVI, x87, persistent-cache/test-register model, or a new external source import. |
+| Exit Criteria | The selected 80386DX-16 CPU form/state ledger has no unclassified in-scope row; every proven source gap is repaired at its earliest CPU owner with focused proof, every non-CPU row has a named later receiver, and the evidence makes no DeskPro runnable/device/timing/L3 claim. |
+| Original Owner Request | Complete the ordered M5 L3 program with single-person dual-role governance, using the selected DeskPro Model 40 configuration and shared-VADP/personality allocation without importing external ROMs into the repository. |
+| Similar-Issue Sweep | Search all CPU profile gates, 80386 decode/execution state, fault/interrupt/retirement publishers and their consumers for the same model-visible semantic gap; separately search profile/product descriptors only to prove that no DeskPro device/composition work is silently pulled into this CPU task. |
 
 ## Current Technical Baseline
 
