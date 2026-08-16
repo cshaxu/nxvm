@@ -29,7 +29,7 @@ last-sector payload/result, and out-of-range error result.
 
 P1 verification passed: focused S24 regression; T345 ownership verification with
 225 rows (165 owner tests); 60 specialized/governance checks; and the serial
-current gate 278/278. The unchanged runnable artifact is `vm-0-5-0389` SHA-256
+current gate 278/278. Corrective P2 adds an actual 512-byte Model-40 DMA2 transfer into Core RAM through the production DMA/FDC path; it passes focused verification. Real external Model-40 ROM BIOS storage-consumer replay remains the only acceptance requirement. The unchanged runnable artifact is `vm-0-5-0389` SHA-256
 `0CB4173F06E91C3BD5F9493497F2EC5480F361A23493ED7A7326000DADFB3F20`.
 
 Flux/CRC/index/rotation/physical CHRN observables, device service and board

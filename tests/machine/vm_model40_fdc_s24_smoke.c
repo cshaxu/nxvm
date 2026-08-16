@@ -1,5 +1,6 @@
 #include "type.h"
 
+#include "core/machine/dma.h"
 #include "core/machine/fdc.h"
 #include "core/machine/machine.h"
 #include "core/machine/port.h"
@@ -27,6 +28,18 @@ static C_INT model40_fdc_result(core_machine_fdc *fdc, t_port *port,
     return (core_machine_port_read(port, 0x03f4u) & (VFDC_MSR_CB | VFDC_MSR_DIO)) == 0u;
 }
 
+static C_VOID model40_fdc_write_dma2(t_port *port, type_unsigned_16 address,
+    type_unsigned_16 count)
+{
+    core_machine_port_write(port, 0x000cu, 0u);
+    core_machine_port_write(port, 0x0004u, address & 0xffu);
+    core_machine_port_write(port, 0x0004u, address >> 8u);
+    core_machine_port_write(port, 0x0005u, count & 0xffu);
+    core_machine_port_write(port, 0x0005u, count >> 8u);
+    core_machine_port_write(port, 0x0081u, 0u);
+    core_machine_port_write(port, 0x000bu, 0x46u);
+    core_machine_port_write(port, 0x000au, 0x02u);
+}
 C_INT main(C_VOID)
 {
     static type_unsigned_8 even[VM_PROFILE_MODEL40_ROM_CHIP_BYTES];
@@ -34,6 +47,7 @@ C_INT main(C_VOID)
     static type_unsigned_8 image[MODEL40_FDC_BYTES];
     const vm_profile_model40_external_rom rom = { even, odd, sizeof(even) };
     static const type_unsigned_8 specify[] = {0x03u, 0xdfu, 0x03u};
+    static const type_unsigned_8 specify_dma[] = {0x03u, 0xdfu, 0x02u};
     static const type_unsigned_8 read_last[] = {0xe6u, 0u, 0u, 0u, 15u, 2u, 15u, 0x1bu, 0xffu};
     static const type_unsigned_8 read_oob[] = {0xe6u, 0u, 0u, 0u, 16u, 2u, 16u, 0x1bu, 0xffu};
     vm_session *session = STD_NULL;
@@ -69,7 +83,22 @@ C_INT main(C_VOID)
         }
         failed |= !model40_fdc_result(fdc, port, result, sizeof(result)) ||
             result[0] != core_machine_fdc_ST0_NORMAL || result[1] != 0u ||
-            result[5] != 16u || result[6] != 2u;
+            result[5] != 16u || result[6] != 2u;        model40_fdc_command(fdc, port, specify_dma, sizeof(specify_dma));
+        model40_fdc_write_dma2(port, 0x0600u, 511u);
+        model40_fdc_command(fdc, port, read_last, sizeof(read_last));
+        for (index = 0u; index < 512u; ++index) {
+            core_machine_dma_advance(&session->core_machine->shared_dma_latch,
+                &session->core_machine->shared_dma_primary,
+                &session->core_machine->shared_dma_secondary,
+                &session->core_machine->executor_memory, 1u);
+            if (index + 1u < 512u) core_machine_fdc_advance_at(fdc,
+                fdc->data.elapsed_ticks + CORE_MACHINE_FDC_500K_BYTE_TICKS);
+        }
+        failed |= fdc->data.phase != core_machine_fdc_PHASE_PENDING_COMPLETE ||
+            core_machine_memory_read(session->core_machine, 0x0600u, &result[0],
+                sizeof(result[0])) != TYPE_STATUS_OK || result[0] != 0xa5u;
+        failed |= !model40_fdc_result(fdc, port, result, sizeof(result)) ||
+            result[0] != core_machine_fdc_ST0_NORMAL || result[1] != 0u;
         model40_fdc_command(fdc, port, read_oob, sizeof(read_oob));
         failed |= !model40_fdc_result(fdc, port, result, sizeof(result)) ||
             result[0] != core_machine_fdc_ST0_ABNORMAL || result[1] != 0x04u;
