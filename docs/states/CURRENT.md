@@ -2,33 +2,20 @@
 
 ## Current Work
 
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation -- M5 T386 S23; latest open T386 retains accepted S22 progress and Td S102 receiver order. |
-| Admission And Approval | Owner approved on 2026-08-16 to continue the original DeskPro development after the small planning/governance work. Scope is the next source-backed D4-SKEY A20 and reset-arbitration functional receiver; no architecture exception or timing claim. |
-| Objective | Define and implement the selected Model-40 D4-SKEY A20 control and the D4 shutdown/program/power plus 8042 reset-arbitration behavior, reusing Core A20/reset owners where semantics match and retaining only Model-40 board policy in VM/profile composition. |
-| Non-goals | No physical reset pulse, bus-cycle/READY timing, firmware execution, guest media/ROM import, generic variant schema, D4 parity redesign, FDC/HDC/CECG work, DeskPro board timing or L3 claim. Do not add a test-only reset/A20 API or reuse IBM planar semantics. |
-| Reference Baseline | Accepted Td S102 `610c5262`; T386 S22 `d565b232`; `vm-0-5-0389` SHA-256 `B7DC400F3E3A8857C4699EEB6349893F2B72C70607FC29BF2C02F6E1952B5D70`. Primary Compaq Model-40 technical material is researched transiently under source policy; existing Core A20, 8042 reset and D4 platform owners constrain the source. |
-| Candidate Proposal | `docs/proposals/m5-deskpro-386-model40-device-functional-closure.md`, first remaining receiver after S22. |
-| Files And ABI Surface | Expected: focused Core A20/reset owner only if a reusable operation is missing; Model-40 D4/profile/composition only for board-local wiring; focused tests/CMake and T386 evidence/history/CURRENT. No Console/YAML ABI or public test operation. |
-| Applicable Rules | Task Reading Set; EXECUTION lifecycle/mechanism-defect/closure rules; ARCHITECTURE shared-owner and opaque-boundary invariants; CODING C11/cohesion/test-boundary rules; source policy transient-research/no-import rule; DOCUMENT at closure. |
-| Verification | Establish the primary D4-SKEY/reset facts before code. Sweep Core A20/reset, 8042 output/reset, D4 port/control paths and existing Model-40 mappings. Add focused normal/reset/interaction/isolation regressions, run strict-owner/static gates, serial current gate, documentation gate, diff check and actual-change review. |
-| Expected Markers | `M5:T386:S23:D4-SKEY-A20:OK`; `M5:T386:S23:D4-RESET-ARBITRATION:OK`; `M5:T386:S23:CORE-VM-RESET-OWNER:OK`. |
-| Asset Needs | Transient primary technical reference only. No firmware, guest-media, local asset path, vendor hash, source text, derived binary or third-party code enters Git. |
-| Reporting Requirements | Report the source-backed D4-SKEY/reset contract, Core/VM ownership decision, focused/current gate result, artifact identity, and remaining FDC/HDC/CECG/timing transfer. Coordinator independently reviews all P changes before acceptance. |
-| Stop Conditions | Stop for missing/ambiguous primary D4-SKEY or reset fact, a required physical timing inference, a need to bypass the existing 8042 reset owner, conflict with existing Model-40 D4 behavior, or a test-only production operation. Return unresolved hardware fact to a bounded research/owner decision. |
-| Exit Criteria | One source-backed A20/reset arbitration contract has one shared owner per reusable mechanism and Model-40-local policy only where needed; regressions prove selected control/reset behavior and isolation; no timing/firmware/media/L3 overclaim; required gates pass and evidence transfers remaining work. |
-| Original Owner Request | Owner-approved request, 2026-08-16: quickly close current S, perform small necessary proposal/Queue/architecture governance, then continue original DeskPro development. |
-| Similar-Issue Sweep | Sweep all Core A20/reset/8042/keyboard reset callers, D4/SKEY/control mapping, Model-40 composition/reset, IBM planar and default-PC/AT isolation, and T386 functional/timing proposal receivers. |
-
+**T386 open; S1--S23 accepted.** Td S102 retains the remaining functional receiver
+order without creating an architecture exception or allocating S identifiers:
+selected FDC/1.2-MB logical behavior, fitted 40-MB controller/startup media,
+CECG residual behavior, then the T386 functional-closure audit. S23 has closed
+the source-backed D4-SKEY functional A20 binding and D4-only CPU-shutdown reset
+arbitration; board timing and Model-40 L3 remain outside it.
 ## Current Technical Baseline
 
-- **Current developer artifact:** T386 S22 `vm-0-5-0389` /
+- **Current developer artifact:** T386 S23 `vm-0-5-0389` /
   `build/output/nxvm_0_5_0389.exe`, SHA-256
-  `B7DC400F3E3A8857C4699EEB6349893F2B72C70607FC29BF2C02F6E1952B5D70`.
-  Rebuilt from accepted S22 source after its 276-test serial current-gate; the
-  D4 parity/IOCHK proof is retained in
-  [S22 evidence](../etc/evidence/t386-s22-d4-parity-diagnostic.md).
+  `0CB4173F06E91C3BD5F9493497F2EC5480F361A23493ED7A7326000DADFB3F20`.
+  Rebuilt from accepted S23 source after its 277-test serial current-gate; the
+  D4-SKEY/reset proof is retained in
+  [S23 evidence](../etc/evidence/t386-s23-d4-skey-reset-arbitration.md).
 - **Model-339 readiness:** T383 S1 accepts the current runnable source graph
   under the frozen deterministic event-and-bus L3 contract. This is only the
   selected Model 339 configuration and preserves every documented physical,
@@ -47,7 +34,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T386 S22 | Accepted: D4 lane-parity diagnostics and the logical IOCHK/NMI path now consume one location-bearing Core event owner; normal covered RAM writes clear IOCHK, and IBM planar parity remains isolated. D4-SKEY/reset arbitration, other functional receivers and timing remain open. [Evidence](../etc/evidence/t386-s22-d4-parity-diagnostic.md). |
+| T386 S23 | Accepted: D4-SKEY uses the existing 8042 `D1h` output-port A20/reset owner, while a failed CPU double fault produces shutdown that only a D4-configured board consumes through the existing cold-reset lifecycle. Non-D4 terminal behavior remains isolated; FDC/HDC/CECG receivers and timing remain open. [Evidence](../etc/evidence/t386-s23-d4-skey-reset-arbitration.md). |
 | T385 | Closed: the selected Model-40 80386DX-16 consumes the shared 80386 CPU/state/retirement owners without a DeskPro CPU fork; a clean current-source 251/251 gate passed, while functionality and board timing transfer unchanged. [Closure audit](../etc/evidence/t385-s1-task-closure-audit.md). |
 | T384 | Closed: the Model-40 capability audit freezes its original Compaq system board/storage ledger and owner-selected color EGA, keyboard and external-ROM constraint; its shared-VADP IBM/Compaq personality boundary transfers CPU, functional and timing work without making a runnable or L3 claim. [Closure audit](../etc/evidence/t384-s2-task-closure-audit.md). |
 | T383 | Closed: independent current-source replay accepts the frozen Model-339 deterministic L3 contract after T380's strict-start repair; 251/251 current gate and focused matrix are retained in [evidence](../etc/evidence/t383-s1-model339-current-source-reaudit.md). |
@@ -59,4 +46,24 @@
 ## Recent Governance
 
 - **M5 Td S102 P1:** reconciled accepted D4 parity work into the T386 proposal and Queue title, defined the non-preallocated remaining functional receiver order, and confirmed the existing Core/VM/profile architecture authority needs no amendment.
-- **M5 Td S101 P1:** added a compact execution-entry table without creating new paths, and made coordinator semantic review explicit after structural documentation-gate success.
+- **M5 Td S101 P1:** added a compact execution-entry table without creating
+  new paths, and made coordinator semantic review explicit after structural
+  documentation-gate success.
+- **M5 Td S100 P1:** archived the closed T382 proposal, queued Model-339
+  current-source re-audit before DeskPro, reconciled T380 S2 history, and made
+  host/workspace path detection reject the external-assets form while retaining
+  guest DOS-path examples.
+- **M5 Td S99 P1:** compacted documentation gates, closure evidence, artifact
+  identity, build hygiene, and recorder containment within Execution; design
+  authorities remain unchanged.
+- **M5 Td S98 P1:** made coordinator-review inputs, exit criteria, and the
+  executor-report boundary explicit in Role cycle.
+- **M5 Td S97 P1:** added explicit single-/separate-session review navigation
+  without changing the lifecycle requirements.
+- **M5 Td S96 P1:** compressed duplicate Role cycle prose into references to
+  its retained authorities without changing lifecycle requirements.
+- **M5 Td S95 P1:** removed duplicate M5 technical narrative from Queue while
+  retaining all shared-context, candidate, and required proposal-index links.
+- **M5 Td S94 P1:** locks the DeskPro 386 Model 40 and PC/XT 5160-268
+  baselines, establishes capability-ledger then functional-before-timing
+  closure for all three machines, and retains external ROMs outside Git.

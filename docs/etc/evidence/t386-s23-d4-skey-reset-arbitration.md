@@ -70,5 +70,7 @@ passed; and the serial current gate passed 277/277. The rebuilt
 `vm-0-5-0389` artifact SHA-256 is
 `0CB4173F06E91C3BD5F9493497F2EC5480F361A23493ED7A7326000DADFB3F20`.
 T345's explicit owner-test and S2 inventory counts were reconciled to the actual
-current-gate matrix (164 and 161 respectively); no check was relaxed. P2 records
-the independent acceptance and task-state handoff.
+current-gate matrix (164 and 161 respectively); no check was relaxed. P2 independent review accepted the committed implementation: the CPU remains the
+sole shutdown producer, Core Machine the sole reset lifecycle owner, and D4 only
+selects the board policy. CURRENT advances to the S23 artifact and transfers the
+next selected FDC/1.2-MB functional receiver.
