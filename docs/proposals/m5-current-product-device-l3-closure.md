@@ -21,6 +21,11 @@ project-owned firmware/DOS consumer. Reuse the 5170, DeskPro Model 40, and
 PC/XT 5160-268
 ledgers only after proving profile, device, and timing-accounting equivalence.
 
+The retained IBM EGA product capability has its own small IBM personality
+contract around the shared VADP core. It is not evidence for the selected
+Compaq EGA personality, whose functional and board work belong exclusively to
+the DeskPro candidates; the reverse transfer is equally forbidden.
+
 Every entry in the refreshed inventory must be either L3-closed or removed from
 the supported product surface before this candidate closes. A compatibility
 label is not a transfer for a capability the product still exposes.

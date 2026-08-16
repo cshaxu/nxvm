@@ -27,9 +27,12 @@ or any L3 result.  Documentation governance and actual-change review passed.
 
 ## Open Task Boundary
 
-T384 remains open.  Its next continuation requires the owner to choose one
-documented Compaq display/monitor pair, one documented keyboard, and an
-owner-managed ROM revision/provenance.  Until then, no generic CGA/EGA/VGA,
-ATA/HDC, IBM MFM, AUX, or IBM 5170 slot may be substituted.  The next queued
-CPU task may proceed only with its bounded architectural scope and may not
-claim a runnable DeskPro profile.
+### S2: Configuration and personality allocation
+
+The owner selected Compaq Enhanced Color Graphics plus Color Monitor, the
+101-key Enhanced Keyboard, and an owner-managed DeskPro 386/16 Rev-E ROM
+constraint. The S2 evidence records these choices without retaining ROM bytes,
+path, hash, part catalogue or a runtime dependency. It also allocates one
+shared VADP core with disjoint IBM-current-product and Compaq-DeskPro EGA
+personality/closure paths. S2 is awaiting coordinator review; no VADP or
+device implementation is included in this delivery.

@@ -17,6 +17,12 @@ otherwise repair the earliest shared owner and prove the Model-40 binding.
 Leave board waits, service durations, arbitration, and phase placement to the
 following timing candidate.
 
+The selected display is Compaq Enhanced Color Graphics plus Color Monitor. It
+uses the shared VADP core through one small, source-backed Compaq personality
+contract; no copied VADP core or IBM EGA default is permitted. IBM EGA remains
+outside this candidate and belongs solely to current-product device-capability
+L3 closure.
+
 ## Non-goals and stop conditions
 
 No generic 386 clone, 486/VME/PVI/x87 expansion, unselected adapter, exact
