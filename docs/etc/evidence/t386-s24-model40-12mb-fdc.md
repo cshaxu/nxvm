@@ -32,6 +32,23 @@ P1 verification passed: focused S24 regression; T345 ownership verification with
 current gate 278/278. Corrective P2 adds an actual 512-byte Model-40 DMA2 transfer into Core RAM through the production DMA/FDC path; it passes focused verification. Real external Model-40 ROM BIOS storage-consumer replay remains the only acceptance requirement. The unchanged runnable artifact is `vm-0-5-0389` SHA-256
 `0CB4173F06E91C3BD5F9493497F2EC5480F361A23493ED7A7326000DADFB3F20`.
 
+## P3 External-ROM Consumer Result
+
+P3 focused verification and the serial current CTest corpus pass 278/278 with no external assets. The external invocation is deliberately not a default CTest case because the firmware remains owner-supplied and outside Git.
+
+The asset-free smoke now has an optional six-argument BYOB invocation. It accepts
+only caller-supplied manifest fields, materializes no firmware or guest-media
+fixture in Git, installs a self-contained bootable raw image, and requires the
+external ROM to load that boot sector through the production FDC/DMA route.
+
+A transient owner-supplied Model-40 ROM run reached the real reset stream but
+entered a shared CPU `#UD` delivery loop before the boot-sector marker or FDC
+consumer could be observed. The ROM mapping and manifest validation are not
+therefore treated as proof of a BIOS-visible storage consumer. This leaves S24
+open and transfers the startup compatibility defect to the next T386 receiver:
+repair the earliest shared Core CPU/execution behavior, prove the same external
+ROM reaches the boot marker, then re-run this S24 invocation. It neither
+reopens a profile-local CPU path nor relaxes the FDC acceptance condition.
 Flux/CRC/index/rotation/physical CHRN observables, device service and board
 arbitration timing, firmware/media import, and generic variants remain excluded.
 The next T386 functional receiver is the fitted 40 MB Compaq fixed-disk startup

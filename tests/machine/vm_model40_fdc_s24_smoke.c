@@ -40,12 +40,22 @@ static C_VOID model40_fdc_write_dma2(t_port *port, type_unsigned_16 address,
     core_machine_port_write(port, 0x000bu, 0x46u);
     core_machine_port_write(port, 0x000au, 0x02u);
 }
-C_INT main(C_VOID)
+C_INT main(C_INT argc, C_CHAR **argv)
 {
     static type_unsigned_8 even[VM_PROFILE_MODEL40_ROM_CHIP_BYTES];
     static type_unsigned_8 odd[VM_PROFILE_MODEL40_ROM_CHIP_BYTES];
     static type_unsigned_8 image[MODEL40_FDC_BYTES];
     const vm_profile_model40_external_rom rom = { even, odd, sizeof(even) };
+    const vm_session_config byob_config = {
+        .profile_kind = VM_SESSION_PROFILE_COMPAQ_DESKPRO_386_MODEL_40,
+        .model40_firmware = {
+            .even_path = argc == 6 ? argv[1] : STD_NULL,
+            .even_sha256 = argc == 6 ? argv[2] : STD_NULL,
+            .odd_path = argc == 6 ? argv[3] : STD_NULL,
+            .odd_sha256 = argc == 6 ? argv[4] : STD_NULL,
+            .provenance = argc == 6 ? argv[5] : STD_NULL
+        }
+    };
     static const type_unsigned_8 specify[] = {0x03u, 0xdfu, 0x03u};
     static const type_unsigned_8 specify_dma[] = {0x03u, 0xdfu, 0x02u};
     static const type_unsigned_8 read_last[] = {0xe6u, 0u, 0u, 0u, 15u, 2u, 15u, 0x1bu, 0xffu};
@@ -55,12 +65,27 @@ C_INT main(C_VOID)
     t_port *port;
     type_unsigned_8 result[7] = {0};
     type_unsigned_32 index;
-    C_INT failed = 0;
+    core_machine_run_result run;
+    type_status create_status;
+    type_unsigned_8 bios_marker = 0u;
+    C_INT failed = argc != 1 && argc != 6;
 
 
+    static const type_unsigned_8 boot_code[] = {
+        0xfau, 0x31u, 0xc0u, 0x8eu, 0xd8u, 0xc6u, 0x06u, 0x00u, 0x05u, 0xa5u,
+        0xf4u, 0xebu, 0xfdu
+    };
+
+    STD_MEMCPY(image, boot_code, sizeof(boot_code));
+    image[510u] = 0x55u;
+    image[511u] = 0xaau;
     image[(15u - 1u) * 512u] = 0xa5u;
-    failed |= vm_session_create_model40_private(&rom, &session) != TYPE_STATUS_OK ||
-        session == STD_NULL || vm_machine_fdd_replace_bytes(&session->fdd, image,
+    if (argc == 6) {
+        create_status = (type_status)vm_session_create(&byob_config, &session);
+    } else {
+        create_status = vm_session_create_model40_private(&rom, &session);
+    }
+    failed |= create_status != TYPE_STATUS_OK || session == STD_NULL || vm_machine_fdd_replace_bytes(&session->fdd, image,
         sizeof(image)) != TYPE_FALSE;
     if (!failed) {
         fdc = &session->core_machine->fdc;
@@ -83,7 +108,8 @@ C_INT main(C_VOID)
         }
         failed |= !model40_fdc_result(fdc, port, result, sizeof(result)) ||
             result[0] != core_machine_fdc_ST0_NORMAL || result[1] != 0u ||
-            result[5] != 16u || result[6] != 2u;        model40_fdc_command(fdc, port, specify_dma, sizeof(specify_dma));
+            result[5] != 16u || result[6] != 2u;
+        model40_fdc_command(fdc, port, specify_dma, sizeof(specify_dma));
         model40_fdc_write_dma2(port, 0x0600u, 511u);
         model40_fdc_command(fdc, port, read_last, sizeof(read_last));
         for (index = 0u; index < 512u; ++index) {
@@ -102,6 +128,28 @@ C_INT main(C_VOID)
         model40_fdc_command(fdc, port, read_oob, sizeof(read_oob));
         failed |= !model40_fdc_result(fdc, port, result, sizeof(result)) ||
             result[0] != core_machine_fdc_ST0_ABNORMAL || result[1] != 0x04u;
+        if (argc == 6) {
+            for (index = 0u; index < 400000u && bios_marker == 0u; index += 64u) {
+                failed |= core_machine_run(session->core_machine,
+                    (core_machine_run_budget){64u, 0u}, &run) != TYPE_STATUS_OK ||
+                    run.reason == CORE_MACHINE_STOP_FAULT || core_machine_memory_read(
+                        session->core_machine, 0x0500u, &bios_marker,
+                        sizeof(bios_marker)) != TYPE_STATUS_OK;
+                if (failed) break;
+            }
+            failed |= bios_marker != 0xa5u;
+        }
+    }
+    if (failed && argc == 6) {
+        core_machine_cpu_diagnostic diagnostic;
+        if (session != STD_NULL && core_machine_get_cpu_diagnostic(
+                session->core_machine, &diagnostic) == TYPE_STATUS_OK &&
+            diagnostic.last_delivered_exception.valid) {
+            const core_machine_cpu_execution_point *point =
+                &diagnostic.last_delivered_exception.point;
+            STD_PRINTF("M5:T386:S24:BYOB-DIAGNOSTIC:%08x:%02x:%02x:%02x\n",
+                point->linear_pc, point->bytes[0], point->bytes[1], point->bytes[2]);
+        }
     }
     vm_session_destroy(session);
     if (failed) return 1;

@@ -75,7 +75,9 @@ order, with each receiver admitted only after reviewing the preceding evidence:
    at the VM profile carrier. It excludes reset pulse and bus-cycle timing.
 1. Selected 765A plus 1.2 MB raw-IMG logical command/state/error/recovery and
    DMA2/IRQ6/BIOS-visible consumer proof. It must not enlarge raw IMG into a
-   flux/CRC/index/rotation/physical-CHRN format.
+   flux/CRC/index/rotation/physical-CHRN format. Its external-ROM replay may
+   expose a shared CPU/startup gap; in that case repair the earliest shared
+   execution owner and re-run this receiver before admitting later storage.
 1. Compaq Multipurpose Fixed Disk Controller and fitted 40 MB fixed startup
    route: normal CHS/PIO/reset/error/IRQ14 behavior and one startup-frozen
    external media contract, with no ATA/IBM-MFM substitution or runtime media
