@@ -2,26 +2,7 @@
 
 ## Current Work
 
-## M5 T385 S1 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | New |
-| Admission And Approval | The owner approved continuous single-person execution of the ordered M5 Queue through the DeskPro/XT L3 program, and most recently confirmed the T384 Model-40 configuration and IBM/Compaq EGA ownership split. T384 is closed; this next ordered candidate is admitted only for its CPU boundary. |
-| Objective | Reconcile the selected 1986 DeskPro 386 Model 40 80386DX-16 CPU/state contract against the closed shared 80386 evidence and current source, then repair only a proven CPU/state or successful-retirement gap and record the resulting Model-40 CPU ledger. |
-| Non-goals | No machine/profile runtime composition, firmware execution, external-ROM manifest, memory/ROM mapping, EGA personality, keyboard/input, FDC/storage, PIC/DMA/PIT/RTC/NMI/reset binding, board/bus timing, clock/wait-state claim, x87, VME/PVI, Windows claim, or L3 decision. |
-| Reference Baseline | T384 S1/S2 Model-40 selection and transfer; the closed T340--T342 80386DX evidence; `80386-closure-map.md`; DeskPro CPU candidate and shared DeskPro closure context; Intel 80386 primary documentation and project-owned probes where a source-defined CPU distinction is observable. |
-| Candidate Proposal | [DeskPro 386 Model 40 80386 CPU closure](../proposals/m5-deskpro-386-profile-cpu-closure.md). |
-| Files And ABI Surface | Initial audit may change only `docs/states/CURRENT.md` and T385 evidence/history. Any later source repair requires an explicit packet revision naming its CPU owner, callers, tests and ABI surface; no product/core composition or device source is admitted by this packet. |
-| Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`, and `docs/etc/operations/policy/source-policy.md`; CPU changes, if justified, must preserve the shared core transaction/publication owner. No exception is requested. |
-| Verification | Build a source-labelled 80386DX-16 form/state matrix from the closure map and T340--T342; sweep decode, CPU profile gates, mode/paging/privilege/delivery/retirement publishers and their callers; distinguish CPU semantic evidence from later board timing; run focused existing or new project-owned CPU tests for every repaired/claimed row plus retained regressions; run the applicable current gate before acceptance. |
-| Expected Markers | `M5:T385:S1:DESKPRO-CPU-LEDGER:OK` and, if a repair is proven necessary, a source-owner-specific repair marker recorded in the revised packet and evidence. |
-| Asset Needs | No firmware, guest media, third-party source, emulator code or external-ROM asset is needed for the initial CPU audit. Primary Intel/Compaq documentation is research-only and is not imported. |
-| Reporting Requirements | Record the Model-40 CPU identity/clock boundary, every matrix row claimed complete or transferred, source/caller/publication findings, focused proof, retained regression result, and exact functional/timing receivers. Switch to coordinator review after one complete audit/repair P; do not treat a smoke count as CPU closure. |
-| Stop Conditions | Stop and revise or transfer if a required distinction depends on DeskPro device composition, firmware execution, physical clocking, waits/arbitration, an unselected corpus, VME/PVI, x87, persistent-cache/test-register model, or a new external source import. |
-| Exit Criteria | The selected 80386DX-16 CPU form/state ledger has no unclassified in-scope row; every proven source gap is repaired at its earliest CPU owner with focused proof, every non-CPU row has a named later receiver, and the evidence makes no DeskPro runnable/device/timing/L3 claim. |
-| Original Owner Request | Complete the ordered M5 L3 program with single-person dual-role governance, using the selected DeskPro Model 40 configuration and shared-VADP/personality allocation without importing external ROMs into the repository. |
-| Similar-Issue Sweep | Search all CPU profile gates, 80386 decode/execution state, fault/interrupt/retirement publishers and their consumers for the same model-visible semantic gap; separately search profile/product descriptors only to prove that no DeskPro device/composition work is silently pulled into this CPU task. |
+**Idle.**
 
 ## Current Technical Baseline
 
@@ -49,6 +30,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T385 | Closed: the selected Model-40 80386DX-16 consumes the shared 80386 CPU/state/retirement owners without a DeskPro CPU fork; a clean current-source 251/251 gate passed, while functionality and board timing transfer unchanged. [Closure audit](../etc/evidence/t385-s1-task-closure-audit.md). |
 | T384 | Closed: the Model-40 capability audit freezes its original Compaq system board/storage ledger and owner-selected color EGA, keyboard and external-ROM constraint; its shared-VADP IBM/Compaq personality boundary transfers CPU, functional and timing work without making a runnable or L3 claim. [Closure audit](../etc/evidence/t384-s2-task-closure-audit.md). |
 | T383 | Closed: independent current-source replay accepts the frozen 5170 Model 339 deterministic-L3 contract after T380's strict-start repair; 251/251 current gate and focused matrix are retained in [evidence](../etc/evidence/t383-s1-model339-current-source-reaudit.md). |
 | T382 | Reclosed at S8: the prior S1--S7 closure is retained historically, while S8 corrects its Console 64-bit transport and final artifact baseline. [Corrective audit](../etc/evidence/t382-s8-reclosure-audit.md). |
@@ -56,7 +38,6 @@
 | T380 | Closed: strict Model-339 startup, 512 KB FDC/BDA repair, input/FDC current-gate recovery, and the owner-replayed DOS 5/HIMEM no-XMS path are verified. It does not claim DOS completion or 5170 L3 closure. [Evidence](../etc/evidence/t380-s2-model339-start-and-current-gate-recovery.md). |
 | T378 | Closed at `42f0402a`: production ingress proof and virtual-time ownership are corrected without a test-only API; Model-339 re-audit remains the sole L3 decision receiver. [Evidence](../etc/evidence/t378-s1-native-ingress-boundary-repair.md). |
 | T379 | Closed at `160a34e1`: independent re-audit accepted the then-current frozen Model-339 deterministic L3 contract. Its result is historical and is superseded for the current graph by T383. [Audit](../etc/evidence/t379-s1-model339-final-reaudit.md). |
-| T377 | Closed at `1cdd5110`: final audit rejects premature Model-339 L3 acceptance; its shared input/global-gate repair and independent re-audit successors are queued. [Audit](../etc/evidence/t377-s1-model339-final-l3-audit.md). |
 
 ## Recent Governance
 
