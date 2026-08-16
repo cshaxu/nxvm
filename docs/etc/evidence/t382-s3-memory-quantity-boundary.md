@@ -7,11 +7,16 @@ conversion owner used by the YAML catalog and `--memory-kib` session-option
 construction. It rejects empty, signed, non-decimal, zero, trailing and
 overflow input before any session configuration is built.
 
-The catalog smoke accepts one KiB exactly and rejects negative, trailing,
-overflow, empty and zero values. The production sweep finds only the YAML
-field, the session option, firmware CMOS metadata, and non-parser display
-uses; no second text conversion remains.
+The catalog smoke accepts one KiB and the exact 64-bit KiB upper boundary,
+then rejects negative, trailing, overflow, empty and zero values. The
+production sweep finds only the YAML field, the session option, firmware CMOS
+metadata, and non-parser display uses; no second text conversion remains.
+
+Focused catalog and Console input-failure smokes pass. The full current-gate
+aggregate was live and completed, but retains two pre-existing VM construction
+failures (`current.vm-multi-window-session-smoke` and
+`current.vm-session-manager-smoke`); neither reaches the new conversion owner.
 
 | Artifact | SHA-256 |
 | --- | --- |
-| `build/output/nxvm_0_5_0382.exe` | `23D3212C59D1DD1BCE2760FF248AD104C045E7BBDD063533AEF59F373DE87B72` |
+| `build/output/nxvm_0_5_0382.exe` | `09D7F0E8DED60DC0A52FF3BD45BDEE1155850013C15F8346E8AC0BEAFEAC6AEA` |

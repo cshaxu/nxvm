@@ -1103,6 +1103,7 @@ target_compile_definitions(vm-product-console-input-failure-smoke PRIVATE
 )
 target_link_libraries(vm-product-console-input-failure-smoke PRIVATE
     core-product-session
+    core-product-utils
     type-facade
 )
 

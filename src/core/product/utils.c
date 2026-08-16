@@ -120,7 +120,7 @@ type_status core_product_utils_parse_memory_kib(const C_CHAR *text,
 
         if (text[index] < '0' || text[index] > '9') return TYPE_STATUS_INVALID_ARGUMENT;
         digit = (type_unsigned_8)(text[index] - '0');
-        if (value > (((STD_SIZE_T)-1u >> 10) - digit) / 10u) {
+        if (value > (((~(STD_SIZE_T)0u >> 10) - digit) / 10u)) {
             return TYPE_STATUS_INVALID_ARGUMENT;
         }
         value = value * 10u + digit;

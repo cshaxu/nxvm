@@ -33,12 +33,16 @@ C_INT main(C_VOID)
         !write_file("t381-session-catalog/c.yaml", "schema: nxvm-session/v1\nmachine:\n  profile: default-pc-at\n  memory_kib: 1x\n  display: console\n  boot: rom\nmedia:\n  floppy: null\n  hard_disk: null\n") ||
         !write_file("t381-session-catalog/d.yaml", "schema: nxvm-session/v1\nmachine:\n  profile: default-pc-at\n  memory_kib: 18446744073709551615\n  display: console\n  boot: rom\nmedia:\n  floppy: null\n  hard_disk: null\n") ||
         !write_file("t381-session-catalog/e.yaml", "schema: nxvm-session/v1\nmachine:\n  profile: default-pc-at\n  memory_kib: \n  display: console\n  boot: rom\nmedia:\n  floppy: null\n  hard_disk: null\n") ||
-        !write_file("t381-session-catalog/f.yaml", "schema: nxvm-session/v1\nmachine:\n  profile: default-pc-at\n  memory_kib: 0\n  display: console\n  boot: rom\nmedia:\n  floppy: null\n  hard_disk: null\n")) goto done;
+        !write_file("t381-session-catalog/f.yaml", "schema: nxvm-session/v1\nmachine:\n  profile: default-pc-at\n  memory_kib: 0\n  display: console\n  boot: rom\nmedia:\n  floppy: null\n  hard_disk: null\n") ||
+        !write_file("t381-session-catalog/g.yaml", "schema: nxvm-session/v1\nmachine:\n  profile: default-pc-at\n  memory_kib: 18014398509481983\n  display: console\n  boot: rom\nmedia:\n  floppy: null\n  hard_disk: null\n")) goto done;
     vm_product_session_catalog_initialize(&catalog, directory);
-    if (catalog.count == 1u && catalog.rejected == 5u &&
+    if (catalog.count == 2u && catalog.rejected == 5u &&
         !STD_STRCMP(catalog.entries[0].file_name, "a.yaml") &&
         !STD_STRCMP(catalog.entries[0].profile, "default-pc-at") &&
-        catalog.entries[0].memory_bytes == 1024u) result = 0;
+        catalog.entries[0].memory_bytes == 1024u &&
+        !STD_STRCMP(catalog.entries[1].file_name, "g.yaml") &&
+        catalog.entries[1].memory_bytes ==
+            (~(STD_SIZE_T)0u & ~((STD_SIZE_T)1023u))) result = 0;
 done:
     (C_VOID)STD_REMOVE("t381-session-catalog/a.yaml");
     (C_VOID)STD_REMOVE("t381-session-catalog/b.yaml");
@@ -46,6 +50,7 @@ done:
     (C_VOID)STD_REMOVE("t381-session-catalog/d.yaml");
     (C_VOID)STD_REMOVE("t381-session-catalog/e.yaml");
     (C_VOID)STD_REMOVE("t381-session-catalog/f.yaml");
+    (C_VOID)STD_REMOVE("t381-session-catalog/g.yaml");
     (C_VOID)TEST_RMDIR(directory);
     if (result == 0) STD_PRINTF("M5:T381:S1:SESSION-CATALOG:OK\n");
     return result;
