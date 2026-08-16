@@ -2,8 +2,8 @@
 
 ## Current Work
 
-**Idle.** M5 Td S95 restored Queue to a short ordering/index surface without
-changing a candidate, proposal, rule, roadmap, runtime path, or artifact.
+**Idle.** M5 Td S96 made the Role cycle a concise reference sequence while
+retaining the existing lifecycle, authority, review, and objection requirements.
 
 ## Current Technical Baseline
 
@@ -35,6 +35,8 @@ changing a candidate, proposal, rule, roadmap, runtime path, or artifact.
 
 ## Recent Governance
 
+- **M5 Td S96 P1:** compressed duplicate Role cycle prose into references to
+  its retained authorities without changing lifecycle requirements.
 - **M5 Td S95 P1:** removed duplicate M5 technical narrative from Queue while
   retaining all shared-context, candidate, and required proposal-index links.
 - **M5 Td S94 P1:** locks the DeskPro 386 Model 40 and PC/XT 5160-268

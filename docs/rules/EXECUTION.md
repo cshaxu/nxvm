@@ -206,31 +206,16 @@ sources.
 
 **Role cycle.**
 
-1. The coordinator admits a bounded S packet under an approved T or standalone
-   Td work, and provides the executor the complete S brief.
-2. The executor scrutinizes the brief, relevant routes, existing evidence, and
-   task-specific risks. It reports either a material objection or confirmation
-   before execution. An objection pauses affected work for coordinator decision
-   and, if needed, packet/brief revision; it cannot be overridden by a request
-   to continue.
-3. After confirmation, the executor works under its durable completion goal,
-   sends the S-required progress reports, self-reviews every acceptance
-   requirement against actual evidence, then commits and pushes only its
-   complete P. A partial implementation, local smoke, diagnosis, internal
-   batch, packet preparation, registration lookup, or status update is not a
-   completion point.
-4. The coordinator reviews the original request, S brief, packet, evidence,
-   applicable rules, and the pushed P's actual Git/worktree changes. The
-   executor report is only an evidence index. The coordinator either issues one
-   consolidated corrective brief or accepts the P and applies the applicable
-   P-lifecycle closure above.
-
-A one-session run explicitly switches between these roles and repeats the
-coordinator-side actual-change review after the executor-side P; it must not
-claim independent review. A two-session run assigns the roles to separate
-sessions, so the coordinator review is independent. If a role moves between
-sessions mid-S, its handoff records the accepted brief, current evidence,
-unresolved objections, and worktree state before the receiving session resumes.
+Apply the preceding rules in order: coordinator admission under **Request
+Lifecycle** and the S contract; executor confirmation or objection, completion
+goal, reporting, self-review, and complete-P push; then coordinator
+actual-change review and the applicable P-lifecycle outcome. **Role authority**
+and the one-session/two-session review boundary above govern who performs those
+steps and whether the review is independent. A material objection pauses
+affected work pending coordinator direction and cannot be overridden by a
+request to continue. A mid-S handoff records the
+accepted brief, current evidence, unresolved objections, and worktree state
+before the receiving session resumes.
 ## Change Discipline
 
 Structural relocation uses `git mv`: repair direct includes and build paths,
