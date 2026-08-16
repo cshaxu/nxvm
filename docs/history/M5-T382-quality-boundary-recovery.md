@@ -36,3 +36,13 @@ and task artifact record are retained in
 P3 `4482dac6` removes the post-return legacy Console block and its private
 provider-only callbacks. The retained Console command route and focused/full
 gate proof are recorded in [T382 S2 evidence](../etc/evidence/t382-s2-console-dead-code-retirement.md).
+
+## S3 Acceptance
+
+P6 `92e313b5` introduces the shared strict decimal KiB conversion owner for
+catalog and `--memory-kib` construction. Corrective P7 `b887380c` proves the
+actual 64-bit upper boundary and supplies the direct-source smoke link
+dependency. The full gate remains live but reports two stale zero-session
+manager contracts; their repair is transferred to S6 and does not weaken the
+S3 boundary conclusion. [T382 S3 evidence](../etc/evidence/t382-s3-memory-quantity-boundary.md)
+retains the focused proof and artifact record.
