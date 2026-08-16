@@ -2,18 +2,24 @@
 
 ## Current Work
 
-**T386 open; S1--S8 accepted.** The accepted [functional ledger](../etc/evidence/t386-s1-deskpro-functional-ledger.md),
-[non-runnable carrier contract](../etc/evidence/t386-s2-model40-carrier-contract.md),
-[second-PIT proof](../etc/evidence/t386-s3-second-pit-owner.md),
-[D4 platform-control proof](../etc/evidence/t386-s4-d4-platform-control.md),
-[S5 storage-controller contract](../etc/evidence/t386-s5-deskpro-storage-controller.md),
-[S6 Compaq EGA personality evidence](../etc/evidence/t386-s6-compaq-ega-personality.md),
-[S7 private composition evidence](../etc/evidence/t386-s7-private-model40-composition.md), and
-[S8 integrated selected-device replay](../etc/evidence/t386-s8-model40-integration.md)
-now provide the selected functional owners without early Model-40 publication or
-an L3 claim. S8 repairs one shared FDC reset/Sense owner only after Model-40
-replay reproduces the gap; firmware, physical media and board timing remain
-transferred to later receivers.
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | `M5 T386 S9` -- Continuation. |
+| Admission And Approval | Owner-approved continuing DeskPro 386 functional and L3 programme. S9 follows accepted S8 and is narrowed to the CECG functional prerequisite identified by the T386 ledger and TODO before board timing. |
+| Objective | Establish a source-backed, bounded Compaq Enhanced Color Graphics functional contract for the selected Model 40 and implement only an earliest owner whose gap is reproduced by that contract. |
+| Non-goals | No board or raster timing, physical monitor/cable claim, firmware or ROM import, profile publication, generic IBM EGA mutation, broad VGA/EGA work, Windows or L3 claim. |
+| Reference Baseline | `42c06207` (T386 S8 accepted); T386 S6 CECG evidence; `TODO.md` CECG boundary; T386 functional and board proposals. |
+| Candidate Proposal | [DeskPro 386 Model 40 selected-device functional closure](../proposals/m5-deskpro-386-model40-device-functional-closure.md). |
+| Files And ABI Surface | Evidence/owned tests and only the existing shared VADP or private Model-40 composition owner if a source-backed observable demands it. No public VM product interface or assets. |
+| Applicable Rules | `docs/design/ARCHITECTURE.md`, `docs/design/CODING.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`, `docs/rules/EXECUTION.md`, and `docs/etc/operations/policy/source-policy.md`; VADP stays the shared owner, Model-40 choice stays VM-owned. |
+| Verification | Build a source-to-observable table for `3C6h`, selected status/read behavior, monitor/switch declaration and reset; add focused owner and Model-40 controls only for determined observables; run serial current gate and applicable governance checks. |
+| Expected Markers | `M5:T386:S9:CECG-CONTRACT:OK`; any implementation marker must name its actual owner. |
+| Asset Needs | Transient primary documentation/research and project-owned synthetic fixtures only; no third-party source, firmware, guest media, local path or binary is copied, hashed or committed. |
+| Reporting Requirements | Report whether the primary contract determines each proposed observable, implementation/evidence outcomes, and all transfers; complete and push one P only after self-review, then conduct coordinator actual-change review. |
+| Stop Conditions | Stop and transfer an observable lacking a primary contract, requiring firmware/physical monitor behavior, or demanding board timing; do not infer from IBM EGA or copy emulator behavior. |
+| Exit Criteria | Each selected CECG functional observable is implemented with focused proof or explicitly transferred with source-bound reason; no board timing claim; required gates pass. |
+| Original Owner Request | Continue DeskPro 386 complete functional and L3 work under the stated boundary: profile/composition in `vm`; generic hardware capability in `core`. |
+| Similar-Issue Sweep | Sweep VADP EGA personalities, `3C6h`, status/identity ports, Model-40 composition, default/IBM EGA controls, reset paths and all CECG TODO/proposal/evidence records. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T382 S8 `vm-0-5-0382` /

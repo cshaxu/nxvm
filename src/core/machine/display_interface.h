@@ -39,6 +39,16 @@ typedef enum core_machine_vadp_ega_personality {
     CORE_MACHINE_VADP_EGA_PERSONALITY_COMPAQ_ENHANCED_COLOR
 } core_machine_vadp_ega_personality;
 
+/* Composition declares board-fixed CECG switch state; VADP owns the
+ * resulting register state and reset behavior. */
+typedef struct core_machine_vadp_cecg_config {
+    type_unsigned_8 control_mode;
+    type_unsigned_8 environment;
+    type_unsigned_8 display_type;
+    type_unsigned_8 initial_mode;
+    type_bool lightpen_switch_open;
+} core_machine_vadp_cecg_config;
+
 typedef struct core_machine_vadp_ega_controller_config {
     type_unsigned_8 graphics[CORE_MACHINE_DISPLAY_EGA_GRAPHICS_REGISTER_COUNT];
     type_unsigned_8 attribute[CORE_MACHINE_DISPLAY_EGA_ATTRIBUTE_REGISTER_COUNT];

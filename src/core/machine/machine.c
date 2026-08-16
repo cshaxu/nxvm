@@ -3450,6 +3450,11 @@ type_status core_machine_configure_display(core_machine *machine,
         status = core_machine_vadp_configure_ega_personality(
             &machine->shared_vadp, &machine->executor_port,
             config->ega_personality);
+        if (status == TYPE_STATUS_OK && config->ega_personality ==
+            CORE_MACHINE_VADP_EGA_PERSONALITY_COMPAQ_ENHANCED_COLOR) {
+            status = core_machine_vadp_configure_cecg(&machine->shared_vadp,
+                &config->cecg);
+        }
         if (status != TYPE_STATUS_OK) {
             core_machine_port_rollback_registration(&machine->executor_port,
                 port_checkpoint);

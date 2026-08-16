@@ -37,6 +37,9 @@ extern "C" {
 #define CORE_MACHINE_VADP_PORT_MODE 0x03d8u
 #define CORE_MACHINE_VADP_PORT_COLOR 0x03d9u
 #define CORE_MACHINE_VADP_PORT_STATUS 0x03dau
+#define CORE_MACHINE_VADP_PORT_COMPAQ_CONTROL_MODE 0x03c6u
+#define CORE_MACHINE_VADP_PORT_COMPAQ_LIGHTPEN_LATCH_RESET 0x03dbu
+#define CORE_MACHINE_VADP_PORT_COMPAQ_LIGHTPEN_LATCH_SET 0x03dcu
 #define CORE_MACHINE_VADP_PORT_COMPAQ_ENVIRONMENT 0x07c6u
 #define CORE_MACHINE_VADP_PORT_COMPAQ_DISPLAY_TYPE 0x0bc6u
 #define CORE_MACHINE_VADP_PORT_COMPAQ_INITIAL_MODE 0x0fc6u
@@ -74,6 +77,9 @@ typedef struct t_vadp_data {
     type_unsigned_16 columns;
     type_unsigned_16 rows;
     C_INT color_enabled;
+    core_machine_vadp_cecg_config cecg;
+    type_unsigned_8 compaq_control_mode;
+    type_bool compaq_lightpen_latched;
     type_unsigned_64 dirty_generation;
     C_INT captured;
     core_machine_display_kind captured_kind;
@@ -103,6 +109,8 @@ C_VOID core_machine_vadp_initialize(t_vadp *adapter, t_port *port);
 C_VOID core_machine_vadp_configure_ega_ports(t_vadp *adapter, t_port *port);
 type_status core_machine_vadp_configure_ega_personality(t_vadp *adapter,
     t_port *port, core_machine_vadp_ega_personality personality);
+type_status core_machine_vadp_configure_cecg(t_vadp *adapter,
+    const core_machine_vadp_cecg_config *config);
 type_status core_machine_vadp_configure_cga_memory(t_vadp *adapter, t_ram *memory);
 C_VOID core_machine_vadp_reset(t_vadp *adapter);
 C_VOID core_machine_vadp_advance(t_vadp *adapter, t_ram *memory,
