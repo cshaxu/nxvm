@@ -3958,6 +3958,12 @@ static C_INT core_machine_hdc_topology_is_valid(
     if (config->lba28_supported != TYPE_FALSE && config->lba28_supported != TYPE_TRUE) {
         return 0;
     }
+    if (config->protocol != CORE_MACHINE_HDC_PROTOCOL_ATA_PIO &&
+        config->protocol != CORE_MACHINE_HDC_PROTOCOL_COMPAQ_WD_40MB) return 0;
+    if ((config->protocol == CORE_MACHINE_HDC_PROTOCOL_ATA_PIO &&
+            config->drive_address_port != 0u) ||
+        (config->protocol == CORE_MACHINE_HDC_PROTOCOL_COMPAQ_WD_40MB &&
+            (config->lba28_supported || config->drive_address_port == 0u))) return 0;
     for (first = 0u; first < sizeof(ports) / sizeof(ports[0]); ++first) {
         for (second = first + 1u; second < sizeof(ports) / sizeof(ports[0]); ++second) {
             if (ports[first] == ports[second]) return 0;
@@ -4076,6 +4082,11 @@ type_status core_machine_configure_hdc(core_machine *machine,
     if (!core_machine_hdc_topology_is_valid(topology)) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
+    if (topology->config.protocol == CORE_MACHINE_HDC_PROTOCOL_COMPAQ_WD_40MB &&
+        (!machine->fdc_configured ||
+            topology->config.drive_address_port != machine->fdc_topology.config.direction_port ||
+            !core_machine_port_has_read(&machine->executor_port,
+                topology->config.drive_address_port))) return TYPE_STATUS_INVALID_STATE;
     if (!core_machine_controller_ports_are_available(machine, ports,
             sizeof(ports) / sizeof(ports[0]))) return TYPE_STATUS_INVALID_STATE;
     provider = core_machine_hdc_port_provider();
@@ -4108,6 +4119,18 @@ type_status core_machine_configure_hdc(core_machine *machine,
         STD_MEMSET(&machine->hdc_topology, TYPE_ZERO_8,
             sizeof(machine->hdc_topology));
         return status;
+    }
+    if (machine->hdc_topology.config.protocol == CORE_MACHINE_HDC_PROTOCOL_COMPAQ_WD_40MB) {
+        status = core_machine_port_add_read_wired_or_provider(&machine->executor_port,
+            machine->hdc_topology.config.drive_address_port, provider->read, &machine->hdc);
+        if (status != TYPE_STATUS_OK) {
+            core_machine_port_rollback_registration(&machine->executor_port,
+                port_checkpoint);
+            core_machine_hdc_finalize(&machine->hdc);
+            STD_MEMSET(&machine->hdc_topology, TYPE_ZERO_8,
+                sizeof(machine->hdc_topology));
+            return status;
+        }
     }
     machine->hdc_configured = TYPE_TRUE;
     return TYPE_STATUS_OK;

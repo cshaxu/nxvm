@@ -2,14 +2,16 @@
 
 ## Current Work
 
-**T386 open; S1--S4 accepted.** The accepted [functional ledger](../etc/evidence/t386-s1-deskpro-functional-ledger.md),
+**T386 open; S1--S5 accepted.** The accepted [functional ledger](../etc/evidence/t386-s1-deskpro-functional-ledger.md),
 [non-runnable carrier contract](../etc/evidence/t386-s2-model40-carrier-contract.md),
-[second-PIT proof](../etc/evidence/t386-s3-second-pit-owner.md), and
-[D4 platform-control proof](../etc/evidence/t386-s4-d4-platform-control.md)
-now provide an isolated `48h-4Bh` 8254 and an optional, source-bounded D4
-port-`61h`/NMI receiver without early profile publication. S5 storage and S6
-Compaq EGA remain required before any Model-40 composition, runnable claim or
-YAML/catalog publication.
+[second-PIT proof](../etc/evidence/t386-s3-second-pit-owner.md),
+[D4 platform-control proof](../etc/evidence/t386-s4-d4-platform-control.md), and
+[S5 storage-controller contract](../etc/evidence/t386-s5-deskpro-storage-controller.md)
+now provide the primary-backed Compaq fixed-disk personality and narrow shared-`3F7h`
+composition, without early profile publication. Long/format/ECC physical-media
+semantics and the independent parallel Console test-isolation defect remain
+explicit TODO transfers. S6 Compaq EGA remains required before any Model-40
+composition, runnable claim or YAML/catalog publication.
 ## Current Technical Baseline
 
 - **Current developer artifact:** T382 S8 `vm-0-5-0382` /

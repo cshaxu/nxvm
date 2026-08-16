@@ -1401,6 +1401,12 @@ target_link_libraries(core-machine-fdc-topology-port-smoke PRIVATE core-machine)
 add_executable(core-machine-fdc-media-change-port-smoke
     tests/machine/core_machine_fdc_media_change_port_smoke.c)
 target_link_libraries(core-machine-fdc-media-change-port-smoke PRIVATE core-machine)
+add_executable(core-machine-compaq-hdc-s5-smoke
+    tests/machine/core_machine_compaq_hdc_s5_smoke.c)
+target_link_libraries(core-machine-compaq-hdc-s5-smoke PRIVATE core-machine)
+add_executable(core-machine-compaq-hdc-machine-s5-smoke
+    tests/machine/core_machine_compaq_hdc_machine_s5_smoke.c)
+target_link_libraries(core-machine-compaq-hdc-machine-s5-smoke PRIVATE core-machine)
 add_executable(core-machine-hdc-smoke tests/machine/core_machine_hdc_smoke.c)
 target_link_libraries(core-machine-hdc-smoke PRIVATE core-machine)
 add_executable(core-machine-controller-authority-smoke
@@ -1969,6 +1975,8 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     core-machine-fdc-topology-port-smoke
     core-machine-fdc-media-change-port-smoke
     core-machine-hdc-smoke
+    core-machine-compaq-hdc-s5-smoke
+    core-machine-compaq-hdc-machine-s5-smoke
     core-machine-controller-authority-smoke
     core-mantle-shape-smoke
     vm-kbc-aux-guest-smoke
@@ -3107,10 +3115,10 @@ foreach(project_t345_target IN LISTS PROJECT_T344_CURRENT_GATE_TARGETS)
 endforeach()
 list(LENGTH PROJECT_T345_S2_OWNER_TEST_STRICT_TARGETS project_t345_s2_pure_count)
 list(LENGTH PROJECT_T345_S2_MIXED_OWNER_TEST_TARGETS project_t345_s2_mixed_count)
-if(NOT project_t345_s2_pure_count EQUAL 137 OR
+if(NOT project_t345_s2_pure_count EQUAL 139 OR
         NOT project_t345_s2_mixed_count EQUAL 3)
     message(FATAL_ERROR
-        "T345 S2 expected 137 pure and 3 mixed owner-test targets; found ${project_t345_s2_pure_count} pure and ${project_t345_s2_mixed_count} mixed.")
+        "T345 S2 expected 139 pure and 3 mixed owner-test targets; found ${project_t345_s2_pure_count} pure and ${project_t345_s2_mixed_count} mixed.")
 endif()
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     foreach(project_t345_target IN LISTS PROJECT_T345_S2_OWNER_TEST_STRICT_TARGETS)

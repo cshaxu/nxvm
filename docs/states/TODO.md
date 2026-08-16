@@ -40,6 +40,7 @@ adopts them.
   probe corpus, and a decision whether its adapter-parity state produces
   I/O-channel-check NMI. Do not alias ATA registers, ATA media or ATA timing to
   IBM MFM, import firmware/media, or use a generic hard-disk backend as proof.
+- [ ] **Compaq 40 MB physical fixed-disk media semantics (`TODO(Medium)`).** T386 S5 establishes only the primary-backed normal CHS PIO controller path over the existing pure logical RAW-IMG medium. Read/Write Long, format-track parameter/data semantics, ECC/error-recovery classes, physical sector identity, drive-side controller service and their IRQ/DRQ timing require a separately selected physical-media representation and board receiver. Admit this only after the selected DeskPro storage/profile path is published and a primary source plus bounded corpus defines the required observables; preserve the current normal-route proof, do not reinterpret ATA/MFM media, and do not claim raw IMG represents ECC or physical sectors.
 - [ ] **Broaden digital CGA beyond the frozen supported surface (`TODO(Medium)`).**
   The baseline-machine capability ledger, 5170 selected-device closure, and
   current-product device closure own every CGA capability that remains publicly
@@ -216,6 +217,7 @@ admissions, not the default definition of NXVM completion.
   caller/behavior sweep, target-local options, and regression result. Do not
   add a global flag, treat a linked strict library as direct coverage, or use a
   blanket inherited exemption.
+- [ ] **Parallel Console profile-smoke isolation (`TODO(High)`).** The current-gate Console lifecycle and 64-bit-memory smokes write fixed YAML filenames into the shared source working directory, then invoke catalog discovery on `.`. A parallel `ctest` can make either test discover both profiles and select a different menu ordinal; the affected memory smoke failed once in the T386 S5 parallel replay and passed alone and in the 255/255 serial control. Admit a bounded test/CMake isolation repair that gives each smoke an owned profile directory or CTest working directory while retaining startup catalog discovery, stdin restoration and the existing product route. Prove repeated parallel current-gate runs; do not change Console selection semantics or hide the test from the gate.
 - [ ] **Linux runtime verification (`TODO(Medium)`).** Linux source is a
   portability asset, not a support claim. Add native POSIX compile and runtime
   probes after an approved POSIX environment is available; do not install WSL

@@ -29,6 +29,11 @@ typedef struct core_machine_fdc_drive_bindings {
     core_machine_media_id media_id[CORE_MACHINE_FDC_DRIVE_COUNT];
 } core_machine_fdc_drive_bindings;
 
+typedef enum core_machine_hdc_protocol {
+    CORE_MACHINE_HDC_PROTOCOL_ATA_PIO,
+    CORE_MACHINE_HDC_PROTOCOL_COMPAQ_WD_40MB
+} core_machine_hdc_protocol;
+
 typedef struct core_machine_hdc_config {
     type_unsigned_16 data_port;
     type_unsigned_16 error_features_port;
@@ -39,8 +44,10 @@ typedef struct core_machine_hdc_config {
     type_unsigned_16 drive_head_port;
     type_unsigned_16 status_command_port;
     type_unsigned_16 alternate_status_device_control_port;
+    type_unsigned_16 drive_address_port;
     type_unsigned_8 irq;
     type_bool lba28_supported;
+    core_machine_hdc_protocol protocol;
 } core_machine_hdc_config;
 
 #endif

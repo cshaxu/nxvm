@@ -6,14 +6,46 @@
 
 #define CORE_MACHINE_HDC_COMMAND_READ_SECTORS 0x20u
 #define CORE_MACHINE_HDC_COMMAND_WRITE_SECTORS 0x30u
+#define CORE_MACHINE_HDC_COMMAND_VERIFY_SECTORS 0x40u
+#define CORE_MACHINE_HDC_COMMAND_INITIALIZE_DRIVE_PARAMETERS 0x91u
+#define CORE_MACHINE_HDC_COMMAND_EXECUTE_DIAGNOSTICS 0x90u
 #define CORE_MACHINE_HDC_COMMAND_IDENTIFY_DEVICE 0xecu
+#define CORE_MACHINE_HDC_COMMAND_RECALIBRATE_MASK 0xf0u
+#define CORE_MACHINE_HDC_COMMAND_RECALIBRATE_VALUE 0x10u
+#define CORE_MACHINE_HDC_COMMAND_SEEK_MASK 0xf0u
+#define CORE_MACHINE_HDC_COMMAND_SEEK_VALUE 0x70u
+#define CORE_MACHINE_HDC_ERROR_DIAGNOSTIC_OK 0x01u
+static C_INT core_machine_hdc_is_compaq_wd_40mb(const core_machine_hdc *hdc)
+{
+    return hdc != STD_NULL && hdc->connect.config.protocol ==
+        CORE_MACHINE_HDC_PROTOCOL_COMPAQ_WD_40MB;
+}
+
 static C_INT core_machine_hdc_selected_master(const core_machine_hdc *hdc)
 { return hdc != STD_NULL && (hdc->data.drive_head & 0x10u) == 0u; }
 
 static C_INT core_machine_hdc_lba_mode(const core_machine_hdc *hdc)
 {
-    return hdc != STD_NULL && hdc->connect.config.lba28_supported &&
-        (hdc->data.drive_head & 0x40u) != 0u;
+    return hdc != STD_NULL && !core_machine_hdc_is_compaq_wd_40mb(hdc) &&
+        hdc->connect.config.lba28_supported && (hdc->data.drive_head & 0x40u) != 0u;
+}
+
+static C_INT core_machine_hdc_command_is_read(const core_machine_hdc *hdc,
+    type_unsigned_8 command)
+{
+    if (core_machine_hdc_is_compaq_wd_40mb(hdc)) {
+        return (command & 0xfeu) == CORE_MACHINE_HDC_COMMAND_READ_SECTORS;
+    }
+    return command == CORE_MACHINE_HDC_COMMAND_READ_SECTORS;
+}
+
+static C_INT core_machine_hdc_command_is_write(const core_machine_hdc *hdc,
+    type_unsigned_8 command)
+{
+    if (core_machine_hdc_is_compaq_wd_40mb(hdc)) {
+        return (command & 0xfeu) == CORE_MACHINE_HDC_COMMAND_WRITE_SECTORS;
+    }
+    return command == CORE_MACHINE_HDC_COMMAND_WRITE_SECTORS;
 }
 
 static C_VOID core_machine_hdc_clear_irq(core_machine_hdc *hdc)
@@ -389,50 +421,95 @@ static C_VOID core_machine_hdc_capture_command(core_machine_hdc *hdc,
     hdc->data.status = CORE_MACHINE_HDC_STATUS_BSY;
 }
 
+static C_VOID core_machine_hdc_begin_read(core_machine_hdc *hdc)
+{
+    if (!core_machine_hdc_load_sector(hdc)) return;
+    hdc->data.phase = CORE_MACHINE_HDC_PHASE_DATA_READ;
+    hdc->data.sectors_remaining = hdc->data.sector_count == 0u ? 256u :
+        hdc->data.sector_count;
+    hdc->data.data_index = 0u;
+    hdc->data.status = CORE_MACHINE_HDC_STATUS_DRDY | CORE_MACHINE_HDC_STATUS_DSC |
+        CORE_MACHINE_HDC_STATUS_DRQ;
+    core_machine_hdc_raise_irq(hdc);
+}
+
+static C_VOID core_machine_hdc_begin_write(core_machine_hdc *hdc)
+{
+    if (!core_machine_hdc_load_sector(hdc)) return;
+    hdc->data.phase = CORE_MACHINE_HDC_PHASE_DATA_WRITE;
+    hdc->data.sectors_remaining = hdc->data.sector_count == 0u ? 256u :
+        hdc->data.sector_count;
+    hdc->data.data_index = 0u;
+    hdc->data.status = CORE_MACHINE_HDC_STATUS_DRDY | CORE_MACHINE_HDC_STATUS_DSC |
+        CORE_MACHINE_HDC_STATUS_DRQ;
+    core_machine_hdc_raise_irq(hdc);
+}
+
 static C_VOID core_machine_hdc_execute_command(core_machine_hdc *hdc, type_unsigned_8 command)
 {
+    type_unsigned_16 cylinder;
+
     if (hdc == STD_NULL) return;
     hdc->data.last_command = command;
     ++hdc->data.command_count;
-    if (!core_machine_hdc_selected_master(hdc)) {
+    if (!core_machine_hdc_selected_master(hdc) ||
+        (core_machine_hdc_is_compaq_wd_40mb(hdc) &&
+            (hdc->data.drive_head & 0x20u) == 0u) ||
+        (!core_machine_hdc_is_compaq_wd_40mb(hdc) &&
+            (hdc->data.drive_head & 0x40u) != 0u &&
+            !hdc->connect.config.lba28_supported)) {
         core_machine_hdc_fail(hdc, CORE_MACHINE_HDC_ERROR_ABORT);
         return;
     }
-    if ((hdc->data.drive_head & 0x40u) != 0u &&
-        !hdc->connect.config.lba28_supported) {
+    if (core_machine_hdc_command_is_read(hdc, command)) {
+        core_machine_hdc_begin_read(hdc);
+        return;
+    }
+    if (core_machine_hdc_command_is_write(hdc, command)) {
+        core_machine_hdc_begin_write(hdc);
+        return;
+    }
+    if (core_machine_hdc_is_compaq_wd_40mb(hdc)) {
+        if (command == CORE_MACHINE_HDC_COMMAND_INITIALIZE_DRIVE_PARAMETERS) {
+            core_machine_hdc_complete(hdc);
+            return;
+        }
+        if (command == CORE_MACHINE_HDC_COMMAND_EXECUTE_DIAGNOSTICS) {
+            hdc->data.error = CORE_MACHINE_HDC_ERROR_DIAGNOSTIC_OK;
+            core_machine_hdc_complete(hdc);
+            return;
+        }
+        if (command == CORE_MACHINE_HDC_COMMAND_VERIFY_SECTORS) {
+            if (core_machine_hdc_load_sector(hdc)) core_machine_hdc_complete(hdc);
+            return;
+        }
+        if ((command & CORE_MACHINE_HDC_COMMAND_RECALIBRATE_MASK) ==
+            CORE_MACHINE_HDC_COMMAND_RECALIBRATE_VALUE) {
+            hdc->data.cylinder_low = 0u;
+            hdc->data.cylinder_high = 0u;
+            core_machine_hdc_complete(hdc);
+            return;
+        }
+        if ((command & CORE_MACHINE_HDC_COMMAND_SEEK_MASK) ==
+            CORE_MACHINE_HDC_COMMAND_SEEK_VALUE) {
+            cylinder = (type_unsigned_16)hdc->data.cylinder_low |
+                ((type_unsigned_16)hdc->data.cylinder_high << 8u);
+            if (cylinder > 1023u) {
+                core_machine_hdc_fail(hdc, CORE_MACHINE_HDC_ERROR_ID_NOT_FOUND);
+            } else {
+                core_machine_hdc_complete(hdc);
+            }
+            return;
+        }
         core_machine_hdc_fail(hdc, CORE_MACHINE_HDC_ERROR_ABORT);
         return;
     }
-    switch (command) {
-    case CORE_MACHINE_HDC_COMMAND_IDENTIFY_DEVICE:
+    if (command == CORE_MACHINE_HDC_COMMAND_IDENTIFY_DEVICE) {
         core_machine_hdc_identify(hdc);
-        break;
-    case CORE_MACHINE_HDC_COMMAND_READ_SECTORS:
-        if (!core_machine_hdc_load_sector(hdc)) break;
-        hdc->data.phase = CORE_MACHINE_HDC_PHASE_DATA_READ;
-        hdc->data.sectors_remaining = hdc->data.sector_count == 0u ? 256u :
-            hdc->data.sector_count;
-        hdc->data.data_index = 0u;
-        hdc->data.status = CORE_MACHINE_HDC_STATUS_DRDY | CORE_MACHINE_HDC_STATUS_DSC |
-            CORE_MACHINE_HDC_STATUS_DRQ;
-        core_machine_hdc_raise_irq(hdc);
-        break;
-    case CORE_MACHINE_HDC_COMMAND_WRITE_SECTORS:
-        if (!core_machine_hdc_load_sector(hdc)) break;
-        hdc->data.phase = CORE_MACHINE_HDC_PHASE_DATA_WRITE;
-        hdc->data.sectors_remaining = hdc->data.sector_count == 0u ? 256u :
-            hdc->data.sector_count;
-        hdc->data.data_index = 0u;
-        hdc->data.status = CORE_MACHINE_HDC_STATUS_DRDY | CORE_MACHINE_HDC_STATUS_DSC |
-            CORE_MACHINE_HDC_STATUS_DRQ;
-        core_machine_hdc_raise_irq(hdc);
-        break;
-    default:
+    } else {
         core_machine_hdc_fail(hdc, CORE_MACHINE_HDC_ERROR_ABORT);
-        break;
     }
 }
-
 static type_status core_machine_hdc_port_read(C_VOID *opaque, type_unsigned_16 port,
     type_unsigned_32 *out_value)
 {
@@ -472,6 +549,9 @@ static type_status core_machine_hdc_port_read(C_VOID *opaque, type_unsigned_16 p
         core_machine_hdc_clear_irq(hdc);
     } else if (port == hdc->connect.config.alternate_status_device_control_port) {
         *out_value = hdc->data.status;
+    } else if (port == hdc->connect.config.drive_address_port &&
+        core_machine_hdc_is_compaq_wd_40mb(hdc)) {
+        *out_value = hdc->data.drive_head & 0x1fu;
     } else {
         return TYPE_STATUS_UNSUPPORTED;
     }

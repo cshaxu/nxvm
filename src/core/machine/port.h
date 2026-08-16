@@ -54,6 +54,9 @@ type_status core_machine_port_add_write(t_port *port, type_unsigned_16 port_id,
 type_status core_machine_port_add_read_provider(t_port *port,
     type_unsigned_16 port_id, core_machine_port_read_provider provider,
     C_VOID *owner);
+type_status core_machine_port_add_read_wired_or_provider(t_port *port,
+    type_unsigned_16 port_id, core_machine_port_read_provider provider,
+    C_VOID *owner);
 type_status core_machine_port_add_write_provider(t_port *port,
     type_unsigned_16 port_id, core_machine_port_write_provider provider,
     C_VOID *owner);

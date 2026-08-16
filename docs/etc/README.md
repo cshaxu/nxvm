@@ -12,6 +12,7 @@ principal documents named in [docs/README.md](../README.md).
 | `architecture/` | Architecture owner | Current detailed machine, profile, layout, and contract rationale. |
 | `requirements/` | Product and profile owners | Future DOS, NXVDM, and profile admissions. |
 | `evidence/` | Verification owner | Capability, verification, baseline, and fixture evidence. |
+| `evidence/t386-s5-deskpro-storage-controller.md` | Verification owner | T386 S5 primary Compaq storage-controller ledger, narrow shared-3F7 composition, focused proof and pure-IMG physical-media transfer. Retain with T386 progress. |
 | `evidence/t382-s1-current-gate-aggregate.md` | Verification owner | T382 S1 aggregate CTest deadline, Job Object cleanup, abnormal-child proof, aggregate-entry sweep, and task artifact record. Retain with T382 history. |
 | `evidence/t382-s2-console-dead-code-retirement.md` | Verification owner | T382 S2 unreachable Console route and callback retirement, focused command sweep, regression proof, and task artifact record. Retain with T382 history. |
 | `evidence/t382-s3-memory-quantity-boundary.md` | Verification owner | T382 S3 checked KiB conversion owner, parser sweep, negative proof, and task artifact record. Retain with T382 history. |
