@@ -63,3 +63,19 @@ mode programming, raster/service duration, ISA availability, and board waits.
 Those items remain transferred through `TODO.md` to later DeskPro functional,
 firmware, board, and L3 receivers. This S makes no board-timing, firmware,
 runnable-public-profile, or L3 claim.
+## P2 Corrective Failure Atomicity
+
+Coordinator review rejected P1 because the initial CECG declaration was
+validated after `core_machine_vadp_configure_ega_personality()` had committed
+its personality. Port registration was rolled back on a failure, but the
+personality could remain changed and block a valid retry on the same machine.
+
+P2 establishes `core_machine_vadp_cecg_config_is_valid()` as the sole CECG
+validation owner. `core_machine_configure_display()` invokes it before text,
+port, personality, or provider state changes; VADP reuses the same validation
+when consuming the declaration. The S9 core smoke now rejects an invalid CECG
+declaration, then configures generic EGA successfully on the same machine.
+This is a configuration failure-atomicity repair, not a profile or device
+behavior expansion.
+
+P2 verification: focused CECG/Model-40 controls and the serial current-gate both pass; the final serial gate reports 260/260 tests passed in 78.15 seconds. Documentation governance, VM provider-composition, and deferred direct-ownership governance checks also pass after the corrective change.

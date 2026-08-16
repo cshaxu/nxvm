@@ -109,6 +109,8 @@ C_VOID core_machine_vadp_initialize(t_vadp *adapter, t_port *port);
 C_VOID core_machine_vadp_configure_ega_ports(t_vadp *adapter, t_port *port);
 type_status core_machine_vadp_configure_ega_personality(t_vadp *adapter,
     t_port *port, core_machine_vadp_ega_personality personality);
+C_INT core_machine_vadp_cecg_config_is_valid(
+    const core_machine_vadp_cecg_config *config);
 type_status core_machine_vadp_configure_cecg(t_vadp *adapter,
     const core_machine_vadp_cecg_config *config);
 type_status core_machine_vadp_configure_cga_memory(t_vadp *adapter, t_ram *memory);

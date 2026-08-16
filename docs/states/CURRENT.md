@@ -12,7 +12,7 @@
 | Candidate Proposal | [DeskPro 386 Model 40 selected-device functional closure](../proposals/m5-deskpro-386-model40-device-functional-closure.md). |
 | Files And ABI Surface | Evidence/owned tests and only the existing shared VADP or private Model-40 composition owner if a source-backed observable demands it. No public VM product interface or assets. |
 | Applicable Rules | `docs/design/ARCHITECTURE.md`, `docs/design/CODING.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`, `docs/rules/EXECUTION.md`, and `docs/etc/operations/policy/source-policy.md`; VADP stays the shared owner, Model-40 choice stays VM-owned. |
-| Verification | Build a source-to-observable table for `3C6h`, selected status/read behavior, monitor/switch declaration and reset; add focused owner and Model-40 controls only for determined observables; run serial current gate and applicable governance checks. |
+| Verification | Build a source-to-observable table for `3C6h`, selected status/read behavior, monitor/switch declaration, reset, and invalid-declaration failure atomicity; add focused owner and Model-40 controls only for determined observables; run serial current gate and applicable governance checks. |
 | Expected Markers | `M5:T386:S9:CECG-CONTRACT:OK`; any implementation marker must name its actual owner. |
 | Asset Needs | Transient primary documentation/research and project-owned synthetic fixtures only; no third-party source, firmware, guest media, local path or binary is copied, hashed or committed. |
 | Reporting Requirements | Report whether the primary contract determines each proposed observable, implementation/evidence outcomes, and all transfers; complete and push one P only after self-review, then conduct coordinator actual-change review. |

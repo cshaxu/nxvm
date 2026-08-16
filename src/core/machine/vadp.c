@@ -1060,15 +1060,20 @@ type_status core_machine_vadp_configure_ega_personality(t_vadp *adapter,
     return TYPE_STATUS_OK;
 }
 
+C_INT core_machine_vadp_cecg_config_is_valid(
+    const core_machine_vadp_cecg_config *config)
+{
+    return config != STD_NULL && (config->control_mode & 0xe0u) == 0x40u &&
+        (config->display_type & 0x44u) == 0u && config->initial_mode == 0x01u;
+}
+
 type_status core_machine_vadp_configure_cecg(t_vadp *adapter,
     const core_machine_vadp_cecg_config *config)
 {
-    if (adapter == STD_NULL || config == STD_NULL ||
+    if (adapter == STD_NULL ||
         adapter->data.ega_personality !=
         CORE_MACHINE_VADP_EGA_PERSONALITY_COMPAQ_ENHANCED_COLOR ||
-        (config->control_mode & 0xe0u) != 0x40u ||
-        (config->display_type & 0x44u) != 0u ||
-        config->initial_mode != 0x01u) {
+        !core_machine_vadp_cecg_config_is_valid(config)) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
     adapter->data.cecg = *config;

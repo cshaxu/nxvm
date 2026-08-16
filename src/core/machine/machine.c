@@ -3419,7 +3419,10 @@ type_status core_machine_configure_display(core_machine *machine,
     if (!core_machine_configuration_is_open(machine) || machine->display_configured) {
         return TYPE_STATUS_INVALID_STATE;
     }
-    if (config == STD_NULL || !core_machine_display_ports_are_vadp(config)) {
+    if (config == STD_NULL || !core_machine_display_ports_are_vadp(config) ||
+        (config->ega_present && config->ega_personality ==
+        CORE_MACHINE_VADP_EGA_PERSONALITY_COMPAQ_ENHANCED_COLOR &&
+        !core_machine_vadp_cecg_config_is_valid(&config->cecg))) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
     status = core_machine_vadp_configure_text_timing(&machine->shared_vadp,
