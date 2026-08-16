@@ -79,3 +79,7 @@ This is a configuration failure-atomicity repair, not a profile or device
 behavior expansion.
 
 P2 verification: focused CECG/Model-40 controls and the serial current-gate both pass; the final serial gate reports 260/260 tests passed in 78.15 seconds. Documentation governance, VM provider-composition, and deferred direct-ownership governance checks also pass after the corrective change.
+
+## Coordinator Acceptance
+
+P1 is retained as pushed history but rejected for a configuration failure-atomicity defect. P2 corrects that defect, its actual-change review is accepted, and this evidence records S9 only as functional progress. T386 and every firmware, physical-media, board-timing, and L3 receiver remain open.

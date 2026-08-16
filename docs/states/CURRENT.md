@@ -2,24 +2,7 @@
 
 ## Current Work
 
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | `M5 T386 S9` -- Continuation. |
-| Admission And Approval | Owner-approved continuing DeskPro 386 functional and L3 programme. S9 follows accepted S8 and is narrowed to the CECG functional prerequisite identified by the T386 ledger and TODO before board timing. |
-| Objective | Establish a source-backed, bounded Compaq Enhanced Color Graphics functional contract for the selected Model 40 and implement only an earliest owner whose gap is reproduced by that contract. |
-| Non-goals | No board or raster timing, physical monitor/cable claim, firmware or ROM import, profile publication, generic IBM EGA mutation, broad VGA/EGA work, Windows or L3 claim. |
-| Reference Baseline | `42c06207` (T386 S8 accepted); T386 S6 CECG evidence; `TODO.md` CECG boundary; T386 functional and board proposals. |
-| Candidate Proposal | [DeskPro 386 Model 40 selected-device functional closure](../proposals/m5-deskpro-386-model40-device-functional-closure.md). |
-| Files And ABI Surface | Evidence/owned tests and only the existing shared VADP or private Model-40 composition owner if a source-backed observable demands it. No public VM product interface or assets. |
-| Applicable Rules | `docs/design/ARCHITECTURE.md`, `docs/design/CODING.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`, `docs/rules/EXECUTION.md`, and `docs/etc/operations/policy/source-policy.md`; VADP stays the shared owner, Model-40 choice stays VM-owned. |
-| Verification | Build a source-to-observable table for `3C6h`, selected status/read behavior, monitor/switch declaration, reset, and invalid-declaration failure atomicity; add focused owner and Model-40 controls only for determined observables; run serial current gate and applicable governance checks. |
-| Expected Markers | `M5:T386:S9:CECG-CONTRACT:OK`; any implementation marker must name its actual owner. |
-| Asset Needs | Transient primary documentation/research and project-owned synthetic fixtures only; no third-party source, firmware, guest media, local path or binary is copied, hashed or committed. |
-| Reporting Requirements | Report whether the primary contract determines each proposed observable, implementation/evidence outcomes, and all transfers; complete and push one P only after self-review, then conduct coordinator actual-change review. |
-| Stop Conditions | Stop and transfer an observable lacking a primary contract, requiring firmware/physical monitor behavior, or demanding board timing; do not infer from IBM EGA or copy emulator behavior. |
-| Exit Criteria | Each selected CECG functional observable is implemented with focused proof or explicitly transferred with source-bound reason; no board timing claim; required gates pass. |
-| Original Owner Request | Continue DeskPro 386 complete functional and L3 work under the stated boundary: profile/composition in `vm`; generic hardware capability in `core`. |
-| Similar-Issue Sweep | Sweep VADP EGA personalities, `3C6h`, status/identity ports, Model-40 composition, default/IBM EGA controls, reset paths and all CECG TODO/proposal/evidence records. |
+**T386 open; S1--S9 accepted.** The accepted [functional ledger](../etc/evidence/t386-s1-deskpro-functional-ledger.md), [non-runnable carrier contract](../etc/evidence/t386-s2-model40-carrier-contract.md), [second-PIT proof](../etc/evidence/t386-s3-second-pit-owner.md), [D4 platform-control proof](../etc/evidence/t386-s4-d4-platform-control.md), [S5 storage-controller contract](../etc/evidence/t386-s5-deskpro-storage-controller.md), [S6 Compaq EGA personality evidence](../etc/evidence/t386-s6-compaq-ega-personality.md), [S7 private composition evidence](../etc/evidence/t386-s7-private-model40-composition.md), [S8 integrated selected-device replay](../etc/evidence/t386-s8-model40-integration.md), and [S9 CECG control/static-configuration evidence](../etc/evidence/t386-s9-cecg-control-static-configuration.md) establish only the selected functional owners without early Model-40 publication or an L3 claim. S9 adds source-backed CECG control/latch/static configuration; P2 makes rejected CECG declarations failure-atomic. Firmware, physical media, board timing and L3 closure remain transferred.
 ## Current Technical Baseline
 
 - **Current developer artifact:** T382 S8 `vm-0-5-0382` /
@@ -46,7 +29,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T386 S8 | Progress accepted: private Model-40 integration replay validates selected device bindings and repairs the shared 8272A DOR reset-release/Sense state owner; 258/258 serial current-gate and focused/governance checks pass. Firmware, physical media and board/L3 timing remain transferred. [Evidence](../etc/evidence/t386-s8-model40-integration.md). |
+| T386 S9 | Progress accepted: source-backed CECG Control Mode/static state and lightpen latch/status are VADP-owned; private Model-40 composition selects its board state; P2 rejects invalid declarations atomically. 260/260 serial current-gate and governance checks pass. Physical, firmware, board and L3 timing remain transferred. [Evidence](../etc/evidence/t386-s9-cecg-control-static-configuration.md). |
 | T385 | Closed: the selected Model-40 80386DX-16 consumes the shared 80386 CPU/state/retirement owners without a DeskPro CPU fork; a clean current-source 251/251 gate passed, while functionality and board timing transfer unchanged. [Closure audit](../etc/evidence/t385-s1-task-closure-audit.md). |
 | T384 | Closed: the Model-40 capability audit freezes its original Compaq system board/storage ledger and owner-selected color EGA, keyboard and external-ROM constraint; its shared-VADP IBM/Compaq personality boundary transfers CPU, functional and timing work without making a runnable or L3 claim. [Closure audit](../etc/evidence/t384-s2-task-closure-audit.md). |
 | T383 | Closed: independent current-source replay accepts the frozen 5170 Model 339 deterministic-L3 contract after T380's strict-start repair; 251/251 current gate and focused matrix are retained in [evidence](../etc/evidence/t383-s1-model339-current-source-reaudit.md). |
