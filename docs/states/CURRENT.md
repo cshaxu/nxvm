@@ -2,15 +2,28 @@
 
 ## Current Work
 
-**No active task packet.**
+**Active: M5 T382 S5.**
 
-| Latest Task S | Compact result |
-| --- | --- |
-| T382 S4 | Accepted: the FDC topology fixture copies phase before destruction; the media-change sweep retains only independent failure data. [Evidence](../etc/evidence/t382-s4-fdc-diagnostic-lifetime.md). |
+## M5 T382 S5 Packet
 
-| Latest Task S | Compact result |
+| Field | Required record |
 | --- | --- |
-| T382 S3 | Accepted: catalog and session construction now use one checked KiB conversion owner; 64-bit upper-bound proof and direct-source test dependency are retained. Two stale zero-session smoke contracts remain transferred to T382 S6. [Evidence](../etc/evidence/t382-s3-memory-quantity-boundary.md). |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner-approved T382 quality-boundary recovery, 2026-08-15; S5 only. |
+| Objective | Complete xasm/debug internal statement-capacity and failure contract. |
+| Non-goals | No instruction semantic change or claim of global strict compilation. |
+| Reference Baseline | T382 S4 acceptance `edd2b2af` and retained S5 proposal. |
+| Candidate Proposal | [M5 quality-boundary recovery](../proposals/m5-quality-boundary-recovery.md), S5. |
+| Files And ABI Surface | `aasm32`, `dasm32`, `debug`, `core_product_utils`, focused tests and evidence. |
+| Applicable Rules | Execution, architecture single-owner, coding bounded-failure, and documentation rules; no exception. |
+| Verification | Capacity matrix, exact-fit/overflow/atomicity tests, xasm/debug smokes, current gate, governance and artifact. |
+| Expected Markers | Bounded construction rejects overflow without changing promised output. |
+| Asset Needs | None. |
+| Reporting Requirements | Complete executor P, then one-session coordinator actual-change review and governance P. |
+| Stop Conditions | Required instruction semantic change, new public API, or owner domain beyond xasm/debug. |
+| Exit Criteria | Matrix names all production paths and all retained unsafe paths have bounded TODO admission. |
+| Original Owner Request | Finish the current code-quality task in one-session dual-role mode. |
+| Similar-Issue Sweep | Enumerate production `STD_STRCPY` and `STD_STRCAT` in the owner domain. |
 
 ## Current Technical Baseline
 

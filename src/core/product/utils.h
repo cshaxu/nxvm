@@ -24,6 +24,10 @@ type_status core_product_utils_disassemble(const type_unsigned_8 *code,
     STD_SIZE_T *out_statement_bytes, C_INT flag32);
 type_status core_product_utils_parse_memory_kib(const C_CHAR *text,
     STD_SIZE_T *out_memory_bytes);
+type_status core_product_utils_copy_text(C_CHAR *destination,
+    STD_SIZE_T destination_capacity, const C_CHAR *source);
+type_status core_product_utils_append_text(C_CHAR *destination,
+    STD_SIZE_T destination_capacity, const C_CHAR *source);
 
 #ifdef __cplusplus
 } /*_EOCD_*/

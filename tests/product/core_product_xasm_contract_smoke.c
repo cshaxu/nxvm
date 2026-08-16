@@ -27,11 +27,19 @@ static C_INT xasm_output_is_unchanged(const type_unsigned_8 *code,
 
 int main(C_VOID)
 {
+    C_CHAR text[4] = "x";
     C_CHAR exact_statement[CORE_PRODUCT_UTILS_XASM_MAX_STATEMENT_BYTES];
     C_CHAR overlong_statement[CORE_PRODUCT_UTILS_XASM_MAX_STATEMENT_BYTES + 1u];
     C_CHAR statement[8];
     type_unsigned_8 code[CORE_PRODUCT_UTILS_XASM_MAX_CODE_BYTES];
     STD_SIZE_T result_bytes = 37u;
+
+    if (core_product_utils_append_text(text, sizeof(text), "yz") !=
+            TYPE_STATUS_OK || STD_STRCMP(text, "xyz") ||
+        core_product_utils_append_text(text, sizeof(text), "q") !=
+            TYPE_STATUS_INVALID_ARGUMENT || STD_STRCMP(text, "xyz") ||
+        core_product_utils_copy_text(text, sizeof(text), "abcd") !=
+            TYPE_STATUS_INVALID_ARGUMENT || STD_STRCMP(text, "xyz")) return 10;
 
     STD_MEMSET(exact_statement, ' ', sizeof(exact_statement));
     exact_statement[0] = 'n';

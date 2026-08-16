@@ -87,6 +87,18 @@ struct dasm32_context
         }                                                                           \
     } while (0)
 
+#define DASM_COPY_ARRAY(destination, source)                                       \
+    do {                                                                            \
+        if (core_product_utils_copy_text((destination), MAXLINE,                   \
+                (source)) != TYPE_STATUS_OK) TYPE_TRACE_SET_ERROR;                 \
+    } while (0)
+
+#define DASM_APPEND_ARRAY(destination, source)                                     \
+    do {                                                                            \
+        if (core_product_utils_append_text((destination), MAXLINE,                 \
+                (source)) != TYPE_STATUS_OK) TYPE_TRACE_SET_ERROR;                 \
+    } while (0)
+
 static C_VOID SPRINTFSI(dasm32_context *dasmContext, C_CHAR *str, type_unsigned_32 imm, type_unsigned_8 byte)
 {
     C_CHAR sign;
@@ -709,8 +721,8 @@ static C_VOID _kdf_modrm(dasm32_context *dasmContext, type_unsigned_8 regbyte, t
     case 0:
         if (flagmem)
         {
-            STD_STRCAT(dptr, drm);
-            STD_STRCPY(drm, dptr);
+            DASM_APPEND_ARRAY(dptr, drm);
+            DASM_COPY_ARRAY(drm, dptr);
         }
     case 9:
         /* reg is operation or segment */
@@ -6788,12 +6800,12 @@ static type_unsigned_8 dasm32_execute(dasm32_context *dasmContext, C_CHAR *stmt,
         TYPE_TRACE_CHECK_BREAK((*(dtable[opcode]))(dasmContext));
         if (STD_STRLEN(dop))
         {
-            STD_STRCAT(dop, " ");
-            STD_STRCPY(dstmt, dop);
+            DASM_APPEND_ARRAY(dop, " ");
+            DASM_COPY_ARRAY(dstmt, dop);
             for (i = STD_STRLEN(dop); i < 8; ++i)
-                STD_STRCAT(dstmt, " ");
-            STD_STRCAT(dstmt, dopr);
-            STD_STRCAT(stmt, dstmt);
+                DASM_APPEND_ARRAY(dstmt, " ");
+            DASM_APPEND_ARRAY(dstmt, dopr);
+            DASM_APPEND_ARRAY(stmt, dstmt);
         }
         TYPE_TRACE_CALL_END;
     } while (_kdf_check_prefix(dasmContext, opcode));
@@ -6804,6 +6816,10 @@ static type_unsigned_8 dasm32_execute(dasm32_context *dasmContext, C_CHAR *stmt,
     }
     type_trace_finalize(&trace);
 #endif
+    if (flagError) {
+        stmt[0] = 0;
+        return 0u;
+    }
     return iop;
 }
 

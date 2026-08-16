@@ -129,3 +129,34 @@ type_status core_product_utils_parse_memory_kib(const C_CHAR *text,
     *out_memory_bytes = value << 10;
     return TYPE_STATUS_OK;
 }
+
+type_status core_product_utils_copy_text(C_CHAR *destination,
+    STD_SIZE_T destination_capacity, const C_CHAR *source)
+{
+    STD_SIZE_T source_bytes;
+
+    if (destination == STD_NULL || source == STD_NULL ||
+        destination_capacity == 0u) return TYPE_STATUS_INVALID_ARGUMENT;
+    source_bytes = STD_STRLEN(source);
+    if (source_bytes >= destination_capacity) return TYPE_STATUS_INVALID_ARGUMENT;
+    STD_MEMCPY(destination, source, source_bytes + 1u);
+    return TYPE_STATUS_OK;
+}
+
+type_status core_product_utils_append_text(C_CHAR *destination,
+    STD_SIZE_T destination_capacity, const C_CHAR *source)
+{
+    STD_SIZE_T destination_bytes;
+    STD_SIZE_T source_bytes;
+
+    if (destination == STD_NULL || source == STD_NULL ||
+        destination_capacity == 0u) return TYPE_STATUS_INVALID_ARGUMENT;
+    destination_bytes = STD_STRLEN(destination);
+    source_bytes = STD_STRLEN(source);
+    if (destination_bytes >= destination_capacity ||
+        source_bytes >= destination_capacity - destination_bytes) {
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
+    STD_MEMCPY(destination + destination_bytes, source, source_bytes + 1u);
+    return TYPE_STATUS_OK;
+}

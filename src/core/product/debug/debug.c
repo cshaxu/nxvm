@@ -30,6 +30,20 @@ static C_INT core_product_debug_read_line(C_CHAR *buffer, STD_SIZE_T buffer_size
         STD_FGETS(buffer, (C_INT)buffer_size, STD_STDIN) != STD_NULL;
 }
 
+static C_INT core_product_debug_copy_text(C_CHAR *destination,
+    STD_SIZE_T destination_capacity, const C_CHAR *source)
+{
+    return core_product_utils_copy_text(destination, destination_capacity, source) ==
+        TYPE_STATUS_OK;
+}
+
+static C_INT core_product_debug_append_text(C_CHAR *destination,
+    STD_SIZE_T destination_capacity, const C_CHAR *source)
+{
+    return core_product_utils_append_text(destination, destination_capacity, source) ==
+        TYPE_STATUS_OK;
+}
+
 #define nErrPos (debugContext->error_position)
 #define narg (debugContext->argument_count)
 #define arg (debugContext->arguments)
@@ -231,7 +245,10 @@ static C_VOID addrparse(core_product_debug_context *debugContext, type_unsigned_
 {
     C_CHAR *cseg, *cptr;
     C_CHAR ccopy[0x100];
-    STD_STRCPY(ccopy, addr);
+    if (!core_product_debug_copy_text(ccopy, sizeof(ccopy), addr)) {
+        seterr(debugContext, narg - 1u);
+        return;
+    }
     cseg = STD_STRTOK(ccopy, ":");
     cptr = STD_STRTOK(STD_NULL, "");
     if (!cptr)
@@ -730,7 +747,8 @@ static C_VOID n(core_product_debug_context *debugContext)
     if (narg != 2)
         seterr(debugContext, narg - 1);
     else
-        STD_STRCPY(strFileName, arg[1]);
+        if (!core_product_debug_copy_text(strFileName, sizeof(strFileName),
+                arg[1])) seterr(debugContext, 1u);
 }
 /* output */
 static C_VOID o(core_product_debug_context *debugContext)
@@ -801,9 +819,18 @@ static type_unsigned_8 uprintins(core_product_debug_context *debugContext, type_
         }
         for (i = STD_STRLEN(str); i < 24; ++i)
         {
-            STD_STRCAT(str, " ");
+            if (!core_product_debug_append_text(str, sizeof(str), " ")) {
+                len = 0u;
+                (C_VOID)STD_SNPRINTF(str, sizeof(str), "%04X:%04X <ERROR>",
+                    segment, off);
+                break;
+            }
         }
-        STD_STRCAT(str, stmt);
+        if (!core_product_debug_append_text(str, sizeof(str), stmt)) {
+            len = 0u;
+            (C_VOID)STD_SNPRINTF(str, sizeof(str), "%04X:%04X <ERROR>",
+                segment, off);
+        }
     }
     STD_PRINTF("%s\n", str);
     return len;
@@ -1418,9 +1445,16 @@ static type_unsigned_8 xuprintins(core_product_debug_context *debugContext, type
         }
         for (i = STD_STRLEN(str); i < 24; ++i)
         {
-            STD_STRCAT(str, " ");
+            if (!core_product_debug_append_text(str, sizeof(str), " ")) {
+                len = 0u;
+                (C_VOID)STD_SNPRINTF(str, sizeof(str), "L%08X <ERROR>", linear);
+                break;
+            }
         }
-        STD_STRCAT(str, stmt);
+        if (!core_product_debug_append_text(str, sizeof(str), stmt)) {
+            len = 0u;
+            (C_VOID)STD_SNPRINTF(str, sizeof(str), "L%08X <ERROR>", linear);
+        }
     }
     STD_PRINTF("%s\n", str);
     return len;
@@ -2453,7 +2487,8 @@ static C_VOID help(core_product_debug_context *debugContext)
 
 static C_VOID parse(core_product_debug_context *debugContext)
 {
-    STD_STRCPY(strCmdCopy, strCmdBuff);
+    if (!core_product_debug_copy_text(strCmdCopy, sizeof(strCmdCopy),
+            strCmdBuff)) return;
     narg = 0;
     arg[0] = STD_STRTOK(strCmdCopy, " ,\t\n\r\f");
     if (arg[narg])
