@@ -209,7 +209,11 @@ sources.
 Apply the preceding rules in order: coordinator admission under **Request
 Lifecycle** and the S contract; executor confirmation or objection, completion
 goal, reporting, self-review, and complete-P push; then coordinator
-actual-change review and the applicable P-lifecycle outcome. **Role authority**
+actual-change review and the applicable P-lifecycle outcome.
+Coordinator review compares the original request, S brief, packet, applicable
+rules, evidence, and actual Git/worktree changes against the exit criteria; an
+executor report indexes evidence and cannot substitute for that review.
+**Role authority**
 and the one-session/two-session review boundary above govern who performs those
 steps and whether the review is independent. One-session runs switch to the
 coordinator role for that review; a separate-session coordinator review is

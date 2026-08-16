@@ -2,7 +2,8 @@
 
 ## Current Work
 
-**Idle.**
+**Idle.** M5 Td S98 makes the coordinator's actual-change review inputs,
+exit-criteria comparison, and executor-report boundary visible in Role cycle.
 
 ## Current Technical Baseline
 
@@ -37,6 +38,8 @@
 
 ## Recent Governance
 
+- **M5 Td S98 P1:** made coordinator-review inputs, exit criteria, and the
+  executor-report boundary explicit in Role cycle.
 - **M5 Td S97 P1:** added explicit single-/separate-session review navigation
   without changing the lifecycle requirements.
 - **M5 Td S96 P1:** compressed duplicate Role cycle prose into references to
