@@ -2321,6 +2321,12 @@ if(NOT PROJECT_CURRENT_SMOKE_JOBS MATCHES "^[1-9][0-9]*$")
     message(FATAL_ERROR
         "PROJECT_CURRENT_SMOKE_JOBS must be a positive integer, got: ${PROJECT_CURRENT_SMOKE_JOBS}")
 endif()
+set(PROJECT_CURRENT_SMOKE_DEADLINE_SECONDS "300" CACHE STRING
+    "Aggregate deadline for the complete current-smoke CTest invocation")
+if(NOT PROJECT_CURRENT_SMOKE_DEADLINE_SECONDS MATCHES "^[1-9][0-9]*$")
+    message(FATAL_ERROR
+        "PROJECT_CURRENT_SMOKE_DEADLINE_SECONDS must be a positive integer, got: ${PROJECT_CURRENT_SMOKE_DEADLINE_SECONDS}")
+endif()
 set(PROJECT_ASSETS_ROOT "${CMAKE_SOURCE_DIR}/../../assets" CACHE PATH
     "Owner-provided local asset root for current runtime smoke coverage")
 set(PROJECT_FDD_SMOKE_IMAGE "${PROJECT_ASSETS_ROOT}/fdd.img" CACHE FILEPATH
@@ -2441,21 +2447,44 @@ add_custom_target(verify-t344-current-gate-registration
     COMMENT "Verifying T344 current-gate registration integrity"
     VERBATIM)
 
-add_custom_target(run-current-smokes
-    COMMAND "${CMAKE_CTEST_COMMAND}" --test-dir "${CMAKE_BINARY_DIR}"
-        --output-on-failure --no-tests=error --label-regex "^current-gate$"
-        --parallel "${PROJECT_CURRENT_SMOKE_JOBS}"
-    DEPENDS ${PROJECT_CURRENT_ALL_SMOKE_TARGETS}
-    COMMENT "Building and executing current runnable smoke coverage"
-    VERBATIM)
+if(POWERSHELL_EXECUTABLE)
+    add_custom_target(run-current-smokes
+        COMMAND "${POWERSHELL_EXECUTABLE}" -NoProfile -ExecutionPolicy Bypass
+            -File "${CMAKE_SOURCE_DIR}/tools/RunCurrentSmokeAggregate.ps1"
+            -CTestPath "${CMAKE_CTEST_COMMAND}"
+            -TestDirectory "${CMAKE_BINARY_DIR}"
+            -ParallelJobs "${PROJECT_CURRENT_SMOKE_JOBS}"
+            -DeadlineSeconds "${PROJECT_CURRENT_SMOKE_DEADLINE_SECONDS}"
+        DEPENDS ${PROJECT_CURRENT_ALL_SMOKE_TARGETS}
+        COMMENT "Building and executing current runnable smoke coverage"
+        VERBATIM)
 
-add_custom_target(run-current-fast-smokes
-    COMMAND "${CMAKE_CTEST_COMMAND}" --test-dir "${CMAKE_BINARY_DIR}"
-        --output-on-failure --no-tests=error --label-regex "^current-gate$"
-        --label-exclude "media" --parallel "${PROJECT_CURRENT_SMOKE_JOBS}"
-    DEPENDS ${PROJECT_CURRENT_NONMEDIA_SMOKE_TARGETS}
-    COMMENT "Building and executing current non-media smoke coverage"
-    VERBATIM)
+    add_custom_target(run-current-fast-smokes
+        COMMAND "${POWERSHELL_EXECUTABLE}" -NoProfile -ExecutionPolicy Bypass
+            -File "${CMAKE_SOURCE_DIR}/tools/RunCurrentSmokeAggregate.ps1"
+            -CTestPath "${CMAKE_CTEST_COMMAND}"
+            -TestDirectory "${CMAKE_BINARY_DIR}"
+            -ParallelJobs "${PROJECT_CURRENT_SMOKE_JOBS}"
+            -DeadlineSeconds "${PROJECT_CURRENT_SMOKE_DEADLINE_SECONDS}"
+            -ExcludeMedia
+        DEPENDS ${PROJECT_CURRENT_NONMEDIA_SMOKE_TARGETS}
+        COMMENT "Building and executing current non-media smoke coverage"
+        VERBATIM)
+
+    add_custom_target(verify-t382-current-gate-aggregate
+        COMMAND "${POWERSHELL_EXECUTABLE}" -NoProfile -ExecutionPolicy Bypass
+            -File "${CMAKE_SOURCE_DIR}/tools/VerifyCurrentSmokeAggregate.ps1"
+            -RepositoryRoot "${CMAKE_SOURCE_DIR}"
+        COMMENT "Verifying T382 current-gate aggregate deadline and cleanup"
+        VERBATIM)
+else()
+    add_custom_target(run-current-smokes
+        COMMAND "${CMAKE_COMMAND}" -E false
+        COMMENT "run-current-smokes requires PowerShell process-tree cleanup on this host")
+    add_custom_target(run-current-fast-smokes
+        COMMAND "${CMAKE_COMMAND}" -E false
+        COMMENT "run-current-fast-smokes requires PowerShell process-tree cleanup on this host")
+endif()
 
 project_configure_t317_strict_cpu_smokes()
 
@@ -2517,8 +2546,8 @@ function(add_current_vm_artifact target version)
             "${CMAKE_SOURCE_DIR}/build/output/${task_artifact_filename}")
 endfunction()
 
-set(PROJECT_CURRENT_VM_ARTIFACT_TARGET vm-0-5-0381)
-add_current_vm_artifact(vm-0-5-0381 "0.5.0381")
+set(PROJECT_CURRENT_VM_ARTIFACT_TARGET vm-0-5-0382)
+add_current_vm_artifact(vm-0-5-0382 "0.5.0382")
 option(PROJECT_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
 
@@ -2952,6 +2981,7 @@ set(PROJECT_CURRENT_SPECIALIZED_VERIFIER_CANDIDATES
     verify-cancellable-wait-boundary
     verify-vm-composition-lifecycle
     verify-t344-current-gate-registration
+    verify-t382-current-gate-aggregate
     verify-fpu-boundary
     verify-core-cpu-pic-authority
     verify-core-display-authority
