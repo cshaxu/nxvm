@@ -2,27 +2,13 @@
 
 ## Current Work
 
-## M5 T386 S1 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | New |
-| Admission And Approval | The owner approved continuous single-person execution of the ordered M5 Queue through the DeskPro/XT L3 program, selected the original DeskPro 386 Model 40 configuration in T384, and required a small Compaq EGA personality around the shared VADP core rather than an IBM-derived adapter. T385 is closed; this next ordered candidate is admitted for functional-gap allocation only. |
-| Objective | Build the complete selected Model-40 functional capability ledger and ownership plan for the first runnable Compaq composition: memory/ROM contract, PIC/DMA/PIT/RTC/KBC/A20/NMI/reset, selected 1.2 MB/FDC and Compaq fixed-disk subsystem, 101-key keyboard, and Compaq EGA/color personality. Classify every row as reusable, partial, missing or excluded, with its earliest repair owner and a bounded later S receiver. |
-| Non-goals | No device implementation, runtime DeskPro descriptor, ROM-byte import or manifest, ATA/HDC or IBM MFM substitution, IBM EGA completion, board/bus/monitor timing, physical 16 MHz claim, x87, AUX/IRQ12, Windows claim or Model-40 L3 decision. |
-| Reference Baseline | T384 S1/S2 selected Model-40 ledger and EGA ownership allocation; T385 CPU closure; the DeskPro functional candidate and shared DeskPro context; current capability baseline/T373 classification; Compaq primary documentation already recorded by T384; current source and project-owned test inventory. |
-| Candidate Proposal | [DeskPro 386 Model 40 selected-device functional closure](../proposals/m5-deskpro-386-model40-device-functional-closure.md). |
-| Files And ABI Surface | Audit-only: `docs/states/CURRENT.md`, T386 evidence/history and, if needed, directly affected DeskPro proposal detail. Product/core source, public ABI, ROM/media assets and runtime composition are read-only. A later implementation S must name exact source owners, callers, tests, profile contract and ABI before code changes. |
-| Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`, and `docs/etc/operations/policy/source-policy.md`; one mutable state/route owner, neutral dependency flow and product-root-only composition remain required. No exception is requested. |
-| Verification | Sweep all selected components through existing core and VM owners, ports/routes, reset/publication paths, tests and current capability evidence; distinguish generic product support from profile evidence; verify no Compaq descriptor/personality/controller exists; reconcile every selected row exactly once to reusable/partial/missing/excluded plus earliest owner and S receiver; run documentation governance, link validation and actual-change review. |
-| Expected Markers | `M5:T386:S1:DESKPRO-FUNCTIONAL-LEDGER:OK` and `M5:T386:S1:DESKPRO-OWNER-ALLOCATION:OK`. |
-| Asset Needs | No ROM, guest media, third-party source or emulator code is consumed. Existing primary documentation remains research evidence only; any later BYOB ROM binding needs a separately admitted profile-composition contract. |
-| Reporting Requirements | Record every selected device/capability, current source disposition, exact earliest owner, functional S boundary, later board-timing receiver and exclusion. Explicitly report the smallest coherent implementation slices and their dependency order; do not use a generic product device as completion evidence. |
-| Stop Conditions | Stop and transfer if a required functional contract depends on a ROM byte, undocumented Compaq controller behavior, physical bus/monitor timing, a missing corpus, a device outside the selected Model-40 configuration or a new third-party import. |
-| Exit Criteria | The selected Model-40 functional ledger has no unclassified row, no ATA/IBM/IBM-EGA substitution, no profile-composition claim, and a reviewable dependency-ordered implementation allocation that can be admitted one coherent owner boundary at a time. |
-| Original Owner Request | Complete the ordered M5 L3 program with single-person dual-role governance, including full DeskPro functionality before DeskPro board timing and final audit, while keeping external ROMs outside the repository. |
-| Similar-Issue Sweep | Search all generic/default PC/AT, Model-339 and current-product device/profile bindings for accidental use as a DeskPro substitute; search every selected component's port, IRQ/DMA, reset and registration owner so a later S repairs the earliest shared owner or a clearly named Compaq-local contract, never a duplicate route. |
-
+**T386 open; S1 accepted.** The complete selected Model-40 functional
+capability and ownership ledger is retained in [S1 evidence](../etc/evidence/t386-s1-deskpro-functional-ledger.md).
+It prevents generic PC/AT, ATA/HDC, IBM MFM and IBM EGA substitution, and
+orders the next implementation slices from the profile carrier through second
+PIT, platform NMI/reset, storage and the small Compaq EGA personality. It is
+not a runnable-profile, firmware, device-completeness, board-timing or L3
+claim.
 ## Current Technical Baseline
 
 - **Current developer artifact:** T382 S8 `vm-0-5-0382` /
@@ -49,6 +35,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T386 S1 | Progress accepted: the Model-40 selected-device ledger allocates every functional row to a coherent owner and transfer path, preserving the external-ROM and non-substitution boundaries before implementation begins. [Evidence](../etc/evidence/t386-s1-deskpro-functional-ledger.md). |
 | T385 | Closed: the selected Model-40 80386DX-16 consumes the shared 80386 CPU/state/retirement owners without a DeskPro CPU fork; a clean current-source 251/251 gate passed, while functionality and board timing transfer unchanged. [Closure audit](../etc/evidence/t385-s1-task-closure-audit.md). |
 | T384 | Closed: the Model-40 capability audit freezes its original Compaq system board/storage ledger and owner-selected color EGA, keyboard and external-ROM constraint; its shared-VADP IBM/Compaq personality boundary transfers CPU, functional and timing work without making a runnable or L3 claim. [Closure audit](../etc/evidence/t384-s2-task-closure-audit.md). |
 | T383 | Closed: independent current-source replay accepts the frozen 5170 Model 339 deterministic-L3 contract after T380's strict-start repair; 251/251 current gate and focused matrix are retained in [evidence](../etc/evidence/t383-s1-model339-current-source-reaudit.md). |
