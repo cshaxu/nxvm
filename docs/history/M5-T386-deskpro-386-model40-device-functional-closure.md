@@ -53,3 +53,9 @@ mechanism, with separate `48h-4Bh` state/ports/lifetime and no output consumer.
 The [S3 evidence](../etc/evidence/t386-s3-second-pit-owner.md) retains its
 focused isolation proof and full current-gate result. Failsafe/NMI behavior,
 firmware binding and board timing transfer unchanged to S4/later work.
+
+Coordinator review accepted S3 against the selected Model-40 `48h-4Bh` fact,
+actual core-machine lifecycle and the focused/full-gate evidence. The new
+mechanism has one shared PIT owner and no output consumer; it neither chooses a
+profile nor leaks an IRQ/NMI route. Documentation governance and actual-change
+review passed.
