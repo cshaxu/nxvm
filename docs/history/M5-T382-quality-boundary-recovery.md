@@ -2,8 +2,8 @@
 
 ## Task Record
 
-T382 is the admitted form of the first M5 queue candidate,
-[quality-boundary recovery](../proposals/m5-quality-boundary-recovery.md).
+T382 is the admitted form of the retained
+[quality-boundary recovery proposal](M5-T382-quality-boundary-recovery-proposal.md).
 It repairs only the named quality mechanism owners and their proof.  It does
 not broaden hardware compatibility, alter guest media, weaken a gate, or claim
 completion of inherited legacy strictness debt.
@@ -17,6 +17,7 @@ completion of inherited legacy strictness debt.
 5. S5 - xasm/debug internal capacity and failure contract.
 6. S6 - session-manager capacity and ID exhaustion.
 7. S7 - debug-debt record reconciliation.
+8. S8 - corrective Console memory round trip.
 
 Only the active `CURRENT.md` packet authorizes the current S.  Detailed
 acceptance, non-goals, and transfer conditions remain in the retained

@@ -26,8 +26,9 @@ function Test-Mojibake([string]$text) {
 }
 
 function Test-MachineLocalPath([string]$text) {
-    # Stable disclosure recurrence: committed local paths are never portable evidence.
-    return $text -match '(?i)(?:[a-z]:\\(?:users|home)\\|/(?:home|users)/|\\\\[a-z0-9][a-z0-9.-]*\\)'
+    # Stable disclosure recurrence: host/workspace paths are not portable evidence.
+    # Guest DOS examples such as C:\NAME.EXT remain valid documentation.
+    return $text -match '(?i)(?:[a-z]:\\(?:users|home|assets|repos(?:[._-][^\\]+)?|temp|appdata|program files)\\|/(?:home|users)/|\\\\[a-z0-9][a-z0-9.-]*\\)'
 }
 
 function Test-ExactNameSet([string[]]$actual, [string[]]$expected) {
@@ -407,6 +408,7 @@ if ($SelfTest) {
     foreach ($machineLocalPath in @(
             'C:\Users\alice\file.txt',
             'D:\home\example',
+            'O:\assets\fdd.img',
             '/home/alice/file.txt',
             '\\server\share\file.txt'
         )) {

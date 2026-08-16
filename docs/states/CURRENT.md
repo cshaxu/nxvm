@@ -2,8 +2,7 @@
 
 ## Current Work
 
-**Idle.** M5 Td S99 compacted execution-governance prose in place without
-moving implementation rules to a design authority.
+**Idle.**
 
 ## Current Technical Baseline
 
@@ -13,6 +12,10 @@ moving implementation rules to a design authority.
   Its 251-test current-gate and corrective reclosure proof are retained in
   [S8 evidence](../etc/evidence/t382-s8-console-memory-roundtrip.md) and the
   [corrective audit](../etc/evidence/t382-s8-reclosure-audit.md).
+- **Model-339 readiness:** T379's deterministic-L3 decision remains historical
+  evidence for its then-current source graph. T380 S2 subsequently changed the
+  strict profile startup path, so the queued current-source re-audit owns the
+  next ready/not-ready decision before DeskPro work begins.
 - **T285 display implementation:** `INT 10h` mode `10h` /
   `EGA-640x350x16-direct` has a VADP-owned planar frame path and copied-frame
   consumer boundary; mode 0Dh remains a separate retained path.
@@ -31,13 +34,17 @@ moving implementation rules to a design authority.
 | T381 | Closed: S1 P1 `9b6a86c6` delivered frozen YAML profile selection and the true zero-session Console; corrective S2 restored its task-level closure state without changing runtime evidence or the T381 artifact. [Evidence](../etc/evidence/t381-s1-console-yaml-profiles.md). |
 | T380 | Closed: strict Model-339 startup, 512 KB FDC/BDA repair, input/FDC current-gate recovery, and the owner-replayed DOS 5/HIMEM no-XMS path are verified. It does not claim DOS completion or 5170 L3 closure. [Evidence](../etc/evidence/t380-s2-model339-start-and-current-gate-recovery.md). |
 | T378 | Closed at `42f0402a`: production ingress proof and virtual-time ownership are corrected without a test-only API; Model-339 re-audit remains the sole L3 decision receiver. [Evidence](../etc/evidence/t378-s1-native-ingress-boundary-repair.md). |
-| T379 | Closed at `160a34e1`: independent re-audit accepts the frozen Model-339 deterministic L3 contract. [Audit](../etc/evidence/t379-s1-model339-final-reaudit.md). |
+| T379 | Closed at `160a34e1`: independent re-audit accepted the then-current frozen Model-339 deterministic L3 contract. Its result is historical; the queued current-source re-audit owns the next readiness decision. [Audit](../etc/evidence/t379-s1-model339-final-reaudit.md). |
 | T377 | Closed at `1cdd5110`: final audit rejects premature Model-339 L3 acceptance; its shared input/global-gate repair and independent re-audit successors are queued. [Audit](../etc/evidence/t377-s1-model339-final-l3-audit.md). |
 | T376 | Closed at `991060a4`: raw-IMG sidecar persistence, selected 8272A command fidelity and malformed-sidecar rejection are proven; physical duplicate-CHRN representation remains explicitly outside pure raw-IMG support. [Closure audit](../etc/evidence/t376-s6-task-closure-audit.md). |
 | T375 | Closed at `07484727`: board/device phase work accepts source-backed service and logical-order contracts, transfers raw-IMG fidelity and source-exhausted physical board phases, and **does not accept Model-339 L3**. [Closure audit](../etc/evidence/t375-s26-task-closure-transfer-audit.md). |
 
 ## Recent Governance
 
+- **M5 Td S100 P1:** archived the closed T382 proposal, queued Model-339
+  current-source re-audit before DeskPro, reconciled T380 S2 history, and made
+  host/workspace path detection reject the external-assets form while retaining
+  guest DOS-path examples.
 - **M5 Td S99 P1:** compacted documentation gates, closure evidence, artifact
   identity, build hygiene, and recorder containment within Execution; design
   authorities remain unchanged.
