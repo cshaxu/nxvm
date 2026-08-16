@@ -58,3 +58,7 @@ profile, physical-monitor, firmware, board-timing, or L3 claim.
 ## Verification
 
 Focused S10 owner and Model-40 controls pass. The serial current-gate reports 262/262 tests passed in 76.30 seconds. Documentation governance, VM provider-composition, and deferred direct-ownership governance also pass; the latter reports 209 rows with 149 owner tests.
+
+## Coordinator Acceptance
+
+P1 is accepted after actual-change review of the VADP state/port owner, declaration and reset paths, focused controls, generic-EGA isolation, strict-owner inventory, full current-gate and transfers. This accepts S10 only as selected-device functional progress. T386 and every firmware, physical-media, board-timing and L3 receiver remain open.
