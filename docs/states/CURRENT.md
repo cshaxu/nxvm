@@ -2,25 +2,12 @@
 
 ## Current Work
 
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Governance -- M5 Td S102; standalone post-S22 T386 continuation planning. |
-| Admission And Approval | Owner approved on 2026-08-16 to quickly close S22, perform small necessary planning/proposal/Queue/architecture governance, then continue the original DeskPro development. This Td changes only planning/authority navigation; no runtime behavior, artifact, task identifier, or architecture exception. |
-| Objective | Reconcile the accepted S22 D4 parity result into the active T386 functional proposal and Queue title, state the dependency-ordered remaining functional receivers, select the next D4-SKEY/reset-arbitration receiver, and record whether existing Core/VM architecture authorities require amendment. |
-| Non-goals | No source, CMake, runtime, asset, firmware, media, timing, L3, YAML-variant, Queue ordering, or numeric task allocation change. Do not preallocate T386 S identifiers or make a new capability/ROM selection. |
-| Reference Baseline | Accepted T386 S22 `d565b232`; `vm-0-5-0389` SHA-256 `B7DC400F3E3A8857C4699EEB6349893F2B72C70607FC29BF2C02F6E1952B5D70`; current functional proposal, Queue and M5 Roadmap. |
-| Candidate Proposal | `docs/proposals/m5-deskpro-386-model40-device-functional-closure.md`; shared context `docs/proposals/m5-80386-deskpro-386-l3-baseline.md`. |
-| Files And ABI Surface | `docs/proposals/m5-deskpro-386-model40-device-functional-closure.md`, `docs/states/QUEUE.md`, T386 evidence/history/CURRENT, and only an architecture-authority disposition if the existing Core/VM map proves insufficient. No source or ABI surface. |
-| Applicable Rules | Task Reading Set; EXECUTION governance admission/closure and no-preallocation rule; DOCUMENT authority boundaries; ROADMAP M5 functional-before-timing order; ARCHITECTURE shared Core versus VM-profile ownership. |
-| Verification | Inspect S22 evidence/current source ownership, current proposal, Queue, Roadmap and Architecture. Run documentation governance, link/index and actual-change review. Confirm each remaining selected functional cluster has one earliest receiver and that the next receiver is narrower than Board/L3 work. |
-| Expected Markers | `M5:TD:S102:T386-POST-S22-PLAN:OK`; `M5:TD:S102:CORE-VM-DISPOSITION:OK`. |
-| Asset Needs | None. No research or local asset is read, recorded or imported. |
-| Reporting Requirements | Report the remaining dependency order, selected next receiver, whether a principal architecture change was necessary, changed authorities and gate result. |
-| Stop Conditions | Stop for a new hardware selection, incompatible shared-owner mapping, a proposal that requires preallocating S identifiers, or a missing source fact needed to select D4-SKEY/reset scope. Return such work to an admitted implementation/research receiver. |
-| Exit Criteria | Proposal explicitly reflects S22 and names dependency-ordered remaining functional receivers; Queue remains ordered/unallocated and links the clarified proposal; architecture disposition is explicit without duplicate authority; required documentation checks and coordinator review pass. |
-| Original Owner Request | Owner-approved request, 2026-08-16: quickly close the current S, allow small planning/proposal/Queue and necessary architecture governance, then continue original DeskPro development. |
-| Similar-Issue Sweep | Sweep T386 S21/S22 matrix/history/evidence, DeskPro closure context, Queue title/order, M5 Roadmap functional-before-timing rule, current-product variant handoff and Core/VM architecture map. |
-
+**T386 open; S1--S22 accepted.** Td S102 accepts the remaining functional
+receiver order without creating an architecture exception or allocating S
+identifiers: D4-SKEY/reset arbitration, selected FDC/1.2-MB logical behavior,
+fitted 40-MB controller/startup media, CECG residual behavior, then the T386
+functional-closure audit. The next implementation receiver is D4-SKEY/reset
+arbitration; board timing and Model-40 L3 remain outside it.
 ## Current Technical Baseline
 
 - **Current developer artifact:** T386 S22 `vm-0-5-0389` /
@@ -58,6 +45,7 @@
 
 ## Recent Governance
 
+- **M5 Td S102 P1:** reconciled accepted D4 parity work into the T386 proposal and Queue title, defined the non-preallocated remaining functional receiver order, and confirmed the existing Core/VM/profile architecture authority needs no amendment.
 - **M5 Td S101 P1:** added a compact execution-entry table without creating
   new paths, and made coordinator semantic review explicit after structural
   documentation-gate success.
