@@ -357,11 +357,17 @@ static C_VOID vm_product_console_open_profile(vm_product_console_context *contex
     C_CHAR option_cpu[] = "--cpu";
     C_CHAR option_fpu[] = "--fpu";
     C_CHAR option_memory[] = "--memory-kib";
+    C_CHAR option_even_path[] = "--model40-rom-even-path";
+    C_CHAR option_even_sha256[] = "--model40-rom-even-sha256";
+    C_CHAR option_odd_path[] = "--model40-rom-odd-path";
+    C_CHAR option_odd_sha256[] = "--model40-rom-odd-sha256";
+    C_CHAR option_provenance[] = "--model40-provenance";
     C_CHAR memory[32];
     C_CHAR *arguments[] = { option, STD_NULL,
         option_fdd, STD_NULL, option_hdd, STD_NULL, option_boot, STD_NULL,
         option_display, STD_NULL, STD_NULL, STD_NULL, STD_NULL, STD_NULL,
-        STD_NULL, STD_NULL };
+        STD_NULL, STD_NULL, option_even_path, STD_NULL, option_even_sha256, STD_NULL,
+        option_odd_path, STD_NULL, option_odd_sha256, STD_NULL, option_provenance, STD_NULL };
     core_product_session_id id;
     type_status status;
     C_INT argument_count = 10;
@@ -383,6 +389,18 @@ static C_VOID vm_product_console_open_profile(vm_product_console_context *contex
             arguments[argument_count++] = option_memory;
             arguments[argument_count++] = memory;
         }
+    }
+    if (!STD_STRCMP(entry->profile, "compaq-deskpro-386-model-40")) {
+        arguments[argument_count++] = option_even_path;
+        arguments[argument_count++] = (C_CHAR *)entry->model40_even_path;
+        arguments[argument_count++] = option_even_sha256;
+        arguments[argument_count++] = (C_CHAR *)entry->model40_even_sha256;
+        arguments[argument_count++] = option_odd_path;
+        arguments[argument_count++] = (C_CHAR *)entry->model40_odd_path;
+        arguments[argument_count++] = option_odd_sha256;
+        arguments[argument_count++] = (C_CHAR *)entry->model40_odd_sha256;
+        arguments[argument_count++] = option_provenance;
+        arguments[argument_count++] = (C_CHAR *)entry->model40_provenance;
     }
     status = core_product_session_manager_open_with_options(context->session_manager,
         &(core_product_session_open_options){ argument_count, arguments }, &id);

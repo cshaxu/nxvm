@@ -72,6 +72,9 @@ const C_CHAR *vm_session_profile_name(vm_session_profile_kind kind)
     if (kind == VM_SESSION_PROFILE_IBM_5170_MODEL_339) {
         return "ibm-5170-model-339";
     }
+    if (kind == VM_SESSION_PROFILE_COMPAQ_DESKPRO_386_MODEL_40) {
+        return "compaq-deskpro-386-model-40";
+    }
     return "unknown";
 }
 
@@ -373,6 +376,52 @@ C_VOID vm_session_storage_finalize(vm_session *machine)
     machine->core_machine = STD_NULL;
 }
 
+static type_status vm_session_create_model40_byob(const vm_session_config *config,
+    vm_session **out_session)
+{
+    vm_session *session;
+    type_status status;
+
+    if (config == STD_NULL || out_session == STD_NULL ||
+        !vm_profile_model40_byob_manifest_is_valid(&config->model40_firmware)) {
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
+    *out_session = STD_NULL;
+    session = (vm_session *)STD_CALLOC(1u, sizeof(*session));
+    if (session == STD_NULL) return TYPE_STATUS_NO_MEMORY;
+    session->model40_private = 1;
+    session->floppy_kind = VM_PROFILE_FLOPPY_525_1200K;
+    session->core_machine_config = (core_machine_config) {
+        .memory_bytes = 1024u * 1024u,
+        .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
+        .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE,
+        .ticks_per_instruction = 1u,
+        .instruction_timing = {1u, 0u, 0u, 0u, 0u, 0u},
+        .clock_plan = {{1u, 1u, 0u}, {1u, 1u, 0u}, {1u, 1u, 0u},
+            {1u, 1u, 0u}, {1u, 1u, 0u}, {1u, 1u, 0u}},
+        .auxiliary_pit_present = TYPE_TRUE,
+        .auxiliary_pit_base_port = 0x0048u,
+        .kbc_aux_absent = TYPE_TRUE
+    };
+    status = vm_profile_model40_byob_manifest_load(&config->model40_firmware,
+        session->model40_even_rom, session->model40_odd_rom, &session->model40_rom);
+    if (status != TYPE_STATUS_OK) { STD_FREE(session); return status; }
+    session->retained_config = *config;
+    STD_MEMSET(&session->retained_config.model40_firmware, 0,
+        sizeof(session->retained_config.model40_firmware));
+    status = vm_session_initialize(session);
+    if (status != TYPE_STATUS_OK) { STD_FREE(session); return status; }
+    if ((config->fdd_image != STD_NULL && vm_session_insert_fdd(session, config->fdd_image)) ||
+        (config->hdd_image != STD_NULL && vm_session_insert_hdd(session, config->hdd_image))) {
+        vm_session_destroy(session);
+        return TYPE_STATUS_FAULT;
+    }
+    if (config->boot_hdd) session->boot_preference = VM_SESSION_BOOT_PREFERENCE_HDD;
+    vm_session_apply_boot_preference(session);
+    vm_session_control_reset(&session->control);
+    *out_session = session;
+    return TYPE_STATUS_OK;
+}
 type_status vm_session_create_model40_private(
     const vm_profile_model40_external_rom *rom, vm_session **out_session)
 {
@@ -412,6 +461,9 @@ C_INT vm_session_create(const vm_session_config *config, vm_session **out_sessio
     vm_session *session;
     vm_profile_default_pc_at_cpu_contract cpu_contract;
 
+    if (config != STD_NULL && config->profile_kind == VM_SESSION_PROFILE_COMPAQ_DESKPRO_386_MODEL_40) {
+        return vm_session_create_model40_byob(config, out_session);
+    }
     if (out_session == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
     *out_session = STD_NULL;
     session = (vm_session *)STD_CALLOC(1u, sizeof(*session));

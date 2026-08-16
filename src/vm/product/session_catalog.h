@@ -15,6 +15,11 @@ typedef struct vm_product_session_catalog_entry {
     C_CHAR boot[16];
     C_CHAR floppy[VM_PRODUCT_SESSION_CATALOG_PATH_MAX];
     C_CHAR hard_disk[VM_PRODUCT_SESSION_CATALOG_PATH_MAX];
+    C_CHAR model40_even_path[VM_PRODUCT_SESSION_CATALOG_PATH_MAX];
+    C_CHAR model40_even_sha256[65];
+    C_CHAR model40_odd_path[VM_PRODUCT_SESSION_CATALOG_PATH_MAX];
+    C_CHAR model40_odd_sha256[65];
+    C_CHAR model40_provenance[256];
     STD_SIZE_T memory_bytes;
 } vm_product_session_catalog_entry;
 

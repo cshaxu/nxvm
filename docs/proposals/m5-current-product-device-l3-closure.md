@@ -3,18 +3,22 @@
 ## Purpose
 
 Close source-backed, profile-local L3 timing for every device capability that
-the current NXVM product exposes. This follows the three baseline-machine
-closures and precedes every Windows 3.1 candidate and the final M5 audit. It
-does not broaden the product merely to make an unimplemented historical
-peripheral eligible for M5.
+the current NXVM product exposes. This follows the device-profile and
+functional-capability closure plus the three baseline-machine closures, and
+precedes every Windows 3.1 candidate and the final M5 audit. It does not
+broaden the product merely to make an unimplemented historical peripheral
+eligible for M5.
 
 ## Required scope
 
-First refresh the current-capability inventory and map every supported device
-surface to one exact baseline profile or a separately declared current-product
-configuration. At minimum, reconcile the bounded ATA PIO/HDD and FDD boot
-paths, the currently exposed CGA/EGA digital display paths, and the bounded
-KBC/AUX path with their port/memory/DMA/IRQ/reset and host-copy boundaries.
+Consume the frozen public-capability inventory and profile/backbone contracts
+from the preceding functional-capability closure, and map every supported
+device surface to one exact baseline profile or a separately declared
+current-product configuration. A newly exposed or unprofiled capability
+returns to that predecessor rather than being implicitly accepted here. At
+minimum, reconcile the bounded ATA PIO/HDD and FDD boot paths, the currently
+exposed CGA/EGA digital display paths, and the bounded KBC/AUX path with their
+port/memory/DMA/IRQ/reset and host-copy boundaries.
 For each supported capability, establish the source contract, command/service
 and availability timing, event order, cancellation/reset behavior, trace, and
 project-owned firmware/DOS consumer. Reuse the 5170, DeskPro Model 40, and

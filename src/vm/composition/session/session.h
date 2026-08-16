@@ -72,6 +72,8 @@ struct vm_session {
     C_INT model40_private;
     vm_profile_floppy_kind floppy_kind;
     vm_profile_model40_external_rom model40_rom;
+    type_unsigned_8 model40_even_rom[VM_PROFILE_MODEL40_ROM_CHIP_BYTES];
+    type_unsigned_8 model40_odd_rom[VM_PROFILE_MODEL40_ROM_CHIP_BYTES];
     vm_profile_model40_d4_memory model40_d4_memory;
     C_CHAR fdd_image_path[1024];
     C_CHAR hdd_image_path[1024];

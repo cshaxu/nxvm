@@ -48,6 +48,8 @@ static C_INT vm_session_provider_parse_profile(const C_CHAR *value,
     } else if (!STD_STRCMP(value, "2") ||
         !STD_STRCMP(value, "ibm-5170-model-339")) {
         *out_profile = VM_SESSION_PROFILE_IBM_5170_MODEL_339;
+    } else if (!STD_STRCMP(value, "compaq-deskpro-386-model-40")) {
+        *out_profile = VM_SESSION_PROFILE_COMPAQ_DESKPRO_386_MODEL_40;
     } else {
         return 0;
     }
@@ -103,12 +105,32 @@ static type_status vm_session_provider_parse_options(
             if (core_product_utils_parse_memory_kib(options->arguments[index + 1],
                     &config->memory_bytes) != TYPE_STATUS_OK) return TYPE_STATUS_INVALID_ARGUMENT;
             has_generic_override = 1;
+        } else if (!STD_STRCMP(options->arguments[index], "--model40-rom-even-path")) {
+            config->model40_firmware.even_path = options->arguments[index + 1];
+        } else if (!STD_STRCMP(options->arguments[index], "--model40-rom-even-sha256")) {
+            config->model40_firmware.even_sha256 = options->arguments[index + 1];
+        } else if (!STD_STRCMP(options->arguments[index], "--model40-rom-odd-path")) {
+            config->model40_firmware.odd_path = options->arguments[index + 1];
+        } else if (!STD_STRCMP(options->arguments[index], "--model40-rom-odd-sha256")) {
+            config->model40_firmware.odd_sha256 = options->arguments[index + 1];
+        } else if (!STD_STRCMP(options->arguments[index], "--model40-provenance")) {
+            config->model40_firmware.provenance = options->arguments[index + 1];
         } else {
             return TYPE_STATUS_INVALID_ARGUMENT;
         }
     }
     if (config->profile_kind != VM_SESSION_PROFILE_DEFAULT_PC_AT &&
         has_generic_override) return TYPE_STATUS_INVALID_STATE;
+    if (config->profile_kind == VM_SESSION_PROFILE_COMPAQ_DESKPRO_386_MODEL_40 &&
+        !vm_profile_model40_byob_manifest_is_valid(&config->model40_firmware)) {
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
+    if (config->profile_kind != VM_SESSION_PROFILE_COMPAQ_DESKPRO_386_MODEL_40 &&
+        (config->model40_firmware.even_path != STD_NULL ||
+         config->model40_firmware.even_sha256 != STD_NULL ||
+         config->model40_firmware.odd_path != STD_NULL ||
+         config->model40_firmware.odd_sha256 != STD_NULL ||
+         config->model40_firmware.provenance != STD_NULL)) return TYPE_STATUS_INVALID_STATE;
     return config->fpu_profile == CORE_MACHINE_FPU_PROFILE_NONE ?
         TYPE_STATUS_OK : TYPE_STATUS_INVALID_STATE;
 }

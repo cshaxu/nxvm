@@ -7,10 +7,12 @@
 #include "core/machine/fpu_interface.h"
 #include "core/platform/input_interface.h"
 #include "vm/platform/virtual_time_interface.h"
+#include "vm/profile/model40/model40.h"
 
 typedef enum vm_session_profile_kind {
     VM_SESSION_PROFILE_DEFAULT_PC_AT,
-    VM_SESSION_PROFILE_IBM_5170_MODEL_339
+    VM_SESSION_PROFILE_IBM_5170_MODEL_339,
+    VM_SESSION_PROFILE_COMPAQ_DESKPRO_386_MODEL_40
 } vm_session_profile_kind;
 
 const C_CHAR *vm_session_profile_name(vm_session_profile_kind kind);
@@ -30,6 +32,7 @@ typedef struct vm_session_config {
     core_machine_cpu_profile cpu_profile;
     core_machine_fpu_profile fpu_profile;
     const vm_session_virtual_time_source *virtual_time_source;
+    vm_profile_model40_byob_manifest model40_firmware;
 } vm_session_config;
 
 typedef struct vm_session vm_session;

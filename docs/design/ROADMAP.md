@@ -50,7 +50,14 @@ evidence-led Queue sequence before using a guest operating system as
 validation. The 8088 profile retains 8086 instruction semantics but separately
 owns its external bus and prefetch/timing boundary. The 8086 and 80186 retain
 CPU boundaries but have no physical-machine baseline until separately selected
-systems are admitted. That program has
+systems are admitted. After the DeskPro Model 40 L3 audit and before the
+8088/PC/XT program, M5 also freezes every publicly exposed device capability
+under a profile contract and closes its functional support surface. Reusable
+chips, controllers, bus mechanisms and generic device semantics belong to
+Core; VM device profiles own named hardware-capability contracts; machine
+backbones own the permitted historical combinations and board constraints; and
+YAML may select only a defined backbone, its allowed variants and media. That
+program has
 complementary instruction-form and architecture-state closure views; it
 includes real/protected/VM86 transitions, privilege/exception delivery, paging,
 and remaining system state. A completed opcode slice never closes a CPU family,

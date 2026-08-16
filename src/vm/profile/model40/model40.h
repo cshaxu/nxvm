@@ -27,8 +27,23 @@ typedef struct vm_profile_model40_external_rom {
     STD_SIZE_T chip_byte_count;
 } vm_profile_model40_external_rom;
 
+/* A local owner-supplied manifest is transient composition input only. */
+typedef struct vm_profile_model40_byob_manifest {
+    const C_CHAR *even_path;
+    const C_CHAR *even_sha256;
+    const C_CHAR *odd_path;
+    const C_CHAR *odd_sha256;
+    const C_CHAR *provenance;
+} vm_profile_model40_byob_manifest;
+
 C_INT vm_profile_model40_external_rom_is_valid(
     const vm_profile_model40_external_rom *rom);
+C_INT vm_profile_model40_byob_manifest_is_valid(
+    const vm_profile_model40_byob_manifest *manifest);
+type_status vm_profile_model40_byob_manifest_load(
+    const vm_profile_model40_byob_manifest *manifest,
+    type_unsigned_8 *even_bytes, type_unsigned_8 *odd_bytes,
+    vm_profile_model40_external_rom *out_rom);
 const core_machine_firmware_provider *vm_profile_model40_firmware_provider(C_VOID);
 C_VOID vm_profile_model40_d4_memory_initialize(vm_profile_model40_d4_memory *memory);
 C_VOID vm_profile_model40_d4_memory_reset(vm_profile_model40_d4_memory *memory);
