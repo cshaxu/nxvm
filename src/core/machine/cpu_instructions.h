@@ -163,6 +163,7 @@ struct core_machine_cpu_execution_context {
     C_VOID *diagnostic_context;
     type_bool stop_requested;
     type_bool reset_requested;
+    type_bool shutdown_requested;
     /* Private execution-round outcome.  A successfully delivered synchronous
      * exception preserves its architectural delivery but must not be mistaken
      * for retirement of the faulting instruction by the machine clock owner. */

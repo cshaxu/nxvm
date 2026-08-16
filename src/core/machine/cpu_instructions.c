@@ -6,6 +6,7 @@
 #include "core/machine/transaction.h"
 
 #include "core/machine/cpu_instructions.h"
+#include "core/machine/cpu.h"
 
 #define cpu_state (*context->cpu)
 #define instruction_state (*context->instructions)
@@ -18053,7 +18054,9 @@ static C_VOID ExecFinal(core_machine_cpu_execution_context *context)
                     _e_mark_instruction_fault_delivered(context);
                     return;
                 }
-                /* A failed #DF delivery is terminal here; reset policy is deferred. */
+                /* The CPU enters shutdown. Platform reset policy consumes the
+                 * event without changing CPU exception production. */
+                core_machine_cpu_execution_request_shutdown(context);
                 cpu_state = fault_cpu;
                 instruction_state.data.except = VCPUINS_EXCEPT_DF;
                 instruction_state.data.excode = 0u;

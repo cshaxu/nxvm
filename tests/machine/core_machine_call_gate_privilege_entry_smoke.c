@@ -304,7 +304,8 @@ static C_INT cg_test_dpl_failure_atomic(C_VOID)
                 &ss_after, sizeof(ss_after)) || after.data.eip != before.data.eip ||
             after.data.esp != before.data.esp || after.data.cs.selector !=
                 before.data.cs.selector || after.data.ss.selector !=
-                before.data.ss.selector || cs_after != cs_before || ss_after != ss_before;
+                before.data.ss.selector || cs_after != cs_before || ss_after != ss_before ||
+                !state.machine->executor_cpu_execution.shutdown_requested;
     }
     core_machine_destroy(state.machine);
     return !failed;
@@ -361,7 +362,8 @@ static C_INT cg_test_parameter_source_failure_atomic(C_VOID)
             after.data.eip != before.data.eip || after.data.esp != before.data.esp ||
             after.data.eflags != before.data.eflags || after.data.cs.selector !=
                 before.data.cs.selector || after.data.ss.selector !=
-                before.data.ss.selector || cs_after != cs_before || ss_after != ss_before;
+                before.data.ss.selector || cs_after != cs_before || ss_after != ss_before ||
+                !state.machine->executor_cpu_execution.shutdown_requested;
     }
     core_machine_destroy(state.machine);
     return !failed;

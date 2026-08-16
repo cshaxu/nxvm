@@ -4737,6 +4737,17 @@ type_status core_machine_run(
                 type_bool was_halted = machine->executor_cpu.data.flagHalt;
 
                 core_machine_cpu_execution_refresh(&machine->executor_cpu_execution);
+                if (machine->d4_platform_configured &&
+                    core_machine_cpu_execution_consume_shutdown_request(
+                        &machine->executor_cpu_execution)) {
+                    machine->lifecycle = CORE_MACHINE_PAUSED;
+                    if (core_machine_cold_reset(machine) != TYPE_STATUS_OK) {
+                        return TYPE_STATUS_FAULT;
+                    }
+                    result->reason = CORE_MACHINE_STOP_RESET_REQUESTED;
+                    result->linear_pc = core_machine_linear_pc(machine);
+                    return TYPE_STATUS_OK;
+                }
                 if (machine->lifecycle == CORE_MACHINE_FAULTED) {
                     result->reason = CORE_MACHINE_STOP_FAULT;
                     result->linear_pc = core_machine_linear_pc(machine);

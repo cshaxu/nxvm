@@ -38,6 +38,10 @@ C_VOID core_machine_cpu_execution_request_reset(
     core_machine_cpu_execution_context *context);
 type_bool core_machine_cpu_execution_consume_reset_request(
     core_machine_cpu_execution_context *context);
+C_VOID core_machine_cpu_execution_request_shutdown(
+    core_machine_cpu_execution_context *context);
+type_bool core_machine_cpu_execution_consume_shutdown_request(
+    core_machine_cpu_execution_context *context);
 C_VOID core_machine_cpu_state_initialize(
     core_machine_cpu_execution_context *context);
 C_VOID core_machine_cpu_state_reset(core_machine_cpu_execution_context *context);

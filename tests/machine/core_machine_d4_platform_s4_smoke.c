@@ -1,6 +1,7 @@
 #include "type.h"
 
 #include "core/machine/machine.h"
+#include "core/machine/cpu.h"
 #include "core/machine/machine_interface.h"
 
 #include "../support/core_machine_cpu_fixture.h"
@@ -65,6 +66,15 @@ C_INT main(C_VOID)
         value != 0x8cu;
     if (!failed) STD_PRINTF("M5:T386:S4:D4-FAILSAFE-ROUTE:OK\n");
 
+    if (!failed) {
+        core_machine_run_result result;
+        core_machine_cpu_execution_request_shutdown(&machine->executor_cpu_execution);
+        machine->executor_cpu.data.flagHalt = TYPE_TRUE;
+        failed |= core_machine_run(machine, (core_machine_run_budget){1u, 0u},
+            &result) != TYPE_STATUS_OK ||
+            result.reason != CORE_MACHINE_STOP_RESET_REQUESTED ||
+            machine->executor_cpu.data.eip != 0x0000fff0u;
+    }
     if (!failed) failed |= core_machine_reset(machine) != TYPE_STATUS_OK ||
         core_machine_get_d4_platform_observation(machine, &observation) !=
             TYPE_STATUS_OK || !observation.iochk_enabled || observation.failsafe_enabled ||
@@ -75,5 +85,6 @@ C_INT main(C_VOID)
     core_machine_destroy(machine);
     if (failed) return 1;
     STD_PRINTF("M5:T386:S4:D4-RESET-ISOLATION:OK\n");
+    STD_PRINTF("M5:T386:S23:D4-RESET-ARBITRATION:OK\n");
     return 0;
 }

@@ -106,6 +106,7 @@ C_VOID core_machine_cpu_state_initialize(
     if (context != STD_NULL) {
         context->stop_requested = TYPE_FALSE;
         context->reset_requested = TYPE_FALSE;
+        context->shutdown_requested = TYPE_FALSE;
         context->debug_trap_pending = TYPE_FALSE;
         context->debug_tf_before = TYPE_FALSE;
         context->debug_rf_before = TYPE_FALSE;
@@ -120,6 +121,7 @@ C_VOID core_machine_cpu_state_reset(core_machine_cpu_execution_context *context)
     if (context != STD_NULL) {
         context->stop_requested = TYPE_FALSE;
         context->reset_requested = TYPE_FALSE;
+        context->shutdown_requested = TYPE_FALSE;
     }
 
     cpu_state.data.eip = 0x0000fff0;
@@ -214,6 +216,18 @@ type_bool core_machine_cpu_execution_consume_reset_request(
 {
     type_bool requested = context != STD_NULL && context->reset_requested;
     if (context != STD_NULL) context->reset_requested = TYPE_FALSE;
+    return requested;
+}
+C_VOID core_machine_cpu_execution_request_shutdown(
+    core_machine_cpu_execution_context *context)
+{
+    if (context != STD_NULL) context->shutdown_requested = TYPE_TRUE;
+}
+type_bool core_machine_cpu_execution_consume_shutdown_request(
+    core_machine_cpu_execution_context *context)
+{
+    type_bool requested = context != STD_NULL && context->shutdown_requested;
+    if (context != STD_NULL) context->shutdown_requested = TYPE_FALSE;
     return requested;
 }
 
