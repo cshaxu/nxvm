@@ -40,3 +40,9 @@ carrier is deliberately the default-PC/AT or Model-339 shape, not a generic
 host for Model-40 facts: ATA HDC, generated firmware and generic EGA are
 structural false substitutes. The accepted [carrier contract](../etc/evidence/t386-s2-model40-carrier-contract.md)
 therefore keeps Model-40 private until S3--S6 close the selected receivers.
+
+Coordinator review accepted S2 against the T386 S1 ledger and the actual
+profile/session source graph. It confirms that the present descriptor is a
+closed default-PC/AT/Model-339 mechanism, not a neutral extension point, and
+that its generic firmware/ATA/EGA coupling makes early Model-40 publication
+false. Documentation governance and actual-change review passed.
