@@ -226,7 +226,9 @@ C_INT main(C_VOID)
         {1u, CORE_MACHINE_MEDIA_ID_INVALID, CORE_MACHINE_MEDIA_ID_INVALID,
             CORE_MACHINE_MEDIA_ID_INVALID}
     };
-    const core_machine_dma_wiring dma_wiring = {.fdc_channel = 2u};
+    const core_machine_dma_wiring dma_wiring = { .fdc_channel = 2u,
+        .controller_count = CORE_MACHINE_DMA_CONTROLLER_COUNT,
+        .cascade_channel = CORE_MACHINE_DMA_CASCADE_CHANNEL };
     core_machine_fdc_fixture_media fixture = {
         .generation = 1u, .present = TYPE_TRUE,
         .forced_read_result = CORE_MACHINE_MEDIA_RESULT_OK,

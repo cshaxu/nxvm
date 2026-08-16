@@ -318,6 +318,8 @@ type_status vm_session_storage_initialize(vm_session *machine)
     display_config.ports.crtc_last = crtc_last->port;
     display_config.provider = &machine->display_provider;
     dma_wiring.fdc_channel = fdc_route->dma_channel;
+    dma_wiring.controller_count = CORE_MACHINE_DMA_CONTROLLER_COUNT;
+    dma_wiring.cascade_channel = CORE_MACHINE_DMA_CASCADE_CHANNEL;
     rtc_cmos_config.index_port = cmos_first->port;
     rtc_cmos_config.data_port = cmos_last->port;
     rtc_cmos_config.irq = cmos_route->irq;

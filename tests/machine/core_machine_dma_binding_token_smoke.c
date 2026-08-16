@@ -11,7 +11,9 @@ static const core_machine_config core_machine_dma_binding_token_config = {
 };
 
 static const core_machine_dma_wiring core_machine_dma_binding_token_wiring = {
-    .fdc_channel = 2u
+    .fdc_channel = 2u,
+    .controller_count = CORE_MACHINE_DMA_CONTROLLER_COUNT,
+    .cascade_channel = CORE_MACHINE_DMA_CASCADE_CHANNEL
 };
 
 static const core_machine_fdc_config core_machine_dma_binding_token_fdc_config = {

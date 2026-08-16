@@ -92,7 +92,9 @@ static C_INT port_assembly_create_failure(C_VOID)
 static C_INT port_assembly_fdc_transaction(C_VOID)
 {
     const core_machine_config config = { .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES };
-    const core_machine_dma_wiring wiring = { .fdc_channel = 2u };
+    const core_machine_dma_wiring wiring = { .fdc_channel = 2u,
+        .controller_count = CORE_MACHINE_DMA_CONTROLLER_COUNT,
+        .cascade_channel = CORE_MACHINE_DMA_CASCADE_CHANNEL };
     core_machine_media_registry media = {0};
     core_machine_dma_request_binding request = {0};
     core_machine_fdc_topology topology = {

@@ -160,10 +160,16 @@ typedef struct core_machine_absent_memory_config {
     type_unsigned_8 read_value;
 } core_machine_absent_memory_config;
 
-/* The current DMA consumer is embedded core FDC storage; composition receives
- * only the resulting frozen request binding, never DMA controller storage. */
+#define CORE_MACHINE_DMA_CONTROLLER_COUNT 2u
+#define CORE_MACHINE_DMA_CASCADE_CHANNEL 4u
+
+/* The current DMA consumer is embedded core FDC storage; composition selects
+ * the generic controller topology and receives only the frozen request binding,
+ * never DMA controller storage. */
 typedef struct core_machine_dma_wiring {
     type_unsigned_8 fdc_channel;
+    type_unsigned_8 controller_count;
+    type_unsigned_8 cascade_channel;
 } core_machine_dma_wiring;
 
 /* Composition retains the media provider policy, while core copies this

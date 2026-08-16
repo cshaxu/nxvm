@@ -35,7 +35,10 @@ static type_unsigned_8 core_machine_dma_rtc_cmos_read(core_machine *machine,
 int main(C_VOID)
 {
     core_machine_config machine_config = {0};
-    core_machine_dma_wiring dma_wiring = {2u};
+    core_machine_dma_wiring dma_wiring = { .fdc_channel = 2u,
+        .controller_count = CORE_MACHINE_DMA_CONTROLLER_COUNT,
+        .cascade_channel = CORE_MACHINE_DMA_CASCADE_CHANNEL };
+    core_machine_dma_wiring invalid_wiring = dma_wiring;
     core_machine_rtc_cmos_config rtc_config = {0};
     core_machine_dma_request_binding fdc_request = {0};
     core_machine_run_budget budget = {2u, 0u};
@@ -59,7 +62,10 @@ int main(C_VOID)
     rtc_config.defaults[0].value = 0x5au;
     rtc_config.default_count = 1u;
 
+    invalid_wiring.controller_count = 1u;
     if (core_machine_create(&machine_config, &machine) != TYPE_STATUS_OK ||
+        core_machine_configure_dma(machine, &invalid_wiring, &fdc_request) !=
+            TYPE_STATUS_INVALID_ARGUMENT ||
         core_machine_configure_dma(machine, &dma_wiring, &fdc_request) !=
             TYPE_STATUS_OK ||
         core_machine_configure_rtc_cmos(machine, &rtc_config) != TYPE_STATUS_OK ||

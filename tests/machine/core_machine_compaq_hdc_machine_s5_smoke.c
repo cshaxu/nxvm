@@ -92,7 +92,9 @@ C_INT main(C_VOID)
         .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE,
         .ticks_per_instruction = 1u
     };
-    const core_machine_dma_wiring dma_wiring = {.fdc_channel = 2u};
+    const core_machine_dma_wiring dma_wiring = { .fdc_channel = 2u,
+        .controller_count = CORE_MACHINE_DMA_CONTROLLER_COUNT,
+        .cascade_channel = CORE_MACHINE_DMA_CASCADE_CHANNEL };
     const core_machine_fdc_config fdc_config = {
         .dor_port = 0x03f2u, .status_port = 0x03f4u, .data_port = 0x03f5u,
         .direction_port = 0x03f7u, .control_port = 0x03f7u,

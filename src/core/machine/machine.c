@@ -3677,6 +3677,15 @@ static C_VOID core_machine_fdc_dma_request_deassert(C_VOID *owner,
         &machine->shared_dma_secondary, binding);
 }
 
+static type_bool core_machine_dma_wiring_is_valid(
+    const core_machine_dma_wiring *wiring)
+{
+    return wiring != STD_NULL &&
+        wiring->controller_count == CORE_MACHINE_DMA_CONTROLLER_COUNT &&
+        wiring->cascade_channel == CORE_MACHINE_DMA_CASCADE_CHANNEL &&
+        wiring->fdc_channel < VDMA_CHANNEL_COUNT;
+}
+
 type_status core_machine_configure_dma(core_machine *machine,
     const core_machine_dma_wiring *wiring,
     core_machine_dma_request_binding *out_fdc_request)
@@ -3686,7 +3695,7 @@ type_status core_machine_configure_dma(core_machine *machine,
     if (!core_machine_configuration_is_open(machine) || machine->dma_configured) {
         return TYPE_STATUS_INVALID_STATE;
     }
-    if (wiring == STD_NULL || out_fdc_request == STD_NULL) {
+    if (!core_machine_dma_wiring_is_valid(wiring) || out_fdc_request == STD_NULL) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
     status = core_machine_dma_bind_channel(&machine->shared_dma_latch,

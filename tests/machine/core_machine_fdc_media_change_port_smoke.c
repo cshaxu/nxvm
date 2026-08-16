@@ -116,7 +116,9 @@ int main(C_VOID)
     const core_machine_fdc_drive_bindings drives = {
         {21u, 22u, CORE_MACHINE_MEDIA_ID_INVALID, CORE_MACHINE_MEDIA_ID_INVALID}
     };
-    const core_machine_dma_wiring dma_wiring = {.fdc_channel = 2u};
+    const core_machine_dma_wiring dma_wiring = { .fdc_channel = 2u,
+        .controller_count = CORE_MACHINE_DMA_CONTROLLER_COUNT,
+        .cascade_channel = CORE_MACHINE_DMA_CASCADE_CHANNEL };
     core_machine_fdc_change_media drive0 = {.generation = 10u, .present = TYPE_TRUE};
     core_machine_fdc_change_media drive1 = {.generation = 30u, .present = TYPE_TRUE};
     core_machine_media_registry media = {0};

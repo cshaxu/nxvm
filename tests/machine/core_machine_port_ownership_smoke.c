@@ -90,7 +90,9 @@ static C_INT core_machine_port_probe_fdc_read_is_independent(C_VOID)
     const core_machine_port_provider read_provider = {
         core_machine_port_probe_read, STD_NULL
     };
-    const core_machine_dma_wiring dma_wiring = {.fdc_channel = 2u};
+    const core_machine_dma_wiring dma_wiring = { .fdc_channel = 2u,
+        .controller_count = CORE_MACHINE_DMA_CONTROLLER_COUNT,
+        .cascade_channel = CORE_MACHINE_DMA_CASCADE_CHANNEL };
     core_machine_media_registry media = {0};
     core_machine_dma_request_binding dma_request = {0};
     core_machine_fdc_topology topology = {
@@ -138,7 +140,9 @@ static C_INT core_machine_port_probe_fdc_write_conflict_is_retained(C_VOID)
     const core_machine_port_provider write_provider = {
         STD_NULL, core_machine_port_probe_write
     };
-    const core_machine_dma_wiring dma_wiring = {.fdc_channel = 2u};
+    const core_machine_dma_wiring dma_wiring = { .fdc_channel = 2u,
+        .controller_count = CORE_MACHINE_DMA_CONTROLLER_COUNT,
+        .cascade_channel = CORE_MACHINE_DMA_CASCADE_CHANNEL };
     core_machine_media_registry media = {0};
     core_machine_dma_request_binding dma_request = {0};
     core_machine_fdc_topology topology = {
