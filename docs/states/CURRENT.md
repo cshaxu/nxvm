@@ -2,7 +2,28 @@
 
 ## Current Work
 
-**M5 T382 remains open.** S1 and S2 are accepted; S3 is the next bounded unit.
+**Active: M5 T382 S3.**
+
+## M5 T382 S3 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner-approved T382 quality-boundary recovery, 2026-08-15; S3 only. |
+| Objective | Establish one strict `memory_kib` text-to-byte conversion for catalog and session-option construction. |
+| Non-goals | No schema expansion, clamping, profile change, or S4--S7 work. |
+| Reference Baseline | T382 S2 acceptance `d1a1e9de` and the retained S3 proposal. |
+| Candidate Proposal | [M5 quality-boundary recovery](../proposals/m5-quality-boundary-recovery.md), S3. |
+| Files And ABI Surface | Core product utility conversion; VM catalog, Console, session factory, and focused catalog proof. |
+| Applicable Rules | Execution, architecture single-owner, coding bounded-failure, and documentation rules; no exception. |
+| Verification | Focused catalog/option tests, parser sweep, full gates, governance, diff, artifact and SHA-256. |
+| Expected Markers | Valid KiB becomes exact bytes; empty, signed, trailing and overflow input never reaches session construction. |
+| Asset Needs | None. |
+| Reporting Requirements | Complete executor P, then one-session coordinator actual-change review and governance P. |
+| Stop Conditions | New schema or profile requirement, another parsing owner, or API expansion outside this boundary. |
+| Exit Criteria | Both production sites use one checked owner with complete focused proof and sweep. |
+| Original Owner Request | Finish the current code-quality task in one-session dual-role mode. |
+| Similar-Issue Sweep | Search all production `memory_kib` and `--memory-kib` parsing sites and classify every hit. |
 
 ## Current Technical Baseline
 

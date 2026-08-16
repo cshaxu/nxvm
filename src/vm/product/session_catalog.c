@@ -3,6 +3,7 @@
 #include <dirent.h>
 
 #include "vm/product/session_catalog.h"
+#include "core/product/utils.h"
 
 static C_CHAR *vm_product_session_catalog_trim(C_CHAR *value)
 {
@@ -95,8 +96,8 @@ static C_INT vm_product_session_catalog_parse(const C_CHAR *directory,
             continue;
         }
         if (section == 1 && vm_product_session_catalog_parse_value(text, "memory_kib", &value)) {
-            entry->memory_kib = (STD_SIZE_T)STD_ATOI(value);
-            if (entry->memory_kib == 0u) break;
+            if (core_product_utils_parse_memory_kib(value,
+                    &entry->memory_bytes) != TYPE_STATUS_OK) break;
             continue;
         }
         if (section == 1 && vm_product_session_catalog_parse_value(text, "display", &value)) {
@@ -131,7 +132,7 @@ static C_INT vm_product_session_catalog_parse(const C_CHAR *directory,
         STD_STRCMP(entry->profile, "ibm-5170-model-339")) return 0;
     if (!STD_STRCMP(entry->profile, "ibm-5170-model-339") &&
         (entry->cpu[0] != '\0' || entry->fpu[0] != '\0' ||
-         entry->memory_kib != 0u || entry->hard_disk[0] != '\0')) return 0;
+         entry->memory_bytes != 0u || entry->hard_disk[0] != '\0')) return 0;
     if (STD_STRCMP(entry->display, "console") && STD_STRCMP(entry->display, "window") &&
         STD_STRCMP(entry->display, "auto")) return 0;
     if (STD_STRCMP(entry->boot, "floppy") && STD_STRCMP(entry->boot, "hard_disk") &&

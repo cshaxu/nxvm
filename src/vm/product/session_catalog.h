@@ -15,7 +15,7 @@ typedef struct vm_product_session_catalog_entry {
     C_CHAR boot[16];
     C_CHAR floppy[VM_PRODUCT_SESSION_CATALOG_PATH_MAX];
     C_CHAR hard_disk[VM_PRODUCT_SESSION_CATALOG_PATH_MAX];
-    STD_SIZE_T memory_kib;
+    STD_SIZE_T memory_bytes;
 } vm_product_session_catalog_entry;
 
 typedef struct vm_product_session_catalog {

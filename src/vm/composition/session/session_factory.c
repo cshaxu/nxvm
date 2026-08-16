@@ -10,6 +10,7 @@
 #include "vm/composition/session/machine_info.h"
 #include "core/machine/memory.h"
 #include "core/product/debug/debug.h"
+#include "core/product/utils.h"
 #include "vm/machine/debug.h"
 #include "vm/machine/fdd.h"
 #include "vm/machine/hdd.h"
@@ -99,9 +100,8 @@ static type_status vm_session_provider_parse_options(
                 return TYPE_STATUS_INVALID_ARGUMENT;
             }
         } else if (!STD_STRCMP(options->arguments[index], "--memory-kib")) {
-            STD_SIZE_T kib = (STD_SIZE_T)STD_ATOI(options->arguments[index + 1]);
-            if (kib == 0u) return TYPE_STATUS_INVALID_ARGUMENT;
-            config->memory_bytes = kib << 10;
+            if (core_product_utils_parse_memory_kib(options->arguments[index + 1],
+                    &config->memory_bytes) != TYPE_STATUS_OK) return TYPE_STATUS_INVALID_ARGUMENT;
             has_generic_override = 1;
         } else {
             return TYPE_STATUS_INVALID_ARGUMENT;
