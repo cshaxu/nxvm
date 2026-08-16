@@ -378,7 +378,8 @@ static C_VOID vm_product_console_open_profile(vm_product_console_context *contex
         arguments[argument_count++] = option_fpu;
         arguments[argument_count++] = (C_CHAR *)(entry->fpu[0] ? entry->fpu : "none");
         if (entry->memory_bytes != 0u) {
-            if (STD_SNPRINTF(memory, sizeof(memory), "%u", (unsigned int)(entry->memory_bytes >> 10)) < 0) return;
+            if (STD_SNPRINTF(memory, sizeof(memory), "%zu",
+                    entry->memory_bytes >> 10) < 0) return;
             arguments[argument_count++] = option_memory;
             arguments[argument_count++] = memory;
         }
