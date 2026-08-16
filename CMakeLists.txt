@@ -109,6 +109,9 @@ target_link_libraries(vm-model40-d4-map-s16-smoke PRIVATE vm-composition)
 add_executable(vm-model40-dma-s17-smoke
     tests/machine/vm_model40_dma_s17_smoke.c)
 target_link_libraries(vm-model40-dma-s17-smoke PRIVATE vm-composition)
+add_executable(vm-model40-fdd-s18-smoke
+    tests/machine/vm_model40_fdd_s18_smoke.c)
+target_link_libraries(vm-model40-fdd-s18-smoke PRIVATE vm-composition)
 add_executable(vm-model-339-clock-contract-smoke
     tests/machine/vm_model_339_clock_contract_smoke.c)
 target_link_libraries(vm-model-339-clock-contract-smoke PRIVATE vm-composition)
@@ -907,6 +910,7 @@ set(VM_PROFILE_SOURCES
     src/vm/profile/default_profile/pc_at_profile.c
     src/vm/profile/default_profile/keyboard_mapper.c
     src/vm/profile/default_profile/mouse_mapper.c
+    src/vm/profile/device/floppy.c
     src/vm/profile/default_profile/firmware/bios.c
     src/vm/profile/default_profile/firmware/qdcga.c
     src/vm/profile/model40/model40.c
@@ -1884,6 +1888,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     vm-model40-rom-layout-s14-smoke
     vm-model40-d4-map-s16-smoke
     vm-model40-dma-s17-smoke
+    vm-model40-fdd-s18-smoke
     vm-ibm-5170-model-339-cga-topology-smoke
     vm-ibm-5170-model-339-firmware-fdc-topology-smoke
     vm-fdc-dma-boundary-smoke
@@ -2647,8 +2652,8 @@ function(add_current_vm_artifact target version)
             "${CMAKE_SOURCE_DIR}/build/output/${task_artifact_filename}")
 endfunction()
 
-set(PROJECT_CURRENT_VM_ARTIFACT_TARGET vm-0-5-0388)
-add_current_vm_artifact(vm-0-5-0388 "0.5.0388")
+set(PROJECT_CURRENT_VM_ARTIFACT_TARGET vm-0-5-0389)
+add_current_vm_artifact(vm-0-5-0389 "0.5.0389")
 option(PROJECT_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
 
@@ -3191,10 +3196,10 @@ foreach(project_t345_target IN LISTS PROJECT_T344_CURRENT_GATE_TARGETS)
 endforeach()
 list(LENGTH PROJECT_T345_S2_OWNER_TEST_STRICT_TARGETS project_t345_s2_pure_count)
 list(LENGTH PROJECT_T345_S2_MIXED_OWNER_TEST_TARGETS project_t345_s2_mixed_count)
-if(NOT project_t345_s2_pure_count EQUAL 156 OR
+if(NOT project_t345_s2_pure_count EQUAL 157 OR
         NOT project_t345_s2_mixed_count EQUAL 3)
     message(FATAL_ERROR
-        "T345 S2 expected 156 pure and 3 mixed owner-test targets; found ${project_t345_s2_pure_count} pure and ${project_t345_s2_mixed_count} mixed.")
+        "T345 S2 expected 157 pure and 3 mixed owner-test targets; found ${project_t345_s2_pure_count} pure and ${project_t345_s2_mixed_count} mixed.")
 endif()
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     foreach(project_t345_target IN LISTS PROJECT_T345_S2_OWNER_TEST_STRICT_TARGETS)

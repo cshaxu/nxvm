@@ -1,6 +1,6 @@
 /* Copyright 2012-2014 Neko. */
 
-/* VFDD implements Floppy Disk Drive: 3.5" 1.44MB. */
+/* VFDD implements profile-configured floppy media. */
 
 #include "type.h"
 
@@ -108,7 +108,8 @@ static C_INT vm_machine_fdd_sidecar_load(const t_fdd *fdd, const C_CHAR *image_n
     }
     text[length] = '\0';
     cursor = text;
-    sector_count = (STD_SIZE_T)fdd->data.ncyl * fdd->data.nhead * fdd->data.nsector;
+    sector_count = (STD_SIZE_T)fdd->data.ncyl * fdd->data.nhead *
+        fdd->data.nsector;
     if (vm_machine_fdd_json_literal(&cursor, "{") ||
         vm_machine_fdd_json_literal(&cursor, "\"version\"") ||
         vm_machine_fdd_json_literal(&cursor, ":") ||
@@ -169,7 +170,8 @@ static C_INT vm_machine_fdd_sidecar_serialize(const t_fdd *fdd,
     if (fdd == STD_NULL || image_bytes == STD_NULL || out_bytes == STD_NULL ||
         out_count == STD_NULL || fdd->connect.pAddressMarks == (type_virtual_address)STD_NULL)
         return TYPE_TRUE;
-    sector_count = (STD_SIZE_T)fdd->data.ncyl * fdd->data.nhead * fdd->data.nsector;
+    sector_count = (STD_SIZE_T)fdd->data.ncyl * fdd->data.nhead *
+        fdd->data.nsector;
     capacity = sizeof(prefix) + 4u * 10u + sector_count + sizeof(suffix);
     text = (C_CHAR *)STD_MALLOC(capacity);
     if (text == STD_NULL) return TYPE_TRUE;
@@ -325,6 +327,37 @@ const core_machine_media_provider *vm_machine_fdd_media_provider(C_VOID)
     return &provider;
 }
 
+static const core_machine_media_geometry vm_machine_fdd_default_geometry = {
+    2880u, 512u, 80u, 2u, 18u
+};
+
+static C_INT vm_machine_fdd_geometry_is_valid(
+    const core_machine_media_geometry *geometry)
+{
+    STD_SIZE_T sector_count;
+
+    if (geometry == STD_NULL || geometry->cylinders == 0u ||
+        geometry->heads == 0u || geometry->sectors_per_track == 0u ||
+        geometry->bytes_per_sector == 0u) return TYPE_FALSE;
+    if (geometry->cylinders > (STD_SIZE_T)-1 / geometry->heads) {
+        return TYPE_FALSE;
+    }
+    sector_count = (STD_SIZE_T)geometry->cylinders * geometry->heads;
+    if (geometry->sectors_per_track > (STD_SIZE_T)-1 / sector_count) {
+        return TYPE_FALSE;
+    }
+    sector_count *= geometry->sectors_per_track;
+    return geometry->logical_sector_count == sector_count &&
+        geometry->bytes_per_sector <= (STD_SIZE_T)-1 / sector_count;
+}
+
+static C_VOID vm_machine_fdd_apply_geometry(t_fdd *fdd)
+{
+    fdd->data.ncyl = fdd->geometry.cylinders;
+    fdd->data.nhead = fdd->geometry.heads;
+    fdd->data.nsector = fdd->geometry.sectors_per_track;
+    fdd->data.nbyte = fdd->geometry.bytes_per_sector;
+}
 STD_SIZE_T vm_machine_fdd_image_size(const t_fdd *fdd)
 {
     return (STD_SIZE_T)fdd->data.nbyte * fdd->data.nsector * fdd->data.nhead *
@@ -426,30 +459,41 @@ C_INT vm_machine_fdd_format_sector(t_fdd *fdd, type_unsigned_16 cylinder,
 
 C_VOID vm_machine_fdd_initialize(t_fdd *fdd)
 {
-    if (fdd == STD_NULL) return;
-    STD_MEMSET((C_VOID *)fdd, TYPE_ZERO_8, sizeof(*fdd));
-    fdd->data.ncyl = 0x0050;
-    fdd->data.nhead = 0x0002;
-    fdd->data.nsector = 0x0012;
-    fdd->data.nbyte = 0x0200;
-    fdd->connect.pImgBase = (type_virtual_address)STD_MALLOC(vm_machine_fdd_image_size(fdd));
-    fdd->connect.pAddressMarks = (type_virtual_address)STD_CALLOC(
-        (STD_SIZE_T)fdd->data.ncyl * fdd->data.nhead * fdd->data.nsector,
-        sizeof(type_unsigned_8));
-    if (fdd->connect.pImgBase != (type_virtual_address)STD_NULL) {
-        STD_MEMSET((C_VOID *)fdd->connect.pImgBase, TYPE_ZERO_8,
-            vm_machine_fdd_image_size(fdd));
+    (C_VOID)vm_machine_fdd_initialize_with_geometry(fdd,
+        &vm_machine_fdd_default_geometry);
+}
+
+C_INT vm_machine_fdd_initialize_with_geometry(t_fdd *fdd,
+    const core_machine_media_geometry *geometry)
+{
+    STD_SIZE_T sector_count;
+
+    if (fdd == STD_NULL || !vm_machine_fdd_geometry_is_valid(geometry)) {
+        return TYPE_TRUE;
     }
+    STD_MEMSET((C_VOID *)fdd, TYPE_ZERO_8, sizeof(*fdd));
+    fdd->geometry = *geometry;
+    vm_machine_fdd_reset(fdd);
+    sector_count = (STD_SIZE_T)fdd->data.ncyl * fdd->data.nhead *
+        fdd->data.nsector;
+    fdd->connect.pImgBase = (type_virtual_address)STD_MALLOC(vm_machine_fdd_image_size(fdd));
+    fdd->connect.pAddressMarks = (type_virtual_address)STD_CALLOC(sector_count,
+        sizeof(type_unsigned_8));
+    if (fdd->connect.pImgBase == (type_virtual_address)STD_NULL ||
+        fdd->connect.pAddressMarks == (type_virtual_address)STD_NULL) {
+        vm_machine_fdd_finalize(fdd);
+        return TYPE_TRUE;
+    }
+    STD_MEMSET((C_VOID *)fdd->connect.pImgBase, TYPE_ZERO_8,
+        vm_machine_fdd_image_size(fdd));
+    return TYPE_FALSE;
 }
 
 C_VOID vm_machine_fdd_reset(t_fdd *fdd)
 {
     if (fdd == STD_NULL) return;
     STD_MEMSET((C_VOID *)&fdd->data, TYPE_ZERO_8, sizeof(fdd->data));
-    fdd->data.ncyl = 0x0050;
-    fdd->data.nhead = 0x0002;
-    fdd->data.nsector = 0x0012;
-    fdd->data.nbyte = 0x0200;
+    vm_machine_fdd_apply_geometry(fdd);
 }
 
 C_VOID vm_machine_fdd_refresh(t_fdd *fdd) { (C_VOID)fdd; }

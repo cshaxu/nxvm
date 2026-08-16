@@ -386,6 +386,7 @@ type_status vm_session_create_model40_private(
     session = (vm_session *)STD_CALLOC(1u, sizeof(*session));
     if (session == STD_NULL) return TYPE_STATUS_NO_MEMORY;
     session->model40_private = 1;
+    session->floppy_kind = VM_PROFILE_FLOPPY_525_1200K;
     session->model40_rom = *rom;
     session->core_machine_config = (core_machine_config) {
         .memory_bytes = 1024u * 1024u,

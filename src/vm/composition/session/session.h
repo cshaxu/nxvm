@@ -25,6 +25,7 @@
 #include "vm/profile/default_profile/firmware/bios.h"
 #include "vm/profile/default_profile/firmware/context.h"
 #include "vm/profile/default_profile/pc_at_profile.h"
+#include "vm/profile/device/floppy.h"
 #include "vm/profile/model40/model40.h"
 
 typedef enum vm_session_boot_preference {
@@ -69,6 +70,7 @@ struct vm_session {
     vm_platform_virtual_time_source model_339_virtual_time_source;
     vm_session_boot_preference boot_preference;
     C_INT model40_private;
+    vm_profile_floppy_kind floppy_kind;
     vm_profile_model40_external_rom model40_rom;
     vm_profile_model40_d4_memory model40_d4_memory;
     C_CHAR fdd_image_path[1024];

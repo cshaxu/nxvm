@@ -12,17 +12,17 @@ extern "C" {
 
 typedef struct t_latch t_latch;
 
-#define VM_MACHINE_DEVICE_FDD "3.5\" Floppy Disk Drive"
+#define VM_MACHINE_DEVICE_FDD "Floppy Disk Drive"
 
 typedef struct {
-    type_unsigned_16 cyl;     /* vfdc.C; cylinder id (0 to 79) */
-    type_unsigned_16 head;    /* vfdc.H; head id (0 or 1) */
-    type_unsigned_16 sector;  /* vfdc.R; sector id (1 to 18) */
-    type_unsigned_8  gpl;     /* vfdc.GPL; gap length of sector (default is 3) */
-    type_unsigned_16 ncyl;    /* number of cylinders */
-    type_unsigned_16 nhead;   /* number of heads */
-    type_unsigned_16 nsector; /* vfdc.EOT; end sector id (default is 18) */
-    type_unsigned_16 nbyte;   /* vfdc.N; bytes per sector (default is 512) */
+    type_unsigned_16 cyl;     /* vfdc.C; cylinder id */
+    type_unsigned_16 head;    /* vfdc.H; head id */
+    type_unsigned_16 sector;  /* vfdc.R; sector id */
+    type_unsigned_8  gpl;     /* vfdc.GPL; gap length of sector */
+    type_unsigned_16 ncyl;    /* configured number of cylinders */
+    type_unsigned_16 nhead;   /* configured number of heads */
+    type_unsigned_16 nsector; /* configured sectors per track */
+    type_unsigned_16 nbyte;   /* configured bytes per sector */
 } t_fdd_data;
 
 typedef struct {
@@ -35,6 +35,7 @@ typedef struct {
 } t_fdd_connect;
 
 typedef struct {
+    core_machine_media_geometry geometry;
     t_fdd_data data;
     t_fdd_connect connect;
 } t_fdd;
@@ -53,6 +54,8 @@ C_INT vm_machine_fdd_write_byte(t_fdd *fdd, type_unsigned_16 cylinder,
 C_INT vm_machine_fdd_format_sector(t_fdd *fdd, type_unsigned_16 cylinder,
     type_unsigned_16 head, type_unsigned_16 sector, type_unsigned_8 fill_byte);
 C_VOID vm_machine_fdd_initialize(t_fdd *fdd);
+C_INT vm_machine_fdd_initialize_with_geometry(t_fdd *fdd,
+    const core_machine_media_geometry *geometry);
 C_VOID vm_machine_fdd_reset(t_fdd *fdd);
 C_VOID vm_machine_fdd_refresh(t_fdd *fdd);
 C_VOID vm_machine_fdd_finalize(t_fdd *fdd);

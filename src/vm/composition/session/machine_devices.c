@@ -12,7 +12,8 @@
 C_VOID vm_session_machine_devices_initialize_media(vm_session *session)
 {
     if (session == STD_NULL) return;
-    vm_machine_fdd_initialize(&session->fdd);
+    (C_VOID)vm_machine_fdd_initialize_with_geometry(&session->fdd,
+        vm_profile_floppy_geometry_get(session->floppy_kind));
     if (session->model40_private ||
         (session->profile != STD_NULL && session->profile->hdc_present)) {
         vm_machine_hdd_initialize(&session->hdd);
