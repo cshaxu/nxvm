@@ -63,3 +63,11 @@ Focused S9--S11 CECG owner and Model-40 controls pass. The serial current-gate
 reports 264/264 tests passed in 85.11 seconds. Documentation governance and
 deferred direct-ownership governance pass; the latter reports 211 rows with
 151 owner tests.
+## Coordinator Acceptance
+
+P1 `9c2b0a6b` is accepted after actual-change review of the CECG-only `3C2h`
+registration, VADP provider-query gate, configuration and reset paths,
+Model-40 declaration, generic-EGA isolation, focused controls, strict-owner
+inventory, serial current gate and debt transfer. This accepts S11 only as
+selected-device functional progress. T386 and every remaining `3C2h`, firmware,
+physical-media, board-timing and L3 receiver remain open.

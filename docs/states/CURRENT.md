@@ -2,24 +2,13 @@
 
 ## Current Work
 
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | `M5 T386 S11` -- Continuation. |
-| Admission And Approval | Owner-approved continuing DeskPro 386 functional and L3 programme, including the explicit core-generic / VM-profile boundary. S11 follows accepted S10 and adopts the next primary-determined CECG functional gap. |
-| Objective | Implement the source-backed `3C2h` Miscellaneous Output CPU-video-memory decode gate for selected CECG, using VADP as the shared hardware owner and Model-40 composition only for reset declaration. |
-| Non-goals | No other `3C2h` effects, I/O-base switching, Input Status 0, feature/special-interface hardware, live-video multiplexing, monitor/physical output, firmware/ROM import, board/raster timing, profile publication, IBM/generic EGA mutation, Windows or L3 claim. |
-| Reference Baseline | `a8270369` (T386 S10 accepted); Compaq *Enhanced Color Graphics Board / Color Monitor Technical Reference Guide* (December 1986), sections 4.1--4.2; T386 S6/S9/S10 evidence; `TODO.md` CECG boundary; T386 functional and board proposals. |
-| Candidate Proposal | [DeskPro 386 Model 40 selected-device functional closure](../proposals/m5-deskpro-386-model40-device-functional-closure.md). |
-| Files And ABI Surface | Evidence/owned tests, existing shared VADP state, `3C2h` port and EGA memory-provider query owner, display declaration only for reset state, and private Model-40 composition only for selected declaration. No public VM product interface, catalog or assets. |
-| Applicable Rules | `docs/design/ARCHITECTURE.md`, `docs/design/CODING.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`, `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, and `docs/etc/operations/policy/source-policy.md`; VADP owns the generic device decode rule, Model-40 composition only selects its reset state. |
-| Verification | Build a source-to-observable table for Miscellaneous Output bit 1; add focused VADP and selected Model-40 controls covering enabled/disabled aperture route, declared reset restoration and generic-EGA isolation; run serial current gate and applicable governance checks. |
-| Expected Markers | `M5:T386:S11:CECG-CPU-VIDEO-GATE:OK`; any implementation marker must name its actual owner. |
-| Asset Needs | Transient primary documentation/research and project-owned synthetic fixtures only; no third-party source, firmware, guest media, local path or binary is copied, hashed or committed. |
-| Reporting Requirements | Report source-determined register semantics, implementation/evidence outcomes and every transfer; complete and push one P only after self-review, then conduct coordinator actual-change review. |
-| Stop Conditions | Stop and transfer an observable lacking a primary contract, requiring alternate I/O routing, board memory availability, firmware, physical monitor behavior or board timing; do not infer from IBM EGA or copy emulator behavior. |
-| Exit Criteria | The CECG-only `3C2h` bit changes whether VADP claims its EGA aperture; reset restores the declared state; generic EGA remains isolated; focused and required gates pass; all excluded behavior is explicitly transferred without a board-timing claim. |
-| Original Owner Request | Continue DeskPro 386 complete functional and L3 work under the stated boundary: profile/composition in `vm`; generic hardware capability in `core`. |
-| Similar-Issue Sweep | Sweep `3C2h`, miscellaneous output, EGA device-provider query/read/write routes, CECG declarations, generic EGA paths, Model-40 composition, reset paths, tests, CMake and all CECG TODO/proposal/evidence records. |
+**T386 open; S1--S11 accepted.** S11 adds the source-backed Compaq CECG `3C2h`
+CPU-video-memory decode gate in the shared VADP owner. Private Model-40
+composition supplies only the reset declaration. The accepted controls prove
+selected enable/disable routing, reset restoration and generic-EGA isolation;
+264/264 serial current-gate tests passed. Remaining CECG register effects,
+firmware, physical board behavior and L3 timing remain explicit receivers in
+`TODO.md` and the T386 proposals.
 ## Current Technical Baseline
 
 - **Current developer artifact:** T382 S8 `vm-0-5-0382` /
@@ -46,7 +35,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T386 S10 | Progress accepted: source-backed CECG Feature Control to Environment state is VADP-owned; private Model-40 composition supplies only reset state. 262/262 serial current-gate and governance checks pass. Physical, firmware, board and L3 timing remain transferred. [Evidence](../etc/evidence/t386-s10-cecg-feature-environment.md). |
+| T386 S11 | Progress accepted: source-backed CECG `3C2h` bit-1 CPU-video-memory decode gate is VADP-owned; private Model-40 composition supplies only reset state. 264/264 serial current-gate and governance checks pass. Remaining `3C2h`, physical, firmware, board and L3 timing behavior remains transferred. [Evidence](../etc/evidence/t386-s11-cecg-cpu-video-gate.md). |
 | T385 | Closed: the selected Model-40 80386DX-16 consumes the shared 80386 CPU/state/retirement owners without a DeskPro CPU fork; a clean current-source 251/251 gate passed, while functionality and board timing transfer unchanged. [Closure audit](../etc/evidence/t385-s1-task-closure-audit.md). |
 | T384 | Closed: the Model-40 capability audit freezes its original Compaq system board/storage ledger and owner-selected color EGA, keyboard and external-ROM constraint; its shared-VADP IBM/Compaq personality boundary transfers CPU, functional and timing work without making a runnable or L3 claim. [Closure audit](../etc/evidence/t384-s2-task-closure-audit.md). |
 | T383 | Closed: independent current-source replay accepts the frozen 5170 Model 339 deterministic-L3 contract after T380's strict-start repair; 251/251 current gate and focused matrix are retained in [evidence](../etc/evidence/t383-s1-model339-current-source-reaudit.md). |
