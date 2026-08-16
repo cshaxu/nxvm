@@ -41,14 +41,7 @@ only caller-supplied manifest fields, materializes no firmware or guest-media
 fixture in Git, installs a self-contained bootable raw image, and requires the
 external ROM to load that boot sector through the production FDC/DMA route.
 
-A transient owner-supplied Model-40 ROM run reached the real reset stream but
-entered a shared CPU `#UD` delivery loop before the boot-sector marker or FDC
-consumer could be observed. The ROM mapping and manifest validation are not
-therefore treated as proof of a BIOS-visible storage consumer. This leaves S24
-open and transfers the startup compatibility defect to the next T386 receiver:
-repair the earliest shared Core CPU/execution behavior, prove the same external
-ROM reaches the boot marker, then re-run this S24 invocation. It neither
-reopens a profile-local CPU path nor relaxes the FDC acceptance condition.
+A transient owner-supplied Model-40 ROM run reached the real reset stream, progressed through ROM initialization, but later observed `#UD` before the boot-sector marker or FDC consumer could be observed. The ROM mapping and manifest validation are not therefore treated as proof of a BIOS-visible storage consumer. This closes only the selected raw-IMG FDC logical contract. A separately admitted external-ROM board-startup receiver must use trace evidence to select the earliest shared or Model-40 board owner, repair only that owner, prove the same ROM reaches the boot marker, and re-run this invocation. It neither creates a profile-local CPU path nor relaxes the future consumer acceptance condition.
 Flux/CRC/index/rotation/physical CHRN observables, device service and board
 arbitration timing, firmware/media import, and generic variants remain excluded.
 The next T386 functional receiver is the fitted 40 MB Compaq fixed-disk startup

@@ -76,8 +76,13 @@ order, with each receiver admitted only after reviewing the preceding evidence:
 1. Selected 765A plus 1.2 MB raw-IMG logical command/state/error/recovery and
    DMA2/IRQ6/BIOS-visible consumer proof. It must not enlarge raw IMG into a
    flux/CRC/index/rotation/physical-CHRN format. Its external-ROM replay may
-   expose a shared CPU/startup gap; in that case repair the earliest shared
-   execution owner and re-run this receiver before admitting later storage.
+   expose an earlier shared or Model-40 board startup gap; trace it to the
+   earliest owner, repair only that owner, and re-run this receiver before
+   admitting later storage.
+1. External-ROM board-startup compatibility: identify and repair the earliest
+   trace-backed shared or Model-40 owner that prevents the selected ROM from
+   reaching its boot-sector consumer. It does not turn a firmware observation
+   into a CPU claim and must preserve the established FDC contract.
 1. Compaq Multipurpose Fixed Disk Controller and fitted 40 MB fixed startup
    route: normal CHS/PIO/reset/error/IRQ14 behavior and one startup-frozen
    external media contract, with no ATA/IBM-MFM substitution or runtime media
