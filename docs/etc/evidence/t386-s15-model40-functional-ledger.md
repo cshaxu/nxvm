@@ -65,3 +65,14 @@ current contradiction found is the D4 ROM/replacement contract above.  All
 other incomplete rows already have an earliest owner or a source/physical
 boundary.  No code, public ABI, artifact, firmware or guest media changes are
 made by S15.
+
+## Coordinator Acceptance
+
+P1 `400e681a` is accepted after independent actual-change review.  The review
+confirms the matrix covers the full frozen BOM rather than only implemented
+features, distinguishes functional gaps from board timing and external assets,
+and assigns the D4 ROM/replacement conflict to one explicit next receiver.
+The delivery changes only active status and indexed evidence; documentation
+governance passes, and no source, ROM, media, artifact or public interface is
+changed.  S15 is accepted as the functional-completeness baseline, not a
+functional or L3 closure.  T386 remains open.

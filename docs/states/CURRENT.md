@@ -2,29 +2,12 @@
 
 ## Current Work
 
-**T386 open; S1--S14 accepted; S15 active.** S15 reconciles the selected
-Model-40 functional ledger against the current source and accepted S5--S14
-evidence before another implementation slice. It allocates no device timing or
-L3 result.
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation: M5 T386 S15. |
-| Admission And Approval | Owner approved the continuing T386 selected-device functional and L3 program, including a capability-ledger-first sequence and implementation of the resulting gaps. This S is the bounded functional-ledger reconciliation required before the next repair; no exception. |
-| Objective | Produce one current-source Model-40 selected-device functional matrix that classifies every selected platform, input, storage, display, interrupt/DMA, NMI/reset, memory/ROM and bus-facing requirement as complete, incomplete, externally constrained, or timing-only; assign each incomplete functional row to its earliest owner and next receiver. |
-| Non-goals | No device implementation, no Core/VM behavior change, no new firmware or media import, no ROM path/hash/bytes, no physical-media inference, no board waits/service timing, no L3 or Windows claim, and no reopening historical task records. |
-| Reference Baseline | T384 S1/S2 frozen Model-40 BOM and configuration; T385 CPU closure; T386 S5--S14 accepted evidence; current source at `fd58e422`; the DeskPro selected-device-functional and common L3 proposals. |
-| Candidate Proposal | `docs/proposals/m5-deskpro-386-model40-device-functional-closure.md` with `docs/proposals/m5-80386-deskpro-386-l3-baseline.md`. |
-| Files And ABI Surface | `docs/states/CURRENT.md`, one indexed T386 S15 evidence record, and `docs/etc/README.md` only. Source, build, public ABI and runnable artifact are read-only. |
-| Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, T384 capability evidence, T386 proposal boundaries and source policy. The ledger must preserve Core generic-owner versus VM profile-composition ownership and distinguish functional closure from timing. |
-| Verification | Reconcile every T384 selected requirement against source owner, current focused tests and accepted T386 evidence; execute source/static sweeps for Model-40 composition and selected core owners; run documentation governance; coordinator actual-change review. |
-| Expected Markers | `M5:T386:S15:MODEL40-FUNCTIONAL-LEDGER:OK` and `M5:T386:S15:NEXT-RECEIVER:OK`. |
-| Asset Needs | Primary documentation already cited by T384/S5/S6/S13 may be used only as transient evidence; no ROM, firmware, guest media, local path, hash, vendor text or third-party code is imported or committed. |
-| Reporting Requirements | Record the full row-to-owner disposition in indexed evidence, identify the one next implementable functional receiver and all explicit stop/transfer rows, push the complete audit P, then perform coordinator actual-change review and governance P. |
-| Stop Conditions | Stop and transfer a row if its selected observable is not source-defined, requires protected firmware, physical-media representation, board timing, or an owner decision beyond the frozen Model-40 configuration. Do not convert an unknown into a generic PC/AT behavior. |
-| Exit Criteria | Every frozen selected component has a functional classification, owner, evidence/source basis and next receiver; no functional gap is hidden as timing; the next code S has one bounded owner/scope; evidence is indexed, governance passes, and coordinator review accepts the audit. |
-| Original Owner Request | Continue under the governed queue plan to achieve DeskPro 386 Model 40 complete functionality and L3 timing; the user specifically required a device-completeness/support-surface ledger before timing closure and profile-specific behavior in VM versus generic hardware in Core. |
-| Similar-Issue Sweep | Sweep the full T384 BOM, T386 S5--S14 evidence, Model-40 composition, selected device configuration APIs, focused current-gate tests, TODO and Queue receivers. For each row, classify current owner, missing functional observable, timing-only transfer or external constraint; report every unowned functional hit rather than narrowing the ledger to already-tested features. |
+**T386 open; S1--S15 accepted.** S15 reclassifies every selected Model-40
+component against current source and evidence: memory-map, complete DMA, D4
+reset logic, selected 1.2 MB drive and remaining CECG behavior are functional
+receivers; real BIOS and physical disk media remain external constraints; bus
+phases remain timing. S16 receives the source-sensitive D4 memory/ROM-map
+reconciliation before further firmware-visible device implementation.
 ## Current Technical Baseline
 
 - **Current developer artifact:** T386 S14 `vm-0-5-0386` /
@@ -51,7 +34,7 @@ L3 result.
 
 | Task | Compact result |
 | --- | --- |
-| T386 S14 | Progress accepted: private Model-40 Rev-E ROM composition uses two 16 KiB odd/even chips, a mirrored 64 KiB system-ROM window and VM-owned A20 reset alias; Core remains unchanged. 269/269 serial current-gate plus composition, ownership and documentation gates pass. Public firmware, board behavior, timing and L3 remain transferred. [Evidence](../etc/evidence/t386-s14-model40-rom-layout.md). |
+| T386 S15 | Progress accepted: current-source functional ledger classifies every selected Model-40 component, identifies D4 ROM/replacement mapping as the next functional receiver, and preserves physical-media, firmware and timing boundaries. Documentation governance and actual-change review pass. [Evidence](../etc/evidence/t386-s15-model40-functional-ledger.md). |
 | T385 | Closed: the selected Model-40 80386DX-16 consumes the shared 80386 CPU/state/retirement owners without a DeskPro CPU fork; a clean current-source 251/251 gate passed, while functionality and board timing transfer unchanged. [Closure audit](../etc/evidence/t385-s1-task-closure-audit.md). |
 | T384 | Closed: the Model-40 capability audit freezes its original Compaq system board/storage ledger and owner-selected color EGA, keyboard and external-ROM constraint; its shared-VADP IBM/Compaq personality boundary transfers CPU, functional and timing work without making a runnable or L3 claim. [Closure audit](../etc/evidence/t384-s2-task-closure-audit.md). |
 | T383 | Closed: independent current-source replay accepts the frozen 5170 Model 339 deterministic-L3 contract after T380's strict-start repair; 251/251 current gate and focused matrix are retained in [evidence](../etc/evidence/t383-s1-model339-current-source-reaudit.md). |
