@@ -2,13 +2,24 @@
 
 ## Current Work
 
-**T386 open; S1--S11 accepted.** S11 adds the source-backed Compaq CECG `3C2h`
-CPU-video-memory decode gate in the shared VADP owner. Private Model-40
-composition supplies only the reset declaration. The accepted controls prove
-selected enable/disable routing, reset restoration and generic-EGA isolation;
-264/264 serial current-gate tests passed. Remaining CECG register effects,
-firmware, physical board behavior and L3 timing remain explicit receivers in
-`TODO.md` and the T386 proposals.
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | `M5 T386 S12` -- Continuation. |
+| Admission And Approval | Owner-approved continuing DeskPro 386 functional and L3 programme, including the explicit core-generic / VM-profile boundary. S12 follows accepted S11 and admits the next source-determined CECG observable. |
+| Objective | Implement selected CECG `3C2h` bit-0 color/monochrome I/O-base selection, with shared VADP owning dynamic port response and private Model-40 composition declaring the reset selection. |
+| Non-goals | No Input Status 0, SW1 sense, Special Features inputs, vertical-retrace IRQ, remaining `3C2h` bits, monitor/blanking behavior, firmware/ROM import, physical output, board/raster timing, profile publication, IBM/generic EGA mutation, Windows or L3 claim. |
+| Reference Baseline | `b06ec551` (T386 S11 accepted); Compaq *Enhanced Color Graphics Board / Color Monitor Technical Reference Guide* (December 1986), sections 3.2 and 4.1--4.2; T386 S6--S11 evidence; `TODO.md` CECG boundary; T386 functional and board proposals. |
+| Candidate Proposal | [DeskPro 386 Model 40 selected-device functional closure](../proposals/m5-deskpro-386-model40-device-functional-closure.md). |
+| Files And ABI Surface | Evidence/owned tests, existing shared VADP CRTC/status/feature/lightpen routing and CECG declaration/reset state, plus private Model-40 composition declaration. No public VM product interface, catalog, assets, timing owner or board-firmware path. |
+| Applicable Rules | `docs/design/ARCHITECTURE.md`, `docs/design/CODING.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`, `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, and `docs/etc/operations/policy/source-policy.md`; VADP owns generic port response, Model-40 composition selects only source-backed reset state. |
+| Verification | Build a source-to-observable table for `3C2h` bit 0; add focused VADP and selected Model-40 controls covering selected color-to-monochrome port response, inactive-route rejection, reset restoration and generic-EGA isolation; run serial current gate and applicable governance checks. |
+| Expected Markers | `M5:T386:S12:CECG-IO-BASE:OK`; any implementation marker must name its actual owner. |
+| Asset Needs | Transient primary documentation/research and project-owned synthetic fixtures only; no third-party source, firmware, guest media, local path or binary is copied, hashed or committed. |
+| Reporting Requirements | Report source-determined port/base semantics, implementation/evidence outcomes and every transfer; complete and push one P only after self-review, then conduct coordinator actual-change review. |
+| Stop Conditions | Stop and transfer an observable requiring Input Status 0, SW1, Special Features inputs, vertical-retrace IRQ, monitor/blanking behavior, firmware, board wiring, physical output or timing; do not infer from generic/IBM EGA or copy emulator behavior. |
+| Exit Criteria | For CECG only, `3C2h` bit 0 selects the documented `3Dxh` or `3Bxh` active route for documented `3x4/3x5`, `3xA/3xB/3xC` VADP ports; inactive route has no CECG response; reset restores the declared selection; generic EGA remains isolated; focused and required gates pass; all excluded behavior is explicitly transferred. |
+| Original Owner Request | Continue DeskPro 386 complete functional and L3 work under the stated boundary: profile/composition in `vm`; generic hardware capability in `core`. |
+| Similar-Issue Sweep | Sweep `3C2h`, documented `3x4/3x5`, `3xA/3xB/3xC` ports, CRTC/status/feature/lightpen routes, CECG declarations, generic EGA paths, Model-40 composition, reset paths, tests, CMake and all CECG TODO/proposal/evidence records. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T382 S8 `vm-0-5-0382` /

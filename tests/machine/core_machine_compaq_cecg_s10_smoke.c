@@ -6,7 +6,7 @@
 C_INT main(C_VOID)
 {
     const core_machine_vadp_cecg_config config = {
-        0x40u, 0x05u, 0x30u, 0x01u, TYPE_TRUE, TYPE_FALSE
+        0x40u, 0x05u, 0x30u, 0x01u, TYPE_TRUE, TYPE_FALSE, TYPE_TRUE
     };
     t_port port;
     t_port generic_port;

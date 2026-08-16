@@ -32,8 +32,13 @@ extern "C" {
 #define CORE_MACHINE_VADP_PORT_SEQUENCER_DATA 0x03c5u
 #define CORE_MACHINE_VADP_PORT_GRAPHICS_INDEX 0x03ceu
 #define CORE_MACHINE_VADP_PORT_GRAPHICS_DATA 0x03cfu
+#define CORE_MACHINE_VADP_PORT_MONO_CRTC_INDEX 0x03b4u
+#define CORE_MACHINE_VADP_PORT_MONO_CRTC_DATA 0x03b5u
 #define CORE_MACHINE_VADP_PORT_CRTC_INDEX 0x03d4u
 #define CORE_MACHINE_VADP_PORT_CRTC_DATA 0x03d5u
+#define CORE_MACHINE_VADP_PORT_MONO_STATUS 0x03bau
+#define CORE_MACHINE_VADP_PORT_MONO_LIGHTPEN_LATCH_RESET 0x03bbu
+#define CORE_MACHINE_VADP_PORT_MONO_LIGHTPEN_LATCH_SET 0x03bcu
 #define CORE_MACHINE_VADP_PORT_MODE 0x03d8u
 #define CORE_MACHINE_VADP_PORT_COLOR 0x03d9u
 #define CORE_MACHINE_VADP_PORT_STATUS 0x03dau
@@ -84,6 +89,7 @@ typedef struct t_vadp_data {
     type_unsigned_8 compaq_control_mode;
     type_unsigned_8 compaq_feature_control;
     type_bool compaq_cpu_video_memory_disabled;
+    type_bool compaq_color_io_base;
     type_bool compaq_lightpen_latched;
     type_unsigned_64 dirty_generation;
     C_INT captured;

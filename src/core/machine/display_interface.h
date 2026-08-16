@@ -48,6 +48,7 @@ typedef struct core_machine_vadp_cecg_config {
     type_unsigned_8 initial_mode;
     type_bool lightpen_switch_open;
     type_bool cpu_video_memory_disabled;
+    type_bool color_io_base;
 } core_machine_vadp_cecg_config;
 
 typedef struct core_machine_vadp_ega_controller_config {
