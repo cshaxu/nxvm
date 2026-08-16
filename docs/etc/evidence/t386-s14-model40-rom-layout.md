@@ -65,3 +65,17 @@ public ROM loader nor a real-firmware execution claim, and it does not model
 ROM shadowing, relocation, flash/update behavior, physical board decode,
 selected-device timing or Model-40 L3.  Those remain explicit receivers in the
 T386 functional and board/L3 proposals and `TODO.md`.
+
+## Coordinator Acceptance
+
+P1 `f8257a5d` is accepted after independent actual-diff review.  The review
+confirms that the revision changes no Core source: generic immutable mapping
+and A20 semantics remain there, while the Model-40 chip organization, system
+ROM window and reset alias remain in VM.  The carrier migration covers every
+private initializer and retained S7--S13 control; the new focused smoke proves
+interleaving, mirror, immutability and canonical reset fetch.  The reviewed
+verification record is 269/269 serial current-gate, successful current-smoke
+aggregate, VM-composition, strict T345 ownership and documentation governance.
+No protected asset is tracked.  S14 is accepted as private selected-device
+functional progress only; T386, public firmware admission, board behavior,
+timing and Model-40 L3 remain open.
