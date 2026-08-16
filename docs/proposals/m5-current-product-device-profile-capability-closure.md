@@ -1,4 +1,4 @@
-# M5 Current-Product Device Profile And Functional-Capability Closure
+﻿# M5 Current-Product Device Profile And Functional-Capability Closure
 
 ## Purpose
 
@@ -12,13 +12,24 @@ closure.
 
 ## Required scope
 
-Begin from the accepted S20 product mechanism for YAML backbone/variant
-selection and external ROM-manifest validation with in-memory snapshots. Audit
-that mechanism against every retained public profile. If any required generic
-catalog, selection, snapshot or constraint-validation behavior is absent,
-complete it in `src/vm/product` before migrating device contracts; do not make a
-machine-local workaround or assume the first 5170/DeskPro contracts exhausted
-its reusable scope.
+Begin from S20's actual product mechanism: startup catalog discovery, a frozen
+entry, the one fixed Model-40 backbone, and its external two-ROM manifest with
+in-memory copies. S20 does **not** supply generic backbone/variant selection,
+an allowed-variant table, or a universal media contract. Use the accepted
+Model-40 functional matrix and L3 audit, plus the Model-339 contract, as inputs
+rather than treating either machine as a generic builder.
+
+First audit the retained public catalog, selection, snapshot and
+constraint-validation behavior. Where the inputs demonstrate a shared need,
+complete one generic `src/vm/product` contract before profile migration; do
+not make a machine-local workaround or assume the first 5170/DeskPro contracts
+exhaust its reusable scope. That contract must make each backbone declare its
+fixed properties, default configuration, allowed named variants, prohibited
+combinations, ROM/firmware manifest requirements, startup-only fixed-media
+rules, and removable-media lifecycle. YAML may select only such a defined
+backbone, one of its declared allowed variants, and admitted media. It must
+reject arbitrary chip composition, forbidden variants, and any fixed-media
+replacement after session publication.
 
 Then create one source-backed support ledger for every device, controller,
 adapter, media path and selectable variant currently public in the product.
@@ -39,7 +50,7 @@ Apply the following composition boundary to each retained entry:
 - **Machine backbones/profiles** own the historical combination: fitted
   devices, permitted variants, BIOS and board wiring, machine-local limits,
   and machine-local timing responsibility.
-- **YAML** selects only a defined backbone, its permitted variants and media.
+- **YAML** selects only a defined backbone, its allowed variants and media.
   It must reject arbitrary chip composition and any variant the selected
   backbone does not permit.
 
@@ -54,17 +65,19 @@ input, storage controllers and every other retained public device.
 
 ## Dependencies and verification
 
-Admission requires the DeskPro Model 40 L3 audit and S20's YAML
-backbone/variant/ROM-manifest snapshot mechanism to be accepted, an inventory
-of all public device and YAML surfaces, and the source/provenance boundary for
-each declared machine or personality. The audit must explicitly decide whether
-S20's generic product mechanism is sufficient for every retained public
-profile; any shortfall is in scope for repair in `src/vm/product` before
-profile migration proceeds. Before closure require the support and ownership
-ledger, profile-contract and backbone/variant validation tests, functional
-register/state plus IRQ/DRQ/reset evidence for every retained capability, a
-shared-owner sweep, the current gate, and an explicit retained/removed
-disposition for every inventory entry.
+Admission requires the DeskPro Model 40 L3 audit, the accepted Model-40
+functional matrix, Model-339 current contract, an inventory of all public
+device and YAML surfaces, and the source/provenance boundary for each declared
+machine or personality. The admission audit must decide which fixed
+configuration and allowed-variant facts are actually proven for each backbone;
+no desired but unsourced option becomes public merely because a Core mechanism
+exists.
+
+Before closure require the support and ownership ledger, profile-contract and
+backbone/variant validation tests, startup snapshot and fixed/removable-media
+lifecycle tests, functional register/state plus IRQ/DRQ/reset evidence for
+every retained capability, a shared-owner sweep, the current gate, and an
+explicit retained/removed disposition for every inventory entry.
 
 The following 8088/XT program may use these shared implementations, but still
 must audit the 5160-268's own selected board, bindings and timing. The later

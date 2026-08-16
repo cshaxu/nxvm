@@ -1,13 +1,25 @@
-# Project Status
+﻿# Project Status
 
 ## Current Work
 
-**T386 open; S1--S20 accepted.** S20 publishes the fixed DeskPro 386/16
-Model 40 backbone only through a startup-frozen, two-chip external-ROM BYOB
-manifest. It validates/copies the local pair before publication and selects the
-reusable 1.2 MB drive profile; no real firmware, path, vendor hash or asset is
-tracked. Firmware behavior, remaining devices, board timing and Model-40 L3
-remain open.
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T386 S21; the latest open task retains accepted S20 progress. |
+| Admission And Approval | Owner approved on 2026-08-16 to quickly close S20 history, admit this narrow T386 planning/contract S, update the future profile-variant proposal and required Queue/architecture governance, then continue the original DeskPro plan. No exception to Core/VM ownership or source policy. |
+| Objective | Reconcile the accepted S16–S20 results into the current Model-40 functional matrix; freeze the Model-40 fixed public-session contract and its truthful deferred boundaries; correct the future cross-product profile/variant proposal so it begins after the DeskPro L3 audit from actual, not assumed, product capability. |
+| Non-goals | No Core or product source change; no generic YAML variant schema or free-form builder; no new public hardware selection; no BIOS/media import or committed asset; no functional, timing, firmware-execution or L3 claim; no Queue reordering. |
+| Reference Baseline | Accepted T386 S20 source `181718fe`, current artifact `vm-0-5-0389` SHA-256 `B0B70FA0C0A304BA9D8E1F2ADECC0E32A547DABA3FE274513B5C9DFEBA8C9483`, plus accepted T384/T385 and T386 S15–S20 evidence. |
+| Candidate Proposal | `docs/proposals/m5-deskpro-386-model40-device-functional-closure.md`; update its exact remaining functional plan and the linked future `m5-current-product-device-profile-capability-closure.md` contract without changing candidate order. |
+| Files And ABI Surface | `docs/states/CURRENT.md`, `docs/states/QUEUE.md`, the two linked proposals, `docs/proposals/m5-80386-deskpro-386-l3-baseline.md`, a new indexed T386 S21 evidence record, `docs/etc/README.md`, and T386 history progress. No runtime ABI/source surface. |
+| Applicable Rules | `docs/README.md` Task Reading Set; `docs/rules/EXECUTION.md` request lifecycle, S/P lifecycle, actual-change review, identifier, documentation gate and similar-issue sweep; `docs/rules/DOCUMENT.md` authority matrix/status retention; `CONTRIBUTING.md`. Roadmap stays dependency authority; no architecture rule is changed. |
+| Verification | Review every changed authority and the complete S21 matrix against T384, T385, S15–S20 and TODO; check Queue ordering/link targets; run `powershell -NoProfile -ExecutionPolicy Bypass -File tools/Verify-DocumentationGovernance.ps1 -RepositoryRoot .`; inspect `git diff --check` and final status. |
+| Expected Markers | `M5:T386:S21:MODEL40-CURRENT-FUNCTIONAL-MATRIX:OK`; `M5:T386:S21:PROFILE-VARIANT-TRANSFER:OK`. |
+| Asset Needs | None. Do not read, import, hash, package or commit firmware, guest media, local machine paths or third-party code. |
+| Reporting Requirements | Executor confirms this bounded documentation/contract scope, reports only the resulting matrix/transfer and verification; coordinator independently reviews actual documents and records acceptance/governance closure before next code S. |
+| Stop Conditions | Stop for a source/selection conflict, a proposal change that would reorder the Queue or introduce generic profile implementation, or a missing truthfully selectable Model-40 fixed-disk/media boundary; return it for owner decision or a separately admitted S. |
+| Exit Criteria | One current S20-based matrix disposes every Model-40 selected functional row as complete, required in remaining T386 functional work, timing receiver, or explicit TODO; future variant proposal states S20's actual fixed-backbone limit and mandatory constrained-contract behavior; Queue remains ordered; indexed evidence and T386 progress are truthful; documentation gate passes. |
+| Original Owner Request | Owner-approved request, 2026-08-16: quickly close the current S, admit this small planning/proposal/Queue/necessary architecture-governance S, then continue the original DeskPro 386 implementation plan. |
+| Similar-Issue Sweep | Documentation-only planning, so no production defect class is repaired. Sweep all current Model-40 functional/transfer evidence (T384/T385/T386 S15–S20), both linked proposals, Queue, Roadmap and relevant TODO rows for stale S20/variant assertions; record every hit/disposition in S21 evidence. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T386 S20 `vm-0-5-0389` /

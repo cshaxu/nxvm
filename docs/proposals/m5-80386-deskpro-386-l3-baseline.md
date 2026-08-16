@@ -1,4 +1,4 @@
-# Compaq DeskPro 386 Model 40 80386 L3 Closure Context
+﻿# Compaq DeskPro 386 Model 40 80386 L3 Closure Context
 
 ## Purpose
 
@@ -16,13 +16,22 @@ one exact board/revision, 80386 clock, chipset, memory, owner-managed Rev-E ROM
 constraint, Compaq Enhanced Color Graphics plus Color Monitor, 101-key Enhanced
 Keyboard, Compaq Multipurpose Fixed Disk Controller with one 1.2 MB diskette
 drive and one 40 MB fixed disk, and project-owned probe corpus. "DeskPro 386"
-alone is not a timing contract. The profile audit owns selection and gap classification, the CPU
-candidate owns instruction/state evidence, the functional candidate owns device
-state completeness, the board candidate owns availability/service timing, and
-the audit reconciles rather than repairs them. Primary Compaq, Intel and device
-documentation plus project-owned probes are required; 86Box, MAME and PCjs may
-only cross-check a primary-constrained range or an explicitly recorded
-measurement contract.
+alone is not a timing contract. The profile audit owns selection and gap
+classification, the CPU candidate owns instruction/state evidence, the
+functional candidate owns device state completeness, the board candidate owns
+availability/service timing, and the audit reconciles rather than repairs them.
+Primary Compaq, Intel and device documentation plus project-owned probes are
+required; 86Box, MAME and PCjs may only cross-check a primary-constrained range
+or an explicitly recorded measurement contract.
+
+The accepted public Model-40 route is a fixed backbone with a frozen external
+ROM manifest. Until the later current-product profile-capability candidate, it
+has no public generic `variant` field. T386 functional work must declare its
+selected external fixed-disk startup boundary and removable-diskette boundary,
+but may neither turn them into a free-form builder nor make a machine-local
+variant schema. The post-DeskPro candidate receives the real fixed/allowed/
+prohibited facts from this baseline and the Model-339 baseline, then designs
+the cross-product contract.
 
 VADP remains a shared core owner. The DeskPro functional candidate owns one
 small source-backed Compaq EGA personality/profile contract around that core;

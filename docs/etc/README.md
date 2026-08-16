@@ -1,4 +1,4 @@
-# Supporting Documentation Index
+﻿# Supporting Documentation Index
 
 The fixed documentation topology retains this owner-approved area for supporting detail
 that does not fit the principal `rules/` and `design/` authorities. A supporting
@@ -27,6 +27,7 @@ principal documents named in [docs/README.md](../README.md).
 | `evidence/t386-s17-model40-dual-dma.md` | Verification owner | T386 S17 explicitly binds the selected Model-40 dual-8237A topology to generic Core DMA configuration, then proves word/cascade/reset behavior without a timing or L3 claim. Retain with T386 progress. |
 | `evidence/t386-s18-model40-floppy-device-profile.md` | Verification owner | T386 S18 adds reusable VM device-profile floppy geometry, selects the Model-40 1.2 MB drive, and retains Core-neutral FDC/media mechanisms without a timing or L3 claim. Retain with T386 progress. |
 | `evidence/t386-s20-model40-byob-profile.md` | Verification owner | T386 S20 exposes the selected Model-40 backbone only through a strict local BYOB manifest, frozen catalog entry and copied VM-owned ROM carrier; it makes no BIOS, device-completeness, timing or L3 claim. Retain with T386 progress. |
+| `evidence/t386-s21-model40-current-functional-matrix.md` | Verification owner | T386 S21 reconciles S16--S20 into the current Model-40 functional matrix, fixes the fixed-backbone versus future-variant handoff, and bounds the remaining functional receivers. Retain with T386 progress. |
 | `evidence/t382-s1-current-gate-aggregate.md` | Verification owner | T382 S1 aggregate CTest deadline, Job Object cleanup, abnormal-child proof, aggregate-entry sweep, and task artifact record. Retain with T382 history. |
 | `evidence/t382-s2-console-dead-code-retirement.md` | Verification owner | T382 S2 unreachable Console route and callback retirement, focused command sweep, regression proof, and task artifact record. Retain with T382 history. |
 | `evidence/t382-s3-memory-quantity-boundary.md` | Verification owner | T382 S3 checked KiB conversion owner, parser sweep, negative proof, and task artifact record. Retain with T382 history. |
