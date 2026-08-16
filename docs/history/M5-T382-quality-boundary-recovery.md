@@ -46,3 +46,10 @@ dependency. The full gate remains live but reports two stale zero-session
 manager contracts; their repair is transferred to S6 and does not weaken the
 S3 boundary conclusion. [T382 S3 evidence](../etc/evidence/t382-s3-memory-quantity-boundary.md)
 retains the focused proof and artifact record.
+
+## S4 Acceptance
+
+P9 `b4f000ff` copies the topology fixture's phase before teardown. Focused
+topology and media-change smokes pass; the fixture sweep finds no other
+post-destruction owner read. [T382 S4 evidence](../etc/evidence/t382-s4-fdc-diagnostic-lifetime.md)
+retains the proof.
