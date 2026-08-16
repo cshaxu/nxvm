@@ -2,38 +2,16 @@
 
 ## Current Work
 
-**Active: M5 T382 S8 corrective.**
-
-## M5 T382 S8 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Corrective |
-| Admission And Approval | Owner-approved corrective reopening after closure review, 2026-08-15; S8 only. |
-| Objective | Preserve 64-bit `memory_kib` exactly through catalog, Console and session option construction; reconcile current artifact baseline. |
-| Non-goals | No memory schema/profile change or new allocation semantics. |
-| Reference Baseline | T382 closure `75312b16` is rejected pending this correction. |
-| Candidate Proposal | [M5 quality-boundary recovery](../proposals/m5-quality-boundary-recovery.md), S3 corrective continuation. |
-| Files And ABI Surface | Console formatting, focused Console regression, current-gate registration, CURRENT/evidence/history. |
-| Applicable Rules | Execution, architecture single-owner, coding bounded-failure, and documentation rules; no exception. |
-| Verification | >32-bit KiB YAML-to-option round trip, Console lifecycle, current gate, artifact SHA-256, governance and final audit. |
-| Expected Markers | `4294967296` remains exact at provider ingress. |
-| Asset Needs | None. |
-| Reporting Requirements | Complete executor P, then one-session coordinator actual-change review and governance P. |
-| Stop Conditions | Any schema or VM allocation requirement beyond formatting/transport. |
-| Exit Criteria | No narrowing conversion; CURRENT names final artifact and task-level closure only. |
-| Original Owner Request | Correct rejected T382 closure without rewriting prior history. |
-| Similar-Issue Sweep | Search formatting of `memory_bytes >> 10` and all CURRENT T382 artifact references. |
-
-| Latest Closed Task | Compact result |
-| --- | --- |
-| T382 | Prior S1--S7 closure `75312b16` is under approved S8 corrective review; it is not accepted as final until this packet closes. |
+**Idle.**
 
 ## Current Technical Baseline
 
-- **Current developer artifact:** T382 S8 candidate `vm-0-5-0382` /
-  `build/output/nxvm_0_5_0382.exe`; final SHA-256 and current-gate proof await
-  S8 evidence. The prior T382 closure is not accepted while this packet is active.
+- **Current developer artifact:** T382 S8 `vm-0-5-0382` /
+  `build/output/nxvm_0_5_0382.exe`, SHA-256
+  `6507E88A85F9E85ED4EB12D1B0B376DED5894771D178E3D1B2B5B89202BC8D57`.
+  Its 251-test current-gate and corrective reclosure proof are retained in
+  [S8 evidence](../etc/evidence/t382-s8-console-memory-roundtrip.md) and the
+  [corrective audit](../etc/evidence/t382-s8-reclosure-audit.md).
 - **T285 display implementation:** `INT 10h` mode `10h` /
   `EGA-640x350x16-direct` has a VADP-owned planar frame path and copied-frame
   consumer boundary; mode 0Dh remains a separate retained path.
@@ -48,7 +26,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T382 | Prior S1--S7 closure is under approved S8 corrective review; it is retained as a task-level record and not final until S8 accepts. [Prior audit](../etc/evidence/t382-task-closure-audit.md). |
+| T382 | Reclosed at S8: the prior S1--S7 closure is retained historically, while S8 corrects its Console 64-bit transport and final artifact baseline. [Corrective audit](../etc/evidence/t382-s8-reclosure-audit.md). |
 | T381 | Closed: S1 P1 `9b6a86c6` delivered frozen YAML profile selection and the true zero-session Console; corrective S2 restored its task-level closure state without changing runtime evidence or the T381 artifact. [Evidence](../etc/evidence/t381-s1-console-yaml-profiles.md). |
 | T380 | Closed: strict Model-339 startup, 512 KB FDC/BDA repair, input/FDC current-gate recovery, and the owner-replayed DOS 5/HIMEM no-XMS path are verified. It does not claim DOS completion or 5170 L3 closure. [Evidence](../etc/evidence/t380-s2-model339-start-and-current-gate-recovery.md). |
 | T378 | Closed at `42f0402a`: production ingress proof and virtual-time ownership are corrected without a test-only API; Model-339 re-audit remains the sole L3 decision receiver. [Evidence](../etc/evidence/t378-s1-native-ingress-boundary-repair.md). |

@@ -79,3 +79,14 @@ S1--S7 closure review is retained in
 [T382 closure audit](../etc/evidence/t382-task-closure-audit.md). T382 is
 closed; it does not claim L3 hardware closure or implement CR mutation
 semantics.
+
+## S8 Corrective Acceptance And Reclosure
+
+The prior closure was correctly rejected because Console narrowed a valid
+64-bit catalog KiB value while constructing its session option, and CURRENT
+still named the S1 artifact as current. P17 `ce952146` removes the narrowing,
+adds the catalog-to-Console-to-provider regression, and registers it in the
+current gate. The corrective review establishes the final artifact baseline
+and re-closes T382 without rewriting the earlier evidence. See
+[T382 S8 evidence](../etc/evidence/t382-s8-console-memory-roundtrip.md) and
+the [corrective reclosure audit](../etc/evidence/t382-s8-reclosure-audit.md).
