@@ -37,6 +37,7 @@ extern "C" {
 #define CORE_MACHINE_VADP_PORT_MODE 0x03d8u
 #define CORE_MACHINE_VADP_PORT_COLOR 0x03d9u
 #define CORE_MACHINE_VADP_PORT_STATUS 0x03dau
+#define CORE_MACHINE_VADP_PORT_COMPAQ_MISCELLANEOUS_OUTPUT 0x03c2u
 #define CORE_MACHINE_VADP_PORT_COMPAQ_FEATURE_CONTROL \
     CORE_MACHINE_VADP_PORT_STATUS
 #define CORE_MACHINE_VADP_PORT_COMPAQ_CONTROL_MODE 0x03c6u
@@ -82,6 +83,7 @@ typedef struct t_vadp_data {
     core_machine_vadp_cecg_config cecg;
     type_unsigned_8 compaq_control_mode;
     type_unsigned_8 compaq_feature_control;
+    type_bool compaq_cpu_video_memory_disabled;
     type_bool compaq_lightpen_latched;
     type_unsigned_64 dirty_generation;
     C_INT captured;

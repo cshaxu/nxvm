@@ -2,7 +2,24 @@
 
 ## Current Work
 
-**T386 open; S1--S10 accepted.** The accepted [functional ledger](../etc/evidence/t386-s1-deskpro-functional-ledger.md), [non-runnable carrier contract](../etc/evidence/t386-s2-model40-carrier-contract.md), [second-PIT proof](../etc/evidence/t386-s3-second-pit-owner.md), [D4 platform-control proof](../etc/evidence/t386-s4-d4-platform-control.md), [S5 storage-controller contract](../etc/evidence/t386-s5-deskpro-storage-controller.md), [S6 Compaq EGA personality evidence](../etc/evidence/t386-s6-compaq-ega-personality.md), [S7 private composition evidence](../etc/evidence/t386-s7-private-model40-composition.md), [S8 integrated selected-device replay](../etc/evidence/t386-s8-model40-integration.md), [S9 CECG control/static-configuration evidence](../etc/evidence/t386-s9-cecg-control-static-configuration.md), and [S10 CECG Feature Control/Environment evidence](../etc/evidence/t386-s10-cecg-feature-environment.md) establish only selected functional owners without early Model-40 publication or an L3 claim. S10 adds source-backed color-route Feature Control-to-Environment state and reset restoration. Firmware, physical media, board timing and L3 closure remain transferred.
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | `M5 T386 S11` -- Continuation. |
+| Admission And Approval | Owner-approved continuing DeskPro 386 functional and L3 programme, including the explicit core-generic / VM-profile boundary. S11 follows accepted S10 and adopts the next primary-determined CECG functional gap. |
+| Objective | Implement the source-backed `3C2h` Miscellaneous Output CPU-video-memory decode gate for selected CECG, using VADP as the shared hardware owner and Model-40 composition only for reset declaration. |
+| Non-goals | No other `3C2h` effects, I/O-base switching, Input Status 0, feature/special-interface hardware, live-video multiplexing, monitor/physical output, firmware/ROM import, board/raster timing, profile publication, IBM/generic EGA mutation, Windows or L3 claim. |
+| Reference Baseline | `a8270369` (T386 S10 accepted); Compaq *Enhanced Color Graphics Board / Color Monitor Technical Reference Guide* (December 1986), sections 4.1--4.2; T386 S6/S9/S10 evidence; `TODO.md` CECG boundary; T386 functional and board proposals. |
+| Candidate Proposal | [DeskPro 386 Model 40 selected-device functional closure](../proposals/m5-deskpro-386-model40-device-functional-closure.md). |
+| Files And ABI Surface | Evidence/owned tests, existing shared VADP state, `3C2h` port and EGA memory-provider query owner, display declaration only for reset state, and private Model-40 composition only for selected declaration. No public VM product interface, catalog or assets. |
+| Applicable Rules | `docs/design/ARCHITECTURE.md`, `docs/design/CODING.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`, `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, and `docs/etc/operations/policy/source-policy.md`; VADP owns the generic device decode rule, Model-40 composition only selects its reset state. |
+| Verification | Build a source-to-observable table for Miscellaneous Output bit 1; add focused VADP and selected Model-40 controls covering enabled/disabled aperture route, declared reset restoration and generic-EGA isolation; run serial current gate and applicable governance checks. |
+| Expected Markers | `M5:T386:S11:CECG-CPU-VIDEO-GATE:OK`; any implementation marker must name its actual owner. |
+| Asset Needs | Transient primary documentation/research and project-owned synthetic fixtures only; no third-party source, firmware, guest media, local path or binary is copied, hashed or committed. |
+| Reporting Requirements | Report source-determined register semantics, implementation/evidence outcomes and every transfer; complete and push one P only after self-review, then conduct coordinator actual-change review. |
+| Stop Conditions | Stop and transfer an observable lacking a primary contract, requiring alternate I/O routing, board memory availability, firmware, physical monitor behavior or board timing; do not infer from IBM EGA or copy emulator behavior. |
+| Exit Criteria | The CECG-only `3C2h` bit changes whether VADP claims its EGA aperture; reset restores the declared state; generic EGA remains isolated; focused and required gates pass; all excluded behavior is explicitly transferred without a board-timing claim. |
+| Original Owner Request | Continue DeskPro 386 complete functional and L3 work under the stated boundary: profile/composition in `vm`; generic hardware capability in `core`. |
+| Similar-Issue Sweep | Sweep `3C2h`, miscellaneous output, EGA device-provider query/read/write routes, CECG declarations, generic EGA paths, Model-40 composition, reset paths, tests, CMake and all CECG TODO/proposal/evidence records. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T382 S8 `vm-0-5-0382` /

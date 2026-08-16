@@ -290,6 +290,9 @@ static type_status core_machine_vadp_ega_planar_query(C_VOID *owner,
     t_vadp *adapter = (t_vadp *)owner;
 
     if (adapter == STD_NULL || !core_machine_vadp_ega_planar_active(adapter) ||
+        (adapter->data.ega_personality ==
+        CORE_MACHINE_VADP_EGA_PERSONALITY_COMPAQ_ENHANCED_COLOR &&
+        adapter->data.compaq_cpu_video_memory_disabled) ||
         (access != CORE_MACHINE_MEMORY_ACCESS_READ &&
          access != CORE_MACHINE_MEMORY_ACCESS_WRITE) ||
         physical < CORE_MACHINE_VADP_EGA_APERTURE_BASE ||
@@ -785,6 +788,17 @@ static C_VOID core_machine_vadp_write_compaq_lightpen_latch_set(t_port *port,
     if (adapter != STD_NULL) adapter->data.compaq_lightpen_latched = TYPE_TRUE;
 }
 
+static C_VOID core_machine_vadp_write_compaq_miscellaneous_output(t_port *port,
+    type_unsigned_16 port_id, C_VOID *owner)
+{
+    t_vadp *adapter = (t_vadp *)owner;
+
+    (C_VOID)port_id;
+    if (port == STD_NULL || adapter == STD_NULL) return;
+    adapter->data.compaq_cpu_video_memory_disabled =
+        (port->data.ioByte & 0x02u) != 0u;
+}
+
 static C_VOID core_machine_vadp_write_compaq_feature_control(t_port *port,
     type_unsigned_16 port_id, C_VOID *owner)
 {
@@ -1054,6 +1068,8 @@ type_status core_machine_vadp_configure_ega_personality(t_vadp *adapter,
             core_machine_vadp_write_compaq_lightpen_latch_reset, adapter);
         core_machine_port_add_write(port, CORE_MACHINE_VADP_PORT_COMPAQ_LIGHTPEN_LATCH_SET,
             core_machine_vadp_write_compaq_lightpen_latch_set, adapter);
+        core_machine_port_add_write(port, CORE_MACHINE_VADP_PORT_COMPAQ_MISCELLANEOUS_OUTPUT,
+            core_machine_vadp_write_compaq_miscellaneous_output, adapter);
         core_machine_port_add_write(port, CORE_MACHINE_VADP_PORT_COMPAQ_FEATURE_CONTROL,
             core_machine_vadp_write_compaq_feature_control, adapter);
         core_machine_port_add_read(port, CORE_MACHINE_VADP_PORT_COMPAQ_ENVIRONMENT,
@@ -1069,7 +1085,7 @@ type_status core_machine_vadp_configure_ega_personality(t_vadp *adapter,
     adapter->data.ega_personality = personality;
     if (personality == CORE_MACHINE_VADP_EGA_PERSONALITY_COMPAQ_ENHANCED_COLOR) {
         adapter->data.cecg = (core_machine_vadp_cecg_config) {
-            0x40u, 0x00u, 0x30u, 0x01u, TYPE_TRUE };
+            0x40u, 0x00u, 0x30u, 0x01u, TYPE_TRUE, TYPE_FALSE };
         adapter->data.compaq_control_mode = adapter->data.cecg.control_mode;
     }
     return TYPE_STATUS_OK;
@@ -1093,6 +1109,8 @@ type_status core_machine_vadp_configure_cecg(t_vadp *adapter,
     }
     adapter->data.cecg = *config;
     adapter->data.compaq_control_mode = config->control_mode;
+    adapter->data.compaq_cpu_video_memory_disabled =
+        config->cpu_video_memory_disabled;
     adapter->data.compaq_feature_control = config->environment & 0x03u;
     return TYPE_STATUS_OK;
 }
@@ -1150,6 +1168,8 @@ C_VOID core_machine_vadp_reset(t_vadp *adapter)
     adapter->data.cecg = cecg;
     adapter->data.compaq_control_mode = cecg.control_mode;
     adapter->data.compaq_feature_control = cecg.environment & 0x03u;
+    adapter->data.compaq_cpu_video_memory_disabled =
+        cecg.cpu_video_memory_disabled;
     adapter->data.ega_sequencer = ega_sequencer;
     adapter->data.ega_sequencer_configured = ega_sequencer_configured;
     core_machine_vadp_reset_sequencer(adapter);
