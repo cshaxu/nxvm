@@ -2,13 +2,26 @@
 
 ## Current Work
 
-**T386 open; S1 accepted.** The complete selected Model-40 functional
-capability and ownership ledger is retained in [S1 evidence](../etc/evidence/t386-s1-deskpro-functional-ledger.md).
-It prevents generic PC/AT, ATA/HDC, IBM MFM and IBM EGA substitution, and
-orders the next implementation slices from the profile carrier through second
-PIT, platform NMI/reset, storage and the small Compaq EGA personality. It is
-not a runnable-profile, firmware, device-completeness, board-timing or L3
-claim.
+## M5 T386 S2 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | The owner approved continuous single-person execution of the ordered M5 Queue through DeskPro/XT L3, selected the original 1986 Compaq DeskPro 386 Model 40/386-16 in T384, and approved one shared VADP core with a small Compaq personality rather than copied IBM EGA code. T386 S1 is accepted; this continuation is admitted only to define the first product-local Model-40 composition contract. |
+| Objective | Specify and prove the exact VM profile-carrier/composition boundary that can represent the selected Model-40 topology without exposing a partial runnable profile: 80386DX-16/no-x87, one MiB, 128 KiB external-ROM geometry, keyboard-only/no-AUX, dual PIC/DMA, primary PIT/RTC/FDC routes, second-PIT, D4 NMI/reset/A20, Compaq fixed-disk and Compaq-EGA receiver seams. Identify which existing descriptor fields can carry facts, which falsely encode generic ATA/generated firmware/generic EGA, and the smallest source/test changes necessary before a later runnable publication. |
+| Non-goals | No source implementation or runtime publication; no YAML/catalog selection; no generic-PC/AT, Model-339, ATA/HDC, IBM MFM, generated BIOS or IBM-EGA reuse as a Compaq substitute; no ROM bytes/provenance manifest; no second-PIT, NMI/reset, storage or display implementation; no board timing/L3, physical 16 MHz, x87 or AUX. |
+| Reference Baseline | Accepted T386 S1 functional ledger; closed T384 selected configuration and T385 CPU ledger; current `pc_at_profile`, session, provider and machine-device source graph; architecture/coding rules; source policy; product-session/profile tests and current capability evidence. |
+| Candidate Proposal | [DeskPro 386 Model 40 selected-device functional closure](../proposals/m5-deskpro-386-model40-device-functional-closure.md). |
+| Files And ABI Surface | Audit/contract-only: `docs/states/CURRENT.md`, T386 evidence/history and, only if needed, focused product-profile/test planning records. Product/core source, public interfaces, profile enum/catalog, YAML, firmware, ROM/media assets and runtime composition remain read-only. A later code S must name the exact descriptor/selection/provider surface and prove that it cannot publish incomplete hardware. |
+| Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`, and `docs/etc/operations/policy/source-policy.md`: one composition root and one mutable route owner; no duplicate or implicit profile truth; product-visible changes require evidence; protected firmware remains external. No exception is requested. |
+| Verification | Trace every descriptor field through session selection, validation, core materialization, device configuration, firmware binding, media admission and profile/YAML tests. Produce a receiver matrix for Model-40 facts, including unavailable capability states, and prove that current runtime selection would bind generic firmware/ATA/EGA or otherwise misrepresent the Model-40. Verify a later carrier can remain private/non-runnable until all S3--S6 dependencies complete; run documentation governance and actual-change review. |
+| Expected Markers | `M5:T386:S2:MODEL40-CARRIER-CONTRACT:OK` and `M5:T386:S2:NONRUNNABLE-PUBLICATION-GUARD:OK`. |
+| Asset Needs | No ROM, guest media, external code or new research import is consumed. Existing T384 primary-source selection bounds the contract; unknown controller behavior remains S5 research/implementation work. |
+| Reporting Requirements | Record the exact current profile field/consumer audit, truthful carrier requirements, forbidden generic substitutions, any required private availability state, source/test receivers and the condition under which a Model-40 catalog/YAML entry may first become selectable. Do not call a contract a runnable machine. |
+| Stop Conditions | Stop and transfer if the carrier requires a new public ABI or profile catalog/YAML behavior, an unrecorded physical/firmware fact, ROM-byte analysis, an undocumented controller contract, a core owner change, or a new third-party import. |
+| Exit Criteria | A reviewed source-level contract accounts for every selected Model-40 fact and every current false substitute, establishes a non-runnable publication guard, and gives later S3--S6 exact source/test receivers without modifying product behavior. |
+| Original Owner Request | Complete the ordered M5 L3 program with full DeskPro functionality before DeskPro board timing and final audit, keeping external ROMs outside Git and retaining IBM EGA for the current-product L3 closure only. |
+| Similar-Issue Sweep | Search all profile descriptors, session/profile-provider callers, firmware slots, controller selection paths and YAML-visible profile identifiers. Dispose of each hit as reusable fact, false generic substitute, Model-40 receiver or unaffected Model-339/default behavior; do not create a second composition truth. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T382 S8 `vm-0-5-0382` /

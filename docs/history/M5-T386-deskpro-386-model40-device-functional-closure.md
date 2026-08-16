@@ -31,3 +31,12 @@ runnable profile or selecting/embedding a ROM. Second-PIT, platform
 NMI/reset, Compaq storage, and the small Compaq EGA personality remain
 separate bounded implementation receivers. IBM EGA stays outside this task's
 display scope and with the product-device L3 closure.
+
+### S2: Carrier And Non-Runnable Publication Contract
+
+S2 traces the current descriptor through selection, materialization, device
+composition, media and default firmware. It establishes that the existing
+carrier is deliberately the default-PC/AT or Model-339 shape, not a generic
+host for Model-40 facts: ATA HDC, generated firmware and generic EGA are
+structural false substitutes. The accepted [carrier contract](../etc/evidence/t386-s2-model40-carrier-contract.md)
+therefore keeps Model-40 private until S3--S6 close the selected receivers.
