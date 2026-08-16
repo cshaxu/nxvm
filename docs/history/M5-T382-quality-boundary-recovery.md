@@ -61,3 +61,12 @@ public facade, private xasm/disassembler construction, and debug console
 paths. The capacity matrix, static sweep, focused regression evidence, and
 separate S6 current-gate transfer are retained in
 [T382 S5 evidence](../etc/evidence/t382-s5-xasm-debug-capacity.md).
+
+## S6 Acceptance
+
+P13 `7335fa61` establishes pre-provider session capacity/final-ID rejection,
+with a generic limits policy usable by production hosts and focused proof of
+unchanged manager/provider state. It also corrects consumers to explicitly
+open sessions under the retained zero-session contract. The 250/250 current
+aggregate proof and artifact are retained in
+[T382 S6 evidence](../etc/evidence/t382-s6-session-manager-limits.md).
