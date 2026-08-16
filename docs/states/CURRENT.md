@@ -2,31 +2,11 @@
 
 ## Current Work
 
-**T386 open; S1--S17 accepted; S18 active.** S18 receives the selected
-Model-40 1.2 MB diskette-drive functional gap: its profile contract must choose
-the reusable 5.25-inch 1.2 MB device profile while the shared Core FDC continues
-to consume only the profile-neutral media contract. It is bounded functional
-progress only. Flux, CRC, rotation/index, physical CHRN, service timing, board
-waits and the Model-40 L3 audit remain open.
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation: M5 T386 S18. |
-| Admission And Approval | The owner approved continuing the DeskPro functional-before-timing program and clarified that profile concerns belong in VM while universal hardware capabilities belong in Core. T386 S5 and S15 identify the selected 1.2 MB drive/media contract as an open receiver; no exception. |
-| Objective | Close the selected Model-40 1.2 MB diskette drive functional binding: VM selects the reusable 5.25-inch 1.2 MB device profile (80 cylinders, two heads, 15 sectors per track and 512-byte sectors) for its raw-IMG media path, presents the resulting geometry through the existing profile-neutral media contract, and retains the selected FDC DMA2/IRQ6 composition. |
-| Non-goals | No Core Model-40/Compaq policy, FDC command-state rewrite, real BIOS/firmware execution, guest-media import, physical flux/CRC/rotation/index/CHRN representation, data-rate service-duration claim, controller/ISA wait or phase timing, generic clone behavior, public profile/catalog exposure, test-only production API or Model-40 L3 claim. |
-| Reference Baseline | T384 selected Model-40 capability audit; T386 S5 primary-backed 1.2 MB/500-kbit/s selection and generic FDC boundary; S7/S8 private composition; S15 functional ledger; accepted S16 at c25d46e1 and S17 at 12d606c5. |
-| Candidate Proposal | docs/proposals/m5-deskpro-386-model40-device-functional-closure.md with the DeskPro shared closure context. |
-| Files And ABI Surface | VM profile owns reusable device-profile specifications; VM machine media owns profile-neutral raw-IMG allocation and provider behavior; Model-40 private composition selects the reusable 5.25-inch 1.2 MB specification. Core media/FDC contracts and transactions remain profile-neutral and change only if a demonstrated generic capability is missing; no Core file may contain a Compaq name, selected geometry or profile decision. Existing default/5170 VM behavior retains its 1.44 MB selection. Tests use project-owned synthetic image bytes and existing production paths only. |
-| Applicable Rules | docs/rules/EXECUTION.md, docs/design/ARCHITECTURE.md, docs/design/CODING.md, docs/rules/ARCHITECTURE.md, docs/rules/CODING.md, the Model-40 functional proposal and VM-to-Core dependency direction. VM owns bootable-machine/profile composition; Core owns only generic media/FDC transactions and contracts. |
-| Verification | Sweep every VM FDD geometry initializer, create/insert/replace/reset path, media-provider geometry observation, all profile/session constructors and FDC binding callers. Add focused Model-40 private-session proof for selected device profile, 1,228,800-byte media acceptance, incorrect-size rejection, media observation, retained FDC DMA2/IRQ6 topology and reset persistence; retain default/5170 1.44 MB controls. Run affected media/FDC/composition tests, ownership checks, serial current gate, artifact rebuild, documentation governance, diff review and coordinator actual-change review. |
-| Expected Markers | M5:T386:S18:MODEL40-FDD-GEOMETRY:OK, M5:T386:S18:MODEL40-FDD-MEDIA:OK, and M5:T386:S18:MODEL40-FDD-RESET-BINDING:OK. |
-| Asset Needs | No ROM, firmware, guest media or external source is needed. T386 S5 retains the primary-backed selection facts; tests create only project-owned synthetic bytes in memory. |
-| Reporting Requirements | Record the VM-versus-Core ownership decision, selected geometry/media size, default/5170 control result and explicit physical/timing transfers in indexed evidence. Push one complete implementation P with proof and gates, then conduct coordinator actual-change review and governance P. |
-| Stop Conditions | Stop and transfer if selected behavior requires an actual BIOS policy, an unrepresented data-rate/drive-electrical contract, media encoding/physical sector identity, a Core profile-specific condition, or a change to public profile selection. Stop if a generic VM geometry mechanism cannot preserve existing 1.44 MB session consumers atomically. |
-| Exit Criteria | Model-40 private composition selects the stated 1.2 MB reusable device profile; generic Core observes it only via its existing media contract; focused production-path proof covers exact media size, rejection, observation, reset and retained FDC route; default/5170 controls retain 1.44 MB; no protected asset is tracked; all applicable gates and coordinator review pass. |
-| Original Owner Request | Achieve complete DeskPro 386 Model 40 functionality and L3 timing under the approved queue, capability-ledger-first order, with profile configuration in VM and universal hardware capabilities in Core. |
-| Similar-Issue Sweep | Sweep all reusable VM floppy device-profile selection, VM FDD allocation, image replacement/insertion, sidecar and reset code; every session/profile construction path; all media-registry/FDC callers and focused media/FDC tests. Classify each hit as shared Core mechanism, reusable VM device mechanism, Model-40 profile selection, another profile consumer or later physical/timing work; repair the owner or explicitly transfer the boundary. |
+**T386 open; S1--S18 accepted.** S18 adds reusable VM device-profile
+floppy specifications over Core's neutral media contract. The private Model 40
+selects its 5.25-inch 1.2 MB drive while default PC/AT and Model 339 retain
+1.44 MB. Public YAML backbone/variant selection, remaining device work, board
+timing and the Model-40 L3 audit remain open.
 ## Current Technical Baseline
 
 - **Current developer artifact:** T386 S18 `vm-0-5-0389` /
@@ -53,7 +33,7 @@ waits and the Model-40 L3 audit remain open.
 
 | Task | Compact result |
 | --- | --- |
-| T386 S17 | Accepted: Model-40 composition explicitly selects the generic dual-8237A/channel-4 cascade topology; Core validates it and retained/new proofs cover word/cascade/reset plus FDC DMA2 binding. DCLK, arbitration, expansion endpoints, remaining devices, board timing and L3 remain open. [Evidence](../etc/evidence/t386-s17-model40-dual-dma.md). |
+| T386 S18 | Accepted: reusable VM device-profile floppy geometries select Model-40 1.2 MB raw media while Core retains neutral media/FDC/DMA mechanics; default and Model-339 retain 1.44 MB. Public variants, physical media, timing and L3 remain open. [Evidence](../etc/evidence/t386-s18-model40-floppy-device-profile.md). |
 | T385 | Closed: the selected Model-40 80386DX-16 consumes the shared 80386 CPU/state/retirement owners without a DeskPro CPU fork; a clean current-source 251/251 gate passed, while functionality and board timing transfer unchanged. [Closure audit](../etc/evidence/t385-s1-task-closure-audit.md). |
 | T384 | Closed: the Model-40 capability audit freezes its original Compaq system board/storage ledger and owner-selected color EGA, keyboard and external-ROM constraint; its shared-VADP IBM/Compaq personality boundary transfers CPU, functional and timing work without making a runnable or L3 claim. [Closure audit](../etc/evidence/t384-s2-task-closure-audit.md). |
 | T383 | Closed: independent current-source replay accepts the frozen 5170 Model 339 deterministic-L3 contract after T380's strict-start repair; 251/251 current gate and focused matrix are retained in [evidence](../etc/evidence/t383-s1-model339-current-source-reaudit.md). |

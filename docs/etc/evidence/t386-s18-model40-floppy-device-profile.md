@@ -63,3 +63,20 @@ controller/ISA waits, or DeskPro board timing/L3. Those remain T386 functional
 or board-timing receivers. The generalized backbone/allowed-variant YAML
 surface transfers to a separate following S so the Console schema does not
 silently change during a storage-functional proof.
+## Coordinator Acceptance
+
+P1 `48820dd3` is accepted after independent actual-change review. The review
+confirms the reusable device-profile layer depends only on the existing
+Core-neutral media geometry contract, while VM retains the raw-IMG provider and
+all machine selection. Model 40 is the only new selector and chooses the
+shared 1.2 MB profile; default PC/AT and Model 339 retain their 1.44 MB
+control. No Compaq fact, profile policy, or test-only operation was added to
+Core.
+
+The coordinator reviewed every production, test, build, preset, governance and
+documentation change. The new test and owner-target inventory are registered;
+T345 has 160 owner tests, and T344 explicitly classifies the previously
+unclassified existing CECG fixture. Dependency-DAG, artifact, documentation,
+focused tests and the serial **273/273** current gate pass. S18 is accepted as
+bounded DeskPro functional progress, not as a BIOS, public YAML variant,
+physical-media, service-timing, board-timing or L3 result. T386 remains open.
