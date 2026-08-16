@@ -86,3 +86,7 @@ for additional machines require their own constrained profile contracts.
 ## P2 Corrective Acceptance Input
 
 P1 was not accepted because its catalog and construction proofs were separate. P2 adds the missing retained Console-to-catalog-to-provider production-route regression; it changes no machine contract or artifact bytes. The focused route, 275/275 serial current gate, specialized gates and documentation gate pass from the corrected graph.
+
+## Coordinator Acceptance
+
+P1 14b3abe was reviewed against the active packet and rejected solely because it lacked a durable Console-to-catalog-to-provider path regression. P2 8f3f8ec adds that exact synthetic regression. The coordinator reviewed P1--P2 actual source, CMake, tests, evidence and owner-provided Queue/Roadmap/proposal changes: Core remains free of Model-40/file policy; VM retains the constrained manifest, copied carrier and fixed backbone; no protected asset is tracked. The final source passes the 275/275 serial current gate, specialized gates and documentation governance. S20 is accepted as bounded functional composition progress, not firmware execution, selected-device completion, board timing or L3 closure.
