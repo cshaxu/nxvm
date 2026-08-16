@@ -16,6 +16,7 @@ C_INT main(C_VOID)
 
     vm_session_provider_initialize(&provider);
     if (core_product_session_manager_create(&provider, &manager) != TYPE_STATUS_OK ||
+        core_product_session_manager_open(manager, &id) != TYPE_STATUS_OK || id != 0u ||
         core_product_session_manager_borrow_selected(manager, &first) != TYPE_STATUS_OK ||
         core_product_session_manager_open(manager, &id) != TYPE_STATUS_OK || id != 1u ||
         core_product_session_manager_select(manager, 1u) != TYPE_STATUS_OK ||
@@ -24,11 +25,11 @@ C_INT main(C_VOID)
         core_product_session_manager_close(manager, 1u) != TYPE_STATUS_OK ||
         core_product_session_manager_get_selected_id(manager, &id) != TYPE_STATUS_OK ||
         id != 0u ||
-        core_product_session_manager_open(manager, &id) != TYPE_STATUS_OK || id != 1u ||
-        core_product_session_manager_select(manager, 1u) != TYPE_STATUS_OK ||
+        core_product_session_manager_open(manager, &id) != TYPE_STATUS_OK || id != 2u ||
+        core_product_session_manager_select(manager, 2u) != TYPE_STATUS_OK ||
         core_product_session_manager_list(manager, snapshots, 2u, &count) != TYPE_STATUS_OK ||
         count != 2u || snapshots[0].id != 0u || snapshots[0].selected ||
-        snapshots[1].id != 1u || !snapshots[1].selected) {
+        snapshots[1].id != 2u || !snapshots[1].selected) {
         core_product_session_manager_destroy(manager);
         return 1;
     }

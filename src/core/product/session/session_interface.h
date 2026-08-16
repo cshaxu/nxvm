@@ -33,11 +33,20 @@ typedef struct core_product_session_snapshot {
     C_CHAR details[64];
 } core_product_session_snapshot;
 
+typedef struct core_product_session_manager_limits {
+    STD_SIZE_T maximum_sessions;
+    core_product_session_id last_session_id;
+} core_product_session_manager_limits;
+
 typedef struct core_product_session_manager core_product_session_manager;
 typedef struct core_product_session_provider core_product_session_provider;
 
 type_status core_product_session_manager_create(
     const core_product_session_provider *provider,
+    core_product_session_manager **out_manager);
+type_status core_product_session_manager_create_with_limits(
+    const core_product_session_provider *provider,
+    const core_product_session_manager_limits *limits,
     core_product_session_manager **out_manager);
 C_VOID core_product_session_manager_destroy(core_product_session_manager *manager);
 type_status core_product_session_manager_open(

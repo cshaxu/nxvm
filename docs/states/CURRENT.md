@@ -2,11 +2,28 @@
 
 ## Current Work
 
-**No active task packet.**
+**Active: M5 T382 S6.**
 
-| Latest Task S | Compact result |
+## M5 T382 S6 Packet
+
+| Field | Required record |
 | --- | --- |
-| T382 S5 | Accepted: bounded text construction now covers public xasm, private assembler/disassembler fields, and debug console strings. Current-gate manager failures remain transferred to S6. [Evidence](../etc/evidence/t382-s5-xasm-debug-capacity.md). |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner-approved T382 quality-boundary recovery, 2026-08-15; S6 only. |
+| Objective | Define deterministic session-manager capacity, allocation-overflow, and 32-bit ID-exhaustion behavior. |
+| Non-goals | No change to ordinary zero-session behavior, selection semantics, or global registry. |
+| Reference Baseline | T382 S5 acceptance `2768aeb3` and retained S6 proposal. |
+| Candidate Proposal | [M5 quality-boundary recovery](../proposals/m5-quality-boundary-recovery.md), S6. |
+| Files And ABI Surface | Core session manager, provider-contract test seam, affected zero-session smokes, evidence. |
+| Applicable Rules | Execution, architecture single-owner, coding bounded-failure, and documentation rules; no exception. |
+| Verification | Normal open/close, capacity rejection without provider open, ID exhaustion without duplicate ID, zero-session smoke correction, current gate and governance. |
+| Expected Markers | Exhaustion leaves manager state and provider state unchanged. |
+| Asset Needs | None. |
+| Reporting Requirements | Complete executor P, then one-session coordinator actual-change review and governance P. |
+| Stop Conditions | A required public test-only control or altered ordinary session semantics. |
+| Exit Criteria | All growth/ID paths follow one explicit failure contract. |
+| Original Owner Request | Finish the current code-quality task in one-session dual-role mode. |
+| Similar-Issue Sweep | Search all manager allocation and ID advancement paths plus consumers assuming an implicit session. |
 
 ## Current Technical Baseline
 

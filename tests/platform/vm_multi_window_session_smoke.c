@@ -22,6 +22,7 @@ C_INT main(C_VOID)
 
     vm_session_provider_initialize(&provider);
     if (core_product_session_manager_create(&provider, &manager) != TYPE_STATUS_OK ||
+        core_product_session_manager_open(manager, &id) != TYPE_STATUS_OK ||
         core_product_session_manager_borrow_selected(manager, &opaque) != TYPE_STATUS_OK) {
         core_product_session_manager_destroy(manager);
         return 1;

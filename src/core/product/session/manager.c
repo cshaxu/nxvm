@@ -12,7 +12,10 @@ struct core_product_session_manager {
     core_product_session_provider provider;
     core_product_session_entry *entries;
     STD_SIZE_T count;
+    STD_SIZE_T maximum_sessions;
     core_product_session_id next_id;
+    core_product_session_id last_session_id;
+    C_INT id_exhausted;
     core_product_session_id selected_id;
 };
 
@@ -36,6 +39,15 @@ type_status core_product_session_manager_create(
     const core_product_session_provider *provider,
     core_product_session_manager **out_manager)
 {
+    return core_product_session_manager_create_with_limits(provider, STD_NULL,
+        out_manager);
+}
+
+type_status core_product_session_manager_create_with_limits(
+    const core_product_session_provider *provider,
+    const core_product_session_manager_limits *limits,
+    core_product_session_manager **out_manager)
+{
     core_product_session_manager *manager;
     if (provider == STD_NULL || out_manager == STD_NULL ||
         provider->open == STD_NULL || provider->describe == STD_NULL ||
@@ -44,6 +56,14 @@ type_status core_product_session_manager_create(
     manager = (core_product_session_manager *)STD_CALLOC(1u, sizeof(*manager));
     if (manager == STD_NULL) return TYPE_STATUS_NO_MEMORY;
     manager->provider = *provider;
+    manager->maximum_sessions = limits == STD_NULL ?
+        (STD_SIZE_T)-1 / sizeof(*manager->entries) : limits->maximum_sessions;
+    manager->last_session_id = limits == STD_NULL ? (core_product_session_id)-1 :
+        limits->last_session_id;
+    if (manager->maximum_sessions == 0u) {
+        STD_FREE(manager);
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
     *out_manager = manager;
     return TYPE_STATUS_OK;
 }
@@ -79,6 +99,9 @@ type_status core_product_session_manager_open_with_options(
     type_status status;
 
     if (manager == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (manager->count >= manager->maximum_sessions || manager->id_exhausted) {
+        return TYPE_STATUS_INVALID_STATE;
+    }
     id = manager->next_id;
     status = manager->provider.open(manager->provider.context, id, options,
         &session);
@@ -100,7 +123,8 @@ type_status core_product_session_manager_open_with_options(
     manager->entries[manager->count].id = id;
     manager->entries[manager->count].session = session;
     ++manager->count;
-    ++manager->next_id;
+    if (id == manager->last_session_id) manager->id_exhausted = 1;
+    else ++manager->next_id;
     if (manager->count == 1u) manager->selected_id = id;
     if (out_id != STD_NULL) *out_id = id;
     return TYPE_STATUS_OK;
