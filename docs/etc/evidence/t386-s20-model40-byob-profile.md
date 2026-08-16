@@ -61,14 +61,15 @@ vendor digest, catalogue or download mechanism is committed.
 - `vm-product-session-catalog-smoke` accepts a complete synthetic two-slot
   Model 40 manifest, retains its profile/provenance fields, and rejects an
   otherwise identical malformed digest.
+- `vm-model40-console-s20-smoke` drives the retained Console startup chooser through a complete synthetic YAML manifest and confirms the selected session reports the fixed Model-40 profile, 80386 and no FPU.
 - `vm-model40-byob-s20-smoke` writes project-owned zero/one 16-KiB synthetic
   chip files, creates the public fixed Model 40 session, proves 80386/no-FPU/
   1 MiB/15-sector FDD selection and copied carrier bytes, mutates the source
   file after creation without changing those live bytes, then proves a digest
   mismatch publishes no session.
-- The serial `current-gate` passed **274/274** controls. The specialized gate
-  passed with zero VM-to-Core migration edges, 274 registered current targets,
-  and T345's updated 221-row ownership matrix (161 owner-test, seven embedded,
+- The serial `current-gate` passed **275/275** controls. The specialized gate
+  passed with zero VM-to-Core migration edges, 275 registered current targets,
+  and T345's updated 222-row ownership matrix (162 owner-test, seven embedded,
   one type, two safe-production, 50 mixed/inherited and 57 residual rows).
 - The rebuilt developer artifact is `vm-0-5-0389`,
   `build/output/nxvm_0_5_0389.exe`, SHA-256
@@ -82,3 +83,6 @@ D4 parity/reset arbitration, remaining CECG behavior, physical fixed-media
 semantics, selected-device completeness, board timing or Model-40 L3. Those
 remain the T386 functional and board/L3 receivers. Public backbone variants
 for additional machines require their own constrained profile contracts.
+## P2 Corrective Acceptance Input
+
+P1 was not accepted because its catalog and construction proofs were separate. P2 adds the missing retained Console-to-catalog-to-provider production-route regression; it changes no machine contract or artifact bytes. The focused route, 275/275 serial current gate, specialized gates and documentation gate pass from the corrected graph.
