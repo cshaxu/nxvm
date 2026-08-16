@@ -37,7 +37,7 @@ static C_INT core_machine_kbc_mixed_fifo_lifecycle(C_VOID)
     core_machine_pic_initialize(&pic_master, &pic_slave, &port);
     core_machine_kbc_initialize(&kbc, &port);
     core_machine_kbc_bind_core_services(&kbc, &pic_master, &pic_slave,
-        &memory, &execution);
+        &memory, &execution, TYPE_TRUE);
     core_machine_kbc_initialize_pic(&port);
 
     core_machine_port_write(&port, 0x0064u, 0xd4u);
@@ -160,7 +160,7 @@ C_INT main(C_VOID)
     core_machine_pic_initialize(&pic_master, &pic_slave, &port);
     core_machine_kbc_initialize(&kbc, &port);
     core_machine_kbc_bind_core_services(&kbc, &pic_master, &pic_slave,
-        &memory, &execution);
+        &memory, &execution, TYPE_TRUE);
     core_machine_kbc_initialize_pic(&port);
 
     mixed_failed = core_machine_kbc_mixed_fifo_lifecycle();

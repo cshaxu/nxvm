@@ -4421,7 +4421,8 @@ static type_status core_machine_create_internal(
         core_machine_pic_timer_output, &machine->shared_pit_irq0_source);
     core_machine_kbc_bind_core_services(&machine->shared_kbc,
         &machine->shared_pic_master, &machine->shared_pic_slave,
-        &machine->executor_memory, &machine->executor_cpu_execution);
+        &machine->executor_memory, &machine->executor_cpu_execution,
+        !config->kbc_aux_absent);
     core_machine_kbc_set_typematic_timing(&machine->shared_kbc,
         machine->kbc_typematic_initial_ticks,
         machine->kbc_typematic_repeat_ticks);

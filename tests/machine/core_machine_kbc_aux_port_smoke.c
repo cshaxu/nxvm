@@ -64,7 +64,7 @@ C_INT main(C_VOID)
     core_machine_pic_initialize(&master, &slave, &port);
     core_machine_kbc_initialize(&kbc, &port);
     core_machine_kbc_bind_core_services(&kbc, &master, &slave, &memory,
-        &execution);
+        &execution, TYPE_TRUE);
     initialize_pic(&port);
 
     core_machine_port_write(&port, 0x0064u, 0x20u);

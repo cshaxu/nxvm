@@ -79,6 +79,9 @@ target_link_libraries(vm-pcat-composition-s4-smoke PRIVATE vm-composition)
 add_executable(vm-ibm-5170-model-339-composition-smoke
     tests/machine/vm_ibm_5170_model_339_composition_smoke.c)
 target_link_libraries(vm-ibm-5170-model-339-composition-smoke PRIVATE vm-composition)
+add_executable(vm-model40-private-composition-s7-smoke
+    tests/machine/vm_model40_private_composition_s7_smoke.c)
+target_link_libraries(vm-model40-private-composition-s7-smoke PRIVATE vm-composition)
 add_executable(vm-model-339-clock-contract-smoke
     tests/machine/vm_model_339_clock_contract_smoke.c)
 target_link_libraries(vm-model-339-clock-contract-smoke PRIVATE vm-composition)
@@ -876,6 +879,7 @@ set(VM_PROFILE_SOURCES
     src/vm/profile/default_profile/mouse_mapper.c
     src/vm/profile/default_profile/firmware/bios.c
     src/vm/profile/default_profile/firmware/qdcga.c
+    src/vm/profile/model40/model40.c
 )
 
 set(VM_RUNTIME_SOURCES
@@ -908,6 +912,7 @@ set(VM_COMPOSITION_SOURCES
     src/vm/composition/session/virtual_time.c
     src/vm/composition/session/provider_lifecycle.c
     src/vm/composition/session/machine_devices.c
+    src/vm/composition/session/model40_composition.c
     src/vm/composition/session/profile_firmware.c
     src/vm/composition/session/machine_info.c
 )
@@ -1819,6 +1824,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     vm-pcat-topology-s2-smoke
     vm-pcat-composition-s4-smoke
     vm-ibm-5170-model-339-composition-smoke
+    vm-model40-private-composition-s7-smoke
     vm-ibm-5170-model-339-cga-topology-smoke
     vm-ibm-5170-model-339-firmware-fdc-topology-smoke
     vm-fdc-dma-boundary-smoke
@@ -3120,10 +3126,10 @@ foreach(project_t345_target IN LISTS PROJECT_T344_CURRENT_GATE_TARGETS)
 endforeach()
 list(LENGTH PROJECT_T345_S2_OWNER_TEST_STRICT_TARGETS project_t345_s2_pure_count)
 list(LENGTH PROJECT_T345_S2_MIXED_OWNER_TEST_TARGETS project_t345_s2_mixed_count)
-if(NOT project_t345_s2_pure_count EQUAL 140 OR
+if(NOT project_t345_s2_pure_count EQUAL 141 OR
         NOT project_t345_s2_mixed_count EQUAL 3)
     message(FATAL_ERROR
-        "T345 S2 expected 140 pure and 3 mixed owner-test targets; found ${project_t345_s2_pure_count} pure and ${project_t345_s2_mixed_count} mixed.")
+        "T345 S2 expected 141 pure and 3 mixed owner-test targets; found ${project_t345_s2_pure_count} pure and ${project_t345_s2_mixed_count} mixed.")
 endif()
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     foreach(project_t345_target IN LISTS PROJECT_T345_S2_OWNER_TEST_STRICT_TARGETS)
@@ -3233,6 +3239,7 @@ set(PROJECT_T345_S4_RESIDUAL_DIRECT_ENTRIES
     "vm-composition|src/vm/composition/session/virtual_time.c|vm-composition"
     "vm-composition|src/vm/composition/session/provider_lifecycle.c|vm-composition"
     "vm-composition|src/vm/composition/session/machine_devices.c|vm-composition"
+    "vm-composition|src/vm/composition/session/model40_composition.c|vm-composition"
     "vm-composition|src/vm/composition/session/profile_firmware.c|vm-composition"
     "vm-composition|src/vm/composition/session/machine_info.c|vm-composition")
 string(REPLACE ";" "\n" project_t345_s4_residual_contents

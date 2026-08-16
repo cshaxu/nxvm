@@ -76,6 +76,8 @@ typedef struct core_machine_config {
     /* Optional product-selected 8254 topology; no output consumer is implied. */
     type_bool auxiliary_pit_present;
     type_unsigned_16 auxiliary_pit_base_port;
+    /* False preserves PC/AT AUX; true selects a keyboard-only 8042 topology. */
+    type_bool kbc_aux_absent;
 } core_machine_config;
 
 typedef struct core_machine_display_port_topology {

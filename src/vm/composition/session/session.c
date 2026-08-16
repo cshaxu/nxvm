@@ -222,13 +222,16 @@ type_status vm_session_storage_initialize(vm_session *machine)
     const vm_profile_default_pc_at_port_leaf *cmos_last;
     const vm_profile_default_pc_at_route *cmos_route;
     const vm_profile_default_pc_at_route *fdc_route;
-    core_machine_display_config display_config;
-    core_machine_dma_wiring dma_wiring;
+    core_machine_display_config display_config = {0};
+    core_machine_dma_wiring dma_wiring = {0};
     core_machine_rtc_cmos_config rtc_cmos_config = {0};
     type_status status;
 
     if (machine == STD_NULL || machine->core_machine != STD_NULL) {
         return TYPE_STATUS_INVALID_STATE;
+    }
+    if (machine->model40_private) {
+        return vm_session_model40_storage_initialize(machine);
     }
     if (machine->profile == STD_NULL) {
         machine->profile = vm_profile_default_pc_at_descriptor_get();
@@ -366,6 +369,39 @@ C_VOID vm_session_storage_finalize(vm_session *machine)
     core_machine_display_provider_slot_finalize(&machine->display_provider);
     core_machine_destroy(machine->core_machine);
     machine->core_machine = STD_NULL;
+}
+
+type_status vm_session_create_model40_private(
+    const vm_profile_model40_external_rom *rom, vm_session **out_session)
+{
+    vm_session *session;
+    type_status status;
+
+    if (out_session == STD_NULL || !vm_profile_model40_external_rom_is_valid(rom)) {
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
+    *out_session = STD_NULL;
+    session = (vm_session *)STD_CALLOC(1u, sizeof(*session));
+    if (session == STD_NULL) return TYPE_STATUS_NO_MEMORY;
+    session->model40_private = 1;
+    session->model40_rom = *rom;
+    session->core_machine_config = (core_machine_config) {
+        .memory_bytes = 1024u * 1024u,
+        .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
+        .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE,
+        .ticks_per_instruction = 1u,
+        .instruction_timing = {1u, 0u, 0u, 0u, 0u, 0u},
+        .clock_plan = {{1u, 1u, 0u}, {1u, 1u, 0u}, {1u, 1u, 0u},
+            {1u, 1u, 0u}, {1u, 1u, 0u}, {1u, 1u, 0u}},
+        .auxiliary_pit_present = TYPE_TRUE,
+        .auxiliary_pit_base_port = 0x0048u,
+        .kbc_aux_absent = TYPE_TRUE
+    };
+    status = vm_session_initialize(session);
+    if (status != TYPE_STATUS_OK) { STD_FREE(session); return status; }
+    vm_session_control_reset(&session->control);
+    *out_session = session;
+    return TYPE_STATUS_OK;
 }
 
 C_INT vm_session_create(const vm_session_config *config, vm_session **out_session)

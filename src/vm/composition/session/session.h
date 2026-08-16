@@ -13,6 +13,7 @@
 #include "core/utils/wait_provider.h"
 #include "vm/composition/session/control.h"
 #include "vm/composition/session/fault.h"
+#include "vm/composition/session/model40_composition.h"
 #include "vm/machine/debug.h"
 #include "core/machine/fdc.h"
 #include "vm/machine/fdd.h"
@@ -24,6 +25,7 @@
 #include "vm/profile/default_profile/firmware/bios.h"
 #include "vm/profile/default_profile/firmware/context.h"
 #include "vm/profile/default_profile/pc_at_profile.h"
+#include "vm/profile/model40/model40.h"
 
 typedef enum vm_session_boot_preference {
     VM_SESSION_BOOT_PREFERENCE_AUTO,
@@ -66,6 +68,8 @@ struct vm_session {
     vm_session_virtual_time_source virtual_time_source;
     vm_platform_virtual_time_source model_339_virtual_time_source;
     vm_session_boot_preference boot_preference;
+    C_INT model40_private;
+    vm_profile_model40_external_rom model40_rom;
     C_CHAR fdd_image_path[1024];
     C_CHAR hdd_image_path[1024];
 };
@@ -76,5 +80,7 @@ C_VOID vm_session_apply_boot_preference(vm_session *session);
 C_VOID vm_session_set_boot_hdd(vm_session *session, C_INT enabled);
 C_VOID vm_session_consume_request(C_VOID *opaque,
     const vm_platform_request *request);
+type_status vm_session_create_model40_private(
+    const vm_profile_model40_external_rom *rom, vm_session **out_session);
 
 #endif

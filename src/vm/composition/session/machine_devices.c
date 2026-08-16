@@ -13,7 +13,8 @@ C_VOID vm_session_machine_devices_initialize_media(vm_session *session)
 {
     if (session == STD_NULL) return;
     vm_machine_fdd_initialize(&session->fdd);
-    if (session->profile != STD_NULL && session->profile->hdc_present) {
+    if (session->model40_private ||
+        (session->profile != STD_NULL && session->profile->hdc_present)) {
         vm_machine_hdd_initialize(&session->hdd);
     }
 }
@@ -94,8 +95,13 @@ type_status vm_session_machine_devices_configure_controllers(vm_session *session
 {
     type_status status;
 
-    if (session == STD_NULL || !vm_profile_default_pc_at_descriptor_is_valid(
-            session->profile)) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (session == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (session->model40_private) {
+        return vm_session_model40_configure_controllers(session);
+    }
+    if (!vm_profile_default_pc_at_descriptor_is_valid(session->profile)) {
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
     status = vm_session_machine_devices_configure_fdc(session);
 
     if (status != TYPE_STATUS_OK) return status;
@@ -106,7 +112,8 @@ C_VOID vm_session_machine_devices_refresh(vm_session *session)
 {
     if (session == STD_NULL) return;
     vm_machine_fdd_refresh(&session->fdd);
-    if (session->profile != STD_NULL && session->profile->hdc_present) {
+    if (session->model40_private ||
+        (session->profile != STD_NULL && session->profile->hdc_present)) {
         vm_machine_hdd_refresh(&session->hdd);
     }
 }
@@ -115,7 +122,8 @@ C_VOID vm_session_machine_devices_reset(vm_session *session)
 {
     if (session == STD_NULL) return;
     vm_machine_fdd_reset(&session->fdd);
-    if (session->profile != STD_NULL && session->profile->hdc_present) {
+    if (session->model40_private ||
+        (session->profile != STD_NULL && session->profile->hdc_present)) {
         vm_machine_hdd_reset(&session->hdd);
     }
 }
@@ -124,7 +132,8 @@ C_VOID vm_session_machine_devices_finalize(vm_session *session)
 {
     if (session == STD_NULL) return;
     vm_machine_fdd_finalize(&session->fdd);
-    if (session->profile != STD_NULL && session->profile->hdc_present) {
+    if (session->model40_private ||
+        (session->profile != STD_NULL && session->profile->hdc_present)) {
         vm_machine_hdd_finalize(&session->hdd);
     }
 }

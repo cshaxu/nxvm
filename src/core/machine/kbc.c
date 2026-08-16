@@ -61,7 +61,8 @@ static C_VOID core_machine_kbc_refresh_current_irq(t_kbc *controller)
         }
     } else if (origin == CORE_MACHINE_KBC_OUTPUT_AUX) {
         core_machine_kbc_deassert_irq1(controller);
-        if (!controller->data.irq12_asserted && controller->data.aux_enabled &&
+        if (!controller->data.irq12_asserted && controller->connect.aux_present &&
+            controller->data.aux_enabled &&
             (controller->data.command_byte & CORE_MACHINE_KBC_COMMAND_IRQ12) != 0u &&
             (controller->data.command_byte & CORE_MACHINE_KBC_COMMAND_DISABLE_AUX) == 0u) {
             core_machine_pic_irq_source_assert(&controller->connect.irq12_source);
@@ -570,8 +571,11 @@ static C_VOID core_machine_kbc_write_data(t_port *port, type_unsigned_16 port_id
         controller->data.command_byte = value;
         controller->data.keyboard_enabled =
             (value & CORE_MACHINE_KBC_COMMAND_DISABLE_KEYBOARD) == 0u;
-        controller->data.aux_enabled =
+        controller->data.aux_enabled = controller->connect.aux_present &&
             (value & CORE_MACHINE_KBC_COMMAND_DISABLE_AUX) == 0u;
+        if (!controller->connect.aux_present) {
+            controller->data.command_byte |= CORE_MACHINE_KBC_COMMAND_DISABLE_AUX;
+        }
         controller->data.pending_write = CORE_MACHINE_KBC_PENDING_NONE;
         core_machine_kbc_refresh_current_irq(controller);
         break;
@@ -611,6 +615,9 @@ static C_VOID core_machine_kbc_write_data(t_port *port, type_unsigned_16 port_id
     case CORE_MACHINE_KBC_PENDING_AUX_DEVICE:
         controller->data.pending_write = CORE_MACHINE_KBC_PENDING_NONE;
         core_machine_kbc_handle_aux_command(controller, value);
+        break;
+    case CORE_MACHINE_KBC_PENDING_AUX_DISCARD:
+        controller->data.pending_write = CORE_MACHINE_KBC_PENDING_NONE;
         break;
     default:
         core_machine_kbc_handle_keyboard_command(controller, value);
@@ -669,12 +676,17 @@ static C_VOID core_machine_kbc_write_command(t_port *port,
         core_machine_kbc_refresh_current_irq(controller);
         break;
     case 0xa8u:
-        controller->data.aux_enabled = TYPE_TRUE;
-        controller->data.command_byte &= ~CORE_MACHINE_KBC_COMMAND_DISABLE_AUX;
+        controller->data.aux_enabled = controller->connect.aux_present;
+        if (controller->connect.aux_present) {
+            controller->data.command_byte &= ~CORE_MACHINE_KBC_COMMAND_DISABLE_AUX;
+        } else {
+            controller->data.command_byte |= CORE_MACHINE_KBC_COMMAND_DISABLE_AUX;
+        }
         core_machine_kbc_refresh_current_irq(controller);
         break;
     case 0xa9u:
-        core_machine_kbc_schedule_response_byte(controller, 0x00u,
+        core_machine_kbc_schedule_response_byte(controller,
+            controller->connect.aux_present ? 0x00u : 0x01u,
             CORE_MACHINE_KBC_OUTPUT_CONTROLLER);
         break;
     case 0xd0u:
@@ -685,7 +697,9 @@ static C_VOID core_machine_kbc_write_command(t_port *port,
         controller->data.pending_write = CORE_MACHINE_KBC_PENDING_OUTPUT_PORT;
         break;
     case 0xd4u:
-        controller->data.pending_write = CORE_MACHINE_KBC_PENDING_AUX_DEVICE;
+        controller->data.pending_write = controller->connect.aux_present ?
+            CORE_MACHINE_KBC_PENDING_AUX_DEVICE :
+            CORE_MACHINE_KBC_PENDING_AUX_DISCARD;
         break;
     default:
         /* IBM PC/AT 8042 commands F0h--FFh pulse output-port bits selected
@@ -717,12 +731,13 @@ C_VOID core_machine_kbc_register_ports(t_kbc *controller, t_port *port)
 C_VOID core_machine_kbc_initialize(t_kbc *controller, t_port *port) {
     if (controller == STD_NULL || port == STD_NULL) return;
     STD_MEMSET(controller, TYPE_ZERO_8, sizeof(*controller));
+    controller->connect.aux_present = TYPE_TRUE;
     core_machine_kbc_register_ports(controller, port);
     core_machine_kbc_reset(controller);
 }
 C_VOID core_machine_kbc_bind_core_services(t_kbc *controller, t_pic *pic_master,
     t_pic *pic_slave, t_ram *memory,
-    core_machine_cpu_execution_context *execution)
+    core_machine_cpu_execution_context *execution, type_bool aux_present)
 {
     if (controller == STD_NULL) return;
     core_machine_pic_irq_source_bind(&controller->connect.irq1_source,
@@ -731,6 +746,13 @@ C_VOID core_machine_kbc_bind_core_services(t_kbc *controller, t_pic *pic_master,
         pic_master, pic_slave, 12u);
     controller->connect.memory = memory;
     controller->connect.execution = execution;
+    controller->connect.aux_present = aux_present;
+    if (!aux_present) {
+        controller->data.aux_enabled = TYPE_FALSE;
+        controller->data.command_byte &= ~CORE_MACHINE_KBC_COMMAND_IRQ12;
+        controller->data.command_byte |= CORE_MACHINE_KBC_COMMAND_DISABLE_AUX;
+        core_machine_kbc_deassert_irq12(controller);
+    }
 }
 C_VOID core_machine_kbc_reset(t_kbc *controller)
 {
@@ -749,12 +771,13 @@ C_VOID core_machine_kbc_reset(t_kbc *controller)
     core_machine_pic_irq_source_deassert(&controller->connect.irq1_source);
     core_machine_pic_irq_source_deassert(&controller->connect.irq12_source);
     controller->data.command_byte = CORE_MACHINE_KBC_COMMAND_IRQ1 |
-        CORE_MACHINE_KBC_COMMAND_IRQ12 |
+        (controller->connect.aux_present ? CORE_MACHINE_KBC_COMMAND_IRQ12 :
+            CORE_MACHINE_KBC_COMMAND_DISABLE_AUX) |
         CORE_MACHINE_KBC_COMMAND_SYSTEM |
         CORE_MACHINE_KBC_COMMAND_TRANSLATION;
     controller->data.output_port = CORE_MACHINE_KBC_OUTPUT_RESET;
     controller->data.keyboard_enabled = TYPE_TRUE;
-    controller->data.aux_enabled = TYPE_TRUE;
+    controller->data.aux_enabled = controller->connect.aux_present;
     core_machine_kbc_set_defaults(controller);
     controller->data.scanning_enabled = TYPE_TRUE;
     core_machine_kbc_set_aux_defaults(controller);
@@ -931,7 +954,8 @@ type_status core_machine_kbc_submit_aux_report(t_kbc *controller,
 
     if (controller == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
     buttons &= 0x07u;
-    if (!controller->data.aux_enabled || !controller->data.aux_reporting_enabled) {
+    if (!controller->connect.aux_present || !controller->data.aux_enabled ||
+        !controller->data.aux_reporting_enabled) {
         return TYPE_STATUS_INVALID_STATE;
     }
     if (delta_x == 0 && delta_y == 0 && buttons == controller->data.aux_button_state) {

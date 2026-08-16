@@ -107,7 +107,9 @@ type_status vm_session_bind_execution_provider(vm_session *machine)
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
     status = core_machine_bind_firmware_provider(machine->core_machine,
-        vm_session_profile_firmware_provider(), &machine->default_profile_context);
+        machine->model40_private ? vm_profile_model40_firmware_provider() :
+        vm_session_profile_firmware_provider(), machine->model40_private ?
+        (C_VOID *)&machine->model40_rom : (C_VOID *)&machine->default_profile_context);
     if (status != TYPE_STATUS_OK) return status;
     status = core_machine_bind_execution_provider(machine->core_machine,
         &vm_session_execution_provider, machine);

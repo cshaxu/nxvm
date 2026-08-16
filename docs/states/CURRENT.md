@@ -2,6 +2,25 @@
 
 ## Current Work
 
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | `M5 T386 S7` -- Continuation. |
+| Admission And Approval | Owner approved continued single-person implementation of T386 on 2026-08-16. S1--S6 progress is retained below. This S is expanded with owner approval on 2026-08-16 to repair the shared 8042 AUX-topology owner required by the selected keyboard-only Model 40. The expansion is limited to explicit AUX absence; no other core scope is admitted. |
+| Objective | Materialize a private, immutable 1986 DeskPro 386 Model 40 composition specification and bind all accepted selected hardware owners through a non-public VM session route. The route must require an abstract, owner-supplied 128 KiB external-ROM input and reject absence or invalid geometry before any default firmware is bound. |
+| Non-goals | No public `vm_session_profile_kind`, Console/YAML/catalog selection, filesystem ROM loading, ROM/media commit, default/generated BIOS reuse, ATA/IBM-MFM substitution, IBM EGA selection, generic session override, timing/L3/Windows claim, board-service/wait implementation, or unrelated core behavior. |
+| Reference Baseline | `749ed997` (T386 S6 acceptance), accepted S2 carrier contract, S3 second PIT, S4 D4 platform, S5 Compaq storage and S6 Compaq EGA evidence. |
+| Candidate Proposal | [DeskPro 386 Model 40 selected-device functional closure](../proposals/m5-deskpro-386-model40-device-functional-closure.md), constrained by [DeskPro closure context](../proposals/m5-80386-deskpro-386-l3-baseline.md). |
+| Files And ABI Surface | New private `src/vm/profile/model40/` and private session composition receiver as needed; minimal `src/core/machine/{machine,kbc}.*` AUX-topology owner/configuration, CMake and owned tests. Do not modify public Console/catalog/session-selection interfaces or firmware/media assets. |
+| Applicable Rules | README Task Reading Set; EXECUTION lifecycle, P/closure, similar-issue and artifact rules; ARCHITECTURE sole owner/composition/private interface rules; CODING C11/cohesion/test rules; source policy external-ROM/BYOB boundary; DESIGN architecture/coding. Evidence records provenance and all transfers. |
+| Verification | Focused private Model-40 composition smoke proves immutable selected facts, absence/invalid-ROM rejection before default-firmware bind, successful product-local binding with project-owned synthetic bytes, selected hardware observations, no-AUX command/IRQ12/host-ingress proof, and default/Model-339 negative controls. Run required configured current gate serially, applicable specialized gates, documentation governance, source/diff review and static sweep. |
+| Expected Markers | `M5:T386:S7:MODEL40-PRIVATE-COMPOSITION:OK`; `M5:T386:S7:EXTERNAL-ROM-GUARD:OK`; focused smoke and evidence markers. |
+| Asset Needs | No external binary is read, copied, hashed, committed or discovered. Focused proof may use only project-owned synthetic bytes; real owner-managed ROM manifest/path loading is later separately admitted. |
+| Reporting Requirements | Report contract confirmation, after private carrier/composition binding, after focused proof, and final implementation P with source/asset boundary and transfers. |
+| Stop Conditions | Stop for any need to publish selection, use generated/default firmware, read an owner ROM/media, modify core outside the approved AUX topology owner, select unproven FDC/CECG firmware behavior, or alter functional/timing scope; transfer unresolved item through TODO/next S. |
+| Exit Criteria | A private carrier validates exactly selected Model-40 hardware facts; no default descriptor is a Model-40 truth source; all selected S3--S6 receiver configurations and keyboard-only AUX absence are materialized through production composition; ROM absence/invalid geometry cannot bind any firmware; a synthetic owned input proves generic immutable-ROM binding only; focused and required gates pass; evidence truthfully transfers firmware programming, media and timing gaps. |
+| Original Owner Request | Continue implementing the queued DeskPro 386 functional and L3 programme under governance, with owner-managed ROMs outside Git and no premature public profile. |
+| Similar-Issue Sweep | Sweep all `vm_session_profile_kind`, profile descriptor/validation, firmware binding, display/HDC/FDC/D4/second-PIT composition and 8042 AUX/IRQ12 ingress, profile catalog and default firmware uses. Every hit is fixed, explicitly retained as a control, or transferred. |
+
 **T386 open; S1--S6 accepted.** The accepted [functional ledger](../etc/evidence/t386-s1-deskpro-functional-ledger.md),
 [non-runnable carrier contract](../etc/evidence/t386-s2-model40-carrier-contract.md),
 [second-PIT proof](../etc/evidence/t386-s3-second-pit-owner.md),

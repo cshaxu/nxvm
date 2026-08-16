@@ -48,7 +48,8 @@ typedef enum core_machine_kbc_pending_write {
     CORE_MACHINE_KBC_PENDING_KEYBOARD_LEDS,
     CORE_MACHINE_KBC_PENDING_KEYBOARD_TYPEMATIC,
     CORE_MACHINE_KBC_PENDING_KEYBOARD_SCAN_SET,
-    CORE_MACHINE_KBC_PENDING_AUX_DEVICE
+    CORE_MACHINE_KBC_PENDING_AUX_DEVICE,
+    CORE_MACHINE_KBC_PENDING_AUX_DISCARD
 } core_machine_kbc_pending_write;
 
 typedef enum core_machine_kbc_aux_pending_parameter {
@@ -107,6 +108,7 @@ typedef struct t_kbc_data {
 typedef struct t_kbc_connect {
     core_machine_pic_irq_source irq1_source;
     core_machine_pic_irq_source irq12_source;
+    type_bool aux_present;
     t_ram *memory;
     core_machine_cpu_execution_context *execution;
 } t_kbc_connect;
@@ -120,7 +122,7 @@ C_VOID core_machine_kbc_register_ports(t_kbc *controller, t_port *port);
 C_VOID core_machine_kbc_initialize(t_kbc *controller, t_port *port);
 C_VOID core_machine_kbc_bind_core_services(t_kbc *controller, t_pic *pic_master,
     t_pic *pic_slave, t_ram *memory,
-    core_machine_cpu_execution_context *execution);
+    core_machine_cpu_execution_context *execution, type_bool aux_present);
 C_VOID core_machine_kbc_reset(t_kbc *controller);
 C_VOID core_machine_kbc_refresh(t_kbc *controller);
 C_VOID core_machine_kbc_advance(t_kbc *controller, type_unsigned_64 elapsed_ticks);

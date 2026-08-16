@@ -19,6 +19,11 @@ type_status vm_session_provider_lifecycle_initialize(vm_session *session)
     if (session == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
 
     vm_session_machine_devices_initialize_media(session);
+    if (session->model40_private) {
+        status = vm_session_machine_devices_configure_controllers(session);
+        if (status != TYPE_STATUS_OK) return status;
+        return vm_session_bind_media(session);
+    }
     status = vm_session_profile_firmware_initialize(session);
     if (status != TYPE_STATUS_OK) return status;
     vm_session_profile_firmware_register_cmos(session);
@@ -48,6 +53,6 @@ C_VOID vm_session_provider_lifecycle_reset(vm_session *session)
 C_VOID vm_session_provider_lifecycle_finalize(vm_session *session)
 {
     if (session == STD_NULL) return;
-    vm_session_profile_firmware_finalize(session);
+    if (!session->model40_private) vm_session_profile_firmware_finalize(session);
     vm_session_machine_devices_finalize(session);
 }
