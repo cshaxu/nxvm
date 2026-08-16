@@ -1,4 +1,4 @@
-﻿# Compaq DeskPro 386 Model 40 80386 L3 Closure Context
+# Compaq DeskPro 386 Model 40 80386 L3 Closure Context
 
 ## Purpose
 

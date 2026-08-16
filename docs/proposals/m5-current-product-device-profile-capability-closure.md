@@ -1,4 +1,4 @@
-﻿# M5 Current-Product Device Profile And Functional-Capability Closure
+# M5 Current-Product Device Profile And Functional-Capability Closure
 
 ## Purpose
 

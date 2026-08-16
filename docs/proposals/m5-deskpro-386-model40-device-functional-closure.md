@@ -1,4 +1,4 @@
-﻿# DeskPro 386 Model 40 Selected-Device Functional Closure
+# DeskPro 386 Model 40 Selected-Device Functional Closure
 
 ## Purpose
 

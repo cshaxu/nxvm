@@ -1,4 +1,4 @@
-﻿# Supporting Documentation Index
+# Supporting Documentation Index
 
 The fixed documentation topology retains this owner-approved area for supporting detail
 that does not fit the principal `rules/` and `design/` authorities. A supporting

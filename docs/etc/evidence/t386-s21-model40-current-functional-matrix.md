@@ -1,4 +1,4 @@
-﻿# T386 S21: Model-40 Current Functional Matrix And Profile Transfer
+# T386 S21: Model-40 Current Functional Matrix And Profile Transfer
 
 `M5:T386:S21:MODEL40-CURRENT-FUNCTIONAL-MATRIX:OK`
 
