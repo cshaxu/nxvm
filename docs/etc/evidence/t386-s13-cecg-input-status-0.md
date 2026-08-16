@@ -72,3 +72,15 @@ evidence file lacked their required final newline. P2 restores the C source
 endings; P3 restores the evidence ending. Neither changes code behavior,
 ownership, verification scope or transfer boundary. The focused S13 controls
 and the completed serial 268/268 replay remain the behavioral evidence.
+## Coordinator Acceptance
+
+P1 `7bd623f0` is accepted after independent actual-diff review. Its narrow P2
+`b374b97d`, P3 `c2a4ee74` and P4 `6ced0b29` corrective sequence restores final
+newlines and makes that record precise without altering behavior. The review
+confirms that VADP, not VM composition, owns `3C2h` mutable selector and Input
+Status 0 behavior; Model-40 composition supplies only declared fixed board
+facts; generic EGA is isolated; all direct declaration initializers and strict
+inventories are synchronized; focused controls, serial 268/268 current-gate
+replay and documentation governance pass. S13 is accepted as selected-device
+functional progress only; T386, firmware, physical board behavior, board
+timing and L3 closure remain open.

@@ -2,25 +2,13 @@
 
 ## Current Work
 
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation: T386 S13. |
-| Admission And Approval | Owner-approved continuation of T386 selected-device functional closure; owner explicitly confirms that Model-40 profile data belongs in `vm` and reusable hardware behavior belongs in `core` (2026-08-16). No exception is requested. |
-| Objective | Implement the primary-backed Compaq CECG `3C2h` bits 2--3 master-clock/SW1 selector and Input Status 0 observable for the selected Model-40 no-Special-Features, no-vertical-retrace-IRQ configuration. |
-| Non-goals | No raster/master-clock timing effect, monitor blanking/selection effect, Special Features interface/pins, vertical-retrace IRQ, `3x8/3x9` routing, firmware/ROM publication, physical monitor signaling, board waits, or L3 claim. |
-| Reference Baseline | `master` at T386 S12 accepted (`2e356458`); Compaq Enhanced Color Graphics Board / Color Monitor Technical Reference Guide, Dec. 1986, consulted transiently under source policy; T386 selected-device proposal and S9--S12 evidence. |
-| Candidate Proposal | `docs/proposals/m5-deskpro-386-model40-device-functional-closure.md`. |
-| Files And ABI Surface | Core: `src/core/machine/display_interface.h`, `vadp.[ch]`, and owned machine test/CMake registration as needed. VM: private `src/vm/composition/session/model40_composition.c` and its owned session proof only. No public profile/YAML/ROM ABI. |
-| Applicable Rules | Architecture: core is the shared generic CECG state/port owner; VM composition declares only Model-40 fixed switch/reset facts; no reverse dependency, duplicate VADP, or test-only production API. Coding: C11/project types, narrow cohesive helpers, bounded public declaration. Source: transient primary research only; no scan/ROM/media/source text/local path in Git. Documentation: active packet and truthful transfer/evidence only. |
-| Verification | Add core and Model-40 focused controls proving all four SW1 selector reads, declared reset restoration, CECG-only registration, generic-EGA isolation, and existing S9--S12 retained behavior. Run configured focused tests, applicable strict/ownership checks, serial current gate, documentation governance, and similar-issue sweep. |
-| Expected Markers | `M5:T386:S13:CECG-INPUT-STATUS-0:OK` and `M5:T386:S13:MODEL40-INPUT-STATUS-0:OK`. |
-| Asset Needs | No ROM, firmware, guest media, local asset, or third-party source import. A project-owned synthetic Model-40 ROM fixture remains test-only. |
-| Reporting Requirements | Report owner-boundary confirmation now; report implementation P with focused and gate evidence; coordinator independently reviews actual diff before a documentation-only acceptance P. |
-| Stop Conditions | Stop for a missing or conflicting primary register contract, an effect requiring an unselected Special Features board/IRQ producer/physical monitor, any ROM-publication requirement, or a scope expansion beyond selected register observability; transfer it to TODO/board receiver. |
-| Exit Criteria | Core owns mutable selector and Input Status 0 behavior; VM contains only the selected static switch/reset declaration; focused core and private-composition tests cover required observables and retained isolation; required gates pass; evidence/TODO are truthful; implementation and acceptance commits are pushed. |
-| Original Owner Request | Continue implementing DeskPro 386 complete functionality and L3 timing under governance; latest clarification: profile-specific data belongs in VM and generic hardware behavior belongs in Core. |
-| Similar-Issue Sweep | Sweep all CECG configuration initializers, `3C2h` registrations/read-write handlers, reset paths, Model-40 composition, generic-EGA setup, CMake/current-gate membership, S9--S12 controls, evidence and TODO. |
-
+**T386 open; S1--S13 accepted.** S13 makes the primary-backed Compaq CECG
+`3C2h` bit-2/3 SW1 selector and Input Status 0 VADP-owned. Private Model-40
+composition declares only the selected Color Monitor switch/reset facts and
+absent board features; accepted controls prove all four SW1 selector reads,
+reset restoration and generic-EGA isolation. Remaining `3C2h` effects,
+firmware, physical board behavior and L3 timing remain explicit receivers in
+`TODO.md` and the T386 proposals.
 ## Current Technical Baseline
 
 - **Current developer artifact:** T382 S8 `vm-0-5-0382` /
