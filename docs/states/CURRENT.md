@@ -2,38 +2,18 @@
 
 ## Current Work
 
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | `M5 T386 S8` -- Continuation. |
-| Admission And Approval | Owner-approved T386 continuation after S7 private composition; S8 is the next unused T386 subtask and is bounded to integrated selected-device functional replay. |
-| Objective | Use the private Model 40 composition with project-owned synthetic ROM bytes to replay and prove selected reset, IRQ/DRQ, controller state, error and consumer behavior. Repair a reproduced functional defect only at its earliest shared or VM owner. |
-| Non-goals | No public profile/catalog/Console/YAML route, external ROM or media loading, generated BIOS substitution, new firmware implementation, physical 40 MB semantics, CECG firmware/board behavior, board waits/service timing, L3 or Windows claim. |
-| Reference Baseline | `3824acf9` (S7 private carrier), S1 functional ledger, S3 second PIT, S4 D4, S5 storage and S6 CECG evidence. |
-| Candidate Proposal | [DeskPro 386 Model 40 selected-device functional closure](../proposals/m5-deskpro-386-model40-device-functional-closure.md). |
-| Files And ABI Surface | Owned Model 40 private composition/test/evidence; minimal earliest shared core or VM owner only when the replay proves a functional defect. No public product interfaces or assets. |
-| Applicable Rules | `docs/design/ARCHITECTURE.md`, `docs/design/CODING.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`, `docs/rules/EXECUTION.md`, and `docs/etc/operations/policy/source-policy.md`; the generic FDC state machine remains core-owned, while Model 40 selection/composition remains VM-owned. |
-| Verification | A focused integration smoke must cover reset, selected ROM mapping, 8042 keyboard-only behavior, D4/NMI observation, second PIT state/reset, FDC DMA2/IRQ6 topology, Compaq HDC status/IRQ14 semantics, CECG identity/reset, RTC/CMOS and negative default/Model-339 controls. Run serial current gate and required owner/governance gates. |
-| Expected Markers | `M5:T386:S8:MODEL40-INTEGRATION:OK`; `M5:T386:S8:MODEL40-CONTROLS:OK`. |
-| Asset Needs | Synthetic project-owned ROM bytes only. No external ROM, guest disk, source import, path or binary is read, copied, hashed or committed. Local reference source is inspected transiently only as an allowed behavior cross-check and is not copied or imported. |
-| Reporting Requirements | Report the selected-device matrix result, owner boundary, focused and required gate outcomes, and each transferred non-goal. Commit and push only a complete P after executor self-review; coordinator then performs actual-change review. |
-| Stop Conditions | Stop for a missing primary functional contract, firmware behavior requirement, physical-media behavior, public-profile need, or board-time/availability question; transfer it to the governing later receiver. |
-| Exit Criteria | Integrated replay proves every selected available owner listed in Verification or records a bounded repaired defect; all unresolved firmware, physical-media, CECG-board and timing matters are explicitly transferred; focused and required gates pass. |
-| Original Owner Request | Continue the approved DeskPro 386 functional closure under the stated rule: Model 40 profile/composition belongs in `vm`; generic reusable hardware capability belongs in `core`. |
-| Similar-Issue Sweep | Sweep Model 40 private route, default/Model-339 controls, firmware binding, reset, KBC/AUX, second PIT, D4/NMI, RTC, FDC/DMA, Compaq HDC/IRQ14, CECG and all session composition calls. |
-**T386 open; S1--S6 accepted.** The accepted [functional ledger](../etc/evidence/t386-s1-deskpro-functional-ledger.md),
+**T386 open; S1--S8 accepted.** The accepted [functional ledger](../etc/evidence/t386-s1-deskpro-functional-ledger.md),
 [non-runnable carrier contract](../etc/evidence/t386-s2-model40-carrier-contract.md),
 [second-PIT proof](../etc/evidence/t386-s3-second-pit-owner.md),
 [D4 platform-control proof](../etc/evidence/t386-s4-d4-platform-control.md),
-[S5 storage-controller contract](../etc/evidence/t386-s5-deskpro-storage-controller.md), and
-[S6 Compaq EGA personality evidence](../etc/evidence/t386-s6-compaq-ega-personality.md)
-now provide primary-backed selected functional owners without early Model-40
-publication. S6 adds one shared-VADP Compaq personality for the selected CECG
-identity reads and 64-colour digital capture, preserves generic EGA as its
-control, and truthfully transfers CECG firmware/physical/board behavior to
-TODO and the later DeskPro board receiver. The serial 256/256 current gate,
-all specialized gates, and documentation governance passed; P10/P11 are
-accepted after actual-change review. S7 alone may compose the accepted owners;
-no runnable Model-40 or L3 claim is made here.
+[S5 storage-controller contract](../etc/evidence/t386-s5-deskpro-storage-controller.md),
+[S6 Compaq EGA personality evidence](../etc/evidence/t386-s6-compaq-ega-personality.md),
+[S7 private composition evidence](../etc/evidence/t386-s7-private-model40-composition.md), and
+[S8 integrated selected-device replay](../etc/evidence/t386-s8-model40-integration.md)
+now provide the selected functional owners without early Model-40 publication or
+an L3 claim. S8 repairs one shared FDC reset/Sense owner only after Model-40
+replay reproduces the gap; firmware, physical media and board timing remain
+transferred to later receivers.
 ## Current Technical Baseline
 
 - **Current developer artifact:** T382 S8 `vm-0-5-0382` /
@@ -60,7 +40,7 @@ no runnable Model-40 or L3 claim is made here.
 
 | Task | Compact result |
 | --- | --- |
-| T386 S3 | Progress accepted: one optional shared 8254 now owns isolated `48h-4Bh` state, ports, reset and machine-time advance without an implicit signal consumer; failsafe/NMI and publication remain transferred. [Evidence](../etc/evidence/t386-s3-second-pit-owner.md). |
+| T386 S8 | Progress accepted: private Model-40 integration replay validates selected device bindings and repairs the shared 8272A DOR reset-release/Sense state owner; 258/258 serial current-gate and focused/governance checks pass. Firmware, physical media and board/L3 timing remain transferred. [Evidence](../etc/evidence/t386-s8-model40-integration.md). |
 | T385 | Closed: the selected Model-40 80386DX-16 consumes the shared 80386 CPU/state/retirement owners without a DeskPro CPU fork; a clean current-source 251/251 gate passed, while functionality and board timing transfer unchanged. [Closure audit](../etc/evidence/t385-s1-task-closure-audit.md). |
 | T384 | Closed: the Model-40 capability audit freezes its original Compaq system board/storage ledger and owner-selected color EGA, keyboard and external-ROM constraint; its shared-VADP IBM/Compaq personality boundary transfers CPU, functional and timing work without making a runnable or L3 claim. [Closure audit](../etc/evidence/t384-s2-task-closure-audit.md). |
 | T383 | Closed: independent current-source replay accepts the frozen 5170 Model 339 deterministic-L3 contract after T380's strict-start repair; 251/251 current gate and focused matrix are retained in [evidence](../etc/evidence/t383-s1-model339-current-source-reaudit.md). |
