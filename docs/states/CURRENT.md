@@ -23,8 +23,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T382 S2 | Accepted: P3 `4482dac6` removes unreachable Console configuration routes and Console-only callbacks while preserving retained `FLOPPY` behavior; [evidence](../etc/evidence/t382-s2-console-dead-code-retirement.md). |
-| T382 S1 | Accepted: P1 `8ab02ff5` adds the owned Windows aggregate deadline, Job Object cleanup, abnormal-child proof, and current artifact `vm-0-5-0382`; [evidence](../etc/evidence/t382-s1-current-gate-aggregate.md). |
+| T382 S2 | Accepted: S1 P1 `8ab02ff5` establishes aggregate-gate liveness; S2 P3 `4482dac6` removes unreachable Console configuration routes and callbacks while preserving retained `FLOPPY` behavior. [S1 evidence](../etc/evidence/t382-s1-current-gate-aggregate.md), [S2 evidence](../etc/evidence/t382-s2-console-dead-code-retirement.md). |
 | T381 | Closed: S1 P1 `9b6a86c6` delivered frozen YAML profile selection and the true zero-session Console; corrective S2 restored its task-level closure state without changing runtime evidence or the T381 artifact. [Evidence](../etc/evidence/t381-s1-console-yaml-profiles.md). |
 | T380 | Closed: strict Model-339 startup, 512 KB FDC/BDA repair, input/FDC current-gate recovery, and the owner-replayed DOS 5/HIMEM no-XMS path are verified. It does not claim DOS completion or 5170 L3 closure. [Evidence](../etc/evidence/t380-s2-model339-start-and-current-gate-recovery.md). |
 | T378 | Closed at `42f0402a`: production ingress proof and virtual-time ownership are corrected without a test-only API; Model-339 re-audit remains the sole L3 decision receiver. [Evidence](../etc/evidence/t378-s1-native-ingress-boundary-repair.md). |
