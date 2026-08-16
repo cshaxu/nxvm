@@ -19,6 +19,7 @@ principal documents named in [docs/README.md](../README.md).
 | `evidence/t382-s5-xasm-debug-capacity.md` | Verification owner | T382 S5 records the complete xasm/debug capacity matrix, migration sweep, focused proof, and task artifact. Retain with T382 history. |
 | `evidence/t382-s6-session-manager-limits.md` | Verification owner | T382 S6 records manager capacity/ID limits, zero-session consumer correction, current-gate proof, and task artifact. Retain with T382 history. |
 | `evidence/t382-s7-debug-debt-reconciliation.md` | Verification owner | T382 S7 reconciles current debug operations with the retained CR-mutation debt. Retain with T382 history. |
+| `evidence/t382-task-closure-audit.md` | Verification owner | T382 final audit records S1--S7 acceptance and retained non-goals. Retain with T382 history. |
 | `evidence/t375-s19-fdc-service-time-crosswalk.md` | Verification owner | T375 S19 named aftermarket-drive primary timing crosswalk, 86Box secondary boundary, existing FDC owner sweep, and elapsed-time scheduler receiver. Retain with T375 closure evidence. |
 | `evidence/t375-s20-fdc-dma-cadence.md` | Verification owner | T375 S20 500-kbit/s FDC DMA2 byte gate, IRQ6 ordering proof, cancellation boundary, and retained drive/controller timing transfers. Retain with T375 closure evidence. |
 | `evidence/t375-s21-fdc-seek-cadence.md` | Verification owner | T375 S21 FDC seek/recalibrate per-track deadline, IRQ6/Sense-Interrupt proof, and retained mechanical timing transfers. Retain with T375 closure evidence. |

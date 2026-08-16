@@ -70,3 +70,12 @@ unchanged manager/provider state. It also corrects consumers to explicitly
 open sessions under the retained zero-session contract. The 250/250 current
 aggregate proof and artifact are retained in
 [T382 S6 evidence](../etc/evidence/t382-s6-session-manager-limits.md).
+
+## S7 Acceptance And Task Closure
+
+P15 `e8f35bbc` removes the nonexistent debug-borrow debt and anchors the
+retained CR mutation debt to the operation-based core boundary. The independent
+S1--S7 closure review is retained in
+[T382 closure audit](../etc/evidence/t382-task-closure-audit.md). T382 is
+closed; it does not claim L3 hardware closure or implement CR mutation
+semantics.
