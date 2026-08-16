@@ -76,7 +76,8 @@ are deliberately `source-unknown`, not "missing implementation":
 | ROM identity | Owner-managed legal BIOS image provenance plus a source-supported revision/part identity; keep bytes and local paths outside the repository. | T384 follow-up evidence S, before the CPU closure can declare firmware execution. |
 
 All other rows have a primary-source disposition and transfer cleanly to the
-next queued owners.  This audit therefore resolves the system-board capability
-ledger but does **not** authorize starting a runnable profile, the CPU closure,
-the device closure, board timing, or L3 acceptance until the three explicit
-configuration selections are made.  It creates no generic-device waiver.
+next queued owners.  This audit therefore permits the next CPU task to close
+only its source-defined 80386 architectural contract.  It does **not**
+authorize a runnable profile, selected-device function, board timing, or L3
+acceptance until the three explicit configuration selections are made.  It
+creates no generic-device waiver.

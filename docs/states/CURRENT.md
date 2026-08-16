@@ -2,26 +2,12 @@
 
 ## Current Work
 
-## M5 T384 S1 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | New |
-| Admission And Approval | The owner-approved enduring objective directs the single-role lifecycle to execute the ordered DeskPro sequence after the completed 5170 re-audit. Scope is the first Queue candidate only: profile provenance and capability-gap audit, with no runtime repair, firmware import, or L3 decision. |
-| Objective | Lock the original 1986 Compaq DeskPro 386 Model 40/DeskPro 386/16 from Compaq primary documentation, and produce its complete selected-capability and owner-gap handoff for the later CPU, functional and board-timing tasks. |
-| Non-goals | No CPU/device implementation, DeskPro profile source, board-timing allocation, generic clone inference, Windows claim, ROM/media import, vendor-byte record, or ready/not-ready L3 decision. |
-| Reference Baseline | T383 accepts only the 5170. T373 records DeskPro as an empty machine composition with source-unknown display, controller and route fields. The shared DeskPro closure context and this candidate define the five-stage sequence. |
-| Candidate Proposal | [DeskPro Model 40 profile and capability-gap audit](../proposals/m5-deskpro-386-model40-profile-capability-audit.md). |
-| Files And ABI Surface | Audit-only: `docs/states/CURRENT.md`, `docs/history/M5-T384-deskpro-model40-profile-capability-audit.md`, `docs/etc/evidence/t384-s1-deskpro-model40-profile-capability-audit.md`, supporting index and closure state. Product source, ABI, ROM/media and assets are read-only. |
-| Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`, `docs/etc/operations/policy/source-policy.md`, T373 ledger, and the DeskPro closure context; no exception is requested. |
-| Verification | Read and cite Compaq's September 1986 First Edition Technical Reference Guide as the primary source; distinguish its facts from PCjs hosting and secondary cross-checks; reconcile every selected component against current source/test inventory and T373; require one owner and later receiver per gap; run documentation governance, link validation, and actual-change review. |
-| Expected Markers | `M5:T384:S1:DESKPRO-MODEL40-PROFILE-AUDIT:OK` and an evidence matrix with one explicit classification, owner and receiver for CPU, memory/ROM, display, input, FDC, fixed disk, PIC/PIT/DMA/RTC/NMI/reset and corpus. |
-| Asset Needs | No asset. The BIOS slot remains an external owner-managed research input; this task records neither a vendor byte, local path, hash catalogue nor runtime dependency. |
-| Reporting Requirements | Record source provenance and exact unselected/unknown fields, BOM, current capability disposition, earliest functional owner and later timing receiver. Complete one audit P, then switch to coordinator review before closure. |
-| Stop Conditions | Stop if Compaq primary material cannot select a field, or if a proposed selection would rely on clone, emulator or generic PC/AT inference. Retain it as source-unknown with a bounded evidence/probe receiver; do not implement a substitute. |
-| Exit Criteria | The Model 40 identity and every selected component has a primary-source or explicitly unknown disposition; the capability-gap matrix makes no inherited generic-device claim; CPU, functional and board-timing handoffs are complete; evidence, governance verification and closure audit are reviewable. |
-| Original Owner Request | The active owner objective directs governance-compliant, single-person dual-role execution of the Queue plan through complete DeskPro 386 functionality and L3 timing. |
-| Similar-Issue Sweep | Reconcile all existing DeskPro/Compaq references, generic 80386/PC-AT descriptor paths, display/storage/input/controller assumptions, and T373 unknown fields so no existing default profile is accidentally promoted to Model 40 evidence. |
+**T384 open; S1 accepted.** The primary-source system-board and Model-40
+storage ledger is retained in [S1 evidence](../etc/evidence/t384-s1-deskpro-model40-profile-capability-audit.md).
+The owner must select one documented Compaq display/monitor pair, physical
+keyboard and ROM revision/provenance before a runnable DeskPro profile or
+selected-device work can begin.  The queued CPU closure may proceed only as a
+bounded architectural task and cannot claim a runnable profile.
 
 ## Current Technical Baseline
 
@@ -49,6 +35,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T384 S1 | Progress accepted: Compaq primary sources freeze the Model-40 system board and storage baseline; display/monitor, physical keyboard and ROM revision remain explicit owner choices before any runnable profile claim. [Evidence](../etc/evidence/t384-s1-deskpro-model40-profile-capability-audit.md). |
 | T383 | Closed: independent current-source replay accepts the frozen 5170 Model 339 deterministic-L3 contract after T380's strict-start repair; 251/251 current gate and focused matrix are retained in [evidence](../etc/evidence/t383-s1-model339-current-source-reaudit.md). |
 | T382 | Reclosed at S8: the prior S1--S7 closure is retained historically, while S8 corrects its Console 64-bit transport and final artifact baseline. [Corrective audit](../etc/evidence/t382-s8-reclosure-audit.md). |
 | T381 | Closed: S1 P1 `9b6a86c6` delivered frozen YAML profile selection and the true zero-session Console; corrective S2 restored its task-level closure state without changing runtime evidence or the T381 artifact. [Evidence](../etc/evidence/t381-s1-console-yaml-profiles.md). |
@@ -56,7 +43,6 @@
 | T378 | Closed at `42f0402a`: production ingress proof and virtual-time ownership are corrected without a test-only API; Model-339 re-audit remains the sole L3 decision receiver. [Evidence](../etc/evidence/t378-s1-native-ingress-boundary-repair.md). |
 | T379 | Closed at `160a34e1`: independent re-audit accepted the then-current frozen Model-339 deterministic L3 contract. Its result is historical and is superseded for the current graph by T383. [Audit](../etc/evidence/t379-s1-model339-final-reaudit.md). |
 | T377 | Closed at `1cdd5110`: final audit rejects premature Model-339 L3 acceptance; its shared input/global-gate repair and independent re-audit successors are queued. [Audit](../etc/evidence/t377-s1-model339-final-l3-audit.md). |
-| T376 | Closed at `991060a4`: raw-IMG sidecar persistence, selected 8272A command fidelity and malformed-sidecar rejection are proven; physical duplicate-CHRN representation remains explicitly outside pure raw-IMG support. [Closure audit](../etc/evidence/t376-s6-task-closure-audit.md). |
 
 ## Recent Governance
 
