@@ -2,24 +2,20 @@
 
 ## Current Work
 
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation T386 S6. |
-| Admission And Approval | Owner approved T386 continuation and the one-VADP-core/two-small-personality-contract direction in this conversation; 2026-08-16. Scope is core-only Compaq EGA functional personality, with no publication. |
-| Objective | Add one source-backed Compaq Enhanced Color Graphics/Color Monitor personality around the shared VADP owner: selected 64-colour digital palette conversion and determinate CECG identity-status ports, while retaining generic EGA behavior as the control. |
-| Non-goals | No `src/vm` change; no DeskPro profile/catalog/YAML/firmware/media publication; no copied VADP core; no IBM EGA claim; no option-ROM, light-pen, dynamic monitor/configuration, physical cable/waveform, arbitration, wait, or raster-timing claim. |
-| Reference Baseline | `2062fca0` T386 S5 P9 on `master`; current artifact remains T382 S8 `nxvm_0_5_0382.exe` SHA-256 `6507E88A85F9E85ED4EB12D1B0B376DED5894771D178E3D1B2B5B89202BC8D57`. |
-| Candidate Proposal | [DeskPro 386 Model 40 Selected-Device Functional Closure](../proposals/m5-deskpro-386-model40-device-functional-closure.md); T384 S2 configuration and T386 S2 carrier evidence are binding. |
-| Files And ABI Surface | `src/core/machine/{display_interface.h,vadp.h,vadp.c,machine.c}` only as required, one focused `tests/machine` smoke, `CMakeLists.txt`, `cmake/verify_t344_historical_fixture_shapes.cmake`, `cmake/verify_t345_deferred_direct_ownership.cmake`, `docs/states/CURRENT.md`, indexed S6 evidence and transfer debt. Public core config may add an immutable personality selector; no mutable layout crosses modules. |
-| Applicable Rules | Architecture: one VADP mutable owner, core never depends on VM, composition only at approved root, no product-visible publication. Coding: C11/project types, bounded owner-local helpers, no test-only API or duplicate owner. Source: documentation facts only, no third-party source/firmware/media import. Documentation: active packet and indexed evidence remain authoritative. |
-| Verification | Build the focused smoke and current gate serially; inspect generic EGA negative controls; reconcile the discovered three-entry T344 direct-fixture inventory drift; run specialized and documentation governance gates at closure. The focused smoke proves Compaq-only port ownership/status values, 6-bit digital palette mapping, reset persistence and generic non-regression. |
-| Expected Markers | `M5:T386:S6:COMPAQ-EGA-PERSONALITY:OK`; `M5:T386:S6:COMPAQ-EGA-SWEEP:OK`. |
-| Asset Needs | The Compaq December 1986 Enhanced Color Graphics Board/Color Monitor Technical Reference Guide is transient research only; no ROM, guest media, third-party source, machine-local path, or downloaded asset enters Git. |
-| Reporting Requirements | Report admission confirmation, focused implementation/proof, full serial-gate outcome, source provenance boundary, transfers, pushed executor P, then coordinator actual-change review and governance closure P. Include compatible user changes after review. |
-| Stop Conditions | Stop for an undocumented required behavior, a need for ROM/firmware/media import, a required VM/profile/catalog edit, a public ABI conflict, or a material expansion beyond selected functional personality; revise/admit a later receiver instead. |
-| Exit Criteria | One shared VADP owner supports generic and Compaq selected behavior without copied mechanics; focused regressions prove selected Compaq state and generic control; all required gates pass; evidence maps source facts, implementation and transfers; complete P is pushed and independently reviewed. |
-| Original Owner Request | Continue work after authorization; Compaq EGA must be a small personality around the shared VADP core, while IBM EGA remains current-product L3 and Compaq EGA is DeskPro-only. Owner also authorizes including their relevant changes in commits. |
-| Similar-Issue Sweep | Defect class: generic EGA palette/port behavior silently standing in for a selected non-IBM EGA personality. Search tracked `src/core`, `src/vm`, tests, CMake and T384/T386 records for VADP/EGA palette/port/profile consumers. Shared VADP hits are repaired once here; VM/publication hits are unchanged and explicitly transferred to S7; physical/firmware/timing variants transfer to the DeskPro board task/TODO. |
+**T386 open; S1--S6 accepted.** The accepted [functional ledger](../etc/evidence/t386-s1-deskpro-functional-ledger.md),
+[non-runnable carrier contract](../etc/evidence/t386-s2-model40-carrier-contract.md),
+[second-PIT proof](../etc/evidence/t386-s3-second-pit-owner.md),
+[D4 platform-control proof](../etc/evidence/t386-s4-d4-platform-control.md),
+[S5 storage-controller contract](../etc/evidence/t386-s5-deskpro-storage-controller.md), and
+[S6 Compaq EGA personality evidence](../etc/evidence/t386-s6-compaq-ega-personality.md)
+now provide primary-backed selected functional owners without early Model-40
+publication. S6 adds one shared-VADP Compaq personality for the selected CECG
+identity reads and 64-colour digital capture, preserves generic EGA as its
+control, and truthfully transfers CECG firmware/physical/board behavior to
+TODO and the later DeskPro board receiver. The serial 256/256 current gate,
+all specialized gates, and documentation governance passed; P10/P11 are
+accepted after actual-change review. S7 alone may compose the accepted owners;
+no runnable Model-40 or L3 claim is made here.
 ## Current Technical Baseline
 
 - **Current developer artifact:** T382 S8 `vm-0-5-0382` /
