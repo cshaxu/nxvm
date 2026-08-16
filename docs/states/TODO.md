@@ -48,7 +48,8 @@ adopts them.
   admission retains one VADP owner, B8000h mapping, copied-frame output, and
   port/memory/frame plus DOS-fixture evidence; it may not use this debt entry
   to leave an exposed CGA mode incomplete.
-- [ ] **Broaden digital EGA and admit VGA compatibility (`TODO(Medium)`).** T352
+- [ ] **Compaq CECG physical, firmware and board behavior (`TODO(Medium)`).** T386 S6 establishes only the selected Compaq Enhanced Color Graphics digital personality: 64-colour capture mapping and determinate Environment/Display-Type/Initial-Mode reads. Before DeskPro board/device timing or final Model-40 acceptance, admit source-backed Control Mode `3C6h` behavior, light-pen/multiplexed status, monitor/switch and option-ROM/BIOS configuration, physical monitor signalling, raster/service duration, ISA availability and waits through the selected DeskPro composition/firmware and board receiver. Do not infer these from generic/IBM EGA, expose an incomplete profile, or call the captured palette an analog-monitor model.
+- [ ] **Broaden digital EGA and admit VGA compatibility (TODO(Medium)).** T352
   closes only direct planar `320x200x16` and mode-10 `640x350x16` through one
   VADP owner. Admit the next adapter package only with a complete IBM EGA/VGA
   register/mode/CRTC matrix, explicit aperture and palette semantics, reset and

@@ -37,6 +37,9 @@ extern "C" {
 #define CORE_MACHINE_VADP_PORT_MODE 0x03d8u
 #define CORE_MACHINE_VADP_PORT_COLOR 0x03d9u
 #define CORE_MACHINE_VADP_PORT_STATUS 0x03dau
+#define CORE_MACHINE_VADP_PORT_COMPAQ_ENVIRONMENT 0x07c6u
+#define CORE_MACHINE_VADP_PORT_COMPAQ_DISPLAY_TYPE 0x0bc6u
+#define CORE_MACHINE_VADP_PORT_COMPAQ_INITIAL_MODE 0x0fc6u
 
 typedef struct t_port t_port;
 typedef struct t_ram t_ram;
@@ -46,6 +49,7 @@ typedef struct t_vadp_data {
     type_unsigned_8 crtc[CORE_MACHINE_VADP_CRTC_REGISTER_COUNT];
     type_unsigned_8 mode_control;
     type_unsigned_8 color_select;
+    core_machine_vadp_ega_personality ega_personality;
     core_machine_vadp_ega_sequencer_config ega_sequencer;
     type_unsigned_8 sequencer_index;
     type_unsigned_8 sequencer[CORE_MACHINE_VADP_SEQUENCER_REGISTER_COUNT];
@@ -97,6 +101,8 @@ typedef struct t_vadp {
 
 C_VOID core_machine_vadp_initialize(t_vadp *adapter, t_port *port);
 C_VOID core_machine_vadp_configure_ega_ports(t_vadp *adapter, t_port *port);
+type_status core_machine_vadp_configure_ega_personality(t_vadp *adapter,
+    t_port *port, core_machine_vadp_ega_personality personality);
 type_status core_machine_vadp_configure_cga_memory(t_vadp *adapter, t_ram *memory);
 C_VOID core_machine_vadp_reset(t_vadp *adapter);
 C_VOID core_machine_vadp_advance(t_vadp *adapter, t_ram *memory,

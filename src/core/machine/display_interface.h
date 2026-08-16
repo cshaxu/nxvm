@@ -34,6 +34,11 @@ typedef struct core_machine_vadp_ega_sequencer_config {
     type_bool planar_ega;
 } core_machine_vadp_ega_sequencer_config;
 
+typedef enum core_machine_vadp_ega_personality {
+    CORE_MACHINE_VADP_EGA_PERSONALITY_GENERIC = 0,
+    CORE_MACHINE_VADP_EGA_PERSONALITY_COMPAQ_ENHANCED_COLOR
+} core_machine_vadp_ega_personality;
+
 typedef struct core_machine_vadp_ega_controller_config {
     type_unsigned_8 graphics[CORE_MACHINE_DISPLAY_EGA_GRAPHICS_REGISTER_COUNT];
     type_unsigned_8 attribute[CORE_MACHINE_DISPLAY_EGA_ATTRIBUTE_REGISTER_COUNT];

@@ -118,6 +118,33 @@ static type_unsigned_32 core_machine_vadp_rgbi_color(type_unsigned_8 index)
     return colors[index & 0x0fu];
 }
 
+/* The Compaq CECG guide names its six digital palette bits r g b R G B,
+ * from bit 5 through bit 0. Snapshot RGB expands each primary/secondary
+ * pair to the project 0x00..0xff capture range; it is not a monitor model. */
+static type_unsigned_32 core_machine_vadp_compaq_ega_color(type_unsigned_8 value)
+{
+    type_unsigned_8 red = (type_unsigned_8)(((value >> 2u) & 1u) * 2u +
+        ((value >> 5u) & 1u));
+    type_unsigned_8 green = (type_unsigned_8)(((value >> 1u) & 1u) * 2u +
+        ((value >> 4u) & 1u));
+    type_unsigned_8 blue = (type_unsigned_8)(((value >> 0u) & 1u) * 2u +
+        ((value >> 3u) & 1u));
+
+    return ((type_unsigned_32)red * 0x55u << 16u) |
+        ((type_unsigned_32)green * 0x55u << 8u) |
+        (type_unsigned_32)blue * 0x55u;
+}
+
+static type_unsigned_32 core_machine_vadp_ega_palette_color(const t_vadp *adapter,
+    type_unsigned_8 value)
+{
+    if (adapter != STD_NULL && adapter->data.ega_personality ==
+        CORE_MACHINE_VADP_EGA_PERSONALITY_COMPAQ_ENHANCED_COLOR) {
+        return core_machine_vadp_compaq_ega_color(value & 0x3fu);
+    }
+    return core_machine_vadp_rgbi_color(value & 0x0fu);
+}
+
 static C_VOID core_machine_vadp_graphics_palette(const t_vadp *adapter,
     type_unsigned_32 palette[4])
 {
@@ -703,6 +730,27 @@ static C_VOID core_machine_vadp_read_status(t_port *port,
     }
 }
 
+static C_VOID core_machine_vadp_read_compaq_environment(t_port *port,
+    type_unsigned_16 port_id, C_VOID *owner)
+{
+    (C_VOID)port_id;
+    if (port != STD_NULL && owner != STD_NULL) port->data.ioByte = 0x00u;
+}
+
+static C_VOID core_machine_vadp_read_compaq_display_type(t_port *port,
+    type_unsigned_16 port_id, C_VOID *owner)
+{
+    (C_VOID)port_id;
+    if (port != STD_NULL && owner != STD_NULL) port->data.ioByte = 0x30u;
+}
+
+static C_VOID core_machine_vadp_read_compaq_initial_mode(t_port *port,
+    type_unsigned_16 port_id, C_VOID *owner)
+{
+    (C_VOID)port_id;
+    if (port != STD_NULL && owner != STD_NULL) port->data.ioByte = 0x01u;
+}
+
 static C_VOID core_machine_vadp_read_graphics_index(t_port *port,
     type_unsigned_16 port_id, C_VOID *owner)
 {
@@ -914,9 +962,33 @@ C_VOID core_machine_vadp_configure_ega_ports(t_vadp *adapter, t_port *port)
         core_machine_vadp_write_sequencer_data, adapter);
 }
 
+type_status core_machine_vadp_configure_ega_personality(t_vadp *adapter,
+    t_port *port, core_machine_vadp_ega_personality personality)
+{
+    if (adapter == STD_NULL || port == STD_NULL ||
+        adapter->data.ega_personality != CORE_MACHINE_VADP_EGA_PERSONALITY_GENERIC ||
+        (personality != CORE_MACHINE_VADP_EGA_PERSONALITY_GENERIC &&
+        personality != CORE_MACHINE_VADP_EGA_PERSONALITY_COMPAQ_ENHANCED_COLOR)) {
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
+    if (personality == CORE_MACHINE_VADP_EGA_PERSONALITY_COMPAQ_ENHANCED_COLOR) {
+        core_machine_port_add_read(port, CORE_MACHINE_VADP_PORT_COMPAQ_ENVIRONMENT,
+            core_machine_vadp_read_compaq_environment, adapter);
+        core_machine_port_add_read(port, CORE_MACHINE_VADP_PORT_COMPAQ_DISPLAY_TYPE,
+            core_machine_vadp_read_compaq_display_type, adapter);
+        core_machine_port_add_read(port, CORE_MACHINE_VADP_PORT_COMPAQ_INITIAL_MODE,
+            core_machine_vadp_read_compaq_initial_mode, adapter);
+        if (core_machine_port_registration_status(port) != TYPE_STATUS_OK) {
+            return core_machine_port_registration_status(port);
+        }
+    }
+    adapter->data.ega_personality = personality;
+    return TYPE_STATUS_OK;
+}
 C_VOID core_machine_vadp_reset(t_vadp *adapter)
 {
     core_machine_vadp_text_timing timing;
+    core_machine_vadp_ega_personality ega_personality;
     core_machine_vadp_ega_sequencer_config ega_sequencer;
     core_machine_vadp_ega_controller_config ega_controller;
     type_unsigned_8 crtc[CORE_MACHINE_VADP_CRTC_REGISTER_COUNT];
@@ -933,6 +1005,7 @@ C_VOID core_machine_vadp_reset(t_vadp *adapter)
         timing.horizontal_blank_ticks = CORE_MACHINE_VADP_DEFAULT_HORIZONTAL_BLANK_TICKS;
         timing.vertical_retrace_ticks = CORE_MACHINE_VADP_DEFAULT_VERTICAL_RETRACE_TICKS;
     }
+    ega_personality = adapter->data.ega_personality;
     ega_sequencer = adapter->data.ega_sequencer;
     ega_sequencer_configured = adapter->data.ega_sequencer_configured;
     ega_controller = adapter->data.ega_controller;
@@ -959,6 +1032,7 @@ C_VOID core_machine_vadp_reset(t_vadp *adapter)
         adapter->data.crtc[CORE_MACHINE_VADP_CRTC_CURSOR_TOP] = 6u;
         adapter->data.crtc[CORE_MACHINE_VADP_CRTC_CURSOR_BOTTOM] = 7u;
     }
+    adapter->data.ega_personality = ega_personality;
     adapter->data.ega_sequencer = ega_sequencer;
     adapter->data.ega_sequencer_configured = ega_sequencer_configured;
     core_machine_vadp_reset_sequencer(adapter);
@@ -1348,8 +1422,8 @@ static C_INT core_machine_vadp_capture_ega_planar_snapshot(t_vadp *adapter,
     out_snapshot->pixel_height = height;
     for (x = 0u; x < CORE_MACHINE_DISPLAY_PALETTE_ENTRIES; ++x) {
         type_unsigned_8 enabled_index = (type_unsigned_8)(x & adapter->data.attribute[18]);
-        out_snapshot->palette_rgb[x] = core_machine_vadp_rgbi_color(
-            adapter->data.attribute[enabled_index] & 0x0fu);
+        out_snapshot->palette_rgb[x] = core_machine_vadp_ega_palette_color(adapter,
+            adapter->data.attribute[enabled_index]);
     }
     for (y = 0u; y < height; ++y) {
         for (x = 0u; x < width; ++x) {

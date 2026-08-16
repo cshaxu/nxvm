@@ -3447,6 +3447,14 @@ type_status core_machine_configure_display(core_machine *machine,
         status = core_machine_vadp_configure_ega_controllers(&machine->shared_vadp,
             &config->ega_controllers);
         if (status != TYPE_STATUS_OK) return status;
+        status = core_machine_vadp_configure_ega_personality(
+            &machine->shared_vadp, &machine->executor_port,
+            config->ega_personality);
+        if (status != TYPE_STATUS_OK) {
+            core_machine_port_rollback_registration(&machine->executor_port,
+                port_checkpoint);
+            return status;
+        }
     }
     machine->display_ports = config->ports;
     machine->display_configured = TYPE_TRUE;
