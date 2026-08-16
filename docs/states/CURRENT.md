@@ -2,28 +2,7 @@
 
 ## Current Work
 
-**Active: M5 T382 S1.**
-
-## M5 T382 S1 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | New |
-| Admission And Approval | Owner: repository user. Approval: 2026-08-15 request to execute the queue's first code-quality-governance task in one-session dual-role mode. Approved scope: the queued M5 quality-boundary recovery proposal, beginning only with S1. No exception permits weakened, skipped, serialized, or silently timed-out smoke coverage. |
-| Objective | Give `run-current-smokes` an owning aggregate deadline, useful abnormal-path diagnostics, child-process cleanup, and truthful final result propagation while retaining the complete current smoke selection. |
-| Non-goals | Do not alter hardware behavior, committed guest media, smoke membership/labels, test serialization, specialized-gate separation, or any S2--S7 owner domain. |
-| Reference Baseline | T381 closure `ebbb8fef`, the preceding developer artifact, queued `m5-quality-boundary-recovery.md`, and the current CMake/CTest aggregate route. |
-| Candidate Proposal | [M5 quality-boundary recovery](../proposals/m5-quality-boundary-recovery.md), S1. |
-| Files And ABI Surface | Expected owner surface: root `CMakeLists.txt`, a narrowly owned CMake/host wrapper or its tests, current-gate verification/evidence, and T382 task records. No product or public ABI change is expected. |
-| Applicable Rules | `docs/rules/EXECUTION.md` lifecycle, P, closure, similar-issue and build-hygiene rules; `docs/rules/ARCHITECTURE.md` single owner and composition invariants; `docs/rules/CODING.md` cohesive bounded owner/test-boundary rules; `docs/rules/DOCUMENT.md` authority/closure ownership. No exception requested. |
-| Verification | Fresh isolated GCC/Ninja configuration; normal full `run-current-smokes`; controlled abnormal child path proving bounded termination, retained diagnostic, cleanup, result propagation, and no locked `LastTest.log.tmp`; aggregate CTest-entry sweep; applicable specialized/documentation gates; artifact build and SHA-256. |
-| Expected Markers | Normal aggregate returns an explicit pass/fail result; abnormal regression emits its deterministic diagnostic and cleanly terminates its owned child/process tree; no residual CTest/Ninja/test process or `LastTest.log.tmp` remains. |
-| Asset Needs | No committed assets. Existing local smoke media remain optional owner-provided inputs and must fail diagnostically if unavailable. |
-| Reporting Requirements | Executor: initial contract confirmation, report after normal and abnormal proof, then one complete pushed P. Coordinator: switch roles, inspect actual changes independently within this session, accept/reject with a consolidated corrective brief if needed, then issue only the truthful governance P. |
-| Stop Conditions | Stop for a material change to smoke scope, required host privilege/tooling, an aggregate design that cannot preserve individual failures, orphan cleanup that cannot be owned safely, or any need to modify an S2--S7 boundary; record evidence and request coordinator/owner direction. |
-| Exit Criteria | All aggregate CTest entry points are classified; S1 acceptance proof passes on a fresh isolated build; no unsupported host limitation is silently ignored; similar-issue sweep, actual-change review, governance, diff, artifact, and task evidence are complete. |
-| Original Owner Request | Execute the first Queue code-quality-governance task under the latest governance rules in one-session dual-role mode. |
-| Similar-Issue Sweep | Sweep every tracked aggregate CTest entry point, wrapper, and current-gate invocation for deadline, cleanup, diagnostic, and result-propagation ownership. Classify each hit as migrated, already covered, or explicitly deferred with a bounded admission path. |
+**M5 T382 remains open.** S1 is accepted; S2 is the next bounded unit.
 
 ## Current Technical Baseline
 
@@ -44,6 +23,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T382 S1 | Accepted: P1 `8ab02ff5` adds the owned Windows aggregate deadline, Job Object cleanup, abnormal-child proof, and current artifact `vm-0-5-0382`; [evidence](../etc/evidence/t382-s1-current-gate-aggregate.md). |
 | T381 | Closed: S1 P1 `9b6a86c6` delivered frozen YAML profile selection and the true zero-session Console; corrective S2 restored its task-level closure state without changing runtime evidence or the T381 artifact. [Evidence](../etc/evidence/t381-s1-console-yaml-profiles.md). |
 | T380 | Closed: strict Model-339 startup, 512 KB FDC/BDA repair, input/FDC current-gate recovery, and the owner-replayed DOS 5/HIMEM no-XMS path are verified. It does not claim DOS completion or 5170 L3 closure. [Evidence](../etc/evidence/t380-s2-model339-start-and-current-gate-recovery.md). |
 | T378 | Closed at `42f0402a`: production ingress proof and virtual-time ownership are corrected without a test-only API; Model-339 re-audit remains the sole L3 decision receiver. [Evidence](../etc/evidence/t378-s1-native-ingress-boundary-repair.md). |

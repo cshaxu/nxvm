@@ -21,3 +21,12 @@ completion of inherited legacy strictness debt.
 Only the active `CURRENT.md` packet authorizes the current S.  Detailed
 acceptance, non-goals, and transfer conditions remain in the retained
 proposal until task closure.
+
+## S1 Acceptance
+
+P1 `8ab02ff5` establishes one Windows-owned aggregate CTest deadline and
+Job Object tree-cleanup boundary without changing smoke selection, labels,
+parallelism, or individual test timeout. The focused abnormal-child proof,
+full current gate, specialized gate, documentation governance, diff check,
+and task artifact record are retained in
+[T382 S1 evidence](../etc/evidence/t382-s1-current-gate-aggregate.md).
