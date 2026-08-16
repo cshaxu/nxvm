@@ -2,12 +2,24 @@
 
 ## Current Work
 
-**T386 open; S1--S23 accepted.** Td S102 retains the remaining functional receiver
-order without creating an architecture exception or allocating S identifiers:
-selected FDC/1.2-MB logical behavior, fitted 40-MB controller/startup media,
-CECG residual behavior, then the T386 functional-closure audit. S23 has closed
-the source-backed D4-SKEY functional A20 binding and D4-only CPU-shutdown reset
-arbitration; board timing and Model-40 L3 remain outside it.
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation -- M5 T386 S24; T386 remains open after accepted S23 and Td S102 receiver order. |
+| Admission And Approval | Owner approved on 2026-08-16 to continue original DeskPro 386 development after rapidly closing the preceding S. Scope is the next selected 765A/1.2-MB logical functional receiver only; no architecture exception or timing/L3 claim. |
+| Objective | Close the source-backed Model-40 selected 765A plus one 1.2-MB raw-IMG drive logical command/state/error/recovery, DMA2/IRQ6/reset and BIOS-visible consumer gaps at the earliest reusable owner, then prove the fixed Model-40 binding. |
+| Non-goals | No flux/CRC/index/rotation/physical-CHRN image semantics, board waits/service durations/arbitration, firmware or guest-media import, fixed-disk/CECG work, generic YAML variants, device-timing or L3 claim. Do not add test-only production APIs. |
+| Reference Baseline | Accepted T386 S23 `f43477c1` / `efdbaf46`; artifact `vm-0-5-0389` SHA-256 `0CB4173F06E91C3BD5F9493497F2EC5480F361A23493ED7A7326000DADFB3F20`; proposal receiver two. Primary 765A/Model-40 facts and existing Core FDC/DMA/IRQ owners constrain the implementation; 86Box/MAME/PCjs may be behavior cross-checks only where primary material lacks a deterministic logical fact. |
+| Candidate Proposal | `docs/proposals/m5-deskpro-386-model40-device-functional-closure.md`, selected 765A/1.2-MB receiver after accepted S23. |
+| Files And ABI Surface | Expected: Core FDC/media/DMA/IRQ owner changes only where shared semantics are missing; VM Model-40 profile/composition only for fixed topology/binding; focused tests/CMake/evidence/CURRENT. No public Console/YAML or test-only ABI. |
+| Applicable Rules | Task Reading Set; EXECUTION lifecycle/mechanism-defect/closure rules; ARCHITECTURE shared-owner/opaque-boundary invariants; CODING C11/cohesion/test-boundary rules; source policy transient-research/no-import rule; DOCUMENT at closure. |
+| Verification | Establish geometry/controller facts before code; sweep FDC command/state/reset, media provider, DMA2/IRQ6, Model-40 composition and BIOS-visible existing proofs. Add focused normal/error/reset/interaction/isolation regressions; run strict-owner/static gates, serial current gate, documentation gate, diff check and actual-change review. |
+| Expected Markers | `M5:T386:S24:FDC-12MB-LOGICAL:OK`; `M5:T386:S24:FDC-DMA2-IRQ6:OK`; `M5:T386:S24:MODEL40-FDC-BINDING:OK`. |
+| Asset Needs | Transient documentation/research only. No firmware, guest-media, local asset path, vendor hash, source text, derived binary or third-party code enters Git. |
+| Reporting Requirements | Report the source-backed selected 1.2-MB contract, Core/VM owner decision, focused/current gate result, artifact identity, and physical-media/timing plus HDC/CECG transfer. Coordinator independently reviews all P changes before acceptance. |
+| Stop Conditions | Stop for a missing selected-drive/controller fact, a required physical-media/timing inference, conflict with Core FDC ownership, or need for a test-only product operation. Return unresolved fact to bounded research/owner decision. |
+| Exit Criteria | One shared FDC/media/DMA/IRQ/reset mechanism owns all admitted logical behavior; Model-40 has the fixed selected binding; regressions cover normal/error/reset/isolation and BIOS-visible consumer effect; no timing/physical-media/firmware/L3 overclaim; required gates pass and evidence transfers remaining work. |
+| Original Owner Request | Owner-approved request, 2026-08-16: quickly close current S, perform small necessary proposal/Queue/architecture governance, then continue original DeskPro development. |
+| Similar-Issue Sweep | Sweep all Core FDC/media/DMA2/IRQ6/reset callers, 1.2-MB geometry/topology profiles, Model-40 and IBM/default bindings, existing BIOS-visible storage tests, and T386 functional/timing proposal receivers. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T386 S23 `vm-0-5-0389` /
