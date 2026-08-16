@@ -89,3 +89,9 @@ correct here, but `CURRENT.md` retained stale S17/272 prose beside the S18
 artifact identity. T386 S19 corrects that one baseline sentence to S18/0389
 and 273/273. It changes no runtime source, artifact, verification result or
 S18 acceptance boundary.
+### S19 Coordinator Acceptance
+
+P1 `30b494dd` is accepted after independent review of both changed documents
+against S18 P1/P2, the retained artifact hash and the recorded 273/273 serial
+gate. The correction is truthful and bounded: no source, build, artifact,
+profile, device or timing behavior changed. T386 remains open.

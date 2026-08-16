@@ -2,30 +2,11 @@
 
 ## Current Work
 
-**T386 open; S1--S18 accepted; S19 active.** S19 corrects the S18 technical-
-baseline provenance record only: the accepted 0389 artifact and 273/273 serial
-gate replace stale S17/272 wording. It adds no runtime behavior, profile,
-artifact or L3 claim.
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation: M5 T386 S19. |
-| Admission And Approval | The owner authorized continued single-role governed DeskPro work. Coordinator discovery found S18's accepted CURRENT technical-baseline prose still said S17/272 while naming S18 artifact 0389; correct the truthful record only, with no exception. |
-| Objective | Correct S18 current-baseline provenance to name its S18 worktree, 273/273 serial current-gate and floppy device-profile proof. |
-| Non-goals | No source, build, artifact, test, profile, YAML, firmware, media, timing, device functionality or L3 change. |
-| Reference Baseline | Accepted T386 S18 P1 48820dd3 and P2 fa7b6e96; indexed S18 evidence; artifact hash 29A174DBC889A1220B0F4BD17805AAA78B326F01B31E5D68D5688F6B5DEC09E4. |
-| Candidate Proposal | docs/proposals/m5-deskpro-386-model40-device-functional-closure.md. |
-| Files And ABI Surface | docs/states/CURRENT.md and indexed S18 evidence only; no code or ABI surface. |
-| Applicable Rules | EXECUTION and DOCUMENT rules: CURRENT is sole current technical baseline and must truthfully agree with accepted artifact/evidence. |
-| Verification | Inspect accepted P1/P2, artifact SHA-256, current-gate evidence and exact diff; run documentation governance and coordinator actual-change review. |
-| Expected Markers | M5:T386:S19:BASELINE-PROVENANCE:OK. |
-| Asset Needs | None. |
-| Reporting Requirements | Record the correction and acceptance in S18 evidence; do not claim a new artifact or runtime verification. |
-| Stop Conditions | Stop if correction requires source/build behavior changes or contradicts accepted evidence. |
-| Exit Criteria | CURRENT names S18/0389/273 accurately, evidence records the corrective provenance result, docs gate and actual-diff review pass. |
-| Original Owner Request | Continue governed DeskPro functionality/L3 work with truthful evidence and architecture boundaries. |
-| Similar-Issue Sweep | Inspect all S18 CURRENT artifact/proof wording and evidence references; correct only the stale provenance statement. |
-
+**T386 open; S1--S19 accepted.** S19 corrects S18 technical-baseline
+provenance to the accepted 0389 artifact and 273/273 serial gate. It adds no
+runtime behavior, profile, artifact or L3 claim. Public YAML backbone/variant
+selection, remaining device work, board timing and the Model-40 L3 audit remain
+open.
 ## Current Technical Baseline
 
 - **Current developer artifact:** T386 S18 `vm-0-5-0389` /
@@ -52,7 +33,7 @@ artifact or L3 claim.
 
 | Task | Compact result |
 | --- | --- |
-| T386 S18 | Accepted: reusable VM device-profile floppy geometries select Model-40 1.2 MB raw media while Core retains neutral media/FDC/DMA mechanics; default and Model-339 retain 1.44 MB. Public variants, physical media, timing and L3 remain open. [Evidence](../etc/evidence/t386-s18-model40-floppy-device-profile.md). |
+| T386 S19 | Accepted: corrected S18 baseline provenance to artifact 0389 and 273/273 serial current gate; no runtime or artifact change. [Evidence](../etc/evidence/t386-s18-model40-floppy-device-profile.md). |
 | T385 | Closed: the selected Model-40 80386DX-16 consumes the shared 80386 CPU/state/retirement owners without a DeskPro CPU fork; a clean current-source 251/251 gate passed, while functionality and board timing transfer unchanged. [Closure audit](../etc/evidence/t385-s1-task-closure-audit.md). |
 | T384 | Closed: the Model-40 capability audit freezes its original Compaq system board/storage ledger and owner-selected color EGA, keyboard and external-ROM constraint; its shared-VADP IBM/Compaq personality boundary transfers CPU, functional and timing work without making a runnable or L3 claim. [Closure audit](../etc/evidence/t384-s2-task-closure-audit.md). |
 | T383 | Closed: independent current-source replay accepts the frozen 5170 Model 339 deterministic-L3 contract after T380's strict-start repair; 251/251 current gate and focused matrix are retained in [evidence](../etc/evidence/t383-s1-model339-current-source-reaudit.md). |
