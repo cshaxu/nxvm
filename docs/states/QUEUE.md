@@ -8,8 +8,6 @@ is retained separately so this queue remains a short ordering surface.
 
 ## M5 Candidates
 
-1. [IBM PC/AT 5170 Model 339 current-source L3 re-audit](../proposals/m5-5170-model339-current-source-l3-reaudit.md).
-
 The [four-profile CPU-completeness program](../proposals/m5-four-profile-cpu-completeness-program.md)
 is the shared admission context for this dependency-ordered sequence.
 
