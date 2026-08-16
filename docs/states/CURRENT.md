@@ -28,9 +28,9 @@ revision and evidence.
 | Similar-Issue Sweep | Sweep all tracked Model-40 ROM constants/providers/tests, D4 memory-map references, generic immutable mapping call sites and historical conflicting T384/S7/S14 wording. Classify each as selected mapping, distinct configuration, or historical evidence; correct current source/evidence atomically and transfer any unresolved physical/shadowing behavior. |
 ## Current Technical Baseline
 
-- **Current developer artifact:** T386 S16 ``vm-0-5-0387`` /
-  ``build/output/nxvm_0_5_0387.exe``, SHA-256
-  ``1F294C9D0A04D5F3E32F4C06DDD6E6CC6DD543F14E5807C5BB9C9075F446213E``. Built from the current S16 worktree after its 271-test serial
+- **Current developer artifact:** T386 S16 `vm-0-5-0387` /
+  `build/output/nxvm_0_5_0387.exe`, SHA-256
+  `1F294C9D0A04D5F3E32F4C06DDD6E6CC6DD543F14E5807C5BB9C9075F446213E`. Built from the current S16 worktree after its 271-test serial
   current-gate; the D4 mapping proof is retained in
   [S16 evidence](../etc/evidence/t386-s16-d4-memory-rom-map.md).
 - **Model-339 readiness:** T383 S1 accepts the current runnable source graph

@@ -61,9 +61,9 @@ the existing composed EGA, ROM, and new D4 device graph without a hidden limit.
 - Retained `vm-model40-rom-layout-s14-smoke` continues to prove interleave,
   mirror, immutable write rejection and reset fetch.
 - Focused CTest: all three controls pass.
-- Serial ctest -L current-gate --parallel 1 passes **271/271** tests.
-- The runnable developer artifact is m-0-5-0387,
-  uild/output/nxvm_0_5_0387.exe, SHA-256
+- Serial `ctest -L current-gate --parallel 1` passes **271/271** tests.
+- The runnable developer artifact is `vm-0-5-0387`,
+  `build/output/nxvm_0_5_0387.exe`, SHA-256
   1F294C9D0A04D5F3E32F4C06DDD6E6CC6DD543F14E5807C5BB9C9075F446213E.
 - Applicable composition, ownership, artifact and documentation gates are
   recorded before P1 acceptance.

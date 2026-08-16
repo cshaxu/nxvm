@@ -64,7 +64,6 @@ C_INT main(C_VOID)
         CHECK(write_byte(session->core_machine, VM_PROFILE_MODEL40_D4_COMPATIBILITY_START,
             0x3cu, TYPE_STATUS_OK));
     }
-    if (failed) STD_PRINTF("fail=%d\n", failed);
 #undef CHECK
     if (!failed) STD_PRINTF("M5:T386:S16:D4-ROM-MAP:OK\n");
     if (!failed) STD_PRINTF("M5:T386:S16:D4-REPLACEMENT:OK\n");
