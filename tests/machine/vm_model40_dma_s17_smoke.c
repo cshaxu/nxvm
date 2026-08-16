@@ -54,7 +54,7 @@ C_INT main(C_VOID)
     }
 
     vm_session_reset(session);
-    if (        session->core_machine->shared_dma_primary.data.request != 0u ||
+    if (session->core_machine->shared_dma_primary.data.request != 0u ||
         session->core_machine->shared_dma_secondary.data.request != 0u ||
         session->core_machine->shared_dma_primary.data.mask != VDMA_MASK_VALID ||
         session->core_machine->shared_dma_secondary.data.mask != VDMA_MASK_VALID ||
