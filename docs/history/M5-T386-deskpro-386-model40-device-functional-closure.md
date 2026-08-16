@@ -59,3 +59,18 @@ actual core-machine lifecycle and the focused/full-gate evidence. The new
 mechanism has one shared PIT owner and no output consumer; it neither chooses a
 profile nor leaks an IRQ/NMI route. Documentation governance and actual-change
 review passed.
+### S21: Current Functional Matrix And Profile Transfer
+
+S21 replaces the obsolete S15 next-step view with the accepted
+[S21 current matrix](../etc/evidence/t386-s21-model40-current-functional-matrix.md).
+It receives four bounded functional clusters: D4/platform control, selected
+1.2 MB FDC/media logic, the fitted 40 MB controller/startup-media route, and
+CECG behavior. It retains physical media and DeskPro timing as separate
+boundaries. S20 is recorded truthfully as a fixed backbone, not generic variant
+selection; the later queued current-product profile-capability candidate owns
+the cross-machine allowed-variant contract.
+
+Coordinator review accepted P1/P2 after removal of unrelated encoding noise.
+Documentation governance, link/index checks and actual-change review pass; no
+runtime source, asset, artifact or L3 claim changes. T386 remains open for its
+four functional receivers.

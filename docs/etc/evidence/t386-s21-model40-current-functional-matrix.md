@@ -73,3 +73,20 @@ Queue/proposal boundaries. The documentation governance gate, link/index
 checks and final coordinator actual-change review are recorded with S21
 closure. No runtime verification is claimed because this S changes no runtime
 surface.
+
+## Coordinator Acceptance
+
+P1 `1dbbbb99` delivered the bounded matrix, proposal, Queue and shared-context
+reconciliation. Coordinator actual-change review rejected direct acceptance
+because its UTF-8 compatibility workaround introduced unrelated BOM changes to
+existing documents. P2 `fd2fb760` removes that encoding noise without changing
+any planning conclusion. The coordinator then re-reviewed both commits against
+the approved S21 packet, T384/T385/S15--S20 evidence, current TODO, Queue and
+Roadmap: all selected functional rows are now disposed, S20 is truthfully
+limited to a fixed backbone, the fixed 40 MB startup-media absence is explicit,
+and the later profile-capability candidate receives the generic variant contract.
+
+`Verify-DocumentationGovernance.ps1`, link/index checks and `git diff --check`
+pass; no runtime source, artifact, asset or ABI changed. S21 is accepted as
+planning/contract progress only. T386 remains open for the four listed
+functional receivers.
