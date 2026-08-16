@@ -1,0 +1,79 @@
+#include "type.h"
+
+#include "core/machine/machine.h"
+#include "core/machine/machine_interface.h"
+
+#include "../support/core_machine_cpu_fixture.h"
+
+C_INT main(C_VOID)
+{
+    core_machine_config config = {0};
+    core_machine_d4_platform_config d4 = {CORE_MACHINE_PC_AT_PORT_B, 0u};
+    core_machine_rtc_cmos_config cmos = {0};
+    core_machine_d4_platform_observation observation;
+    core_machine *machine = STD_NULL;
+    type_unsigned_32 value = 0u;
+    C_INT failed = 0;
+
+    config.memory_bytes = 2u * 1024u * 1024u;
+    config.auxiliary_pit_present = TYPE_TRUE;
+    config.auxiliary_pit_base_port = 0x0048u;
+    cmos.index_port = 0x0070u;
+    cmos.data_port = 0x0071u;
+    cmos.irq = 8u;
+    cmos.nmi_mask_bit = 0x80u;
+    cmos.ticks_per_second = 1u;
+    failed |= core_machine_create(&config, &machine) != TYPE_STATUS_OK ||
+        core_machine_configure_d4_platform(machine, &d4) != TYPE_STATUS_OK ||
+        core_machine_configure_rtc_cmos(machine, &cmos) != TYPE_STATUS_OK ||
+        test_core_machine_fixture_register_reset_mapping(machine, 0xfffffff0u,
+            0x000ffff0u, 64u) != TYPE_STATUS_OK ||
+        core_machine_freeze_execution_providers(machine) != TYPE_STATUS_OK ||
+        core_machine_reset(machine) != TYPE_STATUS_OK ||
+        core_machine_bus_read(machine, 0x0061u, &value) != TYPE_STATUS_OK ||
+        value != 0x0bu ||
+        core_machine_get_d4_platform_observation(machine, &observation) !=
+            TYPE_STATUS_OK || !observation.configured || !observation.iochk_enabled ||
+        observation.failsafe_enabled || observation.iochk_latched ||
+        observation.failsafe_latched || observation.nmi_signaled;
+    if (!failed) STD_PRINTF("M5:T386:S4:D4-PLATFORM-PORT:OK\n");
+
+    if (!failed) failed |= core_machine_bus_write(machine, 0x0070u, 0x80u) !=
+            TYPE_STATUS_OK || core_machine_report_d4_iochk_fault(machine) !=
+            TYPE_STATUS_OK || core_machine_get_d4_platform_observation(machine,
+            &observation) != TYPE_STATUS_OK || !observation.iochk_latched ||
+        observation.nmi_signaled || machine->executor_cpu.data.flagNMI ||
+        core_machine_bus_read(machine, 0x0061u, &value) != TYPE_STATUS_OK ||
+        value != 0x4bu || core_machine_bus_write(machine, 0x0070u, 0u) !=
+            TYPE_STATUS_OK || core_machine_get_d4_platform_observation(machine,
+            &observation) != TYPE_STATUS_OK || !observation.nmi_signaled ||
+        !machine->executor_cpu.data.flagNMI;
+    if (!failed) STD_PRINTF("M5:T386:S4:D4-NMI-MASK:OK\n");
+
+    if (!failed) failed |= core_machine_reset(machine) != TYPE_STATUS_OK ||
+        core_machine_bus_write(machine, 0x0061u, 0x0cu) != TYPE_STATUS_OK ||
+        machine->shared_kbc.data.output_port != 1u ||
+        core_machine_bus_write(machine, 0x004bu, 0x30u) != TYPE_STATUS_OK ||
+        core_machine_bus_write(machine, 0x0048u, 1u) != TYPE_STATUS_OK ||
+        core_machine_bus_write(machine, 0x0048u, 0u) != TYPE_STATUS_OK ||
+        core_machine_advance_time(machine, 1u) != TYPE_STATUS_OK ||
+        core_machine_get_d4_platform_observation(machine, &observation) !=
+            TYPE_STATUS_OK || !observation.failsafe_enabled ||
+        !observation.failsafe_latched || !observation.nmi_signaled ||
+        !machine->executor_cpu.data.flagNMI ||
+        core_machine_bus_read(machine, 0x0061u, &value) != TYPE_STATUS_OK ||
+        value != 0x8cu;
+    if (!failed) STD_PRINTF("M5:T386:S4:D4-FAILSAFE-ROUTE:OK\n");
+
+    if (!failed) failed |= core_machine_reset(machine) != TYPE_STATUS_OK ||
+        core_machine_get_d4_platform_observation(machine, &observation) !=
+            TYPE_STATUS_OK || !observation.iochk_enabled || observation.failsafe_enabled ||
+        observation.iochk_latched || observation.failsafe_latched ||
+        observation.nmi_signaled || machine->executor_cpu.data.flagNMI ||
+        core_machine_bus_read(machine, 0x0061u, &value) != TYPE_STATUS_OK ||
+        value != 0x0bu;
+    core_machine_destroy(machine);
+    if (failed) return 1;
+    STD_PRINTF("M5:T386:S4:D4-RESET-ISOLATION:OK\n");
+    return 0;
+}

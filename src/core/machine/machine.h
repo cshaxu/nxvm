@@ -112,6 +112,12 @@ struct core_machine {
     type_bool planar_parity_configured;
     type_bool planar_parity_latched;
     type_bool planar_parity_nmi_signaled;
+    core_machine_d4_platform_config d4_platform_config;
+    type_unsigned_8 d4_platform_port_b;
+    type_bool d4_platform_configured;
+    type_bool d4_platform_iochk_latched;
+    type_bool d4_platform_failsafe_latched;
+    type_bool d4_platform_nmi_signaled;
     core_machine_absent_memory absent_memory;
     core_machine_fdc_topology fdc_topology;
     type_bool fdc_configured;

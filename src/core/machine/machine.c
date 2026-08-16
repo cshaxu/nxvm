@@ -3559,6 +3559,74 @@ static type_status core_machine_planar_parity_port_write(C_VOID *owner,
     return TYPE_STATUS_OK;
 }
 
+static C_VOID core_machine_d4_platform_refresh_nmi(core_machine *machine)
+{
+    type_bool pending;
+
+    if (machine == STD_NULL || !machine->d4_platform_configured) return;
+    pending = ((machine->d4_platform_port_b & 0x08u) != 0u &&
+        machine->d4_platform_iochk_latched) ||
+        ((machine->d4_platform_port_b & 0x04u) != 0u &&
+        machine->d4_platform_failsafe_latched);
+    if (pending && !machine->executor_cpu.data.flagMaskNMI &&
+        !machine->d4_platform_nmi_signaled) {
+        machine->executor_cpu.data.flagNMI = TYPE_TRUE;
+        machine->d4_platform_nmi_signaled = TYPE_TRUE;
+    }
+}
+
+static C_VOID core_machine_d4_platform_failsafe_output(C_VOID *owner,
+    type_bool asserted)
+{
+    core_machine *machine = (core_machine *)owner;
+
+    if (machine == STD_NULL || !machine->d4_platform_configured || !asserted) return;
+    machine->d4_platform_failsafe_latched = TYPE_TRUE;
+    core_machine_d4_platform_refresh_nmi(machine);
+}
+
+static type_status core_machine_d4_platform_port_read(C_VOID *owner,
+    type_unsigned_16 port, type_unsigned_32 *out_value)
+{
+    core_machine *machine = (core_machine *)owner;
+
+    if (machine == STD_NULL || out_value == STD_NULL ||
+        !machine->d4_platform_configured ||
+        port != machine->d4_platform_config.port) return TYPE_STATUS_INVALID_ARGUMENT;
+    *out_value = (type_unsigned_32)machine->d4_platform_port_b |
+        (machine->d4_platform_iochk_latched ? 0x40u : 0u) |
+        (machine->d4_platform_failsafe_latched ? 0x80u : 0u);
+    return TYPE_STATUS_OK;
+}
+
+static type_status core_machine_d4_platform_port_write(C_VOID *owner,
+    type_unsigned_16 port, type_unsigned_32 value)
+{
+    core_machine *machine = (core_machine *)owner;
+
+    if (machine == STD_NULL || !machine->d4_platform_configured ||
+        port != machine->d4_platform_config.port) return TYPE_STATUS_INVALID_ARGUMENT;
+    machine->d4_platform_port_b = (type_unsigned_8)value & 0x3fu;
+    /* The external Rev-E diagnostic raises and then clears each enable bit.
+     * This models that observed logical clear sequence, not its pulse timing. */
+    if ((machine->d4_platform_port_b & 0x08u) == 0u) {
+        machine->d4_platform_iochk_latched = TYPE_FALSE;
+    }
+    if ((machine->d4_platform_port_b & 0x04u) == 0u) {
+        machine->d4_platform_failsafe_latched = TYPE_FALSE;
+    }
+    if (!machine->d4_platform_iochk_latched &&
+        !machine->d4_platform_failsafe_latched) {
+        machine->d4_platform_nmi_signaled = TYPE_FALSE;
+    }
+    core_machine_d4_platform_refresh_nmi(machine);
+    return TYPE_STATUS_OK;
+}
+
+static const core_machine_port_provider core_machine_d4_platform_port_provider = {
+    core_machine_d4_platform_port_read,
+    core_machine_d4_platform_port_write
+};
 static const core_machine_port_provider core_machine_rtc_cmos_port_provider = {
     core_machine_rtc_cmos_port_read,
     core_machine_rtc_cmos_port_write
@@ -3702,6 +3770,36 @@ type_status core_machine_configure_planar_parity(core_machine *machine,
     return TYPE_STATUS_OK;
 }
 
+type_status core_machine_configure_d4_platform(core_machine *machine,
+    const core_machine_d4_platform_config *config)
+{
+    core_machine_port_provider_entry *checkpoint;
+    type_status status;
+
+    if (!core_machine_configuration_is_open(machine) ||
+        machine->d4_platform_configured) return TYPE_STATUS_INVALID_STATE;
+    if (config == STD_NULL || config->port != CORE_MACHINE_PC_AT_PORT_B ||
+        config->failsafe_pit_counter >= 3u || !machine->auxiliary_pit_configured ||
+        machine->auxiliary_pit.connect.output[config->failsafe_pit_counter] != STD_NULL ||
+        core_machine_port_has_read(&machine->executor_port, config->port) ||
+        core_machine_port_has_write(&machine->executor_port, config->port)) {
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
+    checkpoint = core_machine_port_registration_begin(&machine->executor_port);
+    status = core_machine_install_port_provider(machine, config->port, config->port,
+        &core_machine_d4_platform_port_provider, machine);
+    if (status != TYPE_STATUS_OK) {
+        core_machine_port_rollback_registration(&machine->executor_port, checkpoint);
+        return status;
+    }
+    machine->d4_platform_config = *config;
+    machine->d4_platform_port_b = 0x0bu;
+    machine->d4_platform_configured = TYPE_TRUE;
+    core_machine_pit_set_output(&machine->auxiliary_pit,
+        config->failsafe_pit_counter, core_machine_d4_platform_failsafe_output,
+        machine);
+    return TYPE_STATUS_OK;
+}
 type_status core_machine_report_planar_parity_fault(core_machine *machine)
 {
     if (machine == STD_NULL || !core_machine_mutable_operation_is_allowed(machine) ||
@@ -3752,6 +3850,30 @@ static type_status core_machine_absent_memory_query(C_VOID *owner,
     return TYPE_STATUS_OK;
 }
 
+type_status core_machine_report_d4_iochk_fault(core_machine *machine)
+{
+    if (machine == STD_NULL || !core_machine_mutable_operation_is_allowed(machine) ||
+        !machine->d4_platform_configured) return TYPE_STATUS_INVALID_STATE;
+    machine->d4_platform_iochk_latched = TYPE_TRUE;
+    core_machine_d4_platform_refresh_nmi(machine);
+    return TYPE_STATUS_OK;
+}
+
+type_status core_machine_get_d4_platform_observation(const core_machine *machine,
+    core_machine_d4_platform_observation *out_observation)
+{
+    if (machine == STD_NULL || out_observation == STD_NULL) {
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
+    out_observation->configured = machine->d4_platform_configured;
+    out_observation->iochk_enabled = (machine->d4_platform_port_b & 0x08u) != 0u;
+    out_observation->failsafe_enabled =
+        (machine->d4_platform_port_b & 0x04u) != 0u;
+    out_observation->iochk_latched = machine->d4_platform_iochk_latched;
+    out_observation->failsafe_latched = machine->d4_platform_failsafe_latched;
+    out_observation->nmi_signaled = machine->d4_platform_nmi_signaled;
+    return TYPE_STATUS_OK;
+}
 type_status core_machine_configure_absent_memory(core_machine *machine,
     const core_machine_absent_memory_config *config)
 {
@@ -4327,6 +4449,10 @@ static type_status core_machine_cold_reset(core_machine *machine)
     machine->planar_parity_port_b = machine->planar_parity_configured ? 0x04u : 0u;
     machine->planar_parity_latched = TYPE_FALSE;
     machine->planar_parity_nmi_signaled = TYPE_FALSE;
+    machine->d4_platform_port_b = machine->d4_platform_configured ? 0x0bu : 0u;
+    machine->d4_platform_iochk_latched = TYPE_FALSE;
+    machine->d4_platform_failsafe_latched = TYPE_FALSE;
+    machine->d4_platform_nmi_signaled = TYPE_FALSE;
     core_machine_fdc_reset(&machine->fdc);
     core_machine_hdc_reset(&machine->hdc);
     core_machine_pic_reset(&machine->shared_pic_master,
@@ -4653,7 +4779,10 @@ type_status core_machine_set_nmi_mask(core_machine *machine, C_INT masked)
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
     machine->executor_cpu.data.flagMaskNMI = masked ? TYPE_TRUE : TYPE_FALSE;
-    if (!masked) core_machine_planar_parity_refresh_nmi(machine);
+    if (!masked) {
+        core_machine_planar_parity_refresh_nmi(machine);
+        core_machine_d4_platform_refresh_nmi(machine);
+    }
     return TYPE_STATUS_OK;
 }
 

@@ -131,6 +131,22 @@ typedef struct core_machine_planar_parity_observation {
     C_INT nmi_signaled;
 } core_machine_planar_parity_observation;
 
+/* DeskPro D4 platform port B.  This is distinct from IBM planar parity even
+ * though both selected boards decode port 61h. */
+typedef struct core_machine_d4_platform_config {
+    type_unsigned_16 port;
+    type_unsigned_8 failsafe_pit_counter;
+} core_machine_d4_platform_config;
+
+typedef struct core_machine_d4_platform_observation {
+    C_INT configured;
+    C_INT iochk_enabled;
+    C_INT failsafe_enabled;
+    C_INT iochk_latched;
+    C_INT failsafe_latched;
+    C_INT nmi_signaled;
+} core_machine_d4_platform_observation;
+
 /* A profile-selected, bounded unpopulated memory window. Reads return the
  * declared fallback byte and writes are deliberately discarded; it never adds
  * installed RAM. This is for board models, not a generic memory default. */
@@ -278,11 +294,16 @@ type_status core_machine_configure_rtc_cmos(core_machine *machine,
     const core_machine_rtc_cmos_config *config);
 type_status core_machine_configure_planar_parity(core_machine *machine,
     const core_machine_planar_parity_config *config);
+type_status core_machine_configure_d4_platform(core_machine *machine,
+    const core_machine_d4_platform_config *config);
 type_status core_machine_configure_absent_memory(core_machine *machine,
     const core_machine_absent_memory_config *config);
 type_status core_machine_report_planar_parity_fault(core_machine *machine);
+type_status core_machine_report_d4_iochk_fault(core_machine *machine);
 type_status core_machine_get_planar_parity_observation(const core_machine *machine,
     core_machine_planar_parity_observation *out_observation);
+type_status core_machine_get_d4_platform_observation(const core_machine *machine,
+    core_machine_d4_platform_observation *out_observation);
 type_status core_machine_configure_fdc(core_machine *machine,
     const core_machine_fdc_topology *topology);
 type_status core_machine_configure_hdc(core_machine *machine,

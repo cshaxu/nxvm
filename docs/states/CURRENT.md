@@ -2,12 +2,24 @@
 
 ## Current Work
 
-**T386 open; S1--S3 accepted.** The accepted [functional ledger](../etc/evidence/t386-s1-deskpro-functional-ledger.md),
-[non-runnable carrier contract](../etc/evidence/t386-s2-model40-carrier-contract.md)
-and [second-PIT proof](../etc/evidence/t386-s3-second-pit-owner.md) now provide
-an isolated `48h-4Bh` 8254 receiver without early profile publication. S4
-owns the selected D4 NMI/reset/A20 and port-`61h` platform state; no Model-40
-YAML/catalog publication is permitted until S3--S6 all close.
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation `M5 T386 S4`; T386 is the latest open numeric task and S1--S3 are accepted. |
+| Admission And Approval | Owner approved continuation and the selected Compaq EGA personality on 2026-08-15. S4 covers the S1-ledgered D4 NMI/reset/A20 and port-`61h` state only; no rule exception. |
+| Objective | Add one optional D4 platform-control receiver at `61h`: source-defined IOCHK enable/status and failsafe enable/status, NMI publication through the existing CMOS `70h` mask, an explicitly configured auxiliary-PIT output route, cold-reset visible state, and a KBC reset/A20 composition boundary. |
+| Non-goals | No Model-40 publication, firmware/ROM, storage/FDC/EGA, speaker/audio, speed control, timing/pulse duration, generic PC/AT port-`61h` change, or inferred latch-clear/PAL behavior. |
+| Reference Baseline | Accepted T386 S1--S3, T384 S1 audit, and `master` at `1d1d9185`. Primary corpus establishes D4 `61h` bits 3/6 and 2/7, CMOS NMI masking, reset paths and two 8254s. Manufacturer diagnostics corroborate cold-visible bits 0/1/3=1 and 2/7=0 plus failsafe interrupt/NMI observability. 86Box/PCjs are non-authoritative cross-checks. |
+| Candidate Proposal | [DeskPro 386 Model 40 selected-device functional closure](../proposals/m5-deskpro-386-model40-device-functional-closure.md), NMI/reset ledger row. |
+| Files And ABI Surface | `src/core/machine/{machine.c,machine.h,machine_interface.h}`, and KBC files only if required for an explicit callback; one `tests/machine/` smoke; `CMakeLists.txt`; S4 evidence. Existing planar-parity API/semantics remain unchanged. |
+| Applicable Rules | Task Reading Set; Execution S/P lifecycle, actual-change review, evidence and similar-issue sweep; Contributing; Architecture/Coding design and rules; source policy. Invariants: optional/default-off composition, atomic port registration, reset/finalize deassertion, no test-only ingress, source-unknown transfer, and no public profile before S3--S6. |
+| Verification | Focused smoke proves default isolation, D4 cold state, documented port visibility, IOCHK/failsafe NMI with mask/unmask behavior, selected auxiliary-PIT output/reset, and planar-parity non-regression. Build focused target, run CTest and current-gate; record commands/results and sweep. |
+| Expected Markers | `M5:T386:S4:D4-PLATFORM-PORT:OK`; `M5:T386:S4:D4-NMI-MASK:OK`; `M5:T386:S4:D4-FAILSAFE-ROUTE:OK`; `M5:T386:S4:D4-RESET-ISOLATION:OK`. |
+| Asset Needs | No asset is loaded, copied, bundled or committed; external ROM is research-only. |
+| Reporting Requirements | Executor confirms, reports owner/source boundary, self-reviews and pushes one complete implementation P. Coordinator then inspects actual changes and pushes acceptance P only if exit criteria hold. |
+| Stop Conditions | Stop and transfer undocumented bit ownership, latch clear, timer channel, reset duration or PAL transformation; likewise profile publication, ROM execution, storage, EGA, timing, AUX policy or generic-PC/AT changes. |
+| Exit Criteria | Default-off optional owner; no port conflict; documented cold/port/NMI behavior and explicit PIT route proven; no duplicated KBC mutation; parity/default controls retained; evidence separates proof from transfer; pushed implementation and acceptance P. No runnable/L3 claim. |
+| Original Owner Request | Continue selected original 1986 DeskPro 386 Model 40 functional closure: 386-16, 1 MiB, external ROM, 1.2 MB floppy/Compaq controller, Compaq EGA, no x87/AUX; 86Box/MAME/PCjs cross-check only when primary manuals are incomplete. |
+| Similar-Issue Sweep | Search tracked `src`, tests, CMake and T386/T384 records for `port.?61|0x0061|planar_parity|set_nmi_mask|auxiliary_pit|kbc.*output|request_reset`; classify each production hit as retained IBM parity, shared receiver or transfer. No static forbidden-shape gate: intentional distinct owners share port number; negative controls prove isolation. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T382 S8 `vm-0-5-0382` /

@@ -30,20 +30,20 @@ Model-339 descriptor; neither is a Compaq profile.
 
 ## Required Implementation Order
 
-1. **S2 — Model-40 descriptor/carrier and common binding plan.** Establish the
+1. **S2 -- Model-40 descriptor/carrier and common binding plan.** Establish the
    VM-profile composition boundary and selected common-device topology without
    pretending the machine boots or binds a vendor ROM.
-2. **S3 — second-PIT shared platform owner.** The Model-40 cannot be
+2. **S3 -- second-PIT shared platform owner.** The Model-40 cannot be
    functionally complete while this selected controller is absent.
-3. **S4 — D4 NMI/reset/A20 platform state.** Add only the selected latches,
+3. **S4 -- D4 NMI/reset/A20 platform state.** Add only the selected latches,
    publications and reset arbitration; speaker/audio stays out of scope.
-4. **S5 — Compaq storage controller and selected 1.2 MB drive.** It is gated
+4. **S5 -- Compaq storage controller and selected 1.2 MB drive.** It is gated
    by a complete primary-source functional contract for the Multipurpose Fixed
    Disk Controller. Current ATA/HDC and IBM MFM are forbidden substitutes.
-5. **S6 — small Compaq EGA personality.** Bind the selected display around
+5. **S6 -- small Compaq EGA personality.** Bind the selected display around
    shared VADP mechanics and prove its functional register/reset/consumer
    contract. IBM EGA remains solely with current-product closure.
-6. **S7 — integrated selected-device replay.** Only after S2--S6 may the task
+6. **S7 -- integrated selected-device replay.** Only after S2--S6 may the task
    claim a first runnable composition; it must replay reset, IRQ/DRQ, errors,
    consumers and profile-local no-AUX/no-x87 exclusions. Board availability,
    waits and service placement remain later work.
