@@ -2,7 +2,28 @@
 
 ## Current Work
 
-**No active task packet.**
+**Active: M5 T382 S4.**
+
+## M5 T382 S4 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner-approved T382 quality-boundary recovery, 2026-08-15; S4 only. |
+| Objective | Eliminate any post-destruction FDC topology-smoke diagnostic access. |
+| Non-goals | No FDC production timing, controller-state, or assertion change. |
+| Reference Baseline | T382 S3 acceptance `e3947011` and the retained S4 proposal. |
+| Candidate Proposal | [M5 quality-boundary recovery](../proposals/m5-quality-boundary-recovery.md), S4. |
+| Files And ABI Surface | FDC topology/media-change test fixtures and evidence only. |
+| Applicable Rules | Execution, architecture single-owner, coding bounded-failure, and documentation rules; no exception. |
+| Verification | Focused topology and media-change smokes, induced failure diagnostic, fixture sweep, governance, diff, artifact and SHA-256. |
+| Expected Markers | Teardown diagnostics read only copied/live values. |
+| Asset Needs | None. |
+| Reporting Requirements | Complete executor P, then one-session coordinator actual-change review and governance P. |
+| Stop Conditions | A production FDC behavior change or cross-owner diagnostic requirement. |
+| Exit Criteria | All swept FDC teardown diagnostics use live copies only. |
+| Original Owner Request | Finish the current code-quality task in one-session dual-role mode. |
+| Similar-Issue Sweep | Search modified FDC fixtures for destruction followed by owner-pointer diagnostics. |
 
 | Latest Task S | Compact result |
 | --- | --- |

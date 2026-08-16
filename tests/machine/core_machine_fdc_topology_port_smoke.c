@@ -119,6 +119,7 @@ int main(C_VOID)
     core_machine_fdc_topology topology = {0};
     core_machine *machine = STD_NULL;
     core_machine_fdc *fdc = STD_NULL;
+    type_unsigned_8 diagnostic_phase = 0u;
     t_port *port = STD_NULL;
     type_unsigned_8 result[7] = {0};
     C_INT failed = 0;
@@ -187,12 +188,13 @@ int main(C_VOID)
             }
         }
     }
+    if (fdc != STD_NULL) diagnostic_phase = fdc->data.phase;
     core_machine_destroy(machine);
     core_machine_media_registry_finalize(&media);
     if (failed) {
         STD_FPRINTF(stderr, "M5:T380:S2:FDC-TOPOLOGY:FAIL:%x:reads=%u,%u:phase=%u\n",
             failed, drive0.read_count, drive1.read_count,
-            fdc == STD_NULL ? 0u : fdc->data.phase);
+            diagnostic_phase);
         return 1;
     }
     puts("M5:T290:S1:FDC:PORT:OK");
