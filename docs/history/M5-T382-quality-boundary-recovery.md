@@ -53,3 +53,11 @@ P9 `b4f000ff` copies the topology fixture's phase before teardown. Focused
 topology and media-change smokes pass; the fixture sweep finds no other
 post-destruction owner read. [T382 S4 evidence](../etc/evidence/t382-s4-fdc-diagnostic-lifetime.md)
 retains the proof.
+
+## S5 Acceptance
+
+P11 `266c23e6` establishes checked text copy/append ownership across the
+public facade, private xasm/disassembler construction, and debug console
+paths. The capacity matrix, static sweep, focused regression evidence, and
+separate S6 current-gate transfer are retained in
+[T382 S5 evidence](../etc/evidence/t382-s5-xasm-debug-capacity.md).
