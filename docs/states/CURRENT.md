@@ -2,11 +2,28 @@
 
 ## Current Work
 
-**No active task packet.**
+**Active: M5 T382 S7.**
 
-| Latest Task S | Compact result |
+## M5 T382 S7 Packet
+
+| Field | Required record |
 | --- | --- |
-| T382 S6 | Accepted: generic session-manager limits reject capacity/ID exhaustion before provider mutation, and zero-session consumers explicitly open sessions. [Evidence](../etc/evidence/t382-s6-session-manager-limits.md). |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner-approved T382 quality-boundary recovery, 2026-08-15; S7 only. |
+| Objective | Reconcile stale debug-borrow debt wording with the current operation boundary. |
+| Non-goals | No CR mutation implementation or debugger behavior change. |
+| Reference Baseline | T382 S6 acceptance `d5e9eaaf` and retained S7 proposal. |
+| Candidate Proposal | [M5 quality-boundary recovery](../proposals/m5-quality-boundary-recovery.md), S7. |
+| Files And ABI Surface | TODO, current evidence/history, no code ABI. |
+| Applicable Rules | Execution and documentation rules; no exception. |
+| Verification | Current declaration/call sweep, TODO/history authority sweep, governance and diff. |
+| Expected Markers | No current authority claims a nonexistent borrow API. |
+| Asset Needs | None. |
+| Reporting Requirements | Complete executor P, then one-session coordinator actual-change review and governance P. |
+| Stop Conditions | A current production borrow path or required semantics change. |
+| Exit Criteria | CR mutation debt names actual operations and actionable admission conditions. |
+| Original Owner Request | Finish the current code-quality task in one-session dual-role mode. |
+| Similar-Issue Sweep | Search current authorities and source declarations/calls for debug borrow APIs. |
 
 ## Current Technical Baseline
 

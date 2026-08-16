@@ -115,19 +115,15 @@ adopts them.
   reset writes, then bind the image through the existing core immutable-ROM
   mapping contract. Do not call the current generated BIOS an immutable ROM,
   add a second boot route, or change the retained boot UX.
-- [ ] **Paused-boundary debug borrow retirement (`TODO(Medium)`).**
-  `core_machine_debug_*_borrow()` remains a transitional adapter used only
-  after a returned command boundary; it is not a second owner or executor.
-  Replace it only with copied or operation-specific core debug access that
-  preserves the retained Console/debugger semantics and multi-session
-  isolation.
 - [ ] **Core debug control-register mutation contract (`TODO(Medium)`).**
-  `vm/composition/session/debug_target.c` still directly writes `CR0`--`CR4`
-  through the debugger borrow. This is not a guest execution path, but it can
-  construct paging/control state that guest `MOV CRx` may not. Admit a
-  core-owned debug mutation contract only after preserving retained debugger
-  UX and defining lifecycle, validation, raw-override policy, and focused
-  regression; do not let VM composition acquire paging semantics.
+  `vm/composition/session/debug_target.c` reaches the operation-based
+  `core_machine_debug_write_register()` / `core_machine_debug_patch_registers()`
+  boundary for debugger-originated `CR0`--`CR4` writes. This is not a guest
+  execution path, but it can construct paging/control state that guest `MOV
+  CRx` may not. Admit a core-owned debug mutation contract only after
+  preserving retained debugger UX and defining lifecycle, validation,
+  raw-override policy, and focused regression; do not let VM composition
+  acquire paging semantics.
 - [ ] **Broaden present x87 (`TODO(Low)`).** T262 closes only the exact-8087
   finite-`m32real`/basic-arithmetic baseline with owned state, exceptions, and
   `FWAIT`. T317 S1 reconciles retained ESC/WAIT `#NM` vector-7 delivery tests
