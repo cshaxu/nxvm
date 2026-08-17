@@ -36,8 +36,9 @@ fallback. Prefix/default success remains prohibited under T388 S3.
 The partition is bound to `core_machine_80286_source_instruction_cost` and
 its `case 0x0fu:`, `case 0x62u:`, `case 0x63u:`, `case 0x8cu:`,
 `case 0x8eu:`, `case 0xc4u: case 0xc5u:` and `prefixes != 0u` paths.
-Every retained success uses `CORE_MACHINE_SOURCE_UNALLOCATED_TICKS` only as
-the explicit nonphysical receiver.
+Every **residual unallocated** success uses
+`CORE_MACHINE_SOURCE_UNALLOCATED_TICKS` only as the explicit nonphysical
+receiver; retained exact rows do not pass through that marker.
 ## Static Boundary
 
 `verify-t388-80286-appendix-b-context` binds the existing classifier,
