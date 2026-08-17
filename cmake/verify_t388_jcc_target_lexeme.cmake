@@ -26,7 +26,7 @@ foreach(token IN ITEMS "core_machine_cpu_execution_preview_lexeme" "CORE_MACHINE
 endforeach()
 t388_require("${preview_text}" "preview_mode = TYPE_TRUE")
 t388_require("${preview_smoke_text}" "preview_test_taken_near_jcc_target")
-t388_require("${preview_smoke_text}" "0x0fu, 0x85u")
+t388_require("${preview_smoke_text}" "0x66u, 0x0fu, 0x84u")
 t388_require("${timing_smoke_text}" "static const type_unsigned_8 jcc[]")
 t388_require("${timing_smoke_text}" "result.ticks != 9u")
 t388_require("${evidence_text}" "M5:T388:S5:JCC-TARGET-LEXEME:OK")

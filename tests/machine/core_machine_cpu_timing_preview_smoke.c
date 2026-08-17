@@ -200,7 +200,8 @@ static C_INT preview_test_taken_jcc_target(C_VOID)
 static C_INT preview_test_taken_near_jcc_target(C_VOID)
 {
     static const type_unsigned_8 program[] = {
-        0x0fu, 0x85u, 0xfau, 0xffu, 0xffu, 0xffu
+        0x66u, 0x0fu, 0x84u, 0x02u, 0x00u, 0x00u, 0x00u,
+        0x90u, 0x90u, 0xf4u
     };
     const core_machine_config config = {
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386
@@ -218,16 +219,15 @@ static C_INT preview_test_taken_near_jcc_target(C_VOID)
             sizeof(program)) != TYPE_STATUS_OK;
 
     if (!failed) {
-        machine->executor_cpu.data.cs.seg.exec.defsize = TYPE_TRUE;
-        machine->executor_cpu.data.eflags &= ~VCPU_EFLAGS_ZF;
+        machine->executor_cpu.data.eflags |= VCPU_EFLAGS_ZF;
         if (core_machine_run(machine, budget, &result) != TYPE_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 1u ||
-            machine->executor_cpu.data.eip != 0xfff0u) {
+            machine->executor_cpu.data.eip != 0xfff9u) {
             failed = 1;
         } else if (core_machine_capture_observation(machine, &before) !=
             TYPE_STATUS_OK || !core_machine_cpu_execution_preview_lexeme(
                 &machine->executor_cpu_execution, &lexeme) || !lexeme.available ||
-            lexeme.byte_count != sizeof(program) || lexeme.component_count != 3u ||
+            lexeme.byte_count != 1u || lexeme.component_count != 1u ||
             core_machine_capture_observation(machine, &after) != TYPE_STATUS_OK ||
             STD_MEMCMP(&before, &after, sizeof(before)) != 0) {
             failed = 1;
