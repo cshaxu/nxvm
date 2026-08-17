@@ -109,3 +109,18 @@ the S6 packet, 80286 owner smoke, static recurrence gate, documentation
 governance and full 281-target current gate. The [accepted evidence](../etc/evidence/t388-s6-80286-appendix-b-context.md)
 adds no scalar, production behavior, profile enablement, artifact revision or
 L3 claim. T388 remains open for the named residual receivers.
+### S7: 80286 LSL Architecture Reconciliation
+
+S7 corrects the S6 interpretation without rewriting its accepted evidence or
+P history. The current 80286 classifier already selects the Intel-primary
+unprefixed protected `0F 03` `LSL` register/memory `14/16` rows, and the focused
+owner smoke proves valid/invalid selector and direct/indexed memory outcomes.
+Descriptor page granularity is an 80386-only context and is not an 80286
+receiver. The [corrective evidence](../etc/evidence/t388-s7-80286-lsl-architecture-reconciliation.md)
+records the source distinction and a static recurrence gate.
+
+Coordinator review accepts P1 `dc3431b7` against the S7 packet, focused owner
+smoke, T388 static gate, documentation governance and full 281-target current
+gate. It adds no production behavior, scalar, profile enablement, artifact
+revision or L3 claim. T388 remains open for genuine 80386 descriptor context,
+prefix/default, x87 and physical-service receivers.
