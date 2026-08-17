@@ -43,6 +43,10 @@ typedef struct model40_retirement_capture {
     type_unsigned_8 terminal_byte_count;
     type_bool checkpoint_reached;
     type_bool c1_checkpoint_reached;
+    type_bool post_c0_io_seen;
+    type_bool post_c0_io_read;
+    type_bool post_c0_io_port_known;
+    type_unsigned_16 post_c0_io_port;
     type_bool observation_seen;
     type_bool previous_protected_mode;
     type_bool protected_mode_seen;
@@ -260,6 +264,19 @@ static C_VOID model40_capture_observe(C_VOID *opaque,
     if (opcode == 0x0fu && opcode_index + 1u < observation->point.byte_count) {
         escape_opcode = observation->point.bytes[opcode_index + 1u];
     }
+    if (capture->checkpoint_reached && !capture->post_c0_io_seen) {
+        if ((opcode == 0xe4u || opcode == 0xe5u || opcode == 0xe6u ||
+            opcode == 0xe7u) && opcode_index + 1u < observation->point.byte_count) {
+            capture->post_c0_io_seen = TYPE_TRUE;
+            capture->post_c0_io_port_known = TYPE_TRUE;
+            capture->post_c0_io_port = observation->point.bytes[opcode_index + 1u];
+            capture->post_c0_io_read = opcode == 0xe4u || opcode == 0xe5u;
+        } else if (opcode == 0xecu || opcode == 0xedu || opcode == 0xeeu ||
+            opcode == 0xefu) {
+            capture->post_c0_io_seen = TYPE_TRUE;
+            capture->post_c0_io_read = opcode == 0xecu || opcode == 0xedu;
+        }
+    }
     group_extension = model40_capture_group_extension(observation, opcode_index, opcode);
     name = model40_capture_form_name(observation, opcode_index);
     operand = model40_capture_operand_name(observation);
@@ -333,7 +350,8 @@ static C_INT model40_capture_create_session(C_INT argc, C_CHAR **argv,
 
     if (argv == STD_NULL || out_session == STD_NULL ||
         (argc != 7 && (argc != 8 || (STD_STRCMP(argv[7], "--terminal-bytes") &&
-        STD_STRCMP(argv[7], "--c1-diagnostic"))))) return 0;
+        STD_STRCMP(argv[7], "--c1-diagnostic") &&
+        STD_STRCMP(argv[7], "--post-c0-io-diagnostic"))))) return 0;
     config.profile_kind = VM_SESSION_PROFILE_COMPAQ_DESKPRO_386_MODEL_40;
     config.fdd_image = argv[6];
     config.model40_firmware = (vm_profile_model40_byob_manifest) {
@@ -376,6 +394,10 @@ static C_INT model40_capture_synthetic_c0_smoke(C_VOID)
     model40_capture_observe(&capture, &observation);
     observation.timing_origin =
         CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY;
+    observation.point.bytes[0] = 0xe6u;
+    observation.point.bytes[1] = 0x84u;
+    observation.point.byte_count = 2u;
+    model40_capture_observe(&capture, &observation);
     observation.point.bytes[0] = 0x90u;
     model40_capture_observe(&capture, &observation);
     observation.timing_disposition =
@@ -385,12 +407,16 @@ static C_INT model40_capture_synthetic_c0_smoke(C_VOID)
     observation.protected_mode = TYPE_TRUE;
     model40_capture_observe(&capture, &observation);
     if (!capture.checkpoint_reached || !capture.c1_checkpoint_reached ||
-        capture.count != 7u || capture.classified != 6u ||
-        capture.unallocated != 1u || capture.form_count != 7u ||
+        !capture.post_c0_io_seen || !capture.post_c0_io_port_known ||
+        capture.post_c0_io_read ||
+        capture.post_c0_io_port != 0x0084u || capture.count != 8u ||
+        capture.classified != 7u || capture.unallocated != 1u ||
+        capture.form_count != 8u ||
         STD_STRCMP(capture.forms[0].form, "mov-immediate")) return 1;
     STD_PRINTF("M5:T390:S17:M40-C0-CAPTURE:OK\n");
     STD_PRINTF("M5:T390:S29:M40-C1-DIAGNOSTIC:OK\n");
     STD_PRINTF("M5:T390:S32:C1-TRANSITION:OK\n");
+    STD_PRINTF("M5:T390:S33:POST-C0-IO:OK\n");
     return 0;
 }
 C_INT main(C_INT argc, C_CHAR **argv)
@@ -412,10 +438,12 @@ C_INT main(C_INT argc, C_CHAR **argv)
         !STD_STRCMP(argv[7], "--terminal-bytes");
     C_INT c1_diagnostic = argc == 8 && argv != STD_NULL &&
         !STD_STRCMP(argv[7], "--c1-diagnostic");
+    C_INT post_c0_io_diagnostic = argc == 8 && argv != STD_NULL &&
+        !STD_STRCMP(argv[7], "--post-c0-io-diagnostic");
 
     if (!model40_capture_create_session(argc, argv, &session)) {
         STD_FPRINTF(STD_STDERR, "usage: capture even-image even-digest "
-            "odd-image odd-digest provenance floppy-image [--terminal-bytes|--c1-diagnostic]\n");
+            "odd-image odd-digest provenance floppy-image [--terminal-bytes|--c1-diagnostic|--post-c0-io-diagnostic]\n");
         return 2;
     }
     provider.callback = model40_capture_observe;
@@ -425,13 +453,15 @@ C_INT main(C_INT argc, C_CHAR **argv)
     if (status == TYPE_STATUS_OK) status = core_machine_reset(session->core_machine);
     for (index = 0u; status == TYPE_STATUS_OK && index <
         MODEL40_CAPTURE_RETIREMENT_LIMIT &&
-        (!capture.checkpoint_reached || (c1_diagnostic && !capture.c1_checkpoint_reached)) &&
+        (!capture.checkpoint_reached || (c1_diagnostic && !capture.c1_checkpoint_reached) ||
+        (post_c0_io_diagnostic && !capture.post_c0_io_seen)) &&
         capture.unallocated == 0u && !capture.form_limit_reached; ++index) {
         elapsed_before_terminal = result.elapsed_ticks;
         status = core_machine_run(session->core_machine, budget, &result);
         if (status != TYPE_STATUS_OK || result.reason == CORE_MACHINE_STOP_FAULT) break;
     }
-    if (c1_diagnostic && capture.c1_checkpoint_reached) terminal = "c1-protected-entry";
+    if (post_c0_io_diagnostic && capture.post_c0_io_seen) terminal = "post-c0-io";
+    else if (c1_diagnostic && capture.c1_checkpoint_reached) terminal = "c1-protected-entry";
     else if (c1_diagnostic && capture.unallocated != 0u) terminal =
         "c1-source-timing-unallocated";
     else if (capture.form_limit_reached) terminal = "form-capacity";
@@ -448,6 +478,12 @@ C_INT main(C_INT argc, C_CHAR **argv)
         (unsigned)capture.unallocated, (unsigned)capture.form_count,
         (unsigned)capture.protected_mode_seen, (unsigned)capture.checkpoint_reached,
         (unsigned)capture.c1_checkpoint_reached, (unsigned)status);
+    if (post_c0_io_diagnostic) {
+        STD_PRINTF("M5:T390:S33:POST-C0-IO:terminal=%s port-known=%u port=%04X read=%u "
+            "unallocated=%u status=%u\n", terminal, (unsigned)capture.post_c0_io_port_known,
+            (unsigned)capture.post_c0_io_port, (unsigned)capture.post_c0_io_read,
+            (unsigned)capture.unallocated, (unsigned)status);
+    }
     if (c1_diagnostic) {
         STD_PRINTF("M5:T390:S29:M40-C1-DIAGNOSTIC:terminal=%s unallocated=%u c1=%u "
             "executed=%u ticks=%llu elapsed-before=%llu elapsed=%llu status=%u\n", terminal,
@@ -458,6 +494,11 @@ C_INT main(C_INT argc, C_CHAR **argv)
             (unsigned long long)result.elapsed_ticks, (unsigned)status);
     }
     vm_session_destroy(session);
+    if (post_c0_io_diagnostic) {
+        return capture.checkpoint_reached && capture.post_c0_io_seen &&
+            capture.unallocated == 0u && !capture.form_limit_reached &&
+            status == TYPE_STATUS_OK ? 0 : 1;
+    }
     if (c1_diagnostic) {
         return capture.checkpoint_reached && capture.c1_checkpoint_reached &&
             capture.unallocated == 0u && !capture.form_limit_reached &&

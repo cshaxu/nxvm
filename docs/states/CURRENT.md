@@ -2,7 +2,28 @@
 
 ## Current Work
 
-**Active.** T390 remains open between accepted subtasks. S32 proves the candidate C1 transition (a later real-to-protected success after C0) is absent within the bounded corrected-ROM replay. The state machine is covered synthetically; a later receiver must select another finite checkpoint. No timing, board-time, physical-retirement, or L3 claim follows. [Evidence](../etc/evidence/t390-s32-c1-transition-boundary.md).
+**Active.** T390 S33 is collecting the first post-C0 I/O semantic event under the corrected-ROM baseline. The work is test-only and aggregate-only: it identifies direction and, when directly encoded, an I/O port after C0 without retaining bytes, PCs, or a raw trace. No timing, board-time, physical-retirement, or L3 claim follows.
+
+## M5 T390 S33 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; T390 remains the latest open numeric task and S33 follows accepted S32. |
+| Admission And Approval | Owner authorized continued implementation, correction of confirmed defects, and CPU/timing audit in the current task conversation on 2026-08-17. |
+| Objective | Add a bounded, test-only aggregate observer that identifies the first retired I/O operation after C0 and its port when directly encoded, so the next semantic checkpoint is assigned to an actual Core or Model-40 device owner rather than inferred from instruction budgets. |
+| Non-goals | No production Core/VM API or data-layout change, port-provider replacement, device semantic change, timing allocation, physical-clock or board-ratio claim, ROM/media import, or raw bytes/PC/trace retention. |
+| Reference Baseline | Accepted T390 S27/S28 C0 batch and physical-contract selection; accepted S31 corrected A20 startup path; accepted S32 C1 candidate absent within its containment run. |
+| Candidate Proposal | Continue the accepted [T390 physical-qualification proposal](../proposals/m5-80386-physical-retirement-qualification.md) through a finite, owner-qualified post-C0 semantic checkpoint. |
+| Files And ABI Surface | Existing test-only BYOB capture helper and synthetic smoke, current status and aggregate-only evidence. No production source, Core/VM interface, timing ledger, profile contract, CMake registration, or external source change. |
+| Applicable Rules | Execution, coding, architecture, documentation and source-policy authorities; tests may inspect same-module state without creating a public contract, and the Core/VM composition boundary remains unchanged. |
+| Verification | Build/run the synthetic post-C0 I/O state regression; execute one contained owner-managed replay with wall and retirement limits; verify only aggregate result is retained and no raw output remains; run focused capture and documentation/diff gates. |
+| Expected Markers | Existing C0 and S32 markers plus an S33 synthetic post-C0-I/O marker and an aggregate-only contained summary. |
+| Asset Needs | Read-only owner-managed formal assets, used transiently only; no asset identifier, locator, hash, provenance, byte, PC, trace or guest media enters Git. |
+| Reporting Requirements | Record the observation definition, first post-C0 I/O event or bounded absence, owner disposition, similar-issue sweep, and transfer without timing inference. |
+| Stop Conditions | Stop for an observation that requires a public interface or raw capture, source-unallocated success, a form-capacity condition, or a proposed timing/board conclusion. |
+| Exit Criteria | Synthetic observer transitions prove deterministically; contained replay reports a first aggregate post-C0 I/O event (with port when directly encoded) or bounded absence; the event is assigned to an existing owner or transferred; documentation and focused verification pass. |
+| Original Owner Request | Continue the global CPU instruction/timing audit toward later DeskPro board timing and L3 closure; fix confirmed issues and preserve Core/VM interfaces. |
+| Similar-Issue Sweep | Review every test-only post-checkpoint instruction-inspection path and all existing I/O observation facilities; classify their boundaries so no production hook, duplicate port provider, or raw-output side path is introduced. |
 
 ## Current Technical Baseline
 
