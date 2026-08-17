@@ -51,6 +51,11 @@ typedef struct core_machine_clock_plan {
     core_machine_clock_ratio provider;
 } core_machine_clock_plan;
 
+typedef enum core_machine_retirement_time_contract {
+    CORE_MACHINE_RETIREMENT_TIME_DETERMINISTIC = 0,
+    CORE_MACHINE_RETIREMENT_TIME_PHYSICAL = 1
+} core_machine_retirement_time_contract;
+
 /* Level 2 costs are relative to one completed executor refresh. Zero keeps the
  * legacy ticks_per_instruction base and disables the corresponding surcharge. */
 typedef struct core_machine_instruction_timing {
@@ -73,6 +78,9 @@ typedef struct core_machine_config {
     type_unsigned_32 ticks_per_instruction;
     core_machine_instruction_timing instruction_timing;
     core_machine_clock_plan clock_plan;
+    /* Physical mode refuses an unallocated successful retirement before it can
+     * be published into a clock-domain plan. */
+    core_machine_retirement_time_contract retirement_time_contract;
     type_unsigned_32 kbc_typematic_initial_ticks;
     type_unsigned_32 kbc_typematic_repeat_ticks;
     type_unsigned_32 kbc_command_response_ticks;

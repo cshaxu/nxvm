@@ -576,6 +576,13 @@ static const core_machine_source_repeat_timing_contract
 #define CORE_MACHINE_80386_JCC_NOT_TAKEN_TICKS 3u
 #define CORE_MACHINE_80386_JCC_TAKEN_TICKS 7u
 #define CORE_MACHINE_SOURCE_UNALLOCATED_TICKS 1u
+
+static C_VOID core_machine_source_timing_mark_unallocated(core_machine *machine,
+    type_unsigned_64 *out_ticks)
+{
+    if (machine != STD_NULL) machine->source_timing_unallocated = TYPE_TRUE;
+    if (out_ticks != STD_NULL) *out_ticks = CORE_MACHINE_SOURCE_UNALLOCATED_TICKS;
+}
 #define CORE_MACHINE_80386_SOURCE_MAXIMUM_TICKS 106u
 #define CORE_MACHINE_8086_JCC_NOT_TAKEN_TICKS 4u
 #define CORE_MACHINE_8086_JCC_TAKEN_TICKS 16u
@@ -616,7 +623,7 @@ static const core_machine_legacy_source_timing_contract
     CORE_MACHINE_80186_JCC_TAKEN_TICKS
 };
 
-static type_unsigned_64 core_machine_source_timing_lookup(
+static type_unsigned_64 core_machine_source_timing_lookup(core_machine *machine,
     const core_machine_source_timing_entry *ledger, STD_SIZE_T ledger_entries,
     core_machine_source_timing_form form)
 {
@@ -627,20 +634,21 @@ static type_unsigned_64 core_machine_source_timing_lookup(
             return ledger[index].ticks;
         }
     }
+    if (machine != STD_NULL) machine->source_timing_unallocated = TYPE_TRUE;
     return CORE_MACHINE_SOURCE_UNALLOCATED_TICKS;
 }
 
 static type_unsigned_64 core_machine_80386_source_timing_lookup(
-    core_machine_source_timing_form form)
+    core_machine *machine, core_machine_source_timing_form form)
 {
-    return core_machine_source_timing_lookup(
+    return core_machine_source_timing_lookup(machine,
         core_machine_80386_source_timing_ledger,
         sizeof(core_machine_80386_source_timing_ledger) /
         sizeof(core_machine_80386_source_timing_ledger[0]), form);
 }
 
 static type_unsigned_64 core_machine_80286_source_timing_lookup(
-    core_machine_source_timing_form form);
+    core_machine *machine, core_machine_source_timing_form form);
 static const core_machine_source_repeat_timing_entry
     *core_machine_source_repeat_timing_lookup(
         const core_machine_source_repeat_timing_contract *contract,
@@ -665,14 +673,14 @@ static C_INT core_machine_80386_timing_uses_permission_map(
 }
 
 static type_unsigned_64 core_machine_80386_source_timing_port_cost(
-    const t_cpuins_data *data, core_machine_source_timing_form real_form,
+    core_machine *machine, const t_cpuins_data *data, core_machine_source_timing_form real_form,
     core_machine_source_timing_form protected_form,
     core_machine_source_timing_form permission_form)
 {
     if ((data->oldcpu.data.cr0 & VCPU_CR0_PE) == 0u) {
-        return core_machine_80386_source_timing_lookup(real_form);
+        return core_machine_80386_source_timing_lookup(machine, real_form);
     }
-    return core_machine_80386_source_timing_lookup(
+    return core_machine_80386_source_timing_lookup(machine,
         core_machine_80386_timing_uses_permission_map(data) ?
         permission_form : protected_form);
 }
@@ -790,22 +798,22 @@ static C_INT core_machine_string_io_source_instruction_cost(
     if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80386) {
         switch (form) {
         case CORE_MACHINE_SOURCE_TIMING_IN_IMMEDIATE:
-            *out_ticks = core_machine_80386_source_timing_port_cost(data, form,
+            *out_ticks = core_machine_80386_source_timing_port_cost(machine, data, form,
                 CORE_MACHINE_SOURCE_TIMING_IN_IMMEDIATE_PROTECTED,
                 CORE_MACHINE_SOURCE_TIMING_IN_IMMEDIATE_PERMISSION);
             break;
         case CORE_MACHINE_SOURCE_TIMING_IN_DX:
-            *out_ticks = core_machine_80386_source_timing_port_cost(data, form,
+            *out_ticks = core_machine_80386_source_timing_port_cost(machine, data, form,
                 CORE_MACHINE_SOURCE_TIMING_IN_DX_PROTECTED,
                 CORE_MACHINE_SOURCE_TIMING_IN_DX_PERMISSION);
             break;
         case CORE_MACHINE_SOURCE_TIMING_OUT_IMMEDIATE:
-            *out_ticks = core_machine_80386_source_timing_port_cost(data, form,
+            *out_ticks = core_machine_80386_source_timing_port_cost(machine, data, form,
                 CORE_MACHINE_SOURCE_TIMING_OUT_IMMEDIATE_PROTECTED,
                 CORE_MACHINE_SOURCE_TIMING_OUT_IMMEDIATE_PERMISSION);
             break;
         case CORE_MACHINE_SOURCE_TIMING_OUT_DX:
-            *out_ticks = core_machine_80386_source_timing_port_cost(data, form,
+            *out_ticks = core_machine_80386_source_timing_port_cost(machine, data, form,
                 CORE_MACHINE_SOURCE_TIMING_OUT_DX_PROTECTED,
                 CORE_MACHINE_SOURCE_TIMING_OUT_DX_PERMISSION);
             break;
@@ -815,21 +823,21 @@ static C_INT core_machine_string_io_source_instruction_cost(
         return 1;
     }
     if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_8086) {
-        *out_ticks = core_machine_source_timing_lookup(
+        *out_ticks = core_machine_source_timing_lookup(machine,
             core_machine_8086_source_timing_ledger,
             sizeof(core_machine_8086_source_timing_ledger) /
                 sizeof(core_machine_8086_source_timing_ledger[0]), form);
         return 1;
     }
     if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80186) {
-        *out_ticks = core_machine_source_timing_lookup(
+        *out_ticks = core_machine_source_timing_lookup(machine,
             core_machine_80186_source_timing_ledger,
             sizeof(core_machine_80186_source_timing_ledger) /
                 sizeof(core_machine_80186_source_timing_ledger[0]), form);
         return 1;
     }
     if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286) {
-        *out_ticks = core_machine_80286_source_timing_lookup(form);
+        *out_ticks = core_machine_80286_source_timing_lookup(machine, form);
         return 1;
     }
     return 0;
@@ -1391,7 +1399,7 @@ static C_INT core_machine_legacy_source_instruction_cost(core_machine *machine,
     segment_override = core_machine_8086_timing_has_segment_override(data,
         prefixes);
     if (prefixes != 0u && !segment_override) {
-        *out_ticks = CORE_MACHINE_SOURCE_UNALLOCATED_TICKS;
+        core_machine_source_timing_mark_unallocated(machine, out_ticks);
         return 1;
     }
     if (opcode >= 0x70u && opcode <= 0x7fu && prefixes == 0u) {
@@ -1403,27 +1411,27 @@ static C_INT core_machine_legacy_source_instruction_cost(core_machine *machine,
     switch (opcode) {
     case 0x90u:
         if (prefixes != 0u) break;
-        *out_ticks = core_machine_source_timing_lookup(contract->ledger,
+        *out_ticks = core_machine_source_timing_lookup(machine, contract->ledger,
             contract->ledger_entries,
             CORE_MACHINE_SOURCE_TIMING_NOP);
         return 1;
     case 0xf8u:
         if (prefixes != 0u) break;
-        *out_ticks = core_machine_source_timing_lookup(contract->ledger,
+        *out_ticks = core_machine_source_timing_lookup(machine, contract->ledger,
             contract->ledger_entries,
             CORE_MACHINE_SOURCE_TIMING_CLC);
         return 1;
     case 0x88u: case 0x89u: case 0x8au: case 0x8bu:
         if (!data->flagMem) {
             if (prefixes != 0u) break;
-            *out_ticks = core_machine_source_timing_lookup(contract->ledger,
+            *out_ticks = core_machine_source_timing_lookup(machine, contract->ledger,
                 contract->ledger_entries,
                 CORE_MACHINE_SOURCE_TIMING_MOV_REGISTER_REGISTER);
             return 1;
         }
         memory_ticks = core_machine_8086_timing_effective_address(data, prefixes);
         if (memory_ticks == 0u) break;
-        *out_ticks = core_machine_source_timing_lookup(contract->ledger,
+        *out_ticks = core_machine_source_timing_lookup(machine, contract->ledger,
             contract->ledger_entries,
             opcode == 0x88u || opcode == 0x89u ?
             CORE_MACHINE_SOURCE_TIMING_MOV_RM_REGISTER :
@@ -1433,7 +1441,7 @@ static C_INT core_machine_legacy_source_instruction_cost(core_machine *machine,
                 core_machine_8086_timing_odd_word(data) : 0u);
         return 1;
     case 0xa0u: case 0xa1u: case 0xa2u: case 0xa3u:
-        *out_ticks = core_machine_source_timing_lookup(contract->ledger,
+        *out_ticks = core_machine_source_timing_lookup(machine, contract->ledger,
             contract->ledger_entries,
             opcode == 0xa0u || opcode == 0xa1u ?
             CORE_MACHINE_SOURCE_TIMING_MOV_MOFFS_READ :
@@ -1444,14 +1452,14 @@ static C_INT core_machine_legacy_source_instruction_cost(core_machine *machine,
         return 1;
     default:
         if (opcode >= 0xb0u && opcode <= 0xbfu && prefixes == 0u) {
-            *out_ticks = core_machine_source_timing_lookup(contract->ledger,
+            *out_ticks = core_machine_source_timing_lookup(machine, contract->ledger,
                 contract->ledger_entries,
                 CORE_MACHINE_SOURCE_TIMING_MOV_IMMEDIATE);
             return 1;
         }
         break;
     }
-    *out_ticks = CORE_MACHINE_SOURCE_UNALLOCATED_TICKS;
+    core_machine_source_timing_mark_unallocated(machine, out_ticks);
     return 1;
 }
 
@@ -1470,9 +1478,9 @@ static C_INT core_machine_80186_source_instruction_cost(core_machine *machine,
 }
 
 static type_unsigned_64 core_machine_80286_source_timing_lookup(
-    core_machine_source_timing_form form)
+    core_machine *machine, core_machine_source_timing_form form)
 {
-    return core_machine_source_timing_lookup(
+    return core_machine_source_timing_lookup(machine,
         core_machine_80286_source_timing_ledger,
         sizeof(core_machine_80286_source_timing_ledger) /
             sizeof(core_machine_80286_source_timing_ledger[0]), form);
@@ -1931,24 +1939,24 @@ static C_INT core_machine_primary_source_instruction_cost(
  * No handler owns a clock; paths needing a gate, privilege change, task switch
  * or exception delivery deliberately remain outside this classifier. */
 static type_unsigned_64 core_machine_control_stack_source_lookup(
-    const core_machine *machine, core_machine_source_timing_form form)
+    core_machine *machine, core_machine_source_timing_form form)
 {
     if (machine == STD_NULL) return CORE_MACHINE_SOURCE_UNALLOCATED_TICKS;
     switch (machine->cpu_profile) {
     case CORE_MACHINE_CPU_PROFILE_8086:
-        return core_machine_source_timing_lookup(
+        return core_machine_source_timing_lookup(machine,
             core_machine_8086_source_timing_ledger,
             sizeof(core_machine_8086_source_timing_ledger) /
                 sizeof(core_machine_8086_source_timing_ledger[0]), form);
     case CORE_MACHINE_CPU_PROFILE_80186:
-        return core_machine_source_timing_lookup(
+        return core_machine_source_timing_lookup(machine,
             core_machine_80186_source_timing_ledger,
             sizeof(core_machine_80186_source_timing_ledger) /
                 sizeof(core_machine_80186_source_timing_ledger[0]), form);
     case CORE_MACHINE_CPU_PROFILE_80286:
-        return core_machine_80286_source_timing_lookup(form);
+        return core_machine_80286_source_timing_lookup(machine, form);
     case CORE_MACHINE_CPU_PROFILE_80386:
-        return core_machine_80386_source_timing_lookup(form);
+        return core_machine_80386_source_timing_lookup(machine, form);
     default:
         return CORE_MACHINE_SOURCE_UNALLOCATED_TICKS;
     }
@@ -2421,7 +2429,7 @@ static C_INT core_machine_80386_secondary_source_instruction_cost(
             *out_ticks = CORE_MACHINE_80386_JCC_TAKEN_TICKS +
                 lexeme.component_count;
         } else {
-            *out_ticks = CORE_MACHINE_SOURCE_UNALLOCATED_TICKS;
+            core_machine_source_timing_mark_unallocated(machine, out_ticks);
         }
         return 1;
     }
@@ -2643,7 +2651,7 @@ static C_INT core_machine_80286_source_instruction_cost(core_machine *machine,
     opcode = data->opcodes[prefixes];
     machine->source_repeat_active = TYPE_FALSE;
     if (prefixes != 0u) {
-        *out_ticks = CORE_MACHINE_SOURCE_UNALLOCATED_TICKS;
+        core_machine_source_timing_mark_unallocated(machine, out_ticks);
         return 1;
     }
     if (opcode >= 0x70u && opcode <= 0x7fu) {
@@ -2706,14 +2714,14 @@ static C_INT core_machine_80286_source_instruction_cost(core_machine *machine,
                 (data->flagMem ? 16u : 14u) : (data->flagMem ? 3u : 2u));
             return 1;
         }
-        *out_ticks = CORE_MACHINE_SOURCE_UNALLOCATED_TICKS;
+        core_machine_source_timing_mark_unallocated(machine, out_ticks);
         return 1;
     case 0x90u:
-        *out_ticks = core_machine_80286_source_timing_lookup(
+        *out_ticks = core_machine_80286_source_timing_lookup(machine,
             CORE_MACHINE_SOURCE_TIMING_NOP);
         return 1;
     case 0xf8u:
-        *out_ticks = core_machine_80286_source_timing_lookup(
+        *out_ticks = core_machine_80286_source_timing_lookup(machine,
             CORE_MACHINE_SOURCE_TIMING_CLC);
         return 1;
     case 0xf5u: case 0xf9u: case 0xfcu: case 0xfdu:
@@ -2742,14 +2750,14 @@ static C_INT core_machine_80286_source_instruction_cost(core_machine *machine,
             *out_ticks = 13u;
             return 1;
         }
-        *out_ticks = CORE_MACHINE_SOURCE_UNALLOCATED_TICKS;
+        core_machine_source_timing_mark_unallocated(machine, out_ticks);
         return 1;
     case 0x63u:
         if (core_machine_control_stack_is_protected(data)) {
             *out_ticks = data->flagMem ? 11u : 10u;
             return 1;
         }
-        *out_ticks = CORE_MACHINE_SOURCE_UNALLOCATED_TICKS;
+        core_machine_source_timing_mark_unallocated(machine, out_ticks);
         return 1;
     case 0x8cu:
         if (prefixes + 1u < data->oplen &&
@@ -2759,7 +2767,7 @@ static C_INT core_machine_80286_source_instruction_cost(core_machine *machine,
                 core_machine_80286_timing_odd_word(data) : 2u;
             return 1;
         }
-        *out_ticks = CORE_MACHINE_SOURCE_UNALLOCATED_TICKS;
+        core_machine_source_timing_mark_unallocated(machine, out_ticks);
         return 1;
     case 0x8eu:
         if (prefixes + 1u < data->oplen &&
@@ -2772,24 +2780,24 @@ static C_INT core_machine_80286_source_instruction_cost(core_machine *machine,
                 core_machine_80286_timing_odd_word(data);
             return 1;
         }
-        *out_ticks = CORE_MACHINE_SOURCE_UNALLOCATED_TICKS;
+        core_machine_source_timing_mark_unallocated(machine, out_ticks);
         return 1;
     case 0xc4u: case 0xc5u:
         if (data->flagMem) {
             *out_ticks = 7u;
             return 1;
         }
-        *out_ticks = CORE_MACHINE_SOURCE_UNALLOCATED_TICKS;
+        core_machine_source_timing_mark_unallocated(machine, out_ticks);
         return 1;
     case 0x88u: case 0x89u: case 0x8au: case 0x8bu:
         if (!data->flagMem) {
-            *out_ticks = core_machine_80286_source_timing_lookup(
+            *out_ticks = core_machine_80286_source_timing_lookup(machine,
                 CORE_MACHINE_SOURCE_TIMING_MOV_REGISTER_REGISTER);
             return 1;
         }
         memory_ticks = core_machine_80286_timing_effective_address(data,
             prefixes);
-        *out_ticks = core_machine_80286_source_timing_lookup(
+        *out_ticks = core_machine_80286_source_timing_lookup(machine,
             opcode == 0x88u || opcode == 0x89u ?
             CORE_MACHINE_SOURCE_TIMING_MOV_RM_REGISTER :
             CORE_MACHINE_SOURCE_TIMING_MOV_REGISTER_RM) + memory_ticks +
@@ -2797,7 +2805,7 @@ static C_INT core_machine_80286_source_instruction_cost(core_machine *machine,
                 core_machine_80286_timing_odd_word(data) : 0u);
         return 1;
     case 0xa0u: case 0xa1u: case 0xa2u: case 0xa3u:
-        *out_ticks = core_machine_80286_source_timing_lookup(
+        *out_ticks = core_machine_80286_source_timing_lookup(machine,
             opcode == 0xa0u || opcode == 0xa1u ?
             CORE_MACHINE_SOURCE_TIMING_MOV_MOFFS_READ :
             CORE_MACHINE_SOURCE_TIMING_MOV_MOFFS_WRITE) +
@@ -2816,7 +2824,7 @@ static C_INT core_machine_80286_source_instruction_cost(core_machine *machine,
                 data, prefixes);
             return 1;
         }
-        *out_ticks = CORE_MACHINE_SOURCE_UNALLOCATED_TICKS;
+        core_machine_source_timing_mark_unallocated(machine, out_ticks);
         return 1;
     case 0xc0u: case 0xc1u: case 0xd2u: case 0xd3u:
         if (prefixes + 1u < data->oplen &&
@@ -2828,14 +2836,14 @@ static C_INT core_machine_80286_source_instruction_cost(core_machine *machine,
                 5u + memory_ticks;
             return 1;
         }
-        *out_ticks = CORE_MACHINE_SOURCE_UNALLOCATED_TICKS;
+        core_machine_source_timing_mark_unallocated(machine, out_ticks);
         return 1;
     default:
         if (opcode >= 0xb0u && opcode <= 0xbfu) {
-            *out_ticks = core_machine_80286_source_timing_lookup(
+            *out_ticks = core_machine_80286_source_timing_lookup(machine,
                 CORE_MACHINE_SOURCE_TIMING_MOV_IMMEDIATE);
         } else {
-            *out_ticks = CORE_MACHINE_SOURCE_UNALLOCATED_TICKS;
+            core_machine_source_timing_mark_unallocated(machine, out_ticks);
         }
         return 1;
     }
@@ -2859,7 +2867,7 @@ static C_INT core_machine_80386_source_instruction_cost(core_machine *machine,
     opcode = data->opcodes[prefixes];
     machine->source_repeat_active = TYPE_FALSE;
     if (prefixes != 0u) {
-        *out_ticks = CORE_MACHINE_SOURCE_UNALLOCATED_TICKS;
+        core_machine_source_timing_mark_unallocated(machine, out_ticks);
         return 1;
     }
     if (opcode >= 0x70u && opcode <= 0x7fu) {
@@ -2872,49 +2880,49 @@ static C_INT core_machine_80386_source_instruction_cost(core_machine *machine,
             *out_ticks = CORE_MACHINE_80386_JCC_TAKEN_TICKS +
                 lexeme.component_count;
         } else {
-            *out_ticks = CORE_MACHINE_SOURCE_UNALLOCATED_TICKS;
+            core_machine_source_timing_mark_unallocated(machine, out_ticks);
         }
         return 1;
     }
     switch (opcode) {
     case 0x90u:
-        *out_ticks = core_machine_80386_source_timing_lookup(
+        *out_ticks = core_machine_80386_source_timing_lookup(machine,
             CORE_MACHINE_SOURCE_TIMING_NOP);
         return 1;
     case 0xf8u:
-        *out_ticks = core_machine_80386_source_timing_lookup(
+        *out_ticks = core_machine_80386_source_timing_lookup(machine,
             CORE_MACHINE_SOURCE_TIMING_CLC);
         return 1;
     case 0x88u: case 0x89u:
-        *out_ticks = core_machine_80386_source_timing_lookup(
+        *out_ticks = core_machine_80386_source_timing_lookup(machine,
             core_machine_source_timing_modrm_is_memory(data, prefixes) ?
             CORE_MACHINE_SOURCE_TIMING_MOV_RM_REGISTER :
             CORE_MACHINE_SOURCE_TIMING_MOV_REGISTER_REGISTER);
         return 1;
     case 0x8au: case 0x8bu:
-        *out_ticks = core_machine_80386_source_timing_lookup(
+        *out_ticks = core_machine_80386_source_timing_lookup(machine,
             core_machine_source_timing_modrm_is_memory(data, prefixes) ?
             CORE_MACHINE_SOURCE_TIMING_MOV_REGISTER_RM :
             CORE_MACHINE_SOURCE_TIMING_MOV_REGISTER_REGISTER);
         return 1;
     case 0xa0u: case 0xa1u:
-        *out_ticks = core_machine_80386_source_timing_lookup(
+        *out_ticks = core_machine_80386_source_timing_lookup(machine,
             CORE_MACHINE_SOURCE_TIMING_MOV_MOFFS_READ);
         return 1;
     case 0xa2u: case 0xa3u:
-        *out_ticks = core_machine_80386_source_timing_lookup(
+        *out_ticks = core_machine_80386_source_timing_lookup(machine,
             CORE_MACHINE_SOURCE_TIMING_MOV_MOFFS_WRITE);
         return 1;
     default:
         if (opcode >= 0xb0u && opcode <= 0xbfu) {
-            *out_ticks = core_machine_80386_source_timing_lookup(
+            *out_ticks = core_machine_80386_source_timing_lookup(machine,
                 CORE_MACHINE_SOURCE_TIMING_MOV_IMMEDIATE);
         } else {
-            *out_ticks = CORE_MACHINE_SOURCE_UNALLOCATED_TICKS;
+            core_machine_source_timing_mark_unallocated(machine, out_ticks);
         }
         return 1;
     }
-    *out_ticks = CORE_MACHINE_SOURCE_UNALLOCATED_TICKS;
+    core_machine_source_timing_mark_unallocated(machine, out_ticks);
     return 1;
 }
 
@@ -2975,6 +2983,7 @@ static C_INT core_machine_instruction_cost(core_machine *machine,
     type_unsigned_64 *out_ticks)
 {
     if (machine == STD_NULL || out_ticks == STD_NULL) return 0;
+    machine->source_timing_unallocated = TYPE_FALSE;
     if (core_machine_string_io_source_instruction_cost(machine, out_ticks)) {
         return 1;
     }
@@ -3047,6 +3056,12 @@ static C_VOID core_machine_transaction_trace(C_VOID *opaque,
         (detail << 16u));
 }
 
+static C_INT core_machine_retirement_time_contract_is_valid(
+    core_machine_retirement_time_contract contract)
+{
+    return contract == CORE_MACHINE_RETIREMENT_TIME_DETERMINISTIC ||
+        contract == CORE_MACHINE_RETIREMENT_TIME_PHYSICAL;
+}
 static C_INT core_machine_clock_plan_is_valid(
     const core_machine_clock_plan *plan)
 {
@@ -4391,6 +4406,8 @@ static type_status core_machine_create_internal(
             core_machine_resolve_cpu_profile(config->cpu_profile)) ||
         !core_machine_valid_fpu_profile(config->fpu_profile) ||
         !core_machine_clock_plan_is_valid(&config->clock_plan) ||
+        !core_machine_retirement_time_contract_is_valid(
+            config->retirement_time_contract) ||
         (config->auxiliary_pit_present != TYPE_FALSE &&
         config->auxiliary_pit_present != TYPE_TRUE) ||
         (config->auxiliary_pit_present && config->auxiliary_pit_base_port > 0xfffcu)) {
@@ -4408,6 +4425,7 @@ static type_status core_machine_create_internal(
 
     machine->lifecycle = CORE_MACHINE_INITIALIZED;
     machine->cpu_profile = core_machine_resolve_cpu_profile(config->cpu_profile);
+    machine->retirement_time_contract = config->retirement_time_contract;
     machine->cpu_80386_cr_mov_ignores_mod =
         config->cpu_80386_cr_mov_ignores_mod;
     if (machine->cpu_80386_cr_mov_ignores_mod &&
@@ -4861,6 +4879,16 @@ type_status core_machine_run(
                     result->elapsed_ticks = machine->elapsed_ticks;
                     return TYPE_STATUS_FAULT;
                 }
+                if (machine->retirement_time_contract ==
+                    CORE_MACHINE_RETIREMENT_TIME_PHYSICAL &&
+                    machine->source_timing_unallocated) {
+                    (C_VOID)core_machine_report_fault(machine, 0x54494d55u);
+                    result->reason = CORE_MACHINE_STOP_FAULT;
+                    result->linear_pc = core_machine_linear_pc(machine);
+                    result->detail = machine->fault_detail;
+                    result->elapsed_ticks = machine->elapsed_ticks;
+                    return TYPE_STATUS_FAULT;
+                }
                 ++result->executed;
                 result->ticks += instruction_ticks;
                 if (core_machine_publish_elapsed_ticks(machine,
@@ -4906,7 +4934,9 @@ type_status core_machine_run(
 type_status core_machine_advance_time(core_machine *machine,
     type_unsigned_64 source_ticks)
 {
-    if (machine == STD_NULL || !core_machine_mutable_operation_is_allowed(machine) ||
+    if (machine == STD_NULL || machine->retirement_time_contract ==
+        CORE_MACHINE_RETIREMENT_TIME_PHYSICAL ||
+        !core_machine_mutable_operation_is_allowed(machine) ||
         (machine->lifecycle != CORE_MACHINE_STOPPED &&
         machine->lifecycle != CORE_MACHINE_PAUSED)) {
         return TYPE_STATUS_INVALID_STATE;

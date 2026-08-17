@@ -179,6 +179,46 @@ static C_INT timing_test_stop(C_VOID)
     return failed;
 }
 
+static C_INT timing_test_physical_contract(C_VOID)
+{
+    static const type_unsigned_8 exact[] = { 0x90u };
+    static const type_unsigned_8 unallocated[] = { 0x26u, 0x90u };
+    const core_machine_config config = {
+        .cpu_profile = CORE_MACHINE_CPU_PROFILE_80286,
+        .ticks_per_instruction = 1u,
+        .instruction_timing = { 10u, 2u, 7u, 3u, 5u, 4u },
+        .retirement_time_contract = CORE_MACHINE_RETIREMENT_TIME_PHYSICAL
+    };
+    timing_port_state port_state = { 0u, 0u };
+    core_machine_run_budget budget = { 1u, 0u };
+    core_machine_run_result result;
+    core_machine *machine = STD_NULL;
+    C_INT failed = core_machine_create(&config, &machine) != TYPE_STATUS_OK ||
+        test_core_machine_fixture_register_reset_mapping(machine,
+            TIMING_RESET_LINEAR, TIMING_RESET_PHYSICAL, TIMING_WINDOW_BYTES) !=
+            TYPE_STATUS_OK ||
+        core_machine_install_port_provider(machine, 0x0080u, 0x0080u,
+            &timing_port_provider, &port_state) != TYPE_STATUS_OK ||
+        core_machine_freeze_execution_providers(machine) != TYPE_STATUS_OK ||
+        core_machine_reset(machine) != TYPE_STATUS_OK;
+
+    if (!failed) {
+        failed |= core_machine_advance_time(machine, 1u) != TYPE_STATUS_INVALID_STATE ||
+        core_machine_memory_write(machine, TIMING_RESET_LINEAR, exact,
+            sizeof(exact)) != TYPE_STATUS_OK ||
+            core_machine_run(machine, budget, &result) != TYPE_STATUS_OK ||
+            result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 1u ||
+            result.ticks != 3u || result.elapsed_ticks != 3u ||
+            core_machine_reset(machine) != TYPE_STATUS_OK ||
+            core_machine_memory_write(machine, TIMING_RESET_LINEAR, unallocated,
+                sizeof(unallocated)) != TYPE_STATUS_OK ||
+            core_machine_run(machine, budget, &result) != TYPE_STATUS_FAULT ||
+            result.reason != CORE_MACHINE_STOP_FAULT || result.executed != 0u ||
+            result.ticks != 0u || result.elapsed_ticks != 0u;
+    }
+    core_machine_destroy(machine);
+    return failed;
+}
 C_INT main(C_VOID)
 {
     static const type_unsigned_8 nop[] = { 0x90u };
@@ -205,6 +245,7 @@ C_INT main(C_VOID)
     if (timing_test_quantum_and_reset()) return 5;
     if (timing_test_fault()) return 6;
     if (timing_test_stop()) return 7;
+    if (timing_test_physical_contract()) return 8;
     STD_PRINTF("M5:T265:S3:INSTRUCTION-TIMING:OK\n");
     return 0;
 }

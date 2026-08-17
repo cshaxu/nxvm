@@ -15,6 +15,26 @@ successful route. Its [evidence](../etc/evidence/t388-s2-successful-sentinel-mat
 assigns a single Core eligibility boundary as the next receiver. T388 S3 must
 make that status explicit at the sole publication site without pausing the
 deterministic timeline or letting VM relabel a fallback cost.
+## M5 T388 S3 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; S2 is accepted retained progress for latest open T388. |
+| Admission And Approval | Owner authorization to continue according to Queue, 2026-08-16; S2 acceptance `409861d0` supplies the complete direct-sentinel matrix and bounded Core receiver. |
+| Objective | Implement one Core-owned successful-retirement physical-eligibility boundary at the sole publication site, preserving deterministic elapsed progression while preventing an unallocated success from being mislabeled as physical CPU-clock input. |
+| Non-goals | No cycle scalar, source-row allocation, CPU semantic repair, physical board-clock enablement, VM profile ratio change, host-time coupling, ROM/media import, artifact revision or L3 claim. |
+| Reference Baseline | T388 S1/S2, T359/T360/T361/T363 timing ledgers, T366 S9/S10, T368 S7, core clock/transaction architecture, source policy and execution rules. |
+| Candidate Proposal | [Four-profile CPU physical-timebase closure](../proposals/m5-four-profile-cpu-physical-timebase-closure.md). |
+| Files And ABI Surface | Core machine timing/configuration and focused owner smoke plus evidence/history/current/index/static gate. Any public interface addition must be minimal, typed and documented; VM profiles remain unchanged and deterministic. |
+| Applicable Rules | EXECUTION/DOCUMENT/ARCHITECTURE/CODING, architecture/coding, source policy and differential-debug policy. |
+| Verification | Prove exact-source and unallocated-success classification are distinct even where numeric tick values coincide; prove sole publication, deterministic timeline preservation, physical-mode rejection/nonpublication behavior, reset/fault/overflow handling, and current-gate verification. |
+| Expected Markers | `M5:T388:S3:PHYSICAL-ELIGIBILITY-BOUNDARY:OK`. |
+| Asset Needs | No ROM or guest media. Retained source-ledger evidence only. |
+| Reporting Requirements | Name the Core owner and every configuration/public contract change; distinguish deterministic elapsed advancement from physical-clock eligibility and report no profile is enabled unless its complete source matrix supports it. |
+| Stop Conditions | Stop and transfer any need to assign a source value, change a VM ratio, pause a deterministic device clock, or derive classification from numeric tick equality. |
+| Exit Criteria | A focused regression proves an explicit physical eligibility result travels from classifier to the sole publisher; current deterministic profiles preserve behavior, and an unallocated successful form cannot silently enter a physical clock source contract. |
+| Original Owner Request | Continue autonomously toward full DeskPro function and L3 timing; find and resolve root causes without routine approval requests. |
+| Similar-Issue Sweep | Search tracked Core/VM production, tests, CMake gates and timing evidence for successful timing return values, sentinel comparisons, elapsed publication, clock plans and profile frequency/physical claims. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T386 S28 `vm-0-5-0389` /
