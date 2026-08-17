@@ -9,3 +9,7 @@ The focused timing-ledger smoke proves normal and physical two-tick admission, p
 A rebuilt owner-managed redacted Model-40 replay advances beyond the former LAHF terminal to its bounded 250,000-successful-retirement budget with no unallocated successful retirement. This does not qualify the full CPU, physical profile, board timing or L3. No external asset identity, path, hash, byte record or trace enters Git.
 
 Full 283/283 current gates, documentation governance and diff hygiene pass. The S12 developer artifact is `vm-0-5-0390`, SHA-256 `9810495E3258E8395050C55452E4DEC20FD361239F2D9F143076DB2CBC7BA227`. Coordinator review remains required before acceptance.
+
+## Coordinator Acceptance
+
+Coordinator actual-diff review confirms one private 80386 source owner, exact Intel two-tick qualification and explicit prefixed rejection. The focused regression independently passes; the full gate, documentation governance and replay evidence meet the packet. S12 is accepted; no L3 claim is made.

@@ -2,26 +2,7 @@
 
 ## Current Work
 
-**Active packet:** T390 S12 (Continuation) -- 80386 LAHF qualification.
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation -- T390 remains the latest open numeric task; S12 follows accepted S11. |
-| Admission And Approval | Owner approved continuation of Queue-ordered T390 in this conversation on 2026-08-17. Scope is the newly observed no-prefix `LAHF` form at the existing Core source-timing owner. No exception is approved. |
-| Objective | Qualify only observed 80386 `LAHF` at Intel's exact two-clock row, retaining prefixed and every other unproven form/context nonphysical. |
-| Non-goals | No flag semantic change, broad flag-transfer completion, prefix qualification, profile selection, board/device timing, ROM/media or L3 claim. |
-| Reference Baseline | Accepted T390 S11 artifact `vm-0-5-0390`, SHA-256 `9758F3696EDFDFDDFD30D86ABA28E101766B85A31D0AE15A2B0D9878CB24AAEF`; Intel 80386 PRM `LAHF` table printed page 324; S11 retained terminal transfer. |
-| Candidate Proposal | [80386 physical-retirement qualification](../proposals/m5-80386-physical-retirement-qualification.md). |
-| Files And ABI Surface | Private Core 80386 timing ledger/classifier in `src/core/machine/machine.c`; focused timing-ledger smoke; T390 evidence/history/status/index as required. No public ABI or VM/profile change. |
-| Applicable Rules | Execution, architecture, coding, documentation and source-policy rules. Invariants: one shared Core classifier; Intel-primary exact row; unsupported successes remain prepublication nonphysical; no test-only product API; external assets stay uncommitted. |
-| Verification | Focused timing-ledger smoke proves no-prefix `LAHF` physical admission at two ticks and prefixed rejection; bounded redacted BYOB replay advances or transfers its next terminal; current artifact, full current gates, documentation governance, diff hygiene and coordinator actual-diff review pass. |
-| Expected Markers | Existing timing-ledger smoke success marker; bounded capture output only in normalized/redacted form; S12 evidence retains source citation and developer artifact digest. |
-| Asset Needs | Optional owner-managed external firmware/media only for bounded replay; no identity, path, hash, bytes or trace enters Git. |
-| Reporting Requirements | Deliver one complete P1 with focused/full verification and evidence, then coordinator acceptance or one consolidated corrective brief and governance closure. |
-| Stop Conditions | Stop and transfer if the exact source row, no-prefix capture or stable source owner is unavailable, if the observed instruction faults, or if replay reaches a new unallocated success. |
-| Exit Criteria | The observed form is source-cited, classified by one Core owner at two ticks, the prefixed form is prepublication-rejected, replay result is recorded without external data, and required verification/evidence/acceptance complete. |
-| Original Owner Request | Continue Queue-ordered shared 80386 physical-retirement qualification before DeskPro board-level timing, using Intel manuals as CPU authority. |
-| Similar-Issue Sweep | Inspect existing 80386 `SAHF`/flag-transfer source paths, prefix handling and current timing-ledger tests; repair only the exact observed owner or transfer broader forms. |
+**Active.** T390 remains open between accepted subtasks.
 
 ## Current Technical Baseline
 
@@ -49,7 +30,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T390 S11 | Accepted: the shared Core 80386 owner now admits only the observed operand-size `RCL r/m32,1` register form at nine ticks; native-size and memory RCL remain nonphysical. A bounded redacted replay reaches 116,637 successful retirements and transfers one new terminal; physical-profile selection, board timing and L3 remain open. [Evidence](../etc/evidence/t390-s11-rcl-register-one.md). |
+| T390 S12 | Accepted: the shared Core 80386 owner admits no-prefix `LAHF` at two ticks and retains prefixed LAHF nonphysical. A bounded redacted replay reaches 250,000 successful retirements without unallocated success; physical-profile selection, board timing and L3 remain open. [Evidence](../etc/evidence/t390-s12-lahf-qualification.md). |
 | T389 | Stopped by owner-approved requeue: S1 proves no physical board slice can begin while 80386 successful retirement remains nonphysical; S2 archives the invalid candidate and queues a shared CPU qualification before a fresh board task. No board timing, physical-clock or L3 claim. [Audit](../etc/evidence/t389-s2-stop-and-requeue-audit.md). |
 | T388 | Closed: S1--S9 establish the sole publisher, exhaustive exact-or-nonphysical residual disposition and pre-publication physical-contract rejection. No current CPU profile is physically clock-qualified; board work transfers under this restriction. [Closure audit](../etc/evidence/t388-s9-task-closure-audit.md). |
 | T387 | Closed: source/owner inventory, exact port-`61h` reconciliation and reference qualification transfer the shared physical-timebase then physical-device/firmware prerequisites before any DeskPro L3 audit. No physical-time or L3 claim. [Closure audit](../etc/evidence/t387-s6-task-closure-transfer-audit.md). |
