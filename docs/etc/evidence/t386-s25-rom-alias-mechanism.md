@@ -65,3 +65,43 @@ DeskPro 386 Model 40 uses, whether any Model-40 window must be partly covered
 by a different mapping, whether D4 replacement is active, or that the selected
 ROM reaches the boot sector.  Those remain S25's board-owner trace and BYOB
 consumer exit condition; no L3, timing, or functional-closure claim follows.
+
+## P2 Startup-Compatibility Repair And Transfer
+
+P2 keeps the P1 immutable-ROM mechanism and resolves the three earliest
+production owners reached by the bounded external-ROM replay without making a
+firmware, timing, or L3 claim.
+
+- Core retains strict 80386 `MOV CR` decoding by default.  A bounded
+  original-80386 compatibility capability is valid only with the 80386 profile;
+  it ignores the ModR/M MOD field for `MOV CR` register selection, without
+  decoding an effective address or changing `MOV DR` or `MOV TR`.  The Model-40
+  session declares that capability; the default profile does not.
+- The shared PC/AT port-B owner publishes system PIT counter 1 at bit 4 and
+  counter 2 at bit 5.  Planar PC/AT and D4 board composition initialize the
+  fixed refresh counter at configuration and on cold reset; speaker-gate and
+  board-local NMI latches remain separate.
+- The Model-40 D4 proof retains low replacement mapping, selected alias/reset
+  behavior and immutable ROM write protection.  Generic immutable-ROM aliases
+  remain a Core lifecycle mechanism, not a Model-40 decoder.
+
+`core-machine-descriptor-system-smoke` proves strict default rejection plus
+bounded compatibility read/write forms; `vm-model40-byob-s20-smoke` proves
+Model-40 declaration; `core-machine-planar-parity-nmi-s3-smoke` and
+`vm-model40-d4-compatibility-s25-smoke` prove counter-1 port-B transition and
+cold-reset restoration for both selected PC/AT board routes.  S24 FDC/DMA,
+D4-map and immutable-ROM focused smokes remain green.  Documentation governance,
+specialized verification and the configured full current-smoke gate passed from
+the rebuilt current source graph.
+
+The optional owner-supplied BYOB replay reports only the neutral outcome
+`M5:T386:S25:BYOB-CONSUMER:NOT-REACHED`; no firmware, guest-media, local path,
+hash, byte, instruction address or trace is retained.  The replay has passed
+its resolved CPU and refresh owners but does not reach the self-contained boot
+consumer within this functional receiver.  The remaining prerequisite is a
+source-backed CPU-to-PIT clock-domain calibration that makes the physical
+counter-1 pulse observable through the established rational-clock mechanism.
+It is explicitly transferred to the queued DeskPro board bus/device timing
+closure, which may not infer a ratio from this replay.  HDC, CECG, physical
+media, device service durations, waits, arbitration and all L3 claims remain
+outside S25.

@@ -1610,15 +1610,13 @@ static C_VOID _s_write_cr0_80386(core_machine_cpu_execution_context *context,
     {
         TYPE_TRACE_CHECK_RETURN(_SetExcept_UD(0));
     }
-    if (!_GetCR0_PE && TYPE_GET_BIT(value, VCPU_CR0_PG) &&
+    if (TYPE_GET_BIT(value, VCPU_CR0_PG) &&
         !TYPE_GET_BIT(value, VCPU_CR0_PE))
     {
         TYPE_TRACE_CHECK_RETURN(_SetExcept_UD(0));
     }
-    if (_GetCR0_PE && !TYPE_GET_BIT(value, VCPU_CR0_PE))
-    {
-        TYPE_TRACE_CHECK_RETURN(_SetExcept_UD(0));
-    }
+    /* On 80386 a privileged MOV CR0 may clear PE. The following far jump
+     * supplies the real-address CS cache transition. */
     cpu_state.data.cr0 = value;
     TYPE_TRACE_CALL_END;
 }
@@ -1889,7 +1887,7 @@ static C_VOID _kdf_code(core_machine_cpu_execution_context *context, type_virtua
     TYPE_TRACE_CHECK_RETURN(_kdf_skip(context, byte));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _kdf_modrm(core_machine_cpu_execution_context *context, type_unsigned_8 regbyte, type_unsigned_8 rmbyte)
+static C_VOID _kdf_modrm_with_mod_quirk(core_machine_cpu_execution_context *context, type_unsigned_8 regbyte, type_unsigned_8 rmbyte, type_bool ignore_mod)
 {
     type_signed_8 disp8;
     type_unsigned_16 disp16;
@@ -1903,7 +1901,12 @@ static C_VOID _kdf_modrm(core_machine_cpu_execution_context *context, type_unsig
     instruction_state.data.mrm.offset = 0;
     instruction_state.data.cr = instruction_state.data.crm = 0;
     instruction_state.data.rrm = instruction_state.data.rr = (type_virtual_address)STD_NULL;
-    switch (_GetAddressSize)
+    /* The normal architecture requires MOD=11 for MOV CR. Selected original
+     * 80386 silicon instead takes only the r/m register bits: no effective
+     * address, SIB, displacement, or memory operation is decoded. */
+    if (!ignore_mod || _GetModRM_MOD(modrm) == 3)
+    {
+        switch (_GetAddressSize)
     {
     case 2:
         TYPE_TRACE_BLOCK_BEGIN("AddressSize(2)");
@@ -2349,7 +2352,8 @@ static C_VOID _kdf_modrm(core_machine_cpu_execution_context *context, type_unsig
         TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    if (_GetModRM_MOD(modrm) == 3)
+    }
+    if (_GetModRM_MOD(modrm) == 3 || ignore_mod)
     {
         TYPE_TRACE_BLOCK_BEGIN("ModRM_MOD(3)");
         instruction_state.data.flagMem = TYPE_FALSE;
@@ -2574,6 +2578,17 @@ static C_VOID _kdf_modrm(core_machine_cpu_execution_context *context, type_unsig
         TYPE_TRACE_CHECK_RETURN(_m_read_ref(context, instruction_state.data.rr, TYPE_REFERENCE_OF(instruction_state.data.cr), regbyte));
     }
     TYPE_TRACE_CALL_END;
+}
+static C_VOID _kdf_modrm(core_machine_cpu_execution_context *context,
+    type_unsigned_8 regbyte, type_unsigned_8 rmbyte)
+{
+    _kdf_modrm_with_mod_quirk(context, regbyte, rmbyte, TYPE_FALSE);
+}
+
+static C_VOID _kdf_modrm_creg(core_machine_cpu_execution_context *context)
+{
+    _kdf_modrm_with_mod_quirk(context, 0, 4,
+        context->cpu_80386_cr_mov_ignores_mod);
 }
 static C_VOID _d_skip(core_machine_cpu_execution_context *context, type_unsigned_8 byte)
 {
@@ -15825,8 +15840,9 @@ static C_VOID INS_FF(core_machine_cpu_execution_context *context)
 static C_VOID _d_modrm_creg(core_machine_cpu_execution_context *context)
 {
     TYPE_TRACE_CALL_BEGIN("_d_modrm_creg");
-    TYPE_TRACE_CHECK_RETURN(_kdf_modrm(context, 0, 4));
-    if (instruction_state.data.flagMem)
+    TYPE_TRACE_CHECK_RETURN(_kdf_modrm_creg(context));
+    if (instruction_state.data.flagMem &&
+        !context->cpu_80386_cr_mov_ignores_mod)
     {
         TYPE_TRACE_BLOCK_BEGIN("flagMem(1)");
         TYPE_TRACE_CHECK_RETURN(_SetExcept_UD(0));

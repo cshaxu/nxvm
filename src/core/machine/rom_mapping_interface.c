@@ -24,11 +24,18 @@ static type_status core_machine_rom_mapping_write(C_VOID *owner,
     type_unsigned_32 physical, type_virtual_address source,
     type_native_unsigned bytes)
 {
-    (C_VOID)owner;
-    (C_VOID)physical;
-    (C_VOID)source;
-    (C_VOID)bytes;
-    return TYPE_STATUS_FAULT;
+    const core_machine_immutable_rom_mapping *mapping =
+        (const core_machine_immutable_rom_mapping *)owner;
+    STD_SIZE_T offset;
+
+    if (mapping == STD_NULL || mapping->image == STD_NULL || source == 0u ||
+        physical < mapping->physical_start) return TYPE_STATUS_FAULT;
+    offset = (STD_SIZE_T)((type_unsigned_64)physical - mapping->physical_start);
+    if (offset > mapping->bytes || bytes > mapping->bytes - offset) {
+        return TYPE_STATUS_FAULT;
+    }
+    /* Physical ROM accepts the bus write but retains its immutable backing. */
+    return TYPE_STATUS_OK;
 }
 
 static type_status core_machine_rom_mapping_query(C_VOID *owner,
@@ -45,8 +52,8 @@ static type_status core_machine_rom_mapping_query(C_VOID *owner,
     if (offset > mapping->bytes || bytes > mapping->bytes - offset) {
         return TYPE_STATUS_FAULT;
     }
-    return access == CORE_MACHINE_MEMORY_ACCESS_READ ? TYPE_STATUS_OK :
-        TYPE_STATUS_FAULT;
+    (C_VOID)access;
+    return TYPE_STATUS_OK;
 }
 
 static type_status core_machine_register_immutable_rom_mapping_internal(

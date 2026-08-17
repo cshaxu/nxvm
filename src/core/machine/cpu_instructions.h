@@ -179,6 +179,7 @@ struct core_machine_cpu_execution_context {
     type_bool preview_mode;
     core_machine_cpu_profile cpu_profile;
     core_machine_fpu_profile fpu_profile;
+    type_bool cpu_80386_cr_mov_ignores_mod;
     core_machine_fpu *fpu;
 };
 

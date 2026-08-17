@@ -30,6 +30,9 @@ type_status vm_session_model40_storage_initialize(vm_session *session)
     status = core_machine_create(&session->core_machine_config, &session->core_machine);
     if (status != TYPE_STATUS_OK) return status;
     vm_profile_model40_d4_memory_initialize(&session->model40_d4_memory);
+    status = vm_profile_model40_d4_memory_load_compatibility(
+        &session->model40_d4_memory, &session->model40_rom);
+    if (status != TYPE_STATUS_OK) { vm_session_model40_storage_rollback(session); return status; }
     status = vm_profile_model40_d4_memory_register(session->core_machine,
         &session->model40_d4_memory);
     if (status != TYPE_STATUS_OK) { vm_session_model40_storage_rollback(session); return status; }

@@ -4,12 +4,15 @@
 
 static C_VOID core_machine_cpu_diagnostic_copy_point(
     core_machine_cpu_execution_point *point, const t_cpu *cpu,
-    const t_cpuins *instructions)
+    const t_cpuins *instructions, type_bool fault_origin)
 {
+    const t_cpu *source;
+
     if (point == STD_NULL || cpu == STD_NULL || instructions == STD_NULL) return;
-    point->cs = cpu->data.cs.selector;
-    point->cs_base = cpu->data.cs.base;
-    point->eip = cpu->data.eip;
+    source = fault_origin ? &instructions->data.oldcpu : cpu;
+    point->cs = source->data.cs.selector;
+    point->cs_base = source->data.cs.base;
+    point->eip = source->data.eip;
     point->linear_pc = instructions->data.linear;
     point->byte_count = (type_unsigned_8)instructions->data.oplen;
     STD_MEMCPY(point->bytes, instructions->data.opcodes, sizeof(point->bytes));
@@ -25,7 +28,7 @@ static C_VOID core_machine_cpu_diagnostic_record_instruction(C_VOID *opaque,
     if (machine == STD_NULL) return;
     state = &machine->cpu_diagnostic;
     core_machine_cpu_diagnostic_copy_point(
-        &state->snapshot.recent[state->next_index], cpu, instructions);
+        &state->snapshot.recent[state->next_index], cpu, instructions, TYPE_FALSE);
     state->next_index = (state->next_index + 1u) % CORE_MACHINE_CPU_DIAGNOSTIC_WINDOW_CAPACITY;
     if (state->snapshot.recent_count < CORE_MACHINE_CPU_DIAGNOSTIC_WINDOW_CAPACITY) {
         ++state->snapshot.recent_count;
@@ -46,7 +49,7 @@ static C_VOID core_machine_cpu_diagnostic_record_fault(C_VOID *opaque,
     fault->valid = 1;
     fault->exception_mask = instructions->data.except;
     fault->exception_code = instructions->data.excode;
-    core_machine_cpu_diagnostic_copy_point(&fault->point, cpu, instructions);
+    core_machine_cpu_diagnostic_copy_point(&fault->point, cpu, instructions, TYPE_TRUE);
     fault->eax = cpu->data.eax;
     fault->ebx = cpu->data.ebx;
     fault->ecx = cpu->data.ecx;
@@ -73,7 +76,7 @@ static C_VOID core_machine_cpu_diagnostic_record_delivered_exception(
     exception->valid = 1;
     exception->exception_mask = instructions->data.except;
     exception->exception_code = instructions->data.excode;
-    core_machine_cpu_diagnostic_copy_point(&exception->point, cpu, instructions);
+    core_machine_cpu_diagnostic_copy_point(&exception->point, cpu, instructions, TYPE_TRUE);
     exception->eax = cpu->data.eax;
     exception->ebx = cpu->data.ebx;
     exception->ecx = cpu->data.ecx;
@@ -2585,7 +2588,8 @@ static C_INT core_machine_80386_privileged_source_instruction_cost(
         return 1;
     case 0x20u:
         if ((data->oldcpu.data.eflags & VCPU_EFLAGS_VM) != 0u ||
-            (protected_mode && data->oldcpu.data.cs.dpl != 0u) || memory ||
+            (protected_mode && data->oldcpu.data.cs.dpl != 0u) ||
+            (memory && !machine->cpu_80386_cr_mov_ignores_mod) ||
             (extension != 0u && extension != 2u && extension != 3u)) return 0;
         *out_ticks = 6u;
         return 1;
@@ -2598,7 +2602,8 @@ static C_INT core_machine_80386_privileged_source_instruction_cost(
         return 1;
     case 0x22u:
         if ((data->oldcpu.data.eflags & VCPU_EFLAGS_VM) != 0u ||
-            (protected_mode && data->oldcpu.data.cs.dpl != 0u) || memory ||
+            (protected_mode && data->oldcpu.data.cs.dpl != 0u) ||
+            (memory && !machine->cpu_80386_cr_mov_ignores_mod) ||
             (extension != 0u && extension != 2u && extension != 3u)) return 0;
         *out_ticks = extension == 0u ? 10u : (extension == 2u ? 4u : 5u);
         return 1;
@@ -3552,6 +3557,39 @@ static C_VOID core_machine_planar_parity_refresh_nmi(core_machine *machine)
     }
 }
 
+/* PC/AT-compatible port B exposes the system 8254's refresh and speaker
+ * channel outputs independently of the board-specific NMI latches. */
+static type_unsigned_8 core_machine_pc_at_port_b_timer_status(
+    const core_machine *machine)
+{
+    type_unsigned_8 value = 0u;
+
+    if (machine == STD_NULL) return 0u;
+    if (core_machine_pit_get_output(&machine->shared_pit, 1u)) value |= 0x10u;
+    if (core_machine_pit_get_output(&machine->shared_pit, 2u)) value |= 0x20u;
+    return value;
+}
+
+/* PC/AT-compatible boards wire system PIT counter 1 to DRAM refresh and
+ * expose its output at port 61h bit 4. The board programs mode 2 with the
+ * fixed refresh divider on every cold reset; channel 0 and channel 2 remain
+ * firmware-owned timer and speaker resources. */
+static C_VOID core_machine_pc_at_refresh_timer_program(core_machine *machine)
+{
+    if (machine == STD_NULL) return;
+    core_machine_port_write(&machine->executor_port, 0x0043u, 0x74u);
+    core_machine_port_write(&machine->executor_port, 0x0041u, 18u);
+    core_machine_port_write(&machine->executor_port, 0x0041u, 0u);
+}
+
+static C_VOID core_machine_pc_at_port_b_set_speaker_gate(core_machine *machine,
+    type_unsigned_8 value)
+{
+    if (machine == STD_NULL) return;
+    core_machine_pit_set_gate(&machine->shared_pit, 2u,
+        (value & 0x01u) != 0u ? TYPE_TRUE : TYPE_FALSE);
+}
+
 static C_VOID core_machine_planar_parity_memory_fault(C_VOID *owner,
     type_unsigned_32 physical)
 {
@@ -3566,7 +3604,8 @@ static type_status core_machine_planar_parity_port_read(C_VOID *owner,
 
     if (machine == STD_NULL || out_value == STD_NULL || !machine->planar_parity_configured ||
         port != machine->planar_parity_config.port) return TYPE_STATUS_INVALID_ARGUMENT;
-    *out_value = (type_unsigned_32)(machine->planar_parity_port_b & 0x7fu) |
+    *out_value = (type_unsigned_32)(machine->planar_parity_port_b & 0x4fu) |
+        core_machine_pc_at_port_b_timer_status(machine) |
         (machine->planar_parity_latched ? 0x80u : 0u);
     return TYPE_STATUS_OK;
 }
@@ -3579,6 +3618,7 @@ static type_status core_machine_planar_parity_port_write(C_VOID *owner,
     if (machine == STD_NULL || !machine->planar_parity_configured ||
         port != machine->planar_parity_config.port) return TYPE_STATUS_INVALID_ARGUMENT;
     machine->planar_parity_port_b = (type_unsigned_8)value;
+    core_machine_pc_at_port_b_set_speaker_gate(machine, machine->planar_parity_port_b);
     if ((machine->planar_parity_port_b & 0x04u) == 0u) {
         machine->planar_parity_latched = TYPE_FALSE;
         machine->planar_parity_nmi_signaled = TYPE_FALSE;
@@ -3622,7 +3662,8 @@ static type_status core_machine_d4_platform_port_read(C_VOID *owner,
     if (machine == STD_NULL || out_value == STD_NULL ||
         !machine->d4_platform_configured ||
         port != machine->d4_platform_config.port) return TYPE_STATUS_INVALID_ARGUMENT;
-    *out_value = (type_unsigned_32)machine->d4_platform_port_b |
+    *out_value = (type_unsigned_32)(machine->d4_platform_port_b & 0x0fu) |
+        core_machine_pc_at_port_b_timer_status(machine) |
         (machine->d4_platform_iochk_latched ? 0x40u : 0u) |
         (machine->d4_platform_failsafe_latched ? 0x80u : 0u);
     return TYPE_STATUS_OK;
@@ -3636,6 +3677,7 @@ static type_status core_machine_d4_platform_port_write(C_VOID *owner,
     if (machine == STD_NULL || !machine->d4_platform_configured ||
         port != machine->d4_platform_config.port) return TYPE_STATUS_INVALID_ARGUMENT;
     machine->d4_platform_port_b = (type_unsigned_8)value & 0x3fu;
+    core_machine_pc_at_port_b_set_speaker_gate(machine, machine->d4_platform_port_b);
     /* The external Rev-E diagnostic raises and then clears each enable bit.
      * This models that observed logical clear sequence, not its pulse timing. */
     if ((machine->d4_platform_port_b & 0x08u) == 0u) {
@@ -3805,6 +3847,8 @@ type_status core_machine_configure_planar_parity(core_machine *machine,
     machine->planar_parity_config = *config;
     machine->planar_parity_port_b = 0x04u;
     machine->planar_parity_configured = TYPE_TRUE;
+    core_machine_pc_at_refresh_timer_program(machine);
+    core_machine_pc_at_port_b_set_speaker_gate(machine, machine->planar_parity_port_b);
     status = core_machine_memory_enable_parity(&machine->executor_memory,
         config->memory_bytes, core_machine_planar_parity_memory_fault, machine);
     if (status != TYPE_STATUS_OK) {
@@ -3840,6 +3884,8 @@ type_status core_machine_configure_d4_platform(core_machine *machine,
     machine->d4_platform_config = *config;
     machine->d4_platform_port_b = 0x0bu;
     machine->d4_platform_configured = TYPE_TRUE;
+    core_machine_pc_at_refresh_timer_program(machine);
+    core_machine_pc_at_port_b_set_speaker_gate(machine, machine->d4_platform_port_b);
     core_machine_pit_set_output(&machine->auxiliary_pit,
         config->failsafe_pit_counter, core_machine_d4_platform_failsafe_output,
         machine);
@@ -4362,6 +4408,13 @@ static type_status core_machine_create_internal(
 
     machine->lifecycle = CORE_MACHINE_INITIALIZED;
     machine->cpu_profile = core_machine_resolve_cpu_profile(config->cpu_profile);
+    machine->cpu_80386_cr_mov_ignores_mod =
+        config->cpu_80386_cr_mov_ignores_mod;
+    if (machine->cpu_80386_cr_mov_ignores_mod &&
+        machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_80386) {
+        STD_FREE(machine);
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
     if (core_machine_timeline_initialize(&machine->timeline) != TYPE_STATUS_OK) {
         STD_FREE(machine);
         return TYPE_STATUS_INVALID_ARGUMENT;
@@ -4413,7 +4466,7 @@ static type_status core_machine_create_internal(
         &machine->executor_memory, &machine->executor_port);
     core_machine_cpu_execution_context_bind_profiles(
         &machine->executor_cpu_execution, machine->cpu_profile,
-        machine->fpu.profile);
+        machine->fpu.profile, machine->cpu_80386_cr_mov_ignores_mod);
     core_machine_cpu_execution_context_bind_fpu(
         &machine->executor_cpu_execution, &machine->fpu);
     core_machine_cpu_execution_context_bind_transaction(
@@ -4537,6 +4590,15 @@ static type_status core_machine_cold_reset(core_machine *machine)
     core_machine_pic_reset(&machine->shared_pic_master,
         &machine->shared_pic_slave);
     core_machine_pit_reset(&machine->shared_pit);
+    if (machine->planar_parity_configured || machine->d4_platform_configured) {
+        core_machine_pc_at_refresh_timer_program(machine);
+    }
+    if (machine->planar_parity_configured) {
+        core_machine_pc_at_port_b_set_speaker_gate(machine, machine->planar_parity_port_b);
+    }
+    if (machine->d4_platform_configured) {
+        core_machine_pc_at_port_b_set_speaker_gate(machine, machine->d4_platform_port_b);
+    }
     if (machine->auxiliary_pit_configured) {
         core_machine_pit_reset(&machine->auxiliary_pit);
     }

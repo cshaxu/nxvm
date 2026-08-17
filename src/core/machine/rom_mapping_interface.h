@@ -9,6 +9,8 @@ extern "C" {
 
 typedef struct core_machine core_machine;
 
+/* ROM backing is immutable. In-range physical writes are accepted and
+ * discarded, matching a non-writable ROM bus target. */
 type_status core_machine_register_immutable_rom_mapping(
     core_machine *machine,
     type_unsigned_32 physical_start,

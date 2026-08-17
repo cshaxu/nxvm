@@ -103,6 +103,9 @@ target_link_libraries(vm-model40-cecg-s13-smoke PRIVATE vm-composition)
 add_executable(vm-model40-rom-layout-s14-smoke
     tests/machine/vm_model40_rom_layout_s14_smoke.c)
 target_link_libraries(vm-model40-rom-layout-s14-smoke PRIVATE vm-composition)
+add_executable(vm-model40-d4-compatibility-s25-smoke
+    tests/machine/vm_model40_d4_compatibility_s25_smoke.c)
+target_link_libraries(vm-model40-d4-compatibility-s25-smoke PRIVATE vm-composition)
 add_executable(vm-model40-d4-map-s16-smoke
     tests/machine/vm_model40_d4_map_s16_smoke.c)
 target_link_libraries(vm-model40-d4-map-s16-smoke PRIVATE vm-composition)
@@ -1900,7 +1903,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     vm-model40-cecg-s11-smoke
     vm-model40-cecg-s12-smoke
     vm-model40-cecg-s13-smoke
-    vm-model40-rom-layout-s14-smoke
+    vm-model40-d4-compatibility-s25-smoke
     vm-model40-d4-map-s16-smoke
     vm-model40-d4-parity-s22-smoke
     vm-model40-fdc-s24-smoke

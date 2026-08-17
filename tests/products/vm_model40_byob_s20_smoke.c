@@ -30,6 +30,7 @@ C_INT main(C_VOID)
         !session->model40_private || session->core_machine_config.memory_bytes != 1024u * 1024u ||
         session->core_machine_config.cpu_profile != CORE_MACHINE_CPU_PROFILE_80386 ||
         session->core_machine_config.fpu_profile != CORE_MACHINE_FPU_PROFILE_NONE ||
+        !session->core_machine_config.cpu_80386_cr_mov_ignores_mod ||
         session->fdd.data.nsector != 15u || session->model40_rom.even_bytes[0] != 0u ||
         session->model40_rom.odd_bytes[0] != 1u;
     failed |= !failed && !write_chip("t386-s20-even.bin", 2u);

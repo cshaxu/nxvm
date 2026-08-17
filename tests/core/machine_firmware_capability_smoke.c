@@ -206,8 +206,11 @@ C_INT main(C_VOID)
         TYPE_STATUS_OK || value != 0x5au;
     failed |= core_machine_memory_read(machine, 0xe0003u, &value, sizeof(value)) !=
         TYPE_STATUS_OK || value != 0xa5u;
+    value = 0u;
     failed |= core_machine_memory_write(machine, 0xf0000u, &value, sizeof(value)) !=
-        TYPE_STATUS_FAULT;
+        TYPE_STATUS_OK;
+    failed |= core_machine_memory_read(machine, 0xf0000u, &value, sizeof(value)) !=
+        TYPE_STATUS_OK || value != 0xf4u;
     failed |= core_machine_get_lifecycle(machine, &lifecycle) != TYPE_STATUS_OK ||
         lifecycle != CORE_MACHINE_STOPPED;
     run_status = core_machine_run(machine, budget, &result);

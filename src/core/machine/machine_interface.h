@@ -66,6 +66,9 @@ typedef struct core_machine_config {
     STD_SIZE_T memory_bytes;
     core_machine_cpu_profile cpu_profile;
     core_machine_fpu_profile fpu_profile;
+    /* Original 80386 silicon accepts MOV CR ModR/M forms with MOD other
+     * than 11b, using the r/m field as the general-register selector. */
+    type_bool cpu_80386_cr_mov_ignores_mod;
     /* Compatibility base-cost shorthand when instruction_timing.base_ticks is 0. */
     type_unsigned_32 ticks_per_instruction;
     core_machine_instruction_timing instruction_timing;

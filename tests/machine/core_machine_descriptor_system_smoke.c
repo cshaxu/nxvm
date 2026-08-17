@@ -34,12 +34,13 @@ static const core_machine_execution_provider dt_provider = {
 };
 
 static C_INT dt_prepare_profile(descriptor_system_machine *state,
-    core_machine_cpu_profile profile)
+    core_machine_cpu_profile profile, type_bool cpu_80386_cr_mov_ignores_mod)
 {
     const core_machine_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
         .cpu_profile = profile,
-        .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
+        .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE,
+        .cpu_80386_cr_mov_ignores_mod = cpu_80386_cr_mov_ignores_mod
     };
 
     if (state == STD_NULL) return 0;
@@ -56,7 +57,12 @@ static C_INT dt_prepare_profile(descriptor_system_machine *state,
 
 static C_INT dt_prepare(descriptor_system_machine *state)
 {
-    return dt_prepare_profile(state, CORE_MACHINE_CPU_PROFILE_80386);
+    return dt_prepare_profile(state, CORE_MACHINE_CPU_PROFILE_80386, TYPE_FALSE);
+}
+
+static C_INT dt_prepare_early_80386(descriptor_system_machine *state)
+{
+    return dt_prepare_profile(state, CORE_MACHINE_CPU_PROFILE_80386, TYPE_TRUE);
 }
 
 static C_INT dt_write(descriptor_system_machine *state, type_unsigned_32 address,
@@ -312,7 +318,7 @@ static C_INT dt_test_msw_and_control_registers(C_VOID)
         const core_machine_cpu_profile profile = index == 0u ?
             CORE_MACHINE_CPU_PROFILE_80286 : CORE_MACHINE_CPU_PROFILE_80386;
         const type_unsigned_32 flags = 0x00000246u;
-        C_INT failed = !dt_prepare_profile(&state, profile);
+        C_INT failed = !dt_prepare_profile(&state, profile, TYPE_FALSE);
 
         if (!failed) {
             state.machine->executor_cpu.data.cr0 = VCPU_CR0_TS;
@@ -344,7 +350,7 @@ static C_INT dt_test_msw_and_control_registers(C_VOID)
         descriptor_system_machine state;
         t_cpu before;
         t_cpu after;
-        C_INT failed = !dt_prepare_profile(&state, CORE_MACHINE_CPU_PROFILE_80186);
+        C_INT failed = !dt_prepare_profile(&state, CORE_MACHINE_CPU_PROFILE_80186, TYPE_FALSE);
 
         if (!failed) {
             state.machine->executor_cpu.data.cr0 = VCPU_CR0_TS;
@@ -449,6 +455,33 @@ static C_INT dt_test_msw_and_control_registers(C_VOID)
             after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
             failed |= !dt_control_equal(&before, &after) ||
                 after.data.eflags != before.data.eflags;
+        }
+        core_machine_destroy(state.machine);
+        if (failed) return 0;
+    }
+    {
+        static const type_unsigned_8 ignored_mod_read[] = {
+            0x66u, 0x0fu, 0x20u, 0x80u, 0xf4u
+        };
+        static const type_unsigned_8 ignored_mod_write[] = {
+            0x66u, 0x0fu, 0x22u, 0x80u, 0xf4u
+        };
+        descriptor_system_machine state;
+        C_INT failed = !dt_prepare_early_80386(&state);
+
+        if (!failed) {
+            state.machine->executor_cpu.data.cr0 = 0x0000000cu;
+            state.machine->executor_cpu.data.eax = 0xdeadbeefu;
+            failed = !dt_run(&state, ignored_mod_read, sizeof(ignored_mod_read),
+                0, 0u) || state.machine->executor_cpu.data.eax != 0x0000000cu;
+        }
+        core_machine_destroy(state.machine);
+        if (failed) return 0;
+        failed = !dt_prepare_early_80386(&state);
+        if (!failed) {
+            state.machine->executor_cpu.data.eax = 0u;
+            failed = !dt_run(&state, ignored_mod_write, sizeof(ignored_mod_write),
+                0, 0u) || state.machine->executor_cpu.data.cr0 != 0u;
         }
         core_machine_destroy(state.machine);
         if (failed) return 0;
@@ -943,6 +976,7 @@ static C_INT dt_test_memory_faults_preserve_tables(C_VOID)
         core_machine_destroy(state.machine);
         if (failed) return 0;
     }
+
     for (index = 0u; index < 2u; ++index) {
         descriptor_system_machine state;
         t_cpu before;
@@ -965,12 +999,51 @@ static C_INT dt_test_memory_faults_preserve_tables(C_VOID)
     return 1;
 }
 
+
+static C_INT dt_test_c7_segment_override_real_mode(C_VOID)
+{
+    static const type_unsigned_8 code[] = {
+        0x26u, 0xc7u, 0x47u, 0x02u, 0xffu, 0xffu, 0xf4u
+    };
+    descriptor_system_machine state;
+    type_unsigned_16 observed = 0u;
+    C_INT failed = !dt_prepare(&state);
+
+    if (!failed) {
+        state.machine->executor_cpu.data.ebx = 0u;
+        failed = !dt_run(&state, code, sizeof(code), 0, 0u) ||
+            !dt_read(&state, 2u, (type_unsigned_8 *)&observed, sizeof(observed)) ||
+            observed != 0xffffu;
+    }
+    core_machine_destroy(state.machine);
+    return !failed;
+}
+static C_INT dt_test_leave_protected_mode(C_VOID)
+{
+    static const type_unsigned_8 code[] = {
+        0x0fu, 0x22u, 0xc0u, 0xeau, 0x08u, 0x00u, 0x00u, 0x00u, 0xf4u
+    };
+    descriptor_system_machine state;
+    C_INT failed = !dt_prepare(&state);
+
+    if (!failed) {
+        dt_enter_protected(&state, 0u);
+        state.machine->executor_cpu.data.eax = 0u;
+        failed = !dt_run(&state, code, sizeof(code), 0, 0u) ||
+            state.machine->executor_cpu.data.cr0 != 0u ||
+            state.machine->executor_cpu.data.cs.selector != 0u ||
+            state.machine->executor_cpu.data.cs.base != 0u;
+    }
+    core_machine_destroy(state.machine);
+    return !failed;
+}
 C_INT main(C_VOID)
 {
     if (!dt_test_store_layout() || !dt_test_protected_stores() ||
         !dt_test_load_layout() || !dt_test_register_and_privilege_faults() ||
         !dt_test_memory_faults_preserve_tables() || !dt_test_selector_stores() ||
-        !dt_test_selector_loads() || !dt_test_msw_and_control_registers()) return 1;
+        !dt_test_selector_loads() || !dt_test_msw_and_control_registers() ||
+        !dt_test_c7_segment_override_real_mode() || !dt_test_leave_protected_mode()) return 1;
     STD_PRINTF("M5:T304:DESCRIPTOR-SYSTEM:OK\n");
     return 0;
 }

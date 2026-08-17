@@ -42,17 +42,20 @@ C_VOID core_machine_cpu_execution_context_initialize(
     context->preview_mode = TYPE_FALSE;
     context->cpu_profile = CORE_MACHINE_CPU_PROFILE_80386;
     context->fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE;
+    context->cpu_80386_cr_mov_ignores_mod = TYPE_FALSE;
     context->fpu = STD_NULL;
 }
 
 C_VOID core_machine_cpu_execution_context_bind_profiles(
     core_machine_cpu_execution_context *context,
     core_machine_cpu_profile cpu_profile,
-    core_machine_fpu_profile fpu_profile)
+    core_machine_fpu_profile fpu_profile,
+    type_bool cpu_80386_cr_mov_ignores_mod)
 {
     if (context == STD_NULL) return;
     context->cpu_profile = cpu_profile;
     context->fpu_profile = fpu_profile;
+    context->cpu_80386_cr_mov_ignores_mod = cpu_80386_cr_mov_ignores_mod;
 }
 
 C_VOID core_machine_cpu_execution_context_bind_fpu(

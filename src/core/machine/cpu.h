@@ -48,7 +48,8 @@ C_VOID core_machine_cpu_state_reset(core_machine_cpu_execution_context *context)
 C_VOID core_machine_cpu_execution_context_bind_profiles(
     core_machine_cpu_execution_context *context,
     core_machine_cpu_profile cpu_profile,
-    core_machine_fpu_profile fpu_profile);
+    core_machine_fpu_profile fpu_profile,
+    type_bool cpu_80386_cr_mov_ignores_mod);
 
 #include "type.h"
 

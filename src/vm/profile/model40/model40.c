@@ -157,12 +157,12 @@ static C_VOID vm_profile_model40_rom_materialize(
 {
     STD_SIZE_T index;
 
-    for (index = 0u; index < VM_PROFILE_MODEL40_ROM_LOGICAL_BYTES; ++index) {
-        window[index] = (index & 1u) == 0u ? rom->even_bytes[index >> 1u] :
-            rom->odd_bytes[index >> 1u];
+    for (index = 0u; index < VM_PROFILE_MODEL40_ROM_WINDOW_BYTES; ++index) {
+        STD_SIZE_T logical = index % VM_PROFILE_MODEL40_ROM_LOGICAL_BYTES;
+
+        window[index] = (logical & 1u) == 0u ? rom->even_bytes[logical >> 1u] :
+            rom->odd_bytes[logical >> 1u];
     }
-    STD_MEMCPY(window + VM_PROFILE_MODEL40_ROM_LOGICAL_BYTES, window,
-        VM_PROFILE_MODEL40_ROM_LOGICAL_BYTES);
 }
 
 static type_status vm_profile_model40_firmware_configure(C_VOID *opaque,
@@ -179,9 +179,7 @@ static type_status vm_profile_model40_firmware_configure(C_VOID *opaque,
     vm_profile_model40_rom_materialize(rom, window);
     status = core_machine_firmware_register_immutable_rom(firmware,
         VM_PROFILE_MODEL40_ROM_LOW_PHYSICAL_START, window, sizeof(window));
-    if (status != TYPE_STATUS_OK) return status;
-    return core_machine_firmware_register_immutable_rom(firmware,
-        VM_PROFILE_MODEL40_ROM_HIGH_PHYSICAL_START, window, sizeof(window));
+    return status;
 }
 
 static type_status vm_profile_model40_firmware_reset(C_VOID *opaque,
@@ -210,6 +208,9 @@ static C_INT vm_profile_model40_d4_memory_is_active(
     return memory != STD_NULL && ((physical >= VM_PROFILE_MODEL40_D4_COMPATIBILITY_START &&
         physical - VM_PROFILE_MODEL40_D4_COMPATIBILITY_START <
             VM_PROFILE_MODEL40_D4_COMPATIBILITY_BYTES) ||
+        (physical >= VM_PROFILE_MODEL40_D4_COMPATIBILITY_HIGH_START &&
+            physical - VM_PROFILE_MODEL40_D4_COMPATIBILITY_HIGH_START <
+                VM_PROFILE_MODEL40_D4_COMPATIBILITY_BYTES) ||
         ((memory->control & 0x01u) == 0u &&
             physical >= VM_PROFILE_MODEL40_D4_REPLACEMENT_START &&
             physical - VM_PROFILE_MODEL40_D4_REPLACEMENT_START <
@@ -218,9 +219,17 @@ static C_INT vm_profile_model40_d4_memory_is_active(
 
 static STD_SIZE_T vm_profile_model40_d4_memory_offset(type_unsigned_32 physical)
 {
-    return physical >= VM_PROFILE_MODEL40_D4_COMPATIBILITY_START ?
-        (STD_SIZE_T)(physical - VM_PROFILE_MODEL40_D4_COMPATIBILITY_START) :
-        (STD_SIZE_T)(physical - VM_PROFILE_MODEL40_D4_REPLACEMENT_START);
+    if (physical >= VM_PROFILE_MODEL40_D4_COMPATIBILITY_START &&
+        physical - VM_PROFILE_MODEL40_D4_COMPATIBILITY_START <
+            VM_PROFILE_MODEL40_D4_COMPATIBILITY_BYTES) {
+        return (STD_SIZE_T)(physical - VM_PROFILE_MODEL40_D4_COMPATIBILITY_START);
+    }
+    if (physical >= VM_PROFILE_MODEL40_D4_COMPATIBILITY_HIGH_START &&
+        physical - VM_PROFILE_MODEL40_D4_COMPATIBILITY_HIGH_START <
+            VM_PROFILE_MODEL40_D4_COMPATIBILITY_BYTES) {
+        return (STD_SIZE_T)(physical - VM_PROFILE_MODEL40_D4_COMPATIBILITY_HIGH_START);
+    }
+    return (STD_SIZE_T)(physical - VM_PROFILE_MODEL40_D4_REPLACEMENT_START);
 }
 
 static type_status vm_profile_model40_d4_memory_read(C_VOID *opaque,
@@ -349,6 +358,17 @@ C_VOID vm_profile_model40_d4_memory_reset(vm_profile_model40_d4_memory *memory)
     }
 }
 
+type_status vm_profile_model40_d4_memory_load_compatibility(
+    vm_profile_model40_d4_memory *memory,
+    const vm_profile_model40_external_rom *rom)
+{
+    if (memory == STD_NULL || !vm_profile_model40_external_rom_is_valid(rom)) {
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
+    vm_profile_model40_rom_materialize(rom, memory->compatibility);
+    return TYPE_STATUS_OK;
+}
+
 type_status vm_profile_model40_d4_memory_register(core_machine *machine,
     vm_profile_model40_d4_memory *memory)
 {
@@ -368,6 +388,10 @@ type_status vm_profile_model40_d4_memory_register(core_machine *machine,
     if (status != TYPE_STATUS_OK) return status;
     status = core_machine_register_memory_device(machine,
         VM_PROFILE_MODEL40_D4_COMPATIBILITY_START,
+        VM_PROFILE_MODEL40_D4_COMPATIBILITY_BYTES, &memory_callbacks, memory);
+    if (status != TYPE_STATUS_OK) return status;
+    status = core_machine_register_memory_device(machine,
+        VM_PROFILE_MODEL40_D4_COMPATIBILITY_HIGH_START,
         VM_PROFILE_MODEL40_D4_COMPATIBILITY_BYTES, &memory_callbacks, memory);
     if (status != TYPE_STATUS_OK) return status;
     status = core_machine_register_memory_device(machine,

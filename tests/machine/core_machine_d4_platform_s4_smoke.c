@@ -38,6 +38,23 @@ C_INT main(C_VOID)
         observation.failsafe_enabled || observation.iochk_latched ||
         observation.failsafe_latched || observation.nmi_signaled;
     if (!failed) STD_PRINTF("M5:T386:S4:D4-PLATFORM-PORT:OK\n");
+    if (!failed) failed |= core_machine_bus_write(machine, 0x0043u, 0x74u) !=
+            TYPE_STATUS_OK || core_machine_bus_write(machine, 0x0041u, 2u) !=
+            TYPE_STATUS_OK || core_machine_bus_write(machine, 0x0041u, 0u) !=
+            TYPE_STATUS_OK || core_machine_bus_write(machine, 0x0043u, 0xb4u) !=
+            TYPE_STATUS_OK || core_machine_bus_write(machine, 0x0042u, 2u) !=
+            TYPE_STATUS_OK || core_machine_bus_write(machine, 0x0042u, 0u) !=
+            TYPE_STATUS_OK || core_machine_bus_read(machine, 0x0061u, &value) !=
+            TYPE_STATUS_OK || (value & 0x30u) != 0x30u ||
+        core_machine_bus_write(machine, 0x0061u, 0x0au) != TYPE_STATUS_OK ||
+        core_machine_advance_time(machine, 2u) != TYPE_STATUS_OK ||
+        core_machine_bus_read(machine, 0x0061u, &value) != TYPE_STATUS_OK ||
+        (value & 0x30u) != 0x20u ||
+        core_machine_bus_write(machine, 0x0061u, 0x0bu) != TYPE_STATUS_OK ||
+        core_machine_bus_read(machine, 0x0061u, &value) != TYPE_STATUS_OK ||
+        (value & 0x20u) != 0x20u || core_machine_reset(machine) != TYPE_STATUS_OK ||
+        core_machine_bus_read(machine, 0x0061u, &value) != TYPE_STATUS_OK || value != 0x0bu;
+    if (!failed) STD_PRINTF("M5:T386:S25:D4-PORT-B-SYSTEM-PIT:OK\n");
 
     if (!failed) failed |= core_machine_bus_write(machine, 0x0070u, 0x80u) !=
             TYPE_STATUS_OK || core_machine_report_d4_iochk_fault(machine) !=

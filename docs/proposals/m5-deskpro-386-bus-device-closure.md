@@ -11,7 +11,10 @@ alter CPU semantics or repair an incomplete device.
 
 Map Model-40 board memory/ROM and I/O availability, DMA arbitration,
 PIC/PIT/RTC, keyboard, selected display and storage, NMI producers/latches/
-masks, reset and cross-device event order. For each already functional selected
+masks, reset and cross-device event order. It also owns the source-backed
+CPU-to-PIT clock-domain calibration needed for PIT counter-1 refresh-pulse
+observability at port 61h; it must not choose a ratio from a boot symptom.
+For each already functional selected
 component, establish board-local command availability, ready/busy, DRQ/IRQ,
 acknowledgement, cancellation and reset timing through the existing core
 transaction/event owners. Use Compaq, Intel and component-primary material plus

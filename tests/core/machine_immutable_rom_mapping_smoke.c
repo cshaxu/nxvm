@@ -41,12 +41,16 @@ C_INT main(C_VOID)
             CORE_MACHINE_MEMORY_ACCESS_READ, &route) != TYPE_STATUS_OK ||
             route != CORE_MACHINE_MEMORY_ROUTE_PROVIDER;
         failed |= core_machine_memory_query(machine, 0x1000u, 1u,
-            CORE_MACHINE_MEMORY_ACCESS_WRITE, &route) != TYPE_STATUS_FAULT;
+            CORE_MACHINE_MEMORY_ACCESS_WRITE, &route) != TYPE_STATUS_OK ||
+            route != CORE_MACHINE_MEMORY_ROUTE_PROVIDER;
         failed |= core_machine_memory_read(machine, 0x1000u, observed,
             sizeof(observed)) != TYPE_STATUS_OK ||
             STD_MEMCMP(image, observed, sizeof(image)) != 0;
         failed |= core_machine_memory_write(machine, 0x1000u, &overwrite, 1u) !=
-            TYPE_STATUS_FAULT;
+            TYPE_STATUS_OK;
+        failed |= core_machine_memory_read(machine, 0x1000u, observed,
+            sizeof(observed)) != TYPE_STATUS_OK ||
+            STD_MEMCMP(image, observed, sizeof(image)) != 0;
         failed |= core_machine_memory_write(machine, RESET_LINEAR, reset_jump,
             sizeof(reset_jump)) != TYPE_STATUS_OK;
         failed |= core_machine_run(machine, budget, &result) != TYPE_STATUS_OK ||

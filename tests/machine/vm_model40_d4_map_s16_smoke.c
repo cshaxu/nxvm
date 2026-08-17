@@ -46,7 +46,7 @@ C_INT main(C_VOID)
             0x10000u, 0x5au, TYPE_STATUS_OK));
         CHECK(read_byte(session->core_machine, VM_PROFILE_MODEL40_D4_COMPATIBILITY_START,
             0xa5u));
-        CHECK(read_byte(session->core_machine, 0x000e0000u, 0u));
+        CHECK(read_byte(session->core_machine, 0x000e0000u, 0x11u));
         CHECK(write_byte(session->core_machine, VM_PROFILE_MODEL40_D4_CONTROL_PHYSICAL,
             replacement_enabled, TYPE_STATUS_OK));
         CHECK(read_byte(session->core_machine, 0x000e0000u, 0xa5u));

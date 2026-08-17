@@ -8,7 +8,6 @@
 #include "vm/machine/fdd.h"
 
 #define MODEL40_FDC_BYTES (80u * 2u * 15u * 512u)
-
 static C_VOID model40_fdc_command(core_machine_fdc *fdc, t_port *port,
     const type_unsigned_8 *bytes, STD_SIZE_T count)
 {
@@ -141,15 +140,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
         }
     }
     if (failed && argc == 6) {
-        core_machine_cpu_diagnostic diagnostic;
-        if (session != STD_NULL && core_machine_get_cpu_diagnostic(
-                session->core_machine, &diagnostic) == TYPE_STATUS_OK &&
-            diagnostic.last_delivered_exception.valid) {
-            const core_machine_cpu_execution_point *point =
-                &diagnostic.last_delivered_exception.point;
-            STD_PRINTF("M5:T386:S24:BYOB-DIAGNOSTIC:%08x:%02x:%02x:%02x\n",
-                point->linear_pc, point->bytes[0], point->bytes[1], point->bytes[2]);
-        }
+        STD_PRINTF("M5:T386:S25:BYOB-CONSUMER:NOT-REACHED\n");
     }
     vm_session_destroy(session);
     if (failed) return 1;

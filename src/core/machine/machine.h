@@ -131,6 +131,7 @@ struct core_machine {
     STD_SIZE_T immutable_rom_mapping_count;
     type_bool entry_plan_applied;
     core_machine_cpu_profile cpu_profile;
+    type_bool cpu_80386_cr_mov_ignores_mod;
     core_machine_fpu fpu;
     t_cpu executor_cpu;
     t_cpuins executor_cpu_instructions;

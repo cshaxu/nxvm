@@ -7,11 +7,11 @@
 
 #define VM_PROFILE_MODEL40_ROM_CHIP_BYTES (16u * 1024u)
 #define VM_PROFILE_MODEL40_ROM_LOGICAL_BYTES (2u * VM_PROFILE_MODEL40_ROM_CHIP_BYTES)
-#define VM_PROFILE_MODEL40_ROM_WINDOW_BYTES (2u * VM_PROFILE_MODEL40_ROM_LOGICAL_BYTES)
-#define VM_PROFILE_MODEL40_ROM_LOW_PHYSICAL_START 0x000f0000u
-#define VM_PROFILE_MODEL40_ROM_HIGH_PHYSICAL_START 0xffef0000u
+#define VM_PROFILE_MODEL40_ROM_WINDOW_BYTES (4u * VM_PROFILE_MODEL40_ROM_LOGICAL_BYTES)
+#define VM_PROFILE_MODEL40_ROM_LOW_PHYSICAL_START 0x000e0000u
 
 #define VM_PROFILE_MODEL40_D4_COMPATIBILITY_START 0x00fe0000u
+#define VM_PROFILE_MODEL40_D4_COMPATIBILITY_HIGH_START 0xffee0000u
 #define VM_PROFILE_MODEL40_D4_COMPATIBILITY_BYTES (128u * 1024u)
 #define VM_PROFILE_MODEL40_D4_REPLACEMENT_START 0x000e0000u
 #define VM_PROFILE_MODEL40_D4_REPLACEMENT_BYTES VM_PROFILE_MODEL40_D4_COMPATIBILITY_BYTES
@@ -49,6 +49,9 @@ type_status vm_profile_model40_byob_manifest_load(
 const core_machine_firmware_provider *vm_profile_model40_firmware_provider(C_VOID);
 C_VOID vm_profile_model40_d4_memory_initialize(vm_profile_model40_d4_memory *memory);
 C_VOID vm_profile_model40_d4_memory_reset(vm_profile_model40_d4_memory *memory);
+type_status vm_profile_model40_d4_memory_load_compatibility(
+    vm_profile_model40_d4_memory *memory,
+    const vm_profile_model40_external_rom *rom);
 type_status vm_profile_model40_d4_memory_enable_parity(core_machine *machine,
     vm_profile_model40_d4_memory *memory);
 type_status vm_profile_model40_d4_memory_register(core_machine *machine,
