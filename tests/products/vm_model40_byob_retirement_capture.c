@@ -39,6 +39,8 @@ typedef struct model40_retirement_capture {
     type_unsigned_32 classified;
     type_unsigned_32 unallocated;
     type_unsigned_32 form_count;
+    type_bool c0a_diagnostic;
+    type_bool c0a_collecting;
     type_unsigned_8 terminal_bytes[CORE_MACHINE_CPU_DIAGNOSTIC_BYTES];
     type_unsigned_8 terminal_byte_count;
     type_bool checkpoint_reached;
@@ -228,8 +230,20 @@ static C_VOID model40_capture_observe(C_VOID *opaque,
     type_unsigned_8 opcode;
     type_unsigned_8 escape_opcode = 0xffu;
     type_unsigned_8 group_extension;
+    type_bool aggregate;
 
     if (capture == STD_NULL || observation == STD_NULL) return;
+    aggregate = !capture->c0a_diagnostic || capture->c0a_collecting;
+    if (!aggregate) {
+        if (!capture->observation_seen) capture->observation_seen = TYPE_TRUE;
+        else if (capture->previous_protected_mode && !observation->protected_mode) {
+            capture->checkpoint_reached = TYPE_TRUE;
+            capture->c0a_collecting = TYPE_TRUE;
+        }
+        if (observation->protected_mode) capture->protected_mode_seen = TYPE_TRUE;
+        capture->previous_protected_mode = observation->protected_mode;
+        return;
+    }
     ++capture->count;
     if ((capture->count & 1023u) == 0u) {
         STD_PRINTF("M5:T390:S5:BYOB-BOOT-PROGRESS:count=%u\n",
@@ -351,7 +365,8 @@ static C_INT model40_capture_create_session(C_INT argc, C_CHAR **argv,
     if (argv == STD_NULL || out_session == STD_NULL ||
         (argc != 7 && (argc != 8 || (STD_STRCMP(argv[7], "--terminal-bytes") &&
         STD_STRCMP(argv[7], "--c1-diagnostic") &&
-        STD_STRCMP(argv[7], "--post-c0-io-diagnostic"))))) return 0;
+        STD_STRCMP(argv[7], "--post-c0-io-diagnostic") &&
+        STD_STRCMP(argv[7], "--c0a-diagnostic"))))) return 0;
     config.profile_kind = VM_SESSION_PROFILE_COMPAQ_DESKPRO_386_MODEL_40;
     config.fdd_image = argv[6];
     config.model40_firmware = (vm_profile_model40_byob_manifest) {
@@ -419,11 +434,52 @@ static C_INT model40_capture_synthetic_c0_smoke(C_VOID)
     STD_PRINTF("M5:T390:S33:POST-C0-IO:OK\n");
     return 0;
 }
+static C_INT model40_capture_synthetic_c0a_smoke(C_VOID)
+{
+    model40_retirement_capture capture = { 0 };
+    core_machine_retirement_observation observation = { 0 };
+
+    capture.c0a_diagnostic = TYPE_TRUE;
+    observation.cpu_profile = CORE_MACHINE_CPU_PROFILE_80386;
+    observation.timing_disposition = CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED;
+    observation.point.byte_count = 2u;
+    observation.point.bytes[0] = 0x90u;
+    model40_capture_observe(&capture, &observation);
+    observation.protected_mode = TYPE_TRUE;
+    observation.point.bytes[0] = 0x0fu;
+    observation.point.bytes[1] = 0x20u;
+    model40_capture_observe(&capture, &observation);
+    observation.protected_mode = TYPE_FALSE;
+    observation.point.bytes[0] = 0xeau;
+    observation.point.byte_count = 1u;
+    model40_capture_observe(&capture, &observation);
+    observation.point.bytes[0] = 0x90u;
+    model40_capture_observe(&capture, &observation);
+    observation.point.bytes[0] = 0xffu;
+    observation.point.bytes[1] = 0xe0u;
+    observation.point.byte_count = 2u;
+    model40_capture_observe(&capture, &observation);
+    observation.point.bytes[0] = 0xe4u;
+    observation.point.bytes[1] = 0x61u;
+    model40_capture_observe(&capture, &observation);
+    if (!capture.checkpoint_reached || !capture.c0a_collecting ||
+        !capture.post_c0_io_seen || !capture.post_c0_io_read ||
+        !capture.post_c0_io_port_known || capture.post_c0_io_port != 0x0061u ||
+        capture.count != 3u || capture.classified != 3u || capture.unallocated != 0u ||
+        capture.form_count != 3u) return 1;
+    STD_PRINTF("M5:T391:S2:C0A-CAPTURE:OK\n");
+    return 0;
+}
 C_INT main(C_INT argc, C_CHAR **argv)
 {
     if (argc == 2 && argv != STD_NULL &&
         !STD_STRCMP(argv[1], "--synthetic-c0-smoke")) {
-        return model40_capture_synthetic_c0_smoke();
+        return model40_capture_synthetic_c0_smoke() ||
+            model40_capture_synthetic_c0a_smoke();
+    }
+    if (argc == 2 && argv != STD_NULL &&
+        !STD_STRCMP(argv[1], "--synthetic-c0a-smoke")) {
+        return model40_capture_synthetic_c0a_smoke();
     }
     const core_machine_run_budget budget = { 1u, 0u };
     core_machine_retirement_observation_provider provider;
@@ -440,12 +496,15 @@ C_INT main(C_INT argc, C_CHAR **argv)
         !STD_STRCMP(argv[7], "--c1-diagnostic");
     C_INT post_c0_io_diagnostic = argc == 8 && argv != STD_NULL &&
         !STD_STRCMP(argv[7], "--post-c0-io-diagnostic");
+    C_INT c0a_diagnostic = argc == 8 && argv != STD_NULL &&
+        !STD_STRCMP(argv[7], "--c0a-diagnostic");
 
     if (!model40_capture_create_session(argc, argv, &session)) {
         STD_FPRINTF(STD_STDERR, "usage: capture even-image even-digest "
-            "odd-image odd-digest provenance floppy-image [--terminal-bytes|--c1-diagnostic|--post-c0-io-diagnostic]\n");
+            "odd-image odd-digest provenance floppy-image [--terminal-bytes|--c1-diagnostic|--post-c0-io-diagnostic|--c0a-diagnostic]\n");
         return 2;
     }
+    capture.c0a_diagnostic = c0a_diagnostic != 0;
     provider.callback = model40_capture_observe;
     provider.context = &capture;
     status = core_machine_set_retirement_observation_provider(
@@ -454,13 +513,13 @@ C_INT main(C_INT argc, C_CHAR **argv)
     for (index = 0u; status == TYPE_STATUS_OK && index <
         MODEL40_CAPTURE_RETIREMENT_LIMIT &&
         (!capture.checkpoint_reached || (c1_diagnostic && !capture.c1_checkpoint_reached) ||
-        (post_c0_io_diagnostic && !capture.post_c0_io_seen)) &&
+        ((post_c0_io_diagnostic || c0a_diagnostic) && !capture.post_c0_io_seen)) &&
         capture.unallocated == 0u && !capture.form_limit_reached; ++index) {
         elapsed_before_terminal = result.elapsed_ticks;
         status = core_machine_run(session->core_machine, budget, &result);
         if (status != TYPE_STATUS_OK || result.reason == CORE_MACHINE_STOP_FAULT) break;
     }
-    if (post_c0_io_diagnostic && capture.post_c0_io_seen) terminal = "post-c0-io";
+    if ((post_c0_io_diagnostic || c0a_diagnostic) && capture.post_c0_io_seen) terminal = "post-c0-io";
     else if (c1_diagnostic && capture.c1_checkpoint_reached) terminal = "c1-protected-entry";
     else if (c1_diagnostic && capture.unallocated != 0u) terminal =
         "c1-source-timing-unallocated";
