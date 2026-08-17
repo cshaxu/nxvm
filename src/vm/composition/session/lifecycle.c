@@ -218,6 +218,7 @@ C_VOID vm_session_reset(vm_session *machine) {
         vm_session_platform_join_and_finalize(machine);
     }
     vm_session_control_reset(&machine->control);
+    machine->model40_fdc_terminal_observation_valid = TYPE_FALSE;
     vm_session_start_outcome_clear(machine);
     if (!vm_session_control_is_running(&machine->control)) {
         vm_session_publish_display(machine, 1);

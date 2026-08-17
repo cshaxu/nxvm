@@ -301,6 +301,20 @@ static C_VOID core_machine_fdc_set_result(core_machine_fdc *fdc, type_unsigned_8
     fdc->data.ret[6] = 0x02u;
 }
 
+static C_VOID core_machine_fdc_publish_terminal_result(core_machine_fdc *fdc)
+{
+    core_machine_fdc_terminal_observation observation;
+
+    if (fdc == STD_NULL || fdc->connect.observation_provider.callback == STD_NULL) return;
+    observation.sequence = ++fdc->connect.observation_sequence;
+    observation.command = fdc->data.cmd[0];
+    observation.drive = fdc->data.selected_drive;
+    STD_MEMCPY(observation.result, fdc->data.ret, sizeof(observation.result));
+    observation.successful = fdc->data.st1 == 0u;
+    fdc->connect.observation_provider.callback(fdc->connect.observation_provider.context,
+        &observation);
+}
+
 static C_VOID core_machine_fdc_complete_transfer(core_machine_fdc *fdc,
     type_unsigned_8 st1)
 {
@@ -938,7 +952,8 @@ C_VOID core_machine_fdc_connect(core_machine_fdc *fdc,
     core_machine_fdc_dma_request_operation dma_request_assert,
     core_machine_fdc_dma_request_operation dma_request_deassert,
     C_VOID *dma_request_owner, t_pic *pic_master, t_pic *pic_slave,
-    t_port *port, const core_machine_fdc_config *config)
+    t_port *port, const core_machine_fdc_config *config,
+    const core_machine_fdc_terminal_observation_provider *observation_provider)
 {
     if (fdc == STD_NULL || drives == STD_NULL || dma_request == STD_NULL ||
         dma_request_assert == STD_NULL || dma_request_deassert == STD_NULL ||
@@ -953,6 +968,9 @@ C_VOID core_machine_fdc_connect(core_machine_fdc *fdc,
         pic_slave, config->irq);
     fdc->connect.port = port;
     fdc->connect.config = *config;
+    if (observation_provider != STD_NULL) {
+        fdc->connect.observation_provider = *observation_provider;
+    }
 }
 
 C_VOID core_machine_fdc_initialize(core_machine_fdc *fdc)
@@ -1016,6 +1034,7 @@ C_VOID core_machine_fdc_advance_at(core_machine_fdc *fdc,
             core_machine_fdc_ST0_NORMAL : core_machine_fdc_ST0_ABNORMAL,
             fdc->data.pending_st1, fdc->data.pending_st2);
         core_machine_fdc_result_phase(fdc, 7u);
+        core_machine_fdc_publish_terminal_result(fdc);
         core_machine_fdc_raise_irq(fdc);
     }
     core_machine_fdc_publish_due_dma_byte(fdc);

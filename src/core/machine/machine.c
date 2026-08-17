@@ -4292,7 +4292,8 @@ type_status core_machine_configure_fdc(core_machine *machine,
         core_machine_fdc_dma_request_assert,
         core_machine_fdc_dma_request_deassert, machine,
         &machine->shared_pic_master, &machine->shared_pic_slave,
-        &machine->executor_port, &machine->fdc_topology.config);
+        &machine->executor_port, &machine->fdc_topology.config,
+        &machine->fdc_topology.observation_provider);
     core_machine_fdc_initialize(&machine->fdc);
     status = core_machine_port_registration_status(&machine->executor_port);
     if (status != TYPE_STATUS_OK) {

@@ -14,6 +14,7 @@
 #include "type.h"
 #include "core/machine/trace_interface.h"
 #include "core/machine/retirement_observation_interface.h"
+#include "core/machine/fdc_observation_interface.h"
 #include "core/machine/rom_mapping_interface.h"
 #include "core/machine/entry_plan_interface.h"
 
@@ -192,6 +193,7 @@ typedef struct core_machine_fdc_topology {
     core_machine_fdc_drive_bindings drives;
     core_machine_dma_request_binding dma_request;
     core_machine_fdc_config config;
+    core_machine_fdc_terminal_observation_provider observation_provider;
 } core_machine_fdc_topology;
 
 typedef struct core_machine_hdc_topology {

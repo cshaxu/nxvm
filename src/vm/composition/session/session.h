@@ -75,6 +75,8 @@ struct vm_session {
     type_unsigned_8 model40_even_rom[VM_PROFILE_MODEL40_ROM_CHIP_BYTES];
     type_unsigned_8 model40_odd_rom[VM_PROFILE_MODEL40_ROM_CHIP_BYTES];
     vm_profile_model40_d4_memory model40_d4_memory;
+    core_machine_fdc_terminal_observation model40_fdc_terminal_observation;
+    type_bool model40_fdc_terminal_observation_valid;
     C_CHAR fdd_image_path[1024];
     C_CHAR hdd_image_path[1024];
 };

@@ -5,6 +5,7 @@
 #include "core/machine/machine.h"
 #include "core/machine/port.h"
 #include "vm/composition/session/session.h"
+#include "vm/composition/session/lifecycle.h"
 #include "vm/machine/fdd.h"
 
 #define MODEL40_FDC_BYTES (80u * 2u * 15u * 512u)
@@ -99,7 +100,8 @@ C_INT main(C_INT argc, C_CHAR **argv)
         core_machine_port_write(port, 0x03f7u, 0u);
         model40_fdc_command(fdc, port, specify, sizeof(specify));
         model40_fdc_command(fdc, port, read_last, sizeof(read_last));
-        failed |= core_machine_port_read(port, 0x03f5u) != 0xa5u;
+        failed |= session->model40_fdc_terminal_observation_valid ||
+            core_machine_port_read(port, 0x03f5u) != 0xa5u;
         for (index = 1u; index < 512u; ++index) {
             core_machine_fdc_advance_at(fdc, fdc->data.elapsed_ticks +
                 CORE_MACHINE_FDC_500K_BYTE_TICKS);
@@ -107,7 +109,11 @@ C_INT main(C_INT argc, C_CHAR **argv)
         }
         failed |= !model40_fdc_result(fdc, port, result, sizeof(result)) ||
             result[0] != core_machine_fdc_ST0_NORMAL || result[1] != 0u ||
-            result[5] != 16u || result[6] != 2u;
+            result[5] != 16u || result[6] != 2u ||
+            !session->model40_fdc_terminal_observation_valid ||
+            session->model40_fdc_terminal_observation.command != 0xe6u ||
+            session->model40_fdc_terminal_observation.result[0] != result[0] ||
+            session->model40_fdc_terminal_observation.result[1] != result[1];
         model40_fdc_command(fdc, port, specify_dma, sizeof(specify_dma));
         model40_fdc_write_dma2(port, 0x0600u, 511u);
         model40_fdc_command(fdc, port, read_last, sizeof(read_last));
@@ -123,10 +129,18 @@ C_INT main(C_INT argc, C_CHAR **argv)
             core_machine_memory_read(session->core_machine, 0x0600u, &result[0],
                 sizeof(result[0])) != TYPE_STATUS_OK || result[0] != 0xa5u;
         failed |= !model40_fdc_result(fdc, port, result, sizeof(result)) ||
-            result[0] != core_machine_fdc_ST0_NORMAL || result[1] != 0u;
+            result[0] != core_machine_fdc_ST0_NORMAL || result[1] != 0u ||
+            !session->model40_fdc_terminal_observation_valid ||
+            !session->model40_fdc_terminal_observation.successful;
+        vm_session_reset(session);
+        failed |= session->model40_fdc_terminal_observation_valid;
         model40_fdc_command(fdc, port, read_oob, sizeof(read_oob));
         failed |= !model40_fdc_result(fdc, port, result, sizeof(result)) ||
-            result[0] != core_machine_fdc_ST0_ABNORMAL || result[1] != 0x04u;
+            result[0] != core_machine_fdc_ST0_ABNORMAL || result[1] != 0x04u ||
+            !session->model40_fdc_terminal_observation_valid ||
+            session->model40_fdc_terminal_observation.successful ||
+            session->model40_fdc_terminal_observation.result[0] != result[0] ||
+            session->model40_fdc_terminal_observation.result[1] != result[1];
         if (argc == 6) {
             for (index = 0u; index < 400000u && bios_marker == 0u; index += 64u) {
                 failed |= core_machine_run(session->core_machine,

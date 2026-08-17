@@ -12,6 +12,7 @@ extern "C" {
 #include "core/machine/dma.h"
 #include "core/machine/media_interface.h"
 #include "core/machine/pic.h"
+#include "core/machine/fdc_observation_interface.h"
 
 typedef struct t_pic t_pic;
 typedef struct t_port t_port;
@@ -98,6 +99,8 @@ typedef struct {
     core_machine_pic_irq_source irq_source;
     t_port *port;
     core_machine_fdc_config config;
+    core_machine_fdc_terminal_observation_provider observation_provider;
+    type_unsigned_64 observation_sequence;
 } core_machine_fdc_connection;
 
 typedef struct {
@@ -222,7 +225,8 @@ C_VOID core_machine_fdc_connect(core_machine_fdc *fdc,
     core_machine_fdc_dma_request_operation dma_request_assert,
     core_machine_fdc_dma_request_operation dma_request_deassert,
     C_VOID *dma_request_owner, t_pic *pic_master, t_pic *pic_slave,
-    t_port *port, const core_machine_fdc_config *config);
+    t_port *port, const core_machine_fdc_config *config,
+    const core_machine_fdc_terminal_observation_provider *observation_provider);
 const core_machine_dma_channel_provider *core_machine_fdc_dma_provider(C_VOID);
 C_VOID core_machine_fdc_initialize(core_machine_fdc *fdc);
 C_VOID core_machine_fdc_reset(core_machine_fdc *fdc);

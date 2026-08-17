@@ -2,8 +2,28 @@
 
 ## Current Work
 
-**T393 S1 accepted.** The FDC data-transfer terminal-result contract is frozen; the next receiver is the bounded Core copied-observation implementation and Model-40 copied consumer. No C1 or physical claim.
+**Active: M5 T393 S2 Continuation.** Implement the frozen Core copied FDC data-transfer terminal-result observer and Model-40 copied consumer, with complete success/failure/DMA/reset regression. No C1 or physical claim.
 
+## M5 T393 S2 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner authorized continued implementation; accepted T393 S1 `38fc70bd` selects this finite implementation. |
+| Objective | Add a Core-owned copied FDC terminal-result observer and a Model-40 VM-owned copied consumer. |
+| Non-goals | No private pointer/layout, VM-specific Core callback, C1 success claim, physical timing, board/L3, ROM/media import or raw trace. |
+| Reference Baseline | T393 S1 evidence, Core retirement-observation lifecycle, FDC completion/reset paths and Model-40 composition. |
+| Candidate Proposal | [DeskPro FDC operation observation contract](../proposals/m5-deskpro-fdc-operation-observation-contract.md). |
+| Files And ABI Surface | New Core FDC observation interface, Core machine/FDC implementation, Model-40 session-private copied state, focused Core/VM tests and evidence. |
+| Applicable Rules | Architecture dependency and copied-public-interface invariants; Coding public-header discipline; Execution mechanism-defect sweep; source policy. |
+| Verification | Focused success/failure/DMA/reset and running-state rejection tests, current Model-40 capture regression, documentation governance and diff review. |
+| Expected Markers | One Core publication path, copied result only, monotonically sequenced records, reset invalidation and no observer publication for cancellation. |
+| Asset Needs | None; tests use project-owned synthetic media only. |
+| Reporting Requirements | Evidence exact publisher/caller sweep, tests, P1 push, independent review and P2 acceptance. |
+| Stop Conditions | Stop if publication needs mutable FDC/session access, a VM-specific Core type, unbounded data, or a different device contract. |
+| Exit Criteria | All frozen paths are covered or explicitly excluded, Core/VM boundary tests pass, and no C1/physical conclusion is made. |
+| Original Owner Request | Continue holistic CPU/timing audit while preserving Core/VM interface boundaries. |
+| Similar-Issue Sweep | Compare FDC observer lifecycle with retirement observer; sweep all FDC transfer completion, DMA terminal and reset/cancel callers. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T390 S22 `vm-0-5-0390` /
