@@ -85,3 +85,10 @@ but currently observes 81 normalized key aggregates against the accepted
 82-child ledger. This is an active reconciliation gap, not an accepted collision
 or physical descriptor selection.
 [Evidence](../etc/evidence/t394-s5-pre-retirement-key-refresh.md).
+S5 P2 completes the finite mapping: 80 of 82 corrected C0 children map
+one-to-one to a normalized Core key, while C0-027 and the C0-031 memory/ext-6
+child map to one prefix-normalized `MOV` key. The collision preserves 1+2=3
+successful retirements and differs only by the literal CS segment-override
+prefix intentionally excluded by S3. The resulting 81-key mapping transfers a
+later descriptor-selection decision; no physical selection is made here.
+[Mapping evidence](../etc/evidence/t394-s5-c0-key-mapping-reconciliation.md).

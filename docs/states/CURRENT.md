@@ -2,7 +2,7 @@
 
 ## Current Work
 
-**T394 S5 active.** Reconcile the complete accepted T390 C0 82-child corpus to the S4 Core eligibility key before considering any descriptor contents or physical profile selection.
+**T394 S5 active.** The complete accepted T390 C0 82-child corpus is reconciled to 81 S4 Core eligibility keys; record P2 and transfer the later descriptor-selection decision without selecting a physical profile.
 
 ## M5 T394 S5 Packet
 
@@ -10,13 +10,13 @@
 | --- | --- |
 | Identifier Mode | Continuation |
 | Admission And Approval | Owner’s continuing global CPU correctness/timing audit authorization, including instruction to continue implementation after S4; S4 acceptance and P3 (`31a03ecb`) transfer this finite mapping. No exception. |
-| Objective | Replay the fixed T390 C0 corpus through the S4 copied key, reconcile every one of its 82 children to an observed key or justified same-key semantic equivalent, and record the finite descriptor cardinality/collision result. |
+| Objective | Record and validate the completed fixed T390 C0 mapping: every accepted child resolves to one of 81 observed copied keys, including the one proven prefix-normalized same-key equivalence. Transfer descriptor contents and physical profile selection to a later admitted task. |
 | Non-goals | No production C0 descriptor, Model-40 physical contract selection, VM/Core ABI change, firmware/media import, board timing, C1, device timing, cycle/exact or L3 claim. |
 | Reference Baseline | T390 S23 ledger, S26 corrected 82-child refinement, S27 direct-row regression, T394 S3 collision design and S4 copied descriptor enforcement. |
 | Candidate Proposal | [80386 physical-retirement qualification](../proposals/m5-80386-physical-retirement-qualification.md). |
 | Files And ABI Surface | Existing Model-40 BYOB retirement-capture harness and Core copied observation/key; repair the discovered private pre-retirement snapshot/key-refresh defect if replay proves it, with focused capture-only regression plus current/history/evidence/index. No production descriptor or VM interface. |
 | Applicable Rules | Architecture: Core owns key construction and VM only consumes copied observations; no firmware/media identity or reverse dependency. Coding: bounded owner-local capture aggregation. Execution: consume the complete fixed 82-child batch, record collisions and actual-change review. |
-| Verification | Synthetic capture regression, fixed C0 replay when owner-managed inputs are available, pre-retirement mode/control snapshot preservation, 82-child/key cardinality and collision reconciliation, existing S4 rejection regression, both deterministic Model-40 composition tests, current gate/artifact and documentation governance. |
+| Verification | Synthetic capture regression, fixed historical/current C0 comparison when owner-managed inputs are available, pre-retirement mode/control snapshot preservation, exact 82-child-to-81-key collision reconciliation, existing S4 rejection regression, both deterministic Model-40 composition tests, current gate/artifact and documentation governance. |
 | Expected Markers | `M5:T394:S5:C0-KEY-MAPPING:OK`; retained `M5:T394:S4:ELIGIBILITY-KEY:OK`; deterministic Model-40 assertions remain green. |
 | Asset Needs | No repository asset. Owner-managed external BYOB inputs may be read only if already available under `O:\assets`; they are neither imported nor recorded. |
 | Reporting Requirements | Record exact corpus availability, child-to-key aggregation, duplicate-equivalence reasoning, descriptor cardinality, any unavailable input and the full C0 mapping transfer. |
