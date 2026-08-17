@@ -88,6 +88,7 @@ records its 17 normalized forms, focused physical-boundary regression, clean
 current gates and developer artifact. It expressly transfers the full
 boot-sector corpus; it makes no physical Model-40, board-timing or L3 claim.
 Coordinator actual-change review and acceptance remain required.
+
 P1 was not accepted: coordinator review found that an unallocated observation
 could continue to the fixed budget before the tool returned failure. Corrective
 P2 makes the first unallocated record terminal and proves that behavior with a

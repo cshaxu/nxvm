@@ -90,6 +90,7 @@ output. The retained S3 observation smoke continues to prove that the copied
 unallocated record is published before physical rejection and before elapsed
 publication. The normal owner-managed preboot replay remains `64/64`
 classified and exits successfully.
+
 ## Transfer
 
 This is a preboot prefix, not the S2 corpus completion checkpoint. The selected

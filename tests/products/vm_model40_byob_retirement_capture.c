@@ -56,7 +56,8 @@ static const C_CHAR *model40_capture_form_name(
         return observation->point.bytes[0] >= 0xb0u &&
             observation->point.bytes[0] <= 0xbfu ? "mov-immediate" :
             "other";
-    }}
+    }
+}
 
 static const C_CHAR *model40_capture_operand_name(
     const core_machine_retirement_observation *observation)
