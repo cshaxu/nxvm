@@ -113,3 +113,13 @@ exists. Physical monitor, live-video, firmware and timing effects remain
 explicit transfers. P1 `027674d6` is pushed; documentation governance,
 specialized gates and the 278-target current smoke gate pass. T386 remains open
 for that shared mechanism and its functional audit.
+
+### S28: CECG Odd/Even Page Receiver
+
+S28 accepts the source-determined CECG `3C2h` bit-5 low/high-page receiver.
+One shared VADP owner now holds the state and applies it to planar memory and
+copied snapshots when the CECG Odd/Even path is selected. Reset restores the
+fixed Model-40 low-page declaration; generic EGA has no CECG port route. P1
+`7de64aca` passes the focused markers and the 280-target current-source gate.
+The physical monitor, firmware and board-timing transfers remain unchanged;
+T386 remains open only for its selected-device functional-closure audit.

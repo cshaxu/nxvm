@@ -83,22 +83,17 @@ sole remaining shared functional mechanism; all remaining monitor,
 Special-Features, live-video, firmware and timing effects have explicit later
 receivers and are not silently accepted as VADP behavior.
 
-The remaining functional work stays in this candidate and proceeds in this
-order, with each receiver admitted only after reviewing the preceding evidence:
+S28 closes that receiver at the shared VADP owner: the selected CECG input
+changes one reusable low/high page state consumed by planar CPU memory and
+copied snapshots, reset restores the declared state, and the fixed Model-40
+composition declares low page. Generic EGA remains isolated. This is not an
+IBM-EGA/VGA breadth, firmware, physical-display or timing claim.
 
-1. Shared VADP Odd/Even display-page mechanism required by the selected CECG
-   `3C2h` bit-5 contract. It must provide one reusable page-state, memory and
-   copied-snapshot consumer path with reset and Model-40 binding proof; it may
-   not become an IBM-EGA/VGA breadth claim or profile-local workaround.
-1. A T386 functional-closure audit only after that receiver has accepted
-   evidence. It must re-run the selected-device ledger, fixed-versus-external
-   declarations and timing handoff before T386 may transfer to DeskPro board
-   bus/device timing.
-
-This ordering introduces no numeric S allocation. The remaining dependency is
-the source-backed CECG contract before the audit transfers every selected
-functional row to DeskPro board timing.
-
+The only remaining functional work in this candidate is a T386
+functional-closure audit. After reviewing S28 evidence, it must re-run the
+selected-device ledger, fixed-versus-external declarations and timing handoff
+before T386 may transfer to DeskPro board bus/device timing. This ordering
+introduces no numeric S allocation.
 The existing principal architecture and M5 Roadmap already state the necessary
 owner rule: reusable chips, controller mechanisms and generic device semantics
 belong to Core; VM device profiles own named hardware-capability contracts; the
@@ -130,3 +125,4 @@ claim, or firmware/media import. Stop and return a shared defect to its
 earliest owner; do not attach a local delay merely to make an incomplete device
 appear ready. Stop a missing fixed-disk startup contract or an unsupported
 selected-device fact for owner decision; do not invent a profile override.
+

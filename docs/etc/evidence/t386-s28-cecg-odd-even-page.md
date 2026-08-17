@@ -63,7 +63,7 @@ M5:T386:S28:CECG-ODD-EVEN-PAGE:OK
 M5:T386:S28:MODEL40-CECG-ODD-EVEN:OK
 ```
 
-The documentation governance and combined specialized/current-source gate passed after the full fixture and T345 inventory sweep: 280 current targets, including both S28 markers. Existing S9--S13 CECG controls remain in the current gate. The rebuilt local developer artifact is `vm-0-5-0389` / `build/output/nxvm_0_5_0389.exe`, SHA-256 `80EC4B58630B163ECAFED6FE5B97F3B69D5E22D87928811FE66A8D5274E64EDD`. Coordinator acceptance remains required.
+The documentation governance and combined specialized/current-source gate passed after the full fixture and T345 inventory sweep: 280 current targets, including both S28 markers. Existing S9--S13 CECG controls remain in the current gate. The rebuilt local developer artifact is `vm-0-5-0389` / `build/output/nxvm_0_5_0389.exe`, SHA-256 `80EC4B58630B163ECAFED6FE5B97F3B69D5E22D87928811FE66A8D5274E64EDD`. Coordinator acceptance below records the independent actual-change review.
 
 ## Similar-issue sweep and transfer
 
@@ -77,3 +77,15 @@ S28 consumes the sole shared functional CECG receiver. The next T386 step is
 the proposal-required selected-device functional-closure audit. The retained
 physical, firmware and board timing questions remain in `TODO.md` and transfer
 to the DeskPro board/device timing candidate; this evidence makes no L3 claim.
+
+## Coordinator acceptance
+
+The coordinator reviewed P1 `7de64aca` directly: the configuration field is
+carried into VADP reset state; the only page-address transform is shared by the
+existing planar read/write provider and copied snapshot; the Model-40 declares
+low page; and the tests exercise public memory/display routes without a
+profile-local or test-only API. The fixture sweep explicitly repairs every
+strict initializer, and both T345 inventory guards account for the two added
+owner tests. The documented 280-target combined gate passed. S28 is accepted;
+only the proposal-required selected-device functional-closure audit remains in
+T386. No L3, physical, firmware or timing claim is accepted.
