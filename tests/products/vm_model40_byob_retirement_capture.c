@@ -5,7 +5,7 @@
 #include "vm/composition/session/session.h"
 
 #define MODEL40_CAPTURE_FORM_LIMIT 128u
-#define MODEL40_CAPTURE_RETIREMENT_LIMIT 250000u
+#define MODEL40_CAPTURE_RETIREMENT_LIMIT 2000000u
 #define MODEL40_BOOT_SECTOR_LINEAR_PC 0x00007c00u
 
 typedef struct model40_retirement_capture_form {
@@ -253,7 +253,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
     vm_session *session = STD_NULL;
     type_status status = TYPE_STATUS_OK;
     type_unsigned_32 index;
-    const C_CHAR *terminal = "retirement-budget";
+    const C_CHAR *terminal = "retirement-budget-exhausted";
     C_INT emit_terminal_bytes = argc == 8 && argv != STD_NULL &&
         !STD_STRCMP(argv[7], "--terminal-bytes");
 
