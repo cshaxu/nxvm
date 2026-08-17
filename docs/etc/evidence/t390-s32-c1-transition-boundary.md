@@ -38,3 +38,7 @@ from already copied state or add only the minimum bounded copied scalar state
 needed to express one.  It must not use a retirement or wall-clock budget as a
 checkpoint, retain raw observation data, assign a timing value, or advance
 DeskPro board/L3 work.
+
+## Coordinator acceptance
+
+The coordinator reviewed pushed P1 47352d34 against the admitted S32 packet and original request. The test-only capture holds one phase owner, publishes only aggregate state, and neither expands a production interface nor changes CPU/profile behavior. The synthetic transition proof, contained replay cleanup, focused CTest target, documentation governance, and diff hygiene pass. S32 is accepted; the specific second protected-entry candidate transfers as absent within containment.

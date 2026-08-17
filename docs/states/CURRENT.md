@@ -2,28 +2,8 @@
 
 ## Current Work
 
-**Active.** T390 remains open between accepted subtasks. S31 corrects Model-40 A20-disabled routing: high reset/ROM aliases remain physical while only the second-MiB compatibility window mirrors. Its bounded formal-asset replay reaches protected mode and the protected-return checkpoint but exhausts the C1 containment budget; no timing, board-time, physical-retirement, or L3 claim follows. [Evidence](../etc/evidence/t390-s31-model40-a20-startup-baseline.md).
+**Active.** T390 remains open between accepted subtasks. S32 proves the candidate C1 transition (a later real-to-protected success after C0) is absent within the bounded corrected-ROM replay. The state machine is covered synthetically; a later receiver must select another finite checkpoint. No timing, board-time, physical-retirement, or L3 claim follows. [Evidence](../etc/evidence/t390-s32-c1-transition-boundary.md).
 
-## M5 T390 S32 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation; T390 remains the latest open numeric task and S32 follows accepted S31. |
-| Admission And Approval | Owner authorized continued implementation, correction of confirmed defects, and CPU/timing audit in the current task conversation on 2026-08-17. |
-| Objective | Make the existing Model-40 C1 diagnostic identify phase transitions with copied aggregate-only state, then use the corrected startup path to discover and freeze the first reproducible finite C1 semantic checkpoint. |
-| Non-goals | No timing allocation, physical-clock or board-ratio claim, ROM/media import, raw bytes/PC/trace retention, CPU semantic change, or external emulator dependency. |
-| Reference Baseline | Accepted T390 S27/S28 C0 batch and physical-contract selection; accepted S31 corrected A20 path reaches protected mode and protected-return checkpoint but exhausts C1 containment. |
-| Candidate Proposal | Continue the accepted [T390 physical-qualification proposal](../proposals/m5-80386-physical-retirement-qualification.md) through its next finite semantic checkpoint stage. |
-| Files And ABI Surface | Existing test-only BYOB capture helper, its synthetic smoke, CMake test registration only if needed, current status and aggregate-only evidence. No production Core/VM interface, data layout, timing ledger, or profile contract change. |
-| Applicable Rules | Execution, coding, architecture, documentation and source-policy authorities; the copied observer remains pre-publication and external assets remain transient. |
-| Verification | Build/run synthetic transition-state regression; execute one contained owner-managed replay with wall and retirement limits; verify no raw output remains; run focused capture and documentation/diff gates. |
-| Expected Markers | Existing C0 marker plus a new S32 synthetic C1-transition marker and aggregate-only contained summary. |
-| Asset Needs | Read-only owner-managed formal assets, used transiently only; no asset identifier, locator, hash, provenance, byte, PC, trace or guest media enters Git. |
-| Reporting Requirements | Record the state-machine definition, aggregate transition result, first finite C1 checkpoint or bounded absence, similar-issue sweep, and transfer without timing inference. |
-| Stop Conditions | Stop for required raw observation, missing semantic state that demands a broader public interface, source-unallocated success, or a proposed timing/board conclusion. |
-| Exit Criteria | Synthetic state transitions prove deterministically; contained replay yields an aggregate-only finite C1 checkpoint or records its bounded absence; documentation and focused verification pass. |
-| Original Owner Request | Continue the global CPU instruction/timing audit toward later DeskPro board timing and L3 closure; fix confirmed issues and preserve Core/VM interfaces. |
-| Similar-Issue Sweep | Review all existing capture phase/checkpoint booleans and callers; classify every production/test path so no duplicate phase tracker or raw-output side path remains. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T390 S22 `vm-0-5-0390` /
@@ -50,7 +30,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T390 S31 | Accepted: Core-owned, Model-40-selected A20 policy preserves high reset/ROM aliases while mirroring only the second MiB. Focused regressions and 284/284 current gate pass; the contained replay reaches protected mode and return checkpoint but exhausts C1 containment. No timing, board-time, physical-retirement, or L3 claim. [Evidence](../etc/evidence/t390-s31-model40-a20-startup-baseline.md). |
+| T390 S32 | Accepted: aggregate-only C1 phase tracker proves the candidate later real-to-protected transition synthetically, but it is absent within the bounded corrected-ROM replay. The candidate transfers; no timing, board-time, physical-retirement, or L3 claim. [Evidence](../etc/evidence/t390-s32-c1-transition-boundary.md). |
 | T389 | Stopped by owner-approved requeue: S1 proves no physical board slice can begin while 80386 successful retirement remains nonphysical; S2 archives the invalid candidate and queues a shared CPU qualification before a fresh board task. No board timing, physical-clock or L3 claim. [Audit](../etc/evidence/t389-s2-stop-and-requeue-audit.md). |
 | T388 | Closed: S1--S9 establish the sole publisher, exhaustive exact-or-nonphysical residual disposition and pre-publication physical-contract rejection. No current CPU profile is physically clock-qualified; board work transfers under this restriction. [Closure audit](../etc/evidence/t388-s9-task-closure-audit.md). |
 | T387 | Closed: source/owner inventory, exact port-`61h` reconciliation and reference qualification transfer the shared physical-timebase then physical-device/firmware prerequisites before any DeskPro L3 audit. No physical-time or L3 claim. [Closure audit](../etc/evidence/t387-s6-task-closure-transfer-audit.md). |
