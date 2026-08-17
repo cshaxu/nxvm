@@ -2,26 +2,8 @@
 
 ## Current Work
 
-**Active packet:** T390 S16 (Continuation) -- Model-40 checkpoint and finite-corpus disposition audit.
+**Active.** T390 remains open between accepted subtasks.
 
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation -- T390 remains the latest open task; S16 follows accepted S15. |
-| Admission And Approval | Owner-approved correction of the former first-unallocated loop: use only owner-managed local ROM/media and do not retain their identity, path, digest, bytes, PC data or raw trace. |
-| Objective | Determine whether the selected pre-7C00 execution is normal POST progress, media/FDC progression failure, or a CPU/ROM/control-flow defect; freeze a finite named 80386 corpus/checkpoint and its batch-classification/transfer plan. |
-| Non-goals | No next single-instruction timing repair, no raised replay cap as a substitute for diagnosis, no Core/profile implementation, physical retirement enablement, board timing or L3 claim. |
-| Reference Baseline | Accepted S15 evidence/artifact, S2 observation contract, S5 boot-media terminal, S13 checkpoint boundary and current selected 1 MiB Model-40 composition. |
-| Candidate Proposal | [80386 physical-retirement qualification](../proposals/m5-80386-physical-retirement-qualification.md). |
-| Files And ABI Surface | T390 evidence/status and, only if needed, proposal clarification; no production, Core, VM-profile, public ABI or external asset change. |
-| Applicable Rules | Execution, documentation, architecture, coding and source policy; actual-diff review, one observer path and bounded external research containment. |
-| Verification | Reproduce the existing bounded normalized observation; inspect capture/session/control routes and selected configuration; reconcile the disposition against source and named checkpoint; docs, diff and actual review. |
-| Expected Markers | Existing normalized capture marker only; no new physical or L3 marker. |
-| Asset Needs | External owner-managed Model-40 ROM pair and bootable 1.2 MB floppy only; temporary normalized output is deleted after exit. |
-| Reporting Requirements | Complete one audit P with finite corpus/checkpoint definition, batch matrix/transfer receiver and coordinator actual-diff review. |
-| Stop Conditions | Missing source/capture basis, unbounded or asset-identifying record, unresolved diagnosis, or any request to assign a timing row without exact Intel evidence. |
-| Exit Criteria | One truthful diagnostic disposition; finite named corpus/checkpoint; all successful-form/context collection and batch-classification plan; no physical-retirement, board or L3 overclaim. |
-| Original Owner Request | Stop incremental single-form repair as the default and establish the checkpoint/corpus disposition required before DeskPro board timing. |
-| Similar-Issue Sweep | Inspect all T390 S2--S15 checkpoint, observer, capture-limit, first-unallocated and physical-contract claims for accidental incremental or success-by-budget language. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T390 S15 `vm-0-5-0390` /
@@ -48,7 +30,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T390 S15 | Accepted: shared Core now admits only the observed operand-size register RCL-CL form at Intel's nine-clock row; memory and other forms remain nonphysical. The bounded replay has no unallocated success through 2,000,000 retirements but exhausts before the 7C00 checkpoint; physical-profile selection, corpus/checkpoint disposition, board timing and L3 remain open. [Evidence](../etc/evidence/t390-s15-rcl-cl.md). |
+| T390 S16 | Accepted: the incremental terminal-repair default is retired; M40-C0 freezes a semantic protected-return checkpoint and transfers complete batch form/context collection and classification. The pre-boot phase remains unresolved; no physical-retirement, board-timing or L3 claim. [Evidence](../etc/evidence/t390-s16-checkpoint-corpus-disposition.md). |
 | T389 | Stopped by owner-approved requeue: S1 proves no physical board slice can begin while 80386 successful retirement remains nonphysical; S2 archives the invalid candidate and queues a shared CPU qualification before a fresh board task. No board timing, physical-clock or L3 claim. [Audit](../etc/evidence/t389-s2-stop-and-requeue-audit.md). |
 | T388 | Closed: S1--S9 establish the sole publisher, exhaustive exact-or-nonphysical residual disposition and pre-publication physical-contract rejection. No current CPU profile is physically clock-qualified; board work transfers under this restriction. [Closure audit](../etc/evidence/t388-s9-task-closure-audit.md). |
 | T387 | Closed: source/owner inventory, exact port-`61h` reconciliation and reference qualification transfer the shared physical-timebase then physical-device/firmware prerequisites before any DeskPro L3 audit. No physical-time or L3 claim. [Closure audit](../etc/evidence/t387-s6-task-closure-transfer-audit.md). |

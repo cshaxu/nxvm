@@ -30,3 +30,7 @@ S2 already defines `0:7C00` as a later boot-transfer checkpoint and declares cap
 ## Coordinator Review Scope
 
 This S changes no runnable source, external asset, product interface, physical contract or technical artifact. Documentation governance and diff hygiene verify the authority/index changes; the retained local normalized replay is diagnostic evidence only. The next implementation S must run the stated focused and full source gates after it changes the capture path.
+
+## Coordinator Acceptance
+
+Coordinator actual-diff review accepts P1 `efae71f9`. The change is confined to the active packet, the existing T390 proposal, one indexed evidence record and status closure. It preserves S15's artifact baseline and every prior exact-row acceptance, adds no runnable source or external input, and truthfully retains the unresolved pre-boot diagnosis. The finite M40-C0 semantic checkpoint and batch-matrix receiver are the next T390 scope; neither physical retirement, board timing nor L3 is accepted.
