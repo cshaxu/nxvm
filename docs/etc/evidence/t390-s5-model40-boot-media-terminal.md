@@ -55,3 +55,12 @@ semantic identity), then cite and prove its exact Intel-primary row or retain
 it nonphysical.  It must repeat this process through the `0:7C00` checkpoint
 before any Model-40 physical-retirement selection.  Board clocks, device
 physical timing and L3 remain outside S5.
+
+## Coordinator Acceptance
+
+Coordinator actual-change review accepts P1 `f2697e20`.  It confirms that the
+media bridge uses only the existing VM session ingress; the focused synthetic
+smoke covers startup insertion and registry geometry; the current-gate and
+T345 ownership registrations are consistent; and no external asset identity,
+raw guest output, physical selection, board timing or L3 claim enters Git.
+The S5 transfer remains mandatory before the selected corpus can advance.

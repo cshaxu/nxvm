@@ -11,7 +11,8 @@ physical-device, firmware, ROM/media or L3 claim by itself.
 
 ## Active Subtask
 
-No subtask is active. T390 remains open with S4 retained as compact accepted progress.
+No subtask is active. T390 remains open with S5 retained as compact accepted progress.
+
 ## Accepted Progress
 
 ### S1: 80386 Physical-Qualification Inventory
@@ -109,3 +110,30 @@ replays pass.
 T390 remains open. The next receiver must reach the S2 boot-sector corpus
 checkpoint with owner-managed media before any physical Model-40 CPU, board,
 device or L3 claim is considered.
+
+### S5: Model-40 Boot-Media Terminal
+
+S5 extends the explicit external BYOB capture helper through the normal Model-40
+1.2 MB startup-media route, adds a project-owned canonical current smoke and
+keeps capture output bounded and normalized.  The retained
+[evidence](../etc/evidence/t390-s5-model40-boot-media-terminal.md) records an
+owner-managed contained run that reaches 104 successful real-address
+retirements before the first source-unallocated normalized `other` terminal.
+It does not reach `0:7C00`, identify that terminal semantically, assign a new
+Intel row or enable physical retirement.
+
+## Coordinator Acceptance
+
+After independent actual-change review of P1 `f2697e20`, the coordinator
+accepts S5.  The review confirms that media enters only through the existing
+VM session configuration, the new smoke exercises that normal path and is
+registered in the canonical gate, and the exact T345 ownership inventories
+rise coherently.  The external tool retains no firmware/media identity or raw
+trace in Git and stops before a physical selection.  The user-approved
+four-profile proposal clarification is documentation-only and makes no
+current-L3 claim.  Full current gates, documentation governance, focused
+registration and diff hygiene pass.
+
+T390 remains open.  The next receiver must turn the normalized first terminal
+into a policy-compliant semantic identity, then prove or retain its Intel
+source-timing disposition before repeating the bounded corpus toward `0:7C00`.
