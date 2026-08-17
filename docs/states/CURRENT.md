@@ -2,11 +2,32 @@
 
 ## Current Work
 
-- **Next admission:** perform T386's selected-device functional-closure audit.
-  It must reconcile the completed CECG receiver with the full Model-40 ledger,
-  fixed-versus-external declarations and board-timing handoff. No implementation
-  work proceeds until its approved packet is installed.
+- **Active packet:** T386 S29; independently audit the completed selected-device
+  functional matrix, fixed-versus-external declarations and precise board/
+  firmware/physical timing handoff. No source repair or timing implementation
+  is in scope unless the audit reproduces an in-scope false completion. The audit
+  reproduced one false-completion finding: S26's HDC regression was built but
+  omitted from the canonical current gate; this packet revision admits only its
+  CMake registration and replay.
 
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; T386 remains the latest open numeric task through retained S28 progress, and S29 is the next unused subtask. |
+| Admission And Approval | Owner's continuing authorization to implement and push the DeskPro 386 functional/L3 program, including autonomous root-cause work, reaffirmed 2026-08-16. The approved scope is the proposal-ordered selected-device functional-closure audit. |
+| Objective | Independently reconcile every selected Model-40 functional row against accepted S21--S28 evidence and current source/tests; accept transfer to DeskPro board/device timing only if every selected device has an implemented functional owner and proof or a truthful explicit firmware/physical boundary. |
+| Non-goals | No board/device timing allocation, L3 acceptance, generic clone/variant work, IBM EGA/VGA breadth, new BIOS/ROM/media behavior, external asset import, or implementation unrelated to a reproduced false-completion finding. |
+| Reference Baseline | T384 capability audit, T385 CPU closure, S21 matrix, accepted S22--S28 evidence, current T386 proposal/TODO, Queue/Roadmap, and S28 artifact `80EC4B58630B163ECAFED6FE5B97F3B69D5E22D87928811FE66A8D5274E64EDD`. |
+| Candidate Proposal | [DeskPro 386 Model 40 selected-device functional closure](../proposals/m5-deskpro-386-model40-device-functional-closure.md). |
+| Files And ABI Surface | `CMakeLists.txt` and its T345 ownership verifier may add the existing S26 HDC smoke to the canonical current gate and update their resulting strict-test inventory; expected evidence, proposal/current/history/TODO reconciliation follows. No production ABI, device implementation or timing change is admitted. |
+| Applicable Rules | `docs/rules/EXECUTION.md`, `DOCUMENT.md`, `ARCHITECTURE.md`, `CODING.md`; `docs/design/ARCHITECTURE.md`, `CODING.md`, `UI.md`; source policy. Audit one owner and proof per selected state/register/reset/IRQ-DMA/consumer row; preserve Core/VM separation and no unsupported L3 inference. |
+| Verification | Inspect actual source/registrations and replay the retained targeted Model-40/D4/FDC/HDC/CECG controls plus current documentation governance and full current-source gate. Verify S26 is registered and executed by the canonical gate. Build a requirement-to-evidence matrix that distinguishes complete function, board timing, firmware lifecycle and physical-media debt. |
+| Expected Markers | `M5:T386:S29:FUNCTIONAL-CLOSURE-AUDIT:OK`; retained S22--S28 markers and current gate. |
+| Asset Needs | No external asset is needed. Existing evidence only; if source research becomes necessary, use transient material under source policy and do not commit vendor/manual/ROM/media content or local paths. |
+| Reporting Requirements | Record every selected row, current owner/proof, acceptance or exact transfer, all audit findings, actual commits/gate result, and an explicit no-L3 conclusion. |
+| Stop Conditions | The reproduced S26 gate-registration omission is this packet's sole admitted corrective instance; stop and admit a narrow corrective S for any further source/test finding that disproves a completed functional row; transfer an underdetermined physical, firmware or timing fact without invention; do not reclassify a known board/physical boundary as functional completion. |
+| Exit Criteria | One matrix disposes every selected Model-40 functional row as complete with source/current proof or as a named, truthful later receiver; no selected device remains only syntactically composed; the next Queue candidate is the DeskPro board bus/device timing closure, while T386 itself makes no L3 claim. |
+| Original Owner Request | Continue the approved DeskPro 386 work autonomously and identify the root cause rather than repeatedly requesting decisions. |
+| Similar-Issue Sweep | Sweep T384/T385/S21--S28 evidence, Model-40 composition/profile and current-gate tests, including every selected-device smoke target registration; selected CPU/RAM/D4/PIC/DMA/PIT/RTC/8042/FDC/HDC/CECG/ROM routes; fixed/external declarations; Queue/TODO/proposal/history; current supported-device surface and all claimed transfer destinations. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T386 S28 `vm-0-5-0389` /
