@@ -58,3 +58,13 @@ items retain their existing TODO rows; no TODO row is silently closed here.
 
 T386 itself is therefore ready for its task-level closure audit, but this S
 makes no Model-40 L3 claim.
+
+## Coordinator Acceptance
+
+After actual-change review of P1 `a9210fde`, the coordinator accepts S29 and
+closes T386.  Review confirmed that the CMake change registers the existing HDC
+smoke in the sole canonical current-gate list, and that the three exact T345
+inventory assertions are the only dependent count owners.  Documentation
+governance, specialized gates, the 281-target current gate and the focused HDC
+CTest replay pass.  The task-level decision remains functional-only: T386
+transfers to the next Queue candidate and makes no Model-40 L3 claim.

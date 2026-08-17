@@ -123,3 +123,28 @@ fixed Model-40 low-page declaration; generic EGA has no CECG port route. P1
 `7de64aca` passes the focused markers and the 280-target current-source gate.
 The physical monitor, firmware and board-timing transfers remain unchanged;
 T386 remains open only for its selected-device functional-closure audit.
+### S29: Selected-Device Functional Closure Audit
+
+S29 independently reconciles every selected Model-40 functional row, its
+current owner and focused proof against S21--S28.  It finds one false-completion
+weakness: S26's existing HDC startup smoke had been built but was omitted from
+the canonical current gate.  P1 `a9210fde` registers that test and updates only
+the exact current-test inventories.  The 281-target current gate, focused HDC
+CTest replay, documentation governance and specialized gates pass.  The
+[detailed audit](../etc/evidence/t386-s29-functional-closure-audit.md) records
+the full functional matrix and transfers board, firmware and physical-media
+questions without an L3 claim.
+
+## Closure
+
+Coordinator review accepted S29 against T386's selected-device proposal,
+actual source/build changes, S21--S29 evidence, Queue and TODO.  T386 closes:
+every selected logical function has a current owner and proof, and no selected
+device remains merely composed.  The retained proposal companion records its
+admitted scope; the next Queue candidate is the DeskPro 386 board bus and
+device timing closure.
+
+This closure does not accept external-ROM execution, physical media fidelity,
+board timing or Model-40 L3 accuracy.  Those items remain in their named
+board, firmware and TODO receivers.  The task-level audit is retained in the
+[S29 evidence](../etc/evidence/t386-s29-functional-closure-audit.md).
