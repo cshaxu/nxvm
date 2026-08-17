@@ -200,3 +200,21 @@ S10 removes trailing whitespace introduced by S9 P3 from the retained acceptance
 ## Coordinator Acceptance
 
 The coordinator accepts P1 `f57e02a0` after actual-diff review, documentation governance and diff-hygiene verification. T390 remains open with the S9 terminal transfer unchanged.
+
+### S27: M40-C0 Direct-Row Regression
+
+S27 reconciles the complete corrected C0 batch: 82 children over the frozen
+75-parent/18,255-success checkpoint. The retained
+[direct-row evidence](../etc/evidence/t390-s27-c0-direct-row-regression.md)
+maps every child to an existing exact Intel-primary Core owner and its
+project-owned regression. The corrected LOOP parent is explicitly split into
+289 taken and four fall-through successes. No child becomes physical-eligible.
+
+## Coordinator Acceptance
+
+After actual-change review of P1 `7d9f2b19`, the coordinator accepts S27. The
+fresh scalar-only replay, focused source-owner regressions, full current gate,
+documentation governance and diff hygiene pass. T390 remains open; the next
+receiver is a separately admitted proof that the complete C0 batch can select
+the existing physical-retirement contract without widening the nonpublication
+boundary. No DeskPro board timing or L3 claim is accepted.

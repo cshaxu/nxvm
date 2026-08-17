@@ -47,3 +47,14 @@ this complete source-and-regression-qualified C0 batch, or an earlier receiver
 if that proof finds a new prerequisite. It must preserve the whole-batch
 nonpublication boundary and cannot derive a board-clock ratio from these Core
 rows.
+
+## Coordinator acceptance
+
+Coordinator actual-change review accepts P1 `7d9f2b19`. The committed surface
+is limited to the admitted S27 packet and this scalar-only evidence record;
+there is no production, ABI, profile, asset, or physical-clock change. The
+complete 82-child owner grouping was checked against the fresh C0 replay;
+focused T359 owner smokes, the T357 ledger smoke, the full 284/284 current
+CTest gate, documentation governance, and diff hygiene pass. S27 is accepted.
+T390 remains open for a separately admitted physical-contract selection proof;
+no C0 child, DeskPro board clock, or L3 gate is accepted here.
