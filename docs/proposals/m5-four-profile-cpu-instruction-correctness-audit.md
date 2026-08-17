@@ -12,7 +12,7 @@ device work relies on a prior completeness claim.
 
 This candidate follows the DeskPro 386 Model-40 L3 audit because that audit
 must not silently absorb a shared CPU defect. The separate
-[four-profile physical-timebase closure](m5-four-profile-cpu-physical-timebase-closure.md)
+[four-profile physical-timebase closure](../history/M5-T388-four-profile-cpu-physical-timebase-closure-proposal.md)
 precedes that audit and owns the CPU-clock eligibility prerequisite; this
 candidate remains semantic rather than a second timing program. It precedes
 current-product device profile/functional closure so retained product

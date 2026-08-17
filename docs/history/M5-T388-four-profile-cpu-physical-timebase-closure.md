@@ -151,3 +151,11 @@ Coordinator review accepts P1 `ec4bb030` against the S9 packet, source/debt
 sweep, documentation governance and full 281-target current gate. T388 is
 closed; its proposal is retained beside this history record. DeskPro board
 work is released only under the retained nonphysical CPU-time restriction.
+
+### S9 Closure-Record Correction
+
+After the accepted P1 audit, P2 archived the retained proposal. P3 restored the
+required idle state for a closed packet, and P4--P5 repair every retained
+proposal reference to that archival location. These documentation-only corrections
+do not alter P1's code, evidence, verification result or nonphysical-clock
+conclusion; documentation governance is re-run after the final repair.
