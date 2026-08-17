@@ -9,26 +9,12 @@ adds the static recurrence boundary; it assigns no physical scalar. T388 S2
 must classify and resolve or prohibit each reachable successful sentinel route
 before a profile may drive a physical board clock.
 
-## M5 T388 S2 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation; S1 is accepted retained progress for latest open T388. |
-| Admission And Approval | Owner authorization to continue according to Queue, 2026-08-16; S1 acceptance `6202b026` supplies the inventory and immediate receiver. |
-| Objective | Classify every current successful `CORE_MACHINE_SOURCE_UNALLOCATED_TICKS` route by exact form/context and primary evidence status, and define the single eligible/non-eligible publication contract without assigning an unsupported clock value. |
-| Non-goals | No invented cycle scalar, CPU semantic repair, board/device timing implementation, profile clock ratio, host-time coupling, ROM/media import, artifact revision or L3 claim. |
-| Reference Baseline | T359/T360/T361/T363 timing ledgers, T366 S9/S10, T368 S7, T388 S1 inventory, four-profile physical-timebase proposal, source policy and execution rules. |
-| Candidate Proposal | [Four-profile CPU physical-timebase closure](../proposals/m5-four-profile-cpu-physical-timebase-closure.md). |
-| Files And ABI Surface | Evidence/history/current/index and a static recurrence check; production source only if a bounded Core eligibility contract is required by the completed matrix. No VM profile, public ABI, asset or media change. |
-| Applicable Rules | EXECUTION/DOCUMENT/ARCHITECTURE/CODING, architecture/coding, source policy and differential-debug policy. |
-| Verification | Sweep every source fallback site and dispatch order; trace executable forms to the retained Intel-ledger disposition; prove classifier coverage with a focused static check; run documentation governance and applicable current-gate verification. |
-| Expected Markers | `M5:T388:S2:SUCCESSFUL-SENTINEL-MATRIX:OK`. |
-| Asset Needs | No ROM or guest media. Use retained Intel-labelled project evidence; secondary sources only under the proposal/source-policy condition if primary is range-only or silent. |
-| Reporting Requirements | Separate exact primary values/formulas, primary-under-determined prohibitions, non-retiring routes and CPU-semantic receivers. State whether each profile is physically eligible without converting a one-tick fallback into a clock. |
-| Stop Conditions | Stop and record a precise receiver for any form requiring an unsupported semantic/context capture or secondary-observation admission; do not turn a range, default, or profile-inapplicable route into a scalar. |
-| Exit Criteria | A complete, auditable successful-sentinel matrix maps every source fallback site and reachable profile form/context to a primary row/formula, explicit physical-clock prohibition, or exact later receiver; it defines the bounded next Core implementation if one remains. |
-| Original Owner Request | Continue autonomously toward full DeskPro function and L3 timing; find and resolve root causes without routine approval requests. |
-| Similar-Issue Sweep | Search tracked Core/VM production, tests, CMake gates and timing evidence for the sentinel, timing fallback, source classifiers, clock publication and profile frequency claims. |
+**Current progress:** T388 S2 is accepted: the complete direct successful-sentinel
+matrix proves that every profile retains at least one physical-clock-prohibited
+successful route. Its [evidence](../etc/evidence/t388-s2-successful-sentinel-matrix.md)
+assigns a single Core eligibility boundary as the next receiver. T388 S3 must
+make that status explicit at the sole publication site without pausing the
+deterministic timeline or letting VM relabel a fallback cost.
 ## Current Technical Baseline
 
 - **Current developer artifact:** T386 S28 `vm-0-5-0389` /
@@ -55,7 +41,7 @@ before a profile may drive a physical board clock.
 
 | Task | Compact result |
 | --- | --- |
-| T388 S1 | Accepted: P1 inventories the sole elapsed-time publisher, all four terminal classifiers, sentinel routes, six clock consumers and waiting-only virtual-time source. The shared tick remains mixed-unit; S2 must establish a complete source/formula/qualified-observation-or-prohibition disposition before physical-clock eligibility. [Evidence](../etc/evidence/t388-s1-physical-timebase-inventory.md). |
+| T388 S2 | Accepted: P1 classifies every direct successful one-tick fallback family and records that no complete profile retirement axis is physically eligible yet. It transfers one Core-owned eligibility boundary to S3, while preserving deterministic time and the later source/observation receivers. [Evidence](../etc/evidence/t388-s2-successful-sentinel-matrix.md). |
 | T387 | Closed: source/owner inventory, exact port-`61h` reconciliation and reference qualification transfer the shared physical-timebase then physical-device/firmware prerequisites before any DeskPro L3 audit. No physical-time or L3 claim. [Closure audit](../etc/evidence/t387-s6-task-closure-transfer-audit.md). |
 | T386 | Closed: S29 independently reconciles every selected Model-40 functional owner/proof, corrects the omitted S26 HDC current-gate registration and transfers only board, firmware and physical-media work to the next candidate/TODO. No L3 claim. [Closure audit](../etc/evidence/t386-s29-functional-closure-audit.md). |
 | T385 | Closed: the selected Model-40 80386DX-16 consumes the shared 80386 CPU/state/retirement owners without a DeskPro CPU fork; a clean current-source 251/251 gate passed, while functionality and board timing transfer unchanged. [Closure audit](../etc/evidence/t385-s1-task-closure-audit.md). |
