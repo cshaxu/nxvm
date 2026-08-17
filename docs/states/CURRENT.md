@@ -2,27 +2,7 @@
 
 ## Current Work
 
-## M5 T390 S23 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner standing approval for Queue-ordered T390 continuation; Td S103 now requires a durable convergence ledger for this coverage-bearing qualification task. |
-| Objective | Create the frozen M40-C0 coverage ledger: enumerate every normalized aggregate/context row, its Core origin/form attribution, allowed disposition and exact completion predicate for later batch mapping. |
-| Non-goals | No timing-row implementation or inference, physical contract enablement, C1 boot, board/device timing or L3 claim. |
-| Reference Baseline | Accepted T390 S16--S22, especially S17 finite C0 checkpoint, S19 form attribution, S21 coverage audit and S22 all-row origin attribution. |
-| Candidate Proposal | [80386 physical-retirement qualification](../proposals/m5-80386-physical-retirement-qualification.md). |
-| Files And ABI Surface | Indexed T390 evidence ledger/status only; no production, public ABI or profile surface. |
-| Applicable Rules | Execution Task-Scale Convergence And Coverage, documentation, architecture/coding and source policy: finite non-raw corpus, one Core owner, exact-or-nonphysical disposition. |
-| Verification | Fresh deleted normalized C0 replay; row-count/reconciliation check; ledger complete-batch review; documentation gate, diff and actual review. |
-| Expected Markers | protected-return-c0 with 75 aggregate rows and 18,255 successful classified retirements, plus a 75-entry project-owned coverage ledger. |
-| Asset Needs | Owner-authorized local ROM/media only for deleted normalized replay; no external identity, path, hash, byte, PC, raw trace or provenance enters Git. |
-| Reporting Requirements | Record the frozen universe, unit/context, each permitted disposition and T390 completion predicate; executor P1 then coordinator review/acceptance P2. |
-| Stop Conditions | A row cannot be expressed without raw external data, corpus changes without documented universe refinement, or a disposition needs an inferred timing row. |
-| Exit Criteria | One indexed ledger reconciles all 75 C0 rows and 18,255 successes; every entry has a current disposition and named next batch/receiver. |
-| Original Owner Request | Continue DeskPro 386 CPU qualification toward complete function and L3 timing under governed full-coverage convergence. |
-| Similar-Issue Sweep | Reconcile S16 checkpoint definition, S17/S19/S21/S22 aggregate keys, all C0 origins/forms and the T390 proposal completion standard. |
-
+**Active.** T390 remains open between accepted subtasks.
 ## Current Technical Baseline
 
 - **Current developer artifact:** T390 S22 `vm-0-5-0390` /
@@ -49,7 +29,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T390 S22 | Accepted: shared Core timing-origin attribution covers all finite C0 rows without inferring Intel rows. Exact origin/context matrix mapping transfers; no physical, board or L3 claim. [Evidence](../etc/evidence/t390-s22-classified-timing-origin.md). |
+| T390 S23 | Accepted: durable M40-C0 ledger reconciles all 75 aggregate units / 18,255 successes to named nonphysical batch disposition; exact Intel row/context mapping transfers. No physical, C1, board or L3 claim. [Evidence](../etc/evidence/t390-s23-m40-c0-convergence-ledger.md). |
 | T389 | Stopped by owner-approved requeue: S1 proves no physical board slice can begin while 80386 successful retirement remains nonphysical; S2 archives the invalid candidate and queues a shared CPU qualification before a fresh board task. No board timing, physical-clock or L3 claim. [Audit](../etc/evidence/t389-s2-stop-and-requeue-audit.md). |
 | T388 | Closed: S1--S9 establish the sole publisher, exhaustive exact-or-nonphysical residual disposition and pre-publication physical-contract rejection. No current CPU profile is physically clock-qualified; board work transfers under this restriction. [Closure audit](../etc/evidence/t388-s9-task-closure-audit.md). |
 | T387 | Closed: source/owner inventory, exact port-`61h` reconciliation and reference qualification transfer the shared physical-timebase then physical-device/firmware prerequisites before any DeskPro L3 audit. No physical-time or L3 claim. [Closure audit](../etc/evidence/t387-s6-task-closure-transfer-audit.md). |

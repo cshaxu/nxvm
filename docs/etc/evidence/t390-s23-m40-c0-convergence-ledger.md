@@ -108,3 +108,7 @@ A future change may refine this universe only with evidence that changes the adm
 ## Transfer
 
 The next receiver is one complete **T390 C0 exact-row/context matrix batch**: reconcile the 75 entries as a batch against Intel-primary authority, add project-owned regressions for any Accepted entries, and transfer each underdetermined class whole. Do not select individual repairs merely because a replay reaches a different terminal. This ledger does not qualify physical retirement, M40-C1 boot transfer, board/device timing or DeskPro L3.
+
+## Coordinator Acceptance
+
+Coordinator actual-diff review accepts P1 a7d9b1c1. The indexed evidence fixes one finite M40-C0 universe, retains all permitted normalized context without external asset data, and reconciles 75 aggregate units to 18,255 successful classified retirements. Each unit has an explicit nonphysical receiver; no tick value or opaque Core form identifier is treated as an Intel timing citation. Documentation governance, ledger cardinality/sum and artifact-boundary review pass. The next T390 work is one whole C0 exact-row/context matrix batch; physical retirement, C1, board/device timing and L3 remain unaccepted.
