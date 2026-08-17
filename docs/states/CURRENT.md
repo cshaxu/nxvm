@@ -2,28 +2,7 @@
 
 ## Current Work
 
-**T394 S4 active.** Implement the Core-owned normalized eligibility key and construction-time copied descriptor, retaining deterministic Model-40 behavior until a later C0 mapping admits physical selection.
-
-## M5 T394 S4 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner’s continuing instruction-correctness/timing audit authorization; T394 S3 acceptance (`6fe832c6`) selects this bounded Core implementation. No exception. |
-| Objective | Materialize the S3 value-only eligibility key in Core, validate and copy a finite descriptor at construction, and reject physical successful retirement when source timing is unallocated or its classified key is absent. |
-| Non-goals | No C0 descriptor contents, Model-40 physical selection, VM callback/state coupling, firmware/media handling, board timing, cycle changes or L3 claim. |
-| Reference Baseline | T394 S1 ledger, T394 S3 collision audit, existing retirement classifier/observation and prepublication physical rejection. |
-| Candidate Proposal | [80386 physical-retirement qualification](../proposals/m5-80386-physical-retirement-qualification.md). |
-| Files And ABI Surface | Core machine configuration/retirement interfaces and private state, focused machine regressions, CMake registration, current/history/evidence/index. The public descriptor is immutable input copied synchronously; no VM interface changes. |
-| Applicable Rules | Architecture invariants: Core owns decode/timing and copies external configuration; no mutable layout/pointer retention or reverse VM dependency. Coding: minimum durable interface and cohesive owner-local helpers. Execution: complete affected batch, focused regression, artifact and actual-change review. |
-| Verification | Focused key equality/normalization, invalid descriptor, copied-lifetime, reset, classified-absent-key nonpublication and unallocated rejection regressions; existing timing and both Model-40 deterministic composition tests; current gate/artifact and documentation governance. |
-| Expected Markers | `M5:T394:S4:ELIGIBILITY-KEY:OK`; `M5:T394:S4:PHYSICAL-ABSENT-KEY:OK`; Model-40 deterministic assertions remain green. |
-| Asset Needs | None. |
-| Reporting Requirements | Record owner/lifetime, validation-to-copy boundary, fault/nonpublication semantics, source sweep and full C0 mapping transfer. |
-| Stop Conditions | Stop if a key field requires raw/dynamic firmware data, descriptor copying cannot be failure-atomic, or an existing physical test needs a C0-specific descriptor. |
-| Exit Criteria | Key/descriptor implementation and focused proofs are committed, pushed and accepted; no profile becomes physical-qualified; C0 mapping remains explicitly transferred. |
-| Original Owner Request | Continue the global CPU correctness/timing audit, repair clear in-scope defects, and preserve the Core/VM boundary. |
-| Similar-Issue Sweep | Sweep all physical-retirement publication points, Core construction variants and Model-40 routes; repair the shared Core mechanism or transfer any excluded variant. |
+**T394 S4 accepted.** Core now owns the normalized eligibility key and copied descriptor enforcement; no profile is physical-qualified until a later finite C0-to-key mapping is admitted.
 
 ## Current Technical Baseline
 
@@ -51,7 +30,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T394 S3 | Accepted: Core-owned normalized eligibility-key schema and C0 collision dimensions are defined; materialization, copied descriptor and full mapping remain required before physical selection. Both Model-40 routes remain deterministic. [Evidence](../etc/evidence/t394-s3-normalized-eligibility-key-collision-audit.md). |
+| T394 S4 | Accepted: Core owns a value-only normalized eligibility key and construction-time copied descriptor; physical successful retirement rejects unallocated or absent-key sources before time publication. No production descriptor or profile selection exists; finite C0-to-key mapping transfers. [Evidence](../etc/evidence/t394-s4-core-eligibility-key-descriptor.md). |
 | T392 | Closed: S1-S5 exhaust copied C1, VM/session and FDC operation candidates, then repair the missed proposal archival and stale Queue entry; no endpoint or defect exists. Only a separately admitted generic immutable device-operation snapshot plus selected consumer contract can proceed. No Core/VM ABI, CPU timing, physical, board, firmware or L3 claim. [Corrective audit](../etc/evidence/t392-s5-closure-topology-corrective-audit.md). |
 | T391 | Closed: S1-S8 establish the bounded C0A startup predecessor, complete C1 aggregate disposition and the truthful transfer that C1 physical qualification remains blocked pending a new finite checkpoint or earliest-owner defect. No Core/VM interface, timing, physical, board, firmware or L3 claim. [Closure audit](../etc/evidence/t391-s8-startup-semantic-closure-audit.md). |
 | T389 | Stopped by owner-approved requeue: S1 proves no physical board slice can begin while 80386 successful retirement remains nonphysical; S2 archives the invalid candidate and queues a shared CPU qualification before a fresh board task. No board timing, physical-clock or L3 claim. [Audit](../etc/evidence/t389-s2-stop-and-requeue-audit.md). |

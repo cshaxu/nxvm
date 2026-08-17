@@ -66,3 +66,7 @@ and no physical, board or L3 claim is accepted.
 S4 implements the S3 Core-owned normalized key and immutable construction-time descriptor, with prepublication rejection for every physical unallocated or absent-key success. It makes no C0 membership, Model-40 physical, board or L3 claim.
 
 S4 materializes that key in Core and copies a finite descriptor during construction. Physical retirement now rejects both unallocated successful sources and classified keys absent from that descriptor before time publication. The descriptor contains no VM state or firmware identity; no C0 membership is selected, and both Model-40 paths remain deterministic pending a later C0 mapping.
+
+## Coordinator Acceptance
+
+After actual-change review of P1 `0b410c77`, the coordinator accepts S4. The Core-only descriptor is validated and copied atomically during construction; membership uses the S3 value key and physical retirement faults before publication for unallocated or absent-key sources. Focused timing, retirement-observation and both Model-40 deterministic composition regressions pass, as do the full current-gates build and documentation governance. The T394 artifact is `vm-0-5-0394`; no production descriptor, profile physical selection, board timing or L3 claim is accepted. The finite T390 C0-to-key mapping remains the next required receiver.
