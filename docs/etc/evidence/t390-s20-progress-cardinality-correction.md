@@ -7,3 +7,6 @@ This corrective slice changes only governed status/evidence records. It preserve
 ## Transfer
 
 The next functional T390 continuation remains finite C0 owner/Intel-row/context batch disposition. This correction does not admit that work.
+## Coordinator Acceptance
+
+Coordinator actual-change review accepts P1 01d93f46. The correction is documentation-only, preserves immutable S19 commits and its artifact baseline, leaves one retained predecessor row while the S20 packet is active, and keeps S18/S19 detail in indexed evidence. The documentation governance gate and diff check pass. On this acceptance, CURRENT.md records exactly one latest T390 subtask progress row.
