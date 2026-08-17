@@ -101,3 +101,12 @@ CPU-to-board ratio, or make a board/device/L3 claim. A later T390 continuation
 must extend the runner to the S2 checkpoint, retain normalized form/context
 coverage for new success, and reject or transfer the first underdetermined form
 before physical retirement may be selected.
+
+## Coordinator Acceptance
+
+Coordinator actual-change review accepts P1 `ab413f62`, corrective P2
+`4ad54ef1`, and formatting corrective P3 `e69facfd`. The review confirms the
+narrow Core classification scope, copied observation boundary, fail-fast
+unallocated behavior, no protected asset identity, and preserved transfer of
+the complete boot-sector corpus. T390 remains open; this acceptance makes no
+physical Model-40, board/device timing or L3 claim.

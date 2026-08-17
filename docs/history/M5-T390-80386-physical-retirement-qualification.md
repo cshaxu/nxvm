@@ -11,7 +11,7 @@ physical-device, firmware, ROM/media or L3 claim by itself.
 
 ## Active Subtask
 
-S4 is the contained Model-40 preboot corpus/matrix receiver defined by the active packet.
+No subtask is active. T390 remains open with S4 retained as compact accepted progress.
 ## Accepted Progress
 
 ### S1: 80386 Physical-Qualification Inventory
@@ -77,7 +77,8 @@ contracts, and the strict matrix keeps rather than excludes the new smoke.
 T390 remains open: the next receiver must conduct the owner-managed external
 BYOB corpus/matrix run and bind observed form/context to Intel-primary timing
 rows before any physical CPU or DeskPro board-time claim.
-### S4: Model-40 Preboot Retirement Matrix (Implementation Pending Acceptance)
+
+### S4: Model-40 Preboot Retirement Matrix
 
 S4's implementation P adds a normalized, operator-run BYOB Model-40
 preboot observer tool, records a finite 64-retirement real-mode prefix, and
@@ -87,10 +88,24 @@ retained [matrix evidence](../etc/evidence/t390-s4-model40-preboot-retirement-ma
 records its 17 normalized forms, focused physical-boundary regression, clean
 current gates and developer artifact. It expressly transfers the full
 boot-sector corpus; it makes no physical Model-40, board-timing or L3 claim.
-Coordinator actual-change review and acceptance remain required.
 
 P1 was not accepted: coordinator review found that an unallocated observation
 could continue to the fixed budget before the tool returned failure. Corrective
 P2 makes the first unallocated record terminal and proves that behavior with a
 temporary project-owned synthetic ROM pair, while retaining the normal external
-preboot replay.
+preboot replay. P3 corrects the final runner/evidence formatting identified by
+the same actual-change review.
+
+## Coordinator Acceptance
+
+After independent actual-change review of P1 `ab413f62`, corrective P2
+`4ad54ef1`, and formatting corrective P3 `e69facfd`, the coordinator accepts
+S4. The review confirms one Core source-timing owner, no public API addition,
+no external asset identity in Git, preserved physical rejection of the
+memory-source form, and fail-fast behavior at the first source-unallocated
+capture. Full current-gate, specialized-gate and documentation-governance
+replays pass.
+
+T390 remains open. The next receiver must reach the S2 boot-sector corpus
+checkpoint with owner-managed media before any physical Model-40 CPU, board,
+device or L3 claim is considered.
