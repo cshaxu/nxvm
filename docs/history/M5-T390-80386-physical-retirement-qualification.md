@@ -52,3 +52,28 @@ asset or trace, retains no local identity/hash/path, accurately distinguishes
 the generic trace's synchronous buffer from its missing pre-publication
 classification data, and does not make a physical, board or L3 claim.
 Documentation governance passes after push.
+
+### S3: 80386 Retirement Observation Provider
+
+S3 P1 adds the sole lifecycle-owned, opt-in Core observation provider for
+copied pre-execution instruction/context and exact-or-unallocated classifier
+disposition before physical rejection or publication.  P2 then reconciles all
+six baseline-reproduced current-gate failures at their earliest owners: the
+immutable-ROM and media contracts, port-`61h` PIT status expectations, and the
+TSS debug-trap diagnostic point.  It also retains the added observer smoke in
+the T345 strict-compilation inventory.  The [evidence](../etc/evidence/t390-s3-retirement-observation-provider.md)
+records `282/282` current tests, governance/specialized success, and the
+`vm-0-5-0390` developer artifact.  No external corpus, physical-row binding,
+board clock, firmware/media execution, or L3 claim is made.
+
+## Coordinator Acceptance
+
+After independent actual-change review of P1 `dabd1679` and corrective P2
+`b54b1db3`, the coordinator accepts S3.  The review confirms that the public
+observer ABI remains copied and lifecycle-bound; P2 changes the TSS `#DB`
+diagnostic snapshot only, leaving instruction state and exception delivery
+unchanged.  The five repaired smoke expectations match their existing Core
+contracts, and the strict matrix keeps rather than excludes the new smoke.
+T390 remains open: the next receiver must conduct the owner-managed external
+BYOB corpus/matrix run and bind observed form/context to Intel-primary timing
+rows before any physical CPU or DeskPro board-time claim.

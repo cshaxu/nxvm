@@ -87,6 +87,10 @@ This records the complete implementation P2 evidence.  Coordinator
 actual-change review and the subsequent governance acceptance remain required;
 this evidence does not claim physical qualification, board timing, firmware or
 media execution, or L3 closure.
+## Coordinator Acceptance
+
+Coordinator actual-change review accepts P1 `dabd1679` and corrective P2 `b54b1db3`: the observer ABI remains unchanged; the TSS correction changes only the copied diagnostic snapshot; all retained-smoke changes reconcile documented existing contracts; and the strict ownership guard retains the added test.  T390 remains open for the external corpus/matrix receiver.
+
 ## Transfer
 
 The next T390 receiver needs a contained external BYOB run and a finite
