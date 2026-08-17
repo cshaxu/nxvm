@@ -2,7 +2,26 @@
 
 ## Current Work
 
-**Active.** T390 remains open between accepted subtasks.
+## M5 T390 S24 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner standing approval for Queue-ordered T390 continuation; the accepted S23 convergence ledger requires the next complete C0 matrix batch. |
+| Objective | Reconcile every M40-C0 ledger entry as one exact Intel-primary timing-row/context matrix: record direct source sufficiency or whole-class underdetermination and the earliest receiver. |
+| Non-goals | No guessed timing, per-terminal repair, physical contract enablement, C1 boot, board/device timing or L3 claim. |
+| Reference Baseline | Accepted T390 S16--S23, especially the S23 75-unit M40-C0 convergence ledger and the existing T359/T360/T363 source ledgers. |
+| Candidate Proposal | [80386 physical-retirement qualification](../proposals/m5-80386-physical-retirement-qualification.md). |
+| Files And ABI Surface | Indexed evidence/status only; no production, public ABI, profile or asset surface. |
+| Applicable Rules | Execution Task-Scale Convergence And Coverage, documentation and source policy: Intel-primary authority; each C0 unit exact-or-nonphysical; no timing inference from emitted ticks. |
+| Verification | Complete 75-unit matrix reconciliation; identifier-set and count cross-check against S23; citation/context review; documentation gate, diff and actual review. |
+| Expected Markers | Every C0-001 through C0-075 has an Accepted, Non-applicable, Deferred/nonphysical or Blocked disposition with proof/receiver; no omitted or duplicate unit. |
+| Asset Needs | No new external asset use; prior S23 normalized non-raw ledger is the frozen corpus input. No external identity, path, hash, bytes, PC or raw trace enters Git. |
+| Reporting Requirements | Record exact source/capture sufficiency for the whole C0 batch, each non-accepted class receiver and before/after ledger state; executor P1 then coordinator review/acceptance P2. |
+| Stop Conditions | Intel primary material has no exact form/context row, or current normalized capture lacks a required row-selection fact; retain the affected whole class nonphysical and transfer it. |
+| Exit Criteria | One indexed matrix reconciles all 75 frozen C0 units and 18,255 successes, with every unit's source/capture disposition and named receiver; no physical, C1, board or L3 claim. |
+| Original Owner Request | Continue DeskPro 386 CPU qualification toward complete function and L3 timing under governed full-coverage convergence. |
+| Similar-Issue Sweep | Reconcile all five observed origin families, opaque form IDs, primary/escape/group forms, real/protected contexts and prior S6--S15 exact-row claims against the frozen C0 universe. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T390 S22 `vm-0-5-0390` /
