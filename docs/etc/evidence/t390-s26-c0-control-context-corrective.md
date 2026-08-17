@@ -32,3 +32,7 @@ Every affected child remains Deferred/nonphysical, together with every unchanged
 - `core-machine-retirement-observation-s3-smoke` passes its new taken/fall-through assertion and existing lifecycle/physical-boundary coverage.
 - A fresh owner-authorized local replay reaches the frozen `protected-return-c0` terminal with 18,255 successful classified retirements, zero source-unallocated successes and 82 refined aggregates. No asset identity, path, hash, bytes, PC, trace, or provenance is retained here.
 - The next T390 S must re-admit the complete 82-child direct-row regression batch. It must not reuse the invalid S25 outcome classification, select physical retirement, or resume first-terminal repair.
+
+## Coordinator Acceptance
+
+Coordinator actual-diff review accepts P1 `ce67d58d`. The repair uses the existing pure decoder lexeme scanner only at the shared Core observation owner, replaces no instruction semantics or time publisher, and leaves unavailable context non-inferential. The focused taken/fall-through regression proves the former diagnostic-window defect is closed; fresh scalar-only C0 replay preserves the 75-parent/18,255-success universe and exposes the correct 82-child refinement. The current-gates GCC build, full 284/284 CTest run, documentation gate, source-policy boundary and actual diff pass. S26 is accepted. All 82 children remain nonphysical and transfer as one C0 direct-row regression batch; no CPU physical qualification, C1, board/device timing or L3 conclusion is accepted.

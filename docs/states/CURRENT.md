@@ -4,26 +4,8 @@
 
 **Active.** T390 remains open between accepted subtasks. S25 accepts bounded copied Core context for the complete former missing-context class; the unchanged 75-parent/18,255-success C0 universe now has 81 nonphysical aggregates, all transferred together to the direct-row regression batch. [Evidence](../etc/evidence/t390-s25-c0-context-capture.md).
 
-## M5 T390 S26 Packet
+**Active.** T390 remains open between accepted subtasks. S26 corrects S25 control outcome from the diagnostic window to decoded lexical length; C0 remains 75 parents / 18,255 successes and is now 82 nonphysical aggregates, all transferred together to the direct-row regression batch. [Evidence](../etc/evidence/t390-s26-c0-control-context-corrective.md).
 
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner standing approval for Queue-ordered T390 continuation; S26 corrects the accepted S25 Core control-context defect discovered before the transferred direct-row batch began. |
-| Objective | Correct the shared Core control-outcome capture to use the existing decoded lexeme length rather than the 15-byte diagnostic window, then re-run the complete frozen C0 context reconciliation. |
-| Non-goals | No direct-row qualification, timing value selection, physical-retirement enablement, corpus/checkpoint expansion, new public interface, profile-specific behavior, board/device timing, C1 boot, or L3 claim. |
-| Reference Baseline | Accepted T390 S16--S25. S25's bounded context capture is retained except for its invalid control fall-through calculation from diagnostic `oplen`. |
-| Candidate Proposal | [80386 physical-retirement qualification](../proposals/m5-80386-physical-retirement-qualification.md). |
-| Files And ABI Surface | Shared Core retirement-observation context owner and focused observer/C0 aggregate tests only; reuse the existing lexeme scanner and add no test-only production API. |
-| Applicable Rules | Execution corrective-S and coverage convergence: invalidate the affected S25 class rather than carry it into S26 direct-row work; architecture/coding: one Core decode owner, copied bounded state and no raw pointers; source policy: no external asset data enters Git. |
-| Verification | Focused taken/fall-through observer regression proving decoded-length selection; aggregate synthetic proof; fresh scalar-only C0 replay and complete affected-ID before/after disposition; relevant build/current gate, documentation gate, diff and P1/P2 actual review. |
-| Expected Markers | A short conditional branch recognizes its true two-byte fall-through, a non-taken branch has no next-target lexeme, and every formerly context-complete control child is either corrected/reclassified or explicitly transferred. |
-| Asset Needs | Owner-authorized local ROM/media only for deleted scalar C0 replay; no path, hash, bytes, PC, trace or provenance enters Git. |
-| Reporting Requirements | Record root cause, shared owner, exact former S25 affected classes, corrected C0 aggregate reconciliation and residual transfer; executor P1 then coordinator P2. |
-| Stop Conditions | If the existing lexeme scanner cannot decode a successful control form or a wider decoder mechanism is necessary, keep its whole class nonphysical and transfer it; do not infer from diagnostic bytes, emitted ticks or a secondary emulator. |
-| Exit Criteria | Indexed evidence proves the corrected shared control context, focused taken/fall-through proof and full affected C0 before/after disposition; it must explicitly invalidate any S25 control classification that changes and make no physical eligibility claim. |
-| Original Owner Request | Continue DeskPro 386 CPU qualification toward complete function and L3 timing under governed full-coverage convergence. |
-| Similar-Issue Sweep | Sweep observer capture/publication order, diagnostic versus decoded byte domains, direct/conditional/loop/indirect control forms, next-lexeme availability, reset/physical rejection, C0 aggregate keys and existing context consumers. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T390 S22 `vm-0-5-0390` /
@@ -50,7 +32,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T390 S25 | Accepted: bounded Core context completes all 31 former S24 missing-context receivers and refines the unchanged C0 universe to 81 aggregates; all remain nonphysical pending one direct-row regression batch. No C1, board or L3 claim. [Evidence](../etc/evidence/t390-s25-c0-context-capture.md). |
+| T390 S26 | Accepted corrective: decoded lexical length replaces S25 diagnostic-window control outcome; C0 remains 75 parents / 18,255 successes and refines to 82 nonphysical aggregates. All transfer to one direct-row regression batch; no C1, board or L3 claim. [Evidence](../etc/evidence/t390-s26-c0-control-context-corrective.md). |
 | T389 | Stopped by owner-approved requeue: S1 proves no physical board slice can begin while 80386 successful retirement remains nonphysical; S2 archives the invalid candidate and queues a shared CPU qualification before a fresh board task. No board timing, physical-clock or L3 claim. [Audit](../etc/evidence/t389-s2-stop-and-requeue-audit.md). |
 | T388 | Closed: S1--S9 establish the sole publisher, exhaustive exact-or-nonphysical residual disposition and pre-publication physical-contract rejection. No current CPU profile is physically clock-qualified; board work transfers under this restriction. [Closure audit](../etc/evidence/t388-s9-task-closure-audit.md). |
 | T387 | Closed: source/owner inventory, exact port-`61h` reconciliation and reference qualification transfer the shared physical-timebase then physical-device/firmware prerequisites before any DeskPro L3 audit. No physical-time or L3 claim. [Closure audit](../etc/evidence/t387-s6-task-closure-transfer-audit.md). |
