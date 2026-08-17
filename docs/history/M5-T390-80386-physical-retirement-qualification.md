@@ -11,7 +11,7 @@ physical-device, firmware, ROM/media or L3 claim by itself.
 
 ## Active Subtask
 
-No subtask is active. T390 remains open with S5 retained as compact accepted progress.
+No subtask is active. T390 remains open with S6 retained as compact accepted progress.
 
 ## Accepted Progress
 
@@ -137,3 +137,24 @@ registration and diff hygiene pass.
 T390 remains open.  The next receiver must turn the normalized first terminal
 into a policy-compliant semantic identity, then prove or retain its Intel
 source-timing disposition before repeating the bounded corpus toward `0:7C00`.
+### S6: Model-40 SAL Register-One Qualification
+
+S6 adds an explicitly opt-in, terminal-only external diagnostic, identifies the
+first S5 terminal as real-mode register `SAL r/m8,1`, and adds its exact
+3-clock Intel Table-8-1 Core ledger row.  The retained
+[evidence](../etc/evidence/t390-s6-sal-register-one.md) proves that register
+form may pass the physical classifier while the memory counterpart remains
+prepublication-rejected.  A bounded replay reaches the next `CLD` terminal at
+122 successful retirements; it does not reach `0:7C00` or select physical
+Model-40 retirement.
+
+## Coordinator Acceptance
+
+After independent actual-change review of P1 `a4d508ea`, the coordinator
+accepts S6.  The review confirms one exact Core owner, a complete register
+versus memory physical boundary regression, default diagnostic redaction, no
+external data in Git, and a current artifact matching the retained hash.
+The full current gates, documentation governance and diff hygiene pass.
+
+T390 remains open.  The next receiver must identify and disposition `CLD`,
+then repeat the bounded corpus before considering the later terminal.

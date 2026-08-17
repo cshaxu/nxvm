@@ -44,3 +44,11 @@ exit.
 T390 transfers `CLD` semantic/timing disposition to its next bounded
 continuation.  Physical retirement selection, board timing, device timing and
 Model-40 L3 remain open.
+## Coordinator Acceptance
+
+Coordinator actual-change review accepts P1 `a4d508ea`.  It confirms the exact
+Table-8-1 register row has one Core owner, the memory counterpart remains
+nonphysical, default capture does not emit terminal bytes, owner-managed raw
+output remains external, and the evidence truthfully transfers `CLD` before
+any physical profile, board timing or L3 claim.  Full current gates,
+documentation governance and diff hygiene pass.
