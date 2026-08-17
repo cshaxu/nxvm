@@ -138,3 +138,16 @@ smoke, static gate, documentation governance and full 281-target current gate.
 It adds no public ABI, physical scalar, profile enablement, artifact revision
 or L3 claim. T388 remains open for prefix/default, x87 and physical-service
 receivers.
+### S9: Task Closure Audit
+
+S9 independently reconciles every S2 successful-sentinel family through S3's
+pre-publication physical rejection and S4--S8's exact-or-prohibited receiver
+records. It finds no selected profile that enables the physical retirement
+contract, and no unclassified success can reach board/device clocks in that
+contract. The [closure audit](../etc/evidence/t388-s9-task-closure-audit.md)
+therefore closes T388 with the truthful negative physical-clock conclusion.
+
+Coordinator review accepts P1 `ec4bb030` against the S9 packet, source/debt
+sweep, documentation governance and full 281-target current gate. T388 is
+closed; its proposal is retained beside this history record. DeskPro board
+work is released only under the retained nonphysical CPU-time restriction.

@@ -2,28 +2,8 @@
 
 ## Current Work
 
-**Current progress:** T388 S8 is accepted: successful 80386 `LSL` now captures descriptor G privately and the sole publisher selects fixed `20/21` byte or `25/26` page rows. Prefix/default, x87 and physical-service routes remain open. No profile is physically enabled and DeskPro board timing remains blocked on T388 completion.
+**Current progress:** T388 is closed: the shared CPU physical-timebase safety and attribution boundary is complete. All unproved successful retirement remains deterministically timed but explicitly nonphysical; no profile has a physical CPU-clock claim. The next queue candidate is DeskPro 386 board-level timing closure under that retained restriction.
 
-## M5 T388 S9 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation; S8 is accepted retained progress for latest open T388. |
-| Admission And Approval | Owner authorization to continue according to Queue, 2026-08-16. S1--S8 now provide the publisher inventory, exhaustive sentinel matrix, physical rejection, residual ledger and the last named 80286/80386 context captures. |
-| Objective | Independently audit T388 against its proposal completion standard; either close the task with a truthful no-current-profile physical-clock conclusion and explicit transfers, or retain the exact missing receiver in a later T388 S. |
-| Non-goals | No new timing scalar, physical contract/profile enablement, board/device work, CPU semantic repair, ROM/media import, artifact revision or L3 claim. |
-| Reference Baseline | T388 proposal; S1--S8 evidence/history; CURRENT, QUEUE and TODO; sole publisher and physical-eligibility implementation. |
-| Candidate Proposal | [Four-profile CPU physical-timebase closure](../proposals/m5-four-profile-cpu-physical-timebase-closure.md). |
-| Files And ABI Surface | Evidence/history/current/queue/proposal archival only unless audit finds a real source gap; no production or public ABI change. |
-| Applicable Rules | EXECUTION, DOCUMENT, ARCHITECTURE, CODING and source policy. Passing a gate is not sufficient: audit actual source, receiver matrix, debt and successor dependencies. |
-| Verification | Reconcile every S2/S4 residual family through current source and S3 physical rejection; verify S5--S8 receiver closure; search active task records for unclassified physical claims; run documentation governance and current gate. |
-| Expected Markers | `M5:T388:S9:TASK-CLOSURE-AUDIT:OK`. |
-| Asset Needs | Existing retained primary-source evidence only; no ROM, guest media, emulator run, trace or machine-local path. |
-| Reporting Requirements | State exact closure conclusion, all retained explicit prohibitions/transfers, no-profile physical-clock result, queue successor readiness and any blocker. |
-| Stop Conditions | Stop without closure on an unclassified successful route, a profile selecting physical mode, untracked source/semantic defect, missing evidence or a board/device prerequisite incorrectly folded into T388. |
-| Exit Criteria | Either a task-level closure proves every reachable residual success is exact or explicitly nonphysical before device clocks, with successor transfers and no false physical claim, or the next S packet names the specific unmet condition. |
-| Original Owner Request | Continue autonomously according to Queue toward full DeskPro functionality and L3 timing; use authoritative Intel sources first and find root causes without routine approval requests. |
-| Similar-Issue Sweep | Search tracked source, tests, CMake gates, T388 evidence/history/current, QUEUE and TODO for `source_timing_unallocated`, physical contracts, all four profile classifiers, residual receivers and physical-clock claims; classify every production hit. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T386 S28 `vm-0-5-0389` /
@@ -50,7 +30,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T388 S8 | Accepted: P1 captures successful 80386 `LSL` descriptor granularity privately and selects the primary `20/21` or `25/26` row at the sole publisher. Prefix/default, x87 and physical-service receivers remain open; no profile is physically enabled. [Evidence](../etc/evidence/t388-s8-80386-lsl-granularity-capture.md). |
+| T388 | Closed: S1--S9 establish the sole publisher, exhaustive exact-or-nonphysical residual disposition and pre-publication physical-contract rejection. No current CPU profile is physically clock-qualified; board work transfers under this restriction. [Closure audit](../etc/evidence/t388-s9-task-closure-audit.md). |
 | T387 | Closed: source/owner inventory, exact port-`61h` reconciliation and reference qualification transfer the shared physical-timebase then physical-device/firmware prerequisites before any DeskPro L3 audit. No physical-time or L3 claim. [Closure audit](../etc/evidence/t387-s6-task-closure-transfer-audit.md). |
 | T386 | Closed: S29 independently reconciles every selected Model-40 functional owner/proof, corrects the omitted S26 HDC current-gate registration and transfers only board, firmware and physical-media work to the next candidate/TODO. No L3 claim. [Closure audit](../etc/evidence/t386-s29-functional-closure-audit.md). |
 | T385 | Closed: the selected Model-40 80386DX-16 consumes the shared 80386 CPU/state/retirement owners without a DeskPro CPU fork; a clean current-source 251/251 gate passed, while functionality and board timing transfer unchanged. [Closure audit](../etc/evidence/t385-s1-task-closure-audit.md). |
