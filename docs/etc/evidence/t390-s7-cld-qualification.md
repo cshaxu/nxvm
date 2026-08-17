@@ -17,3 +17,7 @@ The owner-managed boot replay uses the existing normal Model-40 1.2 MB startup-m
 ## Verification
 
 The focused timing-ledger smoke, product build, full current-gate build, documentation-governance gate and diff hygiene pass. The capture runner is explicitly rebuilt before the external replay so the replay uses the S7 Core row; temporary output is removed after the process exits.
+
+## Coordinator Acceptance
+
+Coordinator actual-change review accepts P1 `b6deb9c4`. It confirms one private Core owner for the exact no-prefix CLD row, normal two-tick and physical/nonpublication regressions, preserved prefixed rejection, a rebuilt redacted external replay, and no external asset or trace in Git. The replay truthfully transfers only memory-source MOV Sreg,r/m16; no physical profile, board timing, boot-sector or L3 claim is accepted. Full current gates, documentation governance and diff hygiene pass.

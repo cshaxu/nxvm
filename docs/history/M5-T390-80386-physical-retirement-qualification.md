@@ -158,3 +158,22 @@ The full current gates, documentation governance and diff hygiene pass.
 
 T390 remains open.  The next receiver must identify and disposition `CLD`,
 then repeat the bounded corpus before considering the later terminal.
+### S7: Model-40 CLD Qualification
+
+S7 qualifies the S6-transferred real-address no-prefix `CLD` form through the
+Intel 80386 Programmer's Reference Manual's exact two-clock row. The private
+Core ledger/classifier and focused smoke prove ordinary two-tick retirement and
+physical admission, while a segment-prefixed counterpart remains rejected
+before time publication. A bounded, redacted owner-managed boot replay reaches
+426 successful retirements and transfers the next source-unallocated
+memory-source `MOV Sreg,r/m16` form. It reaches neither `0:7C00` nor a physical
+profile selection; no board timing or L3 claim is made.
+
+## Coordinator Acceptance
+
+After actual-change review of P1 `b6deb9c4`, the coordinator accepts S7. The
+review confirms the exact manual row, sole Core owner, prefix boundary,
+contained replay and external-asset exclusion. Full current gates,
+documentation governance and diff hygiene pass. T390 remains open; its next
+receiver must identify and disposition the transferred memory-source
+`MOV Sreg,r/m16` form before repeating the bounded corpus.
