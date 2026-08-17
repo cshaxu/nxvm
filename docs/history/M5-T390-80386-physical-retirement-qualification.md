@@ -218,3 +218,18 @@ documentation governance and diff hygiene pass. T390 remains open; the next
 receiver is a separately admitted proof that the complete C0 batch can select
 the existing physical-retirement contract without widening the nonpublication
 boundary. No DeskPro board timing or L3 claim is accepted.
+
+### S28: Model-40 Physical-Contract Selection
+
+S28 selects the existing Core physical-retirement contract through both
+Model-40 composition paths after S27's complete corrected C0 batch. A
+project-owned unallocated-success regression retains prepublication fault
+behavior; a scalar-only replay reaches the retained 75-parent/18,255-success
+C0 checkpoint under the selected contract. No board timing or L3 claim is made.
+
+## Coordinator Acceptance
+
+After actual-change review of P1 `da5dfd3a`, the coordinator accepts S28.
+Focused and full current gates, documentation governance and diff hygiene pass.
+T390 remains open; the next receiver must identify and disposition the first
+post-C0 successful form or admit C1 separately.

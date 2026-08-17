@@ -35,3 +35,13 @@ board-clock claim, advance C1, or qualify DMA, PIT, device, firmware, or L3
 time. The next T390 receiver is the first post-C0 unqualified successful form
 or a separately admitted C1 batch; it remains nonphysical unless its complete
 context, Intel-primary row and direct regression are established.
+## Coordinator Acceptance
+
+After actual-change review of P1 `da5dfd3a`, the coordinator accepts S28. Both
+Model-40 composition paths select the existing physical-retirement contract;
+the project-owned unallocated-success regression proves prepublication fault
+behavior, and the scalar C0 replay proves the complete accepted C0 batch
+continues under that selection. Full current gates, documentation governance
+and diff hygiene pass. T390 remains open: the next receiver must identify and
+disposition the first post-C0 successful form or admit C1 separately. No
+DeskPro board timing or L3 claim is accepted.

@@ -2,28 +2,8 @@
 
 ## Current Work
 
-**Active.** T390 remains open between accepted subtasks. S27 reconciles the complete corrected 82-child M40-C0 direct-row batch to existing Intel-primary Core owners and project-owned regressions; the retained 75-parent/18,255-success checkpoint has no physical-eligible child. [Evidence](../etc/evidence/t390-s27-c0-direct-row-regression.md).
+**Active.** T390 remains open between accepted subtasks. S28 selects the existing physical-retirement contract only for the complete accepted Model-40 C0 batch, retaining prepublication fault behavior for later unqualified successes. [Evidence](../etc/evidence/t390-s28-model40-physical-contract-selection.md).
 
-## M5 T390 S28 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner standing approval for Queue-ordered T390 continuation; accepted S27 supplies the complete corrected 82-child C0 direct-row and regression batch. |
-| Objective | Prove and enable the existing Core physical-retirement contract selection for the Model-40 C0-qualified CPU path, while preserving prepublication failure for every later unqualified success. |
-| Non-goals | No board-clock ratio, device/DMA/PIT time, C1 qualification, firmware/media persistence, public ABI, new CPU timing value, or L3 claim. |
-| Reference Baseline | Accepted T388 physical-eligibility boundary and T390 S23--S27 complete C0 ledger, context, regression and replay evidence. |
-| Candidate Proposal | [80386 physical-retirement qualification](../proposals/m5-80386-physical-retirement-qualification.md). |
-| Files And ABI Surface | Existing Model-40/Core configuration owner, sole Core physical publication boundary, focused owned product/Core regressions and indexed evidence; no new public interface. |
-| Applicable Rules | Execution coverage convergence: consume the complete accepted C0 batch before selection; architecture/coding: one Core time publisher and composition-only selection; source policy: no local ROM/media identity enters Git. |
-| Verification | Model-40 selection proof for a C0 exact row; next unqualified successful row faults before executed/ticks/elapsed/device/provider publication; deterministic profiles remain unchanged; C0 scalar replay, focused and full gates, documentation gate, diff and P1/P2 review. |
-| Expected Markers | Physical contract is selectable only through the admitted Model-40 owner after the complete C0 batch, and no unqualified success can publish elapsed time. |
-| Asset Needs | Owner-authorized local ROM/media only for deleted scalar C0 replay; no path, hash, bytes, PC, trace or provenance enters Git. |
-| Reporting Requirements | Record selected owner, positive C0 proof, next-unqualified nonpublication proof, complete C0 before/after disposition, residual C1 transfer and P1/P2 review. |
-| Stop Conditions | Any required selected C0 row is not directly proved, selection requires board/device semantics, a C1 success is source-underdetermined, or an existing profile behavior changes outside the Model-40 owner: preserve deterministic/nonpublication behavior and transfer the class. |
-| Exit Criteria | Indexed evidence proves the accepted complete C0 batch is the sole admitted Model-40 physical-contract selection input and proves first later unqualified success remains prepublication-rejected; no board or L3 claim. |
-| Original Owner Request | Continue DeskPro 386 CPU qualification toward complete function and L3 timing under governed full-coverage convergence. |
-| Similar-Issue Sweep | Sweep every retirement-time contract initializer, Model-40/Core composition caller, elapsed/device/provider publication route, C0 source owner and non-C0 fallback. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T390 S22 `vm-0-5-0390` /
@@ -50,7 +30,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T390 S27 | Accepted: complete corrected 82-child C0 direct-row reconciliation to existing exact Intel-primary Core owners and project-owned regressions. The retained 75-parent/18,255-success checkpoint remains wholly nonphysical; physical-contract selection transfers to the next admitted S. [Evidence](../etc/evidence/t390-s27-c0-direct-row-regression.md). |
+| T390 S28 | Accepted: both Model-40 composition paths select the existing physical-retirement contract after the complete C0 batch; unqualified successes remain prepublication-rejected. The retained C0 replay reaches 75 parents / 18,255 successes, with no board or L3 claim. [Evidence](../etc/evidence/t390-s28-model40-physical-contract-selection.md). |
 | T389 | Stopped by owner-approved requeue: S1 proves no physical board slice can begin while 80386 successful retirement remains nonphysical; S2 archives the invalid candidate and queues a shared CPU qualification before a fresh board task. No board timing, physical-clock or L3 claim. [Audit](../etc/evidence/t389-s2-stop-and-requeue-audit.md). |
 | T388 | Closed: S1--S9 establish the sole publisher, exhaustive exact-or-nonphysical residual disposition and pre-publication physical-contract rejection. No current CPU profile is physically clock-qualified; board work transfers under this restriction. [Closure audit](../etc/evidence/t388-s9-task-closure-audit.md). |
 | T387 | Closed: source/owner inventory, exact port-`61h` reconciliation and reference qualification transfer the shared physical-timebase then physical-device/firmware prerequisites before any DeskPro L3 audit. No physical-time or L3 claim. [Closure audit](../etc/evidence/t387-s6-task-closure-transfer-audit.md). |
