@@ -214,6 +214,7 @@ typedef enum core_machine_source_timing_form {
     CORE_MACHINE_SOURCE_TIMING_RCL_REGISTER_ONE_32,
     CORE_MACHINE_SOURCE_TIMING_CLI,
     CORE_MACHINE_SOURCE_TIMING_SAHF,
+    CORE_MACHINE_SOURCE_TIMING_LAHF,
     CORE_MACHINE_SOURCE_TIMING_MOV_SREG_REGISTER,
     CORE_MACHINE_SOURCE_TIMING_MOV_SREG_MEMORY,
     CORE_MACHINE_SOURCE_TIMING_MOV_IMMEDIATE,
@@ -467,6 +468,7 @@ static const core_machine_source_timing_entry
     { CORE_MACHINE_SOURCE_TIMING_RCL_REGISTER_ONE_32, 9u },
     { CORE_MACHINE_SOURCE_TIMING_CLI, 3u },
     { CORE_MACHINE_SOURCE_TIMING_SAHF, 3u },
+    { CORE_MACHINE_SOURCE_TIMING_LAHF, 2u },
     { CORE_MACHINE_SOURCE_TIMING_MOV_SREG_REGISTER, 2u },
     { CORE_MACHINE_SOURCE_TIMING_MOV_SREG_MEMORY, 5u },
     { CORE_MACHINE_SOURCE_TIMING_MOV_IMMEDIATE, 2u },
@@ -2957,6 +2959,10 @@ static C_INT core_machine_80386_source_instruction_cost(core_machine *machine,
     case 0x9eu:
         *out_ticks = core_machine_80386_source_timing_lookup(machine,
             CORE_MACHINE_SOURCE_TIMING_SAHF);
+        return 1;
+    case 0x9fu:
+        *out_ticks = core_machine_80386_source_timing_lookup(machine,
+            CORE_MACHINE_SOURCE_TIMING_LAHF);
         return 1;
     case 0x8eu:
         if (!core_machine_source_timing_modrm_is_memory(data, prefixes)) {
