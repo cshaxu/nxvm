@@ -16,6 +16,11 @@ typedef struct model40_retirement_capture_form {
     type_unsigned_8 group_extension;
     type_unsigned_32 source_timing_form_id;
     core_machine_retirement_timing_origin timing_origin;
+    core_machine_retirement_modrm_form modrm_form;
+    type_unsigned_8 modrm_extension;
+    core_machine_retirement_control_outcome control_outcome;
+    type_unsigned_8 next_lexeme_components;
+    core_machine_retirement_repeat_phase repeat_phase;
     type_unsigned_64 ticks;
     type_unsigned_8 cpl;
     type_bool protected_mode;
@@ -185,6 +190,11 @@ static C_INT model40_capture_form_matches(
         form->group_extension == group_extension &&
         form->source_timing_form_id == source_timing_form_id &&
         form->timing_origin == timing_origin &&
+        form->modrm_form == observation->modrm_form &&
+        form->modrm_extension == observation->modrm_extension &&
+        form->control_outcome == observation->control_outcome &&
+        form->next_lexeme_components == observation->next_lexeme_components &&
+        form->repeat_phase == observation->repeat_phase &&
         form->ticks == observation->source_ticks && form->cpl == observation->cpl &&
         form->protected_mode == observation->protected_mode &&
         form->virtual_8086_mode == observation->virtual_8086_mode &&
@@ -253,6 +263,9 @@ static C_VOID model40_capture_observe(C_VOID *opaque,
     capture->forms[capture->form_count++] = (model40_retirement_capture_form) {
         name, operand, opcode, escape_opcode, group_extension,
         observation->source_timing_form_id, observation->timing_origin,
+        observation->modrm_form, observation->modrm_extension,
+        observation->control_outcome, observation->next_lexeme_components,
+        observation->repeat_phase,
         observation->source_ticks, observation->cpl,
         observation->protected_mode, observation->virtual_8086_mode,
         observation->operand_size_32, observation->address_size_32,
@@ -282,11 +295,14 @@ static C_VOID model40_capture_emit(const model40_retirement_capture *capture)
     for (index = 0u; index < capture->form_count; ++index) {
         const model40_retirement_capture_form *form = &capture->forms[index];
 
-        STD_PRINTF("T390 form=%s operand=%s opcode=%02X escape=%02X group=%u source-form=%u origin=%u ticks=%llu cpl=%u pm=%u vm=%u os32=%u "
+        STD_PRINTF("T390 form=%s operand=%s opcode=%02X escape=%02X group=%u source-form=%u origin=%u modrm=%u modrm-ext=%u control=%u next=%u repeat-phase=%u ticks=%llu cpl=%u pm=%u vm=%u os32=%u "
             "as32=%u lock=%u rep=%u disposition=%u count=%u\n",
             form->form, form->operand, (unsigned)form->opcode,
             (unsigned)form->escape_opcode, (unsigned)form->group_extension,
             (unsigned)form->source_timing_form_id, (unsigned)form->timing_origin,
+            (unsigned)form->modrm_form, (unsigned)form->modrm_extension,
+            (unsigned)form->control_outcome, (unsigned)form->next_lexeme_components,
+            (unsigned)form->repeat_phase,
             (unsigned long long)form->ticks, (unsigned)form->cpl, (unsigned)form->protected_mode,
             (unsigned)form->virtual_8086_mode, (unsigned)form->operand_size_32,
             (unsigned)form->address_size_32, (unsigned)form->lock_prefix,
@@ -329,7 +345,12 @@ static C_INT model40_capture_synthetic_c0_smoke(C_VOID)
     observation.point.bytes[0] = 0x0fu;
     observation.point.bytes[1] = 0x20u;
     observation.point.byte_count = 2u;
+    observation.modrm_form = CORE_MACHINE_RETIREMENT_MODRM_REGISTER;
+    observation.modrm_extension = 0u;
     model40_capture_observe(&capture, &observation);
+    observation.modrm_extension = 2u;
+    model40_capture_observe(&capture, &observation);
+    observation.modrm_extension = CORE_MACHINE_RETIREMENT_CONTEXT_UNAVAILABLE;
     observation.protected_mode = TYPE_FALSE;
     observation.timing_origin =
         CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK;
@@ -340,9 +361,9 @@ static C_INT model40_capture_synthetic_c0_smoke(C_VOID)
         CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY;
     observation.point.bytes[0] = 0x90u;
     model40_capture_observe(&capture, &observation);
-    if (!capture.checkpoint_reached || capture.count != 4u ||
-        capture.classified != 4u || capture.unallocated != 0u ||
-        capture.form_count != 4u) return 1;
+    if (!capture.checkpoint_reached || capture.count != 5u ||
+        capture.classified != 5u || capture.unallocated != 0u ||
+        capture.form_count != 5u) return 1;
     STD_PRINTF("M5:T390:S17:M40-C0-CAPTURE:OK\n");
     return 0;
 }

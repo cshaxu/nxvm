@@ -944,6 +944,8 @@ static type_unsigned_64 core_machine_source_timing_repeat_string(
     address_size = data->oldcpu.data.cs.seg.exec.defsize !=
         (data->prefix_addrsize != TYPE_FALSE);
     if (data->prefix_rep == PREFIX_REP_NONE) {
+        machine->source_timing_repeat_phase =
+            CORE_MACHINE_RETIREMENT_REPEAT_PRIMITIVE;
         machine->source_repeat_active = TYPE_FALSE;
         return entry->primitive_ticks;
     }
@@ -956,6 +958,10 @@ static type_unsigned_64 core_machine_source_timing_repeat_string(
         machine->source_repeat_prefix == (type_unsigned_8)data->prefix_rep &&
         machine->source_repeat_operand_size == operand_size &&
         machine->source_repeat_address_size == address_size;
+    machine->source_timing_repeat_phase = count == 0u ?
+        CORE_MACHINE_RETIREMENT_REPEAT_ZERO_COUNT : continuing ?
+        CORE_MACHINE_RETIREMENT_REPEAT_CONTINUATION :
+        CORE_MACHINE_RETIREMENT_REPEAT_FIRST;
     ticks = count == 0u ? entry->repeat_setup_ticks : continuing ?
         entry->repeat_iteration_ticks : entry->repeat_setup_ticks +
         entry->repeat_iteration_ticks;
@@ -3083,6 +3089,7 @@ static C_INT core_machine_instruction_cost(core_machine *machine,
     machine->source_timing_origin =
         CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_UNATTRIBUTED;
     machine->source_timing_form_id = CORE_MACHINE_RETIREMENT_SOURCE_FORM_UNATTRIBUTED;
+    machine->source_timing_repeat_phase = CORE_MACHINE_RETIREMENT_REPEAT_NONE;
     if (core_machine_string_io_source_instruction_cost(machine, out_ticks)) {
         machine->source_timing_origin = CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO;
         return 1;

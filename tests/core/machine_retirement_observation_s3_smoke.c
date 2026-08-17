@@ -75,6 +75,13 @@ C_INT main(C_VOID)
         probe.records[0].source_timing_form_id != 0u ||
         probe.records[0].timing_origin !=
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80386_FALLBACK ||
+        probe.records[0].modrm_form != CORE_MACHINE_RETIREMENT_MODRM_UNAVAILABLE ||
+        probe.records[0].modrm_extension !=
+            CORE_MACHINE_RETIREMENT_CONTEXT_UNAVAILABLE ||
+        probe.records[0].control_outcome != CORE_MACHINE_RETIREMENT_CONTROL_NONE ||
+        probe.records[0].next_lexeme_components !=
+            CORE_MACHINE_RETIREMENT_CONTEXT_UNAVAILABLE ||
+        probe.records[0].repeat_phase != CORE_MACHINE_RETIREMENT_REPEAT_NONE ||
         probe.records[0].elapsed_ticks != 0u || probe.records[0].timeline_ticks != 0u ||
         probe.records[0].source_ticks == 0u || probe.records[0].protected_mode ||
         probe.records[0].virtual_8086_mode || probe.records[0].operand_size_32 ||
@@ -109,6 +116,13 @@ C_INT main(C_VOID)
             CORE_MACHINE_RETIREMENT_SOURCE_FORM_UNATTRIBUTED ||
         probe.records[0].timing_origin !=
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80386_FALLBACK ||
+        probe.records[0].modrm_form != CORE_MACHINE_RETIREMENT_MODRM_UNAVAILABLE ||
+        probe.records[0].modrm_extension !=
+            CORE_MACHINE_RETIREMENT_CONTEXT_UNAVAILABLE ||
+        probe.records[0].control_outcome != CORE_MACHINE_RETIREMENT_CONTROL_NONE ||
+        probe.records[0].next_lexeme_components !=
+            CORE_MACHINE_RETIREMENT_CONTEXT_UNAVAILABLE ||
+        probe.records[0].repeat_phase != CORE_MACHINE_RETIREMENT_REPEAT_NONE ||
         probe.records[0].elapsed_ticks != 0u || probe.records[0].timeline_ticks != 0u;
     failed |= core_machine_get_timeline_observation(machine, &timeline) != TYPE_STATUS_OK ||
         timeline.now != 0u;

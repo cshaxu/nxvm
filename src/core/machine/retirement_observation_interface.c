@@ -47,6 +47,108 @@ type_status core_machine_set_retirement_observation_provider(
     return TYPE_STATUS_OK;
 }
 
+static type_unsigned_8 core_machine_retirement_observation_prefix_count(
+    const t_cpuins_data *data)
+{
+    type_unsigned_8 count = 0u;
+
+    if (data == STD_NULL) return 0u;
+    while (count < data->oplen) {
+        switch (data->opcodes[count]) {
+        case 0x26u: case 0x2eu: case 0x36u: case 0x3eu: case 0x64u: case 0x65u:
+        case 0x66u: case 0x67u: case 0xf0u: case 0xf2u: case 0xf3u:
+            ++count;
+            break;
+        default:
+            return count;
+        }
+    }
+    return count;
+}
+
+static C_INT core_machine_retirement_observation_modrm_index(
+    const t_cpuins_data *data, type_unsigned_8 opcode_index,
+    type_unsigned_8 *out_index)
+{
+    type_unsigned_8 opcode;
+
+    if (data == STD_NULL || out_index == STD_NULL || opcode_index >= data->oplen) {
+        return 0;
+    }
+    opcode = data->opcodes[opcode_index];
+    if (opcode == 0x0fu) {
+        if (opcode_index + 2u >= data->oplen) return 0;
+        switch (data->opcodes[opcode_index + 1u]) {
+        case 0x01u: case 0x20u: case 0x22u:
+            *out_index = (type_unsigned_8)(opcode_index + 2u);
+            return 1;
+        default:
+            return 0;
+        }
+    }
+    switch (opcode) {
+    case 0x80u: case 0x81u: case 0x83u: case 0x88u: case 0x8au: case 0x8bu:
+    case 0x8eu: case 0xd0u: case 0xf6u: case 0xf7u: case 0xfeu: case 0xffu:
+        if (opcode_index + 1u >= data->oplen) return 0;
+        *out_index = (type_unsigned_8)(opcode_index + 1u);
+        return 1;
+    default:
+        return 0;
+    }
+}
+
+static C_VOID core_machine_retirement_observation_capture_context(
+    core_machine *machine, const t_cpu *cpu, const t_cpuins *instructions,
+    core_machine_retirement_observation *observation)
+{
+    const t_cpuins_data *data;
+    core_machine_cpu_instruction_lexeme lexeme;
+    type_unsigned_8 opcode_index;
+    type_unsigned_8 opcode;
+    type_unsigned_8 modrm_index;
+    type_unsigned_32 fallthrough;
+    if (machine == STD_NULL || cpu == STD_NULL || instructions == STD_NULL ||
+        observation == STD_NULL) return;
+    data = &instructions->data;
+    observation->modrm_form = CORE_MACHINE_RETIREMENT_MODRM_UNAVAILABLE;
+    observation->modrm_extension = CORE_MACHINE_RETIREMENT_CONTEXT_UNAVAILABLE;
+    observation->control_outcome = CORE_MACHINE_RETIREMENT_CONTROL_NONE;
+    observation->next_lexeme_components = CORE_MACHINE_RETIREMENT_CONTEXT_UNAVAILABLE;
+    observation->repeat_phase = CORE_MACHINE_RETIREMENT_REPEAT_NONE;
+    opcode_index = core_machine_retirement_observation_prefix_count(data);
+    if (opcode_index >= data->oplen) return;
+    opcode = data->opcodes[opcode_index];
+    if (core_machine_retirement_observation_modrm_index(data, opcode_index,
+            &modrm_index)) {
+        observation->modrm_form = (data->opcodes[modrm_index] & 0xc0u) == 0xc0u ?
+            CORE_MACHINE_RETIREMENT_MODRM_REGISTER :
+            CORE_MACHINE_RETIREMENT_MODRM_MEMORY;
+        observation->modrm_extension = (type_unsigned_8)(
+            (data->opcodes[modrm_index] >> 3u) & 7u);
+    }
+    switch (opcode) {
+    case 0x70u: case 0x71u: case 0x72u: case 0x73u: case 0x74u: case 0x75u:
+    case 0x76u: case 0x77u: case 0x78u: case 0x79u: case 0x7au: case 0x7bu:
+    case 0x7cu: case 0x7du: case 0x7eu: case 0x7fu:
+    case 0xe0u: case 0xe1u: case 0xe2u: case 0xe3u:
+        fallthrough = data->oldcpu.data.eip + data->oplen;
+        if (!data->oldcpu.data.cs.seg.exec.defsize) fallthrough &= 0xffffu;
+        observation->control_outcome = cpu->data.eip == fallthrough ?
+            CORE_MACHINE_RETIREMENT_CONTROL_FALLTHROUGH :
+            CORE_MACHINE_RETIREMENT_CONTROL_TAKEN;
+        break;
+    case 0xe9u: case 0xeau: case 0xebu: case 0xffu:
+        observation->control_outcome = CORE_MACHINE_RETIREMENT_CONTROL_TAKEN;
+        break;
+    default:
+        break;
+    }
+    if (observation->control_outcome == CORE_MACHINE_RETIREMENT_CONTROL_TAKEN &&
+        core_machine_cpu_execution_preview_lexeme(&machine->executor_cpu_execution,
+            &lexeme) && lexeme.available) {
+        observation->next_lexeme_components = lexeme.component_count;
+    }
+}
 C_VOID core_machine_retirement_observation_capture_instruction(core_machine *machine,
     const t_cpu *cpu, const t_cpuins *instructions)
 {
@@ -68,6 +170,7 @@ C_VOID core_machine_retirement_observation_capture_instruction(core_machine *mac
         instructions->data.prefix_addrsize;
     observation->lock_prefix = instructions->data.flagLock;
     observation->repeat_prefix = (type_unsigned_8)instructions->data.prefix_rep;
+
     machine->retirement_observation.pending = TYPE_TRUE;
 }
 
@@ -90,6 +193,9 @@ C_VOID core_machine_retirement_observation_publish(core_machine *machine,
         CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED;
     observation->timing_origin = machine->source_timing_origin;
     observation->source_timing_form_id = machine->source_timing_form_id;
+    core_machine_retirement_observation_capture_context(machine, &machine->executor_cpu,
+        &machine->executor_cpu_instructions, observation);
+    observation->repeat_phase = machine->source_timing_repeat_phase;
     state->provider.callback(state->provider.context, observation);
     state->pending = TYPE_FALSE;
 }

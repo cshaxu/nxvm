@@ -31,9 +31,30 @@ typedef enum core_machine_retirement_timing_origin {
     CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_COMPATIBILITY
 } core_machine_retirement_timing_origin;
 
+typedef enum core_machine_retirement_modrm_form {
+    CORE_MACHINE_RETIREMENT_MODRM_UNAVAILABLE = 0,
+    CORE_MACHINE_RETIREMENT_MODRM_REGISTER,
+    CORE_MACHINE_RETIREMENT_MODRM_MEMORY
+} core_machine_retirement_modrm_form;
+
+typedef enum core_machine_retirement_control_outcome {
+    CORE_MACHINE_RETIREMENT_CONTROL_NONE = 0,
+    CORE_MACHINE_RETIREMENT_CONTROL_FALLTHROUGH,
+    CORE_MACHINE_RETIREMENT_CONTROL_TAKEN
+} core_machine_retirement_control_outcome;
+
+typedef enum core_machine_retirement_repeat_phase {
+    CORE_MACHINE_RETIREMENT_REPEAT_NONE = 0,
+    CORE_MACHINE_RETIREMENT_REPEAT_PRIMITIVE,
+    CORE_MACHINE_RETIREMENT_REPEAT_ZERO_COUNT,
+    CORE_MACHINE_RETIREMENT_REPEAT_FIRST,
+    CORE_MACHINE_RETIREMENT_REPEAT_CONTINUATION
+} core_machine_retirement_repeat_phase;
+
 /* The timing form is an opaque Core-owned identifier. A classified path
  * without a ledger lookup intentionally reports this sentinel. */
 #define CORE_MACHINE_RETIREMENT_SOURCE_FORM_UNATTRIBUTED ((type_unsigned_32)-1)
+#define CORE_MACHINE_RETIREMENT_CONTEXT_UNAVAILABLE ((type_unsigned_8)-1)
 
 typedef struct core_machine_retirement_observation {
     type_unsigned_64 sequence;
@@ -45,6 +66,11 @@ typedef struct core_machine_retirement_observation {
     core_machine_retirement_timing_disposition timing_disposition;
     core_machine_retirement_timing_origin timing_origin;
     type_unsigned_32 source_timing_form_id;
+    core_machine_retirement_modrm_form modrm_form;
+    type_unsigned_8 modrm_extension;
+    core_machine_retirement_control_outcome control_outcome;
+    type_unsigned_8 next_lexeme_components;
+    core_machine_retirement_repeat_phase repeat_phase;
     type_unsigned_8 cpl;
     type_bool protected_mode;
     type_bool virtual_8086_mode;

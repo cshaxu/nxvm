@@ -95,6 +95,7 @@ struct core_machine {
     type_bool source_timing_unallocated;
     core_machine_retirement_timing_origin source_timing_origin;
     type_unsigned_32 source_timing_form_id;
+    core_machine_retirement_repeat_phase source_timing_repeat_phase;
     type_bool source_repeat_active;
     type_unsigned_16 source_repeat_cs;
     type_unsigned_32 source_repeat_eip;

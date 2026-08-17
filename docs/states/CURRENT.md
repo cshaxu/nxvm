@@ -2,7 +2,26 @@
 
 ## Current Work
 
-**Active.** T390 remains open between accepted subtasks.
+## M5 T390 S25 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner standing approval for Queue-ordered T390 continuation; accepted S24 assigns complete shared Core capture receivers for every Blocked C0 unit. |
+| Objective | Add one bounded copied Core timing-context record sufficient for the four S24 C0 capture classes: control outcome/lexeme, ModR/M shape and selector, and string repeat phase; aggregate these facts in the existing Model-40 capture. |
+| Non-goals | No timing values, instruction semantics, physical contract change, profile-specific classifier, raw trace persistence, C1 boot, board/device timing or L3 claim. |
+| Reference Baseline | Accepted T390 S16--S24, especially S23 frozen corpus and S24 complete 44/31 source-sufficiency matrix. |
+| Candidate Proposal | [80386 physical-retirement qualification](../proposals/m5-80386-physical-retirement-qualification.md). |
+| Files And ABI Surface | Shared Core copied retirement-observation contract/private timing state, existing Model-40 aggregate tool and owned focused regressions only; no VM/profile public behavior. |
+| Applicable Rules | Execution Task-Scale Convergence And Coverage, architecture/coding and source policy: one Core owner; copied bounded scalars only; reset/disabled-provider neutrality; exact-or-nonphysical. |
+| Verification | Focused Core observer reset/lifecycle/synthetic aggregation proofs; fresh deleted C0 replay and S24 affected-class matrix reconciliation; relevant build/current gate; documentation gate, diff and actual review. |
+| Expected Markers | Every prior S24 Blocked unit gains only its named normalized fact or remains explicitly blocked; no raw external data and no physical elapsed-time selection. |
+| Asset Needs | Owner-authorized local ROM/media only for deleted C0 replay; no external identity, path, hash, bytes, PC, raw trace or provenance enters Git. |
+| Reporting Requirements | Record owner, fields, reset/publication boundary, full affected-ID before/after disposition and residual transfer; executor P1 then coordinator review/acceptance P2. |
+| Stop Conditions | A needed fact cannot be copied as a bounded Core scalar before publication, changes instruction behavior, or needs an unmodeled Intel/bus condition; keep the whole class nonphysical and transfer it. |
+| Exit Criteria | One indexed evidence record proves bounded context capture and complete affected-class reconciliation for all 31 S24 Blocked units, while the 44 direct rows remain nonphysical pending their regression batch. |
+| Original Owner Request | Continue DeskPro 386 CPU qualification toward complete function and L3 timing under governed full-coverage convergence. |
+| Similar-Issue Sweep | Sweep every successful classifier origin, observer lifecycle/reset path, C0 aggregate key, source-form sentinel, prefix/modrm/control/string contexts and physical-rejection ordering. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T390 S22 `vm-0-5-0390` /
