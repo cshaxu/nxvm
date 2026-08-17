@@ -103,3 +103,13 @@ reset and clears it when a new generic media candidate commits. P1
 gate and retained HDC/FDC/D4 controls pass. Physical-media semantics and
 DeskPro service/bus timing remain transferred, and T386 remains open for the
 CECG receiver and its functional audit.
+
+### S27: CECG Residual Functional Audit
+
+S27 reconciles the residual source-determined CECG controls against current
+VADP. It assigns `3C2h` bit-5 Odd/Even display-page behavior to the next shared
+VADP receiver because no page state, memory route or copied-snapshot consumer
+exists. Physical monitor, live-video, firmware and timing effects remain
+explicit transfers. P1 `027674d6` is pushed; documentation governance,
+specialized gates and the 278-target current smoke gate pass. T386 remains open
+for that shared mechanism and its functional audit.

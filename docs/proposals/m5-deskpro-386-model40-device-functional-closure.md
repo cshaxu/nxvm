@@ -77,6 +77,12 @@ fixed-media replacement. The reusable VM HDD owner validates selected geometry,
 preserves it across reset and restores generic geometry for each new media
 candidate. Physical media and timing remain transferred.
 
+S27 audits the residual CECG receiver against the primary guide and current
+VADP. It establishes that `3C2h` bit-5 Odd/Even display-page behavior is the
+sole remaining shared functional mechanism; all remaining monitor,
+Special-Features, live-video, firmware and timing effects have explicit later
+receivers and are not silently accepted as VADP behavior.
+
 The remaining functional work stays in this candidate and proceeds in this
 order, with each receiver admitted only after reviewing the preceding evidence:
 
