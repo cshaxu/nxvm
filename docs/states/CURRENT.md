@@ -2,7 +2,26 @@
 
 ## Current Work
 
-**Active.** T390 remains open between accepted subtasks.
+**Active packet:** T390 S15 (Continuation) -- 80386 operand-size RCL-CL qualification.
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation -- T390 remains latest open task; S15 follows accepted S14. |
+| Admission And Approval | Owner standing approval for Queue-ordered T390 continuation; scope is observed `66 D3 /2` register RCL with CL count. |
+| Objective | Qualify exactly the observed operand-size 32-bit register RCL-CL form at Intel's nine-clock register row. |
+| Non-goals | No memory, immediate, native-size, other rotate, profile physical enablement, board timing or L3 claim. |
+| Reference Baseline | Accepted S13 artifact and Intel 80386 PRM RCL table printed page 372. |
+| Candidate Proposal | [80386 physical-retirement qualification](../proposals/m5-80386-physical-retirement-qualification.md). |
+| Files And ABI Surface | Private Core ledger/classifier, focused smoke, T390 evidence/status only; no public ABI. |
+| Applicable Rules | Execution, architecture, coding, documentation, source policy; Intel-primary exact row and unsupported-success rejection. |
+| Verification | Focused physical admission at nine ticks plus excluded shapes; bounded redacted replay, current gate, docs, diff, actual review. |
+| Expected Markers | Timing-ledger success and normalized capture only. |
+| Asset Needs | Owner-managed external assets only; no external data in Git. |
+| Reporting Requirements | Complete P1, coordinator review, acceptance/correction. |
+| Stop Conditions | Missing exact row/capture/owner, fault, or next unallocated terminal. |
+| Exit Criteria | Exact form source-cited, one owner, excluded shapes reject, required proof/evidence/acceptance complete. |
+| Original Owner Request | Continue shared 80386 qualification before DeskPro board timing. |
+| Similar-Issue Sweep | Inspect D3 group-2 paths, RCL count variants and existing tests. |
 
 ## Current Technical Baseline
 

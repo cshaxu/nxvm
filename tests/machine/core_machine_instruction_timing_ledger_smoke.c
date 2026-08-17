@@ -139,6 +139,7 @@ static C_INT timing_ledger_test_baseline(C_VOID)
     static const type_unsigned_8 cli[] = { 0xfau };
     static const type_unsigned_8 sahf[] = { 0x9eu };
     static const type_unsigned_8 lahf[] = { 0x9fu };
+    static const type_unsigned_8 rcl_register_cl_32[] = { 0x66u, 0xd3u, 0xd3u };
     static const type_unsigned_8 mov_sreg_register[] = { 0x8eu, 0xd8u };
     static const type_unsigned_8 mov_imm[] = { 0xb8u, 0x34u, 0x12u };
     static const type_unsigned_8 mov_register[] = { 0x8bu, 0xc1u };
@@ -152,6 +153,8 @@ static C_INT timing_ledger_test_baseline(C_VOID)
         !timing_ledger_case(cli, sizeof(cli), 1u, 3u) &&
         !timing_ledger_case(sahf, sizeof(sahf), 1u, 3u) &&
         !timing_ledger_case(lahf, sizeof(lahf), 1u, 2u) &&
+        !timing_ledger_case(rcl_register_cl_32, sizeof(rcl_register_cl_32),
+            1u, 9u) &&
         !timing_ledger_case(mov_sreg_register, sizeof(mov_sreg_register), 1u,
             2u) && !timing_ledger_case(mov_imm, sizeof(mov_imm), 1u, 2u) &&
         !timing_ledger_case(mov_register, sizeof(mov_register), 1u, 2u);
@@ -344,6 +347,10 @@ static C_INT timing_ledger_test_physical_classifier_boundary(C_VOID)
     static const type_unsigned_8 rcl_memory_one_32[] = {
         0x66u, 0xd1u, 0x16u, 0x00u, 0x10u
     };
+    static const type_unsigned_8 rcl_register_cl_32[] = { 0x66u, 0xd3u, 0xd3u };
+    static const type_unsigned_8 rcl_memory_cl_32[] = {
+        0x66u, 0xd3u, 0x16u, 0x00u, 0x10u
+    };
     static const type_unsigned_8 lahf[] = { 0x9fu };
     static const type_unsigned_8 prefixed_lahf[] = { 0x26u, 0x9fu };
     static const type_unsigned_8 sahf[] = { 0x9eu };
@@ -366,6 +373,10 @@ static C_INT timing_ledger_test_physical_classifier_boundary(C_VOID)
             sizeof(rcl_register_one_16), TYPE_STATUS_FAULT, 0u) ||
         timing_ledger_physical_case(rcl_memory_one_32,
             sizeof(rcl_memory_one_32), TYPE_STATUS_FAULT, 0u) ||
+        timing_ledger_physical_case(rcl_register_cl_32,
+            sizeof(rcl_register_cl_32), TYPE_STATUS_OK, 9u) ||
+        timing_ledger_physical_case(rcl_memory_cl_32,
+            sizeof(rcl_memory_cl_32), TYPE_STATUS_FAULT, 0u) ||
         timing_ledger_physical_case(lahf, sizeof(lahf), TYPE_STATUS_OK, 2u) ||
         timing_ledger_physical_case(prefixed_lahf, sizeof(prefixed_lahf),
             TYPE_STATUS_FAULT, 0u) ||
