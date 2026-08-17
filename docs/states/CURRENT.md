@@ -2,10 +2,30 @@
 
 ## Current Work
 
-**T394 S5 accepted.** The complete accepted T390 C0 82-child corpus maps to 81
-Core eligibility keys: 80 one-to-one entries and one proven prefix-normalized
-same-key equivalence. No descriptor or physical profile is selected. The next
-continuation must audit descriptor selection over the full 81-key set.
+**T394 S6 active.** Audit the complete accepted C0 81-key set for an explicit
+Model-40 physical-retirement descriptor selection; do not select it unless all
+prepublication, reset, deterministic-path and source-row conditions hold.
+
+## M5 T394 S6 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner continuing authorization for the global CPU correctness/timing audit, including implementation after S5. S5 acceptance P3 (`bdab4982`) transfers the bounded 81-key selection audit. No exception. |
+| Objective | Determine whether the accepted T390 C0 81-key mapping can be installed as an immutable Model-40 physical-retirement descriptor while preserving Core-owned key construction and all existing prepublication rejection. Implement only if the complete batch passes. |
+| Non-goals | No partial descriptor, C1 qualification, VM/Core ABI change, firmware/media import, board clock ratio, device timing, cycle-exact or L3 claim. |
+| Reference Baseline | T390 S27 direct-row regression, T394 S3 key schema, S4 copied descriptor enforcement, and S5 accepted 82-child/81-key mapping. |
+| Candidate Proposal | [80386 physical-retirement qualification](../proposals/m5-80386-physical-retirement-qualification.md). |
+| Files And ABI Surface | Core copied descriptor configuration and private Model-40 composition only; focused Core/Model-40 physical-contract regressions, evidence, history and status. No public ABI or firmware identity. |
+| Applicable Rules | Architecture: Core owns validation/key and VM composes only copied values. Coding: bounded static descriptor data with no raw-byte or asset dependency. Execution: select or reject the complete 81-key batch as one unit after actual-change review. |
+| Verification | Every 81 key has S27 source/regression coverage; absent/unallocated keys fault before publication; descriptor survives caller mutation/reset; both Model-40 routes stay deterministic unless the explicit selected route enables physical retirement; full current gates and documentation governance. |
+| Expected Markers | Retained `M5:T394:S4:ELIGIBILITY-KEY:OK` and `M5:T394:S5:C0-KEY-MAPPING:OK`; new S6 marker only if complete selection is proven. |
+| Asset Needs | No repository asset. Existing owner-managed inputs may be read only for a bounded replay; do not import or record them. |
+| Reporting Requirements | Record full 81-key selection/rejection basis, caller and route sweep, descriptor ownership/lifetime, failure atomicity, deterministic preservation and every transfer. |
+| Stop Conditions | Stop without selection if any key lacks exact source/regression evidence, physical publication cannot be contained to the selected route, or any descriptor/key mismatch occurs. |
+| Exit Criteria | A committed, pushed and accepted complete-batch selection or a committed, pushed and accepted whole-batch rejection/earliest-owner transfer; no partial physical enablement. |
+| Original Owner Request | Continue the global CPU correctness/timing audit, repair clear in-scope defects, and preserve the Core/VM boundary. |
+| Similar-Issue Sweep | Sweep all descriptor producers/consumers, physical retirement callers, Model-40 construction routes and reset/mutation paths; repair shared defects or transfer excluded variants. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T394 S5 P1 `vm-0-5-0394` /

@@ -105,3 +105,10 @@ and the owner-managed read-only comparison pass. No descriptor entry, physical
 profile selection, board time, firmware/media dependency, or L3 claim is
 accepted. The next receiver is a separately admitted descriptor-selection
 audit over the complete 81-key set.
+### S6: Descriptor-Selection Non-Admission
+
+S6 sweeps both Model-40 construction routes and retains the complete 81-key
+C0 batch without selection. Both routes are deterministic with the explicitly
+neutral 1:1 clock plan; T387's source-backed board conversion prerequisite is
+therefore the earliest receiver. No partial descriptor or physical CPU time is
+allowed. [Evidence](../etc/evidence/t394-s6-descriptor-selection-nonadmission.md).
