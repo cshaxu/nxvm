@@ -2,32 +2,12 @@
 
 ## Current Work
 
-**Current progress:** T388 S5 is accepted: the private Core target-lexeme
-preview now has executable 80386 short and `66h` near-`Jcc` proof, and its
-physical-contract behavior is covered end to end. It adds no scalar or profile
-clock enablement. T388 remains open for the separate 80286 Appendix-B context
-capture and the remaining prefix/default/range receivers before DeskPro board
-timing may begin.
-## M5 T388 S6 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation; S5 is accepted retained progress for latest open T388. |
-| Admission And Approval | Owner authorization to continue according to Queue, 2026-08-16; T388 S5 acceptance `a54b5262` transfers only the distinct 80286 Appendix-B source/context receiver. |
-| Objective | Audit and, where current completed decoder/CPU state is sufficient, classify the remaining successful 80286 Appendix-B system/context families without changing an unproven timing scalar. |
-| Non-goals | No physical contract enablement, VM ratio, 80386 work, generic prefix charge, x87 timing, source-range allocation, bus/device timing, instruction semantic expansion, ROM/media import, artifact revision or L3 claim. |
-| Reference Baseline | Intel 80286/80287 PRM Appendix B; T359 S6, T366 S10, T368 S7, T388 S2--S5, current 80286 classifier and owner smoke. |
-| Candidate Proposal | [Four-profile CPU physical-timebase closure](../proposals/m5-four-profile-cpu-physical-timebase-closure.md). |
-| Files And ABI Surface | Core 80286 timing classifier and focused smoke only if an already-captured successful context admits a primary row; evidence/history/current/index/static gate. No public/VM ABI. |
-| Applicable Rules | EXECUTION, ARCHITECTURE, CODING, DOCUMENT and source policy. A value requires an exact Appendix-B row and completed pre-retirement context; faults/delivery, waits, x87 and missing context remain nonpublishing receivers. |
-| Verification | Partition `0F`, `62`, `63`, `8C`, `8E`, `C4/C5`, shift/default and prefix routes by actual success/context; prove every proposed row against an owner smoke, physical rejection on each retained unallocated route, static recurrence and current gate. |
-| Expected Markers | `M5:T388:S6:80286-APPENDIX-B-CONTEXT:OK`. |
-| Asset Needs | Retained Intel Appendix-B evidence and owned test fixtures only; no ROM, guest media, emulator run, trace or machine-local path. |
-| Reporting Requirements | Name each admitted form/context and source row, each unavailable prerequisite and receiver, and whether any context requires a later Core mechanism rather than a local classifier branch. |
-| Stop Conditions | Stop and transfer a missing Appendix-B form/context, descriptor-granularity or following-byte state not captured before retirement, source conflict, x87 route, physical scalar, bus/device requirement or CPU semantic defect. |
-| Exit Criteria | Every reachable residual 80286 successful context is either exact-source classified with regression or retained as one explicit receiver; no generic fallback can silently become a physical source. |
-| Original Owner Request | Continue autonomously according to Queue toward full DeskPro functionality and L3 timing; use authoritative Intel sources first and find root causes without routine approval requests. |
-| Similar-Issue Sweep | Search the 80286 classifier, control/stack and string owners, timing ledgers, tests, CMake gates and evidence for every successful sentinel, Appendix-B system form, prefix and lookup route; classify every hit. |
+**Current progress:** T388 S6 is accepted: existing completed 80286
+Appendix-B forms are reconciled to their retained exact owners; only residual
+unallocated success reaches the sentinel boundary. `LSL` descriptor granularity,
+prefix/default, x87 and physical-service routes remain explicit receivers.
+No profile is physically enabled and DeskPro board timing remains blocked on
+T388 completion.
 ## Current Technical Baseline
 
 - **Current developer artifact:** T386 S28 `vm-0-5-0389` /
@@ -54,7 +34,7 @@ timing may begin.
 
 | Task | Compact result |
 | --- | --- |
-| T388 S5 | Accepted: P1--P3 prove the private nonpublishing 80386 Jcc target-lexeme path for short and 66h near forms, correct the test/evidence discrepancy, and retain physical rejection on unavailable success. No profile is physically enabled; T388 remains open. [Evidence](../etc/evidence/t388-s5-jcc-target-lexeme.md). |
+| T388 S6 | Accepted: P1/P2 reconcile completed 80286 Appendix-B source contexts from residual sentinel routes and correct the exact-row/sentinel evidence boundary. `LSL`, prefix/default and x87 receivers remain open; no profile is physically enabled. [Evidence](../etc/evidence/t388-s6-80286-appendix-b-context.md). |
 | T387 | Closed: source/owner inventory, exact port-`61h` reconciliation and reference qualification transfer the shared physical-timebase then physical-device/firmware prerequisites before any DeskPro L3 audit. No physical-time or L3 claim. [Closure audit](../etc/evidence/t387-s6-task-closure-transfer-audit.md). |
 | T386 | Closed: S29 independently reconciles every selected Model-40 functional owner/proof, corrects the omitted S26 HDC current-gate registration and transfers only board, firmware and physical-media work to the next candidate/TODO. No L3 claim. [Closure audit](../etc/evidence/t386-s29-functional-closure-audit.md). |
 | T385 | Closed: the selected Model-40 80386DX-16 consumes the shared 80386 CPU/state/retirement owners without a DeskPro CPU fork; a clean current-source 251/251 gate passed, while functionality and board timing transfer unchanged. [Closure audit](../etc/evidence/t385-s1-task-closure-audit.md). |

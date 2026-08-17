@@ -94,3 +94,18 @@ smokes, documentation governance and full 281-target current gate. The
 [accepted evidence](../etc/evidence/t388-s5-jcc-target-lexeme.md) adds no
 physical scalar, profile enablement, artifact revision or L3 claim. T388
 remains open for 80286 context capture and all remaining receiver families.
+
+### S6: 80286 Appendix-B Context
+
+S6 reconciles the completed 80286 decoder/CPU state already consumed by the
+current source classifier: selected system, selector, segment, EA and
+odd-word forms retain their exact Appendix-B owners. It explicitly separates
+those rows from residual success: only the latter uses the unallocated marker.
+`LSL` descriptor granularity, prefix/default contexts, x87 and physical-service
+conditions remain visible later receivers.
+
+Coordinator review accepts P1 `6d339981` and corrective P2 `9d19ddc8` against
+the S6 packet, 80286 owner smoke, static recurrence gate, documentation
+governance and full 281-target current gate. The [accepted evidence](../etc/evidence/t388-s6-80286-appendix-b-context.md)
+adds no scalar, production behavior, profile enablement, artifact revision or
+L3 claim. T388 remains open for the named residual receivers.
