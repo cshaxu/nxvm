@@ -50,3 +50,7 @@ admitted corpus has an enforceable qualification boundary; source-classified
 status alone is insufficient.  Until then, CPU/source-timing work continues
 under deterministic retirement, and DeskPro board-time/L3 work remains
 blocked.
+
+## Coordinator acceptance
+
+The coordinator reviewed pushed P1 dbe6481e against the admitted S34 packet and original request. The two production selections are both in Model-40 composition; the repair changes only those selections to the existing deterministic contract. The private regression proves the constructed Core behavior, the public BYOB regression proves its configuration without violating opacity, generic Core physical-contract coverage remains intact, the current artifact was rebuilt, and the full 284/284 CTest gate, documentation governance, and diff hygiene pass. S34 is accepted; a later complete and enforceable corpus is required before Model-40 can select physical retirement again.

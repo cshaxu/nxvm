@@ -2,28 +2,7 @@
 
 ## Current Work
 
-**Active.** T390 S34 corrects a physical-retirement scope mismatch: the selected Model-40 physical contract publishes every source-classified retirement, although S28 admitted only C0. The repair restores deterministic retirement until a complete later corpus has an enforceable qualification mechanism. No Core/VM interface, board-time, or L3 claim follows.
-
-## M5 T390 S34 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation; T390 remains the latest open numeric task and S34 follows accepted S33. |
-| Admission And Approval | Owner authorized continued implementation, correction of confirmed defects, and CPU/timing audit in the current task conversation on 2026-08-17. |
-| Objective | Correct premature Model-40 physical-retirement selection so a C0-only accepted corpus cannot publish elapsed/device time for later source-classified forms before their own complete qualification. |
-| Non-goals | No Core/VM public interface change, runtime stage tracker, CPU decoder/executor change, timing-row allocation, board-ratio/device-time claim, asset/media import, or raw capture. |
-| Reference Baseline | T390 S28 selected physical retirement after C0; S33 observes a later source-classified post-C0 port-`61h` read; current Core physical publication rejects only source-unallocated retirement. |
-| Candidate Proposal | Continue the accepted [T390 physical-qualification proposal](../proposals/m5-80386-physical-retirement-qualification.md) by restoring its stage-bound nonpublication requirement. |
-| Files And ABI Surface | Model-40 session construction, its composition regression, current status and evidence only. No Core interface/layout or VM-to-Core mutable-state path. |
-| Applicable Rules | Execution, architecture, coding, documentation and source-policy authorities; Core owns generic publication and VM composition selects the contract, while tests prove the composed boundary without exposing a new API. |
-| Verification | Build/run the focused Model-40 composition regression and selected retirement-contract regression; prove both Model-40 construction paths select deterministic retirement; run documentation/diff gates and an aggregate-only contained replay if needed. |
-| Expected Markers | Existing Model-40 composition marker plus an S34 deterministic-selection assertion; no new timing or board marker. |
-| Asset Needs | None for the focused repair. A replay, if run, uses read-only owner-managed assets transiently and retains no asset identity, path, hash, bytes, PC, trace, or media. |
-| Reporting Requirements | Record the static reproducer, both composition paths, corrected selection, focused proof, similar-issue sweep, and transfer; state explicitly that classified source rows alone are not a physical stage qualification. |
-| Stop Conditions | Stop for a need to add a public stage interface, change Core publication semantics for all profiles, assign physical time, or infer board timing. |
-| Exit Criteria | Both Model-40 construction paths remain functional but select deterministic retirement; focused proofs pass; all physical selections are classified by scope; documentation and diff gates pass. |
-| Original Owner Request | Continue the global CPU instruction/timing audit toward later DeskPro board timing and L3 closure; fix confirmed issues and preserve Core/VM interfaces. |
-| Similar-Issue Sweep | Search all Model-40 construction and physical-contract selections plus their regressions; every production hit is corrected or explicitly outside the Model-40 selection scope. |
+**Active.** T390 remains open between accepted subtasks. S34 corrects premature Model-40 physical-retirement selection: because the accepted C0 batch did not establish a later enforceable corpus boundary, both Model-40 construction paths now retain deterministic retirement. Core/VM interfaces remain unchanged; board-time and L3 work remain blocked. [Evidence](../etc/evidence/t390-s34-physical-retirement-scope-correction.md).
 
 ## Current Technical Baseline
 
@@ -51,7 +30,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T390 S33 | Accepted: test-only aggregate post-C0 I/O capture reaches the immediate-port `61h` read, assigns it to the existing D4 Core mechanism selected by Model-40 composition, and preserves all Core/VM interfaces. No defect, timing, board-time, physical-retirement, or L3 claim. [Evidence](../etc/evidence/t390-s33-post-c0-io-owner-boundary.md). |
+| T390 S34 | Accepted: both Model-40 construction paths revert from premature physical to deterministic retirement until a later corpus has an enforceable qualification boundary. Existing generic Core physical tests remain unchanged; 284/284 current CTest passes. No board-time or L3 claim. [Evidence](../etc/evidence/t390-s34-physical-retirement-scope-correction.md). |
 | T389 | Stopped by owner-approved requeue: S1 proves no physical board slice can begin while 80386 successful retirement remains nonphysical; S2 archives the invalid candidate and queues a shared CPU qualification before a fresh board task. No board timing, physical-clock or L3 claim. [Audit](../etc/evidence/t389-s2-stop-and-requeue-audit.md). |
 | T388 | Closed: S1--S9 establish the sole publisher, exhaustive exact-or-nonphysical residual disposition and pre-publication physical-contract rejection. No current CPU profile is physically clock-qualified; board work transfers under this restriction. [Closure audit](../etc/evidence/t388-s9-task-closure-audit.md). |
 | T387 | Closed: source/owner inventory, exact port-`61h` reconciliation and reference qualification transfer the shared physical-timebase then physical-device/firmware prerequisites before any DeskPro L3 audit. No physical-time or L3 claim. [Closure audit](../etc/evidence/t387-s6-task-closure-transfer-audit.md). |
