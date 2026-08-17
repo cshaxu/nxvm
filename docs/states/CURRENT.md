@@ -2,28 +2,28 @@
 
 ## Current Work
 
-**Active: M5 T393 S6 Corrective.** Repair the discovered task-level closure schema omission in T393 history so the archived task is mechanically closed before a new task is admitted. No runtime, FDC, CPU timing, asset, physical, board or L3 change is in scope.
+**Active: M5 T394 S1 New.** Establish the finite shared 80386 physical-retirement qualification admission ledger from current classifier, C0/C0A evidence and 80386DX candidate constraints. This S selects neither a physical retirement mode nor a board-clock implementation.
 
-## M5 T393 S6 Packet
+## M5 T394 S1 Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Corrective |
-| Admission And Approval | Owner authorized continued implementation and instructed in-scope issues to be repaired; T394 admission gate discovered the omitted T393 task-level closure marker. |
-| Objective | Add the missing T393 task outcome record and revalidate its archived/current topology. |
-| Non-goals | No runtime behavior, FDC observation, CPU timing, board/device work, asset operation, physical selection or L3 claim. |
-| Reference Baseline | T393 S5 P2 archive/Queue cleanup and documentation governance failure requiring a task-level closed predecessor. |
-| Candidate Proposal | [DeskPro FDC operation observation contract](../proposals/m5-deskpro-fdc-operation-observation-contract.md). |
-| Files And ABI Surface | T393 history/evidence/current/index only; no production source or ABI. |
-| Applicable Rules | Execution post-closure corrective lifecycle and actual-change review; Documentation task-history/current topology rules. |
-| Verification | Documentation governance proves T393 is task-level closed; direct history/current/index/archive reference sweep; diff review. |
-| Expected Markers | One explicit task outcome, no proposal Queue entry, and a valid next-task admission boundary. |
-| Asset Needs | None. |
-| Reporting Requirements | Record the schema finding, exact repair and P1/P2 actual-change review. |
-| Stop Conditions | Stop if any runtime or new task scope becomes necessary. |
-| Exit Criteria | T393 remains factually unchanged but is mechanically task-level closed, enabling a later T394 admission. |
-| Original Owner Request | Continue the global CPU instruction/timing audit while repairing discovered in-scope issues. |
-| Similar-Issue Sweep | Verify the archived proposal, Queue, Current progress row and T393 history use one consistent closed-task topology. |
+| Identifier Mode | New |
+| Admission And Approval | Owner authorized continued global CPU instruction/timing audit; T393 closure releases the queued shared 80386 physical-retirement qualification prerequisite. |
+| Objective | Create the durable finite-stage admission ledger and exact receiver decision for renewed shared 80386 physical-retirement qualification. |
+| Non-goals | No physical-retirement selection, board/device timing, guessed cycle count, ROM/media import, C1 claim, Core/VM bridge, firmware compatibility or L3 claim. |
+| Reference Baseline | T388 residual ledger; T390 S27 C0 matrix, S34 physical-scope correction, S35/S36 dependency transfer; T391/T393 bounded C0A/FDC outcomes; queued physical-retirement proposal. |
+| Candidate Proposal | [80386 physical-retirement qualification](../proposals/m5-80386-physical-retirement-qualification.md). |
+| Files And ABI Surface | Evidence/history/current/index only unless the complete selected batch proves a bounded shared Core repair; no ABI change in S1. |
+| Applicable Rules | Execution task-scale convergence/finite semantic checkpoint; Architecture sole Core timing and copied-boundary invariants; Coding test-boundary discipline; source-policy primary-authority restriction. |
+| Verification | Current classifier/caller/reference sweep, prior-ledger reconciliation, proposed-stage completeness predicate, documentation governance, direct diff review. |
+| Expected Markers | A frozen initial stage universe, each row disposition, no-enablement predicate, and exact next receiver or stop reason. |
+| Asset Needs | None; use retained project evidence only. |
+| Reporting Requirements | Record coverage universe, owner, source/proof status, residual transfer and P1/P2 actual-change review. |
+| Stop Conditions | Stop if a physical selection, unbounded replay, missing primary source, Core/VM bridge, device timing or external asset becomes necessary. |
+| Exit Criteria | The next qualification stage is either fully defined with a complete matrix/enforcement path or transferred to the earliest missing owner; no partial profile enablement is possible. |
+| Original Owner Request | Audit and repair CPU instruction defects, errors and timing globally while preparing later DeskPro board timing and L3 closure. |
+| Similar-Issue Sweep | Compare every Model-40 construction selection, physical-contract caller, classifier residual route and prior C0/C0A/C1 evidence for premature or unenforceable physical eligibility. |
 
 ## Current Technical Baseline
 

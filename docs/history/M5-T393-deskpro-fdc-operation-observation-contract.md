@@ -91,3 +91,10 @@ publication universe, implements the copied Core/VM terminal-result contract,
 and completes bounded C0A consumer observation with no successful post-C0A
 drive-0 `READ DATA`. It transfers only shared 80386 physical-retirement
 qualification; no board, firmware, asset or L3 gate opens.
+## Corrective Acceptance
+
+After actual-change review of P1 `d257de2a`, the coordinator accepts S6. The
+repair adds the omitted closure-schema outcome only; P2 restores the archived
+proposal and removes the temporary Queue link. T393 facts, FDC behavior and
+all CPU/physical/board/L3 boundaries remain unchanged. Documentation governance
+and direct topology review pass.
