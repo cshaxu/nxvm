@@ -43,3 +43,6 @@ This is documentation-only. It changes no source, build, test, artifact,
 ROM/media, runtime configuration, interface, or external-research input.
 Required closure checks are documentation governance, diff hygiene, and actual-
 diff review against the S36 packet.
+## Coordinator Acceptance
+
+The coordinator reviewed P1 `e528cf53` against the S36 packet. The actual change adds only a bounded startup-semantic candidate, Queue ordering, task-history closure, evidence index and status records. It preserves all source and interface boundaries, does not claim a timing result, and resolves the documented C1/board prerequisite cycle. Documentation governance and diff hygiene pass. S36 is accepted and T390 closes as stopped by owner-approved dependency requeue.

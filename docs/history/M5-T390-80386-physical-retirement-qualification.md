@@ -11,7 +11,7 @@ physical-device, firmware, ROM/media or L3 claim by itself.
 
 ## Active Subtask
 
-S36 is active under `states/CURRENT.md`. It is documentation-only dependency reconciliation: no CPU, Core/VM, profile, firmware/media, asset, physical-clock, board-time, or L3 behavior changes.
+No subtask is active. T390 stopped at S36 by owner-approved dependency requeue.
 
 ## Accepted Progress
 
@@ -255,3 +255,14 @@ S35 reconciles the accepted S11-S34 evidence chain and explicitly supersedes S28
 ## Coordinator Acceptance
 
 After actual-change review of P1 `8d4f12eb` and corrective P2 `f2f1ff25`, the coordinator accepts S35. The review confirms that every accepted S11-S34 evidence record is reachable from the T390 history, S14 is correctly retained through its S13 evidence record, and no historical fact is rewritten. The completed reconciliation leaves all Core/VM interfaces and runtime behavior unchanged, retains deterministic Model-40 retirement, and names the next bounded C1 ledger receiver. Documentation governance and diff hygiene pass. T390 remains open; board timing, physical-device timing, physical-clock selection, and L3 remain blocked.
+### S36: Owner-Approved Stop And Requeue
+
+S36 confirms that T390 cannot admit C1 from the current startup evidence: the corrected-ROM path does not establish the required semantic baseline, while the existing board-timing candidate is intentionally gated on physical qualification. The task stops without physical CPU qualification, board timing, physical clock, firmware compatibility, or L3 acceptance. The Queue now places DeskPro startup semantic readiness before a renewed physical-retirement qualification. [Audit](../etc/evidence/t390-s36-stop-and-requeue-audit.md).
+
+## Task Outcome
+
+**Stopped by owner-approved dependency requeue; not physically qualified.** T390 retains its completed C0 and safety evidence, but no global Model-40 physical selection is valid. The next candidate owns only startup-semantic readiness; renewed physical qualification, board timing, physical-device/firmware timing, and L3 remain separate later work.
+
+## Coordinator Acceptance
+
+After actual-change review of P1 `e528cf53`, the coordinator accepts S36 and closes T390 as the owner-approved non-implementation stop. Review confirms that the new first Queue candidate is bounded to startup semantics, preserves the existing deterministic Model-40 contract, and does not create a Core/VM bridge or import external firmware/media. Documentation governance and diff hygiene pass.

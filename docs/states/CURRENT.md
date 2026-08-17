@@ -2,24 +2,8 @@
 
 ## Current Work
 
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation - M5 T390 S36. T390 is the latest open numeric task; S35 is its latest accepted progress. |
-| Admission And Approval | Owner: user. Approval: this thread's continuing instruction to implement the global CPU audit, repair confirmed defects, and preserve the Core/VM interface boundary, 2026-08-17. Scope: record and correct the discovered T390/C1 dependency cycle through Queue/proposal/history evidence only. |
-| Objective | Establish whether T390 can admit C1 under current startup evidence; if not, stop T390 without a physical claim and queue the earliest bounded DeskPro startup-semantic receiver before renewed physical qualification. |
-| Non-goals | No source, ABI, Core/VM interface, runtime profile, ROM/media, asset, board-time, device-time, CPU timing-row, physical-clock, or L3 change. |
-| Reference Baseline | Accepted T390 S30, S32, S34 and S35; T386 S29 functional closure; current physical-retirement and board-timing proposals. |
-| Candidate Proposal | `docs/proposals/m5-80386-physical-retirement-qualification.md`; proposed startup-semantic candidate is created only if the documented cycle is confirmed. |
-| Files And ABI Surface | `docs/states/CURRENT.md`, `docs/states/QUEUE.md`, `docs/proposals/`, `docs/history/M5-T390-80386-physical-retirement-qualification.md`, `docs/etc/README.md`, and indexed S36 evidence only. No source or interface surface changes. |
-| Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`, `docs/README.md`, and `CONTRIBUTING.md`; architecture/coding rules apply as unchanged-boundary constraints. |
-| Verification | Documentation Governance Gate; `git diff --check`; actual-diff review; dependency sweep across T386 S29, T390 S16/S30/S32/S34/S35, the physical proposal, board proposal, Queue, and TODO. |
-| Expected Markers | `M5:T390:S36:STOP-AND-REQUEUE:OK`. |
-| Asset Needs | None. No asset, firmware, media, local path, hash, byte, trace, or external repository content is read, added, or changed. |
-| Reporting Requirements | Report whether the cycle is confirmed, the exact reordered receiver, pushed commits, and retained boundaries; do not claim CPU, board, physical-clock, or L3 completion. |
-| Stop Conditions | Stop if a proposed receiver requires a Core/VM interface change, claims timing from a startup observation, imports/researches external firmware, or cannot state a bounded acceptance condition. |
-| Exit Criteria | The dependency cycle is either disproved with direct authority or corrected by an ordered, bounded Queue candidate; T390 is truthfully closed or remains open with a defined executable C1 receiver; documentation checks pass. |
-| Original Owner Request | Continue the global CPU instruction/timing audit, repair confirmed issues, prepare DeskPro board timing and L3 closure, and preserve Core/VM boundaries. |
-| Similar-Issue Sweep | T389 stop/requeue, T386 functional closure, T390 S16/S30/S32/S34/S35, current Queue proposals, and TODO startup/firmware boundaries. |
+**Idle.**
+
 ## Current Technical Baseline
 
 - **Current developer artifact:** T390 S22 `vm-0-5-0390` /
@@ -46,7 +30,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T390 S35 | Accepted: the T390 S11-S34 evidence chain is reconciled; Model-40 remains deterministic because C0 has no enforceable profile-wide qualification boundary. The next CPU receiver is a bounded C1-stage admission/ledger decision. No Core/VM interface, board-time, physical-clock, or L3 claim. [Evidence](../etc/evidence/t390-s35-convergence-reconciliation.md). |
+| T390 | Stopped by owner-approved requeue: C1 needs a bounded startup-semantic prerequisite while board timing requires physical qualification first. The Queue now places startup semantic readiness before renewed physical qualification. Model-40 remains deterministic; no Core/VM interface, board-time, physical-clock, or L3 claim. [Audit](../etc/evidence/t390-s36-stop-and-requeue-audit.md). |
 | T389 | Stopped by owner-approved requeue: S1 proves no physical board slice can begin while 80386 successful retirement remains nonphysical; S2 archives the invalid candidate and queues a shared CPU qualification before a fresh board task. No board timing, physical-clock or L3 claim. [Audit](../etc/evidence/t389-s2-stop-and-requeue-audit.md). |
 | T388 | Closed: S1--S9 establish the sole publisher, exhaustive exact-or-nonphysical residual disposition and pre-publication physical-contract rejection. No current CPU profile is physically clock-qualified; board work transfers under this restriction. [Closure audit](../etc/evidence/t388-s9-task-closure-audit.md). |
 | T387 | Closed: source/owner inventory, exact port-`61h` reconciliation and reference qualification transfer the shared physical-timebase then physical-device/firmware prerequisites before any DeskPro L3 audit. No physical-time or L3 claim. [Closure audit](../etc/evidence/t387-s6-task-closure-transfer-audit.md). |
@@ -54,7 +38,6 @@
 | T385 | Closed: the selected Model-40 80386DX-16 consumes the shared 80386 CPU/state/retirement owners without a DeskPro CPU fork; a clean current-source 251/251 gate passed, while functionality and board timing transfer unchanged. [Closure audit](../etc/evidence/t385-s1-task-closure-audit.md). |
 | T384 | Closed: the Model-40 capability audit freezes its original Compaq system board/storage ledger and owner-selected color EGA, keyboard and external-ROM constraint; its shared-VADP IBM/Compaq personality boundary transfers CPU, functional and timing work without making a runnable or L3 claim. [Closure audit](../etc/evidence/t384-s2-task-closure-audit.md). |
 | T383 | Closed: independent current-source replay accepts the frozen Model-339 deterministic L3 contract after T380's strict-start repair; 251/251 current gate and focused matrix are retained in [evidence](../etc/evidence/t383-s1-model339-current-source-reaudit.md). |
-| T382 | Reclosed at S8: the prior S1--S7 closure is retained historically, while S8 corrects its Console 64-bit transport and final artifact baseline. [Corrective audit](../etc/evidence/t382-s8-reclosure-audit.md). |
 
 ## Recent Governance
 
