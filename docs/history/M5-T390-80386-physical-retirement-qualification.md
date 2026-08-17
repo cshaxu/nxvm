@@ -11,7 +11,7 @@ physical-device, firmware, ROM/media or L3 claim by itself.
 
 ## Active Subtask
 
-S35 is active under `states/CURRENT.md`. It is documentation-only reconciliation: no CPU, Core/VM, profile, firmware/media, asset, physical-clock, board-time, or L3 behavior changes.
+No subtask is active. T390 remains open with S35 retained as compact accepted progress.
 
 ## Accepted Progress
 
@@ -248,3 +248,10 @@ S16 stopped the first-terminal-at-a-time method and defined M40-C0 as the first 
 ### S29-S34: Model-40 Start-Path Corrections And Physical-Scope Repair
 
 S29 corrected the DeskPro ROM decode; S30-S33 then re-established the later start-path observations, corrected Model-40 A20 behavior, and bounded the first post-C0 I/O observation. S33 proved that a later source-classified successful retirement exists beyond C0. S34 therefore corrected the actual defect: both Model-40 composition paths retain deterministic retirement because the generic Core physical contract has no firmware-stage mechanism. S34 changes no Core/VM interface and makes no board, physical-clock, or L3 claim. [S29](../etc/evidence/t390-s29-model40-rom-decode-correction.md), [S31](../etc/evidence/t390-s31-model40-a20-startup-baseline.md), [S33](../etc/evidence/t390-s33-post-c0-io-owner-boundary.md), and [S34](../etc/evidence/t390-s34-physical-retirement-scope-correction.md) retain the detailed proof.
+### S35: Convergence Reconciliation
+
+S35 reconciles the accepted S11-S34 evidence chain and explicitly supersedes S28's unsafe Model-40 physical selection. C0 remains a complete finite stage, but the generic Core physical contract cannot enforce a firmware semantic stage, so both Model-40 construction paths remain deterministic. The next receiver is a bounded C1-stage admission/ledger decision; it must not install a Core/VM bridge, re-enable physical retirement, or substitute an unbounded replay. [Evidence](../etc/evidence/t390-s35-convergence-reconciliation.md).
+
+## Coordinator Acceptance
+
+After actual-change review of P1 `8d4f12eb` and corrective P2 `f2f1ff25`, the coordinator accepts S35. The review confirms that every accepted S11-S34 evidence record is reachable from the T390 history, S14 is correctly retained through its S13 evidence record, and no historical fact is rewritten. The completed reconciliation leaves all Core/VM interfaces and runtime behavior unchanged, retains deterministic Model-40 retirement, and names the next bounded C1 ledger receiver. Documentation governance and diff hygiene pass. T390 remains open; board timing, physical-device timing, physical-clock selection, and L3 remain blocked.

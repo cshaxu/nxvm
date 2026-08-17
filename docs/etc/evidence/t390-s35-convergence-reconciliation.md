@@ -25,3 +25,6 @@ Until such an enforceable profile-level admission exists, CPU/source-timing inve
 ## Verification
 
 This is documentation-only. It changes no source, build, test, artifact, ROM/media, runtime configuration, interface, or external-research input. Required closure checks are documentation governance, diff hygiene, and actual-diff review against the S35 packet.
+## Coordinator Acceptance
+
+The coordinator reviewed P1 `8d4f12eb` and corrective P2 `f2f1ff25` against the S35 packet. P2 closes the only review finding by linking every accepted S11-S34 evidence record from task history without changing an accepted fact. The result is documentation-only: Core/VM interfaces, Model-40 runtime behavior, ROM/media handling, artifact baseline, and test surface are unchanged. Documentation governance and diff hygiene pass. S35 is accepted with deterministic Model-40 retirement retained; a bounded C1-stage admission/ledger decision is the next CPU receiver.

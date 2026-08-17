@@ -2,25 +2,7 @@
 
 ## Current Work
 
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation - M5 T390 S35. T390 is the latest open numeric task; S34 is its latest accepted progress. |
-| Admission And Approval | Owner: user. Approval: this thread's continuing instruction to implement the CPU audit and to fix confirmed issues, with the explicit Core/VM interface-boundary constraint, 2026-08-17. Scope: reconcile the accepted T390 convergence record and define the next safe receiver; no exception authorizes a physical-clock, board-time, L3, firmware/media, or interface change. |
-| Objective | Reconcile T390 S11-S34 into its durable task history and convergence record; make the S34 correction's completion predicate and next receiver explicit so subsequent CPU work cannot treat C0 source classification as Model-40 physical eligibility. |
-| Non-goals | No source, build, test, artifact, ABI, Core/VM composition, ROM/media, board timing, physical-device, physical-clock, or L3 change; do not admit C1 capture or a CPU-row repair. |
-| Reference Baseline | Accepted T390 S34, current deterministic Model-40 retirement selection, and the T390 physical-retirement-qualification proposal. |
-| Candidate Proposal | `docs/proposals/m5-80386-physical-retirement-qualification.md`. |
-| Files And ABI Surface | `docs/states/CURRENT.md`, `docs/history/M5-T390-80386-physical-retirement-qualification.md`, `docs/etc/README.md`, and new indexed T390 S35 evidence only. No source or public/private interface surface changes. |
-| Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`, `docs/README.md`, and `CONTRIBUTING.md`; architecture/coding rules apply as unchanged-boundary constraints. |
-| Verification | Documentation Governance Gate; `git diff --check`; actual-diff review against this packet; history/evidence link and T390 S11-S34 reconciliation sweep. |
-| Expected Markers | `M5:T390:S35:CONVERGENCE-RECONCILIATION:OK`. |
-| Asset Needs | None. No asset, firmware, media, local path, hash, byte, trace, or external repository content is read, added, or changed. |
-| Reporting Requirements | Report the task's boundary decision, pushed commits, governance result, and the named next receiver; do not claim CPU, board, physical-clock, or L3 completion. |
-| Stop Conditions | Stop and transfer if reconciliation requires a new Core/VM interface, changes a historical accepted fact, discovers an unrecorded source behavior, or requires external-asset research. |
-| Exit Criteria | Every accepted S11-S34 result is linked truthfully from T390 history; S34's deterministic-only conclusion and the complete-stage/enforceable-boundary predicate are explicit; the next receiver is bounded; documentation checks pass. |
-| Original Owner Request | Continue the global CPU instruction/timing audit; use DeskPro/reference work only as bounded evidence; fix confirmed issues; preserve the Core/VM interface boundary. |
-| Similar-Issue Sweep | Reconcile T390 S11-S34, S23/S27/S28/S33/S34, T389 stop/requeue, the queue's physical-retirement candidate, and the four-profile CPU-audit proposal. No other current profile selects Model-40 physical retirement through this task record. |
-
+**Active.** T390 remains open between accepted subtasks. S35 reconciles the accepted S11-S34 evidence record and confirms the current safe boundary: both Model-40 construction paths retain deterministic retirement because C0 is finite but does not have an enforceable profile-wide qualification boundary. The next CPU receiver is a bounded C1-stage admission/ledger decision. Core/VM interfaces remain unchanged; board-time and L3 work remain blocked. [Evidence](../etc/evidence/t390-s35-convergence-reconciliation.md).
 ## Current Technical Baseline
 
 - **Current developer artifact:** T390 S22 `vm-0-5-0390` /
@@ -47,7 +29,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T390 S34 | Accepted: both Model-40 construction paths revert from premature physical to deterministic retirement until a later corpus has an enforceable qualification boundary. Existing generic Core physical tests remain unchanged; 284/284 current CTest passes. No board-time or L3 claim. [Evidence](../etc/evidence/t390-s34-physical-retirement-scope-correction.md). |
+| T390 S35 | Accepted: the T390 S11-S34 evidence chain is reconciled; Model-40 remains deterministic because C0 has no enforceable profile-wide qualification boundary. The next CPU receiver is a bounded C1-stage admission/ledger decision. No Core/VM interface, board-time, physical-clock, or L3 claim. [Evidence](../etc/evidence/t390-s35-convergence-reconciliation.md). |
 | T389 | Stopped by owner-approved requeue: S1 proves no physical board slice can begin while 80386 successful retirement remains nonphysical; S2 archives the invalid candidate and queues a shared CPU qualification before a fresh board task. No board timing, physical-clock or L3 claim. [Audit](../etc/evidence/t389-s2-stop-and-requeue-audit.md). |
 | T388 | Closed: S1--S9 establish the sole publisher, exhaustive exact-or-nonphysical residual disposition and pre-publication physical-contract rejection. No current CPU profile is physically clock-qualified; board work transfers under this restriction. [Closure audit](../etc/evidence/t388-s9-task-closure-audit.md). |
 | T387 | Closed: source/owner inventory, exact port-`61h` reconciliation and reference qualification transfer the shared physical-timebase then physical-device/firmware prerequisites before any DeskPro L3 audit. No physical-time or L3 claim. [Closure audit](../etc/evidence/t387-s6-task-closure-transfer-audit.md). |
