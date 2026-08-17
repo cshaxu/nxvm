@@ -14,7 +14,7 @@ Therefore C0 completion cannot select Model-40 physical retirement. S34's determ
 
 ## Reconciled Progress
 
-The task history now retains the missing accepted S11-S34 progression. Earlier terminal qualifications remain bounded historical evidence. S16-S27 establish and reconcile C0, while S28 is explicitly superseded as an unsafe global profile selection. S29-S34 correct the start-path premises and restore deterministic Model-40 retirement. The history links detailed evidence rather than reproducing firmware, media, raw trace, or asset data.
+The task history now retains the missing accepted S11-S34 progression and links each retained evidence record (with S14 recorded in S13 evidence). Earlier terminal qualifications remain bounded historical evidence. S16-S27 establish and reconcile C0, while S28 is explicitly superseded as an unsafe global profile selection. S29-S34 correct the start-path premises and restore deterministic Model-40 retirement. The history links detailed evidence rather than reproducing firmware, media, raw trace, or asset data.
 
 ## Next Receiver And Completion Predicate
 
