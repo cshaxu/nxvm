@@ -16,3 +16,6 @@ The interface exposes neither the private enum nor CPU pointers, instruction byt
 ## Transfer
 
 The next T390 continuation must rerun the finite C0 corpus and build one batch owner/Intel-row/context disposition using this attribution. It must separately account for lookup-backed IDs and classified-but-unattributed paths, cite exact Intel-primary rows, and transfer every underdetermined class as a whole. This slice neither adds timing rows nor enables physical retirement, C1 boot, DeskPro board/device timing, or L3.
+## Coordinator Acceptance
+
+Coordinator actual-change review accepts P1 8c3003f8. The reset occurs at the per-attempt timing boundary, successful lookup is the single attribution owner, and the observer copies a scalar before rejection/publication without publishing or retaining forbidden raw state. The focused lifecycle proof, synthetic C0 proof, full 284/284 current gate, documentation gate, artifact baseline and actual diff satisfy S19. Classified-but-unattributed forms remain an explicit batch-matrix obligation; physical retirement, C1, board/device timing and L3 remain unaccepted.

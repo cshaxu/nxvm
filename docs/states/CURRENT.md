@@ -2,26 +2,7 @@
 
 ## Current Work
 
-**Active packet:** T390 S19 (Continuation) -- shared Core source-form attribution capture.
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation -- T390 remains latest open task; S19 follows accepted S18. |
-| Admission And Approval | Owner standing approval for Queue-ordered T390 continuation and S18's shared-Core attribution receiver. |
-| Objective | Record the single successful timing-form attribution at the Core lookup owner and copy it through the existing retirement observer for M40-C0 batch classification. |
-| Non-goals | No timing-row addition, no second classifier, profile specialization, physical enablement, C1 boot, board/device timing or L3 claim. |
-| Reference Baseline | Accepted S18 attribution audit; current machine.c lookup/classifier chain and copied observer lifecycle. |
-| Candidate Proposal | [80386 physical-retirement qualification](../proposals/m5-80386-physical-retirement-qualification.md). |
-| Files And ABI Surface | Core private timing/observation state, copied observation contract, focused Core/capture smoke, CMake/evidence/status; no raw pointers or mutable public layout. |
-| Applicable Rules | Execution, architecture, coding, documentation and source policy; one owner, copied boundary, disabled-path neutrality, reset/failure atomicity and actual review. |
-| Verification | Focused attribution lifecycle/reset/nonpublication proof; M40-C0 synthetic and contained replay; full current gate, docs, diff and actual review. |
-| Expected Markers | Existing M40-C0 capture marker plus a project-owned source-form attribution smoke. |
-| Asset Needs | Owner-managed local ROM/media for deleted C0 replay only; no external identity or raw trace in Git. |
-| Reporting Requirements | Complete P1 with implementation/evidence then coordinator review and acceptance/correction. |
-| Stop Conditions | Attribution cannot remain single-owner/copied, leaks raw state, changes disabled behavior, lacks reset safety, or requires a timing inference. |
-| Exit Criteria | Exact lookup attribution reaches copied observer; focused proofs and contained C0 replay pass; batch matrix transfer remains explicit. |
-| Original Owner Request | Add the shared Core source-form attribution needed for C0 batch mapping. |
-| Similar-Issue Sweep | Inspect every timing lookup, unallocated path, observer reset/install/remove lifecycle and all observer consumers. |
+**Active.** T390 remains open between accepted subtasks.
 
 ## Current Technical Baseline
 
@@ -49,6 +30,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T390 S19 | Accepted: copied opaque Core source-form attribution reaches the C0 observer while classified-but-unattributed paths remain explicit. Finite batch matrix mapping transfers; no physical, board or L3 claim. [Evidence](../etc/evidence/t390-s19-source-form-attribution.md). |
 | T390 S18 | Accepted: C0 batch mapping cannot infer Intel rows from ticks; it transfers one shared Core source-form attribution capture before matrix classification. No physical, board or L3 claim. [Evidence](../etc/evidence/t390-s18-c0-batch-disposition.md). |
 | T389 | Stopped by owner-approved requeue: S1 proves no physical board slice can begin while 80386 successful retirement remains nonphysical; S2 archives the invalid candidate and queues a shared CPU qualification before a fresh board task. No board timing, physical-clock or L3 claim. [Audit](../etc/evidence/t389-s2-stop-and-requeue-audit.md). |
 | T388 | Closed: S1--S9 establish the sole publisher, exhaustive exact-or-nonphysical residual disposition and pre-publication physical-contract rejection. No current CPU profile is physically clock-qualified; board work transfers under this restriction. [Closure audit](../etc/evidence/t388-s9-task-closure-audit.md). |
