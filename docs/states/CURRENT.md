@@ -2,29 +2,9 @@
 
 ## Current Work
 
-**Active.** T390 remains open between accepted subtasks. S29 corrects the Model-40 Rev-E ROM decode to the observed low and reset alias windows while returning the fabricated E-segment ROM mirror to the D4 owner; C1 capture remains paused and no board-time or L3 claim follows. [Evidence](../etc/evidence/t390-s29-model40-rom-decode-correction.md).
+**Active.** T390 remains open between accepted subtasks. S30 establishes that the corrected-ROM start path does not reach a meaningful C1 checkpoint within its bounded aggregate replay; the synthetic C0-to-C1 diagnostic remains covered. C1 qualification transfers to a future DeskPro board-startup receiver; no board-time or L3 claim follows. [Evidence](../etc/evidence/t390-s30-corrected-rom-c1-baseline.md).
 
 
-## M5 T390 S30 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner request on 2026-08-17 to continue the CPU audit after S29, first establishing the corrected-ROM real-start baseline and then resuming C1 capture; standing T390 execution authorization remains in force. |
-| Objective | Re-establish a bounded Model-40 real-start checkpoint under the corrected Rev-E ROM decode, then resume the project-owned C1 capture only from that baseline. |
-| Non-goals | No vendor ROM/media retention, raw trace, firmware default dependency, CPU C1 timing-value guess, full C1 qualification, board-clock/device timing claim, public ABI, or L3 conclusion. |
-| Reference Baseline | Accepted T390 S29 ROM decode correction; accepted S28 C0 physical contract; existing project-owned retirement-capture owner and synthetic C0-to-C1 regression; read-only PCjs and 86Box DeskPro behavior references. |
-| Candidate Proposal | [80386 physical-retirement qualification](../proposals/m5-80386-physical-retirement-qualification.md). |
-| Files And ABI Surface | Existing test-only Model-40 retirement-capture owner, its focused synthetic regression, stale platform request-bridge smoke and CPU-probe test-support include repairs that unblock the full gate, and neutral evidence only; a bounded no-trace external bridge probe may compare aggregate checkpoints; no production/session semantics, public interface change or external-source import. |
-| Applicable Rules | External assets remain owner-managed research input; Core retains retirement observation and physical prepublication rejection; a retirement budget is containment only, never coverage completion. |
-| Verification | Synthetic regression proves prefix-aware form aggregation and the C0-to-C1 diagnostic path; bounded formal-asset replay and, if locally runnable, an external bridge probe report only normalized aggregate checkpoints with time budget and cleanup; focused/full gates, documentation gate, diff and P1/P2 review. |
-| Expected Markers | The synthetic capture emits its C0 and C1 diagnostic markers; actual replay reports a normalized corrected-ROM baseline before any C1 conclusion. |
-| Asset Needs | Formal owner-managed ROM and boot media may be read only for bounded non-retained replay; no path, digest, byte, PC, trace, provenance or raw asset output enters Git. |
-| Reporting Requirements | Record the corrected-ROM baseline outcome, C1 reachability/result, capture-boundary changes, similar-issue sweep, residual whole-C1 receiver and P1/P2 review. |
-| Stop Conditions | The replay or bridge probe needs raw asset facts/PC tracing, no meaningful checkpoint can be observed within the declared containment budgets, a capture change alters production/session semantics, or the first C1 form requires a timing-row decision: preserve the nonpublication guard and transfer the batch. |
-| Exit Criteria | Owned synthetic coverage and a bounded corrected-ROM aggregate replay establish whether C1 is reached; any observed C1 result is retained only as a diagnostic boundary, with full-C1 qualification explicitly left to its batch receiver. |
-| Original Owner Request | Execute the current task: globally audit and repair CPU instruction defects, errors and timing in preparation for DeskPro 386 board timing and final L3 closure; continue after the ROM-decode correction. |
-| Similar-Issue Sweep | Sweep capture prefix handling, C0 stop/continuation predicates, terminal labeling, containment budgets, corrected-ROM replay setup and stale platform request names and opaque-session test includes; consult read-only external behavior references without code import; repair in-scope defects or explicitly transfer wider timing work. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T390 S22 `vm-0-5-0390` /
@@ -51,7 +31,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T390 S29 | Accepted: Model-40 Rev-E external-ROM decode now uses the observed low F-segment and 80386 reset aliases, removes the fabricated E-segment mirror, and expands only the private core route capacity needed to assemble the declared Model-40 routes. The current 284-test gate and documentation governance pass; C1 remains paused and no board-time or L3 claim is accepted. [Evidence](../etc/evidence/t390-s29-model40-rom-decode-correction.md). |
+| T390 S30 | Accepted: corrected-ROM aggregate replay remains pre-protected and does not reach C1 within containment; synthetic C0-to-C1 coverage remains. Read-only PCjs/86Box analysis confirms useful behavioral leads but no locally runnable dynamic bridge exists. Two stale test contracts were repaired without changing Core or VM production interfaces. [Evidence](../etc/evidence/t390-s30-corrected-rom-c1-baseline.md). |
 | T389 | Stopped by owner-approved requeue: S1 proves no physical board slice can begin while 80386 successful retirement remains nonphysical; S2 archives the invalid candidate and queues a shared CPU qualification before a fresh board task. No board timing, physical-clock or L3 claim. [Audit](../etc/evidence/t389-s2-stop-and-requeue-audit.md). |
 | T388 | Closed: S1--S9 establish the sole publisher, exhaustive exact-or-nonphysical residual disposition and pre-publication physical-contract rejection. No current CPU profile is physically clock-qualified; board work transfers under this restriction. [Closure audit](../etc/evidence/t388-s9-task-closure-audit.md). |
 | T387 | Closed: source/owner inventory, exact port-`61h` reconciliation and reference qualification transfer the shared physical-timebase then physical-device/firmware prerequisites before any DeskPro L3 audit. No physical-time or L3 claim. [Closure audit](../etc/evidence/t387-s6-task-closure-transfer-audit.md). |

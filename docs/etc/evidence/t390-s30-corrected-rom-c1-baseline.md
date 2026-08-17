@@ -53,3 +53,18 @@ the existing internal session declaration and pointer-form control calls.
 Neither change alters a Core or VM production interface, data layout, or
 runtime behavior.  The full build and 284-test current gate pass after these
 repairs.
+
+## Coordinator acceptance
+
+The coordinator reviewed P1 018f955d against the active S30 packet.  The
+capture changes remain test-only and publish aggregate state only; the two
+build repairs update tests to existing interfaces.  No Core or VM production
+interface, layout, runtime semantics, external source, or owner-managed asset
+was changed.
+
+The corrected-ROM replay reached no meaningful C1 checkpoint within its
+contained budget, while the synthetic transition remains covered.  The
+read-only bridge assessment neither invents a dynamic external result nor
+broadens the selected Model-40 D4 contract.  The full build, 284-test current
+gate, documentation governance gate, and diff hygiene pass.  S30 is accepted;
+C1 qualification stays transferred to a future board-startup receiver.
