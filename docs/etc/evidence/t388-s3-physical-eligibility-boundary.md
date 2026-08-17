@@ -15,7 +15,7 @@ the separate classification bit rather than numerical equality.
 `core_machine_retirement_time_contract` has two typed configurations:
 `CORE_MACHINE_RETIREMENT_TIME_DETERMINISTIC` preserves existing elapsed-time
 and clock-plan behavior, while `CORE_MACHINE_RETIREMENT_TIME_PHYSICAL` refuses
-a successful unallocated source cost at the sole post-refresh publication
+a successful unallocated source cost at the sole `core_machine_publish_elapsed_ticks()` post-refresh publication
 boundary. The rejection occurs before `executed`, result ticks, elapsed ticks,
 timeline, device clocks or the execution provider advance. External
 `core_machine_advance_time()` is invalid in physical mode, so VM composition

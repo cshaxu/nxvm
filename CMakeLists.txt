@@ -3080,6 +3080,11 @@ if(PROJECT_VERIFY_DEPENDENCY_DAG)
             -P "${CMAKE_SOURCE_DIR}/cmake/verify_t388_physical_timebase_inventory.cmake"
         COMMENT "Verifying T388 four-profile physical-timebase inventory"
         VERBATIM)
+    add_custom_target(verify-t388-physical-eligibility-boundary
+        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_t388_physical_eligibility_boundary.cmake"
+        COMMENT "Verifying T388 physical-eligibility boundary"
+        VERBATIM)
 endif()
 
 set(PROJECT_CURRENT_SPECIALIZED_VERIFIER_CANDIDATES
@@ -3095,6 +3100,7 @@ set(PROJECT_CURRENT_SPECIALIZED_VERIFIER_CANDIDATES
     verify-t360-timing-source-inventory
     verify-t388-successful-sentinel-matrix
     verify-t388-physical-timebase-inventory
+    verify-t388-physical-eligibility-boundary
     verify-documentation-governance
     verify-dependency-dag
     verify-live-machine-authority
