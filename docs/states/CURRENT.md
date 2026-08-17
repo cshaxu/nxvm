@@ -2,7 +2,28 @@
 
 ## Current Work
 
-**Active.** T390 remains open between accepted subtasks. S30 establishes that the corrected-ROM start path does not reach a meaningful C1 checkpoint within its bounded aggregate replay; the synthetic C0-to-C1 diagnostic remains covered. C1 qualification transfers to a future DeskPro board-startup receiver; no board-time or L3 claim follows. [Evidence](../etc/evidence/t390-s30-corrected-rom-c1-baseline.md).
+**Active.** T390 S31 is correcting the Model-40 A20-disabled physical-address policy so the 80386 high-reset ROM routes remain reachable while only the documented second-MiB compatibility window mirrors. It re-establishes a bounded corrected-ROM startup baseline; no board-time or L3 claim follows.
+
+## M5 T390 S31 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; T390 remains the latest open numeric task and S31 follows accepted S30. |
+| Admission And Approval | Owner approved continued implementation, external reference comparison and bridge experiments in the current task conversation on 2026-08-17; scope is the confirmed Model-40 startup defect. |
+| Objective | Correct Model-40 A20-disabled physical-address policy so high reset/ROM routes remain reachable while only the documented first-to-second-MiB compatibility window mirrors; re-establish a bounded corrected-ROM startup baseline. |
+| Non-goals | No CPU timing value, board clock, L3 conclusion, ROM/media import, dynamic external-emulator claim, or generic-PC behavioral change. |
+| Reference Baseline | Accepted T390 S30 corrected ROM decode and bounded pre-protected replay; read-only PCjs DeskPro behavior shows only the first-to-second-MiB compatibility mirror while high addresses remain physical. |
+| Candidate Proposal | Continue the accepted [T390 physical-qualification proposal](../proposals/m5-80386-physical-retirement-qualification.md) with a Core-owned A20 wrap-policy configuration selected by the Model-40 composition. |
+| Files And ABI Surface | Core private RAM policy storage and Core configuration field; Model-40 composition selects its profile policy; focused Core/Model-40 tests and evidence only. Existing request, CPU, VM session and firmware interfaces remain unchanged. |
+| Applicable Rules | Execution, coding, architecture, source-policy and documentation authorities from the Task Reading Set; preserve Core ownership of physical routing and VM ownership of profile selection. |
+| Verification | Build and run Model-40 ROM-map, KBC A20, generic RAM-port focused tests; run bounded formal-asset capture only through its existing contained helper; then current-source gate, documentation governance and diff review. |
+| Expected Markers | `M5:T390:S31:MODEL40-A20-POLICY:OK`, existing Model-40 ROM-map markers, generic RAM-port marker, and contained capture summary. |
+| Asset Needs | Read-only owner-managed formal ROM asset; no import, hash, path, bytes, trace or guest media may enter Git. |
+| Reporting Requirements | Record route semantics, focused and bounded outcomes, interface-boundary review, similar-issue sweep, and any transfer without raw protected data. |
+| Stop Conditions | Stop for any failure requiring a changed board contract, protected asset import, generic-policy regression, or a materially broader interface/architecture change. |
+| Exit Criteria | Model-40 A20-off high aliases and second-MiB mirror prove correctly; generic global mask remains covered; bounded replay is recorded; required gates and actual-diff review pass. |
+| Original Owner Request | Continue CPU/DeskPro audit holistically, compare PCjs/86Box read-only where useful, bridge experimentally when available, fix confirmed defects, and preserve Core/VM boundaries. |
+| Similar-Issue Sweep | Search all Core A20 wrapping call sites and Model-40 configuration constructors; classify every production hit and retain focused regression coverage for generic and Model-40 policies. |
 
 
 ## Current Technical Baseline

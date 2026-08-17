@@ -10,8 +10,11 @@ C_INT main(C_VOID)
     static type_unsigned_8 odd[VM_PROFILE_MODEL40_ROM_CHIP_BYTES];
     vm_profile_model40_external_rom rom = { even, odd, sizeof(even) };
     core_machine_run_result result;
+    type_unsigned_8 high_rom_byte = 0u;
     vm_session *session = STD_NULL;
     C_INT failed = 0;
+
+    odd[0u] = 0xa5u;
 
     failed |= vm_session_create_model40_private(&rom, &session) != TYPE_STATUS_OK ||
         session == STD_NULL;
@@ -24,6 +27,9 @@ C_INT main(C_VOID)
                 TYPE_STATUS_OK ||
             core_machine_bus_write(session->core_machine, 0x0060u, 0x01u) !=
                 TYPE_STATUS_OK || session->core_machine->executor_memory.data.flagA20 ||
+            core_machine_memory_read(session->core_machine,
+                VM_PROFILE_MODEL40_ROM_HIGH_RESET_ALIAS_START + 1u, &high_rom_byte,
+                sizeof(high_rom_byte)) != TYPE_STATUS_OK || high_rom_byte != 0xa5u ||
             core_machine_bus_write(session->core_machine, 0x0064u, 0xd1u) !=
                 TYPE_STATUS_OK ||
             core_machine_bus_write(session->core_machine, 0x0060u, 0u) !=
@@ -37,5 +43,6 @@ C_INT main(C_VOID)
     if (failed) return 1;
     STD_PRINTF("M5:T386:S23:D4-SKEY-A20:OK\n");
     STD_PRINTF("M5:T386:S23:CORE-VM-RESET-OWNER:OK\n");
+    STD_PRINTF("M5:T390:S31:MODEL40-A20-POLICY:OK\n");
     return 0;
 }

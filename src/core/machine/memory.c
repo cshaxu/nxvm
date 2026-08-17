@@ -12,7 +12,14 @@
 static type_unsigned_32 core_machine_memory_wrap_a20(const t_ram *ram,
     type_unsigned_32 offset)
 {
-    return offset & (ram->data.flagA20 ? TYPE_MAX_UNSIGNED_32 : ~VRAM_BIT_A20);
+    if (ram->data.flagA20) return offset;
+    if (ram->connect.a20_wrap_policy == CORE_MACHINE_A20_WRAP_FIRST_TO_SECOND_MIB) {
+        if (offset >= VRAM_BIT_A20 && offset < 2u * VRAM_BIT_A20) {
+            return offset - VRAM_BIT_A20;
+        }
+        return offset;
+    }
+    return offset & ~VRAM_BIT_A20;
 }
 
 static type_status core_machine_memory_offset(const t_ram *ram,
@@ -441,6 +448,17 @@ C_VOID core_machine_memory_finalize(t_ram *ram)
     ram->connect.backing_capacity = 0u;
 }
 
+type_status core_machine_memory_set_a20_wrap_policy(t_ram *ram,
+    core_machine_a20_wrap_policy policy)
+{
+    if (ram == STD_NULL || ram->connect.mappings_frozen ||
+        (policy != CORE_MACHINE_A20_WRAP_GLOBAL_MASK &&
+        policy != CORE_MACHINE_A20_WRAP_FIRST_TO_SECOND_MIB)) {
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
+    ram->connect.a20_wrap_policy = policy;
+    return TYPE_STATUS_OK;
+}
 C_VOID core_machine_memory_register_ports(t_ram *ram, t_port *port)
 {
     core_machine_port_add_read(port, 0x0092,

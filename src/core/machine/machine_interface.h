@@ -75,6 +75,7 @@ typedef struct core_machine_config {
     /* Original 80386 silicon accepts MOV CR ModR/M forms with MOD other
      * than 11b, using the r/m field as the general-register selector. */
     type_bool cpu_80386_cr_mov_ignores_mod;
+    core_machine_a20_wrap_policy a20_wrap_policy;
     /* Compatibility base-cost shorthand when instruction_timing.base_ticks is 0. */
     type_unsigned_32 ticks_per_instruction;
     core_machine_instruction_timing instruction_timing;

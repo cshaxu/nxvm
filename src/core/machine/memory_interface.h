@@ -16,6 +16,10 @@ typedef C_VOID (*core_machine_memory_parity_fault_observer)(C_VOID *owner,
 typedef C_VOID (*core_machine_memory_write_observer)(C_VOID *owner,
     type_unsigned_32 physical, type_native_unsigned bytes);
 
+typedef enum core_machine_a20_wrap_policy {
+    CORE_MACHINE_A20_WRAP_GLOBAL_MASK = 0,
+    CORE_MACHINE_A20_WRAP_FIRST_TO_SECOND_MIB = 1
+} core_machine_a20_wrap_policy;
 typedef enum core_machine_memory_access {
     CORE_MACHINE_MEMORY_ACCESS_READ = 0,
     CORE_MACHINE_MEMORY_ACCESS_WRITE

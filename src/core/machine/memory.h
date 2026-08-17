@@ -60,6 +60,7 @@ typedef struct {
         device_providers[CORE_MACHINE_MEMORY_DEVICE_PROVIDER_CAPACITY];
     type_native_unsigned device_provider_count;
     type_bool mappings_frozen;
+    core_machine_a20_wrap_policy a20_wrap_policy;
 } t_ram_connect;
 
 typedef struct t_ram {
@@ -90,6 +91,8 @@ type_status core_machine_memory_initialize_for(t_ram *ram, STD_SIZE_T bytes,
 C_VOID core_machine_memory_reset(t_ram *ram);
 C_VOID core_machine_memory_finalize(t_ram *ram);
 C_VOID core_machine_memory_register_ports(t_ram *ram, t_port *port);
+type_status core_machine_memory_set_a20_wrap_policy(t_ram *ram,
+    core_machine_a20_wrap_policy policy);
 
 
 type_status core_machine_memory_allocate_for(t_ram *ram, STD_SIZE_T bytes);

@@ -4548,6 +4548,8 @@ static type_status core_machine_create_internal(
         !core_machine_valid_cpu_profile(
             core_machine_resolve_cpu_profile(config->cpu_profile)) ||
         !core_machine_valid_fpu_profile(config->fpu_profile) ||
+        (config->a20_wrap_policy != CORE_MACHINE_A20_WRAP_GLOBAL_MASK &&
+        config->a20_wrap_policy != CORE_MACHINE_A20_WRAP_FIRST_TO_SECOND_MIB) ||
         !core_machine_clock_plan_is_valid(&config->clock_plan) ||
         !core_machine_retirement_time_contract_is_valid(
             config->retirement_time_contract) ||
@@ -4648,6 +4650,11 @@ static type_status core_machine_create_internal(
             memory_bytes, test_allocation) != TYPE_STATUS_OK) {
         core_machine_destroy(machine);
         return TYPE_STATUS_NO_MEMORY;
+    }
+    if (core_machine_memory_set_a20_wrap_policy(&machine->executor_memory,
+            config->a20_wrap_policy) != TYPE_STATUS_OK) {
+        core_machine_destroy(machine);
+        return TYPE_STATUS_INVALID_ARGUMENT;
     }
     /* The 80386 reset vector is at physical FFFFFFF0.  Configurations with
      * at least 1 MiB of backing RAM retain the PC/AT firmware window's final

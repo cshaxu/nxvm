@@ -44,8 +44,6 @@ C_INT main(C_VOID)
             VM_PROFILE_MODEL40_ROM_COMPATIBILITY_ALIAS_START, 0x11u));
         CHECK(read_byte(session->core_machine,
             VM_PROFILE_MODEL40_ROM_COMPATIBILITY_ALIAS_START + 1u, 0x22u));
-        CHECK(core_machine_set_a20(session->core_machine, 1) == TYPE_STATUS_OK);
-
         CHECK(read_byte(session->core_machine,
             VM_PROFILE_MODEL40_ROM_HIGH_ALIAS_START, 0x11u));
         CHECK(read_byte(session->core_machine,
@@ -54,6 +52,13 @@ C_INT main(C_VOID)
             VM_PROFILE_MODEL40_ROM_HIGH_RESET_ALIAS_START, 0x11u));
         CHECK(read_byte(session->core_machine,
             VM_PROFILE_MODEL40_ROM_HIGH_RESET_ALIAS_START + 1u, 0x22u));
+        CHECK(write_byte(session->core_machine, 0x00000020u, 0xa5u,
+            TYPE_STATUS_OK));
+        CHECK(read_byte(session->core_machine, 0x00100020u, 0xa5u));
+        CHECK(core_machine_set_a20(session->core_machine, TYPE_TRUE) == TYPE_STATUS_OK);
+        CHECK(write_byte(session->core_machine, 0x00100020u, 0xa5u,
+            TYPE_STATUS_FAULT));
+        CHECK(core_machine_set_a20(session->core_machine, TYPE_FALSE) == TYPE_STATUS_OK);
 
         CHECK(read_byte(session->core_machine, VM_PROFILE_MODEL40_D4_CONTROL_PHYSICAL,
             0xbfu));
