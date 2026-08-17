@@ -2,24 +2,17 @@
 
 ## Current Work
 
-- **S25 accepted:** `f3701196` and `baf0a8eb` complete the external-ROM
-  startup compatibility receiver.  Generic immutable-ROM aliases, bounded
-  original-80386 control-register compatibility, D4 mapping/reset and shared
-  PC/AT refresh wiring are proven without a profile-local CPU path.
-  The optional owner-supplied replay reports only that the self-contained
-  consumer is not reached.  CPU-to-PIT calibration transfers to the queued
-  DeskPro board bus/device timing candidate; no timing or L3 claim follows.
-  [Evidence](../etc/evidence/t386-s25-rom-alias-mechanism.md).
 - **Next admission:** continue T386's selected-device functional matrix with
-  the next unclosed receiver.  Current S25 packet is closed; no implementation
-  work proceeds until the next approved packet is installed.
+  the next unclosed receiver. No implementation work proceeds until its
+  approved packet is installed.
+
 ## Current Technical Baseline
 
-- **Current developer artifact:** T386 S23 `vm-0-5-0389` /
+- **Current developer artifact:** T386 S25 `vm-0-5-0389` /
   `build/output/nxvm_0_5_0389.exe`, SHA-256
   `197BC89BD2476F10D34559DC4EB71A35EEF7F6C58DFA8ECFEE9F8F592817836D`.
-  S24 preserves the artifact and retains its selected 1.2-MB logical-FDC proof
-  in [S24 evidence](../etc/evidence/t386-s24-model40-12mb-fdc.md).
+  S25 preserves the artifact and accepts the startup-compatibility receiver in
+  [S25 evidence](../etc/evidence/t386-s25-rom-alias-mechanism.md).
 - **Model-339 readiness:** T383 S1 accepts the current runnable source graph
   under the frozen deterministic event-and-bus L3 contract. This is only the
   selected Model 339 configuration and preserves every documented physical,
@@ -38,8 +31,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T386 S24 | Accepted logical-FDC receiver: the fixed 1.2-MB raw-IMG geometry, selected 765A command/state/error/reset behavior and production DMA2/IRQ6 path are proven. An external ROM initializes but does not reach the boot-sector consumer; S25 owns trace-backed startup compatibility without a CPU pre-judgment. [Evidence](../etc/evidence/t386-s24-model40-12mb-fdc.md). |
-| T386 S23 | Accepted: D4-SKEY uses the existing 8042 `D1h` output-port A20/reset owner, while a failed CPU double fault produces shutdown that only a D4-configured board consumes through the existing cold-reset lifecycle. Non-D4 terminal behavior remains isolated; FDC/HDC/CECG receivers and timing remain open. [Evidence](../etc/evidence/t386-s23-d4-skey-reset-arbitration.md). |
+| T386 S25 | Accepted external-ROM startup-compatibility receiver: generic immutable-ROM aliases, bounded original-80386 control-register compatibility, D4 mapping/reset and shared PC/AT refresh wiring are proven without a profile-local CPU path. The optional owner-supplied replay does not reach its self-contained consumer; source-backed CPU-to-PIT calibration transfers to DeskPro board bus/device timing, with no timing or L3 claim. [Evidence](../etc/evidence/t386-s25-rom-alias-mechanism.md). |
 | T385 | Closed: the selected Model-40 80386DX-16 consumes the shared 80386 CPU/state/retirement owners without a DeskPro CPU fork; a clean current-source 251/251 gate passed, while functionality and board timing transfer unchanged. [Closure audit](../etc/evidence/t385-s1-task-closure-audit.md). |
 | T384 | Closed: the Model-40 capability audit freezes its original Compaq system board/storage ledger and owner-selected color EGA, keyboard and external-ROM constraint; its shared-VADP IBM/Compaq personality boundary transfers CPU, functional and timing work without making a runnable or L3 claim. [Closure audit](../etc/evidence/t384-s2-task-closure-audit.md). |
 | T383 | Closed: independent current-source replay accepts the frozen Model-339 deterministic L3 contract after T380's strict-start repair; 251/251 current gate and focused matrix are retained in [evidence](../etc/evidence/t383-s1-model339-current-source-reaudit.md). |
