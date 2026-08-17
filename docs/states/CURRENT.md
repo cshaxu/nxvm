@@ -2,7 +2,24 @@
 
 ## Current Work
 
-**Active.** T390 remains open between accepted subtasks. S35 reconciles the accepted S11-S34 evidence record and confirms the current safe boundary: both Model-40 construction paths retain deterministic retirement because C0 is finite but does not have an enforceable profile-wide qualification boundary. The next CPU receiver is a bounded C1-stage admission/ledger decision. Core/VM interfaces remain unchanged; board-time and L3 work remain blocked. [Evidence](../etc/evidence/t390-s35-convergence-reconciliation.md).
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation - M5 T390 S36. T390 is the latest open numeric task; S35 is its latest accepted progress. |
+| Admission And Approval | Owner: user. Approval: this thread's continuing instruction to implement the global CPU audit, repair confirmed defects, and preserve the Core/VM interface boundary, 2026-08-17. Scope: record and correct the discovered T390/C1 dependency cycle through Queue/proposal/history evidence only. |
+| Objective | Establish whether T390 can admit C1 under current startup evidence; if not, stop T390 without a physical claim and queue the earliest bounded DeskPro startup-semantic receiver before renewed physical qualification. |
+| Non-goals | No source, ABI, Core/VM interface, runtime profile, ROM/media, asset, board-time, device-time, CPU timing-row, physical-clock, or L3 change. |
+| Reference Baseline | Accepted T390 S30, S32, S34 and S35; T386 S29 functional closure; current physical-retirement and board-timing proposals. |
+| Candidate Proposal | `docs/proposals/m5-80386-physical-retirement-qualification.md`; proposed startup-semantic candidate is created only if the documented cycle is confirmed. |
+| Files And ABI Surface | `docs/states/CURRENT.md`, `docs/states/QUEUE.md`, `docs/proposals/`, `docs/history/M5-T390-80386-physical-retirement-qualification.md`, `docs/etc/README.md`, and indexed S36 evidence only. No source or interface surface changes. |
+| Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`, `docs/README.md`, and `CONTRIBUTING.md`; architecture/coding rules apply as unchanged-boundary constraints. |
+| Verification | Documentation Governance Gate; `git diff --check`; actual-diff review; dependency sweep across T386 S29, T390 S16/S30/S32/S34/S35, the physical proposal, board proposal, Queue, and TODO. |
+| Expected Markers | `M5:T390:S36:STOP-AND-REQUEUE:OK`. |
+| Asset Needs | None. No asset, firmware, media, local path, hash, byte, trace, or external repository content is read, added, or changed. |
+| Reporting Requirements | Report whether the cycle is confirmed, the exact reordered receiver, pushed commits, and retained boundaries; do not claim CPU, board, physical-clock, or L3 completion. |
+| Stop Conditions | Stop if a proposed receiver requires a Core/VM interface change, claims timing from a startup observation, imports/researches external firmware, or cannot state a bounded acceptance condition. |
+| Exit Criteria | The dependency cycle is either disproved with direct authority or corrected by an ordered, bounded Queue candidate; T390 is truthfully closed or remains open with a defined executable C1 receiver; documentation checks pass. |
+| Original Owner Request | Continue the global CPU instruction/timing audit, repair confirmed issues, prepare DeskPro board timing and L3 closure, and preserve Core/VM boundaries. |
+| Similar-Issue Sweep | T389 stop/requeue, T386 functional closure, T390 S16/S30/S32/S34/S35, current Queue proposals, and TODO startup/firmware boundaries. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T390 S22 `vm-0-5-0390` /

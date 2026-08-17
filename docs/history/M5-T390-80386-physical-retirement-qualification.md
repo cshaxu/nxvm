@@ -11,7 +11,7 @@ physical-device, firmware, ROM/media or L3 claim by itself.
 
 ## Active Subtask
 
-No subtask is active. T390 remains open with S35 retained as compact accepted progress.
+S36 is active under `states/CURRENT.md`. It is documentation-only dependency reconciliation: no CPU, Core/VM, profile, firmware/media, asset, physical-clock, board-time, or L3 behavior changes.
 
 ## Accepted Progress
 
