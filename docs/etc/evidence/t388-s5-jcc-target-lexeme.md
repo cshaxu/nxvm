@@ -9,7 +9,8 @@ taken 80386 `Jcc`, `core_machine_cpu_execution_preview_lexeme()` scans the
 current target `EIP` through copied CPU/instruction state with preview mode.
 It clears transaction, trace and diagnostic providers, then derives only the
 next target instruction's lexical `component_count`. The 80386 timing owner
-uses that count with `CORE_MACHINE_80386_JCC_TAKEN_TICKS` for the Intel PRM section 17.2.2.3 `m` term. It does not
+uses that count with `CORE_MACHINE_80386_JCC_TAKEN_TICKS` for the Intel PRM
+section 17.2.2.3 `m` term. It does not
 execute the target or publish an elapsed tick itself.
 
 A preview failure or unavailable target reaches
@@ -20,8 +21,8 @@ result/timeline/device/provider publication. No profile is enabled by this S.
 ## Regression
 
 `core-machine-cpu-timing-preview-smoke` now executes a taken near `Jcc` in a
-32-bit code segment (`0F 85` with a 32-bit self target), then proves its target
-lexeme is available, has the expected six-byte/three-component layout, and
+16-bit code segment with `66h 0F 84 rel32`, then proves its forward `HLT`
+target lexeme is available with the expected one-byte/one-component layout, and
 leaves the complete machine observation unchanged. The existing short-loop
 case retains the 16-bit-code short branch route. The unavailable/limited fetch
 case retains failure-safe, nonpublishing preview behavior.
