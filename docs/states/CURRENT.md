@@ -2,10 +2,24 @@
 
 ## Current Work
 
-**Current progress:** T390 S1 is accepted. It inventories current 80386
-exact-or-nonphysical retirement routes and confirms there is no approved
-Model-40 external-ROM execution corpus. The next receiver is a bounded BYOB
-observation contract; no physical profile, board clock or L3 claim is enabled.
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation - T390 S2. |
+| Admission And Approval | Owner approved continuation on 2026-08-17. The owner also authorizes use of external owner-managed ROM and guest-media assets, provided no vendor ROM, guest media, hash catalogue, local path, or trace is committed. Scope is limited to a BYOB observation contract and current trace-gap decision; it does not authorize physical-profile enablement. |
+| Objective | Freeze the bounded external Model-40 BYOB corpus/observation contract required to determine whether every successful 80386 retirement through a selected checkpoint is exact or stops before physical publication; record whether existing production trace can supply its required normalized observation. |
+| Non-goals | No ROM/media import, catalogue, download mechanism, committed trace, emulator-as-oracle result, CPU timing-row assignment, Core or VM code change, physical retirement selection, board-clock ratio, device timing, firmware-completeness or Model-L3 claim. |
+| Reference Baseline | T390 S1 inventory; T388 S9 physical rejection closure; selected DeskPro Model 40 profile/ROM BYOB boundary retained by T386. Existing current trace records retirement PC and elapsed ticks only. |
+| Candidate Proposal | [80386 physical-retirement qualification](../proposals/m5-80386-physical-retirement-qualification.md). |
+| Files And ABI Surface | `docs/states/CURRENT.md`; `docs/history/M5-T390-80386-physical-retirement-qualification.md`; `docs/etc/evidence/t390-s2-model40-byob-observation-contract.md`; `docs/etc/README.md`. No source or ABI surface. |
+| Applicable Rules | Execution lifecycle, actual-change review, documentation topology and source/research policy apply. The observation contract applies recorder-trace containment if a later S launches it. No rule exception is requested. |
+| Verification | Review the current Model-40 BYOB composition and `core/machine` trace event/capacity owners; verify the contract neither stores protected asset identity nor turns external references into an oracle; run documentation-governance and whitespace checks. |
+| Expected Markers | `M5:T390:S2:MODEL40-BYOB-OBSERVATION-CONTRACT:OK`; explicit `CURRENT-TRACE-INSUFFICIENT` decision; a named next receiver if a shared capture boundary is required. |
+| Asset Needs | External owner-managed Model-40 ROM pair and bootable 1.2 MB DOS medium may be identified only outside the repository. This S does not launch them or retain their local paths, hashes, bytes, catalogue entries, or traces. |
+| Reporting Requirements | Report contract decision, trace sufficiency, gate result, commit and pushed state; link durable evidence and name the next bounded receiver. |
+| Stop Conditions | Stop and transfer if the required observation requires a new public/test-only control path, protected asset retention, unbounded recording, an undefined checkpoint, or a wider CPU mechanism than the contract can isolate. |
+| Exit Criteria | Indexed evidence defines exact profile/configuration abstraction, normalized observation fields, reset/checkpoint/terminal states, hard recorder budgets and cleanup, and proves from source inspection whether existing trace can meet them. Task history and current state truthfully retain the S result. |
+| Original Owner Request | Continue the queue after owner-approved requeue; qualify the shared 80386 retirement prerequisite before returning to DeskPro board timing, using external ROM/media only outside the repository. |
+| Similar-Issue Sweep | Inspect all current CPU-retire trace emission and Model-40 BYOB construction sites, not just the first observed call, for enough context to distinguish exact from source-unallocated successful retirement. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T386 S28 `vm-0-5-0389` /

@@ -33,3 +33,13 @@ asset, trace, clock, profile, artifact or L3 claim. The source sweep correctly
 keeps existing exact rows distinct from residual nonphysical successes and
 identifies the BYOB observation contract as the next bounded receiver.
 Documentation governance passes after push.
+### S2: Model-40 BYOB Observation Contract
+
+S2 freezes the external owner-managed corpus, checkpoint, normalized
+pre-publication observation and recorder-containment requirements for physical
+80386 qualification. Its retained [contract](../etc/evidence/t390-s2-model40-byob-observation-contract.md)
+finds the current generic trace insufficient: it has no instruction/context or
+classifier disposition, and rejected unallocated successes occur before its
+retirement event. The next receiver is a bounded shared-Core production
+observation/capture slice. No external asset, trace, physical profile, board
+clock or L3 claim enters the repository.
