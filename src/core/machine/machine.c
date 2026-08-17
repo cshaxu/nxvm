@@ -209,6 +209,9 @@ static C_INT core_machine_80386_timing_has_source_prefixes(
 typedef enum core_machine_source_timing_form {
     CORE_MACHINE_SOURCE_TIMING_NOP,
     CORE_MACHINE_SOURCE_TIMING_CLC,
+    CORE_MACHINE_SOURCE_TIMING_CLI,
+    CORE_MACHINE_SOURCE_TIMING_SAHF,
+    CORE_MACHINE_SOURCE_TIMING_MOV_SREG_REGISTER,
     CORE_MACHINE_SOURCE_TIMING_MOV_IMMEDIATE,
     CORE_MACHINE_SOURCE_TIMING_MOV_REGISTER_REGISTER,
     CORE_MACHINE_SOURCE_TIMING_MOV_RM_REGISTER,
@@ -454,6 +457,9 @@ static const core_machine_source_timing_entry
     core_machine_80386_source_timing_ledger[] = {
     { CORE_MACHINE_SOURCE_TIMING_NOP, 3u },
     { CORE_MACHINE_SOURCE_TIMING_CLC, 2u },
+    { CORE_MACHINE_SOURCE_TIMING_CLI, 3u },
+    { CORE_MACHINE_SOURCE_TIMING_SAHF, 3u },
+    { CORE_MACHINE_SOURCE_TIMING_MOV_SREG_REGISTER, 2u },
     { CORE_MACHINE_SOURCE_TIMING_MOV_IMMEDIATE, 2u },
     { CORE_MACHINE_SOURCE_TIMING_MOV_REGISTER_REGISTER, 2u },
     { CORE_MACHINE_SOURCE_TIMING_MOV_RM_REGISTER, 2u },
@@ -2904,6 +2910,22 @@ static C_INT core_machine_80386_source_instruction_cost(core_machine *machine,
     case 0xf8u:
         *out_ticks = core_machine_80386_source_timing_lookup(machine,
             CORE_MACHINE_SOURCE_TIMING_CLC);
+        return 1;
+    case 0xfau:
+        *out_ticks = core_machine_80386_source_timing_lookup(machine,
+            CORE_MACHINE_SOURCE_TIMING_CLI);
+        return 1;
+    case 0x9eu:
+        *out_ticks = core_machine_80386_source_timing_lookup(machine,
+            CORE_MACHINE_SOURCE_TIMING_SAHF);
+        return 1;
+    case 0x8eu:
+        if (!core_machine_source_timing_modrm_is_memory(data, prefixes)) {
+            *out_ticks = core_machine_80386_source_timing_lookup(machine,
+                CORE_MACHINE_SOURCE_TIMING_MOV_SREG_REGISTER);
+        } else {
+            core_machine_source_timing_mark_unallocated(machine, out_ticks);
+        }
         return 1;
     case 0x88u: case 0x89u:
         *out_ticks = core_machine_80386_source_timing_lookup(machine,

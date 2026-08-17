@@ -4,11 +4,31 @@
 
 **Active.** T390 remains open between accepted subtasks.
 
+## M5 T390 S4 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | The owner's continuing request is to follow the governance Queue through DeskPro 386 functional and L3 work, and explicitly authorizes owner-managed ROM/media use outside the repository. S3 is accepted and T390 remains its prerequisite. This S admits only a bounded external BYOB corpus/matrix receiver. |
+| Objective | Use the accepted copied Core retirement-observation boundary with an owner-managed, uncommitted selected Model-40 external corpus to record a finite successful 80386 form/context matrix, then bind each candidate only to an Intel-primary exact timing row or retain it nonphysical. |
+| Non-goals | No firmware/media/ROM commit, repository path/hash/catalogue, guest binary/traces, default runtime dependency, board clock ratio, device timing, guessed/range midpoint timing, broad CPU completeness, physical-contract enablement before the matrix is complete, or Model-L3 claim. |
+| Reference Baseline | T390 S1 inventory, S2 BYOB observation contract, S3 provider/evidence and accepted P3 `d3d84612`; the current profile remains physically nonqualified under T388 until this task proves otherwise. |
+| Candidate Proposal | [80386 physical-retirement qualification](../proposals/m5-80386-physical-retirement-qualification.md). |
+| Files And ABI Surface | The bounded 80386 Core source-timing classifier/ledger and its existing timing regression may add only exact real-mode, no-prefix forms observed by the external receiver; the external owner-managed runner/input; normalized non-proprietary evidence, T390 history/current and artifact configuration. No new public API and no vendor firmware, guest media, raw trace or local asset identity enters Git. |
+| Applicable Rules | Source/research policy BYOB and third-party-firmware constraints; architecture single-owner/copy boundary; execution evidence/actual-change review; coding rules only if a production change becomes necessary; documentation topology. No exception is requested. |
+| Verification | Inventory selectable external inputs without recording their path/hash/content; prove a finite capture checkpoint through the S3 provider; map every observed successful form/context to cited Intel-primary exact row or explicit nonphysical reason; prove classified real-mode exact rows and rejected non-matching forms; repeat reset/nonpublication checks; run focused proofs, applicable source/caller sweep, governance and full current gate. |
+| Expected Markers | Existing `M5:T390:S3:RETIREMENT-OBSERVATION:OK`; an S4 matrix/evidence marker only if a corpus checkpoint is reached; otherwise a truthful bounded transfer. |
+| Asset Needs | Owner-managed external Model-40 ROM/media may be read solely outside the repository under the source policy. No local path, filename, hash, bytes, trace, or guest-derived payload may be committed. |
+| Reporting Requirements | Report corpus availability only at abstract capability level, capture checkpoint, all observed form/context dispositions, primary-row citations or exact transfer, source changes if any, verification, push state, and whether a later physical-selection S is admissible. |
+| Stop Conditions | Stop and transfer if no compliant external corpus can reach a selected checkpoint, a needed capture needs raw executor exposure/second callback, any form lacks exact Intel evidence, the corpus reaches a nonphysical success, or completion would need a board/device change. Do not enable partial physical execution. |
+| Exit Criteria | A finite selected corpus matrix has complete exact-primary/nonphysical dispositions and replay evidence, or the first unavailable requirement is truthfully transferred; no unsupported physical or L3 claim is made. |
+| Original Owner Request | Continue the Queue-governed DeskPro work, use reusable Core mechanisms rather than test-only APIs, freely use external ROM/media without committing them, and do not let emulator availability block bridge/differential research. |
+| Similar-Issue Sweep | Inspect every S3 observer install/capture/publish route, selected Model-40 composition boundary and external-input bridge; for every observed form inspect prefix, operand/address size, mode, privilege, descriptor, lexical/repeat and reset context before assigning or rejecting a timing row. |
 ## Current Technical Baseline
 
-- **Current developer artifact:** T390 S3 `vm-0-5-0390` /
+- **Current developer artifact:** T390 S4 `vm-0-5-0390` /
   `build/output/nxvm_0_5_0390.exe`, SHA-256
-  `361360730ADC2E75F01A2FD45D7F07E272D394CF8DBA8E49FB26D02318818BFE`.
+  `8618F97B6987A4A0D12D932A78346F7F72DD4F1E07D2A7F1188D35889AB271ED`.
   T386 closes selected-device functional completeness at S29; its retained
   [closure audit](../etc/evidence/t386-s29-functional-closure-audit.md) fixes
   HDC current-gate coverage and transfers board, firmware and physical work.

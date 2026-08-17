@@ -130,13 +130,72 @@ static C_INT timing_ledger_test_baseline(C_VOID)
 {
     static const type_unsigned_8 nop[] = { 0x90u };
     static const type_unsigned_8 clc[] = { 0xf8u };
+    static const type_unsigned_8 cli[] = { 0xfau };
+    static const type_unsigned_8 sahf[] = { 0x9eu };
+    static const type_unsigned_8 mov_sreg_register[] = { 0x8eu, 0xd8u };
     static const type_unsigned_8 mov_imm[] = { 0xb8u, 0x34u, 0x12u };
     static const type_unsigned_8 mov_register[] = { 0x8bu, 0xc1u };
 
     return !timing_ledger_case(nop, sizeof(nop), 1u, 3u) &&
         !timing_ledger_case(clc, sizeof(clc), 1u, 2u) &&
-        !timing_ledger_case(mov_imm, sizeof(mov_imm), 1u, 2u) &&
+        !timing_ledger_case(cli, sizeof(cli), 1u, 3u) &&
+        !timing_ledger_case(sahf, sizeof(sahf), 1u, 3u) &&
+        !timing_ledger_case(mov_sreg_register, sizeof(mov_sreg_register), 1u,
+            2u) && !timing_ledger_case(mov_imm, sizeof(mov_imm), 1u, 2u) &&
         !timing_ledger_case(mov_register, sizeof(mov_register), 1u, 2u);
+}
+
+static C_INT timing_ledger_physical_case(const type_unsigned_8 *program,
+    STD_SIZE_T program_bytes, type_status expected_status,
+    type_unsigned_64 expected_ticks)
+{
+    const core_machine_config config = {
+        .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
+        .retirement_time_contract = CORE_MACHINE_RETIREMENT_TIME_PHYSICAL
+    };
+    const core_machine_run_budget budget = { 1u, 0u };
+    core_machine_run_result result;
+    timing_ledger_state state = { 0u, 0u, 0u };
+    core_machine *machine = STD_NULL;
+    C_INT failed = core_machine_create(&config, &machine) != TYPE_STATUS_OK ||
+        test_core_machine_fixture_register_reset_mapping(machine,
+            TIMING_LEDGER_RESET_LINEAR, TIMING_LEDGER_RESET_PHYSICAL,
+            TIMING_LEDGER_WINDOW_BYTES) != TYPE_STATUS_OK ||
+        !test_core_machine_fixture_bind_freeze_reset(machine,
+            &timing_ledger_execution_provider, &state) ||
+        !timing_ledger_load(machine, program, program_bytes) ||
+        core_machine_run(machine, budget, &result) != expected_status;
+
+    if (!failed && expected_status == TYPE_STATUS_OK) {
+        failed |= result.reason != CORE_MACHINE_STOP_BUDGET ||
+            result.executed != 1u || result.ticks != expected_ticks ||
+            result.elapsed_ticks != expected_ticks ||
+            state.advanced_ticks != expected_ticks;
+    }
+    if (!failed && expected_status == TYPE_STATUS_FAULT) {
+        failed |= result.reason != CORE_MACHINE_STOP_FAULT ||
+            result.executed != 0u || result.ticks != 0u ||
+            result.elapsed_ticks != 0u || state.advanced_ticks != 0u;
+    }
+    core_machine_destroy(machine);
+    return failed;
+}
+
+static C_INT timing_ledger_test_physical_classifier_boundary(C_VOID)
+{
+    static const type_unsigned_8 cli[] = { 0xfau };
+    static const type_unsigned_8 sahf[] = { 0x9eu };
+    static const type_unsigned_8 mov_sreg_register[] = { 0x8eu, 0xd8u };
+    static const type_unsigned_8 mov_sreg_memory[] = {
+        0x8eu, 0x1eu, 0x00u, 0x10u
+    };
+
+    return timing_ledger_physical_case(cli, sizeof(cli), TYPE_STATUS_OK, 3u) ||
+        timing_ledger_physical_case(sahf, sizeof(sahf), TYPE_STATUS_OK, 3u) ||
+        timing_ledger_physical_case(mov_sreg_register,
+            sizeof(mov_sreg_register), TYPE_STATUS_OK, 2u) ||
+        timing_ledger_physical_case(mov_sreg_memory,
+            sizeof(mov_sreg_memory), TYPE_STATUS_FAULT, 0u);
 }
 
 static C_INT timing_ledger_test_memory(C_VOID)
@@ -345,6 +404,7 @@ C_INT main(C_VOID)
     if (timing_ledger_test_unavailable_and_fault()) return 5;
     if (timing_ledger_test_budget_overflow_and_reset()) return 6;
     if (timing_ledger_test_compatibility_is_not_source_truth()) return 7;
+    if (timing_ledger_test_physical_classifier_boundary()) return 8;
     STD_PRINTF("M5:T357:S3:INSTRUCTION-TIMING-LEDGER:OK\n");
     return 0;
 }

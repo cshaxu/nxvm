@@ -11,7 +11,7 @@ physical-device, firmware, ROM/media or L3 claim by itself.
 
 ## Active Subtask
 
-S1 is the source/classifier/corpus inventory defined by the active packet.
+S4 is the contained Model-40 preboot corpus/matrix receiver defined by the active packet.
 ## Accepted Progress
 
 ### S1: 80386 Physical-Qualification Inventory
@@ -77,3 +77,14 @@ contracts, and the strict matrix keeps rather than excludes the new smoke.
 T390 remains open: the next receiver must conduct the owner-managed external
 BYOB corpus/matrix run and bind observed form/context to Intel-primary timing
 rows before any physical CPU or DeskPro board-time claim.
+### S4: Model-40 Preboot Retirement Matrix (Implementation Pending Acceptance)
+
+S4's implementation P adds a normalized, operator-run BYOB Model-40
+preboot observer tool, records a finite 64-retirement real-mode prefix, and
+repairs the three exact source rows that the prefix previously left
+unallocated: `CLI`, `SAHF`, and register-source `MOV Sreg,r/m16`. The
+retained [matrix evidence](../etc/evidence/t390-s4-model40-preboot-retirement-matrix.md)
+records its 17 normalized forms, focused physical-boundary regression, clean
+current gates and developer artifact. It expressly transfers the full
+boot-sector corpus; it makes no physical Model-40, board-timing or L3 claim.
+Coordinator actual-change review and acceptance remain required.
