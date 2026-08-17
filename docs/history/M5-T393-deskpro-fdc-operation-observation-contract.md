@@ -58,6 +58,7 @@ focused FDC/capture regressions pass. One owner-managed BYOB run reaches its
 later successful `READ DATA`; this is bounded non-success, not C1 or physical
 qualification. T393 remains open only for a separately admitted decision on
 whether any further finite observation receiver exists.
+
 ### S5: Task Closure Audit
 
 S5 reconciles every frozen FDC publisher disposition, the copied Core/VM
@@ -66,3 +67,14 @@ C1 endpoint or physical conclusion; it completes the selected finite consumer
 disposition. The task may close only after P1 actual-change review archives the
 proposal and removes its Queue entry.
 [Evidence](../etc/evidence/t393-s5-task-closure-audit.md).
+## Task Closure Acceptance
+
+After actual-change review of P1 `f15164f1`, the coordinator accepts S5 and
+closes T393. The P1 changed only the active packet, durable evidence, history
+and supporting index; its complete publisher/contract/consumer reconciliation
+matches the task completion standard. P2 archives the retained proposal beside
+this history record and removes its Queue entry. Focused FDC/capture
+regressions, direct reference sweep, diff hygiene and documentation governance
+pass. The next ordered receiver remains shared 80386 physical-retirement
+qualification; no C1, CPU physical-time, DeskPro board, firmware or L3 gate
+opens from this closure.

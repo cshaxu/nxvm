@@ -2,28 +2,7 @@
 
 ## Current Work
 
-**Active: M5 T393 S5 Continuation.** Reconcile the frozen FDC publication universe, copied Core/VM contract and bounded C0A consumer result, then close T393 and release only its stated downstream prerequisite. No new FDC observation, C1, timing, board or L3 claim is in scope.
-
-## M5 T393 S5 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner previously authorized continued implementation; T393 S4 accepted the final bounded consumer result. |
-| Objective | Perform the T393 task-level closure audit and archive its completed candidate topology after P1 review. |
-| Non-goals | No new runtime behavior, FDC observation, CPU/board timing, firmware/media import, C1, physical or L3 claim. |
-| Reference Baseline | T393 S1 publisher inventory, S2 copied terminal contract and S4 bounded C0A-sequenced non-success. |
-| Candidate Proposal | [DeskPro FDC operation observation contract](../proposals/m5-deskpro-fdc-operation-observation-contract.md). |
-| Files And ABI Surface | Current/history/proposal/Queue/evidence/index only; no production source or public ABI. |
-| Applicable Rules | Execution task closure and actual-change review; Documentation topology/index/Queue rules; Architecture and source-policy boundaries are unchanged. |
-| Verification | Direct source/history/Queue reference sweep, focused FDC/capture regressions, documentation governance and diff review. |
-| Expected Markers | One closure audit, one task-level history acceptance, archived proposal and no T393 Queue entry after P2. |
-| Asset Needs | None; no asset is read, changed, imported or recorded. |
-| Reporting Requirements | Record all completion-standard elements, residual transfer and P1/P2 actual-change review. |
-| Stop Conditions | Stop if closure requires a new FDC publisher/consumer, raw trace, new physical claim or production change. |
-| Exit Criteria | T393 is closed with every frozen publisher covered/transferred, copied contract retained, selected consumer disposition recorded, and only stated downstream work released. |
-| Original Owner Request | Continue the global CPU instruction/timing audit while preserving Core/VM boundaries. |
-| Similar-Issue Sweep | Sweep proposal/Queue/history/current/index references and confirm no stale active FDC-candidate topology remains. |
+**T393 closed.** The complete FDC publication/consumer contract concludes in bounded C0A non-success; only the queued shared 80386 physical-retirement qualification remains its downstream receiver. No C1, physical, board or L3 claim opens.
 
 ## Current Technical Baseline
 
@@ -51,7 +30,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T393 S4 | Accepted: Test-only C0A-sequenced copied FDC result diagnostic proves synthetic success/failure/reset boundaries; the bounded owner-managed BYOB run reaches no later successful drive-0 `READ DATA`. No C1 or physical claim. [Evidence](../etc/evidence/t393-s4-fdc-read-data-c0a-diagnostic.md). |
+| T393 S5 | Closed: T393 freezes and implements the copied FDC terminal contract, then completes bounded C0A candidate observation without a successful post-C0A drive-0 `READ DATA`; transfer only shared 80386 physical-retirement qualification. No C1, physical, board or L3 claim. [Closure audit](../etc/evidence/t393-s5-task-closure-audit.md). |
 | T392 | Closed: S1-S5 exhaust copied C1, VM/session and FDC operation candidates, then repair the missed proposal archival and stale Queue entry; no endpoint or defect exists. Only a separately admitted generic immutable device-operation snapshot plus selected consumer contract can proceed. No Core/VM ABI, CPU timing, physical, board, firmware or L3 claim. [Corrective audit](../etc/evidence/t392-s5-closure-topology-corrective-audit.md). |
 | T391 | Closed: S1-S8 establish the bounded C0A startup predecessor, complete C1 aggregate disposition and the truthful transfer that C1 physical qualification remains blocked pending a new finite checkpoint or earliest-owner defect. No Core/VM interface, timing, physical, board, firmware or L3 claim. [Closure audit](../etc/evidence/t391-s8-startup-semantic-closure-audit.md). |
 | T389 | Stopped by owner-approved requeue: S1 proves no physical board slice can begin while 80386 successful retirement remains nonphysical; S2 archives the invalid candidate and queues a shared CPU qualification before a fresh board task. No board timing, physical-clock or L3 claim. [Audit](../etc/evidence/t389-s2-stop-and-requeue-audit.md). |
