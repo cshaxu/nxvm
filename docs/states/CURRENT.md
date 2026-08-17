@@ -17,7 +17,7 @@
 | Verification | Focused timing-ledger smoke proves the CS-overridden memory far JMP real-address `43+m` and successful protected same-privilege direct-code `31+m` rows with known target lexemes; a gate/other protected route remains rejected prepublication; similar `FF /3` and direct far-JMP rows are swept; normal bounded redacted BYOB replay advances or records its next terminal; build, current gates, documentation governance, `git diff --check`, and coordinator actual-diff review pass. |
 | Expected Markers | Existing timing-ledger smoke success marker; existing bounded `M5:T390:S8:BYOB-BOOT-CAPTURE` output or its successor only if the runner changes; S9 evidence references source citation and final artifact digest. |
 | Asset Needs | Optional owner-managed external ROM and boot media only for bounded replay; no media, ROM bytes, identity, path, hash, raw trace or terminal bytes enter Git. |
-| Reporting Requirements | Report admission confirmation, implementation P1 with focused/full verification and evidence link, coordinator acceptance or consolidated corrective brief, then closure/transfer. |
+| Reporting Requirements | P1 is rejected by coordinator review: P2 must repair the discovered documentation bytes/formatting and add a project-owned positive protected same-privilege direct-code regression; it then reports focused/full verification and returns for acceptance. |
 | Stop Conditions | Stop and transfer if the exact source row or required preview context is unavailable, if the form fails functionally, if a wider decoder/state mechanism is necessary, or if replay reaches a new unallocated success. Do not substitute an emulator count or enable a partial physical profile. |
 | Exit Criteria | The exact real-address and successful protected same-privilege direct-code memory far-JMP rows and next-term semantics are source-cited, one Core owner produces their expected ticks for the observed prefix form, gate/task/other protected routes stay nonphysical, the similar-form sweep is recorded, and required verification/evidence/acceptance are complete. |
 | Original Owner Request | Continue the Queue-ordered 80386 physical-retirement qualification before returning to DeskPro board timing; user additionally required Intel manual authority for 80386 instruction behavior. |
@@ -25,7 +25,9 @@
 
 ## Current Technical Baseline
 
-- **Current developer artifact:** T390 S9 `vm-0-5-0390` /`n  `build/output/nxvm_0_5_0390.exe`, SHA-256`n  `F2946939290ECFE8CA35106FF3299FD7F110AF9798558B952AEA37901E0F2926`.
+- **Current developer artifact:** T390 S9 `vm-0-5-0390` /
+  `build/output/nxvm_0_5_0390.exe`, SHA-256
+  `F20E1C1B8398B5D915C60FBBD31C304E7A330C2DA65E748FE57DF8E841EA97C4`.
   T386 closes selected-device functional completeness at S29; its retained
   [closure audit](../etc/evidence/t386-s29-functional-closure-audit.md) fixes
   HDC current-gate coverage and transfers board, firmware and physical work.

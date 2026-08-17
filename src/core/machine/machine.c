@@ -282,6 +282,7 @@ typedef enum core_machine_source_timing_form {
     CORE_MACHINE_SOURCE_TIMING_JMP_MEMORY,
     CORE_MACHINE_SOURCE_TIMING_JMP_FAR_DIRECT,
     CORE_MACHINE_SOURCE_TIMING_JMP_FAR_MEMORY,
+    CORE_MACHINE_SOURCE_TIMING_JMP_FAR_MEMORY_PROTECTED,
     CORE_MACHINE_SOURCE_TIMING_RET_NEAR,
     CORE_MACHINE_SOURCE_TIMING_RET_NEAR_IMMEDIATE,
     CORE_MACHINE_SOURCE_TIMING_PUSH_REGISTER,
@@ -494,6 +495,7 @@ static const core_machine_source_timing_entry
     { CORE_MACHINE_SOURCE_TIMING_JMP_MEMORY, 10u },
     { CORE_MACHINE_SOURCE_TIMING_JMP_FAR_DIRECT, 12u },
     { CORE_MACHINE_SOURCE_TIMING_JMP_FAR_MEMORY, 43u },
+    { CORE_MACHINE_SOURCE_TIMING_JMP_FAR_MEMORY_PROTECTED, 31u },
     { CORE_MACHINE_SOURCE_TIMING_RET_NEAR, 10u },
     { CORE_MACHINE_SOURCE_TIMING_RET_NEAR_IMMEDIATE, 10u },
     { CORE_MACHINE_SOURCE_TIMING_PUSH_REGISTER, 2u },
@@ -2268,6 +2270,7 @@ static C_INT core_machine_control_stack_source_instruction_cost(
                     machine->executor_cpu.data.cs.selector))) return 0;
             *out_ticks = core_machine_control_stack_source_lookup(machine,
                 extension == 3u ? CORE_MACHINE_SOURCE_TIMING_CALL_FAR_MEMORY :
+                protected_mode ? CORE_MACHINE_SOURCE_TIMING_JMP_FAR_MEMORY_PROTECTED :
                 CORE_MACHINE_SOURCE_TIMING_JMP_FAR_MEMORY);
             *out_ticks += core_machine_control_stack_memory_additions(machine,
                 data, prefixes, extension == 3u ? 4u : 2u);

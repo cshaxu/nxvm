@@ -1,5 +1,6 @@
 #include "type.h"
 
+#include "core/machine/machine.h"
 #include "core/machine/machine_interface.h"
 #include "../support/core_machine_cpu_fixture.h"
 
@@ -258,6 +259,70 @@ static C_INT timing_ledger_physical_far_jmp_memory(C_INT protected_mode)
     core_machine_destroy(machine);
     return failed;
 }
+static C_INT timing_ledger_physical_protected_far_jmp_memory(C_VOID)
+{
+    static const type_unsigned_8 gdt_pointer[] = { 0x17u, 0u, 0u, 0x03u, 0u, 0u };
+    static const type_unsigned_8 gdt[] = {
+        0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u,
+        0xffu, 0xffu, 0u, 0x20u, 0u, 0x9au, 0u, 0u,
+        0xffu, 0xffu, 0u, 0u, 0u, 0x92u, 0xcfu, 0u
+    };
+    static const type_unsigned_8 real_code[] = {
+        0x0fu, 0x01u, 0x16u, 0x00u, 0x01u,
+        0xb8u, 0x01u, 0x00u, 0x0fu, 0x01u, 0xf0u,
+        0xb8u, 0x10u, 0x00u, 0x8eu, 0xd8u, 0x8eu, 0xc0u,
+        0xb8u, 0x10u, 0x00u, 0x8eu, 0xd0u,
+        0xbcu, 0x00u, 0x80u, 0xeau, 0x00u, 0x00u, 0x08u, 0x00u
+    };
+    static const type_unsigned_8 instruction[] = {
+        0x2eu, 0xffu, 0x2eu, 0x1fu, 0x00u
+    };
+    static const type_unsigned_8 pointer[] = { 0x28u, 0u, 0x08u, 0u };
+    static const type_unsigned_8 target[] = { 0x90u };
+    static const type_unsigned_8 halt[] = { 0xf4u };
+    const core_machine_config config = {
+        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386
+    };
+    const core_machine_run_budget setup_budget = { 96u, 0u };
+    const core_machine_run_budget budget = { 1u, 0u };
+    core_machine_run_result result;
+    timing_ledger_state state = { 0u, 0u, 0u };
+    core_machine *machine = STD_NULL;
+    type_unsigned_64 elapsed_before = 0u;
+    C_INT failed = core_machine_create(&config, &machine) != TYPE_STATUS_OK ||
+        !test_core_machine_fixture_bind_freeze_reset(machine,
+            &timing_ledger_execution_provider, &state) ||
+        !test_core_machine_fixture_prepare_real_mode_execution(machine, 0u) ||
+        core_machine_memory_write(machine, 0x0100u, gdt_pointer,
+            sizeof(gdt_pointer)) != TYPE_STATUS_OK ||
+        core_machine_memory_write(machine, 0x0300u, gdt, sizeof(gdt)) !=
+            TYPE_STATUS_OK || core_machine_memory_write(machine, 0u, real_code,
+            sizeof(real_code)) != TYPE_STATUS_OK ||
+        core_machine_memory_write(machine, 0x2000u, halt, sizeof(halt)) !=
+            TYPE_STATUS_OK || core_machine_run(machine, setup_budget, &result) !=
+            TYPE_STATUS_OK || result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
+    if (!failed) {
+        failed |= core_machine_memory_write(machine, 0x2000u, instruction,
+            sizeof(instruction)) != TYPE_STATUS_OK ||
+            core_machine_memory_write(machine, 0x201fu, pointer,
+                sizeof(pointer)) != TYPE_STATUS_OK ||
+            core_machine_memory_write(machine, 0x2028u, target,
+                sizeof(target)) != TYPE_STATUS_OK;
+    }
+    if (!failed) {
+        test_core_machine_fixture_resume_after_halt_at(machine, 0u);
+        machine->retirement_time_contract = CORE_MACHINE_RETIREMENT_TIME_PHYSICAL;
+        elapsed_before = machine->elapsed_ticks;
+        state.advanced_ticks = 0u;
+        failed |= core_machine_run(machine, budget, &result) != TYPE_STATUS_OK ||
+            result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 1u ||
+            result.ticks != 32u || result.elapsed_ticks != elapsed_before + 32u ||
+            state.advanced_ticks != 32u;
+    }
+    core_machine_destroy(machine);
+    return failed;
+}
 static C_INT timing_ledger_test_physical_classifier_boundary(C_VOID)
 {
     static const type_unsigned_8 cli[] = { 0xfau };
@@ -286,7 +351,8 @@ static C_INT timing_ledger_test_physical_classifier_boundary(C_VOID)
             sizeof(mov_sreg_memory), TYPE_STATUS_OK, 5u) ||
         timing_ledger_physical_protected_mov_sreg_memory() ||
         timing_ledger_physical_far_jmp_memory(0) ||
-        timing_ledger_physical_far_jmp_memory(1);
+        timing_ledger_physical_far_jmp_memory(1) ||
+        timing_ledger_physical_protected_far_jmp_memory();
 }
 
 static C_INT timing_ledger_test_memory(C_VOID)
