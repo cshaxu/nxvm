@@ -2,26 +2,7 @@
 
 ## Current Work
 
-## M5 T390 S22 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner standing approval for Queue-ordered T390 shared-Core implementation, following accepted S21 receiver decision. |
-| Objective | Add one copied Core timing-origin attribution at the successful classifier orchestration owner so every successful C0 retirement identifies its selecting classifier family before later exact-row mapping. |
-| Non-goals | No timing-row change, no per-form Intel inference, no raw instruction/PC publication, no profile-local classifier, physical contract enablement, C1, board/device timing or L3 claim. |
-| Reference Baseline | Accepted S19 lookup-form capture and S21 C0 audit: 53 classified-but-unattributed aggregate rows require a shared classifier-origin receiver. |
-| Candidate Proposal | [80386 physical-retirement qualification](../proposals/m5-80386-physical-retirement-qualification.md). |
-| Files And ABI Surface | Core private per-attempt origin state, copied observation contract, existing M40 capture aggregation and focused Core/C0 regressions; no mutable layout, pointer or raw-data exposure. |
-| Applicable Rules | Execution, architecture, coding, documentation and source policy: sole Core orchestration owner, copied observer lifetime, reset/failure atomicity, disabled-path neutrality, exact-or-nonphysical physical boundary. |
-| Verification | Origin lifecycle/reset and profile-dispatch focused proof; C0 synthetic aggregation; fresh deleted normalized C0 split; full current gate, docs, diff and actual review. |
-| Expected Markers | Existing observer smoke and M40 C0 marker, with stable copied timing-origin classification. |
-| Asset Needs | Owner-authorized local ROM/media only for deleted normalized replay; no external identity, path, hash, byte, PC, trace or provenance in Git. |
-| Reporting Requirements | Complete P1 with implementation/evidence and then coordinator actual review/acceptance P2. |
-| Stop Conditions | Origin needs a second timing publisher, misses a successful classifier route, leaks raw state, changes timing/disposition, or requires an exact-row inference. |
-| Exit Criteria | Each successful instruction-cost owner sets one copied origin or the explicit sentinel; focused and C0 proofs pass and the remaining exact-context matrix transfer is explicit. |
-| Original Owner Request | Continue governed DeskPro 386 CPU qualification toward full functional and L3 timing closure without incremental terminal repair. |
-| Similar-Issue Sweep | Inspect every return-success owner in core_machine_instruction_cost, observer publish/reset/install/remove paths, physical rejection and all observer consumers. |
+**Active.** T390 remains open between accepted subtasks.
 
 ## Current Technical Baseline
 
@@ -49,7 +30,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T390 S21 | Accepted: C0 has 22 lookup-backed and 53 classified-but-unattributed aggregate rows; one shared Core classified timing-origin receiver transfers before matrix mapping. No physical, board or L3 claim. [Evidence](../etc/evidence/t390-s21-c0-attribution-coverage-audit.md). |
+| T390 S22 | Accepted: shared Core timing-origin attribution covers all finite C0 rows without inferring Intel rows. Exact origin/context matrix mapping transfers; no physical, board or L3 claim. [Evidence](../etc/evidence/t390-s22-classified-timing-origin.md). |
 | T389 | Stopped by owner-approved requeue: S1 proves no physical board slice can begin while 80386 successful retirement remains nonphysical; S2 archives the invalid candidate and queues a shared CPU qualification before a fresh board task. No board timing, physical-clock or L3 claim. [Audit](../etc/evidence/t389-s2-stop-and-requeue-audit.md). |
 | T388 | Closed: S1--S9 establish the sole publisher, exhaustive exact-or-nonphysical residual disposition and pre-publication physical-contract rejection. No current CPU profile is physically clock-qualified; board work transfers under this restriction. [Closure audit](../etc/evidence/t388-s9-task-closure-audit.md). |
 | T387 | Closed: source/owner inventory, exact port-`61h` reconciliation and reference qualification transfer the shared physical-timebase then physical-device/firmware prerequisites before any DeskPro L3 audit. No physical-time or L3 claim. [Closure audit](../etc/evidence/t387-s6-task-closure-transfer-audit.md). |

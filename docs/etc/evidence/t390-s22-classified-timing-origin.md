@@ -16,3 +16,6 @@ The origin identifies the shared classifier family--string/I-O, 80386 dynamic mu
 ## Transfer
 
 The next finite C0 matrix slice must split each origin family into exact Intel-primary row/context dispositions using the existing normalized fields plus any narrowly admitted missing semantic facts. It must add project-owned regression or transfer every underdetermined class whole. This slice does not qualify physical retirement or claim C1 boot, DeskPro board/device timing or L3.
+## Coordinator Acceptance
+
+Coordinator actual-change review accepts P1 e89607e9. The sole classifier orchestration point resets then assigns exactly one origin only after successful resolution, preserves explicit classifier order, and copies only bounded scalar data before the existing physical rejection/publication boundary. Focused lifecycle and synthetic aggregation proofs, the deleted C0 replay, full 284/284 current gate, artifact baseline, documentation gate and actual diff satisfy S22. Exact Intel-row/context mapping remains a separate finite-matrix receiver; no physical, board/device or L3 claim is accepted.
