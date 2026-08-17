@@ -2,24 +2,12 @@
 
 ## Current Work
 
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation - T390 S2. |
-| Admission And Approval | Owner approved continuation on 2026-08-17. The owner also authorizes use of external owner-managed ROM and guest-media assets, provided no vendor ROM, guest media, hash catalogue, local path, or trace is committed. Scope is limited to a BYOB observation contract and current trace-gap decision; it does not authorize physical-profile enablement. |
-| Objective | Freeze the bounded external Model-40 BYOB corpus/observation contract required to determine whether every successful 80386 retirement through a selected checkpoint is exact or stops before physical publication; record whether existing production trace can supply its required normalized observation. |
-| Non-goals | No ROM/media import, catalogue, download mechanism, committed trace, emulator-as-oracle result, CPU timing-row assignment, Core or VM code change, physical retirement selection, board-clock ratio, device timing, firmware-completeness or Model-L3 claim. |
-| Reference Baseline | T390 S1 inventory; T388 S9 physical rejection closure; selected DeskPro Model 40 profile/ROM BYOB boundary retained by T386. Existing current trace records retirement PC and elapsed ticks only. |
-| Candidate Proposal | [80386 physical-retirement qualification](../proposals/m5-80386-physical-retirement-qualification.md). |
-| Files And ABI Surface | `docs/states/CURRENT.md`; `docs/history/M5-T390-80386-physical-retirement-qualification.md`; `docs/etc/evidence/t390-s2-model40-byob-observation-contract.md`; `docs/etc/README.md`. No source or ABI surface. |
-| Applicable Rules | Execution lifecycle, actual-change review, documentation topology and source/research policy apply. The observation contract applies recorder-trace containment if a later S launches it. No rule exception is requested. |
-| Verification | Review the current Model-40 BYOB composition and `core/machine` trace event/capacity owners; verify the contract neither stores protected asset identity nor turns external references into an oracle; run documentation-governance and whitespace checks. |
-| Expected Markers | `M5:T390:S2:MODEL40-BYOB-OBSERVATION-CONTRACT:OK`; explicit `CURRENT-TRACE-INSUFFICIENT` decision; a named next receiver if a shared capture boundary is required. |
-| Asset Needs | External owner-managed Model-40 ROM pair and bootable 1.2 MB DOS medium may be identified only outside the repository. This S does not launch them or retain their local paths, hashes, bytes, catalogue entries, or traces. |
-| Reporting Requirements | Report contract decision, trace sufficiency, gate result, commit and pushed state; link durable evidence and name the next bounded receiver. |
-| Stop Conditions | Stop and transfer if the required observation requires a new public/test-only control path, protected asset retention, unbounded recording, an undefined checkpoint, or a wider CPU mechanism than the contract can isolate. |
-| Exit Criteria | Indexed evidence defines exact profile/configuration abstraction, normalized observation fields, reset/checkpoint/terminal states, hard recorder budgets and cleanup, and proves from source inspection whether existing trace can meet them. Task history and current state truthfully retain the S result. |
-| Original Owner Request | Continue the queue after owner-approved requeue; qualify the shared 80386 retirement prerequisite before returning to DeskPro board timing, using external ROM/media only outside the repository. |
-| Similar-Issue Sweep | Inspect all current CPU-retire trace emission and Model-40 BYOB construction sites, not just the first observed call, for enough context to distinguish exact from source-unallocated successful retirement. |
+**Current progress:** T390 S2 is accepted. The external Model-40 BYOB corpus
+and bounded observation contract are frozen, and the current trace is proven
+insufficient because it does not expose pre-publication instruction/context or
+exact-or-unallocated classifier disposition. The next receiver is a lifecycle-
+owned, opt-in shared-Core production capture; no external asset, physical
+profile, board clock or L3 claim is enabled.
 ## Current Technical Baseline
 
 - **Current developer artifact:** T386 S28 `vm-0-5-0389` /
@@ -46,7 +34,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T390 S1 | Accepted: source/classifier inventory separates exact 80386 rows from nonphysical successes and transfers a bounded Model-40 BYOB corpus observation contract. No physical profile, board clock or L3 claim. [Evidence](../etc/evidence/t390-s1-80386-physical-qualification-inventory.md). |
+| T390 S2 | Accepted: external Model-40 BYOB corpus/observation containment is frozen; current trace cannot expose pre-publication instruction/context or exact-or-unallocated disposition, so a shared Core capture transfers next. No physical profile, board clock or L3 claim. [Evidence](../etc/evidence/t390-s2-model40-byob-observation-contract.md). |
 | T389 | Stopped by owner-approved requeue: S1 proves no physical board slice can begin while 80386 successful retirement remains nonphysical; S2 archives the invalid candidate and queues a shared CPU qualification before a fresh board task. No board timing, physical-clock or L3 claim. [Audit](../etc/evidence/t389-s2-stop-and-requeue-audit.md). |
 | T388 | Closed: S1--S9 establish the sole publisher, exhaustive exact-or-nonphysical residual disposition and pre-publication physical-contract rejection. No current CPU profile is physically clock-qualified; board work transfers under this restriction. [Closure audit](../etc/evidence/t388-s9-task-closure-audit.md). |
 | T387 | Closed: source/owner inventory, exact port-`61h` reconciliation and reference qualification transfer the shared physical-timebase then physical-device/firmware prerequisites before any DeskPro L3 audit. No physical-time or L3 claim. [Closure audit](../etc/evidence/t387-s6-task-closure-transfer-audit.md). |

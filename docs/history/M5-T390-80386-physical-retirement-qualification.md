@@ -43,3 +43,12 @@ classifier disposition, and rejected unallocated successes occur before its
 retirement event. The next receiver is a bounded shared-Core production
 observation/capture slice. No external asset, trace, physical profile, board
 clock or L3 claim enters the repository.
+
+## Coordinator Acceptance
+
+After actual-change review of P1 `2b8abcf6`, the coordinator accepts S2. The
+review confirms that the contract remains documentation-only, uses no external
+asset or trace, retains no local identity/hash/path, accurately distinguishes
+the generic trace's synchronous buffer from its missing pre-publication
+classification data, and does not make a physical, board or L3 claim.
+Documentation governance passes after push.
