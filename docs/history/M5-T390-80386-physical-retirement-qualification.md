@@ -11,7 +11,7 @@ physical-device, firmware, ROM/media or L3 claim by itself.
 
 ## Active Subtask
 
-No subtask is active. T390 remains open with S6 retained as compact accepted progress.
+S35 is active under `states/CURRENT.md`. It is documentation-only reconciliation: no CPU, Core/VM, profile, firmware/media, asset, physical-clock, board-time, or L3 behavior changes.
 
 ## Accepted Progress
 
@@ -233,3 +233,15 @@ After actual-change review of P1 `da5dfd3a`, the coordinator accepts S28.
 Focused and full current gates, documentation governance and diff hygiene pass.
 T390 remains open; the next receiver must identify and disposition the first
 post-C0 successful form or admit C1 separately.
+
+### S11-S15: Bounded Terminal Qualifications And Checkpoint Correction
+
+S11, S12 and S15 qualified only the observed 80386 RCL/LAHF forms with exact Intel-primary rows and retained their excluded forms nonphysical. S13 corrected the capture contract so budget exhaustion cannot be a corpus success; S14 repaired that record's documentation hygiene. These accepted increments advanced bounded diagnosis but did not establish a complete semantic corpus or profile physical eligibility. [S11](../etc/evidence/t390-s11-rcl-register-one.md), [S12](../etc/evidence/t390-s12-lahf-qualification.md), [S13](../etc/evidence/t390-s13-corpus-checkpoint.md), and [S15](../etc/evidence/t390-s15-rcl-cl.md) retain the detailed proof.
+
+### S16-S28: C0 Corpus Definition, Reconciliation, And Superseded Selection
+
+S16 stopped the first-terminal-at-a-time method and defined M40-C0 as the first finite semantic stage. S17-S27 then captured, attributed, contextualized and reconciled the full protected-return C0 universe: 75 parents, refined to 82 children, each with exact source proof and focused regression. S28 selected Model-40 physical retirement from that finite result, but did not have a runtime-enforceable stage boundary. This historical selection is superseded by S34; it is retained as the condition corrected, not as current profile behavior. [S16](../etc/evidence/t390-s16-checkpoint-corpus-disposition.md), [S23 ledger](../etc/evidence/t390-s23-m40-c0-convergence-ledger.md), [S27](../etc/evidence/t390-s27-c0-direct-row-regression.md), and [S28](../etc/evidence/t390-s28-model40-physical-contract-selection.md) retain the detailed records.
+
+### S29-S34: Model-40 Start-Path Corrections And Physical-Scope Repair
+
+S29 corrected the DeskPro ROM decode; S30-S33 then re-established the later start-path observations, corrected Model-40 A20 behavior, and bounded the first post-C0 I/O observation. S33 proved that a later source-classified successful retirement exists beyond C0. S34 therefore corrected the actual defect: both Model-40 composition paths retain deterministic retirement because the generic Core physical contract has no firmware-stage mechanism. S34 changes no Core/VM interface and makes no board, physical-clock, or L3 claim. [S29](../etc/evidence/t390-s29-model40-rom-decode-correction.md), [S31](../etc/evidence/t390-s31-model40-a20-startup-baseline.md), [S33](../etc/evidence/t390-s33-post-c0-io-owner-boundary.md), and [S34](../etc/evidence/t390-s34-physical-retirement-scope-correction.md) retain the detailed proof.
