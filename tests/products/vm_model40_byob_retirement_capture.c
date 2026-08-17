@@ -11,6 +11,9 @@
 typedef struct model40_retirement_capture_form {
     const C_CHAR *form;
     const C_CHAR *operand;
+    type_unsigned_8 opcode;
+    type_unsigned_8 escape_opcode;
+    type_unsigned_8 group_extension;
     type_unsigned_64 ticks;
     type_unsigned_8 cpl;
     type_bool protected_mode;
@@ -32,6 +35,7 @@ typedef struct model40_retirement_capture {
     type_unsigned_8 terminal_bytes[CORE_MACHINE_CPU_DIAGNOSTIC_BYTES];
     type_unsigned_8 terminal_byte_count;
     type_bool checkpoint_reached;
+    type_bool protected_mode_seen;
     type_bool form_limit_reached;
     type_bool terminal_bytes_available;
 } model40_retirement_capture;
@@ -128,12 +132,53 @@ static const C_CHAR *model40_capture_operand_name(
         "register" : "memory";
 }
 
+static C_INT model40_capture_is_prefix(type_unsigned_8 opcode)
+{
+    switch (opcode) {
+    case 0x26u: case 0x2eu: case 0x36u: case 0x3eu: case 0x64u: case 0x65u:
+    case 0x66u: case 0x67u: case 0xf0u: case 0xf2u: case 0xf3u:
+        return 1;
+    default:
+        return 0;
+    }
+}
+
+static type_unsigned_8 model40_capture_opcode_index(
+    const core_machine_retirement_observation *observation)
+{
+    type_unsigned_8 index = 0u;
+
+    if (observation == STD_NULL) return 0u;
+    while (index < observation->point.byte_count &&
+        model40_capture_is_prefix(observation->point.bytes[index])) ++index;
+    return index;
+}
+
+static type_unsigned_8 model40_capture_group_extension(
+    const core_machine_retirement_observation *observation, type_unsigned_8 index,
+    type_unsigned_8 opcode)
+{
+    type_unsigned_8 modrm_index = (type_unsigned_8)(index + 1u);
+
+    if (observation == STD_NULL || modrm_index >= observation->point.byte_count) return 0xffu;
+    switch (opcode) {
+    case 0x80u: case 0x81u: case 0x82u: case 0x83u: case 0xc0u: case 0xc1u:
+    case 0xd0u: case 0xd1u: case 0xd2u: case 0xd3u: case 0xf6u: case 0xf7u:
+    case 0xfeu: case 0xffu:
+        return (type_unsigned_8)((observation->point.bytes[modrm_index] >> 3u) & 7u);
+    default:
+        return 0xffu;
+    }
+}
 static C_INT model40_capture_form_matches(
     const model40_retirement_capture_form *form, const C_CHAR *name,
-    const C_CHAR *operand, const core_machine_retirement_observation *observation)
+    const C_CHAR *operand, type_unsigned_8 opcode, type_unsigned_8 escape_opcode,
+    type_unsigned_8 group_extension, const core_machine_retirement_observation *observation)
 {
     return form != STD_NULL && observation != STD_NULL &&
         !STD_STRCMP(form->form, name) && !STD_STRCMP(form->operand, operand) &&
+        form->opcode == opcode && form->escape_opcode == escape_opcode &&
+        form->group_extension == group_extension &&
         form->ticks == observation->source_ticks && form->cpl == observation->cpl &&
         form->protected_mode == observation->protected_mode &&
         form->virtual_8086_mode == observation->virtual_8086_mode &&
@@ -152,6 +197,10 @@ static C_VOID model40_capture_observe(C_VOID *opaque,
     const C_CHAR *name;
     const C_CHAR *operand;
     type_unsigned_32 index;
+    type_unsigned_8 opcode_index;
+    type_unsigned_8 opcode;
+    type_unsigned_8 escape_opcode = 0xffu;
+    type_unsigned_8 group_extension;
 
     if (capture == STD_NULL || observation == STD_NULL) return;
     ++capture->count;
@@ -172,14 +221,20 @@ static C_VOID model40_capture_observe(C_VOID *opaque,
             capture->terminal_bytes_available = TYPE_TRUE;
         }
     }
-    if (observation->point.linear_pc == MODEL40_BOOT_SECTOR_LINEAR_PC) {
-        capture->checkpoint_reached = TYPE_TRUE;
+    if (observation->protected_mode) capture->protected_mode_seen = TYPE_TRUE;
+    else if (capture->protected_mode_seen) capture->checkpoint_reached = TYPE_TRUE;
+    opcode_index = model40_capture_opcode_index(observation);
+    opcode = opcode_index < observation->point.byte_count ?
+        observation->point.bytes[opcode_index] : 0xffu;
+    if (opcode == 0x0fu && opcode_index + 1u < observation->point.byte_count) {
+        escape_opcode = observation->point.bytes[opcode_index + 1u];
     }
+    group_extension = model40_capture_group_extension(observation, opcode_index, opcode);
     name = model40_capture_form_name(observation);
     operand = model40_capture_operand_name(observation);
     for (index = 0u; index < capture->form_count; ++index) {
         if (model40_capture_form_matches(&capture->forms[index], name, operand,
-                observation)) {
+                opcode, escape_opcode, group_extension, observation)) {
             ++capture->forms[index].count;
             return;
         }
@@ -189,7 +244,8 @@ static C_VOID model40_capture_observe(C_VOID *opaque,
         return;
     }
     capture->forms[capture->form_count++] = (model40_retirement_capture_form) {
-        name, operand, observation->source_ticks, observation->cpl,
+        name, operand, opcode, escape_opcode, group_extension,
+        observation->source_ticks, observation->cpl,
         observation->protected_mode, observation->virtual_8086_mode,
         observation->operand_size_32, observation->address_size_32,
         observation->lock_prefix, observation->repeat_prefix,
@@ -218,9 +274,11 @@ static C_VOID model40_capture_emit(const model40_retirement_capture *capture)
     for (index = 0u; index < capture->form_count; ++index) {
         const model40_retirement_capture_form *form = &capture->forms[index];
 
-        STD_PRINTF("T390 form=%s operand=%s ticks=%llu cpl=%u pm=%u vm=%u os32=%u "
+        STD_PRINTF("T390 form=%s operand=%s opcode=%02X escape=%02X group=%u ticks=%llu cpl=%u pm=%u vm=%u os32=%u "
             "as32=%u lock=%u rep=%u disposition=%u count=%u\n",
-            form->form, form->operand, (unsigned long long)form->ticks,
+            form->form, form->operand, (unsigned)form->opcode,
+            (unsigned)form->escape_opcode, (unsigned)form->group_extension,
+            (unsigned long long)form->ticks,
             (unsigned)form->cpl, (unsigned)form->protected_mode,
             (unsigned)form->virtual_8086_mode, (unsigned)form->operand_size_32,
             (unsigned)form->address_size_32, (unsigned)form->lock_prefix,
@@ -244,8 +302,38 @@ static C_INT model40_capture_create_session(C_INT argc, C_CHAR **argv,
         *out_session != STD_NULL;
 }
 
+static C_INT model40_capture_synthetic_c0_smoke(C_VOID)
+{
+    model40_retirement_capture capture = { 0 };
+    core_machine_retirement_observation observation = { 0 };
+
+    observation.cpu_profile = CORE_MACHINE_CPU_PROFILE_80386;
+    observation.timing_disposition = CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED;
+    observation.point.byte_count = 1u;
+    observation.point.bytes[0] = 0x90u;
+    observation.source_ticks = 3u;
+    model40_capture_observe(&capture, &observation);
+    observation.protected_mode = TYPE_TRUE;
+    observation.point.bytes[0] = 0x0fu;
+    observation.point.bytes[1] = 0x20u;
+    observation.point.byte_count = 2u;
+    model40_capture_observe(&capture, &observation);
+    observation.protected_mode = TYPE_FALSE;
+    observation.point.bytes[0] = 0xeau;
+    observation.point.byte_count = 1u;
+    model40_capture_observe(&capture, &observation);
+    if (!capture.checkpoint_reached || capture.count != 3u ||
+        capture.classified != 3u || capture.unallocated != 0u ||
+        capture.form_count != 3u) return 1;
+    STD_PRINTF("M5:T390:S17:M40-C0-CAPTURE:OK\n");
+    return 0;
+}
 C_INT main(C_INT argc, C_CHAR **argv)
 {
+    if (argc == 2 && argv != STD_NULL &&
+        !STD_STRCMP(argv[1], "--synthetic-c0-smoke")) {
+        return model40_capture_synthetic_c0_smoke();
+    }
     const core_machine_run_budget budget = { 1u, 0u };
     core_machine_retirement_observation_provider provider;
     core_machine_run_result result = { 0 };
@@ -273,7 +361,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
         status = core_machine_run(session->core_machine, budget, &result);
         if (status != TYPE_STATUS_OK || result.reason == CORE_MACHINE_STOP_FAULT) break;
     }
-    if (capture.checkpoint_reached) terminal = "boot-sector-linear-7c00";
+    if (capture.checkpoint_reached) terminal = "protected-return-c0";
     else if (capture.unallocated != 0u) terminal = "source-timing-unallocated";
     else if (capture.form_limit_reached) terminal = "form-capacity";
     else if (status != TYPE_STATUS_OK) terminal = "run-status";

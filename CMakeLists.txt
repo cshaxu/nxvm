@@ -1933,6 +1933,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     vm-model40-dma-s17-smoke
     vm-model40-fdd-s18-smoke
     vm-model40-byob-s20-smoke
+    vm-model40-byob-retirement-capture
     vm-model40-byob-boot-media-s5-smoke
     vm-model40-hdc-s26-smoke
     vm-model40-console-s20-smoke
@@ -2532,7 +2533,11 @@ endfunction()
 foreach(target IN LISTS PROJECT_CURRENT_ALL_SMOKE_TARGETS)
     list(FIND PROJECT_CURRENT_MEDIA_SMOKE_TARGETS ${target} media_smoke_index)
     if(media_smoke_index EQUAL -1)
-        project_add_current_smoke_test(${target})
+        if(target STREQUAL "vm-model40-byob-retirement-capture")
+            project_add_current_smoke_test(${target} --synthetic-c0-smoke)
+        else()
+            project_add_current_smoke_test(${target})
+        endif()
     endif()
 endforeach()
 
@@ -3294,10 +3299,10 @@ foreach(project_t345_target IN LISTS PROJECT_T344_CURRENT_GATE_TARGETS)
 endforeach()
 list(LENGTH PROJECT_T345_S2_OWNER_TEST_STRICT_TARGETS project_t345_s2_pure_count)
 list(LENGTH PROJECT_T345_S2_MIXED_OWNER_TEST_TARGETS project_t345_s2_mixed_count)
-if(NOT project_t345_s2_pure_count EQUAL 167 OR
+if(NOT project_t345_s2_pure_count EQUAL 168 OR
         NOT project_t345_s2_mixed_count EQUAL 3)
     message(FATAL_ERROR
-        "T345 S2 expected 167 pure and 3 mixed owner-test targets; found ${project_t345_s2_pure_count} pure and ${project_t345_s2_mixed_count} mixed.")
+        "T345 S2 expected 168 pure and 3 mixed owner-test targets; found ${project_t345_s2_pure_count} pure and ${project_t345_s2_mixed_count} mixed.")
 endif()
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     foreach(project_t345_target IN LISTS PROJECT_T345_S2_OWNER_TEST_STRICT_TARGETS)

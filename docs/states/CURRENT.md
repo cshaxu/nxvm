@@ -2,7 +2,26 @@
 
 ## Current Work
 
-**Active.** T390 remains open between accepted subtasks.
+**Active packet:** T390 S17 (Continuation) -- M40-C0 semantic batch capture.
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation -- T390 remains the latest open task; S17 follows accepted S16. |
+| Admission And Approval | Owner standing approval for Queue-ordered T390 continuation and S16's finite-corpus decision; owner-managed local ROM/media remain external and unrecorded. |
+| Objective | Implement a project-owned M40-C0 capture that stops at the protected-return semantic checkpoint and aggregates every observed successful form/context using a non-raw semantic instruction key. |
+| Non-goals | No individual timing-row repair, Core observer/interface extension, physical retirement enablement, C1 boot transfer, board/device timing, firmware/media import or L3 claim. |
+| Reference Baseline | Accepted S16 M40-C0 definition, existing lifecycle-owned copied retirement observer and Model-40 BYOB capture tool. |
+| Candidate Proposal | [80386 physical-retirement qualification](../proposals/m5-80386-physical-retirement-qualification.md). |
+| Files And ABI Surface | Private tests/products capture helper/tool, project-owned focused smoke, CMake registration, T390 evidence/status only; no production or public ABI. |
+| Applicable Rules | Execution, architecture, coding, documentation and source policy; reuse copied observer, no duplicate CPU execution path, external containment and actual-diff review. |
+| Verification | Project-owned synthetic observer checkpoint/matrix smoke; capture option/terminal regression; owner-managed M40-C0 normalized replay; full current gate, docs, diff and actual review. |
+| Expected Markers | M40-C0 synthetic capture smoke and normalized M40-C0 capture marker only. |
+| Asset Needs | Owner-managed Model-40 ROM pair and bootable 1.2 MB floppy for local replay only; no path, digest, byte, PC or raw trace enters Git. |
+| Reporting Requirements | Complete P1 with bounded capture implementation/evidence, then coordinator review and acceptance/correction. |
+| Stop Conditions | Inadequate copied context, raw-data persistence, semantic checkpoint not reached, unallocated/fault/form-capacity terminal, or need for an exact row before matrix review. |
+| Exit Criteria | C0 checkpoint detection, complete non-raw aggregate key/context, synthetic proof, redacted contained replay result and explicit batch-classification transfer. |
+| Original Owner Request | Implement the finite M40-C0 batch capture after ending incremental first-unallocated repair as the default. |
+| Similar-Issue Sweep | Inspect Model-40 capture argument/terminal handling, all observer consumers, opcode/prefix normalization and test-only helper boundaries. |
 
 ## Current Technical Baseline
 
