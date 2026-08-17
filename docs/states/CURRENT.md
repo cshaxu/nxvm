@@ -2,8 +2,24 @@
 
 ## Current Work
 
-**Active.** T391 remains open between accepted subtasks. S3 reconciles the complete three-unit M40-C0A form/context batch to existing source-row owners; it makes a bounded C1 admission/inventory the next receiver. Model-40 remains deterministic and no Core/VM interface or physical-clock selection changed. [Evidence](../etc/evidence/t391-s3-c0a-form-context-ledger.md).
-
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation `T391 S4`. |
+| Admission And Approval | Owner approved continued CPU/startup audit and requires Core/VM interface preservation. S4 is the next receiver named by accepted S3, limited to an existing-state C1 semantic-observability inventory. No exception is requested. |
+| Objective | Determine whether an M40-C1 finite semantic endpoint can be defined using only the current copied retirement observation and existing Model-40/D4 ownership facts. |
+| Non-goals | No production code, observer ABI expansion, Core/VM callback or bridge, port-provider change, physical-retirement selection, board/device time, firmware/media import, raw trace, PC/byte retention, or L3 claim. |
+| Reference Baseline | Accepted T391 S1--S3, T390 S30--S36 C1/start-path records, existing retirement-observation interface, and deterministic Model-40 composition. |
+| Candidate Proposal | `docs/proposals/m5-deskpro-386-startup-semantic-readiness.md`; consumes C0A as the finite predecessor and C1's retained absence observations. |
+| Files And ABI Surface | Documentation/evidence only: `docs/states/CURRENT.md`, `docs/history/M5-T391-deskpro-386-startup-semantic-readiness.md`, and new C1 observability evidence. No ABI surface changes. |
+| Applicable Rules | Execution convergence: inventory every existing candidate rather than choosing a later replay terminal. Documentation: durable evidence and one current authority. Architecture/coding: preserve Core generic ownership and VM composition selection; source is read-only for this S. |
+| Verification | Sweep the current copied-observation fields, capture terminal rules, C1 candidates, Model-40 composition and D4 port ownership; run documentation governance and inspect actual P1 diff before acceptance. |
+| Expected Markers | Retained `M5:T391:S2:C0A-CAPTURE:OK`; new evidence marker `M5:T391:S4:C1-OBSERVABILITY:OK`. |
+| Asset Needs | None. This S uses retained normalized evidence and source inventory only. |
+| Reporting Requirements | State every candidate's representability, reset/failure boundary and owner; conclude C1 eligibility or an explicit earliest-owner transfer without timing inference. |
+| Stop Conditions | Stop and transfer if no semantic endpoint is representable from existing copied state, or if any candidate needs register/PC/raw bytes, firmware/media data, a new observer field, or a Core/VM interface change. |
+| Exit Criteria | A complete candidate inventory gives each candidate an accepted existing-state endpoint or explicit ineligible reason and earliest receiver; no candidate is selected from a containment budget. |
+| Original Owner Request | Continue holistic CPU/timing work with bridge-reference awareness where useful, and do not break Core/VM interface boundaries. |
+| Similar-Issue Sweep | Compare the second protected-entry and post-C0 I/O candidates, distinguish immediate-port facts from unresolved DX I/O, and confirm reset/capture terminal behavior remains test-only. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T390 S22 `vm-0-5-0390` /
