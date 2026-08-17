@@ -36,6 +36,12 @@ virtual time is also distinct: VM invokes it only while waiting for interrupt.
 Model-339's 8 MHz binding is host pacing during HLT and cannot repair active
 CPU retirement units.
 
+## Clock-Consumer Anchors
+
+The shared scheduler reaches `core_machine_clock_domain_advance` for
+`dma_clock`, `pit_clock`, `rtc_clock`, `kbc_clock`, `vadp_clock`, and
+`provider_clock`. These exact owner anchors are inventory anchors only: their
+presence does not make the mixed successful-retirement input a physical unit.
 ## Static Recurrence Boundary
 
 `verify-t388-physical-timebase-inventory` binds this inventory to the sole
