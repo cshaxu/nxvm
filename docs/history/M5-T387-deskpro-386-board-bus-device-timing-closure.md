@@ -21,7 +21,7 @@ retirement axis remains mixed-unit until a dedicated shared receiver closes.
 
 ## Transfers
 
-The [four-profile CPU physical-timebase closure](../proposals/m5-four-profile-cpu-physical-timebase-closure.md)
+The [four-profile CPU physical-timebase closure](M5-T388-four-profile-cpu-physical-timebase-closure-proposal.md)
 precedes the [DeskPro board-level timing closure](../proposals/m5-deskpro-386-board-level-timing-closure.md), which precedes the [DeskPro physical-device and firmware-timing closure](../proposals/m5-deskpro-386-physical-device-firmware-timing-closure.md),
 which in turn precedes the [DeskPro Model-L3 audit](../proposals/m5-deskpro-386-l3-audit.md).
 The retained [S6 closure audit](../etc/evidence/t387-s6-task-closure-transfer-audit.md)

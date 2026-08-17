@@ -55,7 +55,7 @@ clock-domain receiver. The 80286 and 80386 profiles are direct affected
 consumers; 8086 and 80186 retain the same shared publisher and are included in
 the new four-profile receiver.
 
-The new queued [four-profile CPU physical-timebase closure](../../proposals/m5-four-profile-cpu-physical-timebase-closure.md)
+The new queued [four-profile CPU physical-timebase closure](../../history/M5-T388-four-profile-cpu-physical-timebase-closure-proposal.md)
 owns the missing shared prerequisite. It must establish a clock-eligible unit
 or prohibit every unallocated successful route before any selected profile
 can convert CPU execution to a physical board clock. T387 retains all
