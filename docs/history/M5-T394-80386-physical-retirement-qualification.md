@@ -92,3 +92,16 @@ successful retirements and differs only by the literal CS segment-override
 prefix intentionally excluded by S3. The resulting 81-key mapping transfers a
 later descriptor-selection decision; no physical selection is made here.
 [Mapping evidence](../etc/evidence/t394-s5-c0-key-mapping-reconciliation.md).
+## Coordinator Acceptance: S5
+
+After actual-change review of P1 `e1b89568` and P2 `dc4b3101`, the coordinator
+accepts S5. P1 repaired the shared Core pre-retirement snapshot/key-refresh
+ordering and added a direct `LMSW` regression. P2 independently reproduces the
+accepted 82-child C0 corpus and maps it to 81 observed normalized keys, with
+C0-027 and the C0-031 memory/ext-6 child proved to be the sole, count-preserving
+prefix-normalized equivalence. Focused Core timing and Model-40 composition
+regressions, complete current gates, documentation governance, diff hygiene,
+and the owner-managed read-only comparison pass. No descriptor entry, physical
+profile selection, board time, firmware/media dependency, or L3 claim is
+accepted. The next receiver is a separately admitted descriptor-selection
+audit over the complete 81-key set.
