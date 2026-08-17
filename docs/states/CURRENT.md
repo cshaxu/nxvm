@@ -2,7 +2,7 @@
 
 ## Current Work
 
-**Active.** T392 remains open between accepted subtasks. S3 confirms FDC operation completion is Core-owned private state; no selected consumer contract permits a C1 endpoint. The next receiver is a separately admitted generic device-operation snapshot design, and C1 physical qualification remains blocked. [Evidence](../etc/evidence/t392-s3-fdc-operation-decision.md).
+**Idle.** T392 is closed by S4: all C1/VM/FDC candidates are exhausted without an admissible endpoint or CPU defect. The sole future receiver is a separately admitted generic immutable device-operation snapshot plus selected VM consumer contract; physical qualification remains blocked. [Closure audit](../etc/evidence/t392-s4-c1-semantic-endpoint-closure-audit.md).
 ## Current Technical Baseline
 
 - **Current developer artifact:** T390 S22 `vm-0-5-0390` /
@@ -29,7 +29,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T392 S3 | Accepted: FDC completion is correctly retained as Core-private; a generic immutable operation snapshot and selected consumer contract are transferred rather than exposed. [Evidence](../etc/evidence/t392-s3-fdc-operation-decision.md). |
+| T392 | Closed: S1-S4 exhaust copied C1, VM/session and FDC operation candidates without an endpoint or defect; only a separately admitted generic immutable device-operation snapshot plus selected consumer contract can proceed. No Core/VM ABI, CPU timing, physical, board, firmware or L3 claim. [Closure audit](../etc/evidence/t392-s4-c1-semantic-endpoint-closure-audit.md). |
 | T391 | Closed: S1-S8 establish the bounded C0A startup predecessor, complete C1 aggregate disposition and the truthful transfer that C1 physical qualification remains blocked pending a new finite checkpoint or earliest-owner defect. No Core/VM interface, timing, physical, board, firmware or L3 claim. [Closure audit](../etc/evidence/t391-s8-startup-semantic-closure-audit.md). |
 | T389 | Stopped by owner-approved requeue: S1 proves no physical board slice can begin while 80386 successful retirement remains nonphysical; S2 archives the invalid candidate and queues a shared CPU qualification before a fresh board task. No board timing, physical-clock or L3 claim. [Audit](../etc/evidence/t389-s2-stop-and-requeue-audit.md). |
 | T388 | Closed: S1--S9 establish the sole publisher, exhaustive exact-or-nonphysical residual disposition and pre-publication physical-contract rejection. No current CPU profile is physically clock-qualified; board work transfers under this restriction. [Closure audit](../etc/evidence/t388-s9-task-closure-audit.md). |

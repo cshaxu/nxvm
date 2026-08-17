@@ -8,7 +8,7 @@ defect; it does not reopen T391 or bypass the C1 physical-qualification block.
 
 ## Active Subtask
 
-S1 is active: inventory every existing copied-state candidate and determine
+T392 is closed by S4 after S1-S3 inventory and decision evidence. S1 originally inventoried every existing copied-state candidate and determined
 whether any can become a finite semantic checkpoint without an interface
 expansion or prohibited retained data.
 ### S1: Existing-State C1 Candidate Inventory
@@ -51,3 +51,9 @@ paths, preserves the Core/VM boundary, and does not import reference code or
 claim a firmware/CPU/physical result. Focused C1 capture regression and
 documentation governance pass. T392 remains open; the generic operation-
 snapshot design is its sole next receiver.
+
+### S4: C1 Semantic Endpoint Closure Audit
+
+S4 closes T392 with complete C1/VM/FDC transfer and no endpoint or CPU defect.
+The sole future receiver is a separately admitted generic immutable device-
+operation snapshot plus selected VM consumer contract. [Evidence](../etc/evidence/t392-s4-c1-semantic-endpoint-closure-audit.md).
