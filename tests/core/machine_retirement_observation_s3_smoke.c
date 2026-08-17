@@ -36,6 +36,36 @@ static C_INT retirement_prepare(core_machine **out_machine,
             TYPE_STATUS_OK;
 }
 
+static C_INT retirement_control_context_case(type_unsigned_8 opcode,
+    core_machine_retirement_control_outcome expected_outcome,
+    type_unsigned_8 expected_next_components)
+{
+    const core_machine_config config = {
+        .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386
+    };
+    const core_machine_run_budget budget = { 1u, 0u };
+    const type_unsigned_8 program[] = { opcode, 0x01u, 0x90u, 0x90u };
+    core_machine_retirement_observation_provider provider;
+    core_machine_run_result result;
+    retirement_probe probe = { STD_NULL, { { 0 } }, 0u, TYPE_STATUS_OK };
+    core_machine *machine = STD_NULL;
+    C_INT failed = !retirement_prepare(&machine, &config, program, sizeof(program));
+
+    provider.callback = retirement_capture;
+    provider.context = &probe;
+    probe.machine = machine;
+    if (!failed) {
+        failed |= core_machine_set_retirement_observation_provider(machine,
+            &provider) != TYPE_STATUS_OK ||
+            core_machine_run(machine, budget, &result) != TYPE_STATUS_OK ||
+            result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 1u ||
+            probe.count != 1u ||
+            probe.records[0].control_outcome != expected_outcome ||
+            probe.records[0].next_lexeme_components != expected_next_components;
+    }
+    core_machine_destroy(machine);
+    return failed;
+}
 C_INT main(C_VOID)
 {
     core_machine *machine = STD_NULL;
@@ -87,6 +117,11 @@ C_INT main(C_VOID)
         probe.records[0].virtual_8086_mode || probe.records[0].operand_size_32 ||
         probe.records[0].address_size_32 || probe.records[0].lock_prefix ||
         probe.records[0].repeat_prefix != 0u;
+    failed |= retirement_control_context_case(0x75u,
+        CORE_MACHINE_RETIREMENT_CONTROL_TAKEN, 1u) ||
+        retirement_control_context_case(0x74u,
+            CORE_MACHINE_RETIREMENT_CONTROL_FALLTHROUGH,
+            CORE_MACHINE_RETIREMENT_CONTEXT_UNAVAILABLE);
     failed |= core_machine_set_retirement_observation_provider(machine, STD_NULL) !=
         TYPE_STATUS_OK;
     failed |= core_machine_reset(machine) != TYPE_STATUS_OK;

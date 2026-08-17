@@ -102,7 +102,8 @@ static C_VOID core_machine_retirement_observation_capture_context(
     core_machine_retirement_observation *observation)
 {
     const t_cpuins_data *data;
-    core_machine_cpu_instruction_lexeme lexeme;
+    core_machine_cpu_instruction_lexeme instruction_lexeme;
+    core_machine_cpu_instruction_lexeme next_lexeme;
     type_unsigned_8 opcode_index;
     type_unsigned_8 opcode;
     type_unsigned_8 modrm_index;
@@ -131,11 +132,15 @@ static C_VOID core_machine_retirement_observation_capture_context(
     case 0x76u: case 0x77u: case 0x78u: case 0x79u: case 0x7au: case 0x7bu:
     case 0x7cu: case 0x7du: case 0x7eu: case 0x7fu:
     case 0xe0u: case 0xe1u: case 0xe2u: case 0xe3u:
-        fallthrough = data->oldcpu.data.eip + data->oplen;
-        if (!data->oldcpu.data.cs.seg.exec.defsize) fallthrough &= 0xffffu;
-        observation->control_outcome = cpu->data.eip == fallthrough ?
-            CORE_MACHINE_RETIREMENT_CONTROL_FALLTHROUGH :
-            CORE_MACHINE_RETIREMENT_CONTROL_TAKEN;
+        if (core_machine_cpu_instruction_lexeme_scan(data->opcodes,
+                (type_unsigned_8)sizeof(data->opcodes), machine->cpu_profile,
+                data->oldcpu.data.cs.seg.exec.defsize, &instruction_lexeme)) {
+            fallthrough = data->oldcpu.data.eip + instruction_lexeme.byte_count;
+            if (!data->oldcpu.data.cs.seg.exec.defsize) fallthrough &= 0xffffu;
+            observation->control_outcome = cpu->data.eip == fallthrough ?
+                CORE_MACHINE_RETIREMENT_CONTROL_FALLTHROUGH :
+                CORE_MACHINE_RETIREMENT_CONTROL_TAKEN;
+        }
         break;
     case 0xe9u: case 0xeau: case 0xebu: case 0xffu:
         observation->control_outcome = CORE_MACHINE_RETIREMENT_CONTROL_TAKEN;
@@ -145,8 +150,8 @@ static C_VOID core_machine_retirement_observation_capture_context(
     }
     if (observation->control_outcome == CORE_MACHINE_RETIREMENT_CONTROL_TAKEN &&
         core_machine_cpu_execution_preview_lexeme(&machine->executor_cpu_execution,
-            &lexeme) && lexeme.available) {
-        observation->next_lexeme_components = lexeme.component_count;
+            &next_lexeme) && next_lexeme.available) {
+        observation->next_lexeme_components = next_lexeme.component_count;
     }
 }
 C_VOID core_machine_retirement_observation_capture_instruction(core_machine *machine,
