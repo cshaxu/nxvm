@@ -72,6 +72,7 @@ C_INT main(C_VOID)
         probe.records[0].cpu_profile != CORE_MACHINE_CPU_PROFILE_80386 ||
         probe.records[0].timing_disposition !=
             CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED ||
+        probe.records[0].source_timing_form_id != 0u ||
         probe.records[0].elapsed_ticks != 0u || probe.records[0].timeline_ticks != 0u ||
         probe.records[0].source_ticks == 0u || probe.records[0].protected_mode ||
         probe.records[0].virtual_8086_mode || probe.records[0].operand_size_32 ||
@@ -102,6 +103,8 @@ C_INT main(C_VOID)
         probe.records[0].point.bytes[1] != rep_nop[1] ||
         probe.records[0].timing_disposition !=
             CORE_MACHINE_RETIREMENT_TIMING_SOURCE_UNALLOCATED ||
+        probe.records[0].source_timing_form_id !=
+            CORE_MACHINE_RETIREMENT_SOURCE_FORM_UNATTRIBUTED ||
         probe.records[0].elapsed_ticks != 0u || probe.records[0].timeline_ticks != 0u;
     failed |= core_machine_get_timeline_observation(machine, &timeline) != TYPE_STATUS_OK ||
         timeline.now != 0u;

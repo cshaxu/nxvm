@@ -652,6 +652,7 @@ static type_unsigned_64 core_machine_source_timing_lookup(core_machine *machine,
 
     for (index = 0u; index < ledger_entries; ++index) {
         if (ledger[index].form == form) {
+            if (machine != STD_NULL) machine->source_timing_form_id = (type_unsigned_32)form;
             return ledger[index].ticks;
         }
     }
@@ -3079,6 +3080,7 @@ static C_INT core_machine_instruction_cost(core_machine *machine,
 {
     if (machine == STD_NULL || out_ticks == STD_NULL) return 0;
     machine->source_timing_unallocated = TYPE_FALSE;
+    machine->source_timing_form_id = CORE_MACHINE_RETIREMENT_SOURCE_FORM_UNATTRIBUTED;
     if (core_machine_string_io_source_instruction_cost(machine, out_ticks)) {
         return 1;
     }

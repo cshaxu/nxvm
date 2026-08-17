@@ -14,6 +14,7 @@ typedef struct model40_retirement_capture_form {
     type_unsigned_8 opcode;
     type_unsigned_8 escape_opcode;
     type_unsigned_8 group_extension;
+    type_unsigned_32 source_timing_form_id;
     type_unsigned_64 ticks;
     type_unsigned_8 cpl;
     type_bool protected_mode;
@@ -173,12 +174,14 @@ static type_unsigned_8 model40_capture_group_extension(
 static C_INT model40_capture_form_matches(
     const model40_retirement_capture_form *form, const C_CHAR *name,
     const C_CHAR *operand, type_unsigned_8 opcode, type_unsigned_8 escape_opcode,
-    type_unsigned_8 group_extension, const core_machine_retirement_observation *observation)
+    type_unsigned_8 group_extension, type_unsigned_32 source_timing_form_id,
+    const core_machine_retirement_observation *observation)
 {
     return form != STD_NULL && observation != STD_NULL &&
         !STD_STRCMP(form->form, name) && !STD_STRCMP(form->operand, operand) &&
         form->opcode == opcode && form->escape_opcode == escape_opcode &&
         form->group_extension == group_extension &&
+        form->source_timing_form_id == source_timing_form_id &&
         form->ticks == observation->source_ticks && form->cpl == observation->cpl &&
         form->protected_mode == observation->protected_mode &&
         form->virtual_8086_mode == observation->virtual_8086_mode &&
@@ -234,7 +237,8 @@ static C_VOID model40_capture_observe(C_VOID *opaque,
     operand = model40_capture_operand_name(observation);
     for (index = 0u; index < capture->form_count; ++index) {
         if (model40_capture_form_matches(&capture->forms[index], name, operand,
-                opcode, escape_opcode, group_extension, observation)) {
+                opcode, escape_opcode, group_extension, observation->source_timing_form_id,
+                observation)) {
             ++capture->forms[index].count;
             return;
         }
@@ -245,7 +249,7 @@ static C_VOID model40_capture_observe(C_VOID *opaque,
     }
     capture->forms[capture->form_count++] = (model40_retirement_capture_form) {
         name, operand, opcode, escape_opcode, group_extension,
-        observation->source_ticks, observation->cpl,
+        observation->source_timing_form_id, observation->source_ticks, observation->cpl,
         observation->protected_mode, observation->virtual_8086_mode,
         observation->operand_size_32, observation->address_size_32,
         observation->lock_prefix, observation->repeat_prefix,
@@ -274,11 +278,11 @@ static C_VOID model40_capture_emit(const model40_retirement_capture *capture)
     for (index = 0u; index < capture->form_count; ++index) {
         const model40_retirement_capture_form *form = &capture->forms[index];
 
-        STD_PRINTF("T390 form=%s operand=%s opcode=%02X escape=%02X group=%u ticks=%llu cpl=%u pm=%u vm=%u os32=%u "
+        STD_PRINTF("T390 form=%s operand=%s opcode=%02X escape=%02X group=%u source-form=%u ticks=%llu cpl=%u pm=%u vm=%u os32=%u "
             "as32=%u lock=%u rep=%u disposition=%u count=%u\n",
             form->form, form->operand, (unsigned)form->opcode,
             (unsigned)form->escape_opcode, (unsigned)form->group_extension,
-            (unsigned long long)form->ticks,
+            (unsigned)form->source_timing_form_id, (unsigned long long)form->ticks,
             (unsigned)form->cpl, (unsigned)form->protected_mode,
             (unsigned)form->virtual_8086_mode, (unsigned)form->operand_size_32,
             (unsigned)form->address_size_32, (unsigned)form->lock_prefix,

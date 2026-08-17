@@ -2,13 +2,32 @@
 
 ## Current Work
 
-**Active.** T390 remains open between accepted subtasks.
+**Active packet:** T390 S19 (Continuation) -- shared Core source-form attribution capture.
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation -- T390 remains latest open task; S19 follows accepted S18. |
+| Admission And Approval | Owner standing approval for Queue-ordered T390 continuation and S18's shared-Core attribution receiver. |
+| Objective | Record the single successful timing-form attribution at the Core lookup owner and copy it through the existing retirement observer for M40-C0 batch classification. |
+| Non-goals | No timing-row addition, no second classifier, profile specialization, physical enablement, C1 boot, board/device timing or L3 claim. |
+| Reference Baseline | Accepted S18 attribution audit; current machine.c lookup/classifier chain and copied observer lifecycle. |
+| Candidate Proposal | [80386 physical-retirement qualification](../proposals/m5-80386-physical-retirement-qualification.md). |
+| Files And ABI Surface | Core private timing/observation state, copied observation contract, focused Core/capture smoke, CMake/evidence/status; no raw pointers or mutable public layout. |
+| Applicable Rules | Execution, architecture, coding, documentation and source policy; one owner, copied boundary, disabled-path neutrality, reset/failure atomicity and actual review. |
+| Verification | Focused attribution lifecycle/reset/nonpublication proof; M40-C0 synthetic and contained replay; full current gate, docs, diff and actual review. |
+| Expected Markers | Existing M40-C0 capture marker plus a project-owned source-form attribution smoke. |
+| Asset Needs | Owner-managed local ROM/media for deleted C0 replay only; no external identity or raw trace in Git. |
+| Reporting Requirements | Complete P1 with implementation/evidence then coordinator review and acceptance/correction. |
+| Stop Conditions | Attribution cannot remain single-owner/copied, leaks raw state, changes disabled behavior, lacks reset safety, or requires a timing inference. |
+| Exit Criteria | Exact lookup attribution reaches copied observer; focused proofs and contained C0 replay pass; batch matrix transfer remains explicit. |
+| Original Owner Request | Add the shared Core source-form attribution needed for C0 batch mapping. |
+| Similar-Issue Sweep | Inspect every timing lookup, unallocated path, observer reset/install/remove lifecycle and all observer consumers. |
 
 ## Current Technical Baseline
 
-- **Current developer artifact:** T390 S15 `vm-0-5-0390` /
+- **Current developer artifact:** T390 S19 `vm-0-5-0390` /
   `build/output/nxvm_0_5_0390.exe`, SHA-256
-  `9A0996D0C207BEA9848EEE42BC268AF58A1922C6CDABBF0A376AE36B22391540`.
+  `01FDEA7D036ED8A69B8927E26622B7D8556AC7B799028A04355D51A5182B6814`.
   T386 closes selected-device functional completeness at S29; its retained
   [closure audit](../etc/evidence/t386-s29-functional-closure-audit.md) fixes
   HDC current-gate coverage and transfers board, firmware and physical work.
