@@ -57,3 +57,10 @@ snapshot design is its sole next receiver.
 S4 closes T392 with complete C1/VM/FDC transfer and no endpoint or CPU defect.
 The sole future receiver is a separately admitted generic immutable device-
 operation snapshot plus selected VM consumer contract. [Evidence](../etc/evidence/t392-s4-c1-semantic-endpoint-closure-audit.md).
+## Coordinator Acceptance
+
+After actual-change review of P1 `750de4e8`, the coordinator accepts S4 and
+closes T392. The audit exhausts all C1, VM/session and FDC candidates, preserves
+Core/VM ownership and transfers only the unimplemented generic immutable device-
+operation snapshot plus selected consumer contract. Focused C1 regression and
+documentation governance pass.
