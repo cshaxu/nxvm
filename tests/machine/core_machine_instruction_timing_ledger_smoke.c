@@ -210,7 +210,7 @@ static C_INT timing_ledger_test_physical_classifier_boundary(C_VOID)
         timing_ledger_physical_case(mov_sreg_register,
             sizeof(mov_sreg_register), TYPE_STATUS_OK, 2u) ||
         timing_ledger_physical_case(mov_sreg_memory,
-            sizeof(mov_sreg_memory), TYPE_STATUS_FAULT, 0u);
+            sizeof(mov_sreg_memory), TYPE_STATUS_OK, 5u);
 }
 
 static C_INT timing_ledger_test_memory(C_VOID)

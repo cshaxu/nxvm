@@ -214,6 +214,7 @@ typedef enum core_machine_source_timing_form {
     CORE_MACHINE_SOURCE_TIMING_CLI,
     CORE_MACHINE_SOURCE_TIMING_SAHF,
     CORE_MACHINE_SOURCE_TIMING_MOV_SREG_REGISTER,
+    CORE_MACHINE_SOURCE_TIMING_MOV_SREG_MEMORY,
     CORE_MACHINE_SOURCE_TIMING_MOV_IMMEDIATE,
     CORE_MACHINE_SOURCE_TIMING_MOV_REGISTER_REGISTER,
     CORE_MACHINE_SOURCE_TIMING_MOV_RM_REGISTER,
@@ -464,6 +465,7 @@ static const core_machine_source_timing_entry
     { CORE_MACHINE_SOURCE_TIMING_CLI, 3u },
     { CORE_MACHINE_SOURCE_TIMING_SAHF, 3u },
     { CORE_MACHINE_SOURCE_TIMING_MOV_SREG_REGISTER, 2u },
+    { CORE_MACHINE_SOURCE_TIMING_MOV_SREG_MEMORY, 5u },
     { CORE_MACHINE_SOURCE_TIMING_MOV_IMMEDIATE, 2u },
     { CORE_MACHINE_SOURCE_TIMING_MOV_REGISTER_REGISTER, 2u },
     { CORE_MACHINE_SOURCE_TIMING_MOV_RM_REGISTER, 2u },
@@ -2941,6 +2943,9 @@ static C_INT core_machine_80386_source_instruction_cost(core_machine *machine,
         if (!core_machine_source_timing_modrm_is_memory(data, prefixes)) {
             *out_ticks = core_machine_80386_source_timing_lookup(machine,
                 CORE_MACHINE_SOURCE_TIMING_MOV_SREG_REGISTER);
+        } else if (!core_machine_control_stack_is_protected(data)) {
+            *out_ticks = core_machine_80386_source_timing_lookup(machine,
+                CORE_MACHINE_SOURCE_TIMING_MOV_SREG_MEMORY);
         } else {
             core_machine_source_timing_mark_unallocated(machine, out_ticks);
         }

@@ -2,7 +2,26 @@
 
 ## Current Work
 
-**Active.** T390 remains open between accepted subtasks.
+**Active.** M5 T390 S8 is admitted as a `Continuation` task packet.
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | `Continuation`; M5 T390 S8 after accepted S7. |
+| Admission And Approval | Owner-approved autonomous Queue execution on 2026-08-17 with standing write/commit/push authorization. Scope is only S7's earliest transferred real-address memory-source `MOV Sreg,r/m16`. |
+| Objective | Qualify the observed 80386 real-address memory-source `MOV Sreg,r/m16` at its Intel-primary exact Core-clock row, preserve physical prepublication for excluded contexts, and repeat the bounded redacted Model-40 replay. |
+| Non-goals | No protected-mode `pm=18/19` forms, other segment destinations, prefixes, board/device/firmware timing, profile selection, boot completion, `0:7C00`, ROM/media import, or L3 claim. |
+| Reference Baseline | Accepted S7 P2 `fb509c6f`, S7 evidence, and retained T390 history. Intel 80386 Programmer's Reference Manual (1986), MOV table page 344: `8E /r MOV Sreg,r/m16` is `2/5, pm=18/19`; S8 admits only the observed real-address memory value `5`. |
+| Candidate Proposal | `docs/proposals/m5-80386-physical-retirement-qualification.md`; this remains a bounded shared-Core corpus qualification. |
+| Files And ABI Surface | Private Core timing ledger/classifier, existing timing-ledger smoke, external-only capture runner, evidence/history/Current. No public ABI, VM/profile interface, or device change. |
+| Applicable Rules | Execution: active packet, complete P1, actual review/P2 and similar-form sweep. Architecture: sole Core owner and physical eligibility only for exact source-backed context. Coding: C11 minimal owner-local change/no test API. Document and source policy: indexed evidence; owner media stays external and redacted. |
+| Verification | Primary citation; normal and physical exact 5-tick proof; the existing register form remains 2 ticks; prefixed or protected contexts remain nonphysical; focused smoke, product/current-gate build, documentation gate, diff hygiene, and bounded default external replay with output cleanup. |
+| Expected Markers | Existing timing-ledger marker; `M5:T390:S8:MOV-SREG-MEMORY:OK`; redacted replay transfers only its next earliest terminal. |
+| Asset Needs | Existing owner-managed ROM/media only for external replay; never retain identity, bytes, paths, hashes, provenance, or trace. |
+| Reporting Requirements | Executor confirms, then P1 push with evidence/transfer; coordinator actual review then P2 or one consolidated corrective brief. |
+| Stop Conditions | Stop/transfer if context differs, exact row is unavailable, a broader CPU mechanism is needed, replay reaches a new unqualified terminal, source containment fails, or any required gate fails. |
+| Exit Criteria | Exact real-address memory source uses 5 Core ticks; existing register form remains 2; prefixed and protected forms remain rejected prior to publication; replay is redacted/bounded and next terminal transferred; required verification and P2 acceptance pass. |
+| Original Owner Request | Continue the Queue-governed DeskPro 386 completeness/L3 work under single-person dual-role governance and use Intel primary material for exact timing. |
+| Similar-Issue Sweep | Search 80386 `0x8e` enum/ledger/classifier/tests and 80286 distinct owner. Qualify only current observed real-address memory form; existing 80386 register owner remains 2; protected `18/19` and prefixed forms are excluded and must retain rejection. |
 
 ## Current Technical Baseline
 
