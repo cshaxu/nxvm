@@ -2,7 +2,26 @@
 
 ## Current Work
 
-**Active.** T390 remains open between accepted subtasks.
+**Active packet:** T390 S18 (Continuation) -- M40-C0 batch form/context disposition audit.
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation -- T390 remains the latest open task; S18 follows accepted S17. |
+| Admission And Approval | Owner standing approval for Queue-ordered T390 continuation and S16/S17 finite-corpus method. |
+| Objective | Produce the complete M40-C0 75-class form/context matrix, reconcile each class to its current owner and Intel-primary eligibility, and select one bounded batch implementation or explicit transfer. |
+| Non-goals | No per-terminal repair, no guessed timing, no physical enablement, C1 boot, board/device timing, firmware/media import or L3 claim. |
+| Reference Baseline | Accepted S16 finite-corpus disposition, S17 capture evidence and Intel 80386 PRM source boundary. |
+| Candidate Proposal | [80386 physical-retirement qualification](../proposals/m5-80386-physical-retirement-qualification.md). |
+| Files And ABI Surface | T390 evidence/status and proposal clarification only unless a separately admitted implementation receiver is selected; no production or public ABI. |
+| Applicable Rules | Execution, documentation, architecture, coding and source policy; Intel-primary exact rows, no raw external data and actual-diff review. |
+| Verification | Fresh deleted normalized C0 replay; source-owner sweep; complete matrix reconciliation; docs, diff and actual review. |
+| Expected Markers | Existing C0 capture marker only. |
+| Asset Needs | Owner-managed local ROM/media for contained replay only; no identity/path/hash/bytes/PC/raw trace in Git. |
+| Reporting Requirements | Complete one audit P with complete matrix and named next receiver, then coordinator review and acceptance. |
+| Stop Conditions | Any class cannot be semantically identified/captured, lacks exact primary row, is privileged/dynamic/lexical underdetermined, or reveals a non-C0 requirement. |
+| Exit Criteria | Every C0 aggregate has one owner/disposition, no false physical claim, and one batch receiver or explicit transfer exists. |
+| Original Owner Request | Batch-classify the finite M40-C0 corpus instead of restoring single-terminal repair. |
+| Similar-Issue Sweep | Inspect all 80386 classifier owners, prefix/group context, C0 aggregate keys and previous T390 exact-row evidence. |
 
 ## Current Technical Baseline
 
