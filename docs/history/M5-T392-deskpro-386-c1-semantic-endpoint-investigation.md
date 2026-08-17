@@ -71,3 +71,13 @@ retained proposal in `docs/proposals/` and its completed candidate in Queue.
 P1 records the supporting evidence; after review, P2 removes the stale Queue
 entry and archives the proposal beside this numbered record. No runtime source,
 artifact, Core/VM boundary, asset, timing, physical or L3 claim changes. [Evidence](../etc/evidence/t392-s5-closure-topology-corrective-audit.md).
+
+## Coordinator Acceptance
+
+After actual-change review of P1 `3b40d2ce`, the coordinator accepts S5 and
+re-closes T392. P2 archives the retained proposal beside this record and removes
+the stale Queue candidate; the direct-reference sweep, focused C1 regression and
+documentation governance gate pass. The corrective changes no runtime source,
+developer artifact, Core/VM boundary, asset, timing, physical or L3 claim. The
+unchanged transfer remains a separately admitted generic immutable Core
+device-operation snapshot plus selected VM consumer contract.

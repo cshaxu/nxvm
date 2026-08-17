@@ -2,28 +2,8 @@
 
 ## Current Work
 
-**Active: M5 T392 S5 Corrective.** Repair the discovered closed-task documentation topology only: archive T392's retained proposal beside its history and remove its stale Queue candidate. No runtime source, Core/VM boundary, asset, timing, physical or L3 work is admitted.
+**Idle.**
 
-## M5 T392 S5 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Corrective |
-| Admission And Approval | The owner authorized continued holistic execution and prompt repair of confirmed in-scope issues in the current session on 2026-08-17. This narrow corrective uses the latest closed numeric task T392 under the Execution Rules exception solely to repair its missed proposal archival and stale Queue entry. |
-| Objective | Restore T392 closure topology by retaining its proposal beside the numbered history record, removing the completed candidate from Queue, and recording an evidence-backed corrective closure. |
-| Non-goals | No runtime source, tests, developer-artifact identity, Core/VM interface, FDC behavior, firmware/media research, asset import, C1 endpoint selection, CPU timing, physical qualification, board timing or L3 claim. |
-| Reference Baseline | Accepted T392 S4 P2 `a42bc248`, T392 S4 closure audit, current documentation topology, and the retained T392 proposal before archival. |
-| Candidate Proposal | [Retained T392 proposal companion](../proposals/m5-deskpro-386-c1-semantic-endpoint-investigation.md); this corrective does not admit its transferred future mechanism. |
-| Files And ABI Surface | `docs/states/CURRENT.md`, `docs/states/QUEUE.md`, `docs/history/M5-T392-deskpro-386-c1-semantic-endpoint-investigation.md`, the moved proposal companion, `docs/etc/README.md`, and one T392 S5 evidence record only. No public or private runtime ABI changes. |
-| Applicable Rules | Documentation Rules topology/status/Queue requirements; Execution Rules corrective allocation, P lifecycle, actual-change review, documentation gate and closure audit; Architecture Rules public-boundary invariant is preserved because no runtime surface changes. |
-| Verification | `git diff --check`; a complete T392 reference/path sweep; `ctest --test-dir build/t386-s23-verify --output-on-failure -R '^current\.vm-model40-byob-retirement-capture$'`; and `powershell -NoProfile -ExecutionPolicy Bypass -File tools/Verify-DocumentationGovernance.ps1 -RepositoryRoot .`. |
-| Expected Markers | The retained proposal exists only under `docs/history/`; Queue has no T392 candidate; T392 history/evidence/index link the corrective record; no `src/`, `tests/`, asset or ABI path changes occur. |
-| Asset Needs | None. No firmware, guest media, third-party source, trace or external asset is read, imported, retained or catalogued. |
-| Reporting Requirements | Record the defect, complete-reference sweep, no-runtime-change result, verification and boundary in durable evidence; push P1, independently review it, then push P2 acceptance and report the closure. |
-| Stop Conditions | Stop and transfer to a new task if repair requires changing runtime source, a public interface, an artifact identity, a new candidate mechanism, source/firmware research, or any task other than T392. |
-| Exit Criteria | T392's proposal is archived beside its numbered history, Queue contains only current candidates, all direct references agree, the current task record is structurally valid, focused regression and documentation governance pass, and coordinator review accepts the P1 diff before P2 closure. |
-| Original Owner Request | Owner authorized continued holistic execution, prompt repair of confirmed small in-scope issues, and handling of uncommitted files. |
-| Similar-Issue Sweep | Sweep Queue candidates, proposal/history locations, T392 links and all directly affected supporting-index rows for the same closed-task topology defect; transfer any unrelated occurrence rather than widening this corrective. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T390 S22 `vm-0-5-0390` /
@@ -50,7 +30,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T392 | Closed: S1-S4 exhaust copied C1, VM/session and FDC operation candidates without an endpoint or defect; only a separately admitted generic immutable device-operation snapshot plus selected consumer contract can proceed. No Core/VM ABI, CPU timing, physical, board, firmware or L3 claim. [Closure audit](../etc/evidence/t392-s4-c1-semantic-endpoint-closure-audit.md). |
+| T392 | Closed: S1-S5 exhaust copied C1, VM/session and FDC operation candidates, then repair the missed proposal archival and stale Queue entry; no endpoint or defect exists. Only a separately admitted generic immutable device-operation snapshot plus selected consumer contract can proceed. No Core/VM ABI, CPU timing, physical, board, firmware or L3 claim. [Corrective audit](../etc/evidence/t392-s5-closure-topology-corrective-audit.md). |
 | T391 | Closed: S1-S8 establish the bounded C0A startup predecessor, complete C1 aggregate disposition and the truthful transfer that C1 physical qualification remains blocked pending a new finite checkpoint or earliest-owner defect. No Core/VM interface, timing, physical, board, firmware or L3 claim. [Closure audit](../etc/evidence/t391-s8-startup-semantic-closure-audit.md). |
 | T389 | Stopped by owner-approved requeue: S1 proves no physical board slice can begin while 80386 successful retirement remains nonphysical; S2 archives the invalid candidate and queues a shared CPU qualification before a fresh board task. No board timing, physical-clock or L3 claim. [Audit](../etc/evidence/t389-s2-stop-and-requeue-audit.md). |
 | T388 | Closed: S1--S9 establish the sole publisher, exhaustive exact-or-nonphysical residual disposition and pre-publication physical-contract rejection. No current CPU profile is physically clock-qualified; board work transfers under this restriction. [Closure audit](../etc/evidence/t388-s9-task-closure-audit.md). |

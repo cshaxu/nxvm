@@ -37,3 +37,13 @@ must inspect the actual P1 diff. The earlier transfer remains unchanged: a
 separately admitted generic immutable Core device-operation snapshot plus a
 selected VM consumer contract is required before any new C1 endpoint claim;
 physical qualification remains blocked.
+
+## Acceptance Result
+
+Coordinator review of P1 `3b40d2ce` confirmed that its changed surface was
+limited to the active packet, numbered history, evidence and supporting index.
+P2 atomically moves the proposal beside the T392 history record and removes its
+Queue candidate. `git diff --check`, the focused C0/C0A/C1 capture regression,
+and the complete documentation governance gate pass. The corrective re-closes
+T392 without changing runtime source, artifact identity, Core/VM boundaries,
+assets, timing, physical qualification or L3 status.
