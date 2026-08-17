@@ -23,6 +23,7 @@
 
 #include "core/machine/cpu_instructions.h"
 
+#include "vm/composition/session/session.h"
 #include "vm/composition/session/session_interface.h"
 
 struct test_vm_cpu_probe {
@@ -52,7 +53,7 @@ static C_INT vm_session_cpu_probe_capture_state(const test_vm_cpu_probe *probe,
 
 static C_INT vm_session_cpu_probe_reset(test_vm_cpu_probe *probe)
 {
-    vm_session_control_reset(probe->machine.control);
+    vm_session_control_reset(&probe->machine.control);
     return test_core_machine_fixture_reset_real_mode(probe->machine.core_machine);
 }
 
@@ -67,7 +68,7 @@ C_INT vm_session_cpu_probe_create(test_vm_cpu_probe **out_probe)
     probe = (test_vm_cpu_probe *)STD_CALLOC(1u, sizeof(*probe));
     if (probe == STD_NULL) return 0;
     vm_session_storage_initialize(&probe->machine);
-    vm_session_control_initialize(probe->machine.control, &probe->machine);
+    vm_session_control_initialize(&probe->machine.control, &probe->machine);
     probe->active = 1;
     if (!vm_session_cpu_probe_reset(probe)) {
         vm_session_cpu_probe_destroy(probe);
@@ -117,7 +118,7 @@ C_INT vm_session_cpu_probe_step(
 C_VOID vm_session_cpu_probe_destroy(test_vm_cpu_probe *probe)
 {
     if (probe != STD_NULL && probe->active) {
-        vm_session_control_finalize(probe->machine.control, &probe->machine);
+        vm_session_control_finalize(&probe->machine.control, &probe->machine);
         vm_session_storage_finalize(&probe->machine);
         probe->active = 0;
     }
