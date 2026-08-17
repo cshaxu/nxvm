@@ -11,3 +11,7 @@ The next receiver is a bounded **shared Core source-form attribution capture** s
 After attribution exists, a later T390 batch task must rerun M40-C0, form one complete owner/row/context matrix, cite exact Intel-primary rows and add project-owned regressions for every selected class. Any class without an exact row or required fact transfers as a whole to its named receiver; no one-terminal repair resumes.
 
 This audit neither enables physical retirement nor advances C1, DeskPro board timing, device timing or L3.
+
+## Coordinator Acceptance
+
+Coordinator actual-diff review accepts P1 52873362. The audit records the observed 75-row C0 boundary without retaining external data and correctly rejects tick-based inference as an Intel-row substitute. It selects one shared Core attribution receiver, preserves the S17 aggregate and makes no physical, board or L3 claim.
