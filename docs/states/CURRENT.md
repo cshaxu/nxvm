@@ -2,7 +2,26 @@
 
 ## Current Work
 
-**Active.** T390 remains open between accepted subtasks.
+## M5 T390 S20 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; T390 remains open and S20 corrects the documentation-governance failure discovered while closing accepted S19. |
+| Admission And Approval | Owner standing approval for the Queue-ordered T390 continuation and correction of governed closure defects. |
+| Objective | Restore the one-row latest-subtask progress record required when T390 has no active packet, without changing accepted source or timing conclusions. |
+| Non-goals | No production code, timing row, artifact, physical qualification, C1, board/device timing or L3 work. |
+| Reference Baseline | P1 8c3003f8 and P2 c89f0482; documentation-gate failure identifying duplicate T390 S18/S19 progress rows. |
+| Candidate Proposal | [80386 physical-retirement qualification](../proposals/m5-80386-physical-retirement-qualification.md). |
+| Files And ABI Surface | CURRENT.md, indexed corrective evidence and evidence index only; no runtime or public ABI surface. |
+| Applicable Rules | Execution and documentation rules: immutable pushed history, active packet, current-status cardinality, evidence index and actual review. |
+| Verification | Documentation governance gate, diff check, actual review and clean remote-sync status. |
+| Expected Markers | Documentation governance pass for vm-0-5-0390. |
+| Asset Needs | None. |
+| Reporting Requirements | Record P2 failure, complete corrective P1, then coordinator actual review and acceptance P2. |
+| Stop Conditions | Any required correction changes code, artifact baseline, historical commit, or task scope. |
+| Exit Criteria | Between-subtask CURRENT state contains exactly one latest T390 progress row and all documentation checks pass. |
+| Original Owner Request | Continue T390 under the approved finite-corpus qualification route. |
+| Similar-Issue Sweep | Inspect active-packet removal, every retained T390 recent-progress row and supporting evidence index. |
 
 ## Current Technical Baseline
 
@@ -31,7 +50,6 @@
 | Task | Compact result |
 | --- | --- |
 | T390 S19 | Accepted: copied opaque Core source-form attribution reaches the C0 observer while classified-but-unattributed paths remain explicit. Finite batch matrix mapping transfers; no physical, board or L3 claim. [Evidence](../etc/evidence/t390-s19-source-form-attribution.md). |
-| T390 S18 | Accepted: C0 batch mapping cannot infer Intel rows from ticks; it transfers one shared Core source-form attribution capture before matrix classification. No physical, board or L3 claim. [Evidence](../etc/evidence/t390-s18-c0-batch-disposition.md). |
 | T389 | Stopped by owner-approved requeue: S1 proves no physical board slice can begin while 80386 successful retirement remains nonphysical; S2 archives the invalid candidate and queues a shared CPU qualification before a fresh board task. No board timing, physical-clock or L3 claim. [Audit](../etc/evidence/t389-s2-stop-and-requeue-audit.md). |
 | T388 | Closed: S1--S9 establish the sole publisher, exhaustive exact-or-nonphysical residual disposition and pre-publication physical-contract rejection. No current CPU profile is physically clock-qualified; board work transfers under this restriction. [Closure audit](../etc/evidence/t388-s9-task-closure-audit.md). |
 | T387 | Closed: source/owner inventory, exact port-`61h` reconciliation and reference qualification transfer the shared physical-timebase then physical-device/firmware prerequisites before any DeskPro L3 audit. No physical-time or L3 claim. [Closure audit](../etc/evidence/t387-s6-task-closure-transfer-audit.md). |
