@@ -10,7 +10,7 @@ firmware compatibility, or L3 claim.
 
 ## Active Subtask
 
-T391 S3 is active: it consumes the complete three-unit C0A form/context batch.
+No subtask is active. T391 remains open with S1--S3 retained as compact accepted progress.
 
 ## Accepted Progress
 
@@ -36,3 +36,12 @@ S3 consumes all three frozen C0A units and reconciles their exact retained
 context to the existing privileged, control/stack and ordinary-I/O source
 owners. It is documentation and evidence only; no physical selection or
 Core/VM boundary change is in scope. [Evidence](../etc/evidence/t391-s3-c0a-form-context-ledger.md).
+
+## Coordinator Acceptance
+
+After actual-change review of P1 `688ee4dc`, the coordinator accepts S3. The
+review confirms that the evidence disposes every frozen C0A unit and only
+links existing private Core owners and regression boundaries; it changes no
+production source, Model-40 composition, interface or physical selection. The
+C0A current test and documentation governance pass. T391 remains open; the
+next receiver is a bounded C1 admission/inventory.

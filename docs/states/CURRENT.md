@@ -2,24 +2,8 @@
 
 ## Current Work
 
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation `T391 S3`. |
-| Admission And Approval | Owner approved continued holistic CPU/startup work and explicitly authorized handling uncommitted files. This is the next retained T391 receiver, limited to the complete three-unit C0A ledger. No exception is requested. |
-| Objective | Reconcile all three M40-C0A copied-observation units to their existing 80386 source-row owners and record their complete form/context dispositions. |
-| Non-goals | No production code, Core/VM interface, physical-retirement selection, board/device time, firmware/media import, raw trace, PC/byte/asset retention, C1 capture, or L3 claim. |
-| Reference Baseline | Accepted T391 S2 capture, T359 S3 control/stack ledger, T359 S6 privileged ledger, T357 S3 ordinary-I/O ledger, and deterministic Model-40 composition. |
-| Candidate Proposal | `docs/proposals/m5-deskpro-386-startup-semantic-readiness.md`; consumes the T391 M40-C0A finite corpus. |
-| Files And ABI Surface | Documentation and evidence only: `docs/states/CURRENT.md`, `docs/history/M5-T391-deskpro-386-startup-semantic-readiness.md`, and new `docs/etc/evidence/t391-s3-c0a-form-context-ledger.md`. No ABI surface changes. |
-| Applicable Rules | Execution convergence: dispose the complete frozen three-unit batch. Documentation: one current authority and durable evidence. Architecture/coding: not applicable because no code changes; preserve the existing Core generic and VM composition boundary. |
-| Verification | Review the three captured contexts against the named existing owners; run the C0A synthetic current test and documentation-governance gate; inspect the actual P1 diff before acceptance. |
-| Expected Markers | `M5:T391:S2:C0A-CAPTURE:OK`; evidence marker `M5:T391:S3:C0A-LEDGER:OK`. |
-| Asset Needs | None. S3 consumes only the already retained normalized S2 result and existing project documentation. |
-| Reporting Requirements | Record the three dispositions, owner and regression boundaries, then state whether C1 is admissible without claiming physical time. |
-| Stop Conditions | Stop and transfer if a unit lacks retained form/context evidence, requires an inferred Intel row, requires production capture expansion, or identifies a Core/VM boundary change. |
-| Exit Criteria | All three frozen C0A units have explicit form/context, existing owner, source-row evidence, regression boundary and nonphysical disposition; evidence names the next receiver. |
-| Original Owner Request | Continue the CPU correctness/timing audit with DeskPro/86Box/PCjs reference awareness, bridge experiments where useful, and do not break the Core/VM interface boundary. |
-| Similar-Issue Sweep | Reconcile every C0A unit, not only the endpoint I/O read; distinguish `FF /4` near register JMP from prior `FF /5` far-memory JMP; confirm no physical contract is selected by this documentation-only work. |
+**Active.** T391 remains open between accepted subtasks. S3 reconciles the complete three-unit M40-C0A form/context batch to existing source-row owners; it makes a bounded C1 admission/inventory the next receiver. Model-40 remains deterministic and no Core/VM interface or physical-clock selection changed. [Evidence](../etc/evidence/t391-s3-c0a-form-context-ledger.md).
+
 ## Current Technical Baseline
 
 - **Current developer artifact:** T390 S22 `vm-0-5-0390` /
@@ -46,7 +30,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T391 S2 | Accepted: test-only C0A capture isolates three classified units through the first post-C0 port-61h read. It transfers the three-unit form/context ledger; no Core/VM interface, physical-clock, board-time, or L3 claim. [Evidence](../etc/evidence/t391-s2-c0a-stage-capture.md). |
+| T391 S3 | Accepted: the complete C0A three-unit form/context batch maps to existing privileged, control/stack and ordinary-I/O owners. It makes only a separately admitted C1 inventory eligible; no physical-clock, board-time, firmware or L3 claim. [Evidence](../etc/evidence/t391-s3-c0a-form-context-ledger.md). |
 | T389 | Stopped by owner-approved requeue: S1 proves no physical board slice can begin while 80386 successful retirement remains nonphysical; S2 archives the invalid candidate and queues a shared CPU qualification before a fresh board task. No board timing, physical-clock or L3 claim. [Audit](../etc/evidence/t389-s2-stop-and-requeue-audit.md). |
 | T388 | Closed: S1--S9 establish the sole publisher, exhaustive exact-or-nonphysical residual disposition and pre-publication physical-contract rejection. No current CPU profile is physically clock-qualified; board work transfers under this restriction. [Closure audit](../etc/evidence/t388-s9-task-closure-audit.md). |
 | T387 | Closed: source/owner inventory, exact port-`61h` reconciliation and reference qualification transfer the shared physical-timebase then physical-device/firmware prerequisites before any DeskPro L3 audit. No physical-time or L3 claim. [Closure audit](../etc/evidence/t387-s6-task-closure-transfer-audit.md). |
