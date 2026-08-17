@@ -58,3 +58,11 @@ focused FDC/capture regressions pass. One owner-managed BYOB run reaches its
 later successful `READ DATA`; this is bounded non-success, not C1 or physical
 qualification. T393 remains open only for a separately admitted decision on
 whether any further finite observation receiver exists.
+### S5: Task Closure Audit
+
+S5 reconciles every frozen FDC publisher disposition, the copied Core/VM
+contract and the bounded C0A consumer result. The BYOB non-success supplies no
+C1 endpoint or physical conclusion; it completes the selected finite consumer
+disposition. The task may close only after P1 actual-change review archives the
+proposal and removes its Queue entry.
+[Evidence](../etc/evidence/t393-s5-task-closure-audit.md).

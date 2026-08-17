@@ -2,7 +2,28 @@
 
 ## Current Work
 
-**T393 S4 accepted.** The test-only C0A-sequenced FDC diagnostic reaches a bounded BYOB non-success: no later successful drive-0 `READ DATA` appeared before the 2,000,000-retirement limit. It does not establish C1 or physical qualification.
+**Active: M5 T393 S5 Continuation.** Reconcile the frozen FDC publication universe, copied Core/VM contract and bounded C0A consumer result, then close T393 and release only its stated downstream prerequisite. No new FDC observation, C1, timing, board or L3 claim is in scope.
+
+## M5 T393 S5 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner previously authorized continued implementation; T393 S4 accepted the final bounded consumer result. |
+| Objective | Perform the T393 task-level closure audit and archive its completed candidate topology after P1 review. |
+| Non-goals | No new runtime behavior, FDC observation, CPU/board timing, firmware/media import, C1, physical or L3 claim. |
+| Reference Baseline | T393 S1 publisher inventory, S2 copied terminal contract and S4 bounded C0A-sequenced non-success. |
+| Candidate Proposal | [DeskPro FDC operation observation contract](../proposals/m5-deskpro-fdc-operation-observation-contract.md). |
+| Files And ABI Surface | Current/history/proposal/Queue/evidence/index only; no production source or public ABI. |
+| Applicable Rules | Execution task closure and actual-change review; Documentation topology/index/Queue rules; Architecture and source-policy boundaries are unchanged. |
+| Verification | Direct source/history/Queue reference sweep, focused FDC/capture regressions, documentation governance and diff review. |
+| Expected Markers | One closure audit, one task-level history acceptance, archived proposal and no T393 Queue entry after P2. |
+| Asset Needs | None; no asset is read, changed, imported or recorded. |
+| Reporting Requirements | Record all completion-standard elements, residual transfer and P1/P2 actual-change review. |
+| Stop Conditions | Stop if closure requires a new FDC publisher/consumer, raw trace, new physical claim or production change. |
+| Exit Criteria | T393 is closed with every frozen publisher covered/transferred, copied contract retained, selected consumer disposition recorded, and only stated downstream work released. |
+| Original Owner Request | Continue the global CPU instruction/timing audit while preserving Core/VM boundaries. |
+| Similar-Issue Sweep | Sweep proposal/Queue/history/current/index references and confirm no stale active FDC-candidate topology remains. |
 
 ## Current Technical Baseline
 
