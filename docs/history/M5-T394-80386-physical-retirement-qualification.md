@@ -112,3 +112,12 @@ C0 batch without selection. Both routes are deterministic with the explicitly
 neutral 1:1 clock plan; T387's source-backed board conversion prerequisite is
 therefore the earliest receiver. No partial descriptor or physical CPU time is
 allowed. [Evidence](../etc/evidence/t394-s6-descriptor-selection-nonadmission.md).
+## Coordinator Acceptance: S6
+
+After actual-change review of P1 `e15a71bc`, the coordinator accepts S6. The
+complete 81-key C0 set is correctly retained as one batch: both selected
+Model-40 construction routes remain deterministic under the neutral 1:1 plan,
+and T387's source-backed board conversion remains the earliest receiver. Core
+key/descriptor validation and prepublication rejection are unchanged. Current
+gates, documentation governance and diff hygiene pass. No physical descriptor,
+board time or L3 claim is accepted.
