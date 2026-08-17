@@ -90,3 +90,16 @@ D4 contract, Core/VM ownership rules and actual diff. It confirms no test-only
 production operation, IBM parity fork, firmware/media import, timing claim or
 L3 claim. D4-SKEY/reset arbitration and the remaining FDC, fixed-disk and CECG
 functional receivers remain in T386 before its later board timing work.
+
+### S26: Fixed 40 MB HDC Startup Route
+
+S26 accepts the selected Compaq fixed-disk startup receiver. Its private
+Model-40 construction route admits one exact 925/5/17 logical RAW-IMG, while
+the public session route rejects later replacement. Project-owned focused
+inputs prove normal CHS/PIO, IRQ14 acknowledgement, reset and error behavior;
+the shared VM HDD owner now validates selected geometry, preserves it over
+reset and clears it when a new generic media candidate commits. P1
+`e0c0a2ab` and corrective P2 `6fac7d57` are pushed. The current 278-target
+gate and retained HDC/FDC/D4 controls pass. Physical-media semantics and
+DeskPro service/bus timing remain transferred, and T386 remains open for the
+CECG receiver and its functional audit.

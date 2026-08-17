@@ -61,45 +61,36 @@ L3 closure.
 
 ## Accepted Progress And Remaining Receiver Order
 
-T386 S22 closes only the first D4/platform receiver: the D4 parity diagnostic,
-four-lane status latch and logical IOCHK/NMI publication now consume one
-location-bearing Core memory-parity event. It does not close the rest of the D4
-controller or any other selected device.
+T386 S22 closes the D4 parity diagnostic, four-lane status latch and logical
+IOCHK/NMI publication. S23 closes the selected D4-SKEY A20 and logical
+shutdown/program/power reset-arbitration contract through the existing Core
+owners. S24 closes the selected 765A/1.2-MB RAW-IMG logical FDC, DMA2 and IRQ6
+receiver without extending media to flux/CRC/index/rotation/physical-CHRN
+behavior. S25 closes the external-ROM startup compatibility receiver, retaining
+its unresolved CPU-to-PIT calibration as a timing transfer rather than a CPU
+or functional claim.
+
+S26 closes the Compaq Multipurpose Fixed Disk Controller and fitted 40-MB fixed
+startup route: Model-40 construction accepts only the selected 925/5/17 logical
+RAW-IMG, proves normal CHS/PIO/reset/error/IRQ14 behavior and rejects later
+fixed-media replacement. The reusable VM HDD owner validates selected geometry,
+preserves it across reset and restores generic geometry for each new media
+candidate. Physical media and timing remain transferred.
 
 The remaining functional work stays in this candidate and proceeds in this
 order, with each receiver admitted only after reviewing the preceding evidence:
 
-1. D4-SKEY A20 behavior and the selected shutdown/program/power plus 8042
-   reset-arbitration contract. It must reuse the existing Core A20/reset
-   mechanisms where their semantics match, leaving only Model-40 wiring/policy
-   at the VM profile carrier. It excludes reset pulse and bus-cycle timing.
-1. Selected 765A plus 1.2 MB raw-IMG logical command/state/error/recovery and
-   DMA2/IRQ6/BIOS-visible consumer proof. It must not enlarge raw IMG into a
-   flux/CRC/index/rotation/physical-CHRN format. Its external-ROM replay may
-   expose an earlier shared or Model-40 board startup gap; trace it to the
-   earliest owner, repair only that owner, and re-run this receiver before
-   admitting later storage.
-1. External-ROM board-startup compatibility: identify and repair the earliest
-   trace-backed shared or Model-40 owner that prevents the selected ROM from
-   reaching its boot-sector consumer. It does not turn a firmware observation
-   into a CPU claim and must preserve the established FDC contract.
-1. Compaq Multipurpose Fixed Disk Controller and fitted 40 MB fixed startup
-   route: normal CHS/PIO/reset/error/IRQ14 behavior and one startup-frozen
-   external media contract, with no ATA/IBM-MFM substitution or runtime media
-   swap.
 1. Remaining source-backed CECG monitor, status, firmware-programming effect,
    reset and isolation behavior, through the existing shared VADP personality
    boundary rather than a copied EGA core.
-1. A T386 functional-closure audit only after those receivers have accepted
+1. A T386 functional-closure audit only after that receiver has accepted
    evidence. It must re-run the selected-device ledger, fixed-versus-external
    declarations and timing handoff before T386 may transfer to DeskPro board
    bus/device timing.
 
-This ordering introduces no numeric S allocation. It is a dependency order:
-D4 reset/A20 must resolve the selected control plane before consumer media
-replay; FDC and fixed-disk state machines then close independent storage
-routes; CECG completes the selected display contract; only the audit can
-transfer all selected functional rows to timing.
+This ordering introduces no numeric S allocation. The remaining dependency is
+the source-backed CECG contract before the audit transfers every selected
+functional row to DeskPro board timing.
 
 The existing principal architecture and M5 Roadmap already state the necessary
 owner rule: reusable chips, controller mechanisms and generic device semantics
@@ -107,10 +98,11 @@ belong to Core; VM device profiles own named hardware-capability contracts; the
 Model-40 backbone owns its historical combination and board constraints. This
 proposal applies that rule and does not create a second architecture authority
 or require an architecture-document amendment.
+
 ## Dependencies and verification
 
 Begin from the accepted T384 capability selection, T385 CPU closure, and T386
-S16--S20 evidence rather than the superseded S15 next-step narrative. Require
+S21--S26 evidence rather than the superseded S15 next-step narrative. Require
 a current Model-40 matrix, selected state/reset and IRQ/DRQ traces, focused
 consumer regressions, a shared-owner sweep, and an explicit timing handoff.
 The matrix must identify the fixed startup profile contract and every deferred
