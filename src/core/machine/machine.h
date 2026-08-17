@@ -62,6 +62,7 @@ typedef struct core_machine_immutable_rom_mapping {
     type_unsigned_32 physical_start;
     STD_SIZE_T bytes;
     type_unsigned_8 *image;
+    type_bool owns_image;
 } core_machine_immutable_rom_mapping;
 
 typedef struct core_machine_absent_memory {
@@ -176,6 +177,9 @@ C_INT core_machine_mutable_operation_is_allowed(const core_machine *machine);
 type_status core_machine_register_immutable_rom_mapping_from_firmware(
     core_machine *machine, type_unsigned_32 physical_start, const type_unsigned_8 *image,
     STD_SIZE_T bytes);
+type_status core_machine_register_immutable_rom_mapping_alias_from_firmware(
+    core_machine *machine, type_unsigned_32 source_start,
+    type_unsigned_32 physical_start, STD_SIZE_T bytes);
 C_VOID core_machine_rollback_immutable_rom_mappings(core_machine *machine,
     STD_SIZE_T mapping_count);
 /* Private test-only create seam; the public create contract remains unchanged. */

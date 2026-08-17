@@ -12,6 +12,7 @@ principal documents named in [docs/README.md](../README.md).
 | `architecture/` | Architecture owner | Current detailed machine, profile, layout, and contract rationale. |
 | `requirements/` | Product and profile owners | Future DOS, NXVDM, and profile admissions. |
 | `evidence/` | Verification owner | Capability, verification, baseline, and fixture evidence. |
+| `history/legacy/` | Governance history owner | Superseded legacy governance records; they are historical only and cannot define live debt, policy, status, queue, or roadmap. |
 | `evidence/t386-s5-deskpro-storage-controller.md` | Verification owner | T386 S5 primary Compaq storage-controller ledger, narrow shared-3F7 composition, focused proof and pure-IMG physical-media transfer. Retain with T386 progress. |
 | `evidence/t386-s6-compaq-ega-personality.md` | Verification owner | T386 S6 source-bounded Compaq Enhanced Color Graphics personality, generic control proof, and board/firmware transfer. Retain with T386 progress. |
 | `evidence/t386-s7-private-model40-composition.md` | Verification owner | T386 S7 private Model-40 composition boundary and selected-device binding evidence. Retain with T386 progress. |
@@ -31,6 +32,7 @@ principal documents named in [docs/README.md](../README.md).
 | `evidence/t386-s22-d4-parity-diagnostic.md` | Verification owner | T386 S22 records the shared location-bearing memory-parity owner, selected D4 diagnostic/IOCHK behavior, focused isolation proof, and retained functional/timing transfers. Retain with T386 progress. |
 | `evidence/t386-s23-d4-skey-reset-arbitration.md` | Verification owner | T386 S23 records D4-SKEY functional equivalence, CPU-shutdown-to-D4 reset arbitration, focused isolation proof, and retained physical timing transfers. Retain with T386 progress. |
 | `evidence/t386-s24-model40-12mb-fdc.md` | Verification owner | T386 S24 records the selected Model-40 1.2 MB raw-IMG FDC logical path, real port/DMA/IRQ/reset proof, and retained physical-media/timing transfers. Retain with T386 progress. |
+| `evidence/t386-s25-rom-alias-mechanism.md` | Verification owner | T386 S25 P1 records the generic immutable-ROM subwindow lifecycle and route-priority proof, while explicitly retaining Model-40 decode and external-ROM consumer decisions. Retain with T386 progress. |
 | `evidence/t382-s1-current-gate-aggregate.md` | Verification owner | T382 S1 aggregate CTest deadline, Job Object cleanup, abnormal-child proof, aggregate-entry sweep, and task artifact record. Retain with T382 history. |
 | `evidence/t382-s2-console-dead-code-retirement.md` | Verification owner | T382 S2 unreachable Console route and callback retirement, focused command sweep, regression proof, and task artifact record. Retain with T382 history. |
 | `evidence/t382-s3-memory-quantity-boundary.md` | Verification owner | T382 S3 checked KiB conversion owner, parser sweep, negative proof, and task artifact record. Retain with T382 history. |

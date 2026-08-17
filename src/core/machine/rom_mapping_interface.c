@@ -76,6 +76,7 @@ static type_status core_machine_register_immutable_rom_mapping_internal(
     mapping->physical_start = physical_start;
     mapping->bytes = bytes;
     mapping->image = copy;
+    mapping->owns_image = TYPE_TRUE;
     status = core_machine_memory_register_device_provider(&machine->executor_memory,
         physical_start, bytes, core_machine_rom_mapping_read,
         core_machine_rom_mapping_write, core_machine_rom_mapping_query, mapping);
@@ -96,12 +97,82 @@ type_status core_machine_register_immutable_rom_mapping(
         physical_start, image, bytes, 0);
 }
 
+static type_status core_machine_register_immutable_rom_mapping_alias_internal(
+    core_machine *machine, type_unsigned_32 source_start,
+    type_unsigned_32 physical_start, STD_SIZE_T bytes, C_INT firmware_call)
+{
+    core_machine_immutable_rom_mapping *source = STD_NULL;
+    core_machine_immutable_rom_mapping *mapping;
+    STD_SIZE_T index;
+    STD_SIZE_T source_offset;
+    type_status status;
+
+    if (machine == STD_NULL || bytes == 0u ||
+        (type_unsigned_64)physical_start + bytes >
+            (type_unsigned_64)TYPE_MAX_UNSIGNED_32 + 1u) {
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
+    if ((!firmware_call && !core_machine_configuration_is_open(machine)) ||
+        (firmware_call && !(machine->firmware_operation_active &&
+          machine->firmware_context.active && machine->firmware_context.configuring))) {
+        return TYPE_STATUS_INVALID_STATE;
+    }
+    if (machine->immutable_rom_mapping_count >=
+        CORE_MACHINE_IMMUTABLE_ROM_MAPPING_CAPACITY) return TYPE_STATUS_NO_MEMORY;
+
+    for (index = 0u; index < machine->immutable_rom_mapping_count; ++index) {
+        core_machine_immutable_rom_mapping *candidate =
+            &machine->immutable_rom_mappings[index];
+
+        if (source_start >= candidate->physical_start &&
+            (type_unsigned_64)source_start - candidate->physical_start + bytes <=
+                candidate->bytes) {
+            source = candidate;
+            break;
+        }
+    }
+    if (source == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+
+    source_offset = (STD_SIZE_T)((type_unsigned_64)source_start -
+        source->physical_start);
+    mapping = &machine->immutable_rom_mappings[machine->immutable_rom_mapping_count];
+    mapping->physical_start = physical_start;
+    mapping->bytes = bytes;
+    mapping->image = source->image + source_offset;
+    mapping->owns_image = TYPE_FALSE;
+    status = core_machine_memory_register_overlay_device_provider(&machine->executor_memory,
+        physical_start, bytes, core_machine_rom_mapping_read,
+        core_machine_rom_mapping_write, core_machine_rom_mapping_query, mapping);
+    if (status != TYPE_STATUS_OK) {
+        STD_MEMSET(mapping, 0, sizeof(*mapping));
+        return status;
+    }
+    ++machine->immutable_rom_mapping_count;
+    return TYPE_STATUS_OK;
+}
+
+type_status core_machine_register_immutable_rom_mapping_alias(
+    core_machine *machine, type_unsigned_32 source_start,
+    type_unsigned_32 physical_start, STD_SIZE_T bytes)
+{
+    return core_machine_register_immutable_rom_mapping_alias_internal(machine,
+        source_start, physical_start, bytes, 0);
+}
+
 type_status core_machine_register_immutable_rom_mapping_from_firmware(
     core_machine *machine, type_unsigned_32 physical_start, const type_unsigned_8 *image,
     STD_SIZE_T bytes)
 {
     return core_machine_register_immutable_rom_mapping_internal(machine,
         physical_start, image, bytes, 1);
+}
+
+type_status core_machine_register_immutable_rom_mapping_alias_from_firmware(
+    core_machine *machine, type_unsigned_32 source_start,
+    type_unsigned_32 physical_start, STD_SIZE_T bytes)
+{
+    return core_machine_register_immutable_rom_mapping_alias_internal(machine,
+        source_start, physical_start, bytes, 1);
 }
 
 C_VOID core_machine_rollback_immutable_rom_mappings(core_machine *machine,
@@ -137,7 +208,7 @@ C_VOID core_machine_rollback_immutable_rom_mappings(core_machine *machine,
                 break;
             }
         }
-        STD_FREE(mapping->image);
+        if (mapping->owns_image) STD_FREE(mapping->image);
         STD_MEMSET(mapping, 0, sizeof(*mapping));
     }
     machine->immutable_rom_mapping_count = mapping_count;

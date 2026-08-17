@@ -33,7 +33,7 @@ static type_status firmware_probe_configure(C_VOID *opaque,
     core_machine_firmware_context *firmware)
 {
     firmware_probe *probe = (firmware_probe *)opaque;
-    const type_unsigned_8 code = 0x90u;
+    const type_unsigned_8 code[] = { 0x90u, 0xf4u, 0x5au, 0xa5u };
     type_status status;
 
     if (probe == STD_NULL || firmware == STD_NULL) return TYPE_STATUS_FAULT;
@@ -41,23 +41,32 @@ static type_status firmware_probe_configure(C_VOID *opaque,
     probe->reentry_rejected =
         core_machine_reset(probe->machine) == TYPE_STATUS_INVALID_STATE &&
         core_machine_register_immutable_rom_mapping(probe->machine, 0xffff0u,
-            &code, sizeof(code)) == TYPE_STATUS_INVALID_STATE;
+            code, sizeof(code)) == TYPE_STATUS_INVALID_STATE &&
+        core_machine_register_immutable_rom_mapping_alias(probe->machine,
+            0xd0000u, 0xc0000u, sizeof(code)) == TYPE_STATUS_INVALID_STATE;
     status = core_machine_firmware_register_immutable_rom(firmware, 0xe0000u,
-        &code, sizeof(code));
+        code, sizeof(code));
     if (status != TYPE_STATUS_OK) return status;
-    return core_machine_firmware_register_immutable_rom(firmware, 0xffff0u,
-        &code, sizeof(code));
+    status = core_machine_firmware_register_immutable_rom_alias(firmware,
+        0xe0001u, 0xf0000u, 2u);
+    if (status != TYPE_STATUS_OK) return status;
+    /* This alias overlaps E0002h--E0003h. The existing source mapping has
+     * earlier route priority, so it remains observable in that range. */
+    return core_machine_firmware_register_immutable_rom_alias(firmware,
+        0xe0001u, 0xe0002u, 2u);
 }
 
 static type_status firmware_failed_probe_configure(C_VOID *opaque,
     core_machine_firmware_context *firmware)
 {
     firmware_failed_probe *probe = (firmware_failed_probe *)opaque;
-    const type_unsigned_8 code = 0x90u;
+    const type_unsigned_8 code[] = { 0x90u, 0xf4u, 0x5au, 0xa5u };
 
     if (probe == STD_NULL || firmware == STD_NULL ||
         core_machine_firmware_register_immutable_rom(firmware, 0xe0000u,
-            &code, sizeof(code)) != TYPE_STATUS_OK) {
+            code, sizeof(code)) != TYPE_STATUS_OK ||
+        core_machine_firmware_register_immutable_rom_alias(firmware,
+            0xe0001u, 0xf0000u, 2u) != TYPE_STATUS_OK) {
         return TYPE_STATUS_FAULT;
     }
     ++probe->configure_calls;
@@ -161,6 +170,10 @@ C_INT main(C_VOID)
         0xe0000u, sizeof(prior_rom),
         CORE_MACHINE_MEMORY_ACCESS_READ, &route) != TYPE_STATUS_OK ||
         route != CORE_MACHINE_MEMORY_ROUTE_ORDINARY_RAM;
+    failed |= test_core_machine_fixture_query_configuration_memory_route(machine,
+        0xf0000u, sizeof(prior_rom),
+        CORE_MACHINE_MEMORY_ACCESS_READ, &route) != TYPE_STATUS_OK ||
+        route != CORE_MACHINE_MEMORY_ROUTE_ORDINARY_RAM;
     failed |= core_machine_firmware_memory_read(failed_probe.expired, 0xe0000u,
         &value, sizeof(value)) != TYPE_STATUS_INVALID_STATE;
     probe.machine = machine;
@@ -174,6 +187,27 @@ C_INT main(C_VOID)
         !probe.reentry_rejected;
     failed |= core_machine_firmware_memory_read(probe.expired, 0x500u, &value,
         sizeof(value)) != TYPE_STATUS_INVALID_STATE;
+    failed |= core_machine_memory_read(machine, 0xe0000u, &value, sizeof(value)) !=
+        TYPE_STATUS_OK || value != 0x90u;
+    failed |= core_machine_memory_read(machine, 0xf0000u, &value, sizeof(value)) !=
+        TYPE_STATUS_OK || value != 0xf4u;
+    value = 0u;
+    failed |= core_machine_memory_read(machine, 0xe0001u, &value, sizeof(value)) !=
+        TYPE_STATUS_OK || value != 0xf4u;
+    failed |= core_machine_memory_read(machine, 0xf0001u, &value, sizeof(value)) !=
+        TYPE_STATUS_OK || value != 0x5au;
+    /* The alias length is exactly two bytes: F0002h falls through to RAM. */
+    failed |= test_core_machine_fixture_query_configuration_memory_route(machine,
+        0xf0002u, 1u, CORE_MACHINE_MEMORY_ACCESS_READ, &route) != TYPE_STATUS_OK ||
+        route != CORE_MACHINE_MEMORY_ROUTE_ORDINARY_RAM;
+    /* The later alias targets E0002h--E0003h, but the prior exclusive source
+     * remains route owner there and exposes its original bytes. */
+    failed |= core_machine_memory_read(machine, 0xe0002u, &value, sizeof(value)) !=
+        TYPE_STATUS_OK || value != 0x5au;
+    failed |= core_machine_memory_read(machine, 0xe0003u, &value, sizeof(value)) !=
+        TYPE_STATUS_OK || value != 0xa5u;
+    failed |= core_machine_memory_write(machine, 0xf0000u, &value, sizeof(value)) !=
+        TYPE_STATUS_FAULT;
     failed |= core_machine_get_lifecycle(machine, &lifecycle) != TYPE_STATUS_OK ||
         lifecycle != CORE_MACHINE_STOPPED;
     run_status = core_machine_run(machine, budget, &result);
@@ -190,5 +224,6 @@ C_INT main(C_VOID)
         return 1;
     }
     puts("M5:T297:S3:FIRMWARE-CAPABILITY:OK");
+    puts("M5:T386:S25:ROM-ALIAS-LIFECYCLE:OK");
     return 0;
 }

@@ -3310,6 +3310,17 @@ type_status core_machine_firmware_register_immutable_rom(
         physical_start, image, bytes);
 }
 
+type_status core_machine_firmware_register_immutable_rom_alias(
+    core_machine_firmware_context *firmware, type_unsigned_32 source_start,
+    type_unsigned_32 physical_start, STD_SIZE_T bytes)
+{
+    if (!core_machine_firmware_context_is_active(firmware, 1)) {
+        return TYPE_STATUS_INVALID_STATE;
+    }
+    return core_machine_register_immutable_rom_mapping_alias_from_firmware(
+        firmware->machine, source_start, physical_start, bytes);
+}
+
 type_status core_machine_firmware_memory_read(
     core_machine_firmware_context *firmware, type_unsigned_32 physical,
     C_VOID *out_data, STD_SIZE_T size)
@@ -4967,7 +4978,9 @@ C_VOID core_machine_destroy(core_machine *machine)
         core_machine_memory_finalize(&machine->executor_memory);
         for (STD_SIZE_T index = 0u; index < machine->immutable_rom_mapping_count;
                 ++index) {
-            STD_FREE(machine->immutable_rom_mappings[index].image);
+            if (machine->immutable_rom_mappings[index].owns_image) {
+                STD_FREE(machine->immutable_rom_mappings[index].image);
+            }
         }
     }
     core_machine_trace_finalize(machine);

@@ -15,6 +15,13 @@ type_status core_machine_register_immutable_rom_mapping(
     const type_unsigned_8 *image,
     STD_SIZE_T bytes);
 
+/* Configuration-only alias of an existing core-owned immutable ROM subrange.
+ * The source bytes remain owned by their original mapping. Earlier providers
+ * retain route priority where the alias target overlaps them. */
+type_status core_machine_register_immutable_rom_mapping_alias(
+    core_machine *machine, type_unsigned_32 source_start,
+    type_unsigned_32 physical_start, STD_SIZE_T bytes);
+
 #ifdef __cplusplus
 }
 #endif

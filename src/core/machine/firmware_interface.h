@@ -30,6 +30,14 @@ type_status core_machine_firmware_register_immutable_rom(
     core_machine_firmware_context *firmware, type_unsigned_32 physical_start,
     const type_unsigned_8 *image, STD_SIZE_T bytes);
 
+/* Configuration-only alias of a prior immutable ROM mapping. `source_start`
+ * and `bytes` select a backing subrange. Core validates that subrange and
+ * retains the backing-image lifetime. Earlier providers retain route priority
+ * where an alias target overlaps them. */
+type_status core_machine_firmware_register_immutable_rom_alias(
+    core_machine_firmware_context *firmware, type_unsigned_32 source_start,
+    type_unsigned_32 physical_start, STD_SIZE_T bytes);
+
 /* Runtime whitelist. Every memory and port access remains core-checked and
  * is valid only while its originating callback is active. */
 type_status core_machine_firmware_memory_read(
