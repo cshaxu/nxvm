@@ -23,7 +23,9 @@ Detailed scope, acceptance conditions, and common constraints remain in these
 shared proposals and in each candidate's linked proposal.
 
 1. [DeskPro 386 board bus and device timing closure](../proposals/m5-deskpro-386-bus-device-closure.md).
+1. [Four-profile CPU physical-timebase closure](../proposals/m5-four-profile-cpu-physical-timebase-closure.md).
 1. [DeskPro 386 model-L3 closure audit](../proposals/m5-deskpro-386-l3-audit.md).
+1. [Four-profile CPU instruction-correctness audit and repair program](../proposals/m5-four-profile-cpu-instruction-correctness-audit.md).
 1. [Current-product device profile and functional-capability closure](../proposals/m5-current-product-device-profile-capability-closure.md).
 1. [32-bit GCC host-build compatibility verification](../proposals/m5-32bit-gcc-host-build-compatibility.md).
 1. [8088 CPU-profile admission and timing closure](../proposals/m5-8088-cpu-profile.md).

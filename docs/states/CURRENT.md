@@ -4,9 +4,30 @@
 
 - **Current progress:** T387 S4 accepts the local-reference negative
   disposition: 86Box and PCjs cannot supply the exact Model-40 PIT counter-1 /
-  port-`61h` receiver, and local MAME material is unavailable. The next
-  receiver must progress a source-backed board route that does not assume the
-  missing calibration; no timing behavior changed.
+  port-`61h` receiver, and local MAME material is unavailable. S5 reconciles
+  the primary port-`61h` facts and the inherited physical-time non-admission;
+  it must transfer the shared CPU timebase blocker rather than fabricate a
+  16 MHz calibration. No timing behavior changed.
+## M5 T387 S5 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; S5 reconciles the apparent S3/S4 port-61h conflict within open T387. |
+| Admission And Approval | Owner continuing authorization for DeskPro L3 work and push, 2026-08-16; discovered in-scope source reconciliation requires a truthful disposition before further timing work. |
+| Objective | Reconcile the Model-40 port-61h/PIT source boundary against D3PE and define the generic virtual-time receiver that can consume its primary clock facts. |
+| Non-goals | No reference execution, ROM/media import, generic-AT substitution, rewrite of historical evidence, physical waveform claim, or L3 claim. |
+| Reference Baseline | T384 S1 primary D4 audit, T386 S3/S22/S23, T387 S1-S4, source policy, differential-debug policy and DeskPro board proposal. |
+| Candidate Proposal | [DeskPro 386 board bus and device timing closure](../proposals/m5-deskpro-386-bus-device-closure.md). |
+| Files And ABI Surface | Evidence/current/index plus Queue/proposal transfer records, and a bounded generic Core/VM virtual-time implementation only if the existing architecture admits it; no profile-local clock mechanism, asset or ABI change. |
+| Applicable Rules | EXECUTION/DOCUMENT/ARCHITECTURE/CODING, architecture/coding/UI, source policy and differential-debug policy. |
+| Verification | Reconcile every port-61 and PIT assertion against retained primary-labelled evidence; inventory the existing virtual-time/clock-domain owner and admit only a source-backed generic receiver; run focused/full verification and documentation governance. |
+| Expected Markers | `M5:T387:S5:PORT61-PIT-RECONCILIATION:OK`; any implementation marker must name the generic virtual-time owner. |
+| Asset Needs | No asset use; retained source-labelled evidence only. |
+| Reporting Requirements | Preserve S3/S4 historically, state why port-61 bit 4 and D4 NMI bits coexist, identify the exact virtual-time receiver and all transfers, and record every behavior change. |
+| Stop Conditions | Stop and transfer if the existing virtual-time owner cannot consume a board clock without coupling it to host time or successful-retirement count. |
+| Exit Criteria | The timing ledger records the primary D4 port-61/PIT facts and either delivers a generic source-backed virtual-time receiver or transfers a precise architectural blocker. |
+| Original Owner Request | Continue autonomously toward full DeskPro function and L3 timing; find the root cause rather than requesting a choice. |
+| Similar-Issue Sweep | Sweep T387 evidence, DeskPro proposal, T384 D4 audit, retained Model-40 functional evidence and all virtual-time/clock-domain consumers for an inherited generic-PC/AT assumption or retirement-time coupling. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T386 S28 `vm-0-5-0389` /
