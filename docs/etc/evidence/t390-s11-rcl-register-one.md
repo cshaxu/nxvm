@@ -21,3 +21,6 @@ After rebuilding the owner-managed redacted Model-40 capture against S11, the re
 ## Verification
 
 The focused timing-ledger smoke and the full 283/283 current gate pass, along with diff hygiene. The S11 developer artifact is `vm-0-5-0390` / `build/output/nxvm_0_5_0390.exe`, SHA-256 `9758F3696EDFDFDDFD30D86ABA28E101766B85A31D0AE15A2B0D9878CB24AAEF`. Coordinator actual-change review and documentation-governance verification remain required before acceptance.
+## Coordinator Acceptance
+
+Coordinator actual-change review of pushed P1 confirms one private Core 80386 timing owner, an Intel-primary exact register row, and no new public or profile path. The focused regression independently passes, records the qualified nine-tick register form and preserves no-publication rejection for the native-size and memory variants. The full 283/283 current gate, documentation governance and diff hygiene passed before P1; repository and remote are synchronized. S11 is accepted. The later normalized successful terminal remains the next bounded T390 receiver; no physical profile, board-time or L3 claim is accepted.

@@ -2,26 +2,7 @@
 
 ## Current Work
 
-**Active packet:** T390 S11 (Continuation) -- 80386 operand-size RCL qualification.
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation -- T390 remains the latest open numeric task; S11 follows accepted S10. |
-| Admission And Approval | Owner approved continuation of Queue-ordered T390 in this conversation on 2026-08-17. Scope is the newly observed real-address operand-size-prefixed register `RCL r/m32,1` form at the existing Core source-timing owner. No exception is approved. |
-| Objective | Qualify only the observed `66 D1 /2` register RCL form at Intel's exact nine-clock row, retaining all memory, count-from-CL/immediate, other rotate and unproven contexts nonphysical. |
-| Non-goals | No broad rotate-family completion, memory RCL, protected/VM86 qualification, decoder semantic change, profile selection, board/device timing, ROM/media or L3 claim. |
-| Reference Baseline | Accepted T390 S9 artifact `vm-0-5-0390`, SHA-256 `F20E1C1B8398B5D915C60FBBD31C304E7A330C2DA65E748FE57DF8E841EA97C4`; Intel 80386 PRM RCL/RCR/ROL/ROR table printed page 372; S9 retained terminal transfer. |
-| Candidate Proposal | [80386 physical-retirement qualification](../proposals/m5-80386-physical-retirement-qualification.md). |
-| Files And ABI Surface | Private Core 80386 timing ledger/classifier in `src/core/machine/machine.c`; focused timing-ledger smoke; T390 evidence/history/status/index as required. No public ABI or VM/profile change. |
-| Applicable Rules | Execution, architecture, coding, documentation and source-policy rules. Invariants: one shared Core classifier; Intel-primary exact row; unsupported successes remain prepublication nonphysical; no test-only product API; external assets stay uncommitted. |
-| Verification | Focused timing-ledger smoke proves `66 D1 /2` register physical admission at nine ticks and memory/other RCL shape rejection; bounded redacted BYOB replay advances or transfers its next terminal; current artifact, full current gates, documentation governance, diff hygiene and coordinator actual-diff review pass. |
-| Expected Markers | Existing timing-ledger smoke success marker; bounded capture output only in normalized/redacted form; S11 evidence retains source citation and developer artifact digest. |
-| Asset Needs | Optional owner-managed external firmware/media only for bounded replay; no identity, path, hash, bytes or trace enters Git. |
-| Reporting Requirements | Deliver one complete P1 with focused/full verification and evidence, then coordinator acceptance or one consolidated corrective brief and governance closure. |
-| Stop Conditions | Stop and transfer if the exact source row, operand-size/register capture or stable source owner is unavailable, if the observed instruction faults, or if replay reaches a new unallocated success. |
-| Exit Criteria | The observed register form is source-cited, classified by one Core owner at nine ticks, excluded shapes are prepublication-rejected, replay result is recorded without external data, and required verification/evidence/acceptance complete. |
-| Original Owner Request | Continue Queue-ordered shared 80386 physical-retirement qualification before DeskPro board-level timing, using Intel manuals as CPU authority. |
-| Similar-Issue Sweep | Inspect existing `D0`/`D1` shift-rotate source paths, all 80386 operand-size handling, RCL register/memory/count variants and current timing-LEDGER tests; repair only the exact observed owner or transfer broader forms. |
+**Active.** T390 remains open between accepted subtasks.
 
 ## Current Technical Baseline
 
@@ -49,7 +30,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T390 S9 | Accepted after corrective P2: the shared Core far-indirect JMP owner now uses Intel 80386 `43+m` real-address and `31+m` successful protected same-privilege direct-code rows; project-owned regressions prove both physical paths. A bounded redacted replay reaches 18,315 successful retirements and transfers one new terminal; physical-profile selection, board timing and L3 remain open. [Evidence](../etc/evidence/t390-s9-far-indirection-jmp-qualification.md). |
+| T390 S11 | Accepted: the shared Core 80386 owner now admits only the observed operand-size `RCL r/m32,1` register form at nine ticks; native-size and memory RCL remain nonphysical. A bounded redacted replay reaches 116,637 successful retirements and transfers one new terminal; physical-profile selection, board timing and L3 remain open. [Evidence](../etc/evidence/t390-s11-rcl-register-one.md). |
 | T389 | Stopped by owner-approved requeue: S1 proves no physical board slice can begin while 80386 successful retirement remains nonphysical; S2 archives the invalid candidate and queues a shared CPU qualification before a fresh board task. No board timing, physical-clock or L3 claim. [Audit](../etc/evidence/t389-s2-stop-and-requeue-audit.md). |
 | T388 | Closed: S1--S9 establish the sole publisher, exhaustive exact-or-nonphysical residual disposition and pre-publication physical-contract rejection. No current CPU profile is physically clock-qualified; board work transfers under this restriction. [Closure audit](../etc/evidence/t388-s9-task-closure-audit.md). |
 | T387 | Closed: source/owner inventory, exact port-`61h` reconciliation and reference qualification transfer the shared physical-timebase then physical-device/firmware prerequisites before any DeskPro L3 audit. No physical-time or L3 claim. [Closure audit](../etc/evidence/t387-s6-task-closure-transfer-audit.md). |
