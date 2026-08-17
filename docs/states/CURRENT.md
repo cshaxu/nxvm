@@ -2,7 +2,26 @@
 
 ## Current Work
 
-**Active.** T390 remains open between accepted subtasks.
+## M5 T390 S21 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner standing approval for Queue-ordered T390 implementation, including bounded finite-corpus evidence and shared Core work. |
+| Objective | Audit M40-C0 source-form attribution coverage and name the single earliest Core receiver required before a complete owner/Intel-row/context matrix can be made. |
+| Non-goals | No timing-row addition, source inference from ticks, physical contract enablement, C1 boot, board/device timing or L3 claim. |
+| Reference Baseline | Accepted T390 S16--S20; S19 copied form ID; fresh owner-managed C0 result with 18,255 classified successes, 75 aggregate rows and zero unallocated successes. |
+| Candidate Proposal | [80386 physical-retirement qualification](../proposals/m5-80386-physical-retirement-qualification.md). |
+| Files And ABI Surface | Evidence/index/status and, only if the audit proves a bounded shared receiver necessary, a later explicitly admitted Core/capture slice; this S itself does not alter production code. |
+| Applicable Rules | Execution, documentation, architecture, coding and source policy: one Core owner, copied non-raw boundary, no profile classifier, exact-or-nonphysical physical contract. |
+| Verification | Fresh contained C0 replay; full aggregation attribution split; static owner/caller sweep; documentation gate and actual review. |
+| Expected Markers | Existing protected-return-c0 terminal with normalized attribution totals and one documented receiver decision. |
+| Asset Needs | Owner-authorized local Model-40 ROM/media only for deleted normalized replay; no identity, path, hash, byte, raw trace or provenance enters Git. |
+| Reporting Requirements | Record exact attribution coverage/disposition and transfer; executor P1 then coordinator actual review/acceptance P2. |
+| Stop Conditions | Matrix would require inferred Intel rows, raw firmware trace retention, a profile-local classifier, or an unbounded new capture contract. |
+| Exit Criteria | Every C0 aggregate is classified as lookup-backed or classified-but-unattributed, and the earliest shared receiver/transfer is explicit. |
+| Original Owner Request | Continue governed T390 qualification toward DeskPro 386 full function and L3 timing without incremental terminal repairs. |
+| Similar-Issue Sweep | Inspect all successful 80386 timing-return paths, lookup callers, direct calculated/fallback paths, observer consumers and C0 aggregate keys. |
 
 ## Current Technical Baseline
 
