@@ -78,3 +78,19 @@ documentation governance and full 281-target current gate. It adds no timing
 scalar, production behavior, ABI, artifact revision, physical-clock or L3
 claim. T388 remains open for bounded context-capture and range-observation
 receivers.
+
+### S5: 80386 Jcc Target Lexeme
+
+S5 proves the existing Core preview is a read-only target-lexeme mechanism,
+not speculative execution: it uses copied state and publishes no transaction,
+trace, diagnostic, elapsed or provider event. P1 adds the target/physical
+contract regressions; P2 corrects the initially invalid self-target test with
+a real 16-bit-code `66h 0F 84 rel32` execution case; P3 corrects the evidence
+so it names that actual proof.
+
+Coordinator review accepts P1 `156cd8bb`, corrective P2 `af62fe52` and
+corrective P3 `2e56c5c1` against the S5 packet, static boundary gate, owner
+smokes, documentation governance and full 281-target current gate. The
+[accepted evidence](../etc/evidence/t388-s5-jcc-target-lexeme.md) adds no
+physical scalar, profile enablement, artifact revision or L3 claim. T388
+remains open for 80286 context capture and all remaining receiver families.
