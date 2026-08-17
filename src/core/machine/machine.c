@@ -211,6 +211,7 @@ typedef enum core_machine_source_timing_form {
     CORE_MACHINE_SOURCE_TIMING_CLC,
     CORE_MACHINE_SOURCE_TIMING_CLD,
     CORE_MACHINE_SOURCE_TIMING_SAL_REGISTER_ONE,
+    CORE_MACHINE_SOURCE_TIMING_RCL_REGISTER_ONE_32,
     CORE_MACHINE_SOURCE_TIMING_CLI,
     CORE_MACHINE_SOURCE_TIMING_SAHF,
     CORE_MACHINE_SOURCE_TIMING_MOV_SREG_REGISTER,
@@ -463,6 +464,7 @@ static const core_machine_source_timing_entry
     { CORE_MACHINE_SOURCE_TIMING_CLC, 2u },
     { CORE_MACHINE_SOURCE_TIMING_CLD, 2u },
     { CORE_MACHINE_SOURCE_TIMING_SAL_REGISTER_ONE, 3u },
+    { CORE_MACHINE_SOURCE_TIMING_RCL_REGISTER_ONE_32, 9u },
     { CORE_MACHINE_SOURCE_TIMING_CLI, 3u },
     { CORE_MACHINE_SOURCE_TIMING_SAHF, 3u },
     { CORE_MACHINE_SOURCE_TIMING_MOV_SREG_REGISTER, 2u },
@@ -2895,7 +2897,8 @@ static C_INT core_machine_80386_source_instruction_cost(core_machine *machine,
     }
     opcode = data->opcodes[prefixes];
     machine->source_repeat_active = TYPE_FALSE;
-    if (prefixes != 0u) {
+    if (prefixes != 0u && !(prefixes == 1u && data->opcodes[0] == 0x66u &&
+            opcode == 0xd1u)) {
         core_machine_source_timing_mark_unallocated(machine, out_ticks);
         return 1;
     }
@@ -2924,6 +2927,17 @@ static C_INT core_machine_80386_source_instruction_cost(core_machine *machine,
             ((data->opcodes[prefixes + 1u] >> 3u) & 7u) == 4u) {
             *out_ticks = core_machine_80386_source_timing_lookup(machine,
                 CORE_MACHINE_SOURCE_TIMING_SAL_REGISTER_ONE);
+        } else {
+            core_machine_source_timing_mark_unallocated(machine, out_ticks);
+        }
+        return 1;
+    case 0xd1u:
+        if (prefixes == 1u && data->opcodes[0] == 0x66u &&
+            prefixes + 1u < data->oplen &&
+            !core_machine_source_timing_modrm_is_memory(data, prefixes) &&
+            ((data->opcodes[prefixes + 1u] >> 3u) & 7u) == 2u) {
+            *out_ticks = core_machine_80386_source_timing_lookup(machine,
+                CORE_MACHINE_SOURCE_TIMING_RCL_REGISTER_ONE_32);
         } else {
             core_machine_source_timing_mark_unallocated(machine, out_ticks);
         }
