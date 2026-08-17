@@ -107,3 +107,20 @@ type_status vm_session_model40_configure_controllers(vm_session *session)
         14u, TYPE_FALSE, CORE_MACHINE_HDC_PROTOCOL_COMPAQ_WD_40MB };
     return core_machine_configure_hdc(session->core_machine, &hdc);
 }
+C_INT vm_session_model40_insert_hdd_at_startup(vm_session *session, const C_CHAR *path)
+{
+    const STD_SIZE_T expected_bytes = 925u * 5u * 17u * 512u;
+    STD_SIZE_T path_length;
+
+    if (session == STD_NULL || !session->model40_private || path == STD_NULL ||
+        session->hdd.connect.flagDiskExist || vm_machine_hdd_insert(&session->hdd, path) != 0 ||
+        session->hdd.connect.raw_byte_count != expected_bytes) return -1;
+    path_length = STD_STRLEN(path);
+    if (path_length >= sizeof(session->hdd_image_path)) return -1;
+    STD_MEMCPY(session->hdd_image_path, path, path_length + 1u);
+    if (vm_machine_hdd_set_geometry(&session->hdd, 925u, 5u, 17u) != TYPE_FALSE) {
+        return -1;
+    }
+    session->retained_config.hdd_image = session->hdd_image_path;
+    return 0;
+}

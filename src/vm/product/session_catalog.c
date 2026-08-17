@@ -199,6 +199,8 @@ static C_INT vm_product_session_catalog_parse(const C_CHAR *directory,
     if (!STD_STRCMP(entry->profile, "compaq-deskpro-386-model-40") &&
         (!vm_product_session_catalog_sha256_is_valid(entry->model40_even_sha256) ||
          !vm_product_session_catalog_sha256_is_valid(entry->model40_odd_sha256))) return 0;
+    if (!STD_STRCMP(entry->profile, "compaq-deskpro-386-model-40") &&
+        STD_STRCMP(entry->boot, "rom")) return 0;
     if (STD_STRCMP(entry->display, "console") && STD_STRCMP(entry->display, "window") &&
         STD_STRCMP(entry->display, "auto")) return 0;
     if (STD_STRCMP(entry->boot, "floppy") && STD_STRCMP(entry->boot, "hard_disk") &&

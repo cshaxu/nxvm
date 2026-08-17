@@ -42,3 +42,23 @@
 - **M5 Td S102 P1:** reconciled accepted D4 parity work into the T386 proposal and Queue title, defined the non-preallocated remaining functional receiver order, and confirmed the existing Core/VM/profile architecture authority needs no amendment.
 - **M5 Td S101 P1:** added a compact execution-entry table without creating new paths, and made coordinator semantic review explicit after structural documentation-gate success.
 - **M5 Td S100 P1:** archived the closed T382 proposal, queued Model-339 current-source re-audit before DeskPro, reconciled T380 S2 history, and made host/workspace path detection reject the external-assets form while retaining guest DOS-path examples.
+## M5 T386 S26 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; T386 remains the latest open numeric task through its single retained S25 progress row, and S26 is the next unused subtask. |
+| Admission And Approval | Owner's continuing authorization to implement and push the DeskPro 386 functional/L3 program, reaffirmed 2026-08-16 by directing autonomous root-cause work; approved scope is the next proposal-ordered Model-40 functional receiver only. |
+| Objective | Publish the selected Compaq Multipurpose Fixed Disk Controller's fitted 40 MB RAW-IMG route through the fixed Model-40 YAML/session composition, with startup-only media lifetime and a project-owned end-to-end normal CHS/PIO, reset/error and IRQ14 consumer proof. |
+| Non-goals | No ATA or IBM MFM substitution; no new generic variant builder; no hot-swap or post-publication fixed-media replacement; no vendor ROM/media commit; no Long/format/ECC/recovery/physical-sector behavior; no controller-service or board timing/L3 claim; no CECG work. |
+| Reference Baseline | Accepted T386 S5 Compaq HDC contract, S20 fixed BYOB backbone, S21 functional matrix, S24 FDC receiver, S25 startup receiver, current `vm-0-5-0389` artifact and the Model-40 functional-closure proposal. |
+| Candidate Proposal | [DeskPro 386 Model 40 selected-device functional closure](../proposals/m5-deskpro-386-model40-device-functional-closure.md). |
+| Files And ABI Surface | Expected VM composition/profile/catalog/session lifecycle and Model-40 focused tests, plus CMake/evidence/status only as required. Preserve Core's generic HDC API unless a reproduced reusable mechanism defect demands its earliest-owner repair; no public test-only API. |
+| Applicable Rules | `docs/rules/EXECUTION.md`, `DOCUMENT.md`, `ARCHITECTURE.md`, `CODING.md`; `docs/design/ARCHITECTURE.md`, `CODING.md`, `UI.md`; source policy. Core retains reusable controller semantics; VM owns Model-40 backbone, media policy and composition. |
+| Verification | Add focused Model-40 product/session proof using only project-owned synthetic RAW-IMG input: successful frozen startup path, normal CHS/PIO consumer result, IRQ14 acknowledgement/reset/error behavior, and rejection of fixed-media replacement after publication. Re-run retained Compaq HDC S5 and Model-40 FDC/S25 controls, documentation governance, specialized gates and current smoke gate. |
+| Expected Markers | New `M5:T386:S26:MODEL40-HDC-STARTUP:OK` and `M5:T386:S26:MODEL40-HDC-FIXED-MEDIA:OK`; retained S5, S24 and S25 markers. |
+| Asset Needs | Project-owned synthetic test media only. Optional owner-supplied external ROM/media may be used locally only under the source policy and must not be committed, catalogued, path-recorded or required for acceptance. |
+| Reporting Requirements | Report the actual owner/root cause, immutable P commit, focused and required gate conclusion, and explicit transfer of physical media/timing boundary. Record evidence without protected bytes, paths or hashes. |
+| Stop Conditions | Stop and transfer if the route requires a vendor firmware/media fact, generic public variant policy, a new physical-media representation, or a timing workaround. Repair a reproduced shared Core lifecycle defect only at its earliest owner with a variant/caller sweep. |
+| Exit Criteria | The fixed Model-40 profile accepts one valid startup HDC image only during construction, reaches the selected Compaq normal HDC consumer path with reset/error/IRQ14 proof, rejects later replacement, preserves default/Model-339 isolation, and records remaining physical/timing debt without an L3 claim. |
+| Original Owner Request | Continue the approved DeskPro 386 work autonomously and identify the root cause rather than repeatedly requesting decisions. |
+| Similar-Issue Sweep | Sweep all `hdd`, `hard_disk`, `vm_session_insert_hdd`, Model-40 private composition, catalog-to-provider argument transport, `hdc_present`, HDC protocol, boot preference and fixed-media lifecycle callers; distinguish default ATA and Model-339 no-disk behavior. |

@@ -175,8 +175,7 @@ C_INT vm_session_insert_fdd(vm_session *session, const C_CHAR *path)
 
 C_INT vm_session_insert_hdd(vm_session *session, const C_CHAR *path)
 {
-    if (session == STD_NULL || session->profile == STD_NULL ||
-        !session->profile->hdc_present || !vm_session_copy_path(session->hdd_image_path,
+    if (session == STD_NULL || session->model40_private || session->profile == STD_NULL || !session->profile->hdc_present || !vm_session_copy_path(session->hdd_image_path,
             sizeof(session->hdd_image_path), path) ||
         vm_machine_hdd_insert(&session->hdd, path) != 0) return -1;
     session->retained_config.hdd_image = session->hdd_image_path;
@@ -413,7 +412,7 @@ static type_status vm_session_create_model40_byob(const vm_session_config *confi
     status = vm_session_initialize(session);
     if (status != TYPE_STATUS_OK) { STD_FREE(session); return status; }
     if ((config->fdd_image != STD_NULL && vm_session_insert_fdd(session, config->fdd_image)) ||
-        (config->hdd_image != STD_NULL && vm_session_insert_hdd(session, config->hdd_image))) {
+        (config->hdd_image != STD_NULL && vm_session_model40_insert_hdd_at_startup(session, config->hdd_image))) {
         vm_session_destroy(session);
         return TYPE_STATUS_FAULT;
     }

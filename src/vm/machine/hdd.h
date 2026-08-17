@@ -32,6 +32,9 @@ typedef struct {
     STD_SIZE_T virtual_byte_count; /* guest-visible rounded sector capacity */
     type_bool flagPaddingWritten; /* persistence must materialize tail padding */
     type_unsigned_32 media_generation; /* advances on create, insert, remove, format */
+    type_unsigned_32 geometry_cylinders;
+    type_unsigned_16 geometry_heads;
+    type_unsigned_16 geometry_sectors_per_track;
 } t_hdd_connect;
 
 typedef struct {
@@ -50,6 +53,8 @@ C_VOID vm_machine_hdd_create(t_hdd *hdd, type_unsigned_16 cylinders);
 C_INT vm_machine_hdd_replace_bytes(t_hdd *hdd, const C_VOID *bytes,
     STD_SIZE_T raw_byte_count);
 C_INT vm_machine_hdd_insert(t_hdd *hdd, const C_CHAR *file_name);
+C_INT vm_machine_hdd_set_geometry(t_hdd *hdd, type_unsigned_32 cylinders,
+    type_unsigned_16 heads, type_unsigned_16 sectors_per_track);
 C_INT vm_machine_hdd_remove(t_hdd *hdd, const C_CHAR *file_name);
 const core_machine_media_provider *vm_machine_hdd_media_provider(C_VOID);
 

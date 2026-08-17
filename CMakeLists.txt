@@ -127,6 +127,9 @@ target_link_libraries(vm-model40-fdd-s18-smoke PRIVATE vm-composition)
 add_executable(vm-model40-byob-s20-smoke
     tests/products/vm_model40_byob_s20_smoke.c)
 target_link_libraries(vm-model40-byob-s20-smoke PRIVATE vm-composition)
+add_executable(vm-model40-hdc-s26-smoke
+    tests/products/vm_model40_hdc_s26_smoke.c)
+target_link_libraries(vm-model40-hdc-s26-smoke PRIVATE vm-composition)
 add_executable(vm-model40-console-s20-smoke
     tests/products/vm_model40_console_s20_smoke.c)
 target_link_libraries(vm-model40-console-s20-smoke PRIVATE vm-product vm-composition)

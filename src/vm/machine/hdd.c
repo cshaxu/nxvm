@@ -180,18 +180,20 @@ static C_VOID vm_machine_hdd_commit_candidate(t_hdd *hdd,
 C_VOID vm_machine_hdd_initialize(t_hdd *hdd) {
     if (hdd == STD_NULL) return;
     STD_MEMSET((C_VOID *)hdd, TYPE_ZERO_8, sizeof(*hdd));
-    hdd->data.ncyl = 0;
-    hdd->data.nhead = 16;
-    hdd->data.nsector = 63;
-    hdd->data.nbyte = 512;
+    hdd->connect.geometry_heads = 16u;
+    hdd->connect.geometry_sectors_per_track = 63u;
+    hdd->data.nhead = hdd->connect.geometry_heads;
+    hdd->data.nsector = hdd->connect.geometry_sectors_per_track;
+    hdd->data.nbyte = 512u;
 }
 C_VOID vm_machine_hdd_reset(t_hdd *hdd) {
     if (hdd == STD_NULL) return;
     STD_MEMSET((C_VOID *)&hdd->data, TYPE_ZERO_8, sizeof(hdd->data));
-    hdd->data.nhead = 16;
-    hdd->data.nsector = 63;
-    hdd->data.nbyte = 512;
-    if (hdd->connect.virtual_byte_count != 0u) {
+    hdd->data.nhead = hdd->connect.geometry_heads;
+    hdd->data.nsector = hdd->connect.geometry_sectors_per_track;
+    hdd->data.nbyte = 512u;
+    hdd->data.ncyl = hdd->connect.geometry_cylinders;
+    if (hdd->data.ncyl == 0u && hdd->connect.virtual_byte_count != 0u) {
         hdd->data.ncyl = (type_unsigned_32)((hdd->connect.virtual_byte_count / 512u +
             (16u * 63u) - 1u) / (16u * 63u));
     }
@@ -309,5 +311,23 @@ C_INT vm_machine_hdd_remove(t_hdd *hdd, const C_CHAR *file_name) {
         STD_MEMSET((C_VOID *)hdd->connect.pImgBase, TYPE_ZERO_8,
             hdd->connect.virtual_byte_count);
     }
+    return TYPE_FALSE;
+}
+C_INT vm_machine_hdd_set_geometry(t_hdd *hdd, type_unsigned_32 cylinders,
+    type_unsigned_16 heads, type_unsigned_16 sectors_per_track)
+{
+    type_unsigned_64 expected_bytes;
+
+    if (hdd == STD_NULL || !hdd->connect.flagDiskExist || cylinders == 0u || heads == 0u ||
+        sectors_per_track == 0u) return TYPE_TRUE;
+    expected_bytes = (type_unsigned_64)cylinders * heads * sectors_per_track * 512u;
+    if (expected_bytes != hdd->connect.virtual_byte_count) return TYPE_TRUE;
+    hdd->connect.geometry_cylinders = cylinders;
+    hdd->connect.geometry_heads = heads;
+    hdd->connect.geometry_sectors_per_track = sectors_per_track;
+    hdd->data.ncyl = cylinders;
+    hdd->data.nhead = heads;
+    hdd->data.nsector = sectors_per_track;
+    hdd->data.nbyte = 512u;
     return TYPE_FALSE;
 }
