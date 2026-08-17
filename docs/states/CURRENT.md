@@ -2,30 +2,10 @@
 
 ## Current Work
 
-- **Active packet:** T387 S3; define the bounded Model-40 bridge-observation contract.
-  bounded bridge-observation contract is the next receiver. No timing behavior
-  changed.
-
-## M5 T387 S3 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation; T387 S2 is accepted progress and S3 is next. |
-| Admission And Approval | Owner continuing authorization for DeskPro L3 work and push, 2026-08-16; S2 assigns a bounded bridge observation as receiver. |
-| Objective | Define the reproducible, non-product Model-40 bridge-observation contract needed to measure one named PIT board observable without making a timing claim. |
-| Non-goals | No reference launch, trace capture, Core code, timing scalar, external dependency, firmware/media import or L3 claim. |
-| Reference Baseline | T387 S1/S2, T375 S16 reference bridge, differential-debug policy, source policy and current Model-40 profile. |
-| Candidate Proposal | [DeskPro 386 board bus and device timing closure](../proposals/m5-deskpro-386-bus-device-closure.md). |
-| Files And ABI Surface | Evidence/current/index only; no source, CMake, ABI or test change. |
-| Applicable Rules | EXECUTION/DOCUMENT/ARCHITECTURE/CODING, architecture/coding/UI, source policy and differential-debug policy. |
-| Verification | Define identity, input, named observable, checkpoints/masks, budgets, cleanup and non-oracle boundary; run documentation governance. |
-| Expected Markers | `M5:T387:S3:MODEL40-BRIDGE-CONTRACT:OK`; no runtime timing marker. |
-| Asset Needs | No asset use in S3; later experiment uses owner-managed external inputs only. |
-| Reporting Requirements | Record all limits, cleanup owner, raw-trace deletion rule and exact condition under which a scalar remains inadmissible. |
-| Stop Conditions | Stop if the contract would depend on an unsupported reference model or cannot name a measurable Model-40 observable. |
-| Exit Criteria | One bounded contract makes a future bridge experiment reproducible without becoming a product dependency or timing oracle. |
-| Original Owner Request | Continue autonomously toward full DeskPro function and L3 timing. |
-| Similar-Issue Sweep | Sweep prior bridge policies/evidence, reference dependencies, trace cleanup, Model-40 profile constraints and current timing transfers. |
+- **Current progress:** T387 S3 accepts the bounded Model-40 PIT counter-1 /
+  port-`61h` bridge-observation contract. The next receiver must qualify an
+  exact Model-40 reference or record its negative disposition; no timing
+  behavior changed.
 ## Current Technical Baseline
 
 - **Current developer artifact:** T386 S28 `vm-0-5-0389` /
@@ -52,7 +32,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T387 S2 | Accepted strict source disposition: D4 CPU/PIT/DCLK facts do not map successful-retirement ticks; a bounded bridge observation is required before any clock-plan behavior. [Evidence](../etc/evidence/t387-s2-model40-clock-source-disposition.md). |
+| T387 S3 | Accepted a bounded Model-40 PIT counter-1/port-`61h` bridge-observation contract: exact-reference qualification, compact checkpoints, masks, budgets and cleanup are mandatory; it produces no scalar or L3 claim. [Evidence](../etc/evidence/t387-s3-model40-bridge-observation-contract.md). |
 | T386 | Closed: S29 independently reconciles every selected Model-40 functional owner/proof, corrects the omitted S26 HDC current-gate registration and transfers only board, firmware and physical-media work to the next candidate/TODO. No L3 claim. [Closure audit](../etc/evidence/t386-s29-functional-closure-audit.md). |
 | T385 | Closed: the selected Model-40 80386DX-16 consumes the shared 80386 CPU/state/retirement owners without a DeskPro CPU fork; a clean current-source 251/251 gate passed, while functionality and board timing transfer unchanged. [Closure audit](../etc/evidence/t385-s1-task-closure-audit.md). |
 | T384 | Closed: the Model-40 capability audit freezes its original Compaq system board/storage ledger and owner-selected color EGA, keyboard and external-ROM constraint; its shared-VADP IBM/Compaq personality boundary transfers CPU, functional and timing work without making a runnable or L3 claim. [Closure audit](../etc/evidence/t384-s2-task-closure-audit.md). |

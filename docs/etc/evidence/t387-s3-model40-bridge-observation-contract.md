@@ -84,3 +84,18 @@ Any later proposal to publish a scalar must separately join a primary source
 that defines both domains to a project-owned NXVM measurement and pass the
 normal source, Core/VM ownership, regression and full-current-gate review.
 This contract itself changes no code, timing behavior or L3 status.
+
+## Coordinator Acceptance
+
+The coordinator reviewed the complete P1--P2 range, including the active
+packet, indexed evidence and every actual changed file. P1 introduced no
+product source, build target, external asset, reference runtime or timing
+scalar. P2 corrects only the evidence-file terminal newline. The contract
+names one primary-constrained Model-40 receiver, rejects generic-AT and
+IBM-model substitution, bounds input/checkpoints/masks/trace cleanup, and
+keeps every physical-period and retirement-tick conclusion outside its scope.
+
+Documentation governance passes against the reviewed graph. S3 is accepted as
+design progress only. The next receiver is qualification of a reference model
+or a documented negative disposition; no calibration, behavior change or L3
+claim is accepted.
