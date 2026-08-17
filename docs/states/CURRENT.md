@@ -2,26 +2,8 @@
 
 ## Current Work
 
-## M5 T389 S2 Packet
+**Idle.**
 
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation; T389 S1 is accepted retained progress, and S2 performs the owner-approved stop-and-requeue disposition. |
-| Admission And Approval | Owner approval, 2026-08-17: stop and requeue T389, add the shared 80386 physical-retirement qualification prerequisite before a new DeskPro board task. Repository/Git authority remains granted. |
-| Objective | Close T389 truthfully as a non-implementation stop caused by its invalid physical-time prerequisite, archive its proposal, and establish the approved ordered replacement candidates without claiming board timing or L3 completion. |
-| Non-goals | No CPU, Core, VM, device, firmware, media, artifact, ABI, profile, timing or L3 behavior change; no rewriting S1 history; no assignment of a physical clock scalar. |
-| Reference Baseline | T389 S1 reconciliation, T388 S9 safety closure, T359/T360/T363 timing ledgers, T386/T387 transfers, current Queue, ROADMAP, EXECUTION, DOCUMENT and source policy. |
-| Candidate Proposal | [DeskPro 386 board-level timing closure](../proposals/m5-deskpro-386-board-level-timing-closure.md). |
-| Files And ABI Surface | `CURRENT.md`, `QUEUE.md`, T389 history/proposal archive, replacement proposals and supporting index only. No source, build, public/runtime ABI, configuration, asset or media surface. |
-| Applicable Rules | EXECUTION governs continuation, task stop, history and identifiers; DOCUMENT governs archival/link/state topology; ROADMAP fixes the CPU-before-board dependency; source policy retains no firmware/media/reference import. |
-| Verification | Inspect S1 and referenced source/timing evidence; prove the replacement prerequisite owns the exact gap without absorbing board/device work; run `git diff --check` and documentation governance. |
-| Expected Markers | `M5:T389:S2:STOP-AND-REQUEUE:OK`. |
-| Asset Needs | None. No ROM, firmware, guest-media, Intel PDF download, or secondary-reference execution. |
-| Reporting Requirements | State that T389 is stopped rather than board-complete; name the replacement order and preserve all existing physical/nonphysical boundaries. |
-| Stop Conditions | Stop if the replacement qualification would infer cycles, become a generic CPU-completeness claim, or require moving device/firmware timing into its scope. Record an explicit receiver instead. |
-| Exit Criteria | T389 is task-level closed as an owner-approved non-implementation stop; its retained proposal/history links remain valid; Queue begins with bounded 80386 physical-retirement qualification followed by a fresh DeskPro board candidate. |
-| Original Owner Request | Continue under the Queue toward complete DeskPro 386 function and L3 timing; owner explicitly approves stopping and reordering T389 around the shared prerequisite. |
-| Similar-Issue Sweep | Inspect current Queue/DeskPro/CPU timing proposals and T359/T360/T363/T388/T389 evidence for an existing candidate that already owns the shared physical-retirement qualification; classify duplicates or gaps. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T386 S28 `vm-0-5-0389` /
@@ -48,7 +30,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T389 S1 | Accepted: post-T388 Model-40 board reconciliation retains neutral deterministic clock domains and transfers shared 80386 physical-retirement qualification before board-clock implementation. No physical-clock or L3 claim. [Evidence](../etc/evidence/t389-s1-model40-board-timing-reconciliation.md). |
+| T389 | Stopped by owner-approved requeue: S1 proves no physical board slice can begin while 80386 successful retirement remains nonphysical; S2 archives the invalid candidate and queues a shared CPU qualification before a fresh board task. No board timing, physical-clock or L3 claim. [Audit](../etc/evidence/t389-s2-stop-and-requeue-audit.md). |
 | T388 | Closed: S1--S9 establish the sole publisher, exhaustive exact-or-nonphysical residual disposition and pre-publication physical-contract rejection. No current CPU profile is physically clock-qualified; board work transfers under this restriction. [Closure audit](../etc/evidence/t388-s9-task-closure-audit.md). |
 | T387 | Closed: source/owner inventory, exact port-`61h` reconciliation and reference qualification transfer the shared physical-timebase then physical-device/firmware prerequisites before any DeskPro L3 audit. No physical-time or L3 claim. [Closure audit](../etc/evidence/t387-s6-task-closure-transfer-audit.md). |
 | T386 | Closed: S29 independently reconciles every selected Model-40 functional owner/proof, corrects the omitted S26 HDC current-gate registration and transfers only board, firmware and physical-media work to the next candidate/TODO. No L3 claim. [Closure audit](../etc/evidence/t386-s29-functional-closure-audit.md). |

@@ -53,3 +53,11 @@ DeskPro board candidate.
 **Stopped by owner-approved requeue; not completed.** T389's sole accepted
 implementation result is the S1 discovery/ledger. No Model-40 board timing
 behavior, physical CPU clock or L3 result was produced.
+## Coordinator Acceptance
+
+After actual-change review of P1 `c795722f`, the coordinator accepts S2 and
+closes T389 as the owner-approved non-implementation stop. Review confirms the
+archived proposal records the invalid dependency order; the two current
+candidates cleanly separate shared 80386 physical-retirement qualification from
+Model-40 board timing; and no source, build, artifact, asset, media, profile or
+runtime contract changed. Documentation governance passes after push.
