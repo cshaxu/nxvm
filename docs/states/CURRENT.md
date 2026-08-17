@@ -6,6 +6,26 @@
   port-`61h` bridge-observation contract. The next receiver must qualify an
   exact Model-40 reference or record its negative disposition; no timing
   behavior changed.
+## M5 T387 S4 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; T387 S3 is accepted progress and S4 is next. |
+| Admission And Approval | Owner continuing authorization for DeskPro L3 work and push, 2026-08-16; S3 assigns exact-reference qualification or negative disposition. |
+| Objective | Qualify locally available secondary reference candidates for the exact 1986 Compaq DeskPro 386 Model 40 bridge contract, or record their bounded negative disposition. |
+| Non-goals | No product code, reference execution, trace capture, ROM/media import, generic-AT substitution, scalar, timing repair or L3 claim. |
+| Reference Baseline | T387 S1-S3, T384 primary Model-40 audit, source policy, differential-debug policy, and locally installed owner-managed reference material. |
+| Candidate Proposal | [DeskPro 386 board bus and device timing closure](../proposals/m5-deskpro-386-bus-device-closure.md). |
+| Files And ABI Surface | Evidence/current/index only; no source, CMake, ABI, asset or test change. |
+| Applicable Rules | EXECUTION/DOCUMENT/ARCHITECTURE/CODING, architecture/coding/UI, source policy and differential-debug policy. |
+| Verification | Search local reference source/configuration assets and record exact model identifiers, board-route support evidence, exclusions and a reproducible result. |
+| Expected Markers | `M5:T387:S4:MODEL40-REFERENCE-QUALIFICATION:OK`; no runtime timing marker. |
+| Asset Needs | Read-only inspection of owner-managed local reference sources/configurations; no bytes copied, modified or committed. |
+| Reporting Requirements | Identify every checked candidate and revision/path class without publishing machine-local paths; distinguish an unsupported exact model from uninspected or non-comparable candidates. |
+| Stop Conditions | Stop with a negative disposition if no checked candidate proves both exact Model-40 board identity and the counter-1/port-61h route. |
+| Exit Criteria | A future bridge run has one qualified reference candidate with both required identities, or a documented negative result transfers the receiver without an AT substitution. |
+| Original Owner Request | Continue autonomously toward full DeskPro function and L3 timing. |
+| Similar-Issue Sweep | Sweep 86Box, MAME, PCjs and local source/configuration manifests for aliases, generic-AT fallbacks, DeskPro variants and port-61h route evidence. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T386 S28 `vm-0-5-0389` /
