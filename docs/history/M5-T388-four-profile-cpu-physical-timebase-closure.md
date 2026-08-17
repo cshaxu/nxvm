@@ -42,3 +42,22 @@ Coordinator review accepted P1 `c9971e9a` against the S2 packet, T359/T360/T361/
 T363/T366/T368 retained evidence, actual static-gate changes and the full
 281-target current smoke gate. It adds no runtime/profile ABI, clock scalar,
 artifact revision or L3 claim.
+
+### S3: Physical Eligibility Boundary
+
+S3 adds one typed Core retirement-time contract and an explicit private
+classification that is independent of the legacy deterministic tick value.
+Exact source costs continue to publish as before in the deterministic contract;
+an unallocated successful cost is refused before the sole elapsed publisher,
+execution result, timeline, device clocks or provider advance when the physical
+contract is selected. Direct VM time injection is invalid under that contract,
+so composition cannot relabel host pacing as qualified CPU retirement time.
+No current profile selects the physical contract.
+
+Coordinator review accepted P1 `10336271` and P2 `66a9b49e` against the S3
+packet, actual Core/configuration change set, owner regression, new static
+boundary gate, documentation governance and the full 281-target current gate.
+The accepted [physical-eligibility evidence](../etc/evidence/t388-s3-physical-eligibility-boundary.md)
+creates no physical scalar, profile clock enablement, artifact revision or L3
+claim. T388 remains open for source/form/context allocation or approved
+observation coverage.
