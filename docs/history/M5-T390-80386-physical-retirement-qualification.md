@@ -177,3 +177,11 @@ contained replay and external-asset exclusion. Full current gates,
 documentation governance and diff hygiene pass. T390 remains open; its next
 receiver must identify and disposition the transferred memory-source
 `MOV Sreg,r/m16` form before repeating the bounded corpus.
+
+### S8: Model-40 Memory-Source MOV Sreg Qualification
+
+S8 qualifies the observed real-address memory-source MOV Sreg,r/m16 at the Intel 80386 manual's exact five-core-clock row. P2 directly proves the protected-mode counterpart remains rejected before physical publication. A bounded redacted replay reaches 18,228 retirements and transfers the next unallocated terminal; it reaches neither  :7C00 nor profile physical selection. Board timing and L3 remain open.
+
+## Coordinator Acceptance
+
+After actual-change review of P1 c1021cef and P2 86632441, the coordinator accepts S8. T390 remains open; the next receiver must identify and disposition the transferred terminal before replay continues.

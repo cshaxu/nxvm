@@ -15,3 +15,7 @@ A freshly rebuilt owner-managed capture helper uses the normal Model-40 startup-
 ## Verification
 
 Focused timing-ledger smoke, product/current-gate build, documentation governance and diff hygiene pass.
+
+## Coordinator Acceptance
+
+Coordinator actual-change review accepts P1 c1021cef and corrective P2 86632441. P2 directly proves the same memory-source encoding under protected mode faults before retirement, elapsed-time or device publication. The exact real-address row, existing register row, prefix boundary, source containment and bounded terminal transfer remain correct. No physical profile, board timing or L3 claim is accepted.
