@@ -2,7 +2,7 @@
 
 ## Current Work
 
-**Current progress:** T388 is closed: the shared CPU physical-timebase safety and attribution boundary is complete. All unproved successful retirement remains deterministically timed but explicitly nonphysical; no profile has a physical CPU-clock claim. The next queue candidate is DeskPro 386 board-level timing closure under that retained restriction.
+**Idle.** T388 is closed: the shared CPU physical-timebase safety and attribution boundary is complete. All unproved successful retirement remains deterministically timed but explicitly nonphysical; no profile has a physical CPU-clock claim. The next queue candidate is DeskPro 386 board-level timing closure under that retained restriction.
 
 ## Current Technical Baseline
 
