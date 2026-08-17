@@ -2,13 +2,30 @@
 
 ## Current Work
 
-**Active.** T390 remains open between accepted subtasks.
+**Active packet:** T390 S9 (Continuation) -- 80386 real-address far-indirect JMP timing qualification.
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation -- T390 is the latest open numeric task; S9 follows accepted S8. |
+| Admission And Approval | Owner approved continuation in this conversation on 2026-08-17. The owner-approved root-cause continuation now covers the observed 80386 CS-overridden `FF /5` far-indirect JMP and its exact real-address and successful protected same-privilege direct-code rows at the existing shared Core owner. No exception is approved. |
+| Objective | Reconcile the exact Intel 80386 PRM `FF /5` `JMP m16:16` rows reached by the observed CS-overridden form: real-address `43+m` and successful protected same-privilege direct-code `31+m`. Prove their `m` next-instruction lexical term through the existing shared preview owner, while retaining gate/task/other privilege routes nonphysical. |
+| Non-goals | No VM86, call-gate, task-switch, privilege-changing or other protected far-transfer qualification; no broad prefix policy change; no decoder/execution semantics, ROM/media, profile selection, board clock, device timing, or L3 claim. |
+| Reference Baseline | Accepted T390 S8 artifact `vm-0-5-0390`, SHA-256 `846506BC1A43D4F2BEDFEF3FFCB2595ADEDF74E359B4FB590F055036BAA3495E`; Intel 80386 PRM, instruction `JMP` page 318 and clocks definition page 248; current Core control/stack classifier and T390 S8 evidence. |
+| Candidate Proposal | [80386 physical-retirement qualification](../proposals/m5-80386-physical-retirement-qualification.md). |
+| Files And ABI Surface | Private Core implementation/ledger in `src/core/machine/machine.c`; focused Core timing-ledger smoke; T390 evidence/history/status/index as needed. No public ABI or VM/profile change. |
+| Applicable Rules | Execution, documentation, architecture and coding rules; source policy. Invariants: one shared Core timing owner; exact Intel-primary row; immutable external assets; physical-contract failure before publication for any excluded context; tests do not create a public test-only API. |
+| Verification | Focused timing-ledger smoke proves the CS-overridden memory far JMP real-address `43+m` and successful protected same-privilege direct-code `31+m` rows with known target lexemes; a gate/other protected route remains rejected prepublication; similar `FF /3` and direct far-JMP rows are swept; normal bounded redacted BYOB replay advances or records its next terminal; build, current gates, documentation governance, `git diff --check`, and coordinator actual-diff review pass. |
+| Expected Markers | Existing timing-ledger smoke success marker; existing bounded `M5:T390:S8:BYOB-BOOT-CAPTURE` output or its successor only if the runner changes; S9 evidence references source citation and final artifact digest. |
+| Asset Needs | Optional owner-managed external ROM and boot media only for bounded replay; no media, ROM bytes, identity, path, hash, raw trace or terminal bytes enter Git. |
+| Reporting Requirements | Report admission confirmation, implementation P1 with focused/full verification and evidence link, coordinator acceptance or consolidated corrective brief, then closure/transfer. |
+| Stop Conditions | Stop and transfer if the exact source row or required preview context is unavailable, if the form fails functionally, if a wider decoder/state mechanism is necessary, or if replay reaches a new unallocated success. Do not substitute an emulator count or enable a partial physical profile. |
+| Exit Criteria | The exact real-address and successful protected same-privilege direct-code memory far-JMP rows and next-term semantics are source-cited, one Core owner produces their expected ticks for the observed prefix form, gate/task/other protected routes stay nonphysical, the similar-form sweep is recorded, and required verification/evidence/acceptance are complete. |
+| Original Owner Request | Continue the Queue-ordered 80386 physical-retirement qualification before returning to DeskPro board timing; user additionally required Intel manual authority for 80386 instruction behavior. |
+| Similar-Issue Sweep | Inspect all existing 80386 far CALL/JMP direct/memory ledger entries and source consumers, all accepted segment-prefix routes through the control/stack owner, and existing evidence that states the affected row; repair only exact in-scope current ownership and record historical discrepancy without rewriting accepted history. |
 
 ## Current Technical Baseline
 
-- **Current developer artifact:** T390 S8 `vm-0-5-0390` /
-  `build/output/nxvm_0_5_0390.exe`, SHA-256
-  `846506BC1A43D4F2BEDFEF3FFCB2595ADEDF74E359B4FB590F055036BAA3495E`.
+- **Current developer artifact:** T390 S9 `vm-0-5-0390` /`n  `build/output/nxvm_0_5_0390.exe`, SHA-256`n  `F2946939290ECFE8CA35106FF3299FD7F110AF9798558B952AEA37901E0F2926`.
   T386 closes selected-device functional completeness at S29; its retained
   [closure audit](../etc/evidence/t386-s29-functional-closure-audit.md) fixes
   HDC current-gate coverage and transfers board, firmware and physical work.

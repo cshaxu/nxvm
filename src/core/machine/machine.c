@@ -493,7 +493,7 @@ static const core_machine_source_timing_entry
     { CORE_MACHINE_SOURCE_TIMING_JMP_REGISTER, 7u },
     { CORE_MACHINE_SOURCE_TIMING_JMP_MEMORY, 10u },
     { CORE_MACHINE_SOURCE_TIMING_JMP_FAR_DIRECT, 12u },
-    { CORE_MACHINE_SOURCE_TIMING_JMP_FAR_MEMORY, 17u },
+    { CORE_MACHINE_SOURCE_TIMING_JMP_FAR_MEMORY, 43u },
     { CORE_MACHINE_SOURCE_TIMING_RET_NEAR, 10u },
     { CORE_MACHINE_SOURCE_TIMING_RET_NEAR_IMMEDIATE, 10u },
     { CORE_MACHINE_SOURCE_TIMING_PUSH_REGISTER, 2u },
@@ -2263,7 +2263,9 @@ static C_INT core_machine_control_stack_source_instruction_cost(
                 out_ticks);
         }
         if (extension == 3u || extension == 5u) {
-            if (!memory || !same_privilege || protected_mode) return 0;
+            if (!memory || !same_privilege ||
+                (protected_mode && (extension != 5u || data->crm !=
+                    machine->executor_cpu.data.cs.selector))) return 0;
             *out_ticks = core_machine_control_stack_source_lookup(machine,
                 extension == 3u ? CORE_MACHINE_SOURCE_TIMING_CALL_FAR_MEMORY :
                 CORE_MACHINE_SOURCE_TIMING_JMP_FAR_MEMORY);

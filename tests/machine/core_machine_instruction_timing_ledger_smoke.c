@@ -214,6 +214,50 @@ static C_INT timing_ledger_physical_protected_mov_sreg_memory(C_VOID)
     core_machine_destroy(machine);
     return failed;
 }
+static C_INT timing_ledger_physical_far_jmp_memory(C_INT protected_mode)
+{
+    static const type_unsigned_8 instruction[] = {
+        0x2eu, 0xffu, 0x2eu, 0xf6u, 0xffu
+    };
+    static const type_unsigned_8 pointer[] = { 0xfeu, 0xffu, 0x00u, 0xf0u };
+    static const type_unsigned_8 target[] = { 0x90u };
+    const core_machine_config config = {
+        .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
+        .retirement_time_contract = CORE_MACHINE_RETIREMENT_TIME_PHYSICAL
+    };
+    const core_machine_run_budget budget = { 1u, 0u };
+    core_machine_run_result result;
+    timing_ledger_state state = { 0u, 0u, 0u };
+    core_machine *machine = STD_NULL;
+    C_INT failed = core_machine_create(&config, &machine) != TYPE_STATUS_OK ||
+        test_core_machine_fixture_register_reset_mapping(machine,
+            TIMING_LEDGER_RESET_LINEAR, TIMING_LEDGER_RESET_PHYSICAL,
+            TIMING_LEDGER_WINDOW_BYTES) != TYPE_STATUS_OK ||
+        !test_core_machine_fixture_bind_freeze_reset(machine,
+            &timing_ledger_execution_provider, &state) ||
+        !timing_ledger_load(machine, instruction, sizeof(instruction)) ||
+        core_machine_memory_write(machine, TIMING_LEDGER_RESET_LINEAR + 6u,
+            pointer, sizeof(pointer)) != TYPE_STATUS_OK ||
+        core_machine_memory_write(machine, TIMING_LEDGER_RESET_LINEAR + 14u,
+            target, sizeof(target)) != TYPE_STATUS_OK;
+
+    if (!failed && protected_mode) machine->executor_cpu.data.cr0 |= VCPU_CR0_PE;
+    if (!failed) {
+        failed |= core_machine_run(machine, budget, &result) !=
+            (protected_mode ? TYPE_STATUS_FAULT : TYPE_STATUS_OK);
+        if (protected_mode) {
+            failed |= result.reason != CORE_MACHINE_STOP_FAULT ||
+                result.executed != 0u || result.ticks != 0u ||
+                result.elapsed_ticks != 0u || state.advanced_ticks != 0u;
+        } else {
+            failed |= result.reason != CORE_MACHINE_STOP_BUDGET ||
+                result.executed != 1u || result.ticks != 44u ||
+                result.elapsed_ticks != 44u || state.advanced_ticks != 44u;
+        }
+    }
+    core_machine_destroy(machine);
+    return failed;
+}
 static C_INT timing_ledger_test_physical_classifier_boundary(C_VOID)
 {
     static const type_unsigned_8 cli[] = { 0xfau };
@@ -240,7 +284,9 @@ static C_INT timing_ledger_test_physical_classifier_boundary(C_VOID)
             sizeof(mov_sreg_register), TYPE_STATUS_OK, 2u) ||
         timing_ledger_physical_case(mov_sreg_memory,
             sizeof(mov_sreg_memory), TYPE_STATUS_OK, 5u) ||
-        timing_ledger_physical_protected_mov_sreg_memory();
+        timing_ledger_physical_protected_mov_sreg_memory() ||
+        timing_ledger_physical_far_jmp_memory(0) ||
+        timing_ledger_physical_far_jmp_memory(1);
 }
 
 static C_INT timing_ledger_test_memory(C_VOID)
