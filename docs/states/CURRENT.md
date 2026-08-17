@@ -1,14 +1,35 @@
-# Project Status
+﻿# Project Status
 
 ## Current Work
 
-**T394 S3 accepted.** The immutable Core-owned key schema covers every C0 collision dimension; a later implementation S must materialize the key, copied descriptor and 82-child mapping before physical selection. Both Model-40 paths remain deterministic.
+**T394 S4 active.** Implement the Core-owned normalized eligibility key and construction-time copied descriptor, retaining deterministic Model-40 behavior until a later C0 mapping admits physical selection.
+
+## M5 T394 S4 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner’s continuing instruction-correctness/timing audit authorization; T394 S3 acceptance (`6fe832c6`) selects this bounded Core implementation. No exception. |
+| Objective | Materialize the S3 value-only eligibility key in Core, validate and copy a finite descriptor at construction, and reject physical successful retirement when source timing is unallocated or its classified key is absent. |
+| Non-goals | No C0 descriptor contents, Model-40 physical selection, VM callback/state coupling, firmware/media handling, board timing, cycle changes or L3 claim. |
+| Reference Baseline | T394 S1 ledger, T394 S3 collision audit, existing retirement classifier/observation and prepublication physical rejection. |
+| Candidate Proposal | [80386 physical-retirement qualification](../proposals/m5-80386-physical-retirement-qualification.md). |
+| Files And ABI Surface | Core machine configuration/retirement interfaces and private state, focused machine regressions, CMake registration, current/history/evidence/index. The public descriptor is immutable input copied synchronously; no VM interface changes. |
+| Applicable Rules | Architecture invariants: Core owns decode/timing and copies external configuration; no mutable layout/pointer retention or reverse VM dependency. Coding: minimum durable interface and cohesive owner-local helpers. Execution: complete affected batch, focused regression, artifact and actual-change review. |
+| Verification | Focused key equality/normalization, invalid descriptor, copied-lifetime, reset, classified-absent-key nonpublication and unallocated rejection regressions; existing timing and both Model-40 deterministic composition tests; current gate/artifact and documentation governance. |
+| Expected Markers | `M5:T394:S4:ELIGIBILITY-KEY:OK`; `M5:T394:S4:PHYSICAL-ABSENT-KEY:OK`; Model-40 deterministic assertions remain green. |
+| Asset Needs | None. |
+| Reporting Requirements | Record owner/lifetime, validation-to-copy boundary, fault/nonpublication semantics, source sweep and full C0 mapping transfer. |
+| Stop Conditions | Stop if a key field requires raw/dynamic firmware data, descriptor copying cannot be failure-atomic, or an existing physical test needs a C0-specific descriptor. |
+| Exit Criteria | Key/descriptor implementation and focused proofs are committed, pushed and accepted; no profile becomes physical-qualified; C0 mapping remains explicitly transferred. |
+| Original Owner Request | Continue the global CPU correctness/timing audit, repair clear in-scope defects, and preserve the Core/VM boundary. |
+| Similar-Issue Sweep | Sweep all physical-retirement publication points, Core construction variants and Model-40 routes; repair the shared Core mechanism or transfer any excluded variant. |
 
 ## Current Technical Baseline
 
-- **Current developer artifact:** T390 S22 `vm-0-5-0390` /
-  `build/output/nxvm_0_5_0390.exe`, SHA-256
-  `AF45AB7BF8D76CBFAD2EEE1C53BB9710CF408997CA9C78948196EE880AB140F8`.
+- **Current developer artifact:** T394 S4 `vm-0-5-0394` /
+  `build/output/nxvm_0_5_0394.exe`, SHA-256
+  `2215B0DD8E0BF2B85E34DB705230A6ECF9A7D872A946952FD7469087A0C59CBE`.
   T386 closes selected-device functional completeness at S29; its retained
   [closure audit](../etc/evidence/t386-s29-functional-closure-audit.md) fixes
   HDC current-gate coverage and transfers board, firmware and physical work.

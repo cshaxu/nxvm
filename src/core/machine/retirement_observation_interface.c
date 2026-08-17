@@ -158,9 +158,11 @@ C_VOID core_machine_retirement_observation_capture_instruction(core_machine *mac
     const t_cpu *cpu, const t_cpuins *instructions)
 {
     core_machine_retirement_observation *observation;
+    type_unsigned_8 opcode_index;
+    type_unsigned_8 opcode = 0xffu;
+    type_unsigned_8 escape_opcode = 0xffu;
 
-    if (machine == STD_NULL || cpu == STD_NULL || instructions == STD_NULL ||
-        machine->retirement_observation.provider.callback == STD_NULL) return;
+    if (machine == STD_NULL || cpu == STD_NULL || instructions == STD_NULL) return;
     observation = &machine->retirement_observation.pending_observation;
     STD_MEMSET(observation, 0, sizeof(*observation));
     core_machine_retirement_observation_copy_point(&observation->point, cpu,
@@ -175,8 +177,28 @@ C_VOID core_machine_retirement_observation_capture_instruction(core_machine *mac
         instructions->data.prefix_addrsize;
     observation->lock_prefix = instructions->data.flagLock;
     observation->repeat_prefix = (type_unsigned_8)instructions->data.prefix_rep;
-
-    machine->retirement_observation.pending = TYPE_TRUE;
+    core_machine_retirement_observation_capture_context(machine, cpu, instructions,
+        observation);
+    observation->repeat_phase = machine->source_timing_repeat_phase;
+    opcode_index = core_machine_retirement_observation_prefix_count(&instructions->data);
+    if (opcode_index < instructions->data.oplen) {
+        opcode = instructions->data.opcodes[opcode_index];
+        if (opcode == 0x0fu && opcode_index + 1u < instructions->data.oplen) {
+            escape_opcode = instructions->data.opcodes[opcode_index + 1u];
+        }
+    }
+    observation->eligibility_key = (core_machine_retirement_eligibility_key) {
+        observation->cpu_profile, machine->source_timing_origin,
+        machine->source_timing_form_id, opcode, escape_opcode, observation->modrm_form,
+        observation->modrm_extension, observation->control_outcome,
+        observation->next_lexeme_components, observation->repeat_phase,
+        observation->cpl, observation->protected_mode, observation->virtual_8086_mode,
+        observation->operand_size_32, observation->address_size_32,
+        observation->lock_prefix, observation->repeat_prefix };
+    machine->retirement_eligibility_key = observation->eligibility_key;
+    machine->retirement_eligibility_key_valid = TYPE_TRUE;
+    machine->retirement_observation.pending =
+        machine->retirement_observation.provider.callback != STD_NULL;
 }
 
 C_VOID core_machine_retirement_observation_publish(core_machine *machine,

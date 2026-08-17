@@ -56,11 +56,39 @@ typedef enum core_machine_retirement_repeat_phase {
 #define CORE_MACHINE_RETIREMENT_SOURCE_FORM_UNATTRIBUTED ((type_unsigned_32)-1)
 #define CORE_MACHINE_RETIREMENT_CONTEXT_UNAVAILABLE ((type_unsigned_8)-1)
 
+/* A semantic retirement identity; it deliberately contains no instruction
+ * addresses, literal operands, firmware identity, or elapsed-time result. */
+typedef struct core_machine_retirement_eligibility_key {
+    core_machine_cpu_profile cpu_profile;
+    core_machine_retirement_timing_origin timing_origin;
+    type_unsigned_32 source_timing_form_id;
+    type_unsigned_8 opcode;
+    type_unsigned_8 escape_opcode;
+    core_machine_retirement_modrm_form modrm_form;
+    type_unsigned_8 modrm_extension;
+    core_machine_retirement_control_outcome control_outcome;
+    type_unsigned_8 next_lexeme_components;
+    core_machine_retirement_repeat_phase repeat_phase;
+    type_unsigned_8 cpl;
+    type_bool protected_mode;
+    type_bool virtual_8086_mode;
+    type_bool operand_size_32;
+    type_bool address_size_32;
+    type_bool lock_prefix;
+    type_unsigned_8 repeat_prefix;
+} core_machine_retirement_eligibility_key;
+
+typedef struct core_machine_retirement_qualification_descriptor {
+    const core_machine_retirement_eligibility_key *entries;
+    STD_SIZE_T entry_count;
+} core_machine_retirement_qualification_descriptor;
+
 typedef struct core_machine_retirement_observation {
     type_unsigned_64 sequence;
     type_unsigned_64 elapsed_ticks;
     type_unsigned_64 timeline_ticks;
     type_unsigned_64 source_ticks;
+    core_machine_retirement_eligibility_key eligibility_key;
     core_machine_cpu_execution_point point;
     core_machine_cpu_profile cpu_profile;
     core_machine_retirement_timing_disposition timing_disposition;

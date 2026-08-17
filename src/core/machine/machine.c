@@ -3199,6 +3199,39 @@ static C_VOID core_machine_transaction_trace(C_VOID *opaque,
         (detail << 16u));
 }
 
+static C_INT core_machine_retirement_qualification_contains(
+    const core_machine *machine)
+{
+    STD_SIZE_T index;
+
+    if (machine == STD_NULL || !machine->retirement_eligibility_key_valid) return 0;
+    for (index = 0u; index < machine->retirement_qualification_count; ++index) {
+        const core_machine_retirement_eligibility_key *candidate =
+            &machine->retirement_qualification[index];
+        const core_machine_retirement_eligibility_key *key =
+            &machine->retirement_eligibility_key;
+        if (candidate->cpu_profile == key->cpu_profile &&
+            candidate->timing_origin == key->timing_origin &&
+            candidate->source_timing_form_id == key->source_timing_form_id &&
+            candidate->opcode == key->opcode &&
+            candidate->escape_opcode == key->escape_opcode &&
+            candidate->modrm_form == key->modrm_form &&
+            candidate->modrm_extension == key->modrm_extension &&
+            candidate->control_outcome == key->control_outcome &&
+            candidate->next_lexeme_components == key->next_lexeme_components &&
+            candidate->repeat_phase == key->repeat_phase &&
+            candidate->cpl == key->cpl &&
+            candidate->protected_mode == key->protected_mode &&
+            candidate->virtual_8086_mode == key->virtual_8086_mode &&
+            candidate->operand_size_32 == key->operand_size_32 &&
+            candidate->address_size_32 == key->address_size_32 &&
+            candidate->lock_prefix == key->lock_prefix &&
+            candidate->repeat_prefix == key->repeat_prefix) {
+            return 1;
+        }
+    }
+    return 0;
+}
 static C_INT core_machine_retirement_time_contract_is_valid(
     core_machine_retirement_time_contract contract)
 {
@@ -4572,6 +4605,21 @@ static type_status core_machine_create_internal(
     machine->lifecycle = CORE_MACHINE_INITIALIZED;
     machine->cpu_profile = core_machine_resolve_cpu_profile(config->cpu_profile);
     machine->retirement_time_contract = config->retirement_time_contract;
+    if (config->retirement_qualification != STD_NULL) {
+        if (config->retirement_qualification->entries == STD_NULL ||
+            config->retirement_qualification->entry_count == 0u ||
+            config->retirement_qualification->entry_count >
+                CORE_MACHINE_RETIREMENT_QUALIFICATION_CAPACITY) {
+            STD_FREE(machine);
+            return TYPE_STATUS_INVALID_ARGUMENT;
+        }
+        machine->retirement_qualification_count =
+            config->retirement_qualification->entry_count;
+        STD_MEMCPY(machine->retirement_qualification,
+            config->retirement_qualification->entries,
+            machine->retirement_qualification_count *
+                sizeof(machine->retirement_qualification[0]));
+    }
     machine->cpu_80386_cr_mov_ignores_mod =
         config->cpu_80386_cr_mov_ignores_mod;
     if (machine->cpu_80386_cr_mov_ignores_mod &&
@@ -4777,6 +4825,7 @@ static type_status core_machine_cold_reset(core_machine *machine)
     STD_ATOMIC_STORE(&machine->stop_requested, 0);
     machine->fault_detail = 0u;
     machine->elapsed_ticks = 0u;
+    machine->retirement_eligibility_key_valid = TYPE_FALSE;
     machine->source_repeat_active = TYPE_FALSE;
     machine->source_repeat_cs = 0u;
     machine->source_repeat_eip = 0u;
@@ -5032,10 +5081,13 @@ type_status core_machine_run(
                     result->elapsed_ticks = machine->elapsed_ticks;
                     return TYPE_STATUS_FAULT;
                 }
+                core_machine_retirement_observation_capture_instruction(machine,
+                    &machine->executor_cpu, &machine->executor_cpu_instructions);
                 core_machine_retirement_observation_publish(machine, instruction_ticks);
                 if (machine->retirement_time_contract ==
                     CORE_MACHINE_RETIREMENT_TIME_PHYSICAL &&
-                    machine->source_timing_unallocated) {
+                    (machine->source_timing_unallocated ||
+                    !core_machine_retirement_qualification_contains(machine))) {
                     (C_VOID)core_machine_report_fault(machine, 0x54494d55u);
                     result->reason = CORE_MACHINE_STOP_FAULT;
                     result->linear_pc = core_machine_linear_pc(machine);

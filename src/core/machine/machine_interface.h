@@ -84,6 +84,9 @@ typedef struct core_machine_config {
     /* Physical mode refuses an unallocated successful retirement before it can
      * be published into a clock-domain plan. */
     core_machine_retirement_time_contract retirement_time_contract;
+    /* Read synchronously by create and copied into Core-owned storage; the
+     * caller retains no lifetime obligation after core_machine_create(). */
+    const core_machine_retirement_qualification_descriptor *retirement_qualification;
     type_unsigned_32 kbc_typematic_initial_ticks;
     type_unsigned_32 kbc_typematic_repeat_ticks;
     type_unsigned_32 kbc_command_response_ticks;

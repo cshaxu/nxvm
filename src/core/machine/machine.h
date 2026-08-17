@@ -44,6 +44,7 @@
 
 #define CORE_MACHINE_TRACE_CAPACITY 32u
 #define CORE_MACHINE_IMMUTABLE_ROM_MAPPING_CAPACITY 4u
+#define CORE_MACHINE_RETIREMENT_QUALIFICATION_CAPACITY 128u
 
 typedef struct core_machine_trace_state {
     core_machine_trace_provider provider;
@@ -96,6 +97,11 @@ struct core_machine {
     core_machine_retirement_timing_origin source_timing_origin;
     type_unsigned_32 source_timing_form_id;
     core_machine_retirement_repeat_phase source_timing_repeat_phase;
+    core_machine_retirement_eligibility_key retirement_eligibility_key;
+    type_bool retirement_eligibility_key_valid;
+    core_machine_retirement_eligibility_key retirement_qualification[
+        CORE_MACHINE_RETIREMENT_QUALIFICATION_CAPACITY];
+    STD_SIZE_T retirement_qualification_count;
     type_bool source_repeat_active;
     type_unsigned_16 source_repeat_cs;
     type_unsigned_32 source_repeat_eip;

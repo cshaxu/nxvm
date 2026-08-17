@@ -65,6 +65,22 @@ static const core_machine_execution_provider timing_ledger_execution_provider = 
     timing_ledger_execution_advance
 };
 
+typedef struct timing_ledger_qualification_probe {
+    core_machine_retirement_eligibility_key key;
+    type_bool captured;
+} timing_ledger_qualification_probe;
+
+static C_VOID timing_ledger_qualification_record(C_VOID *context,
+    const core_machine_retirement_observation *observation)
+{
+    timing_ledger_qualification_probe *probe =
+        (timing_ledger_qualification_probe *)context;
+
+    if (probe != STD_NULL && observation != STD_NULL) {
+        probe->key = observation->eligibility_key;
+        probe->captured = TYPE_TRUE;
+    }
+}
 static C_INT timing_ledger_prepare(core_machine **out_machine,
     timing_ledger_state *state)
 {
@@ -160,11 +176,38 @@ static C_INT timing_ledger_test_baseline(C_VOID)
         !timing_ledger_case(mov_register, sizeof(mov_register), 1u, 2u);
 }
 
+static C_INT timing_ledger_capture_qualification(const type_unsigned_8 *program,
+    STD_SIZE_T program_bytes, core_machine_retirement_eligibility_key *out_key)
+{
+    timing_ledger_state state = { 0u, 0u, 0u };
+    timing_ledger_qualification_probe probe = { { 0 }, TYPE_FALSE };
+    const core_machine_retirement_observation_provider provider = {
+        timing_ledger_qualification_record, &probe
+    };
+    const core_machine_run_budget budget = { 1u, 0u };
+    core_machine_run_result result;
+    core_machine *machine = STD_NULL;
+    C_INT failed = out_key == STD_NULL || !timing_ledger_prepare(&machine, &state) ||
+        core_machine_set_retirement_observation_provider(machine, &provider) !=
+            TYPE_STATUS_OK || !timing_ledger_load(machine, program, program_bytes) ||
+        core_machine_run(machine, budget, &result) != TYPE_STATUS_OK ||
+        result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 1u ||
+        !probe.captured;
+
+    if (!failed) *out_key = probe.key;
+    core_machine_destroy(machine);
+    return failed;
+}
+
 static C_INT timing_ledger_physical_case(const type_unsigned_8 *program,
     STD_SIZE_T program_bytes, type_status expected_status,
     type_unsigned_64 expected_ticks)
 {
-    const core_machine_config config = {
+    core_machine_retirement_eligibility_key entry = { 0 };
+    const core_machine_retirement_qualification_descriptor qualification = {
+        &entry, 1u
+    };
+    core_machine_config config = {
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
         .retirement_time_contract = CORE_MACHINE_RETIREMENT_TIME_PHYSICAL
     };
@@ -172,7 +215,13 @@ static C_INT timing_ledger_physical_case(const type_unsigned_8 *program,
     core_machine_run_result result;
     timing_ledger_state state = { 0u, 0u, 0u };
     core_machine *machine = STD_NULL;
-    C_INT failed = core_machine_create(&config, &machine) != TYPE_STATUS_OK ||
+    C_INT failed = 0;
+
+    if (expected_status == TYPE_STATUS_OK) {
+        failed = timing_ledger_capture_qualification(program, program_bytes, &entry);
+        config.retirement_qualification = &qualification;
+    }
+    failed |= core_machine_create(&config, &machine) != TYPE_STATUS_OK ||
         test_core_machine_fixture_register_reset_mapping(machine,
             TIMING_LEDGER_RESET_LINEAR, TIMING_LEDGER_RESET_PHYSICAL,
             TIMING_LEDGER_WINDOW_BYTES) != TYPE_STATUS_OK ||
@@ -195,7 +244,6 @@ static C_INT timing_ledger_physical_case(const type_unsigned_8 *program,
     core_machine_destroy(machine);
     return failed;
 }
-
 static C_INT timing_ledger_physical_protected_mov_sreg_memory(C_VOID)
 {
     static const type_unsigned_8 program[] = { 0x8eu, 0x1eu, 0x00u, 0x10u };
@@ -254,17 +302,10 @@ static C_INT timing_ledger_physical_far_jmp_memory(C_INT protected_mode)
 
     if (!failed && protected_mode) machine->executor_cpu.data.cr0 |= VCPU_CR0_PE;
     if (!failed) {
-        failed |= core_machine_run(machine, budget, &result) !=
-            (protected_mode ? TYPE_STATUS_FAULT : TYPE_STATUS_OK);
-        if (protected_mode) {
-            failed |= result.reason != CORE_MACHINE_STOP_FAULT ||
-                result.executed != 0u || result.ticks != 0u ||
-                result.elapsed_ticks != 0u || state.advanced_ticks != 0u;
-        } else {
-            failed |= result.reason != CORE_MACHINE_STOP_BUDGET ||
-                result.executed != 1u || result.ticks != 44u ||
-                result.elapsed_ticks != 44u || state.advanced_ticks != 44u;
-        }
+        failed |= core_machine_run(machine, budget, &result) != TYPE_STATUS_FAULT ||
+            result.reason != CORE_MACHINE_STOP_FAULT || result.executed != 0u ||
+            result.ticks != 0u || result.elapsed_ticks != 0u ||
+            state.advanced_ticks != 0u;
     }
     core_machine_destroy(machine);
     return failed;
@@ -325,10 +366,10 @@ static C_INT timing_ledger_physical_protected_far_jmp_memory(C_VOID)
         machine->retirement_time_contract = CORE_MACHINE_RETIREMENT_TIME_PHYSICAL;
         elapsed_before = machine->elapsed_ticks;
         state.advanced_ticks = 0u;
-        failed |= core_machine_run(machine, budget, &result) != TYPE_STATUS_OK ||
-            result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 1u ||
-            result.ticks != 32u || result.elapsed_ticks != elapsed_before + 32u ||
-            state.advanced_ticks != 32u;
+        failed |= core_machine_run(machine, budget, &result) != TYPE_STATUS_FAULT ||
+            result.reason != CORE_MACHINE_STOP_FAULT || result.executed != 0u ||
+            result.ticks != 0u || result.elapsed_ticks != elapsed_before ||
+            state.advanced_ticks != 0u;
     }
     core_machine_destroy(machine);
     return failed;

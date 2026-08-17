@@ -1,4 +1,4 @@
-# Supporting Documentation Index
+﻿# Supporting Documentation Index
 
 The fixed documentation topology retains this owner-approved area for supporting detail
 that does not fit the principal `rules/` and `design/` authorities. A supporting
@@ -66,6 +66,7 @@ principal documents named in [docs/README.md](../README.md).
 | `evidence/t394-s1-80386-physical-qualification-admission-ledger.md` | Verification owner | T394 S1 freezes the C0/C0A/C1/residual qualification ledger and transfers immutable shared-Core stage enforcement without physical selection. Retain with T394 history. |
 | `evidence/t394-s2-immutable-stage-mechanism-decision.md` | Verification owner | T394 S2 rejects existing descriptor candidates and transfers a bounded Core normalized eligibility-key design without physical selection. Retain with T394 history. |
 | `evidence/t394-s3-normalized-eligibility-key-collision-audit.md` | Verification owner | T394 S3 defines the Core-owned normalized eligibility-key schema, C0 collision dimensions and immutable-descriptor receiver without physical selection. Retain with T394 history. |
+| `evidence/t394-s4-core-eligibility-key-descriptor.md` | Core timing owner | T394 S4 materializes the Core-only normalized eligibility key and copied descriptor, proving prepublication rejection without selecting a physical profile. Retain with T394 history. |
 | `evidence/t391-s1-post-c0-port61-readiness-inventory.md` | Verification owner | T391 S1 admits the finite post-C0 port-61h startup checkpoint from existing copied observation, identifies its one Core D4 owner and Model-40 composition path, and transfers the C0A corpus ledger without a timing claim. Retain with T391 history. |
 | `evidence/t390-s36-stop-and-requeue-audit.md` | Closure audit | T390 S36 records the C1/startup dependency cycle, stops the unready physical-qualification task, and queues an earlier startup-semantic receiver without changing a Core/VM interface. Retain with T390 history. |
 | `evidence/t390-s35-convergence-reconciliation.md` | Verification owner | T390 S35 reconciles the accepted task record, retains the deterministic Model-40 retirement boundary, and names a complete enforceable corpus-stage receiver before any future physical selection. Retain with T390 history. |

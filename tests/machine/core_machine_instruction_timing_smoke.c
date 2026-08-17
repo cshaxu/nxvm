@@ -179,22 +179,104 @@ static C_INT timing_test_stop(C_VOID)
     return failed;
 }
 
+typedef struct timing_qualification_probe {
+    core_machine_retirement_eligibility_key key;
+    type_bool captured;
+} timing_qualification_probe;
+
+static C_VOID timing_qualification_record(C_VOID *context,
+    const core_machine_retirement_observation *observation)
+{
+    timing_qualification_probe *probe = (timing_qualification_probe *)context;
+
+    if (probe != STD_NULL && observation != STD_NULL) {
+        probe->key = observation->eligibility_key;
+        probe->captured = TYPE_TRUE;
+    }
+}
+
+static C_INT timing_capture_qualification(const type_unsigned_8 *program,
+    STD_SIZE_T program_bytes, core_machine_retirement_eligibility_key *out_key)
+{
+    const core_machine_config config = {
+        .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
+        .ticks_per_instruction = 1u,
+        .instruction_timing = { 10u, 2u, 7u, 3u, 5u, 4u }
+    };
+    timing_qualification_probe probe = { { 0 }, TYPE_FALSE };
+    const core_machine_retirement_observation_provider provider = {
+        timing_qualification_record, &probe
+    };
+    const core_machine_run_budget budget = { 1u, 0u };
+    core_machine_run_result result;
+    core_machine *machine = STD_NULL;
+    C_INT failed = out_key == STD_NULL ||
+        core_machine_create(&config, &machine) != TYPE_STATUS_OK ||
+        test_core_machine_fixture_register_reset_mapping(machine,
+            TIMING_RESET_LINEAR, TIMING_RESET_PHYSICAL, TIMING_WINDOW_BYTES) !=
+            TYPE_STATUS_OK ||
+        core_machine_freeze_execution_providers(machine) != TYPE_STATUS_OK ||
+        core_machine_reset(machine) != TYPE_STATUS_OK ||
+        core_machine_set_retirement_observation_provider(machine, &provider) !=
+            TYPE_STATUS_OK ||
+        core_machine_memory_write(machine, TIMING_RESET_LINEAR, program,
+            program_bytes) != TYPE_STATUS_OK ||
+        core_machine_run(machine, budget, &result) != TYPE_STATUS_OK ||
+        result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 1u ||
+        !probe.captured;
+
+    if (!failed) *out_key = probe.key;
+    core_machine_destroy(machine);
+    return failed;
+}
+
+static C_INT timing_test_invalid_qualification(C_VOID)
+{
+    core_machine_retirement_eligibility_key entry = { 0 };
+    const core_machine_retirement_qualification_descriptor missing_entries = {
+        STD_NULL, 1u
+    };
+    const core_machine_retirement_qualification_descriptor empty_entries = {
+        &entry, 0u
+    };
+    const core_machine_config missing_config = {
+        .retirement_qualification = &missing_entries
+    };
+    const core_machine_config empty_config = {
+        .retirement_qualification = &empty_entries
+    };
+    core_machine *machine = STD_NULL;
+
+    return core_machine_create(&missing_config, &machine) != TYPE_STATUS_INVALID_ARGUMENT ||
+        machine != STD_NULL ||
+        core_machine_create(&empty_config, &machine) != TYPE_STATUS_INVALID_ARGUMENT ||
+        machine != STD_NULL;
+}
 static C_INT timing_test_physical_contract(C_VOID)
 {
     static const type_unsigned_8 exact[] = { 0x90u };
     static const type_unsigned_8 jcc[] = { 0x75u, 0xfeu };
+    static const type_unsigned_8 classified_unqualified[] = { 0xb8u, 0x34u, 0x12u };
     static const type_unsigned_8 unallocated[] = { 0x26u, 0x90u };
+    core_machine_retirement_eligibility_key entries[2];
+    const core_machine_retirement_qualification_descriptor qualification = {
+        entries, sizeof(entries) / sizeof(entries[0])
+    };
     const core_machine_config config = {
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
         .ticks_per_instruction = 1u,
         .instruction_timing = { 10u, 2u, 7u, 3u, 5u, 4u },
-        .retirement_time_contract = CORE_MACHINE_RETIREMENT_TIME_PHYSICAL
+        .retirement_time_contract = CORE_MACHINE_RETIREMENT_TIME_PHYSICAL,
+        .retirement_qualification = &qualification
     };
     timing_port_state port_state = { 0u, 0u };
     core_machine_run_budget budget = { 1u, 0u };
     core_machine_run_result result;
     core_machine *machine = STD_NULL;
-    C_INT failed = core_machine_create(&config, &machine) != TYPE_STATUS_OK ||
+    C_INT failed = timing_capture_qualification(exact, sizeof(exact),
+            &entries[0]) ||
+        timing_capture_qualification(jcc, sizeof(jcc), &entries[1]) ||
+        core_machine_create(&config, &machine) != TYPE_STATUS_OK ||
         test_core_machine_fixture_register_reset_mapping(machine,
             TIMING_RESET_LINEAR, TIMING_RESET_PHYSICAL, TIMING_WINDOW_BYTES) !=
             TYPE_STATUS_OK ||
@@ -204,9 +286,10 @@ static C_INT timing_test_physical_contract(C_VOID)
         core_machine_reset(machine) != TYPE_STATUS_OK;
 
     if (!failed) {
+        entries[0].opcode ^= 1u; /* create copied the descriptor. */
         failed |= core_machine_advance_time(machine, 1u) != TYPE_STATUS_INVALID_STATE ||
-        core_machine_memory_write(machine, TIMING_RESET_LINEAR, exact,
-            sizeof(exact)) != TYPE_STATUS_OK ||
+            core_machine_memory_write(machine, TIMING_RESET_LINEAR, exact,
+                sizeof(exact)) != TYPE_STATUS_OK ||
             core_machine_run(machine, budget, &result) != TYPE_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 1u ||
             result.ticks != 3u || result.elapsed_ticks != 3u ||
@@ -217,11 +300,21 @@ static C_INT timing_test_physical_contract(C_VOID)
             result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 1u ||
             result.ticks != 9u || result.elapsed_ticks != 9u ||
             core_machine_reset(machine) != TYPE_STATUS_OK ||
+            core_machine_memory_write(machine, TIMING_RESET_LINEAR,
+                classified_unqualified, sizeof(classified_unqualified)) != TYPE_STATUS_OK ||
+            core_machine_run(machine, budget, &result) != TYPE_STATUS_FAULT ||
+            result.reason != CORE_MACHINE_STOP_FAULT || result.executed != 0u ||
+            result.ticks != 0u || result.elapsed_ticks != 0u ||
+            core_machine_reset(machine) != TYPE_STATUS_OK ||
             core_machine_memory_write(machine, TIMING_RESET_LINEAR, unallocated,
                 sizeof(unallocated)) != TYPE_STATUS_OK ||
             core_machine_run(machine, budget, &result) != TYPE_STATUS_FAULT ||
             result.reason != CORE_MACHINE_STOP_FAULT || result.executed != 0u ||
             result.ticks != 0u || result.elapsed_ticks != 0u;
+    }
+    if (!failed) {
+        STD_PRINTF("M5:T394:S4:ELIGIBILITY-KEY:OK\n");
+        STD_PRINTF("M5:T394:S4:PHYSICAL-ABSENT-KEY:OK\n");
     }
     core_machine_destroy(machine);
     return failed;
@@ -252,7 +345,8 @@ C_INT main(C_VOID)
     if (timing_test_quantum_and_reset()) return 5;
     if (timing_test_fault()) return 6;
     if (timing_test_stop()) return 7;
-    if (timing_test_physical_contract()) return 8;
+    if (timing_test_invalid_qualification()) return 8;
+    if (timing_test_physical_contract()) return 9;
     STD_PRINTF("M5:T265:S3:INSTRUCTION-TIMING:OK\n");
     return 0;
 }

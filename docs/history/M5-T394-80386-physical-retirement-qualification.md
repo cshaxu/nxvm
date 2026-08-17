@@ -1,4 +1,4 @@
-# M5 T394: 80386 Physical-Retirement Qualification
+﻿# M5 T394: 80386 Physical-Retirement Qualification
 
 ## Task Record
 
@@ -61,3 +61,8 @@ explicitly excludes literal/dynamic trace data. Documentation governance and
 diff hygiene pass. T394 remains open for a separately admitted Core
 implementation subtask; both Model-40 construction routes remain deterministic
 and no physical, board or L3 claim is accepted.
+### S4: Core Eligibility-Key And Copied Descriptor
+
+S4 implements the S3 Core-owned normalized key and immutable construction-time descriptor, with prepublication rejection for every physical unallocated or absent-key success. It makes no C0 membership, Model-40 physical, board or L3 claim.
+
+S4 materializes that key in Core and copies a finite descriptor during construction. Physical retirement now rejects both unallocated successful sources and classified keys absent from that descriptor before time publication. The descriptor contains no VM state or firmware identity; no C0 membership is selected, and both Model-40 paths remain deterministic pending a later C0 mapping.
