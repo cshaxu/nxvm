@@ -2,26 +2,7 @@
 
 ## Current Work
 
-## M5 T392 S2 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner authorized autonomous continuation of the CPU/startup audit; S1 accepted inventory selects the bounded VM/session observability decision. |
-| Objective | Decide whether any existing VM-level copied state can define a C1 endpoint, and specify the earliest valid owner if new observability is required. |
-| Non-goals | No production implementation, Core observer expansion, raw trace, firmware/media import, timing allocation, physical selection, board/device time or L3 claim. |
-| Reference Baseline | T392 S1 seven-candidate ledger; current VM session layout, Model40 composition and existing display/fault/media boundaries. |
-| Candidate Proposal | [DeskPro 386 C1 semantic endpoint investigation](../proposals/m5-deskpro-386-c1-semantic-endpoint-investigation.md). |
-| Files And ABI Surface | Evidence/history/current only; no production header, Core or VM ABI. |
-| Applicable Rules | Core/VM ownership direction, copied/opaque state boundary, complete candidate disposition, no mutable layout exposure and source-policy asset exclusion. |
-| Verification | Session/device state owner inventory, candidate/consumer/failure matrix, focused existing capture regression, documentation governance. |
-| Expected Markers | T392 S2 VM observability decision evidence marker. |
-| Asset Needs | None. |
-| Reporting Requirements | State why each existing session/device observable is accepted, insufficient or excluded; name exact owner and contract for any future capability. |
-| Stop Conditions | Stop if the only candidate needs private-pointer exposure, a Core callback, or external asset-dependent behavior. |
-| Exit Criteria | Complete decision matrix proves an existing endpoint or gives a single safe future-owner transfer without an interface change. |
-| Original Owner Request | Continue global CPU correctness/timing work toward DeskPro board readiness without breaking the Core/VM boundary. |
-| Similar-Issue Sweep | Include display, fault, media, FDC, FDD, session control and retirement paths; distinguish media insertion from device completion. |
+**Active.** T392 remains open between accepted subtasks. S2 exhausts VM/session observability: no existing state proves C1 success, and any future capability must be a separately admitted immutable VM-owned device-operation snapshot. C1 physical qualification remains blocked. [Evidence](../etc/evidence/t392-s2-vm-session-observability-decision.md).
 ## Current Technical Baseline
 
 - **Current developer artifact:** T390 S22 `vm-0-5-0390` /
@@ -48,6 +29,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T392 S2 | Accepted: VM/session observability decision rejects mutable or non-semantic state and transfers a future immutable VM-owned device-operation snapshot design. [Evidence](../etc/evidence/t392-s2-vm-session-observability-decision.md). |
 | T392 S1 | Accepted: seven existing-state C1 candidates are fully disposed; no finite endpoint or shared defect is identified, and the next receiver is device/session observability design. [Evidence](../etc/evidence/t392-s1-c1-existing-state-candidate-inventory.md). |
 | T391 | Closed: S1-S8 establish the bounded C0A startup predecessor, complete C1 aggregate disposition and the truthful transfer that C1 physical qualification remains blocked pending a new finite checkpoint or earliest-owner defect. No Core/VM interface, timing, physical, board, firmware or L3 claim. [Closure audit](../etc/evidence/t391-s8-startup-semantic-closure-audit.md). |
 | T389 | Stopped by owner-approved requeue: S1 proves no physical board slice can begin while 80386 successful retirement remains nonphysical; S2 archives the invalid candidate and queues a shared CPU qualification before a fresh board task. No board timing, physical-clock or L3 claim. [Audit](../etc/evidence/t389-s2-stop-and-requeue-audit.md). |

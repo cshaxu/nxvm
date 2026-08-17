@@ -30,3 +30,10 @@ bounded device/session observability design decision.
 S2 exhausts existing VM/session state, rejects mutable media/topology/display/
 fault facts as C1 success, and transfers a future immutable VM-owned operation
 snapshot design without changing Core or VM ABI. [Evidence](../etc/evidence/t392-s2-vm-session-observability-decision.md).
+## Coordinator Acceptance
+
+After actual-change review of P1 `3319d1b4`, the coordinator accepts S2. The
+matrix disposes every existing VM/session state without exposing mutable layout
+or changing Core/VM ABI. Focused C0/C0A/C1 capture regression and documentation
+governance pass. T392 remains open; any next step requires a separately
+admitted selected device-operation contract.
