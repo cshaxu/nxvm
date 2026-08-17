@@ -24,3 +24,9 @@ Core/VM boundary, identifies no endpoint or shared defect, and gives every
 candidate a receiver. The focused C0/C0A/C1 capture regression and
 documentation governance pass. T392 remains open; the next receiver is a
 bounded device/session observability design decision.
+
+### S2: VM And Session Observability Decision
+
+S2 exhausts existing VM/session state, rejects mutable media/topology/display/
+fault facts as C1 success, and transfers a future immutable VM-owned operation
+snapshot design without changing Core or VM ABI. [Evidence](../etc/evidence/t392-s2-vm-session-observability-decision.md).
