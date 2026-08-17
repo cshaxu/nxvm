@@ -53,6 +53,7 @@ typedef struct core_machine_vadp_cecg_config {
     type_unsigned_8 clock_switch_select;
     type_bool special_features_present;
     type_bool vertical_retrace_irq_enabled;
+    type_bool odd_even_high_page;
 } core_machine_vadp_cecg_config;
 
 typedef struct core_machine_vadp_ega_controller_config {

@@ -26,6 +26,7 @@ extern "C" {
     CORE_MACHINE_DISPLAY_EGA_ATTRIBUTE_REGISTER_COUNT
 #define CORE_MACHINE_VADP_EGA_PLANES 4u
 #define CORE_MACHINE_VADP_EGA_PLANE_BYTES CORE_MACHINE_VADP_EGA_APERTURE_BYTES
+#define CORE_MACHINE_VADP_EGA_ODD_EVEN_PAGE_BYTES 0x00004000u
 #define CORE_MACHINE_VADP_PORT_ATTRIBUTE 0x03c0u
 #define CORE_MACHINE_VADP_PORT_ATTRIBUTE_DATA_READ 0x03c1u
 #define CORE_MACHINE_VADP_PORT_SEQUENCER_INDEX 0x03c4u
@@ -91,6 +92,7 @@ typedef struct t_vadp_data {
     type_bool compaq_cpu_video_memory_disabled;
     type_bool compaq_color_io_base;
     type_unsigned_8 compaq_clock_switch_select;
+    type_bool compaq_odd_even_high_page;
     type_bool compaq_lightpen_latched;
     type_unsigned_64 dirty_generation;
     C_INT captured;

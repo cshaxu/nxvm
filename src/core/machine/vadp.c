@@ -209,6 +209,27 @@ static type_unsigned_8 core_machine_vadp_logical_operation(type_unsigned_8 opera
     }
 }
 
+static C_INT core_machine_vadp_compaq_odd_even_page_active(const t_vadp *adapter)
+{
+    return adapter != STD_NULL && adapter->data.ega_personality ==
+        CORE_MACHINE_VADP_EGA_PERSONALITY_COMPAQ_ENHANCED_COLOR &&
+        (adapter->data.sequencer[4] & 0x04u) == 0u &&
+        (adapter->data.graphics[6] & 0x02u) != 0u;
+}
+
+static type_unsigned_32 core_machine_vadp_ega_planar_offset(const t_vadp *adapter,
+    type_unsigned_32 physical)
+{
+    type_unsigned_32 offset = physical - CORE_MACHINE_VADP_EGA_APERTURE_BASE;
+
+    if (core_machine_vadp_compaq_odd_even_page_active(adapter)) {
+        return ((offset >> 1u) & (CORE_MACHINE_VADP_EGA_ODD_EVEN_PAGE_BYTES - 1u)) |
+            (adapter->data.compaq_odd_even_high_page ?
+            CORE_MACHINE_VADP_EGA_ODD_EVEN_PAGE_BYTES : 0u);
+    }
+    return offset;
+}
+
 static type_status core_machine_vadp_ega_planar_read(C_VOID *owner,
     type_unsigned_32 physical, type_virtual_address destination,
     type_native_unsigned bytes)
@@ -227,7 +248,8 @@ static type_status core_machine_vadp_ega_planar_read(C_VOID *owner,
         return TYPE_STATUS_UNSUPPORTED;
     }
     for (index = 0u; index < bytes; ++index) {
-        type_unsigned_32 offset = physical - CORE_MACHINE_VADP_EGA_APERTURE_BASE + index;
+        type_unsigned_32 offset = core_machine_vadp_ega_planar_offset(adapter,
+            physical + (type_unsigned_32)index);
         type_unsigned_8 plane;
 
         for (plane = 0u; plane < CORE_MACHINE_VADP_EGA_PLANES; ++plane) {
@@ -257,7 +279,8 @@ static type_status core_machine_vadp_ega_planar_write(C_VOID *owner,
         return TYPE_STATUS_UNSUPPORTED;
     }
     for (index = 0u; index < bytes; ++index) {
-        type_unsigned_32 offset = physical - CORE_MACHINE_VADP_EGA_APERTURE_BASE + index;
+        type_unsigned_32 offset = core_machine_vadp_ega_planar_offset(adapter,
+            physical + (type_unsigned_32)index);
         type_unsigned_8 rotated = core_machine_vadp_rotate_right(input[index],
             adapter->data.graphics[3]);
         type_unsigned_8 plane;
@@ -832,6 +855,11 @@ static C_VOID core_machine_vadp_write_compaq_miscellaneous_output(t_port *port,
         (port->data.ioByte & 0x02u) != 0u;
     adapter->data.compaq_color_io_base = (port->data.ioByte & 0x01u) != 0u;
     adapter->data.compaq_clock_switch_select = (port->data.ioByte >> 2u) & 0x03u;
+    if (adapter->data.compaq_odd_even_high_page !=
+        ((port->data.ioByte & 0x20u) != 0u)) {
+        adapter->data.compaq_odd_even_high_page = (port->data.ioByte & 0x20u) != 0u;
+        core_machine_vadp_mark_dirty(adapter);
+    }
 }
 
 static C_VOID core_machine_vadp_read_compaq_input_status_0(t_port *port,
@@ -1160,7 +1188,7 @@ type_status core_machine_vadp_configure_ega_personality(t_vadp *adapter,
     if (personality == CORE_MACHINE_VADP_EGA_PERSONALITY_COMPAQ_ENHANCED_COLOR) {
         adapter->data.cecg = (core_machine_vadp_cecg_config) {
             0x40u, 0x00u, 0x30u, 0x01u, TYPE_TRUE, TYPE_FALSE, TYPE_TRUE,
-            0x06u, 0x01u, TYPE_FALSE, TYPE_FALSE };
+            0x06u, 0x01u, TYPE_FALSE, TYPE_FALSE, TYPE_FALSE };
         adapter->data.compaq_control_mode = adapter->data.cecg.control_mode;
         adapter->data.compaq_cpu_video_memory_disabled =
             adapter->data.cecg.cpu_video_memory_disabled;
@@ -1194,6 +1222,7 @@ type_status core_machine_vadp_configure_cecg(t_vadp *adapter,
         config->cpu_video_memory_disabled;
     adapter->data.compaq_color_io_base = config->color_io_base;
     adapter->data.compaq_clock_switch_select = config->clock_switch_select;
+    adapter->data.compaq_odd_even_high_page = config->odd_even_high_page;
     adapter->data.compaq_feature_control = config->environment & 0x03u;
     return TYPE_STATUS_OK;
 }
@@ -1255,6 +1284,7 @@ C_VOID core_machine_vadp_reset(t_vadp *adapter)
         cecg.cpu_video_memory_disabled;
     adapter->data.compaq_color_io_base = cecg.color_io_base;
     adapter->data.compaq_clock_switch_select = cecg.clock_switch_select;
+    adapter->data.compaq_odd_even_high_page = cecg.odd_even_high_page;
     adapter->data.ega_sequencer = ega_sequencer;
     adapter->data.ega_sequencer_configured = ega_sequencer_configured;
     core_machine_vadp_reset_sequencer(adapter);
@@ -1636,6 +1666,11 @@ static C_INT core_machine_vadp_capture_ega_planar_snapshot(t_vadp *adapter,
         ((type_unsigned_32)core_machine_vadp_crtc_word(adapter,
             CORE_MACHINE_VADP_CRTC_START_HIGH) * 2u) &
             (CORE_MACHINE_VADP_EGA_PLANE_BYTES - 1u) : 0u;
+    if (core_machine_vadp_compaq_odd_even_page_active(adapter)) {
+        start_byte = (start_byte & (CORE_MACHINE_VADP_EGA_ODD_EVEN_PAGE_BYTES - 1u)) |
+            (adapter->data.compaq_odd_even_high_page ?
+            CORE_MACHINE_VADP_EGA_ODD_EVEN_PAGE_BYTES : 0u);
+    }
     buffer_changed = !adapter->data.captured || adapter->data.captured_kind != kind ||
         adapter->data.captured_ega_dirty_generation != adapter->data.dirty_generation;
     STD_MEMSET(out_snapshot, 0, sizeof(*out_snapshot));

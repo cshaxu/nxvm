@@ -44,7 +44,7 @@ type_status vm_session_model40_storage_initialize(vm_session *session)
     display.ega_personality = CORE_MACHINE_VADP_EGA_PERSONALITY_COMPAQ_ENHANCED_COLOR;
     display.cecg = (core_machine_vadp_cecg_config) {
         0x40u, 0x00u, 0x30u, 0x01u, TYPE_TRUE, TYPE_FALSE, TYPE_TRUE,
-        0x06u, 0x01u, TYPE_FALSE, TYPE_FALSE };
+        0x06u, 0x01u, TYPE_FALSE, TYPE_FALSE, TYPE_FALSE };
     display.ega_sequencer = (core_machine_vadp_ega_sequencer_config) {
         CORE_MACHINE_VADP_EGA_APERTURE_BASE, CORE_MACHINE_VADP_EGA_APERTURE_BYTES,
         0x03u, 0x00u, 0x0fu, 0x02u, TYPE_TRUE };
