@@ -3080,41 +3080,80 @@ static C_INT core_machine_instruction_cost(core_machine *machine,
 {
     if (machine == STD_NULL || out_ticks == STD_NULL) return 0;
     machine->source_timing_unallocated = TYPE_FALSE;
+    machine->source_timing_origin =
+        CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_UNATTRIBUTED;
     machine->source_timing_form_id = CORE_MACHINE_RETIREMENT_SOURCE_FORM_UNATTRIBUTED;
     if (core_machine_string_io_source_instruction_cost(machine, out_ticks)) {
+        machine->source_timing_origin = CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO;
         return 1;
     }
     if (core_machine_80386_dynamic_multiply_cost(machine, out_ticks)) {
+        machine->source_timing_origin =
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80386_DYNAMIC_MULTIPLY;
         return 1;
     }
     if (core_machine_legacy_dynamic_arithmetic_model_cost(machine, out_ticks)) {
+        machine->source_timing_origin =
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_LEGACY_DYNAMIC_ARITHMETIC;
         return 1;
     }
     if (core_machine_80386_secondary_source_instruction_cost(machine, out_ticks)) {
+        machine->source_timing_origin =
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80386_SECONDARY;
         return 1;
     }
     if (core_machine_80386_privileged_source_instruction_cost(machine, out_ticks)) {
+        machine->source_timing_origin =
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80386_PRIVILEGED;
         return 1;
     }
     if (core_machine_primary_source_instruction_cost(machine, out_ticks)) {
+        machine->source_timing_origin = CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY;
         return 1;
     }
     if (core_machine_control_stack_source_instruction_cost(machine, out_ticks)) {
+        machine->source_timing_origin =
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK;
         return 1;
     }
     if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_8086) {
-        return core_machine_8086_source_instruction_cost(machine, out_ticks);
+        if (core_machine_8086_source_instruction_cost(machine, out_ticks)) {
+            machine->source_timing_origin =
+                CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_8086_FALLBACK;
+            return 1;
+        }
+        return 0;
     }
     if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80186) {
-        return core_machine_80186_source_instruction_cost(machine, out_ticks);
+        if (core_machine_80186_source_instruction_cost(machine, out_ticks)) {
+            machine->source_timing_origin =
+                CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80186_FALLBACK;
+            return 1;
+        }
+        return 0;
     }
     if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286) {
-        return core_machine_80286_source_instruction_cost(machine, out_ticks);
+        if (core_machine_80286_source_instruction_cost(machine, out_ticks)) {
+            machine->source_timing_origin =
+                CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80286_FALLBACK;
+            return 1;
+        }
+        return 0;
     }
     if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80386) {
-        return core_machine_80386_source_instruction_cost(machine, out_ticks);
+        if (core_machine_80386_source_instruction_cost(machine, out_ticks)) {
+            machine->source_timing_origin =
+                CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80386_FALLBACK;
+            return 1;
+        }
+        return 0;
     }
-    return core_machine_compatibility_instruction_cost(machine, out_ticks);
+    if (core_machine_compatibility_instruction_cost(machine, out_ticks)) {
+        machine->source_timing_origin =
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_COMPATIBILITY;
+        return 1;
+    }
+    return 0;
 }
 
 static C_VOID core_machine_transaction_trace(C_VOID *opaque,

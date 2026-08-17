@@ -2,13 +2,32 @@
 
 ## Current Work
 
-**Active.** T390 remains open between accepted subtasks.
+## M5 T390 S22 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner standing approval for Queue-ordered T390 shared-Core implementation, following accepted S21 receiver decision. |
+| Objective | Add one copied Core timing-origin attribution at the successful classifier orchestration owner so every successful C0 retirement identifies its selecting classifier family before later exact-row mapping. |
+| Non-goals | No timing-row change, no per-form Intel inference, no raw instruction/PC publication, no profile-local classifier, physical contract enablement, C1, board/device timing or L3 claim. |
+| Reference Baseline | Accepted S19 lookup-form capture and S21 C0 audit: 53 classified-but-unattributed aggregate rows require a shared classifier-origin receiver. |
+| Candidate Proposal | [80386 physical-retirement qualification](../proposals/m5-80386-physical-retirement-qualification.md). |
+| Files And ABI Surface | Core private per-attempt origin state, copied observation contract, existing M40 capture aggregation and focused Core/C0 regressions; no mutable layout, pointer or raw-data exposure. |
+| Applicable Rules | Execution, architecture, coding, documentation and source policy: sole Core orchestration owner, copied observer lifetime, reset/failure atomicity, disabled-path neutrality, exact-or-nonphysical physical boundary. |
+| Verification | Origin lifecycle/reset and profile-dispatch focused proof; C0 synthetic aggregation; fresh deleted normalized C0 split; full current gate, docs, diff and actual review. |
+| Expected Markers | Existing observer smoke and M40 C0 marker, with stable copied timing-origin classification. |
+| Asset Needs | Owner-authorized local ROM/media only for deleted normalized replay; no external identity, path, hash, byte, PC, trace or provenance in Git. |
+| Reporting Requirements | Complete P1 with implementation/evidence and then coordinator actual review/acceptance P2. |
+| Stop Conditions | Origin needs a second timing publisher, misses a successful classifier route, leaks raw state, changes timing/disposition, or requires an exact-row inference. |
+| Exit Criteria | Each successful instruction-cost owner sets one copied origin or the explicit sentinel; focused and C0 proofs pass and the remaining exact-context matrix transfer is explicit. |
+| Original Owner Request | Continue governed DeskPro 386 CPU qualification toward full functional and L3 timing closure without incremental terminal repair. |
+| Similar-Issue Sweep | Inspect every return-success owner in core_machine_instruction_cost, observer publish/reset/install/remove paths, physical rejection and all observer consumers. |
 
 ## Current Technical Baseline
 
-- **Current developer artifact:** T390 S19 `vm-0-5-0390` /
+- **Current developer artifact:** T390 S22 `vm-0-5-0390` /
   `build/output/nxvm_0_5_0390.exe`, SHA-256
-  `01FDEA7D036ED8A69B8927E26622B7D8556AC7B799028A04355D51A5182B6814`.
+  `7CD172472BADEEE78160548EDE93104C94874CE03F25DDA2392A63E1217FE2C5`.
   T386 closes selected-device functional completeness at S29; its retained
   [closure audit](../etc/evidence/t386-s29-functional-closure-audit.md) fixes
   HDC current-gate coverage and transfers board, firmware and physical work.

@@ -93,6 +93,7 @@ struct core_machine {
     type_unsigned_64 maximum_instruction_ticks;
     core_machine_retirement_time_contract retirement_time_contract;
     type_bool source_timing_unallocated;
+    core_machine_retirement_timing_origin source_timing_origin;
     type_unsigned_32 source_timing_form_id;
     type_bool source_repeat_active;
     type_unsigned_16 source_repeat_cs;

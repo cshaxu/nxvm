@@ -88,6 +88,7 @@ C_VOID core_machine_retirement_observation_publish(core_machine *machine,
     observation->timing_disposition = machine->source_timing_unallocated ?
         CORE_MACHINE_RETIREMENT_TIMING_SOURCE_UNALLOCATED :
         CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED;
+    observation->timing_origin = machine->source_timing_origin;
     observation->source_timing_form_id = machine->source_timing_form_id;
     state->provider.callback(state->provider.context, observation);
     state->pending = TYPE_FALSE;

@@ -15,6 +15,7 @@ typedef struct model40_retirement_capture_form {
     type_unsigned_8 escape_opcode;
     type_unsigned_8 group_extension;
     type_unsigned_32 source_timing_form_id;
+    core_machine_retirement_timing_origin timing_origin;
     type_unsigned_64 ticks;
     type_unsigned_8 cpl;
     type_bool protected_mode;
@@ -175,6 +176,7 @@ static C_INT model40_capture_form_matches(
     const model40_retirement_capture_form *form, const C_CHAR *name,
     const C_CHAR *operand, type_unsigned_8 opcode, type_unsigned_8 escape_opcode,
     type_unsigned_8 group_extension, type_unsigned_32 source_timing_form_id,
+    core_machine_retirement_timing_origin timing_origin,
     const core_machine_retirement_observation *observation)
 {
     return form != STD_NULL && observation != STD_NULL &&
@@ -182,6 +184,7 @@ static C_INT model40_capture_form_matches(
         form->opcode == opcode && form->escape_opcode == escape_opcode &&
         form->group_extension == group_extension &&
         form->source_timing_form_id == source_timing_form_id &&
+        form->timing_origin == timing_origin &&
         form->ticks == observation->source_ticks && form->cpl == observation->cpl &&
         form->protected_mode == observation->protected_mode &&
         form->virtual_8086_mode == observation->virtual_8086_mode &&
@@ -238,7 +241,7 @@ static C_VOID model40_capture_observe(C_VOID *opaque,
     for (index = 0u; index < capture->form_count; ++index) {
         if (model40_capture_form_matches(&capture->forms[index], name, operand,
                 opcode, escape_opcode, group_extension, observation->source_timing_form_id,
-                observation)) {
+                observation->timing_origin, observation)) {
             ++capture->forms[index].count;
             return;
         }
@@ -249,7 +252,8 @@ static C_VOID model40_capture_observe(C_VOID *opaque,
     }
     capture->forms[capture->form_count++] = (model40_retirement_capture_form) {
         name, operand, opcode, escape_opcode, group_extension,
-        observation->source_timing_form_id, observation->source_ticks, observation->cpl,
+        observation->source_timing_form_id, observation->timing_origin,
+        observation->source_ticks, observation->cpl,
         observation->protected_mode, observation->virtual_8086_mode,
         observation->operand_size_32, observation->address_size_32,
         observation->lock_prefix, observation->repeat_prefix,
@@ -278,12 +282,12 @@ static C_VOID model40_capture_emit(const model40_retirement_capture *capture)
     for (index = 0u; index < capture->form_count; ++index) {
         const model40_retirement_capture_form *form = &capture->forms[index];
 
-        STD_PRINTF("T390 form=%s operand=%s opcode=%02X escape=%02X group=%u source-form=%u ticks=%llu cpl=%u pm=%u vm=%u os32=%u "
+        STD_PRINTF("T390 form=%s operand=%s opcode=%02X escape=%02X group=%u source-form=%u origin=%u ticks=%llu cpl=%u pm=%u vm=%u os32=%u "
             "as32=%u lock=%u rep=%u disposition=%u count=%u\n",
             form->form, form->operand, (unsigned)form->opcode,
             (unsigned)form->escape_opcode, (unsigned)form->group_extension,
-            (unsigned)form->source_timing_form_id, (unsigned long long)form->ticks,
-            (unsigned)form->cpl, (unsigned)form->protected_mode,
+            (unsigned)form->source_timing_form_id, (unsigned)form->timing_origin,
+            (unsigned long long)form->ticks, (unsigned)form->cpl, (unsigned)form->protected_mode,
             (unsigned)form->virtual_8086_mode, (unsigned)form->operand_size_32,
             (unsigned)form->address_size_32, (unsigned)form->lock_prefix,
             (unsigned)form->repeat_prefix, (unsigned)form->disposition,
@@ -313,22 +317,32 @@ static C_INT model40_capture_synthetic_c0_smoke(C_VOID)
 
     observation.cpu_profile = CORE_MACHINE_CPU_PROFILE_80386;
     observation.timing_disposition = CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED;
+    observation.timing_origin =
+        CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80386_FALLBACK;
     observation.point.byte_count = 1u;
     observation.point.bytes[0] = 0x90u;
     observation.source_ticks = 3u;
     model40_capture_observe(&capture, &observation);
     observation.protected_mode = TYPE_TRUE;
+    observation.timing_origin =
+        CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80386_SECONDARY;
     observation.point.bytes[0] = 0x0fu;
     observation.point.bytes[1] = 0x20u;
     observation.point.byte_count = 2u;
     model40_capture_observe(&capture, &observation);
     observation.protected_mode = TYPE_FALSE;
+    observation.timing_origin =
+        CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK;
     observation.point.bytes[0] = 0xeau;
     observation.point.byte_count = 1u;
     model40_capture_observe(&capture, &observation);
-    if (!capture.checkpoint_reached || capture.count != 3u ||
-        capture.classified != 3u || capture.unallocated != 0u ||
-        capture.form_count != 3u) return 1;
+    observation.timing_origin =
+        CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY;
+    observation.point.bytes[0] = 0x90u;
+    model40_capture_observe(&capture, &observation);
+    if (!capture.checkpoint_reached || capture.count != 4u ||
+        capture.classified != 4u || capture.unallocated != 0u ||
+        capture.form_count != 4u) return 1;
     STD_PRINTF("M5:T390:S17:M40-C0-CAPTURE:OK\n");
     return 0;
 }
