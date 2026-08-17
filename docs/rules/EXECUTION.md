@@ -106,6 +106,23 @@ owner-approved goal with a stated scope, non-goals, dependencies, completion
 standard, and stop condition. It is not a pre-allocation of every implementation
 step. The coordinator observes the evidence produced by each admitted S and
 dynamically plans the next S within the active T boundary.
+### Task-Scale Convergence And Coverage
+
+Dynamic S planning is evidence-led adaptation, not permission to redefine a T as the sequence of its first observed failures. A **coverage-bearing T** is a task whose stated outcome uses complete, all, qualification, closure, audit, L3, or an equivalent whole-domain claim. Before its first implementation S, its proposal or an admitted planning S must define one durable task convergence ledger. The ledger is detailed evidence or task history, not a second current authority; the active packet links to the applicable ledger and names the batch it consumes.
+
+The ledger records, at the level appropriate to the T, all of:
+
+- the frozen coverage universe: named capabilities, forms, state transitions, devices, routes, or finite corpus/checkpoints to which the claim applies;
+- the unit of coverage and required context, including any source, ownership, timing, lifecycle, reset, failure, or interoperability facts needed to make a disposition;
+- each permitted disposition: accepted with direct proof, explicitly non-applicable with reason, retained non-eligible/deferred with its named receiver, or blocked by a stated authority/implementation prerequisite;
+- the evidence and regression owner for an accepted disposition, and the admission path for every non-accepted one; and
+- the T-level completion predicate: which ledger states must be exhausted or transferred before its claimed gate can open.
+
+The universe may be refined only by evidence that changes the admitted domain; the coordinator records the change, its reason, and its effect on every affected disposition before more implementation proceeds. Refinement must not silently turn an unbounded runtime path into a moving target. Where execution or firmware is the consumer, the corpus uses named finite semantic checkpoints; a retirement, wall-clock, byte, or retry budget is containment only and never coverage success.
+
+Every S inside a coverage-bearing T states which ledger batch it consumes and, at closure, records the before/after disposition of that complete batch. A successful replay that reaches farther, a new first terminal, or one repaired form is diagnostic evidence only. It cannot by itself select the next repair, advance a qualification gate, or support a complete/L3 claim. The coordinator first collects or reconciles the full affected batch, then either admits one batch repair with exact authority and regressions or transfers the whole underdetermined class to its earliest owner. A narrowly scoped safety fix may stop unsafe publication immediately, but it does not count toward coverage until it enters the ledger and receives the same batch disposition.
+
+Before accepting an S or closing a coverage-bearing T, coordinator actual-diff review verifies that the implemented and observed surface is mapped to the ledger, that no unresolved member is hidden by a later checkpoint, and that every claimed gate has its stated completion predicate. The documentation gate checks structure only; it cannot prove convergence. A T that cannot establish this ledger is not eligible for a whole-domain conclusion and must remain an inventory, diagnostic, or bounded implementation task with its residual work transferred explicitly.
 
 An S is the smallest implementation, review, and acceptance unit inside an
 active T. Its active `states/CURRENT.md` packet is the required task contract. Each S
