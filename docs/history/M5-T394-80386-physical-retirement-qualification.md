@@ -124,3 +124,13 @@ board time or L3 claim is accepted.
 ### S7: Task Closure Audit
 
 S7 closes T394: the complete C0 qualification set and Core safety mechanism transfer intact to the queued DeskPro board clock-plan contract. [Evidence](../etc/evidence/t394-s7-physical-qualification-closure-audit.md).
+
+## Coordinator Acceptance And Task Closure
+
+After actual-change review of S7 P1 `28ccbbf5`, T394 is closed. The complete
+C0 81-key qualification set, Core copied-descriptor rejection mechanism and
+both deterministic Model-40 routes are reconciled; C0A/C1/residuals remain
+outside the accepted C0 batch with their retained dispositions. The queued
+DeskPro board-level timing closure is the sole receiver for a source-backed
+clock-plan before any physical descriptor selection. Documentation governance,
+diff hygiene and current gates pass. No physical time or L3 claim is closed.

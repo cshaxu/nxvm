@@ -2,30 +2,8 @@
 
 ## Current Work
 
-**T394 S7 active.** Close the shared 80386 physical-retirement qualification
-with a complete CPU/key/descriptor transfer to the queued DeskPro board
-clock-plan contract; do not implement board timing in this subtask.
+**T394 closed.** Shared 80386 C0 qualification is complete and transfers intact to the queued DeskPro board-level timing closure; no physical clock or L3 claim is accepted.
 
-## M5 T394 S7 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner continuing global CPU correctness/timing audit authorization. Accepted S6 (`d04cbb1f`) transfers this task-level closure audit. No exception. |
-| Objective | Reconcile every T394 result, consumer and residual: Core key/descriptor safety, S5 81-key C0 set, both deterministic Model-40 routes and the sole source-backed board clock-plan receiver; close T394 only if no CPU qualification gap remains. |
-| Non-goals | No board-clock implementation, descriptor selection, C1/C0A qualification, VM/Core ABI, firmware/media, device timing, cycle-exact or L3 claim. |
-| Reference Baseline | T394 S1-S6 evidence, T390 S27 C0 source/regression ledger, T387 S1 board timing inventory and queued DeskPro board-level timing proposal. |
-| Candidate Proposal | [80386 physical-retirement qualification](../proposals/m5-80386-physical-retirement-qualification.md). |
-| Files And ABI Surface | Evidence, task history, status and queue/proposal truthfulness only; no production source or interface change. |
-| Applicable Rules | Execution task-scale closure audit; documentation authority boundaries; Core/VM ownership is verified, not changed. |
-| Verification | Exact evidence/consumer/residual matrix; route and descriptor caller sweep; queue/proposal transfer truthfulness; documentation governance and current gates. |
-| Expected Markers | Retained T394 S4/S5 markers and a new closure marker only after the whole audit passes. |
-| Asset Needs | None. No asset is read, imported or recorded. |
-| Reporting Requirements | Record each accepted CPU result, every excluded stage, sole board receiver, verifier result and no-L3 boundary. |
-| Stop Conditions | Do not close if any physical caller, descriptor consumer, C0 child, unresolved CPU form or board precondition lacks an explicit disposition. |
-| Exit Criteria | Committed, pushed and accepted task closure audit transfers the full qualified CPU boundary to the queued board clock-plan contract; otherwise retain exact open debt. |
-| Original Owner Request | Continue the global CPU correctness/timing audit, repair clear in-scope defects, and preserve the Core/VM boundary. |
-| Similar-Issue Sweep | Sweep T394 evidence, Core descriptor callers, all Model-40 constructors, queue/proposal links and retained CPU qualification transfers. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T394 S5 P1 `vm-0-5-0394` /
@@ -52,7 +30,7 @@ clock-plan contract; do not implement board timing in this subtask.
 
 | Task | Compact result |
 | --- | --- |
-| T394 S4 | Accepted: Core owns a value-only normalized eligibility key and construction-time copied descriptor; physical successful retirement rejects unallocated or absent-key sources before time publication. No production descriptor or profile selection exists; finite C0-to-key mapping transfers. [Evidence](../etc/evidence/t394-s4-core-eligibility-key-descriptor.md). |
+| T394 | Closed: S1-S7 establish the complete C0 81-key qualification and Core copied-descriptor safety boundary, then transfer physical selection solely to the queued source-backed DeskPro board clock-plan contract. No physical clock or L3 claim. [Closure audit](../etc/evidence/t394-s7-physical-qualification-closure-audit.md). |
 | T392 | Closed: S1-S5 exhaust copied C1, VM/session and FDC operation candidates, then repair the missed proposal archival and stale Queue entry; no endpoint or defect exists. Only a separately admitted generic immutable device-operation snapshot plus selected consumer contract can proceed. No Core/VM ABI, CPU timing, physical, board, firmware or L3 claim. [Corrective audit](../etc/evidence/t392-s5-closure-topology-corrective-audit.md). |
 | T391 | Closed: S1-S8 establish the bounded C0A startup predecessor, complete C1 aggregate disposition and the truthful transfer that C1 physical qualification remains blocked pending a new finite checkpoint or earliest-owner defect. No Core/VM interface, timing, physical, board, firmware or L3 claim. [Closure audit](../etc/evidence/t391-s8-startup-semantic-closure-audit.md). |
 | T389 | Stopped by owner-approved requeue: S1 proves no physical board slice can begin while 80386 successful retirement remains nonphysical; S2 archives the invalid candidate and queues a shared CPU qualification before a fresh board task. No board timing, physical-clock or L3 claim. [Audit](../etc/evidence/t389-s2-stop-and-requeue-audit.md). |
