@@ -24,3 +24,12 @@ finds no Model-40 external-ROM execution corpus in the current source or gate.
 It therefore transfers the next bounded receiver to an owner-managed BYOB
 observation contract before any profile physical selection. No source, clock,
 board or L3 behavior changes.
+## Coordinator Acceptance
+
+After actual-change review of P1 `d43dc49b`, the coordinator accepts S1. The
+review confirms the inventory is limited to current source, retained
+Intel-labelled evidence and documentation; it adds no runnable code, corpus,
+asset, trace, clock, profile, artifact or L3 claim. The source sweep correctly
+keeps existing exact rows distinct from residual nonphysical successes and
+identifies the BYOB observation contract as the next bounded receiver.
+Documentation governance passes after push.

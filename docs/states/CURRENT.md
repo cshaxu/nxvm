@@ -2,26 +2,10 @@
 
 ## Current Work
 
-## M5 T390 S1 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | New; T390 is the first queued shared 80386 physical-retirement qualification candidate after task-level-stopped T389. |
-| Admission And Approval | Owner approval, 2026-08-17: stop/requeue T389 and add this shared prerequisite before a fresh DeskPro board task; continuing authorization covers autonomous L3 work and Git push. |
-| Objective | Inventory every current successful 80386 retirement classification route relevant to the selected Model-40 firmware/corpus boundary, and derive the bounded exact-or-nonphysical qualification plan without enabling a physical profile. |
-| Non-goals | No guessed cycles, physical profile selection, CPU semantic completion claim, board/DMA/PIT/device timing, ROM/media import, secondary-emulator authority, host-time use, artifact revision or L3 claim. |
-| Reference Baseline | T359/T360/T363 source ledgers, T388 S2--S9 physical safety records, T389 S1/S2 stop audit, Intel 80386 PRM authority named there, selected Model-40 profile/corpus constraints, qualification proposal, ROADMAP and execution/source rules. |
-| Candidate Proposal | [80386 physical-retirement qualification](../proposals/m5-80386-physical-retirement-qualification.md). |
-| Files And ABI Surface | New T390 history/evidence and `docs/etc/README.md`; source, tests, CMake, profile and artifact are read-only in S1. No public or runtime ABI, asset, configuration or media change. |
-| Applicable Rules | EXECUTION/DOCUMENT govern admission/evidence; ARCHITECTURE/CODING classify shared-owner impact; source policy governs Intel-primary and excludes firmware/media/reference import; ROADMAP preserves CPU-before-board order. |
-| Verification | Exhaustively enumerate 80386 classifier paths and current `source_timing_unallocated` markers; reconcile each to retained Intel-primary source evidence, selected Model-40 corpus status and exact receiver; run source/static searches, documentation governance and `git diff --check`. |
-| Expected Markers | `M5:T390:S1:80386-PHYSICAL-QUALIFICATION-INVENTORY:OK`. |
-| Asset Needs | No ROM, firmware, guest media or external emulator run. Retained source-labelled Intel evidence and current source only. |
-| Reporting Requirements | Separate exact source rows, capturable but unimplemented contexts, range/missing authority and unselected corpus paths; name the first bounded Core repair and preserve physical rejection for all other successes. |
-| Stop Conditions | Stop and transfer a row if Intel has no exact source, selected corpus identity is insufficient, a capture requires a broader CPU mechanism, or board/device timing is implicated. Do not infer a value or enable physical mode partially. |
-| Exit Criteria | A complete selected-80386 source/classifier/corpus matrix identifies physical eligibility, nonphysical prohibitions and one bounded next implementation receiver; it makes no physical-clock or L3 decision. |
-| Original Owner Request | Continue under the Queue toward complete DeskPro 386 function and L3 timing, using shared Core mechanisms and truthful transfers; owner approved this prerequisite before board work. |
-| Similar-Issue Sweep | Search all tracked Core/VM source, tests, CMake and timing evidence for 80386 classifier routes, unallocated markers, retirement contracts, Model-40 construction and physical-clock selection. |
+**Current progress:** T390 S1 is accepted. It inventories current 80386
+exact-or-nonphysical retirement routes and confirms there is no approved
+Model-40 external-ROM execution corpus. The next receiver is a bounded BYOB
+observation contract; no physical profile, board clock or L3 claim is enabled.
 ## Current Technical Baseline
 
 - **Current developer artifact:** T386 S28 `vm-0-5-0389` /
@@ -48,6 +32,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T390 S1 | Accepted: source/classifier inventory separates exact 80386 rows from nonphysical successes and transfers a bounded Model-40 BYOB corpus observation contract. No physical profile, board clock or L3 claim. [Evidence](../etc/evidence/t390-s1-80386-physical-qualification-inventory.md). |
 | T389 | Stopped by owner-approved requeue: S1 proves no physical board slice can begin while 80386 successful retirement remains nonphysical; S2 archives the invalid candidate and queues a shared CPU qualification before a fresh board task. No board timing, physical-clock or L3 claim. [Audit](../etc/evidence/t389-s2-stop-and-requeue-audit.md). |
 | T388 | Closed: S1--S9 establish the sole publisher, exhaustive exact-or-nonphysical residual disposition and pre-publication physical-contract rejection. No current CPU profile is physically clock-qualified; board work transfers under this restriction. [Closure audit](../etc/evidence/t388-s9-task-closure-audit.md). |
 | T387 | Closed: source/owner inventory, exact port-`61h` reconciliation and reference qualification transfer the shared physical-timebase then physical-device/firmware prerequisites before any DeskPro L3 audit. No physical-time or L3 claim. [Closure audit](../etc/evidence/t387-s6-task-closure-transfer-audit.md). |
