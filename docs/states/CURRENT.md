@@ -2,10 +2,28 @@
 
 ## Current Work
 
-**Active.** T390 remains open between accepted subtasks. S25 accepts bounded copied Core context for the complete former missing-context class; the unchanged 75-parent/18,255-success C0 universe now has 81 nonphysical aggregates, all transferred together to the direct-row regression batch. [Evidence](../etc/evidence/t390-s25-c0-context-capture.md).
+**Active.** T390 S27 is consuming the corrected 82-child M40-C0 direct-row batch. The retained 75-parent/18,255-success checkpoint is unchanged; no child is physical-eligible. [S26 corrective evidence](../etc/evidence/t390-s26-c0-control-context-corrective.md).
 
-**Active.** T390 remains open between accepted subtasks. S26 corrects S25 control outcome from the diagnostic window to decoded lexical length; C0 remains 75 parents / 18,255 successes and is now 82 nonphysical aggregates, all transferred together to the direct-row regression batch. [Evidence](../etc/evidence/t390-s26-c0-control-context-corrective.md).
+## M5 T390 S27 Packet
 
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner standing approval for Queue-ordered T390 continuation; accepted S26 transfers the corrected full 82-child C0 aggregate batch to direct-row regression. |
+| Objective | Reconcile the complete corrected M40-C0 82-child batch to Intel-primary exact rows and existing/directly added project-owned regressions, with one explicit nonphysical disposition for every child. |
+| Non-goals | No inferred timing value, physical-retirement enablement, profile/device/board timing, C1 boot, new corpus, raw asset persistence, or L3 claim. |
+| Reference Baseline | Accepted T390 S16--S26: S23 frozen 75-parent/18,255-success C0 universe; S24 source matrix; S25 capture; and S26 corrected 82-child control context. |
+| Candidate Proposal | [80386 physical-retirement qualification](../proposals/m5-80386-physical-retirement-qualification.md). |
+| Files And ABI Surface | Existing shared Core source timing owners and focused timing tests, C0 aggregate evidence and a dedicated owned regression only where current tests lack the selected exact row. No new public interface or VM/profile behavior. |
+| Applicable Rules | Execution coverage convergence: consume all 82 children as one complete batch; architecture/coding: reuse sole Core timing owner and no test-only API; source policy: Intel 80386 PRM is primary and no local ROM/media identity enters Git. |
+| Verification | Complete 82-child ID-to-exact-row/regression/disposition matrix; focused positive exact-row and rejected/unknown nonpublication proofs; fresh scalar-only C0 replay; build/full gate, documentation gate, diff and P1/P2 actual review. |
+| Expected Markers | Every child is Accepted only with an exact Intel-primary row plus direct project-owned regression, or remains whole-class Deferred/nonphysical/Non-applicable with its receiver. |
+| Asset Needs | Owner-authorized local ROM/media only for deleted scalar C0 replay; no path, hash, bytes, PC, trace or provenance enters Git. |
+| Reporting Requirements | Record exact source/case ownership, all-child before/after disposition, added tests, residual transfer and any mismatch; executor P1 then coordinator P2. |
+| Stop Conditions | A row requires uncaptured condition, has a range/missing authority, needs a wider CPU mechanism, or reveals a non-C0 impact: keep the whole affected class nonphysical and transfer it, never guess or use a secondary emulator. |
+| Exit Criteria | Indexed evidence proves a complete 82-child reconciliation with direct regression for every exact source-sufficient child and a named receiver for every residual; no child becomes physical-eligible in this S. |
+| Original Owner Request | Continue DeskPro 386 CPU qualification toward complete function and L3 timing under governed full-coverage convergence. |
+| Similar-Issue Sweep | Sweep every C0 primary, secondary, privileged, string/I-O and control/stack origin; real/protected mode, ModR/M form/selector, outcome/lexeme, repeat phase, source-timing form, physical rejection and test owner. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T390 S22 `vm-0-5-0390` /
