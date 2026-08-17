@@ -33,7 +33,9 @@ static C_INT lar_lsl_s57_prepare(lar_lsl_s57_machine *state,
     const core_machine_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
         .cpu_profile = profile,
-        .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
+        .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE,
+        .ticks_per_instruction = 29u,
+        .instruction_timing = { 29u, 7u, 31u, 37u, 41u, 43u }
     };
 
     if (state == STD_NULL) {
@@ -851,6 +853,42 @@ static C_INT lar_lsl_s57_test_pic_lar(C_VOID)
     return !failed;
 }
 
+static C_INT lar_lsl_s57_test_80386_timing_granularity(C_VOID)
+{
+    static const type_unsigned_8 lsl[] = { 0x0fu, 0x03u, 0xc8u };
+    static const type_unsigned_8 lsl_memory[] = {
+        0x0fu, 0x03u, 0x0eu, 0x00u, 0x10u
+    };
+    const type_unsigned_8 *codes[] = { lsl, lsl, lsl_memory, lsl_memory };
+    const core_machine_run_budget budget = { 1u, 0u };
+    const type_unsigned_16 selectors[] = { 0x0010u, 0x0028u, 0x0010u, 0x0028u };
+    const type_unsigned_64 expected[] = { 20u, 25u, 21u, 26u };
+    type_unsigned_8 index;
+
+    for (index = 0u; index < 4u; ++index) {
+        lar_lsl_s57_machine state;
+        core_machine_run_result result;
+        t_cpu after;
+        C_INT failed = !lar_lsl_s57_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386) ||
+            !lar_lsl_s57_boot_protected(&state, &after);
+
+        if (!failed) {
+            state.machine->executor_cpu.data.eax = selectors[index];
+            state.machine->executor_cpu.data.ecx = 0u;
+            state.machine->elapsed_ticks = 0u;
+            if (index >= 2u) failed |= core_machine_memory_write(state.machine,
+                0x4000u, &selectors[index], sizeof(selectors[index])) != TYPE_STATUS_OK;
+            failed |= !lar_lsl_s57_resume(&state, codes[index],
+                index < 2u ? sizeof(lsl) : sizeof(lsl_memory), &budget, &result) ||
+                result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 1u ||
+                result.ticks != expected[index] || result.elapsed_ticks != expected[index] ||
+                (state.machine->executor_cpu.data.eflags & VCPU_EFLAGS_ZF) == 0u;
+        }
+        core_machine_destroy(state.machine);
+        if (failed) return 0;
+    }
+    return 1;
+}
 static C_INT lar_lsl_s57_test_pic_lsl_and_invalid(C_VOID)
 {
     static const type_unsigned_8 codes[][8] = {
@@ -1023,6 +1061,11 @@ C_INT main(C_VOID)
     {
         STD_FPRINTF(STD_STDERR, "S57 PIC LAR failed\n");
         return 1;
+    }
+    if (!lar_lsl_s57_test_80386_timing_granularity())
+    {
+        STD_FPRINTF(STD_STDERR, "S57 80386 LSL timing granularity failed\n");
+        return 12;
     }
     if (!lar_lsl_s57_test_pic_lsl_and_invalid())
     {

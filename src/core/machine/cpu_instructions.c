@@ -16818,6 +16818,11 @@ static C_VOID LSL_R32_RM32(core_machine_cpu_execution_context *context)
             {
                 TYPE_TRACE_BLOCK_BEGIN("EFLAGS_ZF");
                 limit = _IsDescSegGranularLarge(descriptor) ? ((_GetDescSeg_Limit(descriptor) << 12) | 0x0fff) : _GetDescSeg_Limit(descriptor);
+                if (context->cpu_profile == CORE_MACHINE_CPU_PROFILE_80386) {
+                    instruction_state.data.source_lsl_granularity_valid = TYPE_TRUE;
+                    instruction_state.data.source_lsl_page_granular =
+                        _IsDescSegGranularLarge(descriptor);
+                }
                 switch (_GetOperandSize)
                 {
                 case 2:
@@ -17709,6 +17714,8 @@ static C_VOID ExecInit(core_machine_cpu_execution_context *context)
     instruction_state.data.prefix_oprsize = TYPE_FALSE;
     instruction_state.data.prefix_addrsize = TYPE_FALSE;
     instruction_state.data.flagMem = TYPE_FALSE;
+    instruction_state.data.source_lsl_granularity_valid = TYPE_FALSE;
+    instruction_state.data.source_lsl_page_granular = TYPE_FALSE;
     instruction_state.data.flagInsLoop = TYPE_FALSE;
     instruction_state.data.flagMaskInt = TYPE_FALSE;
     instruction_state.data.bit = 0;

@@ -73,6 +73,8 @@ typedef struct {
     type_unsigned_64 crm, cr, cimm;
     type_bool flagMem; /* if rm is in memory */
     type_bool flagLock;
+    type_bool source_lsl_granularity_valid;
+    type_bool source_lsl_page_granular;
 
     /* arithmetic operands */
     type_unsigned_64 opr1, opr2, result;

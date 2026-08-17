@@ -3105,6 +3105,11 @@ if(PROJECT_VERIFY_DEPENDENCY_DAG)
             -P "${CMAKE_SOURCE_DIR}/cmake/verify_t388_80286_lsl_architecture_reconciliation.cmake"
         COMMENT "Verifying T388 80286 LSL architecture reconciliation"
         VERBATIM)
+    add_custom_target(verify-t388-80386-lsl-granularity-capture
+        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_t388_80386_lsl_granularity_capture.cmake"
+        COMMENT "Verifying T388 80386 LSL granularity capture"
+        VERBATIM)
 endif()
 
 set(PROJECT_CURRENT_SPECIALIZED_VERIFIER_CANDIDATES
@@ -3125,6 +3130,7 @@ set(PROJECT_CURRENT_SPECIALIZED_VERIFIER_CANDIDATES
     verify-t388-jcc-target-lexeme
     verify-t388-80286-appendix-b-context
     verify-t388-80286-lsl-architecture-reconciliation
+    verify-t388-80386-lsl-granularity-capture
     verify-documentation-governance
     verify-dependency-dag
     verify-live-machine-authority

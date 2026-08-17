@@ -2594,6 +2594,17 @@ static C_INT core_machine_80386_privileged_source_instruction_cost(
         }
         *out_ticks = memory ? 16u : 15u;
         return 1;
+    case 0x03u:
+        if (!protected_mode || (data->oldcpu.data.eflags & VCPU_EFLAGS_VM) != 0u ||
+            !data->source_lsl_granularity_valid) {
+            return 0;
+        }
+        if (data->source_lsl_page_granular) {
+            *out_ticks = memory ? 26u : 25u;
+        } else {
+            *out_ticks = memory ? 21u : 20u;
+        }
+        return 1;
     case 0x20u:
         if ((data->oldcpu.data.eflags & VCPU_EFLAGS_VM) != 0u ||
             (protected_mode && data->oldcpu.data.cs.dpl != 0u) ||

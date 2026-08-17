@@ -10,6 +10,26 @@ without rewriting its history. Descriptor page granularity remains only an
 No profile is physically enabled and DeskPro board timing remains blocked on
 T388 completion.
 
+## M5 T388 S8 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; S7 is accepted retained progress for latest open T388. |
+| Admission And Approval | Owner authorization to continue according to Queue, 2026-08-16. S7 reconciles 80286 ownership and transfers the genuine 80386 `LSL` descriptor/page context. |
+| Objective | Add a private, nonpublishing successful-80386-`LSL` descriptor-granularity capture, then let the sole post-refresh source publisher select Intel-primary byte/page and register/memory rows `20/21` or `25/26`. |
+| Non-goals | No descriptor semantic repair, selector/table redesign, generic prefix allocation, fault/delivery timing, CPU physical contract enablement, profile clock/rate, bus/device timing, ROM/media import, public ABI, artifact revision or L3 claim. |
+| Reference Baseline | Intel 80386 PRM sections 5/6 and 17.2.2.3; T359 S6; T366 S28; T388 S3--S7; `LSL_R32_RM32`, sole instruction-cost publisher and existing LAR/LSL semantic smoke. |
+| Candidate Proposal | [Four-profile CPU physical-timebase closure](../proposals/m5-four-profile-cpu-physical-timebase-closure.md). |
+| Files And ABI Surface | Private Core instruction-state/execution capture, sole 80386 source classifier, focused owned smoke, evidence/history/current/index/static gate. No public header, VM/profile or consumer ABI. |
+| Applicable Rules | EXECUTION, ARCHITECTURE, CODING, DOCUMENT and source policy. Capture must be reset/reused safely, must be unavailable unless a successful 80386 `LSL` has read its descriptor, and the classifier must retain unallocated prohibition for every other result. |
+| Verification | Prove 80386 protected valid `LSL` register/memory against byte-G and page-G descriptors; expect `20/21` and `25/26`; prove invalid selector, non-80386, non-`LSL`, prefix, fault and reset paths cannot select a row; run focused smokes, static gate, documentation governance and current gate. |
+| Expected Markers | `M5:T388:S8:80386-LSL-GRANULARITY-CAPTURE:OK`. |
+| Asset Needs | Intel primary manual citations and owned test fixtures only; no ROM, guest media, emulator run, trace or machine-local path. |
+| Reporting Requirements | Name capture lifecycle and owner, exact selected rows and tests, unavailable-path disposition, source scope, every similar capture/publication hit and remaining T388 receivers. |
+| Stop Conditions | Stop and transfer a source conflict, descriptor semantic defect, missing successful-retirement lifecycle hook, public ABI requirement, physical scalar/clock requirement, selector/table/fault redesign or bus/device prerequisite. |
+| Exit Criteria | A successful eligible 80386 `LSL` alone can select the exact primary row from captured G and ModR/M state; no stale or unavailable capture can publish it; all other routes remain explicitly unallocated/nonphysical. |
+| Original Owner Request | Continue autonomously according to Queue toward full DeskPro functionality and L3 timing; use authoritative Intel sources first and find root causes without routine approval requests. |
+| Similar-Issue Sweep | Search all tracked production source, tests, build descriptions and T388 evidence for descriptor reads, `_IsDescSegGranularLarge`, `LSL_R32_RM32`, post-refresh timing capture, `0F 03`, source publication and reset/finalize paths; classify every hit. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T386 S28 `vm-0-5-0389` /
