@@ -27,3 +27,11 @@ no physical selection and does not weaken prepublication rejection. Focused
 Core timing-ledger and private/public Model-40 composition regressions plus
 documentation governance pass. T394 remains open for a separately admitted
 shared immutable-stage eligibility mechanism decision.
+### S2: Immutable Stage-Mechanism Decision
+
+S2 rejects each existing Core configuration/observation mechanism as an exact
+C0 descriptor: source timing context is not a one-to-one semantic identity and
+literal instruction bytes would overfit dynamic inputs. It transfers a bounded
+Core-owned normalized eligibility-key design, with no VM state, physical mode
+or board claim.
+[Evidence](../etc/evidence/t394-s2-immutable-stage-mechanism-decision.md).

@@ -2,7 +2,28 @@
 
 ## Current Work
 
-**T394 S1 accepted.** C0 is source-complete but not enforceably eligible; C0A/C1 and residual paths remain nonphysical. The next receiver is a bounded shared immutable-stage eligibility mechanism decision.
+**Active: M5 T394 S2 Continuation.** Define whether a Core-owned immutable qualified-retirement descriptor can enforce a complete finite 80386 stage before physical time publication, without VM state or a profile execution fork. It does not enable physical mode.
+
+## M5 T394 S2 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner authorized continued global CPU instruction/timing audit; accepted T394 S1 selects this bounded shared-Core mechanism decision. |
+| Objective | Inventory and define a validated immutable Core qualification descriptor for finite stage membership, or transfer it if no boundary-safe representation exists. |
+| Non-goals | No physical-mode selection, board/device clock, C0 corpus expansion, C1 replay, VM callback/state, firmware/media operation, guessed timing or L3 claim. |
+| Reference Baseline | T394 S1 admission ledger; T390 S27 C0 82-child matrix; T390 S34 deterministic-scope correction; current two-value Core contract and Model-40 deterministic callers. |
+| Candidate Proposal | [80386 physical-retirement qualification](../proposals/m5-80386-physical-retirement-qualification.md). |
+| Files And ABI Surface | Core private/config validation and test/evidence surfaces only if a descriptor is feasible; no VM-facing runtime callback or mutable cross-boundary layout. |
+| Applicable Rules | Execution finite-stage and complete-batch requirements; Architecture one owner/copy-or-bounded-interface invariant; Coding private mutable-layout/test-boundary discipline. |
+| Verification | Existing immutable configuration pattern/caller sweep, descriptor completeness/validation design, failure/reset/nonpublication test plan, documentation governance and actual diff review. |
+| Expected Markers | One descriptor ownership/lifetime decision, full C0 identity requirements, validation-to-publication boundary and exact S3 implementation or transfer. |
+| Asset Needs | None. |
+| Reporting Requirements | Record every considered existing configuration mechanism, rejection reason, selected ownership, caller sweep and P1/P2 review. |
+| Stop Conditions | Stop and transfer if complete C0 identity needs VM-private history, an unbounded corpus, a mutable pointer/callback or an unverifiable physical selection. |
+| Exit Criteria | A feasible descriptor has an exact immutable Core contract and test matrix, or the earliest owner receives a precise no-mechanism transfer; Model-40 remains deterministic. |
+| Original Owner Request | Audit and repair CPU instruction defects, errors and timing globally while preparing later DeskPro board timing and L3 closure. |
+| Similar-Issue Sweep | Compare every Core creation descriptor, configuration copy/validation path, physical-contract caller and Model-40 construction path for duplicate or bypassable qualification state. |
 
 ## Current Technical Baseline
 
