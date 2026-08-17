@@ -10,7 +10,7 @@ negative conclusion remains binding: no current CPU profile may convert the
 complete successful-retirement axis to a physical oscillator, and this task
 must not imply that it does.
 
-## Active Subtask
+## Initial Subtask
 
 S1 is the post-T388 source/owner reconciliation defined by the active packet.
 It records exact Model-40 board facts, the current deterministic owner graph,
@@ -38,3 +38,18 @@ runtime, ABI, artifact or timing behavior. The documented source/owner sweep
 and the post-commit documentation-governance gate pass. S1 truthfully retains
 T388's nonphysical-clock restriction and identifies the shared qualification
 receiver rather than manufacturing a Model-40 board delay.
+### S2: Owner-Approved Stop And Requeue
+
+S2 records the owner-approved material correction to the candidate sequence.
+The [stop-and-requeue audit](../etc/evidence/t389-s2-stop-and-requeue-audit.md)
+confirms that T389 cannot implement its original physical board scope after
+T388's safety-only result. T389 stops without a board-timing, physical-clock or
+L3 claim. Its proposal is retained beside this history record. The Queue now
+places the new shared 80386 physical-retirement qualification before a fresh
+DeskPro board candidate.
+
+## Task Outcome
+
+**Stopped by owner-approved requeue; not completed.** T389's sole accepted
+implementation result is the S1 discovery/ledger. No Model-40 board timing
+behavior, physical CPU clock or L3 result was produced.
