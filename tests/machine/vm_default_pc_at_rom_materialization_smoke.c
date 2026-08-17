@@ -38,7 +38,7 @@ int main(C_VOID)
             &route) != TYPE_STATUS_OK || route != CORE_MACHINE_MEMORY_ROUTE_PROVIDER;
         failed |= core_machine_memory_query(session->core_machine,
             TEST_ROM_CODE_PHYSICAL, 1u, CORE_MACHINE_MEMORY_ACCESS_WRITE,
-            &route) != TYPE_STATUS_FAULT;
+            &route) != TYPE_STATUS_OK || route != CORE_MACHINE_MEMORY_ROUTE_PROVIDER;
         failed |= core_machine_memory_query(session->core_machine,
             TEST_ROM_WORK_PHYSICAL, 1u, CORE_MACHINE_MEMORY_ACCESS_WRITE,
             &route) != TYPE_STATUS_OK || route != CORE_MACHINE_MEMORY_ROUTE_ORDINARY_RAM;
@@ -49,7 +49,10 @@ int main(C_VOID)
             TEST_ROM_RESET_LINEAR, &reset_opcode, sizeof(reset_opcode)) != TYPE_STATUS_OK ||
             reset_opcode != 0xeau;
         failed |= core_machine_memory_write(session->core_machine,
-            TEST_ROM_CODE_PHYSICAL, &overwrite, sizeof(overwrite)) != TYPE_STATUS_FAULT;
+            TEST_ROM_CODE_PHYSICAL, &overwrite, sizeof(overwrite)) != TYPE_STATUS_OK;
+        failed |= core_machine_memory_read(session->core_machine,
+            TEST_ROM_CODE_PHYSICAL, &code_after, sizeof(code_after)) != TYPE_STATUS_OK ||
+            code_after != code_before;
         failed |= core_machine_memory_read(session->core_machine, TEST_IVT_VIDEO,
             ivt_before, sizeof(ivt_before)) != TYPE_STATUS_OK;
         failed |= core_machine_memory_read(session->core_machine, TEST_IVT_FDC,

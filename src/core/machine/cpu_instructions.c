@@ -4501,11 +4501,17 @@ static C_VOID _ser_task_transition_tss_plan(
         TYPE_TRACE_CHECK_RETURN(_e_except_n(context, 0x01u, _GetOperandSize));
         if (context->diagnostic_provider != STD_NULL &&
             context->diagnostic_provider->record_delivered_exception != STD_NULL) {
-            instruction_state.data.except = VCPUINS_EXCEPT_DB;
-            instruction_state.data.excode = 0u;
+            t_cpuins diagnostic_instructions = instruction_state;
+
+            /* The task-switch #DB is a trap at the incoming task's EIP.  It is
+             * delivered outside ExecFinal(), so preserve that point for the
+             * fault-origin diagnostic contract without changing the current
+             * instruction's saved oldcpu. */
+            diagnostic_instructions.data.oldcpu = trap_cpu;
+            diagnostic_instructions.data.except = VCPUINS_EXCEPT_DB;
+            diagnostic_instructions.data.excode = 0u;
             context->diagnostic_provider->record_delivered_exception(
-                context->diagnostic_context, &trap_cpu, &instruction_state);
-            instruction_state.data.except = 0u;
+                context->diagnostic_context, &trap_cpu, &diagnostic_instructions);
         }
     }
     TYPE_TRACE_CALL_END;

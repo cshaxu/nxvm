@@ -5,26 +5,26 @@
 | Field | Required record |
 | --- | --- |
 | Identifier Mode | Continuation - T390 S3. |
-| Admission And Approval | Owner approved continuation on 2026-08-17, including the necessary shared Core implementation for 80386 qualification. The owner forbids test-only APIs and requires reusable hardware mechanisms in Core; external ROM/media remains owner-managed and uncommitted. |
-| Objective | Implement the minimal lifecycle-owned, opt-in Core retirement-observation provider that receives a copied pre-execution instruction point and the classifier disposition/timing result before physical-contract rejection or elapsed/device-time publication. |
-| Non-goals | No external ROM/media execution or retention, raw recorder/harness, Console UX, VM/profile policy, physical-contract selection, guessed timing row, board-clock conversion, device timing, CPU semantic change, second executor, or Model-L3 claim. |
-| Reference Baseline | T390 S1 classifier inventory and T390 S2 observation contract. Existing diagnostic callback owns the pre-execution copied instruction point; `core_machine_instruction_cost()` and physical rejection own classification/publication order; generic trace ABI remains unchanged. |
+| Admission And Approval | Owner approved the T390 S3 P2 corrective continuation on 2026-08-17 after P1 `dabd1679` proved that six full-gate failures predate its observer change. Scope is limited to restoring those registered current smokes at their earliest owners; no external asset or test-only production API is allowed. |
+| Objective | Correct the six reproducible pre-existing current-gate failures that reject T390 S3 P1, while retaining its lifecycle-owned Core retirement-observation provider unchanged unless a focused root cause requires a compatible correction. |
+| Non-goals | No external ROM/media execution or retention, raw recorder/harness, Console UX redesign, physical-contract selection, guessed timing row, board-clock conversion, broad CPU/device feature work, weakened/removal of a failing smoke, second executor, or Model-L3 claim. |
+| Reference Baseline | P1 `dabd1679` and its retained observation evidence; detached accepted S2 `a27caff0` reproduces the same six failures. The D4 control first reads `61h = 1Bh` against a `0Bh` assertion; all other causes require source-complete diagnosis before repair. |
 | Candidate Proposal | [80386 physical-retirement qualification](../proposals/m5-80386-physical-retirement-qualification.md). |
-| Files And ABI Surface | Core machine observation interface/implementation and private state; `machine.c` classifier/publication junction; focused Core smoke and CMake registration; T390 evidence/history/current baseline and artifact configuration if required by runnable-path identity. No VM/profile source. |
+| Files And ABI Surface | Only the earliest production/test/CMake owners of `core-machine-d4-platform-s4`, `core-machine-task-switch`, Model-40 composition/integration, media-provider, and default-ROM-materialization failures; their focused tests, T390 evidence/current/history and artifact configuration if runnable code changes. The S3 observer public ABI is frozen. |
 | Applicable Rules | Architecture single-owner, opaque copied public contract, lifecycle mutation and production-path invariants; C11/type vocabulary/minimal durable interface; execution artifact, actual-change review, source policy and documentation topology. No exception is requested. |
-| Verification | Focused Core smoke must prove disabled-path neutrality; stopped/paused-only install/remove; copied pre-execution bytes/PC and relevant context; exact/unallocated disposition emitted before publish; physical unallocated observation then fault with unchanged elapsed/timeline; reset/failure behavior; retained trace and current gate. Run source/caller sweep and full configured current gate; build/copy T390 artifact and record identity/hash if code completes. |
-| Expected Markers | `M5:T390:S3:RETIREMENT-OBSERVATION:OK`; static single-publisher/observer-owner marker; current-gate pass. |
+| Verification | Diagnose each of the six baseline-reproduced failures to its first failing assertion and shared owner; add or retain focused regressions without weakening expected behavior; run the S3 observer smoke, every repaired smoke, source/caller sweeps, documentation gate, and full configured current gate. Build/copy a T390 artifact and record identity/hash only after the full gate passes. |
+| Expected Markers | `M5:T390:S3:RETIREMENT-OBSERVATION:OK`; every retained repaired-smoke marker; current-gate pass. |
 | Asset Needs | None for implementation proof. The S2 external corpus remains deferred and no ROM/media/local path/hash/trace may enter repository or test fixture. |
-| Reporting Requirements | Report public capability/lifetime, exact publication ordering, focused and full verification, artifact identity if emitted, commit/push state, and any remaining row-identifier/corpus receiver. |
-| Stop Conditions | Stop and transfer if obtaining required copied pre-execution context needs a second CPU callback path, exposing a raw executor pointer, changing generic trace ABI, a CPU semantic repair, unbounded storage/output, or an external asset. Do not substitute a classifier route label for an Intel timing row. |
-| Exit Criteria | One opt-in production Core observer is lifecycle-bound and disabled by default; it observes each classified successful retirement before physical rejection/publication through copied data; focused regressions prove ordering and nonpublication; all current gates pass; retained evidence states exactly whether the stable timing-row identifier is available or transfers. |
-| Original Owner Request | Continue the approved T390 prerequisite before DeskPro board timing, use Core for reusable hardware capability, and avoid pure test APIs while keeping external ROM/media out of the repository. |
-| Similar-Issue Sweep | Inspect every instruction-record callback, `core_machine_instruction_cost()` return route, source-unallocated marker, physical-rejection path, elapsed publisher and generic trace client for duplicate capture/publication or a missed successful-retirement route. |
+| Reporting Requirements | Report every failure root cause, owner, repair or truthful transfer, focused and full verification, artifact identity if emitted, commit/push state, and the remaining timing-row/BYOB receiver. |
+| Stop Conditions | Stop and report if any failure needs external media/ROM, a broad CPU semantic rewrite, new public product capability, incompatible test expectation, or a nonlocal architecture change. Do not weaken, skip, serialize away, or de-register a failing smoke. |
+| Exit Criteria | The P1 observer contract remains proven; all six failures have a source-complete disposition and any repair has focused coverage; documentation and the complete current gate pass; artifact/evidence truthfully retain the still-missing timing-row identifier and BYOB matrix receiver. |
+| Original Owner Request | Continue the approved T390 prerequisite before DeskPro board timing, use Core for reusable hardware capability, avoid pure test APIs and external assets, and restore the blocked current gate rather than accepting an incomplete result. |
+| Similar-Issue Sweep | For each repaired root, search every caller, profile variant, reset/lifecycle route and registered current smoke sharing that owner. Also retain the P1 observer capture/publisher/trace sweep and prove its frozen ABI remains single-owner. |
 ## Current Technical Baseline
 
-- **Current developer artifact:** T386 S28 `vm-0-5-0389` /
-  `build/output/nxvm_0_5_0389.exe`, SHA-256
-  `80EC4B58630B163ECAFED6FE5B97F3B69D5E22D87928811FE66A8D5274E64EDD`.
+- **Current developer artifact:** T390 S3 P2 `vm-0-5-0390` /
+  `build/output/nxvm_0_5_0390.exe`, SHA-256
+  `361360730ADC2E75F01A2FD45D7F07E272D394CF8DBA8E49FB26D02318818BFE`.
   T386 closes selected-device functional completeness at S29; its retained
   [closure audit](../etc/evidence/t386-s29-functional-closure-audit.md) fixes
   HDC current-gate coverage and transfers board, firmware and physical work.

@@ -46,29 +46,47 @@ pre-dispatch callback and one publish call between successful source-timing
 classification and the physical rejection/publisher.  The generic
 `CPU_RETIRE` trace ABI has no new field or producer.
 
-## Current-Gate Disposition
+## Corrective P2: Current-Gate Reconciliation
 
-The full gate cannot currently be accepted for S3.  Six current smoke targets
-fail identically in both this source tree and a detached worktree at accepted
-T390 S2 commit `a27caff0`; therefore they predate S3:
+P1 could not be accepted because six registered current smokes failed identically
+at accepted T390 S2 `a27caff0`.  P2 traced each failure to its first assertion
+and retained or corrected the owning contract; no target was skipped,
+de-registered, or weakened.
 
-- `current.vm-model40-private-composition-s7-smoke`;
-- `current.vm-model40-integration-s8-smoke`;
-- `current.vm-media-provider-smoke`;
-- `current.vm-default-pc-at-rom-materialization-smoke`; and
-- `current.core-machine-d4-platform-s4-smoke`; and
-- `current.core-machine-task-switch-smoke`.
+- The immutable-ROM materialization smoke incorrectly expected a routed ROM
+  write and its query to fault.  The established Core ROM contract instead
+  accepts the transaction while retaining immutable backing; the repaired
+  assertion proves both successful routing and unchanged bytes.
+- The Model-40 composition/integration and D4 platform smokes omitted the
+  shared PIT counter-1 output bit from port `61h`.  The reset state is `1Bh`,
+  not `0Bh`; the tests now preserve the existing NMI/board bits while asserting
+  the timer-derived bit.
+- The media-provider smoke initialized a one-cylinder HDD, reset it, and then
+  incorrectly required two cylinders.  The provider correctly preserves the
+  configured geometry; its assertion now matches the fixture's `1 x 32 x 63`
+  input.
+- P1 adds one registered Core retirement-observation smoke to the T345 owner matrix. The specialized count guard is therefore reconciled from 168 to 169; it retains the test in the owned direct-compilation inventory rather than excluding it.
+- The task-switch debug-trap smoke exposed a real Core diagnostic defect.  A
+  task-switch `#DB` is delivered outside `ExecFinal()`: its diagnostic copied
+  `instruction_state.oldcpu`, which still describes the outgoing task, so its
+  point was recorded as EIP `30h` instead of the incoming task EIP `100h`.
+  The task-transition owner now passes a local diagnostic instruction snapshot
+  whose saved CPU is the incoming trap point.  It preserves the executing
+  instruction's original `oldcpu`, actual exception delivery, and all other
+  diagnostic paths.  The existing T329 task paging/debug regression now proves
+  the corrected point together with its frame and register effects.
 
-The complete configured gate finishes 276/282 passing; the six failures above are identical in the accepted baseline.  The new T390 S3 smoke passes in the changed tree.  Direct debugger inspection
-of the Core-only D4 control establishes its first failed group reads port
-`61h` as `0x1b` where its legacy assertion expects `0x0b`; the same failure
-repeats across ten direct runs.  This is a reproducible pre-existing
-current-gate regression, not an asset-only or flaky result, but it is outside
-S3's CPU observation scope.  It must receive a separate, source-complete
-current-gate corrective task before S3 can meet its full-gate exit criterion.
-No T390 physical qualification, board clock, firmware/ROM/media execution, or
-L3 claim is made by this record.
+Focused repaired smokes and the S3 retirement-observation smoke pass.  After
+reconfiguration, the complete configured current gate passes **282/282**
+(`144.99 sec*proc`); documentation governance and specialized gates also pass.
+The rebuilt developer artifact is `vm-0-5-0390`,
+`build/output/nxvm_0_5_0390.exe`, SHA-256
+`361360730ADC2E75F01A2FD45D7F07E272D394CF8DBA8E49FB26D02318818BFE`.
 
+This records the complete implementation P2 evidence.  Coordinator
+actual-change review and the subsequent governance acceptance remain required;
+this evidence does not claim physical qualification, board timing, firmware or
+media execution, or L3 closure.
 ## Transfer
 
 The next T390 receiver needs a contained external BYOB run and a finite

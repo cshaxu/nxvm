@@ -192,7 +192,7 @@ C_INT main(C_VOID)
             &result) != TYPE_STATUS_OK || result != CORE_MACHINE_MEDIA_RESULT_OK ||
         mark != CORE_MACHINE_MEDIA_ADDRESS_MARK_DATA ||
         core_machine_media_query(&registry, 2u, &info, &result) != TYPE_STATUS_OK ||
-        result != CORE_MACHINE_MEDIA_RESULT_OK || info.geometry.cylinders != 2u ||
+        result != CORE_MACHINE_MEDIA_RESULT_OK || info.geometry.cylinders != 1u ||
         (info.capabilities & CORE_MACHINE_MEDIA_CAPABILITY_ADDRESS_MARKS) != 0u ||
         core_machine_media_set_address_mark(&registry, 2u, 0u,
             CORE_MACHINE_MEDIA_ADDRESS_MARK_DELETED_DATA, &result) != TYPE_STATUS_OK ||

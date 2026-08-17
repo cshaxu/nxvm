@@ -43,7 +43,7 @@ C_INT main(C_VOID)
         core_machine_bus_read(session->core_machine, 0x0fc6u, &value) !=
             TYPE_STATUS_OK || value != 0x01u ||
         core_machine_bus_read(session->core_machine, 0x0061u, &value) !=
-            TYPE_STATUS_OK || value != 0x0bu ||
+            TYPE_STATUS_OK || value != 0x1bu ||
         core_machine_memory_read(session->core_machine, 0x000ffff0u, &rom_byte,
             sizeof(rom_byte)) != TYPE_STATUS_OK || rom_byte != 0xa5u ||
         session->core_machine->shared_kbc.connect.aux_present ||
