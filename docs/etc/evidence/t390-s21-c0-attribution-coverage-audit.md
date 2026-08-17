@@ -17,3 +17,6 @@ No tick value, opcode/group aggregate, or post-execution result may fill this ga
 The earliest receiver is one shared Core **classified timing-origin attribution** mechanism. It must reset with each cost attempt and allow every successful timing classifier--lookup-backed or direct--to select one opaque source-category ID before the copied observer publishes. It must retain the explicit unattributed sentinel for sources not yet mapped, preserve the existing no-raw observer boundary and T388 physical rejection, and expose no profile-local classifier or mutable Core state.
 
 A later finite C0 matrix slice can use that origin plus its normalized contextual captures to map exact Intel-primary rows and regressions, or transfer an underdetermined class whole. This audit adds no timing row, source inference, physical retirement, C1 boot, DeskPro board/device timing, or L3 claim.
+## Coordinator Acceptance
+
+Coordinator actual-change review accepts P1 b33d3f44. The contained replay measures the complete frozen aggregate without retaining prohibited external data, the total partition reconciles exactly, and the owner sweep correctly distinguishes lookup attribution from classified direct paths. The selected next receiver is one shared Core mechanism; no timing inference, physical-contract selection, board/device timing or L3 claim enters this acceptance.
