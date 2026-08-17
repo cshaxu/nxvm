@@ -166,6 +166,9 @@ static C_VOID vm_machine_hdd_commit_candidate(t_hdd *hdd,
     hdd->connect.raw_byte_count = raw_byte_count;
     hdd->connect.virtual_byte_count = virtual_byte_count;
     hdd->connect.flagPaddingWritten = TYPE_FALSE;
+    hdd->connect.geometry_cylinders = 0u;
+    hdd->connect.geometry_heads = 16u;
+    hdd->connect.geometry_sectors_per_track = 63u;
     hdd->data.ncyl = cylinders;
     hdd->data.cyl = 0u;
     hdd->data.head = 0u;

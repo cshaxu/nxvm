@@ -164,6 +164,16 @@ C_INT main(C_VOID)
     }
     vm_machine_fdd_create_for(&fdd);
     vm_machine_hdd_create(&hdd, 2u);
+    if (vm_machine_hdd_set_geometry(&hdd, 1u, 32u, 63u) != TYPE_FALSE ||
+        vm_machine_hdd_set_geometry(&hdd, 1u, 16u, 63u) != TYPE_TRUE ||
+        hdd.data.ncyl != 1u || hdd.data.nhead != 32u || hdd.data.nsector != 63u) {
+        failed = 1;
+    }
+    vm_machine_hdd_reset(&hdd);
+    if (!failed && (hdd.data.ncyl != 1u || hdd.data.nhead != 32u ||
+        hdd.data.nsector != 63u || hdd.data.nbyte != 512u)) {
+        failed = 1;
+    }
     core_machine_media_registry_initialize(&registry);
     if (core_machine_media_registry_bind(&registry, 1u, &fdd,
             vm_machine_fdd_media_provider()) != TYPE_STATUS_OK ||
@@ -279,6 +289,8 @@ C_INT main(C_VOID)
     if (!failed && temporary_image != STD_NULL) failed = 1;
     if (temporary_image != STD_NULL) (C_VOID)STD_FCLOSE(temporary_image);
     if (!failed && (vm_machine_hdd_replace_bytes(&hdd, STD_NULL, 0u) != TYPE_FALSE ||
+        hdd.connect.geometry_cylinders != 0u || hdd.connect.geometry_heads != 16u ||
+        hdd.connect.geometry_sectors_per_track != 63u ||
         vm_media_provider_expect_hdd_capacity(&hdd, &registry, 0u, 0u) ||
         vm_machine_hdd_replace_bytes(&hdd, hdd_bytes, 1u) != TYPE_FALSE ||
         vm_media_provider_expect_hdd_capacity(&hdd, &registry, 1u, 0x5au) ||

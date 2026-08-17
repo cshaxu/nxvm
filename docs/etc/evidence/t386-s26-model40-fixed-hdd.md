@@ -29,7 +29,7 @@ geometry after cold reset, Compaq CHS read PIO, IRQ14 status acknowledgement,
 unsupported Identify error, SRST state, and rejection of post-publication
 fixed-media replacement. A short image rejects construction.
 
-The retained S5 Compaq HDC route and machine-composition smokes, S24 FDC
+The shared-owner `core-machine-media-provider-smoke` directly proves exact-capacity geometry validation rejects a mismatch, selected geometry survives reset, and every new media candidate restores generic 16/63 geometry before its own capacity is published. The retained S5 Compaq HDC route and machine-composition smokes, S24 FDC
 smoke, and S25 D4/refresh smoke pass. The configured current smoke gate,
 specialized gates and documentation governance gate pass from the rebuilt
 current graph.
