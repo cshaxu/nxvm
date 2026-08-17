@@ -43,3 +43,11 @@ admitted selected device-operation contract.
 S3 verifies the generic Core FDC has operation-completion behavior but no safe
 published snapshot or selected firmware-consumer contract. It transfers the
 whole mechanism rather than exposing private FDC state. [Evidence](../etc/evidence/t392-s3-fdc-operation-decision.md).
+## Coordinator Acceptance
+
+After actual-change review of P1 `4c79473c`, the coordinator accepts S3. The
+review confirms the FDC decision is based on current project-owned completion
+paths, preserves the Core/VM boundary, and does not import reference code or
+claim a firmware/CPU/physical result. Focused C1 capture regression and
+documentation governance pass. T392 remains open; the generic operation-
+snapshot design is its sole next receiver.
