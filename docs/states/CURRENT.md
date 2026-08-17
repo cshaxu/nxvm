@@ -2,26 +2,7 @@
 
 ## Current Work
 
-**Active packet:** T390 S13 (Continuation) -- Model-40 corpus checkpoint qualification.
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation -- T390 remains latest open task; S13 follows accepted S12. |
-| Admission And Approval | Owner's standing approval for Queue-ordered T390 continuation; scope corrects the discovered capture-budget/checkpoint verification boundary. |
-| Objective | Make the existing project-owned Model-40 retirement capture distinguish checkpoint success from bounded budget exhaustion, then prove its declared 7C00 checkpoint or transfer the first failure. |
-| Non-goals | No CPU timing guessing, profile physical enablement, board timing, ROM/media commit, or L3 claim. |
-| Reference Baseline | Accepted S12 artifact `9810495E3258E8395050C55452E4DEC20FD361239F2D9F143076DB2CBC7BA227`; current capture owns 7C00 checkpoint but exhausts 250000 before it. |
-| Candidate Proposal | [80386 physical-retirement qualification](../proposals/m5-80386-physical-retirement-qualification.md). |
-| Files And ABI Surface | Project-owned capture test/tool and T390 evidence/status only; no public ABI or production profile surface. |
-| Applicable Rules | Execution, architecture, coding, documentation, source policy; bounded owner-local test tooling, no external data in Git. |
-| Verification | Focused capture behavior proves checkpoint-success and budget-exhaustion distinction; bounded owner-managed replay reaches checkpoint or records its first explicit terminal; full current gate, docs governance, diff and coordinator review pass. |
-| Expected Markers | Normalized capture terminal; no asset identities, paths, hashes, bytes or trace committed. |
-| Asset Needs | Optional owner-managed firmware/media for replay only. |
-| Reporting Requirements | Complete P1 then coordinator actual review and acceptance/correction. |
-| Stop Conditions | Stop/transfer if explicit checkpoint cannot be reached within a documented safe bound, form capacity or unallocated success appears, or a wider observation mechanism is required. |
-| Exit Criteria | Budget exhaustion cannot be misread as success; checkpoint result is proven or explicitly transferred with the first terminal; all gates/evidence/acceptance complete. |
-| Original Owner Request | Continue shared 80386 qualification before DeskPro board timing. |
-| Similar-Issue Sweep | Inspect all capture exit conditions, command invocation handling and current T390 evidence claims. |
+**Active.** T390 remains open between accepted subtasks.
 
 ## Current Technical Baseline
 
