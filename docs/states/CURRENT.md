@@ -2,7 +2,26 @@
 
 ## Current Work
 
-**Idle.** T391 is closed by S8. The accepted C0A predecessor does not make the retained C1 replay an admissible physical-retirement corpus: the C1 endpoint remained absent and its complete 44-unit aggregate is nonphysical. The queued 80386 physical-retirement qualification remains blocked pending a separately admitted finite C1 checkpoint or earliest-owner functional defect. No Core/VM interface, timing, physical-clock, board-time, firmware or L3 claim changed. [Closure audit](../etc/evidence/t391-s8-startup-semantic-closure-audit.md).
+## M5 T392 S1 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New |
+| Admission And Approval | Owner authorized autonomous continuation of the global CPU correctness/timing audit and preservation of Core/VM boundaries. T391 S8 supplies the specific C1-blocked prerequisite. |
+| Objective | Inventory every existing-state finite C1 semantic candidate and determine the earliest admissible checkpoint or functional-defect receiver. |
+| Non-goals | No timing allocation, physical selection, board/device time, firmware/media import, raw trace retention, Core/VM ABI change or L3 claim. |
+| Reference Baseline | T391 S4 observability inventory, T391 S7 aggregate ledger, T391 S8 closure audit, and T390 S36 dependency decision. |
+| Candidate Proposal | [DeskPro 386 C1 semantic endpoint investigation](../proposals/m5-deskpro-386-c1-semantic-endpoint-investigation.md). |
+| Files And ABI Surface | Evidence, history, test-only inventory if required, queue/current; no production ABI. |
+| Applicable Rules | Finite checkpoint rather than containment, existing copied-state boundary, complete candidate disposition, source-policy asset exclusion and no Core/VM bridge. |
+| Verification | Source/owner/caller inventory; candidate ledger cardinality; existing focused C0/C0A/C1 regression; documentation governance. |
+| Expected Markers | T392 S1 C1 candidate-inventory evidence marker and existing S5 capture marker. |
+| Asset Needs | None for inventory; any later replay is owner-managed transient only. |
+| Reporting Requirements | Record each candidate, observable fact, reset/failure state, receiver and admissibility result. |
+| Stop Conditions | Stop and transfer if a candidate needs a new callback, retained raw data, external asset as dependency, or broader device/firmware mechanism. |
+| Exit Criteria | Complete finite candidate ledger with one admissible endpoint, one bounded defect receiver, or explicit no-endpoint transfer. |
+| Original Owner Request | Continue global CPU correctness/timing work toward DeskPro board readiness without breaking the Core/VM boundary. |
+| Similar-Issue Sweep | Include all existing copied retirement, session and selected device observables; keep C0/C0A/C1 and containment distinct. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T390 S22 `vm-0-5-0390` /
