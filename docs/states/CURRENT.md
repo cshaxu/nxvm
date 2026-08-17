@@ -2,26 +2,7 @@
 
 ## Current Work
 
-**Active packet:** T390 S17 (Continuation) -- M40-C0 semantic batch capture.
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation -- T390 remains the latest open task; S17 follows accepted S16. |
-| Admission And Approval | Owner standing approval for Queue-ordered T390 continuation and S16's finite-corpus decision; owner-managed local ROM/media remain external and unrecorded. |
-| Objective | Implement a project-owned M40-C0 capture that stops at the protected-return semantic checkpoint and aggregates every observed successful form/context using a non-raw semantic instruction key. |
-| Non-goals | No individual timing-row repair, Core observer/interface extension, physical retirement enablement, C1 boot transfer, board/device timing, firmware/media import or L3 claim. |
-| Reference Baseline | Accepted S16 M40-C0 definition, existing lifecycle-owned copied retirement observer and Model-40 BYOB capture tool. |
-| Candidate Proposal | [80386 physical-retirement qualification](../proposals/m5-80386-physical-retirement-qualification.md). |
-| Files And ABI Surface | Private tests/products capture helper/tool, project-owned focused smoke, CMake registration, T390 evidence/status only; no production or public ABI. |
-| Applicable Rules | Execution, architecture, coding, documentation and source policy; reuse copied observer, no duplicate CPU execution path, external containment and actual-diff review. |
-| Verification | Project-owned synthetic observer checkpoint/matrix smoke; capture option/terminal regression; owner-managed M40-C0 normalized replay; full current gate, docs, diff and actual review. |
-| Expected Markers | M40-C0 synthetic capture smoke and normalized M40-C0 capture marker only. |
-| Asset Needs | Owner-managed Model-40 ROM pair and bootable 1.2 MB floppy for local replay only; no path, digest, byte, PC or raw trace enters Git. |
-| Reporting Requirements | Complete P1 with bounded capture implementation/evidence, then coordinator review and acceptance/correction. |
-| Stop Conditions | Inadequate copied context, raw-data persistence, semantic checkpoint not reached, unallocated/fault/form-capacity terminal, or need for an exact row before matrix review. |
-| Exit Criteria | C0 checkpoint detection, complete non-raw aggregate key/context, synthetic proof, redacted contained replay result and explicit batch-classification transfer. |
-| Original Owner Request | Implement the finite M40-C0 batch capture after ending incremental first-unallocated repair as the default. |
-| Similar-Issue Sweep | Inspect Model-40 capture argument/terminal handling, all observer consumers, opcode/prefix normalization and test-only helper boundaries. |
+**Active.** T390 remains open between accepted subtasks.
 
 ## Current Technical Baseline
 
@@ -49,7 +30,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T390 S16 | Accepted: the incremental terminal-repair default is retired; M40-C0 freezes a semantic protected-return checkpoint and transfers complete batch form/context collection and classification. The pre-boot phase remains unresolved; no physical-retirement, board-timing or L3 claim. [Evidence](../etc/evidence/t390-s16-checkpoint-corpus-disposition.md). |
+| T390 S17 | Accepted: M40-C0 has a non-raw semantic checkpoint and 75-row contained aggregate; batch Intel-row classification and all later physical/board work remain open. [Evidence](../etc/evidence/t390-s17-m40-c0-batch-capture.md). |
 | T389 | Stopped by owner-approved requeue: S1 proves no physical board slice can begin while 80386 successful retirement remains nonphysical; S2 archives the invalid candidate and queues a shared CPU qualification before a fresh board task. No board timing, physical-clock or L3 claim. [Audit](../etc/evidence/t389-s2-stop-and-requeue-audit.md). |
 | T388 | Closed: S1--S9 establish the sole publisher, exhaustive exact-or-nonphysical residual disposition and pre-publication physical-contract rejection. No current CPU profile is physically clock-qualified; board work transfers under this restriction. [Closure audit](../etc/evidence/t388-s9-task-closure-audit.md). |
 | T387 | Closed: source/owner inventory, exact port-`61h` reconciliation and reference qualification transfer the shared physical-timebase then physical-device/firmware prerequisites before any DeskPro L3 audit. No physical-time or L3 claim. [Closure audit](../etc/evidence/t387-s6-task-closure-transfer-audit.md). |

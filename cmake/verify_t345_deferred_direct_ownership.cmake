@@ -139,7 +139,7 @@ if(NOT project_t345_owner_test_count EQUAL 171 OR
         "Unexpected T345 ownership counts: tests=${project_t345_owner_test_count}, embedded=${project_t345_embedded_count}, type=${project_t345_type_count}.")
 endif()
 if(NOT project_t345_s2_target_count EQUAL 168)
-    message(FATAL_ERROR "T345 S2 target inventory has ${project_t345_s2_target_count} entries; expected 167.")
+    message(FATAL_ERROR "T345 S2 target inventory has ${project_t345_s2_target_count} entries; expected 168.")
 endif()
 list(LENGTH project_t345_s3_entries project_t345_s3_entry_count)
 if(NOT project_t345_safe_production_count EQUAL 2 OR

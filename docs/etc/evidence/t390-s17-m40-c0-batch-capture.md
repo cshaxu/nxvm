@@ -11,3 +11,7 @@ A fresh owner-managed, deleted normalized capture reaches `protected-return-c0` 
 ## Transfer
 
 The next T390 continuation must turn the retained C0 aggregate into one complete finite batch matrix: identify each semantic class, map every class to an exact Intel-primary row with project-owned regression or transfer missing/underdetermined classes, then rerun C0 with the complete disposition. It must not reopen the former one-terminal-at-a-time strategy.
+
+## Coordinator Acceptance
+
+Coordinator actual-diff review accepts P1 131c51c6. The capture stops only after the protected-to-real semantic transition, keeps the existing copied observer path, and distinguishes aggregates by opcode/escape/group plus prior context without retaining PC or payload bytes. The CMake argument branch runs this executable only through its synthetic self-check, and both T345 inventories now describe the added owned target. Full current-gate build and CTest pass. C0 is observable but not classified to Intel rows; physical retirement, C1, board timing and L3 remain open.
