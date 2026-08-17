@@ -3095,6 +3095,11 @@ if(PROJECT_VERIFY_DEPENDENCY_DAG)
             -P "${CMAKE_SOURCE_DIR}/cmake/verify_t388_jcc_target_lexeme.cmake"
         COMMENT "Verifying T388 Jcc target-lexeme boundary"
         VERBATIM)
+    add_custom_target(verify-t388-80286-appendix-b-context
+        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_t388_80286_appendix_b_context.cmake"
+        COMMENT "Verifying T388 80286 Appendix-B context"
+        VERBATIM)
 endif()
 
 set(PROJECT_CURRENT_SPECIALIZED_VERIFIER_CANDIDATES
@@ -3113,6 +3118,7 @@ set(PROJECT_CURRENT_SPECIALIZED_VERIFIER_CANDIDATES
     verify-t388-physical-eligibility-boundary
     verify-t388-residual-form-context-ledger
     verify-t388-jcc-target-lexeme
+    verify-t388-80286-appendix-b-context
     verify-documentation-governance
     verify-dependency-dag
     verify-live-machine-authority
