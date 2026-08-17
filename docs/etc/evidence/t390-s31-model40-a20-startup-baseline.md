@@ -47,3 +47,7 @@ A future T390 C1 receiver may use this now-meaningful startup path to define a
 finite C1 checkpoint corpus.  It must retain the external-asset boundary and
 must not infer CPU timing, board timing, physical retirement qualification, or
 L3 closure from this containment result.
+
+## Coordinator acceptance
+
+The coordinator reviewed pushed P1 c5b9723a against the admitted S31 packet and the original owner request. The change keeps physical-address translation in Core and makes Model-40 only select the checked profile policy; it creates no VM-to-RAM internal access or reverse dependency. The stale D4 test now matches the accepted Rev-E ROM windows. Focused regressions, aggregate-only contained replay, the full 284/284 current-source gate, documentation governance, and diff hygiene pass. S31 is accepted; a future C1 receiver owns any finite later checkpoint corpus.
