@@ -2,7 +2,7 @@
 
 ## Current Work
 
-**Active.** T391 remains open between accepted subtasks. S7 reconciles the complete trace-free C1 aggregate: 44/44 units and 1,981,742 classified successful retirements are deferred as one startup-semantic batch because the named boot-transfer endpoint was not reached within containment. The next receiver is the T391 task-closure startup-semantic decision; it must keep renewed C1 physical qualification blocked unless a new finite semantic checkpoint or earliest-owner functional defect is separately admitted. No Core/VM interface, timing, physical-clock, board-time, firmware or L3 claim changed. [Evidence](../etc/evidence/t391-s7-c1-form-context-ledger.md).
+**Idle.** T391 is closed by S8. The accepted C0A predecessor does not make the retained C1 replay an admissible physical-retirement corpus: the C1 endpoint remained absent and its complete 44-unit aggregate is nonphysical. The queued 80386 physical-retirement qualification remains blocked pending a separately admitted finite C1 checkpoint or earliest-owner functional defect. No Core/VM interface, timing, physical-clock, board-time, firmware or L3 claim changed. [Closure audit](../etc/evidence/t391-s8-startup-semantic-closure-audit.md).
 ## Current Technical Baseline
 
 - **Current developer artifact:** T390 S22 `vm-0-5-0390` /
@@ -29,7 +29,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T391 S7 | Accepted: complete trace-free C1 ledger disposes all 44 aggregates and 1,981,742 classified retirements as nonphysical; no C1 transfer endpoint, Core/VM interface, timing, physical, board, firmware or L3 claim. [Evidence](../etc/evidence/t391-s7-c1-form-context-ledger.md). |
+| T391 | Closed: S1-S8 establish the bounded C0A startup predecessor, complete C1 aggregate disposition and the truthful transfer that C1 physical qualification remains blocked pending a new finite checkpoint or earliest-owner defect. No Core/VM interface, timing, physical, board, firmware or L3 claim. [Closure audit](../etc/evidence/t391-s8-startup-semantic-closure-audit.md). |
 | T389 | Stopped by owner-approved requeue: S1 proves no physical board slice can begin while 80386 successful retirement remains nonphysical; S2 archives the invalid candidate and queues a shared CPU qualification before a fresh board task. No board timing, physical-clock or L3 claim. [Audit](../etc/evidence/t389-s2-stop-and-requeue-audit.md). |
 | T388 | Closed: S1--S9 establish the sole publisher, exhaustive exact-or-nonphysical residual disposition and pre-publication physical-contract rejection. No current CPU profile is physically clock-qualified; board work transfers under this restriction. [Closure audit](../etc/evidence/t388-s9-task-closure-audit.md). |
 | T387 | Closed: source/owner inventory, exact port-`61h` reconciliation and reference qualification transfer the shared physical-timebase then physical-device/firmware prerequisites before any DeskPro L3 audit. No physical-time or L3 claim. [Closure audit](../etc/evidence/t387-s6-task-closure-transfer-audit.md). |

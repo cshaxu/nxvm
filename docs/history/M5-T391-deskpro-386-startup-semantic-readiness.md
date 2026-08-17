@@ -10,7 +10,7 @@ firmware compatibility, or L3 claim.
 
 ## Active Subtask
 
-No subtask is active. T391 remains open with S1--S6 retained as compact accepted progress.
+No subtask is active. T391 is closed by S8; S1--S7 remain its accepted startup-semantic evidence.
 
 ## Accepted Progress
 
@@ -106,3 +106,10 @@ a Core/VM interface change. The focused capture regression and documentation
 governance pass. T391 remains open; its next receiver is the task-closure
 startup-semantic decision, with renewed C1 physical qualification still blocked
 on a separately admitted finite semantic checkpoint or earliest-owner defect.
+
+### S8: Startup Semantic Closure Audit
+
+S8 reconciles every proposal requirement and closes T391: M40-C0A is an
+accepted predecessor, but the retained replay supplies no finite C1 transfer
+checkpoint. Renewed C1 physical qualification remains blocked pending a newly
+admitted finite checkpoint or earliest-owner functional defect. [Evidence](../etc/evidence/t391-s8-startup-semantic-closure-audit.md).
