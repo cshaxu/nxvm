@@ -2,26 +2,7 @@
 
 ## Current Work
 
-**Active packet:** T390 S10 (Continuation) -- acceptance-record whitespace correction.
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation -- T390 remains the latest open numeric task; S10 follows accepted S9. |
-| Admission And Approval | Owner's 2026-08-17 approved continuation covers in-scope corrective task records. Coordinator found trailing whitespace in S9 P3 after push; no exception is approved. |
-| Objective | Remove the S9 acceptance-record trailing whitespace and restore diff hygiene without changing source, behavior, evidence facts or task scope. |
-| Non-goals | No Core, VM, test, artifact, timing, external-asset, board or L3 change. |
-| Reference Baseline | P3 `14d117b7`; the current S9 artifact identity and accepted evidence remain unchanged. |
-| Candidate Proposal | [80386 physical-retirement qualification](../proposals/m5-80386-physical-retirement-qualification.md). |
-| Files And ABI Surface | Only the T390 history acceptance record and Current state record. No ABI. |
-| Applicable Rules | Execution and documentation rules; invariant: pushed deliveries pass diff hygiene and truthfully retain accepted history. |
-| Verification | `git diff --check`, documentation governance, actual-diff review, clean worktree and synchronized branch. |
-| Expected Markers | Documentation governance success for `vm-0-5-0390`. |
-| Asset Needs | None. |
-| Reporting Requirements | Commit the narrow P1 correction, independently review it, then record acceptance/transfer in a governance P2. |
-| Stop Conditions | Stop if repairing whitespace would rewrite facts, alter unrelated files or require source changes. |
-| Exit Criteria | The history record has no trailing whitespace; required documentation/diff checks and acceptance are complete. |
-| Original Owner Request | Continue Queue-ordered T390 work autonomously under the repository governance rules. |
-| Similar-Issue Sweep | Inspect only the S9 acceptance/evidence records for terminal line-ending whitespace; do not rewrite unrelated historical documents. |
+**Active.** T390 remains open between accepted subtasks.
 
 ## Current Technical Baseline
 

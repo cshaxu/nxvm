@@ -193,3 +193,10 @@ S9 corrects the shared 80386 `FF /5` far-memory JMP timing owner: real-address u
 ## Coordinator Acceptance
 
 After actual-change review, P1 `640af8e1` is rejected because it reused the real-address base for protected mode, lacked a positive protected proof and malformed its documentation. Corrective P2 `d22c49f4` separates the exact protected row, adds the project-owned transition proof and repairs the record. The coordinator accepts S9 after focused smoke, full 283/283 current-gate, documentation-governance and diff-hygiene replays. T390 remains open; the next receiver must identify and disposition the transferred terminal before later board work.
+### S10: Acceptance-Record Hygiene Correction
+
+S10 removes trailing whitespace introduced by S9 P3 from the retained acceptance record. It changes no source, timing behavior, artifact, evidence fact, external asset boundary, board claim or L3 state.
+
+## Coordinator Acceptance
+
+The coordinator accepts P1 `f57e02a0` after actual-diff review, documentation governance and diff-hygiene verification. T390 remains open with the S9 terminal transfer unchanged.
