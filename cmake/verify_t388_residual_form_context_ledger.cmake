@@ -1,0 +1,40 @@
+if(NOT DEFINED PROJECT_SOURCE_DIR)
+    message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
+endif()
+set(machine "${PROJECT_SOURCE_DIR}/src/core/machine/machine.c")
+set(s2 "${PROJECT_SOURCE_DIR}/docs/etc/evidence/t388-s2-successful-sentinel-matrix.md")
+set(s4 "${PROJECT_SOURCE_DIR}/docs/etc/evidence/t388-s4-residual-form-context-ledger.md")
+set(authority "${PROJECT_SOURCE_DIR}/docs/etc/evidence/t360-s1-four-profile-source-authority-consumer-inventory.md")
+foreach(path IN ITEMS "${machine}" "${s2}" "${s4}" "${authority}")
+    if(NOT EXISTS "${path}")
+        message(FATAL_ERROR "T388 residual ledger input is missing: ${path}")
+    endif()
+endforeach()
+file(READ "${machine}" machine_text)
+file(READ "${s2}" s2_text)
+file(READ "${s4}" s4_text)
+file(READ "${authority}" authority_text)
+function(t388_require text token)
+    string(FIND "${text}" "${token}" position)
+    if(position EQUAL -1)
+        message(FATAL_ERROR "T388 residual ledger drift: ${token}")
+    endif()
+endfunction()
+foreach(token IN ITEMS
+    "core_machine_source_timing_lookup"
+    "core_machine_legacy_source_instruction_cost"
+    "core_machine_string_io_source_instruction_cost"
+    "core_machine_80286_source_instruction_cost"
+    "core_machine_80386_source_instruction_cost"
+    "core_machine_cpu_execution_preview_lexeme"
+    "CORE_MACHINE_SOURCE_UNALLOCATED_TICKS")
+    t388_require("${machine_text}" "${token}")
+    t388_require("${s2_text}" "${token}")
+    t388_require("${s4_text}" "${token}")
+endforeach()
+foreach(token IN ITEMS "Tables 2-20/2-21" "Table 1-16" "Appendix B" "section 17.2.2.3")
+    t388_require("${authority_text}" "${token}")
+    t388_require("${s4_text}" "${token}")
+endforeach()
+t388_require("${s4_text}" "M5:T388:S4:RESIDUAL-FORM-CONTEXT-LEDGER:OK")
+message(STATUS "T388 residual form/context ledger passed.")
