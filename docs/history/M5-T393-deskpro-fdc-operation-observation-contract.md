@@ -45,3 +45,16 @@ non-success. Synthetic success/failure/reset coverage and focused FDC/capture
 smokes prove the bounded diagnostic without changing a Core or VM production
 interface.
 [Evidence](../etc/evidence/t393-s4-fdc-read-data-c0a-diagnostic.md).
+
+## Coordinator Acceptance
+
+After actual-change review of P1 `b01cf455`, the coordinator accepts S4. The
+capture reads only the existing Model-40 private copied result and adds no
+Core/VM production interface. It accepts only a successful drive-0 `READ DATA`
+record whose sequence advances after the C0A `IN AL, 61h` baseline; baseline,
+wrong-drive, failed and reset-invalid records are rejected. Synthetic and
+focused FDC/capture regressions pass. One owner-managed BYOB run reaches its
+2,000,000-retirement containment limit with no unallocated timing but no
+later successful `READ DATA`; this is bounded non-success, not C1 or physical
+qualification. T393 remains open only for a separately admitted decision on
+whether any further finite observation receiver exists.

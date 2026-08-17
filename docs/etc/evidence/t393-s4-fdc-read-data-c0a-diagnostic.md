@@ -17,3 +17,10 @@ a failed result, and reset-invalidated state; it accepts only the later
 successful drive-0 result. Focused Core FDC, Model-40 FDC, and capture smokes
 pass. This is bounded candidate observation only: it neither proves C1 nor
 physical board/timing/L3 qualification.
+One owner-managed BYOB execution used the existing DeskPro ROM pair and a
+5.25-inch MS-DOS boot floppy solely as external inputs. It reached the fixed
+2,000,000-retirement containment limit with C0A reached, 2,000,000 classified
+retirements and zero unallocated retirements, but did not observe a later
+successful drive-0 `READ DATA` result. The outcome is therefore a bounded
+non-success; it does not select a C1, board, physical-time, or L3 receiver.
+No asset was changed, copied into the repository, catalogued, or committed.
