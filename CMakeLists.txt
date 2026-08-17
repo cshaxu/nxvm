@@ -55,6 +55,7 @@ add_library(core-machine STATIC
     src/core/machine/presentation_interface.c
     src/core/machine/rom_mapping_interface.c
     src/core/machine/trace_interface.c
+    src/core/machine/retirement_observation_interface.c
     src/core/machine/timeline.c
 )
 # This is the complete public core-machine runtime. It extends the primitive
@@ -725,6 +726,11 @@ add_executable(core-machine-trace-smoke
     tests/core/machine_trace_smoke.c
 )
 target_link_libraries(core-machine-trace-smoke PRIVATE core-machine)
+
+add_executable(core-machine-retirement-observation-s3-smoke
+    tests/core/machine_retirement_observation_s3_smoke.c
+)
+target_link_libraries(core-machine-retirement-observation-s3-smoke PRIVATE core-machine)
 add_executable(core-machine-external-time-trace-s18-smoke
     tests/core/machine_external_time_trace_s18_smoke.c
 )
@@ -1944,6 +1950,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     core-machine-rational-clock-smoke
     core-machine-timeline-s2-smoke
     core-machine-arbitration-s3-smoke
+    core-machine-retirement-observation-s3-smoke
     core-machine-rtc-storage-s4-smoke
     core-machine-planar-parity-nmi-s3-smoke
     core-machine-input-display-s5-smoke
@@ -3280,10 +3287,10 @@ foreach(project_t345_target IN LISTS PROJECT_T344_CURRENT_GATE_TARGETS)
 endforeach()
 list(LENGTH PROJECT_T345_S2_OWNER_TEST_STRICT_TARGETS project_t345_s2_pure_count)
 list(LENGTH PROJECT_T345_S2_MIXED_OWNER_TEST_TARGETS project_t345_s2_mixed_count)
-if(NOT project_t345_s2_pure_count EQUAL 165 OR
+if(NOT project_t345_s2_pure_count EQUAL 166 OR
         NOT project_t345_s2_mixed_count EQUAL 3)
     message(FATAL_ERROR
-        "T345 S2 expected 165 pure and 3 mixed owner-test targets; found ${project_t345_s2_pure_count} pure and ${project_t345_s2_mixed_count} mixed.")
+        "T345 S2 expected 166 pure and 3 mixed owner-test targets; found ${project_t345_s2_pure_count} pure and ${project_t345_s2_mixed_count} mixed.")
 endif()
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     foreach(project_t345_target IN LISTS PROJECT_T345_S2_OWNER_TEST_STRICT_TARGETS)

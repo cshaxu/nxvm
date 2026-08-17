@@ -29,6 +29,7 @@ static C_VOID core_machine_cpu_diagnostic_record_instruction(C_VOID *opaque,
     state = &machine->cpu_diagnostic;
     core_machine_cpu_diagnostic_copy_point(
         &state->snapshot.recent[state->next_index], cpu, instructions, TYPE_FALSE);
+    core_machine_retirement_observation_capture_instruction(machine, cpu, instructions);
     state->next_index = (state->next_index + 1u) % CORE_MACHINE_CPU_DIAGNOSTIC_WINDOW_CAPACITY;
     if (state->snapshot.recent_count < CORE_MACHINE_CPU_DIAGNOSTIC_WINDOW_CAPACITY) {
         ++state->snapshot.recent_count;
@@ -4489,6 +4490,7 @@ static type_status core_machine_create_internal(
     core_machine_transaction_bind_trace(&machine->transaction,
         core_machine_transaction_trace, machine);
     core_machine_cpu_diagnostic_initialize(machine);
+    core_machine_retirement_observation_initialize(machine);
 
     core_machine_cpu_execution_context_initialize(&machine->executor_cpu_execution,
         &machine->executor_cpu, &machine->executor_cpu_instructions,
@@ -4674,6 +4676,7 @@ static type_status core_machine_cold_reset(core_machine *machine)
     }
     machine->entry_plan_applied = TYPE_FALSE;
     core_machine_cpu_diagnostic_reset(machine);
+    core_machine_retirement_observation_reset(machine);
     if (machine->execution_provider != STD_NULL &&
         machine->execution_provider->reset != STD_NULL) {
         machine->execution_provider->reset(machine->execution_provider_context);
@@ -4890,6 +4893,7 @@ type_status core_machine_run(
                     result->elapsed_ticks = machine->elapsed_ticks;
                     return TYPE_STATUS_FAULT;
                 }
+                core_machine_retirement_observation_publish(machine, instruction_ticks);
                 if (machine->retirement_time_contract ==
                     CORE_MACHINE_RETIREMENT_TIME_PHYSICAL &&
                     machine->source_timing_unallocated) {

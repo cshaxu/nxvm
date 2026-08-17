@@ -13,6 +13,7 @@
 #include "core/machine/port_interface.h"
 #include "type.h"
 #include "core/machine/trace_interface.h"
+#include "core/machine/retirement_observation_interface.h"
 #include "core/machine/rom_mapping_interface.h"
 #include "core/machine/entry_plan_interface.h"
 

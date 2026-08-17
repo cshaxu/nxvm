@@ -58,6 +58,12 @@ typedef struct core_machine_cpu_diagnostic_state {
     STD_SIZE_T next_index;
 } core_machine_cpu_diagnostic_state;
 
+typedef struct core_machine_retirement_observation_state {
+    core_machine_retirement_observation_provider provider;
+    core_machine_retirement_observation pending_observation;
+    type_unsigned_64 next_sequence;
+    type_bool pending;
+} core_machine_retirement_observation_state;
 typedef struct core_machine_immutable_rom_mapping {
     type_unsigned_32 physical_start;
     STD_SIZE_T bytes;
@@ -128,6 +134,7 @@ struct core_machine {
     type_bool hdc_configured;
     core_machine_trace_state trace;
     core_machine_cpu_diagnostic_state cpu_diagnostic;
+    core_machine_retirement_observation_state retirement_observation;
     core_machine_immutable_rom_mapping
         immutable_rom_mappings[CORE_MACHINE_IMMUTABLE_ROM_MAPPING_CAPACITY];
     STD_SIZE_T immutable_rom_mapping_count;
@@ -175,6 +182,12 @@ C_VOID core_machine_trace_record(
     type_unsigned_32 detail);
 C_VOID core_machine_cpu_diagnostic_initialize(core_machine *machine);
 C_VOID core_machine_cpu_diagnostic_reset(core_machine *machine);
+C_VOID core_machine_retirement_observation_initialize(core_machine *machine);
+C_VOID core_machine_retirement_observation_reset(core_machine *machine);
+C_VOID core_machine_retirement_observation_capture_instruction(core_machine *machine,
+    const t_cpu *cpu, const t_cpuins *instructions);
+C_VOID core_machine_retirement_observation_publish(core_machine *machine,
+    type_unsigned_64 source_ticks);
 C_INT core_machine_configuration_is_open(const core_machine *machine);
 C_INT core_machine_mutable_operation_is_allowed(const core_machine *machine);
 type_status core_machine_register_immutable_rom_mapping_from_firmware(

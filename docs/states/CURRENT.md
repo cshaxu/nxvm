@@ -2,12 +2,24 @@
 
 ## Current Work
 
-**Current progress:** T390 S2 is accepted. The external Model-40 BYOB corpus
-and bounded observation contract are frozen, and the current trace is proven
-insufficient because it does not expose pre-publication instruction/context or
-exact-or-unallocated classifier disposition. The next receiver is a lifecycle-
-owned, opt-in shared-Core production capture; no external asset, physical
-profile, board clock or L3 claim is enabled.
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation - T390 S3. |
+| Admission And Approval | Owner approved continuation on 2026-08-17, including the necessary shared Core implementation for 80386 qualification. The owner forbids test-only APIs and requires reusable hardware mechanisms in Core; external ROM/media remains owner-managed and uncommitted. |
+| Objective | Implement the minimal lifecycle-owned, opt-in Core retirement-observation provider that receives a copied pre-execution instruction point and the classifier disposition/timing result before physical-contract rejection or elapsed/device-time publication. |
+| Non-goals | No external ROM/media execution or retention, raw recorder/harness, Console UX, VM/profile policy, physical-contract selection, guessed timing row, board-clock conversion, device timing, CPU semantic change, second executor, or Model-L3 claim. |
+| Reference Baseline | T390 S1 classifier inventory and T390 S2 observation contract. Existing diagnostic callback owns the pre-execution copied instruction point; `core_machine_instruction_cost()` and physical rejection own classification/publication order; generic trace ABI remains unchanged. |
+| Candidate Proposal | [80386 physical-retirement qualification](../proposals/m5-80386-physical-retirement-qualification.md). |
+| Files And ABI Surface | Core machine observation interface/implementation and private state; `machine.c` classifier/publication junction; focused Core smoke and CMake registration; T390 evidence/history/current baseline and artifact configuration if required by runnable-path identity. No VM/profile source. |
+| Applicable Rules | Architecture single-owner, opaque copied public contract, lifecycle mutation and production-path invariants; C11/type vocabulary/minimal durable interface; execution artifact, actual-change review, source policy and documentation topology. No exception is requested. |
+| Verification | Focused Core smoke must prove disabled-path neutrality; stopped/paused-only install/remove; copied pre-execution bytes/PC and relevant context; exact/unallocated disposition emitted before publish; physical unallocated observation then fault with unchanged elapsed/timeline; reset/failure behavior; retained trace and current gate. Run source/caller sweep and full configured current gate; build/copy T390 artifact and record identity/hash if code completes. |
+| Expected Markers | `M5:T390:S3:RETIREMENT-OBSERVATION:OK`; static single-publisher/observer-owner marker; current-gate pass. |
+| Asset Needs | None for implementation proof. The S2 external corpus remains deferred and no ROM/media/local path/hash/trace may enter repository or test fixture. |
+| Reporting Requirements | Report public capability/lifetime, exact publication ordering, focused and full verification, artifact identity if emitted, commit/push state, and any remaining row-identifier/corpus receiver. |
+| Stop Conditions | Stop and transfer if obtaining required copied pre-execution context needs a second CPU callback path, exposing a raw executor pointer, changing generic trace ABI, a CPU semantic repair, unbounded storage/output, or an external asset. Do not substitute a classifier route label for an Intel timing row. |
+| Exit Criteria | One opt-in production Core observer is lifecycle-bound and disabled by default; it observes each classified successful retirement before physical rejection/publication through copied data; focused regressions prove ordering and nonpublication; all current gates pass; retained evidence states exactly whether the stable timing-row identifier is available or transfers. |
+| Original Owner Request | Continue the approved T390 prerequisite before DeskPro board timing, use Core for reusable hardware capability, and avoid pure test APIs while keeping external ROM/media out of the repository. |
+| Similar-Issue Sweep | Inspect every instruction-record callback, `core_machine_instruction_cost()` return route, source-unallocated marker, physical-rejection path, elapsed publisher and generic trace client for duplicate capture/publication or a missed successful-retirement route. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T386 S28 `vm-0-5-0389` /
