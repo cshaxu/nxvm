@@ -44,3 +44,9 @@ receiver is a Core-owned normalized eligibility key. Both Model-40 routes
 remain deterministic. Focused Core timing and Model-40 composition regressions
 plus documentation governance pass. T394 remains open for a separately
 admitted key/collision-design subtask.
+### S3: Normalized Eligibility-Key Collision Audit
+
+S3 defines and reconciles the smallest Core-owned normalized eligibility key
+against T390 S27's complete C0 universe. It excludes literal instruction bytes,
+addresses, firmware/asset identity, VM-owned state and retained callbacks, and
+makes no descriptor, physical, board or L3 change.

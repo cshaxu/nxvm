@@ -2,7 +2,28 @@
 
 ## Current Work
 
-**T394 S2 accepted.** Existing configuration cannot represent C0 exactly; Core must first produce a normalized eligibility key. Both Model-40 paths remain deterministic.
+**T394 S3 active.** Define and collision-audit a Core-owned normalized eligibility key for the complete C0 universe before any descriptor, physical-mode selection, board timing or L3 claim.
+
+## M5 T394 S3 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner approval is the continuing request to complete the global CPU correctness/timing audit while preserving Core/VM boundaries, including the explicit instruction to continue implementation and to repair in-scope issues. T394 S2 acceptance (`3309d338`) selects this bounded prerequisite; no exception is granted. |
+| Objective | Define the smallest Core-owned, normalized retirement eligibility-key schema that can represent semantic C0 membership without firmware bytes, PC, asset identity, VM state, callback or retained external pointer; audit it against the complete 82-child C0 universe and identify every required decoder/classifier producer and collision risk. |
+| Non-goals | No descriptor activation, physical-contract selection, elapsed/device-time publication change, VM ABI change, firmware/media import, board/device timing, C0A/C1 work, guessed cycle count or L3 claim. |
+| Reference Baseline | Current T394 S2 decision; T394 S1 qualification ledger; T390 S27 complete C0 matrix; existing Core retirement observation and classifier surfaces. |
+| Candidate Proposal | [80386 physical-retirement qualification](../proposals/m5-80386-physical-retirement-qualification.md). |
+| Files And ABI Surface | `docs/states/CURRENT.md`, `docs/history/M5-T394-80386-physical-retirement-qualification.md`, `docs/etc/evidence/t394-s3-normalized-eligibility-key-collision-audit.md`, and `docs/etc/README.md` only. This is a design/evidence S; no production or public ABI change. |
+| Applicable Rules | Execution: active-packet, coverage-ledger, evidence, P lifecycle and actual-change review; Documentation: principal-versus-supporting authority and indexed evidence. Architecture/Coding: no implementation change; the evidence must preserve Core semantic ownership and prohibit VM/firmware identity coupling. Source policy: no source, firmware, media or third-party import/research action. |
+| Verification | Static source sweep of retirement classifier/observation producers and all C0-specific normalized capture fields; reconcile every C0 child group in T390 S27 against required key dimensions; document exclusion of dynamic literal data and reset/failure implications; run documentation governance and diff hygiene. |
+| Expected Markers | `M5:T394:S3:NORMALIZED-KEY-COLLISION-AUDIT:OK`; no production file change; both Model-40 construction routes remain deterministic. |
+| Asset Needs | None. No asset, ROM, guest media, local capture or external reference is read or changed. |
+| Reporting Requirements | Record schema, producer ownership, C0 coverage/collision disposition, omitted-dimension risk, reset/failure semantics and exact next receiver in indexed evidence. Report any mechanism defect immediately; no physical claim. |
+| Stop Conditions | Stop and transfer if the complete C0 matrix cannot be represented without raw bytes/dynamic values, if a required semantic dimension has no Core-owned producer, or if the result requires a VM/firmware identity or wider decoder redesign. |
+| Exit Criteria | A bounded key schema, complete C0 group-to-dimension reconciliation, collision/omission decision, stable Core producer inventory, reset/failure requirements and an implementation-ready next receiver are committed, verified and accepted. |
+| Original Owner Request | Continue the CPU instruction correctness/timing audit, use external implementations only as read-only references where useful, consider bridge experiments, repair clear in-scope defects, and do not break the Core/VM interface boundary. |
+| Similar-Issue Sweep | Design-only: sweep every current retirement observation/classifier producer and both Model-40 construction paths. No defect is repaired in this S; any uncovered production coupling transfers to the next admitted receiver. |
 
 ## Current Technical Baseline
 
