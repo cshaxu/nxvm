@@ -34,3 +34,14 @@ no mutable FDC/session layout escapes. Direct Core and Model-40 FDC smokes plus
 the current C1 capture regression and documentation governance pass. T393
 remains open: only bounded candidate observation may decide whether a semantic
 checkpoint exists.
+
+### S4: C0A-Preconditioned READ DATA Diagnostic
+
+S4 adds a test-capture-only, opt-in observation. C0A is the immediate
+post-return `IN AL, 61h` retirement; its copied FDC-terminal sequence becomes
+the lower bound. Only a later successful drive-0 `READ DATA` copied result is
+reported. The one-retirement budget makes ambiguous same-boundary ordering a
+non-success. Synthetic success/failure/reset coverage and focused FDC/capture
+smokes prove the bounded diagnostic without changing a Core or VM production
+interface.
+[Evidence](../etc/evidence/t393-s4-fdc-read-data-c0a-diagnostic.md).

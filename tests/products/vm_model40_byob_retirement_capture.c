@@ -44,6 +44,9 @@ typedef struct model40_retirement_capture {
     type_bool c1_transfer_diagnostic;
     type_bool c1_collecting;
     type_bool c1_transfer_reached;
+    type_bool fdc_read_data_reached;
+    type_bool fdc_read_data_baseline_valid;
+    type_unsigned_64 fdc_terminal_sequence_at_c0a;
     type_unsigned_8 terminal_bytes[CORE_MACHINE_CPU_DIAGNOSTIC_BYTES];
     type_unsigned_8 terminal_byte_count;
     type_bool checkpoint_reached;
@@ -245,6 +248,30 @@ static C_VOID model40_capture_record_post_c0_io(
         capture->post_c0_io_read = opcode == 0xecu || opcode == 0xedu;
     }
 }
+
+static type_bool model40_capture_c0a_reached(
+    const model40_retirement_capture *capture)
+{
+    return capture != STD_NULL && capture->checkpoint_reached &&
+        capture->post_c0_io_seen && capture->post_c0_io_read &&
+        capture->post_c0_io_port_known && capture->post_c0_io_port == 0x0061u;
+}
+
+static type_bool model40_capture_has_fdc_read_data(
+    const model40_retirement_capture *capture, const vm_session *session)
+{
+    const core_machine_fdc_terminal_observation *observation;
+
+    if (capture == STD_NULL || session == STD_NULL ||
+        !capture->fdc_read_data_baseline_valid ||
+        !model40_capture_c0a_reached(capture) ||
+        !session->model40_fdc_terminal_observation_valid) return TYPE_FALSE;
+    observation = &session->model40_fdc_terminal_observation;
+    return observation->sequence > capture->fdc_terminal_sequence_at_c0a &&
+        observation->command == 0xe6u && observation->drive == 0u &&
+        observation->successful;
+}
+
 static C_VOID model40_capture_observe(C_VOID *opaque,
     const core_machine_retirement_observation *observation)
 {
@@ -391,7 +418,8 @@ static C_INT model40_capture_create_session(C_INT argc, C_CHAR **argv,
         STD_STRCMP(argv[7], "--c1-diagnostic") &&
         STD_STRCMP(argv[7], "--post-c0-io-diagnostic") &&
         STD_STRCMP(argv[7], "--c0a-diagnostic") &&
-        STD_STRCMP(argv[7], "--c1-transfer-diagnostic"))))) return 0;
+        STD_STRCMP(argv[7], "--c1-transfer-diagnostic") &&
+        STD_STRCMP(argv[7], "--fdc-read-data-diagnostic"))))) return 0;
     config.profile_kind = VM_SESSION_PROFILE_COMPAQ_DESKPRO_386_MODEL_40;
     config.fdd_image = argv[6];
     config.model40_firmware = (vm_profile_model40_byob_manifest) {
@@ -495,6 +523,38 @@ static C_INT model40_capture_synthetic_c0a_smoke(C_VOID)
     STD_PRINTF("M5:T391:S2:C0A-CAPTURE:OK\n");
     return 0;
 }
+static C_INT model40_capture_synthetic_fdc_read_data_smoke(C_VOID)
+{
+    model40_retirement_capture capture = { 0 };
+    vm_session session = { 0 };
+
+    capture.checkpoint_reached = TYPE_TRUE;
+    capture.post_c0_io_seen = TYPE_TRUE;
+    capture.post_c0_io_read = TYPE_TRUE;
+    capture.post_c0_io_port_known = TYPE_TRUE;
+    capture.post_c0_io_port = 0x0061u;
+    capture.fdc_read_data_baseline_valid = TYPE_TRUE;
+    capture.fdc_terminal_sequence_at_c0a = 7u;
+    session.model40_fdc_terminal_observation_valid = TYPE_TRUE;
+    session.model40_fdc_terminal_observation.sequence = 7u;
+    session.model40_fdc_terminal_observation.command = 0xe6u;
+    session.model40_fdc_terminal_observation.drive = 0u;
+    session.model40_fdc_terminal_observation.successful = TYPE_TRUE;
+    if (model40_capture_has_fdc_read_data(&capture, &session)) return 1;
+    session.model40_fdc_terminal_observation.sequence = 8u;
+    session.model40_fdc_terminal_observation.drive = 1u;
+    if (model40_capture_has_fdc_read_data(&capture, &session)) return 1;
+    session.model40_fdc_terminal_observation.drive = 0u;
+    session.model40_fdc_terminal_observation.successful = TYPE_FALSE;
+    if (model40_capture_has_fdc_read_data(&capture, &session)) return 1;
+    session.model40_fdc_terminal_observation.successful = TYPE_TRUE;
+    if (!model40_capture_has_fdc_read_data(&capture, &session)) return 1;
+    session.model40_fdc_terminal_observation_valid = TYPE_FALSE;
+    if (model40_capture_has_fdc_read_data(&capture, &session)) return 1;
+    STD_PRINTF("M5:T393:S4:FDC-READ-DATA-CAPTURE:OK\n");
+    return 0;
+}
+
 static C_INT model40_capture_synthetic_c1_transfer_smoke(C_VOID)
 {
     model40_retirement_capture capture = { 0 };
@@ -531,6 +591,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
         !STD_STRCMP(argv[1], "--synthetic-c0-smoke")) {
         return model40_capture_synthetic_c0_smoke() ||
             model40_capture_synthetic_c0a_smoke() ||
+            model40_capture_synthetic_fdc_read_data_smoke() ||
             model40_capture_synthetic_c1_transfer_smoke();
     }
     if (argc == 2 && argv != STD_NULL &&
@@ -556,6 +617,8 @@ C_INT main(C_INT argc, C_CHAR **argv)
         !STD_STRCMP(argv[7], "--c0a-diagnostic");
     C_INT c1_transfer_diagnostic = argc == 8 && argv != STD_NULL &&
         !STD_STRCMP(argv[7], "--c1-transfer-diagnostic");
+    C_INT fdc_read_data_diagnostic = argc == 8 && argv != STD_NULL &&
+        !STD_STRCMP(argv[7], "--fdc-read-data-diagnostic");
 
     if (!model40_capture_create_session(argc, argv, &session)) {
         STD_FPRINTF(STD_STDERR, "usage: capture even-image even-digest "
@@ -573,13 +636,26 @@ C_INT main(C_INT argc, C_CHAR **argv)
         MODEL40_CAPTURE_RETIREMENT_LIMIT &&
         (!capture.checkpoint_reached || (c1_diagnostic && !capture.c1_checkpoint_reached) ||
         (c1_transfer_diagnostic && !capture.c1_transfer_reached) ||
+        (fdc_read_data_diagnostic && !capture.fdc_read_data_reached) ||
         ((post_c0_io_diagnostic || c0a_diagnostic) && !capture.post_c0_io_seen)) &&
         capture.unallocated == 0u && !capture.form_limit_reached; ++index) {
         elapsed_before_terminal = result.elapsed_ticks;
         status = core_machine_run(session->core_machine, budget, &result);
         if (status != TYPE_STATUS_OK || result.reason == CORE_MACHINE_STOP_FAULT) break;
+        if (fdc_read_data_diagnostic && !capture.fdc_read_data_baseline_valid &&
+            model40_capture_c0a_reached(&capture)) {
+            capture.fdc_read_data_baseline_valid = TYPE_TRUE;
+            if (session->model40_fdc_terminal_observation_valid) {
+                capture.fdc_terminal_sequence_at_c0a =
+                    session->model40_fdc_terminal_observation.sequence;
+            }
+        } else if (fdc_read_data_diagnostic &&
+            model40_capture_has_fdc_read_data(&capture, session)) {
+            capture.fdc_read_data_reached = TYPE_TRUE;
+        }
     }
-    if (c1_transfer_diagnostic && capture.c1_transfer_reached) terminal = "c1-boot-transfer";
+    if (fdc_read_data_diagnostic && capture.fdc_read_data_reached) terminal = "fdc-read-data";
+    else if (c1_transfer_diagnostic && capture.c1_transfer_reached) terminal = "c1-boot-transfer";
     else if ((post_c0_io_diagnostic || c0a_diagnostic) && capture.post_c0_io_seen) terminal = "post-c0-io";
     else if (c1_diagnostic && capture.c1_checkpoint_reached) terminal = "c1-protected-entry";
     else if (c1_diagnostic && capture.unallocated != 0u) terminal =
@@ -587,8 +663,9 @@ C_INT main(C_INT argc, C_CHAR **argv)
     else if (capture.form_limit_reached) terminal = "form-capacity";
     else if (status != TYPE_STATUS_OK) terminal = "run-status";
     else if (result.reason == CORE_MACHINE_STOP_FAULT) terminal = "fault";
+    else if (fdc_read_data_diagnostic) terminal = "fdc-read-data-retirement-budget-exhausted";
     else if (c1_transfer_diagnostic) terminal = "c1-transfer-retirement-budget-exhausted";
-        else if (c1_diagnostic) terminal = "c1-retirement-budget-exhausted";
+    else if (c1_diagnostic) terminal = "c1-retirement-budget-exhausted";
     else if (capture.checkpoint_reached) terminal = "protected-return-c0";
     else if (capture.unallocated != 0u) terminal = "source-timing-unallocated";
     model40_capture_emit(&capture);
@@ -617,6 +694,12 @@ C_INT main(C_INT argc, C_CHAR **argv)
     vm_session_destroy(session);
     if (post_c0_io_diagnostic) {
         return capture.checkpoint_reached && capture.post_c0_io_seen &&
+            capture.unallocated == 0u && !capture.form_limit_reached &&
+            status == TYPE_STATUS_OK ? 0 : 1;
+    }
+    if (fdc_read_data_diagnostic) {
+        return model40_capture_c0a_reached(&capture) &&
+            capture.fdc_read_data_baseline_valid && capture.fdc_read_data_reached &&
             capture.unallocated == 0u && !capture.form_limit_reached &&
             status == TYPE_STATUS_OK ? 0 : 1;
     }

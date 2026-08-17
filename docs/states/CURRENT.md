@@ -2,8 +2,28 @@
 
 ## Current Work
 
-**T393 S2 accepted.** Core publishes copied FDC data-transfer terminal results and Model 40 retains a reset-invalidated private copy; the next receiver is bounded observation of the selected candidate, not a C1 or physical claim.
+**Active: M5 T393 S4 Continuation.** Add a bounded Model-40 capture diagnostic that records only whether the first successful drive-0 `READ DATA` terminal result occurs after C0A. It is diagnostic only and cannot establish C1 or physical qualification.
 
+## M5 T393 S4 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner authorized continued implementation; accepted T393 S2 selects bounded candidate observation. |
+| Objective | Add a trace-free C0A-preconditioned first-successful-READ-DATA diagnostic to the existing Model-40 capture harness. |
+| Non-goals | No raw trace/PC/bytes, firmware import, CPU timing, physical qualification, board/L3 claim or production interface change. |
+| Reference Baseline | T393 S2 copied terminal observation, existing bounded C0A/C1 capture harness and its 2,000,000-retirement containment limit. |
+| Candidate Proposal | [DeskPro FDC operation observation contract](../proposals/m5-deskpro-fdc-operation-observation-contract.md). |
+| Files And ABI Surface | Test capture only plus evidence/history/current records; Core and VM production interfaces remain unchanged. |
+| Applicable Rules | Execution finite semantic checkpoint and trace containment; Architecture copied-boundary invariant; Coding test-boundary discipline. |
+| Verification | Synthetic capture regression, focused FDC and current capture tests, documentation governance, direct diff review. |
+| Expected Markers | One boolean and copied result summary; no event before C0A; failure/absence never reports success. |
+| Asset Needs | Optional owner-managed BYOB inputs only; no asset retained, imported or catalogued. |
+| Reporting Requirements | Record finite contract, outcome and non-success boundary; P1/P2 push and actual-change review. |
+| Stop Conditions | Stop if a raw trace, mutable pointer, unbounded run or physical-time inference becomes necessary. |
+| Exit Criteria | The harness distinguishes synthetic success/failure/reset and a bounded BYOB outcome without claiming C1 from containment. |
+| Original Owner Request | Continue the holistic CPU/timing audit while preserving Core/VM boundaries. |
+| Similar-Issue Sweep | Sweep all capture modes and FDC terminal results for premature success or retained raw data. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T390 S22 `vm-0-5-0390` /
