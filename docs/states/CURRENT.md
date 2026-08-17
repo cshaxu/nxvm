@@ -2,26 +2,7 @@
 
 ## Current Work
 
-## M5 T392 S1 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | New |
-| Admission And Approval | Owner authorized autonomous continuation of the global CPU correctness/timing audit and preservation of Core/VM boundaries. T391 S8 supplies the specific C1-blocked prerequisite. |
-| Objective | Inventory every existing-state finite C1 semantic candidate and determine the earliest admissible checkpoint or functional-defect receiver. |
-| Non-goals | No timing allocation, physical selection, board/device time, firmware/media import, raw trace retention, Core/VM ABI change or L3 claim. |
-| Reference Baseline | T391 S4 observability inventory, T391 S7 aggregate ledger, T391 S8 closure audit, and T390 S36 dependency decision. |
-| Candidate Proposal | [DeskPro 386 C1 semantic endpoint investigation](../proposals/m5-deskpro-386-c1-semantic-endpoint-investigation.md). |
-| Files And ABI Surface | Evidence, history, test-only inventory if required, queue/current; no production ABI. |
-| Applicable Rules | Finite checkpoint rather than containment, existing copied-state boundary, complete candidate disposition, source-policy asset exclusion and no Core/VM bridge. |
-| Verification | Source/owner/caller inventory; candidate ledger cardinality; existing focused C0/C0A/C1 regression; documentation governance. |
-| Expected Markers | T392 S1 C1 candidate-inventory evidence marker and existing S5 capture marker. |
-| Asset Needs | None for inventory; any later replay is owner-managed transient only. |
-| Reporting Requirements | Record each candidate, observable fact, reset/failure state, receiver and admissibility result. |
-| Stop Conditions | Stop and transfer if a candidate needs a new callback, retained raw data, external asset as dependency, or broader device/firmware mechanism. |
-| Exit Criteria | Complete finite candidate ledger with one admissible endpoint, one bounded defect receiver, or explicit no-endpoint transfer. |
-| Original Owner Request | Continue global CPU correctness/timing work toward DeskPro board readiness without breaking the Core/VM boundary. |
-| Similar-Issue Sweep | Include all existing copied retirement, session and selected device observables; keep C0/C0A/C1 and containment distinct. |
+**Active.** T392 remains open between accepted subtasks. S1 exhausts seven existing copied-state C1 candidates: none supplies a new finite endpoint or a reproducible earliest-owner defect. The next receiver is a bounded device/session observability design decision; C1 physical qualification remains blocked. [Evidence](../etc/evidence/t392-s1-c1-existing-state-candidate-inventory.md).
 ## Current Technical Baseline
 
 - **Current developer artifact:** T390 S22 `vm-0-5-0390` /
@@ -48,6 +29,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T392 S1 | Accepted: seven existing-state C1 candidates are fully disposed; no finite endpoint or shared defect is identified, and the next receiver is device/session observability design. [Evidence](../etc/evidence/t392-s1-c1-existing-state-candidate-inventory.md). |
 | T391 | Closed: S1-S8 establish the bounded C0A startup predecessor, complete C1 aggregate disposition and the truthful transfer that C1 physical qualification remains blocked pending a new finite checkpoint or earliest-owner defect. No Core/VM interface, timing, physical, board, firmware or L3 claim. [Closure audit](../etc/evidence/t391-s8-startup-semantic-closure-audit.md). |
 | T389 | Stopped by owner-approved requeue: S1 proves no physical board slice can begin while 80386 successful retirement remains nonphysical; S2 archives the invalid candidate and queues a shared CPU qualification before a fresh board task. No board timing, physical-clock or L3 claim. [Audit](../etc/evidence/t389-s2-stop-and-requeue-audit.md). |
 | T388 | Closed: S1--S9 establish the sole publisher, exhaustive exact-or-nonphysical residual disposition and pre-publication physical-contract rejection. No current CPU profile is physically clock-qualified; board work transfers under this restriction. [Closure audit](../etc/evidence/t388-s9-task-closure-audit.md). |
