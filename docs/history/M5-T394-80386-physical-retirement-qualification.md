@@ -35,3 +35,12 @@ literal instruction bytes would overfit dynamic inputs. It transfers a bounded
 Core-owned normalized eligibility-key design, with no VM state, physical mode
 or board claim.
 [Evidence](../etc/evidence/t394-s2-immutable-stage-mechanism-decision.md).
+## Coordinator Acceptance
+
+After actual-change review of P1 `6f60e382`, the coordinator accepts S2. The
+existing Core/VM surfaces support the conclusion: no current descriptor is
+one-to-one with the complete C0 semantic universe, and the only safe next
+receiver is a Core-owned normalized eligibility key. Both Model-40 routes
+remain deterministic. Focused Core timing and Model-40 composition regressions
+plus documentation governance pass. T394 remains open for a separately
+admitted key/collision-design subtask.

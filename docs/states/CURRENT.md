@@ -2,28 +2,7 @@
 
 ## Current Work
 
-**Active: M5 T394 S2 Continuation.** Define whether a Core-owned immutable qualified-retirement descriptor can enforce a complete finite 80386 stage before physical time publication, without VM state or a profile execution fork. It does not enable physical mode.
-
-## M5 T394 S2 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner authorized continued global CPU instruction/timing audit; accepted T394 S1 selects this bounded shared-Core mechanism decision. |
-| Objective | Inventory and define a validated immutable Core qualification descriptor for finite stage membership, or transfer it if no boundary-safe representation exists. |
-| Non-goals | No physical-mode selection, board/device clock, C0 corpus expansion, C1 replay, VM callback/state, firmware/media operation, guessed timing or L3 claim. |
-| Reference Baseline | T394 S1 admission ledger; T390 S27 C0 82-child matrix; T390 S34 deterministic-scope correction; current two-value Core contract and Model-40 deterministic callers. |
-| Candidate Proposal | [80386 physical-retirement qualification](../proposals/m5-80386-physical-retirement-qualification.md). |
-| Files And ABI Surface | Core private/config validation and test/evidence surfaces only if a descriptor is feasible; no VM-facing runtime callback or mutable cross-boundary layout. |
-| Applicable Rules | Execution finite-stage and complete-batch requirements; Architecture one owner/copy-or-bounded-interface invariant; Coding private mutable-layout/test-boundary discipline. |
-| Verification | Existing immutable configuration pattern/caller sweep, descriptor completeness/validation design, failure/reset/nonpublication test plan, documentation governance and actual diff review. |
-| Expected Markers | One descriptor ownership/lifetime decision, full C0 identity requirements, validation-to-publication boundary and exact S3 implementation or transfer. |
-| Asset Needs | None. |
-| Reporting Requirements | Record every considered existing configuration mechanism, rejection reason, selected ownership, caller sweep and P1/P2 review. |
-| Stop Conditions | Stop and transfer if complete C0 identity needs VM-private history, an unbounded corpus, a mutable pointer/callback or an unverifiable physical selection. |
-| Exit Criteria | A feasible descriptor has an exact immutable Core contract and test matrix, or the earliest owner receives a precise no-mechanism transfer; Model-40 remains deterministic. |
-| Original Owner Request | Audit and repair CPU instruction defects, errors and timing globally while preparing later DeskPro board timing and L3 closure. |
-| Similar-Issue Sweep | Compare every Core creation descriptor, configuration copy/validation path, physical-contract caller and Model-40 construction path for duplicate or bypassable qualification state. |
+**T394 S2 accepted.** Existing configuration cannot represent C0 exactly; Core must first produce a normalized eligibility key. Both Model-40 paths remain deterministic.
 
 ## Current Technical Baseline
 
@@ -51,7 +30,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T394 S1 | Accepted: The C0/C0A/C1/residual admission ledger retains both Model-40 construction paths deterministic and transfers only a shared immutable-stage eligibility mechanism decision. No physical, board or L3 claim. [Evidence](../etc/evidence/t394-s1-80386-physical-qualification-admission-ledger.md). |
+| T394 S2 | Accepted: Existing descriptors cannot express complete C0 membership; only a Core-owned normalized eligibility-key design may proceed. Both Model-40 routes remain deterministic; no physical, board or L3 claim. [Evidence](../etc/evidence/t394-s2-immutable-stage-mechanism-decision.md). |
 | T392 | Closed: S1-S5 exhaust copied C1, VM/session and FDC operation candidates, then repair the missed proposal archival and stale Queue entry; no endpoint or defect exists. Only a separately admitted generic immutable device-operation snapshot plus selected consumer contract can proceed. No Core/VM ABI, CPU timing, physical, board, firmware or L3 claim. [Corrective audit](../etc/evidence/t392-s5-closure-topology-corrective-audit.md). |
 | T391 | Closed: S1-S8 establish the bounded C0A startup predecessor, complete C1 aggregate disposition and the truthful transfer that C1 physical qualification remains blocked pending a new finite checkpoint or earliest-owner defect. No Core/VM interface, timing, physical, board, firmware or L3 claim. [Closure audit](../etc/evidence/t391-s8-startup-semantic-closure-audit.md). |
 | T389 | Stopped by owner-approved requeue: S1 proves no physical board slice can begin while 80386 successful retirement remains nonphysical; S2 archives the invalid candidate and queues a shared CPU qualification before a fresh board task. No board timing, physical-clock or L3 claim. [Audit](../etc/evidence/t389-s2-stop-and-requeue-audit.md). |
