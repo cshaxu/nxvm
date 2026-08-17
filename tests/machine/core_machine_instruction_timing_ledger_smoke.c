@@ -185,6 +185,35 @@ static C_INT timing_ledger_physical_case(const type_unsigned_8 *program,
     return failed;
 }
 
+static C_INT timing_ledger_physical_protected_mov_sreg_memory(C_VOID)
+{
+    static const type_unsigned_8 program[] = { 0x8eu, 0x1eu, 0x00u, 0x10u };
+    const core_machine_config config = {
+        .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
+        .retirement_time_contract = CORE_MACHINE_RETIREMENT_TIME_PHYSICAL
+    };
+    const core_machine_run_budget budget = { 1u, 0u };
+    core_machine_run_result result;
+    timing_ledger_state state = { 0u, 0u, 0u };
+    core_machine *machine = STD_NULL;
+    C_INT failed = core_machine_create(&config, &machine) != TYPE_STATUS_OK ||
+        test_core_machine_fixture_register_reset_mapping(machine,
+            TIMING_LEDGER_RESET_LINEAR, TIMING_LEDGER_RESET_PHYSICAL,
+            TIMING_LEDGER_WINDOW_BYTES) != TYPE_STATUS_OK ||
+        !test_core_machine_fixture_bind_freeze_reset(machine,
+            &timing_ledger_execution_provider, &state) ||
+        !timing_ledger_load(machine, program, sizeof(program));
+
+    if (!failed) {
+        machine->executor_cpu.data.cr0 |= VCPU_CR0_PE;
+        failed |= core_machine_run(machine, budget, &result) != TYPE_STATUS_FAULT ||
+            result.reason != CORE_MACHINE_STOP_FAULT || result.executed != 0u ||
+            result.ticks != 0u || result.elapsed_ticks != 0u ||
+            state.advanced_ticks != 0u;
+    }
+    core_machine_destroy(machine);
+    return failed;
+}
 static C_INT timing_ledger_test_physical_classifier_boundary(C_VOID)
 {
     static const type_unsigned_8 cli[] = { 0xfau };
@@ -210,7 +239,8 @@ static C_INT timing_ledger_test_physical_classifier_boundary(C_VOID)
         timing_ledger_physical_case(mov_sreg_register,
             sizeof(mov_sreg_register), TYPE_STATUS_OK, 2u) ||
         timing_ledger_physical_case(mov_sreg_memory,
-            sizeof(mov_sreg_memory), TYPE_STATUS_OK, 5u);
+            sizeof(mov_sreg_memory), TYPE_STATUS_OK, 5u) ||
+        timing_ledger_physical_protected_mov_sreg_memory();
 }
 
 static C_INT timing_ledger_test_memory(C_VOID)
