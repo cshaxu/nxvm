@@ -10,7 +10,7 @@ firmware compatibility, or L3 claim.
 
 ## Active Subtask
 
-T391 S5 is active: it implements the bounded test-only C1 boot-transfer capture.
+No subtask is active. T391 remains open with S1--S5 retained as compact accepted progress.
 
 ## Accepted Progress
 
@@ -68,3 +68,12 @@ receiver is the bounded test-only C1-transfer capture.
 S5 adds a test-local C1 aggregation mode after C0A and terminates only on the
 existing copied `0:7C00` boolean. It may not change the observer interface,
 Core/VM boundary or any production timing behavior. [Evidence](../etc/evidence/t391-s5-c1-boot-transfer-capture.md).
+
+## Coordinator Acceptance
+
+After actual-change review of P1 `baf2f15c`, the coordinator accepts S5. The
+change is confined to the test capture and its documentation: C0A is excluded,
+the existing copied linear-PC fact becomes only a local boolean, and all prior
+synthetic modes remain in the canonical smoke. Focused capture testing and
+documentation governance pass. T391 remains open; its next receiver is a
+contained owner-managed C1 replay followed by complete batch disposition.
