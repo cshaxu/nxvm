@@ -113,3 +113,12 @@ S8 reconciles every proposal requirement and closes T391: M40-C0A is an
 accepted predecessor, but the retained replay supplies no finite C1 transfer
 checkpoint. Renewed C1 physical qualification remains blocked pending a newly
 admitted finite checkpoint or earliest-owner functional defect. [Evidence](../etc/evidence/t391-s8-startup-semantic-closure-audit.md).
+## Coordinator Acceptance
+
+After actual-change review of P1 `03ceffb5`, the coordinator accepts S8 and
+closes T391. The review confirms the closure audit reconciles every proposal
+requirement, preserves the existing Core/VM boundary, archives the proposal,
+removes the completed Queue candidate, and records the only truthful transfer:
+renewed C1 physical qualification remains blocked pending a newly admitted
+finite semantic checkpoint or earliest-owner functional defect. The focused
+C0/C0A/C1 capture regression and documentation governance pass.
