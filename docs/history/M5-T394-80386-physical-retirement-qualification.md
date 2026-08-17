@@ -50,3 +50,14 @@ S3 defines and reconciles the smallest Core-owned normalized eligibility key
 against T390 S27's complete C0 universe. It excludes literal instruction bytes,
 addresses, firmware/asset identity, VM-owned state and retained callbacks, and
 makes no descriptor, physical, board or L3 change.
+## Coordinator Acceptance
+
+After actual-change review of P1 `5cc0ac20`, the coordinator accepts S3. The
+committed audit is limited to the active packet, indexed evidence and task
+history; it changes no source, ABI, profile, asset or timing behavior. It
+identifies a complete Core-owned value-key dimension set, maps every T390 S27
+C0 owner group to the dimensions required to prevent semantic collapse, and
+explicitly excludes literal/dynamic trace data. Documentation governance and
+diff hygiene pass. T394 remains open for a separately admitted Core
+implementation subtask; both Model-40 construction routes remain deterministic
+and no physical, board or L3 claim is accepted.
