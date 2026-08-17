@@ -2,8 +2,13 @@
 
 ## Current Work
 
-**Idle.** T388 is closed: the shared CPU physical-timebase safety and attribution boundary is complete. All unproved successful retirement remains deterministically timed but explicitly nonphysical; no profile has a physical CPU-clock claim. The next queue candidate is DeskPro 386 board-level timing closure under that retained restriction.
-
+**Current progress:** T389 S1 is accepted. It reconciles the selected Model 40
+board facts and current owner graph after T388, and proves that every Model-40
+clock domain still uses the neutral deterministic `1:1` plan. T388's safety
+closure does not qualify 80386 retirement as a physical clock. T389 therefore
+has no truthful board-clock implementation slice until a separately admitted
+shared 80386 physical-retirement qualification precedes it; the exact transfer
+is retained in the S1 evidence.
 ## Current Technical Baseline
 
 - **Current developer artifact:** T386 S28 `vm-0-5-0389` /
@@ -30,6 +35,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T389 S1 | Accepted: post-T388 Model-40 board reconciliation retains neutral deterministic clock domains and transfers shared 80386 physical-retirement qualification before board-clock implementation. No physical-clock or L3 claim. [Evidence](../etc/evidence/t389-s1-model40-board-timing-reconciliation.md). |
 | T388 | Closed: S1--S9 establish the sole publisher, exhaustive exact-or-nonphysical residual disposition and pre-publication physical-contract rejection. No current CPU profile is physically clock-qualified; board work transfers under this restriction. [Closure audit](../etc/evidence/t388-s9-task-closure-audit.md). |
 | T387 | Closed: source/owner inventory, exact port-`61h` reconciliation and reference qualification transfer the shared physical-timebase then physical-device/firmware prerequisites before any DeskPro L3 audit. No physical-time or L3 claim. [Closure audit](../etc/evidence/t387-s6-task-closure-transfer-audit.md). |
 | T386 | Closed: S29 independently reconciles every selected Model-40 functional owner/proof, corrects the omitted S26 HDC current-gate registration and transfers only board, firmware and physical-media work to the next candidate/TODO. No L3 claim. [Closure audit](../etc/evidence/t386-s29-functional-closure-audit.md). |
