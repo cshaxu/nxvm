@@ -131,7 +131,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
         session->core_machine, &provider);
     if (status == TYPE_STATUS_OK) status = core_machine_reset(session->core_machine);
     for (index = 0u; status == TYPE_STATUS_OK && index < 64u &&
-        capture.count < 64u; ++index) {
+        capture.count < 64u && capture.unallocated == 0u; ++index) {
         status = core_machine_run(session->core_machine, budget, &result);
         if (status != TYPE_STATUS_OK ||
             result.reason == CORE_MACHINE_STOP_FAULT) break;

@@ -76,6 +76,20 @@ S4's evidence and corpus are 80386-only.
 - The rebuilt developer artifact is `vm-0-5-0390`, SHA-256
   `8618F97B6987A4A0D12D932A78346F7F72DD4F1E07D2A7F1188D35889AB271ED`.
 
+## Corrective P2: First-Unallocated Stop
+
+Coordinator review rejected P1 because the capture tool returned failure for an
+unallocated observation only after continuing through its 64-retirement budget.
+P2 makes `capture.unallocated == 0` a loop precondition, so the first copied
+source-unallocated observation is the terminal capture checkpoint.
+
+A project-owned temporary synthetic ROM pair places one known unallocated
+prefix form at reset. The tool reports exactly `count=1 classified=0
+unallocated=1 status=0`, exits nonzero, and deletes the synthetic inputs and
+output. The retained S3 observation smoke continues to prove that the copied
+unallocated record is published before physical rejection and before elapsed
+publication. The normal owner-managed preboot replay remains `64/64`
+classified and exits successfully.
 ## Transfer
 
 This is a preboot prefix, not the S2 corpus completion checkpoint. The selected
