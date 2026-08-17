@@ -2,7 +2,24 @@
 
 ## Current Work
 
-**Active.** T391 remains open between accepted subtasks. S4 finds that a test-local boolean based on the existing copied `linear_pc` can express the named `0:7C00` boot-transfer endpoint without an observer ABI change. The next receiver is a bounded test-only C1-transfer capture; Model-40 remains deterministic and no Core/VM interface or physical-clock selection changed. [Evidence](../etc/evidence/t391-s4-c1-semantic-observability.md).
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation `T391 S5`. |
+| Admission And Approval | Owner approved continued CPU/startup work and requires the Core/VM boundary remain unchanged. S5 is the accepted S4 receiver, limited to a test-only C1 transfer capture. No exception is requested. |
+| Objective | Add a bounded test-only capture mode that begins after the existing C0A endpoint and records only a boolean when existing copied `linear_pc` reaches `0:7C00`. |
+| Non-goals | No production Core/VM source, observer ABI, provider, port route, profile behavior, physical-retirement selection, board/device time, firmware/media import, raw PC/byte output, or L3 claim. |
+| Reference Baseline | Accepted T391 S1--S4, existing Model-40 BYOB retirement-capture test, existing copied retirement observation, and deterministic Model-40 composition. |
+| Candidate Proposal | `docs/proposals/m5-deskpro-386-startup-semantic-readiness.md`; consumes S4's accepted `0:7C00` C1 endpoint. |
+| Files And ABI Surface | Test-only capture and evidence: `tests/products/vm_model40_byob_retirement_capture.c`, `docs/states/CURRENT.md`, T391 history and new S5 evidence. No public or production ABI changes. |
+| Applicable Rules | Architecture/coding: test consumer reads only existing copied snapshot and creates no mirror public contract. Execution convergence: C1 capture is bounded by named C0A and boot-transfer endpoints, never a budget. Documentation: record reset/failure/transfer boundaries. |
+| Verification | Extend canonical synthetic capture with C0A-to-boot-transfer sequence; run focused current capture test, documentation governance, diff hygiene and actual P1 review. |
+| Expected Markers | Existing `M5:T391:S2:C0A-CAPTURE:OK`; new `M5:T391:S5:C1-TRANSFER-CAPTURE:OK`. |
+| Asset Needs | None for the synthetic regression. Any later owner-managed replay remains transient and records no asset identity or raw trace. |
+| Reporting Requirements | Record collection start/end, boolean-only terminal, reset/fault/unallocated/form-capacity handling and the absence of an ABI/runtime change. |
+| Stop Conditions | Stop if the existing snapshot cannot express the boolean endpoint, if C0A cannot be excluded, if the test would retain PC/bytes, or if a production/interface change is required. |
+| Exit Criteria | Canonical synthetic test proves pre-C0A observations are excluded, C0A endpoint is excluded, post-C0A observations aggregate, `0:7C00` sets the terminal boolean, and reset/failure boundaries remain unchanged. |
+| Original Owner Request | Continue the global CPU/timing audit toward DeskPro board readiness without breaking the Core/VM interface boundary. |
+| Similar-Issue Sweep | Keep legacy C0, C0A and old C1 protected-entry modes behaviorally covered; distinguish the named boot-transfer boolean from a raw PC or a containment terminal. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T390 S22 `vm-0-5-0390` /

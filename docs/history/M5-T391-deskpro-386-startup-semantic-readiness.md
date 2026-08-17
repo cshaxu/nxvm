@@ -10,7 +10,7 @@ firmware compatibility, or L3 claim.
 
 ## Active Subtask
 
-No subtask is active. T391 remains open with S1--S4 retained as compact accepted progress.
+T391 S5 is active: it implements the bounded test-only C1 boot-transfer capture.
 
 ## Accepted Progress
 
@@ -62,3 +62,9 @@ entry and post-C0 I/O out of C1, and selects only an existing copied
 interface, composition, physical selection or timing behavior changed.
 Documentation governance and diff hygiene pass. T391 remains open; its next
 receiver is the bounded test-only C1-transfer capture.
+
+### S5: C1 Boot-Transfer Capture
+
+S5 adds a test-local C1 aggregation mode after C0A and terminates only on the
+existing copied `0:7C00` boolean. It may not change the observer interface,
+Core/VM boundary or any production timing behavior. [Evidence](../etc/evidence/t391-s5-c1-boot-transfer-capture.md).

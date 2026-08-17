@@ -41,6 +41,9 @@ typedef struct model40_retirement_capture {
     type_unsigned_32 form_count;
     type_bool c0a_diagnostic;
     type_bool c0a_collecting;
+    type_bool c1_transfer_diagnostic;
+    type_bool c1_collecting;
+    type_bool c1_transfer_reached;
     type_unsigned_8 terminal_bytes[CORE_MACHINE_CPU_DIAGNOSTIC_BYTES];
     type_unsigned_8 terminal_byte_count;
     type_bool checkpoint_reached;
@@ -218,6 +221,30 @@ static C_INT model40_capture_form_matches(
         form->disposition == observation->timing_disposition;
 }
 
+static C_VOID model40_capture_record_post_c0_io(
+    model40_retirement_capture *capture,
+    const core_machine_retirement_observation *observation)
+{
+    type_unsigned_8 opcode_index;
+    type_unsigned_8 opcode;
+
+    if (capture == STD_NULL || observation == STD_NULL ||
+        !capture->checkpoint_reached || capture->post_c0_io_seen) return;
+    opcode_index = model40_capture_opcode_index(observation);
+    opcode = opcode_index < observation->point.byte_count ?
+        observation->point.bytes[opcode_index] : 0xffu;
+    if ((opcode == 0xe4u || opcode == 0xe5u || opcode == 0xe6u ||
+        opcode == 0xe7u) && opcode_index + 1u < observation->point.byte_count) {
+        capture->post_c0_io_seen = TYPE_TRUE;
+        capture->post_c0_io_port_known = TYPE_TRUE;
+        capture->post_c0_io_port = observation->point.bytes[opcode_index + 1u];
+        capture->post_c0_io_read = opcode == 0xe4u || opcode == 0xe5u;
+    } else if (opcode == 0xecu || opcode == 0xedu || opcode == 0xeeu ||
+        opcode == 0xefu) {
+        capture->post_c0_io_seen = TYPE_TRUE;
+        capture->post_c0_io_read = opcode == 0xecu || opcode == 0xedu;
+    }
+}
 static C_VOID model40_capture_observe(C_VOID *opaque,
     const core_machine_retirement_observation *observation)
 {
@@ -233,7 +260,8 @@ static C_VOID model40_capture_observe(C_VOID *opaque,
     type_bool aggregate;
 
     if (capture == STD_NULL || observation == STD_NULL) return;
-    aggregate = !capture->c0a_diagnostic || capture->c0a_collecting;
+    aggregate = capture->c1_transfer_diagnostic ? capture->c1_collecting :
+        (!capture->c0a_diagnostic || capture->c0a_collecting);
     if (!aggregate) {
         if (!capture->observation_seen) capture->observation_seen = TYPE_TRUE;
         else if (capture->previous_protected_mode && !observation->protected_mode) {
@@ -242,6 +270,10 @@ static C_VOID model40_capture_observe(C_VOID *opaque,
         }
         if (observation->protected_mode) capture->protected_mode_seen = TYPE_TRUE;
         capture->previous_protected_mode = observation->protected_mode;
+        if (capture->c1_transfer_diagnostic) {
+            model40_capture_record_post_c0_io(capture, observation);
+            if (capture->post_c0_io_seen) capture->c1_collecting = TYPE_TRUE;
+        }
         return;
     }
     ++capture->count;
@@ -278,18 +310,10 @@ static C_VOID model40_capture_observe(C_VOID *opaque,
     if (opcode == 0x0fu && opcode_index + 1u < observation->point.byte_count) {
         escape_opcode = observation->point.bytes[opcode_index + 1u];
     }
-    if (capture->checkpoint_reached && !capture->post_c0_io_seen) {
-        if ((opcode == 0xe4u || opcode == 0xe5u || opcode == 0xe6u ||
-            opcode == 0xe7u) && opcode_index + 1u < observation->point.byte_count) {
-            capture->post_c0_io_seen = TYPE_TRUE;
-            capture->post_c0_io_port_known = TYPE_TRUE;
-            capture->post_c0_io_port = observation->point.bytes[opcode_index + 1u];
-            capture->post_c0_io_read = opcode == 0xe4u || opcode == 0xe5u;
-        } else if (opcode == 0xecu || opcode == 0xedu || opcode == 0xeeu ||
-            opcode == 0xefu) {
-            capture->post_c0_io_seen = TYPE_TRUE;
-            capture->post_c0_io_read = opcode == 0xecu || opcode == 0xedu;
-        }
+    model40_capture_record_post_c0_io(capture, observation);
+    if (capture->c1_transfer_diagnostic &&
+        observation->point.linear_pc == MODEL40_BOOT_SECTOR_LINEAR_PC) {
+        capture->c1_transfer_reached = TYPE_TRUE;
     }
     group_extension = model40_capture_group_extension(observation, opcode_index, opcode);
     name = model40_capture_form_name(observation, opcode_index);
@@ -470,12 +494,43 @@ static C_INT model40_capture_synthetic_c0a_smoke(C_VOID)
     STD_PRINTF("M5:T391:S2:C0A-CAPTURE:OK\n");
     return 0;
 }
+static C_INT model40_capture_synthetic_c1_transfer_smoke(C_VOID)
+{
+    model40_retirement_capture capture = { 0 };
+    core_machine_retirement_observation observation = { 0 };
+
+    capture.c1_transfer_diagnostic = TYPE_TRUE;
+    observation.cpu_profile = CORE_MACHINE_CPU_PROFILE_80386;
+    observation.timing_disposition = CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED;
+    observation.point.byte_count = 2u;
+    observation.point.bytes[0] = 0x90u;
+    observation.protected_mode = TYPE_TRUE;
+    model40_capture_observe(&capture, &observation);
+    observation.protected_mode = TYPE_FALSE;
+    model40_capture_observe(&capture, &observation);
+    observation.point.bytes[0] = 0xe4u;
+    observation.point.bytes[1] = 0x61u;
+    model40_capture_observe(&capture, &observation);
+    observation.point.bytes[0] = 0x90u;
+    observation.point.byte_count = 1u;
+    observation.point.linear_pc = 0x00001000u;
+    model40_capture_observe(&capture, &observation);
+    observation.point.linear_pc = MODEL40_BOOT_SECTOR_LINEAR_PC;
+    model40_capture_observe(&capture, &observation);
+    if (!capture.checkpoint_reached || !capture.post_c0_io_seen ||
+        !capture.c1_collecting || !capture.c1_transfer_reached ||
+        capture.count != 2u || capture.classified != 2u ||
+        capture.unallocated != 0u || capture.form_count != 1u) return 1;
+    STD_PRINTF("M5:T391:S5:C1-TRANSFER-CAPTURE:OK\n");
+    return 0;
+}
 C_INT main(C_INT argc, C_CHAR **argv)
 {
     if (argc == 2 && argv != STD_NULL &&
         !STD_STRCMP(argv[1], "--synthetic-c0-smoke")) {
         return model40_capture_synthetic_c0_smoke() ||
-            model40_capture_synthetic_c0a_smoke();
+            model40_capture_synthetic_c0a_smoke() ||
+            model40_capture_synthetic_c1_transfer_smoke();
     }
     if (argc == 2 && argv != STD_NULL &&
         !STD_STRCMP(argv[1], "--synthetic-c0a-smoke")) {
@@ -498,13 +553,16 @@ C_INT main(C_INT argc, C_CHAR **argv)
         !STD_STRCMP(argv[7], "--post-c0-io-diagnostic");
     C_INT c0a_diagnostic = argc == 8 && argv != STD_NULL &&
         !STD_STRCMP(argv[7], "--c0a-diagnostic");
+    C_INT c1_transfer_diagnostic = argc == 8 && argv != STD_NULL &&
+        !STD_STRCMP(argv[7], "--c1-transfer-diagnostic");
 
     if (!model40_capture_create_session(argc, argv, &session)) {
         STD_FPRINTF(STD_STDERR, "usage: capture even-image even-digest "
-            "odd-image odd-digest provenance floppy-image [--terminal-bytes|--c1-diagnostic|--post-c0-io-diagnostic|--c0a-diagnostic]\n");
+            "odd-image odd-digest provenance floppy-image [--terminal-bytes|--c1-diagnostic|--post-c0-io-diagnostic|--c0a-diagnostic|--c1-transfer-diagnostic]\n");
         return 2;
     }
     capture.c0a_diagnostic = c0a_diagnostic != 0;
+    capture.c1_transfer_diagnostic = c1_transfer_diagnostic != 0;
     provider.callback = model40_capture_observe;
     provider.context = &capture;
     status = core_machine_set_retirement_observation_provider(
@@ -513,20 +571,23 @@ C_INT main(C_INT argc, C_CHAR **argv)
     for (index = 0u; status == TYPE_STATUS_OK && index <
         MODEL40_CAPTURE_RETIREMENT_LIMIT &&
         (!capture.checkpoint_reached || (c1_diagnostic && !capture.c1_checkpoint_reached) ||
+        (c1_transfer_diagnostic && !capture.c1_transfer_reached) ||
         ((post_c0_io_diagnostic || c0a_diagnostic) && !capture.post_c0_io_seen)) &&
         capture.unallocated == 0u && !capture.form_limit_reached; ++index) {
         elapsed_before_terminal = result.elapsed_ticks;
         status = core_machine_run(session->core_machine, budget, &result);
         if (status != TYPE_STATUS_OK || result.reason == CORE_MACHINE_STOP_FAULT) break;
     }
-    if ((post_c0_io_diagnostic || c0a_diagnostic) && capture.post_c0_io_seen) terminal = "post-c0-io";
+    if (c1_transfer_diagnostic && capture.c1_transfer_reached) terminal = "c1-boot-transfer";
+    else if ((post_c0_io_diagnostic || c0a_diagnostic) && capture.post_c0_io_seen) terminal = "post-c0-io";
     else if (c1_diagnostic && capture.c1_checkpoint_reached) terminal = "c1-protected-entry";
     else if (c1_diagnostic && capture.unallocated != 0u) terminal =
         "c1-source-timing-unallocated";
     else if (capture.form_limit_reached) terminal = "form-capacity";
     else if (status != TYPE_STATUS_OK) terminal = "run-status";
     else if (result.reason == CORE_MACHINE_STOP_FAULT) terminal = "fault";
-    else if (c1_diagnostic) terminal = "c1-retirement-budget-exhausted";
+    else if (c1_transfer_diagnostic) terminal = "c1-transfer-retirement-budget-exhausted";
+        else if (c1_diagnostic) terminal = "c1-retirement-budget-exhausted";
     else if (capture.checkpoint_reached) terminal = "protected-return-c0";
     else if (capture.unallocated != 0u) terminal = "source-timing-unallocated";
     model40_capture_emit(&capture);
@@ -557,6 +618,11 @@ C_INT main(C_INT argc, C_CHAR **argv)
         return capture.checkpoint_reached && capture.post_c0_io_seen &&
             capture.unallocated == 0u && !capture.form_limit_reached &&
             status == TYPE_STATUS_OK ? 0 : 1;
+    }
+    if (c1_transfer_diagnostic) {
+        return capture.checkpoint_reached && capture.post_c0_io_seen &&
+            capture.c1_transfer_reached && capture.unallocated == 0u &&
+            !capture.form_limit_reached && status == TYPE_STATUS_OK ? 0 : 1;
     }
     if (c1_diagnostic) {
         return capture.checkpoint_reached && capture.c1_checkpoint_reached &&
