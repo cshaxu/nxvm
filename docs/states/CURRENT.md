@@ -2,26 +2,7 @@
 
 ## Current Work
 
-**Active packet:** T390 S9 (Continuation) -- 80386 real-address far-indirect JMP timing qualification.
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation -- T390 is the latest open numeric task; S9 follows accepted S8. |
-| Admission And Approval | Owner approved continuation in this conversation on 2026-08-17. The owner-approved root-cause continuation now covers the observed 80386 CS-overridden `FF /5` far-indirect JMP and its exact real-address and successful protected same-privilege direct-code rows at the existing shared Core owner. No exception is approved. |
-| Objective | Reconcile the exact Intel 80386 PRM `FF /5` `JMP m16:16` rows reached by the observed CS-overridden form: real-address `43+m` and successful protected same-privilege direct-code `31+m`. Prove their `m` next-instruction lexical term through the existing shared preview owner, while retaining gate/task/other privilege routes nonphysical. |
-| Non-goals | No VM86, call-gate, task-switch, privilege-changing or other protected far-transfer qualification; no broad prefix policy change; no decoder/execution semantics, ROM/media, profile selection, board clock, device timing, or L3 claim. |
-| Reference Baseline | Accepted T390 S8 artifact `vm-0-5-0390`, SHA-256 `846506BC1A43D4F2BEDFEF3FFCB2595ADEDF74E359B4FB590F055036BAA3495E`; Intel 80386 PRM, instruction `JMP` page 318 and clocks definition page 248; current Core control/stack classifier and T390 S8 evidence. |
-| Candidate Proposal | [80386 physical-retirement qualification](../proposals/m5-80386-physical-retirement-qualification.md). |
-| Files And ABI Surface | Private Core implementation/ledger in `src/core/machine/machine.c`; focused Core timing-ledger smoke; T390 evidence/history/status/index as needed. No public ABI or VM/profile change. |
-| Applicable Rules | Execution, documentation, architecture and coding rules; source policy. Invariants: one shared Core timing owner; exact Intel-primary row; immutable external assets; physical-contract failure before publication for any excluded context; tests do not create a public test-only API. |
-| Verification | Focused timing-ledger smoke proves the CS-overridden memory far JMP real-address `43+m` and successful protected same-privilege direct-code `31+m` rows with known target lexemes; a gate/other protected route remains rejected prepublication; similar `FF /3` and direct far-JMP rows are swept; normal bounded redacted BYOB replay advances or records its next terminal; build, current gates, documentation governance, `git diff --check`, and coordinator actual-diff review pass. |
-| Expected Markers | Existing timing-ledger smoke success marker; existing bounded `M5:T390:S8:BYOB-BOOT-CAPTURE` output or its successor only if the runner changes; S9 evidence references source citation and final artifact digest. |
-| Asset Needs | Optional owner-managed external ROM and boot media only for bounded replay; no media, ROM bytes, identity, path, hash, raw trace or terminal bytes enter Git. |
-| Reporting Requirements | P1 is rejected by coordinator review: P2 must repair the discovered documentation bytes/formatting and add a project-owned positive protected same-privilege direct-code regression; it then reports focused/full verification and returns for acceptance. |
-| Stop Conditions | Stop and transfer if the exact source row or required preview context is unavailable, if the form fails functionally, if a wider decoder/state mechanism is necessary, or if replay reaches a new unallocated success. Do not substitute an emulator count or enable a partial physical profile. |
-| Exit Criteria | The exact real-address and successful protected same-privilege direct-code memory far-JMP rows and next-term semantics are source-cited, one Core owner produces their expected ticks for the observed prefix form, gate/task/other protected routes stay nonphysical, the similar-form sweep is recorded, and required verification/evidence/acceptance are complete. |
-| Original Owner Request | Continue the Queue-ordered 80386 physical-retirement qualification before returning to DeskPro board timing; user additionally required Intel manual authority for 80386 instruction behavior. |
-| Similar-Issue Sweep | Inspect all existing 80386 far CALL/JMP direct/memory ledger entries and source consumers, all accepted segment-prefix routes through the control/stack owner, and existing evidence that states the affected row; repair only exact in-scope current ownership and record historical discrepancy without rewriting accepted history. |
+**Active.** T390 remains open between accepted subtasks.
 
 ## Current Technical Baseline
 
@@ -49,7 +30,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T390 S8 | Accepted: P1/P2 qualify real-address memory-source `MOV Sreg,r/m16` at 5 Core ticks and directly prove protected-mode physical rejection. A bounded redacted replay reaches 18,228 successful retirements and transfers its next terminal; full boot corpus, physical-profile selection, board timing and L3 remain T390 work. [Evidence](../etc/evidence/t390-s8-mov-sreg-memory-qualification.md). |
+| T390 S9 | Accepted after corrective P2: the shared Core far-indirect JMP owner now uses Intel 80386 `43+m` real-address and `31+m` successful protected same-privilege direct-code rows; project-owned regressions prove both physical paths. A bounded redacted replay reaches 18,315 successful retirements and transfers one new terminal; physical-profile selection, board timing and L3 remain open. [Evidence](../etc/evidence/t390-s9-far-indirection-jmp-qualification.md). |
 | T389 | Stopped by owner-approved requeue: S1 proves no physical board slice can begin while 80386 successful retirement remains nonphysical; S2 archives the invalid candidate and queues a shared CPU qualification before a fresh board task. No board timing, physical-clock or L3 claim. [Audit](../etc/evidence/t389-s2-stop-and-requeue-audit.md). |
 | T388 | Closed: S1--S9 establish the sole publisher, exhaustive exact-or-nonphysical residual disposition and pre-publication physical-contract rejection. No current CPU profile is physically clock-qualified; board work transfers under this restriction. [Closure audit](../etc/evidence/t388-s9-task-closure-audit.md). |
 | T387 | Closed: source/owner inventory, exact port-`61h` reconciliation and reference qualification transfer the shared physical-timebase then physical-device/firmware prerequisites before any DeskPro L3 audit. No physical-time or L3 claim. [Closure audit](../etc/evidence/t387-s6-task-closure-transfer-audit.md). |

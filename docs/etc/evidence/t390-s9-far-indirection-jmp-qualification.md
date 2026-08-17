@@ -19,3 +19,7 @@ A rebuilt owner-managed, redacted Model-40 boot-media replay classified the prev
 ## Verification
 
 Focused timing-ledger smoke, full 283/283 current gates, documentation governance and diff hygiene pass. The S9 developer artifact is `vm-0-5-0390` / `build/output/nxvm_0_5_0390.exe`, SHA-256 `F20E1C1B8398B5D915C60FBBD31C304E7A330C2DA65E748FE57DF8E841EA97C4`. P1 coordinator review rejected the shared-row implementation and malformed documentation; P2 supplies the separated protected row, positive regression and documentation repair. Coordinator re-review remains required before acceptance.
+
+## Coordinator Acceptance
+
+The coordinator rejected P1 after actual-diff review: it reused the real-address base for the protected row, lacked a project-owned positive protected proof, and contained malformed documentation. P2 gives the protected same-privilege direct-code form its separate exact row, proves `31+1 = 32` through a project-owned transition fixture, repairs the documentation record, and preserves the real-address `43+1 = 44` proof. Independent actual-change review, focused smoke, 283/283 current gates, documentation governance and diff hygiene pass. S9 is accepted; the new redacted terminal transfers to the next T390 receiver. No physical profile, board timing or L3 claim is accepted.

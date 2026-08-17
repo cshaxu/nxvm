@@ -185,3 +185,11 @@ S8 qualifies the observed real-address memory-source MOV Sreg,r/m16 at the Intel
 ## Coordinator Acceptance
 
 After actual-change review of P1 c1021cef and P2 86632441, the coordinator accepts S8. T390 remains open; the next receiver must identify and disposition the transferred terminal before replay continues.
+
+### S9: Far-Indirection JMP Qualification
+
+S9 corrects the shared 80386 `FF /5` far-memory JMP timing owner: real-address uses the Intel `43+m` row and the observed successful protected same-privilege direct-code route uses its separate `31+m` row. Project-owned physical regressions prove both rows with known one-component targets; gate, task, privilege-changing and other unproven protected routes remain nonphysical. A bounded redacted replay reaches 18,315 successful retirements and transfers a new terminal. It makes no physical-profile, board-time or L3 claim.
+
+## Coordinator Acceptance
+
+After actual-change review, P1 `640af8e1` is rejected because it reused the real-address base for protected mode, lacked a positive protected proof and malformed its documentation. Corrective P2 `d22c49f4` separates the exact protected row, adds the project-owned transition proof and repairs the record. The coordinator accepts S9 after focused smoke, full 283/283 current-gate, documentation-governance and diff-hygiene replays. T390 remains open; the next receiver must identify and disposition the transferred terminal before later board work.
