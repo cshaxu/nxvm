@@ -2,8 +2,6 @@
 
 ## Current Work
 
-## M5 T386 Progress
-
 - **S25 accepted:** `f3701196` and `baf0a8eb` complete the external-ROM
   startup compatibility receiver.  Generic immutable-ROM aliases, bounded
   original-80386 control-register compatibility, D4 mapping/reset and shared
