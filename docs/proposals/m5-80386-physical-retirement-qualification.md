@@ -22,12 +22,16 @@ form remains explicitly nonphysical and is rejected by the existing physical
 contract before elapsed time or device clocks advance.
 
 The task owns the shared form/context qualification, classification and
-physical-contract enablement proof. It may repair a bounded earliest Core
-classifier/capture only with a complete similar-form sweep. It must prove that
-the selected Model-40 profile cannot select physical retirement until its
-approved corpus is fully covered, and must preserve failure atomicity,
-physical-mode rejection and deterministic behavior for every excluded form.
-
+physical-contract enablement proof. Its corpus is admitted as named, finite
+semantic checkpoint stages, each with a complete batch form/context matrix.
+A retirement budget is containment only and is never a success criterion.
+The task may repair a bounded Core classifier/capture only after the relevant
+stage has collected its complete matrix and the batch disposition identifies
+the exact rows and transfers. It must prove that the selected Model-40 profile
+cannot select physical retirement until its approved stage corpus is fully
+covered, and must preserve failure atomicity, physical-mode rejection and
+deterministic behavior for every excluded form. A first-unallocated replay is
+diagnostic input to that batch process, not the default unit of CPU repair.
 ## Non-goals And Stop Conditions
 
 No guessed cycle count; universal 80386 instruction-completeness claim;

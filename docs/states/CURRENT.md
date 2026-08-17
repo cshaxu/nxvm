@@ -2,8 +2,26 @@
 
 ## Current Work
 
-**Active.** T390 remains open between accepted subtasks.
+**Active packet:** T390 S16 (Continuation) -- Model-40 checkpoint and finite-corpus disposition audit.
 
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation -- T390 remains the latest open task; S16 follows accepted S15. |
+| Admission And Approval | Owner-approved correction of the former first-unallocated loop: use only owner-managed local ROM/media and do not retain their identity, path, digest, bytes, PC data or raw trace. |
+| Objective | Determine whether the selected pre-7C00 execution is normal POST progress, media/FDC progression failure, or a CPU/ROM/control-flow defect; freeze a finite named 80386 corpus/checkpoint and its batch-classification/transfer plan. |
+| Non-goals | No next single-instruction timing repair, no raised replay cap as a substitute for diagnosis, no Core/profile implementation, physical retirement enablement, board timing or L3 claim. |
+| Reference Baseline | Accepted S15 evidence/artifact, S2 observation contract, S5 boot-media terminal, S13 checkpoint boundary and current selected 1 MiB Model-40 composition. |
+| Candidate Proposal | [80386 physical-retirement qualification](../proposals/m5-80386-physical-retirement-qualification.md). |
+| Files And ABI Surface | T390 evidence/status and, only if needed, proposal clarification; no production, Core, VM-profile, public ABI or external asset change. |
+| Applicable Rules | Execution, documentation, architecture, coding and source policy; actual-diff review, one observer path and bounded external research containment. |
+| Verification | Reproduce the existing bounded normalized observation; inspect capture/session/control routes and selected configuration; reconcile the disposition against source and named checkpoint; docs, diff and actual review. |
+| Expected Markers | Existing normalized capture marker only; no new physical or L3 marker. |
+| Asset Needs | External owner-managed Model-40 ROM pair and bootable 1.2 MB floppy only; temporary normalized output is deleted after exit. |
+| Reporting Requirements | Complete one audit P with finite corpus/checkpoint definition, batch matrix/transfer receiver and coordinator actual-diff review. |
+| Stop Conditions | Missing source/capture basis, unbounded or asset-identifying record, unresolved diagnosis, or any request to assign a timing row without exact Intel evidence. |
+| Exit Criteria | One truthful diagnostic disposition; finite named corpus/checkpoint; all successful-form/context collection and batch-classification plan; no physical-retirement, board or L3 overclaim. |
+| Original Owner Request | Stop incremental single-form repair as the default and establish the checkpoint/corpus disposition required before DeskPro board timing. |
+| Similar-Issue Sweep | Inspect all T390 S2--S15 checkpoint, observer, capture-limit, first-unallocated and physical-contract claims for accidental incremental or success-by-budget language. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T390 S15 `vm-0-5-0390` /
