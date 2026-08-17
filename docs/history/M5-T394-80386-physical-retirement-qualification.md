@@ -121,3 +121,6 @@ and T387's source-backed board conversion remains the earliest receiver. Core
 key/descriptor validation and prepublication rejection are unchanged. Current
 gates, documentation governance and diff hygiene pass. No physical descriptor,
 board time or L3 claim is accepted.
+### S7: Task Closure Audit
+
+S7 closes T394: the complete C0 qualification set and Core safety mechanism transfer intact to the queued DeskPro board clock-plan contract. [Evidence](../etc/evidence/t394-s7-physical-qualification-closure-audit.md).
