@@ -2,8 +2,28 @@
 
 ## Current Work
 
-**Idle.**
+**Active: M5 T393 S1 New.** Freeze the Core-owned FDC operation-result publisher and selected Model-40 copied-consumer contract before implementation.
 
+## M5 T393 S1 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New |
+| Admission And Approval | Owner authorized continued implementation and prompt in-scope repair on 2026-08-17; T392 explicitly transferred this separately admitted prerequisite. |
+| Objective | Freeze the complete FDC operation-result publisher, reset/failure and Model-40 consumer contract. |
+| Non-goals | No endpoint, physical time, board/L3 claim, ROM/media import, raw trace, private pointer or VM-specific Core callback. |
+| Reference Baseline | T392 S5 `ab4807b2`, Core FDC completion paths, Model-40 composition and owner-managed local technical research. |
+| Candidate Proposal | [DeskPro FDC operation observation contract](../proposals/m5-deskpro-fdc-operation-observation-contract.md). |
+| Files And ABI Surface | Documentation/evidence only in S1; later code requires a copied Core interface and VM consumer, never mutable layouts. |
+| Applicable Rules | Execution coverage and corrective lifecycle; Documentation topology; Architecture copied-interface and dependency invariants; source policy. |
+| Verification | Direct publisher/caller/reference sweep, `git diff --check`, focused FDC tests and documentation governance gate. |
+| Expected Markers | Complete publisher batch, exact reset/failure disposition, one consumer decision and no runtime change in S1. |
+| Asset Needs | Read-only owner-managed technical text and local references only; no asset retained or committed. |
+| Reporting Requirements | Durable evidence, actual P1 review, P2 acceptance and explicit transfer if no finite consumer exists. |
+| Stop Conditions | Stop before implementation if any publisher/consumer needs a private pointer, VM-specific Core callback, raw trace or unbounded semantic condition. |
+| Exit Criteria | Every frozen publisher and consumer candidate has a disposition and the next implementation contract is finite. |
+| Original Owner Request | Continue holistic CPU/timing audit while preserving the Core/VM boundary and promptly repair confirmed defects. |
+| Similar-Issue Sweep | Sweep all FDC completion, result, IRQ, reset, DMA-terminal and Model-40 composition paths; transfer other devices. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T390 S22 `vm-0-5-0390` /

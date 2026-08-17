@@ -22,6 +22,7 @@ binds the retained DeskPro candidates below; the preceding shared 80386 physical
 Detailed scope, acceptance conditions, and common constraints remain in these
 shared proposals and in each candidate's linked proposal.
 
+1. [DeskPro FDC operation observation contract](../proposals/m5-deskpro-fdc-operation-observation-contract.md).
 1. [80386 physical-retirement qualification](../proposals/m5-80386-physical-retirement-qualification.md).
 1. [Core memory-device route registry scalability](../proposals/m5-core-memory-route-registry-scalability.md).
 1. [DeskPro 386 board-level timing closure](../proposals/m5-deskpro-386-board-level-timing-closure.md).
