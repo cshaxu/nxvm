@@ -7,3 +7,7 @@ Focused timing-ledger proof covers positive register admission and memory reject
 S15 artifact SHA-256: `
 9A0996D0C207BEA9848EEE42BC268AF58A1922C6CDABBF0A376AE36B22391540
 `.
+
+## Coordinator Acceptance
+
+Actual-diff review of P1 confirms one private Core owner and one exact timing row: operand-size `D3 /2` register RCL with CL count is admitted at nine ticks. The decoder retains the existing prefix boundary and rejects memory, native-size and other group-2 forms through the physical classifier. The focused ledger smoke was independently rerun successfully. The retained 2,000,000-retirement replay removes the transferred unallocated terminal but remains a budget-exhausted, pre-7C00 observation, not a board, firmware, corpus-completion, physical-clock or L3 acceptance.

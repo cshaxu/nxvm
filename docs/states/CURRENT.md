@@ -2,32 +2,13 @@
 
 ## Current Work
 
-**Active packet:** T390 S15 (Continuation) -- 80386 operand-size RCL-CL qualification.
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation -- T390 remains latest open task; S15 follows accepted S14. |
-| Admission And Approval | Owner standing approval for Queue-ordered T390 continuation; scope is observed `66 D3 /2` register RCL with CL count. |
-| Objective | Qualify exactly the observed operand-size 32-bit register RCL-CL form at Intel's nine-clock register row. |
-| Non-goals | No memory, immediate, native-size, other rotate, profile physical enablement, board timing or L3 claim. |
-| Reference Baseline | Accepted S13 artifact and Intel 80386 PRM RCL table printed page 372. |
-| Candidate Proposal | [80386 physical-retirement qualification](../proposals/m5-80386-physical-retirement-qualification.md). |
-| Files And ABI Surface | Private Core ledger/classifier, focused smoke, T390 evidence/status only; no public ABI. |
-| Applicable Rules | Execution, architecture, coding, documentation, source policy; Intel-primary exact row and unsupported-success rejection. |
-| Verification | Focused physical admission at nine ticks plus excluded shapes; bounded redacted replay, current gate, docs, diff, actual review. |
-| Expected Markers | Timing-ledger success and normalized capture only. |
-| Asset Needs | Owner-managed external assets only; no external data in Git. |
-| Reporting Requirements | Complete P1, coordinator review, acceptance/correction. |
-| Stop Conditions | Missing exact row/capture/owner, fault, or next unallocated terminal. |
-| Exit Criteria | Exact form source-cited, one owner, excluded shapes reject, required proof/evidence/acceptance complete. |
-| Original Owner Request | Continue shared 80386 qualification before DeskPro board timing. |
-| Similar-Issue Sweep | Inspect D3 group-2 paths, RCL count variants and existing tests. |
+**Active.** T390 remains open between accepted subtasks.
 
 ## Current Technical Baseline
 
-- **Current developer artifact:** T390 S13 `vm-0-5-0390` /
+- **Current developer artifact:** T390 S15 `vm-0-5-0390` /
   `build/output/nxvm_0_5_0390.exe`, SHA-256
-  `9810495E3258E8395050C55452E4DEC20FD361239F2D9F143076DB2CBC7BA227`.
+  `9A0996D0C207BEA9848EEE42BC268AF58A1922C6CDABBF0A376AE36B22391540`.
   T386 closes selected-device functional completeness at S29; its retained
   [closure audit](../etc/evidence/t386-s29-functional-closure-audit.md) fixes
   HDC current-gate coverage and transfers board, firmware and physical work.
@@ -49,7 +30,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T390 S14 | Accepted corrective: S13 capture proof explicitly distinguishes 7C00 checkpoint success from budget exhaustion; corrected evidence records the new unallocated RCL-CL terminal. Physical-profile selection, board timing and L3 remain open. [Evidence](../etc/evidence/t390-s13-corpus-checkpoint.md). |
+| T390 S15 | Accepted: shared Core now admits only the observed operand-size register RCL-CL form at Intel's nine-clock row; memory and other forms remain nonphysical. The bounded replay has no unallocated success through 2,000,000 retirements but exhausts before the 7C00 checkpoint; physical-profile selection, corpus/checkpoint disposition, board timing and L3 remain open. [Evidence](../etc/evidence/t390-s15-rcl-cl.md). |
 | T389 | Stopped by owner-approved requeue: S1 proves no physical board slice can begin while 80386 successful retirement remains nonphysical; S2 archives the invalid candidate and queues a shared CPU qualification before a fresh board task. No board timing, physical-clock or L3 claim. [Audit](../etc/evidence/t389-s2-stop-and-requeue-audit.md). |
 | T388 | Closed: S1--S9 establish the sole publisher, exhaustive exact-or-nonphysical residual disposition and pre-publication physical-contract rejection. No current CPU profile is physically clock-qualified; board work transfers under this restriction. [Closure audit](../etc/evidence/t388-s9-task-closure-audit.md). |
 | T387 | Closed: source/owner inventory, exact port-`61h` reconciliation and reference qualification transfer the shared physical-timebase then physical-device/firmware prerequisites before any DeskPro L3 audit. No physical-time or L3 claim. [Closure audit](../etc/evidence/t387-s6-task-closure-transfer-audit.md). |
