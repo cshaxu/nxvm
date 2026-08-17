@@ -2,8 +2,30 @@
 
 ## Current Work
 
-**T394 closed.** Shared 80386 C0 qualification is complete and transfers intact to the queued DeskPro board-level timing closure; no physical clock or L3 claim is accepted.
+**T395 S1 active.** Audit Core's memory-device route registry capacity,
+registration/freeze/rollback semantics and all fixed-capacity consumers before
+implementing the bounded growable mechanism.
 
+## M5 T395 S1 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New |
+| Admission And Approval | Owner continuing global correctness/timing authorization; T394 is task-level closed and queue order selects this next Core prerequisite. No exception. |
+| Objective | Establish the finite route-capacity universe, exact existing semantics and implementation contract for growable private Core memory-device registration. |
+| Non-goals | No DeskPro board timing, ROM mapping behavior change, physical retirement, VM/Core ABI, firmware/media or L3 claim. |
+| Reference Baseline | Core memory route registry source, queued T395 proposal, representative Model-40 and non-Model-40 compositions. |
+| Candidate Proposal | [Core memory-device route registry scalability](../proposals/m5-core-memory-route-registry-scalability.md). |
+| Files And ABI Surface | Core private memory registration/lookup storage, owner-local regressions, evidence/history/status; no public mutable registry. |
+| Applicable Rules | Core owns registration/order/overlay/freeze/rollback; preserve existing route semantics and bounded deterministic failure. |
+| Verification | Complete caller/capacity ledger, fixed-capacity and route-order sweep, focused Core/Model-40/non-Model-40 regressions, current gates and documentation governance. |
+| Expected Markers | New T395 S1 capacity-inventory marker only after the complete current surface is reconciled. |
+| Asset Needs | None. |
+| Reporting Requirements | Record fixed limit, every registration path, current order/decline semantics, failure/rollback behavior, candidate finite limit and excluded profile behavior. |
+| Stop Conditions | Stop before implementation if semantics require public exposure, unbounded allocation, or an unproven ordering change. |
+| Exit Criteria | Committed, pushed and accepted finite implementation contract or whole-scope non-admission with earliest receiver. |
+| Original Owner Request | Continue the global CPU correctness/timing audit, repair clear in-scope defects, and preserve the Core/VM boundary. |
+| Similar-Issue Sweep | Sweep all Core memory device-provider definitions, registration callers, fixed capacity assumptions, composition routes and tests. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T394 S5 P1 `vm-0-5-0394` /
@@ -30,7 +52,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T394 S7 | Accepted closure: S1-S7 establish the complete C0 81-key qualification and Core copied-descriptor safety boundary, then transfer physical selection solely to the queued source-backed DeskPro board clock-plan contract. No physical clock or L3 claim. [Closure audit](../etc/evidence/t394-s7-physical-qualification-closure-audit.md). |
+| T394 | Closed: S1-S7 establish the complete C0 81-key qualification and Core copied-descriptor safety boundary, then transfer physical selection solely to the queued source-backed DeskPro board clock-plan contract. No physical clock or L3 claim. [Closure audit](../etc/evidence/t394-s7-physical-qualification-closure-audit.md). |
 | T392 | Closed: S1-S5 exhaust copied C1, VM/session and FDC operation candidates, then repair the missed proposal archival and stale Queue entry; no endpoint or defect exists. Only a separately admitted generic immutable device-operation snapshot plus selected consumer contract can proceed. No Core/VM ABI, CPU timing, physical, board, firmware or L3 claim. [Corrective audit](../etc/evidence/t392-s5-closure-topology-corrective-audit.md). |
 | T391 | Closed: S1-S8 establish the bounded C0A startup predecessor, complete C1 aggregate disposition and the truthful transfer that C1 physical qualification remains blocked pending a new finite checkpoint or earliest-owner defect. No Core/VM interface, timing, physical, board, firmware or L3 claim. [Closure audit](../etc/evidence/t391-s8-startup-semantic-closure-audit.md). |
 | T389 | Stopped by owner-approved requeue: S1 proves no physical board slice can begin while 80386 successful retirement remains nonphysical; S2 archives the invalid candidate and queues a shared CPU qualification before a fresh board task. No board timing, physical-clock or L3 claim. [Audit](../etc/evidence/t389-s2-stop-and-requeue-audit.md). |
