@@ -7,7 +7,7 @@ source-labelled board/device timing inventory and earliest shared receivers.
 It did not accept physical board timing or Model-40 L3: the governing CPU
 retirement axis remains mixed-unit until a dedicated shared receiver closes.
 
-## Delivered Subtask Records
+## Completed Subtasks
 
 - S1 inventories Model-40 board/device timing sources, current owner graph and
   unknowns.
@@ -17,7 +17,7 @@ retirement axis remains mixed-unit until a dedicated shared receiver closes.
 - S5 reconciles D3PE port-`61h` facts with D4 ownership, and identifies the
   shared successful-retirement physical-timebase blocker.
 - S6 independently maps every T387 requirement to evidence or a named receiver
-  and prepares the task-closure recommendation without a physical-time or L3 claim.
+  and closes this task without a physical-time or L3 claim.
 
 ## Transfers
 

@@ -22,7 +22,6 @@ binds its five bounded candidates below without becoming a candidate itself.
 Detailed scope, acceptance conditions, and common constraints remain in these
 shared proposals and in each candidate's linked proposal.
 
-1. [DeskPro 386 board bus and device timing closure](../proposals/m5-deskpro-386-bus-device-closure.md).
 1. [Four-profile CPU physical-timebase closure](../proposals/m5-four-profile-cpu-physical-timebase-closure.md).
 1. [DeskPro 386 physical-device and firmware-timing closure](../proposals/m5-deskpro-386-physical-device-firmware-timing-closure.md).
 1. [DeskPro 386 model-L3 closure audit](../proposals/m5-deskpro-386-l3-audit.md).
