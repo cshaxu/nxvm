@@ -8,6 +8,26 @@ The earliest implementation receivers are nonpublishing 80386 target-lexeme
 and 80286 Appendix-B context capture; 8086/80186 range rows remain explicitly
 blocked pending the separate observation-contract path. No profile is
 physically enabled and DeskPro board timing remains blocked on T388 completion.
+## M5 T388 S5 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; S4 is accepted retained progress for latest open T388. |
+| Admission And Approval | Owner authorization to continue according to Queue, 2026-08-16; S4 acceptance `e914bf64` identifies the 80386 taken-`Jcc` target-lexeme receiver as the first bounded implementation slice. |
+| Objective | Make the existing Core-owned, nonpublishing 80386 target-lexeme preview sufficient for every otherwise-successful taken short/near `Jcc` context for which the Intel `m` term is admissible, while preserving explicit rejection when a target instruction cannot be safely previewed. |
+| Non-goals | No new clock scalar, physical-contract enablement, VM ratio, 80286 context repair, prefix breadth, instruction semantic repair, bus/device timing, observation run, ROM/media import, artifact revision or L3 claim. |
+| Reference Baseline | Intel 80386 PRM section 17.2.2.3 and `Jcc` source record; T359/T363 selected branch ledger, T388 S2/S4, existing CPU preview API/smoke, architecture/coding/source policies. |
+| Candidate Proposal | [Four-profile CPU physical-timebase closure](../proposals/m5-four-profile-cpu-physical-timebase-closure.md). |
+| Files And ABI Surface | Core CPU preview/80386 timing owner and focused owner smoke, evidence/history/current/index/static gate. Preserve the existing private Core boundary; no public or VM interface change unless proven necessary. |
+| Applicable Rules | EXECUTION, ARCHITECTURE, CODING, DOCUMENT and source policy. Preview must remain read-only: no CPU/memory/device mutation, transaction, trace, elapsed publication or provider call. Intel primary source controls the `m` use; do not substitute emulator values. |
+| Verification | Cover taken short and near `Jcc`, 16/32-bit code and operand-size displacement forms, a target crossing a checked mapping boundary where preview is legal, and an unavailable/invalid target that remains explicitly unallocated. Prove preview nonpublication and current physical contract rejection; add a static recurrence gate and run full current gate. |
+| Expected Markers | `M5:T388:S5:JCC-TARGET-LEXEME:OK`. |
+| Asset Needs | Retained Intel source/evidence and owned test bytes only; no ROM, guest media, external emulator, raw trace or machine-local path. |
+| Reporting Requirements | Report the exact target-address derivation, every legal preview form covered, remaining unavailable target disposition, and proof that neither preview nor rejection changes guest observable state before the normal successful retirement boundary. |
+| Stop Conditions | Stop and transfer a need for speculative execution, memory/port side effects, uncaptured protected-mode translation, a new timing value, 80286 behavior, physical board clock or emulator observation. |
+| Exit Criteria | The target-lexeme `m` term is selected only through a complete, read-only, failure-safe preview for its admitted 80386 `Jcc` forms; unavailable targets remain visibly prohibited, with focused and current-gate proof. |
+| Original Owner Request | Continue autonomously according to Queue toward full DeskPro functionality and L3 timing; use authoritative Intel material first and find root causes without routine approval requests. |
+| Similar-Issue Sweep | Search all Core branch timing, CPU preview callers, fallback markers, tests, CMake gates and evidence for target preview, `Jcc`, `component_count`, and read-only/nonpublication assumptions; classify every production hit. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T386 S28 `vm-0-5-0389` /

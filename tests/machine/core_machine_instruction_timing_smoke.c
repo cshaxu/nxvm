@@ -182,9 +182,10 @@ static C_INT timing_test_stop(C_VOID)
 static C_INT timing_test_physical_contract(C_VOID)
 {
     static const type_unsigned_8 exact[] = { 0x90u };
+    static const type_unsigned_8 jcc[] = { 0x75u, 0xfeu };
     static const type_unsigned_8 unallocated[] = { 0x26u, 0x90u };
     const core_machine_config config = {
-        .cpu_profile = CORE_MACHINE_CPU_PROFILE_80286,
+        .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
         .ticks_per_instruction = 1u,
         .instruction_timing = { 10u, 2u, 7u, 3u, 5u, 4u },
         .retirement_time_contract = CORE_MACHINE_RETIREMENT_TIME_PHYSICAL
@@ -209,6 +210,12 @@ static C_INT timing_test_physical_contract(C_VOID)
             core_machine_run(machine, budget, &result) != TYPE_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 1u ||
             result.ticks != 3u || result.elapsed_ticks != 3u ||
+            core_machine_reset(machine) != TYPE_STATUS_OK ||
+            core_machine_memory_write(machine, TIMING_RESET_LINEAR, jcc,
+                sizeof(jcc)) != TYPE_STATUS_OK ||
+            core_machine_run(machine, budget, &result) != TYPE_STATUS_OK ||
+            result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 1u ||
+            result.ticks != 9u || result.elapsed_ticks != 9u ||
             core_machine_reset(machine) != TYPE_STATUS_OK ||
             core_machine_memory_write(machine, TIMING_RESET_LINEAR, unallocated,
                 sizeof(unallocated)) != TYPE_STATUS_OK ||

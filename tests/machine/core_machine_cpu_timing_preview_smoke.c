@@ -197,6 +197,45 @@ static C_INT preview_test_taken_jcc_target(C_VOID)
     return failed;
 }
 
+static C_INT preview_test_taken_near_jcc_target(C_VOID)
+{
+    static const type_unsigned_8 program[] = {
+        0x0fu, 0x85u, 0xfau, 0xffu, 0xffu, 0xffu
+    };
+    const core_machine_config config = {
+        .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386
+    };
+    const core_machine_run_budget budget = { 1u, 0u };
+    core_machine_cpu_instruction_lexeme lexeme;
+    core_machine_observation before = { 0 };
+    core_machine_observation after = { 0 };
+    core_machine_run_result result;
+    core_machine *machine = STD_NULL;
+    C_INT failed = core_machine_create(&config, &machine) != TYPE_STATUS_OK ||
+        core_machine_freeze_execution_providers(machine) != TYPE_STATUS_OK ||
+        core_machine_reset(machine) != TYPE_STATUS_OK ||
+        core_machine_memory_write(machine, PREVIEW_RESET_PHYSICAL, program,
+            sizeof(program)) != TYPE_STATUS_OK;
+
+    if (!failed) {
+        machine->executor_cpu.data.cs.seg.exec.defsize = TYPE_TRUE;
+        machine->executor_cpu.data.eflags &= ~VCPU_EFLAGS_ZF;
+        if (core_machine_run(machine, budget, &result) != TYPE_STATUS_OK ||
+            result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 1u ||
+            machine->executor_cpu.data.eip != 0xfff0u) {
+            failed = 1;
+        } else if (core_machine_capture_observation(machine, &before) !=
+            TYPE_STATUS_OK || !core_machine_cpu_execution_preview_lexeme(
+                &machine->executor_cpu_execution, &lexeme) || !lexeme.available ||
+            lexeme.byte_count != sizeof(program) || lexeme.component_count != 3u ||
+            core_machine_capture_observation(machine, &after) != TYPE_STATUS_OK ||
+            STD_MEMCMP(&before, &after, sizeof(before)) != 0) {
+            failed = 1;
+        }
+    }
+    core_machine_destroy(machine);
+    return failed;
+}
 static C_INT preview_test_default_reset_alias(C_VOID)
 {
     static const type_unsigned_8 halt[] = { 0xf4u };
@@ -227,7 +266,8 @@ C_INT main(C_VOID)
     if (preview_test_cpu_fetch_nonpublication()) return 4;
     if (preview_test_limited_fetch_nonpublication()) return 5;
     if (preview_test_taken_jcc_target()) return 6;
-    if (preview_test_default_reset_alias()) return 7;
+    if (preview_test_taken_near_jcc_target()) return 7;
+    if (preview_test_default_reset_alias()) return 8;
     STD_PRINTF("M5:T357:S2:CPU-TIMING-PREVIEW:OK\n");
     return 0;
 }

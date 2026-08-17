@@ -3090,6 +3090,11 @@ if(PROJECT_VERIFY_DEPENDENCY_DAG)
             -P "${CMAKE_SOURCE_DIR}/cmake/verify_t388_residual_form_context_ledger.cmake"
         COMMENT "Verifying T388 residual form/context ledger"
         VERBATIM)
+    add_custom_target(verify-t388-jcc-target-lexeme
+        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_t388_jcc_target_lexeme.cmake"
+        COMMENT "Verifying T388 Jcc target-lexeme boundary"
+        VERBATIM)
 endif()
 
 set(PROJECT_CURRENT_SPECIALIZED_VERIFIER_CANDIDATES
@@ -3107,6 +3112,7 @@ set(PROJECT_CURRENT_SPECIALIZED_VERIFIER_CANDIDATES
     verify-t388-physical-timebase-inventory
     verify-t388-physical-eligibility-boundary
     verify-t388-residual-form-context-ledger
+    verify-t388-jcc-target-lexeme
     verify-documentation-governance
     verify-dependency-dag
     verify-live-machine-authority
