@@ -61,3 +61,20 @@ The accepted [physical-eligibility evidence](../etc/evidence/t388-s3-physical-el
 creates no physical scalar, profile clock enablement, artifact revision or L3
 claim. T388 remains open for source/form/context allocation or approved
 observation coverage.
+
+### S4: Residual Form/Context Ledger
+
+S4 reconciles every direct T388 S2 successful sentinel family to a source
+labelled disposition. Existing exact owners remain outside the residual route;
+range-only legacy arithmetic, uncaptured prefix/form context, no-FPU ESC, and
+unavailable 80386 target-lexeme context remain explicit prohibitions or later
+receivers. The retained [residual ledger](../etc/evidence/t388-s4-residual-form-context-ledger.md)
+identifies nonpublishing 80386 target-lexeme and 80286 Appendix-B context
+capture as the earliest implementation work. No profile selects physical mode.
+
+Coordinator review accepted P1 `cf65174e` against the S4 packet, the complete
+S2 family matrix, source-authority inventory, static recurrence gate,
+documentation governance and full 281-target current gate. It adds no timing
+scalar, production behavior, ABI, artifact revision, physical-clock or L3
+claim. T388 remains open for bounded context-capture and range-observation
+receivers.
