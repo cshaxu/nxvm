@@ -2,7 +2,28 @@
 
 ## Current Work
 
-**Active.** T390 remains open between accepted subtasks.
+**Active.** T390 S5 is admitted as its next bounded continuation.
+
+## M5 T390 S5 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | The owner approved continuation of the Queue-governed T390 work on 2026-08-17 and previously authorized uncommitted owner-managed ROM/media use. S4 is accepted; this S admits only the normal 1.2 MB media bridge and bounded boot-corpus observation needed by S2. |
+| Objective | Extend the contained Model-40 BYOB capture route to insert an owner-managed bootable 1.2 MB floppy through the normal session media path, then observe the selected corpus from cold reset to its first boot-sector control-transfer checkpoint or truthfully stop at the first terminal boundary. |
+| Non-goals | No ROM/media commit, local path/hash/content/provenance in Git, default runtime dependency, test-only production ingress, ROM-decode claim, physical retirement selection, board/device timing, generic boot-completeness, guessed timing or Model-L3 claim. |
+| Reference Baseline | Accepted T390 S2 BYOB observation contract, T390 S3 copied Core observer, T390 S4 preboot matrix and `6f5550f9`; the selected Model-40 remains physically nonqualified under T388. |
+| Candidate Proposal | [80386 physical-retirement qualification](../proposals/m5-80386-physical-retirement-qualification.md). |
+| Files And ABI Surface | The existing external capture helper may accept the optional owner-managed floppy input and use existing `vm_session_config.fdd_image`; bounded helper output/termination and project-owned focused coverage may change. No Core, public ABI, profile wiring, firmware, guest data or default product path changes are admitted unless a separately approved packet revision is required. |
+| Applicable Rules | Source/research policy governs owner-managed firmware/media; architecture requires the existing session/media boundary; execution requires one complete pushed P, actual-change review and evidence; coding rules govern changed helper/tests; documentation topology governs Current/history/evidence. No exception is requested. |
+| Verification | Prove helper argument validation and normal Model-40 1.2 MB startup insertion with project-owned focused coverage; perform one contained external run using owner-managed inputs without retaining identities; enforce S2's process/output/wall/no-progress/retirement limits; record only normalized checkpoint/terminal form matrix; run focused proofs, source/caller sweep, documentation governance and full current gates. |
+| Expected Markers | Existing `M5:T390:S3:RETIREMENT-OBSERVATION:OK`; a new S5 normalized boot-corpus checkpoint or truthful terminal/transfer marker, never a physical or L3 marker. |
+| Asset Needs | Read an owner-managed valid Model-40 ROM pair and bootable 1.2 MB floppy only outside the repository. The asset names, locations, hashes, bytes, provenance and raw output remain uncommitted and unrecorded. |
+| Reporting Requirements | Report only abstract corpus availability, checkpoint/terminal reason, normalized disposition summary, source scope, verification, evidence and pushed state. Explicitly state that physical selection, board timing and L3 remain open. |
+| Stop Conditions | Stop and transfer if normal media insertion is unavailable, containment cannot be met, the checkpoint cannot be recognized without wider observer data, a successful form is unallocated, an exact Intel row is absent, or physical/board/device work would be needed. Do not enlarge the observer or enable a partial physical path. |
+| Exit Criteria | The normal-media receiver is covered; either a bounded selected corpus reaches the S2 checkpoint with normalized complete-or-transferred form dispositions, or its first unavailable requirement is recorded with the next receiver. No unsupported physical or L3 claim is made. |
+| Original Owner Request | Continue the Queue-governed DeskPro work; use reusable production boundaries rather than test-only APIs; owner-managed ROM/media are available for bridge/differential work but must not enter the repository; do not let whole-machine emulator issues block progress. |
+| Similar-Issue Sweep | Inspect every Model-40 startup media insertion/caller, helper invocation and capture terminal path; inspect all changed FDD argument validation branches and every emitted observation terminal reason for containment, nonpublication and no-identity leakage. |
 
 ## Current Technical Baseline
 

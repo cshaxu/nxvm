@@ -134,6 +134,9 @@ target_link_libraries(vm-model40-byob-s20-smoke PRIVATE vm-composition)
 add_executable(vm-model40-byob-retirement-capture
     tests/products/vm_model40_byob_retirement_capture.c)
 target_link_libraries(vm-model40-byob-retirement-capture PRIVATE vm-composition)
+add_executable(vm-model40-byob-boot-media-s5-smoke
+    tests/products/vm_model40_byob_boot_media_s5_smoke.c)
+target_link_libraries(vm-model40-byob-boot-media-s5-smoke PRIVATE vm-composition)
 add_executable(vm-model40-hdc-s26-smoke
     tests/products/vm_model40_hdc_s26_smoke.c)
 target_link_libraries(vm-model40-hdc-s26-smoke PRIVATE vm-composition)
@@ -1930,6 +1933,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     vm-model40-dma-s17-smoke
     vm-model40-fdd-s18-smoke
     vm-model40-byob-s20-smoke
+    vm-model40-byob-boot-media-s5-smoke
     vm-model40-hdc-s26-smoke
     vm-model40-console-s20-smoke
     vm-ibm-5170-model-339-cga-topology-smoke
@@ -3290,10 +3294,10 @@ foreach(project_t345_target IN LISTS PROJECT_T344_CURRENT_GATE_TARGETS)
 endforeach()
 list(LENGTH PROJECT_T345_S2_OWNER_TEST_STRICT_TARGETS project_t345_s2_pure_count)
 list(LENGTH PROJECT_T345_S2_MIXED_OWNER_TEST_TARGETS project_t345_s2_mixed_count)
-if(NOT project_t345_s2_pure_count EQUAL 166 OR
+if(NOT project_t345_s2_pure_count EQUAL 167 OR
         NOT project_t345_s2_mixed_count EQUAL 3)
     message(FATAL_ERROR
-        "T345 S2 expected 166 pure and 3 mixed owner-test targets; found ${project_t345_s2_pure_count} pure and ${project_t345_s2_mixed_count} mixed.")
+        "T345 S2 expected 167 pure and 3 mixed owner-test targets; found ${project_t345_s2_pure_count} pure and ${project_t345_s2_mixed_count} mixed.")
 endif()
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     foreach(project_t345_target IN LISTS PROJECT_T345_S2_OWNER_TEST_STRICT_TARGETS)
