@@ -124,3 +124,17 @@ smoke, T388 static gate, documentation governance and full 281-target current
 gate. It adds no production behavior, scalar, profile enablement, artifact
 revision or L3 claim. T388 remains open for genuine 80386 descriptor context,
 prefix/default, x87 and physical-service receivers.
+### S8: 80386 LSL Granularity Capture
+
+S8 creates a private per-instruction capture that is reset by `ExecInit` and
+written only after successful 80386 `LSL` descriptor validation. The sole
+post-refresh publisher then selects Intel-primary register/memory byte rows
+`20/21` or page rows `25/26`; absent capture remains unallocated. The
+[accepted evidence](../etc/evidence/t388-s8-80386-lsl-granularity-capture.md)
+contains the source boundary, recurrence gate and owned four-row smoke.
+
+Coordinator review accepts P1 `4747d53a` against the S8 packet, focused owner
+smoke, static gate, documentation governance and full 281-target current gate.
+It adds no public ABI, physical scalar, profile enablement, artifact revision
+or L3 claim. T388 remains open for prefix/default, x87 and physical-service
+receivers.
