@@ -2,28 +2,8 @@
 
 ## Current Work
 
-**Active: M5 T393 S1 New.** Freeze the Core-owned FDC operation-result publisher and selected Model-40 copied-consumer contract before implementation.
+**T393 S1 accepted.** The FDC data-transfer terminal-result contract is frozen; the next receiver is the bounded Core copied-observation implementation and Model-40 copied consumer. No C1 or physical claim.
 
-## M5 T393 S1 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | New |
-| Admission And Approval | Owner authorized continued implementation and prompt in-scope repair on 2026-08-17; T392 explicitly transferred this separately admitted prerequisite. |
-| Objective | Freeze the complete FDC operation-result publisher, reset/failure and Model-40 consumer contract. |
-| Non-goals | No endpoint, physical time, board/L3 claim, ROM/media import, raw trace, private pointer or VM-specific Core callback. |
-| Reference Baseline | T392 S5 `ab4807b2`, Core FDC completion paths, Model-40 composition and owner-managed local technical research. |
-| Candidate Proposal | [DeskPro FDC operation observation contract](../proposals/m5-deskpro-fdc-operation-observation-contract.md). |
-| Files And ABI Surface | Documentation/evidence only in S1; later code requires a copied Core interface and VM consumer, never mutable layouts. |
-| Applicable Rules | Execution coverage and corrective lifecycle; Documentation topology; Architecture copied-interface and dependency invariants; source policy. |
-| Verification | Direct publisher/caller/reference sweep, `git diff --check`, focused FDC tests and documentation governance gate. |
-| Expected Markers | Complete publisher batch, exact reset/failure disposition, one consumer decision and no runtime change in S1. |
-| Asset Needs | Read-only owner-managed technical text and local references only; no asset retained or committed. |
-| Reporting Requirements | Durable evidence, actual P1 review, P2 acceptance and explicit transfer if no finite consumer exists. |
-| Stop Conditions | Stop before implementation if any publisher/consumer needs a private pointer, VM-specific Core callback, raw trace or unbounded semantic condition. |
-| Exit Criteria | Every frozen publisher and consumer candidate has a disposition and the next implementation contract is finite. |
-| Original Owner Request | Continue holistic CPU/timing audit while preserving the Core/VM boundary and promptly repair confirmed defects. |
-| Similar-Issue Sweep | Sweep all FDC completion, result, IRQ, reset, DMA-terminal and Model-40 composition paths; transfer other devices. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T390 S22 `vm-0-5-0390` /
@@ -50,6 +30,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T393 S1 | Accepted: frozen data-transfer terminal publishers, reset/failure disposition and Model-40 first-successful-READ-DATA candidate; implementation remains required before any C1 inference. [Evidence](../etc/evidence/t393-s1-fdc-publisher-consumer-inventory.md). |
 | T392 | Closed: S1-S5 exhaust copied C1, VM/session and FDC operation candidates, then repair the missed proposal archival and stale Queue entry; no endpoint or defect exists. Only a separately admitted generic immutable device-operation snapshot plus selected consumer contract can proceed. No Core/VM ABI, CPU timing, physical, board, firmware or L3 claim. [Corrective audit](../etc/evidence/t392-s5-closure-topology-corrective-audit.md). |
 | T391 | Closed: S1-S8 establish the bounded C0A startup predecessor, complete C1 aggregate disposition and the truthful transfer that C1 physical qualification remains blocked pending a new finite checkpoint or earliest-owner defect. No Core/VM interface, timing, physical, board, firmware or L3 claim. [Closure audit](../etc/evidence/t391-s8-startup-semantic-closure-audit.md). |
 | T389 | Stopped by owner-approved requeue: S1 proves no physical board slice can begin while 80386 successful retirement remains nonphysical; S2 archives the invalid candidate and queues a shared CPU qualification before a fresh board task. No board timing, physical-clock or L3 claim. [Audit](../etc/evidence/t389-s2-stop-and-requeue-audit.md). |
