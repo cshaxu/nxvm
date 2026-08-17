@@ -2,13 +2,34 @@
 
 ## Current Work
 
-**Active.** T390 remains open between accepted subtasks. S33 proves the first post-C0 I/O retirement is an immediate-port read of `61h`, owned by the existing D4 platform mechanism selected by Model-40 composition. The helper and replay preserve the Core/VM boundary; no CPU or device defect, timing, board-time, physical-retirement, or L3 claim follows. [Evidence](../etc/evidence/t390-s33-post-c0-io-owner-boundary.md).
+**Active.** T390 S34 corrects a physical-retirement scope mismatch: the selected Model-40 physical contract publishes every source-classified retirement, although S28 admitted only C0. The repair restores deterministic retirement until a complete later corpus has an enforceable qualification mechanism. No Core/VM interface, board-time, or L3 claim follows.
+
+## M5 T390 S34 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; T390 remains the latest open numeric task and S34 follows accepted S33. |
+| Admission And Approval | Owner authorized continued implementation, correction of confirmed defects, and CPU/timing audit in the current task conversation on 2026-08-17. |
+| Objective | Correct premature Model-40 physical-retirement selection so a C0-only accepted corpus cannot publish elapsed/device time for later source-classified forms before their own complete qualification. |
+| Non-goals | No Core/VM public interface change, runtime stage tracker, CPU decoder/executor change, timing-row allocation, board-ratio/device-time claim, asset/media import, or raw capture. |
+| Reference Baseline | T390 S28 selected physical retirement after C0; S33 observes a later source-classified post-C0 port-`61h` read; current Core physical publication rejects only source-unallocated retirement. |
+| Candidate Proposal | Continue the accepted [T390 physical-qualification proposal](../proposals/m5-80386-physical-retirement-qualification.md) by restoring its stage-bound nonpublication requirement. |
+| Files And ABI Surface | Model-40 session construction, its composition regression, current status and evidence only. No Core interface/layout or VM-to-Core mutable-state path. |
+| Applicable Rules | Execution, architecture, coding, documentation and source-policy authorities; Core owns generic publication and VM composition selects the contract, while tests prove the composed boundary without exposing a new API. |
+| Verification | Build/run the focused Model-40 composition regression and selected retirement-contract regression; prove both Model-40 construction paths select deterministic retirement; run documentation/diff gates and an aggregate-only contained replay if needed. |
+| Expected Markers | Existing Model-40 composition marker plus an S34 deterministic-selection assertion; no new timing or board marker. |
+| Asset Needs | None for the focused repair. A replay, if run, uses read-only owner-managed assets transiently and retains no asset identity, path, hash, bytes, PC, trace, or media. |
+| Reporting Requirements | Record the static reproducer, both composition paths, corrected selection, focused proof, similar-issue sweep, and transfer; state explicitly that classified source rows alone are not a physical stage qualification. |
+| Stop Conditions | Stop for a need to add a public stage interface, change Core publication semantics for all profiles, assign physical time, or infer board timing. |
+| Exit Criteria | Both Model-40 construction paths remain functional but select deterministic retirement; focused proofs pass; all physical selections are classified by scope; documentation and diff gates pass. |
+| Original Owner Request | Continue the global CPU instruction/timing audit toward later DeskPro board timing and L3 closure; fix confirmed issues and preserve Core/VM interfaces. |
+| Similar-Issue Sweep | Search all Model-40 construction and physical-contract selections plus their regressions; every production hit is corrected or explicitly outside the Model-40 selection scope. |
 
 ## Current Technical Baseline
 
 - **Current developer artifact:** T390 S22 `vm-0-5-0390` /
   `build/output/nxvm_0_5_0390.exe`, SHA-256
-  `7CD172472BADEEE78160548EDE93104C94874CE03F25DDA2392A63E1217FE2C5`.
+  `AF45AB7BF8D76CBFAD2EEE1C53BB9710CF408997CA9C78948196EE880AB140F8`.
   T386 closes selected-device functional completeness at S29; its retained
   [closure audit](../etc/evidence/t386-s29-functional-closure-audit.md) fixes
   HDC current-gate coverage and transfers board, firmware and physical work.

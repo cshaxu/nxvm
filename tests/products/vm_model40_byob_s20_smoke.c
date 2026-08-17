@@ -28,6 +28,8 @@ C_INT main(C_VOID)
         "project-owned synthetic test input" };
     failed |= vm_session_create(&config, &session) != TYPE_STATUS_OK || session == STD_NULL ||
         !session->model40_private || session->core_machine_config.memory_bytes != 1024u * 1024u ||
+        session->core_machine_config.retirement_time_contract !=
+            CORE_MACHINE_RETIREMENT_TIME_DETERMINISTIC ||
         session->core_machine_config.cpu_profile != CORE_MACHINE_CPU_PROFILE_80386 ||
         session->core_machine_config.fpu_profile != CORE_MACHINE_FPU_PROFILE_NONE ||
         !session->core_machine_config.cpu_80386_cr_mov_ignores_mod ||

@@ -33,7 +33,7 @@ C_INT main(C_VOID)
         TYPE_STATUS_OK || session == STD_NULL || !session->model40_private ||
         session->profile != STD_NULL ||
         session->core_machine->retirement_time_contract !=
-            CORE_MACHINE_RETIREMENT_TIME_PHYSICAL ||
+            CORE_MACHINE_RETIREMENT_TIME_DETERMINISTIC ||
         core_machine_get_cpu_profile(session->core_machine, &cpu_profile) !=
             TYPE_STATUS_OK || cpu_profile != CORE_MACHINE_CPU_PROFILE_80386 ||
         core_machine_get_memory_bytes(session->core_machine, &memory_bytes) !=
@@ -57,9 +57,9 @@ C_INT main(C_VOID)
             CORE_MACHINE_KBC_COMMAND_DISABLE_AUX) == 0u;
     if (!failed) {
         failed |= core_machine_run(session->core_machine, budget, &result) !=
-            TYPE_STATUS_FAULT || result.reason != CORE_MACHINE_STOP_FAULT ||
-            result.executed != 0u || result.ticks != 0u ||
-            result.elapsed_ticks != 0u;
+            TYPE_STATUS_OK || result.reason != CORE_MACHINE_STOP_BUDGET ||
+            result.executed != 1u || result.ticks != 1u ||
+            result.elapsed_ticks != 1u;
     }
     if (!failed) {
         core_platform_input_event event = {0};
@@ -90,7 +90,7 @@ C_INT main(C_VOID)
     }
     if (!failed) STD_PRINTF("M5:T386:S7:MODEL40-PRIVATE-COMPOSITION:OK\n");
     if (!failed) STD_PRINTF("M5:T386:S7:EXTERNAL-ROM-GUARD:OK\n");
-    if (!failed) STD_PRINTF("M5:T390:S28:MODEL40-PHYSICAL-CONTRACT:OK\n");
+    if (!failed) STD_PRINTF("M5:T390:S34:MODEL40-DETERMINISTIC-CONTRACT:OK\n");
     vm_session_destroy(session);
     return failed ? 1 : 0;
 }
