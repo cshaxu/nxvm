@@ -78,3 +78,16 @@ regressions, direct reference sweep, diff hygiene and documentation governance
 pass. The next ordered receiver remains shared 80386 physical-retirement
 qualification; no C1, CPU physical-time, DeskPro board, firmware or L3 gate
 opens from this closure.
+### S6: Task-Outcome Schema Corrective
+
+S6 repairs the missing task-level closure marker discovered by the next-task
+admission gate. It changes neither the accepted FDC contract nor its transfer.
+[Evidence](../etc/evidence/t393-s6-task-outcome-corrective-audit.md).
+
+## Task Outcome
+
+**Closed without a C1 or physical qualification.** T393 freezes the FDC
+publication universe, implements the copied Core/VM terminal-result contract,
+and completes bounded C0A consumer observation with no successful post-C0A
+drive-0 `READ DATA`. It transfers only shared 80386 physical-retirement
+qualification; no board, firmware, asset or L3 gate opens.

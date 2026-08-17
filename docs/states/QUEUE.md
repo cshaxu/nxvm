@@ -8,6 +8,8 @@ is retained separately so this queue remains a short ordering surface.
 
 ## M5 Candidates
 
+1. [DeskPro FDC operation observation contract](../proposals/m5-deskpro-fdc-operation-observation-contract.md).
+
 The [four-profile CPU-completeness program](../proposals/m5-four-profile-cpu-completeness-program.md)
 is the shared admission context for this dependency-ordered sequence.
 
