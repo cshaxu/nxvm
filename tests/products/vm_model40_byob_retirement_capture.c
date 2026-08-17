@@ -390,7 +390,8 @@ static C_INT model40_capture_create_session(C_INT argc, C_CHAR **argv,
         (argc != 7 && (argc != 8 || (STD_STRCMP(argv[7], "--terminal-bytes") &&
         STD_STRCMP(argv[7], "--c1-diagnostic") &&
         STD_STRCMP(argv[7], "--post-c0-io-diagnostic") &&
-        STD_STRCMP(argv[7], "--c0a-diagnostic"))))) return 0;
+        STD_STRCMP(argv[7], "--c0a-diagnostic") &&
+        STD_STRCMP(argv[7], "--c1-transfer-diagnostic"))))) return 0;
     config.profile_kind = VM_SESSION_PROFILE_COMPAQ_DESKPRO_386_MODEL_40;
     config.fdd_image = argv[6];
     config.model40_firmware = (vm_profile_model40_byob_manifest) {

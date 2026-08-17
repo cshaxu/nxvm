@@ -10,7 +10,7 @@ firmware compatibility, or L3 claim.
 
 ## Active Subtask
 
-No subtask is active. T391 remains open with S1--S5 retained as compact accepted progress.
+T391 S6 is active: it runs the contained owner-managed C1 transfer replay.
 
 ## Accepted Progress
 
@@ -77,3 +77,9 @@ the existing copied linear-PC fact becomes only a local boolean, and all prior
 synthetic modes remain in the canonical smoke. Focused capture testing and
 documentation governance pass. T391 remains open; its next receiver is a
 contained owner-managed C1 replay followed by complete batch disposition.
+
+### S6: Contained C1 Transfer Replay
+
+S6 runs exactly one owner-managed transient C1 capture and retains only its
+normalized aggregate terminal. It does not import assets or alter runtime
+ownership, timing or interfaces.

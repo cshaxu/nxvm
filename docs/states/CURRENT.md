@@ -2,8 +2,24 @@
 
 ## Current Work
 
-**Active.** T391 remains open between accepted subtasks. S5 adds a bounded test-only C1 capture from C0A through the existing 0:7C00 boolean endpoint. The next receiver is a contained owner-managed replay and complete C1 form/context batch disposition; no Core/VM interface, physical-clock, board-time, firmware or L3 claim changed. [Evidence](../etc/evidence/t391-s5-c1-boot-transfer-capture.md).
-
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation `T391 S6`. |
+| Admission And Approval | Owner approved continued CPU/startup audit, use of external owner-managed assets, and Core/VM boundary preservation. S6 is the accepted S5 receiver, limited to one contained C1 replay and aggregate disposition. No exception is requested. |
+| Objective | Run the existing test-only C1 transfer capture with the owner-managed DeskPro ROM and startup medium; retain only its normalized terminal and aggregate result. |
+| Non-goals | No asset import, repository asset path/hash/provenance, raw PC/byte/trace retention, production code, Core/VM interface, physical clock, board/device time, firmware compatibility or L3 claim. |
+| Reference Baseline | Accepted T391 S1--S5, deterministic Model-40 composition, and the test-only `--c1-transfer-diagnostic` capture. |
+| Candidate Proposal | `docs/proposals/m5-deskpro-386-startup-semantic-readiness.md`; consumes the S5 finite C1 transfer endpoint. |
+| Files And ABI Surface | Evidence/history/current only unless the replay identifies an in-scope test defect. No production or public ABI changes. |
+| Applicable Rules | Source policy: external assets are transient owner-managed inputs and never committed. Execution convergence: terminal is `0:7C00` or a named failure/containment condition, never budget success. Architecture: preserve existing copied observer and deterministic composition. |
+| Verification | Run one 45-second contained replay with the existing C1 flag; retain normalized output only; run focused capture test and documentation governance; inspect actual P1 diff. |
+| Expected Markers | `M5:T391:S5:C1-TRANSFER-CAPTURE:OK` and one normalized replay terminal. |
+| Asset Needs | Existing owner-managed external DeskPro Rev-E ROM pair and one 1.2 MB startup medium under `O:\assets`; do not retain their identities, paths, hashes or contents. |
+| Reporting Requirements | Record terminal class, classified/unallocated/form aggregate, whether C1 reached, and exact transfer; omit asset identity and raw output. |
+| Stop Conditions | Stop if asset validation/session creation fails, terminal output would retain prohibited data, execution exceeds containment, or a result requires a new interface or timing inference. |
+| Exit Criteria | One bounded replay produces a normalized C1 result with no retained protected data and names either the complete C1 batch receiver or earliest blocked owner. |
+| Original Owner Request | Continue the global CPU correctness/timing audit toward DeskPro board readiness without breaking Core/VM interface boundaries. |
+| Similar-Issue Sweep | Retain C0/C0A distinction, differentiate boot-transfer success from containment/fault/unallocated terminals, and keep physical selection excluded. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T390 S22 `vm-0-5-0390` /
