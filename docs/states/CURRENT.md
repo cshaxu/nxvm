@@ -2,7 +2,28 @@
 
 ## Current Work
 
-**Active.** T390 remains open between accepted subtasks.
+**Active.** T390 S6 is admitted as its next bounded continuation.
+
+## M5 T390 S6 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | The owner approved continued Queue-governed T390 work on 2026-08-17 and authorizes owner-managed external ROM/media use without repository import. S5 is accepted and transfers the first normalized source-unallocated boot-corpus record. This S admits only semantic identification and its exact-or-nonphysical disposition. |
+| Objective | Obtain a policy-contained semantic identity for S5's first external selected-corpus unallocated success, map it to an Intel-primary exact 80386 row with focused regression if available, or retain a precise nonphysical transfer; then repeat the bounded run to its next terminal only when the first disposition is complete. |
+| Non-goals | No vendor firmware/media/trace/raw bytes in Git, default runtime dependency, CPU completeness claim, arbitrary capture ABI/Core extension, guessed/range midpoint timing, physical retirement selection, board/device timing, full boot completion or Model-L3 claim. |
+| Reference Baseline | Accepted T390 S2 observation/containment contract, T390 S3 copied observer, T390 S4 preboot matrix, S5 terminal evidence and accepted P2 `479d7078`; T388 physical rejection remains mandatory. |
+| Candidate Proposal | [80386 physical-retirement qualification](../proposals/m5-80386-physical-retirement-qualification.md). |
+| Files And ABI Surface | The explicit external helper may add an opt-in, terminal-only local semantic diagnostic that is disabled by default and does not retain output; the shared Core 80386 source-timing owner/ledger and focused timing proof may change only for the exact identified real-mode no-prefix form. Evidence/history/current may change. No public API, VM composition/profile or media mechanism change is admitted. |
+| Applicable Rules | Source/research policy requires BYOB containment and no retained raw output; architecture requires one Core timing owner and no test-only production API; execution requires exact evidence, similar-form sweep, P push and actual-change review; coding and documentation rules apply. No exception is requested. |
+| Verification | Prove opt-in diagnostic is absent from default capture output and emits only the terminal record externally; identify its semantic form without retaining raw output; cite Intel-primary edition/table/form; add exact-row and physical/nonpublication focused proofs plus similar-form sweep; contained replay, current gates, documentation governance and diff hygiene must pass. |
+| Expected Markers | Existing S3 observer marker; S6 terminal semantic/disposition evidence marker only. No physical or L3 marker. |
+| Asset Needs | Read owner-managed Model-40 ROM/media and temporary external terminal output only outside the repository. Do not commit or document their identity, bytes, hashes, paths, provenance or trace. |
+| Reporting Requirements | Report only the semantic form, context, primary disposition, bounded next terminal/checkpoint, verification, evidence and push state. Explicitly state any retained nonphysical transfer and that physical/board/L3 remain open. |
+| Stop Conditions | Stop and transfer if semantic identity cannot be made policy-compliant without wider capture, Intel lacks an exact applicable row, the form context is underdetermined, or a change would broaden beyond the shared timing owner. Do not select physical retirement partially. |
+| Exit Criteria | The S5 first terminal has a semantic identity and exact-primary regression or a precise nonphysical transfer; a replay may proceed only after that disposition, and no unsupported physical or L3 claim is made. |
+| Original Owner Request | Continue DeskPro work under the Queue; use reusable Core mechanisms rather than test-only product APIs; freely use external ROM/media but never commit them; do not let whole-machine emulator availability block bridge/differential progress. |
+| Similar-Issue Sweep | Inspect all capture output modes and terminal branches for containment/default redaction; inspect all same-family 80386 timing classifier forms, exact ledger entries and physical-gate cases before adding any row; inspect the full Model-40 BYOB startup path for unchanged media ownership. |
 
 ## Current Technical Baseline
 

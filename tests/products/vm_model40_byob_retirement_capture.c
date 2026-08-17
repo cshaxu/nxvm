@@ -29,8 +29,11 @@ typedef struct model40_retirement_capture {
     type_unsigned_32 classified;
     type_unsigned_32 unallocated;
     type_unsigned_32 form_count;
+    type_unsigned_8 terminal_bytes[CORE_MACHINE_CPU_DIAGNOSTIC_BYTES];
+    type_unsigned_8 terminal_byte_count;
     type_bool checkpoint_reached;
     type_bool form_limit_reached;
+    type_bool terminal_bytes_available;
 } model40_retirement_capture;
 
 static const C_CHAR *model40_capture_form_name(
@@ -69,6 +72,9 @@ static const C_CHAR *model40_capture_form_name(
             "mov-register-register" : "mov-register-rm";
     case 0x8eu:
         return "mov-sreg";
+    case 0xd0u:
+        return (observation->point.bytes[1] & 0xf8u) == 0xe0u ?
+            "sal-register-one" : "group2-one";
     case 0x9cu:
         return "pushf";
     case 0x9du:
@@ -159,6 +165,12 @@ static C_VOID model40_capture_observe(C_VOID *opaque,
         ++capture->classified;
     } else {
         ++capture->unallocated;
+        if (!capture->terminal_bytes_available) {
+            capture->terminal_byte_count = observation->point.byte_count;
+            STD_MEMCPY(capture->terminal_bytes, observation->point.bytes,
+                sizeof(capture->terminal_bytes));
+            capture->terminal_bytes_available = TYPE_TRUE;
+        }
     }
     if (observation->point.linear_pc == MODEL40_BOOT_SECTOR_LINEAR_PC) {
         capture->checkpoint_reached = TYPE_TRUE;
@@ -182,6 +194,20 @@ static C_VOID model40_capture_observe(C_VOID *opaque,
         observation->operand_size_32, observation->address_size_32,
         observation->lock_prefix, observation->repeat_prefix,
         observation->timing_disposition, 1u };
+}
+
+static C_VOID model40_capture_emit_terminal_bytes(
+    const model40_retirement_capture *capture)
+{
+    type_unsigned_8 index;
+
+    if (capture == STD_NULL || !capture->terminal_bytes_available) return;
+    STD_PRINTF("T390 terminal-bytes=");
+    for (index = 0u; index < capture->terminal_byte_count &&
+        index < sizeof(capture->terminal_bytes); ++index) {
+        STD_PRINTF("%02X", (unsigned)capture->terminal_bytes[index]);
+    }
+    STD_PRINTF("\n");
 }
 
 static C_VOID model40_capture_emit(const model40_retirement_capture *capture)
@@ -208,7 +234,8 @@ static C_INT model40_capture_create_session(C_INT argc, C_CHAR **argv,
 {
     vm_session_config config = { 0 };
 
-    if (argv == STD_NULL || out_session == STD_NULL || argc != 7) return 0;
+    if (argv == STD_NULL || out_session == STD_NULL ||
+        (argc != 7 && (argc != 8 || STD_STRCMP(argv[7], "--terminal-bytes")))) return 0;
     config.profile_kind = VM_SESSION_PROFILE_COMPAQ_DESKPRO_386_MODEL_40;
     config.fdd_image = argv[6];
     config.model40_firmware = (vm_profile_model40_byob_manifest) {
@@ -227,10 +254,12 @@ C_INT main(C_INT argc, C_CHAR **argv)
     type_status status = TYPE_STATUS_OK;
     type_unsigned_32 index;
     const C_CHAR *terminal = "retirement-budget";
+    C_INT emit_terminal_bytes = argc == 8 && argv != STD_NULL &&
+        !STD_STRCMP(argv[7], "--terminal-bytes");
 
     if (!model40_capture_create_session(argc, argv, &session)) {
         STD_FPRINTF(STD_STDERR, "usage: capture even-image even-digest "
-            "odd-image odd-digest provenance floppy-image\n");
+            "odd-image odd-digest provenance floppy-image [--terminal-bytes]\n");
         return 2;
     }
     provider.callback = model40_capture_observe;
@@ -250,7 +279,8 @@ C_INT main(C_INT argc, C_CHAR **argv)
     else if (status != TYPE_STATUS_OK) terminal = "run-status";
     else if (result.reason == CORE_MACHINE_STOP_FAULT) terminal = "fault";
     model40_capture_emit(&capture);
-    STD_PRINTF("M5:T390:S5:BYOB-BOOT-CAPTURE:terminal=%s count=%u classified=%u "
+    if (emit_terminal_bytes) model40_capture_emit_terminal_bytes(&capture);
+    STD_PRINTF("M5:T390:S6:BYOB-BOOT-CAPTURE:terminal=%s count=%u classified=%u "
         "unallocated=%u forms=%u status=%u\n", terminal, (unsigned)capture.count,
         (unsigned)capture.classified, (unsigned)capture.unallocated,
         (unsigned)capture.form_count, (unsigned)status);

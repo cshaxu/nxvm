@@ -209,6 +209,7 @@ static C_INT core_machine_80386_timing_has_source_prefixes(
 typedef enum core_machine_source_timing_form {
     CORE_MACHINE_SOURCE_TIMING_NOP,
     CORE_MACHINE_SOURCE_TIMING_CLC,
+    CORE_MACHINE_SOURCE_TIMING_SAL_REGISTER_ONE,
     CORE_MACHINE_SOURCE_TIMING_CLI,
     CORE_MACHINE_SOURCE_TIMING_SAHF,
     CORE_MACHINE_SOURCE_TIMING_MOV_SREG_REGISTER,
@@ -450,13 +451,14 @@ static const core_machine_source_timing_entry
     { CORE_MACHINE_SOURCE_TIMING_IRET, 17u }
 };
 
-/* Intel 80386 PRM section 17.2.2.3 selected rows.  These are core clocks
+/* Intel 80386 Programmer's Reference Manual, Table 8-1 selected rows.  These are core clocks
  * under the manual's prefetched/no-wait/no-HOLD assumptions; they are not
  * device service, bus arbitration, or host-time values. */
 static const core_machine_source_timing_entry
     core_machine_80386_source_timing_ledger[] = {
     { CORE_MACHINE_SOURCE_TIMING_NOP, 3u },
     { CORE_MACHINE_SOURCE_TIMING_CLC, 2u },
+    { CORE_MACHINE_SOURCE_TIMING_SAL_REGISTER_ONE, 3u },
     { CORE_MACHINE_SOURCE_TIMING_CLI, 3u },
     { CORE_MACHINE_SOURCE_TIMING_SAHF, 3u },
     { CORE_MACHINE_SOURCE_TIMING_MOV_SREG_REGISTER, 2u },
@@ -2906,6 +2908,16 @@ static C_INT core_machine_80386_source_instruction_cost(core_machine *machine,
     case 0x90u:
         *out_ticks = core_machine_80386_source_timing_lookup(machine,
             CORE_MACHINE_SOURCE_TIMING_NOP);
+        return 1;
+    case 0xd0u:
+        if (prefixes + 1u < data->oplen &&
+            !core_machine_source_timing_modrm_is_memory(data, prefixes) &&
+            ((data->opcodes[prefixes + 1u] >> 3u) & 7u) == 4u) {
+            *out_ticks = core_machine_80386_source_timing_lookup(machine,
+                CORE_MACHINE_SOURCE_TIMING_SAL_REGISTER_ONE);
+        } else {
+            core_machine_source_timing_mark_unallocated(machine, out_ticks);
+        }
         return 1;
     case 0xf8u:
         *out_ticks = core_machine_80386_source_timing_lookup(machine,
