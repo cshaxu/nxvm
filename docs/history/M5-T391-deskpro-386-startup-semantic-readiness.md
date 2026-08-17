@@ -10,7 +10,7 @@ firmware compatibility, or L3 claim.
 
 ## Active Subtask
 
-T391 S6 is active: it runs the contained owner-managed C1 transfer replay.
+No subtask is active. T391 remains open with S1--S6 retained as compact accepted progress.
 
 ## Accepted Progress
 
@@ -83,3 +83,11 @@ contained owner-managed C1 replay followed by complete batch disposition.
 S6 runs exactly one owner-managed transient C1 capture and retains only its
 normalized aggregate terminal. It does not import assets or alter runtime
 ownership, timing or interfaces.
+
+## Coordinator Acceptance
+
+After actual-change review of P1 `9e3067a8`, the coordinator accepts S6. The
+new flag whitelist is confined to the test-only capture; the transient replay
+result is retained only as normalized aggregate evidence. The focused capture
+test and documentation governance pass. T391 remains open; the next receiver
+is the complete 44-form C1 form/context disposition.
