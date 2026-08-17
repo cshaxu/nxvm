@@ -2,7 +2,26 @@
 
 ## Current Work
 
-**Active.** T390 remains open between accepted subtasks.
+**Active.** M5 T390 S7 is admitted as a `Continuation` task packet.
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | `Continuation`; M5 T390 S7, following accepted S6. |
+| Admission And Approval | The owner approved continuation of the queue plan on 2026-08-17 and permanently authorizes repository writes, commits and pushes. This packet admits only the earliest S6 transferred terminal: unprefixed real-address `CLD`. |
+| Objective | Qualify the observed 80386 `CLD` form at its Intel-primary exact Core-clock row, preserve the physical prepublication boundary, and repeat the bounded owner-managed Model-40 boot-media capture to transfer its next earliest terminal truthfully. |
+| Non-goals | No board ratio, physical-profile selection, device, firmware, ROM/media, full-boot, `0:7C00`, Model-40 L3, other flag-control opcode, prefixed form, protected/VM86 context, or generic 80386-completeness claim. No external asset, path, hash, provenance, raw byte record or trace enters Git. |
+| Reference Baseline | T390 S6 acceptance `57d0a4a0`; T390 proposal `../proposals/m5-80386-physical-retirement-qualification.md`; S6 evidence `../etc/evidence/t390-s6-sal-register-one.md`; retained history `../history/M5-T390-80386-physical-retirement-qualification.md`. Intel 80386 Programmer's Reference Manual (1986), CLD entry, page 283, opcode `FC`, `2` clocks. |
+| Candidate Proposal | `docs/proposals/m5-80386-physical-retirement-qualification.md`; this is the proposal's bounded actual-corpus Core qualification path, not a new board or profile candidate. |
+| Files And ABI Surface | Private Core source-timing ledger/classifier in `src/core/machine/machine.c`; existing internal timing-ledger smoke; external-only Model-40 capture runner; indexed evidence, history and Current status. No public ABI, VM/profile contract, Core observer ABI or device interface change. |
+| Applicable Rules | `docs/rules/EXECUTION.md`: active packet, single S, complete pushed P1, actual-change review, evidence, similar-issue sweep and acceptance P2. `docs/rules/ARCHITECTURE.md`: one Core timing owner, physical eligibility only after exact source row, no external asset dependency. `docs/rules/CODING.md`: C11, owner-local minimal change and no test-only production contract. `docs/rules/DOCUMENT.md`: Current is sole active authority and evidence stays indexed. `docs/etc/operations/policy/source-policy.md`: owner-managed firmware/media and raw diagnostics stay external. |
+| Verification | Cite the primary-manual `CLD` row; add exact normal and physical-boundary regression (2 ticks, one execution-provider advance; prefixed counterpart remains nonphysical); run focused smoke, product build, full current gates, documentation governance and `git diff --check`; run the existing contained default external replay with normal output redaction, bounded process/output and cleanup. |
+| Expected Markers | Existing timing-ledger success marker; evidence marker `M5:T390:S7:CLD:OK`; default external replay has `raw-lines=0` and transfers only the next normalized earliest terminal, if reached. |
+| Asset Needs | Existing owner-managed external Model-40 ROM pair and 1.2 MB boot media only for the explicitly local replay. They are neither copied nor identified in repository files. |
+| Reporting Requirements | Report executor confirmation, after P1 the pushed commit plus focused/full verification and transfer, then coordinator actual-change review and P2 acceptance or a consolidated corrective brief. |
+| Stop Conditions | Stop and transfer if primary material lacks the exact `CLD` row, observed context differs from unprefixed real-address `CLD`, the change requires a broader CPU mechanism, capture reaches a new unqualified terminal, physical eligibility changes outside the exact form, source-policy containment cannot be maintained, or a required gate fails. |
+| Exit Criteria | One exact unprefixed 80386 `CLD` Core row at 2 ticks; no-prefix classifier and focused normal/physical proofs; prefixed `CLD` remains rejected before elapsed/device publication; default replay remains redacted and bounded, captures next terminal or records no further progress; no external content in Git; all required gates and actual-change acceptance pass. |
+| Original Owner Request | Continue queue-directed DeskPro 386 work autonomously under single-person dual-role governance until L3 closure, with Intel manuals primary and external ROM/media local only. |
+| Similar-Issue Sweep | Defect class: observed 80386 no-prefix flag-control successful form has no exact source-timing disposition. Search the full tracked Core timing enum, 80386 ledger/classifier, timing smoke and existing 80286 flag cases for `0xfc`, `CLD`, and adjacent flag-control forms. The sole observed 80386 hit is qualified here; adjacent 80386 opcodes are outside this S and remain source-unallocated unless already ledger-owned; 80286 is a distinct CPU ledger and is not changed. The focused prefixed negative proves the prepublication boundary. |
 
 ## Current Technical Baseline
 

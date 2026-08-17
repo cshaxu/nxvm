@@ -130,6 +130,7 @@ static C_INT timing_ledger_test_baseline(C_VOID)
 {
     static const type_unsigned_8 nop[] = { 0x90u };
     static const type_unsigned_8 clc[] = { 0xf8u };
+    static const type_unsigned_8 cld[] = { 0xfcu };
     static const type_unsigned_8 sal_register_one[] = { 0xd0u, 0xe3u };
     static const type_unsigned_8 cli[] = { 0xfau };
     static const type_unsigned_8 sahf[] = { 0x9eu };
@@ -139,6 +140,7 @@ static C_INT timing_ledger_test_baseline(C_VOID)
 
     return !timing_ledger_case(nop, sizeof(nop), 1u, 3u) &&
         !timing_ledger_case(clc, sizeof(clc), 1u, 2u) &&
+        !timing_ledger_case(cld, sizeof(cld), 1u, 2u) &&
         !timing_ledger_case(sal_register_one, sizeof(sal_register_one), 1u, 3u) &&
         !timing_ledger_case(cli, sizeof(cli), 1u, 3u) &&
         !timing_ledger_case(sahf, sizeof(sahf), 1u, 3u) &&
@@ -186,6 +188,8 @@ static C_INT timing_ledger_physical_case(const type_unsigned_8 *program,
 static C_INT timing_ledger_test_physical_classifier_boundary(C_VOID)
 {
     static const type_unsigned_8 cli[] = { 0xfau };
+    static const type_unsigned_8 cld[] = { 0xfcu };
+    static const type_unsigned_8 prefixed_cld[] = { 0x26u, 0xfcu };
     static const type_unsigned_8 sal_register_one[] = { 0xd0u, 0xe3u };
     static const type_unsigned_8 sal_memory_one[] = { 0xd0u, 0x26u, 0x00u, 0x10u };
     static const type_unsigned_8 sahf[] = { 0x9eu };
@@ -195,6 +199,9 @@ static C_INT timing_ledger_test_physical_classifier_boundary(C_VOID)
     };
 
     return timing_ledger_physical_case(cli, sizeof(cli), TYPE_STATUS_OK, 3u) ||
+        timing_ledger_physical_case(cld, sizeof(cld), TYPE_STATUS_OK, 2u) ||
+        timing_ledger_physical_case(prefixed_cld, sizeof(prefixed_cld),
+            TYPE_STATUS_FAULT, 0u) ||
         timing_ledger_physical_case(sal_register_one, sizeof(sal_register_one),
             TYPE_STATUS_OK, 3u) ||
         timing_ledger_physical_case(sal_memory_one, sizeof(sal_memory_one),

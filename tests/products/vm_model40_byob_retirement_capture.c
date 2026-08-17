@@ -280,7 +280,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
     else if (result.reason == CORE_MACHINE_STOP_FAULT) terminal = "fault";
     model40_capture_emit(&capture);
     if (emit_terminal_bytes) model40_capture_emit_terminal_bytes(&capture);
-    STD_PRINTF("M5:T390:S6:BYOB-BOOT-CAPTURE:terminal=%s count=%u classified=%u "
+    STD_PRINTF("M5:T390:S7:BYOB-BOOT-CAPTURE:terminal=%s count=%u classified=%u "
         "unallocated=%u forms=%u status=%u\n", terminal, (unsigned)capture.count,
         (unsigned)capture.classified, (unsigned)capture.unallocated,
         (unsigned)capture.form_count, (unsigned)status);
