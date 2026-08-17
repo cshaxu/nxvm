@@ -2,12 +2,32 @@
 
 ## Current Work
 
-**Current progress:** T388 S6 is accepted: existing completed 80286
-Appendix-B forms are reconciled to their retained exact owners; only residual
-unallocated success reaches the sentinel boundary. `LSL` descriptor granularity,
-prefix/default, x87 and physical-service routes remain explicit receivers.
-No profile is physically enabled and DeskPro board timing remains blocked on
-T388 completion.
+**Current progress:** T388 S6 is accepted, but its retained `LSL`-granularity
+statement requires a narrow corrective reconciliation: 80286 `LSL` already has
+an exact register/memory source owner, and descriptor page granularity belongs
+to the 80386 architecture. No profile is physically enabled and DeskPro board
+timing remains blocked on T388 completion.
+
+## M5 T388 S7 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; S6 is accepted retained progress for latest open T388. |
+| Admission And Approval | Owner authorization to continue according to Queue, 2026-08-16. Read-only source and classifier review found the S6 evidence's 80286 `LSL` descriptor-granularity receiver conflicts with its actual exact classifier row and the Intel 80286/80386 architectural boundary. |
+| Objective | Correctly reconcile the successful 80286 `0F 03 LSL` register/memory Appendix-B rows, retain S6 history without rewriting it, and make the residual ledger and recurrence evidence reject a future cross-CPU descriptor-granularity attribution. |
+| Non-goals | No timing scalar change, descriptor semantic change, physical-contract enablement, profile clock/rate, 80386 timing allocation, generic prefix charge, x87 timing, bus/device work, ROM/media import, artifact revision or L3 claim. |
+| Reference Baseline | Intel 80286/80287 PRM Appendix B and descriptor architecture; Intel 80386 PRM descriptor-granularity definition; T359 S6; T388 S3--S6; current 80286 classifier and owner smoke. |
+| Candidate Proposal | [Four-profile CPU physical-timebase closure](../proposals/m5-four-profile-cpu-physical-timebase-closure.md). |
+| Files And ABI Surface | 80286 timing evidence, residual ledger/history/current/index and a narrow static recurrence gate; focused owner smoke only if its current exact register/memory proof needs an assertion clarification. No production ABI or VM/profile surface. |
+| Applicable Rules | EXECUTION, ARCHITECTURE, CODING, DOCUMENT and source policy. Intel primary manuals decide CPU-specific architectural/timing facts; evidence must distinguish an exact classified row from an unallocated receiver. |
+| Verification | Re-read the actual `0F 03` classifier and owner smoke; source-anchor the 80286 register/memory `14/16` rows; search all active T388 evidence/history/static gates for the false 80286-granularity attribution; run the focused owner smoke, static gate, documentation governance and current gate. |
+| Expected Markers | `M5:T388:S7:80286-LSL-ARCHITECTURE-RECONCILIATION:OK`. |
+| Asset Needs | Primary manual citations and owned test fixtures only; no ROM, guest media, emulator run, trace or machine-local path. |
+| Reporting Requirements | Identify the corrected claim, exact 80286 source/classifier/smoke owner, historical S6 retention boundary, all similar evidence hits and the remaining genuine T388 receivers. |
+| Stop Conditions | Stop and transfer any source conflict, attempted 80286 descriptor semantic repair, 80386 timing context, physical scalar/clock requirement, bus/device prerequisite or CPU semantic defect. |
+| Exit Criteria | The active evidence truthfully records `LSL` as an exact successful 80286 register/memory row; no active T388 receiver or recurrence gate treats 80386 page granularity as an 80286 timing context; genuine prefix/default, x87 and physical-service receivers remain explicit. |
+| Original Owner Request | Continue autonomously according to Queue toward full DeskPro functionality and L3 timing; use authoritative Intel sources first and find root causes without routine approval requests. |
+| Similar-Issue Sweep | Search all tracked active T388 source, tests, CMake gates, evidence, history and Current records for `LSL`, `granularity`, `Appendix-B`, `0F 03`, `14/16` and 80286/80386 attribution; record every hit and disposition. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T386 S28 `vm-0-5-0389` /

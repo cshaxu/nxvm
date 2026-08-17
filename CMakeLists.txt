@@ -3100,6 +3100,11 @@ if(PROJECT_VERIFY_DEPENDENCY_DAG)
             -P "${CMAKE_SOURCE_DIR}/cmake/verify_t388_80286_appendix_b_context.cmake"
         COMMENT "Verifying T388 80286 Appendix-B context"
         VERBATIM)
+    add_custom_target(verify-t388-80286-lsl-architecture-reconciliation
+        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_t388_80286_lsl_architecture_reconciliation.cmake"
+        COMMENT "Verifying T388 80286 LSL architecture reconciliation"
+        VERBATIM)
 endif()
 
 set(PROJECT_CURRENT_SPECIALIZED_VERIFIER_CANDIDATES
@@ -3119,6 +3124,7 @@ set(PROJECT_CURRENT_SPECIALIZED_VERIFIER_CANDIDATES
     verify-t388-residual-form-context-ledger
     verify-t388-jcc-target-lexeme
     verify-t388-80286-appendix-b-context
+    verify-t388-80286-lsl-architecture-reconciliation
     verify-documentation-governance
     verify-dependency-dag
     verify-live-machine-authority
