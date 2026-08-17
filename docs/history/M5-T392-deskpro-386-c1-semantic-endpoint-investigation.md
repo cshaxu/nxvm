@@ -64,3 +64,10 @@ closes T392. The audit exhausts all C1, VM/session and FDC candidates, preserves
 Core/VM ownership and transfers only the unimplemented generic immutable device-
 operation snapshot plus selected consumer contract. Focused C1 regression and
 documentation governance pass.
+### S5: Closure-Topology Corrective Repair
+
+S5 repairs a discovered closure-topology omission only: the S4 closure left the
+retained proposal in `docs/proposals/` and its completed candidate in Queue.
+P1 records the supporting evidence; after review, P2 removes the stale Queue
+entry and archives the proposal beside this numbered record. No runtime source,
+artifact, Core/VM boundary, asset, timing, physical or L3 claim changes. [Evidence](../etc/evidence/t392-s5-closure-topology-corrective-audit.md).
