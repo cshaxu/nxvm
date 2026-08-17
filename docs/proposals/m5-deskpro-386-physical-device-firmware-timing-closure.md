@@ -4,7 +4,8 @@
 
 Complete the exact Model 40 board-visible timing work which cannot be resolved
 by CPU-clock eligibility alone. This candidate consumes the four-profile
-physical-timebase closure and the accepted Model-40 topology/function records;
+physical-timebase closure, the DeskPro board-level timing closure, and the
+accepted Model-40 topology/function records;
 it precedes the Model-40 L3 audit and is not a generic PC/AT task.
 
 ## Required Scope
@@ -12,10 +13,6 @@ it precedes the Model-40 L3 audit and is not a generic PC/AT task.
 For every selected Model-40 device and firmware-visible board route, establish
 one primary-labelled availability/service contract or retain a precise receiver:
 
-- D4 memory/ROM replacement availability, transaction/wait disposition and
-  reset visibility;
-- dual-8237 DCLK/wait/arbitration, PIC/PIT/RTC/8042 propagation, port-`61h`
-  refresh/failsafe/I/O-channel status and reset/cancellation ordering;
 - the selected 1.2 MB FDC/DMA2/IRQ6 and Compaq 40 MB controller/IRQ14 routes,
   including the boundary between logical RAW-IMG service and physical media;
 - selected Compaq Enhanced Color Graphics board/firmware timing, including

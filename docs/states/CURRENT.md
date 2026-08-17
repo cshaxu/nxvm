@@ -2,9 +2,26 @@
 
 ## Current Work
 
-**Idle.** T387 is task-level closed; its explicit transfers are retained in the
-recent-closure record below. The next candidate may now be admitted.
+## M5 T388 S1 Packet
 
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New; T388 is the first queued shared physical-timebase candidate after closed T387. |
+| Admission And Approval | Owner continuing authorization for autonomous L3 work and Git push, 2026-08-16; T387 S5/S6 explicitly transfer this prerequisite. |
+| Objective | Build the source, publisher and clock-domain inventory required to define the shared physical-timebase closure without allocating a scalar. |
+| Non-goals | No cycle value, CPU semantic repair, board/device timing implementation, profile clock ratio, host-time coupling, ROM/media import, artifact revision or L3 claim. |
+| Reference Baseline | T359/T360/T363 timing closures, T366 S9/S10/S32, T368 S7, T375 S17, T387 S5/S6, physical-timebase proposal, source policy and execution rules. |
+| Candidate Proposal | [Four-profile CPU physical-timebase closure](../proposals/m5-four-profile-cpu-physical-timebase-closure.md). |
+| Files And ABI Surface | Evidence/current/index/static inventory plus the owner-requested Queue/proposal dependency correction; no public or runtime ABI, profile, asset or media change. |
+| Applicable Rules | EXECUTION/DOCUMENT/ARCHITECTURE/CODING, architecture/coding, source policy and differential-debug policy. |
+| Verification | Inventory every successful elapsed-time publisher/classifier and every physical-clock consumer across four profiles; prove the current sentinels/reachable paths and classify each earliest receiver; run focused static checks, documentation governance and applicable current-gate verification. |
+| Expected Markers | `M5:T388:S1:PHYSICAL-TIMEBASE-INVENTORY:OK`. |
+| Asset Needs | No asset use; retained Intel/Compaq-labelled evidence and current source only. |
+| Reporting Requirements | Distinguish source-backed cycle rows, explicit sentinels, non-retiring paths and host pacing; record no physical-clock conclusion in S1. |
+| Stop Conditions | Stop and transfer any source range or unavailable form context rather than infer a cycle count; stop if a consumer requires a board/device contract rather than the shared timebase. |
+| Exit Criteria | A complete four-profile publisher-to-consumer matrix identifies all current physical-timebase blockers and the exact bounded next implementation receiver. |
+| Original Owner Request | Continue autonomously toward full DeskPro function and L3 timing; find and resolve root causes without routine approval requests. |
+| Similar-Issue Sweep | Search all tracked Core/VM production, tests, CMake gates and timing evidence for elapsed ticks, unallocated timing sentinels, clock plans, virtual-time sources and profile frequency claims. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T386 S28 `vm-0-5-0389` /

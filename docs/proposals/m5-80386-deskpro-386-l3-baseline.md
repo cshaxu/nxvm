@@ -2,16 +2,16 @@
 
 ## Purpose
 
-This shared context binds the five ordered DeskPro candidates: Model-40
+This shared context binds the six ordered DeskPro candidates: Model-40
 profile/capability audit, 80386 CPU closure, selected-device functional
-closure, board bus/device timing closure, and the final DeskPro L3 audit.
+closure, board-level timing closure, physical-device/firmware timing closure, and the final DeskPro L3 audit.
 Together they establish the 1986 original Compaq DeskPro 386 Model 40
 (DeskPro 386/16) baseline after the final 5170 audit and before the 8088/XT
 path. It is not itself a candidate and does not allocate a numeric task.
 
 ## Required scope
 
-All five candidates retain the 1986 original Model 40/DeskPro 386/16 identity,
+All six candidates retain the 1986 original Model 40/DeskPro 386/16 identity,
 one exact board/revision, 80386 clock, chipset, memory, owner-managed Rev-E ROM
 constraint, Compaq Enhanced Color Graphics plus Color Monitor, 101-key Enhanced
 Keyboard, Compaq Multipurpose Fixed Disk Controller with one 1.2 MB diskette
@@ -52,7 +52,7 @@ owner.
 
 ## Evidence standard
 
-Require exact profile provenance across all five candidates and, collectively,
+Require exact profile provenance across all six candidates and, collectively,
 the CPU/bus/device/NMI source ledger, functional-completeness matrix,
 source-to-model or reference-exhausted timing table, paging/IRQ/DMA contention
 and reset replay, project-owned firmware/DOS probes, current-gate evidence and

@@ -3069,6 +3069,12 @@ if(PROJECT_VERIFY_DEPENDENCY_DAG)
             -P "${CMAKE_SOURCE_DIR}/cmake/verify_t360_timing_source_inventory.cmake"
         COMMENT "Verifying T360 four-profile timing source inventory"
         VERBATIM)
+
+    add_custom_target(verify-t388-physical-timebase-inventory
+        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_t388_physical_timebase_inventory.cmake"
+        COMMENT "Verifying T388 four-profile physical-timebase inventory"
+        VERBATIM)
 endif()
 
 set(PROJECT_CURRENT_SPECIALIZED_VERIFIER_CANDIDATES
@@ -3082,6 +3088,7 @@ set(PROJECT_CURRENT_SPECIALIZED_VERIFIER_CANDIDATES
     verify-t331-real-exception-final-construction
     verify-t359-instruction-timing-inventory
     verify-t360-timing-source-inventory
+    verify-t388-physical-timebase-inventory
     verify-documentation-governance
     verify-dependency-dag
     verify-live-machine-authority
