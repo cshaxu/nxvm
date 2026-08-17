@@ -10,7 +10,7 @@ firmware compatibility, or L3 claim.
 
 ## Active Subtask
 
-T391 S4 is active: it inventories C1 semantic observability under the existing copied-state boundary.
+No subtask is active. T391 remains open with S1--S4 retained as compact accepted progress.
 
 ## Accepted Progress
 
@@ -52,3 +52,13 @@ S4 inventories all existing-state C1 semantic candidates after the accepted
 C0A ledger. It may only select a finite endpoint already representable by the
 copied observer; otherwise it transfers the missing fact to its earliest owner.
 No runtime, Core/VM interface or timing change is in scope. [Evidence](../etc/evidence/t391-s4-c1-semantic-observability.md).
+
+## Coordinator Acceptance
+
+After actual-change review of P1 `fa088b19`, the coordinator accepts S4. The
+inventory considers every retained C1 candidate, keeps the second protected
+entry and post-C0 I/O out of C1, and selects only an existing copied
+`linear_pc` comparison whose test consumer retains a boolean. No source,
+interface, composition, physical selection or timing behavior changed.
+Documentation governance and diff hygiene pass. T391 remains open; its next
+receiver is the bounded test-only C1-transfer capture.

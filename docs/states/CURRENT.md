@@ -2,24 +2,7 @@
 
 ## Current Work
 
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation `T391 S4`. |
-| Admission And Approval | Owner approved continued CPU/startup audit and requires Core/VM interface preservation. S4 is the next receiver named by accepted S3, limited to an existing-state C1 semantic-observability inventory. No exception is requested. |
-| Objective | Determine whether an M40-C1 finite semantic endpoint can be defined using only the current copied retirement observation and existing Model-40/D4 ownership facts. |
-| Non-goals | No production code, observer ABI expansion, Core/VM callback or bridge, port-provider change, physical-retirement selection, board/device time, firmware/media import, raw trace, PC/byte retention, or L3 claim. |
-| Reference Baseline | Accepted T391 S1--S3, T390 S30--S36 C1/start-path records, existing retirement-observation interface, and deterministic Model-40 composition. |
-| Candidate Proposal | `docs/proposals/m5-deskpro-386-startup-semantic-readiness.md`; consumes C0A as the finite predecessor and C1's retained absence observations. |
-| Files And ABI Surface | Documentation/evidence only: `docs/states/CURRENT.md`, `docs/history/M5-T391-deskpro-386-startup-semantic-readiness.md`, and new C1 observability evidence. No ABI surface changes. |
-| Applicable Rules | Execution convergence: inventory every existing candidate rather than choosing a later replay terminal. Documentation: durable evidence and one current authority. Architecture/coding: preserve Core generic ownership and VM composition selection; source is read-only for this S. |
-| Verification | Sweep the current copied-observation fields, capture terminal rules, C1 candidates, Model-40 composition and D4 port ownership; run documentation governance and inspect actual P1 diff before acceptance. |
-| Expected Markers | Retained `M5:T391:S2:C0A-CAPTURE:OK`; new evidence marker `M5:T391:S4:C1-OBSERVABILITY:OK`. |
-| Asset Needs | None. This S uses retained normalized evidence and source inventory only. |
-| Reporting Requirements | State every candidate's representability, reset/failure boundary and owner; conclude C1 eligibility or an explicit earliest-owner transfer without timing inference. |
-| Stop Conditions | Stop and transfer if no semantic endpoint is representable from existing copied state, or if any candidate needs register/PC/raw bytes, firmware/media data, a new observer field, or a Core/VM interface change. |
-| Exit Criteria | A complete candidate inventory gives each candidate an accepted existing-state endpoint or explicit ineligible reason and earliest receiver; no candidate is selected from a containment budget. |
-| Original Owner Request | Continue holistic CPU/timing work with bridge-reference awareness where useful, and do not break Core/VM interface boundaries. |
-| Similar-Issue Sweep | Compare the second protected-entry and post-C0 I/O candidates, distinguish immediate-port facts from unresolved DX I/O, and confirm reset/capture terminal behavior remains test-only. |
+**Active.** T391 remains open between accepted subtasks. S4 finds that a test-local boolean based on the existing copied `linear_pc` can express the named `0:7C00` boot-transfer endpoint without an observer ABI change. The next receiver is a bounded test-only C1-transfer capture; Model-40 remains deterministic and no Core/VM interface or physical-clock selection changed. [Evidence](../etc/evidence/t391-s4-c1-semantic-observability.md).
 ## Current Technical Baseline
 
 - **Current developer artifact:** T390 S22 `vm-0-5-0390` /
@@ -46,7 +29,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T391 S3 | Accepted: the complete C0A three-unit form/context batch maps to existing privileged, control/stack and ordinary-I/O owners. It makes only a separately admitted C1 inventory eligible; no physical-clock, board-time, firmware or L3 claim. [Evidence](../etc/evidence/t391-s3-c0a-form-context-ledger.md). |
+| T391 S4 | Accepted: the C1 candidate inventory selects only a test-local `0:7C00` boolean endpoint from the existing copied observation; second protected entry and post-C0 I/O remain ineligible. A bounded C1 capture is next; no interface, physical-clock, board-time, firmware or L3 claim. [Evidence](../etc/evidence/t391-s4-c1-semantic-observability.md). |
 | T389 | Stopped by owner-approved requeue: S1 proves no physical board slice can begin while 80386 successful retirement remains nonphysical; S2 archives the invalid candidate and queues a shared CPU qualification before a fresh board task. No board timing, physical-clock or L3 claim. [Audit](../etc/evidence/t389-s2-stop-and-requeue-audit.md). |
 | T388 | Closed: S1--S9 establish the sole publisher, exhaustive exact-or-nonphysical residual disposition and pre-publication physical-contract rejection. No current CPU profile is physically clock-qualified; board work transfers under this restriction. [Closure audit](../etc/evidence/t388-s9-task-closure-audit.md). |
 | T387 | Closed: source/owner inventory, exact port-`61h` reconciliation and reference qualification transfer the shared physical-timebase then physical-device/firmware prerequisites before any DeskPro L3 audit. No physical-time or L3 claim. [Closure audit](../etc/evidence/t387-s6-task-closure-transfer-audit.md). |
