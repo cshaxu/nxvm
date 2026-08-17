@@ -4,6 +4,27 @@
 
 **Active.** T390 remains open between accepted subtasks. S28 selects the existing physical-retirement contract only for the complete accepted Model-40 C0 batch, retaining prepublication fault behavior for later unqualified successes. [Evidence](../etc/evidence/t390-s28-model40-physical-contract-selection.md).
 
+
+## M5 T390 S29 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner redirect on 2026-08-17: investigate the original DeskPro 386 ROM decode before further C0-to-C1 work; directly repair it if the evidence confirms a defect. The owner retains standing authorization for this active T390 work. |
+| Objective | Correct the Model-40 Rev-E external-ROM decode from the erroneous E-segment repeated window to the observed DeskPro 386 low-ROM placement and required reset aliases. |
+| Non-goals | No ROM/media import, vendor bytes, asset identity/path/hash/provenance in Git, firmware default dependency, board-clock result, C1 timing qualification, public ABI, or L3 claim. |
+| Reference Baseline | T390 proposal; accepted S16 D4-map ownership; owner-authorized external research archive; PCjs Rev-E machine configuration and public DeskPro reset-mapping explanation; 86Box used only as a divergent later-revision behavior reference. |
+| Candidate Proposal | [80386 physical-retirement qualification](../proposals/m5-80386-physical-retirement-qualification.md). |
+| Files And ABI Surface | Model-40 private profile ROM configuration, the private core memory-provider capacity required for its real alias count, the existing D4 mapping smoke, an indexed neutral evidence note and this packet; no public interface or asset change. |
+| Applicable Rules | VM profile owns board-local ROM placement; core firmware owns immutable mapping and explicit aliases; core private provider capacity must admit the declared profile routes; D4 replacement must not be hidden by a fabricated ROM mirror; third-party firmware and external source remain research-only. |
+| Verification | Project-owned synthetic even/odd chips prove the low mapping, F-segment compatibility alias, high reset aliases, retained D4 protection behavior, and writable E-segment absence of an invented ROM mirror; focused and full current gates, documentation gate, diff review and P1/P2 review. |
+| Expected Markers | The existing Model-40 D4 ROM-map smoke remains green while asserting the corrected physical placements and aliases. |
+| Asset Needs | Formal owner-managed assets may be read only for non-retained confirmation; no asset data, path, digest, byte, trace, PC, or provenance enters Git. |
+| Reporting Requirements | Record the neutral mapping evidence, exact removed fabricated aliases, retained aliases, D4 interaction, similar-issue sweep, focused/full verification and P1/P2 review. |
+| Stop Conditions | The sources disagree on Rev-E decode without a reproducible owned probe, the correction needs a core/public-interface change, an alias conflicts with an existing immutable route, or the work would require retained vendor material: stop and transfer rather than infer. |
+| Exit Criteria | Owned regression proves exactly the documented low and reset alias surface, proves E-segment writes are no longer blocked by the ROM, and all affected current gates pass. |
+| Original Owner Request | Execute the current task: globally audit and repair CPU instruction defects, errors and timing in preparation for DeskPro 386 board timing and final L3 closure; prioritize original DeskPro 386 ROM mapping and repair confirmed defects immediately. |
+| Similar-Issue Sweep | Sweep every Model-40 ROM-window constant, materialization loop, firmware alias registration and D4-map assertion; dispose every hit within this mapping boundary or explicitly transfer it. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T390 S22 `vm-0-5-0390` /

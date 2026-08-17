@@ -179,7 +179,18 @@ static type_status vm_profile_model40_firmware_configure(C_VOID *opaque,
     vm_profile_model40_rom_materialize(rom, window);
     status = core_machine_firmware_register_immutable_rom(firmware,
         VM_PROFILE_MODEL40_ROM_LOW_PHYSICAL_START, window, sizeof(window));
-    return status;
+    if (status != TYPE_STATUS_OK) return status;
+    status = core_machine_firmware_register_immutable_rom_alias(firmware,
+        VM_PROFILE_MODEL40_ROM_LOW_PHYSICAL_START,
+        VM_PROFILE_MODEL40_ROM_COMPATIBILITY_ALIAS_START, sizeof(window));
+    if (status != TYPE_STATUS_OK) return status;
+    status = core_machine_firmware_register_immutable_rom_alias(firmware,
+        VM_PROFILE_MODEL40_ROM_LOW_PHYSICAL_START,
+        VM_PROFILE_MODEL40_ROM_HIGH_ALIAS_START, sizeof(window));
+    if (status != TYPE_STATUS_OK) return status;
+    return core_machine_firmware_register_immutable_rom_alias(firmware,
+        VM_PROFILE_MODEL40_ROM_LOW_PHYSICAL_START,
+        VM_PROFILE_MODEL40_ROM_HIGH_RESET_ALIAS_START, sizeof(window));
 }
 
 static type_status vm_profile_model40_firmware_reset(C_VOID *opaque,

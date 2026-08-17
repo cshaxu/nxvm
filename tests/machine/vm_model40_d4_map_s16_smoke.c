@@ -36,17 +36,38 @@ C_INT main(C_VOID)
     CHECK(vm_session_create_model40_private(&rom, &session) == TYPE_STATUS_OK &&
         session != STD_NULL);
     if (!failed) {
-        CHECK(read_byte(session->core_machine, 0x000f0000u, 0x11u));
+        CHECK(read_byte(session->core_machine,
+            VM_PROFILE_MODEL40_ROM_LOW_PHYSICAL_START, 0x11u));
+        CHECK(read_byte(session->core_machine,
+            VM_PROFILE_MODEL40_ROM_LOW_PHYSICAL_START + 1u, 0x22u));
+        CHECK(read_byte(session->core_machine,
+            VM_PROFILE_MODEL40_ROM_COMPATIBILITY_ALIAS_START, 0x11u));
+        CHECK(read_byte(session->core_machine,
+            VM_PROFILE_MODEL40_ROM_COMPATIBILITY_ALIAS_START + 1u, 0x22u));
+        CHECK(core_machine_set_a20(session->core_machine, 1) == TYPE_STATUS_OK);
+
+        CHECK(read_byte(session->core_machine,
+            VM_PROFILE_MODEL40_ROM_HIGH_ALIAS_START, 0x11u));
+        CHECK(read_byte(session->core_machine,
+            VM_PROFILE_MODEL40_ROM_HIGH_ALIAS_START + 1u, 0x22u));
+        CHECK(read_byte(session->core_machine,
+            VM_PROFILE_MODEL40_ROM_HIGH_RESET_ALIAS_START, 0x11u));
+        CHECK(read_byte(session->core_machine,
+            VM_PROFILE_MODEL40_ROM_HIGH_RESET_ALIAS_START + 1u, 0x22u));
+
         CHECK(read_byte(session->core_machine, VM_PROFILE_MODEL40_D4_CONTROL_PHYSICAL,
             0xbfu));
         CHECK(core_machine_set_a20(session->core_machine, 1) == TYPE_STATUS_OK);
+        CHECK(write_byte(session->core_machine, 0x000e0000u, 0xa5u,
+            TYPE_STATUS_OK));
+        CHECK(read_byte(session->core_machine, 0x000e0000u, 0xa5u));
         CHECK(write_byte(session->core_machine, VM_PROFILE_MODEL40_D4_COMPATIBILITY_START,
             0xa5u, TYPE_STATUS_OK));
         CHECK(write_byte(session->core_machine, VM_PROFILE_MODEL40_D4_COMPATIBILITY_START +
             0x10000u, 0x5au, TYPE_STATUS_OK));
         CHECK(read_byte(session->core_machine, VM_PROFILE_MODEL40_D4_COMPATIBILITY_START,
             0xa5u));
-        CHECK(read_byte(session->core_machine, 0x000e0000u, 0x11u));
+        CHECK(read_byte(session->core_machine, 0x000e0000u, 0xa5u));
         CHECK(write_byte(session->core_machine, VM_PROFILE_MODEL40_D4_CONTROL_PHYSICAL,
             replacement_enabled, TYPE_STATUS_OK));
         CHECK(read_byte(session->core_machine, 0x000e0000u, 0xa5u));
@@ -68,6 +89,7 @@ C_INT main(C_VOID)
     if (!failed) STD_PRINTF("M5:T386:S16:D4-ROM-MAP:OK\n");
     if (!failed) STD_PRINTF("M5:T386:S16:D4-REPLACEMENT:OK\n");
     if (!failed) STD_PRINTF("M5:T386:S16:D4-RESET-ALIAS:OK\n");
+    if (!failed) STD_PRINTF("M5:T390:S29:MODEL40-ROM-DECODE:OK\n");
     vm_session_destroy(session);
     return failed ? 1 : 0;
 }
