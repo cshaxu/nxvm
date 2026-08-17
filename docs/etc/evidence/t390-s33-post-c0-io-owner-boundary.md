@@ -49,3 +49,7 @@ post-C0 `61h` read, or a subsequent named I/O event if that consequence cannot
 be represented from copied aggregate state.  It must reuse the existing D4
 owner, preserve the Core/VM boundary, and not infer board timing from this
 functional checkpoint.
+
+## Coordinator acceptance
+
+The coordinator reviewed pushed P1 f2422f68 against the admitted S33 packet and original request. The observer uses the existing copied retirement record, retains only aggregate direction/port state, and does not introduce a port provider, Core/VM interface, or profile behavior change. The focused CTest target, synthetic marker, contained replay cleanup, documentation governance, and diff hygiene pass. S33 is accepted; the next checkpoint must inspect the semantic consequence of the existing port `61h` read without inferring board timing.
