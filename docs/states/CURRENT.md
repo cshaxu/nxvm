@@ -2,26 +2,8 @@
 
 ## Current Work
 
-## M5 T390 S25 Packet
+**Active.** T390 remains open between accepted subtasks. S25 accepts bounded copied Core context for the complete former missing-context class; the unchanged 75-parent/18,255-success C0 universe now has 81 nonphysical aggregates, all transferred together to the direct-row regression batch. [Evidence](../etc/evidence/t390-s25-c0-context-capture.md).
 
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner standing approval for Queue-ordered T390 continuation; accepted S24 assigns complete shared Core capture receivers for every Blocked C0 unit. |
-| Objective | Add one bounded copied Core timing-context record sufficient for the four S24 C0 capture classes: control outcome/lexeme, ModR/M shape and selector, and string repeat phase; aggregate these facts in the existing Model-40 capture. |
-| Non-goals | No timing values, instruction semantics, physical contract change, profile-specific classifier, raw trace persistence, C1 boot, board/device timing or L3 claim. |
-| Reference Baseline | Accepted T390 S16--S24, especially S23 frozen corpus and S24 complete 44/31 source-sufficiency matrix. |
-| Candidate Proposal | [80386 physical-retirement qualification](../proposals/m5-80386-physical-retirement-qualification.md). |
-| Files And ABI Surface | Shared Core copied retirement-observation contract/private timing state, existing Model-40 aggregate tool and owned focused regressions only; no VM/profile public behavior. |
-| Applicable Rules | Execution Task-Scale Convergence And Coverage, architecture/coding and source policy: one Core owner; copied bounded scalars only; reset/disabled-provider neutrality; exact-or-nonphysical. |
-| Verification | Focused Core observer reset/lifecycle/synthetic aggregation proofs; fresh deleted C0 replay and S24 affected-class matrix reconciliation; relevant build/current gate; documentation gate, diff and actual review. |
-| Expected Markers | Every prior S24 Blocked unit gains only its named normalized fact or remains explicitly blocked; no raw external data and no physical elapsed-time selection. |
-| Asset Needs | Owner-authorized local ROM/media only for deleted C0 replay; no external identity, path, hash, bytes, PC, raw trace or provenance enters Git. |
-| Reporting Requirements | Record owner, fields, reset/publication boundary, full affected-ID before/after disposition and residual transfer; executor P1 then coordinator review/acceptance P2. |
-| Stop Conditions | A needed fact cannot be copied as a bounded Core scalar before publication, changes instruction behavior, or needs an unmodeled Intel/bus condition; keep the whole class nonphysical and transfer it. |
-| Exit Criteria | One indexed evidence record proves bounded context capture and complete affected-class reconciliation for all 31 S24 Blocked units, while the 44 direct rows remain nonphysical pending their regression batch. |
-| Original Owner Request | Continue DeskPro 386 CPU qualification toward complete function and L3 timing under governed full-coverage convergence. |
-| Similar-Issue Sweep | Sweep every successful classifier origin, observer lifecycle/reset path, C0 aggregate key, source-form sentinel, prefix/modrm/control/string contexts and physical-rejection ordering. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T390 S22 `vm-0-5-0390` /
@@ -48,7 +30,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T390 S24 | Accepted: all 75 M40-C0 units / 18,255 successes have exact-source sufficiency or complete missing-context disposition; shared capture and direct-row regression transfer. No physical, C1, board or L3 claim. [Evidence](../etc/evidence/t390-s24-c0-exact-row-context-matrix.md). |
+| T390 S25 | Accepted: bounded Core context completes all 31 former S24 missing-context receivers and refines the unchanged C0 universe to 81 aggregates; all remain nonphysical pending one direct-row regression batch. No C1, board or L3 claim. [Evidence](../etc/evidence/t390-s25-c0-context-capture.md). |
 | T389 | Stopped by owner-approved requeue: S1 proves no physical board slice can begin while 80386 successful retirement remains nonphysical; S2 archives the invalid candidate and queues a shared CPU qualification before a fresh board task. No board timing, physical-clock or L3 claim. [Audit](../etc/evidence/t389-s2-stop-and-requeue-audit.md). |
 | T388 | Closed: S1--S9 establish the sole publisher, exhaustive exact-or-nonphysical residual disposition and pre-publication physical-contract rejection. No current CPU profile is physically clock-qualified; board work transfers under this restriction. [Closure audit](../etc/evidence/t388-s9-task-closure-audit.md). |
 | T387 | Closed: source/owner inventory, exact port-`61h` reconciliation and reference qualification transfer the shared physical-timebase then physical-device/firmware prerequisites before any DeskPro L3 audit. No physical-time or L3 claim. [Closure audit](../etc/evidence/t387-s6-task-closure-transfer-audit.md). |

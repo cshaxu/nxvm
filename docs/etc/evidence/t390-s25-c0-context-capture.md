@@ -36,3 +36,7 @@ Thus no S24 Blocked receiver remains blocked **for lack of copied context**. All
 ## Transfer
 
 The next T390 work remains one finite **C0 direct-row regression batch** over all 81 refined aggregates, using the established Intel-primary row crosswalk. It must provide project-owned direct regressions and a complete before/after matrix before any C0-only physical-retirement decision. It may not replace this transfer with a new first-terminal repair, unbounded boot replay, board timing, or L3 claim.
+
+## Coordinator Acceptance
+
+Coordinator actual-diff review accepts P1 `dc0dfdc8`. The Core contract adds only bounded copied scalar context, resets it at the classification owner, publishes it after decode and before the existing callback, and preserves the pre-publication physical rejection boundary. The modified aggregate key accounts for every former S24 Blocked parent and preserves the frozen 75-parent/18,255-success C0 universe while refining it to 81 children. Focused observer and aggregate smokes, the fresh scalar-only C0 replay, current-gates GCC build, full 284/284 CTest run, documentation gate, source-policy boundary, and clean actual diff pass. S25 is accepted; all 81 child aggregates remain nonphysical and transfer together to the direct-row regression batch. No CPU physical qualification, C1, board/device timing, or L3 conclusion is accepted.
