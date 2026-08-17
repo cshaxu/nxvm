@@ -39,3 +39,17 @@ The paused C0-to-C1 capture remains a separate later receiver.
 - [PCjs Rev-E DeskPro 386 EGA configuration](https://www.pcjs.org/machines/pcx86/compaq/deskpro386/ega/2048kb/machine.xml)
 - [PCjs DeskPro 386 reset-mapping explanation](https://www.pcjs.org/blog/2015/04/16/)
 - [PCjs DeskPro 386 ROM catalog](https://www.pcjs.org/machines/pcx86/compaq/deskpro386/rom/)
+
+## Coordinator acceptance
+
+The coordinator reviewed P1 fd601c57 against the redirected S29 packet. The
+changed profile constants, materialization window, explicit immutable-ROM alias
+registrations, internal provider capacity, and D4-map assertions all implement
+the stated address-decode correction. No firmware asset, asset locator,
+digest, byte, trace, C1 capture change, or unrelated timing smoke is included.
+
+The focused Model-40 ROM/D4 and BYOB tests pass. The full 284-test current gate,
+documentation governance gate, and diff hygiene pass. The capacity change is
+private core storage only; it adds no provider or address route for another
+profile. S29 is accepted. T390 remains open only for separately admitted CPU
+qualification work; no board-clock, firmware-boot, or L3 conclusion is made.
