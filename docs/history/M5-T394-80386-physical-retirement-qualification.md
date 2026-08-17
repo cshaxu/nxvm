@@ -18,3 +18,12 @@ binary physical contract lacks an enforceable immutable stage boundary. It
 transfers a bounded shared-Core eligibility-mechanism decision; both Model-40
 paths remain deterministic.
 [Evidence](../etc/evidence/t394-s1-80386-physical-qualification-admission-ledger.md).
+## Coordinator Acceptance
+
+After actual-change review of P1 `0103b1c3`, the coordinator accepts S1. The
+ledger matches the current two-value Core contract, both deterministic Model-40
+construction selections and the retained C0/C0A/C1/residual evidence. It makes
+no physical selection and does not weaken prepublication rejection. Focused
+Core timing-ledger and private/public Model-40 composition regressions plus
+documentation governance pass. T394 remains open for a separately admitted
+shared immutable-stage eligibility mechanism decision.

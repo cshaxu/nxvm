@@ -2,28 +2,7 @@
 
 ## Current Work
 
-**Active: M5 T394 S1 New.** Establish the finite shared 80386 physical-retirement qualification admission ledger from current classifier, C0/C0A evidence and 80386DX candidate constraints. This S selects neither a physical retirement mode nor a board-clock implementation.
-
-## M5 T394 S1 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | New |
-| Admission And Approval | Owner authorized continued global CPU instruction/timing audit; T393 closure releases the queued shared 80386 physical-retirement qualification prerequisite. |
-| Objective | Create the durable finite-stage admission ledger and exact receiver decision for renewed shared 80386 physical-retirement qualification. |
-| Non-goals | No physical-retirement selection, board/device timing, guessed cycle count, ROM/media import, C1 claim, Core/VM bridge, firmware compatibility or L3 claim. |
-| Reference Baseline | T388 residual ledger; T390 S27 C0 matrix, S34 physical-scope correction, S35/S36 dependency transfer; T391/T393 bounded C0A/FDC outcomes; queued physical-retirement proposal. |
-| Candidate Proposal | [80386 physical-retirement qualification](../proposals/m5-80386-physical-retirement-qualification.md). |
-| Files And ABI Surface | Evidence/history/current/index only unless the complete selected batch proves a bounded shared Core repair; no ABI change in S1. |
-| Applicable Rules | Execution task-scale convergence/finite semantic checkpoint; Architecture sole Core timing and copied-boundary invariants; Coding test-boundary discipline; source-policy primary-authority restriction. |
-| Verification | Current classifier/caller/reference sweep, prior-ledger reconciliation, proposed-stage completeness predicate, documentation governance, direct diff review. |
-| Expected Markers | A frozen initial stage universe, each row disposition, no-enablement predicate, and exact next receiver or stop reason. |
-| Asset Needs | None; use retained project evidence only. |
-| Reporting Requirements | Record coverage universe, owner, source/proof status, residual transfer and P1/P2 actual-change review. |
-| Stop Conditions | Stop if a physical selection, unbounded replay, missing primary source, Core/VM bridge, device timing or external asset becomes necessary. |
-| Exit Criteria | The next qualification stage is either fully defined with a complete matrix/enforcement path or transferred to the earliest missing owner; no partial profile enablement is possible. |
-| Original Owner Request | Audit and repair CPU instruction defects, errors and timing globally while preparing later DeskPro board timing and L3 closure. |
-| Similar-Issue Sweep | Compare every Model-40 construction selection, physical-contract caller, classifier residual route and prior C0/C0A/C1 evidence for premature or unenforceable physical eligibility. |
+**T394 S1 accepted.** C0 is source-complete but not enforceably eligible; C0A/C1 and residual paths remain nonphysical. The next receiver is a bounded shared immutable-stage eligibility mechanism decision.
 
 ## Current Technical Baseline
 
@@ -51,7 +30,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T393 | Closed: T393 freezes and implements the copied FDC terminal contract, then completes bounded C0A candidate observation without a successful post-C0A drive-0 `READ DATA`; transfer only shared 80386 physical-retirement qualification. No C1, physical, board or L3 claim. [Closure audit](../etc/evidence/t393-s5-task-closure-audit.md). |
+| T394 S1 | Accepted: The C0/C0A/C1/residual admission ledger retains both Model-40 construction paths deterministic and transfers only a shared immutable-stage eligibility mechanism decision. No physical, board or L3 claim. [Evidence](../etc/evidence/t394-s1-80386-physical-qualification-admission-ledger.md). |
 | T392 | Closed: S1-S5 exhaust copied C1, VM/session and FDC operation candidates, then repair the missed proposal archival and stale Queue entry; no endpoint or defect exists. Only a separately admitted generic immutable device-operation snapshot plus selected consumer contract can proceed. No Core/VM ABI, CPU timing, physical, board, firmware or L3 claim. [Corrective audit](../etc/evidence/t392-s5-closure-topology-corrective-audit.md). |
 | T391 | Closed: S1-S8 establish the bounded C0A startup predecessor, complete C1 aggregate disposition and the truthful transfer that C1 physical qualification remains blocked pending a new finite checkpoint or earliest-owner defect. No Core/VM interface, timing, physical, board, firmware or L3 claim. [Closure audit](../etc/evidence/t391-s8-startup-semantic-closure-audit.md). |
 | T389 | Stopped by owner-approved requeue: S1 proves no physical board slice can begin while 80386 successful retirement remains nonphysical; S2 archives the invalid candidate and queues a shared CPU qualification before a fresh board task. No board timing, physical-clock or L3 claim. [Audit](../etc/evidence/t389-s2-stop-and-requeue-audit.md). |
