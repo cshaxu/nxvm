@@ -11,3 +11,5 @@ Full current gates, documentation governance and diff hygiene pass. S13 artifact
 ## Coordinator Acceptance
 
 Coordinator review accepts the bounded capture correction: checkpoint success remains the only success condition, budget exhaustion is explicit, and the replay exit status is observed. The new unallocated terminal transfers to the next T390 receiver. No physical profile, board timing or L3 claim is accepted.
+
+S14 corrective review accepts the evidence-only repair: malformed control character, trailing whitespace and literal digest placeholder are removed. Documentation governance and diff hygiene pass; this changes no runtime behavior or acceptance boundary.

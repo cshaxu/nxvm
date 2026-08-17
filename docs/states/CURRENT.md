@@ -30,7 +30,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T390 S12 | Accepted: the shared Core 80386 owner admits no-prefix `LAHF` at two ticks and retains prefixed LAHF nonphysical. A bounded redacted replay reaches 250,000 successful retirements without unallocated success; physical-profile selection, board timing and L3 remain open. [Evidence](../etc/evidence/t390-s12-lahf-qualification.md). |
+| T390 S14 | Accepted corrective: S13 capture proof explicitly distinguishes 7C00 checkpoint success from budget exhaustion; corrected evidence records the new unallocated RCL-CL terminal. Physical-profile selection, board timing and L3 remain open. [Evidence](../etc/evidence/t390-s13-corpus-checkpoint.md). |
 | T389 | Stopped by owner-approved requeue: S1 proves no physical board slice can begin while 80386 successful retirement remains nonphysical; S2 archives the invalid candidate and queues a shared CPU qualification before a fresh board task. No board timing, physical-clock or L3 claim. [Audit](../etc/evidence/t389-s2-stop-and-requeue-audit.md). |
 | T388 | Closed: S1--S9 establish the sole publisher, exhaustive exact-or-nonphysical residual disposition and pre-publication physical-contract rejection. No current CPU profile is physically clock-qualified; board work transfers under this restriction. [Closure audit](../etc/evidence/t388-s9-task-closure-audit.md). |
 | T387 | Closed: source/owner inventory, exact port-`61h` reconciliation and reference qualification transfer the shared physical-timebase then physical-device/firmware prerequisites before any DeskPro L3 audit. No physical-time or L3 claim. [Closure audit](../etc/evidence/t387-s6-task-closure-transfer-audit.md). |
