@@ -33,12 +33,19 @@ typedef struct model40_retirement_capture_form {
     type_unsigned_32 count;
 } model40_retirement_capture_form;
 
+typedef struct model40_retirement_capture_key {
+    core_machine_retirement_eligibility_key value;
+    type_unsigned_32 count;
+} model40_retirement_capture_key;
+
 typedef struct model40_retirement_capture {
     model40_retirement_capture_form forms[MODEL40_CAPTURE_FORM_LIMIT];
+    model40_retirement_capture_key keys[MODEL40_CAPTURE_FORM_LIMIT];
     type_unsigned_32 count;
     type_unsigned_32 classified;
     type_unsigned_32 unallocated;
     type_unsigned_32 form_count;
+    type_unsigned_32 key_count;
     type_bool c0a_diagnostic;
     type_bool c0a_collecting;
     type_bool c1_transfer_diagnostic;
@@ -59,9 +66,52 @@ typedef struct model40_retirement_capture {
     type_bool previous_protected_mode;
     type_bool protected_mode_seen;
     type_bool form_limit_reached;
+    type_bool key_limit_reached;
     type_bool terminal_bytes_available;
 } model40_retirement_capture;
 
+static C_INT model40_capture_key_matches(
+    const core_machine_retirement_eligibility_key *left,
+    const core_machine_retirement_eligibility_key *right)
+{
+    return left != STD_NULL && right != STD_NULL &&
+        left->cpu_profile == right->cpu_profile &&
+        left->timing_origin == right->timing_origin &&
+        left->source_timing_form_id == right->source_timing_form_id &&
+        left->opcode == right->opcode && left->escape_opcode == right->escape_opcode &&
+        left->modrm_form == right->modrm_form &&
+        left->modrm_extension == right->modrm_extension &&
+        left->control_outcome == right->control_outcome &&
+        left->next_lexeme_components == right->next_lexeme_components &&
+        left->repeat_phase == right->repeat_phase && left->cpl == right->cpl &&
+        left->protected_mode == right->protected_mode &&
+        left->virtual_8086_mode == right->virtual_8086_mode &&
+        left->operand_size_32 == right->operand_size_32 &&
+        left->address_size_32 == right->address_size_32 &&
+        left->lock_prefix == right->lock_prefix &&
+        left->repeat_prefix == right->repeat_prefix;
+}
+
+static C_VOID model40_capture_record_key(model40_retirement_capture *capture,
+    const core_machine_retirement_eligibility_key *key)
+{
+    type_unsigned_32 index;
+
+    if (capture == STD_NULL || key == STD_NULL) return;
+    for (index = 0u; index < capture->key_count; ++index) {
+        if (model40_capture_key_matches(&capture->keys[index].value, key)) {
+            ++capture->keys[index].count;
+            return;
+        }
+    }
+    if (capture->key_count == MODEL40_CAPTURE_FORM_LIMIT) {
+        capture->key_limit_reached = TYPE_TRUE;
+        return;
+    }
+    capture->keys[capture->key_count].value = *key;
+    capture->keys[capture->key_count].count = 1u;
+    ++capture->key_count;
+}
 static const C_CHAR *model40_capture_form_name(
     const core_machine_retirement_observation *observation,
     type_unsigned_8 opcode_index)
@@ -312,6 +362,7 @@ static C_VOID model40_capture_observe(C_VOID *opaque,
     if (observation->timing_disposition ==
         CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED) {
         ++capture->classified;
+        model40_capture_record_key(capture, &observation->eligibility_key);
     } else {
         ++capture->unallocated;
         if (!capture->terminal_bytes_available) {
@@ -487,6 +538,36 @@ static C_INT model40_capture_synthetic_c0_smoke(C_VOID)
     STD_PRINTF("M5:T390:S33:POST-C0-IO:OK\n");
     return 0;
 }
+static C_INT model40_capture_synthetic_key_mapping_smoke(C_VOID)
+{
+    model40_retirement_capture capture = { 0 };
+    core_machine_retirement_observation observation = { 0 };
+
+    observation.cpu_profile = CORE_MACHINE_CPU_PROFILE_80386;
+    observation.timing_disposition = CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED;
+    observation.point.byte_count = 1u;
+    observation.point.bytes[0] = 0x90u;
+    observation.eligibility_key.cpu_profile = CORE_MACHINE_CPU_PROFILE_80386;
+    observation.eligibility_key.timing_origin =
+        CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY;
+    observation.eligibility_key.source_timing_form_id = 1u;
+    observation.eligibility_key.opcode = 0x90u;
+    observation.eligibility_key.escape_opcode = 0xffu;
+    observation.eligibility_key.modrm_form =
+        CORE_MACHINE_RETIREMENT_MODRM_UNAVAILABLE;
+    observation.eligibility_key.modrm_extension =
+        CORE_MACHINE_RETIREMENT_CONTEXT_UNAVAILABLE;
+    observation.eligibility_key.next_lexeme_components =
+        CORE_MACHINE_RETIREMENT_CONTEXT_UNAVAILABLE;
+    model40_capture_observe(&capture, &observation);
+    model40_capture_observe(&capture, &observation);
+    observation.eligibility_key.opcode = 0x91u;
+    model40_capture_observe(&capture, &observation);
+    if (capture.key_count != 2u || capture.keys[0].count != 2u ||
+        capture.keys[1].count != 1u || capture.key_limit_reached) return 1;
+    STD_PRINTF("M5:T394:S5:C0-KEY-MAPPING:OK\n");
+    return 0;
+}
 static C_INT model40_capture_synthetic_c0a_smoke(C_VOID)
 {
     model40_retirement_capture capture = { 0 };
@@ -590,6 +671,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
     if (argc == 2 && argv != STD_NULL &&
         !STD_STRCMP(argv[1], "--synthetic-c0-smoke")) {
         return model40_capture_synthetic_c0_smoke() ||
+            model40_capture_synthetic_key_mapping_smoke() ||
             model40_capture_synthetic_c0a_smoke() ||
             model40_capture_synthetic_fdc_read_data_smoke() ||
             model40_capture_synthetic_c1_transfer_smoke();
@@ -669,6 +751,9 @@ C_INT main(C_INT argc, C_CHAR **argv)
     else if (capture.checkpoint_reached) terminal = "protected-return-c0";
     else if (capture.unallocated != 0u) terminal = "source-timing-unallocated";
     model40_capture_emit(&capture);
+    STD_PRINTF("M5:T394:S5:C0-KEY-MAPPING:forms=%u keys=%u key-limit=%u\n",
+        (unsigned)capture.form_count, (unsigned)capture.key_count,
+        (unsigned)capture.key_limit_reached);
     if (emit_terminal_bytes) model40_capture_emit_terminal_bytes(&capture);
     STD_PRINTF("M5:T390:S8:BYOB-BOOT-CAPTURE:terminal=%s count=%u classified=%u "
         "unallocated=%u forms=%u protected=%u checkpoint=%u c1=%u status=%u\n", terminal,

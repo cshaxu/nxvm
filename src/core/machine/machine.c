@@ -5081,8 +5081,7 @@ type_status core_machine_run(
                     result->elapsed_ticks = machine->elapsed_ticks;
                     return TYPE_STATUS_FAULT;
                 }
-                core_machine_retirement_observation_capture_instruction(machine,
-                    &machine->executor_cpu, &machine->executor_cpu_instructions);
+                core_machine_retirement_observation_capture_eligibility_key(machine);
                 core_machine_retirement_observation_publish(machine, instruction_ticks);
                 if (machine->retirement_time_contract ==
                     CORE_MACHINE_RETIREMENT_TIME_PHYSICAL &&

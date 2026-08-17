@@ -195,6 +195,8 @@ C_VOID core_machine_retirement_observation_initialize(core_machine *machine);
 C_VOID core_machine_retirement_observation_reset(core_machine *machine);
 C_VOID core_machine_retirement_observation_capture_instruction(core_machine *machine,
     const t_cpu *cpu, const t_cpuins *instructions);
+C_VOID core_machine_retirement_observation_capture_eligibility_key(
+    core_machine *machine);
 C_VOID core_machine_retirement_observation_publish(core_machine *machine,
     type_unsigned_64 source_ticks);
 C_INT core_machine_configuration_is_open(const core_machine *machine);

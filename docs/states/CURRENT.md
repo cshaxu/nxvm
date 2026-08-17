@@ -2,13 +2,34 @@
 
 ## Current Work
 
-**T394 S4 accepted.** Core now owns the normalized eligibility key and copied descriptor enforcement; no profile is physical-qualified until a later finite C0-to-key mapping is admitted.
+**T394 S5 active.** Reconcile the complete accepted T390 C0 82-child corpus to the S4 Core eligibility key before considering any descriptor contents or physical profile selection.
+
+## M5 T394 S5 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner’s continuing global CPU correctness/timing audit authorization, including instruction to continue implementation after S4; S4 acceptance and P3 (`31a03ecb`) transfer this finite mapping. No exception. |
+| Objective | Replay the fixed T390 C0 corpus through the S4 copied key, reconcile every one of its 82 children to an observed key or justified same-key semantic equivalent, and record the finite descriptor cardinality/collision result. |
+| Non-goals | No production C0 descriptor, Model-40 physical contract selection, VM/Core ABI change, firmware/media import, board timing, C1, device timing, cycle/exact or L3 claim. |
+| Reference Baseline | T390 S23 ledger, S26 corrected 82-child refinement, S27 direct-row regression, T394 S3 collision design and S4 copied descriptor enforcement. |
+| Candidate Proposal | [80386 physical-retirement qualification](../proposals/m5-80386-physical-retirement-qualification.md). |
+| Files And ABI Surface | Existing Model-40 BYOB retirement-capture harness and Core copied observation/key; repair the discovered private pre-retirement snapshot/key-refresh defect if replay proves it, with focused capture-only regression plus current/history/evidence/index. No production descriptor or VM interface. |
+| Applicable Rules | Architecture: Core owns key construction and VM only consumes copied observations; no firmware/media identity or reverse dependency. Coding: bounded owner-local capture aggregation. Execution: consume the complete fixed 82-child batch, record collisions and actual-change review. |
+| Verification | Synthetic capture regression, fixed C0 replay when owner-managed inputs are available, pre-retirement mode/control snapshot preservation, 82-child/key cardinality and collision reconciliation, existing S4 rejection regression, both deterministic Model-40 composition tests, current gate/artifact and documentation governance. |
+| Expected Markers | `M5:T394:S5:C0-KEY-MAPPING:OK`; retained `M5:T394:S4:ELIGIBILITY-KEY:OK`; deterministic Model-40 assertions remain green. |
+| Asset Needs | No repository asset. Owner-managed external BYOB inputs may be read only if already available under `O:\assets`; they are neither imported nor recorded. |
+| Reporting Requirements | Record exact corpus availability, child-to-key aggregation, duplicate-equivalence reasoning, descriptor cardinality, any unavailable input and the full C0 mapping transfer. |
+| Stop Conditions | Stop before production selection if the corpus is unavailable, any child cannot be represented by the S4 key, or an observed collision is not a proven same-key semantic equivalent. |
+| Exit Criteria | A committed, pushed and accepted finite mapping audit proves every C0 child’s key disposition; physical mode remains unselected unless a later S admits descriptor content. |
+| Original Owner Request | Continue the global CPU correctness/timing audit, repair clear in-scope defects, and preserve the Core/VM boundary. |
+| Similar-Issue Sweep | Sweep all C0 capture aggregation dimensions, descriptor consumers, both Model-40 construction routes and every physical-retirement publication path; repair shared capture defects or transfer excluded variants. |
 
 ## Current Technical Baseline
 
-- **Current developer artifact:** T394 S4 `vm-0-5-0394` /
+- **Current developer artifact:** T394 S5 P1 `vm-0-5-0394` /
   `build/output/nxvm_0_5_0394.exe`, SHA-256
-  `2215B0DD8E0BF2B85E34DB705230A6ECF9A7D872A946952FD7469087A0C59CBE`.
+  `7277DB885277BF54077B100055B2E9481C0DFA629769695AC3764CF8AEA11264`.
   T386 closes selected-device functional completeness at S29; its retained
   [closure audit](../etc/evidence/t386-s29-functional-closure-audit.md) fixes
   HDC current-gate coverage and transfers board, firmware and physical work.

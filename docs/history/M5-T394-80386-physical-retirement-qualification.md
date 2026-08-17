@@ -72,3 +72,16 @@ S4 materializes that key in Core and copies a finite descriptor during construct
 After actual-change review of P1 `0b410c77`, the coordinator accepts S4. The Core-only descriptor is validated and copied atomically during construction; membership uses the S3 value key and physical retirement faults before publication for unallocated or absent-key sources. Focused timing, retirement-observation and both Model-40 deterministic composition regressions pass, as do the full current-gates build and documentation governance. The T394 artifact is `vm-0-5-0394`; no production descriptor, profile physical selection, board timing or L3 claim is accepted. The finite T390 C0-to-key mapping remains the next required receiver.
 
 S4 P3 records a governance-only commit-identifier correction: P1 and P2 were pushed under nonconforming subjects, so this immutable record restores the closed-subtask sequence for the next continuation. It changes no source, artifact, descriptor behavior, profile selection, physical timing or L3 boundary.
+
+### S5: C0 Eligibility-Key Mapping
+
+S5 replays the accepted C0 corpus through the S4 copied Core key before any
+membership selection. P1 repairs a discovered Core observation-order defect:
+post-classification full recapture had overwritten pre-retirement mode state for
+instructions such as `LMSW`. The repair retains the execution-pre snapshot and
+refreshes only derived key context after classification. Read-only replay again
+captures 18,255 classified successful retirements with zero unallocated results,
+but currently observes 81 normalized key aggregates against the accepted
+82-child ledger. This is an active reconciliation gap, not an accepted collision
+or physical descriptor selection.
+[Evidence](../etc/evidence/t394-s5-pre-retirement-key-refresh.md).

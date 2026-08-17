@@ -66,6 +66,35 @@ static C_INT retirement_control_context_case(type_unsigned_8 opcode,
     core_machine_destroy(machine);
     return failed;
 }
+static C_INT retirement_pre_mode_snapshot_case(C_VOID)
+{
+    const core_machine_config config = {
+        .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386
+    };
+    const core_machine_run_budget budget = { 1u, 0u };
+    const type_unsigned_8 program[] = { 0x0fu, 0x01u, 0xf0u };
+    core_machine_retirement_observation_provider provider;
+    core_machine_run_result result;
+    retirement_probe probe = { STD_NULL, { { 0 } }, 0u, TYPE_STATUS_OK };
+    core_machine *machine = STD_NULL;
+    C_INT failed = !retirement_prepare(&machine, &config, program, sizeof(program));
+
+    provider.callback = retirement_capture;
+    provider.context = &probe;
+    probe.machine = machine;
+    if (!failed) {
+        machine->executor_cpu.data.eax = 1u;
+        failed |= core_machine_set_retirement_observation_provider(machine,
+            &provider) != TYPE_STATUS_OK ||
+            core_machine_run(machine, budget, &result) != TYPE_STATUS_OK ||
+            result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 1u ||
+            probe.count != 1u || probe.records[0].protected_mode ||
+            probe.records[0].eligibility_key.protected_mode ||
+            (machine->executor_cpu.data.cr0 & VCPU_CR0_PE) == 0u;
+    }
+    core_machine_destroy(machine);
+    return failed;
+}
 C_INT main(C_VOID)
 {
     core_machine *machine = STD_NULL;
@@ -121,7 +150,8 @@ C_INT main(C_VOID)
         CORE_MACHINE_RETIREMENT_CONTROL_TAKEN, 1u) ||
         retirement_control_context_case(0x74u,
             CORE_MACHINE_RETIREMENT_CONTROL_FALLTHROUGH,
-            CORE_MACHINE_RETIREMENT_CONTEXT_UNAVAILABLE);
+            CORE_MACHINE_RETIREMENT_CONTEXT_UNAVAILABLE) ||
+        retirement_pre_mode_snapshot_case();
     failed |= core_machine_set_retirement_observation_provider(machine, STD_NULL) !=
         TYPE_STATUS_OK;
     failed |= core_machine_reset(machine) != TYPE_STATUS_OK;
