@@ -43,3 +43,17 @@ obtain a primary corpus that joins the board observable to the required domain.
 Until then, source-backed board behavior may proceed only where it does not
 require the missing conversion; CPU-to-PIT calibration, DMA DCLK placement,
 physical periods and all L3 conclusions transfer unchanged.
+
+## Coordinator Acceptance
+
+The coordinator reviewed the complete P1 change, its source-policy boundary,
+the active packet and the actual reference-source facts. The evidence correctly
+distinguishes an exact-model label from the required board route: 86Box's
+DeskPro entry reaches generic AT initialization and generic port-61 behavior;
+PCjs's checked entry is an explicit IBM-adapter/2 MiB variant; and no local
+MAME manifest was found. No reference was run and no local path, ROM, guest
+media or external code entered the product tree.
+
+Documentation governance passes against the reviewed graph. S4 is accepted as
+a negative qualification result. It transfers the calibration receiver without
+an AT substitution and does not accept any scalar, timing behavior or L3 claim.
