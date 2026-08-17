@@ -20,3 +20,11 @@ S1 accepts M40-C0A, ending at the first post-C0 immediate port-61h read, as a fi
 ## Coordinator Acceptance
 
 After actual-change review of P1 `138c210a`, the coordinator accepts S1. The review confirms one existing D4 Core owner, one Model-40 composition selection and one test-only observer; no new provider, pointer, callback, source behavior or interface was added. The focused current capture smoke and documentation governance pass. T391 remains open; C0A ledger work is the next receiver.
+
+### S2: C0A Stage Capture
+
+S2 adds a test-only C0A aggregation mode and canonical synthetic regression. The finite stage has three classified units and ends at the existing post-C0 port-61h read; no production owner or interface changes. [Evidence](../etc/evidence/t391-s2-c0a-stage-capture.md).
+
+## Coordinator Acceptance
+
+After actual-change review of P1 240d6237, the coordinator accepts S2. The capture isolation is test-only, normal C0 behavior remains covered by the same canonical smoke, and the owner-managed aggregate replay confirms three classified units with no fault or unallocated timing. Documentation governance and diff hygiene pass. T391 remains open; its next receiver is the complete three-unit C0A ledger.

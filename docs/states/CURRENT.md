@@ -1,25 +1,9 @@
 # Project Status
 
-## M5 T391 S2 Packet
+## Current Work
 
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner: user; continuing authorization in this thread, 2026-08-17. Scope: add a test-only C0A aggregation mode to the existing Model-40 retirement capture. |
-| Objective | Separate the finite C0A corpus from pre-C0/C0 aggregates by resetting only test-owned aggregation after the C0 transition and stopping at the existing first post-C0 I/O checkpoint. |
-| Non-goals | No Core/VM/ABI/runtime/ROM/media/timing/board/L3 change; no raw trace or new port provider. |
-| Reference Baseline | T391 S1; T390 S33; existing `vm-model40-byob-retirement-capture`. |
-| Candidate Proposal | [DeskPro 386 startup semantic readiness](../proposals/m5-deskpro-386-startup-semantic-readiness.md). |
-| Files And ABI Surface | Test capture, its CMake invocation if needed, T391 evidence/history/status only. No production source or interface changes. |
-| Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`, `docs/design/ARCHITECTURE.md`, `docs/design/CODING.md`; test-only, opaque-boundary constraints apply. |
-| Verification | Existing synthetic C0 smoke remains unchanged; new synthetic C0A smoke; bounded owner-managed C0A aggregate replay; focused CTest; full current gate; documentation governance; diff hygiene. |
-| Expected Markers | `M5:T391:S2:C0A-CAPTURE:OK`. |
-| Asset Needs | Existing owner-managed assets used transiently for aggregate replay only; no identity/path/hash/bytes/trace enter Git. |
-| Reporting Requirements | Report the C0A aggregate universe, source/interface boundary, tests, and any transfer; no physical qualification or board/L3 claim. |
-| Stop Conditions | Stop if isolation needs a production observer change, raw state, a new port provider, or a non-finite checkpoint. |
-| Exit Criteria | C0A mode excludes all pre-C0/C0 aggregates, includes only C0A observations, preserves normal capture, and produces a bounded aggregate corpus for the next ledger. |
-| Original Owner Request | Continue global CPU instruction/timing audit and repairs while preserving Core/VM boundaries. |
-| Similar-Issue Sweep | Existing C0 capture, C1 diagnostic, post-C0 I/O diagnostic, synthetic/current CMake registrations, and all Model-40 composition paths. |
+**Active.** T391 remains open between accepted subtasks. S2 isolates the complete three-unit M40-C0A stage under the existing copied-observation boundary. The next receiver is a three-unit form/context ledger; Model-40 remains deterministic and no Core/VM interface changed. [Evidence](../etc/evidence/t391-s2-c0a-stage-capture.md).
+
 ## Current Technical Baseline
 
 - **Current developer artifact:** T390 S22 `vm-0-5-0390` /
@@ -46,7 +30,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T391 S1 | Accepted: M40-C0A, the first post-C0 port-61h read, is a finite startup checkpoint from existing copied observation. It transfers a complete C0A CPU form/context ledger; no Core/VM interface, physical-clock, board-time, or L3 claim. [Evidence](../etc/evidence/t391-s1-post-c0-port61-readiness-inventory.md). |
+| T391 S2 | Accepted: test-only C0A capture isolates three classified units through the first post-C0 port-61h read. It transfers the three-unit form/context ledger; no Core/VM interface, physical-clock, board-time, or L3 claim. [Evidence](../etc/evidence/t391-s2-c0a-stage-capture.md). |
 | T389 | Stopped by owner-approved requeue: S1 proves no physical board slice can begin while 80386 successful retirement remains nonphysical; S2 archives the invalid candidate and queues a shared CPU qualification before a fresh board task. No board timing, physical-clock or L3 claim. [Audit](../etc/evidence/t389-s2-stop-and-requeue-audit.md). |
 | T388 | Closed: S1--S9 establish the sole publisher, exhaustive exact-or-nonphysical residual disposition and pre-publication physical-contract rejection. No current CPU profile is physically clock-qualified; board work transfers under this restriction. [Closure audit](../etc/evidence/t388-s9-task-closure-audit.md). |
 | T387 | Closed: source/owner inventory, exact port-`61h` reconciliation and reference qualification transfer the shared physical-timebase then physical-device/firmware prerequisites before any DeskPro L3 audit. No physical-time or L3 claim. [Closure audit](../etc/evidence/t387-s6-task-closure-transfer-audit.md). |

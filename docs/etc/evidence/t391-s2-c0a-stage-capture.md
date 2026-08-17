@@ -22,3 +22,7 @@ path, digest, byte, PC, raw trace or provenance is retained.
 The next receiver is the complete three-unit C0A form/context ledger. This
 capture makes no timing, physical-retirement, board, firmware-completeness or
 L3 claim.
+
+## Coordinator Acceptance
+
+The coordinator reviewed P1 240d6237 against the S2 packet. It changes only the test capture and documentation; no Core or VM runtime surface changes. Focused canonical smoke, bounded aggregate replay, documentation governance and diff hygiene pass. S2 is accepted.
