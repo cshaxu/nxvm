@@ -80,9 +80,10 @@ candidate. Physical media and timing remain transferred.
 The remaining functional work stays in this candidate and proceeds in this
 order, with each receiver admitted only after reviewing the preceding evidence:
 
-1. Remaining source-backed CECG monitor, status, firmware-programming effect,
-   reset and isolation behavior, through the existing shared VADP personality
-   boundary rather than a copied EGA core.
+1. Shared VADP Odd/Even display-page mechanism required by the selected CECG
+   `3C2h` bit-5 contract. It must provide one reusable page-state, memory and
+   copied-snapshot consumer path with reset and Model-40 binding proof; it may
+   not become an IBM-EGA/VGA breadth claim or profile-local workaround.
 1. A T386 functional-closure audit only after that receiver has accepted
    evidence. It must re-run the selected-device ledger, fixed-versus-external
    declarations and timing handoff before T386 may transfer to DeskPro board

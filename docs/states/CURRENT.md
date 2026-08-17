@@ -42,3 +42,23 @@
 - **M5 Td S102 P1:** reconciled accepted D4 parity work into the T386 proposal and Queue title, defined the non-preallocated remaining functional receiver order, and confirmed the existing Core/VM/profile architecture authority needs no amendment.
 - **M5 Td S101 P1:** added a compact execution-entry table without creating new paths, and made coordinator semantic review explicit after structural documentation-gate success.
 - **M5 Td S100 P1:** archived the closed T382 proposal, queued Model-339 current-source re-audit before DeskPro, reconciled T380 S2 history, and made host/workspace path detection reject the external-assets form while retaining guest DOS-path examples.
+## M5 T386 S27 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; T386 remains the latest open numeric task through its single retained S26 progress row, and S27 is the next unused subtask. |
+| Admission And Approval | Owner's continuing authorization to implement and push the DeskPro 386 functional/L3 program, reaffirmed 2026-08-16 by directing autonomous root-cause work; approved scope is the next proposal-ordered Model-40 CECG functional receiver. |
+| Objective | Close every remaining primary-source-determined Compaq Enhanced Color Graphics/Color Monitor register, state, reset, isolation and selected-consumer gap through the shared VADP personality and fixed Model-40 declaration, or truthfully transfer an underdetermined physical, firmware or timing question. |
+| Non-goals | No IBM EGA or VGA expansion; no copied VADP core; no analog-monitor, cable, raster, service-duration, ISA contention/wait or L3 claim; no option-ROM/BIOS behavior without a source-backed contract; no vendor ROM, manual scan, guest media, path, hash or third-party source commit. |
+| Reference Baseline | Accepted T386 S6 and S9--S13 CECG contracts, S21 current functional matrix, S26 technical baseline, the Model-40 functional-closure proposal, and current CECG TODO ledger. |
+| Candidate Proposal | [DeskPro 386 Model 40 selected-device functional closure](../proposals/m5-deskpro-386-model40-device-functional-closure.md). |
+| Files And ABI Surface | Expected shared Core VADP state/ports/configuration and focused CECG tests, plus Model-40 composition only for fixed historical declaration, CMake/evidence/status as required. No new generic variant or test-only production API. |
+| Applicable Rules | `docs/rules/EXECUTION.md`, `DOCUMENT.md`, `ARCHITECTURE.md`, `CODING.md`; `docs/design/ARCHITECTURE.md`, `CODING.md`, `UI.md`; source policy. Core owns reusable VADP register/state behavior; VM owns the Model-40 declaration and composition. |
+| Verification | First audit the primary-guide-determined residual observables against current VADP and TODO. Add focused shared-owner and Model-40 consumer/reset/isolation proof only for determined behavior; retain S9--S13 controls. Re-run documentation governance, specialized gates and the current smoke gate. |
+| Expected Markers | New `M5:T386:S27:CECG-RESIDUAL:OK` and Model-40 binding marker if implementation is warranted; retained S9--S13 CECG markers. |
+| Asset Needs | Transient primary manual research only under source policy; project-owned synthetic test data only. No external firmware, media, manual content or local asset path enters Git. |
+| Reporting Requirements | Report each residual observable's source disposition, actual shared owner/root cause, immutable P commit, focused and required gate conclusion, and explicit physical/firmware/timing transfer without an L3 claim. |
+| Stop Conditions | Stop and transfer a residual item if the primary material does not determine its semantics, if it requires physical/electrical/timing representation, or if it would need firmware behavior or a generic profile/variant policy. Repair a reproduced reusable VADP lifecycle or registration defect only at its earliest owner with a variant/caller sweep. |
+| Exit Criteria | The selected CECG functional ledger has no unclassified primary-determined register/state/reset/consumer gap: each is implemented and proven through shared VADP plus Model-40 binding, or explicitly transferred under the stated boundary. Generic EGA remains isolated and no physical, firmware, timing or L3 behavior is claimed. |
+| Original Owner Request | Continue the approved DeskPro 386 work autonomously and identify the root cause rather than repeatedly requesting decisions. |
+| Similar-Issue Sweep | Sweep all CECG/VADP personality declarations, `3C2h`/`3C6h`/`3xA`/status/monitor routes, reset and provider-query paths, Model-40 declarations, generic EGA isolation, CECG tests, CMake registrations, proposal/matrix/TODO references and firmware-mode callers. |
