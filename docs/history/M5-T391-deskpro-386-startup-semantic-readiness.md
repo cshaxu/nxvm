@@ -91,3 +91,9 @@ new flag whitelist is confined to the test-only capture; the transient replay
 result is retained only as normalized aggregate evidence. The focused capture
 test and documentation governance pass. T391 remains open; the next receiver
 is the complete 44-form C1 form/context disposition.
+
+### S7: C1 Form And Context Ledger
+
+S7 consumes the full retained 44-unit C1 aggregate and records every context
+unit with a whole-batch nonphysical disposition. It deliberately makes no
+source-row, timing, physical or Core/VM-interface inference. [Evidence](../etc/evidence/t391-s7-c1-form-context-ledger.md).

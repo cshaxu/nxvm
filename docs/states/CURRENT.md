@@ -2,8 +2,24 @@
 
 ## Current Work
 
-**Active.** T391 remains open between accepted subtasks. S6 captures a finite 44-form C1 aggregate but does not reach 0:7C00 within containment. The next receiver is the complete C1 form/context disposition; no Core/VM interface, physical-clock, board-time, firmware or L3 claim changed. [Evidence](../etc/evidence/t391-s6-contained-c1-transfer-replay.md).
-
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation `T391 S7`. |
+| Admission And Approval | Owner approved continued CPU/startup audit and preservation of Core/VM boundaries. S7 consumes the accepted 44-form C1 aggregate for a normalized ledger inventory. |
+| Objective | Define a durable 44-form C1 form/context ledger input from the existing test-only capture without retaining raw trace, PC, bytes or asset data. |
+| Non-goals | No production code, CPU timing allocation, physical selection, board/device time, firmware/media import or L3 claim. |
+| Reference Baseline | T391 S5 C1 capture, T391 S6 normalized 44-form aggregate, and T390 C0 convergence ledger model. |
+| Candidate Proposal | `docs/proposals/m5-deskpro-386-startup-semantic-readiness.md`. |
+| Files And ABI Surface | Test capture/evidence/history/current only; no Core or VM ABI. |
+| Applicable Rules | Complete finite-batch coverage, existing copied-state boundary, no source-row inference from tick values, and source policy asset exclusion. |
+| Verification | Re-run contained capture only to produce normalized aggregate input; inspect cardinality and context records; run focused test and governance. |
+| Expected Markers | Existing `M5:T391:S5:C1-TRANSFER-CAPTURE:OK`; normalized C1 ledger evidence marker. |
+| Asset Needs | Owner-managed transient ROM/media only; no identity or content retained. |
+| Reporting Requirements | Record all 44 units or explicit compression rule, context keys, count sum, and each unit's exact/deferred/blocked disposition. |
+| Stop Conditions | Stop if the current capture cannot emit a durable normalized ledger without prohibited data or an interface expansion. |
+| Exit Criteria | A complete, count-reconciled 44-unit ledger is retained with explicit source-sufficiency and receiver disposition. |
+| Original Owner Request | Continue global CPU correctness/timing work toward DeskPro board readiness without breaking the Core/VM boundary. |
+| Similar-Issue Sweep | Keep C0/C0A/C1 boundaries distinct and do not treat containment, tick value or opaque source-form ID as Intel authority. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T390 S22 `vm-0-5-0390` /
@@ -30,7 +46,8 @@
 
 | Task | Compact result |
 | --- | --- |
-| T391 S6 | Accepted: one transient C1 replay records 44 classified forms and no `0:7C00` hit within containment. It transfers the complete C1 batch disposition; no interface, physical-clock, board-time, firmware or L3 claim. [Evidence](../etc/evidence/t391-s6-contained-c1-transfer-replay.md). |`n| T389 | Stopped by owner-approved requeue: S1 proves no physical board slice can begin while 80386 successful retirement remains nonphysical; S2 archives the invalid candidate and queues a shared CPU qualification before a fresh board task. No board timing, physical-clock or L3 claim. [Audit](../etc/evidence/t389-s2-stop-and-requeue-audit.md). |
+| T391 S6 | Accepted: one transient C1 replay records 44 classified forms and no `0:7C00` hit within containment. It transfers the complete C1 batch disposition; no interface, physical-clock, board-time, firmware or L3 claim. [Evidence](../etc/evidence/t391-s6-contained-c1-transfer-replay.md). |
+| T389 | Stopped by owner-approved requeue: S1 proves no physical board slice can begin while 80386 successful retirement remains nonphysical; S2 archives the invalid candidate and queues a shared CPU qualification before a fresh board task. No board timing, physical-clock or L3 claim. [Audit](../etc/evidence/t389-s2-stop-and-requeue-audit.md). |
 | T388 | Closed: S1--S9 establish the sole publisher, exhaustive exact-or-nonphysical residual disposition and pre-publication physical-contract rejection. No current CPU profile is physically clock-qualified; board work transfers under this restriction. [Closure audit](../etc/evidence/t388-s9-task-closure-audit.md). |
 | T387 | Closed: source/owner inventory, exact port-`61h` reconciliation and reference qualification transfer the shared physical-timebase then physical-device/firmware prerequisites before any DeskPro L3 audit. No physical-time or L3 claim. [Closure audit](../etc/evidence/t387-s6-task-closure-transfer-audit.md). |
 | T386 | Closed: S29 independently reconciles every selected Model-40 functional owner/proof, corrects the omitted S26 HDC current-gate registration and transfers only board, firmware and physical-media work to the next candidate/TODO. No L3 claim. [Closure audit](../etc/evidence/t386-s29-functional-closure-audit.md). |
