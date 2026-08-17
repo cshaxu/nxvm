@@ -1,25 +1,9 @@
 # Project Status
 
-## M5 T391 S1 Packet
+## Current Work
 
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | New |
-| Admission And Approval | Owner: user. Approval: this thread's continuing instruction to audit and repair CPU/startup defects, prepare DeskPro timing/L3, and preserve Core/VM boundaries, 2026-08-17. Scope: inventory the existing post-C0 port-61h startup checkpoint and identify its earliest functional/CPU receiver. |
-| Objective | Establish whether the accepted first post-C0 immediate port-61h read provides a finite startup semantic checkpoint from existing copied observation, and record the complete owner/caller/test boundary for the following C0A corpus admission. |
-| Non-goals | No source, interface, runtime profile, ROM/media, asset, CPU timing row, physical-retirement, board-time, device-time, or L3 change; do not treat port 61h as a clock or infer firmware completeness. |
-| Reference Baseline | T390 S33 post-C0 I/O evidence, T390 S34/S35 deterministic boundary, T390 S36 dependency requeue, T386 S29 functional closure, and the T391 startup-semantic proposal. |
-| Candidate Proposal | [DeskPro 386 startup semantic readiness](../proposals/m5-deskpro-386-startup-semantic-readiness.md). |
-| Files And ABI Surface | `docs/states/CURRENT.md`, `docs/history/M5-T391-deskpro-386-startup-semantic-readiness.md`, `docs/etc/README.md`, and indexed T391 S1 evidence only. No source or public/private interface surface changes. |
-| Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`, `docs/README.md`, and `CONTRIBUTING.md`; architecture/coding rules apply as unchanged-boundary constraints. |
-| Verification | Existing `current.vm-model40-byob-retirement-capture` synthetic smoke; documentation governance; `git diff --check`; actual-diff review; source/owner/caller sweep. |
-| Expected Markers | `M5:T391:S1:POST-C0-PORT61-INVENTORY:OK`. |
-| Asset Needs | None. Existing retained aggregate evidence only; no asset, firmware, media, local path, hash, byte, trace, or external repository content is read, added, or changed. |
-| Reporting Requirements | Report the finite checkpoint decision, current owner, absent/present defect decision, next corpus receiver, and retained boundaries; do not claim CPU qualification, board timing, or L3. |
-| Stop Conditions | Stop and transfer if the checkpoint requires raw state, a VM-specific Core callback, a new port provider, external asset research, or cannot define a finite stage. |
-| Exit Criteria | The port-61h checkpoint is explicitly accepted or rejected as C0A admission input; every owner/caller/test is recorded; a bounded next corpus receiver or earliest defect owner is named; focused and documentation checks pass. |
-| Original Owner Request | Continue the global CPU instruction/timing audit, repair confirmed issues, prepare DeskPro board timing and L3 closure, and preserve Core/VM boundaries. |
-| Similar-Issue Sweep | T390 S30/S32/S33/S34/S35/S36; Model-40 D4/port-61h owner and composition; capture synthetic/current registration; T386 functional closure; physical and board-time proposals. |
+**Active.** T391 remains open between accepted subtasks. S1 accepts M40-C0A, the first post-C0 port-61h read, as a finite startup semantic checkpoint using existing copied observation. The next receiver is a complete C0A form/context ledger; Model-40 remains deterministic and Core/VM interfaces remain unchanged. [Evidence](../etc/evidence/t391-s1-post-c0-port61-readiness-inventory.md).
+
 ## Current Technical Baseline
 
 - **Current developer artifact:** T390 S22 `vm-0-5-0390` /
@@ -46,7 +30,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T390 | Stopped by owner-approved requeue: C1 needs a bounded startup-semantic prerequisite while board timing requires physical qualification first. The Queue now places startup semantic readiness before renewed physical qualification. Model-40 remains deterministic; no Core/VM interface, board-time, physical-clock, or L3 claim. [Audit](../etc/evidence/t390-s36-stop-and-requeue-audit.md). |
+| T391 S1 | Accepted: M40-C0A, the first post-C0 port-61h read, is a finite startup checkpoint from existing copied observation. It transfers a complete C0A CPU form/context ledger; no Core/VM interface, physical-clock, board-time, or L3 claim. [Evidence](../etc/evidence/t391-s1-post-c0-port61-readiness-inventory.md). |
 | T389 | Stopped by owner-approved requeue: S1 proves no physical board slice can begin while 80386 successful retirement remains nonphysical; S2 archives the invalid candidate and queues a shared CPU qualification before a fresh board task. No board timing, physical-clock or L3 claim. [Audit](../etc/evidence/t389-s2-stop-and-requeue-audit.md). |
 | T388 | Closed: S1--S9 establish the sole publisher, exhaustive exact-or-nonphysical residual disposition and pre-publication physical-contract rejection. No current CPU profile is physically clock-qualified; board work transfers under this restriction. [Closure audit](../etc/evidence/t388-s9-task-closure-audit.md). |
 | T387 | Closed: source/owner inventory, exact port-`61h` reconciliation and reference qualification transfer the shared physical-timebase then physical-device/firmware prerequisites before any DeskPro L3 audit. No physical-time or L3 claim. [Closure audit](../etc/evidence/t387-s6-task-closure-transfer-audit.md). |

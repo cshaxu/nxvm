@@ -38,3 +38,6 @@ proves the ordered C0-to-post-C0-I/O state sequence and its marker. This
 inventory changes no source, build, test, artifact, ROM/media, runtime
 configuration, interface, or external-research input. Documentation governance,
 diff hygiene and actual-diff review are required for closure.
+## Coordinator Acceptance
+
+The coordinator reviewed P1 `138c210a` against the S1 packet. The inventory uses only accepted aggregate evidence and the existing capture path; it adds no runtime mechanism or interface. The focused current capture smoke and documentation governance pass. S1 is accepted; C0A ledger work remains bounded, deterministic and separate from physical timing.
