@@ -2,31 +2,10 @@
 
 ## Current Work
 
-- **Active packet:** T387 S1; build the source-labelled Model-40 board/device
-  timing inventory that bounds all later timing implementation. No timing
-  implementation, profile expansion, firmware import or L3 decision is in
-  scope.
+- **Current progress:** T387 S1 accepted the Model-40 board/device timing inventory;
+  it establishes the source/owner gaps and transfers exact clock conversion to
+  the next S. No timing behavior changed.
 
-## M5 T387 S1 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | New; T386 is closed, the DeskPro board bus/device timing candidate is first in Queue, and T387 is the next numeric implementation task. S1 is its first subtask. |
-| Admission And Approval | Owner's continuing authorization to implement and push the DeskPro 386 functional/L3 program, including autonomous root-cause work, reaffirmed 2026-08-16. The approved scope is the next Queue candidate, beginning with its required source-to-model inventory. |
-| Objective | Establish one source-labelled inventory of Model-40 board memory/ROM and I/O availability, controller service/IRQ/DRQ/reset timing, arbitration, CPU-to-PIT calibration and every already-complete functional receiver; identify the earliest timing owner and exact proof needed before any implementation. |
-| Non-goals | No timing code, waits/delays, L3 acceptance, device-functional rework, generic clone/variant work, external ROM/media import, host-time coupling, waveform claim or Windows claim. |
-| Reference Baseline | Closed T384--T386 evidence, especially T386 S29 functional-closure audit and its retained TODO transfers; DeskPro closure context, board-timing proposal, Queue/Roadmap, current Core/VM ownership rules, and current artifact `vm-0-5-0389` / SHA-256 `80EC4B58630B163ECAFED6FE5B97F3B69D5E22D87928811FE66A8D5274E64EDD`. |
-| Candidate Proposal | [DeskPro 386 board bus and device timing closure](../proposals/m5-deskpro-386-bus-device-closure.md). |
-| Files And ABI Surface | Expected evidence, proposal/current/history/TODO reconciliation only. No production ABI, CMake, source or test change is admitted by S1. |
-| Applicable Rules | `docs/rules/EXECUTION.md`, `DOCUMENT.md`, `ARCHITECTURE.md`, `CODING.md`; `docs/design/ARCHITECTURE.md`, `CODING.md`, `UI.md`; source policy. Preserve Core ownership of reusable transactions/events and VM ownership of Model-40 composition; distinguish function from board timing and do not infer unmeasured hardware facts. |
-| Verification | Read the applicable primary-source and retained evidence authorities; inspect current timing publishers/consumers and Model-40 routes; produce a component-to-source-to-owner-to-proof matrix with explicit unknowns, cross-reference limits and TODO/Queue receivers. Run documentation governance. |
-| Expected Markers | `M5:T387:S1:MODEL40-BOARD-TIMING-INVENTORY:OK`; no runtime timing marker or L3 marker. |
-| Asset Needs | No external asset is required for this inventory. If further primary research becomes necessary, use transient material under source policy; do not commit ROM, firmware, guest media, local paths or unreviewed third-party content. |
-| Reporting Requirements | Record every selected board/device timing row, source authority or exact uncertainty, current publisher/consumer, future mechanism receiver, owner boundary, verification need and all transfers. State explicitly that no timing behavior changed. |
-| Stop Conditions | Stop and transfer any timing fact lacking an authoritative source or bounded probe; admit a later corrective S for a reproduced functional defect; do not convert range-only or secondary-emulator observations into exact timing. |
-| Exit Criteria | One complete inventory covers memory/ROM, CPU/PIT calibration, PIC/DMA/FDC/HDC/CECG/RTC/8042/NMI/reset availability and command lifecycle; every row has a source/probe disposition and a future timing owner; the next S can implement one bounded mechanism without reopening T386 functionality. |
-| Original Owner Request | Continue the approved DeskPro 386 work autonomously, identify root causes rather than repeatedly requesting decisions, and progress toward full L3 closure. |
-| Similar-Issue Sweep | Sweep T386 functional evidence/TODO, shared Core timing publishers and consumers, Model-40 VM composition/profile bindings, current-gate timing tests, all selected controller lifecycle routes, Queue/Roadmap and existing primary/secondary source boundaries. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T386 S28 `vm-0-5-0389` /
@@ -53,6 +32,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T387 S1 | Accepted source-labelled Model-40 board/device timing inventory; DCLK and CPU-to-PIT conversion remain the next evidence receiver, while no timing behavior or L3 claim was made. [Evidence](../etc/evidence/t387-s1-model40-board-timing-inventory.md). |
 | T386 | Closed: S29 independently reconciles every selected Model-40 functional owner/proof, corrects the omitted S26 HDC current-gate registration and transfers only board, firmware and physical-media work to the next candidate/TODO. No L3 claim. [Closure audit](../etc/evidence/t386-s29-functional-closure-audit.md). |
 | T385 | Closed: the selected Model-40 80386DX-16 consumes the shared 80386 CPU/state/retirement owners without a DeskPro CPU fork; a clean current-source 251/251 gate passed, while functionality and board timing transfer unchanged. [Closure audit](../etc/evidence/t385-s1-task-closure-audit.md). |
 | T384 | Closed: the Model-40 capability audit freezes its original Compaq system board/storage ledger and owner-selected color EGA, keyboard and external-ROM constraint; its shared-VADP IBM/Compaq personality boundary transfers CPU, functional and timing work without making a runnable or L3 claim. [Closure audit](../etc/evidence/t384-s2-task-closure-audit.md). |
