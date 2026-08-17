@@ -2,24 +2,7 @@
 
 ## Current Work
 
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation `T391 S7`. |
-| Admission And Approval | Owner approved continued CPU/startup audit and preservation of Core/VM boundaries. S7 consumes the accepted 44-form C1 aggregate for a normalized ledger inventory. |
-| Objective | Define a durable 44-form C1 form/context ledger input from the existing test-only capture without retaining raw trace, PC, bytes or asset data. |
-| Non-goals | No production code, CPU timing allocation, physical selection, board/device time, firmware/media import or L3 claim. |
-| Reference Baseline | T391 S5 C1 capture, T391 S6 normalized 44-form aggregate, and T390 C0 convergence ledger model. |
-| Candidate Proposal | `docs/proposals/m5-deskpro-386-startup-semantic-readiness.md`. |
-| Files And ABI Surface | Test capture/evidence/history/current only; no Core or VM ABI. |
-| Applicable Rules | Complete finite-batch coverage, existing copied-state boundary, no source-row inference from tick values, and source policy asset exclusion. |
-| Verification | Re-run contained capture only to produce normalized aggregate input; inspect cardinality and context records; run focused test and governance. |
-| Expected Markers | Existing `M5:T391:S5:C1-TRANSFER-CAPTURE:OK`; normalized C1 ledger evidence marker. |
-| Asset Needs | Owner-managed transient ROM/media only; no identity or content retained. |
-| Reporting Requirements | Record all 44 units or explicit compression rule, context keys, count sum, and each unit's exact/deferred/blocked disposition. |
-| Stop Conditions | Stop if the current capture cannot emit a durable normalized ledger without prohibited data or an interface expansion. |
-| Exit Criteria | A complete, count-reconciled 44-unit ledger is retained with explicit source-sufficiency and receiver disposition. |
-| Original Owner Request | Continue global CPU correctness/timing work toward DeskPro board readiness without breaking the Core/VM boundary. |
-| Similar-Issue Sweep | Keep C0/C0A/C1 boundaries distinct and do not treat containment, tick value or opaque source-form ID as Intel authority. |
+**Active.** T391 remains open between accepted subtasks. S7 reconciles the complete trace-free C1 aggregate: 44/44 units and 1,981,742 classified successful retirements are deferred as one startup-semantic batch because the named boot-transfer endpoint was not reached within containment. The next receiver is the T391 task-closure startup-semantic decision; it must keep renewed C1 physical qualification blocked unless a new finite semantic checkpoint or earliest-owner functional defect is separately admitted. No Core/VM interface, timing, physical-clock, board-time, firmware or L3 claim changed. [Evidence](../etc/evidence/t391-s7-c1-form-context-ledger.md).
 ## Current Technical Baseline
 
 - **Current developer artifact:** T390 S22 `vm-0-5-0390` /
@@ -46,6 +29,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T391 S7 | Accepted: complete trace-free C1 ledger disposes all 44 aggregates and 1,981,742 classified retirements as nonphysical; no C1 transfer endpoint, Core/VM interface, timing, physical, board, firmware or L3 claim. [Evidence](../etc/evidence/t391-s7-c1-form-context-ledger.md). |
 | T391 S6 | Accepted: one transient C1 replay records 44 classified forms and no `0:7C00` hit within containment. It transfers the complete C1 batch disposition; no interface, physical-clock, board-time, firmware or L3 claim. [Evidence](../etc/evidence/t391-s6-contained-c1-transfer-replay.md). |
 | T389 | Stopped by owner-approved requeue: S1 proves no physical board slice can begin while 80386 successful retirement remains nonphysical; S2 archives the invalid candidate and queues a shared CPU qualification before a fresh board task. No board timing, physical-clock or L3 claim. [Audit](../etc/evidence/t389-s2-stop-and-requeue-audit.md). |
 | T388 | Closed: S1--S9 establish the sole publisher, exhaustive exact-or-nonphysical residual disposition and pre-publication physical-contract rejection. No current CPU profile is physically clock-qualified; board work transfers under this restriction. [Closure audit](../etc/evidence/t388-s9-task-closure-audit.md). |

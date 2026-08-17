@@ -97,3 +97,12 @@ is the complete 44-form C1 form/context disposition.
 S7 consumes the full retained 44-unit C1 aggregate and records every context
 unit with a whole-batch nonphysical disposition. It deliberately makes no
 source-row, timing, physical or Core/VM-interface inference. [Evidence](../etc/evidence/t391-s7-c1-form-context-ledger.md).
+## Coordinator Acceptance
+
+After actual-change review of P1 `f62ba959`, the coordinator accepts S7. The
+review confirms the indexed ledger has all 44 units, its count reconciles to
+1,981,742 classified records, and it retains neither raw external material nor
+a Core/VM interface change. The focused capture regression and documentation
+governance pass. T391 remains open; its next receiver is the task-closure
+startup-semantic decision, with renewed C1 physical qualification still blocked
+on a separately admitted finite semantic checkpoint or earliest-owner defect.
