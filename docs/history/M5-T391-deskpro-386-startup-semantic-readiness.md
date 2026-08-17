@@ -10,9 +10,10 @@ firmware compatibility, or L3 claim.
 
 ## Active Subtask
 
-No subtask is active. T391 remains open with S1 retained as compact accepted progress.
+T391 S3 is active: it consumes the complete three-unit C0A form/context batch.
 
 ## Accepted Progress
+
 ### S1: Post-C0 Port-61h Readiness Inventory
 
 S1 accepts M40-C0A, ending at the first post-C0 immediate port-61h read, as a finite startup-semantic checkpoint from existing copied observation. The D4 Core owner and Model-40 composition remain unchanged. The next receiver is one complete C0A form/context ledger; no physical-retirement, board-time, firmware-completeness, or L3 claim follows. [Evidence](../etc/evidence/t391-s1-post-c0-port61-readiness-inventory.md).
@@ -28,3 +29,10 @@ S2 adds a test-only C0A aggregation mode and canonical synthetic regression. The
 ## Coordinator Acceptance
 
 After actual-change review of P1 240d6237, the coordinator accepts S2. The capture isolation is test-only, normal C0 behavior remains covered by the same canonical smoke, and the owner-managed aggregate replay confirms three classified units with no fault or unallocated timing. Documentation governance and diff hygiene pass. T391 remains open; its next receiver is the complete three-unit C0A ledger.
+
+### S3: C0A Form And Context Ledger
+
+S3 consumes all three frozen C0A units and reconciles their exact retained
+context to the existing privileged, control/stack and ordinary-I/O source
+owners. It is documentation and evidence only; no physical selection or
+Core/VM boundary change is in scope. [Evidence](../etc/evidence/t391-s3-c0a-form-context-ledger.md).
