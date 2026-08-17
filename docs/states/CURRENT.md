@@ -8,6 +8,26 @@
   successful one-tick sentinels, so Model-40 CPU-to-PIT/DCLK calibration and
   physical/L3 conclusions transfer to the queued four-profile physical-timebase
   closure; no timing behavior changed.
+## M5 T387 S6 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; S6 is the task-level closure and transfer audit for open T387 after accepted S1--S5. |
+| Admission And Approval | Owner continuing authorization for DeskPro L3 work and push, 2026-08-16; S5's source-backed shared-timebase finding requires truthful task closure rather than an invented Model-40 physical clock. |
+| Objective | Independently reconcile every T387 board/device timing requirement, delivered fact and transfer, then close T387 without claiming Model-40 L3 or physical-time completion. |
+| Non-goals | No CPU timing repair, clock scalar, device repair, reference execution, ROM/media import, generic-AT substitution, artifact revision, or L3 claim. |
+| Reference Baseline | T384 S1/S2, T385 S1, T386 S15/S22--S29, T387 S1--S5, four-profile physical-timebase proposal, DeskPro board and model-L3 proposals, source policy and execution rules. |
+| Candidate Proposal | [DeskPro 386 board bus and device timing closure](../proposals/m5-deskpro-386-bus-device-closure.md). |
+| Files And ABI Surface | T387 closure evidence/current/index and any required Queue/proposal transfer reconciliation; no source, ABI, profile, artifact, asset or media change. |
+| Applicable Rules | EXECUTION/DOCUMENT/ARCHITECTURE/CODING, architecture/coding/UI, source policy and differential-debug policy. |
+| Verification | Map every T387 proposal requirement to S1--S5 evidence/current source or one named receiver; inspect the actual pushed S5 changes and current Queue order; run documentation governance and git diff check, retaining S5 P1's 281-target current-gate proof. |
+| Expected Markers | `M5:T387:S6:TASK-CLOSURE-TRANSFER-AUDIT:OK`. |
+| Asset Needs | No asset use; retained source-labelled evidence only. |
+| Reporting Requirements | State exactly what T387 delivered, which primary facts are retained, every unresolved board/CPU/device receiver, and why no Model-40 L3 result is claimed. |
+| Stop Conditions | Stop and record a Queue/TODO receiver if any T387 requirement lacks a named owner, if a new board behavior needs CPU-timebase repair, or if the closure would imply physical timing or L3. |
+| Exit Criteria | One independent closure matrix covers all T387 scope, current Queue dependencies are sufficient and ordered, documentation governance passes, and T387 closes only with explicit transfers. |
+| Original Owner Request | Continue autonomously toward full DeskPro function and L3 timing; find and resolve root causes without asking routine design questions. |
+| Similar-Issue Sweep | Sweep all T387 evidence, T386 timing transfers, T366/T368 physical-time records, Model-339 virtual-time evidence, Queue and TODO for unnamed CPU-to-board-clock, device-service or L3 transfers. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T386 S28 `vm-0-5-0389` /
