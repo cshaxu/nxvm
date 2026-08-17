@@ -37,3 +37,9 @@ matrix disposes every existing VM/session state without exposing mutable layout
 or changing Core/VM ABI. Focused C0/C0A/C1 capture regression and documentation
 governance pass. T392 remains open; any next step requires a separately
 admitted selected device-operation contract.
+
+### S3: FDC Operation Decision
+
+S3 verifies the generic Core FDC has operation-completion behavior but no safe
+published snapshot or selected firmware-consumer contract. It transfers the
+whole mechanism rather than exposing private FDC state. [Evidence](../etc/evidence/t392-s3-fdc-operation-decision.md).

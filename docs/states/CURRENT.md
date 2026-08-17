@@ -2,7 +2,26 @@
 
 ## Current Work
 
-**Active.** T392 remains open between accepted subtasks. S2 exhausts VM/session observability: no existing state proves C1 success, and any future capability must be a separately admitted immutable VM-owned device-operation snapshot. C1 physical qualification remains blocked. [Evidence](../etc/evidence/t392-s2-vm-session-observability-decision.md).
+## M5 T392 S3 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner authorized autonomous CPU/startup continuation and read-only external reference research; S2 selects one candidate device-operation design rather than a Core change. |
+| Objective | Evaluate FDC boot-sector read completion as the sole candidate finite C1 operation and determine whether it has a safe VM-owned snapshot contract. |
+| Non-goals | No implementation, Core observer change, firmware/media import, raw trace, ROM-byte dependency, timing allocation, physical selection, board/device time or L3 claim. |
+| Reference Baseline | T392 S1/S2; Model40 FDC composition; local read-only 86Box and PCjs implementations as secondary references only. |
+| Candidate Proposal | [DeskPro 386 C1 semantic endpoint investigation](../proposals/m5-deskpro-386-c1-semantic-endpoint-investigation.md). |
+| Files And ABI Surface | Evidence/history/current only; external repositories read-only; no production ABI. |
+| Applicable Rules | Primary/source boundary, no third-party code derivation, VM-owned copied immutable state only, finite semantic checkpoint and source-policy asset exclusion. |
+| Verification | Owner/caller/device-operation inventory; local reference comparison; reset/failure matrix; documentation governance. |
+| Expected Markers | T392 S3 FDC operation decision evidence marker. |
+| Asset Needs | No asset contents; local external source only, read-only. |
+| Reporting Requirements | Name operation, producer, completion/failure/reset semantics, test consumer and exact reason for admission or transfer. |
+| Stop Conditions | Stop if operation meaning relies on firmware bytes, private mutable state, an unreviewed source import, or a wider device/BIOS contract. |
+| Exit Criteria | One source-bounded FDC operation decision either yields a safe future VM snapshot contract or complete explicit transfer. |
+| Original Owner Request | Continue global CPU correctness/timing work toward DeskPro board readiness without breaking the Core/VM boundary. |
+| Similar-Issue Sweep | Compare FDC read completion with generic media insertion, DMA, IRQ, display and BIOS-result alternatives; retain only semantic operation outcomes. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T390 S22 `vm-0-5-0390` /
