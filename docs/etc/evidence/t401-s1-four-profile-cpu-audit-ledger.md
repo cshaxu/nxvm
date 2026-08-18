@@ -51,6 +51,33 @@ proves `/0`--`/3` reject while `/4`--`/7` admit. This is deliberately a
 metadata/profile inventory proof only; dispatch execution, operand semantics,
 fault atomicity and timing remain assigned to their form-level tests and
 ledger rows rather than inferred from this matrix.
+## S3 Current `0F` Map Reconciliation
+
+The current source matrix contains 66 metadata-valid secondary opcode slots:
+five 80286 slots/groups (`00`, `01`, `02`, `03`, `06`) and 61 80386 slots/groups.
+The table below is a source/metadata classification, not a claim that every
+valid instruction form has one uniform timing model.
+
+| Current slots | Profile / form disposition | Current form-level evidence or transfer |
+| --- | --- | --- |
+| `00 /0`--`/5`, `01 /0`--`/6`, `02`, `03`, `06` | 80286+; omitted group extensions reject. | Batch A above; DTTR, descriptor-system, LAR/LSL and CLTS focused tests. Nonphysical timing retained. |
+| `20`--`24`, `26` | 80386 CR/DR/TR moves; `25` is reserved and rejects. | T401 S2 plus debug-MOV and descriptor-system tests; CR/DR/TR semantics retain their distinct existing evidence boundaries. |
+| `80`--`8F` | 80386 near conditional branches. | T303 control-transfer matrix; selected target/fault forms are proven, timing remains at its existing nonphysical owner. |
+| `90`--`9F` | 80386 SETcc r/m8 forms. | T310 S3 setcc smoke covers declared condition, register/memory, prefix and pre-fault publication rows. |
+| `A0`, `A1`, `A8`, `A9` | 80386 FS/GS push/pop. | T316 S23 FS/GS stack matrix. |
+| `A3`, `AB`, `B3`, `BB`, `BA /4`--`/7` | 80386 BT/BTS/BTR/BTC; `BA /0`--`/3` reject. | T310 S5 bit-test matrix and S3 metadata regression. |
+| `A4`, `A5`, `AC`, `AD` | 80386 SHLD/SHRD immediate/CL forms. | T310 S6 double-shift matrix. |
+| `AF`, `BC`, `BD`, `B6`, `B7`, `BE`, `BF` | 80386 IMUL2, BSF/BSR and MOVZX/MOVSX. | T310 S8/S7/S4 form matrices. |
+| `B2`, `B4`, `B5` | 80386 LSS/LFS/LGS, memory-only. | T316 S24 matrix; selected descriptor/fault boundary only. |
+| Every other slot, including `09`, `25`, `30`, `32`, `A2`, `AA`, `B0`, `B1`, `B8`, `B9`, `C0`--`FF` | Reserved/later/unsupported for the selected processors; metadata gate rejects before dispatch, even where a later-CPU handler name remains initialized. | S3 256-slot metadata regression plus T401 S2 `25` execution delivery proof. No later-CPU feature is admitted. |
+
+The audit also checks that `ExecIns` applies the metadata/profile gate and
+`INS_0F` repeats it before the initialized table route. Consequently, a
+later-CPU handler present in the table is not treated as an implemented 80386
+instruction. This matrix reconciles the current source graph with the retained
+T303/T304/T310/T316 proofs; it exposes no additional metadata/profile mismatch
+beyond the repaired `0F 25`. Remaining CPU work is per-form semantic and timing
+audit, not an unclassified secondary-opcode hole.
 Batch B then covers the remaining `0F` map, beginning with control/debug/test-register,
 bit-operation, conditional branch/set and 80386-only forms. FPU escape stays
 a separately classified coverage family. Every successful reachable form also
