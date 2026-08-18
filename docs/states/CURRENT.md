@@ -4,6 +4,26 @@
 
 **Active: M5 T399.**
 
+## M5 T399 S2 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; the packet heading allocates `M5 T399 S2`. |
+| Admission And Approval | Owner-approved in this thread on 2026-08-17 to complete every DeskPro L3-timing item possible before the queued CPU audit: implement primary-backed behavior, otherwise use exact reference-derived evidence, transfer no-reference gaps to TODO, and defer CPU-audit prerequisites until the post-audit next task. S2 consumes only B3. |
+| Objective | Reconcile the complete B3 KBC/D4/port-`61h`/fail-safe/IOCHK-NMI observation contract against D3PE and PCjs DeskPro-specific topology, then implement only any missing bounded project-owned behavior and regression. |
+| Non-goals | No physical timing scalar, reference tick, firmware execution/import, generic AT substitution, new Core/VM interface, scheduler, B1/B2/B4/B5 behavior, or physical/reference-derived L3 decision. |
+| Reference Baseline | T386 D4 functional regressions, T396/T397 owner ledgers, T399 S1 frozen B3 disposition, retained D3PE topology facts, and PCjs exact DeskPro-specific `48h`/port-`61h` model facts. |
+| Candidate Proposal | [DeskPro 386 reference-derived timing bridge and L3 re-audit](../proposals/m5-deskpro-386-reference-derived-timing-bridge.md). |
+| Files And ABI Surface | Existing Core D4/platform/NMI and VM Model-40 composition owners, focused `tests/machine` smoke coverage, T399 evidence/history and `CURRENT.md`. No new public ABI is admitted. |
+| Applicable Rules | Execution, documentation, architecture and coding rules; source/research policy. Preserve Core-neutral ownership, VM-only Model-40 composition, immutable/copy-safe public boundary, no third-party source/asset import, and no host-time coupling. |
+| Verification | Focused existing/new B3 smoke; current-gate registration if code changes; reset/cancel replay; source-owner/reference sweep; documentation governance; coordinator actual-diff review. |
+| Expected Markers | `M5:T399:S2:B3-CONTRACT-RECONCILED`; if a gap is repaired, focused `M5:T399:S2:B3-*` regression markers. |
+| Asset Needs | Read-only D3PE and reference source/configuration metadata only. No ROM, media, source, configuration, trace or binary is copied into NXVM. |
+| Reporting Requirements | Record direct-source facts, reference-derived topology facts, every B3 input/checkpoint/reset/cancel result, disagreement outcome, behavior decision, and any remaining receiver. |
+| Stop Conditions | Stop implementation if B3 requires an electrical phase/value, an unbounded firmware observation, a generic reference substitution, a new public interface, a protected asset, or a CPU-audit prerequisite. Transfer the whole unsupported class. |
+| Exit Criteria | B3 is accepted with direct/reference-derived normalized project proof or transferred whole to one TODO/post-CPU receiver; no unresolved B3 form is hidden; all required verification and governance pass. |
+| Original Owner Request | “把DeskPro 386能做的L3时序部分都做了；有权威资料直接实现；只有参考可参考实现；没有参考加入TODO；需等待CPU审计的放到CPU审计之后的下一任务。” |
+| Similar-Issue Sweep | Recheck B3 D4/port-`61h`/NMI routes in Core and both Model-40 compositions; distinguish PCjs DeskPro-only bits from generic AT/86Box behavior; review B1/B2/B4/B5 disposition consistency before any transfer. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T395 S1 P4 `vm-0-5-0395` /
