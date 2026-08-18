@@ -3,6 +3,26 @@
 ## Current Work
 
 **Active: M5 T401.**
+## M5 T401 S71 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner: user; standing approval to continue CPU audit and directly repair confirmed small issues. |
+| Objective | Audit 80286/80386 `0F 00` system-group reserved `/6` and `/7` forms; align lexical availability with documented #UD execution. |
+| Non-goals | No task-switch, LDT breadth, public Core/VM ABI change, CPU timing model, DeskPro claim or external-source import; no T401 closure. |
+| Reference Baseline | `d34d05ae` (S70 P2), retained Intel 80286/80386 PRM system-instruction tables, T401 Batch A, current INS_0F_00 and protected-UD smoke. |
+| Candidate Proposal | [Four-profile CPU instruction-correctness audit](../proposals/m5-four-profile-cpu-instruction-correctness-audit.md), system-group reserved-form batch. |
+| Files And ABI Surface | Core private lexical validator, preview smoke, existing protected-UD smoke, CURRENT and T401 ledger; no public ABI surface. |
+| Applicable Rules | Preserve public generic scanner and Core/VM boundary; coding, documentation and execution rules apply. |
+| Verification | Reproduce lexical mismatch; build/run preview and protected-UD smoke; full current gate; documentation governance; diff check. |
+| Expected Markers | `M5:T401:S71:SYSTEM-SELECTOR-GROUP-PREVIEW-PROFILES:OK`; existing protected-UD marker. |
+| Asset Needs | None. |
+| Reporting Requirements | Record `/6` and `/7` reserved disposition, legal neighboring extensions, profile/mode and register/memory form evidence. |
+| Stop Conditions | Transfer any task-switch, LDT breadth, public ABI, physical timing or machine-profile expansion. |
+| Exit Criteria | Reserved forms reject before lexical publication and runtime #UD remains proven; legal `/0`--`/5` forms stay available. |
+| Original Owner Request | Continue CPU audit before later DeskPro L3 work with direct repair of confirmed small issues. |
+| Similar-Issue Sweep | Treat all `0F 00` extensions, selector-query/load semantics, register/memory forms and pre-80286 rejection together. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T395 S1 P4 `vm-0-5-0395` /

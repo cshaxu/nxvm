@@ -929,6 +929,32 @@ static C_INT preview_test_imul2_profiles(C_VOID)
         if(core_machine_cpu_instruction_lexeme_scan((const type_unsigned_8[]){0x0fu,0xafu,0xc8u},3u,unavailable[profile],TYPE_FALSE,&lexeme)||lexeme.available)return 0;
     return preview_expect((const type_unsigned_8[]){0x0fu,0xafu,0xc8u},3u,CORE_MACHINE_CPU_PROFILE_80386,TYPE_FALSE,3u,3u)&&preview_expect((const type_unsigned_8[]){0x0fu,0xafu,0x0eu,0x34u,0x12u},5u,CORE_MACHINE_CPU_PROFILE_80386,TYPE_FALSE,5u,4u)&&preview_expect((const type_unsigned_8[]){0x66u,0x0fu,0xafu,0xc8u},4u,CORE_MACHINE_CPU_PROFILE_80386,TYPE_FALSE,4u,4u)&&preview_expect((const type_unsigned_8[]){0x67u,0x0fu,0xafu,0x05u,0x78u,0x56u,0x34u,0x12u},8u,CORE_MACHINE_CPU_PROFILE_80386,TYPE_FALSE,8u,5u)&&preview_expect((const type_unsigned_8[]){0x66u,0x67u,0x0fu,0xafu,0x05u,0x78u,0x56u,0x34u,0x12u},9u,CORE_MACHINE_CPU_PROFILE_80386,TYPE_FALSE,9u,6u);
 }
+static C_INT preview_test_system_selector_group_profiles(C_VOID)
+{
+    static const core_machine_cpu_profile profiles[] = {
+        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
+    };
+    core_machine_cpu_instruction_lexeme lexeme;
+    type_unsigned_8 profile;
+    type_unsigned_8 extension;
+
+    for (profile = 0u; profile < sizeof(profiles) / sizeof(profiles[0]); ++profile) {
+        for (extension = 0u; extension < 6u; ++extension)
+            if (!preview_expect((const type_unsigned_8[]){0x0fu, 0x00u,
+                    (type_unsigned_8)(0xc0u | (extension << 3u))}, 3u,
+                    profiles[profile], TYPE_FALSE, 3u, 3u)) return 0;
+        for (extension = 6u; extension < 8u; ++extension)
+            if (core_machine_cpu_instruction_lexeme_scan((const type_unsigned_8[]){0x0fu,
+                    0x00u, (type_unsigned_8)(extension << 3u)}, 3u,
+                    profiles[profile], TYPE_FALSE, &lexeme) || lexeme.available ||
+                core_machine_cpu_instruction_lexeme_scan((const type_unsigned_8[]){0x0fu,
+                    0x00u, (type_unsigned_8)((extension << 3u) | 6u), 0u, 0u}, 5u,
+                    profiles[profile], TYPE_FALSE, &lexeme) || lexeme.available) return 0;
+    }
+    return core_machine_cpu_instruction_lexeme_scan((const type_unsigned_8[]){0x0fu,
+            0x00u, 0xc0u}, 3u, CORE_MACHINE_CPU_PROFILE_80186, TYPE_FALSE,
+            &lexeme) == TYPE_FALSE && !lexeme.available;
+}
 static C_INT preview_test_system_group_profiles(C_VOID)
 {
     static const core_machine_cpu_profile profiles[] = {
@@ -1684,6 +1710,7 @@ C_INT main(C_VOID)
     if (!preview_test_debug_mov_profiles()) return 63;
     if (!preview_test_test_mov_profiles()) return 65;
     if (!preview_test_system_group_profiles()) return 66;
+    if (!preview_test_system_selector_group_profiles()) return 67;
     if (!preview_test_lss_lfs_lgs_profiles()) return 64;
     if (!preview_test_les_lds_profiles()) return 34;
     if (!preview_test_group3_profiles()) return 10;
@@ -1757,5 +1784,6 @@ C_INT main(C_VOID)
     STD_PRINTF("M5:T401:S68:LSS-LFS-LGS-PREVIEW-PROFILES:OK\n");
     STD_PRINTF("M5:T401:S69:TEST-MOV-PREVIEW-PROFILES:OK\n");
     STD_PRINTF("M5:T401:S70:SYSTEM-GROUP-PREVIEW-PROFILES:OK\n");
+    STD_PRINTF("M5:T401:S71:SYSTEM-SELECTOR-GROUP-PREVIEW-PROFILES:OK\n");
     return 0;
 }

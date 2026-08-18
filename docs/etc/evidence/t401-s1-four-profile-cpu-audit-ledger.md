@@ -1208,3 +1208,6 @@ S70 audits 80286/80386 `0F 01` system-group reserved extensions `/5` and `/7`. T
 ## S70 Acceptance
 
 S70 closes the bounded 80286/80386  F 01 system-group reserved-form audit. The scanner now rejects /5 and /7 before lexical publication, matching the retained runtime #UD path. Legal neighboring table, SMSW and LMSW forms, profile gates, memory/register constraints and 80386 prefix layouts remain proven. No INVLPG, ABI, physical timing or machine-profile semantics are admitted.
+## S71 Selector-system Group Reserved Forms
+
+S71 audits 80286/80386 `0F 00` selector-system-group reserved extensions `/6` and `/7`. The initial source review found no lexical-validator special case, but the metadata gate already rejects both before the validator runs, consistently with the runtime `INS_0F_00` `#UD` branches. `M5:T401:S71:SYSTEM-SELECTOR-GROUP-PREVIEW-PROFILES:OK` adds direct current proof: `/0`--`/5` remain lexical forms on 80286/80386, `/6` and `/7` reject in register and memory encodings, and 80186 rejects the escape. No production discrepancy or later-CPU feature is present; timing remains nonphysical.
