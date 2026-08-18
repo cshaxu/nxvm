@@ -10,3 +10,10 @@ This closes only the logical digital line. Audio rendering, acoustic and
 physical-frequency behavior, host-time scheduling and broader PPI semantics
 remain transferred in the hardware debt ledger. T421 is not a physical timing
 or Model-L3 acceptance.
+## S2 Corrective: Port-B Topology Guard
+
+S2 independently checked the suspected duplicate planar/D4 port-B route. The
+existing Core registry already rejects the second provider atomically; S2 adds
+the missing two-direction reset-visible regression. Model-40 and Model 339
+remain independent profile selections of the same Core port/PIT/speaker owner.
+No production mechanism, ABI, source tier or physical/L3 conclusion changes.

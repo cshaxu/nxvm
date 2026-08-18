@@ -6,6 +6,40 @@
 
 #include "../support/core_machine_cpu_fixture.h"
 
+static C_INT core_machine_port_b_exclusivity(C_VOID)
+{
+    core_machine_config config = {0};
+    core_machine_planar_parity_config planar = {CORE_MACHINE_PC_AT_PORT_B,
+        512u * 1024u};
+    core_machine_d4_platform_config d4 = {CORE_MACHINE_PC_AT_PORT_B, 0u};
+    core_machine *machine = STD_NULL;
+    type_unsigned_32 value = 0u;
+    C_INT failed = 0;
+
+    config.memory_bytes = 2u * 1024u * 1024u;
+    config.auxiliary_pit_present = TYPE_TRUE;
+    config.auxiliary_pit_base_port = 0x0048u;
+    failed |= core_machine_create(&config, &machine) != TYPE_STATUS_OK ||
+        core_machine_configure_planar_parity(machine, &planar) != TYPE_STATUS_OK ||
+        core_machine_configure_d4_platform(machine, &d4) != TYPE_STATUS_INVALID_ARGUMENT ||
+        core_machine_freeze_execution_providers(machine) != TYPE_STATUS_OK ||
+        core_machine_reset(machine) != TYPE_STATUS_OK ||
+        core_machine_bus_read(machine, CORE_MACHINE_PC_AT_PORT_B, &value) !=
+            TYPE_STATUS_OK || (value & 0x0fu) != 0x04u;
+    core_machine_destroy(machine);
+
+    machine = STD_NULL;
+    value = 0u;
+    failed |= core_machine_create(&config, &machine) != TYPE_STATUS_OK ||
+        core_machine_configure_d4_platform(machine, &d4) != TYPE_STATUS_OK ||
+        core_machine_configure_planar_parity(machine, &planar) != TYPE_STATUS_INVALID_ARGUMENT ||
+        core_machine_freeze_execution_providers(machine) != TYPE_STATUS_OK ||
+        core_machine_reset(machine) != TYPE_STATUS_OK ||
+        core_machine_bus_read(machine, CORE_MACHINE_PC_AT_PORT_B, &value) !=
+            TYPE_STATUS_OK || (value & 0x0fu) != 0x0fu;
+    core_machine_destroy(machine);
+    return failed;
+}
 C_INT main(C_VOID)
 {
     core_machine_config config = {0};
@@ -125,8 +159,10 @@ C_INT main(C_VOID)
         observation.nmi_signaled || machine->executor_cpu.data.flagNMI ||
         core_machine_bus_read(machine, 0x0061u, &value) != TYPE_STATUS_OK ||
         value != 0x1fu;
+    if (!failed) failed |= core_machine_port_b_exclusivity();
     core_machine_destroy(machine);
     if (failed) return 1;
+    STD_PRINTF("M5:T421:S2:PORT-B-EXCLUSIVITY:OK\n");
     STD_PRINTF("M5:T386:S4:D4-RESET-ISOLATION:OK\n");
     STD_PRINTF("M5:T386:S23:D4-RESET-ARBITRATION:OK\n");
     STD_PRINTF("M5:T399:S2:B3-ACTIVE-LOW-NMI:OK\n");
