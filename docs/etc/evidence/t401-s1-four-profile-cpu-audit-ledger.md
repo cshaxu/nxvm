@@ -1028,3 +1028,7 @@ S53 closes the bounded short conditional-jump family audit. The complete control
 ## S54 Direct Near Control Transfer
 
 S54 audits direct near CALL/JMP `E8h`/`E9h` and short JMP `EBh`. The control-transfer fixture proves real-mode execution across 8086, 80186, 80286 and 80386, including stack-preserving CALL/RET behavior; it also proves 80386 16/32-bit code and operand-width forms, direct target progression and related target-fault boundaries. `M5:T401:S54:DIRECT-NEAR-CONTROL-PREVIEW-PROFILES:OK` adds direct lexical proof for all three encodings on all four profiles, rel16 and rel32 immediate widths, fixed rel8 width, and 80386 operand/address prefix layouts. No production discrepancy was found; timing remains nonphysical.
+
+## S54 Acceptance
+
+S54 closes the bounded direct near-control audit. The control-transfer fixture and direct lexical matrix establish four-profile real-mode behavior, CALL stack preservation, direct targets, rel16/rel32 and rel8 layouts, and 80386 attribute boundaries. No production discrepancy was found; Core timing remains nonphysical and T401 remains open.
