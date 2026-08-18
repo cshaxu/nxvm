@@ -2,13 +2,33 @@
 
 ## Current Work
 
-**Idle.**
+**Active: M5 T406 S1.**
 
+## M5 T406 S1 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New |
+| Admission And Approval | Owner approved continued DeskPro L3/hardware-gap implementation using original sources first, read-only reference implementations second, and explicitly labelled generic IBM AT skeletons when no higher tier yields a mechanism; commits and pushes to `master` are standing-authorized, reaffirmed 2026-08-18. |
+| Objective | Implement the Td S105 first receiver: a generic-AT virtual-time cadence for native keyboard serial bytes in the existing Core KBC owner, bound only by the Model-40 composition. |
+| Non-goals | No original Compaq rate, physical/L3 claim, host-time coupling, firmware/media import, new Core/VM bypass, second scheduler/queue, command-response semantic change, FDC/HDC/CECG work, or user-facing configuration. |
+| Reference Baseline | Td S105 tiered receiver ledger; T403 functional KBC closure; T405 host-build baseline. PCjs/86Box are read-only mechanism references only; actual cadence is labelled `generic-at`. |
+| Candidate Proposal | [DeskPro tiered timing fallback foundation](../proposals/m5-deskpro-tiered-timing-fallback-foundation.md). |
+| Files And ABI Surface | `src/core/machine/kbc.[ch]`, Core machine configuration/storage, Model-40 session composition, KBC/Model-40 tests, `docs/history/M5-T406-deskpro-generic-at-keyboard-serial-cadence.md`, `docs/etc/evidence/`, `docs/states/CURRENT.md`, and `docs/states/QUEUE.md` at closure. Existing public native-byte API retains its signature and route. |
+| Applicable Rules | Architecture: Core owns reusable KBC behavior and VM composes the profile binding; no reverse dependency or duplicate path. Coding: C11/type facade, one owner and project-owned test boundary. Source policy: references read-only, no source/firmware/media import. |
+| Verification | Focused KBC controller cadence proof; Model-40 composition proof; full `current-gate`; documentation governance; actual diff and similar-issue sweep over KBC serial submit/drain/reset call sites. |
+| Expected Markers | `M5:T406:S1:KBC-SERIAL-CADENCE:OK` and `M5:T406:S1:CLOSURE-AUDIT:OK` |
+| Asset Needs | None. No ROM, guest media, local asset path, binary, hash catalogue, or third-party source import. |
+| Reporting Requirements | Record the generic-AT tier, PCjs/86Box configuration limits, cadence input/output/reset/cancellation contract, zero-cadence compatibility, affected caller sweep, gates, artifact identity/hash, and remaining physical/L3 transfer. |
+| Stop Conditions | Stop and transfer if the mechanism requires a new VM-to-Core input path, host elapsed time, a fixed original-Compaq value, or modification of the KBC command/FIFO/IRQ contract beyond serial release scheduling. |
+| Exit Criteria | The existing KBC serial queue releases no more than one native byte per configured virtual-time cadence, zero preserves current behavior, reset clears cadence state, Model-40 selects a labelled generic-AT cadence, all focused/full gates pass, artifact `vm-0-5-0406` is verified, and the remaining physical/L3 boundary is retained. |
+| Original Owner Request | Implement DeskPro 386 L3-level timing and all hardware gaps: original sources first, reference implementations second, generic IBM AT skeletons if necessary; label all three levels and keep moving. |
+| Similar-Issue Sweep | Sweep `core_machine_kbc_submit_native_byte(s)`, serial drain, KBC reset, machine peripheral advancement, and both generic/Model-40 construction paths; fix same-owner omissions or record a bounded transfer. |
 ## Current Technical Baseline
 
-- **Current developer artifact:** T405 S1 P4 `vm-0-5-0405` /
-  `build/output/nxvm_0_5_0405.exe`, SHA-256
-  `6A2234EBBD08910686B6A9EB708DBCE3269DFA0379CB9C89ABF3CB9230FC8E48`.
+- **Current developer artifact:** T406 S1 P1 `vm-0-5-0406` /
+  `build/output/nxvm_0_5_0406.exe`, SHA-256
+  `81357370B706709088DAB0CD5F5AE42AA15006A9DD95F665DCEBE486D9B35C4E`.
   [T405 x86 GCC evidence](../etc/evidence/t405-s1-x86-gcc-host-build-compatibility.md) records 286/286 current-gate passes on both x86 and x64 hosts; this remains no L3 claim.
   T386 closes selected-device functional completeness at S29; its retained
   [closure audit](../etc/evidence/t386-s29-functional-closure-audit.md) fixes

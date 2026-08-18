@@ -118,6 +118,7 @@ struct core_machine {
     type_unsigned_32 kbc_typematic_initial_ticks;
     type_unsigned_32 kbc_typematic_repeat_ticks;
     type_unsigned_32 kbc_command_response_ticks;
+    type_unsigned_32 kbc_serial_delivery_ticks;
     core_machine_display_port_topology display_ports;
     type_bool display_configured;
     core_machine_dma_wiring dma_wiring;

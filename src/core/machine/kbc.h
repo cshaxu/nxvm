@@ -101,11 +101,13 @@ typedef struct t_kbc_data {
     type_unsigned_8 delayed_response_index;
     type_unsigned_64 typematic_remaining_ticks;
     type_unsigned_64 response_remaining_ticks;
+    type_unsigned_64 serial_delivery_remaining_ticks;
     type_unsigned_32 typematic_nominal_initial_ticks;
     type_unsigned_32 typematic_nominal_repeat_ticks;
     type_unsigned_32 typematic_initial_ticks;
     type_unsigned_32 typematic_repeat_ticks;
     type_unsigned_32 command_response_ticks;
+    type_unsigned_32 serial_delivery_ticks;
     type_bool typematic_active;
 } t_kbc_data;
 
@@ -134,6 +136,8 @@ C_VOID core_machine_kbc_set_typematic_timing(t_kbc *controller,
     type_unsigned_32 initial_ticks, type_unsigned_32 repeat_ticks);
 C_VOID core_machine_kbc_set_command_response_timing(t_kbc *controller,
     type_unsigned_32 response_ticks);
+C_VOID core_machine_kbc_set_serial_delivery_timing(t_kbc *controller,
+    type_unsigned_32 delivery_ticks);
 C_VOID core_machine_kbc_finalize(t_kbc *controller);
 /* Submit a byte emitted by the attached physical keyboard.  This is the
  * production keyboard-to-controller boundary; it is not a guest-FIFO or test

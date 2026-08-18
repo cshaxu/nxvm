@@ -90,6 +90,7 @@ typedef struct core_machine_config {
     type_unsigned_32 kbc_typematic_initial_ticks;
     type_unsigned_32 kbc_typematic_repeat_ticks;
     type_unsigned_32 kbc_command_response_ticks;
+    type_unsigned_32 kbc_serial_delivery_ticks;
     /* Optional product-selected 8254 topology; no output consumer is implied. */
     type_bool auxiliary_pit_present;
     type_unsigned_16 auxiliary_pit_base_port;

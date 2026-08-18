@@ -277,7 +277,8 @@ static C_VOID core_machine_kbc_drain_keyboard_serial(t_kbc *controller)
     type_unsigned_8 native_byte;
     type_status status;
 
-    if (controller == STD_NULL) return;
+    if (controller == STD_NULL ||
+        controller->data.serial_delivery_remaining_ticks != 0u) return;
     while (controller->data.keyboard_serial_count != 0u &&
         controller->data.fifo_count < CORE_MACHINE_KBC_FIFO_CAPACITY) {
         native_byte = controller->data.keyboard_serial[
@@ -288,6 +289,11 @@ static C_VOID core_machine_kbc_drain_keyboard_serial(t_kbc *controller)
             (controller->data.keyboard_serial_head + 1u) %
             CORE_MACHINE_KBC_KEYBOARD_SERIAL_CAPACITY);
         --controller->data.keyboard_serial_count;
+        if (controller->data.serial_delivery_ticks != 0u) {
+            controller->data.serial_delivery_remaining_ticks =
+                controller->data.serial_delivery_ticks;
+            return;
+        }
     }
 }
 static type_bool core_machine_kbc_is_typematic_scan_code(type_unsigned_8 scan_code)
@@ -780,15 +786,18 @@ C_VOID core_machine_kbc_reset(t_kbc *controller)
     type_unsigned_32 typematic_nominal_initial_ticks;
     type_unsigned_32 typematic_nominal_repeat_ticks;
     type_unsigned_32 command_response_ticks;
+    type_unsigned_32 serial_delivery_ticks;
 
     if (controller == STD_NULL) return;
     typematic_nominal_initial_ticks = controller->data.typematic_nominal_initial_ticks;
     typematic_nominal_repeat_ticks = controller->data.typematic_nominal_repeat_ticks;
     command_response_ticks = controller->data.command_response_ticks;
+    serial_delivery_ticks = controller->data.serial_delivery_ticks;
     STD_MEMSET(&controller->data, TYPE_ZERO_8, sizeof(controller->data));
     controller->data.typematic_nominal_initial_ticks = typematic_nominal_initial_ticks;
     controller->data.typematic_nominal_repeat_ticks = typematic_nominal_repeat_ticks;
     controller->data.command_response_ticks = command_response_ticks;
+    controller->data.serial_delivery_ticks = serial_delivery_ticks;
     core_machine_pic_irq_source_deassert(&controller->connect.irq1_source);
     core_machine_pic_irq_source_deassert(&controller->connect.irq12_source);
     controller->data.command_byte = CORE_MACHINE_KBC_COMMAND_IRQ1 |
@@ -810,6 +819,11 @@ C_VOID core_machine_kbc_refresh(t_kbc *controller) { (C_VOID)controller; }
 C_VOID core_machine_kbc_advance(t_kbc *controller, type_unsigned_64 elapsed_ticks)
 {
     if (controller == STD_NULL) return;
+    if (elapsed_ticks >= controller->data.serial_delivery_remaining_ticks) {
+        controller->data.serial_delivery_remaining_ticks = 0u;
+    } else {
+        controller->data.serial_delivery_remaining_ticks -= elapsed_ticks;
+    }
     core_machine_kbc_drain_keyboard_serial(controller);
     if (controller->data.delayed_response_count != 0u) {
         if (elapsed_ticks < controller->data.response_remaining_ticks) {
@@ -867,6 +881,14 @@ C_VOID core_machine_kbc_set_command_response_timing(t_kbc *controller,
 {
     if (controller == STD_NULL) return;
     controller->data.command_response_ticks = response_ticks;
+}
+C_VOID core_machine_kbc_set_serial_delivery_timing(t_kbc *controller,
+    type_unsigned_32 delivery_ticks)
+{
+    if (controller == STD_NULL) return;
+    controller->data.serial_delivery_ticks = delivery_ticks;
+    controller->data.serial_delivery_remaining_ticks = 0u;
+    core_machine_kbc_drain_keyboard_serial(controller);
 }
 C_VOID core_machine_kbc_finalize(t_kbc *controller)
 {
@@ -948,6 +970,11 @@ type_status core_machine_kbc_submit_native_byte(t_kbc *controller,
         CORE_MACHINE_KBC_KEYBOARD_SERIAL_CAPACITY);
     controller->data.keyboard_serial[tail] = native_byte;
     ++controller->data.keyboard_serial_count;
+    if (controller->data.serial_delivery_ticks != 0u &&
+        controller->data.serial_delivery_remaining_ticks == 0u) {
+        controller->data.serial_delivery_remaining_ticks =
+            controller->data.serial_delivery_ticks;
+    }
     core_machine_kbc_drain_keyboard_serial(controller);
     return TYPE_STATUS_OK;
 }
@@ -973,6 +1000,11 @@ type_status core_machine_kbc_submit_native_bytes(t_kbc *controller,
             CORE_MACHINE_KBC_KEYBOARD_SERIAL_CAPACITY);
         controller->data.keyboard_serial[tail] = native_bytes[index];
         ++controller->data.keyboard_serial_count;
+    }
+    if (controller->data.serial_delivery_ticks != 0u &&
+        controller->data.serial_delivery_remaining_ticks == 0u) {
+        controller->data.serial_delivery_remaining_ticks =
+            controller->data.serial_delivery_ticks;
     }
     core_machine_kbc_drain_keyboard_serial(controller);
     return TYPE_STATUS_OK;

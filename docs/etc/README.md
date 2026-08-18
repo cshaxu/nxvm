@@ -398,6 +398,8 @@ principal documents named in [docs/README.md](../README.md).
 
 | `evidence/td-s105-tiered-deskpro-receiver-ledger.md` | Verification owner | Td S105 maps the five retained T398 DeskPro receivers to labelled original/reference-derived/generic-AT inputs, existing owners, tests and T406 admission. Retain until all listed receivers are closed or transferred by a later DeskPro closure audit. |
 
+| `evidence/t406-s1-kbc-serial-cadence.md` | Verification owner | T406 S1 generic-AT KBC serial delivery cadence, Model-40 binding, focused/full gate evidence and physical/L3 transfer. Retain with T406 history. |
+
 Adding a new supporting document requires owner approval, an exact-file index
 row or a declared indexed subtree, and a stated promotion, merge, or retirement
 condition. The governance gate verifies that every supporting Markdown file is

@@ -4667,6 +4667,7 @@ static type_status core_machine_create_internal(
     machine->kbc_typematic_initial_ticks = config->kbc_typematic_initial_ticks;
     machine->kbc_typematic_repeat_ticks = config->kbc_typematic_repeat_ticks;
     machine->kbc_command_response_ticks = config->kbc_command_response_ticks;
+    machine->kbc_serial_delivery_ticks = config->kbc_serial_delivery_ticks;
     core_machine_fpu_initialize(&machine->fpu, config->fpu_profile);
     STD_ATOMIC_INIT(&machine->stop_requested, 0);
     core_machine_trace_initialize(machine);
@@ -4748,6 +4749,8 @@ static type_status core_machine_create_internal(
         machine->kbc_typematic_repeat_ticks);
     core_machine_kbc_set_command_response_timing(&machine->shared_kbc,
         machine->kbc_command_response_ticks);
+    core_machine_kbc_set_serial_delivery_timing(&machine->shared_kbc,
+        machine->kbc_serial_delivery_ticks);
     core_machine_pit_set_output(&machine->shared_pit, 1, STD_NULL, STD_NULL);
     {
         type_status status = core_machine_port_registration_status(

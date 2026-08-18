@@ -427,6 +427,7 @@ static type_status vm_session_create_model40_byob(const vm_session_config *confi
         .ticks_per_instruction = 1u,
         .instruction_timing = {1u, 0u, 0u, 0u, 0u, 0u},
         .retirement_time_contract = CORE_MACHINE_RETIREMENT_TIME_DETERMINISTIC,
+        .kbc_serial_delivery_ticks = 1u, /* Generic-AT virtual-time cadence, not a Compaq measurement. */
         .clock_plan = {{1u, 1u, 0u}, {1u, 1u, 0u}, {1u, 1u, 0u},
             {1u, 1u, 0u}, {1u, 1u, 0u}, {1u, 1u, 0u}},
         .auxiliary_pit_present = TYPE_TRUE,
@@ -476,6 +477,7 @@ type_status vm_session_create_model40_private(
         .ticks_per_instruction = 1u,
         .instruction_timing = {1u, 0u, 0u, 0u, 0u, 0u},
         .retirement_time_contract = CORE_MACHINE_RETIREMENT_TIME_DETERMINISTIC,
+        .kbc_serial_delivery_ticks = 1u, /* Generic-AT virtual-time cadence, not a Compaq measurement. */
         .clock_plan = {{1u, 1u, 0u}, {1u, 1u, 0u}, {1u, 1u, 0u},
             {1u, 1u, 0u}, {1u, 1u, 0u}, {1u, 1u, 0u}},
         .auxiliary_pit_present = TYPE_TRUE,
