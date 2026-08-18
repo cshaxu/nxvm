@@ -1,4 +1,4 @@
-﻿# M5 T387: DeskPro 386 Board Bus And Device Timing Closure
+# M5 T387: DeskPro 386 Board Bus And Device Timing Closure
 
 ## Task Record
 
