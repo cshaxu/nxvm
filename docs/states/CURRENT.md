@@ -4,24 +4,24 @@
 
 **Active: M5 T401.**
 
-## M5 T401 S30 Packet
+## M5 T401 S31 Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation; M5 T401 S30. |
-| Admission And Approval | Owner approved continuing the four-profile CPU audit. S29 is accepted after complete BOUND execution/preview evidence. |
-| Objective | Audit immediate IMUL `69h`/`6Bh` across 8086, 80186, 80286 and 80386: signed product, overflow, prefix/profile gates, preview and retirement. |
+| Identifier Mode | Continuation; M5 T401 S31. |
+| Admission And Approval | Owner approved continuing the four-profile CPU audit. S30 is accepted after complete immediate IMUL execution/preview evidence. |
+| Objective | Audit PUSHA/POPA `60h`/`61h` across 8086, 80186, 80286 and 80386: stack image, profile gates, prefixes, preview and retirement. |
 | Non-goals | No broad string-engine, arithmetic/flag or memory-transaction rewrite, no device/board work, no physical timing or DeskPro L3 claim. |
 | Reference Baseline | Intel manuals; retained MOV/prefix/timing ledgers; current decoder/execution/preview. Secondary emulators only corroborate Intel-underspecified behavior and must be labelled reference-derived. |
 | Candidate Proposal | [Four-profile CPU instruction-correctness audit and repair program](../proposals/m5-four-profile-cpu-instruction-correctness-audit.md). |
 | Files And ABI Surface | Audit ledger, packet and focused CPU smoke only unless a bounded shared defect is reproduced; no public ABI. |
 | Applicable Rules | Execution bounded corrective/actual-diff review; shared Core CPU ownership; coding/test rules; Intel primary-source requirement; external-provider/source policy; documentation indexing. |
 | Verification | Four-profile execution/preview matrix, byte/word/dword compare, DF/REP progression and termination, 80386 address/operand prefixes, pre-80386 #UD atomicity, flags/segments/retirement; focused tests, full gate after repair, governance/diff checks. |
-| Expected Markers | New T401 S30 markers and any bounded defect marker. |
+| Expected Markers | New T401 S31 markers and any bounded defect marker. |
 | Reporting Requirements | Record CPU/profile, opcode, compare/flag/address state, repeat/DF/segment attributes, manual/source tier, current owner, focused proof or transfer and retained nonphysical timing boundary. |
 | Stop Conditions | Stop and create a precise receiver if repair requires a broad decoder/register/fault-delivery redesign, a new CPU facility, device/board timing model or broad state-model change. |
 | Asset Needs | None. |
-| Exit Criteria | Every selected `69h`/`6Bh` profile/form row has focused proof or an explicit transfer; bounded repairs have full-gate proof. |
+| Exit Criteria | Every selected `60h`/`61h` profile/form row has focused proof or an explicit transfer; bounded repairs have full-gate proof. |
 | Original Owner Request | Continue source-backed, reference-backed or explicitly generic CPU work rather than leaving feasible work undone. |
 | Similar-Issue Sweep | For any mismatch, sweep INT vector/frame/privilege forms, interrupt siblings, profile gates, prefixes, preview callers and stack consumers, profile gates, prefixes, preview callers and address/segment/register/flag consumers. |
 ## Current Technical Baseline
@@ -50,7 +50,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T401 S29 | Accepted: BOUND audit closes 62h profiles, #BR, protected/VM86/IRQ and lexical component coverage. S30 owns immediate IMUL. [Ledger](../etc/evidence/t401-s1-four-profile-cpu-audit-ledger.md). |
+| T401 S30 | Accepted: immediate IMUL audit repairs 6Bh preview length and closes profile, attribute, protection/VM86/IRQ coverage. S31 owns PUSHA/POPA. [Ledger](../etc/evidence/t401-s1-four-profile-cpu-audit-ledger.md). |
 | T400 | Closed: the HDC, CECG and CPU/DMA/BWAIT generic-reference ledger is exhausted; accepted logical repairs retain every DeskPro physical boundary. [Closure audit](../etc/evidence/t400-s1-task-closure-audit.md). |
 | T399 | Closed: the five-batch reference-derived DeskPro L3 ledger is exhausted; B2/B3 logical contracts are accepted, B1/B4/B5 retain exact receivers, and both reference-derived and physical L3 are not ready. [Closure audit](../etc/evidence/t399-s5-task-closure-audit.md). |
 | T398 | Closed: final exact 1986 DeskPro Model-40 audit is not-ready for L3; five physical/firmware boundaries retain explicit TODO receivers and require a fresh audit after repair. [Closure audit](../etc/evidence/t398-s2-task-closure-audit.md). |

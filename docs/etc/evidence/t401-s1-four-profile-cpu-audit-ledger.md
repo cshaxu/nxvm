@@ -809,3 +809,7 @@ S30 audits immediate IMUL `69h`/`6Bh`. Intel's 80186/80386 references define sig
 `M5:T401:S30:IMUL-IMMEDIATE-PROFILES:OK` retains 8086 #UD, 80186+ word forms, 80386 dword/attribute, memory/segment/SIB, protected-limit, VM86, IRQ and LOCK rejection proof. `M5:T401:S30:IMUL-IMMEDIATE-PREVIEW-PROFILES:OK` adds the matching lexical matrix and repairs `6Bh` imm8 byte count.
 
 Core discrepancy repaired: the preview lexer had classified `69h` but omitted `6Bh` from immediate-byte decoding, truncating legal 80186+ forms. No physical timing, DeskPro L3 or Core/VM interface claim follows.
+
+## S30 Acceptance
+
+S30 closes immediate IMUL `69h`/`6Bh` with focused runtime and preview proof. It repairs the lexer imm8 omission for `6Bh`, retains the complete 8086 through 80386 matrix and passes the current full gate. Core timing remains explicitly nonphysical. S31 owns PUSHA/POPA `60h`/`61h`.
