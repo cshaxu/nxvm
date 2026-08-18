@@ -2,7 +2,27 @@
 
 ## Current Work
 
-**Idle.**
+**Active: M5 T404.**
+## M5 T404 S1 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New |
+| Admission And Approval | Owner: user; continuing authorization to implement DeskPro hardware gaps and necessary shared device contracts using labelled original, reference or generic evidence. |
+| Objective | Freeze the complete current public device, catalog, YAML, backbone, variant and media capability universe; record one owner, profile contract, evidence tier, proof and disposition for every member before batch repair. |
+| Non-goals | No free-form machine builder, broadened public hardware, vendor asset import, physical timing scalar, L3 claim or profile-specific Core fork. |
+| Reference Baseline | `aab0f98c` (T403 closure), current-product device-profile proposal, accepted Model-40/Model-339 functional records and current catalog/configuration source. |
+| Candidate Proposal | [Current-product device profile and functional-capability closure](../proposals/m5-current-product-device-profile-capability-closure.md). |
+| Files And ABI Surface | T404 ledger evidence/index/history/CURRENT and existing catalog/profile/configuration/test inspection only unless a confirmed first batch repair is admitted by the frozen ledger. |
+| Applicable Rules | One owner and profile contract per public capability; Core generic, VM profile/backbone specific; each public member needs functional proof or retained/removed transfer. |
+| Verification | Static public-surface and caller inventory; ledger completeness check; focused existing profile/catalog/media smokes; documentation governance and actual-diff review. |
+| Expected Markers | `M5:T404:S1:PUBLIC-DEVICE-LEDGER` with complete universe, batch order and explicit physical-time transfer. |
+| Asset Needs | No new asset; approved records and read-only source/references only. |
+| Reporting Requirements | Report universe, owner, evidence tier, proof, disposition, batch order and every retained physical receiver. |
+| Stop Conditions | Stop a member at an explicit retained/removed disposition if source or contract is insufficient; do not leave it accidentally public. |
+| Exit Criteria | Durable ledger exhausts every current public device/profile/catalog/YAML/media member into direct proof, repair batch, retained/removed or named transfer. |
+| Original Owner Request | Implement DeskPro 386 L3 timing and all hardware gaps with original, reference, then labelled generic skeletons; do not stop merely for missing hardware. |
+| Similar-Issue Sweep | Inventory tracked VM product/catalog/profile/configuration/YAML/media sources, Core device registrars, public tests and capability evidence. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T395 S1 P4 `vm-0-5-0395` /
