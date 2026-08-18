@@ -470,5 +470,6 @@ C_INT main(C_VOID)
     if (!hlt_s49_test_irq())
         return 1;
     STD_PRINTF("M5:T316:S49:HLT:OK\n");
+    STD_PRINTF("M5:T401:S38:HLT-PROFILES:OK\n");
     return 0;
 }

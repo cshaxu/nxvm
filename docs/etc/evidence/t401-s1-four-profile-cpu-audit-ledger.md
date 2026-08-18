@@ -897,3 +897,11 @@ No production discrepancy was found. This remains CPU semantic/nonphysical timin
 ## S37 Acceptance
 
 S37 closes CLI/STI `FAh`/`FBh` coverage with focused runtime and preview proof across all four profiles. It retains IF behavior, privilege rejection, STI IRQ inhibition/reacceptance and attribute/LOCK boundaries. No production discrepancy was found; Core timing remains explicitly nonphysical. S38 owns HLT `F4h`.
+
+## S38 HLT
+
+S38 audits HLT `F4h`. Intel 8086/80286/80386 references define halted-state publication, protected/VM86 privilege behavior and interrupt resumption. This is original-source semantic/form evidence; no emulator implementation, ROM or guest asset was imported.
+
+`M5:T401:S38:HLT-PROFILES:OK` retains all-four-profile halt behavior, pre-80386 attribute #UD, 80386 attributes/LOCK, protected/VM86 privilege delivery and IF-conditioned IRQ wakeup. `M5:T401:S38:HLT-PREVIEW-PROFILES:OK` adds the matching lexical matrix.
+
+No production discrepancy was found. This remains CPU semantic/nonphysical timing-baseline evidence only and does not establish physical timing, DeskPro L3 or a Core/VM interface change.
