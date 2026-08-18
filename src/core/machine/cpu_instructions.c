@@ -17822,14 +17822,23 @@ static C_VOID ExecInit(core_machine_cpu_execution_context *context)
     if (!context->prefetch_valid || instruction_state.data.linear <
         context->prefetch_linear || instruction_state.data.linear -
         context->prefetch_linear >= context->prefetch_count) {
+        type_unsigned_8 prefetch_bytes = 15u;
+
         context->prefetch_valid = TYPE_FALSE;
+        if (cpu_state.data.eip <= cpu_state.data.cs.limit &&
+            (type_unsigned_64)cpu_state.data.cs.limit - cpu_state.data.eip + 1u <
+                prefetch_bytes) {
+            prefetch_bytes = (type_unsigned_8)((type_unsigned_64)
+                cpu_state.data.cs.limit - cpu_state.data.eip + 1u);
+        }
         context->memory_access_provenance = CORE_MACHINE_CPU_MEMORY_ACCESS_INSTRUCTION_PREFETCH;
-        _kma_read_linear(context, instruction_state.data.linear,
-            (type_virtual_address)context->prefetch_bytes, 15, _GetCPL, 1);
+        _kma_read_logical(context, &cpu_state.data.cs, cpu_state.data.eip,
+            (type_virtual_address)context->prefetch_bytes, prefetch_bytes,
+            _GetCPL, 1);
         context->memory_access_provenance = CORE_MACHINE_CPU_MEMORY_ACCESS_DATA;
         if (!instruction_state.data.except) {
             context->prefetch_linear = instruction_state.data.linear;
-            context->prefetch_count = 15u;
+            context->prefetch_count = prefetch_bytes;
             context->prefetch_valid = TYPE_TRUE;
         }
     }
