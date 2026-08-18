@@ -1000,3 +1000,6 @@ S49 corrects two evidence deficiencies: S44 expected three components for its pr
 ## S49 Acceptance
 
 S49 closes the local preview-evidence correction for S44 through S48. The focused executable now reaches the S44, S46, S47, S48 and S49 markers; direct checks cover the intended four-profile forms and 80386 attributes. No CPU execution or timing discrepancy was found. Core timing remains nonphysical, and T401 remains open for its next complete audit batch.
+## S50 PUSH Immediate
+
+S50 audits the 80186-plus PUSH-immediate forms `68h` and `6Ah`. The existing runtime fixture proves 8086 rejection, 80186/80286/80386 word execution, immediate-byte sign extension, 80386 operand/address attributes, LOCK rejection, protected stack faults and IRQ delivery. `M5:T401:S50:PUSH-IMMEDIATE-PREVIEW-PROFILES:OK` adds direct lexical proof: both legal forms on 80186 through 80386, 8086 unavailability, and exact 80386 operand/address prefix byte/component layouts. No production discrepancy was found; timing remains nonphysical.

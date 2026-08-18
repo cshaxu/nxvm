@@ -3,6 +3,26 @@
 ## Current Work
 
 **Active: M5 T401.**
+## M5 T401 S50 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner: user; standing approval to continue the four-profile CPU audit and directly repair confirmed small issues. |
+| Objective | Audit the 80186+ PUSH-immediate family `68h`/`6Ah` across the four profiles, using the existing runtime fixture and adding executable decoder-preview coverage for availability and 80386 attribute layouts. |
+| Non-goals | No CPU execution/timing change, Core/VM interface change, DeskPro timing claim, external-source import, or T401 closure. |
+| Reference Baseline | `94fc1109` (S49 P2), T401 coverage ledger, existing `core-machine-push-immediate-smoke`, and the project-retained Intel manual references. |
+| Candidate Proposal | [Four-profile CPU instruction-correctness audit](../proposals/m5-four-profile-cpu-instruction-correctness-audit.md), 80186 extension form batch. |
+| Files And ABI Surface | `tests/machine/core_machine_cpu_timing_preview_smoke.c`, `docs/states/CURRENT.md`, `docs/etc/evidence/t401-s1-four-profile-cpu-audit-ledger.md`; test/documentation only. |
+| Applicable Rules | `ARCHITECTURE.md`: shared Core decoder ownership remains unchanged; `CODING.md`: machine-owner test style; `DOCUMENT.md`/`EXECUTION.md`: packet, evidence, actual-change review and lifecycle requirements. |
+| Verification | Build/run `core-machine-push-immediate-smoke` and `core-machine-cpu-timing-preview-smoke`; require both markers; run documentation governance and `git diff --check`. |
+| Expected Markers | `M5:T316:S45:PUSH-IMMEDIATE:OK`; `M5:T401:S50:PUSH-IMMEDIATE-PREVIEW-PROFILES:OK`; documentation governance pass. |
+| Asset Needs | None; no ROM, firmware, guest media, or external code is read or imported. |
+| Reporting Requirements | Report four-profile availability, 80386 attribute coverage, production-discrepancy result, commits and retained nonphysical timing boundary. |
+| Stop Conditions | Stop and transfer if execution/lexeme behavior contradicts the existing fixture or requires a broader decoder/stack repair. |
+| Exit Criteria | 8086 rejection and 80186/80286/80386 legal forms are directly checked; 80386 operand/address prefixes have exact byte/component assertions; runtime fixture and preview smoke pass; ledger records the disposition. |
+| Original Owner Request | Continue CPU completeness audit before later DeskPro L3 timing work; use primary authority first, references secondarily, retain unknowns explicitly, and directly fix confirmed small issues. |
+| Similar-Issue Sweep | This family is the remaining immediate-PUSH pair in the 80186 extension map; both opcode bytes, legacy rejection, 80386 width/address attributes and LOCK boundary are covered together. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T395 S1 P4 `vm-0-5-0395` /

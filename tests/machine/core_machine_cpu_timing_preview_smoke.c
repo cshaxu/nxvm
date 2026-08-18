@@ -567,6 +567,36 @@ static C_INT preview_test_modrm_data_move_profiles(C_VOID)
         preview_expect((const type_unsigned_8[]){0x8eu, 0xe1u}, 2u,
         CORE_MACHINE_CPU_PROFILE_80386, TYPE_FALSE, 2u, 2u);
 }
+static C_INT preview_test_push_immediate_profiles(C_VOID)
+{
+    static const core_machine_cpu_profile profiles[] = {
+        CORE_MACHINE_CPU_PROFILE_80186, CORE_MACHINE_CPU_PROFILE_80286,
+        CORE_MACHINE_CPU_PROFILE_80386
+    };
+    static const type_unsigned_8 push_iw[] = { 0x68u, 0x34u, 0x12u };
+    static const type_unsigned_8 push_ib[] = { 0x6au, 0x80u };
+    core_machine_cpu_instruction_lexeme lexeme;
+    type_unsigned_8 profile;
+
+    if (core_machine_cpu_instruction_lexeme_scan(push_iw, sizeof(push_iw),
+            CORE_MACHINE_CPU_PROFILE_8086, TYPE_FALSE, &lexeme) ||
+        lexeme.available || core_machine_cpu_instruction_lexeme_scan(push_ib,
+            sizeof(push_ib), CORE_MACHINE_CPU_PROFILE_8086, TYPE_FALSE,
+            &lexeme) || lexeme.available) return 0;
+    for (profile = 0u; profile != sizeof(profiles) / sizeof(profiles[0]); ++profile)
+        if (!preview_expect(push_iw, sizeof(push_iw), profiles[profile],
+                TYPE_FALSE, 3u, 2u) || !preview_expect(push_ib,
+                sizeof(push_ib), profiles[profile], TYPE_FALSE, 2u, 2u)) return 0;
+    return preview_expect((const type_unsigned_8[]){0x66u, 0x68u, 0x78u,
+        0x56u, 0x34u, 0x12u}, 6u, CORE_MACHINE_CPU_PROFILE_80386,
+        TYPE_FALSE, 6u, 3u) && preview_expect((const type_unsigned_8[]){0x66u,
+        0x6au, 0x80u}, 3u, CORE_MACHINE_CPU_PROFILE_80386, TYPE_FALSE,
+        3u, 3u) && preview_expect((const type_unsigned_8[]){0x67u, 0x68u,
+        0x34u, 0x12u}, 4u, CORE_MACHINE_CPU_PROFILE_80386, TYPE_FALSE,
+        4u, 3u) && preview_expect((const type_unsigned_8[]){0x66u, 0x67u,
+        0x6au, 0x80u}, 4u, CORE_MACHINE_CPU_PROFILE_80386, TYPE_FALSE,
+        4u, 4u);
+}
 static C_INT preview_test_gpr_push_pop_profiles(C_VOID)
 {
     static const core_machine_cpu_profile p[] = {CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186, CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386}; type_unsigned_8 i;
@@ -1087,6 +1117,7 @@ C_INT main(C_VOID)
     if (!preview_test_loop_jcxz_profiles()) return 44;
     if (!preview_test_lea_profiles()) return 45;
     if (!preview_test_modrm_data_move_profiles()) return 46;
+    if (!preview_test_push_immediate_profiles()) return 47;
     if (!preview_test_les_lds_profiles()) return 34;
     if (!preview_test_group3_profiles()) return 10;
     if (!preview_test_group45_profiles()) return 11;
@@ -1138,5 +1169,6 @@ C_INT main(C_VOID)
     STD_PRINTF("M5:T401:S47:GPR-MOV-MODRM-PREVIEW-PROFILES:OK\n");
     STD_PRINTF("M5:T401:S48:SREG-MOV-PREVIEW-PROFILES:OK\n");
     STD_PRINTF("M5:T401:S49:MODRM-DATA-MOVE-PREVIEW-PROFILES:OK\n");
+    STD_PRINTF("M5:T401:S50:PUSH-IMMEDIATE-PREVIEW-PROFILES:OK\n");
     return 0;
 }
