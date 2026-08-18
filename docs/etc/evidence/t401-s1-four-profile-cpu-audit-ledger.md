@@ -686,3 +686,7 @@ scannable where execution rejects it.
 No production discrepancy was found. This remains CPU semantic/nonphysical
 timing-baseline evidence only and does not establish physical timing, DeskPro
 L3 or a Core/VM interface change.
+
+## S21 Acceptance
+
+S21 closes immediate-count group-2 C0h/C1h coverage with focused runtime and preview proof. It fills 8086 #UD and 80286 extension-matrix gaps; Core timing remains explicitly nonphysical. S22 owns near return C2h/C3h.
