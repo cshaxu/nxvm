@@ -508,3 +508,27 @@ S14 closes the selected `A0h`--`A3h` moffs MOV family. Focused moffs and CPU
 preview current-gate tests pass, with no production discrepancy. Temporary CE
 observations during test construction were traced to malformed test address
 bytes and removed before acceptance.
+## S15 MOVS
+
+S15 audits `A4h`/`A5h` MOVS. Intel's 80386 Programmer's Reference Manual
+string-instruction/MOV entries define source-to-ES destination routing,
+DF-controlled index progression, operand-size payload width, address-size
+index/count selection and REP iteration. This is original-source semantic/form
+evidence; no emulator implementation, ROM or guest asset was imported.
+
+`M5:T401:S15:MOVS-PROFILES:OK` retains all-four-profile byte/word execution,
+REP count zero/one/multiple behavior, 80386 dword and 32-bit address forms,
+DF decrement, source segment overrides, pre-80386 prefix atomic #UD, LOCK
+rejection and IRQ behavior. `M5:T401:S15:MOVS-PREVIEW-PROFILES:OK` adds the
+complete four-profile lexical matrix for both opcodes, REP and every selected
+80386 operand/address attribute combination.
+
+No production discrepancy was found. This remains CPU semantic/nonphysical
+timing-baseline evidence only and does not establish physical timing, DeskPro
+L3 or a Core/VM interface change.
+
+## S15 Acceptance
+
+S15 closes selected MOVS `A4h`/`A5h` form coverage with focused runtime and
+preview proof. The existing Core timing disposition remains explicitly
+nonphysical.

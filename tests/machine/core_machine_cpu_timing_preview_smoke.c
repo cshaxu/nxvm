@@ -147,6 +147,40 @@ static C_INT preview_test_immediate_register_mov_profiles(C_VOID)
     return 1;
 }
 
+static C_INT preview_test_movs_profiles(C_VOID)
+{
+    static const core_machine_cpu_profile profiles[] = {
+        CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
+        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
+    };
+    type_unsigned_8 profile;
+    type_unsigned_8 opcode;
+
+    for (profile = 0u; profile != sizeof(profiles) / sizeof(profiles[0]); ++profile)
+    for (opcode = 0xa4u; opcode != 0xa6u; ++opcode) {
+        const type_unsigned_8 primary[] = {opcode};
+        const type_unsigned_8 repeated[] = {0xf3u, opcode};
+        if (!preview_expect(primary, sizeof(primary), profiles[profile],
+            TYPE_FALSE, 1u, 1u) || !preview_expect(repeated, sizeof(repeated),
+            profiles[profile], TYPE_FALSE, 2u, 2u)) return 0;
+    }
+    for (opcode = 0xa4u; opcode != 0xa6u; ++opcode) {
+        const type_unsigned_8 operand[] = {0x66u, opcode};
+        const type_unsigned_8 address[] = {0x67u, opcode};
+        const type_unsigned_8 combined[] = {0x66u, 0x67u, opcode};
+        const type_unsigned_8 repeated[] = {0xf3u, 0x66u, 0x67u, opcode};
+        if (!preview_expect(operand, sizeof(operand),
+            CORE_MACHINE_CPU_PROFILE_80386, TYPE_FALSE, 2u, 2u) ||
+            !preview_expect(address, sizeof(address),
+            CORE_MACHINE_CPU_PROFILE_80386, TYPE_FALSE, 2u, 2u) ||
+            !preview_expect(combined, sizeof(combined),
+            CORE_MACHINE_CPU_PROFILE_80386, TYPE_FALSE, 3u, 3u) ||
+            !preview_expect(repeated, sizeof(repeated),
+            CORE_MACHINE_CPU_PROFILE_80386, TYPE_FALSE, 4u, 4u)) return 0;
+    }
+    return 1;
+}
+
 static C_INT preview_test_moffs_mov_profiles(C_VOID)
 {
     static const core_machine_cpu_profile profiles[] = {
@@ -487,6 +521,7 @@ C_INT main(C_VOID)
     if (!preview_test_primary_inc_dec_profiles()) return 12;
     if (!preview_test_immediate_register_mov_profiles()) return 14;
     if (!preview_test_moffs_mov_profiles()) return 15;
+    if (!preview_test_movs_profiles()) return 16;
     if (!preview_test_group3_profiles()) return 10;
     if (!preview_test_group45_profiles()) return 11;
     if (preview_test_cpu_fetch_nonpublication()) return 4;
@@ -502,5 +537,6 @@ C_INT main(C_VOID)
     STD_PRINTF("M5:T401:S12:ACCUMULATOR-XCHG-PREVIEW-PROFILES:OK\n");
     STD_PRINTF("M5:T401:S13:IMMEDIATE-REGISTER-MOV-PREVIEW-PROFILES:OK\n");
     STD_PRINTF("M5:T401:S14:MOFFS-MOV-PREVIEW-PROFILES:OK\n");
+    STD_PRINTF("M5:T401:S15:MOVS-PREVIEW-PROFILES:OK\n");
     return 0;
 }
