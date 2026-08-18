@@ -660,3 +660,10 @@ matching lexical decode matrix.
 No production discrepancy was found. This remains CPU semantic/nonphysical
 timing-baseline evidence only and does not establish physical timing, DeskPro
 L3 or a Core/VM interface change.
+## S20 Acceptance
+
+S20 closes accumulator TEST `A8h`/`A9h` coverage with direct runtime and
+preview proof across all four profiles. It fills the missing 80286 row and
+makes pre-80386 `66h` rejection explicit alongside the legal 80386 dword form.
+No production discrepancy was found; existing Core timing remains explicitly
+nonphysical. S21 owns immediate-count shift/rotate groups `C0h`/`C1h`.
