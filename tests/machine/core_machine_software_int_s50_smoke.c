@@ -567,5 +567,6 @@ C_INT main(C_VOID)
     if (!software_int_s50_test_pic_boundary())
         return 1;
     STD_PRINTF("M5:T316:S50:SOFTWARE-INT:OK\n");
+    STD_PRINTF("M5:T401:S25:INT-IMMEDIATE-PROFILES:OK\n");
     return 0;
 }

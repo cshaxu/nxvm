@@ -726,3 +726,23 @@ No production discrepancy was found. This remains CPU semantic/nonphysical timin
 ## S24 Acceptance
 
 S24 closes ENTER/LEAVE C8h/C9h coverage with focused runtime and preview proof. It retains support/rejection, nesting, stack-width, protected-fault and IRQ boundaries; the lexical imm16+imm8 field is correctly one component. Core timing remains explicitly nonphysical. S25 owns INT immediate CDh.
+
+## S25 INT Immediate
+
+S25 audits `CDh ib` software interrupt. Intel's 80386 Programmer's Reference
+Manual INT entry defines immediate-vector dispatch, saved return address/CS/
+FLAGS frame, IF/TF clearing and operand-size-selected frame width; the older
+profiles retain 16-bit real-mode framing. This is original-source semantic/form
+evidence; no emulator implementation, ROM or guest asset was imported.
+
+`M5:T401:S25:INT-IMMEDIATE-PROFILES:OK` retains all-four-profile real-mode
+vector dispatch, return-IP/CS/FLAGS frame, register/segment preservation and
+IF/TF retirement proof. It also retains 80386 operand/address-prefix forms,
+pre-80386 prefix atomic #UD, LOCK rejection, protected-mode entry, fault and
+VM86 coverage from the focused software-interrupt fixture.
+`M5:T401:S25:INT-IMMEDIATE-PREVIEW-PROFILES:OK` adds the matching all-profile
+lexical `CDh ib` matrix plus each selected 80386 prefix arrangement.
+
+No production discrepancy was found. This remains CPU semantic/nonphysical
+timing-baseline evidence only and does not establish physical timing, DeskPro
+L3 or a Core/VM interface change.
