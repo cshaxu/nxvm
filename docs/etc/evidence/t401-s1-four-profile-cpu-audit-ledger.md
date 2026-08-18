@@ -996,3 +996,7 @@ S48 audits MOV 8Ch/8Eh. Existing focused proof covers real/protected forms, 8038
 ## S49 ModR/M Data-Move Preview Corrective
 
 S49 corrects two evidence deficiencies: S44 expected three components for its prefixed ModR/M-plus-displacement forms although the lexeme contract records four, and the S46 through S48 acceptance trail emitted three preview markers without direct calls for the corresponding lexeme forms. `M5:T401:S49:MODRM-DATA-MOVE-PREVIEW-PROFILES:OK` now executes one shared matrix across 8086, 80186, 80286 and 80386 for XCHG `86h`/`87h`, GPR MOV `88h`-`8Bh`, and segment MOV `8Ch`/`8Eh`, including register and displacement-bearing memory forms. Its 80386 rows also cover operand/address attributes and FS selector transfer forms. This is a test-only evidence correction: no production discrepancy was found, and timing remains nonphysical.
+
+## S49 Acceptance
+
+S49 closes the local preview-evidence correction for S44 through S48. The focused executable now reaches the S44, S46, S47, S48 and S49 markers; direct checks cover the intended four-profile forms and 80386 attributes. No CPU execution or timing discrepancy was found. Core timing remains nonphysical, and T401 remains open for its next complete audit batch.

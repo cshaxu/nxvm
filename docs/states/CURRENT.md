@@ -3,27 +3,6 @@
 ## Current Work
 
 **Active: M5 T401.**
-## M5 T401 S49 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner: user; approval is the continuing instruction to complete the four-profile CPU audit and directly fix confirmed small issues. This narrow corrective replaces an over-strong accepted lexical-coverage claim without changing production semantics. |
-| Objective | Correct the S44 LEA attribute component counts and add executable four-profile lexeme proof for S46 XCHG, S47 GPR MOV, and S48 segment MOV ModR/M forms; correct the current-state statement and record the correction in the T401 ledger. |
-| Non-goals | No CPU execution/timing change, Core/VM interface change, DeskPro hardware/timing claim, external-source import, or task-level T401 closure. |
-| Reference Baseline | `6df7c0f9` (S48 P2), current T401 four-profile ledger and existing `core-machine-cpu-timing-preview-smoke` harness. |
-| Candidate Proposal | [Four-profile CPU instruction-correctness audit](../proposals/m5-four-profile-cpu-instruction-correctness-audit.md), decoder/ModR/M byte-consumption batch. |
-| Files And ABI Surface | `tests/machine/core_machine_cpu_timing_preview_smoke.c`, `docs/states/CURRENT.md`, and `docs/etc/evidence/t401-s1-four-profile-cpu-audit-ledger.md`; test and documentation only, no public or production ABI surface. |
-| Applicable Rules | `ARCHITECTURE.md`: shared Core ownership and no profile fork remain unchanged; `CODING.md`: test belongs to machine owner and preserves C style; `DOCUMENT.md` and `EXECUTION.md`: exact packet, ledger, actual-change review and acceptance lifecycle. |
-| Verification | Configure/build `core-machine-cpu-timing-preview-smoke`; run it and require its S49 marker; run `tools/Verify-DocumentationGovernance.ps1`; inspect `git diff --check` and actual diff. |
-| Expected Markers | `M5:T401:S49:MODRM-DATA-MOVE-PREVIEW-PROFILES:OK`; documentation governance pass. |
-| Asset Needs | None; no ROM, firmware, guest media, external code, or asset is read or imported. |
-| Reporting Requirements | Report the corrected evidence boundary, P1/P2 commits, focused verification and retained nonphysical timing boundary. |
-| Stop Conditions | Stop and transfer if lexeme behavior contradicts the existing execution-audit conclusion or requires a decoder/production repair beyond a bounded correction. |
-| Exit Criteria | Actual test calls cover all stated legacy profile forms plus 80386 operand/address and FS/GS selector forms; S48 current claim is corrected; ledger records the result; focused build/test and documentation gate pass. |
-| Original Owner Request | Continue CPU audit before further DeskPro L3 timing work; use authoritative evidence where available, reference implementations only secondarily, retain unsupported/unknown work explicitly, and fix confirmed small issues directly. |
-| Similar-Issue Sweep | Reviewed S44 through S48 after the focused executable exposed stale S44 component counts and marker-only gaps in S46 through S48; S49 supplies direct calls for the complete local set. |
-
 ## Current Technical Baseline
 
 - **Current developer artifact:** T395 S1 P4 `vm-0-5-0395` /
@@ -50,7 +29,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T401 S48 | Accepted: segment-register MOV audit closes four-profile selector and protection execution coverage; lexical proof is corrected by active S49. [Ledger](../etc/evidence/t401-s1-four-profile-cpu-audit-ledger.md). |
+| T401 S49 | Accepted: corrective preview evidence closes S44 component counts and direct lexical proof for S46-S48 ModR/M data moves across four profiles; no production discrepancy. [Ledger](../etc/evidence/t401-s1-four-profile-cpu-audit-ledger.md). |
 | T400 | Closed: the HDC, CECG and CPU/DMA/BWAIT generic-reference ledger is exhausted; accepted logical repairs retain every DeskPro physical boundary. [Closure audit](../etc/evidence/t400-s1-task-closure-audit.md). |
 | T399 | Closed: the five-batch reference-derived DeskPro L3 ledger is exhausted; B2/B3 logical contracts are accepted, B1/B4/B5 retain exact receivers, and both reference-derived and physical L3 are not ready. [Closure audit](../etc/evidence/t399-s5-task-closure-audit.md). |
 | T398 | Closed: final exact 1986 DeskPro Model-40 audit is not-ready for L3; five physical/firmware boundaries retain explicit TODO receivers and require a fresh audit after repair. [Closure audit](../etc/evidence/t398-s2-task-closure-audit.md). |
