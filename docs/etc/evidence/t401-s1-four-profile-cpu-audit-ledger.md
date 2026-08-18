@@ -785,3 +785,7 @@ S28 audits ARPL `63h`. Intel's 80286/80386 references define RPL comparison/repl
 `M5:T401:S28:ARPL-PROFILES:OK` retains 80286/80386 register and memory forms, RPL/ZF preservation, 80386 attributes, protected limits and IRQ proof, plus 8086/80186 atomic #UD. `M5:T401:S28:ARPL-PREVIEW-PROFILES:OK` adds the matching availability and lexical matrix.
 
 No production discrepancy was found. This remains CPU semantic/nonphysical timing-baseline evidence only and does not establish physical timing, DeskPro L3 or a Core/VM interface change.
+
+## S28 Acceptance
+
+S28 closes ARPL `63h` with focused runtime and preview proof. It retains 80286/80386 RPL/ZF and memory behavior, attributes, protected/IRQ bounds and atomic 8086/80186 #UD. No production discrepancy was found; Core timing remains explicitly nonphysical. S29 owns BOUND `62h`.
