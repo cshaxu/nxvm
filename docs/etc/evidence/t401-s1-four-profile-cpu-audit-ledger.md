@@ -1190,3 +1190,7 @@ S67 closes the bounded 80386 control-register MOV audit. The generic scanner rem
 ## S68 LSS/LFS/LGS
 
 S68 audits 80386 far-pointer loads `0F B2h/B4h/B5h`. The existing T316 S24 execution fixture proves all three targets in real and protected mode, 16/32-bit offset forms, register-ModR/M #UD, 80186/80286 #UD, source-fault atomicity and non-shadow IRQ delivery. The new `M5:T401:S68:LSS-LFS-LGS-PREVIEW-PROFILES:OK` matrix independently proves each legal memory form, rejects the register forms and pre-80386 profiles, and retains 80386 operand/address prefix layouts. No production discrepancy was found; timing remains nonphysical.
+
+## S68 Acceptance
+
+S68 closes the bounded 80386 LSS/LFS/LGS audit. The new lexical matrix and retained execution fixture establish all three segment targets, memory-only ModR/M, 80186/80286 rejection, operand/address attributes, real/protected far-pointer loads, source-fault atomicity and IRQ boundaries. No production discrepancy was found; Core timing remains nonphysical and T401 remains open.
