@@ -2,7 +2,7 @@
 
 ## Current Work
 
-**Active: M5 T399.**
+**Idle.**
 
 ## Current Technical Baseline
 
