@@ -4,27 +4,6 @@
 
 **Active: M5 T401.**
 
-## M5 T401 S45 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation; M5 T401 S45. |
-| Admission And Approval | Owner approved continuing T401; S44 is accepted. |
-| Objective | Audit CBW/CWD 98h/99h across all four profiles and 80386 operand attributes. |
-| Non-goals | No broad decoder rewrite, physical timing or DeskPro L3 claim. |
-| Reference Baseline | Intel 8086/80386 references and current sign-extend fixture. |
-| Candidate Proposal | [Four-profile CPU instruction-correctness audit and repair program](../proposals/m5-four-profile-cpu-instruction-correctness-audit.md). |
-| Files And ABI Surface | Ledger, packet, sign-extend fixture and preview smoke; no public ABI. |
-| Applicable Rules | Execution, Core ownership, coding/test, source and documentation rules. |
-| Verification | Four-profile sign/width/prefix matrix, LOCK and IRQ proof, focused tests and governance. |
-| Expected Markers | T401 S45 execution and preview markers. |
-| Asset Needs | None. |
-| Reporting Requirements | Profile/form/result/flags/attribute/source/owner/nonphysical timing evidence. |
-| Stop Conditions | Broad state/decoder/fault redesign. |
-| Exit Criteria | Every selected form has focused proof or transfer. |
-| Original Owner Request | Continue source-backed, reference-backed or generic CPU work. |
-| Similar-Issue Sweep | Sign-extension siblings, prefixes, preview callers and profile gates. |
-
 ## Current Technical Baseline
 
 - **Current developer artifact:** T395 S1 P4 `vm-0-5-0395` /
@@ -51,7 +30,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T401 S44 | Accepted: LEA audit closes four-profile effective-address and lexical coverage; no production discrepancy. [Ledger](../etc/evidence/t401-s1-four-profile-cpu-audit-ledger.md). |
+| T401 S45 | Accepted: CBW/CWD audit closes four-profile sign-extension and lexical coverage; no production discrepancy. [Ledger](../etc/evidence/t401-s1-four-profile-cpu-audit-ledger.md). |
 | T400 | Closed: the HDC, CECG and CPU/DMA/BWAIT generic-reference ledger is exhausted; accepted logical repairs retain every DeskPro physical boundary. [Closure audit](../etc/evidence/t400-s1-task-closure-audit.md). |
 | T399 | Closed: the five-batch reference-derived DeskPro L3 ledger is exhausted; B2/B3 logical contracts are accepted, B1/B4/B5 retain exact receivers, and both reference-derived and physical L3 are not ready. [Closure audit](../etc/evidence/t399-s5-task-closure-audit.md). |
 | T398 | Closed: final exact 1986 DeskPro Model-40 audit is not-ready for L3; five physical/firmware boundaries retain explicit TODO receivers and require a fresh audit after repair. [Closure audit](../etc/evidence/t398-s2-task-closure-audit.md). |
