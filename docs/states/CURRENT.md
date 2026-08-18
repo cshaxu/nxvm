@@ -2,26 +2,7 @@
 
 ## Current Work
 
-## M5 T399 S1 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | New; the packet heading allocates `M5 T399 S1`. |
-| Admission And Approval | Owner-approved in this thread on 2026-08-17: proceed with the queued DeskPro reference-derived timing bridge because no physical hardware observation is available. Scope is the exact 1986 DeskPro 386 Model 40 only; reference evidence may establish only the explicitly named reference-derived tier. |
-| Objective | Freeze and qualify the durable five-batch reference-derived convergence ledger, including exact-reference provenance and a reproducible observation-contract boundary, before any behavior change. |
-| Non-goals | No physical-time, physical-L3, generic-PC/AT, source/firmware/media/configuration import, ROM discovery, Model-40-local scheduler, Core/VM interface, or production timing-value claim. |
-| Reference Baseline | T396--T398 DeskPro closure evidence; retained D3PE topology facts; the current deterministic Core clock/timeline/transaction owners and VM Model-40 composition. |
-| Candidate Proposal | [DeskPro 386 reference-derived timing bridge and L3 re-audit](../proposals/m5-deskpro-386-reference-derived-timing-bridge.md). |
-| Files And ABI Surface | `docs/states/CURRENT.md`, `docs/states/QUEUE.md`, the DeskPro closure context, `docs/history/M5-T399-deskpro-386-reference-derived-timing-bridge.md`, and indexed evidence only. No source or ABI surface is admitted in S1. |
-| Applicable Rules | Documentation and execution governance; source/research policy; T396/T397 ownership and no-substitution boundaries. Architecture and coding rules are not applicable because S1 changes no code. |
-| Verification | Documentation governance combined gate; link and path inspection; read-only exact-reference configuration/provenance sweep; coordinator actual-change review. |
-| Expected Markers | `M5:T399:S1:REFERENCE-LEDGER-FROZEN`; five complete batch rows; each row has an exact-reference qualification/disposition, D3PE constraint, input/checkpoint/reset contract, disagreement mask, and named next receiver. |
-| Asset Needs | Read-only owner-managed D3PE facts and read-only external reference checkouts only. No asset, ROM, firmware, media, trace, or configuration copy enters NXVM. |
-| Reporting Requirements | Record the frozen universe and disposition for all five batches, exact reference revision/configuration or rejection reason, reset/cancellation and disagreement handling, and report any implementation admission separately. |
-| Stop Conditions | Stop before a behavior change if no reference proves the exact DeskPro configuration, no bounded reproducible probe/checkpoint exists, D3PE conflicts, a reference tick would be treated as hardware time, or a source/asset import would be required. |
-| Exit Criteria | One indexed evidence ledger exhausts all five proposed batches into qualified observation contracts, explicit non-eligibility/contradiction, or a named receiver; queue is truthful; governance passes; no physical or production timing claim is made. |
-| Original Owner Request | “那就好好干吧开始” after authorizing the reference-derived DeskPro bridge and Queue/proposal update. |
-| Similar-Issue Sweep | Recheck the completed T394 physical-retirement candidate for stale Queue/context references; sweep local PCjs, 86Box, MAME and Bochs availability/configuration before treating any route as reference-derived evidence. |
+**Active: M5 T399.**
 
 ## Current Technical Baseline
 
@@ -49,6 +30,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T399 S1 | Accepted: five-batch reference-derived timing ledger is frozen; no runtime behavior or physical claim. [Acceptance audit](../etc/evidence/t399-s1-reference-ledger-acceptance-audit.md). |
 | T398 | Closed: final exact 1986 DeskPro Model-40 audit is not-ready for L3; five physical/firmware boundaries retain explicit TODO receivers and require a fresh audit after repair. [Closure audit](../etc/evidence/t398-s2-task-closure-audit.md). |
 | T397 | Closed: selected functional FDC/HDC/CECG/KBC-NMI/DMA routes and reset/order evidence retained; physical availability, phase and service facts transfer to explicit TODO receivers. Final DeskPro L3 may make only a ready/not-ready decision. [Closure audit](../etc/evidence/t397-s2-task-closure-audit.md). |
 | T396 | Closed: finite Model-40 source/owner, six-domain, reset and callback-order ledger retained; all unsourced physical clock, phase, wait and device/firmware visibility facts transfer to the next DeskPro candidate. No physical scalar or L3 claim. [Closure audit](../etc/evidence/t396-s2-task-closure-audit.md). |
