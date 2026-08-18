@@ -1036,3 +1036,6 @@ S54 closes the bounded direct near-control audit. The control-transfer fixture a
 ## S55 Direct Far Control Transfer
 
 S55 audits direct far CALL/JMP `9Ah`/`EAh`. The control-transfer fixture proves direct far transfer in real mode across 8086, 80186, 80286 and 80386, including target CS/IP publication and CALL stack/RETF behavior. Its 80386 rows prove both 16:16 and 16:32 immediate-pointer forms in 16-bit and 32-bit code contexts. `M5:T401:S55:DIRECT-FAR-CONTROL-PREVIEW-PROFILES:OK` adds direct lexical proof for both encodings on all four profiles, the combined offset-plus-selector field, 16:16 and 16:32 layouts, and 80386 operand/address prefix layouts. No production discrepancy was found; timing remains nonphysical.
+## S55 Acceptance
+
+S55 closes the bounded direct far-control audit. The control-transfer fixture and direct lexical matrix establish real-mode behavior across all four profiles, selector/target publication, CALL stack preservation, 16:16 and 16:32 pointer layouts, and 80386 attribute boundaries. No production discrepancy was found; Core timing remains nonphysical and T401 remains open.
