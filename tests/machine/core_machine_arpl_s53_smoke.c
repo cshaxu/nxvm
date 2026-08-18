@@ -641,5 +641,6 @@ C_INT main(C_VOID)
         return 1;
     }
     STD_PRINTF("M5:T316:S53:ARPL:OK\n");
+    STD_PRINTF("M5:T401:S28:ARPL-PROFILES:OK\n");
     return 0;
 }
