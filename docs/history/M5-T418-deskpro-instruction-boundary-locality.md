@@ -5,3 +5,5 @@ an inserted CPU idle state ends a page-hit cycle. Since Core does not expose a
 physical overlap/idle phase, T418 uses an explicitly generic-AT conservative
 boundary: each new instruction round clears the prior locality key. It must not
 claim that every instruction boundary was an original D4 idle state.
+
+P2 independently closes T418 with full-gate proof and retains physical D4 overlap timing.
