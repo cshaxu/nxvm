@@ -1091,3 +1091,6 @@ adds all-opcode 80386 register and memory lexical layouts plus operand,
 address and combined attributes; it proves 80186/80286 reject the secondary
 forms. 8086 remains excluded because `0Fh` is its distinct POP CS opcode.
 No production discrepancy was found; timing remains nonphysical.
+## S60 Acceptance
+
+S60 closes the bounded 80386 SETcc audit. Runtime and preview matrices establish every predicate's register/memory true-and-false behavior, 80386 attributes, pre-fault nonpublication, 80186/80286 rejection, and the retained 8086 POP CS distinction. Both focused smokes and documentation governance pass; no production discrepancy was found, timing remains nonphysical, and T401 remains open.
