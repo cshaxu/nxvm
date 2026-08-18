@@ -797,3 +797,7 @@ S29 audits BOUND `62h`. Intel's 80186/80386 references define signed lower/upper
 `M5:T401:S29:BOUND-PROFILES:OK` retains 80186+ profiles, 8086 #UD, signed 16/32-bit bounds, #BR delivery, 80386 attributes, protected limits, segment/SIB, IRQ and VM86 proof. `M5:T401:S29:BOUND-PREVIEW-PROFILES:OK` adds the matching availability and lexical matrix.
 
 No production discrepancy was found. This remains CPU semantic/nonphysical timing-baseline evidence only and does not establish physical timing, DeskPro L3 or a Core/VM interface change.
+
+## S29 Acceptance
+
+S29 closes BOUND `62h` with focused runtime and preview proof. It retains 80186+ semantics, 8086 #UD, signed #BR delivery, protected/VM86/IRQ behavior and 80386 attributes. No production discrepancy was found; Core timing remains explicitly nonphysical. S30 owns immediate IMUL `69h`/`6Bh`.
