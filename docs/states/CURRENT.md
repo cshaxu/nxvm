@@ -2,8 +2,28 @@
 
 ## Current Work
 
-No active subtask. T398 S1 is accepted and retains the required latest-task progress row pending the owner-visible readiness decision.
+**T398 S2 active.** Make the explicit owner-visible DeskPro Model-L3 ready/not-ready decision from the accepted matrix, then close the task without implementing or weakening any retained physical receiver.
 
+## M5 T398 S2 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner continuing global CPU correctness/timing authorization; accepted T398 S1 retains the required latest-task progress row. No exception. |
+| Objective | Independently verify the accepted eleven-row matrix, the exact residual TODO receivers, cross-device regression/current-gate evidence and Model-339/PC-XT distinction; publish the truthful Model-40 ready/not-ready decision and close T398. |
+| Non-goals | No code repair, physical scalar, device/firmware implementation, asset import, profile expansion, generic PC conclusion, Windows claim, x87 claim or change to a retained receiver. |
+| Reference Baseline | T398 S1 P2/P3, matrix acceptance audit, T386/T394/T396/T397 closure records, retained TODOs, Model-339 L3 record and T398 proposal. |
+| Candidate Proposal | [DeskPro 386 model-L3 closure audit](../proposals/m5-deskpro-386-l3-audit.md). |
+| Files And ABI Surface | Decision/closure evidence, history, status, queue, TODO cross-links and retained proposal archive only; no source, artifact or ABI change. |
+| Applicable Rules | L3 audit never absorbs missing implementation; each selected row must be directly proved or retained; owner-visible ready/not-ready decision; distinct-model boundary; documentation governance. |
+| Verification | Actual S1 review, every matrix-row recheck, retained TODO/link sweep, full current-gate evidence review, documentation governance and diff hygiene. |
+| Expected Markers | T398 S2 Model-L3 decision and closure audit only; no runtime marker. |
+| Asset Needs | Read-only evidence only; no ROM, guest media or external code import. |
+| Reporting Requirements | State the decision unambiguously, enumerate every non-ready row/receiver, name regression/gate evidence and distinguish Model-40 from Model-339 and PC/XT. |
+| Stop Conditions | Stop if any row changes disposition without evidence, a receiver is missing, a generic-model fact is used as Model-40 proof, or closure would imply implementation. |
+| Exit Criteria | Pushed decision and task closure audit, status transition to one T398 closure summary and archived proposal, with every non-ready fact retained. |
+| Original Owner Request | Continue the global CPU correctness/timing audit, repair clear in-scope defects, and preserve the Core/VM boundary. |
+| Similar-Issue Sweep | Recheck all eleven matrix rows, T386/T394/T396/T397 transfers, all linked TODOs, Model-339/PC-XT boundaries, evidence index and queue/proposal references; no runtime defect class is in scope. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T395 S1 P4 `vm-0-5-0395` /
