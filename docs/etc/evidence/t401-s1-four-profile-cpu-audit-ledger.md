@@ -833,3 +833,7 @@ S32 audits LAR/LSL `0F02h`/`0F03h`. Intel's 80286/80386 references define descri
 `M5:T401:S32:LAR-LSL-PROFILES:OK` retains descriptor matrices, attributes, rejection, source-memory/segments/SIB, limits, VM86, IRQ and LDT proof. `M5:T401:S32:LAR-LSL-PREVIEW-PROFILES:OK` records 80186 rejection and 80286+ availability; 8086 `0Fh` remains its distinct POP CS instruction.
 
 No production discrepancy was found. This remains CPU semantic/nonphysical timing-baseline evidence only and does not establish physical timing, DeskPro L3 or a Core/VM interface change.
+
+## S32 Acceptance
+
+S32 closes LAR/LSL `0F02h`/`0F03h` with focused runtime and preview proof. It retains descriptor accesses, profile/rejection rules, source-memory/segment boundaries, VM86, IRQ and LDT coverage; 8086 `0Fh` remains POP CS. No production discrepancy was found; Core timing remains explicitly nonphysical. S33 owns LES/LDS `C4h`/`C5h`.
