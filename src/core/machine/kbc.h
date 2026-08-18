@@ -19,6 +19,7 @@ typedef struct core_machine_cpu_execution_context
     core_machine_cpu_execution_context;
 
 #define CORE_MACHINE_KBC_FIFO_CAPACITY 64u
+#define CORE_MACHINE_KBC_KEYBOARD_SERIAL_CAPACITY 64u
 #define CORE_MACHINE_KBC_RESPONSE_CAPACITY 4u
 #define CORE_MACHINE_KBC_SCAN_SET_1 1u
 #define CORE_MACHINE_KBC_SCAN_SET_2 2u
@@ -65,6 +66,9 @@ typedef struct t_kbc_data {
     core_machine_kbc_output_origin fifo_origin[CORE_MACHINE_KBC_FIFO_CAPACITY];
     type_unsigned_8 fifo_head;
     type_unsigned_8 fifo_count;
+    type_unsigned_8 keyboard_serial[CORE_MACHINE_KBC_KEYBOARD_SERIAL_CAPACITY];
+    type_unsigned_8 keyboard_serial_head;
+    type_unsigned_8 keyboard_serial_count;
     core_machine_kbc_pending_write pending_write;
     core_machine_kbc_aux_pending_parameter aux_pending_parameter;
     type_bool keyboard_enabled;

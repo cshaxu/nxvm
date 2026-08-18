@@ -28,6 +28,8 @@
 #define CORE_MACHINE_KBC_AUX_STATUS_REPORTING 0x20u
 #define CORE_MACHINE_KBC_AUX_STATUS_SCALING_2_TO_1 0x10u
 
+static C_VOID core_machine_kbc_drain_keyboard_serial(t_kbc *controller);
+
 static C_VOID core_machine_kbc_deassert_irq1(t_kbc *controller)
 {
     if (controller == STD_NULL || !controller->data.irq1_asserted) return;
@@ -270,6 +272,24 @@ static type_status core_machine_kbc_publish_native_byte(t_kbc *controller,
         CORE_MACHINE_KBC_OUTPUT_KEYBOARD);
 }
 
+static C_VOID core_machine_kbc_drain_keyboard_serial(t_kbc *controller)
+{
+    type_unsigned_8 native_byte;
+    type_status status;
+
+    if (controller == STD_NULL) return;
+    while (controller->data.keyboard_serial_count != 0u &&
+        controller->data.fifo_count < CORE_MACHINE_KBC_FIFO_CAPACITY) {
+        native_byte = controller->data.keyboard_serial[
+            controller->data.keyboard_serial_head];
+        status = core_machine_kbc_publish_native_byte(controller, native_byte);
+        if (status != TYPE_STATUS_OK && status != TYPE_STATUS_UNSUPPORTED) return;
+        controller->data.keyboard_serial_head = (type_unsigned_8)(
+            (controller->data.keyboard_serial_head + 1u) %
+            CORE_MACHINE_KBC_KEYBOARD_SERIAL_CAPACITY);
+        --controller->data.keyboard_serial_count;
+    }
+}
 static type_bool core_machine_kbc_is_typematic_scan_code(type_unsigned_8 scan_code)
 {
     switch (scan_code) {
@@ -300,6 +320,7 @@ static type_unsigned_8 core_machine_kbc_dequeue(t_kbc *controller)
         core_machine_kbc_deassert_irq12(controller);
     }
     core_machine_kbc_refresh_current_irq(controller);
+    core_machine_kbc_drain_keyboard_serial(controller);
     return value;
 }
 
@@ -789,6 +810,7 @@ C_VOID core_machine_kbc_refresh(t_kbc *controller) { (C_VOID)controller; }
 C_VOID core_machine_kbc_advance(t_kbc *controller, type_unsigned_64 elapsed_ticks)
 {
     if (controller == STD_NULL) return;
+    core_machine_kbc_drain_keyboard_serial(controller);
     if (controller->data.delayed_response_count != 0u) {
         if (elapsed_ticks < controller->data.response_remaining_ticks) {
             controller->data.response_remaining_ticks -= elapsed_ticks;
@@ -855,7 +877,7 @@ C_VOID core_machine_kbc_finalize(t_kbc *controller)
         controller->data.irq12_asserted = TYPE_FALSE;
     }
 }
-type_status core_machine_kbc_submit_native_byte(t_kbc *controller,
+static type_status core_machine_kbc_admit_native_byte(t_kbc *controller,
     type_unsigned_8 native_byte)
 {
     type_bool known;
@@ -907,9 +929,28 @@ type_status core_machine_kbc_submit_native_byte(t_kbc *controller,
         native_byte != 0xe0u && native_byte != 0xe1u && native_byte != 0xf0u) {
         controller->data.set2_break_pending = TYPE_FALSE;
     }
-    return core_machine_kbc_publish_native_byte(controller, native_byte);
+    return TYPE_STATUS_OK;
 }
 
+type_status core_machine_kbc_submit_native_byte(t_kbc *controller,
+    type_unsigned_8 native_byte)
+{
+    type_unsigned_8 tail;
+    type_status status;
+
+    if (controller == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (controller->data.keyboard_serial_count >=
+        CORE_MACHINE_KBC_KEYBOARD_SERIAL_CAPACITY) return TYPE_STATUS_NO_MEMORY;
+    status = core_machine_kbc_admit_native_byte(controller, native_byte);
+    if (status != TYPE_STATUS_OK) return status;
+    tail = (type_unsigned_8)((controller->data.keyboard_serial_head +
+        controller->data.keyboard_serial_count) %
+        CORE_MACHINE_KBC_KEYBOARD_SERIAL_CAPACITY);
+    controller->data.keyboard_serial[tail] = native_byte;
+    ++controller->data.keyboard_serial_count;
+    core_machine_kbc_drain_keyboard_serial(controller);
+    return TYPE_STATUS_OK;
+}
 type_status core_machine_kbc_submit_native_bytes(t_kbc *controller,
     const type_unsigned_8 *native_bytes, STD_SIZE_T count)
 {
@@ -921,14 +962,19 @@ type_status core_machine_kbc_submit_native_bytes(t_kbc *controller,
     if (!controller->data.keyboard_enabled || !controller->data.scanning_enabled) {
         return TYPE_STATUS_INVALID_STATE;
     }
-    if (count > CORE_MACHINE_KBC_FIFO_CAPACITY - controller->data.fifo_count) {
-        return TYPE_STATUS_INVALID_STATE;
-    }
+    if (count > CORE_MACHINE_KBC_KEYBOARD_SERIAL_CAPACITY -
+        controller->data.keyboard_serial_count) return TYPE_STATUS_NO_MEMORY;
     for (index = 0u; index < count; ++index) {
-        /* Capacity was reserved above; preserve per-byte typematic state. */
-        if (core_machine_kbc_submit_native_byte(controller,
-                native_bytes[index]) != TYPE_STATUS_OK) return TYPE_STATUS_INVALID_STATE;
+        type_unsigned_8 tail;
+        if (core_machine_kbc_admit_native_byte(controller, native_bytes[index]) !=
+            TYPE_STATUS_OK) return TYPE_STATUS_INVALID_STATE;
+        tail = (type_unsigned_8)((controller->data.keyboard_serial_head +
+            controller->data.keyboard_serial_count) %
+            CORE_MACHINE_KBC_KEYBOARD_SERIAL_CAPACITY);
+        controller->data.keyboard_serial[tail] = native_bytes[index];
+        ++controller->data.keyboard_serial_count;
     }
+    core_machine_kbc_drain_keyboard_serial(controller);
     return TYPE_STATUS_OK;
 }
 

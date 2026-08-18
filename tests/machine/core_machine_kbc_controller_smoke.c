@@ -355,18 +355,32 @@ C_INT main(C_VOID)
     core_machine_kbc_reset(&kbc);
     core_machine_port_write(&port, 0x0064u, 0x60u);
     core_machine_port_write(&port, 0x0060u, 0x07u);
-    for (index = 0u; index < CORE_MACHINE_KBC_FIFO_CAPACITY; ++index) {
-        failed |= core_machine_kbc_submit_native_byte(&kbc, index) != TYPE_STATUS_OK;
+    {
+        static const type_unsigned_8 enter_break[] = { 0xf0u, 0x1eu };
+
+        core_machine_kbc_set_typematic_timing(&kbc, 3u, 2u);
+        failed |= core_machine_kbc_submit_native_byte(&kbc, 0x1eu) != TYPE_STATUS_OK ||
+            core_machine_kbc_read_byte(&port, 0x0060u) != 0x1eu ||
+            !kbc.data.typematic_active;
+        for (index = 0u; index < CORE_MACHINE_KBC_FIFO_CAPACITY; ++index) {
+            failed |= core_machine_kbc_submit_native_byte(&kbc, 0xe0u) != TYPE_STATUS_OK;
+        }
+        /* Full CPU output must not discard a complete Set-2 break; accepting
+         * it cancels typematic before the bytes become CPU-visible. */
+        failed |= core_machine_kbc_submit_native_bytes(&kbc, enter_break,
+            sizeof(enter_break)) != TYPE_STATUS_OK || kbc.data.keyboard_serial_count !=
+            sizeof(enter_break) || kbc.data.typematic_active;
     }
-    failed |= core_machine_kbc_submit_native_byte(&kbc, 0xffu) !=
-        TYPE_STATUS_INVALID_STATE;
     /* A command reply behind rapid typeahead remains KBC-owned until the
      * guest drains FIFO space; it is never lost merely because output is full. */
     core_machine_port_write(&port, 0x0060u, 0xf2u);
     for (index = 0u; index < CORE_MACHINE_KBC_FIFO_CAPACITY; ++index) {
-        failed |= core_machine_kbc_read_byte(&port, 0x0060u) != index;
+        failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0xe0u;
         core_machine_kbc_advance(&kbc, 0u);
     }
+    failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0xf0u ||
+        core_machine_kbc_read_byte(&port, 0x0060u) != 0x1eu ||
+        kbc.data.keyboard_serial_count != 0u;
     failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0xfau;
     failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0xabu;
     failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0x83u;

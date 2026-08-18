@@ -2,7 +2,27 @@
 
 ## Current Work
 
-**Idle.**
+**Active: M5 T403.**
+## M5 T403 S1 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New |
+| Admission And Approval | Owner: user; continuing authorization to implement DeskPro 386 L3 timing and all hardware gaps using original-source, reference-derived, then labelled generic tiers; direct repairs, normal commits and pushes are authorized. |
+| Objective | Freeze the shared keyboard/8042 producer-consumer matrix and repair atomic native-sequence admission, break/typematic state and CPU-output flow control so congestion cannot discard a valid break. |
+| Non-goals | No physical DeskPro keyboard wire/FIFO timing claim, exact 8042 firmware or capacity claim, vendor firmware/media import, new host ABI, platform-side guest mutation, Core/VM reversal or L3 claim. |
+| Reference Baseline | `7c516481` (T402 closure); queue proposal; retained T351 keyboard/KBC lifecycle evidence; IBM PC/AT and Intel 8042 material for observable controller contract; local references only as labelled ordering guidance. |
+| Candidate Proposal | [Keyboard serial endpoint and 8042 flow-control repair](../proposals/m5-keyboard-serial-endpoint-and-8042-flow-control.md). |
+| Files And ABI Surface | Core KBC/keyboard private owner, VM session ingress retry behavior only if endpoint semantics require it, focused Core/VM/product regressions, T403 evidence/index/history/CURRENT; no profile-specific Core path. |
+| Applicable Rules | Core owns shared keyboard state/output arbitration; VM maps host transitions only; atomic admission prevents partial state publication; preserve 60h/64h, IRQ1/IRQ12 and command/AUX contracts; source tiers and no physical overclaim. |
+| Verification | Producer/consumer inventory; focused Set-1/Set-2/translation/break/typematic/endpoint-full/output-full/reset/command/AUX tests; VM ingress and DOS keyboard regressions; full current CTest, documentation governance and actual-diff review. |
+| Expected Markers | `M5:T403:S1:KBC-FLOW` plus sequence-atomicity, break-before-typematic and ordered-output markers; explicit physical transfer. |
+| Asset Needs | No new asset. Read-only primary/reference documents only; no ROM, firmware, media or third-party source enters NXVM. |
+| Reporting Requirements | Record the complete producer/consumer matrix, one owner for every pending byte/state transition, source tier, regression proof and retained physical timing receiver. |
+| Stop Conditions | Stop and transfer if a required behavior needs unverified firmware emulation, a physical parameter, a Core/VM public interface change, or an ordering decision not supported by the selected generic/primary contract. |
+| Exit Criteria | Every selected keyboard/8042 producer/consumer and lifecycle variant is fixed, conforming, explicitly reference-derived or transferred; valid mapped breaks cannot be lost through CPU-output congestion; no physical/L3 claim. |
+| Original Owner Request | Implement DeskPro 386 L3 timing and all hardware gaps: original sources first, then reference implementations, then labelled generic skeletons; do not stop merely because no hardware is available. |
+| Similar-Issue Sweep | Search all KBC native-input, typematic, command-response, AUX, output-read/status/IRQ, reset, VM request and platform host-ingress paths; classify every production hit and relevant focused/product regression. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T395 S1 P4 `vm-0-5-0395` /
