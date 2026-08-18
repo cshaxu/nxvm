@@ -553,3 +553,10 @@ attribute combination.
 No production discrepancy was found. This remains CPU semantic/nonphysical
 timing-baseline evidence only and does not establish physical timing, DeskPro
 L3 or a Core/VM interface change.
+## S16 Acceptance
+
+S16 closes selected CMPS `A6h`/`A7h` form coverage with focused runtime and
+preview proof across all four profiles. It covers comparison flags, REPE and
+REPNE termination, DF/segment routing, 80386 attributes and prefix rejection.
+No production discrepancy was found; existing Core timing remains explicitly
+nonphysical. S17 owns STOS `AAh`/`ABh`.
