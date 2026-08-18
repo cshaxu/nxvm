@@ -891,5 +891,6 @@ C_INT main(C_VOID)
         return 1;
     }
     STD_PRINTF("M5:T316:S54:BOUND:OK\n");
+    STD_PRINTF("M5:T401:S29:BOUND-PROFILES:OK\n");
     return 0;
 }

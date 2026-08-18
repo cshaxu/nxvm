@@ -789,3 +789,11 @@ No production discrepancy was found. This remains CPU semantic/nonphysical timin
 ## S28 Acceptance
 
 S28 closes ARPL `63h` with focused runtime and preview proof. It retains 80286/80386 RPL/ZF and memory behavior, attributes, protected/IRQ bounds and atomic 8086/80186 #UD. No production discrepancy was found; Core timing remains explicitly nonphysical. S29 owns BOUND `62h`.
+
+## S29 BOUND
+
+S29 audits BOUND `62h`. Intel's 80186/80386 references define signed lower/upper-pair comparison, #BR delivery and operand/address-size behavior. This is original-source semantic/form evidence; no emulator implementation, ROM or guest asset was imported.
+
+`M5:T401:S29:BOUND-PROFILES:OK` retains 80186+ profiles, 8086 #UD, signed 16/32-bit bounds, #BR delivery, 80386 attributes, protected limits, segment/SIB, IRQ and VM86 proof. `M5:T401:S29:BOUND-PREVIEW-PROFILES:OK` adds the matching availability and lexical matrix.
+
+No production discrepancy was found. This remains CPU semantic/nonphysical timing-baseline evidence only and does not establish physical timing, DeskPro L3 or a Core/VM interface change.

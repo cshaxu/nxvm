@@ -452,6 +452,22 @@ static C_INT preview_test_group2_immediate_profiles(C_VOID)
     return preview_expect((const type_unsigned_8[]){0x66u, 0xc1u, 0xc0u, 1u},
         4u, CORE_MACHINE_CPU_PROFILE_80386, TYPE_FALSE, 4u, 4u);
 }
+static C_INT preview_test_bound_profiles(C_VOID)
+{
+    static const type_unsigned_8 bound[] = {0x62u, 0x06u, 0u, 0x20u};
+    core_machine_cpu_instruction_lexeme lexeme;
+
+    if (core_machine_cpu_instruction_lexeme_scan(bound, sizeof(bound),
+        CORE_MACHINE_CPU_PROFILE_8086, TYPE_FALSE, &lexeme) || lexeme.available)
+        return 0;
+    return preview_expect(bound, sizeof(bound), CORE_MACHINE_CPU_PROFILE_80186,
+        TYPE_FALSE, 4u, 3u) && preview_expect(bound, sizeof(bound),
+        CORE_MACHINE_CPU_PROFILE_80286, TYPE_FALSE, 4u, 3u) &&
+        preview_expect(bound, sizeof(bound), CORE_MACHINE_CPU_PROFILE_80386,
+        TYPE_FALSE, 4u, 3u) && preview_expect((const type_unsigned_8[]){0x66u,0x62u,0x06u,0u,0x20u},5u,
+        CORE_MACHINE_CPU_PROFILE_80386, TYPE_FALSE, 5u, 4u);
+}
+
 static C_INT preview_test_arpl_profiles(C_VOID)
 {
     static const type_unsigned_8 arpl[] = {0x63u, 0xc0u};
@@ -847,6 +863,7 @@ C_INT main(C_VOID)
     if (!preview_test_int3_into_profiles()) return 27;
     if (!preview_test_iret_profiles()) return 28;
     if (!preview_test_arpl_profiles()) return 29;
+    if (!preview_test_bound_profiles()) return 30;
     if (!preview_test_group3_profiles()) return 10;
     if (!preview_test_group45_profiles()) return 11;
     if (preview_test_cpu_fetch_nonpublication()) return 4;
@@ -876,5 +893,6 @@ C_INT main(C_VOID)
     STD_PRINTF("M5:T401:S26:INT3-INTO-PREVIEW-PROFILES:OK\n");
     STD_PRINTF("M5:T401:S27:IRET-PREVIEW-PROFILES:OK\n");
     STD_PRINTF("M5:T401:S28:ARPL-PREVIEW-PROFILES:OK\n");
+    STD_PRINTF("M5:T401:S29:BOUND-PREVIEW-PROFILES:OK\n");
     return 0;
 }
