@@ -4,26 +4,26 @@
 
 **Active: M5 T401.**
 
-## M5 T401 S40 Packet
+## M5 T401 S41 Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation; M5 T401 S40. |
-| Admission And Approval | Owner approved continuing the four-profile CPU audit. S39 is accepted after complete PUSHF/POPF execution/preview evidence. |
-| Objective | Audit general-register PUSH/POP `50h`-`5Fh` across 8086, 80186, 80286 and 80386: stack images, widths, SP/ESP rules and preview behavior. |
-| Non-goals | No broad stack or register-model rewrite, no device/board work, no physical timing or DeskPro L3 claim. |
-| Reference Baseline | Intel 8086/80386 instruction references; retained stack/register/prefix/timing ledgers; current decoder/execution/preview. Secondary emulators only corroborate Intel-underspecified behavior and must be labelled reference-derived. |
+| Identifier Mode | Continuation; M5 T401 S41. |
+| Admission And Approval | Owner approved continuing the four-profile CPU audit. S40 is accepted after complete general-register PUSH/POP execution/preview evidence. |
+| Objective | Audit segment-register PUSH/POP across 8086, 80186, 80286 and 80386: selector/cache state, stack behavior, FS/GS profile gates and preview behavior. |
+| Non-goals | No broad segment, stack or privilege-model rewrite, no device/board work, no physical timing or DeskPro L3 claim. |
+| Reference Baseline | Intel 8086/80386 instruction references; retained segment/stack/prefix/timing ledgers; current decoder/execution/preview. Secondary emulators only corroborate Intel-underspecified behavior and must be labelled reference-derived. |
 | Candidate Proposal | [Four-profile CPU instruction-correctness audit and repair program](../proposals/m5-four-profile-cpu-instruction-correctness-audit.md). |
-| Files And ABI Surface | Audit ledger, packet, general-register PUSH/POP fixture and preview smoke only unless a bounded shared defect is reproduced; no public ABI. |
+| Files And ABI Surface | Audit ledger, packet, segment-register PUSH/POP fixture and preview smoke only unless a bounded shared defect is reproduced; no public ABI. |
 | Applicable Rules | Execution bounded corrective/actual-diff review; shared Core CPU ownership; coding/test rules; Intel primary-source requirement; external-provider/source policy; documentation indexing. |
 | Verification | Four-profile execution/preview matrix, four-profile execution/preview matrix, DS/segment override and 80386 address attributes, protected limits/fault atomicity and retirement; focused tests, full gate after repair, governance/diff checks. |
-| Expected Markers | New T401 S40 markers and any bounded defect marker. |
-| Reporting Requirements | Record CPU/profile, opcode, GPR/stack state, attribute and retirement behavior, manual/source tier, current owner, focused proof or transfer and retained nonphysical timing boundary. |
+| Expected Markers | New T401 S41 markers and any bounded defect marker. |
+| Reporting Requirements | Record CPU/profile, opcode, selector/cache/stack state, attribute and retirement behavior, manual/source tier, current owner, focused proof or transfer and retained nonphysical timing boundary. |
 | Stop Conditions | Stop and create a precise receiver if repair requires a broad decoder/register/fault-delivery redesign, a new CPU facility, device/board timing model or broad state-model change. |
 | Asset Needs | None. |
-| Exit Criteria | Every selected general-register PUSH/POP profile/form row has focused proof or an explicit transfer; bounded repairs have full-gate proof. |
+| Exit Criteria | Every selected segment-register PUSH/POP profile/form row has focused proof or an explicit transfer; bounded repairs have full-gate proof. |
 | Original Owner Request | Continue source-backed, reference-backed or explicitly generic CPU work rather than leaving feasible work undone. |
-| Similar-Issue Sweep | For any mismatch, sweep stack-transfer siblings, profile gates, prefixes, preview callers and GPR/stack consumers. |
+| Similar-Issue Sweep | For any mismatch, sweep segment-stack siblings, profile gates, prefixes, preview callers and selector/cache consumers. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T395 S1 P4 `vm-0-5-0395` /
@@ -50,7 +50,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T401 S39 | Accepted: PUSHF/POPF audit closes four-profile FLAGS/stack/privilege behavior and lexical coverage. S40 owns general-register PUSH/POP. [Ledger](../etc/evidence/t401-s1-four-profile-cpu-audit-ledger.md). |
+| T401 S40 | Accepted: general-register PUSH/POP audit closes four-profile stack/width/atomicity behavior and lexical coverage. S41 owns segment-register PUSH/POP. [Ledger](../etc/evidence/t401-s1-four-profile-cpu-audit-ledger.md). |
 | T400 | Closed: the HDC, CECG and CPU/DMA/BWAIT generic-reference ledger is exhausted; accepted logical repairs retain every DeskPro physical boundary. [Closure audit](../etc/evidence/t400-s1-task-closure-audit.md). |
 | T399 | Closed: the five-batch reference-derived DeskPro L3 ledger is exhausted; B2/B3 logical contracts are accepted, B1/B4/B5 retain exact receivers, and both reference-derived and physical L3 are not ready. [Closure audit](../etc/evidence/t399-s5-task-closure-audit.md). |
 | T398 | Closed: final exact 1986 DeskPro Model-40 audit is not-ready for L3; five physical/firmware boundaries retain explicit TODO receivers and require a fresh audit after repair. [Closure audit](../etc/evidence/t398-s2-task-closure-audit.md). |

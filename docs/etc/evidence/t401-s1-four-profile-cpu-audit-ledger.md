@@ -929,3 +929,7 @@ S40 audits general-register PUSH/POP `50h`-`5Fh`. Intel 8086/80386 references de
 `M5:T401:S40:GPR-PUSH-POP-PROFILES:OK` retains all-four-profile register/r-m forms, 8086 SP behavior, POP ESP addressing, 80386 attributes, LOCK rejection, protected stack-limit faults and atomicity. `M5:T401:S40:GPR-PUSH-POP-PREVIEW-PROFILES:OK` adds the matching lexical matrix.
 
 No production discrepancy was found. This remains CPU semantic/nonphysical timing-baseline evidence only and does not establish physical timing, DeskPro L3 or a Core/VM interface change.
+
+## S40 Acceptance
+
+S40 closes general-register PUSH/POP `50h`-`5Fh` coverage with focused runtime and preview proof across all four profiles. It retains 8086 SP behavior, r/m forms, 80386 attributes, LOCK rejection and protected-stack atomicity. No production discrepancy was found; Core timing remains explicitly nonphysical. S41 owns segment-register PUSH/POP.
