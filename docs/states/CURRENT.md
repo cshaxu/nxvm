@@ -3,27 +3,6 @@
 ## Current Work
 
 **Active: M5 T402.**
-## M5 T402 S1 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | New |
-| Admission And Approval | Owner: user; explicit continuing authorization to implement DeskPro 386 L3 timing and hardware gaps with original-source, reference-derived, then labelled generic tiers; user also directs direct correction of confirmed small issues. |
-| Objective | Freeze and reconcile the original 1986 DeskPro D4 memory-control functional matrix against the Model-40 profile; implement every confirmed bounded mapping/control discrepancy without changing Core/VM interface ownership. |
-| Non-goals | No physical D4 DRAM/ISA/cache timing scalar, L3 claim, firmware/media import, generic AT substitution, copied third-party source or public Core/VM ABI change. |
-| Reference Baseline | `0e13e676` (T401 closure); D3PE 1986 primary material in approved external research archive; T386/T390 D4 evidence; local read-only 86Box `compaq_386.c` as Tier 2 only. |
-| Candidate Proposal | [DeskPro D4 memory-controller reconciliation](../proposals/m5-deskpro-386-d4-memory-controller-reconciliation.md). |
-| Files And ABI Surface | Model-40 profile D4 owner, focused D4 regression(s), T402 evidence/index/history/CURRENT; Core interfaces only if a demonstrated shared owner requires it. |
-| Applicable Rules | Original source controls board facts; Tier 2 is labelled and cannot override primary material; preserve Core/VM boundary and explicit physical timing transfer. |
-| Verification | Build/run focused D4 map and parity smokes plus any new matrix smoke; static owner sweep; full current CTest, documentation governance and diff review. |
-| Expected Markers | `M5:T402:S1:D4-MATRIX` plus focused functional mapping/control markers and an explicit physical-transfer statement. |
-| Asset Needs | Read-only approved research materials only; no ROM, media, trace or third-party source enters NXVM. |
-| Reporting Requirements | Report the complete D4 member matrix, each evidence tier, every confirmed repair and every retained physical receiver. |
-| Stop Conditions | Stop and transfer a member if neither original material nor a bounded labelled Tier-2 reference determines it, or if it requires a new timing owner/interface. |
-| Exit Criteria | Every selected D4 functional member is conforming, fixed, explicitly Tier-2-derived, rejected or transferred; no physical or L3 overclaim. |
-| Original Owner Request | Implement DeskPro 386 L3 timing and all hardware gaps using original sources, then reference implementations, then explicitly labelled generic fallback; do not stop merely for lack of physical hardware. |
-| Similar-Issue Sweep | Search all Model-40 D4 mapping/control registrations, aliases, reset paths, memory queries and focused smokes; classify each production hit and named D4 register/window variant. |
-
 ## Current Technical Baseline
 
 - **Current developer artifact:** T395 S1 P4 `vm-0-5-0395` /
@@ -50,6 +29,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T402 S1 | Accepted: D3PE-first functional D4 matrix reconciled; Model-40 control aperture repaired from one byte to a Tier-2-labelled four-register, 4 KiB nonresponsive window; focused D4 tests and full 285/285 current gate pass. Physical D4/cache/DRAM/ISA timing remains transferred. [Evidence](../etc/evidence/t402-s1-d4-memory-controller-matrix.md). |
 | T401 | Closed: bounded four-profile CPU semantic/source-timing audit; every frozen form is proven, repaired, nonphysical-observed, rejected or transferred, without an x87, physical CPU, board or L3 claim. [Closure audit](../etc/evidence/t401-s78-task-closure-audit.md). |
 | T400 | Closed: the HDC, CECG and CPU/DMA/BWAIT generic-reference ledger is exhausted; accepted logical repairs retain every DeskPro physical boundary. [Closure audit](../etc/evidence/t400-s1-task-closure-audit.md). |
 | T399 | Closed: the five-batch reference-derived DeskPro L3 ledger is exhausted; B2/B3 logical contracts are accepted, B1/B4/B5 retain exact receivers, and both reference-derived and physical L3 are not ready. [Closure audit](../etc/evidence/t399-s5-task-closure-audit.md). |
