@@ -3,6 +3,26 @@
 ## Current Work
 
 **Active: M5 T401.**
+## M5 T401 S60 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner: user; standing approval to continue CPU audit and directly repair confirmed small issues. |
+| Objective | Independently audit 80386 SETcc `0F 90h` through `0F 9Fh`, including all predicates, register/memory forms, profile availability and lexical publication. |
+| Non-goals | No CPU timing model, Core/VM interface, DeskPro claim or external-source import; no T401 closure. |
+| Reference Baseline | `7ea0f1fd` (S59 P2), T401 ledger, retained Intel 80386 PRM, and `core-machine-setcc-smoke`. |
+| Candidate Proposal | [Four-profile CPU instruction-correctness audit](../proposals/m5-four-profile-cpu-instruction-correctness-audit.md), 80386 secondary-data-form batch. |
+| Files And ABI Surface | SETcc smoke, preview smoke, CURRENT and T401 ledger only; test/documentation surface. |
+| Applicable Rules | Shared CPU condition-code ownership unchanged; coding, documentation and execution rules apply. |
+| Verification | Build/run SETcc and preview smokes; documentation governance; diff check. |
+| Expected Markers | `M5:T401:S60:SETCC-PROFILES:OK` and `M5:T401:S60:SETCC-PREVIEW-PROFILES:OK`. |
+| Asset Needs | None. |
+| Reporting Requirements | Record predicate/form/profile evidence, discrepancy result, commits and nonphysical boundary. |
+| Stop Conditions | Transfer any nonlocal condition-code, fault-delivery or timing repair. |
+| Exit Criteria | All sixteen 80386 SETcc forms execute for both truth values to register and memory; 80186/80286 reject while 8086 retains POP CS; 80386 attributes scan; ledger records conclusion. |
+| Original Owner Request | Continue CPU audit before later DeskPro L3 work with direct repair of confirmed small issues. |
+| Similar-Issue Sweep | Treat all predicate opcodes, register/memory, true/false, old-profile rejection, attributes, pre-fault nonpublication and LOCK together. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T395 S1 P4 `vm-0-5-0395` /

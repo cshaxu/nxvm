@@ -1079,3 +1079,15 @@ remains nonphysical.
 ## S59 Acceptance
 
 S59 closes the bounded 80386 near conditional-jump audit. The control-transfer and preview matrices establish all predicates, rel16/rel32 and 80386 attribute layouts, plus 80186/80286 secondary-form rejection and the retained 8086 POP CS distinction. Both focused smokes and documentation governance pass; no production discrepancy was found, timing remains nonphysical, and T401 remains open.
+
+## S60 SETcc
+
+S60 independently audits 80386 SETcc `0F 90h` through `0F 9Fh`. The retained
+SETcc fixture executes all sixteen conditions for both truth values to a
+register and direct memory, preserves EFLAGS and unrelated register state,
+retains operand/address-prefix execution, and proves older-profile #UD and
+protected-limit pre-fault nonpublication. `M5:T401:S60:SETCC-PREVIEW-PROFILES:OK`
+adds all-opcode 80386 register and memory lexical layouts plus operand,
+address and combined attributes; it proves 80186/80286 reject the secondary
+forms. 8086 remains excluded because `0Fh` is its distinct POP CS opcode.
+No production discrepancy was found; timing remains nonphysical.

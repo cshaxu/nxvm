@@ -273,5 +273,6 @@ C_INT main(C_VOID)
     if (!setcc_test_register_conditions() || !setcc_test_memory_conditions() ||
         !setcc_test_prefix_forms() || !setcc_test_pre_fault_nonpublication()) return 1;
     STD_PRINTF("M5:T310:S3:SETCC:OK\n");
+    STD_PRINTF("M5:T401:S60:SETCC-PROFILES:OK\n");
     return 0;
 }
