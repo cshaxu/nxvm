@@ -504,5 +504,6 @@ C_INT main(C_VOID)
         return 1;
     }
     STD_PRINTF("M5:T316:S40:DIRECT-FLAGS:OK\n");
+    STD_PRINTF("M5:T401:S42:DIRECT-FLAGS-PROFILES:OK\n");
     return 0;
 }

@@ -15621,7 +15621,7 @@ static C_VOID CLD(core_machine_cpu_execution_context *context)
 }
 static C_VOID STD(core_machine_cpu_execution_context *context)
 {
-    TYPE_TRACE_CALL_BEGIN("CLD");
+    TYPE_TRACE_CALL_BEGIN("STD");
     if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386)
     {
         _adv;
