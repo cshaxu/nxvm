@@ -917,3 +917,7 @@ S39 audits PUSHF/POPF `9Ch`/`9Dh`. Intel 8086/80286/80386 references define stac
 `M5:T401:S39:PUSHF-POPF-PROFILES:OK` retains four-profile flag images, 80386 16/32-bit stack forms, pre-80386 attribute #UD, LOCK atomicity, protected/VM86/stack-fault and IRQ proof. `M5:T401:S39:PUSHF-POPF-PREVIEW-PROFILES:OK` adds the matching lexical matrix.
 
 No production discrepancy was found. This remains CPU semantic/nonphysical timing-baseline evidence only and does not establish physical timing, DeskPro L3 or a Core/VM interface change.
+
+## S39 Acceptance
+
+S39 closes PUSHF/POPF `9Ch`/`9Dh` coverage with focused runtime and preview proof across all four profiles. It retains stack flag images, widths, attributes/LOCK, privilege and IRQ boundaries. No production discrepancy was found; Core timing remains explicitly nonphysical. S40 owns general-register PUSH/POP `50h`-`5Fh`.
