@@ -324,3 +324,18 @@ active operand size for `F7h`) and the two-byte forms for `/2`--`/7`.  The
 existing inc-dec execution, multiply/divide fault and attribute matrices retain
 the state, FLAGS, transaction and #DE coverage; no new production repair or
 Core/VM boundary is introduced by this test-only completion slice.
+
+## S10 Group-4/5 Form Inventory
+
+S10 began the `FEh`/`FFh` Group-4/5 audit.  The shared dispatch matches the
+Intel form partition: `FEh /0`--`/1` are byte INC/DEC and `/2`--`/7` are #UD;
+`FFh /0`--`/2`, `/4` and `/6` admit r/m forms; far CALL/JMP `/3` and `/5`
+require memory; `/7` is #UD.  The existing control-transfer, GPR-push/pop,
+prefix and protected-#UD tests retain the execution, stack, memory-only,
+LOCK, transaction and delivery proofs.
+
+`M5:T401:S10:GROUP45-PREVIEW-PROFILES:OK` adds four-profile form inventory for
+all extensions and both direct-register and 16-bit-addressed memory encodings.
+It verifies the exact availability partition and the two- versus four-byte
+preview layouts.  This is source-backed Intel form classification; it makes no
+physical timing or DeskPro-L3 claim and introduces no Core/VM interface change.

@@ -111,6 +111,45 @@ static C_INT preview_test_group3_profiles(C_VOID)
     }
     return 1;
 }
+static C_INT preview_test_group45_profiles(C_VOID)
+{
+    static const core_machine_cpu_profile profiles[] = {
+        CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
+        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
+    };
+    type_unsigned_8 profile_index;
+    type_unsigned_8 extension;
+
+    for (profile_index = 0u; profile_index != sizeof(profiles) / sizeof(profiles[0]);
+        ++profile_index)
+    for (extension = 0u; extension != 8u; ++extension) {
+        type_unsigned_8 fe[] = { 0xfeu, (type_unsigned_8)((extension << 3u) | 0xc0u) };
+        type_unsigned_8 ff_register[] = { 0xffu,
+            (type_unsigned_8)((extension << 3u) | 0xc0u) };
+        type_unsigned_8 ff_memory[] = { 0xffu,
+            (type_unsigned_8)((extension << 3u) | 0x06u), 0u, 0x40u };
+        core_machine_cpu_instruction_lexeme lexeme;
+        const type_bool fe_valid = extension <= 1u;
+        const type_bool ff_register_valid = extension <= 2u || extension == 4u ||
+            extension == 6u;
+        const type_bool ff_memory_valid = extension <= 6u;
+
+        if (fe_valid != (core_machine_cpu_instruction_lexeme_scan(fe, sizeof(fe),
+            profiles[profile_index], TYPE_FALSE, &lexeme) && lexeme.available) ||
+            ff_register_valid != (core_machine_cpu_instruction_lexeme_scan(ff_register,
+            sizeof(ff_register), profiles[profile_index], TYPE_FALSE, &lexeme) &&
+            lexeme.available) || ff_memory_valid !=
+            (core_machine_cpu_instruction_lexeme_scan(ff_memory, sizeof(ff_memory),
+            profiles[profile_index], TYPE_FALSE, &lexeme) && lexeme.available)) return 0;
+        if (fe_valid && !preview_expect(fe, sizeof(fe), profiles[profile_index],
+            TYPE_FALSE, 2u, 2u)) return 0;
+        if (ff_register_valid && !preview_expect(ff_register, sizeof(ff_register),
+            profiles[profile_index], TYPE_FALSE, 2u, 2u)) return 0;
+        if (ff_memory_valid && !preview_expect(ff_memory, sizeof(ff_memory),
+            profiles[profile_index], TYPE_FALSE, 4u, 3u)) return 0;
+    }
+    return 1;
+}
 static C_INT preview_test_unavailable(C_VOID)
 {
     static const type_unsigned_8 truncated[] = { 0x8bu };
@@ -339,6 +378,7 @@ C_INT main(C_VOID)
     if (!preview_test_layouts()) return 2;
     if (!preview_test_unavailable()) return 3;
     if (!preview_test_group3_profiles()) return 10;
+    if (!preview_test_group45_profiles()) return 11;
     if (preview_test_cpu_fetch_nonpublication()) return 4;
     if (preview_test_limited_fetch_nonpublication()) return 5;
     if (preview_test_taken_jcc_target()) return 6;
@@ -347,5 +387,6 @@ C_INT main(C_VOID)
     if (preview_test_cr_mov_mod_quirk()) return 9;
     STD_PRINTF("M5:T357:S2:CPU-TIMING-PREVIEW:OK\n");
     STD_PRINTF("M5:T401:S9:GROUP3-PREVIEW-PROFILES:OK\n");
+    STD_PRINTF("M5:T401:S10:GROUP45-PREVIEW-PROFILES:OK\n");
     return 0;
 }
