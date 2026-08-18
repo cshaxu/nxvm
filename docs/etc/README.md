@@ -429,6 +429,8 @@ principal documents named in [docs/README.md](../README.md).
 
 | evidence/t416-s1-dma-hold-locality.md | Verification owner | T416 S1 adds a generic-AT DMA HOLD locality invalidation policy based on D4 HOLD/HLDA topology, while retaining all physical phase claims. Retain with T416 history. |
 
+| evidence/t416-s2-dma-hold-locality-closure-audit.md | Closure audit | T416 S2 independently closes the generic-AT DMA HOLD locality boundary and transfers physical D4 DMA/refresh phases. Retain with T416 history. |
+
 Adding a new supporting document requires owner approval, an exact-file index
 row or a declared indexed subtree, and a stated promotion, merge, or retirement
 condition. The governance gate verifies that every supporting Markdown file is

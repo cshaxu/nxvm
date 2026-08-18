@@ -2,26 +2,26 @@
 
 ## Current Work
 
-## M5 T416 S1 Packet
+## M5 T417 S1 Packet
 
 | Field | Required record |
 | --- | --- |
 | Identifier Mode | New |
 | Admission And Approval | Owner authorization of 2026-08-18 covers continued DeskPro L3 implementation, tier-labelled reference/generic bridges, and master pushes. |
-| Objective | Implement one bounded generic-AT CPU/DMA ownership-boundary policy: a DMA HOLD/HLDA handoff invalidates the CPU external-memory locality key before a later CPU cycle, using D4 schematic HOLD/HLDA wiring as original structural evidence. |
+| Objective | Implement one bounded generic-AT refresh locality policy: a D4-configured system PIT counter-1 refresh pulse invalidates the CPU external-memory locality key before a later CPU cycle, using the original D4 refresh topology and existing PIT output owner. |
 | Non-goals | Do not claim D4 DMA/refresh/BWAIT clocks, exact DRAM page retention, a physical HOLD waveform, device service timing, or Model-L3 readiness. |
-| Reference Baseline | T408 original D4 page-mode facts, T410 external cycles, T412--T415 locality bridges, D3PE schematic HOLD/HLDA/DMA/refresh topology, and existing Core transaction HOLD lifecycle. |
+| Reference Baseline | T408 original D4 page-mode facts, T410 external cycles, T412--T416 locality bridges, original D3PE refresh/HLDA topology, and the existing Core PC/AT counter-1 refresh timer/output owner. |
 | Candidate Proposal | [DeskPro physical-cycle and phase-timing closure](../proposals/m5-deskpro-physical-cycle-and-phase-timing.md) |
-| Files And ABI Surface | Existing Core transaction trace/locality owner and Model-40 composition only; preserve Core/VM direction and one CPU/DMA transaction owner. |
+| Files And ABI Surface | Existing Core shared-PIT output/locality owner and D4 composition only; preserve Core/VM direction and one CPU/DMA transaction owner. |
 | Applicable Rules | docs/design/ARCHITECTURE.md; docs/design/CODING.md; docs/rules/ARCHITECTURE.md; docs/rules/CODING.md; docs/rules/EXECUTION.md. |
-| Verification | Original-source/topology review, focused CPU locality plus DMA HOLD request/ack/release/reset trace, current gate, documentation gate and actual-diff review. |
-| Expected Markers | M5:T416:S1:DMA-HOLD-LOCALITY:OK or M5:T416:S1:DMA-HOLD-LOCALITY:TRANSFER. |
+| Verification | Original-source/topology review, focused D4 counter-1 pulse/locality miss/reset trace, retained DMA-HOLD competition regression, current gate, documentation gate and actual-diff review. |
+| Expected Markers | M5:T417:S1:REFRESH-LOCALITY:OK or M5:T417:S1:REFRESH-LOCALITY:TRANSFER. |
 | Asset Needs | O:\assets original D3PE research and read-only PCjs/other available references; no import. |
 | Reporting Requirements | Label the policy generic-AT and the schematic topology original; name every unbound D4 physical receiver. |
 | Stop Conditions | Stop and transfer any policy requiring exact DMA/refresh/BWAIT phase clocks, physical page retention proof, a second scheduler, or another transaction path. |
-| Exit Criteria | A committed DMA HOLD acknowledgement invalidates CPU locality before the next CPU external cycle with focused reset/cancellation proof, or the receiver is transferred without blocking later work. |
+| Exit Criteria | A D4-configured refresh pulse invalidates CPU locality before the next CPU external cycle with focused reset/cancellation proof, or the receiver is transferred without blocking later work. |
 | Original Owner Request | Implement DeskPro 386 L3 timing/hardware gaps using original then reference then generic-AT tiers; do not stall and preserve Core/VM boundary. |
-| Similar-Issue Sweep | Inspect DMA transaction lifecycle, CPU external-cycle locality, HOLD/HLDA/reset/cancellation, refresh, FDC/HDC DMA consumers, page walks, prefetch, data reads/writes, and Model-40 composition. |
+| Similar-Issue Sweep | Inspect PIT counter-1 refresh output, CPU locality, reset/cancellation, DMA HOLD, port 61h, page walks, prefetch, data reads/writes, and Model-40 composition. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T416 S1 P1 `vm-0-5-0416` /
@@ -52,6 +52,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T416 | Closed: Core generic-AT locality invalidates at acknowledged DMA HOLD only; exact D4 page retention and phase work remain transferred. [Closure audit](../etc/evidence/t416-s2-dma-hold-locality-closure-audit.md). |
 | T415 | Closed: Core generic-AT locality now covers committed page-table reads/writebacks, and CR0 PG/CR3 invalidate stale prefetch translation context; CPU/DMA page retention remains transferred. [Closure audit](../etc/evidence/t415-s2-page-walk-locality-closure-audit.md). |
 | T414 | Closed: Core generic-AT external-memory locality now covers committed CPU data reads, while page walks and exact D4 physical phases remain transferred. [Closure audit](../etc/evidence/t414-s2-data-read-locality-closure-audit.md). |
 | T413 | Closed: Core generic-AT external-memory locality now covers Model-40 prefetch reads and CPU data writes; exact D4 phase/arbitration remains transferred. [Closure audit](../etc/evidence/t413-s2-external-write-locality-closure-audit.md). |
