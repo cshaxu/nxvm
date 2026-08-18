@@ -1,6 +1,7 @@
 #include "type.h"
 
 #include "core/machine/machine_interface.h"
+#include "core/machine/transaction.h"
 #include "../support/core_machine_cpu_fixture.h"
 
 static C_INT run_halt(const core_machine_external_memory_locality_timing *timing,
@@ -126,6 +127,18 @@ static C_INT locality_observer_contract(C_VOID)
             TYPE_TRUE, CORE_MACHINE_CPU_MEMORY_ACCESS_PAGE_TABLE_WRITE);
         failed |= !machine->external_memory_locality_page_valid ||
             machine->external_memory_locality_round_ticks != 3u;
+        machine->external_memory_locality_round_ticks = 0u;
+        failed |= core_machine_transaction_hold_request(&machine->transaction,
+            CORE_MACHINE_TRANSACTION_OWNER_DMA, 0u) != TYPE_STATUS_OK;
+        failed |= core_machine_transaction_hold_acknowledge(&machine->transaction,
+            CORE_MACHINE_TRANSACTION_OWNER_DMA) != TYPE_STATUS_OK;
+        failed |= machine->external_memory_locality_page_valid;
+        core_machine_transaction_hold_release(&machine->transaction,
+            CORE_MACHINE_TRANSACTION_OWNER_DMA);
+        provider(context, CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_COMMIT, 0x808u, 4u,
+            TYPE_FALSE, CORE_MACHINE_CPU_MEMORY_ACCESS_PAGE_TABLE_READ);
+        failed |= !machine->external_memory_locality_page_valid ||
+            machine->external_memory_locality_round_ticks != 2u;
         failed |= core_machine_reset(machine) != TYPE_STATUS_OK;
         failed |= machine->external_memory_locality_page_valid ||
             machine->external_memory_locality_round_ticks != 0u;
@@ -162,5 +175,6 @@ C_INT main(C_VOID)
     STD_PRINTF("M5:T413:S1:EXTERNAL-WRITE-BRIDGE:OK\n");
     STD_PRINTF("M5:T414:S1:DATA-READ-LOCALITY:OK\n");
     STD_PRINTF("M5:T415:S1:PAGE-WALK-LOCALITY:OK\n");
+    STD_PRINTF("M5:T416:S1:DMA-HOLD-LOCALITY:OK\n");
     return 0;
 }

@@ -24,14 +24,13 @@
 | Similar-Issue Sweep | Inspect DMA transaction lifecycle, CPU external-cycle locality, HOLD/HLDA/reset/cancellation, refresh, FDC/HDC DMA consumers, page walks, prefetch, data reads/writes, and Model-40 composition. |
 ## Current Technical Baseline
 
-- **Current developer artifact:** T415 S1 P1 `vm-0-5-0415` /
-  `build/output/nxvm_0_5_0415.exe`, SHA-256
-  `F57D7A70EBD78307786C4B0C98BB0D3EEA715070DFCDA025284C3439D94BE5B8`.
-  T415 extends the Model-40 generic locality bridge to committed page-table
-  reads and writebacks. It also repairs persistent-prefetch invalidation across
-  CR0 PG and CR3 translation-context changes. Exact D4 PAL phases remain
-  transferred; T409 classification itself does not publish original D4 timing
-  or a Model-L3 claim.
+- **Current developer artifact:** T416 S1 P1 `vm-0-5-0416` /
+  `build/output/nxvm_0_5_0416.exe`, SHA-256
+  `347D73EEAAA81BA3F88C6C1AD47C7E2FEAC94E997323B6FA2403C0F7D85BB51F`.
+  T416 adds a Core generic-AT DMA-HOLD locality invalidation boundary, backed
+  only by original D4 HOLD/HLDA topology. It does not claim physical D4
+  page-retention or phase timing; T415 page-walk and CR0 PG/CR3 prefetch-context
+  fixes remain retained.
   T386 closes selected-device functional completeness at S29; its retained
   [closure audit](../etc/evidence/t386-s29-functional-closure-audit.md) fixes
   HDC current-gate coverage and transfers board, firmware and physical work.

@@ -1,0 +1,7 @@
+# M5 T416: DeskPro DMA HOLD Locality Bridge
+
+T416 consumes the next bounded CPU/DMA ownership receiver. It uses original
+D4 schematic topology and a labelled generic-AT policy: a completed DMA bus
+handoff invalidates the Core CPU locality key. It cannot define an original D4
+phase, page-retention or timing duration. P1 implements this boundary with
+request/acknowledge/release/reset proof.

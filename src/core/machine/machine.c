@@ -3172,6 +3172,13 @@ static C_VOID core_machine_transaction_trace(C_VOID *opaque,
     core_machine_trace_event_type type;
 
     if (machine == STD_NULL) return;
+    /* Generic-AT policy: an acknowledged DMA bus handoff breaks CPU-side
+     * locality. D4 establishes the HOLD/HLDA topology, not this page-retention
+     * behavior or any physical phase duration. */
+    if (phase == CORE_MACHINE_TRANSACTION_PHASE_HOLD_ACKNOWLEDGE &&
+        owner == CORE_MACHINE_TRANSACTION_OWNER_DMA) {
+        machine->external_memory_locality_page_valid = TYPE_FALSE;
+    }
     switch (phase) {
     case CORE_MACHINE_TRANSACTION_PHASE_BEGIN:
         type = CORE_MACHINE_TRACE_TRANSACTION_BEGIN;

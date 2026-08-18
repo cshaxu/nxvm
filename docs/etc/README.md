@@ -427,6 +427,8 @@ principal documents named in [docs/README.md](../README.md).
 
 | evidence/t415-s2-page-walk-locality-closure-audit.md | Closure audit | T415 S2 independently closes the generic-AT page-walk locality receiver, corrects CR0 PG/CR3 scope, and transfers CPU/DMA page retention. Retain with T415 history. |
 
+| evidence/t416-s1-dma-hold-locality.md | Verification owner | T416 S1 adds a generic-AT DMA HOLD locality invalidation policy based on D4 HOLD/HLDA topology, while retaining all physical phase claims. Retain with T416 history. |
+
 Adding a new supporting document requires owner approval, an exact-file index
 row or a declared indexed subtree, and a stated promotion, merge, or retirement
 condition. The governance gate verifies that every supporting Markdown file is
