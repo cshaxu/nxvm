@@ -30,7 +30,6 @@
 | Task | Compact result |
 | --- | --- |
 | T401 S73 | Accepted: every selected metadata-valid primary opcode slot maps to current accepted evidence or the explicit CPU-side FPU/provider boundary; whole-T401 closure and physical timing remain separate. [Ledger](../etc/evidence/t401-s1-four-profile-cpu-audit-ledger.md). |
-| T401 S72 | Accepted: every selected metadata-valid `0F` escape-map slot maps to current accepted evidence or an explicit external boundary; primary/FPU spaces remain separate. [Ledger](../etc/evidence/t401-s1-four-profile-cpu-audit-ledger.md). |
 | T400 | Closed: the HDC, CECG and CPU/DMA/BWAIT generic-reference ledger is exhausted; accepted logical repairs retain every DeskPro physical boundary. [Closure audit](../etc/evidence/t400-s1-task-closure-audit.md). |
 | T399 | Closed: the five-batch reference-derived DeskPro L3 ledger is exhausted; B2/B3 logical contracts are accepted, B1/B4/B5 retain exact receivers, and both reference-derived and physical L3 are not ready. [Closure audit](../etc/evidence/t399-s5-task-closure-audit.md). |
 | T398 | Closed: final exact 1986 DeskPro Model-40 audit is not-ready for L3; five physical/firmware boundaries retain explicit TODO receivers and require a fresh audit after repair. [Closure audit](../etc/evidence/t398-s2-task-closure-audit.md). |
