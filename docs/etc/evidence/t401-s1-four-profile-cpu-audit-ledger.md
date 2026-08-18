@@ -418,3 +418,13 @@ atomic `#UD` on 8086, 80186 and 80286, preserving EAX, EFLAGS and EIP. This
 extends the former single-80286 INC probe to both primary opcode halves and all
 pre-80386 selected profiles. The 80386 dword cases are covered by the normal
 execution and preview matrix.
+## S11 Acceptance
+
+S11 closes the `40h`--`4Fh` primary register INC/DEC matrix: every selected
+profile and opcode has execution and preview coverage, 80386 dword prefix
+forms are distinguished, and every pre-80386 `66h` representative is proven
+atomic #UD. No production discrepancy remained. Focused INC/DEC and preview
+probes passed; the current-gate CTest log on 2026-08-17 records all 285/285
+tests through `current.vm-ata-pio-dos-smoke` with no failure marker. This is
+CPU semantic/nonphysical timing-baseline acceptance only, not a physical or
+DeskPro L3 claim.
