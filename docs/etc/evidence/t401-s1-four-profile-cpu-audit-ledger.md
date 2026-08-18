@@ -607,3 +607,10 @@ operand/address attribute combination.
 No production discrepancy was found. This remains CPU semantic/nonphysical
 timing-baseline evidence only and does not establish physical timing, DeskPro
 L3 or a Core/VM interface change.
+## S18 Acceptance
+
+S18 closes selected LODS `ACh`/`ADh` form coverage with focused runtime and
+preview proof across all four profiles. It covers accumulator payload widths,
+FLAGS preservation, REP and DF/source-segment routing, 80386 attributes and
+prefix rejection. No production discrepancy was found; existing Core timing
+remains explicitly nonphysical. S19 owns SCAS `AEh`/`AFh`.

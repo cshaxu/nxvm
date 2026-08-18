@@ -4,26 +4,26 @@
 
 **Active: M5 T401.**
 
-## M5 T401 S18 Packet
+## M5 T401 S19 Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation; M5 T401 S18. |
-| Admission And Approval | Owner approved continuing the four-profile CPU audit. S17 is accepted after complete STOS execution/preview evidence. |
-| Objective | Audit primary LODS (`ACh`/`ADh`) across 8086, 80186, 80286 and 80386: byte/word/dword forms, DF and source segment routing, repeat, prefix/profile gates, flags preservation, preview and retirement. |
+| Identifier Mode | Continuation; M5 T401 S19. |
+| Admission And Approval | Owner approved continuing the four-profile CPU audit. S18 is accepted after complete LODS execution/preview evidence. |
+| Objective | Audit primary SCAS (`AEh`/`AFh`) across 8086, 80186, 80286 and 80386: byte/word/dword forms, DF and ES destination routing, REPE/REPNE, prefix/profile gates, flags, preview and retirement. |
 | Non-goals | No broad string-engine, arithmetic/flag or memory-transaction rewrite, no device/board work, no physical timing or DeskPro L3 claim. |
 | Reference Baseline | Intel manuals; retained MOV/prefix/timing ledgers; current decoder/execution/preview. Secondary emulators only corroborate Intel-underspecified behavior and must be labelled reference-derived. |
 | Candidate Proposal | [Four-profile CPU instruction-correctness audit and repair program](../proposals/m5-four-profile-cpu-instruction-correctness-audit.md). |
 | Files And ABI Surface | Audit ledger, packet and focused CPU smoke only unless a bounded shared defect is reproduced; no public ABI. |
 | Applicable Rules | Execution bounded corrective/actual-diff review; shared Core CPU ownership; coding/test rules; Intel primary-source requirement; external-provider/source policy; documentation indexing. |
 | Verification | Four-profile execution/preview matrix, byte/word/dword compare, DF/REP progression and termination, 80386 address/operand prefixes, pre-80386 #UD atomicity, flags/segments/retirement; focused tests, full gate after repair, governance/diff checks. |
-| Expected Markers | New T401 S18 markers and any bounded defect marker. |
+| Expected Markers | New T401 S19 markers and any bounded defect marker. |
 | Reporting Requirements | Record CPU/profile, opcode, compare/flag/address state, repeat/DF/segment attributes, manual/source tier, current owner, focused proof or transfer and retained nonphysical timing boundary. |
 | Stop Conditions | Stop and create a precise receiver if repair requires a broad decoder/register/fault-delivery redesign, a new CPU facility, device/board timing model or broad state-model change. |
 | Asset Needs | None. |
-| Exit Criteria | Every selected `ACh`/`ADh` profile/form row has focused proof or an explicit transfer; bounded repairs have full-gate proof. |
+| Exit Criteria | Every selected `AEh`/`AFh` profile/form row has focused proof or an explicit transfer; bounded repairs have full-gate proof. |
 | Original Owner Request | Continue source-backed, reference-backed or explicitly generic CPU work rather than leaving feasible work undone. |
-| Similar-Issue Sweep | For any mismatch, sweep LODS width/repeat/DF/source-segment forms, string siblings, profile gates, prefixes, preview callers and address/segment/register/flag consumers. |
+| Similar-Issue Sweep | For any mismatch, sweep SCAS width/repeat/DF/condition forms, string siblings, profile gates, prefixes, preview callers and address/segment/register/flag consumers. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T395 S1 P4 `vm-0-5-0395` /
@@ -50,7 +50,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T401 S17 | Accepted: STOS audit closes AAh/ABh four-profile execution/preview, flags preservation, REP/DF, ES destination, attribute and prefix gates. S18 owns LODS. [Ledger](../etc/evidence/t401-s1-four-profile-cpu-audit-ledger.md). |
+| T401 S18 | Accepted: LODS audit closes ACh/ADh four-profile execution/preview, flags preservation, REP/DF, source segments, attribute and prefix gates. S19 owns SCAS. [Ledger](../etc/evidence/t401-s1-four-profile-cpu-audit-ledger.md). |
 | T400 | Closed: the HDC, CECG and CPU/DMA/BWAIT generic-reference ledger is exhausted; accepted logical repairs retain every DeskPro physical boundary. [Closure audit](../etc/evidence/t400-s1-task-closure-audit.md). |
 | T399 | Closed: the five-batch reference-derived DeskPro L3 ledger is exhausted; B2/B3 logical contracts are accepted, B1/B4/B5 retain exact receivers, and both reference-derived and physical L3 are not ready. [Closure audit](../etc/evidence/t399-s5-task-closure-audit.md). |
 | T398 | Closed: final exact 1986 DeskPro Model-40 audit is not-ready for L3; five physical/firmware boundaries retain explicit TODO receivers and require a fresh audit after repair. [Closure audit](../etc/evidence/t398-s2-task-closure-audit.md). |
