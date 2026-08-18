@@ -421,6 +421,8 @@ principal documents named in [docs/README.md](../README.md).
 
 | evidence/t414-s1-data-read-locality.md | Verification owner | T414 S1 extends the generic locality bridge to committed CPU data reads and transfers exact D4 physical phases/page walks. Retain with T414 history. |
 
+| evidence/t414-s2-data-read-locality-closure-audit.md | Closure audit | T414 S2 confirms bounded data-read scope and transfers page walks. Retain with T414 history. |
+
 Adding a new supporting document requires owner approval, an exact-file index
 row or a declared indexed subtree, and a stated promotion, merge, or retirement
 condition. The governance gate verifies that every supporting Markdown file is
