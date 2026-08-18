@@ -4,27 +4,26 @@
 
 **Active: M5 T401.**
 
-## M5 T401 S2 Packet
+## M5 T401 S3 Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation; M5 T401 S2. |
-| Admission And Approval | Owner approved the four-profile CPU audit and its bounded shared repairs on 2026-08-17; S1 found a reproducible 80386 `0F 25` metadata/dispatch mismatch. |
-| Objective | Correct the reserved `0F 25` 80386 metadata classification and prove metadata, lexical scan and execution all reject it while adjacent CR/DR/TR forms retain their current classification. |
-| Non-goals | No new instruction support, CR/DR/TR behavior change, timing model, CPU profile fork, decoder rewrite, public ABI change, device work or physical/L3 claim. |
-| Reference Baseline | T401 S1 ledger Batch B candidate; Intel 80386 PRM order 230985 Appendix A; current metadata, lexical scanner and `0F` dispatch table. |
+| Identifier Mode | Continuation; M5 T401 S3. |
+| Admission And Approval | Owner approved the four-profile CPU audit and bounded shared repairs on 2026-08-17; T401 S2 is accepted after the `0F 25` correction and full current gate. |
+| Objective | Reconcile the complete current `0F` opcode map against the existing form-level Intel-ledger evidence, beginning with the 80386 secondary integer and conditional forms, and classify every metadata-valid, reserved and later-only slot for the four selected profiles. |
+| Non-goals | No decoder rewrite, new CPU facility, device or board work, profile-specific execution fork, public ABI change, physical timing claim or DeskPro L3 claim. |
+| Reference Baseline | T401 ledger Batch A/S2; Intel 80286 PRM 210498 Appendix B and Intel 80386 PRM 230985 Appendix A/instruction dictionary; retained T303, T304, T310, T316 and T359 form ledgers; current metadata, lexical scanner and `0F` dispatch table. |
 | Candidate Proposal | [Four-profile CPU instruction-correctness audit and repair program](../proposals/m5-four-profile-cpu-instruction-correctness-audit.md). |
-| Files And ABI Surface | `cpu_instructions.c`, a focused existing/new CPU smoke, T401 ledger and CURRENT only; private shared Core implementation, no public ABI. |
-| Applicable Rules | Execution bounded corrective/actual-diff review; shared Core CPU ownership; coding/test rules; Intel primary-source requirement; documentation indexing. |
-| Verification | Add direct metadata and lexeme checks for `0F 25`, execute it to the existing #UD delivery path, sweep `0F 20--24` and `0F 26` metadata, run focused CTest, documentation governance and diff check. |
-| Expected Markers | Existing #UD delivery marker plus a new focused `M5:T401:S2:0F25-METADATA:OK` marker. |
-| Asset Needs | None. No ROM, guest media, Microsoft component or external binary is needed. |
-| Reporting Requirements | Record exact Intel encoding disposition, current owner, before/after metadata result, regression proof, adjacent-form sweep and retained nonphysical timing boundary. |
-| Stop Conditions | Stop if the primary encoding disposition conflicts with the 80386 manual, the repair affects a different instruction family, or the necessary validation cannot remain at the shared metadata owner. |
-| Exit Criteria | `0F 25` is invalid in metadata/lexeme/execution, all adjacent intended CR/DR/TR encodings retain their intended 80386 disposition, and focused proof/gates pass. |
-| Original Owner Request | Continue the CPU audit after DeskPro timing work, repairing discovered defects instead of leaving them for later. |
-| Similar-Issue Sweep | Inspect the entire `0F 20--26` metadata branch, its dispatch entries, CR/DR/TR handlers and all metadata/lexeme consumers for other range-based reserved-opcode admissions. |
-
+| Files And ABI Surface | Audit ledger, current task packet and focused existing/new CPU smoke only unless a source-complete shared Core defect is reproduced; no public ABI. |
+| Applicable Rules | Execution bounded corrective/actual-diff review; shared Core CPU ownership; coding/test rules; Intel primary-source requirement; secondary-emulator cross-check policy; documentation indexing. |
+| Verification | Build a 256-slot metadata/dispatch/profile matrix; reconcile each valid family to focused current-gate evidence or record a precise gap; probe any reproduced mismatch at its earliest shared owner; run focused CTest, full current gate after any repair, documentation governance and diff check. |
+| Expected Markers | Existing focused family markers or a new T401 S3 matrix marker, plus any bounded defect marker. |
+| Asset Needs | None. No ROM, guest media, Microsoft component or external binary is needed. Secondary emulator repositories may be read-only cross-checks only, never imported. |
+| Reporting Requirements | Record Intel encoding disposition, current metadata/dispatch/lexeme owner, profile distinction, existing proof or precise transfer, every secondary source used and the retained nonphysical timing boundary. |
+| Stop Conditions | Stop and create a precise receiver if an authoritative Intel disposition conflicts with the retained source family, a repair broadens beyond one shared mechanism, or behavior cannot be validated without a new facility. |
+| Exit Criteria | Every `0F` slot has a current-source/profile classification, each valid selected family is linked to form-level proof or a concrete repair/transfer, and any bounded repair has a focused and full-gate regression. |
+| Original Owner Request | Continue CPU auditing after DeskPro timing work, implementing source-backed, reference-backed or clearly labeled generic behavior rather than leaving feasible work undone. |
+| Similar-Issue Sweep | For every discovered mismatch, inspect all metadata ranges, lexical length rules, dispatch entries and profile gates in the same `0F` family before accepting the repair. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T395 S1 P4 `vm-0-5-0395` /
@@ -51,7 +50,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T401 S1 | Accepted: frozen CPU decoder-space ledger and Batch A system-control reconciliation found `0F 25` metadata/dispatch mismatch; S2 owns the bounded repair. [Ledger](../etc/evidence/t401-s1-four-profile-cpu-audit-ledger.md). |
+| T401 S2 | Accepted: corrected the reserved `0F 25` metadata/lexeme mismatch at the shared Core owner; focused regressions and the 285/285 current gate pass. S3 owns the complete current `0F` map reconciliation. [Ledger](../etc/evidence/t401-s1-four-profile-cpu-audit-ledger.md). |
 | T400 | Closed: the HDC, CECG and CPU/DMA/BWAIT generic-reference ledger is exhausted; accepted logical repairs retain every DeskPro physical boundary. [Closure audit](../etc/evidence/t400-s1-task-closure-audit.md). |
 | T399 | Closed: the five-batch reference-derived DeskPro L3 ledger is exhausted; B2/B3 logical contracts are accepted, B1/B4/B5 retain exact receivers, and both reference-derived and physical L3 are not ready. [Closure audit](../etc/evidence/t399-s5-task-closure-audit.md). |
 | T398 | Closed: final exact 1986 DeskPro Model-40 audit is not-ready for L3; five physical/firmware boundaries retain explicit TODO receivers and require a fresh audit after repair. [Closure audit](../etc/evidence/t398-s2-task-closure-audit.md). |
