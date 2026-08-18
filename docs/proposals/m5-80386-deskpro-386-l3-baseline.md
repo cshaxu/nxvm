@@ -1,4 +1,4 @@
-# Compaq DeskPro 386 Model 40 80386 L3 Closure Context
+﻿# Compaq DeskPro 386 Model 40 80386 L3 Closure Context
 
 ## Purpose
 
@@ -24,6 +24,16 @@ Primary Compaq, Intel and device documentation plus project-owned probes are
 required; 86Box, MAME and PCjs may only cross-check a primary-constrained range
 or an explicitly recorded measurement contract.
 
+
+## Reference-Derived Extension
+
+When the owner explicitly accepts existing reference simulations because no
+physical hardware observation is available, a separately queued DeskPro bridge
+may establish a `reference-derived` evidence tier. It consumes primary Compaq
+facts for topology and only an exact reproducible DeskPro reference contract
+for behavior. It does not revise any completed physical-time conclusion,
+permit generic AT substitution, import third-party source/firmware/media, or
+claim physical L3. A later independent re-audit must name this tier exactly.
 The accepted public Model-40 route is a fixed backbone with a frozen external
 ROM manifest. Until the later current-product profile-capability candidate, it
 has no public generic `variant` field. T386 functional work must declare its

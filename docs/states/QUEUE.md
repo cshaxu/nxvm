@@ -24,6 +24,7 @@ Detailed scope, acceptance conditions, and common constraints remain in these
 shared proposals and in each candidate's linked proposal.
 
 1. [80386 physical-retirement qualification](../proposals/m5-80386-physical-retirement-qualification.md).
+1. [DeskPro 386 reference-derived timing bridge and L3 re-audit](../proposals/m5-deskpro-386-reference-derived-timing-bridge.md).
 1. [Four-profile CPU instruction-correctness audit and repair program](../proposals/m5-four-profile-cpu-instruction-correctness-audit.md).
 1. [Current-product device profile and functional-capability closure](../proposals/m5-current-product-device-profile-capability-closure.md).
 1. [32-bit GCC host-build compatibility verification](../proposals/m5-32bit-gcc-host-build-compatibility.md).
