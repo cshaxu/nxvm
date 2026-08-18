@@ -1291,3 +1291,36 @@ Instead, `M5 T401 S73 P1:` records the accepted S73 evidence in the required
 identifier sequence so that the repository allocator can retain S73 as the
 latest open-task progress. The normal P2 acceptance will remove the active
 packet while retaining only that S73 progress row.
+## S74 Timing-disposition Reconciliation
+
+S74 compares the maps accepted by S72 and S73 with the existing timing and
+observation authorities. T357 closes only a stated finite selected corpus;
+T360 closes source-owner reconciliation for selected rows and explicitly
+transfers range-only, system/descriptor, x87 and physical classes; T390 proves
+the single classifier/observation owner and origin attribution, not an
+Intel-row disposition for each decoded form. None of those bounded results may
+be promoted into whole-map timing coverage.
+
+| Accepted T401 map | Existing timing/observation receiver | S74 disposition |
+| --- | --- | --- |
+| Primary map | T357 selected primary corpus; T360 primary/control-stack/legacy source owners; T390 primary, control-stack and fallback origins. | Observation ownership exists, but many accepted primary forms have no per-form source row or retained nonphysical observation disposition. Transfer as one primary/profile matrix class. |
+| `0F` secondary map | T359/T360 selected 80386 secondary and privileged source owners; T390 secondary/privileged origins. | Selected integer and system rows have bounded source context; the full S72-valid map does not have a complete per-form disposition. Transfer as one secondary/profile matrix class. |
+| `9B` and `D8`--`DF` | S6/T316 S65 CPU/provider semantic boundary; T360 names x87 numeric timing as a separate transfer. | CPU interface semantics are accepted, but numerical/provider timing is explicitly external and not a successful-form timing closure. Retain that boundary. |
+| Prefix/profile gates | S5/S57 form classification and T357/T360 capture boundaries. | Prefix decoding is covered, but it is not itself a complete timing disposition for every affected successful form; include it in each map matrix rather than allocating prefix clocks. |
+
+The concrete next receiver is **T401 S75: four-profile accepted-map timing
+matrix**. It must enumerate each accepted successful form/context by
+primary/secondary/profile class and give exactly one disposition: primary
+Intel row/formula/range model, retained nonphysical owner-local observation,
+or explicit external/unsupported transfer. It must prove that successful
+source-underdetermined forms either expose the required bounded observation or
+are transferred whole. It must not invent ticks, collapse ranges, change the
+sole Core publisher, or make a physical timing/L3 claim.
+
+## S74 Acceptance
+
+S74 closes this reconciliation only: it confirms a real, bounded task-level
+gap and assigns it to S75 rather than treating existing selected timing corpus
+or origin attribution as comprehensive. No production discrepancy is asserted,
+and all physical, x87 numerical and board/device timing boundaries remain
+unchanged.

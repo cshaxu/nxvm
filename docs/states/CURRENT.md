@@ -3,6 +3,26 @@
 ## Current Work
 
 **Active: M5 T401.**
+## M5 T401 S74 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner: user; standing approval to continue the CPU audit and repair confirmed small in-scope issues. |
+| Objective | Reconcile the T401 per-form timing-disposition requirement against the existing four-profile timing and nonphysical-observation ledgers, and identify the next concrete uncovered receiver if any. |
+| Non-goals | No physical CPU/board/L3 timing claim, cycle invention, external-source import, broad Core/VM refactor, or whole-T401 closure. |
+| Reference Baseline | `c43a4c31` (S73 P2), T401 proposal timing requirements, T357/T360/T390 timing and observation ledgers, and current Core observation owners. |
+| Candidate Proposal | [Four-profile CPU instruction-correctness audit](../proposals/m5-four-profile-cpu-instruction-correctness-audit.md), timing-disposition convergence batch. |
+| Files And ABI Surface | T401 ledger and CURRENT; source/tests only for a confirmed missing owner-local nonphysical observation, with no public ABI change. |
+| Applicable Rules | Preserve one sole Core timing/observation owner; do not turn deterministic fallback into authority; retain every source-underdetermined successful form with a named receiver and observation boundary. |
+| Verification | Reconcile T401 accepted primary/secondary/FPU/prefix maps with T357/T360/T390 dispositions and current observation paths; documentation governance and diff check; full current gate if production changes. |
+| Expected Markers | Existing T357/T360/T390 timing markers plus an S74 ledger disposition or a concrete next receiver. |
+| Asset Needs | None; manuals/references remain read-only and no ROM or guest media is used. |
+| Reporting Requirements | State whether each selected map has a complete timing-disposition receiver, enumerate any uncovered class, and distinguish nonphysical observation from physical timing. |
+| Stop Conditions | Transfer any missing broad observation contract, physical timing, device/board dependency or source-undertermined class to its earliest bounded receiver. |
+| Exit Criteria | Every accepted map is reconciled to an existing timing disposition/observation record or one concrete next CPU-audit receiver; no timing value is inferred. |
+| Original Owner Request | Continue the full CPU audit before later DeskPro L3 work, using references where appropriate and retaining unresolved work explicitly. |
+| Similar-Issue Sweep | Check primary, `0F`, FPU/WAIT, prefix and profile-gated successful-retirement paths together rather than accepting a timing ledger by title alone. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T395 S1 P4 `vm-0-5-0395` /
