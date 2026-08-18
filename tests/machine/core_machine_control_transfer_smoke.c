@@ -1099,5 +1099,6 @@ C_INT main(C_VOID)
         !ct_test_legacy_real_near_control() || !ct_test_legacy_ff_reserved()) return 1;
     STD_PRINTF("M5:T303:CONTROL-TRANSFER:OK\n");
     STD_PRINTF("M5:T401:S10:GROUP5-CONTROL-PROFILES:OK\n");
+    STD_PRINTF("M5:T401:S22:NEAR-RETURN-PROFILES:OK\n");
     return 0;
 }

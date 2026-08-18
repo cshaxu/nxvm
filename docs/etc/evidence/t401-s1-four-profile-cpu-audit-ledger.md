@@ -690,3 +690,11 @@ L3 or a Core/VM interface change.
 ## S21 Acceptance
 
 S21 closes immediate-count group-2 C0h/C1h coverage with focused runtime and preview proof. It fills 8086 #UD and 80286 extension-matrix gaps; Core timing remains explicitly nonphysical. S22 owns near return C2h/C3h.
+
+## S22 Near Return
+
+S22 audits C2h/C3h near return. Intel's 80386 Programmer's Reference Manual RET entry defines the stack-pop return target, optional unsigned immediate stack cleanup and operand-size-selected stack/IP width. This is original-source semantic/form evidence; no emulator implementation, ROM or guest asset was imported.
+
+M5:T401:S22:NEAR-RETURN-PROFILES:OK retains all-four-profile real-mode RET and RET-immediate stack/IP proof, plus 80386 16/32-width cleanup and target-fault atomicity. M5:T401:S22:NEAR-RETURN-PREVIEW-PROFILES:OK adds the matching four-profile lexical matrix with 80386 66h forms.
+
+No production discrepancy was found. This remains CPU semantic/nonphysical timing-baseline evidence only and does not establish physical timing, DeskPro L3 or a Core/VM interface change.
