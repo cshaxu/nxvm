@@ -957,3 +957,10 @@ The audit corrected the Core STD trace entry label from `CLD` to `STD`; executio
 ## S42 Acceptance
 
 S42 closes CLC/STC/CMC/CLD/STD coverage with focused runtime and preview proof across all four profiles. It retains CF/DF publication, attributes/LOCK, protected/VM86 and IRQ boundaries, and corrects the bounded STD trace label. Core timing remains explicitly nonphysical. S43 owns LOOPNE/LOOPE/LOOP/JCXZ.
+## S43 LOOP/JCXZ
+
+S43 audits LOOPNE/LOOPE/LOOP/JCXZ `E0h`-`E3h`. Intel 8086/80386 references define decrement and condition sequencing, address-size counter selection and short-relative target behavior. This is original-source semantic/form evidence; no emulator implementation, ROM or guest asset was imported.
+
+`M5:T401:S43:LOOP-JCXZ-PROFILES:OK` retains all-four-profile LOOPNE/LOOPE taken and not-taken behavior, LOOP decrement, JCXZ non-decrement and FLAGS preservation. `M5:T401:S43:LOOP-JCXZ-PREVIEW-PROFILES:OK` adds the four-profile two-byte lexical matrix and 80386 operand/address attribute forms.
+
+No production discrepancy was found. This remains CPU semantic/nonphysical timing-baseline evidence only and does not establish physical timing, DeskPro L3 or a Core/VM interface change.

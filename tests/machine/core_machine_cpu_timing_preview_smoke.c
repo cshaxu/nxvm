@@ -471,6 +471,25 @@ static C_INT preview_test_sreg_push_pop_profiles(C_VOID)
     for(j=0u;j!=sizeof(extended);++j) { if(!preview_expect((const type_unsigned_8[]){0x0fu,extended[j]},2u,CORE_MACHINE_CPU_PROFILE_80386,TYPE_FALSE,2u,2u)) return 0; } return 1;
 }
 
+static C_INT preview_test_loop_jcxz_profiles(C_VOID)
+{
+    static const type_unsigned_8 opcodes[] = {0xe0u, 0xe1u, 0xe2u, 0xe3u};
+    static const core_machine_cpu_profile profiles[] = {
+        CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
+        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
+    };
+    type_unsigned_8 profile;
+    type_unsigned_8 opcode;
+
+    for (profile = 0u; profile != sizeof(profiles) / sizeof(profiles[0]); ++profile)
+        for (opcode = 0u; opcode != sizeof(opcodes); ++opcode)
+            if (!preview_expect((const type_unsigned_8[]){opcodes[opcode], 0u},
+                2u, profiles[profile], TYPE_FALSE, 2u, 2u)) return 0;
+    return preview_expect((const type_unsigned_8[]){0x66u, 0xe2u, 0u}, 3u,
+        CORE_MACHINE_CPU_PROFILE_80386, TYPE_FALSE, 3u, 3u) &&
+        preview_expect((const type_unsigned_8[]){0x67u, 0xe3u, 0u}, 3u,
+        CORE_MACHINE_CPU_PROFILE_80386, TYPE_FALSE, 3u, 3u);
+}
 static C_INT preview_test_direct_flags_profiles(C_VOID)
 {
     static const type_unsigned_8 opcodes[] = {0xf5u, 0xf8u, 0xf9u, 0xfcu, 0xfdu};
@@ -1007,6 +1026,7 @@ C_INT main(C_VOID)
     if (!preview_test_gpr_push_pop_profiles()) return 41;
     if (!preview_test_sreg_push_pop_profiles()) return 42;
     if (!preview_test_direct_flags_profiles()) return 43;
+    if (!preview_test_loop_jcxz_profiles()) return 44;
     if (!preview_test_les_lds_profiles()) return 34;
     if (!preview_test_group3_profiles()) return 10;
     if (!preview_test_group45_profiles()) return 11;
@@ -1051,5 +1071,6 @@ C_INT main(C_VOID)
     STD_PRINTF("M5:T401:S40:GPR-PUSH-POP-PREVIEW-PROFILES:OK\n");
     STD_PRINTF("M5:T401:S41:SREG-PUSH-POP-PREVIEW-PROFILES:OK\n");
     STD_PRINTF("M5:T401:S42:DIRECT-FLAGS-PREVIEW-PROFILES:OK\n");
+    STD_PRINTF("M5:T401:S43:LOOP-JCXZ-PREVIEW-PROFILES:OK\n");
     return 0;
 }

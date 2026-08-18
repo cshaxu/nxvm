@@ -361,6 +361,78 @@ static C_INT ct_test_16bit_code_and_real_mode(C_VOID)
     return 1;
 }
 
+static C_INT ct_test_loop_jcxz_four_profiles(C_VOID)
+{
+    static const core_machine_cpu_profile profiles[] = {
+        CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
+        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
+    };
+    static const type_unsigned_8 opcodes[] = {0xe0u, 0xe1u, 0xe2u};
+    static const type_unsigned_8 code_template[] = {0u, 2u, 0xb0u, 0u, 0xf4u};
+    type_unsigned_8 profile;
+    type_unsigned_8 opcode;
+
+    for (profile = 0u; profile != sizeof(profiles) / sizeof(profiles[0]); ++profile)
+    for (opcode = 0u; opcode != sizeof(opcodes); ++opcode) {
+        ct_machine state;
+        t_cpu after;
+        type_unsigned_8 code[sizeof(code_template)];
+        const type_unsigned_32 flags = 0x00000002u |
+            (opcodes[opcode] == 0xe1u ? VCPU_EFLAGS_ZF : 0u);
+        C_INT failed = !ct_prepare_real(&state, profiles[profile]);
+
+        if (!failed) {
+            STD_MEMCPY(code, code_template, sizeof(code));
+            code[0] = opcodes[opcode];
+            state.machine->executor_cpu.data.ecx = 2u;
+            state.machine->executor_cpu.data.eax = 0x123456a5u;
+            state.machine->executor_cpu.data.eflags = flags;
+            failed = !ct_run_real(&state, code, sizeof(code), &after) ||
+                after.data.ecx != 1u || after.data.eax != 0x123456a5u ||
+                after.data.eflags != flags;
+        }
+        core_machine_destroy(state.machine);
+        if (failed) return 0;
+    }
+    for (profile = 0u; profile != sizeof(profiles) / sizeof(profiles[0]); ++profile)
+    for (opcode = 0u; opcode != 2u; ++opcode) {
+        ct_machine state;
+        t_cpu after;
+        type_unsigned_8 code[sizeof(code_template)];
+        const type_unsigned_32 flags = 0x00000002u |
+            (opcode == 0u ? VCPU_EFLAGS_ZF : 0u);
+        C_INT failed = !ct_prepare_real(&state, profiles[profile]);
+
+        if (!failed) {
+            STD_MEMCPY(code, code_template, sizeof(code));
+            code[0] = opcodes[opcode];
+            state.machine->executor_cpu.data.ecx = 2u;
+            state.machine->executor_cpu.data.eax = 0x123456a5u;
+            state.machine->executor_cpu.data.eflags = flags;
+            failed = !ct_run_real(&state, code, sizeof(code), &after) ||
+                after.data.ecx != 1u || after.data.eax != 0x12345600u ||
+                after.data.eflags != flags;
+        }
+        core_machine_destroy(state.machine);
+        if (failed) return 0;
+    }
+    for (profile = 0u; profile != sizeof(profiles) / sizeof(profiles[0]); ++profile) {
+        ct_machine state;
+        t_cpu after;
+        const type_unsigned_8 code[] = {0xe3u, 2u, 0xb0u, 0u, 0xf4u};
+        C_INT failed = !ct_prepare_real(&state, profiles[profile]);
+
+        if (!failed) {
+            state.machine->executor_cpu.data.ecx = 0u;
+            state.machine->executor_cpu.data.eax = 0x123456a5u;
+            failed = !ct_run_real(&state, code, sizeof(code), &after) ||
+                after.data.ecx != 0u || after.data.eax != 0x123456a5u;
+        }
+        core_machine_destroy(state.machine);
+        if (failed) return 0;
+    }
+    return 1;
+}
 static C_INT ct_test_loop_and_jcxz(C_VOID)
 {
     static const type_unsigned_8 loop[] = {0xe2u,2,0xb0u,0,0xf4u};
@@ -1090,7 +1162,8 @@ C_INT main(C_VOID)
 {
     if (!ct_test_jcc_short() || !ct_test_near_and_short_jumps() ||
         !ct_test_jcc_near_conditions() || !ct_test_16bit_code_and_real_mode() ||
-        !ct_test_loop_and_jcxz() || !ct_test_jcc_limit_boundaries() ||
+        !ct_test_loop_and_jcxz() || !ct_test_loop_jcxz_four_profiles() ||
+        !ct_test_jcc_limit_boundaries() ||
         !ct_test_loop_target_fault_is_atomic() || !ct_test_pre386_near_jcc_is_ud() ||
         !ct_test_ret_target_fault_is_atomic() || !ct_test_near_call_and_ret_forms() ||
         !ct_test_near_indirect_and_fault_boundaries() ||
@@ -1101,5 +1174,6 @@ C_INT main(C_VOID)
     STD_PRINTF("M5:T401:S10:GROUP5-CONTROL-PROFILES:OK\n");
     STD_PRINTF("M5:T401:S22:NEAR-RETURN-PROFILES:OK\n");
     STD_PRINTF("M5:T401:S23:FAR-RETURN-PROFILES:OK\n");
+    STD_PRINTF("M5:T401:S43:LOOP-JCXZ-PROFILES:OK\n");
     return 0;
 }
