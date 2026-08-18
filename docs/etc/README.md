@@ -417,6 +417,8 @@ principal documents named in [docs/README.md](../README.md).
 
 | evidence/t413-s1-external-write-locality.md | Verification owner | T413 S1 extends the generic locality bridge to committed CPU writes, backed by original D4 write-cycle facts but retaining exact PAL phases as a transfer. Retain with T413 history. |
 
+| evidence/t413-s2-external-write-locality-closure-audit.md | Closure audit | T413 S2 confirms Core/VM ownership, focused/full proof and transferred exact D4 phases. Retain with T413 history. |
+
 Adding a new supporting document requires owner approval, an exact-file index
 row or a declared indexed subtree, and a stated promotion, merge, or retirement
 condition. The governance gate verifies that every supporting Markdown file is

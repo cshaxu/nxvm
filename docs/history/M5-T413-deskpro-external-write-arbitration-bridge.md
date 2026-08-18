@@ -10,3 +10,4 @@ No source, firmware, media or reference implementation is imported. Exact D4
 BWAIT, write phase, DMA/refresh arbitration, overlap and physical/L3 claims
 remain excluded unless admissible evidence and a project-owned regression bind
 them.
+P1 ae3839f1 is independently accepted by the S2 closure audit. T413 closes its bounded CPU-write bridge while exact D4 physical phases remain transferred. [Closure audit](../etc/evidence/t413-s2-external-write-locality-closure-audit.md).
