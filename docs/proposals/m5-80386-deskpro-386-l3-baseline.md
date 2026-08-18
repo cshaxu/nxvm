@@ -2,9 +2,12 @@
 
 ## Purpose
 
-This shared context binds the six ordered DeskPro candidates: Model-40
-profile/capability audit, 80386 CPU closure, selected-device functional
-closure, board-level timing closure, physical-device/firmware timing closure, and the final DeskPro L3 audit. The separate shared 80386 physical-retirement qualification now precedes the board candidate; it is not a Model-40 substitute.
+This shared context records the six completed ordered DeskPro candidates:
+Model-40 profile/capability audit, 80386 CPU closure, selected-device
+functional closure, board-level timing closure, physical-device/firmware timing
+closure, and the final DeskPro L3 audit. The completed shared 80386
+physical-retirement qualification is historical cross-profile context; it is
+not a Model-40 substitute or a queued prerequisite.
 Together they establish the 1986 original Compaq DeskPro 386 Model 40
 (DeskPro 386/16) baseline after the final 5170 audit and before the 8088/XT
 path. It is not itself a candidate and does not allocate a numeric task.

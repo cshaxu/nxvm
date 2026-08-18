@@ -19,11 +19,12 @@ are shared planning references for the corresponding candidates below; they do
 not allocate a numeric task.
 
 The [DeskPro 386 Model 40 closure context](../proposals/m5-80386-deskpro-386-l3-baseline.md)
-binds the retained DeskPro candidates below; the preceding shared 80386 physical-retirement qualification is a cross-profile prerequisite, not a Model-40 substitute.
+binds the retained DeskPro candidates below. The completed shared 80386
+physical-retirement qualification remains historical context, not a queued
+prerequisite or a Model-40 substitute.
 Detailed scope, acceptance conditions, and common constraints remain in these
 shared proposals and in each candidate's linked proposal.
 
-1. [80386 physical-retirement qualification](../proposals/m5-80386-physical-retirement-qualification.md).
 1. [DeskPro 386 reference-derived timing bridge and L3 re-audit](../proposals/m5-deskpro-386-reference-derived-timing-bridge.md).
 1. [Four-profile CPU instruction-correctness audit and repair program](../proposals/m5-four-profile-cpu-instruction-correctness-audit.md).
 1. [Current-product device profile and functional-capability closure](../proposals/m5-current-product-device-profile-capability-closure.md).
