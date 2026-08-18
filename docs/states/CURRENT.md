@@ -3,11 +3,31 @@
 ## Current Work
 
 **Active: M5 T404.**
+## M5 T404 S3 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner approved the T404 proposal and ongoing in-scope implementation, commits and pushes on 2026-08-18. Scope: Batch B media/controller/display/input functional reconciliation and bounded shared-owner repair. No exceptions. |
+| Objective | Consume the Batch B fixed/removable-media lifecycle slice: make the session owner enforce that fixed HDD media is startup-only and removable FDD media cannot change while running; retain controller/display/input coverage for the subsequent complete Batch B reconciliation. |
+| Non-goals | No controller register/timing/L3 claim; no media or ROM import; no Console-only workaround; no public Core/VM ABI expansion. |
+| Reference Baseline | T404 S1 ledger, S2 catalog contract, current `vm_session_insert_fdd`/`vm_session_insert_hdd` paths, Model-40 startup HDC binding, and existing console lifecycle check. |
+| Candidate Proposal | [T404 proposal](../proposals/m5-current-product-device-profile-capability-closure.md); [ledger](../etc/evidence/t404-s1-current-public-device-capability-ledger.md). |
+| Files And ABI Surface | `src/vm/composition/session/session.*` and owned product/machine tests; preserve public function signatures, Core/VM boundary, and Model-40 private startup HDC path. |
+| Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`, `docs/design/ARCHITECTURE.md`, `docs/design/CODING.md`; source policy is not triggered because no external source or asset is used. |
+| Verification | Focused session/console media lifecycle tests, current full CTest gate, documentation governance gate, and actual-diff review. |
+| Expected Markers | Existing session product markers remain; new focused lifecycle regression records `M5:T404:S3:MEDIA-LIFECYCLE:OK`. |
+| Asset Needs | None. Tests use temporary project-owned synthetic disk images only; no firmware, guest media, or asset archive access. |
+| Reporting Requirements | Record every public FDD/HDD insertion path, startup/publication/running disposition, before/after test proof, similar-issue sweep, and deferred controller/display/input Batch B rows. |
+| Stop Conditions | Stop and transfer any controller semantic, physical timing, firmware/media byte, unsupported profile behavior, or interface expansion outside the lifecycle boundary. |
+| Exit Criteria | Fixed HDD replacement is unavailable after session publication; removable FDD insertion is rejected while running by its owner; startup construction remains functional for every supported profile; all known public insertion callers are dispositioned. |
+| Original Owner Request | Implement DeskPro 386 L3 and all hardware gaps using primary sources, labelled reference implementations, or a generic IBM AT skeleton when necessary; do not block useful implementation on missing perfect references. |
+| Similar-Issue Sweep | Search all production and test callers of `vm_session_insert_fdd`, `vm_session_insert_hdd`, Model-40 startup HDD insertion, and Console insert commands; fix shared-owner hits or record an explicit disposition. |
 ## Current Technical Baseline
 
-- **Current developer artifact:** T404 S2 P1 `vm-0-5-0404` /
+- **Current developer artifact:** T404 S3 P1 `vm-0-5-0404` /
   `build/output/nxvm_0_5_0404.exe`, SHA-256
-  `A790623CF0FE337350161C5EA74613C8DC3F419A05F6ECFFBDCB3ADA110B4D86`.
+  `BDB5436DC88B22A7CCC15E701AE2CC07BC26D85829B7FDB2C38D566D5D9CF32A`.
   T386 closes selected-device functional completeness at S29; its retained
   [closure audit](../etc/evidence/t386-s29-functional-closure-audit.md) fixes
   HDC current-gate coverage and transfers board, firmware and physical work.

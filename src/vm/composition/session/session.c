@@ -165,24 +165,39 @@ static C_VOID vm_session_storage_rollback(vm_session *machine)
 
 C_INT vm_session_insert_fdd(vm_session *session, const C_CHAR *path)
 {
-    if (session == STD_NULL || !vm_session_copy_path(session->fdd_image_path,
-            sizeof(session->fdd_image_path), path) ||
-        vm_machine_fdd_insert_for(&session->fdd, path) != 0) return -1;
+    C_CHAR candidate[sizeof(session->fdd_image_path)];
+
+    if (session == STD_NULL || vm_session_control_is_running(&session->control) ||
+        !vm_session_copy_path(candidate, sizeof(candidate), path) ||
+        vm_machine_fdd_insert_for(&session->fdd, candidate) != 0 ||
+        !vm_session_copy_path(session->fdd_image_path, sizeof(session->fdd_image_path),
+            candidate)) return -1;
     session->retained_config.fdd_image = session->fdd_image_path;
+    vm_session_apply_boot_preference(session);
+    return 0;
+}
+
+static C_INT vm_session_insert_hdd_at_startup(vm_session *session,
+    const C_CHAR *path)
+{
+    C_CHAR candidate[sizeof(session->hdd_image_path)];
+
+    if (session == STD_NULL || session->model40_private || session->profile == STD_NULL ||
+        !session->profile->hdc_present || !vm_session_copy_path(candidate,
+            sizeof(candidate), path) || vm_machine_hdd_insert(&session->hdd, candidate) != 0 ||
+        !vm_session_copy_path(session->hdd_image_path, sizeof(session->hdd_image_path),
+            candidate)) return -1;
+    session->retained_config.hdd_image = session->hdd_image_path;
     vm_session_apply_boot_preference(session);
     return 0;
 }
 
 C_INT vm_session_insert_hdd(vm_session *session, const C_CHAR *path)
 {
-    if (session == STD_NULL || session->model40_private || session->profile == STD_NULL || !session->profile->hdc_present || !vm_session_copy_path(session->hdd_image_path,
-            sizeof(session->hdd_image_path), path) ||
-        vm_machine_hdd_insert(&session->hdd, path) != 0) return -1;
-    session->retained_config.hdd_image = session->hdd_image_path;
-    vm_session_apply_boot_preference(session);
-    return 0;
+    (C_VOID)session;
+    (C_VOID)path;
+    return -1;
 }
-
 C_VOID vm_session_apply_boot_preference(vm_session *session)
 {
     C_INT boot_hdd;
@@ -531,8 +546,7 @@ C_INT vm_session_create(const vm_session_config *config, vm_session **out_sessio
     if (config != STD_NULL &&
         ((config->fdd_image != STD_NULL && vm_session_insert_fdd(session,
             config->fdd_image)) ||
-         (config->hdd_image != STD_NULL && vm_session_insert_hdd(session,
-            config->hdd_image)))) {
+         (config->hdd_image != STD_NULL && vm_session_insert_hdd_at_startup(session, config->hdd_image)))) {
         vm_session_destroy(session);
         return TYPE_STATUS_FAULT;
     }

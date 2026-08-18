@@ -201,6 +201,9 @@ target_link_libraries(vm-session-profile-smoke PRIVATE vm-composition)
 add_executable(vm-session-reconfigure-smoke
     tests/products/nxvm_session_reconfigure_smoke.c)
 target_link_libraries(vm-session-reconfigure-smoke PRIVATE vm-composition)
+add_executable(vm-session-media-lifecycle-s3-smoke
+    tests/products/vm_session_media_lifecycle_s3_smoke.c)
+target_link_libraries(vm-session-media-lifecycle-s3-smoke PRIVATE vm-composition)
 add_executable(vm-session-virtual-time-s6-smoke
     tests/products/vm_session_virtual_time_s6_smoke.c)
 target_link_libraries(vm-session-virtual-time-s6-smoke PRIVATE vm-composition)
@@ -2189,6 +2192,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     vm-session-initialization-atomicity-smoke
     vm-session-manager-smoke
     vm-session-reconfigure-smoke
+    vm-session-media-lifecycle-s3-smoke
     vm-platform-host-surface-smoke
     vdm-minimal-session-smoke
     vdm-minimal-presentation-smoke)
@@ -3304,10 +3308,10 @@ foreach(project_t345_target IN LISTS PROJECT_T344_CURRENT_GATE_TARGETS)
 endforeach()
 list(LENGTH PROJECT_T345_S2_OWNER_TEST_STRICT_TARGETS project_t345_s2_pure_count)
 list(LENGTH PROJECT_T345_S2_MIXED_OWNER_TEST_TARGETS project_t345_s2_mixed_count)
-if(NOT project_t345_s2_pure_count EQUAL 169 OR
+if(NOT project_t345_s2_pure_count EQUAL 170 OR
         NOT project_t345_s2_mixed_count EQUAL 3)
     message(FATAL_ERROR
-        "T345 S2 expected 169 pure and 3 mixed owner-test targets; found ${project_t345_s2_pure_count} pure and ${project_t345_s2_mixed_count} mixed.")
+        "T345 S2 expected 170 pure and 3 mixed owner-test targets; found ${project_t345_s2_pure_count} pure and ${project_t345_s2_mixed_count} mixed.")
 endif()
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     foreach(project_t345_target IN LISTS PROJECT_T345_S2_OWNER_TEST_STRICT_TARGETS)
