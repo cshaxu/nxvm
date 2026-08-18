@@ -3,26 +3,6 @@
 ## Current Work
 
 **Active: M5 T401.**
-## M5 T401 S53 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner: user; standing approval to continue CPU audit and directly repair confirmed small issues. |
-| Objective | Audit short conditional branches `70h`-`7Fh` across all profiles, consume the control-transfer fixture and add direct four-profile lexical coverage. |
-| Non-goals | No control-transfer production change, CPU timing model, Core/VM interface, DeskPro claim or external-source import; no T401 closure. |
-| Reference Baseline | `21ac3c8f` (S52 P2), T401 ledger, retained Intel references, and `core-machine-control-transfer-smoke`. |
-| Candidate Proposal | [Four-profile CPU instruction-correctness audit](../proposals/m5-four-profile-cpu-instruction-correctness-audit.md), baseline conditional-control form batch. |
-| Files And ABI Surface | Preview smoke, CURRENT and T401 ledger only; test/documentation surface. |
-| Applicable Rules | Shared Core control-transfer ownership unchanged; coding, documentation and execution rules apply. |
-| Verification | Build/run control-transfer and preview smokes; documentation governance; diff check. |
-| Expected Markers | Existing control-transfer marker and `M5:T401:S53:SHORT-JCC-PREVIEW-PROFILES:OK`. |
-| Asset Needs | None. |
-| Reporting Requirements | Record condition/profile/target evidence, discrepancy result, commits and nonphysical boundary. |
-| Stop Conditions | Transfer any nonlocal control-flow, delivery or timing repair. |
-| Exit Criteria | All 16 branch encodings with signed byte displacement scan across four profiles and 80386 attribute layouts; runtime fixture passes; ledger records conclusion. |
-| Original Owner Request | Continue CPU audit before later DeskPro L3 work with direct repair of confirmed small issues. |
-| Similar-Issue Sweep | Treat every short Jcc condition together; distinguish taken/not-taken and 80386 operand/address forms via existing execution proof and new lexical matrix. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T395 S1 P4 `vm-0-5-0395` /
@@ -49,7 +29,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T401 S52 | Accepted: scalar IN/OUT audit closes four-profile behavior/permission evidence and 80386 lexical widths; no production discrepancy. [Ledger](../etc/evidence/t401-s1-four-profile-cpu-audit-ledger.md). |
+| T401 S53 | Accepted: short Jcc audit closes all 16 four-profile conditions, target boundaries and 80386 lexical attributes; no production discrepancy. [Ledger](../etc/evidence/t401-s1-four-profile-cpu-audit-ledger.md). |
 | T400 | Closed: the HDC, CECG and CPU/DMA/BWAIT generic-reference ledger is exhausted; accepted logical repairs retain every DeskPro physical boundary. [Closure audit](../etc/evidence/t400-s1-task-closure-audit.md). |
 | T399 | Closed: the five-batch reference-derived DeskPro L3 ledger is exhausted; B2/B3 logical contracts are accepted, B1/B4/B5 retain exact receivers, and both reference-derived and physical L3 are not ready. [Closure audit](../etc/evidence/t399-s5-task-closure-audit.md). |
 | T398 | Closed: final exact 1986 DeskPro Model-40 audit is not-ready for L3; five physical/firmware boundaries retain explicit TODO receivers and require a fresh audit after repair. [Closure audit](../etc/evidence/t398-s2-task-closure-audit.md). |
