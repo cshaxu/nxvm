@@ -3,26 +3,6 @@
 ## Current Work
 
 **Active: M5 T401.**
-## M5 T401 S74 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner: user; standing approval to continue the CPU audit and repair confirmed small in-scope issues. |
-| Objective | Reconcile the T401 per-form timing-disposition requirement against the existing four-profile timing and nonphysical-observation ledgers, and identify the next concrete uncovered receiver if any. |
-| Non-goals | No physical CPU/board/L3 timing claim, cycle invention, external-source import, broad Core/VM refactor, or whole-T401 closure. |
-| Reference Baseline | `c43a4c31` (S73 P2), T401 proposal timing requirements, T357/T360/T390 timing and observation ledgers, and current Core observation owners. |
-| Candidate Proposal | [Four-profile CPU instruction-correctness audit](../proposals/m5-four-profile-cpu-instruction-correctness-audit.md), timing-disposition convergence batch. |
-| Files And ABI Surface | T401 ledger and CURRENT; source/tests only for a confirmed missing owner-local nonphysical observation, with no public ABI change. |
-| Applicable Rules | Preserve one sole Core timing/observation owner; do not turn deterministic fallback into authority; retain every source-underdetermined successful form with a named receiver and observation boundary. |
-| Verification | Reconcile T401 accepted primary/secondary/FPU/prefix maps with T357/T360/T390 dispositions and current observation paths; documentation governance and diff check; full current gate if production changes. |
-| Expected Markers | Existing T357/T360/T390 timing markers plus an S74 ledger disposition or a concrete next receiver. |
-| Asset Needs | None; manuals/references remain read-only and no ROM or guest media is used. |
-| Reporting Requirements | State whether each selected map has a complete timing-disposition receiver, enumerate any uncovered class, and distinguish nonphysical observation from physical timing. |
-| Stop Conditions | Transfer any missing broad observation contract, physical timing, device/board dependency or source-undertermined class to its earliest bounded receiver. |
-| Exit Criteria | Every accepted map is reconciled to an existing timing disposition/observation record or one concrete next CPU-audit receiver; no timing value is inferred. |
-| Original Owner Request | Continue the full CPU audit before later DeskPro L3 work, using references where appropriate and retaining unresolved work explicitly. |
-| Similar-Issue Sweep | Check primary, `0F`, FPU/WAIT, prefix and profile-gated successful-retirement paths together rather than accepting a timing ledger by title alone. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T395 S1 P4 `vm-0-5-0395` /
@@ -49,7 +29,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T401 S73 | Accepted: every selected metadata-valid primary opcode slot maps to current accepted evidence or the explicit CPU-side FPU/provider boundary; whole-T401 closure and physical timing remain separate. [Ledger](../etc/evidence/t401-s1-four-profile-cpu-audit-ledger.md). |
+| T401 S74 | Reconciled: existing timing ledgers prove selected corpus and a sole observation owner, not complete accepted-map coverage; S75 owns the explicit four-profile timing-disposition matrix. [Ledger](../etc/evidence/t401-s1-four-profile-cpu-audit-ledger.md). |
 | T400 | Closed: the HDC, CECG and CPU/DMA/BWAIT generic-reference ledger is exhausted; accepted logical repairs retain every DeskPro physical boundary. [Closure audit](../etc/evidence/t400-s1-task-closure-audit.md). |
 | T399 | Closed: the five-batch reference-derived DeskPro L3 ledger is exhausted; B2/B3 logical contracts are accepted, B1/B4/B5 retain exact receivers, and both reference-derived and physical L3 are not ready. [Closure audit](../etc/evidence/t399-s5-task-closure-audit.md). |
 | T398 | Closed: final exact 1986 DeskPro Model-40 audit is not-ready for L3; five physical/firmware boundaries retain explicit TODO receivers and require a fresh audit after repair. [Closure audit](../etc/evidence/t398-s2-task-closure-audit.md). |
