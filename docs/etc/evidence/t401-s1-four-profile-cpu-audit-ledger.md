@@ -881,3 +881,7 @@ S36 audits LAHF/SAHF `9Fh`/`9Eh`. Intel 8086/80386 references define the AH tran
 `M5:T401:S36:LAHF-SAHF-PROFILES:OK` retains all-four-profile FLAGS/AH transfer, ignored AH bits, pre-80386 attribute #UD atomicity, 80386 attribute and LOCK behavior, protected/VM86 and IRQ proof. `M5:T401:S36:LAHF-SAHF-PREVIEW-PROFILES:OK` adds the matching lexical matrix.
 
 No production discrepancy was found. This remains CPU semantic/nonphysical timing-baseline evidence only and does not establish physical timing, DeskPro L3 or a Core/VM interface change.
+
+## S36 Acceptance
+
+S36 closes LAHF/SAHF `9Fh`/`9Eh` coverage with focused runtime and preview proof across all four profiles. It retains defined FLAGS/AH transfer, ignored bits, attributes, protected/VM86 and IRQ boundaries. No production discrepancy was found; Core timing remains explicitly nonphysical. S37 owns CLI/STI `FAh`/`FBh`.
