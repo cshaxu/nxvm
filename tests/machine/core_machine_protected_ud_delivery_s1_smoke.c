@@ -211,6 +211,17 @@ static C_INT ud_s1_metadata_and_lexeme(C_VOID)
     }
     return 1;
 }
+static C_INT ud_s1_lexeme_8086_pop_cs(C_VOID)
+{
+    static const type_unsigned_8 pop_cs[] = { 0x0fu };
+    core_machine_cpu_instruction_lexeme lexeme;
+
+    return core_machine_cpu_instruction_lexeme_scan(pop_cs, sizeof(pop_cs),
+        CORE_MACHINE_CPU_PROFILE_8086, TYPE_FALSE, &lexeme) && lexeme.available &&
+        lexeme.byte_count == 1u && lexeme.component_count == 1u &&
+        !core_machine_cpu_instruction_lexeme_scan(pop_cs, sizeof(pop_cs),
+            CORE_MACHINE_CPU_PROFILE_80186, TYPE_FALSE, &lexeme);
+}
 static C_INT ud_s1_primary_metadata_and_lexeme(C_VOID)
 {
     static const type_unsigned_8 reserved[] = { 0xf1u };
@@ -338,7 +349,8 @@ C_INT main(C_VOID)
             return 1;
         }
     }
-    if (!ud_s1_metadata_and_lexeme() || !ud_s1_primary_metadata_and_lexeme() ||
+    if (!ud_s1_metadata_and_lexeme() || !ud_s1_lexeme_8086_pop_cs() ||
+        !ud_s1_primary_metadata_and_lexeme() ||
         !ud_s1_primary_metadata_matrix() || !ud_s1_0f_metadata_matrix() ||
         !ud_s1_protected_invalid_gate()) {
         return 1;
@@ -348,5 +360,6 @@ C_INT main(C_VOID)
     STD_PRINTF("M5:T401:S3:0F-METADATA-MATRIX:OK\n");
     STD_PRINTF("M5:T401:S4:F1-METADATA:OK\n");
     STD_PRINTF("M5:T401:S4:PRIMARY-METADATA-MATRIX:OK\n");
+    STD_PRINTF("M5:T401:S5:LEXEME-8086-POP-CS:OK\n");
     return 0;
 }

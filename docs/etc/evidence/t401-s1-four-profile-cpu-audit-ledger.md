@@ -51,6 +51,17 @@ proves `/0`--`/3` reject while `/4`--`/7` admit. This is deliberately a
 metadata/profile inventory proof only; dispatch execution, operand semantics,
 fault atomicity and timing remain assigned to their form-level tests and
 ledger rows rather than inferred from this matrix.
+## S5 Lexical Repair: 8086 `0F` POP CS
+
+The runtime `INS_0F` route retains the historical 8086 one-byte `POP CS`
+meaning, while 80186 rejects `0F` and 80286+ uses it as the secondary opcode
+escape. The lexical scanner had instead treated every profile's `0F` as that
+escape and therefore rejected the valid 8086 form when no second byte was
+present. T401 S5 makes only non-8086 profiles enter the secondary-opcode scan.
+The focused regression proves a one-byte, one-component, available preview on
+8086 and rejection on 80186 with marker `M5:T401:S5:LEXEME-8086-POP-CS:OK`.
+This is a shared decoder/preview classification correction; it does not claim
+POP CS semantic breadth or physical timing.
 ## S4 Primary-Map Repair: `F1`
 
 Intel 80386 PRM Appendix A does not assign primary opcode `F1`. Current

@@ -7670,7 +7670,7 @@ type_bool core_machine_cpu_instruction_lexeme_scan(
         if (address_size_prefix)
             address_bytes = code_32 ? 2u : 4u;
     }
-    if (opcode == 0x0fu) {
+    if (opcode == 0x0fu && profile != CORE_MACHINE_CPU_PROFILE_8086) {
         if (profile < CORE_MACHINE_CPU_PROFILE_80286 || index >= available_bytes ||
             index >= 15u) return TYPE_FALSE;
         opcode = bytes[index++];
