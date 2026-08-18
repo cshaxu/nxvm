@@ -710,3 +710,7 @@ S23 audits CAh/CBh far return. Intel's 80386 Programmer's Reference Manual RETF 
 M5:T401:S23:FAR-RETURN-PROFILES:OK retains all-four-profile real-mode far-return and immediate-cleanup proof, 80386 16/32 forms, and protected same-CPL validation/atomicity. M5:T401:S23:FAR-RETURN-PREVIEW-PROFILES:OK adds the matching lexical matrix.
 
 No production discrepancy was found. This remains CPU semantic/nonphysical timing-baseline evidence only and does not establish physical timing, DeskPro L3 or a Core/VM interface change.
+
+## S23 Acceptance
+
+S23 closes far return CAh/CBh coverage with focused runtime and preview proof across all four profiles, including immediate cleanup, 80386 width forms and protected validation/atomicity. Core timing remains explicitly nonphysical. S24 owns ENTER/LEAVE C8h/C9h.
