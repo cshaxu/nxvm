@@ -2,7 +2,26 @@
 
 ## Current Work
 
-**T411 S1 accepted: Core persistent instruction-prefetch window, reset/control-transfer invalidation, and compatibility proof are recorded in [evidence](../etc/evidence/t411-s1-cpu-prefetch-window.md). D4 wait/page-hit timing remains unbound.**
+## M5 T411 S2 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner authorization of 2026-08-18 covers continued DeskPro L3 work and master pushes. |
+| Objective | Independently close the bounded CPU-prefetch prerequisite and transfer the remaining D4 physical-cycle receivers. |
+| Non-goals | Do not publish a DeskPro D4 wait scalar, page-hit decision, BWAIT model, or Model-L3 result. |
+| Reference Baseline | T411 S1 P1 a9be57f8 and P2 c0032e3c; original D4 timing admission T408. |
+| Candidate Proposal | [DeskPro physical-cycle and phase-timing closure](../proposals/m5-deskpro-physical-cycle-and-phase-timing.md) |
+| Files And ABI Surface | Evidence, history and current-status records only. |
+| Applicable Rules | docs/rules/EXECUTION.md; docs/rules/DOCUMENT.md; docs/rules/ARCHITECTURE.md. |
+| Verification | Actual P1/P2 diff review, lifecycle-entry sweep, documentation governance and clean worktree. |
+| Expected Markers | M5:T411:S2:PREFETCH-CLOSURE:OK |
+| Asset Needs | T408 original D3PE evidence read-only; no import. |
+| Reporting Requirements | Name exact completed prerequisite and each transferred D4 physical receiver. |
+| Stop Conditions | Stop if closure would imply physical timing from generic/reference behavior. |
+| Exit Criteria | Every T411 objective is evidenced or transferred to the existing physical-cycle proposal, and the task is task-level closed. |
+| Original Owner Request | Continue DeskPro L3/hardware work with original, reference-derived and generic-AT tiers labelled; do not stall. |
+| Similar-Issue Sweep | Review execution init, code reads, sequential advance, reset, interrupt/exception, preview, paging and HOLD/HLDA paths. |
 
 ## Current Technical Baseline
 
