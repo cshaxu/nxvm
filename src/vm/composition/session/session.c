@@ -426,7 +426,7 @@ static type_status vm_session_create_model40_byob(const vm_session_config *confi
         .a20_wrap_policy = CORE_MACHINE_A20_WRAP_FIRST_TO_SECOND_MIB,
         .ticks_per_instruction = 1u,
         .instruction_timing = {1u, 0u, 0u, 0u, 0u, 0u},
-        /* Generic-AT locality bridge; not the exact Compaq D4 row/bank PAL. */
+        /* Generic-AT locality bridge for CPU and page-walk memory; not D4 row/bank PAL. */
         .external_memory_locality_timing = {2048u, 2u, 0u},
         .retirement_time_contract = CORE_MACHINE_RETIREMENT_TIME_DETERMINISTIC,
         .kbc_serial_delivery_ticks = 1u, /* Generic-AT virtual-time cadence, not a Compaq measurement. */
@@ -478,7 +478,7 @@ type_status vm_session_create_model40_private(
         .a20_wrap_policy = CORE_MACHINE_A20_WRAP_FIRST_TO_SECOND_MIB,
         .ticks_per_instruction = 1u,
         .instruction_timing = {1u, 0u, 0u, 0u, 0u, 0u},
-        /* Generic-AT locality bridge; not the exact Compaq D4 row/bank PAL. */
+        /* Generic-AT locality bridge for CPU and page-walk memory; not D4 row/bank PAL. */
         .external_memory_locality_timing = {2048u, 2u, 0u},
         .retirement_time_contract = CORE_MACHINE_RETIREMENT_TIME_DETERMINISTIC,
         .kbc_serial_delivery_ticks = 1u, /* Generic-AT virtual-time cadence, not a Compaq measurement. */

@@ -1659,7 +1659,12 @@ static C_VOID _s_write_cr0_80386(core_machine_cpu_execution_context *context,
         TYPE_TRACE_CHECK_RETURN(_SetExcept_UD(0));
     }
     /* On 80386 a privileged MOV CR0 may clear PE. The following far jump
-     * supplies the real-address CS cache transition. */
+     * supplies the real-address CS cache transition. A PG change also
+     * invalidates bytes fetched through the former translation context. */
+    if ((cpu_state.data.cr0 ^ value) & VCPU_CR0_PG) {
+        context->prefetch_valid = TYPE_FALSE;
+        context->prefetch_expected_valid = TYPE_FALSE;
+    }
     cpu_state.data.cr0 = value;
     TYPE_TRACE_CALL_END;
 }
@@ -1671,6 +1676,9 @@ static C_VOID _s_write_cr3_80386(core_machine_cpu_execution_context *context,
     {
         TYPE_TRACE_CHECK_RETURN(_SetExcept_UD(0));
     }
+    /* A new directory changes the translation context of queued bytes. */
+    context->prefetch_valid = TYPE_FALSE;
+    context->prefetch_expected_valid = TYPE_FALSE;
     cpu_state.data.cr3 = value;
     TYPE_TRACE_CALL_END;
 }

@@ -2,13 +2,36 @@
 
 ## Current Work
 
+## M5 T415 S1 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New |
+| Admission And Approval | Owner authorization of 2026-08-18 covers continued DeskPro L3 implementation, tier-labelled reference/generic bridges, and master pushes. |
+| Objective | Determine and implement a bounded page-table read/writeback locality policy on the Core external-cycle boundary, using original D4 page-mode values with an explicit generic-AT page-key fallback where needed. |
+| Non-goals | Do not claim exact D4 row/bank mapping, paging microarchitecture overlap, BWAIT, DMA/refresh arbitration, device timing or Model-L3 readiness. |
+| Reference Baseline | T408 original page-mode facts, T409 page-walk provenance, T410 external cycles, and T412--T414 CPU-memory locality bridges. |
+| Candidate Proposal | [DeskPro physical-cycle and phase-timing closure](../proposals/m5-deskpro-physical-cycle-and-phase-timing.md) |
+| Files And ABI Surface | Existing Core external-cycle/transaction/retirement owner and Model-40 composition only; preserve Core/VM direction and no second scheduler. |
+| Applicable Rules | docs/design/ARCHITECTURE.md; docs/design/CODING.md; docs/rules/ARCHITECTURE.md; docs/rules/CODING.md; docs/rules/EXECUTION.md. |
+| Verification | Original-source review, focused paging read/writeback/hit/cancel/reset trace, current gate, documentation gate and actual-diff review. |
+| Expected Markers | M5:T415:S1:PAGE-WALK-LOCALITY:OK or M5:T415:S1:PAGE-WALK-LOCALITY:TRANSFER. |
+| Asset Needs | O:\assets original D4 research and read-only PCjs/other available references; no import. |
+| Reporting Requirements | Label mechanisms original, reference-derived or generic-AT; name every unbound D4 physical receiver. |
+| Stop Conditions | Stop and transfer any phase that would fabricate paging overlap or require a second CPU/DMA transaction or scheduler path. |
+| Exit Criteria | Committed page-table reads/writebacks participate in a bounded locality policy with focused proof, or the missing phase fact is transferred without blocking later receivers. |
+| Original Owner Request | Implement DeskPro 386 L3 timing/hardware gaps using original then reference then generic-AT tiers; do not stall and preserve Core/VM boundary. |
+| Similar-Issue Sweep | Inspect page-table reads/writebacks, data reads/writes, prefetch, TLB/paging faults, reset/cancellation, HOLD/HLDA, DMA, ROM/RAM maps and Model-40 composition. |
 ## Current Technical Baseline
 
-- **Current developer artifact:** T414 S1 P1 `vm-0-5-0414` /
-  `build/output/nxvm_0_5_0414.exe`, SHA-256
-  `B5CB21F73AC06EDD70B4919368609EDF20BE52C9FEFF20B45734111AC9577D2D`.
-  The isolated x64 current gate passes 288/288. T414 extends the Model-40 generic bridge to committed CPU data reads; exact D4 PAL phases remain transferred. T409 labels Core CPU memory
-  provenance only; it does not publish original D4 timing or a Model-L3 claim.
+- **Current developer artifact:** T415 S1 P1 `vm-0-5-0415` /
+  `build/output/nxvm_0_5_0415.exe`, SHA-256
+  `F57D7A70EBD78307786C4B0C98BB0D3EEA715070DFCDA025284C3439D94BE5B8`.
+  T415 extends the Model-40 generic locality bridge to committed page-table
+  reads and writebacks. It also repairs persistent-prefetch invalidation across
+  CR0 PE/PG and CR3 translation-context changes. Exact D4 PAL phases remain
+  transferred; T409 classification itself does not publish original D4 timing
+  or a Model-L3 claim.
   T386 closes selected-device functional completeness at S29; its retained
   [closure audit](../etc/evidence/t386-s29-functional-closure-audit.md) fixes
   HDC current-gate coverage and transfers board, firmware and physical work.

@@ -114,6 +114,18 @@ static C_INT locality_observer_contract(C_VOID)
             TYPE_TRUE, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA);
         failed |= !machine->external_memory_locality_page_valid ||
             machine->external_memory_locality_round_ticks != 3u;
+        machine->external_memory_locality_round_ticks = 0u;
+        machine->external_memory_locality_page_valid = TYPE_FALSE;
+        provider(context, CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_CANCEL, 0x800u, 4u,
+            TYPE_FALSE, CORE_MACHINE_CPU_MEMORY_ACCESS_PAGE_TABLE_READ);
+        failed |= machine->external_memory_locality_page_valid ||
+            machine->external_memory_locality_round_ticks != 0u;
+        provider(context, CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_COMMIT, 0x800u, 4u,
+            TYPE_FALSE, CORE_MACHINE_CPU_MEMORY_ACCESS_PAGE_TABLE_READ);
+        provider(context, CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_COMMIT, 0x804u, 4u,
+            TYPE_TRUE, CORE_MACHINE_CPU_MEMORY_ACCESS_PAGE_TABLE_WRITE);
+        failed |= !machine->external_memory_locality_page_valid ||
+            machine->external_memory_locality_round_ticks != 3u;
         failed |= core_machine_reset(machine) != TYPE_STATUS_OK;
         failed |= machine->external_memory_locality_page_valid ||
             machine->external_memory_locality_round_ticks != 0u;
@@ -149,5 +161,6 @@ C_INT main(C_VOID)
     STD_PRINTF("M5:T412:S1:EXTERNAL-READ-LOCALITY:OK\n");
     STD_PRINTF("M5:T413:S1:EXTERNAL-WRITE-BRIDGE:OK\n");
     STD_PRINTF("M5:T414:S1:DATA-READ-LOCALITY:OK\n");
+    STD_PRINTF("M5:T415:S1:PAGE-WALK-LOCALITY:OK\n");
     return 0;
 }
