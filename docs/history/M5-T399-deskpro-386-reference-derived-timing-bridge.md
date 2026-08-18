@@ -36,3 +36,7 @@ cancellation/rearm order as `M5:T399:S3:B2-CONTRACT-RECONCILED`. The
 retains PCjs-only confidence and every physical timing/media boundary; the
 [acceptance audit](../etc/evidence/t399-s3-b2-acceptance-audit.md) records no
 production defect or Core/VM interface change.
+
+## S4 B4 HDC Disposition
+
+S4 rejects PCjs's generic IBM Type-5 HDC as a reference for the selected Compaq controller; its [disposition](../etc/evidence/t399-s4-b4-compaq-hdc-disposition.md) retains existing logical regressions and physical-media TODO receivers.
