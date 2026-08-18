@@ -2,8 +2,28 @@
 
 ## Current Work
 
-No active subtask. T396 S1 is accepted and retains the required latest-task progress row pending a bounded physical-contract or task-closure subtask.
+**T396 S2 active.** Perform the explicit task-closure audit for the accepted DeskPro 386 Model 40 board-timing ledger; do not publish an unsourced clock or expand into device/firmware timing or L3.
 
+## M5 T396 S2 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner continuing global CPU correctness/timing authorization; accepted T396 S1 retains the required latest-task progress row. No exception. |
+| Objective | Reconcile every T396 proposal requirement against the accepted S1 source/owner ledger, primary-source boundary, focused regressions and current Core/VM contracts; close T396 or record the exact remaining receiver. |
+| Non-goals | No new Core/VM behavior, physical clock scalar, DMA wait placement, ROM/media import, device-service timing, firmware change, host wall-clock coupling or L3 claim. |
+| Reference Baseline | T396 S1 P3/P4, source-and-owner acceptance audit, T396 proposal, T394 physical-qualification closure, current neutral Model-40 constructors and current `vm-0-5-0395` artifact. |
+| Candidate Proposal | [DeskPro 386 board-level timing closure](../proposals/m5-deskpro-386-board-level-timing-closure.md). |
+| Files And ABI Surface | Closure evidence, task history, status and retained proposal archive only; no source, artifact or ABI change. |
+| Applicable Rules | Coordinator actual-change review; primary source before bounded secondary observation; Core shared time/transaction ownership; VM selected topology declaration; task-scale closure and documentation governance. |
+| Verification | Inspect actual S1 delivery and every proposal bullet, reconcile the consumer ledger and transfers, documentation governance and diff hygiene. |
+| Expected Markers | T396 S2 task-closure audit only; no runtime or physical-timing marker. |
+| Asset Needs | Read-only provenance/evidence only; no ROM, guest media or external code import. |
+| Reporting Requirements | Record each accepted board-level fact, each rejected physical publication, verification result and named physical-device/firmware or L3 receiver. |
+| Stop Conditions | Stop task closure if any board-clock proposal requirement lacks direct evidence, a remaining fact lacks a named receiver, or closure would imply a physical/L3 claim. |
+| Exit Criteria | Pushed closure audit and status transition to one task-level T396 summary with its proposal archived, or a documented remaining T396 implementation receiver. |
+| Original Owner Request | Continue the global CPU correctness/timing audit, repair clear in-scope defects, and preserve the Core/VM boundary. |
+| Similar-Issue Sweep | Reconcile both Model-40 routes, every six-domain consumer/reset row, D3PE source facts, local reference disqualifications and all T396 proposal bullets; no new defect class is in scope. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T395 S1 P4 `vm-0-5-0395` /
