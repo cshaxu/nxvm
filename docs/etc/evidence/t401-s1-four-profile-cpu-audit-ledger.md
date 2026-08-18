@@ -722,3 +722,7 @@ S24 audits C8h/C9h ENTER/LEAVE. Intel's 80186/80386 references define post-8086 
 M5:T401:S24:ENTER-LEAVE-PROFILES:OK retains four-profile support/rejection, nesting, attributes, protected faults and IRQ boundaries. M5:T401:S24:ENTER-LEAVE-PREVIEW-PROFILES:OK adds lexical proof; ENTER's imm16+imm8 field correctly forms one immediate component.
 
 No production discrepancy was found. This remains CPU semantic/nonphysical timing-baseline evidence only and does not establish physical timing, DeskPro L3 or a Core/VM interface change.
+
+## S24 Acceptance
+
+S24 closes ENTER/LEAVE C8h/C9h coverage with focused runtime and preview proof. It retains support/rejection, nesting, stack-width, protected-fault and IRQ boundaries; the lexical imm16+imm8 field is correctly one component. Core timing remains explicitly nonphysical. S25 owns INT immediate CDh.
