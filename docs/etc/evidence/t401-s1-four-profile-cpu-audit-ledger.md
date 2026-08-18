@@ -1182,4 +1182,8 @@ S66 closes the bounded 80386 debug-register MOV audit. It repairs reserved DR4/D
 
 ## S67 Control-register MOV
 
-S67 audits 80386 MOV CR  F 20h/22h. The generic scanner retains standard register-only forms. The private original-80386 execution preview independently proves both directions consume non-register ModR/M forms as three bytes when the immutable machine option is enabled. Existing paging/descriptor regressions retain CR state, privilege and fault evidence. No ABI or production change; timing remains nonphysical.
+S67 audits 80386 MOV CR 0F 20h/22h. The generic scanner retains standard register-only forms. The private original-80386 execution preview independently proves both directions consume non-register ModR/M forms as three bytes when the immutable machine option is enabled. Existing paging/descriptor regressions retain CR state, privilege and fault evidence. No ABI or production change; timing remains nonphysical.
+
+## S67 Acceptance
+
+S67 closes the bounded 80386 control-register MOV audit. The generic scanner remains standard register-only, while the private original-80386 execution preview proves both `0F 20h` and `0F 22h` non-register ModR/M forms consume three bytes only when the immutable option is enabled. Existing paging and descriptor regressions retain state, privilege and fault evidence. The discovered NUL character in the S67 opcode label is corrected to `0F`; no production, ABI or physical-timing discrepancy exists.
