@@ -4,6 +4,27 @@
 
 **Active: M5 T401.**
 
+## M5 T401 S45 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; M5 T401 S45. |
+| Admission And Approval | Owner approved continuing T401; S44 is accepted. |
+| Objective | Audit CBW/CWD 98h/99h across all four profiles and 80386 operand attributes. |
+| Non-goals | No broad decoder rewrite, physical timing or DeskPro L3 claim. |
+| Reference Baseline | Intel 8086/80386 references and current sign-extend fixture. |
+| Candidate Proposal | [Four-profile CPU instruction-correctness audit and repair program](../proposals/m5-four-profile-cpu-instruction-correctness-audit.md). |
+| Files And ABI Surface | Ledger, packet, sign-extend fixture and preview smoke; no public ABI. |
+| Applicable Rules | Execution, Core ownership, coding/test, source and documentation rules. |
+| Verification | Four-profile sign/width/prefix matrix, LOCK and IRQ proof, focused tests and governance. |
+| Expected Markers | T401 S45 execution and preview markers. |
+| Asset Needs | None. |
+| Reporting Requirements | Profile/form/result/flags/attribute/source/owner/nonphysical timing evidence. |
+| Stop Conditions | Broad state/decoder/fault redesign. |
+| Exit Criteria | Every selected form has focused proof or transfer. |
+| Original Owner Request | Continue source-backed, reference-backed or generic CPU work. |
+| Similar-Issue Sweep | Sign-extension siblings, prefixes, preview callers and profile gates. |
+
 ## Current Technical Baseline
 
 - **Current developer artifact:** T395 S1 P4 `vm-0-5-0395` /

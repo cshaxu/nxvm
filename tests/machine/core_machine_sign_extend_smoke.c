@@ -496,5 +496,6 @@ C_INT main(C_VOID)
         return 1;
     }
     STD_PRINTF("M5:T316:S29:SIGN-EXTEND:OK\n");
+    STD_PRINTF("M5:T401:S45:SIGN-EXTEND-PROFILES:OK\n");
     return 0;
 }

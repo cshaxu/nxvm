@@ -1,4 +1,4 @@
-﻿# T401 S1 Four-Profile CPU Audit Ledger
+# T401 S1 Four-Profile CPU Audit Ledger
 
 `M5:T401:S1:CPU-AUDIT-LEDGER-FROZEN`
 
@@ -976,3 +976,7 @@ S44 audits LEA `8Dh`. Intel 8086/80386 references define memory-only ModR/M form
 `M5:T401:S44:LEA-PROFILES:OK` retains all-four-profile forms, 80386 attributes, register-form #UD, LOCK, protected mode, null-DS no-read and IRQ boundaries. `M5:T401:S44:LEA-PREVIEW-PROFILES:OK` adds the corresponding lexical matrix.
 
 No production discrepancy was found. This remains CPU semantic/nonphysical timing-baseline evidence only and does not establish physical timing, DeskPro L3 or a Core/VM interface change.
+
+## S45 CBW/CWD
+
+S45 audits CBW/CWD 98h/99h, including 80386 CWDE/CDQ operand-size forms. Existing focused proof covers all four profiles, sign boundaries, FLAGS preservation, prefixes, LOCK and IRQ behavior; timing remains nonphysical.
