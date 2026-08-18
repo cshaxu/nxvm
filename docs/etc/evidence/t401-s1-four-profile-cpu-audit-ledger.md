@@ -964,3 +964,7 @@ S43 audits LOOPNE/LOOPE/LOOP/JCXZ `E0h`-`E3h`. Intel 8086/80386 references defin
 `M5:T401:S43:LOOP-JCXZ-PROFILES:OK` retains all-four-profile LOOPNE/LOOPE taken and not-taken behavior, LOOP decrement, JCXZ non-decrement and FLAGS preservation. `M5:T401:S43:LOOP-JCXZ-PREVIEW-PROFILES:OK` adds the four-profile two-byte lexical matrix and 80386 operand/address attribute forms.
 
 No production discrepancy was found. This remains CPU semantic/nonphysical timing-baseline evidence only and does not establish physical timing, DeskPro L3 or a Core/VM interface change.
+
+## S43 Acceptance
+
+S43 closes LOOPNE/LOOPE/LOOP/JCXZ coverage with focused runtime and preview proof across all four profiles. It retains taken/not-taken conditions, counter behavior, FLAGS preservation and 80386 attribute layouts. No production discrepancy was found; Core timing remains explicitly nonphysical.
