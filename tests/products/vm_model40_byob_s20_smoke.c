@@ -19,6 +19,8 @@ C_INT main(C_VOID)
     static const C_CHAR odd_sha256[] = "111ce3c2a38d83a2e4706bde4abddd509d7f8248116c6832b06745bdc349e09f";
     vm_session_config config = {0};
     vm_session *session = STD_NULL;
+    vm_session_reset_vector reset_vector = {0};
+    core_machine_run_result result = {0};
     C_INT failed = 0;
 
     if (!write_chip("t386-s20-even.bin", 0u) || !write_chip("t386-s20-odd.bin", 1u)) failed = 1;
@@ -35,6 +37,14 @@ C_INT main(C_VOID)
         !session->core_machine_config.cpu_80386_cr_mov_ignores_mod ||
         session->fdd.data.nsector != 15u || session->model40_rom.even_bytes[0] != 0u ||
         session->model40_rom.odd_bytes[0] != 1u;
+    failed |= !failed && (vm_session_get_reset_vector(session, &reset_vector) != TYPE_STATUS_OK ||
+        reset_vector.cs != 0xf000u || reset_vector.ip != 0xfff0u);
+    failed |= !failed && (core_machine_run(session->core_machine,
+        (core_machine_run_budget) {1u, 0u}, &result) != TYPE_STATUS_OK ||
+        result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 1u);
+    failed |= !failed && core_machine_reset(session->core_machine) != TYPE_STATUS_OK;
+    failed |= !failed && (vm_session_get_reset_vector(session, &reset_vector) != TYPE_STATUS_OK ||
+        reset_vector.cs != 0xf000u || reset_vector.ip != 0xfff0u);
     failed |= !failed && !write_chip("t386-s20-even.bin", 2u);
     failed |= !failed && (session->model40_rom.even_bytes[0] != 0u ||
         session->model40_rom.odd_bytes[0] != 1u);
@@ -44,6 +54,6 @@ C_INT main(C_VOID)
     failed |= vm_session_create(&config, &session) != TYPE_STATUS_FAULT || session != STD_NULL;
     (C_VOID)STD_REMOVE("t386-s20-even.bin");
     (C_VOID)STD_REMOVE("t386-s20-odd.bin");
-    if (!failed) STD_PRINTF("M5:T386:S20:MODEL40-BYOB-MANIFEST:OK\nM5:T386:S20:MODEL40-BYOB-VALIDATION:OK\nM5:T386:S20:MODEL40-PUBLIC-COMPOSITION:OK\n");
+    if (!failed) STD_PRINTF("M5:T386:S20:MODEL40-BYOB-MANIFEST:OK\nM5:T386:S20:MODEL40-BYOB-VALIDATION:OK\nM5:T386:S20:MODEL40-PUBLIC-COMPOSITION:OK\nM5:T424:S1:MODEL40-BYOB-RESET-LIFECYCLE:OK\n");
     return failed;
 }

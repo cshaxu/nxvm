@@ -28,6 +28,7 @@ principal documents named in [docs/README.md](../README.md).
 | `evidence/t386-s17-model40-dual-dma.md` | Verification owner | T386 S17 explicitly binds the selected Model-40 dual-8237A topology to generic Core DMA configuration, then proves word/cascade/reset behavior without a timing or L3 claim. Retain with T386 history. |
 | `evidence/t386-s18-model40-floppy-device-profile.md` | Verification owner | T386 S18 adds reusable VM device-profile floppy geometry, selects the Model-40 1.2 MB drive, and retains Core-neutral FDC/media mechanisms without a timing or L3 claim. Retain with T386 history. |
 | `evidence/t386-s20-model40-byob-profile.md` | Verification owner | T386 S20 exposes the selected Model-40 backbone only through a strict local BYOB manifest, frozen catalog entry and copied VM-owned ROM carrier; it makes no BIOS, device-completeness, timing or L3 claim. Retain with T386 history. |
+| evidence/t424-s1-model40-byob-reset-lifecycle.md | Verification owner | T424 S1 proves the lawful Model-40 BYOB manifest-to-copied-ROM reset-vector execution/replay route with synthetic chips and retains vendor firmware behavior as external-corpus work. |
 | `evidence/t386-s21-model40-current-functional-matrix.md` | Verification owner | T386 S21 reconciles S16--S20 into the current Model-40 functional matrix, fixes the fixed-backbone versus future-variant handoff, and bounds the remaining functional receivers. Retain with T386 history. |
 | `evidence/t386-s22-d4-parity-diagnostic.md` | Verification owner | T386 S22 records the shared location-bearing memory-parity owner, selected D4 diagnostic/IOCHK behavior, focused isolation proof, and retained functional/timing transfers. Retain with T386 history. |
 | `evidence/t386-s23-d4-skey-reset-arbitration.md` | Verification owner | T386 S23 records D4-SKEY functional equivalence, CPU-shutdown-to-D4 reset arbitration, focused isolation proof, and retained physical timing transfers. Retain with T386 history. |
@@ -102,7 +103,7 @@ principal documents named in [docs/README.md](../README.md).
 | `evidence/t394-s2-immutable-stage-mechanism-decision.md` | Verification owner | T394 S2 rejects existing descriptor candidates and transfers a bounded Core normalized eligibility-key design without physical selection. Retain with T394 history. |
 | `evidence/t394-s3-normalized-eligibility-key-collision-audit.md` | Verification owner | T394 S3 defines the Core-owned normalized eligibility-key schema, C0 collision dimensions and immutable-descriptor receiver without physical selection. Retain with T394 history. |
 | `evidence/t394-s4-core-eligibility-key-descriptor.md` | Core timing owner | T394 S4 materializes the Core-only normalized eligibility key and copied descriptor, proving prepublication rejection without selecting a physical profile. Retain with T394 history. |
-| vidence/t394-s5-pre-retirement-key-refresh.md | Core timing owner | T394 S5 P1 repairs Core pre-retirement eligibility-key refresh ordering, proves the retained mode snapshot, and transfers the unresolved 82-child/81-key C0 reconciliation without physical selection. Retain while T394 S5 is active. |
+| evidence/t394-s5-pre-retirement-key-refresh.md | Core timing owner | T394 S5 P1 repairs Core pre-retirement eligibility-key refresh ordering, proves the retained mode snapshot, and transfers the unresolved 82-child/81-key C0 reconciliation without physical selection. Retain while T394 S5 is active. |
 | `evidence/t394-s5-c0-key-mapping-reconciliation.md` | Core timing owner | T394 S5 P2 reconciles all 82 accepted C0 children to 81 observed Core eligibility keys, records the sole prefix-normalized same-key equivalence, and transfers descriptor selection without physical selection. Retain with T394 history. |
 | `evidence/t394-s6-descriptor-selection-nonadmission.md` | Core timing owner | T394 S6 records whole-batch non-admission of the mapped C0 descriptor until a source-backed Model-40 board clock-plan exists. Retain with T394 history. |
 | `evidence/t394-s7-physical-qualification-closure-audit.md` | Core timing owner | T394 S7 closes the finite C0 qualification with a complete board clock-plan transfer. Retain with T394 history. |
@@ -414,7 +415,7 @@ principal documents named in [docs/README.md](../README.md).
 | evidence/t412-s2-external-read-locality-closure-audit.md | Closure audit | T412 S2 reviews the generic-AT bridge, its Core/VM ownership and full-gate proof, and retains exact D4 physical receivers. Retain with T412 history. |
 
 | evidence/t411-s1-cpu-prefetch-window.md | Verification owner | T411 S1 makes the Core 15-byte instruction-prefetch window persistent with control-transfer and reset invalidation, while retaining D4 timing as unbound. Retain with T411 history. |
-| vidence/t411-s2-prefetch-closure-audit.md | Closure audit | T411 S2 verifies the single Core prefetch lifecycle and transfers every D4 physical-cycle receiver without an L3 claim. Retain with T411 history. |
+| evidence/t411-s2-prefetch-closure-audit.md | Closure audit | T411 S2 verifies the single Core prefetch lifecycle and transfers every D4 physical-cycle receiver without an L3 claim. Retain with T411 history. |
 
 | evidence/t413-s1-external-write-locality.md | Verification owner | T413 S1 extends the generic locality bridge to committed CPU writes, backed by original D4 write-cycle facts but retaining exact PAL phases as a transfer. Retain with T413 history. |
 
@@ -475,4 +476,4 @@ condition. The governance gate verifies that every supporting Markdown file is
 covered by one of those index forms. `etc/` is not a shortcut for adding
 another principal document.
 
-| vidence/t405-s1-x86-gcc-host-build-compatibility.md | Verification owner | T405 S1 records isolated i686 GCC provenance, host-width repairs, PE-i386 proof, x86/x64 286/286 current-gate results and the retained x64 artifact hash; no L3 claim. Retain with T405 history. |
+| evidence/t405-s1-x86-gcc-host-build-compatibility.md | Verification owner | T405 S1 records isolated i686 GCC provenance, host-width repairs, PE-i386 proof, x86/x64 286/286 current-gate results and the retained x64 artifact hash; no L3 claim. Retain with T405 history. |

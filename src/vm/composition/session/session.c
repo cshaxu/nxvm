@@ -619,7 +619,7 @@ C_VOID vm_session_destroy(vm_session *session)
     STD_FREE(session);
 }
 
-C_INT vm_session_get_reset_vector(const vm_session *session,
+type_status vm_session_get_reset_vector(const vm_session *session,
     vm_session_reset_vector *out_vector)
 {
     core_machine_observation observation;

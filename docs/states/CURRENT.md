@@ -2,7 +2,28 @@
 
 ## Current Work
 
-**Idle.**
+**Active: M5 T424 S1.**
+
+## M5 T424 S1 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New |
+| Admission And Approval | Owner: user. Approval: persistent active-thread authorization to continue DeskPro 386 L3 hardware gaps, commit, and push to `master` (2026-08-18). Scope: bounded lawful BYOB firmware-visible reset/POST observation route; no ROM/media import, discovery, or default dependency. |
+| Objective | Prove the existing Model-40 BYOB manifest -> copied immutable ROM -> reset-vector execution lifecycle using only project-owned synthetic chips, and expose only the minimal VM-owned observation needed to distinguish valid construction from a reset-visible firmware launch. |
+| Non-goals | Vendor-ROM validation, vendor POST/service correctness, physical timing, new Core firmware owner, ROM path/hash retention, firmware download/catalogue, or a Model-L3 claim. |
+| Reference Baseline | `8ad0df10` T423 S1; T386 S20 BYOB carrier; T390 S2 observation contract; current physical-cycle proposal receiver 5. |
+| Candidate Proposal | [DeskPro physical-cycle and phase-timing closure](../proposals/m5-deskpro-physical-cycle-and-phase-timing.md), receiver 5 (`original` lawful interface facts). |
+| Files And ABI Surface | VM Model-40 profile/composition/session lifecycle, the existing focused product smoke, indexed evidence, and CURRENT/TODO only. Any public surface is a VM-owned copied observation; Core and its firmware-provider ABI remain unchanged. |
+| Applicable Rules | Execution, Documentation, Architecture, Coding, and source/research policy read. Architecture: one Core firmware/mapping owner and VM-only profile policy. Coding: C11 and no duplicate execution route. Source: synthetic project-owned bytes only; no protected asset/path/hash/catalogue in repository. |
+| Verification | Focused BYOB lifecycle smoke proving manifest validation, copied carrier, reset-vector observation, one bounded synthetic reset instruction, repeated reset, and failed-manifest nonpublication; existing BYOB/retirement smokes; serial `current-gate`; documentation governance; diff check. |
+| Expected Markers | New `M5:T424:S1:MODEL40-BYOB-RESET-LIFECYCLE:OK`; retained T386 S20 BYOB markers. |
+| Asset Needs | Project-owned synthetic 16 KiB test chips created and deleted by the test only. No `O:\assets` input and no third-party firmware or media. |
+| Reporting Requirements | Report evidence tier, changed owner/path, verification, pushed commit, and exact transfer: vendor POST/device-service timing and cancellation remain unvalidated pending owner-supplied corpus. |
+| Stop Conditions | Stop and transfer if validation requires a vendor firmware/media image, a machine-local path/hash, host time, a second execution route, or any Core/VM boundary violation. |
+| Exit Criteria | One VM-owned reset-visible BYOB lifecycle route is regression-proven with synthetic chips and reset replay; all sensitive manifest fields remain transient; residual vendor lifecycle work is explicitly retained. |
+| Original Owner Request | "好 请你现在开始干活 把deskpro的l3各任务做好" and active goal to implement DeskPro 386 L3 timing/hardware gaps with original/reference/generic evidence tiers. |
+| Similar-Issue Sweep | Inspect all Model-40 BYOB constructors and session reset routes, plus generic profile firmware binding, to ensure no second firmware lifecycle/mapping owner is introduced. |
 
 ## Current Technical Baseline
 
