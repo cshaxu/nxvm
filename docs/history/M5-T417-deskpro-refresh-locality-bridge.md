@@ -8,3 +8,6 @@ DeskPro refresh period, page retention, arbitration phase or cycle timing.
 P1 implements the callback and proves the real D4-configured counter reaches
 its refresh low pulse before the later same-page CPU external cycle is charged
 as a miss.
+P2 independently closes T417. It confirms D4-only binding, the counter-1
+active-low refresh boundary, the real 18-tick focused proof and reset behavior,
+and retains all calibrated D4 refresh/arbitration work as future receivers.

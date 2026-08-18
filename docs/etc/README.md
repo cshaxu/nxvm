@@ -433,6 +433,8 @@ principal documents named in [docs/README.md](../README.md).
 
 | evidence/t417-s1-refresh-locality.md | Verification owner | T417 S1 binds the D4 counter-1 refresh low pulse to the generic-AT locality boundary and transfers physical D4 refresh phases. Retain with T417 history. |
 
+| evidence/t417-s2-refresh-locality-closure-audit.md | Closure audit | T417 S2 independently closes the D4-bound generic-AT refresh locality boundary and transfers physical D4 refresh phases. Retain with T417 history. |
+
 Adding a new supporting document requires owner approval, an exact-file index
 row or a declared indexed subtree, and a stated promotion, merge, or retirement
 condition. The governance gate verifies that every supporting Markdown file is
