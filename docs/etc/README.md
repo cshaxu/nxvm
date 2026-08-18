@@ -458,6 +458,8 @@ principal documents named in [docs/README.md](../README.md).
 
 | evidence/t419-s5-external-cycle-overlap-closure-audit.md | Closure audit | T419 S5 closes the original-source 2 KiB external-cycle overlap receiver with one Core owner and transfers the asynchronous physical producer and phase work. Retain with T419 history. |
 
+| evidence/t419-s6-prefetch-producer-transfer.md | Transfer record | T419 S6 verifies that the present synchronous Core prefetch lifecycle cannot publish a physical asynchronous overlap declaration; it retains one Core-owned producer prerequisite and the shared Model-40/IBM-5170 configuration route. Retain with T419 history. |
+
 Adding a new supporting document requires owner approval, an exact-file index
 row or a declared indexed subtree, and a stated promotion, merge, or retirement
 condition. The governance gate verifies that every supporting Markdown file is
