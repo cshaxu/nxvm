@@ -23,3 +23,8 @@ future source-backed board-clock or physical-device/firmware receiver.
 ## Coordinator Acceptance
 
 After actual-change review of S1 P3 9e1f56d2, the coordinator accepts S1. The [acceptance audit](../etc/evidence/t396-s1-source-owner-acceptance-audit.md) reconciles every packet requirement and retains T396 only for a bounded physical-contract or task-closure decision; it accepts no board scalar, physical device timing or L3 claim.
+
+
+## S2 Task Closure
+
+S2 reconciles every board-clock proposal requirement against the accepted ledger, source boundary, focused regressions and full current gate. The [task closure audit](../etc/evidence/t396-s2-task-closure-audit.md) closes T396 through explicit transfer of physical device/firmware availability, wait and phase facts; no physical scalar or L3 conclusion is made.
