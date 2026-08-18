@@ -211,6 +211,42 @@ static C_INT ud_s1_metadata_and_lexeme(C_VOID)
     }
     return 1;
 }
+static core_machine_cpu_profile ud_s1_0f_expected_minimum(type_unsigned_8 opcode)
+{
+    if (opcode == 0x00u || opcode == 0x01u || opcode == 0x02u ||
+        opcode == 0x03u || opcode == 0x06u) return CORE_MACHINE_CPU_PROFILE_80286;
+    if ((opcode >= 0x20u && opcode <= 0x24u) || opcode == 0x26u ||
+        (opcode >= 0x80u && opcode <= 0x8fu) ||
+        (opcode >= 0x90u && opcode <= 0x9fu) || opcode == 0xa0u ||
+        opcode == 0xa1u || opcode == 0xa3u || opcode == 0xa4u ||
+        opcode == 0xa5u || opcode == 0xa8u || opcode == 0xa9u ||
+        opcode == 0xabu || opcode == 0xacu || opcode == 0xadu ||
+        opcode == 0xafu || (opcode >= 0xb2u && opcode <= 0xb7u) ||
+        (opcode >= 0xbbu && opcode <= 0xbfu))
+        return CORE_MACHINE_CPU_PROFILE_80386;
+    return (core_machine_cpu_profile)0xffu;
+}
+
+static C_INT ud_s1_0f_metadata_matrix(C_VOID)
+{
+    type_unsigned_16 value;
+
+    for (value = 0u; value != 0x100u; ++value) {
+        type_unsigned_8 opcode = (type_unsigned_8)value;
+        core_machine_cpu_instruction_metadata metadata =
+            core_machine_cpu_instruction_metadata_get(
+                CORE_MACHINE_CPU_INSTRUCTION_0F, opcode, 0xc0u);
+        core_machine_cpu_profile expected = ud_s1_0f_expected_minimum(opcode);
+
+        if ((expected == (core_machine_cpu_profile)0xffu) != (!metadata.valid) ||
+            (metadata.valid && metadata.minimum_cpu != expected)) return 0;
+    }
+    if (core_machine_cpu_instruction_metadata_get(
+            CORE_MACHINE_CPU_INSTRUCTION_0F, 0xbau, 0xc0u).valid ||
+        !core_machine_cpu_instruction_metadata_get(
+            CORE_MACHINE_CPU_INSTRUCTION_0F, 0xbau, 0xe0u).valid) return 0;
+    return 1;
+}
 static C_INT ud_s1_protected_invalid_gate(C_VOID)
 {
     static const type_unsigned_8 code[] = { 0x0fu, 0x01u, 0xf8u };
@@ -261,10 +297,12 @@ C_INT main(C_VOID)
             return 1;
         }
     }
-    if (!ud_s1_metadata_and_lexeme() || !ud_s1_protected_invalid_gate()) {
+    if (!ud_s1_metadata_and_lexeme() || !ud_s1_0f_metadata_matrix() ||
+        !ud_s1_protected_invalid_gate()) {
         return 1;
     }
     STD_PRINTF("M5:T326:S1:PROTECTED-UD-DELIVERY:OK\n");
     STD_PRINTF("M5:T401:S2:0F25-METADATA:OK\n");
+    STD_PRINTF("M5:T401:S3:0F-METADATA-MATRIX:OK\n");
     return 0;
 }
