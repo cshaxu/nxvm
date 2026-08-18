@@ -1123,3 +1123,6 @@ nonpublication. `M5:T401:S62:DOUBLE-SHIFT-PREVIEW-PROFILES:OK` adds all four
 opcode layouts, immediate width, memory displacement, 80386 attributes and
 80186/80286 unavailability. 8086 remains distinct because its `0Fh` is POP
 CS. No production discrepancy was found; timing remains nonphysical.
+## S62 Acceptance
+
+S62 closes the bounded 80386 double-shift audit. Runtime and preview matrices establish SHLD/SHRD direction, immediate/CL counts, zero-count preservation, register/memory destinations, 80386 attributes, 80186/80286 rejection and the retained 8086 POP CS distinction. Both focused smokes and documentation governance pass; no production discrepancy was found, timing remains nonphysical, and T401 remains open.
