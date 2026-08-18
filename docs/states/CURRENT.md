@@ -2,8 +2,26 @@
 
 ## Current Work
 
-| T419 S2 | Closed receiver: original-source-backed discrete D4 one-quantum DMA grant wait selected only by Model-40; Core remains sole CPU/DMA transaction owner. [Closure audit](../etc/evidence/t419-s2-d4-dma-grant-wait-closure-audit.md). |
+## M5 T419 S3 Packet
 
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation. T419 remains the latest open numeric task; S2 closure is retained immediately below. |
+| Admission And Approval | Owner approval: user’s standing authorization in this thread to continue DeskPro Model-40 L3 work using original sources, reference implementations, then labelled generic AT mechanisms; no repeated approval request. Scope: a bounded original-source D4 DMA `BUSRDY` ready gate only. |
+| Objective | Add one Core-owned, configurable DMA-cycle ready gate. A false provider result defers the pending DMA grant without a transfer; when ready resumes, the existing one transaction route performs it. Model-40 selects the capability with its default-ready binding. |
+| Non-goals | No CPU `BWAIT`, no DCLK/CLK16 calibration, no refresh request/priority, no HAK/HAKDMA waveform, no new VM transaction executor, and no peripheral-specific BUSRDY wiring. |
+| Reference Baseline | `master` at `9afae9d7`; T419 S2 evidence; Compaq D3PE processor description pp. 19–21 under `O:\assets\research\compaq_deskpro_386_16\technical_spec_1986_textmode.txt`, which states BUSRDY can extend a DMA cycle. PCjs DeskPro configuration is inspected only as `reference-derived` topology context and is not a timing source. |
+| Candidate Proposal | [DeskPro physical-cycle and phase-timing closure](../proposals/m5-deskpro-physical-cycle-and-phase-timing.md), receiver 2. Evidence tier: `original`. Ledger batch: D4 DMA ready input only. |
+| Files And ABI Surface | `src/core/machine/machine_interface.h`, `machine.h`, `machine.c`; Model-40 composition/session configuration only; focused Core and Model-40 smoke tests; indexed evidence and Current. Any public config addition is append-only. |
+| Applicable Rules | Architecture: one Core CPU/DMA transaction owner; VM composition selects only Model-40 difference; no reverse dependency. Coding: C11/type vocabulary, bounded owner-local helper. Source policy: no imported third-party code or firmware. Documentation/Execution: packet, evidence, review, full gate, artifact refresh, closure audit. |
+| Verification | Focused Core smoke proves a false ready provider blocks both existing grant wait completion and DMA memory write, a true result releases exactly one existing DMA transfer, reset restores no stale wait, and default profiles retain current behavior. Model-40 smoke proves default-ready selection. Run `cmake --build build/mingw-gcc-x64 --target run-current-smokes --parallel 4` and documentation governance gate. |
+| Expected Markers | `M5:T419:S3:D4-DMA-BUSRDY:OK`; existing S1/S2 and competition markers remain. |
+| Asset Needs | Read-only primary research text under `O:\assets`; no ROM, guest media, external source text, or machine-local path committed. |
+| Reporting Requirements | Report source tier, exact discrete contract, commit/push, focused/full verification, and remaining D4 transfers. |
+| Stop Conditions | Stop and transfer any request for calibrated waveform duration, CPU BWAIT, refresh/DMA priority, external bus adapter semantics, protected media, or a second transaction route. |
+| Exit Criteria | One Core production path owns ready-gated DMA progression; Model-40 selects it without affecting other profiles; focused and full gates pass; evidence names remaining transfers; actual diff review and closure audit are committed. |
+| Original Owner Request | “实现DeskPro 386的L3级别时序和所有硬件缺口。能用原始资料的用原始资料，能用参考实现的用参考实现，实在都没有的，可以用通用骨架（如标准的IBM AT）实现，三个级别各自标注，活人不能被尿憋死！” |
+| Similar-Issue Sweep | Before code: inspect all `core_machine_dma_advance_transaction`, DMA clock, hold, and profile configuration callers. Repair at the shared Core grant boundary; do not add a D4-side scheduler. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T419 S2 P6 `vm-0-5-0419` /`build/output/nxvm_0_5_0419.exe`, SHA-256 `84662DCABC6BDA05992D09C9E394F3BA95ED10809724AB37900D1F5365228A17`. T419 runs the existing sole Core DMA transaction route under D4 composition and verifies the original-source high-level no-extra-wait property; it does not model D4 waveform duration, BWAIT or refresh arbitration. T418 instruction-boundary locality, T417 refresh, T416 DMA-HOLD and T415 paging fixes remain retained.
