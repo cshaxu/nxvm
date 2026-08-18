@@ -460,6 +460,8 @@ principal documents named in [docs/README.md](../README.md).
 
 | evidence/t419-s6-prefetch-producer-transfer.md | Transfer record | T419 S6 verifies that the present synchronous Core prefetch lifecycle cannot publish a physical asynchronous overlap declaration; it retains one Core-owned producer prerequisite and the shared Model-40/IBM-5170 configuration route. Retain with T419 history. |
 
+| evidence/t419-s7-task-closure-audit.md | Closure audit | T419 S7 closes the bounded D4 discrete timing task without a Model-L3 claim and transfers its asynchronous physical producer and phase prerequisites. Retain with T419 history. |
+
 Adding a new supporting document requires owner approval, an exact-file index
 row or a declared indexed subtree, and a stated promotion, merge, or retirement
 condition. The governance gate verifies that every supporting Markdown file is

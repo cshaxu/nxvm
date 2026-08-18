@@ -13,3 +13,12 @@ platform topology, then proves ordered CPU retirement, HOLD request/acknowledge,
 DMA transaction begin/commit, HOLD release and DMA advance, while the one-instruction
 run stays at its existing three ticks. This is not a calibrated D4 DMA waveform or
 an assertion of BWAIT/refresh arbitration.
+## S5-S7 Final Disposition
+
+T419 later established the single Core external-cycle overlap contract and
+Model-40's D4 selector, while IBM 5170 retained the same disabled selector
+route. S6 then proved that the current synchronous 15-byte Core prefetch refill
+has no retained in-flight predecessor and cannot honestly publish a physical
+asynchronous overlap declaration. The physical producer, PAL row/bank phases,
+BCLK, CPU BWAIT and external bus-master work transfer to the DeskPro physical
+observable timing receiver. T419 closes without a Model-L3-ready claim.
