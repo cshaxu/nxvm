@@ -3,6 +3,26 @@
 ## Current Work
 
 **Active: M5 T401.**
+## M5 T401 S55 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner: user; standing approval to continue CPU audit and directly repair confirmed small issues. |
+| Objective | Audit direct far CALL/JMP `9Ah`/`EAh` across all profiles, consume the control-transfer fixture and add direct four-profile lexical coverage. |
+| Non-goals | No control-transfer production change, CPU timing model, Core/VM interface, DeskPro claim or external-source import; no T401 closure. |
+| Reference Baseline | `29aeb0ea` (S54 P2), T401 ledger, retained Intel references, and `core-machine-control-transfer-smoke`. |
+| Candidate Proposal | [Four-profile CPU instruction-correctness audit](../proposals/m5-four-profile-cpu-instruction-correctness-audit.md), baseline far-control form batch. |
+| Files And ABI Surface | Preview smoke, CURRENT and T401 ledger only; test/documentation surface. |
+| Applicable Rules | Shared Core control-transfer ownership unchanged; coding, documentation and execution rules apply. |
+| Verification | Build/run control-transfer and preview smokes; documentation governance; diff check. |
+| Expected Markers | Existing control-transfer marker and `M5:T401:S55:DIRECT-FAR-CONTROL-PREVIEW-PROFILES:OK`. |
+| Asset Needs | None. |
+| Reporting Requirements | Record form/profile/selector/target evidence, discrepancy result, commits and nonphysical boundary. |
+| Stop Conditions | Transfer any nonlocal far-control, descriptor, delivery or timing repair. |
+| Exit Criteria | `9Ah` and `EAh` scan across four profiles with 16:16 and 16:32 immediate-pointer layouts plus 80386 operand/address prefixes; runtime fixture passes; ledger records conclusion. |
+| Original Owner Request | Continue CPU audit before later DeskPro L3 work with direct repair of confirmed small issues. |
+| Similar-Issue Sweep | Treat direct far CALL and JMP together; distinguish offset width, selector field, code-size and 80386 operand/address forms via existing execution proof and new lexical matrix. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T395 S1 P4 `vm-0-5-0395` /
