@@ -845,3 +845,7 @@ S33 audits LES/LDS `C4h`/`C5h`. Intel's 8086/80386 references define memory-only
 `M5:T401:S33:LES-LDS-PROFILES:OK` retains all-four-profile real mode, 80386 attributes, register-form/LOCK rejection, protected delivery/limits and IRQ proof. `M5:T401:S33:LES-LDS-PREVIEW-PROFILES:OK` records all-four-profile lexical availability; these are original 8086 instructions.
 
 No production discrepancy was found. This remains CPU semantic/nonphysical timing-baseline evidence only and does not establish physical timing, DeskPro L3 or a Core/VM interface change.
+
+## S33 Acceptance
+
+S33 closes LES/LDS `C4h`/`C5h` coverage with focused runtime and preview proof across all four profiles. It retains far-pointer memory-only semantics, 80386 width attributes, register/LOCK rejection, protected limits and IRQ boundaries. No production discrepancy was found; Core timing remains explicitly nonphysical. S34 owns DAA/DAS/AAA/AAS/AAM/AAD.
