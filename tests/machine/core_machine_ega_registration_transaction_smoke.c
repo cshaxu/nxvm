@@ -151,6 +151,31 @@ C_INT main(C_VOID)
     finalize(&adapter, &memory);
 
     initialize(&adapter, &memory, &port);
+    {
+        core_machine_memory_test_allocation allocation = { TYPE_TRUE, 0u };
+
+        failed |= !register_provider_fillers(&memory, &filler,
+            CORE_MACHINE_MEMORY_DEVICE_PROVIDER_INITIAL_CAPACITY);
+        memory.connect.device_provider_test_allocation = &allocation;
+        failed |= core_machine_memory_register_device_provider(&memory, 0x1c00u,
+            1u, ignored_read, ignored_device_write, ignored_query, &filler) !=
+            TYPE_STATUS_NO_MEMORY;
+        failed |= allocation.attempts != 1u ||
+            memory.connect.device_provider_count !=
+                CORE_MACHINE_MEMORY_DEVICE_PROVIDER_INITIAL_CAPACITY ||
+            memory.connect.device_provider_capacity !=
+                CORE_MACHINE_MEMORY_DEVICE_PROVIDER_INITIAL_CAPACITY;
+        memory.connect.device_provider_test_allocation = STD_NULL;
+        failed |= core_machine_memory_register_device_provider(&memory, 0x1c00u,
+            1u, ignored_read, ignored_device_write, ignored_query, &filler) !=
+            TYPE_STATUS_OK;
+        failed |= memory.connect.device_provider_count !=
+            CORE_MACHINE_MEMORY_DEVICE_PROVIDER_INITIAL_CAPACITY + 1u ||
+            memory.connect.device_provider_capacity <=
+                CORE_MACHINE_MEMORY_DEVICE_PROVIDER_INITIAL_CAPACITY;
+    }
+    finalize(&adapter, &memory);
+    initialize(&adapter, &memory, &port);
     failed |= !register_provider_fillers(&memory, &filler,
         CORE_MACHINE_MEMORY_DEVICE_PROVIDER_LIMIT);
     failed |= core_machine_vadp_configure_ega_sequencer(&adapter, &memory,

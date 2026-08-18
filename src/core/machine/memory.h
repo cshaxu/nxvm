@@ -11,6 +11,8 @@ extern "C" {
 #include "core/machine/memory_interface.h"
 
 typedef struct t_port t_port;
+typedef struct core_machine_memory_test_allocation
+    core_machine_memory_test_allocation;
 
 #define CORE_MACHINE_DEVICE_RAM "Unknown Random-access Memory"
 
@@ -60,6 +62,7 @@ typedef struct {
     core_machine_memory_device_provider *device_providers;
     type_native_unsigned device_provider_count;
     type_native_unsigned device_provider_capacity;
+    core_machine_memory_test_allocation *device_provider_test_allocation;
     type_bool mappings_frozen;
     core_machine_a20_wrap_policy a20_wrap_policy;
 } t_ram_connect;
@@ -69,11 +72,11 @@ typedef struct t_ram {
     t_ram_connect connect;
 } t_ram;
 
-/* Private test-only observation for one core-owned backing allocation. */
-typedef struct core_machine_memory_test_allocation {
+/* Private test-only observation for one Core-owned allocation. */
+struct core_machine_memory_test_allocation {
     type_bool fail;
     STD_SIZE_T attempts;
-} core_machine_memory_test_allocation;
+};
 
 #define VRAM_BIT_A20  0x00100000
 #define VRAM_FLAG_A20 0x02

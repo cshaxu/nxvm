@@ -228,6 +228,12 @@ static type_status core_machine_memory_reserve_device_provider(t_ram *ram)
     if (capacity > CORE_MACHINE_MEMORY_DEVICE_PROVIDER_LIMIT) {
         capacity = CORE_MACHINE_MEMORY_DEVICE_PROVIDER_LIMIT;
     }
+    if (ram->connect.device_provider_test_allocation != STD_NULL) {
+        ++ram->connect.device_provider_test_allocation->attempts;
+        if (ram->connect.device_provider_test_allocation->fail) {
+            return TYPE_STATUS_NO_MEMORY;
+        }
+    }
     providers = (core_machine_memory_device_provider *)STD_CALLOC(capacity,
         sizeof(*providers));
     if (providers == STD_NULL) return TYPE_STATUS_NO_MEMORY;

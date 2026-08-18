@@ -29,6 +29,9 @@ write observer is published.
 - An overlay retains its existing overlap admission behavior. It does not gain
   implicit priority over an earlier provider.
 - Frozen registration keeps its existing `TYPE_STATUS_INVALID_ARGUMENT` result.
+- A direct private-Core allocation hook fails the first growth attempt after
+  twelve registrations and proves both count and capacity remain twelve; after
+  removing the hook, the same registration grows and succeeds.
 - The EGA transaction regression fills all 64 entries and confirms the
   provider-plus-observer registration returns `TYPE_STATUS_NO_MEMORY` with no
   VADP configuration, provider or observer publication. Its existing injected
