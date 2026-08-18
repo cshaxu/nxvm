@@ -580,3 +580,10 @@ combination.
 No production discrepancy was found. This remains CPU semantic/nonphysical
 timing-baseline evidence only and does not establish physical timing, DeskPro
 L3 or a Core/VM interface change.
+## S17 Acceptance
+
+S17 closes selected STOS `AAh`/`ABh` form coverage with focused runtime and
+preview proof across all four profiles. It covers accumulator payload widths,
+FLAGS preservation, REP and DF/ES destination routing, 80386 attributes and
+prefix rejection. No production discrepancy was found; existing Core timing
+remains explicitly nonphysical. S18 owns LODS `ACh`/`ADh`.
