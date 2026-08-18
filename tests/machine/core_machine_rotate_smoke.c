@@ -666,14 +666,51 @@ static C_INT rotate_test_shift_profile_and_fault(C_VOID)
     return 1;
 }
 
+static C_INT rotate_test_8086_immediate_rejection(C_VOID)
+{
+    type_unsigned_8 width;
+    type_unsigned_8 extension;
+
+    for (width = 0u; width != 2u; ++width)
+    for (extension = 0u; extension != 8u; ++extension) {
+        const type_unsigned_8 code[] = {width == 0u ? 0xc0u : 0xc1u,
+            (type_unsigned_8)((extension << 3u) | 0xc0u), 1u};
+        rotate_machine state;
+        t_cpu before;
+        t_cpu after;
+        core_machine_cpu_diagnostic diagnostic;
+        C_INT failed = !rotate_prepare(CORE_MACHINE_CPU_PROFILE_8086, &state);
+
+        if (!failed) {
+            state.machine->executor_cpu.data.eax = 0x11223381u;
+            state.machine->executor_cpu.data.eflags = VCPU_EFLAGS_CF |
+                VCPU_EFLAGS_OF | VCPU_EFLAGS_AF;
+            before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+            failed |= !rotate_run_real(&state, code, sizeof(code), 1, &after,
+                &diagnostic) || !diagnostic.first_fault.valid || !TYPE_GET_BIT(
+                diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_UD) ||
+                after.data.eip != 0u || after.data.eax != before.data.eax ||
+                after.data.ecx != before.data.ecx || after.data.eflags !=
+                before.data.eflags;
+        }
+        core_machine_destroy(state.machine);
+        if (failed)
+            return 0;
+    }
+    return 1;
+}
 static C_INT rotate_test_80186_immediate_extensions(C_VOID)
 {
+    static const core_machine_cpu_profile profiles[] = {
+        CORE_MACHINE_CPU_PROFILE_80186, CORE_MACHINE_CPU_PROFILE_80286
+    };
+    type_unsigned_8 profile;
     type_unsigned_8 width_index;
     type_unsigned_8 extension;
 
+    for (profile = 0u; profile != sizeof(profiles) / sizeof(profiles[0]); ++profile)
     for (width_index = 0u; width_index != 2u; ++width_index)
-    for (extension = 0u; extension != 8u; ++extension) {
-        const type_unsigned_8 width = width_index == 0u ? 8u : 16u;
+    for (extension = 0u; extension != 8u; ++extension) {        const type_unsigned_8 width = width_index == 0u ? 8u : 16u;
         const type_unsigned_8 opcode = width == 8u ? 0xc0u : 0xc1u;
         const type_unsigned_8 code[] = {
             opcode, (type_unsigned_8)((extension << 3u) | 0xc0u), 1u
@@ -687,8 +724,7 @@ static C_INT rotate_test_80186_immediate_extensions(C_VOID)
         t_cpu before;
         t_cpu after;
         core_machine_cpu_diagnostic diagnostic;
-        C_INT failed = !rotate_prepare(CORE_MACHINE_CPU_PROFILE_80186,
-            &state);
+        C_INT failed = !rotate_prepare(profiles[profile], &state);
 
         if (!failed) {
             state.machine->executor_cpu.data.eax = initial;
@@ -742,11 +778,13 @@ C_INT main(C_VOID)
         !rotate_test_shift_forms() ||
         !rotate_test_shift_boundaries() ||
         !rotate_test_shift_profile_and_fault() ||
+        !rotate_test_8086_immediate_rejection() ||
         !rotate_test_80186_immediate_extensions() ||
         !rotate_test_profile() || !rotate_test_access_failure())
         return 1;
     STD_PRINTF("M5:T316:S18:ROTATE:OK\n");
     STD_PRINTF("M5:T316:S19:SHIFT:OK\n");
     STD_PRINTF("M5:T401:S8:GROUP2-CL-PROFILES:OK\n");
+    STD_PRINTF("M5:T401:S21:GROUP2-IMMEDIATE-PROFILES:OK\n");
     return 0;
 }

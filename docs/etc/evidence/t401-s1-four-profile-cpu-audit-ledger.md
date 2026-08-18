@@ -667,3 +667,22 @@ preview proof across all four profiles. It fills the missing 80286 row and
 makes pre-80386 `66h` rejection explicit alongside the legal 80386 dword form.
 No production discrepancy was found; existing Core timing remains explicitly
 nonphysical. S21 owns immediate-count shift/rotate groups `C0h`/`C1h`.
+## S21 Immediate-Count Group 2
+
+S21 audits `C0h`/`C1h` immediate-count group-2 rotate/shift forms. Intel's
+80186/80386 references define the post-8086 availability, ModR/M extension,
+operand-size width and immediate count; the retained CPU execution owner
+supplies the reserved `/6` #UD boundary. This is original-source semantic/form
+evidence; no emulator implementation, ROM or guest asset was imported.
+
+`M5:T401:S21:GROUP2-IMMEDIATE-PROFILES:OK` adds complete 8086 #UD coverage
+for both opcodes and every extension, and extends the existing 80186 extension
+matrix to 80286. The retained 80386 fixture covers byte/word/dword, register/
+memory, count zero/one/large, flags, address attributes and protected access
+nonpublication. `M5:T401:S21:GROUP2-IMMEDIATE-PREVIEW-PROFILES:OK` adds the
+matching profile lexical matrix, keeping reserved `/6` as structurally
+scannable where execution rejects it.
+
+No production discrepancy was found. This remains CPU semantic/nonphysical
+timing-baseline evidence only and does not establish physical timing, DeskPro
+L3 or a Core/VM interface change.

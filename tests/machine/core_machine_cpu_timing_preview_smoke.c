@@ -369,6 +369,31 @@ static C_INT preview_test_moffs_mov_profiles(C_VOID)
     return 1;
 }
 
+static C_INT preview_test_group2_immediate_profiles(C_VOID)
+{
+    static const core_machine_cpu_profile profiles[] = {
+        CORE_MACHINE_CPU_PROFILE_80186, CORE_MACHINE_CPU_PROFILE_80286,
+        CORE_MACHINE_CPU_PROFILE_80386
+    };
+    type_unsigned_8 profile;
+    type_unsigned_8 opcode;
+    type_unsigned_8 extension;
+
+    for (opcode = 0xc0u; opcode != 0xc2u; ++opcode)
+    for (extension = 0u; extension != 8u; ++extension) {
+        const type_unsigned_8 code[] = {opcode,
+            (type_unsigned_8)((extension << 3u) | 0xc0u), 1u};
+        core_machine_cpu_instruction_lexeme lexeme;
+        if (core_machine_cpu_instruction_lexeme_scan(code, sizeof(code),
+            CORE_MACHINE_CPU_PROFILE_8086, TYPE_FALSE, &lexeme) ||
+            lexeme.available) return 0;
+        for (profile = 0u; profile != sizeof(profiles) / sizeof(profiles[0]); ++profile)
+            if (!preview_expect(code, sizeof(code), profiles[profile],
+                TYPE_FALSE, 3u, 3u)) return 0;
+    }
+    return preview_expect((const type_unsigned_8[]){0x66u, 0xc1u, 0xc0u, 1u},
+        4u, CORE_MACHINE_CPU_PROFILE_80386, TYPE_FALSE, 4u, 4u);
+}
 static C_INT preview_test_group3_profiles(C_VOID)
 {
     static const core_machine_cpu_profile profiles[] = {
@@ -684,6 +709,7 @@ C_INT main(C_VOID)
     if (!preview_test_lods_profiles()) return 19;
     if (!preview_test_scas_profiles()) return 20;
     if (!preview_test_accumulator_test_profiles()) return 21;
+    if (!preview_test_group2_immediate_profiles()) return 22;
     if (!preview_test_group3_profiles()) return 10;
     if (!preview_test_group45_profiles()) return 11;
     if (preview_test_cpu_fetch_nonpublication()) return 4;
@@ -705,5 +731,6 @@ C_INT main(C_VOID)
     STD_PRINTF("M5:T401:S18:LODS-PREVIEW-PROFILES:OK\n");
     STD_PRINTF("M5:T401:S19:SCAS-PREVIEW-PROFILES:OK\n");
     STD_PRINTF("M5:T401:S20:ACCUMULATOR-TEST-PREVIEW-PROFILES:OK\n");
+    STD_PRINTF("M5:T401:S21:GROUP2-IMMEDIATE-PREVIEW-PROFILES:OK\n");
     return 0;
 }
