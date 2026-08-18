@@ -15,11 +15,15 @@
 | Reference Baseline | Intel manuals; retained MOV/prefix/timing ledgers; current decoder/execution/preview. Secondary emulators only corroborate Intel-underspecified behavior and must be labelled reference-derived. |
 | Candidate Proposal | [Four-profile CPU instruction-correctness audit and repair program](../proposals/m5-four-profile-cpu-instruction-correctness-audit.md). |
 | Files And ABI Surface | Audit ledger, packet and focused CPU smoke only unless a bounded shared defect is reproduced; no public ABI. |
+| Applicable Rules | Execution bounded corrective/actual-diff review; shared Core CPU ownership; coding/test rules; Intel primary-source requirement; external-provider/source policy; documentation indexing. |
 | Verification | Four-profile all-opcode execution/preview matrix, byte/word/dword immediate size, 80386 prefixes, pre-80386 #UD atomicity, FLAGS/retirement; focused tests, full gate after repair, governance/diff checks. |
 | Expected Markers | New T401 S13 markers and any bounded defect marker. |
+| Reporting Requirements | Record CPU/profile, opcode, operand width and attribute state, manual/source tier, current owner, focused proof or transfer and retained nonphysical timing boundary. |
+| Stop Conditions | Stop and create a precise receiver if repair requires a broad decoder/register/fault-delivery redesign, a new CPU facility, device/board timing model or broad state-model change. |
 | Asset Needs | None. |
 | Exit Criteria | Every `B0h`--`BFh` profile/form row has focused proof or an explicit transfer; bounded repairs have full-gate proof. |
 | Original Owner Request | Continue source-backed, reference-backed or explicitly generic CPU work rather than leaving feasible work undone. |
+| Similar-Issue Sweep | For any mismatch, sweep all sixteen B0h--BFh forms, ModR/M immediate MOV forms, profile gates, prefixes, preview callers and register/flag consumers. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T395 S1 P4 `vm-0-5-0395` /
