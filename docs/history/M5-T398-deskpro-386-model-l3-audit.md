@@ -12,3 +12,5 @@ contract.
 S1 freezes the selected configuration, finite component universe, prior task
 records, residual TODO receivers and exact Model-339/PC/XT distinction before
 any final readiness decision.
+
+The [S1 matrix](../etc/evidence/t398-s1-deskpro-l3-requirement-matrix.md) freezes eleven selected capability rows and separates functional deterministic proof from every physical-visible receiver. It finds no unclassified route and prepares a truthful not-ready decision.
