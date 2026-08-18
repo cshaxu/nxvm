@@ -2,28 +2,8 @@
 
 ## Current Work
 
-**T397 S1 active.** Establish the finite Model-40 physical-device and firmware-visible timing universe, source strength, owner and probe-admissibility boundary before publishing any device availability, wait, phase or service timing value.
+No active subtask. T397 S1 is accepted and retains the required latest-task progress row pending a bounded physical-contract probe or task-closure subtask.
 
-## M5 T397 S1 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | New |
-| Admission And Approval | Owner continuing global CPU correctness/timing authorization; T396 is task-level closed and queue order selects this next DeskPro prerequisite. No exception. |
-| Objective | Reconcile every selected Model-40 FDC/DMA2/IRQ6, HDC/IRQ14, CECG/firmware, keyboard/reset/NMI and transferred board-visible route into a finite source-to-owner-to-observable ledger, then admit only a bounded source-backed implementation or explicit non-admission. |
-| Non-goals | No CPU instruction repair, generic PC/AT conclusion, physical-media representation, analog/pin waveform, ROM/media import, host wall-clock coupling, new local scheduler, VM/Core ABI change or L3 claim. |
-| Reference Baseline | T386 selected functional closure, T387/T396 transfers, physical-device/firmware proposal, current Model-40 private/BYOB composition, Core device/timeline owners and current `vm-0-5-0395` artifact. |
-| Candidate Proposal | [DeskPro 386 physical-device and firmware-timing closure](../proposals/m5-deskpro-386-physical-device-firmware-timing-closure.md). |
-| Files And ABI Surface | Source/evidence ledger and task history/status only unless a later admitted implementation batch proves a source-backed existing-owner change. |
-| Applicable Rules | Core owns shared time, DMA, PIC, PIT, device transaction and reset mechanisms; VM owns selected topology; primary sources precede bounded observations; no generic-AT substitute or Model-40-local scheduler. |
-| Verification | Complete selected-route, caller/owner, source-availability and reset/cancellation sweep; qualified reference/probe capability review; focused existing FDC/HDC/CECG/KBC/D4 regressions and documentation governance. |
-| Expected Markers | T397 S1 source/owner/probe-admissibility ledger only; no physical timing marker. |
-| Asset Needs | Read-only metadata/provenance only; no ROM, guest media or external code import. |
-| Reporting Requirements | Record every selected route, source strength, current timing/visibility owner, observable checkpoint, reset/cancellation path, missing fact and earliest receiver. |
-| Stop Conditions | Stop before implementation if primary material is absent or range-only without a qualified observable, if a proposed scalar would conflate logical service with physical media, or if a route needs a new scheduler/interface. |
-| Exit Criteria | Pushed finite ledger and accepted implementation/non-admission boundary, with every unresolved physical fact transferred explicitly. |
-| Original Owner Request | Continue the global CPU correctness/timing audit, repair clear in-scope defects, and preserve the Core/VM boundary. |
-| Similar-Issue Sweep | Sweep Model-40 private/BYOB routes, FDC/DMA/IRQ, HDC/IRQ, CECG/VADP/firmware, KBC/reset/NMI, D3PE/component evidence, retained TODOs and local reference implementations. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T395 S1 P4 `vm-0-5-0395` /
@@ -50,6 +30,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T397 S1 | Accepted: finite FDC/HDC/CECG/KBC-NMI/DMA source-owner-probe ledger with 13 focused regressions; no physical scalar admitted. Transfers only a bounded contract probe or closure decision. [Acceptance audit](../etc/evidence/t397-s1-device-timing-acceptance-audit.md). |
 | T396 | Closed: finite Model-40 source/owner, six-domain, reset and callback-order ledger retained; all unsourced physical clock, phase, wait and device/firmware visibility facts transfer to the next DeskPro candidate. No physical scalar or L3 claim. [Closure audit](../etc/evidence/t396-s2-task-closure-audit.md). |
 | T395 | Closed: private 12-to-64 bounded Core route growth with direct allocation/limit rollback, frozen-registration and order/decline proof. Transfers only the queued DeskPro board-level timing receiver. [Closure audit](../etc/evidence/t395-s2-task-closure-audit.md). |
 | T394 | Closed: S1-S7 establish the complete C0 81-key qualification and Core copied-descriptor safety boundary, then transfer physical selection solely to the queued source-backed DeskPro board clock-plan contract. No physical clock or L3 claim. [Closure audit](../etc/evidence/t394-s7-physical-qualification-closure-audit.md). |
@@ -57,7 +38,6 @@
 | T391 | Closed: S1-S8 establish the bounded C0A startup predecessor, complete C1 aggregate disposition and the truthful transfer that C1 physical qualification remains blocked pending a new finite checkpoint or earliest-owner defect. No Core/VM interface, timing, physical, board, firmware or L3 claim. [Closure audit](../etc/evidence/t391-s8-startup-semantic-closure-audit.md). |
 | T389 | Stopped by owner-approved requeue: S1 proves no physical board slice can begin while 80386 successful retirement remains nonphysical; S2 archives the invalid candidate and queues a shared CPU qualification before a fresh board task. No board timing, physical-clock or L3 claim. [Audit](../etc/evidence/t389-s2-stop-and-requeue-audit.md). |
 | T388 | Closed: S1--S9 establish the sole publisher, exhaustive exact-or-nonphysical residual disposition and pre-publication physical-contract rejection. No current CPU profile is physically clock-qualified; board work transfers under this restriction. [Closure audit](../etc/evidence/t388-s9-task-closure-audit.md). |
-| T387 | Closed: source/owner inventory, exact port-`61h` reconciliation and reference qualification transfer the shared physical-timebase then physical-device/firmware prerequisites before any DeskPro L3 audit. No physical-time or L3 claim. [Closure audit](../etc/evidence/t387-s6-task-closure-transfer-audit.md). |
 
 ## Recent Governance
 

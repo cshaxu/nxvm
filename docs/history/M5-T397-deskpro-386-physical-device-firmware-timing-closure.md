@@ -14,3 +14,8 @@ observable contract, and decides whether available primary material or a
 bounded primary-constrained probe can support an implementation batch.
 
 The [S1 ledger](../etc/evidence/t397-s1-device-timing-source-owner-ledger.md) freezes five selected routes and their source/probe limits. It identifies D3PE signal-level facts but admits no scalar without a retirement-to-observable contract.
+
+
+## Coordinator Acceptance
+
+After actual-change review of S1 P2 2defd878, the coordinator accepts S1. The [acceptance audit](../etc/evidence/t397-s1-device-timing-acceptance-audit.md) confirms the complete source/owner/probe boundary and retains only a bounded probe or closure decision; no physical service timing or L3 claim is accepted.
