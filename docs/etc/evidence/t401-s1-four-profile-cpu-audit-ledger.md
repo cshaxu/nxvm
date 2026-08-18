@@ -801,3 +801,11 @@ No production discrepancy was found. This remains CPU semantic/nonphysical timin
 ## S29 Acceptance
 
 S29 closes BOUND `62h` with focused runtime and preview proof. It retains 80186+ semantics, 8086 #UD, signed #BR delivery, protected/VM86/IRQ behavior and 80386 attributes. No production discrepancy was found; Core timing remains explicitly nonphysical. S30 owns immediate IMUL `69h`/`6Bh`.
+
+## S30 Immediate IMUL
+
+S30 audits immediate IMUL `69h`/`6Bh`. Intel's 80186/80386 references define signed immediate products, CF/OF overflow publication and operand/address attributes. This is original-source semantic/form evidence; no emulator implementation, ROM or guest asset was imported.
+
+`M5:T401:S30:IMUL-IMMEDIATE-PROFILES:OK` retains 8086 #UD, 80186+ word forms, 80386 dword/attribute, memory/segment/SIB, protected-limit, VM86, IRQ and LOCK rejection proof. `M5:T401:S30:IMUL-IMMEDIATE-PREVIEW-PROFILES:OK` adds the matching lexical matrix and repairs `6Bh` imm8 byte count.
+
+Core discrepancy repaired: the preview lexer had classified `69h` but omitted `6Bh` from immediate-byte decoding, truncating legal 80186+ forms. No physical timing, DeskPro L3 or Core/VM interface claim follows.

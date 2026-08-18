@@ -7646,7 +7646,7 @@ static type_unsigned_8 core_machine_cpu_instruction_lexeme_immediate_bytes(
         if (opcode == 0xbau) return 1u;
         return 0u;
     }
-    if ((opcode & 0xc7u) == 0x04u || opcode == 0x6au ||
+    if ((opcode & 0xc7u) == 0x04u || opcode == 0x6au || opcode == 0x6bu ||
         (opcode >= 0x70u && opcode <= 0x7fu) || opcode == 0x80u ||
         opcode == 0x82u || opcode == 0x83u || opcode == 0xa8u ||
         (opcode >= 0xb0u && opcode <= 0xb7u) || opcode == 0xc0u ||

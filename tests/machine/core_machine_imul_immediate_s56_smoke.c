@@ -731,5 +731,6 @@ C_INT main(C_VOID)
         return 1;
     }
     STD_PRINTF("M5:T316:S56:IMUL-IMM:OK\n");
+    STD_PRINTF("M5:T401:S30:IMUL-IMMEDIATE-PROFILES:OK\n");
     return 0;
 }
