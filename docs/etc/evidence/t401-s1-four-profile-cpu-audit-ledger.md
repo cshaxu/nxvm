@@ -178,3 +178,44 @@ a separately classified coverage family. Every successful reachable form also
 retains an exact row, formula, range model, or explicit nonphysical timing
 record; emulator implementations may only cross-check a requirement already
 fixed from Intel material.
+
+## S6 WAIT/ESC Profile and Provider Disposition
+
+S6 re-ran the CPU-side external-coprocessor matrix against the retained Intel
+8086/80286/80386 coprocessor-interface baseline and current owners.  It found
+no shared CPU-interface discrepancy to repair.  The following result is an
+explicit interface classification, not a numerical-x87, physical-timing or
+DeskPro-L3 claim.
+
+| CPU/profile or condition | `9B` WAIT/FWAIT | ESC `D8`--`DF` | Owner and focused proof |
+| --- | --- | --- | --- |
+| 8086, 80186, 80286, 80386; FPU `none`; CR0 clear | Consumed with no provider result. | All eight escape families consume their legal byte forms without manufacturing an x87 result. | `WAIT`, `FPU_ESCAPE`, `core-machine-fpu-interface-s65-smoke`. |
+| Any selected CPU; `EM` or `TS` for ESC | N/A to the ESC predicate. | CPU raises `#NM` before provider dispatch. | `FPU_ESCAPE`; S65 vector-7/restart delivery matrix. |
+| 80386; `TS` and `MP` for WAIT | CPU raises `#NM`. | N/A. | `WAIT`; S65 vector-7/restart delivery matrix. |
+| Pending configured provider exception | CPU observes provider pending state and raises `#MF`. | N/A. | `WAIT`, `core_machine_fpu_wait_pending`; S65 vector-16 frame matrix. |
+| Configured 8087 subset | N/A unless pending exception. | Existing bounded 8087 operations route to the provider. | `FPU_ESCAPE`, retained `core-machine-fpu-8087-smoke`. |
+| Configured 80287/80387 | N/A unless pending exception. | Explicit unsupported-provider fault boundary; no arithmetic is invented. | `core_machine_fpu_escape_dispatch`; S65 unsupported-provider rows. |
+| Preview/lexeme | The scanner preserves structural byte layout. | The scanner preserves escape plus ModR/M layout; provider result is intentionally not inferred. | `core_machine_cpu_instruction_lexeme_scan`; S5 disposition. |
+
+The dispatch order is coherent with the matrix: metadata admits `D8`--`DF` as
+8086-plus external-coprocessor forms; `FPU_ESCAPE` validates the escape form,
+then applies `EM/TS` before provider dispatch; `WAIT` applies `TS && MP`
+before pending-provider `#MF`.  This order also explains why a provider-free
+ESC is a successful CPU-side consume rather than `#UD`, and why a structural
+preview remains available without a provider argument.  Existing 80386
+`66h`/`67h` and LOCK/pre-386 prefix rejection coverage remains authoritative;
+S6 made no decoder or ABI change.
+
+Focused verification on 2026-08-17 passed:
+
+- `current.core-machine-fpu-escape-smoke` and
+  `current.core-machine-fpu-interface-s65-smoke`: 2/2.
+- `core-machine-cpu-fpu-profile-smoke`:
+  `M5:T154:S1:CPU-FPU-PROFILES:OK`.
+- `core-machine-cpu-fpu-profile-closure-smoke`:
+  `M5:T158:S1:CPU-FPU-METADATA-CLOSURE:OK`.
+
+No full current-gate rerun is required by this packet because S6 made no
+production repair.  Any future numerical x87/provider admission must receive
+its own bounded task, source/reference tier and operation matrix; it cannot be
+inferred from this CPU-interface audit.
