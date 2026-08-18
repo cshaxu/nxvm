@@ -2,26 +2,6 @@
 
 ## Current Work
 
-## M5 T419 S1 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | New |
-| Admission And Approval | Owner authorization of 2026-08-18 covers continued DeskPro L3 implementation, tier-labelled original/reference/generic bridges, corrective task bookkeeping and master pushes. |
-| Objective | Qualify the existing Core-owned DMA arbitration route under actual D4 composition: a pending DMA memory cycle obtains HOLD/HLDA, commits through the sole transaction owner, releases HOLD and adds no separate locality/wait surcharge. |
-| Non-goals | Do not claim calibrated D4 DMA duration, BWAIT waveform, refresh-versus-DMA priority, DMA row retention, bus-master/cascade details or Model-L3 readiness. |
-| Reference Baseline | Original D3PE processor description: system DMA and refresh use standard multiplexed RAM cycles with no wait states; D4-RCTL defines DMA/read/write state transitions after HLDA. |
-| Candidate Proposal | [DeskPro physical-cycle and phase-timing closure](../proposals/m5-deskpro-physical-cycle-and-phase-timing.md) receiver 2. |
-| Files And ABI Surface | Existing Core machine/DMA transaction owner, existing competition smoke, artifact selection and task evidence only; preserve Core/VM direction and no second scheduler or transaction path. |
-| Applicable Rules | docs/design/ARCHITECTURE.md; docs/design/CODING.md; docs/rules/ARCHITECTURE.md; docs/rules/CODING.md; docs/rules/DOCUMENT.md; docs/rules/EXECUTION.md. |
-| Verification | Original-source review; focused actual-D4 competition regression proving CPU retire -> DMA HOLD request/acknowledge -> DMA begin/commit -> HOLD release -> DMA advance order and no added run tick; current gate; documentation gate; actual-diff review. |
-| Expected Markers | M5:T419:S1:D4-DMA-NO-WAIT:OK or M5:T419:S1:D4-DMA-NO-WAIT:TRANSFER. |
-| Asset Needs | O:/assets/research/compaq_deskpro_386_16/technical_spec_1986_textmode.txt original research; no import. |
-| Reporting Requirements | Label the no-wait assertion original-source-backed only for the high-level memory-cycle property; state that current tick does not model D4 waveform duration. |
-| Stop Conditions | Stop and transfer any work requiring physical DMA phase duration, BWAIT, refresh contention, board signal model, a second scheduler or transaction path. |
-| Exit Criteria | The focused regression runs with D4 composition configured and proves the retained DMA transaction path has no extra locality/wait surcharge beyond its sole arbitration tick; artifact and evidence identify the timing boundary. |
-| Original Owner Request | Implement DeskPro 386 L3 timing/hardware gaps using original then reference then generic-AT tiers; do not stall and preserve Core/VM boundary. |
-| Similar-Issue Sweep | Inspect all Core DMA advance routes, 80286/80386 HOLD arbitration, D4 composition, refresh hookup and transaction trace consumers; classify source hits or transfer out-of-scope physical phase work. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T419 S1 P2 `vm-0-5-0419` /`build/output/nxvm_0_5_0419.exe`, SHA-256 `E49081DCCAB999D756FFAE1F3855309DDAB6ECF720FE134B2321043F098A4ABE`. T419 runs the existing sole Core DMA transaction route under D4 composition and verifies the original-source high-level no-extra-wait property; it does not model D4 waveform duration, BWAIT or refresh arbitration. T418 instruction-boundary locality, T417 refresh, T416 DMA-HOLD and T415 paging fixes remain retained.
@@ -46,6 +26,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T419 S1 | Closed receiver: actual D4 composition qualifies the Core DMA no-extra-wait transaction route; physical DMA phases remain transferred. [Closure audit](../etc/evidence/t419-s2-d4-dma-no-wait-closure-audit.md). |
 | T418 | Closed: generic-AT locality ends at every instruction boundary; physical D4 overlap timing remains transferred. [Closure audit](../etc/evidence/t418-s2-instruction-boundary-locality-closure-audit.md). |
 | T417 | Closed: D4 counter-1 refresh low pulses invalidate generic-AT CPU locality; physical refresh timing and arbitration remain transferred. [Closure audit](../etc/evidence/t417-s2-refresh-locality-closure-audit.md). |
 | T416 | Closed: Core generic-AT locality invalidates at acknowledged DMA HOLD only; exact D4 page retention and phase work remain transferred. [Closure audit](../etc/evidence/t416-s2-dma-hold-locality-closure-audit.md). |
@@ -53,7 +34,7 @@
 | T414 | Closed: Core generic-AT external-memory locality now covers committed CPU data reads, while page walks and exact D4 physical phases remain transferred. [Closure audit](../etc/evidence/t414-s2-data-read-locality-closure-audit.md). |
 | T413 | Closed: Core generic-AT external-memory locality now covers Model-40 prefetch reads and CPU data writes; exact D4 phase/arbitration remains transferred. [Closure audit](../etc/evidence/t413-s2-external-write-locality-closure-audit.md). |
 | T412 | Closed: Model-40 now selects a Core generic-AT prefetch-locality bridge (2 KiB, miss +2/hit +0); the exact D4 row/bank PAL and physical timing remain transferred. [Closure audit](../etc/evidence/t412-s2-external-read-locality-closure-audit.md). |
-| T411 | Closed: Core persistent instruction-prefetch window and task-level lifecycle audit establish the D4 physical-cycle prerequisite, while row/page waits, BWAIT and arbitration remain explicitly transferred. [Closure audit](../etc/evidence/t411-s2-prefetch-closure-audit.md). |
+
 
 
 
