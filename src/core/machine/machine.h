@@ -120,8 +120,6 @@ struct core_machine {
     core_machine_clock_domain vadp_clock;
     core_machine_clock_domain kbc_clock;
     core_machine_clock_domain provider_clock;
-    type_unsigned_32 dma_cycle_wait_quanta;
-    type_unsigned_32 dma_cycle_wait_remaining;
     type_unsigned_32 kbc_typematic_initial_ticks;
     type_unsigned_32 kbc_typematic_repeat_ticks;
     type_unsigned_32 kbc_command_response_ticks;
@@ -185,6 +183,9 @@ struct core_machine {
     const core_machine_execution_provider *execution_provider;
     C_VOID *execution_provider_context;
     C_INT execution_provider_frozen;
+    /* Append-only scheduler state keeps existing internal offsets stable. */
+    type_unsigned_32 dma_cycle_wait_quanta;
+    type_unsigned_32 dma_cycle_wait_remaining;
 };
 
 type_status core_machine_bus_initialize(core_machine *machine);

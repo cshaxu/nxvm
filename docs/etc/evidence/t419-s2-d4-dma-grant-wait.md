@@ -11,10 +11,16 @@ tick is 250 ns.
 
 Core remains the sole transaction owner. A zero selector preserves the existing
 route. Model-40 private and BYOB composition select one quantum; reset clears
-the pending delay. The retained Core competition smoke passes unchanged, while
-the Model-40 DMA topology smoke proves the selected value and emits the T419
-marker. No D4 pin waveform, BUSRDY stretch, refresh priority or BWAIT model is
-claimed.
+the pending delay. The direct Core DMA probe proves that the first eligible
+quantum performs no write and leaves one quantum pending, while the second
+performs exactly one transfer and clears it; reset also clears the state. The
+retained Core competition smoke passes unchanged, while the Model-40 DMA topology
+smoke proves the selected value and emits the T419 marker.
+
+A clean build of pre-T419 commit 0982ae3f reproduces the three current-gate
+failures in interrupt-entry, immutable-ROM-mapping and entry-plan smokes, so they
+are documented baseline/toolchain failures rather than this bridge's regression.
+No D4 pin waveform, BUSRDY stretch, refresh priority or BWAIT model is claimed.
 
 Artifact: `vm-0-5-0419`, `build/output/nxvm_0_5_0419.exe`, 3,213,818 bytes,
 SHA-256 `CE739C2B99E41F473A6F31EDB91DE3D8BD67DBFA56363285DD6EA1CAFC857B67`.

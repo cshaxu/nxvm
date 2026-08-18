@@ -90,8 +90,6 @@ typedef struct core_machine_config {
     core_machine_instruction_timing instruction_timing;
     core_machine_external_memory_locality_timing external_memory_locality_timing;
     core_machine_clock_plan clock_plan;
-    /* Per-DMA-cycle delay in delivered DMA clock quanta; zero preserves generic timing. */
-    type_unsigned_32 dma_cycle_wait_quanta;
     /* Physical mode refuses an unallocated successful retirement before it can
      * be published into a clock-domain plan. */
     core_machine_retirement_time_contract retirement_time_contract;
@@ -107,6 +105,8 @@ typedef struct core_machine_config {
     type_unsigned_16 auxiliary_pit_base_port;
     /* False preserves PC/AT AUX; true selects a keyboard-only 8042 topology. */
     type_bool kbc_aux_absent;
+    /* Per-DMA-cycle delay in delivered DMA clock quanta; zero preserves generic timing. */
+    type_unsigned_32 dma_cycle_wait_quanta;
 } core_machine_config;
 
 typedef struct core_machine_display_port_topology {
