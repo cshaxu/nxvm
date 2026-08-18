@@ -7649,7 +7649,7 @@ static type_unsigned_8 core_machine_cpu_instruction_lexeme_immediate_bytes(
     if ((opcode & 0xc7u) == 0x04u || opcode == 0x6au || opcode == 0x6bu ||
         (opcode >= 0x70u && opcode <= 0x7fu) || opcode == 0x80u ||
         opcode == 0x82u || opcode == 0x83u || opcode == 0xa8u ||
-        (opcode >= 0xb0u && opcode <= 0xb7u) || opcode == 0xc0u ||
+        (opcode >= 0xb0u && opcode <= 0xb7u) || opcode == 0xc0u || opcode == 0xc6u ||
         opcode == 0xc1u || opcode == 0xcdu || opcode == 0xd4u ||
         opcode == 0xd5u || (opcode >= 0xe0u && opcode <= 0xe3u) ||
         (opcode >= 0xe4u && opcode <= 0xe7u) || opcode == 0xebu ||

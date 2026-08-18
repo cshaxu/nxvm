@@ -232,12 +232,18 @@ static C_INT gpr_mov_test_defaults(C_VOID)
 
 static C_INT gpr_mov_test_immediate_and_reject(C_VOID)
 {
+    static const core_machine_cpu_profile profiles[] = {
+        CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
+        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
+    };
     static const type_unsigned_8 valid[][6] = {
         {0xc6u,0x06u,0,0x10u,0x5au,0},
         {0xc7u,0x06u,0,0x10u,0x34u,0x12u}
     };
+    type_unsigned_8 profile;
     type_unsigned_8 form;
 
+    for (profile = 0u; profile != sizeof(profiles) / sizeof(profiles[0]); ++profile)
     for (form = 0u; form != 2u; ++form) {
         gpr_mov_machine state;
         t_cpu before;
@@ -246,7 +252,7 @@ static C_INT gpr_mov_test_immediate_and_reject(C_VOID)
         type_status status;
         type_unsigned_16 image = 0u;
         type_unsigned_8 bytes = form == 0u ? 5u : 6u;
-        C_INT failed = !gpr_mov_prepare(CORE_MACHINE_CPU_PROFILE_80386,
+        C_INT failed = !gpr_mov_prepare(profiles[profile],
             &state);
 
         if (!failed) {
@@ -264,6 +270,7 @@ static C_INT gpr_mov_test_immediate_and_reject(C_VOID)
         core_machine_destroy(state.machine);
         if (failed) return 0;
     }
+    for (profile = 0u; profile != sizeof(profiles) / sizeof(profiles[0]); ++profile)
     for (form = 0u; form != 2u; ++form) {
         type_unsigned_8 extension;
 
@@ -276,7 +283,7 @@ static C_INT gpr_mov_test_immediate_and_reject(C_VOID)
             type_unsigned_16 image = 0xbeefu;
             type_unsigned_8 code[] = {(type_unsigned_8)(form ? 0xc7u : 0xc6u),
                 (type_unsigned_8)(0x06u | (extension << 3u)),0,0x10u,0,0};
-            C_INT failed = !gpr_mov_prepare(CORE_MACHINE_CPU_PROFILE_80386,
+            C_INT failed = !gpr_mov_prepare(profiles[profile],
                 &state);
 
             if (!failed) {
@@ -767,5 +774,6 @@ C_INT main(C_VOID)
     STD_PRINTF("M5:T316:S31:GPR-MOV:OK\n");
     STD_PRINTF("M5:T401:S13:IMMEDIATE-REGISTER-MOV-PROFILES:OK\n");
     STD_PRINTF("M5:T401:S47:GPR-MOV-MODRM-PROFILES:OK\n");
+    STD_PRINTF("M5:T401:S58:RM-IMMEDIATE-MOV-PROFILES:OK\n");
     return 0;
 }

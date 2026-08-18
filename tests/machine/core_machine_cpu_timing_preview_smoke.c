@@ -567,6 +567,36 @@ static C_INT preview_test_modrm_data_move_profiles(C_VOID)
         preview_expect((const type_unsigned_8[]){0x8eu, 0xe1u}, 2u,
         CORE_MACHINE_CPU_PROFILE_80386, TYPE_FALSE, 2u, 2u);
 }
+static C_INT preview_test_rm_immediate_mov_profiles(C_VOID)
+{
+    static const core_machine_cpu_profile profiles[] = {
+        CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
+        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
+    };
+    static const type_unsigned_8 mov8_memory[] = {0xc6u, 0x06u, 0u, 0x20u, 0x5au};
+    static const type_unsigned_8 mov16_memory[] = {0xc7u, 0x06u, 0u, 0x20u, 0x34u, 0x12u};
+    core_machine_cpu_instruction_lexeme lexeme;
+    type_unsigned_8 profile;
+
+    for (profile = 0u; profile != sizeof(profiles) / sizeof(profiles[0]); ++profile) {
+        if (!preview_expect(mov8_memory, sizeof(mov8_memory), profiles[profile],
+                TYPE_FALSE, 5u, 4u) ||
+            !preview_expect(mov16_memory, sizeof(mov16_memory), profiles[profile],
+                TYPE_FALSE, 6u, 4u) ||
+            !preview_expect((const type_unsigned_8[]){0xc6u, 0xc0u, 0x5au}, 3u,
+                profiles[profile], TYPE_FALSE, 3u, 3u) ||
+            !preview_expect((const type_unsigned_8[]){0xc7u, 0xc0u, 0x34u, 0x12u},
+                4u, profiles[profile], TYPE_FALSE, 4u, 3u) ||
+            core_machine_cpu_instruction_lexeme_scan(
+                (const type_unsigned_8[]){0xc6u, 0xc8u, 0x5au}, 3u,
+                profiles[profile], TYPE_FALSE, &lexeme) || lexeme.available) return 0;
+    }
+    return preview_expect((const type_unsigned_8[]){0x66u, 0xc7u, 0x06u, 0u,
+        0x20u, 0x78u, 0x56u, 0x34u, 0x12u}, 9u,
+        CORE_MACHINE_CPU_PROFILE_80386, TYPE_FALSE, 9u, 5u) &&
+        preview_expect((const type_unsigned_8[]){0x67u, 0xc7u, 0x46u, 0x10u,
+        0x34u, 0x12u}, 6u, CORE_MACHINE_CPU_PROFILE_80386, TYPE_FALSE, 6u, 5u);
+}
 static C_INT preview_test_shared_prefix_profiles(C_VOID)
 {
     static const core_machine_cpu_profile profiles[] = {
@@ -1344,6 +1374,7 @@ C_INT main(C_VOID)
     if (!preview_test_direct_far_control_profiles()) return 52;
     if (!preview_test_primary_alu_profiles()) return 53;
     if (!preview_test_shared_prefix_profiles()) return 54;
+    if (!preview_test_rm_immediate_mov_profiles()) return 55;
     if (!preview_test_les_lds_profiles()) return 34;
     if (!preview_test_group3_profiles()) return 10;
     if (!preview_test_group45_profiles()) return 11;
@@ -1403,5 +1434,6 @@ C_INT main(C_VOID)
     STD_PRINTF("M5:T401:S55:DIRECT-FAR-CONTROL-PREVIEW-PROFILES:OK\n");
     STD_PRINTF("M5:T401:S56:PRIMARY-ALU-PREVIEW-PROFILES:OK\n");
     STD_PRINTF("M5:T401:S57:SHARED-PREFIX-PREVIEW-PROFILES:OK\n");
+    STD_PRINTF("M5:T401:S58:RM-IMMEDIATE-MOV-PREVIEW-PROFILES:OK\n");
     return 0;
 }

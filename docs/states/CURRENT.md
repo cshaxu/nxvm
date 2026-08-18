@@ -3,6 +3,26 @@
 ## Current Work
 
 **Active: M5 T401.**
+## M5 T401 S58 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner: user; standing approval to continue CPU audit and directly repair confirmed small issues. |
+| Objective | Audit immediate-to-r/m MOV `C6h`/`C7h` across all profiles, extend valid runtime rows and add lexical coverage. |
+| Non-goals | No production change unless a shared defect is confirmed; no CPU timing model, Core/VM interface, DeskPro claim or external-source import; no T401 closure. |
+| Reference Baseline | `d78be3db` (S57 P2), T401 ledger, retained Intel references and `core-machine-gpr-mov-smoke`. |
+| Candidate Proposal | [Four-profile CPU instruction-correctness audit](../proposals/m5-four-profile-cpu-instruction-correctness-audit.md), primary MOV form batch. |
+| Files And ABI Surface | GPR-MOV smoke, preview smoke, CURRENT and T401 ledger only; test/documentation surface. |
+| Applicable Rules | Shared CPU MOV ownership unchanged; coding, documentation and execution rules apply. |
+| Verification | Build/run GPR-MOV and preview smokes; documentation governance; diff check. |
+| Expected Markers | `M5:T401:S58:RM-IMMEDIATE-MOV-PROFILES:OK` and `M5:T401:S58:RM-IMMEDIATE-MOV-PREVIEW-PROFILES:OK`. |
+| Asset Needs | None. |
+| Reporting Requirements | Record form/profile/extension evidence, discrepancy result, commits and nonphysical boundary. |
+| Stop Conditions | Transfer any nonlocal MOV, fault-delivery or timing repair. |
+| Exit Criteria | Valid `C6h /0` and `C7h /0` run across four profiles; reserved extensions reject; 80386 attributes scan; ledger records conclusion. |
+| Original Owner Request | Continue CPU audit before later DeskPro L3 work with direct repair of confirmed small issues. |
+| Similar-Issue Sweep | Treat byte/word/dword, register/memory, valid `/0` and reserved `/1` through `/7`, attributes and LOCK together. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T395 S1 P4 `vm-0-5-0395` /
