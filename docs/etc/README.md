@@ -462,6 +462,8 @@ principal documents named in [docs/README.md](../README.md).
 
 | evidence/t419-s7-task-closure-audit.md | Closure audit | T419 S7 closes the bounded D4 discrete timing task without a Model-L3 claim and transfers its asynchronous physical producer and phase prerequisites. Retain with T419 history. |
 
+| evidence/t420-s2-duplicate-audit-withdrawal.md | Closure audit | T420 S2 withdraws a duplicate four-profile CPU audit after reconciling completed T401 instruction and T360 timing authorities; no second audit path is created. Retain with T420 history. |
+
 Adding a new supporting document requires owner approval, an exact-file index
 row or a declared indexed subtree, and a stated promotion, merge, or retirement
 condition. The governance gate verifies that every supporting Markdown file is

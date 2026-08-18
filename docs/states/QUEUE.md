@@ -25,7 +25,6 @@ Detailed scope, acceptance conditions, and common constraints remain in these
 shared proposals and in each candidate's linked proposal.
 
 1. [DeskPro 386 tiered timing fallback foundation](../proposals/m5-deskpro-tiered-timing-fallback-foundation.md) -- eligible now; uses explicitly labelled original, reference-derived or generic-AT inputs to implement one retained DeskPro receiver at a time and does not accept physical/L3 readiness.
-1. [CPU execution architecture audit](../proposals/m5-cpu-execution-architecture-audit.md) -- eligible now; inventories the Intel-defined four-profile execution surface before a further implementation or timing claim.
 1. [DeskPro 386 physical-cycle and phase-timing closure](../proposals/m5-deskpro-physical-cycle-and-phase-timing.md) -- eligible after the active Core CPU-memory provenance increment closes; advances D4 external-cycle/prefetch, board arbitration, display, storage, input/NMI, and BYOB lifecycle receivers one bounded, tier-labelled mechanism at a time, with final Model-L3 audit retained separately.
 1. [Generic PC backbone foundation](../proposals/m5-generic-pc-backbone-foundation.md) -- eligible only after a comprehensive DeskPro 386 Model 40 L3 closure accepts its selected profile and the profile/device contract closes; remains before the 8088/PC/XT program.
 1. [8088 CPU-profile admission and timing closure](../proposals/m5-8088-cpu-profile.md).
