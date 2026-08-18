@@ -1139,3 +1139,13 @@ production discrepancy was found; timing remains nonphysical.
 ## S63 Acceptance
 
 S63 closes the bounded 80386 BSF/BSR audit. Runtime and preview matrices establish direction, zero/nonzero behavior, register/memory sources, 80386 attributes, 80186/80286 rejection and the retained 8086 POP CS distinction. Both focused smokes and documentation governance pass; no production discrepancy was found, timing remains nonphysical, and T401 remains open.
+
+## S64 MOVZX and MOVSX
+
+S64 independently audits 80386 MOVZX/MOVSX `0F B6h/B7h/BEh/BFh`. The retained
+MOVX fixture executes zero/sign and byte/word source forms through register
+and memory paths, 16/32-bit destination and addressing attributes,
+80186/80286 #UD and protected read-fault nonpublication. `M5:T401:S64:MOVX-PREVIEW-PROFILES:OK` adds all four opcode layouts, register/memory forms,
+80386 attributes and 80186/80286 unavailability. 8086 remains distinct
+because its `0Fh` is POP CS. No production discrepancy was found; timing
+remains nonphysical.

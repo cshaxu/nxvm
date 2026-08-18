@@ -3,6 +3,26 @@
 ## Current Work
 
 **Active: M5 T401.**
+## M5 T401 S64 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner: user; standing approval to continue CPU audit and directly repair confirmed small issues. |
+| Objective | Independently audit 80386 MOVZX/MOVSX `0F B6h/B7h/BEh/BFh` register and memory forms. |
+| Non-goals | No CPU timing model, Core/VM interface, DeskPro claim or external-source import; no T401 closure. |
+| Reference Baseline | `4ba573f1` (S63 P2), T401 ledger, retained Intel 80386 PRM, and `core-machine-movx-smoke`. |
+| Candidate Proposal | [Four-profile CPU instruction-correctness audit](../proposals/m5-four-profile-cpu-instruction-correctness-audit.md), 80386 secondary-data-extension batch. |
+| Files And ABI Surface | MOVX smoke, preview smoke, CURRENT and T401 ledger only; test/documentation surface. |
+| Applicable Rules | Shared CPU MOVX ownership unchanged; coding, documentation and execution rules apply. |
+| Verification | Build/run MOVX and preview smokes; documentation governance; diff check. |
+| Expected Markers | `M5:T401:S64:MOVX-PROFILES:OK` and `M5:T401:S64:MOVX-PREVIEW-PROFILES:OK`. |
+| Asset Needs | None. |
+| Reporting Requirements | Record sign/zero, width/form/profile evidence, discrepancy result, commits and nonphysical boundary. |
+| Stop Conditions | Transfer any nonlocal MOVX, fault-delivery or timing repair. |
+| Exit Criteria | All zero/sign and byte/word forms cover register/memory, attributes and 80186/80286 rejection while 8086 retains POP CS. |
+| Original Owner Request | Continue CPU audit before later DeskPro L3 work with direct repair of confirmed small issues. |
+| Similar-Issue Sweep | Treat zero/sign, byte/word, register/memory, 16/32 destination attributes, old-profile rejection and fault atomicity together. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T395 S1 P4 `vm-0-5-0395` /

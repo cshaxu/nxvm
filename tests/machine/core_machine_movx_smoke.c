@@ -308,5 +308,6 @@ C_INT main(C_VOID)
     if (!movx_test_forms() || !movx_test_address_prefix() ||
         !movx_test_read_boundaries()) return 1;
     STD_PRINTF("M5:T310:S4:MOVX:OK\n");
+    STD_PRINTF("M5:T401:S64:MOVX-PROFILES:OK\n");
     return 0;
 }
