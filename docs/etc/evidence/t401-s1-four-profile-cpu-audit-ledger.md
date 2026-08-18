@@ -849,3 +849,11 @@ No production discrepancy was found. This remains CPU semantic/nonphysical timin
 ## S33 Acceptance
 
 S33 closes LES/LDS `C4h`/`C5h` coverage with focused runtime and preview proof across all four profiles. It retains far-pointer memory-only semantics, 80386 width attributes, register/LOCK rejection, protected limits and IRQ boundaries. No production discrepancy was found; Core timing remains explicitly nonphysical. S34 owns DAA/DAS/AAA/AAS/AAM/AAD.
+
+## S34 Decimal/ASCII Adjust
+
+S34 audits DAA/DAS/AAA/AAS/AAM/AAD `27h`/`2Fh`/`37h`/`3Fh`/`D4h`/`D5h`. Intel 8086/80286/80386 references define the implicit AL/AH operations, defined flag subsets and AAM divide-error behavior. This is original-source semantic/form evidence; no emulator implementation, ROM or guest asset was imported.
+
+`M5:T401:S34:DECIMAL-ADJUST-PROFILES:OK` extends the retained adjustment fixture through all four profiles, preserving defined AL/AH and AF/CF/SF/ZF/PF checks while not asserting architecturally undefined flags. It retains AAM base-zero #DE delivery/frame and nonpublication proof. `M5:T401:S34:DECIMAL-ADJUST-PREVIEW-PROFILES:OK` adds four-profile lexical proof for the simple and immediate-base forms, plus 80386 prefix layouts.
+
+No production discrepancy was found. This remains CPU semantic/nonphysical timing-baseline evidence only and does not establish physical timing, DeskPro L3 or a Core/VM interface change.

@@ -562,7 +562,8 @@ static C_INT legacy_alu_test_test_forms(C_VOID)
 static C_INT legacy_alu_test_adjust_and_xlat_forms(C_VOID)
 {
     static const core_machine_cpu_profile profiles[] = {
-        CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186
+        CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
+        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
     };
     static const type_unsigned_8 codes[][2] = {
         { 0x27u }, { 0x2fu }, { 0x37u }, { 0x3fu }, { 0xd4u, 10u },
@@ -1188,5 +1189,6 @@ int main(C_VOID)
         return 1;
     }
     STD_PRINTF("M5:T338:S2:LEGACY-ALU:OK\n");
+    STD_PRINTF("M5:T401:S34:DECIMAL-ADJUST-PROFILES:OK\n");
     return 0;
 }

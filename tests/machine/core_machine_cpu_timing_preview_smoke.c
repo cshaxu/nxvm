@@ -464,6 +464,19 @@ static C_INT preview_test_les_lds_profiles(C_VOID)
     return preview_expect((const type_unsigned_8[]){0x66u,0xc4u,0x06u,0u,0x20u},5u,CORE_MACHINE_CPU_PROFILE_80386,TYPE_FALSE,5u,4u);
 }
 
+static C_INT preview_test_decimal_adjust_profiles(C_VOID)
+{
+    static const type_unsigned_8 simple[] = {0x27u,0x2fu,0x37u,0x3fu};
+    static const core_machine_cpu_profile profiles[] = {CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186, CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386};
+    type_unsigned_8 profile; type_unsigned_8 opcode;
+    for (profile = 0u; profile != sizeof(profiles) / sizeof(profiles[0]); ++profile) {
+        for (opcode = 0u; opcode != sizeof(simple); ++opcode)
+            if (!preview_expect(&simple[opcode],1u,profiles[profile],TYPE_FALSE,1u,1u)) return 0;
+        if (!preview_expect((const type_unsigned_8[]){0xd4u,10u},2u,profiles[profile],TYPE_FALSE,2u,2u) || !preview_expect((const type_unsigned_8[]){0xd5u,10u},2u,profiles[profile],TYPE_FALSE,2u,2u)) return 0;
+    }
+    return preview_expect((const type_unsigned_8[]){0x66u,0xd4u,10u},3u,CORE_MACHINE_CPU_PROFILE_80386,TYPE_FALSE,3u,3u) && preview_expect((const type_unsigned_8[]){0x67u,0xd5u,10u},3u,CORE_MACHINE_CPU_PROFILE_80386,TYPE_FALSE,3u,3u);
+}
+
 static C_INT preview_test_lar_lsl_profiles(C_VOID)
 {
     static const type_unsigned_8 lar[] = {0x0fu,0x02u,0xc1u};
@@ -913,6 +926,7 @@ C_INT main(C_VOID)
     if (!preview_test_imul_immediate_profiles()) return 31;
     if (!preview_test_pusha_popa_profiles()) return 32;
     if (!preview_test_lar_lsl_profiles()) return 33;
+    if (!preview_test_decimal_adjust_profiles()) return 35;
     if (!preview_test_les_lds_profiles()) return 34;
     if (!preview_test_group3_profiles()) return 10;
     if (!preview_test_group45_profiles()) return 11;
@@ -948,5 +962,6 @@ C_INT main(C_VOID)
     STD_PRINTF("M5:T401:S31:PUSHA-POPA-PREVIEW-PROFILES:OK\n");
     STD_PRINTF("M5:T401:S32:LAR-LSL-PREVIEW-PROFILES:OK\n");
     STD_PRINTF("M5:T401:S33:LES-LDS-PREVIEW-PROFILES:OK\n");
+    STD_PRINTF("M5:T401:S34:DECIMAL-ADJUST-PREVIEW-PROFILES:OK\n");
     return 0;
 }
