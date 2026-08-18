@@ -980,3 +980,7 @@ No production discrepancy was found. This remains CPU semantic/nonphysical timin
 ## S45 CBW/CWD
 
 S45 audits CBW/CWD 98h/99h, including 80386 CWDE/CDQ operand-size forms. Existing focused proof covers all four profiles, sign boundaries, FLAGS preservation, prefixes, LOCK and IRQ behavior; timing remains nonphysical.
+
+## S46 ModR/M XCHG
+
+S46 audits XCHG 86h/87h. Existing focused proof covers four profiles, register/memory forms, 80386 attributes, LOCK, fault atomicity and IRQ; timing remains nonphysical.
