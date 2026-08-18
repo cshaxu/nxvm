@@ -30,6 +30,7 @@ static C_INT vm_model_339_selected_contract(C_VOID)
     };
     core_machine_cpu_profile cpu_profile;
     core_machine_planar_parity_observation parity;
+    core_machine_speaker_observation speaker;
     core_machine_memory_route memory_route;
     vm_session *session = STD_NULL;
     STD_SIZE_T memory_bytes = 0u;
@@ -61,6 +62,12 @@ static C_INT vm_model_339_selected_contract(C_VOID)
         session->core_machine->external_cycle_timing.page_hit_ticks != 0u ||
         session->core_machine->external_cycle_timing.overlap_policy !=
             CORE_MACHINE_EXTERNAL_CYCLE_OVERLAP_DISABLED;
+    failed |= core_machine_bus_write(session->core_machine, CORE_MACHINE_PC_AT_PORT_B,
+        0x02u) != TYPE_STATUS_OK || core_machine_get_speaker_observation(
+        session->core_machine, &speaker) != TYPE_STATUS_OK || !speaker.configured ||
+        speaker.timer_gate || !speaker.data_enabled || !speaker.output ||
+        core_machine_bus_write(session->core_machine, CORE_MACHINE_PC_AT_PORT_B,
+        0x04u) != TYPE_STATUS_OK;
     failed |= core_machine_get_cpu_profile(session->core_machine, &cpu_profile) !=
         TYPE_STATUS_OK || cpu_profile != CORE_MACHINE_CPU_PROFILE_80286;
     failed |= core_machine_get_memory_bytes(session->core_machine, &memory_bytes) !=
@@ -127,5 +134,6 @@ C_INT main(C_VOID)
         vm_default_profile_remains_ata()) return 1;
     STD_PRINTF("M5:T366:S5:MODEL339-COMPOSITION:OK\n");
     STD_PRINTF("M5:T380:S2:MODEL339-NO-XMS-PROBE:OK\n");
+    STD_PRINTF("M5:T421:S1:IBM5170-SHARED-SPEAKER:OK\n");
     return 0;
 }

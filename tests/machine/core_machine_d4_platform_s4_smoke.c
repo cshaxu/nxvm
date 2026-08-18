@@ -12,6 +12,7 @@ C_INT main(C_VOID)
     core_machine_d4_platform_config d4 = {CORE_MACHINE_PC_AT_PORT_B, 0u};
     core_machine_rtc_cmos_config cmos = {0};
     core_machine_d4_platform_observation observation;
+    core_machine_speaker_observation speaker;
     core_machine *machine = STD_NULL;
     type_unsigned_32 value = 0u;
     C_INT failed = 0;
@@ -55,6 +56,30 @@ C_INT main(C_VOID)
         (value & 0x20u) != 0x20u || core_machine_reset(machine) != TYPE_STATUS_OK ||
         core_machine_bus_read(machine, 0x0061u, &value) != TYPE_STATUS_OK || value != 0x1fu;
     if (!failed) STD_PRINTF("M5:T386:S25:D4-PORT-B-SYSTEM-PIT:OK\n");
+
+    if (!failed) failed |= core_machine_bus_write(machine, 0x0061u, 0x02u) !=
+        TYPE_STATUS_OK || core_machine_get_speaker_observation(machine, &speaker) !=
+        TYPE_STATUS_OK || !speaker.configured || speaker.timer_gate ||
+        !speaker.data_enabled || !speaker.output ||
+        core_machine_bus_write(machine, 0x0061u, 0x00u) != TYPE_STATUS_OK ||
+        core_machine_get_speaker_observation(machine, &speaker) != TYPE_STATUS_OK ||
+        speaker.output || core_machine_bus_write(machine, 0x0043u, 0xb4u) !=
+        TYPE_STATUS_OK || core_machine_bus_write(machine, 0x0042u, 2u) !=
+        TYPE_STATUS_OK || core_machine_bus_write(machine, 0x0042u, 0u) !=
+        TYPE_STATUS_OK || core_machine_bus_write(machine, 0x0061u, 0x03u) !=
+        TYPE_STATUS_OK || core_machine_get_speaker_observation(machine, &speaker) !=
+        TYPE_STATUS_OK || !speaker.timer_gate || !speaker.data_enabled ||
+        !speaker.timer_output || !speaker.output || core_machine_advance_time(machine,
+        2u) != TYPE_STATUS_OK || core_machine_get_speaker_observation(machine,
+        &speaker) != TYPE_STATUS_OK || speaker.timer_output || speaker.output ||
+        core_machine_advance_time(machine, 1u) != TYPE_STATUS_OK ||
+        core_machine_get_speaker_observation(machine, &speaker) != TYPE_STATUS_OK ||
+        !speaker.timer_output || !speaker.output;
+    if (!failed) STD_PRINTF("M5:T421:S1:D4-SPEAKER-LINE:OK\n");
+    if (!failed) failed |= core_machine_reset(machine) != TYPE_STATUS_OK ||
+        core_machine_get_speaker_observation(machine, &speaker) != TYPE_STATUS_OK ||
+        !speaker.configured || !speaker.timer_gate || !speaker.data_enabled ||
+        speaker.output != speaker.timer_output;
 
     if (!failed) failed |= core_machine_bus_write(machine, 0x0061u, 0x03u) != TYPE_STATUS_OK ||
         core_machine_bus_write(machine, 0x0070u, 0x80u) !=

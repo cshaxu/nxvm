@@ -3992,12 +3992,42 @@ static C_VOID core_machine_pc_at_refresh_timer_program(core_machine *machine)
     core_machine_port_write(&machine->executor_port, 0x0041u, 0u);
 }
 
+static type_unsigned_8 core_machine_pc_at_port_b_speaker_value(
+    const core_machine *machine)
+{
+    if (machine == STD_NULL) return 0u;
+    if (machine->d4_platform_configured) return machine->d4_platform_port_b;
+    if (machine->planar_parity_configured) return machine->planar_parity_port_b;
+    return 0u;
+}
+
+static C_VOID core_machine_pc_at_speaker_refresh(core_machine *machine)
+{
+    type_unsigned_8 value;
+
+    if (machine == STD_NULL) return;
+    value = core_machine_pc_at_port_b_speaker_value(machine);
+    machine->speaker_output = (value & 0x02u) != 0u &&
+        ((value & 0x01u) == 0u ||
+        core_machine_pit_get_output(&machine->shared_pit, 2u));
+}
+
+static C_VOID core_machine_pc_at_speaker_timer_output(C_VOID *owner,
+    type_bool asserted)
+{
+    core_machine *machine = (core_machine *)owner;
+
+    (C_VOID)asserted;
+    core_machine_pc_at_speaker_refresh(machine);
+}
+
 static C_VOID core_machine_pc_at_port_b_set_speaker_gate(core_machine *machine,
     type_unsigned_8 value)
 {
     if (machine == STD_NULL) return;
     core_machine_pit_set_gate(&machine->shared_pit, 2u,
         (value & 0x01u) != 0u ? TYPE_TRUE : TYPE_FALSE);
+    core_machine_pc_at_speaker_refresh(machine);
 }
 
 static C_VOID core_machine_planar_parity_memory_fault(C_VOID *owner,
@@ -4267,6 +4297,8 @@ type_status core_machine_configure_planar_parity(core_machine *machine,
     machine->planar_parity_config = *config;
     machine->planar_parity_port_b = 0x04u;
     machine->planar_parity_configured = TYPE_TRUE;
+    core_machine_pit_set_output(&machine->shared_pit, 2u,
+        core_machine_pc_at_speaker_timer_output, machine);
     core_machine_pc_at_refresh_timer_program(machine);
     core_machine_pc_at_port_b_set_speaker_gate(machine, machine->planar_parity_port_b);
     status = core_machine_memory_enable_parity(&machine->executor_memory,
@@ -4304,6 +4336,8 @@ type_status core_machine_configure_d4_platform(core_machine *machine,
     machine->d4_platform_config = *config;
     machine->d4_platform_port_b = 0x0fu;
     machine->d4_platform_configured = TYPE_TRUE;
+    core_machine_pit_set_output(&machine->shared_pit, 2u,
+        core_machine_pc_at_speaker_timer_output, machine);
     core_machine_pc_at_refresh_timer_program(machine);
     core_machine_pit_set_output(&machine->shared_pit, 1u,
         core_machine_d4_refresh_output, machine);
@@ -4395,6 +4429,24 @@ type_status core_machine_get_d4_platform_observation(const core_machine *machine
     out_observation->iochk_latched = machine->d4_platform_iochk_latched;
     out_observation->failsafe_latched = machine->d4_platform_failsafe_latched;
     out_observation->nmi_signaled = machine->d4_platform_nmi_signaled;
+    return TYPE_STATUS_OK;
+}
+type_status core_machine_get_speaker_observation(const core_machine *machine,
+    core_machine_speaker_observation *out_observation)
+{
+    type_unsigned_8 value;
+
+    if (machine == STD_NULL || out_observation == STD_NULL) {
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
+    value = core_machine_pc_at_port_b_speaker_value(machine);
+    out_observation->configured = machine->d4_platform_configured ||
+        machine->planar_parity_configured;
+    out_observation->timer_gate = (value & 0x01u) != 0u;
+    out_observation->data_enabled = (value & 0x02u) != 0u;
+    out_observation->timer_output = core_machine_pit_get_output(
+        &machine->shared_pit, 2u);
+    out_observation->output = machine->speaker_output;
     return TYPE_STATUS_OK;
 }
 type_status core_machine_configure_absent_memory(core_machine *machine,
@@ -5043,6 +5095,7 @@ static type_status core_machine_cold_reset(core_machine *machine)
     machine->planar_parity_port_b = machine->planar_parity_configured ? 0x04u : 0u;
     machine->planar_parity_latched = TYPE_FALSE;
     machine->planar_parity_nmi_signaled = TYPE_FALSE;
+    machine->speaker_output = TYPE_FALSE;
     machine->d4_platform_port_b = machine->d4_platform_configured ? 0x0fu : 0u;
     machine->d4_platform_iochk_latched = TYPE_FALSE;
     machine->d4_platform_failsafe_latched = TYPE_FALSE;

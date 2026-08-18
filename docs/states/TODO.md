@@ -59,12 +59,14 @@ adopts them.
   color, phase, and colorburst as an optional renderer/profile capability only
   after digital CGA is complete. Do not fold it into VADP digital state or use
   it to claim EGA/VGA support.
-- [ ] **PC/AT speaker/PPI `61h` (`TODO(Medium)`).** No core speaker/PPI owner
-  exists. Admit it only from a DOS or Windows corpus that needs gate/speaker
-  timing, with a documented 8253 channel-2 and port-`61h` contract,
-  deterministic event ownership, reset behavior, and a copied host-audio
-  boundary. Do not use host audio time as guest time.
-- [ ] **Serial, parallel, and game-port interfaces (`TODO(Low)`).** These
+- [ ] **PC/AT host speaker rendering and PPI breadth (`TODO(Medium)`).** T421
+  provides one Core-owned port-`61h`/PIT-channel-2 logical speaker line shared
+  by Model-40 D4 and 5170 planar selection. It does not provide host audio,
+  waveform/amplitude or physical-frequency behavior, 8255 PPI breadth, or a
+  DOS/Windows audio corpus. Re-admit only with a named consumer, deterministic
+  event ownership, reset proof and a copied host-audio boundary; host audio
+  time must never become guest time.
+- [ ] **Serial, parallel, and game-port interfaces (TODO(Low)).** These
   controllers have no selected core owners. Admit one interface at a time only
   from a named corpus and hardware contract, preserving core-owned port,
   IRQ/DMA, reset, and deterministic-event boundaries; do not add generic host

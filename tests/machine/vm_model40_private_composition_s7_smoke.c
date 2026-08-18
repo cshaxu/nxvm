@@ -17,6 +17,7 @@ C_INT main(C_VOID)
     core_machine_cpu_profile cpu_profile;
     STD_SIZE_T memory_bytes;
     core_machine_d4_platform_observation d4;
+    core_machine_speaker_observation speaker;
     type_unsigned_32 value = 0u;
     type_unsigned_8 rom_byte = 0u;
     const core_machine_run_budget budget = { 1u, 0u };
@@ -57,6 +58,12 @@ C_INT main(C_VOID)
         core_machine_memory_read(session->core_machine, 0x000ffff0u, &rom_byte,
             sizeof(rom_byte)) != TYPE_STATUS_OK || rom_byte != 0x26u ||
         session->core_machine->shared_kbc.connect.aux_present ||
+        core_machine_bus_write(session->core_machine, 0x0061u, 0x02u) !=
+            TYPE_STATUS_OK || core_machine_get_speaker_observation(
+            session->core_machine, &speaker) != TYPE_STATUS_OK ||
+        !speaker.configured || speaker.timer_gate || !speaker.data_enabled ||
+        !speaker.output || core_machine_bus_write(session->core_machine, 0x0061u,
+            0x0fu) != TYPE_STATUS_OK ||
         session->core_machine->shared_kbc.data.aux_enabled ||
         (session->core_machine->shared_kbc.data.command_byte &
             CORE_MACHINE_KBC_COMMAND_DISABLE_AUX) == 0u;
@@ -96,6 +103,7 @@ C_INT main(C_VOID)
                 CORE_MACHINE_KBC_PENDING_NONE;
     }
     if (!failed) STD_PRINTF("M5:T386:S7:MODEL40-PRIVATE-COMPOSITION:OK\n");
+    if (!failed) STD_PRINTF("M5:T421:S1:MODEL40-SPEAKER-SELECTION:OK\n");
     if (!failed) STD_PRINTF("M5:T386:S7:EXTERNAL-ROM-GUARD:OK\n");
     if (!failed) STD_PRINTF("M5:T390:S34:MODEL40-DETERMINISTIC-CONTRACT:OK\n");
     vm_session_destroy(session);

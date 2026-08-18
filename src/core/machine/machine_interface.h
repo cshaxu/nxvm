@@ -189,6 +189,15 @@ typedef struct core_machine_d4_platform_observation {
     C_INT failsafe_latched;
     C_INT nmi_signaled;
 } core_machine_d4_platform_observation;
+/* Copied logical speaker-line state. The Core owns port-B and PIT sampling;
+ * host audio is a separate, optional consumer. */
+typedef struct core_machine_speaker_observation {
+    C_INT configured;
+    C_INT timer_gate;
+    C_INT data_enabled;
+    C_INT timer_output;
+    C_INT output;
+} core_machine_speaker_observation;
 
 /* A profile-selected, bounded unpopulated memory window. Reads return the
  * declared fallback byte and writes are deliberately discarded; it never adds
@@ -357,6 +366,8 @@ type_status core_machine_get_planar_parity_observation(const core_machine *machi
     core_machine_planar_parity_observation *out_observation);
 type_status core_machine_get_d4_platform_observation(const core_machine *machine,
     core_machine_d4_platform_observation *out_observation);
+type_status core_machine_get_speaker_observation(const core_machine *machine,
+    core_machine_speaker_observation *out_observation);
 type_status core_machine_configure_fdc(core_machine *machine,
     const core_machine_fdc_topology *topology);
 type_status core_machine_configure_hdc(core_machine *machine,
