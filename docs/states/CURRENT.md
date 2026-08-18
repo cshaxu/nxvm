@@ -2,28 +2,29 @@
 
 ## Current Work
 
-**Active: M5 T400.**
+**Active: M5 T401.**
 
-## M5 T400 S1 Packet
+## M5 T401 S1 Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | New; M5 T400 S1. |
-| Admission And Approval | Owner explicitly authorized generic PCjs/86Box/MAME/QEMU/Bochs implementations as a second-tier reference in this conversation on 2026-08-17 after T399 closed; use them rather than leaving feasible logical work undone. Physical claims, third-party imports and Core/VM ABI changes remain excluded. |
-| Objective | Use traceable generic emulator implementations to implement or correct feasible Core/VM logical behavior and deterministic ordering for HDC, CECG and CPU/DMA/BWAIT before CPU audit; freeze the finite batch ledger as part of that execution. |
-| Non-goals | No physical Compaq timing/identity claim, ROM/media/config/source import, host-time model, Model-40 scheduler, generic behavior silently relabeled as DeskPro-specific, or speculative implementation without a traceable generic reference. |
-| Reference Baseline | T399 closure; read-only PCjs `c7f21b4fa2bdedac3d5c73094a6402fdc8b24c70`, local 86Box `4fef696a4eead1d55a28d6ac0e5bd2864e5454da`, existing Core HDC/VADP/DMA and Model-40 tests. |
-| Candidate Proposal | [DeskPro generic-reference continuation](../proposals/m5-deskpro-386-generic-reference-continuation.md). |
-| Files And ABI Surface | Proposal, generic-reference convergence ledger, evidence index and CURRENT; read-only external implementations. Existing Core HDC/VADP/DMA and VM Model-40 owners may change; no public ABI change. |
-| Applicable Rules | Execution convergence ledger; architecture Core/VM ownership; document indexing; source policy read-only reference/no import. |
-| Verification | For each admitted batch: focused build and regression, project-owned replay, exact-revision record, documentation governance and diff check. |
-| Expected Markers | `M5:T400:S1:GENERIC-REFERENCE-LEDGER-FROZEN` plus a batch-specific marker when behavior is repaired. |
-| Asset Needs | None. No O:\assets or external firmware/media is consumed. |
-| Reporting Requirements | State generic-versus-DeskPro distinction for every row, reference revision/configuration, implemented behavior/probe, receiver and physical boundary. |
-| Stop Conditions | Stop a row if no traceable generic component/configuration exists, a probe needs protected assets, or it would cross into physical time/identity. |
-| Exit Criteria | Durable finite ledger records every HDC, CECG and CPU/DMA/BWAIT row and immediately admits the first reproducible implementation candidate; no feasible generic logical repair is deferred merely for not being original hardware. |
-| Original Owner Request | “该参考的参考！你可以标注说这个不是原本的，但是你不能不去做！” |
-| Similar-Issue Sweep | Check all T399 rejected/non-eligible rows and their existing Core/VM tests so generic reference actively fills logical gaps while preserving, rather than erasing, physical TODOs. |
+| Identifier Mode | New; M5 T401 S1. |
+| Admission And Approval | Owner approved continuation into the four-profile CPU audit in this conversation on 2026-08-17 after T400 completion; generic emulator implementations remain permitted only as labeled secondary cross-checks. |
+| Objective | Freeze the source-derived, four-profile CPU instruction-family/form coverage ledger and complete the first bounded decoder/dispatch inventory batch before any semantic-completeness conclusion. |
+| Non-goals | No DeskPro board timing, device work, CPU profile fork, third-party source import, Intel-manual substitution by emulator behavior, broad decoder rewrite or global correctness/L3 claim. |
+| Reference Baseline | T400 closure; four-profile CPU audit proposal; current shared execution, decode, transaction, fault/delivery and CPU-focused current-gate source graph. |
+| Candidate Proposal | [Four-profile CPU instruction-correctness audit and repair program](../proposals/m5-four-profile-cpu-instruction-correctness-audit.md). |
+| Files And ABI Surface | CPU audit evidence/matrix, CURRENT and existing shared CPU/Core source/tests only if a source-complete bounded defect is admitted later; no Core/VM public ABI change. |
+| Applicable Rules | Execution coverage-ledger and actual-diff review; architecture shared CPU/Core ownership; coding/test rules; document indexing; source policy for Intel primary material and read-only secondary references. |
+| Verification | Reconcile decoder/dispatch inventory with all four profile gates and current CPU tests; create the durable ledger schema and first complete batch disposition; run applicable focused checks, documentation governance and diff check. |
+| Expected Markers | `M5:T401:S1:CPU-AUDIT-LEDGER-FROZEN` plus a batch marker only when its full inventory is reconciled. |
+| Asset Needs | None. No ROM, guest media, Microsoft component or external binary is needed. |
+| Reporting Requirements | Record CPU/profile/form, primary-manual citation, current owner, timing disposition, test coverage, conclusion and repair/transfer for every ledger row; state all secondary-reference limits. |
+| Stop Conditions | Stop a form when primary authority is unavailable, an optional unit or broad mechanism is required, the form cannot be bounded as a shared correction, or a source-derived row lacks a complete disposition. |
+| Exit Criteria | A durable complete coverage universe and first inventory batch are recorded without an unclassified reachable form; all discovered gaps have an earliest owner/receiver and no emulator result is presented as semantic authority. |
+| Original Owner Request | “完成这个后还继续审计CPU的”; continue the CPU instruction audit after the DeskPro generic-reference continuation completes. |
+| Similar-Issue Sweep | Inventory opcode maps, prefixes, profile gates, dispatch/execution handlers, transaction/fault/delivery routes and current CPU tests together so no reachable family is hidden by generic #UD or a later-profile assumption. |
+
 ## Current Technical Baseline
 
 - **Current developer artifact:** T395 S1 P4 `vm-0-5-0395` /
@@ -50,6 +51,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T400 | Closed: the HDC, CECG and CPU/DMA/BWAIT generic-reference ledger is exhausted; accepted logical repairs retain every DeskPro physical boundary. [Closure audit](../etc/evidence/t400-s1-task-closure-audit.md). |
 | T399 | Closed: the five-batch reference-derived DeskPro L3 ledger is exhausted; B2/B3 logical contracts are accepted, B1/B4/B5 retain exact receivers, and both reference-derived and physical L3 are not ready. [Closure audit](../etc/evidence/t399-s5-task-closure-audit.md). |
 | T398 | Closed: final exact 1986 DeskPro Model-40 audit is not-ready for L3; five physical/firmware boundaries retain explicit TODO receivers and require a fresh audit after repair. [Closure audit](../etc/evidence/t398-s2-task-closure-audit.md). |
 | T397 | Closed: selected functional FDC/HDC/CECG/KBC-NMI/DMA routes and reset/order evidence retained; physical availability, phase and service facts transfer to explicit TODO receivers. Final DeskPro L3 may make only a ready/not-ready decision. [Closure audit](../etc/evidence/t397-s2-task-closure-audit.md). |
@@ -57,7 +59,6 @@
 | T395 | Closed: private 12-to-64 bounded Core route growth with direct allocation/limit rollback, frozen-registration and order/decline proof. Transfers only the queued DeskPro board-level timing receiver. [Closure audit](../etc/evidence/t395-s2-task-closure-audit.md). |
 | T394 | Closed: S1-S7 establish the complete C0 81-key qualification and Core copied-descriptor safety boundary, then transfer physical selection solely to the queued source-backed DeskPro board clock-plan contract. No physical clock or L3 claim. [Closure audit](../etc/evidence/t394-s7-physical-qualification-closure-audit.md). |
 | T392 | Closed: S1-S5 exhaust copied C1, VM/session and FDC operation candidates, then repair the missed proposal archival and stale Queue entry; no endpoint or defect exists. Only a separately admitted generic immutable device-operation snapshot plus selected consumer contract can proceed. No Core/VM ABI, CPU timing, physical, board, firmware or L3 claim. [Corrective audit](../etc/evidence/t392-s5-closure-topology-corrective-audit.md). |
-| T391 | Closed: S1-S8 establish the bounded C0A startup predecessor, complete C1 aggregate disposition and the truthful transfer that C1 physical qualification remains blocked pending a new finite checkpoint or earliest-owner defect. No Core/VM interface, timing, physical, board, firmware or L3 claim. [Closure audit](../etc/evidence/t391-s8-startup-semantic-closure-audit.md). |
 
 ## Recent Governance
 
