@@ -560,3 +560,23 @@ preview proof across all four profiles. It covers comparison flags, REPE and
 REPNE termination, DF/segment routing, 80386 attributes and prefix rejection.
 No production discrepancy was found; existing Core timing remains explicitly
 nonphysical. S17 owns STOS `AAh`/`ABh`.
+## S17 STOS
+
+S17 audits `AAh`/`ABh` STOS. Intel's 80386 Programmer's Reference Manual
+string-instruction/STOS entries define AL/AX/EAX storage through ES:DI/EDI,
+DF-controlled destination progression, operand-size payload width,
+address-size index/count selection and REP iteration. This is original-source
+semantic/form evidence; no emulator implementation, ROM or guest asset was
+imported.
+
+`M5:T401:S17:STOS-PROFILES:OK` retains all-four-profile byte/word execution,
+FLAGS preservation, REP count zero/one/multiple behavior, ES-fixed destination
+routing, DF decrement, 80386 dword and 32-bit address forms, pre-80386 prefix
+atomic #UD, LOCK rejection, protected-limit nonpublication and IRQ behavior.
+`M5:T401:S17:STOS-PREVIEW-PROFILES:OK` adds the complete four-profile lexical
+matrix for both opcodes, REP and every selected 80386 operand/address attribute
+combination.
+
+No production discrepancy was found. This remains CPU semantic/nonphysical
+timing-baseline evidence only and does not establish physical timing, DeskPro
+L3 or a Core/VM interface change.

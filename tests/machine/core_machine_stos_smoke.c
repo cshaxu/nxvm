@@ -623,5 +623,6 @@ C_INT main(C_VOID)
         return 1;
     }
     STD_PRINTF("M5:T316:S34:STOS:OK\n");
+    STD_PRINTF("M5:T401:S17:STOS-PROFILES:OK\n");
     return 0;
 }

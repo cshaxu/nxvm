@@ -23,7 +23,7 @@
 | Asset Needs | None. |
 | Exit Criteria | Every selected `AAh`/`ABh` profile/form row has focused proof or an explicit transfer; bounded repairs have full-gate proof. |
 | Original Owner Request | Continue source-backed, reference-backed or explicitly generic CPU work rather than leaving feasible work undone. |
-| Similar-Issue Sweep | For any mismatch, sweep CMPS width/repeat/DF/condition forms, string siblings, profile gates, prefixes, preview callers and address/segment/register/flag consumers. |
+| Similar-Issue Sweep | For any mismatch, sweep STOS width/repeat/DF/destination forms, string siblings, profile gates, prefixes, preview callers and address/segment/register/flag consumers. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T395 S1 P4 `vm-0-5-0395` /
