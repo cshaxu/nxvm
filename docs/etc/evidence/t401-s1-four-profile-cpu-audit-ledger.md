@@ -532,3 +532,24 @@ L3 or a Core/VM interface change.
 S15 closes selected MOVS `A4h`/`A5h` form coverage with focused runtime and
 preview proof. The existing Core timing disposition remains explicitly
 nonphysical.
+
+## S16 CMPS
+
+S16 audits `A6h`/`A7h` CMPS. Intel's 80386 Programmer's Reference Manual
+string-instruction/CMPS entries define source-segment to ES comparison,
+FLAGS-only subtraction result, DF-controlled index progression, operand-size
+payload width, address-size index/count selection and REPE/REPNE stopping.
+This is original-source semantic/form evidence; no emulator implementation,
+ROM or guest asset was imported.
+
+`M5:T401:S16:CMPS-PROFILES:OK` retains all-four-profile byte/word execution,
+FLAGS outcomes, REPE/REPNE count zero/one/multiple behavior, source-segment
+routing, DF decrement, 80386 dword and 32-bit address forms, pre-80386 prefix
+atomic #UD, LOCK rejection, protected-limit nonpublication and IRQ behavior.
+`M5:T401:S16:CMPS-PREVIEW-PROFILES:OK` adds the complete four-profile lexical
+matrix for both opcodes, REPE/REPNE and every selected 80386 operand/address
+attribute combination.
+
+No production discrepancy was found. This remains CPU semantic/nonphysical
+timing-baseline evidence only and does not establish physical timing, DeskPro
+L3 or a Core/VM interface change.
