@@ -211,6 +211,37 @@ static C_INT ud_s1_metadata_and_lexeme(C_VOID)
     }
     return 1;
 }
+static C_INT ud_s1_lexeme_memory_form_rejection(C_VOID)
+{
+    static const type_unsigned_8 invalid[][3] = {
+        { 0x62u, 0xc0u, 0u }, { 0x8du, 0xc0u, 0u },
+        { 0xc4u, 0xc0u, 0u }, { 0xc5u, 0xc0u, 0u },
+        { 0xffu, 0xd8u, 0u }, { 0xffu, 0xe8u, 0u },
+        { 0x0fu, 0x01u, 0xc0u }, { 0x0fu, 0xb2u, 0xc0u },
+        { 0x0fu, 0xb4u, 0xc0u }, { 0x0fu, 0xb5u, 0xc0u }
+    };
+    static const type_unsigned_8 valid[][3] = {
+        { 0x62u, 0x00u, 0u }, { 0x8du, 0x00u, 0u },
+        { 0xc4u, 0x00u, 0u }, { 0xc5u, 0x00u, 0u },
+        { 0xffu, 0x18u, 0u }, { 0xffu, 0x28u, 0u },
+        { 0x0fu, 0x01u, 0x00u }, { 0x0fu, 0xb2u, 0x00u },
+        { 0x0fu, 0xb4u, 0x00u }, { 0x0fu, 0xb5u, 0x00u }
+    };
+    core_machine_cpu_instruction_lexeme lexeme;
+    STD_SIZE_T index;
+
+    for (index = 0u; index != sizeof(invalid) / sizeof(invalid[0]); ++index) {
+        if (core_machine_cpu_instruction_lexeme_scan(invalid[index],
+                sizeof(invalid[index]), CORE_MACHINE_CPU_PROFILE_80386,
+                TYPE_TRUE, &lexeme)) return 0;
+    }
+    for (index = 0u; index != sizeof(valid) / sizeof(valid[0]); ++index) {
+        if (!core_machine_cpu_instruction_lexeme_scan(valid[index],
+                sizeof(valid[index]), CORE_MACHINE_CPU_PROFILE_80386,
+                TYPE_TRUE, &lexeme) || !lexeme.available) return 0;
+    }
+    return 1;
+}
 static C_INT ud_s1_lexeme_primary_group_rejection(C_VOID)
 {
     static const type_unsigned_8 invalid[][2] = {
@@ -381,7 +412,8 @@ C_INT main(C_VOID)
             return 1;
         }
     }
-    if (!ud_s1_metadata_and_lexeme() || !ud_s1_lexeme_primary_group_rejection() ||
+    if (!ud_s1_metadata_and_lexeme() || !ud_s1_lexeme_memory_form_rejection() ||
+        !ud_s1_lexeme_primary_group_rejection() ||
         !ud_s1_lexeme_8086_pop_cs() || !ud_s1_primary_metadata_and_lexeme() ||
         !ud_s1_primary_metadata_matrix() || !ud_s1_0f_metadata_matrix() ||
         !ud_s1_protected_invalid_gate()) {
@@ -394,5 +426,6 @@ C_INT main(C_VOID)
     STD_PRINTF("M5:T401:S4:PRIMARY-METADATA-MATRIX:OK\n");
     STD_PRINTF("M5:T401:S5:LEXEME-8086-POP-CS:OK\n");
     STD_PRINTF("M5:T401:S5:LEXEME-PRIMARY-GROUPS:OK\n");
+    STD_PRINTF("M5:T401:S5:LEXEME-MEMORY-FORMS:OK\n");
     return 0;
 }

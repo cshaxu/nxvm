@@ -7595,7 +7595,16 @@ static type_bool core_machine_cpu_instruction_lexeme_modrm_form_valid(
 {
     type_unsigned_8 reg = (modrm >> 3u) & 7u;
 
-    if (extended) return TYPE_TRUE;
+    if (extended) {
+        if ((opcode == 0x01u && reg <= 3u) || opcode == 0xb2u ||
+            opcode == 0xb4u || opcode == 0xb5u)
+            return (modrm >> 6u) != 3u;
+        return TYPE_TRUE;
+    }
+    if (opcode == 0x62u || opcode == 0x8du || opcode == 0xc4u || opcode == 0xc5u)
+        return (modrm >> 6u) != 3u;
+    if (opcode == 0xffu && (reg == 3u || reg == 5u))
+        return (modrm >> 6u) != 3u;
     if (opcode == 0x8fu || opcode == 0xc6u || opcode == 0xc7u)
         return reg == 0u;
     if (opcode == 0xf6u || opcode == 0xf7u)

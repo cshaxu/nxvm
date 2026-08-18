@@ -51,6 +51,17 @@ proves `/0`--`/3` reject while `/4`--`/7` admit. This is deliberately a
 metadata/profile inventory proof only; dispatch execution, operand semantics,
 fault atomicity and timing remain assigned to their form-level tests and
 ledger rows rather than inferred from this matrix.
+## S5 Lexical Repair: Memory-Only ModR/M Forms
+
+The runtime decoder rejects register ModR/M forms for `BOUND`, `LEA`, `LES`,
+`LDS`, `FF /3` and `/5` far CALL/JMP, `0F 01 /0`--`/3` table-memory forms,
+and `0F B2/B4/B5` LSS/LFS/LGS. The preview scanner had decoded their byte
+layout but did not retain the memory-only constraint. It now rejects the
+register forms before publishing a lexeme, while the regression preserves one
+valid memory form for each owner and reports
+`M5:T401:S5:LEXEME-MEMORY-FORMS:OK`. This is decoder/preview coherence only;
+privilege, descriptor, operand fault and timing evidence remain with the
+existing form owners.
 ## S5 Lexical Repair: Primary ModR/M Groups
 
 Intel's primary group encodings reserve `8F /1`--`/7`, `C6/C7 /1`--`/7`,
