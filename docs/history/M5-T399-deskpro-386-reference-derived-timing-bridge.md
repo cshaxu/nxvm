@@ -39,7 +39,7 @@ production defect or Core/VM interface change.
 
 ## S4 B4 HDC Disposition
 
-S4 rejects PCjs's generic IBM Type-5 HDC as a reference for the selected Compaq controller; its [disposition](../etc/evidence/t399-s4-b4-compaq-hdc-disposition.md) retains existing logical regressions and physical-media TODO receivers.
+S4 rejects PCjs's two generic AT Type-1 10.16 MB drives as a reference for the selected Compaq controller; its [disposition](../etc/evidence/t399-s4-b4-compaq-hdc-disposition.md) retains existing logical regressions and physical-media TODO receivers.
 
 ## Final Decision
 

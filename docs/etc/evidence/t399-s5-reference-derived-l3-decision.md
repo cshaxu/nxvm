@@ -8,8 +8,8 @@ The frozen five-batch universe is exhausted. B2 is accepted as PCjs-only,
 project-owned FDC/DMA2/IRQ6 logical ordering; B3 is accepted for the exact
 DeskPro port-61 active-low NMI semantics. B1 is non-eligible: no CPU
 retirement-to-DCLK/BWAIT signal contract exists. B4 is rejected: the exact
-PCjs DeskPro configuration selects a generic IBM Type-5 HDC, not the Compaq WD
-40 MB controller. B5 is rejected: PCjs explicitly uses IBM EGA and says Compaq
+PCjs DeskPro configuration selects two generic AT Type-1 10.16 MB drives, not the
+Compaq WD 40 MB controller. B5 is rejected: PCjs explicitly uses IBM EGA and says Compaq
 EGA support is incomplete; no exact CECG reference exists. B1/B4/B5 have the
 pre-existing precise TODO receivers.
 

@@ -2,8 +2,8 @@
 
 The coordinator reviewed the exact PCjs DeskPro configuration and its HDC
 reference, current B4 packet, Core HDC and Model-40 tests, and actual worktree.
-The configuration's IBM Type-5 47 MB AT HDC conflicts with the selected Compaq
-WD 40 MB route, so generic behavior cannot normalize B4. The complete batch is
+The configuration's two generic AT Type-1 10.16 MB drives conflict with the selected
+Compaq WD 40 MB route, so generic behavior cannot normalize B4. The complete batch is
 therefore honestly rejected rather than silently substituted.
 
 The three focused CTests pass and documentation governance passes. B4 is
