@@ -827,6 +827,7 @@ static C_INT ct_test_far_real_mode_profile(core_machine_cpu_profile profile)
     static const type_unsigned_8 retf[] = {0xcbu};
     static const type_unsigned_8 retf_immediate[] = {0xcau,2u,0u};
     static const type_unsigned_8 indirect_jmp[] = {0xffu,0x2eu,0,1};
+    static const type_unsigned_8 indirect_jmp_boundary[] = {0xffu,0x2eu,0xfeu,0xffu};
     static const type_unsigned_8 indirect_call[] = {0xffu,0x1eu,0,1,0xb0u,0xa5u,0xf4u};
     static const type_unsigned_8 pointer[] = {0,0,0,1};
     const core_machine_run_budget budget = {48u,0u};
@@ -878,6 +879,20 @@ static C_INT ct_test_far_real_mode_profile(core_machine_cpu_profile profile)
             result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
         after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= after.data.cs.selector != 0x0100u || after.data.cs.base != 0x1000u;
+    }
+    core_machine_destroy(state.machine);
+    if (failed) return 0;
+    failed = !ct_prepare_real(&state, profile);
+    if (!failed) {
+        /* ptr16:16 starts at DS:FFFE and its selector follows at DS:10000. */
+        failed = !ct_write(&state, 0u, indirect_jmp_boundary, sizeof(indirect_jmp_boundary)) ||
+            !ct_write(&state, 0xfffeu, (const type_unsigned_8[]){0u,0u}, 2u) ||
+            !ct_write(&state, 0x10000u, (const type_unsigned_8[]){0u,2u}, 2u) ||
+            !ct_write(&state, 0x2000u, halt, sizeof(halt)) ||
+            core_machine_run(state.machine, budget, &result) != TYPE_STATUS_OK ||
+            result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
+        after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+        failed |= after.data.cs.selector != 0x0200u || after.data.cs.base != 0x2000u;
     }
     core_machine_destroy(state.machine);
     if (failed) return 0;

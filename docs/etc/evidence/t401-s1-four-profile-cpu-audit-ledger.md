@@ -339,3 +339,16 @@ all extensions and both direct-register and 16-bit-addressed memory encodings.
 It verifies the exact availability partition and the two- versus four-byte
 preview layouts.  This is source-backed Intel form classification; it makes no
 physical timing or DeskPro-L3 claim and introduces no Core/VM interface change.
+The execution sweep also adds a real-mode `FF /5` ptr16:16 source boundary
+probe at `DS:FFFEh`: the offset is read at `FFFEh`, and the selector is read at
+the consecutive `10000h` byte address rather than wrapped to `0000h`. Intel's
+form definition supplies the pointer width; the exact cross-boundary access
+interpretation is **reference-derived**, corroborated without import by the
+read-only local PCjs `fnJMPFdw` handler, which reads the selector at its decoded
+linear effective address plus the operand size. NXVM's shared logical-memory
+route agrees: `INS_FF` advances the decoded pointer offset by two and submits
+that second read to the same checked access helper. The probe executes on the
+8086 and 80186 real-mode profiles and requires the resulting `0200:0000h`
+target, so a 16-bit wrap reads the deliberately different bytes at `0000h` and
+fails. No third-party source was copied; no production code or Core/VM
+interface changed.
