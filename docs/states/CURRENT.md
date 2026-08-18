@@ -2,8 +2,28 @@
 
 ## Current Work
 
-**Idle.**
+**T398 S1 active.** Build the independent exact-Model-40 requirement-and-evidence matrix for the final DeskPro Model-L3 audit; do not absorb missing physical-device or timing implementation.
 
+## M5 T398 S1 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New |
+| Admission And Approval | Owner continuing global CPU correctness/timing authorization; T397 is task-level closed and queue order selects the final DeskPro Model-L3 audit. No exception. |
+| Objective | Reconcile the selected 1986 DeskPro 386/16 configuration's CPU/state, memory/I/O, DMA, interrupts/NMI, selected devices, reset/cancellation and deterministic ordering against direct evidence and all retained receiver boundaries, producing a finite independent readiness matrix. |
+| Non-goals | No code repair, physical timing publication, device/firmware implementation, ROM/media import, expanded DeskPro variant, generic 80386 conclusion, Windows claim, x87 numeric claim or pre-decided ready outcome. |
+| Reference Baseline | T386 functional closure, T394 physical qualification, T396 board closure, T397 device closure, selected Model-40 private/BYOB composition, retained TODOs, Model-339 L3 boundary and L3 audit proposal. |
+| Candidate Proposal | [DeskPro 386 model-L3 closure audit](../proposals/m5-deskpro-386-l3-audit.md). |
+| Files And ABI Surface | Evidence matrix and task history/status only unless a later admitted corrective task proves an in-scope defect; no source, artifact or ABI change. |
+| Applicable Rules | Independent requirement-to-evidence reconciliation; Core/VM ownership boundaries; no L3 task implementation; every unresolved boundary has a named receiver; current-model distinction. |
+| Verification | Complete finite component/route matrix, prior evidence and TODO sweep, cross-device reset/cancellation/order replay using existing tests, full current-gate and documentation governance. |
+| Expected Markers | T398 S1 matrix only; no readiness marker until the decision subtask. |
+| Asset Needs | Read-only provenance only; no ROM, guest media or external code import. |
+| Reporting Requirements | For every matrix row record direct proof, owner, current status, retained receiver and whether it permits a Model-L3 readiness claim. |
+| Stop Conditions | Stop before decision if any selected component lacks a finite disposition, a cited source is ambiguous, or a row would infer physical readiness from logical functionality. |
+| Exit Criteria | Pushed finite matrix and accepted decision boundary, with no unclassified selected route. |
+| Original Owner Request | Continue the global CPU correctness/timing audit, repair clear in-scope defects, and preserve the Core/VM boundary. |
+| Similar-Issue Sweep | Sweep Model-40 private/BYOB composition, all T386/T394/T396/T397 evidence and TODOs, current tests, Model-339 L3 record and PC/XT distinction; no runtime defect class is in scope. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T395 S1 P4 `vm-0-5-0395` /
