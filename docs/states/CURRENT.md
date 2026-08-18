@@ -2,26 +2,8 @@
 
 ## Current Work
 
-## M5 T427 S1 Packet
+**Idle.**
 
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | New |
-| Admission And Approval | Owner: repository user; approval: the standing request to continue DeskPro 386 L3 work, to use original/reference/generic evidence honestly, and to commit/push to `master`; confirmed 2026-08-18. Scope: the original-source CPU BUSRDY gate only. |
-| Objective | Bind the original DeskPro CPU BUSRDY wait input to the one Core external-cycle completion/retirement path, with Model-40 selection and 5170 isolation. |
-| Non-goals | No asynchronous prefetch producer, BWAIT waveform, CLK16/BCLK scalar, ISA peripheral producer, D4 PAL row/bank model, VM scheduler, firmware/media import, or L3 acceptance. |
-| Reference Baseline | `c77e9427` after T426: external-cycle chargeable waits retire through Core only; Model-40 selects D4 timing and 5170 is disabled. New original 1986 D3PE material was transiently consulted and deleted. |
-| Candidate Proposal | [T427 proposal](../proposals/m5-deskpro-physical-cycle-and-phase-timing.md) |
-| Files And ABI Surface | Core machine config/interface and execution state, Model-40 composition, focused Core/VM smokes, CMake registration, evidence/history/status and supporting index. Append only the minimum typed Core configuration/operation required for the discrete gate. |
-| Applicable Rules | Architecture: one Core CPU transaction/retirement owner; VM only selects profile capability; no reverse dependencies. Coding: C11, `type.h` vocabulary, no test-only public state. Source: transient research only, no retained source asset. Documentation: one packet and indexed evidence. |
-| Verification | Build affected focused targets; run focused CPU BUSRDY, external-cycle, Model-40 and 5170 smokes; run the serial current-gate, documentation governance and `git diff --check`. |
-| Expected Markers | A new T427 CPU-BUSRDY focused marker, plus retained external-cycle and profile-composition markers. |
-| Asset Needs | None. The source was consulted transiently outside the repository and deleted; no ROM, PDF, media, source text, hash or path is retained. |
-| Reporting Requirements | Record original evidence tier, exact owner/boundary, reset/cancellation behavior, focused and full verification, similar-issue sweep and every residual transfer in indexed evidence. |
-| Stop Conditions | Stop and transfer if implementation needs a second CPU/scheduler route, host time, a fabricated peripheral producer, retained proprietary material, or a change beyond the discrete existing completion wait. |
-| Exit Criteria | One Core-owned reset-safe gate exists; Model-40 selects it, 5170 does not; focused proof covers blocked/released/reset behavior; all stated gates pass; residual physical receiver is explicit. |
-| Original Owner Request | Continue DeskPro L3 work with original/reference/generic evidence tiers, no fabricated claims, and direct completion of clear fixes. |
-| Similar-Issue Sweep | Search every Core completion-wait, external-cycle, DMA BUSRDY, reset/cold-reset, Model-40 and 5170 configuration/caller path. Classify CPU versus DMA signals and retain all non-CPU cases at their current owner. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T421 S1 `vm-0-5-0419` / `build/output/nxvm_0_5_0419.exe`, SHA-256 `859E1B93C6891E8EAAF0D98D4DBEF25F2383F911EC243390A50FB9A9CDBBA5BF`. T421 adds one Core-owned logical port-61h/PIT-channel-2 speaker line: Model-40 D4 and IBM 5170 planar configuration select it without a second provider; host audio and physical acoustic behavior remain transferred.
@@ -46,6 +28,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T427 | Closed: original-source CPU BUSRDY gate holds the existing Core external completion wait without retirement; Model-40 selects it and 5170 is isolated. [Evidence](../etc/evidence/t427-s1-deskpro-cpu-busready-gate.md). |
 | T426 | Closed: independent audit retains all tier-labelled logical receivers but rejects DeskPro physical/L3 acceptance pending named source/corpus blockers. [Evidence](../etc/evidence/t426-s1-deskpro-physical-l3-reaudit.md). |
 | T425 | Closed: reconciled FDC/HDC/KBC/DMA/PIC/NMI logical device phases at declared tiers; physical rates and propagation remain transferred. [Evidence](../etc/evidence/t425-s1-deskpro-device-phase-reconciliation.md). |
 | T424 | Closed: VM Model-40 BYOB now proves synthetic manifest validation, immutable mapped reset-vector execution and cold-reset replay; vendor POST/service/timing corpus remains external. [Evidence](../etc/evidence/t424-s1-model40-byob-reset-lifecycle.md). |
@@ -53,7 +36,6 @@
 | T422 | Closed: original D3PE SLOWD*/refresh/auxiliary-PIT channel-2 bridge uses one Core hold route; Model-40 binds it and 5170 remains isolated. [Evidence](../etc/evidence/t422-s1-d4-slowdown-hold.md). |
 | T421 | Closed: Core owns the logical port-61h/PIT-channel-2 speaker line; S2 proves existing planar/D4 port-B exclusivity in both orders. Model-40 and 5170 keep one selected route. [S1](../etc/evidence/t421-s1-d4-speaker-line.md), [S2](../etc/evidence/t421-s2-port-b-exclusivity.md). |
 | T420 | Withdrawn as duplicate: T401 S1-S78 already supplies the finite four-profile instruction-correctness audit and T360 S1-S5 supplies the source-timing consumer reconciliation. No second CPU audit path is created. [Closure audit](../etc/evidence/t420-s2-duplicate-audit-withdrawal.md). |
-| T419 | Closed: bounded D4 discrete timing mechanisms retain one Core owner and shared Model-40/IBM-5170 selection; the asynchronous physical producer and phase work transfer without a Model-L3 claim. [Closure audit](../etc/evidence/t419-s7-task-closure-audit.md). |
 
 ## Recent Governance
 
