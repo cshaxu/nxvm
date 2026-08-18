@@ -177,6 +177,15 @@ C_INT vm_session_insert_fdd(vm_session *session, const C_CHAR *path)
     return 0;
 }
 
+C_INT vm_session_remove_fdd(vm_session *session, const C_CHAR *path)
+{
+    if (session == STD_NULL || vm_session_control_is_running(&session->control) ||
+        vm_machine_fdd_remove_for(&session->fdd, path) != 0) return -1;
+    session->fdd_image_path[0] = '\0';
+    session->retained_config.fdd_image = STD_NULL;
+    vm_session_apply_boot_preference(session);
+    return 0;
+}
 static C_INT vm_session_insert_hdd_at_startup(vm_session *session,
     const C_CHAR *path)
 {

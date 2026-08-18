@@ -3,11 +3,31 @@
 ## Current Work
 
 **Active: M5 T404.**
+## M5 T404 S4 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner approved ongoing in-scope T404 repairs, commits and pushes on 2026-08-18. This is the S3 similar-issue corrective continuation for the same removable-media lifecycle defect. |
+| Objective | Move FDD removal behind the VM session owner so removable-media removal, like insertion, rejects a running session and updates retained media/boot state atomically when stopped. |
+| Non-goals | No controller register/timing/L3 change; no media import; no Core/VM interface expansion; no profile or Console-only exception. |
+| Reference Baseline | T404 S3 evidence and P1 `25cb4839`; existing Console adapter directly calls `vm_machine_fdd_remove_for` while insertion calls the session owner. |
+| Candidate Proposal | [T404 proposal](../proposals/m5-current-product-device-profile-capability-closure.md); [S3 evidence](../etc/evidence/t404-s3-media-lifecycle.md). |
+| Files And ABI Surface | Private VM composition `session.*`, Console machine adapter, and the existing S3 owned regression. Keep `session_interface.h` unchanged and preserve Core ownership of raw FDD mechanics. |
+| Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`, `docs/design/ARCHITECTURE.md`, and `docs/design/CODING.md`. |
+| Verification | Extend the S3 focused lifecycle smoke, run the full current CTest gate and documentation governance gate, then actual-diff review. |
+| Expected Markers | `M5:T404:S3:MEDIA-LIFECYCLE:OK` remains the complete insert/remove lifecycle marker. |
+| Asset Needs | None. The regression uses VM-created in-memory media only. |
+| Reporting Requirements | Amend the media evidence with the removal disposition, caller sweep and before/after proof; record all retained Batch B controller/display/input scope. |
+| Stop Conditions | Stop and transfer any raw FDD controller semantic, physical timing, firmware/media byte, or public ABI change. |
+| Exit Criteria | No production FDD removal bypasses the session run-state rule; stopped removal is functional and clears retained media/boot state; focused and full tests pass. |
+| Original Owner Request | Implement DeskPro 386 L3 and every hardware gap with primary sources where possible, labelled references where applicable, and generic skeletons when necessary; do not leave useful repairs blocked on unavailable perfect sources. |
+| Similar-Issue Sweep | Search all production `vm_machine_fdd_remove_for` and session removal paths, plus Console callers; disposition every hit. |
 ## Current Technical Baseline
 
-- **Current developer artifact:** T404 S3 P1 `vm-0-5-0404` /
+- **Current developer artifact:** T404 S4 P1 `vm-0-5-0404` /
   `build/output/nxvm_0_5_0404.exe`, SHA-256
-  `BDB5436DC88B22A7CCC15E701AE2CC07BC26D85829B7FDB2C38D566D5D9CF32A`.
+  `DFC7212E5C0C90C3E4922EC9BC64EF143A9AEC9E62F7C4A714650CC579368559`.
   T386 closes selected-device functional completeness at S29; its retained
   [closure audit](../etc/evidence/t386-s29-functional-closure-audit.md) fixes
   HDC current-gate coverage and transfers board, firmware and physical work.

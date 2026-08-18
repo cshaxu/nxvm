@@ -29,7 +29,13 @@ C_INT main(C_VOID)
     failed |= vm_session_insert_fdd(session, "t404-running-removable.img") == 0 ||
         session->fdd.connect.media_generation != fdd_generation ||
         session->fdd_image_path[0] != '\0';
+    failed |= vm_session_remove_fdd(session, STD_NULL) == 0 ||
+        session->fdd.connect.media_generation != fdd_generation ||
+        session->fdd_image_path[0] != '\0';
     STD_ATOMIC_STORE(&session->control.flagRun, TYPE_FALSE);
+    failed |= vm_session_remove_fdd(session, STD_NULL) != 0 ||
+        session->fdd.connect.flagDiskExist || session->fdd_image_path[0] != '\0' ||
+        session->retained_config.fdd_image != STD_NULL;
     vm_session_destroy(session);
     if (failed) return 1;
     STD_PRINTF("M5:T404:S3:MEDIA-LIFECYCLE:OK\n");

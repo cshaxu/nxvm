@@ -85,6 +85,7 @@ type_status vm_session_storage_initialize(vm_session *machine);
 C_VOID vm_session_storage_finalize(vm_session *machine);
 C_VOID vm_session_apply_boot_preference(vm_session *session);
 C_VOID vm_session_set_boot_hdd(vm_session *session, C_INT enabled);
+C_INT vm_session_remove_fdd(vm_session *session, const C_CHAR *path);
 C_VOID vm_session_consume_request(C_VOID *opaque,
     const vm_platform_request *request);
 type_status vm_session_create_model40_private(
