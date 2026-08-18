@@ -780,6 +780,13 @@ static C_VOID core_machine_vadp_read_status(t_port *port,
         return;
     }
     port->data.ioByte = core_machine_vadp_status(adapter);
+    if (adapter->data.ega_controller_configured) {
+        if (!adapter->data.ega_status_diagnostic_high) {
+            port->data.ioByte |= 0x30u;
+        }
+        adapter->data.ega_status_diagnostic_high =
+            !adapter->data.ega_status_diagnostic_high;
+    }
     if (adapter->data.ega_personality ==
         CORE_MACHINE_VADP_EGA_PERSONALITY_COMPAQ_ENHANCED_COLOR) {
         if (adapter->data.compaq_lightpen_latched) {

@@ -34,6 +34,8 @@ C_INT main(C_VOID)
     t_ram memory;
     t_vadp vadp;
     type_unsigned_8 value = 0u;
+    type_unsigned_8 status_first = 0u;
+    type_unsigned_8 status_second = 0u;
     core_machine_display_snapshot snapshot;
     core_machine_display_kind copied_kind;
     type_unsigned_8 copied_pixel_zero;
@@ -50,6 +52,10 @@ C_INT main(C_VOID)
         &sequencer) != TYPE_STATUS_OK;
     failed |= core_machine_vadp_configure_ega_controllers(&vadp,
         &controllers) != TYPE_STATUS_OK;
+
+    status_first = core_machine_port_read(&port, 0x03dau);
+    status_second = core_machine_port_read(&port, 0x03dau);
+    failed |= (status_first & 0x30u) != 0x30u || (status_second & 0x30u) != 0u;
 
     failed |= !core_machine_vadp_ega_aperture_contains(&vadp, 0x000a0000u,
         0x00010000u);
@@ -119,6 +125,10 @@ C_INT main(C_VOID)
     core_machine_vadp_reset(&vadp);
     core_machine_port_write(&port, 0x03ceu, 6u);
     core_machine_port_write(&port, 0x03cfu, 0x05u);
+    status_first = core_machine_port_read(&port, 0x03dau);
+    status_second = core_machine_port_read(&port, 0x03dau);
+    failed |= (status_first & 0x30u) != 0x30u || (status_second & 0x30u) != 0u;
+
     failed |= !core_machine_vadp_ega_aperture_contains(&vadp, 0x000a0000u,
         0x00010000u);
     failed |= !core_machine_ega_planar_read(&memory, 0x000a0000u, &value) ||

@@ -16,7 +16,7 @@ phase, firmware outcome, or Model-L3 readiness.
 | Row | Tier and source | Admitted behavior | T400 disposition | Physical receiver |
 | --- | --- | --- | --- | --- |
 | HDC multi-sector PIO / IRQ14 | Tier 2: PCjs `c7f21b4fa2bdedac3d5c73094a6402fdc8b24c70`, generic IBM AT HDC; Tier 3 project-owned CHS fixture | Data-sector completion advances CHS/count; normal status acknowledges IRQ while alternate status does not; next data sector and final completion each signal IRQ. | Accepted. The HDC smoke fixture was extended from one to two 512-byte sectors and now replays both transfers, status-port acknowledgement and completion. Existing production state machine already satisfied the contract; the missing regression was repaired. | Exact DeskPro controller identity, controller latency and media mechanics remain outside this row. |
-| CECG generic EGA register/raster ordering | Tier 2: generic EGA models in PCjs/86Box; Tier 3 only if a register-visible behavior is independently reproducible | Reset, register gating and Input Status ordering only; no Compaq raster inference. | Next admitted candidate. | CECG analogue/raster phase, monitor and firmware-visible behavior remain separate. |
+| CECG generic EGA register/raster ordering | Tier 2: PCjs and 86Box generic EGA STATUS1 paths; Tier 3 project-owned EGA port replay | STATUS1 reads reset the attribute address/data flip-flop and provide a deterministic diagnostic-bit 4/5 compatibility fallback. | Accepted. VADP now alternates bits 4/5 on each configured-EGA STATUS1 read, resets that phase on VADP reset, and preserves all existing CECG port tests. | CECG analogue/raster phase, monitor, firmware-visible behavior and Compaq pixel-mux diagnostics remain separate. |
 | CPU/DMA/BWAIT transaction ordering | Tier 2: generic emulator transaction abstractions; Tier 3 project-owned AT transaction skeleton | Deterministic arbitration/cancellation order only, if independently reproducible. | Queued after CECG; no DCLK/BWAIT scalar is inferred. | DeskPro BWAIT electrical/clock conversion remains a physical receiver. |
 
 ## HDC Probe And Result
@@ -44,3 +44,17 @@ ctest --test-dir build/t400-s1-gcc -R '^current\.core-machine-hdc-smoke$' --outp
 No third-party source, configuration, ROM, guest media, trace or binary was
 imported. This is a regression-coverage repair, not a claim that PCjs’s generic
 IBM HDC is the original DeskPro controller.
+## CECG-Shared Generic EGA Result
+
+Both PCjs and 86Box retain a generic EGA STATUS1 bit-4/5 diagnostic compatibility
+path that alternates those bits to satisfy EGA BIOS diagnostics; 86Box uses a
+separate Compaq path when a full raster color multiplexer is available. NXVM now
+implements only the generic fallback in the shared configured-EGA VADP status
+reader: the first read after reset sets bits 4/5, the next clears them, and a
+STATUS1 read still resets the attribute-controller address/data phase. The
+project-owned `core-machine-ega-planar-port-smoke` verifies the alternation and
+reset restart; all six existing CECG regressions pass unchanged.
+
+This is Tier 2 logical compatibility, not a Compaq color-mux, monitor, or
+physical-raster claim. No third-party source, configuration, ROM, guest media,
+trace or binary was imported.

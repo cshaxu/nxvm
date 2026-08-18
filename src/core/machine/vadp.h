@@ -73,6 +73,7 @@ typedef struct t_vadp_data {
     type_unsigned_8 attribute[CORE_MACHINE_VADP_ATTRIBUTE_REGISTER_COUNT];
     type_bool attribute_data_phase;
     type_bool attribute_display_enabled;
+    type_bool ega_status_diagnostic_high;
     type_bool ega_controller_configured;
     type_bool ega_planar_enabled;
     type_bool ega_planar_armed;
