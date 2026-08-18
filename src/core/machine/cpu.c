@@ -43,6 +43,9 @@ C_VOID core_machine_cpu_execution_context_initialize(
     context->debug_trap_cause = TYPE_ZERO_32;
     context->preview_mode = TYPE_FALSE;
     context->memory_access_provenance = CORE_MACHINE_CPU_MEMORY_ACCESS_DATA;
+    context->prefetch_count = 0u;
+    context->prefetch_valid = TYPE_FALSE;
+    context->prefetch_expected_valid = TYPE_FALSE;
     context->cpu_profile = CORE_MACHINE_CPU_PROFILE_80386;
     context->fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE;
     context->cpu_80386_cr_mov_ignores_mod = TYPE_FALSE;
@@ -126,6 +129,9 @@ C_VOID core_machine_cpu_state_initialize(
         context->debug_tf_before = TYPE_FALSE;
         context->debug_rf_before = TYPE_FALSE;
         context->debug_trap_cause = TYPE_ZERO_32;
+        context->prefetch_count = 0u;
+        context->prefetch_valid = TYPE_FALSE;
+        context->prefetch_expected_valid = TYPE_FALSE;
     }
     core_machine_cpu_execution_initialize(context);
 }
@@ -137,6 +143,9 @@ C_VOID core_machine_cpu_state_reset(core_machine_cpu_execution_context *context)
         context->stop_requested = TYPE_FALSE;
         context->reset_requested = TYPE_FALSE;
         context->shutdown_requested = TYPE_FALSE;
+        context->prefetch_count = 0u;
+        context->prefetch_valid = TYPE_FALSE;
+        context->prefetch_expected_valid = TYPE_FALSE;
     }
 
     cpu_state.data.eip = 0x0000fff0;

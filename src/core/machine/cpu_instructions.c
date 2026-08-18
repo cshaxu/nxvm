@@ -1301,10 +1301,20 @@ static C_VOID _s_read_cs(core_machine_cpu_execution_context *context, type_unsig
 {
     core_machine_cpu_memory_access_provenance previous =
         context->memory_access_provenance;
+    type_unsigned_32 linear = cpu_state.data.cs.base + offset;
+    type_unsigned_32 prefetch_offset;
     TYPE_TRACE_CALL_BEGIN("_s_read_cs");
-    context->memory_access_provenance = CORE_MACHINE_CPU_MEMORY_ACCESS_INSTRUCTION_FETCH;
-    _kma_read_logical(context, &cpu_state.data.cs, offset, rdata, byte,
-        _GetCPL, 1);
+    if (context->prefetch_valid && linear >= context->prefetch_linear &&
+        (prefetch_offset = linear - context->prefetch_linear) <=
+            context->prefetch_count && byte <= context->prefetch_count -
+            prefetch_offset) {
+        STD_MEMCPY((C_VOID *)rdata, context->prefetch_bytes + prefetch_offset,
+            byte);
+    } else {
+        context->memory_access_provenance = CORE_MACHINE_CPU_MEMORY_ACCESS_INSTRUCTION_FETCH;
+        _kma_read_logical(context, &cpu_state.data.cs, offset, rdata, byte,
+            _GetCPL, 1);
+    }
     context->memory_access_provenance = previous;
     TYPE_TRACE_CALL_END;
 }
@@ -1910,6 +1920,8 @@ static C_VOID _kdf_skip(core_machine_cpu_execution_context *context, type_unsign
     else
         TYPE_TRACE_CHECK_RETURN(cpu_state.data.eip = TYPE_MASK_UNSIGNED_16(
             cpu_state.data.eip + byte));
+    context->prefetch_expected_linear = cpu_state.data.cs.base + cpu_state.data.eip;
+    context->prefetch_expected_valid = TYPE_TRUE;
     TYPE_TRACE_CALL_END;
 }
 static C_VOID _kdf_code(core_machine_cpu_execution_context *context, type_virtual_address rdata, type_unsigned_8 byte)
@@ -17796,10 +17808,31 @@ static C_VOID ExecInit(core_machine_cpu_execution_context *context)
     instruction_state.data.oldcpu = cpu_state;
     instruction_state.data.except = TYPE_ZERO_32;
     instruction_state.data.excode = TYPE_ZERO_32;
-    context->memory_access_provenance = CORE_MACHINE_CPU_MEMORY_ACCESS_INSTRUCTION_PREFETCH;
-    _kma_read_linear(context, instruction_state.data.linear,
-        (type_virtual_address)instruction_state.data.opcodes, 15, _GetCPL, 1);
-    context->memory_access_provenance = CORE_MACHINE_CPU_MEMORY_ACCESS_DATA;
+    if (context->prefetch_expected_valid && instruction_state.data.linear !=
+        context->prefetch_expected_linear) context->prefetch_valid = TYPE_FALSE;
+    if (!context->prefetch_valid || instruction_state.data.linear <
+        context->prefetch_linear || instruction_state.data.linear -
+        context->prefetch_linear >= context->prefetch_count) {
+        context->prefetch_valid = TYPE_FALSE;
+        context->memory_access_provenance = CORE_MACHINE_CPU_MEMORY_ACCESS_INSTRUCTION_PREFETCH;
+        _kma_read_linear(context, instruction_state.data.linear,
+            (type_virtual_address)context->prefetch_bytes, 15, _GetCPL, 1);
+        context->memory_access_provenance = CORE_MACHINE_CPU_MEMORY_ACCESS_DATA;
+        if (!instruction_state.data.except) {
+            context->prefetch_linear = instruction_state.data.linear;
+            context->prefetch_count = 15u;
+            context->prefetch_valid = TYPE_TRUE;
+        }
+    }
+    if (context->prefetch_valid && instruction_state.data.linear >=
+        context->prefetch_linear && instruction_state.data.linear -
+        context->prefetch_linear < context->prefetch_count) {
+        type_unsigned_8 available = context->prefetch_count -
+            (type_unsigned_8)(instruction_state.data.linear - context->prefetch_linear);
+        STD_MEMSET(instruction_state.data.opcodes, 0, 15u);
+        STD_MEMCPY(instruction_state.data.opcodes, context->prefetch_bytes +
+            (instruction_state.data.linear - context->prefetch_linear), available);
+    }
     if (instruction_state.data.except) {
         instruction_state.data.oplen = 0;
     }

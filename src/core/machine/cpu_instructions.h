@@ -203,6 +203,12 @@ struct core_machine_cpu_execution_context {
      * architectural, transaction, trace, or diagnostic publication. */
     type_bool preview_mode;
     core_machine_cpu_memory_access_provenance memory_access_provenance;
+    type_unsigned_32 prefetch_linear;
+    type_unsigned_32 prefetch_expected_linear;
+    type_unsigned_8 prefetch_bytes[15];
+    type_unsigned_8 prefetch_count;
+    type_bool prefetch_valid;
+    type_bool prefetch_expected_valid;
     core_machine_cpu_profile cpu_profile;
     core_machine_fpu_profile fpu_profile;
     type_bool cpu_80386_cr_mov_ignores_mod;

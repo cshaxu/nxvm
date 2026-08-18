@@ -2,13 +2,33 @@
 
 ## Current Work
 
-**Idle.**
+## M5 T411 S1 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New |
+| Admission And Approval | Owner authorization of 2026-08-18 covers continued DeskPro L3 timing implementation and master pushes. |
+| Objective | Replace per-round stateless opcode loading with a Core-owned persistent instruction-prefetch window, including control-transfer invalidation. |
+| Non-goals | Do not publish D4 waits or claim page hits until overlap is independently observable. |
+| Reference Baseline | master at b2106566; T408 original D4 sequential-request condition and T409/T410 provenance/cycle boundaries. |
+| Candidate Proposal | [DeskPro physical-cycle and phase-timing closure](../proposals/m5-deskpro-physical-cycle-and-phase-timing.md) |
+| Files And ABI Surface | Core CPU execution internals and focused tests only; no VM interface change. |
+| Applicable Rules | docs/design/ARCHITECTURE.md; docs/design/CODING.md; docs/rules/ARCHITECTURE.md; docs/rules/CODING.md; docs/rules/EXECUTION.md. |
+| Verification | Focused prefetch-window/reset/control-transfer tests, current gate, documentation gate, actual diff review. |
+| Expected Markers | M5:T411:S1:CPU-PREFETCH-WINDOW:OK |
+| Asset Needs | Original D3PE read-only, no import. |
+| Reporting Requirements | Record exact preserved semantics and retained D4 timing boundary. |
+| Stop Conditions | Stop if window changes architectural fetch/exception semantics or needs an unsupported 80386 microarchitecture claim. |
+| Exit Criteria | Persistent window is reset-safe, invalidated on changed CS:EIP, covers instruction bytes without changing CPU semantics, and exposes actual demand/refill separation. |
+| Original Owner Request | Owner-approved DeskPro L3 implementation with original, reference-derived, and generic-AT tiers labelled; preserve Core/VM boundary. |
+| Similar-Issue Sweep | Examine reset, exceptions, interrupts, near/far control transfer, task switch, preview, paging and HOLD paths. |
+
 
 ## Current Technical Baseline
 
-- **Current developer artifact:** T410 S1 P1 `vm-0-5-0410` /
-  `build/output/nxvm_0_5_0410.exe`, SHA-256
-  `9E3EB86B62AD1CDF6A3CBEE18B9A16FBA7FF9F3E56F63E4FE060AF21B3B9E98B`.
+- **Current developer artifact:** T411 S1 P1 `vm-0-5-0411` /
+  `build/output/nxvm_0_5_0411.exe`, SHA-256
+  `E4A0786E8C80CFCCFBB37EE7BB14B502DDBA5A02C825041B8FA89A3074DFC366`.
   The isolated x64 current gate passes 287/287. T409 labels Core CPU memory
   provenance only; it does not publish original D4 timing or a Model-L3 claim.
   T386 closes selected-device functional completeness at S29; its retained

@@ -136,6 +136,21 @@ static C_INT transaction_find_external_cycle(const transaction_probe *probe,
     }
     return 0;
 }
+static type_unsigned_32 transaction_count_external_cycles(
+    const transaction_probe *probe, core_machine_trace_event_type type,
+    core_machine_cpu_memory_access_provenance provenance)
+{
+    type_unsigned_32 index;
+    type_unsigned_32 count = 0u;
+
+    if (probe == STD_NULL) return 0u;
+    for (index = 0u; index < probe->count; ++index) {
+        if (probe->events[index].type == type &&
+            probe->events[index].detail == provenance) ++count;
+    }
+    return count;
+}
+
 static C_VOID transaction_dma_program_channel2(t_port *port)
 {
     core_machine_port_write(port, 0x000cu, 0u);
@@ -157,12 +172,16 @@ C_INT main(C_VOID)
         transaction_dma_read, STD_NULL, STD_NULL
     };
     static const type_unsigned_8 code[] = {
-        0xb0u, 0x5au, 0xe6u, 0xe0u, 0xa0u, 0x10u, 0u, 0xf4u
+        0xebu, 0x01u, 0x90u, 0xb0u, 0x5au, 0xe6u, 0xe0u,
+        0xa0u, 0x10u, 0u, 0xf4u
+    };
+    static const type_unsigned_8 reset_code[] = {
+        0xb0u, 0x6cu, 0xe6u, 0xe0u, 0xf4u
     };
     core_machine *machine = STD_NULL;
     core_machine_config config = {0};
     core_machine_trace_provider trace;
-    core_machine_run_budget budget = {4u, 0u};
+    core_machine_run_budget budget = {5u, 0u};
     core_machine_run_result result;
     transaction_probe probe = {{{0}}, 0u, 0u};
     type_unsigned_8 data = 0x3cu;
@@ -209,13 +228,34 @@ C_INT main(C_VOID)
     failed |= !transaction_find_external_cycle(&probe,
         CORE_MACHINE_TRACE_CPU_EXTERNAL_CYCLE_COMMIT,
         CORE_MACHINE_CPU_MEMORY_ACCESS_INSTRUCTION_PREFETCH, &external_commit);
-    failed |= external_begin >= external_commit;    failed |= !transaction_has_provenance_pair(&probe,
-        CORE_MACHINE_CPU_MEMORY_ACCESS_INSTRUCTION_PREFETCH);
+    failed |= external_begin >= external_commit;
+    /* The control transfer starts a second logical window. Its 15-byte range
+     * crosses the reset-vector 32-bit wrap, so observation records three
+     * physical prefetch cycles: initial, destination, and wrapped tail. */
+    failed |= transaction_count_external_cycles(&probe,
+        CORE_MACHINE_TRACE_CPU_EXTERNAL_CYCLE_BEGIN,
+        CORE_MACHINE_CPU_MEMORY_ACCESS_INSTRUCTION_PREFETCH) != 3u;
+    failed |= transaction_count_external_cycles(&probe,
+        CORE_MACHINE_TRACE_CPU_EXTERNAL_CYCLE_COMMIT,
+        CORE_MACHINE_CPU_MEMORY_ACCESS_INSTRUCTION_PREFETCH) != 3u;
     failed |= !transaction_has_provenance_pair(&probe,
+        CORE_MACHINE_CPU_MEMORY_ACCESS_INSTRUCTION_PREFETCH);
+    failed |= transaction_has_provenance_pair(&probe,
         CORE_MACHINE_CPU_MEMORY_ACCESS_INSTRUCTION_FETCH);
     failed |= !transaction_has_provenance_pair(&probe,
         CORE_MACHINE_CPU_MEMORY_ACCESS_DATA);
 
+    probe.count = 0u;
+    failed |= core_machine_reset(machine) != TYPE_STATUS_OK;
+    failed |= core_machine_memory_write(machine, 0x000ffff0u, reset_code,
+        sizeof(reset_code)) != TYPE_STATUS_OK;
+    failed |= core_machine_run(machine, (core_machine_run_budget){3u, 0u},
+        &result) != TYPE_STATUS_OK;
+    failed |= result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
+    failed |= probe.port_value != 0x6cu;
+    failed |= transaction_count_external_cycles(&probe,
+        CORE_MACHINE_TRACE_CPU_EXTERNAL_CYCLE_BEGIN,
+        CORE_MACHINE_CPU_MEMORY_ACCESS_INSTRUCTION_PREFETCH) != 1u;
     core_machine_transaction_initialize(&transaction);
     core_machine_transaction_bind_trace(&transaction, transaction_state_trace,
         &state_probe);
@@ -263,5 +303,6 @@ C_INT main(C_VOID)
     STD_PRINTF("M5:T354:S2:TRANSACTION:OK\n");
     STD_PRINTF("M5:T409:S1:CPU-MEMORY-PROVENANCE:OK\n");
     STD_PRINTF("M5:T410:S1:CPU-EXTERNAL-CYCLE:OK\n");
+    STD_PRINTF("M5:T411:S1:CPU-PREFETCH-WINDOW:OK\n");
     return 0;
 }

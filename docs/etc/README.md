@@ -408,6 +408,8 @@ principal documents named in [docs/README.md](../README.md).
 
 | `evidence/t410-s1-cpu-external-cycle.md` | Verification owner | T410 S1 adds a Core CPU external-cycle observation lifecycle around classified physical accesses without publishing physical timing. Retain with T410 history. |
 
+| vidence/t411-s1-cpu-prefetch-window.md | Verification owner | T411 S1 makes the Core 15-byte instruction-prefetch window persistent with control-transfer and reset invalidation, while retaining D4 timing as unbound. Retain with T411 history. |
+
 Adding a new supporting document requires owner approval, an exact-file index
 row or a declared indexed subtree, and a stated promotion, merge, or retirement
 condition. The governance gate verifies that every supporting Markdown file is
