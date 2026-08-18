@@ -3,26 +3,6 @@
 ## Current Work
 
 **Active: M5 T401.**
-## M5 T401 S57 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner: user; standing approval to continue CPU audit and directly repair confirmed small issues. |
-| Objective | Audit shared segment, repeat, LOCK and operand/address prefix behavior across the four profiles, consuming the S64 runtime fixture and adding a four-profile lexical matrix. |
-| Non-goals | No prefix production change unless the matrices confirm a shared defect; no CPU timing model, Core/VM interface, DeskPro claim or external-source import; no T401 closure. |
-| Reference Baseline | `d7028aa9` (S56 P2), T401 ledger, retained Intel references, `core-machine-prefix-attributes-s64-smoke` and preview smoke. |
-| Candidate Proposal | [Four-profile CPU instruction-correctness audit](../proposals/m5-four-profile-cpu-instruction-correctness-audit.md), shared prefix/control batch. |
-| Files And ABI Surface | Prefix-attributes smoke, preview smoke, CURRENT and T401 ledger only; test/documentation surface. |
-| Applicable Rules | Shared prefix/decode ownership unchanged; coding, documentation and execution rules apply. |
-| Verification | Build/run prefix-attributes and preview smokes; documentation governance; diff check. |
-| Expected Markers | `M5:T401:S57:SHARED-PREFIX-PROFILES:OK` and `M5:T401:S57:SHARED-PREFIX-PREVIEW-PROFILES:OK`. |
-| Asset Needs | None. |
-| Reporting Requirements | Record prefix/profile/legality evidence, discrepancy result, commits and nonphysical boundary. |
-| Stop Conditions | Transfer any nonlocal decode, transaction, fault-delivery or timing repair. |
-| Exit Criteria | Traditional segment and repeat prefixes scan on every profile; FS/GS and width prefixes distinguish 80386; pre-386 attributes and LOCK lexical routes reject; S64 runtime fixture passes and ledger records conclusion. |
-| Original Owner Request | Continue CPU audit before later DeskPro L3 work with direct repair of confirmed small issues. |
-| Similar-Issue Sweep | Treat all shared prefix classes together: segment last-wins, REP/REPNE, LOCK legality, repeated size prefixes, fixed-segment/register effects, pre-386 rejection and 80386 additions. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T395 S1 P4 `vm-0-5-0395` /
@@ -49,7 +29,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T401 S56 | Accepted: primary ALU audit closes all baseline operation/form encodings across four profiles and 80386 dword forms; no production discrepancy. [Ledger](../etc/evidence/t401-s1-four-profile-cpu-audit-ledger.md). |
+| T401 S57 | Accepted: shared prefix audit closes runtime and lexical four-profile legality, repetition and 80386 attribute boundaries; no production discrepancy. [Ledger](../etc/evidence/t401-s1-four-profile-cpu-audit-ledger.md). |
 | T400 | Closed: the HDC, CECG and CPU/DMA/BWAIT generic-reference ledger is exhausted; accepted logical repairs retain every DeskPro physical boundary. [Closure audit](../etc/evidence/t400-s1-task-closure-audit.md). |
 | T399 | Closed: the five-batch reference-derived DeskPro L3 ledger is exhausted; B2/B3 logical contracts are accepted, B1/B4/B5 retain exact receivers, and both reference-derived and physical L3 are not ready. [Closure audit](../etc/evidence/t399-s5-task-closure-audit.md). |
 | T398 | Closed: final exact 1986 DeskPro Model-40 audit is not-ready for L3; five physical/firmware boundaries retain explicit TODO receivers and require a fresh audit after repair. [Closure audit](../etc/evidence/t398-s2-task-closure-audit.md). |

@@ -1050,3 +1050,6 @@ S56 closes the bounded primary-ALU audit. Runtime and lexical matrices establish
 ## S57 Shared Prefixes
 
 S57 audits the shared prefix path. The retained S64 fixture proves segment-source selection for ES/CS/SS/DS/FS/GS, last-segment-prefix wins, 80386 operand/address selection, legal versus illegal LOCK forms and their atomicity, repeated width prefixes, fixed-segment/register effects, REP/REPNE progression and last-repeat-prefix selection, plus IRQ non-shadow behavior. Its pre-386 rows prove `66h`/`67h` atomic #UD across 8086, 80186 and 80286. `M5:T401:S57:SHARED-PREFIX-PREVIEW-PROFILES:OK` adds direct lexical proof for traditional segment and repeat prefixes on all profiles, FS/GS and width prefixes on 80386, and scanner rejection for pre-386 width attributes and LOCK. No production discrepancy was found; timing remains nonphysical.
+## S57 Acceptance
+
+S57 closes the bounded shared-prefix audit. The S64 runtime fixture and direct lexical matrix establish traditional segment and repeat forms on all four profiles, last-wins behavior, LOCK legality and atomicity, repeated widths, pre-386 66h/67h rejection, and 80386 FS/GS plus operand/address attributes. The component-count correction was test-only; no production discrepancy was found. Core timing remains nonphysical and T401 remains open.
