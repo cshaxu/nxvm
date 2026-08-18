@@ -8,7 +8,7 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | New T405 S1. |
+| Identifier Mode | New |
 | Admission And Approval | Owner approved continued DeskPro 386 L3 and hardware-gap work, Queue/proposal updates, normal repairs, commits and pushes to `master` without repeated confirmation; standing approval reiterated 2026-08-18. This first queued candidate is admitted before the distinct 8088/PC/XT program. |
 | Objective | Establish reproducible x86 GCC host-build provenance, configure an isolated 32-bit build, and determine whether the current product and current-gate suite can execute as a 32-bit host process. |
 | Non-goals | No guest CPU semantic or profile change; no L3 claim; no toolchain, ROM, guest media, or third-party binary import; no 32-bit release promise; preserve the 64-bit build and artifact. |
