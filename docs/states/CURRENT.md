@@ -2,9 +2,7 @@
 
 ## Current Work
 
-**T395 S1 active.** Audit Core's memory-device route registry capacity,
-registration/freeze/rollback semantics and all fixed-capacity consumers before
-implementing the bounded growable mechanism.
+**T395 S1 active.** Reconcile the Core memory-device route registry capacity and its registration/freeze/rollback semantics; implement and verify the bounded growable mechanism without altering Core/VM boundaries.
 
 ## M5 T395 S1 Packet
 
@@ -12,14 +10,14 @@ implementing the bounded growable mechanism.
 | --- | --- |
 | Identifier Mode | New |
 | Admission And Approval | Owner continuing global correctness/timing authorization; T394 is task-level closed and queue order selects this next Core prerequisite. No exception. |
-| Objective | Establish the finite route-capacity universe, exact existing semantics and implementation contract for growable private Core memory-device registration. |
+| Objective | Reconcile the finite route-capacity universe and implement bounded growable private Core memory-device registration while retaining exact existing registration, lookup, overlay, freeze and rollback semantics. |
 | Non-goals | No DeskPro board timing, ROM mapping behavior change, physical retirement, VM/Core ABI, firmware/media or L3 claim. |
 | Reference Baseline | Core memory route registry source, queued T395 proposal, representative Model-40 and non-Model-40 compositions. |
 | Candidate Proposal | [Core memory-device route registry scalability](../proposals/m5-core-memory-route-registry-scalability.md). |
 | Files And ABI Surface | Core private memory registration/lookup storage, owner-local regressions, evidence/history/status; no public mutable registry. |
 | Applicable Rules | Core owns registration/order/overlay/freeze/rollback; preserve existing route semantics and bounded deterministic failure. |
 | Verification | Complete caller/capacity ledger, fixed-capacity and route-order sweep, focused Core/Model-40/non-Model-40 regressions, current gates and documentation governance. |
-| Expected Markers | New T395 S1 capacity-inventory marker only after the complete current surface is reconciled. |
+| Expected Markers | M5:T395:S1:ROUTE-REGISTRY-SCALABILITY:OK after capacity, frozen-registration, priority/decline and transactional-failure regressions pass. |
 | Asset Needs | None. |
 | Reporting Requirements | Record fixed limit, every registration path, current order/decline semantics, failure/rollback behavior, candidate finite limit and excluded profile behavior. |
 | Stop Conditions | Stop before implementation if semantics require public exposure, unbounded allocation, or an unproven ordering change. |

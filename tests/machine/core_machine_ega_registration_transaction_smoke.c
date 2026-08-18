@@ -50,6 +50,32 @@ static type_status ignored_query(C_VOID *owner, type_unsigned_32 physical,
     return TYPE_STATUS_UNSUPPORTED;
 }
 
+typedef struct priority_provider {
+    C_UCHAR value;
+    type_bool decline;
+} priority_provider;
+
+static type_status priority_read(C_VOID *owner, type_unsigned_32 physical,
+    type_virtual_address destination, type_native_unsigned bytes)
+{
+    priority_provider *provider = (priority_provider *)owner;
+
+    if (provider == STD_NULL || physical != 0x8000u || bytes != 1u) {
+        return TYPE_STATUS_FAULT;
+    }
+    *(C_UCHAR *)destination = provider->value;
+    return TYPE_STATUS_OK;
+}
+
+static type_status priority_query(C_VOID *owner, type_unsigned_32 physical,
+    type_native_unsigned bytes, core_machine_memory_access access)
+{
+    priority_provider *provider = (priority_provider *)owner;
+
+    if (provider == STD_NULL || physical != 0x8000u || bytes != 1u ||
+        access != CORE_MACHINE_MEMORY_ACCESS_READ) return TYPE_STATUS_FAULT;
+    return provider->decline ? TYPE_STATUS_UNSUPPORTED : TYPE_STATUS_OK;
+}
 static C_VOID initialize(t_vadp *adapter, t_ram *memory, t_port *port)
 {
     core_machine_port_initialize(port);
@@ -72,11 +98,12 @@ static C_INT is_unconfigured(const t_vadp *adapter, const t_ram *memory,
         memory->connect.device_provider_count == providers;
 }
 
-static C_INT register_provider_fillers(t_ram *memory, C_VOID *owner)
+static C_INT register_provider_fillers(t_ram *memory, C_VOID *owner,
+    type_native_unsigned count)
 {
     type_native_unsigned index;
 
-    for (index = 0u; index < CORE_MACHINE_MEMORY_DEVICE_PROVIDER_CAPACITY;
+    for (index = 0u; index < count;
             ++index) {
         if (core_machine_memory_register_device_provider(memory,
                 0x1000u + (type_unsigned_32)(index * 0x100u), 1u,
@@ -124,13 +151,41 @@ C_INT main(C_VOID)
     finalize(&adapter, &memory);
 
     initialize(&adapter, &memory, &port);
-    failed |= !register_provider_fillers(&memory, &filler);
+    failed |= !register_provider_fillers(&memory, &filler,
+        CORE_MACHINE_MEMORY_DEVICE_PROVIDER_LIMIT);
     failed |= core_machine_vadp_configure_ega_sequencer(&adapter, &memory,
         &config) != TYPE_STATUS_NO_MEMORY;
     failed |= !is_unconfigured(&adapter, &memory, 0u,
-        CORE_MACHINE_MEMORY_DEVICE_PROVIDER_CAPACITY);
+        CORE_MACHINE_MEMORY_DEVICE_PROVIDER_LIMIT);
     finalize(&adapter, &memory);
 
+    initialize(&adapter, &memory, &port);
+    {
+        priority_provider first = { 0x3cu, TYPE_FALSE };
+        priority_provider overlay = { 0xa5u, TYPE_FALSE };
+        C_UCHAR value = 0u;
+
+        failed |= core_machine_memory_allocate_for(&memory, 0x10000u) !=
+            TYPE_STATUS_OK;
+        failed |= core_machine_memory_register_device_provider(&memory, 0x8000u,
+            1u, priority_read, ignored_device_write, priority_query, &first) !=
+            TYPE_STATUS_OK;
+        failed |= core_machine_memory_register_overlay_device_provider(&memory,
+            0x8000u, 1u, priority_read, ignored_device_write, priority_query,
+            &overlay) != TYPE_STATUS_OK;
+        core_machine_memory_freeze_mappings(&memory);
+        failed |= core_machine_memory_read_physical(&memory, 0x8000u, (type_virtual_address)&value, 1u) !=
+            TYPE_STATUS_OK || value != first.value;
+        first.decline = TYPE_TRUE;
+        value = 0u;
+        failed |= core_machine_memory_read_physical(&memory, 0x8000u, (type_virtual_address)&value, 1u) !=
+            TYPE_STATUS_OK || value != overlay.value;
+        failed |= core_machine_memory_register_device_provider(&memory, 0x9000u,
+            1u, ignored_read, ignored_device_write, ignored_query, &filler) !=
+            TYPE_STATUS_INVALID_ARGUMENT;
+        failed |= memory.connect.device_provider_count != 2u;
+    }
+    finalize(&adapter, &memory);
     initialize(&adapter, &memory, &port);
     failed |= !register_observer_fillers(&memory, &filler);
     failed |= core_machine_vadp_configure_ega_sequencer(&adapter, &memory,
@@ -140,6 +195,6 @@ C_INT main(C_VOID)
     finalize(&adapter, &memory);
 
     if (failed) return 1;
-    puts("M5:T334:S1:EGA-REGISTRATION-TRANSACTION:OK");
+    puts("M5:T395:S1:ROUTE-REGISTRY-SCALABILITY:OK");
     return 0;
 }

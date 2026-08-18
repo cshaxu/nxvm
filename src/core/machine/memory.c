@@ -191,7 +191,7 @@ static type_status core_machine_memory_validate_device_provider(const t_ram *ram
     end = (type_unsigned_64)physical_start + bytes;
     if (end > (type_unsigned_64)TYPE_MAX_UNSIGNED_32 + 1u ||
         ram->connect.device_provider_count >=
-            CORE_MACHINE_MEMORY_DEVICE_PROVIDER_CAPACITY) {
+            CORE_MACHINE_MEMORY_DEVICE_PROVIDER_LIMIT) {
         return TYPE_STATUS_NO_MEMORY;
     }
     if (!overlay) {
@@ -210,6 +210,36 @@ static type_status core_machine_memory_validate_device_provider(const t_ram *ram
     return TYPE_STATUS_OK;
 }
 
+static type_status core_machine_memory_reserve_device_provider(t_ram *ram)
+{
+    core_machine_memory_device_provider *providers;
+    type_native_unsigned capacity;
+
+    if (ram == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (ram->connect.device_provider_count < ram->connect.device_provider_capacity) {
+        return TYPE_STATUS_OK;
+    }
+    if (ram->connect.device_provider_capacity >= CORE_MACHINE_MEMORY_DEVICE_PROVIDER_LIMIT) {
+        return TYPE_STATUS_NO_MEMORY;
+    }
+    capacity = ram->connect.device_provider_capacity == 0u ?
+        CORE_MACHINE_MEMORY_DEVICE_PROVIDER_INITIAL_CAPACITY :
+        ram->connect.device_provider_capacity * 2u;
+    if (capacity > CORE_MACHINE_MEMORY_DEVICE_PROVIDER_LIMIT) {
+        capacity = CORE_MACHINE_MEMORY_DEVICE_PROVIDER_LIMIT;
+    }
+    providers = (core_machine_memory_device_provider *)STD_CALLOC(capacity,
+        sizeof(*providers));
+    if (providers == STD_NULL) return TYPE_STATUS_NO_MEMORY;
+    if (ram->connect.device_provider_count != 0u) {
+        STD_MEMCPY(providers, ram->connect.device_providers,
+            ram->connect.device_provider_count * sizeof(*providers));
+    }
+    STD_FREE(ram->connect.device_providers);
+    ram->connect.device_providers = providers;
+    ram->connect.device_provider_capacity = capacity;
+    return TYPE_STATUS_OK;
+}
 static C_VOID core_machine_memory_append_write_observer(t_ram *ram,
     core_machine_memory_write_observer callback, C_VOID *owner)
 {
@@ -257,6 +287,8 @@ type_status core_machine_memory_register_device_provider(t_ram *ram,
         physical_start, bytes, read, write, query, owner, TYPE_FALSE);
 
     if (status != TYPE_STATUS_OK) return status;
+    status = core_machine_memory_reserve_device_provider(ram);
+    if (status != TYPE_STATUS_OK) return status;
     core_machine_memory_append_device_provider(ram, physical_start, bytes, read,
         write, query, owner, TYPE_FALSE);
     return TYPE_STATUS_OK;
@@ -270,6 +302,8 @@ type_status core_machine_memory_register_overlay_device_provider(t_ram *ram,
     type_status status = core_machine_memory_validate_device_provider(ram,
         physical_start, bytes, read, write, query, owner, TYPE_TRUE);
 
+    if (status != TYPE_STATUS_OK) return status;
+    status = core_machine_memory_reserve_device_provider(ram);
     if (status != TYPE_STATUS_OK) return status;
     core_machine_memory_append_device_provider(ram, physical_start, bytes, read,
         write, query, owner, TYPE_TRUE);
@@ -287,6 +321,8 @@ type_status core_machine_memory_register_device_provider_and_write_observer(
 
     if (status != TYPE_STATUS_OK) return status;
     status = core_machine_memory_validate_write_observer(ram, callback, owner);
+    if (status != TYPE_STATUS_OK) return status;
+    status = core_machine_memory_reserve_device_provider(ram);
     if (status != TYPE_STATUS_OK) return status;
     core_machine_memory_append_device_provider(ram, physical_start, bytes, read,
         write, query, owner, TYPE_FALSE);
@@ -443,6 +479,10 @@ C_VOID core_machine_memory_finalize(t_ram *ram)
         STD_FREE((C_VOID *)ram->connect.backing);
     }
     if (ram->connect.parity != 0u) STD_FREE((C_VOID *)ram->connect.parity);
+    STD_FREE(ram->connect.device_providers);
+    ram->connect.device_providers = STD_NULL;
+    ram->connect.device_provider_count = 0u;
+    ram->connect.device_provider_capacity = 0u;
     ram->connect.backing = 0u;
     ram->connect.installed_bytes = 0u;
     ram->connect.backing_capacity = 0u;

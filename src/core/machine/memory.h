@@ -31,7 +31,8 @@ typedef struct {
 
 #define CORE_MACHINE_MEMORY_MAPPING_CAPACITY 4u
 #define CORE_MACHINE_MEMORY_WRITE_OBSERVER_CAPACITY 4u
-#define CORE_MACHINE_MEMORY_DEVICE_PROVIDER_CAPACITY 12u
+#define CORE_MACHINE_MEMORY_DEVICE_PROVIDER_INITIAL_CAPACITY 12u
+#define CORE_MACHINE_MEMORY_DEVICE_PROVIDER_LIMIT 64u
 
 typedef struct {
     type_unsigned_32 physical_start;
@@ -56,9 +57,9 @@ typedef struct {
     core_machine_memory_write_observer_slot
         write_observers[CORE_MACHINE_MEMORY_WRITE_OBSERVER_CAPACITY];
     type_native_unsigned write_observer_count;
-    core_machine_memory_device_provider
-        device_providers[CORE_MACHINE_MEMORY_DEVICE_PROVIDER_CAPACITY];
+    core_machine_memory_device_provider *device_providers;
     type_native_unsigned device_provider_count;
+    type_native_unsigned device_provider_capacity;
     type_bool mappings_frozen;
     core_machine_a20_wrap_policy a20_wrap_policy;
 } t_ram_connect;
