@@ -396,6 +396,8 @@ principal documents named in [docs/README.md](../README.md).
 | `research/` | Source owner | Provenance, external references, and non-product research. |
 | `history/` | Documentation owner | Read-only legacy and M5 migration/roadmap evidence. |
 
+| `evidence/td-s105-tiered-deskpro-receiver-ledger.md` | Verification owner | Td S105 maps the five retained T398 DeskPro receivers to labelled original/reference-derived/generic-AT inputs, existing owners, tests and T406 admission. Retain until all listed receivers are closed or transferred by a later DeskPro closure audit. |
+
 Adding a new supporting document requires owner approval, an exact-file index
 row or a declared indexed subtree, and a stated promotion, merge, or retirement
 condition. The governance gate verifies that every supporting Markdown file is
