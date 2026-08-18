@@ -443,3 +443,7 @@ and 80386 `66h` representatives. This is an original-source semantic/form
 classification and test-only evidence correction: no production discrepancy,
 external-source import, physical timing claim or Core/VM interface change was
 found.
+
+## S12 Acceptance
+
+S12 closes 90h--97h accumulator XCHG. The all-profile execution matrix covers the NOP alias, register pair selection, FLAGS preservation, 80386 dword form, pre-80386 66h #UD atomicity, LOCK rejection and IRQ boundary; the new preview matrix covers every byte and 80386 prefixed representatives. No production discrepancy remained. This is CPU semantic/nonphysical timing-baseline acceptance only, not a physical or DeskPro L3 claim.

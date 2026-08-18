@@ -4,26 +4,22 @@
 
 **Active: M5 T401.**
 
-## M5 T401 S12 Packet
+## M5 T401 S13 Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation; M5 T401 S12. |
-| Admission And Approval | Owner approved continuing the four-profile CPU audit after S11 on 2026-08-17. S11 is accepted after complete primary INC/DEC form, execution, prefix-rejection and preview coverage plus a clean 285/285 current gate. |
-| Objective | Audit the primary accumulator XCHG opcode family (`90h`--`97h`) across 8086, 80186, 80286 and 80386: architectural NOP alias, register-pair selection, profile validity, FLAGS preservation, operand attributes, timing disposition and preview classification. |
-| Non-goals | No broad register-file rewrite, no r/m XCHG reopening except a bounded shared defect, no x87/provider/device/board work, no profile-specific CPU fork, physical timing claim or DeskPro L3 claim. |
-| Reference Baseline | Intel 8086/80186/80286/80386 instruction manuals; retained XCHG, prefix and timing ledgers; current primary decoder, execution and preview paths. 86Box/PCjs/Bochs/MAME may corroborate an Intel-underspecified behavior only, labeled as reference-derived. |
+| Identifier Mode | Continuation; M5 T401 S13. |
+| Admission And Approval | Owner approved continuing the four-profile CPU audit. S12 is accepted after complete accumulator-XCHG execution/preview evidence. |
+| Objective | Audit primary immediate-register MOV (`B0h`--`BFh`) across 8086, 80186, 80286 and 80386: byte/word/dword forms, register selection, prefix/profile gates, FLAGS preservation, preview and retirement. |
+| Non-goals | No broad MOV or register-file rewrite, no device/board work, no physical timing or DeskPro L3 claim. |
+| Reference Baseline | Intel manuals; retained MOV/prefix/timing ledgers; current decoder/execution/preview. Secondary emulators only corroborate Intel-underspecified behavior and must be labelled reference-derived. |
 | Candidate Proposal | [Four-profile CPU instruction-correctness audit and repair program](../proposals/m5-four-profile-cpu-instruction-correctness-audit.md). |
-| Files And ABI Surface | Audit ledger, current task packet and focused existing/new CPU smoke only unless a source-complete shared Core defect is reproduced; no public ABI. |
-| Applicable Rules | Execution bounded corrective/actual-diff review; shared Core CPU ownership; coding/test rules; Intel primary-source requirement; external-provider/source policy; documentation indexing. |
-| Verification | Build a four-profile matrix for every `90h`--`97h` opcode, bidirectional register values, EFLAGS preservation, 80386 operand-size behavior and preview; reconcile decoder, execution, retirement and timing disposition; run focused CTest, full current gate after any repair, documentation governance and diff check. |
-| Expected Markers | A new T401 S12 matrix marker and any bounded defect marker. |
-| Asset Needs | None. No ROM, guest media, Microsoft component or external binary is needed. |
-| Reporting Requirements | Record CPU/profile, opcode, operand width and attribute state, manual/source tier, current owner, focused proof or transfer and retained nonphysical timing boundary. |
-| Stop Conditions | Stop and create a precise receiver if repair requires a broad register/decoder/fault-delivery redesign, a new CPU facility, device/board timing model or broad state-model change. |
-| Exit Criteria | Every accumulator-XCHG opcode/profile row is classified and linked to focused proof or explicit transfer; any bounded repair has focused/full-gate proof. |
-| Original Owner Request | Continue CPU auditing after DeskPro timing work, implementing source-backed, reference-backed or clearly labeled generic behavior rather than leaving feasible work undone. |
-| Similar-Issue Sweep | For any discovered mismatch, sweep all eight primary opcodes, r/m XCHG equivalences, profile gates, operand-size prefixes, preview callers and register/flag consumers. |
+| Files And ABI Surface | Audit ledger, packet and focused CPU smoke only unless a bounded shared defect is reproduced; no public ABI. |
+| Verification | Four-profile all-opcode execution/preview matrix, byte/word/dword immediate size, 80386 prefixes, pre-80386 #UD atomicity, FLAGS/retirement; focused tests, full gate after repair, governance/diff checks. |
+| Expected Markers | New T401 S13 markers and any bounded defect marker. |
+| Asset Needs | None. |
+| Exit Criteria | Every `B0h`--`BFh` profile/form row has focused proof or an explicit transfer; bounded repairs have full-gate proof. |
+| Original Owner Request | Continue source-backed, reference-backed or explicitly generic CPU work rather than leaving feasible work undone. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T395 S1 P4 `vm-0-5-0395` /
@@ -50,7 +46,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T401 S11 | Accepted: primary INC/DEC audit closes all 40h--4Fh form, four-profile execution/preview and pre-80386 prefix-rejection coverage, with 285/285 current-gate proof. S12 owns accumulator XCHG audit. [Ledger](../etc/evidence/t401-s1-four-profile-cpu-audit-ledger.md). |
+| T401 S12 | Accepted: accumulator XCHG audit closes 90h--97h four-profile execution/preview, 66h, LOCK and IRQ boundaries. S13 owns immediate-register MOV audit. [Ledger](../etc/evidence/t401-s1-four-profile-cpu-audit-ledger.md). |
 | T400 | Closed: the HDC, CECG and CPU/DMA/BWAIT generic-reference ledger is exhausted; accepted logical repairs retain every DeskPro physical boundary. [Closure audit](../etc/evidence/t400-s1-task-closure-audit.md). |
 | T399 | Closed: the five-batch reference-derived DeskPro L3 ledger is exhausted; B2/B3 logical contracts are accepted, B1/B4/B5 retain exact receivers, and both reference-derived and physical L3 are not ready. [Closure audit](../etc/evidence/t399-s5-task-closure-audit.md). |
 | T398 | Closed: final exact 1986 DeskPro Model-40 audit is not-ready for L3; five physical/firmware boundaries retain explicit TODO receivers and require a fresh audit after repair. [Closure audit](../etc/evidence/t398-s2-task-closure-audit.md). |
