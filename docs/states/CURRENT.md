@@ -2,7 +2,28 @@
 
 ## Current Work
 
-**Idle.**
+**Active: M5 T426 S1.**
+
+## M5 T426 S1 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New |
+| Admission And Approval | Owner: user. Persistent active-thread authorization to complete DeskPro L3 tasks, commit, and push to `master` (2026-08-18). Scope: independent final receiver audit and truthful L3 disposition. |
+| Objective | Reconcile all six DeskPro physical-cycle proposal receivers and issue an evidence-tiered Model-40 physical/L3 acceptance or non-acceptance decision. |
+| Non-goals | New hardware behavior, speculative timing values, importing firmware/media, lowering an evidence tier, or claiming physical L3 from logical/generic mechanisms. |
+| Reference Baseline | `d252474f` T425 closure, T423 CPU retirement wait, T424 BYOB reset lifecycle, T399 HDC disposition, and T386 CECG/HDC evidence. |
+| Candidate Proposal | [DeskPro physical-cycle and phase-timing closure](../proposals/m5-deskpro-physical-cycle-and-phase-timing.md), receiver 6. |
+| Files And ABI Surface | Evidence/history, CURRENT/Queue/TODO only; no runtime or public interface changes. |
+| Applicable Rules | Execution and Documentation rules; Architecture/Coding as no-runtime owner review; source policy for retained primary/reference conclusions. |
+| Verification | Documentation governance, diff check, and focused retained T423/T424/T425 plus Compaq HDC/CECG regressions. |
+| Expected Markers | Evidence-tier decision only; no new runtime marker. |
+| Asset Needs | None. No owner-supplied ROM/media execution and no external asset import. |
+| Reporting Requirements | Map every receiver to owner, tier, proof, residual transfer, and L3 consequence; report accepted or not-ready decision and pushed commit. |
+| Stop Conditions | Stop if any unresolved physical receiver is hidden, a generic/reference mechanism is labelled original Compaq timing, or acceptance needs a missing corpus. |
+| Exit Criteria | All six receivers have a complete disposition and the L3 decision follows their evidence rather than implementation count. |
+| Original Owner Request | "好 请你现在开始干活 把deskpro的l3各任务做好" and active three-tier DeskPro L3 goal. |
+| Similar-Issue Sweep | Review CPU-board, device phase, fixed disk, CECG, BYOB and existing final-audit records for stale claims or duplicate acceptance paths. |
 
 ## Current Technical Baseline
 
