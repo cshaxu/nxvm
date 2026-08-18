@@ -19,3 +19,9 @@ The [acceptance audit](../etc/evidence/t399-s1-reference-ledger-acceptance-audit
 accepts the complete ledger as `M5:T399:S1:REFERENCE-LEDGER-FROZEN`. It admits
 no behavior change; a continuation may consume only one eligible batch through
 a new asset-free observation contract.
+## S2 B3 Port-61/NMI Contract
+
+S2 corrects the DeskPro-specific active-low port-`61h` IOCHK/fail-safe NMI
+semantics and high-pulse latch clear in the existing Core D4 owner. The
+[contract evidence](../etc/evidence/t399-s2-b3-port61-nmi-contract.md) retains
+physical pulse/propagation timing as unresolved.

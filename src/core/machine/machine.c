@@ -3824,9 +3824,9 @@ static C_VOID core_machine_d4_platform_refresh_nmi(core_machine *machine)
     type_bool pending;
 
     if (machine == STD_NULL || !machine->d4_platform_configured) return;
-    pending = ((machine->d4_platform_port_b & 0x08u) != 0u &&
+    pending = ((machine->d4_platform_port_b & 0x08u) == 0u &&
         machine->d4_platform_iochk_latched) ||
-        ((machine->d4_platform_port_b & 0x04u) != 0u &&
+        ((machine->d4_platform_port_b & 0x04u) == 0u &&
         machine->d4_platform_failsafe_latched);
     if (pending && !machine->executor_cpu.data.flagMaskNMI &&
         !machine->d4_platform_nmi_signaled) {
@@ -3869,12 +3869,13 @@ static type_status core_machine_d4_platform_port_write(C_VOID *owner,
         port != machine->d4_platform_config.port) return TYPE_STATUS_INVALID_ARGUMENT;
     machine->d4_platform_port_b = (type_unsigned_8)value & 0x3fu;
     core_machine_pc_at_port_b_set_speaker_gate(machine, machine->d4_platform_port_b);
-    /* The external Rev-E diagnostic raises and then clears each enable bit.
-     * This models that observed logical clear sequence, not its pulse timing. */
-    if ((machine->d4_platform_port_b & 0x08u) == 0u) {
+    /* DeskPro port 61h bits 3 and 2 disable IOCHK and RAM/fail-safe NMI.
+     * A high pulse clears the corresponding latched status; this records the
+     * bounded logical effect, not electrical pulse timing. */
+    if ((machine->d4_platform_port_b & 0x08u) != 0u) {
         machine->d4_platform_iochk_latched = TYPE_FALSE;
     }
-    if ((machine->d4_platform_port_b & 0x04u) == 0u) {
+    if ((machine->d4_platform_port_b & 0x04u) != 0u) {
         machine->d4_platform_failsafe_latched = TYPE_FALSE;
     }
     if (!machine->d4_platform_iochk_latched &&
@@ -4073,7 +4074,7 @@ type_status core_machine_configure_d4_platform(core_machine *machine,
         return status;
     }
     machine->d4_platform_config = *config;
-    machine->d4_platform_port_b = 0x0bu;
+    machine->d4_platform_port_b = 0x0fu;
     machine->d4_platform_configured = TYPE_TRUE;
     core_machine_pc_at_refresh_timer_program(machine);
     core_machine_pc_at_port_b_set_speaker_gate(machine, machine->d4_platform_port_b);
@@ -4158,9 +4159,9 @@ type_status core_machine_get_d4_platform_observation(const core_machine *machine
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
     out_observation->configured = machine->d4_platform_configured;
-    out_observation->iochk_enabled = (machine->d4_platform_port_b & 0x08u) != 0u;
+    out_observation->iochk_enabled = (machine->d4_platform_port_b & 0x08u) == 0u;
     out_observation->failsafe_enabled =
-        (machine->d4_platform_port_b & 0x04u) != 0u;
+        (machine->d4_platform_port_b & 0x04u) == 0u;
     out_observation->iochk_latched = machine->d4_platform_iochk_latched;
     out_observation->failsafe_latched = machine->d4_platform_failsafe_latched;
     out_observation->nmi_signaled = machine->d4_platform_nmi_signaled;
@@ -4799,7 +4800,7 @@ static type_status core_machine_cold_reset(core_machine *machine)
     machine->planar_parity_port_b = machine->planar_parity_configured ? 0x04u : 0u;
     machine->planar_parity_latched = TYPE_FALSE;
     machine->planar_parity_nmi_signaled = TYPE_FALSE;
-    machine->d4_platform_port_b = machine->d4_platform_configured ? 0x0bu : 0u;
+    machine->d4_platform_port_b = machine->d4_platform_configured ? 0x0fu : 0u;
     machine->d4_platform_iochk_latched = TYPE_FALSE;
     machine->d4_platform_failsafe_latched = TYPE_FALSE;
     machine->d4_platform_nmi_signaled = TYPE_FALSE;

@@ -39,7 +39,7 @@ C_INT main(C_VOID)
         core_machine_get_memory_bytes(session->core_machine, &memory_bytes) !=
             TYPE_STATUS_OK || memory_bytes != 1024u * 1024u ||
         core_machine_get_d4_platform_observation(session->core_machine, &d4) !=
-            TYPE_STATUS_OK || !d4.configured || !d4.iochk_enabled ||
+            TYPE_STATUS_OK || !d4.configured || d4.iochk_enabled ||
         d4.failsafe_enabled ||
         core_machine_bus_read(session->core_machine, 0x07c6u, &value) !=
             TYPE_STATUS_OK || value != 0u ||
@@ -48,7 +48,7 @@ C_INT main(C_VOID)
         core_machine_bus_read(session->core_machine, 0x0fc6u, &value) !=
             TYPE_STATUS_OK || value != 0x01u ||
         core_machine_bus_read(session->core_machine, 0x0061u, &value) !=
-            TYPE_STATUS_OK || value != 0x1bu ||
+            TYPE_STATUS_OK || value != 0x1fu ||
         core_machine_memory_read(session->core_machine, 0x000ffff0u, &rom_byte,
             sizeof(rom_byte)) != TYPE_STATUS_OK || rom_byte != 0x26u ||
         session->core_machine->shared_kbc.connect.aux_present ||

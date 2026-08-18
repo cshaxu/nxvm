@@ -32,9 +32,9 @@ C_INT main(C_VOID)
         core_machine_freeze_execution_providers(machine) != TYPE_STATUS_OK ||
         core_machine_reset(machine) != TYPE_STATUS_OK ||
         core_machine_bus_read(machine, 0x0061u, &value) != TYPE_STATUS_OK ||
-        value != 0x1bu ||
+        value != 0x1fu ||
         core_machine_get_d4_platform_observation(machine, &observation) !=
-            TYPE_STATUS_OK || !observation.configured || !observation.iochk_enabled ||
+            TYPE_STATUS_OK || !observation.configured || observation.iochk_enabled ||
         observation.failsafe_enabled || observation.iochk_latched ||
         observation.failsafe_latched || observation.nmi_signaled;
     if (!failed) STD_PRINTF("M5:T386:S4:D4-PLATFORM-PORT:OK\n");
@@ -53,23 +53,24 @@ C_INT main(C_VOID)
         core_machine_bus_write(machine, 0x0061u, 0x0bu) != TYPE_STATUS_OK ||
         core_machine_bus_read(machine, 0x0061u, &value) != TYPE_STATUS_OK ||
         (value & 0x20u) != 0x20u || core_machine_reset(machine) != TYPE_STATUS_OK ||
-        core_machine_bus_read(machine, 0x0061u, &value) != TYPE_STATUS_OK || value != 0x1bu;
+        core_machine_bus_read(machine, 0x0061u, &value) != TYPE_STATUS_OK || value != 0x1fu;
     if (!failed) STD_PRINTF("M5:T386:S25:D4-PORT-B-SYSTEM-PIT:OK\n");
 
-    if (!failed) failed |= core_machine_bus_write(machine, 0x0070u, 0x80u) !=
+    if (!failed) failed |= core_machine_bus_write(machine, 0x0061u, 0x03u) != TYPE_STATUS_OK ||
+        core_machine_bus_write(machine, 0x0070u, 0x80u) !=
             TYPE_STATUS_OK || core_machine_report_d4_iochk_fault(machine) !=
             TYPE_STATUS_OK || core_machine_get_d4_platform_observation(machine,
             &observation) != TYPE_STATUS_OK || !observation.iochk_latched ||
         observation.nmi_signaled || machine->executor_cpu.data.flagNMI ||
         core_machine_bus_read(machine, 0x0061u, &value) != TYPE_STATUS_OK ||
-        value != 0x5bu || core_machine_bus_write(machine, 0x0070u, 0u) !=
+        value != 0x53u || core_machine_bus_write(machine, 0x0070u, 0u) !=
             TYPE_STATUS_OK || core_machine_get_d4_platform_observation(machine,
             &observation) != TYPE_STATUS_OK || !observation.nmi_signaled ||
         !machine->executor_cpu.data.flagNMI;
     if (!failed) STD_PRINTF("M5:T386:S4:D4-NMI-MASK:OK\n");
 
     if (!failed) failed |= core_machine_reset(machine) != TYPE_STATUS_OK ||
-        core_machine_bus_write(machine, 0x0061u, 0x0cu) != TYPE_STATUS_OK ||
+        core_machine_bus_write(machine, 0x0061u, 0u) != TYPE_STATUS_OK ||
         machine->shared_kbc.data.output_port != 1u ||
         core_machine_bus_write(machine, 0x004bu, 0x30u) != TYPE_STATUS_OK ||
         core_machine_bus_write(machine, 0x0048u, 1u) != TYPE_STATUS_OK ||
@@ -80,7 +81,7 @@ C_INT main(C_VOID)
         !observation.failsafe_latched || !observation.nmi_signaled ||
         !machine->executor_cpu.data.flagNMI ||
         core_machine_bus_read(machine, 0x0061u, &value) != TYPE_STATUS_OK ||
-        value != 0x9cu;
+        value != 0x90u;
     if (!failed) STD_PRINTF("M5:T386:S4:D4-FAILSAFE-ROUTE:OK\n");
 
     if (!failed) {
@@ -94,14 +95,15 @@ C_INT main(C_VOID)
     }
     if (!failed) failed |= core_machine_reset(machine) != TYPE_STATUS_OK ||
         core_machine_get_d4_platform_observation(machine, &observation) !=
-            TYPE_STATUS_OK || !observation.iochk_enabled || observation.failsafe_enabled ||
+            TYPE_STATUS_OK || observation.iochk_enabled || observation.failsafe_enabled ||
         observation.iochk_latched || observation.failsafe_latched ||
         observation.nmi_signaled || machine->executor_cpu.data.flagNMI ||
         core_machine_bus_read(machine, 0x0061u, &value) != TYPE_STATUS_OK ||
-        value != 0x1bu;
+        value != 0x1fu;
     core_machine_destroy(machine);
     if (failed) return 1;
     STD_PRINTF("M5:T386:S4:D4-RESET-ISOLATION:OK\n");
     STD_PRINTF("M5:T386:S23:D4-RESET-ARBITRATION:OK\n");
+    STD_PRINTF("M5:T399:S2:B3-ACTIVE-LOW-NMI:OK\n");
     return 0;
 }
