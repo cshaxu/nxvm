@@ -33,6 +33,8 @@ C_VOID core_machine_cpu_execution_context_initialize(
     }
     context->diagnostic_provider = STD_NULL;
     context->diagnostic_context = STD_NULL;
+    context->external_cycle_provider = STD_NULL;
+    context->external_cycle_context = STD_NULL;
     context->stop_requested = TYPE_FALSE;
     context->reset_requested = TYPE_FALSE;
     context->debug_trap_pending = TYPE_FALSE;
@@ -63,6 +65,15 @@ C_VOID core_machine_cpu_execution_context_bind_fpu(
     core_machine_cpu_execution_context *context, core_machine_fpu *fpu)
 {
     if (context != STD_NULL) context->fpu = fpu;
+}
+
+C_VOID core_machine_cpu_execution_context_bind_external_cycle_provider(
+    core_machine_cpu_execution_context *context,
+    core_machine_cpu_external_cycle_provider provider, C_VOID *provider_context)
+{
+    if (context == STD_NULL) return;
+    context->external_cycle_provider = provider;
+    context->external_cycle_context = provider_context;
 }
 
 C_VOID core_machine_cpu_execution_context_bind_transaction(

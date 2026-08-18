@@ -3199,6 +3199,30 @@ static C_VOID core_machine_transaction_trace(C_VOID *opaque,
         (detail << 16u));
 }
 
+static C_VOID core_machine_cpu_external_cycle_trace(C_VOID *opaque,
+    core_machine_cpu_external_cycle_phase phase, type_unsigned_32 physical,
+    type_unsigned_8 bytes, core_machine_cpu_memory_access_provenance provenance)
+{
+    core_machine *machine = (core_machine *)opaque;
+    core_machine_trace_event_type type;
+
+    if (machine == STD_NULL) return;
+    switch (phase) {
+    case CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_BEGIN:
+        type = CORE_MACHINE_TRACE_CPU_EXTERNAL_CYCLE_BEGIN;
+        break;
+    case CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_COMMIT:
+        type = CORE_MACHINE_TRACE_CPU_EXTERNAL_CYCLE_COMMIT;
+        break;
+    case CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_CANCEL:
+        type = CORE_MACHINE_TRACE_CPU_EXTERNAL_CYCLE_CANCEL;
+        break;
+    default:
+        return;
+    }
+    core_machine_trace_record(machine, type, physical, bytes,
+        (type_unsigned_32)provenance);
+}
 static C_INT core_machine_retirement_qualification_contains(
     const core_machine *machine)
 {
@@ -4685,7 +4709,9 @@ static type_status core_machine_create_internal(
         machine->fpu.profile, machine->cpu_80386_cr_mov_ignores_mod);
     core_machine_cpu_execution_context_bind_fpu(
         &machine->executor_cpu_execution, &machine->fpu);
-    core_machine_cpu_execution_context_bind_transaction(
+    core_machine_cpu_execution_context_bind_external_cycle_provider(
+        &machine->executor_cpu_execution, core_machine_cpu_external_cycle_trace,
+        machine);    core_machine_cpu_execution_context_bind_transaction(
         &machine->executor_cpu_execution, &machine->transaction);
     core_machine_cpu_execution_context_bind_diagnostic_provider(
         &machine->executor_cpu_execution, &core_machine_cpu_diagnostic_provider,

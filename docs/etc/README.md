@@ -406,6 +406,8 @@ principal documents named in [docs/README.md](../README.md).
 
 | `evidence/t409-s1-cpu-memory-provenance.md` | Verification owner | T409 S1 classifies Core CPU memory transactions by prefetch, instruction fetch, data, and page-table walk/writeback source, with focused/full proof and no physical D4 timing claim. Retain with T409 history. |
 
+| `evidence/t410-s1-cpu-external-cycle.md` | Verification owner | T410 S1 adds a Core CPU external-cycle observation lifecycle around classified physical accesses without publishing physical timing. Retain with T410 history. |
+
 Adding a new supporting document requires owner approval, an exact-file index
 row or a declared indexed subtree, and a stated promotion, merge, or retirement
 condition. The governance gate verifies that every supporting Markdown file is

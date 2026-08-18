@@ -2,13 +2,32 @@
 
 ## Current Work
 
-**Idle.**
+## M5 T410 S1 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New |
+| Admission And Approval | Owner authorization is retained from the DeskPro continuation conversation on 2026-08-18: continue the approved DeskPro 386 Model 40 L3 timing work, use original material first, repair clear in-scope defects, and commit/push to `master` without repeated approval requests. T410 is the next eligible CPU external-cycle receiver in the accepted DeskPro physical-cycle/phase proposal. |
+| Objective | Add one Core-owned, observable CPU external-memory-cycle boundary that records classified memory activity and its lifecycle separately from immediate logical transaction completion. |
+| Non-goals | Do not add a D4 wait scalar, infer page hits from adjacent logical accesses, emulate a full 80386 prefetch queue, add a second CPU/DMA transaction owner, change VM contracts, or claim physical/L3 completion. |
+| Reference Baseline | `master` at `c739e103`; T408 original D3PE material defines the 2 KiB page and sequential-request rule, while T409 provides Core provenance. The new physical-cycle/phase proposal is the candidate authority. |
+| Candidate Proposal | [DeskPro physical-cycle and phase-timing closure](../proposals/m5-deskpro-physical-cycle-and-phase-timing.md) |
+| Files And ABI Surface | Core machine CPU execution/transaction/trace internals and focused Core regressions only. Preserve public Core/VM direction; public observation is admitted only if a reusable Core contract is complete. |
+| Applicable Rules | `docs/design/ARCHITECTURE.md`, `docs/design/CODING.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`, `docs/rules/DOCUMENT.md`, `docs/rules/EXECUTION.md`, and `docs/etc/operations/policy/source-policy.md`. |
+| Verification | Add focused lifecycle/order/reset/cancellation proof; run affected CTests, full current gate, documentation governance, actual-diff review, and build/copy `nxvm_0_5_0410.exe` if runnable paths change. |
+| Expected Markers | `M5:T410:S1:CPU-EXTERNAL-CYCLE:OK`; observable provenance and lifecycle distinct from logical CPU transaction; no timing surcharge. |
+| Asset Needs | Read-only owner-managed Compaq DeskPro 386/16 Technical Spec D3PE Processor Descriptions (January 1987); no asset copy or repository import. |
+| Reporting Requirements | Report the Core boundary, exact lifecycle observations, regressions/gates, commit/push, and the remaining original D4 overlap/page-mode receiver. |
+| Stop Conditions | Stop and transfer if an accurate boundary requires unproven 80386 bus microarchitecture, exposes mutable Core internals, requires vendor assets, or would assign D4 timing to serial logical accesses. |
+| Exit Criteria | A reset/cancellation-safe Core external-cycle observation boundary covers CPU prefetch, consumed fetch, page-table walk and data access with focused proof, preserves existing transaction/HOLD/retirement behavior, and publishes no D4 timing. |
+| Original Owner Request | "把DeskPro 386能做的L3时序部分都做了；有权威资料直接实现；只有参考实现可参考实现；没有参考加入TODO；不要破坏core和vm接口边界。" |
+| Similar-Issue Sweep | Review every CPU physical read/write, instruction preview path, page-walk/writeback, port path, transaction cancel, HOLD/HLDA, reset, and CPU-retirement publication. |
 
 ## Current Technical Baseline
 
-- **Current developer artifact:** T409 S1 P1 `vm-0-5-0409` /
-  `build/output/nxvm_0_5_0409.exe`, SHA-256
-  `04309056182200FA6F64C9804EB8CB2DD6525041F6A8A4358E867C326C6C6ACB`.
+- **Current developer artifact:** T409 S1 P1 `vm-0-5-0410` /
+  `build/output/nxvm_0_5_0410.exe`, SHA-256
+  `9E3EB86B62AD1CDF6A3CBEE18B9A16FBA7FF9F3E56F63E4FE060AF21B3B9E98B`.
   The isolated x64 current gate passes 287/287. T409 labels Core CPU memory
   provenance only; it does not publish original D4 timing or a Model-L3 claim.
   T386 closes selected-device functional completeness at S29; its retained

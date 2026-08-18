@@ -127,6 +127,16 @@ typedef enum core_machine_cpu_memory_access_provenance {
     CORE_MACHINE_CPU_MEMORY_ACCESS_PAGE_TABLE_WRITE
 } core_machine_cpu_memory_access_provenance;
 
+typedef enum core_machine_cpu_external_cycle_phase {
+    CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_BEGIN = 1,
+    CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_COMMIT,
+    CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_CANCEL
+} core_machine_cpu_external_cycle_phase;
+
+typedef C_VOID (*core_machine_cpu_external_cycle_provider)(C_VOID *context,
+    core_machine_cpu_external_cycle_phase phase, type_unsigned_32 physical,
+    type_unsigned_8 bytes, core_machine_cpu_memory_access_provenance provenance);
+
 typedef struct core_machine_cpu_instruction_metadata {
     core_machine_cpu_profile minimum_cpu;
     core_machine_fpu_profile minimum_fpu;
@@ -174,6 +184,8 @@ struct core_machine_cpu_execution_context {
     type_trace *trace;
     const core_machine_cpu_execution_diagnostic_provider *diagnostic_provider;
     C_VOID *diagnostic_context;
+    core_machine_cpu_external_cycle_provider external_cycle_provider;
+    C_VOID *external_cycle_context;
     type_bool stop_requested;
     type_bool reset_requested;
     type_bool shutdown_requested;
@@ -209,6 +221,9 @@ C_VOID core_machine_cpu_execution_context_bind_diagnostic_provider(
     C_VOID *provider_context);
 C_VOID core_machine_cpu_execution_context_bind_fpu(
     core_machine_cpu_execution_context *context, core_machine_fpu *fpu);
+C_VOID core_machine_cpu_execution_context_bind_external_cycle_provider(
+    core_machine_cpu_execution_context *context,
+    core_machine_cpu_external_cycle_provider provider, C_VOID *provider_context);
 C_VOID core_machine_cpu_execution_context_bind_transaction(
     core_machine_cpu_execution_context *context,
     core_machine_transaction_state *transaction);

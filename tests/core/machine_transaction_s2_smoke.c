@@ -119,6 +119,23 @@ static C_INT transaction_has_provenance_pair(const transaction_probe *probe,
     return 0;
 }
 
+static C_INT transaction_find_external_cycle(const transaction_probe *probe,
+    core_machine_trace_event_type type,
+    core_machine_cpu_memory_access_provenance provenance,
+    type_unsigned_32 *out_index)
+{
+    type_unsigned_32 index;
+
+    if (probe == STD_NULL || out_index == STD_NULL) return 0;
+    for (index = 0u; index < probe->count; ++index) {
+        if (probe->events[index].type == type &&
+            probe->events[index].detail == provenance) {
+            *out_index = index;
+            return 1;
+        }
+    }
+    return 0;
+}
 static C_VOID transaction_dma_program_channel2(t_port *port)
 {
     core_machine_port_write(port, 0x000cu, 0u);
@@ -158,6 +175,8 @@ C_INT main(C_VOID)
     core_machine_transaction_state transaction;
     transaction_state_probe state_probe = {0};
     dma_source source = {0xa5u};
+    type_unsigned_32 external_begin;
+    type_unsigned_32 external_commit;
     C_INT failed = 0;
 
     trace.callback = transaction_trace;
@@ -184,7 +203,13 @@ C_INT main(C_VOID)
         CORE_MACHINE_TRACE_TRANSACTION_COMMIT,
         CORE_MACHINE_TRANSACTION_OWNER_CPU,
         CORE_MACHINE_TRANSACTION_CPU_PORT_WRITE);
-    failed |= !transaction_has_provenance_pair(&probe,
+    failed |= !transaction_find_external_cycle(&probe,
+        CORE_MACHINE_TRACE_CPU_EXTERNAL_CYCLE_BEGIN,
+        CORE_MACHINE_CPU_MEMORY_ACCESS_INSTRUCTION_PREFETCH, &external_begin);
+    failed |= !transaction_find_external_cycle(&probe,
+        CORE_MACHINE_TRACE_CPU_EXTERNAL_CYCLE_COMMIT,
+        CORE_MACHINE_CPU_MEMORY_ACCESS_INSTRUCTION_PREFETCH, &external_commit);
+    failed |= external_begin >= external_commit;    failed |= !transaction_has_provenance_pair(&probe,
         CORE_MACHINE_CPU_MEMORY_ACCESS_INSTRUCTION_PREFETCH);
     failed |= !transaction_has_provenance_pair(&probe,
         CORE_MACHINE_CPU_MEMORY_ACCESS_INSTRUCTION_FETCH);
@@ -237,5 +262,6 @@ C_INT main(C_VOID)
     if (failed != 0) return 1;
     STD_PRINTF("M5:T354:S2:TRANSACTION:OK\n");
     STD_PRINTF("M5:T409:S1:CPU-MEMORY-PROVENANCE:OK\n");
+    STD_PRINTF("M5:T410:S1:CPU-EXTERNAL-CYCLE:OK\n");
     return 0;
 }
