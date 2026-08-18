@@ -813,3 +813,11 @@ Core discrepancy repaired: the preview lexer had classified `69h` but omitted `6
 ## S30 Acceptance
 
 S30 closes immediate IMUL `69h`/`6Bh` with focused runtime and preview proof. It repairs the lexer imm8 omission for `6Bh`, retains the complete 8086 through 80386 matrix and passes the current full gate. Core timing remains explicitly nonphysical. S31 owns PUSHA/POPA `60h`/`61h`.
+
+## S31 PUSHA/POPA
+
+S31 audits PUSHA/POPA `60h`/`61h`. Intel's 80186/80386 references define saved stack image, POPA's ignored saved-SP slot and operand-size-selected stack width. This is original-source semantic/form evidence; no emulator implementation, ROM or guest asset was imported.
+
+`M5:T401:S31:PUSHA-POPA-PROFILES:OK` retains 8086 #UD, 80186+/80286 word image, 80386 dword attributes, protected stack limits and IRQ proof. `M5:T401:S31:PUSHA-POPA-PREVIEW-PROFILES:OK` adds the matching lexical matrix.
+
+No production discrepancy was found. This remains CPU semantic/nonphysical timing-baseline evidence only and does not establish physical timing, DeskPro L3 or a Core/VM interface change.

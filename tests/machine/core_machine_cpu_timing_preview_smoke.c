@@ -452,6 +452,16 @@ static C_INT preview_test_group2_immediate_profiles(C_VOID)
     return preview_expect((const type_unsigned_8[]){0x66u, 0xc1u, 0xc0u, 1u},
         4u, CORE_MACHINE_CPU_PROFILE_80386, TYPE_FALSE, 4u, 4u);
 }
+static C_INT preview_test_pusha_popa_profiles(C_VOID)
+{
+    static const type_unsigned_8 pusha[] = {0x60u};
+    static const type_unsigned_8 popa[] = {0x61u};
+    core_machine_cpu_instruction_lexeme lexeme;
+
+    if (core_machine_cpu_instruction_lexeme_scan(pusha,1u,CORE_MACHINE_CPU_PROFILE_8086,TYPE_FALSE,&lexeme)||lexeme.available||core_machine_cpu_instruction_lexeme_scan(popa,1u,CORE_MACHINE_CPU_PROFILE_8086,TYPE_FALSE,&lexeme)||lexeme.available) return 0;
+    return preview_expect(pusha,1u,CORE_MACHINE_CPU_PROFILE_80186,TYPE_FALSE,1u,1u)&&preview_expect(popa,1u,CORE_MACHINE_CPU_PROFILE_80186,TYPE_FALSE,1u,1u)&&preview_expect(pusha,1u,CORE_MACHINE_CPU_PROFILE_80286,TYPE_FALSE,1u,1u)&&preview_expect(popa,1u,CORE_MACHINE_CPU_PROFILE_80386,TYPE_FALSE,1u,1u)&&preview_expect((const type_unsigned_8[]){0x66u,0x60u},2u,CORE_MACHINE_CPU_PROFILE_80386,TYPE_FALSE,2u,2u)&&preview_expect((const type_unsigned_8[]){0x66u,0x61u},2u,CORE_MACHINE_CPU_PROFILE_80386,TYPE_FALSE,2u,2u);
+}
+
 static C_INT preview_test_imul_immediate_profiles(C_VOID)
 {
     static const type_unsigned_8 iw[] = {0x69u,0xc1u,0xfeu,0xffu};
@@ -875,6 +885,7 @@ C_INT main(C_VOID)
     if (!preview_test_arpl_profiles()) return 29;
     if (!preview_test_bound_profiles()) return 30;
     if (!preview_test_imul_immediate_profiles()) return 31;
+    if (!preview_test_pusha_popa_profiles()) return 32;
     if (!preview_test_group3_profiles()) return 10;
     if (!preview_test_group45_profiles()) return 11;
     if (preview_test_cpu_fetch_nonpublication()) return 4;
@@ -906,5 +917,6 @@ C_INT main(C_VOID)
     STD_PRINTF("M5:T401:S28:ARPL-PREVIEW-PROFILES:OK\n");
     STD_PRINTF("M5:T401:S29:BOUND-PREVIEW-PROFILES:OK\n");
     STD_PRINTF("M5:T401:S30:IMUL-IMMEDIATE-PREVIEW-PROFILES:OK\n");
+    STD_PRINTF("M5:T401:S31:PUSHA-POPA-PREVIEW-PROFILES:OK\n");
     return 0;
 }

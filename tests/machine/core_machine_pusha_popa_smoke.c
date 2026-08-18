@@ -582,5 +582,6 @@ C_INT main(C_VOID)
         return 1;
     }
     STD_PRINTF("M5:T316:S42:PUSHA-POPA:OK\n");
+    STD_PRINTF("M5:T401:S31:PUSHA-POPA-PROFILES:OK\n");
     return 0;
 }
