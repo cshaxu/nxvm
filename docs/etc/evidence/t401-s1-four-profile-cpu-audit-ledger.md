@@ -893,3 +893,7 @@ S37 audits CLI/STI `FAh`/`FBh`. Intel 8086/80286/80386 references define IF publ
 `M5:T401:S37:CLI-STI-PROFILES:OK` retains four-profile IF behavior, 80286 IRQ inhibition/reacceptance, pre-80386 attribute #UD atomicity and 80386 attributes/LOCK proof. `M5:T401:S37:CLI-STI-PREVIEW-PROFILES:OK` adds the matching lexical matrix.
 
 No production discrepancy was found. This remains CPU semantic/nonphysical timing-baseline evidence only and does not establish physical timing, DeskPro L3 or a Core/VM interface change.
+
+## S37 Acceptance
+
+S37 closes CLI/STI `FAh`/`FBh` coverage with focused runtime and preview proof across all four profiles. It retains IF behavior, privilege rejection, STI IRQ inhibition/reacceptance and attribute/LOCK boundaries. No production discrepancy was found; Core timing remains explicitly nonphysical. S38 owns HLT `F4h`.
