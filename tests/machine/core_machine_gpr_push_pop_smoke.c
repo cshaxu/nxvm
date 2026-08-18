@@ -282,10 +282,17 @@ static C_INT gpr_push_pop_test_rm_forms(C_VOID)
     const type_unsigned_8 *codes[] = {push_reg, pop_reg, push_ds, push_ss, pop_ds,
         pop_ss, push_67, pop_67};
     const type_unsigned_8 bytes[] = {2u, 2u, 4u, 3u, 4u, 3u, 7u, 7u};
+    static const core_machine_cpu_profile profiles[] = {
+        CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
+        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
+    };
+    type_unsigned_8 profile;
     type_unsigned_8 form;
 
+    for (profile = 0u; profile != sizeof(profiles) / sizeof(profiles[0]); ++profile)
     for (form = 0u; form != sizeof(codes) / sizeof(codes[0]); ++form)
     {
+        if (form >= 6u && profiles[profile] != CORE_MACHINE_CPU_PROFILE_80386) continue;
         gpr_push_pop_machine state;
         core_machine_cpu_diagnostic diagnostic;
         t_cpu before;
@@ -296,8 +303,7 @@ static C_INT gpr_push_pop_test_rm_forms(C_VOID)
         type_unsigned_32 observed = 0u;
         type_unsigned_32 address = 0x20u;
         C_INT push = form == 0u || form == 2u || form == 3u || form == 6u;
-        C_INT failed = !gpr_push_pop_prepare(CORE_MACHINE_CPU_PROFILE_80386,
-            &state);
+        C_INT failed = !gpr_push_pop_prepare(profiles[profile], &state);
 
         if (!failed)
         {
@@ -774,5 +780,6 @@ C_INT main(C_VOID)
         return 1;
     }
     STD_PRINTF("M5:T316:S44:GPR-PUSH-POP:OK\n");
+    STD_PRINTF("M5:T401:S10:GROUP5-PUSH-RM-PROFILES:OK\n");
     return 0;
 }

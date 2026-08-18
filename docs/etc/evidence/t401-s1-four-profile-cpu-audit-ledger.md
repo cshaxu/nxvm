@@ -360,3 +360,12 @@ prefixed dword forms remain gated to that profile. Each row checks result,
 architecturally defined INC/DEC flags and carry preservation. This is an
 original-source form/flag rule and test-only coverage expansion; it makes no
 physical timing or DeskPro-L3 claim and changes no Core/VM interface.
+`M5:T401:S10:GROUP5-PUSH-RM-PROFILES:OK` extends the retained `FF /6`
+PUSH-r/m execution matrix to 8086, 80186, 80286 and 80386. It covers register,
+DS-default and SS-default 16-bit memory sources, checks the source value,
+16-bit stack update, stack image, flags and non-destination registers, and
+retains the 80386-only `67h` address-size cases under their existing profile
+gate. Existing protected source- and stack-fault cases remain the transaction
+proof for this shared stack owner. This is original-source opcode/form coverage,
+not a physical timing or DeskPro-L3 claim; no production or Core/VM interface
+changed.
