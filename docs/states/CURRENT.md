@@ -2,12 +2,32 @@
 
 ## Current Work
 
+## M5 T414 S1 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New |
+| Admission And Approval | Owner authorization of 2026-08-18 covers continued DeskPro L3 implementation, tier-labelled reference/generic bridges, and master pushes. |
+| Objective | Bind committed CPU data-memory reads to the existing Core external-memory locality bridge, using original D4 page-mode facts with an explicit generic-AT page-key fallback. |
+| Non-goals | Do not claim exact D4 row/bank mapping, idle/overlap timing, page-walk timing, BWAIT, DMA/refresh arbitration, device timing or Model-L3 readiness. |
+| Reference Baseline | T408 original page-mode source, T410 external-cycle lifecycle, T411 prefetch window, T412 prefetch bridge and T413 CPU-write bridge. |
+| Candidate Proposal | [DeskPro physical-cycle and phase-timing closure](../proposals/m5-deskpro-physical-cycle-and-phase-timing.md) |
+| Files And ABI Surface | Existing Core external-cycle/transaction/retirement owner and Model-40 composition only; preserve Core/VM direction and no second scheduler. |
+| Applicable Rules | docs/design/ARCHITECTURE.md; docs/design/CODING.md; docs/rules/ARCHITECTURE.md; docs/rules/CODING.md; docs/rules/EXECUTION.md. |
+| Verification | Original-source and read-only reference review, focused data-read/hit/cancel/reset trace, current gate, documentation gate and actual-diff review. |
+| Expected Markers | M5:T414:S1:DATA-READ-LOCALITY:OK or M5:T414:S1:DATA-READ-LOCALITY:TRANSFER. |
+| Asset Needs | O:\assets original D4 research and read-only PCjs/other available references; no import. |
+| Reporting Requirements | Label each mechanism original, reference-derived or generic-AT; name every unbound D4 physical receiver. |
+| Stop Conditions | Stop and transfer exact D4 phase/row mapping if implementation would fabricate it or require a second CPU/DMA transaction or scheduler path. |
+| Exit Criteria | Committed CPU data reads participate in the bounded locality policy with focused proof, or the exact missing fact is transferred without blocking later receivers. |
+| Original Owner Request | Implement DeskPro 386 L3 timing/hardware gaps using original then reference then generic-AT tiers; do not stall and preserve Core/VM boundary. |
+| Similar-Issue Sweep | Inspect data reads, string/RMW forms, page-table reads, instruction fetch/prefetch, writes, reset/cancellation, HOLD/HLDA, DMA, ROM/RAM maps and Model-40 composition. |
 ## Current Technical Baseline
 
-- **Current developer artifact:** T413 S1 P1 `vm-0-5-0413` /
-  `build/output/nxvm_0_5_0413.exe`, SHA-256
-  `72F747A75460856B2C967A4763565CE11915BC8E0D562DF4EFF2ABCF98DF3D4A`.
-  The isolated x64 current gate passes 288/288. T413 extends the Model-40 generic bridge to committed CPU data writes; exact D4 PAL phases remain transferred. T409 labels Core CPU memory
+- **Current developer artifact:** T414 S1 P1 `vm-0-5-0414` /
+  `build/output/nxvm_0_5_0414.exe`, SHA-256
+  `B5CB21F73AC06EDD70B4919368609EDF20BE52C9FEFF20B45734111AC9577D2D`.
+  The isolated x64 current gate passes 288/288. T414 extends the Model-40 generic bridge to committed CPU data reads; exact D4 PAL phases remain transferred. T409 labels Core CPU memory
   provenance only; it does not publish original D4 timing or a Model-L3 claim.
   T386 closes selected-device functional completeness at S29; its retained
   [closure audit](../etc/evidence/t386-s29-functional-closure-audit.md) fixes

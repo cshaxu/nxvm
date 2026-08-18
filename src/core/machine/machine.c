@@ -3209,7 +3209,8 @@ static C_VOID core_machine_cpu_external_cycle_trace(C_VOID *opaque,
 
     if (machine == STD_NULL) return;
     if (phase == CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_COMMIT &&
-        ((!write && provenance == CORE_MACHINE_CPU_MEMORY_ACCESS_INSTRUCTION_PREFETCH) ||
+        ((!write && (provenance == CORE_MACHINE_CPU_MEMORY_ACCESS_INSTRUCTION_PREFETCH ||
+        provenance == CORE_MACHINE_CPU_MEMORY_ACCESS_DATA)) ||
         (write && provenance == CORE_MACHINE_CPU_MEMORY_ACCESS_DATA)) &&
         machine->external_memory_locality_timing.page_bytes != 0u) {
         type_unsigned_32 page_tag = physical /

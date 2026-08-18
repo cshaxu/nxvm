@@ -69,7 +69,7 @@ typedef struct core_machine_instruction_timing {
     type_unsigned_32 rep_iteration_surcharge;
 } core_machine_instruction_timing;
 
-/* A profile may charge completed instruction-prefetch reads and data writes by a
+/* A profile may charge completed instruction-prefetch and data reads, and data writes by a
  * bounded locality page. Zero page_bytes disables this optional policy. */
 typedef struct core_machine_external_memory_locality_timing {
     type_unsigned_32 page_bytes;
