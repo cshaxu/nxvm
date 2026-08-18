@@ -352,3 +352,11 @@ that second read to the same checked access helper. The probe executes on the
 target, so a 16-bit wrap reads the deliberately different bytes at `0000h` and
 fails. No third-party source was copied; no production code or Core/VM
 interface changed.
+`M5:T401:S10:GROUP45-INC-DEC-PROFILES:OK` extends the existing FE/FF
+increment/decrement execution matrix from an 80386-only run to 8086, 80186,
+80286 and 80386. It executes the byte (`FE /0,/1`) and word (`FF /0,/1`)
+register and direct-memory forms on every profile; the 80386-only operand-size
+prefixed dword forms remain gated to that profile. Each row checks result,
+architecturally defined INC/DEC flags and carry preservation. This is an
+original-source form/flag rule and test-only coverage expansion; it makes no
+physical timing or DeskPro-L3 claim and changes no Core/VM interface.

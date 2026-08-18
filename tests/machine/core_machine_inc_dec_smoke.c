@@ -191,8 +191,15 @@ static C_INT inc_dec_test_rm_forms(C_VOID)
         { 0x66u, 0xffu, 0x0eu, 0x00u, 0x50u }
     };
     static const type_unsigned_8 lengths[] = { 2u, 2u, 2u, 2u, 4u, 4u, 4u, 4u, 5u, 5u };
+    static const core_machine_cpu_profile profiles[] = {
+        CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
+        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
+    };
+    type_unsigned_8 profile;
     type_unsigned_8 form;
+    for (profile = 0u; profile != sizeof(profiles) / sizeof(profiles[0]); ++profile)
     for (form = 0u; form != sizeof(lengths); ++form) {
+        if (form >= 8u && profiles[profile] != CORE_MACHINE_CPU_PROFILE_80386) continue;
         const C_INT decrement = (form & 1u) != 0u;
         const type_unsigned_8 bytes = form < 2u || (form >= 4u && form < 6u) ? 1u :
             (form < 8u ? 2u : 4u);
@@ -209,7 +216,7 @@ static C_INT inc_dec_test_rm_forms(C_VOID)
         t_cpu after;
         core_machine_cpu_diagnostic diagnostic;
         type_unsigned_32 observed = 0u;
-        C_INT failed = !inc_dec_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
+        C_INT failed = !inc_dec_prepare(profiles[profile], &state);
 
         if (!failed) {
             state.machine->executor_cpu.data.eax = before;
@@ -3334,6 +3341,7 @@ C_INT main(C_VOID)
     STD_PRINTF("M5:T316:S14:XOR:OK\n");
     STD_PRINTF("M5:T316:S15:CMP:OK\n");
     STD_PRINTF("M5:T401:S7:GROUP1-PROFILE-MATRIX:OK\n");
+    STD_PRINTF("M5:T401:S10:GROUP45-INC-DEC-PROFILES:OK\n");
     STD_PRINTF("M5:T316:S16:DECIMAL-ADJUST:OK\n");
     STD_PRINTF("M5:T316:S17:XLAT:OK\n");
     return 0;
