@@ -28,7 +28,7 @@ transfer has no memory write and no consumed wait quantum across two time
 advances; releasing BUSRDY creates the existing one-quantum wait and then
 exactly one write. It also verifies cold reset restores ready and clears the
 wait state. `vm-model40-dma-s17-smoke` verifies the Model-40 selection and
-emits this marker.
+emits this marker.`n`nThe full current smoke gate passed after rebuilding all current targets. The T419`nS3 developer artifact is `nxvm_0_5_0419.exe`, SHA-256`n`D0F106BB5173AA5190A0CC0417CEA4642889801D086D37BA302E86651857EE3D.
 
 ## Remaining Transfer
 
