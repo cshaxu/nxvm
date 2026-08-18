@@ -2,30 +2,11 @@
 
 ## Current Work
 
-## M5 T419 S5 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | The user has standing approval in this thread to continue tier-labelled DeskPro L3 work without repeated authorization. Scope is the original-source D4 CPU external-memory-cycle and prefetch-overlap receiver. |
-| Objective | Replace the retained logical-access locality assumption with a Core-owned observable CPU external-memory-cycle/prefetch-overlap boundary that applies the documented 2 KiB miss/hit outcome only to a proven overlapping sequential request. |
-| Non-goals | No calibrated BCLK duration, PAL translation, general cache model, VM scheduler, firmware import, or claimed whole-machine L3 acceptance. |
-| Reference Baseline | master at f6912668; original D4 material fixes the 2 KiB page and initial/row-miss versus row-hit wait distinction. Current TODO records that a logical-access scalar cannot publish this result. |
-| Candidate Proposal | [DeskPro physical-cycle and phase-timing closure](../proposals/m5-deskpro-physical-cycle-and-phase-timing.md), receiver 1; evidence tier original. |
-| Files And ABI Surface | Core machine transaction/timing private state and trace surface as necessary; Model-40 selects only the difference; focused Core and Model-40 tests; Current and indexed evidence. |
-| Applicable Rules | Core remains the sole CPU/DMA transaction owner; VM selects no alternate transaction path; C11/type vocabulary; original source is design evidence only; task, evidence, artifact and gate rules apply. |
-| Verification | A focused trace distinguishes speculative prefetch, consumed fetch, page walk and data access; proves hit eligibility requires declared overlap identity and sequence; proves reset/cancel/HOLD lifecycle; retains non-D4 behavior; runs adjacent and full gates. |
-| Expected Markers | A new T419 S5 marker plus retained S1-S4 markers. |
-| Asset Needs | Read-only approved primary research corpus only; no firmware, media, reference source text or local path committed. |
-| Reporting Requirements | Record source tier, request identity and overlap contract, exact regressions, artifact hash, remaining physical transfers and pushed commit. |
-| Stop Conditions | Stop and transfer calibrated duration, any unproven page-hit predicate, CPU BWAIT, external bus-master behavior, or a second Core/VM transaction route. |
-| Exit Criteria | The Core-owned external-cycle/prefetch-overlap contract is selected only for D4, has focused lifecycle proof and full gate evidence, and transfers remaining physical timing. |
-| Original Owner Request | Implement DeskPro 386 L3 timing and hardware gaps with original material first, reference-derived behavior second, then explicitly labelled generic AT scaffolding. |
-| Similar-Issue Sweep | Inspect every CPU external memory transaction, existing locality timing, prefetch path, page-walk path, cancellation, HOLD and Model-40 configuration; repair the shared owner only. |
+| T419 S5 | Closed: Model-40 selects the original-source 2 KiB miss/hit result through one Core explicit external-cycle/prefetch-overlap boundary; 5170 reuses the disabled policy and the remaining physical producer/phase work is transferred. [Closure audit](../etc/evidence/t419-s5-external-cycle-overlap-closure-audit.md). |
 
 ## Current Technical Baseline
 
-- **Current developer artifact:** T419 S5 `vm-0-5-0419` /`build/output/nxvm_0_5_0419.exe`, SHA-256 `5820F4B1A7D7B92548C0AA144C717276D8E3F8A14E29ABBF75BF5FAC92BB5BDB`. T419 keeps the single Core DMA transaction route and adds the D4-selected explicit external CPU-cycle/prefetch-overlap policy; completed adjacency cannot manufacture a hit, and stopped-state physical writes invalidate queued prefetch. Exact asynchronous producer, calibrated waveform, CPU BWAIT, row/bank PAL, and electrical refresh remain transferred. T418 instruction-boundary locality, T417 refresh, T416 DMA-HOLD and T415 paging fixes remain retained.
+- **Current developer artifact:** T419 S5 P2 `vm-0-5-0419` /`build/output/nxvm_0_5_0419.exe`, SHA-256 `5820F4B1A7D7B92548C0AA144C717276D8E3F8A14E29ABBF75BF5FAC92BB5BDB`. T419 keeps the single Core DMA transaction route and adds the D4-selected explicit external CPU-cycle/prefetch-overlap policy; completed adjacency cannot manufacture a hit, and stopped-state physical writes invalidate queued prefetch. Exact asynchronous producer, calibrated waveform, CPU BWAIT, row/bank PAL, and electrical refresh remain transferred. T418 instruction-boundary locality, T417 refresh, T416 DMA-HOLD and T415 paging fixes remain retained.
   T386 closes selected-device functional completeness at S29; its retained
   [closure audit](../etc/evidence/t386-s29-functional-closure-audit.md) fixes
   HDC current-gate coverage and transfers board, firmware and physical work.

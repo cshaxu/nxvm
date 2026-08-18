@@ -456,6 +456,8 @@ principal documents named in [docs/README.md](../README.md).
 
 | evidence/t419-s5-external-cycle-overlap.md | Verification owner | T419 S5 replaces inferred logical locality with a single Core explicit external-cycle/prefetch-overlap contract, binds Model-40, audits disabled IBM 5170 reuse, repairs stopped-state write prefetch coherence, and transfers the physical producer/phase boundary. Retain with T419 history. |
 
+| evidence/t419-s5-external-cycle-overlap-closure-audit.md | Closure audit | T419 S5 closes the original-source 2 KiB external-cycle overlap receiver with one Core owner and transfers the asynchronous physical producer and phase work. Retain with T419 history. |
+
 Adding a new supporting document requires owner approval, an exact-file index
 row or a declared indexed subtree, and a stated promotion, merge, or retirement
 condition. The governance gate verifies that every supporting Markdown file is
