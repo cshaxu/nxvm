@@ -450,6 +450,10 @@ principal documents named in [docs/README.md](../README.md).
 
 | evidence/t419-s3-d4-dma-busready-closure-audit.md | Closure audit | T419 S3 closes the discrete original-source D4 DMA BUSRDY bridge and transfers remaining physical arbitration. Retain with T419 history. |
 
+| evidence/t419-s4-d4-refresh-hold.md | Verification owner | T419 S4 adds the original-source D4 refresh-request-to-hold bridge through the sole Core arbitration route and transfers physical timing and electrical details. Retain with T419 history. |
+
+| evidence/t419-s4-d4-refresh-hold-closure-audit.md | Closure audit | T419 S4 closes the discrete D4 refresh hold bridge and transfers remaining physical L3 work. Retain with T419 history. |
+
 Adding a new supporting document requires owner approval, an exact-file index
 row or a declared indexed subtree, and a stated promotion, merge, or retirement
 condition. The governance gate verifies that every supporting Markdown file is
