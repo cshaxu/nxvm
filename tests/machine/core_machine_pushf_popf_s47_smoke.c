@@ -404,5 +404,6 @@ C_INT main(C_VOID)
         return 1;
     }
     STD_PRINTF("M5:T316:S47:PUSHF-POPF:OK\n");
+    STD_PRINTF("M5:T401:S39:PUSHF-POPF-PROFILES:OK\n");
     return 0;
 }

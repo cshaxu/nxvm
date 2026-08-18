@@ -909,3 +909,11 @@ No production discrepancy was found. This remains CPU semantic/nonphysical timin
 ## S38 Acceptance
 
 S38 closes HLT `F4h` coverage with focused runtime and preview proof across all four profiles. It retains halted state, attributes/LOCK, protected/VM86 privilege behavior and IRQ wakeup boundary. No production discrepancy was found; Core timing remains explicitly nonphysical. S39 owns PUSHF/POPF `9Ch`/`9Dh`.
+
+## S39 PUSHF/POPF
+
+S39 audits PUSHF/POPF `9Ch`/`9Dh`. Intel 8086/80286/80386 references define stack flag images, reserved/privileged flag treatment and 80386 operand-size behavior. This is original-source semantic/form evidence; no emulator implementation, ROM or guest asset was imported.
+
+`M5:T401:S39:PUSHF-POPF-PROFILES:OK` retains four-profile flag images, 80386 16/32-bit stack forms, pre-80386 attribute #UD, LOCK atomicity, protected/VM86/stack-fault and IRQ proof. `M5:T401:S39:PUSHF-POPF-PREVIEW-PROFILES:OK` adds the matching lexical matrix.
+
+No production discrepancy was found. This remains CPU semantic/nonphysical timing-baseline evidence only and does not establish physical timing, DeskPro L3 or a Core/VM interface change.
