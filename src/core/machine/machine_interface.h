@@ -69,13 +69,13 @@ typedef struct core_machine_instruction_timing {
     type_unsigned_32 rep_iteration_surcharge;
 } core_machine_instruction_timing;
 
-/* A profile may charge completed instruction-prefetch physical reads by a
+/* A profile may charge completed instruction-prefetch reads and data writes by a
  * bounded locality page. Zero page_bytes disables this optional policy. */
-typedef struct core_machine_prefetch_locality_timing {
+typedef struct core_machine_external_memory_locality_timing {
     type_unsigned_32 page_bytes;
     type_unsigned_32 page_miss_ticks;
     type_unsigned_32 page_hit_ticks;
-} core_machine_prefetch_locality_timing;
+} core_machine_external_memory_locality_timing;
 
 typedef struct core_machine_config {
     STD_SIZE_T memory_bytes;
@@ -88,7 +88,7 @@ typedef struct core_machine_config {
     /* Compatibility base-cost shorthand when instruction_timing.base_ticks is 0. */
     type_unsigned_32 ticks_per_instruction;
     core_machine_instruction_timing instruction_timing;
-    core_machine_prefetch_locality_timing prefetch_locality_timing;
+    core_machine_external_memory_locality_timing external_memory_locality_timing;
     core_machine_clock_plan clock_plan;
     /* Physical mode refuses an unallocated successful retirement before it can
      * be published into a clock-domain plan. */

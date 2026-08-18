@@ -415,6 +415,8 @@ principal documents named in [docs/README.md](../README.md).
 | evidence/t411-s1-cpu-prefetch-window.md | Verification owner | T411 S1 makes the Core 15-byte instruction-prefetch window persistent with control-transfer and reset invalidation, while retaining D4 timing as unbound. Retain with T411 history. |
 | vidence/t411-s2-prefetch-closure-audit.md | Closure audit | T411 S2 verifies the single Core prefetch lifecycle and transfers every D4 physical-cycle receiver without an L3 claim. Retain with T411 history. |
 
+| evidence/t413-s1-external-write-locality.md | Verification owner | T413 S1 extends the generic locality bridge to committed CPU writes, backed by original D4 write-cycle facts but retaining exact PAL phases as a transfer. Retain with T413 history. |
+
 Adding a new supporting document requires owner approval, an exact-file index
 row or a declared indexed subtree, and a stated promotion, merge, or retirement
 condition. The governance gate verifies that every supporting Markdown file is

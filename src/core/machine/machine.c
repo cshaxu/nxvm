@@ -3208,21 +3208,22 @@ static C_VOID core_machine_cpu_external_cycle_trace(C_VOID *opaque,
     core_machine_trace_event_type type;
 
     if (machine == STD_NULL) return;
-    if (phase == CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_COMMIT && !write &&
-        provenance == CORE_MACHINE_CPU_MEMORY_ACCESS_INSTRUCTION_PREFETCH &&
-        machine->prefetch_locality_timing.page_bytes != 0u) {
+    if (phase == CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_COMMIT &&
+        ((!write && provenance == CORE_MACHINE_CPU_MEMORY_ACCESS_INSTRUCTION_PREFETCH) ||
+        (write && provenance == CORE_MACHINE_CPU_MEMORY_ACCESS_DATA)) &&
+        machine->external_memory_locality_timing.page_bytes != 0u) {
         type_unsigned_32 page_tag = physical /
-            machine->prefetch_locality_timing.page_bytes;
-        type_unsigned_32 wait_ticks = !machine->prefetch_locality_page_valid ||
-            machine->prefetch_locality_page_tag != page_tag ?
-            machine->prefetch_locality_timing.page_miss_ticks :
-            machine->prefetch_locality_timing.page_hit_ticks;
-        machine->prefetch_locality_page_valid = TYPE_TRUE;
-        machine->prefetch_locality_page_tag = page_tag;
-        if (UINT64_MAX - machine->prefetch_locality_round_ticks < wait_ticks) {
-            machine->prefetch_locality_round_overflow = TYPE_TRUE;
+            machine->external_memory_locality_timing.page_bytes;
+        type_unsigned_32 wait_ticks = !machine->external_memory_locality_page_valid ||
+            machine->external_memory_locality_page_tag != page_tag ?
+            machine->external_memory_locality_timing.page_miss_ticks :
+            machine->external_memory_locality_timing.page_hit_ticks;
+        machine->external_memory_locality_page_valid = TYPE_TRUE;
+        machine->external_memory_locality_page_tag = page_tag;
+        if (UINT64_MAX - machine->external_memory_locality_round_ticks < wait_ticks) {
+            machine->external_memory_locality_round_overflow = TYPE_TRUE;
         } else {
-            machine->prefetch_locality_round_ticks += wait_ticks;
+            machine->external_memory_locality_round_ticks += wait_ticks;
         }
     }
     switch (phase) {
@@ -3280,8 +3281,8 @@ static C_INT core_machine_retirement_time_contract_is_valid(
     return contract == CORE_MACHINE_RETIREMENT_TIME_DETERMINISTIC ||
         contract == CORE_MACHINE_RETIREMENT_TIME_PHYSICAL;
 }
-static C_INT core_machine_prefetch_locality_timing_is_valid(
-    const core_machine_prefetch_locality_timing *timing)
+static C_INT core_machine_external_memory_locality_timing_is_valid(
+    const core_machine_external_memory_locality_timing *timing)
 {
     if (timing == STD_NULL) return 0;
     if (timing->page_bytes == 0u) {
@@ -4640,8 +4641,8 @@ static type_status core_machine_create_internal(
         !core_machine_clock_plan_is_valid(&config->clock_plan) ||
         !core_machine_retirement_time_contract_is_valid(
             config->retirement_time_contract) ||
-        !core_machine_prefetch_locality_timing_is_valid(
-            &config->prefetch_locality_timing) ||
+        !core_machine_external_memory_locality_timing_is_valid(
+            &config->external_memory_locality_timing) ||
         (config->auxiliary_pit_present != TYPE_FALSE &&
         config->auxiliary_pit_present != TYPE_TRUE) ||
         (config->auxiliary_pit_present && config->auxiliary_pit_base_port > 0xfffcu)) {
@@ -4660,7 +4661,7 @@ static type_status core_machine_create_internal(
     machine->lifecycle = CORE_MACHINE_INITIALIZED;
     machine->cpu_profile = core_machine_resolve_cpu_profile(config->cpu_profile);
     machine->retirement_time_contract = config->retirement_time_contract;
-    machine->prefetch_locality_timing = config->prefetch_locality_timing;
+    machine->external_memory_locality_timing = config->external_memory_locality_timing;
     if (config->retirement_qualification != STD_NULL) {
         if (config->retirement_qualification->entries == STD_NULL ||
             config->retirement_qualification->entry_count == 0u ||
@@ -4886,10 +4887,10 @@ static type_status core_machine_cold_reset(core_machine *machine)
     STD_ATOMIC_STORE(&machine->stop_requested, 0);
     machine->fault_detail = 0u;
     machine->elapsed_ticks = 0u;
-    machine->prefetch_locality_page_tag = 0u;
-    machine->prefetch_locality_round_ticks = 0u;
-    machine->prefetch_locality_page_valid = TYPE_FALSE;
-    machine->prefetch_locality_round_overflow = TYPE_FALSE;
+    machine->external_memory_locality_page_tag = 0u;
+    machine->external_memory_locality_round_ticks = 0u;
+    machine->external_memory_locality_page_valid = TYPE_FALSE;
+    machine->external_memory_locality_round_overflow = TYPE_FALSE;
     machine->retirement_eligibility_key_valid = TYPE_FALSE;
     machine->source_repeat_active = TYPE_FALSE;
     machine->source_repeat_cs = 0u;
@@ -5094,8 +5095,8 @@ type_status core_machine_run(
             {
                 type_bool was_halted = machine->executor_cpu.data.flagHalt;
 
-                machine->prefetch_locality_round_ticks = 0u;
-                machine->prefetch_locality_round_overflow = TYPE_FALSE;
+                machine->external_memory_locality_round_ticks = 0u;
+                machine->external_memory_locality_round_overflow = TYPE_FALSE;
                 core_machine_cpu_execution_refresh(&machine->executor_cpu_execution);
                 if (machine->d4_platform_configured &&
                     core_machine_cpu_execution_consume_shutdown_request(
@@ -5139,9 +5140,9 @@ type_status core_machine_run(
                 type_unsigned_64 instruction_ticks;
 
                 if (!core_machine_instruction_cost(machine, &instruction_ticks) ||
-                    machine->prefetch_locality_round_overflow ||
+                    machine->external_memory_locality_round_overflow ||
                     !core_machine_add_ticks(&instruction_ticks,
-                        machine->prefetch_locality_round_ticks) ||
+                        machine->external_memory_locality_round_ticks) ||
                     UINT64_MAX - result->ticks < instruction_ticks ||
                     UINT64_MAX - machine->elapsed_ticks < instruction_ticks) {
                     (C_VOID)core_machine_report_fault(machine, 0x54494d45u);
