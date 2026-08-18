@@ -215,7 +215,7 @@ static C_INT scas_test_flags(C_VOID)
         VCPU_EFLAGS_AF | VCPU_EFLAGS_OF);
 }
 
-static C_INT scas_rep_case(const type_unsigned_8 *code, type_unsigned_8 bytes, C_INT repz,
+static C_INT scas_rep_case(core_machine_cpu_profile profile, const type_unsigned_8 *code, type_unsigned_8 bytes, C_INT repz,
     type_unsigned_16 count, const type_unsigned_8 *image, type_unsigned_16 expected_count,
     type_unsigned_16 expected_di, type_unsigned_32 expected_flags)
 {
@@ -226,7 +226,7 @@ static C_INT scas_rep_case(const type_unsigned_8 *code, type_unsigned_8 bytes, C
     core_machine_run_result result;
     type_status status;
     type_unsigned_8 observed[3] = {0u, 0u, 0u};
-    C_INT failed = !scas_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
+    C_INT failed = !scas_prepare(profile, &state);
 
     if (!failed) {
         scas_seed(&state);
@@ -255,33 +255,33 @@ static C_INT scas_rep_case(const type_unsigned_8 *code, type_unsigned_8 bytes, C
 
 static C_INT scas_test_rep(C_VOID)
 {
+    static const core_machine_cpu_profile profiles[] = {
+        CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
+        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
+    };
     static const type_unsigned_8 repe[] = {0xf3u, 0xaeu};
     static const type_unsigned_8 repne[] = {0xf2u, 0xaeu};
     static const type_unsigned_8 equals[] = {0x10u, 1u, 0x10u};
     static const type_unsigned_8 unequal[] = {1u, 0x10u, 1u};
     static const type_unsigned_8 zero[] = {1u, 1u, 1u};
     static const type_unsigned_8 one[] = {0x10u, 1u, 1u};
+    type_unsigned_8 profile;
 
-    if (!scas_rep_case(repe, sizeof(repe), 1, 0u, zero, 0u, 0x20u, 0u)) {
-        STD_PRINTF("SCAS rep=zero\n");
-        return 0;
-    }
-    if (!scas_rep_case(repe, sizeof(repe), 1, 1u, one, 0u, 0x21u,
-        VCPU_EFLAGS_PF | VCPU_EFLAGS_ZF))
-        return 0;
-    if (!scas_rep_case(repne, sizeof(repne), 0, 0u, zero, 0u, 0x20u, 0u) ||
-        !scas_rep_case(repne, sizeof(repne), 0, 1u, unequal, 0u, 0x21u,
-        VCPU_EFLAGS_PF | VCPU_EFLAGS_AF))
-        return 0;
-    if (!scas_rep_case(repe, sizeof(repe), 1, 3u, equals, 1u, 0x22u,
-        VCPU_EFLAGS_PF | VCPU_EFLAGS_AF)) {
-        STD_PRINTF("SCAS rep=repe\n");
-        return 0;
-    }
-    if (!scas_rep_case(repne, sizeof(repne), 0, 3u, unequal, 1u, 0x22u,
-        VCPU_EFLAGS_PF | VCPU_EFLAGS_ZF)) {
-        STD_PRINTF("SCAS rep=repne\n");
-        return 0;
+    for (profile = 0u; profile != sizeof(profiles) / sizeof(profiles[0]); ++profile) {
+        if (!scas_rep_case(profiles[profile], repe, sizeof(repe), 1, 0u,
+            zero, 0u, 0x20u, 0u) || !scas_rep_case(profiles[profile], repe,
+            sizeof(repe), 1, 1u, one, 0u, 0x21u,
+            VCPU_EFLAGS_PF | VCPU_EFLAGS_ZF) || !scas_rep_case(
+            profiles[profile], repne, sizeof(repne), 0, 0u, zero, 0u, 0x20u,
+            0u) || !scas_rep_case(profiles[profile], repne, sizeof(repne),
+            0, 1u, unequal, 0u, 0x21u, VCPU_EFLAGS_PF | VCPU_EFLAGS_AF) ||
+            !scas_rep_case(profiles[profile], repe, sizeof(repe), 1, 3u,
+            equals, 1u, 0x22u, VCPU_EFLAGS_PF | VCPU_EFLAGS_AF) ||
+            !scas_rep_case(profiles[profile], repne, sizeof(repne), 0, 3u,
+            unequal, 1u, 0x22u, VCPU_EFLAGS_PF | VCPU_EFLAGS_ZF)) {
+            STD_PRINTF("SCAS rep profile=%u\n", profile);
+            return 0;
+        }
     }
     return 1;
 }
@@ -609,5 +609,6 @@ C_INT main(C_VOID)
     if (!scas_test_irq())
         return 1;
     STD_PRINTF("M5:T316:S36:SCAS:OK\n");
+    STD_PRINTF("M5:T401:S19:SCAS-PROFILES:OK\n");
     return 0;
 }
