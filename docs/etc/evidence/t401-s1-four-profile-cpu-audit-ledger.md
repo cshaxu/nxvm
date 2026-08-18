@@ -953,3 +953,7 @@ S42 audits CLC/STC/CMC/CLD/STD `F8h`/`F9h`/`F5h`/`FCh`/`FDh`. Intel 8086/80386 r
 `M5:T401:S42:DIRECT-FLAGS-PROFILES:OK` retains all-four-profile CF/DF publication, pre-80386 attribute #UD atomicity, 80386 attributes/LOCK, protected/VM86 and IRQ proof. `M5:T401:S42:DIRECT-FLAGS-PREVIEW-PROFILES:OK` adds the corresponding four-profile lexical matrix with 80386 operand/address attribute forms.
 
 The audit corrected the Core STD trace entry label from `CLD` to `STD`; execution semantics were already correct. This remains CPU semantic/nonphysical timing-baseline evidence only and does not establish physical timing, DeskPro L3 or a Core/VM interface change.
+
+## S42 Acceptance
+
+S42 closes CLC/STC/CMC/CLD/STD coverage with focused runtime and preview proof across all four profiles. It retains CF/DF publication, attributes/LOCK, protected/VM86 and IRQ boundaries, and corrects the bounded STD trace label. Core timing remains explicitly nonphysical. S43 owns LOOPNE/LOOPE/LOOP/JCXZ.
