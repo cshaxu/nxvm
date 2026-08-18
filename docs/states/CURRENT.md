@@ -4,6 +4,26 @@
 
 **Active: M5 T399.**
 
+## M5 T399 S4 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; M5 T399 S4. |
+| Admission And Approval | Owner approved completing every feasible DeskPro L3 reference-derived batch before CPU audit on 2026-08-17; T399 S3 is accepted. No exception permits generic AT substitution, reference import, protected-media use, physical-L3 promotion or Core/VM ABI change. |
+| Objective | Consume the complete B4 Compaq HDC command/DRQ/IRQ14 batch by qualifying or rejecting the available exact DeskPro reference route and recording the existing project-owned HDC boundary. |
+| Non-goals | No physical media/ECC claim, time scalar, generic AT HDC as Compaq proof, external media/ROM/config/source import, production behavior change without a demonstrated defect, or whole-T399 decision. |
+| Reference Baseline | T399 ledger B4; PCjs `c7f21b4fa2bdedac3d5c73094a6402fdc8b24c70` DeskPro configurations; T386 S5/S26 Compaq WD 40 MB HDC tests; T397/T398 physical-media transfer. |
+| Candidate Proposal | [DeskPro 386 reference-derived timing bridge](../proposals/m5-deskpro-386-reference-derived-timing-bridge.md). |
+| Files And ABI Surface | Existing `tests/machine/core_machine_compaq_hdc_s5_smoke.c`, `tests/products/vm_model40_hdc_s26_smoke.c`, `src/core/machine/hdc.*`, existing Model-40 composition, plus indexed T399 evidence and status only. No public ABI change. |
+| Applicable Rules | Execution: one ledger batch and full disposition; Architecture: Core owns shared HDC, VM selects Model-40; Coding: focused C11 owner tests; Document: indexed evidence/current packet; source policy: read-only reference only. |
+| Verification | Build and run `core-machine-compaq-hdc-s5-smoke`, `core-machine-compaq-hdc-machine-s5-smoke`, and `vm-model40-hdc-s26-smoke`; documentation governance and diff check. |
+| Expected Markers | `M5:T386:S5:COMPAQ-HDC-ROUTE:OK`, `M5:T386:S5:COMPAQ-HDC-MACHINE:OK`, `M5:T386:S26:MODEL40-HDC-STARTUP:OK`, and `M5:T386:S26:MODEL40-HDC-FIXED-MEDIA:OK`. |
+| Asset Needs | None; tests synthesize inputs. Reference configurations are read-only and are not copied. |
+| Reporting Requirements | Record whether PCjs proves the exact Compaq HDC route, command/DRQ/IRQ14/reset/cancel coverage, any disagreement, and the precise TODO receiver if rejected. |
+| Stop Conditions | Reject B4 for this tier if the exact configuration binds only an IBM/generic AT HDC, a required checkpoint lacks a project-owned probe, or the result would infer physical media/timing. |
+| Exit Criteria | B4 is either accepted with exact reference-derived proof and focused replay, or rejected with the existing Compaq physical-media/T397-T398 receiver; no unclassified route remains. |
+| Original Owner Request | Complete all feasible DeskPro L3 timing before CPU instruction audit; direct authority first, qualified emulator references second, otherwise TODO; defer CPU-audit prerequisites. |
+| Similar-Issue Sweep | Inspect every selected Model-40 Compaq-HDC and Core HDC test plus PCjs DeskPro configuration references; distinguish controller route from generic Type-5 media and physical-media claims. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T395 S1 P4 `vm-0-5-0395` /
