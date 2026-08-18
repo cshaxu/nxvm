@@ -1175,3 +1175,6 @@ The new preview matrix found and repaired a shared lexical defect: DR4/DR5
 were incorrectly advertised as available although execution rejects them.
 The lexical validator now rejects those reserved indices before publication.
 Focused smokes and the 285-test current gate pass; timing remains nonphysical.
+## S66 Acceptance
+
+S66 closes the bounded 80386 debug-register MOV audit. It repairs reserved DR4/DR5 lexical availability and retains direction, register-only form, privilege, LOCK, IRQ, 80186/80286 rejection and 8086 POP CS boundaries. Focused smokes, documentation governance and the 285-test current gate pass; timing remains nonphysical and T401 remains open.
