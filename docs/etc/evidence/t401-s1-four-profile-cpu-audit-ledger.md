@@ -42,7 +42,9 @@ reaccepting their task status.
 
 ## Transfer
 
-Batch B is the remaining `0F` map, beginning with control/debug/test-register,
+Batch B first admits the reproducible metadata/dispatch mismatch `0F 25`: Intel 80386 Appendix A reserves this opcode and the dispatch table already emits #UD, but the metadata range `0x20..0x26` makes the lexical scan report it as a valid 80386 form. The next bounded repair must split that range, add a direct metadata/lexeme/#UD regression, and sweep adjacent CR/DR/TR forms without changing their existing state owners.
+
+Batch B then covers the remaining `0F` map, beginning with control/debug/test-register,
 bit-operation, conditional branch/set and 80386-only forms. FPU escape stays
 a separately classified coverage family. Every successful reachable form also
 retains an exact row, formula, range model, or explicit nonphysical timing
