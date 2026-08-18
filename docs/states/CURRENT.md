@@ -3,6 +3,26 @@
 ## Current Work
 
 **Active: M5 T401.**
+## M5 T401 S73 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner: user; standing approval to continue CPU audit and directly repair confirmed small issues. |
+| Objective | Reconcile every metadata-valid selected primary-map slot into accepted current evidence, an identified next audit receiver, or an explicit FPU/external boundary. |
+| Non-goals | No whole-T401 completion, no unproven primary-family acceptance, public ABI, CPU timing, DeskPro or external-source change. |
+| Reference Baseline | `4ac76d93` (S72 P2), frozen T401 Coverage Universe/S4 primary matrix, retained Intel manuals and current source/tests. |
+| Candidate Proposal | [Four-profile CPU instruction-correctness audit](../proposals/m5-four-profile-cpu-instruction-correctness-audit.md), finite primary-map reconciliation. |
+| Files And ABI Surface | T401 ledger and CURRENT only unless a confirmed family repair is separately admitted; no ABI surface. |
+| Applicable Rules | Do not infer family coverage from metadata alone; preserve explicit gaps and separate FPU/provider boundary. |
+| Verification | Reconcile 256-slot primary matrix, S7--S58/S49 evidence, source owner and fixtures; documentation governance; diff check. |
+| Expected Markers | Existing `M5:T401:S4:PRIMARY-METADATA-MATRIX:OK` plus mapped form markers. |
+| Asset Needs | None. |
+| Reporting Requirements | List every selected primary group, accepted receiver and unclassified next receiver; state exact non-completion boundary. |
+| Stop Conditions | Transfer any broad unclassified family into its own S, and any FPU, ABI, physical timing or DeskPro work. |
+| Exit Criteria | Every primary slot is either mapped to current accepted evidence, explicitly FPU/external, or assigned to a concrete next CPU-audit receiver. |
+| Original Owner Request | Continue CPU audit before later DeskPro L3 work with direct repair of confirmed small issues. |
+| Similar-Issue Sweep | Reconcile ALU, TEST/XCHG/MOV, stack/control, string/I/O, groups, prefixes, profile additions and reserved slots together. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T395 S1 P4 `vm-0-5-0395` /

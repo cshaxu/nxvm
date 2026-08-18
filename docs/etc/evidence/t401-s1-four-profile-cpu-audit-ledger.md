@@ -1235,3 +1235,48 @@ The S3 metadata matrix, S5 lexical coherence work, S59--S71 current form tests a
 ## S72 Acceptance
 
 S72 closes only the finite selected  F escape-map reconciliation. Every metadata-valid slot has a current accepted receiver or explicit external boundary, and reserved/later slots retain the S3 metadata disposition. The primary opcode map, FPU/WAIT provider boundary, CPU physical timing and DeskPro work remain separate open scope.
+## S73 Primary-map Reconciliation
+
+S73 reconciles the finite primary opcode map against the S4 metadata matrix.
+It is a coverage reconciliation, not a substitute for the individual runtime,
+lexical, protection and nonphysical-timing proofs retained by its receivers.
+
+| Primary slots/forms | Current accepted receiver |
+| --- | --- |
+| Primary ADD/OR/ADC/SBB/AND/SUB/XOR/CMP forms in `00`--`3D` | S56 primary-ALU runtime and lexical matrix. |
+| `27`, `2F`, `37`, `3F`, `D4`, `D5` | S34 decimal/ASCII-adjust matrix. |
+| `06`, `07`, `0E`, `16`, `17`, `1E`, `1F` | S41 segment-register PUSH/POP, including selector/cache and stack-fault boundaries. |
+| `40`--`4F` | S11 primary register INC/DEC. |
+| `50`--`5F`, `8F /0` | S40 general-register PUSH/POP, including the retained r/m POP form and its protection/atomicity evidence. |
+| `60`, `61`, `62`, `63`, `68`, `69`, `6A`, `6B`, `6C`--`6F`, `C0`, `C1`, `C8`, `C9` | S31 PUSHA/POPA, S29 BOUND, S28 ARPL, S50 PUSH-immediate, S30 IMUL-immediate, S51 INS/OUTS, S21 immediate-count Group-2 and S24 ENTER/LEAVE respectively; the S4 80186/80286/80386 profile gates remain authoritative. |
+| `64`--`67`, `F0`, `F2`, `F3` | S57 shared prefixes (FS/GS and width prefixes only on 80386; LOCK/REP classification retained). |
+| `70`--`7F` | S53 short conditional jumps. |
+| `80`--`83` | S7 Group-1 immediate disposition, including the explicitly reference-derived `82` alias. |
+| `84`, `85` | T316 S7 Primary TEST r/m,reg closure evidence and the retained current `core-machine-inc-dec-smoke` execution/profile/fault matrix. |
+| `86`, `87`; `88`--`8B`; `8C`, `8E`; `8D` | S46 XCHG, S47 GPR MOV, S48 segment MOV and S44 LEA, with S49 direct lexical reconciliation. |
+| `90`--`97`; `98`, `99`; `9A`; `9C`, `9D`; `9E`, `9F` | S12 accumulator XCHG/NOP alias, S45 CBW/CWD, S55 direct far CALL, S39 PUSHF/POPF and S36 LAHF/SAHF. |
+| `9B`, `D8`--`DF` | S6 and retained T316 S65 CPU-side WAIT/ESC/profile/provider boundary; no numerical x87 implementation or physical timing claim is made. |
+| `A0`--`A3`; `A4`--`A7`; `A8`, `A9`; `AA`, `AB`; `AC`, `AD`; `AE`, `AF` | S14 moffs MOV, S15/S16 string MOVS/CMPS, S20 accumulator TEST, S17 STOS, S18 LODS and S19 SCAS. |
+| `B0`--`BF` | S13 immediate-register MOV. |
+| `C2`, `C3`; `C4`, `C5`; `C6`, `C7`; `CA`, `CB`; `CC`--`CE`; `CF` | S22 near RET, S33 LES/LDS, S58 immediate r/m MOV, S23 far RET, S26 INT3/INTO and S27 IRET. |
+| `D0`--`D3`; `D7`; `E0`--`E3`; `E4`--`E7`, `EC`--`EF`; `E8`, `E9`, `EB`; `EA` | S8 Group-2 shifts/rotates, S35 XLAT, S43 LOOP/JCXZ, S52 scalar I/O, S54 direct near transfer and S55 direct far JMP. |
+| `F4`; `F5`, `F8`, `F9`, `FC`, `FD`; `F6`, `F7`; `FA`, `FB`; `FE`, `FF` | S38 HLT, S42 direct FLAGS, S9 Group-3, S37 CLI/STI and S10 Group-4/5 form inventory. |
+| `0F` | S72 selected escape-map reconciliation; its byte is a primary-map escape, not an unreviewed primary instruction. |
+| `D6`, `F1` | S4 metadata marks both primary bytes reserved/invalid, so they are outside the metadata-valid receiver set. |
+
+The table leaves no metadata-valid selected primary slot without a current
+accepted receiver or the already accepted CPU-side FPU/provider boundary.
+It also does not merge distinct historical/profile availability: S4 retains
+the 80186-plus, 80286-plus and 80386-only gates, while the receivers retain
+their instruction-specific mode, fault, transaction and prefix evidence.
+
+## S73 Acceptance
+
+S73 closes only the finite selected primary-map reconciliation. Every
+metadata-valid primary slot now has an accepted receiver; `D6` and `F1`
+remain metadata-invalid, `0F` transfers to the accepted secondary-map
+reconciliation, and `9B`/`D8`--`DF` retain the accepted external-coprocessor
+boundary. This does not close T401, establish CPU physical timing, or make a
+DeskPro L3 claim. A later task-level audit must still reconcile the accepted
+maps and their retained timing/protection evidence against the T401 coverage
+universe before any whole-CPU completion decision.
