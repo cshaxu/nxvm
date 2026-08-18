@@ -41,6 +41,11 @@ C_INT main(C_VOID)
         CHECK(write_byte(session->core_machine, parity_physical, 0x5au));
         CHECK(core_machine_bus_write(session->core_machine, 0x0070u, 0x80u) ==
             TYPE_STATUS_OK);
+        /* DeskPro port 61h bit 3 disables IOCHK/NMI after reset.  Enable the
+         * selected source before injecting the parity fault; the CMOS mask
+         * keeps the fault latched until the following observation. */
+        CHECK(core_machine_bus_write(session->core_machine, 0x0061u, 0x07u) ==
+            TYPE_STATUS_OK);
         CHECK(session->core_machine->executor_memory.connect.parity != 0u);
         if (!failed) {
             ((type_unsigned_8 *)session->core_machine->executor_memory.connect.parity)
