@@ -21,3 +21,7 @@ S1 P4 builds the required current developer artifact `vm-0-5-0395` / `build/outp
 ## Coordinator Acceptance
 
 After actual-change review of S1 P2 `348ac557`, P3 `99090da6` and P4 `f33baa49`, the coordinator accepts S1; T395 remains open pending an explicit task-closure subtask. The private 12-to-64 bounded registry preserves registration order, overlay/decline behavior, freeze rejection and ROM rollback storage ownership. Direct growth-allocation failure and finite-limit provider-plus-observer rollback are both proven before publication. The T395 artifact and full current gates passed. DeskPro board timing remains queued and unselected; no timing, firmware, ROM/media or L3 claim is accepted.
+
+## S2 Task Closure
+
+S2 reconciles every finite proposal requirement against the pushed S1 source, direct regression, caller sweep, artifact and full gate. The [task closure audit](../etc/evidence/t395-s2-task-closure-audit.md) closes T395 and transfers only the ordered board-level timing receiver; no hardware timing or L3 conclusion is made.
