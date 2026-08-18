@@ -567,6 +567,26 @@ static C_INT preview_test_modrm_data_move_profiles(C_VOID)
         preview_expect((const type_unsigned_8[]){0x8eu, 0xe1u}, 2u,
         CORE_MACHINE_CPU_PROFILE_80386, TYPE_FALSE, 2u, 2u);
 }
+static C_INT preview_test_short_jcc_profiles(C_VOID)
+{
+    static const core_machine_cpu_profile profiles[] = {
+        CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
+        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
+    };
+    type_unsigned_8 profile;
+    type_unsigned_8 opcode;
+
+    for (profile = 0u; profile != sizeof(profiles) / sizeof(profiles[0]); ++profile)
+    for (opcode = 0x70u; opcode != 0x80u; ++opcode)
+        if (!preview_expect((const type_unsigned_8[]){opcode, 0x80u}, 2u,
+                profiles[profile], TYPE_FALSE, 2u, 2u)) return 0;
+    return preview_expect((const type_unsigned_8[]){0x66u, 0x74u, 0x80u}, 3u,
+        CORE_MACHINE_CPU_PROFILE_80386, TYPE_FALSE, 3u, 3u) &&
+        preview_expect((const type_unsigned_8[]){0x67u, 0x75u, 0x7fu}, 3u,
+        CORE_MACHINE_CPU_PROFILE_80386, TYPE_FALSE, 3u, 3u) &&
+        preview_expect((const type_unsigned_8[]){0x66u, 0x67u, 0x7cu, 0u}, 4u,
+        CORE_MACHINE_CPU_PROFILE_80386, TYPE_FALSE, 4u, 4u);
+}
 static C_INT preview_test_scalar_io_profiles(C_VOID)
 {
     static const core_machine_cpu_profile profiles[] = {
@@ -1176,6 +1196,7 @@ C_INT main(C_VOID)
     if (!preview_test_push_immediate_profiles()) return 47;
     if (!preview_test_string_io_profiles()) return 48;
     if (!preview_test_scalar_io_profiles()) return 49;
+    if (!preview_test_short_jcc_profiles()) return 50;
     if (!preview_test_les_lds_profiles()) return 34;
     if (!preview_test_group3_profiles()) return 10;
     if (!preview_test_group45_profiles()) return 11;
@@ -1230,5 +1251,6 @@ C_INT main(C_VOID)
     STD_PRINTF("M5:T401:S50:PUSH-IMMEDIATE-PREVIEW-PROFILES:OK\n");
     STD_PRINTF("M5:T401:S51:STRING-IO-PREVIEW-PROFILES:OK\n");
     STD_PRINTF("M5:T401:S52:SCALAR-IO-PREVIEW-PROFILES:OK\n");
+    STD_PRINTF("M5:T401:S53:SHORT-JCC-PREVIEW-PROFILES:OK\n");
     return 0;
 }

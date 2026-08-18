@@ -1018,3 +1018,6 @@ S52 audits scalar IN/OUT `E4h`-`E7h` and `ECh`-`EFh`. Existing runtime fixtures 
 ## S52 Acceptance
 
 S52 closes the bounded scalar IN/OUT family audit. Runtime, protected-I/O and I/O-map fixtures plus direct lexical coverage establish the selected form and permission boundary. No production discrepancy was found; Core timing remains nonphysical and T401 remains open.
+## S53 Short Conditional Jumps
+
+S53 audits short Jcc `70h`-`7Fh`. The control-transfer fixture proves all sixteen flag predicates, taken/not-taken target behavior, four-profile real/control contexts, 80386 attributes, target-limit atomicity and delivery boundaries. `M5:T401:S53:SHORT-JCC-PREVIEW-PROFILES:OK` adds direct lexical proof for every signed rel8 form on all four profiles and 80386 operand/address prefix layouts. No production discrepancy was found; timing remains nonphysical.
