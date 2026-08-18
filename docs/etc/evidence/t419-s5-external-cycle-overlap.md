@@ -38,12 +38,12 @@ stopped-state physical writes; `core-machine-fpu-8087-smoke` and
 
 The rebuilt developer artifact is `nxvm_0_5_0419.exe`, SHA-256
 `5820F4B1A7D7B92548C0AA144C717276D8E3F8A14E29ABBF75BF5FAC92BB5BDB`.
-The direct serial current-gate CTest run passed 287 of 289 tests. The only
-remaining failures are the unrelated media smokes
-`current.vm-dos-video-port-smoke` and
-`current.vm-fdc-read-track-dos-smoke`, each at its independent 30-second
-limit. The aggregate wrapper also stalled after spawning CTest, so it is not
-reported as a pass.
+The registered current-gate CTest replay passed all 289 tests with four workers and
+the unchanged 30-second per-test limit. The two media smokes now pass in 4.87
+seconds (video) and 9.94 seconds (FDC): their persistent display checkpoints
+are sampled every 256 executed instructions, while the video smoke retains its
+per-instruction opcode/INT 10h accounting and the FDC smoke retains both
+one-instruction and 128-instruction execution cases.
 
 ## Remaining Transfer
 

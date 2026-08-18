@@ -9,6 +9,7 @@
 #include "../support/core_machine_cpu_fixture.h"
 
 #define VM_DOS_VIDEO_PROBE_INSTRUCTION_BUDGET 1500000u
+#define VM_DOS_VIDEO_DISPLAY_OBSERVATION_QUANTUM 256u
 #define VM_DOS_VIDEO_TEXT_CELLS (80u * 25u)
 
 static C_INT vm_dos_video_has_prompt(const core_machine_display_snapshot *snapshot)
@@ -70,7 +71,11 @@ C_INT main(C_INT argc, C_CHAR **argv)
             failed = 1;
             break;
         }
-        if (core_machine_capture_display_snapshot(session->core_machine, &snapshot) ==
+        /* The prompt is persistent.  Preserve per-instruction INT observation,
+         * but avoid copying a complete display frame after every instruction. */
+        if ((instruction % VM_DOS_VIDEO_DISPLAY_OBSERVATION_QUANTUM == 0u ||
+             instruction + 1u == VM_DOS_VIDEO_PROBE_INSTRUCTION_BUDGET) &&
+            core_machine_capture_display_snapshot(session->core_machine, &snapshot) ==
                 TYPE_STATUS_OK && vm_dos_video_has_prompt(&snapshot)) {
             prompt_seen = 1;
             break;

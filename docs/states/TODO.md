@@ -196,15 +196,6 @@ admissions, not the default definition of NXVM completion.
   one boundary only after the M5 L3 audit records why it is not supported; do
   not create a second bus or device-timing owner.
 
-- [ ] **Current media-smoke timeout diagnosis (`TODO(High)`).** T419 S5 direct
-  serial current-gate replay passed 287 of 289 tests; only
-  `vm-dos-video-port-smoke` and `vm-fdc-read-track-dos-smoke` exceed their
-  independent 30-second limits. Admit a bounded VM test/runtime diagnosis that
-  captures the terminal checkpoint and determines whether the fault is media
-  fixture setup, guest execution progress, or the timeout budget. Preserve the
-  Core CPU/DMA transaction route, actual DOS/media assertions, and current-gate
-  registration; do not increase the timeout or exclude either smoke merely to
-  make the gate green.
 ## Architecture And Portability Debt
 
 - [ ] **Dormant VM request-bridge smoke interface drift (`TODO(Medium)`).**

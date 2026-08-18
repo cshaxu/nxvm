@@ -15,6 +15,7 @@
 #define VM_FDC242_HANDLER_OFFSET 0x0280u
 #define VM_FDC242_IRQ_COUNT_OFFSET 0x02a0u
 #define VM_FDC242_RESULT_OFFSET 0x02a1u
+#define VM_FDC242_DISPLAY_OBSERVATION_QUANTUM 256u
 
 static type_unsigned_16 vm_fdc242_fat_get(const type_unsigned_8 *fat, type_unsigned_16 cluster)
 {
@@ -159,12 +160,18 @@ static C_INT vm_fdc242_run_until(vm_session *session, type_unsigned_32 limit,
     core_machine_display_snapshot snapshot; type_unsigned_32 used = 0u;
     while (used < limit) {
         if (core_machine_run(session->core_machine, budget, &result) != TYPE_STATUS_OK ||
-            result.reason == CORE_MACHINE_STOP_FAULT || core_machine_capture_display_snapshot(
-            session->core_machine, &snapshot) != TYPE_STATUS_OK) return 0;
+            result.reason == CORE_MACHINE_STOP_FAULT) return 0;
+        used += budget.instructions;
+        /* Both the prompt and the test program's marker persist.  Sampling
+         * the display less frequently does not alter the run quantum or the
+         * instruction-level FDC/DMA execution being compared. */
+        if (used < limit && used % VM_FDC242_DISPLAY_OBSERVATION_QUANTUM != 0u)
+            continue;
+        if (core_machine_capture_display_snapshot(session->core_machine,
+                &snapshot) != TYPE_STATUS_OK) return 0;
         if (marker ? snapshot.kind == CORE_MACHINE_DISPLAY_KIND_TEXT &&
                 snapshot.characters[VM_FDC242_MARKER_CELL] == marker :
             vm_fdc242_has_prompt(&snapshot)) return 1;
-        used += budget.instructions;
     }
     return 0;
 }
