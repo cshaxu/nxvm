@@ -1201,3 +1201,6 @@ S69 audits 80386 `MOV r32,TRx` / `MOV TRx,r32` (`0F 24h/26h`). The runtime decod
 ## S69 Acceptance
 
 S69 closes the bounded 80386 test-register MOV audit. The shared scanner now agrees with execution: both directions are register-only and accept TR6/TR7 only; TR0--TR5, memory forms and pre-80386 profiles reject. Prefix layouts and the retained privileged timing row are proven. Persistent TLB/test-array semantics remain outside the supported no-cache model; no ABI, physical-timing or machine-profile change exists.
+## S70 System-group Reserved Forms
+
+S70 audits 80286/80386 `0F 01` system-group reserved extensions `/5` and `/7`. The retained Intel tables and T401 Batch A classify both as `#UD`; the runtime `INS_0F_01` already rejected them, but the public lexical scanner published their layouts. The shared validator now rejects both extensions before preview publication. `M5:T401:S70:SYSTEM-GROUP-PREVIEW-PROFILES:OK` proves legal neighboring `/0`, `/4`, `/6` layouts on both 80286 and 80386, rejects `/5` and `/7` in register and memory encodings, retains 80186 rejection and checks 80386 operand/address layouts. The existing protected-UD delivery fixture retains runtime `#UD` evidence. No later-CPU `INVLPG` semantics are admitted. The full 285-test current gate passes; timing remains nonphysical.
