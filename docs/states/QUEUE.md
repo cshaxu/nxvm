@@ -24,7 +24,6 @@ prerequisite or a Model-40 substitute.
 Detailed scope, acceptance conditions, and common constraints remain in these
 shared proposals and in each candidate's linked proposal.
 
-1. [32-bit GCC host-build compatibility verification](../proposals/m5-32bit-gcc-host-build-compatibility.md).
 1. [Generic PC backbone foundation](../proposals/m5-generic-pc-backbone-foundation.md) — eligible only after a comprehensive DeskPro 386 Model 40 L3 closure accepts its selected profile and the profile/device contract closes; remains before the 8088/PC/XT program.
 1. [8088 CPU-profile admission and timing closure](../proposals/m5-8088-cpu-profile.md).
 1. [IBM PC/XT 5160-268 profile and capability-gap audit](../proposals/m5-xt-5160-268-profile-capability-audit.md).

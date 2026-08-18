@@ -1,4 +1,4 @@
-﻿# Supporting Documentation Index
+# Supporting Documentation Index
 
 The fixed documentation topology retains this owner-approved area for supporting detail
 that does not fit the principal `rules/` and `design/` authorities. A supporting
@@ -401,3 +401,5 @@ row or a declared indexed subtree, and a stated promotion, merge, or retirement
 condition. The governance gate verifies that every supporting Markdown file is
 covered by one of those index forms. `etc/` is not a shortcut for adding
 another principal document.
+
+| vidence/t405-s1-x86-gcc-host-build-compatibility.md | Verification owner | T405 S1 records isolated i686 GCC provenance, host-width repairs, PE-i386 proof, x86/x64 286/286 current-gate results and the retained x64 artifact hash; no L3 claim. Retain with T405 history. |

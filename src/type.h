@@ -14,11 +14,6 @@ extern "C"
 #define GLOBAL_PLATFORM_LINUX 1
 
 /* COMPILING OPTIONS ******************************* */
-#if 1
-#define GLOBAL_SIZE_INTEGER 64
-#else
-#define GLOBAL_SIZE_INTEGER 32
-#endif
 #ifdef _WIN32
 #define GLOBAL_PLATFORM GLOBAL_PLATFORM_WIN32
 #else
@@ -41,6 +36,12 @@ extern "C"
 #include <time.h>
 #include <ctype.h>
 #include <stdint.h>
+
+#if defined(_WIN64) || defined(__LP64__) || defined(_LP64)
+#define GLOBAL_SIZE_INTEGER 64
+#else
+#define GLOBAL_SIZE_INTEGER 32
+#endif
 
     typedef void C_VOID;
     typedef char C_CHAR;
@@ -131,6 +132,8 @@ typedef type_signed_32 type_native_signed;
     typedef type_unsigned_1 type_bool;
     typedef type_native_unsigned type_virtual_address;
     typedef type_native_unsigned type_flat_address;
+    _Static_assert(sizeof(type_virtual_address) == sizeof(type_unsigned_pointer),
+        "type_virtual_address must preserve every host pointer bit");
 
 #define TYPE_REFERENCE_OF(n) ((type_virtual_address)(&(n)))
 

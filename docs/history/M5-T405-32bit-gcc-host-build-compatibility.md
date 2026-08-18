@@ -14,3 +14,12 @@ S1 records the reproducible-toolchain, isolated-build, full-current-gate,
 bounded-profile-check, executable-architecture and host-width-sweep contract.
 The installed toolchain is an external development input and is never copied,
 committed, or made a runtime dependency.
+## S1 Acceptance And Task Closure
+
+P1 completes the bounded x86 GCC host-build verification. It removes the
+64-bit-only CMake rejection, makes the shared native/pointer carrier match the
+host ABI, and narrows validated 64-bit media offsets only at the host-address
+boundary. The isolated `i686-w64-mingw32` executable is PE i386; x86 and x64
+current gates both pass 286/286. The retained evidence records toolchain,
+commands, exact architecture, sweep and artifact hash. T405 closes its host
+compatibility scope without an L3 claim.

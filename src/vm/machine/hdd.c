@@ -47,7 +47,7 @@ static core_machine_media_result vm_machine_hdd_media_read(C_VOID *context,
     if (byte_count == 0u) return CORE_MACHINE_MEDIA_RESULT_OK;
     if (buffer == STD_NULL || hdd->connect.pImgBase == (type_virtual_address)STD_NULL)
         return CORE_MACHINE_MEDIA_RESULT_PERMANENT;
-    STD_MEMCPY(buffer, (const C_VOID *)(hdd->connect.pImgBase + offset), byte_count);
+    STD_MEMCPY(buffer, (const C_VOID *)(hdd->connect.pImgBase + (STD_SIZE_T)offset), byte_count);
     return CORE_MACHINE_MEDIA_RESULT_OK;
 }
 
@@ -66,7 +66,7 @@ static core_machine_media_result vm_machine_hdd_media_write(C_VOID *context,
     if (byte_count == 0u) return CORE_MACHINE_MEDIA_RESULT_OK;
     if (buffer == STD_NULL || hdd->connect.pImgBase == (type_virtual_address)STD_NULL)
         return CORE_MACHINE_MEDIA_RESULT_PERMANENT;
-    STD_MEMCPY((C_VOID *)(hdd->connect.pImgBase + offset), buffer, byte_count);
+    STD_MEMCPY((C_VOID *)(hdd->connect.pImgBase + (STD_SIZE_T)offset), buffer, byte_count);
     if (offset + byte_count > hdd->connect.raw_byte_count) {
         hdd->connect.flagPaddingWritten = TYPE_TRUE;
     }
@@ -87,7 +87,7 @@ static core_machine_media_result vm_machine_hdd_media_format(C_VOID *context,
     sector_total = hdd->connect.virtual_byte_count / hdd->data.nbyte;
     if (logical_sector >= sector_total || sector_count > sector_total - logical_sector)
         return CORE_MACHINE_MEDIA_RESULT_INVALID_RANGE;
-    STD_MEMSET((C_VOID *)(hdd->connect.pImgBase + logical_sector * hdd->data.nbyte),
+    STD_MEMSET((C_VOID *)(hdd->connect.pImgBase + (STD_SIZE_T)(logical_sector * hdd->data.nbyte)),
         fill, sector_count * hdd->data.nbyte);
     if ((logical_sector + sector_count) * hdd->data.nbyte >
         hdd->connect.raw_byte_count) {

@@ -31,8 +31,8 @@ if(NOT CMAKE_C_COMPILER_ID MATCHES "^(GNU|MSVC|Clang)$")
     message(FATAL_ERROR "NXVM requires GCC, MSVC, or Clang C11 support.")
 endif()
 
-if(NOT CMAKE_SIZEOF_VOID_P EQUAL 8)
-    message(FATAL_ERROR "NXVM requires a 64-bit C toolchain.")
+if(NOT CMAKE_SIZEOF_VOID_P EQUAL 4 AND NOT CMAKE_SIZEOF_VOID_P EQUAL 8)
+    message(FATAL_ERROR "NXVM requires a 32-bit or 64-bit C toolchain.")
 endif()
 
 find_program(POWERSHELL_EXECUTABLE NAMES powershell pwsh)
@@ -2715,8 +2715,8 @@ function(add_current_vm_artifact target version)
             "${CMAKE_SOURCE_DIR}/build/output/${task_artifact_filename}")
 endfunction()
 
-set(PROJECT_CURRENT_VM_ARTIFACT_TARGET vm-0-5-0404)
-add_current_vm_artifact(vm-0-5-0404 "0.5.0404")
+set(PROJECT_CURRENT_VM_ARTIFACT_TARGET vm-0-5-0405)
+add_current_vm_artifact(vm-0-5-0405 "0.5.0405")
 option(PROJECT_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
 

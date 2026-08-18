@@ -232,7 +232,7 @@ static core_machine_media_result vm_machine_fdd_media_read(C_VOID *context,
     image_size = vm_machine_fdd_image_size(fdd);
     if (offset > image_size || byte_count > image_size - offset)
         return CORE_MACHINE_MEDIA_RESULT_INVALID_RANGE;
-    STD_MEMCPY(buffer, (const C_VOID *)(fdd->connect.pImgBase + offset), byte_count);
+    STD_MEMCPY(buffer, (const C_VOID *)(fdd->connect.pImgBase + (STD_SIZE_T)offset), byte_count);
     return CORE_MACHINE_MEDIA_RESULT_OK;
 }
 
@@ -250,7 +250,7 @@ static core_machine_media_result vm_machine_fdd_media_write(C_VOID *context,
     image_size = vm_machine_fdd_image_size(fdd);
     if (offset > image_size || byte_count > image_size - offset)
         return CORE_MACHINE_MEDIA_RESULT_INVALID_RANGE;
-    STD_MEMCPY((C_VOID *)(fdd->connect.pImgBase + offset), buffer, byte_count);
+    STD_MEMCPY((C_VOID *)(fdd->connect.pImgBase + (STD_SIZE_T)offset), buffer, byte_count);
     return CORE_MACHINE_MEDIA_RESULT_OK;
 }
 
@@ -268,7 +268,7 @@ static core_machine_media_result vm_machine_fdd_media_format(C_VOID *context,
     sector_total = (type_unsigned_64)fdd->data.ncyl * fdd->data.nhead * fdd->data.nsector;
     if (logical_sector >= sector_total || sector_count > sector_total - logical_sector)
         return CORE_MACHINE_MEDIA_RESULT_INVALID_RANGE;
-    STD_MEMSET((C_VOID *)(fdd->connect.pImgBase + logical_sector * fdd->data.nbyte),
+    STD_MEMSET((C_VOID *)(fdd->connect.pImgBase + (STD_SIZE_T)(logical_sector * fdd->data.nbyte)),
         fill, sector_count * fdd->data.nbyte);
     ++fdd->connect.media_generation;
     return CORE_MACHINE_MEDIA_RESULT_OK;
@@ -287,7 +287,7 @@ static core_machine_media_result vm_machine_fdd_media_get_address_mark(
         return CORE_MACHINE_MEDIA_RESULT_PERMANENT;
     sector_total = (type_unsigned_64)fdd->data.ncyl * fdd->data.nhead * fdd->data.nsector;
     if (logical_sector >= sector_total) return CORE_MACHINE_MEDIA_RESULT_INVALID_RANGE;
-    *out_mark = TYPE_DEREFERENCE_UNSIGNED_8(fdd->connect.pAddressMarks + logical_sector) ?
+    *out_mark = TYPE_DEREFERENCE_UNSIGNED_8(fdd->connect.pAddressMarks + (STD_SIZE_T)logical_sector) ?
         CORE_MACHINE_MEDIA_ADDRESS_MARK_DELETED_DATA : CORE_MACHINE_MEDIA_ADDRESS_MARK_DATA;
     return CORE_MACHINE_MEDIA_RESULT_OK;
 }
@@ -308,7 +308,7 @@ static core_machine_media_result vm_machine_fdd_media_set_address_mark(
     if (logical_sector >= sector_total || (mark != CORE_MACHINE_MEDIA_ADDRESS_MARK_DATA &&
         mark != CORE_MACHINE_MEDIA_ADDRESS_MARK_DELETED_DATA))
         return CORE_MACHINE_MEDIA_RESULT_INVALID_RANGE;
-    TYPE_DEREFERENCE_UNSIGNED_8(fdd->connect.pAddressMarks + logical_sector) =
+    TYPE_DEREFERENCE_UNSIGNED_8(fdd->connect.pAddressMarks + (STD_SIZE_T)logical_sector) =
         mark == CORE_MACHINE_MEDIA_ADDRESS_MARK_DELETED_DATA;
     return CORE_MACHINE_MEDIA_RESULT_OK;
 }
