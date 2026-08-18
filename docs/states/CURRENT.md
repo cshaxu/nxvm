@@ -26,10 +26,9 @@
 
 ## Recent M5 Closures
 
-
-| T424 | Closed: VM Model-40 BYOB now proves synthetic manifest validation, immutable mapped reset-vector execution and cold-reset replay; vendor POST/service/timing corpus remains external. [Evidence](../etc/evidence/t424-s1-model40-byob-reset-lifecycle.md). |
 | Task | Compact result |
 | --- | --- |
+| T424 | Closed: VM Model-40 BYOB now proves synthetic manifest validation, immutable mapped reset-vector execution and cold-reset replay; vendor POST/service/timing corpus remains external. [Evidence](../etc/evidence/t424-s1-model40-byob-reset-lifecycle.md). |
 | T423 | Closed: chargeable D4 external CPU-memory waits now advance through a Core-owned non-retiring completion state before retirement; BWAIT/ISA/async-prefetch physical work remains transferred. [Evidence](../etc/evidence/t423-s1-cpu-board-retirement-wait.md). |
 | T422 | Closed: original D3PE SLOWD*/refresh/auxiliary-PIT channel-2 bridge uses one Core hold route; Model-40 binds it and 5170 remains isolated. [Evidence](../etc/evidence/t422-s1-d4-slowdown-hold.md). |
 | T421 | Closed: Core owns the logical port-61h/PIT-channel-2 speaker line; S2 proves existing planar/D4 port-B exclusivity in both orders. Model-40 and 5170 keep one selected route. [S1](../etc/evidence/t421-s1-d4-speaker-line.md), [S2](../etc/evidence/t421-s2-port-b-exclusivity.md). |
