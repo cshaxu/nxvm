@@ -2,7 +2,26 @@
 
 ## Current Work
 
-| T419 S4 | Closed: original-source D4 counter-1 refresh now queues one Core-owned hold that precedes the retained DMA route; calibrated/electrical L3 details remain transferred. [Closure audit](../etc/evidence/t419-s4-d4-refresh-hold-closure-audit.md). |
+## M5 T419 S5 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | The user has standing approval in this thread to continue tier-labelled DeskPro L3 work without repeated authorization. Scope is the original-source D4 CPU external-memory-cycle and prefetch-overlap receiver. |
+| Objective | Replace the retained logical-access locality assumption with a Core-owned observable CPU external-memory-cycle/prefetch-overlap boundary that applies the documented 2 KiB miss/hit outcome only to a proven overlapping sequential request. |
+| Non-goals | No calibrated BCLK duration, PAL translation, general cache model, VM scheduler, firmware import, or claimed whole-machine L3 acceptance. |
+| Reference Baseline | master at f6912668; original D4 material fixes the 2 KiB page and initial/row-miss versus row-hit wait distinction. Current TODO records that a logical-access scalar cannot publish this result. |
+| Candidate Proposal | [DeskPro physical-cycle and phase-timing closure](../proposals/m5-deskpro-physical-cycle-and-phase-timing.md), receiver 1; evidence tier original. |
+| Files And ABI Surface | Core machine transaction/timing private state and trace surface as necessary; Model-40 selects only the difference; focused Core and Model-40 tests; Current and indexed evidence. |
+| Applicable Rules | Core remains the sole CPU/DMA transaction owner; VM selects no alternate transaction path; C11/type vocabulary; original source is design evidence only; task, evidence, artifact and gate rules apply. |
+| Verification | A focused trace distinguishes speculative prefetch, consumed fetch, page walk and data access; proves hit eligibility requires declared overlap identity and sequence; proves reset/cancel/HOLD lifecycle; retains non-D4 behavior; runs adjacent and full gates. |
+| Expected Markers | A new T419 S5 marker plus retained S1-S4 markers. |
+| Asset Needs | Read-only approved primary research corpus only; no firmware, media, reference source text or local path committed. |
+| Reporting Requirements | Record source tier, request identity and overlap contract, exact regressions, artifact hash, remaining physical transfers and pushed commit. |
+| Stop Conditions | Stop and transfer calibrated duration, any unproven page-hit predicate, CPU BWAIT, external bus-master behavior, or a second Core/VM transaction route. |
+| Exit Criteria | The Core-owned external-cycle/prefetch-overlap contract is selected only for D4, has focused lifecycle proof and full gate evidence, and transfers remaining physical timing. |
+| Original Owner Request | Implement DeskPro 386 L3 timing and hardware gaps with original material first, reference-derived behavior second, then explicitly labelled generic AT scaffolding. |
+| Similar-Issue Sweep | Inspect every CPU external memory transaction, existing locality timing, prefetch path, page-walk path, cancellation, HOLD and Model-40 configuration; repair the shared owner only. |
 
 ## Current Technical Baseline
 
