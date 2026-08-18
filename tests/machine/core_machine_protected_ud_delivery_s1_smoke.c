@@ -186,6 +186,31 @@ static C_INT ud_s1_protected_delivery(const type_unsigned_8 *code,
     return !failed;
 }
 
+static C_INT ud_s1_metadata_and_lexeme(C_VOID)
+{
+    static const type_unsigned_8 reserved[] = { 0x0fu, 0x25u, 0xc0u };
+    static const type_unsigned_8 adjacent[][3] = {
+        { 0x0fu, 0x20u, 0xc0u }, { 0x0fu, 0x21u, 0xc0u },
+        { 0x0fu, 0x22u, 0xc0u }, { 0x0fu, 0x23u, 0xc0u },
+        { 0x0fu, 0x24u, 0xc0u }, { 0x0fu, 0x26u, 0xc0u }
+    };
+    core_machine_cpu_instruction_lexeme lexeme;
+    STD_SIZE_T index;
+
+    if (core_machine_cpu_instruction_metadata_get(
+            CORE_MACHINE_CPU_INSTRUCTION_0F, 0x25u, 0xc0u).valid ||
+        core_machine_cpu_instruction_lexeme_scan(reserved, sizeof(reserved),
+            CORE_MACHINE_CPU_PROFILE_80386, TYPE_TRUE, &lexeme)) return 0;
+    for (index = 0u; index != sizeof(adjacent) / sizeof(adjacent[0]); ++index) {
+        if (!core_machine_cpu_instruction_metadata_get(
+                CORE_MACHINE_CPU_INSTRUCTION_0F, adjacent[index][1],
+                adjacent[index][2]).valid ||
+            !core_machine_cpu_instruction_lexeme_scan(adjacent[index],
+                sizeof(adjacent[index]), CORE_MACHINE_CPU_PROFILE_80386,
+                TYPE_TRUE, &lexeme) || !lexeme.available) return 0;
+    }
+    return 1;
+}
 static C_INT ud_s1_protected_invalid_gate(C_VOID)
 {
     static const type_unsigned_8 code[] = { 0x0fu, 0x01u, 0xf8u };
@@ -219,13 +244,14 @@ C_INT main(C_VOID)
 {
     static const type_unsigned_8 invalid_primary[] = { 0xf1u };
     static const type_unsigned_8 reserved_0f[] = { 0x0fu, 0x01u, 0xf8u };
+    static const type_unsigned_8 reserved_0f25[] = { 0x0fu, 0x25u, 0xc0u };
     static const type_unsigned_8 invalid_operand[] = { 0x62u, 0xc0u };
     static const type_unsigned_8 invalid_lock[] = { 0xf0u, 0x90u };
     const type_unsigned_8 *forms[] = {
-        invalid_primary, reserved_0f, invalid_operand, invalid_lock
+        invalid_primary, reserved_0f, reserved_0f25, invalid_operand, invalid_lock
     };
     const STD_SIZE_T sizes[] = {
-        sizeof(invalid_primary), sizeof(reserved_0f), sizeof(invalid_operand),
+        sizeof(invalid_primary), sizeof(reserved_0f), sizeof(reserved_0f25), sizeof(invalid_operand),
         sizeof(invalid_lock)
     };
     STD_SIZE_T index;
@@ -235,9 +261,10 @@ C_INT main(C_VOID)
             return 1;
         }
     }
-    if (!ud_s1_protected_invalid_gate()) {
+    if (!ud_s1_metadata_and_lexeme() || !ud_s1_protected_invalid_gate()) {
         return 1;
     }
     STD_PRINTF("M5:T326:S1:PROTECTED-UD-DELIVERY:OK\n");
+    STD_PRINTF("M5:T401:S2:0F25-METADATA:OK\n");
     return 0;
 }

@@ -42,7 +42,7 @@ reaccepting their task status.
 
 ## Transfer
 
-Batch B first admits the reproducible metadata/dispatch mismatch `0F 25`: Intel 80386 Appendix A reserves this opcode and the dispatch table already emits #UD, but the metadata range `0x20..0x26` makes the lexical scan report it as a valid 80386 form. The next bounded repair must split that range, add a direct metadata/lexeme/#UD regression, and sweep adjacent CR/DR/TR forms without changing their existing state owners.
+T401 S2 repaired the reproducible `0F 25` mismatch: Intel 80386 Appendix A reserves the opcode and dispatch already emitted #UD, while both metadata and lexical ModR/M classification had admitted it through an over-broad `0x20..0x26` range. The shared range now selects only `0F 20..24` and `0F 26`. `core-machine-protected-ud-delivery-s1-smoke` proves invalid metadata, unavailable lexeme and protected #UD delivery for `0F 25`, then confirms all six adjacent CR/DR/TR opcodes still scan. Descriptor-system, debug-MOV and selector regressions pass unchanged. This is a logical decode correction; timing remains nonphysical.
 
 Batch B then covers the remaining `0F` map, beginning with control/debug/test-register,
 bit-operation, conditional branch/set and 80386-only forms. FPU escape stays

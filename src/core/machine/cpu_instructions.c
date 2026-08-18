@@ -7569,7 +7569,7 @@ static type_bool core_machine_cpu_instruction_lexeme_has_modrm(
 {
     if (extended) {
         return opcode <= 0x03u ||
-            (opcode >= 0x20u && opcode <= 0x26u) ||
+            (opcode >= 0x20u && opcode <= 0x24u) || opcode == 0x26u ||
             (opcode >= 0x90u && opcode <= 0x9fu) || opcode == 0xa3u ||
             (opcode >= 0xa4u && opcode <= 0xa5u) || opcode == 0xabu ||
             (opcode >= 0xacu && opcode <= 0xadu) || opcode == 0xafu ||
@@ -7786,7 +7786,7 @@ core_machine_cpu_instruction_metadata core_machine_cpu_instruction_metadata_get(
             metadata.minimum_cpu = CORE_MACHINE_CPU_PROFILE_80286;
             metadata.valid = 1;
         }
-        else if ((opcode >= 0x20u && opcode <= 0x26u) ||
+        else if ((opcode >= 0x20u && opcode <= 0x24u) || opcode == 0x26u ||
                  (opcode >= 0x80u && opcode <= 0x8fu) ||
                  (opcode >= 0x90u && opcode <= 0x9fu) ||
                  opcode == 0xa0u || opcode == 0xa1u || opcode == 0xa3u ||
