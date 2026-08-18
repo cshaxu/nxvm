@@ -402,7 +402,7 @@ principal documents named in [docs/README.md](../README.md).
 
 | `evidence/t407-s1-hdc-phase-acceptance.md` | Verification owner | T407 accepts the existing Core HDC generic-AT pending command/sector phase contract and retains Compaq physical/L3 transfer. Retain with T407 history. |
 
-| `evidence/t408-s1-original-d4-memory-timing-admission.md | Verification owner | T408 records the original D4 row-hit/miss timing source, proves why current logical transactions cannot safely receive its scalar, and transfers the external-cycle/row-decoder prerequisite. Retain with T408 history. |
+| `evidence/t408-s1-original-d4-memory-timing-admission.md` | Verification owner | T408 records the original D4 row-hit/miss timing source, proves why current logical transactions cannot safely receive its scalar, and transfers the external-cycle/row-decoder prerequisite. Retain with T408 history. |
 
 Adding a new supporting document requires owner approval, an exact-file index
 row or a declared indexed subtree, and a stated promotion, merge, or retirement
