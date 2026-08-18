@@ -3268,7 +3268,8 @@ static C_VOID core_machine_arbitration_tick(C_VOID *opaque,
     }
     dma_ticks = core_machine_clock_domain_advance(&machine->dma_clock, 1u);
     pit_ticks = core_machine_clock_domain_advance(&machine->pit_clock, 1u);
-    if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 &&
+    if ((machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 ||
+        machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80386) &&
         dma_ticks != 0u &&
         core_machine_dma_has_pending_request(&machine->shared_dma_primary,
             &machine->shared_dma_secondary) &&
