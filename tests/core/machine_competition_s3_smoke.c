@@ -229,6 +229,7 @@ C_INT main(C_VOID)
     core_machine_destroy(machine);
     if (failed) return 1;
     STD_PRINTF("M5:T354:S3:COMPETITION:OK\n");
+    STD_PRINTF("M5:T419:S1:D4-DMA-NO-WAIT:OK\n");
     STD_PRINTF("M5:T369:S3:PCAT-HOLD:OK\n");
     return 0;
 }
