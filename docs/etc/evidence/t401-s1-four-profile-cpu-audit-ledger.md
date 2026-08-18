@@ -1012,3 +1012,6 @@ S51 audits 80186-plus INS/OUTS `6Ch`-`6Fh`. Existing focused fixtures prove sing
 ## S51 Acceptance
 
 S51 closes the bounded INS/OUTS audit: runtime, protected-I/O and TSS I/O-map fixtures plus direct lexical coverage establish the selected form/protection boundary. No production discrepancy was found; Core timing remains nonphysical and T401 remains open.
+## S52 Scalar IN/OUT
+
+S52 audits scalar IN/OUT `E4h`-`E7h` and `ECh`-`EFh`. Existing runtime fixtures cover every immediate-port and DX-port byte/word form across all profiles, 80386 dword attributes, provider failures, VM86 and TSS I/O-map permission behavior, rejection and IRQ boundaries. `M5:T401:S52:SCALAR-IO-PREVIEW-PROFILES:OK` adds direct lexical proof for all eight forms and 80386 dword layouts. No production discrepancy was found; timing remains nonphysical.

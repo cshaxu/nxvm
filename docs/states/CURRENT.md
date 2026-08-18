@@ -3,6 +3,26 @@
 ## Current Work
 
 **Active: M5 T401.**
+## M5 T401 S52 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner: user; standing approval to continue CPU audit and directly fix confirmed small issues. |
+| Objective | Audit scalar IN/OUT `E4h`-`E7h` and `ECh`-`EFh`, consume the existing full runtime/permission fixtures, and add direct four-profile lexeme coverage. |
+| Non-goals | No CPU, port-provider, Core/VM interface, DeskPro timing, or external-source change; no T401 closure. |
+| Reference Baseline | `1a9b7569` (S51 P2), T401 ledger, retained Intel references, port-I/O S55, protected-I/O and TSS I/O-map fixtures. |
+| Candidate Proposal | [Four-profile CPU instruction-correctness audit](../proposals/m5-four-profile-cpu-instruction-correctness-audit.md), scalar port-I/O form batch. |
+| Files And ABI Surface | Preview smoke, CURRENT and T401 ledger only; test/documentation surface. |
+| Applicable Rules | Shared Core CPU/port ownership unchanged; coding, documentation and execution rules apply. |
+| Verification | Build/run port-I/O, protected-I/O, TSS I/O-map and preview smokes; documentation governance; diff check. |
+| Expected Markers | Existing port-I/O/permission/I/O-map markers and `M5:T401:S52:SCALAR-IO-PREVIEW-PROFILES:OK`. |
+| Asset Needs | None. |
+| Reporting Requirements | Record form/permission/attribute evidence, discrepancy result, commits and nonphysical boundary. |
+| Stop Conditions | Transfer any nonlocal port, privilege, transaction or timing repair. |
+| Exit Criteria | All eight opcodes, immediate/DX layouts and 80386 attributes scan as expected; fixture suite passes; ledger records conclusion. |
+| Original Owner Request | Continue CPU audit before later DeskPro L3 work with direct repair of confirmed small issues. |
+| Similar-Issue Sweep | Treat immediate-port and DX-port encodings, byte/word/dword and input/output directions as one scalar I/O family. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T395 S1 P4 `vm-0-5-0395` /
