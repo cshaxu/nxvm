@@ -40,3 +40,7 @@ production defect or Core/VM interface change.
 ## S4 B4 HDC Disposition
 
 S4 rejects PCjs's generic IBM Type-5 HDC as a reference for the selected Compaq controller; its [disposition](../etc/evidence/t399-s4-b4-compaq-hdc-disposition.md) retains existing logical regressions and physical-media TODO receivers.
+
+## Final Decision
+
+The independent [reference-derived L3 decision](../etc/evidence/t399-s5-reference-derived-l3-decision.md) and [closure audit](../etc/evidence/t399-s5-task-closure-audit.md) close T399 as not ready in both reference-derived and physical tiers, with all five ledger rows exhausted and CPU audit next.
