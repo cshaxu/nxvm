@@ -19,3 +19,8 @@ The [S1 matrix](../etc/evidence/t398-s1-deskpro-l3-requirement-matrix.md) freeze
 ## Coordinator Acceptance
 
 After actual-change review of S1 P2 ef5e29e, the coordinator accepts S1. The [acceptance audit](../etc/evidence/t398-s1-l3-matrix-acceptance-audit.md) confirms the finite universe and retains only the explicit readiness decision; no Model-40 L3 claim is accepted yet.
+
+
+## S2 Decision And Task Closure
+
+S2 makes the explicit [Model-L3 not-ready decision](../etc/evidence/t398-s2-deskpro-l3-decision.md) after reconciling every matrix row and retained receiver. The [task closure audit](../etc/evidence/t398-s2-task-closure-audit.md) closes T398; a future ready claim requires its exact physical or firmware receiver and a fresh independent audit.
