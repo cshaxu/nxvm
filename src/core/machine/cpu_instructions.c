@@ -7590,6 +7590,22 @@ static type_bool core_machine_cpu_instruction_lexeme_has_modrm(
         opcode == 0xf7u || opcode == 0xfeu || opcode == 0xffu;
 }
 
+static type_bool core_machine_cpu_instruction_lexeme_modrm_form_valid(
+    type_unsigned_8 opcode, type_bool extended, type_unsigned_8 modrm)
+{
+    type_unsigned_8 reg = (modrm >> 3u) & 7u;
+
+    if (extended) return TYPE_TRUE;
+    if (opcode == 0x8fu || opcode == 0xc6u || opcode == 0xc7u)
+        return reg == 0u;
+    if (opcode == 0xf6u || opcode == 0xf7u)
+        return reg != 1u;
+    if (opcode == 0xfeu)
+        return reg <= 1u;
+    if (opcode == 0xffu)
+        return reg <= 6u;
+    return TYPE_TRUE;
+}
 static type_unsigned_8 core_machine_cpu_instruction_lexeme_immediate_bytes(
     type_unsigned_8 opcode, type_bool extended, type_unsigned_8 modrm,
     type_unsigned_8 operand_bytes, type_unsigned_8 address_bytes)
@@ -7707,6 +7723,8 @@ type_bool core_machine_cpu_instruction_lexeme_scan(
             }
         }
     }
+    if (!core_machine_cpu_instruction_lexeme_modrm_form_valid(opcode, extended, modrm))
+        return TYPE_FALSE;
     metadata = core_machine_cpu_instruction_metadata_get(extended ?
         CORE_MACHINE_CPU_INSTRUCTION_0F : CORE_MACHINE_CPU_INSTRUCTION_PRIMARY,
         opcode, modrm);

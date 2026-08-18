@@ -211,6 +211,38 @@ static C_INT ud_s1_metadata_and_lexeme(C_VOID)
     }
     return 1;
 }
+static C_INT ud_s1_lexeme_primary_group_rejection(C_VOID)
+{
+    static const type_unsigned_8 invalid[][2] = {
+        { 0x8fu, 0xc8u }, { 0xc6u, 0xc8u }, { 0xc7u, 0xc8u },
+        { 0xf6u, 0xc8u }, { 0xf7u, 0xc8u }, { 0xfeu, 0xd0u },
+        { 0xffu, 0xf8u }
+    };
+    static const type_unsigned_8 valid[][2] = {
+        { 0x8fu, 0xc0u }, { 0xf6u, 0xd0u }, { 0xf7u, 0xd0u },
+        { 0xfeu, 0xc0u }, { 0xffu, 0xf0u }
+    };
+    core_machine_cpu_instruction_lexeme lexeme;
+    STD_SIZE_T index;
+
+    for (index = 0u; index != sizeof(invalid) / sizeof(invalid[0]); ++index) {
+        if (core_machine_cpu_instruction_lexeme_scan(invalid[index],
+                sizeof(invalid[index]), CORE_MACHINE_CPU_PROFILE_80386,
+                TYPE_TRUE, &lexeme)) return 0;
+    }
+    for (index = 0u; index != sizeof(valid) / sizeof(valid[0]); ++index) {
+        if (!core_machine_cpu_instruction_lexeme_scan(valid[index],
+                sizeof(valid[index]), CORE_MACHINE_CPU_PROFILE_80386,
+                TYPE_TRUE, &lexeme) || !lexeme.available) return 0;
+    }
+    if (!core_machine_cpu_instruction_lexeme_scan(
+            (const type_unsigned_8[]){ 0xc6u, 0xc0u, 0x12u }, 3u,
+            CORE_MACHINE_CPU_PROFILE_80386, TYPE_TRUE, &lexeme) ||
+        !core_machine_cpu_instruction_lexeme_scan(
+            (const type_unsigned_8[]){ 0xc7u, 0xc0u, 0x78u, 0x56u, 0x34u, 0x12u },
+            6u, CORE_MACHINE_CPU_PROFILE_80386, TYPE_TRUE, &lexeme)) return 0;
+    return 1;
+}
 static C_INT ud_s1_lexeme_8086_pop_cs(C_VOID)
 {
     static const type_unsigned_8 pop_cs[] = { 0x0fu };
@@ -349,8 +381,8 @@ C_INT main(C_VOID)
             return 1;
         }
     }
-    if (!ud_s1_metadata_and_lexeme() || !ud_s1_lexeme_8086_pop_cs() ||
-        !ud_s1_primary_metadata_and_lexeme() ||
+    if (!ud_s1_metadata_and_lexeme() || !ud_s1_lexeme_primary_group_rejection() ||
+        !ud_s1_lexeme_8086_pop_cs() || !ud_s1_primary_metadata_and_lexeme() ||
         !ud_s1_primary_metadata_matrix() || !ud_s1_0f_metadata_matrix() ||
         !ud_s1_protected_invalid_gate()) {
         return 1;
@@ -361,5 +393,6 @@ C_INT main(C_VOID)
     STD_PRINTF("M5:T401:S4:F1-METADATA:OK\n");
     STD_PRINTF("M5:T401:S4:PRIMARY-METADATA-MATRIX:OK\n");
     STD_PRINTF("M5:T401:S5:LEXEME-8086-POP-CS:OK\n");
+    STD_PRINTF("M5:T401:S5:LEXEME-PRIMARY-GROUPS:OK\n");
     return 0;
 }

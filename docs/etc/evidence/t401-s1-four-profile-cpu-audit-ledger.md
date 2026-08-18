@@ -51,6 +51,18 @@ proves `/0`--`/3` reject while `/4`--`/7` admit. This is deliberately a
 metadata/profile inventory proof only; dispatch execution, operand semantics,
 fault atomicity and timing remain assigned to their form-level tests and
 ledger rows rather than inferred from this matrix.
+## S5 Lexical Repair: Primary ModR/M Groups
+
+Intel's primary group encodings reserve `8F /1`--`/7`, `C6/C7 /1`--`/7`,
+`F6/F7 /1`, `FE /2`--`/7` and `FF /7`. Their runtime owners already reach
+`#UD`, but the timing-preview scanner had only recognized the opcode byte and
+therefore advertised those forms as available. The scanner now owns the same
+small group-validity classification before reporting a lexeme. The regression
+rejects every listed reserved representative and retains valid POP, TEST/NOT,
+INC, PUSH plus `C6/C7 /0` immediate layouts with marker
+`M5:T401:S5:LEXEME-PRIMARY-GROUPS:OK`. Memory-only and privilege-specific form
+rules remain separate lexical audit rows; this change does not make a timing or
+physical-L3 claim.
 ## S5 Lexical Repair: 8086 `0F` POP CS
 
 The runtime `INS_0F` route retains the historical 8086 one-byte `POP CS`
