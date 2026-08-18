@@ -7759,7 +7759,7 @@ core_machine_cpu_instruction_metadata core_machine_cpu_instruction_metadata_get(
         {
             metadata.minimum_cpu = CORE_MACHINE_CPU_PROFILE_80386;
         }
-        else if (opcode == 0x82u || opcode == 0xd6u)
+        else if (opcode == 0x82u || opcode == 0xd6u || opcode == 0xf1u)
         {
             metadata.valid = 0;
         }

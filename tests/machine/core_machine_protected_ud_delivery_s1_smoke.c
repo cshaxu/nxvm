@@ -211,6 +211,18 @@ static C_INT ud_s1_metadata_and_lexeme(C_VOID)
     }
     return 1;
 }
+static C_INT ud_s1_primary_metadata_and_lexeme(C_VOID)
+{
+    static const type_unsigned_8 reserved[] = { 0xf1u };
+    core_machine_cpu_instruction_lexeme lexeme;
+    core_machine_cpu_instruction_metadata metadata =
+        core_machine_cpu_instruction_metadata_get(
+            CORE_MACHINE_CPU_INSTRUCTION_PRIMARY, 0xf1u, 0u);
+
+    return !metadata.valid && !core_machine_cpu_instruction_lexeme_scan(
+        reserved, sizeof(reserved), CORE_MACHINE_CPU_PROFILE_80386,
+        TYPE_TRUE, &lexeme);
+}
 static core_machine_cpu_profile ud_s1_0f_expected_minimum(type_unsigned_8 opcode)
 {
     if (opcode == 0x00u || opcode == 0x01u || opcode == 0x02u ||
@@ -297,12 +309,14 @@ C_INT main(C_VOID)
             return 1;
         }
     }
-    if (!ud_s1_metadata_and_lexeme() || !ud_s1_0f_metadata_matrix() ||
+    if (!ud_s1_metadata_and_lexeme() || !ud_s1_primary_metadata_and_lexeme() ||
+        !ud_s1_0f_metadata_matrix() ||
         !ud_s1_protected_invalid_gate()) {
         return 1;
     }
     STD_PRINTF("M5:T326:S1:PROTECTED-UD-DELIVERY:OK\n");
     STD_PRINTF("M5:T401:S2:0F25-METADATA:OK\n");
     STD_PRINTF("M5:T401:S3:0F-METADATA-MATRIX:OK\n");
+    STD_PRINTF("M5:T401:S4:F1-METADATA:OK\n");
     return 0;
 }

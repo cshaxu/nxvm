@@ -51,6 +51,19 @@ proves `/0`--`/3` reject while `/4`--`/7` admit. This is deliberately a
 metadata/profile inventory proof only; dispatch execution, operand semantics,
 fault atomicity and timing remain assigned to their form-level tests and
 ledger rows rather than inferred from this matrix.
+## S4 Primary-Map Repair: `F1`
+
+Intel 80386 PRM Appendix A does not assign primary opcode `F1`. Current
+execution already routed it to `UndefinedOpcode`, and the retained protected
+#UD smoke exercised that route, but the shared primary metadata default and
+lexeme scanner had still advertised it as available. T401 S4 makes `F1`
+invalid at the metadata owner, which makes the lexical preview unavailable
+before it can publish a timing shape. The nearby `82` and `D6` reserved slots
+were included in the same primary invalid-opcode branch and remain invalid.
+`core-machine-protected-ud-delivery-s1-smoke` now emits
+`M5:T401:S4:F1-METADATA:OK` after proving the metadata/lexeme rejection while
+retaining existing protected #UD delivery. This is a decode-classification
+repair only; instruction timing remains nonphysical.
 ## S3 Current `0F` Map Reconciliation
 
 The current source matrix contains 66 metadata-valid secondary opcode slots:
