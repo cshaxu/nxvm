@@ -432,6 +432,8 @@ static type_status vm_session_create_model40_byob(const vm_session_config *confi
         .kbc_serial_delivery_ticks = 1u, /* Generic-AT virtual-time cadence, not a Compaq measurement. */
         .clock_plan = {{1u, 1u, 0u}, {1u, 1u, 0u}, {1u, 1u, 0u},
             {1u, 1u, 0u}, {1u, 1u, 0u}, {1u, 1u, 0u}},
+        /* D3PE: one DCLK wait each DMA cycle; discrete bridge, not 250 ns. */
+        .dma_cycle_wait_quanta = 1u,
         .auxiliary_pit_present = TYPE_TRUE,
         .auxiliary_pit_base_port = 0x0048u,
         .kbc_aux_absent = TYPE_TRUE
@@ -484,6 +486,8 @@ type_status vm_session_create_model40_private(
         .kbc_serial_delivery_ticks = 1u, /* Generic-AT virtual-time cadence, not a Compaq measurement. */
         .clock_plan = {{1u, 1u, 0u}, {1u, 1u, 0u}, {1u, 1u, 0u},
             {1u, 1u, 0u}, {1u, 1u, 0u}, {1u, 1u, 0u}},
+        /* D3PE: one DCLK wait each DMA cycle; discrete bridge, not 250 ns. */
+        .dma_cycle_wait_quanta = 1u,
         .auxiliary_pit_present = TYPE_TRUE,
         .auxiliary_pit_base_port = 0x0048u,
         .kbc_aux_absent = TYPE_TRUE

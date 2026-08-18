@@ -17,6 +17,7 @@ C_INT main(C_VOID)
 
     if (vm_session_create_model40_private(&rom, &session) != TYPE_STATUS_OK ||
         session == STD_NULL || !session->core_machine->dma_configured ||
+        session->core_machine->dma_cycle_wait_quanta != 1u ||
         session->core_machine->dma_wiring.fdc_channel != 2u ||
         session->core_machine->dma_wiring.controller_count !=
             CORE_MACHINE_DMA_CONTROLLER_COUNT ||
@@ -69,5 +70,6 @@ done:
     STD_PRINTF("M5:T386:S17:DUAL-DMA-TOPOLOGY:OK\n");
     STD_PRINTF("M5:T386:S17:DMA-WORD-CASCADE:OK\n");
     STD_PRINTF("M5:T386:S17:DMA-RESET-BINDING:OK\n");
+    STD_PRINTF("M5:T419:S2:D4-DMA-GRANT-WAIT:OK\n");
     return 0;
 }

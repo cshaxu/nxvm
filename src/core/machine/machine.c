@@ -3317,6 +3317,29 @@ static C_INT core_machine_clock_plan_is_valid(
  * machine tick; scheduling the next tick from the callback preserves both
  * deterministic due-time order and the existing one-grant DMA semantics.
  */
+static C_VOID core_machine_dma_grant_advance(core_machine *machine)
+{
+    if (machine == STD_NULL) return;
+    if ((machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 ||
+        machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80386) &&
+        core_machine_dma_has_pending_request(&machine->shared_dma_primary,
+            &machine->shared_dma_secondary) &&
+        core_machine_transaction_hold_request(&machine->transaction,
+            CORE_MACHINE_TRANSACTION_OWNER_DMA, 0u) == TYPE_STATUS_OK) {
+        if (core_machine_transaction_hold_acknowledge(&machine->transaction,
+                CORE_MACHINE_TRANSACTION_OWNER_DMA) == TYPE_STATUS_OK) {
+            core_machine_dma_advance_transaction(&machine->shared_dma_latch,
+                &machine->shared_dma_primary, &machine->shared_dma_secondary,
+                &machine->executor_memory, &machine->transaction, 1u);
+        }
+        core_machine_transaction_hold_release(&machine->transaction,
+            CORE_MACHINE_TRANSACTION_OWNER_DMA);
+    } else {
+        core_machine_dma_advance_transaction(&machine->shared_dma_latch,
+            &machine->shared_dma_primary, &machine->shared_dma_secondary,
+            &machine->executor_memory, &machine->transaction, 1u);
+    }
+}
 static C_VOID core_machine_arbitration_tick(C_VOID *opaque,
     type_unsigned_64 due_tick)
 {
@@ -3330,7 +3353,19 @@ static C_VOID core_machine_arbitration_tick(C_VOID *opaque,
     }
     dma_ticks = core_machine_clock_domain_advance(&machine->dma_clock, 1u);
     pit_ticks = core_machine_clock_domain_advance(&machine->pit_clock, 1u);
-    if ((machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 ||
+    if (machine->dma_cycle_wait_quanta != 0u && dma_ticks != 0u) {
+        type_unsigned_64 tick;
+        for (tick = 0u; tick < dma_ticks; ++tick) {
+            if (core_machine_dma_has_pending_request(&machine->shared_dma_primary,
+                    &machine->shared_dma_secondary) &&
+                machine->dma_cycle_wait_remaining < machine->dma_cycle_wait_quanta) {
+                ++machine->dma_cycle_wait_remaining;
+            } else {
+                core_machine_dma_grant_advance(machine);
+                machine->dma_cycle_wait_remaining = 0u;
+            }
+        }
+    } else if ((machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 ||
         machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80386) &&
         dma_ticks != 0u &&
         core_machine_dma_has_pending_request(&machine->shared_dma_primary,
@@ -4685,6 +4720,7 @@ static type_status core_machine_create_internal(
     machine->cpu_profile = core_machine_resolve_cpu_profile(config->cpu_profile);
     machine->retirement_time_contract = config->retirement_time_contract;
     machine->external_memory_locality_timing = config->external_memory_locality_timing;
+    machine->dma_cycle_wait_quanta = config->dma_cycle_wait_quanta;
     if (config->retirement_qualification != STD_NULL) {
         if (config->retirement_qualification->entries == STD_NULL ||
             config->retirement_qualification->entry_count == 0u ||
@@ -4910,6 +4946,7 @@ static type_status core_machine_cold_reset(core_machine *machine)
     STD_ATOMIC_STORE(&machine->stop_requested, 0);
     machine->fault_detail = 0u;
     machine->elapsed_ticks = 0u;
+    machine->dma_cycle_wait_remaining = 0u;
     machine->external_memory_locality_page_tag = 0u;
     machine->external_memory_locality_round_ticks = 0u;
     machine->external_memory_locality_page_valid = TYPE_FALSE;

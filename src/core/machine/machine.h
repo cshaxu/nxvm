@@ -120,6 +120,8 @@ struct core_machine {
     core_machine_clock_domain vadp_clock;
     core_machine_clock_domain kbc_clock;
     core_machine_clock_domain provider_clock;
+    type_unsigned_32 dma_cycle_wait_quanta;
+    type_unsigned_32 dma_cycle_wait_remaining;
     type_unsigned_32 kbc_typematic_initial_ticks;
     type_unsigned_32 kbc_typematic_repeat_ticks;
     type_unsigned_32 kbc_command_response_ticks;

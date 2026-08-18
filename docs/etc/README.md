@@ -443,6 +443,8 @@ principal documents named in [docs/README.md](../README.md).
 
 | evidence/t419-s2-d4-dma-no-wait-closure-audit.md | Closure audit | T419 S1 independently closes the high-level D4 DMA no-extra-wait receiver and transfers physical DMA phases. Retain with T419 history. |
 
+| evidence/t419-s2-d4-dma-grant-wait.md | Verification owner | T419 S2 selects a discrete one-quantum DMA grant delay for Model-40 from original D3PE material, without claiming DCLK calibration. Retain with T419 history. |
+
 Adding a new supporting document requires owner approval, an exact-file index
 row or a declared indexed subtree, and a stated promotion, merge, or retirement
 condition. The governance gate verifies that every supporting Markdown file is
