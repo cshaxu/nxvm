@@ -3163,6 +3163,8 @@ static C_INT core_machine_instruction_cost(core_machine *machine,
     return 0;
 }
 
+static C_VOID core_machine_external_cycle_invalidate(core_machine *machine);
+
 static C_VOID core_machine_transaction_trace(C_VOID *opaque,
     core_machine_transaction_owner owner, core_machine_transaction_kind kind,
     core_machine_transaction_phase phase, type_unsigned_32 address,
@@ -3177,7 +3179,7 @@ static C_VOID core_machine_transaction_trace(C_VOID *opaque,
      * behavior or any physical phase duration. */
     if (phase == CORE_MACHINE_TRANSACTION_PHASE_HOLD_ACKNOWLEDGE &&
         owner == CORE_MACHINE_TRANSACTION_OWNER_DMA) {
-        machine->external_memory_locality_page_valid = TYPE_FALSE;
+        core_machine_external_cycle_invalidate(machine);
     }
     switch (phase) {
     case CORE_MACHINE_TRANSACTION_PHASE_BEGIN:
@@ -3206,6 +3208,35 @@ static C_VOID core_machine_transaction_trace(C_VOID *opaque,
         (detail << 16u));
 }
 
+static C_INT core_machine_external_cycle_access_is_chargeable(type_bool write,
+    core_machine_cpu_memory_access_provenance provenance)
+{
+    return (!write && (provenance == CORE_MACHINE_CPU_MEMORY_ACCESS_INSTRUCTION_PREFETCH ||
+        provenance == CORE_MACHINE_CPU_MEMORY_ACCESS_DATA ||
+        provenance == CORE_MACHINE_CPU_MEMORY_ACCESS_PAGE_TABLE_READ)) ||
+        (write && (provenance == CORE_MACHINE_CPU_MEMORY_ACCESS_DATA ||
+        provenance == CORE_MACHINE_CPU_MEMORY_ACCESS_PAGE_TABLE_WRITE));
+}
+
+static C_INT core_machine_external_cycle_pending_matches(const core_machine *machine,
+    type_unsigned_32 physical, type_unsigned_8 bytes, type_bool write,
+    core_machine_cpu_memory_access_provenance provenance)
+{
+    return machine != STD_NULL && machine->external_cycle_pending_valid &&
+        machine->external_cycle_pending_physical == physical &&
+        machine->external_cycle_pending_bytes == bytes &&
+        machine->external_cycle_pending_write == write &&
+        machine->external_cycle_pending_provenance == provenance;
+}
+
+static C_VOID core_machine_external_cycle_invalidate(core_machine *machine)
+{
+    if (machine == STD_NULL) return;
+    machine->external_cycle_page_valid = TYPE_FALSE;
+    machine->external_cycle_pending_valid = TYPE_FALSE;
+    machine->external_cycle_overlap_valid = TYPE_FALSE;
+}
+
 static C_VOID core_machine_cpu_external_cycle_trace(C_VOID *opaque,
     core_machine_cpu_external_cycle_phase phase, type_unsigned_32 physical,
     type_unsigned_8 bytes, type_bool write,
@@ -3213,41 +3244,81 @@ static C_VOID core_machine_cpu_external_cycle_trace(C_VOID *opaque,
 {
     core_machine *machine = (core_machine *)opaque;
     core_machine_trace_event_type type;
+    C_INT pending_matches;
+    type_bool timing_enabled;
 
     if (machine == STD_NULL) return;
-    if (phase == CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_COMMIT &&
-        ((!write && (provenance == CORE_MACHINE_CPU_MEMORY_ACCESS_INSTRUCTION_PREFETCH ||
-        provenance == CORE_MACHINE_CPU_MEMORY_ACCESS_DATA ||
-        provenance == CORE_MACHINE_CPU_MEMORY_ACCESS_PAGE_TABLE_READ)) ||
-        (write && (provenance == CORE_MACHINE_CPU_MEMORY_ACCESS_DATA ||
-        provenance == CORE_MACHINE_CPU_MEMORY_ACCESS_PAGE_TABLE_WRITE))) &&
-        machine->external_memory_locality_timing.page_bytes != 0u) {
-        type_unsigned_32 page_tag = physical /
-            machine->external_memory_locality_timing.page_bytes;
-        type_unsigned_32 wait_ticks = !machine->external_memory_locality_page_valid ||
-            !machine->external_memory_locality_overlap_valid ||
-            machine->external_memory_locality_overlap_next_physical != physical ||
-            machine->external_memory_locality_page_tag != page_tag ?
-            machine->external_memory_locality_timing.page_miss_ticks :
-            machine->external_memory_locality_timing.page_hit_ticks;
-        /* Synchronous CPU commits cannot manufacture physical overlap. */
-        machine->external_memory_locality_overlap_valid = TYPE_FALSE;
-        machine->external_memory_locality_page_valid = TYPE_TRUE;
-        machine->external_memory_locality_page_tag = page_tag;
-        if (UINT64_MAX - machine->external_memory_locality_round_ticks < wait_ticks) {
-            machine->external_memory_locality_round_overflow = TYPE_TRUE;
-        } else {
-            machine->external_memory_locality_round_ticks += wait_ticks;
-        }
-    }
+    timing_enabled = machine->external_cycle_timing.page_bytes != 0u;
     switch (phase) {
     case CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_BEGIN:
+        if (!timing_enabled) {
+            type = CORE_MACHINE_TRACE_CPU_EXTERNAL_CYCLE_BEGIN;
+            break;
+        }
+        if (machine->external_cycle_pending_valid) {
+            core_machine_external_cycle_invalidate(machine);
+        } else if (machine->external_cycle_overlap_valid &&
+            machine->external_cycle_overlap_next_physical != physical) {
+            machine->external_cycle_overlap_valid = TYPE_FALSE;
+        }
+        machine->external_cycle_pending_valid = TYPE_TRUE;
+        machine->external_cycle_pending_physical = physical;
+        machine->external_cycle_pending_bytes = bytes;
+        machine->external_cycle_pending_write = write;
+        machine->external_cycle_pending_provenance = provenance;
         type = CORE_MACHINE_TRACE_CPU_EXTERNAL_CYCLE_BEGIN;
         break;
+    case CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_OVERLAP_DECLARE:
+        if (timing_enabled && machine->external_cycle_timing.overlap_policy ==
+                CORE_MACHINE_EXTERNAL_CYCLE_OVERLAP_EXPLICIT_SEQUENTIAL &&
+            machine->external_cycle_pending_valid &&
+            !machine->external_cycle_pending_write && !write &&
+            machine->external_cycle_pending_provenance ==
+                CORE_MACHINE_CPU_MEMORY_ACCESS_INSTRUCTION_PREFETCH &&
+            provenance == CORE_MACHINE_CPU_MEMORY_ACCESS_INSTRUCTION_PREFETCH &&
+            machine->external_cycle_pending_physical <= UINT32_MAX -
+                machine->external_cycle_pending_bytes &&
+            physical == machine->external_cycle_pending_physical +
+                machine->external_cycle_pending_bytes) {
+            machine->external_cycle_overlap_valid = TYPE_TRUE;
+            machine->external_cycle_overlap_next_physical = physical;
+        }
+        type = CORE_MACHINE_TRACE_CPU_EXTERNAL_CYCLE_OVERLAP_DECLARE;
+        break;
     case CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_COMMIT:
+        pending_matches = timing_enabled &&
+            core_machine_external_cycle_pending_matches(machine,
+            physical, bytes, write, provenance);
+        if (pending_matches && core_machine_external_cycle_access_is_chargeable(write,
+                provenance) && machine->external_cycle_timing.page_bytes != 0u) {
+            type_unsigned_32 page_tag = physical /
+                machine->external_cycle_timing.page_bytes;
+            type_unsigned_32 wait_ticks = !machine->external_cycle_page_valid ||
+                !machine->external_cycle_overlap_valid ||
+                machine->external_cycle_overlap_next_physical != physical ||
+                machine->external_cycle_page_tag != page_tag ?
+                machine->external_cycle_timing.page_miss_ticks :
+                machine->external_cycle_timing.page_hit_ticks;
+            if (machine->external_cycle_overlap_valid &&
+                machine->external_cycle_overlap_next_physical == physical) {
+                machine->external_cycle_overlap_valid = TYPE_FALSE;
+            }
+            machine->external_cycle_page_valid = TYPE_TRUE;
+            machine->external_cycle_page_tag = page_tag;
+            if (UINT64_MAX - machine->external_cycle_round_ticks < wait_ticks) {
+                machine->external_cycle_round_overflow = TYPE_TRUE;
+            } else {
+                machine->external_cycle_round_ticks += wait_ticks;
+            }
+        }
+        if (pending_matches) machine->external_cycle_pending_valid = TYPE_FALSE;
         type = CORE_MACHINE_TRACE_CPU_EXTERNAL_CYCLE_COMMIT;
         break;
     case CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_CANCEL:
+        if (timing_enabled && core_machine_external_cycle_pending_matches(machine, physical, bytes,
+                write, provenance)) {
+            core_machine_external_cycle_invalidate(machine);
+        }
         type = CORE_MACHINE_TRACE_CPU_EXTERNAL_CYCLE_CANCEL;
         break;
     default:
@@ -3295,12 +3366,15 @@ static C_INT core_machine_retirement_time_contract_is_valid(
     return contract == CORE_MACHINE_RETIREMENT_TIME_DETERMINISTIC ||
         contract == CORE_MACHINE_RETIREMENT_TIME_PHYSICAL;
 }
-static C_INT core_machine_external_memory_locality_timing_is_valid(
-    const core_machine_external_memory_locality_timing *timing)
+static C_INT core_machine_external_cycle_timing_is_valid(
+    const core_machine_external_cycle_timing *timing)
 {
-    if (timing == STD_NULL) return 0;
+    if (timing == STD_NULL || (timing->overlap_policy !=
+        CORE_MACHINE_EXTERNAL_CYCLE_OVERLAP_DISABLED && timing->overlap_policy !=
+        CORE_MACHINE_EXTERNAL_CYCLE_OVERLAP_EXPLICIT_SEQUENTIAL)) return 0;
     if (timing->page_bytes == 0u) {
-        return timing->page_miss_ticks == 0u && timing->page_hit_ticks == 0u;
+        return timing->page_miss_ticks == 0u && timing->page_hit_ticks == 0u &&
+            timing->overlap_policy == CORE_MACHINE_EXTERNAL_CYCLE_OVERLAP_DISABLED;
     }
     return (timing->page_bytes & (timing->page_bytes - 1u)) == 0u;
 }
@@ -3904,7 +3978,7 @@ static C_VOID core_machine_d4_refresh_output(C_VOID *opaque, type_bool asserted)
             machine->d4_refresh_pulse_active = TYPE_FALSE;
         } else if (!machine->d4_refresh_pulse_active) {
             machine->d4_refresh_pulse_active = TYPE_TRUE;
-            machine->external_memory_locality_page_valid = TYPE_FALSE;
+            core_machine_external_cycle_invalidate(machine);
             machine->d4_refresh_hold_pending = TYPE_TRUE;
         }
     }
@@ -4744,8 +4818,8 @@ static type_status core_machine_create_internal(
         !core_machine_clock_plan_is_valid(&config->clock_plan) ||
         !core_machine_retirement_time_contract_is_valid(
             config->retirement_time_contract) ||
-        !core_machine_external_memory_locality_timing_is_valid(
-            &config->external_memory_locality_timing) ||
+        !core_machine_external_cycle_timing_is_valid(
+            &config->external_cycle_timing) ||
         (config->auxiliary_pit_present != TYPE_FALSE &&
         config->auxiliary_pit_present != TYPE_TRUE) ||
         (config->dma_cycle_bus_ready_gate_enabled != TYPE_FALSE &&
@@ -4766,7 +4840,7 @@ static type_status core_machine_create_internal(
     machine->lifecycle = CORE_MACHINE_INITIALIZED;
     machine->cpu_profile = core_machine_resolve_cpu_profile(config->cpu_profile);
     machine->retirement_time_contract = config->retirement_time_contract;
-    machine->external_memory_locality_timing = config->external_memory_locality_timing;
+    machine->external_cycle_timing = config->external_cycle_timing;
     machine->dma_cycle_wait_quanta = config->dma_cycle_wait_quanta;
     machine->dma_cycle_bus_ready_gate_enabled = config->dma_cycle_bus_ready_gate_enabled;
     machine->dma_cycle_bus_ready = TYPE_TRUE;
@@ -5007,12 +5081,18 @@ static type_status core_machine_cold_reset(core_machine *machine)
     machine->elapsed_ticks = 0u;
     machine->dma_cycle_wait_remaining = 0u;
     machine->dma_cycle_bus_ready = TYPE_TRUE;
-    machine->external_memory_locality_page_tag = 0u;
-    machine->external_memory_locality_round_ticks = 0u;
-    machine->external_memory_locality_page_valid = TYPE_FALSE;
-    machine->external_memory_locality_overlap_valid = TYPE_FALSE;
-    machine->external_memory_locality_overlap_next_physical = 0u;
-    machine->external_memory_locality_round_overflow = TYPE_FALSE;
+    machine->external_cycle_page_tag = 0u;
+    machine->external_cycle_round_ticks = 0u;
+    machine->external_cycle_page_valid = TYPE_FALSE;
+    machine->external_cycle_pending_valid = TYPE_FALSE;
+    machine->external_cycle_pending_physical = 0u;
+    machine->external_cycle_pending_bytes = 0u;
+    machine->external_cycle_pending_write = TYPE_FALSE;
+    machine->external_cycle_pending_provenance =
+        CORE_MACHINE_CPU_MEMORY_ACCESS_DATA;
+    machine->external_cycle_overlap_valid = TYPE_FALSE;
+    machine->external_cycle_overlap_next_physical = 0u;
+    machine->external_cycle_round_overflow = TYPE_FALSE;
     machine->retirement_eligibility_key_valid = TYPE_FALSE;
     machine->source_repeat_active = TYPE_FALSE;
     machine->source_repeat_cs = 0u;
@@ -5217,12 +5297,11 @@ type_status core_machine_run(
             {
                 type_bool was_halted = machine->executor_cpu.data.flagHalt;
 
-                machine->external_memory_locality_round_ticks = 0u;
-                machine->external_memory_locality_round_overflow = TYPE_FALSE;
-                /* Generic-AT conservative boundary: D4 says an inserted CPU
-                 * idle terminates PAGE HIT. Core has no physical overlap phase,
-                 * so a new instruction round cannot inherit a prior round key. */
-                machine->external_memory_locality_page_valid = TYPE_FALSE;
+                machine->external_cycle_round_ticks = 0u;
+                machine->external_cycle_round_overflow = TYPE_FALSE;
+                /* A completed instruction round cannot inherit an undeclared
+                 * external-cycle overlap into the next CPU refresh. */
+                core_machine_external_cycle_invalidate(machine);
                 core_machine_cpu_execution_refresh(&machine->executor_cpu_execution);
                 if (machine->d4_platform_configured &&
                     core_machine_cpu_execution_consume_shutdown_request(
@@ -5266,9 +5345,9 @@ type_status core_machine_run(
                 type_unsigned_64 instruction_ticks;
 
                 if (!core_machine_instruction_cost(machine, &instruction_ticks) ||
-                    machine->external_memory_locality_round_overflow ||
+                    machine->external_cycle_round_overflow ||
                     !core_machine_add_ticks(&instruction_ticks,
-                        machine->external_memory_locality_round_ticks) ||
+                        machine->external_cycle_round_ticks) ||
                     UINT64_MAX - result->ticks < instruction_ticks ||
                     UINT64_MAX - machine->elapsed_ticks < instruction_ticks) {
                     (C_VOID)core_machine_report_fault(machine, 0x54494d45u);

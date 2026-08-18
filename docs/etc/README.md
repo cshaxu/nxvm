@@ -454,6 +454,8 @@ principal documents named in [docs/README.md](../README.md).
 
 | evidence/t419-s4-d4-refresh-hold-closure-audit.md | Closure audit | T419 S4 closes the discrete D4 refresh hold bridge and transfers remaining physical L3 work. Retain with T419 history. |
 
+| evidence/t419-s5-external-cycle-overlap.md | Verification owner | T419 S5 replaces inferred logical locality with a single Core explicit external-cycle/prefetch-overlap contract, binds Model-40, audits disabled IBM 5170 reuse, repairs stopped-state write prefetch coherence, and transfers the physical producer/phase boundary. Retain with T419 history. |
+
 Adding a new supporting document requires owner approval, an exact-file index
 row or a declared indexed subtree, and a stated promotion, merge, or retirement
 condition. The governance gate verifies that every supporting Markdown file is

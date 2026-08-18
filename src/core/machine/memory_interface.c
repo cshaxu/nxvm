@@ -75,6 +75,10 @@ type_status core_machine_memory_write(
         type_status status = core_machine_memory_write_physical(
             &machine->executor_memory, physical, (type_virtual_address)data, size);
 
+        if (status == TYPE_STATUS_OK) {
+            core_machine_cpu_execution_invalidate_prefetch(
+                &machine->executor_cpu_execution);
+        }
         core_machine_trace_record(machine, CORE_MACHINE_TRACE_MEMORY_WRITE,
             physical, (type_unsigned_32)size, (type_unsigned_32)status);
         return status;

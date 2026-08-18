@@ -218,6 +218,15 @@ C_VOID core_machine_cpu_state_reset(core_machine_cpu_execution_context *context)
 
 }
 
+C_VOID core_machine_cpu_execution_invalidate_prefetch(
+    core_machine_cpu_execution_context *context)
+{
+    if (context == STD_NULL) return;
+    context->prefetch_count = 0u;
+    context->prefetch_valid = TYPE_FALSE;
+    context->prefetch_expected_valid = TYPE_FALSE;
+}
+
 C_VOID core_machine_cpu_execution_request_stop(
     core_machine_cpu_execution_context *context)
 {

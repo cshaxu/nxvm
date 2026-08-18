@@ -91,14 +91,18 @@ struct core_machine {
     core_machine_timeline timeline;
     core_machine_transaction_state transaction;
     core_machine_instruction_timing instruction_timing;
-    core_machine_external_memory_locality_timing external_memory_locality_timing;
-    type_unsigned_32 external_memory_locality_page_tag;
-    type_unsigned_64 external_memory_locality_round_ticks;
-    type_bool external_memory_locality_page_valid;
-    /* Only an explicit in-flight external-cycle owner may publish this. */
-    type_bool external_memory_locality_overlap_valid;
-    type_unsigned_32 external_memory_locality_overlap_next_physical;
-    type_bool external_memory_locality_round_overflow;
+    core_machine_external_cycle_timing external_cycle_timing;
+    type_unsigned_32 external_cycle_page_tag;
+    type_unsigned_64 external_cycle_round_ticks;
+    type_bool external_cycle_page_valid;
+    type_bool external_cycle_pending_valid;
+    type_unsigned_32 external_cycle_pending_physical;
+    type_unsigned_8 external_cycle_pending_bytes;
+    type_bool external_cycle_pending_write;
+    core_machine_cpu_memory_access_provenance external_cycle_pending_provenance;
+    type_bool external_cycle_overlap_valid;
+    type_unsigned_32 external_cycle_overlap_next_physical;
+    type_bool external_cycle_round_overflow;
     type_unsigned_64 maximum_instruction_ticks;
     core_machine_retirement_time_contract retirement_time_contract;
     type_bool source_timing_unallocated;

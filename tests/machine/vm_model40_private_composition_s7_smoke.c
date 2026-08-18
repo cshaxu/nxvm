@@ -34,6 +34,11 @@ C_INT main(C_VOID)
         session->profile != STD_NULL ||
         session->core_machine->retirement_time_contract !=
             CORE_MACHINE_RETIREMENT_TIME_DETERMINISTIC ||
+        session->core_machine->external_cycle_timing.page_bytes != 2048u ||
+        session->core_machine->external_cycle_timing.page_miss_ticks != 2u ||
+        session->core_machine->external_cycle_timing.page_hit_ticks != 0u ||
+        session->core_machine->external_cycle_timing.overlap_policy !=
+            CORE_MACHINE_EXTERNAL_CYCLE_OVERLAP_EXPLICIT_SEQUENTIAL ||
         core_machine_get_cpu_profile(session->core_machine, &cpu_profile) !=
             TYPE_STATUS_OK || cpu_profile != CORE_MACHINE_CPU_PROFILE_80386 ||
         core_machine_get_memory_bytes(session->core_machine, &memory_bytes) !=

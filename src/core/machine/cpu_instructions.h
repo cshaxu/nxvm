@@ -130,7 +130,10 @@ typedef enum core_machine_cpu_memory_access_provenance {
 typedef enum core_machine_cpu_external_cycle_phase {
     CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_BEGIN = 1,
     CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_COMMIT,
-    CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_CANCEL
+    CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_CANCEL,
+    /* The Core CPU owner issued this named sequential request while the
+     * preceding prefetch cycle was still in flight. */
+    CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_OVERLAP_DECLARE
 } core_machine_cpu_external_cycle_phase;
 
 typedef C_VOID (*core_machine_cpu_external_cycle_provider)(C_VOID *context,
@@ -244,6 +247,10 @@ type_bool core_machine_cpu_execution_write_linear(
     core_machine_cpu_execution_context *context, type_unsigned_32 linear,
     type_virtual_address rdata, type_unsigned_8 byte);
 C_VOID core_machine_cpu_execution_initialize(
+    core_machine_cpu_execution_context *context);
+/* Core invalidates queued instruction bytes after a stopped-state physical write.
+ * The caller does not need CPU or prefetch storage access. */
+C_VOID core_machine_cpu_execution_invalidate_prefetch(
     core_machine_cpu_execution_context *context);
 C_VOID core_machine_cpu_execution_reset(
     core_machine_cpu_execution_context *context);

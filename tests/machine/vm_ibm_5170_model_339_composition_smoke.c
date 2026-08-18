@@ -54,6 +54,13 @@ static C_INT vm_model_339_selected_contract(C_VOID)
     }
     vm_session_reset(session);
     failed |= session->profile != profile;
+    /* 5170 selects no board-specific external-cycle policy; it reuses the
+     * same Core owner with the disabled default rather than a parallel path. */
+    failed |= session->core_machine->external_cycle_timing.page_bytes != 0u ||
+        session->core_machine->external_cycle_timing.page_miss_ticks != 0u ||
+        session->core_machine->external_cycle_timing.page_hit_ticks != 0u ||
+        session->core_machine->external_cycle_timing.overlap_policy !=
+            CORE_MACHINE_EXTERNAL_CYCLE_OVERLAP_DISABLED;
     failed |= core_machine_get_cpu_profile(session->core_machine, &cpu_profile) !=
         TYPE_STATUS_OK || cpu_profile != CORE_MACHINE_CPU_PROFILE_80286;
     failed |= core_machine_get_memory_bytes(session->core_machine, &memory_bytes) !=

@@ -25,7 +25,7 @@
 
 ## Current Technical Baseline
 
-- **Current developer artifact:** T419 S4 P2 `vm-0-5-0419` /`build/output/nxvm_0_5_0419.exe`, SHA-256 `B25078C401D466C54BC08445BB3E7A4846A0491B58D17052332D143D655DC5D6`. T419 runs the existing sole Core DMA transaction route under D4 composition, with original-source one-quantum DMA grant delay BUSRDY gate, and one discrete refresh hold before pending DMA; calibrated waveform duration, CPU BWAIT, and electrical refresh remain transferred. T418 instruction-boundary locality, T417 refresh, T416 DMA-HOLD and T415 paging fixes remain retained.
+- **Current developer artifact:** T419 S5 `vm-0-5-0419` /`build/output/nxvm_0_5_0419.exe`, SHA-256 `5820F4B1A7D7B92548C0AA144C717276D8E3F8A14E29ABBF75BF5FAC92BB5BDB`. T419 keeps the single Core DMA transaction route and adds the D4-selected explicit external CPU-cycle/prefetch-overlap policy; completed adjacency cannot manufacture a hit, and stopped-state physical writes invalidate queued prefetch. Exact asynchronous producer, calibrated waveform, CPU BWAIT, row/bank PAL, and electrical refresh remain transferred. T418 instruction-boundary locality, T417 refresh, T416 DMA-HOLD and T415 paging fixes remain retained.
   T386 closes selected-device functional completeness at S29; its retained
   [closure audit](../etc/evidence/t386-s29-functional-closure-audit.md) fixes
   HDC current-gate coverage and transfers board, firmware and physical work.
