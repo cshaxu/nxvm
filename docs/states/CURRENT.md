@@ -3,26 +3,6 @@
 ## Current Work
 
 **Active: M5 T401.**
-## M5 T401 S65 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner: user; standing approval to continue CPU audit and directly repair confirmed small issues. |
-| Objective | Independently audit 80386 two-operand IMUL `0F AFh` register and memory forms. |
-| Non-goals | No CPU timing model, Core/VM interface, DeskPro claim or external-source import; no T401 closure. |
-| Reference Baseline | `527ea8d3` (S64 P2), T401 ledger, retained Intel 80386 PRM, and `core-machine-imul2-smoke`. |
-| Candidate Proposal | [Four-profile CPU instruction-correctness audit](../proposals/m5-four-profile-cpu-instruction-correctness-audit.md), 80386 secondary-arithmetic batch. |
-| Files And ABI Surface | IMUL2 smoke, preview smoke, CURRENT and T401 ledger only; test/documentation surface. |
-| Applicable Rules | Shared CPU IMUL ownership unchanged; coding, documentation and execution rules apply. |
-| Verification | Build/run IMUL2 and preview smokes; documentation governance; diff check. |
-| Expected Markers | `M5:T401:S65:IMUL2-PROFILES:OK` and `M5:T401:S65:IMUL2-PREVIEW-PROFILES:OK`. |
-| Asset Needs | None. |
-| Reporting Requirements | Record form/profile evidence, discrepancy result, commits and nonphysical boundary. |
-| Stop Conditions | Transfer any nonlocal IMUL, fault-delivery or timing repair. |
-| Exit Criteria | Register/memory and 16/32-bit IMUL2 forms have runtime/lexical evidence with 80186/80286 rejection and 8086 POP CS distinction. |
-| Original Owner Request | Continue CPU audit before later DeskPro L3 work with direct repair of confirmed small issues. |
-| Similar-Issue Sweep | Treat signed result/overflow, register/memory, 16/32-bit attributes, old-profile rejection and fault atomicity together. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T395 S1 P4 `vm-0-5-0395` /
@@ -49,7 +29,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T401 S64 | Accepted: 80386 MOVZX/MOVSX audit closes sign/zero, source width, destination, attribute and pre-80386 classification evidence; no production discrepancy. [Ledger](../etc/evidence/t401-s1-four-profile-cpu-audit-ledger.md). |
+| T401 S65 | Accepted: 80386 two-operand IMUL audit closes signed form, source, attribute and pre-80386 classification evidence; no production discrepancy. [Ledger](../etc/evidence/t401-s1-four-profile-cpu-audit-ledger.md). |
 | T400 | Closed: the HDC, CECG and CPU/DMA/BWAIT generic-reference ledger is exhausted; accepted logical repairs retain every DeskPro physical boundary. [Closure audit](../etc/evidence/t400-s1-task-closure-audit.md). |
 | T399 | Closed: the five-batch reference-derived DeskPro L3 ledger is exhausted; B2/B3 logical contracts are accepted, B1/B4/B5 retain exact receivers, and both reference-derived and physical L3 are not ready. [Closure audit](../etc/evidence/t399-s5-task-closure-audit.md). |
 | T398 | Closed: final exact 1986 DeskPro Model-40 audit is not-ready for L3; five physical/firmware boundaries retain explicit TODO receivers and require a fresh audit after repair. [Closure audit](../etc/evidence/t398-s2-task-closure-audit.md). |

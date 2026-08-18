@@ -1162,3 +1162,6 @@ nonpublication. `M5:T401:S65:IMUL2-PREVIEW-PROFILES:OK` adds register/memory
 layouts, 80386 attributes and 80186/80286 unavailability. 8086 remains
 distinct because its `0Fh` is POP CS. No production discrepancy was found;
 timing remains nonphysical.
+## S65 Acceptance
+
+S65 closes the bounded 80386 two-operand IMUL audit. Runtime and preview matrices establish signed register/memory forms, 80386 attributes, 80186/80286 rejection and the retained 8086 POP CS distinction. Both focused smokes and documentation governance pass; no production discrepancy was found, timing remains nonphysical, and T401 remains open.
