@@ -611,6 +611,87 @@ static C_INT inc_dec_test_test_forms(C_VOID)
     return 1;
 }
 
+static C_INT inc_dec_test_accumulator_profiles(C_VOID)
+{
+    static const core_machine_cpu_profile profiles[] = {
+        CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
+        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
+    };
+    static const type_unsigned_8 forms[][3] = {
+        {0xa8u, 0x80u, 0u}, {0xa9u, 0u, 0x80u}
+    };
+    static const type_unsigned_8 lengths[] = {2u, 3u};
+    static const type_unsigned_8 dword[] = {0x66u, 0xa9u, 0u, 0u, 0u, 0x80u};
+    const type_unsigned_32 initial_flags = VCPU_EFLAGS_CF | VCPU_EFLAGS_OF |
+        VCPU_EFLAGS_AF | VCPU_EFLAGS_ZF | VCPU_EFLAGS_PF;
+    type_unsigned_8 profile;
+    type_unsigned_8 form;
+
+    for (profile = 0u; profile != sizeof(profiles) / sizeof(profiles[0]); ++profile)
+    for (form = 0u; form != sizeof(lengths); ++form) {
+        inc_dec_machine state;
+        t_cpu after;
+        core_machine_cpu_diagnostic diagnostic;
+        type_unsigned_32 expected = form == 0u ? VCPU_EFLAGS_SF :
+            VCPU_EFLAGS_SF | VCPU_EFLAGS_PF;
+        C_INT failed = !inc_dec_prepare(profiles[profile], &state);
+
+        if (!failed) {
+            state.machine->executor_cpu.data.eax = 0xaabbffffu;
+            state.machine->executor_cpu.data.eflags = initial_flags;
+            failed |= !inc_dec_run(&state, forms[form], lengths[form], 0, &after,
+                &diagnostic) || diagnostic.first_fault.valid || after.data.eip !=
+                lengths[form] || after.data.eax != 0xaabbffffu ||
+                (after.data.eflags & TEST_DEFINED_FLAGS) != expected ||
+                (after.data.eflags & ~TEST_DEFINED_FLAGS) !=
+                (initial_flags & ~TEST_DEFINED_FLAGS);
+        }
+        core_machine_destroy(state.machine);
+        if (failed)
+            return 0;
+    }
+    for (profile = 0u; profile != 3u; ++profile) {
+        inc_dec_machine state;
+        t_cpu after;
+        core_machine_cpu_diagnostic diagnostic;
+        C_INT failed = !inc_dec_prepare(profiles[profile], &state);
+
+        if (!failed) {
+            state.machine->executor_cpu.data.eax = 0xaabbffffu;
+            state.machine->executor_cpu.data.eflags = initial_flags;
+            failed |= !inc_dec_run(&state, dword, sizeof(dword), 1, &after,
+                &diagnostic) || !diagnostic.first_fault.valid || !TYPE_GET_BIT(
+                diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_UD) ||
+                after.data.eip != 0u || after.data.eax != 0xaabbffffu ||
+                after.data.eflags != initial_flags;
+        }
+        core_machine_destroy(state.machine);
+        if (failed)
+            return 0;
+    }
+    {
+        inc_dec_machine state;
+        t_cpu after;
+        core_machine_cpu_diagnostic diagnostic;
+        C_INT failed = !inc_dec_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
+
+        if (!failed) {
+            state.machine->executor_cpu.data.eax = 0xffffffffu;
+            state.machine->executor_cpu.data.eflags = initial_flags;
+            failed |= !inc_dec_run(&state, dword, sizeof(dword), 0, &after,
+                &diagnostic) || diagnostic.first_fault.valid || after.data.eip !=
+                sizeof(dword) || after.data.eax != 0xffffffffu ||
+                (after.data.eflags & TEST_DEFINED_FLAGS) !=
+                (VCPU_EFLAGS_SF | VCPU_EFLAGS_PF) ||
+                (after.data.eflags & ~TEST_DEFINED_FLAGS) !=
+                (initial_flags & ~TEST_DEFINED_FLAGS);
+        }
+        core_machine_destroy(state.machine);
+        if (failed)
+            return 0;
+    }
+    return 1;
+}
 static C_INT inc_dec_test_test_address_and_profile(C_VOID)
 {
     static const type_unsigned_8 address_code[] = { 0x67u,0x66u,0xf7u,0x06u,
@@ -3325,7 +3406,7 @@ C_INT main(C_VOID)
         !inc_dec_test_address_and_profile() || !inc_dec_test_fault_nonpublication() ||
         !inc_dec_test_not_neg_forms() || !inc_dec_test_not_neg_address_and_profile() ||
         !inc_dec_test_not_neg_fault_nonpublication() || !inc_dec_test_test_forms() ||
-        !inc_dec_test_test_address_and_profile() ||
+        !inc_dec_test_test_address_and_profile() || !inc_dec_test_accumulator_profiles() ||
         !inc_dec_test_test_fault_nonpublication() || !inc_dec_test_mul_imul_forms() || !inc_dec_test_imul_sign_extension_profiles() ||
         !inc_dec_test_mul_imul_address_and_profile() ||
         !inc_dec_test_mul_imul_fault_nonpublication() || !inc_dec_test_div_idiv_forms() ||
@@ -3371,6 +3452,7 @@ C_INT main(C_VOID)
     STD_PRINTF("M5:T401:S7:GROUP1-PROFILE-MATRIX:OK\n");
     STD_PRINTF("M5:T401:S10:GROUP45-INC-DEC-PROFILES:OK\n");
     STD_PRINTF("M5:T401:S11:PRIMARY-INC-DEC-PROFILES:OK\n");
+    STD_PRINTF("M5:T401:S20:ACCUMULATOR-TEST-PROFILES:OK\n");
     STD_PRINTF("M5:T316:S16:DECIMAL-ADJUST:OK\n");
     STD_PRINTF("M5:T316:S17:XLAT:OK\n");
     return 0;

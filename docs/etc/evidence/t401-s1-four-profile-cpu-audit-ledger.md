@@ -643,3 +643,20 @@ REPE/REPNE execution sweep and covers comparison flags, DF/ES routing, 80386
 attributes and prefix rejection. No production discrepancy was found; existing
 Core timing remains explicitly nonphysical. S20 owns accumulator TEST
 `A8h`/`A9h`.
+## S20 Accumulator TEST
+
+S20 audits `A8h`/`A9h` accumulator-immediate TEST. Intel's 80386 Programmer's
+Reference Manual TEST entry defines byte-immediate AL and operand-size-selected
+AX/EAX forms, no accumulator publication, and logical-result flags. This is
+original-source semantic/form evidence; no emulator implementation, ROM or
+guest asset was imported.
+
+`M5:T401:S20:ACCUMULATOR-TEST-PROFILES:OK` adds direct all-four-profile byte
+and word execution, FLAGS and accumulator preservation proof; it adds the 80386
+`66h A9h` dword form and proves its atomic #UD rejection on every pre-80386
+profile. `M5:T401:S20:ACCUMULATOR-TEST-PREVIEW-PROFILES:OK` supplies the
+matching lexical decode matrix.
+
+No production discrepancy was found. This remains CPU semantic/nonphysical
+timing-baseline evidence only and does not establish physical timing, DeskPro
+L3 or a Core/VM interface change.
