@@ -327,5 +327,6 @@ C_INT main(C_VOID)
         !iret_s51_test_protected() || !iret_s51_test_pic())
         return 1;
     STD_PRINTF("M5:T316:S51:IRET:OK\n");
+    STD_PRINTF("M5:T401:S27:IRET-PROFILES:OK\n");
     return 0;
 }

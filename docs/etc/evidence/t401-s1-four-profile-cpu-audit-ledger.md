@@ -765,3 +765,11 @@ No production discrepancy was found. This remains CPU semantic/nonphysical timin
 ## S26 Acceptance
 
 S26 closes INT3 `CCh` and INTO `CEh` with focused runtime and preview proof across all four profiles. It retains fixed-vector dispatch, INTO overflow gating, saved-frame/flag handling, 80386 prefixes, pre-80386 #UD atomicity and protected/fault/VM86 boundaries. No production discrepancy was found; Core timing remains explicitly nonphysical. S27 owns IRET `CFh`.
+
+## S27 IRET
+
+S27 audits IRET `CFh`. Intel's 80386 Programmer's Reference Manual defines return-frame restoration, privilege-sensitive FLAGS publication and operand-size frame width; older profiles retain 16-bit real-mode behavior. This is original-source semantic/form evidence; no emulator implementation, ROM or guest asset was imported.
+
+`M5:T401:S27:IRET-PROFILES:OK` retains four-profile real-mode return, 80386 attribute forms, pre-80386 prefix atomic #UD, LOCK rejection, protected same/outer return, VM86 and PIC reacceptance proof. `M5:T401:S27:IRET-PREVIEW-PROFILES:OK` adds the matching lexical matrix.
+
+No production discrepancy was found. This remains CPU semantic/nonphysical timing-baseline evidence only and does not establish physical timing, DeskPro L3 or a Core/VM interface change.
