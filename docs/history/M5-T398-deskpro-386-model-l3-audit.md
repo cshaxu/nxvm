@@ -14,3 +14,8 @@ records, residual TODO receivers and exact Model-339/PC/XT distinction before
 any final readiness decision.
 
 The [S1 matrix](../etc/evidence/t398-s1-deskpro-l3-requirement-matrix.md) freezes eleven selected capability rows and separates functional deterministic proof from every physical-visible receiver. It finds no unclassified route and prepares a truthful not-ready decision.
+
+
+## Coordinator Acceptance
+
+After actual-change review of S1 P2 ef5e29e, the coordinator accepts S1. The [acceptance audit](../etc/evidence/t398-s1-l3-matrix-acceptance-audit.md) confirms the finite universe and retains only the explicit readiness decision; no Model-40 L3 claim is accepted yet.
