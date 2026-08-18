@@ -968,3 +968,11 @@ No production discrepancy was found. This remains CPU semantic/nonphysical timin
 ## S43 Acceptance
 
 S43 closes LOOPNE/LOOPE/LOOP/JCXZ coverage with focused runtime and preview proof across all four profiles. It retains taken/not-taken conditions, counter behavior, FLAGS preservation and 80386 attribute layouts. No production discrepancy was found; Core timing remains explicitly nonphysical.
+
+## S44 LEA
+
+S44 audits LEA `8Dh`. Intel 8086/80386 references define memory-only ModR/M form validation, effective-address result without a memory access, FLAGS preservation and 80386 operand/address attributes. This is original-source semantic/form evidence; no emulator implementation, ROM or guest asset was imported.
+
+`M5:T401:S44:LEA-PROFILES:OK` retains all-four-profile forms, 80386 attributes, register-form #UD, LOCK, protected mode, null-DS no-read and IRQ boundaries. `M5:T401:S44:LEA-PREVIEW-PROFILES:OK` adds the corresponding lexical matrix.
+
+No production discrepancy was found. This remains CPU semantic/nonphysical timing-baseline evidence only and does not establish physical timing, DeskPro L3 or a Core/VM interface change.

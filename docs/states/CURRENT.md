@@ -4,6 +4,26 @@
 
 **Active: M5 T401.**
 
+## M5 T401 S44 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; M5 T401 S44. |
+| Admission And Approval | Owner approved continuing the four-profile CPU audit; S43 is accepted. |
+| Objective | Audit LEA `8Dh` across all four profiles: ModR/M memory-form validity, effective-address result, attributes and preview behavior. |
+| Non-goals | No broad effective-address/decoder rewrite, device/board work, physical timing or DeskPro L3 claim. |
+| Reference Baseline | Intel 8086/80386 references; retained decoder/effective-address/timing ledger; current Core execution and preview. |
+| Candidate Proposal | [Four-profile CPU instruction-correctness audit and repair program](../proposals/m5-four-profile-cpu-instruction-correctness-audit.md). |
+| Files And ABI Surface | Audit ledger, packet, LEA fixture and preview smoke only unless a bounded shared defect is reproduced; no public ABI. |
+| Applicable Rules | Execution review; shared Core CPU ownership; coding/test rules; Intel primary-source requirement; source policy; documentation indexing. |
+| Verification | Four-profile execution/preview matrix, register-form rejection, 80386 address/operand attributes, fault atomicity and retirement; focused tests, full gate after repair, governance/diff checks. |
+| Expected Markers | New T401 S44 markers and any bounded defect marker. |
+| Asset Needs | None. |
+| Reporting Requirements | Record CPU/profile, opcode/ModR/M, effective address/result, attributes, retirement, source tier, owner and nonphysical timing boundary. |
+| Stop Conditions | Stop and create a precise receiver for a broad address-generation, fault-delivery, device/board or state-model redesign. |
+| Exit Criteria | Every selected LEA profile/form row has focused proof or explicit transfer; bounded repairs have full-gate proof. |
+| Original Owner Request | Continue source-backed, reference-backed or explicitly generic CPU work rather than leaving feasible work undone. |
+| Similar-Issue Sweep | For any mismatch, sweep effective-address siblings, profile gates, ModR/M validation, prefixes and preview callers. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T395 S1 P4 `vm-0-5-0395` /

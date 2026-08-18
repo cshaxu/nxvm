@@ -363,5 +363,6 @@ C_INT main(C_VOID)
             !lea_test_null_ds_no_read() || !lea_test_irq_no_shadow())
         return 1;
     STD_PRINTF("M5:T316:S26:LEA:OK\n");
+    STD_PRINTF("M5:T401:S44:LEA-PROFILES:OK\n");
     return 0;
 }
