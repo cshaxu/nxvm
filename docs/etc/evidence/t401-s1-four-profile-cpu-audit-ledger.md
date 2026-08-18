@@ -921,3 +921,11 @@ No production discrepancy was found. This remains CPU semantic/nonphysical timin
 ## S39 Acceptance
 
 S39 closes PUSHF/POPF `9Ch`/`9Dh` coverage with focused runtime and preview proof across all four profiles. It retains stack flag images, widths, attributes/LOCK, privilege and IRQ boundaries. No production discrepancy was found; Core timing remains explicitly nonphysical. S40 owns general-register PUSH/POP `50h`-`5Fh`.
+
+## S40 General-register PUSH/POP
+
+S40 audits general-register PUSH/POP `50h`-`5Fh`. Intel 8086/80386 references define register stack images, the 8086 PUSH SP distinction and 80386 operand-size forms. This is original-source semantic/form evidence; no emulator implementation, ROM or guest asset was imported.
+
+`M5:T401:S40:GPR-PUSH-POP-PROFILES:OK` retains all-four-profile register/r-m forms, 8086 SP behavior, POP ESP addressing, 80386 attributes, LOCK rejection, protected stack-limit faults and atomicity. `M5:T401:S40:GPR-PUSH-POP-PREVIEW-PROFILES:OK` adds the matching lexical matrix.
+
+No production discrepancy was found. This remains CPU semantic/nonphysical timing-baseline evidence only and does not establish physical timing, DeskPro L3 or a Core/VM interface change.
