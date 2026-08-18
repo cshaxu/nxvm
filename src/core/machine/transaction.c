@@ -58,7 +58,7 @@ type_status core_machine_transaction_begin(core_machine_transaction_state *state
 {
     if (state == STD_NULL || owner == CORE_MACHINE_TRANSACTION_OWNER_NONE ||
         kind < CORE_MACHINE_TRANSACTION_CPU_MEMORY_READ ||
-        kind > CORE_MACHINE_TRANSACTION_DMA_MEMORY_COPY ||
+        kind > CORE_MACHINE_TRANSACTION_REFRESH_MEMORY_CYCLE ||
         state->owner != CORE_MACHINE_TRANSACTION_OWNER_NONE ||
         (state->hold_owner != CORE_MACHINE_TRANSACTION_OWNER_NONE &&
          (state->hold_owner != owner || !state->hold_acknowledged))) {

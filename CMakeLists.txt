@@ -255,6 +255,10 @@ add_executable(core-machine-competition-s3-smoke
     tests/core/machine_competition_s3_smoke.c)
 target_link_libraries(core-machine-competition-s3-smoke PRIVATE core-machine)
 
+add_executable(core-machine-d4-refresh-hold-smoke
+    tests/core/machine_d4_refresh_hold_smoke.c)
+target_link_libraries(core-machine-d4-refresh-hold-smoke PRIVATE core-machine)
+
 add_executable(core-machine-competition-80386-s1-smoke
     tests/core/machine_competition_80386_s1_smoke.c)
 target_link_libraries(core-machine-competition-80386-s1-smoke PRIVATE core-machine)
@@ -1968,6 +1972,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     core-machine-transaction-s2-smoke
     core-machine-prefetch-locality-smoke
     core-machine-competition-s3-smoke
+    core-machine-d4-refresh-hold-smoke
     core-machine-competition-80386-s1-smoke
     core-machine-transaction-lifecycle-s4-smoke
     core-machine-rational-clock-smoke
@@ -3316,10 +3321,10 @@ foreach(project_t345_target IN LISTS PROJECT_T344_CURRENT_GATE_TARGETS)
 endforeach()
 list(LENGTH PROJECT_T345_S2_OWNER_TEST_STRICT_TARGETS project_t345_s2_pure_count)
 list(LENGTH PROJECT_T345_S2_MIXED_OWNER_TEST_TARGETS project_t345_s2_mixed_count)
-if(NOT project_t345_s2_pure_count EQUAL 172 OR
+if(NOT project_t345_s2_pure_count EQUAL 173 OR
         NOT project_t345_s2_mixed_count EQUAL 3)
     message(FATAL_ERROR
-        "T345 S2 expected 172 pure and 3 mixed owner-test targets; found ${project_t345_s2_pure_count} pure and ${project_t345_s2_mixed_count} mixed.")
+        "T345 S2 expected 173 pure and 3 mixed owner-test targets; found ${project_t345_s2_pure_count} pure and ${project_t345_s2_mixed_count} mixed.")
 endif()
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     foreach(project_t345_target IN LISTS PROJECT_T345_S2_OWNER_TEST_STRICT_TARGETS)

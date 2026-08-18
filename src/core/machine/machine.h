@@ -188,6 +188,10 @@ struct core_machine {
     type_unsigned_32 dma_cycle_wait_remaining;
     type_bool dma_cycle_bus_ready_gate_enabled;
     type_bool dma_cycle_bus_ready;
+    /* D4 refresh request state; it is serviced at the shared arbitration point. */
+    type_bool d4_refresh_hold_pending;
+    type_bool d4_refresh_pulse_active;
+    type_unsigned_8 d4_refresh_address;
 };
 
 type_status core_machine_bus_initialize(core_machine *machine);

@@ -3340,6 +3340,26 @@ static C_VOID core_machine_dma_grant_advance(core_machine *machine)
             &machine->executor_memory, &machine->transaction, 1u);
     }
 }
+static C_VOID core_machine_d4_refresh_hold_advance(core_machine *machine)
+{
+    if (machine == STD_NULL || !machine->d4_refresh_hold_pending) return;
+    if (core_machine_transaction_hold_request(&machine->transaction,
+            CORE_MACHINE_TRANSACTION_OWNER_REFRESH, machine->d4_refresh_address) !=
+        TYPE_STATUS_OK) return;
+    if (core_machine_transaction_hold_acknowledge(&machine->transaction,
+            CORE_MACHINE_TRANSACTION_OWNER_REFRESH) == TYPE_STATUS_OK &&
+        core_machine_transaction_begin(&machine->transaction,
+            CORE_MACHINE_TRANSACTION_OWNER_REFRESH,
+            CORE_MACHINE_TRANSACTION_REFRESH_MEMORY_CYCLE,
+            machine->d4_refresh_address, 0u, 0u) == TYPE_STATUS_OK) {
+        /* Bus occupation only: Core has no DRAM electrical refresh model. */
+        core_machine_transaction_commit(&machine->transaction);
+        machine->d4_refresh_address = (type_unsigned_8)(machine->d4_refresh_address + 1u);
+        machine->d4_refresh_hold_pending = TYPE_FALSE;
+    }
+    core_machine_transaction_hold_release(&machine->transaction,
+        CORE_MACHINE_TRANSACTION_OWNER_REFRESH);
+}
 static C_VOID core_machine_arbitration_tick(C_VOID *opaque,
     type_unsigned_64 due_tick)
 {
@@ -3353,6 +3373,7 @@ static C_VOID core_machine_arbitration_tick(C_VOID *opaque,
     }
     dma_ticks = core_machine_clock_domain_advance(&machine->dma_clock, 1u);
     pit_ticks = core_machine_clock_domain_advance(&machine->pit_clock, 1u);
+    core_machine_d4_refresh_hold_advance(machine);
     if (machine->dma_cycle_wait_quanta != 0u && dma_ticks != 0u) {
         type_unsigned_64 tick;
         for (tick = 0u; tick < dma_ticks; ++tick) {
@@ -3874,8 +3895,14 @@ static C_VOID core_machine_d4_refresh_output(C_VOID *opaque, type_bool asserted)
     /* Generic-AT policy: the counter-1 refresh pulse ends CPU-side locality.
      * D4 establishes this refresh topology, but not a physical page-retention
      * interval or any calibrated phase duration. */
-    if (machine != STD_NULL && !asserted) {
-        machine->external_memory_locality_page_valid = TYPE_FALSE;
+    if (machine != STD_NULL) {
+        if (asserted) {
+            machine->d4_refresh_pulse_active = TYPE_FALSE;
+        } else if (!machine->d4_refresh_pulse_active) {
+            machine->d4_refresh_pulse_active = TYPE_TRUE;
+            machine->external_memory_locality_page_valid = TYPE_FALSE;
+            machine->d4_refresh_hold_pending = TYPE_TRUE;
+        }
     }
 }
 
@@ -4959,6 +4986,16 @@ static type_status core_machine_cold_reset(core_machine *machine)
     if (machine->auxiliary_pit_configured) {
         core_machine_pit_reset(&machine->auxiliary_pit);
     }
+    if (machine->d4_platform_configured) {
+        core_machine_pit_set_output(&machine->shared_pit, 1u,
+            core_machine_d4_refresh_output, machine);
+        core_machine_pit_set_output(&machine->auxiliary_pit,
+            machine->d4_platform_config.failsafe_pit_counter,
+            core_machine_d4_platform_failsafe_output, machine);
+    }
+    machine->d4_refresh_hold_pending = TYPE_FALSE;
+    machine->d4_refresh_pulse_active = TYPE_FALSE;
+    machine->d4_refresh_address = 0u;
     core_machine_vadp_reset(&machine->shared_vadp);
 
     STD_ATOMIC_STORE(&machine->stop_requested, 0);

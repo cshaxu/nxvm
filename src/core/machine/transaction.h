@@ -10,7 +10,8 @@ extern "C" {
 typedef enum core_machine_transaction_owner {
     CORE_MACHINE_TRANSACTION_OWNER_NONE = 0,
     CORE_MACHINE_TRANSACTION_OWNER_CPU,
-    CORE_MACHINE_TRANSACTION_OWNER_DMA
+    CORE_MACHINE_TRANSACTION_OWNER_DMA,
+    CORE_MACHINE_TRANSACTION_OWNER_REFRESH
 } core_machine_transaction_owner;
 
 typedef enum core_machine_transaction_kind {
@@ -20,7 +21,8 @@ typedef enum core_machine_transaction_kind {
     CORE_MACHINE_TRANSACTION_CPU_PORT_WRITE,
     CORE_MACHINE_TRANSACTION_DMA_MEMORY_READ,
     CORE_MACHINE_TRANSACTION_DMA_MEMORY_WRITE,
-    CORE_MACHINE_TRANSACTION_DMA_MEMORY_COPY
+    CORE_MACHINE_TRANSACTION_DMA_MEMORY_COPY,
+    CORE_MACHINE_TRANSACTION_REFRESH_MEMORY_CYCLE
 } core_machine_transaction_kind;
 
 typedef enum core_machine_transaction_phase {
