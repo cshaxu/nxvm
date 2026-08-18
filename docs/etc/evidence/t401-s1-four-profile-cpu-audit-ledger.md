@@ -941,3 +941,7 @@ S41 audits segment-register PUSH/POP, including 80386 FS/GS `0F A0h`/`A1h`/`A8h`
 `M5:T401:S41:SREG-PUSH-POP-PROFILES:OK` retains ES/CS/SS/DS all-profile behavior, selector/cache and protected stack/fault/IRQ/LOCK boundaries, and adds direct 80386 FS/GS stack and selector coverage. `M5:T401:S41:SREG-PUSH-POP-PREVIEW-PROFILES:OK` adds matching legacy and FS/GS lexical matrices.
 
 No production discrepancy was found. This remains CPU semantic/nonphysical timing-baseline evidence only and does not establish physical timing, DeskPro L3 or a Core/VM interface change.
+
+## S41 Acceptance
+
+S41 closes segment-register PUSH/POP coverage with focused runtime and preview proof. It retains ES/CS/SS/DS all-profile selector/cache behavior, and newly completes direct 80386 FS/GS stack/selector evidence. No production discrepancy was found; Core timing remains explicitly nonphysical. S42 owns CLC/STC/CMC/CLD/STD.
