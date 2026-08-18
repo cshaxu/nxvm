@@ -746,3 +746,10 @@ lexical `CDh ib` matrix plus each selected 80386 prefix arrangement.
 No production discrepancy was found. This remains CPU semantic/nonphysical
 timing-baseline evidence only and does not establish physical timing, DeskPro
 L3 or a Core/VM interface change.
+## S25 Acceptance
+
+S25 closes INT immediate `CDh` coverage with focused runtime and preview proof
+across all four profiles. It retains vector dispatch, saved frame, IF/TF
+retirement, 80386 prefix forms, pre-80386 #UD atomicity and protected/fault/
+VM86 boundaries. No production discrepancy was found; Core timing remains
+explicitly nonphysical. S26 owns INT3 `CCh` and INTO `CEh`.
