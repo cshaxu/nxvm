@@ -96,6 +96,10 @@ type_status vm_session_submit_host_input(vm_session *session,
     const core_platform_input_event *event)
 {
     if (session == STD_NULL || !session->active) return TYPE_STATUS_INVALID_STATE;
+    if (event == STD_NULL || (event->kind != CORE_PLATFORM_INPUT_KEY &&
+        event->kind != CORE_PLATFORM_INPUT_RELATIVE_MOUSE)) {
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
     return core_platform_input_source_submit(&session->input_source, event);
 }
 

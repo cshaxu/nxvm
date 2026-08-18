@@ -44,11 +44,19 @@ C_INT main(C_VOID)
         request.kind != VM_PLATFORM_REQUEST_KEY_EVENT ||
         request.data.key_event.scan_code != 0x2au ||
         !request.data.key_event.pressed) goto fail;
+    event.kind = (core_platform_input_kind)2;
+    if (vm_session_submit_host_input(session, &event) != TYPE_STATUS_INVALID_ARGUMENT ||
+        vm_platform_request_transport_dequeue_ingress(&session->request_transport,
+            &request) == TYPE_STATUS_OK) goto fail;
     vm_session_destroy(session);
     STD_PRINTF("M5:T226:S2:HOST-INGRESS:OK\n");
     return 0;
 
 fail:
+    event.kind = (core_platform_input_kind)2;
+    if (vm_session_submit_host_input(session, &event) != TYPE_STATUS_INVALID_ARGUMENT ||
+        vm_platform_request_transport_dequeue_ingress(&session->request_transport,
+            &request) == TYPE_STATUS_OK) goto fail;
     vm_session_destroy(session);
     return 1;
 }

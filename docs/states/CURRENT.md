@@ -3,11 +3,31 @@
 ## Current Work
 
 **Active: M5 T404.**
+## M5 T404 S5 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner approved ongoing in-scope T404 repairs, commits and pushes on 2026-08-18. Scope: public VM input contract reconciliation within Batch B. |
+| Objective | Make `vm_session_submit_host_input` reject event kinds that its VM session consumer cannot map to a guest request, so accepted host input has one queued guest-bound operation. |
+| Non-goals | No Core input-source policy change; no keyboard/mouse hardware timing claim; no input ABI expansion; no display or controller semantic implementation. |
+| Reference Baseline | T404 S1 Batch B ledger; session input consumer accepts only key and relative-mouse events while the public submit operation currently reports success for an ignored unknown kind. |
+| Candidate Proposal | [T404 proposal](../proposals/m5-current-product-device-profile-capability-closure.md); [ledger](../etc/evidence/t404-s1-current-public-device-capability-ledger.md). |
+| Files And ABI Surface | VM session composition and existing host-ingress product/platform regression only. Preserve `core_platform_input_source` generic capability and public event layout. |
+| Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`, `docs/design/ARCHITECTURE.md`, and `docs/design/CODING.md`. |
+| Verification | Extend the host-ingress smoke for rejected unknown kind/no queued request; full current CTest gate; documentation governance and actual-diff review. |
+| Expected Markers | Existing `M5:T226:S2:HOST-INGRESS:OK` marker gains the public VM input-rejection proof. |
+| Asset Needs | None. |
+| Reporting Requirements | Record accepted/rejected input-kind dispositions, queue proof, source-owner boundary and retained physical keyboard/mouse timing transfer. |
+| Stop Conditions | Stop and transfer any new input kind, Core-source policy change, KBC/AUX controller behavior, physical timing, or external asset need. |
+| Exit Criteria | Every VM-public host input kind is either mapped to a queued request or rejected; supported key/mouse tests remain valid. |
+| Original Owner Request | Implement DeskPro 386 L3 and all hardware gaps using primary sources, labelled reference implementations, or generic skeletons where necessary; avoid leaving useful work blocked by unavailable perfect reference material. |
+| Similar-Issue Sweep | Search session host-input submissions and all consumer switches for ignored public event kinds; disposition every production path. |
 ## Current Technical Baseline
 
-- **Current developer artifact:** T404 S4 P1 `vm-0-5-0404` /
+- **Current developer artifact:** T404 S5 P1 `vm-0-5-0404` /
   `build/output/nxvm_0_5_0404.exe`, SHA-256
-  `DFC7212E5C0C90C3E4922EC9BC64EF143A9AEC9E62F7C4A714650CC579368559`.
+  `291DF614D24CF5EE4AB0C65188CBCF1815084978A94FC9C700CBCED171115469`.
   T386 closes selected-device functional completeness at S29; its retained
   [closure audit](../etc/evidence/t386-s29-functional-closure-audit.md) fixes
   HDC current-gate coverage and transfers board, firmware and physical work.
