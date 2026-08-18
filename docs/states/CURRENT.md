@@ -3,6 +3,26 @@
 ## Current Work
 
 **Active: M5 T401.**
+## M5 T401 S61 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner: user; standing approval to continue CPU audit and directly repair confirmed small issues. |
+| Objective | Independently audit 80386 BT/BTS/BTR/BTC secondary forms `0F A3h/ABh/B3h/BBh` and `0F BAh /4` through `/7`. |
+| Non-goals | No CPU timing model, Core/VM interface, DeskPro claim or external-source import; no T401 closure. |
+| Reference Baseline | `a6a01d06` (S60 P2), T401 ledger, retained Intel 80386 PRM, and `core-machine-bit-test-smoke`. |
+| Candidate Proposal | [Four-profile CPU instruction-correctness audit](../proposals/m5-four-profile-cpu-instruction-correctness-audit.md), 80386 secondary-bit-form batch. |
+| Files And ABI Surface | Bit-test smoke, preview smoke, CURRENT and T401 ledger only; test/documentation surface. |
+| Applicable Rules | Shared CPU bit-operation ownership unchanged; coding, documentation and execution rules apply. |
+| Verification | Build/run bit-test and preview smokes; documentation governance; diff check. |
+| Expected Markers | `M5:T401:S61:BIT-TEST-PROFILES:OK` and `M5:T401:S61:BIT-TEST-PREVIEW-PROFILES:OK`. |
+| Asset Needs | None. |
+| Reporting Requirements | Record forms, extension validity, profile evidence, discrepancy result, commits and nonphysical boundary. |
+| Stop Conditions | Transfer any nonlocal bit-operation, fault-delivery or timing repair. |
+| Exit Criteria | Register-index and immediate-index bit forms cover BT/BTS/BTR/BTC, 80386 attributes scan, BA /0-/3 reject, and older profiles reject while 8086 retains POP CS. |
+| Original Owner Request | Continue CPU audit before later DeskPro L3 work with direct repair of confirmed small issues. |
+| Similar-Issue Sweep | Treat read-only/mutating forms, register/memory, immediate/register indices, old-profile rejection, reserved BA extensions, attributes, LOCK and fault atomicity together. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T395 S1 P4 `vm-0-5-0395` /

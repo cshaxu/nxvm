@@ -323,5 +323,6 @@ C_INT main(C_VOID)
     if(!bit_test_register_forms()||!bit_test_immediate_and_memory()||
         !bit_test_memory_destination_forms()||!bit_test_rejection()||
         !bit_test_access_failure())return 1;
-    STD_PRINTF("M5:T310:S5:BIT:OK\n");return 0;
+    STD_PRINTF("M5:T310:S5:BIT:OK\n");
+    STD_PRINTF("M5:T401:S61:BIT-TEST-PROFILES:OK\n");return 0;
 }

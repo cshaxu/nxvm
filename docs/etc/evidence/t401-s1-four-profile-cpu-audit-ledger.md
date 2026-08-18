@@ -1094,3 +1094,18 @@ No production discrepancy was found; timing remains nonphysical.
 ## S60 Acceptance
 
 S60 closes the bounded 80386 SETcc audit. Runtime and preview matrices establish every predicate's register/memory true-and-false behavior, 80386 attributes, pre-fault nonpublication, 80186/80286 rejection, and the retained 8086 POP CS distinction. Both focused smokes and documentation governance pass; no production discrepancy was found, timing remains nonphysical, and T401 remains open.
+
+## S61 Bit Test and Modify
+
+S61 independently audits the 80386 bit families `0F A3h/ABh/B3h/BBh` (BT,
+BTS, BTR and BTC with register index) and `0F BAh /4` through `/7` (immediate
+index). The retained fixture executes register and memory destinations,
+read-only and mutating forms, byte/word/dword attributes, signed memory bit
+indexing, CF result, protected access failures and no-publication boundaries.
+It also retains 80186/80286 #UD plus zero provider access and reserved
+`BA /0` through `/3` rejection. `M5:T401:S61:BIT-TEST-PREVIEW-PROFILES:OK`
+adds every operation's register/memory layout, all BA extension validity,
+80386 attributes and 80186/80286 unavailability. 8086 remains distinct because
+its `0Fh` is POP CS. The initial preview failure was a test encoding error: a
+32-bit direct displacement uses ModR/M `rm=5`, not `rm=6`; no production
+discrepancy was found. Timing remains nonphysical.

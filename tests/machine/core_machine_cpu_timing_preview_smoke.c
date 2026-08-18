@@ -803,6 +803,51 @@ static C_INT preview_test_setcc_profiles(C_VOID)
             0x05u, 0x78u, 0x56u, 0x34u, 0x12u}, 9u,
             CORE_MACHINE_CPU_PROFILE_80386, TYPE_FALSE, 9u, 6u);
 }
+static C_INT preview_test_bit_test_profiles(C_VOID)
+{
+    static const core_machine_cpu_profile unavailable_profiles[] = {
+        CORE_MACHINE_CPU_PROFILE_80186, CORE_MACHINE_CPU_PROFILE_80286
+    };
+    static const type_unsigned_8 opcodes[] = {0xa3u, 0xabu, 0xb3u, 0xbbu};
+    core_machine_cpu_instruction_lexeme lexeme;
+    type_unsigned_8 profile;
+    type_unsigned_8 index;
+    type_unsigned_8 extension;
+
+    for (profile = 0u; profile < sizeof(unavailable_profiles) /
+        sizeof(unavailable_profiles[0]); ++profile)
+    for (index = 0u; index < sizeof(opcodes); ++index)
+        if (core_machine_cpu_instruction_lexeme_scan((const type_unsigned_8[]){
+                0x0fu, opcodes[index], 0xc8u }, 3u, unavailable_profiles[profile],
+                TYPE_FALSE, &lexeme) || lexeme.available) return 0;
+    for (index = 0u; index < sizeof(opcodes); ++index)
+        if (!preview_expect((const type_unsigned_8[]){0x0fu, opcodes[index], 0xc8u},
+                3u, CORE_MACHINE_CPU_PROFILE_80386, TYPE_FALSE, 3u, 3u) ||
+            !preview_expect((const type_unsigned_8[]){0x0fu, opcodes[index], 0x0eu,
+                0x34u, 0x12u}, 5u, CORE_MACHINE_CPU_PROFILE_80386,
+                TYPE_FALSE, 5u, 4u)) return 0;
+    for (extension = 0u; extension != 8u; ++extension) {
+        const type_unsigned_8 ba[] = {0x0fu, 0xbau,
+            (type_unsigned_8)(0xc0u | (extension << 3u)), 0x1fu};
+        const type_bool valid = extension >= 4u;
+        if (valid != (core_machine_cpu_instruction_lexeme_scan(ba, sizeof(ba),
+            CORE_MACHINE_CPU_PROFILE_80386, TYPE_FALSE, &lexeme) && lexeme.available))
+            return 0;
+        if (valid && !preview_expect(ba, sizeof(ba), CORE_MACHINE_CPU_PROFILE_80386,
+            TYPE_FALSE, 4u, 4u)) return 0;
+    }
+    return preview_expect((const type_unsigned_8[]){0x0fu, 0xbau, 0x2eu,
+            0x34u, 0x12u, 0x1fu}, 6u, CORE_MACHINE_CPU_PROFILE_80386,
+            TYPE_FALSE, 6u, 5u) &&
+        preview_expect((const type_unsigned_8[]){0x66u, 0x0fu, 0xabu, 0xc8u},
+            4u, CORE_MACHINE_CPU_PROFILE_80386, TYPE_FALSE, 4u, 4u) &&
+        preview_expect((const type_unsigned_8[]){0x67u, 0x0fu, 0xbau, 0x2du,
+            0x78u, 0x56u, 0x34u, 0x12u, 0x1fu}, 9u,
+            CORE_MACHINE_CPU_PROFILE_80386, TYPE_FALSE, 9u, 6u) &&
+        preview_expect((const type_unsigned_8[]){0x66u, 0x67u, 0x0fu, 0xbbu,
+            0x05u, 0x78u, 0x56u, 0x34u, 0x12u}, 9u,
+            CORE_MACHINE_CPU_PROFILE_80386, TYPE_FALSE, 9u, 6u);
+}
 static C_INT preview_test_short_jcc_profiles(C_VOID)
 {
     static const core_machine_cpu_profile profiles[] = {
@@ -1440,6 +1485,7 @@ C_INT main(C_VOID)
     if (!preview_test_rm_immediate_mov_profiles()) return 55;
     if (!preview_test_near_jcc_profiles()) return 56;
     if (!preview_test_setcc_profiles()) return 57;
+    if (!preview_test_bit_test_profiles()) return 58;
     if (!preview_test_les_lds_profiles()) return 34;
     if (!preview_test_group3_profiles()) return 10;
     if (!preview_test_group45_profiles()) return 11;
@@ -1502,5 +1548,6 @@ C_INT main(C_VOID)
     STD_PRINTF("M5:T401:S58:RM-IMMEDIATE-MOV-PREVIEW-PROFILES:OK\n");
     STD_PRINTF("M5:T401:S59:NEAR-JCC-PREVIEW-PROFILES:OK\n");
     STD_PRINTF("M5:T401:S60:SETCC-PREVIEW-PROFILES:OK\n");
+    STD_PRINTF("M5:T401:S61:BIT-TEST-PREVIEW-PROFILES:OK\n");
     return 0;
 }
