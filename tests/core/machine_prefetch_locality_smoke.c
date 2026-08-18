@@ -147,6 +147,49 @@ static C_INT locality_observer_contract(C_VOID)
     return !failed;
 }
 
+
+static C_INT d4_refresh_locality_contract(C_VOID)
+{
+    static const core_machine_external_memory_locality_timing locality = {2048u, 2u, 1u};
+    core_machine_config config = {0};
+    core_machine_d4_platform_config d4 = {CORE_MACHINE_PC_AT_PORT_B, 0u};
+    core_machine *machine = STD_NULL;
+    core_machine_cpu_external_cycle_provider provider;
+    C_VOID *context;
+    C_INT failed = 0;
+
+    config.external_memory_locality_timing = locality;
+    config.auxiliary_pit_present = TYPE_TRUE;
+    config.auxiliary_pit_base_port = 0x0048u;
+    failed |= core_machine_create(&config, &machine) != TYPE_STATUS_OK;
+    failed |= core_machine_configure_d4_platform(machine, &d4) != TYPE_STATUS_OK;
+    failed |= core_machine_freeze_execution_providers(machine) != TYPE_STATUS_OK;
+    failed |= core_machine_reset(machine) != TYPE_STATUS_OK;
+    provider = machine == STD_NULL ? STD_NULL :
+        machine->executor_cpu_execution.external_cycle_provider;
+    context = machine == STD_NULL ? STD_NULL :
+        machine->executor_cpu_execution.external_cycle_context;
+    failed |= provider == STD_NULL;
+    if (!failed) {
+        provider(context, CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_COMMIT, 0x800u, 4u,
+            TYPE_FALSE, CORE_MACHINE_CPU_MEMORY_ACCESS_PAGE_TABLE_READ);
+        failed |= !machine->external_memory_locality_page_valid ||
+            machine->external_memory_locality_round_ticks != 2u;
+        machine->external_memory_locality_round_ticks = 0u;
+        failed |= core_machine_advance_time(machine, 18u) != TYPE_STATUS_OK;
+        failed |= machine->external_memory_locality_page_valid;
+        provider(context, CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_COMMIT, 0x804u, 4u,
+            TYPE_FALSE, CORE_MACHINE_CPU_MEMORY_ACCESS_PAGE_TABLE_READ);
+        failed |= !machine->external_memory_locality_page_valid ||
+            machine->external_memory_locality_round_ticks != 2u;
+        failed |= core_machine_reset(machine) != TYPE_STATUS_OK;
+        failed |= machine->external_memory_locality_page_valid ||
+            machine->external_memory_locality_round_ticks != 0u;
+    }
+    core_machine_destroy(machine);
+    return !failed;
+}
+
 C_INT main(C_VOID)
 {
     static const core_machine_external_memory_locality_timing disabled = {0u, 0u, 0u};
@@ -170,11 +213,13 @@ C_INT main(C_VOID)
     failed |= write_locality_ticks != write_baseline_ticks + 4u;
     failed |= read_locality_ticks != read_baseline_ticks + 4u;
     failed |= !locality_observer_contract();
+    failed |= !d4_refresh_locality_contract();
     if (failed != 0) return 1;
     STD_PRINTF("M5:T412:S1:EXTERNAL-READ-LOCALITY:OK\n");
     STD_PRINTF("M5:T413:S1:EXTERNAL-WRITE-BRIDGE:OK\n");
     STD_PRINTF("M5:T414:S1:DATA-READ-LOCALITY:OK\n");
     STD_PRINTF("M5:T415:S1:PAGE-WALK-LOCALITY:OK\n");
     STD_PRINTF("M5:T416:S1:DMA-HOLD-LOCALITY:OK\n");
+    STD_PRINTF("M5:T417:S1:REFRESH-LOCALITY:OK\n");
     return 0;
 }

@@ -3828,6 +3828,17 @@ static type_unsigned_8 core_machine_pc_at_port_b_timer_status(
  * expose its output at port 61h bit 4. The board programs mode 2 with the
  * fixed refresh divider on every cold reset; channel 0 and channel 2 remain
  * firmware-owned timer and speaker resources. */
+static C_VOID core_machine_d4_refresh_output(C_VOID *opaque, type_bool asserted)
+{
+    core_machine *machine = (core_machine *)opaque;
+    /* Generic-AT policy: the counter-1 refresh pulse ends CPU-side locality.
+     * D4 establishes this refresh topology, but not a physical page-retention
+     * interval or any calibrated phase duration. */
+    if (machine != STD_NULL && !asserted) {
+        machine->external_memory_locality_page_valid = TYPE_FALSE;
+    }
+}
+
 static C_VOID core_machine_pc_at_refresh_timer_program(core_machine *machine)
 {
     if (machine == STD_NULL) return;
@@ -4140,6 +4151,8 @@ type_status core_machine_configure_d4_platform(core_machine *machine,
     machine->d4_platform_port_b = 0x0fu;
     machine->d4_platform_configured = TYPE_TRUE;
     core_machine_pc_at_refresh_timer_program(machine);
+    core_machine_pit_set_output(&machine->shared_pit, 1u,
+        core_machine_d4_refresh_output, machine);
     core_machine_pc_at_port_b_set_speaker_gate(machine, machine->d4_platform_port_b);
     core_machine_pit_set_output(&machine->auxiliary_pit,
         config->failsafe_pit_counter, core_machine_d4_platform_failsafe_output,
