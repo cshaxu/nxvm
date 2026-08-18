@@ -861,3 +861,11 @@ No production discrepancy was found. This remains CPU semantic/nonphysical timin
 ## S34 Acceptance
 
 S34 closes DAA/DAS/AAA/AAS/AAM/AAD coverage with focused runtime and preview proof across all four profiles. It retains defined AL/AH/flag behavior and AAM base-zero #DE delivery without asserting undefined flags. The pre-existing combined fixture also exercised XLAT in the added profiles; this is not an XLAT audit claim. No production discrepancy was found; Core timing remains explicitly nonphysical. S35 owns XLAT `D7h`.
+
+## S35 XLAT
+
+S35 audits XLAT `D7h`. Intel 8086/80386 references define the implicit DS:(BX/EBX+AL) table read and the 80386 address-size selection. This is original-source semantic/form evidence; no emulator implementation, ROM or guest asset was imported.
+
+`M5:T401:S35:XLAT-PROFILES:OK` retains four-profile base-table execution, 80286 timing-ledger proof, 80386 `67h` address-size and ES override proof, and protected-limit fault nonpublication. `M5:T401:S35:XLAT-PREVIEW-PROFILES:OK` supplies all-profile lexical availability plus 80386 address/segment-prefix layouts.
+
+No production discrepancy was found. This remains CPU semantic/nonphysical timing-baseline evidence only and does not establish physical timing, DeskPro L3 or a Core/VM interface change.
