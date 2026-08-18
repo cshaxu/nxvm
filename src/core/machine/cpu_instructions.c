@@ -7796,7 +7796,7 @@ core_machine_cpu_instruction_metadata core_machine_cpu_instruction_metadata_get(
         {
             metadata.minimum_cpu = CORE_MACHINE_CPU_PROFILE_80386;
         }
-        else if (opcode == 0x82u || opcode == 0xd6u || opcode == 0xf1u)
+        else if (opcode == 0xd6u || opcode == 0xf1u)
         {
             metadata.valid = 0;
         }
@@ -18428,7 +18428,7 @@ C_VOID core_machine_cpu_execution_initialize(
     instruction_state.connect.insTable[0x7f] = (core_machine_cpu_instruction_handler)JG_REL8;
     instruction_state.connect.insTable[0x80] = (core_machine_cpu_instruction_handler)INS_80;
     instruction_state.connect.insTable[0x81] = (core_machine_cpu_instruction_handler)INS_81;
-    instruction_state.connect.insTable[0x82] = (core_machine_cpu_instruction_handler)UndefinedOpcode;
+    instruction_state.connect.insTable[0x82] = (core_machine_cpu_instruction_handler)INS_80;
     instruction_state.connect.insTable[0x83] = (core_machine_cpu_instruction_handler)INS_83;
     instruction_state.connect.insTable[0x84] = (core_machine_cpu_instruction_handler)TEST_RM8_R8;
     instruction_state.connect.insTable[0x85] = (core_machine_cpu_instruction_handler)TEST_RM32_R32;

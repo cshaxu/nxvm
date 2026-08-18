@@ -319,7 +319,7 @@ static C_INT ud_s1_primary_metadata_matrix(C_VOID)
         core_machine_cpu_instruction_metadata metadata =
             core_machine_cpu_instruction_metadata_get(
                 CORE_MACHINE_CPU_INSTRUCTION_PRIMARY, opcode, 0u);
-        type_bool reserved = opcode == 0x82u || opcode == 0xd6u || opcode == 0xf1u;
+        type_bool reserved = opcode == 0xd6u || opcode == 0xf1u;
 
         if (metadata.valid == reserved || (!reserved &&
             metadata.minimum_cpu != ud_s1_primary_expected_minimum(opcode))) return 0;

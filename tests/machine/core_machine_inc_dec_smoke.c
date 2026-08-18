@@ -3197,6 +3197,46 @@ static C_INT inc_dec_test_xlat(C_VOID)
     return 1;
 }
 
+static C_INT inc_dec_test_group1_profile_matrix(C_VOID)
+{
+    static const type_unsigned_8 opcodes[] = { 0x80u, 0x81u, 0x82u, 0x83u };
+    core_machine_cpu_profile profile;
+    type_unsigned_8 opcode_index;
+    type_unsigned_8 selector;
+
+    for (profile = CORE_MACHINE_CPU_PROFILE_8086;
+        profile <= CORE_MACHINE_CPU_PROFILE_80386; ++profile) {
+        for (opcode_index = 0u; opcode_index != sizeof(opcodes); ++opcode_index) {
+            const type_unsigned_8 opcode = opcodes[opcode_index];
+            const type_unsigned_8 operand_bytes = (opcode == 0x80u || opcode == 0x82u) ? 1u : 2u;
+            const type_unsigned_8 immediate_bytes = opcode == 0x81u ? 2u : 1u;
+            const type_unsigned_32 mask = operand_bytes == 1u ? 0xffu : 0xffffu;
+
+            for (selector = 0u; selector != 8u; ++selector) {
+                type_unsigned_8 code[] = { opcode,
+                    (type_unsigned_8)(0xc0u | (selector << 3u)), 0xffu, 0xffu };
+                const type_unsigned_32 expected = selector == 3u || selector == 5u ?
+                    1u : (selector == 4u || selector == 7u ? 0u : mask);
+                inc_dec_machine state;
+                t_cpu after;
+                core_machine_cpu_diagnostic diagnostic;
+                C_INT failed = !inc_dec_prepare(profile, &state);
+
+                if (!failed) {
+                    state.machine->executor_cpu.data.eax = 0u;
+                    state.machine->executor_cpu.data.eflags = 0u;
+                    failed |= !inc_dec_run(&state, code, (STD_SIZE_T)(2u + immediate_bytes), 0,
+                        &after, &diagnostic) || diagnostic.first_fault.valid ||
+                        (after.data.eax & mask) != expected ||
+                        after.data.eip != 2u + immediate_bytes;
+                }
+                core_machine_destroy(state.machine);
+                if (failed) return 0;
+            }
+        }
+    }
+    return 1;
+}
 C_INT main(C_VOID)
 {
     if (!inc_dec_test_register_forms() || !inc_dec_test_rm_forms() ||
@@ -3229,7 +3269,8 @@ C_INT main(C_VOID)
         !inc_dec_test_sub_attribute_profile_fault() || !inc_dec_test_xor_forms() ||
         !inc_dec_test_xor_immediates() || !inc_dec_test_xor_attribute_profile_fault() ||
         !inc_dec_test_cmp_forms() || !inc_dec_test_cmp_boundaries() ||
-        !inc_dec_test_cmp_attribute_profile_fault() || !inc_dec_test_decimal_adjust() || !inc_dec_test_xlat()) return 1;
+        !inc_dec_test_cmp_attribute_profile_fault() || !inc_dec_test_group1_profile_matrix() ||
+        !inc_dec_test_decimal_adjust() || !inc_dec_test_xlat()) return 1;
     STD_PRINTF("M5:T316:S2:INC-DEC:OK\n");
     STD_PRINTF("M5:T316:S3:NOT-NEG:OK\n");
     STD_PRINTF("M5:T316:S4:TEST:OK\n");
@@ -3244,6 +3285,7 @@ C_INT main(C_VOID)
     STD_PRINTF("M5:T316:S13:SUB:OK\n");
     STD_PRINTF("M5:T316:S14:XOR:OK\n");
     STD_PRINTF("M5:T316:S15:CMP:OK\n");
+    STD_PRINTF("M5:T401:S7:GROUP1-PROFILE-MATRIX:OK\n");
     STD_PRINTF("M5:T316:S16:DECIMAL-ADJUST:OK\n");
     STD_PRINTF("M5:T316:S17:XLAT:OK\n");
     return 0;

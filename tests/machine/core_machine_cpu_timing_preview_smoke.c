@@ -31,6 +31,7 @@ static C_INT preview_test_layouts(C_VOID)
     static const type_unsigned_8 near_jcc[] = {
         0x0fu, 0x84u, 0x78u, 0x56u, 0x34u, 0x12u
     };
+    static const type_unsigned_8 group1_alias[] = { 0x82u, 0xc0u, 0xffu };
     static const type_unsigned_8 clts[] = { 0x0fu, 0x06u };
     static const type_unsigned_8 shld_imm8[] = {
         0x0fu, 0xa4u, 0xc1u, 0x05u
@@ -51,6 +52,14 @@ static C_INT preview_test_layouts(C_VOID)
             CORE_MACHINE_CPU_PROFILE_80386, TYPE_FALSE, 8u, 5u) &&
         preview_expect(near_jcc, sizeof(near_jcc),
             CORE_MACHINE_CPU_PROFILE_80386, TYPE_TRUE, 6u, 3u) &&
+        preview_expect(group1_alias, sizeof(group1_alias),
+            CORE_MACHINE_CPU_PROFILE_8086, TYPE_FALSE, 3u, 3u) &&
+        preview_expect(group1_alias, sizeof(group1_alias),
+            CORE_MACHINE_CPU_PROFILE_80186, TYPE_FALSE, 3u, 3u) &&
+        preview_expect(group1_alias, sizeof(group1_alias),
+            CORE_MACHINE_CPU_PROFILE_80286, TYPE_FALSE, 3u, 3u) &&
+        preview_expect(group1_alias, sizeof(group1_alias),
+            CORE_MACHINE_CPU_PROFILE_80386, TYPE_TRUE, 3u, 3u) &&
         preview_expect(clts, sizeof(clts), CORE_MACHINE_CPU_PROFILE_80386,
             TYPE_TRUE, 2u, 2u) &&
         preview_expect(shld_imm8, sizeof(shld_imm8),
@@ -67,7 +76,7 @@ static C_INT preview_test_unavailable(C_VOID)
 {
     static const type_unsigned_8 truncated[] = { 0x8bu };
     static const type_unsigned_8 legacy_operand_prefix[] = { 0x66u, 0x90u };
-    static const type_unsigned_8 invalid_opcode[] = { 0x82u, 0xc0u };
+    static const type_unsigned_8 invalid_opcode[] = { 0xd6u };
     static const type_unsigned_8 locked_nop[] = { 0xf0u, 0x90u };
     core_machine_cpu_instruction_lexeme lexeme;
 

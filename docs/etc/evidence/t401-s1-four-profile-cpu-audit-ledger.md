@@ -122,8 +122,9 @@ execution already routed it to `UndefinedOpcode`, and the retained protected
 #UD smoke exercised that route, but the shared primary metadata default and
 lexeme scanner had still advertised it as available. T401 S4 makes `F1`
 invalid at the metadata owner, which makes the lexical preview unavailable
-before it can publish a timing shape. The nearby `82` and `D6` reserved slots
-were included in the same primary invalid-opcode branch and remain invalid.
+before it can publish a timing shape. The nearby `D6` reserved slot
+remains invalid. `82` was later reclassified by S7 as the Group-1 byte alias
+after the original-8086/manual and reference-implementation reconciliation.
 `core-machine-protected-ud-delivery-s1-smoke` now emits
 `M5:T401:S4:F1-METADATA:OK` after proving the metadata/lexeme rejection while
 retaining existing protected #UD delivery. This is a decode-classification
@@ -131,8 +132,9 @@ repair only; instruction timing remains nonphysical.
 ## S4 Current Primary-Map Reconciliation
 
 `M5:T401:S4:PRIMARY-METADATA-MATRIX:OK` checks every one of the 256 primary
-slots. The current metadata classification is: `82`, `D6` and `F1` reserved;
-`D8`--`DF` valid only as 8087 escape entries; 15 80186 additions (`60`--`62`,
+slots. The current metadata classification is: `D6` and `F1` reserved; `82`
+is the Group-1 byte alias of `80`; `D8`--`DF` valid only as 8087 escape
+entries; 15 80186 additions (`60`--`62`,
 `68`--`6F`, `C0`, `C1`, `C8`, `C9`); `63` as the 80286 ARPL addition; and
 `64`--`67` as the 80386 FS/GS prefix additions. The remaining 225 slots retain
 the 8086 baseline classification, including `0F`'s documented pre-80286 POP
@@ -219,3 +221,49 @@ No full current-gate rerun is required by this packet because S6 made no
 production repair.  Any future numerical x87/provider admission must receive
 its own bounded task, source/reference tier and operation matrix; it cannot be
 inferred from this CPU-interface audit.
+## S7 Group-1 Immediate Disposition And `82h` Repair
+
+S7 audited every Group-1 selector (`/0` ADD, `/1` OR, `/2` ADC, `/3` SBB,
+`/4` AND, `/5` SUB, `/6` XOR and `/7` CMP) for `80h`, `81h`, `82h` and
+`83h`.  The existing `80h`/`81h`/`83h` handlers, operand-size branches,
+flag/transaction owners and preview layout agree with the retained arithmetic
+matrices.  `83h` uses the existing 12-bit/20-bit helper mode solely to
+sign-extend `imm8` to the active 16-/32-bit operand.  LOCK register forms are
+rejected by `_d_modrm` after prefix classification, while memory-destination
+forms retain the existing shared path.
+
+S7 found and repaired one source/reference discrepancy: the shared primary
+metadata and dispatch had classified `82h` as `#UD`.  Intel's 1979
+[8086 Family User's Manual](https://bitsavers.org/components/intel/8086/9800722-03_The_8086_Family_Users_Manual_Oct79.pdf)
+shows the `100000sw` Group-1 encoding, including its byte `82h` combination.
+Later material is inconsistent about whether that redundant encoding is
+reserved.  Therefore the selected 80386 compatibility result is explicitly
+**reference-derived**, cross-checked against the read-only local PCjs x86
+implementation, which maps `80h` and `82h` to the same byte-immediate Group-1
+handler for all processors.  No third-party source was imported or derived.
+
+The shared repair makes `82h` metadata-valid and dispatches it to `INS_80`.
+The lexical scanner already supplied the matching byte-immediate layout, so no
+new scanner rule or Core/VM interface was needed.  The S7 matrix executes all
+four CPU profiles, all four Group-1 opcode bytes, all eight ModR/M selectors,
+and validates `80h`/`82h` byte versus `81h` word and `83h` sign-extended byte
+lengths.  The preview smoke additionally proves `82h` is a three-byte,
+three-component lexeme across the four profiles.  The previous all-profile
+`82h` invalid assertion was removed; `D6h` and `F1h` remain the primary
+reserved slots.
+
+Focused proofs on 2026-08-17 passed:
+
+- `current.core-machine-inc-dec-smoke` with
+  `M5:T401:S7:GROUP1-PROFILE-MATRIX:OK`.
+- `current.core-machine-cpu-timing-preview-smoke`.
+- `current.core-machine-protected-ud-delivery-s1-smoke`, including the
+  corrected primary metadata matrix.
+
+This is a CPU decode/compatibility repair only.  It makes no physical timing,
+board or DeskPro-L3 claim.
+
+The full-gate follow-up also exposed one stale legacy-ALU expectation that still
+classified `82h` as reserved.  S7 removed that expectation and reran the
+legacy-ALU plus S7 focused set: 4/4 passed on 2026-08-17.  The replacement
+full current gate is the acceptance authority for this production repair.

@@ -1044,9 +1044,9 @@ static C_INT legacy_alu_test_reserved_and_attribute_rejections(C_VOID)
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186
     };
     static const type_unsigned_8 reserved[][2] = {
-        { 0x82u }, { 0xd6u }, { 0xf1u }, { 0xf6u, 0xc8u }, { 0xf7u, 0xc8u }
+        { 0xd6u }, { 0xf1u }, { 0xf6u, 0xc8u }, { 0xf7u, 0xc8u }
     };
-    static const type_unsigned_8 lengths[] = { 1u, 1u, 1u, 2u, 2u };
+    static const type_unsigned_8 lengths[] = { 1u, 1u, 2u, 2u };
     static const type_unsigned_8 attributes[][3] = {
         { 0x66u, 0x01u, 0xc8u }, { 0x67u, 0x01u, 0xc8u },
         { 0x66u, 0x67u, 0x01u }
