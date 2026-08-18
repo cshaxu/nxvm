@@ -869,3 +869,7 @@ S35 audits XLAT `D7h`. Intel 8086/80386 references define the implicit DS:(BX/EB
 `M5:T401:S35:XLAT-PROFILES:OK` retains four-profile base-table execution, 80286 timing-ledger proof, 80386 `67h` address-size and ES override proof, and protected-limit fault nonpublication. `M5:T401:S35:XLAT-PREVIEW-PROFILES:OK` supplies all-profile lexical availability plus 80386 address/segment-prefix layouts.
 
 No production discrepancy was found. This remains CPU semantic/nonphysical timing-baseline evidence only and does not establish physical timing, DeskPro L3 or a Core/VM interface change.
+
+## S35 Acceptance
+
+S35 closes XLAT `D7h` coverage with focused runtime, preview and 80286 timing proof across all four profiles. It retains the table base/index, 80386 address-size and segment-override, protected-limit nonpublication and lexical boundaries. No production discrepancy was found; Core timing remains explicitly nonphysical. S36 owns LAHF/SAHF `9Fh`/`9Eh`.
