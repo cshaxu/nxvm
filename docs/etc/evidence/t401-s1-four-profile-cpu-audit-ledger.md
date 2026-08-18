@@ -1136,3 +1136,6 @@ read-fault nonpublication. `M5:T401:S63:BIT-SCAN-PREVIEW-PROFILES:OK` adds both
 opcode register/memory layouts, 80386 attributes and 80186/80286
 unavailability. 8086 remains distinct because its `0Fh` is POP CS. No
 production discrepancy was found; timing remains nonphysical.
+## S63 Acceptance
+
+S63 closes the bounded 80386 BSF/BSR audit. Runtime and preview matrices establish direction, zero/nonzero behavior, register/memory sources, 80386 attributes, 80186/80286 rejection and the retained 8086 POP CS distinction. Both focused smokes and documentation governance pass; no production discrepancy was found, timing remains nonphysical, and T401 remains open.
