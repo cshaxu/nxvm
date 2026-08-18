@@ -5,7 +5,7 @@
 #include "core/machine/media_interface.h"
 
 typedef struct core_machine_hdc_fixture_media {
-    type_unsigned_8 sector[512];
+    type_unsigned_8 sector[2][512];
     type_unsigned_64 generation;
     type_unsigned_32 query_count;
     type_unsigned_32 read_count;
@@ -33,9 +33,9 @@ static core_machine_media_result core_machine_hdc_fixture_query(C_VOID *context,
     if (media->read_only) out_info->capabilities |= CORE_MACHINE_MEDIA_CAPABILITY_READ_ONLY;
     out_info->geometry.cylinders = 1u;
     out_info->geometry.heads = 1u;
-    out_info->geometry.sectors_per_track = 1u;
+    out_info->geometry.sectors_per_track = 2u;
     out_info->geometry.bytes_per_sector = 512u;
-    out_info->geometry.logical_sector_count = 1u;
+    out_info->geometry.logical_sector_count = 2u;
     return media->present ? CORE_MACHINE_MEDIA_RESULT_OK : CORE_MACHINE_MEDIA_RESULT_ABSENT;
 }
 
@@ -50,11 +50,11 @@ static core_machine_media_result core_machine_hdc_fixture_read(C_VOID *context,
     if (media->forced_read_result != CORE_MACHINE_MEDIA_RESULT_OK) {
         return media->forced_read_result;
     }
-    if (offset != 0u || byte_count != sizeof(media->sector)) {
+    if ((offset != 0u && offset != 512u) || byte_count != sizeof(media->sector[0])) {
         return CORE_MACHINE_MEDIA_RESULT_INVALID_RANGE;
     }
     ++media->read_count;
-    STD_MEMCPY(buffer, media->sector, sizeof(media->sector));
+    STD_MEMCPY(buffer, media->sector[offset / 512u], sizeof(media->sector[0]));
     return CORE_MACHINE_MEDIA_RESULT_OK;
 }
 
@@ -70,11 +70,11 @@ static core_machine_media_result core_machine_hdc_fixture_write(C_VOID *context,
     if (media->forced_write_result != CORE_MACHINE_MEDIA_RESULT_OK) {
         return media->forced_write_result;
     }
-    if (offset != 0u || byte_count != sizeof(media->sector)) {
+    if ((offset != 0u && offset != 512u) || byte_count != sizeof(media->sector[0])) {
         return CORE_MACHINE_MEDIA_RESULT_INVALID_RANGE;
     }
     ++media->write_count;
-    STD_MEMCPY(media->sector, buffer, sizeof(media->sector));
+    STD_MEMCPY(media->sector[offset / 512u], buffer, sizeof(media->sector[0]));
     return CORE_MACHINE_MEDIA_RESULT_OK;
 }
 
@@ -173,8 +173,8 @@ C_INT main(C_VOID)
     type_unsigned_32 queries_before;
     C_INT failed = 0;
 
-    media.sector[0] = 0x34u;
-    media.sector[1] = 0x12u;
+    media.sector[0][0] = 0x34u;
+    media.sector[0][1] = 0x12u;
     core_machine_media_registry_initialize(&registry);
     if (core_machine_create(&config, &machine) != TYPE_STATUS_OK) failed |= 0x01;
     if (!failed) {
@@ -225,8 +225,8 @@ C_INT main(C_VOID)
                 if (!core_machine_hdc_program_chs(machine, &hdc_config) ||
                     !core_machine_hdc_command(machine, &hdc_config, 0x30u) ||
                     !core_machine_hdc_fill(machine, &hdc_config, 0xa55au) ||
-                    media.write_count != 1u || media.sector[0] != 0x5au ||
-                    media.sector[1] != 0xa5u) failed |= 0x10;
+                    media.write_count != 1u || media.sector[0][0] != 0x5au ||
+                    media.sector[0][1] != 0xa5u) failed |= 0x10;
 
                 queries_before = media.query_count;
                 ++media.generation;
@@ -297,8 +297,42 @@ C_INT main(C_VOID)
                     core_machine_hdc_irq_pending(hdc);
                 core_machine_hdc_advance(hdc);
                 failed |= hdc->data.phase != CORE_MACHINE_HDC_PHASE_IDLE ||
-                    media.sector[0] != 0xa5u || media.sector[1] != 0x5au ||
+                    media.sector[0][0] != 0xa5u || media.sector[0][1] != 0x5au ||
                     !core_machine_hdc_irq_pending(hdc);
+
+                media.sector[1][0] = 0x78u;
+                media.sector[1][1] = 0x56u;
+                if (!core_machine_hdc_program_chs(machine, &hdc_config) ||
+                    !core_machine_hdc_write(machine, hdc_config.sector_count_port, 2u) ||
+                    !core_machine_hdc_command(machine, &hdc_config, 0x20u) ||
+                    !core_machine_hdc_irq_pending(hdc) ||
+                    !core_machine_hdc_read(machine, hdc_config.status_command_port, &status) ||
+                    core_machine_hdc_irq_pending(hdc)) failed |= 0x4000;
+                for (type_unsigned_32 index = 0u; index < 256u; ++index) {
+                    failed |= !core_machine_hdc_read(machine, hdc_config.data_port, &status);
+                    if (index == 0u) failed |= status != 0x5aa5u;
+                }
+                failed |= hdc->data.phase != CORE_MACHINE_HDC_PHASE_PENDING_READ_SECTOR ||
+                    hdc->data.status != CORE_MACHINE_HDC_STATUS_BSY || core_machine_hdc_irq_pending(hdc);
+                core_machine_hdc_advance(hdc);
+                failed |= hdc->data.phase != CORE_MACHINE_HDC_PHASE_DATA_READ ||
+                    hdc->data.sector_number != 2u || hdc->data.sector_count != 1u ||
+                    !core_machine_hdc_irq_pending(hdc) ||
+                    !core_machine_hdc_read(machine, hdc_config.alternate_status_device_control_port, &status) ||
+                    !core_machine_hdc_irq_pending(hdc) ||
+                    !core_machine_hdc_read(machine, hdc_config.status_command_port, &status) ||
+                    core_machine_hdc_irq_pending(hdc);
+                for (type_unsigned_32 index = 0u; index < 256u; ++index) {
+                    failed |= !core_machine_hdc_read(machine, hdc_config.data_port, &status);
+                    if (index == 0u) failed |= status != 0x5678u;
+                }
+                failed |= hdc->data.phase != CORE_MACHINE_HDC_PHASE_PENDING_READ_SECTOR ||
+                    hdc->data.status != CORE_MACHINE_HDC_STATUS_BSY || core_machine_hdc_irq_pending(hdc);
+                core_machine_hdc_advance(hdc);
+                failed |= hdc->data.phase != CORE_MACHINE_HDC_PHASE_IDLE ||
+                    hdc->data.sector_count != 0u || !core_machine_hdc_irq_pending(hdc) ||
+                    !core_machine_hdc_read(machine, hdc_config.status_command_port, &status) ||
+                    core_machine_hdc_irq_pending(hdc);
 
                 if (!core_machine_hdc_write(machine, hdc_config.status_command_port, 0xecu) ||
                     hdc->data.phase != CORE_MACHINE_HDC_PHASE_PENDING_COMMAND ||
