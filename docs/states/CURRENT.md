@@ -2,8 +2,28 @@
 
 ## Current Work
 
-**Idle.**
+**T396 S1 active.** Establish the finite source and implementation baseline for the DeskPro 386 Model 40 board-level timing closure before publishing any clock or bus timing value.
 
+## M5 T396 S1 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New |
+| Admission And Approval | Owner continuing global CPU correctness/timing authorization; T395 is task-level closed and queue order selects the next DeskPro board-level timing prerequisite. No exception. |
+| Objective | Reconcile the accepted CPU qualification input, Model-40 clock/topology declarations, primary-source availability and existing Core time/DMA/PIT/PIC/NMI/reset consumers into a finite implementation ledger. |
+| Non-goals | No speculative timing constant, physical clock publication, CPU repair, ROM/media import, firmware service timing, host wall-clock coupling, VM/Core ABI change or L3 claim. |
+| Reference Baseline | T394 physical-qualification closure, T395 closure, DeskPro board-level timing proposal, current Model-40 private/BYOB composition and Core rational-clock owners. |
+| Candidate Proposal | [DeskPro 386 board-level timing closure](../proposals/m5-deskpro-386-board-level-timing-closure.md). |
+| Files And ABI Surface | Source/evidence ledger and task history/status only unless a later admitted implementation batch proves a source-backed Core/VM owner change. |
+| Applicable Rules | Core owns shared clock/transaction/DMA/PIC/PIT/reset mechanisms; VM owns Model-40 topology declaration; primary source precedes bounded secondary observation. |
+| Verification | Complete owner/caller and source-availability sweep, explicit clock/reset/visibility ledger, focused existing Model-40 and Core clock regressions, documentation governance. |
+| Expected Markers | T396 S1 source-and-owner ledger only; no physical timing marker. |
+| Asset Needs | Read-only metadata/provenance only; no ROM, guest media or external code import. |
+| Reporting Requirements | Record every timing domain, current neutral value, owner, source strength, consumer, reset phase and earliest receiver for unresolved facts. |
+| Stop Conditions | Stop before implementation if the required primary source is absent, only range/unknown phase exists, or a proposed value would publish a scalar without a board contract. |
+| Exit Criteria | Pushed finite ledger and accepted implementation/non-admission boundary, with every unresolved board/device fact transferred explicitly. |
+| Original Owner Request | Continue the global CPU correctness/timing audit, repair clear in-scope defects, and preserve the Core/VM boundary. |
+| Similar-Issue Sweep | Sweep Model-40 private/BYOB construction, Core clock plans, PIT/DMA/PIC/RTC/KBC/NMI/reset consumers, evidence/provenance and local reference implementations. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T395 S1 P4 `vm-0-5-0395` /
