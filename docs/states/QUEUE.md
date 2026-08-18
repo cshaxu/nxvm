@@ -20,12 +20,13 @@ not allocate a numeric task.
 The [DeskPro 386 Model 40 closure context](../proposals/m5-80386-deskpro-386-l3-baseline.md)
 binds the retained DeskPro candidates below. The completed shared 80386
 physical-retirement qualification remains historical context, not a queued
-prerequisite or a Model-40 substitute.
+prerequisite or a Model-40 substitute. The completed tiered-fallback foundation
+is retained in [Td S107 evidence](../etc/evidence/td-s107-deskpro-timing-queue-reconciliation.md);
+its evidence-tier discipline remains a shared constraint, not a candidate.
 Detailed scope, acceptance conditions, and common constraints remain in these
 shared proposals and in each candidate's linked proposal.
 
-1. [DeskPro 386 tiered timing fallback foundation](../proposals/m5-deskpro-tiered-timing-fallback-foundation.md) -- eligible now; uses explicitly labelled original, reference-derived or generic-AT inputs to implement one retained DeskPro receiver at a time and does not accept physical/L3 readiness.
-1. [DeskPro 386 physical-cycle and phase-timing closure](../proposals/m5-deskpro-physical-cycle-and-phase-timing.md) -- eligible after the active Core CPU-memory provenance increment closes; advances D4 external-cycle/prefetch, board arbitration, display, storage, input/NMI, and BYOB lifecycle receivers one bounded, tier-labelled mechanism at a time, with final Model-L3 audit retained separately.
+1. [DeskPro 386 physical-cycle and phase-timing closure](../proposals/m5-deskpro-physical-cycle-and-phase-timing.md) -- eligible now; begin with the Core-owned CPU-to-board transaction/BWAIT/retirement receiver, then advance each listed receiver one bounded, tier-labelled mechanism at a time. Final DeskPro physical/L3 acceptance remains separate.
 1. [Generic PC backbone foundation](../proposals/m5-generic-pc-backbone-foundation.md) -- eligible only after a comprehensive DeskPro 386 Model 40 L3 closure accepts its selected profile and the profile/device contract closes; remains before the 8088/PC/XT program.
 1. [8088 CPU-profile admission and timing closure](../proposals/m5-8088-cpu-profile.md).
 1. [IBM PC/XT 5160-268 profile and capability-gap audit](../proposals/m5-xt-5160-268-profile-capability-audit.md).
