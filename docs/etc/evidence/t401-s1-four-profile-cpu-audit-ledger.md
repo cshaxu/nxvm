@@ -479,3 +479,32 @@ the full matrix; no production discrepancy was found. The S13 test assertion
 was corrected during the audit before acceptance, so it does not represent a
 Core defect. Timing remains the existing explicitly nonphysical source-ledger
 disposition.
+## S14 Moffs MOV
+
+S14 audits `A0h`--`A3h` moffs MOV. Intel's 80386 Programmer's Reference
+Manual MOV entry defines the accumulator read/write directions, byte versus
+operand-size-selected word/dword payload, address-size-selected moffs field
+and segment-override behavior. The retained [80386 MOV timing
+ledger](t357-s3-80386-instruction-timing-ledger.md) links the same original
+manual rows. No reference-emulator source, ROM or guest asset was imported.
+
+`M5:T401:S14:MOFFS-MOV-PROFILES:OK` retains all-four-profile unprefixed
+execution for each read/write opcode, FLAGS and exact EIP, pre-80386 `66h`/
+`67h` atomic #UD, LOCK rejection, segment overrides, protected-limit
+nonpublication and IRQ boundary. It adds a full 80386 single-`66h`,
+single-`67h` and combined attribute matrix across all four opcodes, proving
+byte/word/dword accumulator and memory publication with 16- and 32-bit moffs
+addresses. `M5:T401:S14:MOFFS-MOV-PREVIEW-PROFILES:OK` supplies the matching
+four-profile lexical matrix.
+
+This is original-source semantic/form evidence and a test-only coverage
+correction. The timing disposition remains explicitly nonphysical at the
+existing Core timing owner; it makes no physical-cycle, DeskPro L3 or Core/VM
+interface claim.
+
+## S14 Acceptance
+
+S14 closes the selected `A0h`--`A3h` moffs MOV family. Focused moffs and CPU
+preview current-gate tests pass, with no production discrepancy. Temporary CE
+observations during test construction were traced to malformed test address
+bytes and removed before acceptance.

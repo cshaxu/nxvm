@@ -186,6 +186,61 @@ static C_INT moffs_test_386_attributes(C_VOID)
     return 1;
 }
 
+static C_INT moffs_test_386_single_attributes(C_VOID)
+{
+    type_unsigned_8 attribute;
+    type_unsigned_8 opcode;
+
+    for (attribute = 0u; attribute != 3u; ++attribute)
+    for (opcode = 0xa0u; opcode != 0xa4u; ++opcode) {
+        moffs_machine state;
+        t_cpu before;
+        t_cpu after;
+        core_machine_cpu_diagnostic diagnostic;
+        type_status status;
+        type_unsigned_8 code[] = {0x66u,0x67u,opcode,0,0x80u,0,0};
+        const type_unsigned_8 bytes = attribute == 0u ? 4u :
+            attribute == 1u ? 6u : 7u;
+        const type_unsigned_32 address = attribute == 0u ? 0x1000u : 0x8000u;
+        const type_unsigned_8 width = opcode == 0xa0u || opcode == 0xa2u ?
+            1u : attribute == 1u ? 2u : 4u;
+        type_unsigned_32 image = 0x1122335au;
+        C_INT failed = !moffs_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
+
+        if (!failed) {
+            if (attribute == 0u) {
+                code[1] = opcode; code[2] = 0; code[3] = 0x10u;
+            } else if (attribute == 1u) {
+                code[0] = 0x67u; code[1] = opcode; code[2] = 0; code[3] = 0x80u; code[4] = 0;
+            }
+            failed |= !test_core_machine_fixture_prepare_real_mode_execution(
+                state.machine, 0u);
+            moffs_set_registers(&state);
+            if (opcode == 0xa0u || opcode == 0xa1u)
+                failed |= core_machine_memory_write(state.machine, address,
+                    &image, width) != TYPE_STATUS_OK;
+            before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+            failed |= !moffs_run(&state, code, bytes, &after, &diagnostic,
+                &status) || status != TYPE_STATUS_OK || diagnostic.first_fault.valid ||
+                after.data.eip != bytes || !moffs_nonparticipants(&before,
+                &after, opcode);
+            if (opcode == 0xa0u) failed |= after.data.eax != 0xaabb335au;
+            if (opcode == 0xa1u) failed |= after.data.eax != (attribute == 1u ?
+                0xaabb335au : 0x1122335au);
+            if (opcode == 0xa2u || opcode == 0xa3u) {
+                image = 0u;
+                failed |= core_machine_memory_read_physical(&state.machine->executor_memory,
+                    address, TYPE_REFERENCE_OF(image), width) != TYPE_STATUS_OK ||
+                    image != (width == 1u ? 0x44u : width == 2u ? 0x3344u :
+                    0xaabb3344u);
+            }
+        }
+        core_machine_destroy(state.machine);
+        if (failed) return 0;
+    }
+    return 1;
+}
+
 static C_INT moffs_state_equal(const t_cpu *before, const t_cpu *after)
 {
     return before->data.eax == after->data.eax &&
@@ -525,7 +580,8 @@ C_INT main(C_VOID)
         STD_PRINTF("MOFFS stage=default\n");
         return 1;
     }
-    if (!moffs_test_386_attributes())
+    if (!moffs_test_386_attributes() ||
+        !moffs_test_386_single_attributes())
     {
         STD_PRINTF("MOFFS stage=attributes\n");
         return 1;
@@ -561,5 +617,6 @@ C_INT main(C_VOID)
         return 1;
     }
     STD_PRINTF("M5:T316:S30:MOFFS:OK\n");
+    STD_PRINTF("M5:T401:S14:MOFFS-MOV-PROFILES:OK\n");
     return 0;
 }
