@@ -933,3 +933,11 @@ No production discrepancy was found. This remains CPU semantic/nonphysical timin
 ## S40 Acceptance
 
 S40 closes general-register PUSH/POP `50h`-`5Fh` coverage with focused runtime and preview proof across all four profiles. It retains 8086 SP behavior, r/m forms, 80386 attributes, LOCK rejection and protected-stack atomicity. No production discrepancy was found; Core timing remains explicitly nonphysical. S41 owns segment-register PUSH/POP.
+
+## S41 Segment-register PUSH/POP
+
+S41 audits segment-register PUSH/POP, including 80386 FS/GS `0F A0h`/`A1h`/`A8h`/`A9h`. Intel 8086/80386 references define selector stack images, segment-cache loads and FS/GS availability. This is original-source semantic/form evidence; no emulator implementation, ROM or guest asset was imported.
+
+`M5:T401:S41:SREG-PUSH-POP-PROFILES:OK` retains ES/CS/SS/DS all-profile behavior, selector/cache and protected stack/fault/IRQ/LOCK boundaries, and adds direct 80386 FS/GS stack and selector coverage. `M5:T401:S41:SREG-PUSH-POP-PREVIEW-PROFILES:OK` adds matching legacy and FS/GS lexical matrices.
+
+No production discrepancy was found. This remains CPU semantic/nonphysical timing-baseline evidence only and does not establish physical timing, DeskPro L3 or a Core/VM interface change.

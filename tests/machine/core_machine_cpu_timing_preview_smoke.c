@@ -464,6 +464,13 @@ static C_INT preview_test_les_lds_profiles(C_VOID)
     return preview_expect((const type_unsigned_8[]){0x66u,0xc4u,0x06u,0u,0x20u},5u,CORE_MACHINE_CPU_PROFILE_80386,TYPE_FALSE,5u,4u);
 }
 
+static C_INT preview_test_sreg_push_pop_profiles(C_VOID)
+{
+    static const type_unsigned_8 legacy[] = {0x06u,0x07u,0x0eu,0x16u,0x17u,0x1eu,0x1fu}; static const type_unsigned_8 extended[] = {0xa0u,0xa1u,0xa8u,0xa9u}; static const core_machine_cpu_profile p[] = {CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186, CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386}; type_unsigned_8 i,j;
+    for(i=0u;i!=sizeof(p)/sizeof(p[0]);++i) for(j=0u;j!=sizeof(legacy);++j) if(!preview_expect(&legacy[j],1u,p[i],TYPE_FALSE,1u,1u)) return 0;
+    for(j=0u;j!=sizeof(extended);++j) { if(!preview_expect((const type_unsigned_8[]){0x0fu,extended[j]},2u,CORE_MACHINE_CPU_PROFILE_80386,TYPE_FALSE,2u,2u)) return 0; } return 1;
+}
+
 static C_INT preview_test_gpr_push_pop_profiles(C_VOID)
 {
     static const core_machine_cpu_profile p[] = {CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186, CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386}; type_unsigned_8 i;
@@ -979,6 +986,7 @@ C_INT main(C_VOID)
     if (!preview_test_hlt_profiles()) return 39;
     if (!preview_test_pushf_popf_profiles()) return 40;
     if (!preview_test_gpr_push_pop_profiles()) return 41;
+    if (!preview_test_sreg_push_pop_profiles()) return 42;
     if (!preview_test_les_lds_profiles()) return 34;
     if (!preview_test_group3_profiles()) return 10;
     if (!preview_test_group45_profiles()) return 11;
@@ -1021,5 +1029,6 @@ C_INT main(C_VOID)
     STD_PRINTF("M5:T401:S38:HLT-PREVIEW-PROFILES:OK\n");
     STD_PRINTF("M5:T401:S39:PUSHF-POPF-PREVIEW-PROFILES:OK\n");
     STD_PRINTF("M5:T401:S40:GPR-PUSH-POP-PREVIEW-PROFILES:OK\n");
+    STD_PRINTF("M5:T401:S41:SREG-PUSH-POP-PREVIEW-PROFILES:OK\n");
     return 0;
 }

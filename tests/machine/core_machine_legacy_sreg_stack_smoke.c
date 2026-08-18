@@ -664,6 +664,16 @@ static C_INT legacy_sreg_stack_test_irq(C_VOID)
     }return 1;
 }
 
+static C_INT legacy_sreg_stack_test_fs_gs(C_VOID)
+{
+    static const type_unsigned_8 opcodes[] = {0xa0u,0xa1u,0xa8u,0xa9u};
+    type_unsigned_8 form;
+    for (form = 0u; form != sizeof(opcodes); ++form) {
+        legacy_sreg_stack_machine state; core_machine_run_result result; core_machine_cpu_diagnostic diagnostic; t_cpu before, after; type_unsigned_16 image = (type_unsigned_16)(0x5500u + form); C_INT failed = !legacy_sreg_stack_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
+        if (!failed) { state.machine->executor_cpu.data.esp=0x8000u; state.machine->executor_cpu.data.fs.selector=0x1111u; state.machine->executor_cpu.data.gs.selector=0x2222u; if (form & 1u) failed |= core_machine_memory_write(state.machine,0x8000u,&image,2u)!=TYPE_STATUS_OK; failed |= core_machine_memory_write(state.machine,0u,(type_unsigned_8[]){0x0fu,opcodes[form]},2u)!=TYPE_STATUS_OK; before=test_core_machine_fixture_capture_cpu_after_run(state.machine); failed |= core_machine_run(state.machine,(core_machine_run_budget){1u,0u},&result)!=TYPE_STATUS_OK || result.reason!=CORE_MACHINE_STOP_BUDGET || core_machine_get_cpu_diagnostic(state.machine,&diagnostic)!=TYPE_STATUS_OK; after=test_core_machine_fixture_capture_cpu_after_run(state.machine); failed |= diagnostic.first_fault.valid || after.data.eip!=2u || after.data.eflags!=before.data.eflags || !legacy_sreg_stack_gprs_same_except_esp(&before,&after); if (!(form&1u)) { type_unsigned_16 observed=0u; failed |= after.data.esp!=0x7ffeu || core_machine_memory_read_physical(&state.machine->executor_memory,0x7ffeu,TYPE_REFERENCE_OF(observed),2u)!=TYPE_STATUS_OK || observed!=(form==0u?0x1111u:0x2222u); } else failed |= after.data.esp!=0x8002u || (form==1u ? after.data.fs.selector : after.data.gs.selector)!=image; } core_machine_destroy(state.machine); if (failed) return 0;
+    } return 1;
+}
+
 C_INT main(C_VOID)
 {
     if (!legacy_sreg_stack_test_defaults())
@@ -706,11 +716,14 @@ C_INT main(C_VOID)
         STD_PRINTF("LEGACY-SREG-STACK stage=irq\n");
         return 1;
     }
+    if (!legacy_sreg_stack_test_fs_gs())
+        return 1;
     if (!legacy_sreg_stack_test_lock())
     {
         STD_PRINTF("LEGACY-SREG-STACK stage=lock\n");
         return 1;
     }
     STD_PRINTF("M5:T316:S46:LEGACY-SREG-STACK:OK\n");
+    STD_PRINTF("M5:T401:S41:SREG-PUSH-POP-PROFILES:OK\n");
     return 0;
 }
