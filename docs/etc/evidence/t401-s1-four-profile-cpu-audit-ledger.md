@@ -821,3 +821,7 @@ S31 audits PUSHA/POPA `60h`/`61h`. Intel's 80186/80386 references define saved s
 `M5:T401:S31:PUSHA-POPA-PROFILES:OK` retains 8086 #UD, 80186+/80286 word image, 80386 dword attributes, protected stack limits and IRQ proof. `M5:T401:S31:PUSHA-POPA-PREVIEW-PROFILES:OK` adds the matching lexical matrix.
 
 No production discrepancy was found. This remains CPU semantic/nonphysical timing-baseline evidence only and does not establish physical timing, DeskPro L3 or a Core/VM interface change.
+
+## S31 Acceptance
+
+S31 closes PUSHA/POPA `60h`/`61h` with focused runtime and preview proof. It retains 8086 #UD, 80186+ stack-image rules, 80386 widths, protected stack limits and IRQ boundaries. No production discrepancy was found; Core timing remains explicitly nonphysical. S32 owns LAR/LSL `0F02h`/`0F03h`.
