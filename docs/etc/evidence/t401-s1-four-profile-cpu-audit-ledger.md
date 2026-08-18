@@ -587,3 +587,23 @@ preview proof across all four profiles. It covers accumulator payload widths,
 FLAGS preservation, REP and DF/ES destination routing, 80386 attributes and
 prefix rejection. No production discrepancy was found; existing Core timing
 remains explicitly nonphysical. S18 owns LODS `ACh`/`ADh`.
+## S18 LODS
+
+S18 audits `ACh`/`ADh` LODS. Intel's 80386 Programmer's Reference Manual
+string-instruction/LODS entries define DS-selected source loading into
+AL/AX/EAX, DF-controlled source progression, operand-size payload width,
+address-size index/count selection and REP iteration. This is original-source
+semantic/form evidence; no emulator implementation, ROM or guest asset was
+imported.
+
+`M5:T401:S18:LODS-PROFILES:OK` retains all-four-profile byte/word execution,
+FLAGS preservation, REP count zero/one/multiple behavior, source-segment
+overrides, DF decrement, 80386 dword and 32-bit address forms, pre-80386
+prefix atomic #UD, LOCK rejection, protected-limit nonpublication and IRQ
+behavior. `M5:T401:S18:LODS-PREVIEW-PROFILES:OK` adds the complete
+four-profile lexical matrix for both opcodes, REP and every selected 80386
+operand/address attribute combination.
+
+No production discrepancy was found. This remains CPU semantic/nonphysical
+timing-baseline evidence only and does not establish physical timing, DeskPro
+L3 or a Core/VM interface change.

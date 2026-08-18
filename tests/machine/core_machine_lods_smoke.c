@@ -572,5 +572,6 @@ C_INT main(C_VOID)
     if (!lods_test_irq_rep_restart())
         return 1;
     STD_PRINTF("M5:T316:S35:LODS:OK\n");
+    STD_PRINTF("M5:T401:S18:LODS-PROFILES:OK\n");
     return 0;
 }
