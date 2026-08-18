@@ -2,28 +2,8 @@
 
 ## Current Work
 
-**T395 S1 active.** Reconcile the Core memory-device route registry capacity and its registration/freeze/rollback semantics; implement and verify the bounded growable mechanism without altering Core/VM boundaries.
+No active subtask. T395 S1 is accepted and retains the required latest-task progress row pending an explicit task-closure subtask.
 
-## M5 T395 S1 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | New |
-| Admission And Approval | Owner continuing global correctness/timing authorization; T394 is task-level closed and queue order selects this next Core prerequisite. No exception. |
-| Objective | Reconcile the finite route-capacity universe and implement bounded growable private Core memory-device registration while retaining exact existing registration, lookup, overlay, freeze and rollback semantics. |
-| Non-goals | No DeskPro board timing, ROM mapping behavior change, physical retirement, VM/Core ABI, firmware/media or L3 claim. |
-| Reference Baseline | Core memory route registry source, queued T395 proposal, representative Model-40 and non-Model-40 compositions. |
-| Candidate Proposal | [Core memory-device route registry scalability](../proposals/m5-core-memory-route-registry-scalability.md). |
-| Files And ABI Surface | Core private memory registration/lookup storage, owner-local regressions, evidence/history/status; no public mutable registry. |
-| Applicable Rules | Core owns registration/order/overlay/freeze/rollback; preserve existing route semantics and bounded deterministic failure. |
-| Verification | Complete caller/capacity ledger, fixed-capacity and route-order sweep, focused Core/Model-40/non-Model-40 regressions, current gates and documentation governance. |
-| Expected Markers | M5:T395:S1:ROUTE-REGISTRY-SCALABILITY:OK after capacity, frozen-registration, priority/decline and transactional-failure regressions pass. |
-| Asset Needs | None. |
-| Reporting Requirements | Record fixed limit, every registration path, current order/decline semantics, failure/rollback behavior, candidate finite limit and excluded profile behavior. |
-| Stop Conditions | Stop before implementation if semantics require public exposure, unbounded allocation, or an unproven ordering change. |
-| Exit Criteria | Committed, pushed and accepted finite implementation contract or whole-scope non-admission with earliest receiver. |
-| Original Owner Request | Continue the global CPU correctness/timing audit, repair clear in-scope defects, and preserve the Core/VM boundary. |
-| Similar-Issue Sweep | Sweep all Core memory device-provider definitions, registration callers, fixed capacity assumptions, composition routes and tests. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T395 S1 P4 `vm-0-5-0395` /
@@ -50,6 +30,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T395 S1 | Accepted: private 12-to-64 bounded Core route growth, direct allocation/limit rollback proof, frozen-registration and order/decline coverage. No board timing or L3 claim. [Acceptance audit](../etc/evidence/t395-s1-route-registry-closure-audit.md). |
 | T394 | Closed: S1-S7 establish the complete C0 81-key qualification and Core copied-descriptor safety boundary, then transfer physical selection solely to the queued source-backed DeskPro board clock-plan contract. No physical clock or L3 claim. [Closure audit](../etc/evidence/t394-s7-physical-qualification-closure-audit.md). |
 | T392 | Closed: S1-S5 exhaust copied C1, VM/session and FDC operation candidates, then repair the missed proposal archival and stale Queue entry; no endpoint or defect exists. Only a separately admitted generic immutable device-operation snapshot plus selected consumer contract can proceed. No Core/VM ABI, CPU timing, physical, board, firmware or L3 claim. [Corrective audit](../etc/evidence/t392-s5-closure-topology-corrective-audit.md). |
 | T391 | Closed: S1-S8 establish the bounded C0A startup predecessor, complete C1 aggregate disposition and the truthful transfer that C1 physical qualification remains blocked pending a new finite checkpoint or earliest-owner defect. No Core/VM interface, timing, physical, board, firmware or L3 claim. [Closure audit](../etc/evidence/t391-s8-startup-semantic-closure-audit.md). |

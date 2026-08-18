@@ -1,4 +1,4 @@
-# Queue
+﻿# Queue
 
 This is the ordered, unnumbered candidate queue. It does not activate work,
 reserve a numeric task identifier, or define a technical baseline.

@@ -17,3 +17,7 @@ mapping semantics changed.
 S1 P3 adds a direct deterministic allocation-failure injection at the private route-registry growth boundary: a failed thirteenth registration retains the original twelve providers and capacity, and the retry grows successfully. No Core/VM interface changed.
 
 S1 P4 builds the required current developer artifact `vm-0-5-0395` / `build/output/nxvm_0_5_0395.exe` from the complete source graph, SHA-256 `5DBD4B50762BAD5E393CD8EFA8A0CB7E06FD9A1304A44F8993CC64915A99D4A6` (3,180,342 bytes).
+
+## Coordinator Acceptance
+
+After actual-change review of S1 P2 `348ac557`, P3 `99090da6` and P4 `f33baa49`, the coordinator accepts S1; T395 remains open pending an explicit task-closure subtask. The private 12-to-64 bounded registry preserves registration order, overlay/decline behavior, freeze rejection and ROM rollback storage ownership. Direct growth-allocation failure and finite-limit provider-plus-observer rollback are both proven before publication. The T395 artifact and full current gates passed. DeskPro board timing remains queued and unselected; no timing, firmware, ROM/media or L3 claim is accepted.
