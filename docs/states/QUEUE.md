@@ -25,6 +25,7 @@ prerequisite or a Model-40 substitute.
 Detailed scope, acceptance conditions, and common constraints remain in these
 shared proposals and in each candidate's linked proposal.
 
+1. [DeskPro 386 generic-reference functional and deterministic-timing continuation](../proposals/m5-deskpro-386-generic-reference-continuation.md).
 1. [Four-profile CPU instruction-correctness audit and repair program](../proposals/m5-four-profile-cpu-instruction-correctness-audit.md).
 1. [Current-product device profile and functional-capability closure](../proposals/m5-current-product-device-profile-capability-closure.md).
 1. [32-bit GCC host-build compatibility verification](../proposals/m5-32bit-gcc-host-build-compatibility.md).
