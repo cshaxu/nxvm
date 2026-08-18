@@ -857,3 +857,7 @@ S34 audits DAA/DAS/AAA/AAS/AAM/AAD `27h`/`2Fh`/`37h`/`3Fh`/`D4h`/`D5h`. Intel 80
 `M5:T401:S34:DECIMAL-ADJUST-PROFILES:OK` extends the retained adjustment fixture through all four profiles, preserving defined AL/AH and AF/CF/SF/ZF/PF checks while not asserting architecturally undefined flags. It retains AAM base-zero #DE delivery/frame and nonpublication proof. `M5:T401:S34:DECIMAL-ADJUST-PREVIEW-PROFILES:OK` adds four-profile lexical proof for the simple and immediate-base forms, plus 80386 prefix layouts.
 
 No production discrepancy was found. This remains CPU semantic/nonphysical timing-baseline evidence only and does not establish physical timing, DeskPro L3 or a Core/VM interface change.
+
+## S34 Acceptance
+
+S34 closes DAA/DAS/AAA/AAS/AAM/AAD coverage with focused runtime and preview proof across all four profiles. It retains defined AL/AH/flag behavior and AAM base-zero #DE delivery without asserting undefined flags. The pre-existing combined fixture also exercised XLAT in the added profiles; this is not an XLAT audit claim. No production discrepancy was found; Core timing remains explicitly nonphysical. S35 owns XLAT `D7h`.

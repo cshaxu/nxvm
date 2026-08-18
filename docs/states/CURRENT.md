@@ -4,26 +4,26 @@
 
 **Active: M5 T401.**
 
-## M5 T401 S34 Packet
+## M5 T401 S35 Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation; M5 T401 S34. |
-| Admission And Approval | Owner approved continuing the four-profile CPU audit. S33 is accepted after complete LES/LDS execution/preview evidence. |
-| Objective | Audit DAA/DAS/AAA/AAS/AAM/AAD `27h`/`2Fh`/`37h`/`3Fh`/`D4h`/`D5h` across 8086, 80186, 80286 and 80386: decimal/ASCII adjustment, flags, divide-error and profile/preview behavior. |
-| Non-goals | No broad arithmetic/flag-engine rewrite, no device/board work, no physical timing or DeskPro L3 claim. |
-| Reference Baseline | Intel 8086/80386 instruction references; retained arithmetic/prefix/timing ledgers; current decoder/execution/preview. Secondary emulators only corroborate Intel-underspecified behavior and must be labelled reference-derived. |
+| Identifier Mode | Continuation; M5 T401 S35. |
+| Admission And Approval | Owner approved continuing the four-profile CPU audit. S34 is accepted after complete decimal/ASCII-adjust execution/preview evidence. |
+| Objective | Audit XLAT `D7h` across 8086, 80186, 80286 and 80386: implicit table addressing, segment/address attributes, fault atomicity and preview behavior. |
+| Non-goals | No broad arithmetic, memory-transaction or segment-engine rewrite, no device/board work, no physical timing or DeskPro L3 claim. |
+| Reference Baseline | Intel 8086/80386 instruction references; retained data-movement/prefix/timing ledgers; current decoder/execution/preview. Secondary emulators only corroborate Intel-underspecified behavior and must be labelled reference-derived. |
 | Candidate Proposal | [Four-profile CPU instruction-correctness audit and repair program](../proposals/m5-four-profile-cpu-instruction-correctness-audit.md). |
-| Files And ABI Surface | Audit ledger, packet, decimal-adjust fixture and preview smoke only unless a bounded shared defect is reproduced; no public ABI. |
+| Files And ABI Surface | Audit ledger, packet, XLAT fixture and preview smoke only unless a bounded shared defect is reproduced; no public ABI. |
 | Applicable Rules | Execution bounded corrective/actual-diff review; shared Core CPU ownership; coding/test rules; Intel primary-source requirement; external-provider/source policy; documentation indexing. |
-| Verification | Four-profile execution/preview matrix, AL/AH and AF/CF/SF/ZF/PF/OF behavior, AAM zero divide-error delivery, 80386 attribute rejection, retirement atomicity; focused tests, full gate after repair, governance/diff checks. |
-| Expected Markers | New T401 S34 markers and any bounded defect marker. |
-| Reporting Requirements | Record CPU/profile, opcode, AL/AH and flag state, divide-error/retirement attributes, manual/source tier, current owner, focused proof or transfer and retained nonphysical timing boundary. |
+| Verification | Four-profile execution/preview matrix, four-profile execution/preview matrix, DS/segment override and 80386 address attributes, protected limits/fault atomicity and retirement; focused tests, full gate after repair, governance/diff checks. |
+| Expected Markers | New T401 S35 markers and any bounded defect marker. |
+| Reporting Requirements | Record CPU/profile, opcode, table base/index/address state, segment/attribute and retirement behavior, manual/source tier, current owner, focused proof or transfer and retained nonphysical timing boundary. |
 | Stop Conditions | Stop and create a precise receiver if repair requires a broad decoder/register/fault-delivery redesign, a new CPU facility, device/board timing model or broad state-model change. |
 | Asset Needs | None. |
-| Exit Criteria | Every selected decimal/ASCII-adjust profile/form row has focused proof or an explicit transfer; bounded repairs have full-gate proof. |
+| Exit Criteria | Every selected XLAT profile/form row has focused proof or an explicit transfer; bounded repairs have full-gate proof. |
 | Original Owner Request | Continue source-backed, reference-backed or explicitly generic CPU work rather than leaving feasible work undone. |
-| Similar-Issue Sweep | For any mismatch, sweep decimal-adjust siblings, profile gates, prefixes, preview callers and AL/AH/flag/fault consumers. |
+| Similar-Issue Sweep | For any mismatch, sweep implicit-table-load siblings, profile gates, prefixes, preview callers and segment/address/fault consumers. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T395 S1 P4 `vm-0-5-0395` /
@@ -50,7 +50,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T401 S33 | Accepted: LES/LDS audit closes far-pointer/profile/protected/IRQ behavior and lexical coverage. S34 owns decimal/ASCII adjust instructions. [Ledger](../etc/evidence/t401-s1-four-profile-cpu-audit-ledger.md). |
+| T401 S34 | Accepted: decimal/ASCII adjustment audit closes four-profile AL/AH/defined-flag/#DE behavior and lexical coverage. S35 owns XLAT. [Ledger](../etc/evidence/t401-s1-four-profile-cpu-audit-ledger.md). |
 | T400 | Closed: the HDC, CECG and CPU/DMA/BWAIT generic-reference ledger is exhausted; accepted logical repairs retain every DeskPro physical boundary. [Closure audit](../etc/evidence/t400-s1-task-closure-audit.md). |
 | T399 | Closed: the five-batch reference-derived DeskPro L3 ledger is exhausted; B2/B3 logical contracts are accepted, B1/B4/B5 retain exact receivers, and both reference-derived and physical L3 are not ready. [Closure audit](../etc/evidence/t399-s5-task-closure-audit.md). |
 | T398 | Closed: final exact 1986 DeskPro Model-40 audit is not-ready for L3; five physical/firmware boundaries retain explicit TODO receivers and require a fresh audit after repair. [Closure audit](../etc/evidence/t398-s2-task-closure-audit.md). |
