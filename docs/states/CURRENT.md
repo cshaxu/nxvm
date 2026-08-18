@@ -2,32 +2,29 @@
 
 ## Current Work
 
-## M5 T418 S1 Packet
+## M5 T419 S1 Packet
 
 | Field | Required record |
 | --- | --- |
 | Identifier Mode | New |
-| Admission And Approval | Owner authorization of 2026-08-18 covers continued DeskPro L3 implementation, tier-labelled reference/generic bridges, and master pushes. |
-| Objective | Implement a bounded generic-AT CPU instruction-boundary locality invalidation policy so a later instruction cannot receive a D4 page hit solely from adjacent logical accesses. |
-| Non-goals | Do not claim D4 pipelined-address overlap, calibrated CPU idle duration, BWAIT timing, DMA/refresh arbitration, or Model-L3 readiness. |
-| Reference Baseline | Original D3PE page-mode description: CPU idle between cycles terminates PAGE HIT and reverts to INITIAL; T410--T417 external-cycle/locality bridges. |
-| Candidate Proposal | [DeskPro physical-cycle and phase-timing closure](../proposals/m5-deskpro-physical-cycle-and-phase-timing.md) |
-| Files And ABI Surface | Existing Core run-loop/locality owner and focused Core tests only; preserve Core/VM direction and the sole transaction owner. |
-| Applicable Rules | docs/design/ARCHITECTURE.md; docs/design/CODING.md; docs/rules/ARCHITECTURE.md; docs/rules/CODING.md; docs/rules/EXECUTION.md. |
-| Verification | Original-source review, focused consecutive-instruction versus same-instruction locality/reset/cancellation proof, current gate, documentation gate and actual-diff review. |
-| Expected Markers | M5:T418:S1:INSTRUCTION-BOUNDARY-LOCALITY:OK or M5:T418:S1:INSTRUCTION-BOUNDARY-LOCALITY:TRANSFER. |
-| Asset Needs | O:\assets original D3PE research; no import. |
-| Reporting Requirements | Label the policy generic-AT; state that an instruction boundary is conservative and not an observed D4 physical idle phase. |
-| Stop Conditions | Stop and transfer any policy requiring overlap duration, physical idle detection, BWAIT/DMA/refresh phases, a second scheduler, or another transaction path. |
-| Exit Criteria | A new instruction boundary clears the generic locality key before a later CPU cycle, while cycles within one execution round retain their existing owner-local behavior, with focused proof. |
+| Admission And Approval | Owner authorization of 2026-08-18 covers continued DeskPro L3 implementation, tier-labelled original/reference/generic bridges, corrective task bookkeeping and master pushes. |
+| Objective | Qualify the existing Core-owned DMA arbitration route under actual D4 composition: a pending DMA memory cycle obtains HOLD/HLDA, commits through the sole transaction owner, releases HOLD and adds no separate locality/wait surcharge. |
+| Non-goals | Do not claim calibrated D4 DMA duration, BWAIT waveform, refresh-versus-DMA priority, DMA row retention, bus-master/cascade details or Model-L3 readiness. |
+| Reference Baseline | Original D3PE processor description: system DMA and refresh use standard multiplexed RAM cycles with no wait states; D4-RCTL defines DMA/read/write state transitions after HLDA. |
+| Candidate Proposal | [DeskPro physical-cycle and phase-timing closure](../proposals/m5-deskpro-physical-cycle-and-phase-timing.md) receiver 2. |
+| Files And ABI Surface | Existing Core machine/DMA transaction owner, existing competition smoke, artifact selection and task evidence only; preserve Core/VM direction and no second scheduler or transaction path. |
+| Applicable Rules | docs/design/ARCHITECTURE.md; docs/design/CODING.md; docs/rules/ARCHITECTURE.md; docs/rules/CODING.md; docs/rules/DOCUMENT.md; docs/rules/EXECUTION.md. |
+| Verification | Original-source review; focused actual-D4 competition regression proving CPU retire -> DMA HOLD request/acknowledge -> DMA begin/commit -> HOLD release -> DMA advance order and no added run tick; current gate; documentation gate; actual-diff review. |
+| Expected Markers | M5:T419:S1:D4-DMA-NO-WAIT:OK or M5:T419:S1:D4-DMA-NO-WAIT:TRANSFER. |
+| Asset Needs | O:/assets/research/compaq_deskpro_386_16/technical_spec_1986_textmode.txt original research; no import. |
+| Reporting Requirements | Label the no-wait assertion original-source-backed only for the high-level memory-cycle property; state that current tick does not model D4 waveform duration. |
+| Stop Conditions | Stop and transfer any work requiring physical DMA phase duration, BWAIT, refresh contention, board signal model, a second scheduler or transaction path. |
+| Exit Criteria | The focused regression runs with D4 composition configured and proves the retained DMA transaction path has no extra locality/wait surcharge beyond its sole arbitration tick; artifact and evidence identify the timing boundary. |
 | Original Owner Request | Implement DeskPro 386 L3 timing/hardware gaps using original then reference then generic-AT tiers; do not stall and preserve Core/VM boundary. |
-| Similar-Issue Sweep | Inspect instruction-run boundary, prefetch/data/page-walk locality, reset, cancellation, DMA HOLD, refresh pulse and Model-40 composition. |
+| Similar-Issue Sweep | Inspect all Core DMA advance routes, 80286/80386 HOLD arbitration, D4 composition, refresh hookup and transaction trace consumers; classify source hits or transfer out-of-scope physical phase work. |
 ## Current Technical Baseline
 
-- **Current developer artifact:** T418 S1 P1 `vm-0-5-0418` /
-  `build/output/nxvm_0_5_0418.exe`, SHA-256
-  `E431A7412EB1DF2215CADDBC3A03A7D2179851CD3511F74C7C44F89F08B108A9`.
-  T418 conservatively clears generic-AT CPU locality at every new instruction round. Original D4 source proves that a CPU idle ends PAGE HIT, but Core cannot observe physical overlap; T417 refresh, T416 DMA-HOLD and T415 paging fixes remain retained.
+- **Current developer artifact:** T419 S1 P2 `vm-0-5-0419` /`build/output/nxvm_0_5_0419.exe`, SHA-256 `E49081DCCAB999D756FFAE1F3855309DDAB6ECF720FE134B2321043F098A4ABE`. T419 runs the existing sole Core DMA transaction route under D4 composition and verifies the original-source high-level no-extra-wait property; it does not model D4 waveform duration, BWAIT or refresh arbitration. T418 instruction-boundary locality, T417 refresh, T416 DMA-HOLD and T415 paging fixes remain retained.
   T386 closes selected-device functional completeness at S29; its retained
   [closure audit](../etc/evidence/t386-s29-functional-closure-audit.md) fixes
   HDC current-gate coverage and transfers board, firmware and physical work.

@@ -102,6 +102,8 @@ C_INT main(C_VOID)
     const type_unsigned_8 nop = 0x90u;
     core_machine *machine = STD_NULL;
     core_machine_config config = {0};
+    core_machine_d4_platform_config d4 = {CORE_MACHINE_PC_AT_PORT_B, 0u};
+    core_machine_d4_platform_observation d4_observation;
     core_machine_trace_provider trace;
     core_machine_dma_request_binding binding = {0};
     core_machine_run_budget budget = {1u, 0u};
@@ -130,10 +132,15 @@ C_INT main(C_VOID)
     type_unsigned_32 reset_hold_release;
     C_INT failed = 0;
 
-    config.cpu_profile = CORE_MACHINE_CPU_PROFILE_80286;
+    config.cpu_profile = CORE_MACHINE_CPU_PROFILE_80386;
+    config.auxiliary_pit_present = TYPE_TRUE;
+    config.auxiliary_pit_base_port = 0x0048u;
     trace.callback = competition_trace;
     trace.context = &probe;
     failed |= core_machine_create(&config, &machine) != TYPE_STATUS_OK;
+    failed |= core_machine_configure_d4_platform(machine, &d4) != TYPE_STATUS_OK;
+    failed |= core_machine_get_d4_platform_observation(machine, &d4_observation) !=
+        TYPE_STATUS_OK || !d4_observation.configured;
     failed |= test_core_machine_fixture_register_reset_mapping(machine, 0xfffffff0u,
         0x000ffff0u, 16u) != TYPE_STATUS_OK;
     failed |= core_machine_dma_bind_channel(&machine->shared_dma_latch,
