@@ -2,27 +2,7 @@
 
 ## Current Work
 
-**Active: M5 T402.**
-## M5 T402 S2 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner: user; continuing authorization to complete DeskPro 386 hardware gaps with original-source, reference-derived, then labelled generic tiers; normal commits, pushes and stale summary rotation are authorized. |
-| Objective | Independently audit T402's D4 functional matrix, P1 actual source surface, proof and transfer ledger; close T402 only if every selected functional member is accounted for and physical timing remains explicit. |
-| Non-goals | No code expansion, physical D4/cache/DRAM/ISA timing claim, L3 claim, firmware/media import, generic AT substitution or Core/VM ABI change. |
-| Reference Baseline | T402 S1 P1 `1c41bc53`, acceptance P2 `c022063d`, indexed T402 S1 evidence, D3PE-first task proposal and retained T386 D4 records. |
-| Candidate Proposal | [DeskPro D4 memory-controller reconciliation](../proposals/m5-deskpro-386-d4-memory-controller-reconciliation.md). |
-| Files And ABI Surface | T402 closure-audit evidence, evidence index, T402 history/proposal/status/Queue only; no production source or public interface is expected. |
-| Applicable Rules | Verify actual changed source against the D4 matrix; retain source tiers and physical transfer; task closure needs a complete ledger and independent audit. |
-| Verification | Static owner/matrix sweep; actual Git P1/P2 review; documentation governance; recheck recorded full-current and focused results; diff review. |
-| Expected Markers | `M5:T402:S2:CLOSURE-AUDIT` and an explicit functional-only closure/no-L3 statement. |
-| Asset Needs | No assets; prior read-only approved D3PE and local references are cited only through retained evidence. |
-| Reporting Requirements | Report closure decision, all selected functional dispositions, source tiers, verification and each retained physical receiver. |
-| Stop Conditions | Do not close if a selected functional matrix member lacks a disposition/proof, if the P1 source differs from evidence, or if a physical claim is implicit. |
-| Exit Criteria | Independent review proves every selected functional member is conforming, fixed, Tier-2-derived or transferred; closure records no physical timing or L3 completion. |
-| Original Owner Request | Implement DeskPro 386 L3 timing and hardware gaps using original sources, reference implementations, then labelled generic fallback; do not stop merely because physical hardware is unavailable. |
-| Similar-Issue Sweep | Re-read every T402 matrix row and its Model-40 control/mapping/parity owner, focused regressions, evidence/index/history/Queue/current status and physical transfer language. |
+**Idle.**
 ## Current Technical Baseline
 
 - **Current developer artifact:** T395 S1 P4 `vm-0-5-0395` /
@@ -49,7 +29,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T402 S1 | Accepted: D3PE-first functional D4 matrix reconciled; Model-40 control aperture repaired from one byte to a Tier-2-labelled four-register, 4 KiB nonresponsive window; focused D4 tests and full 285/285 current gate pass. Physical D4/cache/DRAM/ISA timing remains transferred. [Evidence](../etc/evidence/t402-s1-d4-memory-controller-matrix.md). |
+| T402 | Closed: D3PE-first functional D4 matrix accepted; the Model-40 control aperture repair is reference-labelled where primary material is incomplete, while cache/DRAM/ISA physical timing and L3 remain transferred. [Closure audit](../etc/evidence/t402-s2-d4-functional-closure-audit.md). |
 | T401 | Closed: bounded four-profile CPU semantic/source-timing audit; every frozen form is proven, repaired, nonphysical-observed, rejected or transferred, without an x87, physical CPU, board or L3 claim. [Closure audit](../etc/evidence/t401-s78-task-closure-audit.md). |
 | T400 | Closed: the HDC, CECG and CPU/DMA/BWAIT generic-reference ledger is exhausted; accepted logical repairs retain every DeskPro physical boundary. [Closure audit](../etc/evidence/t400-s1-task-closure-audit.md). |
 | T399 | Closed: the five-batch reference-derived DeskPro L3 ledger is exhausted; B2/B3 logical contracts are accepted, B1/B4/B5 retain exact receivers, and both reference-derived and physical L3 are not ready. [Closure audit](../etc/evidence/t399-s5-task-closure-audit.md). |
@@ -57,7 +37,6 @@
 | T397 | Closed: selected functional FDC/HDC/CECG/KBC-NMI/DMA routes and reset/order evidence retained; physical availability, phase and service facts transfer to explicit TODO receivers. Final DeskPro L3 may make only a ready/not-ready decision. [Closure audit](../etc/evidence/t397-s2-task-closure-audit.md). |
 | T396 | Closed: finite Model-40 source/owner, six-domain, reset and callback-order ledger retained; all unsourced physical clock, phase, wait and device/firmware visibility facts transfer to the next DeskPro candidate. No physical scalar or L3 claim. [Closure audit](../etc/evidence/t396-s2-task-closure-audit.md). |
 | T395 | Closed: private 12-to-64 bounded Core route growth with direct allocation/limit rollback, frozen-registration and order/decline proof. Transfers only the queued DeskPro board-level timing receiver. [Closure audit](../etc/evidence/t395-s2-task-closure-audit.md). |
-| T394 | Closed: S1-S7 establish the complete C0 81-key qualification and Core copied-descriptor safety boundary, then transfer physical selection solely to the queued source-backed DeskPro board clock-plan contract. No physical clock or L3 claim. [Closure audit](../etc/evidence/t394-s7-physical-qualification-closure-audit.md). |
 
 ## Recent Governance
 

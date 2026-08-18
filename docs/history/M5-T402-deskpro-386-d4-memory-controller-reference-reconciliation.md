@@ -22,3 +22,11 @@ documentation governance passes.  The actual change review confirms no Core or
 public Core/VM interface change.  S1 is accepted as functional D4 progress;
 physical D4/cache/DRAM/ISA timing and L3 remain transferred to the later
 board/device timing receiver.
+## S2 Acceptance And Task Closure
+
+P1 `cb08b95b` independently reviews the admitted D4 functional universe, actual
+S1 source change, focused/current-gate results and every physical transfer.  It
+finds no unclassified selected functional member and no Core/VM boundary
+regression.  T402 therefore closes at functional D4 scope only; its retained
+[closure audit](../etc/evidence/t402-s2-d4-functional-closure-audit.md) rejects
+any D4/cache/DRAM/ISA physical-timing or L3 conclusion.
