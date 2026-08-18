@@ -1046,3 +1046,7 @@ S56 audits the primary ALU map `00h`-`3Dh`: ADD, OR, ADC, SBB, AND, SUB, XOR and
 ## S56 Acceptance
 
 S56 closes the bounded primary-ALU audit. Runtime and lexical matrices establish all eight baseline operations, both ModR/M directions, accumulator immediates, byte/word four-profile execution, memory publication, FLAGS and CMP nonpublication, plus 80386 dword and attribute layouts. The temporary expanded-matrix assertion corrections were test-only; no production discrepancy was found. Core timing remains nonphysical and T401 remains open.
+
+## S57 Shared Prefixes
+
+S57 audits the shared prefix path. The retained S64 fixture proves segment-source selection for ES/CS/SS/DS/FS/GS, last-segment-prefix wins, 80386 operand/address selection, legal versus illegal LOCK forms and their atomicity, repeated width prefixes, fixed-segment/register effects, REP/REPNE progression and last-repeat-prefix selection, plus IRQ non-shadow behavior. Its pre-386 rows prove `66h`/`67h` atomic #UD across 8086, 80186 and 80286. `M5:T401:S57:SHARED-PREFIX-PREVIEW-PROFILES:OK` adds direct lexical proof for traditional segment and repeat prefixes on all profiles, FS/GS and width prefixes on 80386, and scanner rejection for pre-386 width attributes and LOCK. No production discrepancy was found; timing remains nonphysical.

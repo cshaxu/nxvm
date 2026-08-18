@@ -950,5 +950,6 @@ C_INT main(C_VOID)
         return 1;
     }
     STD_PRINTF("M5:T316:S64:PREFIX-ATTRIBUTES:OK\n");
+    STD_PRINTF("M5:T401:S57:SHARED-PREFIX-PROFILES:OK\n");
     return 0;
 }

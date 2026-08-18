@@ -3,6 +3,26 @@
 ## Current Work
 
 **Active: M5 T401.**
+## M5 T401 S57 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner: user; standing approval to continue CPU audit and directly repair confirmed small issues. |
+| Objective | Audit shared segment, repeat, LOCK and operand/address prefix behavior across the four profiles, consuming the S64 runtime fixture and adding a four-profile lexical matrix. |
+| Non-goals | No prefix production change unless the matrices confirm a shared defect; no CPU timing model, Core/VM interface, DeskPro claim or external-source import; no T401 closure. |
+| Reference Baseline | `d7028aa9` (S56 P2), T401 ledger, retained Intel references, `core-machine-prefix-attributes-s64-smoke` and preview smoke. |
+| Candidate Proposal | [Four-profile CPU instruction-correctness audit](../proposals/m5-four-profile-cpu-instruction-correctness-audit.md), shared prefix/control batch. |
+| Files And ABI Surface | Prefix-attributes smoke, preview smoke, CURRENT and T401 ledger only; test/documentation surface. |
+| Applicable Rules | Shared prefix/decode ownership unchanged; coding, documentation and execution rules apply. |
+| Verification | Build/run prefix-attributes and preview smokes; documentation governance; diff check. |
+| Expected Markers | `M5:T401:S57:SHARED-PREFIX-PROFILES:OK` and `M5:T401:S57:SHARED-PREFIX-PREVIEW-PROFILES:OK`. |
+| Asset Needs | None. |
+| Reporting Requirements | Record prefix/profile/legality evidence, discrepancy result, commits and nonphysical boundary. |
+| Stop Conditions | Transfer any nonlocal decode, transaction, fault-delivery or timing repair. |
+| Exit Criteria | Traditional segment and repeat prefixes scan on every profile; FS/GS and width prefixes distinguish 80386; pre-386 attributes and LOCK lexical routes reject; S64 runtime fixture passes and ledger records conclusion. |
+| Original Owner Request | Continue CPU audit before later DeskPro L3 work with direct repair of confirmed small issues. |
+| Similar-Issue Sweep | Treat all shared prefix classes together: segment last-wins, REP/REPNE, LOCK legality, repeated size prefixes, fixed-segment/register effects, pre-386 rejection and 80386 additions. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T395 S1 P4 `vm-0-5-0395` /

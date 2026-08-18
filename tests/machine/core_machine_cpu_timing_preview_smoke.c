@@ -567,6 +567,49 @@ static C_INT preview_test_modrm_data_move_profiles(C_VOID)
         preview_expect((const type_unsigned_8[]){0x8eu, 0xe1u}, 2u,
         CORE_MACHINE_CPU_PROFILE_80386, TYPE_FALSE, 2u, 2u);
 }
+static C_INT preview_test_shared_prefix_profiles(C_VOID)
+{
+    static const core_machine_cpu_profile profiles[] = {
+        CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
+        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
+    };
+    static const type_unsigned_8 segment_prefixes[] = {0x26u, 0x2eu, 0x36u, 0x3eu};
+    static const type_unsigned_8 repeat_prefixes[] = {0xf2u, 0xf3u};
+    static const type_unsigned_8 size_prefixes[] = {0x66u, 0x67u};
+    static const type_unsigned_8 locked_add[] = {0xf0u, 0x01u, 0x06u, 0u, 0x20u};
+    core_machine_cpu_instruction_lexeme lexeme;
+    type_unsigned_8 profile;
+    type_unsigned_8 prefix;
+
+    for (profile = 0u; profile != sizeof(profiles) / sizeof(profiles[0]); ++profile) {
+        for (prefix = 0u; prefix != sizeof(segment_prefixes); ++prefix)
+            if (!preview_expect((const type_unsigned_8[]){segment_prefixes[prefix],
+                    0x8au, 0x06u, 0u, 0x20u}, 5u, profiles[profile],
+                    TYPE_FALSE, 5u, 4u)) return 0;
+        for (prefix = 0u; prefix != sizeof(repeat_prefixes); ++prefix)
+            if (!preview_expect((const type_unsigned_8[]){repeat_prefixes[prefix],
+                    0xa4u}, 2u, profiles[profile], TYPE_FALSE, 2u, 2u)) return 0;
+    }
+    for (profile = 0u; profile != 3u; ++profile) {
+        for (prefix = 0u; prefix != sizeof(size_prefixes); ++prefix)
+            if (core_machine_cpu_instruction_lexeme_scan(
+                    (const type_unsigned_8[]){size_prefixes[prefix], 0x8bu, 0xc1u},
+                    3u, profiles[profile], TYPE_FALSE, &lexeme) || lexeme.available)
+                return 0;
+        if (core_machine_cpu_instruction_lexeme_scan(locked_add, sizeof(locked_add),
+                profiles[profile], TYPE_FALSE, &lexeme) || lexeme.available) return 0;
+    }
+    return preview_expect((const type_unsigned_8[]){0x64u, 0x8au, 0x06u, 0u, 0x20u},
+        5u, CORE_MACHINE_CPU_PROFILE_80386, TYPE_FALSE, 5u, 4u) &&
+        preview_expect((const type_unsigned_8[]){0x65u, 0x8au, 0x06u, 0u, 0x20u},
+        5u, CORE_MACHINE_CPU_PROFILE_80386, TYPE_FALSE, 5u, 4u) &&
+        preview_expect((const type_unsigned_8[]){0x66u, 0x8bu, 0xc1u}, 3u,
+        CORE_MACHINE_CPU_PROFILE_80386, TYPE_FALSE, 3u, 3u) &&
+        preview_expect((const type_unsigned_8[]){0x67u, 0x8bu, 0x46u, 0x10u}, 4u,
+        CORE_MACHINE_CPU_PROFILE_80386, TYPE_FALSE, 4u, 4u) &&
+        !core_machine_cpu_instruction_lexeme_scan(locked_add, sizeof(locked_add),
+            CORE_MACHINE_CPU_PROFILE_80386, TYPE_FALSE, &lexeme) && !lexeme.available;
+}
 static C_INT preview_test_primary_alu_profiles(C_VOID)
 {
     static const core_machine_cpu_profile profiles[] = {
@@ -1300,6 +1343,7 @@ C_INT main(C_VOID)
     if (!preview_test_direct_near_control_profiles()) return 51;
     if (!preview_test_direct_far_control_profiles()) return 52;
     if (!preview_test_primary_alu_profiles()) return 53;
+    if (!preview_test_shared_prefix_profiles()) return 54;
     if (!preview_test_les_lds_profiles()) return 34;
     if (!preview_test_group3_profiles()) return 10;
     if (!preview_test_group45_profiles()) return 11;
@@ -1358,5 +1402,6 @@ C_INT main(C_VOID)
     STD_PRINTF("M5:T401:S54:DIRECT-NEAR-CONTROL-PREVIEW-PROFILES:OK\n");
     STD_PRINTF("M5:T401:S55:DIRECT-FAR-CONTROL-PREVIEW-PROFILES:OK\n");
     STD_PRINTF("M5:T401:S56:PRIMARY-ALU-PREVIEW-PROFILES:OK\n");
+    STD_PRINTF("M5:T401:S57:SHARED-PREFIX-PREVIEW-PROFILES:OK\n");
     return 0;
 }
