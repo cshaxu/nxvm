@@ -352,5 +352,6 @@ C_INT main(C_VOID)
     if (!cli_sti_s48_test_386_prefix_and_lock())
         return 1;
     STD_PRINTF("M5:T316:S48:CLI-STI:OK\n");
+    STD_PRINTF("M5:T401:S37:CLI-STI-PROFILES:OK\n");
     return 0;
 }

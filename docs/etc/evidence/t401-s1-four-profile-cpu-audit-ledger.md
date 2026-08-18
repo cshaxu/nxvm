@@ -885,3 +885,11 @@ No production discrepancy was found. This remains CPU semantic/nonphysical timin
 ## S36 Acceptance
 
 S36 closes LAHF/SAHF `9Fh`/`9Eh` coverage with focused runtime and preview proof across all four profiles. It retains defined FLAGS/AH transfer, ignored bits, attributes, protected/VM86 and IRQ boundaries. No production discrepancy was found; Core timing remains explicitly nonphysical. S37 owns CLI/STI `FAh`/`FBh`.
+
+## S37 CLI/STI
+
+S37 audits CLI/STI `FAh`/`FBh`. Intel 8086/80286/80386 references define IF publication, protected/VM86 privilege gates and STI interrupt recognition inhibition. This is original-source semantic/form evidence; no emulator implementation, ROM or guest asset was imported.
+
+`M5:T401:S37:CLI-STI-PROFILES:OK` retains four-profile IF behavior, 80286 IRQ inhibition/reacceptance, pre-80386 attribute #UD atomicity and 80386 attributes/LOCK proof. `M5:T401:S37:CLI-STI-PREVIEW-PROFILES:OK` adds the matching lexical matrix.
+
+No production discrepancy was found. This remains CPU semantic/nonphysical timing-baseline evidence only and does not establish physical timing, DeskPro L3 or a Core/VM interface change.
