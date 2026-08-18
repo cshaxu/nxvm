@@ -6,7 +6,7 @@
 
 ## Current Technical Baseline
 
-- **Current developer artifact:** T409 S1 P1 `vm-0-5-0410` /
+- **Current developer artifact:** T410 S1 P1 `vm-0-5-0410` /
   `build/output/nxvm_0_5_0410.exe`, SHA-256
   `9E3EB86B62AD1CDF6A3CBEE18B9A16FBA7FF9F3E56F63E4FE060AF21B3B9E98B`.
   The isolated x64 current gate passes 287/287. T409 labels Core CPU memory
