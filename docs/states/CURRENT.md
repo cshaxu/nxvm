@@ -3,6 +3,26 @@
 ## Current Work
 
 **Active: M5 T401.**
+## M5 T401 S78 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner: user; standing approval to complete the CPU audit before returning to DeskPro L3 work, with direct correction of confirmed small issues. |
+| Objective | Independently review the S77 concrete-form matrix against the original T401 completion predicate, current dispatch/metadata/classifier graph and retained evidence; close T401 only if every required CPU semantic/source-timing disposition is proved or explicitly transferred. |
+| Non-goals | No physical CPU/board/L3 claim, numerical x87 claim, ROM/media import, history rewrite, or closure based solely on green tests. |
+| Reference Baseline | `0071e264` (S77 P2), T401 proposal, S76 review, S77 matrix, T359/T360 validators and current Core source/test graph. |
+| Candidate Proposal | [Four-profile CPU instruction-correctness audit](../proposals/m5-four-profile-cpu-instruction-correctness-audit.md), independent final closure review. |
+| Files And ABI Surface | T401 closure evidence, index and CURRENT; source/tests only for a confirmed bounded discrepancy, with no public ABI change. |
+| Applicable Rules | Independently verify all original closure bullets and every transfer; do not treat a timing fallback, map membership or single test as a physical or whole-machine result. |
+| Verification | Re-run T359/T360 inventory verifiers, inspect S77 membership against S72/S73 and current source, re-run full current gate, documentation governance and diff check; review exact changes before acceptance. |
+| Expected Markers | Existing S1--S77 markers plus a closure audit result and, if accepted, a task-level closure record. |
+| Asset Needs | None; no external artifact is added. |
+| Reporting Requirements | Report each original T401 closure bullet, proof/transfer and final decision; state the exact post-T401 DeskPro receiver boundary. |
+| Stop Conditions | Keep T401 open and assign a concrete corrective receiver for any unclassified form, source-timing gap, missing proof or unsupported transfer. |
+| Exit Criteria | T401 is closed only when every selected CPU semantic/source-timing row is mapped, nonphysical/external boundaries are explicit, and no physical DeskPro claim is implied. |
+| Original Owner Request | Continue CPU audit before DeskPro L3 work, then continue the DeskPro hardware/timing program with original/reference/generic levels labelled. |
+| Similar-Issue Sweep | Reconcile all matrix rows, metadata-invalid forms, prefix variants, FPU/provider boundary, timing origins, source-unallocated observation and physical transfers together. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T395 S1 P4 `vm-0-5-0395` /
