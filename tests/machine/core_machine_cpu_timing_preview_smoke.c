@@ -452,6 +452,26 @@ static C_INT preview_test_group2_immediate_profiles(C_VOID)
     return preview_expect((const type_unsigned_8[]){0x66u, 0xc1u, 0xc0u, 1u},
         4u, CORE_MACHINE_CPU_PROFILE_80386, TYPE_FALSE, 4u, 4u);
 }
+static C_INT preview_test_int3_into_profiles(C_VOID)
+{
+    static const core_machine_cpu_profile profiles[] = {
+        CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
+        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
+    };
+    static const type_unsigned_8 int3[] = {0xccu};
+    static const type_unsigned_8 into[] = {0xceu};
+    type_unsigned_8 profile;
+
+    for (profile = 0u; profile != sizeof(profiles) / sizeof(profiles[0]); ++profile)
+        if (!preview_expect(int3, sizeof(int3), profiles[profile],
+            TYPE_FALSE, 1u, 1u) || !preview_expect(into, sizeof(into),
+            profiles[profile], TYPE_FALSE, 1u, 1u)) return 0;
+    return preview_expect((const type_unsigned_8[]){0x66u, 0xccu}, 2u,
+        CORE_MACHINE_CPU_PROFILE_80386, TYPE_FALSE, 2u, 2u) &&
+        preview_expect((const type_unsigned_8[]){0x66u, 0x67u, 0xceu}, 3u,
+        CORE_MACHINE_CPU_PROFILE_80386, TYPE_FALSE, 3u, 3u);
+}
+
 static C_INT preview_test_int_immediate_profiles(C_VOID)
 {
     static const core_machine_cpu_profile profiles[] = {
@@ -791,6 +811,7 @@ C_INT main(C_VOID)
     if (!preview_test_far_return_profiles()) return 24;
     if (!preview_test_enter_leave_profiles()) return 25;
     if (!preview_test_int_immediate_profiles()) return 26;
+    if (!preview_test_int3_into_profiles()) return 27;
     if (!preview_test_group3_profiles()) return 10;
     if (!preview_test_group45_profiles()) return 11;
     if (preview_test_cpu_fetch_nonpublication()) return 4;
@@ -817,5 +838,6 @@ C_INT main(C_VOID)
     STD_PRINTF("M5:T401:S23:FAR-RETURN-PREVIEW-PROFILES:OK\n");
     STD_PRINTF("M5:T401:S24:ENTER-LEAVE-PREVIEW-PROFILES:OK\n");
     STD_PRINTF("M5:T401:S25:INT-IMMEDIATE-PREVIEW-PROFILES:OK\n");
+    STD_PRINTF("M5:T401:S26:INT3-INTO-PREVIEW-PROFILES:OK\n");
     return 0;
 }

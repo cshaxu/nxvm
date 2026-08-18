@@ -753,3 +753,11 @@ across all four profiles. It retains vector dispatch, saved frame, IF/TF
 retirement, 80386 prefix forms, pre-80386 #UD atomicity and protected/fault/
 VM86 boundaries. No production discrepancy was found; Core timing remains
 explicitly nonphysical. S26 owns INT3 `CCh` and INTO `CEh`.
+
+## S26 INT3 and INTO
+
+S26 audits INT3 `CCh` and INTO `CEh`. Intel's 80386 Programmer's Reference Manual defines their fixed vectors, saved return frame, IF/TF handling, and INTO's overflow-flag gate; older profiles retain 16-bit real-mode framing. This is original-source semantic/form evidence; no emulator implementation, ROM or guest asset was imported.
+
+`M5:T401:S26:INT3-INTO-PROFILES:OK` retains four-profile real-mode vector/frame and flag proof, 80386 prefix forms, pre-80386 prefix atomic #UD, LOCK rejection, protected-mode gate and fault/VM86 behavior. `M5:T401:S26:INT3-INTO-PREVIEW-PROFILES:OK` adds the matching lexical matrix.
+
+No production discrepancy was found. This remains CPU semantic/nonphysical timing-baseline evidence only and does not establish physical timing, DeskPro L3 or a Core/VM interface change.
