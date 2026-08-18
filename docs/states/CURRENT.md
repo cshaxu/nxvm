@@ -4,6 +4,26 @@
 
 **Active: M5 T399.**
 
+## M5 T399 S5 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; M5 T399 S5. |
+| Admission And Approval | Owner approved T399 completion before CPU audit on 2026-08-17; S2--S4 are accepted. The approved outcome is a truthful reference-derived L3 decision, never physical promotion. |
+| Objective | Independently re-audit the frozen five-batch T399 ledger and make the final reference-derived DeskPro Model-40 L3 ready/not-ready decision. |
+| Non-goals | No new implementation, physical timing claim, generic substitution, ROM/media/reference import, Core/VM ABI change, or CPU-audit work. |
+| Reference Baseline | T399 proposal and S1 ledger; S2 B3, S3 B2 and S4 B4 acceptance audits; T398 physical L3 decision and current TODO receivers. |
+| Candidate Proposal | [DeskPro 386 reference-derived timing bridge](../proposals/m5-deskpro-386-reference-derived-timing-bridge.md). |
+| Files And ABI Surface | T399 evidence/history, CURRENT, etc index and T399 proposal only; no source or ABI surface. |
+| Applicable Rules | Execution convergence/actual-diff/closure audit; Document authority/index/history rules; Architecture and source policy boundaries remain unchanged. |
+| Verification | Reconcile all five ledger rows and receivers; run current GCC gate, documentation governance and diff check. |
+| Expected Markers | Current-gate success and retained B2/B3/B4 markers; no new runtime marker. |
+| Asset Needs | None. No vendor or third-party asset is used. |
+| Reporting Requirements | Map every B1--B5 disposition to evidence/receiver, state reference confidence and physical separation, update plan/history/status and report the CPU-audit transfer. |
+| Stop Conditions | Stop ready publication if any batch lacks a disposition, accepted row lacks reproducible proof, rejected/non-eligible row lacks a receiver, or any claim crosses into physical timing. |
+| Exit Criteria | All five batches are exhausted and an independent reference-derived ready/not-ready decision, task closure audit and next CPU-audit transfer are recorded. |
+| Original Owner Request | Complete feasible DeskPro L3 timing before CPU instruction audit, using authority then qualified emulator references, otherwise TODO and deferring CPU-prerequisite work. |
+| Similar-Issue Sweep | Recheck T398’s physical L3 blockers, current TODO entries, Queue order and every T399 batch so no accepted logical contract is mistaken for physical proof. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T395 S1 P4 `vm-0-5-0395` /
