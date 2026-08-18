@@ -317,3 +317,10 @@ instruction-timing-ledger tests passed 4/4 on 2026-08-17.  One full-gate run
 had an unrelated DOS-keyboard timeout which passed twice in isolation; the
 replacement full current gate then executed 285/285 tests with no failure
 marker on 2026-08-17.
+`M5:T401:S9:GROUP3-PREVIEW-PROFILES:OK` adds the complete decoder/preview
+matrix: four profiles, both Group-3 opcode bytes and all eight extensions.  It
+proves `/1` unavailable, `/0` immediate-size selection (byte for `F6h`;
+active operand size for `F7h`) and the two-byte forms for `/2`--`/7`.  The
+existing inc-dec execution, multiply/divide fault and attribute matrices retain
+the state, FLAGS, transaction and #DE coverage; no new production repair or
+Core/VM boundary is introduced by this test-only completion slice.

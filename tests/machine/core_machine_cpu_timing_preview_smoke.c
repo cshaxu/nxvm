@@ -72,6 +72,45 @@ static C_INT preview_test_layouts(C_VOID)
             CORE_MACHINE_CPU_PROFILE_80386, TYPE_FALSE, 4u, 4u);
 }
 
+static C_INT preview_test_group3_profiles(C_VOID)
+{
+    static const core_machine_cpu_profile profiles[] = {
+        CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
+        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
+    };
+    type_unsigned_8 profile_index;
+    type_unsigned_8 extension;
+
+    for (profile_index = 0u; profile_index != sizeof(profiles) / sizeof(profiles[0]);
+        ++profile_index)
+    for (extension = 0u; extension != 8u; ++extension) {
+        type_unsigned_8 f6[] = { 0xf6u,
+            (type_unsigned_8)((extension << 3u) | 0xc0u), 0xa5u };
+        type_unsigned_8 f7[] = { 0xf7u,
+            (type_unsigned_8)((extension << 3u) | 0xc0u),
+            0x78u, 0x56u, 0x34u, 0x12u };
+        core_machine_cpu_instruction_lexeme lexeme;
+        const type_unsigned_8 operand_bytes = profiles[profile_index] ==
+            CORE_MACHINE_CPU_PROFILE_80386 ? 4u : 2u;
+        const type_bool code_32 = profiles[profile_index] ==
+            CORE_MACHINE_CPU_PROFILE_80386 ? TYPE_TRUE : TYPE_FALSE;
+        const type_bool invalid = extension == 1u;
+
+        if (invalid) {
+            if (core_machine_cpu_instruction_lexeme_scan(f6, sizeof(f6),
+                profiles[profile_index], code_32, &lexeme) || lexeme.available ||
+                core_machine_cpu_instruction_lexeme_scan(f7, sizeof(f7),
+                profiles[profile_index], code_32, &lexeme) || lexeme.available)
+                return 0;
+        } else if (!preview_expect(f6, sizeof(f6), profiles[profile_index],
+            code_32, extension == 0u ? 3u : 2u,
+            extension == 0u ? 3u : 2u) || !preview_expect(f7, sizeof(f7),
+            profiles[profile_index], code_32, extension == 0u ?
+            (type_unsigned_8)(2u + operand_bytes) : 2u,
+            extension == 0u ? 3u : 2u)) return 0;
+    }
+    return 1;
+}
 static C_INT preview_test_unavailable(C_VOID)
 {
     static const type_unsigned_8 truncated[] = { 0x8bu };
@@ -299,6 +338,7 @@ C_INT main(C_VOID)
 {
     if (!preview_test_layouts()) return 2;
     if (!preview_test_unavailable()) return 3;
+    if (!preview_test_group3_profiles()) return 10;
     if (preview_test_cpu_fetch_nonpublication()) return 4;
     if (preview_test_limited_fetch_nonpublication()) return 5;
     if (preview_test_taken_jcc_target()) return 6;
@@ -306,5 +346,6 @@ C_INT main(C_VOID)
     if (preview_test_default_reset_alias()) return 8;
     if (preview_test_cr_mov_mod_quirk()) return 9;
     STD_PRINTF("M5:T357:S2:CPU-TIMING-PREVIEW:OK\n");
+    STD_PRINTF("M5:T401:S9:GROUP3-PREVIEW-PROFILES:OK\n");
     return 0;
 }
