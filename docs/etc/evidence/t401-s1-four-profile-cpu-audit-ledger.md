@@ -761,3 +761,7 @@ S26 audits INT3 `CCh` and INTO `CEh`. Intel's 80386 Programmer's Reference Manua
 `M5:T401:S26:INT3-INTO-PROFILES:OK` retains four-profile real-mode vector/frame and flag proof, 80386 prefix forms, pre-80386 prefix atomic #UD, LOCK rejection, protected-mode gate and fault/VM86 behavior. `M5:T401:S26:INT3-INTO-PREVIEW-PROFILES:OK` adds the matching lexical matrix.
 
 No production discrepancy was found. This remains CPU semantic/nonphysical timing-baseline evidence only and does not establish physical timing, DeskPro L3 or a Core/VM interface change.
+
+## S26 Acceptance
+
+S26 closes INT3 `CCh` and INTO `CEh` with focused runtime and preview proof across all four profiles. It retains fixed-vector dispatch, INTO overflow gating, saved-frame/flag handling, 80386 prefixes, pre-80386 #UD atomicity and protected/fault/VM86 boundaries. No production discrepancy was found; Core timing remains explicitly nonphysical. S27 owns IRET `CFh`.
