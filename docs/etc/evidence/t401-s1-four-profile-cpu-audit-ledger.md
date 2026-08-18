@@ -413,3 +413,8 @@ forms with `66h`. `M5:T401:S11:PRIMARY-INC-DEC-PREVIEW-PROFILES:OK` scans all
 sixteen one-byte forms on every profile and both prefixed 80386 representatives.
 The result is a test-only evidence correction: no shared Core defect, external
 source import, physical timing claim or Core/VM interface change was found.
+S11 also closes the unavailable-prefix row: `66h 40h` and `66h 48h` execute as
+atomic `#UD` on 8086, 80186 and 80286, preserving EAX, EFLAGS and EIP. This
+extends the former single-80286 INC probe to both primary opcode halves and all
+pre-80386 selected profiles. The 80386 dword cases are covered by the normal
+execution and preview matrix.

@@ -257,7 +257,13 @@ static C_INT inc_dec_test_address_and_profile(C_VOID)
 {
     static const type_unsigned_8 address_code[] = { 0x67u,0x66u,0xffu,0x06u,
         0x00u,0x50u,0x00u,0x00u };
-    static const type_unsigned_8 rejected_prefix[] = { 0x66u,0x40u };
+    static const type_unsigned_8 rejected_prefixes[][2] = {
+        {0x66u,0x40u}, {0x66u,0x48u}
+    };
+    static const core_machine_cpu_profile legacy_profiles[] = {
+        CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
+        CORE_MACHINE_CPU_PROFILE_80286
+    };
     static const type_unsigned_8 accepted_legacy[] = { 0xffu,0xc0u };
     inc_dec_machine state;
     t_cpu after;
@@ -281,18 +287,28 @@ static C_INT inc_dec_test_address_and_profile(C_VOID)
     core_machine_destroy(state.machine);
     if (failed) return 0;
 
-    failed = !inc_dec_prepare(CORE_MACHINE_CPU_PROFILE_80286, &state);
-    if (!failed) {
-        state.machine->executor_cpu.data.eax = 0x11227fffu;
-        state.machine->executor_cpu.data.eflags = VCPU_EFLAGS_CF;
-        failed |= !inc_dec_run(&state, rejected_prefix, sizeof(rejected_prefix), 1,
-            &after, &diagnostic) || !diagnostic.first_fault.valid ||
-            !TYPE_GET_BIT(diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_UD) ||
-            after.data.eax != 0x11227fffu || after.data.eflags != VCPU_EFLAGS_CF ||
-            after.data.eip != 0u;
+    {
+        type_unsigned_8 profile;
+        type_unsigned_8 opcode;
+        for (profile = 0u; profile != sizeof(legacy_profiles) / sizeof(legacy_profiles[0]);
+            ++profile)
+        for (opcode = 0u; opcode != sizeof(rejected_prefixes) / sizeof(rejected_prefixes[0]);
+            ++opcode) {
+            failed = !inc_dec_prepare(legacy_profiles[profile], &state);
+            if (!failed) {
+                state.machine->executor_cpu.data.eax = 0x11227fffu;
+                state.machine->executor_cpu.data.eflags = VCPU_EFLAGS_CF;
+                failed |= !inc_dec_run(&state, rejected_prefixes[opcode],
+                    sizeof(rejected_prefixes[opcode]), 1, &after, &diagnostic) ||
+                    !diagnostic.first_fault.valid || !TYPE_GET_BIT(
+                    diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_UD) ||
+                    after.data.eax != 0x11227fffu ||
+                    after.data.eflags != VCPU_EFLAGS_CF || after.data.eip != 0u;
+            }
+            core_machine_destroy(state.machine);
+            if (failed) return 0;
+        }
     }
-    core_machine_destroy(state.machine);
-    if (failed) return 0;
 
     failed = !inc_dec_prepare(CORE_MACHINE_CPU_PROFILE_80186, &state);
     if (!failed) {
