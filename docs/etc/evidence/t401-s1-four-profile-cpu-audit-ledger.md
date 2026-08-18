@@ -1057,3 +1057,7 @@ S57 closes the bounded shared-prefix audit. The S64 runtime fixture and direct l
 ## S58 Immediate r/m MOV
 
 S58 audits MOV C6h/C7h. The GPR-MOV fixture now executes valid /0 direct-memory byte and word forms on 8086, 80186, 80286 and 80386; it retains reserved /1--/7, 80386 dword attributes, pre-386 prefix rejection, LOCK, protected-limit and IRQ evidence. M5:T401:S58:RM-IMMEDIATE-MOV-PREVIEW-PROFILES:OK adds lexical proof for register/memory valid forms, reserved extensions and 80386 width/address layouts. S58 found and repaired one shared lexical discrepancy: `C6h` imm8 was omitted from the immediate-byte classifier, so preview truncated valid immediate-to-r/m byte MOV forms. The classifier now consumes that byte; the four-profile matrix and full current gate pass. Timing remains nonphysical.
+
+## S58 Acceptance
+
+S58 closes immediate r/m MOV C6h/C7h. It expands valid forms to all four profiles, retains reserved-extension and protection/LOCK/IRQ boundaries, and repairs C6 imm8 lexical consumption. Both focused smokes and the 285-test current gate pass; timing remains nonphysical and T401 remains open.
