@@ -1006,3 +1006,6 @@ S50 audits the 80186-plus PUSH-immediate forms `68h` and `6Ah`. The existing run
 ## S50 Acceptance
 
 S50 closes the bounded 80186-plus PUSH-immediate family audit. Runtime and direct preview evidence cover profile availability, immediate width/sign extension, 80386 attributes, LOCK, protected stack faults and IRQ boundaries. No production discrepancy was found; Core timing remains nonphysical and T401 remains open.
+## S51 INS/OUTS String I/O
+
+S51 audits 80186-plus INS/OUTS `6Ch`-`6Fh`. Existing focused fixtures prove single and REP input/output routing, byte/word/dword widths, index direction/address-size behavior, 80386 protected and VM86 permission checks, and TSS I/O-map allow/deny atomicity. `M5:T401:S51:STRING-IO-PREVIEW-PROFILES:OK` adds direct lexical proof for 8086 rejection, all four legal forms on 80186 through 80386, REP, and 80386 operand/address prefixes. No production discrepancy was found; timing remains nonphysical.

@@ -3,6 +3,26 @@
 ## Current Work
 
 **Active: M5 T401.**
+## M5 T401 S51 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner: user; standing approval to continue the four-profile CPU audit and fix confirmed small issues. |
+| Objective | Audit 80186-plus INS/OUTS string-port forms `6Ch`-`6Fh`, consume the existing runtime/protection fixtures, and add direct four-profile lexical availability and 80386 attribute proof. |
+| Non-goals | No port-provider, CPU execution/timing, Core/VM interface, DeskPro timing, or external-source change; no T401 closure. |
+| Reference Baseline | `4ab13dc9` (S50 P2), T401 ledger, retained Intel references, `core-machine-port-strings-smoke`, `core-machine-80386-protected-io-timing-smoke`, and `core-machine-tss-iomap-port-smoke`. |
+| Candidate Proposal | [Four-profile CPU instruction-correctness audit](../proposals/m5-four-profile-cpu-instruction-correctness-audit.md), 80186 string I/O form batch. |
+| Files And ABI Surface | `tests/machine/core_machine_cpu_timing_preview_smoke.c`, `docs/states/CURRENT.md`, `docs/etc/evidence/t401-s1-four-profile-cpu-audit-ledger.md`; test/documentation only. |
+| Applicable Rules | `ARCHITECTURE.md`: shared Core CPU/port transaction ownership stays unchanged; `CODING.md`: machine-owner tests; `DOCUMENT.md`/`EXECUTION.md`: lifecycle and evidence. |
+| Verification | Build/run string-port, protected-I/O, TSS I/O-map and preview smokes; require their markers; run documentation governance and `git diff --check`. |
+| Expected Markers | Existing port-string, protected-I/O and I/O-map markers plus `M5:T401:S51:STRING-IO-PREVIEW-PROFILES:OK`. |
+| Asset Needs | None; no ROM, firmware, guest media or third-party source is read/imported. |
+| Reporting Requirements | Report form/profile/attribute and permission evidence, production-discrepancy result, commits and nonphysical timing boundary. |
+| Stop Conditions | Stop and transfer if a string I/O form exposes a port transaction, repeat, privilege or timing mechanism defect exceeding a bounded shared repair. |
+| Exit Criteria | 8086 rejection, 80186/80286/80386 legal forms, REP and 80386 operand/address layouts are directly scanned; existing runtime/protection fixtures pass; ledger records conclusion. |
+| Original Owner Request | Continue the CPU audit before later DeskPro L3 work; primary authority first, reference secondary, explicit transfers, direct repair of confirmed small issues. |
+| Similar-Issue Sweep | Treat all four INS/OUTS opcodes together because they share string-port and privilege mechanisms; distinguish byte/word/dword and input/output directions through existing fixtures. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T395 S1 P4 `vm-0-5-0395` /
