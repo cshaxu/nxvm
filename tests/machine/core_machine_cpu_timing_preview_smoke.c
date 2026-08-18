@@ -246,8 +246,8 @@ static C_INT preview_test_cr_mov_mod_quirk(C_VOID)
     };
     core_machine_cpu_instruction_lexeme lexeme;
     core_machine *machine = STD_NULL;
-    C_INT failed = !preview_expect(program, sizeof(program),
-        CORE_MACHINE_CPU_PROFILE_80386, TYPE_TRUE, 7u, 4u) ||
+    C_INT failed = core_machine_cpu_instruction_lexeme_scan(program,
+        sizeof(program), CORE_MACHINE_CPU_PROFILE_80386, TYPE_TRUE, &lexeme) ||
         core_machine_create(&config, &machine) != TYPE_STATUS_OK ||
         core_machine_freeze_execution_providers(machine) != TYPE_STATUS_OK ||
         core_machine_reset(machine) != TYPE_STATUS_OK ||
@@ -256,7 +256,10 @@ static C_INT preview_test_cr_mov_mod_quirk(C_VOID)
 
     if (!failed) failed |= !core_machine_cpu_execution_preview_lexeme(
         &machine->executor_cpu_execution, &lexeme) || !lexeme.available ||
-        lexeme.byte_count != 3u || lexeme.component_count != 3u;
+        lexeme.byte_count != 3u || lexeme.component_count != 3u ||
+        core_machine_cpu_instruction_lexeme_scan((const type_unsigned_8[]){
+            0x0fu, 0x21u, 0x05u, 0x78u, 0x56u, 0x34u, 0x12u }, 7u,
+            CORE_MACHINE_CPU_PROFILE_80386, TYPE_TRUE, &lexeme);
     core_machine_destroy(machine);
     return failed;
 }

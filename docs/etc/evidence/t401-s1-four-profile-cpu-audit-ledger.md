@@ -60,9 +60,10 @@ machine option, but the non-mutating execution preview delegated to the public
 generic lexical scanner and consumed an invented SIB/displacement. A private
 scanner option now serves only the bound execution-preview context; the public
 scanner retains the standard register-only 80386 layout and API. The focused
-preview regression proves `0F 20 05 disp32` is seven bytes generically and
-three bytes for the enabled original-80386 option. This implements neither a
-new machine profile nor a physical timing claim.
+preview regression proves a generic scanner rejects `0F 20 05 disp32`, as it
+would every non-register CR/DR/TR form, while the enabled original-80386
+option recognizes the documented CR form as three bytes. This implements
+neither a new machine profile nor a physical timing claim.
 ## S5 Lexical Repair: Memory-Only ModR/M Forms
 
 The runtime decoder rejects register ModR/M forms for `BOUND`, `LEA`, `LES`,
