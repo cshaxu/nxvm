@@ -5120,6 +5120,10 @@ type_status core_machine_run(
 
                 machine->external_memory_locality_round_ticks = 0u;
                 machine->external_memory_locality_round_overflow = TYPE_FALSE;
+                /* Generic-AT conservative boundary: D4 says an inserted CPU
+                 * idle terminates PAGE HIT. Core has no physical overlap phase,
+                 * so a new instruction round cannot inherit a prior round key. */
+                machine->external_memory_locality_page_valid = TYPE_FALSE;
                 core_machine_cpu_execution_refresh(&machine->executor_cpu_execution);
                 if (machine->d4_platform_configured &&
                     core_machine_cpu_execution_consume_shutdown_request(

@@ -2,35 +2,32 @@
 
 ## Current Work
 
-## M5 T417 S1 Packet
+## M5 T418 S1 Packet
 
 | Field | Required record |
 | --- | --- |
 | Identifier Mode | New |
 | Admission And Approval | Owner authorization of 2026-08-18 covers continued DeskPro L3 implementation, tier-labelled reference/generic bridges, and master pushes. |
-| Objective | Implement one bounded generic-AT refresh locality policy: a D4-configured system PIT counter-1 refresh pulse invalidates the CPU external-memory locality key before a later CPU cycle, using the original D4 refresh topology and existing PIT output owner. |
-| Non-goals | Do not claim D4 DMA/refresh/BWAIT clocks, exact DRAM page retention, a physical HOLD waveform, device service timing, or Model-L3 readiness. |
-| Reference Baseline | T408 original D4 page-mode facts, T410 external cycles, T412--T416 locality bridges, original D3PE refresh/HLDA topology, and the existing Core PC/AT counter-1 refresh timer/output owner. |
+| Objective | Implement a bounded generic-AT CPU instruction-boundary locality invalidation policy so a later instruction cannot receive a D4 page hit solely from adjacent logical accesses. |
+| Non-goals | Do not claim D4 pipelined-address overlap, calibrated CPU idle duration, BWAIT timing, DMA/refresh arbitration, or Model-L3 readiness. |
+| Reference Baseline | Original D3PE page-mode description: CPU idle between cycles terminates PAGE HIT and reverts to INITIAL; T410--T417 external-cycle/locality bridges. |
 | Candidate Proposal | [DeskPro physical-cycle and phase-timing closure](../proposals/m5-deskpro-physical-cycle-and-phase-timing.md) |
-| Files And ABI Surface | Existing Core shared-PIT output/locality owner and D4 composition only; preserve Core/VM direction and one CPU/DMA transaction owner. |
+| Files And ABI Surface | Existing Core run-loop/locality owner and focused Core tests only; preserve Core/VM direction and the sole transaction owner. |
 | Applicable Rules | docs/design/ARCHITECTURE.md; docs/design/CODING.md; docs/rules/ARCHITECTURE.md; docs/rules/CODING.md; docs/rules/EXECUTION.md. |
-| Verification | Original-source/topology review, focused D4 counter-1 pulse/locality miss/reset trace, retained DMA-HOLD competition regression, current gate, documentation gate and actual-diff review. |
-| Expected Markers | M5:T417:S1:REFRESH-LOCALITY:OK or M5:T417:S1:REFRESH-LOCALITY:TRANSFER. |
-| Asset Needs | O:\assets original D3PE research and read-only PCjs/other available references; no import. |
-| Reporting Requirements | Label the policy generic-AT and the schematic topology original; name every unbound D4 physical receiver. |
-| Stop Conditions | Stop and transfer any policy requiring exact DMA/refresh/BWAIT phase clocks, physical page retention proof, a second scheduler, or another transaction path. |
-| Exit Criteria | A D4-configured refresh pulse invalidates CPU locality before the next CPU external cycle with focused reset/cancellation proof, or the receiver is transferred without blocking later work. |
+| Verification | Original-source review, focused consecutive-instruction versus same-instruction locality/reset/cancellation proof, current gate, documentation gate and actual-diff review. |
+| Expected Markers | M5:T418:S1:INSTRUCTION-BOUNDARY-LOCALITY:OK or M5:T418:S1:INSTRUCTION-BOUNDARY-LOCALITY:TRANSFER. |
+| Asset Needs | O:\assets original D3PE research; no import. |
+| Reporting Requirements | Label the policy generic-AT; state that an instruction boundary is conservative and not an observed D4 physical idle phase. |
+| Stop Conditions | Stop and transfer any policy requiring overlap duration, physical idle detection, BWAIT/DMA/refresh phases, a second scheduler, or another transaction path. |
+| Exit Criteria | A new instruction boundary clears the generic locality key before a later CPU cycle, while cycles within one execution round retain their existing owner-local behavior, with focused proof. |
 | Original Owner Request | Implement DeskPro 386 L3 timing/hardware gaps using original then reference then generic-AT tiers; do not stall and preserve Core/VM boundary. |
-| Similar-Issue Sweep | Inspect PIT counter-1 refresh output, CPU locality, reset/cancellation, DMA HOLD, port 61h, page walks, prefetch, data reads/writes, and Model-40 composition. |
+| Similar-Issue Sweep | Inspect instruction-run boundary, prefetch/data/page-walk locality, reset, cancellation, DMA HOLD, refresh pulse and Model-40 composition. |
 ## Current Technical Baseline
 
-- **Current developer artifact:** T417 S1 P1 `vm-0-5-0417` /
-  `build/output/nxvm_0_5_0417.exe`, SHA-256
-  `3D509C6680FFEAEFD039744DCF959BC1BED89CEEDB94DA05B30A669DEC1AD4DE`.
-  T417 binds only the D4-configured system PIT counter-1 refresh low pulse to
-  the Core generic-AT locality invalidation boundary. Original D4 source proves
-  refresh topology, not a physical page-retention interval or phase timing;
-  T416 DMA-HOLD and T415 page-walk/CR0 PG/CR3 fixes remain retained.
+- **Current developer artifact:** T418 S1 P1 `vm-0-5-0418` /
+  `build/output/nxvm_0_5_0418.exe`, SHA-256
+  `E431A7412EB1DF2215CADDBC3A03A7D2179851CD3511F74C7C44F89F08B108A9`.
+  T418 conservatively clears generic-AT CPU locality at every new instruction round. Original D4 source proves that a CPU idle ends PAGE HIT, but Core cannot observe physical overlap; T417 refresh, T416 DMA-HOLD and T415 paging fixes remain retained.
   T386 closes selected-device functional completeness at S29; its retained
   [closure audit](../etc/evidence/t386-s29-functional-closure-audit.md) fixes
   HDC current-gate coverage and transfers board, firmware and physical work.

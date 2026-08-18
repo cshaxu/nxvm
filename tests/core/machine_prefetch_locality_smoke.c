@@ -208,8 +208,8 @@ C_INT main(C_VOID)
     failed |= !run_write(&locality, &write_locality_ticks);
     failed |= !run_read(&disabled, &read_baseline_ticks);
     failed |= !run_read(&locality, &read_locality_ticks);
-    /* Retirement receives one initial prefetch miss and one write-page miss. */
-    failed |= locality_ticks != baseline_ticks + 5u;
+    /* Instruction boundaries conservatively end locality: prefetch and later write each miss. */
+    failed |= locality_ticks != baseline_ticks + 6u;
     failed |= write_locality_ticks != write_baseline_ticks + 4u;
     failed |= read_locality_ticks != read_baseline_ticks + 4u;
     failed |= !locality_observer_contract();
@@ -221,5 +221,6 @@ C_INT main(C_VOID)
     STD_PRINTF("M5:T415:S1:PAGE-WALK-LOCALITY:OK\n");
     STD_PRINTF("M5:T416:S1:DMA-HOLD-LOCALITY:OK\n");
     STD_PRINTF("M5:T417:S1:REFRESH-LOCALITY:OK\n");
+    STD_PRINTF("M5:T418:S1:INSTRUCTION-BOUNDARY-LOCALITY:OK\n");
     return 0;
 }

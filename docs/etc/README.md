@@ -435,6 +435,8 @@ principal documents named in [docs/README.md](../README.md).
 
 | evidence/t417-s2-refresh-locality-closure-audit.md | Closure audit | T417 S2 independently closes the D4-bound generic-AT refresh locality boundary and transfers physical D4 refresh phases. Retain with T417 history. |
 
+| evidence/t418-s1-instruction-boundary-locality.md | Verification owner | T418 S1 adds a conservative generic-AT instruction-boundary locality invalidation and transfers physical D4 overlap timing. Retain with T418 history. |
+
 Adding a new supporting document requires owner approval, an exact-file index
 row or a declared indexed subtree, and a stated promotion, merge, or retirement
 condition. The governance gate verifies that every supporting Markdown file is
