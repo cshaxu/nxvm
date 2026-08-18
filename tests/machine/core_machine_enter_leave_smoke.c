@@ -684,5 +684,6 @@ C_INT main(C_VOID)
         return 1;
     }
     STD_PRINTF("M5:T316:S43:ENTER-LEAVE:OK\n");
+    STD_PRINTF("M5:T401:S24:ENTER-LEAVE-PROFILES:OK\n");
     return 0;
 }

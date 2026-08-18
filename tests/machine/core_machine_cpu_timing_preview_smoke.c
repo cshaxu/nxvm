@@ -369,6 +369,26 @@ static C_INT preview_test_moffs_mov_profiles(C_VOID)
     return 1;
 }
 
+static C_INT preview_test_enter_leave_profiles(C_VOID)
+{
+    static const core_machine_cpu_profile profiles[] = {
+        CORE_MACHINE_CPU_PROFILE_80186, CORE_MACHINE_CPU_PROFILE_80286,
+        CORE_MACHINE_CPU_PROFILE_80386
+    };
+    static const type_unsigned_8 enter[] = {0xc8u, 4u, 0u, 2u};
+    static const type_unsigned_8 leave[] = {0xc9u};
+   type_unsigned_8 profile;
+
+
+    for (profile = 0u; profile != sizeof(profiles) / sizeof(profiles[0]); ++profile)
+        if (!preview_expect(enter, sizeof(enter), profiles[profile], TYPE_FALSE,
+            4u, 2u) || !preview_expect(leave, sizeof(leave), profiles[profile],
+            TYPE_FALSE, 1u, 1u)) return 0;
+    return preview_expect((const type_unsigned_8[]){0x66u,0xc8u,4u,0u,1u},
+        5u, CORE_MACHINE_CPU_PROFILE_80386, TYPE_FALSE, 5u, 3u) &&
+        preview_expect((const type_unsigned_8[]){0x66u,0xc9u}, 2u,
+        CORE_MACHINE_CPU_PROFILE_80386, TYPE_FALSE, 2u, 2u);
+}
 static C_INT preview_test_far_return_profiles(C_VOID)
 {
     static const core_machine_cpu_profile profiles[] = {
@@ -750,6 +770,7 @@ C_INT main(C_VOID)
     if (!preview_test_group2_immediate_profiles()) return 22;
     if (!preview_test_near_return_profiles()) return 23;
     if (!preview_test_far_return_profiles()) return 24;
+    if (!preview_test_enter_leave_profiles()) return 25;
     if (!preview_test_group3_profiles()) return 10;
     if (!preview_test_group45_profiles()) return 11;
     if (preview_test_cpu_fetch_nonpublication()) return 4;
@@ -774,5 +795,6 @@ C_INT main(C_VOID)
     STD_PRINTF("M5:T401:S21:GROUP2-IMMEDIATE-PREVIEW-PROFILES:OK\n");
     STD_PRINTF("M5:T401:S22:NEAR-RETURN-PREVIEW-PROFILES:OK\n");
     STD_PRINTF("M5:T401:S23:FAR-RETURN-PREVIEW-PROFILES:OK\n");
+    STD_PRINTF("M5:T401:S24:ENTER-LEAVE-PREVIEW-PROFILES:OK\n");
     return 0;
 }

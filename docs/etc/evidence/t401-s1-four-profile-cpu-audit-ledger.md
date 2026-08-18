@@ -714,3 +714,11 @@ No production discrepancy was found. This remains CPU semantic/nonphysical timin
 ## S23 Acceptance
 
 S23 closes far return CAh/CBh coverage with focused runtime and preview proof across all four profiles, including immediate cleanup, 80386 width forms and protected validation/atomicity. Core timing remains explicitly nonphysical. S24 owns ENTER/LEAVE C8h/C9h.
+
+## S24 ENTER/LEAVE
+
+S24 audits C8h/C9h ENTER/LEAVE. Intel's 80186/80386 references define post-8086 availability, frame allocation/nesting and operand-size-selected stack width. This is original-source semantic/form evidence; no emulator implementation, ROM or guest asset was imported.
+
+M5:T401:S24:ENTER-LEAVE-PROFILES:OK retains four-profile support/rejection, nesting, attributes, protected faults and IRQ boundaries. M5:T401:S24:ENTER-LEAVE-PREVIEW-PROFILES:OK adds lexical proof; ENTER's imm16+imm8 field correctly forms one immediate component.
+
+No production discrepancy was found. This remains CPU semantic/nonphysical timing-baseline evidence only and does not establish physical timing, DeskPro L3 or a Core/VM interface change.
