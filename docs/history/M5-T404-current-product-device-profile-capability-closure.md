@@ -24,3 +24,7 @@ P1 `25cb4839` repairs the shared session media lifecycle: generic fixed HDD load
 ## S4 Acceptance
 
 P1 `612aee33` completes the S3 removable-media similar-issue sweep: Console removal no longer bypasses the VM session owner, running removal rejects, and stopped removal clears retained state. The extended lifecycle smoke and full current gate (286/286) pass; documentation governance passes. S4 is accepted; T404 remains open for controller, display and input Batch B reconciliation.
+
+## S5 Acceptance
+
+P1 `82b0da50` makes the VM-public host-input contract total: key and relative-mouse events map to ordered ingress, while unknown kinds reject before queueing. The focused ingress smoke and full current gate (286/286) pass; documentation governance passes. S5 is accepted; T404 remains open for residual controller/display Batch B reconciliation.

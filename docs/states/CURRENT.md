@@ -3,26 +3,6 @@
 ## Current Work
 
 **Active: M5 T404.**
-## M5 T404 S5 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner approved ongoing in-scope T404 repairs, commits and pushes on 2026-08-18. Scope: public VM input contract reconciliation within Batch B. |
-| Objective | Make `vm_session_submit_host_input` reject event kinds that its VM session consumer cannot map to a guest request, so accepted host input has one queued guest-bound operation. |
-| Non-goals | No Core input-source policy change; no keyboard/mouse hardware timing claim; no input ABI expansion; no display or controller semantic implementation. |
-| Reference Baseline | T404 S1 Batch B ledger; session input consumer accepts only key and relative-mouse events while the public submit operation currently reports success for an ignored unknown kind. |
-| Candidate Proposal | [T404 proposal](../proposals/m5-current-product-device-profile-capability-closure.md); [ledger](../etc/evidence/t404-s1-current-public-device-capability-ledger.md). |
-| Files And ABI Surface | VM session composition and existing host-ingress product/platform regression only. Preserve `core_platform_input_source` generic capability and public event layout. |
-| Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`, `docs/design/ARCHITECTURE.md`, and `docs/design/CODING.md`. |
-| Verification | Extend the host-ingress smoke for rejected unknown kind/no queued request; full current CTest gate; documentation governance and actual-diff review. |
-| Expected Markers | Existing `M5:T226:S2:HOST-INGRESS:OK` marker gains the public VM input-rejection proof. |
-| Asset Needs | None. |
-| Reporting Requirements | Record accepted/rejected input-kind dispositions, queue proof, source-owner boundary and retained physical keyboard/mouse timing transfer. |
-| Stop Conditions | Stop and transfer any new input kind, Core-source policy change, KBC/AUX controller behavior, physical timing, or external asset need. |
-| Exit Criteria | Every VM-public host input kind is either mapped to a queued request or rejected; supported key/mouse tests remain valid. |
-| Original Owner Request | Implement DeskPro 386 L3 and all hardware gaps using primary sources, labelled reference implementations, or generic skeletons where necessary; avoid leaving useful work blocked by unavailable perfect reference material. |
-| Similar-Issue Sweep | Search session host-input submissions and all consumer switches for ignored public event kinds; disposition every production path. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T404 S5 P1 `vm-0-5-0404` /
@@ -49,7 +29,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T404 S4 | Accepted: FDD insertion and removal now share one VM-owner lifecycle boundary; stopped removal clears retained state and running changes reject. [Evidence](../etc/evidence/t404-s3-media-lifecycle.md). |
+| T404 S5 | Accepted: VM-public host input accepts only mapped key/mouse events; unknown kinds reject before ingress without a guest-side effect. [Evidence](../etc/evidence/t404-s5-public-host-input-contract.md). |
 | T403 | Closed: shared keyboard serial endpoint prevents accepted break loss under full 8042 output; functional KBC flow is complete while physical keyboard/8042/DeskPro timing remains transferred. [Closure audit](../etc/evidence/t403-s2-keyboard-flow-control-closure-audit.md). |
 | T402 | Closed: D3PE-first functional D4 matrix accepted; the Model-40 control aperture repair is reference-labelled where primary material is incomplete, while cache/DRAM/ISA physical timing and L3 remain transferred. [Closure audit](../etc/evidence/t402-s2-d4-functional-closure-audit.md). |
 | T401 | Closed: bounded four-profile CPU semantic/source-timing audit; every frozen form is proven, repaired, nonphysical-observed, rejected or transferred, without an x87, physical CPU, board or L3 claim. [Closure audit](../etc/evidence/t401-s78-task-closure-audit.md). |
