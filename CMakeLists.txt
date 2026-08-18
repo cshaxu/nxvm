@@ -247,6 +247,9 @@ target_link_libraries(core-machine-timing-checkpoint-smoke PRIVATE core-machine)
 add_executable(core-machine-transaction-s2-smoke
     tests/core/machine_transaction_s2_smoke.c)
 target_link_libraries(core-machine-transaction-s2-smoke PRIVATE core-machine)
+add_executable(core-machine-prefetch-locality-smoke
+    tests/core/machine_prefetch_locality_smoke.c)
+target_link_libraries(core-machine-prefetch-locality-smoke PRIVATE core-machine)
 
 add_executable(core-machine-competition-s3-smoke
     tests/core/machine_competition_s3_smoke.c)
@@ -1963,6 +1966,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     core-machine-scheduler-smoke
     core-machine-timing-checkpoint-smoke
     core-machine-transaction-s2-smoke
+    core-machine-prefetch-locality-smoke
     core-machine-competition-s3-smoke
     core-machine-competition-80386-s1-smoke
     core-machine-transaction-lifecycle-s4-smoke
@@ -2719,8 +2723,8 @@ function(add_current_vm_artifact target version)
             "${CMAKE_SOURCE_DIR}/build/output/${task_artifact_filename}")
 endfunction()
 
-set(PROJECT_CURRENT_VM_ARTIFACT_TARGET vm-0-5-0411)
-add_current_vm_artifact(vm-0-5-0411 "0.5.0411")
+set(PROJECT_CURRENT_VM_ARTIFACT_TARGET vm-0-5-0412)
+add_current_vm_artifact(vm-0-5-0412 "0.5.0412")
 option(PROJECT_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
 
@@ -3312,10 +3316,10 @@ foreach(project_t345_target IN LISTS PROJECT_T344_CURRENT_GATE_TARGETS)
 endforeach()
 list(LENGTH PROJECT_T345_S2_OWNER_TEST_STRICT_TARGETS project_t345_s2_pure_count)
 list(LENGTH PROJECT_T345_S2_MIXED_OWNER_TEST_TARGETS project_t345_s2_mixed_count)
-if(NOT project_t345_s2_pure_count EQUAL 171 OR
+if(NOT project_t345_s2_pure_count EQUAL 172 OR
         NOT project_t345_s2_mixed_count EQUAL 3)
     message(FATAL_ERROR
-        "T345 S2 expected 171 pure and 3 mixed owner-test targets; found ${project_t345_s2_pure_count} pure and ${project_t345_s2_mixed_count} mixed.")
+        "T345 S2 expected 172 pure and 3 mixed owner-test targets; found ${project_t345_s2_pure_count} pure and ${project_t345_s2_mixed_count} mixed.")
 endif()
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     foreach(project_t345_target IN LISTS PROJECT_T345_S2_OWNER_TEST_STRICT_TARGETS)

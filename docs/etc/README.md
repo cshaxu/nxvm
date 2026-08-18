@@ -408,6 +408,8 @@ principal documents named in [docs/README.md](../README.md).
 
 | `evidence/t410-s1-cpu-external-cycle.md` | Verification owner | T410 S1 adds a Core CPU external-cycle observation lifecycle around classified physical accesses without publishing physical timing. Retain with T410 history. |
 
+| vidence/t412-s1-external-read-locality.md | Verification owner | T412 S1 adds the Model-40-bound generic-AT prefetch-locality bridge, with exact D4 PAL timing retained as a transfer. Retain with T412 history. |
+
 | evidence/t411-s1-cpu-prefetch-window.md | Verification owner | T411 S1 makes the Core 15-byte instruction-prefetch window persistent with control-transfer and reset invalidation, while retaining D4 timing as unbound. Retain with T411 history. |
 | vidence/t411-s2-prefetch-closure-audit.md | Closure audit | T411 S2 verifies the single Core prefetch lifecycle and transfers every D4 physical-cycle receiver without an L3 claim. Retain with T411 history. |
 

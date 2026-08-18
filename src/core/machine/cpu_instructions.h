@@ -135,7 +135,8 @@ typedef enum core_machine_cpu_external_cycle_phase {
 
 typedef C_VOID (*core_machine_cpu_external_cycle_provider)(C_VOID *context,
     core_machine_cpu_external_cycle_phase phase, type_unsigned_32 physical,
-    type_unsigned_8 bytes, core_machine_cpu_memory_access_provenance provenance);
+    type_unsigned_8 bytes, type_bool write,
+    core_machine_cpu_memory_access_provenance provenance);
 
 typedef struct core_machine_cpu_instruction_metadata {
     core_machine_cpu_profile minimum_cpu;

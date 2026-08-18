@@ -91,6 +91,11 @@ struct core_machine {
     core_machine_timeline timeline;
     core_machine_transaction_state transaction;
     core_machine_instruction_timing instruction_timing;
+    core_machine_prefetch_locality_timing prefetch_locality_timing;
+    type_unsigned_32 prefetch_locality_page_tag;
+    type_unsigned_64 prefetch_locality_round_ticks;
+    type_bool prefetch_locality_page_valid;
+    type_bool prefetch_locality_round_overflow;
     type_unsigned_64 maximum_instruction_ticks;
     core_machine_retirement_time_contract retirement_time_contract;
     type_bool source_timing_unallocated;

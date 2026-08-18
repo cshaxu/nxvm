@@ -84,12 +84,13 @@ static C_VOID _kma_write_ref(core_machine_cpu_execution_context *context, type_v
 static C_VOID _kma_publish_external_cycle(
     core_machine_cpu_execution_context *context,
     core_machine_cpu_external_cycle_phase phase, type_unsigned_32 physical,
-    type_unsigned_8 byte, core_machine_cpu_memory_access_provenance provenance)
+    type_unsigned_8 byte, type_bool write,
+    core_machine_cpu_memory_access_provenance provenance)
 {
     if (context != STD_NULL && !context->preview_mode &&
         context->external_cycle_provider != STD_NULL) {
         context->external_cycle_provider(context->external_cycle_context, phase,
-            physical, byte, provenance);
+            physical, byte, write, provenance);
     }
 }
 /* read content from physical */
@@ -97,50 +98,50 @@ static C_VOID _kma_read_physical(core_machine_cpu_execution_context *context, ty
 {
     TYPE_TRACE_CALL_BEGIN("_kma_read_physical");
     _kma_publish_external_cycle(context, CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_BEGIN,
-        physical, byte, provenance);
+        physical, byte, TYPE_FALSE, provenance);
     if (!context->preview_mode && context->transaction != STD_NULL && core_machine_transaction_begin(
             context->transaction, CORE_MACHINE_TRANSACTION_OWNER_CPU,
             CORE_MACHINE_TRANSACTION_CPU_MEMORY_READ, physical, byte, provenance) !=
             TYPE_STATUS_OK) {
         _kma_publish_external_cycle(context, CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_CANCEL,
-            physical, byte, provenance);
+            physical, byte, TYPE_FALSE, provenance);
         TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(physical));
     }
     if (core_machine_memory_read_physical(context->memory, physical, rdata,
             byte) != TYPE_STATUS_OK) {
         if (!context->preview_mode) core_machine_transaction_cancel(context->transaction);
         _kma_publish_external_cycle(context, CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_CANCEL,
-            physical, byte, provenance);
+            physical, byte, TYPE_FALSE, provenance);
         TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(physical));
     }
     if (!context->preview_mode) core_machine_transaction_commit(context->transaction);
     _kma_publish_external_cycle(context, CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_COMMIT,
-        physical, byte, provenance);
+        physical, byte, TYPE_FALSE, provenance);
     TYPE_TRACE_CALL_END;
 }/* write content to physical */
 static C_VOID _kma_write_physical(core_machine_cpu_execution_context *context, type_unsigned_32 physical, type_virtual_address rdata, type_unsigned_8 byte, core_machine_cpu_memory_access_provenance provenance)
 {
     TYPE_TRACE_CALL_BEGIN("_kma_write_physical");
     _kma_publish_external_cycle(context, CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_BEGIN,
-        physical, byte, provenance);
+        physical, byte, TYPE_TRUE, provenance);
     if (context->transaction != STD_NULL && core_machine_transaction_begin(
             context->transaction, CORE_MACHINE_TRANSACTION_OWNER_CPU,
             CORE_MACHINE_TRANSACTION_CPU_MEMORY_WRITE, physical, byte, provenance) !=
             TYPE_STATUS_OK) {
         _kma_publish_external_cycle(context, CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_CANCEL,
-            physical, byte, provenance);
+            physical, byte, TYPE_TRUE, provenance);
         TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(physical));
     }
     if (core_machine_memory_write_physical(context->memory, physical, rdata,
             byte) != TYPE_STATUS_OK) {
         core_machine_transaction_cancel(context->transaction);
         _kma_publish_external_cycle(context, CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_CANCEL,
-            physical, byte, provenance);
+            physical, byte, TYPE_TRUE, provenance);
         TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(physical));
     }
     core_machine_transaction_commit(context->transaction);
     _kma_publish_external_cycle(context, CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_COMMIT,
-        physical, byte, provenance);
+        physical, byte, TYPE_TRUE, provenance);
     TYPE_TRACE_CALL_END;
 }typedef struct t_kma_linear_translation {
     type_unsigned_32 physical;
