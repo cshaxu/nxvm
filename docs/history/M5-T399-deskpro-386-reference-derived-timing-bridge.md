@@ -27,3 +27,12 @@ semantics and high-pulse latch clear in the existing Core D4 owner. The
 physical pulse/propagation timing as unresolved.
 
 The [acceptance audit](../etc/evidence/t399-s2-b3-acceptance-audit.md) accepts B3 without a physical-timing claim.
+
+## S3 B2 FDC/DMA2/IRQ6 Contract
+
+S3 accepts the project-owned Model-40 FDC/DMA2/IRQ6 logical availability and
+cancellation/rearm order as `M5:T399:S3:B2-CONTRACT-RECONCILED`. The
+[contract evidence](../etc/evidence/t399-s3-b2-fdc-dma2-irq6-contract.md)
+retains PCjs-only confidence and every physical timing/media boundary; the
+[acceptance audit](../etc/evidence/t399-s3-b2-acceptance-audit.md) records no
+production defect or Core/VM interface change.

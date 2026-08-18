@@ -4,26 +4,6 @@
 
 **Active: M5 T399.**
 
-## M5 T399 S3 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation; M5 T399 S3. |
-| Admission And Approval | Owner approved the DeskPro L3-first sequence in this conversation on 2026-08-17; execute the already accepted T399 reference-derived bridge before CPU audit. No exception authorizes physical-L3 promotion, reference-source import, ROM/media import, or a Core/VM interface change. |
-| Objective | Consume the complete B2 FDC command-to-DRQ/DMA2/IRQ6 batch with an asset-free Model-40 probe, reconcile it to the sole exact PCjs DeskPro configuration, and repair only a demonstrated existing-owner defect. |
-| Non-goals | No hardware-time scalar, physical-media/electrical claim, generic-AT substitution, external trace/config/source import, new Core/VM ABI, or whole-T399/L3 decision. |
-| Reference Baseline | `docs/etc/evidence/t399-s1-reference-derived-timing-convergence-ledger.md` B2; PCjs `c7f21b4fa2bdedac3d5c73094a6402fdc8b24c70` exact DeskPro 386 EGA/2 MiB configuration; T386 S24 Model-40 FDC logical contract; T397/T398 physical boundary. |
-| Candidate Proposal | [DeskPro 386 reference-derived timing bridge](../proposals/m5-deskpro-386-reference-derived-timing-bridge.md). |
-| Files And ABI Surface | `tests/machine/vm_model40_fdc_s24_smoke.c`, existing `src/core/machine/fdc.*`, `dma.*`, `pic.*`, and existing VM Model-40 composition only if a focused defect requires it; `docs/etc/evidence/t399-s3-*`, `docs/etc/README.md`, and `docs/states/CURRENT.md`. No public interface change. |
-| Applicable Rules | `docs/rules/EXECUTION.md`: one batch, full batch disposition, actual-diff review and acceptance; `docs/rules/ARCHITECTURE.md`: Core owns shared FDC/DMA/PIC semantics and VM owns Model-40 composition; `docs/rules/CODING.md`: C11 focused owner test; `docs/rules/DOCUMENT.md`: indexed evidence/current packet; source policy: reference is read-only and is not imported. |
-| Verification | Build `core-machine-fdc-smoke`, `core-machine-fdc-media-change-port-smoke`, `vm-model40-fdc-s24-smoke`; run their exact current CTests; run documentation governance and `git diff --check`. If code changes, run the relevant full current gate before acceptance. |
-| Expected Markers | Existing `M5:T386:S24:FDC-12MB-LOGICAL:OK`, `M5:T386:S24:FDC-DMA2-IRQ6:OK`, `M5:T386:S24:MODEL40-FDC-BINDING:OK`; new T399 marker only if a bounded project-owned observation is added. |
-| Asset Needs | None. The probe uses synthetic project-owned ROM and floppy bytes. No O:\assets, firmware, guest media, ROM, reference configuration, trace, or binary is read or copied. |
-| Reporting Requirements | Record command acceptance, DRQ eligibility, DMA2 transfer, IRQ6 assertion/clear, cold reset and mid-command cancellation; state PCjs-only confidence and 86Box non-corroboration; update B2 ledger before/after and provide an acceptance audit. |
-| Stop Conditions | Stop and retain B2 if the exact reference route is generic-only, a checkpoint cannot be observed with the project-owned probe, a behavior conflicts with the frozen topology, or a proposed conversion would turn reference ticks into physical time. |
-| Exit Criteria | B2 is accepted only with a complete normalized, asset-free result and focused regression proof, or transferred as unavailable/contradictory with its existing physical-observable receiver. |
-| Original Owner Request | “好的，那么接下来开始做T399，力争在CPU指令全面审计之前，把DeskPro 386能做的L3时序部分都做了；如果有权威资料，直接实现；如果没有权威资料但是只有pcjs / 86box / mame / qemu / bochs等，可以参考实现；如果参考都没得参考，加入TODO；如果有需要等待CPU 全面审计之后才能做的，那也等到CPU审计之后的下一任务。” |
-| Similar-Issue Sweep | Inspect all Model-40 FDC producer/consumer and reset/cancellation tests plus Core FDC/DMA/PIC routes; classify only selected Model-40 B2 paths and transfer any physical timing gap to the existing physical-observable TODO. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T395 S1 P4 `vm-0-5-0395` /
@@ -50,7 +30,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T399 S2 | Accepted: B3 corrects DeskPro active-low port-61 IOCHK/fail-safe NMI and high-pulse latch clear; physical propagation remains unresolved. [Acceptance audit](../etc/evidence/t399-s2-b3-acceptance-audit.md). |
+| T399 S3 | Accepted: B2 reconciles the selected 1.2 MB FDC→DMA2→IRQ6 logical order, reset and cancellation at PCjs-only reference-derived confidence; physical device timing remains unresolved. [Acceptance audit](../etc/evidence/t399-s3-b2-acceptance-audit.md). |
 | T398 | Closed: final exact 1986 DeskPro Model-40 audit is not-ready for L3; five physical/firmware boundaries retain explicit TODO receivers and require a fresh audit after repair. [Closure audit](../etc/evidence/t398-s2-task-closure-audit.md). |
 | T397 | Closed: selected functional FDC/HDC/CECG/KBC-NMI/DMA routes and reset/order evidence retained; physical availability, phase and service facts transfer to explicit TODO receivers. Final DeskPro L3 may make only a ready/not-ready decision. [Closure audit](../etc/evidence/t397-s2-task-closure-audit.md). |
 | T396 | Closed: finite Model-40 source/owner, six-domain, reset and callback-order ledger retained; all unsourced physical clock, phase, wait and device/firmware visibility facts transfer to the next DeskPro candidate. No physical scalar or L3 claim. [Closure audit](../etc/evidence/t396-s2-task-closure-audit.md). |
