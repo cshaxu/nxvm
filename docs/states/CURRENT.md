@@ -31,7 +31,6 @@
 | Task | Compact result |
 | --- | --- |
 | T399 S2 | Accepted: B3 corrects DeskPro active-low port-61 IOCHK/fail-safe NMI and high-pulse latch clear; physical propagation remains unresolved. [Acceptance audit](../etc/evidence/t399-s2-b3-acceptance-audit.md). |
-| T399 S1 | Accepted: five-batch reference-derived timing ledger is frozen; no runtime behavior or physical claim. [Acceptance audit](../etc/evidence/t399-s1-reference-ledger-acceptance-audit.md). |
 | T398 | Closed: final exact 1986 DeskPro Model-40 audit is not-ready for L3; five physical/firmware boundaries retain explicit TODO receivers and require a fresh audit after repair. [Closure audit](../etc/evidence/t398-s2-task-closure-audit.md). |
 | T397 | Closed: selected functional FDC/HDC/CECG/KBC-NMI/DMA routes and reset/order evidence retained; physical availability, phase and service facts transfer to explicit TODO receivers. Final DeskPro L3 may make only a ready/not-ready decision. [Closure audit](../etc/evidence/t397-s2-task-closure-audit.md). |
 | T396 | Closed: finite Model-40 source/owner, six-domain, reset and callback-order ledger retained; all unsourced physical clock, phase, wait and device/firmware visibility facts transfer to the next DeskPro candidate. No physical scalar or L3 claim. [Closure audit](../etc/evidence/t396-s2-task-closure-audit.md). |
