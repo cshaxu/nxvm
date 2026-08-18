@@ -3,6 +3,26 @@
 ## Current Work
 
 **Active: M5 T401.**
+## M5 T401 S72 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner: user; standing approval to continue CPU audit and directly repair confirmed small issues. |
+| Objective | Reconcile every metadata-valid selected `0F` escape-map slot against a current accepted S/form fixture or explicit external boundary. |
+| Non-goals | No claim that all primary/FPU spaces or the whole T401 task are closed; no production, public ABI, CPU timing, DeskPro or external-source change. |
+| Reference Baseline | `a8b33ae7` (S71 P2), frozen T401 Coverage Universe/S3 256-slot matrix, retained Intel 80286/80386 PRM Appendices and current source/tests. |
+| Candidate Proposal | [Four-profile CPU instruction-correctness audit](../proposals/m5-four-profile-cpu-instruction-correctness-audit.md), finite escape-map reconciliation. |
+| Files And ABI Surface | T401 ledger and CURRENT only; no ABI surface. |
+| Applicable Rules | Do not infer whole-CPU or physical timing closure from an escape-map reconciliation; documentation and execution rules apply. |
+| Verification | Reconcile 256-slot metadata matrix, current S ledger, source owner and focused fixture markers; documentation governance; diff check. |
+| Expected Markers | Existing `M5:T401:S3:0F-METADATA-MATRIX:OK` plus mapped form markers. |
+| Asset Needs | None. |
+| Reporting Requirements | List every valid slot group, accepted receiver and residual/external classification; state exact reconciliation boundary. |
+| Stop Conditions | Transfer any primary-map/FPU-wide, ABI, physical timing or DeskPro work. |
+| Exit Criteria | No metadata-valid selected `0F` slot lacks a current accepted receiver or explicit external boundary; remaining primary/FPU work is named separately. |
+| Original Owner Request | Continue CPU audit before later DeskPro L3 work with direct repair of confirmed small issues. |
+| Similar-Issue Sweep | Reconcile system groups, CR/DR/TR, branches, stacks, bit/data, far-pointer and reserved/later slots together. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T395 S1 P4 `vm-0-5-0395` /

@@ -1215,3 +1215,19 @@ S71 audits 80286/80386 `0F 00` selector-system-group reserved extensions `/6` an
 ## S71 Acceptance
 
 S71 closes the bounded 80286/80386  F 00 selector-system-group reserved-form audit. Direct current evidence confirms that metadata, lexical scanning and runtime agree: /0--/5 retain their declared forms while /6 and /7 reject in both register and memory encodings. No production, ABI, timing or DeskPro discrepancy was found.
+## S72 Selected 0F Escape-map Reconciliation
+
+S72 reconciles the finite 256-slot `0F` metadata map; it does not close the primary map, FPU space, whole T401 program or any physical timing claim.
+
+| Metadata-valid selected slots | Current accepted receiver |
+| --- | --- |
+| `00 /0`--`/5`, `01 /0`--`/4,/6`, `02`, `03`, `06` | Batch A evidence plus S70/S71 reserved-form reconciliation; DTTR, descriptor-system, LAR/LSL, CLTS and MSW fixtures retain mode, privilege, memory/register and fault boundaries. |
+| `20`, `22` CR moves; `21`, `23` DR moves; `24`, `26` TR moves | S67, S66 and S69 respectively; CR original-80386 MOD quirk remains private-preview-only, DR4/DR5 and TR0--TR5 reject, and TR6/TR7 persistent-cache semantics remain external. |
+| `80`--`8F`, `90`--`9F` | S59 near Jcc and S60 SETcc. |
+| `A0`, `A1`, `A8`, `A9` | S41 FS/GS stack forms. |
+| `A3`, `AB`, `B3`, `BB`, `BA /4`--`/7`, `A4`, `A5`, `AC`, `AD` | S61 bit-test/modify and S62 double-shift families. |
+| `AF`, `BC`, `BD`, `B6`, `B7`, `BE`, `BF` | S65 IMUL2, S63 BSF/BSR and S64 MOVZX/MOVSX. |
+| `B2`, `B4`, `B5` | S68 LSS/LFS/LGS. |
+| Every other slot | S3's 256-slot metadata proof classifies it reserved, later-CPU or unsupported for the selected processors. No initialized later handler grants a selected implementation; `25` additionally has S2 protected-UD delivery evidence. |
+
+The S3 metadata matrix, S5 lexical coherence work, S59--S71 current form tests and retained focused fixtures leave no metadata-valid selected escape-map slot without an accepted current receiver or explicit external boundary. Remaining CPU audit work is the primary map's task-level reconciliation and the separately classified FPU/WAIT provider boundary; neither transfers a physical DeskPro timing claim.
