@@ -425,6 +425,8 @@ principal documents named in [docs/README.md](../README.md).
 
 | evidence/t415-s1-page-walk-locality.md | Verification owner | T415 S1 extends the bounded generic-AT locality receiver to committed page-table reads/writebacks and records the adjacent CR0/CR3 prefetch-context repair; exact D4 phases remain transferred. Retain with T415 history. |
 
+| evidence/t415-s2-page-walk-locality-closure-audit.md | Closure audit | T415 S2 independently closes the generic-AT page-walk locality receiver, corrects CR0 PG/CR3 scope, and transfers CPU/DMA page retention. Retain with T415 history. |
+
 Adding a new supporting document requires owner approval, an exact-file index
 row or a declared indexed subtree, and a stated promotion, merge, or retirement
 condition. The governance gate verifies that every supporting Markdown file is

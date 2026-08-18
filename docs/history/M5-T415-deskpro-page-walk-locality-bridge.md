@@ -8,3 +8,6 @@ row/bank decoder, BWAIT, DMA/refresh arbitration or physical/L3 timing.
 P1 implements the bounded generic-AT receiver and repairs prefetch invalidation
 on CR0 translation-mode and CR3 directory changes. The real 80386 paging corpus
 is the regression proof; exact D4 phase behavior remains transferred.
+P2 independently closes T415. It corrects the earlier broad PE/PG wording to
+CR0 PG plus CR3 only, retains all D4 physical phases, and transfers CPU/DMA
+page-retention behavior to T416.
