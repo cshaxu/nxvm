@@ -24,7 +24,7 @@
 | Similar-Issue Sweep | Inspect all Core DMA advance paths, profile constructors, Model-40 BYOB/private construction, direct DMA test fixtures and trace consumers; classify every timing-selector hit. |
 ## Current Technical Baseline
 
-- **Current developer artifact:** T419 S1 P2 `vm-0-5-0419` /`build/output/nxvm_0_5_0419.exe`, SHA-256 `CE739C2B99E41F473A6F31EDB91DE3D8BD67DBFA56363285DD6EA1CAFC857B67`. T419 runs the existing sole Core DMA transaction route under D4 composition and verifies the original-source high-level no-extra-wait property; it does not model D4 waveform duration, BWAIT or refresh arbitration. T418 instruction-boundary locality, T417 refresh, T416 DMA-HOLD and T415 paging fixes remain retained.
+- **Current developer artifact:** T419 S1 P2 `vm-0-5-0419` /`build/output/nxvm_0_5_0419.exe`, SHA-256 `84662DCABC6BDA05992D09C9E394F3BA95ED10809724AB37900D1F5365228A17`. T419 runs the existing sole Core DMA transaction route under D4 composition and verifies the original-source high-level no-extra-wait property; it does not model D4 waveform duration, BWAIT or refresh arbitration. T418 instruction-boundary locality, T417 refresh, T416 DMA-HOLD and T415 paging fixes remain retained.
   T386 closes selected-device functional completeness at S29; its retained
   [closure audit](../etc/evidence/t386-s29-functional-closure-audit.md) fixes
   HDC current-gate coverage and transfers board, firmware and physical work.
