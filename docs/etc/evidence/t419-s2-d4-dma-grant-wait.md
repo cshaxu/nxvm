@@ -20,6 +20,8 @@ smoke proves the selected value and emits the T419 marker.
 A clean build of pre-T419 commit 0982ae3f reproduces the three current-gate
 failures in interrupt-entry, immutable-ROM-mapping and entry-plan smokes, so they
 are documented baseline/toolchain failures rather than this bridge's regression.
+The same unified route now segments a mixed ordinary-RAM/provider span, so a 15-byte CPU prefetch beginning in a short immutable ROM consumes the ROM byte rather than bypassing it; the immutable-ROM regression emits the T419 ROM-prefetch marker.
+
 No D4 pin waveform, BUSRDY stretch, refresh priority or BWAIT model is claimed.
 
 Artifact: `vm-0-5-0419`, `build/output/nxvm_0_5_0419.exe`, 3,213,818 bytes,

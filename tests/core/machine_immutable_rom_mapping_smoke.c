@@ -64,5 +64,6 @@ C_INT main(C_VOID)
     core_machine_destroy(machine);
     if (failed) return 1;
     puts("M5:T245:S2:IMMUTABLE-ROM-MAPPING:OK");
+    puts("M5:T419:S2:ROM-PREFETCH-BOUNDARY:OK");
     return 0;
 }

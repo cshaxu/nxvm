@@ -371,6 +371,25 @@ type_status core_machine_memory_read_physical(t_ram *ram, type_unsigned_32 physi
     status = core_machine_memory_route_resolve(ram, physical, byte,
         CORE_MACHINE_MEMORY_ACCESS_READ, &provider, &offset);
     if (status != TYPE_STATUS_OK) return status;
+    if (provider == STD_NULL && byte > 1u) {
+        type_native_unsigned index;
+        for (index = 0u; index < byte; ++index) {
+            const core_machine_memory_device_provider *single_provider;
+            STD_SIZE_T single_offset;
+            status = core_machine_memory_route_resolve(ram,
+                physical + (type_unsigned_32)index, 1u,
+                CORE_MACHINE_MEMORY_ACCESS_READ, &single_provider, &single_offset);
+            if (status != TYPE_STATUS_OK) return status;
+            if (single_provider != STD_NULL) {
+                for (index = 0u; index < byte; ++index) {
+                    status = core_machine_memory_read_physical(ram,
+                        physical + (type_unsigned_32)index, destination + index, 1u);
+                    if (status != TYPE_STATUS_OK) return status;
+                }
+                return TYPE_STATUS_OK;
+            }
+        }
+    }
     if (provider != STD_NULL) {
         status = provider->read(provider->owner,
             core_machine_memory_wrap_a20(ram, physical), destination, byte);
@@ -410,6 +429,25 @@ type_status core_machine_memory_write_physical(t_ram *ram, type_unsigned_32 phys
     status = core_machine_memory_route_resolve(ram, physical, byte,
         CORE_MACHINE_MEMORY_ACCESS_WRITE, &provider, &offset);
     if (status != TYPE_STATUS_OK) return status;
+    if (provider == STD_NULL && byte > 1u) {
+        type_native_unsigned index;
+        for (index = 0u; index < byte; ++index) {
+            const core_machine_memory_device_provider *single_provider;
+            STD_SIZE_T single_offset;
+            status = core_machine_memory_route_resolve(ram,
+                physical + (type_unsigned_32)index, 1u,
+                CORE_MACHINE_MEMORY_ACCESS_WRITE, &single_provider, &single_offset);
+            if (status != TYPE_STATUS_OK) return status;
+            if (single_provider != STD_NULL) {
+                for (index = 0u; index < byte; ++index) {
+                    status = core_machine_memory_write_physical(ram,
+                        physical + (type_unsigned_32)index, source + index, 1u);
+                    if (status != TYPE_STATUS_OK) return status;
+                }
+                return TYPE_STATUS_OK;
+            }
+        }
+    }
     if (provider != STD_NULL) {
         status = provider->write(provider->owner,
             core_machine_memory_wrap_a20(ram, physical), source, byte);
