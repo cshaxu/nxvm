@@ -1231,3 +1231,7 @@ S72 reconciles the finite 256-slot `0F` metadata map; it does not close the prim
 | Every other slot | S3's 256-slot metadata proof classifies it reserved, later-CPU or unsupported for the selected processors. No initialized later handler grants a selected implementation; `25` additionally has S2 protected-UD delivery evidence. |
 
 The S3 metadata matrix, S5 lexical coherence work, S59--S71 current form tests and retained focused fixtures leave no metadata-valid selected escape-map slot without an accepted current receiver or explicit external boundary. Remaining CPU audit work is the primary map's task-level reconciliation and the separately classified FPU/WAIT provider boundary; neither transfers a physical DeskPro timing claim.
+
+## S72 Acceptance
+
+S72 closes only the finite selected  F escape-map reconciliation. Every metadata-valid slot has a current accepted receiver or explicit external boundary, and reserved/later slots retain the S3 metadata disposition. The primary opcode map, FPU/WAIT provider boundary, CPU physical timing and DeskPro work remain separate open scope.

@@ -3,26 +3,6 @@
 ## Current Work
 
 **Active: M5 T401.**
-## M5 T401 S72 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner: user; standing approval to continue CPU audit and directly repair confirmed small issues. |
-| Objective | Reconcile every metadata-valid selected `0F` escape-map slot against a current accepted S/form fixture or explicit external boundary. |
-| Non-goals | No claim that all primary/FPU spaces or the whole T401 task are closed; no production, public ABI, CPU timing, DeskPro or external-source change. |
-| Reference Baseline | `a8b33ae7` (S71 P2), frozen T401 Coverage Universe/S3 256-slot matrix, retained Intel 80286/80386 PRM Appendices and current source/tests. |
-| Candidate Proposal | [Four-profile CPU instruction-correctness audit](../proposals/m5-four-profile-cpu-instruction-correctness-audit.md), finite escape-map reconciliation. |
-| Files And ABI Surface | T401 ledger and CURRENT only; no ABI surface. |
-| Applicable Rules | Do not infer whole-CPU or physical timing closure from an escape-map reconciliation; documentation and execution rules apply. |
-| Verification | Reconcile 256-slot metadata matrix, current S ledger, source owner and focused fixture markers; documentation governance; diff check. |
-| Expected Markers | Existing `M5:T401:S3:0F-METADATA-MATRIX:OK` plus mapped form markers. |
-| Asset Needs | None. |
-| Reporting Requirements | List every valid slot group, accepted receiver and residual/external classification; state exact reconciliation boundary. |
-| Stop Conditions | Transfer any primary-map/FPU-wide, ABI, physical timing or DeskPro work. |
-| Exit Criteria | No metadata-valid selected `0F` slot lacks a current accepted receiver or explicit external boundary; remaining primary/FPU work is named separately. |
-| Original Owner Request | Continue CPU audit before later DeskPro L3 work with direct repair of confirmed small issues. |
-| Similar-Issue Sweep | Reconcile system groups, CR/DR/TR, branches, stacks, bit/data, far-pointer and reserved/later slots together. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T395 S1 P4 `vm-0-5-0395` /
@@ -49,7 +29,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T401 S71 | Accepted: 80286/80386 `0F 00` reserved `/6` and `/7` forms are already rejected by metadata and runtime; direct current evidence closes the audit. [Ledger](../etc/evidence/t401-s1-four-profile-cpu-audit-ledger.md). |
+| T401 S72 | Accepted: every selected metadata-valid `0F` escape-map slot maps to current accepted evidence or an explicit external boundary; primary/FPU spaces remain separate. [Ledger](../etc/evidence/t401-s1-four-profile-cpu-audit-ledger.md). |
 | T400 | Closed: the HDC, CECG and CPU/DMA/BWAIT generic-reference ledger is exhausted; accepted logical repairs retain every DeskPro physical boundary. [Closure audit](../etc/evidence/t400-s1-task-closure-audit.md). |
 | T399 | Closed: the five-batch reference-derived DeskPro L3 ledger is exhausted; B2/B3 logical contracts are accepted, B1/B4/B5 retain exact receivers, and both reference-derived and physical L3 are not ready. [Closure audit](../etc/evidence/t399-s5-task-closure-audit.md). |
 | T398 | Closed: final exact 1986 DeskPro Model-40 audit is not-ready for L3; five physical/firmware boundaries retain explicit TODO receivers and require a fresh audit after repair. [Closure audit](../etc/evidence/t398-s2-task-closure-audit.md). |
