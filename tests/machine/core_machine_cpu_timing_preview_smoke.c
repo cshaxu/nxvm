@@ -72,6 +72,26 @@ static C_INT preview_test_layouts(C_VOID)
             CORE_MACHINE_CPU_PROFILE_80386, TYPE_FALSE, 4u, 4u);
 }
 
+static C_INT preview_test_primary_inc_dec_profiles(C_VOID)
+{
+    static const core_machine_cpu_profile profiles[] = {
+        CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
+        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
+    };
+    type_unsigned_8 profile;
+    type_unsigned_8 opcode;
+
+    for (profile = 0u; profile != sizeof(profiles) / sizeof(profiles[0]); ++profile)
+    for (opcode = 0x40u; opcode != 0x50u; ++opcode) {
+        const type_unsigned_8 primary[] = {opcode};
+        if (!preview_expect(primary, sizeof(primary), profiles[profile], TYPE_FALSE,
+            1u, 1u)) return 0;
+    }
+    return preview_expect((const type_unsigned_8[]){0x66u,0x40u}, 2u,
+        CORE_MACHINE_CPU_PROFILE_80386, TYPE_FALSE, 2u, 2u) &&
+        preview_expect((const type_unsigned_8[]){0x66u,0x48u}, 2u,
+        CORE_MACHINE_CPU_PROFILE_80386, TYPE_FALSE, 2u, 2u);
+}
 static C_INT preview_test_group3_profiles(C_VOID)
 {
     static const core_machine_cpu_profile profiles[] = {
@@ -377,6 +397,7 @@ C_INT main(C_VOID)
 {
     if (!preview_test_layouts()) return 2;
     if (!preview_test_unavailable()) return 3;
+    if (!preview_test_primary_inc_dec_profiles()) return 12;
     if (!preview_test_group3_profiles()) return 10;
     if (!preview_test_group45_profiles()) return 11;
     if (preview_test_cpu_fetch_nonpublication()) return 4;
@@ -388,5 +409,6 @@ C_INT main(C_VOID)
     STD_PRINTF("M5:T357:S2:CPU-TIMING-PREVIEW:OK\n");
     STD_PRINTF("M5:T401:S9:GROUP3-PREVIEW-PROFILES:OK\n");
     STD_PRINTF("M5:T401:S10:GROUP45-PREVIEW-PROFILES:OK\n");
+    STD_PRINTF("M5:T401:S11:PRIMARY-INC-DEC-PREVIEW-PROFILES:OK\n");
     return 0;
 }

@@ -150,37 +150,49 @@ static C_INT inc_dec_flags_match(type_unsigned_32 flags, type_unsigned_32 expect
 
 static C_INT inc_dec_test_register_forms(C_VOID)
 {
+    static const core_machine_cpu_profile profiles[] = {
+        CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
+        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
+    };
+    type_unsigned_8 profile;
     type_unsigned_8 index;
+    type_unsigned_8 decrement;
     type_unsigned_8 operand32;
-    for (index = 0u; index != 8u; ++index) {
-        for (operand32 = 0u; operand32 != 2u; ++operand32) {
-            type_unsigned_8 code[2] = { 0x40u + index, 0u };
-            inc_dec_machine state;
-            t_cpu after;
-            core_machine_cpu_diagnostic diagnostic;
-            type_unsigned_32 *reg;
-            C_INT failed = !inc_dec_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
 
-            if (operand32) { code[0] = 0x66u; code[1] = 0x40u + index; }
-            if (!failed) {
-                reg = inc_dec_register(&state.machine->executor_cpu, index);
-                *reg = operand32 ? 0x7fffffffu : 0xaabb7fffu;
-                state.machine->executor_cpu.data.eflags = VCPU_EFLAGS_CF;
-                failed |= !inc_dec_run(&state, code, operand32 ? 2u : 1u, 0,
-                    &after, &diagnostic) || diagnostic.first_fault.valid ||
-                    *inc_dec_register(&after, index) != (operand32 ? 0x80000000u :
-                        0xaabb8000u) || !inc_dec_flags_match(after.data.eflags,
-                        VCPU_EFLAGS_OF | VCPU_EFLAGS_SF | VCPU_EFLAGS_AF |
-                        VCPU_EFLAGS_PF,
-                        VCPU_EFLAGS_CF);
-            }
-            core_machine_destroy(state.machine);
-            if (failed) return 0;
+    for (profile = 0u; profile != sizeof(profiles) / sizeof(profiles[0]); ++profile)
+    for (index = 0u; index != 8u; ++index)
+    for (decrement = 0u; decrement != 2u; ++decrement)
+    for (operand32 = 0u; operand32 != (profiles[profile] ==
+        CORE_MACHINE_CPU_PROFILE_80386 ? 2u : 1u); ++operand32) {
+        type_unsigned_8 code[2] = {(type_unsigned_8)(0x40u + index + decrement * 8u),0u};
+        const type_unsigned_32 before = decrement ? (operand32 ? 0x80000000u :
+            0xaabb8000u) : (operand32 ? 0x7fffffffu : 0xaabb7fffu);
+        const type_unsigned_32 expected = decrement ? (operand32 ? 0x7fffffffu :
+            0xaabb7fffu) : (operand32 ? 0x80000000u : 0xaabb8000u);
+        const type_unsigned_32 flags = decrement ?
+            (VCPU_EFLAGS_OF | VCPU_EFLAGS_AF | VCPU_EFLAGS_PF) :
+            (VCPU_EFLAGS_OF | VCPU_EFLAGS_SF | VCPU_EFLAGS_AF | VCPU_EFLAGS_PF);
+        inc_dec_machine state;
+        t_cpu after;
+        core_machine_cpu_diagnostic diagnostic;
+        type_unsigned_32 *reg;
+        C_INT failed = !inc_dec_prepare(profiles[profile], &state);
+
+        if (operand32) { code[0] = 0x66u; code[1] = (type_unsigned_8)(0x40u + index + decrement * 8u); }
+        if (!failed) {
+            reg = inc_dec_register(&state.machine->executor_cpu, index);
+            *reg = before;
+            state.machine->executor_cpu.data.eflags = VCPU_EFLAGS_CF;
+            failed |= !inc_dec_run(&state, code, operand32 ? 2u : 1u, 0,
+                &after, &diagnostic) || diagnostic.first_fault.valid ||
+                *inc_dec_register(&after, index) != expected ||
+                !inc_dec_flags_match(after.data.eflags, flags, VCPU_EFLAGS_CF);
         }
+        core_machine_destroy(state.machine);
+        if (failed) return 0;
     }
     return 1;
 }
-
 static C_INT inc_dec_test_rm_forms(C_VOID)
 {
     static const type_unsigned_8 forms[][6] = {
@@ -3342,6 +3354,7 @@ C_INT main(C_VOID)
     STD_PRINTF("M5:T316:S15:CMP:OK\n");
     STD_PRINTF("M5:T401:S7:GROUP1-PROFILE-MATRIX:OK\n");
     STD_PRINTF("M5:T401:S10:GROUP45-INC-DEC-PROFILES:OK\n");
+    STD_PRINTF("M5:T401:S11:PRIMARY-INC-DEC-PROFILES:OK\n");
     STD_PRINTF("M5:T316:S16:DECIMAL-ADJUST:OK\n");
     STD_PRINTF("M5:T316:S17:XLAT:OK\n");
     return 0;

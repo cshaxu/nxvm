@@ -397,3 +397,19 @@ gate then ran 285/285 tests with no failure marker. This accepts CPU semantic
 and nonphysical timing-baseline evidence only. It does not claim physical
 instruction, board, ISA, DMA, firmware, or DeskPro L3 timing; those boundaries
 remain with their retained DeskPro receivers.
+## S11 Primary Register INC/DEC
+
+S11 audits the distinct primary register INC/DEC opcode family `40h`--`4Fh`.
+Intel's 8086/80286/80386 instruction definitions retain these eight INC and
+eight DEC register forms on all four selected profiles; 80386 `66h` selects the
+dword operand form. The current decoder/dispatch and shared arithmetic owner
+match that partition. The prior regression was incomplete evidence: it ran
+only INC and only on 80386.
+
+`M5:T401:S11:PRIMARY-INC-DEC-PROFILES:OK` now executes every opcode for 8086,
+80186, 80286 and 80386, checks 16-bit result retention for each register,
+INC/DEC defined FLAGS and carry preservation, and adds 80386 dword boundary
+forms with `66h`. `M5:T401:S11:PRIMARY-INC-DEC-PREVIEW-PROFILES:OK` scans all
+sixteen one-byte forms on every profile and both prefixed 80386 representatives.
+The result is a test-only evidence correction: no shared Core defect, external
+source import, physical timing claim or Core/VM interface change was found.
