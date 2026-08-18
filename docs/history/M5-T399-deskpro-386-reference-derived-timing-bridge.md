@@ -12,5 +12,4 @@ revise T398's physical Model-L3 not-ready conclusion.
 S1 freezes the five-batch convergence universe, qualifies only exact
 DeskPro-specific reference configurations against retained D3PE topology facts,
 and records either a bounded project-owned observation contract or an explicit
-non-eligibility receiver for every batch. No runtime implementation is
-admitted in this subtask.
+non-eligibility receiver for every batch. The [frozen ledger](../etc/evidence/t399-s1-reference-derived-timing-convergence-ledger.md) qualifies PCjs as the sole current behavior-reference candidate, keeps 86Box conditional, and rejects generic or non-CECG substitution. No runtime implementation is admitted in this subtask.
