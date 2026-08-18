@@ -2,28 +2,8 @@
 
 ## Current Work
 
-**Active: M5 T406 S1.**
+**Idle.**
 
-## M5 T406 S1 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | New |
-| Admission And Approval | Owner approved continued DeskPro L3/hardware-gap implementation using original sources first, read-only reference implementations second, and explicitly labelled generic IBM AT skeletons when no higher tier yields a mechanism; commits and pushes to `master` are standing-authorized, reaffirmed 2026-08-18. |
-| Objective | Implement the Td S105 first receiver: a generic-AT virtual-time cadence for native keyboard serial bytes in the existing Core KBC owner, bound only by the Model-40 composition. |
-| Non-goals | No original Compaq rate, physical/L3 claim, host-time coupling, firmware/media import, new Core/VM bypass, second scheduler/queue, command-response semantic change, FDC/HDC/CECG work, or user-facing configuration. |
-| Reference Baseline | Td S105 tiered receiver ledger; T403 functional KBC closure; T405 host-build baseline. PCjs/86Box are read-only mechanism references only; actual cadence is labelled `generic-at`. |
-| Candidate Proposal | [DeskPro tiered timing fallback foundation](../proposals/m5-deskpro-tiered-timing-fallback-foundation.md). |
-| Files And ABI Surface | `src/core/machine/kbc.[ch]`, Core machine configuration/storage, Model-40 session composition, KBC/Model-40 tests, `docs/history/M5-T406-deskpro-generic-at-keyboard-serial-cadence.md`, `docs/etc/evidence/`, `docs/states/CURRENT.md`, and `docs/states/QUEUE.md` at closure. Existing public native-byte API retains its signature and route. |
-| Applicable Rules | Architecture: Core owns reusable KBC behavior and VM composes the profile binding; no reverse dependency or duplicate path. Coding: C11/type facade, one owner and project-owned test boundary. Source policy: references read-only, no source/firmware/media import. |
-| Verification | Focused KBC controller cadence proof; Model-40 composition proof; full `current-gate`; documentation governance; actual diff and similar-issue sweep over KBC serial submit/drain/reset call sites. |
-| Expected Markers | `M5:T406:S1:KBC-SERIAL-CADENCE:OK` and `M5:T406:S1:CLOSURE-AUDIT:OK` |
-| Asset Needs | None. No ROM, guest media, local asset path, binary, hash catalogue, or third-party source import. |
-| Reporting Requirements | Record the generic-AT tier, PCjs/86Box configuration limits, cadence input/output/reset/cancellation contract, zero-cadence compatibility, affected caller sweep, gates, artifact identity/hash, and remaining physical/L3 transfer. |
-| Stop Conditions | Stop and transfer if the mechanism requires a new VM-to-Core input path, host elapsed time, a fixed original-Compaq value, or modification of the KBC command/FIFO/IRQ contract beyond serial release scheduling. |
-| Exit Criteria | The existing KBC serial queue releases no more than one native byte per configured virtual-time cadence, zero preserves current behavior, reset clears cadence state, Model-40 selects a labelled generic-AT cadence, all focused/full gates pass, artifact `vm-0-5-0406` is verified, and the remaining physical/L3 boundary is retained. |
-| Original Owner Request | Implement DeskPro 386 L3-level timing and all hardware gaps: original sources first, reference implementations second, generic IBM AT skeletons if necessary; label all three levels and keep moving. |
-| Similar-Issue Sweep | Sweep `core_machine_kbc_submit_native_byte(s)`, serial drain, KBC reset, machine peripheral advancement, and both generic/Model-40 construction paths; fix same-owner omissions or record a bounded transfer. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T406 S1 P1 `vm-0-5-0406` /
@@ -48,6 +28,8 @@
   current runtime or release products.
 
 ## Recent M5 Closures
+
+| T406 | Closed: generic-AT KBC native-byte cadence is Core-owned and Model-40-bound; 287/287 gates pass, while physical keyboard/8042/board timing and L3 remain transferred. [Evidence](../etc/evidence/t406-s1-kbc-serial-cadence.md). |
 
 | Task | Compact result |
 | --- | --- |
