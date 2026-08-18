@@ -723,6 +723,53 @@ static C_INT inc_dec_test_mul_imul_forms(C_VOID)
     return 1;
 }
 
+static C_INT inc_dec_test_imul_sign_extension_profiles(C_VOID)
+{
+    static const core_machine_cpu_profile profiles[] = {
+        CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
+        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
+    };
+    type_unsigned_8 profile_index;
+    type_unsigned_8 width_index;
+
+    for (profile_index = 0u; profile_index != sizeof(profiles) / sizeof(profiles[0]);
+        ++profile_index)
+    for (width_index = 0u; width_index != (profiles[profile_index] ==
+        CORE_MACHINE_CPU_PROFILE_80386 ? 3u : 2u); ++width_index) {
+        static const type_unsigned_8 code[][3] = {
+            { 0xf6u, 0xe9u }, { 0xf7u, 0xe9u }, { 0x66u, 0xf7u, 0xe9u }
+        };
+        const type_unsigned_8 bytes = width_index == 0u ? 1u :
+            (width_index == 1u ? 2u : 4u);
+        const type_unsigned_32 initial_eax = bytes == 1u ? 0x112233ffu :
+            (bytes == 2u ? 0x1122ffffu : 0xffffffffu);
+        const type_unsigned_32 initial_edx = 0xaabbccddu;
+        const type_unsigned_32 expected_eax = bytes != 4u ? 0x1122ffffu :
+            0xffffffffu;
+        const type_unsigned_32 expected_edx = bytes == 1u ? initial_edx :
+            (bytes == 2u ? 0xaabbffffu : 0xffffffffu);
+        inc_dec_machine state;
+        t_cpu after;
+        core_machine_cpu_diagnostic diagnostic;
+        C_INT failed = !inc_dec_prepare(profiles[profile_index], &state);
+
+        if (!failed) {
+            state.machine->executor_cpu.data.eax = initial_eax;
+            state.machine->executor_cpu.data.ecx = 1u;
+            state.machine->executor_cpu.data.edx = initial_edx;
+            state.machine->executor_cpu.data.eflags = MUL_DEFINED_FLAGS |
+                VCPU_EFLAGS_ZF;
+            failed |= !inc_dec_run(&state, code[width_index], bytes == 4u ?
+                3u : 2u, 0, &after, &diagnostic) || diagnostic.first_fault.valid ||
+                after.data.eax != expected_eax || after.data.edx != expected_edx ||
+                (after.data.eflags & MUL_DEFINED_FLAGS) != 0u ||
+                after.data.cx != 1u;
+        }
+        core_machine_destroy(state.machine);
+        if (failed) return 0;
+    }
+    return 1;
+}
 static C_INT inc_dec_test_mul_imul_address_and_profile(C_VOID)
 {
     static const type_unsigned_8 address_code[] = { 0x67u,0x66u,0xf7u,0x2eu };
@@ -3244,7 +3291,7 @@ C_INT main(C_VOID)
         !inc_dec_test_not_neg_forms() || !inc_dec_test_not_neg_address_and_profile() ||
         !inc_dec_test_not_neg_fault_nonpublication() || !inc_dec_test_test_forms() ||
         !inc_dec_test_test_address_and_profile() ||
-        !inc_dec_test_test_fault_nonpublication() || !inc_dec_test_mul_imul_forms() ||
+        !inc_dec_test_test_fault_nonpublication() || !inc_dec_test_mul_imul_forms() || !inc_dec_test_imul_sign_extension_profiles() ||
         !inc_dec_test_mul_imul_address_and_profile() ||
         !inc_dec_test_mul_imul_fault_nonpublication() || !inc_dec_test_div_idiv_forms() ||
         !inc_dec_test_div_idiv_attribute_and_profile() ||
@@ -3275,6 +3322,7 @@ C_INT main(C_VOID)
     STD_PRINTF("M5:T316:S3:NOT-NEG:OK\n");
     STD_PRINTF("M5:T316:S4:TEST:OK\n");
     STD_PRINTF("M5:T316:S5:MUL-IMUL:OK\n");
+    STD_PRINTF("M5:T401:S9:IMUL-SIGN-EXTENSION-PROFILES:OK\n");
     STD_PRINTF("M5:T316:S6:DIV-IDIV:OK\n");
     STD_PRINTF("M5:T316:S7:TEST-RM-REG:OK\n");
     STD_PRINTF("M5:T316:S8:ADD:OK\n");

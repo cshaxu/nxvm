@@ -298,3 +298,22 @@ extension and `CL=33` on all four profiles, proves the divergent count result,
 and retains the `/6` atomic #UD proof.  Focused regressions passed on
 2026-08-17: rotate, legacy-ALU, CPU-profile-gate, 80286 timing-ledger and CPU
 preview (5/5).  The full current gate then executed 285/285 tests with no failure marker on 2026-08-17.
+## S9 Group-3 Unary IMUL Sign-Extension Repair
+
+S9 began the `F6h`/`F7h` Group-3 audit and reproduced a shared single-operand
+IMUL flag defect.  Intel's 8086/80286/80386 manuals specify CF and OF clear
+when the upper half of the product is the sign extension of the lower half.
+The existing byte path compared a masked unsigned product with a signed
+extension, so `AL=-1; IMUL r/m8(1)` wrongly retained CF/OF; the analogous
+word/dword predicates were normalized at the same shared owner.  This is an
+original-source semantic rule, not a reference-derived behavior.
+
+The repair compares each full product and its retained low half as the matching
+signed width.  `M5:T401:S9:IMUL-SIGN-EXTENSION-PROFILES:OK` covers byte and
+word forms on 8086/80186/80286/80386 plus the 80386 dword form, verifies the
+result halves and CF/OF clear outcome, and preserves the pre-80386 16-bit
+register surface.  Focused inc-dec, preview, CPU-profile-gate and 80286
+instruction-timing-ledger tests passed 4/4 on 2026-08-17.  One full-gate run
+had an unrelated DOS-keyboard timeout which passed twice in isolation; the
+replacement full current gate then executed 285/285 tests with no failure
+marker on 2026-08-17.

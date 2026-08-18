@@ -6178,7 +6178,7 @@ static C_VOID _a_imul(core_machine_cpu_execution_context *context, type_unsigned
         instruction_state.data.opr2 = TYPE_MASK_UNSIGNED_8((type_signed_8)csrc);
         cdest = TYPE_MASK_UNSIGNED_16((type_signed_8)cpu_state.data.al * (type_signed_8)instruction_state.data.opr2);
         cpu_state.data.ax = TYPE_MASK_UNSIGNED_16(cdest);
-        if (TYPE_MASK_UNSIGNED_16(cdest) == (type_signed_16)((type_signed_8)cpu_state.data.al))
+        if ((type_signed_16)cdest == (type_signed_16)(type_signed_8)cpu_state.data.al)
         {
             _ClrEFLAGS_CF;
             _ClrEFLAGS_OF;
@@ -6199,7 +6199,7 @@ static C_VOID _a_imul(core_machine_cpu_execution_context *context, type_unsigned
         cdest = TYPE_MASK_UNSIGNED_32((type_signed_16)cpu_state.data.ax * (type_signed_16)instruction_state.data.opr2);
         cpu_state.data.ax = TYPE_MASK_UNSIGNED_16(cdest);
         cpu_state.data.dx = TYPE_MASK_UNSIGNED_16(cdest >> 16);
-        if (TYPE_MASK_UNSIGNED_32(cdest) == (type_signed_32)((type_signed_16)cpu_state.data.ax))
+        if ((type_signed_32)cdest == (type_signed_32)(type_signed_16)cpu_state.data.ax)
         {
             _ClrEFLAGS_CF;
             _ClrEFLAGS_OF;
@@ -6221,7 +6221,7 @@ static C_VOID _a_imul(core_machine_cpu_execution_context *context, type_unsigned
                                       (type_signed_64)(type_signed_32)instruction_state.data.opr2);
         cpu_state.data.eax = TYPE_MASK_UNSIGNED_32(cdest);
         cpu_state.data.edx = TYPE_MASK_UNSIGNED_32(cdest >> 32);
-        if (TYPE_MASK_UNSIGNED_64(cdest) == (type_signed_64)((type_signed_32)cpu_state.data.eax))
+        if ((type_signed_64)cdest == (type_signed_64)(type_signed_32)cpu_state.data.eax)
         {
             _ClrEFLAGS_CF;
             _ClrEFLAGS_OF;
