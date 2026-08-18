@@ -16,3 +16,7 @@ contract audit and any resulting bounded repair.
 ## S2 Acceptance
 
 P1 `61a4ae98` reconciles the public YAML catalog with the session-start contract, updates the required developer artifact to `vm-0-5-0404`, and records the full Batch A disposition. Direct catalog smoke and the full current gate (285/285) pass; documentation governance passes. S2 is accepted; T404 remains open for Batch B controller/media/display/input functional reconciliation.
+
+## S3 Acceptance
+
+P1 `25cb4839` repairs the shared session media lifecycle: generic fixed HDD loading is private to startup, public HDD replacement is unavailable after publication, and public FDD insertion is running-state guarded and failure-atomic. The focused smoke and full current gate (286/286) pass; documentation governance passes. S3 is accepted; T404 remains open for the residual Batch B controller, display and input functional reconciliation.

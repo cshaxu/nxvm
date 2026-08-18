@@ -3,26 +3,6 @@
 ## Current Work
 
 **Active: M5 T404.**
-## M5 T404 S3 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner approved the T404 proposal and ongoing in-scope implementation, commits and pushes on 2026-08-18. Scope: Batch B media/controller/display/input functional reconciliation and bounded shared-owner repair. No exceptions. |
-| Objective | Consume the Batch B fixed/removable-media lifecycle slice: make the session owner enforce that fixed HDD media is startup-only and removable FDD media cannot change while running; retain controller/display/input coverage for the subsequent complete Batch B reconciliation. |
-| Non-goals | No controller register/timing/L3 claim; no media or ROM import; no Console-only workaround; no public Core/VM ABI expansion. |
-| Reference Baseline | T404 S1 ledger, S2 catalog contract, current `vm_session_insert_fdd`/`vm_session_insert_hdd` paths, Model-40 startup HDC binding, and existing console lifecycle check. |
-| Candidate Proposal | [T404 proposal](../proposals/m5-current-product-device-profile-capability-closure.md); [ledger](../etc/evidence/t404-s1-current-public-device-capability-ledger.md). |
-| Files And ABI Surface | `src/vm/composition/session/session.*` and owned product/machine tests; preserve public function signatures, Core/VM boundary, and Model-40 private startup HDC path. |
-| Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`, `docs/design/ARCHITECTURE.md`, `docs/design/CODING.md`; source policy is not triggered because no external source or asset is used. |
-| Verification | Focused session/console media lifecycle tests, current full CTest gate, documentation governance gate, and actual-diff review. |
-| Expected Markers | Existing session product markers remain; new focused lifecycle regression records `M5:T404:S3:MEDIA-LIFECYCLE:OK`. |
-| Asset Needs | None. Tests use temporary project-owned synthetic disk images only; no firmware, guest media, or asset archive access. |
-| Reporting Requirements | Record every public FDD/HDD insertion path, startup/publication/running disposition, before/after test proof, similar-issue sweep, and deferred controller/display/input Batch B rows. |
-| Stop Conditions | Stop and transfer any controller semantic, physical timing, firmware/media byte, unsupported profile behavior, or interface expansion outside the lifecycle boundary. |
-| Exit Criteria | Fixed HDD replacement is unavailable after session publication; removable FDD insertion is rejected while running by its owner; startup construction remains functional for every supported profile; all known public insertion callers are dispositioned. |
-| Original Owner Request | Implement DeskPro 386 L3 and all hardware gaps using primary sources, labelled reference implementations, or a generic IBM AT skeleton when necessary; do not block useful implementation on missing perfect references. |
-| Similar-Issue Sweep | Search all production and test callers of `vm_session_insert_fdd`, `vm_session_insert_hdd`, Model-40 startup HDD insertion, and Console insert commands; fix shared-owner hits or record an explicit disposition. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T404 S3 P1 `vm-0-5-0404` /
@@ -49,7 +29,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T404 S2 | Accepted: Batch A reconciles all public catalog-to-session profile paths; unsupported default CPU/FPU catalog variants now reject before selection, and Batch B retains media/controller function. [Evidence](../etc/evidence/t404-s2-public-catalog-session-contract.md). |
+| T404 S3 | Accepted: fixed HDD replacement is startup-only, removable FDD insertion is owner-guarded while running, and failure leaves media state intact. [Evidence](../etc/evidence/t404-s3-media-lifecycle.md). |
 | T403 | Closed: shared keyboard serial endpoint prevents accepted break loss under full 8042 output; functional KBC flow is complete while physical keyboard/8042/DeskPro timing remains transferred. [Closure audit](../etc/evidence/t403-s2-keyboard-flow-control-closure-audit.md). |
 | T402 | Closed: D3PE-first functional D4 matrix accepted; the Model-40 control aperture repair is reference-labelled where primary material is incomplete, while cache/DRAM/ISA physical timing and L3 remain transferred. [Closure audit](../etc/evidence/t402-s2-d4-functional-closure-audit.md). |
 | T401 | Closed: bounded four-profile CPU semantic/source-timing audit; every frozen form is proven, repaired, nonphysical-observed, rejected or transferred, without an x87, physical CPU, board or L3 claim. [Closure audit](../etc/evidence/t401-s78-task-closure-audit.md). |
