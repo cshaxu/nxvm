@@ -3,26 +3,6 @@
 ## Current Work
 
 **Active: M5 T401.**
-## M5 T401 S73 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner: user; standing approval to continue the CPU audit and directly correct confirmed small governance issues. |
-| Objective | Record the already verified S73 primary-map reconciliation under the required immutable `M5 T401 S73 Pn:` commit sequence, without rewriting prior pushed history. |
-| Non-goals | No semantic re-audit expansion, source change, physical timing/L3 claim, public ABI change, force push, or history rewrite. |
-| Reference Baseline | `27c883ac`, pushed S73 ledger evidence, and execution-governance identifier allocation rule. |
-| Candidate Proposal | [Four-profile CPU instruction-correctness audit](../proposals/m5-four-profile-cpu-instruction-correctness-audit.md), primary-map reconciliation correction. |
-| Files And ABI Surface | T401 ledger and CURRENT only; no ABI surface. |
-| Applicable Rules | Pushed commits are immutable; use the next correction commit rather than amend/rebase; preserve exactly one active task-progress row. |
-| Verification | Documentation governance, diff check, commit-subject inspection, normal push and remote/master synchronization check. |
-| Expected Markers | `M5 T401 S73 P1:` commit subject and retained S73 accepted ledger record. |
-| Asset Needs | None. |
-| Reporting Requirements | Name the immutable-history correction and confirm no semantic/runtime evidence was weakened or altered. |
-| Stop Conditions | Transfer any required history rewrite or unrelated governance change; neither is authorized here. |
-| Exit Criteria | The repository recognizes S73 as the latest committed T401 subtask and CURRENT retains only its compact progress row. |
-| Original Owner Request | Continue the CPU audit and handle confirmed small issues rather than deferring them. |
-| Similar-Issue Sweep | Inspect the latest T401 P subjects and CURRENT progress cardinality together. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T395 S1 P4 `vm-0-5-0395` /
