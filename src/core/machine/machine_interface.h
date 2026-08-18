@@ -107,6 +107,8 @@ typedef struct core_machine_config {
     type_bool kbc_aux_absent;
     /* Per-DMA-cycle delay in delivered DMA clock quanta; zero preserves generic timing. */
     type_unsigned_32 dma_cycle_wait_quanta;
+    /* Enables a Core-owned DMA BUSRDY input; reset defaults the input ready. */
+    type_bool dma_cycle_bus_ready_gate_enabled;
 } core_machine_config;
 
 typedef struct core_machine_display_port_topology {
@@ -330,6 +332,8 @@ type_status core_machine_configure_display(core_machine *machine,
 type_status core_machine_configure_dma(core_machine *machine,
     const core_machine_dma_wiring *wiring,
     core_machine_dma_request_binding *out_fdc_request);
+/* Selected bus adapters drive this level at deterministic guest-time boundaries. */
+type_status core_machine_set_dma_bus_ready(core_machine *machine, C_INT ready);
 type_status core_machine_configure_rtc_cmos(core_machine *machine,
     const core_machine_rtc_cmos_config *config);
 type_status core_machine_configure_planar_parity(core_machine *machine,

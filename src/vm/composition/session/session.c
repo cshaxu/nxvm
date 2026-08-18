@@ -434,6 +434,8 @@ static type_status vm_session_create_model40_byob(const vm_session_config *confi
             {1u, 1u, 0u}, {1u, 1u, 0u}, {1u, 1u, 0u}},
         /* D3PE: one DCLK wait each DMA cycle; discrete bridge, not 250 ns. */
         .dma_cycle_wait_quanta = 1u,
+        /* D3PE: BUSRDY may extend a DMA cycle; reset level is ready. */
+        .dma_cycle_bus_ready_gate_enabled = TYPE_TRUE,
         .auxiliary_pit_present = TYPE_TRUE,
         .auxiliary_pit_base_port = 0x0048u,
         .kbc_aux_absent = TYPE_TRUE
@@ -488,6 +490,8 @@ type_status vm_session_create_model40_private(
             {1u, 1u, 0u}, {1u, 1u, 0u}, {1u, 1u, 0u}},
         /* D3PE: one DCLK wait each DMA cycle; discrete bridge, not 250 ns. */
         .dma_cycle_wait_quanta = 1u,
+        /* D3PE: BUSRDY may extend a DMA cycle; reset level is ready. */
+        .dma_cycle_bus_ready_gate_enabled = TYPE_TRUE,
         .auxiliary_pit_present = TYPE_TRUE,
         .auxiliary_pit_base_port = 0x0048u,
         .kbc_aux_absent = TYPE_TRUE

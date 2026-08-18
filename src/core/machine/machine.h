@@ -186,6 +186,8 @@ struct core_machine {
     /* Append-only scheduler state keeps existing internal offsets stable. */
     type_unsigned_32 dma_cycle_wait_quanta;
     type_unsigned_32 dma_cycle_wait_remaining;
+    type_bool dma_cycle_bus_ready_gate_enabled;
+    type_bool dma_cycle_bus_ready;
 };
 
 type_status core_machine_bus_initialize(core_machine *machine);

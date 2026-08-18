@@ -107,6 +107,7 @@ static C_INT competition_dma_wait_contract(C_VOID)
 
     config.cpu_profile = CORE_MACHINE_CPU_PROFILE_80386;
     config.dma_cycle_wait_quanta = 1u;
+    config.dma_cycle_bus_ready_gate_enabled = TYPE_TRUE;
     failed |= core_machine_create(&config, &machine) != TYPE_STATUS_OK;
     failed |= test_core_machine_fixture_register_reset_mapping(machine, 0xfffffff0u,
         0x000ffff0u, 16u) != TYPE_STATUS_OK;
@@ -119,6 +120,11 @@ static C_INT competition_dma_wait_contract(C_VOID)
     competition_program_dma_channel2(&machine->executor_port);
     core_machine_dma_request_assert(&machine->shared_dma_primary,
         &machine->shared_dma_secondary, &binding);
+    failed |= core_machine_set_dma_bus_ready(machine, 0) != TYPE_STATUS_OK;
+    failed |= core_machine_advance_time(machine, 2u) != TYPE_STATUS_OK;
+    failed |= core_machine_memory_read(machine, 0x11234u, &value, 1u) != TYPE_STATUS_OK ||
+        value != 0u || machine->dma_cycle_wait_remaining != 0u;
+    failed |= core_machine_set_dma_bus_ready(machine, 1) != TYPE_STATUS_OK;
     failed |= core_machine_advance_time(machine, 1u) != TYPE_STATUS_OK;
     failed |= core_machine_memory_read(machine, 0x11234u, &value, 1u) != TYPE_STATUS_OK ||
         value != 0u || machine->dma_cycle_wait_remaining != 1u;
@@ -274,6 +280,7 @@ C_INT main(C_VOID)
     if (failed) return 1;
     STD_PRINTF("M5:T354:S3:COMPETITION:OK\n");
     STD_PRINTF("M5:T419:S1:D4-DMA-NO-WAIT:OK\n");
+    STD_PRINTF("M5:T419:S3:D4-DMA-BUSRDY:OK\n");
     STD_PRINTF("M5:T369:S3:PCAT-HOLD:OK\n");
     return 0;
 }

@@ -3357,12 +3357,17 @@ static C_VOID core_machine_arbitration_tick(C_VOID *opaque,
         type_unsigned_64 tick;
         for (tick = 0u; tick < dma_ticks; ++tick) {
             if (core_machine_dma_has_pending_request(&machine->shared_dma_primary,
-                    &machine->shared_dma_secondary) &&
-                machine->dma_cycle_wait_remaining < machine->dma_cycle_wait_quanta) {
-                ++machine->dma_cycle_wait_remaining;
-            } else {
-                core_machine_dma_grant_advance(machine);
-                machine->dma_cycle_wait_remaining = 0u;
+                    &machine->shared_dma_secondary)) {
+                if (machine->dma_cycle_bus_ready_gate_enabled &&
+                    !machine->dma_cycle_bus_ready) {
+                    continue;
+                }
+                if (machine->dma_cycle_wait_remaining < machine->dma_cycle_wait_quanta) {
+                    ++machine->dma_cycle_wait_remaining;
+                } else {
+                    core_machine_dma_grant_advance(machine);
+                    machine->dma_cycle_wait_remaining = 0u;
+                }
             }
         }
     } else if ((machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 ||
@@ -4065,6 +4070,15 @@ type_status core_machine_configure_dma(core_machine *machine,
     return TYPE_STATUS_OK;
 }
 
+type_status core_machine_set_dma_bus_ready(core_machine *machine, C_INT ready)
+{
+    if (machine == STD_NULL || !core_machine_mutable_operation_is_allowed(machine) ||
+        !machine->dma_cycle_bus_ready_gate_enabled) {
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
+    machine->dma_cycle_bus_ready = ready ? TYPE_TRUE : TYPE_FALSE;
+    return TYPE_STATUS_OK;
+}
 type_status core_machine_configure_rtc_cmos(core_machine *machine,
     const core_machine_rtc_cmos_config *config)
 {
@@ -4703,6 +4717,8 @@ static type_status core_machine_create_internal(
             &config->external_memory_locality_timing) ||
         (config->auxiliary_pit_present != TYPE_FALSE &&
         config->auxiliary_pit_present != TYPE_TRUE) ||
+        (config->dma_cycle_bus_ready_gate_enabled != TYPE_FALSE &&
+        config->dma_cycle_bus_ready_gate_enabled != TYPE_TRUE) ||
         (config->auxiliary_pit_present && config->auxiliary_pit_base_port > 0xfffcu)) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
@@ -4721,6 +4737,8 @@ static type_status core_machine_create_internal(
     machine->retirement_time_contract = config->retirement_time_contract;
     machine->external_memory_locality_timing = config->external_memory_locality_timing;
     machine->dma_cycle_wait_quanta = config->dma_cycle_wait_quanta;
+    machine->dma_cycle_bus_ready_gate_enabled = config->dma_cycle_bus_ready_gate_enabled;
+    machine->dma_cycle_bus_ready = TYPE_TRUE;
     if (config->retirement_qualification != STD_NULL) {
         if (config->retirement_qualification->entries == STD_NULL ||
             config->retirement_qualification->entry_count == 0u ||
@@ -4947,6 +4965,7 @@ static type_status core_machine_cold_reset(core_machine *machine)
     machine->fault_detail = 0u;
     machine->elapsed_ticks = 0u;
     machine->dma_cycle_wait_remaining = 0u;
+    machine->dma_cycle_bus_ready = TYPE_TRUE;
     machine->external_memory_locality_page_tag = 0u;
     machine->external_memory_locality_round_ticks = 0u;
     machine->external_memory_locality_page_valid = TYPE_FALSE;
