@@ -1078,5 +1078,6 @@ C_INT main(C_VOID)
         return 1;
     }
     STD_PRINTF("M5:T316:S57:LAR-LSL:OK\n");
+    STD_PRINTF("M5:T401:S32:LAR-LSL-PROFILES:OK\n");
     return 0;
 }

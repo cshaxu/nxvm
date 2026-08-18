@@ -825,3 +825,11 @@ No production discrepancy was found. This remains CPU semantic/nonphysical timin
 ## S31 Acceptance
 
 S31 closes PUSHA/POPA `60h`/`61h` with focused runtime and preview proof. It retains 8086 #UD, 80186+ stack-image rules, 80386 widths, protected stack limits and IRQ boundaries. No production discrepancy was found; Core timing remains explicitly nonphysical. S32 owns LAR/LSL `0F02h`/`0F03h`.
+
+## S32 LAR/LSL
+
+S32 audits LAR/LSL `0F02h`/`0F03h`. Intel's 80286/80386 references define descriptor access-right/limit loads and ZF publication. This is original-source semantic/form evidence; no emulator implementation, ROM or guest asset was imported.
+
+`M5:T401:S32:LAR-LSL-PROFILES:OK` retains descriptor matrices, attributes, rejection, source-memory/segments/SIB, limits, VM86, IRQ and LDT proof. `M5:T401:S32:LAR-LSL-PREVIEW-PROFILES:OK` records 80186 rejection and 80286+ availability; 8086 `0Fh` remains its distinct POP CS instruction.
+
+No production discrepancy was found. This remains CPU semantic/nonphysical timing-baseline evidence only and does not establish physical timing, DeskPro L3 or a Core/VM interface change.
