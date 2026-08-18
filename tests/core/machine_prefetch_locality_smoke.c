@@ -212,6 +212,40 @@ static C_INT d4_refresh_external_cycle_contract(C_VOID)
     return !failed;
 }
 
+static C_INT retirement_wait_contract(C_VOID)
+{
+    static const type_unsigned_8 code[] = {0xa0u, 0x10u, 0x00u, 0xf4u};
+    static const type_unsigned_8 data = 0x5au;
+    static const core_machine_external_cycle_timing timing = {2048u, 2u, 0u,
+        CORE_MACHINE_EXTERNAL_CYCLE_OVERLAP_DISABLED};
+    core_machine_config config = {0};
+    core_machine *machine = STD_NULL;
+    core_machine_run_result result;
+    C_INT failed = 0;
+
+    config.cpu_profile = CORE_MACHINE_CPU_PROFILE_80386;
+    config.external_cycle_timing = timing;
+    failed |= core_machine_create(&config, &machine) != TYPE_STATUS_OK;
+    failed |= test_core_machine_fixture_register_reset_mapping(machine,
+        0xfffffff0u, 0x000ffff0u, 16u) != TYPE_STATUS_OK;
+    failed |= core_machine_freeze_execution_providers(machine) != TYPE_STATUS_OK;
+    failed |= core_machine_reset(machine) != TYPE_STATUS_OK;
+    failed |= core_machine_memory_write(machine, 0x000ffff0u, code, sizeof(code)) !=
+        TYPE_STATUS_OK;
+    failed |= core_machine_memory_write(machine, 0x10u, &data, 1u) != TYPE_STATUS_OK;
+    machine->maximum_instruction_ticks = 1u;
+    failed |= core_machine_run(machine, (core_machine_run_budget){0u, 1u},
+        &result) != TYPE_STATUS_OK;
+    failed |= result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 0u ||
+        result.ticks != 1u || machine->cpu_retirement_wait_pending == TYPE_FALSE ||
+        machine->cpu_retirement_wait_ticks == 0u;
+    failed |= core_machine_run(machine, (core_machine_run_budget){1u, 0u},
+        &result) != TYPE_STATUS_OK;
+    failed |= result.executed != 1u || result.ticks <= 1u ||
+        machine->cpu_retirement_wait_pending != TYPE_FALSE;
+    core_machine_destroy(machine);
+    return !failed;
+}
 C_INT main(C_VOID)
 {
     static const core_machine_external_cycle_timing disabled = {0u, 0u, 0u,
@@ -238,6 +272,7 @@ C_INT main(C_VOID)
     failed |= read_timing_ticks != read_baseline_ticks + 4u;
     failed |= !external_cycle_observer_contract();
     failed |= !d4_refresh_external_cycle_contract();
+    failed |= !retirement_wait_contract();
     if (failed != 0) return 1;
     STD_PRINTF("M5:T412:S1:EXTERNAL-READ-LOCALITY:OK\n");
     STD_PRINTF("M5:T413:S1:EXTERNAL-WRITE-BRIDGE:OK\n");
@@ -247,5 +282,6 @@ C_INT main(C_VOID)
     STD_PRINTF("M5:T417:S1:REFRESH-LOCALITY:OK\n");
     STD_PRINTF("M5:T418:S1:INSTRUCTION-BOUNDARY-LOCALITY:OK\n");
     STD_PRINTF("M5:T419:S5:EXTERNAL-CYCLE-OVERLAP:OK\n");
+    STD_PRINTF("M5:T423:S1:CPU-BOARD-TRANSACTION:OK\n");
     return 0;
 }

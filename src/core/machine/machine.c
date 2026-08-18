@@ -5155,6 +5155,9 @@ static type_status core_machine_cold_reset(core_machine *machine)
     machine->dma_cycle_bus_ready = TYPE_TRUE;
     machine->external_cycle_page_tag = 0u;
     machine->external_cycle_round_ticks = 0u;
+    machine->cpu_retirement_wait_ticks = 0u;
+    machine->cpu_retirement_completion_ticks = 0u;
+    machine->cpu_retirement_source_ticks = 0u;
     machine->external_cycle_page_valid = TYPE_FALSE;
     machine->external_cycle_pending_valid = TYPE_FALSE;
     machine->external_cycle_pending_physical = 0u;
@@ -5165,6 +5168,7 @@ static type_status core_machine_cold_reset(core_machine *machine)
     machine->external_cycle_overlap_valid = TYPE_FALSE;
     machine->external_cycle_overlap_next_physical = 0u;
     machine->external_cycle_round_overflow = TYPE_FALSE;
+    machine->cpu_retirement_wait_pending = TYPE_FALSE;
     machine->retirement_eligibility_key_valid = TYPE_FALSE;
     machine->source_repeat_active = TYPE_FALSE;
     machine->source_repeat_cs = 0u;
@@ -5352,6 +5356,68 @@ type_status core_machine_run(
                 result->linear_pc = core_machine_linear_pc(machine);
                 return TYPE_STATUS_OK;
             }
+            if (machine->cpu_retirement_wait_pending) {
+                if (machine->cpu_retirement_wait_ticks != 0u) {
+                    if (result->ticks == UINT64_MAX ||
+                        machine->elapsed_ticks == UINT64_MAX) {
+                        (C_VOID)core_machine_report_fault(machine, 0x54494d45u);
+                        result->reason = CORE_MACHINE_STOP_FAULT;
+                        result->linear_pc = core_machine_linear_pc(machine);
+                        result->detail = machine->fault_detail;
+                        result->elapsed_ticks = machine->elapsed_ticks;
+                        return TYPE_STATUS_FAULT;
+                    }
+                    ++result->ticks;
+                    --machine->cpu_retirement_wait_ticks;
+                    if (core_machine_publish_elapsed_ticks(machine, 1u, TYPE_FALSE) != TYPE_STATUS_OK) return TYPE_STATUS_FAULT;
+                    result->elapsed_ticks = machine->elapsed_ticks;
+                if (machine->executor_cpu.data.flagHalt) {
+                    machine->lifecycle = CORE_MACHINE_PAUSED;
+                    result->reason = CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
+                    result->linear_pc = core_machine_linear_pc(machine);
+                    return TYPE_STATUS_OK;
+                }
+                    continue;
+                }
+                if (budget.ticks != 0u && machine->cpu_retirement_completion_ticks >
+                    budget.ticks - result->ticks) {
+                    machine->lifecycle = CORE_MACHINE_PAUSED;
+                    result->reason = CORE_MACHINE_STOP_BUDGET;
+                    result->linear_pc = core_machine_linear_pc(machine);
+                    result->elapsed_ticks = machine->elapsed_ticks;
+                    return TYPE_STATUS_OK;
+                }
+                if (UINT64_MAX - result->ticks < machine->cpu_retirement_completion_ticks ||
+                    UINT64_MAX - machine->elapsed_ticks <
+                        machine->cpu_retirement_completion_ticks) {
+                    (C_VOID)core_machine_report_fault(machine, 0x54494d45u);
+                    result->reason = CORE_MACHINE_STOP_FAULT;
+                    result->linear_pc = core_machine_linear_pc(machine);
+                    result->detail = machine->fault_detail;
+                    result->elapsed_ticks = machine->elapsed_ticks;
+                    return TYPE_STATUS_FAULT;
+                }
+                core_machine_retirement_observation_publish(machine, machine->cpu_retirement_source_ticks);
+                if (machine->retirement_time_contract ==
+                    CORE_MACHINE_RETIREMENT_TIME_PHYSICAL &&
+                    (machine->source_timing_unallocated ||
+                    !core_machine_retirement_qualification_contains(machine))) {
+                    (C_VOID)core_machine_report_fault(machine, 0x54494d55u);
+                    result->reason = CORE_MACHINE_STOP_FAULT;
+                    result->linear_pc = core_machine_linear_pc(machine);
+                    result->detail = machine->fault_detail;
+                    result->elapsed_ticks = machine->elapsed_ticks;
+                    return TYPE_STATUS_FAULT;
+                }
+                ++result->executed;
+                result->ticks += machine->cpu_retirement_completion_ticks;
+                if (core_machine_publish_elapsed_ticks(machine, machine->cpu_retirement_completion_ticks, TYPE_TRUE) != TYPE_STATUS_OK) return TYPE_STATUS_FAULT;
+                machine->cpu_retirement_wait_pending = TYPE_FALSE;
+                machine->cpu_retirement_completion_ticks = 0u;
+                machine->cpu_retirement_source_ticks = 0u;
+                result->elapsed_ticks = machine->elapsed_ticks;
+                continue;
+            }
             if (budget.ticks != 0u && machine->maximum_instruction_ticks >
                 budget.ticks - result->ticks) {
                 machine->lifecycle = CORE_MACHINE_PAUSED;
@@ -5378,7 +5444,6 @@ type_status core_machine_run(
                 type_bool was_halted = machine->executor_cpu.data.flagHalt;
 
                 machine->external_cycle_round_ticks = 0u;
-                machine->external_cycle_round_overflow = TYPE_FALSE;
                 /* A completed instruction round cannot inherit an undeclared
                  * external-cycle overlap into the next CPU refresh. */
                 core_machine_external_cycle_invalidate(machine);
@@ -5438,6 +5503,13 @@ type_status core_machine_run(
                     return TYPE_STATUS_FAULT;
                 }
                 core_machine_retirement_observation_capture_eligibility_key(machine);
+                if (machine->external_cycle_round_ticks != 0u) {
+                    machine->cpu_retirement_wait_pending = TYPE_TRUE;
+                    machine->cpu_retirement_wait_ticks = machine->external_cycle_round_ticks;
+                    machine->cpu_retirement_completion_ticks = instruction_ticks - machine->external_cycle_round_ticks;
+                    machine->cpu_retirement_source_ticks = instruction_ticks;
+                    continue;
+                }
                 core_machine_retirement_observation_publish(machine, instruction_ticks);
                 if (machine->retirement_time_contract ==
                     CORE_MACHINE_RETIREMENT_TIME_PHYSICAL &&

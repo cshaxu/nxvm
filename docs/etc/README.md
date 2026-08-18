@@ -466,6 +466,7 @@ principal documents named in [docs/README.md](../README.md).
 | evidence/t421-s1-d4-speaker-line.md | Verification owner | T421 S1 records the original-source DeskPro logical port-61h/PIT-channel-2 speaker line, its Core owner, Model-40 selection and IBM 5170 reuse; acoustic/PPI breadth remains transferred. Retain with T421 history. |
 | evidence/t421-s2-port-b-exclusivity.md | Verification owner | T421 S2 proves the existing Core port registry rejects planar/D4 port-B dual selection atomically and preserves the first route through reset. Retain with T421 history. |
 | evidence/t422-s1-d4-slowdown-hold.md | Verification owner | T422 S1 records the original-source DeskPro 8042 SLOWD*/refresh/PIT-channel-2 CPU-hold bridge, its single Core route, Model-40 selection, and 5170 isolation; physical timing calibration remains transferred. Retain with T422 history. |
+| evidence/t423-s1-cpu-board-retirement-wait.md | Verification owner | T423 S1 records the Core-owned non-retiring completion wait for chargeable D4 external CPU-memory cycles; BWAIT/ISA/physical transfers remain explicit. Retain with T423 history. |
 | evidence/t420-s2-duplicate-audit-withdrawal.md | Closure audit | T420 S2 withdraws a duplicate four-profile CPU audit after reconciling completed T401 instruction and T360 timing authorities; no second audit path is created. Retain with T420 history. |
 
 Adding a new supporting document requires owner approval, an exact-file index

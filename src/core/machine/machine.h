@@ -94,6 +94,9 @@ struct core_machine {
     core_machine_external_cycle_timing external_cycle_timing;
     type_unsigned_32 external_cycle_page_tag;
     type_unsigned_64 external_cycle_round_ticks;
+    type_unsigned_64 cpu_retirement_wait_ticks;
+    type_unsigned_64 cpu_retirement_completion_ticks;
+    type_unsigned_64 cpu_retirement_source_ticks;
     type_bool external_cycle_page_valid;
     type_bool external_cycle_pending_valid;
     type_unsigned_32 external_cycle_pending_physical;
@@ -103,6 +106,7 @@ struct core_machine {
     type_bool external_cycle_overlap_valid;
     type_unsigned_32 external_cycle_overlap_next_physical;
     type_bool external_cycle_round_overflow;
+    type_bool cpu_retirement_wait_pending;
     type_unsigned_64 maximum_instruction_ticks;
     core_machine_retirement_time_contract retirement_time_contract;
     type_bool source_timing_unallocated;
