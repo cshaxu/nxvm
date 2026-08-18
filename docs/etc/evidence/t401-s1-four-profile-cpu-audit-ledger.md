@@ -1076,3 +1076,6 @@ operand/address and combined attribute layouts. The same scanner matrix proves
 from that rejection set because its primary `0Fh` remains the distinct POP CS
 instruction, as recorded by S5. No production discrepancy was found; timing
 remains nonphysical.
+## S59 Acceptance
+
+S59 closes the bounded 80386 near conditional-jump audit. The control-transfer and preview matrices establish all predicates, rel16/rel32 and 80386 attribute layouts, plus 80186/80286 secondary-form rejection and the retained 8086 POP CS distinction. Both focused smokes and documentation governance pass; no production discrepancy was found, timing remains nonphysical, and T401 remains open.
