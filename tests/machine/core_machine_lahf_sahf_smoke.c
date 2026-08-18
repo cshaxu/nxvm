@@ -512,5 +512,6 @@ C_INT main(C_VOID)
         return 1;
     }
     STD_PRINTF("M5:T316:S39:LAHF-SAHF:OK\n");
+    STD_PRINTF("M5:T401:S36:LAHF-SAHF-PROFILES:OK\n");
     return 0;
 }

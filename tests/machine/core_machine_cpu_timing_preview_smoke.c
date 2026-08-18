@@ -464,6 +464,15 @@ static C_INT preview_test_les_lds_profiles(C_VOID)
     return preview_expect((const type_unsigned_8[]){0x66u,0xc4u,0x06u,0u,0x20u},5u,CORE_MACHINE_CPU_PROFILE_80386,TYPE_FALSE,5u,4u);
 }
 
+static C_INT preview_test_lahf_sahf_profiles(C_VOID)
+{
+    static const core_machine_cpu_profile profiles[] = {CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186, CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386};
+    type_unsigned_8 profile;
+    for (profile = 0u; profile != sizeof(profiles) / sizeof(profiles[0]); ++profile)
+        if (!preview_expect((const type_unsigned_8[]){0x9fu},1u,profiles[profile],TYPE_FALSE,1u,1u) || !preview_expect((const type_unsigned_8[]){0x9eu},1u,profiles[profile],TYPE_FALSE,1u,1u)) return 0;
+    return preview_expect((const type_unsigned_8[]){0x66u,0x9fu},2u,CORE_MACHINE_CPU_PROFILE_80386,TYPE_FALSE,2u,2u) && preview_expect((const type_unsigned_8[]){0x67u,0x9eu},2u,CORE_MACHINE_CPU_PROFILE_80386,TYPE_FALSE,2u,2u);
+}
+
 static C_INT preview_test_xlat_profiles(C_VOID)
 {
     static const core_machine_cpu_profile profiles[] = {CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186, CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386};
@@ -937,6 +946,7 @@ C_INT main(C_VOID)
     if (!preview_test_lar_lsl_profiles()) return 33;
     if (!preview_test_decimal_adjust_profiles()) return 35;
     if (!preview_test_xlat_profiles()) return 36;
+    if (!preview_test_lahf_sahf_profiles()) return 37;
     if (!preview_test_les_lds_profiles()) return 34;
     if (!preview_test_group3_profiles()) return 10;
     if (!preview_test_group45_profiles()) return 11;
@@ -974,5 +984,6 @@ C_INT main(C_VOID)
     STD_PRINTF("M5:T401:S33:LES-LDS-PREVIEW-PROFILES:OK\n");
     STD_PRINTF("M5:T401:S34:DECIMAL-ADJUST-PREVIEW-PROFILES:OK\n");
     STD_PRINTF("M5:T401:S35:XLAT-PREVIEW-PROFILES:OK\n");
+    STD_PRINTF("M5:T401:S36:LAHF-SAHF-PREVIEW-PROFILES:OK\n");
     return 0;
 }

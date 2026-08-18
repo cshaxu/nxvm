@@ -873,3 +873,11 @@ No production discrepancy was found. This remains CPU semantic/nonphysical timin
 ## S35 Acceptance
 
 S35 closes XLAT `D7h` coverage with focused runtime, preview and 80286 timing proof across all four profiles. It retains the table base/index, 80386 address-size and segment-override, protected-limit nonpublication and lexical boundaries. No production discrepancy was found; Core timing remains explicitly nonphysical. S36 owns LAHF/SAHF `9Fh`/`9Eh`.
+
+## S36 LAHF/SAHF
+
+S36 audits LAHF/SAHF `9Fh`/`9Eh`. Intel 8086/80386 references define the AH transfer of the defined status flags and reserved-bit treatment. This is original-source semantic/form evidence; no emulator implementation, ROM or guest asset was imported.
+
+`M5:T401:S36:LAHF-SAHF-PROFILES:OK` retains all-four-profile FLAGS/AH transfer, ignored AH bits, pre-80386 attribute #UD atomicity, 80386 attribute and LOCK behavior, protected/VM86 and IRQ proof. `M5:T401:S36:LAHF-SAHF-PREVIEW-PROFILES:OK` adds the matching lexical matrix.
+
+No production discrepancy was found. This remains CPU semantic/nonphysical timing-baseline evidence only and does not establish physical timing, DeskPro L3 or a Core/VM interface change.
