@@ -25,3 +25,5 @@ S2 corrects the DeskPro-specific active-low port-`61h` IOCHK/fail-safe NMI
 semantics and high-pulse latch clear in the existing Core D4 owner. The
 [contract evidence](../etc/evidence/t399-s2-b3-port61-nmi-contract.md) retains
 physical pulse/propagation timing as unresolved.
+
+The [acceptance audit](../etc/evidence/t399-s2-b3-acceptance-audit.md) accepts B3 without a physical-timing claim.
