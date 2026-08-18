@@ -62,6 +62,22 @@ C_INT main(C_VOID)
 
         CHECK(read_byte(session->core_machine, VM_PROFILE_MODEL40_D4_CONTROL_PHYSICAL,
             0xbfu));
+        CHECK(read_byte(session->core_machine, VM_PROFILE_MODEL40_D4_CONTROL_PHYSICAL + 1u,
+            0xfdu));
+        CHECK(read_byte(session->core_machine, VM_PROFILE_MODEL40_D4_CONTROL_PHYSICAL + 2u,
+            0x44u));
+        CHECK(read_byte(session->core_machine, VM_PROFILE_MODEL40_D4_CONTROL_PHYSICAL + 3u,
+            0xfcu));
+        CHECK(read_byte(session->core_machine, VM_PROFILE_MODEL40_D4_CONTROL_PHYSICAL + 4u,
+            0xffu));
+        CHECK(write_byte(session->core_machine, VM_PROFILE_MODEL40_D4_CONTROL_PHYSICAL + 4u,
+            0x5au, TYPE_STATUS_OK));
+        CHECK(read_byte(session->core_machine, VM_PROFILE_MODEL40_D4_CONTROL_PHYSICAL + 4u,
+            0xffu));
+        CHECK(write_byte(session->core_machine, VM_PROFILE_MODEL40_D4_CONTROL_PHYSICAL + 2u,
+            0x4au, TYPE_STATUS_OK));
+        CHECK(read_byte(session->core_machine, VM_PROFILE_MODEL40_D4_CONTROL_PHYSICAL + 2u,
+            0x4au));
         CHECK(core_machine_set_a20(session->core_machine, 1) == TYPE_STATUS_OK);
         CHECK(write_byte(session->core_machine, 0x000e0000u, 0xa5u,
             TYPE_STATUS_OK));
@@ -86,6 +102,22 @@ C_INT main(C_VOID)
         CHECK(read_byte(session->core_machine, 0x000f0000u, 0x11u));
         CHECK(read_byte(session->core_machine, VM_PROFILE_MODEL40_D4_CONTROL_PHYSICAL,
             0xbfu));
+        CHECK(read_byte(session->core_machine, VM_PROFILE_MODEL40_D4_CONTROL_PHYSICAL + 1u,
+            0xfdu));
+        CHECK(read_byte(session->core_machine, VM_PROFILE_MODEL40_D4_CONTROL_PHYSICAL + 2u,
+            0x44u));
+        CHECK(read_byte(session->core_machine, VM_PROFILE_MODEL40_D4_CONTROL_PHYSICAL + 3u,
+            0xfcu));
+        CHECK(read_byte(session->core_machine, VM_PROFILE_MODEL40_D4_CONTROL_PHYSICAL + 4u,
+            0xffu));
+        CHECK(write_byte(session->core_machine, VM_PROFILE_MODEL40_D4_CONTROL_PHYSICAL + 4u,
+            0x5au, TYPE_STATUS_OK));
+        CHECK(read_byte(session->core_machine, VM_PROFILE_MODEL40_D4_CONTROL_PHYSICAL + 4u,
+            0xffu));
+        CHECK(write_byte(session->core_machine, VM_PROFILE_MODEL40_D4_CONTROL_PHYSICAL + 2u,
+            0x4au, TYPE_STATUS_OK));
+        CHECK(read_byte(session->core_machine, VM_PROFILE_MODEL40_D4_CONTROL_PHYSICAL + 2u,
+            0x4au));
         CHECK(core_machine_set_a20(session->core_machine, 1) == TYPE_STATUS_OK);
         CHECK(write_byte(session->core_machine, VM_PROFILE_MODEL40_D4_COMPATIBILITY_START,
             0x3cu, TYPE_STATUS_OK));

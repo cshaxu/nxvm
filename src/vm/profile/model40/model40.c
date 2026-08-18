@@ -323,9 +323,23 @@ static type_status vm_profile_model40_d4_control_read(C_VOID *opaque,
     type_native_unsigned bytes)
 {
     vm_profile_model40_d4_memory *memory = (vm_profile_model40_d4_memory *)opaque;
-    if (memory == STD_NULL || physical != VM_PROFILE_MODEL40_D4_CONTROL_PHYSICAL ||
+    type_unsigned_32 offset;
+
+    if (memory == STD_NULL || physical < VM_PROFILE_MODEL40_D4_CONTROL_PHYSICAL ||
         destination == 0u || bytes != 1u) return TYPE_STATUS_FAULT;
-    *(type_unsigned_8 *)destination = (type_unsigned_8)(0xbfu & ~memory->parity_fault_mask);
+    offset = physical - VM_PROFILE_MODEL40_D4_CONTROL_PHYSICAL;
+    if (offset >= VM_PROFILE_MODEL40_D4_CONTROL_WINDOW_BYTES) return TYPE_STATUS_UNSUPPORTED;
+    if (offset >= VM_PROFILE_MODEL40_D4_CONTROL_REGISTER_BYTES) {
+        *(type_unsigned_8 *)destination = 0xffu;
+    } else if (offset == 0u) {
+        *(type_unsigned_8 *)destination = (type_unsigned_8)(0xbfu & ~memory->parity_fault_mask);
+    } else if (offset == 1u) {
+        *(type_unsigned_8 *)destination = memory->diagnostic_high;
+    } else if (offset == 2u) {
+        *(type_unsigned_8 *)destination = (type_unsigned_8)memory->ram_setup;
+    } else {
+        *(type_unsigned_8 *)destination = (type_unsigned_8)(memory->ram_setup >> 8u);
+    }
     return TYPE_STATUS_OK;
 }
 
@@ -334,11 +348,19 @@ static type_status vm_profile_model40_d4_control_write(C_VOID *opaque,
     type_native_unsigned bytes)
 {
     vm_profile_model40_d4_memory *memory = (vm_profile_model40_d4_memory *)opaque;
+    type_unsigned_32 offset;
 
-    if (memory == STD_NULL || physical != VM_PROFILE_MODEL40_D4_CONTROL_PHYSICAL ||
+    if (memory == STD_NULL || physical < VM_PROFILE_MODEL40_D4_CONTROL_PHYSICAL ||
         source == 0u || bytes != 1u) return TYPE_STATUS_FAULT;
-    memory->control = *(const type_unsigned_8 *)source | 0xfcu;
-    memory->parity_fault_mask = 0u;
+    offset = physical - VM_PROFILE_MODEL40_D4_CONTROL_PHYSICAL;
+    if (offset >= VM_PROFILE_MODEL40_D4_CONTROL_WINDOW_BYTES) return TYPE_STATUS_UNSUPPORTED;
+    if (offset == 0u) {
+        memory->control = *(const type_unsigned_8 *)source | 0xfcu;
+        memory->parity_fault_mask = 0u;
+    } else if (offset == 2u) {
+        memory->ram_setup = (type_unsigned_16)((memory->ram_setup & 0xff00u) |
+            *(const type_unsigned_8 *)source);
+    }
     return TYPE_STATUS_OK;
 }
 
@@ -347,7 +369,9 @@ static type_status vm_profile_model40_d4_control_query(C_VOID *opaque,
     core_machine_memory_access access)
 {
     (C_VOID)opaque;
-    if (physical != VM_PROFILE_MODEL40_D4_CONTROL_PHYSICAL || bytes != 1u) {
+    if (physical < VM_PROFILE_MODEL40_D4_CONTROL_PHYSICAL ||
+        physical - VM_PROFILE_MODEL40_D4_CONTROL_PHYSICAL >=
+            VM_PROFILE_MODEL40_D4_CONTROL_WINDOW_BYTES || bytes != 1u) {
         return TYPE_STATUS_UNSUPPORTED;
     }
     return access == CORE_MACHINE_MEMORY_ACCESS_READ ||
@@ -365,6 +389,9 @@ C_VOID vm_profile_model40_d4_memory_reset(vm_profile_model40_d4_memory *memory)
 {
     if (memory != STD_NULL) {
         memory->control = 0xffu;
+        /* 1 MiB private model: Tier-2 86Box jumper/settings visibility. */
+        memory->diagnostic_high = 0xfdu;
+        memory->ram_setup = 0xfc44u;
         memory->parity_fault_mask = 0u;
     }
 }
@@ -406,7 +433,8 @@ type_status vm_profile_model40_d4_memory_register(core_machine *machine,
         VM_PROFILE_MODEL40_D4_COMPATIBILITY_BYTES, &memory_callbacks, memory);
     if (status != TYPE_STATUS_OK) return status;
     status = core_machine_register_memory_device(machine,
-        VM_PROFILE_MODEL40_D4_CONTROL_PHYSICAL, 1u, &control_callbacks, memory);
+        VM_PROFILE_MODEL40_D4_CONTROL_PHYSICAL, VM_PROFILE_MODEL40_D4_CONTROL_WINDOW_BYTES,
+        &control_callbacks, memory);
     if (status != TYPE_STATUS_OK) return status;
     return core_machine_register_memory_write_observer(machine,
         vm_profile_model40_d4_memory_write_observer, memory);

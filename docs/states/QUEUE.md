@@ -8,6 +8,7 @@ is retained separately so this queue remains a short ordering surface.
 
 ## M5 Candidates
 
+1. [DeskPro 386 D4 memory-controller reference reconciliation](../proposals/m5-deskpro-386-d4-memory-controller-reconciliation.md).
 
 The [four-profile CPU-completeness program](../proposals/m5-four-profile-cpu-completeness-program.md)
 is the shared admission context for this dependency-ordered sequence.

@@ -19,10 +19,14 @@
 #define VM_PROFILE_MODEL40_D4_REPLACEMENT_START 0x000e0000u
 #define VM_PROFILE_MODEL40_D4_REPLACEMENT_BYTES VM_PROFILE_MODEL40_D4_COMPATIBILITY_BYTES
 #define VM_PROFILE_MODEL40_D4_CONTROL_PHYSICAL 0x80c00000u
+#define VM_PROFILE_MODEL40_D4_CONTROL_REGISTER_BYTES 4u
+#define VM_PROFILE_MODEL40_D4_CONTROL_WINDOW_BYTES 4096u
 
 typedef struct vm_profile_model40_d4_memory {
     type_unsigned_8 compatibility[VM_PROFILE_MODEL40_D4_COMPATIBILITY_BYTES];
     type_unsigned_8 control;
+    type_unsigned_8 diagnostic_high;
+    type_unsigned_16 ram_setup;
     type_unsigned_8 parity_fault_mask;
     core_machine *machine;
 } vm_profile_model40_d4_memory;
