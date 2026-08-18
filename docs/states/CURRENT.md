@@ -3,6 +3,26 @@
 ## Current Work
 
 **Active: M5 T401.**
+## M5 T401 S66 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner: user; standing approval to continue CPU audit and directly repair confirmed small issues. |
+| Objective | Independently audit 80386 MOV debug-register forms `0F 21h` and `0F 23h`. |
+| Non-goals | No CPU timing model, Core/VM interface, DeskPro claim or external-source import; no T401 closure. |
+| Reference Baseline | `a43f9c5d` (S65 P2), T401 ledger, retained Intel 80386 PRM, and `core-machine-debug-mov-s59-smoke`. |
+| Candidate Proposal | [Four-profile CPU instruction-correctness audit](../proposals/m5-four-profile-cpu-instruction-correctness-audit.md), 80386 debug-register batch. |
+| Files And ABI Surface | Debug-MOV smoke, preview smoke, CURRENT and T401 ledger only; test/documentation surface. |
+| Applicable Rules | Shared CPU debug-register ownership unchanged; coding, documentation and execution rules apply. |
+| Verification | Build/run debug-MOV and preview smokes; documentation governance; diff check. |
+| Expected Markers | `M5:T401:S66:DEBUG-MOV-PROFILES:OK` and `M5:T401:S66:DEBUG-MOV-PREVIEW-PROFILES:OK`. |
+| Asset Needs | None. |
+| Reporting Requirements | Record direction/register/profile evidence, discrepancy result, commits and nonphysical boundary. |
+| Stop Conditions | Transfer any nonlocal debug-state, fault-delivery or timing repair. |
+| Exit Criteria | Both directions, legal and reserved DR indices, register-only form, 80386 availability and old-profile rejection have evidence. |
+| Original Owner Request | Continue CPU audit before later DeskPro L3 work with direct repair of confirmed small issues. |
+| Similar-Issue Sweep | Treat directions, DR index legality, ModR/M restriction, CPL, LOCK, old-profile rejection and atomicity together. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T395 S1 P4 `vm-0-5-0395` /

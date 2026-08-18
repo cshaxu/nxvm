@@ -7612,6 +7612,7 @@ static type_bool core_machine_cpu_instruction_lexeme_modrm_form_valid(
     type_unsigned_8 reg = (modrm >> 3u) & 7u;
 
     if (extended) {
+        if ((opcode == 0x21u || opcode == 0x23u) && (reg == 4u || reg == 5u)) return TYPE_FALSE;
         if (opcode >= 0x20u && opcode <= 0x24u || opcode == 0x26u) {
             if ((opcode == 0x20u || opcode == 0x22u) &&
                 cpu_80386_cr_mov_ignores_mod) return TYPE_TRUE;

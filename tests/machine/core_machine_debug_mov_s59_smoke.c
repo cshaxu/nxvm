@@ -455,5 +455,6 @@ C_INT main(C_VOID)
         return 1;
     }
     STD_PRINTF("M5:T316:S59:DEBUG-MOV:OK\n");
+    STD_PRINTF("M5:T401:S66:DEBUG-MOV-PROFILES:OK\n");
     return 0;
 }

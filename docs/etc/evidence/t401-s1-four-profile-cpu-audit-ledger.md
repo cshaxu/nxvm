@@ -1165,3 +1165,13 @@ timing remains nonphysical.
 ## S65 Acceptance
 
 S65 closes the bounded 80386 two-operand IMUL audit. Runtime and preview matrices establish signed register/memory forms, 80386 attributes, 80186/80286 rejection and the retained 8086 POP CS distinction. Both focused smokes and documentation governance pass; no production discrepancy was found, timing remains nonphysical, and T401 remains open.
+
+## S66 Debug-register MOV
+
+S66 audits 80386 `MOV r32,DRx` and `MOV DRx,r32` (`0F 21h/23h`). The retained
+fixture covers legal DR indices, both directions, non-register ModR/M,
+reserved indices, privilege, LOCK, attributes and IRQ non-shadow boundaries.
+The new preview matrix found and repaired a shared lexical defect: DR4/DR5
+were incorrectly advertised as available although execution rejects them.
+The lexical validator now rejects those reserved indices before publication.
+Focused smokes and the 285-test current gate pass; timing remains nonphysical.
