@@ -1197,3 +1197,7 @@ S68 closes the bounded 80386 LSS/LFS/LGS audit. The new lexical matrix and retai
 ## S69 Test-register MOV
 
 S69 audits 80386 `MOV r32,TRx` / `MOV TRx,r32` (`0F 24h/26h`). The runtime decoder accepts register-direct TR6/TR7 only and rejects memory forms plus TR0--TR5 with `#UD`, but the public lexical scanner had advertised every register index as available. The new shared lexical check rejects the six reserved indices before publishing a preview. `M5:T401:S69:TEST-MOV-PREVIEW-PROFILES:OK` proves both directions' valid TR6/TR7 forms, reserved-index and memory rejection, 80186/80286 rejection and 80386 `66h`/`67h` layouts. The retained T359 privileged timing smoke passes. TR6/TR7 still have no persistent translation-cache or test-array consumer; that external boundary remains unchanged. The full 285-test current gate passes; timing remains nonphysical.
+
+## S69 Acceptance
+
+S69 closes the bounded 80386 test-register MOV audit. The shared scanner now agrees with execution: both directions are register-only and accept TR6/TR7 only; TR0--TR5, memory forms and pre-80386 profiles reject. Prefix layouts and the retained privileged timing row are proven. Persistent TLB/test-array semantics remain outside the supported no-cache model; no ABI, physical-timing or machine-profile change exists.

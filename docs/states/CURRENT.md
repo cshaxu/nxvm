@@ -3,26 +3,6 @@
 ## Current Work
 
 **Active: M5 T401.**
-## M5 T401 S69 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner: user; standing approval to continue CPU audit and directly repair confirmed small issues. |
-| Objective | Audit 80386 `MOV r32,TRx` / `MOV TRx,r32` `0F 24h/26h`; align lexical reserved-index availability with execution's TR6/TR7-only decoder. |
-| Non-goals | No persistent TLB/test-array model, public Core/VM ABI change, CPU timing model, DeskPro claim or external-source import; no T401 closure. |
-| Reference Baseline | `23fd9108` (S68 P2), retained Intel 80386 PRM Chapter 17/Appendix A, T341 S2 no-cache boundary, T359 S6 timing rows and current decoder. |
-| Candidate Proposal | [Four-profile CPU instruction-correctness audit](../proposals/m5-four-profile-cpu-instruction-correctness-audit.md), 80386 test-register lexical batch. |
-| Files And ABI Surface | Core private lexical validator, preview smoke, CURRENT and T401 ledger; no public ABI surface. |
-| Applicable Rules | Preserve public generic scanner and Core/VM boundary; coding, documentation and execution rules apply. |
-| Verification | Reproduce lexical mismatch; build/run preview and relevant privileged timing smoke; full current gate; documentation governance; diff check. |
-| Expected Markers | `M5:T401:S69:TEST-MOV-PREVIEW-PROFILES:OK`; `M5:T359:S6:PRIVILEGED-TIMING:OK`. |
-| Asset Needs | None. |
-| Reporting Requirements | Record TR6/TR7-only, register-only, reserved-index, profile, prefix and persistent-cache boundary dispositions. |
-| Stop Conditions | Transfer any persistent TLB/test-array semantics, public ABI, physical timing or machine-profile expansion. |
-| Exit Criteria | Both directions reject reserved and memory forms in lexical and execution evidence; valid TR6/TR7 forms and profile/prefix boundaries are explicit. |
-| Original Owner Request | Continue CPU audit before later DeskPro L3 work with direct repair of confirmed small issues. |
-| Similar-Issue Sweep | Treat read/write directions, TR index, register-only form, prefixes, CPL and pre-80386 rejection together. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T395 S1 P4 `vm-0-5-0395` /
@@ -49,7 +29,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T401 S68 | Accepted: 80386 LSS/LFS/LGS audit closes memory-only, profile, prefix and retained far-pointer execution evidence; no production discrepancy. [Ledger](../etc/evidence/t401-s1-four-profile-cpu-audit-ledger.md). |
+| T401 S69 | Accepted: 80386 test-register MOV audit repairs reserved TR0--TR5 lexical availability; TR6/TR7 persistent-cache semantics remain an explicit external boundary. [Ledger](../etc/evidence/t401-s1-four-profile-cpu-audit-ledger.md). |
 | T400 | Closed: the HDC, CECG and CPU/DMA/BWAIT generic-reference ledger is exhausted; accepted logical repairs retain every DeskPro physical boundary. [Closure audit](../etc/evidence/t400-s1-task-closure-audit.md). |
 | T399 | Closed: the five-batch reference-derived DeskPro L3 ledger is exhausted; B2/B3 logical contracts are accepted, B1/B4/B5 retain exact receivers, and both reference-derived and physical L3 are not ready. [Closure audit](../etc/evidence/t399-s5-task-closure-audit.md). |
 | T398 | Closed: final exact 1986 DeskPro Model-40 audit is not-ready for L3; five physical/firmware boundaries retain explicit TODO receivers and require a fresh audit after repair. [Closure audit](../etc/evidence/t398-s2-task-closure-audit.md). |
