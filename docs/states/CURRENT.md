@@ -19,7 +19,7 @@
 | Asset Needs | Read-only approved original research corpus only; no firmware, media, reference source text or local path committed. |
 | Reporting Requirements | Record source tier, exact producer predicate, production-vs-test declaration evidence, regressions, artifact hash, remaining PAL/phase transfers and pushed commit. |
 | Stop Conditions | Stop and transfer calibrated duration, an unproven predicate beyond the source's discrete hit/miss/idle facts, CPU BWAIT, external bus-master behavior, or a second Core/VM transaction route. |
-| Exit Criteria | The production Core prefetch lifecycle—not a test-only callback—can publish the exact declared sequential overlap required by the existing Model-40 policy; focused and full gates pass, and all remaining physical phase work transfers. |
+| Exit Criteria | The production Core prefetch lifecycle, not a test-only callback, can publish the exact declared sequential overlap required by the existing Model-40 policy; focused and full gates pass, and all remaining physical phase work transfers. |
 | Original Owner Request | Implement DeskPro 386 L3 timing and hardware gaps with original material first, reference-derived behavior second, then explicitly labelled generic AT scaffolding. |
 | Similar-Issue Sweep | Inspect all external-cycle publications, CPU prefetch fills/consumption/invalidation, data and page-walk paths, transaction cancellation, HOLD, D4 refresh, reset, stopped-state writes, and Model-40/5170 selection; repair the shared Core owner only. |
 ## Current Technical Baseline
