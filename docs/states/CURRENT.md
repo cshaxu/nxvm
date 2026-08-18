@@ -3,6 +3,26 @@
 ## Current Work
 
 **Active: M5 T401.**
+## M5 T401 S69 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner: user; standing approval to continue CPU audit and directly repair confirmed small issues. |
+| Objective | Audit 80386 `MOV r32,TRx` / `MOV TRx,r32` `0F 24h/26h`; align lexical reserved-index availability with execution's TR6/TR7-only decoder. |
+| Non-goals | No persistent TLB/test-array model, public Core/VM ABI change, CPU timing model, DeskPro claim or external-source import; no T401 closure. |
+| Reference Baseline | `23fd9108` (S68 P2), retained Intel 80386 PRM Chapter 17/Appendix A, T341 S2 no-cache boundary, T359 S6 timing rows and current decoder. |
+| Candidate Proposal | [Four-profile CPU instruction-correctness audit](../proposals/m5-four-profile-cpu-instruction-correctness-audit.md), 80386 test-register lexical batch. |
+| Files And ABI Surface | Core private lexical validator, preview smoke, CURRENT and T401 ledger; no public ABI surface. |
+| Applicable Rules | Preserve public generic scanner and Core/VM boundary; coding, documentation and execution rules apply. |
+| Verification | Reproduce lexical mismatch; build/run preview and relevant privileged timing smoke; full current gate; documentation governance; diff check. |
+| Expected Markers | `M5:T401:S69:TEST-MOV-PREVIEW-PROFILES:OK`; `M5:T359:S6:PRIVILEGED-TIMING:OK`. |
+| Asset Needs | None. |
+| Reporting Requirements | Record TR6/TR7-only, register-only, reserved-index, profile, prefix and persistent-cache boundary dispositions. |
+| Stop Conditions | Transfer any persistent TLB/test-array semantics, public ABI, physical timing or machine-profile expansion. |
+| Exit Criteria | Both directions reject reserved and memory forms in lexical and execution evidence; valid TR6/TR7 forms and profile/prefix boundaries are explicit. |
+| Original Owner Request | Continue CPU audit before later DeskPro L3 work with direct repair of confirmed small issues. |
+| Similar-Issue Sweep | Treat read/write directions, TR index, register-only form, prefixes, CPL and pre-80386 rejection together. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T395 S1 P4 `vm-0-5-0395` /

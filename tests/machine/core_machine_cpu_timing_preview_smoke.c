@@ -929,6 +929,44 @@ static C_INT preview_test_imul2_profiles(C_VOID)
         if(core_machine_cpu_instruction_lexeme_scan((const type_unsigned_8[]){0x0fu,0xafu,0xc8u},3u,unavailable[profile],TYPE_FALSE,&lexeme)||lexeme.available)return 0;
     return preview_expect((const type_unsigned_8[]){0x0fu,0xafu,0xc8u},3u,CORE_MACHINE_CPU_PROFILE_80386,TYPE_FALSE,3u,3u)&&preview_expect((const type_unsigned_8[]){0x0fu,0xafu,0x0eu,0x34u,0x12u},5u,CORE_MACHINE_CPU_PROFILE_80386,TYPE_FALSE,5u,4u)&&preview_expect((const type_unsigned_8[]){0x66u,0x0fu,0xafu,0xc8u},4u,CORE_MACHINE_CPU_PROFILE_80386,TYPE_FALSE,4u,4u)&&preview_expect((const type_unsigned_8[]){0x67u,0x0fu,0xafu,0x05u,0x78u,0x56u,0x34u,0x12u},8u,CORE_MACHINE_CPU_PROFILE_80386,TYPE_FALSE,8u,5u)&&preview_expect((const type_unsigned_8[]){0x66u,0x67u,0x0fu,0xafu,0x05u,0x78u,0x56u,0x34u,0x12u},9u,CORE_MACHINE_CPU_PROFILE_80386,TYPE_FALSE,9u,6u);
 }
+static C_INT preview_test_test_mov_profiles(C_VOID)
+{
+    static const core_machine_cpu_profile unavailable[] = {
+        CORE_MACHINE_CPU_PROFILE_80186, CORE_MACHINE_CPU_PROFILE_80286
+    };
+    static const type_unsigned_8 opcodes[] = {0x24u, 0x26u};
+    core_machine_cpu_instruction_lexeme lexeme;
+    type_unsigned_8 profile;
+    type_unsigned_8 opcode;
+    type_unsigned_8 index;
+
+    for (profile = 0u; profile < sizeof(unavailable) / sizeof(unavailable[0]); ++profile)
+        for (opcode = 0u; opcode < sizeof(opcodes); ++opcode)
+            if (core_machine_cpu_instruction_lexeme_scan((const type_unsigned_8[]){0x0fu,
+                    opcodes[opcode], 0xf0u}, 3u, unavailable[profile], TYPE_TRUE,
+                    &lexeme) || lexeme.available) return 0;
+    for (opcode = 0u; opcode < sizeof(opcodes); ++opcode) {
+        for (index = 6u; index < 8u; ++index)
+            if (!preview_expect((const type_unsigned_8[]){0x0fu, opcodes[opcode],
+                    (type_unsigned_8)(0xc0u | (index << 3u))}, 3u,
+                    CORE_MACHINE_CPU_PROFILE_80386, TYPE_TRUE, 3u, 3u)) return 0;
+        for (index = 0u; index < 6u; ++index)
+            if (core_machine_cpu_instruction_lexeme_scan((const type_unsigned_8[]){0x0fu,
+                    opcodes[opcode], (type_unsigned_8)(0xc0u | (index << 3u))},
+                    3u, CORE_MACHINE_CPU_PROFILE_80386, TYPE_TRUE, &lexeme) ||
+                    lexeme.available) return 0;
+        if (core_machine_cpu_instruction_lexeme_scan((const type_unsigned_8[]){0x0fu,
+                opcodes[opcode], 0x06u, 0u, 0x20u}, 5u,
+                CORE_MACHINE_CPU_PROFILE_80386, TYPE_TRUE, &lexeme) || lexeme.available)
+            return 0;
+    }
+    return preview_expect((const type_unsigned_8[]){0x66u, 0x0fu, 0x24u,
+            0xf0u}, 4u, CORE_MACHINE_CPU_PROFILE_80386, TYPE_TRUE, 4u, 4u) &&
+        preview_expect((const type_unsigned_8[]){0x67u, 0x0fu, 0x26u,
+            0xf8u}, 4u, CORE_MACHINE_CPU_PROFILE_80386, TYPE_TRUE, 4u, 4u) &&
+        preview_expect((const type_unsigned_8[]){0x66u, 0x67u, 0x0fu, 0x26u,
+            0xf0u}, 5u, CORE_MACHINE_CPU_PROFILE_80386, TYPE_TRUE, 5u, 5u);
+}
 static C_INT preview_test_lss_lfs_lgs_profiles(C_VOID)
 {
     static const core_machine_cpu_profile unavailable[] = {
@@ -1610,6 +1648,7 @@ C_INT main(C_VOID)
     if (!preview_test_movx_profiles()) return 61;
     if (!preview_test_imul2_profiles()) return 62;
     if (!preview_test_debug_mov_profiles()) return 63;
+    if (!preview_test_test_mov_profiles()) return 65;
     if (!preview_test_lss_lfs_lgs_profiles()) return 64;
     if (!preview_test_les_lds_profiles()) return 34;
     if (!preview_test_group3_profiles()) return 10;
@@ -1681,5 +1720,6 @@ C_INT main(C_VOID)
     STD_PRINTF("M5:T401:S66:DEBUG-MOV-PREVIEW-PROFILES:OK\n");
     STD_PRINTF("M5:T401:S67:CONTROL-MOV-PREVIEW-PROFILES:OK\n");
     STD_PRINTF("M5:T401:S68:LSS-LFS-LGS-PREVIEW-PROFILES:OK\n");
+    STD_PRINTF("M5:T401:S69:TEST-MOV-PREVIEW-PROFILES:OK\n");
     return 0;
 }

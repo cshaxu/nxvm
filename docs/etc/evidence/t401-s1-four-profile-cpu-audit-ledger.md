@@ -1194,3 +1194,6 @@ S68 audits 80386 far-pointer loads `0F B2h/B4h/B5h`. The existing T316 S24 execu
 ## S68 Acceptance
 
 S68 closes the bounded 80386 LSS/LFS/LGS audit. The new lexical matrix and retained execution fixture establish all three segment targets, memory-only ModR/M, 80186/80286 rejection, operand/address attributes, real/protected far-pointer loads, source-fault atomicity and IRQ boundaries. No production discrepancy was found; Core timing remains nonphysical and T401 remains open.
+## S69 Test-register MOV
+
+S69 audits 80386 `MOV r32,TRx` / `MOV TRx,r32` (`0F 24h/26h`). The runtime decoder accepts register-direct TR6/TR7 only and rejects memory forms plus TR0--TR5 with `#UD`, but the public lexical scanner had advertised every register index as available. The new shared lexical check rejects the six reserved indices before publishing a preview. `M5:T401:S69:TEST-MOV-PREVIEW-PROFILES:OK` proves both directions' valid TR6/TR7 forms, reserved-index and memory rejection, 80186/80286 rejection and 80386 `66h`/`67h` layouts. The retained T359 privileged timing smoke passes. TR6/TR7 still have no persistent translation-cache or test-array consumer; that external boundary remains unchanged. The full 285-test current gate passes; timing remains nonphysical.
