@@ -4,26 +4,26 @@
 
 **Active: M5 T401.**
 
-## M5 T401 S10 Packet
+## M5 T401 S11 Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation; M5 T401 S10. |
-| Admission And Approval | Owner approved the four-profile CPU audit and bounded shared repairs on 2026-08-17; T401 S9 is accepted after Group-3 execution/preview reconciliation, IMUL repair and full-gate proof. |
-| Objective | Audit the primary Group-4/5 increment, decrement, call, jump and push decoder families (`FEh`, `FFh`) across 8086, 80186, 80286 and 80386, reconciling valid forms, memory-only restrictions, operand/address attributes, state/stack behavior, fault atomicity and preview classification. |
-| Non-goals | No broad control-transfer/stack-engine rewrite, no x87/provider change, no device/board work, no profile-specific CPU fork, physical timing claim or DeskPro L3 claim. |
-| Reference Baseline | Intel 8086/80186/80286/80386 instruction manuals; retained control-transfer, stack, operand and timing ledgers; current Group-4/5 handlers, metadata, execution/preview and focused tests. 86Box/PCjs/Bochs/MAME may corroborate an Intel-underspecified behavior only, labeled as reference-derived. |
+| Identifier Mode | Continuation; M5 T401 S11. |
+| Admission And Approval | Owner approved continuing the four-profile CPU audit after S10 on 2026-08-17. S10 is accepted after complete Group-4/5 form classification, all-profile execution/rejection coverage, and a clean 285/285 current gate. |
+| Objective | Audit the primary register INC/DEC opcode family (`40h`--`4Fh`) across 8086, 80186, 80286 and 80386: profile validity, decoder/preview classification, result/FLAGS/carry preservation, operand attributes and fault/retirement boundary. |
+| Non-goals | No broad ALU rewrite, no ModR/M Group-4/5 reopening except a bounded shared defect, no x87/provider/device/board work, no profile-specific CPU fork, physical timing claim or DeskPro L3 claim. |
+| Reference Baseline | Intel 8086/80186/80286/80386 instruction manuals; retained INC/DEC, prefix, timing and Group-4/5 evidence; current primary decoder, execution and preview paths. 86Box/PCjs/Bochs/MAME may corroborate an Intel-underspecified behavior only, labeled as reference-derived. |
 | Candidate Proposal | [Four-profile CPU instruction-correctness audit and repair program](../proposals/m5-four-profile-cpu-instruction-correctness-audit.md). |
 | Files And ABI Surface | Audit ledger, current task packet and focused existing/new CPU smoke only unless a source-complete shared Core defect is reproduced; no public ABI. |
 | Applicable Rules | Execution bounded corrective/actual-diff review; shared Core CPU ownership; coding/test rules; Intel primary-source requirement; external-provider/source policy; documentation indexing. |
-| Verification | Build a four-profile Group-4/5 form matrix covering every extension, FE/FF invalid and memory-only forms, representative register/memory, operand/address attributes, stack/control-transfer retirement and fault paths plus preview; reconcile metadata, execution, FLAGS/retirement and preview; run focused CTest, full current gate after any repair, documentation governance and diff check. |
-| Expected Markers | Existing control-transfer/stack markers or a new T401 S10 matrix marker, plus any bounded defect marker. |
+| Verification | Build a four-profile matrix for every `40h`--`4Fh` opcode, normal and boundary results, FLAGS/carry preservation, 80386 prefix/operand-size behavior and preview; reconcile decoder, execution, retirement and timing disposition; run focused CTest, full current gate after any repair, documentation governance and diff check. |
+| Expected Markers | A new T401 S11 matrix marker and any bounded defect marker. |
 | Asset Needs | None. No ROM, guest media, Microsoft component or external binary is needed. |
-| Reporting Requirements | Record CPU/profile, opcode/extension, operand width and attribute state, manual/source tier, current owner, focused proof or transfer and retained nonphysical timing boundary. |
-| Stop Conditions | Stop and create a precise receiver if repair requires a broad control-transfer/stack redesign, a new CPU facility, device/board timing model or broad fault-delivery change. |
-| Exit Criteria | Every Group-4/5/profile row is classified and linked to focused proof or explicit transfer; any bounded repair has focused/full-gate proof. |
+| Reporting Requirements | Record CPU/profile, opcode, operand width and attribute state, manual/source tier, current owner, focused proof or transfer and retained nonphysical timing boundary. |
+| Stop Conditions | Stop and create a precise receiver if repair requires a broad ALU/decoder/fault-delivery redesign, a new CPU facility, device/board timing model or broad state-model change. |
+| Exit Criteria | Every register INC/DEC opcode/profile row is classified and linked to focused proof or explicit transfer; any bounded repair has focused/full-gate proof. |
 | Original Owner Request | Continue CPU auditing after DeskPro timing work, implementing source-backed, reference-backed or clearly labeled generic behavior rather than leaving feasible work undone. |
-| Similar-Issue Sweep | For any discovered mismatch, sweep both opcode variants, ModR/M extensions, memory-only restrictions, operand widths, profile gates, preview callers and stack/control-transfer consumers. |
+| Similar-Issue Sweep | For any discovered mismatch, sweep all sixteen primary opcodes, Group-4 aliases, profile gates, operand-size prefixes, preview callers and flag/transaction consumers. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T395 S1 P4 `vm-0-5-0395` /
@@ -50,7 +50,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T401 S9 | Accepted: Group-3 audit repairs single-operand IMUL sign-extension flags and closes F6/F7 four-profile preview classification, with focused plus 285/285 full-gate proof. S10 owns Group-4/5 control-transfer/stack audit. [Ledger](../etc/evidence/t401-s1-four-profile-cpu-audit-ledger.md). |
+| T401 S10 | Accepted: Group-4/5 audit closes FE/FF form classification, all-profile execution, memory-only/rejection, pointer-boundary, stack/control-transfer and preview coverage. S11 owns primary register INC/DEC audit. [Ledger](../etc/evidence/t401-s1-four-profile-cpu-audit-ledger.md). |
 | T400 | Closed: the HDC, CECG and CPU/DMA/BWAIT generic-reference ledger is exhausted; accepted logical repairs retain every DeskPro physical boundary. [Closure audit](../etc/evidence/t400-s1-task-closure-audit.md). |
 | T399 | Closed: the five-batch reference-derived DeskPro L3 ledger is exhausted; B2/B3 logical contracts are accepted, B1/B4/B5 retain exact receivers, and both reference-derived and physical L3 are not ready. [Closure audit](../etc/evidence/t399-s5-task-closure-audit.md). |
 | T398 | Closed: final exact 1986 DeskPro Model-40 audit is not-ready for L3; five physical/firmware boundaries retain explicit TODO receivers and require a fresh audit after repair. [Closure audit](../etc/evidence/t398-s2-task-closure-audit.md). |

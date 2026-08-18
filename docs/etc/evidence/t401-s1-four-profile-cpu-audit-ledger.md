@@ -380,3 +380,20 @@ and atomicity coverage. This is original-source opcode/profile
 coverage; protected descriptor/privilege behavior remains with the retained
 T303-focused probes, and neither physical timing nor any Core/VM interface is
 changed.
+## S10 Acceptance
+
+S10 closes the `FEh`/`FFh` Group-4/5 matrix. The four-profile preview sweep
+classifies every extension, direct-register versus memory form and memory-only
+restriction. The execution regressions cover FE/FF INC/DEC result/FLAGS/carry,
+FF /6 push-r/m stack behavior, FF /2,/4 near and FF /3,/5 far control paths,
+source-boundary behavior and every invalid/memory-only rejection. Original
+Intel form semantics are the primary authority; only the 16-bit far-pointer
+cross-boundary interpretation is explicitly reference-derived from the local
+read-only PCjs comparison. No third-party source was imported.
+
+No production discrepancy remained after the bounded sweep. Focused INC/DEC,
+push/pop and control-transfer probes passed on 2026-08-17; the complete current
+gate then ran 285/285 tests with no failure marker. This accepts CPU semantic
+and nonphysical timing-baseline evidence only. It does not claim physical
+instruction, board, ISA, DMA, firmware, or DeskPro L3 timing; those boundaries
+remain with their retained DeskPro receivers.
