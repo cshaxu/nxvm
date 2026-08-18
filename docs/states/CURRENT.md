@@ -3,6 +3,26 @@
 ## Current Work
 
 **Active: M5 T401.**
+## M5 T401 S76 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner: user; standing approval to complete the CPU audit before returning to the DeskPro L3 work, with direct repair of confirmed small issues. |
+| Objective | Independently audit the complete T401 coverage universe against current source, accepted S1--S75 evidence and original proposal exit criteria; either close T401 truthfully or record each unmet item with its earliest receiver. |
+| Non-goals | No semantic/timing overclaim, physical CPU/board/L3 claim, ROM/media import, broad refactor or closure solely because prior subtasks passed. |
+| Reference Baseline | `7b6ffb46` (S75 P2), T401 proposal, frozen coverage universe/S1 ledger, S72/S73 map reconciliations, S75 disposition matrix and current source/test graph. |
+| Candidate Proposal | [Four-profile CPU instruction-correctness audit](../proposals/m5-four-profile-cpu-instruction-correctness-audit.md), independent task-level closure audit. |
+| Files And ABI Surface | T401 ledger, closure evidence and CURRENT; source/tests only for a confirmed bounded gap, with no public ABI change. |
+| Applicable Rules | Verify every original task requirement against current evidence; no map, test, handler or deterministic tick alone proves completion; preserve physical DeskPro separation. |
+| Verification | Re-read original requested outcomes and proposal completion predicate; inspect source/classifier, all map/coverage evidence, current tests and transfer/TODO/Queue state; documentation governance, diff check and full current gate for any production repair. |
+| Expected Markers | Existing S1--S75 markers plus a closure audit outcome with explicit requirement-to-evidence or transfer mapping. |
+| Asset Needs | None; no new firmware, guest media or third-party implementation is admitted. |
+| Reporting Requirements | State each proposal closure requirement, evidence strength and final satisfied/transfer result; if not closed, list only concrete receivers. |
+| Stop Conditions | Admit a bounded repair for a confirmed small gap; transfer broad semantics, physical timing, board/device or x87 breadth without weakening the audit. |
+| Exit Criteria | T401 is either independently shown to meet its stated bounded CPU semantic/source-timing scope or remains open with every unmet condition explicitly assigned. |
+| Original Owner Request | Continue CPU instruction audit before DeskPro L3 work and use source/reference/generic levels honestly instead of blocking progress. |
+| Similar-Issue Sweep | Reconcile semantic, lexical, timing, mode/fault, profile-gate, FPU/provider and transfer requirements together. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T395 S1 P4 `vm-0-5-0395` /
