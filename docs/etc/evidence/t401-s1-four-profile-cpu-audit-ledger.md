@@ -1109,3 +1109,6 @@ adds every operation's register/memory layout, all BA extension validity,
 its `0Fh` is POP CS. The initial preview failure was a test encoding error: a
 32-bit direct displacement uses ModR/M `rm=5`, not `rm=6`; no production
 discrepancy was found. Timing remains nonphysical.
+## S61 Acceptance
+
+S61 closes the bounded 80386 bit-test and bit-modify audit. Runtime and preview matrices establish register/immediate indexes, memory and register destinations, read-only/mutating behavior, 80386 attributes, reserved BA extensions, 80186/80286 rejection and the retained 8086 POP CS distinction. Both focused smokes and documentation governance pass; no production discrepancy was found, timing remains nonphysical, and T401 remains open.
