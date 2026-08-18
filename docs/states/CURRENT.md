@@ -2,7 +2,27 @@
 
 ## Current Work
 
-| T419 S3 | Closed receiver: original-source discrete D4 DMA BUSRDY gate selected only by Model-40; Core remains the sole DMA transaction owner. [Closure audit](../etc/evidence/t419-s3-d4-dma-busready-closure-audit.md). |
+## M5 T419 S4 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | The user has standing approval in this thread to continue tier-labelled DeskPro L3 work without repeated authorization. Scope is the original-source D4 refresh request and one Core-owned refresh hold bridge. |
+| Objective | Convert the existing Model-40 counter-1 refresh pulse into one pending Core refresh hold. At the next arbitration boundary, service one refresh hold before a pending DMA grant, then preserve the existing DMA route. |
+| Non-goals | No calibrated BCLK or DCLK durations, no physical refresh memory read or row retention model, no CPU BWAIT, no source-level PAL translation, no external bus-master path, and no VM transaction executor. |
+| Reference Baseline | `master` at `29491f99`; approved Compaq DeskPro 386/16 D3PE material records the refresh request, REFRS arbitration, one refresh cycle, and back-to-back refresh/DMA holds. Existing D4 counter-1 pulse only invalidates locality. |
+| Candidate Proposal | [DeskPro physical-cycle and phase-timing closure](../proposals/m5-deskpro-physical-cycle-and-phase-timing.md), receiver 2; evidence tier `original`; ledger batch is the refresh request-to-hold bridge. |
+| Files And ABI Surface | Core transaction/machine private state and trace surface as needed; Model-40 D4 configuration only; focused Core/Model-40 tests; Current and indexed evidence. Public changes, if necessary, are append-only. |
+| Applicable Rules | One Core owner for scheduling, holds and transactions; VM selects only the D4 difference; C11/type vocabulary; original source is design evidence only, never imported code; task, evidence, full gate and artifact rules apply. |
+| Verification | A focused trace proves refresh pulse queues one hold, refresh hold request/acknowledge/release precedes a pending DMA transfer without an intervening CPU transaction, request state clears on reset, and non-D4 profiles retain existing behavior. Run focused smokes, full current smokes, and documentation governance. |
+| Expected Markers | `M5:T419:S4:D4-REFRESH-HOLD:OK` plus retained S1-S3 markers. |
+| Asset Needs | Read-only approved primary research corpus only; no firmware, media, reference source text or local path committed. |
+| Reporting Requirements | Record source tier, discrete ordering contract, exact regressions, artifact hash, remaining physical transfers and pushed commit. |
+| Stop Conditions | Stop and transfer calibrated phase duration, refresh memory electrical effects, CPU BWAIT, external bus-master continuation, or any second CPU/DMA transaction path. |
+| Exit Criteria | One Core refresh request and hold path is selected only for D4, focused and full gates pass, closure audit maps the original facts to the exact bridge, and remaining details are transferred. |
+| Original Owner Request | Implement DeskPro 386 L3 timing and hardware gaps with original material first, reference-derived behavior second, then explicitly labelled generic AT scaffolding. |
+| Similar-Issue Sweep | Inspect counter-1 outputs, refresh locality invalidation, all transaction hold callers and DMA grant routing; repair the shared Core arbitration point only. |
+
 
 ## Current Technical Baseline
 
