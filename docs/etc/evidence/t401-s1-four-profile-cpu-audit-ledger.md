@@ -267,3 +267,34 @@ The full-gate follow-up also exposed one stale legacy-ALU expectation that still
 classified `82h` as reserved.  S7 removed that expectation and reran the
 legacy-ALU plus S7 focused set: 4/4 passed on 2026-08-17.  The replacement
 full current gate is the acceptance authority for this production repair.
+
+## S8 Group-2 Shift/Rotate Count Reconciliation
+
+S8 audited the `D0h`--`D3h` one/CL-count and `C0h`/`C1h` immediate-count
+Group-2 forms across all eight ModR/M extensions.  `/0`--`/5` and `/7`
+dispatch to the shared rotate/shift helpers; `/6` remains #UD before a write.
+`C0h`/`C1h` remain unavailable on 8086 and available from 80186; the retained
+metadata, lexeme and profile-gate paths already match that form boundary.
+The owner is the shared Core helper layer, not a machine profile or VM path.
+
+Intel's [1985 iAPX 86/88/186/188 User's Manual](https://www.bitsavers.org/components/intel/8086/210912-001_iAPX_86_88_186_188_Users_Manual_1985.pdf)
+establishes the 8086 CL-count form and the 80186 immediate-count addition.
+Intel's [80286/80287 Programmer's Reference Manual](https://bitsavers.org/components/intel/80286/210498-005_80286_and_80287_Programmers_Reference_Manual_1987.pdf)
+specifies that only the low five CL bits are used.  The retained implementation
+had applied that five-bit mask to every profile, incorrectly making 8086
+`CL=33` behave as count one.  The distinct 8086 full-eight-bit count is
+**reference-derived** where the combined manual is not explicit: the read-only
+PCjs CPU test corpus distinguishes 8086/8088 full-CL execution from 80186/188
+and later low-five-bit masking.  No external code was imported.
+
+The bounded repair introduces one shared count-normalization helper: 8086
+receives the supplied eight-bit count; 80186, 80286 and 80386 receive its low
+five bits.  RCL/RCR retain their existing post-mask ring reduction on the
+later profiles, while 8086 performs its full count iteratively.  This leaves
+all timing nonphysical and changes no Core/VM interface.
+
+`M5:T401:S8:GROUP2-CL-PROFILES:OK` executes `D2h` with every `/0`--`/7`
+extension and `CL=33` on all four profiles, proves the divergent count result,
+and retains the `/6` atomic #UD proof.  Focused regressions passed on
+2026-08-17: rotate, legacy-ALU, CPU-profile-gate, 80286 timing-ledger and CPU
+preview (5/5).  The full current gate then executed 285/285 tests with no failure marker on 2026-08-17.

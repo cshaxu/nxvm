@@ -400,6 +400,61 @@ static type_unsigned_32 shift_result(type_unsigned_8 operation, type_unsigned_8 
     return value;
 }
 
+static C_INT rotate_test_cl_count_profile_matrix(C_VOID)
+{
+    static const core_machine_cpu_profile profiles[] = {
+        CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
+        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
+    };
+    type_unsigned_8 profile_index;
+    type_unsigned_8 extension;
+
+    for (profile_index = 0u; profile_index != sizeof(profiles) / sizeof(profiles[0]);
+        ++profile_index)
+    for (extension = 0u; extension != 8u; ++extension) {
+        const type_unsigned_8 code[] = { 0xd2u,
+            (type_unsigned_8)((extension << 3u) | 0xc0u) };
+        const type_unsigned_8 count = profiles[profile_index] ==
+            CORE_MACHINE_CPU_PROFILE_8086 ? 0x21u : 1u;
+        type_unsigned_8 index;
+        type_unsigned_32 value = 0x81u;
+        type_unsigned_32 carry = 1u;
+        rotate_machine state;
+        t_cpu before;
+        t_cpu after;
+        core_machine_cpu_diagnostic diagnostic;
+        C_INT failed = !rotate_prepare(profiles[profile_index], &state);
+
+        if (!failed) {
+            state.machine->executor_cpu.data.eax = 0x11223381u;
+            state.machine->executor_cpu.data.ecx = 0x55667721u;
+            state.machine->executor_cpu.data.eflags = VCPU_EFLAGS_CF |
+                VCPU_EFLAGS_OF | VCPU_EFLAGS_AF;
+            before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+            for (index = 0u; index != count; ++index) {
+                type_unsigned_32 next;
+                switch (extension) {
+                case 0u: carry = (value >> 7u) & 1u; value = ((value << 1u) | carry) & 0xffu; break;
+                case 1u: carry = value & 1u; value = (value >> 1u) | (carry << 7u); break;
+                case 2u: next = (value >> 7u) & 1u; value = ((value << 1u) | carry) & 0xffu; carry = next; break;
+                case 3u: next = value & 1u; value = (value >> 1u) | (carry << 7u); carry = next; break;
+                case 4u: carry = (value >> 7u) & 1u; value = (value << 1u) & 0xffu; break;
+                case 5u: carry = value & 1u; value >>= 1u; break;
+                case 7u: carry = value & 1u; value = (value >> 1u) | (value & 0x80u); break;
+                default: break;
+                }
+            }
+            if (extension == 6u) {
+                failed |= !rotate_run_real(&state, code, sizeof(code), 1, &after, &diagnostic) || !diagnostic.first_fault.valid || !TYPE_GET_BIT(diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_UD) || after.data.eip != 0u || after.data.eax != before.data.eax || after.data.ecx != before.data.ecx || after.data.eflags != before.data.eflags;
+            } else {
+                failed |= !rotate_run_real(&state, code, sizeof(code), 0, &after, &diagnostic) || diagnostic.first_fault.valid || after.data.eip != sizeof(code) || (after.data.eax & 0xffu) != value || after.data.eax != ((before.data.eax & 0xffffff00u) | value) || after.data.ecx != before.data.ecx;
+            }
+        }
+        core_machine_destroy(state.machine);
+        if (failed) return 0;
+    }
+    return 1;
+}
 static C_INT rotate_test_shift_forms(C_VOID)
 {
     const type_unsigned_32 flags = VCPU_EFLAGS_CF | VCPU_EFLAGS_OF | VCPU_EFLAGS_AF |
@@ -683,7 +738,7 @@ static C_INT rotate_test_80186_immediate_extensions(C_VOID)
 
 C_INT main(C_VOID)
 {
-    if (!rotate_test_forms() || !rotate_test_count_zero() || !rotate_test_non_one() ||
+    if (!rotate_test_forms() || !rotate_test_count_zero() || !rotate_test_non_one() || !rotate_test_cl_count_profile_matrix() ||
         !rotate_test_shift_forms() ||
         !rotate_test_shift_boundaries() ||
         !rotate_test_shift_profile_and_fault() ||
@@ -692,5 +747,6 @@ C_INT main(C_VOID)
         return 1;
     STD_PRINTF("M5:T316:S18:ROTATE:OK\n");
     STD_PRINTF("M5:T316:S19:SHIFT:OK\n");
+    STD_PRINTF("M5:T401:S8:GROUP2-CL-PROFILES:OK\n");
     return 0;
 }

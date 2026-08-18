@@ -6575,6 +6575,12 @@ static C_VOID _a_imul3(core_machine_cpu_execution_context *context, type_unsigne
     TYPE_TRACE_CALL_END;
 }
 
+static type_unsigned_8 _a_shift_rotate_count(core_machine_cpu_execution_context *context,
+    type_unsigned_8 csrc)
+{
+    return context->cpu_profile == CORE_MACHINE_CPU_PROFILE_8086 ? csrc :
+        (type_unsigned_8)(csrc & 0x1fu);
+}
 static C_VOID _a_rol(core_machine_cpu_execution_context *context, type_unsigned_64 cdest, type_unsigned_8 csrc, type_unsigned_8 bit)
 {
     type_unsigned_8 count;
@@ -6584,7 +6590,7 @@ static C_VOID _a_rol(core_machine_cpu_execution_context *context, type_unsigned_
     {
     case 8:
         TYPE_TRACE_BLOCK_BEGIN("bit(8)");
-        count = csrc & 0x07;
+        count = _a_shift_rotate_count(context, csrc);
         instruction_state.data.bit = 8;
         instruction_state.data.opr1 = TYPE_MASK_UNSIGNED_8(cdest);
         instruction_state.data.opr2 = count;
@@ -6607,7 +6613,7 @@ static C_VOID _a_rol(core_machine_cpu_execution_context *context, type_unsigned_
         break;
     case 16:
         TYPE_TRACE_BLOCK_BEGIN("bit(16)");
-        count = csrc & 0x0f;
+        count = _a_shift_rotate_count(context, csrc);
         instruction_state.data.bit = 16;
         instruction_state.data.opr1 = TYPE_MASK_UNSIGNED_16(cdest);
         instruction_state.data.opr2 = count;
@@ -6630,7 +6636,7 @@ static C_VOID _a_rol(core_machine_cpu_execution_context *context, type_unsigned_
         break;
     case 32:
         TYPE_TRACE_BLOCK_BEGIN("bit(32)");
-        count = csrc & 0x1f;
+        count = _a_shift_rotate_count(context, csrc);
         instruction_state.data.bit = 32;
         instruction_state.data.opr1 = TYPE_MASK_UNSIGNED_32(cdest);
         instruction_state.data.opr2 = count;
@@ -6668,7 +6674,7 @@ static C_VOID _a_ror(core_machine_cpu_execution_context *context, type_unsigned_
     {
     case 8:
         TYPE_TRACE_BLOCK_BEGIN("bit(8)");
-        count = csrc & 0x07;
+        count = _a_shift_rotate_count(context, csrc);
         instruction_state.data.bit = 8;
         instruction_state.data.opr1 = TYPE_MASK_UNSIGNED_8(cdest);
         instruction_state.data.opr2 = count;
@@ -6691,7 +6697,7 @@ static C_VOID _a_ror(core_machine_cpu_execution_context *context, type_unsigned_
         break;
     case 16:
         TYPE_TRACE_BLOCK_BEGIN("bit(16)");
-        count = csrc & 0x0f;
+        count = _a_shift_rotate_count(context, csrc);
         instruction_state.data.bit = 16;
         instruction_state.data.opr1 = TYPE_MASK_UNSIGNED_16(cdest);
         instruction_state.data.opr2 = count;
@@ -6714,7 +6720,7 @@ static C_VOID _a_ror(core_machine_cpu_execution_context *context, type_unsigned_
         break;
     case 32:
         TYPE_TRACE_BLOCK_BEGIN("bit(32)");
-        count = csrc & 0x1f;
+        count = _a_shift_rotate_count(context, csrc);
         instruction_state.data.bit = 32;
         instruction_state.data.opr1 = TYPE_MASK_UNSIGNED_32(cdest);
         instruction_state.data.opr2 = count;
@@ -6752,7 +6758,9 @@ static C_VOID _a_rcl(core_machine_cpu_execution_context *context, type_unsigned_
     {
     case 8:
         TYPE_TRACE_BLOCK_BEGIN("bit(8)");
-        count = (csrc & 0x1f) % 9;
+        count = _a_shift_rotate_count(context, csrc);
+        if (context->cpu_profile != CORE_MACHINE_CPU_PROFILE_8086)
+            count %= 9;
         instruction_state.data.bit = 8;
         instruction_state.data.opr1 = TYPE_MASK_UNSIGNED_8(cdest);
         instruction_state.data.opr2 = count;
@@ -6775,7 +6783,9 @@ static C_VOID _a_rcl(core_machine_cpu_execution_context *context, type_unsigned_
         break;
     case 16:
         TYPE_TRACE_BLOCK_BEGIN("bit(16)");
-        count = (csrc & 0x1f) % 17;
+        count = _a_shift_rotate_count(context, csrc);
+        if (context->cpu_profile != CORE_MACHINE_CPU_PROFILE_8086)
+            count %= 17;
         instruction_state.data.bit = 16;
         instruction_state.data.opr1 = TYPE_MASK_UNSIGNED_16(cdest);
         instruction_state.data.opr2 = count;
@@ -6836,7 +6846,9 @@ static C_VOID _a_rcr(core_machine_cpu_execution_context *context, type_unsigned_
     {
     case 8:
         TYPE_TRACE_BLOCK_BEGIN("bit(8)");
-        count = (csrc & 0x1f) % 9;
+        count = _a_shift_rotate_count(context, csrc);
+        if (context->cpu_profile != CORE_MACHINE_CPU_PROFILE_8086)
+            count %= 9;
         instruction_state.data.bit = 8;
         instruction_state.data.opr1 = TYPE_MASK_UNSIGNED_8(cdest);
         instruction_state.data.opr2 = count;
@@ -6859,7 +6871,9 @@ static C_VOID _a_rcr(core_machine_cpu_execution_context *context, type_unsigned_
         break;
     case 16:
         TYPE_TRACE_BLOCK_BEGIN("bit(16)");
-        count = (csrc & 0x1f) % 17;
+        count = _a_shift_rotate_count(context, csrc);
+        if (context->cpu_profile != CORE_MACHINE_CPU_PROFILE_8086)
+            count %= 17;
         instruction_state.data.bit = 16;
         instruction_state.data.opr1 = TYPE_MASK_UNSIGNED_16(cdest);
         instruction_state.data.opr2 = count;
@@ -6915,7 +6929,7 @@ static C_VOID _a_shl(core_machine_cpu_execution_context *context, type_unsigned_
 {
     type_unsigned_8 count;
     TYPE_TRACE_CALL_BEGIN("_a_shl");
-    count = csrc & 0x1f;
+    count = _a_shift_rotate_count(context, csrc);
     instruction_state.data.opr2 = count;
     if (count >= bit)
         instruction_state.data.udf |= VCPU_EFLAGS_CF;
@@ -7008,7 +7022,7 @@ static C_VOID _a_shr(core_machine_cpu_execution_context *context, type_unsigned_
 {
     type_unsigned_8 count;
     TYPE_TRACE_CALL_BEGIN("_a_shr");
-    count = csrc & 0x1f;
+    count = _a_shift_rotate_count(context, csrc);
     instruction_state.data.opr2 = count;
     if (count >= bit)
         instruction_state.data.udf |= VCPU_EFLAGS_CF;
@@ -7099,7 +7113,7 @@ static C_VOID _a_sar(core_machine_cpu_execution_context *context, type_unsigned_
     type_unsigned_8 count;
     type_bool tempcf;
     TYPE_TRACE_CALL_BEGIN("_a_shr");
-    count = csrc & 0x1f;
+    count = _a_shift_rotate_count(context, csrc);
     instruction_state.data.opr2 = count;
     switch (bit)
     {
