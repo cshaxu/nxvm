@@ -447,3 +447,35 @@ found.
 ## S12 Acceptance
 
 S12 closes 90h--97h accumulator XCHG. The all-profile execution matrix covers the NOP alias, register pair selection, FLAGS preservation, 80386 dword form, pre-80386 66h #UD atomicity, LOCK rejection and IRQ boundary; the new preview matrix covers every byte and 80386 prefixed representatives. No production discrepancy remained. This is CPU semantic/nonphysical timing-baseline acceptance only, not a physical or DeskPro L3 claim.
+## S13 Immediate-Register MOV
+
+S13 audits `B0h`--`BFh`. Intel's 80386 Programmer's Reference Manual MOV
+entry identifies `B0+rb` as byte-immediate register MOV and `B8+rw/rd` as the
+operand-size-selected word/dword register form; the retained
+[80386 MOV timing ledger](t357-s3-80386-instruction-timing-ledger.md) links
+those manual rows. This is original-source semantic/form evidence. No
+secondary emulator source or firmware asset was imported or used.
+
+`M5:T401:S13:IMMEDIATE-REGISTER-MOV-PROFILES:OK` executes all eight byte and
+all eight word forms on 8086, 80186, 80286 and 80386, checking high-byte
+selection, destination-only publication, FLAGS preservation and exact EIP.
+It additionally executes every 80386 `66h B0h`--`B7h` (legal, byte width
+unchanged) and `66h B8h`--`BFh` dword form, then proves `66h B0h` and `66h
+B8h` are atomic `#UD` on every pre-80386 profile. The retained LOCK and IRQ
+checks cover the family boundary.
+
+`M5:T401:S13:IMMEDIATE-REGISTER-MOV-PREVIEW-PROFILES:OK` scans all sixteen
+unprefixed encodings for all four profiles, every 80386 `66h` byte form and
+every 80386 `66h` dword form. This closes the previously sampled preview
+coverage without a production correction. The tests remain CPU
+semantic/nonphysical timing-baseline evidence only: they make no physical
+cycle, DeskPro L3, or Core/VM-interface claim.
+
+## S13 Acceptance
+
+S13 closes the `B0h`--`BFh` immediate-register MOV family for the selected
+four profiles. Focused GPR-MOV and CPU-preview current-gate tests pass after
+the full matrix; no production discrepancy was found. The S13 test assertion
+was corrected during the audit before acceptance, so it does not represent a
+Core defect. Timing remains the existing explicitly nonphysical source-ledger
+disposition.

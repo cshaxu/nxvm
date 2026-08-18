@@ -358,6 +358,67 @@ static C_INT gpr_mov_test_386_attributes(C_VOID)
     return 1;
 }
 
+static C_INT gpr_mov_test_immediate_register_386_attributes(C_VOID)
+{
+    type_unsigned_8 form;
+
+    for (form = 0u; form != 8u; ++form) {
+        gpr_mov_machine state;
+        t_cpu before;
+        t_cpu after;
+        core_machine_cpu_diagnostic diagnostic;
+        type_status status;
+        type_unsigned_8 code[] = {0x66u, (type_unsigned_8)(0xb0u + form),
+            (type_unsigned_8)(0x80u + form)};
+        type_unsigned_8 target = form & 3u;
+        type_unsigned_32 expected;
+        C_INT failed = !gpr_mov_prepare(CORE_MACHINE_CPU_PROFILE_80386,
+            &state);
+
+        if (!failed) {
+            gpr_mov_seed(&state);
+            before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+            expected = gpr_mov_gpr(&before, target);
+            expected = form < 4u ?
+                (expected & 0xffffff00u) | (0x80u + form) :
+                (expected & 0xffff00ffu) |
+                    ((type_unsigned_32)(0x80u + form) << 8u);
+            failed |= !gpr_mov_run(&state, code, sizeof(code), &after,
+                &diagnostic, &status) || status != TYPE_STATUS_OK ||
+                diagnostic.first_fault.valid || after.data.eip != sizeof(code) ||
+                !gpr_mov_nonparticipants(&before, &after, target) ||
+                gpr_mov_gpr(&after, target) != expected;
+        }
+        core_machine_destroy(state.machine);
+        if (failed) return 0;
+    }
+    for (form = 0u; form != 8u; ++form) {
+        gpr_mov_machine state;
+        t_cpu before;
+        t_cpu after;
+        core_machine_cpu_diagnostic diagnostic;
+        type_status status;
+        type_unsigned_8 code[] = {0x66u, (type_unsigned_8)(0xb8u + form),
+            0x44u, 0x33u, 0x22u, (type_unsigned_8)(0x11u + form)};
+        type_unsigned_32 expected = 0x11223344u + ((type_unsigned_32)form << 24u);
+        C_INT failed = !gpr_mov_prepare(CORE_MACHINE_CPU_PROFILE_80386,
+            &state);
+
+        if (!failed) {
+            gpr_mov_seed(&state);
+            before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+            failed |= !gpr_mov_run(&state, code, sizeof(code), &after,
+                &diagnostic, &status) || status != TYPE_STATUS_OK ||
+                diagnostic.first_fault.valid || after.data.eip != sizeof(code) ||
+                !gpr_mov_nonparticipants(&before, &after, form) ||
+                gpr_mov_gpr(&after, form) != expected;
+        }
+        core_machine_destroy(state.machine);
+        if (failed) return 0;
+    }
+    return 1;
+}
+
 static C_INT gpr_mov_test_prefix_lock(C_VOID)
 {
     static const core_machine_cpu_profile profiles[] = {
@@ -368,9 +429,11 @@ static C_INT gpr_mov_test_prefix_lock(C_VOID)
         {0x66u,0x8bu,0x06u,0,0x10u},
         {0x67u,0x89u,0x06u,0,0x10u},
         {0x66u,0xc7u,0x06u,0,0x10u,0},
-        {0x67u,0xb8u,0,0,0}
+        {0x67u,0xb8u,0,0,0},
+        {0x66u,0xb0u,0},
+        {0x66u,0xb8u,0,0,0}
     };
-    static const type_unsigned_8 prefix_sizes[] = {5u,5u,6u,5u};
+    static const type_unsigned_8 prefix_sizes[] = {5u,5u,6u,5u,3u,5u};
     static const type_unsigned_8 lock_codes[][7] = {
         {0xf0u,0x88u,0x06u,0,0x10u},
         {0xf0u,0x89u,0x0eu,0,0x10u},
@@ -680,7 +743,8 @@ C_INT main(C_VOID)
         STD_PRINTF("GPR-MOV stage=immediate\n");
         return 1;
     }
-    if (!gpr_mov_test_386_attributes()) {
+    if (!gpr_mov_test_386_attributes() ||
+        !gpr_mov_test_immediate_register_386_attributes()) {
         STD_PRINTF("GPR-MOV stage=attributes\n");
         return 1;
     }
@@ -701,5 +765,6 @@ C_INT main(C_VOID)
         return 1;
     }
     STD_PRINTF("M5:T316:S31:GPR-MOV:OK\n");
+    STD_PRINTF("M5:T401:S13:IMMEDIATE-REGISTER-MOV-PROFILES:OK\n");
     return 0;
 }
