@@ -1061,3 +1061,18 @@ S58 audits MOV C6h/C7h. The GPR-MOV fixture now executes valid /0 direct-memory 
 ## S58 Acceptance
 
 S58 closes immediate r/m MOV C6h/C7h. It expands valid forms to all four profiles, retains reserved-extension and protection/LOCK/IRQ boundaries, and repairs C6 imm8 lexical consumption. Both focused smokes and the 285-test current gate pass; timing remains nonphysical and T401 remains open.
+
+## S59 Near Conditional Jumps
+
+S59 independently audits the 80386 secondary near conditional-jump family
+`0F 80h` through `0F 8Fh`. The retained control-transfer fixture executes all
+sixteen predicates with their taken flags, preserves EFLAGS and unrelated GPR
+state, retains 16-bit and 32-bit relative layouts in both code-size contexts,
+and retains target-limit atomicity. It also retains the existing 80286 runtime
+`#UD` delivery row. `M5:T401:S59:NEAR-JCC-PREVIEW-PROFILES:OK` adds a direct
+matrix for every opcode: 80386 code16 rel16 and code32 rel32 layouts, plus
+operand/address and combined attribute layouts. The same scanner matrix proves
+80186 and 80286 reject the secondary forms. 8086 is deliberately excluded
+from that rejection set because its primary `0Fh` remains the distinct POP CS
+instruction, as recorded by S5. No production discrepancy was found; timing
+remains nonphysical.

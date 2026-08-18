@@ -567,7 +567,6 @@ static C_INT ct_test_pre386_near_jcc_is_ud(C_VOID)
     core_machine_destroy(state.machine);
     return !failed;
 }
-
 static C_INT ct_test_ret_target_fault_is_atomic(C_VOID)
 {
     static const type_unsigned_8 ret[] = {0xc3u};
@@ -1175,5 +1174,6 @@ C_INT main(C_VOID)
     STD_PRINTF("M5:T401:S22:NEAR-RETURN-PROFILES:OK\n");
     STD_PRINTF("M5:T401:S23:FAR-RETURN-PROFILES:OK\n");
     STD_PRINTF("M5:T401:S43:LOOP-JCXZ-PROFILES:OK\n");
+    STD_PRINTF("M5:T401:S59:NEAR-JCC-PROFILES:OK\n");
     return 0;
 }
