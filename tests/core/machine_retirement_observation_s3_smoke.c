@@ -95,6 +95,43 @@ static C_INT retirement_pre_mode_snapshot_case(C_VOID)
     core_machine_destroy(machine);
     return failed;
 }
+static C_INT retirement_unallocated_profile_case(core_machine_cpu_profile profile,
+    core_machine_retirement_timing_origin expected_origin)
+{
+    const core_machine_config physical = {
+        .cpu_profile = profile,
+        .retirement_time_contract = CORE_MACHINE_RETIREMENT_TIME_PHYSICAL
+    };
+    const core_machine_run_budget budget = { 1u, 0u };
+    const type_unsigned_8 rep_nop[] = { 0xf3u, 0x90u };
+    core_machine_retirement_observation_provider provider;
+    core_machine_run_result result;
+    core_machine_timeline_observation timeline;
+    retirement_probe probe = { STD_NULL, { { 0 } }, 0u, TYPE_STATUS_OK };
+    core_machine *machine = STD_NULL;
+    C_INT failed = !retirement_prepare(&machine, &physical, rep_nop, sizeof(rep_nop));
+
+    provider.callback = retirement_capture;
+    provider.context = &probe;
+    probe.machine = machine;
+    if (!failed) {
+        failed |= core_machine_set_retirement_observation_provider(machine,
+            &provider) != TYPE_STATUS_OK ||
+            core_machine_run(machine, budget, &result) != TYPE_STATUS_FAULT ||
+            result.reason != CORE_MACHINE_STOP_FAULT || result.executed != 0u ||
+            probe.count != 1u || probe.set_while_running != TYPE_STATUS_INVALID_STATE ||
+            probe.records[0].timing_disposition !=
+                CORE_MACHINE_RETIREMENT_TIMING_SOURCE_UNALLOCATED ||
+            probe.records[0].source_timing_form_id !=
+                CORE_MACHINE_RETIREMENT_SOURCE_FORM_UNATTRIBUTED ||
+            probe.records[0].timing_origin != expected_origin ||
+            probe.records[0].elapsed_ticks != 0u || probe.records[0].timeline_ticks != 0u ||
+            core_machine_get_timeline_observation(machine, &timeline) != TYPE_STATUS_OK ||
+            timeline.now != 0u;
+    }
+    core_machine_destroy(machine);
+    return failed;
+}
 C_INT main(C_VOID)
 {
     core_machine *machine = STD_NULL;
@@ -146,6 +183,14 @@ C_INT main(C_VOID)
         probe.records[0].virtual_8086_mode || probe.records[0].operand_size_32 ||
         probe.records[0].address_size_32 || probe.records[0].lock_prefix ||
         probe.records[0].repeat_prefix != 0u;
+    failed |= retirement_unallocated_profile_case(CORE_MACHINE_CPU_PROFILE_8086,
+        CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_8086_FALLBACK) ||
+        retirement_unallocated_profile_case(CORE_MACHINE_CPU_PROFILE_80186,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80186_FALLBACK) ||
+        retirement_unallocated_profile_case(CORE_MACHINE_CPU_PROFILE_80286,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80286_FALLBACK) ||
+        retirement_unallocated_profile_case(CORE_MACHINE_CPU_PROFILE_80386,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80386_FALLBACK);
     failed |= retirement_control_context_case(0x75u,
         CORE_MACHINE_RETIREMENT_CONTROL_TAKEN, 1u) ||
         retirement_control_context_case(0x74u,

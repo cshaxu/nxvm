@@ -1324,3 +1324,47 @@ gap and assigns it to S75 rather than treating existing selected timing corpus
 or origin attribution as comprehensive. No production discrepancy is asserted,
 and all physical, x87 numerical and board/device timing boundaries remain
 unchanged.
+## S75 Four-profile Accepted-map Timing-disposition Matrix
+
+S75 turns the S74 reconciliation into the actual source-owned disposition
+matrix. The sole selected-CPU successful-retirement classifier is
+`core_machine_instruction_cost()`: it resets origin, opaque form identifier
+and `source_timing_unallocated` once per attempt, then chooses exactly one
+classifier family. `core_machine_retirement_observation_publish()` copies the
+result before physical-contract rejection; `core_machine_run()` rejects an
+unallocated or unqualified row before elapsed/timeline publication. A returned
+fallback tick is therefore not silently promoted to an Intel timing row.
+
+| Accepted successful class | Profiles and Core origin | Disposition and retained evidence |
+| --- | --- | --- |
+| Selected primary ALU, TEST, XCHG, MOV, adjustment, Group-3, SETcc and related shaped forms | 8086/80186/80286/80386 `PRIMARY`, with 80386 dynamic-multiply and legacy dynamic-arithmetic classifiers where applicable. | The enumerated T357/T359 source rows/formulas remain **source-backed**. Any legal form/context that those classifiers decline reaches its profile fallback as **nonphysical observed / source-unallocated**, not an implicit exact row. |
+| Strings and scalar/string I/O | `STRING_IO` on all applicable profiles, with protected/permission context on 80386. | Existing T357/T359 selected rows are source-backed. Repeat/provider/service breadth not selected by those rows is nonphysical-observed or retains the device/service boundary; no I/O wait or device latency is inferred. |
+| Stack, direct/indirect control, INT/IRET and profile system-control paths | `CONTROL_STACK`, `80286_FALLBACK`, `80386_PRIVILEGED` and `80386_SECONDARY` as form/mode permits. | Existing selected form/context rows remain source-backed. Descriptor-granular, transition, delivery and uncaptured contexts remain source-unallocated observations or their pre-existing whole-class transfer; no fault/interrupt-cycle clock is created. |
+| `0F` S72-selected 80386 integer/system map | `80386_SECONDARY` and `80386_PRIVILEGED`, otherwise `80386_FALLBACK`. | T359/T360 source-backed subsets retain their manual rows. All other successful valid forms retain profile fallback with `SOURCE_UNALLOCATED`; metadata validity is never treated as a timing allocation. |
+| Primary/S72 forms absent from a selected source row, including legal prefix variants | 8086, 80186, 80286 or 80386 profile fallback. | **Nonphysical observed:** `CORE_MACHINE_SOURCE_UNALLOCATED_TICKS` is one containment tick only; source form ID stays unattributed and physical mode rejects before elapsed/timeline publication. S75 extends `core-machine-retirement-observation-s3-smoke` to prove this for all four profile fallback origins. |
+| `9B` WAIT and `D8`--`DF` ESC | CPU FPU/WAIT interface path; no successful numerical timing classifier is admitted. | **External boundary:** S6/T316 S65 owns CPU-side interface/profile behavior; x87 arithmetic/provider timing remains explicitly external. |
+| Invalid, reserved, unavailable-profile, privilege-fault and delivery-fault forms | No successful retirement. | No successful-retirement timing disposition applies. S3/S5/S66--S71 and delivery tests retain their semantic/fault proof. |
+
+S75 also found one stale regression expectation caused by the already accepted
+S69 TR repair: the protected-UD smoke still treated `0F 24/26` TR0 as a legal
+lexeme. It now uses the legal TR6 encoding, preserving the adjacent CR/DR/TR
+sweep and ensuring reserved TR0--TR5 do not re-enter a timing path.
+
+Focused proofs passed on 2026-08-18:
+
+- `current.core-machine-retirement-observation-s3-smoke`, with all four
+  profile fallback origins proving copied `SOURCE_UNALLOCATED` observation and
+  pre-publication physical rejection.
+- `current.core-machine-protected-ud-delivery-s1-smoke`, including the
+  corrected TR6 legal-neighbour sample.
+- Full `ctest --test-dir build/t400-current-gate --output-on-failure`: 285/285.
+
+## S75 Acceptance
+
+S75 closes the accepted-map timing-disposition matrix at the required source
+boundary: every selected successful class is either source-backed, explicitly
+nonphysical-observed, or external, and unsuccessful forms have no invented
+retirement clock. This is not a physical CPU, board or DeskPro L3 result. The
+remaining physical qualification work continues with the retained DeskPro
+board/device timing receivers; no CPU instruction form is silently used to
+open that gate.

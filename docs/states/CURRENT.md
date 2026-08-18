@@ -3,6 +3,26 @@
 ## Current Work
 
 **Active: M5 T401.**
+## M5 T401 S75 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner: user; standing approval to continue the CPU audit and directly repair confirmed small in-scope issues. |
+| Objective | Build the finite four-profile accepted-map timing-disposition matrix from actual Core classifier and retirement-observation owners, assigning every successful class to source-backed, nonphysical-observed, external, or a concrete next receiver. |
+| Non-goals | No invented cycles, physical CPU/board/L3 claim, source import, broad Core/VM refactor, or whole-T401 closure. |
+| Reference Baseline | `e1bf8cc9` (S74 P2), T401 proposal timing requirements, T357/T360/T390 evidence, and current `core_machine_instruction_cost()`/retirement-observation source. |
+| Candidate Proposal | [Four-profile CPU instruction-correctness audit](../proposals/m5-four-profile-cpu-instruction-correctness-audit.md), four-profile accepted-map timing matrix. |
+| Files And ABI Surface | T401 ledger and CURRENT; Core observation/test files only for a confirmed missing classifier/unallocated-observation boundary, with no public ABI change. |
+| Applicable Rules | One sole successful-retirement classifier/publisher; an allocated fallback is not Intel authority; source-underdetermined successful rows need bounded owner-local observation or whole-class transfer. |
+| Verification | Inspect all classifier origins and form-id/disposition publication paths; reconcile S72/S73 map groups; add executable proof if an observation-state gap is found; documentation governance, diff check and full current gate for production changes. |
+| Expected Markers | Existing T357/T360/T390 markers plus S75 matrix disposition and, if needed, a focused unallocated-observation marker. |
+| Asset Needs | None; original manuals stay read-only evidence and no ROM, guest media or third-party source is imported. |
+| Reporting Requirements | Report map/group, profile, classifier origin, form-id/disposition meaning, evidence receiver, and any remaining whole-class transfer. |
+| Stop Conditions | Transfer physical timing, x87 numerical timing, uncapturable dynamic context, or a broad observation-owner change to its earliest bounded receiver. |
+| Exit Criteria | No accepted successful map class remains silently classified: each has a source-backed disposition, explicit owner-local nonphysical observation, external boundary, or one concrete receiver. |
+| Original Owner Request | Continue CPU auditing before later DeskPro L3 work, using source/reference levels honestly and retaining unresolved classes explicitly. |
+| Similar-Issue Sweep | Audit every classifier origin and all primary/secondary/FPU/prefix profile groups, not merely paths represented by an existing timing table. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T395 S1 P4 `vm-0-5-0395` /
