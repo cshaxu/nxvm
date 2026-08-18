@@ -3,6 +3,26 @@
 ## Current Work
 
 **Active: M5 T403.**
+## M5 T403 S2 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner: user; continuing authorization for DeskPro hardware-gap implementation, reference use and normal commit/push lifecycle. |
+| Objective | Independently reconcile the T403 keyboard/8042 flow-control universe, P1 source/coverage and physical transfer; close T403 only if every selected functional member is accounted for. |
+| Non-goals | No new physical timing value, 8042 firmware emulation, DeskPro-specific FIFO claim, Core/VM ABI change or L3 claim. |
+| Reference Baseline | T403 S1 P1 `d3d68564`, P2 `2c50f30b`, indexed T403 evidence, proposal and retained T351 KBC records. |
+| Candidate Proposal | [Keyboard serial endpoint and 8042 flow-control repair](../proposals/m5-keyboard-serial-endpoint-and-8042-flow-control.md). |
+| Files And ABI Surface | T403 closure evidence/index/history/status/Queue only; production source is audit-only. |
+| Applicable Rules | Actual source and complete matrix review; preserve single Core owner and explicit physical transfer; task closure requires independent audit. |
+| Verification | Static producer/consumer sweep; actual P1 review; focused/full-gate evidence replay; documentation governance and diff review. |
+| Expected Markers | `M5:T403:S2:CLOSURE-AUDIT` and functional-only/no-L3 closure statement. |
+| Asset Needs | No new assets or sources; retained primary/reference boundaries are cited only through evidence. |
+| Reporting Requirements | Record each selected disposition, evidence tier, proof and physical residual. |
+| Stop Conditions | Do not close if a selected producer, output origin, lifecycle or ordering variant lacks proof or transfer. |
+| Exit Criteria | Every selected functional member is conforming, fixed, reference-derived or transferred; no physical/L3 overclaim. |
+| Original Owner Request | Implement DeskPro 386 L3 timing and hardware gaps with original, reference, then labelled generic evidence; do not stop for lack of hardware. |
+| Similar-Issue Sweep | Review KBC native ingress, serial/output queues, typematic, translation, command responses, AUX, IRQ/status, reset, VM ingress and all named regressions. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T395 S1 P4 `vm-0-5-0395` /
