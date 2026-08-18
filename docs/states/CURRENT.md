@@ -4,6 +4,27 @@
 
 **Active: M5 T401.**
 
+## M5 T401 S48 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; M5 T401 S48. |
+| Admission And Approval | Owner approved continuing T401; S47 is accepted. |
+| Objective | Audit segment-register MOV 8Ch/8Eh across all four profiles and 80386 extensions. |
+| Non-goals | No segment PUSH/POP re-audit, physical timing or DeskPro L3 claim. |
+| Reference Baseline | Intel 8086/80386 references and current SREG MOV fixture. |
+| Candidate Proposal | [Four-profile CPU instruction-correctness audit and repair program](../proposals/m5-four-profile-cpu-instruction-correctness-audit.md). |
+| Files And ABI Surface | Ledger, packet, SREG MOV fixture and preview smoke; no public ABI. |
+| Applicable Rules | Execution, Core ownership, coding/test, source and documentation rules. |
+| Verification | Four-profile real/protected/extension/LOCK/IRQ-shadow and preview matrix; governance. |
+| Expected Markers | T401 S48 execution and preview markers. |
+| Asset Needs | None. |
+| Reporting Requirements | Profile/form/selector/cache/attribute/source/owner/nonphysical timing evidence. |
+| Stop Conditions | Broad state/decoder/fault redesign. |
+| Exit Criteria | Every selected form has focused proof or transfer. |
+| Original Owner Request | Continue source-backed, reference-backed or generic CPU work. |
+| Similar-Issue Sweep | SREG MOV siblings, profile gates, prefixes, preview callers and IRQ behavior. |
+
 ## Current Technical Baseline
 
 - **Current developer artifact:** T395 S1 P4 `vm-0-5-0395` /

@@ -988,3 +988,7 @@ S46 audits XCHG 86h/87h. Existing focused proof covers four profiles, register/m
 ## S47 ModR/M GPR MOV
 
 S47 audits MOV 88h-8Bh. Existing focused proof covers four profiles, both directions, memory, attributes, LOCK, protected limits and IRQ; timing remains nonphysical.
+
+## S48 Segment-register MOV
+
+S48 audits MOV 8Ch/8Eh. Existing focused proof covers real/protected forms, 80386 extensions, rejected forms/attributes, selector loads and IRQ shadow; timing remains nonphysical.

@@ -724,5 +724,6 @@ C_INT main(C_VOID)
         return 1;
     }
     STD_PRINTF("M5:T316:S32:SREG-MOV:OK\n");
+    STD_PRINTF("M5:T401:S48:SREG-MOV-PROFILES:OK\n");
     return 0;
 }
