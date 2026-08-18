@@ -223,6 +223,35 @@ static C_INT ud_s1_primary_metadata_and_lexeme(C_VOID)
         reserved, sizeof(reserved), CORE_MACHINE_CPU_PROFILE_80386,
         TYPE_TRUE, &lexeme);
 }
+static core_machine_cpu_profile ud_s1_primary_expected_minimum(type_unsigned_8 opcode)
+{
+    if ((opcode >= 0x60u && opcode <= 0x62u) || opcode == 0x68u ||
+        opcode == 0x69u || opcode == 0x6au || opcode == 0x6bu ||
+        (opcode >= 0x6cu && opcode <= 0x6fu) || opcode == 0xc0u ||
+        opcode == 0xc1u || opcode == 0xc8u || opcode == 0xc9u)
+        return CORE_MACHINE_CPU_PROFILE_80186;
+    if (opcode == 0x63u) return CORE_MACHINE_CPU_PROFILE_80286;
+    if (opcode >= 0x64u && opcode <= 0x67u)
+        return CORE_MACHINE_CPU_PROFILE_80386;
+    return CORE_MACHINE_CPU_PROFILE_8086;
+}
+
+static C_INT ud_s1_primary_metadata_matrix(C_VOID)
+{
+    type_unsigned_16 value;
+
+    for (value = 0u; value != 0x100u; ++value) {
+        type_unsigned_8 opcode = (type_unsigned_8)value;
+        core_machine_cpu_instruction_metadata metadata =
+            core_machine_cpu_instruction_metadata_get(
+                CORE_MACHINE_CPU_INSTRUCTION_PRIMARY, opcode, 0u);
+        type_bool reserved = opcode == 0x82u || opcode == 0xd6u || opcode == 0xf1u;
+
+        if (metadata.valid == reserved || (!reserved &&
+            metadata.minimum_cpu != ud_s1_primary_expected_minimum(opcode))) return 0;
+    }
+    return 1;
+}
 static core_machine_cpu_profile ud_s1_0f_expected_minimum(type_unsigned_8 opcode)
 {
     if (opcode == 0x00u || opcode == 0x01u || opcode == 0x02u ||
@@ -310,7 +339,7 @@ C_INT main(C_VOID)
         }
     }
     if (!ud_s1_metadata_and_lexeme() || !ud_s1_primary_metadata_and_lexeme() ||
-        !ud_s1_0f_metadata_matrix() ||
+        !ud_s1_primary_metadata_matrix() || !ud_s1_0f_metadata_matrix() ||
         !ud_s1_protected_invalid_gate()) {
         return 1;
     }
@@ -318,5 +347,6 @@ C_INT main(C_VOID)
     STD_PRINTF("M5:T401:S2:0F25-METADATA:OK\n");
     STD_PRINTF("M5:T401:S3:0F-METADATA-MATRIX:OK\n");
     STD_PRINTF("M5:T401:S4:F1-METADATA:OK\n");
+    STD_PRINTF("M5:T401:S4:PRIMARY-METADATA-MATRIX:OK\n");
     return 0;
 }

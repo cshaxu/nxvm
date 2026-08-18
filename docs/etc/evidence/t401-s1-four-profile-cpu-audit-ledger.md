@@ -64,6 +64,23 @@ were included in the same primary invalid-opcode branch and remain invalid.
 `M5:T401:S4:F1-METADATA:OK` after proving the metadata/lexeme rejection while
 retaining existing protected #UD delivery. This is a decode-classification
 repair only; instruction timing remains nonphysical.
+## S4 Current Primary-Map Reconciliation
+
+`M5:T401:S4:PRIMARY-METADATA-MATRIX:OK` checks every one of the 256 primary
+slots. The current metadata classification is: `82`, `D6` and `F1` reserved;
+`D8`--`DF` valid only as 8087 escape entries; 15 80186 additions (`60`--`62`,
+`68`--`6F`, `C0`, `C1`, `C8`, `C9`); `63` as the 80286 ARPL addition; and
+`64`--`67` as the 80386 FS/GS prefix additions. The remaining 225 slots retain
+the 8086 baseline classification, including `0F`'s documented pre-80286 POP
+CS behavior. This is a metadata/profile inventory check; ModR/M group
+validity, prefix legality, execution semantics, faults and timing remain
+separately proven or transferred by their form-level rows.
+
+The S4 source sweep confirms that `ExecIns` applies this classification before
+the primary dispatch table. The primary matrix therefore guards both the three
+reserved slots and future profile-gate drift, while preserving the separately
+classified FPU escape route. No additional primary metadata/dispatch mismatch
+was found after the `F1` repair.
 ## S3 Current `0F` Map Reconciliation
 
 The current source matrix contains 66 metadata-valid secondary opcode slots:
