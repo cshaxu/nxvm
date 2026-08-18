@@ -94,6 +94,42 @@ static C_VOID competition_program_dma_channel2(t_port *port)
     core_machine_port_write(port, 0x000au, 0x02u);
 }
 
+static C_INT competition_dma_wait_contract(C_VOID)
+{
+    static const core_machine_dma_channel_provider provider = {
+        competition_dma_read, STD_NULL, STD_NULL };
+    core_machine_config config = {0};
+    core_machine_dma_request_binding binding = {0};
+    competition_dma_source source = {0xa5u};
+    core_machine *machine = STD_NULL;
+    type_unsigned_8 value = 0u;
+    C_INT failed = 0;
+
+    config.cpu_profile = CORE_MACHINE_CPU_PROFILE_80386;
+    config.dma_cycle_wait_quanta = 1u;
+    failed |= core_machine_create(&config, &machine) != TYPE_STATUS_OK;
+    failed |= test_core_machine_fixture_register_reset_mapping(machine, 0xfffffff0u,
+        0x000ffff0u, 16u) != TYPE_STATUS_OK;
+    failed |= core_machine_dma_bind_channel(&machine->shared_dma_latch,
+        &machine->shared_dma_primary, &machine->shared_dma_secondary, 2u,
+        &provider, &source, &binding) != TYPE_STATUS_OK;
+    failed |= core_machine_freeze_execution_providers(machine) != TYPE_STATUS_OK;
+    failed |= core_machine_reset(machine) != TYPE_STATUS_OK;
+    failed |= core_machine_memory_write(machine, 0x11234u, &value, 1u) != TYPE_STATUS_OK;
+    competition_program_dma_channel2(&machine->executor_port);
+    core_machine_dma_request_assert(&machine->shared_dma_primary,
+        &machine->shared_dma_secondary, &binding);
+    failed |= core_machine_advance_time(machine, 1u) != TYPE_STATUS_OK;
+    failed |= core_machine_memory_read(machine, 0x11234u, &value, 1u) != TYPE_STATUS_OK ||
+        value != 0u || machine->dma_cycle_wait_remaining != 1u;
+    failed |= core_machine_advance_time(machine, 1u) != TYPE_STATUS_OK;
+    failed |= core_machine_memory_read(machine, 0x11234u, &value, 1u) != TYPE_STATUS_OK ||
+        value != 0xa5u || machine->dma_cycle_wait_remaining != 0u;
+    failed |= core_machine_reset(machine) != TYPE_STATUS_OK ||
+        machine->dma_cycle_wait_remaining != 0u;
+    core_machine_destroy(machine);
+    return !failed;
+}
 C_INT main(C_VOID)
 {
     static const core_machine_dma_channel_provider dma_provider = {
@@ -234,6 +270,7 @@ C_INT main(C_VOID)
         reset_hold_acknowledge >= reset_hold_release;
 
     core_machine_destroy(machine);
+    failed |= !competition_dma_wait_contract();
     if (failed) return 1;
     STD_PRINTF("M5:T354:S3:COMPETITION:OK\n");
     STD_PRINTF("M5:T419:S1:D4-DMA-NO-WAIT:OK\n");
