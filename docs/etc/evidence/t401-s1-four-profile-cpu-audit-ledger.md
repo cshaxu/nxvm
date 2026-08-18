@@ -702,3 +702,11 @@ No production discrepancy was found. This remains CPU semantic/nonphysical timin
 ## S22 Acceptance
 
 S22 closes near return C2h/C3h coverage with focused runtime and preview proof across all four profiles, including immediate cleanup, 80386 width forms and atomic fault boundary. Core timing remains explicitly nonphysical. S23 owns far return CAh/CBh.
+
+## S23 Far Return
+
+S23 audits CAh/CBh far return. Intel's 80386 Programmer's Reference Manual RETF entry defines stack-pop IP/EIP and CS restoration, optional unsigned immediate cleanup and operand-size-selected return width. This is original-source semantic/form evidence; no emulator implementation, ROM or guest asset was imported.
+
+M5:T401:S23:FAR-RETURN-PROFILES:OK retains all-four-profile real-mode far-return and immediate-cleanup proof, 80386 16/32 forms, and protected same-CPL validation/atomicity. M5:T401:S23:FAR-RETURN-PREVIEW-PROFILES:OK adds the matching lexical matrix.
+
+No production discrepancy was found. This remains CPU semantic/nonphysical timing-baseline evidence only and does not establish physical timing, DeskPro L3 or a Core/VM interface change.
