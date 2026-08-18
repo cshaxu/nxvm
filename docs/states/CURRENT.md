@@ -2,7 +2,9 @@
 
 ## Current Work
 
-| T419 S2 | Closed receiver: original-source-backed discrete D4 one-quantum DMA grant wait selected only by Model-40; Core remains sole CPU/DMA transaction owner. [Closure audit](../etc/evidence/t419-s2-d4-dma-grant-wait-closure-audit.md). |`r`n`r`n## Current Technical Baseline
+| T419 S2 | Closed receiver: original-source-backed discrete D4 one-quantum DMA grant wait selected only by Model-40; Core remains sole CPU/DMA transaction owner. [Closure audit](../etc/evidence/t419-s2-d4-dma-grant-wait-closure-audit.md). |
+
+## Current Technical Baseline
 
 - **Current developer artifact:** T419 S2 P6 `vm-0-5-0419` /`build/output/nxvm_0_5_0419.exe`, SHA-256 `84662DCABC6BDA05992D09C9E394F3BA95ED10809724AB37900D1F5365228A17`. T419 runs the existing sole Core DMA transaction route under D4 composition and verifies the original-source high-level no-extra-wait property; it does not model D4 waveform duration, BWAIT or refresh arbitration. T418 instruction-boundary locality, T417 refresh, T416 DMA-HOLD and T415 paging fixes remain retained.
   T386 closes selected-device functional completeness at S29; its retained
