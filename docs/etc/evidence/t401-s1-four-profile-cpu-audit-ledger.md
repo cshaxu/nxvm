@@ -905,3 +905,7 @@ S38 audits HLT `F4h`. Intel 8086/80286/80386 references define halted-state publ
 `M5:T401:S38:HLT-PROFILES:OK` retains all-four-profile halt behavior, pre-80386 attribute #UD, 80386 attributes/LOCK, protected/VM86 privilege delivery and IF-conditioned IRQ wakeup. `M5:T401:S38:HLT-PREVIEW-PROFILES:OK` adds the matching lexical matrix.
 
 No production discrepancy was found. This remains CPU semantic/nonphysical timing-baseline evidence only and does not establish physical timing, DeskPro L3 or a Core/VM interface change.
+
+## S38 Acceptance
+
+S38 closes HLT `F4h` coverage with focused runtime and preview proof across all four profiles. It retains halted state, attributes/LOCK, protected/VM86 privilege behavior and IRQ wakeup boundary. No production discrepancy was found; Core timing remains explicitly nonphysical. S39 owns PUSHF/POPF `9Ch`/`9Dh`.
