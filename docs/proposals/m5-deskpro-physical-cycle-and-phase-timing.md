@@ -1,5 +1,9 @@
 # M5 DeskPro 386 Physical-Cycle And Phase-Timing Closure
 
+## Current Re-admission Input
+
+The original 1986 DeskPro 386/16 D3PE processor material, consulted transiently under the source policy, names CPU memory/I/O BUSRDY wait behavior and the CPU/system-board NAM*/MRDY* completion protocol. It permits one bounded Core-owned CPU BUSRDY completion gate only; its source file and all temporary copies are deleted and never retained. The source does not yet make an asynchronous prefetch producer, BWAIT waveform, ISA peripheral binding, or physical/L3 result implementable.
+
 ## Purpose
 
 Advance the selected 1986 Compaq DeskPro 386 Model 40 through one bounded,

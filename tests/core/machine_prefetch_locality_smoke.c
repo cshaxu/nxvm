@@ -181,6 +181,7 @@ static C_INT d4_refresh_external_cycle_contract(C_VOID)
     C_INT failed = 0;
 
     config.external_cycle_timing = timing;
+    config.cpu_cycle_bus_ready_gate_enabled = TYPE_TRUE;
     config.auxiliary_pit_present = TYPE_TRUE;
     config.auxiliary_pit_base_port = 0x0048u;
     failed |= core_machine_create(&config, &machine) != TYPE_STATUS_OK;
@@ -225,6 +226,7 @@ static C_INT retirement_wait_contract(C_VOID)
 
     config.cpu_profile = CORE_MACHINE_CPU_PROFILE_80386;
     config.external_cycle_timing = timing;
+    config.cpu_cycle_bus_ready_gate_enabled = TYPE_TRUE;
     failed |= core_machine_create(&config, &machine) != TYPE_STATUS_OK;
     failed |= test_core_machine_fixture_register_reset_mapping(machine,
         0xfffffff0u, 0x000ffff0u, 16u) != TYPE_STATUS_OK;
@@ -239,10 +241,18 @@ static C_INT retirement_wait_contract(C_VOID)
     failed |= result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 0u ||
         result.ticks != 1u || machine->cpu_retirement_wait_pending == TYPE_FALSE ||
         machine->cpu_retirement_wait_ticks == 0u;
+    failed |= core_machine_set_cpu_bus_ready(machine, 0) != TYPE_STATUS_OK;
+    failed |= core_machine_run(machine, (core_machine_run_budget){0u, 1u},
+        &result) != TYPE_STATUS_OK;
+    failed |= result.executed != 0u || result.ticks != 1u ||
+        machine->cpu_retirement_wait_ticks == 0u;
+    failed |= core_machine_set_cpu_bus_ready(machine, 1) != TYPE_STATUS_OK;
     failed |= core_machine_run(machine, (core_machine_run_budget){1u, 0u},
         &result) != TYPE_STATUS_OK;
     failed |= result.executed != 1u || result.ticks <= 1u ||
         machine->cpu_retirement_wait_pending != TYPE_FALSE;
+    failed |= core_machine_reset(machine) != TYPE_STATUS_OK ||
+        machine->cpu_cycle_bus_ready != TYPE_TRUE;
     core_machine_destroy(machine);
     return !failed;
 }

@@ -4227,6 +4227,13 @@ type_status core_machine_set_dma_bus_ready(core_machine *machine, C_INT ready)
     machine->dma_cycle_bus_ready = ready ? TYPE_TRUE : TYPE_FALSE;
     return TYPE_STATUS_OK;
 }
+type_status core_machine_set_cpu_bus_ready(core_machine *machine, C_INT ready)
+{
+    if (machine == STD_NULL || !core_machine_mutable_operation_is_allowed(machine) ||
+        !machine->cpu_cycle_bus_ready_gate_enabled) return TYPE_STATUS_INVALID_ARGUMENT;
+    machine->cpu_cycle_bus_ready = ready ? TYPE_TRUE : TYPE_FALSE;
+    return TYPE_STATUS_OK;
+}
 type_status core_machine_configure_rtc_cmos(core_machine *machine,
     const core_machine_rtc_cmos_config *config)
 {
@@ -4890,6 +4897,8 @@ static type_status core_machine_create_internal(
             config->retirement_time_contract) ||
         !core_machine_external_cycle_timing_is_valid(
             &config->external_cycle_timing) ||
+        (config->cpu_cycle_bus_ready_gate_enabled != TYPE_FALSE &&
+        config->cpu_cycle_bus_ready_gate_enabled != TYPE_TRUE) ||
         (config->auxiliary_pit_present != TYPE_FALSE &&
         config->auxiliary_pit_present != TYPE_TRUE) ||
         (config->dma_cycle_bus_ready_gate_enabled != TYPE_FALSE &&
@@ -4913,7 +4922,9 @@ static type_status core_machine_create_internal(
     machine->external_cycle_timing = config->external_cycle_timing;
     machine->dma_cycle_wait_quanta = config->dma_cycle_wait_quanta;
     machine->dma_cycle_bus_ready_gate_enabled = config->dma_cycle_bus_ready_gate_enabled;
+    machine->cpu_cycle_bus_ready_gate_enabled = config->cpu_cycle_bus_ready_gate_enabled;
     machine->dma_cycle_bus_ready = TYPE_TRUE;
+    machine->cpu_cycle_bus_ready = TYPE_TRUE;
     if (config->retirement_qualification != STD_NULL) {
         if (config->retirement_qualification->entries == STD_NULL ||
             config->retirement_qualification->entry_count == 0u ||
@@ -5153,6 +5164,7 @@ static type_status core_machine_cold_reset(core_machine *machine)
     machine->elapsed_ticks = 0u;
     machine->dma_cycle_wait_remaining = 0u;
     machine->dma_cycle_bus_ready = TYPE_TRUE;
+    machine->cpu_cycle_bus_ready = TYPE_TRUE;
     machine->external_cycle_page_tag = 0u;
     machine->external_cycle_round_ticks = 0u;
     machine->cpu_retirement_wait_ticks = 0u;
@@ -5357,6 +5369,19 @@ type_status core_machine_run(
                 return TYPE_STATUS_OK;
             }
             if (machine->cpu_retirement_wait_pending) {
+                if (machine->cpu_cycle_bus_ready_gate_enabled && !machine->cpu_cycle_bus_ready) {
+                    if (result->ticks == UINT64_MAX || machine->elapsed_ticks == UINT64_MAX) {
+                        (C_VOID)core_machine_report_fault(machine, 0x54494d45u);
+                        result->reason = CORE_MACHINE_STOP_FAULT;
+                        result->linear_pc = core_machine_linear_pc(machine);
+                        result->detail = machine->fault_detail;
+                        return TYPE_STATUS_FAULT;
+                    }
+                    ++result->ticks;
+                    if (core_machine_publish_elapsed_ticks(machine, 1u, TYPE_FALSE) != TYPE_STATUS_OK) return TYPE_STATUS_FAULT;
+                    result->elapsed_ticks = machine->elapsed_ticks;
+                    continue;
+                }
                 if (machine->cpu_retirement_wait_ticks != 0u) {
                     if (result->ticks == UINT64_MAX ||
                         machine->elapsed_ticks == UINT64_MAX) {
