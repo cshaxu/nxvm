@@ -20,7 +20,7 @@
 | Reporting Requirements | Report source tier, exact discrete contract, commit/push, focused/full verification, and remaining D4 transfers. |
 | Stop Conditions | Stop and transfer any request for calibrated waveform duration, CPU BWAIT, refresh/DMA priority, external bus adapter semantics, protected media, or a second transaction route. |
 | Exit Criteria | One Core production path owns ready-gated DMA progression; Model-40 selects it without affecting other profiles; focused and full gates pass; evidence names remaining transfers; actual diff review and closure audit are committed. |
-| Original Owner Request | “实现DeskPro 386的L3级别时序和所有硬件缺口。能用原始资料的用原始资料，能用参考实现的用参考实现，实在都没有的，可以用通用骨架（如标准的IBM AT）实现，三个级别各自标注，活人不能被尿憋死！” |
+| Original Owner Request | Implement DeskPro 386 L3 timing and hardware gaps: use original material first, then reference implementations, then explicitly labelled generic IBM PC/AT scaffolding; do not stop merely because a higher evidence tier is unavailable. |
 | Similar-Issue Sweep | Before code: inspect all `core_machine_dma_advance_transaction`, DMA clock, hold, and profile configuration callers. Repair at the shared Core grant boundary; do not add a D4-side scheduler. |
 ## Current Technical Baseline
 
