@@ -2,8 +2,28 @@
 
 ## Current Work
 
-No active subtask. T395 S1 is accepted and retains the required latest-task progress row pending an explicit task-closure subtask.
+**T395 S2 active.** Perform the explicit task-closure audit for the accepted Core route-registry repair; do not expand board, firmware, CPU or L3 scope.
 
+## M5 T395 S2 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner continuing global correctness/timing authorization; accepted T395 S1 retains the required latest-task progress row. No exception. |
+| Objective | Verify every T395 proposal requirement against the pushed S1 implementation, regressions, artifact and evidence, then close T395 or record the exact remaining receiver. |
+| Non-goals | No new Core behavior, DeskPro board clock, CPU timing/qualification, ROM/media, firmware, VM/Core ABI or L3 claim. |
+| Reference Baseline | T395 S1 P2-P5, route-registry acceptance audit, T395 proposal and current artifact vm-0-5-0395. |
+| Candidate Proposal | [Core memory-device route registry scalability](../proposals/m5-core-memory-route-registry-scalability.md). |
+| Files And ABI Surface | Status/history/proposal archive/closure evidence only; no source or ABI change. |
+| Applicable Rules | Coordinator actual-change review, complete proposal-to-evidence mapping, task-closure lifecycle and documentation governance. |
+| Verification | Inspect pushed actual diff and evidence, documentation governance and diff hygiene; retain no unclassified proposal requirement. |
+| Expected Markers | T395 S2 task-closure audit only; no runtime marker. |
+| Asset Needs | None. |
+| Reporting Requirements | Record accepted requirements, artifact/hash, verification and exact DeskPro timing transfer boundary. |
+| Stop Conditions | Stop if any T395 requirement lacks direct proof or a task-level runtime artifact. |
+| Exit Criteria | Pushed closure audit and status transition to one task-level T395 summary, or a documented remaining T395 receiver. |
+| Original Owner Request | Continue the global CPU correctness/timing audit, repair clear in-scope defects, and preserve the Core/VM boundary. |
+| Similar-Issue Sweep | Reconcile all T395 proposal bullets against S1 source, tests, evidence, artifact and caller sweep; no new defect class is in scope. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T395 S1 P4 `vm-0-5-0395` /
