@@ -16,3 +16,4 @@ passed. The developer artifact is `vm-0-5-0411`, SHA-256
 This closes only the prefetch prerequisite. Original D4 2 KiB page, row-hit and
 row-miss waits, BWAIT, write/DMA/refresh arbitration and a Model-40 L3 decision
 remain in the DeskPro physical-cycle proposal.
+T411 S2 (7d0d1322) independently audited every entry point and formally transfers the D4 row/page, overlap, write/DMA/refresh/BWAIT and device-phase receivers. The task is closed; the next eligible work is the physical-cycle proposal under a new task identifier.

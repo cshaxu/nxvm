@@ -2,26 +2,7 @@
 
 ## Current Work
 
-## M5 T411 S2 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner authorization of 2026-08-18 covers continued DeskPro L3 work and master pushes. |
-| Objective | Independently close the bounded CPU-prefetch prerequisite and transfer the remaining D4 physical-cycle receivers. |
-| Non-goals | Do not publish a DeskPro D4 wait scalar, page-hit decision, BWAIT model, or Model-L3 result. |
-| Reference Baseline | T411 S1 P1 a9be57f8 and P2 c0032e3c; original D4 timing admission T408. |
-| Candidate Proposal | [DeskPro physical-cycle and phase-timing closure](../proposals/m5-deskpro-physical-cycle-and-phase-timing.md) |
-| Files And ABI Surface | Evidence, history and current-status records only. |
-| Applicable Rules | docs/rules/EXECUTION.md; docs/rules/DOCUMENT.md; docs/rules/ARCHITECTURE.md. |
-| Verification | Actual P1/P2 diff review, lifecycle-entry sweep, documentation governance and clean worktree. |
-| Expected Markers | M5:T411:S2:PREFETCH-CLOSURE:OK |
-| Asset Needs | T408 original D3PE evidence read-only; no import. |
-| Reporting Requirements | Name exact completed prerequisite and each transferred D4 physical receiver. |
-| Stop Conditions | Stop if closure would imply physical timing from generic/reference behavior. |
-| Exit Criteria | Every T411 objective is evidenced or transferred to the existing physical-cycle proposal, and the task is task-level closed. |
-| Original Owner Request | Continue DeskPro L3/hardware work with original, reference-derived and generic-AT tiers labelled; do not stall. |
-| Similar-Issue Sweep | Review execution init, code reads, sequential advance, reset, interrupt/exception, preview, paging and HOLD/HLDA paths. |
+**Idle.**
 
 ## Current Technical Baseline
 
@@ -51,7 +32,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T411 S1 | Closed: Core persistent instruction-prefetch window now separates refill from consumed bytes, invalidates on non-sequential CS:EIP and reset, and retains D4 wait/page-hit timing as unbound. [Evidence](../etc/evidence/t411-s1-cpu-prefetch-window.md). |
+| T411 | Closed: Core persistent instruction-prefetch window and task-level lifecycle audit establish the D4 physical-cycle prerequisite, while row/page waits, BWAIT and arbitration remain explicitly transferred. [Closure audit](../etc/evidence/t411-s2-prefetch-closure-audit.md). |
 | T410 | Closed: Core now observes classified CPU external-cycle begin/commit/cancel around physical accesses, but it does not model prefetch overlap or publish D4 waits. [Evidence](../etc/evidence/t410-s1-cpu-external-cycle.md). |`n| T409 | Closed: Core CPU memory transactions now label prefetch, instruction fetch, data, page-table read and page-table writeback, with full-gate proof; no external cycle or D4 page-hit timing is claimed. [Evidence](../etc/evidence/t409-s1-cpu-memory-provenance.md). |
 | T408 | Closed: original D4 material proves row-miss two-wait/row-hit zero-wait CPU memory behavior, but current logical accesses cannot safely receive it; external-cycle/prefetch-overlap prerequisite remains transferred. [Evidence](../etc/evidence/t408-s1-original-d4-memory-timing-admission.md). |
 | T407 | Closed: existing Core HDC command/sector pending phases publish DRQ/IRQ14 only through the next readiness tick; accepted as generic-AT virtual-time behavior, with Compaq physical/L3 work retained. [Evidence](../etc/evidence/t407-s1-hdc-phase-acceptance.md). |
