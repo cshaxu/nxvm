@@ -20,3 +20,7 @@ P1 `61a4ae98` reconciles the public YAML catalog with the session-start contract
 ## S3 Acceptance
 
 P1 `25cb4839` repairs the shared session media lifecycle: generic fixed HDD loading is private to startup, public HDD replacement is unavailable after publication, and public FDD insertion is running-state guarded and failure-atomic. The focused smoke and full current gate (286/286) pass; documentation governance passes. S3 is accepted; T404 remains open for the residual Batch B controller, display and input functional reconciliation.
+
+## S4 Acceptance
+
+P1 `612aee33` completes the S3 removable-media similar-issue sweep: Console removal no longer bypasses the VM session owner, running removal rejects, and stopped removal clears retained state. The extended lifecycle smoke and full current gate (286/286) pass; documentation governance passes. S4 is accepted; T404 remains open for controller, display and input Batch B reconciliation.

@@ -3,26 +3,6 @@
 ## Current Work
 
 **Active: M5 T404.**
-## M5 T404 S4 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner approved ongoing in-scope T404 repairs, commits and pushes on 2026-08-18. This is the S3 similar-issue corrective continuation for the same removable-media lifecycle defect. |
-| Objective | Move FDD removal behind the VM session owner so removable-media removal, like insertion, rejects a running session and updates retained media/boot state atomically when stopped. |
-| Non-goals | No controller register/timing/L3 change; no media import; no Core/VM interface expansion; no profile or Console-only exception. |
-| Reference Baseline | T404 S3 evidence and P1 `25cb4839`; existing Console adapter directly calls `vm_machine_fdd_remove_for` while insertion calls the session owner. |
-| Candidate Proposal | [T404 proposal](../proposals/m5-current-product-device-profile-capability-closure.md); [S3 evidence](../etc/evidence/t404-s3-media-lifecycle.md). |
-| Files And ABI Surface | Private VM composition `session.*`, Console machine adapter, and the existing S3 owned regression. Keep `session_interface.h` unchanged and preserve Core ownership of raw FDD mechanics. |
-| Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`, `docs/design/ARCHITECTURE.md`, and `docs/design/CODING.md`. |
-| Verification | Extend the S3 focused lifecycle smoke, run the full current CTest gate and documentation governance gate, then actual-diff review. |
-| Expected Markers | `M5:T404:S3:MEDIA-LIFECYCLE:OK` remains the complete insert/remove lifecycle marker. |
-| Asset Needs | None. The regression uses VM-created in-memory media only. |
-| Reporting Requirements | Amend the media evidence with the removal disposition, caller sweep and before/after proof; record all retained Batch B controller/display/input scope. |
-| Stop Conditions | Stop and transfer any raw FDD controller semantic, physical timing, firmware/media byte, or public ABI change. |
-| Exit Criteria | No production FDD removal bypasses the session run-state rule; stopped removal is functional and clears retained media/boot state; focused and full tests pass. |
-| Original Owner Request | Implement DeskPro 386 L3 and every hardware gap with primary sources where possible, labelled references where applicable, and generic skeletons when necessary; do not leave useful repairs blocked on unavailable perfect sources. |
-| Similar-Issue Sweep | Search all production `vm_machine_fdd_remove_for` and session removal paths, plus Console callers; disposition every hit. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T404 S4 P1 `vm-0-5-0404` /
@@ -49,7 +29,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T404 S3 | Accepted: fixed HDD replacement is startup-only, removable FDD insertion is owner-guarded while running, and failure leaves media state intact. [Evidence](../etc/evidence/t404-s3-media-lifecycle.md). |
+| T404 S4 | Accepted: FDD insertion and removal now share one VM-owner lifecycle boundary; stopped removal clears retained state and running changes reject. [Evidence](../etc/evidence/t404-s3-media-lifecycle.md). |
 | T403 | Closed: shared keyboard serial endpoint prevents accepted break loss under full 8042 output; functional KBC flow is complete while physical keyboard/8042/DeskPro timing remains transferred. [Closure audit](../etc/evidence/t403-s2-keyboard-flow-control-closure-audit.md). |
 | T402 | Closed: D3PE-first functional D4 matrix accepted; the Model-40 control aperture repair is reference-labelled where primary material is incomplete, while cache/DRAM/ISA physical timing and L3 remain transferred. [Closure audit](../etc/evidence/t402-s2-d4-functional-closure-audit.md). |
 | T401 | Closed: bounded four-profile CPU semantic/source-timing audit; every frozen form is proven, repaired, nonphysical-observed, rejected or transferred, without an x87, physical CPU, board or L3 claim. [Closure audit](../etc/evidence/t401-s78-task-closure-audit.md). |
