@@ -1280,3 +1280,14 @@ boundary. This does not close T401, establish CPU physical timing, or make a
 DeskPro L3 claim. A later task-level audit must still reconcile the accepted
 maps and their retained timing/protection evidence against the T401 coverage
 universe before any whole-CPU completion decision.
+
+## S73 Commit-Sequence Correction
+
+The primary-map evidence and its closure were verified and pushed in immutable
+commits `752e0983`, `ca9d2763` and `27c883ac`, but their subjects did not use
+the required `M5 T401 S73 Pn:` identifier. This correction does not rewrite
+those commits or alter any CPU semantic, timing, source or test evidence.
+Instead, `M5 T401 S73 P1:` records the accepted S73 evidence in the required
+identifier sequence so that the repository allocator can retain S73 as the
+latest open-task progress. The normal P2 acceptance will remove the active
+packet while retaining only that S73 progress row.
