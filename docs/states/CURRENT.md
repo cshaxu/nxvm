@@ -4,6 +4,27 @@
 
 **Active: M5 T401.**
 
+## M5 T401 S47 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; M5 T401 S47. |
+| Admission And Approval | Owner approved continuing T401; S46 is accepted. |
+| Objective | Audit ModR/M GPR MOV 88h-8Bh across all four profiles and 80386 attributes. |
+| Non-goals | No immediate/moffs/segment MOV re-audit, physical timing or DeskPro L3 claim. |
+| Reference Baseline | Intel 8086/80386 references and current GPR MOV fixture. |
+| Candidate Proposal | [Four-profile CPU instruction-correctness audit and repair program](../proposals/m5-four-profile-cpu-instruction-correctness-audit.md). |
+| Files And ABI Surface | Ledger, packet, GPR MOV fixture and preview smoke; no public ABI. |
+| Applicable Rules | Execution, Core ownership, coding/test, source and documentation rules. |
+| Verification | Four-profile directions/memory/attributes/LOCK/fault/IRQ and preview matrix; governance. |
+| Expected Markers | T401 S47 execution and preview markers. |
+| Asset Needs | None. |
+| Reporting Requirements | Profile/form/result/flags/attributes/source/owner/nonphysical timing evidence. |
+| Stop Conditions | Broad state/decoder/fault redesign. |
+| Exit Criteria | Every selected form has focused proof or transfer. |
+| Original Owner Request | Continue source-backed, reference-backed or generic CPU work. |
+| Similar-Issue Sweep | MOV siblings, profile gates, ModR/M, prefixes, preview callers. |
+
 ## Current Technical Baseline
 
 - **Current developer artifact:** T395 S1 P4 `vm-0-5-0395` /

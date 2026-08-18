@@ -984,3 +984,7 @@ S45 audits CBW/CWD 98h/99h, including 80386 CWDE/CDQ operand-size forms. Existin
 ## S46 ModR/M XCHG
 
 S46 audits XCHG 86h/87h. Existing focused proof covers four profiles, register/memory forms, 80386 attributes, LOCK, fault atomicity and IRQ; timing remains nonphysical.
+
+## S47 ModR/M GPR MOV
+
+S47 audits MOV 88h-8Bh. Existing focused proof covers four profiles, both directions, memory, attributes, LOCK, protected limits and IRQ; timing remains nonphysical.
