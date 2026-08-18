@@ -2,28 +2,8 @@
 
 ## Current Work
 
-**T396 S1 active.** Establish the finite source and implementation baseline for the DeskPro 386 Model 40 board-level timing closure before publishing any clock or bus timing value.
+No active subtask. T396 S1 is accepted and retains the required latest-task progress row pending a bounded physical-contract or task-closure subtask.
 
-## M5 T396 S1 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | New |
-| Admission And Approval | Owner continuing global CPU correctness/timing authorization; T395 is task-level closed and queue order selects the next DeskPro board-level timing prerequisite. No exception. |
-| Objective | Reconcile the accepted CPU qualification input, Model-40 clock/topology declarations, primary-source availability and existing Core time/DMA/PIT/PIC/NMI/reset consumers into a finite implementation ledger. |
-| Non-goals | No speculative timing constant, physical clock publication, CPU repair, ROM/media import, firmware service timing, host wall-clock coupling, VM/Core ABI change or L3 claim. |
-| Reference Baseline | T394 physical-qualification closure, T395 closure, DeskPro board-level timing proposal, current Model-40 private/BYOB composition and Core rational-clock owners. |
-| Candidate Proposal | [DeskPro 386 board-level timing closure](../proposals/m5-deskpro-386-board-level-timing-closure.md). |
-| Files And ABI Surface | Source/evidence ledger and task history/status only unless a later admitted implementation batch proves a source-backed Core/VM owner change. |
-| Applicable Rules | Core owns shared clock/transaction/DMA/PIC/PIT/reset mechanisms; VM owns Model-40 topology declaration; primary source precedes bounded secondary observation. |
-| Verification | Complete owner/caller and source-availability sweep, explicit clock/reset/visibility ledger, focused existing Model-40 and Core clock regressions, documentation governance. |
-| Expected Markers | T396 S1 source-and-owner ledger only; no physical timing marker. |
-| Asset Needs | Read-only metadata/provenance only; no ROM, guest media or external code import. |
-| Reporting Requirements | Record every timing domain, current neutral value, owner, source strength, consumer, reset phase and earliest receiver for unresolved facts. |
-| Stop Conditions | Stop before implementation if the required primary source is absent, only range/unknown phase exists, or a proposed value would publish a scalar without a board contract. |
-| Exit Criteria | Pushed finite ledger and accepted implementation/non-admission boundary, with every unresolved board/device fact transferred explicitly. |
-| Original Owner Request | Continue the global CPU correctness/timing audit, repair clear in-scope defects, and preserve the Core/VM boundary. |
-| Similar-Issue Sweep | Sweep Model-40 private/BYOB construction, Core clock plans, PIT/DMA/PIC/RTC/KBC/NMI/reset consumers, evidence/provenance and local reference implementations. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T395 S1 P4 `vm-0-5-0395` /
@@ -50,6 +30,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T396 S1 | Accepted: finite Model-40 source/owner, six-domain, reset and callback-order ledger; neutral deterministic plan retained. Transfers only a sourced physical clock contract or explicit board-task closure. [Acceptance audit](../etc/evidence/t396-s1-source-owner-acceptance-audit.md). |
 | T395 | Closed: private 12-to-64 bounded Core route growth with direct allocation/limit rollback, frozen-registration and order/decline proof. Transfers only the queued DeskPro board-level timing receiver. [Closure audit](../etc/evidence/t395-s2-task-closure-audit.md). |
 | T394 | Closed: S1-S7 establish the complete C0 81-key qualification and Core copied-descriptor safety boundary, then transfer physical selection solely to the queued source-backed DeskPro board clock-plan contract. No physical clock or L3 claim. [Closure audit](../etc/evidence/t394-s7-physical-qualification-closure-audit.md). |
 | T392 | Closed: S1-S5 exhaust copied C1, VM/session and FDC operation candidates, then repair the missed proposal archival and stale Queue entry; no endpoint or defect exists. Only a separately admitted generic immutable device-operation snapshot plus selected consumer contract can proceed. No Core/VM ABI, CPU timing, physical, board, firmware or L3 claim. [Corrective audit](../etc/evidence/t392-s5-closure-topology-corrective-audit.md). |
@@ -57,7 +38,6 @@
 | T389 | Stopped by owner-approved requeue: S1 proves no physical board slice can begin while 80386 successful retirement remains nonphysical; S2 archives the invalid candidate and queues a shared CPU qualification before a fresh board task. No board timing, physical-clock or L3 claim. [Audit](../etc/evidence/t389-s2-stop-and-requeue-audit.md). |
 | T388 | Closed: S1--S9 establish the sole publisher, exhaustive exact-or-nonphysical residual disposition and pre-publication physical-contract rejection. No current CPU profile is physically clock-qualified; board work transfers under this restriction. [Closure audit](../etc/evidence/t388-s9-task-closure-audit.md). |
 | T387 | Closed: source/owner inventory, exact port-`61h` reconciliation and reference qualification transfer the shared physical-timebase then physical-device/firmware prerequisites before any DeskPro L3 audit. No physical-time or L3 claim. [Closure audit](../etc/evidence/t387-s6-task-closure-transfer-audit.md). |
-| T386 | Closed: S29 independently reconciles every selected Model-40 functional owner/proof, corrects the omitted S26 HDC current-gate registration and transfers only board, firmware and physical-media work to the next candidate/TODO. No L3 claim. [Closure audit](../etc/evidence/t386-s29-functional-closure-audit.md). |
 
 ## Recent Governance
 

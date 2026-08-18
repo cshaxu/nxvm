@@ -19,3 +19,7 @@ neutral rational domains and three ordered due-tick callbacks, while VM's two
 Model-40 construction routes select deterministic time. It retains logical
 order and reset behavior, but transfers every physical value or phase to a
 future source-backed board-clock or physical-device/firmware receiver.
+
+## Coordinator Acceptance
+
+After actual-change review of S1 P3 9e1f56d2, the coordinator accepts S1. The [acceptance audit](../etc/evidence/t396-s1-source-owner-acceptance-audit.md) reconciles every packet requirement and retains T396 only for a bounded physical-contract or task-closure decision; it accepts no board scalar, physical device timing or L3 claim.
