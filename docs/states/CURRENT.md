@@ -2,27 +2,7 @@
 
 ## Current Work
 
-**Active: M5 T404.**
-## M5 T404 S6 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner approved ongoing T404 implementation, acceptance and push on 2026-08-18. Scope: complete Batch B reconciliation and T404 closure decision. |
-| Objective | Exhaust the frozen Batch B controller/media/display/input universe by reconciling every public route to direct current regression, accepted T404 repair, named retained physical/reference receiver, or a newly admitted bounded repair. |
-| Non-goals | No physical timing or L3 completion claim; no new generic builder, guest media/ROM import, source import, or unsupported device addition. |
-| Reference Baseline | T404 S1 ledger; S2 catalog contract; S3/S4 media lifecycle evidence; S5 host-input evidence; retained T386 selected-device functional matrix and T403 KBC closure. |
-| Candidate Proposal | [T404 proposal](../proposals/m5-current-product-device-profile-capability-closure.md); [ledger](../etc/evidence/t404-s1-current-public-device-capability-ledger.md). |
-| Files And ABI Surface | Documentation/evidence, `CURRENT.md`, task history, Queue/proposal only if the T404 completion predicate is met. No code change unless the audit finds a bounded functional defect. |
-| Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, and the existing architecture/coding evidence boundaries; source policy is not triggered. |
-| Verification | Inspect actual source/test registrations and prior evidence; run documentation governance; rerun full current CTest gate for any code repair. |
-| Expected Markers | `M5:T404:S6:BATCH-B-RECONCILIATION:OK`; a closure audit only if every ledger row is exhausted or transferred. |
-| Asset Needs | None. |
-| Reporting Requirements | Record the complete batch matrix, test/evidence owner, residual receiver, actual-change review and task-level completion decision. |
-| Stop Conditions | If any public route lacks direct proof, admitted repair, unavailable/removed result, or named receiver, retain T404 open and admit only the earliest bounded owner repair. |
-| Exit Criteria | Every Batch B row is explicitly reconciled; T404 closes only when the S1 completion predicate is met, retaining all physical/L3 receivers in Queue/TODO/evidence. |
-| Original Owner Request | Implement DeskPro 386 L3 and all hardware gaps using primary sources, clearly labelled references, or generic skeletons when needed; do not block useful progress on missing perfect references. |
-| Similar-Issue Sweep | Search all public session catalog/Console/session interface entry points and current controller/display/input target registrations for unclassified routes. |
+**Idle.**
 ## Current Technical Baseline
 
 - **Current developer artifact:** T404 S5 P1 `vm-0-5-0404` /
@@ -49,7 +29,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T404 S5 | Accepted: VM-public host input accepts only mapped key/mouse events; unknown kinds reject before ingress without a guest-side effect. [Evidence](../etc/evidence/t404-s5-public-host-input-contract.md). |
+| T404 | Closed: every frozen public profile/catalog/media/controller/display/input route has direct functional proof or a named physical receiver; no timing or L3 claim. [Closure audit](../etc/evidence/t404-s6-batch-b-functional-reconciliation.md). |
 | T403 | Closed: shared keyboard serial endpoint prevents accepted break loss under full 8042 output; functional KBC flow is complete while physical keyboard/8042/DeskPro timing remains transferred. [Closure audit](../etc/evidence/t403-s2-keyboard-flow-control-closure-audit.md). |
 | T402 | Closed: D3PE-first functional D4 matrix accepted; the Model-40 control aperture repair is reference-labelled where primary material is incomplete, while cache/DRAM/ISA physical timing and L3 remain transferred. [Closure audit](../etc/evidence/t402-s2-d4-functional-closure-audit.md). |
 | T401 | Closed: bounded four-profile CPU semantic/source-timing audit; every frozen form is proven, repaired, nonphysical-observed, rejected or transferred, without an x87, physical CPU, board or L3 claim. [Closure audit](../etc/evidence/t401-s78-task-closure-audit.md). |
@@ -57,7 +37,6 @@
 | T399 | Closed: the five-batch reference-derived DeskPro L3 ledger is exhausted; B2/B3 logical contracts are accepted, B1/B4/B5 retain exact receivers, and both reference-derived and physical L3 are not ready. [Closure audit](../etc/evidence/t399-s5-task-closure-audit.md). |
 | T398 | Closed: final exact 1986 DeskPro Model-40 audit is not-ready for L3; five physical/firmware boundaries retain explicit TODO receivers and require a fresh audit after repair. [Closure audit](../etc/evidence/t398-s2-task-closure-audit.md). |
 | T397 | Closed: selected functional FDC/HDC/CECG/KBC-NMI/DMA routes and reset/order evidence retained; physical availability, phase and service facts transfer to explicit TODO receivers. Final DeskPro L3 may make only a ready/not-ready decision. [Closure audit](../etc/evidence/t397-s2-task-closure-audit.md). |
-| T396 | Closed: finite Model-40 source/owner, six-domain, reset and callback-order ledger retained; all unsourced physical clock, phase, wait and device/firmware visibility facts transfer to the next DeskPro candidate. No physical scalar or L3 claim. [Closure audit](../etc/evidence/t396-s2-task-closure-audit.md). |
 
 ## Recent Governance
 
