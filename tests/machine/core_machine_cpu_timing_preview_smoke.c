@@ -1478,30 +1478,25 @@ static C_INT preview_test_taken_near_jcc_target(C_VOID)
 }
 static C_INT preview_test_cr_mov_mod_quirk(C_VOID)
 {
-    static const type_unsigned_8 program[] = { 0x0fu, 0x20u, 0x05u,
-        0x78u, 0x56u, 0x34u, 0x12u };
-    const core_machine_config config = {
-        .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
-        .cpu_80386_cr_mov_ignores_mod = TYPE_TRUE
+    static const type_unsigned_8 programs[][7] = {
+        {0x0fu,0x20u,0x05u,0x78u,0x56u,0x34u,0x12u},
+        {0x0fu,0x22u,0x05u,0x78u,0x56u,0x34u,0x12u}
     };
+    const core_machine_config config = {.cpu_profile=CORE_MACHINE_CPU_PROFILE_80386,
+        .cpu_80386_cr_mov_ignores_mod=TYPE_TRUE};
     core_machine_cpu_instruction_lexeme lexeme;
-    core_machine *machine = STD_NULL;
-    C_INT failed = core_machine_cpu_instruction_lexeme_scan(program,
-        sizeof(program), CORE_MACHINE_CPU_PROFILE_80386, TYPE_TRUE, &lexeme) ||
-        core_machine_create(&config, &machine) != TYPE_STATUS_OK ||
-        core_machine_freeze_execution_providers(machine) != TYPE_STATUS_OK ||
-        core_machine_reset(machine) != TYPE_STATUS_OK ||
-        core_machine_memory_write(machine, PREVIEW_RESET_PHYSICAL, program,
-            sizeof(program)) != TYPE_STATUS_OK;
-
-    if (!failed) failed |= !core_machine_cpu_execution_preview_lexeme(
-        &machine->executor_cpu_execution, &lexeme) || !lexeme.available ||
-        lexeme.byte_count != 3u || lexeme.component_count != 3u ||
-        core_machine_cpu_instruction_lexeme_scan((const type_unsigned_8[]){
-            0x0fu, 0x21u, 0x05u, 0x78u, 0x56u, 0x34u, 0x12u }, 7u,
-            CORE_MACHINE_CPU_PROFILE_80386, TYPE_TRUE, &lexeme);
-    core_machine_destroy(machine);
-    return failed;
+    core_machine *machine=STD_NULL; type_unsigned_8 index;
+    C_INT failed=core_machine_create(&config,&machine)!=TYPE_STATUS_OK||
+        core_machine_freeze_execution_providers(machine)!=TYPE_STATUS_OK||
+        core_machine_reset(machine)!=TYPE_STATUS_OK;
+    for(index=0u;!failed&&index<2u;++index) {
+        failed|=core_machine_cpu_instruction_lexeme_scan(programs[index],7u,
+            CORE_MACHINE_CPU_PROFILE_80386,TYPE_TRUE,&lexeme)||
+            core_machine_memory_write(machine,PREVIEW_RESET_PHYSICAL,programs[index],7u)!=TYPE_STATUS_OK||
+            !core_machine_cpu_execution_preview_lexeme(&machine->executor_cpu_execution,&lexeme)||
+            !lexeme.available||lexeme.byte_count!=3u||lexeme.component_count!=3u;
+    }
+    core_machine_destroy(machine); return failed;
 }
 static C_INT preview_test_default_reset_alias(C_VOID)
 {
@@ -1649,5 +1644,6 @@ C_INT main(C_VOID)
     STD_PRINTF("M5:T401:S64:MOVX-PREVIEW-PROFILES:OK\n");
     STD_PRINTF("M5:T401:S65:IMUL2-PREVIEW-PROFILES:OK\n");
     STD_PRINTF("M5:T401:S66:DEBUG-MOV-PREVIEW-PROFILES:OK\n");
+    STD_PRINTF("M5:T401:S67:CONTROL-MOV-PREVIEW-PROFILES:OK\n");
     return 0;
 }

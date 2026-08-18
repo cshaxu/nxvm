@@ -3,6 +3,26 @@
 ## Current Work
 
 **Active: M5 T401.**
+## M5 T401 S67 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner: user; standing approval to continue CPU audit and directly repair confirmed small issues. |
+| Objective | Independently audit 80386 MOV control-register forms `0F 20h` and `0F 22h`, including the documented original-80386 ModR/M quirk. |
+| Non-goals | No public Core/VM ABI change, CPU timing model, DeskPro claim or external-source import; no T401 closure. |
+| Reference Baseline | `57289842` (S66 P2), T401 ledger, retained Intel 80386 PRM, paging/descriptor tests and private preview option. |
+| Candidate Proposal | [Four-profile CPU instruction-correctness audit](../proposals/m5-four-profile-cpu-instruction-correctness-audit.md), 80386 control-register batch. |
+| Files And ABI Surface | Preview smoke, existing paging/descriptor evidence, CURRENT and T401 ledger; Core private lexical surface only. |
+| Applicable Rules | Preserve public generic scanner and Core/VM boundary; coding, documentation and execution rules apply. |
+| Verification | Build/run preview and relevant existing smokes; full gate if production changes; documentation governance; diff check. |
+| Expected Markers | `M5:T401:S67:CONTROL-MOV-PREVIEW-PROFILES:OK`. |
+| Asset Needs | None. |
+| Reporting Requirements | Record generic versus original-80386 disposition, profile evidence, discrepancy result, commits and nonphysical boundary. |
+| Stop Conditions | Transfer any public ABI, physical timing or machine-profile expansion. |
+| Exit Criteria | Generic scanner and private original-80386 preview behavior, legal/reserved CR forms and pre-80386 rejection have explicit evidence. |
+| Original Owner Request | Continue CPU audit before later DeskPro L3 work with direct repair of confirmed small issues. |
+| Similar-Issue Sweep | Treat read/write, CR index, generic/register-only versus original-80386 ModR/M, prefixes, CPL and old-profile rejection together. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T395 S1 P4 `vm-0-5-0395` /

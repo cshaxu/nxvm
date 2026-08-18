@@ -1178,3 +1178,8 @@ Focused smokes and the 285-test current gate pass; timing remains nonphysical.
 ## S66 Acceptance
 
 S66 closes the bounded 80386 debug-register MOV audit. It repairs reserved DR4/DR5 lexical availability and retains direction, register-only form, privilege, LOCK, IRQ, 80186/80286 rejection and 8086 POP CS boundaries. Focused smokes, documentation governance and the 285-test current gate pass; timing remains nonphysical and T401 remains open.
+
+
+## S67 Control-register MOV
+
+S67 audits 80386 MOV CR  F 20h/22h. The generic scanner retains standard register-only forms. The private original-80386 execution preview independently proves both directions consume non-register ModR/M forms as three bytes when the immutable machine option is enabled. Existing paging/descriptor regressions retain CR state, privilege and fault evidence. No ABI or production change; timing remains nonphysical.
