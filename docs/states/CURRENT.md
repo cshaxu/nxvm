@@ -6,7 +6,7 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation. T419 remains the latest open numeric task; S2 closure is retained immediately below. |
+| Identifier Mode | Continuation |
 | Admission And Approval | Owner approval: user’s standing authorization in this thread to continue DeskPro Model-40 L3 work using original sources, reference implementations, then labelled generic AT mechanisms; no repeated approval request. Scope: a bounded original-source D4 DMA `BUSRDY` ready gate only. |
 | Objective | Add one Core-owned, configurable DMA-cycle ready gate. A false provider result defers the pending DMA grant without a transfer; when ready resumes, the existing one transaction route performs it. Model-40 selects the capability with its default-ready binding. |
 | Non-goals | No CPU `BWAIT`, no DCLK/CLK16 calibration, no refresh request/priority, no HAK/HAKDMA waveform, no new VM transaction executor, and no peripheral-specific BUSRDY wiring. |
