@@ -3,6 +3,26 @@
 ## Current Work
 
 **Active: M5 T404.**
+## M5 T404 S6 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner approved ongoing T404 implementation, acceptance and push on 2026-08-18. Scope: complete Batch B reconciliation and T404 closure decision. |
+| Objective | Exhaust the frozen Batch B controller/media/display/input universe by reconciling every public route to direct current regression, accepted T404 repair, named retained physical/reference receiver, or a newly admitted bounded repair. |
+| Non-goals | No physical timing or L3 completion claim; no new generic builder, guest media/ROM import, source import, or unsupported device addition. |
+| Reference Baseline | T404 S1 ledger; S2 catalog contract; S3/S4 media lifecycle evidence; S5 host-input evidence; retained T386 selected-device functional matrix and T403 KBC closure. |
+| Candidate Proposal | [T404 proposal](../proposals/m5-current-product-device-profile-capability-closure.md); [ledger](../etc/evidence/t404-s1-current-public-device-capability-ledger.md). |
+| Files And ABI Surface | Documentation/evidence, `CURRENT.md`, task history, Queue/proposal only if the T404 completion predicate is met. No code change unless the audit finds a bounded functional defect. |
+| Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, and the existing architecture/coding evidence boundaries; source policy is not triggered. |
+| Verification | Inspect actual source/test registrations and prior evidence; run documentation governance; rerun full current CTest gate for any code repair. |
+| Expected Markers | `M5:T404:S6:BATCH-B-RECONCILIATION:OK`; a closure audit only if every ledger row is exhausted or transferred. |
+| Asset Needs | None. |
+| Reporting Requirements | Record the complete batch matrix, test/evidence owner, residual receiver, actual-change review and task-level completion decision. |
+| Stop Conditions | If any public route lacks direct proof, admitted repair, unavailable/removed result, or named receiver, retain T404 open and admit only the earliest bounded owner repair. |
+| Exit Criteria | Every Batch B row is explicitly reconciled; T404 closes only when the S1 completion predicate is met, retaining all physical/L3 receivers in Queue/TODO/evidence. |
+| Original Owner Request | Implement DeskPro 386 L3 and all hardware gaps using primary sources, clearly labelled references, or generic skeletons when needed; do not block useful progress on missing perfect references. |
+| Similar-Issue Sweep | Search all public session catalog/Console/session interface entry points and current controller/display/input target registrations for unclassified routes. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T404 S5 P1 `vm-0-5-0404` /
