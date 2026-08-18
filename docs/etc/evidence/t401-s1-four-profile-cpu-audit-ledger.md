@@ -635,3 +635,11 @@ attribute combination.
 No production discrepancy was found. This remains CPU semantic/nonphysical
 timing-baseline evidence only and does not establish physical timing, DeskPro
 L3 or a Core/VM interface change.
+## S19 Acceptance
+
+S19 closes selected SCAS `AEh`/`AFh` form coverage with focused runtime and
+preview proof across all four profiles. It repairs the missing four-profile
+REPE/REPNE execution sweep and covers comparison flags, DF/ES routing, 80386
+attributes and prefix rejection. No production discrepancy was found; existing
+Core timing remains explicitly nonphysical. S20 owns accumulator TEST
+`A8h`/`A9h`.
