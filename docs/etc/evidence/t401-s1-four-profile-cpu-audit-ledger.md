@@ -428,3 +428,18 @@ probes passed; the current-gate CTest log on 2026-08-17 records all 285/285
 tests through `current.vm-ata-pio-dos-smoke` with no failure marker. This is
 CPU semantic/nonphysical timing-baseline acceptance only, not a physical or
 DeskPro L3 claim.
+## S12 Accumulator XCHG
+
+S12 audits `90h`--`97h`: Intel defines `90h` as the accumulator self-exchange
+(NOP alias) and the remaining bytes as accumulator exchanges with CX, DX, BX,
+SP, BP, SI and DI. The retained XCHG smoke already executes all eight opcodes
+on 8086, 80186, 80286 and 80386, including FLAGS preservation, 80386 dword
+forms, pre-80386 `66h` #UD atomicity, LOCK rejection and the IRQ boundary.
+
+`M5:T401:S12:ACCUMULATOR-XCHG-PROFILES:OK` names that complete execution
+matrix. `M5:T401:S12:ACCUMULATOR-XCHG-PREVIEW-PROFILES:OK` adds the previously
+missing decoder-preview sweep for all eight one-byte forms across four profiles
+and 80386 `66h` representatives. This is an original-source semantic/form
+classification and test-only evidence correction: no production discrepancy,
+external-source import, physical timing claim or Core/VM interface change was
+found.
