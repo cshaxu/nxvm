@@ -837,3 +837,11 @@ No production discrepancy was found. This remains CPU semantic/nonphysical timin
 ## S32 Acceptance
 
 S32 closes LAR/LSL `0F02h`/`0F03h` with focused runtime and preview proof. It retains descriptor accesses, profile/rejection rules, source-memory/segment boundaries, VM86, IRQ and LDT coverage; 8086 `0Fh` remains POP CS. No production discrepancy was found; Core timing remains explicitly nonphysical. S33 owns LES/LDS `C4h`/`C5h`.
+
+## S33 LES/LDS
+
+S33 audits LES/LDS `C4h`/`C5h`. Intel's 8086/80386 references define memory-only far-pointer loads and operand-size-selected offset width. This is original-source semantic/form evidence; no emulator implementation, ROM or guest asset was imported.
+
+`M5:T401:S33:LES-LDS-PROFILES:OK` retains all-four-profile real mode, 80386 attributes, register-form/LOCK rejection, protected delivery/limits and IRQ proof. `M5:T401:S33:LES-LDS-PREVIEW-PROFILES:OK` records all-four-profile lexical availability; these are original 8086 instructions.
+
+No production discrepancy was found. This remains CPU semantic/nonphysical timing-baseline evidence only and does not establish physical timing, DeskPro L3 or a Core/VM interface change.

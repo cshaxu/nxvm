@@ -573,5 +573,6 @@ C_INT main(C_VOID)
         return 1;
     }
     STD_PRINTF("M5:T316:S41:LES-LDS:OK\n");
+    STD_PRINTF("M5:T401:S33:LES-LDS-PROFILES:OK\n");
     return 0;
 }
