@@ -3,26 +3,6 @@
 ## Current Work
 
 **Active: M5 T404.**
-## M5 T404 S2 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner approved the T404 proposal and ongoing in-scope implementation, commits and pushes on 2026-08-18. Scope: Batch A public catalog/profile/variant/firmware/media contract audit and bounded repair. No exceptions. |
-| Objective | Consume Batch A of the T404 ledger: reconcile the public YAML catalog, console-to-session construction, three named profiles, declared overrides, firmware manifest and startup-media constraints; repair one shared product-boundary defect if the audit establishes it. |
-| Non-goals | No board or physical timing/L3 claim; no ROM/media import or committed bytes; no generic free-form machine builder; no device-controller functional Batch B work. |
-| Reference Baseline | T404 S1 ledger; T402/T403 accepted functional repairs; current `session_catalog`, console and session-factory/session implementation. |
-| Candidate Proposal | [T404 proposal](../proposals/m5-current-product-device-profile-capability-closure.md); Batch A in [ledger](../etc/evidence/t404-s1-current-public-device-capability-ledger.md). |
-| Files And ABI Surface | Inspect `src/vm/product/session_catalog.*`, `console.*`, and `src/vm/composition/session/*`; a repair may alter only the VM product/session contract and its owned product tests. Preserve Core/VM boundary and opaque public session ownership. |
-| Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`, `docs/design/ARCHITECTURE.md`, `docs/design/CODING.md`, and source policy for any research/import (none planned). |
-| Verification | Focused catalog/profile/session regressions; full `ctest --test-dir build/t400-current-gate --output-on-failure` after code; documentation governance gate before acceptance. |
-| Expected Markers | Existing product markers remain; added Batch A regression/evidence names `M5:T404:S2:*:OK` if a repair is admitted. |
-| Asset Needs | None. BYOB firmware remains external and manifest-only; no asset is read, copied or committed. |
-| Reporting Requirements | Record the complete Batch A before/after disposition, source ownership, actual-change review, verification, and explicit transfer of unresolved controller/media behavior to Batch B. |
-| Stop Conditions | Stop and transfer any unsupported profile variant, firmware/media lifecycle fact, physical/timing behavior, external asset, or change that would broaden the public surface. |
-| Exit Criteria | Every Batch A public path has a declared disposition and direct regression or named transfer; any found shared defect is repaired at its earliest VM product/session owner; no Core/VM interface breach. |
-| Original Owner Request | Implement DeskPro 386 L3 and every hardware gap using primary sources, labelled reference implementations, or generic skeletons when needed; continue the CPU audit afterwards; do not block useful implementation on missing perfect references. |
-| Similar-Issue Sweep | Audit all three named profiles and both YAML and direct option paths for generic overrides, firmware-manifest leakage, and startup media replacement; document every production hit and its disposition. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T404 S2 P1 `vm-0-5-0404` /
@@ -49,7 +29,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T404 S1 | Accepted: frozen public device/profile/catalog/media ledger defines Batch A/B coverage and every functional/physical disposition before migration. [Ledger](../etc/evidence/t404-s1-current-public-device-capability-ledger.md). |
+| T404 S2 | Accepted: Batch A reconciles all public catalog-to-session profile paths; unsupported default CPU/FPU catalog variants now reject before selection, and Batch B retains media/controller function. [Evidence](../etc/evidence/t404-s2-public-catalog-session-contract.md). |
 | T403 | Closed: shared keyboard serial endpoint prevents accepted break loss under full 8042 output; functional KBC flow is complete while physical keyboard/8042/DeskPro timing remains transferred. [Closure audit](../etc/evidence/t403-s2-keyboard-flow-control-closure-audit.md). |
 | T402 | Closed: D3PE-first functional D4 matrix accepted; the Model-40 control aperture repair is reference-labelled where primary material is incomplete, while cache/DRAM/ISA physical timing and L3 remain transferred. [Closure audit](../etc/evidence/t402-s2-d4-functional-closure-audit.md). |
 | T401 | Closed: bounded four-profile CPU semantic/source-timing audit; every frozen form is proven, repaired, nonphysical-observed, rejected or transferred, without an x87, physical CPU, board or L3 claim. [Closure audit](../etc/evidence/t401-s78-task-closure-audit.md). |
