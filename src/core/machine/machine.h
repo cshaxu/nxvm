@@ -95,6 +95,9 @@ struct core_machine {
     type_unsigned_32 external_memory_locality_page_tag;
     type_unsigned_64 external_memory_locality_round_ticks;
     type_bool external_memory_locality_page_valid;
+    /* Only an explicit in-flight external-cycle owner may publish this. */
+    type_bool external_memory_locality_overlap_valid;
+    type_unsigned_32 external_memory_locality_overlap_next_physical;
     type_bool external_memory_locality_round_overflow;
     type_unsigned_64 maximum_instruction_ticks;
     core_machine_retirement_time_contract retirement_time_contract;

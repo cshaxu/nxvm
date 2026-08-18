@@ -3225,9 +3225,13 @@ static C_VOID core_machine_cpu_external_cycle_trace(C_VOID *opaque,
         type_unsigned_32 page_tag = physical /
             machine->external_memory_locality_timing.page_bytes;
         type_unsigned_32 wait_ticks = !machine->external_memory_locality_page_valid ||
+            !machine->external_memory_locality_overlap_valid ||
+            machine->external_memory_locality_overlap_next_physical != physical ||
             machine->external_memory_locality_page_tag != page_tag ?
             machine->external_memory_locality_timing.page_miss_ticks :
             machine->external_memory_locality_timing.page_hit_ticks;
+        /* Synchronous CPU commits cannot manufacture physical overlap. */
+        machine->external_memory_locality_overlap_valid = TYPE_FALSE;
         machine->external_memory_locality_page_valid = TYPE_TRUE;
         machine->external_memory_locality_page_tag = page_tag;
         if (UINT64_MAX - machine->external_memory_locality_round_ticks < wait_ticks) {
@@ -5006,6 +5010,8 @@ static type_status core_machine_cold_reset(core_machine *machine)
     machine->external_memory_locality_page_tag = 0u;
     machine->external_memory_locality_round_ticks = 0u;
     machine->external_memory_locality_page_valid = TYPE_FALSE;
+    machine->external_memory_locality_overlap_valid = TYPE_FALSE;
+    machine->external_memory_locality_overlap_next_physical = 0u;
     machine->external_memory_locality_round_overflow = TYPE_FALSE;
     machine->retirement_eligibility_key_valid = TYPE_FALSE;
     machine->source_repeat_active = TYPE_FALSE;

@@ -114,7 +114,7 @@ static C_INT locality_observer_contract(C_VOID)
         provider(context, CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_COMMIT, 1u, 1u,
             TYPE_TRUE, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA);
         failed |= !machine->external_memory_locality_page_valid ||
-            machine->external_memory_locality_round_ticks != 3u;
+            machine->external_memory_locality_round_ticks != 4u;
         machine->external_memory_locality_round_ticks = 0u;
         machine->external_memory_locality_page_valid = TYPE_FALSE;
         provider(context, CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_CANCEL, 0x800u, 4u,
@@ -126,7 +126,7 @@ static C_INT locality_observer_contract(C_VOID)
         provider(context, CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_COMMIT, 0x804u, 4u,
             TYPE_TRUE, CORE_MACHINE_CPU_MEMORY_ACCESS_PAGE_TABLE_WRITE);
         failed |= !machine->external_memory_locality_page_valid ||
-            machine->external_memory_locality_round_ticks != 3u;
+            machine->external_memory_locality_round_ticks != 4u;
         machine->external_memory_locality_round_ticks = 0u;
         failed |= core_machine_transaction_hold_request(&machine->transaction,
             CORE_MACHINE_TRANSACTION_OWNER_DMA, 0u) != TYPE_STATUS_OK;
