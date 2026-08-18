@@ -15,3 +15,9 @@ that native keyboard bytes, their break/typematic state and endpoint capacity
 remain KBC-private; existing CPU output, 60h/64h, IRQ, response and AUX owners
 remain singular. The focused KBC/AUX/mapper/DOS regressions and full 285/285
 current gate pass; no physical DeskPro timing or L3 claim is made.
+## S2 Acceptance And Task Closure
+
+P1 `18ab37c8` independently reconciles every admitted keyboard/8042 functional
+member, actual S1 source and proof. No unclassified production path remains in
+scope. T403 closes at shared functional-input scope only; its closure audit
+retains all physical keyboard, controller and DeskPro timing work as transfer.
