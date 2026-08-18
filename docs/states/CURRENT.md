@@ -3,11 +3,31 @@
 ## Current Work
 
 **Active: M5 T404.**
+## M5 T404 S2 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner approved the T404 proposal and ongoing in-scope implementation, commits and pushes on 2026-08-18. Scope: Batch A public catalog/profile/variant/firmware/media contract audit and bounded repair. No exceptions. |
+| Objective | Consume Batch A of the T404 ledger: reconcile the public YAML catalog, console-to-session construction, three named profiles, declared overrides, firmware manifest and startup-media constraints; repair one shared product-boundary defect if the audit establishes it. |
+| Non-goals | No board or physical timing/L3 claim; no ROM/media import or committed bytes; no generic free-form machine builder; no device-controller functional Batch B work. |
+| Reference Baseline | T404 S1 ledger; T402/T403 accepted functional repairs; current `session_catalog`, console and session-factory/session implementation. |
+| Candidate Proposal | [T404 proposal](../proposals/m5-current-product-device-profile-capability-closure.md); Batch A in [ledger](../etc/evidence/t404-s1-current-public-device-capability-ledger.md). |
+| Files And ABI Surface | Inspect `src/vm/product/session_catalog.*`, `console.*`, and `src/vm/composition/session/*`; a repair may alter only the VM product/session contract and its owned product tests. Preserve Core/VM boundary and opaque public session ownership. |
+| Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`, `docs/design/ARCHITECTURE.md`, `docs/design/CODING.md`, and source policy for any research/import (none planned). |
+| Verification | Focused catalog/profile/session regressions; full `ctest --test-dir build/t400-current-gate --output-on-failure` after code; documentation governance gate before acceptance. |
+| Expected Markers | Existing product markers remain; added Batch A regression/evidence names `M5:T404:S2:*:OK` if a repair is admitted. |
+| Asset Needs | None. BYOB firmware remains external and manifest-only; no asset is read, copied or committed. |
+| Reporting Requirements | Record the complete Batch A before/after disposition, source ownership, actual-change review, verification, and explicit transfer of unresolved controller/media behavior to Batch B. |
+| Stop Conditions | Stop and transfer any unsupported profile variant, firmware/media lifecycle fact, physical/timing behavior, external asset, or change that would broaden the public surface. |
+| Exit Criteria | Every Batch A public path has a declared disposition and direct regression or named transfer; any found shared defect is repaired at its earliest VM product/session owner; no Core/VM interface breach. |
+| Original Owner Request | Implement DeskPro 386 L3 and every hardware gap using primary sources, labelled reference implementations, or generic skeletons when needed; continue the CPU audit afterwards; do not block useful implementation on missing perfect references. |
+| Similar-Issue Sweep | Audit all three named profiles and both YAML and direct option paths for generic overrides, firmware-manifest leakage, and startup media replacement; document every production hit and its disposition. |
 ## Current Technical Baseline
 
-- **Current developer artifact:** T395 S1 P4 `vm-0-5-0395` /
-  `build/output/nxvm_0_5_0395.exe`, SHA-256
-  `5DBD4B50762BAD5E393CD8EFA8A0CB7E06FD9A1304A44F8993CC64915A99D4A6`.
+- **Current developer artifact:** T404 S2 P1 `vm-0-5-0404` /
+  `build/output/nxvm_0_5_0404.exe`, SHA-256
+  `A790623CF0FE337350161C5EA74613C8DC3F419A05F6ECFFBDCB3ADA110B4D86`.
   T386 closes selected-device functional completeness at S29; its retained
   [closure audit](../etc/evidence/t386-s29-functional-closure-audit.md) fixes
   HDC current-gate coverage and transfers board, firmware and physical work.

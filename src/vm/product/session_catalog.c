@@ -27,6 +27,17 @@ static C_INT vm_product_session_catalog_copy(C_CHAR *destination,
     return 1;
 }
 
+static C_INT vm_product_session_catalog_default_cpu_is_valid(const C_CHAR *value)
+{
+    return value == STD_NULL || value[0] == 0 || !STD_STRCMP(value, "8086") ||
+        !STD_STRCMP(value, "80186") || !STD_STRCMP(value, "80286") ||
+        !STD_STRCMP(value, "80386");
+}
+
+static C_INT vm_product_session_catalog_default_fpu_is_valid(const C_CHAR *value)
+{
+    return value == STD_NULL || value[0] == 0 || !STD_STRCMP(value, "none");
+}
 static C_INT vm_product_session_catalog_sha256_is_valid(const C_CHAR *value)
 {
     STD_SIZE_T index;
@@ -187,6 +198,9 @@ static C_INT vm_product_session_catalog_parse(const C_CHAR *directory,
     if (STD_STRCMP(entry->profile, "default-pc-at") &&
         STD_STRCMP(entry->profile, "ibm-5170-model-339") &&
         STD_STRCMP(entry->profile, "compaq-deskpro-386-model-40")) return 0;
+    if (!STD_STRCMP(entry->profile, "default-pc-at") &&
+        (!vm_product_session_catalog_default_cpu_is_valid(entry->cpu) ||
+         !vm_product_session_catalog_default_fpu_is_valid(entry->fpu))) return 0;
     if (!STD_STRCMP(entry->profile, "ibm-5170-model-339") &&
         (entry->cpu[0] != '\0' || entry->fpu[0] != '\0' ||
          entry->memory_bytes != 0u || entry->hard_disk[0] != '\0')) return 0;
