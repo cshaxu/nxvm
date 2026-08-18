@@ -99,7 +99,7 @@ static C_INT legacy_alu_run(legacy_alu_machine *state,
 
 static type_unsigned_32 legacy_alu_mask(type_unsigned_8 width)
 {
-    return width == 8u ? 0xffu : 0xffffu;
+    return width == 8u ? 0xffu : (width == 16u ? 0xffffu : 0xffffffffu);
 }
 
 static type_unsigned_32 legacy_alu_parity(type_unsigned_32 value)
@@ -118,7 +118,8 @@ static type_unsigned_32 legacy_alu_flags(legacy_alu_operation operation,
     type_unsigned_8 width, type_unsigned_32 result, type_unsigned_32 before)
 {
     const type_unsigned_32 mask = legacy_alu_mask(width);
-    const type_unsigned_32 sign = width == 8u ? 0x80u : 0x8000u;
+    const type_unsigned_32 sign = width == 8u ? 0x80u :
+        (width == 16u ? 0x8000u : 0x80000000u);
     type_unsigned_32 flags = before & ~LEGACY_ALU_FLAGS;
     type_unsigned_32 cf = 0u;
     type_unsigned_32 of = 0u;
@@ -161,14 +162,15 @@ static C_INT legacy_alu_binary_case(core_machine_cpu_profile profile,
     static const type_unsigned_8 base[] = {
         0x00u, 0x08u, 0x10u, 0x18u, 0x20u, 0x28u, 0x30u, 0x38u
     };
-    const type_unsigned_32 left = width == 8u ? 0x7fu : 0x7fffu;
+    const type_unsigned_32 left = width == 8u ? 0x7fu :
+        (width == 16u ? 0x7fffu : 0x7fffffffu);
     const type_unsigned_32 right = width == 8u ? 0x01u : 0x0001u;
     const type_unsigned_32 carry = operation == LEGACY_ALU_ADC ||
         operation == LEGACY_ALU_SBB ? 1u : 0u;
     const type_unsigned_32 mask = legacy_alu_mask(width);
     type_unsigned_32 expected;
     type_unsigned_32 observed = 0u;
-    type_unsigned_8 code[5] = { 0u };
+    type_unsigned_8 code[6] = { 0u };
     STD_SIZE_T bytes = 0u;
     legacy_alu_machine state;
     t_cpu after;
@@ -187,6 +189,7 @@ static C_INT legacy_alu_binary_case(core_machine_cpu_profile profile,
         expected = left & right;
     else
         expected = left ^ right;
+    if (width == 32u) code[bytes++] = 0x66u;
     code[bytes++] = (type_unsigned_8)(base[operation] +
         (encoding == 0u ? (width == 8u ? 0u : 1u) :
         (width == 8u ? 2u : 3u)));
@@ -204,7 +207,7 @@ static C_INT legacy_alu_binary_case(core_machine_cpu_profile profile,
         if (memory)
             failed |= core_machine_memory_write(state.machine, LEGACY_ALU_MEMORY,
                 encoding == 0u ? &left : &right,
-                width == 8u ? 1u : 2u) != TYPE_STATUS_OK;
+                width == 8u ? 1u : (width == 16u ? 2u : 4u)) != TYPE_STATUS_OK;
         before = state.machine->executor_cpu;
         failed |= !legacy_alu_run(&state, code, bytes, 0, &after, &diagnostic) ||
             diagnostic.first_fault.valid || after.data.eip != bytes ||
@@ -212,7 +215,7 @@ static C_INT legacy_alu_binary_case(core_machine_cpu_profile profile,
                 width, expected, before.data.eflags);
         if (memory)
             failed |= core_machine_memory_read(state.machine, LEGACY_ALU_MEMORY,
-                &observed, width == 8u ? 1u : 2u) != TYPE_STATUS_OK ||
+                &observed, width == 8u ? 1u : (width == 16u ? 2u : 4u)) != TYPE_STATUS_OK ||
                 observed != (encoding == 0u && operation != LEGACY_ALU_CMP ?
                     expected : (encoding == 0u ? left : right));
         else if (operation != LEGACY_ALU_CMP)
@@ -227,7 +230,8 @@ static C_INT legacy_alu_binary_case(core_machine_cpu_profile profile,
 static C_INT legacy_alu_test_binary_forms(C_VOID)
 {
     static const core_machine_cpu_profile profiles[] = {
-        CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186
+        CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
+        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
     };
     type_unsigned_8 profile_index;
     type_unsigned_8 operation;
@@ -245,13 +249,20 @@ static C_INT legacy_alu_test_binary_forms(C_VOID)
                 (legacy_alu_operation)operation, encoding,
                 width_index == 0u ? 8u : 16u, memory))
             return 0;
+    for (operation = 0u; operation != 8u; ++operation)
+    for (encoding = 0u; encoding != 2u; ++encoding)
+    for (memory = 0u; memory != 2u; ++memory)
+        if (!legacy_alu_binary_case(CORE_MACHINE_CPU_PROFILE_80386,
+                (legacy_alu_operation)operation, encoding, 32u, memory))
+            return 0;
     return 1;
 }
 
 static C_INT legacy_alu_test_accumulator_immediate_forms(C_VOID)
 {
     static const core_machine_cpu_profile profiles[] = {
-        CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186
+        CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
+        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
     };
     static const type_unsigned_8 base[] = {
         0x04u, 0x0cu, 0x14u, 0x1cu, 0x24u, 0x2cu, 0x34u, 0x3cu
@@ -263,9 +274,11 @@ static C_INT legacy_alu_test_accumulator_immediate_forms(C_VOID)
     for (profile_index = 0u; profile_index != sizeof(profiles) / sizeof(profiles[0]);
         ++profile_index)
     for (operation = 0u; operation != 8u; ++operation)
-    for (width_index = 0u; width_index != 2u; ++width_index) {
-        const type_unsigned_8 width = width_index == 0u ? 8u : 16u;
-        const type_unsigned_32 left = width == 8u ? 0x7fu : 0x7fffu;
+    for (width_index = 0u; width_index != 3u; ++width_index) {
+        const type_unsigned_8 width = width_index == 0u ? 8u :
+            (width_index == 1u ? 16u : 32u);
+        const type_unsigned_32 left = width == 8u ? 0x7fu :
+            (width == 16u ? 0x7fffu : 0x7fffffffu);
         const type_unsigned_32 right = 1u;
         const type_unsigned_32 carry = operation == LEGACY_ALU_ADC ||
             operation == LEGACY_ALU_SBB ? 1u : 0u;
@@ -276,17 +289,31 @@ static C_INT legacy_alu_test_accumulator_immediate_forms(C_VOID)
             operation == LEGACY_ALU_CMP ? (left - right - carry) & mask :
             (operation == LEGACY_ALU_OR ? left | right :
             (operation == LEGACY_ALU_AND ? left & right : left ^ right)));
-        type_unsigned_8 code[] = { (type_unsigned_8)(base[operation] +
-            (width == 8u ? 0u : 1u)), 1u, 0u };
-        const STD_SIZE_T bytes = width == 8u ? 2u : 3u;
+        type_unsigned_8 code[6] = { 0u };
+        STD_SIZE_T bytes = 0u;
         legacy_alu_machine state;
         t_cpu before;
         t_cpu after;
         core_machine_cpu_diagnostic diagnostic;
-        C_INT failed = !legacy_alu_prepare(profiles[profile_index], &state);
+        C_INT failed;
 
+        if (width == 32u && profiles[profile_index] != CORE_MACHINE_CPU_PROFILE_80386)
+            continue;
+        if (width == 32u) code[bytes++] = 0x66u;
+        code[bytes++] = (type_unsigned_8)(base[operation] +
+            (width == 8u ? 0u : 1u));
+        code[bytes++] = 1u;
+        if (width != 8u) {
+            code[bytes++] = 0u;
+            if (width == 32u) {
+                code[bytes++] = 0u;
+                code[bytes++] = 0u;
+            }
+        }
+        failed = !legacy_alu_prepare(profiles[profile_index], &state);
         if (!failed) {
-            state.machine->executor_cpu.data.eax = 0xaabb0000u | left;
+            state.machine->executor_cpu.data.eax = width == 32u ? left :
+                (0xaabb0000u | left);
             state.machine->executor_cpu.data.eflags = VCPU_EFLAGS_CF |
                 VCPU_EFLAGS_IF | VCPU_EFLAGS_DF;
             before = state.machine->executor_cpu;
@@ -299,8 +326,7 @@ static C_INT legacy_alu_test_accumulator_immediate_forms(C_VOID)
                 (before.data.eax & 0xffffff00u));
         }
         core_machine_destroy(state.machine);
-        if (failed)
-            return 0;
+        if (failed) return 0;
     }
     return 1;
 }

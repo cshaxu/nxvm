@@ -1039,3 +1039,7 @@ S55 audits direct far CALL/JMP `9Ah`/`EAh`. The control-transfer fixture proves 
 ## S55 Acceptance
 
 S55 closes the bounded direct far-control audit. The control-transfer fixture and direct lexical matrix establish real-mode behavior across all four profiles, selector/target publication, CALL stack preservation, 16:16 and 16:32 pointer layouts, and 80386 attribute boundaries. No production discrepancy was found; Core timing remains nonphysical and T401 remains open.
+
+## S56 Primary ALU
+
+S56 audits the primary ALU map `00h`-`3Dh`: ADD, OR, ADC, SBB, AND, SUB, XOR and CMP in both ModR/M directions and accumulator-immediate forms. The expanded legacy-ALU matrix now executes byte and word forms on 8086, 80186, 80286 and 80386, including register and direct-memory operands, result/FLAGS publication and CMP nonpublication. It additionally executes every 80386 operand-size-prefixed dword ModR/M direction and accumulator-immediate form. `M5:T401:S56:PRIMARY-ALU-PREVIEW-PROFILES:OK` scans all 48 primary encodings on all four profiles, plus 80386 operand/address layouts. The first expanded run exposed only a test assertion read-width error for a dword memory result; CPU EIP and FLAGS already proved the correct execution and the test was corrected. No production discrepancy was found; timing remains nonphysical.

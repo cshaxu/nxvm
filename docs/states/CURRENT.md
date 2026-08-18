@@ -3,6 +3,26 @@
 ## Current Work
 
 **Active: M5 T401.**
+## M5 T401 S56 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner: user; standing approval to continue CPU audit and directly repair confirmed small issues. |
+| Objective | Audit primary ALU `00h`-`3Dh` across all profiles, extend runtime coverage to all profiles and 80386 dword forms, and add direct lexical coverage. |
+| Non-goals | No ALU production change unless the expanded matrix confirms a shared defect; no CPU timing model, Core/VM interface, DeskPro claim or external-source import; no T401 closure. |
+| Reference Baseline | `e6e2a4ce` (S55 P2), T401 ledger, retained Intel references, and `core-machine-legacy-alu-s2-smoke`. |
+| Candidate Proposal | [Four-profile CPU instruction-correctness audit](../proposals/m5-four-profile-cpu-instruction-correctness-audit.md), baseline primary-ALU form batch. |
+| Files And ABI Surface | Legacy ALU smoke, preview smoke, CURRENT and T401 ledger only; test/documentation surface. |
+| Applicable Rules | Shared Core arithmetic ownership unchanged; coding, documentation and execution rules apply. |
+| Verification | Build/run legacy-ALU and preview smokes; documentation governance; diff check. |
+| Expected Markers | Existing legacy-ALU marker and `M5:T401:S56:PRIMARY-ALU-PREVIEW-PROFILES:OK`. |
+| Asset Needs | None. |
+| Reporting Requirements | Record opcode/form/profile/FLAGS evidence, discrepancy result, commits and nonphysical boundary. |
+| Stop Conditions | Transfer any nonlocal arithmetic, fault-delivery or timing repair. |
+| Exit Criteria | All eight ALU operations and six primary form encodings scan across four profiles; runtime covers register/memory directions and 80386 dword forms; ledger records conclusion. |
+| Original Owner Request | Continue CPU audit before later DeskPro L3 work with direct repair of confirmed small issues. |
+| Similar-Issue Sweep | Treat ADD/OR/ADC/SBB/AND/SUB/XOR/CMP as one family across ModR/M directions and accumulator immediates; distinguish byte/word/dword forms and 80386 attributes. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T395 S1 P4 `vm-0-5-0395` /
