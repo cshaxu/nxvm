@@ -2,28 +2,8 @@
 
 ## Current Work
 
-**T397 S2 active.** Perform the explicit task-closure audit for the accepted DeskPro physical-device and firmware-timing ledger; do not manufacture a signal-to-tick contract or expand into L3.
+**Idle.**
 
-## M5 T397 S2 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner continuing global CPU correctness/timing authorization; accepted T397 S1 retains the required latest-task progress row. No exception. |
-| Objective | Reconcile every T397 proposal requirement against the accepted selected-route source/owner/probe ledger, primary-source boundary and focused regressions; close T397 or record the exact remaining implementation receiver. |
-| Non-goals | No new Core/VM behavior, physical scalar, device-service delay, physical-media model, firmware/media import, host clock coupling, local scheduler, ABI change or L3 claim. |
-| Reference Baseline | T397 S1 P2/P3, acceptance audit, T397 proposal, T386/T387/T396 transfers, D3PE source facts and current `vm-0-5-0395` artifact. |
-| Candidate Proposal | [DeskPro 386 physical-device and firmware-timing closure](../proposals/m5-deskpro-386-physical-device-firmware-timing-closure.md). |
-| Files And ABI Surface | Closure evidence, task history, status and retained proposal archive only; no source, artifact or ABI change. |
-| Applicable Rules | Coordinator actual-change review; primary source before bounded observation; Core shared device/time/transaction ownership; VM topology ownership; task-scale closure and documentation governance. |
-| Verification | Inspect actual S1 delivery and every proposal bullet, reconcile all five selected routes and their named receivers, full current-gate and documentation governance. |
-| Expected Markers | T397 S2 task-closure audit only; no runtime or physical-timing marker. |
-| Asset Needs | Read-only provenance/evidence only; no ROM, guest media or external code import. |
-| Reporting Requirements | Record accepted functional behavior, unresolved physical fact, exact receiver and final L3 readiness precondition for each selected route. |
-| Stop Conditions | Stop task closure if any selected route lacks direct source/owner evidence or a named receiver, or if closure would imply physical timing or L3 readiness. |
-| Exit Criteria | Pushed closure audit and status transition to one task-level T397 summary with proposal archive, or a documented remaining T397 implementation receiver. |
-| Original Owner Request | Continue the global CPU correctness/timing audit, repair clear in-scope defects, and preserve the Core/VM boundary. |
-| Similar-Issue Sweep | Reconcile all five ledger routes, every proposal bullet, D3PE source facts, T386/T387/T396 transfers, retained TODOs, local references and L3 proposal prerequisites; no new defect class is in scope. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T395 S1 P4 `vm-0-5-0395` /
@@ -50,7 +30,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T397 S1 | Accepted: finite FDC/HDC/CECG/KBC-NMI/DMA source-owner-probe ledger with 13 focused regressions; no physical scalar admitted. Transfers only a bounded contract probe or closure decision. [Acceptance audit](../etc/evidence/t397-s1-device-timing-acceptance-audit.md). |
+| T397 | Closed: selected functional FDC/HDC/CECG/KBC-NMI/DMA routes and reset/order evidence retained; physical availability, phase and service facts transfer to explicit TODO receivers. Final DeskPro L3 may make only a ready/not-ready decision. [Closure audit](../etc/evidence/t397-s2-task-closure-audit.md). |
 | T396 | Closed: finite Model-40 source/owner, six-domain, reset and callback-order ledger retained; all unsourced physical clock, phase, wait and device/firmware visibility facts transfer to the next DeskPro candidate. No physical scalar or L3 claim. [Closure audit](../etc/evidence/t396-s2-task-closure-audit.md). |
 | T395 | Closed: private 12-to-64 bounded Core route growth with direct allocation/limit rollback, frozen-registration and order/decline proof. Transfers only the queued DeskPro board-level timing receiver. [Closure audit](../etc/evidence/t395-s2-task-closure-audit.md). |
 | T394 | Closed: S1-S7 establish the complete C0 81-key qualification and Core copied-descriptor safety boundary, then transfer physical selection solely to the queued source-backed DeskPro board clock-plan contract. No physical clock or L3 claim. [Closure audit](../etc/evidence/t394-s7-physical-qualification-closure-audit.md). |

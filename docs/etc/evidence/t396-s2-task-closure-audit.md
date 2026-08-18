@@ -27,4 +27,4 @@ T396 closes as a truthful non-publication result. It establishes that a physical
 board scalar cannot be inferred from an accepted CPU qualification key, a
 nominal 80386/16 label, DCLK/TIMCLK facts or generic emulator behavior. The
 neutral deterministic Model-40 plan is retained. The next queue candidate,
-[DeskPro 386 physical-device and firmware-timing closure](../../proposals/m5-deskpro-386-physical-device-firmware-timing-closure.md), receives every unresolved physical availability, wait, phase and device/firmware visibility fact. The later Model-L3 audit remains blocked until that candidate closes; this task makes no L3 claim.
+[DeskPro 386 physical-device and firmware-timing closure](../../history/M5-T397-deskpro-386-physical-device-firmware-timing-closure-proposal.md), receives every unresolved physical availability, wait, phase and device/firmware visibility fact. The later Model-L3 audit remains blocked until that candidate closes; this task makes no L3 claim.

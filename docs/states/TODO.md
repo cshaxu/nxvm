@@ -1,4 +1,4 @@
-# Long-Term Review Ledger
+﻿# Long-Term Review Ledger
 
 This ledger records only open debt and deferred admissions. Each entry carries
 a priority and a bounded admission condition. It does not activate work,
@@ -186,6 +186,7 @@ admissions, not the default definition of NXVM completion.
   8086 rows are a required input to the queued 8088 CPU-profile closure; the
   80186-only rows remain unplanned because M5 selects no 80186 machine.
 
+- [ ] **DeskPro 386 physical-observable device timing (`TODO(Medium)`).** T397 closes the selected logical FDC/DMA2/IRQ6, HDC/IRQ14, CECG, KBC/NMI and D4 routes, but no route has the required primary-backed physical unit/phase, guest-visible checkpoint and qualified retirement conversion. Re-admit only with a selected Model-40 source/measurement contract that names command/DRQ/IRQ/NMI or video checkpoint, reset/cancellation replay, trace containment and an existing Core owner; preserve raw-IMG, copied presentation and deterministic Core timeline behavior. Do not derive a scalar from D3PE signal diagrams, generic AT, PCjs, host time or a new Model-40 scheduler. |
 - [ ] **Unsupported physical timing (`TODO(Medium)`).** The M5 Queue owns the
   three baseline machines and every device capability currently supported by
   the product. Retain only behavior outside that surface here: analog/pin-level
