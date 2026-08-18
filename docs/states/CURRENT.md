@@ -2,28 +2,7 @@
 
 ## Current Work
 
-**Active: M5 T425 S1.**
-
-## M5 T425 S1 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | New |
-| Admission And Approval | Owner: user. Persistent active-thread approval to continue DeskPro 386 L3 hardware gaps, commit, and push to `master` (2026-08-18). Scope: reconcile existing device-phase owners at an explicitly labelled `generic-at`/reference-derived logical layer. |
-| Objective | Close the bounded DeskPro device-phase receiver's existing logical routes: FDC DMA2/IRQ6, HDC IRQ14, KBC IRQ1/NMI, DMA/PIC arbitration, cancellation and reset order. |
-| Non-goals | Compaq physical phase rates, DACK/INTA/BUSRDY waveforms, controller-specific HDC proof, mechanical media timing, CECG timing, or Model-L3 acceptance. |
-| Reference Baseline | `613be07b`; T399 S3 FDC logical order, T407 HDC phase acceptance, T406 KBC cadence, T419 DMA/refresh bridges, and the T371 Core phase owner records. |
-| Candidate Proposal | [DeskPro physical-cycle and phase-timing closure](../proposals/m5-deskpro-physical-cycle-and-phase-timing.md), receiver 2 (`generic-at` except retained reference-derived FDC configuration context). |
-| Files And ABI Surface | Indexed reconciliation evidence, task history, CURRENT/TODO, and no production API or runtime change. |
-| Applicable Rules | Execution and Documentation rules; Architecture/Coding invariants apply as a no-runtime-change owner sweep. Source policy applies to the read-only reference conclusions; no source or asset import. |
-| Verification | Re-run focused FDC, HDC, KBC cadence, PIC lifecycle, and Model-40 FDC smokes; documentation governance and diff check. |
-| Expected Markers | Retained `M5:T399:S3` FDC, `M5:T407:S1:HDC-PHASE:OK`, and `M5:T406:S1` KBC markers; no new runtime marker. |
-| Asset Needs | None. No firmware, media, external source, or `O:\assets` input. |
-| Reporting Requirements | Record each route's evidence tier, owner, logical phase/ack/reset proof and physical transfer; report pushed commit and no L3 claim. |
-| Stop Conditions | Stop if a conclusion needs a measured Compaq phase/rate, vendor firmware/media, a new scheduler, or generic HDC/IDE substitution for the selected Compaq controller. |
-| Exit Criteria | A finite receiver ledger maps every selected phase route to existing proof or a named physical transfer; no route is silently inferred as Compaq physical timing. |
-| Original Owner Request | "好 请你现在开始干活 把deskpro的l3各任务做好" and the active three-tier DeskPro L3 goal. |
-| Similar-Issue Sweep | Inspect FDC, HDC, KBC, PIC/NMI, DMA arbitration, readiness/peripheral callbacks, and both Model-40/5170 compositions for duplicate lifecycle paths. |
+**Idle.**
 
 ## Current Technical Baseline
 
@@ -49,6 +28,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T425 | Closed: reconciled FDC/HDC/KBC/DMA/PIC/NMI logical device phases at declared tiers; physical rates and propagation remain transferred. [Evidence](../etc/evidence/t425-s1-deskpro-device-phase-reconciliation.md). |
 | T424 | Closed: VM Model-40 BYOB now proves synthetic manifest validation, immutable mapped reset-vector execution and cold-reset replay; vendor POST/service/timing corpus remains external. [Evidence](../etc/evidence/t424-s1-model40-byob-reset-lifecycle.md). |
 | T423 | Closed: chargeable D4 external CPU-memory waits now advance through a Core-owned non-retiring completion state before retirement; BWAIT/ISA/async-prefetch physical work remains transferred. [Evidence](../etc/evidence/t423-s1-cpu-board-retirement-wait.md). |
 | T422 | Closed: original D3PE SLOWD*/refresh/auxiliary-PIT channel-2 bridge uses one Core hold route; Model-40 binds it and 5170 remains isolated. [Evidence](../etc/evidence/t422-s1-d4-slowdown-hold.md). |
@@ -56,7 +36,6 @@
 | T420 | Withdrawn as duplicate: T401 S1-S78 already supplies the finite four-profile instruction-correctness audit and T360 S1-S5 supplies the source-timing consumer reconciliation. No second CPU audit path is created. [Closure audit](../etc/evidence/t420-s2-duplicate-audit-withdrawal.md). |
 | T419 | Closed: bounded D4 discrete timing mechanisms retain one Core owner and shared Model-40/IBM-5170 selection; the asynchronous physical producer and phase work transfer without a Model-L3 claim. [Closure audit](../etc/evidence/t419-s7-task-closure-audit.md). |
 | T418 | Closed: generic-AT locality ends at every instruction boundary; physical D4 overlap timing remains transferred. [Closure audit](../etc/evidence/t418-s2-instruction-boundary-locality-closure-audit.md). |
-| T417 | Closed: D4 counter-1 refresh low pulses invalidate generic-AT CPU locality; physical refresh timing and arbitration remain transferred. [Closure audit](../etc/evidence/t417-s2-refresh-locality-closure-audit.md). |
 
 ## Recent Governance
 
