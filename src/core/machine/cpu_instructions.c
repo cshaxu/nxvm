@@ -80,12 +80,12 @@ static C_VOID _kma_write_ref(core_machine_cpu_execution_context *context, type_v
     TYPE_TRACE_CALL_END;
 }
 /* read content from physical */
-static C_VOID _kma_read_physical(core_machine_cpu_execution_context *context, type_unsigned_32 physical, type_virtual_address rdata, type_unsigned_8 byte)
+static C_VOID _kma_read_physical(core_machine_cpu_execution_context *context, type_unsigned_32 physical, type_virtual_address rdata, type_unsigned_8 byte, core_machine_cpu_memory_access_provenance provenance)
 {
     TYPE_TRACE_CALL_BEGIN("_kma_read_physical");
     if (!context->preview_mode && context->transaction != STD_NULL && core_machine_transaction_begin(
             context->transaction, CORE_MACHINE_TRANSACTION_OWNER_CPU,
-            CORE_MACHINE_TRANSACTION_CPU_MEMORY_READ, physical, byte, 0u) !=
+            CORE_MACHINE_TRANSACTION_CPU_MEMORY_READ, physical, byte, provenance) !=
             TYPE_STATUS_OK) {
         TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(physical));
     }
@@ -98,12 +98,12 @@ static C_VOID _kma_read_physical(core_machine_cpu_execution_context *context, ty
     TYPE_TRACE_CALL_END;
 }
 /* write content to physical */
-static C_VOID _kma_write_physical(core_machine_cpu_execution_context *context, type_unsigned_32 physical, type_virtual_address rdata, type_unsigned_8 byte)
+static C_VOID _kma_write_physical(core_machine_cpu_execution_context *context, type_unsigned_32 physical, type_virtual_address rdata, type_unsigned_8 byte, core_machine_cpu_memory_access_provenance provenance)
 {
     TYPE_TRACE_CALL_BEGIN("_kma_write_physical");
     if (context->transaction != STD_NULL && core_machine_transaction_begin(
             context->transaction, CORE_MACHINE_TRANSACTION_OWNER_CPU,
-            CORE_MACHINE_TRANSACTION_CPU_MEMORY_WRITE, physical, byte, 0u) !=
+            CORE_MACHINE_TRANSACTION_CPU_MEMORY_WRITE, physical, byte, provenance) !=
             TYPE_STATUS_OK) {
         TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(physical));
     }
@@ -140,7 +140,7 @@ static C_VOID _kma_prepare_physical_linear(core_machine_cpu_execution_context *c
         return;
     }
     ppde = _GetCR3_Base + _GetLinear_Dir(linear) * 4;
-    TYPE_TRACE_CHECK_RETURN(_kma_read_physical(context, ppde, TYPE_REFERENCE_OF(cpde), 4));
+    TYPE_TRACE_CHECK_RETURN(_kma_read_physical(context, ppde, TYPE_REFERENCE_OF(cpde), 4, CORE_MACHINE_CPU_MEMORY_ACCESS_PAGE_TABLE_READ));
     if (!_IsPageEntryPresent(cpde))
     {
         TYPE_TRACE_BLOCK_BEGIN("!PageDirEntryPresent");
@@ -171,7 +171,7 @@ static C_VOID _kma_prepare_physical_linear(core_machine_cpu_execution_context *c
         TYPE_TRACE_BLOCK_END;
     }
     ppte = _GetPageEntry_Base(cpde) + _GetLinear_Page(linear) * 4;
-    TYPE_TRACE_CHECK_RETURN(_kma_read_physical(context, ppte, TYPE_REFERENCE_OF(cpte), 4));
+    TYPE_TRACE_CHECK_RETURN(_kma_read_physical(context, ppte, TYPE_REFERENCE_OF(cpte), 4, CORE_MACHINE_CPU_MEMORY_ACCESS_PAGE_TABLE_READ));
     if (!_IsPageEntryPresent(cpte))
     {
         TYPE_TRACE_BLOCK_BEGIN("!PageTabEntryPresent");
@@ -221,12 +221,12 @@ static C_VOID _kma_commit_physical_linear(core_machine_cpu_execution_context *co
     }
     _SetPageEntry_A(translation->cpde);
     TYPE_TRACE_CHECK_RETURN(_kma_write_physical(context, translation->ppde,
-        TYPE_REFERENCE_OF(translation->cpde), 4));
+        TYPE_REFERENCE_OF(translation->cpde), 4, CORE_MACHINE_CPU_MEMORY_ACCESS_PAGE_TABLE_WRITE));
     _SetPageEntry_A(translation->cpte);
     if (write)
         _SetPageEntry_D(translation->cpte);
     TYPE_TRACE_CHECK_RETURN(_kma_write_physical(context, translation->ppte,
-        TYPE_REFERENCE_OF(translation->cpte), 4));
+        TYPE_REFERENCE_OF(translation->cpte), 4, CORE_MACHINE_CPU_MEMORY_ACCESS_PAGE_TABLE_WRITE));
     TYPE_TRACE_CALL_END;
 }
 
@@ -467,8 +467,8 @@ static C_VOID _kma_read_linear(core_machine_cpu_execution_context *context, type
             phy1 = translation1.physical;
             phy2 = translation2.physical;
         }
-        TYPE_TRACE_CHECK_RETURN(_kma_read_physical(context, phy1, rdata, byte1));
-        TYPE_TRACE_CHECK_RETURN(_kma_read_physical(context, phy2, rdata + byte1, byte2));
+        TYPE_TRACE_CHECK_RETURN(_kma_read_physical(context, phy1, rdata, byte1, context->memory_access_provenance));
+        TYPE_TRACE_CHECK_RETURN(_kma_read_physical(context, phy2, rdata + byte1, byte2, context->memory_access_provenance));
         TYPE_TRACE_BLOCK_END;
     }
     else
@@ -476,7 +476,7 @@ static C_VOID _kma_read_linear(core_machine_cpu_execution_context *context, type
         TYPE_TRACE_BLOCK_BEGIN("Linear_Offset(<=PageSize)");
         byte1 = byte;
         TYPE_TRACE_CHECK_RETURN(phy1 = _kma_physical_linear(context, linear, byte1, 0, vpl));
-        TYPE_TRACE_CHECK_RETURN(_kma_read_physical(context, phy1, rdata, byte1));
+        TYPE_TRACE_CHECK_RETURN(_kma_read_physical(context, phy1, rdata, byte1, context->memory_access_provenance));
         TYPE_TRACE_BLOCK_END;
     }
     TYPE_TRACE_CALL_END;
@@ -506,8 +506,8 @@ static C_VOID _kma_write_linear(core_machine_cpu_execution_context *context, typ
             phy1 = translation1.physical;
             phy2 = translation2.physical;
         }
-        TYPE_TRACE_CHECK_RETURN(_kma_write_physical(context, phy1, rdata, byte1));
-        TYPE_TRACE_CHECK_RETURN(_kma_write_physical(context, phy2, rdata + byte1, byte2));
+        TYPE_TRACE_CHECK_RETURN(_kma_write_physical(context, phy1, rdata, byte1, context->memory_access_provenance));
+        TYPE_TRACE_CHECK_RETURN(_kma_write_physical(context, phy2, rdata + byte1, byte2, context->memory_access_provenance));
         TYPE_TRACE_BLOCK_END;
     }
     else
@@ -515,7 +515,7 @@ static C_VOID _kma_write_linear(core_machine_cpu_execution_context *context, typ
         TYPE_TRACE_BLOCK_BEGIN("Linear_Offset(<=PageSize)");
         byte1 = byte;
         TYPE_TRACE_CHECK_RETURN(phy1 = _kma_physical_linear(context, linear, byte1, 1, vpl));
-        TYPE_TRACE_CHECK_RETURN(_kma_write_physical(context, phy1, rdata, byte1));
+        TYPE_TRACE_CHECK_RETURN(_kma_write_physical(context, phy1, rdata, byte1, context->memory_access_provenance));
         TYPE_TRACE_BLOCK_END;
     }
     TYPE_TRACE_CALL_END;
@@ -1272,9 +1272,13 @@ static C_VOID _s_read_es(core_machine_cpu_execution_context *context, type_unsig
 }
 static C_VOID _s_read_cs(core_machine_cpu_execution_context *context, type_unsigned_32 offset, type_virtual_address rdata, type_unsigned_8 byte)
 {
+    core_machine_cpu_memory_access_provenance previous =
+        context->memory_access_provenance;
     TYPE_TRACE_CALL_BEGIN("_s_read_cs");
-    TYPE_TRACE_CHECK_RETURN(_kma_read_logical(context, &cpu_state.data.cs,
-        offset, rdata, byte, _GetCPL, 1));
+    context->memory_access_provenance = CORE_MACHINE_CPU_MEMORY_ACCESS_INSTRUCTION_FETCH;
+    _kma_read_logical(context, &cpu_state.data.cs, offset, rdata, byte,
+        _GetCPL, 1);
+    context->memory_access_provenance = previous;
     TYPE_TRACE_CALL_END;
 }
 static C_VOID _s_read_ss(core_machine_cpu_execution_context *context, type_unsigned_32 offset, type_virtual_address rdata, type_unsigned_8 byte)
@@ -17765,8 +17769,10 @@ static C_VOID ExecInit(core_machine_cpu_execution_context *context)
     instruction_state.data.oldcpu = cpu_state;
     instruction_state.data.except = TYPE_ZERO_32;
     instruction_state.data.excode = TYPE_ZERO_32;
+    context->memory_access_provenance = CORE_MACHINE_CPU_MEMORY_ACCESS_INSTRUCTION_PREFETCH;
     _kma_read_linear(context, instruction_state.data.linear,
         (type_virtual_address)instruction_state.data.opcodes, 15, _GetCPL, 1);
+    context->memory_access_provenance = CORE_MACHINE_CPU_MEMORY_ACCESS_DATA;
     if (instruction_state.data.except) {
         instruction_state.data.oplen = 0;
     }

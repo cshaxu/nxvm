@@ -36,6 +36,38 @@ typedef struct paging_machine {
     core_machine *machine;
 } paging_machine;
 
+typedef struct paging_trace_probe {
+    core_machine_trace_event events[4096];
+    type_unsigned_32 count;
+} paging_trace_probe;
+
+static C_VOID paging_trace(C_VOID *opaque, const core_machine_trace_event *event)
+{
+    paging_trace_probe *probe = (paging_trace_probe *)opaque;
+
+    if (probe != STD_NULL && event != STD_NULL && probe->count < 4096u) {
+        probe->events[probe->count++] = *event;
+    }
+}
+
+static C_INT paging_has_provenance_pair(const paging_trace_probe *probe,
+    core_machine_transaction_kind kind,
+    core_machine_cpu_memory_access_provenance provenance)
+{
+    type_unsigned_32 index;
+
+    if (probe == STD_NULL) return 0;
+    for (index = 0u; index + 1u < probe->count; ++index) {
+        if (probe->events[index].type == CORE_MACHINE_TRACE_TRANSACTION_BEGIN &&
+            probe->events[index + 1u].type == CORE_MACHINE_TRACE_TRANSACTION_COMMIT &&
+            (probe->events[index].detail & 0xffu) ==
+                CORE_MACHINE_TRANSACTION_OWNER_CPU &&
+            ((probe->events[index].detail >> 8u) & 0xffu) == kind &&
+            (probe->events[index].detail >> 16u) == provenance) return 1;
+    }
+    return 0;
+}
+
 static C_VOID paging_reset(C_VOID *opaque)
 {
     paging_machine *state = (paging_machine *)opaque;
@@ -266,15 +298,20 @@ static C_INT paging_test_valid_path(C_VOID)
     type_unsigned_32 pre_ecx = 0u;
     type_unsigned_32 pre_edx = 0u;
     t_cpu cpu;
+    paging_trace_probe trace = {{{0}}, 0u};
+    const core_machine_trace_provider trace_provider = { paging_trace, &trace };
     C_INT ran;
     C_INT registers;
     C_INT data_ok;
     C_INT entries_read;
     C_INT entries_ok;
+    C_INT provenance_ok;
     C_INT reset_ok;
     C_INT failed = !paging_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
 
     if (!failed) {
+        failed |= core_machine_set_trace_provider(state.machine,
+            &trace_provider) != TYPE_STATUS_OK;
         failed |= !paging_install_tables(state.machine, code_entry, data_entry,
             stack_entry);
         failed |= !paging_write_bootstrap(state.machine, protected_code,
@@ -303,11 +340,17 @@ static C_INT paging_test_valid_path(C_VOID)
                 (TEST_PAGE_ACCESSED | TEST_PAGE_DIRTY) &&
             (pte_stack & (TEST_PAGE_ACCESSED | TEST_PAGE_DIRTY)) ==
                 (TEST_PAGE_ACCESSED | TEST_PAGE_DIRTY);
+        provenance_ok = paging_has_provenance_pair(&trace,
+                CORE_MACHINE_TRANSACTION_CPU_MEMORY_READ,
+                CORE_MACHINE_CPU_MEMORY_ACCESS_PAGE_TABLE_READ) &&
+            paging_has_provenance_pair(&trace,
+                CORE_MACHINE_TRANSACTION_CPU_MEMORY_WRITE,
+                CORE_MACHINE_CPU_MEMORY_ACCESS_PAGE_TABLE_WRITE);
         reset_ok = core_machine_reset(state.machine) == TYPE_STATUS_OK &&
             ((cpu = test_core_machine_fixture_capture_cpu_after_run(state.machine)),
             cpu.data.cr0 == 0u && cpu.data.cr2 == 0u && cpu.data.cr3 == 0u);
         failed |= !ran || !registers || !data_ok || !entries_read ||
-            !entries_ok || !reset_ok;
+            !entries_ok || !provenance_ok || !reset_ok;
         if (failed) {
             STD_FPRINTF(STD_STDERR,
                 "T258 valid result=%d/%d fault=%d/%08x cr0=%08x cr2=%08x cr3=%08x ecx=%08x edx=%08x data=%04x pde=%08x pte=%08x/%08x/%08x\n",
@@ -316,8 +359,9 @@ static C_INT paging_test_valid_path(C_VOID)
                 pre_cr3, pre_ecx, pre_edx, data, pde, pte_code, pte_data,
                 pte_stack);
             STD_FPRINTF(STD_STDERR,
-                "T258 valid checks ran=%d regs=%d data=%d reads=%d entries=%d reset=%d\n",
-                ran, registers, data_ok, entries_read, entries_ok, reset_ok);
+                "T258 valid checks ran=%d regs=%d data=%d reads=%d entries=%d provenance=%d reset=%d\n",
+                ran, registers, data_ok, entries_read, entries_ok, provenance_ok,
+                reset_ok);
         }
     }
     core_machine_destroy(state.machine);

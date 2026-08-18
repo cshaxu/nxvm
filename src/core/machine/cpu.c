@@ -40,6 +40,7 @@ C_VOID core_machine_cpu_execution_context_initialize(
     context->debug_rf_before = TYPE_FALSE;
     context->debug_trap_cause = TYPE_ZERO_32;
     context->preview_mode = TYPE_FALSE;
+    context->memory_access_provenance = CORE_MACHINE_CPU_MEMORY_ACCESS_DATA;
     context->cpu_profile = CORE_MACHINE_CPU_PROFILE_80386;
     context->fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE;
     context->cpu_80386_cr_mov_ignores_mod = TYPE_FALSE;

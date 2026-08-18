@@ -116,6 +116,17 @@ typedef enum core_machine_cpu_instruction_space {
     CORE_MACHINE_CPU_INSTRUCTION_FPU_ESCAPE
 } core_machine_cpu_instruction_space;
 
+/* CPU accesses share one transaction path. This label preserves their
+ * architectural source for board-timing consumers without asserting that a
+ * logical access is already an external bus cycle. */
+typedef enum core_machine_cpu_memory_access_provenance {
+    CORE_MACHINE_CPU_MEMORY_ACCESS_DATA = 0,
+    CORE_MACHINE_CPU_MEMORY_ACCESS_INSTRUCTION_FETCH,
+    CORE_MACHINE_CPU_MEMORY_ACCESS_INSTRUCTION_PREFETCH,
+    CORE_MACHINE_CPU_MEMORY_ACCESS_PAGE_TABLE_READ,
+    CORE_MACHINE_CPU_MEMORY_ACCESS_PAGE_TABLE_WRITE
+} core_machine_cpu_memory_access_provenance;
+
 typedef struct core_machine_cpu_instruction_metadata {
     core_machine_cpu_profile minimum_cpu;
     core_machine_fpu_profile minimum_fpu;
@@ -179,6 +190,7 @@ struct core_machine_cpu_execution_context {
     /* A temporary CPU-owned lexical fetch may validate bytes without any
      * architectural, transaction, trace, or diagnostic publication. */
     type_bool preview_mode;
+    core_machine_cpu_memory_access_provenance memory_access_provenance;
     core_machine_cpu_profile cpu_profile;
     core_machine_fpu_profile fpu_profile;
     type_bool cpu_80386_cr_mov_ignores_mod;

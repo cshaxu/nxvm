@@ -1,5 +1,6 @@
 #include "type.h"
 
+#include "core/machine/cpu_instructions.h"
 #include "core/machine/dma.h"
 #include "core/machine/machine_interface.h"
 #include "core/machine/memory.h"
@@ -8,7 +9,7 @@
 #include "../support/core_machine_cpu_fixture.h"
 
 typedef struct transaction_probe {
-    core_machine_trace_event events[64];
+    core_machine_trace_event events[256];
     type_unsigned_32 count;
     type_unsigned_32 port_value;
 } transaction_probe;
@@ -30,7 +31,7 @@ static C_VOID transaction_trace(C_VOID *opaque,
 {
     transaction_probe *probe = (transaction_probe *)opaque;
 
-    if (probe != STD_NULL && probe->count < 64u) {
+    if (probe != STD_NULL && probe->count < 256u) {
         probe->events[probe->count++] = *event;
     }
 }
@@ -102,6 +103,22 @@ static C_INT transaction_has_pair(const transaction_probe *probe,
     return 0;
 }
 
+static C_INT transaction_has_provenance_pair(const transaction_probe *probe,
+    core_machine_cpu_memory_access_provenance provenance)
+{
+    type_unsigned_32 index;
+
+    for (index = 0u; index + 1u < probe->count; ++index) {
+        if (probe->events[index].type == CORE_MACHINE_TRACE_TRANSACTION_BEGIN &&
+            probe->events[index + 1u].type == CORE_MACHINE_TRACE_TRANSACTION_COMMIT &&
+            (probe->events[index].detail & 0xffu) == CORE_MACHINE_TRANSACTION_OWNER_CPU &&
+            ((probe->events[index].detail >> 8u) & 0xffu) ==
+                CORE_MACHINE_TRANSACTION_CPU_MEMORY_READ &&
+            (probe->events[index].detail >> 16u) == provenance) return 1;
+    }
+    return 0;
+}
+
 static C_VOID transaction_dma_program_channel2(t_port *port)
 {
     core_machine_port_write(port, 0x000cu, 0u);
@@ -167,6 +184,12 @@ C_INT main(C_VOID)
         CORE_MACHINE_TRACE_TRANSACTION_COMMIT,
         CORE_MACHINE_TRANSACTION_OWNER_CPU,
         CORE_MACHINE_TRANSACTION_CPU_PORT_WRITE);
+    failed |= !transaction_has_provenance_pair(&probe,
+        CORE_MACHINE_CPU_MEMORY_ACCESS_INSTRUCTION_PREFETCH);
+    failed |= !transaction_has_provenance_pair(&probe,
+        CORE_MACHINE_CPU_MEMORY_ACCESS_INSTRUCTION_FETCH);
+    failed |= !transaction_has_provenance_pair(&probe,
+        CORE_MACHINE_CPU_MEMORY_ACCESS_DATA);
 
     core_machine_transaction_initialize(&transaction);
     core_machine_transaction_bind_trace(&transaction, transaction_state_trace,
@@ -213,5 +236,6 @@ C_INT main(C_VOID)
     core_machine_destroy(machine);
     if (failed != 0) return 1;
     STD_PRINTF("M5:T354:S2:TRANSACTION:OK\n");
+    STD_PRINTF("M5:T409:S1:CPU-MEMORY-PROVENANCE:OK\n");
     return 0;
 }
