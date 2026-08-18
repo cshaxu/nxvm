@@ -3,6 +3,26 @@
 ## Current Work
 
 **Active: M5 T401.**
+## M5 T401 S62 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner: user; standing approval to continue CPU audit and directly repair confirmed small issues. |
+| Objective | Independently audit 80386 SHLD/SHRD `0F A4h/A5h/ACh/ADh` immediate and CL-count forms. |
+| Non-goals | No CPU timing model, Core/VM interface, DeskPro claim or external-source import; no T401 closure. |
+| Reference Baseline | `3f24a324` (S61 P2), T401 ledger, retained Intel 80386 PRM, and `core-machine-double-shift-smoke`. |
+| Candidate Proposal | [Four-profile CPU instruction-correctness audit](../proposals/m5-four-profile-cpu-instruction-correctness-audit.md), 80386 secondary-shift batch. |
+| Files And ABI Surface | Double-shift smoke, preview smoke, CURRENT and T401 ledger only; test/documentation surface. |
+| Applicable Rules | Shared CPU shift ownership unchanged; coding, documentation and execution rules apply. |
+| Verification | Build/run double-shift and preview smokes; documentation governance; diff check. |
+| Expected Markers | `M5:T401:S62:DOUBLE-SHIFT-PROFILES:OK` and `M5:T401:S62:DOUBLE-SHIFT-PREVIEW-PROFILES:OK`. |
+| Asset Needs | None. |
+| Reporting Requirements | Record count/form/profile evidence, discrepancy result, commits and nonphysical boundary. |
+| Stop Conditions | Transfer any nonlocal shift, fault-delivery or timing repair. |
+| Exit Criteria | SHLD/SHRD immediate and CL forms cover register/memory, attributes, 80186/80286 rejection and lexical layouts while 8086 retains POP CS. |
+| Original Owner Request | Continue CPU audit before later DeskPro L3 work with direct repair of confirmed small issues. |
+| Similar-Issue Sweep | Treat left/right, immediate/CL, register/memory, count-zero, attributes, old-profile rejection, LOCK and fault atomicity together. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T395 S1 P4 `vm-0-5-0395` /

@@ -237,5 +237,6 @@ C_INT main(C_VOID)
 {
     if(!shift_test_forms()||!shift_test_count_zero()||!shift_test_profile()||
         !shift_test_access_failure())return 1;
-    STD_PRINTF("M5:T310:S6:DOUBLE-SHIFT:OK\n");return 0;
+    STD_PRINTF("M5:T310:S6:DOUBLE-SHIFT:OK\n");
+    STD_PRINTF("M5:T401:S62:DOUBLE-SHIFT-PROFILES:OK\n");return 0;
 }

@@ -1112,3 +1112,14 @@ discrepancy was found. Timing remains nonphysical.
 ## S61 Acceptance
 
 S61 closes the bounded 80386 bit-test and bit-modify audit. Runtime and preview matrices establish register/immediate indexes, memory and register destinations, read-only/mutating behavior, 80386 attributes, reserved BA extensions, 80186/80286 rejection and the retained 8086 POP CS distinction. Both focused smokes and documentation governance pass; no production discrepancy was found, timing remains nonphysical, and T401 remains open.
+
+## S62 Double Shifts
+
+S62 independently audits 80386 SHLD/SHRD `0F A4h/A5h/ACh/ADh`. The retained
+fixture executes both directions, immediate and CL counts, register and memory
+destinations, 16/32-bit operands, 16/32-bit addressing, all defined positive
+counts, count-zero preservation, 80186/80286 #UD and protected access-fault
+nonpublication. `M5:T401:S62:DOUBLE-SHIFT-PREVIEW-PROFILES:OK` adds all four
+opcode layouts, immediate width, memory displacement, 80386 attributes and
+80186/80286 unavailability. 8086 remains distinct because its `0Fh` is POP
+CS. No production discrepancy was found; timing remains nonphysical.
