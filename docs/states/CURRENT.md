@@ -3,6 +3,26 @@
 ## Current Work
 
 **Active: M5 T402.**
+## M5 T402 S2 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner: user; continuing authorization to complete DeskPro 386 hardware gaps with original-source, reference-derived, then labelled generic tiers; normal commits, pushes and stale summary rotation are authorized. |
+| Objective | Independently audit T402's D4 functional matrix, P1 actual source surface, proof and transfer ledger; close T402 only if every selected functional member is accounted for and physical timing remains explicit. |
+| Non-goals | No code expansion, physical D4/cache/DRAM/ISA timing claim, L3 claim, firmware/media import, generic AT substitution or Core/VM ABI change. |
+| Reference Baseline | T402 S1 P1 `1c41bc53`, acceptance P2 `c022063d`, indexed T402 S1 evidence, D3PE-first task proposal and retained T386 D4 records. |
+| Candidate Proposal | [DeskPro D4 memory-controller reconciliation](../proposals/m5-deskpro-386-d4-memory-controller-reconciliation.md). |
+| Files And ABI Surface | T402 closure-audit evidence, evidence index, T402 history/proposal/status/Queue only; no production source or public interface is expected. |
+| Applicable Rules | Verify actual changed source against the D4 matrix; retain source tiers and physical transfer; task closure needs a complete ledger and independent audit. |
+| Verification | Static owner/matrix sweep; actual Git P1/P2 review; documentation governance; recheck recorded full-current and focused results; diff review. |
+| Expected Markers | `M5:T402:S2:CLOSURE-AUDIT` and an explicit functional-only closure/no-L3 statement. |
+| Asset Needs | No assets; prior read-only approved D3PE and local references are cited only through retained evidence. |
+| Reporting Requirements | Report closure decision, all selected functional dispositions, source tiers, verification and each retained physical receiver. |
+| Stop Conditions | Do not close if a selected functional matrix member lacks a disposition/proof, if the P1 source differs from evidence, or if a physical claim is implicit. |
+| Exit Criteria | Independent review proves every selected functional member is conforming, fixed, Tier-2-derived or transferred; closure records no physical timing or L3 completion. |
+| Original Owner Request | Implement DeskPro 386 L3 timing and hardware gaps using original sources, reference implementations, then labelled generic fallback; do not stop merely because physical hardware is unavailable. |
+| Similar-Issue Sweep | Re-read every T402 matrix row and its Model-40 control/mapping/parity owner, focused regressions, evidence/index/history/Queue/current status and physical transfer language. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T395 S1 P4 `vm-0-5-0395` /
