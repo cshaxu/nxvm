@@ -698,3 +698,7 @@ S22 audits C2h/C3h near return. Intel's 80386 Programmer's Reference Manual RET 
 M5:T401:S22:NEAR-RETURN-PROFILES:OK retains all-four-profile real-mode RET and RET-immediate stack/IP proof, plus 80386 16/32-width cleanup and target-fault atomicity. M5:T401:S22:NEAR-RETURN-PREVIEW-PROFILES:OK adds the matching four-profile lexical matrix with 80386 66h forms.
 
 No production discrepancy was found. This remains CPU semantic/nonphysical timing-baseline evidence only and does not establish physical timing, DeskPro L3 or a Core/VM interface change.
+
+## S22 Acceptance
+
+S22 closes near return C2h/C3h coverage with focused runtime and preview proof across all four profiles, including immediate cleanup, 80386 width forms and atomic fault boundary. Core timing remains explicitly nonphysical. S23 owns far return CAh/CBh.
