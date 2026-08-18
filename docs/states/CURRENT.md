@@ -3,6 +3,26 @@
 ## Current Work
 
 **Active: M5 T401.**
+## M5 T401 S63 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner: user; standing approval to continue CPU audit and directly repair confirmed small issues. |
+| Objective | Independently audit 80386 BSF/BSR `0F BCh/BDh` register and memory forms. |
+| Non-goals | No CPU timing model, Core/VM interface, DeskPro claim or external-source import; no T401 closure. |
+| Reference Baseline | `f8005a37` (S62 P2), T401 ledger, retained Intel 80386 PRM, and `core-machine-bit-scan-smoke`. |
+| Candidate Proposal | [Four-profile CPU instruction-correctness audit](../proposals/m5-four-profile-cpu-instruction-correctness-audit.md), 80386 secondary-scan batch. |
+| Files And ABI Surface | Bit-scan smoke, preview smoke, CURRENT and T401 ledger only; test/documentation surface. |
+| Applicable Rules | Shared CPU scan ownership unchanged; coding, documentation and execution rules apply. |
+| Verification | Build/run bit-scan and preview smokes; documentation governance; diff check. |
+| Expected Markers | `M5:T401:S63:BIT-SCAN-PROFILES:OK` and `M5:T401:S63:BIT-SCAN-PREVIEW-PROFILES:OK`. |
+| Asset Needs | None. |
+| Reporting Requirements | Record direction/form/profile evidence, discrepancy result, commits and nonphysical boundary. |
+| Stop Conditions | Transfer any nonlocal scan, fault-delivery or timing repair. |
+| Exit Criteria | BSF/BSR register/memory, zero/nonzero, attributes and old-profile rejection have runtime/lexical evidence while 8086 retains POP CS. |
+| Original Owner Request | Continue CPU audit before later DeskPro L3 work with direct repair of confirmed small issues. |
+| Similar-Issue Sweep | Treat forward/reverse, zero/nonzero, register/memory, attributes, old-profile rejection and fault atomicity together. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T395 S1 P4 `vm-0-5-0395` /

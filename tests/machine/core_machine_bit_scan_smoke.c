@@ -157,5 +157,6 @@ static C_INT scan_test_read_failure(C_VOID)
 C_INT main(C_VOID)
 {
     if(!scan_test_forms()||!scan_test_profile()||!scan_test_read_failure())return 1;
-    STD_PRINTF("M5:T310:S7:BIT-SCAN:OK\n");return 0;
+    STD_PRINTF("M5:T310:S7:BIT-SCAN:OK\n");
+    STD_PRINTF("M5:T401:S63:BIT-SCAN-PROFILES:OK\n");return 0;
 }

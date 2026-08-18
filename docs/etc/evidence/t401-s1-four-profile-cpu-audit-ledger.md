@@ -1126,3 +1126,13 @@ CS. No production discrepancy was found; timing remains nonphysical.
 ## S62 Acceptance
 
 S62 closes the bounded 80386 double-shift audit. Runtime and preview matrices establish SHLD/SHRD direction, immediate/CL counts, zero-count preservation, register/memory destinations, 80386 attributes, 80186/80286 rejection and the retained 8086 POP CS distinction. Both focused smokes and documentation governance pass; no production discrepancy was found, timing remains nonphysical, and T401 remains open.
+
+## S63 Bit Scan
+
+S63 independently audits 80386 BSF/BSR `0F BCh/BDh`. The retained fixture
+executes forward/reverse scans, zero and nonzero operands, register and memory
+sources, 16/32-bit operands and addressing, 80186/80286 #UD and protected
+read-fault nonpublication. `M5:T401:S63:BIT-SCAN-PREVIEW-PROFILES:OK` adds both
+opcode register/memory layouts, 80386 attributes and 80186/80286
+unavailability. 8086 remains distinct because its `0Fh` is POP CS. No
+production discrepancy was found; timing remains nonphysical.
