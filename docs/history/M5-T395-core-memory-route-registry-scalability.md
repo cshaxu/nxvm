@@ -15,3 +15,5 @@ records every production-path hit and focused proof. No Core/VM ABI or machine
 mapping semantics changed.
 
 S1 P3 adds a direct deterministic allocation-failure injection at the private route-registry growth boundary: a failed thirteenth registration retains the original twelve providers and capacity, and the retry grows successfully. No Core/VM interface changed.
+
+S1 P4 builds the required current developer artifact `vm-0-5-0395` / `build/output/nxvm_0_5_0395.exe` from the complete source graph, SHA-256 `5DBD4B50762BAD5E393CD8EFA8A0CB7E06FD9A1304A44F8993CC64915A99D4A6` (3,180,342 bytes).

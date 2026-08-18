@@ -26,9 +26,9 @@
 | Similar-Issue Sweep | Sweep all Core memory device-provider definitions, registration callers, fixed capacity assumptions, composition routes and tests. |
 ## Current Technical Baseline
 
-- **Current developer artifact:** T394 S5 P1 `vm-0-5-0394` /
-  `build/output/nxvm_0_5_0394.exe`, SHA-256
-  `7277DB885277BF54077B100055B2E9481C0DFA629769695AC3764CF8AEA11264`.
+- **Current developer artifact:** T395 S1 P4 `vm-0-5-0395` /
+  `build/output/nxvm_0_5_0395.exe`, SHA-256
+  `5DBD4B50762BAD5E393CD8EFA8A0CB7E06FD9A1304A44F8993CC64915A99D4A6`.
   T386 closes selected-device functional completeness at S29; its retained
   [closure audit](../etc/evidence/t386-s29-functional-closure-audit.md) fixes
   HDC current-gate coverage and transfers board, firmware and physical work.

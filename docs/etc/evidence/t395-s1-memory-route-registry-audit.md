@@ -44,7 +44,9 @@ write observer is published.
 - `ctest --test-dir build/mingw-gcc-x64 -R "core-machine-ega-registration-transaction-smoke|vm-model40-private-composition-s7-smoke|vm-model40-byob-s20-smoke|core-machine-checked-memory-smoke" --output-on-failure`
   passed: 4/4.
 - The owned route test emitted `M5:T395:S1:ROUTE-REGISTRY-SCALABILITY:OK`.
-- Full `current-gates-gcc` remains required before acceptance.
+- Current task artifact: `vm-0-5-0395` / `build/output/nxvm_0_5_0395.exe`, SHA-256
+  `5DBD4B50762BAD5E393CD8EFA8A0CB7E06FD9A1304A44F8993CC64915A99D4A6` (3,180,342 bytes).
+- Full `current-gates-gcc` passed, including `M5:T197:S1:CURRENT-ARTIFACT-TARGET:vm-0-5-0395:OK` and documentation governance.
 
 No asset, ROM, firmware, media, external source, board timing, physical clock,
 or L3 claim is made by this S.
