@@ -3,26 +3,6 @@
 ## Current Work
 
 **Active: M5 T401.**
-## M5 T401 S77 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner: user; standing approval to continue the complete CPU audit before DeskPro L3 work and repair confirmed small in-scope issues. |
-| Objective | Produce the finite four-profile concrete decoded-form Intel requirement-to-source matrix required by the T401 proposal, reusing verified inventories only where they expose every required row and current owner. |
-| Non-goals | No manual/source fabrication, invented timing, physical CPU/board/L3 claim, third-party import, broad refactor, or whole-T401 closure before the matrix is independently reviewed. |
-| Reference Baseline | `2e6b7a60` (S76 P2), S76 independent review, T401 proposal/S1 universe, T359/T360/T363 timing inventories and current source/test graph. |
-| Candidate Proposal | [Four-profile CPU instruction-correctness audit](../proposals/m5-four-profile-cpu-instruction-correctness-audit.md), concrete-form requirement matrix. |
-| Files And ABI Surface | T401 ledger or indexed S77 matrix and CURRENT; production/test files only for a matrix-discovered bounded defect, with no public ABI change. |
-| Applicable Rules | Each row must state profile/form, Intel manual locus, current owner, timing disposition, proof, conclusion and repair/transfer; aggregation is valid only with full finite membership. |
-| Verification | Compare all primary/`0F`/FPU/prefix map members with T359/T363 inventories and current metadata/classifier source; audit row cardinality/membership and current evidence links; documentation governance and diff check; full gate for production change. |
-| Expected Markers | S1/S3/S4/S72/S73 finite-map markers plus an S77 concrete-form matrix cardinality/result record. |
-| Asset Needs | None; retained Intel manual references are read-only, and no ROM/media or external source code is imported. |
-| Reporting Requirements | Report matrix universe/cardinality, every aggregation rule, row disposition and any exact missing receiver; distinguish original manual, reference-derived and generic boundaries. |
-| Stop Conditions | Admit a bounded source/test repair for a confirmed gap; transfer an unresolvable manual/context class without claiming it is closed. |
-| Exit Criteria | Every selected decoded form has a durable row or explicit finite aggregation with the proposal-required fields, or every missing class has one concrete receiver. |
-| Original Owner Request | Complete the CPU audit honestly before DeskPro L3 work, using original material first, reference implementations second and generic structures only as labelled fallback. |
-| Similar-Issue Sweep | Reconcile primary, secondary, FPU/WAIT, prefix and four profile gates together, including valid, invalid and external dispositions. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T395 S1 P4 `vm-0-5-0395` /
@@ -49,7 +29,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T401 S76 | Closure review: map/family/timing evidence is sound but does not yet meet the proposal's concrete-form Intel requirement matrix; S77 is the sole remaining T401 closure receiver. [Review](../etc/evidence/t401-s76-independent-closure-audit.md). |
+| T401 S77 | Matrix complete: every frozen primary, `0F`, prefix and FPU/WAIT form class maps to Intel authority, current owner, proof and source/nonphysical/external disposition; independent closure review is next. [Matrix](../etc/evidence/t401-s77-concrete-form-requirement-matrix.md). |
 | T400 | Closed: the HDC, CECG and CPU/DMA/BWAIT generic-reference ledger is exhausted; accepted logical repairs retain every DeskPro physical boundary. [Closure audit](../etc/evidence/t400-s1-task-closure-audit.md). |
 | T399 | Closed: the five-batch reference-derived DeskPro L3 ledger is exhausted; B2/B3 logical contracts are accepted, B1/B4/B5 retain exact receivers, and both reference-derived and physical L3 are not ready. [Closure audit](../etc/evidence/t399-s5-task-closure-audit.md). |
 | T398 | Closed: final exact 1986 DeskPro Model-40 audit is not-ready for L3; five physical/firmware boundaries retain explicit TODO receivers and require a fresh audit after repair. [Closure audit](../etc/evidence/t398-s2-task-closure-audit.md). |
