@@ -13,7 +13,7 @@
 | Objective | Establish reproducible x86 GCC host-build provenance, configure an isolated 32-bit build, and determine whether the current product and current-gate suite can execute as a 32-bit host process. |
 | Non-goals | No guest CPU semantic or profile change; no L3 claim; no toolchain, ROM, guest media, or third-party binary import; no 32-bit release promise; preserve the 64-bit build and artifact. |
 | Reference Baseline | T404 functional product-capability closure; current developer artifact `vm-0-5-0404` at the recorded SHA-256; proposal `m5-32bit-gcc-host-build-compatibility.md`. |
-| Candidate Proposal | `docs/proposals/m5-32bit-gcc-host-build-compatibility.md`. |
+| Candidate Proposal | [32-bit GCC host-build compatibility](../proposals/m5-32bit-gcc-host-build-compatibility.md). |
 | Files And ABI Surface | `docs/states/CURRENT.md`, `docs/history/M5-T405-32bit-gcc-host-build-compatibility.md`, and indexed evidence only unless an observed host-width defect requires separately packeted owner-first repair. No public ABI change is planned. |
 | Applicable Rules | Documentation and execution rules apply to admission and evidence; architecture and coding rules apply to any later portability repair. Host/toolchain remains an external development input, never a product dependency. |
 | Verification | Record compiler version/target/path, CMake and Ninja versions, configuration command, generated executable architecture, build result, current-gate result, bounded profile session checks, 64-bit-width static sweep, and documentation governance. |
