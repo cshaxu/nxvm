@@ -369,3 +369,12 @@ gate. Existing protected source- and stack-fault cases remain the transaction
 proof for this shared stack owner. This is original-source opcode/form coverage,
 not a physical timing or DeskPro-L3 claim; no production or Core/VM interface
 changed.
+`M5:T401:S10:GROUP5-CONTROL-PROFILES:OK` expands the existing unprefixed
+16-bit real-mode Group-5 control paths from 8086/80186 to 8086, 80186, 80286
+and 80386. It now executes far-indirect `FF /3,/5`, near-indirect `FF /2,/4`
+and retains the reserved `FF /7` #UD proof on every profile. The tests verify
+normal target/return state, flags and stack preservation, plus the existing
+memory-only and atomicity coverage. This is original-source opcode/profile
+coverage; protected descriptor/privilege behavior remains with the retained
+T303-focused probes, and neither physical timing nor any Core/VM interface is
+changed.

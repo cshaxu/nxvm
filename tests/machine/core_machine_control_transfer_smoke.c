@@ -914,7 +914,8 @@ static C_INT ct_test_far_real_mode_profile(core_machine_cpu_profile profile)
 static C_INT ct_test_far_real_mode(C_VOID)
 {
     static const core_machine_cpu_profile profiles[] = {
-        CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186
+        CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
+        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
     };
     STD_SIZE_T index;
 
@@ -927,7 +928,8 @@ static C_INT ct_test_far_real_mode(C_VOID)
 static C_INT ct_test_legacy_real_near_control(C_VOID)
 {
     static const core_machine_cpu_profile profiles[] = {
-        CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186
+        CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
+        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
     };
     static const type_unsigned_8 jump_near[] = { 0xe9u, 2u, 0u, 0xb0u, 0u, 0xf4u };
     static const type_unsigned_8 jump_short[] = { 0xebu, 2u, 0xb0u, 0u, 0xf4u };
@@ -1013,7 +1015,8 @@ static C_INT ct_test_legacy_real_near_control(C_VOID)
 static C_INT ct_test_legacy_ff_reserved(C_VOID)
 {
     static const core_machine_cpu_profile profiles[] = {
-        CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186
+        CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
+        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
     };
     static const type_unsigned_8 code[] = { 0xffu, 0xf8u };
     STD_SIZE_T index;
@@ -1064,5 +1067,6 @@ C_INT main(C_VOID)
         !ct_test_far_indirect_forms() || !ct_test_far_real_mode() ||
         !ct_test_legacy_real_near_control() || !ct_test_legacy_ff_reserved()) return 1;
     STD_PRINTF("M5:T303:CONTROL-TRANSFER:OK\n");
+    STD_PRINTF("M5:T401:S10:GROUP5-CONTROL-PROFILES:OK\n");
     return 0;
 }
