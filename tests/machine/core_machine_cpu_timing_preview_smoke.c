@@ -236,6 +236,30 @@ static C_INT preview_test_taken_near_jcc_target(C_VOID)
     core_machine_destroy(machine);
     return failed;
 }
+static C_INT preview_test_cr_mov_mod_quirk(C_VOID)
+{
+    static const type_unsigned_8 program[] = { 0x0fu, 0x20u, 0x05u,
+        0x78u, 0x56u, 0x34u, 0x12u };
+    const core_machine_config config = {
+        .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
+        .cpu_80386_cr_mov_ignores_mod = TYPE_TRUE
+    };
+    core_machine_cpu_instruction_lexeme lexeme;
+    core_machine *machine = STD_NULL;
+    C_INT failed = !preview_expect(program, sizeof(program),
+        CORE_MACHINE_CPU_PROFILE_80386, TYPE_TRUE, 7u, 4u) ||
+        core_machine_create(&config, &machine) != TYPE_STATUS_OK ||
+        core_machine_freeze_execution_providers(machine) != TYPE_STATUS_OK ||
+        core_machine_reset(machine) != TYPE_STATUS_OK ||
+        core_machine_memory_write(machine, PREVIEW_RESET_PHYSICAL, program,
+            sizeof(program)) != TYPE_STATUS_OK;
+
+    if (!failed) failed |= !core_machine_cpu_execution_preview_lexeme(
+        &machine->executor_cpu_execution, &lexeme) || !lexeme.available ||
+        lexeme.byte_count != 3u || lexeme.component_count != 3u;
+    core_machine_destroy(machine);
+    return failed;
+}
 static C_INT preview_test_default_reset_alias(C_VOID)
 {
     static const type_unsigned_8 halt[] = { 0xf4u };
@@ -268,6 +292,7 @@ C_INT main(C_VOID)
     if (preview_test_taken_jcc_target()) return 6;
     if (preview_test_taken_near_jcc_target()) return 7;
     if (preview_test_default_reset_alias()) return 8;
+    if (preview_test_cr_mov_mod_quirk()) return 9;
     STD_PRINTF("M5:T357:S2:CPU-TIMING-PREVIEW:OK\n");
     return 0;
 }

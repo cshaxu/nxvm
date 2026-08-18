@@ -60,6 +60,7 @@ static C_VOID core_machine_cpu_execution_raise_exception(
 #define VCPU_DR6_BT 0x00008000u
 #define VCPU_DR7_LOCAL_ENABLE_MASK 0x00000155u
 
+
 static C_VOID UndefinedOpcode(core_machine_cpu_execution_context *context);
 
 /* memory management unit */
@@ -7645,9 +7646,10 @@ static type_unsigned_8 core_machine_cpu_instruction_lexeme_immediate_bytes(
     return 0u;
 }
 
-type_bool core_machine_cpu_instruction_lexeme_scan(
+static type_bool core_machine_cpu_instruction_lexeme_scan_with_options(
     const type_unsigned_8 *bytes, type_unsigned_8 available_bytes,
     core_machine_cpu_profile profile, type_bool code_32,
+    type_bool cpu_80386_cr_mov_ignores_mod,
     core_machine_cpu_instruction_lexeme *out_lexeme)
 {
     type_unsigned_8 index = 0u;
@@ -7711,7 +7713,8 @@ type_bool core_machine_cpu_instruction_lexeme_scan(
         ++components;
         mod = modrm >> 6u;
         rm = modrm & 7u;
-        if (mod != 3u) {
+        if (mod != 3u && !(extended && cpu_80386_cr_mov_ignores_mod &&
+            (opcode == 0x20u || opcode == 0x22u))) {
             if (address_bytes == 4u) {
                 if (rm == 4u) {
                     type_unsigned_8 sib;
@@ -7852,6 +7855,14 @@ static C_INT core_machine_cpu_profile_allows_form(
     return metadata.valid && context->cpu_profile >= metadata.minimum_cpu;
 }
 
+type_bool core_machine_cpu_instruction_lexeme_scan(
+    const type_unsigned_8 *bytes, type_unsigned_8 available_bytes,
+    core_machine_cpu_profile profile, type_bool code_32,
+    core_machine_cpu_instruction_lexeme *out_lexeme)
+{
+    return core_machine_cpu_instruction_lexeme_scan_with_options(bytes,
+        available_bytes, profile, code_32, TYPE_FALSE, out_lexeme);
+}
 static C_VOID UndefinedOpcode(core_machine_cpu_execution_context *context)
 {
     TYPE_TRACE_CALL_BEGIN("UndefinedOpcode");
@@ -17798,10 +17809,11 @@ type_bool core_machine_cpu_execution_preview_lexeme(
     preview.preview_mode = TYPE_TRUE;
     ExecInit(&preview);
     if (preview_instructions.data.except) return TYPE_FALSE;
-    return core_machine_cpu_instruction_lexeme_scan(
+    return core_machine_cpu_instruction_lexeme_scan_with_options(
         preview_instructions.data.opcodes,
         (type_unsigned_8)sizeof(preview_instructions.data.opcodes),
-        preview.cpu_profile, preview_cpu.data.cs.seg.exec.defsize, out_lexeme);
+        preview.cpu_profile, preview_cpu.data.cs.seg.exec.defsize,
+        preview.cpu_80386_cr_mov_ignores_mod, out_lexeme);
 }
 
 static type_unsigned_32 _debug_breakpoint_address(type_unsigned_8 index,

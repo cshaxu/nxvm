@@ -51,6 +51,18 @@ proves `/0`--`/3` reject while `/4`--`/7` admit. This is deliberately a
 metadata/profile inventory proof only; dispatch execution, operand semantics,
 fault atomicity and timing remain assigned to their form-level tests and
 ledger rows rather than inferred from this matrix.
+## S5 Lexical Repair: Original 80386 CR-MOV MOD Quirk
+
+The selected DeskPro configuration already records the original 80386 fact
+that `MOV r32,CRx` and `MOV CRx,r32` use the `r/m` bits even when `MOD` is not
+`11b`. Runtime decoding and timing eligibility already consume that immutable
+machine option, but the non-mutating execution preview delegated to the public
+generic lexical scanner and consumed an invented SIB/displacement. A private
+scanner option now serves only the bound execution-preview context; the public
+scanner retains the standard register-only 80386 layout and API. The focused
+preview regression proves `0F 20 05 disp32` is seven bytes generically and
+three bytes for the enabled original-80386 option. This implements neither a
+new machine profile nor a physical timing claim.
 ## S5 Lexical Repair: Memory-Only ModR/M Forms
 
 The runtime decoder rejects register ModR/M forms for `BOUND`, `LEA`, `LES`,
