@@ -3,6 +3,27 @@
 ## Current Work
 
 **Active: M5 T401.**
+## M5 T401 S68 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner: user; standing approval to continue CPU audit and directly repair confirmed small issues. |
+| Objective | Independently audit 80386 LSS/LFS/LGS `0F B2h/B4h/B5h`, including memory-only ModR/M and protected far-pointer publication. |
+| Non-goals | No public Core/VM ABI change, CPU timing model, DeskPro claim or external-source import; no T401 closure. |
+| Reference Baseline | `83fe429b` (S67 P2), T401 ledger, retained Intel 80386 PRM Chapter 17/Appendix A, T316 S24 matrix and current LSS/LFS/LGS smoke. |
+| Candidate Proposal | [Four-profile CPU instruction-correctness audit](../proposals/m5-four-profile-cpu-instruction-correctness-audit.md), 80386 far-pointer load batch. |
+| Files And ABI Surface | Preview smoke, existing LSS/LFS/LGS smoke, CURRENT and T401 ledger; no public ABI surface. |
+| Applicable Rules | Preserve public generic scanner and Core/VM boundary; coding, documentation and execution rules apply. |
+| Verification | Build/run preview and LSS/LFS/LGS smoke; full gate if production changes; documentation governance; diff check. |
+| Expected Markers | `M5:T401:S68:LSS-LFS-LGS-PREVIEW-PROFILES:OK`; `M5:T316:S24:LSS-LFS-LGS:OK`. |
+| Asset Needs | None. |
+| Reporting Requirements | Record 80386-only, memory-only, prefix, segment target, fault/atomicity and timing dispositions. |
+| Stop Conditions | Transfer any public ABI, physical timing or machine-profile expansion. |
+| Exit Criteria | All three forms have explicit lexical, real/protected, source-fault, profile and IRQ evidence; any shared discrepancy is repaired and swept. |
+| Original Owner Request | Continue CPU audit before later DeskPro L3 work with direct repair of confirmed small issues. |
+| Similar-Issue Sweep | Treat LSS/LFS/LGS together across operand/address attributes, register ModR/M, selector loading, source faults and pre-80386 profiles. |
+
 ## Current Technical Baseline
 
 - **Current developer artifact:** T395 S1 P4 `vm-0-5-0395` /

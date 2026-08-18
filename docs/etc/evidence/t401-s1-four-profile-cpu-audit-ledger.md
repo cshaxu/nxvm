@@ -1187,3 +1187,6 @@ S67 audits 80386 MOV CR 0F 20h/22h. The generic scanner retains standard registe
 ## S67 Acceptance
 
 S67 closes the bounded 80386 control-register MOV audit. The generic scanner remains standard register-only, while the private original-80386 execution preview proves both `0F 20h` and `0F 22h` non-register ModR/M forms consume three bytes only when the immutable option is enabled. Existing paging and descriptor regressions retain state, privilege and fault evidence. The discovered NUL character in the S67 opcode label is corrected to `0F`; no production, ABI or physical-timing discrepancy exists.
+## S68 LSS/LFS/LGS
+
+S68 audits 80386 far-pointer loads `0F B2h/B4h/B5h`. The existing T316 S24 execution fixture proves all three targets in real and protected mode, 16/32-bit offset forms, register-ModR/M #UD, 80186/80286 #UD, source-fault atomicity and non-shadow IRQ delivery. The new `M5:T401:S68:LSS-LFS-LGS-PREVIEW-PROFILES:OK` matrix independently proves each legal memory form, rejects the register forms and pre-80386 profiles, and retains 80386 operand/address prefix layouts. No production discrepancy was found; timing remains nonphysical.
