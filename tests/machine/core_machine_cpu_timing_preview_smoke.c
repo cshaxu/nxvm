@@ -921,6 +921,14 @@ static C_INT preview_test_movx_profiles(C_VOID)
         if(!preview_expect((const type_unsigned_8[]){0x0fu,opcodes[index],0xc8u},3u,CORE_MACHINE_CPU_PROFILE_80386,TYPE_FALSE,3u,3u)||!preview_expect((const type_unsigned_8[]){0x0fu,opcodes[index],0x0eu,0x34u,0x12u},5u,CORE_MACHINE_CPU_PROFILE_80386,TYPE_FALSE,5u,4u))return 0;
     return preview_expect((const type_unsigned_8[]){0x66u,0x0fu,0xb7u,0xc8u},4u,CORE_MACHINE_CPU_PROFILE_80386,TYPE_FALSE,4u,4u)&&preview_expect((const type_unsigned_8[]){0x67u,0x0fu,0xbeu,0x05u,0x78u,0x56u,0x34u,0x12u},8u,CORE_MACHINE_CPU_PROFILE_80386,TYPE_FALSE,8u,5u)&&preview_expect((const type_unsigned_8[]){0x66u,0x67u,0x0fu,0xbfu,0x05u,0x78u,0x56u,0x34u,0x12u},9u,CORE_MACHINE_CPU_PROFILE_80386,TYPE_FALSE,9u,6u);
 }
+static C_INT preview_test_imul2_profiles(C_VOID)
+{
+    static const core_machine_cpu_profile unavailable[] = {CORE_MACHINE_CPU_PROFILE_80186,CORE_MACHINE_CPU_PROFILE_80286};
+    core_machine_cpu_instruction_lexeme lexeme; type_unsigned_8 profile;
+    for(profile=0u;profile<sizeof(unavailable)/sizeof(unavailable[0]);++profile)
+        if(core_machine_cpu_instruction_lexeme_scan((const type_unsigned_8[]){0x0fu,0xafu,0xc8u},3u,unavailable[profile],TYPE_FALSE,&lexeme)||lexeme.available)return 0;
+    return preview_expect((const type_unsigned_8[]){0x0fu,0xafu,0xc8u},3u,CORE_MACHINE_CPU_PROFILE_80386,TYPE_FALSE,3u,3u)&&preview_expect((const type_unsigned_8[]){0x0fu,0xafu,0x0eu,0x34u,0x12u},5u,CORE_MACHINE_CPU_PROFILE_80386,TYPE_FALSE,5u,4u)&&preview_expect((const type_unsigned_8[]){0x66u,0x0fu,0xafu,0xc8u},4u,CORE_MACHINE_CPU_PROFILE_80386,TYPE_FALSE,4u,4u)&&preview_expect((const type_unsigned_8[]){0x67u,0x0fu,0xafu,0x05u,0x78u,0x56u,0x34u,0x12u},8u,CORE_MACHINE_CPU_PROFILE_80386,TYPE_FALSE,8u,5u)&&preview_expect((const type_unsigned_8[]){0x66u,0x67u,0x0fu,0xafu,0x05u,0x78u,0x56u,0x34u,0x12u},9u,CORE_MACHINE_CPU_PROFILE_80386,TYPE_FALSE,9u,6u);
+}
 static C_INT preview_test_short_jcc_profiles(C_VOID)
 {
     static const core_machine_cpu_profile profiles[] = {
@@ -1562,6 +1570,7 @@ C_INT main(C_VOID)
     if (!preview_test_double_shift_profiles()) return 59;
     if (!preview_test_bit_scan_profiles()) return 60;
     if (!preview_test_movx_profiles()) return 61;
+    if (!preview_test_imul2_profiles()) return 62;
     if (!preview_test_les_lds_profiles()) return 34;
     if (!preview_test_group3_profiles()) return 10;
     if (!preview_test_group45_profiles()) return 11;
@@ -1628,5 +1637,6 @@ C_INT main(C_VOID)
     STD_PRINTF("M5:T401:S62:DOUBLE-SHIFT-PREVIEW-PROFILES:OK\n");
     STD_PRINTF("M5:T401:S63:BIT-SCAN-PREVIEW-PROFILES:OK\n");
     STD_PRINTF("M5:T401:S64:MOVX-PREVIEW-PROFILES:OK\n");
+    STD_PRINTF("M5:T401:S65:IMUL2-PREVIEW-PROFILES:OK\n");
     return 0;
 }

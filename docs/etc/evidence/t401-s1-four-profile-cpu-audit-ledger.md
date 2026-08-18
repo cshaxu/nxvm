@@ -1152,3 +1152,13 @@ remains nonphysical.
 ## S64 Acceptance
 
 S64 closes the bounded 80386 MOVZX/MOVSX audit. Runtime and preview matrices establish sign/zero behavior, byte/word sources, register/memory forms, 80386 destination/address attributes, 80186/80286 rejection and the retained 8086 POP CS distinction. Both focused smokes and documentation governance pass; no production discrepancy was found, timing remains nonphysical, and T401 remains open.
+
+## S65 Two-Operand IMUL
+
+S65 independently audits 80386 two-operand IMUL `0F AFh`. The retained fixture
+executes signed register and memory products, 16/32-bit operand/address
+attributes, overflow publication, 80186/80286 #UD and protected read-fault
+nonpublication. `M5:T401:S65:IMUL2-PREVIEW-PROFILES:OK` adds register/memory
+layouts, 80386 attributes and 80186/80286 unavailability. 8086 remains
+distinct because its `0Fh` is POP CS. No production discrepancy was found;
+timing remains nonphysical.

@@ -51,4 +51,5 @@ static C_INT imul_read_failure(C_VOID)
  static const type_unsigned_8 code[]={0x0f,0xafu,0x0eu,0x10u,0};imul_machine s;t_cpu a;core_machine_cpu_diagnostic d;core_machine_run_result r;const type_unsigned_32 flags=VCPU_EFLAGS_CF|VCPU_EFLAGS_OF;C_INT f=!imul_limit(&s);
  if(!f){s.machine->executor_cpu.data.ecx=0xaabbccddu;s.machine->executor_cpu.data.eflags=flags;f|=core_machine_memory_write(s.machine,0x2000u,code,sizeof(code))!=TYPE_STATUS_OK;test_core_machine_fixture_resume_after_halt_at(s.machine,0u);f|=core_machine_run(s.machine,(core_machine_run_budget){1u,0u},&r)!=TYPE_STATUS_FAULT||r.reason!=CORE_MACHINE_STOP_FAULT||core_machine_get_cpu_diagnostic(s.machine,&d)!=TYPE_STATUS_OK;a=test_core_machine_fixture_capture_cpu_after_run(s.machine);f|=!d.first_fault.valid||!TYPE_GET_BIT(d.first_fault.exception_mask,VCPUINS_EXCEPT_DF)||a.data.ecx!=0xaabbccddu||a.data.eflags!=flags||a.data.eip!=0u;}core_machine_destroy(s.machine);return !f;
 }
-C_INT main(C_VOID){if(!imul_forms()||!imul_profile()||!imul_read_failure())return 1;STD_PRINTF("M5:T310:S8:IMUL2:OK\n");return 0;}
+C_INT main(C_VOID){if(!imul_forms()||!imul_profile()||!imul_read_failure())return 1;STD_PRINTF("M5:T310:S8:IMUL2:OK\n");
+STD_PRINTF("M5:T401:S65:IMUL2-PROFILES:OK\n");return 0;}
