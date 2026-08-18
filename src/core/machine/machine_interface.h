@@ -179,6 +179,7 @@ typedef struct core_machine_planar_parity_observation {
 typedef struct core_machine_d4_platform_config {
     type_unsigned_16 port;
     type_unsigned_8 failsafe_pit_counter;
+    type_unsigned_8 slowdown_pit_counter;
 } core_machine_d4_platform_config;
 
 typedef struct core_machine_d4_platform_observation {

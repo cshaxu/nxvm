@@ -174,7 +174,7 @@ static C_INT d4_refresh_external_cycle_contract(C_VOID)
     static const core_machine_external_cycle_timing timing = {2048u, 2u, 1u,
         CORE_MACHINE_EXTERNAL_CYCLE_OVERLAP_DISABLED};
     core_machine_config config = {0};
-    core_machine_d4_platform_config d4 = {CORE_MACHINE_PC_AT_PORT_B, 0u};
+    core_machine_d4_platform_config d4 = {CORE_MACHINE_PC_AT_PORT_B, 0u, 2u};
     core_machine *machine = STD_NULL;
     core_machine_cpu_external_cycle_provider provider;
     C_VOID *context;

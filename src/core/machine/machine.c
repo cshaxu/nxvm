@@ -3967,6 +3967,13 @@ static type_unsigned_8 core_machine_pc_at_port_b_timer_status(
  * expose its output at port 61h bit 4. The board programs mode 2 with the
  * fixed refresh divider on every cold reset; channel 0 and channel 2 remain
  * firmware-owned timer and speaker resources. */
+static C_VOID core_machine_d4_kbc_output(C_VOID *opaque, type_unsigned_8 value)
+{
+    core_machine *machine = (core_machine *)opaque;
+    if (machine != STD_NULL) machine->d4_slowdown_enabled =
+        (value & 0x08u) == 0u ? TYPE_TRUE : TYPE_FALSE;
+}
+
 static C_VOID core_machine_d4_refresh_output(C_VOID *opaque, type_bool asserted)
 {
     core_machine *machine = (core_machine *)opaque;
@@ -3979,6 +3986,12 @@ static C_VOID core_machine_d4_refresh_output(C_VOID *opaque, type_bool asserted)
         } else if (!machine->d4_refresh_pulse_active) {
             machine->d4_refresh_pulse_active = TYPE_TRUE;
             core_machine_external_cycle_invalidate(machine);
+            if (machine->d4_slowdown_enabled) {
+                core_machine_pit_set_gate(&machine->auxiliary_pit,
+                    machine->d4_platform_config.slowdown_pit_counter, TYPE_FALSE);
+                core_machine_pit_set_gate(&machine->auxiliary_pit,
+                    machine->d4_platform_config.slowdown_pit_counter, TYPE_TRUE);
+            }
             machine->d4_refresh_hold_pending = TYPE_TRUE;
         }
     }
@@ -4320,8 +4333,11 @@ type_status core_machine_configure_d4_platform(core_machine *machine,
     if (!core_machine_configuration_is_open(machine) ||
         machine->d4_platform_configured) return TYPE_STATUS_INVALID_STATE;
     if (config == STD_NULL || config->port != CORE_MACHINE_PC_AT_PORT_B ||
-        config->failsafe_pit_counter >= 3u || !machine->auxiliary_pit_configured ||
+        config->failsafe_pit_counter >= 3u || config->slowdown_pit_counter >= 3u ||
+        config->failsafe_pit_counter == config->slowdown_pit_counter || !machine->auxiliary_pit_configured ||
         machine->auxiliary_pit.connect.output[config->failsafe_pit_counter] != STD_NULL ||
+        machine->auxiliary_pit.connect.output[config->slowdown_pit_counter] != STD_NULL ||
+        machine->shared_kbc.connect.output_port != STD_NULL ||
         core_machine_port_has_read(&machine->executor_port, config->port) ||
         core_machine_port_has_write(&machine->executor_port, config->port)) {
         return TYPE_STATUS_INVALID_ARGUMENT;
@@ -4345,6 +4361,8 @@ type_status core_machine_configure_d4_platform(core_machine *machine,
     core_machine_pit_set_output(&machine->auxiliary_pit,
         config->failsafe_pit_counter, core_machine_d4_platform_failsafe_output,
         machine);
+    if (!core_machine_kbc_bind_output_port(&machine->shared_kbc,
+            core_machine_d4_kbc_output, machine)) return TYPE_STATUS_INVALID_ARGUMENT;
     return TYPE_STATUS_OK;
 }
 type_status core_machine_report_planar_parity_fault(core_machine *machine)
@@ -5127,6 +5145,7 @@ static type_status core_machine_cold_reset(core_machine *machine)
     machine->d4_refresh_hold_pending = TYPE_FALSE;
     machine->d4_refresh_pulse_active = TYPE_FALSE;
     machine->d4_refresh_address = 0u;
+    machine->d4_slowdown_enabled = TYPE_FALSE;
     core_machine_vadp_reset(&machine->shared_vadp);
 
     STD_ATOMIC_STORE(&machine->stop_requested, 0);
@@ -5340,6 +5359,14 @@ type_status core_machine_run(
                 result->linear_pc = core_machine_linear_pc(machine);
                 result->elapsed_ticks = machine->elapsed_ticks;
                 return TYPE_STATUS_OK;
+            }
+            if (machine->d4_platform_configured && machine->d4_slowdown_enabled &&
+                !core_machine_pit_get_output(&machine->auxiliary_pit,
+                    machine->d4_platform_config.slowdown_pit_counter)) {
+                ++result->ticks;
+                if (core_machine_publish_elapsed_ticks(machine, 1u, TYPE_FALSE) != TYPE_STATUS_OK) return TYPE_STATUS_FAULT;
+                result->elapsed_ticks = machine->elapsed_ticks;
+                continue;
             }
             if (machine->execution_provider != STD_NULL &&
                 machine->execution_provider->refresh != STD_NULL) {

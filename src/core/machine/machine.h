@@ -200,6 +200,7 @@ struct core_machine {
     type_bool d4_refresh_hold_pending;
     type_bool d4_refresh_pulse_active;
     type_unsigned_8 d4_refresh_address;
+    type_bool d4_slowdown_enabled;
 };
 
 type_status core_machine_bus_initialize(core_machine *machine);

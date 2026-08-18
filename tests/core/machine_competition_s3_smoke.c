@@ -144,7 +144,7 @@ C_INT main(C_VOID)
     const type_unsigned_8 nop = 0x90u;
     core_machine *machine = STD_NULL;
     core_machine_config config = {0};
-    core_machine_d4_platform_config d4 = {CORE_MACHINE_PC_AT_PORT_B, 0u};
+    core_machine_d4_platform_config d4 = {CORE_MACHINE_PC_AT_PORT_B, 0u, 2u};
     core_machine_d4_platform_observation d4_observation;
     core_machine_trace_provider trace;
     core_machine_dma_request_binding binding = {0};

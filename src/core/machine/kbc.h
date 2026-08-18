@@ -42,6 +42,9 @@ typedef enum core_machine_kbc_output_origin {
     CORE_MACHINE_KBC_OUTPUT_AUX
 } core_machine_kbc_output_origin;
 
+typedef C_VOID (*core_machine_kbc_output_port_provider)(C_VOID *owner,
+    type_unsigned_8 value);
+
 typedef enum core_machine_kbc_pending_write {
     CORE_MACHINE_KBC_PENDING_NONE,
     CORE_MACHINE_KBC_PENDING_COMMAND_BYTE,
@@ -117,6 +120,8 @@ typedef struct t_kbc_connect {
     type_bool aux_present;
     t_ram *memory;
     core_machine_cpu_execution_context *execution;
+    core_machine_kbc_output_port_provider output_port;
+    C_VOID *output_port_owner;
 } t_kbc_connect;
 
 typedef struct t_kbc {
@@ -129,6 +134,8 @@ C_VOID core_machine_kbc_initialize(t_kbc *controller, t_port *port);
 C_VOID core_machine_kbc_bind_core_services(t_kbc *controller, t_pic *pic_master,
     t_pic *pic_slave, t_ram *memory,
     core_machine_cpu_execution_context *execution, type_bool aux_present);
+C_INT core_machine_kbc_bind_output_port(t_kbc *controller,
+    core_machine_kbc_output_port_provider provider, C_VOID *owner);
 C_VOID core_machine_kbc_reset(t_kbc *controller);
 C_VOID core_machine_kbc_refresh(t_kbc *controller);
 C_VOID core_machine_kbc_advance(t_kbc *controller, type_unsigned_64 elapsed_ticks);

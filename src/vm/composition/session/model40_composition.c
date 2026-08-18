@@ -28,7 +28,7 @@ type_status vm_session_model40_storage_initialize(vm_session *session)
     core_machine_dma_wiring dma = { .fdc_channel = 2u,
         .controller_count = CORE_MACHINE_DMA_CONTROLLER_COUNT,
         .cascade_channel = CORE_MACHINE_DMA_CASCADE_CHANNEL };
-    core_machine_d4_platform_config d4 = { CORE_MACHINE_PC_AT_PORT_B, 0u };
+    core_machine_d4_platform_config d4 = { CORE_MACHINE_PC_AT_PORT_B, 0u, 2u };
     core_machine_rtc_cmos_config rtc = {0};
     type_status status;
 
