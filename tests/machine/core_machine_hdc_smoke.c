@@ -334,6 +334,43 @@ C_INT main(C_VOID)
                     !core_machine_hdc_read(machine, hdc_config.status_command_port, &status) ||
                     core_machine_hdc_irq_pending(hdc);
 
+                if (!core_machine_hdc_program_chs(machine, &hdc_config) ||
+                    !core_machine_hdc_write(machine, hdc_config.sector_count_port, 2u) ||
+                    !core_machine_hdc_command(machine, &hdc_config, 0x30u) ||
+                    !core_machine_hdc_irq_pending(hdc) ||
+                    !core_machine_hdc_read(machine, hdc_config.status_command_port, &status) ||
+                    core_machine_hdc_irq_pending(hdc)) failed |= 0x8000;
+                for (type_unsigned_32 index = 0u; index < 256u; ++index) {
+                    failed |= !core_machine_hdc_write(machine, hdc_config.data_port,
+                        index == 0u ? 0x2211u : 0u);
+                }
+                failed |= hdc->data.phase != CORE_MACHINE_HDC_PHASE_PENDING_WRITE_SECTOR ||
+                    hdc->data.status != CORE_MACHINE_HDC_STATUS_BSY ||
+                    core_machine_hdc_irq_pending(hdc);
+                core_machine_hdc_advance(hdc);
+                failed |= hdc->data.phase != CORE_MACHINE_HDC_PHASE_DATA_WRITE ||
+                    hdc->data.sector_number != 2u || hdc->data.sector_count != 1u ||
+                    media.write_count != 3u || media.sector[0][0] != 0x11u ||
+                    media.sector[0][1] != 0x22u || !core_machine_hdc_irq_pending(hdc) ||
+                    !core_machine_hdc_read(machine,
+                        hdc_config.alternate_status_device_control_port, &status) ||
+                    !core_machine_hdc_irq_pending(hdc) ||
+                    !core_machine_hdc_read(machine, hdc_config.status_command_port, &status) ||
+                    core_machine_hdc_irq_pending(hdc);
+                for (type_unsigned_32 index = 0u; index < 256u; ++index) {
+                    failed |= !core_machine_hdc_write(machine, hdc_config.data_port,
+                        index == 0u ? 0x4433u : 0u);
+                }
+                failed |= hdc->data.phase != CORE_MACHINE_HDC_PHASE_PENDING_WRITE_SECTOR ||
+                    hdc->data.status != CORE_MACHINE_HDC_STATUS_BSY ||
+                    core_machine_hdc_irq_pending(hdc);
+                core_machine_hdc_advance(hdc);
+                failed |= hdc->data.phase != CORE_MACHINE_HDC_PHASE_IDLE ||
+                    hdc->data.sector_count != 0u || media.write_count != 4u ||
+                    media.sector[1][0] != 0x33u || media.sector[1][1] != 0x44u ||
+                    !core_machine_hdc_irq_pending(hdc) ||
+                    !core_machine_hdc_read(machine, hdc_config.status_command_port, &status) ||
+                    core_machine_hdc_irq_pending(hdc);
                 if (!core_machine_hdc_write(machine, hdc_config.status_command_port, 0xecu) ||
                     hdc->data.phase != CORE_MACHINE_HDC_PHASE_PENDING_COMMAND ||
                     hdc->data.status != CORE_MACHINE_HDC_STATUS_BSY) {
