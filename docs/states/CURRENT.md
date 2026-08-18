@@ -4,26 +4,26 @@
 
 **Active: M5 T401.**
 
-## M5 T401 S5 Packet
+## M5 T401 S6 Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation; M5 T401 S5. |
-| Admission And Approval | Owner approved the four-profile CPU audit and bounded shared repairs on 2026-08-17; T401 S4 completed the primary metadata/profile map and repaired the reserved `F1` preview mismatch. |
-| Objective | Reconcile the runtime decoder and timing-preview lexical scanner across prefix, ModR/M, SIB, displacement and immediate consumption for the selected primary and `0F` CPU forms, then repair any source-complete shared classification mismatch. |
-| Non-goals | No decoder rewrite, new CPU facility, device or board work, profile-specific execution fork, public ABI change, physical timing claim or DeskPro L3 claim. |
-| Reference Baseline | T401 S2--S4 ledger; Intel 80286/80386 encoding tables; T358 prefix-classifier coherence; T359/363 timing inventories; current decoder, metadata owner and lexical scanner. |
+| Identifier Mode | Continuation; M5 T401 S6. |
+| Admission And Approval | Owner approved the four-profile CPU audit and bounded shared repairs on 2026-08-17; T401 S5 is accepted after the lexical coherence sweep and current-gate regressions. |
+| Objective | Reconcile WAIT and FPU ESC decode/profile/provider classification for the four selected CPUs, preserving the explicit external-coprocessor boundary and repairing only a reproducible shared CPU-interface discrepancy. |
+| Non-goals | No x87 arithmetic expansion, 80287/80387 emulation, new FPU public API, device/board work, profile-specific CPU fork, physical timing claim or DeskPro L3 claim. |
+| Reference Baseline | Intel 8086/80286/80386 coprocessor interface material; T316 S65 FPU-interface matrix; current FPU metadata, WAIT/FPU_ESCAPE owners, CR0 MP/EM/TS routes and profile/provider tests. |
 | Candidate Proposal | [Four-profile CPU instruction-correctness audit and repair program](../proposals/m5-four-profile-cpu-instruction-correctness-audit.md). |
 | Files And ABI Surface | Audit ledger, current task packet and focused existing/new CPU smoke only unless a source-complete shared Core defect is reproduced; no public ABI. |
-| Applicable Rules | Execution bounded corrective/actual-diff review; shared Core CPU ownership; coding/test rules; Intel primary-source requirement; secondary-emulator cross-check policy; documentation indexing. |
-| Verification | Build representative legal/illegal byte-layout vectors for every lexical rule; compare preview availability/length/components against runtime decode evidence and metadata gates; probe any mismatch at its earliest shared owner; run focused CTest, full current gate after any repair, documentation governance and diff check. |
-| Expected Markers | A T401 S5 lexical-coherence marker, plus any bounded defect marker. |
-| Asset Needs | None. No ROM, guest media, Microsoft component or external binary is needed. Secondary emulator repositories may be read-only cross-checks only, never imported. |
-| Reporting Requirements | Record Intel encoding disposition, runtime/preview owner, profile distinction, exact byte-layout evidence, existing proof or precise transfer, and retained nonphysical timing boundary. |
-| Stop Conditions | Stop and create a precise receiver if an authoritative encoding disposition conflicts with the retained source family, a repair broadens beyond one shared mechanism, or behavior cannot be validated without a new facility. |
-| Exit Criteria | Every lexical rule has legal/illegal evidence linked to its runtime owner, each mismatch has a bounded repair/transfer, and any repair has focused/full-gate regression. |
+| Applicable Rules | Execution bounded corrective/actual-diff review; shared Core CPU ownership; coding/test rules; Intel primary-source requirement; external-provider/source policy; documentation indexing. |
+| Verification | Build a profile/provider/CR0-state matrix for WAIT and ESC; reconcile metadata, execution, fault delivery and preview layout; run focused CTest, full current gate after any repair, documentation governance and diff check. |
+| Expected Markers | Existing FPU-interface markers or a new T401 S6 classification marker, plus any bounded defect marker. |
+| Asset Needs | None. No ROM, guest media, Microsoft component or external binary is needed. |
+| Reporting Requirements | Record CPU/FPU profile, encoding/form, CR0 state, provider disposition, current owner, focused proof or transfer and retained nonphysical timing boundary. |
+| Stop Conditions | Stop and create a precise receiver if repair requires numerical x87 semantics, a new provider interface, a board/device timing model or a broad fault-delivery change. |
+| Exit Criteria | WAIT/ESC profile/provider rows are classified and linked to focused proof or explicit transfer; any bounded repair has focused/full-gate proof. |
 | Original Owner Request | Continue CPU auditing after DeskPro timing work, implementing source-backed, reference-backed or clearly labeled generic behavior rather than leaving feasible work undone. |
-| Similar-Issue Sweep | For every mismatch, inspect every opcode range and prefix class sharing its scanner rule before accepting the repair. |
+| Similar-Issue Sweep | For any discovered mismatch, sweep all ESC bytes, WAIT, FPU metadata consumers, CR0 MP/EM/TS gates and preview callers. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T395 S1 P4 `vm-0-5-0395` /
@@ -50,7 +50,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T401 S4 | Accepted: reconciled all primary metadata/profile slots, repaired the reserved `F1` metadata/lexeme mismatch, and verified the 256-slot matrix plus a 285/285 current gate. S5 owns prefix/lexical coherence. [Ledger](../etc/evidence/t401-s1-four-profile-cpu-audit-ledger.md). |
+| T401 S5 | Accepted: reconciled prefix and lexical preview/runtime coherence, repairing POP CS, reserved groups, memory-only forms and CR-MOV compatibility length; each repair has focused and 285/285 proof. S6 owns the external FPU/WAIT family. [Ledger](../etc/evidence/t401-s1-four-profile-cpu-audit-ledger.md). |
 | T400 | Closed: the HDC, CECG and CPU/DMA/BWAIT generic-reference ledger is exhausted; accepted logical repairs retain every DeskPro physical boundary. [Closure audit](../etc/evidence/t400-s1-task-closure-audit.md). |
 | T399 | Closed: the five-batch reference-derived DeskPro L3 ledger is exhausted; B2/B3 logical contracts are accepted, B1/B4/B5 retain exact receivers, and both reference-derived and physical L3 are not ready. [Closure audit](../etc/evidence/t399-s5-task-closure-audit.md). |
 | T398 | Closed: final exact 1986 DeskPro Model-40 audit is not-ready for L3; five physical/firmware boundaries retain explicit TODO receivers and require a fresh audit after repair. [Closure audit](../etc/evidence/t398-s2-task-closure-audit.md). |

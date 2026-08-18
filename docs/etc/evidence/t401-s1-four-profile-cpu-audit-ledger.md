@@ -51,6 +51,23 @@ proves `/0`--`/3` reject while `/4`--`/7` admit. This is deliberately a
 metadata/profile inventory proof only; dispatch execution, operand semantics,
 fault atomicity and timing remain assigned to their form-level tests and
 ledger rows rather than inferred from this matrix.
+## S5 Lexical-Coherence Disposition
+
+S5 reconciled the lexical rules for prefix availability/size presence, 8086
+`0F` POP CS versus 80186 rejection/80286 escape, primary and secondary
+metadata gates, ModR/M/SIB/displacement layout, immediate widths, reserved
+primary groups, memory-only forms, standard CR/DR/TR register-only forms and
+the selected original-80386 CR-MOV MOD quirk. Each repaired shared rule has a
+focused marker and a 285/285 current-gate run. FPU ESC and WAIT remain a
+separate external-coprocessor family: their byte layout is retained by the
+scanner, but availability and operation result depend on the explicit FPU
+profile/provider and CR0 `MP/EM/TS` state. LOCK remains intentionally
+unavailable to the timing-preview capability, not reclassified as #UD.
+
+No further source-complete prefix/ModR/M/SIB/displacement/immediate mismatch
+was found in this sweep. The next receiver audits FPU/WAIT profile/provider
+classification without inventing x87 arithmetic, physical timing or a
+DeskPro-L3 claim.
 ## S5 Lexical Repair: Original 80386 CR-MOV MOD Quirk
 
 The selected DeskPro configuration already records the original 80386 fact
