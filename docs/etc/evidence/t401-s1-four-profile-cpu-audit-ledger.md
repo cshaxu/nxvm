@@ -1149,3 +1149,6 @@ and memory paths, 16/32-bit destination and addressing attributes,
 80386 attributes and 80186/80286 unavailability. 8086 remains distinct
 because its `0Fh` is POP CS. No production discrepancy was found; timing
 remains nonphysical.
+## S64 Acceptance
+
+S64 closes the bounded 80386 MOVZX/MOVSX audit. Runtime and preview matrices establish sign/zero behavior, byte/word sources, register/memory forms, 80386 destination/address attributes, 80186/80286 rejection and the retained 8086 POP CS distinction. Both focused smokes and documentation governance pass; no production discrepancy was found, timing remains nonphysical, and T401 remains open.
