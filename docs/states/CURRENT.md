@@ -2,11 +2,7 @@
 
 ## Current Work
 
-**M5 T429 remains open; S1 is accepted and no subtask is active.** Generic-AT
-CECG 8-bit port-wait skeleton accepted at `1c02a853`; Core owns the
-memory-versus-port lifecycle and committed wait, Model-40 selects its
-documented port ranges, and 5170 remains unselected.
-[Evidence](../etc/evidence/t429-s1-cecg-8bit-bus-wait.md)
+**Active.** T429 remains open between accepted subtasks.
 ## Current Technical Baseline
 
 - **Current developer artifact:** T421 S1 `vm-0-5-0419` / `build/output/nxvm_0_5_0419.exe`, SHA-256 `859E1B93C6891E8EAAF0D98D4DBEF25F2383F911EC243390A50FB9A9CDBBA5BF`. T421 adds one Core-owned logical port-61h/PIT-channel-2 speaker line: Model-40 D4 and IBM 5170 planar configuration select it without a second provider; host audio and physical acoustic behavior remain transferred.
@@ -30,7 +26,7 @@ documented port ranges, and 5170 remains unselected.
 ## Recent M5 Closures
 
 | Task | Compact result |
-| --- | --- |
+| --- | --- || T429 S1 | Accepted: generic-AT CECG 8-bit port-wait skeleton at `1c02a853`; Core owns the memory-versus-port lifecycle and committed wait, Model-40 selects documented ports, and 5170 remains unselected. [Evidence](../etc/evidence/t429-s1-cecg-8bit-bus-wait.md). |
 | T428 | Closed: Model-40 selects a generic-AT Core prefetch reservation lifecycle with reset/HOLD/refresh priority; it publishes no physical cycle, page hit or timing result. [Evidence](../etc/evidence/t428-s1-generic-prefetch-reservation.md). |
 | T427 | Closed: original-source CPU BUSRDY gate holds the existing Core external completion wait without retirement; Model-40 selects it and 5170 is isolated. [Evidence](../etc/evidence/t427-s1-deskpro-cpu-busready-gate.md). |
 | T426 | Closed: independent audit retains all tier-labelled logical receivers but rejects DeskPro physical/L3 acceptance pending named source/corpus blockers. [Evidence](../etc/evidence/t426-s1-deskpro-physical-l3-reaudit.md). |
