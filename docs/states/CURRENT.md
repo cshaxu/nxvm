@@ -3,26 +3,6 @@
 ## Current Work
 
 **Active.** T429 remains open between accepted subtasks.
-## M5 T429 S3 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner standing approval in this thread (2026-08-18) for pragmatic, tier-labelled DeskPro L3 work, commits and pushes. Scope: one generic-AT CECG aperture wait window. |
-| Objective | Add one Model-40-selected generic-AT memory-space wait window for the VADP CECG A0000h--AFFFFh aperture after the S2 D4 separation. |
-| Non-goals | No physical CECG wait scalar, IOCHRDY/NOWS/BUSRDY claim, raster/monitor/firmware behavior, D4 or 5170 change, or L3 acceptance. |
-| Reference Baseline | `master` at `89210dc9`; T429 S1 port waits and S2 D4/CECG classification are accepted. |
-| Candidate Proposal | [DeskPro physical-cycle proposal](../proposals/m5-deskpro-physical-cycle-and-phase-timing.md), CECG receiver. |
-| Files And ABI Surface | Core window capacity/configuration, Model-40 binding, focused Core/VM regressions, evidence/status/proposal. |
-| Applicable Rules | Core owns lifecycle/waits; VM binds selected profile; source-policy tier labelling; focused verification and closure governance. |
-| Verification | Focused Core, Model-40 and 5170 tests; diff/docs gates; serial current-gate. |
-| Expected Markers | `M5:T429:S3:CECG-APERTURE-WAIT:OK`. |
-| Asset Needs | None. |
-| Reporting Requirements | State generic-at tier, aperture range, ownership, tests, commit and physical transfer. |
-| Stop Conditions | Stop for firmware, CECG electrical behavior, calibration, second scheduler/transaction, or unselected profile impact. |
-| Exit Criteria | Model-40 selects aperture only; Core charges commit wait; D4 remains excluded; 5170 unchanged; cancellation/reset/regressions pass. |
-| Original Owner Request | Continue DeskPro L3 pragmatically with original/reference/generic tiers and preserved Core/VM boundary. |
-| Similar-Issue Sweep | All wait-window capacity/configuration consumers, Model-40 constructors, 5170 composition, aperture constants and reset/cancel tests. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T421 S1 `vm-0-5-0419` / `build/output/nxvm_0_5_0419.exe`, SHA-256 `859E1B93C6891E8EAAF0D98D4DBEF25F2383F911EC243390A50FB9A9CDBBA5BF`. T421 adds one Core-owned logical port-61h/PIT-channel-2 speaker line: Model-40 D4 and IBM 5170 planar configuration select it without a second provider; host audio and physical acoustic behavior remain transferred.
@@ -47,7 +27,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T429 S2 | Accepted: generic-AT D4 conventional-RAM eligibility at `f73cb976`; CECG A0000h aperture is excluded, Core owns classification, and 5170 preserves legacy behavior. [Evidence](../etc/evidence/t429-s2-d4-cecg-memory-class.md).
+| T429 S3 | Accepted: generic-AT CECG aperture wait at `d54cf372`; Core charges only the selected A0000h--AFFFFh commit, D4 remains separate, and 5170 is isolated. [Evidence](../etc/evidence/t429-s3-cecg-aperture-wait.md).
 | T428 | Closed: Model-40 selects a generic-AT Core prefetch reservation lifecycle with reset/HOLD/refresh priority; it publishes no physical cycle, page hit or timing result. [Evidence](../etc/evidence/t428-s1-generic-prefetch-reservation.md). |
 | T427 | Closed: original-source CPU BUSRDY gate holds the existing Core external completion wait without retirement; Model-40 selects it and 5170 is isolated. [Evidence](../etc/evidence/t427-s1-deskpro-cpu-busready-gate.md). |
 | T426 | Closed: independent audit retains all tier-labelled logical receivers but rejects DeskPro physical/L3 acceptance pending named source/corpus blockers. [Evidence](../etc/evidence/t426-s1-deskpro-physical-l3-reaudit.md). |
