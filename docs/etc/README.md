@@ -489,3 +489,5 @@ another principal document.
 | evidence/t430-s1-deskpro-dual-fixed-disk.md | Verification owner | T430 S1 records original-source DeskPro C:/D: capability, controller-matched WD selection, frozen Core media topology, Model-40 VM composition, focused proof, and physical/L3 transfers. Retain with T430 history. |
 | `evidence/t431-s1-deskpro-fdc-not-ready-reference.md` | Verification owner | T431 S1 records reference-derived Model-40 unready READ `ST0=48h` completion, generic-PC/AT isolation, result/IRQ/reset/Sense proof, and physical FDC/L3 transfer. Retain with T431 history. |
 | `evidence/t433-s1-core-l3-coverage-universe.md` | Verification owner | T433 S1 freezes the finite current-public-Core capability universe, master-ledger schema, corpus allocation and conformance predicate; it makes no runtime or L3 conclusion. Retain with T433 history. |
+
+| `evidence/t433-s2-core-cpu-capability-reconciliation.md` | Verification owner | T433 S2 reconciles the five frozen CPU capability families against current Core code, retained evidence and regression owners; physical CPU, prefetch and x87 timing remain explicit transfers. Retain with T433 history. |

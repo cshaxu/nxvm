@@ -25,3 +25,7 @@ Coordinator review accepts P1 `e62bcd9a` and corrective P2 `4eea62dd`.
 The frozen 30-family universe, exact 53-header accounting and documentation
 governance check are complete. T433 remains open; S2 must reconcile the CPU
 batch without changing the frozen coverage rule.
+
+## S2 Scope
+
+S2 reconciles the five frozen CPU capability rows in [its evidence](../etc/evidence/t433-s2-core-cpu-capability-reconciliation.md).

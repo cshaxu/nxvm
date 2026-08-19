@@ -2,7 +2,26 @@
 
 ## Current Work
 
-**T433 is between accepted subtasks.**
+## M5 T433 S2 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner approved T433 total Core audit on 2026-08-19; S1 accepted the frozen universe and assigns this CPU batch. |
+| Objective | Reconcile the complete frozen `CPU-EXEC`, `CPU-EXCEPT`, `CPU-PREFETCH`, `CPU-RETIRE`, and `CPU-FPU` batch against current Core code, tests and retained CPU evidence. |
+| Non-goals | No timing-engine implementation, CPU behavior repair, VM-profile change, external research/import, historical re-proof, physical/L4 claim, or disposition of a non-CPU S1 row. |
+| Reference Baseline | T433 S1 accepted coverage universe; T357/T359/T363 instruction corpus, T401 CPU correctness audit, T420 duplicate-audit withdrawal, and current T432 artifact. |
+| Candidate Proposal | [Core L3 ledger reconciliation and conformance](../proposals/m5-core-l3-ledger-reconciliation.md). |
+| Files And ABI Surface | T433 master-ledger evidence and task history/state only; source/test inspection is read-only and no public ABI or artifact changes are permitted. |
+| Applicable Rules | `docs/rules/EXECUTION.md`, `DOCUMENT.md`, `ARCHITECTURE.md`, `CODING.md`, and the Core L3 timing design; Core owns CPU execution and remains machine-neutral. |
+| Verification | Inspect CPU/FPU/public machine headers and implementation callers, CMake focused smoke registrations, retained corpus rows and current test owners; verify all five IDs have exactly one permitted disposition and named lifecycle/regression evidence. |
+| Expected Markers | `M5:T433:S2:CPU-LEDGER:OK` and documentation-governance success. |
+| Asset Needs | No firmware, guest media, third-party source, or other asset. |
+| Reporting Requirements | Report each CPU-row disposition, code/test owner, transfer receiver and any retained-ledger contradiction. |
+| Stop Conditions | Stop and transfer a contradiction between retained ledgers, a required behavioral repair, an uncovered CPU public boundary, or any scope expansion; do not choose a historical winner without authority. |
+| Exit Criteria | A complete five-row CPU batch enters the master ledger with exact owner/caller, evidence, lifecycle, regression owner and one permitted disposition per row; all discrepancies transfer to the earliest named receiver. |
+| Original Owner Request | Owner asked to execute the active T task as a total audit of Core hardware/chip capabilities. |
+| Similar-Issue Sweep | Sweep every CPU/FPU/retirement/prefetch header, implementation owner and registered smoke; classify a shared transaction or controller finding only as a transfer, not a CPU conclusion. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T432 S1 `vm-0-5-0432` / `build/output/nxvm_0_5_0432.exe`, SHA-256 `F29A7DF2BA6F43D2A7E1B4C9AABCD634123E4E57F92226796B5734B4A71C413C`. T432 separates KBC delayed Set-2 translation from native break typematic cancellation, fixing stuck keys in Model-339 Console and Window sessions.
