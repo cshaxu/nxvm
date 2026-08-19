@@ -7,6 +7,17 @@ requests, availability waits, BUSRDY, HOLD/HLDA, DMA, refresh and retirement.
 It makes the existing transaction and bus ledgers selectable Core contracts
 without placing board or profile names in the CPU executor.
 
+## Shared Admission Baseline
+
+This candidate implements the transaction/arbitration portion of the
+[Core specification-driven timing design](../etc/architecture/specification-driven-l3-timing.md)
+and consumes the earliest transaction batch from the
+[T433 S6 Core L3 admission ledger](../etc/evidence/t433-s6-core-l3-admission-feasibility-ledger.md):
+`CPU-PREFETCH`, `TXN-MEMORY`, `TXN-PORT`, `TXN-ARBITRATION`, and
+`MEM-RAM-A20-PARITY`. It owns neutral availability, completion and arbitration
+contracts; a profile later selects only registered data/contract IDs and may
+not add board-specific executor callbacks.
+
 ## Required Scope
 
 Consume T354/T369 transaction evidence, the reconciled route ledger, and the

@@ -7,6 +7,18 @@ onto the Core timing-plan path. Replace coarse scalar or ad-hoc surcharge
 selection with neutral instruction-form/context timing programs that express
 documented constants, formulas and deterministic bounded ranges.
 
+## Shared Admission Baseline
+
+This candidate applies the
+[Core specification-driven timing design](../etc/architecture/specification-driven-l3-timing.md)
+through the plan boundary and consumes the earliest CPU-program batch:
+`CPU-EXEC`, `CPU-EXCEPT`, and `CPU-FPU` from the
+[T433 S6 Core L3 admission ledger](../etc/evidence/t433-s6-core-l3-admission-feasibility-ledger.md).
+It owns instruction-form and delivery/FPU rule admission, not board
+availability, prefetch production, INTA waveform or profile-local algorithms.
+Those retain their ledger-assigned receivers and explicit L2 status until
+their own contract is implemented.
+
 ## Required Scope
 
 Consume the reconciled CPU rows and retained T357/T359/T360/T361/T362/T363

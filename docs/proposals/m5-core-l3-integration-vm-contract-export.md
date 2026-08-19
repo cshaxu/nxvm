@@ -7,6 +7,18 @@ device-phase contracts into one Core L3 capability surface. Publish the stable,
 validated contract catalog that a later VM profile resolver may select, without
 implementing that resolver or changing a profile in this task.
 
+## Shared Admission Baseline
+
+This final candidate verifies and exports the boundary defined by the
+[Core specification-driven timing design](../etc/architecture/specification-driven-l3-timing.md)
+and consumes the remaining integration-only receiver batch from the
+[T433 S6 Core L3 admission ledger](../etc/evidence/t433-s6-core-l3-admission-feasibility-ledger.md):
+`DISPLAY-PRESENT`, `INPUT-HOST`, `TRACE-DEBUG`, `PLATFORM-MAILBOX`,
+`PLATFORM-RESOURCE`, `PLATFORM-WAIT`, `SESSION-COMMAND`, and `PRODUCT-DEBUG`.
+These rows are copied-observation, host-adapter or product boundaries, not
+machine-chip timing rules; this candidate must preserve that classification
+while exporting only neutral validated contract metadata.
+
 ## Required Scope
 
 Consume all preceding Core candidates and their closure ledgers. Reconcile the

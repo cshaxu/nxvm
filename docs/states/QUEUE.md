@@ -29,7 +29,10 @@ shared proposals and in each candidate's linked proposal.
 The [Core specification-driven timing design](../etc/architecture/specification-driven-l3-timing.md)
 is the shared architecture context for the following ordered Project A sequence.
 These candidates establish Core capabilities before a machine profile may claim
-them; they consume retained evidence rather than reopening closed audits.
+them; they consume retained evidence rather than reopening closed audits. Each
+linked proposal identifies its finite implementation-admission baseline and
+exclusive earliest capability batch; a later candidate may consume a registered
+contract but does not redefine its L3 or Core/VM boundary.
 
 1. [Core timing contract and machine plan](../proposals/m5-core-timing-contract-machine-plan.md).
 1. [Core CPU instruction timing programs](../proposals/m5-core-cpu-instruction-timing-program.md).

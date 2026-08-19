@@ -7,6 +7,18 @@ onto the Core timing-plan and transaction lifecycle: command acceptance,
 service readiness, DRQ/IRQ assertion and withdrawal, acknowledgement, reset,
 cancellation, error/result completion and presentation boundaries.
 
+## Shared Admission Baseline
+
+This candidate applies the
+[Core specification-driven timing design](../etc/architecture/specification-driven-l3-timing.md)
+to the earliest controller/device receiver batch in the
+[T433 S6 Core L3 admission ledger](../etc/evidence/t433-s6-core-l3-admission-feasibility-ledger.md):
+`CTRL-PIC`, `CTRL-DMA`, `CTRL-PIT`, `CTRL-RTC-CMOS`, `CTRL-KBC-NMI`,
+`CTRL-FDC`, `CTRL-HDC`, `MEDIA-BACKING`, and `DISPLAY-VADP`. It admits only
+source-backed or labelled reference contracts through the plan/transaction
+owners; electrical waveforms and unadmitted machine facts remain visible L2
+exceptions rather than generic Core behavior.
+
 ## Required Scope
 
 Consume the reconciled device ledger and retained PIC/DMA/PIT/RTC/KBC/FDC/HDC/
