@@ -91,7 +91,15 @@ are evidence inputs, not competing current architecture authorities.
 
 ## S1 verification
 
-- `rg --files src/core | rg "\\.h$"` enumerated the 42 Core headers.
+- `rg --files src/core | rg "\\.h$"` enumerated 53 headers, accounted for as
+  follows: `utils/` (2: `wait*.h`); `platform/` (6: backing resource, display
+  frame, input, presentation mailbox, sleep and wait); `product/` (10: banner,
+  utilities, three session contracts, three debug contracts and two xasm
+  contracts); and `machine/` (35: CPU/execution/FPU/retirement, machine/time/
+  lifecycle, memory/port/firmware/ROM/entry, controller configuration, device,
+  display/presentation, trace and debug contracts).  The table groups these
+  headers by capability family rather than treating each header as a separate
+  L3 assertion.
 - `CMakeLists.txt` declares `core-machine` with `src` as its public include
   root; the audit also swept `core/platform` and `core/product` headers so that
   public integration paths cannot disappear behind a machine-only filter.

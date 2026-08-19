@@ -12,3 +12,9 @@ L4 claim.
 
 S1 freezes the capability universe and ledger schema. Reconciliation and
 conformance dispositions remain pending until their assigned later S batches.
+
+## P1 Correction
+
+Coordinator review of P1 found an incorrect 42-header count in the S1 evidence.
+P2 corrects it to 53 and records the four-directory accounting; the 30-family
+universe and its no-conformance boundary are unchanged.
