@@ -2,7 +2,26 @@
 
 ## Current Work
 
-**Idle.**
+## M5 T433 S1 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New |
+| Admission And Approval | Owner approved the first Queue candidate, Core L3 ledger reconciliation and conformance, on 2026-08-19. |
+| Objective | Freeze one finite, neutral coverage universe and master-ledger schema for every current public Core capability before reconciliation begins. |
+| Non-goals | No runtime or ABI change, timing-engine implementation, VM-profile change, historical re-proof, external research/import, or L4 claim. |
+| Reference Baseline | Closed T432 artifact `vm-0-5-0432`; Queue-first Core L3 sequence; retained T346, T354, T357, T359, T363, T369, T370, T373, T377, T401, T404 and T420 evidence corpus. |
+| Candidate Proposal | [Core L3 ledger reconciliation and conformance](../proposals/m5-core-l3-ledger-reconciliation.md). |
+| Files And ABI Surface | `docs/etc/evidence/t433-s1-core-l3-coverage-universe.md`, T433 history record, and Current state only; no source, build, test, artifact, or public-ABI modification. |
+| Applicable Rules | `docs/rules/EXECUTION.md`, `DOCUMENT.md`, `ARCHITECTURE.md`, and `docs/etc/architecture/specification-driven-l3-timing.md`; Core stays machine-neutral and every public capability retains one owner and disposition. |
+| Verification | Inspect Core public headers, CMake public include boundary, and retained corpus indexes; check finite IDs, unique batch assignment, required columns, evidence links, and documentation governance. |
+| Expected Markers | `M5:T433:S1:CORE-L3-UNIVERSE:OK` and documentation-governance success. |
+| Asset Needs | No firmware, guest media, third-party source, or other asset. |
+| Reporting Requirements | Report frozen-unit count, header/corpus scope, deferred reconciliation batches, and any contradiction requiring transfer. |
+| Stop Conditions | Stop and transfer a retained-ledger contradiction, an unbounded or missing public boundary, or a required scope/authority expansion; do not select a historical winner without authority. |
+| Exit Criteria | An indexed, finite universe defines every current public Core capability family, its owner/header boundary, required ledger fields, source-corpus family, and exactly one later reconciliation batch; no conformance conclusion is made in S1. |
+| Original Owner Request | Owner asked to formally begin the next Queue task in single-person dual-role mode. |
+| Similar-Issue Sweep | Inspect every `src/core/**/*.h` public boundary and every proposal-named evidence family; record platform/product-facing Core integration rather than treating only `core_machine` headers as Core scope. |
 
 ## Current Technical Baseline
 
