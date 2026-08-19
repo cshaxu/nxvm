@@ -40,11 +40,11 @@
 ## Conformance conclusion
 
 All 30 frozen IDs have exactly one owner/evidence/disposition. The audit finds
-no implementation discrepancy requiring repair. Every nonphysical gap is
-explicitly transferred to the ordered Core timing-plan, CPU-program,
-transaction/arbitration, controller/device or integration-export candidates,
-or the named x87/MFM/media TODO; no boot/default timing result is used as
-proof. This concludes T433 as a factual Core migration baseline, not an L4 or
-universal-device claim.
+no implementation discrepancy requiring repair. Corrective S6 supplements
+this summary with the required actual L3 fact gap, Core-feasibility decision,
+plan/program declaration, evidence admission and focused proof for every row:
+[T433 S6 admission ledger](t433-s6-core-l3-admission-feasibility-ledger.md).
+No boot/default timing result is used as proof. This remains a factual Core
+migration baseline, not an L4 or universal-device claim.
 
 `M5:T433:S5:CONFORMANCE:OK`

@@ -492,8 +492,9 @@ another principal document.
 
 | `evidence/t433-s2-core-cpu-capability-reconciliation.md` | Verification owner | T433 S2 reconciles the five frozen CPU capability families against current Core code, retained evidence and regression owners; physical CPU, prefetch and x87 timing remain explicit transfers. Retain with T433 history. |
 
-| vidence/t433-s3-core-transaction-time-reconciliation.md | Verification owner | T433 S3 reconciles six frozen Core time/transaction/memory rows with current owners and focused smokes; physical waits and signals remain explicit L2 transfers. Retain with T433 history. |
+| `evidence/t433-s3-core-transaction-time-reconciliation.md` | Verification owner | T433 S3 reconciles six frozen Core time/transaction/memory rows with current owners and focused smokes; physical waits and signals remain explicit L2 transfers. Retain with T433 history. |
 
-| vidence/t433-s4-core-controller-device-reconciliation.md | Verification owner | T433 S4 reconciles nine frozen Core controller/device rows with current owners and focused smokes; physical device timing and media semantics remain explicit L2 transfers. Retain with T433 history. |
+| `evidence/t433-s4-core-controller-device-reconciliation.md` | Verification owner | T433 S4 reconciles nine frozen Core controller/device rows with current owners and focused smokes; physical device timing and media semantics remain explicit L2 transfers. Retain with T433 history. |
 
-| vidence/t433-core-l3-master-ledger.md | Verification owner | T433 final 30-row Core master ledger and conformance report. Retain with T433 history. |
+| `evidence/t433-core-l3-master-ledger.md` | Verification owner | T433 final 30-row Core master ledger and conformance report. Retain with T433 history. |
+| `evidence/t433-s6-core-l3-admission-feasibility-ledger.md` | Verification owner | T433 corrective S6 records, for every frozen Core capability, the actual L3 fact gap, Core-neutral feasibility, required timing-plan/program declaration, evidence admission and focused acceptance path. Retain with T433 history. |
