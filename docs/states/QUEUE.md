@@ -8,6 +8,8 @@ is retained separately so this queue remains a short ordering surface.
 
 ## M5 Candidates
 
+1. [Keyboard key-up reliability repair](../proposals/m5-keyboard-keyup-reliability-repair.md).
+
 The [four-profile CPU-completeness program](../proposals/m5-four-profile-cpu-completeness-program.md)
 is the shared admission context for this dependency-ordered sequence.
 

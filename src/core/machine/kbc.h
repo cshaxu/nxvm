@@ -91,6 +91,7 @@ typedef struct t_kbc_data {
     type_unsigned_8 led_state;
     type_unsigned_8 typematic;
     type_bool set2_break_pending;
+    type_bool set2_typematic_break_pending;
     type_bool set2_extended_pending;
     type_unsigned_8 set2_pause_bytes[8];
     type_unsigned_8 set2_pause_count;

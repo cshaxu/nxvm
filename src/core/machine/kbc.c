@@ -170,6 +170,7 @@ static C_VOID core_machine_kbc_set_defaults(t_kbc *controller)
     controller->data.typematic_remaining_ticks = 0u;
     controller->data.typematic_scan_code = 0u;
     controller->data.set2_break_pending = TYPE_FALSE;
+    controller->data.set2_typematic_break_pending = TYPE_FALSE;
     controller->data.set2_extended_pending = TYPE_FALSE;
     controller->data.set2_pause_count = 0u;
 }
@@ -926,9 +927,8 @@ static type_status core_machine_kbc_admit_native_byte(t_kbc *controller,
     /* Break-prefix state belongs to the native keyboard stream even while
      * firmware has disabled 8042 translation; typematic must still see it. */
     if (controller->data.scan_set == CORE_MACHINE_KBC_SCAN_SET_2 &&
-        (controller->data.command_byte & CORE_MACHINE_KBC_COMMAND_TRANSLATION) == 0u &&
         native_byte == 0xf0u) {
-        controller->data.set2_break_pending = TYPE_TRUE;
+        controller->data.set2_typematic_break_pending = TYPE_TRUE;
     }
     if (controller->data.scan_set == CORE_MACHINE_KBC_SCAN_SET_1 &&
         (native_byte & 0x80u) != 0u &&
@@ -946,7 +946,7 @@ static type_status core_machine_kbc_admit_native_byte(t_kbc *controller,
     }
     if (controller->data.scan_set == CORE_MACHINE_KBC_SCAN_SET_2) {
         set1 = core_machine_kbc_set2_to_set1(native_byte, &known);
-        if (controller->data.set2_break_pending && known &&
+        if (controller->data.set2_typematic_break_pending && known &&
             native_byte == controller->data.typematic_scan_code) {
             controller->data.typematic_active = TYPE_FALSE;
         } else if (native_byte != 0xe0u && native_byte != 0xe1u &&
@@ -961,9 +961,8 @@ static type_status core_machine_kbc_admit_native_byte(t_kbc *controller,
         }
     }
     if (controller->data.scan_set == CORE_MACHINE_KBC_SCAN_SET_2 &&
-        (controller->data.command_byte & CORE_MACHINE_KBC_COMMAND_TRANSLATION) == 0u &&
         native_byte != 0xe0u && native_byte != 0xe1u && native_byte != 0xf0u) {
-        controller->data.set2_break_pending = TYPE_FALSE;
+        controller->data.set2_typematic_break_pending = TYPE_FALSE;
     }
     return TYPE_STATUS_OK;
 }

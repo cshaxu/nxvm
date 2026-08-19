@@ -143,6 +143,35 @@ static C_INT core_machine_kbc_set2_translation(C_VOID)
     return failed;
 }
 
+
+static C_INT core_machine_kbc_set2_break_cancels_typematic(C_VOID)
+{
+    static const type_unsigned_8 make_b[] = { 0x32u };
+    static const type_unsigned_8 break_b[] = { 0xf0u, 0x32u };
+    t_kbc kbc;
+    t_port port;
+    C_INT failed = 0;
+
+    core_machine_port_initialize(&port);
+    core_machine_kbc_initialize(&kbc, &port);
+    core_machine_port_write(&port, 0x0064u, 0x60u);
+    core_machine_port_write(&port, 0x0060u, 0x41u);
+    core_machine_kbc_set_typematic_timing(&kbc, 1u, 1u);
+    core_machine_kbc_set_serial_delivery_timing(&kbc, 2u);
+    failed |= core_machine_kbc_submit_native_bytes(&kbc, make_b,
+        sizeof(make_b)) != TYPE_STATUS_OK || !kbc.data.typematic_active;
+    failed |= core_machine_kbc_submit_native_bytes(&kbc, break_b,
+        sizeof(break_b)) != TYPE_STATUS_OK || kbc.data.typematic_active;
+    core_machine_kbc_advance(&kbc, 2u);
+    failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0x30u;
+    core_machine_kbc_advance(&kbc, 2u);
+    core_machine_kbc_advance(&kbc, 2u);
+    failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0xb0u ||
+        kbc.data.typematic_active;
+    core_machine_kbc_finalize(&kbc);
+    core_machine_port_finalize(&port);
+    return failed;
+}
 C_INT main(C_VOID)
 {
     t_kbc kbc;
@@ -154,6 +183,7 @@ C_INT main(C_VOID)
     C_INT failed = 0;
     C_INT mixed_failed;
     C_INT translation_failed;
+    C_INT typematic_break_failed;
     type_unsigned_8 index;
 
     core_machine_port_initialize(&port);
@@ -165,8 +195,10 @@ C_INT main(C_VOID)
 
     mixed_failed = core_machine_kbc_mixed_fifo_lifecycle();
     translation_failed = core_machine_kbc_set2_translation();
+    typematic_break_failed = core_machine_kbc_set2_break_cancels_typematic();
     failed |= mixed_failed;
     failed |= translation_failed;
+    failed |= typematic_break_failed;
 
     failed |= core_machine_kbc_read_byte(&port, 0x0064u) != 0x14u;
     core_machine_port_write(&port, 0x0064u, 0x20u);

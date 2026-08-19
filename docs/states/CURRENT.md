@@ -2,11 +2,30 @@
 
 ## Current Work
 
-**Idle.**
+## M5 T432 S1 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New |
+| Admission And Approval | Owner-approved keyboard key-up reliability repair on 2026-08-18. |
+| Objective | Repair lost host key-up events without changing keyboard timing. |
+| Non-goals | No host-time dependence, profile/UI redesign, capacity-only workaround, or device-surface expansion. |
+| Reference Baseline | Prior T431 developer artifact, T403 keyboard serial-endpoint repair and current Model-339 reproduction. |
+| Candidate Proposal | [Keyboard key-up reliability repair](../proposals/m5-keyboard-keyup-reliability-repair.md); the defect is KBC Set-2 state ownership, not VM queue loss. |
+| Files And ABI Surface | Private Core KBC state, focused Core test, artifact identity and task evidence; no public ABI change. |
+| Applicable Rules | `docs/rules/EXECUTION.md`, `ARCHITECTURE.md`, `CODING.md`, and `DOCUMENT.md`; Core retains KBC state and VM composition owns ordered host ingress. |
+| Verification | Focused delayed Set-2 make/break regression, Model-339 typematic contract, current smoke-gate build, and owner Console/Window manual confirmation. |
+| Expected Markers | A focused marker proving no continued typematic after release. |
+| Asset Needs | No new firmware, media, third-party source, or protected asset. |
+| Reporting Requirements | Report root cause, verification, artifact SHA-256, and remaining host-runtime boundary. |
+| Stop Conditions | Stop for a required host-policy/ABI change, non-reproducible failure, or scope expansion. |
+| Exit Criteria | Set-2 translation state stays distinct from native-break typematic cancellation; focused regression emits the correct Set-1 break and leaves typematic inactive; gates, evidence and `vm-0-5-0432` artifact are complete. |
+| Original Owner Request | Owner asked to permanently repair the reproduced Model-339 continuous key-repeat defect. |
+| Similar-Issue Sweep | Reviewed all Set-2 break state accesses: translation retains `set2_break_pending`; native typematic cancellation uses the new private state; host ingress requires no change. |
 
 ## Current Technical Baseline
 
-- **Current developer artifact:** T431 S1 `vm-0-5-0431` / `build/output/nxvm_0_5_0431.exe`, SHA-256 `63989D0E151497D5DDCAB99BF7EEEADC3300AEB8FFC19BC47A4042D87D9E0723`. T431 adds one Core-owned frozen FDC unready-READ completion policy: Model-40 selects the reference-derived `ST0=48h` result through the existing IRQ/result path, while generic PC/AT retains its policy; physical timing remains transferred.
+- **Current developer artifact:** T432 S1 `vm-0-5-0432` / `build/output/nxvm_0_5_0432.exe`, SHA-256 `F29A7DF2BA6F43D2A7E1B4C9AABCD634123E4E57F92226796B5734B4A71C413C`. T432 separates KBC delayed Set-2 translation from native break typematic cancellation, fixing stuck keys in Model-339 Console and Window sessions.
   T386 closes selected-device functional completeness at S29; its retained
   [closure audit](../etc/evidence/t386-s29-functional-closure-audit.md) fixes
   HDC current-gate coverage and transfers board, firmware and physical work.
