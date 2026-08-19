@@ -2,42 +2,35 @@
 
 ## Purpose
 
-Make the existing Compaq DeskPro 386 Model 40 run as a narrow 80386DX/Compaq
-delta over the accepted IBM PC/AT 5170 profile detail and the Core L3 contract
-catalog. This is a runnable-profile convergence task, not a new physical
-DeskPro reconstruction or a fresh device/timing program.
+Make the existing Compaq DeskPro 386 Model 40 a runnable explicit child of
+`pc-at-5170`. This is the production vertical slice of the VM profile design,
+not an interim direct derivation and not a fresh DeskPro physical/L3 program.
+See [VM Profile Resolution And Core Machine-Plan Design](../etc/architecture/vm-profile-resolution-design.md).
 
 ## Required Scope
 
-Start from the frozen 5170 composition and list every retained 5170 field that
-DeskPro inherits. Add only the declared 80386DX, memory/ROM map, Compaq
-controller/display, firmware-policy and board-route deltas already present in
-current code or accepted evidence. Reuse a Core contract only by its neutral
-ID and retained evidence tier; do not create a DeskPro-only Core mechanism.
+Use one reusable minimal resolver kernel: typed parent patch to immutable
+`vm_resolved_profile`, then copied Core machine plan. Register only the AT
+root and DeskPro child in this candidate, but do not hard-code a DeskPro branch
+in the kernel.
 
-The resulting selected profile must create, reset and run through the existing
-bounded startup and smoke corpus. It must preserve explicit L2 fallbacks and
-reference-derived labels. The later VM profile foundation normalizes this
-interim direct derivation into the general resolver; this candidate does not
-attempt that framework.
+The DeskPro delta declares only 80386DX, memory/ROM map, Compaq controllers and
+display, firmware policy, and board-route differences already in source or
+accepted evidence. Every remaining field is an explicit inheritance, L2
+fallback, or transferred receiver. Compare old and new reset, ROM, routes,
+devices, selected timing contracts, and startup behavior; then remove the old
+Model-40-special production composition path.
 
-## Dependencies
+## Dependencies And Completion
 
-Consumes the six ordered Core L3 candidates and the accepted 5170 baseline. It
-precedes VM PC profile foundation and makes no claim that DeskPro is a complete
-L3 physical machine.
-
-## Evidence And Completion Standard
-
-Require a finite 5170-inherited-versus-DeskPro-delta ledger, reset/ROM/route/
-device/timing-contract parity checks, immutable configuration proof, and the
-current startup/smoke regressions. Every difference is inherited, explicit
-DeskPro delta, accepted L2 fallback, or transferred to the VM foundation; no
-new generic or physical behavior is inferred.
+Consumes the Core contract export and accepted `pc-at-5170` root candidate.
+It precedes the general VM resolver/default-profile and YAML candidates.
+Completion requires the inherited-versus-delta ledger, immutable configuration
+proof, parity/current regressions, and no DeskPro-only Core mechanism.
 
 ## Non-goals And Stop Conditions
 
-Do not reopen physical-cycle, CECG monitor, controller waveform or firmware
-research; add ROM/media; implement profile inheritance generally; or pursue
-L4. Stop if running requires an unproved machine fact or a profile-local Core
-branch; transfer it to the appropriate Core or VM receiver.
+Do not claim DeskPro physical or complete L3, reopen device/firmware research,
+add assets, create an interim inheritance route, migrate `default-at`, or
+implement YAML. Stop if an inherited fact changes frozen behavior, a Core
+contract is unavailable, or a new difference lacks evidence.

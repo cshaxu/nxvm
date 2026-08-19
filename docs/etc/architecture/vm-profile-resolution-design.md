@@ -4,7 +4,7 @@ M5 Td S110 supporting design. This document elaborates the principal System Arch
 
 ## Scope
 
-This design covers only the current foundation families: IBM PC/XT 5160, IBM PC/AT 5170, a generic 386DX AT, and the DeskPro 386 delta. 80486 and P5 are outside scope.
+The architecture retains IBM PC/XT 5160 and PC/AT 5170 as its two eventual roots. The current implementation program is deliberately restricted to the existing AT tree: pc-at-5170, default-at, and the DeskPro 386 delta. XT admission remains later Queue work; 80486 and P5 are outside this design.
 
 ## Decisions
 
@@ -13,14 +13,14 @@ Project A owns reusable Core execution, transaction, device-state and virtual-ti
 Project B owns VM machine identity, topology, firmware/media policy, provenance, profile inheritance, resolution, and user-session policy. VM selects Core contracts but never implements a CPU timing algorithm or controller state machine.
 
 ```text
-ibm-5160-xt                 ibm-5170-at
-                                  |
-                          generic-386dx-at
-                                  |
-                       compaq-deskpro-386-model-40
+ibm-5160-xt (deferred root)
+
+pc-at-5170
+|- default-at
+- compaq-deskpro-386-model-40
 ```
 
-The only built-in profile roots are ibm-5160-xt and ibm-5170-at. They are independent; XT is never an AT parent. Every other built-in profile has exactly one parent ending at a root. A profile is the only machine-selection concept: no variant, no second profile-variable layer, no multiple inheritance. Private reusable fragments may share typed data, but are not selectable profiles and cannot create a diamond.
+The two architecture roots are ibm-5160-xt and pc-at-5170. They are independent; XT is never an AT parent. The current VM program admits only the pc-at-5170 tree; 5160 admission remains later Queue work. Every other built-in profile has exactly one profile parent ultimately ending at one of those roots. A profile is the only machine-selection concept: no variant, no second profile-variable layer, and no multiple inheritance. Private reusable fragments may share typed data, but are not selectable profiles and cannot create a diamond.
 
 ## Profile Contract And Resolution
 
@@ -28,7 +28,7 @@ A profile is immutable declarative data, never live machine pointers, host callb
 
 Before migration, freeze a finite field/dependency universe: CPU and clocks; RAM, ROM, reset and A20; ports and memory decode; PIC, DMA, PIT, RTC, KBC, NMI and speaker; FDC/HDC/media; display; firmware policy; and every IRQ, DRQ, HOLD, BUSRDY, wait and reset dependency. Children may inherit, replace, disable, or make a predeclared allowed add only.
 
-The resolver recursively resolves the parent and applies typed patches. It rejects duplicate ownership, disabled-but-bound devices, port/memory overlap, IRQ/DRQ conflict, invalid ROM/memory windows, unavailable Core contracts, broken dependencies, and disallowed media or firmware policy. Its output is a copied immutable vm_resolved_profile with VM-only identity, provenance, evidence links, and session-policy limits. It never creates a partial machine to find an error.
+The resolver recursively resolves the parent and applies typed patches. It rejects duplicate ownership, disabled-but-bound devices, port/memory overlap, IRQ/DRQ conflict, invalid ROM/memory windows, unavailable Core contracts, broken dependencies, and disallowed media or firmware policy. Its output is a copied immutable vm_resolved_profile with VM-only identity, provenance, evidence links, and session-policy limits. Resolution never constructs a partial machine to discover validity.
 
 ## Core Boundary
 
@@ -60,15 +60,15 @@ The single profile field selects one built-in profile. YAML may select only choi
 1. Freeze profile fields, dependencies, capability IDs, current-path probes, and explicit L2 exceptions.
 2. Add immutable typed profile data, resolver validation, resolved-profile snapshots, and a plan adapter; preserve the current composer behind it.
 3. Add the complete copied core_machine_plan validation/freeze boundary and compare its Core snapshot to current 5170 composition.
-4. Migrate ibm-5170-at, prove reset/ROM/routes/devices/timing-contract parity, cut over, and delete its legacy production path.
-5. Migrate ibm-5160-xt as an independent root through the same resolver and plan boundary, never as an AT alias.
-6. Add generic-386dx-at as a 5170 child, then migrate DeskPro 386 as its Compaq delta. Retain reference-derived and generic-at labels; do not turn generic behavior into false Compaq evidence.
-7. Replace the hard-coded session parser with nxvm-session after the roots and parity corpus exist, then delete superseded profile-specific branches.
+4. Migrate pc-at-5170, prove reset/ROM/routes/devices/timing-contract parity, cut over, and delete its legacy production path.
+5. Migrate DeskPro 386 directly as a named pc-at-5170 child. Retain reference-derived and generic-at labels; do not turn generic behavior into false Compaq evidence.
+6. Complete the same resolver and migrate default-at as the second explicit pc-at-5170 child.
+7. Replace the hard-coded session parser with nxvm-session after all three AT profiles have parity, then delete superseded profile-specific composition branches.
 
-Each cutover compares immutable Core snapshots and focused reset, mapping, route, device, firmware-policy, and timing-contract regressions. New becomes the only production path before the next migration. A mismatch stops the increment; no profile-local callback or silent generic fallback is permitted.
+At every cutover, the old and new paths are compared through immutable Core snapshots and focused reset, mapping, route, device, firmware-policy and timing-contract regressions. New becomes the only production path before the next migration. A mismatch stops that increment; no profile-local callback or silent generic fallback is permitted.
 
 ## Acceptance And Governance
 
 A profile migration needs a complete field ledger, available selected Core contracts, owner-visible L2 exceptions, and resolver conflict/provenance/immutability tests plus existing composition regressions. This is an L3 composition framework, not an assertion that every selected device already has L3 coverage.
 
-Promotion to principal architecture, Queue/proposal changes, root-profile admission, or Core/VM ABI change requires a separately approved governance or implementation task. Existing runtime behavior and proposals remain unchanged.
+Promotion to principal architecture, root-profile admission, or Core/VM ABI change requires a separately approved governance or implementation task. This supporting document does not itself change runtime behavior or the Core/VM ABI.

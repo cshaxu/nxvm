@@ -38,8 +38,10 @@ them; they consume retained evidence rather than reopening closed audits.
 1. [Core controller and device phase contracts](../proposals/m5-core-controller-device-phase-contracts.md).
 1. [Core L3 integration closure and VM contract export](../proposals/m5-core-l3-integration-vm-contract-export.md).
 
+1. [PC/AT 5170 root profile normalization](../proposals/m5-pc-at-5170-root-profile-normalization.md).
 1. [DeskPro 386 5170-derived runnable profile](../proposals/m5-deskpro-386-5170-derived-runnable-profile.md).
-1. [VM PC profile foundation](../proposals/m5-vm-pc-profile-foundation.md).
+1. [VM AT profile resolution foundation](../proposals/m5-vm-at-profile-resolution-foundation.md).
+1. [VM session profile YAML cutover](../proposals/m5-vm-session-profile-yaml-cutover.md).
 1. [IBM PC/XT 5160-268 profile and capability-gap audit](../proposals/m5-xt-5160-268-profile-capability-audit.md).
 1. [IBM PC/XT 5160-268 selected-device functional closure](../proposals/m5-xt-5160-268-device-functional-closure.md).
 1. [IBM PC/XT 5160-268 board and device phase-timing closure](../proposals/m5-8088-5150-xt-l3-baseline.md).
