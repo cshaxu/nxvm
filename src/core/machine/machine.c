@@ -3444,6 +3444,7 @@ static C_VOID core_machine_arbitration_tick(C_VOID *opaque,
     core_machine *machine = (core_machine *)opaque;
     type_unsigned_64 dma_ticks;
     type_unsigned_64 pit_ticks;
+    type_bool refresh_pending;
     core_machine_timeline_token next;
 
     if (machine == STD_NULL) {
@@ -3451,6 +3452,7 @@ static C_VOID core_machine_arbitration_tick(C_VOID *opaque,
     }
     dma_ticks = core_machine_clock_domain_advance(&machine->dma_clock, 1u);
     pit_ticks = core_machine_clock_domain_advance(&machine->pit_clock, 1u);
+    refresh_pending = machine->d4_refresh_hold_pending;
     core_machine_d4_refresh_hold_advance(machine);
     if (machine->dma_cycle_wait_quanta != 0u && dma_ticks != 0u) {
         type_unsigned_64 tick;
@@ -3488,6 +3490,15 @@ static C_VOID core_machine_arbitration_tick(C_VOID *opaque,
         core_machine_dma_advance_transaction(&machine->shared_dma_latch,
             &machine->shared_dma_primary, &machine->shared_dma_secondary,
             &machine->executor_memory, &machine->transaction, dma_ticks);
+    }
+    if (machine->cpu_prefetch_reservation_enabled && !refresh_pending &&
+        !machine->d4_refresh_hold_pending &&
+        !core_machine_dma_has_pending_request(&machine->shared_dma_primary,
+            &machine->shared_dma_secondary) &&
+        machine->transaction.owner == CORE_MACHINE_TRANSACTION_OWNER_NONE &&
+        machine->transaction.hold_owner == CORE_MACHINE_TRANSACTION_OWNER_NONE) {
+        core_machine_cpu_execution_advance_prefetch_reservation(
+            &machine->executor_cpu_execution);
     }
     if (dma_ticks != 0u) {
         core_machine_trace_record(machine, CORE_MACHINE_TRACE_DMA_ADVANCE,
@@ -4899,6 +4910,8 @@ static type_status core_machine_create_internal(
             &config->external_cycle_timing) ||
         (config->cpu_cycle_bus_ready_gate_enabled != TYPE_FALSE &&
         config->cpu_cycle_bus_ready_gate_enabled != TYPE_TRUE) ||
+        (config->cpu_prefetch_reservation_enabled != TYPE_FALSE &&
+        config->cpu_prefetch_reservation_enabled != TYPE_TRUE) ||
         (config->auxiliary_pit_present != TYPE_FALSE &&
         config->auxiliary_pit_present != TYPE_TRUE) ||
         (config->dma_cycle_bus_ready_gate_enabled != TYPE_FALSE &&
@@ -4923,6 +4936,7 @@ static type_status core_machine_create_internal(
     machine->dma_cycle_wait_quanta = config->dma_cycle_wait_quanta;
     machine->dma_cycle_bus_ready_gate_enabled = config->dma_cycle_bus_ready_gate_enabled;
     machine->cpu_cycle_bus_ready_gate_enabled = config->cpu_cycle_bus_ready_gate_enabled;
+    machine->cpu_prefetch_reservation_enabled = config->cpu_prefetch_reservation_enabled;
     machine->dma_cycle_bus_ready = TYPE_TRUE;
     machine->cpu_cycle_bus_ready = TYPE_TRUE;
     if (config->retirement_qualification != STD_NULL) {
@@ -5509,6 +5523,10 @@ type_status core_machine_run(
                     result->linear_pc = core_machine_linear_pc(machine);
                     result->elapsed_ticks = machine->elapsed_ticks;
                     return TYPE_STATUS_OK;
+                }
+                if (machine->cpu_prefetch_reservation_enabled) {
+                    core_machine_cpu_execution_reserve_prefetch(
+                        &machine->executor_cpu_execution);
                 }
             }
             {

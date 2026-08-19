@@ -58,6 +58,7 @@ static C_INT vm_model_339_selected_contract(C_VOID)
     /* 5170 selects no board-specific external-cycle policy; it reuses the
      * same Core owner with the disabled default rather than a parallel path. */
     failed |= session->core_machine->cpu_cycle_bus_ready_gate_enabled != TYPE_FALSE ||
+        session->core_machine->cpu_prefetch_reservation_enabled != TYPE_FALSE ||
         session->core_machine->external_cycle_timing.page_bytes != 0u ||
         session->core_machine->external_cycle_timing.page_miss_ticks != 0u ||
         session->core_machine->external_cycle_timing.page_hit_ticks != 0u ||

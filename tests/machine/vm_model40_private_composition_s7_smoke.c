@@ -39,6 +39,7 @@ C_INT main(C_VOID)
         session->core_machine->external_cycle_timing.page_miss_ticks != 2u ||
         session->core_machine->external_cycle_timing.page_hit_ticks != 0u ||
         session->core_machine->cpu_cycle_bus_ready_gate_enabled != TYPE_TRUE ||
+        session->core_machine->cpu_prefetch_reservation_enabled != TYPE_TRUE ||
         session->core_machine->external_cycle_timing.overlap_policy !=
             CORE_MACHINE_EXTERNAL_CYCLE_OVERLAP_EXPLICIT_SEQUENTIAL ||
         core_machine_get_cpu_profile(session->core_machine, &cpu_profile) !=

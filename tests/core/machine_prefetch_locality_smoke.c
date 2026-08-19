@@ -256,6 +256,68 @@ static C_INT retirement_wait_contract(C_VOID)
     core_machine_destroy(machine);
     return !failed;
 }
+static C_INT prefetch_reservation_contract(C_VOID)
+{
+    static const core_machine_external_cycle_timing timing = {2048u, 2u, 0u,
+        CORE_MACHINE_EXTERNAL_CYCLE_OVERLAP_EXPLICIT_SEQUENTIAL};
+    core_machine_config config = {0};
+    core_machine *machine = STD_NULL;
+    core_machine_cpu_execution_context *cpu;
+    C_INT failed = 0;
+
+    config.cpu_profile = CORE_MACHINE_CPU_PROFILE_80386;
+    config.external_cycle_timing = timing;
+    config.cpu_prefetch_reservation_enabled = TYPE_TRUE;
+    failed |= core_machine_create(&config, &machine) != TYPE_STATUS_OK;
+    failed |= core_machine_freeze_execution_providers(machine) != TYPE_STATUS_OK;
+    failed |= core_machine_reset(machine) != TYPE_STATUS_OK;
+    cpu = machine == STD_NULL ? STD_NULL : &machine->executor_cpu_execution;
+    if (!failed) {
+        cpu->prefetch_linear = 0x10u;
+        cpu->prefetch_count = 15u;
+        cpu->prefetch_valid = TYPE_TRUE;
+        cpu->prefetch_expected_linear = 0x17u;
+        cpu->prefetch_expected_valid = TYPE_TRUE;
+        core_machine_cpu_execution_reserve_prefetch(cpu);
+        failed |= !cpu->prefetch_reservation_valid ||
+            cpu->prefetch_reservation_linear != 0x17u ||
+            cpu->prefetch_reservation_count != 15u;
+        failed |= core_machine_advance_time(machine, 1u) != TYPE_STATUS_OK;
+        failed |= cpu->prefetch_reservation_valid || !cpu->prefetch_valid ||
+            cpu->prefetch_linear != 0x10u || cpu->prefetch_count != 15u ||
+            machine->external_cycle_overlap_valid ||
+            machine->external_cycle_round_ticks != 0u;
+        core_machine_cpu_execution_reserve_prefetch(cpu);
+        failed |= !cpu->prefetch_reservation_valid;
+        core_machine_cpu_execution_invalidate_prefetch(cpu);
+        failed |= cpu->prefetch_reservation_valid || cpu->prefetch_valid ||
+            cpu->prefetch_expected_valid;
+        cpu->prefetch_linear = 0x10u;
+        cpu->prefetch_count = 15u;
+        cpu->prefetch_valid = TYPE_TRUE;
+        cpu->prefetch_expected_linear = 0x17u;
+        cpu->prefetch_expected_valid = TYPE_TRUE;
+        core_machine_cpu_execution_reserve_prefetch(cpu);
+        failed |= core_machine_transaction_hold_request(&machine->transaction,
+            CORE_MACHINE_TRANSACTION_OWNER_DMA, 0u) != TYPE_STATUS_OK;
+        failed |= core_machine_transaction_hold_acknowledge(&machine->transaction,
+            CORE_MACHINE_TRANSACTION_OWNER_DMA) != TYPE_STATUS_OK;
+        failed |= core_machine_advance_time(machine, 1u) != TYPE_STATUS_OK ||
+            !cpu->prefetch_reservation_valid;
+        core_machine_transaction_hold_release(&machine->transaction,
+            CORE_MACHINE_TRANSACTION_OWNER_DMA);
+        machine->d4_refresh_hold_pending = TYPE_TRUE;
+        failed |= core_machine_advance_time(machine, 1u) != TYPE_STATUS_OK ||
+            !cpu->prefetch_reservation_valid;
+        failed |= core_machine_advance_time(machine, 1u) != TYPE_STATUS_OK ||
+            cpu->prefetch_reservation_valid;
+        core_machine_cpu_execution_reserve_prefetch(cpu);
+        failed |= core_machine_reset(machine) != TYPE_STATUS_OK ||
+            cpu->prefetch_reservation_valid || cpu->prefetch_valid;
+    }
+    core_machine_destroy(machine);
+    return !failed;
+}
 C_INT main(C_VOID)
 {
     static const core_machine_external_cycle_timing disabled = {0u, 0u, 0u,
@@ -283,6 +345,7 @@ C_INT main(C_VOID)
     failed |= !external_cycle_observer_contract();
     failed |= !d4_refresh_external_cycle_contract();
     failed |= !retirement_wait_contract();
+    failed |= !prefetch_reservation_contract();
     if (failed != 0) return 1;
     STD_PRINTF("M5:T412:S1:EXTERNAL-READ-LOCALITY:OK\n");
     STD_PRINTF("M5:T413:S1:EXTERNAL-WRITE-BRIDGE:OK\n");
@@ -293,5 +356,6 @@ C_INT main(C_VOID)
     STD_PRINTF("M5:T418:S1:INSTRUCTION-BOUNDARY-LOCALITY:OK\n");
     STD_PRINTF("M5:T419:S5:EXTERNAL-CYCLE-OVERLAP:OK\n");
     STD_PRINTF("M5:T423:S1:CPU-BOARD-TRANSACTION:OK\n");
+    STD_PRINTF("M5:T428:S1:GENERIC-PREFETCH-PRODUCER:OK\n");
     return 0;
 }

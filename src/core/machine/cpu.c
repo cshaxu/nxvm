@@ -46,6 +46,9 @@ C_VOID core_machine_cpu_execution_context_initialize(
     context->prefetch_count = 0u;
     context->prefetch_valid = TYPE_FALSE;
     context->prefetch_expected_valid = TYPE_FALSE;
+    context->prefetch_reservation_valid = TYPE_FALSE;
+    context->prefetch_reservation_linear = 0u;
+    context->prefetch_reservation_count = 0u;
     context->cpu_profile = CORE_MACHINE_CPU_PROFILE_80386;
     context->fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE;
     context->cpu_80386_cr_mov_ignores_mod = TYPE_FALSE;
@@ -132,6 +135,9 @@ C_VOID core_machine_cpu_state_initialize(
         context->prefetch_count = 0u;
         context->prefetch_valid = TYPE_FALSE;
         context->prefetch_expected_valid = TYPE_FALSE;
+        context->prefetch_reservation_valid = TYPE_FALSE;
+        context->prefetch_reservation_linear = 0u;
+        context->prefetch_reservation_count = 0u;
     }
     core_machine_cpu_execution_initialize(context);
 }
@@ -146,6 +152,9 @@ C_VOID core_machine_cpu_state_reset(core_machine_cpu_execution_context *context)
         context->prefetch_count = 0u;
         context->prefetch_valid = TYPE_FALSE;
         context->prefetch_expected_valid = TYPE_FALSE;
+        context->prefetch_reservation_valid = TYPE_FALSE;
+        context->prefetch_reservation_linear = 0u;
+        context->prefetch_reservation_count = 0u;
     }
 
     cpu_state.data.eip = 0x0000fff0;
@@ -218,6 +227,40 @@ C_VOID core_machine_cpu_state_reset(core_machine_cpu_execution_context *context)
 
 }
 
+C_VOID core_machine_cpu_execution_reserve_prefetch(
+    core_machine_cpu_execution_context *context)
+{
+    type_unsigned_32 offset;
+    type_unsigned_8 count = 15u;
+
+    if (context == STD_NULL || context->cpu == STD_NULL ||
+        (context->cpu->data.cr0 & VCPU_CR0_PG) ||
+        context->prefetch_reservation_valid || !context->prefetch_valid ||
+        context->prefetch_expected_linear < context->prefetch_linear ||
+        cpu_state.data.eip > cpu_state.data.cs.limit) return;
+    offset = context->prefetch_expected_linear - context->prefetch_linear;
+    if (offset >= context->prefetch_count || context->prefetch_count - offset > 8u) return;
+    if ((type_unsigned_64)cpu_state.data.cs.limit - cpu_state.data.eip + 1u < count) {
+        count = (type_unsigned_8)((type_unsigned_64)cpu_state.data.cs.limit -
+            cpu_state.data.eip + 1u);
+    }
+    if (count == 0u) return;
+    context->prefetch_reservation_linear = context->prefetch_expected_linear;
+    context->prefetch_reservation_count = count;
+    context->prefetch_reservation_valid = TYPE_TRUE;
+}
+
+C_VOID core_machine_cpu_execution_advance_prefetch_reservation(
+    core_machine_cpu_execution_context *context)
+{
+    if (context == STD_NULL || !context->prefetch_reservation_valid) return;
+    /* This transition only releases a bounded prefetch reservation.  Existing
+     * instruction execution remains the sole CPU memory-transaction and
+     * exception owner until a source-backed producer contract is admitted. */
+    context->prefetch_reservation_valid = TYPE_FALSE;
+    context->prefetch_reservation_linear = 0u;
+    context->prefetch_reservation_count = 0u;
+}
 C_VOID core_machine_cpu_execution_invalidate_prefetch(
     core_machine_cpu_execution_context *context)
 {
@@ -225,6 +268,9 @@ C_VOID core_machine_cpu_execution_invalidate_prefetch(
     context->prefetch_count = 0u;
     context->prefetch_valid = TYPE_FALSE;
     context->prefetch_expected_valid = TYPE_FALSE;
+    context->prefetch_reservation_valid = TYPE_FALSE;
+    context->prefetch_reservation_linear = 0u;
+    context->prefetch_reservation_count = 0u;
 }
 
 C_VOID core_machine_cpu_execution_request_stop(

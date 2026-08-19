@@ -213,6 +213,9 @@ struct core_machine_cpu_execution_context {
     type_unsigned_8 prefetch_count;
     type_bool prefetch_valid;
     type_bool prefetch_expected_valid;
+    type_bool prefetch_reservation_valid;
+    type_unsigned_32 prefetch_reservation_linear;
+    type_unsigned_8 prefetch_reservation_count;
     core_machine_cpu_profile cpu_profile;
     core_machine_fpu_profile fpu_profile;
     type_bool cpu_80386_cr_mov_ignores_mod;
@@ -250,6 +253,10 @@ C_VOID core_machine_cpu_execution_initialize(
     core_machine_cpu_execution_context *context);
 /* Core invalidates queued instruction bytes after a stopped-state physical write.
  * The caller does not need CPU or prefetch storage access. */
+C_VOID core_machine_cpu_execution_reserve_prefetch(
+    core_machine_cpu_execution_context *context);
+C_VOID core_machine_cpu_execution_advance_prefetch_reservation(
+    core_machine_cpu_execution_context *context);
 C_VOID core_machine_cpu_execution_invalidate_prefetch(
     core_machine_cpu_execution_context *context);
 C_VOID core_machine_cpu_execution_reset(

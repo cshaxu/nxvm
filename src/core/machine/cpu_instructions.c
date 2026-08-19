@@ -1662,8 +1662,7 @@ static C_VOID _s_write_cr0_80386(core_machine_cpu_execution_context *context,
      * supplies the real-address CS cache transition. A PG change also
      * invalidates bytes fetched through the former translation context. */
     if ((cpu_state.data.cr0 ^ value) & VCPU_CR0_PG) {
-        context->prefetch_valid = TYPE_FALSE;
-        context->prefetch_expected_valid = TYPE_FALSE;
+        core_machine_cpu_execution_invalidate_prefetch(context);
     }
     cpu_state.data.cr0 = value;
     TYPE_TRACE_CALL_END;
@@ -1677,8 +1676,7 @@ static C_VOID _s_write_cr3_80386(core_machine_cpu_execution_context *context,
         TYPE_TRACE_CHECK_RETURN(_SetExcept_UD(0));
     }
     /* A new directory changes the translation context of queued bytes. */
-    context->prefetch_valid = TYPE_FALSE;
-    context->prefetch_expected_valid = TYPE_FALSE;
+    core_machine_cpu_execution_invalidate_prefetch(context);
     cpu_state.data.cr3 = value;
     TYPE_TRACE_CALL_END;
 }
@@ -17818,13 +17816,13 @@ static C_VOID ExecInit(core_machine_cpu_execution_context *context)
     instruction_state.data.except = TYPE_ZERO_32;
     instruction_state.data.excode = TYPE_ZERO_32;
     if (context->prefetch_expected_valid && instruction_state.data.linear !=
-        context->prefetch_expected_linear) context->prefetch_valid = TYPE_FALSE;
+        context->prefetch_expected_linear) core_machine_cpu_execution_invalidate_prefetch(context);
     if (!context->prefetch_valid || instruction_state.data.linear <
         context->prefetch_linear || instruction_state.data.linear -
         context->prefetch_linear >= context->prefetch_count) {
         type_unsigned_8 prefetch_bytes = 15u;
 
-        context->prefetch_valid = TYPE_FALSE;
+        core_machine_cpu_execution_invalidate_prefetch(context);
         if (cpu_state.data.eip <= cpu_state.data.cs.limit &&
             (type_unsigned_64)cpu_state.data.cs.limit - cpu_state.data.eip + 1u <
                 prefetch_bytes) {

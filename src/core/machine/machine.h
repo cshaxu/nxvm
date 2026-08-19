@@ -202,6 +202,7 @@ struct core_machine {
     type_bool dma_cycle_bus_ready;
     type_bool cpu_cycle_bus_ready_gate_enabled;
     type_bool cpu_cycle_bus_ready;
+    type_bool cpu_prefetch_reservation_enabled;
     /* D4 refresh request state; it is serviced at the shared arbitration point. */
     type_bool d4_refresh_hold_pending;
     type_bool d4_refresh_pulse_active;

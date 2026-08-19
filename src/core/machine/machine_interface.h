@@ -119,6 +119,9 @@ typedef struct core_machine_config {
     type_bool dma_cycle_bus_ready_gate_enabled;
     /* Enables a Core-owned CPU BUSRDY input for pending external-cycle waits. */
     type_bool cpu_cycle_bus_ready_gate_enabled;
+    /* Enables the bounded Core prefetch reservation producer.  It has no
+     * physical-cycle overlap or scalar-timing meaning by itself. */
+    type_bool cpu_prefetch_reservation_enabled;
 } core_machine_config;
 
 typedef struct core_machine_display_port_topology {
