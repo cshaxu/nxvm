@@ -87,3 +87,15 @@ time. It separately assigns each missing fact to Core, VM profile, host/product
 or unsupported scope in [the source-sufficiency ledger](../etc/evidence/t433-s7-core-source-sufficiency-ledger.md).
 It does not download sources, implement timing, change runtime behavior or
 weaken the L3 admission rule.
+
+## S7 Acceptance And Corrective Closure
+
+Coordinator actual-change review accepts S7 P1 `55fa3b64`. The new indexed
+ledger has exactly the frozen 30 unique capability IDs; each names its retained
+source status, rule/missing-fact owner, implementation eligibility and receiver.
+It corrects the S6 feasibility-only implication, directly qualifies all five
+Core implementation proposals, and identifies `CTRL-HDC` as source-blocked
+rather than merely profile-unselected. The coordinator reran the 30-ID equality
+check, documentation governance and `git diff --check`. Corrective S7 closes
+without runtime, ABI or developer-artifact change. The next work is a new
+implementation task from the first Queue candidate, not another T433 S.
