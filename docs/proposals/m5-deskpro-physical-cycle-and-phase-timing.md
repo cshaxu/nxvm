@@ -2,7 +2,7 @@
 
 ## Latest Completed Receiver
 
-The original 1986 DeskPro 386/16 D3PE processor material, consulted transiently under the source policy, supported the completed CPU BUSRDY gate. T429 admits a separately labelled generic-AT windowed CECG wait skeleton because the original CECG documents establish addressing and an 8-bit interface but do not yet establish its IOCHRDY/NOWS electrical behavior. The later generic-AT T428 receiver adds only a cancellable, arbitrated prefetch reservation state; it deliberately performs no background fetch, transaction, overlap declaration or physical timing publication. The source file and all temporary copies are deleted and never retained. A source-backed asynchronous producer, BWAIT waveform, ISA peripheral binding and physical/L3 result remain unimplemented.
+The original 1986 DeskPro 386/16 D3PE processor material, consulted transiently under the source policy, supported the completed CPU BUSRDY gate. T429 closes a separately labelled generic-AT windowed CECG 8-bit port-wait skeleton: original CECG documents establish its addressing and 8-bit interface, while the added one-tick wait makes no IOCHRDY/NOWS claim. The earlier generic-AT T428 receiver adds only a cancellable, arbitrated prefetch reservation state; it deliberately performs no background fetch, transaction, overlap declaration or physical timing publication. The source file and all temporary copies are deleted and never retained. A source-backed asynchronous producer, BWAIT waveform, ISA peripheral binding and physical/L3 result remain unimplemented.
 
 ## Purpose
 

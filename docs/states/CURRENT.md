@@ -2,29 +2,11 @@
 
 ## Current Work
 
-**Active: M5 T429 S1.**
-
-## M5 T429 S1 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | New |
-| Admission And Approval | Owner: user; standing approval in this task thread (2026-08-18) to continue DeskPro L3 work, commit, and push to `master`. Scope: one generic-AT CECG 8-bit expansion-bus wait skeleton, with original sources retained only for CECG addressing and 8-bit interface facts; no third-party import or firmware/media retention. |
-| Objective | Give Core one profile-selected, bounded external 8-bit CECG bus-cycle wait classification that advances non-retiring source-cycle quanta before the existing retirement route; bind the selected Model-40 CECG register/aperture surface without a VM transaction or scheduler owner. |
-| Non-goals | No claim that CECG asserts or deasserts NOWS/ BUSRDY; no waveform, BCLK-to-host calibration, asynchronous prefetch, D4 PAL/bank inference, new CPU/DMA path, or physical/L3 acceptance. |
-| Reference Baseline | `master` at `c0b096b5`; T423 Core completion wait, T427 CPU BUSRDY gate, and T428 reservation are retained inputs. Original Compaq DeskPro 386 Volume I and CECG technical reference were inspected transiently under the source policy; no copies are retained. |
-| Candidate Proposal | [DeskPro 386 physical-cycle and phase-timing closure](../proposals/m5-deskpro-physical-cycle-and-phase-timing.md), receiver 1. Ledger batch: generic-AT selected CECG memory/I/O wait skeleton; original addressing/width facts only. |
-| Files And ABI Surface | `src/core/machine/machine_interface.h`, `src/core/machine/machine.[ch]`, Model-40 composition/profile binding, focused Core/VM regression, proposal, evidence/index, history/status/queue. Public surface only gains the minimum copied timing configuration required by Core. |
-| Applicable Rules | `docs/design/ARCHITECTURE.md`: Core owns shared CPU transaction and availability/wait rules; VM binds only board difference. `docs/rules/ARCHITECTURE.md`: one owner/production path and no reverse dependency. `docs/design/CODING.md` and `docs/rules/CODING.md`: module naming, C11/type vocabulary, focused tests. Source policy: reference facts reduced to neutral statements; no retained source/firmware/media. Documentation and execution rules: active packet, evidence, actual-diff review, immediate push, closure P. |
-| Verification | Build focused target(s); run their CTest labels; `git diff --check`; documentation governance gate; full serial `current-gate` CTest before closure. |
-| Expected Markers | New `M5:T429:S1:CECG-8BIT-BUS-WAIT:OK`; existing Model-40/5170 composition markers remain green. |
-| Asset Needs | None. Original public technical references are transient research only; no asset, ROM, PDF, OCR text, hash, local source path, or third-party code enters the repository. |
-| Reporting Requirements | Report source tier, selected surface, Core/Profile ownership, regression, push commit, and residual NOWS/BUSRDY/physical-clock transfer. |
-| Stop Conditions | Stop and transfer if implementation requires a retained third-party source, a CECG-specific NOWS assertion/deassertion, electrical waveform/calibration, unselected expansion hardware, or a second transaction/scheduler path. |
-| Exit Criteria | Core owns one bounded classified wait route, Model-40 selects only its documented CECG surface, 5170 remains unselected, reset/cancellation/retirement proof is focused, evidence labels the generic-AT wait and original addressing/width boundary, and all required gates pass. |
-| Original Owner Request | User directed immediate continued DeskPro L3 implementation, with original/reference/generic evidence tiers, pragmatic execution, preserved Core/VM boundaries, and repair of confirmed in-scope issues. |
-| Similar-Issue Sweep | Defect class: port/memory external-cycle waits must not be globally charged or require a second CPU transaction. Search all Core CPU transaction hooks, profile composition configs, Model-40 and 5170 bindings, tests, proposal/evidence records. Verify every selected Model-40/5170 configuration and cold reset. |
-
+**M5 T429 remains open; S1 is accepted and no subtask is active.** Generic-AT
+CECG 8-bit port-wait skeleton accepted at `1c02a853`; Core owns the
+memory-versus-port lifecycle and committed wait, Model-40 selects its
+documented port ranges, and 5170 remains unselected.
+[Evidence](../etc/evidence/t429-s1-cecg-8bit-bus-wait.md)
 ## Current Technical Baseline
 
 - **Current developer artifact:** T421 S1 `vm-0-5-0419` / `build/output/nxvm_0_5_0419.exe`, SHA-256 `859E1B93C6891E8EAAF0D98D4DBEF25F2383F911EC243390A50FB9A9CDBBA5BF`. T421 adds one Core-owned logical port-61h/PIT-channel-2 speaker line: Model-40 D4 and IBM 5170 planar configuration select it without a second provider; host audio and physical acoustic behavior remain transferred.

@@ -26,7 +26,7 @@ its evidence-tier discipline remains a shared constraint, not a candidate.
 Detailed scope, acceptance conditions, and common constraints remain in these
 shared proposals and in each candidate's linked proposal.
 
-1. [DeskPro 386 physical-cycle and phase-timing closure](../proposals/m5-deskpro-physical-cycle-and-phase-timing.md) -- CPU BUSRDY completion and the generic-AT prefetch-reservation foundation are closed; re-admit only the next bounded receiver with original source, controller-matched reference, or owner-supplied corpus for its named blocker. The reservation is not an asynchronous fetch producer or physical timing result.
+1. [DeskPro 386 physical-cycle and phase-timing closure](../proposals/m5-deskpro-physical-cycle-and-phase-timing.md) -- CPU BUSRDY completion, generic-AT prefetch reservation, and generic-AT CECG 8-bit port-wait skeleton are closed. Re-admit only the next bounded receiver with original source, controller-matched reference, or a explicitly-labelled generic-AT skeleton. None establishes physical timing or L3 acceptance.
 1. [Generic PC backbone foundation](../proposals/m5-generic-pc-backbone-foundation.md) -- eligible only after a comprehensive DeskPro 386 Model 40 L3 closure accepts its selected profile and the profile/device contract closes; remains before the 8088/PC/XT program.
 1. [8088 CPU-profile admission and timing closure](../proposals/m5-8088-cpu-profile.md).
 1. [IBM PC/XT 5160-268 profile and capability-gap audit](../proposals/m5-xt-5160-268-profile-capability-audit.md).
