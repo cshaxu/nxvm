@@ -2,26 +2,7 @@
 
 ## Current Work
 
-## M5 T433 S4 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner-approved T433 total Core audit; accepted S3 assigns the frozen controller/device batch. |
-| Objective | Reconcile `CTRL-PIC`, `CTRL-DMA`, `CTRL-PIT`, `CTRL-RTC-CMOS`, `CTRL-KBC-NMI`, `CTRL-FDC`, `CTRL-HDC`, `MEDIA-BACKING`, and `DISPLAY-VADP` against current Core code, tests and retained device evidence. |
-| Non-goals | No device behavior repair, timing-engine/profile change, physical/L4 claim, external research, or integration-row disposition. |
-| Reference Baseline | Accepted T433 S1-S3; T346/T370/T373/T377/T404 device ledgers and later retained shared-Core evidence. |
-| Candidate Proposal | [Core L3 ledger reconciliation and conformance](../proposals/m5-core-l3-ledger-reconciliation.md). |
-| Files And ABI Surface | Evidence/history/state only; inspection is read-only and no source, ABI or artifact change is allowed. |
-| Applicable Rules | `docs/rules/EXECUTION.md`, `DOCUMENT.md`, `ARCHITECTURE.md`, `CODING.md`, and Core L3 timing design; every controller retains one Core owner and lifecycle. |
-| Verification | Inspect all listed device headers/implementations, route callers, reset paths and registered smokes; record one permitted disposition, evidence and regression owner per frozen ID. |
-| Expected Markers | `M5:T433:S4:DEVICE-LEDGER:OK` and documentation-governance success. |
-| Asset Needs | No new asset. |
-| Reporting Requirements | Report controller ownership, reset/cancel, focused proof and every L2/physical/media transfer. |
-| Stop Conditions | Stop for contradiction, required repair, uncovered public device boundary or scope expansion. |
-| Exit Criteria | All nine frozen device rows have exact owner/caller, evidence, lifecycle, regression and one permitted disposition; no device timing default is misreported as L3. |
-| Original Owner Request | Owner asked to execute the active T as a total audit of Core hardware/chip capabilities. |
-| Similar-Issue Sweep | Sweep all controller/device/media/display production routes and tests; transfer only public presentation/host integration to later S6. |
+**T433 is between accepted subtasks.**
 ## Current Technical Baseline
 
 - **Current developer artifact:** T432 S1 `vm-0-5-0432` / `build/output/nxvm_0_5_0432.exe`, SHA-256 `F29A7DF2BA6F43D2A7E1B4C9AABCD634123E4E57F92226796B5734B4A71C413C`. T432 separates KBC delayed Set-2 translation from native break typematic cancellation, fixing stuck keys in Model-339 Console and Window sessions.
@@ -46,7 +27,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T433 S3 | Accepted: reconciles all six transaction/time rows; deterministic Core validation/publication and reset are conformant, while physical waits and signals remain explicit L2 transfers. [Evidence](../etc/evidence/t433-s3-core-transaction-time-reconciliation.md). |
+| T433 S4 | Accepted: reconciles all nine controller/device rows; logical owners and lifecycle are conformant, while physical timing and media semantics remain explicit L2 transfers. [Evidence](../etc/evidence/t433-s4-core-controller-device-reconciliation.md). |
 | T432 | Closed: separate Core-private Set-2 translation and typematic break states prevent released keys from restarting typematic; focused regression, Model-339 contract and owner Console/Window verification pass. [Record](../history/M5-T432-keyboard-keyup-reliability-repair.md). |
 | T431 | Closed: Model-40 selects a reference-derived unready-drive READ `ST0=48h`/IRQ/result completion through one Core policy; generic PC/AT stays generic, and physical FDC/L3 timing remains transferred. [Evidence](../etc/evidence/t431-s1-deskpro-fdc-not-ready-reference.md). |
 | T430 | Closed: original/reference-backed Compaq WD 40 MB C:/D: selection now uses frozen Core media slots with optional Model-40 secondary backing; generic ATA stays unchanged, and physical/L3 timing remains transferred. [Evidence](../etc/evidence/t430-s1-deskpro-dual-fixed-disk.md). |

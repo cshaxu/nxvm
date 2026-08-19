@@ -45,3 +45,7 @@ Coordinator review accepts P1 518dc2eb. The six transaction/time rows map to cur
 ## S4 Scope
 
 S4 reconciles nine controller/device rows in [its evidence](../etc/evidence/t433-s4-core-controller-device-reconciliation.md).
+
+## S4 Acceptance
+
+Coordinator review accepts P1 d0e98cf3. The nine device rows have current owners, focused proof and explicit physical/media transfers. S5 now performs cross-batch and public-Core integration reconciliation.
