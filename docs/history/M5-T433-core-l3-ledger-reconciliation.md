@@ -29,3 +29,7 @@ batch without changing the frozen coverage rule.
 ## S2 Scope
 
 S2 reconciles the five frozen CPU capability rows in [its evidence](../etc/evidence/t433-s2-core-cpu-capability-reconciliation.md).
+
+## S2 Acceptance
+
+Coordinator review accepts P1 1243cbe. The five CPU rows have one permitted disposition, current code/test owners and explicit nonphysical transfers. S3 is the next transaction/time batch.
