@@ -250,6 +250,7 @@ static C_VOID core_machine_fdc_cancel_execution(core_machine_fdc *fdc)
     fdc->data.next_dma_byte_tick = 0u;
     fdc->data.ndma_byte_gate_pending = TYPE_FALSE;
     fdc->data.next_ndma_byte_tick = 0u;
+    fdc->data.pending_st0 = 0u;
     fdc->data.pending_st1 = 0u;
     fdc->data.pending_st2 = 0u;
     fdc->data.transfer_remaining = 0u;
@@ -274,6 +275,7 @@ static C_VOID core_machine_fdc_command_phase(core_machine_fdc *fdc)
     fdc->data.command_index = 0u;
     fdc->data.result_length = 0u;
     fdc->data.result_index = 0u;
+    fdc->data.pending_st0 = 0u;
     fdc->data.pending_st1 = 0u;
     fdc->data.pending_st2 = 0u;
 }
@@ -310,17 +312,38 @@ static C_VOID core_machine_fdc_publish_terminal_result(core_machine_fdc *fdc)
     observation.command = fdc->data.cmd[0];
     observation.drive = fdc->data.selected_drive;
     STD_MEMCPY(observation.result, fdc->data.ret, sizeof(observation.result));
-    observation.successful = fdc->data.st1 == 0u;
+    observation.successful = fdc->data.st0 == core_machine_fdc_ST0_NORMAL &&
+        fdc->data.st1 == 0u;
     fdc->connect.observation_provider.callback(fdc->connect.observation_provider.context,
         &observation);
+}
+
+static C_VOID core_machine_fdc_complete_transfer_with_status(core_machine_fdc *fdc,
+    type_unsigned_8 st0, type_unsigned_8 st1)
+{
+    core_machine_fdc_deassert_dma(fdc);
+    fdc->data.pending_st0 = st0;
+    fdc->data.pending_st1 = st1;
+    fdc->data.phase = core_machine_fdc_PHASE_PENDING_COMPLETE;
 }
 
 static C_VOID core_machine_fdc_complete_transfer(core_machine_fdc *fdc,
     type_unsigned_8 st1)
 {
-    core_machine_fdc_deassert_dma(fdc);
-    fdc->data.pending_st1 = st1;
-    fdc->data.phase = core_machine_fdc_PHASE_PENDING_COMPLETE;
+    core_machine_fdc_complete_transfer_with_status(fdc, 0u, st1);
+}
+
+static C_VOID core_machine_fdc_complete_unready_read(core_machine_fdc *fdc,
+    core_machine_fdc_phase phase)
+{
+    if (fdc->connect.config.unready_read_policy ==
+        CORE_MACHINE_FDC_UNREADY_READ_DESKPRO_REFERENCE &&
+        phase == core_machine_fdc_PHASE_EXECUTION_READ) {
+        core_machine_fdc_complete_transfer_with_status(fdc,
+            core_machine_fdc_ST0_ABNORMAL | core_machine_fdc_ST0_NOT_READY, 0u);
+        return;
+    }
+    core_machine_fdc_complete_transfer(fdc, core_machine_fdc_ST1_NO_DATA);
 }
 
 static C_VOID core_machine_fdc_complete_simple(core_machine_fdc *fdc, type_unsigned_8 st0,
@@ -369,8 +392,12 @@ static C_INT core_machine_fdc_transfer_byte(core_machine_fdc *fdc, t_latch *latc
     type_unsigned_64 offset;
     type_unsigned_64 logical_sector;
     core_machine_media_address_mark mark;
-    if (fdc->data.transfer_remaining == 0u || !core_machine_fdc_drive_ready(fdc)) {
+    if (fdc->data.transfer_remaining == 0u) {
         core_machine_fdc_complete_transfer(fdc, core_machine_fdc_ST1_NO_DATA);
+        return TYPE_TRUE;
+    }
+    if (!core_machine_fdc_drive_ready(fdc)) {
+        core_machine_fdc_complete_unready_read(fdc, fdc->data.phase);
         return TYPE_TRUE;
     }
     if (!core_machine_fdc_media_info(fdc, &info, &result) ||
@@ -652,8 +679,11 @@ static C_VOID core_machine_fdc_start_transfer(core_machine_fdc *fdc,
         deleted_data;
     fdc->data.scan_mode = scan_mode;
     fdc->data.scan_sector_satisfies = TYPE_TRUE;
+    if (!core_machine_fdc_drive_ready(fdc)) {
+        core_machine_fdc_complete_unready_read(fdc, phase);
+        return;
+    }
     if (size != 2u || (fdc->data.ccr != 0u && fdc->data.ccr != VFDC_CCR_DRC) ||
-        !core_machine_fdc_drive_ready(fdc) ||
         !core_machine_fdc_media_info(fdc, &info, &result) ||
         fdc->data.head >= info.geometry.heads || fdc->data.sector == 0u ||
         fdc->data.sector > fdc->data.eot || fdc->data.eot > info.geometry.sectors_per_track) {
@@ -1030,8 +1060,9 @@ C_VOID core_machine_fdc_advance_at(core_machine_fdc *fdc,
         core_machine_fdc_raise_irq(fdc);
         core_machine_fdc_command_phase(fdc);
     } else if (fdc->data.phase == core_machine_fdc_PHASE_PENDING_COMPLETE) {
-        core_machine_fdc_set_result(fdc, fdc->data.pending_st1 == 0u ?
-            core_machine_fdc_ST0_NORMAL : core_machine_fdc_ST0_ABNORMAL,
+        core_machine_fdc_set_result(fdc, fdc->data.pending_st0 != 0u ?
+            fdc->data.pending_st0 : (fdc->data.pending_st1 == 0u ?
+            core_machine_fdc_ST0_NORMAL : core_machine_fdc_ST0_ABNORMAL),
             fdc->data.pending_st1, fdc->data.pending_st2);
         core_machine_fdc_result_phase(fdc, 7u);
         core_machine_fdc_publish_terminal_result(fdc);

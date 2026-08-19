@@ -54,6 +54,7 @@ typedef struct {
     type_unsigned_8 cmd[9];
     type_unsigned_8 ret[7];
     type_unsigned_8 st0, st1, st2, st3; /* state registers */
+    type_unsigned_8 pending_st0;
     type_unsigned_8 pending_st1;
     type_unsigned_8 pending_st2;
     type_bool transfer_expect_deleted;

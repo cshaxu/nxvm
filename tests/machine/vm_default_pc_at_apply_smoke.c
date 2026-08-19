@@ -17,7 +17,9 @@ C_INT main(C_VOID)
         session->core_machine->fdc.connect.config.data_port != 0x03f5u ||
         session->core_machine->fdc.connect.config.direction_port != 0x03f7u ||
         session->core_machine->fdc.connect.config.irq != 6u ||
-        session->core_machine->fdc.connect.config.dma_channel != 2u) {
+        session->core_machine->fdc.connect.config.dma_channel != 2u ||
+        session->core_machine->fdc.connect.config.unready_read_policy !=
+            CORE_MACHINE_FDC_UNREADY_READ_GENERIC) {
         vm_session_destroy(session);
         return 1;
     }

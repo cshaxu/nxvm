@@ -91,6 +91,8 @@ C_INT main(C_INT argc, C_CHAR **argv)
         fdc = &session->core_machine->fdc;
         port = &session->core_machine->executor_port;
         failed |= fdc->connect.config.irq != 6u || fdc->connect.config.dma_channel != 2u ||
+            fdc->connect.config.unready_read_policy !=
+                CORE_MACHINE_FDC_UNREADY_READ_DESKPRO_REFERENCE ||
             session->floppy_kind != VM_PROFILE_FLOPPY_525_1200K;
         core_machine_port_write(port, 0x03f2u, 0x1cu);
         failed |= !fdc->connect.irq_source.asserted;
@@ -136,11 +138,36 @@ C_INT main(C_INT argc, C_CHAR **argv)
         failed |= session->model40_fdc_terminal_observation_valid;
         model40_fdc_command(fdc, port, read_oob, sizeof(read_oob));
         failed |= !model40_fdc_result(fdc, port, result, sizeof(result)) ||
-            result[0] != core_machine_fdc_ST0_ABNORMAL || result[1] != 0x04u ||
+            result[0] != (core_machine_fdc_ST0_ABNORMAL |
+                core_machine_fdc_ST0_NOT_READY) || result[1] != 0u ||
             !session->model40_fdc_terminal_observation_valid ||
             session->model40_fdc_terminal_observation.successful ||
             session->model40_fdc_terminal_observation.result[0] != result[0] ||
             session->model40_fdc_terminal_observation.result[1] != result[1];
+        failed |= vm_machine_fdd_remove_for(&session->fdd, STD_NULL) != TYPE_FALSE;
+        core_machine_fdc_refresh(fdc);
+        model40_fdc_command(fdc, port, read_last, sizeof(read_last));
+        failed |= fdc->data.phase != core_machine_fdc_PHASE_PENDING_COMPLETE;
+        core_machine_port_write(port, 0x03f2u, 0u);
+        failed |= fdc->data.phase != core_machine_fdc_PHASE_COMMAND ||
+            fdc->connect.irq_source.asserted;
+        core_machine_port_write(port, 0x03f2u, 0x1cu);
+        for (index = 0u; index < CORE_MACHINE_FDC_DRIVE_COUNT; ++index) {
+            model40_fdc_command(fdc, port, (const type_unsigned_8[]){0x08u}, 1u);
+            failed |= !model40_fdc_result(fdc, port, result, 2u) ||
+                result[0] != (core_machine_fdc_ST0_READY_CHANGE | index);
+        }
+        model40_fdc_command(fdc, port, read_last, sizeof(read_last));
+        core_machine_fdc_advance(fdc);
+        failed |= fdc->data.phase != core_machine_fdc_PHASE_RESULT ||
+            !fdc->connect.irq_source.asserted ||
+            !model40_fdc_result(fdc, port, result, sizeof(result)) ||
+            result[0] != (core_machine_fdc_ST0_ABNORMAL |
+                core_machine_fdc_ST0_NOT_READY) || result[1] != 0u || result[2] != 0u;
+        model40_fdc_command(fdc, port, (const type_unsigned_8[]){0x08u}, 1u);
+        failed |= !model40_fdc_result(fdc, port, result, 2u) ||
+            result[0] != (core_machine_fdc_ST0_ABNORMAL |
+                core_machine_fdc_ST0_NOT_READY) || fdc->connect.irq_source.asserted;
         if (argc == 6) {
             for (index = 0u; index < 400000u && bios_marker == 0u; index += 64u) {
                 failed |= core_machine_run(session->core_machine,
@@ -161,5 +188,6 @@ C_INT main(C_INT argc, C_CHAR **argv)
     STD_PRINTF("M5:T386:S24:FDC-12MB-LOGICAL:OK\n");
     STD_PRINTF("M5:T386:S24:FDC-DMA2-IRQ6:OK\n");
     STD_PRINTF("M5:T386:S24:MODEL40-FDC-BINDING:OK\n");
+    STD_PRINTF("M5:T431:S1:MODEL40-FDC-NOT-READY:OK\n");
     return 0;
 }

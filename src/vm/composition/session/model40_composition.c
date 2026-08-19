@@ -107,7 +107,8 @@ type_status vm_session_model40_configure_controllers(vm_session *session)
     fdc.drives = drives;
     fdc.dma_request = session->fdc_dma_request;
     fdc.config = (core_machine_fdc_config) { 0x03f2u, 0x03f4u, 0x03f5u,
-        0x03f7u, 0x03f7u, 6u, 2u };
+        0x03f7u, 0x03f7u, 6u, 2u,
+        CORE_MACHINE_FDC_UNREADY_READ_DESKPRO_REFERENCE };
     fdc.observation_provider = (core_machine_fdc_terminal_observation_provider) {
         vm_session_model40_capture_fdc_terminal, session };
     status = core_machine_configure_fdc(session->core_machine, &fdc);
