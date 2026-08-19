@@ -427,10 +427,11 @@ static type_status vm_session_create_model40_byob(const vm_session_config *confi
         .ticks_per_instruction = 1u,
         .instruction_timing = {1u, 0u, 0u, 0u, 0u, 0u},
         /* D4 selects 2 KiB miss/hit policy; Core requires explicit prefetch overlap,
-         * not an inferred D4 row/bank PAL waveform. */
-                .external_cycle_timing = {2048u, 2u, 0u,
-            CORE_MACHINE_EXTERNAL_CYCLE_OVERLAP_EXPLICIT_SEQUENTIAL},
-        /* Generic-AT virtual-time wait skeleton. Original CECG material only
+         * not an inferred D4 row/bank PAL waveform. */        .external_cycle_timing = {.page_bytes = 2048u, .page_miss_ticks = 2u,
+            .page_hit_ticks = 0u,
+            .overlap_policy = CORE_MACHINE_EXTERNAL_CYCLE_OVERLAP_EXPLICIT_SEQUENTIAL,
+            .first_eligible_address = 0x00000000u,
+            .last_eligible_address = 0x0009ffffu},        /* Generic-AT virtual-time wait skeleton. Original CECG material only
          * establishes this 8-bit port surface, not NOWS/BUSRDY behavior. */
         .external_access_wait_windows = {
             {CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_PORT, 0x03b4u, 0x03bau, 1u},
@@ -496,10 +497,11 @@ type_status vm_session_create_model40_private(
         .ticks_per_instruction = 1u,
         .instruction_timing = {1u, 0u, 0u, 0u, 0u, 0u},
         /* D4 selects 2 KiB miss/hit policy; Core requires explicit prefetch overlap,
-         * not an inferred D4 row/bank PAL waveform. */
-                .external_cycle_timing = {2048u, 2u, 0u,
-            CORE_MACHINE_EXTERNAL_CYCLE_OVERLAP_EXPLICIT_SEQUENTIAL},
-        /* Generic-AT virtual-time wait skeleton. Original CECG material only
+         * not an inferred D4 row/bank PAL waveform. */        .external_cycle_timing = {.page_bytes = 2048u, .page_miss_ticks = 2u,
+            .page_hit_ticks = 0u,
+            .overlap_policy = CORE_MACHINE_EXTERNAL_CYCLE_OVERLAP_EXPLICIT_SEQUENTIAL,
+            .first_eligible_address = 0x00000000u,
+            .last_eligible_address = 0x0009ffffu},        /* Generic-AT virtual-time wait skeleton. Original CECG material only
          * establishes this 8-bit port surface, not NOWS/BUSRDY behavior. */
         .external_access_wait_windows = {
             {CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_PORT, 0x03b4u, 0x03bau, 1u},

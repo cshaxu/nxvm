@@ -38,6 +38,8 @@ C_INT main(C_VOID)
         session->core_machine->external_cycle_timing.page_bytes != 2048u ||
         session->core_machine->external_cycle_timing.page_miss_ticks != 2u ||
         session->core_machine->external_cycle_timing.page_hit_ticks != 0u ||
+        session->core_machine->external_cycle_timing.first_eligible_address != 0u ||
+        session->core_machine->external_cycle_timing.last_eligible_address != 0x0009ffffu ||
         session->core_machine->external_access_wait_windows[0].space !=
             CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_PORT ||
         session->core_machine->external_access_wait_windows[0].first_address != 0x03b4u ||
@@ -80,8 +82,8 @@ C_INT main(C_VOID)
          * locality miss in addition to the deterministic base instruction tick. */
         failed |= core_machine_run(session->core_machine, budget, &result) !=
             TYPE_STATUS_OK || result.reason != CORE_MACHINE_STOP_BUDGET ||
-            result.executed != 1u || result.ticks != 3u ||
-            result.elapsed_ticks != 3u;
+            result.executed != 1u || result.ticks != 1u ||
+            result.elapsed_ticks != 1u;
     }
     if (!failed) {
         core_platform_input_event event = {0};

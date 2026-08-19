@@ -3271,7 +3271,11 @@ static C_VOID core_machine_cpu_external_cycle_trace(C_VOID *opaque,
 
     if (machine == STD_NULL) return;
     page_timing_enabled = space == CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_MEMORY &&
-        machine->external_cycle_timing.page_bytes != 0u;
+        machine->external_cycle_timing.page_bytes != 0u &&
+        ((machine->external_cycle_timing.first_eligible_address == 0u &&
+          machine->external_cycle_timing.last_eligible_address == 0u) ||
+         (address >= machine->external_cycle_timing.first_eligible_address &&
+          address <= machine->external_cycle_timing.last_eligible_address));
     switch (phase) {
     case CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_BEGIN:
         if (machine->external_cycle_pending_valid) {
@@ -3404,7 +3408,10 @@ static C_INT core_machine_external_cycle_timing_is_valid(
         return timing->page_miss_ticks == 0u && timing->page_hit_ticks == 0u &&
             timing->overlap_policy == CORE_MACHINE_EXTERNAL_CYCLE_OVERLAP_DISABLED;
     }
-    return (timing->page_bytes & (timing->page_bytes - 1u)) == 0u;
+    return (timing->page_bytes & (timing->page_bytes - 1u)) == 0u &&
+        ((timing->first_eligible_address == 0u &&
+          timing->last_eligible_address == 0u) ||
+         timing->first_eligible_address <= timing->last_eligible_address);
 }
 static C_INT core_machine_external_access_wait_windows_are_valid(
     const core_machine_external_access_wait_window *windows)

@@ -3,6 +3,26 @@
 ## Current Work
 
 **Active.** T429 remains open between accepted subtasks.
+## M5 T429 S2 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner: user; standing approval in this task thread (2026-08-18) for continued DeskPro L3 work, commits, pushes, and pragmatic generic-AT mechanisms where original/reference behavior is unavailable. Scope: repair the explicit D4-RAM versus CECG-aperture classification boundary; no firmware/media or third-party import. |
+| Objective | Make Core external memory-page timing eligible only for declared profile memory ranges, then bind Model-40 D4 conventional RAM explicitly and prove the CECG A0000h aperture does not inherit that D4 policy. |
+| Non-goals | No CECG-specific aperture wait scalar, NOWS/BUSRDY/IOCHRDY claim, RAM-controller physical model, D4 PAL inference, raster/monitor behavior, new transaction/scheduler path, or L3 acceptance. |
+| Reference Baseline | `master` at `9698677e`; accepted T429 S1 port-space lifecycle at `1c02a853`; T386 S28 owns CECG aperture/page functional behavior. |
+| Candidate Proposal | [DeskPro 386 physical-cycle and phase-timing closure](../proposals/m5-deskpro-physical-cycle-and-phase-timing.md), receiver 1; S2 consumes the generic-AT D4/CECG memory-classification boundary. |
+| Files And ABI Surface | Core external-cycle timing configuration/receiver, Model-40 composition, focused Core/Model-40 regression, evidence/index, status/proposal/history/queue. |
+| Applicable Rules | Core owns timing eligibility and lifecycle; VM binds only Model-40 ranges. C11/type vocabulary and focused tests apply. Source policy prohibits retained sources/assets. Execution/documentation rules require evidence, sweep, actual-diff review, and immediate push. |
+| Verification | Focused Core and Model-40 CTest; 5170 composition isolation; diff check; documentation gate; serial current-gate before closure. |
+| Expected Markers | New `M5:T429:S2:D4-CECG-MEMORY-CLASS:OK`; existing T429 S1, Model-40 CECG and 5170 markers remain green. |
+| Asset Needs | None. |
+| Reporting Requirements | Report generic-AT classification tier, exact D4/CECG boundary, Core/Profile ownership, tests, pushed commit, and residual aperture wait/physical transfer. |
+| Stop Conditions | Stop and transfer if a range requires vendor firmware, CECG electrical behavior, physical scalar calibration, a second transaction/scheduler, or a non-Model-40 profile change. |
+| Exit Criteria | Page timing has one explicit eligible-memory selection, Model-40 selects D4 conventional RAM only, CECG aperture is proved outside it, 5170 retains prior behavior, cancellation/reset remain correct, and gates pass. |
+| Original Owner Request | User directed continued DeskPro L3 implementation using original/reference/generic tiers pragmatically while preserving Core/VM boundaries and repairing confirmed issues. |
+| Similar-Issue Sweep | Search every external-cycle timing config and provider call, all profile bindings, VADP apertures, D4 mappings, reset/cancel paths, and 5170 composition; classify every range change. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T421 S1 `vm-0-5-0419` / `build/output/nxvm_0_5_0419.exe`, SHA-256 `859E1B93C6891E8EAAF0D98D4DBEF25F2383F911EC243390A50FB9A9CDBBA5BF`. T421 adds one Core-owned logical port-61h/PIT-channel-2 speaker line: Model-40 D4 and IBM 5170 planar configuration select it without a second provider; host audio and physical acoustic behavior remain transferred.

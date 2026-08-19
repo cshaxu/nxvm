@@ -83,6 +83,9 @@ typedef struct core_machine_external_cycle_timing {
     type_unsigned_32 page_miss_ticks;
     type_unsigned_32 page_hit_ticks;
     core_machine_external_cycle_overlap_policy overlap_policy;
+    /* Both zero retains legacy all-memory eligibility. */
+    type_unsigned_32 first_eligible_address;
+    type_unsigned_32 last_eligible_address;
 } core_machine_external_cycle_timing;
 
 #define CORE_MACHINE_EXTERNAL_ACCESS_WAIT_WINDOW_CAPACITY 6u
