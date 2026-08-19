@@ -428,8 +428,17 @@ static type_status vm_session_create_model40_byob(const vm_session_config *confi
         .instruction_timing = {1u, 0u, 0u, 0u, 0u, 0u},
         /* D4 selects 2 KiB miss/hit policy; Core requires explicit prefetch overlap,
          * not an inferred D4 row/bank PAL waveform. */
-        .external_cycle_timing = {2048u, 2u, 0u,
+                .external_cycle_timing = {2048u, 2u, 0u,
             CORE_MACHINE_EXTERNAL_CYCLE_OVERLAP_EXPLICIT_SEQUENTIAL},
+        /* Generic-AT virtual-time wait skeleton. Original CECG material only
+         * establishes this 8-bit port surface, not NOWS/BUSRDY behavior. */
+        .external_access_wait_windows = {
+            {CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_PORT, 0x03b4u, 0x03bau, 1u},
+            {CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_PORT, 0x03c0u, 0x03cfu, 1u},
+            {CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_PORT, 0x03d4u, 0x03dcu, 1u},
+            {CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_PORT, 0x07c6u, 0x07c6u, 1u},
+            {CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_PORT, 0x0bc6u, 0x0bc6u, 1u},
+            {CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_PORT, 0x0fc6u, 0x0fc6u, 1u}},
         .retirement_time_contract = CORE_MACHINE_RETIREMENT_TIME_DETERMINISTIC,
         .kbc_serial_delivery_ticks = 1u, /* Generic-AT virtual-time cadence, not a Compaq measurement. */
         .clock_plan = {{1u, 1u, 0u}, {1u, 1u, 0u}, {1u, 1u, 0u},
@@ -488,8 +497,17 @@ type_status vm_session_create_model40_private(
         .instruction_timing = {1u, 0u, 0u, 0u, 0u, 0u},
         /* D4 selects 2 KiB miss/hit policy; Core requires explicit prefetch overlap,
          * not an inferred D4 row/bank PAL waveform. */
-        .external_cycle_timing = {2048u, 2u, 0u,
+                .external_cycle_timing = {2048u, 2u, 0u,
             CORE_MACHINE_EXTERNAL_CYCLE_OVERLAP_EXPLICIT_SEQUENTIAL},
+        /* Generic-AT virtual-time wait skeleton. Original CECG material only
+         * establishes this 8-bit port surface, not NOWS/BUSRDY behavior. */
+        .external_access_wait_windows = {
+            {CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_PORT, 0x03b4u, 0x03bau, 1u},
+            {CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_PORT, 0x03c0u, 0x03cfu, 1u},
+            {CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_PORT, 0x03d4u, 0x03dcu, 1u},
+            {CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_PORT, 0x07c6u, 0x07c6u, 1u},
+            {CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_PORT, 0x0bc6u, 0x0bc6u, 1u},
+            {CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_PORT, 0x0fc6u, 0x0fc6u, 1u}},
         .retirement_time_contract = CORE_MACHINE_RETIREMENT_TIME_DETERMINISTIC,
         .kbc_serial_delivery_ticks = 1u, /* Generic-AT virtual-time cadence, not a Compaq measurement. */
         .clock_plan = {{1u, 1u, 0u}, {1u, 1u, 0u}, {1u, 1u, 0u},

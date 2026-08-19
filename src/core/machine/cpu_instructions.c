@@ -90,7 +90,20 @@ static C_VOID _kma_publish_external_cycle(
     if (context != STD_NULL && !context->preview_mode &&
         context->external_cycle_provider != STD_NULL) {
         context->external_cycle_provider(context->external_cycle_context, phase,
-            physical, byte, write, provenance);
+            CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_MEMORY, physical, byte, write,
+            provenance);
+    }
+}
+static C_VOID _p_publish_external_cycle(
+    core_machine_cpu_execution_context *context,
+    core_machine_cpu_external_cycle_phase phase, type_unsigned_16 portid,
+    type_unsigned_8 byte, type_bool write)
+{
+    if (context != STD_NULL && !context->preview_mode &&
+        context->external_cycle_provider != STD_NULL) {
+        context->external_cycle_provider(context->external_cycle_context, phase,
+            CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_PORT, portid, byte, write,
+            CORE_MACHINE_CPU_MEMORY_ACCESS_DATA);
     }
 }
 /* read content from physical */
@@ -1803,14 +1816,20 @@ static C_VOID _p_input(core_machine_cpu_execution_context *context, type_unsigne
     if (byte != 1u && byte != 2u && byte != 4u) {
         TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(byte));
     }
+    _p_publish_external_cycle(context, CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_BEGIN,
+        portid, byte, TYPE_FALSE);
     if (context->transaction != STD_NULL && core_machine_transaction_begin(
             context->transaction, CORE_MACHINE_TRANSACTION_OWNER_CPU,
             CORE_MACHINE_TRANSACTION_CPU_PORT_READ, portid, byte, 0u) !=
             TYPE_STATUS_OK) {
+        _p_publish_external_cycle(context, CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_CANCEL,
+            portid, byte, TYPE_FALSE);
         TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(portid));
     }
     if (core_machine_port_execute_read(context->port, portid) != TYPE_STATUS_OK) {
         core_machine_transaction_cancel(context->transaction);
+        _p_publish_external_cycle(context, CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_CANCEL,
+            portid, byte, TYPE_FALSE);
         TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(portid));
     }
     switch (byte)
@@ -1841,6 +1860,8 @@ static C_VOID _p_input(core_machine_cpu_execution_context *context, type_unsigne
     }
     instruction_state.data.flagIgnore = TYPE_TRUE;
     core_machine_transaction_commit(context->transaction);
+    _p_publish_external_cycle(context, CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_COMMIT,
+        portid, byte, TYPE_FALSE);
     TYPE_TRACE_CALL_END;
 }
 static C_VOID _p_output(core_machine_cpu_execution_context *context, type_unsigned_16 portid, type_virtual_address rdata, type_unsigned_8 byte)
@@ -1873,18 +1894,26 @@ static C_VOID _p_output(core_machine_cpu_execution_context *context, type_unsign
         TYPE_TRACE_BLOCK_END;
         break;
     }
+    _p_publish_external_cycle(context, CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_BEGIN,
+        portid, byte, TYPE_TRUE);
     if (context->transaction != STD_NULL && core_machine_transaction_begin(
             context->transaction, CORE_MACHINE_TRANSACTION_OWNER_CPU,
             CORE_MACHINE_TRANSACTION_CPU_PORT_WRITE, portid, byte, 0u) !=
             TYPE_STATUS_OK) {
+        _p_publish_external_cycle(context, CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_CANCEL,
+            portid, byte, TYPE_TRUE);
         TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(portid));
     }
     if (core_machine_port_execute_write(context->port, portid) != TYPE_STATUS_OK) {
         core_machine_transaction_cancel(context->transaction);
+        _p_publish_external_cycle(context, CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_CANCEL,
+            portid, byte, TYPE_TRUE);
         TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(portid));
     }
     instruction_state.data.flagIgnore = TYPE_TRUE;
     core_machine_transaction_commit(context->transaction);
+    _p_publish_external_cycle(context, CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_COMMIT,
+        portid, byte, TYPE_TRUE);
     TYPE_TRACE_CALL_END;
 }
 

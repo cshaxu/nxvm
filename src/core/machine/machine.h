@@ -92,6 +92,8 @@ struct core_machine {
     core_machine_transaction_state transaction;
     core_machine_instruction_timing instruction_timing;
     core_machine_external_cycle_timing external_cycle_timing;
+    core_machine_external_access_wait_window external_access_wait_windows[
+        CORE_MACHINE_EXTERNAL_ACCESS_WAIT_WINDOW_CAPACITY];
     type_unsigned_32 external_cycle_page_tag;
     type_unsigned_64 external_cycle_round_ticks;
     type_unsigned_64 cpu_retirement_wait_ticks;
@@ -99,6 +101,7 @@ struct core_machine {
     type_unsigned_64 cpu_retirement_source_ticks;
     type_bool external_cycle_page_valid;
     type_bool external_cycle_pending_valid;
+    core_machine_cpu_external_cycle_space external_cycle_pending_space;
     type_unsigned_32 external_cycle_pending_physical;
     type_unsigned_8 external_cycle_pending_bytes;
     type_bool external_cycle_pending_write;

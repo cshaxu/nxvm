@@ -3,6 +3,13 @@
 
 #include "type.h"
 
+/* An external-cycle address is only comparable within its named CPU space.
+ * This is shared by profile configuration and the Core CPU lifecycle. */
+typedef enum core_machine_cpu_external_cycle_space {
+    CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_MEMORY = 0,
+    CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_PORT
+} core_machine_cpu_external_cycle_space;
+
 typedef enum core_machine_cpu_profile {
     CORE_MACHINE_CPU_PROFILE_DEFAULT = 0,
     CORE_MACHINE_CPU_PROFILE_8086,

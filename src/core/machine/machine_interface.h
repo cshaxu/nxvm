@@ -85,6 +85,15 @@ typedef struct core_machine_external_cycle_timing {
     core_machine_external_cycle_overlap_policy overlap_policy;
 } core_machine_external_cycle_timing;
 
+#define CORE_MACHINE_EXTERNAL_ACCESS_WAIT_WINDOW_CAPACITY 6u
+
+typedef struct core_machine_external_access_wait_window {
+    core_machine_cpu_external_cycle_space space;
+    type_unsigned_32 first_address;
+    type_unsigned_32 last_address;
+    type_unsigned_32 wait_ticks;
+} core_machine_external_access_wait_window;
+
 typedef struct core_machine_config {
     STD_SIZE_T memory_bytes;
     core_machine_cpu_profile cpu_profile;
@@ -97,6 +106,10 @@ typedef struct core_machine_config {
     type_unsigned_32 ticks_per_instruction;
     core_machine_instruction_timing instruction_timing;
     core_machine_external_cycle_timing external_cycle_timing;
+    /* Bounded profile-selected external access windows.  They add a declared
+     * logical wait only after a matching CPU lifecycle commit. */
+    core_machine_external_access_wait_window external_access_wait_windows[
+        CORE_MACHINE_EXTERNAL_ACCESS_WAIT_WINDOW_CAPACITY];
     core_machine_clock_plan clock_plan;
     /* Physical mode refuses an unallocated successful retirement before it can
      * be published into a clock-domain plan. */

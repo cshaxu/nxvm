@@ -136,8 +136,10 @@ typedef enum core_machine_cpu_external_cycle_phase {
     CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_OVERLAP_DECLARE
 } core_machine_cpu_external_cycle_phase;
 
+
 typedef C_VOID (*core_machine_cpu_external_cycle_provider)(C_VOID *context,
-    core_machine_cpu_external_cycle_phase phase, type_unsigned_32 physical,
+    core_machine_cpu_external_cycle_phase phase,
+    core_machine_cpu_external_cycle_space space, type_unsigned_32 address,
     type_unsigned_8 bytes, type_bool write,
     core_machine_cpu_memory_access_provenance provenance);
 

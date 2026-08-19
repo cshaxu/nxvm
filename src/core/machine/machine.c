@@ -3219,14 +3219,35 @@ static C_INT core_machine_external_cycle_access_is_chargeable(type_bool write,
 }
 
 static C_INT core_machine_external_cycle_pending_matches(const core_machine *machine,
-    type_unsigned_32 physical, type_unsigned_8 bytes, type_bool write,
+    core_machine_cpu_external_cycle_space space, type_unsigned_32 address,
+    type_unsigned_8 bytes, type_bool write,
     core_machine_cpu_memory_access_provenance provenance)
 {
     return machine != STD_NULL && machine->external_cycle_pending_valid &&
-        machine->external_cycle_pending_physical == physical &&
+        machine->external_cycle_pending_space == space &&
+        machine->external_cycle_pending_physical == address &&
         machine->external_cycle_pending_bytes == bytes &&
         machine->external_cycle_pending_write == write &&
         machine->external_cycle_pending_provenance == provenance;
+}
+
+static type_unsigned_32 core_machine_external_access_wait_ticks(
+    const core_machine *machine, core_machine_cpu_external_cycle_space space,
+    type_unsigned_32 address)
+{
+    STD_SIZE_T index;
+
+    if (machine == STD_NULL) return 0u;
+    for (index = 0u; index < CORE_MACHINE_EXTERNAL_ACCESS_WAIT_WINDOW_CAPACITY;
+            ++index) {
+        const core_machine_external_access_wait_window *window =
+            &machine->external_access_wait_windows[index];
+        if (window->wait_ticks != 0u && window->space == space &&
+            address >= window->first_address && address <= window->last_address) {
+            return window->wait_ticks;
+        }
+    }
+    return 0u;
 }
 
 static C_VOID core_machine_external_cycle_invalidate(core_machine *machine)
@@ -3238,69 +3259,68 @@ static C_VOID core_machine_external_cycle_invalidate(core_machine *machine)
 }
 
 static C_VOID core_machine_cpu_external_cycle_trace(C_VOID *opaque,
-    core_machine_cpu_external_cycle_phase phase, type_unsigned_32 physical,
+    core_machine_cpu_external_cycle_phase phase,
+    core_machine_cpu_external_cycle_space space, type_unsigned_32 address,
     type_unsigned_8 bytes, type_bool write,
     core_machine_cpu_memory_access_provenance provenance)
 {
     core_machine *machine = (core_machine *)opaque;
     core_machine_trace_event_type type;
     C_INT pending_matches;
-    type_bool timing_enabled;
+    type_bool page_timing_enabled;
 
     if (machine == STD_NULL) return;
-    timing_enabled = machine->external_cycle_timing.page_bytes != 0u;
+    page_timing_enabled = space == CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_MEMORY &&
+        machine->external_cycle_timing.page_bytes != 0u;
     switch (phase) {
     case CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_BEGIN:
-        if (!timing_enabled) {
-            type = CORE_MACHINE_TRACE_CPU_EXTERNAL_CYCLE_BEGIN;
-            break;
-        }
         if (machine->external_cycle_pending_valid) {
             core_machine_external_cycle_invalidate(machine);
-        } else if (machine->external_cycle_overlap_valid &&
-            machine->external_cycle_overlap_next_physical != physical) {
+        } else if (page_timing_enabled && machine->external_cycle_overlap_valid &&
+            machine->external_cycle_overlap_next_physical != address) {
             machine->external_cycle_overlap_valid = TYPE_FALSE;
         }
         machine->external_cycle_pending_valid = TYPE_TRUE;
-        machine->external_cycle_pending_physical = physical;
+        machine->external_cycle_pending_space = space;
+        machine->external_cycle_pending_physical = address;
         machine->external_cycle_pending_bytes = bytes;
         machine->external_cycle_pending_write = write;
         machine->external_cycle_pending_provenance = provenance;
         type = CORE_MACHINE_TRACE_CPU_EXTERNAL_CYCLE_BEGIN;
         break;
     case CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_OVERLAP_DECLARE:
-        if (timing_enabled && machine->external_cycle_timing.overlap_policy ==
+        if (page_timing_enabled && machine->external_cycle_timing.overlap_policy ==
                 CORE_MACHINE_EXTERNAL_CYCLE_OVERLAP_EXPLICIT_SEQUENTIAL &&
             machine->external_cycle_pending_valid &&
+            machine->external_cycle_pending_space ==
+                CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_MEMORY &&
             !machine->external_cycle_pending_write && !write &&
             machine->external_cycle_pending_provenance ==
                 CORE_MACHINE_CPU_MEMORY_ACCESS_INSTRUCTION_PREFETCH &&
             provenance == CORE_MACHINE_CPU_MEMORY_ACCESS_INSTRUCTION_PREFETCH &&
             machine->external_cycle_pending_physical <= UINT32_MAX -
                 machine->external_cycle_pending_bytes &&
-            physical == machine->external_cycle_pending_physical +
+            address == machine->external_cycle_pending_physical +
                 machine->external_cycle_pending_bytes) {
             machine->external_cycle_overlap_valid = TYPE_TRUE;
-            machine->external_cycle_overlap_next_physical = physical;
+            machine->external_cycle_overlap_next_physical = address;
         }
         type = CORE_MACHINE_TRACE_CPU_EXTERNAL_CYCLE_OVERLAP_DECLARE;
         break;
     case CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_COMMIT:
-        pending_matches = timing_enabled &&
-            core_machine_external_cycle_pending_matches(machine,
-            physical, bytes, write, provenance);
-        if (pending_matches && core_machine_external_cycle_access_is_chargeable(write,
-                provenance) && machine->external_cycle_timing.page_bytes != 0u) {
-            type_unsigned_32 page_tag = physical /
-                machine->external_cycle_timing.page_bytes;
+        pending_matches = core_machine_external_cycle_pending_matches(machine,
+            space, address, bytes, write, provenance);
+        if (pending_matches && page_timing_enabled &&
+            core_machine_external_cycle_access_is_chargeable(write, provenance)) {
+            type_unsigned_32 page_tag = address / machine->external_cycle_timing.page_bytes;
             type_unsigned_32 wait_ticks = !machine->external_cycle_page_valid ||
                 !machine->external_cycle_overlap_valid ||
-                machine->external_cycle_overlap_next_physical != physical ||
+                machine->external_cycle_overlap_next_physical != address ||
                 machine->external_cycle_page_tag != page_tag ?
                 machine->external_cycle_timing.page_miss_ticks :
                 machine->external_cycle_timing.page_hit_ticks;
             if (machine->external_cycle_overlap_valid &&
-                machine->external_cycle_overlap_next_physical == physical) {
+                machine->external_cycle_overlap_next_physical == address) {
                 machine->external_cycle_overlap_valid = TYPE_FALSE;
             }
             machine->external_cycle_page_valid = TYPE_TRUE;
@@ -3311,12 +3331,21 @@ static C_VOID core_machine_cpu_external_cycle_trace(C_VOID *opaque,
                 machine->external_cycle_round_ticks += wait_ticks;
             }
         }
-        if (pending_matches) machine->external_cycle_pending_valid = TYPE_FALSE;
+        if (pending_matches) {
+            type_unsigned_32 wait_ticks = core_machine_external_access_wait_ticks(
+                machine, space, address);
+            if (UINT64_MAX - machine->external_cycle_round_ticks < wait_ticks) {
+                machine->external_cycle_round_overflow = TYPE_TRUE;
+            } else {
+                machine->external_cycle_round_ticks += wait_ticks;
+            }
+            machine->external_cycle_pending_valid = TYPE_FALSE;
+        }
         type = CORE_MACHINE_TRACE_CPU_EXTERNAL_CYCLE_COMMIT;
         break;
     case CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_CANCEL:
-        if (timing_enabled && core_machine_external_cycle_pending_matches(machine, physical, bytes,
-                write, provenance)) {
+        if (core_machine_external_cycle_pending_matches(machine, space, address,
+                bytes, write, provenance)) {
             core_machine_external_cycle_invalidate(machine);
         }
         type = CORE_MACHINE_TRACE_CPU_EXTERNAL_CYCLE_CANCEL;
@@ -3324,10 +3353,9 @@ static C_VOID core_machine_cpu_external_cycle_trace(C_VOID *opaque,
     default:
         return;
     }
-    core_machine_trace_record(machine, type, physical, bytes,
+    core_machine_trace_record(machine, type, address, bytes,
         (type_unsigned_32)provenance);
-}
-static C_INT core_machine_retirement_qualification_contains(
+}static C_INT core_machine_retirement_qualification_contains(
     const core_machine *machine)
 {
     STD_SIZE_T index;
@@ -3378,7 +3406,24 @@ static C_INT core_machine_external_cycle_timing_is_valid(
     }
     return (timing->page_bytes & (timing->page_bytes - 1u)) == 0u;
 }
-static C_INT core_machine_clock_plan_is_valid(
+static C_INT core_machine_external_access_wait_windows_are_valid(
+    const core_machine_external_access_wait_window *windows)
+{
+    STD_SIZE_T index;
+
+    if (windows == STD_NULL) return 0;
+    for (index = 0u; index < CORE_MACHINE_EXTERNAL_ACCESS_WAIT_WINDOW_CAPACITY;
+            ++index) {
+        const core_machine_external_access_wait_window *window = &windows[index];
+        if (window->wait_ticks == 0u) continue;
+        if ((window->space != CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_MEMORY &&
+                window->space != CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_PORT) ||
+            window->first_address > window->last_address ||
+            (window->space == CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_PORT &&
+                window->last_address > 0xffffu)) return 0;
+    }
+    return 1;
+}static C_INT core_machine_clock_plan_is_valid(
     const core_machine_clock_plan *plan)
 {
     return plan != STD_NULL &&
@@ -4908,6 +4953,8 @@ static type_status core_machine_create_internal(
             config->retirement_time_contract) ||
         !core_machine_external_cycle_timing_is_valid(
             &config->external_cycle_timing) ||
+        !core_machine_external_access_wait_windows_are_valid(
+            config->external_access_wait_windows) ||
         (config->cpu_cycle_bus_ready_gate_enabled != TYPE_FALSE &&
         config->cpu_cycle_bus_ready_gate_enabled != TYPE_TRUE) ||
         (config->cpu_prefetch_reservation_enabled != TYPE_FALSE &&
@@ -4933,6 +4980,9 @@ static type_status core_machine_create_internal(
     machine->cpu_profile = core_machine_resolve_cpu_profile(config->cpu_profile);
     machine->retirement_time_contract = config->retirement_time_contract;
     machine->external_cycle_timing = config->external_cycle_timing;
+    STD_MEMCPY(machine->external_access_wait_windows,
+        config->external_access_wait_windows,
+        sizeof(machine->external_access_wait_windows));
     machine->dma_cycle_wait_quanta = config->dma_cycle_wait_quanta;
     machine->dma_cycle_bus_ready_gate_enabled = config->dma_cycle_bus_ready_gate_enabled;
     machine->cpu_cycle_bus_ready_gate_enabled = config->cpu_cycle_bus_ready_gate_enabled;
@@ -5186,6 +5236,7 @@ static type_status core_machine_cold_reset(core_machine *machine)
     machine->cpu_retirement_source_ticks = 0u;
     machine->external_cycle_page_valid = TYPE_FALSE;
     machine->external_cycle_pending_valid = TYPE_FALSE;
+    machine->external_cycle_pending_space = CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_MEMORY;
     machine->external_cycle_pending_physical = 0u;
     machine->external_cycle_pending_bytes = 0u;
     machine->external_cycle_pending_write = TYPE_FALSE;
