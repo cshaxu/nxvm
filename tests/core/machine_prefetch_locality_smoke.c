@@ -283,6 +283,42 @@ static C_INT retirement_wait_contract(C_VOID)
     core_machine_destroy(machine);
     return !failed;
 }
+static C_INT cecg_aperture_wait_contract(C_VOID)
+{
+    core_machine_config config = {0};
+    core_machine *machine = STD_NULL;
+    core_machine_cpu_external_cycle_provider provider;
+    C_VOID *context;
+    C_INT failed = 0;
+
+    config.external_access_wait_windows[0] =
+        (core_machine_external_access_wait_window) {
+            CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_MEMORY, 0x000a0000u,
+            0x000affffu, 1u};
+    failed |= core_machine_create(&config, &machine) != TYPE_STATUS_OK;
+    failed |= core_machine_freeze_execution_providers(machine) != TYPE_STATUS_OK;
+    failed |= core_machine_reset(machine) != TYPE_STATUS_OK;
+    provider = machine == STD_NULL ? STD_NULL :
+        machine->executor_cpu_execution.external_cycle_provider;
+    context = machine == STD_NULL ? STD_NULL :
+        machine->executor_cpu_execution.external_cycle_context;
+    if (!failed) {
+        external_cycle_begin_and_commit(provider, context, 0x000a0000u, 1u,
+            TYPE_TRUE, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA);
+        failed |= machine->external_cycle_round_ticks != 1u;
+        provider(context, CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_BEGIN,
+            CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_MEMORY, 0x000a0001u, 1u,
+            TYPE_FALSE, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA);
+        provider(context, CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_CANCEL,
+            CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_MEMORY, 0x000a0001u, 1u,
+            TYPE_FALSE, CORE_MACHINE_CPU_MEMORY_ACCESS_DATA);
+        failed |= machine->external_cycle_round_ticks != 1u;
+        failed |= core_machine_reset(machine) != TYPE_STATUS_OK ||
+            machine->external_cycle_round_ticks != 0u;
+    }
+    core_machine_destroy(machine);
+    return !failed;
+}
 static C_INT d4_cecg_memory_class_contract(C_VOID)
 {
     core_machine_config config = {0};
@@ -458,6 +494,7 @@ C_INT main(C_VOID)
     failed |= !prefetch_reservation_contract();
     failed |= !cecg_port_wait_contract();
     failed |= !d4_cecg_memory_class_contract();
+    failed |= !cecg_aperture_wait_contract();
     if (failed != 0) return 1;
     STD_PRINTF("M5:T412:S1:EXTERNAL-READ-LOCALITY:OK\n");
     STD_PRINTF("M5:T413:S1:EXTERNAL-WRITE-BRIDGE:OK\n");
@@ -471,5 +508,6 @@ C_INT main(C_VOID)
     STD_PRINTF("M5:T428:S1:GENERIC-PREFETCH-PRODUCER:OK\n");
     STD_PRINTF("M5:T429:S1:CECG-8BIT-BUS-WAIT:OK\n");
     STD_PRINTF("M5:T429:S2:D4-CECG-MEMORY-CLASS:OK\n");
+    STD_PRINTF("M5:T429:S3:CECG-APERTURE-WAIT:OK\n");
     return 0;
 }

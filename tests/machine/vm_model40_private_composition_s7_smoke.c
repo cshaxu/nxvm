@@ -46,6 +46,9 @@ C_INT main(C_VOID)
         session->core_machine->external_access_wait_windows[2].last_address != 0x03dcu ||
         session->core_machine->external_access_wait_windows[5].first_address != 0x0fc6u ||
         session->core_machine->external_access_wait_windows[5].wait_ticks != 1u ||
+        session->core_machine->external_access_wait_windows[6].space != CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_MEMORY ||
+        session->core_machine->external_access_wait_windows[6].first_address != 0x000a0000u ||
+        session->core_machine->external_access_wait_windows[6].last_address != 0x000affffu ||
         session->core_machine->cpu_cycle_bus_ready_gate_enabled != TYPE_TRUE ||
         session->core_machine->cpu_prefetch_reservation_enabled != TYPE_TRUE ||
         session->core_machine->external_cycle_timing.overlap_policy !=

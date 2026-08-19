@@ -32,6 +32,7 @@ principal documents named in [docs/README.md](../README.md).
 | evidence/t428-s1-generic-prefetch-reservation.md | Verification owner | T428 S1 adds a Model-40-selected generic-AT Core prefetch reservation lifecycle with reset/HOLD/refresh cancellation proof; it emits no external cycle, D4 hit or physical timing result. |
 | evidence/t429-s1-cecg-8bit-bus-wait.md | Verification owner | T429 S1 adds a generic-AT bounded Core CECG port-wait lifecycle, Model-40 binding, cancellation/reset proof and physical-timing transfer. |
 | evidence/t429-s2-d4-cecg-memory-class.md | Verification owner | T429 S2 makes D4 conventional-RAM eligibility explicit and excludes the CECG aperture without a physical timing claim. |
+| evidence/t429-s3-cecg-aperture-wait.md | Verification owner | T429 S3 adds the isolated generic-AT CECG aperture wait window with commit/cancel/reset proof. |
 | evidence/t424-s1-model40-byob-reset-lifecycle.md | Verification owner | T424 S1 proves the lawful Model-40 BYOB manifest-to-copied-ROM reset-vector execution/replay route with synthetic chips and retains vendor firmware behavior as external-corpus work. |
 | evidence/t425-s1-deskpro-device-phase-reconciliation.md | Verification owner | T425 S1 reconciles all selected logical device-phase owners at declared tiers and transfers unmeasured physical phase work. |
 | evidence/t426-s1-deskpro-physical-l3-reaudit.md | Verification owner | T426 S1 rejects physical/L3 acceptance while retaining every tier-labelled logical receiver and named re-admission blocker. |

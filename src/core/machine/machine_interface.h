@@ -88,7 +88,7 @@ typedef struct core_machine_external_cycle_timing {
     type_unsigned_32 last_eligible_address;
 } core_machine_external_cycle_timing;
 
-#define CORE_MACHINE_EXTERNAL_ACCESS_WAIT_WINDOW_CAPACITY 6u
+#define CORE_MACHINE_EXTERNAL_ACCESS_WAIT_WINDOW_CAPACITY 7u
 
 typedef struct core_machine_external_access_wait_window {
     core_machine_cpu_external_cycle_space space;
