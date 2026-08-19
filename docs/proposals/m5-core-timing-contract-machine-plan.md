@@ -15,6 +15,9 @@ and consumes the earliest T433 S6 receiver batch:
 `TIME-CLOCK`, `TIME-LIFECYCLE`, `CPU-RETIRE`, `MEM-ROM-FIRMWARE`, and
 `MACHINE-CONFIG` from the
 [Core L3 admission ledger](../etc/evidence/t433-s6-core-l3-admission-feasibility-ledger.md).
+The [T433 S7 source-sufficiency ledger](../etc/evidence/t433-s7-core-source-sufficiency-ledger.md)
+is a mandatory admission qualifier: the plan may represent and reject partial
+or absent rules, but may not manufacture a profile timing value or Core rule.
 It creates registration, validation, copied lifetime and explicit L2-exception
 support only; later candidates implement their assigned timing rules through
 this boundary and may not redefine the shared L3 or Core/VM contract.

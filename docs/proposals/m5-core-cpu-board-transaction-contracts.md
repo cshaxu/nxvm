@@ -18,6 +18,10 @@ and consumes the earliest transaction batch from the
 contracts; a profile later selects only registered data/contract IDs and may
 not add board-specific executor callbacks.
 
+The [T433 S7 source-sufficiency ledger](../etc/evidence/t433-s7-core-source-sufficiency-ledger.md)
+is mandatory: selected board READY/HOLD/DRAM inputs are VM facts, while missing
+Core lifecycle rules remain blocked rather than being inferred from them.
+
 ## Required Scope
 
 Consume T354/T369 transaction evidence, the reconciled route ledger, and the

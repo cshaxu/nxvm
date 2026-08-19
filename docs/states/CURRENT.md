@@ -2,7 +2,28 @@
 
 ## Current Work
 
-**Idle.**
+**Active: M5 T433 S7.**
+
+## M5 T433 S7 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Corrective; M5 T433 S7 is the next unused subtask of the most recently closed numeric task. |
+| Admission And Approval | Owner request in this conversation on 2026-08-19: reopen T433 and determine, for every current Core capability, which usable manuals/specifications/reference contracts currently exist, which do not, and whether a missing fact is a Core rule, profile-supplied machine input, host/product boundary, or unsupported scope. |
+| Objective | Produce a finite 30-ID source-sufficiency ledger that replaces feasibility-only language with evidence status and a precise implementation precondition: available admissible source, source incomplete/conflicting, source absent/unselected, or not a guest-time rule. It must distinguish Core-owned chip/state-machine rules from external profile facts and non-Core boundaries. |
+| Non-goals | Do not invent numeric timing, download/import source/firmware/media, alter runtime code or L3 definitions, promote a reference emulator into authority, claim an unavailable source exists, or implement any timing rule. |
+| Reference Baseline | `2dccc6ee` / current `master`; T433 S1/S6; retained T357/T359/T363/T369/T370/T373/T377/T401 source ledgers; source/research policy; shared L3 timing design. |
+| Candidate Proposal | Corrective work remains within the retained T433 proposal; the current admissible consumer context is [Core timing contract and machine plan](../proposals/m5-core-timing-contract-machine-plan.md). |
+| Files And ABI Surface | Documentation/evidence/history/index/state only: new `docs/etc/evidence/t433-s7-*`, T433 history/master/S6/index and this packet as justified. No code, ABI, profile, artifact or runtime behavior change. |
+| Applicable Rules | `docs/README.md` Task Reading Set; `docs/rules/EXECUTION.md` corrective-S and coverage-ledger rules; `docs/rules/DOCUMENT.md`; `docs/etc/operations/policy/source-policy.md`; L3 timing design; T433 frozen universe. |
+| Verification | Reconcile exactly the T433 30-ID universe; for each row cite existing evidence/manual class or a bounded `none` finding, assign exactly one missing-fact ownership class, and compare downstream receivers to Queue/proposals. Run documentation governance and `git diff --check`; inspect actual evidence and history changes. |
+| Expected Markers | `M5:T433:S7:SOURCE-SUFFICIENCY:OK`; `M5:T433:S7:OWNERSHIP-RECONCILIATION:OK`; a 30-ID equality check; documentation governance success. |
+| Asset Needs | No protected assets or new downloads. Public manual/reference links already retained in committed evidence may be inspected; any new research source must follow the source policy and be recorded by tier without importing material. |
+| Reporting Requirements | Report the source-sufficiency categories and any genuine source blocker; final delivery links the ledger, pushed commits, verification and the exact next implementation precondition. |
+| Stop Conditions | Stop and ask the owner if a row requires a new device/chipset selection, protected material, an external reference not permitted by policy, a new architecture authority, or a choice between incompatible source tiers. |
+| Exit Criteria | Every T433 ID has an evidence-status classification, named current source/evidence or explicit bounded absence, missing-fact ownership classification, implementation eligibility decision and exact receiver/precondition; no row claims that generic Core feasibility implies sources are already sufficient; history/index corrections and governance checks pass; complete commits are pushed and reviewed. |
+| Original Owner Request | Reopen T433 and confirm exactly which Core items have usable manual specifications, which do not, and whether missing pieces are external inputs to Core or outside its scope; state this task's next subtask. |
+| Similar-Issue Sweep | Search all T433 evidence/history, retained CPU/transaction/device source ledgers, Queue/proposals and TODO for `source`, `manual`, `reference`, `unavailable`, `unselected`, `L2`, and `TODO`; reconcile any capability whose current wording conflates Core feasibility with source sufficiency. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T432 S1 `vm-0-5-0432` / `build/output/nxvm_0_5_0432.exe`, SHA-256 `F29A7DF2BA6F43D2A7E1B4C9AABCD634123E4E57F92226796B5734B4A71C413C`. T432 separates KBC delayed Set-2 translation from native break typematic cancellation, fixing stuck keys in Model-339 Console and Window sessions.

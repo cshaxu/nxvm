@@ -14,6 +14,9 @@ This candidate applies the
 through the plan boundary and consumes the earliest CPU-program batch:
 `CPU-EXEC`, `CPU-EXCEPT`, and `CPU-FPU` from the
 [T433 S6 Core L3 admission ledger](../etc/evidence/t433-s6-core-l3-admission-feasibility-ledger.md).
+The [T433 S7 source-sufficiency ledger](../etc/evidence/t433-s7-core-source-sufficiency-ledger.md)
+distinguishes a missing Core form selector from a board/transaction input; this
+candidate may not turn either into a profile-local algorithm or guessed value.
 It owns instruction-form and delivery/FPU rule admission, not board
 availability, prefetch production, INTA waveform or profile-local algorithms.
 Those retain their ledger-assigned receivers and explicit L2 status until

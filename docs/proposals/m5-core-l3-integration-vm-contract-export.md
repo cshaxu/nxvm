@@ -19,6 +19,10 @@ These rows are copied-observation, host-adapter or product boundaries, not
 machine-chip timing rules; this candidate must preserve that classification
 while exporting only neutral validated contract metadata.
 
+The [T433 S7 source-sufficiency ledger](../etc/evidence/t433-s7-core-source-sufficiency-ledger.md)
+is mandatory: it confirms that these boundary rows require isolation proof,
+not fabricated guest-time manual rules.
+
 ## Required Scope
 
 Consume all preceding Core candidates and their closure ledgers. Reconcile the

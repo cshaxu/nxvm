@@ -76,3 +76,14 @@ manual/reference admission, that L4 is not required, and that host/product
 boundaries are not miscounted as guest-time L3 gaps. The coordinator reran the
 30-ID equality reconciliation, documentation governance and `git diff --check`.
 Corrective S6 closes without runtime, ABI or developer-artifact change.
+
+## S7 Corrective Scope
+
+Owner review correctly challenged the implication that every Core-feasible row
+already had a usable source. Corrective S7 retains the frozen 30-ID universe
+and records, for every row, whether the currently retained source set supports
+the Core semantic rule, is partial, is absent/unselected, or is outside guest
+time. It separately assigns each missing fact to Core, VM profile, host/product
+or unsupported scope in [the source-sufficiency ledger](../etc/evidence/t433-s7-core-source-sufficiency-ledger.md).
+It does not download sources, implement timing, change runtime behavior or
+weaken the L3 admission rule.

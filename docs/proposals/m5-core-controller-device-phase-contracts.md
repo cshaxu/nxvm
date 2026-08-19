@@ -19,6 +19,11 @@ source-backed or labelled reference contracts through the plan/transaction
 owners; electrical waveforms and unadmitted machine facts remain visible L2
 exceptions rather than generic Core behavior.
 
+The [T433 S7 source-sufficiency ledger](../etc/evidence/t433-s7-core-source-sufficiency-ledger.md)
+is mandatory for each row. In particular, chip manuals admit semantics but not
+unselected clock/wiring/personality facts, and `CTRL-HDC` is blocked pending an
+ATA/IDE source admission as well as a selected profile contract.
+
 ## Required Scope
 
 Consume the reconciled device ledger and retained PIC/DMA/PIT/RTC/KBC/FDC/HDC/

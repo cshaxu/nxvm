@@ -42,9 +42,12 @@
 All 30 frozen IDs have exactly one owner/evidence/disposition. The audit finds
 no implementation discrepancy requiring repair. Corrective S6 supplements
 this summary with the required actual L3 fact gap, Core-feasibility decision,
-plan/program declaration, evidence admission and focused proof for every row:
-[T433 S6 admission ledger](t433-s6-core-l3-admission-feasibility-ledger.md).
-No boot/default timing result is used as proof. This remains a factual Core
-migration baseline, not an L4 or universal-device claim.
+plan/program declaration, evidence admission and focused proof for every row.
+Corrective S7 then distinguishes retained source sufficiency from an absent
+Core rule, a VM-profile fact, or a host/product boundary:
+[T433 S7 source-sufficiency ledger](t433-s7-core-source-sufficiency-ledger.md).
+No boot/default timing result or generic feasibility result is used as proof.
+This remains a factual Core migration baseline, not an L4 or universal-device
+claim.
 
 `M5:T433:S5:CONFORMANCE:OK`
