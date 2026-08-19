@@ -51,7 +51,7 @@ is where the declared machine, platform, product, and profile capabilities are
 combined.
 
 Core owns shared instruction decode and execution, checked memory and port
-access, and the CPU/DMA transaction lifecycle. A VM machine profile composes
+access, and the CPU/DMA transaction lifecycle. Its current specification-driven L3 instruction and transaction timing direction, L2 fallback discipline, and future Core-to-VM timing-plan boundary are detailed in [Specification-Driven Instruction And Transaction Timing Simulation](../etc/architecture/specification-driven-l3-timing.md). A VM machine profile composes
 those mechanisms with a documented CPU and board contract; it may add only a
 real architectural or physical difference, including CPU feature gates,
 address/operand width, protection or paging behavior, bus width, prefetch,
