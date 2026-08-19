@@ -13,16 +13,17 @@ state, Queue order, a machine profile, or a physical-hardware claim.
 
 ## Timing Levels
 
-| Level | Contract |
+| Level | Project definition |
 | --- | --- |
-| L1 | Functional semantics: instruction, register, port, command and state effects are correct without a timing claim. |
-| L2 | Proportional deterministic timing: all activity advances in the shared virtual clock; relative rates, event ordering, IRQ/DRQ lifecycle, acknowledgement, reset and cancellation are reproducible. |
-| L3 | Specification-driven instruction and transaction timing: an admitted rule uses a documented constant, formula, bounded range with a declared deterministic selection, or explicitly labelled reference-derived contract. It is scheduled through L2's shared virtual clock. |
-| L4 | Physical/electrical reproduction: board waveforms, propagation delays and hardware measurement correlation. L4 is not an L3 prerequisite and is not inferred from a PDF or reference emulator. |
+| L1 | No timing guarantee. Devices are connected and ordered sufficiently for their functional state to compose and for the machine to boot. This is the earliest NXVM level. |
+| L2 | Implemented macro-scale proportional timing. The shared virtual clock preserves deterministic relative rates, event ordering, IRQ/DRQ lifecycle, acknowledgement, reset and cancellation, but does not claim instruction- or transaction-specific manual timing. |
+| L3 | The current project target: documentation-driven instruction- and transaction-level timing. Each admitted rule is a documented constant, formula, or bounded range with a declared deterministic selection; a clearly labelled reference-derived contract may fill a documented gap. L3 is scheduled through L2's shared virtual clock. |
+| L4 | Hardware-level real timing: electrical waveforms, propagation and measurement correlation. It is not NXVM's standard, is not an L3 prerequisite, and is prohibited from implementation scope. |
 
 L3 is neither a guest-OS checkpoint nor a claim that every undocumented
 physical detail is known. A component can be L3 for one admitted capability and
-remain L2 for a separately recorded capability.
+remain L2 for a separately recorded capability. L4 is never a fallback, a
+completion condition, or a later Project A work item.
 
 ## Coverage Universe And Completion Rule
 
@@ -110,7 +111,7 @@ by executing a partial machine.
 | PIC/DMA/PIT/RTC/KBC | Shared controller owners and common AT topologies, IRQ/DRQ and reset paths. | Each controller command/phase/routing timing row needs an explicit ledger disposition; unknown rates retain L2. |
 | FDC/HDC | Core media/controller paths and selected FDC/HDC policies. | Complete command/error/recovery phase contracts by controller personality; motor/media/electrical facts without a contract remain L2. |
 | Display | VADP, CGA/EGA/CECG state and selected access waits. | Scan, raster/status and monitor timing become capability rows; a port wait alone is not display L3. |
-| Board integrations | Selected D4, planar parity, speaker, refresh/HOLD and reset bridges. | Each bridge must identify producer, consumer, phase and source rule; undocumented electrical details are L2/L4, never fabricated. |
+| Board integrations | Selected D4, planar parity, speaker, refresh/HOLD and reset bridges. | Each bridge must identify producer, consumer, phase and source rule; undocumented electrical details retain L2 treatment; L4 reproduction is prohibited. |
 
 This table is a design inventory, not an assertion that the listed L3 gaps are
 closed. Detailed task evidence remains indexed separately.
@@ -159,8 +160,9 @@ capability.
 
 ## Acceptance Boundary
 
-Project A does not accept L4, a universal clone claim, or every possible
-historical peripheral. It accepts a bounded Core capability only when its
+Project A does not accept L4 work, a universal clone claim, or every possible
+historical peripheral. Hardware-level real-time reproduction is outside this project
+and must not be implemented. Project A accepts a bounded Core capability only when its
 selected functional surface has a deterministic L2 contract, its available
 specification-driven timing has been implemented as L3, and every remaining
 case is explicitly recorded as L2 fallback or unsupported.
