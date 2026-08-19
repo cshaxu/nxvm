@@ -33,3 +33,7 @@ S2 reconciles the five frozen CPU capability rows in [its evidence](../etc/evide
 ## S2 Acceptance
 
 Coordinator review accepts P1 1243cbe. The five CPU rows have one permitted disposition, current code/test owners and explicit nonphysical transfers. S3 is the next transaction/time batch.
+
+## S3 Scope
+
+S3 reconciles the six transaction/time rows in [its evidence](../etc/evidence/t433-s3-core-transaction-time-reconciliation.md).
