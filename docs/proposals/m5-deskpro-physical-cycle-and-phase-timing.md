@@ -2,7 +2,7 @@
 
 ## Latest Completed Receiver
 
-The original 1986 DeskPro 386/16 D3PE processor material, consulted transiently under the source policy, names CPU memory/I/O BUSRDY wait behavior and the CPU/system-board NAM*/MRDY* completion protocol. It supported one bounded Core-owned CPU BUSRDY completion gate, now closed in T427; its source file and all temporary copies are deleted and never retained. The source does not yet make an asynchronous prefetch producer, BWAIT waveform, ISA peripheral binding, or physical/L3 result implementable.
+The original 1986 DeskPro 386/16 D3PE processor material, consulted transiently under the source policy, supported the completed CPU BUSRDY gate. The later generic-AT T428 receiver adds only a cancellable, arbitrated prefetch reservation state; it deliberately performs no background fetch, transaction, overlap declaration or physical timing publication. The source file and all temporary copies are deleted and never retained. A source-backed asynchronous producer, BWAIT waveform, ISA peripheral binding and physical/L3 result remain unimplemented.
 
 ## Purpose
 

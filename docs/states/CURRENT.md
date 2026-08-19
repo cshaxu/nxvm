@@ -2,26 +2,8 @@
 
 ## Current Work
 
-## M5 T428 S1 Packet
+Idle.
 
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | New |
-| Admission And Approval | Owner: repository user; standing approval to continue DeskPro L3 work using original, reference-derived, or explicitly labelled generic-AT mechanisms and to commit/push to `master`; confirmed 2026-08-18. |
-| Objective | Add the minimum Core-owned, cancellable generic-AT asynchronous CPU instruction-prefetch reservation state required to represent an in-flight sequential external-cycle predecessor without fetching outside instruction execution. |
-| Non-goals | No D4 physical page-hit enablement, BWAIT waveform, scalar timing, PAL row/bank decode, VM scheduler, host time, firmware/media input, or L3 acceptance. |
-| Reference Baseline | `9e194662`: T427 closes original-source CPU BUSRDY gating. T419 S6 proves the present synchronous 15-byte refill cannot publish overlap. |
-| Candidate Proposal | [DeskPro physical-cycle proposal](../proposals/m5-deskpro-physical-cycle-and-phase-timing.md) |
-| Files And ABI Surface | Core CPU execution/prefetch and machine external-cycle owner, selected focused tests, evidence/history/status. No VM execution interface or profile-specific transaction path. |
-| Applicable Rules | Architecture: Core owns CPU execution and transaction lifecycle; VM only selects. Coding: C11/type facade/no test-only production interface. Source: generic-at tier is explicit; original D4 timing remains disabled. Documentation: one active packet and indexed evidence. |
-| Verification | Focused prefetch/external-cycle, reset, HOLD/refresh and Model-40/5170 regressions; serial current-gate, documentation governance and diff hygiene. |
-| Expected Markers | A T428 generic-prefetch-reservation marker plus retained external-cycle/profile markers. |
-| Asset Needs | None. |
-| Reporting Requirements | Record generic-at tier, reservation lifecycle, cancellation/reset/HOLD/refresh behavior, profile isolation, exact tests and retained physical transfers. |
-| Stop Conditions | Stop if the work requires a second CPU/memory transaction path, speculative physical scalar, VM scheduler, host time, protected material, or unbounded CPU rewrite. |
-| Exit Criteria | Core has one bounded prefetch producer lifecycle with in-flight identity and cancellation; existing semantics and profile isolation pass; no D4 physical page-hit result is published. |
-| Original Owner Request | Continue DeskPro L3 work with original/reference/generic evidence tiers; use generic structure when stronger evidence is unavailable rather than stopping. |
-| Similar-Issue Sweep | Inspect every CPU prefetch refill/invalidation, external-cycle phase callback, HOLD, refresh, reset and Model-40/5170 configuration path; retain any non-CPU producer at its existing owner. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T421 S1 `vm-0-5-0419` / `build/output/nxvm_0_5_0419.exe`, SHA-256 `859E1B93C6891E8EAAF0D98D4DBEF25F2383F911EC243390A50FB9A9CDBBA5BF`. T421 adds one Core-owned logical port-61h/PIT-channel-2 speaker line: Model-40 D4 and IBM 5170 planar configuration select it without a second provider; host audio and physical acoustic behavior remain transferred.
@@ -46,6 +28,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T428 S1 | Completed: Model-40 selects a generic-AT Core prefetch reservation lifecycle with reset/HOLD/refresh priority; it publishes no physical cycle, page hit or timing result. [Evidence](../etc/evidence/t428-s1-generic-prefetch-reservation.md). |
 | T427 | Closed: original-source CPU BUSRDY gate holds the existing Core external completion wait without retirement; Model-40 selects it and 5170 is isolated. [Evidence](../etc/evidence/t427-s1-deskpro-cpu-busready-gate.md). |
 | T426 | Closed: independent audit retains all tier-labelled logical receivers but rejects DeskPro physical/L3 acceptance pending named source/corpus blockers. [Evidence](../etc/evidence/t426-s1-deskpro-physical-l3-reaudit.md). |
 | T425 | Closed: reconciled FDC/HDC/KBC/DMA/PIC/NMI logical device phases at declared tiers; physical rates and propagation remain transferred. [Evidence](../etc/evidence/t425-s1-deskpro-device-phase-reconciliation.md). |
@@ -53,7 +36,6 @@
 | T423 | Closed: chargeable D4 external CPU-memory waits now advance through a Core-owned non-retiring completion state before retirement; BWAIT/ISA/async-prefetch physical work remains transferred. [Evidence](../etc/evidence/t423-s1-cpu-board-retirement-wait.md). |
 | T422 | Closed: original D3PE SLOWD*/refresh/auxiliary-PIT channel-2 bridge uses one Core hold route; Model-40 binds it and 5170 remains isolated. [Evidence](../etc/evidence/t422-s1-d4-slowdown-hold.md). |
 | T421 | Closed: Core owns the logical port-61h/PIT-channel-2 speaker line; S2 proves existing planar/D4 port-B exclusivity in both orders. Model-40 and 5170 keep one selected route. [S1](../etc/evidence/t421-s1-d4-speaker-line.md), [S2](../etc/evidence/t421-s2-port-b-exclusivity.md). |
-| T420 | Withdrawn as duplicate: T401 S1-S78 already supplies the finite four-profile instruction-correctness audit and T360 S1-S5 supplies the source-timing consumer reconciliation. No second CPU audit path is created. [Closure audit](../etc/evidence/t420-s2-duplicate-audit-withdrawal.md). |
 
 ## Recent Governance
 
