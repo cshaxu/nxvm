@@ -4616,7 +4616,8 @@ static C_INT core_machine_hdc_topology_is_valid(
     STD_SIZE_T second;
 
     if (topology == STD_NULL || topology->media_registry == STD_NULL ||
-        topology->media_id == CORE_MACHINE_MEDIA_ID_INVALID) return 0;
+        topology->media_id == CORE_MACHINE_MEDIA_ID_INVALID ||
+        topology->slave_media_id == topology->media_id) return 0;
     config = &topology->config;
     if (config->lba28_supported != TYPE_FALSE && config->lba28_supported != TYPE_TRUE) {
         return 0;
@@ -4758,7 +4759,8 @@ type_status core_machine_configure_hdc(core_machine *machine,
     port_checkpoint = core_machine_port_registration_begin(&machine->executor_port);
     machine->hdc_topology = *topology;
     core_machine_hdc_connect(&machine->hdc, machine->hdc_topology.media_registry,
-        machine->hdc_topology.media_id, &machine->shared_pic_master,
+        machine->hdc_topology.media_id, machine->hdc_topology.slave_media_id,
+        &machine->shared_pic_master,
         &machine->shared_pic_slave, &machine->hdc_topology.config);
     core_machine_hdc_initialize(&machine->hdc);
     status = core_machine_install_port_provider(machine,

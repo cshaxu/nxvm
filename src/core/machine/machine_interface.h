@@ -255,6 +255,7 @@ typedef struct core_machine_fdc_topology {
 typedef struct core_machine_hdc_topology {
     const core_machine_media_registry *media_registry;
     core_machine_media_id media_id;
+    core_machine_media_id slave_media_id;
     core_machine_hdc_config config;
 } core_machine_hdc_topology;
 

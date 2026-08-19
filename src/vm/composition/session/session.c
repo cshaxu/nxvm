@@ -465,7 +465,9 @@ static type_status vm_session_create_model40_byob(const vm_session_config *confi
     status = vm_session_initialize(session);
     if (status != TYPE_STATUS_OK) { STD_FREE(session); return status; }
     if ((config->fdd_image != STD_NULL && vm_session_insert_fdd(session, config->fdd_image)) ||
-        (config->hdd_image != STD_NULL && vm_session_model40_insert_hdd_at_startup(session, config->hdd_image))) {
+        (config->hdd_image != STD_NULL && vm_session_model40_insert_hdd_at_startup(session, config->hdd_image)) ||
+        (config->hdd_slave_image != STD_NULL &&
+            vm_session_model40_insert_hdd_slave_at_startup(session, config->hdd_slave_image))) {
         vm_session_destroy(session);
         return TYPE_STATUS_FAULT;
     }

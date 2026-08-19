@@ -484,3 +484,4 @@ covered by one of those index forms. `etc/` is not a shortcut for adding
 another principal document.
 
 | evidence/t405-s1-x86-gcc-host-build-compatibility.md | Verification owner | T405 S1 records isolated i686 GCC provenance, host-width repairs, PE-i386 proof, x86/x64 286/286 current-gate results and the retained x64 artifact hash; no L3 claim. Retain with T405 history. |
+| evidence/t430-s1-deskpro-dual-fixed-disk.md | Verification owner | T430 S1 records original-source DeskPro C:/D: capability, controller-matched WD selection, frozen Core media topology, Model-40 VM composition, focused proof, and physical/L3 transfers. Retain with T430 history. |

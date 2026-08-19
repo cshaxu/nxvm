@@ -96,6 +96,7 @@ C_INT main(C_VOID)
         core_machine_compaq_hdc_write, STD_NULL, STD_NULL, STD_NULL, STD_NULL
     };
     core_machine_compaq_hdc_media media = {{0}};
+    core_machine_compaq_hdc_media slave_media = {{0}};
     core_machine_media_registry registry = {0};
     core_machine_hdc hdc = {0};
     t_port port = {0};
@@ -106,16 +107,21 @@ C_INT main(C_VOID)
 
     media.sector[0] = 0x34u;
     media.sector[1] = 0x12u;
+    slave_media.sector[0] = 0x78u;
+    slave_media.sector[1] = 0x56u;
     core_machine_port_initialize(&port);
     core_machine_pic_initialize(&master, &slave, &port);
     core_machine_media_registry_initialize(&registry);
     if (core_machine_media_registry_bind(&registry, 1u, &media, &media_provider) !=
             TYPE_STATUS_OK) {
         failed |= 0x01;
+    } else if (core_machine_media_registry_bind(&registry, 2u, &slave_media, &media_provider) !=
+            TYPE_STATUS_OK) {
+        failed |= 0x02;
     } else if (core_machine_media_registry_freeze(&registry) != TYPE_STATUS_OK) {
         failed |= 0x02;
     } else {
-        core_machine_hdc_connect(&hdc, &registry, 1u, &master, &slave, &config);
+        core_machine_hdc_connect(&hdc, &registry, 1u, 2u, &master, &slave, &config);
         core_machine_hdc_initialize(&hdc);
         if (!core_machine_compaq_hdc_install(&port, &hdc)) {
             failed |= 0x02;
@@ -135,6 +141,19 @@ C_INT main(C_VOID)
                 core_machine_hdc_irq_pending(&hdc);
             value = core_machine_port_read(&port, 0x01f0u);
             failed |= value != 0x1234u;
+            for (type_unsigned_16 index = 1u; index < 256u; ++index) {
+                (C_VOID)core_machine_port_read(&port, 0x01f0u);
+            }
+            core_machine_hdc_advance(&hdc);
+            failed |= !core_machine_hdc_irq_pending(&hdc);
+
+            core_machine_port_write(&port, 0x01f2u, 1u);
+            core_machine_port_write(&port, 0x01f3u, 1u);
+            core_machine_port_write(&port, 0x01f6u, 0x3au);
+            core_machine_port_write(&port, 0x01f7u, 0x20u);
+            core_machine_hdc_advance(&hdc);
+            value = core_machine_port_read(&port, 0x01f0u);
+            failed |= value != 0x5678u;
             for (type_unsigned_16 index = 1u; index < 256u; ++index) {
                 (C_VOID)core_machine_port_read(&port, 0x01f0u);
             }
@@ -183,5 +202,6 @@ C_INT main(C_VOID)
     core_machine_port_finalize(&port);
     puts("M5:T386:S5:COMPAQ-HDC-ROUTE:OK");
     puts("M5:T386:S5:PORT-WIRED-OR:OK");
+    puts("M5:T430:S1:COMPAQ-HDC-DUAL-DRIVE:OK");
     return 0;
 }

@@ -114,6 +114,9 @@ type_status vm_session_model40_configure_controllers(vm_session *session)
     if (status != TYPE_STATUS_OK) return status;
     hdc.media_registry = &session->media_registry;
     hdc.media_id = VM_SESSION_MEDIA_HDD_ID;
+    if (session->retained_config.hdd_slave_image != STD_NULL) {
+        hdc.slave_media_id = VM_SESSION_MEDIA_HDD_SLAVE_ID;
+    }
     hdc.config = (core_machine_hdc_config) { 0x01f0u, 0x01f1u, 0x01f2u,
         0x01f3u, 0x01f4u, 0x01f5u, 0x01f6u, 0x01f7u, 0x03f6u, 0x03f7u,
         14u, TYPE_FALSE, CORE_MACHINE_HDC_PROTOCOL_COMPAQ_WD_40MB };
@@ -134,5 +137,24 @@ C_INT vm_session_model40_insert_hdd_at_startup(vm_session *session, const C_CHAR
         return -1;
     }
     session->retained_config.hdd_image = session->hdd_image_path;
+    return 0;
+}
+
+C_INT vm_session_model40_insert_hdd_slave_at_startup(vm_session *session, const C_CHAR *path)
+{
+    const STD_SIZE_T expected_bytes = 925u * 5u * 17u * 512u;
+    STD_SIZE_T path_length;
+
+    if (session == STD_NULL || !session->model40_private || path == STD_NULL ||
+        session->hdd_slave.connect.flagDiskExist ||
+        vm_machine_hdd_insert(&session->hdd_slave, path) != 0 ||
+        session->hdd_slave.connect.raw_byte_count != expected_bytes) return -1;
+    path_length = STD_STRLEN(path);
+    if (path_length >= sizeof(session->hdd_slave_image_path)) return -1;
+    STD_MEMCPY(session->hdd_slave_image_path, path, path_length + 1u);
+    if (vm_machine_hdd_set_geometry(&session->hdd_slave, 925u, 5u, 17u) != TYPE_FALSE) {
+        return -1;
+    }
+    session->retained_config.hdd_slave_image = session->hdd_slave_image_path;
     return 0;
 }

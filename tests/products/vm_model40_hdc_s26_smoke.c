@@ -3,6 +3,7 @@
 #include "core/machine/hdc.h"
 #include "core/machine/machine.h"
 #include "core/machine/port.h"
+#include "vm/composition/session/media.h"
 #include "vm/composition/session/session.h"
 
 #define MODEL40_HDC_BYTES (925u * 5u * 17u * 512u)
@@ -44,7 +45,8 @@ static C_INT write_short_hdd(const C_CHAR *path)
     return file != STD_NULL && STD_FWRITE(sector, 1u, sizeof(sector), file) == sizeof(sector) &&
         STD_FCLOSE(file) == 0;
 }
-static C_INT read_first_sector(vm_session *session)
+static C_INT read_first_sector(vm_session *session, type_unsigned_8 drive_head,
+    type_unsigned_16 expected_word)
 {
     core_machine_hdc *hdc;
     type_unsigned_32 value;
@@ -56,14 +58,14 @@ static C_INT read_first_sector(vm_session *session)
     core_machine_port_write(&session->core_machine->executor_port, 0x01f3u, 1u);
     core_machine_port_write(&session->core_machine->executor_port, 0x01f4u, 0u);
     core_machine_port_write(&session->core_machine->executor_port, 0x01f5u, 0u);
-    core_machine_port_write(&session->core_machine->executor_port, 0x01f6u, 0x20u);
+    core_machine_port_write(&session->core_machine->executor_port, 0x01f6u, drive_head);
     core_machine_port_write(&session->core_machine->executor_port, 0x01f7u, 0x20u);
     core_machine_hdc_advance(hdc);
     value = core_machine_port_read(&session->core_machine->executor_port, 0x03f6u);
     if ((value & CORE_MACHINE_HDC_STATUS_DRQ) == 0u || !core_machine_hdc_irq_pending(hdc)) return 0;
     value = core_machine_port_read(&session->core_machine->executor_port, 0x01f7u);
     if ((value & CORE_MACHINE_HDC_STATUS_DRQ) == 0u || core_machine_hdc_irq_pending(hdc) ||
-        core_machine_port_read(&session->core_machine->executor_port, 0x01f0u) != 0x5aa5u) return 0;
+        core_machine_port_read(&session->core_machine->executor_port, 0x01f0u) != expected_word) return 0;
     for (index = 1u; index < 256u; ++index) {
         (C_VOID)core_machine_port_read(&session->core_machine->executor_port, 0x01f0u);
     }
@@ -93,8 +95,10 @@ C_INT main(C_VOID)
     if (!write_chip("t386-s26-even.bin", 0u)) { failed = 1; }
     if (!write_chip("t386-s26-odd.bin", 1u)) { failed = 1; }
     if (!write_hdd("t386-s26-hdd.img", 0xa5u, 0x5au)) { failed = 1; }
+    if (!write_hdd("t430-s1-hdd-slave.img", 0x34u, 0x12u)) { failed = 1; }
     config.profile_kind = VM_SESSION_PROFILE_COMPAQ_DESKPRO_386_MODEL_40;
     config.hdd_image = "t386-s26-hdd.img";
+    config.hdd_slave_image = "t430-s1-hdd-slave.img";
     config.model40_firmware = (vm_profile_model40_byob_manifest) {
         "t386-s26-even.bin", even_sha256, "t386-s26-odd.bin", odd_sha256,
         "project-owned synthetic test input" };
@@ -102,7 +106,11 @@ C_INT main(C_VOID)
     failed |= !failed && (session == STD_NULL || !session->hdd.connect.flagDiskExist ||
         session->hdd.data.ncyl != 925u || session->hdd.data.nhead != 5u ||
         session->hdd.data.nsector != 17u || session->hdd.data.nbyte != 512u ||
-        vm_session_insert_hdd(session, "t386-s26-hdd.img") == 0 || !read_first_sector(session));
+        !session->hdd_slave.connect.flagDiskExist ||
+        session->core_machine->hdc.connect.slave_media_id != VM_SESSION_MEDIA_HDD_SLAVE_ID ||
+        vm_session_insert_hdd(session, "t386-s26-hdd.img") == 0 ||
+        !read_first_sector(session, 0x20u, 0x5aa5u) ||
+        !read_first_sector(session, 0x30u, 0x1234u));
     vm_session_destroy(session);
     session = STD_NULL;
     if (!write_short_hdd("t386-s26-bad-hdd.img")) failed = 1;
@@ -112,10 +120,12 @@ C_INT main(C_VOID)
     (C_VOID)STD_REMOVE("t386-s26-even.bin");
     (C_VOID)STD_REMOVE("t386-s26-odd.bin");
     (C_VOID)STD_REMOVE("t386-s26-hdd.img");
+    (C_VOID)STD_REMOVE("t430-s1-hdd-slave.img");
     (C_VOID)STD_REMOVE("t386-s26-bad-hdd.img");
     if (!failed) {
         STD_PRINTF("M5:T386:S26:MODEL40-HDC-STARTUP:OK\n");
         STD_PRINTF("M5:T386:S26:MODEL40-HDC-FIXED-MEDIA:OK\n");
+        STD_PRINTF("M5:T430:S1:MODEL40-HDC-DUAL-DRIVE:OK\n");
     }
     return failed;
 }

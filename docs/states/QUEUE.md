@@ -26,6 +26,7 @@ its evidence-tier discipline remains a shared constraint, not a candidate.
 Detailed scope, acceptance conditions, and common constraints remain in these
 shared proposals and in each candidate's linked proposal.
 
+
 1. [DeskPro 386 physical-cycle and phase-timing closure](../proposals/m5-deskpro-physical-cycle-and-phase-timing.md) -- CPU BUSRDY completion, generic-AT prefetch reservation, and generic-AT CECG 8-bit port-wait skeleton are closed. Re-admit only the next bounded receiver with original source, controller-matched reference, or a explicitly-labelled generic-AT skeleton. None establishes physical timing or L3 acceptance.
 1. [Generic PC backbone foundation](../proposals/m5-generic-pc-backbone-foundation.md) -- eligible only after a comprehensive DeskPro 386 Model 40 L3 closure accepts its selected profile and the profile/device contract closes; remains before the 8088/PC/XT program.
 1. [8088 CPU-profile admission and timing closure](../proposals/m5-8088-cpu-profile.md).
@@ -40,7 +41,7 @@ shared proposals and in each candidate's linked proposal.
 1. [Windows 3.1 386 Enhanced Mode lifecycle](../proposals/m5-windows31-enhanced-mode-lifecycle.md).
 1. [M5 final Windows closure audit](../proposals/m5-final-l3-windows-closure-audit.md).
 
-Retained non-candidate proposal index: [VM profile-contract ownership migration](../proposals/m5-vm-profile-contract-ownership.md), [80286 successful-retirement timing closure](../proposals/m5-80286-retirement-timing-closure.md), [cross-mode mechanism coherence](../proposals/m5-cross-mode-mechanism-coherence.md), [instruction-timed execution](../proposals/m5-instruction-timed-execution.md), and [L3 bus-timing convergence](../proposals/m5-l3-bus-timing-convergence.md). Their completed task records are retained in history.
+Retained non-candidate proposal index: [DeskPro 386 dual fixed-disk selection](../proposals/m5-deskpro-386-dual-fixed-disk-selection.md), [VM profile-contract ownership migration](../proposals/m5-vm-profile-contract-ownership.md), [80286 successful-retirement timing closure](../proposals/m5-80286-retirement-timing-closure.md), [cross-mode mechanism coherence](../proposals/m5-cross-mode-mechanism-coherence.md), [instruction-timed execution](../proposals/m5-instruction-timed-execution.md), and [L3 bus-timing convergence](../proposals/m5-l3-bus-timing-convergence.md). Their completed task records are retained in history.
 
 ## M6 Candidates
 

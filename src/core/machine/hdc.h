@@ -61,6 +61,7 @@ typedef struct core_machine_hdc_data {
 typedef struct core_machine_hdc_connection {
     const core_machine_media_registry *media_registry;
     core_machine_media_id media_id;
+    core_machine_media_id slave_media_id;
     core_machine_pic_irq_source irq_source;
     core_machine_hdc_config config;
 } core_machine_hdc_connection;
@@ -72,7 +73,7 @@ typedef struct core_machine_hdc {
 
 C_VOID core_machine_hdc_connect(core_machine_hdc *hdc,
     const core_machine_media_registry *media_registry,
-    core_machine_media_id media_id,
+    core_machine_media_id media_id, core_machine_media_id slave_media_id,
     t_pic *pic_master, t_pic *pic_slave, const core_machine_hdc_config *config);
 C_VOID core_machine_hdc_initialize(core_machine_hdc *hdc);
 C_VOID core_machine_hdc_reset(core_machine_hdc *hdc);

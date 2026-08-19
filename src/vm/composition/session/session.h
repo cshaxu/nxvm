@@ -48,6 +48,7 @@ struct vm_session {
     core_machine_dma_request_binding fdc_dma_request;
     t_fdd fdd;
     t_hdd hdd;
+    t_hdd hdd_slave;
     t_debug debug;
     t_bios default_bios;
     vm_profile_default_context default_profile_context;
@@ -79,6 +80,7 @@ struct vm_session {
     type_bool model40_fdc_terminal_observation_valid;
     C_CHAR fdd_image_path[1024];
     C_CHAR hdd_image_path[1024];
+    C_CHAR hdd_slave_image_path[1024];
 };
 
 type_status vm_session_storage_initialize(vm_session *machine);

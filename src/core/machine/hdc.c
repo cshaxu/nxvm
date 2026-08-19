@@ -75,12 +75,19 @@ static type_unsigned_32 core_machine_hdc_lba(const core_machine_hdc *hdc)
         ((type_unsigned_32)(hdc->data.drive_head & 0x0fu) << 24u);
 }
 
+static core_machine_media_id core_machine_hdc_selected_media_id(const core_machine_hdc *hdc)
+{
+    return hdc != STD_NULL && (hdc->data.drive_head & 0x10u) != 0u ?
+        hdc->connect.slave_media_id : hdc->connect.media_id;
+}
+
 static C_INT core_machine_hdc_media_info(const core_machine_hdc *hdc,
     core_machine_media_info *out_info, core_machine_media_result *out_result)
 {
     return hdc != STD_NULL && hdc->connect.media_registry != STD_NULL &&
-        core_machine_media_query(hdc->connect.media_registry, hdc->connect.media_id,
-            out_info, out_result) == TYPE_STATUS_OK &&
+        core_machine_hdc_selected_media_id(hdc) != CORE_MACHINE_MEDIA_ID_INVALID &&
+        core_machine_media_query(hdc->connect.media_registry,
+            core_machine_hdc_selected_media_id(hdc), out_info, out_result) == TYPE_STATUS_OK &&
         *out_result == CORE_MACHINE_MEDIA_RESULT_OK;
 }
 
@@ -128,7 +135,7 @@ static C_INT core_machine_hdc_load_chs_sector(core_machine_hdc *hdc)
         ((type_unsigned_16)hdc->data.cylinder_high << 8u);
     head = hdc->data.drive_head & 0x0fu;
     sector = hdc->data.sector_number;
-    if (!core_machine_hdc_selected_master(hdc) || core_machine_hdc_lba_mode(hdc) ||
+    if ((!core_machine_hdc_is_compaq_wd_40mb(hdc) && !core_machine_hdc_selected_master(hdc)) || core_machine_hdc_lba_mode(hdc) ||
         sector == 0u || cylinder >= info.geometry.cylinders ||
         head >= info.geometry.heads || sector > info.geometry.sectors_per_track ||
         info.geometry.bytes_per_sector != sizeof(hdc->data.data)) {
@@ -138,7 +145,7 @@ static C_INT core_machine_hdc_load_chs_sector(core_machine_hdc *hdc)
     offset = (((STD_SIZE_T)cylinder * info.geometry.heads + head) *
         info.geometry.sectors_per_track + (sector - 1u)) * info.geometry.bytes_per_sector;
     if (core_machine_media_read_bytes(hdc->connect.media_registry,
-            hdc->connect.media_id, offset, hdc->data.data, sizeof(hdc->data.data),
+            core_machine_hdc_selected_media_id(hdc), offset, hdc->data.data, sizeof(hdc->data.data),
             &media_result) != TYPE_STATUS_OK ||
         media_result != CORE_MACHINE_MEDIA_RESULT_OK) {
         core_machine_hdc_fail(hdc, media_result == CORE_MACHINE_MEDIA_RESULT_INVALID_RANGE ?
@@ -169,7 +176,7 @@ static C_INT core_machine_hdc_load_lba_sector(core_machine_hdc *hdc)
     }
     offset = (STD_SIZE_T)lba * info.geometry.bytes_per_sector;
     if (core_machine_media_read_bytes(hdc->connect.media_registry,
-            hdc->connect.media_id, offset, hdc->data.data, sizeof(hdc->data.data),
+            core_machine_hdc_selected_media_id(hdc), offset, hdc->data.data, sizeof(hdc->data.data),
             &media_result) != TYPE_STATUS_OK ||
         media_result != CORE_MACHINE_MEDIA_RESULT_OK) {
         core_machine_hdc_fail(hdc, media_result == CORE_MACHINE_MEDIA_RESULT_INVALID_RANGE ?
@@ -203,7 +210,7 @@ static C_INT core_machine_hdc_store_chs_sector(core_machine_hdc *hdc)
         ((type_unsigned_16)hdc->data.cylinder_high << 8u);
     head = hdc->data.drive_head & 0x0fu;
     sector = hdc->data.sector_number;
-    if (!core_machine_hdc_selected_master(hdc) || core_machine_hdc_lba_mode(hdc) ||
+    if ((!core_machine_hdc_is_compaq_wd_40mb(hdc) && !core_machine_hdc_selected_master(hdc)) || core_machine_hdc_lba_mode(hdc) ||
         sector == 0u || cylinder >= info.geometry.cylinders ||
         head >= info.geometry.heads || sector > info.geometry.sectors_per_track ||
         info.geometry.bytes_per_sector != sizeof(hdc->data.data)) {
@@ -213,7 +220,7 @@ static C_INT core_machine_hdc_store_chs_sector(core_machine_hdc *hdc)
     offset = (((STD_SIZE_T)cylinder * info.geometry.heads + head) *
         info.geometry.sectors_per_track + (sector - 1u)) * info.geometry.bytes_per_sector;
     if (core_machine_media_write_bytes(hdc->connect.media_registry,
-            hdc->connect.media_id, offset, hdc->data.data, sizeof(hdc->data.data),
+            core_machine_hdc_selected_media_id(hdc), offset, hdc->data.data, sizeof(hdc->data.data),
             &media_result) != TYPE_STATUS_OK ||
         media_result != CORE_MACHINE_MEDIA_RESULT_OK) {
         core_machine_hdc_fail(hdc, media_result == CORE_MACHINE_MEDIA_RESULT_INVALID_RANGE ?
@@ -244,7 +251,7 @@ static C_INT core_machine_hdc_store_lba_sector(core_machine_hdc *hdc)
     }
     offset = (STD_SIZE_T)lba * info.geometry.bytes_per_sector;
     if (core_machine_media_write_bytes(hdc->connect.media_registry,
-            hdc->connect.media_id, offset, hdc->data.data, sizeof(hdc->data.data),
+            core_machine_hdc_selected_media_id(hdc), offset, hdc->data.data, sizeof(hdc->data.data),
             &media_result) != TYPE_STATUS_OK ||
         media_result != CORE_MACHINE_MEDIA_RESULT_OK) {
         core_machine_hdc_fail(hdc, media_result == CORE_MACHINE_MEDIA_RESULT_INVALID_RANGE ?
@@ -452,7 +459,7 @@ static C_VOID core_machine_hdc_execute_command(core_machine_hdc *hdc, type_unsig
     if (hdc == STD_NULL) return;
     hdc->data.last_command = command;
     ++hdc->data.command_count;
-    if (!core_machine_hdc_selected_master(hdc) ||
+    if ((!core_machine_hdc_is_compaq_wd_40mb(hdc) && !core_machine_hdc_selected_master(hdc)) ||
         (core_machine_hdc_is_compaq_wd_40mb(hdc) &&
             (hdc->data.drive_head & 0x20u) == 0u) ||
         (!core_machine_hdc_is_compaq_wd_40mb(hdc) &&
@@ -626,12 +633,13 @@ static const core_machine_port_provider core_machine_hdc_ports = {
 
 C_VOID core_machine_hdc_connect(core_machine_hdc *hdc,
     const core_machine_media_registry *media_registry,
-    core_machine_media_id media_id,
+    core_machine_media_id media_id, core_machine_media_id slave_media_id,
     t_pic *pic_master, t_pic *pic_slave, const core_machine_hdc_config *config)
 {
     if (hdc == STD_NULL || config == STD_NULL) return;
     hdc->connect.media_registry = media_registry;
     hdc->connect.media_id = media_id;
+    hdc->connect.slave_media_id = slave_media_id;
     core_machine_pic_irq_source_bind(&hdc->connect.irq_source, pic_master,
         pic_slave, config->irq);
     hdc->connect.config = *config;
