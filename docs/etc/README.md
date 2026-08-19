@@ -11,6 +11,7 @@ principal documents named in [docs/README.md](../README.md).
 | --- | --- | --- |
 | `architecture/` | Architecture owner | Current detailed machine, profile, layout, and contract rationale. |
 | `architecture/specification-driven-l3-timing.md` | Architecture owner | Core Project A design: specification-driven instruction and transaction timing, explicit L2 fallback ledger, and neutral Core-to-VM timing-contract boundary. Promotes to the principal Architecture authority only through an approved architecture task. |
+| `architecture/vm-profile-resolution-design.md` | Architecture owner | Supporting target design for two-root built-in VM profiles, profile resolution, the copied Core machine plan, and the custom `nxvm-session` YAML grammar. It does not change current runtime architecture, Queue, or ABI. |
 | `requirements/` | Product and profile owners | Future DOS, NXVDM, and profile admissions. |
 | `evidence/` | Verification owner | Capability, verification, baseline, and fixture evidence. |
 | `history/legacy/` | Governance history owner | Superseded legacy governance records; they are historical only and cannot define live debt, policy, status, queue, or roadmap. |
