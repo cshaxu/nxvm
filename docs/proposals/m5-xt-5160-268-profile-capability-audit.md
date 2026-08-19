@@ -13,7 +13,10 @@ Use IBM/Intel/component primary material to establish the selected 5160-268
 board/revision, CPU clock, memory/ROM constraints, display, input, storage,
 interrupt/DMA, timer, NMI, reset, and project-owned corpus. Map each selected
 component to its functional and timing gaps, earliest shared owner, and the
-proper later XT receiver. The required firmware slot is an external
+proper later XT receiver. It also freezes the 8088-specific CPU attachment,
+external-bus/prefetch and timing differences needed by 5160, reusing the
+retained 8086 semantic ledger rather than restoring a standalone 8088 candidate.
+The required firmware slot is an external
 owner-managed research asset; do not record bytes, local paths, or a vendor
 catalogue in the repository.
 

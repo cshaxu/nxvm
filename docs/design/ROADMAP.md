@@ -33,51 +33,31 @@ implementation plan for core convergence.
 
 ## M5: Converge Core And NXVM
 
-Complete the shared-core/NXVM boundary through three source-backed L3 baseline
-machines: IBM PC/AT 5170 Model 339/Type 3 80286 first, then the 1986 original
-Compaq DeskPro 386 Model 40 (DeskPro 386/16), and then a distinct 8088 CPU
-profile plus IBM PC/XT 5160-268 baseline. Before a machine's timing closure,
-the program freezes its selected capability set and closes the functional
-register/state, IRQ/DMA, reset, and ownership gaps for every selected device.
-It then closes that machine's board/device timing and makes a separate L3
-audit decision. Shared device semantics are repaired at their earliest owner;
-machine-local binding and timing remain profile-specific. For each baseline,
-every selected device, chip, port, bus route, reset, IRQ/DRQ lifecycle,
-availability/wait state, and cross-device event order has one owner and a
-declared timing contract. Carry
-the Intel 8086, 8088, 80186, 80286, and 80386DX form/state program through its
-evidence-led Queue sequence before using a guest operating system as
-validation. The 8088 profile retains 8086 instruction semantics but separately
-owns its external bus and prefetch/timing boundary. The 8086 and 80186 retain
-CPU boundaries but have no physical-machine baseline until separately selected
-systems are admitted. After the DeskPro Model 40 L3 audit and before the
-8088/PC/XT program, M5 also freezes every publicly exposed device capability
-under a profile contract and closes its functional support surface. Reusable
-chips, controllers, bus mechanisms and generic device semantics belong to
-Core; VM device profiles own named hardware-capability contracts; machine
-backbones own the permitted historical combinations and board constraints; and
-YAML may select only a defined backbone, its allowed variants and media. That
-program has
-complementary instruction-form and architecture-state closure views; it
-includes real/protected/VM86 transitions, privilege/exception delivery, paging,
-and remaining system state. A completed opcode slice never closes a CPU family,
-device, or stage by itself, and M5 makes no 80387 claim. Before its final
-audit, M5 also closes every device capability currently supported by the
-product--including its current storage, display, input, and any exposed optional
-I/O surface--to a declared profile-local L3 contract or removes it from the
-supported product surface; no supported capability may remain a
-compatibility-only exception.
+Converge the shared Core/NXVM boundary to Project A's L3 standard: Core uses
+documentation-driven instruction and transaction timing where a constant,
+formula, deterministic range selection or labelled reference-derived contract
+exists; every remaining capability retains an explicit L2 proportional fallback
+or unsupported disposition. L4 hardware-real timing is prohibited.
 
-After the 5170, DeskPro 386 Model 40, PC/XT 5160-268 8088 baseline-machine, and current-product
-device-capability L3 closure audits accept those prerequisites, a separate
-pre-Windows L3 admission audit must accept the frozen DeskPro Model 40 profile. Only
-then does M5 end with an approved BYOB Windows 3.1
-corpus on the frozen DeskPro 386 Model 40:
-Standard Mode and 386 Enhanced Mode must each install, start normally, reach a
-named ready checkpoint, and shut down normally. These are final compatibility
-consumers, not substitutes for device/timing evidence. Windows media is never
-committed or made a default dependency.
+First reconcile the retained Core CPU, transaction, device and capability
+ledgers against current code, then establish the copied validated Core timing
+plan, CPU timing programs, CPU-to-board transactions, controller/device phases
+and integrated Core contract catalog. Core stays machine-neutral throughout.
 
+The existing 5170 baseline is the AT parent. DeskPro 386 first becomes a
+runnable 80386DX/Compaq delta that inherits its retained 5170 detail; it does
+not reopen a physical-board reconstruction. VM then normalizes built-in profile
+composition: independent 5160 XT and 5170 AT roots, `generic-386dx-at` as a
+5170 child, and DeskPro as its Compaq delta. VM owns profile inheritance,
+provenance and session policy; Core owns execution, transactions and device
+state.
+
+The retained 5160-268 profile/device/phase/audit sequence follows that
+foundation, including its 8088 attachment boundary. A pre-Windows audit then
+checks the frozen Core contracts and selected 5170, DeskPro and 5160 profiles
+before Windows 3.1 BYOB, Standard Mode and Enhanced Mode are permitted as final
+compatibility consumers. Windows remains evidence of compatibility, never a
+substitute for Core or profile timing proof; Windows media is never committed.
 ## M6: Build Mantle
 
 Only after M5's L3 and Windows closure decision, implement the neutral VDM

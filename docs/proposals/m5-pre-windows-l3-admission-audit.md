@@ -10,7 +10,8 @@ device closures.
 ## Required scope
 
 Independently review each frozen baseline and every currently supported product
-device capability.  Prove that the 80286, 80386 and 8088 CPU ledgers, board
+device capability.  Prove that the selected Core CPU and device ledgers, 5170/DeskPro/5160 profile
+contracts, board
 availability, service timing, event ordering, reset/cancellation paths and
 profile identities have source-backed or explicitly model-derived L3 evidence,
 with all reference-exhausted boundaries visible.  Decide whether the frozen

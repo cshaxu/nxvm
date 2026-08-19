@@ -26,22 +26,31 @@ its evidence-tier discipline remains a shared constraint, not a candidate.
 Detailed scope, acceptance conditions, and common constraints remain in these
 shared proposals and in each candidate's linked proposal.
 
+The [Core specification-driven timing design](../etc/architecture/specification-driven-l3-timing.md)
+is the shared architecture context for the following ordered Project A sequence.
+These candidates establish Core capabilities before a machine profile may claim
+them; they consume retained evidence rather than reopening closed audits.
 
-1. [DeskPro 386 physical-cycle and phase-timing closure](../proposals/m5-deskpro-physical-cycle-and-phase-timing.md) -- CPU BUSRDY completion, generic-AT prefetch reservation, and generic-AT CECG 8-bit port-wait skeleton are closed. Re-admit only the next bounded receiver with original source, controller-matched reference, or a explicitly-labelled generic-AT skeleton. None establishes physical timing or L3 acceptance.
-1. [Generic PC backbone foundation](../proposals/m5-generic-pc-backbone-foundation.md) -- eligible only after a comprehensive DeskPro 386 Model 40 L3 closure accepts its selected profile and the profile/device contract closes; remains before the 8088/PC/XT program.
-1. [8088 CPU-profile admission and timing closure](../proposals/m5-8088-cpu-profile.md).
+1. [Core L3 ledger reconciliation and conformance](../proposals/m5-core-l3-ledger-reconciliation.md).
+1. [Core timing contract and machine plan](../proposals/m5-core-timing-contract-machine-plan.md).
+1. [Core CPU instruction timing programs](../proposals/m5-core-cpu-instruction-timing-program.md).
+1. [Core CPU-to-board transaction and arbitration contracts](../proposals/m5-core-cpu-board-transaction-contracts.md).
+1. [Core controller and device phase contracts](../proposals/m5-core-controller-device-phase-contracts.md).
+1. [Core L3 integration closure and VM contract export](../proposals/m5-core-l3-integration-vm-contract-export.md).
+
+1. [DeskPro 386 5170-derived runnable profile](../proposals/m5-deskpro-386-5170-derived-runnable-profile.md).
+1. [VM PC profile foundation](../proposals/m5-vm-pc-profile-foundation.md).
 1. [IBM PC/XT 5160-268 profile and capability-gap audit](../proposals/m5-xt-5160-268-profile-capability-audit.md).
 1. [IBM PC/XT 5160-268 selected-device functional closure](../proposals/m5-xt-5160-268-device-functional-closure.md).
 1. [IBM PC/XT 5160-268 board and device phase-timing closure](../proposals/m5-8088-5150-xt-l3-baseline.md).
 1. [IBM PC/XT 5160-268 final model-L3 audit](../proposals/m5-xt-5160-268-l3-audit.md).
-1. [Current-product device-capability L3 closure](../proposals/m5-current-product-device-l3-closure.md).
 1. [M5 pre-Windows L3 admission audit](../proposals/m5-pre-windows-l3-admission-audit.md).
 1. [Windows 3.1 BYOB lifecycle harness](../proposals/m5-windows31-byob-lifecycle-harness.md).
 1. [Windows 3.1 Standard Mode lifecycle](../proposals/m5-windows31-standard-mode-lifecycle.md).
 1. [Windows 3.1 386 Enhanced Mode lifecycle](../proposals/m5-windows31-enhanced-mode-lifecycle.md).
 1. [M5 final Windows closure audit](../proposals/m5-final-l3-windows-closure-audit.md).
 
-Retained non-candidate proposal index: [DeskPro 386 dual fixed-disk selection](../proposals/m5-deskpro-386-dual-fixed-disk-selection.md), [VM profile-contract ownership migration](../proposals/m5-vm-profile-contract-ownership.md), [80286 successful-retirement timing closure](../proposals/m5-80286-retirement-timing-closure.md), [cross-mode mechanism coherence](../proposals/m5-cross-mode-mechanism-coherence.md), [instruction-timed execution](../proposals/m5-instruction-timed-execution.md), and [L3 bus-timing convergence](../proposals/m5-l3-bus-timing-convergence.md). Their completed task records are retained in history.
+Retained non-candidate proposal index: [withdrawn DeskPro physical-cycle and phase-timing closure](../proposals/m5-deskpro-physical-cycle-and-phase-timing.md), [withdrawn generic PC backbone foundation](../proposals/m5-generic-pc-backbone-foundation.md), [withdrawn separate 8088 CPU-profile closure](../proposals/m5-8088-cpu-profile.md), [withdrawn current-product device-capability L3 closure](../proposals/m5-current-product-device-l3-closure.md), [DeskPro 386 dual fixed-disk selection](../proposals/m5-deskpro-386-dual-fixed-disk-selection.md), [VM profile-contract ownership migration](../proposals/m5-vm-profile-contract-ownership.md), [80286 successful-retirement timing closure](../proposals/m5-80286-retirement-timing-closure.md), [cross-mode mechanism coherence](../proposals/m5-cross-mode-mechanism-coherence.md), [instruction-timed execution](../proposals/m5-instruction-timed-execution.md), and [L3 bus-timing convergence](../proposals/m5-l3-bus-timing-convergence.md). Withdrawn records remain only to preserve historical planning and evidence links; they are not candidates. Their completed task records are retained in history.
 
 ## M6 Candidates
 
