@@ -2,7 +2,26 @@
 
 ## Current Work
 
-**T433 is between accepted subtasks.**
+## M5 T433 S5 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner-approved T433 total Core audit; accepted S4 leaves the ten frozen public integration rows and task-level reconciliation. |
+| Objective | Reconcile the ten remaining public Core integration rows, combine all 30 frozen IDs into one master ledger, and publish the conformance report. |
+| Non-goals | No runtime/profile/ABI change, timing implementation, external research/import, physical/L4 claim, or unapproved historical reclassification. |
+| Reference Baseline | Accepted T433 S1-S4 evidence; T346/T354/T370/T373/T377/T404 corpus and current Core public headers. |
+| Candidate Proposal | [Core L3 ledger reconciliation and conformance](../proposals/m5-core-l3-ledger-reconciliation.md). |
+| Files And ABI Surface | T433 evidence/history/state and proposal archival only; no source, test, artifact or public-ABI change. |
+| Applicable Rules | `docs/rules/EXECUTION.md`, `DOCUMENT.md`, `ARCHITECTURE.md`, `CODING.md`, and Core L3 timing design. |
+| Verification | Inspect every remaining integration header/caller and test registration; publish a 30-ID master ledger with one permitted disposition, then perform cardinality/link/governance and full focused evidence review. |
+| Expected Markers | `M5:T433:S5:MASTER-LEDGER:OK`, `M5:T433:S5:CONFORMANCE:OK`, and documentation-governance success. |
+| Asset Needs | No new asset. |
+| Reporting Requirements | Report all remaining-row dispositions, all transfer receivers, exact 30-ID completion check and any contradiction. |
+| Stop Conditions | Stop for contradiction, missing public boundary, required repair, or scope expansion. |
+| Exit Criteria | Every frozen Core ID has exactly one named owner/evidence/regression/disposition in the master ledger; report names every transfer and proves no gap is hidden by boot/default timing. |
+| Original Owner Request | Owner asked to execute the active T as a total audit of Core hardware/chip capabilities. |
+| Similar-Issue Sweep | Re-sweep all `src/core` public headers and CMake registrations, ensuring every S1 family is represented exactly once. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T432 S1 `vm-0-5-0432` / `build/output/nxvm_0_5_0432.exe`, SHA-256 `F29A7DF2BA6F43D2A7E1B4C9AABCD634123E4E57F92226796B5734B4A71C413C`. T432 separates KBC delayed Set-2 translation from native break typematic cancellation, fixing stuck keys in Model-339 Console and Window sessions.

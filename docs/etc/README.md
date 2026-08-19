@@ -495,3 +495,5 @@ another principal document.
 | vidence/t433-s3-core-transaction-time-reconciliation.md | Verification owner | T433 S3 reconciles six frozen Core time/transaction/memory rows with current owners and focused smokes; physical waits and signals remain explicit L2 transfers. Retain with T433 history. |
 
 | vidence/t433-s4-core-controller-device-reconciliation.md | Verification owner | T433 S4 reconciles nine frozen Core controller/device rows with current owners and focused smokes; physical device timing and media semantics remain explicit L2 transfers. Retain with T433 history. |
+
+| vidence/t433-core-l3-master-ledger.md | Verification owner | T433 final 30-row Core master ledger and conformance report. Retain with T433 history. |
