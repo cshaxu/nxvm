@@ -64,3 +64,15 @@ retains the 30-ID universe and adds that complete downstream-admission detail
 in [its ledger](../etc/evidence/t433-s6-core-l3-admission-feasibility-ledger.md).
 It also corrects malformed provenance/index text. No runtime, ABI, artifact,
 profile or timing-rule behavior is in scope.
+
+## S6 Acceptance And Corrective Closure
+
+Coordinator actual-change review accepts S6 P1 `c2b51e59`. Its admission ledger
+has exactly the frozen 30 capability IDs and, for each ID, records the actual
+L3 fact gap, Core-feasibility decision, neutral plan/program declaration,
+evidence admission, focused proof and exact earliest receiver. It confirms
+that every hardware-facing row is Core-feasible now or after a named
+manual/reference admission, that L4 is not required, and that host/product
+boundaries are not miscounted as guest-time L3 gaps. The coordinator reran the
+30-ID equality reconciliation, documentation governance and `git diff --check`.
+Corrective S6 closes without runtime, ABI or developer-artifact change.

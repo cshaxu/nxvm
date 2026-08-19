@@ -2,28 +2,7 @@
 
 ## Current Work
 
-**Active: M5 T433 S6.**
-
-## M5 T433 S6 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Corrective; M5 T433 S6 is the next unused subtask of the most recently closed numeric task. |
-| Admission And Approval | Owner request in this conversation on 2026-08-19: reopen T433 and make every Core device/chip capability's actual L3 gap, manual/reference-driven feasibility, neutral-Core mechanism, implementation plan, and acceptance path explicit. The corrective boundary repairs the incomplete downstream-admission detail in the closed audit; no runtime timing behavior is admitted here. |
-| Objective | Replace T433's summary-only dispositions with one complete, finite, per-capability L3 admission ledger that states whether Core can implement a documentation-driven L3 rule, what fact/contract is missing, the precise earliest receiver, required timing-plan/program fields, evidence class, and proof needed to close that row. Correct the T433 closure provenance/index defects discovered during the reassessment. |
-| Non-goals | Do not implement a timing engine, fabricate timing constants, change CPU/device behavior, add a VM profile, import source/firmware/media, claim L4, or assert that every future external reference fact is already available. |
-| Reference Baseline | `9bf609e6` / current `master`; T433 master ledger and S1-S4 reconciliations; the Core specification-driven timing design; existing T357/T359/T363/T369/T370/T401 retained evidence. |
-| Candidate Proposal | Corrective execution remains within the retained [T433 proposal](../history/M5-T433-core-l3-ledger-reconciliation-proposal.md); the admissible current proposal context is [Core timing contract and machine plan](../proposals/m5-core-timing-contract-machine-plan.md). It supplies the missing exact downstream-admission detail required by the original T433 purpose. |
-| Files And ABI Surface | Documentation/evidence/state/history/index only: `docs/etc/evidence/t433-*`, `docs/history/M5-T433-*`, `docs/etc/README.md`, and this packet. No public/private C API, YAML schema, runtime behavior, artifact identity, or ABI change. |
-| Applicable Rules | `docs/README.md` Task Reading Set; `docs/rules/EXECUTION.md` corrective-S, coverage-ledger, evidence, P lifecycle, and closure rules; `docs/rules/DOCUMENT.md`; `docs/design/ROADMAP.md`; `docs/design/ARCHITECTURE.md`; `docs/etc/architecture/specification-driven-l3-timing.md`; source/research policy for any newly researched manual/reference source. |
-| Verification | Reconcile all frozen 30 IDs against the new required fields; compare every receiver against the ordered Queue and the timing design; run `powershell -NoProfile -ExecutionPolicy Bypass -File tools/Verify-DocumentationGovernance.ps1 -RepositoryRoot .`; run `git diff --check`; inspect actual diffs and linked historical evidence. No build is required because no source/runtime artifact changes. |
-| Expected Markers | `M5:T433:S6:L3-ADMISSION-LEDGER:OK`; `M5:T433:S6:FEASIBILITY-RECONCILIATION:OK`; documentation governance success. |
-| Asset Needs | No protected assets. Existing committed primary-manual/source ledgers may be cited. If new external material becomes necessary, stop before importing or deriving it and apply the source/research policy. |
-| Reporting Requirements | Confirm the corrective boundary; report after the complete 30-row feasibility ledger is reconciled; final report links the ledger, names the pushed commits, verification, and any explicit external evidence receiver. |
-| Stop Conditions | Stop and request owner direction if a row requires a new architecture/Queue decision beyond the existing five Core candidates, an unlicensed/protected source, a contradiction among authoritative sources, or a runtime/API change to make the ledger truthful. |
-| Exit Criteria | Every frozen T433 ID has actual missing L3 fact(s), feasibility classification, Core mechanism boundary, concrete plan/program field(s), evidence admission tier, proof/acceptance scenario, and exact earliest receiver; all non-Core/L4 facts are explicitly bounded; the original T433 closure provenance/index defects are corrected; governance/diff checks pass; complete P is pushed and coordinator-reviewed. |
-| Original Owner Request | Reopen T433 and make the actual gaps and completion plans explicit for every device/chip, so later tasks can close; confirm whether Core can implement documentation-driven timing simulation for every device/chip with this level of clarity. |
-| Similar-Issue Sweep | Documentation-closure defect class: inspect all T433 history, evidence-index and state references for malformed provenance, missing corrective closure facts, ambiguous receiver language, or a frozen capability without exact downstream admission information. Search `docs/history/M5-T433*`, `docs/etc/evidence/t433*`, `docs/etc/README.md`, `docs/states/CURRENT.md`, `docs/states/QUEUE.md`, and the timing design. |
+**Idle.**
 ## Current Technical Baseline
 
 - **Current developer artifact:** T432 S1 `vm-0-5-0432` / `build/output/nxvm_0_5_0432.exe`, SHA-256 `F29A7DF2BA6F43D2A7E1B4C9AABCD634123E4E57F92226796B5734B4A71C413C`. T432 separates KBC delayed Set-2 translation from native break typematic cancellation, fixing stuck keys in Model-339 Console and Window sessions.
@@ -48,7 +27,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T433 | Closed: publishes the 30-row Core master ledger and conformance report; every frozen public Core capability has one owner, evidence, regression and truthful disposition. [Evidence](../etc/evidence/t433-core-l3-master-ledger.md). |
+| T433 | Closed after corrective S6: all 30 frozen Core capabilities now have an actual L3 fact gap, Core-feasibility result, required plan/program declaration, evidence admission, focused proof and exact receiver. [Admission ledger](../etc/evidence/t433-s6-core-l3-admission-feasibility-ledger.md). |
 | T432 | Closed: separate Core-private Set-2 translation and typematic break states prevent released keys from restarting typematic; focused regression, Model-339 contract and owner Console/Window verification pass. [Record](../history/M5-T432-keyboard-keyup-reliability-repair.md). |
 | T431 | Closed: Model-40 selects a reference-derived unready-drive READ `ST0=48h`/IRQ/result completion through one Core policy; generic PC/AT stays generic, and physical FDC/L3 timing remains transferred. [Evidence](../etc/evidence/t431-s1-deskpro-fdc-not-ready-reference.md). |
 | T430 | Closed: original/reference-backed Compaq WD 40 MB C:/D: selection now uses frozen Core media slots with optional Model-40 secondary backing; generic ATA stays unchanged, and physical/L3 timing remains transferred. [Evidence](../etc/evidence/t430-s1-deskpro-dual-fixed-disk.md). |
