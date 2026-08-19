@@ -31,7 +31,6 @@ is the shared architecture context for the following ordered Project A sequence.
 These candidates establish Core capabilities before a machine profile may claim
 them; they consume retained evidence rather than reopening closed audits.
 
-1. [Core L3 ledger reconciliation and conformance](../proposals/m5-core-l3-ledger-reconciliation.md).
 1. [Core timing contract and machine plan](../proposals/m5-core-timing-contract-machine-plan.md).
 1. [Core CPU instruction timing programs](../proposals/m5-core-cpu-instruction-timing-program.md).
 1. [Core CPU-to-board transaction and arbitration contracts](../proposals/m5-core-cpu-board-transaction-contracts.md).

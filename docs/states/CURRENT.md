@@ -2,26 +2,7 @@
 
 ## Current Work
 
-## M5 T433 S5 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner-approved T433 total Core audit; accepted S4 leaves the ten frozen public integration rows and task-level reconciliation. |
-| Objective | Reconcile the ten remaining public Core integration rows, combine all 30 frozen IDs into one master ledger, and publish the conformance report. |
-| Non-goals | No runtime/profile/ABI change, timing implementation, external research/import, physical/L4 claim, or unapproved historical reclassification. |
-| Reference Baseline | Accepted T433 S1-S4 evidence; T346/T354/T370/T373/T377/T404 corpus and current Core public headers. |
-| Candidate Proposal | [Core L3 ledger reconciliation and conformance](../proposals/m5-core-l3-ledger-reconciliation.md). |
-| Files And ABI Surface | T433 evidence/history/state and proposal archival only; no source, test, artifact or public-ABI change. |
-| Applicable Rules | `docs/rules/EXECUTION.md`, `DOCUMENT.md`, `ARCHITECTURE.md`, `CODING.md`, and Core L3 timing design. |
-| Verification | Inspect every remaining integration header/caller and test registration; publish a 30-ID master ledger with one permitted disposition, then perform cardinality/link/governance and full focused evidence review. |
-| Expected Markers | `M5:T433:S5:MASTER-LEDGER:OK`, `M5:T433:S5:CONFORMANCE:OK`, and documentation-governance success. |
-| Asset Needs | No new asset. |
-| Reporting Requirements | Report all remaining-row dispositions, all transfer receivers, exact 30-ID completion check and any contradiction. |
-| Stop Conditions | Stop for contradiction, missing public boundary, required repair, or scope expansion. |
-| Exit Criteria | Every frozen Core ID has exactly one named owner/evidence/regression/disposition in the master ledger; report names every transfer and proves no gap is hidden by boot/default timing. |
-| Original Owner Request | Owner asked to execute the active T as a total audit of Core hardware/chip capabilities. |
-| Similar-Issue Sweep | Re-sweep all `src/core` public headers and CMake registrations, ensuring every S1 family is represented exactly once. |
+**Idle.**
 ## Current Technical Baseline
 
 - **Current developer artifact:** T432 S1 `vm-0-5-0432` / `build/output/nxvm_0_5_0432.exe`, SHA-256 `F29A7DF2BA6F43D2A7E1B4C9AABCD634123E4E57F92226796B5734B4A71C413C`. T432 separates KBC delayed Set-2 translation from native break typematic cancellation, fixing stuck keys in Model-339 Console and Window sessions.
@@ -46,7 +27,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T433 S4 | Accepted: reconciles all nine controller/device rows; logical owners and lifecycle are conformant, while physical timing and media semantics remain explicit L2 transfers. [Evidence](../etc/evidence/t433-s4-core-controller-device-reconciliation.md). |
+| T433 | Closed: publishes the 30-row Core master ledger and conformance report; every frozen public Core capability has one owner, evidence, regression and truthful disposition. [Evidence](../etc/evidence/t433-core-l3-master-ledger.md). |
 | T432 | Closed: separate Core-private Set-2 translation and typematic break states prevent released keys from restarting typematic; focused regression, Model-339 contract and owner Console/Window verification pass. [Record](../history/M5-T432-keyboard-keyup-reliability-repair.md). |
 | T431 | Closed: Model-40 selects a reference-derived unready-drive READ `ST0=48h`/IRQ/result completion through one Core policy; generic PC/AT stays generic, and physical FDC/L3 timing remains transferred. [Evidence](../etc/evidence/t431-s1-deskpro-fdc-not-ready-reference.md). |
 | T430 | Closed: original/reference-backed Compaq WD 40 MB C:/D: selection now uses frozen Core media slots with optional Model-40 secondary backing; generic ATA stays unchanged, and physical/L3 timing remains transferred. [Evidence](../etc/evidence/t430-s1-deskpro-dual-fixed-disk.md). |
@@ -54,7 +35,6 @@
 | T428 | Closed: Model-40 selects a generic-AT Core prefetch reservation lifecycle with reset/HOLD/refresh priority; it publishes no physical cycle, page hit or timing result. [Evidence](../etc/evidence/t428-s1-generic-prefetch-reservation.md). |
 | T427 | Closed: original-source CPU BUSRDY gate holds the existing Core external completion wait without retirement; Model-40 selects it and 5170 is isolated. [Evidence](../etc/evidence/t427-s1-deskpro-cpu-busready-gate.md). |
 | T426 | Closed: independent audit retains all tier-labelled logical receivers but rejects DeskPro physical/L3 acceptance pending named source/corpus blockers. [Evidence](../etc/evidence/t426-s1-deskpro-physical-l3-reaudit.md). |
-| T425 | Closed: reconciled FDC/HDC/KBC/DMA/PIC/NMI logical device phases at declared tiers; physical rates and propagation remain transferred. [Evidence](../etc/evidence/t425-s1-deskpro-device-phase-reconciliation.md). |
 
 
 ## Recent Governance
