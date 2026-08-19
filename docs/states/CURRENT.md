@@ -2,26 +2,7 @@
 
 ## Current Work
 
-## M5 T432 S1 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | New |
-| Admission And Approval | Owner-approved keyboard key-up reliability repair on 2026-08-18. |
-| Objective | Repair lost host key-up events without changing keyboard timing. |
-| Non-goals | No host-time dependence, profile/UI redesign, capacity-only workaround, or device-surface expansion. |
-| Reference Baseline | Prior T431 developer artifact, T403 keyboard serial-endpoint repair and current Model-339 reproduction. |
-| Candidate Proposal | [Keyboard key-up reliability repair](../proposals/m5-keyboard-keyup-reliability-repair.md); the defect is KBC Set-2 state ownership, not VM queue loss. |
-| Files And ABI Surface | Private Core KBC state, focused Core test, artifact identity and task evidence; no public ABI change. |
-| Applicable Rules | `docs/rules/EXECUTION.md`, `ARCHITECTURE.md`, `CODING.md`, and `DOCUMENT.md`; Core retains KBC state and VM composition owns ordered host ingress. |
-| Verification | Focused delayed Set-2 make/break regression, Model-339 typematic contract, current smoke-gate build, and owner Console/Window manual confirmation. |
-| Expected Markers | A focused marker proving no continued typematic after release. |
-| Asset Needs | No new firmware, media, third-party source, or protected asset. |
-| Reporting Requirements | Report root cause, verification, artifact SHA-256, and remaining host-runtime boundary. |
-| Stop Conditions | Stop for a required host-policy/ABI change, non-reproducible failure, or scope expansion. |
-| Exit Criteria | Set-2 translation state stays distinct from native-break typematic cancellation; focused regression emits the correct Set-1 break and leaves typematic inactive; gates, evidence and `vm-0-5-0432` artifact are complete. |
-| Original Owner Request | Owner asked to permanently repair the reproduced Model-339 continuous key-repeat defect. |
-| Similar-Issue Sweep | Reviewed all Set-2 break state accesses: translation retains `set2_break_pending`; native typematic cancellation uses the new private state; host ingress requires no change. |
+**Idle.**
 
 ## Current Technical Baseline
 
@@ -47,6 +28,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T432 | Closed: separate Core-private Set-2 translation and typematic break states prevent released keys from restarting typematic; focused regression, Model-339 contract and owner Console/Window verification pass. [Record](../history/M5-T432-keyboard-keyup-reliability-repair.md). |
 | T431 | Closed: Model-40 selects a reference-derived unready-drive READ `ST0=48h`/IRQ/result completion through one Core policy; generic PC/AT stays generic, and physical FDC/L3 timing remains transferred. [Evidence](../etc/evidence/t431-s1-deskpro-fdc-not-ready-reference.md). |
 | T430 | Closed: original/reference-backed Compaq WD 40 MB C:/D: selection now uses frozen Core media slots with optional Model-40 secondary backing; generic ATA stays unchanged, and physical/L3 timing remains transferred. [Evidence](../etc/evidence/t430-s1-deskpro-dual-fixed-disk.md). |
 | T429 | Closed: generic-AT CECG port/aperture wait skeleton and D4-memory classification; physical CECG and monitor behavior remain TODO. [S1](../etc/evidence/t429-s1-cecg-8bit-bus-wait.md), [S2](../etc/evidence/t429-s2-d4-cecg-memory-class.md), [S3](../etc/evidence/t429-s3-cecg-aperture-wait.md).
@@ -54,7 +36,7 @@
 | T427 | Closed: original-source CPU BUSRDY gate holds the existing Core external completion wait without retirement; Model-40 selects it and 5170 is isolated. [Evidence](../etc/evidence/t427-s1-deskpro-cpu-busready-gate.md). |
 | T426 | Closed: independent audit retains all tier-labelled logical receivers but rejects DeskPro physical/L3 acceptance pending named source/corpus blockers. [Evidence](../etc/evidence/t426-s1-deskpro-physical-l3-reaudit.md). |
 | T425 | Closed: reconciled FDC/HDC/KBC/DMA/PIC/NMI logical device phases at declared tiers; physical rates and propagation remain transferred. [Evidence](../etc/evidence/t425-s1-deskpro-device-phase-reconciliation.md). |
-| T424 | Closed: VM Model-40 BYOB now proves synthetic manifest validation, immutable mapped reset-vector execution and cold-reset replay; vendor POST/service/timing corpus remains external. [Evidence](../etc/evidence/t424-s1-model40-byob-reset-lifecycle.md). |
+
 
 ## Recent Governance
 
