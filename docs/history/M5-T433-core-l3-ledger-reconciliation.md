@@ -37,3 +37,7 @@ Coordinator review accepts P1 1243cbe. The five CPU rows have one permitted dis
 ## S3 Scope
 
 S3 reconciles the six transaction/time rows in [its evidence](../etc/evidence/t433-s3-core-transaction-time-reconciliation.md).
+
+## S3 Acceptance
+
+Coordinator review accepts P1 518dc2eb. The six transaction/time rows map to current owners and focused proof; S4 next audits the frozen controllers, media and display rows.
