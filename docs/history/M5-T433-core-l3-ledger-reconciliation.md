@@ -18,3 +18,10 @@ conformance dispositions remain pending until their assigned later S batches.
 Coordinator review of P1 found an incorrect 42-header count in the S1 evidence.
 P2 corrects it to 53 and records the four-directory accounting; the 30-family
 universe and its no-conformance boundary are unchanged.
+
+## S1 Acceptance
+
+Coordinator review accepts P1 `e62bcd9a` and corrective P2 `4eea62dd`.
+The frozen 30-family universe, exact 53-header accounting and documentation
+governance check are complete. T433 remains open; S2 must reconcile the CPU
+batch without changing the frozen coverage rule.
