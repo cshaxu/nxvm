@@ -27,7 +27,6 @@
 
 | Task | Compact result |
 | --- | --- |
-| T433 S1 | Accepted: freezes 30 neutral public-Core capability families, the seven-field master-ledger schema, 53-header accounting, corpus allocation and completion predicate; no conformance disposition or runtime claim. [Evidence](../etc/evidence/t433-s1-core-l3-coverage-universe.md). |
 | T433 S2 | Accepted: reconciles all five frozen CPU rows; selected execution and retirement are conformant, while exception timing, prefetch physical behavior and FPU breadth remain explicit L2/TODO transfers. [Evidence](../etc/evidence/t433-s2-core-cpu-capability-reconciliation.md). |
 | T432 | Closed: separate Core-private Set-2 translation and typematic break states prevent released keys from restarting typematic; focused regression, Model-339 contract and owner Console/Window verification pass. [Record](../history/M5-T432-keyboard-keyup-reliability-repair.md). |
 | T431 | Closed: Model-40 selects a reference-derived unready-drive READ `ST0=48h`/IRQ/result completion through one Core policy; generic PC/AT stays generic, and physical FDC/L3 timing remains transferred. [Evidence](../etc/evidence/t431-s1-deskpro-fdc-not-ready-reference.md). |
