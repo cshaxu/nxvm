@@ -41,3 +41,7 @@ S3 reconciles the six transaction/time rows in [its evidence](../etc/evidence/t4
 ## S3 Acceptance
 
 Coordinator review accepts P1 518dc2eb. The six transaction/time rows map to current owners and focused proof; S4 next audits the frozen controllers, media and display rows.
+
+## S4 Scope
+
+S4 reconciles nine controller/device rows in [its evidence](../etc/evidence/t433-s4-core-controller-device-reconciliation.md).
