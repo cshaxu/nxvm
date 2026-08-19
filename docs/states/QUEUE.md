@@ -28,6 +28,10 @@ shared proposals and in each candidate's linked proposal.
 
 The [Core specification-driven timing design](../etc/architecture/specification-driven-l3-timing.md)
 is the shared architecture context for the following ordered Project A sequence.
+The [specification-driven complete simulation admission program](../proposals/m5-specification-driven-complete-simulation-admission-program.md)
+is a mandatory shared implementation constraint for every hardware candidate:
+each task freezes and implements every in-scope hardware unit at its
+document-primary, reference-derived, or maintained-boundary level.
 These candidates establish Core capabilities before a machine profile may claim
 them; they consume retained evidence rather than reopening closed audits. Each
 linked proposal identifies its finite implementation-admission baseline and
