@@ -26,7 +26,8 @@
 ## Recent M5 Closures
 
 | Task | Compact result |
-| --- | --- || T429 S1 | Accepted: generic-AT CECG 8-bit port-wait skeleton at `1c02a853`; Core owns the memory-versus-port lifecycle and committed wait, Model-40 selects documented ports, and 5170 remains unselected. [Evidence](../etc/evidence/t429-s1-cecg-8bit-bus-wait.md). |
+| --- | --- |
+| T429 S1 | Accepted: generic-AT CECG 8-bit port-wait skeleton at `1c02a853`; Core owns the memory-versus-port lifecycle and committed wait, Model-40 selects documented ports, and 5170 remains unselected. [Evidence](../etc/evidence/t429-s1-cecg-8bit-bus-wait.md). |
 | T428 | Closed: Model-40 selects a generic-AT Core prefetch reservation lifecycle with reset/HOLD/refresh priority; it publishes no physical cycle, page hit or timing result. [Evidence](../etc/evidence/t428-s1-generic-prefetch-reservation.md). |
 | T427 | Closed: original-source CPU BUSRDY gate holds the existing Core external completion wait without retirement; Model-40 selects it and 5170 is isolated. [Evidence](../etc/evidence/t427-s1-deskpro-cpu-busready-gate.md). |
 | T426 | Closed: independent audit retains all tier-labelled logical receivers but rejects DeskPro physical/L3 acceptance pending named source/corpus blockers. [Evidence](../etc/evidence/t426-s1-deskpro-physical-l3-reaudit.md). |
