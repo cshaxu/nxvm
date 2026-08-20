@@ -79,6 +79,13 @@ contract, while making no L3 claim. The default plan must therefore preserve
 existing runnable machines rather than rejecting them because a future L3 rule
 has not yet been admitted.
 
+Default-plan preservation is a behavioral-equivalence requirement, not a boot
+smoke. Its evidence compares the pre-plan baseline and the validated default
+plan for deterministic event order, reset and cancellation, IRQ/DRQ assertion
+and withdrawal, trace/observation publication, and every construction or
+validation failure rollback. A difference requires an explicit approved rule
+change; it cannot be called migration equivalence or moved to a later task.
+
 Machine construction rejects atomically only when the plan is missing or
 invalid (range, type, topology, lifecycle or copied-lifetime failure), or when
 a profile explicitly requires an unavailable L3 contract. A profile may select
@@ -109,6 +116,19 @@ production plan path, and a disposition for every current public capability.
 It is not sufficient to publish an interface, perform a later integration
 audit, or transfer unconnected consumers to a downstream task.
 
+T434 is ineligible to close if any of these conditions remains true:
+
+1. a current public capability lacks exactly one L3, named L2, non-guest-time
+   or construction-rejection disposition;
+2. any production machine publication route bypasses the validated copied plan;
+   or
+3. a required plan meaning conflicts with the established Core/VM ownership
+   boundary and has not received a separately approved architecture decision.
+
+These are task-local closure blockers. They may not be reclassified as a final
+audit observation or transferred to a CPU, transaction, controller/device or
+integration candidate.
+
 ## Non-goals And Stop Conditions
 
 Do not implement VM inheritance/YAML resolution, migrate every timing rule in
@@ -116,3 +136,4 @@ one change, add a profile-local callback into Core, or model L4. Stop a field
 whose required capability has not been reconciled by the first candidate.
 
 `M5:Td:S115:TIMING-PLAN-CLOSURE:OK`
+`M5:Td:S116:TIMING-PLAN-BLOCKERS:OK`
