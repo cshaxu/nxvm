@@ -59,4 +59,22 @@ foreach ($set in $manifest.context_key_sets) {
         }
     }
 }
-"80186 timing manifest: base=$($seen.Count) L3=$($counts.L3) L2=$($counts.L2) conforming=$($counts.conforming) wrong=$($counts['wrong-value']) unallocated=$($counts.unallocated) missing_input=$($counts['missing-input']) missing_test=$($counts['missing-test']) contexts=$($contexts.Count)"
+$combinations = @{}
+foreach ($set in $manifest.combination_context_sets) {
+    foreach ($field in @("id_suffix", "base_selector", "source_rule", "route", "status", "batch", "test")) {
+        if ([string]::IsNullOrWhiteSpace([string]$set.$field)) { throw "Combination set missing ${field}: $($set.id_suffix)" }
+    }
+    $suffixes = @($set.id_suffix)
+    if ($null -ne $set.phase) { $suffixes = @($set.phase | ForEach-Object { $set.id_suffix.Replace("{phase}", [string]$_) }) }
+    $selector = [regex]$set.base_selector
+    foreach ($base in $seen.Keys) {
+        if (-not $selector.IsMatch($base)) { continue }
+        foreach ($suffix in $suffixes) {
+            $key = "$base-$suffix"
+            if ($combinations.ContainsKey($key)) { throw "Duplicate combination key: $key" }
+            if ($contexts.ContainsKey($key)) { throw "Combination duplicates single-axis key: $key" }
+            $combinations[$key] = $true
+        }
+    }
+}
+"80186 timing manifest: base=$($seen.Count) L3=$($counts.L3) L2=$($counts.L2) conforming=$($counts.conforming) wrong=$($counts['wrong-value']) unallocated=$($counts.unallocated) missing_input=$($counts['missing-input']) missing_test=$($counts['missing-test']) contexts=$($contexts.Count) combinations=$($combinations.Count)"

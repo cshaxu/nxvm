@@ -43,5 +43,12 @@
     {"id_suffix":"ODD-WORD","base_selector":"I186-(ALU-.*-(RM|MR|MI)|CMP-(RM|MR|MI)|TEST-(RM|MI)|INC-M|DEC-M|NEG-M|NOT-M|XCHG-MR|MOV-.*|LDS-M|LES-M|PUSH-M|POP-M|CALL-(RM16|M1616)|JMP-(RM16|M1616)|MUL-(R16|M16)|IMUL-(R16|M16)|IDIV-(R16|M16)|DIV-(R16|M16)|G2-.*|STRING-.*-W|REP-.*-W)","source_rule":"Table 1-16 odd-addressed 16-bit transfer +4","route":"missing per-form transfer observation","status":"missing-input","batch":"B3+B4","test":"i186_timing_{id}"},
     {"id_suffix":"REP-PHASE-{phase}","base_selector":"I186-REP-.*","phase":["FIRST","CONTINUE","ZERO"],"source_rule":"Table 1-16 repeat setup/per-primitive formula","route":"string-io","status":"missing-test","batch":"B0+B3+B4","test":"i186_timing_{id}"},
     {"id_suffix":"LOCK","base_selector":"I186-(ALU-.*-(RM|MR|MI)|INC-M|DEC-M|NEG-M|NOT-M|XCHG-MR|(ROL|ROR|RCL|RCR|SHL|SHR|SAR)-M.*)","source_rule":"Table 1-16 lock prefix exact +2","route":"unallocated-or-missing-term","status":"unallocated","batch":"B3+B4","test":"i186_timing_{id}"}
+  ],
+  "combination_context_sets": [
+    {"id_suffix":"LOCK-SEGMENT","base_selector":"I186-(ALU-.*-(RM|MR|MI)|INC-M|DEC-M|NEG-M|NOT-M|XCHG-MR|(ROL|ROR|RCL|RCR|SHL|SHR|SAR)-M.*)","source_rule":"Table 1-16 exact LOCK + SEGMENT terms","route":"unallocated-or-missing-term","status":"unallocated","batch":"B3+B4","test":"i186_timing_{id}"},
+    {"id_suffix":"SEGMENT-ODD-WORD","base_selector":"I186-STRING-(MOVS|CMPS|LODS)-W|I186-REP-(MOVS|CMPS-REPE|CMPS-REPNE|LODS)-W","source_rule":"Table 1-16 segment and odd-word terms","route":"missing per-form transfer observation","status":"missing-input","batch":"B3+B4","test":"i186_timing_{id}"},
+    {"id_suffix":"SEGMENT-REP-PHASE-{phase}","base_selector":"I186-REP-(MOVS|CMPS-REPE|CMPS-REPNE|LODS)-.*","phase":["FIRST","CONTINUE","ZERO"],"source_rule":"Table 1-16 segment plus repeat formula","route":"missing combined input/result","status":"missing-input","batch":"B3+B4","test":"i186_timing_{id}"},
+    {"id_suffix":"ODD-WORD-REP-PHASE-{phase}","base_selector":"I186-REP-.*-W","phase":["FIRST","CONTINUE","ZERO"],"source_rule":"Table 1-16 odd-word transfer plus repeat formula","route":"missing combined input/result","status":"missing-input","batch":"B3+B4","test":"i186_timing_{id}"},
+    {"id_suffix":"SEGMENT-ODD-WORD-REP-PHASE-{phase}","base_selector":"I186-REP-(MOVS|CMPS-REPE|CMPS-REPNE|LODS)-W","phase":["FIRST","CONTINUE","ZERO"],"source_rule":"Table 1-16 segment, odd-word and repeat formula","route":"missing combined input/result","status":"missing-input","batch":"B3+B4","test":"i186_timing_{id}"}
   ]
 }

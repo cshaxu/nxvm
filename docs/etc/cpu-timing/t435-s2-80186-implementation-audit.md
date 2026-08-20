@@ -50,10 +50,13 @@ and three explicit prefix keys.  `missing-test` is not a pass: it means a
 source route may exist, but no focused key result has yet proved the required
 value and inputs.
 
-The manifest additionally expands 263 single-axis contexts.  They cover
+The manifest additionally expands 263 single-axis contexts and 117 legal
+combined/phase contexts.  They cover
 only legal segment-source uses, odd 16-bit transfers, legal repeat phases and
-lockable read-modify-write forms.  It intentionally does not fabricate
-illegal `LOCK` combinations or redundant prefix byte streams.
+lockable read-modify-write forms.  The combined set covers legal lock/segment
+intersections and every segment/odd-word/repeat-phase intersection that the
+ledger authorizes.  It intentionally does not fabricate illegal `LOCK`
+combinations or redundant prefix byte streams.
 
 ## Complete implementation and closure plan
 
