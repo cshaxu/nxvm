@@ -34,7 +34,7 @@ The concrete source tree and naming map is
   consolidation or an existing narrow boundary over wrappers and parallel paths.
 - A replacement removes its obsolete implementation, forwarding layer and
   retired-path tests in the same task, unless evidence names a live caller and
-  behavioral reason. Follow the execution rule's approved code-size budget.
+  behavioral reason. Report the actual code-size change under the execution rule.
 
 ## Test Boundaries
 

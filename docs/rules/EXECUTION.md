@@ -139,15 +139,13 @@ the admitted objective and non-goals. A revision that expands scope, risk,
 authority, or exit criteria requires renewed owner approval before work
 continues.
 
-**Code-size budget and cleanup.** A code-changing S declares a reproducible
-baseline and counted tracked source/test paths before editing; documentation
-and generated/artifact paths are excluded. The default net delta is **zero or
-negative**. Positive net code needs prior owner approval in the packet of a
-numerical cap and necessity. At closure, report added, removed and net lines
-with the method; remove obsolete/duplicate/unreachable code in the changed
-mechanism, or name each live retained path and reason. Missing prior approval,
-an over-cap actual delta, or an unexplained retained obsolete path blocks
-closure pending an owner-approved packet revision.
+**Code-size and cleanup.** Prefer the smallest cohesive change; non-positive
+net code is a design goal, not an admission or closure gate. A code-changing S
+records its counted tracked source/test paths, excluding documentation and
+generated/artifact paths. At closure, report added, removed and net lines with
+the method, and explain any material positive increase. Remove
+obsolete/duplicate/unreachable code in the changed mechanism, or name each
+live retained path and reason in the evidence.
 
 The S brief is the task-specific delivery instruction recorded in the active
 packet, not an independent contract. A coordinator message may reproduce or
