@@ -13,7 +13,9 @@ routes do not constitute per-key proof. The strict initial audit is zero
 conforming: 234 keys lack a focused result, while 173 dynamic/path/privilege
 keys lack one or more normalized inputs. No L2 or L1 is permitted by S1.
 
-The manifest also generates size, repeat-phase and multiplier contexts. B0
+The manifest generates 659 legal size, repeat-phase and multiplier contexts.
+Operand width is already part of string and multiply base keys, so no redundant
+cross-product is generated. B0
 replaces parallel successful selectors with one publisher; B1 maps every
 Chapter-17 constant/formula; B3 publishes r/m, size, mode, path, next-component,
 repeat and multiplier inputs; B4 requires a result per key and removes any

@@ -2,7 +2,7 @@
 
 The [80386DX manifest](t435-s2-80386-timing-manifest.json) is the sole
 closure ledger. It expands every S1 successful-retirement base form, plus
-finite size, REP-phase and multiplier contexts. Each key retains one Chapter
+659 finite legal size, REP-phase and multiplier contexts. Each key retains one Chapter
 17 rule, route, status, batch and regression identity.
 
 Run `powershell -NoProfile -ExecutionPolicy Bypass -File
