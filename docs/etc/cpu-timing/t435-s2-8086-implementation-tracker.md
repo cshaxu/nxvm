@@ -11,6 +11,27 @@ The machine-readable [8086 manifest](t435-s2-8086-timing-manifest.json) is
 the current tracker source. This document explains its batches and closure
 rules; current key status is maintained in the manifest.
 
+Run `powershell -NoProfile -ExecutionPolicy Bypass -File
+tools/Verify-8086TimingManifest.ps1` before every tracker-changing P. It
+expands all base keys, rejects duplicate/missing/invalid records and reports
+the level/status totals. A later focused runtime test must consume the same
+key IDs; the verifier is deliberately a tracker-integrity gate, not a
+substitute for those runtime results.
+
+## Current verified base-key statistics
+
+The verifier's initial manifest-only baseline is intentionally strict:
+
+| level | conforming | wrong-value | unallocated | missing-input | missing-test | total |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| L3 | 0 | 2 | 54 | 0 | 172 | 228 |
+| L2:G3 | 0 | 8 | 8 | 0 | 0 | 16 |
+| **all base keys** | **0** | **10** | **62** | **0** | **172** | **244** |
+
+`conforming` stays zero until a focused test has produced the manifest key's
+actual result. The table is derived from the manifest and must be updated only
+by rerunning the verifier after a status change; it is not a separate ledger.
+
 One tracker row is a finite key template. Braces mean the Cartesian expansion
 shown in `keys`; the listed cardinality is mandatory and is not an estimate.
 Before a batch can close, its test expands every member into a separately
