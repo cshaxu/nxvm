@@ -178,15 +178,16 @@ admissions, not the default definition of NXVM completion.
 - [ ] **8086/80186 dynamic arithmetic source formula (`TODO(Medium)`).** T360
   S3 confirms that the selected 8086 `MUL`/`IMUL` and 80186
   `MUL`/`IMUL`/`DIV`/`IDIV` plus `69`/`6B` immediate-`IMUL` rows are primary
-  table ranges without an operand-to-clock rule. They remain explicit
-  `CORE_MACHINE_SOURCE_UNALLOCATED_TICKS` transfers, not one-clock hardware
-  claims. Re-admit only with an Intel-primary exact formula or a separately
-  owner-approved hardware-observation contract, profile-local capture and
-  publication/rollback design, all selected Group-3 and immediate-IMUL form
-  coverage, and a consumer sweep. Do not choose a minimum, maximum, midpoint,
-  later-processor formula, host benchmark, or secondary emulator value. The
-  8086 rows are a required input to the queued 8088 CPU-profile closure; the
-  80186-only rows remain unplanned because M5 selects no 80186 machine.
+  table ranges without an operand-to-clock rule. Their L3 debt remains an
+  Intel-primary exact formula or separately owner-approved hardware-observation
+  contract with profile-local capture and publication/rollback design. The
+  queued CPU timing program must first apply the [Td S121 evidence/model
+  ladder](../etc/evidence/td-s121-cpu-timing-evidence-first-governance.md) to
+  establish a labelled L2 model (or an explicit L1 exception) for every form;
+  no successful row may retain an anonymous `CORE_MACHINE_SOURCE_UNALLOCATED_TICKS`
+  or one-clock hardware claim. The 8086 rows remain a required input to the
+  queued 8088 CPU-profile closure; the 80186-only rows remain unplanned because
+  M5 selects no 80186 machine.
 
 - [ ] **DeskPro 386 vendor-BYOB firmware corpus (`TODO(Medium)`).** T424 proves the lawful manifest-to-copied-immutable-ROM-to-reset-vector execution and reset-replay route with project-owned synthetic chips. It does not validate an owner-supplied vendor firmware lifecycle, POST programming effects, device-service timing, cancellation behavior or a boot checkpoint. Admit only with a separately approved external BYOB corpus under the T390 S2 containment contract and existing Core/VM lifecycle owners. Do not commit firmware, record a machine-local path, make vendor ROM a default dependency or infer behavior from the ROM mapping. |
 - [ ] **DeskPro 386 physical-observable device timing (`TODO(Medium)`).** T397 closes the selected logical FDC/DMA2/IRQ6, HDC/IRQ14, CECG, KBC/NMI and D4 routes, but no route has the required primary-backed physical unit/phase, guest-visible checkpoint and qualified retirement conversion. Re-admit each receiver only with its selected Model-40 source/measurement contract, reset/cancellation replay, trace containment and existing Core owner. T408 adds original D4 CPU-memory evidence (initial/row-miss two waits; row hit zero waits), T409 classifies prefetch, execution fetch, page walk and data transactions, and T419 S5 adds the single Core external-cycle/prefetch-overlap boundary: only an explicitly declared in-flight sequential prefetch can receive the 2 KiB hit result. T419 S6 proves the current synchronous 15-byte Core prefetch refill has no in-flight predecessor and therefore cannot publish the existing overlap declaration. The remaining receiver is an original- or reference-backed asynchronous external-prefetch lifecycle plus D4 physical phase/row-bank evidence; synchronous completed adjacency must remain a miss. Preserve raw-IMG, copied presentation and deterministic Core timeline behavior. Do not derive any remaining scalar from generic AT, PCjs, host time or a new Model-40 scheduler. |

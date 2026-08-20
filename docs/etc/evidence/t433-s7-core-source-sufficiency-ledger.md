@@ -21,6 +21,18 @@ Each row has two independent dispositions:
 from VM. A profile must not supply an algorithm by callback. Conversely, a
 missing Core rule blocks even a profile that has values.
 
+## Td S121 L2 Governance Supplement
+
+This T433 record's source-status entries remain the L3 sufficiency finding.
+For the queued CPU timing program, [Td S121](td-s121-cpu-timing-evidence-first-governance.md)
+adds the required L2 disposition path: complete the form/context evidence and
+model ledger first, then audit current implementation, then repair and close
+the declared ledger. A manual range may therefore receive a labelled,
+version-pinned reference-derived or manual-corrected L2 model; it does not
+become L3. A no-range row follows the same reference/project-model ladder and
+is L1 only after that ladder is exhausted. This supplement replaces neither
+the L3 evidence threshold nor any named transaction/device receiver.
+
 The citations below identify existing committed source inventory. This S does
 not download or re-qualify external manuals; a future admission still applies
 the source policy to a newly proposed source or reference contract.
@@ -42,7 +54,7 @@ states the precondition before a future task can register an L3 rule.
 
 | ID | Current source status and bounded evidence | Rule owner / missing-fact owner | Eligibility and receiver |
 | --- | --- | --- | --- |
-| `CPU-EXEC` | **Partial.** Selected Intel form tables exist; [S6](t433-s6-core-l3-admission-feasibility-ledger.md) and [TODO](../../states/TODO.md) retain unresolved 8086/80186 MUL/DIV range selectors and other form/context gaps. | Core rule; operand/context selector is **Core**. Bus availability is **VM profile**. | Require exact formula or deterministic range selector; otherwise `SOURCE_UNALLOCATED`. Receiver: CPU timing programs. |
+| `CPU-EXEC` | **Partial for L3.** Selected Intel form tables exist; [S6](t433-s6-core-l3-admission-feasibility-ledger.md) and [TODO](../../states/TODO.md) retain unresolved 8086/80186 MUL/DIV range selectors and other form/context gaps. | Core rule; operand/context selector is **Core**. Bus availability is **VM profile**. | For L3, require an exact formula or admitted deterministic selector. For L2/L1, apply Td S121's complete evidence/model ledger before current-state audit; no successful row may remain anonymous `SOURCE_UNALLOCATED`. Receiver: CPU timing programs. |
 | `CPU-EXCEPT` | **Partial.** Architecture delivery semantics exist, but no complete per-profile delivery-stage elapsed matrix is admitted. | Core sequence; stack/vector/descriptor availability is **VM profile/transaction**. | Admit a finite delivery matrix plus selected transactions. Receiver: CPU timing programs after transaction work. |
 | `CPU-PREFETCH` | **Partial.** CPU manuals can describe queues, but no selected CPU/board queue width, fill, flush and availability contract is registered. | Core mechanism; CPU personality/bus behavior is **VM profile**. | Require CPU manual plus board/bus contract. Receiver: CPU-to-board contracts. |
 | `CPU-RETIRE` | **Semantic available.** This is Core publication/lifecycle, not a chip timing table. | Core; qualification comes from CPU/transaction rows. | Implement observation/validation now; do not label an unqualified elapsed result L3. Receiver: timing plan. |
