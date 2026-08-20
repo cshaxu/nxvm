@@ -7,6 +7,10 @@ It consumes the accepted [manual ledger](t435-s1-8086-ledger.md) and the
 [context-key catalog](t435-s2-8086-context-key-catalog.md). It is not a new
 source authority: a target value always links back to the S1 manual row.
 
+The machine-readable [8086 manifest](t435-s2-8086-timing-manifest.json) is
+the current tracker source. This document explains its batches and closure
+rules; current key status is maintained in the manifest.
+
 One tracker row is a finite key template. Braces mean the Cartesian expansion
 shown in `keys`; the listed cardinality is mandatory and is not an estimate.
 Before a batch can close, its test expands every member into a separately

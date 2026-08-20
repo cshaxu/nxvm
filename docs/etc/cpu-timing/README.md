@@ -24,3 +24,6 @@ closure.
 The binding [Td S122 closure-manifest governance](../evidence/td-s122-cpu-timing-manifest-governance.md)
 requires that tracker to become a generated, machine-readable per-key manifest
 before any 8086 timing repair begins.
+The admitted [8086 manifest](t435-s2-8086-timing-manifest.json) is that
+machine-readable source; its templates expand exactly 228 L3 and 16 L2 base
+keys before context expansion.

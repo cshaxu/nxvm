@@ -1,0 +1,40 @@
+{
+  "schema": "nxvm.cpu-timing-manifest.v1",
+  "profile": "8086",
+  "source_ledger": "t435-s1-8086-ledger.md",
+  "key_rule": "Each template expands the listed axes; every expanded base key inherits the record unless listed in overrides. Context keys are generated only from the canonical axes below.",
+  "status_values": ["conforming", "wrong-value", "unallocated", "missing-input", "missing-test"],
+  "base_templates": [
+    {"id":"I86-ADJ-{op}","op":["AAA","AAS"],"level":"L3","source_rule":"S1:AAA/AAS exact 4","route":"primary","status":"wrong-value","batch":"B1","test":"i86_timing_{id}"},
+    {"id":"I86-ADJ-{op}","op":["DAA","DAS","AAD","AAM"],"level":"L3","source_rule":"S1:adjust exact","route":"primary","status":"missing-test","batch":"B0+B4","test":"i86_timing_{id}"},
+    {"id":"I86-CONV-{op}","op":["CBW","CWD"],"level":"L3","source_rule":"S1:conversion exact","route":"primary","status":"missing-test","batch":"B0+B4","test":"i86_timing_{id}"},
+    {"id":"I86-ALU-{op}-{form}","op":["ADC","ADD","AND","OR","SBB","SUB","XOR"],"form":["RR","RM","MR","RI","MI","AI"],"level":"L3","source_rule":"S1:ALU exact/EA","route":"primary","status":"missing-test","batch":"B0+B3+B4","test":"i86_timing_{id}"},
+    {"id":"I86-CMP-{form}","form":["RR","RM","MR","RI","MI","AI"],"level":"L3","source_rule":"S1:CMP exact/EA","route":"primary","status":"missing-test","batch":"B0+B3+B4","test":"i86_timing_{id}"},
+    {"id":"I86-TEST-{form}","form":["RR","RM","RI","MI","AI"],"level":"L3","source_rule":"S1:TEST exact/EA","route":"primary","status":"missing-test","batch":"B0+B3+B4","test":"i86_timing_{id}"},
+    {"id":"I86-{op}-{form}","op":["INC","DEC"],"form":["R16","R8","M"],"level":"L3","source_rule":"S1:INC/DEC exact/EA","route":"primary","status":"missing-test","batch":"B0+B3+B4","test":"i86_timing_{id}"},
+    {"id":"I86-{op}-{form}","op":["NEG","NOT"],"form":["R","M"],"level":"L3","source_rule":"S1:NEG/NOT exact/EA","route":"primary","status":"missing-test","batch":"B0+B3+B4","test":"i86_timing_{id}"},
+    {"id":"I86-XCHG-{form}","form":["AXR","RR","MR"],"level":"L3","source_rule":"S1:XCHG exact/EA","route":"primary","status":"missing-test","batch":"B0+B3+B4","test":"i86_timing_{id}"},
+    {"id":"I86-MOV-{form}","form":["RR","RM","MR","RI","MI","MOFFS-R","MOFFS-W"],"level":"L3","source_rule":"S1:MOV exact/EA","route":"primary-or-legacy","status":"missing-test","batch":"B0+B3+B4","test":"i86_timing_{id}"},
+    {"id":"I86-MOV-SREG-{form}","form":["TO-R","TO-M","FROM-R","FROM-M"],"level":"L3","source_rule":"S1:MOV segment exact/EA","route":"unallocated","status":"unallocated","batch":"B1+B3+B4","test":"i86_timing_{id}"},
+    {"id":"I86-{op}-M","op":["LEA","LDS","LES"],"level":"L3","source_rule":"S1:LEA/LDS/LES exact/EA","route":"mixed","status":"missing-test","batch":"B1+B3+B4","test":"i86_timing_{id}","overrides":{"I86-LDS-M":"unallocated","I86-LES-M":"unallocated"}},
+    {"id":"I86-PUSH-{form}","form":["R","SEG-ES","SEG-CS","SEG-SS","SEG-DS","M","F"],"level":"L3","source_rule":"S1:PUSH exact/EA","route":"mixed","status":"missing-test","batch":"B1+B3+B4","test":"i86_timing_{id}","overrides":{"I86-PUSH-SEG-ES":"unallocated","I86-PUSH-SEG-CS":"unallocated","I86-PUSH-SEG-SS":"unallocated","I86-PUSH-SEG-DS":"unallocated"}},
+    {"id":"I86-POP-{form}","form":["R","SEG-ES","SEG-SS","SEG-DS","M","F"],"level":"L3","source_rule":"S1:POP exact/EA","route":"mixed","status":"missing-test","batch":"B1+B3+B4","test":"i86_timing_{id}","overrides":{"I86-POP-SEG-ES":"unallocated","I86-POP-SEG-SS":"unallocated","I86-POP-SEG-DS":"unallocated"}},
+    {"id":"I86-{op}-{form}","op":["CALL","JMP"],"form":["NEAR","FAR","RM16","M1616"],"level":"L3","source_rule":"S1:CALL/JMP exact/EA","route":"control-stack","status":"missing-test","batch":"B0+B3+B4","test":"i86_timing_{id}"},
+    {"id":"I86-JCC-{condition}-{outcome}","condition":["JO","JNO","JB","JAE","JE","JNE","JBE","JA","JS","JNS","JP","JNP","JL","JGE","JLE","JG"],"outcome":["TAKEN","NOT"],"level":"L3","source_rule":"S1:Jcc exact","route":"legacy","status":"missing-test","batch":"B0+B4","test":"i86_timing_{id}"},
+    {"id":"I86-{op}-{outcome}","op":["JCXZ","LOOP","LOOPE","LOOPNE"],"outcome":["TAKEN","NOT"],"level":"L3","source_rule":"S1:loop exact","route":"control-stack","status":"missing-test","batch":"B0+B4","test":"i86_timing_{id}"},
+    {"id":"I86-RET-{form}","form":["NEAR","NEAR-IMM","FAR","FAR-IMM","IRET"],"level":"L3","source_rule":"S1:RET exact","route":"mixed","status":"missing-test","batch":"B1+B4","test":"i86_timing_{id}","overrides":{"I86-RET-FAR":"unallocated","I86-RET-FAR-IMM":"unallocated"}},
+    {"id":"I86-{op}","op":["INT3","INT-IMM","INTO-TAKEN","INTO-NOT","IN-IMM","IN-DX","OUT-IMM","OUT-DX"],"level":"L3","source_rule":"S1:INT/port exact","route":"control-or-string-io","status":"missing-test","batch":"B0+B4","test":"i86_timing_{id}"},
+    {"id":"I86-{op}-{form}","op":["MUL","IMUL","DIV","IDIV"],"form":["R8","R16","M8","M16"],"level":"L2:G3","source_rule":"S1:L2-86BOX-8086-G3 bounds","route":"legacy-dynamic-or-unallocated","status":"wrong-value","batch":"B2+B3+B4","test":"i86_timing_{id}","overrides":{"I86-DIV-R8":"unallocated","I86-DIV-R16":"unallocated","I86-DIV-M8":"unallocated","I86-DIV-M16":"unallocated","I86-IDIV-R8":"unallocated","I86-IDIV-R16":"unallocated","I86-IDIV-M8":"unallocated","I86-IDIV-M16":"unallocated"}},
+    {"id":"I86-{op}-{form}","op":["ROL","ROR","RCL","RCR","SHL","SHR","SAR"],"form":["R1","RCL","M1","MCL"],"level":"L3","source_rule":"S1:Group-2 exact formula","route":"unallocated","status":"unallocated","batch":"B1+B3+B4","test":"i86_timing_{id}"},
+    {"id":"I86-STRING-{op}-{width}-{rep}","op":["MOVS","CMPS","STOS","LODS","SCAS"],"width":["B","W"],"rep":["NONE"],"level":"L3","source_rule":"S1:string primitive","route":"string-io","status":"missing-test","batch":"B0+B3+B4","test":"i86_timing_{id}"},
+    {"id":"I86-REP-{op}-{width}","op":["MOVS","CMPS-REPE","CMPS-REPNE","STOS","LODS","SCAS-REPE","SCAS-REPNE"],"width":["B","W"],"level":"L3","source_rule":"S1:repeat formula","route":"string-io","status":"missing-test","batch":"B0+B3+B4","test":"i86_timing_{id}"},
+    {"id":"I86-FLAG-{op}","op":["CLC","CLD","CLI","CMC","STC","STD","STI","LAHF","SAHF","NOP","HLT"],"level":"L3","source_rule":"S1:flag exact","route":"mixed","status":"missing-test","batch":"B1+B4","test":"i86_timing_{id}","overrides":{"I86-FLAG-CLD":"unallocated","I86-FLAG-CLI":"unallocated","I86-FLAG-CMC":"unallocated","I86-FLAG-STC":"unallocated","I86-FLAG-STD":"unallocated","I86-FLAG-STI":"unallocated","I86-FLAG-LAHF":"unallocated","I86-FLAG-SAHF":"unallocated"}},
+    {"id":"I86-WAIT","level":"L3","source_rule":"S1:WAIT 3+5n","route":"unallocated","status":"unallocated","batch":"B1+B4","test":"i86_timing_I86-WAIT"},
+    {"id":"I86-ESC-{form}","form":["R","M"],"level":"L3","source_rule":"S1:ESC exact/EA","route":"unallocated","status":"unallocated","batch":"B1+B3+B4","test":"i86_timing_{id}"}
+  ],
+  "context_templates": [
+    {"id":"{base}-LOCK","base":"all","level":"inherit","source_rule":"S1:LOCK +2","route":"unallocated-or-missing-term","status":"unallocated","batch":"B3+B4","test":"i86_timing_{id}"},
+    {"id":"{base}-SEGMENT","base":"source-effective-address","level":"inherit","source_rule":"S1:SEGMENT +2","route":"per-base","status":"missing-input","batch":"B3+B4","test":"i86_timing_{id}"},
+    {"id":"{base}-ODD-WORD","base":"word-transfer","level":"inherit","source_rule":"S1:odd word +4/transfer","route":"per-base","status":"missing-input","batch":"B3+B4","test":"i86_timing_{id}"}
+  ]
+}
