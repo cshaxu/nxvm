@@ -2,6 +2,53 @@
 
 #include "core/machine/machine.h"
 
+static const core_machine_timing_seam plan_expected_seams[
+    CORE_MACHINE_TIMING_CAPABILITY_COUNT] = {
+    CORE_MACHINE_TIMING_SEAM_CPU_PROGRAM,
+    CORE_MACHINE_TIMING_SEAM_CPU_PROGRAM,
+    CORE_MACHINE_TIMING_SEAM_CPU_PROGRAM,
+    CORE_MACHINE_TIMING_SEAM_RETIREMENT,
+    CORE_MACHINE_TIMING_SEAM_CPU_PROGRAM,
+    CORE_MACHINE_TIMING_SEAM_CLOCK,
+    CORE_MACHINE_TIMING_SEAM_LIFECYCLE,
+    CORE_MACHINE_TIMING_SEAM_TRANSACTION,
+    CORE_MACHINE_TIMING_SEAM_TRANSACTION,
+    CORE_MACHINE_TIMING_SEAM_TRANSACTION,
+    CORE_MACHINE_TIMING_SEAM_MEMORY,
+    CORE_MACHINE_TIMING_SEAM_MEMORY,
+    CORE_MACHINE_TIMING_SEAM_CONFIGURATION,
+    CORE_MACHINE_TIMING_SEAM_DEVICE,
+    CORE_MACHINE_TIMING_SEAM_DEVICE,
+    CORE_MACHINE_TIMING_SEAM_DEVICE,
+    CORE_MACHINE_TIMING_SEAM_DEVICE,
+    CORE_MACHINE_TIMING_SEAM_DEVICE,
+    CORE_MACHINE_TIMING_SEAM_DEVICE,
+    CORE_MACHINE_TIMING_SEAM_DEVICE,
+    CORE_MACHINE_TIMING_SEAM_DEVICE,
+    CORE_MACHINE_TIMING_SEAM_DEVICE,
+    CORE_MACHINE_TIMING_SEAM_OBSERVATION,
+    CORE_MACHINE_TIMING_SEAM_OBSERVATION,
+    CORE_MACHINE_TIMING_SEAM_OBSERVATION,
+    CORE_MACHINE_TIMING_SEAM_OBSERVATION,
+    CORE_MACHINE_TIMING_SEAM_OBSERVATION,
+    CORE_MACHINE_TIMING_SEAM_OBSERVATION,
+    CORE_MACHINE_TIMING_SEAM_OBSERVATION,
+    CORE_MACHINE_TIMING_SEAM_OBSERVATION
+};
+
+static C_INT plan_capability_is_non_guest_time(
+    core_machine_timing_capability capability)
+{
+    return capability == CORE_MACHINE_TIMING_CAPABILITY_DISPLAY_PRESENT ||
+        capability == CORE_MACHINE_TIMING_CAPABILITY_INPUT_HOST ||
+        capability == CORE_MACHINE_TIMING_CAPABILITY_TRACE_DEBUG ||
+        capability == CORE_MACHINE_TIMING_CAPABILITY_PLATFORM_MAILBOX ||
+        capability == CORE_MACHINE_TIMING_CAPABILITY_PLATFORM_RESOURCE ||
+        capability == CORE_MACHINE_TIMING_CAPABILITY_PLATFORM_WAIT ||
+        capability == CORE_MACHINE_TIMING_CAPABILITY_SESSION_COMMAND ||
+        capability == CORE_MACHINE_TIMING_CAPABILITY_PRODUCT_DEBUG;
+}
+
 static C_INT plan_default_and_copy(C_VOID)
 {
     core_machine_config configuration = { .memory_bytes =
@@ -11,16 +58,22 @@ static C_INT plan_default_and_copy(C_VOID)
     core_machine *machine = STD_NULL;
     core_machine_timing_declaration declaration;
     core_machine_timing_disposition disposition;
+    STD_SIZE_T index;
     C_INT failed = 0;
 
     core_machine_plan_initialize(&plan, &configuration);
     failed |= plan.declaration_count != CORE_MACHINE_TIMING_CAPABILITY_COUNT;
-    failed |= plan.declarations[CORE_MACHINE_TIMING_CAPABILITY_CPU_EXEC].disposition !=
-        CORE_MACHINE_TIMING_DISPOSITION_L2_FALLBACK;
-    failed |= plan.declarations[CORE_MACHINE_TIMING_CAPABILITY_DISPLAY_PRESENT].disposition !=
-        CORE_MACHINE_TIMING_DISPOSITION_NON_GUEST_TIME;
-    failed |= plan.declarations[CORE_MACHINE_TIMING_CAPABILITY_CTRL_PIT].seam !=
-        CORE_MACHINE_TIMING_SEAM_DEVICE;
+    for (index = 0u; index < CORE_MACHINE_TIMING_CAPABILITY_COUNT; ++index) {
+        const core_machine_timing_declaration *candidate = &plan.declarations[index];
+        const core_machine_timing_disposition expected =
+            plan_capability_is_non_guest_time((core_machine_timing_capability)index) ?
+            CORE_MACHINE_TIMING_DISPOSITION_NON_GUEST_TIME :
+            CORE_MACHINE_TIMING_DISPOSITION_L2_FALLBACK;
+
+        failed |= candidate->capability != (core_machine_timing_capability)index ||
+            candidate->seam != plan_expected_seams[index] ||
+            candidate->disposition != expected;
+    }
     temporary = plan.declarations[CORE_MACHINE_TIMING_CAPABILITY_CPU_EXEC];
     plan.declarations[CORE_MACHINE_TIMING_CAPABILITY_CPU_EXEC] =
         plan.declarations[CORE_MACHINE_TIMING_CAPABILITY_CPU_EXCEPT];
@@ -44,6 +97,7 @@ static C_INT plan_rejects_incomplete_or_unavailable(C_VOID)
 {
     core_machine_plan plan;
     core_machine *machine = (core_machine *)(type_virtual_address)1u;
+    STD_SIZE_T index;
     C_INT failed = 0;
 
     core_machine_plan_initialize(&plan, STD_NULL);
@@ -69,6 +123,19 @@ static C_INT plan_rejects_incomplete_or_unavailable(C_VOID)
         CORE_MACHINE_TIMING_SEAM_TRANSACTION;
     failed |= core_machine_create_from_plan(&plan, &machine) !=
         TYPE_STATUS_INVALID_ARGUMENT || machine != STD_NULL;
+    for (index = 0u; index < CORE_MACHINE_TIMING_CAPABILITY_COUNT; ++index) {
+        const core_machine_timing_capability capability =
+            (core_machine_timing_capability)index;
+
+        core_machine_plan_initialize(&plan, STD_NULL);
+        machine = (core_machine *)(type_virtual_address)1u;
+        plan.declarations[index].disposition =
+            plan_capability_is_non_guest_time(capability) ?
+            CORE_MACHINE_TIMING_DISPOSITION_L2_FALLBACK :
+            CORE_MACHINE_TIMING_DISPOSITION_L3_REQUIRED;
+        failed |= core_machine_create_from_plan(&plan, &machine) !=
+            TYPE_STATUS_INVALID_ARGUMENT || machine != STD_NULL;
+    }
     return failed;
 }
 
@@ -102,5 +169,6 @@ C_INT main(C_VOID)
     puts("M5:T434:S1:PLAN-VALIDATION:OK");
     puts("M5:T434:S1:PLAN-COPY:OK");
     puts("M5:T434:S2:ROLLBACK-EQUIVALENCE:OK");
+    puts("M5:T434:S3:ALL-DECLARATIONS:OK");
     return 0;
 }

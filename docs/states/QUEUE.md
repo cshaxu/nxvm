@@ -38,7 +38,6 @@ linked proposal identifies its finite implementation-admission baseline and
 exclusive earliest capability batch; a later candidate may consume a registered
 contract but does not redefine its L3 or Core/VM boundary.
 
-1. [Core timing contract and machine plan](../proposals/m5-core-timing-contract-machine-plan.md).
 1. [Core CPU instruction timing programs](../proposals/m5-core-cpu-instruction-timing-program.md).
 1. [Core CPU-to-board transaction and arbitration contracts](../proposals/m5-core-cpu-board-transaction-contracts.md).
 1. [Core controller and device phase contracts](../proposals/m5-core-controller-device-phase-contracts.md).
