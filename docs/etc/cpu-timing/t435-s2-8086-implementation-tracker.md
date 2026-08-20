@@ -2,7 +2,7 @@
 
 ## Tracker rule
 
-This is the implementation and closure tracker for every 8086 timing key.
+This is the pre-manifest implementation outline for every 8086 timing key.
 It consumes the accepted [manual ledger](t435-s1-8086-ledger.md) and the
 [context-key catalog](t435-s2-8086-context-key-catalog.md). It is not a new
 source authority: a target value always links back to the S1 manual row.
@@ -77,9 +77,12 @@ test report separates every member and all members are conforming.
 | B3 | every legal prefix/EA/odd-word/repeat context is represented and formula-complete | a context is described only by prose, a legal combination is not generated, or a selected success omits a term |
 | B4 | expanded regression report marks every tracker key `conforming` | any key has `wrong-value`, `unallocated`, `missing-input` or `missing-test` |
 
-The sole T435 8086 closure predicate is: every base and generated context key
-in this tracker is `L3 conforming` or `L2:G3 conforming`, with an expanded
-regression result. There is no L1 fallback in this 8086 universe.
+Under [Td S122](../evidence/td-s122-cpu-timing-manifest-governance.md), this
+outline cannot itself close an 8086 key. T435 S2 must replace it with the
+generated per-key manifest and verifier result before implementation begins.
+The sole closure predicate remains: every base and generated context key is
+`L3 conforming` or `L2:G3 conforming`, with an expanded regression result.
+There is no L1 fallback in this 8086 universe.
 
 Markers: `M5:T435:S2:8086-IMPLEMENTATION-TRACKER:OK`;
 `M5:T435:S2:8086-TRACKER-CLOSURE-PREDICATE:OK`.

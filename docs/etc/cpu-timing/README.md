@@ -20,3 +20,7 @@ into the finite [8086 context-key catalog](t435-s2-8086-context-key-catalog.md).
 Its [implementation tracker](t435-s2-8086-implementation-tracker.md) is the
 sole S2 record for expanded key status, implementation batches and regression
 closure.
+
+The binding [Td S122 closure-manifest governance](../evidence/td-s122-cpu-timing-manifest-governance.md)
+requires that tracker to become a generated, machine-readable per-key manifest
+before any 8086 timing repair begins.
