@@ -28,14 +28,14 @@ not a harmless fallback.
 | --- | --- | --- |
 | basic `NOP`, `CLC`; `MOV` r/r, r/m, m/r, moffs, immediate | 8086 source ledger plus `core_machine_legacy_source_instruction_cost()` | conforming only for these selected forms; baseline and memory smoke coverage exists |
 | ALU, `CMP`, `TEST`, `INC/DEC`, `NEG/NOT`, `XCHG`, `LEA`, adjust, conversion and Group-3 decode shapes | `core_machine_primary_source_instruction_cost()` plus 8086 EA, segment and odd-word helpers | partial: the shared shape selector implements a material subset, but no ledger-complete form/context proof exists |
-| direct/indirect `CALL/JMP/RET`, stack forms, `INT`/`IRET`, branch outcomes | `core_machine_control_stack_source_instruction_cost()` and primary/control helpers | partial: source ledger values exist, but the audit found no complete 8086 form/path regression matrix |
+| direct/indirect `CALL/JMP`, near `RET`, ordinary stack forms, `INT`/`IRET`, `JCXZ`/`LOOP*`, and branch outcomes | `core_machine_control_stack_source_instruction_cost()` and primary/control helpers | current base-form selector values conform; complete form/path regression coverage remains missing |
 | `IN`/`OUT`, ordinary string forms, legal REP variants | port and string helpers before primary selection; 8086 repeat contract | partial: selected ports and `MOVS`/`REP MOVS` smoke coverage exists; all five string families and every legal repeat termination are unproven |
 | Table 2-20 EA and segment override | `core_machine_8086_timing_effective_address()` and `core_machine_8086_timing_has_segment_override()` | partially conforming: helper encodes the Table 2-20 buckets and segment +2; focused tests cover direct/indexed/override examples, not the complete EA cross-product |
 | odd-addressed word transfers | `core_machine_8086_timing_odd_word()` multiplied by selected transfer count | partial: read/write examples exist, but source-form transfer cardinality is not proven for every ledger row |
 | `MUL` and `IMUL` L2 rows | `core_machine_legacy_dynamic_arithmetic_model_cost()` | conflict: current 8086 values are fixed lower endpoints (70/118 and 80/128, with memory additions), not `L2-86BOX-8086-G3` operand-dependent modelling |
 | `DIV` and `IDIV` L2 rows | no 8086 dynamic case reaches a source rule; the legacy dynamic helper returns false for both | absent: successful forms reach later unallocated selection |
 | Group-2 rotate/shift, including `D0 C0` | no 8086 source case after shared-primary non-match | absent: the existing smoke explicitly executes `D0 C0` at one tick |
-| remaining accepted rows: `JCXZ`, `LOOP*`, `AAA/AAS/AAD/AAM/DAA/DAS`, all unlisted flag/control rows, `WAIT`, `ESC`, all unlisted prefix combinations | no complete concrete selector mapping; unmatched cases reach `core_machine_source_timing_mark_unallocated()` | absent unless a future complete form-key audit proves a selected route; no current regression may claim these ledger values |
+| `AAA`/`AAS`, segment `MOV`, `LDS`/`LES`, segment stack forms, far `RET`, Group-2, unlisted flag/state, `WAIT`, `ESC` | absent primary/control/fallback selector, except `AAA`/`AAS` which select an incorrect 8-tick value | exact base-form failures enumerated below; no current regression may claim ledger conformance |
 | invalid encodings, faults, `INTR`/`NMI`, prefetch, READY/HOLD, 8087 completion | not successful retirement per S1 boundary | correctly outside this audit's instruction scalar; no repair assigned here |
 
 ## Regression evidence actually present
@@ -53,6 +53,40 @@ gap and cannot qualify a ledger-complete 8086 program.
 the 8086 unallocated condition is published with the 8086 fallback origin.
 Thus no path hides the current failure from observation, but the physical
 retirement guard does not turn it into a ledger-compliant timing result.
+
+## Atomic base-form reconciliation and count
+
+The earlier family-level table is not a closure metric.  This section
+supersedes its aggregate "remaining accepted rows" wording.  A *base-form
+key* is one S1 Table 2-21 instruction/operand/outcome key with no separately
+counted prefix cross-product.  Width is retained where S1 distinguishes it;
+the `MOV` segment row is expanded by direction and register/memory form.  A
+key is counted below only when the current 8086 route is either unallocated or
+returns a value that conflicts with the accepted S1 disposition.  Missing
+regression breadth alone is not counted as an implementation failure.
+
+| S1 level | nonconforming base-form keys | calculation | current route | disposition |
+| --- | ---: | --- | --- | --- |
+| L3 | 56 | `AAA`/`AAS` 2 + `MOV` segment direction/form 4 + `LDS`/`LES` 2 + `PUSH` segment 4 + `POP` segment 3 + `RET` far/far+imm 2 + Group-2 7 x 4 forms 28 + flag/state 8 + `WAIT` 1 + `ESC` r/m 2 | primary returns 8 instead of 4 for `AAA`/`AAS`; every other listed key has no 8086 selector and reaches the legacy one-tick unallocated terminal | not L3 |
+| L2 | 16 | `MUL`, `IMUL`, `DIV`, `IDIV`, each r8/r16/m8/m16 | `MUL`/`IMUL` 8 keys use fixed lower endpoints rather than `L2-86BOX-8086-G3`; `DIV`/`IDIV` 8 keys are unallocated | not L2 |
+
+At mnemonic-family granularity, the same result is 25 L3-affected families
+(`AAA`, `AAS`, `MOV` segment, `LDS`, `LES`, `PUSH` segment, `POP` segment,
+`RET` far, seven Group-2 families, eight flag/state instructions, `WAIT`, and
+`ESC`) and four L2 families.  The base-form metric, not that mnemonic count,
+is the repair and closure metric.
+
+The 56 is an exact count for the S1 ledger's presently enumerable base-form
+keys.  It is deliberately **not** presented as a complete prefix-context
+count: S1 records `SEGMENT`, `LOCK`, and repeat applicability as a grouped
+rule, rather than assigning each legal prefixed instruction its own atomic
+key.  Static inspection already proves a context defect: the string selector
+uses the repeat contract but does not add the 8086 segment-override term, and
+the non-segment prefix paths are not universally source-backed.  Therefore no
+honest global L3 total including every prefix combination can yet be stated.
+This is not transferred to a later task: R2/R3 must first normalize those
+prefix contexts into finite keys, then the resulting table must be reconciled
+to zero before 8086 implementation closure.
 
 ## Finite repair set for the next implementation stage
 
