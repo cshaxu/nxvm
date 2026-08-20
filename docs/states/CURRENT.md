@@ -2,7 +2,28 @@
 
 ## Current Work
 
-**No active subtask. M5 T435 S1 is accepted and closed; S2 awaits admission.**
+**Active: M5 T435 S2, block 1 of 4 (8086 implementation audit).**
+
+## M5 T435 S2 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; S1 is accepted and closed. S2 has four owner-review blocks: 8086, 80186, 80286, and 80386DX. This admitted first delivery is 8086 only. |
+| Admission And Approval | Owner approval in this conversation on 2026-08-20: close S1 and begin S2 as four separately executed implementation-audit blocks; first compare existing 8086 timing code to the accepted ledger's exact values, formulae and selected model. |
+| Objective | Audit every current 8086 successful-retirement timing path against the accepted S1 8086 ledger. Produce one evidence record that maps concrete decoder/form/context keys through selector, prefix/EA/repeat accounting and retirement publication; classify each as conforming, absent, conflict, duplicate/obsolete, fallback or missing regression. Do not repair runtime code in this block. |
+| Non-goals | Do not audit 80186/80286/80386DX, change runtime code or timing values, redesign the timing-plan interface, re-decide S1 evidence, silently treat `SOURCE_UNALLOCATED` as compliant, or close S2/T435. |
+| Reference Baseline | [CPU timing proposal](../proposals/m5-core-cpu-instruction-timing-program.md); [Td S121](../etc/evidence/td-s121-cpu-timing-evidence-first-governance.md); accepted [8086 ledger](../etc/cpu-timing/t435-s1-8086-ledger.md); timing-plan records from T434; current `src/core/machine/` decoder, selector, publisher and tests. |
+| Candidate Proposal | [Core CPU instruction timing programs](../proposals/m5-core-cpu-instruction-timing-program.md). |
+| Files And ABI Surface | `docs/etc/cpu-timing/` 8086 audit record, `docs/states/CURRENT.md`, and existing test/evidence records only. No `src/`, public ABI, build target, artifact or runtime behavior change. |
+| Applicable Rules | Task Reading Set; Execution coverage-ledger/P-review lifecycle and code-size reporting (audit is documentation-only); Documentation supporting-index authority; Architecture source/dependency boundary; Td S121 Phase 2 audit/finite-repair-plan rule; accepted S1 8086 L3/L2/L1 dispositions. |
+| Verification | Inspect the current 8086 decoder metadata/dispatch, timing selectors, `SOURCE_UNALLOCATED` path, prefix/EA/odd-word/repeat/branch accounting, retirement publisher and focused tests. Reconcile each accepted ledger family/context to one actual path/disposition; inspect actual code rather than reports; run documentation governance and diff checks. |
+| Expected Markers | `M5:T435:S2:8086-IMPLEMENTATION-AUDIT:OK` and `M5:T435:S2:8086-REPAIR-SET:OK` only when the complete concrete-path mapping and finite repair set are recorded. |
+| Asset Needs | Existing accepted ledger and source tree only. Do not import third-party code, manuals, firmware, guest media, local paths or generated artifacts. |
+| Reporting Requirements | Report conforming coverage, each mismatch category and exact owner/path, all residual `SOURCE_UNALLOCATED` successful forms, regression gaps, finite repair candidates and the owner-review gate before 80186. Commit/push the completed P by default. |
+| Stop Conditions | Stop and request owner direction if a current 8086 form has no accepted S1 disposition, a code path cannot be traced to a sole publication route, a required repair changes the approved scope, or the audit would need to rewrite S1 evidence. Record the blocker; do not guess compliance. |
+| Exit Criteria | One owner-reviewable pushed 8086 implementation-audit record covers every accepted 8086 ledger form/context, gives each one a concrete current code/test disposition, identifies every implementation gap and records one finite repair set. It leaves S2 active awaiting owner review before 80186. |
+| Original Owner Request | S2 is split into four separately executed profile blocks. Begin with 8086: use the existing ledger/model to verify that the implementation realizes every exact value, formula and selected L2 model. |
+| Similar-Issue Sweep | Sweep all 8086 profile guards and fallback routes, source timing ledgers, opcode/form switches, prefix and string helpers, branch and Group-3 paths, the sole retirement publisher, trace origin and focused tests; do not stop at the first scalar mismatch. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** target `vm-0-5-0434`; T434 S2 `nxvm_0_5_0434.exe` / `build/output/nxvm_0_5_0434.exe`, SHA-256 `0252F8FDA17BEC2131606F19E3547B46894AC6B56DD37EC3B16BD302494FAFDC`. T434 has one copied Core timing-plan publication route for default PC/AT, IBM 5170 Model 339 and Model-40 BYOB session composition.
