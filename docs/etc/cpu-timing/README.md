@@ -17,3 +17,6 @@ started until owner review of that record.
 
 The current 8086 S2 audit normalizes that ledger's narrative prefix conditions
 into the finite [8086 context-key catalog](t435-s2-8086-context-key-catalog.md).
+Its [implementation tracker](t435-s2-8086-implementation-tracker.md) is the
+sole S2 record for expanded key status, implementation batches and regression
+closure.

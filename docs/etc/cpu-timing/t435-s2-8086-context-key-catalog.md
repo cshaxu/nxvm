@@ -27,11 +27,11 @@ r8/r16/m8/m16. Thus the pre-prefix base universe is 244 keys.
 | key family | L3 base keys | L2 base keys | normalization rule |
 | --- | ---: | ---: | --- |
 | scalar, ALU, compare/test, increment, exchange, adjust and conversion | 74 | 0 | every displayed operand/outcome form is one key; duplicate `TEST accumulator,immediate` is one key |
-| transfer and stack | 28 | 0 | expands segment `MOV` 4 and segment `PUSH`/`POP` 4/3 |
-| control, branch, interrupt and port | 57 | 0 | expands every displayed branch/count/outcome form |
+| transfer and stack | 27 | 0 | expands segment `MOV` 4 and segment `PUSH`/`POP` 4/3 |
+| control, branch, interrupt and port | 61 | 0 | expands every displayed branch/count/outcome form |
 | Group-2 | 28 | 0 | seven operations times r,1/r,CL/m,1/m,CL |
 | string and repeat | 24 | 0 | five primitive families times byte/word; seven legal repeat families times byte/word |
-| flag/state, `WAIT`, `ESC` | 17 | 0 | `ESC` is register and memory |
+| flag/state, `WAIT`, `ESC` | 14 | 0 | `ESC` is register and memory |
 | Group-3 range model | 0 | 16 | four families times r8/r16/m8/m16 |
 | **total** | **228** | **16** | **244** |
 

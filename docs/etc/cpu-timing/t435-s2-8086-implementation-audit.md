@@ -92,6 +92,9 @@ That normalization is now recorded in the companion [8086 context-key
 catalog](t435-s2-8086-context-key-catalog.md). It fixes the atomic base
 universe at 228 L3 plus 16 L2 keys and gives every prefix, repeat and
 odd-word context a bounded applicability and current-route disposition.
+The [implementation tracker](t435-s2-8086-implementation-tracker.md) is the
+controlling S2 closure ledger: its expanded per-key status, rather than a
+family aggregate, decides whether any implementation batch is complete.
 
 ## Finite repair set for the next implementation stage
 

@@ -1,0 +1,85 @@
+# T435 S2 - 8086 L3/L2 Implementation Tracker
+
+## Tracker rule
+
+This is the implementation and closure tracker for every 8086 timing key.
+It consumes the accepted [manual ledger](t435-s1-8086-ledger.md) and the
+[context-key catalog](t435-s2-8086-context-key-catalog.md). It is not a new
+source authority: a target value always links back to the S1 manual row.
+
+One tracker row is a finite key template. Braces mean the Cartesian expansion
+shown in `keys`; the listed cardinality is mandatory and is not an estimate.
+Before a batch can close, its test expands every member into a separately
+reported `key_id` and asserts target ticks/formula inputs, retirement origin,
+and `source_timing_unallocated == false`. A row with `missing-test` or any
+status other than `conforming` remains open. Aggregate smoke tests do not
+close a row.
+
+`L3` means the S1 exact/formula target. `L2:G3` means the selected
+`L2-86BOX-8086-G3` model plus the S1 manual bounds. `B0` is the required
+single Core form/context program; it replaces, rather than coexists with, the
+legacy primary/control/fallback timing selection for successful 8086 keys.
+
+## Base-key implementation tracker
+
+| tracker key template and cardinality | level and S1 target | current route/status | implementation batch | required expanded regression |
+| --- | --- | --- | --- | --- |
+| `I86-ADJ-{AAA,AAS}` (2) | L3 exact 4 | primary; wrong value 8 | B1 | `i86_timing_I86-ADJ-*` |
+| `I86-ADJ-{DAA,DAS,AAD,AAM}` (4) | L3 exact 4/4/60/83 | primary; base conforming, missing-test | B0+B4 | `i86_timing_I86-ADJ-*` |
+| `I86-CONV-{CBW,CWD}` (2) | L3 exact 2/5 | primary; base conforming, missing-test | B0+B4 | `i86_timing_I86-CONV-*` |
+| `I86-ALU-{ADC,ADD,AND,OR,SBB,SUB,XOR}-{RR,RM,MR,RI,MI,AI}` (42) | L3 S1 exact/EA formula | primary; base conforming, missing-test | B0+B3+B4 | `i86_timing_I86-ALU-*` |
+| `I86-CMP-{RR,RM,MR,RI,MI,AI}` (6) | L3 S1 exact/EA formula | primary; base conforming, missing-test | B0+B3+B4 | `i86_timing_I86-CMP-*` |
+| `I86-TEST-{RR,RM,RI,MI,AI}` (5) | L3 S1 exact/EA formula | primary; base conforming, missing-test | B0+B3+B4 | `i86_timing_I86-TEST-*` |
+| `I86-{INC,DEC}-{R16,R8,M}` (6) | L3 S1 exact/EA formula | primary; base conforming, missing-test | B0+B3+B4 | `i86_timing_I86-INCDEC-*` |
+| `I86-{NEG,NOT}-{R,M}` (4) | L3 S1 exact/EA formula | primary; base conforming, missing-test | B0+B3+B4 | `i86_timing_I86-NEGNOT-*` |
+| `I86-XCHG-{AXR,RR,MR}` (3) | L3 S1 exact/EA formula | primary; base conforming, missing-test | B0+B3+B4 | `i86_timing_I86-XCHG-*` |
+| `I86-MOV-{RR,RM,MR,RI,MI,MOFFS-R,MOFFS-W}` (7) | L3 S1 exact/EA formula | legacy fallback/primary; base conforming, missing-test | B0+B3+B4 | `i86_timing_I86-MOV-*` |
+| `I86-MOV-SREG-{TO-R,TO-M,FROM-R,FROM-M}` (4) | L3 2 or 8+EA | unallocated | B1+B3+B4 | `i86_timing_I86-MOV-SREG-*` |
+| `I86-{LEA,LDS,LES}-M` (3) | L3 2+EA/16+EA/16+EA | `LEA` base conforming; `LDS`/`LES` unallocated | B1+B3+B4 | `i86_timing_I86-LOADPTR-*` |
+| `I86-PUSH-{R,SEG-ES,SEG-CS,SEG-SS,SEG-DS,M,F}` (7) | L3 S1 exact/EA formula | segment forms unallocated; other base forms conforming/missing-test | B1+B3+B4 | `i86_timing_I86-PUSH-*` |
+| `I86-POP-{R,SEG-ES,SEG-SS,SEG-DS,M,F}` (6) | L3 S1 exact/EA formula | segment forms unallocated; other base forms conforming/missing-test | B1+B3+B4 | `i86_timing_I86-POP-*` |
+| `I86-CALL-{NEAR,FAR,RM16,M1616}` (4) | L3 S1 exact/EA formula | control-stack; base conforming, missing-test | B0+B3+B4 | `i86_timing_I86-CALL-*` |
+| `I86-JMP-{DIRECT,FAR,RM16,M1616}` (4) | L3 S1 exact/EA formula | control-stack; base conforming, missing-test | B0+B3+B4 | `i86_timing_I86-JMP-*` |
+| `I86-JCC-{16 conditions}-{TAKEN,NOT}` (32) | L3 exact 16/4 | legacy fallback; base conforming, missing-test | B0+B4 | `i86_timing_I86-JCC-*` |
+| `I86-{JCXZ,LOOP,LOOPE,LOOPNE}-{TAKEN,NOT}` (8) | L3 S1 exact outcomes | control-stack; base conforming, missing-test | B0+B4 | `i86_timing_I86-LOOP-*` |
+| `I86-RET-{NEAR,NEAR-IMM,FAR,FAR-IMM}; I86-IRET` (5) | L3 S1 exact | far forms unallocated; other base forms conforming/missing-test | B1+B4 | `i86_timing_I86-RET-*` |
+| `I86-{INT3,INT-IMM}; I86-INTO-{TAKEN,NOT}` (4) | L3 S1 exact/outcome | control-stack; base conforming, missing-test | B0+B4 | `i86_timing_I86-INT-*` |
+| `I86-{IN,OUT}-{IMM,DX}` (4) | L3 exact 10/8 | string/I/O selector; base conforming, missing-test | B0+B4 | `i86_timing_I86-PORT-*` |
+| `I86-{MUL,IMUL,DIV,IDIV}-{R8,R16,M8,M16}` (16) | L2:G3 model and S1 bounds | MUL/IMUL fixed lower endpoint; DIV/IDIV unallocated | B2+B3+B4 | `i86_timing_I86-G3-*` |
+| `I86-{ROL,ROR,RCL,RCR,SHL,SHR,SAR}-{R1,RCL,M1,MCL}` (28) | L3 S1 formula | unallocated | B1+B3+B4 | `i86_timing_I86-G2-*` |
+| `I86-{MOVS,CMPS,STOS,LODS,SCAS}-{B,W}-NONE` (10) | L3 exact plus applicable odd-word term | string selector; base scalar conforming, context gaps/missing-test | B0+B3+B4 | `i86_timing_I86-STRING-*` |
+| `I86-{MOVS,CMPS-REPE,CMPS-REPNE,STOS,LODS,SCAS-REPE,SCAS-REPNE}-{B,W}` (14) | L3 S1 setup + iteration formula | string selector; base scalar conforming, context gaps/missing-test | B0+B3+B4 | `i86_timing_I86-REP-*` |
+| `I86-{CLC,CLD,CLI,CMC,STC,STD,STI,LAHF,SAHF,NOP,HLT}` (11) | L3 exact | only CLC/NOP/HLT selected; remaining eight unallocated | B1+B4 | `i86_timing_I86-FLAG-*` |
+| `I86-WAIT` (1) | L3 `3+5n` | unallocated | B1+B4 | `i86_timing_I86-WAIT` |
+| `I86-ESC-{R,M}` (2) | L3 2 / 8+EA | unallocated | B1+B3+B4 | `i86_timing_I86-ESC-*` |
+
+The table contains 228 L3 and 16 L2 base keys. A tracker entry that names
+both conforming and nonconforming members is not closeable until its expanded
+test report separates every member and all members are conforming.
+
+## Context-key implementation tracker
+
+| context template | applies to | target and current status | implementation batch | expanded regression/closure |
+| --- | --- | --- | --- | --- |
+| `I86-*-LOCK` (244) | every base key accepted by the pre-80386 decoder | L3 +2; L2 model plus +2. All currently nonconforming: non-string is unallocated, string omits +2 | B3+B4 | one result per base key; no `LOCK` key may use fallback/unallocated |
+| `I86-*-SEGMENT` | each S1 source-effective-address key | L3 +2. Selected non-string paths currently add it; string source forms omit it; failed base keys remain failed | B3+B4 | enumerate legal operand source/EA keys, including `MOVS`/`CMPS`/`LODS` primitive and repeat forms |
+| `I86-*-ODD-WORD` | each S1 word transfer key | L3 +4 per documented transfer. Selected non-string paths use helper; word-string forms omit it | B3+B4 | enumerate all word transfer counts and assert formula inputs |
+| `I86-STRING-*-REP-{FIRST,CONTINUE,ZERO}` | 14 legal repeat keys | S1 setup/iteration and semantic termination formula; current scalar selection exists but lacks complete proof | B0+B3+B4 | assert phase, count/termination input and published ticks for every legal key |
+| combined legal axes | the finite intersections of rows above | sum only the S1-authorized terms; currently not independently proven | B3+B4 | generate all legal intersections; reject duplicate/redundant prefix streams from coverage input |
+
+## Batch gates
+
+| batch | one allowed result | cannot close while |
+| --- | --- | --- |
+| B0 | one 8086 form/context program becomes the sole successful-retirement selector | any legacy successful key still selects independently, any base scalar is unbound, or any required test ID is absent |
+| B1 | every L3 `wrong-value`/`unallocated` base key is L3 conforming | any of the 56 identified L3 base keys remains nonconforming |
+| B2 | all 16 Group-3 keys use the independently implemented L2:G3 model within manual bounds | fixed endpoint, midpoint substitution, unallocated result or absent operand partition test remains |
+| B3 | every legal prefix/EA/odd-word/repeat context is represented and formula-complete | a context is described only by prose, a legal combination is not generated, or a selected success omits a term |
+| B4 | expanded regression report marks every tracker key `conforming` | any key has `wrong-value`, `unallocated`, `missing-input` or `missing-test` |
+
+The sole T435 8086 closure predicate is: every base and generated context key
+in this tracker is `L3 conforming` or `L2:G3 conforming`, with an expanded
+regression result. There is no L1 fallback in this 8086 universe.
+
+Markers: `M5:T435:S2:8086-IMPLEMENTATION-TRACKER:OK`;
+`M5:T435:S2:8086-TRACKER-CLOSURE-PREDICATE:OK`.
