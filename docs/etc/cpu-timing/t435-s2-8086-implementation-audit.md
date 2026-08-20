@@ -88,6 +88,11 @@ This is not transferred to a later task: R2/R3 must first normalize those
 prefix contexts into finite keys, then the resulting table must be reconciled
 to zero before 8086 implementation closure.
 
+That normalization is now recorded in the companion [8086 context-key
+catalog](t435-s2-8086-context-key-catalog.md). It fixes the atomic base
+universe at 228 L3 plus 16 L2 keys and gives every prefix, repeat and
+odd-word context a bounded applicability and current-route disposition.
+
 ## Finite repair set for the next implementation stage
 
 | ID | required repair and owned boundary | closure proof |

@@ -14,3 +14,6 @@ by a silent one-tick default.
 T435 S1 block 1 is the 8086 material in
 [the 8086 ledger](t435-s1-8086-ledger.md).  Blocks 2--4 are intentionally not
 started until owner review of that record.
+
+The current 8086 S2 audit normalizes that ledger's narrative prefix conditions
+into the finite [8086 context-key catalog](t435-s2-8086-context-key-catalog.md).
