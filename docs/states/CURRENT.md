@@ -2,31 +2,10 @@
 
 ## Current Work
 
-**Active: M5 T434 S2 corrective P2.**
-
-## M5 T434 S2 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation; P1 `7be4dd7d` is not accepted because its verified 0.5.0434 artifact was not the configured current CMake target. |
-| Admission And Approval | Owner objective in this conversation remains complete Core timing-plan implementation; this is the executor correction required by the P lifecycle before S2 acceptance. |
-| Objective | Make the verified `nxvm_0_5_0434.exe` the configured current developer artifact, then rerun the CMake/current-status governance proof without changing timing-plan behavior. |
-| Non-goals | Do not change timing-plan semantics, profile facts, publication routes, runtime behavior, or accept/close S2 before the corrected P is reviewed. |
-| Reference Baseline | P1 `7be4dd7d`; current artifact verification in `t434-s2-plan-only-publication.md`; CMake current artifact declaration. |
-| Candidate Proposal | [Core timing contract and machine plan](../proposals/m5-core-timing-contract-machine-plan.md). |
-| Files And ABI Surface | `CMakeLists.txt`, current status and S2 evidence only; no runtime ABI. |
-| Applicable Rules | Task Reading Set; Execution artifact and P-correction lifecycle; Documentation Rule current-status authority. |
-| Verification | CMake current target is `vm-0-5-0434`; current status matches it; documentation governance, artifact hash/banner and diff check pass. |
-| Expected Markers | `M5:T434:S2:CURRENT-ARTIFACT:OK`. |
-| Asset Needs | Existing locally built, source-only artifact; no protected asset or download. |
-| Reporting Requirements | Report rejected P1 reason, corrected target, artifact identity/hash and push. |
-| Stop Conditions | Stop if changing current target requires a source/runtime change beyond this task artifact correction. |
-| Exit Criteria | Corrected P is pushed and independently reviewed; only then can S2 acceptance be recorded. |
-| Original Owner Request | Fully implement the Core timing plan internal integration and interface construction without an unconnected boundary or deferred production cutover. |
-| Similar-Issue Sweep | Inspect current CMake artifact declaration and `CURRENT.md` identity together; no other current-artifact declaration may retain 0432. |
+**M5 T434 S2 accepted; T434 remains open.**
 ## Current Technical Baseline
 
-- **Current developer artifact:** T434 S2 `nxvm_0_5_0434.exe` / `build/output/nxvm_0_5_0434.exe`, SHA-256 `0252F8FDA17BEC2131606F19E3547B46894AC6B56DD37EC3B16BD302494FAFDC`. T434 has one copied Core timing-plan publication route for default PC/AT, IBM 5170 Model 339 and Model-40 BYOB session composition.
+- **Current developer artifact:** target `vm-0-5-0434`; T434 S2 `nxvm_0_5_0434.exe` / `build/output/nxvm_0_5_0434.exe`, SHA-256 `0252F8FDA17BEC2131606F19E3547B46894AC6B56DD37EC3B16BD302494FAFDC`. T434 has one copied Core timing-plan publication route for default PC/AT, IBM 5170 Model 339 and Model-40 BYOB session composition.
   T386 closes selected-device functional completeness at S29; its retained
   [closure audit](../etc/evidence/t386-s29-functional-closure-audit.md) fixes
   HDC current-gate coverage and transfers board, firmware and physical work.
@@ -48,7 +27,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T434 S2 | Accepted `7be4dd7d`: every current VM materializer now builds one copied plan; Core applies memory/board/display/DMA/RTC/FDC/HDC topology atomically before publication, with direct VM publishers and post-create configuration routes removed. [Evidence](../etc/evidence/t434-s2-plan-only-publication.md). Next: task-level closure audit. |
+| T434 S2 | Accepted `7be4dd7d` / `739fd817`: every current VM materializer now builds one copied plan; Core applies memory/board/display/DMA/RTC/FDC/HDC topology atomically before publication, with direct VM publishers and post-create configuration routes removed. [Evidence](../etc/evidence/t434-s2-plan-only-publication.md). Next: task-level closure audit. |
 | T433 | Closed after corrective S7: 30 frozen Core capabilities have a source-sufficiency and ownership disposition; chip/manual semantics are separated from VM-profile inputs, host/product boundaries and the explicit ATA/HDC source block. [S7 ledger](../etc/evidence/t433-s7-core-source-sufficiency-ledger.md). |
 | T432 | Closed: separate Core-private Set-2 translation and typematic break states prevent released keys from restarting typematic; focused regression, Model-339 contract and owner Console/Window verification pass. [Record](../history/M5-T432-keyboard-keyup-reliability-repair.md). |
 | T431 | Closed: Model-40 selects a reference-derived unready-drive READ `ST0=48h`/IRQ/result completion through one Core policy; generic PC/AT stays generic, and physical FDC/L3 timing remains transferred. [Evidence](../etc/evidence/t431-s1-deskpro-fdc-not-ready-reference.md). |
