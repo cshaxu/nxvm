@@ -106,6 +106,11 @@ if ($contextSeen.Count -ne 289 -or $contextCounts.L3 -ne 273 -or $contextCounts.
 
 $combinationSeen = @{}
 $combinationCounts = @{ total = 0; L3 = 0; L2 = 0; unallocated = 0; 'missing-input' = 0; 'missing-test' = 0 }
+foreach ($field in @("level", "source_rule", "route", "batch", "test")) {
+    if ([string]::IsNullOrWhiteSpace([string]$manifest.combination_defaults.$field)) {
+        throw "Combination defaults missing ${field}"
+    }
+}
 foreach ($set in $manifest.combination_context_sets) {
     foreach ($field in @("id_suffix", "base_selector", "count")) {
         if ([string]::IsNullOrWhiteSpace([string]$set.$field)) {
