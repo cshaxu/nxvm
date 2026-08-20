@@ -34,3 +34,8 @@ The active 80186 S2 block applies the same contract through the
 [implementation tracker](t435-s2-80186-implementation-tracker.md).  Its
 templates expand 256 L3 and 25 explicit fixed-midpoint L2 base keys; legal
 context axes are generated from the manifest rather than left as prose.
+
+The active 80286 S2 block records its all-L3 universe in the
+[80286 manifest](t435-s2-80286-timing-manifest.json),
+[audit](t435-s2-80286-implementation-audit.md), and
+[implementation tracker](t435-s2-80286-implementation-tracker.md).
