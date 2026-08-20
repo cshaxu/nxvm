@@ -36,5 +36,10 @@
     {"id":"{base}-LOCK","base":"all","level":"inherit","source_rule":"S1:LOCK +2","route":"unallocated-or-missing-term","status":"unallocated","batch":"B3+B4","test":"i86_timing_{id}"},
     {"id":"{base}-SEGMENT","base":"source-effective-address","level":"inherit","source_rule":"S1:SEGMENT +2","route":"per-base","status":"missing-input","batch":"B3+B4","test":"i86_timing_{id}"},
     {"id":"{base}-ODD-WORD","base":"word-transfer","level":"inherit","source_rule":"S1:odd word +4/transfer","route":"per-base","status":"missing-input","batch":"B3+B4","test":"i86_timing_{id}"}
+  ],
+  "context_key_sets": [
+    {"id_suffix":"LOCK","base_selector":"all","source_rule":"S1:LOCK +2","route":"non-string unallocated; string missing term","batch":"B3+B4","test":"i86_timing_{id}","default_status":"unallocated","string_status":"missing-input"},
+    {"id_suffix":"SEGMENT","base_selector":"I86-MOV-SREG-(TO-M|FROM-M)|I86-(LDS|LES)-M|I86-(ROL|ROR|RCL|RCR|SHL|SHR|SAR)-(M1|MCL)|I86-ESC-M|I86-STRING-(MOVS|CMPS|LODS)-(B|W)-NONE|I86-REP-(MOVS|CMPS-REPE|CMPS-REPNE|LODS)-(B|W)","source_rule":"S1:SEGMENT +2","route":"failed base or string missing term","batch":"B3+B4","test":"i86_timing_{id}","status":"missing-input"},
+    {"id_suffix":"ODD-WORD","base_selector":"I86-STRING-(MOVS|CMPS|STOS|LODS|SCAS)-W-NONE|I86-REP-(MOVS|CMPS-REPE|CMPS-REPNE|STOS|LODS|SCAS-REPE|SCAS-REPNE)-W","source_rule":"S1:odd word +4/transfer","route":"string missing term","batch":"B3+B4","test":"i86_timing_{id}","status":"missing-input"}
   ]
 }

@@ -69,4 +69,39 @@ foreach ($template in $manifest.context_templates) {
     }
 }
 
+$contextSeen = @{}
+$contextCounts = @{ total = 0; unallocated = 0; 'missing-input' = 0 }
+foreach ($set in $manifest.context_key_sets) {
+    foreach ($field in @("id_suffix", "base_selector", "source_rule", "route", "batch", "test")) {
+        if ([string]::IsNullOrWhiteSpace([string]$set.$field)) {
+            throw "Context key set missing ${field}: $($set.id_suffix)"
+        }
+    }
+    $selector = [regex]$set.base_selector
+    foreach ($base in $seen.Keys) {
+        if ($set.base_selector -ne "all" -and -not $selector.IsMatch($base)) { continue }
+        $key = "$base-$($set.id_suffix)"
+        if ($contextSeen.ContainsKey($key)) { throw "Duplicate context key: $key" }
+        $status = if ($set.base_selector -eq "all" -and
+            ($base.StartsWith("I86-STRING-") -or $base.StartsWith("I86-REP-"))) {
+            [string]$set.string_status
+        } elseif ($null -ne $set.status) {
+            [string]$set.status
+        } else {
+            [string]$set.default_status
+        }
+        if ($manifest.status_values -notcontains $status) {
+            throw "Unknown context status $status for $key"
+        }
+        $contextSeen[$key] = $true
+        ++$contextCounts.total
+        if ($contextCounts.ContainsKey($status)) { ++$contextCounts[$status] }
+    }
+}
+if ($contextSeen.Count -ne 289 -or $contextCounts.unallocated -ne 220 -or
+    $contextCounts['missing-input'] -ne 69) {
+    throw "Context-key count mismatch: total=$($contextSeen.Count) unallocated=$($contextCounts.unallocated) missing_input=$($contextCounts['missing-input'])"
+}
+
 "8086 timing manifest: base=$($seen.Count) L3=$($counts.L3) L2=$($counts.L2) conforming=$($counts.conforming) wrong=$($counts['wrong-value']) unallocated=$($counts.unallocated) missing_input=$($counts['missing-input']) missing_test=$($counts['missing-test'])"
+"8086 timing contexts: total=$($contextCounts.total) unallocated=$($contextCounts.unallocated) missing_input=$($contextCounts['missing-input'])"
