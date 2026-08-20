@@ -1,10 +1,11 @@
 # T435 S2 - 80286 L3 Implementation Tracker
 
 The machine-readable [80286 manifest](t435-s2-80286-timing-manifest.json) is
-the sole closure ledger.  It expands 293 unique L3 successful-retirement keys
-from the accepted [80286 ledger](t435-s1-80286-ledger.md).  Every key has an
-Appendix-B source rule, observed route, current status, implementation batch
-and focused regression identity.
+the sole closure ledger. It expands 293 unique L3 successful-retirement keys,
+369 legal single-axis context keys and 43 legal combined keys from the
+accepted [80286 ledger](t435-s1-80286-ledger.md). Every key has an Appendix-B
+source rule, observed route, current status, implementation batch and focused
+regression identity.
 
 Run `powershell -NoProfile -ExecutionPolicy Bypass -File
 tools/Verify-80286TimingManifest.ps1` before every tracker-changing P.  The
@@ -19,6 +20,11 @@ unallocated bit.
 | branches and `INTO` | outcome-specific Appendix B result | B0+B1+B4 |
 | call/jump/return/IRET/INT paths | real/PM/privilege/gate/task path plus next-byte terms | B0+B1+B3+B4 |
 | system instructions | privilege/memory form and Appendix-B result | B0+B1+B3+B4 |
+
+The existing 80286 ledger smoke is named evidence for its representative
+vectors only; it is not a manifest-key result producer. Therefore the initial
+manifest reports 241 `missing-test`, 52 `missing-input` and zero conforming.
+No aggregate smoke outcome may change an individual key's status.
 
 `B0` is one sole 80286 form/context publisher. `B1` makes all 293 manual
 rules exact/formula-conforming. `B3` supplies each legal EA, odd-word,
