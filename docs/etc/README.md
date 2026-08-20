@@ -15,6 +15,7 @@ principal documents named in [docs/README.md](../README.md).
 | `requirements/` | Product and profile owners | Future DOS, NXVDM, and profile admissions. |
 | `evidence/` | Verification owner | Capability, verification, baseline, and fixture evidence. |
 | `evidence/td-s117-t434-timing-plan-convergence-ledger.md` | Governance owner | Frozen 30-ID T434 seam/disposition ledger, current VM materialization inventory, bounded implementation batches and non-deferrable closure checks. |
+| `evidence/t434-s1-core-timing-plan.md` | Core timing owner | T434 S1 copied Core plan, exact 30-capability declaration/seam map, validation proof and B2 publication boundary. |
 | `history/legacy/` | Governance history owner | Superseded legacy governance records; they are historical only and cannot define live debt, policy, status, queue, or roadmap. |
 | `evidence/t386-s5-deskpro-storage-controller.md` | Verification owner | T386 S5 primary Compaq storage-controller ledger, narrow shared-3F7 composition, focused proof and pure-IMG physical-media transfer. Retain with T386 history. |
 | `evidence/t386-s6-compaq-ega-personality.md` | Verification owner | T386 S6 source-bounded Compaq Enhanced Color Graphics personality, generic control proof, and board/firmware transfer. Retain with T386 history. |

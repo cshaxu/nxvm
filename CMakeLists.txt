@@ -68,6 +68,10 @@ target_include_directories(core-machine PUBLIC
 add_executable(core-machine-contract-smoke
     tests/core/core_contract_smoke.c
 )
+add_executable(core-machine-plan-smoke
+    tests/core/core_machine_plan_smoke.c
+)
+target_link_libraries(core-machine-plan-smoke PRIVATE core-machine)
 add_executable(vm-default-pc-at-profile-smoke
     tests/firmware/default_pc_at_profile_smoke.c)
 target_link_libraries(vm-default-pc-at-profile-smoke PRIVATE vm-profile)

@@ -140,6 +140,72 @@ typedef struct core_machine_config {
     type_bool cpu_prefetch_reservation_enabled;
 } core_machine_config;
 
+#define CORE_MACHINE_TIMING_CAPABILITY_COUNT 30u
+
+typedef enum core_machine_timing_capability {
+    CORE_MACHINE_TIMING_CAPABILITY_CPU_EXEC,
+    CORE_MACHINE_TIMING_CAPABILITY_CPU_EXCEPT,
+    CORE_MACHINE_TIMING_CAPABILITY_CPU_PREFETCH,
+    CORE_MACHINE_TIMING_CAPABILITY_CPU_RETIRE,
+    CORE_MACHINE_TIMING_CAPABILITY_CPU_FPU,
+    CORE_MACHINE_TIMING_CAPABILITY_TIME_CLOCK,
+    CORE_MACHINE_TIMING_CAPABILITY_TIME_LIFECYCLE,
+    CORE_MACHINE_TIMING_CAPABILITY_TXN_MEMORY,
+    CORE_MACHINE_TIMING_CAPABILITY_TXN_PORT,
+    CORE_MACHINE_TIMING_CAPABILITY_TXN_ARBITRATION,
+    CORE_MACHINE_TIMING_CAPABILITY_MEM_RAM_A20_PARITY,
+    CORE_MACHINE_TIMING_CAPABILITY_MEM_ROM_FIRMWARE,
+    CORE_MACHINE_TIMING_CAPABILITY_MACHINE_CONFIG,
+    CORE_MACHINE_TIMING_CAPABILITY_CTRL_PIC,
+    CORE_MACHINE_TIMING_CAPABILITY_CTRL_DMA,
+    CORE_MACHINE_TIMING_CAPABILITY_CTRL_PIT,
+    CORE_MACHINE_TIMING_CAPABILITY_CTRL_RTC_CMOS,
+    CORE_MACHINE_TIMING_CAPABILITY_CTRL_KBC_NMI,
+    CORE_MACHINE_TIMING_CAPABILITY_CTRL_FDC,
+    CORE_MACHINE_TIMING_CAPABILITY_CTRL_HDC,
+    CORE_MACHINE_TIMING_CAPABILITY_MEDIA_BACKING,
+    CORE_MACHINE_TIMING_CAPABILITY_DISPLAY_VADP,
+    CORE_MACHINE_TIMING_CAPABILITY_DISPLAY_PRESENT,
+    CORE_MACHINE_TIMING_CAPABILITY_INPUT_HOST,
+    CORE_MACHINE_TIMING_CAPABILITY_TRACE_DEBUG,
+    CORE_MACHINE_TIMING_CAPABILITY_PLATFORM_MAILBOX,
+    CORE_MACHINE_TIMING_CAPABILITY_PLATFORM_RESOURCE,
+    CORE_MACHINE_TIMING_CAPABILITY_PLATFORM_WAIT,
+    CORE_MACHINE_TIMING_CAPABILITY_SESSION_COMMAND,
+    CORE_MACHINE_TIMING_CAPABILITY_PRODUCT_DEBUG
+} core_machine_timing_capability;
+
+typedef enum core_machine_timing_disposition {
+    CORE_MACHINE_TIMING_DISPOSITION_L2_FALLBACK,
+    CORE_MACHINE_TIMING_DISPOSITION_NON_GUEST_TIME,
+    CORE_MACHINE_TIMING_DISPOSITION_L3_REQUIRED
+} core_machine_timing_disposition;
+
+typedef enum core_machine_timing_seam {
+    CORE_MACHINE_TIMING_SEAM_CPU_PROGRAM,
+    CORE_MACHINE_TIMING_SEAM_RETIREMENT,
+    CORE_MACHINE_TIMING_SEAM_CLOCK,
+    CORE_MACHINE_TIMING_SEAM_LIFECYCLE,
+    CORE_MACHINE_TIMING_SEAM_TRANSACTION,
+    CORE_MACHINE_TIMING_SEAM_MEMORY,
+    CORE_MACHINE_TIMING_SEAM_CONFIGURATION,
+    CORE_MACHINE_TIMING_SEAM_DEVICE,
+    CORE_MACHINE_TIMING_SEAM_OBSERVATION
+} core_machine_timing_seam;
+
+typedef struct core_machine_timing_declaration {
+    core_machine_timing_capability capability;
+    core_machine_timing_disposition disposition;
+    core_machine_timing_seam seam;
+} core_machine_timing_declaration;
+
+typedef struct core_machine_plan {
+    core_machine_config configuration;
+    core_machine_timing_declaration declarations[
+        CORE_MACHINE_TIMING_CAPABILITY_COUNT];
+    STD_SIZE_T declaration_count;
+} core_machine_plan;
+
 typedef struct core_machine_display_port_topology {
     type_unsigned_16 attribute_first;
     type_unsigned_16 attribute_last;
@@ -302,6 +368,17 @@ typedef struct core_machine_timeline_observation {
 type_status core_machine_create(
     const core_machine_config *config,
     core_machine **out_machine);
+
+C_VOID core_machine_plan_initialize(core_machine_plan *out_plan,
+    const core_machine_config *configuration);
+type_status core_machine_create_from_plan(const core_machine_plan *plan,
+    core_machine **out_machine);
+type_status core_machine_get_timing_disposition(const core_machine *machine,
+    core_machine_timing_capability capability,
+    core_machine_timing_disposition *out_disposition);
+type_status core_machine_get_timing_declaration(const core_machine *machine,
+    core_machine_timing_capability capability,
+    core_machine_timing_declaration *out_declaration);
 
 type_status core_machine_reset(core_machine *machine);
 

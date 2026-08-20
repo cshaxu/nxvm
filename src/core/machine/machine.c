@@ -2,6 +2,10 @@
 
 #include "core/machine/machine.h"
 
+_Static_assert(CORE_MACHINE_TIMING_CAPABILITY_PRODUCT_DEBUG + 1u ==
+    CORE_MACHINE_TIMING_CAPABILITY_COUNT,
+    "timing capability count must match the frozen T433 universe");
+
 static C_VOID core_machine_cpu_diagnostic_copy_point(
     core_machine_cpu_execution_point *point, const t_cpu *cpu,
     const t_cpuins *instructions, type_bool fault_origin)
@@ -3398,6 +3402,123 @@ static C_INT core_machine_retirement_time_contract_is_valid(
     return contract == CORE_MACHINE_RETIREMENT_TIME_DETERMINISTIC ||
         contract == CORE_MACHINE_RETIREMENT_TIME_PHYSICAL;
 }
+
+static C_INT core_machine_timing_capability_is_valid(
+    core_machine_timing_capability capability)
+{
+    return capability >= CORE_MACHINE_TIMING_CAPABILITY_CPU_EXEC &&
+        capability <= CORE_MACHINE_TIMING_CAPABILITY_PRODUCT_DEBUG;
+}
+
+static C_INT core_machine_timing_disposition_is_valid(
+    core_machine_timing_disposition disposition)
+{
+    return disposition == CORE_MACHINE_TIMING_DISPOSITION_L2_FALLBACK ||
+        disposition == CORE_MACHINE_TIMING_DISPOSITION_NON_GUEST_TIME ||
+        disposition == CORE_MACHINE_TIMING_DISPOSITION_L3_REQUIRED;
+}
+
+static C_INT core_machine_timing_capability_is_non_guest_time(
+    core_machine_timing_capability capability)
+{
+    return capability == CORE_MACHINE_TIMING_CAPABILITY_DISPLAY_PRESENT ||
+        capability == CORE_MACHINE_TIMING_CAPABILITY_INPUT_HOST ||
+        capability == CORE_MACHINE_TIMING_CAPABILITY_TRACE_DEBUG ||
+        capability == CORE_MACHINE_TIMING_CAPABILITY_PLATFORM_MAILBOX ||
+        capability == CORE_MACHINE_TIMING_CAPABILITY_PLATFORM_RESOURCE ||
+        capability == CORE_MACHINE_TIMING_CAPABILITY_PLATFORM_WAIT ||
+        capability == CORE_MACHINE_TIMING_CAPABILITY_SESSION_COMMAND ||
+        capability == CORE_MACHINE_TIMING_CAPABILITY_PRODUCT_DEBUG;
+}
+
+static core_machine_timing_seam core_machine_timing_capability_seam(
+    core_machine_timing_capability capability)
+{
+    if (capability == CORE_MACHINE_TIMING_CAPABILITY_CPU_RETIRE) {
+        return CORE_MACHINE_TIMING_SEAM_RETIREMENT;
+    }
+    if (capability <= CORE_MACHINE_TIMING_CAPABILITY_CPU_FPU) {
+        return CORE_MACHINE_TIMING_SEAM_CPU_PROGRAM;
+    }
+    if (capability == CORE_MACHINE_TIMING_CAPABILITY_TIME_CLOCK) {
+        return CORE_MACHINE_TIMING_SEAM_CLOCK;
+    }
+    if (capability == CORE_MACHINE_TIMING_CAPABILITY_TIME_LIFECYCLE) {
+        return CORE_MACHINE_TIMING_SEAM_LIFECYCLE;
+    }
+    if (capability <= CORE_MACHINE_TIMING_CAPABILITY_TXN_ARBITRATION) {
+        return CORE_MACHINE_TIMING_SEAM_TRANSACTION;
+    }
+    if (capability <= CORE_MACHINE_TIMING_CAPABILITY_MEM_ROM_FIRMWARE) {
+        return CORE_MACHINE_TIMING_SEAM_MEMORY;
+    }
+    if (capability == CORE_MACHINE_TIMING_CAPABILITY_MACHINE_CONFIG) {
+        return CORE_MACHINE_TIMING_SEAM_CONFIGURATION;
+    }
+    if (capability <= CORE_MACHINE_TIMING_CAPABILITY_DISPLAY_VADP) {
+        return CORE_MACHINE_TIMING_SEAM_DEVICE;
+    }
+    return CORE_MACHINE_TIMING_SEAM_OBSERVATION;
+}
+
+static type_status core_machine_plan_validate(const core_machine_plan *plan)
+{
+    type_bool seen[CORE_MACHINE_TIMING_CAPABILITY_COUNT] = {0};
+    STD_SIZE_T index;
+
+    if (plan == STD_NULL || plan->declaration_count !=
+        CORE_MACHINE_TIMING_CAPABILITY_COUNT) return TYPE_STATUS_INVALID_ARGUMENT;
+    for (index = 0u; index < plan->declaration_count; ++index) {
+        const core_machine_timing_declaration *declaration =
+            &plan->declarations[index];
+
+        if (!core_machine_timing_capability_is_valid(declaration->capability) ||
+            !core_machine_timing_disposition_is_valid(declaration->disposition) ||
+            declaration->seam != core_machine_timing_capability_seam(
+                declaration->capability) || seen[declaration->capability]) {
+            return TYPE_STATUS_INVALID_ARGUMENT;
+        }
+        if (core_machine_timing_capability_is_non_guest_time(
+                declaration->capability)) {
+            if (declaration->disposition !=
+                CORE_MACHINE_TIMING_DISPOSITION_NON_GUEST_TIME) {
+                return TYPE_STATUS_INVALID_ARGUMENT;
+            }
+        } else if (declaration->disposition !=
+            CORE_MACHINE_TIMING_DISPOSITION_L2_FALLBACK) {
+            /* S1 has no registered L3 rule; it must reject such a request. */
+            return TYPE_STATUS_INVALID_ARGUMENT;
+        }
+        seen[declaration->capability] = TYPE_TRUE;
+    }
+    for (index = 0u; index < CORE_MACHINE_TIMING_CAPABILITY_COUNT; ++index) {
+        if (!seen[index]) return TYPE_STATUS_INVALID_ARGUMENT;
+    }
+    return TYPE_STATUS_OK;
+}
+
+C_VOID core_machine_plan_initialize(core_machine_plan *out_plan,
+    const core_machine_config *configuration)
+{
+    STD_SIZE_T index;
+
+    if (out_plan == STD_NULL) return;
+    STD_MEMSET(out_plan, 0, sizeof(*out_plan));
+    if (configuration != STD_NULL) out_plan->configuration = *configuration;
+    out_plan->declaration_count = CORE_MACHINE_TIMING_CAPABILITY_COUNT;
+    for (index = 0u; index < out_plan->declaration_count; ++index) {
+        core_machine_timing_capability capability =
+            (core_machine_timing_capability)index;
+
+        out_plan->declarations[index].capability = capability;
+        out_plan->declarations[index].seam =
+            core_machine_timing_capability_seam(capability);
+        out_plan->declarations[index].disposition =
+            core_machine_timing_capability_is_non_guest_time(capability) ?
+            CORE_MACHINE_TIMING_DISPOSITION_NON_GUEST_TIME :
+            CORE_MACHINE_TIMING_DISPOSITION_L2_FALLBACK;
+    }
+}
 static C_INT core_machine_external_cycle_timing_is_valid(
     const core_machine_external_cycle_timing *timing)
 {
@@ -5168,6 +5289,53 @@ type_status core_machine_create(const core_machine_config *config,
     core_machine **out_machine)
 {
     return core_machine_create_internal(config, out_machine, STD_NULL, STD_NULL);
+}
+
+type_status core_machine_create_from_plan(const core_machine_plan *plan,
+    core_machine **out_machine)
+{
+    type_status status;
+
+    if (out_machine == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    *out_machine = STD_NULL;
+    if (core_machine_plan_validate(plan) != TYPE_STATUS_OK) {
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
+    status = core_machine_create_internal(&plan->configuration, out_machine,
+        STD_NULL, STD_NULL);
+    if (status != TYPE_STATUS_OK) return status;
+    (*out_machine)->timing_plan = *plan;
+    /* Configuration-owned retirement qualification is already copied by
+     * create_internal; the plan copy must retain no caller-owned pointer. */
+    (*out_machine)->timing_plan.configuration.retirement_qualification = STD_NULL;
+    (*out_machine)->timing_plan_copied = TYPE_TRUE;
+    return TYPE_STATUS_OK;
+}
+
+type_status core_machine_get_timing_disposition(const core_machine *machine,
+    core_machine_timing_capability capability,
+    core_machine_timing_disposition *out_disposition)
+{
+    if (machine == STD_NULL || out_disposition == STD_NULL ||
+        !machine->timing_plan_copied ||
+        !core_machine_timing_capability_is_valid(capability)) {
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
+    *out_disposition = machine->timing_plan.declarations[capability].disposition;
+    return TYPE_STATUS_OK;
+}
+
+type_status core_machine_get_timing_declaration(const core_machine *machine,
+    core_machine_timing_capability capability,
+    core_machine_timing_declaration *out_declaration)
+{
+    if (machine == STD_NULL || out_declaration == STD_NULL ||
+        !machine->timing_plan_copied ||
+        !core_machine_timing_capability_is_valid(capability)) {
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
+    *out_declaration = machine->timing_plan.declarations[capability];
+    return TYPE_STATUS_OK;
 }
 
 type_status core_machine_create_with_test_memory_allocation(

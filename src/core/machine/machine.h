@@ -89,6 +89,8 @@ struct core_machine {
     type_unsigned_32 fault_detail;
     type_unsigned_64 elapsed_ticks;
     core_machine_timeline timeline;
+    core_machine_plan timing_plan;
+    type_bool timing_plan_copied;
     core_machine_transaction_state transaction;
     core_machine_instruction_timing instruction_timing;
     core_machine_external_cycle_timing external_cycle_timing;

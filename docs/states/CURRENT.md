@@ -2,7 +2,28 @@
 
 ## Current Work
 
-**Idle.**
+**Active: M5 T434 S1.**
+
+## M5 T434 S1 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New; T434 is the first queued Core timing-contract candidate and S1 consumes B1 of the Td S117 convergence ledger. |
+| Admission And Approval | Owner objective in this conversation: implement the complete Core timing-plan internal integration and interface construction. Owner accepted Td S120's soft code-size governance before this admission. |
+| Objective | Implement the neutral copied Core machine plan, validation and all 30 capability declaration seams, with plan-aware Core construction and focused low-level proof; production remains on its existing sole publisher until B2. |
+| Non-goals | Do not migrate a VM production publisher, retain a temporary second production publisher, implement L3 formulas/scalars, add profile names/callback algorithms to Core, alter Queue order, model L4, or claim T434 closure. |
+| Reference Baseline | `f0e145d6`; T434 proposal; Td S117 convergence ledger; T433 S7 source-sufficiency ledger; current Core machine/configuration source. |
+| Candidate Proposal | [Core timing contract and machine plan](../proposals/m5-core-timing-contract-machine-plan.md). |
+| Files And ABI Surface | Expected Core machine public/private headers and source, focused Core tests/build registration, T434 S1 evidence and current status. Public Core plan API is an intended ABI addition; no VM/profile/public-product behavior change in S1. |
+| Applicable Rules | `docs/README.md` Task Reading Set; `docs/rules/EXECUTION.md`; `docs/rules/ARCHITECTURE.md`; `docs/rules/CODING.md`; `docs/rules/DOCUMENT.md` at closure; Core architecture/source-layout authorities; T433 S7 and Td S117. |
+| Verification | Prove all 30 frozen IDs declare exactly one L2/NGT/required-L3 disposition through copied plan data; valid plans copy and construct; missing/duplicate/invalid and required-unavailable-L3 plans fail before publication; existing low-level configuration creation remains behaviorally unchanged; plan lifecycle/reset/trace declarations are observable. Run focused tests, applicable build/gates, 30-ID equality, code actual-delta report, documentation governance and `git diff --check`. |
+| Expected Markers | `M5:T434:S1:PLAN-DECLARATIONS:OK`; `M5:T434:S1:PLAN-VALIDATION:OK`; `M5:T434:S1:PLAN-COPY:OK`. |
+| Asset Needs | No protected assets, firmware/media, downloads or source import. |
+| Reporting Requirements | Report actual added/removed/net code lines and method; explain any material positive increase; report each retained obsolete path or removal; identify the future B2 publisher migration boundary. |
+| Stop Conditions | Stop for a required capability outside the frozen 30-ID universe, an unresolved Core/VM ownership contradiction, a need for VM production cutover to make B1 meaningful, an ABI conflict, or a plan representation that cannot provide exactly one disposition per ID. |
+| Exit Criteria | One copied validated plan represents every frozen declaration seam and rejects invalid/required-unavailable-L3 input atomically; low-level proof covers copy, dispositions, lifecycle/observation declarations and failures; no production publisher is added; evidence maps all 30 rows; applicable checks pass and S1 P is pushed. |
+| Original Owner Request | Begin and fully implement the Core timing plan internal integration and interface construction, while preventing incomplete consumer seams and preserving maintainable code. |
+| Similar-Issue Sweep | Inspect all `core_machine_config` creation and Core configure/constructor paths, public Core callers, plan-like existing declarations, and focused tests for a duplicated plan, undeclared capability, hidden fallback, copied-lifetime gap or second creation seam. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T432 S1 `vm-0-5-0432` / `build/output/nxvm_0_5_0432.exe`, SHA-256 `F29A7DF2BA6F43D2A7E1B4C9AABCD634123E4E57F92226796B5734B4A71C413C`. T432 separates KBC delayed Set-2 translation from native break typematic cancellation, fixing stuck keys in Model-339 Console and Window sessions.
