@@ -1,0 +1,16 @@
+# CPU Timing Evidence Ledgers
+
+This indexed subtree holds the evidence-first inputs for the queued CPU timing
+program.  It is not a timing authority: Intel manuals remain primary, and a
+third-party emulator is a non-imported, version-pinned L2 candidate only.
+
+Each profile block contains a corpus manifest, an exhaustive successful-
+retirement form/context ledger, and a reference-model assessment.  A ledger
+must state whether its manual gives an exact value, formula, range,
+principle-only information, or no timing information.  It must then state a
+single proposed L3/L2/L1 outcome.  An L1 row is explicit and never represented
+by a silent one-tick default.
+
+T435 S1 block 1 is the 8086 material in
+[the 8086 ledger](t435-s1-8086-ledger.md).  Blocks 2--4 are intentionally not
+started until owner review of that record.

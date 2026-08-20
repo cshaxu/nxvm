@@ -2,7 +2,28 @@
 
 ## Current Work
 
-**Idle.**
+**Active: M5 T435 S1, block 1 of 4 (8086 evidence and model ledger).**
+
+## M5 T435 S1 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New; T434 is task-level closed. S1 has four owner review blocks: 8086, 80186, 80286, and 80386. This admitted first delivery is 8086 only; S1 remains active until the owner accepts each block and the complete four-profile ledger is reconciled. |
+| Admission And Approval | Owner approval in this conversation on 2026-08-20: collect and read authoritative manuals in the approved external archive, account every instruction, research simulator models where L3 is incomplete, and use the stated L3/L2/L1 ladder. The owner explicitly requires review after block 1 before block 2. |
+| Objective | Create the complete 8086 successful-retirement manual/reference/model ledger for every legal current 8086 instruction form and context; classify each rule as manual exact/formula/range/principle-only/no timing, then select a labelled L3/L2/L1 disposition under Td S121 without changing runtime code. |
+| Non-goals | Do not begin 80186/80286/80386 ledger blocks, change an instruction implementation or timing value, treat emulator code as L3 authority, import third-party source, infer board/device waits, model L4, or close S1/T435 after the 8086 review. |
+| Reference Baseline | [CPU timing proposal](../proposals/m5-core-cpu-instruction-timing-program.md); [Td S121](../etc/evidence/td-s121-cpu-timing-evidence-first-governance.md); [T359 8086 inventory](../etc/evidence/t359-s1-four-profile-instruction-timing-inventory.md); [T360 source closure](../etc/evidence/t360-s5-four-profile-timing-source-closure-audit.md); and the user-approved external historical-manual archive. |
+| Candidate Proposal | [Core CPU instruction timing programs](../proposals/m5-core-cpu-instruction-timing-program.md). |
+| Files And ABI Surface | `docs/etc/cpu-timing/` 8086 research/ledger documents, `docs/etc/README.md`, `docs/states/CURRENT.md`, and accepted Td S121 governance material only. No `src/`, public ABI, build target, artifact or runtime behavior change. |
+| Applicable Rules | Task Reading Set; Execution coverage-ledger/P-review lifecycle and code-size reporting (documentation-only: no counted code paths); Documentation supporting-index authority; Source/research policy; Architecture source/dependency boundary; Td S121 L3/L2/L1 ladder. |
+| Verification | Archive permitted manual research inputs in the approved external archive; record publisher/edition/URL/hash and exact loci; reconcile every legal 8086 current metadata/dispatch form against the manual; inspect version-pinned 86Box, MAME, PCjs and Bochs timing implementations as non-imported L2 candidates; prove every form/context has one disposition and no anonymous one-tick outcome; documentation governance and diff checks pass. |
+| Expected Markers | `M5:T435:S1:8086-MANUALS:OK`, `M5:T435:S1:8086-FORM-LEDGER:OK`, and `M5:T435:S1:8086-L2-MODEL-REVIEW:OK` only when the corresponding complete 8086 records are present. |
+| Asset Needs | Owner-authorized external research archive for historical manuals only; do not commit copyrighted manuals, third-party source, firmware, guest media, local paths or raw copied code into the repository. Repository evidence records neutral citations, hashes and conclusions only. |
+| Reporting Requirements | Report manual archive identity, each complete 8086 family disposition, every consulted simulator revision/model, manual conflict/correction, L1 exception if any, and the owner review gate before 80186. Commit/push every completed P by default. |
+| Stop Conditions | Stop before advancing to 80186 if an 8086 form cannot be mapped to manual/research evidence, a manual cannot be lawfully/reproducibly archived, a model conflicts with manual semantics without an explainable correction, or a purported L2 collapses to anonymous one tick. Record the exact blocker in the 8086 ledger and request owner review; do not paper over it with L1. |
+| Exit Criteria | One owner-reviewable pushed 8086 evidence/model ledger covers every current legal 8086 successful-retirement form/context, records manual status and exact loci, evaluates available reference models, gives each row a proposed labelled L3/L2/L1 disposition with rationale, and leaves T435 S1 active awaiting owner review. |
+| Original Owner Request | Collect authoritative manuals and account every instruction; for a row without exact/formula timing, establish L2 from manual-conforming emulator modelling or a fixed range midpoint, and use L1 only when neither model nor range exists. T435 S1 has four blocks; implement and review 8086 before 80186. |
+| Similar-Issue Sweep | Compare 8086 metadata, primary dispatch, prefix legality, Group opcode extensions, current timing classifiers and tests; sweep 86Box, MAME, PCjs and Bochs for every 8086 timing table/model rather than relying on one implementation or one dynamic-arithmetic example. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** target `vm-0-5-0434`; T434 S2 `nxvm_0_5_0434.exe` / `build/output/nxvm_0_5_0434.exe`, SHA-256 `0252F8FDA17BEC2131606F19E3547B46894AC6B56DD37EC3B16BD302494FAFDC`. T434 has one copied Core timing-plan publication route for default PC/AT, IBM 5170 Model 339 and Model-40 BYOB session composition.
@@ -38,6 +59,8 @@
 
 
 ## Recent Governance
+
+- **M5 Td S121 P1:** bound the queued CPU timing program to complete 8086/80186 evidence/model research before implementation audit, then finite repair and closure; manual/reference-derived models are labelled L2, only an exhausted ladder may declare L1, and no emulator model lowers the L3 source threshold. T435 remains unallocated.
 
 - **M5 Td S120 P1:** changed code-size restraint from a hard numerical admission/closure gate to a soft concise-design goal; actual-delta reporting, explanation and obsolete-path retirement/disposition remain mandatory. T434 remains unallocated.
 
