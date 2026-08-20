@@ -2,28 +2,28 @@
 
 ## Current Work
 
-**Active: M5 T435 S2, block 3 of 4 (80286 manifest audit and tracker).**
+**Active: M5 T435 S2, block 4 of 4 (80386DX manifest audit and tracker).**
 
 ## M5 T435 S2 Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation; block 3 of 4 after the completed 80186 tracker delivery. |
-| Admission And Approval | Owner approval in this conversation on 2026-08-20: make 80286 meet the same closure-safe tracker standard as 8086 and 80186. |
-| Objective | Produce a per-key 80286 manifest, current-state audit, batch order and closure evidence usable by later 80286 L3 timing implementation. |
-| Non-goals | Do not change runtime timing, re-decide S1 evidence, audit 80386, or close T435. |
-| Reference Baseline | [T435 proposal](../proposals/m5-core-cpu-instruction-timing-program.md); [Td S121](../etc/evidence/td-s121-cpu-timing-evidence-first-governance.md); [Td S122](../etc/evidence/td-s122-cpu-timing-manifest-governance.md); accepted [80286 ledger](../etc/cpu-timing/t435-s1-80286-ledger.md); completed 8086/80186 tracker architecture. |
+| Identifier Mode | Continuation; block 4 of 4 after the completed 80286 tracker delivery. |
+| Admission And Approval | Owner approval in this conversation on 2026-08-20: make 80386DX meet the same closure-safe tracker standard as 8086, 80186 and 80286. |
+| Objective | Produce a per-key 80386DX manifest, current-state audit, batch order and closure evidence usable by later 80386DX L3 timing implementation. |
+| Non-goals | Do not change runtime timing, re-decide S1 evidence, or close T435. |
+| Reference Baseline | [T435 proposal](../proposals/m5-core-cpu-instruction-timing-program.md); [Td S121](../etc/evidence/td-s121-cpu-timing-evidence-first-governance.md); [Td S122](../etc/evidence/td-s122-cpu-timing-manifest-governance.md); accepted [80386 ledger](../etc/cpu-timing/t435-s1-80386-ledger.md); completed earlier-profile tracker architecture. |
 | Candidate Proposal | [Core CPU instruction timing programs](../proposals/m5-core-cpu-instruction-timing-program.md). |
 | Files And ABI Surface | `docs/etc/cpu-timing/`, `tools/`, `docs/states/CURRENT.md` and tracker verification records only; no runtime or public ABI change. |
 | Applicable Rules | Task Reading Set; execution coverage ledger; documentation rules; Td S121 evidence and Td S122 manifest contract. |
-| Verification | Reconcile every 80286 key/count to S1, inspect decoder/primary/secondary/privileged/control/fallback/string paths, run the manifest verifier, documentation governance and diff checks. |
-| Expected Markers | `M5:T435:S2:80286-MANIFEST-TRACKER:OK`; `M5:T435:S2:80286-MANIFEST-CLOSURE-PLAN:OK`. |
+| Verification | Reconcile every 80386DX key/count to S1, inspect decoder/primary/secondary/privileged/control/fallback/string paths, run the manifest verifier, documentation governance and diff checks. |
+| Expected Markers | `M5:T435:S2:80386-MANIFEST-TRACKER:OK`; `M5:T435:S2:80386-MANIFEST-CLOSURE-PLAN:OK`. |
 | Asset Needs | Existing ledger, audit and source only; no import or external asset. |
 | Reporting Requirements | Report every key class, current disposition, batch/test owner, closure predicate and residual blocker; commit/push by default. |
-| Stop Conditions | Stop if a key lacks S1 evidence, manifest expansion is not finite, an 80286 protected-mode/path formula is not representable, or implementation would require runtime change in this audit P. |
-| Exit Criteria | One pushed S2 P contains the closure-safe 80286 tracker and proves every later L3 implementation key has a unique source rule, current disposition, batch and regression identity. |
-| Original Owner Request | Make 80286 meet the same standard as 8086 and 80186 so later implementation does not leave unfinished L3 timing work. |
-| Similar-Issue Sweep | Include inherited and 80286-only forms, real/protected paths, privilege/task/gate paths, prefixes, EA, odd word, next-instruction-byte terms, repeat phases, branch outcomes, selectors, fallback and retirement observation. |
+| Stop Conditions | Stop if a key lacks S1 evidence, manifest expansion is not finite, an 80386DX formula/path is not representable, or implementation would require runtime change in this audit P. |
+| Exit Criteria | One pushed S2 P contains the closure-safe 80386DX tracker and proves every later L3 implementation key has a unique source rule, current disposition, batch and regression identity. |
+| Original Owner Request | Make 80386DX meet the same standard as the prior three profiles so later implementation does not leave unfinished L3 timing work. |
+| Similar-Issue Sweep | Include compatible and 80386-only forms, operand/address sizes, real/protected/VM86 paths, privilege/task/gate paths, prefixes, r/m, repeat phases, branch outcomes, dynamic multiply inputs, selectors, fallback and retirement observation. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** target `vm-0-5-0434`; T434 S2 `nxvm_0_5_0434.exe` / `build/output/nxvm_0_5_0434.exe`, SHA-256 `0252F8FDA17BEC2131606F19E3547B46894AC6B56DD37EC3B16BD302494FAFDC`. T434 has one copied Core timing-plan publication route for default PC/AT, IBM 5170 Model 339 and Model-40 BYOB session composition.

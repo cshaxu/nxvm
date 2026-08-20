@@ -1,0 +1,23 @@
+# T435 S2 - 80386DX Timing Implementation Audit
+
+The [80386DX manifest](t435-s2-80386-timing-manifest.json) maps the accepted
+[Intel ledger](t435-s1-80386-ledger.md) into 407 all-L3 base keys. The current
+route is `string -> dynamic multiply -> secondary -> privileged -> primary ->
+control-stack -> 80386 fallback -> unallocated -> retirement observation` in
+`src/core/machine/machine.c`.
+
+Static inspection confirms dedicated secondary selectors for Jcc, bit,
+shift-double, MOVSX/MOVZX and BSF/BSR; a dedicated privileged selector for
+system/CR/DR/TR rows; and an owned early-out multiply implementation. Those
+routes do not constitute per-key proof. The strict initial audit is zero
+conforming: 234 keys lack a focused result, while 173 dynamic/path/privilege
+keys lack one or more normalized inputs. No L2 or L1 is permitted by S1.
+
+The manifest also generates size, repeat-phase and multiplier contexts. B0
+replaces parallel successful selectors with one publisher; B1 maps every
+Chapter-17 constant/formula; B3 publishes r/m, size, mode, path, next-component,
+repeat and multiplier inputs; B4 requires a result per key and removes any
+successful unallocated route. READY/HOLD, bus lock arbitration, device waits
+and event delivery remain outside this retirement program.
+
+Markers: `M5:T435:S2:80386-IMPLEMENTATION-AUDIT:OK`.

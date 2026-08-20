@@ -39,3 +39,5 @@ The active 80286 S2 block records its all-L3 universe in the
 [80286 manifest](t435-s2-80286-timing-manifest.json),
 [audit](t435-s2-80286-implementation-audit.md), and
 [implementation tracker](t435-s2-80286-implementation-tracker.md).
+
+The active final profile block uses the [80386DX manifest](t435-s2-80386-timing-manifest.json), [audit](t435-s2-80386-implementation-audit.md), and [tracker](t435-s2-80386-implementation-tracker.md).
