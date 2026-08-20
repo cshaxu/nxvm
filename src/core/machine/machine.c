@@ -3497,6 +3497,21 @@ static type_status core_machine_plan_validate(const core_machine_plan *plan)
     return TYPE_STATUS_OK;
 }
 
+static const core_machine_timing_declaration *
+core_machine_plan_declaration_find(const core_machine_plan *plan,
+    core_machine_timing_capability capability)
+{
+    STD_SIZE_T index;
+
+    if (plan == STD_NULL) return STD_NULL;
+    for (index = 0u; index < plan->declaration_count; ++index) {
+        if (plan->declarations[index].capability == capability) {
+            return &plan->declarations[index];
+        }
+    }
+    return STD_NULL;
+}
+
 C_VOID core_machine_plan_initialize(core_machine_plan *out_plan,
     const core_machine_config *configuration)
 {
@@ -5316,12 +5331,17 @@ type_status core_machine_get_timing_disposition(const core_machine *machine,
     core_machine_timing_capability capability,
     core_machine_timing_disposition *out_disposition)
 {
+    const core_machine_timing_declaration *declaration;
+
     if (machine == STD_NULL || out_disposition == STD_NULL ||
         !machine->timing_plan_copied ||
         !core_machine_timing_capability_is_valid(capability)) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
-    *out_disposition = machine->timing_plan.declarations[capability].disposition;
+    declaration = core_machine_plan_declaration_find(&machine->timing_plan,
+        capability);
+    if (declaration == STD_NULL) return TYPE_STATUS_INVALID_STATE;
+    *out_disposition = declaration->disposition;
     return TYPE_STATUS_OK;
 }
 
@@ -5334,7 +5354,13 @@ type_status core_machine_get_timing_declaration(const core_machine *machine,
         !core_machine_timing_capability_is_valid(capability)) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
-    *out_declaration = machine->timing_plan.declarations[capability];
+    {
+        const core_machine_timing_declaration *declaration =
+            core_machine_plan_declaration_find(&machine->timing_plan, capability);
+
+        if (declaration == STD_NULL) return TYPE_STATUS_INVALID_STATE;
+        *out_declaration = *declaration;
+    }
     return TYPE_STATUS_OK;
 }
 

@@ -66,7 +66,8 @@ rather than silently downgraded.
 The focused `core-machine-plan-smoke` was compiled from current source and
 passed.  It proves default mapping, copied lifetime after caller mutation,
 duplicate/missing declaration rejection, unavailable required-L3 rejection,
-invalid NGT disposition rejection, and invalid seam rejection.  The existing
+invalid NGT disposition rejection, invalid seam rejection, and a valid
+reordered declaration table whose lookup remains capability-correct.  The existing
 `core-machine-ram-create-smoke` was compiled from the same current source and
 passed, preserving direct-config creation during this pre-cutover batch.
 

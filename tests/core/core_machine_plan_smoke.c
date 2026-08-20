@@ -7,6 +7,7 @@ static C_INT plan_default_and_copy(C_VOID)
     core_machine_config configuration = { .memory_bytes =
         CORE_MACHINE_MINIMUM_MEMORY_BYTES };
     core_machine_plan plan;
+    core_machine_timing_declaration temporary;
     core_machine *machine = STD_NULL;
     core_machine_timing_declaration declaration;
     core_machine_timing_disposition disposition;
@@ -20,6 +21,10 @@ static C_INT plan_default_and_copy(C_VOID)
         CORE_MACHINE_TIMING_DISPOSITION_NON_GUEST_TIME;
     failed |= plan.declarations[CORE_MACHINE_TIMING_CAPABILITY_CTRL_PIT].seam !=
         CORE_MACHINE_TIMING_SEAM_DEVICE;
+    temporary = plan.declarations[CORE_MACHINE_TIMING_CAPABILITY_CPU_EXEC];
+    plan.declarations[CORE_MACHINE_TIMING_CAPABILITY_CPU_EXEC] =
+        plan.declarations[CORE_MACHINE_TIMING_CAPABILITY_CPU_EXCEPT];
+    plan.declarations[CORE_MACHINE_TIMING_CAPABILITY_CPU_EXCEPT] = temporary;
     failed |= core_machine_create_from_plan(&plan, &machine) != TYPE_STATUS_OK ||
         machine == STD_NULL;
     plan.declarations[CORE_MACHINE_TIMING_CAPABILITY_CPU_EXEC].disposition =
