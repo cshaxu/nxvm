@@ -80,9 +80,9 @@ current-source compile above is retained as the focused proof.
 
 ## Code-size and retirement review
 
-The implementation diff is `+324/-0` machine-readable lines: `+168/-0` in
+The implementation diff is `+361/-0` machine-readable lines: `+194/-0` in
 `machine.c`, `+77/-0` in `machine_interface.h`, `+2/-0` in `machine.h`,
-`+73/-0` for the focused smoke and `+4/-0` for its CMake registration.  The
+`+84/-0` for the focused smoke and `+4/-0` for its CMake registration.  The
 count is `git diff --numstat` for tracked paths plus `Measure-Object -Line` for
 the new smoke.  The positive change is material because the 30 frozen entries,
 their exact seam map, copied-state validation and negative cases did not exist
