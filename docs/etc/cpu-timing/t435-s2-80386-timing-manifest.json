@@ -22,8 +22,8 @@
   ],
   "context_policy":"r/m, operand/address size, real/PM/VM86, privilege/path, multiplier, next-component and REP phase are canonical axes; no redundant prefix byte streams or external-event time is generated.",
   "context_key_sets":[
-    {"id_suffix":"SIZE16","base_selector":"I386-.*","source_rule":"Ch.17 operand/address-size context","route":"mixed","status":"missing-input","batch":"B3+B4","test":"i386_timing_{id}"},
-    {"id_suffix":"SIZE32","base_selector":"I386-.*","source_rule":"Ch.17 operand/address-size context","route":"mixed","status":"missing-input","batch":"B3+B4","test":"i386_timing_{id}"},
+    {"id_suffix":"SIZE16","base_selector":"I386-(ALU|INC|DEC|NEG|NOT|XCHG|MUL|IMUL|DIV|IDIV|ROL|ROR|RCL|RCR|SHL|SHR|SAR|SHLD|SHRD|MOV|STACK|CALL|JMP|RET|IRET|JCC|BSF|BSR|BT|BTC|BTR|BTS)-.*","source_rule":"Ch.17 operand/address-size context","route":"mixed","status":"missing-input","batch":"B3+B4","test":"i386_timing_{id}"},
+    {"id_suffix":"SIZE32","base_selector":"I386-(ALU|INC|DEC|NEG|NOT|XCHG|MUL|IMUL|DIV|IDIV|ROL|ROR|RCL|RCR|SHL|SHR|SAR|SHLD|SHRD|MOV|STACK|CALL|JMP|RET|IRET|JCC|BSF|BSR|BT|BTC|BTR|BTS)-.*","source_rule":"Ch.17 operand/address-size context","route":"mixed","status":"missing-input","batch":"B3+B4","test":"i386_timing_{id}"},
     {"id_suffix":"REP-PHASE-{phase}","base_selector":"I386-REP-.*","phase":["FIRST","CONTINUE","ZERO"],"source_rule":"Ch.17 n/termination formula","route":"string-io","status":"missing-test","batch":"B0+B3+B4","test":"i386_timing_{id}"},
     {"id_suffix":"MULTIPLIER-{kind}","base_selector":"I386-(MUL|IMUL1|IMUL2|IMUL3)-.*","kind":["ZERO","LOW","HIGH","MEMORY"],"source_rule":"Ch.17 early-out formula inputs","route":"80386-dynamic-multiply","status":"missing-input","batch":"B0+B3+B4","test":"i386_timing_{id}"}
   ]
