@@ -2,31 +2,28 @@
 
 ## Current Work
 
-**Active: M5 Td S122 (CPU timing closure-manifest governance).**
+**Active: M5 T435 S2, block 1 of 4 (8086 manifest audit and tracker).**
 
-**Suspended: M5 T435 S2, block 1 of 4.** Owner authorized this Td on
-2026-08-20 before any 8086 timing implementation; it resumes after Td S122.
-
-## M5 Td S122 Packet
+## M5 T435 S2 Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Governance; Td S122. |
-| Admission And Approval | Owner approval in this conversation on 2026-08-20: start the final governance pass required to turn T435 CPU timing trackers into closure-safe manifests. |
-| Objective | Establish the mandatory manifest, generator, result and verifier contract that prevents a CPU timing form/context from being hidden by a family summary or representative smoke. |
-| Non-goals | Do not change runtime timing, manual evidence, L3/L2 values, ABI, queue order, or admit 80186 implementation. |
-| Reference Baseline | [T435 proposal](../proposals/m5-core-cpu-instruction-timing-program.md); [Td S121](../etc/evidence/td-s121-cpu-timing-evidence-first-governance.md); suspended T435 S2 records. |
+| Identifier Mode | Continuation; T435 S2 resumes after completed Td S122. |
+| Admission And Approval | Owner approval in this conversation on 2026-08-20: make and commit the concrete 8086 S2 tracker so later implementation can close every L3/L2 key. |
+| Objective | Replace the template-only 8086 tracker with a per-key manifest layout, current-state audit fields, batch order and closure evidence usable by later 8086 timing implementation. |
+| Non-goals | Do not change runtime timing, re-decide S1 evidence, audit another CPU profile, or close T435. |
+| Reference Baseline | [T435 proposal](../proposals/m5-core-cpu-instruction-timing-program.md); [Td S121](../etc/evidence/td-s121-cpu-timing-evidence-first-governance.md); [Td S122](../etc/evidence/td-s122-cpu-timing-manifest-governance.md); accepted 8086 ledger and S2 audit. |
 | Candidate Proposal | [Core CPU instruction timing programs](../proposals/m5-core-cpu-instruction-timing-program.md). |
-| Files And ABI Surface | Governance evidence, CPU timing indexes/trackers and `CURRENT.md` only; no runtime or public interface change. |
-| Applicable Rules | Task Reading Set; Execution governance; Documentation rules; source boundary; Td S121. |
-| Verification | Review manifest contract against every T435 closure requirement; run documentation governance and diff checks. |
-| Expected Markers | `M5:Td:S122:CPU-TIMING-CLOSURE-MANIFEST:OK`; `M5:Td:S122:CPU-TIMING-TRACKER-NO-SUMMARY-CLOSURE:OK`. |
-| Asset Needs | Existing documentation and source tree only; no import or external asset. |
-| Reporting Requirements | Record concrete manifest fields, generator/verifier failures, batch/profile/T closure predicates and resumption condition; commit/push by default. |
-| Stop Conditions | Stop if the contract would alter manual evidence, declare a new timing value, require source import, or cannot preserve one active subtask. |
-| Exit Criteria | One pushed Td evidence record makes a machine-readable per-key manifest and verifier mandatory for all T435 profiles, with 8086 as first application and no summary-only closure. |
-| Original Owner Request | Create the final Td so the CPU tracker can guarantee complete L3/L2 closure without task handoff gaps. |
-| Similar-Issue Sweep | Apply the contract to all four T435 profiles, every context axis, current/future tests, batch closure and final T435 closure; reject parallel trackers. |
+| Files And ABI Surface | `docs/etc/cpu-timing/`, `docs/states/CURRENT.md` and tracker verification records only; no runtime or public ABI change. |
+| Applicable Rules | Task Reading Set; execution coverage ledger; documentation rules; Td S121 evidence and Td S122 manifest contract. |
+| Verification | Reconcile tracker coverage/counts to S1 and S2, inspect every current selector category, run documentation governance and diff checks. |
+| Expected Markers | `M5:T435:S2:8086-MANIFEST-TRACKER:OK`; `M5:T435:S2:8086-MANIFEST-CLOSURE-PLAN:OK`. |
+| Asset Needs | Existing ledger, audit and source only; no import or external asset. |
+| Reporting Requirements | Report every key class, current disposition, batch/test owner, closure predicate and residual blocker; commit/push by default. |
+| Stop Conditions | Stop if a key lacks S1 evidence, manifest expansion is not finite, or implementation would require runtime change in this audit P. |
+| Exit Criteria | One pushed S2 P contains the closure-safe 8086 tracker and proves every later L3/L2 implementation key has a unique source rule, current disposition, batch and regression identity. |
+| Original Owner Request | In S2, make a tracker clear enough to close every instruction's function and timing at L3/L2 one by one. |
+| Similar-Issue Sweep | Include base forms, prefixes, EA, odd word, repeat phases, branch outcomes, L2 partitions, selectors, fallback and retirement observation. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** target `vm-0-5-0434`; T434 S2 `nxvm_0_5_0434.exe` / `build/output/nxvm_0_5_0434.exe`, SHA-256 `0252F8FDA17BEC2131606F19E3547B46894AC6B56DD37EC3B16BD302494FAFDC`. T434 has one copied Core timing-plan publication route for default PC/AT, IBM 5170 Model 339 and Model-40 BYOB session composition.
