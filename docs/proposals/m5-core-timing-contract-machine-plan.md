@@ -18,6 +18,10 @@ and consumes the earliest T433 S6 receiver batch:
 The [T433 S7 source-sufficiency ledger](../etc/evidence/t433-s7-core-source-sufficiency-ledger.md)
 is a mandatory admission qualifier: the plan may represent and reject partial
 or absent rules, but may not manufacture a profile timing value or Core rule.
+The [Td S117 convergence ledger](../etc/evidence/td-s117-t434-timing-plan-convergence-ledger.md)
+is the mandatory implementation baseline: its 30-row seam/disposition table,
+three-family materialization inventory, two bounded implementation batches and
+mechanical closure checks are part of this candidate's completion standard.
 It creates registration, validation, copied lifetime and explicit L2-exception
 support only; later candidates implement their assigned timing rules through
 this boundary and may not redefine the shared L3 or Core/VM contract.
@@ -115,6 +119,11 @@ Task closure requires the complete consumer-seam inventory above, one
 production plan path, and a disposition for every current public capability.
 It is not sufficient to publish an interface, perform a later integration
 audit, or transfer unconnected consumers to a downstream task.
+The Td S117 ledger fixes the current product inventory to default PC/AT, IBM
+5170 Model 339 and private BYOB Model-40 session materializers.  All three
+must use the one plan-only publication entry in the same cutover; neither an
+unmigrated private composition nor a temporary compatibility publisher is an
+acceptable exception.
 
 T434 is ineligible to close if any of these conditions remains true:
 
@@ -137,3 +146,4 @@ whose required capability has not been reconciled by the first candidate.
 
 `M5:Td:S115:TIMING-PLAN-CLOSURE:OK`
 `M5:Td:S116:TIMING-PLAN-BLOCKERS:OK`
+`M5:Td:S117:TIMING-PLAN-CONVERGENCE:OK`
