@@ -30,16 +30,11 @@ The concrete source tree and naming map is
   duplicate side path. Separate code needs a real semantic, layout, lifetime,
   or platform difference. Prefer a bounded owner-local helper to a broad
   framework when it expresses the complete shared contract.
-- Treat new code as a cost that needs a named responsibility. Prefer deletion,
-  consolidation, a narrower existing boundary, or a cohesive replacement over
-  accumulating wrappers, compatibility paths and parallel implementations.
-- When a change replaces a mechanism, remove the obsolete implementation,
-  forwarding layer, unused state and tests which only prove the retired path
-  in the same task. A retained old path needs a concrete live caller and
-  behavioral reason in that task's evidence; "future cleanup" is not enough.
-- Follow the execution rule's measured code-size budget. A positive net code
-  delta is neither self-justifying nor a substitute for cohesion: it needs the
-  packet's prior owner-approved maximum and final actual-delta report.
+- Treat new code as a cost with a named responsibility; prefer deletion,
+  consolidation or an existing narrow boundary over wrappers and parallel paths.
+- A replacement removes its obsolete implementation, forwarding layer and
+  retired-path tests in the same task, unless evidence names a live caller and
+  behavioral reason. Follow the execution rule's approved code-size budget.
 
 ## Test Boundaries
 

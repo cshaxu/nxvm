@@ -139,25 +139,15 @@ the admitted objective and non-goals. A revision that expands scope, risk,
 authority, or exit criteria requires renewed owner approval before work
 continues.
 
-**Code-size budget and cleanup.** Every S which changes code, tests, build
-logic, or generated-source inputs declares in its packet a reproducible
-line-count baseline and its counted paths before editing.  Count tracked
-machine-readable source and tests in the approved changed surface; exclude
-documentation, generated build trees, binaries, traces and other artifacts.
-The default allowed net code delta is **zero or negative**.  A positive net
-delta is permitted only when the owner has approved, in the packet before the
-change, a numerical maximum and the named necessity which cannot be met by
-removal, consolidation or an existing boundary.
-
-Before closure, the executor records added, removed and net counted lines for
-the actual diff, together with the command or method used.  It also removes
-obsolete, superseded, duplicate or now-unreachable code in the changed
-mechanism, or records each retained instance and why it remains live.  Actual
-positive net code above the approved maximum, a missing pre-change approval,
-or an unexplained retained obsolete path blocks the S until the owner approves
-a revised packet; it cannot be labelled cleanup for a later task.  This budget
-does not authorize unrelated deletion or override behavioral, source, test or
-architecture obligations.
+**Code-size budget and cleanup.** A code-changing S declares a reproducible
+baseline and counted tracked source/test paths before editing; documentation
+and generated/artifact paths are excluded. The default net delta is **zero or
+negative**. Positive net code needs prior owner approval in the packet of a
+numerical cap and necessity. At closure, report added, removed and net lines
+with the method; remove obsolete/duplicate/unreachable code in the changed
+mechanism, or name each live retained path and reason. Missing prior approval,
+an over-cap actual delta, or an unexplained retained obsolete path blocks
+closure pending an owner-approved packet revision.
 
 The S brief is the task-specific delivery instruction recorded in the active
 packet, not an independent contract. A coordinator message may reproduce or
