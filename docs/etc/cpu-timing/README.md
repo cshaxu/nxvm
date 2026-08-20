@@ -27,3 +27,10 @@ before any 8086 timing repair begins.
 The admitted [8086 manifest](t435-s2-8086-timing-manifest.json) is that
 machine-readable source; its templates expand exactly 228 L3 and 16 L2 base
 keys before context expansion.
+
+The active 80186 S2 block applies the same contract through the
+[80186 manifest](t435-s2-80186-timing-manifest.json), its
+[implementation audit](t435-s2-80186-implementation-audit.md), and its
+[implementation tracker](t435-s2-80186-implementation-tracker.md).  Its
+templates expand 256 L3 and 25 explicit fixed-midpoint L2 base keys; legal
+context axes are generated from the manifest rather than left as prose.
