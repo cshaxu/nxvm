@@ -41,5 +41,19 @@
     {"id_suffix":"LOCK","base_selector":"all","source_rule":"S1:LOCK +2","route":"non-string unallocated; string missing term","batch":"B3+B4","test":"i86_timing_{id}","default_status":"unallocated","string_status":"missing-input"},
     {"id_suffix":"SEGMENT","base_selector":"I86-MOV-SREG-(TO-M|FROM-M)|I86-(LDS|LES)-M|I86-(ROL|ROR|RCL|RCR|SHL|SHR|SAR)-(M1|MCL)|I86-ESC-M|I86-STRING-(MOVS|CMPS|LODS)-(B|W)-NONE|I86-REP-(MOVS|CMPS-REPE|CMPS-REPNE|LODS)-(B|W)","source_rule":"S1:SEGMENT +2","route":"failed base or string missing term","batch":"B3+B4","test":"i86_timing_{id}","status":"missing-input"},
     {"id_suffix":"ODD-WORD","base_selector":"I86-STRING-(MOVS|CMPS|STOS|LODS|SCAS)-W-NONE|I86-REP-(MOVS|CMPS-REPE|CMPS-REPNE|STOS|LODS|SCAS-REPE|SCAS-REPNE)-W","source_rule":"S1:odd word +4/transfer","route":"string missing term","batch":"B3+B4","test":"i86_timing_{id}","status":"missing-input"}
+  ],
+  "combination_context_sets": [
+    {"id_suffix":"LOCK-SEGMENT","base_selector":"I86-MOV-SREG-(TO-M|FROM-M)|I86-(LDS|LES)-M|I86-(ROL|ROR|RCL|RCR|SHL|SHR|SAR)-(M1|MCL)|I86-ESC-M|I86-STRING-(MOVS|CMPS|LODS)-(B|W)-NONE|I86-REP-(MOVS|CMPS-REPE|CMPS-REPNE|LODS)-(B|W)","count":33,"default_status":"unallocated","string_status":"missing-input"},
+    {"id_suffix":"LOCK-ODD-WORD","base_selector":"I86-STRING-(MOVS|CMPS|STOS|LODS|SCAS)-W-NONE|I86-REP-(MOVS|CMPS-REPE|CMPS-REPNE|STOS|LODS|SCAS-REPE|SCAS-REPNE)-W","count":12,"status":"missing-input"},
+    {"id_suffix":"SEGMENT-ODD-WORD","base_selector":"I86-STRING-(MOVS|CMPS|LODS)-W-NONE|I86-REP-(MOVS|CMPS-REPE|CMPS-REPNE|LODS)-W","count":7,"status":"missing-input"},
+    {"id_suffix":"LOCK-SEGMENT-ODD-WORD","base_selector":"I86-STRING-(MOVS|CMPS|LODS)-W-NONE|I86-REP-(MOVS|CMPS-REPE|CMPS-REPNE|LODS)-W","count":7,"status":"missing-input"},
+    {"id_suffix":"REP-PHASE-{phase}","base_selector":"I86-REP-.*","phase":["FIRST","CONTINUE","ZERO"],"count":42,"status":"missing-test"},
+    {"id_suffix":"LOCK-REP-PHASE-{phase}","base_selector":"I86-REP-.*","phase":["FIRST","CONTINUE","ZERO"],"count":42,"status":"missing-input"},
+    {"id_suffix":"SEGMENT-REP-PHASE-{phase}","base_selector":"I86-REP-(MOVS|CMPS-REPE|CMPS-REPNE|LODS)-(B|W)","phase":["FIRST","CONTINUE","ZERO"],"count":24,"status":"missing-input"},
+    {"id_suffix":"ODD-WORD-REP-PHASE-{phase}","base_selector":"I86-REP-(MOVS|CMPS-REPE|CMPS-REPNE|STOS|LODS|SCAS-REPE|SCAS-REPNE)-W","phase":["FIRST","CONTINUE","ZERO"],"count":21,"status":"missing-input"},
+    {"id_suffix":"SEGMENT-ODD-WORD-REP-PHASE-{phase}","base_selector":"I86-REP-(MOVS|CMPS-REPE|CMPS-REPNE|LODS)-W","phase":["FIRST","CONTINUE","ZERO"],"count":12,"status":"missing-input"},
+    {"id_suffix":"LOCK-SEGMENT-REP-PHASE-{phase}","base_selector":"I86-REP-(MOVS|CMPS-REPE|CMPS-REPNE|LODS)-(B|W)","phase":["FIRST","CONTINUE","ZERO"],"count":24,"status":"missing-input"},
+    {"id_suffix":"LOCK-ODD-WORD-REP-PHASE-{phase}","base_selector":"I86-REP-(MOVS|CMPS-REPE|CMPS-REPNE|STOS|LODS|SCAS-REPE|SCAS-REPNE)-W","phase":["FIRST","CONTINUE","ZERO"],"count":21,"status":"missing-input"},
+    {"id_suffix":"LOCK-SEGMENT-ODD-WORD-REP-PHASE-{phase}","base_selector":"I86-REP-(MOVS|CMPS-REPE|CMPS-REPNE|LODS)-W","phase":["FIRST","CONTINUE","ZERO"],"count":12,"status":"missing-input"}
   ]
 }
