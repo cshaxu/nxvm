@@ -91,6 +91,7 @@ struct core_machine {
     core_machine_timeline timeline;
     core_machine_plan timing_plan;
     type_bool timing_plan_copied;
+    type_unsigned_8 *d4_plan_parity_mask;
     core_machine_transaction_state transaction;
     core_machine_instruction_timing instruction_timing;
     core_machine_external_cycle_timing external_cycle_timing;

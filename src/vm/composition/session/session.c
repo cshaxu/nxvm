@@ -7,6 +7,7 @@
 #include "vm/composition/session/lifecycle.h"
 #include "vm/composition/session/display.h"
 #include "vm/composition/session/media.h"
+#include "vm/composition/session/machine_devices.h"
 #include "vm/machine/fdd.h"
 #include "vm/machine/hdd.h"
 #include "vm/profile/default_profile/firmware/bios.h"
@@ -269,35 +270,22 @@ type_status vm_session_storage_initialize(vm_session *machine)
     if (!vm_profile_default_pc_at_descriptor_is_valid(machine->profile)) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
-    status = core_machine_create(&machine->core_machine_config,
-        &machine->core_machine);
-    if (status != TYPE_STATUS_OK) return status;
-    if (machine->profile->unpopulated_extended_memory) {
-        const core_machine_absent_memory_config absent_memory = {
-            0x00100000u, 0x00f00000u, 0xffu
-        };
-
-        status = core_machine_configure_absent_memory(machine->core_machine,
-            &absent_memory);
-        if (status != TYPE_STATUS_OK) {
-            vm_session_storage_rollback(machine);
-            return status;
-        }
-    }
-    if (machine->profile->planar_parity_present) {
-        const core_machine_planar_parity_config parity = {
-            CORE_MACHINE_PC_AT_PORT_B, machine->profile->default_memory_bytes
-        };
-
-        status = core_machine_configure_planar_parity(machine->core_machine,
-            &parity);
-        if (status != TYPE_STATUS_OK) {
-            vm_session_storage_rollback(machine);
-            return status;
-        }
-    }
+    core_machine_plan_initialize(&machine->core_machine_plan,
+        &machine->core_machine_config);
+    core_machine_media_registry_initialize(&machine->media_registry);
     core_machine_display_provider_slot_initialize(&machine->display_provider);
     vm_session_bind_display(machine);
+    if (machine->profile->unpopulated_extended_memory) {
+        machine->core_machine_plan.topology.absent_memory_present = TYPE_TRUE;
+        machine->core_machine_plan.topology.absent_memory =
+            (core_machine_absent_memory_config) { 0x00100000u, 0x00f00000u, 0xffu };
+    }
+    if (machine->profile->planar_parity_present) {
+        machine->core_machine_plan.topology.planar_parity_present = TYPE_TRUE;
+        machine->core_machine_plan.topology.planar_parity =
+            (core_machine_planar_parity_config) { CORE_MACHINE_PC_AT_PORT_B,
+                machine->profile->default_memory_bytes };
+    }
     attribute_first = vm_session_profile_port_leaf(machine->profile,
         VM_PROFILE_DEFAULT_PC_AT_DEVICE_VADP_ATTRIBUTE, 0u);
     attribute_last = vm_session_profile_port_leaf(machine->profile,
@@ -370,20 +358,28 @@ type_status vm_session_storage_initialize(vm_session *machine)
     rtc_cmos_config.defaults[5].value = TYPE_MASK_UNSIGNED_8(
         machine->profile->cmos.base_memory_kib >> 8);
     rtc_cmos_config.default_count = CORE_MACHINE_RTC_DEFAULT_COUNT;
-    status = core_machine_configure_display(machine->core_machine, &display_config);
-    if (status == TYPE_STATUS_OK) {
-        status = core_machine_configure_dma(machine->core_machine, &dma_wiring,
-            &machine->fdc_dma_request);
+    machine->core_machine_plan.topology.display_present = TYPE_TRUE;
+    machine->core_machine_plan.topology.display = display_config;
+    machine->core_machine_plan.topology.dma_present = TYPE_TRUE;
+    machine->core_machine_plan.topology.dma = dma_wiring;
+    machine->core_machine_plan.topology.rtc_cmos_present = TYPE_TRUE;
+    machine->core_machine_plan.topology.rtc_cmos = rtc_cmos_config;
+    status = vm_session_machine_devices_materialize_plan(machine,
+        &machine->core_machine_plan);
+    if (status != TYPE_STATUS_OK) {
+        vm_session_storage_rollback(machine);
+        return status;
     }
+    status = core_machine_create_from_plan(&machine->core_machine_plan,
+        &machine->core_machine);
     if (status == TYPE_STATUS_OK) {
-        status = core_machine_configure_rtc_cmos(machine->core_machine,
-            &rtc_cmos_config);
+        status = core_machine_get_fdc_dma_request_binding(machine->core_machine,
+            &machine->fdc_dma_request);
     }
     if (status != TYPE_STATUS_OK) {
         vm_session_storage_rollback(machine);
         return status;
     }
-    core_machine_media_registry_initialize(&machine->media_registry);
     vm_profile_default_context_initialize(&machine->default_profile_context,
         &machine->default_bios, &machine->media_registry, VM_SESSION_MEDIA_HDD_ID,
         machine->profile->firmware_slot);

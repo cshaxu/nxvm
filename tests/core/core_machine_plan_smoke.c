@@ -72,13 +72,35 @@ static C_INT plan_rejects_incomplete_or_unavailable(C_VOID)
     return failed;
 }
 
+static C_INT plan_rejects_topology_before_publication(C_VOID)
+{
+    core_machine_config configuration = { .memory_bytes =
+        CORE_MACHINE_MINIMUM_MEMORY_BYTES };
+    core_machine_plan plan;
+    core_machine *machine = (core_machine *)(type_virtual_address)1u;
+    C_INT failed = 0;
+
+    core_machine_plan_initialize(&plan, &configuration);
+    plan.topology.fdc_present = TYPE_TRUE;
+    failed |= core_machine_create_from_plan(&plan, &machine) !=
+        TYPE_STATUS_INVALID_ARGUMENT || machine != STD_NULL;
+    core_machine_plan_initialize(&plan, &configuration);
+    plan.topology.absent_memory_present = TYPE_TRUE;
+    plan.topology.absent_memory.physical_start = 0x00100000u;
+    failed |= core_machine_create_from_plan(&plan, &machine) !=
+        TYPE_STATUS_INVALID_ARGUMENT || machine != STD_NULL;
+    return failed;
+}
+
 C_INT main(C_VOID)
 {
-    if (plan_default_and_copy() || plan_rejects_incomplete_or_unavailable()) {
+    if (plan_default_and_copy() || plan_rejects_incomplete_or_unavailable() ||
+        plan_rejects_topology_before_publication()) {
         return 1;
     }
     puts("M5:T434:S1:PLAN-DECLARATIONS:OK");
     puts("M5:T434:S1:PLAN-VALIDATION:OK");
     puts("M5:T434:S1:PLAN-COPY:OK");
+    puts("M5:T434:S2:ROLLBACK-EQUIVALENCE:OK");
     return 0;
 }

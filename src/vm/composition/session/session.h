@@ -43,6 +43,7 @@ struct vm_session {
     C_INT active;
     vm_platform_request_transport request_transport;
     core_machine_config core_machine_config;
+    core_machine_plan core_machine_plan;
     const vm_profile_default_pc_at_descriptor *profile;
     core_machine *core_machine;
     core_machine_dma_request_binding fdc_dma_request;

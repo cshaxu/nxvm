@@ -199,13 +199,6 @@ typedef struct core_machine_timing_declaration {
     core_machine_timing_seam seam;
 } core_machine_timing_declaration;
 
-typedef struct core_machine_plan {
-    core_machine_config configuration;
-    core_machine_timing_declaration declarations[
-        CORE_MACHINE_TIMING_CAPABILITY_COUNT];
-    STD_SIZE_T declaration_count;
-} core_machine_plan;
-
 typedef struct core_machine_display_port_topology {
     type_unsigned_16 attribute_first;
     type_unsigned_16 attribute_last;
@@ -324,6 +317,50 @@ typedef struct core_machine_hdc_topology {
     core_machine_media_id slave_media_id;
     core_machine_hdc_config config;
 } core_machine_hdc_topology;
+
+#define CORE_MACHINE_PLAN_MEMORY_DEVICE_COUNT 4u
+
+typedef struct core_machine_plan_memory_device {
+    type_unsigned_32 physical_start;
+    STD_SIZE_T bytes;
+    core_machine_memory_device_callbacks callbacks;
+    C_VOID *owner;
+} core_machine_plan_memory_device;
+
+/* Every optional topology is copied with the plan and applied by Core before
+ * publication.  Provider endpoints retain their existing composition-owned
+ * lifetime; Core copies the endpoint declaration, never VM state. */
+typedef struct core_machine_plan_topology {
+    type_bool absent_memory_present;
+    core_machine_absent_memory_config absent_memory;
+    type_bool planar_parity_present;
+    core_machine_planar_parity_config planar_parity;
+    type_bool d4_platform_present;
+    core_machine_d4_platform_config d4_platform;
+    core_machine_plan_memory_device memory_devices[
+        CORE_MACHINE_PLAN_MEMORY_DEVICE_COUNT];
+    STD_SIZE_T memory_device_count;
+    type_bool d4_memory_parity_present;
+    type_unsigned_8 *d4_memory_parity_mask;
+    type_bool display_present;
+    core_machine_display_config display;
+    type_bool dma_present;
+    core_machine_dma_wiring dma;
+    type_bool rtc_cmos_present;
+    core_machine_rtc_cmos_config rtc_cmos;
+    type_bool fdc_present;
+    core_machine_fdc_topology fdc;
+    type_bool hdc_present;
+    core_machine_hdc_topology hdc;
+} core_machine_plan_topology;
+
+typedef struct core_machine_plan {
+    core_machine_config configuration;
+    core_machine_plan_topology topology;
+    core_machine_timing_declaration declarations[
+        CORE_MACHINE_TIMING_CAPABILITY_COUNT];
+    STD_SIZE_T declaration_count;
+} core_machine_plan;
 
 typedef enum core_machine_stop_reason {
     CORE_MACHINE_STOP_NONE = 0,
@@ -449,6 +486,8 @@ type_status core_machine_configure_display(core_machine *machine,
 type_status core_machine_configure_dma(core_machine *machine,
     const core_machine_dma_wiring *wiring,
     core_machine_dma_request_binding *out_fdc_request);
+type_status core_machine_get_fdc_dma_request_binding(const core_machine *machine,
+    core_machine_dma_request_binding *out_binding);
 /* Selected bus adapters drive this level at deterministic guest-time boundaries. */
 type_status core_machine_set_dma_bus_ready(core_machine *machine, C_INT ready);
 type_status core_machine_set_cpu_bus_ready(core_machine *machine, C_INT ready);

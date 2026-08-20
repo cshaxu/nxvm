@@ -20,8 +20,6 @@ type_status vm_session_provider_lifecycle_initialize(vm_session *session)
 
     vm_session_machine_devices_initialize_media(session);
     if (session->model40_private) {
-        status = vm_session_machine_devices_configure_controllers(session);
-        if (status != TYPE_STATUS_OK) return status;
         return vm_session_bind_media(session);
     }
     status = vm_session_profile_firmware_initialize(session);
@@ -29,8 +27,6 @@ type_status vm_session_provider_lifecycle_initialize(vm_session *session)
     vm_session_profile_firmware_register_cmos(session);
     vm_session_profile_firmware_register_keyboard(session);
     vm_session_profile_firmware_register_dma(session);
-    status = vm_session_machine_devices_configure_controllers(session);
-    if (status != TYPE_STATUS_OK) return status;
     status = vm_session_bind_media(session);
     if (status != TYPE_STATUS_OK) return status;
     vm_session_profile_firmware_register_fdc(session);

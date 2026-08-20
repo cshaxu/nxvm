@@ -20,7 +20,8 @@ C_VOID vm_session_machine_devices_initialize_media(vm_session *session)
     }
 }
 
-static type_status vm_session_machine_devices_configure_fdc(vm_session *session)
+static type_status vm_session_machine_devices_materialize_fdc(vm_session *session,
+    core_machine_plan *plan)
 {
     const vm_profile_default_pc_at_port_leaf *dor_port;
     const vm_profile_default_pc_at_port_leaf *status_port;
@@ -33,7 +34,7 @@ static type_status vm_session_machine_devices_configure_fdc(vm_session *session)
     };
     core_machine_fdc_topology topology = {0};
 
-    if (session == STD_NULL || session->core_machine == STD_NULL) {
+    if (session == STD_NULL || plan == STD_NULL) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
     dor_port = vm_profile_default_pc_at_port_leaf_at(session->profile,
@@ -52,7 +53,6 @@ static type_status vm_session_machine_devices_configure_fdc(vm_session *session)
     }
     topology.media_registry = &session->media_registry;
     topology.drives = drives;
-    topology.dma_request = session->fdc_dma_request;
     topology.config.dor_port = dor_port->port;
     topology.config.status_port = status_port->port;
     topology.config.data_port = data_port->port;
@@ -60,16 +60,20 @@ static type_status vm_session_machine_devices_configure_fdc(vm_session *session)
     topology.config.control_port = control_port->port;
     topology.config.irq = route->irq;
     topology.config.dma_channel = route->dma_channel;
-    return core_machine_configure_fdc(session->core_machine, &topology);
+    plan->topology.fdc_present = TYPE_TRUE;
+    plan->topology.fdc = topology;
+    return TYPE_STATUS_OK;
 }
 
-static type_status vm_session_machine_devices_configure_hdc(vm_session *session)
+static type_status vm_session_machine_devices_materialize_hdc(vm_session *session,
+    core_machine_plan *plan)
 {
     const vm_profile_default_pc_at_hdc_pio *ports;
     core_machine_hdc_topology topology = {0};
 
-    if (session == STD_NULL || session->profile == STD_NULL ||
-        session->core_machine == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (session == STD_NULL || session->profile == STD_NULL || plan == STD_NULL) {
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
     if (!session->profile->hdc_present) return TYPE_STATUS_OK;
     ports = &session->profile->hdc_pio;
     if (!vm_profile_default_pc_at_descriptor_is_valid(session->profile)) {
@@ -89,24 +93,26 @@ static type_status vm_session_machine_devices_configure_hdc(vm_session *session)
         ports->alternate_status_device_control_port;
     topology.config.irq = ports->irq;
     topology.config.lba28_supported = ports->lba28_supported;
-    return core_machine_configure_hdc(session->core_machine, &topology);
+    plan->topology.hdc_present = TYPE_TRUE;
+    plan->topology.hdc = topology;
+    return TYPE_STATUS_OK;
 }
 
-type_status vm_session_machine_devices_configure_controllers(vm_session *session)
+type_status vm_session_machine_devices_materialize_plan(vm_session *session,
+    core_machine_plan *plan)
 {
     type_status status;
 
-    if (session == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
-    if (session->model40_private) {
-        return vm_session_model40_configure_controllers(session);
+    if (session == STD_NULL || plan == STD_NULL || session->model40_private) {
+        return TYPE_STATUS_INVALID_ARGUMENT;
     }
     if (!vm_profile_default_pc_at_descriptor_is_valid(session->profile)) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
-    status = vm_session_machine_devices_configure_fdc(session);
+    status = vm_session_machine_devices_materialize_fdc(session, plan);
 
     if (status != TYPE_STATUS_OK) return status;
-    return vm_session_machine_devices_configure_hdc(session);
+    return vm_session_machine_devices_materialize_hdc(session, plan);
 }
 
 C_VOID vm_session_machine_devices_refresh(vm_session *session)

@@ -2,7 +2,28 @@
 
 ## Current Work
 
-**M5 T434 S1 accepted; T434 remains open.**
+**Active: M5 T434 S2.**
+
+## M5 T434 S2 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; T434 S2 consumes B2 of the Td S117 convergence ledger after accepted S1. |
+| Admission And Approval | Owner objective in this conversation remains implementation of the complete Core timing-plan internal integration and interface construction; S1 accepted at `f12b4a5c`. |
+| Objective | Atomically migrate default PC/AT, IBM 5170 Model 339 and private Model-40 BYOB production materializers to `core_machine_create_from_plan`, remove their direct Core publication calls, and preserve configured Core topology through plan construction. |
+| Non-goals | Do not leave a compatibility publisher, implement L3 formulas/scalars, change Core/VM ownership, change profile facts, create a fourth production path, modify VDM/test-only direct creation, or claim T434 closure before full equivalence proof. |
+| Reference Baseline | `f12b4a5c`; T434 proposal; Td S117 ledger and S1 evidence; current session/model40 composition and product smoke source. |
+| Candidate Proposal | [Core timing contract and machine plan](../proposals/m5-core-timing-contract-machine-plan.md). |
+| Files And ABI Surface | Expected VM session/model40 composition and Core plan public/private source, product/focused tests/build registration, T434 evidence and current status. The one plan-only Core publication API is consumed; no new product API or profile identity is intended. |
+| Applicable Rules | `docs/README.md` Task Reading Set; `docs/rules/EXECUTION.md`; `docs/rules/ARCHITECTURE.md`; `docs/rules/CODING.md`; `docs/rules/DOCUMENT.md` at closure; Core/VM architecture/source-layout authorities; T433 S7; Td S117; T434 S1 evidence. |
+| Verification | Static sweep proves the three VM production paths have no direct `core_machine_create` call and only the plan entry publishes; product-level default PC/AT, Model-339 and Model-40 creation/reset/rollback equivalence pass; invalid plan fails before publication; all 30 plan declarations persist; run focused regressions, 30-ID equality, actual code-delta report, documentation governance and `git diff --check`. |
+| Expected Markers | `M5:T434:S2:PLAN-ONLY-PUBLICATION:OK`; `M5:T434:S2:PROFILE-MIGRATION:OK`; `M5:T434:S2:ROLLBACK-EQUIVALENCE:OK`. |
+| Asset Needs | No protected assets, firmware/media, downloads or source import. Existing synthetic Model-40 test inputs only. |
+| Reporting Requirements | Report all three migrated paths, every removed direct publisher, actual added/removed/net code lines and method, any retained obsolete code, and remaining T434 closure decision. |
+| Stop Conditions | Stop for a plan representation unable to carry a current required Core topology, an ownership contradiction, a production behavior difference without approved rule change, a fourth materializer, or a need for a temporary dual publisher. |
+| Exit Criteria | All three current VM materializers construct and publish only through the validated copied plan; direct VM publisher calls are removed; focused profile/reset/rollback proof and static sweep pass; no dual route exists; evidence and governance checks pass and S2 P is pushed. |
+| Original Owner Request | Fully implement the Core timing plan internal integration and interface construction without an unconnected boundary or a deferred production cutover. |
+| Similar-Issue Sweep | Inspect every `src/vm` and `src/vdm` Core construction caller, every post-create `core_machine_configure_*` route, profile materializer and product test for an unplanned publisher, uncarried topology, rollback gap or compatibility path. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** T432 S1 `vm-0-5-0432` / `build/output/nxvm_0_5_0432.exe`, SHA-256 `F29A7DF2BA6F43D2A7E1B4C9AABCD634123E4E57F92226796B5734B4A71C413C`. T432 separates KBC delayed Set-2 translation from native break typematic cancellation, fixing stuck keys in Model-339 Console and Window sessions.

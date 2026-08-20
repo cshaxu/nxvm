@@ -63,5 +63,7 @@ type_status vm_profile_model40_d4_memory_enable_parity(core_machine *machine,
     vm_profile_model40_d4_memory *memory);
 type_status vm_profile_model40_d4_memory_register(core_machine *machine,
     vm_profile_model40_d4_memory *memory);
+type_status vm_profile_model40_d4_memory_materialize_plan(
+    vm_profile_model40_d4_memory *memory, core_machine_plan *plan);
 
 #endif

@@ -440,6 +440,37 @@ type_status vm_profile_model40_d4_memory_register(core_machine *machine,
         vm_profile_model40_d4_memory_write_observer, memory);
 }
 
+type_status vm_profile_model40_d4_memory_materialize_plan(
+    vm_profile_model40_d4_memory *memory, core_machine_plan *plan)
+{
+    static const core_machine_memory_device_callbacks memory_callbacks = {
+        vm_profile_model40_d4_memory_read, vm_profile_model40_d4_memory_write,
+        vm_profile_model40_d4_memory_query };
+    static const core_machine_memory_device_callbacks control_callbacks = {
+        vm_profile_model40_d4_control_read, vm_profile_model40_d4_control_write,
+        vm_profile_model40_d4_control_query };
+    core_machine_plan_memory_device *devices;
+
+    if (memory == STD_NULL || plan == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    devices = plan->topology.memory_devices;
+    devices[0] = (core_machine_plan_memory_device) {
+        VM_PROFILE_MODEL40_D4_REPLACEMENT_START, VM_PROFILE_MODEL40_D4_REPLACEMENT_BYTES,
+        memory_callbacks, memory };
+    devices[1] = (core_machine_plan_memory_device) {
+        VM_PROFILE_MODEL40_D4_COMPATIBILITY_START, VM_PROFILE_MODEL40_D4_COMPATIBILITY_BYTES,
+        memory_callbacks, memory };
+    devices[2] = (core_machine_plan_memory_device) {
+        VM_PROFILE_MODEL40_D4_COMPATIBILITY_HIGH_START, VM_PROFILE_MODEL40_D4_COMPATIBILITY_BYTES,
+        memory_callbacks, memory };
+    devices[3] = (core_machine_plan_memory_device) {
+        VM_PROFILE_MODEL40_D4_CONTROL_PHYSICAL, VM_PROFILE_MODEL40_D4_CONTROL_WINDOW_BYTES,
+        control_callbacks, memory };
+    plan->topology.memory_device_count = CORE_MACHINE_PLAN_MEMORY_DEVICE_COUNT;
+    plan->topology.d4_memory_parity_present = TYPE_TRUE;
+    plan->topology.d4_memory_parity_mask = &memory->parity_fault_mask;
+    return TYPE_STATUS_OK;
+}
+
 type_status vm_profile_model40_d4_memory_enable_parity(core_machine *machine,
     vm_profile_model40_d4_memory *memory)
 {
