@@ -1,6 +1,7 @@
 #include "type.h"
 
 #include "core/machine/machine_interface.h"
+#include "core/machine/cpu_timing.h"
 #include "../support/core_machine_cpu_fixture.h"
 
 typedef struct retirement_probe {
@@ -124,6 +125,10 @@ static C_INT retirement_unallocated_profile_case(core_machine_cpu_profile profil
                 CORE_MACHINE_RETIREMENT_TIMING_SOURCE_UNALLOCATED ||
             probe.records[0].source_timing_form_id !=
                 CORE_MACHINE_RETIREMENT_SOURCE_FORM_UNATTRIBUTED ||
+            probe.records[0].timing_key_id !=
+                CORE_MACHINE_RETIREMENT_SOURCE_FORM_UNATTRIBUTED ||
+            (probe.records[0].formula_inputs &
+                CORE_MACHINE_CPU_TIMING_INPUT_REPEAT) == 0u ||
             probe.records[0].timing_origin != expected_origin ||
             probe.records[0].elapsed_ticks != 0u || probe.records[0].timeline_ticks != 0u ||
             core_machine_get_timeline_observation(machine, &timeline) != TYPE_STATUS_OK ||
@@ -169,6 +174,8 @@ C_INT main(C_VOID)
         probe.records[0].timing_disposition !=
             CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED ||
         probe.records[0].source_timing_form_id != 0u ||
+        probe.records[0].timing_key_id != 0u ||
+        probe.records[0].formula_inputs != 0u ||
         probe.records[0].timing_origin !=
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80386_FALLBACK ||
         probe.records[0].modrm_form != CORE_MACHINE_RETIREMENT_MODRM_UNAVAILABLE ||
@@ -224,6 +231,10 @@ C_INT main(C_VOID)
             CORE_MACHINE_RETIREMENT_TIMING_SOURCE_UNALLOCATED ||
         probe.records[0].source_timing_form_id !=
             CORE_MACHINE_RETIREMENT_SOURCE_FORM_UNATTRIBUTED ||
+        probe.records[0].timing_key_id !=
+            CORE_MACHINE_RETIREMENT_SOURCE_FORM_UNATTRIBUTED ||
+        (probe.records[0].formula_inputs &
+            CORE_MACHINE_CPU_TIMING_INPUT_REPEAT) == 0u ||
         probe.records[0].timing_origin !=
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80386_FALLBACK ||
         probe.records[0].modrm_form != CORE_MACHINE_RETIREMENT_MODRM_UNAVAILABLE ||

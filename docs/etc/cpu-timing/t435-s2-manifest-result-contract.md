@@ -62,6 +62,12 @@ are audit facts, not B0 results. B0 must replace that provisional descriptor
 with the registered decoder form and a real result record before it may mark
 any key conforming.
 
+`Verify-CpuTimingResults.ps1 -ResultPath <file>` consumes that materialized
+3,295-key inventory and rejects a missing, duplicate, unknown, unallocated or
+failed result. It is deliberately a final-result gate: the S3 baseline has no
+invented successful values, so it must fail this verifier until profile S4--S7
+provide genuine runtime results.
+
 ## Cross-profile completion rule
 
 All four result files use this schema. B0 is complete only when it covers the

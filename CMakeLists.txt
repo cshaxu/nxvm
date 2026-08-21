@@ -44,6 +44,7 @@ set(PROJECT_PROBE_DIR "${CMAKE_BINARY_DIR}/probes")
 
 add_library(core-machine STATIC
     src/core/machine/clock.c
+    src/core/machine/cpu_timing.c
     src/core/machine/debug.c
     src/core/machine/entry_plan_interface.c
     src/core/machine/fdc.c
@@ -3115,6 +3116,12 @@ if(PROJECT_VERIFY_DEPENDENCY_DAG)
         COMMENT "Verifying T360 four-profile timing source inventory"
         VERBATIM)
 
+    add_custom_target(verify-t435-s3-cpu-timing-seam
+        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_t435_s3_cpu_timing_seam.cmake"
+        COMMENT "Verifying T435 S3 single CPU timing selection/publication seam"
+        VERBATIM)
+
     add_custom_target(verify-t388-successful-sentinel-matrix
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
             -P "${CMAKE_SOURCE_DIR}/cmake/verify_t388_successful_sentinel_matrix.cmake"
@@ -3168,6 +3175,7 @@ set(PROJECT_CURRENT_SPECIALIZED_VERIFIER_CANDIDATES
     verify-t331-real-exception-final-construction
     verify-t359-instruction-timing-inventory
     verify-t360-timing-source-inventory
+    verify-t435-s3-cpu-timing-seam
     verify-t388-successful-sentinel-matrix
     verify-t388-physical-timebase-inventory
     verify-t388-physical-eligibility-boundary

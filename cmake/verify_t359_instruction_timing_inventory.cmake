@@ -4,6 +4,7 @@ endif()
 
 set(t359_source "${PROJECT_SOURCE_DIR}/src/core/machine/cpu_instructions.c")
 set(t359_machine "${PROJECT_SOURCE_DIR}/src/core/machine/machine.c")
+set(t359_timing "${PROJECT_SOURCE_DIR}/src/core/machine/cpu_timing.c")
 set(t359_inventory
     "${PROJECT_SOURCE_DIR}/docs/etc/evidence/t359-s1-four-profile-instruction-timing-inventory.md")
 set(t359_s2_ledger
@@ -18,7 +19,7 @@ set(t359_s6_ledger
     "${PROJECT_SOURCE_DIR}/docs/etc/evidence/t359-s6-privileged-source-ledger.md")
 set(t359_s7_audit
     "${PROJECT_SOURCE_DIR}/docs/etc/evidence/t359-s7-complete-instruction-timing-closure-audit.md")
-foreach(t359_file IN ITEMS "${t359_source}" "${t359_machine}" "${t359_inventory}"
+foreach(t359_file IN ITEMS "${t359_source}" "${t359_machine}" "${t359_timing}" "${t359_inventory}"
     "${t359_s2_ledger}" "${t359_s3_ledger}" "${t359_s4_ledger}"
     "${t359_s5_ledger}" "${t359_s6_ledger}" "${t359_s7_audit}")
     if(NOT EXISTS "${t359_file}")
@@ -27,6 +28,7 @@ foreach(t359_file IN ITEMS "${t359_source}" "${t359_machine}" "${t359_inventory}
 endforeach()
 file(READ "${t359_source}" t359_source_text)
 file(READ "${t359_machine}" t359_machine_text)
+file(READ "${t359_timing}" t359_timing_text)
 file(READ "${t359_inventory}" t359_inventory_text)
 file(READ "${t359_s2_ledger}" t359_s2_ledger_text)
 file(READ "${t359_s3_ledger}" t359_s3_ledger_text)
@@ -46,7 +48,8 @@ endfunction()
 t359_require("${t359_source_text}" "insTable\\[0x00\\]" "primary dispatch is missing")
 t359_require("${t359_source_text}" "insTable_0f\\[0x00\\]" "secondary dispatch is missing")
 t359_require("${t359_source_text}" "core_machine_cpu_instruction_metadata_get" "metadata classifier is missing")
-t359_require("${t359_machine_text}" "core_machine_instruction_cost" "instruction cost owner is missing")
+t359_require("${t359_timing_text}" "core_machine_cpu_timing_select" "B0 timing selector is missing")
+t359_require("${t359_machine_text}" "core_machine_cpu_timing_select" "machine retirement seam is missing")
 t359_require("${t359_machine_text}" "CORE_MACHINE_SOURCE_UNALLOCATED_TICKS" "visible unallocated transfer is missing")
 t359_require("${t359_machine_text}" "core_machine_8086_source_instruction_cost" "8086 source owner is missing")
 t359_require("${t359_machine_text}" "core_machine_80186_source_instruction_cost" "80186 source owner is missing")
@@ -121,11 +124,11 @@ foreach(t359_s2_anchor IN ITEMS
         "missing S2 classifier anchor ${t359_s2_anchor}")
 endforeach()
 
-string(FIND "${t359_machine_text}"
-    "if (core_machine_primary_source_instruction_cost(machine, out_ticks))"
+string(FIND "${t359_timing_text}"
+    "CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY"
     t359_s2_primary_publisher)
-string(FIND "${t359_machine_text}"
-    "core_machine_8086_source_instruction_cost(machine, out_ticks)"
+string(FIND "${t359_timing_text}"
+    "CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_8086_FALLBACK"
     t359_s2_legacy_publisher)
 if(t359_s2_primary_publisher LESS 0 OR t359_s2_legacy_publisher LESS 0 OR
     t359_s2_primary_publisher GREATER t359_s2_legacy_publisher)
@@ -154,8 +157,8 @@ foreach(t359_s3_anchor IN ITEMS
     t359_require("${t359_machine_text}" "${t359_s3_anchor}"
         "missing S3 classifier anchor ${t359_s3_anchor}")
 endforeach()
-string(FIND "${t359_machine_text}"
-    "if (core_machine_control_stack_source_instruction_cost(machine, out_ticks))"
+string(FIND "${t359_timing_text}"
+    "CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK"
     t359_s3_primary_publisher)
 if(t359_s3_primary_publisher LESS 0 OR
     t359_s3_primary_publisher GREATER t359_s2_legacy_publisher)
@@ -188,8 +191,8 @@ foreach(t359_s4_anchor IN ITEMS
     t359_require("${t359_machine_text}" "${t359_s4_anchor}"
         "missing S4 classifier anchor ${t359_s4_anchor}")
 endforeach()
-string(FIND "${t359_machine_text}"
-    "if (core_machine_string_io_source_instruction_cost(machine, out_ticks))"
+string(FIND "${t359_timing_text}"
+    "CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO"
     t359_s4_publisher)
 if(t359_s4_publisher LESS 0 OR t359_s4_publisher GREATER t359_s2_primary_publisher)
     message(FATAL_ERROR
@@ -216,8 +219,8 @@ foreach(t359_s5_anchor IN ITEMS
     t359_require("${t359_machine_text}" "${t359_s5_anchor}"
         "missing S5 secondary timing anchor ${t359_s5_anchor}")
 endforeach()
-string(FIND "${t359_machine_text}"
-    "if (core_machine_80386_secondary_source_instruction_cost(machine, out_ticks))"
+string(FIND "${t359_timing_text}"
+    "CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80386_SECONDARY"
     t359_s5_publisher)
 if(t359_s5_publisher LESS 0 OR t359_s5_publisher GREATER t359_s2_legacy_publisher)
     message(FATAL_ERROR
@@ -248,8 +251,8 @@ foreach(t359_s6_anchor IN ITEMS
     t359_require("${t359_machine_text}" "${t359_s6_anchor}"
         "missing S6 privileged timing anchor ${t359_s6_anchor}")
 endforeach()
-string(FIND "${t359_machine_text}"
-    "if (core_machine_80386_privileged_source_instruction_cost(machine, out_ticks))"
+string(FIND "${t359_timing_text}"
+    "CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80386_PRIVILEGED"
     t359_s6_publisher)
 if(t359_s6_publisher LESS 0 OR t359_s6_publisher GREATER t359_s2_primary_publisher)
     message(FATAL_ERROR

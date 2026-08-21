@@ -232,6 +232,8 @@ C_VOID core_machine_retirement_observation_publish(core_machine *machine,
         CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED;
     observation->timing_origin = machine->source_timing_origin;
     observation->source_timing_form_id = machine->source_timing_form_id;
+    observation->timing_key_id = machine->source_timing_key_id;
+    observation->formula_inputs = machine->source_timing_formula_inputs;
     core_machine_retirement_observation_capture_context(machine, &machine->executor_cpu,
         &machine->executor_cpu_instructions, observation);
     observation->repeat_phase = machine->source_timing_repeat_phase;

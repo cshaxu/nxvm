@@ -94,6 +94,8 @@ typedef struct core_machine_retirement_observation {
     core_machine_retirement_timing_disposition timing_disposition;
     core_machine_retirement_timing_origin timing_origin;
     type_unsigned_32 source_timing_form_id;
+    type_unsigned_32 timing_key_id;
+    type_unsigned_32 formula_inputs;
     core_machine_retirement_modrm_form modrm_form;
     type_unsigned_8 modrm_extension;
     core_machine_retirement_control_outcome control_outcome;

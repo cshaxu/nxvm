@@ -118,6 +118,8 @@ struct core_machine {
     type_bool source_timing_unallocated;
     core_machine_retirement_timing_origin source_timing_origin;
     type_unsigned_32 source_timing_form_id;
+    type_unsigned_32 source_timing_key_id;
+    type_unsigned_32 source_timing_formula_inputs;
     core_machine_retirement_repeat_phase source_timing_repeat_phase;
     core_machine_retirement_eligibility_key retirement_eligibility_key;
     type_bool retirement_eligibility_key_valid;

@@ -1,6 +1,7 @@
 #include "type.h"
 
 #include "core/machine/machine.h"
+#include "core/machine/cpu_timing.h"
 
 _Static_assert(CORE_MACHINE_TIMING_CAPABILITY_PRODUCT_DEBUG + 1u ==
     CORE_MACHINE_TIMING_CAPABILITY_COUNT,
@@ -136,6 +137,22 @@ C_VOID core_machine_cpu_diagnostic_reset(core_machine *machine)
 static type_unsigned_32 core_machine_linear_pc(const core_machine *machine)
 {
     return machine->executor_cpu.data.cs.base + machine->executor_cpu.data.eip;
+}
+
+static C_INT core_machine_retirement_qualification_contains(
+    const core_machine *machine);
+
+/* Both immediate and externally delayed successful retirements meet here.
+ * CPU timing selection is complete before this seam; board-cycle time has
+ * already been added by the caller and never enters cpu_timing.c. */
+static C_INT core_machine_publish_successful_retirement(core_machine *machine)
+{
+    if (machine == STD_NULL) return 0;
+    core_machine_retirement_observation_publish(machine,
+        machine->cpu_retirement_source_ticks);
+    return machine->retirement_time_contract != CORE_MACHINE_RETIREMENT_TIME_PHYSICAL ||
+        (!machine->source_timing_unallocated &&
+         core_machine_retirement_qualification_contains(machine));
 }
 
 static core_machine_cpu_profile core_machine_resolve_cpu_profile(
@@ -759,7 +776,7 @@ static C_INT core_machine_80386_source_string_port_entry(
     return 0;
 }
 
-static C_INT core_machine_string_io_source_instruction_cost(
+C_INT core_machine_string_io_source_instruction_cost(
     core_machine *machine, type_unsigned_64 *out_ticks)
 {
     const t_cpuins_data *data;
@@ -1333,7 +1350,7 @@ static C_INT core_machine_80186_immediate_imul_model_cost(type_unsigned_8 opcode
 /* The 8086 entries retain their source-manual memory additions.  The selected
  * 80186 reference model already includes effective-address time, so only its
  * documented segment-prefix cost is added here. */
-static C_INT core_machine_legacy_dynamic_arithmetic_model_cost(
+C_INT core_machine_legacy_dynamic_arithmetic_model_cost(
     core_machine *machine, type_unsigned_64 *out_ticks)
 {
     const t_cpuins_data *data;
@@ -1495,14 +1512,14 @@ static C_INT core_machine_legacy_source_instruction_cost(core_machine *machine,
     return 1;
 }
 
-static C_INT core_machine_8086_source_instruction_cost(core_machine *machine,
+C_INT core_machine_8086_source_instruction_cost(core_machine *machine,
     type_unsigned_64 *out_ticks)
 {
     return core_machine_legacy_source_instruction_cost(machine, out_ticks,
         &core_machine_8086_source_timing_contract);
 }
 
-static C_INT core_machine_80186_source_instruction_cost(core_machine *machine,
+C_INT core_machine_80186_source_instruction_cost(core_machine *machine,
     type_unsigned_64 *out_ticks)
 {
     return core_machine_legacy_source_instruction_cost(machine, out_ticks,
@@ -1553,7 +1570,7 @@ static type_unsigned_8 core_machine_80286_group2_count(
     return 0u;
 }
 
-static C_INT core_machine_primary_source_instruction_cost(
+C_INT core_machine_primary_source_instruction_cost(
     core_machine *machine, type_unsigned_64 *out_ticks)
 {
     const t_cpuins_data *data;
@@ -2074,7 +2091,7 @@ static type_unsigned_64 core_machine_control_stack_memory_additions(
     return ticks;
 }
 
-static C_INT core_machine_control_stack_source_instruction_cost(
+C_INT core_machine_control_stack_source_instruction_cost(
     core_machine *machine, type_unsigned_64 *out_ticks)
 {
     const t_cpuins_data *data;
@@ -2339,7 +2356,7 @@ static type_unsigned_64 core_machine_80386_timing_ceiling_log2(
 /* Intel 80386 PRM, IMUL/MUL timing tables: use the underlined optimizing
  * multiplier only.  `crm` and `cimm` are decoder-owned values captured during
  * the real execution; this timing path never rereads a register or memory. */
-static C_INT core_machine_80386_dynamic_multiply_cost(core_machine *machine,
+C_INT core_machine_80386_dynamic_multiply_cost(core_machine *machine,
     type_unsigned_64 *out_ticks)
 {
     const t_cpuins_data *data;
@@ -2427,7 +2444,7 @@ static type_unsigned_64 core_machine_80386_timing_zero_scan_count(
     return count;
 }
 
-static C_INT core_machine_80386_secondary_source_instruction_cost(
+C_INT core_machine_80386_secondary_source_instruction_cost(
     core_machine *machine, type_unsigned_64 *out_ticks)
 {
     const t_cpuins_data *data;
@@ -2508,7 +2525,7 @@ static C_INT core_machine_80386_secondary_source_instruction_cost(
  * delivery, task switch, or descriptor-dependent outcome.  This keeps the
  * source row at the sole publisher: handlers, decoder, and delivery owners do
  * not acquire a second clock policy. */
-static C_INT core_machine_80386_privileged_source_instruction_cost(
+C_INT core_machine_80386_privileged_source_instruction_cost(
     core_machine *machine, type_unsigned_64 *out_ticks)
 {
     const t_cpuins_data *data;
@@ -2679,7 +2696,7 @@ static C_INT core_machine_80386_privileged_source_instruction_cost(
     }
 }
 
-static C_INT core_machine_80286_source_instruction_cost(core_machine *machine,
+C_INT core_machine_80286_source_instruction_cost(core_machine *machine,
     type_unsigned_64 *out_ticks)
 {
     const t_cpuins_data *data = &machine->executor_cpu_instructions.data;
@@ -2895,7 +2912,7 @@ static C_INT core_machine_80286_source_instruction_cost(core_machine *machine,
     }
 }
 
-static C_INT core_machine_80386_source_instruction_cost(core_machine *machine,
+C_INT core_machine_80386_source_instruction_cost(core_machine *machine,
     type_unsigned_64 *out_ticks)
 {
     const t_cpuins_data *data = &machine->executor_cpu_instructions.data;
@@ -3041,7 +3058,7 @@ static type_unsigned_64 core_machine_instruction_maximum_ticks(
         timing->io_surcharge + timing->rep_iteration_surcharge;
 }
 
-static C_INT core_machine_compatibility_instruction_cost(core_machine *machine,
+C_INT core_machine_compatibility_instruction_cost(core_machine *machine,
     type_unsigned_64 *out_ticks)
 {
     const t_cpuins_data *data = &machine->executor_cpu_instructions.data;
@@ -3083,88 +3100,6 @@ static C_INT core_machine_compatibility_instruction_cost(core_machine *machine,
     }
     *out_ticks = ticks;
     return 1;
-}
-
-static C_INT core_machine_instruction_cost(core_machine *machine,
-    type_unsigned_64 *out_ticks)
-{
-    if (machine == STD_NULL || out_ticks == STD_NULL) return 0;
-    machine->source_timing_unallocated = TYPE_FALSE;
-    machine->source_timing_origin =
-        CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_UNATTRIBUTED;
-    machine->source_timing_form_id = CORE_MACHINE_RETIREMENT_SOURCE_FORM_UNATTRIBUTED;
-    machine->source_timing_repeat_phase = CORE_MACHINE_RETIREMENT_REPEAT_NONE;
-    if (core_machine_string_io_source_instruction_cost(machine, out_ticks)) {
-        machine->source_timing_origin = CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO;
-        return 1;
-    }
-    if (core_machine_80386_dynamic_multiply_cost(machine, out_ticks)) {
-        machine->source_timing_origin =
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80386_DYNAMIC_MULTIPLY;
-        return 1;
-    }
-    if (core_machine_legacy_dynamic_arithmetic_model_cost(machine, out_ticks)) {
-        machine->source_timing_origin =
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_LEGACY_DYNAMIC_ARITHMETIC;
-        return 1;
-    }
-    if (core_machine_80386_secondary_source_instruction_cost(machine, out_ticks)) {
-        machine->source_timing_origin =
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80386_SECONDARY;
-        return 1;
-    }
-    if (core_machine_80386_privileged_source_instruction_cost(machine, out_ticks)) {
-        machine->source_timing_origin =
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80386_PRIVILEGED;
-        return 1;
-    }
-    if (core_machine_primary_source_instruction_cost(machine, out_ticks)) {
-        machine->source_timing_origin = CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY;
-        return 1;
-    }
-    if (core_machine_control_stack_source_instruction_cost(machine, out_ticks)) {
-        machine->source_timing_origin =
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK;
-        return 1;
-    }
-    if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_8086) {
-        if (core_machine_8086_source_instruction_cost(machine, out_ticks)) {
-            machine->source_timing_origin =
-                CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_8086_FALLBACK;
-            return 1;
-        }
-        return 0;
-    }
-    if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80186) {
-        if (core_machine_80186_source_instruction_cost(machine, out_ticks)) {
-            machine->source_timing_origin =
-                CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80186_FALLBACK;
-            return 1;
-        }
-        return 0;
-    }
-    if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286) {
-        if (core_machine_80286_source_instruction_cost(machine, out_ticks)) {
-            machine->source_timing_origin =
-                CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80286_FALLBACK;
-            return 1;
-        }
-        return 0;
-    }
-    if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80386) {
-        if (core_machine_80386_source_instruction_cost(machine, out_ticks)) {
-            machine->source_timing_origin =
-                CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80386_FALLBACK;
-            return 1;
-        }
-        return 0;
-    }
-    if (core_machine_compatibility_instruction_cost(machine, out_ticks)) {
-        machine->source_timing_origin =
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_COMPATIBILITY;
-        return 1;
-    }
-    return 0;
 }
 
 static C_VOID core_machine_external_cycle_invalidate(core_machine *machine);
@@ -5802,11 +5737,7 @@ type_status core_machine_run(
                     result->elapsed_ticks = machine->elapsed_ticks;
                     return TYPE_STATUS_FAULT;
                 }
-                core_machine_retirement_observation_publish(machine, machine->cpu_retirement_source_ticks);
-                if (machine->retirement_time_contract ==
-                    CORE_MACHINE_RETIREMENT_TIME_PHYSICAL &&
-                    (machine->source_timing_unallocated ||
-                    !core_machine_retirement_qualification_contains(machine))) {
+                if (!core_machine_publish_successful_retirement(machine)) {
                     (C_VOID)core_machine_report_fault(machine, 0x54494d55u);
                     result->reason = CORE_MACHINE_STOP_FAULT;
                     result->linear_pc = core_machine_linear_pc(machine);
@@ -5896,11 +5827,20 @@ type_status core_machine_run(
                 }
             }
             {
+                core_machine_cpu_timing_result timing_result;
                 type_unsigned_64 instruction_ticks;
 
-                if (!core_machine_instruction_cost(machine, &instruction_ticks) ||
-                    machine->external_cycle_round_overflow ||
-                    !core_machine_add_ticks(&instruction_ticks,
+                if (!core_machine_cpu_timing_select(machine, &timing_result) ||
+                    machine->external_cycle_round_overflow) {
+                    (C_VOID)core_machine_report_fault(machine, 0x54494d45u);
+                    result->reason = CORE_MACHINE_STOP_FAULT;
+                    result->linear_pc = core_machine_linear_pc(machine);
+                    result->detail = machine->fault_detail;
+                    result->elapsed_ticks = machine->elapsed_ticks;
+                    return TYPE_STATUS_FAULT;
+                }
+                instruction_ticks = timing_result.ticks;
+                if (!core_machine_add_ticks(&instruction_ticks,
                         machine->external_cycle_round_ticks) ||
                     UINT64_MAX - result->ticks < instruction_ticks ||
                     UINT64_MAX - machine->elapsed_ticks < instruction_ticks) {
@@ -5919,11 +5859,8 @@ type_status core_machine_run(
                     machine->cpu_retirement_source_ticks = instruction_ticks;
                     continue;
                 }
-                core_machine_retirement_observation_publish(machine, instruction_ticks);
-                if (machine->retirement_time_contract ==
-                    CORE_MACHINE_RETIREMENT_TIME_PHYSICAL &&
-                    (machine->source_timing_unallocated ||
-                    !core_machine_retirement_qualification_contains(machine))) {
+                machine->cpu_retirement_source_ticks = instruction_ticks;
+                if (!core_machine_publish_successful_retirement(machine)) {
                     (C_VOID)core_machine_report_fault(machine, 0x54494d55u);
                     result->reason = CORE_MACHINE_STOP_FAULT;
                     result->linear_pc = core_machine_linear_pc(machine);
@@ -5942,6 +5879,7 @@ type_status core_machine_run(
                     result->elapsed_ticks = machine->elapsed_ticks;
                     return TYPE_STATUS_FAULT;
                 }
+                machine->cpu_retirement_source_ticks = 0u;
                 result->elapsed_ticks = machine->elapsed_ticks;
             }
             if (machine->executor_cpu.data.flagHalt) {

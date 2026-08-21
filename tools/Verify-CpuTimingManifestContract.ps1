@@ -120,7 +120,10 @@ foreach ($record in $allRecords) {
     if ($seen.ContainsKey($record.key_id)) { throw "Duplicate cross-profile key: $($record.key_id)" }
     $seen[$record.key_id] = $true
 }
-if ($EmitCanonicalKeys) { $allRecords | ConvertTo-Json -Depth 5 }
+if ($EmitCanonicalKeys) {
+    $allRecords | ConvertTo-Json -Depth 5
+    exit 0
+}
 foreach ($profile in ($allRecords.profile | Sort-Object -Unique)) {
     "$profile canonical_keys=$($allRecords.Where({ $_.profile -eq $profile }).Count)"
 }

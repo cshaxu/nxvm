@@ -3,14 +3,16 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
 endif()
 
 set(t360_machine "${PROJECT_SOURCE_DIR}/src/core/machine/machine.c")
+set(t360_timing "${PROJECT_SOURCE_DIR}/src/core/machine/cpu_timing.c")
 set(t360_inventory
     "${PROJECT_SOURCE_DIR}/docs/etc/evidence/t360-s1-four-profile-source-authority-consumer-inventory.md")
-foreach(t360_file IN ITEMS "${t360_machine}" "${t360_inventory}")
+foreach(t360_file IN ITEMS "${t360_machine}" "${t360_timing}" "${t360_inventory}")
     if(NOT EXISTS "${t360_file}")
         message(FATAL_ERROR "T360 source inventory input is missing: ${t360_file}")
     endif()
 endforeach()
 file(READ "${t360_machine}" t360_machine_text)
+file(READ "${t360_timing}" t360_timing_text)
 file(READ "${t360_inventory}" t360_inventory_text)
 
 function(t360_require text pattern description)
@@ -30,13 +32,13 @@ foreach(t360_consumer IN ITEMS
     "core_machine_80386_dynamic_multiply_cost"
     "core_machine_80386_secondary_source_instruction_cost"
     "core_machine_80386_privileged_source_instruction_cost"
-    "core_machine_instruction_cost"
+    "core_machine_cpu_timing_select"
     "CORE_MACHINE_SOURCE_UNALLOCATED_TICKS")
-    t360_require("${t360_machine_text}" "${t360_consumer}"
+    t360_require("${t360_machine_text}${t360_timing_text}" "${t360_consumer}"
         "missing timing consumer ${t360_consumer}")
-    t360_require("${t360_inventory_text}" "${t360_consumer}"
-        "inventory does not classify timing consumer ${t360_consumer}")
 endforeach()
+t360_require("${t360_inventory_text}" "core_machine_instruction_cost"
+    "historical inventory does not identify the pre-B0 selector")
 foreach(t360_anchor IN ITEMS
     "The 8086 Family User's Manual"
     "Table 1-16"
