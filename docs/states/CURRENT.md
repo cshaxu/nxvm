@@ -2,28 +2,8 @@
 
 ## Current Work
 
-**Active: M5 T435 S2, four-profile pre-implementation reconciliation.**
-
-## M5 T435 S2 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation; reconcile all four completed profile trackers before B0 implementation. |
-| Admission And Approval | Owner approval in this conversation on 2026-08-20: remove every identified pre-implementation documentation/governance gap so CPU timing implementation can close without handoff. |
-| Objective | Reconcile the four S1/S2 records, correct tracker-machine facts, and freeze the common manifest-keyed runtime-result contract required before B0. |
-| Non-goals | Do not change runtime timing, re-decide S1 evidence, or close T435. |
-| Reference Baseline | [T435 proposal](../proposals/m5-core-cpu-instruction-timing-program.md); [Td S121](../etc/evidence/td-s121-cpu-timing-evidence-first-governance.md); [Td S122](../etc/evidence/td-s122-cpu-timing-manifest-governance.md); all four accepted S1 ledgers and S2 manifests/trackers. |
-| Candidate Proposal | [Core CPU instruction timing programs](../proposals/m5-core-cpu-instruction-timing-program.md). |
-| Files And ABI Surface | `docs/etc/cpu-timing/`, `tools/`, `docs/states/CURRENT.md` and tracker verification records only; no runtime or public ABI change. |
-| Applicable Rules | Task Reading Set; execution coverage ledger; documentation rules; Td S121 evidence and Td S122 manifest contract. |
-| Verification | Re-run every manifest verifier, reconcile every reported count to its tracker, check the shared result contract against Td S122, then run documentation governance and diff checks. |
-| Expected Markers | `M5:T435:S2:FOUR-PROFILE-PREIMPLEMENTATION:OK`; `M5:T435:S2:MANIFEST-RESULT-CONTRACT:OK`. |
-| Asset Needs | Existing ledger, audit and source only; no import or external asset. |
-| Reporting Requirements | Report every key class, current disposition, batch/test owner, closure predicate and residual blocker; commit/push by default. |
-| Stop Conditions | Stop if any manifest/tracker count disagrees, a generated context is not demonstrably legal, Td S122 cannot be met by the result contract, or runtime implementation would be required in this documentation P. |
-| Exit Criteria | One pushed S2 P leaves all four profile trackers count-correct and closes the common result-contract, context-legality and current-state handoff required to start B0. |
-| Original Owner Request | Thoroughly complete all implementation-preparation documentation so CPU timing work can begin without preventable tail work. |
-| Similar-Issue Sweep | Check all profile base/context/combination counts, L2 labels, generated-key legality, results schema, fallback/origin proof, old-selector removal, and all current-state cross-profile handoff statements. |
+**M5 T435 remains open between subtasks.** S2 is accepted; no implementation
+packet is active until the owner admits B0/S3.
 ## Current Technical Baseline
 
 - **Current developer artifact:** target `vm-0-5-0434`; T434 S2 `nxvm_0_5_0434.exe` / `build/output/nxvm_0_5_0434.exe`, SHA-256 `0252F8FDA17BEC2131606F19E3547B46894AC6B56DD37EC3B16BD302494FAFDC`. T434 has one copied Core timing-plan publication route for default PC/AT, IBM 5170 Model 339 and Model-40 BYOB session composition.
@@ -48,7 +28,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T435 S1 | Closed: four [CPU timing ledgers](../etc/cpu-timing/README.md) cover every successful-retirement instruction form. 8086 retains the explicit 86Box-derived L2 dynamic Group 3 model; 80186 retains explicit range midpoints; 80286 and 80386DX are all L3. The owner accepted all blocks on 2026-08-20; S2 is the next separate implementation-audit stage. |
+| T435 S2 | Closed: four [CPU timing ledgers and manifests](../etc/cpu-timing/README.md) cover every successful-retirement instruction form and legal timing context. The [S2 readiness audit](../etc/evidence/t435-s2-four-profile-implementation-readiness-audit.md) mechanically freezes 3,295 named keys (no anonymous L1), their S1 L3/L2 source disposition, current nonconformance, result-contract fields, owner and B0--B4 closure predicate. B0/S3 is the next owner-admitted implementation stage. |
 | T434 | Closed: all 30 copied plan declarations/dispositions, every current VM materializer and atomic Core publication route are reconciled; full task closure proof is retained in the [S3 audit](../etc/evidence/t434-s3-task-closure-audit.md) and [task history](../history/M5-T434-core-timing-contract-machine-plan.md). |
 | T433 | Closed after corrective S7: 30 frozen Core capabilities have a source-sufficiency and ownership disposition; chip/manual semantics are separated from VM-profile inputs, host/product boundaries and the explicit ATA/HDC source block. [S7 ledger](../etc/evidence/t433-s7-core-source-sufficiency-ledger.md). |
 | T432 | Closed: separate Core-private Set-2 translation and typematic break states prevent released keys from restarting typematic; focused regression, Model-339 contract and owner Console/Window verification pass. [Record](../history/M5-T432-keyboard-keyup-reliability-repair.md). |

@@ -73,10 +73,10 @@ admitted transaction/device/board timing receivers.
 | S | scope and owned output | exact exit criterion |
 | --- | --- | --- |
 | S3 / B0 | Create `cpu_timing.c`; materialize canonical manifest keys; accept decoder-owned inputs; emit shared result records; route every successful CPU timing request through one publisher | all manifests generate canonical records; one `machine.c` timing/publication seam; no board/transaction rule enters CPU timing |
-| S4 / 8086 | Implement 8086 L3 plus 16 named L2:G3 keys, including EA, odd word, prefixes, repeat and Group-3 partitions | all 790 keys conform; manual bounds/origin/unallocated proof; old selector removed |
-| S5 / 80186 | Implement exact/formula keys and 25 declared midpoint L2 keys, including 80186-only forms and legal contexts | all 661 keys conform; no endpoint/constrained legacy arithmetic path remains |
-| S6 / 80286 | Implement all L3 forms including real/PM, privilege/gate/task, EA/odd word, next-byte and repeat inputs | all 705 keys conform; no successful fallback remains |
-| S7 / 80386DX | Implement all L3 forms including size, VM86/PM, system forms, early-out multiply and r/m/repeat contexts | all 1,066 keys conform; formula/path inputs are published and checked |
+| S4 / 8086 | Implement 8086 L3 plus 16 named L2:G3 keys, including EA, odd word, prefixes, repeat and Group-3 partitions | all 649 keys conform; manual bounds/origin/unallocated proof; old selector removed |
+| S5 / 80186 | Implement exact/formula keys and 25 declared midpoint L2 keys, including 80186-only forms and legal contexts | all 602 keys conform; no endpoint/constrained legacy arithmetic path remains |
+| S6 / 80286 | Implement all L3 forms including real/PM, privilege/gate/task, EA/odd word, next-byte and repeat inputs | all 812 keys conform; no successful fallback remains |
+| S7 / 80386DX | Implement all L3 forms including size, VM86/PM, system forms, early-out multiply and r/m/repeat contexts | all 1,232 keys conform; formula/path inputs are published and checked |
 | S8 / B4 | Cross-profile result consumption, obsolete-selector removal and closure audit | zero nonconforming key across four manifests; focused and cross-profile regressions pass |
 
 Each CPU S verifies decode/semantic execution and fault boundaries as a

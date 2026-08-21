@@ -55,6 +55,13 @@ Template IDs and axes remain the compact authoring form, but B0 must emit the
 fully materialized record before a key can receive a result. Prefix bytes that
 do not change a legal semantic axis never create a separate key.
 
+S2's shared `Verify-CpuTimingManifestContract.ps1` materializes the provisional
+canonical inventory and rejects count/field/duplicate drift across all four
+profiles. Its `decoder-form:<key_id>` encoding and `not-observed` tick value
+are audit facts, not B0 results. B0 must replace that provisional descriptor
+with the registered decoder form and a real result record before it may mark
+any key conforming.
+
 ## Cross-profile completion rule
 
 All four result files use this schema. B0 is complete only when it covers the

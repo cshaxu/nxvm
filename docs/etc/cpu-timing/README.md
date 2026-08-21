@@ -43,3 +43,5 @@ The active 80286 S2 block records its all-L3 universe in the
 The active final profile block uses the [80386DX manifest](t435-s2-80386-timing-manifest.json), [audit](t435-s2-80386-implementation-audit.md), and [tracker](t435-s2-80386-implementation-tracker.md).
 
 All four profiles share the [context-legality contract](t435-s2-context-legality.md) and implementation-time [manifest result contract](t435-s2-manifest-result-contract.md). Together they require legal semantic contexts, frozen expansion cardinalities and canonical per-key runtime proof; tracker expansion alone cannot close a key.
+
+The [four-profile S2 readiness audit](../evidence/t435-s2-four-profile-implementation-readiness-audit.md) records the only implementation handoff: 3,295 mechanically generated canonical keys, their current nonconforming dispositions, the `cpu_timing.c` ownership boundary and the B0--B4 closure sequence.
