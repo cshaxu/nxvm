@@ -41,6 +41,22 @@ if(NOT WIN32)
 endif()
 
 set(PROJECT_PROBE_DIR "${CMAKE_BINARY_DIR}/probes")
+set(PROJECT_CPU_TIMING_MANIFEST_CATALOG
+    "${CMAKE_BINARY_DIR}/generated/cpu_timing_manifest_catalog.inc")
+add_custom_command(
+    OUTPUT "${PROJECT_CPU_TIMING_MANIFEST_CATALOG}"
+    COMMAND "${POWERSHELL_EXECUTABLE}" -NoProfile -ExecutionPolicy Bypass
+        -File "${CMAKE_SOURCE_DIR}/tools/Export-CpuTimingManifestCatalog.ps1"
+        -OutPath "${PROJECT_CPU_TIMING_MANIFEST_CATALOG}"
+    DEPENDS tools/Export-CpuTimingManifestCatalog.ps1
+        tools/Verify-CpuTimingManifestContract.ps1
+        docs/etc/cpu-timing/t435-s2-8086-timing-manifest.json
+        docs/etc/cpu-timing/t435-s2-80186-timing-manifest.json
+        docs/etc/cpu-timing/t435-s2-80286-timing-manifest.json
+        docs/etc/cpu-timing/t435-s2-80386-timing-manifest.json
+    VERBATIM)
+add_custom_target(cpu-timing-manifest-catalog
+    DEPENDS "${PROJECT_CPU_TIMING_MANIFEST_CATALOG}")
 
 add_library(core-machine STATIC
     src/core/machine/clock.c
@@ -59,11 +75,13 @@ add_library(core-machine STATIC
     src/core/machine/retirement_observation_interface.c
     src/core/machine/timeline.c
 )
+add_dependencies(core-machine cpu-timing-manifest-catalog)
 # This is the complete public core-machine runtime. It extends the primitive
 # storage/executor target below; it is not a second guest executor.
 add_library(core-machine-runtime ALIAS core-machine)
 target_include_directories(core-machine PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
+    "${CMAKE_BINARY_DIR}/generated"
 )
 
 add_executable(core-machine-contract-smoke

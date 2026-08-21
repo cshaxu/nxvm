@@ -6,6 +6,9 @@ param(
 $ErrorActionPreference = "Stop"
 $catalog = @(& (Join-Path $PSScriptRoot "Verify-CpuTimingManifestContract.ps1") `
     -EmitCanonicalKeys | ConvertFrom-Json)
+if ($catalog.Count -eq 1 -and $catalog[0] -is [System.Array]) {
+    $catalog = @($catalog[0])
+}
 if (-not (Test-Path -LiteralPath $ResultPath)) {
     throw "CPU timing result file not found: $ResultPath"
 }

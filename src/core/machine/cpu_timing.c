@@ -3,6 +3,20 @@
 #include "core/machine/machine.h"
 #include "core/machine/cpu_timing.h"
 
+static const char *const core_machine_cpu_timing_manifest_keys[] = {
+#include "cpu_timing_manifest_catalog.inc"
+};
+
+_Static_assert(sizeof(core_machine_cpu_timing_manifest_keys) /
+    sizeof(core_machine_cpu_timing_manifest_keys[0]) == 3295u,
+    "T435 S2 canonical manifest count drifted");
+
+STD_SIZE_T core_machine_cpu_timing_manifest_key_count(C_VOID)
+{
+    return sizeof(core_machine_cpu_timing_manifest_keys) /
+        sizeof(core_machine_cpu_timing_manifest_keys[0]);
+}
+
 static type_unsigned_32 core_machine_cpu_timing_formula_inputs(
     const core_machine *machine)
 {

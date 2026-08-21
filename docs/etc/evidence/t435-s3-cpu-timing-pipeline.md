@@ -36,6 +36,12 @@ the materialized inventory consumed by result tooling: 649 8086, 602 80186,
 profile, L3/named-L2 level, key, legal context, source rule, current route,
 batch, regression identity and nonconforming status.
 
+The build invokes `Export-CpuTimingManifestCatalog.ps1` to generate that exact
+3,295-key catalog into the Core build tree; `cpu_timing.c` compiles it and has
+a 3,295-entry assertion. S4--S7 bind decoder forms and context inputs to those
+catalog entries; B0 does not fabricate such bindings before the profile's
+source rule is implemented.
+
 `Verify-CpuTimingResults.ps1 -ResultPath <file>` consumes that exact inventory
 and requires one real result for every key. It rejects missing, duplicate or
 unknown keys, absent ticks/formula inputs/form/origin, an unallocated result,

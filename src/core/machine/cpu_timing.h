@@ -32,6 +32,7 @@ typedef struct core_machine_cpu_timing_result {
 /* B0's only successful-retirement CPU timing selection entry. */
 C_INT core_machine_cpu_timing_select(core_machine *machine,
     core_machine_cpu_timing_result *out_result);
+STD_SIZE_T core_machine_cpu_timing_manifest_key_count(C_VOID);
 
 /* Legacy rule evaluators remain private to Core. They calculate a candidate
  * only; origin assignment and result publication belong exclusively to the
