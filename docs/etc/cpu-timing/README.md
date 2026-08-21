@@ -32,7 +32,7 @@ The active 80186 S2 block applies the same contract through the
 [80186 manifest](t435-s2-80186-timing-manifest.json), its
 [implementation audit](t435-s2-80186-implementation-audit.md), and its
 [implementation tracker](t435-s2-80186-implementation-tracker.md).  Its
-templates expand 256 L3 and 25 explicit fixed-midpoint L2 base keys; legal
+templates expand 253 L3 and 25 explicit fixed-midpoint L2 base keys; legal
 context axes are generated from the manifest rather than left as prose.
 
 The active 80286 S2 block records its all-L3 universe in the
@@ -42,4 +42,4 @@ The active 80286 S2 block records its all-L3 universe in the
 
 The active final profile block uses the [80386DX manifest](t435-s2-80386-timing-manifest.json), [audit](t435-s2-80386-implementation-audit.md), and [tracker](t435-s2-80386-implementation-tracker.md).
 
-All four profiles share the implementation-time [manifest result contract](t435-s2-manifest-result-contract.md). It is the required bridge from compact templates to canonical per-key records and runtime proof; tracker expansion alone cannot close a key.
+All four profiles share the [context-legality contract](t435-s2-context-legality.md) and implementation-time [manifest result contract](t435-s2-manifest-result-contract.md). Together they require legal semantic contexts, frozen expansion cardinalities and canonical per-key runtime proof; tracker expansion alone cannot close a key.

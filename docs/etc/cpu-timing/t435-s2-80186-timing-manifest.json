@@ -2,9 +2,10 @@
   "schema": "nxvm.cpu-timing-manifest.v1",
   "profile": "80186",
   "source_ledger": "t435-s1-80186-ledger.md",
-  "expected": {"base": 281, "L3": 256, "L2": 25},
+  "expected": {"base": 278, "L3": 253, "L2": 25, "contexts":235, "combinations":89},
   "status_values": ["conforming", "wrong-value", "unallocated", "missing-input", "missing-test"],
-  "key_rule": "Each template expands all shown axes. Every key inherits its Intel Table 1-16 source rule or explicitly named fixed-midpoint L2 model; no successful key has an anonymous fallback.",
+  "legal_context_contract": "t435-s2-context-legality.md",
+  "key_rule": "Each template expands all shown axes. Every key inherits its Intel Table 1-16 source rule or explicitly named fixed-midpoint L2 model; prefixes are legal contexts, never successful standalone retirements.",
   "base_templates": [
     {"id":"I186-ADJ-{op}","op":["AAA","AAS","AAD","AAM","CBW","CWD","DAA","DAS"],"level":"L3","source_rule":"I186-UM-1985 Table 1-16 exact","route":"primary","status":"missing-test","batch":"B0+B4","test":"i186_timing_{id}"},
     {"id":"I186-ALU-{op}-{form}","op":["ADC","ADD","AND","OR","SBB","SUB","XOR"],"form":["RR","RM","MR","RI","MI"],"level":"L3","source_rule":"Table 1-16 exact","route":"primary","status":"missing-test","batch":"B0+B3+B4","test":"i186_timing_{id}"},
@@ -34,18 +35,17 @@
     {"id":"I186-STRING-{op}-{width}","op":["MOVS","CMPS","STOS","LODS","SCAS","INS","OUTS"],"width":["B","W"],"level":"L3","source_rule":"Table 1-16 primitive exact","route":"string-io","status":"missing-test","batch":"B0+B3+B4","test":"i186_timing_{id}"},
     {"id":"I186-REP-{op}-{width}","op":["MOVS","CMPS-REPE","CMPS-REPNE","STOS","LODS","SCAS-REPE","SCAS-REPNE","INS","OUTS"],"width":["B","W"],"level":"L3","source_rule":"Table 1-16 repeat formula","route":"string-io","status":"missing-test","batch":"B0+B3+B4","test":"i186_timing_{id}"},
     {"id":"I186-{op}","op":["BOUND","ENTER-L0","ENTER-L1","ENTER-LN","LEAVE"],"level":"L3","source_rule":"Table 1-16 exact/formula","route":"mixed","status":"missing-test","batch":"B0+B4","test":"i186_timing_{id}"},
-    {"id":"I186-FLAG-{op}","op":["CLC","CLD","CLI","CMC","STC","STD","STI","LAHF","SAHF","NOP"],"level":"L3","source_rule":"Table 1-16 exact","route":"mixed","status":"missing-test","batch":"B0+B4","test":"i186_timing_{id}"},
-    {"id":"I186-PREFIX-{op}","op":["LOCK","SEGMENT","REP"],"level":"L3","source_rule":"Table 1-16 exact prefix cost 2","route":"unallocated-or-missing-term","status":"unallocated","batch":"B3+B4","test":"i186_timing_{id}"}
+    {"id":"I186-FLAG-{op}","op":["CLC","CLD","CLI","CMC","STC","STD","STI","LAHF","SAHF","NOP"],"level":"L3","source_rule":"Table 1-16 exact","route":"mixed","status":"missing-test","batch":"B0+B4","test":"i186_timing_{id}"}
   ],
   "context_policy": "Prefixes are axes, not redundant byte streams. SEGMENT expands only a legal memory-source use; ODD-WORD expands only a legal 16-bit transfer; REP phases expand only a legal repeat instruction. LOCK is not crossed with non-lockable instructions.",
   "context_key_sets": [
     {"id_suffix":"SEGMENT","base_selector":"I186-(ALU-.*-(RM|MR|MI)|CMP-(RM|MR|MI)|TEST-(RM|MI)|INC-M|DEC-M|NEG-M|NOT-M|XCHG-MR|MOV-(RM|MR|MOFFS-R|MOFFS-W|SREG-TO-M|SREG-FROM-M)|LDS-M|LES-M|PUSH-M|POP-M|CALL-(RM16|M1616)|JMP-(RM16|M1616)|MUL-M.*|IMUL-M.*|DIV-M.*|IDIV-M.*|(ROL|ROR|RCL|RCR|SHL|SHR|SAR)-M.*|STRING-(MOVS|CMPS|LODS)-.*|REP-(MOVS|CMPS-REPE|CMPS-REPNE|LODS)-.*)","source_rule":"Table 1-16 segment prefix exact +2","route":"mixed; 80186 currently adds inherited EA/odd terms on several primary paths","status":"wrong-value","batch":"B3+B4","test":"i186_timing_{id}"},
     {"id_suffix":"ODD-WORD","base_selector":"I186-(ALU-.*-(RM|MR|MI)|CMP-(RM|MR|MI)|TEST-(RM|MI)|INC-M|DEC-M|NEG-M|NOT-M|XCHG-MR|MOV-.*|LDS-M|LES-M|PUSH-M|POP-M|CALL-(RM16|M1616)|JMP-(RM16|M1616)|MUL-(R16|M16)|IMUL-(R16|M16)|IDIV-(R16|M16)|DIV-(R16|M16)|G2-.*|STRING-.*-W|REP-.*-W)","source_rule":"Table 1-16 odd-addressed 16-bit transfer +4","route":"missing per-form transfer observation","status":"missing-input","batch":"B3+B4","test":"i186_timing_{id}"},
     {"id_suffix":"REP-PHASE-{phase}","base_selector":"I186-REP-.*","phase":["FIRST","CONTINUE","ZERO"],"source_rule":"Table 1-16 repeat setup/per-primitive formula","route":"string-io","status":"missing-test","batch":"B0+B3+B4","test":"i186_timing_{id}"},
-    {"id_suffix":"LOCK","base_selector":"I186-(ALU-.*-(RM|MR|MI)|INC-M|DEC-M|NEG-M|NOT-M|XCHG-MR|(ROL|ROR|RCL|RCR|SHL|SHR|SAR)-M.*)","source_rule":"Table 1-16 lock prefix exact +2","route":"unallocated-or-missing-term","status":"unallocated","batch":"B3+B4","test":"i186_timing_{id}"}
+    {"id_suffix":"LOCK","base_selector":"I186-(ALU-.*-(MR|MI)|INC-M|DEC-M|NEG-M|NOT-M|XCHG-MR)","source_rule":"Table 1-16 lock prefix exact +2 on legal memory RMW","route":"unallocated-or-missing-term","status":"unallocated","batch":"B3+B4","test":"i186_timing_{id}"}
   ],
   "combination_context_sets": [
-    {"id_suffix":"LOCK-SEGMENT","base_selector":"I186-(ALU-.*-(RM|MR|MI)|INC-M|DEC-M|NEG-M|NOT-M|XCHG-MR|(ROL|ROR|RCL|RCR|SHL|SHR|SAR)-M.*)","source_rule":"Table 1-16 exact LOCK + SEGMENT terms","route":"unallocated-or-missing-term","status":"unallocated","batch":"B3+B4","test":"i186_timing_{id}"},
+    {"id_suffix":"LOCK-SEGMENT","base_selector":"I186-(ALU-.*-(MR|MI)|INC-M|DEC-M|NEG-M|NOT-M|XCHG-MR)","source_rule":"Table 1-16 exact LOCK + SEGMENT terms on legal memory RMW","route":"unallocated-or-missing-term","status":"unallocated","batch":"B3+B4","test":"i186_timing_{id}"},
     {"id_suffix":"SEGMENT-ODD-WORD","base_selector":"I186-STRING-(MOVS|CMPS|LODS)-W|I186-REP-(MOVS|CMPS-REPE|CMPS-REPNE|LODS)-W","source_rule":"Table 1-16 segment and odd-word terms","route":"missing per-form transfer observation","status":"missing-input","batch":"B3+B4","test":"i186_timing_{id}"},
     {"id_suffix":"SEGMENT-REP-PHASE-{phase}","base_selector":"I186-REP-(MOVS|CMPS-REPE|CMPS-REPNE|LODS)-.*","phase":["FIRST","CONTINUE","ZERO"],"source_rule":"Table 1-16 segment plus repeat formula","route":"missing combined input/result","status":"missing-input","batch":"B3+B4","test":"i186_timing_{id}"},
     {"id_suffix":"ODD-WORD-REP-PHASE-{phase}","base_selector":"I186-REP-.*-W","phase":["FIRST","CONTINUE","ZERO"],"source_rule":"Table 1-16 odd-word transfer plus repeat formula","route":"missing combined input/result","status":"missing-input","batch":"B3+B4","test":"i186_timing_{id}"},

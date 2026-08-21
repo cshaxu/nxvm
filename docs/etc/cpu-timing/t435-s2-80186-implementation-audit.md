@@ -30,7 +30,7 @@ instruction reaching it is nonconforming; it is never an L1 substitute.
 | `MUL`, inherited `IMUL`, `IDIV`, immediate `IMUL` | legacy dynamic arithmetic | **wrong-value**: values are endpoints/constrained source-model values, not S1's fixed midpoint L2 values; all 14 keys require replacement by the named midpoint rule |
 | `DIV` | legacy dynamic arithmetic | exact source scalar exists but lacks a per-key result; `missing-test`, not conforming |
 | Group-2 rotate/shift (`R1`, `RCL`, `M1`, `MCL`, immediate count) | no 80186 Group-2 selector | **unallocated**: all 42 L3 formula keys require B1 allocation; the 80186 low-five-bit count must be an input |
-| standalone `LOCK`, `SEGMENT`, `REP` prefix entries | no complete prefix-term program | **unallocated**: the three explicit Table 1-16 prefix keys require B3 allocation.  Legal prefix contexts are separately expanded, never inferred from byte count |
+| legal `LOCK`, segment override and repeat contexts | no complete prefix-term program | generated only for their consuming legal instruction form; `LOCK` is limited to memory RMW and no prefix is a standalone retirement key |
 | segment override, odd word and repeat phase contexts | inherited helper/string path | no complete form/transfer observation is emitted.  Segment/odd-word contexts are `wrong-value` or `missing-input` as recorded in the manifest; repeat phases are `missing-test` |
 
 The current code applies `core_machine_8086_timing_effective_address()` and
@@ -42,15 +42,15 @@ be conforming.
 
 ## Exact initial accounting
 
-`Verify-80186TimingManifest.ps1` expands 281 base keys: 256 L3 and 25
+`Verify-80186TimingManifest.ps1` expands 278 base keys: 253 L3 and 25
 L2:midpoint.  The intentionally strict initial state is 0 conforming, 14
-wrong-value, 45 unallocated and 222 missing-test.  The 14 are every accepted
-midpoint Group-3/immediate-IMUL key; the 45 are the 42 Group-2 formula keys
-and three explicit prefix keys.  `missing-test` is not a pass: it means a
+wrong-value, 42 unallocated and 222 missing-test.  The 14 are every accepted
+midpoint Group-3/immediate-IMUL key; the 42 are the Group-2 formula keys.
+`missing-test` is not a pass: it means a
 source route may exist, but no focused key result has yet proved the required
 value and inputs.
 
-The manifest additionally expands 263 single-axis contexts and 117 legal
+The manifest additionally expands 235 single-axis contexts and 89 legal
 combined/phase contexts.  They cover
 only legal segment-source uses, odd 16-bit transfers, legal repeat phases and
 lockable read-modify-write forms.  The combined set covers legal lock/segment

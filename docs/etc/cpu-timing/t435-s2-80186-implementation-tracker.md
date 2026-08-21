@@ -3,9 +3,10 @@
 ## Controlling artifact
 
 The [80186 manifest](t435-s2-80186-timing-manifest.json) is the sole
-per-key closure ledger.  It expands 281 base instruction keys from the
-accepted [80186 manual ledger](t435-s1-80186-ledger.md), then 263 legal
-single-axis and 117 legal combined/phase context keys.  This document is the
+per-key closure ledger.  It expands 278 base instruction keys from the
+accepted [80186 manual ledger](t435-s1-80186-ledger.md), then 235 legal
+single-axis and 89 legal combined/phase context keys under the shared
+[context-legality contract](t435-s2-context-legality.md). This document is the
 human implementation map; it
 cannot change a key's source rule, level, status, batch or regression ID.
 
@@ -34,7 +35,7 @@ shared [manifest result contract](t435-s2-manifest-result-contract.md).
 | `I186-DIV-*` | L3 exact | source scalar exists; proof absent | B0+B1+B3+B4 |
 | `I186-{ROL,ROR,RCL,RCR,SHL,SHR,SAR}-*` | L3 formula; count modulo 32 | unallocated | B0+B1+B3+B4 |
 | `I186-STRING-*`, `I186-REP-*` | L3 primitive/repeat formula | source table exists; phase/termination proof absent | B0+B1+B3+B4 |
-| `I186-{BOUND,ENTER-*,LEAVE}`, `I186-FLAG-*`, `I186-PREFIX-*` | L3 exact/formula | mixed/unallocated as manifest records | B0+B1+B3+B4 |
+| `I186-{BOUND,ENTER-*,LEAVE}`, `I186-FLAG-*` | L3 exact/formula | mixed/unallocated as manifest records | B0+B1+B3+B4 |
 | generated `-SEGMENT`, `-ODD-WORD`, `-LOCK`, `-REP-PHASE-*` and legal combined suffixes | S1 Table 1-16 context rule | no complete independent input/result stream | B3+B4 |
 
 The template form is deliberately compact, but braces in the manifest expand

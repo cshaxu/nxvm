@@ -29,4 +29,5 @@ function Expand-ContextSets($sets, $kind) {
 $contexts=Expand-ContextSets $manifest.context_key_sets "context"
 $combinations=Expand-ContextSets $manifest.combination_context_sets "combination"
 foreach($key in $combinations.Keys){if($contexts.ContainsKey($key)){throw "Combination duplicates context: $key"}}
+if($contexts.Count -ne $manifest.expected.contexts -or $combinations.Count -ne $manifest.expected.combinations){throw "Context count mismatch: contexts=$($contexts.Count) combinations=$($combinations.Count)"}
 "80286 timing manifest: base=$($seen.Count) L3=$($counts.L3) conforming=$($counts.conforming) wrong=$($counts['wrong-value']) unallocated=$($counts.unallocated) missing_input=$($counts['missing-input']) missing_test=$($counts['missing-test']) contexts=$($contexts.Count) combinations=$($combinations.Count)"

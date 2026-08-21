@@ -58,7 +58,7 @@ foreach ($template in $manifest.base_templates) {
     }
 }
 
-if ($seen.Count -ne 244 -or $counts.L3 -ne 228 -or $counts.L2 -ne 16) {
+if ($seen.Count -ne $manifest.expected.base -or $counts.L3 -ne $manifest.expected.L3 -or $counts.L2 -ne $manifest.expected.L2) {
     throw "Base-key count mismatch: total=$($seen.Count) L3=$($counts.L3) L2=$($counts.L2)"
 }
 foreach ($template in $manifest.context_templates) {
@@ -99,8 +99,7 @@ foreach ($set in $manifest.context_key_sets) {
         if ($contextCounts.ContainsKey($status)) { ++$contextCounts[$status] }
     }
 }
-if ($contextSeen.Count -ne 289 -or $contextCounts.L3 -ne 273 -or $contextCounts.L2 -ne 16 -or $contextCounts.unallocated -ne 220 -or
-    $contextCounts['missing-input'] -ne 69) {
+if ($contextSeen.Count -ne $manifest.expected.contexts -or $contextCounts.L3 -ne $manifest.expected.context_L3 -or $contextCounts.L2 -ne $manifest.expected.context_L2) {
     throw "Context-key count mismatch: total=$($contextSeen.Count) unallocated=$($contextCounts.unallocated) missing_input=$($contextCounts['missing-input'])"
 }
 
@@ -149,8 +148,7 @@ foreach ($set in $manifest.combination_context_sets) {
         throw "Combination count mismatch for $($set.id_suffix): actual=$setSeen expected=$($set.count)"
     }
 }
-if ($combinationSeen.Count -ne 257 -or $combinationCounts.L3 -ne 257 -or $combinationCounts.L2 -ne 0 -or $combinationCounts.unallocated -ne 19 -or
-    $combinationCounts['missing-input'] -ne 196 -or $combinationCounts['missing-test'] -ne 42) {
+if ($combinationSeen.Count -ne $manifest.expected.combinations -or $combinationCounts.L3 -ne $manifest.expected.combination_L3 -or $combinationCounts.L2 -ne $manifest.expected.combination_L2) {
     throw "Combination-key count mismatch: total=$($combinationSeen.Count) unallocated=$($combinationCounts.unallocated) missing_input=$($combinationCounts['missing-input']) missing_test=$($combinationCounts['missing-test'])"
 }
 

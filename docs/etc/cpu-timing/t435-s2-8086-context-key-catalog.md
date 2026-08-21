@@ -41,7 +41,7 @@ r8/r16/m8/m16. Thus the pre-prefix base universe is 244 keys.
 | --- | --- | --- | --- |
 | `NONE` | all 244 base keys with no timing prefix | primary, control-stack, legacy dynamic or legacy fallback | 56 L3 keys are absent/conflicting and 16 L2 keys are absent/conflicting, as enumerated in the [implementation audit](t435-s2-8086-implementation-audit.md#atomic-base-form-reconciliation-and-count) |
 | `SEGMENT` | one ES/CS/SS/DS override on a base key whose S1 formula consumes a source-effective-address operand | primary, legacy fallback, control-stack and legacy Group-3 add 2 for selected memory paths; string selection omits it | selected non-string paths conform; already-missing base paths remain missing; source-string keys require the missing +2 term |
-| `LOCK` | one `F0` before any successful pre-80386 base key admitted by the existing decoder | decoder advances it; non-string timing selectors reject its non-segment prefix and reach unallocated; string selection accepts it but adds no 2 | all 228 L3 and all 16 L2 `LOCK` context keys are nonconforming; this is distinct from `NONE` |
+| `LOCK` | one `F0` only on documented memory read-modify-write forms: arithmetic/logical destination, `INC`/`DEC`, `NEG`/`NOT`, and memory `XCHG` | current timing has no complete legal-RMW lock term program | the 19 legal L3 `LOCK` context keys are nonconforming; register, string/repeat, compare/test and shift/rotate forms create no key |
 | `REP` | `REP MOVS`, `REP STOS`, `REP LODS`, each byte/word | string repeat contract | setup plus per-successful-primitive formula is selected; segment/odd-word subcontexts are assessed independently |
 | `REPE` / `REPNE` | `CMPS` and `SCAS`, each prefix sense and byte/word | string repeat contract | setup, iteration and termination input are selected; segment/odd-word subcontexts are assessed independently |
 | `ODD-WORD` | each word-transfer base or repeat key for which S1 Table 2-21 assigns +4 | primary/control/legacy paths call the odd-word helper; string selection has no such addition | selected non-string paths conform; word-string keys lack the term |
@@ -56,7 +56,7 @@ a timing-coverage dimension.
 
 | class | affected finite key set | defect | repair owner |
 | --- | --- | --- | --- |
-| `LOCK(B)` | all 244 base keys | no universal +2 prefix program; non-string paths become unallocated and string paths omit the term | T435 8086 timing-program implementation |
+| `LOCK(B)` | 19 legal memory-RMW base forms | no legal-RMW +2 prefix program | T435 8086 timing-program implementation |
 | `SEGMENT(S)` | source-string `MOVS`, `CMPS`, `LODS`, primitive and legal repeat forms | string timing bypasses the segment +2 formula input | T435 8086 timing-program implementation |
 | `ODD-WORD(W)` | word `MOVS`, `CMPS`, `STOS`, `LODS`, `SCAS`, primitive and legal repeat forms | string timing has no odd-address transfer input | T435 8086 timing-program implementation |
 | `SEGMENT` on an already failed memory base key | every such memory key | no selector exists to receive the additional term | T435 8086 timing-program implementation with the base-form repair |

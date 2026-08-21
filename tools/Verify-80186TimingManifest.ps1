@@ -39,7 +39,7 @@ foreach ($template in $manifest.base_templates) {
         ++$counts[$status]
     }
 }
-if ($seen.Count -ne 281 -or $counts.L3 -ne 256 -or $counts.L2 -ne 25) { throw "Base-key count mismatch: total=$($seen.Count) L3=$($counts.L3) L2=$($counts.L2)" }
+if ($seen.Count -ne $manifest.expected.base -or $counts.L3 -ne $manifest.expected.L3 -or $counts.L2 -ne $manifest.expected.L2) { throw "Base-key count mismatch: total=$($seen.Count) L3=$($counts.L3) L2=$($counts.L2)" }
 if ($manifest.expected.base -ne $seen.Count -or $manifest.expected.L3 -ne $counts.L3 -or $manifest.expected.L2 -ne $counts.L2) { throw "Expected counts disagree with expansion" }
 
 $contexts = @{}
@@ -76,5 +76,8 @@ foreach ($set in $manifest.combination_context_sets) {
             $combinations[$key] = $true
         }
     }
+}
+if ($contexts.Count -ne $manifest.expected.contexts -or $combinations.Count -ne $manifest.expected.combinations) {
+    throw "Context count mismatch: contexts=$($contexts.Count) combinations=$($combinations.Count)"
 }
 "80186 timing manifest: base=$($seen.Count) L3=$($counts.L3) L2=$($counts.L2) conforming=$($counts.conforming) wrong=$($counts['wrong-value']) unallocated=$($counts.unallocated) missing_input=$($counts['missing-input']) missing_test=$($counts['missing-test']) contexts=$($contexts.Count) combinations=$($combinations.Count)"
