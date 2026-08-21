@@ -2,28 +2,8 @@
 
 ## Current Work
 
-**Active: M5 T435 S3 / B0, Core CPU timing execution skeleton.**
-
-## M5 T435 S3 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation; B0 consumes the complete four-profile S2 manifest universe. |
-| Admission And Approval | Owner approved in this conversation on 2026-08-21: begin S3 after accepted S2 closure; no exception is approved. |
-| Objective | Create the single Core-private CPU timing selection/result subsystem, make `machine.c` its one successful-retirement caller and publisher, and establish executable four-profile result verification. |
-| Non-goals | Do not claim any manifest key conforming, select new Intel values, complete a profile, change instruction semantics, or absorb READY/HOLD/DMA/prefetch/device/board timing. |
-| Reference Baseline | [T435 proposal](../proposals/m5-core-cpu-instruction-timing-program.md); [S2 readiness audit](../etc/evidence/t435-s2-four-profile-implementation-readiness-audit.md); [result contract](../etc/cpu-timing/t435-s2-manifest-result-contract.md); [context legality](../etc/cpu-timing/t435-s2-context-legality.md); Td S121/S122. |
-| Candidate Proposal | [Core CPU instruction timing programs](../proposals/m5-core-cpu-instruction-timing-program.md). |
-| Files And ABI Surface | `src/core/machine/cpu_timing.[ch]`, `machine.[ch]`, retirement observation and focused tests/tools/CMake plus task evidence/status; Core-private only, with no public VM ABI change. |
-| Applicable Rules | Task Reading Set; architecture and coding rules; execution coverage/code-size rules; Td S121 evidence-first and Td S122 per-key result contract. |
-| Verification | Compile and focused timing/retirement tests; source-shape check that `machine.c` has one timing call/publication seam; materialize and validate all four manifests; result verifier rejects absent, duplicate, unallocated or nonconforming records; documentation governance and diff checks. |
-| Expected Markers | `M5:T435:S3:CPU-TIMING-SINGLE-SEAM:OK`; `M5:T435:S3:FOUR-PROFILE-RESULT-PIPELINE:OK`. |
-| Asset Needs | Existing tracked manifests, ledgers and source only; no source/media import. |
-| Reporting Requirements | Report every migrated selector, result field and manifest-count verification, board-boundary preservation, code delta and any residual blocker; commit/push by default. |
-| Stop Conditions | Stop for a required S1 rule/value decision, semantic regression, unavoidable public ABI expansion, a board/transaction input entering CPU timing, any surviving parallel successful-retirement selector, or a manifest/result-contract disagreement. |
-| Exit Criteria | Every manifest materializes into the shared result schema; every successful CPU timing request reaches exactly one `machine.c` call and publication seam through `cpu_timing.c`; the final-result verifier rejects invalid or incomplete results while S3 retains the complete nonconforming baseline without invented values; focused and established regressions pass. |
-| Original Owner Request | Build the unique CPU instruction timing execution skeleton before profile-specific timing completion. |
-| Similar-Issue Sweep | Inspect all selector families, deferred-retirement path, source timing origin/form/unallocated fields, observation provider, CMake source/test registration and all four manifest expansion/result paths. |
+**M5 T435 remains open between subtasks.** S3 is accepted; S4/8086 is the
+next owner-admitted implementation batch.
 ## Current Technical Baseline
 
 - **Current developer artifact:** target `vm-0-5-0434`; T434 S2 `nxvm_0_5_0434.exe` / `build/output/nxvm_0_5_0434.exe`, SHA-256 `0252F8FDA17BEC2131606F19E3547B46894AC6B56DD37EC3B16BD302494FAFDC`. T434 has one copied Core timing-plan publication route for default PC/AT, IBM 5170 Model 339 and Model-40 BYOB session composition.
@@ -48,7 +28,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T435 S2 | Closed: four [CPU timing ledgers and manifests](../etc/cpu-timing/README.md) cover every successful-retirement instruction form and legal timing context. The [S2 readiness audit](../etc/evidence/t435-s2-four-profile-implementation-readiness-audit.md) mechanically freezes 3,295 named keys (no anonymous L1), their S1 L3/L2 source disposition, current nonconformance, result-contract fields, owner and B0--B4 closure predicate. B0/S3 is the next owner-admitted implementation stage. |
+| T435 S3 | Closed: [S3 pipeline evidence](../etc/evidence/t435-s3-cpu-timing-pipeline.md) proves one Core-private selector and one successful-retirement publication seam, preserves external board timing ownership, publishes form/key/input/origin/unallocated results, and compiles the 3,295-key S2 catalog. No key is claimed conforming; S4/8086 is the next owner-admitted batch. |
 | T434 | Closed: all 30 copied plan declarations/dispositions, every current VM materializer and atomic Core publication route are reconciled; full task closure proof is retained in the [S3 audit](../etc/evidence/t434-s3-task-closure-audit.md) and [task history](../history/M5-T434-core-timing-contract-machine-plan.md). |
 | T433 | Closed after corrective S7: 30 frozen Core capabilities have a source-sufficiency and ownership disposition; chip/manual semantics are separated from VM-profile inputs, host/product boundaries and the explicit ATA/HDC source block. [S7 ledger](../etc/evidence/t433-s7-core-source-sufficiency-ledger.md). |
 | T432 | Closed: separate Core-private Set-2 translation and typematic break states prevent released keys from restarting typematic; focused regression, Model-339 contract and owner Console/Window verification pass. [Record](../history/M5-T432-keyboard-keyup-reliability-repair.md). |
