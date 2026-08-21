@@ -79,3 +79,15 @@ source form before success, and `source_timing_unallocated` remains a rejected
 successful state. The two historical smokes no longer duplicate a superseded
 AAA or Group-3 timing model: they assert the S4 ledger's exact/manual or named
 L2 values through the shared publication seam.
+
+## Coordinator acceptance
+
+After P1 `a2d66c19` was pushed, the coordinator reviewed the active S4 packet,
+the original owner request, the staged implementation and generated artifact.
+The review confirmed that all 649 frozen keys map to observed successful Core
+retirements; that the L3/L2 provenance, required inputs and source forms are
+validated; that no public ABI or board-timing scope entered the patch; and that
+the prior 8086 fallback did not survive as a competing production route. The
+full current-gate result is 291/291 passing. S4 is accepted. T435 remains open
+only for its later profile batches; no 8086 key or in-scope S4 gap transfers
+forward.
