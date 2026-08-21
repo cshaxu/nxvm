@@ -134,10 +134,11 @@ static C_VOID core_machine_retirement_observation_capture_context(
     case 0x76u: case 0x77u: case 0x78u: case 0x79u: case 0x7au: case 0x7bu:
     case 0x7cu: case 0x7du: case 0x7eu: case 0x7fu:
     case 0xe0u: case 0xe1u: case 0xe2u: case 0xe3u:
-        if (core_machine_cpu_instruction_lexeme_scan(data->opcodes,
-                (type_unsigned_8)sizeof(data->opcodes), machine->cpu_profile,
+        if (core_machine_cpu_instruction_lexeme_scan(data->opcodes + opcode_index,
+                (type_unsigned_8)(sizeof(data->opcodes) - opcode_index), machine->cpu_profile,
                 data->oldcpu.data.cs.seg.exec.defsize, &instruction_lexeme)) {
-            fallthrough = data->oldcpu.data.eip + instruction_lexeme.byte_count;
+            fallthrough = data->oldcpu.data.eip + opcode_index +
+                instruction_lexeme.byte_count;
             if (!data->oldcpu.data.cs.seg.exec.defsize) fallthrough &= 0xffffu;
             observation->control_outcome = cpu->data.eip == fallthrough ?
                 CORE_MACHINE_RETIREMENT_CONTROL_FALLTHROUGH :

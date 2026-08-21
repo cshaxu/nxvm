@@ -2,11 +2,11 @@
 
 ## Corrective scope
 
-S5 corrects the successful-decoder corpus omission found after S4 acceptance:
-opcode `D7` (`XLAT`) was implemented by the 8086 decoder but absent from the
-S1 ledger, S2 manifest, and S4's frozen 649-key execution universe. S4's
-artifact remains immutable historical evidence; it is not rewritten as a
-651-key result.
+S5 corrects successful-decoder corpus omissions found after S4 acceptance:
+opcode `D7` (`XLAT`) and the 8086-only opcode `0F` (`POP CS`) were implemented
+by the decoder but absent from the S1 ledger, S2 manifest, and S4's frozen
+649-key execution universe. S4's artifact remains immutable historical
+evidence; it is not rewritten as a later result.
 
 Intel *The 8086 Family User's Manual*, order 9800722-03, Table 2-21, gives
 `XLAT source-table` an exact 11 clocks. The source-table byte reference can
@@ -18,12 +18,14 @@ not apply to this byte transfer.
 
 `core_machine_legacy_source_instruction_cost()` now assigns the owner-local
 8086 `XLAT` source form and returns 11 plus the observed segment-override
-term. The 8086 manifest runner verifies both timing keys, observes the segment
-formula input, and separately proves the functional `DS:BX+AL -> AL` byte
-transfer on a real 8086 Core machine.
+term, and assigns the 8086-only `0F` form the existing 8-clock `POP` source
+form. The runner verifies both `XLAT` timing keys, observes the segment formula
+input, separately proves the functional `DS:BX+AL -> AL` byte transfer, and
+proves that `POP CS` loads `1234h`, derives base `12340h`, and advances SP by
+two on a real 8086 Core machine.
 
 The generated [`S5 runtime artifact`](../cpu-timing/t435-s5-8086-timing-results.json)
-contains 651 unique records: 619 L3 and 32 named `L2:G3`, with zero
+contains 1,053 unique records: 989 L3 and 64 named `L2:G3`, with zero
 unallocated successful retirements. It supersedes S4 only as the current
 implementation result.
 
@@ -33,15 +35,24 @@ The following commands passed from the configured MinGW Makefiles build:
 
 ```text
 core-machine-8086-timing-manifest-runner
-M5:T435:S5:I86-MANIFEST-PROBE:PASS:651/651
+M5:T435:S5:I86-MANIFEST-PROBE:PASS:1053/1053
 
 Verify-8086TimingResults.ps1 -ResultPath .../t435-s5-8086-timing-results.json
-8086 timing results verified: conforming_keys=651
+8086 timing results verified: conforming_keys=1053
 
 Verify-8086DecoderLedger.ps1 -ResultPath .../t435-s5-8086-timing-results.json
-M5:T435:S5:I86-LEDGER-DIFF:PASS:0
+M5:T435:S5:I86-XLAT-CORRECTION-SLICE:PASS
+M5:T435:S5:I86-DECODER-LEDGER-ZERO-DIFFERENCE:PASS:1053
 ```
 
-The CTest slice containing the runner, result verifier and decoder-ledger
-verifier passed 3/3. The four-profile manifest contract passed with 3,297
-canonical keys (8086: 651; 80186: 602; 80286: 812; 80386DX: 1232).
+The implementation applies the 8086 `LOCK` two-clock term at the one
+post-selection owner. The runner executes every S2-expanded direct-form and
+legal context retirement, including LOCK crossings of legacy, primary,
+control-stack and string routes. The decoder verifier compares all canonical
+S1/S2 keys with all results in both directions and reports the zero-difference
+marker above; the former 19-key RMW-only LOCK subset is historical only.
+The runner also writes a decoder-derived inventory of all 233 lexical primary
+opcode candidates; the verifier compares its exact byte set and semantic-only
+`LOCK` prefix against the 227-direct-plus-seven-prefix reconciliation contract.
+The four-profile manifest contract now has 3,699 canonical keys (8086: 1053;
+80186: 602; 80286: 812; 80386DX: 1232).

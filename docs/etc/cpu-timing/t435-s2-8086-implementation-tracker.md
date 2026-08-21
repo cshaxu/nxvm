@@ -59,12 +59,14 @@ the [manifest result contract](t435-s2-manifest-result-contract.md).
 
 ## Current S5 execution status
 
-S5 corrects the former corpus omission of `XLAT` (`D7`): it adds the exact-L3
-base key `I86-XLAT` (11 clocks) and its legal source-table segment-override
-key `I86-XLAT-SEGMENT` (13 clocks).  The S5 runner has produced 651 unique
-runtime records in [`t435-s5-8086-timing-results.json`](t435-s5-8086-timing-results.json).
-The strict result verifier accepts every key: 619 L3 and 32 named `L2:G3`,
-with no unallocated successful retirement. This is the only current
+S5 first corrected the former corpus omission of `XLAT` (`D7`) with exact-L3
+base key `I86-XLAT` (11 clocks) and legal source-table segment-override key
+`I86-XLAT-SEGMENT` (13 clocks). Its P2 decoder sweep then found 8086-only
+`POP CS` (`0F`), recorded as exact-L3 `I86-POP-SEG-CS` (8 clocks). The S5
+runner has produced 1,053 unique runtime records in
+[`t435-s5-8086-timing-results.json`](t435-s5-8086-timing-results.json). The
+strict result verifier accepts every key: 989 L3 and 64 named `L2:G3`, with no
+unallocated successful retirement. This is the only current
 implementation status for this universe. Every `current`, `unallocated`, `missing-input`, or
 `missing-test` phrase in the historical tables below refers only to the pre-S4
 audit baseline and is superseded by that result artifact.
@@ -99,7 +101,7 @@ legacy primary/control/fallback timing selection for successful 8086 keys.
 | `I86-MOV-SREG-{TO-R,TO-M,FROM-R,FROM-M}` (4) | L3 2 or 8+EA | unallocated | B1+B3+B4 | `i86_timing_I86-MOV-SREG-*` |
 | `I86-{LEA,LDS,LES}-M` (3) | L3 2+EA/16+EA/16+EA | `LEA` base conforming; `LDS`/`LES` unallocated | B1+B3+B4 | `i86_timing_I86-LOADPTR-*` |
 | `I86-PUSH-{R,SEG-ES,SEG-CS,SEG-SS,SEG-DS,M,F}` (7) | L3 S1 exact/EA formula | segment forms unallocated; other base forms conforming/missing-test | B1+B3+B4 | `i86_timing_I86-PUSH-*` |
-| `I86-POP-{R,SEG-ES,SEG-SS,SEG-DS,M,F}` (6) | L3 S1 exact/EA formula | segment forms unallocated; other base forms conforming/missing-test | B1+B3+B4 | `i86_timing_I86-POP-*` |
+| `I86-POP-{R,SEG-ES,SEG-CS,SEG-SS,SEG-DS,M,F}` (7) | L3 S1 exact/EA formula, with `0F` as 8086-only `POP CS` | segment forms unallocated; other base forms conforming/missing-test | B1+B3+B4 | `i86_timing_I86-POP-*` |
 | `I86-CALL-{NEAR,FAR,RM16,M1616}` (4) | L3 S1 exact/EA formula | control-stack; base conforming, missing-test | B0+B3+B4 | `i86_timing_I86-CALL-*` |
 | `I86-JMP-{DIRECT,FAR,RM16,M1616}` (4) | L3 S1 exact/EA formula | control-stack; base conforming, missing-test | B0+B3+B4 | `i86_timing_I86-JMP-*` |
 | `I86-JCC-{16 conditions}-{TAKEN,NOT}` (32) | L3 exact 16/4 | legacy fallback; base conforming, missing-test | B0+B4 | `i86_timing_I86-JCC-*` |

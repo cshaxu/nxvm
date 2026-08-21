@@ -1140,24 +1140,6 @@ typedef struct core_machine_primary_timing_shape {
     C_INT word;
 } core_machine_primary_timing_shape;
 
-static C_INT core_machine_8086_timing_lock_is_legal(
-    const core_machine_primary_timing_shape *shape)
-{
-    if (shape == STD_NULL || !shape->memory) return 0;
-    switch (shape->form) {
-    case CORE_MACHINE_SOURCE_TIMING_ALU_ADD_RM_REGISTER:
-    case CORE_MACHINE_SOURCE_TIMING_ALU_SUB_RM_REGISTER:
-    case CORE_MACHINE_SOURCE_TIMING_ALU_RM_IMMEDIATE:
-    case CORE_MACHINE_SOURCE_TIMING_XCHG_RM_REGISTER:
-    case CORE_MACHINE_SOURCE_TIMING_INC_DEC_RM:
-    case CORE_MACHINE_SOURCE_TIMING_GROUP3_NOT:
-    case CORE_MACHINE_SOURCE_TIMING_GROUP3_NEG:
-        return 1;
-    default:
-        return 0;
-    }
-}
-
 static type_unsigned_8 core_machine_source_timing_primary_word_transfers(
     const core_machine_primary_timing_shape *shape)
 {
@@ -1592,7 +1574,7 @@ C_INT core_machine_l2_dynamic_arithmetic_model_cost(
     segment_override = core_machine_8086_timing_has_segment_override(data,
         prefixes);
     lock_prefix = core_machine_instruction_has_lock_prefix(data, prefixes);
-    if (prefixes != 0u && (!segment_override || lock_prefix)) return 0;
+    if (prefixes != 0u && !segment_override && !lock_prefix) return 0;
     opcode = data->opcodes[prefixes];
 
     if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_8086) {
@@ -1663,26 +1645,30 @@ static C_INT core_machine_legacy_source_instruction_cost(core_machine *machine,
     segment_override = core_machine_8086_timing_has_segment_override(data,
         prefixes);
     lock_prefix = core_machine_instruction_has_lock_prefix(data, prefixes);
-    if (prefixes != 0u && (!segment_override || lock_prefix)) {
+    /* The 8086 LOCK byte is a two-clock prefix for any following valid
+     * instruction.  The common selector appends that term after this source
+     * row succeeds, so accept it here together with an optional segment
+     * override instead of sending otherwise-valid forms to UNALLOCATED. */
+    if (prefixes != 0u && !segment_override && !lock_prefix) {
         core_machine_source_timing_mark_unallocated(machine, out_ticks);
         return 1;
     }
-    if (opcode >= 0x70u && opcode <= 0x7fu && prefixes == 0u) {
+    if (opcode >= 0x70u && opcode <= 0x7fu) {
         machine->source_timing_form_id = CORE_MACHINE_SOURCE_TIMING_8086_JCC;
-        fallthrough = TYPE_MASK_UNSIGNED_16(data->oldcpu.data.eip + 2u);
+        fallthrough = TYPE_MASK_UNSIGNED_16(data->oldcpu.data.eip + prefixes + 2u);
         *out_ticks = machine->executor_cpu.data.eip == fallthrough ?
             contract->jcc_not_taken_ticks : contract->jcc_taken_ticks;
         return 1;
     }
     switch (opcode) {
     case 0x90u:
-        if (prefixes != 0u) break;
+        if (prefixes != 0u && !lock_prefix) break;
         *out_ticks = core_machine_source_timing_lookup(machine, contract->ledger,
             contract->ledger_entries,
             CORE_MACHINE_SOURCE_TIMING_NOP);
         return 1;
     case 0xf8u:
-        if (prefixes != 0u) break;
+        if (prefixes != 0u && !lock_prefix) break;
         if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_8086) {
             machine->source_timing_form_id = CORE_MACHINE_SOURCE_TIMING_8086_FLAG;
             *out_ticks = 2u;
@@ -1694,7 +1680,7 @@ static C_INT core_machine_legacy_source_instruction_cost(core_machine *machine,
         return 1;
     case 0x88u: case 0x89u: case 0x8au: case 0x8bu:
         if (!data->flagMem) {
-            if (prefixes != 0u) break;
+            if (prefixes != 0u && !lock_prefix) break;
             *out_ticks = core_machine_source_timing_lookup(machine, contract->ledger,
                 contract->ledger_entries,
                 CORE_MACHINE_SOURCE_TIMING_MOV_REGISTER_REGISTER);
@@ -1791,7 +1777,9 @@ static C_INT core_machine_legacy_source_instruction_cost(core_machine *machine,
         machine->source_timing_form_id = CORE_MACHINE_SOURCE_TIMING_PUSH_REGISTER;
         *out_ticks = 10u;
         return 1;
-    case 0x07u: case 0x17u: case 0x1fu:
+    /* 0F is POP CS only on the 8086.  It is the 0F escape on later
+     * processors, so keep this source rule in the 8086 profile branch. */
+    case 0x07u: case 0x0fu: case 0x17u: case 0x1fu:
         if (machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_8086) break;
         machine->source_timing_form_id = CORE_MACHINE_SOURCE_TIMING_POP_REGISTER;
         *out_ticks = 8u;
@@ -1831,7 +1819,8 @@ static C_INT core_machine_legacy_source_instruction_cost(core_machine *machine,
             }
             return 1;
         }
-        if (opcode >= 0xb0u && opcode <= 0xbfu && prefixes == 0u) {
+        if (opcode >= 0xb0u && opcode <= 0xbfu &&
+            (prefixes == 0u || lock_prefix)) {
             *out_ticks = core_machine_source_timing_lookup(machine, contract->ledger,
                 contract->ledger_entries,
                 CORE_MACHINE_SOURCE_TIMING_MOV_IMMEDIATE);
@@ -2020,12 +2009,6 @@ C_INT core_machine_primary_source_instruction_cost(
             ticks += (type_unsigned_64)transfers *
                 core_machine_8086_timing_odd_word(data);
             if (segment_override) ticks += CORE_MACHINE_8086_SEGMENT_OVERRIDE_TICKS;
-            if (lock_prefix) {
-                if (!core_machine_8086_timing_lock_is_legal(&shape)) return 0;
-                ticks += 2u;
-            }
-        } else if (lock_prefix) {
-            return 0;
         }
         break;
     case CORE_MACHINE_CPU_PROFILE_80186:
@@ -2391,7 +2374,8 @@ static C_INT core_machine_control_stack_prefixes_are_source_backed(
     }
     segment_override = core_machine_8086_timing_has_segment_override(data,
         prefixes);
-    return prefixes == 0u || segment_override;
+    return prefixes == 0u || segment_override ||
+        core_machine_instruction_has_lock_prefix(data, prefixes);
 }
 
 static C_INT core_machine_control_stack_add_next_term(core_machine *machine,
@@ -2447,7 +2431,6 @@ C_INT core_machine_control_stack_source_instruction_cost(
     data = &machine->executor_cpu_instructions.data;
     prefixes = core_machine_instruction_prefix_count(data);
     if (prefixes >= data->oplen ||
-        (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_8086 && data->flagLock) ||
         !core_machine_control_stack_prefixes_are_source_backed(machine, data,
             prefixes)) {
         return 0;

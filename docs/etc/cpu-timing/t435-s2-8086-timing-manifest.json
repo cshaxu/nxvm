@@ -2,7 +2,7 @@
   "schema": "nxvm.cpu-timing-manifest.v1",
   "profile": "8086",
   "source_ledger": "t435-s1-8086-ledger.md",
-  "expected": {"base":245,"L3":229,"L2":16,"contexts":179,"context_L3":167,"context_L2":12,"combinations":227,"combination_L3":223,"combination_L2":4},
+  "expected": {"base":246,"L3":230,"L2":16,"contexts":406,"context_L3":378,"context_L2":28,"combinations":401,"combination_L3":381,"combination_L2":20},
   "legal_context_contract": "t435-s2-context-legality.md",
   "key_rule": "Each template expands the listed axes; every expanded base key inherits the record unless listed in overrides. Prefixes never retire alone. Context keys are generated only from the legal semantic axes in the common contract.",
   "status_values": ["conforming", "wrong-value", "unallocated", "missing-input", "missing-test"],
@@ -21,7 +21,7 @@
     {"id":"I86-MOV-SREG-{form}","form":["TO-R","TO-M","FROM-R","FROM-M"],"level":"L3","source_rule":"S1:MOV segment exact/EA","route":"unallocated","status":"unallocated","batch":"B1+B3+B4","test":"i86_timing_{id}"},
     {"id":"I86-{op}-M","op":["LEA","LDS","LES"],"level":"L3","source_rule":"S1:LEA/LDS/LES exact/EA","route":"mixed","status":"missing-test","batch":"B1+B3+B4","test":"i86_timing_{id}","overrides":{"I86-LDS-M":"unallocated","I86-LES-M":"unallocated"}},
     {"id":"I86-PUSH-{form}","form":["R","SEG-ES","SEG-CS","SEG-SS","SEG-DS","M","F"],"level":"L3","source_rule":"S1:PUSH exact/EA","route":"mixed","status":"missing-test","batch":"B1+B3+B4","test":"i86_timing_{id}","overrides":{"I86-PUSH-SEG-ES":"unallocated","I86-PUSH-SEG-CS":"unallocated","I86-PUSH-SEG-SS":"unallocated","I86-PUSH-SEG-DS":"unallocated"}},
-    {"id":"I86-POP-{form}","form":["R","SEG-ES","SEG-SS","SEG-DS","M","F"],"level":"L3","source_rule":"S1:POP exact/EA","route":"mixed","status":"missing-test","batch":"B1+B3+B4","test":"i86_timing_{id}","overrides":{"I86-POP-SEG-ES":"unallocated","I86-POP-SEG-SS":"unallocated","I86-POP-SEG-DS":"unallocated"}},
+    {"id":"I86-POP-{form}","form":["R","SEG-ES","SEG-CS","SEG-SS","SEG-DS","M","F"],"level":"L3","source_rule":"S1:POP exact/EA including 8086-only 0F POP CS","route":"mixed","status":"missing-test","batch":"B1+B3+B4","test":"i86_timing_{id}","overrides":{"I86-POP-SEG-ES":"unallocated","I86-POP-SEG-CS":"unallocated","I86-POP-SEG-SS":"unallocated","I86-POP-SEG-DS":"unallocated"}},
     {"id":"I86-{op}-{form}","op":["CALL","JMP"],"form":["NEAR","FAR","RM16","M1616"],"level":"L3","source_rule":"S1:CALL/JMP exact/EA","route":"control-stack","status":"missing-test","batch":"B0+B3+B4","test":"i86_timing_{id}"},
     {"id":"I86-JCC-{condition}-{outcome}","condition":["JO","JNO","JB","JAE","JE","JNE","JBE","JA","JS","JNS","JP","JNP","JL","JGE","JLE","JG"],"outcome":["TAKEN","NOT"],"level":"L3","source_rule":"S1:Jcc exact","route":"legacy","status":"missing-test","batch":"B0+B4","test":"i86_timing_{id}"},
     {"id":"I86-{op}-{outcome}","op":["JCXZ","LOOP","LOOPE","LOOPNE"],"outcome":["TAKEN","NOT"],"level":"L3","source_rule":"S1:loop exact","route":"control-stack","status":"missing-test","batch":"B0+B4","test":"i86_timing_{id}"},
@@ -36,12 +36,12 @@
     {"id":"I86-ESC-{form}","form":["R","M"],"level":"L3","source_rule":"S1:ESC exact/EA","route":"unallocated","status":"unallocated","batch":"B1+B3+B4","test":"i86_timing_{id}"}
   ],
   "context_templates": [
-    {"id":"{base}-LOCK","base":"legal-memory-rmw","level":"inherit","source_rule":"S1:LOCK +2","route":"unallocated-or-missing-term","status":"unallocated","batch":"B3+B4","test":"i86_timing_{id}"},
+    {"id":"{base}-LOCK","base":"every-valid-8086-instruction","level":"inherit","source_rule":"S1:LOCK +2 on every valid following 8086 instruction","route":"cpu-timing-selector","status":"conforming","batch":"S5","test":"i86_timing_{id}"},
     {"id":"{base}-SEGMENT","base":"source-effective-address","level":"inherit","source_rule":"S1:SEGMENT +2","route":"per-base","status":"missing-input","batch":"B3+B4","test":"i86_timing_{id}"},
     {"id":"{base}-ODD-WORD","base":"word-transfer","level":"inherit","source_rule":"S1:odd word +4/transfer","route":"per-base","status":"missing-input","batch":"B3+B4","test":"i86_timing_{id}"}
   ],
   "context_key_sets": [
-    {"id_suffix":"LOCK","base_selector":"I86-(ALU-(ADC|ADD|AND|OR|SBB|SUB|XOR)-(MR|MI)|(INC|DEC|NEG|NOT)-M|XCHG-MR)","source_rule":"S1:LOCK +2 on legal memory RMW","route":"unallocated-or-missing-term","batch":"B3+B4","test":"i86_timing_{id}","status":"unallocated"},
+    {"id_suffix":"LOCK","base_selector":".*","source_rule":"S1:LOCK +2 on every valid following 8086 instruction","route":"cpu-timing-selector","batch":"S5","test":"i86_timing_{id}","status":"conforming"},
     {"id_suffix":"SEGMENT","base_selector":"I86-(ALU-.*-(RM|MR|MI)|CMP-(RM|MR|MI)|TEST-(RM|MI)|(INC|DEC|NEG|NOT)-M|XCHG-MR|MOV-(RM|MR|MI|MOFFS-R|MOFFS-W)|MOV-SREG-(TO-M|FROM-M)|(LDS|LES)-M|PUSH-M|POP-M|(CALL|JMP)-(RM16|M1616)|(MUL|IMUL|DIV|IDIV)-M(8|16)|(ROL|ROR|RCL|RCR|SHL|SHR|SAR)-(M1|MCL)|XLAT|ESC-M|STRING-(MOVS|CMPS|LODS)-(B|W)-NONE|REP-(MOVS|CMPS-REPE|CMPS-REPNE|LODS)-(B|W))","source_rule":"S1:SEGMENT +2 on legal memory operand","route":"failed base or string missing term","batch":"B3+B4","test":"i86_timing_{id}","status":"missing-input"},
     {"id_suffix":"ODD-WORD","base_selector":"I86-(ALU-.*-(RM|MR|MI)|CMP-(RM|MR|MI)|TEST-(RM|MI)|(INC|DEC|NEG|NOT)-M|XCHG-MR|MOV-(RM|MR|MI|MOFFS-R|MOFFS-W)|MOV-SREG-(TO-M|FROM-M)|(LDS|LES)-M|PUSH-M|POP-M|(CALL|JMP)-(RM16|M1616)|(MUL|IMUL|DIV|IDIV)-M16|(ROL|ROR|RCL|RCR|SHL|SHR|SAR)-(M1|MCL)|STRING-(MOVS|CMPS|STOS|LODS|SCAS)-W-NONE|REP-(MOVS|CMPS-REPE|CMPS-REPNE|STOS|LODS|SCAS-REPE|SCAS-REPNE)-W)","source_rule":"S1:odd word +4 per legal 16-bit memory transfer","route":"missing per-form transfer observation","batch":"B3+B4","test":"i86_timing_{id}","status":"missing-input"}
   ],
@@ -53,9 +53,9 @@
     "test": "i86_timing_{id}"
   },
   "combination_context_sets": [
-    {"id_suffix":"LOCK-SEGMENT","base_selector":"I86-(ALU-(ADC|ADD|AND|OR|SBB|SUB|XOR)-(MR|MI)|(INC|DEC|NEG|NOT)-M|XCHG-MR)","count":19,"status":"unallocated"},
-    {"id_suffix":"LOCK-ODD-WORD","base_selector":"I86-(ALU-(ADC|ADD|AND|OR|SBB|SUB|XOR)-(MR|MI)|(INC|DEC|NEG|NOT)-M|XCHG-MR)","count":19,"status":"unallocated"},
-    {"id_suffix":"LOCK-SEGMENT-ODD-WORD","base_selector":"I86-(ALU-(ADC|ADD|AND|OR|SBB|SUB|XOR)-(MR|MI)|(INC|DEC|NEG|NOT)-M|XCHG-MR)","count":19,"status":"unallocated"},
+    {"id_suffix":"LOCK-SEGMENT","base_selector":"I86-(ALU-.*-(RM|MR|MI)|CMP-(RM|MR|MI)|TEST-(RM|MI)|(INC|DEC|NEG|NOT)-M|XCHG-MR|MOV-(RM|MR|MI|MOFFS-R|MOFFS-W)|MOV-SREG-(TO-M|FROM-M)|(LDS|LES)-M|PUSH-M|POP-M|(CALL|JMP)-(RM16|M1616)|(MUL|IMUL|DIV|IDIV)-M(8|16)|(ROL|ROR|RCL|RCR|SHL|SHR|SAR)-(M1|MCL)|XLAT|ESC-M|STRING-(MOVS|CMPS|LODS)-(B|W)-NONE|REP-(MOVS|CMPS-REPE|CMPS-REPNE|LODS)-(B|W))","count":84,"status":"conforming"},
+    {"id_suffix":"LOCK-ODD-WORD","base_selector":"I86-(ALU-.*-(RM|MR|MI)|CMP-(RM|MR|MI)|TEST-(RM|MI)|(INC|DEC|NEG|NOT)-M|XCHG-MR|MOV-(RM|MR|MI|MOFFS-R|MOFFS-W)|MOV-SREG-(TO-M|FROM-M)|(LDS|LES)-M|PUSH-M|POP-M|(CALL|JMP)-(RM16|M1616)|(MUL|IMUL|DIV|IDIV)-M16|(ROL|ROR|RCL|RCR|SHL|SHR|SAR)-(M1|MCL)|STRING-(MOVS|CMPS|STOS|LODS|SCAS)-W-NONE|REP-(MOVS|CMPS-REPE|CMPS-REPNE|STOS|LODS|SCAS-REPE|SCAS-REPNE)-W)","count":76,"status":"conforming"},
+    {"id_suffix":"LOCK-SEGMENT-ODD-WORD","base_selector":"I86-(ALU-.*-(RM|MR|MI)|CMP-(RM|MR|MI)|TEST-(RM|MI)|(INC|DEC|NEG|NOT)-M|XCHG-MR|MOV-(RM|MR|MI|MOFFS-R|MOFFS-W)|MOV-SREG-(TO-M|FROM-M)|(LDS|LES)-M|PUSH-M|POP-M|(CALL|JMP)-(RM16|M1616)|(MUL|IMUL|DIV|IDIV)-M16|(ROL|ROR|RCL|RCR|SHL|SHR|SAR)-(M1|MCL)|STRING-(MOVS|CMPS|LODS)-W-NONE|REP-(MOVS|CMPS-REPE|CMPS-REPNE|LODS)-W)","count":71,"status":"conforming"},
     {"id_suffix":"SEGMENT-ODD-WORD","base_selector":"I86-(ALU-.*-(RM|MR|MI)|CMP-(RM|MR|MI)|TEST-(RM|MI)|(INC|DEC|NEG|NOT)-M|XCHG-MR|MOV-(RM|MR|MI|MOFFS-R|MOFFS-W)|MOV-SREG-(TO-M|FROM-M)|(LDS|LES)-M|PUSH-M|POP-M|(CALL|JMP)-(RM16|M1616)|(MUL|IMUL|DIV|IDIV)-M16|(ROL|ROR|RCL|RCR|SHL|SHR|SAR)-(M1|MCL)|STRING-(MOVS|CMPS|LODS)-W-NONE|REP-(MOVS|CMPS-REPE|CMPS-REPNE|LODS)-W)","count":71,"status":"missing-input"},
     {"id_suffix":"REP-PHASE-{phase}","base_selector":"I86-REP-.*","phase":["FIRST","CONTINUE","ZERO"],"count":42,"status":"missing-test"},
     {"id_suffix":"SEGMENT-REP-PHASE-{phase}","base_selector":"I86-REP-(MOVS|CMPS-REPE|CMPS-REPNE|LODS)-(B|W)","phase":["FIRST","CONTINUE","ZERO"],"count":24,"status":"missing-input"},

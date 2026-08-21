@@ -25,8 +25,12 @@ The binding [Td S122 closure-manifest governance](../evidence/td-s122-cpu-timing
 requires that tracker to become a generated, machine-readable per-key manifest
 before any 8086 timing repair begins.
 The admitted [8086 manifest](t435-s2-8086-timing-manifest.json) is that
-machine-readable source; its templates expand exactly 228 L3 and 16 L2 base
+machine-readable source; its templates expand exactly 230 L3 and 16 L2 base
 keys before context expansion.
+
+The active S5 [8086 decoder reconciliation contract](t435-s5-8086-decoder-reconciliation-contract.md)
+defines the complete current decoder-byte partition that must be proven against
+that ledger and manifest before S5 may make a whole-8086 closure claim.
 
 The active 80186 S2 block applies the same contract through the
 [80186 manifest](t435-s2-80186-timing-manifest.json), its
@@ -44,7 +48,7 @@ The active final profile block uses the [80386DX manifest](t435-s2-80386-timing-
 
 All four profiles share the [context-legality contract](t435-s2-context-legality.md) and implementation-time [manifest result contract](t435-s2-manifest-result-contract.md). Together they require legal semantic contexts, frozen expansion cardinalities and canonical per-key runtime proof; tracker expansion alone cannot close a key.
 
-The [four-profile S2 readiness audit](../evidence/t435-s2-four-profile-implementation-readiness-audit.md) records the only implementation handoff: 3,295 mechanically generated canonical keys, their current nonconforming dispositions, the `cpu_timing.c` ownership boundary and the B0--B4 closure sequence.
+The [four-profile S2 readiness audit](../evidence/t435-s2-four-profile-implementation-readiness-audit.md) records the original implementation handoff: 3,699 mechanically generated canonical keys, their then-nonconforming dispositions, the `cpu_timing.c` ownership boundary and the B0--B4 closure sequence.
 
 The [S3 pipeline evidence](../evidence/t435-s3-cpu-timing-pipeline.md) records
 the implemented single selector/publication seam and the result-verifier input

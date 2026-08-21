@@ -7896,6 +7896,24 @@ core_machine_cpu_instruction_metadata core_machine_cpu_instruction_metadata_get(
         {
             metadata.valid = 0;
         }
+        else if (opcode == 0x8cu)
+        {
+            if (((modrm >> 3u) & 7u) >= 6u) metadata.valid = 0;
+            else if (((modrm >> 3u) & 7u) >= 4u)
+                metadata.minimum_cpu = CORE_MACHINE_CPU_PROFILE_80386;
+        }
+        else if (opcode == 0x8eu)
+        {
+            if (((modrm >> 3u) & 7u) == 1u ||
+                ((modrm >> 3u) & 7u) >= 6u) metadata.valid = 0;
+            else if (((modrm >> 3u) & 7u) >= 4u)
+                metadata.minimum_cpu = CORE_MACHINE_CPU_PROFILE_80386;
+        }
+        else if (opcode >= 0xd0u && opcode <= 0xd3u &&
+                 ((modrm >> 3u) & 7u) == 6u)
+        {
+            metadata.valid = 0;
+        }
         break;
     case CORE_MACHINE_CPU_INSTRUCTION_0F:
         metadata.valid = 0;

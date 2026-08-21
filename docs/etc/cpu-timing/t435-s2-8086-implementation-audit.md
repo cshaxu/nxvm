@@ -9,11 +9,14 @@ block.
 
 This is the accepted pre-S4 audit baseline. Its route descriptions and
 nonconforming dispositions are historical evidence, not current implementation
-status. T435 S5 corrected the prior `XLAT` omission: the complete current
-disposition is the 651-key S5 runtime artifact
+status. T435 S5 corrected the prior `XLAT` omission and the later discovered
+8086-only `POP CS` (`0F`) omission: the current 1,053-key S5 runtime artifact
 [`t435-s5-8086-timing-results.json`](t435-s5-8086-timing-results.json),
-verified by `Verify-8086TimingResults.ps1`. The 649-key S4 artifact remains
-historical evidence of its then-frozen, incomplete inventory.
+verified by `Verify-8086TimingResults.ps1`, covers the complete current S1/S2
+decoder contract. `Verify-8086DecoderLedger.ps1` compares that 1,053-key
+result set with the canonical S1/S2 keys in both directions and rejects any
+unclassified result. The former 19-key RMW-only `LOCK` subset and the 649-key
+S4 artifact remain historical evidence of the then-incomplete inventory.
 
 The sole selection/publication route is:
 
