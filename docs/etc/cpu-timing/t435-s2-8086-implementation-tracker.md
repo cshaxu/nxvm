@@ -44,7 +44,8 @@ with segment/odd-word where legal, and every legal REP family crossed with
 `unallocated`, 196 `missing-input` and 42 `missing-test`. The complete current
 tracker universe is therefore 790 keys (244 base, 289 single-axis contexts and
 257 combined contexts); zero is presently `conforming` because no manifest-key
-runtime result exists yet.
+runtime result exists yet. The common result file and per-key reduction rules
+are frozen in the [manifest result contract](t435-s2-manifest-result-contract.md).
 
 | tracker layer | L3 | L2:G3 | total | wrong-value | unallocated | missing-input | missing-test |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |

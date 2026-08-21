@@ -12,7 +12,7 @@ tools/Verify-80286TimingManifest.ps1` before every tracker-changing P.  The
 gate rejects an incorrect profile, absent record fields, non-L3 substitution,
 duplicate keys and count drift.  A later focused timing test must consume the
 same IDs and emit value, mode/path/EA/repeat/next-byte inputs, origin and the
-unallocated bit.
+unallocated bit under the shared [manifest result contract](t435-s2-manifest-result-contract.md).
 
 | key families | required L3 rule | closure batch |
 | --- | --- | --- |

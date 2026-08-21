@@ -5,7 +5,7 @@
 The [80186 manifest](t435-s2-80186-timing-manifest.json) is the sole
 per-key closure ledger.  It expands 281 base instruction keys from the
 accepted [80186 manual ledger](t435-s1-80186-ledger.md), then 263 legal
-single-axis and 149 legal combined/phase context keys.  This document is the
+single-axis and 117 legal combined/phase context keys.  This document is the
 human implementation map; it
 cannot change a key's source rule, level, status, batch or regression ID.
 
@@ -19,7 +19,8 @@ before every 80186 tracker-changing P.  The verifier rejects duplicate keys,
 missing required fields, invalid level/status values, wrong profile and count
 drift.  It is a manifest-integrity gate, not runtime evidence.  The later
 focused test must consume every generated `key_id` and publish target ticks or
-formula inputs, retirement origin and `source_timing_unallocated`.
+formula inputs, retirement origin and `source_timing_unallocated` under the
+shared [manifest result contract](t435-s2-manifest-result-contract.md).
 
 ## Per-key implementation map
 

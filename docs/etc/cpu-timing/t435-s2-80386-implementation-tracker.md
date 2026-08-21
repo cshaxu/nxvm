@@ -9,7 +9,8 @@ Run `powershell -NoProfile -ExecutionPolicy Bypass -File
 tools/Verify-80386TimingManifest.ps1` before any tracker P. The current
 baseline is deliberately strict: no aggregate smoke or selector presence can
 make a key conforming. Closure requires every generated key to emit its ticks,
-formula inputs, origin and `unallocated=false`, then be marked L3 conforming.
+formula inputs, origin and `unallocated=false`, then be marked L3 conforming
+under the shared [manifest result contract](t435-s2-manifest-result-contract.md).
 
 | batch | required result |
 | --- | --- |
