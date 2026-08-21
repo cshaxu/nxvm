@@ -28,6 +28,12 @@ typedef struct core_machine_cpu_timing_result {
 #define CORE_MACHINE_CPU_TIMING_INPUT_MODE       (1u << 3)
 #define CORE_MACHINE_CPU_TIMING_INPUT_SIZE       (1u << 4)
 #define CORE_MACHINE_CPU_TIMING_INPUT_LOCK       (1u << 5)
+#define CORE_MACHINE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS (1u << 6)
+#define CORE_MACHINE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE (1u << 7)
+#define CORE_MACHINE_CPU_TIMING_INPUT_ODD_WORD   (1u << 8)
+#define CORE_MACHINE_CPU_TIMING_INPUT_REPEAT_PHASE (1u << 9)
+#define CORE_MACHINE_CPU_TIMING_INPUT_GROUP3_OPERAND (1u << 10)
+#define CORE_MACHINE_CPU_TIMING_INPUT_WAIT_ITERATIONS (1u << 11)
 
 /* B0's only successful-retirement CPU timing selection entry. */
 C_INT core_machine_cpu_timing_select(core_machine *machine,
@@ -39,7 +45,9 @@ STD_SIZE_T core_machine_cpu_timing_manifest_key_count(C_VOID);
  * selector above. */
 C_INT core_machine_string_io_source_instruction_cost(core_machine *machine,
     type_unsigned_64 *out_ticks);
-C_INT core_machine_legacy_dynamic_arithmetic_model_cost(core_machine *machine,
+C_INT core_machine_80386_dynamic_multiply_cost(core_machine *machine,
+    type_unsigned_64 *out_ticks);
+C_INT core_machine_l2_dynamic_arithmetic_model_cost(core_machine *machine,
     type_unsigned_64 *out_ticks);
 C_INT core_machine_80386_secondary_source_instruction_cost(core_machine *machine,
     type_unsigned_64 *out_ticks);

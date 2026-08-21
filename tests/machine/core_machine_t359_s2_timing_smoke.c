@@ -71,8 +71,8 @@ static C_INT t359_s2_run_with_setup(core_machine *machine,
     t359_s2_setup setup, C_VOID *opaque)
 {
     const core_machine_run_budget budget = { 1u, 0u };
-    core_machine_run_result result;
-    return machine != STD_NULL && program != STD_NULL && state != STD_NULL &&
+    core_machine_run_result result = { 0 };
+    C_INT passed = machine != STD_NULL && program != STD_NULL && state != STD_NULL &&
         core_machine_reset(machine) == TYPE_STATUS_OK &&
         (setup == STD_NULL || setup(machine, opaque)) &&
         core_machine_memory_write(machine, T359_S2_RESET_LINEAR, program,
@@ -81,6 +81,15 @@ static C_INT t359_s2_run_with_setup(core_machine *machine,
         result.reason == CORE_MACHINE_STOP_BUDGET && result.executed == 1u &&
         result.ticks == expected_ticks && result.elapsed_ticks == expected_ticks &&
         state->advanced_ticks == expected_ticks;
+
+    if (!passed) {
+        STD_PRINTF("T359 S2 timing expected=%llu actual=%llu executed=%llu reason=%d advanced=%llu opcode=%02x\n",
+            (unsigned long long)expected_ticks, (unsigned long long)result.ticks,
+            (unsigned long long)result.executed, (C_INT)result.reason,
+            state == STD_NULL ? 0ull : (unsigned long long)state->advanced_ticks,
+            program == STD_NULL ? 0u : program[0]);
+    }
+    return passed;
 }
 
 static C_INT t359_s2_run(core_machine *machine,
@@ -427,7 +436,7 @@ static C_INT t359_s2_test_legacy_segment_override(C_VOID)
 C_INT main(C_VOID)
 {
     if (t359_s2_test_profile_rows(CORE_MACHINE_CPU_PROFILE_8086,
-            3u, 22u, 15u, 16u, 13u, 8u, 5u)) return 1;
+            3u, 22u, 15u, 16u, 13u, 4u, 5u)) return 1;
     if (t359_s2_test_profile_rows(CORE_MACHINE_CPU_PROFILE_80186,
             3u, 16u, 16u, 19u, 17u, 8u, 4u)) return 2;
     if (t359_s2_test_profile_rows(CORE_MACHINE_CPU_PROFILE_80286,

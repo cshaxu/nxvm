@@ -253,6 +253,8 @@ C_VOID core_machine_fpu_reset(core_machine_fpu *fpu)
     fpu->status_word = 0u;
     fpu->top = 0u;
     fpu->pending_unmasked_exception = TYPE_FALSE;
+    fpu->wait_iterations = 0u;
+    fpu->last_wait_iterations = 0u;
     for (index = 0u; index < 8u; ++index) {
         fpu->tags[index] = CORE_MACHINE_FPU_TAG_EMPTY;
         fpu->registers[index].kind = CORE_MACHINE_FPU_VALUE_ZERO;
@@ -398,4 +400,20 @@ core_machine_fpu_execute_result core_machine_fpu_binary_st0_sti(core_machine_fpu
 type_bool core_machine_fpu_wait_pending(const core_machine_fpu *fpu)
 {
     return fpu != STD_NULL && fpu->pending_unmasked_exception;
+}
+
+type_unsigned_32 core_machine_fpu_complete_wait(core_machine_fpu *fpu)
+{
+    type_unsigned_32 iterations;
+
+    if (fpu == STD_NULL) return 0u;
+    iterations = fpu->wait_iterations;
+    fpu->wait_iterations = 0u;
+    fpu->last_wait_iterations = iterations;
+    return iterations;
+}
+
+type_unsigned_32 core_machine_fpu_last_wait_iterations(const core_machine_fpu *fpu)
+{
+    return fpu == STD_NULL ? 0u : fpu->last_wait_iterations;
 }

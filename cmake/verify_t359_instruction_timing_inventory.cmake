@@ -128,12 +128,12 @@ string(FIND "${t359_timing_text}"
     "CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY"
     t359_s2_primary_publisher)
 string(FIND "${t359_timing_text}"
-    "CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_8086_FALLBACK"
+    "core_machine_8086_source_instruction_cost"
     t359_s2_legacy_publisher)
 if(t359_s2_primary_publisher LESS 0 OR t359_s2_legacy_publisher LESS 0 OR
     t359_s2_primary_publisher GREATER t359_s2_legacy_publisher)
     message(FATAL_ERROR
-        "T359 S2 primary timing classifier must precede the unallocated legacy receiver")
+        "T359 S2 primary timing classifier must precede the 8086 compatibility receiver")
 endif()
 t359_require("${t359_s2_ledger_text}" "## Primary-row normalization"
     "S2 source ledger is missing normalization evidence")

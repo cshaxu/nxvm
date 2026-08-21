@@ -7,6 +7,24 @@ static const char *const core_machine_cpu_timing_manifest_keys[] = {
 #include "cpu_timing_manifest_catalog.inc"
 };
 
+static C_INT core_machine_cpu_timing_8086_string_odd_word(
+    const t_cpuins_data *data, type_unsigned_32 opcode_index)
+{
+    type_unsigned_8 opcode;
+    C_INT source_transfer;
+    C_INT destination_transfer;
+
+    if (data == STD_NULL || opcode_index >= data->oplen) return 0;
+    opcode = data->opcodes[opcode_index];
+    if (opcode != 0xa5u && opcode != 0xa7u && opcode != 0xabu &&
+        opcode != 0xadu && opcode != 0xafu) return 0;
+    source_transfer = opcode == 0xa5u || opcode == 0xa7u || opcode == 0xadu;
+    destination_transfer = opcode == 0xa5u || opcode == 0xa7u ||
+        opcode == 0xabu || opcode == 0xafu;
+    return (source_transfer && (data->oldcpu.data.si & 1u) != 0u) ||
+        (destination_transfer && (data->oldcpu.data.di & 1u) != 0u);
+}
+
 _Static_assert(sizeof(core_machine_cpu_timing_manifest_keys) /
     sizeof(core_machine_cpu_timing_manifest_keys[0]) == 3295u,
     "T435 S2 canonical manifest count drifted");
@@ -21,14 +39,56 @@ static type_unsigned_32 core_machine_cpu_timing_formula_inputs(
     const core_machine *machine)
 {
     const t_cpuins_data *data;
+    type_unsigned_32 prefix;
+    type_unsigned_32 opcode_index;
     type_unsigned_32 inputs = 0u;
 
     if (machine == STD_NULL) return 0u;
     data = &machine->executor_cpu_instructions.data;
-    if (data->flagMem) inputs |= CORE_MACHINE_CPU_TIMING_INPUT_MODRM;
+    prefix = 0u;
+    while (prefix < data->oplen) {
+        switch (data->opcodes[prefix]) {
+        case 0x26u: case 0x2eu: case 0x36u: case 0x3eu:
+            inputs |= CORE_MACHINE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE;
+            ++prefix;
+            break;
+        case 0xf0u:
+            inputs |= CORE_MACHINE_CPU_TIMING_INPUT_LOCK;
+            ++prefix;
+            break;
+        case 0xf2u: case 0xf3u:
+        case 0x64u: case 0x65u: case 0x66u: case 0x67u:
+            ++prefix;
+            break;
+        default:
+            prefix = data->oplen;
+            break;
+        }
+    }
+    opcode_index = 0u;
+    while (opcode_index < data->oplen) {
+        type_unsigned_8 byte = data->opcodes[opcode_index];
+
+        if (byte != 0x26u && byte != 0x2eu && byte != 0x36u && byte != 0x3eu &&
+            byte != 0x64u && byte != 0x65u && byte != 0x66u && byte != 0x67u &&
+            byte != 0xf0u && byte != 0xf2u && byte != 0xf3u) break;
+        ++opcode_index;
+    }
+    if (data->flagMem) {
+        inputs |= CORE_MACHINE_CPU_TIMING_INPUT_MODRM |
+            CORE_MACHINE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS;
+        if (data->mrm.rsreg != STD_NULL &&
+            ((data->mrm.rsreg->base + data->mrm.offset) & 1u) != 0u) {
+            inputs |= CORE_MACHINE_CPU_TIMING_INPUT_ODD_WORD;
+        }
+    }
     if (data->flagLock) inputs |= CORE_MACHINE_CPU_TIMING_INPUT_LOCK;
     if (data->prefix_rep != PREFIX_REP_NONE) {
         inputs |= CORE_MACHINE_CPU_TIMING_INPUT_REPEAT;
+        if (machine->source_timing_repeat_phase !=
+            CORE_MACHINE_RETIREMENT_REPEAT_NONE) {
+            inputs |= CORE_MACHINE_CPU_TIMING_INPUT_REPEAT_PHASE;
+        }
     }
     if ((data->oldcpu.data.cr0 & VCPU_CR0_PE) != 0u ||
         (data->oldcpu.data.eflags & VCPU_EFLAGS_VM) != 0u) {
@@ -36,6 +96,20 @@ static type_unsigned_32 core_machine_cpu_timing_formula_inputs(
     }
     if (data->prefix_oprsize || data->prefix_addrsize) {
         inputs |= CORE_MACHINE_CPU_TIMING_INPUT_SIZE;
+    }
+    if (opcode_index + 1u < data->oplen &&
+        (data->opcodes[opcode_index] == 0xf6u ||
+         data->opcodes[opcode_index] == 0xf7u) &&
+        ((data->opcodes[opcode_index + 1u] >> 3u) & 7u) >= 4u) {
+        inputs |= CORE_MACHINE_CPU_TIMING_INPUT_GROUP3_OPERAND;
+    }
+    if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_8086 &&
+        core_machine_cpu_timing_8086_string_odd_word(data, opcode_index)) {
+        inputs |= CORE_MACHINE_CPU_TIMING_INPUT_ODD_WORD;
+    }
+    if (opcode_index < data->oplen && data->opcodes[opcode_index] == 0x9bu &&
+        core_machine_fpu_last_wait_iterations(&machine->fpu) != 0u) {
+        inputs |= CORE_MACHINE_CPU_TIMING_INPUT_WAIT_ITERATIONS;
     }
     return inputs;
 }
@@ -76,8 +150,8 @@ C_INT core_machine_cpu_timing_select(core_machine *machine,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80386_DYNAMIC_MULTIPLY,
             core_machine_80386_dynamic_multiply_cost) &&
         !core_machine_cpu_timing_try(machine, &result,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_LEGACY_DYNAMIC_ARITHMETIC,
-            core_machine_legacy_dynamic_arithmetic_model_cost) &&
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_L2_DYNAMIC_ARITHMETIC,
+            core_machine_l2_dynamic_arithmetic_model_cost) &&
         !core_machine_cpu_timing_try(machine, &result,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80386_SECONDARY,
             core_machine_80386_secondary_source_instruction_cost) &&
@@ -92,7 +166,7 @@ C_INT core_machine_cpu_timing_select(core_machine *machine,
             core_machine_control_stack_source_instruction_cost) &&
         !(machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_8086 &&
           core_machine_cpu_timing_try(machine, &result,
-              CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_8086_FALLBACK,
+              CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY,
               core_machine_8086_source_instruction_cost)) &&
         !(machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80186 &&
           core_machine_cpu_timing_try(machine, &result,

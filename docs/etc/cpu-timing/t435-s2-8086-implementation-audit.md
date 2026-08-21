@@ -7,6 +7,12 @@ and compares it to the actual 8086 execution route. It is an audit only: no
 runtime value, decoder behaviour, or timing-plan interface changes in this
 block.
 
+This is the accepted pre-S4 audit baseline. Its route descriptions and
+nonconforming dispositions are historical evidence, not current implementation
+status. The complete current disposition is the 649-key S4 runtime artifact
+[`t435-s4-8086-timing-results.json`](t435-s4-8086-timing-results.json),
+verified by `Verify-8086TimingResults.ps1`.
+
 The sole selection/publication route is:
 
 ```text
@@ -100,7 +106,7 @@ family aggregate, decides whether any implementation batch is complete.
 
 | ID | required repair and owned boundary | closure proof |
 | --- | --- | --- |
-| R1 | Replace the 8086 Group-3 fixed endpoint implementation with an independently written `L2-86BOX-8086-G3` model; include `DIV` and `IDIV`, manual-range containment, memory EA/override/odd-word additions and explicit midpoint contingency | operand partitions compare to the selected model and remain inside every Intel range |
+| R1 | Replace the 8086 Group-3 fixed endpoint implementation with an independently written `L2-86BOX-8086-G3` model; include `DIV` and `IDIV`, manual-range containment, and memory EA/override/odd-word additions; no fixed fallback is permitted | operand partitions compare to the selected model and remain inside every Intel range |
 | R2 | Materialize a complete 8086 form/context program for every L3 exact/formula row and route every accepted successful form to it before retirement | generated or table-driven form coverage proves no accepted row reaches unallocated |
 | R3 | Make prefix, all EA buckets, per-form word-transfer cardinality, branch/count outcomes and all legal string repeat phases explicit inputs to that program | cross-product regressions for Table 2-20, odd words, prefixes, outcomes and repeat termination |
 | R4 | Remove the successful-8086 `SOURCE_UNALLOCATED` route and replace the smoke that expects `D0 C0 == 1` with ledger values and negative assertions | no successful 8086 form emits unallocated origin/form; invalid/fault paths stay outside retirement |

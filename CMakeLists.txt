@@ -43,11 +43,15 @@ endif()
 set(PROJECT_PROBE_DIR "${CMAKE_BINARY_DIR}/probes")
 set(PROJECT_CPU_TIMING_MANIFEST_CATALOG
     "${CMAKE_BINARY_DIR}/generated/cpu_timing_manifest_catalog.inc")
+set(PROJECT_CPU_TIMING_MANIFEST_METADATA_CATALOG
+    "${CMAKE_BINARY_DIR}/generated/cpu_timing_manifest_metadata_catalog.inc")
 add_custom_command(
     OUTPUT "${PROJECT_CPU_TIMING_MANIFEST_CATALOG}"
+        "${PROJECT_CPU_TIMING_MANIFEST_METADATA_CATALOG}"
     COMMAND "${POWERSHELL_EXECUTABLE}" -NoProfile -ExecutionPolicy Bypass
         -File "${CMAKE_SOURCE_DIR}/tools/Export-CpuTimingManifestCatalog.ps1"
         -OutPath "${PROJECT_CPU_TIMING_MANIFEST_CATALOG}"
+        -MetadataOutPath "${PROJECT_CPU_TIMING_MANIFEST_METADATA_CATALOG}"
     DEPENDS tools/Export-CpuTimingManifestCatalog.ps1
         tools/Verify-CpuTimingManifestContract.ps1
         docs/etc/cpu-timing/t435-s2-8086-timing-manifest.json
@@ -56,7 +60,8 @@ add_custom_command(
         docs/etc/cpu-timing/t435-s2-80386-timing-manifest.json
     VERBATIM)
 add_custom_target(cpu-timing-manifest-catalog
-    DEPENDS "${PROJECT_CPU_TIMING_MANIFEST_CATALOG}")
+    DEPENDS "${PROJECT_CPU_TIMING_MANIFEST_CATALOG}"
+        "${PROJECT_CPU_TIMING_MANIFEST_METADATA_CATALOG}")
 
 add_library(core-machine STATIC
     src/core/machine/clock.c
@@ -377,6 +382,19 @@ target_link_libraries(core-machine-8086-instruction-timing-ledger-smoke PRIVATE
     core-machine)
 if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
     target_compile_options(core-machine-8086-instruction-timing-ledger-smoke PRIVATE
+        -Wall -Wextra -Wpedantic -Werror)
+endif()
+
+# The T435 S4 runner proves every frozen I86 key through a real instruction
+# execution; its result artifact is verified by the dependent CTest below.
+add_executable(core-machine-8086-timing-manifest-runner
+    tests/machine/core_machine_8086_timing_manifest_runner.c)
+target_link_libraries(core-machine-8086-timing-manifest-runner PRIVATE
+    core-machine)
+add_dependencies(core-machine-8086-timing-manifest-runner
+    cpu-timing-manifest-catalog)
+if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
+    target_compile_options(core-machine-8086-timing-manifest-runner PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
 endif()
 
@@ -2015,6 +2033,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     core-machine-t359-s5-timing-smoke
     core-machine-t359-s6-timing-smoke
     core-machine-8086-instruction-timing-ledger-smoke
+    core-machine-8086-timing-manifest-runner
     core-machine-80186-instruction-timing-ledger-smoke
     core-machine-legacy-timing-normalization-s2-smoke
     core-machine-80286-instruction-timing-ledger-smoke
@@ -2585,6 +2604,21 @@ foreach(target IN LISTS PROJECT_CURRENT_ALL_SMOKE_TARGETS)
         endif()
     endif()
 endforeach()
+
+set_tests_properties("current.core-machine-8086-timing-manifest-runner" PROPERTIES
+    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
+if(POWERSHELL_EXECUTABLE)
+    add_test(NAME "current.core-machine-8086-timing-results"
+        COMMAND "${POWERSHELL_EXECUTABLE}" -NoProfile -ExecutionPolicy Bypass
+            -File "${CMAKE_SOURCE_DIR}/tools/Verify-8086TimingResults.ps1"
+            -ResultPath
+            "${CMAKE_SOURCE_DIR}/docs/etc/cpu-timing/t435-s4-8086-timing-results.json")
+    set_tests_properties("current.core-machine-8086-timing-results" PROPERTIES
+        DEPENDS "current.core-machine-8086-timing-manifest-runner"
+        LABELS "current-gate;smoke"
+        TIMEOUT 30
+        WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
+endif()
 
 foreach(target IN LISTS PROJECT_CURRENT_FDD_SMOKE_TARGETS)
     project_add_current_smoke_test(${target} "${PROJECT_FDD_SMOKE_IMAGE}")

@@ -86,15 +86,17 @@ static C_INT core_machine_retirement_observation_modrm_index(
             return 0;
         }
     }
-    switch (opcode) {
-    case 0x80u: case 0x81u: case 0x83u: case 0x88u: case 0x8au: case 0x8bu:
-    case 0x8eu: case 0xd0u: case 0xf6u: case 0xf7u: case 0xfeu: case 0xffu:
+    if ((opcode <= 0x3bu && (opcode & 7u) <= 3u) ||
+        (opcode >= 0x80u && opcode <= 0x83u) ||
+        (opcode >= 0x84u && opcode <= 0x8fu) || opcode == 0xc4u ||
+        opcode == 0xc5u || opcode == 0xc6u || opcode == 0xc7u ||
+        (opcode >= 0xd0u && opcode <= 0xd3u) || opcode == 0xf6u ||
+        opcode == 0xf7u || opcode == 0xfeu || opcode == 0xffu) {
         if (opcode_index + 1u >= data->oplen) return 0;
         *out_index = (type_unsigned_8)(opcode_index + 1u);
         return 1;
-    default:
-        return 0;
     }
+    return 0;
 }
 
 static C_VOID core_machine_retirement_observation_capture_context(

@@ -89,6 +89,13 @@ static C_INT t362_s2_run_case(const t362_s2_case *test_case)
             result.elapsed_ticks != test_case->ticks ||
             state.advanced_ticks != test_case->ticks;
     }
+    if (failed) {
+        STD_PRINTF("T362 S2 timing profile=%d expected=%llu actual=%llu executed=%llu reason=%d advanced=%llu opcode=%02x\n",
+            (C_INT)test_case->profile, (unsigned long long)test_case->ticks,
+            (unsigned long long)result.ticks, (unsigned long long)result.executed,
+            (C_INT)result.reason, (unsigned long long)state.advanced_ticks,
+            test_case->program[0]);
+    }
     core_machine_destroy(machine);
     return failed;
 }
@@ -113,21 +120,21 @@ static C_INT t362_s2_test_8086(C_VOID)
     };
     static const t362_s2_case cases[] = {
         { CORE_MACHINE_CPU_PROFILE_8086, mul_byte_register,
-            sizeof(mul_byte_register), 70u, TYPE_FALSE },
+            sizeof(mul_byte_register), 71u, TYPE_FALSE },
         { CORE_MACHINE_CPU_PROFILE_8086, mul_word_register,
-            sizeof(mul_word_register), 118u, TYPE_FALSE },
+            sizeof(mul_word_register), 119u, TYPE_FALSE },
         { CORE_MACHINE_CPU_PROFILE_8086, mul_byte_memory,
-            sizeof(mul_byte_memory), 82u, TYPE_TRUE },
+            sizeof(mul_byte_memory), 83u, TYPE_TRUE },
         { CORE_MACHINE_CPU_PROFILE_8086, mul_word_memory,
-            sizeof(mul_word_memory), 134u, TYPE_TRUE },
+            sizeof(mul_word_memory), 131u, TYPE_TRUE },
         { CORE_MACHINE_CPU_PROFILE_8086, imul_byte_register,
-            sizeof(imul_byte_register), 80u, TYPE_FALSE },
+            sizeof(imul_byte_register), 91u, TYPE_FALSE },
         { CORE_MACHINE_CPU_PROFILE_8086, imul_word_register,
-            sizeof(imul_word_register), 128u, TYPE_FALSE },
+            sizeof(imul_word_register), 139u, TYPE_FALSE },
         { CORE_MACHINE_CPU_PROFILE_8086, imul_byte_memory,
-            sizeof(imul_byte_memory), 92u, TYPE_TRUE },
+            sizeof(imul_byte_memory), 103u, TYPE_TRUE },
         { CORE_MACHINE_CPU_PROFILE_8086, imul_word_memory,
-            sizeof(imul_word_memory), 144u, TYPE_TRUE }
+            sizeof(imul_word_memory), 151u, TYPE_TRUE }
     };
     STD_SIZE_T index;
 

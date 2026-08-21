@@ -29,6 +29,11 @@ struct core_machine_fpu {
     core_machine_fpu_tag tags[8];
     core_machine_fpu_value registers[8];
     type_bool pending_unmasked_exception;
+    /* Core-private TEST-pin wait work.  A timing-capable FPU owner supplies
+     * the remaining iterations; FWAIT consumes them atomically on successful
+     * retirement and retains the consumed count for CPU timing publication. */
+    type_unsigned_32 wait_iterations;
+    type_unsigned_32 last_wait_iterations;
 };
 
 typedef enum core_machine_fpu_escape_action {
@@ -57,5 +62,7 @@ C_VOID core_machine_fpu_load_control_word(core_machine_fpu *fpu,
 core_machine_fpu_execute_result core_machine_fpu_binary_st0_sti(core_machine_fpu *fpu,
     core_machine_fpu_operation operation, type_unsigned_8 index);
 type_bool core_machine_fpu_wait_pending(const core_machine_fpu *fpu);
+type_unsigned_32 core_machine_fpu_complete_wait(core_machine_fpu *fpu);
+type_unsigned_32 core_machine_fpu_last_wait_iterations(const core_machine_fpu *fpu);
 
 #endif

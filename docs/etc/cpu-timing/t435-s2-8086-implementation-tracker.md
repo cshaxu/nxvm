@@ -8,8 +8,10 @@ It consumes the accepted [manual ledger](t435-s1-8086-ledger.md) and the
 source authority: a target value always links back to the S1 manual row.
 
 The machine-readable [8086 manifest](t435-s2-8086-timing-manifest.json) is
-the current tracker source. This document explains its batches and closure
-rules; current key status is maintained in the manifest.
+the frozen key/provenance source. This document explains its batches and
+closure rules. Its `status` fields preserve the pre-S4 audit baseline; current
+per-key conformance is maintained only in the runtime
+[S4 result artifact](t435-s4-8086-timing-results.json).
 
 Run `powershell -NoProfile -ExecutionPolicy Bypass -File
 tools/Verify-8086TimingManifest.ps1` before every tracker-changing P. It
@@ -18,9 +20,9 @@ the level/status totals. A later focused runtime test must consume the same
 key IDs; the verifier is deliberately a tracker-integrity gate, not a
 substitute for those runtime results.
 
-## Current verified base-key statistics
+## Historical pre-S4 baseline
 
-The verifier's initial manifest-only baseline is intentionally strict:
+The verifier's initial manifest-only baseline was intentionally strict:
 
 | level | conforming | wrong-value | unallocated | missing-input | missing-test | total |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
@@ -28,9 +30,9 @@ The verifier's initial manifest-only baseline is intentionally strict:
 | L2:G3 | 0 | 8 | 8 | 0 | 0 | 16 |
 | **all base keys** | **0** | **10** | **62** | **0** | **172** | **244** |
 
-`conforming` stays zero until a focused test has produced the manifest key's
-actual result. The table is derived from the manifest and must be updated only
-by rerunning the verifier after a status change; it is not a separate ledger.
+`conforming` stayed zero until a focused test produced a manifest key's actual
+result. This table is derived from the immutable pre-S4 manifest; it is not a
+separate ledger and must not be edited to imitate runtime conformance.
 
 Under the shared [context-legality contract](t435-s2-context-legality.md), the
 manifest generates 178 first-order prefix/formula context keys: 19 legal
@@ -42,11 +44,10 @@ be marked conforming by this static audit.
 It additionally generates 227 canonical combined/phase keys: legal memory-RMW
 `LOCK` crossed with segment/odd-word, and every legal REP family crossed with
 `FIRST`, `CONTINUE` and `ZERO` phase. Their verified baseline is 19
-`unallocated`, 128 `missing-input` and 42 `missing-test`. The complete current
-tracker universe is therefore 649 keys (244 base, 178 single-axis contexts and
-227 combined contexts); zero is presently `conforming` because no manifest-key
-runtime result exists yet. The common result file and per-key reduction rules
-are frozen in the [manifest result contract](t435-s2-manifest-result-contract.md).
+`unallocated`, 128 `missing-input` and 42 `missing-test`. The complete tracker
+universe is 649 keys (244 base, 178 single-axis contexts and 227 combined
+contexts). The common result file and per-key reduction rules are frozen in
+the [manifest result contract](t435-s2-manifest-result-contract.md).
 
 | tracker layer | L3 | L2:G3 | total | wrong-value | unallocated | missing-input | missing-test |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
@@ -54,6 +55,16 @@ are frozen in the [manifest result contract](t435-s2-manifest-result-contract.md
 | single-axis context | 166 | 12 | 178 | 0 | 19 | 159 | 0 |
 | combined/phase context | 223 | 4 | 227 | 0 | 57 | 128 | 42 |
 | **all generated keys** | **617** | **32** | **649** | **10** | **138** | **287** | **214** |
+
+## Current S4 execution status
+
+The S4 runner has produced 649 unique runtime records in
+[`t435-s4-8086-timing-results.json`](t435-s4-8086-timing-results.json). The
+strict result verifier accepts every key: 617 L3 and 32 named `L2:G3`, with no
+unallocated successful retirement. This is the only current implementation
+status for this universe. Every `current`, `unallocated`, `missing-input`, or
+`missing-test` phrase in the historical tables below refers only to the pre-S4
+audit baseline and is superseded by that result artifact.
 
 One tracker row is a finite key template. Braces mean the Cartesian expansion
 shown in `keys`; the listed cardinality is mandatory and is not an estimate.
@@ -70,7 +81,7 @@ legacy primary/control/fallback timing selection for successful 8086 keys.
 
 ## Base-key implementation tracker
 
-| tracker key template and cardinality | level and S1 target | current route/status | implementation batch | required expanded regression |
+| tracker key template and cardinality | level and S1 target | pre-S4 route/status | implementation batch | required expanded regression |
 | --- | --- | --- | --- | --- |
 | `I86-ADJ-{AAA,AAS}` (2) | L3 exact 4 | primary; wrong value 8 | B1 | `i86_timing_I86-ADJ-*` |
 | `I86-ADJ-{DAA,DAS,AAD,AAM}` (4) | L3 exact 4/4/60/83 | primary; base conforming, missing-test | B0+B4 | `i86_timing_I86-ADJ-*` |
@@ -107,7 +118,7 @@ test report separates every member and all members are conforming.
 
 ## Context-key implementation tracker
 
-| context template | applies to | target and current status | implementation batch | expanded regression/closure |
+| context template | applies to | target and pre-S4 status | implementation batch | expanded regression/closure |
 | --- | --- | --- | --- | --- |
 | `I86-*-LOCK` (19) | only legal arithmetic/logical memory RMW, `INC`/`DEC`, `NEG`/`NOT`, and memory `XCHG` | L3 +2. All currently unallocated | B3+B4 | one result per legal memory-RMW key; no `LOCK` key may use fallback/unallocated |
 | `I86-*-SEGMENT` | each S1 source-effective-address key | L3 +2. Selected non-string paths currently add it; string source forms omit it; failed base keys remain failed | B3+B4 | enumerate legal operand source/EA keys, including `MOVS`/`CMPS`/`LODS` primitive and repeat forms |

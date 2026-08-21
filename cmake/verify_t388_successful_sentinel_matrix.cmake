@@ -23,7 +23,7 @@ foreach(token IN ITEMS
     "core_machine_cpu_timing_select"
     "core_machine_publish_elapsed_ticks"
     "core_machine_source_timing_lookup"
-    "prefixes != 0u && !segment_override"
+    "core_machine_instruction_prefix_count(data)"
     "core_machine_string_io_source_instruction_cost"
     "core_machine_80286_source_instruction_cost"
     "case 0x0fu:"

@@ -12268,6 +12268,10 @@ static C_VOID WAIT(core_machine_cpu_execution_context *context)
         TYPE_TRACE_CHECK_RETURN(_SetExcept_MF(0));
         TYPE_TRACE_BLOCK_END;
     }
+    else
+    {
+        (C_VOID)core_machine_fpu_complete_wait(context->fpu);
+    }
     TYPE_TRACE_CALL_END;
 }
 static C_VOID PUSHF(core_machine_cpu_execution_context *context)
