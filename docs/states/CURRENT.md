@@ -2,8 +2,28 @@
 
 ## Current Work
 
-**M5 T435 remains open between subtasks.** S4/8086 is accepted; S5/80186 is
-the next owner-admitted implementation batch.
+**M5 T435 S5 is active.** This corrective reopens the 8086 coverage claim at
+its boundary: reconcile every successful 8086 decoder form against S1/S2,
+then close every discovered omission. The planned 80186 batch follows as S6.
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | `Corrective`; M5 T435 S5 follows accepted S4 after its whole-8086 claim was shown to omit successful opcode `XLAT` (`D7`). |
+| Admission And Approval | Owner: user. Approval: repair S1/S2 and implementation as a reopened S4 P, 2026-08-21. Governance maps this to the next legal corrective S5. No exception is approved. |
+| Objective | Mechanically reconcile the successful 8086 decoder corpus with the S1 ledger and S2 manifest; add every omitted instruction/form/context, implement its manual L3 or named L2 timing and required semantics, and publish an exhaustive actual result universe. |
+| Non-goals | No 80186/80286/80386 timing implementation; no board, transaction, DMA, prefetch, INTA, device-service or physical-cycle timing; no public ABI. |
+| Reference Baseline | Accepted S4 P1 `a2d66c19` and governance P2 `c4156333`; S1 8086 ledger, S2 manifest/context contract, and the Intel 1979 Table 2-21 primary manual. |
+| Candidate Proposal | [M5 Core CPU Instruction Timing Programs](../proposals/m5-core-cpu-instruction-timing-program.md), corrective S5 row. |
+| Files And ABI Surface | S1/S2 8086 ledger, manifest, tracker/audit and result artifact; Core-private 8086 timing/decoder-owned functional code only where the difference requires it; owned runner/verifier/tests, CMake and evidence. No public or cross-module ABI change. |
+| Applicable Rules | One Core timing owner and no duplicate selector; C11 and cohesive owner-local changes; source material is reference-only and no external code/import; coverage ledger requires a finite, zero-difference completion predicate; report source/test delta and retired paths. |
+| Verification | Add a reproducible decoder-to-ledger difference verifier; execute every expanded 8086 key on a real Core machine; verify result provenance/ticks/inputs and absence of unallocated success; run focused and full current-gate CTest, static timing seams, documentation governance, configured build and artifact verification. |
+| Expected Markers | `M5:T435:S5:I86-LEDGER-DIFF:PASS:0`; every expanded key is unique, passed, allocated and L3/L2-proven; `XLAT` is Intel L3 exact 11 clocks if the difference audit confirms it as the only omission. |
+| Asset Needs | Existing owner-authorized manual corpus only. No source, firmware, media or emulator-code import. |
+| Reporting Requirements | Record the complete pre/post decoder-to-ledger difference, every newly admitted key/context and its manual locator, functional/timing implementation mapping, actual result count, test/static/build outcomes, delta and any remaining boundary. |
+| Stop Conditions | Stop for a decoder form whose accepted/manual status cannot be determined, a required source/license import, public ABI change, board input, or a difference that changes the 8086 profile's admitted instruction boundary. Do not hide an unresolved difference by excluding it from the verifier. |
+| Exit Criteria | The reproducible successful-decoder-to-ledger difference is empty; every newly discovered instruction/form and legal context has S1 source/L3-or-L2 disposition, S2 manifest key, functional proof and successful actual retirement result; prior S4 evidence is corrected to its 649-key scope; all required gates pass and the complete P is pushed and independently accepted. |
+| Original Owner Request | Repair the omitted `XLAT` manual/timing entry and implementation, and re-close the same 8086 work without leaving any other unledgered successful instruction. |
+| Similar-Issue Sweep | Sweep all 8086 decoder table registrations, prefix/context legality, S1/S2 key expansion, runner recipes, result verifier and historical S4 whole-coverage language. The mechanically detectable class is any successful 8086 opcode/form absent from the manifest-derived ledger. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** target `vm-0-5-0434`; T434 S2 `nxvm_0_5_0434.exe` / `build/output/nxvm_0_5_0434.exe`, SHA-256 `0252F8FDA17BEC2131606F19E3547B46894AC6B56DD37EC3B16BD302494FAFDC`. T434 has one copied Core timing-plan publication route for default PC/AT, IBM 5170 Model 339 and Model-40 BYOB session composition.

@@ -585,6 +585,36 @@ static C_INT timing_manifest_run_repeat_recipe(
     return failed;
 }
 
+static C_INT timing_manifest_probe_xlat_function(C_VOID)
+{
+    static const type_unsigned_8 program[] = { 0xd7u };
+    const timing_manifest_record *record = timing_manifest_find("I86-XLAT");
+    const core_machine_run_budget budget = { 1u, 0u };
+    const type_unsigned_8 expected_value = 0xa5u;
+    timing_manifest_capture capture = { { 0 }, 0u };
+    core_machine_run_result run;
+    core_machine *machine = STD_NULL;
+    C_INT failed = record == STD_NULL || !timing_manifest_prepare(&machine,
+        &capture, program, sizeof(program));
+
+    if (!failed) {
+        machine->executor_cpu.data.bx = 0x0010u;
+        machine->executor_cpu.data.al = 0x0004u;
+        failed = core_machine_memory_write(machine, 0x0014u, &expected_value,
+                sizeof(expected_value)) != TYPE_STATUS_OK ||
+            core_machine_run(machine, budget, &run) != TYPE_STATUS_OK ||
+            run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
+            run.ticks != 11u || capture.count != 1u ||
+            machine->executor_cpu.data.al != expected_value ||
+            capture.observation.source_ticks != 11u ||
+            capture.observation.timing_origin !=
+                CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY;
+    }
+    if (failed) STD_PRINTF("M5:T435:S5:I86-MANIFEST-RECIPE:FAIL:I86-XLAT-FUNCTION\n");
+    core_machine_destroy(machine);
+    return failed;
+}
+
 static C_INT timing_manifest_probe_adjustments(C_VOID)
 {
     static const timing_manifest_recipe recipes[] = {
@@ -603,6 +633,8 @@ static C_INT timing_manifest_probe_adjustments(C_VOID)
         { "I86-CONV-CBW", { 0x98u, 0u }, 1u, 2u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I86-CONV-CWD", { 0x99u, 0u }, 1u, 5u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I86-XLAT", { 0xd7u, 0u }, 1u, 11u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I86-FLAG-CLC", { 0xf8u, 0u }, 1u, 2u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
@@ -634,6 +666,18 @@ static C_INT timing_manifest_probe_adjustments(C_VOID)
             return 1;
         }
     }
+    {
+        static const timing_manifest_recipe segment_recipe = {
+            "I86-XLAT-SEGMENT", { 0x26u, 0xd7u }, 2u, 13u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY
+        };
+
+        if (timing_manifest_run_exact_recipe_with_inputs_and_formula(
+                &segment_recipe, 0u, 0u, 0u,
+                CORE_MACHINE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE,
+                CORE_MACHINE_RETIREMENT_CONTROL_NONE)) return 1;
+    }
+    if (timing_manifest_probe_xlat_function()) return 1;
     return 0;
 }
 
@@ -2825,7 +2869,7 @@ static C_INT timing_manifest_probe_xchg_memory_contexts(C_VOID)
 static C_INT timing_manifest_write_results(C_VOID)
 {
     const C_CHAR *const path =
-        "docs/etc/cpu-timing/t435-s4-8086-timing-results.json";
+        "docs/etc/cpu-timing/t435-s5-8086-timing-results.json";
     STD_FILE *file = STD_FOPEN(path, "wb");
     STD_SIZE_T index;
     STD_SIZE_T written = 0u;
@@ -2867,7 +2911,7 @@ static C_INT timing_manifest_write_results(C_VOID)
         ++written;
     }
     if (STD_FPRINTF(file, "\n  ]\n}\n") < 0 || STD_FCLOSE(file) != 0) return 1;
-    return written == 649u ? 0 : 1;
+    return written == 651u ? 0 : 1;
 }
 
 C_INT main(C_VOID)
@@ -2886,7 +2930,7 @@ C_INT main(C_VOID)
             record->context[0] == '\0') return 1;
         ++i86_count;
     }
-    if (i86_count != 649u || timing_manifest_probe_adjustments()) return 1;
+    if (i86_count != 651u || timing_manifest_probe_adjustments()) return 1;
     if (timing_manifest_probe_alu_register_forms()) {
         STD_PRINTF("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:ALU-REGISTER\n");
         return 1;
@@ -3065,7 +3109,7 @@ C_INT main(C_VOID)
         STD_PRINTF("M5:T435:S4:I86-MANIFEST-PROBE:FAIL:RESULTS\n");
         return 1;
     }
-    STD_PRINTF("M5:T435:S4:I86-MANIFEST-PROBE:PASS:%u/%u\n", covered_count,
+    STD_PRINTF("M5:T435:S5:I86-MANIFEST-PROBE:PASS:%u/%u\n", covered_count,
         i86_count);
     return 0;
 }

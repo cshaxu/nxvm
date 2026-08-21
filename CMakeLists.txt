@@ -2608,12 +2608,22 @@ endforeach()
 set_tests_properties("current.core-machine-8086-timing-manifest-runner" PROPERTIES
     WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
 if(POWERSHELL_EXECUTABLE)
-    add_test(NAME "current.core-machine-8086-timing-results"
+    add_test(NAME "current.core-machine-8086-timing-results-s5"
         COMMAND "${POWERSHELL_EXECUTABLE}" -NoProfile -ExecutionPolicy Bypass
             -File "${CMAKE_SOURCE_DIR}/tools/Verify-8086TimingResults.ps1"
             -ResultPath
-            "${CMAKE_SOURCE_DIR}/docs/etc/cpu-timing/t435-s4-8086-timing-results.json")
-    set_tests_properties("current.core-machine-8086-timing-results" PROPERTIES
+            "${CMAKE_SOURCE_DIR}/docs/etc/cpu-timing/t435-s5-8086-timing-results.json")
+    set_tests_properties("current.core-machine-8086-timing-results-s5" PROPERTIES
+        DEPENDS "current.core-machine-8086-timing-manifest-runner"
+        LABELS "current-gate;smoke"
+        TIMEOUT 30
+        WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
+    add_test(NAME "current.core-machine-8086-decoder-ledger-s5"
+        COMMAND "${POWERSHELL_EXECUTABLE}" -NoProfile -ExecutionPolicy Bypass
+            -File "${CMAKE_SOURCE_DIR}/tools/Verify-8086DecoderLedger.ps1"
+            -ResultPath
+            "${CMAKE_SOURCE_DIR}/docs/etc/cpu-timing/t435-s5-8086-timing-results.json")
+    set_tests_properties("current.core-machine-8086-decoder-ledger-s5" PROPERTIES
         DEPENDS "current.core-machine-8086-timing-manifest-runner"
         LABELS "current-gate;smoke"
         TIMEOUT 30

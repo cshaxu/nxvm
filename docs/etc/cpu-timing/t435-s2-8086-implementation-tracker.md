@@ -10,8 +10,9 @@ source authority: a target value always links back to the S1 manual row.
 The machine-readable [8086 manifest](t435-s2-8086-timing-manifest.json) is
 the frozen key/provenance source. This document explains its batches and
 closure rules. Its `status` fields preserve the pre-S4 audit baseline; current
-per-key conformance is maintained only in the runtime
-[S4 result artifact](t435-s4-8086-timing-results.json).
+per-key conformance is maintained only in the current runtime
+[S5 result artifact](t435-s5-8086-timing-results.json).  The S4 artifact is
+immutable historical evidence for its original 649-key frozen inventory.
 
 Run `powershell -NoProfile -ExecutionPolicy Bypass -File
 tools/Verify-8086TimingManifest.ps1` before every tracker-changing P. It
@@ -44,9 +45,9 @@ be marked conforming by this static audit.
 It additionally generates 227 canonical combined/phase keys: legal memory-RMW
 `LOCK` crossed with segment/odd-word, and every legal REP family crossed with
 `FIRST`, `CONTINUE` and `ZERO` phase. Their verified baseline is 19
-`unallocated`, 128 `missing-input` and 42 `missing-test`. The complete tracker
-universe is 649 keys (244 base, 178 single-axis contexts and 227 combined
-contexts). The common result file and per-key reduction rules are frozen in
+`unallocated`, 128 `missing-input` and 42 `missing-test`. The pre-S5 baseline
+tracker universe is 649 keys (244 base, 178 single-axis contexts and 227
+combined contexts). The common result file and per-key reduction rules are frozen in
 the [manifest result contract](t435-s2-manifest-result-contract.md).
 
 | tracker layer | L3 | L2:G3 | total | wrong-value | unallocated | missing-input | missing-test |
@@ -56,13 +57,15 @@ the [manifest result contract](t435-s2-manifest-result-contract.md).
 | combined/phase context | 223 | 4 | 227 | 0 | 57 | 128 | 42 |
 | **all generated keys** | **617** | **32** | **649** | **10** | **138** | **287** | **214** |
 
-## Current S4 execution status
+## Current S5 execution status
 
-The S4 runner has produced 649 unique runtime records in
-[`t435-s4-8086-timing-results.json`](t435-s4-8086-timing-results.json). The
-strict result verifier accepts every key: 617 L3 and 32 named `L2:G3`, with no
-unallocated successful retirement. This is the only current implementation
-status for this universe. Every `current`, `unallocated`, `missing-input`, or
+S5 corrects the former corpus omission of `XLAT` (`D7`): it adds the exact-L3
+base key `I86-XLAT` (11 clocks) and its legal source-table segment-override
+key `I86-XLAT-SEGMENT` (13 clocks).  The S5 runner has produced 651 unique
+runtime records in [`t435-s5-8086-timing-results.json`](t435-s5-8086-timing-results.json).
+The strict result verifier accepts every key: 619 L3 and 32 named `L2:G3`,
+with no unallocated successful retirement. This is the only current
+implementation status for this universe. Every `current`, `unallocated`, `missing-input`, or
 `missing-test` phrase in the historical tables below refers only to the pre-S4
 audit baseline and is superseded by that result artifact.
 

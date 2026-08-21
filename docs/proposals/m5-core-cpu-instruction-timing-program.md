@@ -74,10 +74,11 @@ admitted transaction/device/board timing receivers.
 | --- | --- | --- |
 | S3 / B0 | Create `cpu_timing.c`; materialize canonical manifest keys; accept decoder-owned inputs; emit shared result records; route every successful CPU timing request through one publisher | all manifests generate canonical records; one `machine.c` timing/publication seam; no board/transaction rule enters CPU timing |
 | S4 / 8086 | Implement 8086 L3 plus 16 named L2:G3 keys, including EA, odd word, prefixes, repeat and Group-3 partitions | all 649 keys conform; manual bounds/origin/unallocated proof; old selector removed |
-| S5 / 80186 | Implement exact/formula keys and 25 declared midpoint L2 keys, including 80186-only forms and legal contexts | all 602 keys conform; no endpoint/constrained legacy arithmetic path remains |
-| S6 / 80286 | Implement all L3 forms including real/PM, privilege/gate/task, EA/odd word, next-byte and repeat inputs | all 812 keys conform; no successful fallback remains |
-| S7 / 80386DX | Implement all L3 forms including size, VM86/PM, system forms, early-out multiply and r/m/repeat contexts | all 1,232 keys conform; formula/path inputs are published and checked |
-| S8 / B4 | Cross-profile result consumption, obsolete-selector removal and closure audit | zero nonconforming key across four manifests; focused and cross-profile regressions pass |
+| S5 / corrective 8086 completeness | Reconcile the successful 8086 decoder corpus against the S1/S2 ledger, then add every omitted form and its legal contexts before implementing its manual/model timing | machine-checked decoder-to-ledger difference is empty; every newly admitted key has source, L3/L2 disposition, functional proof and actual retirement result; no prior S4 whole-8086 claim remains broader than its frozen universe |
+| S6 / 80186 | Implement exact/formula keys and 25 declared midpoint L2 keys, including 80186-only forms and legal contexts | all 602 keys conform; no endpoint/constrained legacy arithmetic path remains |
+| S7 / 80286 | Implement all L3 forms including real/PM, privilege/gate/task, EA/odd word, next-byte and repeat inputs | all 812 keys conform; no successful fallback remains |
+| S8 / 80386DX | Implement all L3 forms including size, VM86/PM, system forms, early-out multiply and r/m/repeat contexts | all 1,232 keys conform; formula/path inputs are published and checked |
+| S9 / B4 | Cross-profile result consumption, obsolete-selector removal and closure audit | zero nonconforming key across four manifests; focused and cross-profile regressions pass |
 
 Each CPU S verifies decode/semantic execution and fault boundaries as a
 non-regression condition. It does not reopen T401 instruction semantics unless

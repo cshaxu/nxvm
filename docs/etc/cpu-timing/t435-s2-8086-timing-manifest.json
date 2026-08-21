@@ -2,13 +2,14 @@
   "schema": "nxvm.cpu-timing-manifest.v1",
   "profile": "8086",
   "source_ledger": "t435-s1-8086-ledger.md",
-  "expected": {"base":244,"L3":228,"L2":16,"contexts":178,"context_L3":166,"context_L2":12,"combinations":227,"combination_L3":223,"combination_L2":4},
+  "expected": {"base":245,"L3":229,"L2":16,"contexts":179,"context_L3":167,"context_L2":12,"combinations":227,"combination_L3":223,"combination_L2":4},
   "legal_context_contract": "t435-s2-context-legality.md",
   "key_rule": "Each template expands the listed axes; every expanded base key inherits the record unless listed in overrides. Prefixes never retire alone. Context keys are generated only from the legal semantic axes in the common contract.",
   "status_values": ["conforming", "wrong-value", "unallocated", "missing-input", "missing-test"],
   "base_templates": [
     {"id":"I86-ADJ-{op}","op":["AAA","AAS"],"level":"L3","source_rule":"S1:AAA/AAS exact 4","route":"primary","status":"wrong-value","batch":"B1","test":"i86_timing_{id}"},
     {"id":"I86-ADJ-{op}","op":["DAA","DAS","AAD","AAM"],"level":"L3","source_rule":"S1:adjust exact","route":"primary","status":"missing-test","batch":"B0+B4","test":"i86_timing_{id}"},
+    {"id":"I86-XLAT","level":"L3","source_rule":"S1:XLAT exact 11","route":"unallocated","status":"unallocated","batch":"S5","test":"i86_timing_I86-XLAT"},
     {"id":"I86-CONV-{op}","op":["CBW","CWD"],"level":"L3","source_rule":"S1:conversion exact","route":"primary","status":"missing-test","batch":"B0+B4","test":"i86_timing_{id}"},
     {"id":"I86-ALU-{op}-{form}","op":["ADC","ADD","AND","OR","SBB","SUB","XOR"],"form":["RR","RM","MR","RI","MI","AI"],"level":"L3","source_rule":"S1:ALU exact/EA","route":"primary","status":"missing-test","batch":"B0+B3+B4","test":"i86_timing_{id}"},
     {"id":"I86-CMP-{form}","form":["RR","RM","MR","RI","MI","AI"],"level":"L3","source_rule":"S1:CMP exact/EA","route":"primary","status":"missing-test","batch":"B0+B3+B4","test":"i86_timing_{id}"},
@@ -41,7 +42,7 @@
   ],
   "context_key_sets": [
     {"id_suffix":"LOCK","base_selector":"I86-(ALU-(ADC|ADD|AND|OR|SBB|SUB|XOR)-(MR|MI)|(INC|DEC|NEG|NOT)-M|XCHG-MR)","source_rule":"S1:LOCK +2 on legal memory RMW","route":"unallocated-or-missing-term","batch":"B3+B4","test":"i86_timing_{id}","status":"unallocated"},
-    {"id_suffix":"SEGMENT","base_selector":"I86-(ALU-.*-(RM|MR|MI)|CMP-(RM|MR|MI)|TEST-(RM|MI)|(INC|DEC|NEG|NOT)-M|XCHG-MR|MOV-(RM|MR|MI|MOFFS-R|MOFFS-W)|MOV-SREG-(TO-M|FROM-M)|(LDS|LES)-M|PUSH-M|POP-M|(CALL|JMP)-(RM16|M1616)|(MUL|IMUL|DIV|IDIV)-M(8|16)|(ROL|ROR|RCL|RCR|SHL|SHR|SAR)-(M1|MCL)|ESC-M|STRING-(MOVS|CMPS|LODS)-(B|W)-NONE|REP-(MOVS|CMPS-REPE|CMPS-REPNE|LODS)-(B|W))","source_rule":"S1:SEGMENT +2 on legal memory operand","route":"failed base or string missing term","batch":"B3+B4","test":"i86_timing_{id}","status":"missing-input"},
+    {"id_suffix":"SEGMENT","base_selector":"I86-(ALU-.*-(RM|MR|MI)|CMP-(RM|MR|MI)|TEST-(RM|MI)|(INC|DEC|NEG|NOT)-M|XCHG-MR|MOV-(RM|MR|MI|MOFFS-R|MOFFS-W)|MOV-SREG-(TO-M|FROM-M)|(LDS|LES)-M|PUSH-M|POP-M|(CALL|JMP)-(RM16|M1616)|(MUL|IMUL|DIV|IDIV)-M(8|16)|(ROL|ROR|RCL|RCR|SHL|SHR|SAR)-(M1|MCL)|XLAT|ESC-M|STRING-(MOVS|CMPS|LODS)-(B|W)-NONE|REP-(MOVS|CMPS-REPE|CMPS-REPNE|LODS)-(B|W))","source_rule":"S1:SEGMENT +2 on legal memory operand","route":"failed base or string missing term","batch":"B3+B4","test":"i86_timing_{id}","status":"missing-input"},
     {"id_suffix":"ODD-WORD","base_selector":"I86-(ALU-.*-(RM|MR|MI)|CMP-(RM|MR|MI)|TEST-(RM|MI)|(INC|DEC|NEG|NOT)-M|XCHG-MR|MOV-(RM|MR|MI|MOFFS-R|MOFFS-W)|MOV-SREG-(TO-M|FROM-M)|(LDS|LES)-M|PUSH-M|POP-M|(CALL|JMP)-(RM16|M1616)|(MUL|IMUL|DIV|IDIV)-M16|(ROL|ROR|RCL|RCR|SHL|SHR|SAR)-(M1|MCL)|STRING-(MOVS|CMPS|STOS|LODS|SCAS)-W-NONE|REP-(MOVS|CMPS-REPE|CMPS-REPNE|STOS|LODS|SCAS-REPE|SCAS-REPNE)-W)","source_rule":"S1:odd word +4 per legal 16-bit memory transfer","route":"missing per-form transfer observation","batch":"B3+B4","test":"i86_timing_{id}","status":"missing-input"}
   ],
   "combination_defaults": {

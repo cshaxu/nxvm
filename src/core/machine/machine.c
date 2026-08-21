@@ -345,7 +345,8 @@ typedef enum core_machine_source_timing_form {
     CORE_MACHINE_SOURCE_TIMING_8086_ESC,
     CORE_MACHINE_SOURCE_TIMING_8086_JCC,
     CORE_MACHINE_SOURCE_TIMING_8086_LOOP,
-    CORE_MACHINE_SOURCE_TIMING_8086_INTO
+    CORE_MACHINE_SOURCE_TIMING_8086_INTO,
+    CORE_MACHINE_SOURCE_TIMING_8086_XLAT
 } core_machine_source_timing_form;
 
 typedef struct core_machine_source_timing_entry {
@@ -1811,6 +1812,12 @@ static C_INT core_machine_legacy_source_instruction_cost(core_machine *machine,
         machine->source_timing_form_id = CORE_MACHINE_SOURCE_TIMING_8086_WAIT;
         *out_ticks = 3u + (type_unsigned_64)5u *
             core_machine_fpu_last_wait_iterations(&machine->fpu);
+        return 1;
+    case 0xd7u:
+        if (machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_8086) break;
+        machine->source_timing_form_id = CORE_MACHINE_SOURCE_TIMING_8086_XLAT;
+        *out_ticks = 11u + (segment_override ?
+            CORE_MACHINE_8086_SEGMENT_OVERRIDE_TICKS : 0u);
         return 1;
     default:
         if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_8086 &&

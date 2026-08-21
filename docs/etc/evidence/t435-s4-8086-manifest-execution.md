@@ -2,9 +2,9 @@
 
 ## Scope
 
-This evidence indexes the actual 8086 execution result for the frozen T435 S2
-universe. It covers the complete 649-key inventory: 244 base rows, 178 legal
-context rows, and 227 legal combination rows. The artifact is
+This evidence indexes the actual 8086 execution result for the originally
+frozen T435 S2 universe. It covers its 649-key inventory: 244 base rows, 178
+legal context rows, and 227 legal combination rows. The artifact is
 `docs/etc/cpu-timing/t435-s4-8086-timing-results.json`.
 
 ## Result contract
@@ -63,6 +63,15 @@ T359, T360, T435 S3, T388, dependency-DAG, C-facade, documentation-governance
 and whitespace gates passed. This evidence still requires the coordinator's
 actual-change review and P commit/push before S4 acceptance.
 
+## Later scope correction
+
+T435 S5 established that this historical freeze omitted the successfully
+decoded `XLAT` (`D7`) instruction. Therefore the statements above are limited
+to the 649 keys actually frozen and executed by S4; they are not a claim of a
+complete 8086 decoder corpus. S5 adds `I86-XLAT` (11 clocks) and its legal
+`I86-XLAT-SEGMENT` context (13 clocks), and publishes the superseding 651-key
+runtime result artifact `docs/etc/cpu-timing/t435-s5-8086-timing-results.json`.
+
 ## Change accounting and retired paths
 
 Git's staged `--numstat` reports production source changes of +489/-37 lines
@@ -89,5 +98,5 @@ retirements; that the L3/L2 provenance, required inputs and source forms are
 validated; that no public ABI or board-timing scope entered the patch; and that
 the prior 8086 fallback did not survive as a competing production route. The
 full current-gate result is 291/291 passing. S4 is accepted. T435 remains open
-only for its later profile batches; no 8086 key or in-scope S4 gap transfers
-forward.
+only for its later profile batches. T435 S5 subsequently corrected the omitted
+`XLAT` keys as documented above.
