@@ -929,7 +929,7 @@ static C_INT timing_80286_fpu_interface_transfer(C_VOID)
     if (!failed) failed |= !timing_80286_load(machine, fninit, sizeof(fninit)) ||
         !timing_80286_run(machine, &state, 1u, 1u);
     if (!failed) failed |= !timing_80286_load(machine, fwait, sizeof(fwait)) ||
-        !timing_80286_run(machine, &state, 1u, 1u);
+        !timing_80286_run(machine, &state, 1u, 3u);
     core_machine_destroy(machine);
     return failed;
 }

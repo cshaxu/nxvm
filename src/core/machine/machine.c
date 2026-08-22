@@ -3194,6 +3194,12 @@ C_INT core_machine_80286_source_instruction_cost(core_machine *machine,
     case 0xd7u:
         *out_ticks = 5u;
         return 1;
+    case 0x9bu:
+        /* Appendix B assigns three internal clocks to successful WAIT.
+         * BUSY duration is an external completion condition, not a CPU-row
+         * fallback or an invented instruction cost. */
+        *out_ticks = 3u;
+        return 1;
     case 0x9eu: case 0x9fu:
         *out_ticks = 2u;
         return 1;
