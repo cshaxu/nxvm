@@ -1955,6 +1955,11 @@ C_INT core_machine_primary_source_instruction_cost(
         return 0;
     }
     opcode = data->opcodes[prefixes];
+    if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 && prefixes == 0u &&
+        opcode >= 0xd8u && opcode <= 0xdfu) {
+        *out_ticks = 1u;
+        return 1;
+    }
     if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 && prefixes == 0u) {
         switch (opcode) {
         case 0x90u: *out_ticks = 3u; return 1;
@@ -3199,10 +3204,6 @@ C_INT core_machine_80286_source_instruction_cost(core_machine *machine,
         *out_ticks = machine->executor_cpu.data.eip == fallthrough ?
             CORE_MACHINE_80286_JCC_NOT_TAKEN_TICKS :
             CORE_MACHINE_80286_JCC_TAKEN_TICKS;
-        return 1;
-    }
-    if (opcode >= 0xd8u && opcode <= 0xdfu) {
-        *out_ticks = 1u;
         return 1;
     }
     switch (opcode) {
