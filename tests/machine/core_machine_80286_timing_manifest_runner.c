@@ -78,10 +78,12 @@ static C_INT timing_80286_manifest_is_dx_port(const C_CHAR *key_id)
         STD_STRCMP(key_id, "I286-OUT-DX-W") == 0);
 }
 
-static C_INT timing_80286_manifest_is_into(const C_CHAR *key_id)
+static C_INT timing_80286_manifest_is_interrupt(const C_CHAR *key_id)
 {
     return key_id != STD_NULL &&
-        (STD_STRCMP(key_id, "I286-INTO-TAKEN-NEXT-BYTE-2") == 0 ||
+        (STD_STRCMP(key_id, "I286-INT3-REAL-NEXT-BYTE-2") == 0 ||
+            STD_STRCMP(key_id, "I286-INT-IMM-REAL-NEXT-BYTE-2") == 0 ||
+            STD_STRCMP(key_id, "I286-INTO-TAKEN-NEXT-BYTE-2") == 0 ||
             STD_STRCMP(key_id, "I286-INTO-NOT") == 0);
 }
 
@@ -178,14 +180,18 @@ static C_INT timing_80286_manifest_prepare(core_machine **out_machine,
     if (status == TYPE_STATUS_OK) status = core_machine_reset(machine);
     if (status == TYPE_STATUS_OK) status = core_machine_memory_write(machine,
         TIMING_80286_MANIFEST_RESET_LINEAR, program, bytes);
-    if (status == TYPE_STATUS_OK && timing_80286_manifest_is_into(key_id)) {
+    if (status == TYPE_STATUS_OK && timing_80286_manifest_is_interrupt(key_id)) {
         const type_unsigned_16 handler[] = { 0xfff5u, 0xf000u };
         const type_unsigned_8 handler_code[] = { 0x00u, 0xc0u };
 
         machine->executor_cpu.data.sp = TIMING_80286_MANIFEST_STACK_LINEAR +
             TIMING_80286_MANIFEST_STACK_BYTES;
-        status = core_machine_memory_write(machine, 4u * 4u, handler,
+        status = core_machine_memory_write(machine, 3u * 4u, handler,
             sizeof(handler));
+        if (status == TYPE_STATUS_OK) status = core_machine_memory_write(machine,
+            4u * 4u, handler, sizeof(handler));
+        if (status == TYPE_STATUS_OK) status = core_machine_memory_write(machine,
+            0x60u * 4u, handler, sizeof(handler));
         if (status == TYPE_STATUS_OK) status = core_machine_memory_write(machine,
             0x000ffff5u, handler_code, sizeof(handler_code));
     }
@@ -552,7 +558,11 @@ C_INT main(C_VOID)
         { "I286-OUT-IMM-B", { 0xe6u, 0x80u }, 2u, 3u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO },
         { "I286-OUT-IMM-W", { 0xe7u, 0x80u }, 2u, 3u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO },
         { "I286-OUT-DX-B", { 0xeeu }, 1u, 3u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO },
-        { "I286-OUT-DX-W", { 0xefu }, 1u, 3u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO }
+        { "I286-OUT-DX-W", { 0xefu }, 1u, 3u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO },
+        { "I286-INT3-REAL-NEXT-BYTE-2", { 0xccu }, 1u, 25u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
+        { "I286-INT-IMM-REAL-NEXT-BYTE-2", { 0xcdu, 0x60u }, 2u, 25u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK }
     };
     static const timing_80286_manifest_control_recipe control_recipes[] = {
         { "I286-JCC-JO-TAKEN", 0x70u, VCPU_EFLAGS_OF, 7u },
