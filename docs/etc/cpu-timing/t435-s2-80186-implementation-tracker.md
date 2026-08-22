@@ -73,6 +73,14 @@ transfer, and `INSW`/`OUTSW` had not classified their string transfer or
 published the odd-word formula input.  This does **not** close the remaining
 segment-plus-odd and repeat-combination keys.
 
+P67 turns every one of the 88 legal single-axis `SEGMENT` keys into a real
+successful-retirement observation.  The runner derives the normal memory
+recipes, uses the source-consuming segment string forms, and supplies separate
+memory-form recipes for `CALL/JMP r/m16`: their base keys also admit registers,
+but their segment contexts legally name only the memory realization.  The
+Table 1-16 `+2` term passes for all 88; no production selector change was
+needed.
+
 ## Per-key implementation map
 
 | manifest template | level and authoritative rule | present state | close in |
@@ -89,7 +97,8 @@ segment-plus-odd and repeat-combination keys.
 | `I186-BOUND` | L2:midpoint, Table 2-9 range 33--35 | successful in-range result proves the fixed midpoint; prefix contexts remain open | B0+B2+B4 |
 | `I186-{ENTER-*,LEAVE}`, `I186-FLAG-*` | L3 exact/formula | every base form has real retirement proof; no independent legal context is admitted | B0+B1+B3+B4 |
 | generated `-ODD-WORD` (87 legal single-axis keys) | S1 Table 1-16 `+4` odd-addressed 16-bit transfer | every key has a real successful-retirement observation | B3+B4 |
-| generated `-SEGMENT`, `-LOCK`, `-REP-PHASE-*` and legal combined suffixes | S1 Table 1-16 context rule | partial real coverage exists; every unobserved generated key remains open | B3+B4 |
+| generated `-SEGMENT` (88 legal single-axis keys) | S1 Table 1-16 segment-prefix `+2` | every key has a real successful-retirement observation | B3+B4 |
+| generated `-LOCK`, `-REP-PHASE-*` and legal combined suffixes | S1 Table 1-16 context rule | partial real coverage exists; every unobserved generated key remains open | B3+B4 |
 
 The template form is deliberately compact, but braces in the manifest expand
 one concrete key per opcode/form/outcome/width/context.  A test result for one
