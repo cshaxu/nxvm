@@ -33,7 +33,7 @@ shared [manifest result contract](t435-s2-manifest-result-contract.md).
 | `I186-ALU-*-AI`, `I186-CMP-AI`, `I186-TEST-AI`, `I186-MOV-{RI,MI}` | L2:midpoint, manual range and `ceil` rule in S1 | no midpoint closure result | B0+B2+B4 |
 | `I186-MOV-*`, stack, call/jump/return, branches, interrupt/port/ESC/WAIT/HLT | L3 exact/formula | mixed primary/control/fallback routes; per-form proof absent | B0+B1+B3+B4 |
 | `I186-XLAT` | L3 Table 2-9 exact 11 | terminal `source_timing_unallocated`: legacy selector limits XLAT to 8086 | B0+B1+B3+B4 |
-| `I186-{MUL,IMUL,IDIV}-*`, `I186-IMUL-IMM-*` | L2:midpoint accepted S1 values | wrong-value old dynamic/constrained model | B0+B2+B3+B4 |
+| `I186-{MUL,IMUL,IDIV}-*`, `I186-IMUL-IMM-*` | L2:midpoint accepted S1 values | fixed-midpoint selector; representative execution proof passes, but each key still needs its own result | B2+B3+B4 |
 | `I186-DIV-*` | L3 exact | source scalar exists; proof absent | B0+B1+B3+B4 |
 | `I186-{ROL,ROR,RCL,RCR,SHL,SHR,SAR}-*` | L3 formula; count modulo 32 | unallocated | B0+B1+B3+B4 |
 | `I186-STRING-*`, `I186-REP-*` | L3 primitive/repeat formula | source table exists; phase/termination proof absent | B0+B1+B3+B4 |

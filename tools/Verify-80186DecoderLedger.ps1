@@ -206,10 +206,10 @@ foreach ($opcodeText in $inventory.lexeme_primary_opcodes) {
 }
 if ($partitionCounts.prefix -ne 6 -or $partitionCounts.'semantic-prefix' -ne 0 -or $partitionCounts.esc -ne 8 -or $partitionCounts.retirement -ne 233) { throw "Primary partition mismatch: prefix=$($partitionCounts.prefix) semantic=$($partitionCounts.'semantic-prefix') esc=$($partitionCounts.esc) retirement=$($partitionCounts.retirement)" }
 $statusCounts = @{}; foreach($key in $keys){$statusCounts[[string]$key.status] = 1 + [int]$statusCounts[[string]$key.status]}
-if ([int]$statusCounts.conforming -ne 0 -or [int]$statusCounts.'wrong-value' -ne 14 -or [int]$statusCounts.unallocated -ne 43 -or [int]$statusCounts.'missing-test' -ne 222) { throw "S2 base status counts are not reconciled: conforming=$($statusCounts.conforming) wrong=$($statusCounts.'wrong-value') unallocated=$($statusCounts.unallocated) missing-test=$($statusCounts.'missing-test')" }
+if ([int]$statusCounts.conforming -ne 0 -or [int]$statusCounts.'wrong-value' -ne 0 -or [int]$statusCounts.unallocated -ne 43 -or [int]$statusCounts.'missing-test' -ne 236) { throw "S9 base status counts are not reconciled: conforming=$($statusCounts.conforming) wrong=$($statusCounts.'wrong-value') unallocated=$($statusCounts.unallocated) missing-test=$($statusCounts.'missing-test')" }
 $canonicalStatusCounts = @{}; foreach($entry in $canonical.Values){$canonicalStatusCounts[[string]$entry.status] = 1 + [int]$canonicalStatusCounts[[string]$entry.status]}
 "M5:T435:S6:I186-MANUAL-DECODER-PARTITION:OK:247:233:8:6"
 "M5:T435:S6:I186-S1-PRIMARY-LOCATORS:PASS:23"
 "M5:T435:S6:I186-DECODER-LEDGER-ZERO-DIFFERENCE:PASS:279"
-"M5:T435:S6:I186-S2-STATUS-RECONCILED:PASS:0:14:43:222"
+"M5:T435:S9:I186-S2-STATUS-PROGRESS:PASS:0:0:43:236"
 "M5:T435:S6:I186-S2-CANONICAL-STATUS-RECONCILED:PASS:603:$($canonicalStatusCounts.'wrong-value'):$($canonicalStatusCounts.unallocated):$($canonicalStatusCounts.'missing-input'):$($canonicalStatusCounts.'missing-test')"

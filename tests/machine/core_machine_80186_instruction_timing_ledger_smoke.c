@@ -241,11 +241,25 @@ C_INT main(C_VOID)
     static const type_unsigned_8 clc[] = { 0xf8u };
     static const type_unsigned_8 immediate[] = { 0xb8u, 0x34u, 0x12u };
     static const type_unsigned_8 registers[] = { 0x8bu, 0xc1u };
+    static const type_unsigned_8 mul8[] = { 0xf6u, 0xe0u };
+    static const type_unsigned_8 mul16[] = { 0xf7u, 0xe0u };
+    static const type_unsigned_8 imul8[] = { 0xf6u, 0xe8u };
+    static const type_unsigned_8 imul16[] = { 0xf7u, 0xe8u };
+    static const type_unsigned_8 imul_imm8[] = { 0x6bu, 0xc0u, 0x01u };
+    static const type_unsigned_8 imul_imm16[] = {
+        0x69u, 0xc0u, 0x01u, 0x00u
+    };
 
     if (timing_80186_case(nop, sizeof(nop), 3u) ||
         timing_80186_case(clc, sizeof(clc), 2u) ||
         timing_80186_case(immediate, sizeof(immediate), 4u) ||
-        timing_80186_case(registers, sizeof(registers), 2u)) return 1;
+        timing_80186_case(registers, sizeof(registers), 2u) ||
+        timing_80186_case(mul8, sizeof(mul8), 27u) ||
+        timing_80186_case(mul16, sizeof(mul16), 36u) ||
+        timing_80186_case(imul8, sizeof(imul8), 27u) ||
+        timing_80186_case(imul16, sizeof(imul16), 36u) ||
+        timing_80186_case(imul_imm8, sizeof(imul_imm8), 24u) ||
+        timing_80186_case(imul_imm16, sizeof(imul_imm16), 31u)) return 1;
     if (timing_80186_memory()) return 2;
     if (timing_80186_control_ports()) return 3;
     if (timing_80186_boundaries()) return 4;

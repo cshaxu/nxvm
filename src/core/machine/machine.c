@@ -1371,63 +1371,19 @@ static C_INT core_machine_source_timing_primary_shape(
     return 0;
 }
 
-typedef enum core_machine_80186_immediate_imul_provenance {
-    CORE_MACHINE_80186_IMMEDIATE_IMUL_DIRECT = 0,
-    CORE_MACHINE_80186_IMMEDIATE_IMUL_INTEL_CONSTRAINED
-} core_machine_80186_immediate_imul_provenance;
-
-typedef struct core_machine_80186_immediate_imul_timing {
-    type_unsigned_8 opcode;
-    C_INT memory;
-    type_unsigned_8 raw_model_ticks;
-    type_unsigned_8 intel_minimum_ticks;
-    type_unsigned_8 intel_maximum_ticks;
-    type_unsigned_8 selected_ticks;
-    core_machine_80186_immediate_imul_provenance provenance;
-} core_machine_80186_immediate_imul_timing;
-
-/* This project-owned table transcribes the T362 S1 ledger.  The raw i80186
- * model scalar includes effective-address work; it is normalized only inside
- * the documented Intel form domain and never receives the 8086 EA/odd-word
- * additions.  It is not an import of the reference implementation. */
-static const core_machine_80186_immediate_imul_timing
-    core_machine_80186_immediate_imul_timings[] = {
-    { 0x6bu, TYPE_FALSE, 22u, 22u, 24u, 22u,
-        CORE_MACHINE_80186_IMMEDIATE_IMUL_DIRECT },
-    { 0x6bu, TYPE_TRUE, 29u, 22u, 24u, 24u,
-        CORE_MACHINE_80186_IMMEDIATE_IMUL_INTEL_CONSTRAINED },
-    { 0x69u, TYPE_FALSE, 25u, 29u, 32u, 29u,
-        CORE_MACHINE_80186_IMMEDIATE_IMUL_INTEL_CONSTRAINED },
-    { 0x69u, TYPE_TRUE, 32u, 29u, 32u, 32u,
-        CORE_MACHINE_80186_IMMEDIATE_IMUL_DIRECT }
-};
-
-static C_INT core_machine_80186_immediate_imul_model_cost(type_unsigned_8 opcode,
-    C_INT memory, type_unsigned_64 *out_ticks)
+/* Table 2-9 gives the immediate-IMUL rows as ranges.  S1 chose their fixed
+ * midpoints, so neither the ModR/M form nor an external model may select an
+ * endpoint or constrained value. */
+static C_INT core_machine_80186_immediate_imul_midpoint_cost(
+    type_unsigned_8 opcode, type_unsigned_64 *out_ticks)
 {
-    STD_SIZE_T index;
-
     if (out_ticks == STD_NULL) return 0;
-    for (index = 0u; index < sizeof(core_machine_80186_immediate_imul_timings) /
-        sizeof(core_machine_80186_immediate_imul_timings[0]); ++index) {
-        const core_machine_80186_immediate_imul_timing *timing =
-            &core_machine_80186_immediate_imul_timings[index];
-        type_unsigned_8 normalized = timing->raw_model_ticks;
-        C_INT constrained;
-
-        if (timing->opcode != opcode || timing->memory != memory) continue;
-        if (normalized < timing->intel_minimum_ticks) {
-            normalized = timing->intel_minimum_ticks;
-        } else if (normalized > timing->intel_maximum_ticks) {
-            normalized = timing->intel_maximum_ticks;
-        }
-        constrained = normalized != timing->raw_model_ticks;
-        if (normalized != timing->selected_ticks ||
-            constrained != (timing->provenance ==
-                CORE_MACHINE_80186_IMMEDIATE_IMUL_INTEL_CONSTRAINED)) {
-            return 0;
-        }
-        *out_ticks = timing->selected_ticks;
+    if (opcode == 0x6bu) {
+        *out_ticks = 24u;
+        return 1;
+    }
+    if (opcode == 0x69u) {
+        *out_ticks = 31u;
         return 1;
     }
     return 0;
@@ -1593,24 +1549,24 @@ C_INT core_machine_l2_dynamic_arithmetic_model_cost(
 
     switch (shape.form) {
     case CORE_MACHINE_SOURCE_TIMING_GROUP3_MUL:
-        if (!shape.memory) ticks = shape.word ? 35u : 26u;
-        else ticks = shape.word ? 41u : 32u;
+        if (!shape.memory) ticks = shape.word ? 36u : 27u;
+        else ticks = shape.word ? 42u : 33u;
         break;
     case CORE_MACHINE_SOURCE_TIMING_GROUP3_IMUL:
-        if (!shape.memory) ticks = shape.word ? 34u : 25u;
-        else ticks = shape.word ? 40u : 31u;
+        if (!shape.memory) ticks = shape.word ? 36u : 27u;
+        else ticks = shape.word ? 42u : 33u;
         break;
     case CORE_MACHINE_SOURCE_TIMING_GROUP3_DIV:
         if (!shape.memory) ticks = shape.word ? 38u : 29u;
         else ticks = shape.word ? 44u : 35u;
         break;
     case CORE_MACHINE_SOURCE_TIMING_GROUP3_IDIV:
-        if (!shape.memory) ticks = shape.word ? 53u : 44u;
-        else ticks = shape.word ? 59u : 50u;
+        if (!shape.memory) ticks = shape.word ? 57u : 48u;
+        else ticks = shape.word ? 63u : 54u;
         break;
     case CORE_MACHINE_SOURCE_TIMING_IMUL_IMMEDIATE:
-        if (!core_machine_80186_immediate_imul_model_cost(opcode,
-            shape.memory, &ticks)) return 0;
+        if (!core_machine_80186_immediate_imul_midpoint_cost(opcode,
+            &ticks)) return 0;
         break;
     default:
         return 0;
