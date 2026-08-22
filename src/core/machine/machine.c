@@ -2820,8 +2820,13 @@ C_INT core_machine_control_stack_source_instruction_cost(
             core_machine_control_stack_add_next_term(machine, *out_ticks,
                 out_ticks) : 1;
     case 0xcfu:
-        if (!same_privilege) return 0;
-        if (protected_mode) return 0;
+        if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 &&
+            protected_mode) {
+            *out_ticks = same_privilege ? 31u : 55u;
+            return core_machine_control_stack_add_next_term(machine,
+                *out_ticks, out_ticks);
+        }
+        if (!same_privilege || protected_mode) return 0;
         *out_ticks = core_machine_control_stack_source_lookup(machine,
             CORE_MACHINE_SOURCE_TIMING_IRET);
         return machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 ?
