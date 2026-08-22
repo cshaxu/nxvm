@@ -2065,11 +2065,11 @@ C_INT core_machine_primary_source_instruction_cost(
         default:
             return 0;
         }
-        if (shape.memory) {
-            ticks += core_machine_8086_timing_effective_address(data, prefixes);
-            ticks += (type_unsigned_64)transfers *
-                core_machine_8086_timing_odd_word(data);
-            if (segment_override) ticks += CORE_MACHINE_8086_SEGMENT_OVERRIDE_TICKS;
+        /* Table 2-9's 80186 memory-form values are inclusive.  Table 1-16
+         * contributes only the separately documented segment-prefix term;
+         * importing the 8086 EA or odd-word costs would double-charge them. */
+        if (shape.memory && segment_override) {
+            ticks += CORE_MACHINE_8086_SEGMENT_OVERRIDE_TICKS;
         }
         break;
     case CORE_MACHINE_CPU_PROFILE_80286:
