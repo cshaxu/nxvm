@@ -145,7 +145,7 @@ static C_INT timing_80186_memory(C_VOID)
     if (!failed) failed |= !timing_80186_load(machine, override,
         sizeof(override)) || core_machine_memory_write(machine, 0x1000u,
         &value, sizeof(value)) != TYPE_STATUS_OK ||
-        !timing_80186_run(machine, &state, 1u, 14u);
+        !timing_80186_run(machine, &state, 1u, 11u);
     if (!failed) failed |= !timing_80186_load(machine, locked_add,
         sizeof(locked_add)) || core_machine_memory_write(machine, 0x1000u,
         &value, sizeof(value)) != TYPE_STATUS_OK ||
@@ -236,7 +236,7 @@ static C_INT timing_80186_boundaries(C_VOID)
             (machine->executor_cpu.data.di = 0u), 0) ||
         core_machine_run(machine, insufficient, &result) != TYPE_STATUS_OK ||
         result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 0u ||
-        result.ticks != 0u || !timing_80186_run(machine, &state, 1u, 27u);
+        result.ticks != 0u || !timing_80186_run(machine, &state, 1u, 18u);
     if (!failed) failed |= !timing_80186_load(machine, nop, sizeof(nop));
     if (!failed) {
         machine->elapsed_ticks = UINT64_MAX - 2u;
@@ -256,6 +256,7 @@ C_INT main(C_VOID)
     static const type_unsigned_8 clc[] = { 0xf8u };
     static const type_unsigned_8 immediate[] = { 0xb8u, 0x34u, 0x12u };
     static const type_unsigned_8 registers[] = { 0x8bu, 0xc1u };
+    static const type_unsigned_8 direct_jump[] = { 0xebu, 0u };
     static const type_unsigned_8 mul8[] = { 0xf6u, 0xe0u };
     static const type_unsigned_8 mul16[] = { 0xf7u, 0xe0u };
     static const type_unsigned_8 imul8[] = { 0xf6u, 0xe8u };
@@ -276,6 +277,7 @@ C_INT main(C_VOID)
         timing_80186_case(clc, sizeof(clc), 2u) ||
         timing_80186_case(immediate, sizeof(immediate), 4u) ||
         timing_80186_case(registers, sizeof(registers), 2u) ||
+        timing_80186_case(direct_jump, sizeof(direct_jump), 13u) ||
         timing_80186_case(mul8, sizeof(mul8), 27u) ||
         timing_80186_case(mul16, sizeof(mul16), 36u) ||
         timing_80186_case(imul8, sizeof(imul8), 27u) ||
