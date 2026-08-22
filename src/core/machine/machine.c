@@ -1774,13 +1774,21 @@ static C_INT core_machine_legacy_source_instruction_cost(core_machine *machine,
         return 1;
     }
     case 0x06u: case 0x0eu: case 0x16u: case 0x1eu:
-        if (machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_8086) break;
+        if (machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_8086 &&
+            machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_80186) break;
         machine->source_timing_form_id = CORE_MACHINE_SOURCE_TIMING_PUSH_REGISTER;
-        *out_ticks = 10u;
+        *out_ticks = machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80186 ?
+            9u : 10u;
         return 1;
     /* 0F is POP CS only on the 8086.  It is the 0F escape on later
      * processors, so keep this source rule in the 8086 profile branch. */
-    case 0x07u: case 0x0fu: case 0x17u: case 0x1fu:
+    case 0x07u: case 0x17u: case 0x1fu:
+        if (machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_8086 &&
+            machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_80186) break;
+        machine->source_timing_form_id = CORE_MACHINE_SOURCE_TIMING_POP_REGISTER;
+        *out_ticks = 8u;
+        return 1;
+    case 0x0fu:
         if (machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_8086) break;
         machine->source_timing_form_id = CORE_MACHINE_SOURCE_TIMING_POP_REGISTER;
         *out_ticks = 8u;
