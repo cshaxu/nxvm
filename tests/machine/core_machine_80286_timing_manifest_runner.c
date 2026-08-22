@@ -89,14 +89,16 @@ static C_INT timing_80286_manifest_is_interrupt(const C_CHAR *key_id)
 
 static C_INT timing_80286_manifest_uses_stack(const C_CHAR *key_id)
 {
-    return key_id != STD_NULL &&
-        STD_STRCMP(key_id, "I286-CALL-NEAR-DIRECT-NEXT-BYTE-1") == 0;
+    return key_id != STD_NULL && (STD_STRCMP(key_id,
+        "I286-CALL-NEAR-DIRECT-NEXT-BYTE-1") == 0 || STD_STRCMP(key_id,
+        "I286-RET-NEAR-NEXT-BYTE-1") == 0);
 }
 
 static C_INT timing_80286_manifest_uses_far_target(const C_CHAR *key_id)
 {
-    return key_id != STD_NULL &&
-        STD_STRCMP(key_id, "I286-JMP-FAR-REAL-NEXT-BYTE-2") == 0;
+    return key_id != STD_NULL && (STD_STRCMP(key_id,
+        "I286-JMP-FAR-REAL-NEXT-BYTE-2") == 0 || STD_STRCMP(key_id,
+        "I286-RET-NEAR-NEXT-BYTE-1") == 0);
 }
 
 static type_unsigned_16 timing_80286_manifest_control_cx(const C_CHAR *key_id)
@@ -223,11 +225,25 @@ static C_INT timing_80286_manifest_prepare(core_machine **out_machine,
         machine->executor_cpu.data.sp = TIMING_80286_MANIFEST_STACK_LINEAR +
             TIMING_80286_MANIFEST_STACK_BYTES;
     }
+    if (status == TYPE_STATUS_OK && STD_STRCMP(key_id,
+            "I286-RET-NEAR-NEXT-BYTE-1") == 0) {
+        const type_unsigned_16 return_ip = 0xfff5u;
+
+        machine->executor_cpu.data.sp = TIMING_80286_MANIFEST_STACK_LINEAR;
+        status = core_machine_memory_write(machine,
+            TIMING_80286_MANIFEST_STACK_LINEAR, &return_ip, sizeof(return_ip));
+    }
     if (status == TYPE_STATUS_OK && timing_80286_manifest_uses_far_target(key_id)) {
-        const type_unsigned_8 target_code[] = { 0x00u, 0xc0u };
+        static const type_unsigned_8 one_byte_target[] = { 0x90u };
+        static const type_unsigned_8 two_byte_target[] = { 0x00u, 0xc0u };
+        const C_VOID *target_code = STD_STRCMP(key_id,
+            "I286-RET-NEAR-NEXT-BYTE-1") == 0 ? one_byte_target :
+            two_byte_target;
+        STD_SIZE_T target_bytes = target_code == one_byte_target ?
+            sizeof(one_byte_target) : sizeof(two_byte_target);
 
         status = core_machine_memory_write(machine, 0x000ffff5u, target_code,
-            sizeof(target_code));
+            target_bytes);
     }
     if (status == TYPE_STATUS_OK && timing_80286_manifest_flags_active) {
         machine->executor_cpu.data.eflags = timing_80286_manifest_eflags;
@@ -590,7 +606,9 @@ C_INT main(C_VOID)
         { "I286-JMP-NEAR-NEXT-BYTE-1", { 0xebu, 0x01u, 0x90u, 0x90u }, 4u, 8u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
         { "I286-JMP-FAR-REAL-NEXT-BYTE-2", { 0xeau, 0xf5u, 0xffu, 0x00u, 0xf0u },
-            5u, 13u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK }
+            5u, 13u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
+        { "I286-RET-NEAR-NEXT-BYTE-1", { 0xc3u }, 1u, 12u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK }
     };
     static const timing_80286_manifest_control_recipe control_recipes[] = {
         { "I286-JCC-JO-TAKEN", 0x70u, VCPU_EFLAGS_OF, 7u },
