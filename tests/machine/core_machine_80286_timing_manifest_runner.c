@@ -26,7 +26,7 @@ typedef struct timing_80286_manifest_capture {
 
 typedef struct timing_80286_manifest_recipe {
     const C_CHAR *key_id;
-    type_unsigned_8 program[2];
+    type_unsigned_8 program[8];
     STD_SIZE_T bytes;
     type_unsigned_64 ticks;
     core_machine_retirement_timing_origin origin;
@@ -151,6 +151,13 @@ static C_INT timing_80286_manifest_run(
             capture.observation.timing_disposition !=
                 CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED;
     }
+    if (failed) {
+        STD_PRINTF("M5:T435:S10:I286-MANIFEST-DETAIL:%s:expected=%llu:run=%llu:source=%llu:count=%u:origin=%u:disposition=%u\n",
+            recipe->key_id, recipe->ticks, run.ticks,
+            capture.observation.source_ticks, capture.count,
+            (type_unsigned_32)capture.observation.timing_origin,
+            (type_unsigned_32)capture.observation.timing_disposition);
+    }
     core_machine_destroy(machine);
     return failed;
 }
@@ -158,6 +165,110 @@ static C_INT timing_80286_manifest_run(
 C_INT main(C_VOID)
 {
     static const timing_80286_manifest_recipe recipes[] = {
+        { "I286-ADJ-AAA", { 0x37u }, 1u, 3u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ADJ-AAS", { 0x3fu }, 1u, 3u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ADJ-DAA", { 0x27u }, 1u, 3u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ADJ-DAS", { 0x2fu }, 1u, 3u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ADJ-AAD", { 0xd5u, 0x0au }, 2u, 14u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ADJ-AAM", { 0xd4u, 0x0au }, 2u, 16u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ADJ-CBW", { 0x98u }, 1u, 2u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ADJ-CWD", { 0x99u }, 1u, 2u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-ADD-RR", { 0x02u, 0xc1u }, 2u, 2u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-ADD-RM", { 0x02u, 0x06u, 0u, 0x10u }, 4u, 7u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-ADD-MR", { 0x00u, 0x0eu, 0u, 0x10u }, 4u, 7u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-ADD-AI", { 0x04u, 1u }, 2u, 3u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-ADD-RMI", { 0x80u, 0xc0u, 1u }, 3u, 3u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-OR-RR", { 0x0au, 0xc1u }, 2u, 2u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-OR-RM", { 0x0au, 0x06u, 0u, 0x10u }, 4u, 7u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-OR-MR", { 0x08u, 0x0eu, 0u, 0x10u }, 4u, 7u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-OR-AI", { 0x0cu, 1u }, 2u, 3u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-OR-RMI", { 0x80u, 0xc8u, 1u }, 3u, 3u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-ADC-RR", { 0x12u, 0xc1u }, 2u, 2u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-ADC-RM", { 0x12u, 0x06u, 0u, 0x10u }, 4u, 7u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-ADC-MR", { 0x10u, 0x0eu, 0u, 0x10u }, 4u, 7u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-ADC-AI", { 0x14u, 1u }, 2u, 3u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-ADC-RMI", { 0x80u, 0xd0u, 1u }, 3u, 3u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-SBB-RR", { 0x1au, 0xc1u }, 2u, 2u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-SBB-RM", { 0x1au, 0x06u, 0u, 0x10u }, 4u, 7u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-SBB-MR", { 0x18u, 0x0eu, 0u, 0x10u }, 4u, 7u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-SBB-AI", { 0x1cu, 1u }, 2u, 3u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-SBB-RMI", { 0x80u, 0xd8u, 1u }, 3u, 3u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-AND-RR", { 0x22u, 0xc1u }, 2u, 2u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-AND-RM", { 0x22u, 0x06u, 0u, 0x10u }, 4u, 7u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-AND-MR", { 0x20u, 0x0eu, 0u, 0x10u }, 4u, 7u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-AND-AI", { 0x24u, 1u }, 2u, 3u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-AND-RMI", { 0x80u, 0xe0u, 1u }, 3u, 3u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-SUB-RR", { 0x2au, 0xc1u }, 2u, 2u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-SUB-RM", { 0x2au, 0x06u, 0u, 0x10u }, 4u, 7u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-SUB-MR", { 0x28u, 0x0eu, 0u, 0x10u }, 4u, 7u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-SUB-AI", { 0x2cu, 1u }, 2u, 3u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-SUB-RMI", { 0x80u, 0xe8u, 1u }, 3u, 3u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-XOR-RR", { 0x32u, 0xc1u }, 2u, 2u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-XOR-RM", { 0x32u, 0x06u, 0u, 0x10u }, 4u, 7u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-XOR-MR", { 0x30u, 0x0eu, 0u, 0x10u }, 4u, 7u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-XOR-AI", { 0x34u, 1u }, 2u, 3u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-XOR-RMI", { 0x80u, 0xf0u, 1u }, 3u, 3u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-CMP-RR", { 0x3au, 0xc1u }, 2u, 2u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-CMP-RM", { 0x3au, 0x06u, 0u, 0x10u }, 4u, 6u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-CMP-MR", { 0x38u, 0x0eu, 0u, 0x10u }, 4u, 7u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-CMP-AI", { 0x3cu, 1u }, 2u, 3u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-CMP-RMI", { 0x80u, 0xf8u, 1u }, 3u, 3u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-TEST-RR", { 0x84u, 0xc1u }, 2u, 2u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-TEST-RM", { 0x84u, 0x06u, 0u, 0x10u }, 4u, 6u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-TEST-AI", { 0xa8u, 1u }, 2u, 3u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-TEST-RMI", { 0xf6u, 0xc0u, 1u }, 3u, 3u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-NOP", { 0x90u }, 1u, 3u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80286_FALLBACK },
         { "I286-CLC", { 0xf8u }, 1u, 2u,
@@ -184,7 +295,11 @@ C_INT main(C_VOID)
     STD_SIZE_T index;
 
     for (index = 0u; index < sizeof(recipes) / sizeof(recipes[0]); ++index) {
-        if (timing_80286_manifest_run(&recipes[index])) return 1;
+        if (timing_80286_manifest_run(&recipes[index])) {
+            STD_PRINTF("M5:T435:S10:I286-MANIFEST-RECIPE:FAIL:%s\n",
+                recipes[index].key_id);
+            return 1;
+        }
     }
     STD_PRINTF("M5:T435:S10:I286-MANIFEST-FOUNDATION:PASS:observed=%u\n",
         (type_unsigned_32)(sizeof(recipes) / sizeof(recipes[0])));
