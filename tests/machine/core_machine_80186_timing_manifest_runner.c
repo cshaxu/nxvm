@@ -85,6 +85,14 @@ static C_INT timing_80186_manifest_is_return_recipe(const C_CHAR *key_id)
         STD_STRCMP(key_id, "I186-RET-IRET") == 0);
 }
 
+static C_INT timing_80186_manifest_is_interrupt_recipe(const C_CHAR *key_id)
+{
+    return key_id != STD_NULL && (STD_STRCMP(key_id, "I186-INT3") == 0 ||
+        STD_STRCMP(key_id, "I186-INT-IMM") == 0 ||
+        STD_STRCMP(key_id, "I186-INTO-TAKEN") == 0 ||
+        STD_STRCMP(key_id, "I186-INTO-NOT") == 0);
+}
+
 static const timing_80186_manifest_record *timing_80186_manifest_find(
     const C_CHAR *key_id)
 {
@@ -241,7 +249,8 @@ static C_INT timing_80186_manifest_prepare(core_machine **out_machine,
             TIMING_80186_MANIFEST_RESET_LINEAR,
             TIMING_80186_MANIFEST_RESET_PHYSICAL,
             TIMING_80186_MANIFEST_WINDOW_BYTES);
-    if (status == TYPE_STATUS_OK && timing_80186_manifest_is_return_recipe(key_id)) {
+    if (status == TYPE_STATUS_OK && (timing_80186_manifest_is_return_recipe(key_id) ||
+            timing_80186_manifest_is_interrupt_recipe(key_id))) {
         status = test_core_machine_fixture_register_reset_mapping(machine,
             TIMING_80186_MANIFEST_STACK_LINEAR,
             TIMING_80186_MANIFEST_STACK_LINEAR,
@@ -276,6 +285,18 @@ static C_INT timing_80186_manifest_prepare(core_machine **out_machine,
         machine->executor_cpu.data.sp = TIMING_80186_MANIFEST_STACK_LINEAR;
         status = core_machine_memory_write(machine,
             TIMING_80186_MANIFEST_STACK_LINEAR, frame, sizeof(frame));
+    }
+    if (status == TYPE_STATUS_OK && timing_80186_manifest_is_interrupt_recipe(key_id)) {
+        const type_unsigned_16 handler[] = { 0xfff5u, 0xf000u };
+
+        machine->executor_cpu.data.sp = TIMING_80186_MANIFEST_STACK_LINEAR +
+            TIMING_80186_MANIFEST_STACK_BYTES;
+        status = core_machine_memory_write(machine, 3u * 4u, handler,
+            sizeof(handler));
+        if (status == TYPE_STATUS_OK) status = core_machine_memory_write(machine,
+            4u * 4u, handler, sizeof(handler));
+        if (status == TYPE_STATUS_OK) status = core_machine_memory_write(machine,
+            0x60u * 4u, handler, sizeof(handler));
     }
     if (status == TYPE_STATUS_OK) status =
         core_machine_set_retirement_observation_provider(machine, &provider);
@@ -632,6 +653,18 @@ C_INT main(C_VOID)
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
         { "I186-RET-IRET", { 0xcfu }, 1u, 28u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
+        { "I186-INT3", { 0xccu }, 1u, 45u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
+        { "I186-INT-IMM", { 0xcdu,0x60u }, 2u, 47u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
+        { "I186-IN-IMM", { 0xe4u,0x80u }, 2u, 10u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO },
+        { "I186-IN-DX", { 0xecu }, 1u, 8u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO },
+        { "I186-OUT-IMM", { 0xe6u,0x80u }, 2u, 9u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO },
+        { "I186-OUT-DX", { 0xeeu }, 1u, 7u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO },
         { "I186-XLAT", { 0xd7u }, 1u, 11u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80186_FALLBACK },
         { "I186-LEA-M", { 0x8du,0x06u,0u,0x10u }, 4u, 6u,
@@ -745,6 +778,10 @@ C_INT main(C_VOID)
     { { KEY, { OPCODE,1u }, 2u, TICKS, \
         CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80186_FALLBACK }, FLAGS }
     static const timing_80186_manifest_flag_recipe branch_recipes[] = {
+        { { "I186-INTO-TAKEN", { 0xceu }, 1u, 48u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK }, VCPU_EFLAGS_OF },
+        { { "I186-INTO-NOT", { 0xceu }, 1u, 4u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK }, 0u },
         TIMING_80186_JCC("I186-JCC-JO-TAKEN", 0x70u, VCPU_EFLAGS_OF, 13u),
         TIMING_80186_JCC("I186-JCC-JO-NOT", 0x70u, 0u, 4u),
         TIMING_80186_JCC("I186-JCC-JNO-TAKEN", 0x71u, 0u, 13u),
