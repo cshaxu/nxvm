@@ -392,6 +392,8 @@ static C_INT timing_80286_manifest_prepare_protected_system(
     if (status == TYPE_STATUS_OK) status = core_machine_memory_write(machine,
         0x4000u, &operand, sizeof(operand));
     if (status == TYPE_STATUS_OK && (STD_STRCMP(key_id,
+            "I286-LDS-M-PM") == 0 || STD_STRCMP(key_id,
+            "I286-LES-M-PM") == 0 || STD_STRCMP(key_id,
             "I286-LDS-M-PM-SEGMENT") == 0 || STD_STRCMP(key_id,
             "I286-LES-M-PM-SEGMENT") == 0 || STD_STRCMP(key_id,
             "I286-LDS-M-PM-EA-BID") == 0 || STD_STRCMP(key_id,
@@ -1072,6 +1074,14 @@ C_INT main(C_VOID)
         { "I286-INTO-NOT", 0xceu, 0u, 3u }
     };
     static const timing_80286_manifest_recipe protected_system_recipes[] = {
+        { "I286-MOV-SREG-LOAD-PM", { 0x8eu, 0x1eu, 0u, 0x10u }, 4u, 19u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-LEA-M-PM", { 0x8du, 0x06u, 0u, 0x10u }, 4u, 3u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-LDS-M-PM", { 0xc5u, 0x06u, 0u, 0x10u }, 4u, 21u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-LES-M-PM", { 0xc4u, 0x06u, 0u, 0x10u }, 4u, 21u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-SYSTEM-VERR-R", { 0x0fu, 0x00u, 0xe0u }, 3u, 14u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-SYSTEM-VERW-R", { 0x0fu, 0x00u, 0xe8u }, 3u, 14u,
