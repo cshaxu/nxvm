@@ -37,6 +37,8 @@ typedef struct timing_80186_manifest_recipe {
 typedef struct timing_80186_manifest_inputs {
     const C_CHAR *key_id;
     type_unsigned_16 cx;
+    type_unsigned_32 memory_address;
+    type_unsigned_16 memory_value;
 } timing_80186_manifest_inputs;
 
 static const timing_80186_manifest_record timing_80186_manifest_records[] = {
@@ -84,20 +86,28 @@ static const timing_80186_manifest_record *timing_80186_manifest_find(
     return STD_NULL;
 }
 
-static type_unsigned_16 timing_80186_manifest_input_cx(const C_CHAR *key_id)
+static const timing_80186_manifest_inputs *timing_80186_manifest_inputs_find(
+    const C_CHAR *key_id)
 {
     static const timing_80186_manifest_inputs inputs[] = {
-        { "I186-ROL-RCL", 2u }, { "I186-ROR-RCL", 2u },
-        { "I186-RCL-RCL", 2u }, { "I186-RCR-RCL", 2u },
-        { "I186-SHL-RCL", 2u }, { "I186-SHR-RCL", 2u },
-        { "I186-SAR-RCL", 2u }
+        { "I186-ROL-RCL", 2u, 0u, 0u }, { "I186-ROR-RCL", 2u, 0u, 0u },
+        { "I186-RCL-RCL", 2u, 0u, 0u }, { "I186-RCR-RCL", 2u, 0u, 0u },
+        { "I186-SHL-RCL", 2u, 0u, 0u }, { "I186-SHR-RCL", 2u, 0u, 0u },
+        { "I186-SAR-RCL", 2u, 0u, 0u },
+        { "I186-ROL-M1", 0u, 0x1000u, 1u },
+        { "I186-ROR-M1", 0u, 0x1000u, 1u },
+        { "I186-RCL-M1", 0u, 0x1000u, 1u },
+        { "I186-RCR-M1", 0u, 0x1000u, 1u },
+        { "I186-SHL-M1", 0u, 0x1000u, 1u },
+        { "I186-SHR-M1", 0u, 0x1000u, 1u },
+        { "I186-SAR-M1", 0u, 0x1000u, 1u }
     };
     STD_SIZE_T index;
 
     for (index = 0u; index < sizeof(inputs) / sizeof(inputs[0]); ++index) {
-        if (STD_STRCMP(inputs[index].key_id, key_id) == 0) return inputs[index].cx;
+        if (STD_STRCMP(inputs[index].key_id, key_id) == 0) return &inputs[index];
     }
-    return 0u;
+    return STD_NULL;
 }
 
 static C_VOID timing_80186_manifest_capture_retirement(C_VOID *opaque,
@@ -119,7 +129,7 @@ static C_VOID timing_80186_manifest_capture_retirement(C_VOID *opaque,
 
 static C_INT timing_80186_manifest_prepare(core_machine **out_machine,
     timing_80186_manifest_capture *capture, const type_unsigned_8 *program,
-    STD_SIZE_T bytes, type_unsigned_16 cx)
+    STD_SIZE_T bytes, const timing_80186_manifest_inputs *inputs)
 {
     const core_machine_config config = {
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_80186,
@@ -146,7 +156,12 @@ static C_INT timing_80186_manifest_prepare(core_machine **out_machine,
     if (status == TYPE_STATUS_OK) status = core_machine_set_a20(machine, 1);
     if (status == TYPE_STATUS_OK) status = core_machine_memory_write(machine,
         TIMING_80186_MANIFEST_RESET_LINEAR, program, bytes);
-    if (status == TYPE_STATUS_OK) machine->executor_cpu.data.cx = cx;
+    if (status == TYPE_STATUS_OK && inputs != STD_NULL) {
+        machine->executor_cpu.data.cx = inputs->cx;
+        if (inputs->memory_value != 0u) status = core_machine_memory_write(machine,
+            inputs->memory_address, &inputs->memory_value,
+            sizeof(inputs->memory_value));
+    }
     if (status == TYPE_STATUS_OK) status =
         core_machine_set_retirement_observation_provider(machine, &provider);
     if (status != TYPE_STATUS_OK) {
@@ -172,7 +187,7 @@ static C_INT timing_80186_manifest_run_recipe(
     failed = record == STD_NULL || !timing_80186_manifest_is_i186(record) ||
         STD_STRCMP(record->profile, "80186") != 0 ||
         !timing_80186_manifest_prepare(&machine, &capture, recipe->program,
-            recipe->bytes, timing_80186_manifest_input_cx(recipe->key_id));
+            recipe->bytes, timing_80186_manifest_inputs_find(recipe->key_id));
     if (!failed) {
         failed = core_machine_run(machine, budget, &run) != TYPE_STATUS_OK ||
             run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
@@ -250,6 +265,20 @@ C_INT main(C_VOID)
         { "I186-SHR-RIMM8", { 0xc0u,0xe8u,2u }, 3u, 7u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80186_FALLBACK },
         { "I186-SAR-RIMM8", { 0xc0u,0xf8u,2u }, 3u, 7u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80186_FALLBACK },
+        { "I186-ROL-M1", { 0xd0u,0x06u,0u,0x10u }, 4u, 15u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80186_FALLBACK },
+        { "I186-ROR-M1", { 0xd0u,0x0eu,0u,0x10u }, 4u, 15u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80186_FALLBACK },
+        { "I186-RCL-M1", { 0xd0u,0x16u,0u,0x10u }, 4u, 15u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80186_FALLBACK },
+        { "I186-RCR-M1", { 0xd0u,0x1eu,0u,0x10u }, 4u, 15u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80186_FALLBACK },
+        { "I186-SHL-M1", { 0xd0u,0x26u,0u,0x10u }, 4u, 15u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80186_FALLBACK },
+        { "I186-SHR-M1", { 0xd0u,0x2eu,0u,0x10u }, 4u, 15u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80186_FALLBACK },
+        { "I186-SAR-M1", { 0xd0u,0x3eu,0u,0x10u }, 4u, 15u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80186_FALLBACK },
         { "I186-ADJ-AAA", { 0x37u }, 1u, 8u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
