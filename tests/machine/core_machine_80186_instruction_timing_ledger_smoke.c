@@ -120,6 +120,9 @@ static C_INT timing_80186_memory(C_VOID)
     static const type_unsigned_8 moffs_read[] = { 0xa1u, 0x01u, 0x10u };
     static const type_unsigned_8 moffs_write[] = { 0xa3u, 0x01u, 0x10u };
     static const type_unsigned_8 override[] = { 0x26u, 0x8bu, 0x0eu, 0x00u, 0x10u };
+    static const type_unsigned_8 locked_add[] = {
+        0xf0u, 0x01u, 0x0eu, 0x00u, 0x10u
+    };
     const type_unsigned_16 value = 0x5aa5u;
     timing_80186_state state = { 0u, 0u, 0u };
     core_machine *machine = STD_NULL;
@@ -143,6 +146,10 @@ static C_INT timing_80186_memory(C_VOID)
         sizeof(override)) || core_machine_memory_write(machine, 0x1000u,
         &value, sizeof(value)) != TYPE_STATUS_OK ||
         !timing_80186_run(machine, &state, 1u, 14u);
+    if (!failed) failed |= !timing_80186_load(machine, locked_add,
+        sizeof(locked_add)) || core_machine_memory_write(machine, 0x1000u,
+        &value, sizeof(value)) != TYPE_STATUS_OK ||
+        !timing_80186_run(machine, &state, 1u, 12u);
     core_machine_destroy(machine);
     return failed;
 }
