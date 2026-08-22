@@ -2,14 +2,29 @@
 
 ## Current Work
 
-**M5 T435 remains open between subtasks.** S7/80286 re-audit is accepted:
-[its closure audit](../etc/cpu-timing/t435-s7-80286-decoder-ledger-audit.md)
-fixes the manual-to-decoder-to-S1-to-S2 register at 286 legal base keys and
-807 canonical keys. It adds the companion-manual `XLAT` row, removes five
-invalid system-form keys, and retains the complete implementation deficit:
-238 `missing-test`, 47 `missing-input`, and one `unallocated` key. The next
-owner-admitted batch remains S8/80186 implementation; no 80286 runtime claim
-has been made by this audit.
+**M5 T435 S8 is active.** This owner-approved continuation re-audits the
+80386DX before any 80386DX timing implementation. It moves the later CPU
+implementation batches by one S only; it does not change their scope or
+admit runtime timing work.
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | `Continuation`; S8 follows accepted S7 and is the owner-requested 80386DX audit block. |
+| Admission And Approval | Owner: user. Approval: owner directed an 80386DX audit-document repair to the same standard as 80286, 2026-08-21. |
+| Objective | Re-read authorized Intel 80386DX manuals; mechanically reconcile every successful 80386DX decoder form and legal context against S1 and S2; correct every source, form, context, current-route and deficit omission; publish finite reproducible evidence. |
+| Non-goals | No 80186/80286/80386DX runtime timing or semantic implementation, no public ABI, and no board, transaction, DMA, prefetch, INTA, device-service or physical-cycle timing. |
+| Reference Baseline | Intel 80386 Programmer's Reference Manuals, current 80386DX decoder/executor, T435 S1/S2 80386 records, and accepted S6/S7 reconciliation methods. |
+| Candidate Proposal | [M5 Core CPU Instruction Timing Programs](../proposals/m5-core-cpu-instruction-timing-program.md), revised S8 / 80386DX re-audit row. |
+| Files And ABI Surface | 80386 S1/S2 ledger, manifest, audit and tracker; new S8 manual rebaseline, decoder inventory, verifier, reconciliation contract and audit; dedicated test-only inventory runner and CMake registration if needed. The generated-catalog compile-time count assertion may change only to match an admitted manifest correction. No runtime behavior, public or cross-module ABI change. |
+| Applicable Rules | Documentation/execution governance and source-reference-only policy; one finite coverage ledger with a zero-difference predicate; preserve Intel-manual L3 versus labelled L2 distinction; distinguish decoder success, semantic fault, mode/privilege path, prefix/width form and external event boundaries. |
+| Verification | Run the 80386 manifest gate; compile/run a profile-specific decoder inventory; run a bidirectional decoder-to-S1/S2 verifier; check manual locators and status arithmetic; run documentation governance and focused 80386 decoder/profile tests. |
+| Expected Markers | `M5:T435:S8:I386-MANUAL-DECODER-PARTITION:OK`; `M5:T435:S8:I386-DECODER-LEDGER-ZERO-DIFFERENCE:PASS`; `M5:T435:S8:I386-S2-CANONICAL-STATUS-RECONCILED:PASS`. |
+| Asset Needs | Existing owner-authorized Intel manual corpus only. No third-party source, firmware, media or code import. |
+| Reporting Requirements | Record original/revised denominators, every added/removed key with manual locator, every legal mode/path/width/formula decision, exact per-key current status, verifier counts, test/gate outcomes and the remaining implementation boundary. |
+| Stop Conditions | Stop for an unresolved manual/decoder contradiction, unavailable manual authority, required source/license decision, runtime/ABI change, or board/device boundary. Do not hide a difference by removing it from the denominator. |
+| Exit Criteria | The complete successful 80386DX decoder universe and legal contexts have a reproducible zero-difference S1/S2 partition; every S1 row has a manual locator and L3/L2 disposition; every S2 key has an honest route/status; all differences have a recorded decision; gates pass; the P is committed, pushed and independently accepted. |
+| Original Owner Request | Repair the 80386DX audit documents to the same rigorous standard as 80286 and begin now. |
+| Similar-Issue Sweep | Sweep inherited and 80386-only forms, `0F`/ModR/M extensions, `66`/`67`, `FS`/`GS`, real/PM/VM86, privilege/task/gate, EA/alignment, early-out arithmetic, repeat, source grouped rows, S2 contexts/statuses and current selectors. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** target `vm-0-5-0434`; T434 S2 `nxvm_0_5_0434.exe` / `build/output/nxvm_0_5_0434.exe`, SHA-256 `0252F8FDA17BEC2131606F19E3547B46894AC6B56DD37EC3B16BD302494FAFDC`. T434 has one copied Core timing-plan publication route for default PC/AT, IBM 5170 Model 339 and Model-40 BYOB session composition.

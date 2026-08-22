@@ -428,6 +428,15 @@ if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
         -Wall -Wextra -Wpedantic -Werror)
 endif()
 
+add_executable(core-machine-80386-decoder-inventory-runner
+    tests/machine/core_machine_80386_decoder_inventory_runner.c)
+target_link_libraries(core-machine-80386-decoder-inventory-runner PRIVATE
+    core-machine)
+if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
+    target_compile_options(core-machine-80386-decoder-inventory-runner PRIVATE
+        -Wall -Wextra -Wpedantic -Werror)
+endif()
+
 add_executable(core-machine-legacy-timing-normalization-s2-smoke
     tests/machine/core_machine_legacy_timing_normalization_s2_smoke.c)
 target_link_libraries(core-machine-legacy-timing-normalization-s2-smoke PRIVATE

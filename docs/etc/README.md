@@ -16,6 +16,7 @@ principal documents named in [docs/README.md](../README.md).
 | `evidence/` | Verification owner | Capability, verification, baseline, and fixture evidence. |
 | `cpu-timing/` | CPU timing owner | T435 per-profile manual corpus manifests, exhaustive form/context ledgers, and non-imported L2 reference-model assessments. Retain until the queued CPU timing program closes or supersedes the evidence. |
 | `cpu-timing/t435-s7-80286-decoder-ledger-audit.md` | CPU timing closure owner | T435 S7's manual-to-decoder-to-S1/S2 80286 reconciliation result, with the linked rebaseline, inventory and verifier contract. Retain until T435 closes or supersedes it. |
+| `cpu-timing/t435-s8-80386-decoder-inventory-baseline.md` | CPU timing closure owner | T435 S8's profile-specific lexical decoder denominator and first documented S1/S2 discrepancies. Retain until its later reconciliation audit closes or supersedes it. |
 | `evidence/td-s117-t434-timing-plan-convergence-ledger.md` | Governance owner | Frozen 30-ID T434 seam/disposition ledger, current VM materialization inventory, bounded implementation batches and non-deferrable closure checks. |
 | `evidence/t434-s1-core-timing-plan.md` | Core timing owner | T434 S1 copied Core plan, exact 30-capability declaration/seam map, validation proof and B2 publication boundary. |
 | `evidence/t434-s2-plan-only-publication.md` | Core timing owner | T434 S2 atomic plan-only migration of all current VM materializers, topology/rollback proof and developer artifact. |
