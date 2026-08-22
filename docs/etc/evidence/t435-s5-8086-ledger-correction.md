@@ -29,6 +29,25 @@ contains 1,053 unique records: 989 L3 and 64 named `L2:G3`, with zero
 unallocated successful retirements. It supersedes S4 only as the current
 implementation result.
 
+## Result-record integrity correction
+
+The S5 runner originally retained its selected manifest-record index after a
+retirement. A following semantic-only probe could therefore overwrite that
+record's generated result even though the probe itself passed. The defect was
+observable in the generated `I86-POP-SEG-CS` row: the real `POP CS` probe
+asserted the manual 8 clocks, while the artifact could contain a later,
+unrelated observation. This was an evidence-publication defect, not an
+accepted timing disposition.
+
+The capture now consumes and clears the selected record index after precisely
+one real retirement. Regenerating the artifact records `I86-POP-SEG-CS` as
+8 clocks, source form 84 and origin 6, and restores the independently checked
+observations for the affected repeat/context rows. The runner's semantic
+predicates also now assert the architectural results for ALU, adjustment
+(`AAA`/`AAS`/`DAA`/`DAS`/`AAD`/`AAM`), data/stack, Group-3, branches, direct
+flags, compare/test, unary, `LAHF`/`SAHF`, and string index updates; they do
+not replace the existing wider form-specific CPU smoke suite.
+
 ## Reproducible evidence
 
 The following commands passed from the configured MinGW Makefiles build:

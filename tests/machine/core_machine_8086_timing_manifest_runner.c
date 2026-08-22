@@ -1,6 +1,7 @@
 #include "type.h"
 
 #include "core/machine/machine_interface.h"
+#include "core/machine/cpu.h"
 #include "core/machine/cpu_instructions.h"
 #include "core/machine/cpu_timing.h"
 #include "core/machine/retirement_observation_interface.h"
@@ -119,6 +120,9 @@ static C_VOID timing_manifest_capture_retirement(C_VOID *opaque,
         timing_manifest_results[timing_manifest_current_index] = *observation;
         timing_manifest_observed[timing_manifest_current_index] = 1;
     }
+    /* A record selection applies to exactly one real retirement.  Leaving it
+     * live let later semantic-only probes overwrite an unrelated result row. */
+    timing_manifest_current_index = -1;
     ++capture->count;
 }
 
@@ -578,6 +582,18 @@ static C_INT timing_manifest_run_string_primitive_with_prefix_internal(
             failed = machine->executor_cpu.data.ax != (word ? source_word :
                 (type_unsigned_16)(0x1200u | (source_word & 0x00ffu)));
         }
+        if (!failed) {
+            const type_unsigned_16 step = word ? 2u : 1u;
+            const type_unsigned_16 expected_si = recipe->opcode == 0xaau ||
+                recipe->opcode == 0xabu || recipe->opcode == 0xae ||
+                recipe->opcode == 0xafu ? (type_unsigned_16)source_linear :
+                (type_unsigned_16)(source_linear + step);
+            const type_unsigned_16 expected_di = recipe->opcode == 0xacu ||
+                recipe->opcode == 0xadu ? (type_unsigned_16)destination_linear :
+                (type_unsigned_16)(destination_linear + step);
+            failed = machine->executor_cpu.data.si != expected_si ||
+                machine->executor_cpu.data.di != expected_di;
+        }
     }
     if (failed) {
         STD_PRINTF("I86 string ticks=%llu source=%llu inputs=%u phase=%d ax=%u si=%u di=%u\n",
@@ -890,6 +906,409 @@ static C_INT timing_manifest_probe_pop_cs_function(C_VOID)
                 CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY;
     }
     if (failed) STD_PRINTF("M5:T435:S5:I86-MANIFEST-RECIPE:FAIL:I86-POP-SEG-CS-FUNCTION\n");
+    core_machine_destroy(machine);
+    return failed;
+}
+
+/* Functional predicates are deliberately separate from the timing recipes:
+ * a classified retirement alone cannot establish the 8086 architectural
+ * result. These are the first semantic family checks in the S5 runner. */
+static C_INT timing_manifest_probe_alu_function(C_VOID)
+{
+    typedef struct timing_manifest_alu_function_recipe {
+        type_unsigned_8 program[2];
+        type_unsigned_16 ax;
+        type_unsigned_16 bx;
+        type_unsigned_32 eflags;
+        type_unsigned_16 expected_ax;
+        type_unsigned_32 expected_flags;
+    } timing_manifest_alu_function_recipe;
+    static const timing_manifest_alu_function_recipe recipes[] = {
+        { { 0x03u, 0xc3u }, 1u, 2u, 0u, 3u, 0u },
+        { { 0x13u, 0xc3u }, 1u, 2u, VCPU_EFLAGS_CF, 4u, 0u },
+        { { 0x2bu, 0xc3u }, 1u, 2u, 0u, 0xffffu,
+            VCPU_EFLAGS_CF | VCPU_EFLAGS_SF },
+        { { 0x1bu, 0xc3u }, 4u, 2u, VCPU_EFLAGS_CF, 1u, 0u },
+        { { 0x0bu, 0xc3u }, 0x00f0u, 0x0f00u, 0u, 0x0ff0u, 0u },
+        { { 0x23u, 0xc3u }, 0x00f0u, 0x0f00u, 0u, 0u, VCPU_EFLAGS_ZF },
+        { { 0x33u, 0xc3u }, 0x00f0u, 0x0f00u, 0u, 0x0ff0u, 0u }
+    };
+    const core_machine_run_budget budget = { 1u, 0u };
+    STD_SIZE_T index;
+
+    for (index = 0u; index < sizeof(recipes) / sizeof(recipes[0]); ++index) {
+        timing_manifest_capture capture = { { 0 }, 0u };
+        core_machine_run_result run = { 0 };
+        core_machine *machine = STD_NULL;
+        const type_unsigned_32 observed_mask = VCPU_EFLAGS_CF | VCPU_EFLAGS_ZF |
+            VCPU_EFLAGS_SF;
+        C_INT failed = !timing_manifest_prepare(&machine, &capture,
+            recipes[index].program, sizeof(recipes[index].program));
+
+        if (!failed) {
+            machine->executor_cpu.data.ax = recipes[index].ax;
+            machine->executor_cpu.data.bx = recipes[index].bx;
+            machine->executor_cpu.data.eflags = recipes[index].eflags;
+            failed = core_machine_run(machine, budget, &run) != TYPE_STATUS_OK ||
+                run.executed != 1u || machine->executor_cpu.data.ax !=
+                    recipes[index].expected_ax ||
+                (machine->executor_cpu.data.eflags & observed_mask) !=
+                    recipes[index].expected_flags;
+        }
+        core_machine_destroy(machine);
+        if (failed) {
+            STD_PRINTF("M5:T435:S5:I86-FUNCTION:FAIL:ALU:%u\n", (unsigned)index);
+            return 1;
+        }
+    }
+    return 0;
+}
+
+static C_INT timing_manifest_probe_adjustment_function(C_VOID)
+{
+    typedef struct timing_manifest_adjustment_function_recipe {
+        type_unsigned_8 program[2];
+        type_unsigned_8 bytes;
+        type_unsigned_16 ax;
+        type_unsigned_16 expected_ax;
+        type_unsigned_16 expected_dx;
+        type_unsigned_32 observed_flags;
+        type_unsigned_32 expected_flags;
+    } timing_manifest_adjustment_function_recipe;
+    static const timing_manifest_adjustment_function_recipe recipes[] = {
+        { { 0x37u, 0u }, 1u, 0x000bu, 0x0101u, 0u, VCPU_EFLAGS_CF | VCPU_EFLAGS_AF,
+            VCPU_EFLAGS_CF | VCPU_EFLAGS_AF },
+        { { 0x3fu, 0u }, 1u, 0x010bu, 0x0005u, 0u, VCPU_EFLAGS_CF | VCPU_EFLAGS_AF,
+            VCPU_EFLAGS_CF | VCPU_EFLAGS_AF },
+        { { 0x27u, 0u }, 1u, 0x000au, 0x0010u, 0u, VCPU_EFLAGS_CF | VCPU_EFLAGS_AF,
+            VCPU_EFLAGS_AF },
+        { { 0x2fu, 0u }, 1u, 0x000au, 0x0004u, 0u, VCPU_EFLAGS_CF | VCPU_EFLAGS_AF,
+            VCPU_EFLAGS_AF },
+        { { 0xd5u, 0x0au }, 2u, 0x0203u, 0x0017u, 0u, 0u, 0u },
+        { { 0xd4u, 0x0au }, 2u, 0x0023u, 0x0305u, 0u, 0u, 0u },
+        { { 0x98u, 0u }, 1u, 0x0080u, 0xff80u, 0u, 0u, 0u },
+        { { 0x99u, 0u }, 1u, 0x8000u, 0x8000u, 0xffffu, 0u, 0u }
+    };
+    const core_machine_run_budget budget = { 1u, 0u };
+    STD_SIZE_T index;
+
+    for (index = 0u; index < sizeof(recipes) / sizeof(recipes[0]); ++index) {
+        timing_manifest_capture capture = { { 0 }, 0u };
+        core_machine_run_result run = { 0 };
+        core_machine *machine = STD_NULL;
+        C_INT failed = !timing_manifest_prepare(&machine, &capture,
+            recipes[index].program, recipes[index].bytes);
+
+        if (!failed) {
+            machine->executor_cpu.data.ax = recipes[index].ax;
+            failed = core_machine_run(machine, budget, &run) != TYPE_STATUS_OK ||
+                run.executed != 1u || machine->executor_cpu.data.ax !=
+                    recipes[index].expected_ax || machine->executor_cpu.data.dx !=
+                    recipes[index].expected_dx ||
+                (machine->executor_cpu.data.eflags & recipes[index].observed_flags) !=
+                    recipes[index].expected_flags;
+        }
+        core_machine_destroy(machine);
+        if (failed) {
+            STD_PRINTF("M5:T435:S5:I86-FUNCTION:FAIL:ADJUST:%u\n", (unsigned)index);
+            return 1;
+        }
+    }
+    return 0;
+}
+
+static C_INT timing_manifest_probe_data_stack_function(C_VOID)
+{
+    const core_machine_run_budget budget = { 1u, 0u };
+    const type_unsigned_8 mov[] = { 0xb8u, 0x34u, 0x12u };
+    const type_unsigned_8 xchg[] = { 0x93u };
+    const type_unsigned_8 push[] = { 0x50u };
+    const type_unsigned_8 pop[] = { 0x5bu };
+    const type_unsigned_16 pushed = 0x4a3cu;
+    timing_manifest_capture capture = { { 0 }, 0u };
+    core_machine_run_result run = { 0 };
+    core_machine *machine = STD_NULL;
+    type_unsigned_16 observed = 0u;
+    C_INT failed = !timing_manifest_prepare(&machine, &capture, mov, sizeof(mov));
+
+    if (!failed) {
+        failed = core_machine_run(machine, budget, &run) != TYPE_STATUS_OK ||
+            machine->executor_cpu.data.ax != 0x1234u;
+    }
+    core_machine_destroy(machine);
+    machine = STD_NULL;
+    if (!failed && timing_manifest_prepare(&machine, &capture, xchg, sizeof(xchg))) {
+        machine->executor_cpu.data.ax = 0x1234u;
+        machine->executor_cpu.data.bx = 0x5678u;
+        failed = core_machine_run(machine, budget, &run) != TYPE_STATUS_OK ||
+            machine->executor_cpu.data.ax != 0x5678u ||
+            machine->executor_cpu.data.bx != 0x1234u;
+    } else if (!failed) failed = 1;
+    core_machine_destroy(machine);
+    machine = STD_NULL;
+    if (!failed && timing_manifest_prepare(&machine, &capture, push, sizeof(push))) {
+        machine->executor_cpu.data.ax = pushed;
+        machine->executor_cpu.data.sp = 0x8000u;
+        failed = core_machine_run(machine, budget, &run) != TYPE_STATUS_OK ||
+            machine->executor_cpu.data.sp != 0x7ffeu ||
+            core_machine_memory_read(machine, 0x7ffeu, &observed, sizeof(observed)) !=
+                TYPE_STATUS_OK || observed != pushed;
+    } else if (!failed) failed = 1;
+    core_machine_destroy(machine);
+    machine = STD_NULL;
+    if (!failed && timing_manifest_prepare(&machine, &capture, pop, sizeof(pop))) {
+        machine->executor_cpu.data.sp = 0x8000u;
+        failed = core_machine_memory_write(machine, 0x8000u, &pushed, sizeof(pushed)) !=
+                TYPE_STATUS_OK || core_machine_run(machine, budget, &run) !=
+                TYPE_STATUS_OK || machine->executor_cpu.data.bx != pushed ||
+            machine->executor_cpu.data.sp != 0x8002u;
+    } else if (!failed) failed = 1;
+    core_machine_destroy(machine);
+    if (failed) STD_PRINTF("M5:T435:S5:I86-FUNCTION:FAIL:DATA-STACK\n");
+    return failed;
+}
+
+static C_INT timing_manifest_probe_group3_function(C_VOID)
+{
+    typedef struct timing_manifest_group3_function_recipe {
+        type_unsigned_8 program[2];
+        type_unsigned_16 ax;
+        type_unsigned_16 bx;
+        type_unsigned_16 expected_ax;
+        type_unsigned_16 expected_dx;
+    } timing_manifest_group3_function_recipe;
+    static const timing_manifest_group3_function_recipe recipes[] = {
+        { { 0xf6u, 0xe3u }, 2u, 3u, 6u, 0u },
+        { { 0xf6u, 0xebu }, 0xfffeu, 3u, 0xfffau, 0u },
+        { { 0xf6u, 0xf3u }, 7u, 3u, 0x0102u, 0u },
+        { { 0xf6u, 0xfbu }, 0xfff9u, 3u, 0xfffeu, 0u },
+        { { 0xf7u, 0xe3u }, 2u, 3u, 6u, 0u },
+        { { 0xf7u, 0xebu }, 0xfffeu, 3u, 0xfffau, 0xffffu },
+        { { 0xf7u, 0xf3u }, 7u, 3u, 2u, 1u },
+        { { 0xf7u, 0xfbu }, 0xfff9u, 3u, 0xfffeu, 0xffffu }
+    };
+    const core_machine_run_budget budget = { 1u, 0u };
+    STD_SIZE_T index;
+
+    for (index = 0u; index < sizeof(recipes) / sizeof(recipes[0]); ++index) {
+        timing_manifest_capture capture = { { 0 }, 0u };
+        core_machine_run_result run = { 0 };
+        core_machine *machine = STD_NULL;
+        C_INT failed = !timing_manifest_prepare(&machine, &capture,
+            recipes[index].program, sizeof(recipes[index].program));
+
+        if (!failed) {
+            machine->executor_cpu.data.ax = recipes[index].ax;
+            machine->executor_cpu.data.bx = recipes[index].bx;
+            machine->executor_cpu.data.dx = recipes[index].program[0] == 0xf7u &&
+                recipes[index].program[1] == 0xfbu ? 0xffffu : 0u;
+            failed = core_machine_run(machine, budget, &run) != TYPE_STATUS_OK ||
+                run.executed != 1u || machine->executor_cpu.data.ax !=
+                    recipes[index].expected_ax || machine->executor_cpu.data.dx !=
+                    recipes[index].expected_dx;
+        }
+        core_machine_destroy(machine);
+        if (failed) {
+            STD_PRINTF("M5:T435:S5:I86-FUNCTION:FAIL:GROUP3:%u\n", (unsigned)index);
+            return 1;
+        }
+    }
+    return 0;
+}
+
+static C_INT timing_manifest_probe_branch_function(C_VOID)
+{
+    typedef struct timing_manifest_branch_function_recipe {
+        type_unsigned_8 program[2];
+        type_unsigned_16 cx;
+        type_unsigned_32 eflags;
+        type_unsigned_16 expected_ip;
+        type_unsigned_16 expected_cx;
+    } timing_manifest_branch_function_recipe;
+    static const timing_manifest_branch_function_recipe recipes[] = {
+        { { 0x74u, 0x02u }, 0u, VCPU_EFLAGS_ZF, 0xfff4u, 0u },
+        { { 0x74u, 0x02u }, 0u, 0u, 0xfff2u, 0u },
+        { { 0xe2u, 0x02u }, 2u, 0u, 0xfff4u, 1u },
+        { { 0xe2u, 0x02u }, 1u, 0u, 0xfff2u, 0u },
+        { { 0xe3u, 0x02u }, 0u, 0u, 0xfff4u, 0u }
+    };
+    const core_machine_run_budget budget = { 1u, 0u };
+    STD_SIZE_T index;
+
+    for (index = 0u; index < sizeof(recipes) / sizeof(recipes[0]); ++index) {
+        timing_manifest_capture capture = { { 0 }, 0u };
+        core_machine_run_result run = { 0 };
+        core_machine *machine = STD_NULL;
+        C_INT failed = !timing_manifest_prepare(&machine, &capture,
+            recipes[index].program, sizeof(recipes[index].program));
+
+        if (!failed) {
+            machine->executor_cpu.data.cx = recipes[index].cx;
+            machine->executor_cpu.data.eflags = recipes[index].eflags;
+            failed = core_machine_run(machine, budget, &run) != TYPE_STATUS_OK ||
+                run.executed != 1u || machine->executor_cpu.data.ip !=
+                    recipes[index].expected_ip || machine->executor_cpu.data.cx !=
+                    recipes[index].expected_cx;
+        }
+        if (failed) {
+            STD_PRINTF("M5:T435:S5:I86-FUNCTION:FAIL:BRANCH:%u:ip=%u:cx=%u\n",
+                (unsigned)index, machine == STD_NULL ? 0u : machine->executor_cpu.data.ip,
+                machine == STD_NULL ? 0u : machine->executor_cpu.data.cx);
+            core_machine_destroy(machine);
+            return 1;
+        }
+        core_machine_destroy(machine);
+    }
+    return 0;
+}
+
+static C_INT timing_manifest_probe_flag_function(C_VOID)
+{
+    typedef struct timing_manifest_flag_function_recipe {
+        type_unsigned_8 opcode;
+        type_unsigned_32 initial_flags;
+        type_unsigned_32 expected_flags;
+    } timing_manifest_flag_function_recipe;
+    static const timing_manifest_flag_function_recipe recipes[] = {
+        { 0xf8u, VCPU_EFLAGS_CF, 0u },
+        { 0xf9u, 0u, VCPU_EFLAGS_CF },
+        { 0xf5u, VCPU_EFLAGS_CF, 0u },
+        { 0xfcu, VCPU_EFLAGS_DF, 0u },
+        { 0xfdu, 0u, VCPU_EFLAGS_DF },
+        { 0xfau, VCPU_EFLAGS_IF, 0u },
+        { 0xfbu, 0u, VCPU_EFLAGS_IF }
+    };
+    const core_machine_run_budget budget = { 1u, 0u };
+    const type_unsigned_32 observed = VCPU_EFLAGS_CF | VCPU_EFLAGS_DF |
+        VCPU_EFLAGS_IF;
+    STD_SIZE_T index;
+
+    for (index = 0u; index < sizeof(recipes) / sizeof(recipes[0]); ++index) {
+        timing_manifest_capture capture = { { 0 }, 0u };
+        core_machine_run_result run = { 0 };
+        core_machine *machine = STD_NULL;
+        C_INT failed = !timing_manifest_prepare(&machine, &capture,
+            &recipes[index].opcode, 1u);
+
+        if (!failed) {
+            machine->executor_cpu.data.eflags = recipes[index].initial_flags;
+            failed = core_machine_run(machine, budget, &run) != TYPE_STATUS_OK ||
+                run.executed != 1u || (machine->executor_cpu.data.eflags & observed) !=
+                    recipes[index].expected_flags;
+        }
+        core_machine_destroy(machine);
+        if (failed) {
+            STD_PRINTF("M5:T435:S5:I86-FUNCTION:FAIL:FLAGS:%u\n", (unsigned)index);
+            return 1;
+        }
+    }
+    return 0;
+}
+
+static C_INT timing_manifest_probe_compare_function(C_VOID)
+{
+    typedef struct timing_manifest_compare_function_recipe {
+        type_unsigned_8 program[2];
+        type_unsigned_16 ax;
+        type_unsigned_16 bx;
+        type_unsigned_32 expected_flags;
+    } timing_manifest_compare_function_recipe;
+    static const timing_manifest_compare_function_recipe recipes[] = {
+        { { 0x3bu, 0xc3u }, 1u, 2u, VCPU_EFLAGS_CF | VCPU_EFLAGS_SF },
+        { { 0x3bu, 0xc3u }, 2u, 2u, VCPU_EFLAGS_ZF },
+        { { 0x85u, 0xc3u }, 0x00f0u, 0x0f00u, VCPU_EFLAGS_ZF }
+    };
+    const core_machine_run_budget budget = { 1u, 0u };
+    const type_unsigned_32 observed = VCPU_EFLAGS_CF | VCPU_EFLAGS_ZF |
+        VCPU_EFLAGS_SF | VCPU_EFLAGS_OF;
+    STD_SIZE_T index;
+
+    for (index = 0u; index < sizeof(recipes) / sizeof(recipes[0]); ++index) {
+        timing_manifest_capture capture = { { 0 }, 0u };
+        core_machine_run_result run = { 0 };
+        core_machine *machine = STD_NULL;
+        C_INT failed = !timing_manifest_prepare(&machine, &capture,
+            recipes[index].program, sizeof(recipes[index].program));
+
+        if (!failed) {
+            machine->executor_cpu.data.ax = recipes[index].ax;
+            machine->executor_cpu.data.bx = recipes[index].bx;
+            failed = core_machine_run(machine, budget, &run) != TYPE_STATUS_OK ||
+                run.executed != 1u || machine->executor_cpu.data.ax !=
+                    recipes[index].ax || (machine->executor_cpu.data.eflags & observed) !=
+                    recipes[index].expected_flags;
+        }
+        core_machine_destroy(machine);
+        if (failed) return 1;
+    }
+    return 0;
+}
+
+static C_INT timing_manifest_probe_unary_function(C_VOID)
+{
+    typedef struct timing_manifest_unary_function_recipe {
+        type_unsigned_8 program[2];
+        type_unsigned_16 ax;
+        type_unsigned_16 expected_ax;
+        type_unsigned_32 initial_flags;
+        type_unsigned_32 expected_flags;
+    } timing_manifest_unary_function_recipe;
+    static const timing_manifest_unary_function_recipe recipes[] = {
+        { { 0x40u, 0u }, 0xffffu, 0u, VCPU_EFLAGS_CF, VCPU_EFLAGS_CF | VCPU_EFLAGS_ZF },
+        { { 0x48u, 0u }, 0u, 0xffffu, VCPU_EFLAGS_CF, VCPU_EFLAGS_CF | VCPU_EFLAGS_SF },
+        { { 0xf7u, 0xd0u }, 0x00f0u, 0xff0fu, 0u, 0u },
+        { { 0xf7u, 0xd8u }, 1u, 0xffffu, 0u, VCPU_EFLAGS_CF | VCPU_EFLAGS_SF }
+    };
+    const core_machine_run_budget budget = { 1u, 0u };
+    const type_unsigned_32 observed = VCPU_EFLAGS_CF | VCPU_EFLAGS_ZF |
+        VCPU_EFLAGS_SF;
+    STD_SIZE_T index;
+
+    for (index = 0u; index < sizeof(recipes) / sizeof(recipes[0]); ++index) {
+        timing_manifest_capture capture = { { 0 }, 0u };
+        core_machine_run_result run = { 0 };
+        core_machine *machine = STD_NULL;
+        C_INT failed = !timing_manifest_prepare(&machine, &capture,
+            recipes[index].program, recipes[index].program[1] == 0u ? 1u : 2u);
+
+        if (!failed) {
+            machine->executor_cpu.data.ax = recipes[index].ax;
+            machine->executor_cpu.data.eflags = recipes[index].initial_flags;
+            failed = core_machine_run(machine, budget, &run) != TYPE_STATUS_OK ||
+                machine->executor_cpu.data.ax != recipes[index].expected_ax ||
+                (machine->executor_cpu.data.eflags & observed) != recipes[index].expected_flags;
+        }
+        core_machine_destroy(machine);
+        if (failed) return 1;
+    }
+    return 0;
+}
+
+static C_INT timing_manifest_probe_lahf_sahf_function(C_VOID)
+{
+    const core_machine_run_budget budget = { 1u, 0u };
+    const type_unsigned_8 lahf = 0x9fu;
+    const type_unsigned_8 sahf = 0x9eu;
+    const type_unsigned_32 flags = VCPU_EFLAGS_CF | VCPU_EFLAGS_PF |
+        VCPU_EFLAGS_AF | VCPU_EFLAGS_ZF | VCPU_EFLAGS_SF;
+    timing_manifest_capture capture = { { 0 }, 0u };
+    core_machine_run_result run = { 0 };
+    core_machine *machine = STD_NULL;
+    C_INT failed = !timing_manifest_prepare(&machine, &capture, &lahf, 1u);
+
+    if (!failed) {
+        machine->executor_cpu.data.ax = 0x1200u;
+        machine->executor_cpu.data.eflags = flags;
+        failed = core_machine_run(machine, budget, &run) != TYPE_STATUS_OK ||
+            machine->executor_cpu.data.ax != 0xd700u;
+    }
+    core_machine_destroy(machine);
+    machine = STD_NULL;
+    if (!failed && timing_manifest_prepare(&machine, &capture, &sahf, 1u)) {
+        machine->executor_cpu.data.ax = 0xd700u;
+        failed = core_machine_run(machine, budget, &run) != TYPE_STATUS_OK ||
+            (machine->executor_cpu.data.eflags & flags) != flags;
+    } else if (!failed) failed = 1;
     core_machine_destroy(machine);
     return failed;
 }
@@ -3592,6 +4011,15 @@ C_INT main(C_VOID)
     if (i86_count != 1053u || timing_manifest_probe_decoder_lexeme_candidates() ||
             timing_manifest_probe_decoder_form_rejections() ||
             timing_manifest_probe_pop_cs_function() ||
+            timing_manifest_probe_alu_function() ||
+            timing_manifest_probe_adjustment_function() ||
+            timing_manifest_probe_data_stack_function() ||
+            timing_manifest_probe_group3_function() ||
+            timing_manifest_probe_branch_function() ||
+            timing_manifest_probe_flag_function() ||
+            timing_manifest_probe_compare_function() ||
+            timing_manifest_probe_unary_function() ||
+            timing_manifest_probe_lahf_sahf_function() ||
             timing_manifest_probe_general_lock_prefix() ||
             timing_manifest_probe_adjustments()) return 1;
     if (timing_manifest_probe_alu_register_forms()) {
