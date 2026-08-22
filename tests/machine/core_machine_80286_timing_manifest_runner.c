@@ -133,6 +133,14 @@ static C_INT timing_80286_manifest_is_bound(const C_CHAR *key_id)
     return key_id != STD_NULL && STD_STRCMP(key_id, "I286-BOUND") == 0;
 }
 
+static C_INT timing_80286_manifest_uses_odd_group3_operand(const C_CHAR *key_id)
+{
+    return key_id != STD_NULL && (STD_STRCMP(key_id, "I286-MUL-M16-ODD-WORD") == 0 ||
+        STD_STRCMP(key_id, "I286-IMUL-M16-ODD-WORD") == 0 ||
+        STD_STRCMP(key_id, "I286-DIV-M16-ODD-WORD") == 0 ||
+        STD_STRCMP(key_id, "I286-IDIV-M16-ODD-WORD") == 0);
+}
+
 static type_unsigned_16 timing_80286_manifest_control_cx(const C_CHAR *key_id)
 {
     if (key_id == STD_NULL) return 2u;
@@ -257,6 +265,11 @@ static C_INT timing_80286_manifest_prepare(core_machine **out_machine,
         }
         status = core_machine_memory_write(machine, 0x1000u, &operand,
             sizeof(operand));
+        if (status == TYPE_STATUS_OK &&
+            timing_80286_manifest_uses_odd_group3_operand(key_id)) {
+            status = core_machine_memory_write(machine, 0x1001u, &operand,
+                sizeof(operand));
+        }
     }
     if (status == TYPE_STATUS_OK && timing_80286_manifest_is_bound(key_id)) {
         const type_unsigned_16 bounds[] = { 0u, 2u };
@@ -964,6 +977,8 @@ C_INT main(C_VOID)
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-MUL-M16", { 0xf7u, 0x26u, 0u, 0x10u }, 4u, 24u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-MUL-M16-ODD-WORD", { 0xf7u, 0x26u, 1u, 0x10u }, 4u, 26u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-IMUL-R8", { 0xf6u, 0xe8u }, 2u, 13u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-IMUL-R16", { 0xf7u, 0xe8u }, 2u, 21u,
@@ -971,6 +986,8 @@ C_INT main(C_VOID)
         { "I286-IMUL-M8", { 0xf6u, 0x2eu, 0u, 0x10u }, 4u, 16u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-IMUL-M16", { 0xf7u, 0x2eu, 0u, 0x10u }, 4u, 24u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-IMUL-M16-ODD-WORD", { 0xf7u, 0x2eu, 1u, 0x10u }, 4u, 26u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-DIV-R8", { 0xf6u, 0xf0u }, 2u, 14u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
@@ -980,6 +997,8 @@ C_INT main(C_VOID)
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-DIV-M16", { 0xf7u, 0x36u, 0u, 0x10u }, 4u, 25u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-DIV-M16-ODD-WORD", { 0xf7u, 0x36u, 1u, 0x10u }, 4u, 27u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-IDIV-R8", { 0xf6u, 0xf8u }, 2u, 17u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-IDIV-R16", { 0xf7u, 0xf8u }, 2u, 25u,
@@ -987,6 +1006,8 @@ C_INT main(C_VOID)
         { "I286-IDIV-M8", { 0xf6u, 0x3eu, 0u, 0x10u }, 4u, 20u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-IDIV-M16", { 0xf7u, 0x3eu, 0u, 0x10u }, 4u, 28u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-IDIV-M16-ODD-WORD", { 0xf7u, 0x3eu, 1u, 0x10u }, 4u, 30u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-IMUL-IMM-IMM8-R", { 0x6bu, 0xc0u, 1u }, 3u, 21u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
