@@ -257,6 +257,35 @@ static C_INT timing_80186_cmp_test_matrix(C_VOID)
     return 0;
 }
 
+static C_INT timing_80186_adjustment_matrix(C_VOID)
+{
+    typedef struct timing_80186_adjustment_recipe {
+        type_unsigned_8 program[2];
+        STD_SIZE_T bytes;
+        type_unsigned_64 ticks;
+    } timing_80186_adjustment_recipe;
+    static const timing_80186_adjustment_recipe recipes[] = {
+        { { 0x37u }, 1u, 8u }, { { 0x3fu }, 1u, 7u },
+        { { 0xd5u,0x0au }, 2u, 15u }, { { 0xd4u,0x0au }, 2u, 19u },
+        { { 0x98u }, 1u, 2u }, { { 0x99u }, 1u, 4u },
+        { { 0x27u }, 1u, 4u }, { { 0x2fu }, 1u, 4u }
+    };
+    STD_SIZE_T index;
+
+    for (index = 0u; index < sizeof(recipes) / sizeof(recipes[0]); ++index) {
+        timing_80186_state state = { 0u, 0u, 0u };
+        core_machine *machine = STD_NULL;
+        C_INT failed = !timing_80186_prepare(&machine, &state) ||
+            !timing_80186_load(machine, recipes[index].program,
+                recipes[index].bytes) || ((machine->executor_cpu.data.ax = 0x0012u),
+                0) || !timing_80186_run(machine, &state, 1u, recipes[index].ticks);
+
+        core_machine_destroy(machine);
+        if (failed) return 1;
+    }
+    return 0;
+}
+
 static C_INT timing_80186_stack_frame(C_VOID)
 {
     static const type_unsigned_8 enter[] = { 0xc8u, 0u, 0u, 0u };
@@ -459,6 +488,7 @@ C_INT main(C_VOID)
         timing_80186_bound() ||
         timing_80186_alu_matrix() ||
         timing_80186_cmp_test_matrix() ||
+        timing_80186_adjustment_matrix() ||
         timing_80186_stack_frame() ||
         timing_80186_case(near_call, sizeof(near_call), 15u) ||
         timing_80186_case(direct_jump, sizeof(direct_jump), 13u) ||
