@@ -417,10 +417,10 @@ static const core_machine_source_timing_entry
     { CORE_MACHINE_SOURCE_TIMING_CLC, 2u },
     { CORE_MACHINE_SOURCE_TIMING_MOV_IMMEDIATE, 4u },
     { CORE_MACHINE_SOURCE_TIMING_MOV_REGISTER_REGISTER, 2u },
-    { CORE_MACHINE_SOURCE_TIMING_MOV_RM_REGISTER, 9u },
-    { CORE_MACHINE_SOURCE_TIMING_MOV_REGISTER_RM, 12u },
-    { CORE_MACHINE_SOURCE_TIMING_MOV_MOFFS_READ, 8u },
-    { CORE_MACHINE_SOURCE_TIMING_MOV_MOFFS_WRITE, 9u },
+    { CORE_MACHINE_SOURCE_TIMING_MOV_RM_REGISTER, 12u },
+    { CORE_MACHINE_SOURCE_TIMING_MOV_REGISTER_RM, 9u },
+    { CORE_MACHINE_SOURCE_TIMING_MOV_MOFFS_READ, 9u },
+    { CORE_MACHINE_SOURCE_TIMING_MOV_MOFFS_WRITE, 8u },
     { CORE_MACHINE_SOURCE_TIMING_IN_IMMEDIATE, 10u },
     { CORE_MACHINE_SOURCE_TIMING_IN_DX, 8u },
     { CORE_MACHINE_SOURCE_TIMING_OUT_IMMEDIATE, 9u },
@@ -1590,7 +1590,6 @@ static C_INT core_machine_legacy_source_instruction_cost(core_machine *machine,
     type_unsigned_32 fallthrough;
     C_INT segment_override;
     C_INT lock_prefix;
-    type_unsigned_64 memory_ticks;
 
     if (out_ticks == STD_NULL || contract == STD_NULL) return 0;
     if (prefixes >= data->oplen) {
@@ -1644,16 +1643,18 @@ static C_INT core_machine_legacy_source_instruction_cost(core_machine *machine,
                 CORE_MACHINE_SOURCE_TIMING_MOV_REGISTER_REGISTER);
             return 1;
         }
-        memory_ticks = core_machine_8086_timing_effective_address(data, prefixes);
-        if (memory_ticks == 0u) break;
         *out_ticks = core_machine_source_timing_lookup(machine, contract->ledger,
             contract->ledger_entries,
             opcode == 0x88u || opcode == 0x89u ?
             CORE_MACHINE_SOURCE_TIMING_MOV_RM_REGISTER :
-            CORE_MACHINE_SOURCE_TIMING_MOV_REGISTER_RM) + memory_ticks +
+            CORE_MACHINE_SOURCE_TIMING_MOV_REGISTER_RM) +
             (segment_override ? CORE_MACHINE_8086_SEGMENT_OVERRIDE_TICKS : 0u) +
             ((opcode == 0x89u || opcode == 0x8bu) ?
                 core_machine_8086_timing_odd_word(data) : 0u);
+        if (machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_80186) {
+            *out_ticks += core_machine_8086_timing_effective_address(data,
+                prefixes);
+        }
         return 1;
     case 0xa0u: case 0xa1u: case 0xa2u: case 0xa3u:
         *out_ticks = core_machine_source_timing_lookup(machine, contract->ledger,
