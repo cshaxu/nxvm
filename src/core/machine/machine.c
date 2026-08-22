@@ -2089,7 +2089,7 @@ C_INT core_machine_primary_source_instruction_cost(
             ticks = 4u;
             break;
         case CORE_MACHINE_SOURCE_TIMING_MOV_RM_IMMEDIATE:
-            ticks = shape.memory ? (shape.word ? 13u : 12u) : 4u;
+            ticks = shape.memory ? 13u : 4u;
             break;
         case CORE_MACHINE_SOURCE_TIMING_LEA:
             ticks = 6u;
