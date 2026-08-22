@@ -166,6 +166,31 @@ static C_INT timing_80186_bound(C_VOID)
     return failed;
 }
 
+static C_INT timing_80186_stack_frame(C_VOID)
+{
+    static const type_unsigned_8 enter[] = { 0xc8u, 0u, 0u, 0u };
+    static const type_unsigned_8 leave[] = { 0xc9u };
+    const type_unsigned_16 prior_bp = 0x1234u;
+    timing_80186_state state = { 0u, 0u, 0u };
+    core_machine *machine = STD_NULL;
+    C_INT failed = !timing_80186_prepare(&machine, &state);
+
+    if (!failed) failed |= !timing_80186_load(machine, enter, sizeof(enter)) ||
+        ((machine->executor_cpu.data.sp = 0x3000u),
+            (machine->executor_cpu.data.bp = prior_bp), 0) ||
+        !timing_80186_run(machine, &state, 1u, 15u) ||
+        machine->executor_cpu.data.sp != 0x2ffeu ||
+        machine->executor_cpu.data.bp != 0x2ffeu;
+    if (!failed) failed |= !timing_80186_load(machine, leave, sizeof(leave)) ||
+        ((machine->executor_cpu.data.bp = 0x2ffeu), 0) ||
+        core_machine_memory_write(machine, 0x2ffeu, &prior_bp, sizeof(prior_bp)) !=
+            TYPE_STATUS_OK || !timing_80186_run(machine, &state, 1u, 8u) ||
+        machine->executor_cpu.data.sp != 0x3000u ||
+        machine->executor_cpu.data.bp != prior_bp;
+    core_machine_destroy(machine);
+    return failed;
+}
+
 static C_INT timing_80186_memory(C_VOID)
 {
     static const type_unsigned_8 read[] = { 0x8bu, 0x0eu, 0x00u, 0x10u };
@@ -334,6 +359,7 @@ C_INT main(C_VOID)
         timing_80186_lea() ||
         timing_80186_pointer_loads() ||
         timing_80186_bound() ||
+        timing_80186_stack_frame() ||
         timing_80186_case(near_call, sizeof(near_call), 15u) ||
         timing_80186_case(direct_jump, sizeof(direct_jump), 13u) ||
         timing_80186_case(mul8, sizeof(mul8), 27u) ||
