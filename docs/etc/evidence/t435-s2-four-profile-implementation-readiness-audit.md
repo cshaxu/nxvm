@@ -17,11 +17,11 @@ exclude external waits, arbitration, prefetch availability and event delivery.
 
 | profile | base | legal contexts | legal combinations | total canonical keys | S1 level decision |
 | --- | ---: | ---: | ---: | ---: | --- |
-| 8086 | 244 | 178 | 227 | 649 | 228 L3, 16 L2:G3 base keys |
-| 80186 | 278 | 235 | 89 | 602 | 253 L3, 25 L2:midpoint base keys |
-| 80286 | 290 | 460 | 62 | 812 | all L3 |
-| 80386DX | 402 | 830 | 0 | 1,232 | all L3 |
-| **all profiles** | **1,214** | **1,703** | **378** | **3,295** | no anonymous L1 |
+| 8086 | 246 | 406 | 401 | 1,053 | 230 L3, 16 L2:G3 base keys |
+| 80186 | 279 | 235 | 89 | 603 | 253 L3, 26 L2:midpoint base keys |
+| 80286 | 286 | 459 | 62 | 807 | all L3 |
+| 80386DX | 410 | 935 | 0 | 1,345 | all L3 |
+| **all profiles** | **1,221** | **2,035** | **552** | **3,808** | no anonymous L1 |
 
 The profile verifiers and the shared
 `tools/Verify-CpuTimingManifestContract.ps1` derive these figures directly
