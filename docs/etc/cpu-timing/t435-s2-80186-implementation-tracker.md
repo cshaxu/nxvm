@@ -14,6 +14,7 @@ Run:
 
 ```text
 powershell -NoProfile -ExecutionPolicy Bypass -File tools/Verify-80186TimingManifest.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File tools/Verify-80186DecoderLedger.ps1
 ```
 
 before every 80186 tracker-changing P.  The verifier rejects duplicate keys,
@@ -27,7 +28,7 @@ shared [manifest result contract](t435-s2-manifest-result-contract.md).
 
 | manifest template | level and authoritative rule | present state | close in |
 | --- | --- | --- | --- |
-| `I186-ADJ-*`, `I186-INC/DEC-*`, `I186-NEG/NOT-*`, `I186-XCHG-*`, `I186-LEA/LDS/LES-*` | L3 Table 1-16 exact | source selection partial/unproven | B0+B1+B4 |
+| `I186-ADJ-*`, `I186-INC/DEC-*`, `I186-NEG/NOT-*`, `I186-XCHG-*`, `I186-LEA/LDS/LES-*` | L3 Table 2-9 exact | source selection partial/unproven | B0+B1+B4 |
 | `I186-ALU-*`, `I186-CMP-*`, `I186-TEST-*` | L3 exact except the explicit AI rows below | narrow primary coverage; no unproven member is conforming | B0+B1+B3+B4 |
 | `I186-ALU-*-AI`, `I186-CMP-AI`, `I186-TEST-AI`, `I186-MOV-{RI,MI}` | L2:midpoint, manual range and `ceil` rule in S1 | no midpoint closure result | B0+B2+B4 |
 | `I186-MOV-*`, stack, call/jump/return, branches, interrupt/port/ESC/WAIT/HLT | L3 exact/formula | mixed primary/control/fallback routes; per-form proof absent | B0+B1+B3+B4 |

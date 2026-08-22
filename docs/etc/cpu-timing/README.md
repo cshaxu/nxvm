@@ -11,9 +11,10 @@ principle-only information, or no timing information.  It must then state a
 single proposed L3/L2/L1 outcome.  An L1 row is explicit and never represented
 by a silent one-tick default.
 
-T435 S1 block 1 is the 8086 material in
-[the 8086 ledger](t435-s1-8086-ledger.md).  Blocks 2--4 are intentionally not
-started until owner review of that record.
+T435 S1 contains the reviewed [8086 ledger](t435-s1-8086-ledger.md), the
+active [80186 ledger](t435-s1-80186-ledger.md), and the later 80286/80386DX
+ledgers.  Each profile remains separately admitted for implementation; a
+completed evidence register is not an implementation claim.
 
 The current 8086 S2 audit normalizes that ledger's narrative prefix conditions
 into the finite [8086 context-key catalog](t435-s2-8086-context-key-catalog.md).
@@ -36,8 +37,11 @@ The active 80186 S2 block applies the same contract through the
 [80186 manifest](t435-s2-80186-timing-manifest.json), its
 [implementation audit](t435-s2-80186-implementation-audit.md), and its
 [implementation tracker](t435-s2-80186-implementation-tracker.md).  Its
-templates expand 253 L3 and 25 explicit fixed-midpoint L2 base keys; legal
-context axes are generated from the manifest rather than left as prose.
+templates expand 253 L3 and 26 explicit fixed-midpoint L2 base keys; legal
+context axes are generated from the manifest rather than left as prose.  The
+active S6 [decoder reconciliation contract](t435-s6-80186-decoder-reconciliation-contract.md)
+and [P3 audit](t435-s6-80186-decoder-ledger-audit.md) prove decoder/manual
+membership and preserve every current nonconforming status for later work.
 
 The active 80286 S2 block records its all-L3 universe in the
 [80286 manifest](t435-s2-80286-timing-manifest.json),

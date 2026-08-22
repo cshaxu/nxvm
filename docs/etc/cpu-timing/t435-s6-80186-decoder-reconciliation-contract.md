@@ -39,17 +39,33 @@ hiding it again.
 
 ## Bidirectional predicates
 
-P2 is accepted only when both predicates hold:
+The S6 reconciliation is accepted only when both predicates hold:
 
 1. Every scanner candidate is classified by the table above and, when it is a
    retirement instruction, has an S1 family and S2 base-key path.
 2. Every S2 base key has an S1 source rule and a valid 80186 decoder recipe;
    no key may exist only because a manifest template was convenient.
 
-The first predicate is proven by the generated inventory plus the frozen
-candidate count and the partition above. The second is not yet closed by this
-P2 scanner: it requires the following P3 recipe/key verifier.  P2 therefore
-does not claim `I186-DECODER-LEDGER-ZERO-DIFFERENCE:PASS`.
+P2 proves the frozen inventory and records the first partition.  P3 proves the
+second predicate and turns the primary partition into a checked finite map;
+P2 alone does not claim `I186-DECODER-LEDGER-ZERO-DIFFERENCE:PASS`.
+
+## P3 recipe/key reconciliation
+
+`tools/Verify-80186DecoderLedger.ps1` expands all 279 S2 base keys, requires a
+Table 2-9 primary or Table 1-16 supplemental source rule for each one, assigns
+a legal representative 80186 opcode/ModR/M recipe, and checks that recipe
+against the P2 matrix emitted by the real lexical decoder.  The verifier also
+requires every accepted primary opcode to be exactly one of: six byte-prefix
+forms, eight ESC primary bytes, or one of the fixed successful-instruction
+families.  Invalid/future primary bytes are rejected rather than quietly
+counted as an instruction.
+
+This is a decoder/manual/S1/S2 membership proof, not a timing result.  It does
+not call retirement and cannot change a `wrong-value`, `unallocated`, or
+`missing-test` S2 status into `conforming`.  The same verifier checks and
+prints the complete current base-key status vector, so later implementation
+must move actual keys rather than replace an aggregate claim.
 
 ## Reproduction
 
@@ -60,4 +76,7 @@ build/t435-s6-p2/core-machine-80186-decoder-inventory-runner.exe
 ```
 
 Markers: `M5:T435:S6:I186-MANUAL-DECODER-PARTITION:OK`;
-`M5:T435:S6:I186-DECODER-INVENTORY:247:61530`.
+`M5:T435:S6:I186-DECODER-INVENTORY:247:61530`;
+`M5:T435:S6:I186-DECODER-LEDGER-ZERO-DIFFERENCE:PASS:279`;
+`M5:T435:S6:I186-S2-STATUS-RECONCILED:PASS:0:14:43:222`;
+`M5:T435:S6:I186-S2-CANONICAL-STATUS-RECONCILED:PASS:603:102:81:144:276`.
