@@ -489,6 +489,8 @@ static const core_machine_source_timing_entry
     { CORE_MACHINE_SOURCE_TIMING_JMP_FAR_MEMORY, 15u },
     { CORE_MACHINE_SOURCE_TIMING_RET_NEAR, 11u },
     { CORE_MACHINE_SOURCE_TIMING_RET_NEAR_IMMEDIATE, 11u },
+    { CORE_MACHINE_SOURCE_TIMING_RET_FAR, 15u },
+    { CORE_MACHINE_SOURCE_TIMING_RET_FAR_IMMEDIATE, 15u },
     { CORE_MACHINE_SOURCE_TIMING_PUSH_REGISTER, 3u },
     { CORE_MACHINE_SOURCE_TIMING_PUSH_MEMORY, 5u },
     { CORE_MACHINE_SOURCE_TIMING_PUSH_IMMEDIATE, 3u },
@@ -2642,12 +2644,14 @@ C_INT core_machine_control_stack_source_instruction_cost(
             core_machine_control_stack_source_lookup(machine,
                 CORE_MACHINE_SOURCE_TIMING_RET_NEAR), out_ticks);
     case 0xcau:
-        if (machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_80186) return 0;
+        if (machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_80186 &&
+            machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_80286) return 0;
         return core_machine_control_stack_add_next_term(machine,
             core_machine_control_stack_source_lookup(machine,
                 CORE_MACHINE_SOURCE_TIMING_RET_FAR_IMMEDIATE), out_ticks);
     case 0xcbu:
-        if (machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_80186) return 0;
+        if (machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_80186 &&
+            machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_80286) return 0;
         return core_machine_control_stack_add_next_term(machine,
             core_machine_control_stack_source_lookup(machine,
                 CORE_MACHINE_SOURCE_TIMING_RET_FAR), out_ticks);
