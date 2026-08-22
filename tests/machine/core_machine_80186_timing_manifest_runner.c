@@ -28,7 +28,7 @@ typedef struct timing_80186_manifest_capture {
 
 typedef struct timing_80186_manifest_recipe {
     const C_CHAR *key_id;
-    type_unsigned_8 program[4];
+    type_unsigned_8 program[5];
     STD_SIZE_T bytes;
     type_unsigned_64 ticks;
     core_machine_retirement_timing_origin origin;
@@ -107,7 +107,14 @@ static const timing_80186_manifest_inputs *timing_80186_manifest_inputs_find(
         { "I186-RCR-MCL", 2u, 0x1000u, 1u },
         { "I186-SHL-MCL", 2u, 0x1000u, 1u },
         { "I186-SHR-MCL", 2u, 0x1000u, 1u },
-        { "I186-SAR-MCL", 2u, 0x1000u, 1u }
+        { "I186-SAR-MCL", 2u, 0x1000u, 1u },
+        { "I186-ROL-MIMM8", 0u, 0x1000u, 1u },
+        { "I186-ROR-MIMM8", 0u, 0x1000u, 1u },
+        { "I186-RCL-MIMM8", 0u, 0x1000u, 1u },
+        { "I186-RCR-MIMM8", 0u, 0x1000u, 1u },
+        { "I186-SHL-MIMM8", 0u, 0x1000u, 1u },
+        { "I186-SHR-MIMM8", 0u, 0x1000u, 1u },
+        { "I186-SAR-MIMM8", 0u, 0x1000u, 1u }
     };
     STD_SIZE_T index;
 
@@ -300,6 +307,20 @@ C_INT main(C_VOID)
         { "I186-SHR-MCL", { 0xd2u,0x2eu,0u,0x10u }, 4u, 19u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80186_FALLBACK },
         { "I186-SAR-MCL", { 0xd2u,0x3eu,0u,0x10u }, 4u, 19u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80186_FALLBACK },
+        { "I186-ROL-MIMM8", { 0xc0u,0x06u,0u,0x10u,2u }, 5u, 19u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80186_FALLBACK },
+        { "I186-ROR-MIMM8", { 0xc0u,0x0eu,0u,0x10u,2u }, 5u, 19u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80186_FALLBACK },
+        { "I186-RCL-MIMM8", { 0xc0u,0x16u,0u,0x10u,2u }, 5u, 19u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80186_FALLBACK },
+        { "I186-RCR-MIMM8", { 0xc0u,0x1eu,0u,0x10u,2u }, 5u, 19u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80186_FALLBACK },
+        { "I186-SHL-MIMM8", { 0xc0u,0x26u,0u,0x10u,2u }, 5u, 19u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80186_FALLBACK },
+        { "I186-SHR-MIMM8", { 0xc0u,0x2eu,0u,0x10u,2u }, 5u, 19u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80186_FALLBACK },
+        { "I186-SAR-MIMM8", { 0xc0u,0x3eu,0u,0x10u,2u }, 5u, 19u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80186_FALLBACK },
         { "I186-ADJ-AAA", { 0x37u }, 1u, 8u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
