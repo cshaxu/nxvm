@@ -987,7 +987,8 @@ static type_unsigned_64 core_machine_8086_timing_string_modifiers(
     C_INT destination_transfer;
 
     if (machine == STD_NULL || data == STD_NULL ||
-        machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_8086) return 0u;
+        (machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_8086 &&
+         machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_80186)) return 0u;
     for (index = 0u; index < data->oplen; ++index) {
         switch (data->opcodes[index]) {
         case 0x26u: case 0x2eu: case 0x36u: case 0x3eu:

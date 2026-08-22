@@ -152,6 +152,7 @@ static C_INT timing_80186_control_ports(C_VOID)
     static const type_unsigned_8 taken[] = { 0x74u, 0x01u, 0x90u, 0x90u };
     static const type_unsigned_8 not_taken[] = { 0x75u, 0x01u, 0x90u, 0x90u };
     static const type_unsigned_8 rep[] = { 0xf3u, 0xa4u };
+    static const type_unsigned_8 rep_segment[] = { 0x26u, 0xf3u, 0xa4u };
     static const type_unsigned_8 source[] = { 1u, 2u, 3u };
     static const type_unsigned_8 out_imm[] = { 0xe6u, 0x80u };
     static const type_unsigned_8 out_dx[] = { 0xeeu };
@@ -173,6 +174,13 @@ static C_INT timing_80186_control_ports(C_VOID)
             (machine->executor_cpu.data.si = 0x1000u),
             (machine->executor_cpu.data.di = 0x1100u), 0) ||
         !timing_80186_run(machine, &state, 3u, 32u);
+    if (!failed) failed |= !timing_80186_load(machine, rep_segment,
+        sizeof(rep_segment)) || core_machine_memory_write(machine, 0x1000u,
+        source, sizeof(source)) != TYPE_STATUS_OK ||
+        ((machine->executor_cpu.data.cx = 3u),
+        (machine->executor_cpu.data.si = 0x1000u),
+        (machine->executor_cpu.data.di = 0x1100u), 0) ||
+        !timing_80186_run(machine, &state, 3u, 38u);
     if (!failed) failed |= !timing_80186_load(machine, out_imm, sizeof(out_imm)) ||
         !timing_80186_run(machine, &state, 1u, 9u) || state.writes != 1u;
     if (!failed) failed |= !timing_80186_load(machine, out_dx, sizeof(out_dx)) ||
