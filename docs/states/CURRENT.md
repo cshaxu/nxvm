@@ -2,29 +2,9 @@
 
 ## Current Work
 
-**Active: M5 T436 S1.** The owner-approved first 80286 queue candidate is
-admitted for a single-person dual-role implementation lifecycle.
-
-## M5 T436 S1 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | New; M5 T436 S1 is the next numeric task after the owner-approved T435 requeue closure. |
-| Admission And Approval | The owner directed the separate 80286 and 80386DX queue packages on 2026-08-22, required a reasonable 80286 S decomposition, and has a persistent instruction to continue the complete 80286 implementation. This first Queue candidate is admitted without exception. |
-| Objective | Freeze one executable, complete and non-overlapping 80286 implementation partition for all 807 canonical successful-retirement keys, so later S units have exact bounded ownership and proof obligations. |
-| Non-goals | Do not claim a key conforming, change timing selection or instruction semantics, add a CPU profile, assign board/READY/HOLD/DMA/prefetch/device timing, create a public ABI, import source, or start another S. |
-| Reference Baseline | [80286 manual ledger](../etc/cpu-timing/t435-s1-80286-ledger.md), [manifest](../etc/cpu-timing/t435-s2-80286-timing-manifest.json), [tracker](../etc/cpu-timing/t435-s2-80286-implementation-tracker.md), [audit](../etc/cpu-timing/t435-s2-80286-implementation-audit.md), [decoder reconciliation](../etc/cpu-timing/t435-s7-80286-decoder-reconciliation-contract.md), [result contract](../etc/cpu-timing/t435-s2-manifest-result-contract.md), and the owner-approved [S decomposition](../proposals/m5-80286-instruction-timing-closure.md). |
-| Candidate Proposal | [M5 80286 instruction timing closure](../proposals/m5-80286-instruction-timing-closure.md). |
-| Files And ABI Surface | S1 may add only indexed 80286 partition evidence, its verifier if necessary, task history and current status. It must not change runtime source, public headers, CMake products, the developer artifact or external ABI. |
-| Applicable Rules | Execution: new-task allocation, S/P lifecycle, dual-role review and closure. Architecture: one Core timing/publishing path and no board policy. Documentation: CURRENT is the active contract and Queue remains unnumbered. Source policy: retained manual evidence only; no source import. |
-| Verification | Run `Verify-80286TimingManifest.ps1`, `Verify-80286DecoderLedger.ps1`, the existing 80286 manifest runner, documentation governance, and a static comparison proving that every materialized key has exactly one later-S owner. |
-| Expected Markers | Retain the S1/S2/S7 markers; add `M5:T436:S1:I286-PARTITION-COMPLETE:PASS:canonical=807` and `M5:T436:S1:I286-PARTITION-NO-OVERLAP:PASS`. |
-| Asset Needs | Existing owner-managed Intel manual evidence only. No firmware, guest media, downloads, Microsoft components, or third-party code is permitted. |
-| Reporting Requirements | Record the generated partition, per-S key totals, every nontrivial boundary decision, baseline verifier totals and actual changed files. The executor performs one bounded delivery; the same session then independently reviews the actual changes against this packet before accepting or issuing one corrective brief. |
-| Stop Conditions | Stop for a manifest/manual/decoder contradiction, an unrepresentable required key, a partition that cannot be made disjoint without changing the approved CPU boundary, a source-policy issue, or a verifier contradiction. Report evidence; do not guess, exclude a key, or invent a fallback. |
-| Exit Criteria | A durable machine-readable or mechanically verified partition assigns each of the 286 base, 459 single-axis and 62 combined keys to exactly one S2--S7 owner; S8 owns closure only. The baseline statuses remain truthful, the partition verifier passes, all required baseline gates pass, and dual-role review accepts the actual change. |
-| Original Owner Request | Owner request, faithfully translated: split 80286 into reasonable S tasks and continue the complete, correct 80286 instruction function and timing implementation under the governance rules. |
-| Similar-Issue Sweep | Defect class: orphaned, duplicate or silently reassigned 80286 manifest keys. Scope: 80286 ledger, manifest, tracker, decoder inventory/verifiers, result contract, queue proposal and the new partition evidence. Search and mechanically reconcile every generated key; no runtime source is in S1 scope. |
+**Between accepted S units: M5 T436.** S1 has a verified, disjoint partition;
+the next admitted unit is S2, the 80286 result-contract producer and sole
+publication seam.
 ## Current Technical Baseline
 
 - **Current developer artifact:** target `vm-0-5-0434`; T434 S2 `nxvm_0_5_0434.exe` / `build/output/nxvm_0_5_0434.exe`, SHA-256 `0252F8FDA17BEC2131606F19E3547B46894AC6B56DD37EC3B16BD302494FAFDC`. T434 has one copied Core timing-plan publication route for default PC/AT, IBM 5170 Model 339 and Model-40 BYOB session composition.
@@ -49,6 +29,7 @@ admitted for a single-person dual-role implementation lifecycle.
 
 | Task | Compact result |
 | --- | --- |
+| T436 S1 | Closed: the executable [partition](../etc/cpu-timing/t436-s1-80286-key-partition.md) assigns all 807 canonical keys exactly once: S3=318, S4=129, S5=56, S6=212 and S7=92. The strict nonconforming baseline is retained for S2--S8. |
 | T435 | Stopped by owner-approved requeue; not completed. Its profile-specific 80286 and 80386DX closure candidates now lead the Queue. [Record](../history/M5-T435-core-cpu-instruction-timing-program-requeue.md). |
 | T434 | Closed: all 30 copied plan declarations/dispositions, every current VM materializer and atomic Core publication route are reconciled; full task closure proof is retained in the [S3 audit](../etc/evidence/t434-s3-task-closure-audit.md) and [task history](../history/M5-T434-core-timing-contract-machine-plan.md). |
 | T433 | Closed after corrective S7: 30 frozen Core capabilities have a source-sufficiency and ownership disposition; chip/manual semantics are separated from VM-profile inputs, host/product boundaries and the explicit ATA/HDC source block. [S7 ledger](../etc/evidence/t433-s7-core-source-sufficiency-ledger.md). |
@@ -56,7 +37,6 @@ admitted for a single-person dual-role implementation lifecycle.
 | T431 | Closed: Model-40 selects a reference-derived unready-drive READ `ST0=48h`/IRQ/result completion through one Core policy; generic PC/AT stays generic, and physical FDC/L3 timing remains transferred. [Evidence](../etc/evidence/t431-s1-deskpro-fdc-not-ready-reference.md). |
 | T430 | Closed: original/reference-backed Compaq WD 40 MB C:/D: selection now uses frozen Core media slots with optional Model-40 secondary backing; generic ATA stays unchanged, and physical/L3 timing remains transferred. [Evidence](../etc/evidence/t430-s1-deskpro-dual-fixed-disk.md). |
 | T429 | Closed: generic-AT CECG port/aperture wait skeleton and D4-memory classification; physical CECG and monitor behavior remain TODO. [S1](../etc/evidence/t429-s1-cecg-8bit-bus-wait.md), [S2](../etc/evidence/t429-s2-d4-cecg-memory-class.md), [S3](../etc/evidence/t429-s3-cecg-aperture-wait.md).
-| T428 | Closed: Model-40 selects a generic-AT Core prefetch reservation lifecycle with reset/HOLD/refresh priority; it publishes no physical cycle, page hit or timing result. [Evidence](../etc/evidence/t428-s1-generic-prefetch-reservation.md). |
 
 
 ## Recent Governance

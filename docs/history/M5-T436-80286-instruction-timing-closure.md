@@ -40,3 +40,22 @@ inventory, implementation tracker and result contract before runtime changes.
 It must prove exactly one S2--S7 owner for each canonical key, preserve the
 strict nonconforming baseline, and record the focused evidence that later S
 units must produce. It creates no timing result or implementation claim.
+
+## Accepted Progress
+
+### S1: Canonical-Key Partition
+
+S1 added an executable partition verifier and indexed evidence. The verifier
+assigns the complete 807-key manifest exactly once: S3 owns 150 base and 318
+canonical keys, S4 32/129, S5 42/56, S6 26/212 and S7 36/92. It keeps the
+existing strict baseline visible: zero conforming keys, 47 missing inputs and
+239 missing tests. No runtime source, CMake product, developer artifact,
+public ABI or timing result changed.
+
+## Coordinator Acceptance
+
+The single-session coordinator reviewed P1 `591c387e` against the S1 packet.
+The partition verifier, manifest verifier, decoder-ledger verifier, existing
+80286 manifest runner and documentation governance gate passed. The code and
+evidence changes are confined to partition proof and task governance; the
+review found no duplicate, orphaned or silently reassigned canonical key.
