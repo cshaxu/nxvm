@@ -2816,7 +2816,9 @@ C_INT core_machine_control_stack_source_instruction_cost(
         if ((data->oldcpu.data.eflags & VCPU_EFLAGS_OF) == 0u) {
             *out_ticks = machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 ||
                 machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80386 ? 3u : 4u;
-            return 1;
+            return machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 ?
+                core_machine_control_stack_add_next_term(machine, *out_ticks,
+                    out_ticks) : 1;
         }
         if (!same_privilege) return 0;
         if (protected_mode) return 0;

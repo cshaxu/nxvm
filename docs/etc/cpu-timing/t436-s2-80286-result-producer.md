@@ -6,7 +6,7 @@ same tick, formula-input, form-ID, timing-origin and unallocated-disposition
 fields consumed by the 80286 result verifier.
 
 The runner contains the final result-document writer, but the writer refuses
-to open its output unless all 800 legal canonical 80286 records have been observed.
+to open its output unless all 771 legal canonical 80286 records have been observed.
 This prevents an S3--S7 partial recipe set from producing a document that
 looks like a valid closure artifact. Repeated observations of the same key do
 not overwrite the first captured record; protected bootstrap activity has no

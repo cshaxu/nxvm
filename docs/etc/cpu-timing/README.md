@@ -51,11 +51,15 @@ T436 S1's executable [canonical-key partition](t436-s1-80286-key-partition.md)
 assigns every retained 80286 base and legal context key to one later
 implementation S before any new runtime timing result is claimed.
 T436 S2's [result producer](t436-s2-80286-result-producer.md) captures actual
-80286 retirement observations but refuses final result emission until all 800
+80286 retirement observations but refuses final result emission until all 771
 canonical keys have been observed.
 T436 S4's [string/repeat closure](t436-s4-80286-string-repeat-closure.md)
 proves the complete 129-key string, string-I/O and REP partition through real
 retirements and actual repeat inputs.
+T436 S5's [conditional-control closure](t436-s5-80286-conditional-control-closure.md)
+proves all 54 ordinary conditional-control records, repairs both `INTO`
+outcome next-byte timing paths, and records the 771-key legal-universe
+correction.
 
 The active final profile block uses the [80386DX manifest](t435-s2-80386-timing-manifest.json), [audit](t435-s2-80386-implementation-audit.md), [tracker](t435-s2-80386-implementation-tracker.md), and S8's executable [decoder-ledger verifier](../../../tools/Verify-80386DecoderLedger.ps1).
 

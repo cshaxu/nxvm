@@ -4,8 +4,8 @@
 
 T436 owns the complete 80286 successful-retirement instruction function and
 timing closure transferred from the owner-approved requeue of the former
-four-profile program. Its fixed universe is the 286 all-L3 base forms and 521
-finite legal context/combined keys in the retained 80286 manifest: 800
+four-profile program. Its live universe is the 286 all-L3 base forms and 485
+finite legal context/combined keys in the retained 80286 manifest: 771
 canonical keys. It must implement every key through one Core-private timing
 selection and retirement-publication route, with the Appendix-B value/formula,
 actual normalized inputs, origin and `source_timing_unallocated=false`.
@@ -122,3 +122,16 @@ lines (91 net). The rebuilt runner reports 591 unique observations, 129/129
 S4 coverage and retains final-result refusal; manifest, manifest-contract,
 decoder-ledger, partition and documentation gates pass. The coordinator
 accepts S4 and transfers only S5's ordinary control partition.
+
+### S5: Conditional-Control Closure
+
+S5 corrects the shared NEXT-BYTE selector by removing 29 impossible zero-byte
+contexts: a successfully executed next instruction has at least one byte. The
+live universe is therefore 771 keys, with S3/S4/S5/S6/S7 ownership
+303/129/54/193/92. It also repairs the Core control-stack owner so the
+80286 INTO non-overflow outcome applies the Appendix-B next-instruction term,
+just as the overflow interrupt outcome already does. Real recipes prove both
+outcomes and one-through-six-byte inputs; their direct IP checks distinguish
+taken, handler and fall-through destinations. The runner captures 603 records,
+all 54 S5 keys are classified with their correct origin and input, and final
+result emission remains refused until S6/S7 complete.

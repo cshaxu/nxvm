@@ -2,9 +2,29 @@
 
 ## Current Work
 
-**Between accepted S units: M5 T436.** S4 closes the 80286 string and repeat
-partition through real retirements. Its [closure evidence](../etc/cpu-timing/t436-s4-80286-string-repeat-closure.md)
-proves 129/129 records; S5 ordinary control transfer is next.
+**Active: M5 T436 S5.** The owner-approved continuation closes the ordinary
+80286 conditional-control partition through real retirement observations.
+
+## M5 T436 S5 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; M5 T436 S5 follows accepted S4 in the latest open numeric task. |
+| Admission And Approval | The owner directed continued complete 80286 implementation in single-person dual-role mode. Accepted S1 assigns S5 exactly 42 base and 54 canonical conditional-control keys after S5 removes impossible zero-byte next-instruction contexts. |
+| Objective | Prove and, only where required, implement every S5 `Jcc`, `JCXZ`, `LOOP`/`LOOPE`/`LOOPNE` and `INTO` successful outcome, including the Appendix-B next-byte inputs for both successful `INTO` outcomes. |
+| Non-goals | Do not implement CALL, RET, JMP, INT/INT3, IRET, protected control/gate/task paths, strings, protected segment/system forms, external interrupt delivery, board timing, public ABI, source import, a new profile, or final 771-key result emission. |
+| Reference Baseline | [S1 partition](../etc/cpu-timing/t436-s1-80286-key-partition.md), [80286 manual ledger](../etc/cpu-timing/t435-s1-80286-ledger.md), [context legality](../etc/cpu-timing/t435-s2-context-legality.md), [manifest](../etc/cpu-timing/t435-s2-80286-timing-manifest.json), [S2 producer](../etc/cpu-timing/t436-s2-80286-result-producer.md), [S4 evidence](../etc/cpu-timing/t436-s4-80286-string-repeat-closure.md), and the current manifest runner. |
+| Candidate Proposal | [M5 80286 instruction timing closure](../proposals/m5-80286-instruction-timing-closure.md). |
+| Files And ABI Surface | Core-private ordinary-control timing/retirement path only where a real S5 recipe proves necessary; manifest runner, focused tests, evidence, history and CURRENT. No public header or external ABI change. |
+| Applicable Rules | Execution: complete P lifecycle and dual-role acceptance. Architecture: one Core timing/publication route; no board/event policy. Coding: C11 cohesive owner-local repair. Documentation: active packet/evidence only. Source policy is not triggered: no import or research. |
+| Verification | Run manifest, decoder-ledger and partition verifiers before and after changes; build/run the manifest runner; prove each S5 key has a successful classified real retirement with exact Appendix-B ticks/origin/outcome and the required next-byte input. Run result-refusal and documentation gates plus actual diff review. |
+| Expected Markers | Add `M5:T436:S5:I286-CONDITIONAL-COVERAGE:PASS:canonical=54` and `M5:T436:S5:I286-OUTCOME-NEXT-BYTE:PASS`; retain incomplete final-result refusal. |
+| Asset Needs | Existing owner-managed Intel manual evidence and repository fixtures only. No download, firmware, guest media, Microsoft component or third-party source. |
+| Reporting Requirements | Report base/context ownership, before/after captures, condition/outcome/next-byte proof, source/test delta and live/retired mechanism paths; transfer only S1-owned residual keys. |
+| Stop Conditions | Stop for manual/manifest/decoder contradiction; an unrepresentable outcome or next-byte input; required public ABI, board or event timing; source-policy issue; a defect outside S5; or verifier contradiction. Do not use a generic control fallback. |
+| Exit Criteria | All 54 S5 canonical keys, and no other partition, have real classified L3 observations with correct ticks/origin/form/input/unallocated fields; functional outcome checks pass; no S5 record uses generic/unallocated fallback; focused and relevant regressions pass; dual-role review accepts actual changes. |
+| Original Owner Request | Owner request, faithfully translated: continue complete correct 80286 instruction function and timing implementation through the reasonably split S tasks. |
+| Similar-Issue Sweep | Defect class: a successful 80286 conditional-control retirement missing canonical observation, actual outcome or next-byte formula input, Appendix-B timing or focused functional proof. Scope: all S5-owned keys, conditional decode/timing, runner recipes and result evidence. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** target `vm-0-5-0434`; T434 S2 `nxvm_0_5_0434.exe` / `build/output/nxvm_0_5_0434.exe`, SHA-256 `0252F8FDA17BEC2131606F19E3547B46894AC6B56DD37EC3B16BD302494FAFDC`. T434 has one copied Core timing-plan publication route for default PC/AT, IBM 5170 Model 339 and Model-40 BYOB session composition.

@@ -90,6 +90,9 @@ static const core_machine_port_provider timing_80286_manifest_ports = {
     timing_80286_manifest_port_read, timing_80286_manifest_port_write
 };
 
+static C_INT timing_80286_manifest_key_has_prefix(const C_CHAR *key,
+    const C_CHAR *prefix);
+
 static C_INT timing_80286_manifest_is_dx_port(const C_CHAR *key_id)
 {
     return key_id != STD_NULL && (STD_STRCMP(key_id, "I286-IN-DX-B") == 0 ||
@@ -106,15 +109,14 @@ static C_INT timing_80286_manifest_is_interrupt(const C_CHAR *key_id)
         "I286-INT3-REAL-NEXT-BYTE-5", "I286-INT3-REAL-NEXT-BYTE-6",
         "I286-INT-IMM-REAL-NEXT-BYTE-1", "I286-INT-IMM-REAL-NEXT-BYTE-2",
         "I286-INT-IMM-REAL-NEXT-BYTE-3", "I286-INT-IMM-REAL-NEXT-BYTE-4",
-        "I286-INT-IMM-REAL-NEXT-BYTE-5", "I286-INT-IMM-REAL-NEXT-BYTE-6",
-        "I286-INTO-TAKEN-NEXT-BYTE-1", "I286-INTO-TAKEN-NEXT-BYTE-2",
-        "I286-INTO-TAKEN-NEXT-BYTE-3", "I286-INTO-TAKEN-NEXT-BYTE-4",
-        "I286-INTO-TAKEN-NEXT-BYTE-5", "I286-INTO-TAKEN-NEXT-BYTE-6",
-        "I286-INTO-NOT"
+        "I286-INT-IMM-REAL-NEXT-BYTE-5", "I286-INT-IMM-REAL-NEXT-BYTE-6"
     };
     STD_SIZE_T index;
 
     if (key_id == STD_NULL) return 0;
+    if (timing_80286_manifest_key_has_prefix(key_id, "I286-INTO-TAKEN")) {
+        return 1;
+    }
     for (index = 0u; index < sizeof(keys) / sizeof(keys[0]); ++index) {
         if (STD_STRCMP(key_id, keys[index]) == 0) return 1;
     }
@@ -443,6 +445,80 @@ static C_INT timing_80286_manifest_is_s4(
     return timing_80286_manifest_is_i286(record) &&
         (timing_80286_manifest_key_has_prefix(key, "I286-STRING-") ||
          timing_80286_manifest_key_has_prefix(key, "I286-REP-"));
+}
+
+static C_INT timing_80286_manifest_is_s5(
+    const timing_80286_manifest_record *record)
+{
+    const C_CHAR *key = record != STD_NULL ? record->key_id : STD_NULL;
+
+    return timing_80286_manifest_is_i286(record) &&
+        (timing_80286_manifest_key_has_prefix(key, "I286-JCC-") ||
+         timing_80286_manifest_key_has_prefix(key, "I286-JCXZ-") ||
+         timing_80286_manifest_key_has_prefix(key, "I286-LOOP") ||
+         timing_80286_manifest_key_has_prefix(key, "I286-INTO-"));
+}
+
+static type_unsigned_32 timing_80286_manifest_s5_observed_count(C_VOID)
+{
+    STD_SIZE_T index;
+    type_unsigned_32 observed = 0u;
+
+    for (index = 0u; index < sizeof(timing_80286_manifest_records) /
+            sizeof(timing_80286_manifest_records[0]); ++index) {
+        if (timing_80286_manifest_is_s5(&timing_80286_manifest_records[index]) &&
+            timing_80286_manifest_observed[index]) {
+            ++observed;
+        }
+    }
+    return observed;
+}
+
+static type_unsigned_32 timing_80286_manifest_s5_expected_count(C_VOID)
+{
+    STD_SIZE_T index;
+    type_unsigned_32 expected = 0u;
+
+    for (index = 0u; index < sizeof(timing_80286_manifest_records) /
+            sizeof(timing_80286_manifest_records[0]); ++index) {
+        if (timing_80286_manifest_is_s5(&timing_80286_manifest_records[index])) {
+            ++expected;
+        }
+    }
+    return expected;
+}
+
+static C_INT timing_80286_manifest_s5_results_complete(C_VOID)
+{
+    STD_SIZE_T index;
+
+    for (index = 0u; index < sizeof(timing_80286_manifest_records) /
+            sizeof(timing_80286_manifest_records[0]); ++index) {
+        const timing_80286_manifest_record *record =
+            &timing_80286_manifest_records[index];
+        const core_machine_retirement_observation *observation =
+            &timing_80286_manifest_results[index];
+        core_machine_retirement_timing_origin origin;
+        type_unsigned_32 required_inputs = 0u;
+
+        if (!timing_80286_manifest_is_s5(record)) continue;
+        origin = timing_80286_manifest_key_has_prefix(record->key_id,
+            "I286-JCC-") ? CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY :
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK;
+        if (!timing_80286_manifest_observed[index] ||
+            observation->timing_origin != origin ||
+            observation->timing_disposition !=
+                CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED) return 0;
+        if (timing_80286_manifest_key_has_token(record->key_id,
+                "-NEXT-BYTE")) {
+            required_inputs |= CORE_MACHINE_CPU_TIMING_INPUT_CONTROL;
+        }
+        if ((observation->formula_inputs & required_inputs) != required_inputs) {
+            return 0;
+        }
+    }
+    return timing_80286_manifest_s5_observed_count() ==
+        timing_80286_manifest_s5_expected_count();
 }
 
 static type_unsigned_32 timing_80286_manifest_s4_observed_count(C_VOID)
@@ -1426,8 +1502,8 @@ static C_INT timing_80286_manifest_run_interrupt_next_byte_recipe(
     return failed;
 }
 
-static C_INT timing_80286_manifest_run_into_next_byte_recipe(
-    type_unsigned_8 next_bytes)
+static C_INT timing_80286_manifest_run_into_next_byte_recipe(C_INT taken,
+    type_unsigned_8 next_bytes, const C_CHAR *key_id)
 {
     static const type_unsigned_8 target[][6] = {
         { 0u,0u,0u,0u,0u,0u },
@@ -1439,31 +1515,46 @@ static C_INT timing_80286_manifest_run_into_next_byte_recipe(
         { 0xc7u,0x06u,0u,0x10u,1u,0u }
     };
     const core_machine_run_budget budget = { 1u, 0u };
-    const type_unsigned_8 program[] = { 0xceu };
+    type_unsigned_8 program[7] = { 0xceu };
     timing_80286_manifest_capture capture = { { 0 }, 0u };
     core_machine_run_result run = { 0 };
     core_machine *machine = STD_NULL;
-    C_CHAR key_id[96];
     C_INT failed;
 
     if (next_bytes == 0u || next_bytes >= sizeof(target) / sizeof(target[0]) ||
-        STD_SNPRINTF(key_id, sizeof(key_id), "I286-INTO-TAKEN-NEXT-BYTE-%u",
-            (type_unsigned_32)next_bytes) < 0) return 1;
-    timing_80286_manifest_eflags = VCPU_EFLAGS_OF;
+        key_id == STD_NULL) return 1;
+    if (!taken) {
+        STD_SIZE_T index;
+
+        for (index = 0u; index < next_bytes; ++index) {
+            program[1u + index] = target[next_bytes][index];
+        }
+    }
+    timing_80286_manifest_eflags = taken ? VCPU_EFLAGS_OF : 0u;
     timing_80286_manifest_flags_active = 1;
-    failed = !timing_80286_manifest_prepare(&machine, &capture, key_id,
-        program, sizeof(program));
-    if (!failed) failed = core_machine_memory_write(machine, 0x000ffff5u,
+    failed = timing_80286_manifest_find(key_id) == STD_NULL ||
+        !timing_80286_manifest_prepare(&machine, &capture, key_id,
+            program, taken ? 1u : 1u + next_bytes);
+    if (!failed && taken) failed = core_machine_memory_write(machine, 0x000ffff5u,
         target[next_bytes], next_bytes) != TYPE_STATUS_OK;
     if (!failed) {
         failed = core_machine_run(machine, budget, &run) != TYPE_STATUS_OK ||
             run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
-            run.ticks != 24u + next_bytes || capture.count != 1u ||
-            capture.observation.source_ticks != 24u + next_bytes ||
+            run.ticks != (taken ? 24u : 3u) + next_bytes || capture.count != 1u ||
+            capture.observation.source_ticks !=
+                (taken ? 24u : 3u) + next_bytes ||
+            machine->executor_cpu.data.eip != (taken ? 0xfff5u : 0xfff1u) ||
             capture.observation.timing_origin !=
                 CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
             capture.observation.timing_disposition !=
                 CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED;
+    }
+    if (failed) {
+        STD_PRINTF("M5:T436:S5:I286-INTO-DETAIL:%s:taken=%u:bytes=%u:run=%llu:source=%llu:count=%u:origin=%u:disposition=%u\n",
+            key_id, (type_unsigned_32)taken, (type_unsigned_32)next_bytes,
+            run.ticks, capture.observation.source_ticks, capture.count,
+            (type_unsigned_32)capture.observation.timing_origin,
+            (type_unsigned_32)capture.observation.timing_disposition);
     }
     timing_80286_manifest_flags_active = 0;
     core_machine_destroy(machine);
@@ -2170,6 +2261,10 @@ static C_INT timing_80286_manifest_run_control(
             run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
             run.ticks != recipe->ticks || capture.count != 1u ||
             capture.observation.source_ticks != recipe->ticks ||
+            machine->executor_cpu.data.eip !=
+                (recipe->opcode == 0xceu ? 0xfff5u :
+                timing_80286_manifest_key_has_token(recipe->key_id, "-TAKEN") ?
+                    0xfff3u : 0xfff2u) ||
             capture.observation.timing_origin !=
                 timing_80286_manifest_control_origin(recipe->opcode) ||
             capture.observation.timing_disposition !=
@@ -2551,8 +2646,7 @@ C_INT main(C_VOID)
         { "I286-LOOPE-NOT", 0xe1u, 0u, 4u },
         { "I286-LOOPNE-TAKEN", 0xe0u, 0u, 8u },
         { "I286-LOOPNE-NOT", 0xe0u, VCPU_EFLAGS_ZF, 4u },
-        { "I286-INTO-TAKEN-NEXT-BYTE-2", 0xceu, VCPU_EFLAGS_OF, 26u },
-        { "I286-INTO-NOT", 0xceu, 0u, 3u }
+        { "I286-INTO-TAKEN-NEXT-BYTE-2", 0xceu, VCPU_EFLAGS_OF, 26u }
     };
     static const timing_80286_manifest_recipe protected_system_recipes[] = {
         { "I286-MOV-SREG-LOAD-PM", { 0x8eu, 0x1eu, 0u, 0x10u }, 4u, 19u,
@@ -3010,12 +3104,31 @@ C_INT main(C_VOID)
         }
     }
     for (index = 1u; index <= 6u; ++index) {
-        if (index == 2u) continue;
-        if (timing_80286_manifest_run_into_next_byte_recipe((type_unsigned_8)index)) {
+        C_CHAR taken_key[96];
+        C_CHAR not_key[96];
+
+        if (STD_SNPRINTF(taken_key, sizeof(taken_key),
+                "I286-INTO-TAKEN-NEXT-BYTE-%u", (type_unsigned_32)index) < 0 ||
+            STD_SNPRINTF(not_key, sizeof(not_key),
+                "I286-INTO-NOT-NEXT-BYTE-%u", (type_unsigned_32)index) < 0 ||
+            (index != 2u && timing_80286_manifest_run_into_next_byte_recipe(1,
+                (type_unsigned_8)index, taken_key)) ||
+            timing_80286_manifest_run_into_next_byte_recipe(0,
+                (type_unsigned_8)index, not_key)) {
             STD_PRINTF("M5:T435:S10:I286-INTO-NEXT-BYTE-RECIPE:FAIL:%u\n",
                 (type_unsigned_32)index);
             return 1;
         }
+    }
+    if (timing_80286_manifest_run_into_next_byte_recipe(1, 1u,
+            "I286-INTO-TAKEN")) {
+        STD_PRINTF("M5:T436:S5:I286-INTO-BASE-RECIPE:FAIL\n");
+        return 1;
+    }
+    if (timing_80286_manifest_run_into_next_byte_recipe(0, 1u,
+            "I286-INTO-NOT")) {
+        STD_PRINTF("M5:T436:S5:I286-INTO-NOT-BASE-RECIPE:FAIL\n");
+        return 1;
     }
     for (index = 1u; index <= 6u; ++index) {
         if (index == 2u) continue;
@@ -3202,7 +3315,7 @@ C_INT main(C_VOID)
     {
         const type_unsigned_32 probes = (type_unsigned_32)(sizeof(recipes) / sizeof(recipes[0]) +
             sizeof(control_recipes) / sizeof(control_recipes[0]) +
-            119u +
+            131u +
             sizeof(protected_system_recipes) /
                 sizeof(protected_system_recipes[0]) +
             sizeof(segment_recipes) / sizeof(segment_recipes[0]) +
@@ -3221,10 +3334,18 @@ C_INT main(C_VOID)
             timing_80286_manifest_s3_observed_count();
         const type_unsigned_32 s4_captured =
             timing_80286_manifest_s4_observed_count();
+        const type_unsigned_32 s5_captured =
+            timing_80286_manifest_s5_observed_count();
 
         if (captured > probes || timing_80286_manifest_results_complete() ||
             !timing_80286_manifest_s3_results_complete() ||
-            !timing_80286_manifest_s4_results_complete()) return 1;
+            !timing_80286_manifest_s4_results_complete() ||
+            !timing_80286_manifest_s5_results_complete()) {
+            STD_PRINTF("M5:T436:S5:I286-GATE-DETAIL:captured=%u:probes=%u:s3=%u:s4=%u:s5=%u:s5expected=%u\n",
+                captured, probes, s3_captured, s4_captured, s5_captured,
+                timing_80286_manifest_s5_expected_count());
+            return 1;
+        }
         if (timing_80286_manifest_write_results(
                 "docs/etc/cpu-timing/t436-s8-80286-timing-results.json") == 0) {
             return 1;
@@ -3240,6 +3361,10 @@ C_INT main(C_VOID)
         STD_PRINTF("M5:T436:S4:I286-STRING-COVERAGE:PASS:canonical=%u\n",
             timing_80286_manifest_s4_expected_count());
         STD_PRINTF("M5:T436:S4:I286-REPEAT-INPUTS:PASS\n");
+        STD_PRINTF("M5:T436:S5:I286-CONDITIONAL-OBSERVED:%u\n", s5_captured);
+        STD_PRINTF("M5:T436:S5:I286-CONDITIONAL-COVERAGE:PASS:canonical=%u\n",
+            timing_80286_manifest_s5_expected_count());
+        STD_PRINTF("M5:T436:S5:I286-OUTCOME-NEXT-BYTE:PASS\n");
         STD_PRINTF("M5:T435:S10:I286-MANIFEST-FOUNDATION:PASS:observed=%u\n",
             captured);
     }

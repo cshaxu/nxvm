@@ -2,7 +2,7 @@
   "schema": "nxvm.cpu-timing-manifest.v1",
   "profile": "80286",
   "source_ledger": "t435-s1-80286-ledger.md",
-  "expected": {"base": 286, "L3": 286, "L2": 0, "contexts":452, "combinations":62},
+  "expected": {"base": 286, "L3": 286, "L2": 0, "contexts":423, "combinations":62},
   "status_values": ["conforming", "wrong-value", "unallocated", "missing-input", "missing-test"],
   "legal_context_contract": "t435-s2-context-legality.md",
   "key_rule": "Every successful-retirement key inherits I286-PRM-1987 Appendix B. Mode, privilege/path, outcome, EA, odd-word, next-byte, repeat and legal prefix inputs are explicit; a prefix never retires alone. External READY, BUSY and arbitration are excluded.",
@@ -40,7 +40,7 @@
     {"id_suffix":"SEGMENT","base_selector":"I286-(ALU-.*-(RM|MR|RMI)|CMP-(RM|MR|RMI)|TEST-(RM|RMI)|(INC|DEC|NEG|NOT)-M|XCHG-MR|MOV-(RM|MR|MI|MOFFS-R|MOFFS-W|SREG-STORE|SREG-LOAD-REAL|SREG-LOAD-PM)|LDS-M.*|LES-M.*|STACK-(PUSH-M|POP-M)|.*-(M8|M16|IMM8-M|IMM16-M|RM)|.*-M|XLAT)$","source_rule":"Appendix B legal segment-override memory operand; companion-manual XLAT source-table operand","route":"mixed","status":"missing-input","batch":"B3+B4","test":"i286_timing_{id}"},
     {"id_suffix":"REP-PHASE-{phase}","base_selector":"I286-REP-.*","phase":["FIRST","CONTINUE","ZERO"],"source_rule":"Appendix B repeat N/termination formula","route":"string-io","status":"missing-test","batch":"B0+B3+B4","test":"i286_timing_{id}"},
     {"id_suffix":"LOCK","base_selector":"I286-(ALU-.*-(MR|RMI)|(INC|DEC|NEG|NOT)-M|XCHG-MR)","source_rule":"Appendix B legal memory RMW LOCK prefix (zero CPU clocks)","route":"unallocated-or-missing-term","status":"unallocated","batch":"B3+B4","test":"i286_timing_{id}"},
-    {"id_suffix":"NEXT-BYTE-{bytes}","base_selector":"I286-(CALL-.*|RET-.*|JMP-.*|INT.*)","bytes":["0","1","2","3","4","5","6"],"source_rule":"Appendix B marked next-instruction-byte term","route":"control-stack","status":"missing-input","batch":"B3+B4","test":"i286_timing_{id}"}
+    {"id_suffix":"NEXT-BYTE-{bytes}","base_selector":"I286-(CALL-.*|RET-.*|JMP-.*|INT.*)","bytes":["1","2","3","4","5","6"],"source_rule":"Appendix B marked next-instruction-byte term","route":"control-stack","status":"missing-input","batch":"B3+B4","test":"i286_timing_{id}"}
   ],
   "combination_context_sets": [
     {"id_suffix":"LOCK-EA-BID","base_selector":"I286-(ALU-.*-(MR|RMI)|(INC|DEC|NEG|NOT)-M|XCHG-MR)","source_rule":"Appendix B legal LOCK memory RMW with EA input","route":"unallocated-or-missing-term","status":"unallocated","batch":"B3+B4","test":"i286_timing_{id}"},

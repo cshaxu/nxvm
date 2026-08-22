@@ -24,7 +24,7 @@ memory subset, not a separate instruction family.
 | `ODD-WORD` | a documented 16-bit memory transfer subset.  Byte-only variants do not receive it. |
 | `REP-PHASE` | a documented repeat string or string-I/O form, with first/continuing/zero-iteration outcome where the manual formula distinguishes it. |
 | `SIZE16` / `SIZE32` | an 80386 form for which the operand/address attribute is a manual timing input.  The suffix denotes the selected attribute, never an extra instruction byte. |
-| `EA-BID`, `NEXT-BYTE`, mode/path, multiplier | precisely the manual condition named by the profile ledger. |
+| `EA-BID`, `NEXT-BYTE`, mode/path, multiplier | precisely the manual condition named by the profile ledger. `NEXT-BYTE` begins at one: a successful next instruction has at least one executed byte, so a zero-byte context is not emitted. |
 
 No selector may use `all` for a prefix context.  A manifest verifier expands
 each selector, rejects duplicates, and checks its frozen base/context/
