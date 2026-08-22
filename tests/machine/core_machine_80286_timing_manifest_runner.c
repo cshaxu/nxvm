@@ -131,6 +131,9 @@ static type_unsigned_16 timing_80286_manifest_control_cx(const C_CHAR *key_id)
 static core_machine_retirement_timing_origin
 timing_80286_manifest_control_origin(type_unsigned_8 opcode)
 {
+    if (opcode >= 0x70u && opcode <= 0x7fu) {
+        return CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY;
+    }
     return (opcode == 0xceu || (opcode >= 0xe0u && opcode <= 0xe3u)) ?
         CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK :
         CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80286_FALLBACK;

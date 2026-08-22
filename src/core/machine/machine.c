@@ -1956,6 +1956,14 @@ C_INT core_machine_primary_source_instruction_cost(
     }
     opcode = data->opcodes[prefixes];
     if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 && prefixes == 0u &&
+        opcode >= 0x70u && opcode <= 0x7fu) {
+        *out_ticks = machine->executor_cpu.data.eip ==
+            TYPE_MASK_UNSIGNED_16(data->oldcpu.data.eip + 2u) ?
+            CORE_MACHINE_80286_JCC_NOT_TAKEN_TICKS :
+            CORE_MACHINE_80286_JCC_TAKEN_TICKS;
+        return 1;
+    }
+    if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 && prefixes == 0u &&
         opcode >= 0xd8u && opcode <= 0xdfu) {
         *out_ticks = 1u;
         return 1;
@@ -3185,7 +3193,6 @@ C_INT core_machine_80286_source_instruction_cost(core_machine *machine,
     const t_cpuins_data *data = &machine->executor_cpu_instructions.data;
     type_unsigned_32 prefixes = core_machine_instruction_prefix_count(data);
     type_unsigned_8 opcode;
-    type_unsigned_32 fallthrough;
 
     if (out_ticks == STD_NULL) return 0;
     if (prefixes >= data->oplen) {
@@ -3197,13 +3204,6 @@ C_INT core_machine_80286_source_instruction_cost(core_machine *machine,
     machine->source_repeat_active = TYPE_FALSE;
     if (prefixes != 0u) {
         core_machine_source_timing_mark_unallocated(machine, out_ticks);
-        return 1;
-    }
-    if (opcode >= 0x70u && opcode <= 0x7fu) {
-        fallthrough = TYPE_MASK_UNSIGNED_16(data->oldcpu.data.eip + 2u);
-        *out_ticks = machine->executor_cpu.data.eip == fallthrough ?
-            CORE_MACHINE_80286_JCC_NOT_TAKEN_TICKS :
-            CORE_MACHINE_80286_JCC_TAKEN_TICKS;
         return 1;
     }
     switch (opcode) {
