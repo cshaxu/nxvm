@@ -30,7 +30,7 @@ typedef struct timing_80286_manifest_capture {
 
 typedef struct timing_80286_manifest_recipe {
     const C_CHAR *key_id;
-    type_unsigned_8 program[8];
+    type_unsigned_8 program[16];
     STD_SIZE_T bytes;
     type_unsigned_64 ticks;
     core_machine_retirement_timing_origin origin;
@@ -1654,7 +1654,7 @@ C_INT main(C_VOID)
             return 1;
         }
     }
-    for (index = 2u; index <= 5u; ++index) {
+    for (index = 2u; index <= 6u; ++index) {
         if (timing_80286_manifest_run_call_next_byte_recipe((type_unsigned_8)index)) {
             STD_PRINTF("M5:T435:S10:I286-CALL-NEXT-BYTE-RECIPE:FAIL:%u\n",
                 (type_unsigned_32)index);
@@ -1751,7 +1751,7 @@ C_INT main(C_VOID)
     STD_PRINTF("M5:T435:S10:I286-MANIFEST-FOUNDATION:PASS:observed=%u\n",
         (type_unsigned_32)(sizeof(recipes) / sizeof(recipes[0]) +
             sizeof(control_recipes) / sizeof(control_recipes[0]) +
-            9u +
+            10u +
             sizeof(protected_system_recipes) /
                 sizeof(protected_system_recipes[0]) +
             sizeof(segment_recipes) / sizeof(segment_recipes[0]) +
