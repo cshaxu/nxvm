@@ -114,6 +114,11 @@ static C_INT timing_80286_manifest_uses_far_target(const C_CHAR *key_id)
         "I286-RET-NEAR-NEXT-BYTE-1") == 0);
 }
 
+static C_INT timing_80286_manifest_is_bound(const C_CHAR *key_id)
+{
+    return key_id != STD_NULL && STD_STRCMP(key_id, "I286-BOUND") == 0;
+}
+
 static type_unsigned_16 timing_80286_manifest_control_cx(const C_CHAR *key_id)
 {
     if (key_id == STD_NULL) return 2u;
@@ -233,6 +238,12 @@ static C_INT timing_80286_manifest_prepare(core_machine **out_machine,
         }
         status = core_machine_memory_write(machine, 0x1000u, &operand,
             sizeof(operand));
+    }
+    if (status == TYPE_STATUS_OK && timing_80286_manifest_is_bound(key_id)) {
+        const type_unsigned_16 bounds[] = { 0u, 2u };
+
+        status = core_machine_memory_write(machine, 0x1000u, bounds,
+            sizeof(bounds));
     }
     if (status == TYPE_STATUS_OK && timing_80286_manifest_uses_stack(key_id)) {
         machine->executor_cpu.data.sp = TIMING_80286_MANIFEST_STACK_LINEAR +
@@ -651,6 +662,8 @@ C_INT main(C_VOID)
         { "I286-ENTER-L1", { 0xc8u, 0x00u, 0x00u, 0x01u }, 4u, 15u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
         { "I286-ENTER-LN", { 0xc8u, 0x00u, 0x00u, 0x02u }, 4u, 20u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
+        { "I286-BOUND", { 0x62u, 0x06u, 0x00u, 0x10u }, 4u, 13u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK }
     };
     static const timing_80286_manifest_control_recipe control_recipes[] = {

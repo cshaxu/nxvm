@@ -2572,8 +2572,12 @@ C_INT core_machine_control_stack_source_instruction_cost(
             CORE_MACHINE_SOURCE_TIMING_POPA);
         return machine->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80186;
     case 0x62u:
-        if (machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_80186 ||
-            !memory) return 0;
+        if (!memory) return 0;
+        if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286) {
+            *out_ticks = 13u;
+            return 1;
+        }
+        if (machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_80186) return 0;
         *out_ticks = core_machine_control_stack_source_lookup(machine,
             CORE_MACHINE_SOURCE_TIMING_BOUND);
         return 1;
