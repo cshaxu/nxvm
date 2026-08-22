@@ -2,29 +2,9 @@
 
 ## Current Work
 
-**Active: M5 T436 S4.** The owner-approved continuation closes the 80286
-string and repeat partition through real retirement observations.
-
-## M5 T436 S4 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation; M5 T436 S4 follows accepted S3 in the latest open numeric task. |
-| Admission And Approval | The owner directed continuing complete 80286 implementation in single-person dual-role mode. Accepted S1 assigns S4 exactly 32 base and 129 canonical primitive-string, string-I/O and REP keys. |
-| Objective | Prove and, only where required, implement every S4 string/port-string and repeat result: primitive forms, word odd-address subset, REP first/continue/zero paths, and actual repeat formula inputs. |
-| Non-goals | Do not change S3 non-control forms, ordinary/protected control transfer, segment/descriptor/system forms, board timing, external port/device completion, public ABI, source import, a new profile, or final 800-key result emission. |
-| Reference Baseline | [S1 partition](../etc/cpu-timing/t436-s1-80286-key-partition.md), [80286 manual ledger](../etc/cpu-timing/t435-s1-80286-ledger.md), [context legality](../etc/cpu-timing/t435-s2-context-legality.md), [manifest](../etc/cpu-timing/t435-s2-80286-timing-manifest.json), [S2 producer](../etc/cpu-timing/t436-s2-80286-result-producer.md), [S3 evidence](../etc/cpu-timing/t436-s3-80286-noncontrol-closure.md), and the current manifest runner. |
-| Candidate Proposal | [M5 80286 instruction timing closure](../proposals/m5-80286-instruction-timing-closure.md). |
-| Files And ABI Surface | Core-private string/repeat timing or execution only where a real S4 recipe proves necessary; 80286 manifest runner, focused tests, evidence, history and CURRENT. No public header or external ABI change. |
-| Applicable Rules | Execution: complete P lifecycle and dual-role acceptance. Architecture: one Core timing/publication route and no board policy. Coding: C11 cohesive owner-local repair. Documentation: active packet/evidence only. Source policy is not triggered: no source, firmware or third-party import. |
-| Verification | Run manifest, decoder-ledger and partition verifiers before and after changes; build/run the manifest runner; prove all 129 S4 records have successful real observations, correct ticks/origin/classified disposition, actual repeat phase/count inputs and odd-word input only for a non-zero word transfer. Run result-refusal and documentation gates plus actual diff review. |
-| Expected Markers | Add `M5:T436:S4:I286-STRING-COVERAGE:PASS:canonical=129` and `M5:T436:S4:I286-REPEAT-INPUTS:PASS`; retain the incomplete final-result refusal. |
-| Asset Needs | Existing owner-managed Intel manual evidence and repository fixtures only. No download, firmware, guest media, Microsoft component or third-party source. |
-| Reporting Requirements | Report base/context/combined ownership, before/after captures, each primitive/repeat/word family proof, source/test delta and live/retired mechanism paths; transfer only the S1-owned residual keys. |
-| Stop Conditions | Stop for manual/manifest/decoder contradiction; an S4 timing input not representable at the Core-private boundary; required public ABI or board timing; source-policy issue; a string functional defect outside S4; or verifier contradiction. Do not invent a repeat count or generic fallback. |
-| Exit Criteria | All 129 S4 canonical keys, and no other partition, have real classified L3 observations with correct ticks/origin/form/input/unallocated fields; primitive and repeat functional checks pass; no S4 record uses a generic/unallocated fallback; focused and relevant regressions pass; dual-role review accepts actual changes. |
-| Original Owner Request | Owner request, faithfully translated: continue complete correct 80286 instruction function and timing implementation through the reasonably split S tasks. |
-| Similar-Issue Sweep | Defect class: a successful 80286 string or repeat retirement lacking its canonical observation, actual phase/count or odd-word formula input, exact Appendix-B timing or focused functional proof. Scope: all S4-owned keys, string/repeat decode/timing, runner recipes and result evidence. |
+**Between accepted S units: M5 T436.** S4 closes the 80286 string and repeat
+partition through real retirements. Its [closure evidence](../etc/cpu-timing/t436-s4-80286-string-repeat-closure.md)
+proves 129/129 records; S5 ordinary control transfer is next.
 ## Current Technical Baseline
 
 - **Current developer artifact:** target `vm-0-5-0434`; T434 S2 `nxvm_0_5_0434.exe` / `build/output/nxvm_0_5_0434.exe`, SHA-256 `0252F8FDA17BEC2131606F19E3547B46894AC6B56DD37EC3B16BD302494FAFDC`. T434 has one copied Core timing-plan publication route for default PC/AT, IBM 5170 Model 339 and Model-40 BYOB session composition.
@@ -49,7 +29,7 @@ string and repeat partition through real retirement observations.
 
 | Task | Compact result |
 | --- | --- |
-| T436 S3 | Closed: the [non-control evidence](../etc/cpu-timing/t436-s3-80286-noncontrol-closure.md) corrects the legal universe to 800 keys and proves all 303 S3 records with real timing/input observations. S4 owns strings and repeat forms next. |
+| T436 S4 | Closed: the [string/repeat evidence](../etc/cpu-timing/t436-s4-80286-string-repeat-closure.md) proves all 129 string and REP records through real timed retirements. S5 owns ordinary control transfer next. |
 | T435 | Stopped by owner-approved requeue; not completed. Its profile-specific 80286 and 80386DX closure candidates now lead the Queue. [Record](../history/M5-T435-core-cpu-instruction-timing-program-requeue.md). |
 | T434 | Closed: all 30 copied plan declarations/dispositions, every current VM materializer and atomic Core publication route are reconciled; full task closure proof is retained in the [S3 audit](../etc/evidence/t434-s3-task-closure-audit.md) and [task history](../history/M5-T434-core-timing-contract-machine-plan.md). |
 | T433 | Closed after corrective S7: 30 frozen Core capabilities have a source-sufficiency and ownership disposition; chip/manual semantics are separated from VM-profile inputs, host/product boundaries and the explicit ATA/HDC source block. [S7 ledger](../etc/evidence/t433-s7-core-source-sufficiency-ledger.md). |

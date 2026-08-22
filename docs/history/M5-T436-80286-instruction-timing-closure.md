@@ -105,3 +105,20 @@ rebaselined from 3,887 to 3,880, and 198 net counted source/test lines. The
 documentation gates pass; the missing final result file is rejected as
 required. The coordinator accepts S3 and transfers only S4's string/repeat
 partition, not a hidden S3 residual.
+
+### S4: String And Repeat Closure
+
+S4 P1 `a55bd5d8` replaces the word-only REP base helper with a shared real
+`CX=1` retirement for all 18 REP base forms while retaining the nine word-odd
+variants. This adds the 18 previously unobserved base records and an S4
+assertion over the complete 129-key string/string-I/O/REP partition. It checks
+classified `string-io` origin, repeat/phase inputs, non-zero word-transfer odd
+inputs, exact primitive/repeat ticks and preserves zero-count no-transfer
+semantics.
+
+The coordinator reviewed the actual P1 diff: no production Core or ABI change,
+one test runner mechanism replacement, and 109 added/18 removed test-source
+lines (91 net). The rebuilt runner reports 591 unique observations, 129/129
+S4 coverage and retains final-result refusal; manifest, manifest-contract,
+decoder-ledger, partition and documentation gates pass. The coordinator
+accepts S4 and transfers only S5's ordinary control partition.
