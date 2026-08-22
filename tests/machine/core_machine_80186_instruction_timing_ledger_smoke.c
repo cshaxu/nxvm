@@ -315,6 +315,43 @@ static C_INT timing_80186_unary_matrix(C_VOID)
     return 0;
 }
 
+static C_INT timing_80186_flag_controls(C_VOID)
+{
+    typedef struct timing_80186_flag_recipe {
+        type_unsigned_8 opcode;
+        type_unsigned_32 initial_flags;
+        type_unsigned_32 required_set;
+        type_unsigned_32 required_clear;
+        type_unsigned_64 ticks;
+    } timing_80186_flag_recipe;
+    static const timing_80186_flag_recipe recipes[] = {
+        { 0xf9u, 0u, VCPU_EFLAGS_CF, 0u, 2u },
+        { 0xfau, VCPU_EFLAGS_IF, 0u, VCPU_EFLAGS_IF, 2u },
+        { 0xfbu, 0u, VCPU_EFLAGS_IF, 0u, 2u },
+        { 0xfcu, VCPU_EFLAGS_DF, 0u, VCPU_EFLAGS_DF, 2u },
+        { 0xfdu, 0u, VCPU_EFLAGS_DF, 0u, 2u },
+        { 0x90u, 0u, 0u, 0u, 3u }
+    };
+    STD_SIZE_T index;
+
+    for (index = 0u; index < sizeof(recipes) / sizeof(recipes[0]); ++index) {
+        const timing_80186_flag_recipe *recipe = &recipes[index];
+        timing_80186_state state = { 0u,0u,0u };
+        core_machine *machine = STD_NULL;
+        C_INT failed = !timing_80186_prepare(&machine, &state) ||
+            !timing_80186_load(machine, &recipe->opcode, 1u) ||
+            ((machine->executor_cpu.data.eflags = recipe->initial_flags), 0) ||
+            !timing_80186_run(machine, &state, 1u, recipe->ticks) ||
+            (machine->executor_cpu.data.eflags & recipe->required_set) !=
+                recipe->required_set ||
+            (machine->executor_cpu.data.eflags & recipe->required_clear) != 0u;
+
+        core_machine_destroy(machine);
+        if (failed) return 1;
+    }
+    return 0;
+}
+
 static C_INT timing_80186_stack_frame(C_VOID)
 {
     static const type_unsigned_8 enter[] = { 0xc8u, 0u, 0u, 0u };
@@ -527,6 +564,7 @@ C_INT main(C_VOID)
         timing_80186_cmp_test_matrix() ||
         timing_80186_adjustment_matrix() ||
         timing_80186_unary_matrix() ||
+        timing_80186_flag_controls() ||
         timing_80186_stack_frame() ||
         timing_80186_case(near_call, sizeof(near_call), 15u) ||
         timing_80186_case(direct_jump, sizeof(direct_jump), 13u) ||
