@@ -53,6 +53,9 @@ implementation S before any new runtime timing result is claimed.
 T436 S2's [result producer](t436-s2-80286-result-producer.md) captures actual
 80286 retirement observations but refuses final result emission until all 800
 canonical keys have been observed.
+T436 S4's [string/repeat closure](t436-s4-80286-string-repeat-closure.md)
+proves the complete 129-key string, string-I/O and REP partition through real
+retirements and actual repeat inputs.
 
 The active final profile block uses the [80386DX manifest](t435-s2-80386-timing-manifest.json), [audit](t435-s2-80386-implementation-audit.md), [tracker](t435-s2-80386-implementation-tracker.md), and S8's executable [decoder-ledger verifier](../../../tools/Verify-80386DecoderLedger.ps1).
 
