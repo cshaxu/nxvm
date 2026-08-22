@@ -9,6 +9,7 @@ pass: the current source still has no `conforming` 80186 base key.
 | checked relation | result |
 | --- | --- |
 | S2 base key -> S1 primary/supplemental manual rule | 279/279 |
+| S1 grouped manual rows -> non-empty primary-manual locator | 23/23 |
 | S2 base key -> accepted representative current-decoder recipe | 279/279 |
 | current lexical primary opcode -> prefix, ESC, or successful family | 247/247: 6 / 8 / 233 |
 | duplicate base key | 0 |
@@ -42,6 +43,7 @@ The only allowed P3 markers are:
 
 ```text
 M5:T435:S6:I186-MANUAL-DECODER-PARTITION:OK:247:233:8:6
+M5:T435:S6:I186-S1-PRIMARY-LOCATORS:PASS:23
 M5:T435:S6:I186-DECODER-LEDGER-ZERO-DIFFERENCE:PASS:279
 M5:T435:S6:I186-S2-STATUS-RECONCILED:PASS:0:14:43:222
 M5:T435:S6:I186-S2-CANONICAL-STATUS-RECONCILED:PASS:603:102:81:144:276

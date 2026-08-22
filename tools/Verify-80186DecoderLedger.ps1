@@ -134,6 +134,16 @@ $ledger = Get-Content -Raw -LiteralPath $LedgerPath
 if ($manifest.profile -ne '80186' -or $inventory.lexeme_primary_opcode_count -ne 247 -or $inventory.lexeme_opcode_modrm_candidates -ne 61530) { throw 'Unexpected 80186 manifest or decoder inventory denominator' }
 if ($ledger -notmatch 'Every 80186 successful-retirement form has an Intel Table 2-9 primary' -or
         $ledger -notmatch 'M5:T435:S1:80186-FORM-LEDGER:OK') { throw 'S1 80186 manual coverage assertion is missing' }
+$ledgerLines = @($ledger -split "`r?`n")
+$ledgerHeader = [array]::IndexOf($ledgerLines, '| families and every accepted form/context | 80186 manual result | class | proposed result | primary-manual locator |')
+if ($ledgerHeader -lt 0) { throw 'S1 primary-manual locator table is missing' }
+$ledgerRows = @()
+for ($index = $ledgerHeader + 2; $index -lt $ledgerLines.Count -and $ledgerLines[$index].StartsWith('|'); ++$index) { $ledgerRows += $ledgerLines[$index] }
+if ($ledgerRows.Count -ne 23) { throw "Unexpected S1 manual row count: $($ledgerRows.Count)" }
+foreach ($row in $ledgerRows) {
+    $cells = @($row.Split('|'))
+    if ($cells.Count -ne 7 -or [string]::IsNullOrWhiteSpace($cells[5]) -or $cells[5] -notmatch 'I186-UM-1985, Table 2-9') { throw "S1 row lacks a primary manual locator: $row" }
+}
 
 $keys = @()
 foreach ($template in $manifest.base_templates) {
@@ -142,12 +152,12 @@ foreach ($template in $manifest.base_templates) {
         $recipe = New-Recipe $expanded.key_id $expanded.axes
         if (-not (Test-InventoryPair $inventory $recipe.opcode $recipe.modrm)) { throw "Current lexical decoder rejects recipe for $($expanded.key_id): $($recipe.opcode.ToString('X2'))/$($recipe.modrm.ToString('X2'))" }
         $status = if ($null -ne $template.overrides -and $null -ne $template.overrides.$($expanded.key_id)) { $template.overrides.$($expanded.key_id) } else { $template.status }
-        $keys += [pscustomobject]@{ key_id=$expanded.key_id; recipe=$recipe; status=$status; source_rule=$template.source_rule }
+        $keys += [pscustomobject]@{ key_id=$expanded.key_id; recipe=$recipe; status=$status; source_rule=$template.source_rule; route=$template.route }
     }
 }
 if ($keys.Count -ne 279 -or ($keys.key_id | Sort-Object -Unique).Count -ne 279) { throw "Base-key expansion mismatch: $($keys.Count)" }
 $canonical = @{}
-foreach ($key in $keys) { $canonical[$key.key_id] = [pscustomobject]@{ status=$key.status; source_rule=$key.source_rule; route='base-template' } }
+foreach ($key in $keys) { $canonical[$key.key_id] = [pscustomobject]@{ status=$key.status; source_rule=$key.source_rule; route=$key.route } }
 foreach ($setGroup in @($manifest.context_key_sets, $manifest.combination_context_sets)) {
     foreach ($set in $setGroup) {
         foreach ($field in @('id_suffix', 'base_selector', 'source_rule', 'route', 'status', 'batch', 'test')) {
@@ -175,11 +185,23 @@ foreach ($entry in $canonical.GetEnumerator()) {
 }
 
 $partitionCounts = @{ prefix=0; 'semantic-prefix'=0; esc=0; retirement=0 }
+$familySelectors = @{
+    ALU='^I186-ALU-'; CMP='^I186-CMP-'; STACK='^I186-(PUSH|POP)-'; ADJUST='^I186-(ADJ|INC|DEC|NEG|NOT|XCHG)-';
+    UNARY='^I186-(INC|DEC)-'; BRANCH='^I186-(JCC|JCXZ|LOOP)'; 'ALU-TEST'='^I186-(ALU|CMP|TEST)-';
+    DATA='^I186-(MOV|XCHG|LEA|LDS|LES|FLAG-NOP)'; '80186-ADDITION'='^I186-(BOUND|IMUL-IMM|STRING-(INS|OUTS)|REP-(INS|OUTS)|ENTER|LEAVE|PUSH-IMM|POP-(PUSHA|POPA))';
+    CONTROL='^I186-(CALL|JMP|PUSH|INC|DEC)-'; STATE='^I186-(FLAG|WAIT|HLT)'; STRING='^I186-(STRING|REP)-'; 'STRING-IO'='^I186-(STRING|REP)-';
+    'RETURN-INTERRUPT'='^I186-(RET|INT)'; 'GROUP2-XLAT'='^I186-(ROL|ROR|RCL|RCR|SHL|SHR|SAR|XLAT)';
+    'PORT-IO'='^I186-(IN|OUT)-'; GROUP3='^I186-(MUL|IMUL|DIV|IDIV|NEG|NOT)-'
+}
 foreach ($opcodeText in $inventory.lexeme_primary_opcodes) {
     $opcode = [Convert]::ToInt32($opcodeText, 16)
     $kind = Test-PrimaryPartition $opcode
     if ($kind -eq 'reject') { throw "Rejected primary opcode appears in inventory: $opcodeText" }
-    if ($kind -eq 'retirement' -and $null -eq (Get-RetirementFamily $opcode)) { throw "Unmapped successful primary opcode: $opcodeText" }
+    if ($kind -eq 'retirement') {
+        $family = Get-RetirementFamily $opcode
+        if ($null -eq $family -or $null -eq $familySelectors[$family] -or
+                $keys.Where({ $_.key_id -match $familySelectors[$family] }).Count -eq 0) { throw "Unmapped successful primary opcode: $opcodeText" }
+    }
     ++$partitionCounts[$kind]
 }
 if ($partitionCounts.prefix -ne 6 -or $partitionCounts.'semantic-prefix' -ne 0 -or $partitionCounts.esc -ne 8 -or $partitionCounts.retirement -ne 233) { throw "Primary partition mismatch: prefix=$($partitionCounts.prefix) semantic=$($partitionCounts.'semantic-prefix') esc=$($partitionCounts.esc) retirement=$($partitionCounts.retirement)" }
@@ -187,6 +209,7 @@ $statusCounts = @{}; foreach($key in $keys){$statusCounts[[string]$key.status] =
 if ([int]$statusCounts.conforming -ne 0 -or [int]$statusCounts.'wrong-value' -ne 14 -or [int]$statusCounts.unallocated -ne 43 -or [int]$statusCounts.'missing-test' -ne 222) { throw "S2 base status counts are not reconciled: conforming=$($statusCounts.conforming) wrong=$($statusCounts.'wrong-value') unallocated=$($statusCounts.unallocated) missing-test=$($statusCounts.'missing-test')" }
 $canonicalStatusCounts = @{}; foreach($entry in $canonical.Values){$canonicalStatusCounts[[string]$entry.status] = 1 + [int]$canonicalStatusCounts[[string]$entry.status]}
 "M5:T435:S6:I186-MANUAL-DECODER-PARTITION:OK:247:233:8:6"
+"M5:T435:S6:I186-S1-PRIMARY-LOCATORS:PASS:23"
 "M5:T435:S6:I186-DECODER-LEDGER-ZERO-DIFFERENCE:PASS:279"
 "M5:T435:S6:I186-S2-STATUS-RECONCILED:PASS:0:14:43:222"
 "M5:T435:S6:I186-S2-CANONICAL-STATUS-RECONCILED:PASS:603:$($canonicalStatusCounts.'wrong-value'):$($canonicalStatusCounts.unallocated):$($canonicalStatusCounts.'missing-input'):$($canonicalStatusCounts.'missing-test')"
