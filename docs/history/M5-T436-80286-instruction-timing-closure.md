@@ -149,3 +149,14 @@ task-switch and timing-runner regressions pass; manifest, partition and
 decoder-ledger governance checks pass; the runner reports 193/193 S6 transfer
 records with classified Control Stack origin and required inputs. The review
 accepts S6 and transfers only S7's seven protected-system records.
+
+### S7: Segment, Descriptor And System Closure
+
+S7 P1 completes the accepted 92-record partition.  The runner already
+exercised 85 records; the missing seven were the legal `EA-BID` plus
+`ODD-WORD` intersections for `MOV Sreg`, `LDS` and `LES`.  It now establishes
+the relevant real/protected memory state and checks the complete S7 partition
+for classified origin and EA/segment/odd-word formula inputs.  The full run is
+771/771 records, with S7 92/92.  Final-result emission is explicitly deferred
+to S8 through an authorization gate, so this implementation package creates
+no final result artifact.
