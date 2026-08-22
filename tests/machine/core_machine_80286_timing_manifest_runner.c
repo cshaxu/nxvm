@@ -37,6 +37,35 @@ static const timing_80286_manifest_record timing_80286_manifest_records[] = {
 };
 static C_INT timing_80286_manifest_current_index = -1;
 
+static type_status timing_80286_manifest_port_read(C_VOID *owner,
+    type_unsigned_16 port, type_unsigned_32 *out_value)
+{
+    (C_VOID)owner;
+    if (port != 0x0080u || out_value == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    *out_value = 0x5au;
+    return TYPE_STATUS_OK;
+}
+
+static type_status timing_80286_manifest_port_write(C_VOID *owner,
+    type_unsigned_16 port, type_unsigned_32 value)
+{
+    (C_VOID)owner;
+    return port == 0x0080u && value <= 0xffffu ? TYPE_STATUS_OK :
+        TYPE_STATUS_INVALID_ARGUMENT;
+}
+
+static const core_machine_port_provider timing_80286_manifest_ports = {
+    timing_80286_manifest_port_read, timing_80286_manifest_port_write
+};
+
+static C_INT timing_80286_manifest_is_dx_port(const C_CHAR *key_id)
+{
+    return key_id != STD_NULL && (STD_STRCMP(key_id, "I286-IN-DX-B") == 0 ||
+        STD_STRCMP(key_id, "I286-IN-DX-W") == 0 ||
+        STD_STRCMP(key_id, "I286-OUT-DX-B") == 0 ||
+        STD_STRCMP(key_id, "I286-OUT-DX-W") == 0);
+}
+
 static C_INT timing_80286_manifest_is_i286(
     const timing_80286_manifest_record *record)
 {
@@ -104,6 +133,8 @@ static C_INT timing_80286_manifest_prepare(core_machine **out_machine,
             TIMING_80286_MANIFEST_RESET_LINEAR,
             TIMING_80286_MANIFEST_RESET_PHYSICAL,
             TIMING_80286_MANIFEST_WINDOW_BYTES);
+    if (status == TYPE_STATUS_OK) status = core_machine_install_port_provider(
+        machine, 0x0080u, 0x0080u, &timing_80286_manifest_ports, STD_NULL);
     if (status == TYPE_STATUS_OK) status = core_machine_bind_execution_provider(
         machine, &timing_80286_manifest_execution, STD_NULL);
     if (status == TYPE_STATUS_OK) status = core_machine_freeze_execution_providers(machine);
@@ -116,6 +147,9 @@ static C_INT timing_80286_manifest_prepare(core_machine **out_machine,
         machine->executor_cpu.data.eax = 1u;
         machine->executor_cpu.data.ecx = 2u;
         machine->executor_cpu.data.edx = 0u;
+        if (timing_80286_manifest_is_dx_port(recipe->key_id)) {
+            machine->executor_cpu.data.edx = 0x0080u;
+        }
         status = core_machine_memory_write(machine, 0x1000u, &operand,
             sizeof(operand));
     }
@@ -410,7 +444,15 @@ C_INT main(C_VOID)
         { "I286-WAIT", { 0x9bu }, 1u, 3u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80286_FALLBACK },
         { "I286-ESC", { 0xdbu, 0xe3u }, 2u, 1u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80286_FALLBACK }
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80286_FALLBACK },
+        { "I286-IN-IMM-B", { 0xe4u, 0x80u }, 2u, 5u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO },
+        { "I286-IN-IMM-W", { 0xe5u, 0x80u }, 2u, 5u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO },
+        { "I286-IN-DX-B", { 0xecu }, 1u, 5u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO },
+        { "I286-IN-DX-W", { 0xedu }, 1u, 5u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO },
+        { "I286-OUT-IMM-B", { 0xe6u, 0x80u }, 2u, 3u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO },
+        { "I286-OUT-IMM-W", { 0xe7u, 0x80u }, 2u, 3u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO },
+        { "I286-OUT-DX-B", { 0xeeu }, 1u, 3u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO },
+        { "I286-OUT-DX-W", { 0xefu }, 1u, 3u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO }
     };
     STD_SIZE_T index;
 

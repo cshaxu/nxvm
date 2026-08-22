@@ -21,7 +21,7 @@ retirement origin or every Appendix-B input, so it proves only those vectors.
 No key is marked conforming from that aggregate result.
 
 S10 adds `core-machine-80286-timing-manifest-runner`, which attaches the
-retirement observer to generated I286 metadata and validates 129 exact fallback/
+retirement observer to generated I286 metadata and validates 137 exact fallback/
 primary
 base recipes. It intentionally cannot emit a partial result JSON, so this is
 mechanism evidence only; the 807-key result-contract verifier remains the
