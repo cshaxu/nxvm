@@ -34,6 +34,11 @@ typedef struct timing_80186_manifest_recipe {
     core_machine_retirement_timing_origin origin;
 } timing_80186_manifest_recipe;
 
+typedef struct timing_80186_manifest_inputs {
+    const C_CHAR *key_id;
+    type_unsigned_16 cx;
+} timing_80186_manifest_inputs;
+
 static const timing_80186_manifest_record timing_80186_manifest_records[] = {
 #include "cpu_timing_manifest_metadata_catalog.inc"
 };
@@ -79,6 +84,22 @@ static const timing_80186_manifest_record *timing_80186_manifest_find(
     return STD_NULL;
 }
 
+static type_unsigned_16 timing_80186_manifest_input_cx(const C_CHAR *key_id)
+{
+    static const timing_80186_manifest_inputs inputs[] = {
+        { "I186-ROL-RCL", 2u }, { "I186-ROR-RCL", 2u },
+        { "I186-RCL-RCL", 2u }, { "I186-RCR-RCL", 2u },
+        { "I186-SHL-RCL", 2u }, { "I186-SHR-RCL", 2u },
+        { "I186-SAR-RCL", 2u }
+    };
+    STD_SIZE_T index;
+
+    for (index = 0u; index < sizeof(inputs) / sizeof(inputs[0]); ++index) {
+        if (STD_STRCMP(inputs[index].key_id, key_id) == 0) return inputs[index].cx;
+    }
+    return 0u;
+}
+
 static C_VOID timing_80186_manifest_capture_retirement(C_VOID *opaque,
     const core_machine_retirement_observation *observation)
 {
@@ -98,7 +119,7 @@ static C_VOID timing_80186_manifest_capture_retirement(C_VOID *opaque,
 
 static C_INT timing_80186_manifest_prepare(core_machine **out_machine,
     timing_80186_manifest_capture *capture, const type_unsigned_8 *program,
-    STD_SIZE_T bytes)
+    STD_SIZE_T bytes, type_unsigned_16 cx)
 {
     const core_machine_config config = {
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_80186,
@@ -125,6 +146,7 @@ static C_INT timing_80186_manifest_prepare(core_machine **out_machine,
     if (status == TYPE_STATUS_OK) status = core_machine_set_a20(machine, 1);
     if (status == TYPE_STATUS_OK) status = core_machine_memory_write(machine,
         TIMING_80186_MANIFEST_RESET_LINEAR, program, bytes);
+    if (status == TYPE_STATUS_OK) machine->executor_cpu.data.cx = cx;
     if (status == TYPE_STATUS_OK) status =
         core_machine_set_retirement_observation_provider(machine, &provider);
     if (status != TYPE_STATUS_OK) {
@@ -150,7 +172,7 @@ static C_INT timing_80186_manifest_run_recipe(
     failed = record == STD_NULL || !timing_80186_manifest_is_i186(record) ||
         STD_STRCMP(record->profile, "80186") != 0 ||
         !timing_80186_manifest_prepare(&machine, &capture, recipe->program,
-            recipe->bytes);
+            recipe->bytes, timing_80186_manifest_input_cx(recipe->key_id));
     if (!failed) {
         failed = core_machine_run(machine, budget, &run) != TYPE_STATUS_OK ||
             run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
@@ -200,6 +222,20 @@ C_INT main(C_VOID)
         { "I186-SHR-R1", { 0xd0u,0xe8u }, 2u, 2u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80186_FALLBACK },
         { "I186-SAR-R1", { 0xd0u,0xf8u }, 2u, 2u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80186_FALLBACK },
+        { "I186-ROL-RCL", { 0xd2u,0xc0u }, 2u, 7u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80186_FALLBACK },
+        { "I186-ROR-RCL", { 0xd2u,0xc8u }, 2u, 7u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80186_FALLBACK },
+        { "I186-RCL-RCL", { 0xd2u,0xd0u }, 2u, 7u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80186_FALLBACK },
+        { "I186-RCR-RCL", { 0xd2u,0xd8u }, 2u, 7u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80186_FALLBACK },
+        { "I186-SHL-RCL", { 0xd2u,0xe0u }, 2u, 7u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80186_FALLBACK },
+        { "I186-SHR-RCL", { 0xd2u,0xe8u }, 2u, 7u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80186_FALLBACK },
+        { "I186-SAR-RCL", { 0xd2u,0xf8u }, 2u, 7u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80186_FALLBACK },
         { "I186-ADJ-AAA", { 0x37u }, 1u, 8u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
