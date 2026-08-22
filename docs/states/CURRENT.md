@@ -2,30 +2,11 @@
 
 ## Current Work
 
-**Active: M5 T436 S7.** The owner-approved continuation closes the remaining
-80286 segment, descriptor and protected-system partition through real
-retirement observations.
-
-## M5 T436 S7 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation; M5 T436 S7 follows accepted S6 in the latest open numeric task. |
-| Admission And Approval | The owner directed continued complete 80286 implementation in single-person dual-role mode. Accepted S1 assigns S7 exactly 36 base and 92 canonical segment/descriptor/protected-system keys. |
-| Objective | Prove and, only where required, implement every S7 segment load, descriptor and protected-system successful form, including legal register/memory and inherited context inputs. |
-| Non-goals | Do not change S3--S6 ownership; do not alter transfer, string or arithmetic timing, fault/event delivery, board timing, public ABI, source import, a new profile, or final 771-key result emission. |
-| Reference Baseline | [S1 partition](../etc/cpu-timing/t436-s1-80286-key-partition.md), [80286 manual ledger](../etc/cpu-timing/t435-s1-80286-ledger.md), [manifest](../etc/cpu-timing/t435-s2-80286-timing-manifest.json), [S2 producer](../etc/cpu-timing/t436-s2-80286-result-producer.md), [S6 evidence](../etc/cpu-timing/t436-s6-80286-transfer-closure.md), and the current manifest runner. |
-| Candidate Proposal | [M5 80286 instruction timing closure](../proposals/m5-80286-instruction-timing-closure.md). |
-| Files And ABI Surface | Core-private primary/control-stack timing and retirement paths only where a real S7 recipe proves necessary; manifest runner, focused tests, evidence, history and CURRENT. No public header or external ABI change. |
-| Applicable Rules | Execution: complete P lifecycle and dual-role acceptance. Architecture: one Core timing/publication route; no board/event policy. Coding: C11 cohesive owner-local repair. Documentation: active packet/evidence only. Source policy is not triggered: no import or research. |
-| Verification | Run manifest, decoder-ledger and partition verifiers before and after changes; build/run the manifest runner; prove every S7 key has a successful classified real retirement with exact Appendix-B ticks/origin/form/input. Run result-refusal and documentation gates plus actual diff review. |
-| Expected Markers | Add `M5:T436:S7:I286-SYSTEM-COVERAGE:PASS:canonical=92` and `M5:T436:S7:I286-SEGMENT-DESCRIPTOR-PATHS:PASS`; retain incomplete final-result refusal. |
-| Asset Needs | Existing owner-managed Intel manual evidence and repository fixtures only. No download, firmware, guest media, Microsoft component or third-party source. |
-| Reporting Requirements | Report base/context ownership, before/after captures, register/memory/protected path proof, source/test delta and live/retired mechanism paths; transfer only S1-owned S8 closure work. |
-| Stop Conditions | Stop for manual/manifest/decoder contradiction; an unrepresentable protected-system path or timing input; required public ABI, board or event timing; source-policy issue; a defect outside S7; or verifier contradiction. Do not use a generic fallback. |
-| Exit Criteria | All 92 S7 canonical keys, and no other partition, have real classified L3 observations with correct ticks/origin/form/input/unallocated fields; functional path checks pass; no S7 record uses generic/unallocated fallback; focused and relevant regressions pass; dual-role review accepts actual changes. |
-| Original Owner Request | Owner request, faithfully translated: continue complete correct 80286 instruction function and timing implementation through the reasonably split S tasks. |
-| Similar-Issue Sweep | Defect class: a successful 80286 segment/descriptor/protected-system retirement missing canonical observation, actual form/context or Appendix-B timing. Scope: all S7-owned keys, primary/control-stack decode/timing, runner recipes and result evidence. |
+**Between accepted S units: M5 T436.** S7 closes all 92 segment, descriptor
+and protected-system records through real retirement. Its
+[closure evidence](../etc/cpu-timing/t436-s7-80286-system-closure.md) proves
+the final 771/771 observation set while retaining S8-owned final publication,
+cross-profile regression and task-level audit.
 ## Current Technical Baseline
 
 - **Current developer artifact:** target `vm-0-5-0434`; T434 S2 `nxvm_0_5_0434.exe` / `build/output/nxvm_0_5_0434.exe`, SHA-256 `0252F8FDA17BEC2131606F19E3547B46894AC6B56DD37EC3B16BD302494FAFDC`. T434 has one copied Core timing-plan publication route for default PC/AT, IBM 5170 Model 339 and Model-40 BYOB session composition.
@@ -50,7 +31,7 @@ retirement observations.
 
 | Task | Compact result |
 | --- | --- |
-| T436 S6 | Closed: [transfer evidence](../etc/cpu-timing/t436-s6-80286-transfer-closure.md) proves all 193 call/return/jump/interrupt records, including protected call gates, task transfers and task return. S7 protected-system forms are next. |
+| T436 S7 | Closed: [system evidence](../etc/cpu-timing/t436-s7-80286-system-closure.md) proves all 92 segment/descriptor/protected-system records and a complete 771/771 observed set. S8 final publication and task audit are next. |
 | T435 | Stopped by owner-approved requeue; not completed. Its profile-specific 80286 and 80386DX closure candidates now lead the Queue. [Record](../history/M5-T435-core-cpu-instruction-timing-program-requeue.md). |
 | T434 | Closed: all 30 copied plan declarations/dispositions, every current VM materializer and atomic Core publication route are reconciled; full task closure proof is retained in the [S3 audit](../etc/evidence/t434-s3-task-closure-audit.md) and [task history](../history/M5-T434-core-timing-contract-machine-plan.md). |
 | T433 | Closed after corrective S7: 30 frozen Core capabilities have a source-sufficiency and ownership disposition; chip/manual semantics are separated from VM-profile inputs, host/product boundaries and the explicit ATA/HDC source block. [S7 ledger](../etc/evidence/t433-s7-core-source-sufficiency-ledger.md). |
