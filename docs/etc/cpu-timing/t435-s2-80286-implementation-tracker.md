@@ -29,6 +29,13 @@ and zero conforming. `I286-XLAT` has a real 5-clock smoke vector through the
 records its complete result-contract observation.
 No aggregate smoke outcome may change an individual key's status.
 
+S10's `core-machine-80286-timing-manifest-runner` is the real-observation
+foundation: it consumes the generated manifest metadata and currently checks
+the 11 exact fallback base recipes through retirement observation. It writes
+no result artifact until all 807 canonical recipes exist; the separate
+`Verify-80286TimingResults.ps1` gate remains the only all-key acceptance
+mechanism.
+
 `B0` is one sole 80286 form/context publisher. `B1` makes all 286 manual
 rules exact/formula-conforming. `B3` supplies each legal EA, odd-word,
 real/protected, privilege/path, segment, next-byte, repeat and legal LOCK input. `B4` requires one

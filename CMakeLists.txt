@@ -420,6 +420,19 @@ if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
         -Wall -Wextra -Wpedantic -Werror)
 endif()
 
+# S10 starts the 80286 generated-key runner with real retirement observations.
+# It does not write the final 807-key result document until every recipe exists.
+add_executable(core-machine-80286-timing-manifest-runner
+    tests/machine/core_machine_80286_timing_manifest_runner.c)
+target_link_libraries(core-machine-80286-timing-manifest-runner PRIVATE
+    core-machine)
+add_dependencies(core-machine-80286-timing-manifest-runner
+    cpu-timing-manifest-catalog)
+if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
+    target_compile_options(core-machine-80286-timing-manifest-runner PRIVATE
+        -Wall -Wextra -Wpedantic -Werror)
+endif()
+
 # S6 uses this test-only scanner to generate a reproducible decoder-boundary
 # artifact. It deliberately has no CTest registration: it writes an audit
 # document and is invoked by the S6 verifier workflow.

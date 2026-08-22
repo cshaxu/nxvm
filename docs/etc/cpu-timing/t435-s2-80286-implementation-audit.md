@@ -20,6 +20,12 @@ Group-2, strings, ports and branches. It does **not** emit a manifest key ID,
 retirement origin or every Appendix-B input, so it proves only those vectors.
 No key is marked conforming from that aggregate result.
 
+S10 adds `core-machine-80286-timing-manifest-runner`, which attaches the
+retirement observer to generated I286 metadata and validates 11 exact fallback
+base recipes. It intentionally cannot emit a partial result JSON, so this is
+mechanism evidence only; the 807-key result-contract verifier remains the
+conforming gate.
+
 The strict manifest baseline is 286 base keys: 239 `missing-test`, 47
 `missing-input` and zero `unallocated`; zero is conforming or wrong-value.
 `I286-XLAT` has an exact 5-clock functional smoke vector but remains

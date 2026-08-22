@@ -1,0 +1,192 @@
+#include "type.h"
+
+#include "core/machine/machine_interface.h"
+#include "core/machine/retirement_observation_interface.h"
+#include "../support/core_machine_cpu_fixture.h"
+
+#define TIMING_80286_MANIFEST_RESET_LINEAR 0xfffffff0u
+#define TIMING_80286_MANIFEST_RESET_PHYSICAL 0x000ffff0u
+#define TIMING_80286_MANIFEST_WINDOW_BYTES 16u
+
+/* Incremental real-observation runner for the I286 manifest.  A partial
+ * recipe set must never write the final result document: the result verifier
+ * accepts exactly 807 observed canonical keys. */
+typedef struct timing_80286_manifest_record {
+    const C_CHAR *key_id;
+    const C_CHAR *profile;
+    const C_CHAR *level;
+    const C_CHAR *source_rule;
+    const C_CHAR *context;
+} timing_80286_manifest_record;
+
+typedef struct timing_80286_manifest_capture {
+    core_machine_retirement_observation observation;
+    type_unsigned_32 count;
+} timing_80286_manifest_capture;
+
+typedef struct timing_80286_manifest_recipe {
+    const C_CHAR *key_id;
+    type_unsigned_8 program[2];
+    STD_SIZE_T bytes;
+    type_unsigned_64 ticks;
+    core_machine_retirement_timing_origin origin;
+} timing_80286_manifest_recipe;
+
+static const timing_80286_manifest_record timing_80286_manifest_records[] = {
+#include "cpu_timing_manifest_metadata_catalog.inc"
+};
+static C_INT timing_80286_manifest_current_index = -1;
+
+static C_INT timing_80286_manifest_is_i286(
+    const timing_80286_manifest_record *record)
+{
+    return record != STD_NULL && record->key_id[0] == 'I' &&
+        record->key_id[1] == '2' && record->key_id[2] == '8' &&
+        record->key_id[3] == '6' && record->key_id[4] == '-';
+}
+
+static const timing_80286_manifest_record *timing_80286_manifest_find(
+    const C_CHAR *key_id)
+{
+    STD_SIZE_T index;
+
+    timing_80286_manifest_current_index = -1;
+    for (index = 0u; index < sizeof(timing_80286_manifest_records) /
+            sizeof(timing_80286_manifest_records[0]); ++index) {
+        if (STD_STRCMP(timing_80286_manifest_records[index].key_id, key_id) == 0) {
+            timing_80286_manifest_current_index = (C_INT)index;
+            return &timing_80286_manifest_records[index];
+        }
+    }
+    return STD_NULL;
+}
+
+static C_VOID timing_80286_manifest_capture_retirement(C_VOID *opaque,
+    const core_machine_retirement_observation *observation)
+{
+    timing_80286_manifest_capture *capture =
+        (timing_80286_manifest_capture *)opaque;
+
+    if (capture == STD_NULL || observation == STD_NULL) return;
+    if (capture->count == 0u) capture->observation = *observation;
+    timing_80286_manifest_current_index = -1;
+    ++capture->count;
+}
+
+static C_VOID timing_80286_manifest_execution_reset(C_VOID *opaque)
+{
+    (C_VOID)opaque;
+}
+
+static const core_machine_execution_provider timing_80286_manifest_execution = {
+    timing_80286_manifest_execution_reset, STD_NULL, STD_NULL
+};
+
+static C_INT timing_80286_manifest_prepare(core_machine **out_machine,
+    timing_80286_manifest_capture *capture,
+    const timing_80286_manifest_recipe *recipe)
+{
+    const core_machine_config config = {
+        .cpu_profile = CORE_MACHINE_CPU_PROFILE_80286,
+        .ticks_per_instruction = 29u,
+        .instruction_timing = { 29u, 7u, 31u, 37u, 41u, 43u }
+    };
+    const core_machine_retirement_observation_provider provider = {
+        timing_80286_manifest_capture_retirement, capture
+    };
+    core_machine *machine = STD_NULL;
+    type_status status;
+
+    if (out_machine == STD_NULL || capture == STD_NULL || recipe == STD_NULL) return 0;
+    status = core_machine_create(&config, &machine);
+    if (status == TYPE_STATUS_OK) status =
+        test_core_machine_fixture_register_reset_mapping(machine,
+            TIMING_80286_MANIFEST_RESET_LINEAR,
+            TIMING_80286_MANIFEST_RESET_PHYSICAL,
+            TIMING_80286_MANIFEST_WINDOW_BYTES);
+    if (status == TYPE_STATUS_OK) status = core_machine_bind_execution_provider(
+        machine, &timing_80286_manifest_execution, STD_NULL);
+    if (status == TYPE_STATUS_OK) status = core_machine_freeze_execution_providers(machine);
+    if (status == TYPE_STATUS_OK) status = core_machine_reset(machine);
+    if (status == TYPE_STATUS_OK) status = core_machine_memory_write(machine,
+        TIMING_80286_MANIFEST_RESET_LINEAR, recipe->program, recipe->bytes);
+    if (status == TYPE_STATUS_OK && STD_STRCMP(recipe->key_id, "I286-XLAT") == 0) {
+        static const type_unsigned_8 value[] = { 0x5au };
+
+        machine->executor_cpu.data.ebx = 0x1000u;
+        machine->executor_cpu.data.eax = 1u;
+        status = core_machine_memory_write(machine, 0x1001u, value, sizeof(value));
+    }
+    if (status == TYPE_STATUS_OK) status =
+        core_machine_set_retirement_observation_provider(machine, &provider);
+    if (status != TYPE_STATUS_OK) {
+        core_machine_destroy(machine);
+        return 0;
+    }
+    *out_machine = machine;
+    return 1;
+}
+
+static C_INT timing_80286_manifest_run(
+    const timing_80286_manifest_recipe *recipe)
+{
+    const core_machine_run_budget budget = { 1u, 0u };
+    timing_80286_manifest_capture capture = { { 0 }, 0u };
+    const timing_80286_manifest_record *record;
+    core_machine_run_result run = { 0 };
+    core_machine *machine = STD_NULL;
+    C_INT failed;
+
+    if (recipe == STD_NULL) return 1;
+    record = timing_80286_manifest_find(recipe->key_id);
+    failed = record == STD_NULL || !timing_80286_manifest_is_i286(record) ||
+        STD_STRCMP(record->profile, "80286") != 0 ||
+        !timing_80286_manifest_prepare(&machine, &capture, recipe);
+    if (!failed) {
+        failed = core_machine_run(machine, budget, &run) != TYPE_STATUS_OK ||
+            run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
+            run.ticks != recipe->ticks || capture.count != 1u ||
+            capture.observation.source_ticks != recipe->ticks ||
+            capture.observation.timing_origin != recipe->origin ||
+            capture.observation.timing_disposition !=
+                CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED;
+    }
+    core_machine_destroy(machine);
+    return failed;
+}
+
+C_INT main(C_VOID)
+{
+    static const timing_80286_manifest_recipe recipes[] = {
+        { "I286-NOP", { 0x90u }, 1u, 3u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80286_FALLBACK },
+        { "I286-CLC", { 0xf8u }, 1u, 2u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80286_FALLBACK },
+        { "I286-CMC", { 0xf5u }, 1u, 2u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80286_FALLBACK },
+        { "I286-STC", { 0xf9u }, 1u, 2u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80286_FALLBACK },
+        { "I286-CLD", { 0xfcu }, 1u, 2u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80286_FALLBACK },
+        { "I286-STD", { 0xfdu }, 1u, 2u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80286_FALLBACK },
+        { "I286-CLI", { 0xfau }, 1u, 3u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80286_FALLBACK },
+        { "I286-STI", { 0xfbu }, 1u, 2u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80286_FALLBACK },
+        { "I286-LAHF", { 0x9fu }, 1u, 2u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80286_FALLBACK },
+        { "I286-SAHF", { 0x9eu }, 1u, 2u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80286_FALLBACK },
+        { "I286-XLAT", { 0xd7u }, 1u, 5u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80286_FALLBACK }
+    };
+    STD_SIZE_T index;
+
+    for (index = 0u; index < sizeof(recipes) / sizeof(recipes[0]); ++index) {
+        if (timing_80286_manifest_run(&recipes[index])) return 1;
+    }
+    STD_PRINTF("M5:T435:S10:I286-MANIFEST-FOUNDATION:PASS:observed=%u\n",
+        (type_unsigned_32)(sizeof(recipes) / sizeof(recipes[0])));
+    return 0;
+}
