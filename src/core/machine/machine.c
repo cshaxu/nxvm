@@ -1164,6 +1164,8 @@ static type_unsigned_8 core_machine_source_timing_primary_word_transfers(
     case CORE_MACHINE_SOURCE_TIMING_GROUP3_NEG:
         return 2u;
     case CORE_MACHINE_SOURCE_TIMING_MOV_RM_IMMEDIATE:
+    case CORE_MACHINE_SOURCE_TIMING_MOV_RM_REGISTER:
+    case CORE_MACHINE_SOURCE_TIMING_MOV_REGISTER_RM:
         return 1u;
     case CORE_MACHINE_SOURCE_TIMING_CMP_RM_REGISTER:
     case CORE_MACHINE_SOURCE_TIMING_CMP_REGISTER_RM:
@@ -1926,6 +1928,11 @@ static type_unsigned_8 core_machine_80286_group2_count(
     return 0u;
 }
 
+static C_INT core_machine_80286_system_source_instruction_cost(
+    core_machine *machine, type_unsigned_64 *out_ticks);
+static C_INT core_machine_control_stack_is_protected(
+    const t_cpuins_data *data);
+
 C_INT core_machine_primary_source_instruction_cost(
     core_machine *machine, type_unsigned_64 *out_ticks)
 {
@@ -1956,11 +1963,29 @@ C_INT core_machine_primary_source_instruction_cost(
     }
     opcode = data->opcodes[prefixes];
     if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 && prefixes == 0u &&
+        opcode == 0x0fu) {
+        return core_machine_80286_system_source_instruction_cost(machine,
+            out_ticks);
+    }
+    if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 && prefixes == 0u &&
         opcode >= 0x70u && opcode <= 0x7fu) {
         *out_ticks = machine->executor_cpu.data.eip ==
             TYPE_MASK_UNSIGNED_16(data->oldcpu.data.eip + 2u) ?
             CORE_MACHINE_80286_JCC_NOT_TAKEN_TICKS :
             CORE_MACHINE_80286_JCC_TAKEN_TICKS;
+        return 1;
+    }
+    if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 && prefixes == 0u &&
+        opcode == 0x63u && core_machine_control_stack_is_protected(data)) {
+        *out_ticks = data->flagMem ? 11u : 10u;
+        return 1;
+    }
+    if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 && prefixes == 0u &&
+        opcode >= 0xa0u && opcode <= 0xa3u) {
+        *out_ticks = (opcode == 0xa0u || opcode == 0xa1u) ? 5u : 3u;
+        if ((opcode & 1u) != 0u) {
+            *out_ticks += core_machine_80286_timing_odd_word(data);
+        }
         return 1;
     }
     if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 && prefixes == 0u &&
@@ -2573,7 +2598,7 @@ C_INT core_machine_control_stack_source_instruction_cost(
             CORE_MACHINE_SOURCE_TIMING_PUSH_REGISTER);
         return 1;
     case 0x07u: case 0x17u: case 0x1fu:
-        if (machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_80286 || protected_mode) {
+        if (machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_80286) {
             return 0;
         }
         *out_ticks = core_machine_control_stack_source_lookup(machine,
@@ -3187,7 +3212,7 @@ C_INT core_machine_80386_privileged_source_instruction_cost(
     }
 }
 
-C_INT core_machine_80286_source_instruction_cost(core_machine *machine,
+static C_INT core_machine_80286_system_source_instruction_cost(core_machine *machine,
     type_unsigned_64 *out_ticks)
 {
     const t_cpuins_data *data = &machine->executor_cpu_instructions.data;
@@ -3202,10 +3227,7 @@ C_INT core_machine_80286_source_instruction_cost(core_machine *machine,
     }
     opcode = data->opcodes[prefixes];
     machine->source_repeat_active = TYPE_FALSE;
-    if (prefixes != 0u) {
-        core_machine_source_timing_mark_unallocated(machine, out_ticks);
-        return 1;
-    }
+    if (prefixes != 0u || opcode != 0x0fu) return 0;
     switch (opcode) {
     case 0x0fu:
         if (prefixes + 2u < data->oplen &&
@@ -3320,6 +3342,22 @@ C_INT core_machine_80286_source_instruction_cost(core_machine *machine,
         }
         return 1;
     }
+}
+
+C_INT core_machine_80286_source_instruction_cost(core_machine *machine,
+    type_unsigned_64 *out_ticks)
+{
+    const t_cpuins_data *data;
+
+    if (machine == STD_NULL || out_ticks == STD_NULL) return 0;
+    data = &machine->executor_cpu_instructions.data;
+    machine->source_repeat_active = TYPE_FALSE;
+    if (core_machine_instruction_prefix_count(data) >= data->oplen) {
+        *out_ticks = 0u;
+        return 1;
+    }
+    core_machine_source_timing_mark_unallocated(machine, out_ticks);
+    return 1;
 }
 
 C_INT core_machine_80386_source_instruction_cost(core_machine *machine,

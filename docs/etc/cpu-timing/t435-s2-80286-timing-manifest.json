@@ -29,9 +29,9 @@
     {"id":"I286-STRING-{op}-{width}","op":["MOVS","CMPS","STOS","LODS","SCAS","INS","OUTS"],"width":["B","W"],"level":"L3","source_rule":"Appendix B primitive exact","route":"string-io","status":"missing-test","batch":"B0+B1+B3+B4","test":"i286_timing_{id}"},
     {"id":"I286-REP-{op}-{width}","op":["MOVS","CMPS-REPE","CMPS-REPNE","STOS","LODS","SCAS-REPE","SCAS-REPNE","INS","OUTS"],"width":["B","W"],"level":"L3","source_rule":"Appendix B repeat formula","route":"string-io","status":"missing-test","batch":"B0+B1+B3+B4","test":"i286_timing_{id}"},
     {"id":"I286-{op}","op":["CLC","CLD","CMC","STC","STD","STI","CLI","LAHF","SAHF","NOP"],"level":"L3","source_rule":"Appendix B exact control","route":"mixed","status":"missing-test","batch":"B0+B1+B3+B4","test":"i286_timing_{id}"},
-    {"id":"I286-SYSTEM-{op}-{form}","op":["LAR","LSL","VERR","VERW","LLDT","LTR","LMSW","SLDT","SMSW","STR"],"form":["R","M"],"level":"L3","source_rule":"Appendix B exact/mem/privilege","route":"80286-fallback","status":"missing-input","batch":"B0+B1+B3+B4","test":"i286_timing_{id}"},
-    {"id":"I286-SYSTEM-{op}-M","op":["LGDT","LIDT","SGDT","SIDT"],"level":"L3","source_rule":"Appendix B exact memory-only descriptor-table form","route":"80286-fallback","status":"missing-input","batch":"B0+B1+B3+B4","test":"i286_timing_{id}"},
-    {"id":"I286-SYSTEM-CLTS","level":"L3","source_rule":"Appendix B exact operand-free escaped form","route":"80286-fallback","status":"missing-input","batch":"B0+B1+B3+B4","test":"i286_timing_{id}"}
+    {"id":"I286-SYSTEM-{op}-{form}","op":["LAR","LSL","VERR","VERW","LLDT","LTR","LMSW","SLDT","SMSW","STR"],"form":["R","M"],"level":"L3","source_rule":"Appendix B exact/mem/privilege","route":"primary","status":"missing-input","batch":"B0+B1+B3+B4","test":"i286_timing_{id}"},
+    {"id":"I286-SYSTEM-{op}-M","op":["LGDT","LIDT","SGDT","SIDT"],"level":"L3","source_rule":"Appendix B exact memory-only descriptor-table form","route":"primary","status":"missing-input","batch":"B0+B1+B3+B4","test":"i286_timing_{id}"},
+    {"id":"I286-SYSTEM-CLTS","level":"L3","source_rule":"Appendix B exact operand-free escaped form","route":"primary","status":"missing-input","batch":"B0+B1+B3+B4","test":"i286_timing_{id}"}
   ],
   "context_policy": "EA-BID, ODD-WORD, MODE/PATH, NEXT-BYTE, REP-PHASE and LOCK are semantic inputs, not instruction-byte permutations. Only legal Appendix-B intersections are generated; READY, BUSY and arbitration are excluded.",
   "context_key_sets": [
