@@ -95,7 +95,8 @@ static C_INT timing_80286_manifest_uses_stack(const C_CHAR *key_id)
         "I286-STACK-PUSH-SEG", "I286-STACK-PUSH-IMM",
         "I286-STACK-PUSHA", "I286-STACK-PUSHF", "I286-STACK-POP-R",
         "I286-STACK-POP-SEG-REAL", "I286-STACK-POPA",
-        "I286-STACK-POPF", "I286-STACK-LEAVE"
+        "I286-STACK-POPF", "I286-STACK-LEAVE", "I286-ENTER-L0",
+        "I286-ENTER-L1", "I286-ENTER-LN"
     };
     STD_SIZE_T index;
 
@@ -644,6 +645,12 @@ C_INT main(C_VOID)
         { "I286-STACK-POPF", { 0x9du }, 1u, 5u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
         { "I286-STACK-LEAVE", { 0xc9u }, 1u, 8u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
+        { "I286-ENTER-L0", { 0xc8u, 0x00u, 0x00u, 0x00u }, 4u, 11u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
+        { "I286-ENTER-L1", { 0xc8u, 0x00u, 0x00u, 0x01u }, 4u, 15u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
+        { "I286-ENTER-LN", { 0xc8u, 0x00u, 0x00u, 0x02u }, 4u, 20u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK }
     };
     static const timing_80286_manifest_control_recipe control_recipes[] = {
