@@ -1937,6 +1937,7 @@ C_INT core_machine_primary_source_instruction_cost(
     type_unsigned_8 transfers;
     C_INT segment_override;
     C_INT lock_prefix;
+    C_INT memory;
 
     if (machine == STD_NULL || out_ticks == STD_NULL) return 0;
     data = &machine->executor_cpu_instructions.data;
@@ -1950,11 +1951,28 @@ C_INT core_machine_primary_source_instruction_cost(
                 !core_machine_80386_timing_has_source_prefixes(data,
                     prefixes)) ||
              (machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_80386 &&
-                !segment_override && !lock_prefix))) ||
-        !core_machine_source_timing_primary_shape(data, prefixes, &shape)) {
+                !segment_override && !lock_prefix)))) {
         return 0;
     }
     opcode = data->opcodes[prefixes];
+    memory = core_machine_source_timing_modrm_is_memory(data, prefixes);
+    if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 &&
+        (opcode == 0x8cu || opcode == 0x8eu) && prefixes + 1u < data->oplen &&
+        ((data->opcodes[prefixes + 1u] >> 3u) & 7u) <= 3u &&
+        (opcode != 0x8eu || ((data->opcodes[prefixes + 1u] >> 3u) & 7u) != 1u)) {
+        if (opcode == 0x8cu) ticks = memory ? 3u : 2u;
+        else if ((data->oldcpu.data.cr0 & VCPU_CR0_PE) != 0u &&
+            (data->oldcpu.data.eflags & VCPU_EFLAGS_VM) == 0u) {
+            ticks = memory ? 19u : 17u;
+        } else ticks = memory ? 5u : 2u;
+        if (memory) ticks += core_machine_80286_timing_effective_address(data,
+            prefixes) + core_machine_80286_timing_odd_word(data);
+        *out_ticks = ticks;
+        return 1;
+    }
+    if (!core_machine_source_timing_primary_shape(data, prefixes, &shape)) {
+        return 0;
+    }
     transfers = core_machine_source_timing_primary_word_transfers(&shape);
 
     switch (machine->cpu_profile) {

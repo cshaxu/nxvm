@@ -206,7 +206,7 @@ static C_INT timing_80286_manifest_prepare(core_machine **out_machine,
     if (status == TYPE_STATUS_OK) status = core_machine_freeze_execution_providers(machine);
     if (status == TYPE_STATUS_OK) status = core_machine_reset(machine);
     if (status == TYPE_STATUS_OK) status = core_machine_memory_write(machine,
-        TIMING_80286_MANIFEST_RESET_LINEAR, program, bytes);
+        TIMING_80286_MANIFEST_RESET_PHYSICAL, program, bytes);
     if (status == TYPE_STATUS_OK && timing_80286_manifest_is_interrupt(key_id)) {
         const type_unsigned_16 handler[] = { 0xfff5u, 0xf000u };
         const type_unsigned_8 handler_code[] = { 0x00u, 0xc0u };
@@ -571,9 +571,9 @@ C_INT main(C_VOID)
         { "I286-MOV-MOFFS-W", { 0xa2u, 0u, 0x10u }, 3u, 3u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80286_FALLBACK },
         { "I286-MOV-SREG-STORE", { 0x8cu, 0x06u, 0u, 0x10u }, 4u, 3u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80286_FALLBACK },
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-MOV-SREG-LOAD-REAL", { 0x8eu, 0x1eu, 0u, 0x10u }, 4u, 5u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80286_FALLBACK },
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-LEA-M-REAL", { 0x8du, 0x06u, 0u, 0x10u }, 4u, 3u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-LDS-M-REAL", { 0xc5u, 0x06u, 0u, 0x10u }, 4u, 7u,
