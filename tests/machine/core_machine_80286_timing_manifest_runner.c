@@ -76,6 +76,23 @@ static C_INT timing_80286_manifest_is_dx_port(const C_CHAR *key_id)
         STD_STRCMP(key_id, "I286-OUT-DX-W") == 0);
 }
 
+static type_unsigned_16 timing_80286_manifest_control_cx(const C_CHAR *key_id)
+{
+    if (key_id == STD_NULL) return 2u;
+    if (STD_STRCMP(key_id, "I286-JCXZ-TAKEN") == 0) return 0u;
+    if (STD_STRCMP(key_id, "I286-JCXZ-NOT") == 0 ||
+        STD_STRCMP(key_id, "I286-LOOP-NOT") == 0) return 1u;
+    return 2u;
+}
+
+static core_machine_retirement_timing_origin
+timing_80286_manifest_control_origin(type_unsigned_8 opcode)
+{
+    return opcode >= 0xe0u && opcode <= 0xe3u ?
+        CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK :
+        CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80286_FALLBACK;
+}
+
 static C_INT timing_80286_manifest_is_i286(
     const timing_80286_manifest_record *record)
 {
@@ -245,12 +262,14 @@ static C_INT timing_80286_manifest_run_control(
         !timing_80286_manifest_prepare(&machine, &capture, recipe->key_id,
             program, sizeof(program));
     if (!failed) {
+        machine->executor_cpu.data.ecx = timing_80286_manifest_control_cx(
+            recipe->key_id);
         failed = core_machine_run(machine, budget, &run) != TYPE_STATUS_OK ||
             run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
             run.ticks != recipe->ticks || capture.count != 1u ||
             capture.observation.source_ticks != recipe->ticks ||
             capture.observation.timing_origin !=
-                CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80286_FALLBACK ||
+                timing_80286_manifest_control_origin(recipe->opcode) ||
             capture.observation.timing_disposition !=
                 CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED;
     }
@@ -547,7 +566,15 @@ C_INT main(C_VOID)
         { "I286-JCC-JLE-TAKEN", 0x7eu, VCPU_EFLAGS_ZF, 7u },
         { "I286-JCC-JLE-NOT", 0x7eu, 0u, 3u },
         { "I286-JCC-JG-TAKEN", 0x7fu, 0u, 7u },
-        { "I286-JCC-JG-NOT", 0x7fu, VCPU_EFLAGS_ZF, 3u }
+        { "I286-JCC-JG-NOT", 0x7fu, VCPU_EFLAGS_ZF, 3u },
+        { "I286-JCXZ-TAKEN", 0xe3u, 0u, 8u },
+        { "I286-JCXZ-NOT", 0xe3u, 0u, 4u },
+        { "I286-LOOP-TAKEN", 0xe2u, 0u, 8u },
+        { "I286-LOOP-NOT", 0xe2u, 0u, 4u },
+        { "I286-LOOPE-TAKEN", 0xe1u, VCPU_EFLAGS_ZF, 8u },
+        { "I286-LOOPE-NOT", 0xe1u, 0u, 4u },
+        { "I286-LOOPNE-TAKEN", 0xe0u, 0u, 8u },
+        { "I286-LOOPNE-NOT", 0xe0u, VCPU_EFLAGS_ZF, 4u }
     };
     STD_SIZE_T index;
 
