@@ -4038,16 +4038,54 @@ static C_VOID _ser_jmp_far_cs_nonc(core_machine_cpu_execution_context *context, 
     TYPE_TRACE_CHECK_RETURN(_kec_jmp_far(context, newcs, neweip, byte));
     TYPE_TRACE_CALL_END;
 }
-_______todo _ser_jmp_far_call_gate(core_machine_cpu_execution_context *context, type_unsigned_16 newcs)
+static C_VOID _ser_jmp_far_call_gate(core_machine_cpu_execution_context *context,
+    type_unsigned_16 gate_selector)
 {
-    type_unsigned_64 descriptor;
+    type_unsigned_64 gate_desc;
+    type_unsigned_64 code_desc;
+    type_unsigned_16 target_selector;
+    type_unsigned_8 cpl;
+    t_cpu_data_sreg newcs_cache;
+
     TYPE_TRACE_CALL_BEGIN("_ser_jmp_far_call_gate");
     if (!_IsProtected)
         TYPE_TRACE_IMPOSSIBLE_RETURN;
-    TYPE_TRACE_CHECK_RETURN(_s_read_xdt(context, newcs, TYPE_REFERENCE_OF(descriptor)));
-    if (!_IsDescCallGate(descriptor))
+    TYPE_TRACE_CHECK_RETURN(_s_read_xdt(context, gate_selector,
+        TYPE_REFERENCE_OF(gate_desc)));
+    /* Appendix B permits JMP only through a same-privilege 16-bit call gate
+     * on the 80286.  It transfers directly to the gate target: no return
+     * frame, stack switch, or parameter copy is performed. */
+    if (!_IsDescCallGate16(gate_desc))
         TYPE_TRACE_IMPOSSIBLE_RETURN;
-    TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(0));
+    cpl = _GetCPL;
+    if (_GetDesc_DPL(gate_desc) < cpl ||
+        _GetDesc_DPL(gate_desc) < _GetSelector_RPL(gate_selector)) {
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(gate_selector & 0xfffcu));
+    }
+    if (!_IsDescPresent(gate_desc)) {
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_NP(gate_selector & 0xfffcu));
+    }
+    target_selector = TYPE_MASK_UNSIGNED_16(_GetDescGate_Selector(gate_desc));
+    if (_IsSelectorNull(target_selector) || _GetSelector_TI(target_selector)) {
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(target_selector & 0xfffcu));
+    }
+    TYPE_TRACE_CHECK_RETURN(_s_read_xdt(context, target_selector,
+        TYPE_REFERENCE_OF(code_desc)));
+    if (!_IsDescCodeNonConform(code_desc) || _GetDesc_DPL(code_desc) != cpl) {
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(target_selector & 0xfffcu));
+    }
+    if (!_IsDescPresent(code_desc)) {
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_NP(target_selector & 0xfffcu));
+    }
+    newcs_cache = cpu_state.data.cs;
+    TYPE_TRACE_CHECK_RETURN(_ksa_prepare_code_sreg(context, target_selector,
+        cpl, &newcs_cache, &code_desc));
+    TYPE_TRACE_CHECK_RETURN(_kma_test_access(context, &newcs_cache,
+        TYPE_MASK_UNSIGNED_16(_GetDescGate_Offset(gate_desc)), 1u, 0, cpl, 1));
+    TYPE_TRACE_CHECK_RETURN(_s_write_xdt(context, target_selector,
+        TYPE_REFERENCE_OF(code_desc)));
+    cpu_state.data.cs = newcs_cache;
+    cpu_state.data.ip = TYPE_MASK_UNSIGNED_16(_GetDescGate_Offset(gate_desc));
     TYPE_TRACE_CALL_END;
 }
 static C_VOID _ser_jmp_far_task_gate(core_machine_cpu_execution_context *context,
