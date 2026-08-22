@@ -59,3 +59,20 @@ The partition verifier, manifest verifier, decoder-ledger verifier, existing
 80286 manifest runner and documentation governance gate passed. The code and
 evidence changes are confined to partition proof and task governance; the
 review found no duplicate, orphaned or silently reassigned canonical key.
+
+### S2: Result Producer And Incomplete-Output Guard
+
+S2 makes the 80286 manifest runner retain the first real retirement observation
+per canonical metadata record. It preserves ticks, normalized formula inputs,
+form ID, timing origin and unallocated disposition, and contains the final
+result-document writer. That writer refuses to open output unless every one of
+the 807 keys is observed. The baseline executes 606 focused probes and
+captures 563 unique canonical records; the remaining 244 records remain
+explicitly incomplete and assigned to S3--S7. No partial result document was
+created.
+
+The coordinator reviewed P1 `b1c4c7f5` and P2 `786f61d3`. The latter corrects
+the result marker to report actual unique captures rather than probe count.
+The rebuilt runner, absence-of-output refusal check, manifest, decoder-ledger,
+partition and documentation gates pass. The review accepts S2 without a
+conforming-key or final-result claim.
