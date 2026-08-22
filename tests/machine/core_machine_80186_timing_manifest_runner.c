@@ -9,6 +9,8 @@
 #define TIMING_80186_MANIFEST_RESET_LINEAR 0xfffffff0u
 #define TIMING_80186_MANIFEST_RESET_PHYSICAL 0x000ffff0u
 #define TIMING_80186_MANIFEST_WINDOW_BYTES 16u
+#define TIMING_80186_MANIFEST_STACK_LINEAR 0x00001000u
+#define TIMING_80186_MANIFEST_STACK_BYTES 16u
 
 /* This is the incremental real-observation runner for the 80186 manifest.
  * It intentionally does not write the final result document until every
@@ -72,6 +74,15 @@ static C_INT timing_80186_manifest_is_i186(
     return record != STD_NULL && record->key_id[0] == 'I' &&
         record->key_id[1] == '1' && record->key_id[2] == '8' &&
         record->key_id[3] == '6' && record->key_id[4] == '-';
+}
+
+static C_INT timing_80186_manifest_is_return_recipe(const C_CHAR *key_id)
+{
+    return key_id != STD_NULL && (STD_STRCMP(key_id, "I186-RET-NEAR") == 0 ||
+        STD_STRCMP(key_id, "I186-RET-NEAR-IMM") == 0 ||
+        STD_STRCMP(key_id, "I186-RET-FAR") == 0 ||
+        STD_STRCMP(key_id, "I186-RET-FAR-IMM") == 0 ||
+        STD_STRCMP(key_id, "I186-RET-IRET") == 0);
 }
 
 static const timing_80186_manifest_record *timing_80186_manifest_find(
@@ -209,7 +220,8 @@ static C_VOID timing_80186_manifest_capture_retirement(C_VOID *opaque,
 
 static C_INT timing_80186_manifest_prepare(core_machine **out_machine,
     timing_80186_manifest_capture *capture, const type_unsigned_8 *program,
-    STD_SIZE_T bytes, const timing_80186_manifest_inputs *inputs)
+    STD_SIZE_T bytes, const timing_80186_manifest_inputs *inputs,
+    const C_CHAR *key_id)
 {
     const core_machine_config config = {
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_80186,
@@ -229,6 +241,12 @@ static C_INT timing_80186_manifest_prepare(core_machine **out_machine,
             TIMING_80186_MANIFEST_RESET_LINEAR,
             TIMING_80186_MANIFEST_RESET_PHYSICAL,
             TIMING_80186_MANIFEST_WINDOW_BYTES);
+    if (status == TYPE_STATUS_OK && timing_80186_manifest_is_return_recipe(key_id)) {
+        status = test_core_machine_fixture_register_reset_mapping(machine,
+            TIMING_80186_MANIFEST_STACK_LINEAR,
+            TIMING_80186_MANIFEST_STACK_LINEAR,
+            TIMING_80186_MANIFEST_STACK_BYTES);
+    }
     if (status == TYPE_STATUS_OK) status = core_machine_bind_execution_provider(
         machine, &timing_80186_manifest_execution, STD_NULL);
     if (status == TYPE_STATUS_OK) status = core_machine_freeze_execution_providers(machine);
@@ -251,6 +269,13 @@ static C_INT timing_80186_manifest_prepare(core_machine **out_machine,
         machine->executor_cpu.data.cx = inputs->cx;
         if (inputs->memory_value != 0u) status = core_machine_memory_write(machine,
             inputs->memory_address, &memory_value, sizeof(memory_value));
+    }
+    if (status == TYPE_STATUS_OK && timing_80186_manifest_is_return_recipe(key_id)) {
+        const type_unsigned_16 frame[] = { 0xfff5u, 0xf000u, 0x0002u };
+
+        machine->executor_cpu.data.sp = TIMING_80186_MANIFEST_STACK_LINEAR;
+        status = core_machine_memory_write(machine,
+            TIMING_80186_MANIFEST_STACK_LINEAR, frame, sizeof(frame));
     }
     if (status == TYPE_STATUS_OK) status =
         core_machine_set_retirement_observation_provider(machine, &provider);
@@ -277,7 +302,8 @@ static C_INT timing_80186_manifest_run_recipe(
     failed = record == STD_NULL || !timing_80186_manifest_is_i186(record) ||
         STD_STRCMP(record->profile, "80186") != 0 ||
         !timing_80186_manifest_prepare(&machine, &capture, recipe->program,
-            recipe->bytes, timing_80186_manifest_inputs_find(recipe->key_id));
+            recipe->bytes, timing_80186_manifest_inputs_find(recipe->key_id),
+            recipe->key_id);
     if (!failed) {
         failed = core_machine_run(machine, budget, &run) != TYPE_STATUS_OK ||
             run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
@@ -595,6 +621,16 @@ C_INT main(C_VOID)
         { "I186-JMP-RM16", { 0xffu,0xe0u }, 2u, 11u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
         { "I186-JMP-M1616", { 0xffu,0x2eu,0u,0x10u }, 4u, 26u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
+        { "I186-RET-NEAR", { 0xc3u }, 1u, 16u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
+        { "I186-RET-NEAR-IMM", { 0xc2u,0u,0u }, 3u, 18u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
+        { "I186-RET-FAR", { 0xcbu }, 1u, 22u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
+        { "I186-RET-FAR-IMM", { 0xcau,0u,0u }, 3u, 25u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
+        { "I186-RET-IRET", { 0xcfu }, 1u, 28u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
         { "I186-XLAT", { 0xd7u }, 1u, 11u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80186_FALLBACK },

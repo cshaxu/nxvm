@@ -321,6 +321,8 @@ typedef enum core_machine_source_timing_form {
     CORE_MACHINE_SOURCE_TIMING_JMP_FAR_MEMORY_PROTECTED,
     CORE_MACHINE_SOURCE_TIMING_RET_NEAR,
     CORE_MACHINE_SOURCE_TIMING_RET_NEAR_IMMEDIATE,
+    CORE_MACHINE_SOURCE_TIMING_RET_FAR,
+    CORE_MACHINE_SOURCE_TIMING_RET_FAR_IMMEDIATE,
     CORE_MACHINE_SOURCE_TIMING_PUSH_REGISTER,
     CORE_MACHINE_SOURCE_TIMING_PUSH_MEMORY,
     CORE_MACHINE_SOURCE_TIMING_PUSH_IMMEDIATE,
@@ -437,6 +439,8 @@ static const core_machine_source_timing_entry
     { CORE_MACHINE_SOURCE_TIMING_JMP_FAR_MEMORY, 26u },
     { CORE_MACHINE_SOURCE_TIMING_RET_NEAR, 16u },
     { CORE_MACHINE_SOURCE_TIMING_RET_NEAR_IMMEDIATE, 18u },
+    { CORE_MACHINE_SOURCE_TIMING_RET_FAR, 22u },
+    { CORE_MACHINE_SOURCE_TIMING_RET_FAR_IMMEDIATE, 25u },
     { CORE_MACHINE_SOURCE_TIMING_PUSH_REGISTER, 10u },
     { CORE_MACHINE_SOURCE_TIMING_PUSH_MEMORY, 16u },
     { CORE_MACHINE_SOURCE_TIMING_PUSH_IMMEDIATE, 10u },
@@ -2502,6 +2506,16 @@ C_INT core_machine_control_stack_source_instruction_cost(
         return core_machine_control_stack_add_next_term(machine,
             core_machine_control_stack_source_lookup(machine,
                 CORE_MACHINE_SOURCE_TIMING_RET_NEAR), out_ticks);
+    case 0xcau:
+        if (machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_80186) return 0;
+        return core_machine_control_stack_add_next_term(machine,
+            core_machine_control_stack_source_lookup(machine,
+                CORE_MACHINE_SOURCE_TIMING_RET_FAR_IMMEDIATE), out_ticks);
+    case 0xcbu:
+        if (machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_80186) return 0;
+        return core_machine_control_stack_add_next_term(machine,
+            core_machine_control_stack_source_lookup(machine,
+                CORE_MACHINE_SOURCE_TIMING_RET_FAR), out_ticks);
     case 0x50u: case 0x51u: case 0x52u: case 0x53u:
     case 0x54u: case 0x55u: case 0x56u: case 0x57u:
         *out_ticks = core_machine_control_stack_source_lookup(machine,
