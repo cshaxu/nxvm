@@ -2,32 +2,13 @@
 
 ## Current Work
 
-**Active: M5 T436 S8.** The owner-approved continuation performs the complete
-80286 result publication, regression and task-level closure audit.
-
-## M5 T436 S8 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation; M5 T436 S8 follows accepted S7 in the latest open numeric task. |
-| Admission And Approval | The owner directed continuous complete 80286 implementation in single-person dual-role mode and, after the S8 cross-profile audit, authorized one bounded repair for the confirmed 8086 multiword-memory odd-word evidence defect. The approved proposal assigns S8 final publication, cross-profile regression, cleanup and audit after S3--S7 evidence. |
-| Objective | Publish and verify the complete 771-key 80286 result set, prove all manifest status totals are conforming, run relevant cross-profile and task-level audits, and close T436 only if every proposal exit is evidenced. |
-| Non-goals | Do not implement a residual 80286 instruction in S8, modify S3--S7 ownership, alter board/event timing or public ABI, import source/assets, change 80186/80286/80386 behavior without a separately confirmed defect, or claim a final result without the result verifier. |
-| Reference Baseline | [closure proposal](../proposals/m5-80286-instruction-timing-closure.md), [S1 partition](../etc/cpu-timing/t436-s1-80286-key-partition.md), [S2 result producer](../etc/cpu-timing/t436-s2-80286-result-producer.md), [S7 evidence](../etc/cpu-timing/t436-s7-80286-system-closure.md), [manifest](../etc/cpu-timing/t435-s2-80286-timing-manifest.json), [result contract](../etc/cpu-timing/t435-s2-manifest-result-contract.md), and current runner/verifiers. |
-| Candidate Proposal | [M5 80286 instruction timing closure](../proposals/m5-80286-instruction-timing-closure.md). |
-| Files And ABI Surface | Final result artifact, manifest runner authorization, focused/cross-profile test records, the confirmed 8086 result evidence/expected-tick repair, task evidence, history and CURRENT only. No public header, Core runtime, board or external ABI change. |
-| Applicable Rules | Execution: complete P lifecycle, full task audit and dual-role acceptance. Architecture: one Core timing/publication route and no board/event policy. Coding: C11 cohesive publication switch only. Documentation: active packet, evidence and task closure only. Source policy is not triggered: no import or research. |
-| Verification | Build/run the complete 80286 runner; run the result verifier against its emitted JSON plus manifest, partition and decoder-ledger verifiers; rebuild/run 8086 and 80186 manifest runners; prove every affected 8086 multiword-memory odd-word result agrees with the existing transfer-count timing mechanism and that the 80186/80286/80386 disposition remains unchanged; run focused system/control regressions and applicable cross-profile timing gates; build/copy the required developer artifact; run documentation governance and actual source/TODO/history audit. |
-| Expected Markers | `M5:T436:S8:I286-RESULT-CLOSURE:PASS:canonical=771`, zero wrong-value/unallocated/missing-input/missing-test, and `M5:T436:S8:I286-TASK-AUDIT:PASS`. |
-| Asset Needs | Existing owner-managed manual evidence and repository fixtures only. No download, firmware, guest media, Microsoft component or third-party source. |
-| Reporting Requirements | Report generated artifact provenance, result-verifier totals, one-publisher proof, cross-profile and developer-artifact evidence, code/test delta, TODO sweep, task-exit matrix and any explicit transfer. |
-| Stop Conditions | Stop for a result/manifest/manual contradiction, duplicate publisher, nonconforming key, failing cross-profile regression, required ABI/board change, source-policy issue or residual outside S8; return an implementation residual to its original S rather than masking it. |
-| Exit Criteria | JSON contains exactly 771 verified passing L3 results with no missing/duplicate/unallocated/wrong-value/missing-input/missing-test; one authorized publisher remains; required focused/cross-profile regressions and developer artifact pass; no relevant open TODO/debt; task-level actual-change audit accepts every proposal requirement. |
-| Original Owner Request | Owner request, faithfully translated: continue complete correct 80286 instruction function and timing implementation through the reasonably split S tasks. |
-| Similar-Issue Sweep | Defect class: any all-key publication, source/decoder reconciliation, result-contract, obsolete publisher or cross-profile regression gap after per-partition closure. Scope: all tracked 80286 manifest/result/verifier/runner sources plus the 8086 multiword-memory transfer-count owner and 8086/80186/80286/80386 evidence; audit all affected 8086 result paths, repair only demonstrated stale expectations, and retain the unchanged 80186/80286/80386 disposition unless a comparable defect is observed. |
+**Closed: M5 T436.** S8 publishes and verifies the complete 771-key 80286
+result set, reconciles the demonstrated cross-profile evidence drift, and
+accepts the full task audit. The [S8 result closure](../etc/cpu-timing/t436-s8-80286-result-closure.md)
+records the final evidence and developer-artifact provenance.
 ## Current Technical Baseline
 
-- **Current developer artifact:** target `vm-0-5-0434`; T434 S2 `nxvm_0_5_0434.exe` / `build/output/nxvm_0_5_0434.exe`, SHA-256 `0252F8FDA17BEC2131606F19E3547B46894AC6B56DD37EC3B16BD302494FAFDC`. T434 has one copied Core timing-plan publication route for default PC/AT, IBM 5170 Model 339 and Model-40 BYOB session composition.
+- **Current developer artifact:** target `vm-0-5-0434`; `nxvm_0_5_0434.exe` / `build/output/nxvm_0_5_0434.exe`, SHA-256 `F8562F4623D53303470408837249CF89C985E0A0B1130212BBD9CE26B5E1B38A`. T434 has one copied Core timing-plan publication route for default PC/AT, IBM 5170 Model 339 and Model-40 BYOB session composition.
   T386 closes selected-device functional completeness at S29; its retained
   [closure audit](../etc/evidence/t386-s29-functional-closure-audit.md) fixes
   HDC current-gate coverage and transfers board, firmware and physical work.
@@ -49,7 +30,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T436 S7 | Closed: [system evidence](../etc/cpu-timing/t436-s7-80286-system-closure.md) proves all 92 segment/descriptor/protected-system records and a complete 771/771 observed set. S8 final publication and task audit are next. |
+| T436 S8 | Accepted: [result closure](../etc/cpu-timing/t436-s8-80286-result-closure.md) proves the verified 771-key result set, 8086/80186/80286/80386 regression disposition, current-gate completion and developer artifact; T436 is task-level closed. |
 | T435 | Stopped by owner-approved requeue; not completed. Its profile-specific 80286 and 80386DX closure candidates now lead the Queue. [Record](../history/M5-T435-core-cpu-instruction-timing-program-requeue.md). |
 | T434 | Closed: all 30 copied plan declarations/dispositions, every current VM materializer and atomic Core publication route are reconciled; full task closure proof is retained in the [S3 audit](../etc/evidence/t434-s3-task-closure-audit.md) and [task history](../history/M5-T434-core-timing-contract-machine-plan.md). |
 | T433 | Closed after corrective S7: 30 frozen Core capabilities have a source-sufficiency and ownership disposition; chip/manual semantics are separated from VM-profile inputs, host/product boundaries and the explicit ATA/HDC source block. [S7 ledger](../etc/evidence/t433-s7-core-source-sufficiency-ledger.md). |
