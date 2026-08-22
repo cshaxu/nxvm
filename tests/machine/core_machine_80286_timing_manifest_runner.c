@@ -6,6 +6,12 @@
 #include "core/machine/retirement_observation_interface.h"
 #include "../support/core_machine_cpu_fixture.h"
 
+/* Reuse the retained DPL3 outer-return fixture; its main is not part of this
+ * runner, but keeps the fixture's private helpers live under -Werror. */
+#define main timing_80286_manifest_retained_gate_main
+#include "core_machine_protected_16_gate_s3_smoke.c"
+#undef main
+
 #define TIMING_80286_MANIFEST_RESET_LINEAR 0xfffffff0u
 #define TIMING_80286_MANIFEST_RESET_PHYSICAL 0x000ffff0u
 #define TIMING_80286_MANIFEST_WINDOW_BYTES 16u
@@ -1653,6 +1659,54 @@ static C_INT timing_80286_manifest_run_protected_iret_next_byte_recipe(
     return failed;
 }
 
+static C_INT timing_80286_manifest_run_protected_outer_ret_recipe(C_VOID)
+{
+    static const type_unsigned_8 user_data[] = {
+        0xffu,0xffu,0,0,0,0xf2u,0,0
+    };
+    static const type_unsigned_8 retf[] = { 0xcbu };
+    static const type_unsigned_8 target[] = { 0x00u,0xc0u };
+    static const type_unsigned_16 frame[] = { 0x0010u,0x001bu,0x4000u,0x0023u };
+    const core_machine_run_budget budget = { 1u, 0u };
+    timing_80286_manifest_capture capture = { { 0 }, 0u };
+    const core_machine_retirement_observation_provider capture_provider = {
+        timing_80286_manifest_capture_retirement, &capture
+    };
+    const timing_80286_manifest_record *record;
+    core_machine_run_result run = { 0 };
+    s3_gate_machine state;
+    C_INT failed;
+
+    record = timing_80286_manifest_find("I286-RET-FAR-LESS-NEXT-BYTE-2");
+    failed = record == STD_NULL || !timing_80286_manifest_is_i286(record) ||
+        !s3_gate_prepare(&state, CORE_MACHINE_CPU_PROFILE_80286, TYPE_FALSE,
+            VCPU_DESC_SYS_TYPE_INTGATE_16, 0u, TYPE_TRUE);
+    if (!failed) {
+        failed = !s3_gate_write(&state, S3_GDT_BASE + 32u, user_data,
+            sizeof(user_data)) || !s3_gate_write(&state, S3_CODE_BASE, retf,
+            sizeof(retf)) || !s3_gate_write(&state, S3_CODE_BASE + 0x10u,
+            target, sizeof(target)) || !s3_gate_write(&state, S3_STACK_TOP,
+            frame, sizeof(frame));
+        state.machine->executor_cpu.data.gdtr.limit = 39u;
+        state.machine->executor_cpu.data.esp = 0x12348000u;
+        state.machine->executor_cpu.data.eflags = VCPU_EFLAGS_CF;
+        if (!failed) failed = core_machine_set_retirement_observation_provider(
+            state.machine, &capture_provider) != TYPE_STATUS_OK;
+    }
+    if (!failed) {
+        failed = core_machine_run(state.machine, budget, &run) != TYPE_STATUS_OK ||
+            run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
+            run.ticks != 57u || capture.count != 1u ||
+            capture.observation.source_ticks != 57u ||
+            capture.observation.timing_origin !=
+                CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
+            capture.observation.timing_disposition !=
+                CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED;
+    }
+    core_machine_destroy(state.machine);
+    return failed;
+}
+
 static C_INT timing_80286_manifest_run_protected_system(
     const timing_80286_manifest_recipe *recipe)
 {
@@ -2607,6 +2661,10 @@ C_INT main(C_VOID)
             return 1;
         }
     }
+    if (timing_80286_manifest_run_protected_outer_ret_recipe()) {
+        STD_PRINTF("M5:T435:S10:I286-PROTECTED-OUTER-RET-RECIPE:FAIL\n");
+        return 1;
+    }
     for (index = 0u; index < sizeof(protected_system_recipes) /
         sizeof(protected_system_recipes[0]); ++index) {
         if (timing_80286_manifest_run_protected_system(
@@ -2697,7 +2755,7 @@ C_INT main(C_VOID)
     STD_PRINTF("M5:T435:S10:I286-MANIFEST-FOUNDATION:PASS:observed=%u\n",
         (type_unsigned_32)(sizeof(recipes) / sizeof(recipes[0]) +
             sizeof(control_recipes) / sizeof(control_recipes[0]) +
-            107u +
+            108u +
             sizeof(protected_system_recipes) /
                 sizeof(protected_system_recipes[0]) +
             sizeof(segment_recipes) / sizeof(segment_recipes[0]) +
