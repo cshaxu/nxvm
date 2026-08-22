@@ -2,7 +2,29 @@
 
 ## Current Work
 
-**Idle.** The owner-directed 80286 and 80386DX closure candidates are first and second in the M5 Queue. No numeric task is active.
+**Active: M5 T436 S1.** The owner-approved first 80286 queue candidate is
+admitted for a single-person dual-role implementation lifecycle.
+
+## M5 T436 S1 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New; M5 T436 S1 is the next numeric task after the owner-approved T435 requeue closure. |
+| Admission And Approval | The owner directed the separate 80286 and 80386DX queue packages on 2026-08-22, required a reasonable 80286 S decomposition, and has a persistent instruction to continue the complete 80286 implementation. This first Queue candidate is admitted without exception. |
+| Objective | Freeze one executable, complete and non-overlapping 80286 implementation partition for all 807 canonical successful-retirement keys, so later S units have exact bounded ownership and proof obligations. |
+| Non-goals | Do not claim a key conforming, change timing selection or instruction semantics, add a CPU profile, assign board/READY/HOLD/DMA/prefetch/device timing, create a public ABI, import source, or start another S. |
+| Reference Baseline | [80286 manual ledger](../etc/cpu-timing/t435-s1-80286-ledger.md), [manifest](../etc/cpu-timing/t435-s2-80286-timing-manifest.json), [tracker](../etc/cpu-timing/t435-s2-80286-implementation-tracker.md), [audit](../etc/cpu-timing/t435-s2-80286-implementation-audit.md), [decoder reconciliation](../etc/cpu-timing/t435-s7-80286-decoder-reconciliation-contract.md), [result contract](../etc/cpu-timing/t435-s2-manifest-result-contract.md), and the owner-approved [S decomposition](../proposals/m5-80286-instruction-timing-closure.md). |
+| Candidate Proposal | [M5 80286 instruction timing closure](../proposals/m5-80286-instruction-timing-closure.md). |
+| Files And ABI Surface | S1 may add only indexed 80286 partition evidence, its verifier if necessary, task history and current status. It must not change runtime source, public headers, CMake products, the developer artifact or external ABI. |
+| Applicable Rules | Execution: new-task allocation, S/P lifecycle, dual-role review and closure. Architecture: one Core timing/publishing path and no board policy. Documentation: CURRENT is the active contract and Queue remains unnumbered. Source policy: retained manual evidence only; no source import. |
+| Verification | Run `Verify-80286TimingManifest.ps1`, `Verify-80286DecoderLedger.ps1`, the existing 80286 manifest runner, documentation governance, and a static comparison proving that every materialized key has exactly one later-S owner. |
+| Expected Markers | Retain the S1/S2/S7 markers; add `M5:T436:S1:I286-PARTITION-COMPLETE:PASS:canonical=807` and `M5:T436:S1:I286-PARTITION-NO-OVERLAP:PASS`. |
+| Asset Needs | Existing owner-managed Intel manual evidence only. No firmware, guest media, downloads, Microsoft components, or third-party code is permitted. |
+| Reporting Requirements | Record the generated partition, per-S key totals, every nontrivial boundary decision, baseline verifier totals and actual changed files. The executor performs one bounded delivery; the same session then independently reviews the actual changes against this packet before accepting or issuing one corrective brief. |
+| Stop Conditions | Stop for a manifest/manual/decoder contradiction, an unrepresentable required key, a partition that cannot be made disjoint without changing the approved CPU boundary, a source-policy issue, or a verifier contradiction. Report evidence; do not guess, exclude a key, or invent a fallback. |
+| Exit Criteria | A durable machine-readable or mechanically verified partition assigns each of the 286 base, 459 single-axis and 62 combined keys to exactly one S2--S7 owner; S8 owns closure only. The baseline statuses remain truthful, the partition verifier passes, all required baseline gates pass, and dual-role review accepts the actual change. |
+| Original Owner Request | Owner request, faithfully translated: split 80286 into reasonable S tasks and continue the complete, correct 80286 instruction function and timing implementation under the governance rules. |
+| Similar-Issue Sweep | Defect class: orphaned, duplicate or silently reassigned 80286 manifest keys. Scope: 80286 ledger, manifest, tracker, decoder inventory/verifiers, result contract, queue proposal and the new partition evidence. Search and mechanically reconcile every generated key; no runtime source is in S1 scope. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** target `vm-0-5-0434`; T434 S2 `nxvm_0_5_0434.exe` / `build/output/nxvm_0_5_0434.exe`, SHA-256 `0252F8FDA17BEC2131606F19E3547B46894AC6B56DD37EC3B16BD302494FAFDC`. T434 has one copied Core timing-plan publication route for default PC/AT, IBM 5170 Model 339 and Model-40 BYOB session composition.

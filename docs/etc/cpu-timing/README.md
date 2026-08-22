@@ -47,6 +47,9 @@ The active 80286 S2 block records its all-L3 universe in the
 [80286 manifest](t435-s2-80286-timing-manifest.json),
 [audit](t435-s2-80286-implementation-audit.md), and
 [implementation tracker](t435-s2-80286-implementation-tracker.md).
+T436 S1's executable [canonical-key partition](t436-s1-80286-key-partition.md)
+assigns every retained 80286 base and legal context key to one later
+implementation S before any new runtime timing result is claimed.
 
 The active final profile block uses the [80386DX manifest](t435-s2-80386-timing-manifest.json), [audit](t435-s2-80386-implementation-audit.md), [tracker](t435-s2-80386-implementation-tracker.md), and S8's executable [decoder-ledger verifier](../../../tools/Verify-80386DecoderLedger.ps1).
 
