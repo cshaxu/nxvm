@@ -31,7 +31,7 @@ instruction reaching it is nonconforming; it is never an L1 substitute.
 | `DIV` | legacy dynamic arithmetic | exact source scalar exists but lacks a per-key result; `missing-test`, not conforming |
 | Group-2 rotate/shift (`R1`, `RCL`, `M1`, `MCL`, immediate count) | no 80186 Group-2 selector | **unallocated**: all 42 L3 formula keys require B1 allocation; the 80186 low-five-bit count must be an input |
 | legal `LOCK`, segment override and repeat contexts | no complete prefix-term program | generated only for their consuming legal instruction form; `LOCK` is limited to memory RMW and no prefix is a standalone retirement key |
-| segment override, odd word and repeat phase contexts | inherited helper/string path plus focused runner recipes | all 88 legal single-axis segment keys have complete successful-retirement observations of the Table 1-16 `+2` term; all 87 legal single-axis odd-word keys have equivalent observations and the required `ODD_WORD` input. Repeat-phase and remaining combined contexts retain their manifest-recorded open status until each has equivalent evidence |
+| segment override, odd word and repeat phase contexts | inherited helper/string path plus focused runner recipes | all 248 single-axis contexts and all 89 legal combined contexts have real successful-retirement observations. REP first/continue/zero phases are independently checked; zero-count intentionally excludes transfer-dependent odd-word cost. Final closure still requires publishing these observations as the 616-record result document |
 
 The current code applies `core_machine_8086_timing_effective_address()` and
 `core_machine_8086_timing_odd_word()` on several 80186 primary paths.  That

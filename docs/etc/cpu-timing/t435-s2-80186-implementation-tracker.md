@@ -81,6 +81,15 @@ but their segment contexts legally name only the memory realization.  The
 Table 1-16 `+2` term passes for all 88; no production selector change was
 needed.
 
+P68 closes every remaining legal context combination: the runner now observes
+all 54 repeat-phase keys, 19 `LOCK-SEGMENT` keys, 7 `SEGMENT-ODD-WORD` keys,
+and all 63 legal REP phase combinations.  Its repeat harness independently
+checks first, continuation and zero-count executions; the latter deliberately
+retains a segment term but not a transfer-dependent odd-word term.  All 616
+manifest keys therefore have runner evidence, although the final result
+document still must be generated before the profile's final predicate can be
+claimed.
+
 ## Per-key implementation map
 
 | manifest template | level and authoritative rule | present state | close in |
@@ -98,7 +107,7 @@ needed.
 | `I186-{ENTER-*,LEAVE}`, `I186-FLAG-*` | L3 exact/formula | every base form has real retirement proof; no independent legal context is admitted | B0+B1+B3+B4 |
 | generated `-ODD-WORD` (87 legal single-axis keys) | S1 Table 1-16 `+4` odd-addressed 16-bit transfer | every key has a real successful-retirement observation | B3+B4 |
 | generated `-SEGMENT` (88 legal single-axis keys) | S1 Table 1-16 segment-prefix `+2` | every key has a real successful-retirement observation | B3+B4 |
-| generated `-LOCK`, `-REP-PHASE-*` and legal combined suffixes | S1 Table 1-16 context rule | partial real coverage exists; every unobserved generated key remains open | B3+B4 |
+| generated `-LOCK`, `-REP-PHASE-*` and all legal combined suffixes | S1 Table 1-16 context rule | every legal context key has a real successful-retirement observation | B3+B4 |
 
 The template form is deliberately compact, but braces in the manifest expand
 one concrete key per opcode/form/outcome/width/context.  A test result for one
