@@ -1707,6 +1707,56 @@ static C_INT timing_80286_manifest_run_protected_outer_ret_recipe(C_VOID)
     return failed;
 }
 
+static C_INT timing_80286_manifest_run_protected_outer_iret_recipe(C_VOID)
+{
+    static const type_unsigned_8 user_data[] = {
+        0xffu,0xffu,0,0,0,0xf2u,0,0
+    };
+    static const type_unsigned_8 iret[] = { 0xcfu };
+    static const type_unsigned_8 target[] = { 0x00u,0xc0u };
+    static const type_unsigned_16 frame[] = {
+        0x0010u,0x001bu,VCPU_EFLAGS_CF,0x4000u,0x0023u
+    };
+    const core_machine_run_budget budget = { 1u, 0u };
+    timing_80286_manifest_capture capture = { { 0 }, 0u };
+    const core_machine_retirement_observation_provider provider = {
+        timing_80286_manifest_capture_retirement, &capture
+    };
+    const timing_80286_manifest_record *record;
+    core_machine_run_result run = { 0 };
+    s3_gate_machine state;
+    C_INT failed;
+
+    record = timing_80286_manifest_find("I286-RET-IRET-PRIVILEGE-NEXT-BYTE-2");
+    failed = record == STD_NULL || !timing_80286_manifest_is_i286(record) ||
+        !s3_gate_prepare(&state, CORE_MACHINE_CPU_PROFILE_80286, TYPE_FALSE,
+            VCPU_DESC_SYS_TYPE_INTGATE_16, 0u, TYPE_TRUE);
+    if (!failed) {
+        failed = !s3_gate_write(&state, S3_GDT_BASE + 32u, user_data,
+            sizeof(user_data)) || !s3_gate_write(&state, S3_CODE_BASE, iret,
+            sizeof(iret)) || !s3_gate_write(&state, S3_CODE_BASE + 0x10u,
+            target, sizeof(target)) || !s3_gate_write(&state, S3_STACK_TOP,
+            frame, sizeof(frame));
+        state.machine->executor_cpu.data.gdtr.limit = 39u;
+        state.machine->executor_cpu.data.esp = 0x12348000u;
+        state.machine->executor_cpu.data.eflags = VCPU_EFLAGS_CF;
+        if (!failed) failed = core_machine_set_retirement_observation_provider(
+            state.machine, &provider) != TYPE_STATUS_OK;
+    }
+    if (!failed) {
+        failed = core_machine_run(state.machine, budget, &run) != TYPE_STATUS_OK ||
+            run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
+            run.ticks != 57u || capture.count != 1u ||
+            capture.observation.source_ticks != 57u ||
+            capture.observation.timing_origin !=
+                CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
+            capture.observation.timing_disposition !=
+                CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED;
+    }
+    core_machine_destroy(state.machine);
+    return failed;
+}
+
 static C_INT timing_80286_manifest_run_protected_system(
     const timing_80286_manifest_recipe *recipe)
 {
@@ -2665,6 +2715,10 @@ C_INT main(C_VOID)
         STD_PRINTF("M5:T435:S10:I286-PROTECTED-OUTER-RET-RECIPE:FAIL\n");
         return 1;
     }
+    if (timing_80286_manifest_run_protected_outer_iret_recipe()) {
+        STD_PRINTF("M5:T435:S10:I286-PROTECTED-OUTER-IRET-RECIPE:FAIL\n");
+        return 1;
+    }
     for (index = 0u; index < sizeof(protected_system_recipes) /
         sizeof(protected_system_recipes[0]); ++index) {
         if (timing_80286_manifest_run_protected_system(
@@ -2755,7 +2809,7 @@ C_INT main(C_VOID)
     STD_PRINTF("M5:T435:S10:I286-MANIFEST-FOUNDATION:PASS:observed=%u\n",
         (type_unsigned_32)(sizeof(recipes) / sizeof(recipes[0]) +
             sizeof(control_recipes) / sizeof(control_recipes[0]) +
-            108u +
+            109u +
             sizeof(protected_system_recipes) /
                 sizeof(protected_system_recipes[0]) +
             sizeof(segment_recipes) / sizeof(segment_recipes[0]) +

@@ -57,6 +57,7 @@ far-indirect-CALL next-byte lengths 1 through 6, real same-level RETF
 next-byte lengths 1 through 6, and real IRET next-byte lengths 1 through 6.
 It also observes protected same-level RETF next-byte lengths 1 through 6.
 It also observes protected outer RETF with a two-byte next instruction.
+It also observes protected outer IRET with a two-byte next instruction.
 It also observes protected normal IRET next-byte lengths 1 through 6.
 It also observes protected same-level far CALL next-byte lengths 1 through 6.
 It also observes protected same-level memory far JMP next-byte lengths 1 through 6.
