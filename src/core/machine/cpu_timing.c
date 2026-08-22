@@ -155,6 +155,29 @@ static C_INT core_machine_cpu_timing_select_80186(core_machine *machine,
             core_machine_80186_source_instruction_cost);
 }
 
+/* The 80286 has a complete Appendix-B timing ledger.  Keep its candidate
+ * selection profile-private: 80386-only candidates and the compatibility
+ * endpoint cannot silently supply a successful 80286 retirement. */
+static C_INT core_machine_cpu_timing_select_80286(core_machine *machine,
+    core_machine_cpu_timing_result *result)
+{
+    return core_machine_cpu_timing_try(machine, result,
+        CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO,
+        core_machine_string_io_source_instruction_cost) ||
+        core_machine_cpu_timing_try(machine, result,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_L2_DYNAMIC_ARITHMETIC,
+            core_machine_l2_dynamic_arithmetic_model_cost) ||
+        core_machine_cpu_timing_try(machine, result,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY,
+            core_machine_primary_source_instruction_cost) ||
+        core_machine_cpu_timing_try(machine, result,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK,
+            core_machine_control_stack_source_instruction_cost) ||
+        core_machine_cpu_timing_try(machine, result,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80286_FALLBACK,
+            core_machine_80286_source_instruction_cost);
+}
+
 static C_INT core_machine_cpu_timing_has_8086_lock_prefix(
     const t_cpuins_data *data)
 {
@@ -212,6 +235,8 @@ C_INT core_machine_cpu_timing_select(core_machine *machine,
 
     if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80186) {
         if (!core_machine_cpu_timing_select_80186(machine, &result)) return 0;
+    } else if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286) {
+        if (!core_machine_cpu_timing_select_80286(machine, &result)) return 0;
     } else if (!core_machine_cpu_timing_try(machine, &result,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO,
             core_machine_string_io_source_instruction_cost) &&
@@ -237,10 +262,6 @@ C_INT core_machine_cpu_timing_select(core_machine *machine,
           core_machine_cpu_timing_try(machine, &result,
               CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY,
               core_machine_8086_source_instruction_cost)) &&
-        !(machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 &&
-          core_machine_cpu_timing_try(machine, &result,
-              CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80286_FALLBACK,
-              core_machine_80286_source_instruction_cost)) &&
         !(machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80386 &&
           core_machine_cpu_timing_try(machine, &result,
               CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80386_FALLBACK,
