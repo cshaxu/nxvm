@@ -1955,6 +1955,19 @@ C_INT core_machine_primary_source_instruction_cost(
         return 0;
     }
     opcode = data->opcodes[prefixes];
+    if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 && prefixes == 0u) {
+        switch (opcode) {
+        case 0x90u: *out_ticks = 3u; return 1;
+        case 0xf8u: case 0xf5u: case 0xf9u: case 0xfcu: case 0xfdu:
+        case 0xfbu: case 0x9eu: case 0x9fu:
+            *out_ticks = 2u;
+            return 1;
+        case 0xfau: *out_ticks = 3u; return 1;
+        case 0xd7u: *out_ticks = 5u; return 1;
+        case 0x9bu: *out_ticks = 3u; return 1;
+        default: break;
+        }
+    }
     memory = core_machine_source_timing_modrm_is_memory(data, prefixes);
     if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 &&
         (opcode == 0x8cu || opcode == 0x8eu) && prefixes + 1u < data->oplen &&
@@ -3216,35 +3229,6 @@ C_INT core_machine_80286_source_instruction_cost(core_machine *machine,
             return 1;
         }
         core_machine_source_timing_mark_unallocated(machine, out_ticks);
-        return 1;
-    case 0x90u:
-        *out_ticks = core_machine_80286_source_timing_lookup(machine,
-            CORE_MACHINE_SOURCE_TIMING_NOP);
-        return 1;
-    case 0xf8u:
-        *out_ticks = core_machine_80286_source_timing_lookup(machine,
-            CORE_MACHINE_SOURCE_TIMING_CLC);
-        return 1;
-    case 0xf5u: case 0xf9u: case 0xfcu: case 0xfdu:
-        *out_ticks = 2u;
-        return 1;
-    case 0xfau:
-        *out_ticks = 3u;
-        return 1;
-    case 0xfbu:
-        *out_ticks = 2u;
-        return 1;
-    case 0xd7u:
-        *out_ticks = 5u;
-        return 1;
-    case 0x9bu:
-        /* Appendix B assigns three internal clocks to successful WAIT.
-         * BUSY duration is an external completion condition, not a CPU-row
-         * fallback or an invented instruction cost. */
-        *out_ticks = 3u;
-        return 1;
-    case 0x9eu: case 0x9fu:
-        *out_ticks = 2u;
         return 1;
     case 0x06u: case 0x0eu: case 0x16u: case 0x1eu:
         *out_ticks = 3u;
