@@ -599,11 +599,11 @@ static const core_machine_source_repeat_timing_entry
 static const core_machine_source_repeat_timing_entry
     core_machine_80286_source_repeat_timing_ledger[] = {
     { CORE_MACHINE_SOURCE_TIMING_STRING_MOVS, 5u, 5u, 4u },
-    { CORE_MACHINE_SOURCE_TIMING_STRING_CMPS, 9u, 5u, 9u },
+    { CORE_MACHINE_SOURCE_TIMING_STRING_CMPS, 8u, 5u, 9u },
     { CORE_MACHINE_SOURCE_TIMING_STRING_STOS, 3u, 4u, 3u },
     /* Appendix B: REP LODS follows the S + 4*CX string formula. */
     { CORE_MACHINE_SOURCE_TIMING_STRING_LODS, 5u, 5u, 4u },
-    { CORE_MACHINE_SOURCE_TIMING_STRING_SCAS, 8u, 5u, 8u },
+    { CORE_MACHINE_SOURCE_TIMING_STRING_SCAS, 7u, 5u, 8u },
     { CORE_MACHINE_SOURCE_TIMING_STRING_INS, 5u, 5u, 4u },
     { CORE_MACHINE_SOURCE_TIMING_STRING_OUTS, 5u, 5u, 4u }
 };
