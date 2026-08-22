@@ -86,3 +86,22 @@ the result marker to report actual unique captures rather than probe count.
 The rebuilt runner, absence-of-output refusal check, manifest, decoder-ledger,
 partition and documentation gates pass. The review accepts S2 without a
 conforming-key or final-result claim.
+
+### S3: Non-Control Closure
+
+S3 P1 `b7a7d6b5` removes seven invalid non-memory `ODD-WORD` selector products,
+correctly transfers `INT-TASK` plus seven next-byte contexts to S6, and
+rebaselines the legal universe to 800 keys. It adds the ten real missing S3
+odd-memory execution recipes and a runner assertion that every one of S3's
+303 records is classified and supplies its required EA, odd-word, LOCK and
+segment formula inputs. The result writer remains closed: the runner captures
+573 unique records and honestly refuses the final document until S4--S7 close
+their remaining 227 records.
+
+The single-session coordinator reviewed the actual P1 diff: 15 files, no
+public ABI or board-policy change, one Core manifest cardinality assertion
+rebaselined from 3,887 to 3,880, and 198 net counted source/test lines. The
+80286 runner, manifest, manifest-contract, decoder-ledger, partition and
+documentation gates pass; the missing final result file is rejected as
+required. The coordinator accepts S3 and transfers only S4's string/repeat
+partition, not a hidden S3 residual.

@@ -23,6 +23,11 @@ The focused runner executes 616 probes, captures 573 unique canonical records,
 and reports all 303 S3 records observed. Its final result writer still refuses
 output because S4--S7 own the remaining 227 legal records.
 
+The counted tracked source/test delta is 210 added and 12 removed lines in the
+manifest runner, plus a one-line Core catalog assertion rebaseline: 198 net
+lines. The retained recipes and S3-completion assertion are live; no obsolete
+odd-memory fixture remains.
+
 ```text
 M5:T436:S1:I286-PARTITION-COMPLETE:PASS:canonical=800:S3=303:S4=129:S5=56:S6=220:S7=92
 M5:T435:S7:I286-DECODER-LEDGER-ZERO-DIFFERENCE:PASS:canonical=800

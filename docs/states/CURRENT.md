@@ -2,29 +2,9 @@
 
 ## Current Work
 
-**Active: M5 T436 S3.** The owner-approved continuation closes the
-non-control form and memory-input partition through real 80286 retirements.
-
-## M5 T436 S3 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation; M5 T436 S3 follows accepted S2 in the latest open numeric task. |
-| Admission And Approval | The owner directed continuing single-person dual-role implementation. S3 corrects the manifest legality/ownership evidence before implementation: it assigns S3 exactly 149 base and 303 canonical non-control keys; S2 provides the real-result capture boundary. |
-| Objective | Make every S3 non-control 80286 key execute correctly and produce a real Appendix-B L3 retirement result, including r/m, EA-BID, odd-word, legal memory-RMW LOCK, segment override and all required formula inputs. |
-| Non-goals | Do not implement primitive/repeated strings, ordinary or protected control transfer, protected segment/descriptor/system forms, board timing, an ABI, external source import, a new profile, or a final 800-key result document. |
-| Reference Baseline | [S1 partition](../etc/cpu-timing/t436-s1-80286-key-partition.md), [80286 manual ledger](../etc/cpu-timing/t435-s1-80286-ledger.md), [manifest](../etc/cpu-timing/t435-s2-80286-timing-manifest.json), [tracker](../etc/cpu-timing/t435-s2-80286-implementation-tracker.md), [S2 result producer](../etc/cpu-timing/t436-s2-80286-result-producer.md), current CPU timing source and manifest runner. |
-| Candidate Proposal | [M5 80286 instruction timing closure](../proposals/m5-80286-instruction-timing-closure.md). |
-| Files And ABI Surface | Core-private 80286 timing/decoder input publication only where a S3 recipe proves necessary; 80286 manifest runner, focused tests, manifest/tracker/result evidence, CMake registration if required, task history and CURRENT. No public header or external ABI change. |
-| Applicable Rules | Execution: bounded P lifecycle and dual-role review. Architecture: one Core timing/publishing path; no board policy. Coding: C11 concise cohesive ownership and obsolete-path disposition. Documentation/source policy: current packet and retained manual evidence only. |
-| Verification | Before tracker changes run the 80286 manifest and decoder-ledger verifiers. Build and run the manifest runner and focused 80286 functional tests; prove every S3 assigned key has a successful observed record with correct ticks, origin, unallocated state and required EA/odd/LOCK/segment inputs. Run the partition, result and documentation gates plus actual diff review. |
-| Expected Markers | Retain corrected S1/S2 markers; add `M5:T436:S3:I286-NONCONTROL-COVERAGE:PASS:canonical=303`, `M5:T436:S3:I286-MEMORY-INPUTS:PASS`, and result-capture evidence for every S3 key. |
-| Asset Needs | Existing owner-managed Intel manual evidence and repository fixtures only. No firmware, guest media, downloads, Microsoft components or third-party code. |
-| Reporting Requirements | Report every owned base/context key count, source/test delta, added or removed selector/input paths, per-family functional proof, result capture totals and any residual key transferred only to its S1-assigned future owner. |
-| Stop Conditions | Stop for manual/manifest/decoder contradiction; an S3 key requiring an unrepresentable Core-private input; a required public ABI or board timing change; source-policy issue; verifier contradiction; or a proven semantic defect outside the S3 scope. Do not guess, downgrade or generic-fallback a key. |
-| Exit Criteria | All 303 S3 canonical keys, and no other partition, have correct functional execution and real L3 result-contract observations. Their ticks/origin/form/input/unallocated fields pass verification; no S3 path reaches a successful generic/unallocated fallback; focused and relevant cross-profile regressions pass; dual-role review accepts actual changes. |
-| Original Owner Request | Owner request, faithfully translated: continue the complete correct 80286 instruction function and timing implementation through the reasonably split S tasks. |
-| Similar-Issue Sweep | Defect class: successful non-control 80286 retirement that lacks a canonical observation, required memory-context input, Appendix-B timing selection or focused functional proof. Scope: all S3-assigned manifest keys, CPU timing/decoder paths, runner recipes, focused tests, CMake and result evidence. |
+**Between accepted S units: M5 T436.** S3 closes the legal non-control
+partition through real 80286 retirements. Its [closure evidence](../etc/cpu-timing/t436-s3-80286-noncontrol-closure.md)
+records the 800-key legal rebaseline and 303/303 S3 coverage; S4 is next.
 ## Current Technical Baseline
 
 - **Current developer artifact:** target `vm-0-5-0434`; T434 S2 `nxvm_0_5_0434.exe` / `build/output/nxvm_0_5_0434.exe`, SHA-256 `0252F8FDA17BEC2131606F19E3547B46894AC6B56DD37EC3B16BD302494FAFDC`. T434 has one copied Core timing-plan publication route for default PC/AT, IBM 5170 Model 339 and Model-40 BYOB session composition.
@@ -49,7 +29,7 @@ non-control form and memory-input partition through real 80286 retirements.
 
 | Task | Compact result |
 | --- | --- |
-| T436 S2 | Closed: the [result producer](../etc/cpu-timing/t436-s2-80286-result-producer.md) captures 563 unique real observations from 606 probes and refuses final output until all legal keys exist. S3's correction rebaselines the valid universe to 800 records. |
+| T436 S3 | Closed: the [non-control evidence](../etc/cpu-timing/t436-s3-80286-noncontrol-closure.md) corrects the legal universe to 800 keys and proves all 303 S3 records with real timing/input observations. S4 owns strings and repeat forms next. |
 | T435 | Stopped by owner-approved requeue; not completed. Its profile-specific 80286 and 80386DX closure candidates now lead the Queue. [Record](../history/M5-T435-core-cpu-instruction-timing-program-requeue.md). |
 | T434 | Closed: all 30 copied plan declarations/dispositions, every current VM materializer and atomic Core publication route are reconciled; full task closure proof is retained in the [S3 audit](../etc/evidence/t434-s3-task-closure-audit.md) and [task history](../history/M5-T434-core-timing-contract-machine-plan.md). |
 | T433 | Closed after corrective S7: 30 frozen Core capabilities have a source-sufficiency and ownership disposition; chip/manual semantics are separated from VM-profile inputs, host/product boundaries and the explicit ATA/HDC source block. [S7 ledger](../etc/evidence/t433-s7-core-source-sufficiency-ledger.md). |
