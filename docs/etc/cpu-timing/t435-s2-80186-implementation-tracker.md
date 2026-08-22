@@ -15,6 +15,7 @@ Run:
 ```text
 powershell -NoProfile -ExecutionPolicy Bypass -File tools/Verify-80186TimingManifest.ps1
 powershell -NoProfile -ExecutionPolicy Bypass -File tools/Verify-80186DecoderLedger.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File tools/Verify-80186TimingResults.ps1 -ResultPath <real-result.json>
 ```
 
 before every 80186 tracker-changing P.  The verifier rejects duplicate keys,
@@ -23,6 +24,11 @@ drift.  It is a manifest-integrity gate, not runtime evidence.  The later
 focused test must consume every generated `key_id` and publish target ticks or
 formula inputs, retirement origin and `source_timing_unallocated` under the
 shared [manifest result contract](t435-s2-manifest-result-contract.md).
+The result verifier admits exactly the 603 generated 80186 records and checks
+their manifest provenance, unique real observation, non-terminal publication,
+and every required legal context input. It deliberately has no baseline result
+file: a missing or partial file is evidence of an open key, never a synthetic
+pass.
 
 ## Per-key implementation map
 
