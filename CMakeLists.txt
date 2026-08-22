@@ -407,6 +407,19 @@ if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
         -Wall -Wextra -Wpedantic -Werror)
 endif()
 
+# This is intentionally not a current-gate target yet: it records only the
+# real I186 recipes currently migrated to the manifest-result mechanism.
+add_executable(core-machine-80186-timing-manifest-runner
+    tests/machine/core_machine_80186_timing_manifest_runner.c)
+target_link_libraries(core-machine-80186-timing-manifest-runner PRIVATE
+    core-machine)
+add_dependencies(core-machine-80186-timing-manifest-runner
+    cpu-timing-manifest-catalog)
+if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
+    target_compile_options(core-machine-80186-timing-manifest-runner PRIVATE
+        -Wall -Wextra -Wpedantic -Werror)
+endif()
+
 # S6 uses this test-only scanner to generate a reproducible decoder-boundary
 # artifact. It deliberately has no CTest registration: it writes an audit
 # document and is invoked by the S6 verifier workflow.
