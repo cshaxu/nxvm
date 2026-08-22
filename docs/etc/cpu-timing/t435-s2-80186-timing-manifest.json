@@ -2,7 +2,7 @@
   "schema": "nxvm.cpu-timing-manifest.v1",
   "profile": "80186",
   "source_ledger": "t435-s1-80186-ledger.md",
-  "expected": {"base": 279, "L3": 253, "L2": 26, "contexts":256, "combinations":89},
+  "expected": {"base": 279, "L3": 253, "L2": 26, "contexts":248, "combinations":89},
   "status_values": ["conforming", "wrong-value", "unallocated", "missing-input", "missing-test"],
   "legal_context_contract": "t435-s2-context-legality.md",
   "key_rule": "Each template expands all shown axes. Every key inherits its Intel Table 2-9 primary source rule, a named Table 1-16 supplemental context rule, or an explicitly named fixed-midpoint L2 model; prefixes are legal contexts, never successful standalone retirements.",
@@ -42,7 +42,7 @@
   "context_policy": "Prefixes are axes, not redundant byte streams. SEGMENT expands only a legal memory-source use; ODD-WORD expands only a legal 16-bit transfer; REP phases expand only a legal repeat instruction. LOCK is not crossed with non-lockable instructions.",
   "context_key_sets": [
     {"id_suffix":"SEGMENT","base_selector":"I186-(ALU-.*-(RM|MR|MI)|CMP-(RM|MR|MI)|TEST-(RM|MI)|INC-M|DEC-M|NEG-M|NOT-M|XCHG-MR|MOV-(RM|MR|MOFFS-R|MOFFS-W|SREG-TO-M|SREG-FROM-M)|LDS-M|LES-M|PUSH-M|POP-M|CALL-(RM16|M1616)|JMP-(RM16|M1616)|MUL-M.*|IMUL-M.*|DIV-M.*|IDIV-M.*|(ROL|ROR|RCL|RCR|SHL|SHR|SAR)-M.*|STRING-(MOVS|CMPS|LODS)-.*|REP-(MOVS|CMPS-REPE|CMPS-REPNE|LODS)-.*)","source_rule":"Table 1-16 segment prefix exact +2","route":"mixed; 80186 currently adds inherited EA/odd terms on several primary paths","status":"wrong-value","batch":"B3+B4","test":"i186_timing_{id}"},
-    {"id_suffix":"ODD-WORD","base_selector":"I186-(ALU-.*-(RM|MR|MI)|CMP-(RM|MR|MI)|TEST-(RM|MI)|INC-M|DEC-M|NEG-M|NOT-M|XCHG-MR|MOV-.*|LDS-M|LES-M|PUSH-M|POP-M|CALL-(RM16|M1616)|JMP-(RM16|M1616)|MUL-(R16|M16)|IMUL-(R16|M16)|IDIV-(R16|M16)|DIV-(R16|M16)|(ROL|ROR|RCL|RCR|SHL|SHR|SAR)-M.*|STRING-.*-W|REP-.*-W)","source_rule":"Table 1-16 odd-addressed 16-bit transfer +4","route":"missing per-form transfer observation","status":"missing-input","batch":"B3+B4","test":"i186_timing_{id}"},
+    {"id_suffix":"ODD-WORD","base_selector":"I186-(ALU-.*-(RM|MR|MI)|CMP-(RM|MR|MI)|TEST-(RM|MI)|INC-M|DEC-M|NEG-M|NOT-M|XCHG-MR|MOV-(MOFFS-R|MOFFS-W|RM|MR|MI|SREG-TO-M|SREG-FROM-M)|LDS-M|LES-M|PUSH-M|POP-M|CALL-(RM16|M1616)|JMP-(RM16|M1616)|MUL-M16|IMUL-M16|IDIV-M16|DIV-M16|(ROL|ROR|RCL|RCR|SHL|SHR|SAR)-M.*|STRING-.*-W|REP-.*-W)","source_rule":"Table 1-16 odd-addressed 16-bit transfer +4","route":"missing per-form transfer observation","status":"missing-input","batch":"B3+B4","test":"i186_timing_{id}"},
     {"id_suffix":"REP-PHASE-{phase}","base_selector":"I186-REP-.*","phase":["FIRST","CONTINUE","ZERO"],"source_rule":"Table 1-16 repeat setup/per-primitive formula","route":"string-io","status":"missing-test","batch":"B0+B3+B4","test":"i186_timing_{id}"},
     {"id_suffix":"LOCK","base_selector":"I186-(ALU-.*-(MR|MI)|INC-M|DEC-M|NEG-M|NOT-M|XCHG-MR)","source_rule":"Table 1-16 lock prefix exact +2 on legal memory RMW","route":"unallocated-or-missing-term","status":"unallocated","batch":"B3+B4","test":"i186_timing_{id}"}
   ],

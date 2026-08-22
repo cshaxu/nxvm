@@ -4,7 +4,7 @@
 
 The [80186 manifest](t435-s2-80186-timing-manifest.json) is the sole
 per-key closure ledger.  It expands 279 base instruction keys from the
-accepted [80186 manual ledger](t435-s1-80186-ledger.md), then 256 legal
+accepted [80186 manual ledger](t435-s1-80186-ledger.md), then 248 legal
 single-axis and 89 legal combined/phase context keys under the shared
 [context-legality contract](t435-s2-context-legality.md). This document is the
 human implementation map; it
@@ -24,7 +24,7 @@ drift.  It is a manifest-integrity gate, not runtime evidence.  The later
 focused test must consume every generated `key_id` and publish target ticks or
 formula inputs, retirement origin and `source_timing_unallocated` under the
 shared [manifest result contract](t435-s2-manifest-result-contract.md).
-The result verifier admits exactly the 624 generated 80186 records and checks
+The result verifier admits exactly the 616 generated 80186 records and checks
 their manifest provenance, unique real observation, non-terminal publication,
 and every required legal context input. It deliberately has no baseline result
 file: a missing or partial file is evidence of an open key, never a synthetic
@@ -35,7 +35,7 @@ P23 corrects the prior `G2-*` selector typo: the 21 legal odd-addressed
 `ROL`/`ROR`/`RCL`/`RCR`/`SHL`/`SHR`/`SAR` forms. They retain `missing-input`
 until one real result proves their Table 1-16 `+4` term.
 
-P34--P64 add `core-machine-80186-timing-manifest-runner`. All 279 canonical
+P34--P65 add `core-machine-80186-timing-manifest-runner`. All 279 canonical
 base recipes now pass actual retirement observation, and its metadata coverage
 gate rejects a missing base key or a duplicate-only recipe set. P55 corrects
 the former noncanonical `I186-LEA` / `I186-ENTER-LGT1` spellings, makes the
@@ -55,7 +55,13 @@ proves all 19 legal memory-RMW `LOCK` keys and checks the common selector's
 manual `+2` prefix term. P64 derives and proves all 19 `LOCK-SEGMENT` keys,
 with both manual terms present. Odd-word and string-prefix combinations remain
 deliberately open; the runner writes no final result document and every
-manifest status remains open until all 624 keys have a real recipe.
+manifest status remains open until all 616 keys have a real recipe.
+
+P65 corrects the `ODD-WORD` selector to remove eight impossible pure-register
+forms (`MOV-RR`, `MOV-RI`, two segment-register forms, and four Group-3
+register forms). This reduces the canonical universe from 624 to 616 only by
+enforcing the pre-existing legality contract: an odd-word context names a
+16-bit memory transfer, never a register operation.
 
 ## Per-key implementation map
 

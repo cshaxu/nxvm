@@ -53,7 +53,7 @@ route is terminal `source_timing_unallocated`.
 source route may exist, but no focused key result has yet proved the required
 value and inputs.
 
-The manifest additionally expands 256 single-axis contexts and 89 legal
+The manifest additionally expands 248 single-axis contexts and 89 legal
 combined/phase contexts.  They cover
 only legal segment-source uses, odd 16-bit transfers, legal repeat phases and
 lockable read-modify-write forms.  The combined set covers legal lock/segment
