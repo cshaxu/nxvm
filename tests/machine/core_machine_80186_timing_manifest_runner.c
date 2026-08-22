@@ -159,7 +159,9 @@ static const timing_80186_manifest_inputs *timing_80186_manifest_inputs_find(
         { "I186-IDIV-M8", 0u, 0x1000u, 1u },
         { "I186-IDIV-M16", 0u, 0x1000u, 1u },
         { "I186-DIV-M8", 0u, 0x1000u, 1u },
-        { "I186-DIV-M16", 0u, 0x1000u, 1u }
+        { "I186-DIV-M16", 0u, 0x1000u, 1u },
+        { "I186-LDS-M", 0u, 0x1000u, 1u },
+        { "I186-LES-M", 0u, 0x1000u, 1u }
     };
     STD_SIZE_T index;
 
@@ -222,10 +224,11 @@ static C_INT timing_80186_manifest_prepare(core_machine **out_machine,
         machine->executor_cpu.data.dx = 0u;
     }
     if (status == TYPE_STATUS_OK && inputs != STD_NULL) {
+        type_unsigned_32 memory_value = inputs->memory_value;
+
         machine->executor_cpu.data.cx = inputs->cx;
         if (inputs->memory_value != 0u) status = core_machine_memory_write(machine,
-            inputs->memory_address, &inputs->memory_value,
-            sizeof(inputs->memory_value));
+            inputs->memory_address, &memory_value, sizeof(memory_value));
     }
     if (status == TYPE_STATUS_OK) status =
         core_machine_set_retirement_observation_provider(machine, &provider);
@@ -526,6 +529,12 @@ C_INT main(C_VOID)
         { "I186-JMP-SHORT", { 0xebu,0u }, 2u, 13u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
         { "I186-XLAT", { 0xd7u }, 1u, 11u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I186-LEA", { 0x8du,0x06u,0u,0x10u }, 4u, 6u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I186-LDS-M", { 0xc5u,0x06u,0u,0x10u }, 4u, 18u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I186-LES-M", { 0xc4u,0x06u,0u,0x10u }, 4u, 18u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I186-ADJ-AAA", { 0x37u }, 1u, 8u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
