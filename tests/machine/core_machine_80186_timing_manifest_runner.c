@@ -933,6 +933,55 @@ static C_INT timing_80186_manifest_run_repeat_segment_odd_recipe(
     return failed;
 }
 
+static C_INT timing_80186_manifest_write_results(C_VOID)
+{
+    const C_CHAR *const path =
+        "docs/etc/cpu-timing/t435-s9-80186-timing-results.json";
+    STD_FILE *file = STD_FOPEN(path, "wb");
+    STD_SIZE_T index;
+    STD_SIZE_T written = 0u;
+
+    if (file == STD_NULL) return 1;
+    if (STD_FPRINTF(file, "{\n  \"schema\": \"nxvm.cpu-timing-results.v1\",\n"
+            "  \"profile\": \"80186\",\n  \"results\": [\n") < 0) {
+        STD_FCLOSE(file);
+        return 1;
+    }
+    for (index = 0u; index < sizeof(timing_80186_manifest_records) /
+            sizeof(timing_80186_manifest_records[0]); ++index) {
+        const timing_80186_manifest_record *record =
+            &timing_80186_manifest_records[index];
+        const core_machine_retirement_observation *observation =
+            &timing_80186_manifest_results[index];
+
+        if (!timing_80186_manifest_is_i186(record)) continue;
+        if (!timing_80186_manifest_observed[index]) {
+            STD_FCLOSE(file);
+            return 1;
+        }
+        if ((written != 0u && STD_FPRINTF(file, ",\n") < 0) ||
+            STD_FPRINTF(file, "    {\"key_id\":\"%s\","
+                "\"profile\":\"%s\",\"level\":\"%s\","
+                "\"source_rule\":\"%s\",\"context\":\"%s\","
+                "\"ticks\":%llu,\"formula_inputs\":%u,"
+                "\"form_id\":%u,\"retirement_origin\":%d,"
+                "\"source_timing_unallocated\":%s,\"passed\":true}",
+                record->key_id, record->profile, record->level,
+                record->source_rule, record->context, observation->source_ticks,
+                observation->formula_inputs, observation->source_timing_form_id,
+                observation->timing_origin,
+                observation->timing_disposition ==
+                    CORE_MACHINE_RETIREMENT_TIMING_SOURCE_UNALLOCATED ?
+                    "true" : "false") < 0) {
+            STD_FCLOSE(file);
+            return 1;
+        }
+        ++written;
+    }
+    if (STD_FPRINTF(file, "\n  ]\n}\n") < 0 || STD_FCLOSE(file) != 0) return 1;
+    return written == 616u ? 0 : 1;
+}
+
 static C_VOID timing_80186_manifest_report_failure(
     const timing_80186_manifest_recipe *recipe)
 {
@@ -1826,6 +1875,7 @@ C_INT main(C_VOID)
     STD_PRINTF("M5:T435:S9:I186-MANIFEST-COMBINATION-COVERAGE:%u\n",
         (type_unsigned_32)combined_records);
     if (combined_records != 89u) return 1;
+    if (timing_80186_manifest_write_results()) return 1;
     STD_PRINTF("M5:T435:S9:I186-MANIFEST-OBSERVED:%u\n",
         (type_unsigned_32)observed);
     return 0;

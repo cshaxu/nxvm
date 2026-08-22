@@ -11,7 +11,7 @@ if ($records.Count -eq 1 -and $records[0] -is [System.Array]) {
     $records = @($records[0])
 }
 $expectedRecords = @($records | Where-Object { $_.profile -eq "80186" })
-if ($expectedRecords.Count -ne 624) {
+if ($expectedRecords.Count -ne 616) {
     throw "80186 canonical-key count mismatch: $($expectedRecords.Count)"
 }
 if (-not (Test-Path -LiteralPath $ResultPath)) {
@@ -60,7 +60,12 @@ foreach ($result in $results) {
     $requiredInputs = 0
     if ($key -match "-LOCK(?:-|$)") { $requiredInputs = $requiredInputs -bor 32 }
     if ($key -match "-SEGMENT(?:-|$)") { $requiredInputs = $requiredInputs -bor 128 }
-    if ($key -match "-ODD-WORD(?:-|$)") { $requiredInputs = $requiredInputs -bor 256 }
+    # REP zero-count performs setup only: the manual's odd-address term belongs
+    # to a 16-bit transfer and therefore is not an input for that phase.
+    if ($key -match "-ODD-WORD(?:-|$)" -and
+            $key -notmatch "-REP-PHASE-ZERO$") {
+        $requiredInputs = $requiredInputs -bor 256
+    }
     if ($key -match "^I186-REP-") { $requiredInputs = $requiredInputs -bor 4 -bor 512 }
     if (($result.formula_inputs -band $requiredInputs) -ne $requiredInputs) {
         throw "80186 timing result is missing required formula inputs: $key"

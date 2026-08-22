@@ -74,5 +74,14 @@ combinations or redundant prefix byte streams.
 Closure is all generated keys `conforming` at their declared L3 or L2:midpoint
 level.  There is no L1 fallback and no transfer to another task.
 
+## P69 result evidence
+
+`t435-s9-80186-timing-results.json` contains exactly 616 emitted retirement
+records.  `Verify-80186TimingResults.ps1` accepts it with
+`conforming_keys=616`; this is the result-contract evidence that the prior
+runner coverage cannot substitute for on its own.  For `REP-PHASE-ZERO`, the
+verifier correctly requires repeat/phase and any segment input, but not the
+transfer-dependent odd-word input.
+
 Markers: `M5:T435:S2:80186-IMPLEMENTATION-AUDIT:OK`;
 `M5:T435:S2:80186-REPAIR-SET:OK`.

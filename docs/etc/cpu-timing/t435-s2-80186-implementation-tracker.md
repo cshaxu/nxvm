@@ -90,6 +90,14 @@ manifest keys therefore have runner evidence, although the final result
 document still must be generated before the profile's final predicate can be
 claimed.
 
+P69 makes that final predicate executable.  The runner refuses to write
+`t435-s9-80186-timing-results.json` unless all 616 manifest records have a
+real observation, then serializes each retirement's ticks, formula inputs,
+published form ID, origin and classified disposition.  The profile-specific
+result verifier accepts the artifact with `conforming_keys=616`.  Its
+zero-count rule deliberately does not require `ODD_WORD`: no transfer occurs
+in that phase, so the manual's transfer-dependent term is absent.
+
 ## Per-key implementation map
 
 | manifest template | level and authoritative rule | present state | close in |
