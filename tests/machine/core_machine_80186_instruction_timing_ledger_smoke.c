@@ -253,6 +253,9 @@ C_INT main(C_VOID)
     static const type_unsigned_8 xlat[] = { 0xd7u };
     static const type_unsigned_8 sreg_to_register[] = { 0x8cu, 0xc0u };
     static const type_unsigned_8 sreg_from_register[] = { 0x8eu, 0xc0u };
+    static const type_unsigned_8 cmc[] = { 0xf5u };
+    static const type_unsigned_8 sahf[] = { 0x9eu };
+    static const type_unsigned_8 lahf[] = { 0x9fu };
 
     if (timing_80186_case(nop, sizeof(nop), 3u) ||
         timing_80186_case(clc, sizeof(clc), 2u) ||
@@ -267,7 +270,10 @@ C_INT main(C_VOID)
         timing_80186_case(rotate_imm, sizeof(rotate_imm), 8u) ||
         timing_80186_case(xlat, sizeof(xlat), 11u) ||
         timing_80186_case(sreg_to_register, sizeof(sreg_to_register), 2u) ||
-        timing_80186_case(sreg_from_register, sizeof(sreg_from_register), 2u)) return 1;
+        timing_80186_case(sreg_from_register, sizeof(sreg_from_register), 2u) ||
+        timing_80186_case(cmc, sizeof(cmc), 2u) ||
+        timing_80186_case(sahf, sizeof(sahf), 3u) ||
+        timing_80186_case(lahf, sizeof(lahf), 2u)) return 1;
     if (timing_80186_memory()) return 2;
     if (timing_80186_control_ports()) return 3;
     if (timing_80186_boundaries()) return 4;

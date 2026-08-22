@@ -1786,19 +1786,24 @@ static C_INT core_machine_legacy_source_instruction_cost(core_machine *machine,
         return 1;
     case 0xf5u: case 0xf9u: case 0xfau: case 0xfbu: case 0xfcu:
     case 0xfdu:
-        if (machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_8086) break;
+        if (machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_8086 &&
+            machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_80186) break;
         machine->source_timing_form_id = CORE_MACHINE_SOURCE_TIMING_8086_FLAG;
         *out_ticks = 2u;
         return 1;
     case 0x9eu: case 0x9fu:
-        if (machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_8086) break;
+        if (machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_8086 &&
+            machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_80186) break;
         machine->source_timing_form_id = CORE_MACHINE_SOURCE_TIMING_8086_FLAG;
-        *out_ticks = 4u;
+        *out_ticks = machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80186 ?
+            (opcode == 0x9eu ? 3u : 2u) : 4u;
         return 1;
     case 0x9bu:
-        if (machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_8086) break;
+        if (machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_8086 &&
+            machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_80186) break;
         machine->source_timing_form_id = CORE_MACHINE_SOURCE_TIMING_8086_WAIT;
-        *out_ticks = 3u + (type_unsigned_64)5u *
+        *out_ticks = (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80186 ?
+            6u : 3u) + (type_unsigned_64)5u *
             core_machine_fpu_last_wait_iterations(&machine->fpu);
         return 1;
     case 0xd7u:
@@ -1810,13 +1815,16 @@ static C_INT core_machine_legacy_source_instruction_cost(core_machine *machine,
             CORE_MACHINE_8086_SEGMENT_OVERRIDE_TICKS : 0u);
         return 1;
     default:
-        if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_8086 &&
+        if ((machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_8086 ||
+             machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80186) &&
             opcode >= 0xd8u && opcode <= 0xdfu) {
             machine->source_timing_form_id = CORE_MACHINE_SOURCE_TIMING_8086_ESC;
-            *out_ticks = data->flagMem ? 8u +
+            *out_ticks = machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80186 ?
+                (data->flagMem ? 6u : 2u) : data->flagMem ? 8u +
                 core_machine_8086_timing_effective_address(data, prefixes) +
                 core_machine_8086_timing_odd_word(data) : 2u;
-            if (data->flagMem && segment_override) {
+            if (data->flagMem && segment_override &&
+                machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_8086) {
                 *out_ticks += CORE_MACHINE_8086_SEGMENT_OVERRIDE_TICKS;
             }
             return 1;
