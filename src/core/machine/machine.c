@@ -2046,7 +2046,8 @@ C_INT core_machine_primary_source_instruction_cost(
     if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 &&
         (opcode == 0xc4u || opcode == 0xc5u) && data->flagMem) {
         *out_ticks = (core_machine_control_stack_is_protected(data) ? 21u : 7u) +
-            core_machine_80286_timing_effective_address(data, prefixes);
+            core_machine_80286_timing_effective_address(data, prefixes) +
+            2u * core_machine_80286_timing_odd_word(data);
         return 1;
     }
     if (!core_machine_source_timing_primary_shape(data, prefixes, &shape)) {
