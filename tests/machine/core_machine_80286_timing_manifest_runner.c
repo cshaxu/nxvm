@@ -8,6 +8,8 @@
 #define TIMING_80286_MANIFEST_RESET_LINEAR 0xfffffff0u
 #define TIMING_80286_MANIFEST_RESET_PHYSICAL 0x000ffff0u
 #define TIMING_80286_MANIFEST_WINDOW_BYTES 16u
+#define TIMING_80286_MANIFEST_STACK_LINEAR 0x00001000u
+#define TIMING_80286_MANIFEST_STACK_BYTES 16u
 
 /* Incremental real-observation runner for the I286 manifest.  A partial
  * recipe set must never write the final result document: the result verifier
@@ -76,6 +78,13 @@ static C_INT timing_80286_manifest_is_dx_port(const C_CHAR *key_id)
         STD_STRCMP(key_id, "I286-OUT-DX-W") == 0);
 }
 
+static C_INT timing_80286_manifest_is_into(const C_CHAR *key_id)
+{
+    return key_id != STD_NULL &&
+        (STD_STRCMP(key_id, "I286-INTO-TAKEN-NEXT-BYTE-2") == 0 ||
+            STD_STRCMP(key_id, "I286-INTO-NOT") == 0);
+}
+
 static type_unsigned_16 timing_80286_manifest_control_cx(const C_CHAR *key_id)
 {
     if (key_id == STD_NULL) return 2u;
@@ -88,7 +97,7 @@ static type_unsigned_16 timing_80286_manifest_control_cx(const C_CHAR *key_id)
 static core_machine_retirement_timing_origin
 timing_80286_manifest_control_origin(type_unsigned_8 opcode)
 {
-    return opcode >= 0xe0u && opcode <= 0xe3u ?
+    return (opcode == 0xceu || (opcode >= 0xe0u && opcode <= 0xe3u)) ?
         CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK :
         CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80286_FALLBACK;
 }
@@ -169,6 +178,17 @@ static C_INT timing_80286_manifest_prepare(core_machine **out_machine,
     if (status == TYPE_STATUS_OK) status = core_machine_reset(machine);
     if (status == TYPE_STATUS_OK) status = core_machine_memory_write(machine,
         TIMING_80286_MANIFEST_RESET_LINEAR, program, bytes);
+    if (status == TYPE_STATUS_OK && timing_80286_manifest_is_into(key_id)) {
+        const type_unsigned_16 handler[] = { 0xfff5u, 0xf000u };
+        const type_unsigned_8 handler_code[] = { 0x00u, 0xc0u };
+
+        machine->executor_cpu.data.sp = TIMING_80286_MANIFEST_STACK_LINEAR +
+            TIMING_80286_MANIFEST_STACK_BYTES;
+        status = core_machine_memory_write(machine, 4u * 4u, handler,
+            sizeof(handler));
+        if (status == TYPE_STATUS_OK) status = core_machine_memory_write(machine,
+            0x000ffff5u, handler_code, sizeof(handler_code));
+    }
     if (status == TYPE_STATUS_OK) {
         const type_unsigned_16 operand = 1u;
 
@@ -574,7 +594,9 @@ C_INT main(C_VOID)
         { "I286-LOOPE-TAKEN", 0xe1u, VCPU_EFLAGS_ZF, 8u },
         { "I286-LOOPE-NOT", 0xe1u, 0u, 4u },
         { "I286-LOOPNE-TAKEN", 0xe0u, 0u, 8u },
-        { "I286-LOOPNE-NOT", 0xe0u, VCPU_EFLAGS_ZF, 4u }
+        { "I286-LOOPNE-NOT", 0xe0u, VCPU_EFLAGS_ZF, 4u },
+        { "I286-INTO-TAKEN-NEXT-BYTE-2", 0xceu, VCPU_EFLAGS_OF, 26u },
+        { "I286-INTO-NOT", 0xceu, 0u, 3u }
     };
     STD_SIZE_T index;
 
