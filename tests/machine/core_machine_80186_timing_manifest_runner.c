@@ -170,7 +170,15 @@ static const timing_80186_manifest_inputs *timing_80186_manifest_inputs_find(
         { "I186-LDS-M", 0u, 0x1000u, 1u },
         { "I186-LES-M", 0u, 0x1000u, 1u },
         { "I186-PUSH-M", 0u, 0x1000u, 1u },
-        { "I186-POP-M", 0u, 0x1000u, 1u }
+        { "I186-POP-M", 0u, 0x1000u, 1u },
+        { "I186-JCXZ-TAKEN", 0u, 0u, 0u },
+        { "I186-JCXZ-NOT", 1u, 0u, 0u },
+        { "I186-LOOP-TAKEN", 2u, 0u, 0u },
+        { "I186-LOOP-NOT", 1u, 0u, 0u },
+        { "I186-LOOPE-TAKEN", 2u, 0u, 0u },
+        { "I186-LOOPE-NOT", 2u, 0u, 0u },
+        { "I186-LOOPNE-TAKEN", 2u, 0u, 0u },
+        { "I186-LOOPNE-NOT", 2u, 0u, 0u }
     };
     STD_SIZE_T index;
 
@@ -697,7 +705,23 @@ C_INT main(C_VOID)
         TIMING_80186_JCC("I186-JCC-JLE-TAKEN", 0x7eu, VCPU_EFLAGS_ZF, 13u),
         TIMING_80186_JCC("I186-JCC-JLE-NOT", 0x7eu, 0u, 4u),
         TIMING_80186_JCC("I186-JCC-JG-TAKEN", 0x7fu, 0u, 13u),
-        TIMING_80186_JCC("I186-JCC-JG-NOT", 0x7fu, VCPU_EFLAGS_ZF, 4u)
+        TIMING_80186_JCC("I186-JCC-JG-NOT", 0x7fu, VCPU_EFLAGS_ZF, 4u),
+        { { "I186-JCXZ-TAKEN", { 0xe3u,1u }, 2u, 15u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK }, 0u },
+        { { "I186-JCXZ-NOT", { 0xe3u,1u }, 2u, 5u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK }, 0u },
+        { { "I186-LOOP-TAKEN", { 0xe2u,1u }, 2u, 15u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK }, 0u },
+        { { "I186-LOOP-NOT", { 0xe2u,1u }, 2u, 5u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK }, 0u },
+        { { "I186-LOOPE-TAKEN", { 0xe1u,1u }, 2u, 16u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK }, VCPU_EFLAGS_ZF },
+        { { "I186-LOOPE-NOT", { 0xe1u,1u }, 2u, 6u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK }, 0u },
+        { { "I186-LOOPNE-TAKEN", { 0xe0u,1u }, 2u, 16u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK }, 0u },
+        { { "I186-LOOPNE-NOT", { 0xe0u,1u }, 2u, 6u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK }, VCPU_EFLAGS_ZF }
     };
 #undef TIMING_80186_JCC
     STD_SIZE_T index;
