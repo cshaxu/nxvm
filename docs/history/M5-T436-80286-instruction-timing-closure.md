@@ -142,3 +142,10 @@ publication. The final focused runner reports 603 observations and 54/54 S5
 coverage; manifest, partition, decoder-ledger and documentation governance
 checks pass. The review accepts S5 and transfers only the already partitioned
 S6 protected-control records.
+
+The coordinator reviewed P1 `eb3f0b8c`: six files, no public ABI, board/event
+policy, imported source, or generic timing fallback. The focused call-gate,
+task-switch and timing-runner regressions pass; manifest, partition and
+decoder-ledger governance checks pass; the runner reports 193/193 S6 transfer
+records with classified Control Stack origin and required inputs. The review
+accepts S6 and transfers only S7's seven protected-system records.
