@@ -319,6 +319,8 @@ static C_INT timing_80286_manifest_prepare_protected_system(
         0x8eu,0xd8u, 0xeau,0u,0u,0x08u,0u
     };
     static const type_unsigned_8 halt[] = { 0xf4u };
+    static const type_unsigned_8 table_pointer[] = { 0x37u, 0u, 0u, 0x03u,
+        0u, 0u };
     const core_machine_config config = {
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_80286,
         .ticks_per_instruction = 29u,
@@ -372,6 +374,12 @@ static C_INT timing_80286_manifest_prepare_protected_system(
     }
     if (status == TYPE_STATUS_OK) status = core_machine_memory_write(machine,
         0x4000u, &operand, sizeof(operand));
+    if (status == TYPE_STATUS_OK && (STD_STRCMP(key_id,
+            "I286-SYSTEM-LGDT-M-EA-BID") == 0 || STD_STRCMP(key_id,
+            "I286-SYSTEM-LIDT-M-EA-BID") == 0)) {
+        status = core_machine_memory_write(machine, 0x4000u, table_pointer,
+            sizeof(table_pointer));
+    }
     if (status == TYPE_STATUS_OK) {
         machine->executor_cpu.data.eax = operand;
         if (bytes >= 5u && (program[2] & 0xc7u) == 0x82u) {
@@ -906,6 +914,14 @@ C_INT main(C_VOID)
         { "I286-SYSTEM-LLDT-M-EA-BID", { 0x0fu, 0x00u, 0x92u, 0u, 0u }, 5u, 20u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-SYSTEM-LTR-M-EA-BID", { 0x0fu, 0x00u, 0x9au, 0u, 0u }, 5u, 20u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-SYSTEM-SGDT-M-EA-BID", { 0x0fu, 0x01u, 0x82u, 0u, 0u }, 5u, 12u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-SYSTEM-SIDT-M-EA-BID", { 0x0fu, 0x01u, 0x8au, 0u, 0u }, 5u, 13u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-SYSTEM-LGDT-M-EA-BID", { 0x0fu, 0x01u, 0x92u, 0u, 0u }, 5u, 12u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-SYSTEM-LIDT-M-EA-BID", { 0x0fu, 0x01u, 0x9au, 0u, 0u }, 5u, 13u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-SYSTEM-LMSW-M-EA-BID", { 0x0fu, 0x01u, 0xb2u, 0u, 0u }, 5u, 7u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
