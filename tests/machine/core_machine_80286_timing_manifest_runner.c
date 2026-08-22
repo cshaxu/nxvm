@@ -372,6 +372,10 @@ static C_INT timing_80286_manifest_prepare_protected_system(
         0x4000u, &operand, sizeof(operand));
     if (status == TYPE_STATUS_OK) {
         machine->executor_cpu.data.eax = operand;
+        if (bytes >= 5u && (program[2] & 0xc7u) == 0x82u) {
+            machine->executor_cpu.data.ebp = 0x0800u;
+            machine->executor_cpu.data.esi = 0x0800u;
+        }
         machine->elapsed_ticks = 0u;
         test_core_machine_fixture_resume_after_halt_at(machine, 0u);
     }
@@ -888,6 +892,22 @@ C_INT main(C_VOID)
         { "I286-SYSTEM-SMSW-M", { 0x0fu, 0x01u, 0x26u, 0u, 0x10u }, 5u, 3u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-SYSTEM-STR-M", { 0x0fu, 0x00u, 0x0eu, 0u, 0x10u }, 5u, 3u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-SYSTEM-VERR-M-EA-BID", { 0x0fu, 0x00u, 0xa2u, 0u, 0u }, 5u, 17u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-SYSTEM-VERW-M-EA-BID", { 0x0fu, 0x00u, 0xaau, 0u, 0u }, 5u, 17u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-SYSTEM-LAR-M-EA-BID", { 0x0fu, 0x02u, 0x8au, 0u, 0u }, 5u, 17u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-SYSTEM-LSL-M-EA-BID", { 0x0fu, 0x03u, 0x8au, 0u, 0u }, 5u, 17u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-SYSTEM-LMSW-M-EA-BID", { 0x0fu, 0x01u, 0xb2u, 0u, 0u }, 5u, 7u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-SYSTEM-SLDT-M-EA-BID", { 0x0fu, 0x00u, 0x82u, 0u, 0u }, 5u, 4u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-SYSTEM-SMSW-M-EA-BID", { 0x0fu, 0x01u, 0xa2u, 0u, 0u }, 5u, 4u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-SYSTEM-STR-M-EA-BID", { 0x0fu, 0x00u, 0x8au, 0u, 0u }, 5u, 4u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY }
     };
     STD_SIZE_T index;

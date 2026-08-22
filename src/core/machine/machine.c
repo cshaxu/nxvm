@@ -3217,6 +3217,8 @@ static C_INT core_machine_80286_system_source_instruction_cost(core_machine *mac
 {
     const t_cpuins_data *data = &machine->executor_cpu_instructions.data;
     type_unsigned_32 prefixes = core_machine_instruction_prefix_count(data);
+    type_unsigned_64 memory_ea = data->flagMem ?
+        core_machine_80286_timing_effective_address(data, prefixes + 1u) : 0u;
     type_unsigned_8 opcode;
 
     if (out_ticks == STD_NULL) return 0;
@@ -3236,7 +3238,7 @@ static C_INT core_machine_80286_system_source_instruction_cost(core_machine *mac
              ((data->opcodes[prefixes + 2u] >> 3u) & 7u) == 3u) &&
             core_machine_control_stack_is_protected(data) &&
             data->oldcpu.data.cs.dpl == 0u) {
-            *out_ticks = data->flagMem ? 19u : 17u;
+            *out_ticks = (data->flagMem ? 19u : 17u) + memory_ea;
             return 1;
         }
         if (prefixes + 2u < data->oplen &&
@@ -3246,6 +3248,7 @@ static C_INT core_machine_80286_system_source_instruction_cost(core_machine *mac
              data->oldcpu.data.cs.dpl == 0u)) {
             *out_ticks = ((data->opcodes[prefixes + 2u] >> 3u) & 7u) == 0u ||
                 ((data->opcodes[prefixes + 2u] >> 3u) & 7u) == 2u ? 11u : 12u;
+            *out_ticks += memory_ea;
             return 1;
         }
         if (prefixes + 1u < data->oplen && data->opcodes[prefixes + 1u] == 0x06u &&
@@ -3259,7 +3262,7 @@ static C_INT core_machine_80286_system_source_instruction_cost(core_machine *mac
             ((((data->opcodes[prefixes + 2u] >> 3u) & 7u) == 4u) ||
              (((data->opcodes[prefixes + 2u] >> 3u) & 7u) == 5u)) &&
             core_machine_control_stack_is_protected(data)) {
-            *out_ticks = data->flagMem ? 16u : 14u;
+            *out_ticks = (data->flagMem ? 16u : 14u) + memory_ea;
             return 1;
         }
         if (prefixes + 2u < data->oplen &&
@@ -3279,6 +3282,7 @@ static C_INT core_machine_80286_system_source_instruction_cost(core_machine *mac
                 (data->opcodes[prefixes + 1u] == 0x02u ||
                 data->opcodes[prefixes + 1u] == 0x03u ?
                 (data->flagMem ? 16u : 14u) : (data->flagMem ? 3u : 2u));
+            *out_ticks += memory_ea;
             return 1;
         }
         core_machine_source_timing_mark_unallocated(machine, out_ticks);
