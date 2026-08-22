@@ -1116,6 +1116,18 @@ C_INT main(C_VOID)
     };
     static const timing_80286_manifest_recipe lock_recipes[] = {
         { "I286-ALU-ADD-MR-LOCK", { 0xf0u, 0x00u, 0x0eu, 0u, 0x10u }, 5u, 7u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-OR-MR-LOCK", { 0xf0u, 0x08u, 0x0eu, 0u, 0x10u }, 5u, 7u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-SUB-MR-LOCK", { 0xf0u, 0x28u, 0x0eu, 0u, 0x10u }, 5u, 7u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-ADD-RMI-LOCK", { 0xf0u, 0x80u, 0x06u, 0u, 0x10u, 1u }, 6u, 7u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-INC-M-LOCK", { 0xf0u, 0xfeu, 0x06u, 0u, 0x10u }, 5u, 7u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-NEG-M-LOCK", { 0xf0u, 0xf6u, 0x1eu, 0u, 0x10u }, 5u, 7u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-XCHG-MR-LOCK", { 0xf0u, 0x86u, 0x0eu, 0u, 0x10u }, 5u, 5u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY }
     };
     STD_SIZE_T index;
