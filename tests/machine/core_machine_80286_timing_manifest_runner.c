@@ -585,42 +585,55 @@ static C_INT timing_80286_manifest_run_repeat_recipe(
 }
 
 static C_INT timing_80286_manifest_run_string_recipe(
-    const timing_80286_manifest_recipe *recipe)
+    const timing_80286_manifest_recipe *recipe, C_INT odd_word)
 {
     const core_machine_run_budget budget = { 1u, 0u };
     const type_unsigned_16 value = 1u;
     timing_80286_manifest_capture capture = { { 0 }, 0u };
     core_machine_run_result run = { 0 };
     core_machine *machine = STD_NULL;
+    C_CHAR key_id[96];
+    type_unsigned_64 expected_ticks;
+    C_INT source_odd;
     C_INT failed;
 
     if (recipe == STD_NULL) return 1;
-    failed = timing_80286_manifest_find(recipe->key_id) == STD_NULL ||
-        !timing_80286_manifest_prepare(&machine, &capture, recipe->key_id,
+    if (STD_SNPRINTF(key_id, sizeof(key_id), "%s%s", recipe->key_id,
+            odd_word ? "-ODD-WORD" : "") < 0) return 1;
+    expected_ticks = recipe->ticks + (odd_word ? 2u : 0u);
+    source_odd = odd_word && (recipe->program[0] == 0xa5u ||
+        recipe->program[0] == 0xa7u || recipe->program[0] == 0xadu ||
+        recipe->program[0] == 0x6fu);
+    failed = timing_80286_manifest_find(key_id) == STD_NULL ||
+        !timing_80286_manifest_prepare(&machine, &capture, key_id,
             recipe->program, recipe->bytes);
     if (!failed) {
         machine->executor_cpu.data.es.base = machine->executor_cpu.data.ds.base;
         machine->executor_cpu.data.es.selector = machine->executor_cpu.data.ds.selector;
-        machine->executor_cpu.data.si = 0x1000u;
-        machine->executor_cpu.data.di = 0x1100u;
+        machine->executor_cpu.data.si = source_odd ? 0x1001u : 0x1000u;
+        machine->executor_cpu.data.di = source_odd ? 0x1100u :
+            odd_word ? 0x1101u : 0x1100u;
         machine->executor_cpu.data.ax = value;
         machine->executor_cpu.data.edx = 0x0080u;
-        failed = core_machine_memory_write(machine, 0x1000u, &value,
-            sizeof(value)) != TYPE_STATUS_OK || core_machine_memory_write(machine,
-            0x1100u, &value, sizeof(value)) != TYPE_STATUS_OK;
+        failed = core_machine_memory_write(machine, source_odd ? 0x1001u : 0x1000u,
+            &value, sizeof(value)) != TYPE_STATUS_OK || core_machine_memory_write(
+            machine, source_odd ? 0x1100u : odd_word ? 0x1101u : 0x1100u,
+            &value, sizeof(value)) != TYPE_STATUS_OK;
     }
     if (!failed) {
         failed = core_machine_run(machine, budget, &run) != TYPE_STATUS_OK ||
             run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
-            run.ticks != recipe->ticks || capture.count != 1u ||
-            capture.observation.source_ticks != recipe->ticks ||
+            run.ticks != expected_ticks || capture.count != 1u ||
+            capture.observation.source_ticks != expected_ticks ||
             capture.observation.timing_origin !=
                 CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO ||
             capture.observation.timing_disposition !=
-                CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED;
+                CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED ||
+            (odd_word && (capture.observation.formula_inputs &
+                CORE_MACHINE_CPU_TIMING_INPUT_ODD_WORD) == 0u);
     }
     if (failed) STD_PRINTF("M5:T435:S10:I286-STRING-DETAIL:%s:expected=%llu:run=%llu:source=%llu:count=%u\n",
-        recipe->key_id, recipe->ticks, run.ticks,
+        key_id, expected_ticks, run.ticks,
         capture.observation.source_ticks, capture.count);
     core_machine_destroy(machine);
     return failed;
@@ -1448,8 +1461,14 @@ C_INT main(C_VOID)
     }
     for (index = 0u; index < sizeof(string_recipes) / sizeof(string_recipes[0]);
         ++index) {
-        if (timing_80286_manifest_run_string_recipe(&string_recipes[index])) {
+        if (timing_80286_manifest_run_string_recipe(&string_recipes[index], 0)) {
             STD_PRINTF("M5:T435:S10:I286-STRING-RECIPE:FAIL:%s\n",
+                string_recipes[index].key_id);
+            return 1;
+        }
+        if ((string_recipes[index].program[0] & 1u) != 0u &&
+            timing_80286_manifest_run_string_recipe(&string_recipes[index], 1)) {
+            STD_PRINTF("M5:T435:S10:I286-STRING-ODD-RECIPE:FAIL:%s\n",
                 string_recipes[index].key_id);
             return 1;
         }
@@ -1489,6 +1508,7 @@ C_INT main(C_VOID)
             sizeof(ea_recipes) / sizeof(ea_recipes[0]) +
             sizeof(odd_word_recipes) / sizeof(odd_word_recipes[0]) +
             sizeof(string_recipes) / sizeof(string_recipes[0]) +
+            7u +
             1u +
             sizeof(repeat_recipes) / sizeof(repeat_recipes[0]) + 9u +
             sizeof(lock_recipes) / sizeof(lock_recipes[0])));
