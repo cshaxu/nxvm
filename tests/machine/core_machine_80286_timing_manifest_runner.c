@@ -90,11 +90,22 @@ static C_INT timing_80286_manifest_is_dx_port(const C_CHAR *key_id)
 
 static C_INT timing_80286_manifest_is_interrupt(const C_CHAR *key_id)
 {
-    return key_id != STD_NULL &&
-        (STD_STRCMP(key_id, "I286-INT3-REAL-NEXT-BYTE-2") == 0 ||
-            STD_STRCMP(key_id, "I286-INT-IMM-REAL-NEXT-BYTE-2") == 0 ||
-            STD_STRCMP(key_id, "I286-INTO-TAKEN-NEXT-BYTE-2") == 0 ||
-            STD_STRCMP(key_id, "I286-INTO-NOT") == 0);
+    static const C_CHAR *const keys[] = {
+        "I286-INT3-REAL-NEXT-BYTE-1", "I286-INT3-REAL-NEXT-BYTE-2",
+        "I286-INT3-REAL-NEXT-BYTE-3", "I286-INT3-REAL-NEXT-BYTE-4",
+        "I286-INT3-REAL-NEXT-BYTE-5", "I286-INT3-REAL-NEXT-BYTE-6",
+        "I286-INT-IMM-REAL-NEXT-BYTE-1", "I286-INT-IMM-REAL-NEXT-BYTE-2",
+        "I286-INT-IMM-REAL-NEXT-BYTE-3", "I286-INT-IMM-REAL-NEXT-BYTE-4",
+        "I286-INT-IMM-REAL-NEXT-BYTE-5", "I286-INT-IMM-REAL-NEXT-BYTE-6",
+        "I286-INTO-TAKEN-NEXT-BYTE-2", "I286-INTO-NOT"
+    };
+    STD_SIZE_T index;
+
+    if (key_id == STD_NULL) return 0;
+    for (index = 0u; index < sizeof(keys) / sizeof(keys[0]); ++index) {
+        if (STD_STRCMP(key_id, keys[index]) == 0) return 1;
+    }
+    return 0;
 }
 
 static C_INT timing_80286_manifest_uses_stack(const C_CHAR *key_id)
@@ -937,6 +948,52 @@ static C_INT timing_80286_manifest_run_far_jmp_next_byte_recipe(
     return failed;
 }
 
+static C_INT timing_80286_manifest_run_interrupt_next_byte_recipe(
+    C_INT immediate, type_unsigned_8 next_bytes)
+{
+    static const type_unsigned_8 target[][6] = {
+        { 0u,0u,0u,0u,0u,0u },
+        { 0x90u,0u,0u,0u,0u,0u },
+        { 0x00u,0xc0u,0u,0u,0u,0u },
+        { 0x80u,0xc0u,1u,0u,0u,0u },
+        { 0xc6u,0x46u,0u,1u,0u,0u },
+        { 0xc6u,0x06u,0u,0x10u,1u,0u },
+        { 0xc7u,0x06u,0u,0x10u,1u,0u }
+    };
+    const core_machine_run_budget budget = { 1u, 0u };
+    const type_unsigned_8 int3_program[] = { 0xccu };
+    const type_unsigned_8 immediate_program[] = { 0xcdu, 0x60u };
+    const type_unsigned_8 *program = immediate ? immediate_program : int3_program;
+    STD_SIZE_T program_bytes = immediate ? sizeof(immediate_program) :
+        sizeof(int3_program);
+    timing_80286_manifest_capture capture = { { 0 }, 0u };
+    core_machine_run_result run = { 0 };
+    core_machine *machine = STD_NULL;
+    C_CHAR key_id[96];
+    C_INT failed;
+
+    if (next_bytes == 0u || next_bytes >= sizeof(target) / sizeof(target[0]) ||
+        STD_SNPRINTF(key_id, sizeof(key_id), "I286-%s-NEXT-BYTE-%u",
+            immediate ? "INT-IMM-REAL" : "INT3-REAL",
+            (type_unsigned_32)next_bytes) < 0) return 1;
+    failed = !timing_80286_manifest_prepare(&machine, &capture, key_id,
+        program, program_bytes);
+    if (!failed) failed = core_machine_memory_write(machine, 0x000ffff5u,
+        target[next_bytes], next_bytes) != TYPE_STATUS_OK;
+    if (!failed) {
+        failed = core_machine_run(machine, budget, &run) != TYPE_STATUS_OK ||
+            run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
+            run.ticks != 23u + next_bytes || capture.count != 1u ||
+            capture.observation.source_ticks != 23u + next_bytes ||
+            capture.observation.timing_origin !=
+                CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
+            capture.observation.timing_disposition !=
+                CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED;
+    }
+    core_machine_destroy(machine);
+    return failed;
+}
+
 static C_INT timing_80286_manifest_run_protected_system(
     const timing_80286_manifest_recipe *recipe)
 {
@@ -1762,6 +1819,17 @@ C_INT main(C_VOID)
             return 1;
         }
     }
+    for (index = 1u; index <= 6u; ++index) {
+        if (index == 2u) continue;
+        if (timing_80286_manifest_run_interrupt_next_byte_recipe(0,
+                (type_unsigned_8)index) ||
+            timing_80286_manifest_run_interrupt_next_byte_recipe(1,
+                (type_unsigned_8)index)) {
+            STD_PRINTF("M5:T435:S10:I286-INT-NEXT-BYTE-RECIPE:FAIL:%u\n",
+                (type_unsigned_32)index);
+            return 1;
+        }
+    }
     for (index = 2u; index <= 6u; ++index) {
         if (timing_80286_manifest_run_ret_next_byte_recipe((type_unsigned_8)index)) {
             STD_PRINTF("M5:T435:S10:I286-RET-NEXT-BYTE-RECIPE:FAIL:%u\n",
@@ -1866,7 +1934,7 @@ C_INT main(C_VOID)
     STD_PRINTF("M5:T435:S10:I286-MANIFEST-FOUNDATION:PASS:observed=%u\n",
         (type_unsigned_32)(sizeof(recipes) / sizeof(recipes[0]) +
             sizeof(control_recipes) / sizeof(control_recipes[0]) +
-            20u +
+            30u +
             sizeof(protected_system_recipes) /
                 sizeof(protected_system_recipes[0]) +
             sizeof(segment_recipes) / sizeof(segment_recipes[0]) +
