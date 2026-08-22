@@ -35,7 +35,7 @@ P23 corrects the prior `G2-*` selector typo: the 21 legal odd-addressed
 `ROL`/`ROR`/`RCL`/`RCR`/`SHL`/`SHR`/`SAR` forms. They retain `missing-input`
 until one real result proves their Table 1-16 `+4` term.
 
-P34--P59 add `core-machine-80186-timing-manifest-runner`. Its first 247
+P34--P60 add `core-machine-80186-timing-manifest-runner`. Its first 261
 canonical recipes now pass actual retirement observation. P55 corrects the
 former noncanonical `I186-LEA` / `I186-ENTER-LGT1` spellings, makes the runner
 fail with observed facts, aligns each recipe's Core origin, and fixes the
@@ -46,7 +46,9 @@ clocks). P58 adds real-mode IVT and stack preparation for `INT3`, `INT imm8`,
 and both `INTO` outcomes, plus all four scalar `IN`/`OUT` forms. Recipes are
 P59 adds a successful bounded range, both `ESC` forms, zero-wait `WAIT`, and
 the `HLT` retired-then-waiting boundary. Recipes are captured from actual
-retirement observations and check ticks,
+retirement observations and check ticks. P60 proves all fourteen non-repeat
+`MOVS`/`CMPS`/`STOS`/`LODS`/`SCAS`/`INS`/`OUTS` byte-and-word primitives;
+repeat phase and prefixed contexts remain deliberately open.
 origin and classified disposition. The runner is deliberately outside the
 passing gate and writes no final result document until all 624 keys have a
 real recipe; consequently every manifest status remains open.
