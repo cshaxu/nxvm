@@ -256,6 +256,7 @@ C_INT main(C_VOID)
     static const type_unsigned_8 clc[] = { 0xf8u };
     static const type_unsigned_8 immediate[] = { 0xb8u, 0x34u, 0x12u };
     static const type_unsigned_8 registers[] = { 0x8bu, 0xc1u };
+    static const type_unsigned_8 near_call[] = { 0xe8u, 0u, 0u };
     static const type_unsigned_8 direct_jump[] = { 0xebu, 0u };
     static const type_unsigned_8 mul8[] = { 0xf6u, 0xe0u };
     static const type_unsigned_8 mul16[] = { 0xf7u, 0xe0u };
@@ -277,6 +278,7 @@ C_INT main(C_VOID)
         timing_80186_case(clc, sizeof(clc), 2u) ||
         timing_80186_case(immediate, sizeof(immediate), 4u) ||
         timing_80186_case(registers, sizeof(registers), 2u) ||
+        timing_80186_case(near_call, sizeof(near_call), 15u) ||
         timing_80186_case(direct_jump, sizeof(direct_jump), 13u) ||
         timing_80186_case(mul8, sizeof(mul8), 27u) ||
         timing_80186_case(mul16, sizeof(mul16), 36u) ||
