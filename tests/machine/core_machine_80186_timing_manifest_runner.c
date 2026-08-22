@@ -123,7 +123,8 @@ static const timing_80186_manifest_inputs *timing_80186_manifest_inputs_find(
         { "I186-INC-M", 0u, 0x1000u, 1u },
         { "I186-DEC-M", 0u, 0x1000u, 1u },
         { "I186-NEG-M", 0u, 0x1000u, 1u },
-        { "I186-NOT-M", 0u, 0x1000u, 1u }
+        { "I186-NOT-M", 0u, 0x1000u, 1u },
+        { "I186-XCHG-MR", 0u, 0x1000u, 1u }
     };
     STD_SIZE_T index;
 
@@ -372,6 +373,12 @@ C_INT main(C_VOID)
         { "I186-NOT-R", { 0xf6u,0xd0u }, 2u, 3u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I186-NOT-M", { 0xf6u,0x16u,0u,0x10u }, 4u, 3u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I186-XCHG-AXR", { 0x91u }, 1u, 3u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I186-XCHG-RR", { 0x87u,0xc1u }, 2u, 4u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I186-XCHG-MR", { 0x87u,0x06u,0u,0x10u }, 4u, 17u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I186-ADJ-AAA", { 0x37u }, 1u, 8u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
