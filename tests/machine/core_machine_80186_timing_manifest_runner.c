@@ -100,7 +100,14 @@ static const timing_80186_manifest_inputs *timing_80186_manifest_inputs_find(
         { "I186-RCR-M1", 0u, 0x1000u, 1u },
         { "I186-SHL-M1", 0u, 0x1000u, 1u },
         { "I186-SHR-M1", 0u, 0x1000u, 1u },
-        { "I186-SAR-M1", 0u, 0x1000u, 1u }
+        { "I186-SAR-M1", 0u, 0x1000u, 1u },
+        { "I186-ROL-MCL", 2u, 0x1000u, 1u },
+        { "I186-ROR-MCL", 2u, 0x1000u, 1u },
+        { "I186-RCL-MCL", 2u, 0x1000u, 1u },
+        { "I186-RCR-MCL", 2u, 0x1000u, 1u },
+        { "I186-SHL-MCL", 2u, 0x1000u, 1u },
+        { "I186-SHR-MCL", 2u, 0x1000u, 1u },
+        { "I186-SAR-MCL", 2u, 0x1000u, 1u }
     };
     STD_SIZE_T index;
 
@@ -279,6 +286,20 @@ C_INT main(C_VOID)
         { "I186-SHR-M1", { 0xd0u,0x2eu,0u,0x10u }, 4u, 15u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80186_FALLBACK },
         { "I186-SAR-M1", { 0xd0u,0x3eu,0u,0x10u }, 4u, 15u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80186_FALLBACK },
+        { "I186-ROL-MCL", { 0xd2u,0x06u,0u,0x10u }, 4u, 19u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80186_FALLBACK },
+        { "I186-ROR-MCL", { 0xd2u,0x0eu,0u,0x10u }, 4u, 19u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80186_FALLBACK },
+        { "I186-RCL-MCL", { 0xd2u,0x16u,0u,0x10u }, 4u, 19u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80186_FALLBACK },
+        { "I186-RCR-MCL", { 0xd2u,0x1eu,0u,0x10u }, 4u, 19u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80186_FALLBACK },
+        { "I186-SHL-MCL", { 0xd2u,0x26u,0u,0x10u }, 4u, 19u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80186_FALLBACK },
+        { "I186-SHR-MCL", { 0xd2u,0x2eu,0u,0x10u }, 4u, 19u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80186_FALLBACK },
+        { "I186-SAR-MCL", { 0xd2u,0x3eu,0u,0x10u }, 4u, 19u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80186_FALLBACK },
         { "I186-ADJ-AAA", { 0x37u }, 1u, 8u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
