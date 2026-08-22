@@ -2622,6 +2622,12 @@ C_INT core_machine_control_stack_source_instruction_cost(
             core_machine_control_stack_source_lookup(machine,
                 CORE_MACHINE_SOURCE_TIMING_CALL_NEAR_DIRECT), out_ticks);
     case 0x9au:
+        if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 &&
+            protected_mode && same_privilege) {
+            *out_ticks = 26u;
+            return core_machine_control_stack_add_next_term(machine,
+                *out_ticks, out_ticks);
+        }
         if (!same_privilege || protected_mode) return 0;
         ticks = core_machine_control_stack_source_lookup(machine,
             CORE_MACHINE_SOURCE_TIMING_CALL_FAR_DIRECT);
