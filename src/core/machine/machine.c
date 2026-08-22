@@ -408,8 +408,8 @@ static const core_machine_source_timing_entry
     { CORE_MACHINE_SOURCE_TIMING_IRET, 24u }
 };
 
-/* Intel iAPX 86/88/186/188 User's Manual, Table 1-16: parenthesized
- * values are 80186 clocks.  Its prefetch/no-wait and even-word assumptions
+/* Intel iAPX 86/88/186/188 User's Manual, Table 2-9 gives the primary
+ * 80186 instruction values.  Its prefetch/no-wait and even-word assumptions
  * remain an explicit later bus/cycle-exact transfer. */
 static const core_machine_source_timing_entry
     core_machine_80186_source_timing_ledger[] = {
@@ -425,7 +425,7 @@ static const core_machine_source_timing_entry
     { CORE_MACHINE_SOURCE_TIMING_IN_DX, 8u },
     { CORE_MACHINE_SOURCE_TIMING_OUT_IMMEDIATE, 9u },
     { CORE_MACHINE_SOURCE_TIMING_OUT_DX, 7u },
-    { CORE_MACHINE_SOURCE_TIMING_CALL_NEAR_DIRECT, 14u },
+    { CORE_MACHINE_SOURCE_TIMING_CALL_NEAR_DIRECT, 15u },
     { CORE_MACHINE_SOURCE_TIMING_CALL_NEAR_REGISTER, 13u },
     { CORE_MACHINE_SOURCE_TIMING_CALL_NEAR_MEMORY, 19u },
     { CORE_MACHINE_SOURCE_TIMING_CALL_FAR_DIRECT, 23u },
