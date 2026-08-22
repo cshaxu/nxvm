@@ -352,6 +352,57 @@ static C_INT timing_80186_flag_controls(C_VOID)
     return 0;
 }
 
+static C_INT timing_80186_group2_matrix(C_VOID)
+{
+    static const type_unsigned_8 operations[] = { 0u,1u,2u,3u,4u,5u,7u };
+    static const type_unsigned_64 ticks[] = { 2u,8u,15u,20u,8u,20u };
+    STD_SIZE_T operation;
+    STD_SIZE_T form;
+
+    for (operation = 0u; operation < sizeof(operations) / sizeof(operations[0]);
+            ++operation) {
+        for (form = 0u; form < sizeof(ticks) / sizeof(ticks[0]); ++form) {
+            type_unsigned_8 program[5] = { 0 };
+            const type_unsigned_16 value = 1u;
+            STD_SIZE_T bytes;
+            timing_80186_state state = { 0u,0u,0u };
+            core_machine *machine = STD_NULL;
+            C_INT failed;
+
+            switch (form) {
+            case 0u: program[0] = 0xd0u; program[1] =
+                (type_unsigned_8)(0xc0u | (operations[operation] << 3u));
+                bytes = 2u; break;
+            case 1u: program[0] = 0xd2u; program[1] =
+                (type_unsigned_8)(0xc0u | (operations[operation] << 3u));
+                bytes = 2u; break;
+            case 2u: program[0] = 0xd0u; program[1] =
+                (type_unsigned_8)(0x06u | (operations[operation] << 3u));
+                program[2] = 0u; program[3] = 0x10u; bytes = 4u; break;
+            case 3u: program[0] = 0xd2u; program[1] =
+                (type_unsigned_8)(0x06u | (operations[operation] << 3u));
+                program[2] = 0u; program[3] = 0x10u; bytes = 4u; break;
+            case 4u: program[0] = 0xc0u; program[1] =
+                (type_unsigned_8)(0xc0u | (operations[operation] << 3u));
+                program[2] = 3u; bytes = 3u; break;
+            default: program[0] = 0xc0u; program[1] =
+                (type_unsigned_8)(0x06u | (operations[operation] << 3u));
+                program[2] = 0u; program[3] = 0x10u; program[4] = 3u;
+                bytes = 5u; break;
+            }
+            failed = !timing_80186_prepare(&machine, &state) ||
+                !timing_80186_load(machine, program, bytes) ||
+                core_machine_memory_write(machine, 0x1000u, &value,
+                    sizeof(value)) != TYPE_STATUS_OK ||
+                ((machine->executor_cpu.data.cx = 3u), 0) ||
+                !timing_80186_run(machine, &state, 1u, ticks[form]);
+            core_machine_destroy(machine);
+            if (failed) return 1;
+        }
+    }
+    return 0;
+}
+
 static C_INT timing_80186_stack_frame(C_VOID)
 {
     static const type_unsigned_8 enter[] = { 0xc8u, 0u, 0u, 0u };
@@ -573,6 +624,7 @@ C_INT main(C_VOID)
         timing_80186_adjustment_matrix() ||
         timing_80186_unary_matrix() ||
         timing_80186_flag_controls() ||
+        timing_80186_group2_matrix() ||
         timing_80186_stack_frame() ||
         timing_80186_case(near_call, sizeof(near_call), 15u) ||
         timing_80186_case(direct_jump, sizeof(direct_jump), 13u) ||
