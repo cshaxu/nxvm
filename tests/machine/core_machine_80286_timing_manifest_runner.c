@@ -1,6 +1,7 @@
 #include "type.h"
 
 #include "core/machine/cpu.h"
+#include "core/machine/cpu_timing.h"
 #include "core/machine/machine_interface.h"
 #include "core/machine/retirement_observation_interface.h"
 #include "../support/core_machine_cpu_fixture.h"
@@ -41,6 +42,15 @@ typedef struct timing_80286_manifest_control_recipe {
     type_unsigned_32 eflags;
     type_unsigned_64 ticks;
 } timing_80286_manifest_control_recipe;
+
+typedef struct timing_80286_manifest_repeat_recipe {
+    const C_CHAR *key_id;
+    type_unsigned_8 prefix;
+    type_unsigned_8 opcode;
+    type_unsigned_64 first_ticks;
+    type_unsigned_64 continuation_ticks;
+    type_unsigned_64 zero_ticks;
+} timing_80286_manifest_repeat_recipe;
 
 static const timing_80286_manifest_record timing_80286_manifest_records[] = {
 #include "cpu_timing_manifest_metadata_catalog.inc"
@@ -447,6 +457,117 @@ static C_INT timing_80286_manifest_run(
             capture.observation.source_ticks, capture.count,
             (type_unsigned_32)capture.observation.timing_origin,
             (type_unsigned_32)capture.observation.timing_disposition);
+    }
+    core_machine_destroy(machine);
+    return failed;
+}
+
+static C_INT timing_80286_manifest_run_repeat_step(core_machine *machine,
+    timing_80286_manifest_capture *capture, const C_CHAR *key_id,
+    core_machine_retirement_repeat_phase expected_phase,
+    type_unsigned_64 expected_ticks, type_unsigned_32 required_inputs)
+{
+    const core_machine_run_budget budget = { 1u, 0u };
+    core_machine_run_result run = { 0 };
+
+    if (machine == STD_NULL || capture == STD_NULL || key_id == STD_NULL ||
+        timing_80286_manifest_find(key_id) == STD_NULL) return 1;
+    capture->count = 0u;
+    STD_MEMSET(&capture->observation, 0, sizeof(capture->observation));
+    return core_machine_run(machine, budget, &run) != TYPE_STATUS_OK ||
+        run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
+        run.ticks != expected_ticks || capture->count != 1u ||
+        capture->observation.source_ticks != expected_ticks ||
+        capture->observation.timing_origin !=
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO ||
+        capture->observation.timing_disposition !=
+            CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED ||
+        capture->observation.repeat_phase != expected_phase ||
+        (capture->observation.formula_inputs &
+            (CORE_MACHINE_CPU_TIMING_INPUT_REPEAT |
+             CORE_MACHINE_CPU_TIMING_INPUT_REPEAT_PHASE | required_inputs)) !=
+            (CORE_MACHINE_CPU_TIMING_INPUT_REPEAT |
+             CORE_MACHINE_CPU_TIMING_INPUT_REPEAT_PHASE | required_inputs);
+}
+
+static C_INT timing_80286_manifest_run_repeat_recipe(
+    const timing_80286_manifest_repeat_recipe *recipe, C_INT odd_word)
+{
+    type_unsigned_8 program[2] = { 0u, 0u };
+    const type_unsigned_16 source = 1u;
+    type_unsigned_16 destination;
+    C_CHAR first_key[96];
+    C_CHAR continuation_key[96];
+    C_CHAR zero_key[96];
+    timing_80286_manifest_capture capture = { { 0 }, 0u };
+    core_machine *machine = STD_NULL;
+    type_unsigned_32 required_inputs = odd_word ?
+        CORE_MACHINE_CPU_TIMING_INPUT_ODD_WORD : 0u;
+    type_unsigned_64 odd_ticks = odd_word ? 2u : 0u;
+    C_INT source_odd;
+    C_INT failed;
+
+    if (recipe == STD_NULL) return 1;
+    program[0] = recipe->prefix;
+    program[1] = recipe->opcode;
+    source_odd = odd_word && (recipe->opcode == 0xa5u ||
+        recipe->opcode == 0xa7u || recipe->opcode == 0xadu ||
+        recipe->opcode == 0x6fu);
+    if (STD_SNPRINTF(first_key, sizeof(first_key), "%s%s-REP-PHASE-FIRST",
+            recipe->key_id, odd_word ? "-ODD-WORD" : "") < 0 ||
+        STD_SNPRINTF(continuation_key, sizeof(continuation_key),
+            "%s%s-REP-PHASE-CONTINUE", recipe->key_id,
+            odd_word ? "-ODD-WORD" : "") < 0 ||
+        STD_SNPRINTF(zero_key, sizeof(zero_key), "%s%s-REP-PHASE-ZERO",
+            recipe->key_id, odd_word ? "-ODD-WORD" : "") < 0) return 1;
+    failed = !timing_80286_manifest_prepare(&machine, &capture, first_key,
+        program, sizeof(program));
+    if (!failed) {
+        machine->executor_cpu.data.es.base = machine->executor_cpu.data.ds.base;
+        machine->executor_cpu.data.es.selector = machine->executor_cpu.data.ds.selector;
+        machine->executor_cpu.data.si = source_odd ? 0x1001u : 0x1000u;
+        machine->executor_cpu.data.di = source_odd ? 0x1100u :
+            odd_word ? 0x1101u : 0x1100u;
+        machine->executor_cpu.data.ax = 1u;
+        machine->executor_cpu.data.edx = 0x0080u;
+        machine->executor_cpu.data.cx = 2u;
+        destination = recipe->prefix == 0xf3u ? source : 0u;
+        failed = core_machine_memory_write(machine, source_odd ? 0x1001u : 0x1000u,
+            &source, sizeof(source)) != TYPE_STATUS_OK ||
+            core_machine_memory_write(machine, source_odd ? 0x1100u :
+                odd_word ? 0x1101u : 0x1100u, &destination,
+                sizeof(destination)) != TYPE_STATUS_OK;
+    }
+    if (!failed) {
+        failed = timing_80286_manifest_run_repeat_step(machine, &capture,
+            first_key, CORE_MACHINE_RETIREMENT_REPEAT_FIRST,
+            recipe->first_ticks + odd_ticks, required_inputs);
+        if (failed) STD_PRINTF("M5:T435:S10:I286-REP-DETAIL:%s:expected=%llu:observed=%llu:phase=%u:inputs=%u\n",
+            first_key, recipe->first_ticks + odd_ticks,
+            capture.observation.source_ticks,
+            (type_unsigned_32)capture.observation.repeat_phase,
+            capture.observation.formula_inputs);
+        if (!failed) {
+            failed = timing_80286_manifest_run_repeat_step(machine, &capture,
+                continuation_key, CORE_MACHINE_RETIREMENT_REPEAT_CONTINUATION,
+                recipe->continuation_ticks + odd_ticks, required_inputs);
+            if (failed) STD_PRINTF("M5:T435:S10:I286-REP-DETAIL:%s:expected=%llu:observed=%llu:phase=%u:inputs=%u\n",
+                continuation_key, recipe->continuation_ticks + odd_ticks,
+                capture.observation.source_ticks,
+                (type_unsigned_32)capture.observation.repeat_phase,
+                capture.observation.formula_inputs);
+        }
+    }
+    core_machine_destroy(machine);
+    machine = STD_NULL;
+    if (!failed) failed = !timing_80286_manifest_prepare(&machine, &capture,
+        zero_key, program, sizeof(program));
+    if (!failed) {
+        machine->executor_cpu.data.edx = 0x0080u;
+        machine->executor_cpu.data.cx = 0u;
+        failed = timing_80286_manifest_run_repeat_step(machine, &capture, zero_key,
+            CORE_MACHINE_RETIREMENT_REPEAT_ZERO_COUNT, recipe->zero_ticks,
+            0u);
     }
     core_machine_destroy(machine);
     return failed;
@@ -1114,6 +1235,26 @@ C_INT main(C_VOID)
         { "I286-MOV-MOFFS-W-ODD-WORD", { 0xa3u, 1u, 0x10u }, 3u, 5u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY }
     };
+    static const timing_80286_manifest_repeat_recipe repeat_recipes[] = {
+        { "I286-REP-MOVS-B", 0xf3u, 0xa4u, 9u, 4u, 5u },
+        { "I286-REP-MOVS-W", 0xf3u, 0xa5u, 9u, 4u, 5u },
+        { "I286-REP-CMPS-REPE-B", 0xf3u, 0xa6u, 14u, 9u, 5u },
+        { "I286-REP-CMPS-REPE-W", 0xf3u, 0xa7u, 14u, 9u, 5u },
+        { "I286-REP-CMPS-REPNE-B", 0xf2u, 0xa6u, 14u, 9u, 5u },
+        { "I286-REP-CMPS-REPNE-W", 0xf2u, 0xa7u, 14u, 9u, 5u },
+        { "I286-REP-STOS-B", 0xf3u, 0xaau, 7u, 3u, 4u },
+        { "I286-REP-STOS-W", 0xf3u, 0xabu, 7u, 3u, 4u },
+        { "I286-REP-LODS-B", 0xf3u, 0xacu, 9u, 4u, 5u },
+        { "I286-REP-LODS-W", 0xf3u, 0xadu, 9u, 4u, 5u },
+        { "I286-REP-SCAS-REPE-B", 0xf3u, 0xaeu, 13u, 8u, 5u },
+        { "I286-REP-SCAS-REPE-W", 0xf3u, 0xafu, 13u, 8u, 5u },
+        { "I286-REP-SCAS-REPNE-B", 0xf2u, 0xaeu, 13u, 8u, 5u },
+        { "I286-REP-SCAS-REPNE-W", 0xf2u, 0xafu, 13u, 8u, 5u },
+        { "I286-REP-INS-B", 0xf3u, 0x6cu, 9u, 4u, 5u },
+        { "I286-REP-INS-W", 0xf3u, 0x6du, 9u, 4u, 5u },
+        { "I286-REP-OUTS-B", 0xf3u, 0x6eu, 9u, 4u, 5u },
+        { "I286-REP-OUTS-W", 0xf3u, 0x6fu, 9u, 4u, 5u }
+    };
     static const timing_80286_manifest_recipe lock_recipes[] = {
         { "I286-ALU-ADD-MR-LOCK", { 0xf0u, 0x00u, 0x0eu, 0u, 0x10u }, 5u, 7u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
@@ -1179,6 +1320,20 @@ C_INT main(C_VOID)
             return 1;
         }
     }
+    for (index = 0u; index < sizeof(repeat_recipes) / sizeof(repeat_recipes[0]);
+        ++index) {
+        if (timing_80286_manifest_run_repeat_recipe(&repeat_recipes[index], 0)) {
+            STD_PRINTF("M5:T435:S10:I286-REP-RECIPE:FAIL:%s\n",
+                repeat_recipes[index].key_id);
+            return 1;
+        }
+        if ((repeat_recipes[index].opcode & 1u) != 0u &&
+            timing_80286_manifest_run_repeat_recipe(&repeat_recipes[index], 1)) {
+            STD_PRINTF("M5:T435:S10:I286-REP-ODD-RECIPE:FAIL:%s\n",
+                repeat_recipes[index].key_id);
+            return 1;
+        }
+    }
     for (index = 0u; index < sizeof(lock_recipes) / sizeof(lock_recipes[0]);
         ++index) {
         if (timing_80286_manifest_run(&lock_recipes[index])) {
@@ -1195,6 +1350,7 @@ C_INT main(C_VOID)
             sizeof(segment_recipes) / sizeof(segment_recipes[0]) +
             sizeof(ea_recipes) / sizeof(ea_recipes[0]) +
             sizeof(odd_word_recipes) / sizeof(odd_word_recipes[0]) +
+            sizeof(repeat_recipes) / sizeof(repeat_recipes[0]) + 9u +
             sizeof(lock_recipes) / sizeof(lock_recipes[0])));
     return 0;
 }

@@ -601,7 +601,8 @@ static const core_machine_source_repeat_timing_entry
     { CORE_MACHINE_SOURCE_TIMING_STRING_MOVS, 5u, 5u, 4u },
     { CORE_MACHINE_SOURCE_TIMING_STRING_CMPS, 9u, 5u, 9u },
     { CORE_MACHINE_SOURCE_TIMING_STRING_STOS, 3u, 4u, 3u },
-    { CORE_MACHINE_SOURCE_TIMING_STRING_LODS, 5u, 0u, 0u },
+    /* Appendix B: REP LODS follows the S + 4*CX string formula. */
+    { CORE_MACHINE_SOURCE_TIMING_STRING_LODS, 5u, 5u, 4u },
     { CORE_MACHINE_SOURCE_TIMING_STRING_SCAS, 8u, 5u, 8u },
     { CORE_MACHINE_SOURCE_TIMING_STRING_INS, 5u, 5u, 4u },
     { CORE_MACHINE_SOURCE_TIMING_STRING_OUTS, 5u, 5u, 4u }
@@ -990,10 +991,12 @@ static type_unsigned_64 core_machine_8086_timing_string_modifiers(
     C_INT word;
     C_INT source_transfer;
     C_INT destination_transfer;
+    type_unsigned_64 odd_word_ticks;
 
     if (machine == STD_NULL || data == STD_NULL ||
         (machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_8086 &&
-         machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_80186)) return 0u;
+         machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_80186 &&
+         machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_80286)) return 0u;
     for (index = 0u; index < data->oplen; ++index) {
         switch (data->opcodes[index]) {
         case 0x26u: case 0x2eu: case 0x36u: case 0x3eu:
@@ -1024,11 +1027,13 @@ static type_unsigned_64 core_machine_8086_timing_string_modifiers(
         form == CORE_MACHINE_SOURCE_TIMING_STRING_STOS ||
         form == CORE_MACHINE_SOURCE_TIMING_STRING_SCAS ||
         form == CORE_MACHINE_SOURCE_TIMING_STRING_INS;
+    odd_word_ticks = machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 ?
+        CORE_MACHINE_80286_ODD_WORD_TICKS : CORE_MACHINE_8086_ODD_WORD_TICKS;
     if (source_transfer && (data->oldcpu.data.si & 1u) != 0u) {
-        modifiers += CORE_MACHINE_8086_ODD_WORD_TICKS;
+        modifiers += odd_word_ticks;
     }
     if (destination_transfer && (data->oldcpu.data.di & 1u) != 0u) {
-        modifiers += CORE_MACHINE_8086_ODD_WORD_TICKS;
+        modifiers += odd_word_ticks;
     }
     return modifiers;
 }

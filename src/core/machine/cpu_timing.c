@@ -106,7 +106,8 @@ static type_unsigned_32 core_machine_cpu_timing_formula_inputs(
         inputs |= CORE_MACHINE_CPU_TIMING_INPUT_GROUP3_OPERAND;
     }
     if ((machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_8086 ||
-         machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80186) &&
+         machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80186 ||
+         machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286) &&
         core_machine_cpu_timing_string_odd_word(data, opcode_index)) {
         inputs |= CORE_MACHINE_CPU_TIMING_INPUT_ODD_WORD;
     }
