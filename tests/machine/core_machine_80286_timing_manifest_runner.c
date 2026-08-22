@@ -132,6 +132,22 @@ static C_INT timing_80286_manifest_uses_far_target(const C_CHAR *key_id)
         "I286-RET-NEAR-NEXT-BYTE-1") == 0);
 }
 
+static C_INT timing_80286_manifest_is_ret_near_next_byte(const C_CHAR *key_id)
+{
+    static const C_CHAR *const keys[] = {
+        "I286-RET-NEAR-NEXT-BYTE-1", "I286-RET-NEAR-NEXT-BYTE-2",
+        "I286-RET-NEAR-NEXT-BYTE-3", "I286-RET-NEAR-NEXT-BYTE-4",
+        "I286-RET-NEAR-NEXT-BYTE-5", "I286-RET-NEAR-NEXT-BYTE-6"
+    };
+    STD_SIZE_T index;
+
+    if (key_id == STD_NULL) return 0;
+    for (index = 0u; index < sizeof(keys) / sizeof(keys[0]); ++index) {
+        if (STD_STRCMP(key_id, keys[index]) == 0) return 1;
+    }
+    return 0;
+}
+
 static C_INT timing_80286_manifest_is_bound(const C_CHAR *key_id)
 {
     return key_id != STD_NULL && STD_STRCMP(key_id, "I286-BOUND") == 0;
@@ -285,8 +301,8 @@ static C_INT timing_80286_manifest_prepare(core_machine **out_machine,
         machine->executor_cpu.data.sp = TIMING_80286_MANIFEST_STACK_LINEAR +
             TIMING_80286_MANIFEST_STACK_BYTES;
     }
-    if (status == TYPE_STATUS_OK && STD_STRCMP(key_id,
-            "I286-RET-NEAR-NEXT-BYTE-1") == 0) {
+    if (status == TYPE_STATUS_OK &&
+        timing_80286_manifest_is_ret_near_next_byte(key_id)) {
         const type_unsigned_16 return_ip = 0xfff5u;
 
         machine->executor_cpu.data.sp = TIMING_80286_MANIFEST_STACK_LINEAR;
@@ -836,6 +852,47 @@ static C_INT timing_80286_manifest_run_call_next_byte_recipe(
         recipe.program[index + 3u] = target[next_bytes][index];
     }
     return timing_80286_manifest_run(&recipe);
+}
+
+static C_INT timing_80286_manifest_run_ret_next_byte_recipe(
+    type_unsigned_8 next_bytes)
+{
+    static const type_unsigned_8 target[][6] = {
+        { 0u,0u,0u,0u,0u,0u },
+        { 0x90u,0u,0u,0u,0u,0u },
+        { 0x00u,0xc0u,0u,0u,0u,0u },
+        { 0x80u,0xc0u,1u,0u,0u,0u },
+        { 0xc6u,0x46u,0u,1u,0u,0u },
+        { 0xc6u,0x06u,0u,0x10u,1u,0u },
+        { 0xc7u,0x06u,0u,0x10u,1u,0u }
+    };
+    const core_machine_run_budget budget = { 1u, 0u };
+    const type_unsigned_8 program[] = { 0xc3u };
+    timing_80286_manifest_capture capture = { { 0 }, 0u };
+    core_machine_run_result run = { 0 };
+    core_machine *machine = STD_NULL;
+    C_CHAR key_id[96];
+    C_INT failed;
+
+    if (next_bytes == 0u || next_bytes >= sizeof(target) / sizeof(target[0]) ||
+        STD_SNPRINTF(key_id, sizeof(key_id), "I286-RET-NEAR-NEXT-BYTE-%u",
+            (type_unsigned_32)next_bytes) < 0) return 1;
+    failed = !timing_80286_manifest_prepare(&machine, &capture, key_id,
+        program, sizeof(program));
+    if (!failed) failed = core_machine_memory_write(machine, 0x000ffff5u,
+        target[next_bytes], next_bytes) != TYPE_STATUS_OK;
+    if (!failed) {
+        failed = core_machine_run(machine, budget, &run) != TYPE_STATUS_OK ||
+            run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
+            run.ticks != 11u + next_bytes || capture.count != 1u ||
+            capture.observation.source_ticks != 11u + next_bytes ||
+            capture.observation.timing_origin !=
+                CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
+            capture.observation.timing_disposition !=
+                CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED;
+    }
+    core_machine_destroy(machine);
+    return failed;
 }
 
 static C_INT timing_80286_manifest_run_protected_system(
@@ -1655,6 +1712,13 @@ C_INT main(C_VOID)
         }
     }
     for (index = 2u; index <= 6u; ++index) {
+        if (timing_80286_manifest_run_ret_next_byte_recipe((type_unsigned_8)index)) {
+            STD_PRINTF("M5:T435:S10:I286-RET-NEXT-BYTE-RECIPE:FAIL:%u\n",
+                (type_unsigned_32)index);
+            return 1;
+        }
+    }
+    for (index = 2u; index <= 6u; ++index) {
         if (timing_80286_manifest_run_call_next_byte_recipe((type_unsigned_8)index)) {
             STD_PRINTF("M5:T435:S10:I286-CALL-NEXT-BYTE-RECIPE:FAIL:%u\n",
                 (type_unsigned_32)index);
@@ -1751,7 +1815,7 @@ C_INT main(C_VOID)
     STD_PRINTF("M5:T435:S10:I286-MANIFEST-FOUNDATION:PASS:observed=%u\n",
         (type_unsigned_32)(sizeof(recipes) / sizeof(recipes[0]) +
             sizeof(control_recipes) / sizeof(control_recipes[0]) +
-            10u +
+            15u +
             sizeof(protected_system_recipes) /
                 sizeof(protected_system_recipes[0]) +
             sizeof(segment_recipes) / sizeof(segment_recipes[0]) +
