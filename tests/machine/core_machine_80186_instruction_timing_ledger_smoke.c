@@ -113,6 +113,20 @@ static C_INT timing_80186_case(const type_unsigned_8 *program, STD_SIZE_T bytes,
     return failed;
 }
 
+static C_INT timing_80186_lea(C_VOID)
+{
+    static const type_unsigned_8 program[] = { 0x8du, 0x1eu, 0x00u, 0x10u };
+    timing_80186_state state = { 0u, 0u, 0u };
+    core_machine *machine = STD_NULL;
+    C_INT failed = !timing_80186_prepare(&machine, &state) ||
+        !timing_80186_load(machine, program, sizeof(program)) ||
+        !timing_80186_run(machine, &state, 1u, 6u) ||
+        machine->executor_cpu.data.bx != 0x1000u;
+
+    core_machine_destroy(machine);
+    return failed;
+}
+
 static C_INT timing_80186_memory(C_VOID)
 {
     static const type_unsigned_8 read[] = { 0x8bu, 0x0eu, 0x00u, 0x10u };
@@ -278,6 +292,7 @@ C_INT main(C_VOID)
         timing_80186_case(clc, sizeof(clc), 2u) ||
         timing_80186_case(immediate, sizeof(immediate), 4u) ||
         timing_80186_case(registers, sizeof(registers), 2u) ||
+        timing_80186_lea() ||
         timing_80186_case(near_call, sizeof(near_call), 15u) ||
         timing_80186_case(direct_jump, sizeof(direct_jump), 13u) ||
         timing_80186_case(mul8, sizeof(mul8), 27u) ||
