@@ -1,7 +1,7 @@
 # T435 S2 - 80386DX Timing Implementation Audit
 
 The [80386DX manifest](t435-s2-80386-timing-manifest.json) maps the accepted
-[Intel ledger](t435-s1-80386-ledger.md) into 427 all-L3 base keys. The current
+[Intel ledger](t435-s1-80386-ledger.md) into 444 all-L3 base keys. The current
 route is `string -> dynamic multiply -> secondary -> privileged -> primary ->
 control-stack -> 80386 fallback -> unallocated -> retirement observation` in
 `src/core/machine/machine.c`.
@@ -10,11 +10,11 @@ Static inspection confirms dedicated secondary selectors for Jcc, bit,
 shift-double, MOVSX/MOVZX and BSF/BSR; a dedicated privileged selector for
 system/CR/DR/TR rows; and an owned early-out multiply implementation. Those
 routes do not constitute per-key proof. The strict initial audit is zero
-conforming: 254 keys lack a focused result, 172 dynamic/path/privilege keys
+conforming: 251 keys lack a focused result, 192 dynamic/path/privilege keys
 lack one or more normalized inputs, and `I386-XLAT` is unallocated because the
 legacy selector admits it only for 8086. No L2 or L1 is permitted by S1.
 
-The manifest generates 953 legal size, repeat-phase, multiplier, segment and memory-RMW
+The manifest generates 977 legal size, repeat-phase, multiplier, segment and memory-RMW
 `LOCK` contexts under the [shared legality contract](t435-s2-context-legality.md).
 Operand width is already part of string and multiply base keys, so no redundant
 cross-product is generated. B0

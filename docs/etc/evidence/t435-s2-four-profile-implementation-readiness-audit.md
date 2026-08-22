@@ -20,8 +20,8 @@ exclude external waits, arbitration, prefetch availability and event delivery.
 | 8086 | 246 | 406 | 401 | 1,053 | 230 L3, 16 L2:G3 base keys |
 | 80186 | 279 | 235 | 89 | 603 | 253 L3, 26 L2:midpoint base keys |
 | 80286 | 286 | 459 | 62 | 807 | all L3 |
-| 80386DX | 427 | 953 | 0 | 1,380 | all L3 |
-| **all profiles** | **1,238** | **2,053** | **552** | **3,843** | no anonymous L1 |
+| 80386DX | 444 | 977 | 0 | 1,421 | all L3 |
+| **all profiles** | **1,255** | **2,077** | **552** | **3,884** | no anonymous L1 |
 
 The profile verifiers and the shared
 `tools/Verify-CpuTimingManifestContract.ps1` derive these figures directly
