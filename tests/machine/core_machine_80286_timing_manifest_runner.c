@@ -513,6 +513,13 @@ static C_INT timing_80286_manifest_prepare_protected_system(
         status = core_machine_memory_write(machine, 0x2010u, target,
             sizeof(target));
     }
+    if (status == TYPE_STATUS_OK && STD_STRCMP(key_id,
+            "I286-JMP-FAR-PM-NEXT-BYTE-2") == 0) {
+        const type_unsigned_8 target[] = { 0x00u, 0xc0u };
+
+        status = core_machine_memory_write(machine, 0x2010u, target,
+            sizeof(target));
+    }
     if (status == TYPE_STATUS_OK) {
         machine->executor_cpu.data.eax = operand;
         machine->executor_cpu.data.ebp = 0x0800u;
@@ -1981,6 +1988,8 @@ C_INT main(C_VOID)
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
         { "I286-CALL-FAR-DIRECT-PM-NEXT-BYTE-2", { 0x9au,0x10u,0u,0x08u,0u },
             5u, 28u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
+        { "I286-JMP-FAR-PM-NEXT-BYTE-2", { 0xeau,0x10u,0u,0x08u,0u },
+            5u, 25u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
         { "I286-ARPL", { 0x63u, 0xc8u }, 2u, 10u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY }
     };

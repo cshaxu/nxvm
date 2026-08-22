@@ -2637,6 +2637,12 @@ C_INT core_machine_control_stack_source_instruction_cost(
             core_machine_control_stack_source_lookup(machine,
                 CORE_MACHINE_SOURCE_TIMING_JMP_DIRECT), out_ticks);
     case 0xeau:
+        if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 &&
+            protected_mode && same_privilege) {
+            *out_ticks = 23u;
+            return core_machine_control_stack_add_next_term(machine,
+                *out_ticks, out_ticks);
+        }
         if (!same_privilege || protected_mode) return 0;
         ticks = core_machine_control_stack_source_lookup(machine,
             CORE_MACHINE_SOURCE_TIMING_JMP_FAR_DIRECT);
