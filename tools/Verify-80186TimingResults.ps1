@@ -11,7 +11,7 @@ if ($records.Count -eq 1 -and $records[0] -is [System.Array]) {
     $records = @($records[0])
 }
 $expectedRecords = @($records | Where-Object { $_.profile -eq "80186" })
-if ($expectedRecords.Count -ne 603) {
+if ($expectedRecords.Count -ne 624) {
     throw "80186 canonical-key count mismatch: $($expectedRecords.Count)"
 }
 if (-not (Test-Path -LiteralPath $ResultPath)) {

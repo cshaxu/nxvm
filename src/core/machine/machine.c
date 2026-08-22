@@ -1759,6 +1759,11 @@ static C_INT core_machine_legacy_source_instruction_cost(core_machine *machine,
             *out_ticks = data->flagMem ?
                 ((opcode == 0xd0u || opcode == 0xd1u) ? 15u : 17u + count) :
                 ((opcode == 0xd0u || opcode == 0xd1u) ? 2u : 5u + count);
+            if (data->flagMem) {
+                *out_ticks += (opcode & 1u ? core_machine_8086_timing_odd_word(data) :
+                    0u) + (segment_override ?
+                    CORE_MACHINE_8086_SEGMENT_OVERRIDE_TICKS : 0u);
+            }
             return 1;
         }
         if (opcode == 0xd0u || opcode == 0xd1u) {

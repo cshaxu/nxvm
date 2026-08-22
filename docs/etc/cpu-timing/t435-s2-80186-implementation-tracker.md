@@ -4,7 +4,7 @@
 
 The [80186 manifest](t435-s2-80186-timing-manifest.json) is the sole
 per-key closure ledger.  It expands 279 base instruction keys from the
-accepted [80186 manual ledger](t435-s1-80186-ledger.md), then 235 legal
+accepted [80186 manual ledger](t435-s1-80186-ledger.md), then 256 legal
 single-axis and 89 legal combined/phase context keys under the shared
 [context-legality contract](t435-s2-context-legality.md). This document is the
 human implementation map; it
@@ -24,11 +24,16 @@ drift.  It is a manifest-integrity gate, not runtime evidence.  The later
 focused test must consume every generated `key_id` and publish target ticks or
 formula inputs, retirement origin and `source_timing_unallocated` under the
 shared [manifest result contract](t435-s2-manifest-result-contract.md).
-The result verifier admits exactly the 603 generated 80186 records and checks
+The result verifier admits exactly the 624 generated 80186 records and checks
 their manifest provenance, unique real observation, non-terminal publication,
 and every required legal context input. It deliberately has no baseline result
 file: a missing or partial file is evidence of an open key, never a synthetic
 pass.
+
+P23 corrects the prior `G2-*` selector typo: the 21 legal odd-addressed
+16-bit memory Group-2 keys are now materialized as the named
+`ROL`/`ROR`/`RCL`/`RCR`/`SHL`/`SHR`/`SAR` forms. They retain `missing-input`
+until one real result proves their Table 1-16 `+4` term.
 
 ## Per-key implementation map
 

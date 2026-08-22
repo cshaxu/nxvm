@@ -177,7 +177,7 @@ foreach ($setGroup in @($manifest.context_key_sets, $manifest.combination_contex
         }
     }
 }
-if ($canonical.Count -ne 603) { throw "Canonical S2 key count mismatch: $($canonical.Count)" }
+if ($canonical.Count -ne 624) { throw "Canonical S2 key count mismatch: $($canonical.Count)" }
 foreach ($entry in $canonical.GetEnumerator()) {
     if ([string]::IsNullOrWhiteSpace([string]$entry.Value.status) -or
             [string]::IsNullOrWhiteSpace([string]$entry.Value.source_rule) -or
@@ -212,4 +212,4 @@ $canonicalStatusCounts = @{}; foreach($entry in $canonical.Values){$canonicalSta
 "M5:T435:S6:I186-S1-PRIMARY-LOCATORS:PASS:23"
 "M5:T435:S6:I186-DECODER-LEDGER-ZERO-DIFFERENCE:PASS:279"
 "M5:T435:S9:I186-S2-STATUS-PROGRESS:PASS:0:0:0:279"
-"M5:T435:S6:I186-S2-CANONICAL-STATUS-RECONCILED:PASS:603:$($canonicalStatusCounts.'wrong-value'):$($canonicalStatusCounts.unallocated):$($canonicalStatusCounts.'missing-input'):$($canonicalStatusCounts.'missing-test')"
+"M5:T435:S6:I186-S2-CANONICAL-STATUS-RECONCILED:PASS:624:$($canonicalStatusCounts.'wrong-value'):$($canonicalStatusCounts.unallocated):$($canonicalStatusCounts.'missing-input'):$($canonicalStatusCounts.'missing-test')"

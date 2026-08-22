@@ -26,7 +26,7 @@ static C_INT core_machine_cpu_timing_8086_string_odd_word(
 }
 
 _Static_assert(sizeof(core_machine_cpu_timing_manifest_keys) /
-    sizeof(core_machine_cpu_timing_manifest_keys[0]) == 3874u,
+    sizeof(core_machine_cpu_timing_manifest_keys[0]) == 3895u,
     "T435 S2 canonical manifest count drifted");
 
 STD_SIZE_T core_machine_cpu_timing_manifest_key_count(C_VOID)
