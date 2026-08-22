@@ -35,7 +35,11 @@ P23 corrects the prior `G2-*` selector typo: the 21 legal odd-addressed
 `ROL`/`ROR`/`RCL`/`RCR`/`SHL`/`SHR`/`SAR` forms. They retain `missing-input`
 until one real result proves their Table 1-16 `+4` term.
 
-P34--P54 add `core-machine-80186-timing-manifest-runner`. Its first 222 canonical
+P34--P55 add `core-machine-80186-timing-manifest-runner`. Its first 222
+canonical recipes now pass actual retirement observation. P55 corrects the
+former noncanonical `I186-LEA` / `I186-ENTER-LGT1` spellings, makes the runner
+fail with observed facts, aligns each recipe's Core origin, and fixes the
+80186 `ENTER` level byte plus `JCXZ` taken and `LOOPNE` not-taken timing rows.
 recipes are captured from actual retirement observations and check ticks,
 origin and classified disposition. The runner is deliberately outside the
 passing gate and writes no final result document until all 624 keys have a

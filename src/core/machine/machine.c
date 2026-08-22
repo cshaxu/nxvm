@@ -2550,7 +2550,8 @@ C_INT core_machine_control_stack_source_instruction_cost(
         return 1;
     case 0xc8u:
         if (machine->cpu_profile < CORE_MACHINE_CPU_PROFILE_80186) return 0;
-        extension = data->opcodes[data->oplen - 1u] & 0x1fu;
+        if (prefixes + 3u >= data->oplen) return 0;
+        extension = data->opcodes[prefixes + 3u] & 0x1fu;
         if (extension == 0u) {
             *out_ticks = core_machine_control_stack_source_lookup(machine,
                 CORE_MACHINE_SOURCE_TIMING_ENTER_LEVEL_ZERO);
@@ -2586,7 +2587,8 @@ C_INT core_machine_control_stack_source_instruction_cost(
                 (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 ? 4u :
                     machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80186 ? 5u :
                     6u) : (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 ?
-                    8u : 18u);
+                    8u : machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80186 ?
+                    15u : 18u);
         } else {
             C_INT taken = machine->executor_cpu.data.eip !=
                 TYPE_MASK_UNSIGNED_16(data->oldcpu.data.eip + prefixes + 2u);
@@ -2607,7 +2609,9 @@ C_INT core_machine_control_stack_source_instruction_cost(
                     CORE_MACHINE_CPU_PROFILE_80286 ? 8u :
                     machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80186 ? 16u :
                     19u) : (machine->cpu_profile ==
-                    CORE_MACHINE_CPU_PROFILE_80286 ? 4u : 5u);
+                    CORE_MACHINE_CPU_PROFILE_80286 ? 4u :
+                    machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80186 ? 6u :
+                    5u);
             }
         }
         return 1;

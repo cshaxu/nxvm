@@ -302,6 +302,25 @@ static C_INT timing_80186_manifest_run_flag_recipe(
     return failed;
 }
 
+static C_VOID timing_80186_manifest_report_failure(
+    const timing_80186_manifest_recipe *recipe)
+{
+    const timing_80186_manifest_record *record;
+    const core_machine_retirement_observation *observation = STD_NULL;
+
+    if (recipe == STD_NULL) return;
+    record = timing_80186_manifest_find(recipe->key_id);
+    if (record != STD_NULL && timing_80186_manifest_current_index >= 0) {
+        observation = &timing_80186_manifest_results[
+            timing_80186_manifest_current_index];
+    }
+    STD_PRINTF("M5:T435:S9:I186-MANIFEST-RECIPE:FAIL:%s:expected=%llu:observed=%llu:origin=%u:disposition=%u\n",
+        recipe->key_id, recipe->ticks,
+        observation != STD_NULL ? observation->source_ticks : 0u,
+        observation != STD_NULL ? (type_unsigned_32)observation->timing_origin : 0u,
+        observation != STD_NULL ? (type_unsigned_32)observation->timing_disposition : 0u);
+}
+
 C_INT main(C_VOID)
 {
     static const timing_80186_manifest_recipe recipes[] = {
@@ -458,23 +477,23 @@ C_INT main(C_VOID)
         { "I186-XCHG-MR", { 0x87u,0x06u,0u,0x10u }, 4u, 17u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I186-MOV-MOFFS-R", { 0xa1u,0u,0x10u }, 3u, 9u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80186_FALLBACK },
         { "I186-MOV-MOFFS-W", { 0xa3u,0u,0x10u }, 3u, 8u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80186_FALLBACK },
         { "I186-MOV-RR", { 0x8bu,0xc1u }, 2u, 2u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80186_FALLBACK },
         { "I186-MOV-RM", { 0x8bu,0x0eu,0u,0x10u }, 4u, 9u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80186_FALLBACK },
         { "I186-MOV-MR", { 0x89u,0x0eu,0u,0x10u }, 4u, 12u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80186_FALLBACK },
         { "I186-MOV-SREG-TO-R", { 0x8cu,0xc0u }, 2u, 2u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80186_FALLBACK },
         { "I186-MOV-SREG-TO-M", { 0x8cu,0x06u,0u,0x10u }, 4u, 9u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80186_FALLBACK },
         { "I186-MOV-SREG-FROM-R", { 0x8eu,0xc0u }, 2u, 2u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80186_FALLBACK },
         { "I186-MOV-SREG-FROM-M", { 0x8eu,0x06u,0u,0x10u }, 4u, 11u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80186_FALLBACK },
         { "I186-MOV-RI", { 0xb8u,1u,0u }, 3u, 4u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I186-MOV-MI", { 0xc7u,0x06u,0u,0x10u,1u }, 5u, 13u,
@@ -522,63 +541,63 @@ C_INT main(C_VOID)
         { "I186-ALU-XOR-MI", { 0x80u,0x36u,0u,0x10u,1u }, 5u, 16u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I186-MUL-R8", { 0xf6u,0xe0u }, 2u, 27u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_L2_DYNAMIC_ARITHMETIC },
         { "I186-MUL-R16", { 0xf7u,0xe0u }, 2u, 36u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_L2_DYNAMIC_ARITHMETIC },
         { "I186-MUL-M8", { 0xf6u,0x26u,0u,0x10u }, 4u, 33u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_L2_DYNAMIC_ARITHMETIC },
         { "I186-MUL-M16", { 0xf7u,0x26u,0u,0x10u }, 4u, 42u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_L2_DYNAMIC_ARITHMETIC },
         { "I186-IMUL-R8", { 0xf6u,0xe8u }, 2u, 27u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_L2_DYNAMIC_ARITHMETIC },
         { "I186-IMUL-R16", { 0xf7u,0xe8u }, 2u, 36u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_L2_DYNAMIC_ARITHMETIC },
         { "I186-IMUL-M8", { 0xf6u,0x2eu,0u,0x10u }, 4u, 33u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_L2_DYNAMIC_ARITHMETIC },
         { "I186-IMUL-M16", { 0xf7u,0x2eu,0u,0x10u }, 4u, 42u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_L2_DYNAMIC_ARITHMETIC },
         { "I186-IDIV-R8", { 0xf6u,0xf8u }, 2u, 48u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_L2_DYNAMIC_ARITHMETIC },
         { "I186-IDIV-R16", { 0xf7u,0xf8u }, 2u, 57u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_L2_DYNAMIC_ARITHMETIC },
         { "I186-IDIV-M8", { 0xf6u,0x3eu,0u,0x10u }, 4u, 54u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_L2_DYNAMIC_ARITHMETIC },
         { "I186-IDIV-M16", { 0xf7u,0x3eu,0u,0x10u }, 4u, 63u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_L2_DYNAMIC_ARITHMETIC },
         { "I186-IMUL-IMM-IMM8", { 0x6bu,0xc0u,1u }, 3u, 24u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_L2_DYNAMIC_ARITHMETIC },
         { "I186-IMUL-IMM-IMM16", { 0x69u,0xc0u,1u,0u }, 4u, 31u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_L2_DYNAMIC_ARITHMETIC },
         { "I186-DIV-R8", { 0xf6u,0xf0u }, 2u, 29u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_L2_DYNAMIC_ARITHMETIC },
         { "I186-DIV-R16", { 0xf7u,0xf0u }, 2u, 38u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_L2_DYNAMIC_ARITHMETIC },
         { "I186-DIV-M8", { 0xf6u,0x36u,0u,0x10u }, 4u, 35u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_L2_DYNAMIC_ARITHMETIC },
         { "I186-DIV-M16", { 0xf7u,0x36u,0u,0x10u }, 4u, 44u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_L2_DYNAMIC_ARITHMETIC },
         { "I186-CALL-NEAR", { 0xe8u,0u,0u }, 3u, 15u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
         { "I186-JMP-SHORT", { 0xebu,0u }, 2u, 13u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
         { "I186-XLAT", { 0xd7u }, 1u, 11u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I186-LEA", { 0x8du,0x06u,0u,0x10u }, 4u, 6u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80186_FALLBACK },
+        { "I186-LEA-M", { 0x8du,0x06u,0u,0x10u }, 4u, 6u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I186-LDS-M", { 0xc5u,0x06u,0u,0x10u }, 4u, 18u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80186_FALLBACK },
         { "I186-LES-M", { 0xc4u,0x06u,0u,0x10u }, 4u, 18u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80186_FALLBACK },
         { "I186-PUSH-R", { 0x50u }, 1u, 10u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
         { "I186-PUSH-SEG-ES", { 0x06u }, 1u, 9u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80186_FALLBACK },
         { "I186-PUSH-SEG-CS", { 0x0eu }, 1u, 9u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80186_FALLBACK },
         { "I186-PUSH-SEG-SS", { 0x16u }, 1u, 9u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80186_FALLBACK },
         { "I186-PUSH-SEG-DS", { 0x1eu }, 1u, 9u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80186_FALLBACK },
         { "I186-PUSH-M", { 0xffu,0x36u,0u,0x10u }, 4u, 16u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
         { "I186-PUSH-IMM16", { 0x68u,1u,0u }, 3u, 10u,
@@ -587,15 +606,15 @@ C_INT main(C_VOID)
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
         { "I186-PUSH-F", { 0x9cu }, 1u, 9u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
-        { "I186-POP-R", { 0x58u }, 1u, 8u,
+        { "I186-POP-R", { 0x58u }, 1u, 10u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
-        { "I186-POP-SEG-ES", { 0x07u }, 1u, 20u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
-        { "I186-POP-SEG-SS", { 0x17u }, 1u, 20u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
-        { "I186-POP-SEG-DS", { 0x1fu }, 1u, 20u,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
-        { "I186-POP-M", { 0x8fu,0x06u,0u,0x10u }, 4u, 8u,
+        { "I186-POP-SEG-ES", { 0x07u }, 1u, 8u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80186_FALLBACK },
+        { "I186-POP-SEG-SS", { 0x17u }, 1u, 8u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80186_FALLBACK },
+        { "I186-POP-SEG-DS", { 0x1fu }, 1u, 8u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80186_FALLBACK },
+        { "I186-POP-M", { 0x8fu,0x06u,0u,0x10u }, 4u, 20u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
         { "I186-POP-F", { 0x9du }, 1u, 8u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
@@ -607,7 +626,7 @@ C_INT main(C_VOID)
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
         { "I186-ENTER-L1", { 0xc8u,0u,0u,1u }, 4u, 25u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
-        { "I186-ENTER-LGT1", { 0xc8u,0u,0u,2u }, 4u, 38u,
+        { "I186-ENTER-LN", { 0xc8u,0u,0u,2u }, 4u, 38u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
         { "I186-LEAVE", { 0xc9u }, 1u, 8u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
@@ -672,7 +691,7 @@ C_INT main(C_VOID)
     };
 #define TIMING_80186_JCC(KEY, OPCODE, FLAGS, TICKS) \
     { { KEY, { OPCODE,1u }, 2u, TICKS, \
-        CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY }, FLAGS }
+        CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80186_FALLBACK }, FLAGS }
     static const timing_80186_manifest_flag_recipe branch_recipes[] = {
         TIMING_80186_JCC("I186-JCC-JO-TAKEN", 0x70u, VCPU_EFLAGS_OF, 13u),
         TIMING_80186_JCC("I186-JCC-JO-NOT", 0x70u, 0u, 4u),
@@ -728,12 +747,18 @@ C_INT main(C_VOID)
     STD_SIZE_T observed = 0u;
 
     for (index = 0u; index < sizeof(recipes) / sizeof(recipes[0]); ++index) {
-        if (timing_80186_manifest_run_recipe(&recipes[index])) return 1;
+        if (timing_80186_manifest_run_recipe(&recipes[index])) {
+            timing_80186_manifest_report_failure(&recipes[index]);
+            return 1;
+        }
         ++observed;
     }
     for (index = 0u; index < sizeof(branch_recipes) / sizeof(branch_recipes[0]);
             ++index) {
-        if (timing_80186_manifest_run_flag_recipe(&branch_recipes[index])) return 1;
+        if (timing_80186_manifest_run_flag_recipe(&branch_recipes[index])) {
+            timing_80186_manifest_report_failure(&branch_recipes[index].recipe);
+            return 1;
+        }
         ++observed;
     }
     if (observed != sizeof(recipes) / sizeof(recipes[0]) +
