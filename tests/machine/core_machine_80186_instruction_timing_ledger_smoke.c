@@ -190,7 +190,7 @@ static C_INT timing_80186_control_ports(C_VOID)
 static C_INT timing_80186_boundaries(C_VOID)
 {
     static const type_unsigned_8 nop[] = { 0x90u };
-    static const type_unsigned_8 unallocated[] = { 0xd0u, 0xc0u };
+    static const type_unsigned_8 rotate[] = { 0xd0u, 0xc0u };
     static const type_unsigned_8 fault[] = { 0x66u, 0x90u };
     static const type_unsigned_8 maximum[] = { 0x26u, 0x89u, 0x8bu, 0x00u, 0x10u };
     const core_machine_run_budget one = { 1u, 0u };
@@ -200,8 +200,8 @@ static C_INT timing_80186_boundaries(C_VOID)
     core_machine *machine = STD_NULL;
     C_INT failed = !timing_80186_prepare(&machine, &state);
 
-    if (!failed) failed |= !timing_80186_load(machine, unallocated,
-        sizeof(unallocated)) || !timing_80186_run(machine, &state, 1u, 1u);
+    if (!failed) failed |= !timing_80186_load(machine, rotate,
+        sizeof(rotate)) || !timing_80186_run(machine, &state, 1u, 2u);
     if (!failed) failed |= !timing_80186_load(machine, fault, sizeof(fault)) ||
         !test_core_machine_fixture_preflight_real_ud_terminal(machine) ||
         core_machine_run(machine, one, &result) != TYPE_STATUS_FAULT ||
@@ -249,6 +249,8 @@ C_INT main(C_VOID)
     static const type_unsigned_8 imul_imm16[] = {
         0x69u, 0xc0u, 0x01u, 0x00u
     };
+    static const type_unsigned_8 rotate_imm[] = { 0xc0u, 0xc0u, 0x03u };
+    static const type_unsigned_8 xlat[] = { 0xd7u };
 
     if (timing_80186_case(nop, sizeof(nop), 3u) ||
         timing_80186_case(clc, sizeof(clc), 2u) ||
@@ -259,7 +261,9 @@ C_INT main(C_VOID)
         timing_80186_case(imul8, sizeof(imul8), 27u) ||
         timing_80186_case(imul16, sizeof(imul16), 36u) ||
         timing_80186_case(imul_imm8, sizeof(imul_imm8), 24u) ||
-        timing_80186_case(imul_imm16, sizeof(imul_imm16), 31u)) return 1;
+        timing_80186_case(imul_imm16, sizeof(imul_imm16), 31u) ||
+        timing_80186_case(rotate_imm, sizeof(rotate_imm), 8u) ||
+        timing_80186_case(xlat, sizeof(xlat), 11u)) return 1;
     if (timing_80186_memory()) return 2;
     if (timing_80186_control_ports()) return 3;
     if (timing_80186_boundaries()) return 4;

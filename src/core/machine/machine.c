@@ -1708,13 +1708,25 @@ static C_INT core_machine_legacy_source_instruction_cost(core_machine *machine,
         machine->source_timing_form_id = CORE_MACHINE_SOURCE_TIMING_8086_RET_FAR;
         *out_ticks = opcode == 0xcau ? 17u : 18u;
         return 1;
-    case 0xd0u: case 0xd1u: case 0xd2u: case 0xd3u: {
+    case 0xc0u: case 0xc1u: case 0xd0u: case 0xd1u:
+    case 0xd2u: case 0xd3u: {
         type_unsigned_8 count;
 
-        if (machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_8086 ||
+        if ((machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_8086 &&
+             machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_80186) ||
             prefixes + 1u >= data->oplen ||
             ((data->opcodes[prefixes + 1u] >> 3u) & 7u) == 6u) break;
         machine->source_timing_form_id = CORE_MACHINE_SOURCE_TIMING_8086_GROUP2;
+        if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80186) {
+            count = (opcode == 0xd0u || opcode == 0xd1u) ? 1u :
+                (opcode == 0xd2u || opcode == 0xd3u) ?
+                (TYPE_MASK_UNSIGNED_8(data->oldcpu.data.cx) & 0x1fu) :
+                (TYPE_MASK_UNSIGNED_8(data->cimm) & 0x1fu);
+            *out_ticks = data->flagMem ?
+                ((opcode == 0xd0u || opcode == 0xd1u) ? 15u : 17u + count) :
+                ((opcode == 0xd0u || opcode == 0xd1u) ? 2u : 5u + count);
+            return 1;
+        }
         if (opcode == 0xd0u || opcode == 0xd1u) {
             *out_ticks = data->flagMem ? 15u : 2u;
         } else {
@@ -1758,9 +1770,11 @@ static C_INT core_machine_legacy_source_instruction_cost(core_machine *machine,
             core_machine_fpu_last_wait_iterations(&machine->fpu);
         return 1;
     case 0xd7u:
-        if (machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_8086) break;
+        if (machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_8086 &&
+            machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_80186) break;
         machine->source_timing_form_id = CORE_MACHINE_SOURCE_TIMING_8086_XLAT;
-        *out_ticks = 11u + (segment_override ?
+        *out_ticks = 11u + (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_8086 &&
+            segment_override ?
             CORE_MACHINE_8086_SEGMENT_OVERRIDE_TICKS : 0u);
         return 1;
     default:
