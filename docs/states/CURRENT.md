@@ -2,11 +2,14 @@
 
 ## Current Work
 
-**M5 T435 remains open between subtasks.** S6/80186 re-audit is accepted:
-[its closure audit](../etc/cpu-timing/t435-s6-80186-decoder-ledger-audit.md)
-proves the finite manual-to-decoder-to-S1-to-S2 register.  The next
-owner-admitted batch must implement--not re-audit--the 603 explicit 80186
-nonconforming keys.
+**M5 T435 remains open between subtasks.** S7/80286 re-audit is accepted:
+[its closure audit](../etc/cpu-timing/t435-s7-80286-decoder-ledger-audit.md)
+fixes the manual-to-decoder-to-S1-to-S2 register at 286 legal base keys and
+807 canonical keys. It adds the companion-manual `XLAT` row, removes five
+invalid system-form keys, and retains the complete implementation deficit:
+238 `missing-test`, 47 `missing-input`, and one `unallocated` key. The next
+owner-admitted batch remains S8/80186 implementation; no 80286 runtime claim
+has been made by this audit.
 ## Current Technical Baseline
 
 - **Current developer artifact:** target `vm-0-5-0434`; T434 S2 `nxvm_0_5_0434.exe` / `build/output/nxvm_0_5_0434.exe`, SHA-256 `0252F8FDA17BEC2131606F19E3547B46894AC6B56DD37EC3B16BD302494FAFDC`. T434 has one copied Core timing-plan publication route for default PC/AT, IBM 5170 Model 339 and Model-40 BYOB session composition.
