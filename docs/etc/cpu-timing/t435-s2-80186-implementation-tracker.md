@@ -35,39 +35,39 @@ P23 corrects the prior `G2-*` selector typo: the 21 legal odd-addressed
 `ROL`/`ROR`/`RCL`/`RCR`/`SHL`/`SHR`/`SAR` forms. They retain `missing-input`
 until one real result proves their Table 1-16 `+4` term.
 
-P34--P60 add `core-machine-80186-timing-manifest-runner`. Its first 261
-canonical recipes now pass actual retirement observation. P55 corrects the
-former noncanonical `I186-LEA` / `I186-ENTER-LGT1` spellings, makes the runner
-fail with observed facts, aligns each recipe's Core origin, and fixes the
-80186 `ENTER` level byte plus `JCXZ` taken and `LOOPNE` not-taken timing rows.
-P57 adds a mapped real-mode return frame for all five return forms and closes
-the missing 80186 `RETF` / `RETF imm16` control-stack source rows (22 / 25
-clocks). P58 adds real-mode IVT and stack preparation for `INT3`, `INT imm8`,
-and both `INTO` outcomes, plus all four scalar `IN`/`OUT` forms. Recipes are
-P59 adds a successful bounded range, both `ESC` forms, zero-wait `WAIT`, and
-the `HLT` retired-then-waiting boundary. Recipes are captured from actual
-retirement observations and check ticks. P60 proves all fourteen non-repeat
-`MOVS`/`CMPS`/`STOS`/`LODS`/`SCAS`/`INS`/`OUTS` byte-and-word primitives;
-repeat phase and prefixed contexts remain deliberately open.
-origin and classified disposition. The runner is deliberately outside the
-passing gate and writes no final result document until all 624 keys have a
-real recipe; consequently every manifest status remains open.
+P34--P61 add `core-machine-80186-timing-manifest-runner`. All 279 canonical
+base recipes now pass actual retirement observation, and its metadata coverage
+gate rejects a missing base key or a duplicate-only recipe set. P55 corrects
+the former noncanonical `I186-LEA` / `I186-ENTER-LGT1` spellings, makes the
+runner fail with observed facts, aligns each recipe's Core origin, and fixes
+the 80186 `ENTER` level byte plus `JCXZ` taken and `LOOPNE` not-taken timing
+rows. P57 adds a mapped real-mode return frame and closes the missing 80186
+`RETF` / `RETF imm16` control-stack source rows (22 / 25 clocks). P58 adds
+real-mode IVT and stack preparation for `INT3`, `INT imm8`, and both `INTO`
+outcomes, plus all four scalar `IN`/`OUT` forms. P59 adds a successful bounded
+range, both `ESC` forms, zero-wait `WAIT`, and the `HLT` retired-then-waiting
+boundary. P60 proves all fourteen non-repeat string byte-and-word primitives.
+P61 proves every `REP` base key's first, continuation and zero-count phase.
+Recipes check ticks, origin, classified disposition and, for repeat, phase
+and input bits. Prefix and combined contexts remain deliberately open; the
+runner writes no final result document and every manifest status remains open
+until all 624 keys have a real recipe.
 
 ## Per-key implementation map
 
 | manifest template | level and authoritative rule | present state | close in |
 | --- | --- | --- | --- |
-| `I186-ADJ-*`, `I186-INC/DEC-*`, `I186-NEG/NOT-*`, `I186-XCHG-*`, `I186-LEA/LDS/LES-*` | L3 Table 2-9 exact | source selection partial/unproven | B0+B1+B4 |
-| `I186-ALU-*`, `I186-CMP-*`, `I186-TEST-*` | L3 exact except the explicit AI rows below | narrow primary coverage; no unproven member is conforming | B0+B1+B3+B4 |
-| `I186-ALU-*-AI`, `I186-CMP-AI`, `I186-TEST-AI`, `I186-MOV-{RI,MI}` | L2:midpoint, manual range and `ceil` rule in S1 | no midpoint closure result | B0+B2+B4 |
-| `I186-MOV-*`, stack, call/jump/return, branches, interrupt/port/ESC/WAIT/HLT | L3 exact/formula | mixed primary/control/fallback routes; per-form proof absent | B0+B1+B3+B4 |
-| `I186-XLAT` | L3 Table 2-9 exact 11 | 80186 sole selector; focused result is still incomplete | B1+B3+B4 |
-| `I186-{MUL,IMUL,IDIV}-*`, `I186-IMUL-IMM-*` | L2:midpoint accepted S1 values | fixed-midpoint selector; representative execution proof passes, but each key still needs its own result | B2+B3+B4 |
-| `I186-DIV-*` | L3 exact | source scalar exists; proof absent | B0+B1+B3+B4 |
-| `I186-{ROL,ROR,RCL,RCR,SHL,SHR,SAR}-*` | L3 formula; count modulo 32 | 80186 sole selector; every count/form result remains to be proved | B1+B3+B4 |
-| `I186-STRING-*`, `I186-REP-*` | L3 primitive/repeat formula | source table exists; phase/termination proof absent | B0+B1+B3+B4 |
+| `I186-ADJ-*`, `I186-INC/DEC-*`, `I186-NEG/NOT-*`, `I186-XCHG-*`, `I186-LEA/LDS/LES-*` | L3 Table 2-9 exact | every base key has real retirement proof; legal prefix/transfer contexts remain open | B0+B1+B4 |
+| `I186-ALU-*`, `I186-CMP-*`, `I186-TEST-*` | L3 exact except the explicit AI rows below | every base key has real retirement proof; legal prefix/transfer contexts remain open | B0+B1+B3+B4 |
+| `I186-ALU-*-AI`, `I186-CMP-AI`, `I186-TEST-AI`, `I186-MOV-{RI,MI}` | L2:midpoint, manual range and `ceil` rule in S1 | every fixed-midpoint base key has real retirement proof; legal contexts remain open | B0+B2+B4 |
+| `I186-MOV-*`, stack, call/jump/return, branches, interrupt/port/ESC/WAIT/HLT | L3 exact/formula | every base form has real retirement proof; legal prefix/transfer contexts remain open | B0+B1+B3+B4 |
+| `I186-XLAT` | L3 Table 2-9 exact 11 | base result is proven; no legal context is admitted | B1+B3+B4 |
+| `I186-{MUL,IMUL,IDIV}-*`, `I186-IMUL-IMM-*` | L2:midpoint accepted S1 values | every fixed-midpoint base form has real retirement proof; legal transfer contexts remain open | B2+B3+B4 |
+| `I186-DIV-*` | L3 exact | every base scalar has real retirement proof; legal transfer contexts remain open | B0+B1+B3+B4 |
+| `I186-{ROL,ROR,RCL,RCR,SHL,SHR,SAR}-*` | L3 formula; count modulo 32 | every base form has real retirement proof; count boundary and prefix/transfer contexts remain open | B1+B3+B4 |
+| `I186-STRING-*`, `I186-REP-*` | L3 primitive/repeat formula | every primitive base and all REP phases have real retirement proof; legal prefix/transfer contexts remain open | B0+B1+B3+B4 |
 | `I186-BOUND` | L2:midpoint, Table 2-9 range 33--35 | successful in-range result proves the fixed midpoint; prefix contexts remain open | B0+B2+B4 |
-| `I186-{ENTER-*,LEAVE}`, `I186-FLAG-*` | L3 exact/formula | mixed/unallocated as manifest records | B0+B1+B3+B4 |
+| `I186-{ENTER-*,LEAVE}`, `I186-FLAG-*` | L3 exact/formula | every base form has real retirement proof; no independent legal context is admitted | B0+B1+B3+B4 |
 | generated `-SEGMENT`, `-ODD-WORD`, `-LOCK`, `-REP-PHASE-*` and legal combined suffixes | S1 Table 1-16 context rule | no complete independent input/result stream | B3+B4 |
 
 The template form is deliberately compact, but braces in the manifest expand
