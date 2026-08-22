@@ -53,9 +53,9 @@ lengths 1 through 6, plus real INT3/INT-imm next-byte lengths 1 through 6.
 It also observes INTO-taken and indirect near-JMP next-byte lengths 1 through
 6, indirect near-CALL next-byte lengths 1 through 6, and RET-imm next-byte
 lengths 1 through 6, real far-CALL next-byte lengths 1 through 6, and real
-far-indirect-CALL next-byte lengths 1 through 6, and real same-level RETF
-next-byte lengths 1 through 6. It writes no result artifact until all 807
-canonical recipes exist; the separate
+far-indirect-CALL next-byte lengths 1 through 6, real same-level RETF
+next-byte lengths 1 through 6, and real IRET next-byte lengths 1 through 6.
+It writes no result artifact until all 807 canonical recipes exist; the separate
 `Verify-80286TimingResults.ps1` gate remains the only all-key acceptance
 mechanism.
 
