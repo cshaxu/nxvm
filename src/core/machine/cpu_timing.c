@@ -7,7 +7,7 @@ static const char *const core_machine_cpu_timing_manifest_keys[] = {
 #include "cpu_timing_manifest_catalog.inc"
 };
 
-static C_INT core_machine_cpu_timing_8086_string_odd_word(
+static C_INT core_machine_cpu_timing_string_odd_word(
     const t_cpuins_data *data, type_unsigned_32 opcode_index)
 {
     type_unsigned_8 opcode;
@@ -103,8 +103,9 @@ static type_unsigned_32 core_machine_cpu_timing_formula_inputs(
         ((data->opcodes[opcode_index + 1u] >> 3u) & 7u) >= 4u) {
         inputs |= CORE_MACHINE_CPU_TIMING_INPUT_GROUP3_OPERAND;
     }
-    if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_8086 &&
-        core_machine_cpu_timing_8086_string_odd_word(data, opcode_index)) {
+    if ((machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_8086 ||
+         machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80186) &&
+        core_machine_cpu_timing_string_odd_word(data, opcode_index)) {
         inputs |= CORE_MACHINE_CPU_TIMING_INPUT_ODD_WORD;
     }
     if (opcode_index < data->oplen && data->opcodes[opcode_index] == 0x9bu &&
