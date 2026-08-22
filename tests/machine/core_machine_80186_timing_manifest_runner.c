@@ -151,7 +151,15 @@ static const timing_80186_manifest_inputs *timing_80186_manifest_inputs_find(
         { "I186-ALU-SUB-MI", 0u, 0x1000u, 1u },
         { "I186-ALU-XOR-RM", 0u, 0x1000u, 1u },
         { "I186-ALU-XOR-MR", 0u, 0x1000u, 1u },
-        { "I186-ALU-XOR-MI", 0u, 0x1000u, 1u }
+        { "I186-ALU-XOR-MI", 0u, 0x1000u, 1u },
+        { "I186-MUL-M8", 0u, 0x1000u, 1u },
+        { "I186-MUL-M16", 0u, 0x1000u, 1u },
+        { "I186-IMUL-M8", 0u, 0x1000u, 1u },
+        { "I186-IMUL-M16", 0u, 0x1000u, 1u },
+        { "I186-IDIV-M8", 0u, 0x1000u, 1u },
+        { "I186-IDIV-M16", 0u, 0x1000u, 1u },
+        { "I186-DIV-M8", 0u, 0x1000u, 1u },
+        { "I186-DIV-M16", 0u, 0x1000u, 1u }
     };
     STD_SIZE_T index;
 
@@ -207,6 +215,12 @@ static C_INT timing_80186_manifest_prepare(core_machine **out_machine,
     if (status == TYPE_STATUS_OK) status = core_machine_set_a20(machine, 1);
     if (status == TYPE_STATUS_OK) status = core_machine_memory_write(machine,
         TIMING_80186_MANIFEST_RESET_LINEAR, program, bytes);
+    /* Keep arithmetic recipes on their successful-retirement path: a nonzero
+     * accumulator divisor and a zero high half avoid an incidental #DE. */
+    if (status == TYPE_STATUS_OK) {
+        machine->executor_cpu.data.ax = 1u;
+        machine->executor_cpu.data.dx = 0u;
+    }
     if (status == TYPE_STATUS_OK && inputs != STD_NULL) {
         machine->executor_cpu.data.cx = inputs->cx;
         if (inputs->memory_value != 0u) status = core_machine_memory_write(machine,
@@ -470,6 +484,42 @@ C_INT main(C_VOID)
         { "I186-ALU-XOR-MR", { 0x30u,0x0eu,0u,0x10u }, 4u, 10u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I186-ALU-XOR-MI", { 0x80u,0x36u,0u,0x10u,1u }, 5u, 16u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I186-MUL-R8", { 0xf6u,0xe0u }, 2u, 27u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I186-MUL-R16", { 0xf7u,0xe0u }, 2u, 36u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I186-MUL-M8", { 0xf6u,0x26u,0u,0x10u }, 4u, 33u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I186-MUL-M16", { 0xf7u,0x26u,0u,0x10u }, 4u, 42u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I186-IMUL-R8", { 0xf6u,0xe8u }, 2u, 27u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I186-IMUL-R16", { 0xf7u,0xe8u }, 2u, 36u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I186-IMUL-M8", { 0xf6u,0x2eu,0u,0x10u }, 4u, 33u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I186-IMUL-M16", { 0xf7u,0x2eu,0u,0x10u }, 4u, 42u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I186-IDIV-R8", { 0xf6u,0xf8u }, 2u, 48u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I186-IDIV-R16", { 0xf7u,0xf8u }, 2u, 57u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I186-IDIV-M8", { 0xf6u,0x3eu,0u,0x10u }, 4u, 54u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I186-IDIV-M16", { 0xf7u,0x3eu,0u,0x10u }, 4u, 63u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I186-IMUL-IMM-IMM8", { 0x6bu,0xc0u,1u }, 3u, 24u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I186-IMUL-IMM-IMM16", { 0x69u,0xc0u,1u,0u }, 4u, 31u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I186-DIV-R8", { 0xf6u,0xf0u }, 2u, 29u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I186-DIV-R16", { 0xf7u,0xf0u }, 2u, 38u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I186-DIV-M8", { 0xf6u,0x36u,0u,0x10u }, 4u, 35u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I186-DIV-M16", { 0xf7u,0x36u,0u,0x10u }, 4u, 44u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I186-ADJ-AAA", { 0x37u }, 1u, 8u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
