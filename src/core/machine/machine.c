@@ -2420,11 +2420,16 @@ static type_unsigned_64 core_machine_control_stack_memory_additions(
     type_unsigned_64 ticks = 0u;
 
     if (machine == STD_NULL || data == STD_NULL) return 0u;
-    if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_8086 ||
-        machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80186) {
+    if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_8086) {
         ticks = core_machine_8086_timing_effective_address(data, prefixes) +
             (type_unsigned_64)word_transfers *
                 core_machine_8086_timing_odd_word(data);
+        if (core_machine_8086_timing_has_segment_override(data, prefixes)) {
+            ticks += CORE_MACHINE_8086_SEGMENT_OVERRIDE_TICKS;
+        }
+    } else if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80186) {
+        ticks = (type_unsigned_64)word_transfers *
+            core_machine_8086_timing_odd_word(data);
         if (core_machine_8086_timing_has_segment_override(data, prefixes)) {
             ticks += CORE_MACHINE_8086_SEGMENT_OVERRIDE_TICKS;
         }
