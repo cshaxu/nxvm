@@ -542,7 +542,7 @@ static C_INT timing_80186_memory(C_VOID)
     if (!failed) failed |= !timing_80186_load(machine, segment_odd_shift,
         sizeof(segment_odd_shift)) || core_machine_memory_write(machine, 0x1001u,
         &value, sizeof(value)) != TYPE_STATUS_OK ||
-        !timing_80186_run(machine, &state, 1u, 21u);
+        !timing_80186_run(machine, &state, 1u, 25u);
     core_machine_destroy(machine);
     return failed;
 }

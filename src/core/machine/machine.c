@@ -1017,11 +1017,13 @@ static type_unsigned_64 core_machine_8086_timing_string_modifiers(
         CORE_MACHINE_RETIREMENT_REPEAT_ZERO_COUNT) return modifiers;
     source_transfer = form == CORE_MACHINE_SOURCE_TIMING_STRING_MOVS ||
         form == CORE_MACHINE_SOURCE_TIMING_STRING_CMPS ||
-        form == CORE_MACHINE_SOURCE_TIMING_STRING_LODS;
+        form == CORE_MACHINE_SOURCE_TIMING_STRING_LODS ||
+        form == CORE_MACHINE_SOURCE_TIMING_STRING_OUTS;
     destination_transfer = form == CORE_MACHINE_SOURCE_TIMING_STRING_MOVS ||
         form == CORE_MACHINE_SOURCE_TIMING_STRING_CMPS ||
         form == CORE_MACHINE_SOURCE_TIMING_STRING_STOS ||
-        form == CORE_MACHINE_SOURCE_TIMING_STRING_SCAS;
+        form == CORE_MACHINE_SOURCE_TIMING_STRING_SCAS ||
+        form == CORE_MACHINE_SOURCE_TIMING_STRING_INS;
     if (source_transfer && (data->oldcpu.data.si & 1u) != 0u) {
         modifiers += CORE_MACHINE_8086_ODD_WORD_TICKS;
     }
@@ -1511,8 +1513,8 @@ static type_unsigned_64 core_machine_8086_group3_model_cost(
 }
 
 /* The 8086 entries retain their source-manual memory additions.  The selected
- * 80186 reference model already includes effective-address time, so only its
- * documented segment-prefix cost is added here. */
+ * 80186 reference model already includes effective-address time; Table 1-16
+ * still supplies its independent odd-word and segment-prefix terms. */
 C_INT core_machine_l2_dynamic_arithmetic_model_cost(
     core_machine *machine, type_unsigned_64 *out_ticks)
 {
@@ -1579,8 +1581,9 @@ C_INT core_machine_l2_dynamic_arithmetic_model_cost(
     default:
         return 0;
     }
-    if (segment_override && shape.memory) {
-        ticks += CORE_MACHINE_8086_SEGMENT_OVERRIDE_TICKS;
+    if (shape.memory) {
+        if (shape.word) ticks += core_machine_8086_timing_odd_word(data);
+        if (segment_override) ticks += CORE_MACHINE_8086_SEGMENT_OVERRIDE_TICKS;
     }
     *out_ticks = ticks;
     return 1;
@@ -1764,8 +1767,11 @@ static C_INT core_machine_legacy_source_instruction_cost(core_machine *machine,
                 ((opcode == 0xd0u || opcode == 0xd1u) ? 15u : 17u + count) :
                 ((opcode == 0xd0u || opcode == 0xd1u) ? 2u : 5u + count);
             if (data->flagMem) {
-                *out_ticks += (opcode & 1u ? core_machine_8086_timing_odd_word(data) :
-                    0u) + (segment_override ?
+                /* A word memory rotate/shift is a read-modify-write: Table
+                 * 1-16 charges the odd-address term to both 16-bit transfers. */
+                *out_ticks += (opcode & 1u ? (type_unsigned_64)2u *
+                    core_machine_8086_timing_odd_word(data) : 0u) +
+                    (segment_override ?
                     CORE_MACHINE_8086_SEGMENT_OVERRIDE_TICKS : 0u);
             }
             return 1;
@@ -1778,8 +1784,9 @@ static C_INT core_machine_legacy_source_instruction_cost(core_machine *machine,
         }
         if (data->flagMem) {
             *out_ticks += core_machine_8086_timing_effective_address(data,
-                prefixes) + (opcode & 1u ? core_machine_8086_timing_odd_word(data) :
-                0u) + (segment_override ? CORE_MACHINE_8086_SEGMENT_OVERRIDE_TICKS : 0u);
+                prefixes) + (opcode & 1u ? (type_unsigned_64)2u *
+                core_machine_8086_timing_odd_word(data) : 0u) +
+                (segment_override ? CORE_MACHINE_8086_SEGMENT_OVERRIDE_TICKS : 0u);
         }
         return 1;
     }
@@ -2551,7 +2558,7 @@ C_INT core_machine_control_stack_source_instruction_cost(
             CORE_MACHINE_SOURCE_TIMING_POP_REGISTER);
         if (memory) {
             *out_ticks += core_machine_control_stack_memory_additions(machine,
-                data, prefixes, 2u);
+                data, prefixes, 1u);
         }
         return 1;
     case 0x9cu:
@@ -2681,7 +2688,7 @@ C_INT core_machine_control_stack_source_instruction_cost(
                     CORE_MACHINE_SOURCE_TIMING_JMP_REGISTER));
             if (memory) {
                 *out_ticks += core_machine_control_stack_memory_additions(
-                    machine, data, prefixes, extension == 2u ? 2u : 1u);
+                    machine, data, prefixes, 1u);
             }
             return core_machine_control_stack_add_next_term(machine, *out_ticks,
                 out_ticks);
@@ -2695,7 +2702,7 @@ C_INT core_machine_control_stack_source_instruction_cost(
                 protected_mode ? CORE_MACHINE_SOURCE_TIMING_JMP_FAR_MEMORY_PROTECTED :
                 CORE_MACHINE_SOURCE_TIMING_JMP_FAR_MEMORY);
             *out_ticks += core_machine_control_stack_memory_additions(machine,
-                data, prefixes, extension == 3u ? 4u : 2u);
+                data, prefixes, 2u);
             return core_machine_control_stack_add_next_term(machine, *out_ticks,
                 out_ticks);
         }
@@ -2705,7 +2712,7 @@ C_INT core_machine_control_stack_source_instruction_cost(
                 CORE_MACHINE_SOURCE_TIMING_PUSH_REGISTER);
             if (memory) {
                 *out_ticks += core_machine_control_stack_memory_additions(
-                    machine, data, prefixes, 2u);
+                    machine, data, prefixes, 1u);
             }
             return 1;
         }

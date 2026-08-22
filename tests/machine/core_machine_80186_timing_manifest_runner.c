@@ -68,6 +68,9 @@ static C_INT timing_80186_manifest_current_index = -1;
 static C_INT timing_80186_manifest_flags_active = 0;
 static type_unsigned_32 timing_80186_manifest_eflags;
 
+static C_VOID timing_80186_manifest_report_failure(
+    const timing_80186_manifest_recipe *recipe);
+
 static C_VOID timing_80186_manifest_execution_reset(C_VOID *opaque)
 {
     (C_VOID)opaque;
@@ -229,7 +232,9 @@ static const timing_80186_manifest_inputs *timing_80186_manifest_inputs_find(
         { "I186-LOOPNE-TAKEN", 2u, 0u, 0u },
         { "I186-LOOPNE-NOT", 2u, 0u, 0u },
         { "I186-CALL-M1616", 0u, 0x1000u, 1u },
-        { "I186-JMP-M1616", 0u, 0x1000u, 1u }
+        { "I186-JMP-M1616", 0u, 0x1000u, 1u },
+        { "I186-CALL-RM16", 0u, 0x1000u, 1u },
+        { "I186-JMP-RM16", 0u, 0x1000u, 1u }
     };
     STD_SIZE_T index;
 
@@ -344,23 +349,31 @@ static C_INT timing_80186_manifest_prepare(core_machine **out_machine,
     return 1;
 }
 
-static C_INT timing_80186_manifest_run_recipe(
-    const timing_80186_manifest_recipe *recipe)
+static C_INT timing_80186_manifest_run_recipe_with_inputs(
+    const timing_80186_manifest_recipe *recipe, const C_CHAR *input_key_id,
+    type_unsigned_32 input_address_delta)
 {
     const core_machine_run_budget budget = { 1u, 0u };
     timing_80186_manifest_capture capture = { { 0 }, 0u };
+    timing_80186_manifest_inputs adjusted_inputs;
+    const timing_80186_manifest_inputs *inputs;
     const timing_80186_manifest_record *record;
     core_machine_run_result run = { 0 };
     core_machine *machine = STD_NULL;
     C_INT failed;
 
     if (recipe == STD_NULL) return 1;
+    inputs = timing_80186_manifest_inputs_find(input_key_id);
+    if (inputs != STD_NULL && input_address_delta != 0u) {
+        adjusted_inputs = *inputs;
+        adjusted_inputs.memory_address += input_address_delta;
+        inputs = &adjusted_inputs;
+    }
     record = timing_80186_manifest_find(recipe->key_id);
     failed = record == STD_NULL || !timing_80186_manifest_is_i186(record) ||
         STD_STRCMP(record->profile, "80186") != 0 ||
         !timing_80186_manifest_prepare(&machine, &capture, recipe->program,
-            recipe->bytes, timing_80186_manifest_inputs_find(recipe->key_id),
-            recipe->key_id);
+            recipe->bytes, inputs, recipe->key_id);
     if (!failed) {
         failed = core_machine_run(machine, budget, &run) != TYPE_STATUS_OK ||
             run.reason != (timing_80186_manifest_is_halt_recipe(recipe->key_id) ?
@@ -374,6 +387,92 @@ static C_INT timing_80186_manifest_run_recipe(
     }
     core_machine_destroy(machine);
     return failed;
+}
+
+static C_INT timing_80186_manifest_run_recipe(
+    const timing_80186_manifest_recipe *recipe)
+{
+    return recipe == STD_NULL ? 1 :
+        timing_80186_manifest_run_recipe_with_inputs(recipe, recipe->key_id, 0u);
+}
+
+static type_unsigned_8 timing_80186_manifest_odd_word_transfers(
+    const C_CHAR *key_id)
+{
+    static const C_CHAR *const read_modify_write[] = {
+        "I186-ALU-ADD-MR", "I186-ALU-ADD-MI",
+        "I186-ALU-OR-MR", "I186-ALU-OR-MI",
+        "I186-ALU-ADC-MR", "I186-ALU-ADC-MI",
+        "I186-ALU-SBB-MR", "I186-ALU-SBB-MI",
+        "I186-ALU-AND-MR", "I186-ALU-AND-MI",
+        "I186-ALU-SUB-MR", "I186-ALU-SUB-MI",
+        "I186-ALU-XOR-MR", "I186-ALU-XOR-MI",
+        "I186-INC-M", "I186-DEC-M", "I186-NEG-M", "I186-NOT-M",
+        "I186-XCHG-MR",
+        "I186-ROL-M1", "I186-ROR-M1", "I186-RCL-M1", "I186-RCR-M1",
+        "I186-SHL-M1", "I186-SHR-M1", "I186-SAR-M1",
+        "I186-ROL-MCL", "I186-ROR-MCL", "I186-RCL-MCL", "I186-RCR-MCL",
+        "I186-SHL-MCL", "I186-SHR-MCL", "I186-SAR-MCL",
+        "I186-ROL-MIMM8", "I186-ROR-MIMM8", "I186-RCL-MIMM8",
+        "I186-RCR-MIMM8", "I186-SHL-MIMM8", "I186-SHR-MIMM8",
+        "I186-SAR-MIMM8"
+    };
+    static const C_CHAR *const double_word_read[] = {
+        "I186-LDS-M", "I186-LES-M", "I186-CALL-M1616", "I186-JMP-M1616"
+    };
+    STD_SIZE_T index;
+
+    if (key_id == STD_NULL) return 0u;
+    for (index = 0u; index < sizeof(read_modify_write) /
+            sizeof(read_modify_write[0]); ++index) {
+        if (STD_STRCMP(key_id, read_modify_write[index]) == 0) return 2u;
+    }
+    for (index = 0u; index < sizeof(double_word_read) /
+            sizeof(double_word_read[0]); ++index) {
+        if (STD_STRCMP(key_id, double_word_read[index]) == 0) return 2u;
+    }
+    return 1u;
+}
+
+static C_INT timing_80186_manifest_run_odd_word_recipe(
+    const timing_80186_manifest_recipe *base_recipe)
+{
+    timing_80186_manifest_recipe recipe;
+    C_CHAR key_id[96];
+    STD_SIZE_T index;
+
+    if (base_recipe == STD_NULL || STD_SNPRINTF(key_id, sizeof(key_id),
+            "%s-ODD-WORD", base_recipe->key_id) < 0 ||
+        timing_80186_manifest_find(key_id) == STD_NULL) return 1;
+    recipe = *base_recipe;
+    switch (recipe.program[0]) {
+        case 0x00u: case 0x02u: case 0x08u: case 0x0au:
+        case 0x10u: case 0x12u: case 0x18u: case 0x1au:
+        case 0x20u: case 0x22u: case 0x28u: case 0x2au:
+        case 0x30u: case 0x32u: case 0x38u: case 0x3au:
+        case 0x80u: case 0x84u: case 0x86u: case 0x88u:
+        case 0x8au: case 0xa0u: case 0xa2u: case 0xc0u:
+        case 0xd0u: case 0xd2u: case 0xf6u: case 0xfeu:
+            ++recipe.program[0];
+            break;
+        default:
+            break;
+    }
+    for (index = 0u; index + 1u < recipe.bytes; ++index) {
+        if (recipe.program[index] == 0u && recipe.program[index + 1u] == 0x10u) {
+            recipe.program[index] = 1u;
+            recipe.ticks += 4u * timing_80186_manifest_odd_word_transfers(
+                base_recipe->key_id);
+            recipe.key_id = key_id;
+            if (timing_80186_manifest_run_recipe_with_inputs(&recipe,
+                    base_recipe->key_id, 1u)) {
+                timing_80186_manifest_report_failure(&recipe);
+                return 1;
+            }
+            return 0;
+        }
+    }
+    return 1;
 }
 
 static C_INT timing_80186_manifest_run_flag_recipe(
@@ -498,6 +597,91 @@ static C_INT timing_80186_manifest_run_repeat_recipe(
     return failed;
 }
 
+static C_INT timing_80186_manifest_run_string_odd_recipe(const C_CHAR *key_id,
+    type_unsigned_8 opcode, C_INT source_odd, type_unsigned_64 expected_ticks)
+{
+    const core_machine_run_budget budget = { 1u, 0u };
+    const type_unsigned_8 program[] = { opcode };
+    const type_unsigned_16 value = 1u;
+    timing_80186_manifest_capture capture = { { 0 }, 0u };
+    core_machine_run_result run = { 0 };
+    core_machine *machine = STD_NULL;
+    C_INT failed;
+
+    failed = key_id == STD_NULL || timing_80186_manifest_find(key_id) == STD_NULL ||
+        !timing_80186_manifest_prepare(&machine, &capture, program,
+            sizeof(program), STD_NULL, key_id);
+    if (!failed) {
+        machine->executor_cpu.data.es.base = machine->executor_cpu.data.ds.base;
+        machine->executor_cpu.data.es.selector = machine->executor_cpu.data.ds.selector;
+        machine->executor_cpu.data.si = source_odd ? 0x1001u : 0x1000u;
+        machine->executor_cpu.data.di = source_odd ? 0x1100u : 0x1101u;
+        machine->executor_cpu.data.ax = value;
+        failed = core_machine_memory_write(machine, 0x1000u, &value,
+            sizeof(value)) != TYPE_STATUS_OK || core_machine_memory_write(machine,
+            0x1100u, &value, sizeof(value)) != TYPE_STATUS_OK;
+    }
+    if (!failed) {
+        failed = core_machine_run(machine, budget, &run) != TYPE_STATUS_OK ||
+            run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
+            run.ticks != expected_ticks || capture.count != 1u ||
+            capture.observation.source_ticks != expected_ticks ||
+            capture.observation.timing_origin !=
+                CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO ||
+            capture.observation.timing_disposition !=
+                CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED ||
+            (capture.observation.formula_inputs &
+                CORE_MACHINE_CPU_TIMING_INPUT_ODD_WORD) == 0u;
+    }
+    if (failed) STD_PRINTF("M5:T435:S9:I186-STRING-ODD:FAIL:%s:expected=%llu:observed=%llu:inputs=%u\n",
+        key_id, expected_ticks, capture.observation.source_ticks,
+        capture.observation.formula_inputs);
+    core_machine_destroy(machine);
+    return failed;
+}
+
+static C_INT timing_80186_manifest_run_repeat_odd_recipe(
+    const timing_80186_manifest_repeat_recipe *recipe)
+{
+    const core_machine_run_budget budget = { 1u, 0u };
+    const type_unsigned_8 program[] = { recipe == STD_NULL ? 0u : recipe->prefix,
+        recipe == STD_NULL ? 0u : recipe->opcode };
+    const type_unsigned_16 value = 1u;
+    C_CHAR key_id[96];
+    timing_80186_manifest_capture capture = { { 0 }, 0u };
+    core_machine_run_result run = { 0 };
+    core_machine *machine = STD_NULL;
+    C_INT source_odd;
+    C_INT failed;
+
+    if (recipe == STD_NULL || STD_SNPRINTF(key_id, sizeof(key_id),
+            "%s-ODD-WORD", recipe->key_id) < 0) return 1;
+    source_odd = recipe->opcode == 0xa5u || recipe->opcode == 0xa7u ||
+        recipe->opcode == 0xadu || recipe->opcode == 0x6fu;
+    failed = timing_80186_manifest_find(key_id) == STD_NULL ||
+        !timing_80186_manifest_prepare(&machine, &capture, program,
+            sizeof(program), STD_NULL, key_id);
+    if (!failed) {
+        machine->executor_cpu.data.es.base = machine->executor_cpu.data.ds.base;
+        machine->executor_cpu.data.es.selector = machine->executor_cpu.data.ds.selector;
+        machine->executor_cpu.data.si = source_odd ? 0x1001u : 0x1000u;
+        machine->executor_cpu.data.di = source_odd ? 0x1100u : 0x1101u;
+        machine->executor_cpu.data.ax = value;
+        machine->executor_cpu.data.cx = 1u;
+        failed = core_machine_memory_write(machine, 0x1000u, &value,
+            sizeof(value)) != TYPE_STATUS_OK || core_machine_memory_write(machine,
+            0x1100u, &value, sizeof(value)) != TYPE_STATUS_OK;
+    }
+    if (!failed) failed = core_machine_run(machine, budget, &run) != TYPE_STATUS_OK ||
+        run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
+        run.ticks != recipe->first_ticks + 4u || capture.count != 1u ||
+        capture.observation.source_ticks != recipe->first_ticks + 4u ||
+        capture.observation.timing_origin != CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO ||
+        (capture.observation.formula_inputs & CORE_MACHINE_CPU_TIMING_INPUT_ODD_WORD) == 0u;
+    core_machine_destroy(machine);
+    return failed;
+}
+
 static C_VOID timing_80186_manifest_report_failure(
     const timing_80186_manifest_recipe *recipe)
 {
@@ -510,11 +694,12 @@ static C_VOID timing_80186_manifest_report_failure(
         observation = &timing_80186_manifest_results[
             timing_80186_manifest_current_index];
     }
-    STD_PRINTF("M5:T435:S9:I186-MANIFEST-RECIPE:FAIL:%s:expected=%llu:observed=%llu:origin=%u:disposition=%u\n",
+    STD_PRINTF("M5:T435:S9:I186-MANIFEST-RECIPE:FAIL:%s:expected=%llu:observed=%llu:origin=%u:disposition=%u:inputs=%u\n",
         recipe->key_id, recipe->ticks,
         observation != STD_NULL ? observation->source_ticks : 0u,
         observation != STD_NULL ? (type_unsigned_32)observation->timing_origin : 0u,
-        observation != STD_NULL ? (type_unsigned_32)observation->timing_disposition : 0u);
+        observation != STD_NULL ? (type_unsigned_32)observation->timing_disposition : 0u,
+        observation != STD_NULL ? observation->formula_inputs : 0u);
 }
 
 C_INT main(C_VOID)
@@ -1083,6 +1268,7 @@ C_INT main(C_VOID)
     STD_SIZE_T repeat_phase_records = 0u;
     STD_SIZE_T lock_records = 0u;
     STD_SIZE_T lock_segment_records = 0u;
+    STD_SIZE_T odd_word_records = 0u;
 
     for (index = 0u; index < sizeof(recipes) / sizeof(recipes[0]); ++index) {
         if (timing_80186_manifest_run_recipe(&recipes[index])) {
@@ -1090,6 +1276,62 @@ C_INT main(C_VOID)
             return 1;
         }
         ++observed;
+    }
+    for (index = 0u; index < sizeof(recipes) / sizeof(recipes[0]); ++index) {
+        C_CHAR key_id[96];
+        STD_SIZE_T byte_index;
+        C_INT has_memory_displacement = 0;
+
+        if (STD_SNPRINTF(key_id, sizeof(key_id), "%s-ODD-WORD",
+                recipes[index].key_id) < 0 ||
+            timing_80186_manifest_find(key_id) == STD_NULL) continue;
+        for (byte_index = 0u; byte_index + 1u < recipes[index].bytes;
+                ++byte_index) {
+            if (recipes[index].program[byte_index] == 0u &&
+                recipes[index].program[byte_index + 1u] == 0x10u) {
+                has_memory_displacement = 1;
+                break;
+            }
+        }
+        if (!has_memory_displacement) continue;
+        if (timing_80186_manifest_run_odd_word_recipe(&recipes[index])) {
+            timing_80186_manifest_report_failure(&recipes[index]);
+            return 1;
+        }
+    }
+    if (timing_80186_manifest_run_string_odd_recipe(
+            "I186-STRING-MOVS-W-ODD-WORD", 0xa5u, 1, 18u) ||
+        timing_80186_manifest_run_string_odd_recipe(
+            "I186-STRING-CMPS-W-ODD-WORD", 0xa7u, 1, 26u) ||
+        timing_80186_manifest_run_string_odd_recipe(
+            "I186-STRING-STOS-W-ODD-WORD", 0xabu, 0, 14u) ||
+        timing_80186_manifest_run_string_odd_recipe(
+            "I186-STRING-LODS-W-ODD-WORD", 0xadu, 1, 16u) ||
+        timing_80186_manifest_run_string_odd_recipe(
+            "I186-STRING-SCAS-W-ODD-WORD", 0xafu, 0, 19u) ||
+        timing_80186_manifest_run_string_odd_recipe(
+            "I186-STRING-INS-W-ODD-WORD", 0x6du, 0, 18u) ||
+        timing_80186_manifest_run_string_odd_recipe(
+            "I186-STRING-OUTS-W-ODD-WORD", 0x6fu, 1, 18u)) return 1;
+    {
+        const timing_80186_manifest_recipe control_odd_recipes[] = {
+            { "I186-CALL-RM16-ODD-WORD", { 0xffu,0x16u,1u,0x10u }, 4u, 23u,
+                CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
+            { "I186-JMP-RM16-ODD-WORD", { 0xffu,0x26u,1u,0x10u }, 4u, 21u,
+                CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK }
+        };
+
+        for (index = 0u; index < sizeof(control_odd_recipes) /
+                sizeof(control_odd_recipes[0]); ++index) {
+            const C_CHAR *input_key = index == 0u ? "I186-CALL-RM16" :
+                "I186-JMP-RM16";
+
+            if (timing_80186_manifest_run_recipe_with_inputs(
+                    &control_odd_recipes[index], input_key, 1u)) {
+                timing_80186_manifest_report_failure(&control_odd_recipes[index]);
+                return 1;
+            }
+        }
     }
     for (index = 0u; index < sizeof(branch_recipes) / sizeof(branch_recipes[0]);
             ++index) {
@@ -1107,6 +1349,12 @@ C_INT main(C_VOID)
             return 1;
         }
         ++observed;
+    }
+    for (index = 0u; index < sizeof(repeat_recipes) / sizeof(repeat_recipes[0]);
+            ++index) {
+        if ((repeat_recipes[index].opcode & 1u) == 0u) continue;
+        if (timing_80186_manifest_run_repeat_odd_recipe(&repeat_recipes[index]))
+            return 1;
     }
     for (index = 0u; index < sizeof(lock_recipes) / sizeof(lock_recipes[0]);
             ++index) {
@@ -1178,6 +1426,17 @@ C_INT main(C_VOID)
         if (!timing_80186_manifest_observed[index]) return 1;
         ++lock_segment_records;
     }
+    for (index = 0u; index < sizeof(timing_80186_manifest_records) /
+            sizeof(timing_80186_manifest_records[0]); ++index) {
+        const timing_80186_manifest_record *record =
+            &timing_80186_manifest_records[index];
+
+        if (!timing_80186_manifest_is_i186(record) ||
+            STD_STRCMP(record->context, "ODD-WORD") != 0) continue;
+        if (timing_80186_manifest_observed[index]) ++odd_word_records;
+        else STD_PRINTF("M5:T435:S9:I186-MANIFEST-ODD-WORD-MISSING:%s\n",
+            record->key_id);
+    }
     if (base_records != observed) return 1;
     if (repeat_phase_records != 54u) return 1;
     if (lock_records != 19u) return 1;
@@ -1190,6 +1449,9 @@ C_INT main(C_VOID)
         (type_unsigned_32)lock_records);
     STD_PRINTF("M5:T435:S9:I186-MANIFEST-LOCK-SEGMENT-COVERAGE:%u\n",
         (type_unsigned_32)lock_segment_records);
+    STD_PRINTF("M5:T435:S9:I186-MANIFEST-ODD-WORD-COVERAGE:%u\n",
+        (type_unsigned_32)odd_word_records);
+    if (odd_word_records != 87u) return 1;
     STD_PRINTF("M5:T435:S9:I186-MANIFEST-OBSERVED:%u\n",
         (type_unsigned_32)observed);
     return 0;

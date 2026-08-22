@@ -17,10 +17,12 @@ static C_INT core_machine_cpu_timing_string_odd_word(
     if (data == STD_NULL || opcode_index >= data->oplen) return 0;
     opcode = data->opcodes[opcode_index];
     if (opcode != 0xa5u && opcode != 0xa7u && opcode != 0xabu &&
-        opcode != 0xadu && opcode != 0xafu) return 0;
-    source_transfer = opcode == 0xa5u || opcode == 0xa7u || opcode == 0xadu;
+        opcode != 0xadu && opcode != 0xafu && opcode != 0x6du &&
+        opcode != 0x6fu) return 0;
+    source_transfer = opcode == 0xa5u || opcode == 0xa7u || opcode == 0xadu ||
+        opcode == 0x6fu;
     destination_transfer = opcode == 0xa5u || opcode == 0xa7u ||
-        opcode == 0xabu || opcode == 0xafu;
+        opcode == 0xabu || opcode == 0xafu || opcode == 0x6du;
     return (source_transfer && (data->oldcpu.data.si & 1u) != 0u) ||
         (destination_transfer && (data->oldcpu.data.di & 1u) != 0u);
 }

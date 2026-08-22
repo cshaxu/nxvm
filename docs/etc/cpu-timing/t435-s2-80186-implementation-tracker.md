@@ -63,6 +63,16 @@ register forms). This reduces the canonical universe from 624 to 616 only by
 enforcing the pre-existing legality contract: an odd-word context names a
 16-bit memory transfer, never a register operation.
 
+P66 turns every one of the 87 legal single-axis `ODD-WORD` keys into a real
+successful-retirement observation.  The runner now proves the Table 1-16
+`+4` term for direct memory, word read-modify-write (two transfers), far
+pointers, stack-memory forms, word string primitives, and first-iteration REP
+word strings.  It also closes two production defects exposed by that evidence:
+word Group-2 RMW and Group-3 arithmetic had omitted the second/required odd
+transfer, and `INSW`/`OUTSW` had not classified their string transfer or
+published the odd-word formula input.  This does **not** close the remaining
+segment-plus-odd and repeat-combination keys.
+
 ## Per-key implementation map
 
 | manifest template | level and authoritative rule | present state | close in |
@@ -78,7 +88,8 @@ enforcing the pre-existing legality contract: an odd-word context names a
 | `I186-STRING-*`, `I186-REP-*` | L3 primitive/repeat formula | every primitive base and all REP phases have real retirement proof; legal prefix/transfer contexts remain open | B0+B1+B3+B4 |
 | `I186-BOUND` | L2:midpoint, Table 2-9 range 33--35 | successful in-range result proves the fixed midpoint; prefix contexts remain open | B0+B2+B4 |
 | `I186-{ENTER-*,LEAVE}`, `I186-FLAG-*` | L3 exact/formula | every base form has real retirement proof; no independent legal context is admitted | B0+B1+B3+B4 |
-| generated `-SEGMENT`, `-ODD-WORD`, `-LOCK`, `-REP-PHASE-*` and legal combined suffixes | S1 Table 1-16 context rule | no complete independent input/result stream | B3+B4 |
+| generated `-ODD-WORD` (87 legal single-axis keys) | S1 Table 1-16 `+4` odd-addressed 16-bit transfer | every key has a real successful-retirement observation | B3+B4 |
+| generated `-SEGMENT`, `-LOCK`, `-REP-PHASE-*` and legal combined suffixes | S1 Table 1-16 context rule | partial real coverage exists; every unobserved generated key remains open | B3+B4 |
 
 The template form is deliberately compact, but braces in the manifest expand
 one concrete key per opcode/form/outcome/width/context.  A test result for one
