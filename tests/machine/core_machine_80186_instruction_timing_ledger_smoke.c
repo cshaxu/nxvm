@@ -135,10 +135,10 @@ static C_INT timing_80186_memory(C_VOID)
     if (!failed) failed |= !timing_80186_load(machine, moffs_read,
         sizeof(moffs_read)) || core_machine_memory_write(machine, 0x1001u,
         &value, sizeof(value)) != TYPE_STATUS_OK ||
-        !timing_80186_run(machine, &state, 1u, 8u);
+        !timing_80186_run(machine, &state, 1u, 12u);
     if (!failed) failed |= !timing_80186_load(machine, moffs_write,
         sizeof(moffs_write)) || ((machine->executor_cpu.data.ax = value), 0) ||
-        !timing_80186_run(machine, &state, 1u, 9u);
+        !timing_80186_run(machine, &state, 1u, 13u);
     if (!failed) failed |= !timing_80186_load(machine, override,
         sizeof(override)) || core_machine_memory_write(machine, 0x1000u,
         &value, sizeof(value)) != TYPE_STATUS_OK ||
