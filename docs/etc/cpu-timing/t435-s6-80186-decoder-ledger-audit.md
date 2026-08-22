@@ -54,3 +54,21 @@ those deficits finite and attributable; S6 does not close them.  T435 S6 may
 close only as an evidence/audit continuation.  T435's later 80186
 implementation batch may close only after every generated base/context key has
 a real retirement result and becomes `conforming` under the existing tracker.
+
+## Coordinator acceptance
+
+After the executor P sequence, the one-session coordinator role independently
+reviewed the actual changed S1 ledger, S2 manifest/tracker, P2 inventory,
+P3 verifier and audit artifacts at `f425b07e`, `049dc516`, `f91b7a96`, and
+`e4657202`.  It also re-ran the inventory generator, both manifest/verifier
+gates, the focused 80186 decoder/profile smoke tests, documentation governance,
+and `git diff --check`.
+
+The review accepts the S6 audit boundary because it proves the 23 S1 manual
+locators, 279 base recipe witnesses, 247-primary opcode partition, and all 603
+generated key dispositions.  No source or CMake runtime path changed in this
+acceptance review.  The 603 nonconforming runtime dispositions remain the
+explicit next 80186 implementation batch; they are not an S6 audit failure or
+an S6 runtime-conformance claim.
+
+Marker: `M5:T435:S6:I186-AUDIT-ACCEPTED:OK`.

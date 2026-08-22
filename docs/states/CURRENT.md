@@ -2,28 +2,11 @@
 
 ## Current Work
 
-**M5 T435 S6 is active.** This continuation is the owner-approved 80186
-**re-audit**: re-establish the manual-to-decoder-to-S1-to-S2 audit chain before
-any 80186 timing implementation is admitted.
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | `Continuation`; M5 T435 S6 follows the owner-approved 8086 S5 closure audit and performs the next CPU block as a bounded re-audit. |
-| Admission And Approval | Owner: user. Approval: owner authorized the named 80186 re-audit and requested immediate execution, 2026-08-21. No exception is approved. |
-| Objective | Re-read the authorized Intel 80186 manual corpus; mechanically reconcile every successful 80186 decoder form and legal context against S1 and S2; correct all S1 source/model/register omissions and all S2 actual-state/deficit omissions; publish a finite, reproducible audit artifact. |
-| Non-goals | No 80186 runtime timing or semantic implementation, no 80286/80386 re-audit, no public ABI, and no board, transaction, DMA, prefetch, INTA, device-service or physical-cycle timing. |
-| Reference Baseline | Intel 1985 iAPX 86/88/186/188 User's Manual Table 1-16 and named Part I/II cross-checks; current 80186 decoder/executor; T435 S1/S2 80186 ledger, manifest, tracker and context contract; accepted 8086 S5 reconciliation method. |
-| Candidate Proposal | [M5 Core CPU Instruction Timing Programs](../proposals/m5-core-cpu-instruction-timing-program.md), S6 / 80186 row. |
-| Files And ABI Surface | `docs/etc/cpu-timing/t435-s1-80186-ledger.md`, S2 80186 manifest/audit/tracker, `t435-s6-80186-manual-rebaseline.md`, the 80186 reconciliation contract/inventory/P3 ledger-audit, and `tools/Verify-80186DecoderLedger.ps1`; a dedicated test-only decoder-inventory runner and its CMake registration may be added. The existing compile-time timing-catalog count assertion may be updated only to reflect a verified manifest-key delta. No runtime behavior, public or cross-module ABI change. |
-| Applicable Rules | Documentation and execution governance; source material remains reference-only; one finite coverage ledger with a zero-difference predicate; no source import; preserve manual L3 versus labelled L2 midpoint distinction; distinguish decoder success, semantic fault and external event boundaries. |
-| Verification | Run the 80186 manifest integrity gate; compile/run a decoder inventory probe or equivalent current-Core scan; run a new decoder-to-S1/S2 verifier in both directions; independently check S1/manual locators and S2 status-count arithmetic; run documentation governance and focused current CPU decoder/profile tests. |
-| Expected Markers | `M5:T435:S6:I186-MANUAL-DECODER-PARTITION:OK`; `M5:T435:S6:I186-DECODER-LEDGER-ZERO-DIFFERENCE:PASS`; `M5:T435:S6:I186-S2-STATUS-RECONCILED:PASS`. |
-| Asset Needs | Existing owner-authorized manual corpus recorded by the S1 primary-corpus table and already-recorded reference research only. No third-party source, firmware, media or code import. |
-| Reporting Requirements | Record the old and revised successful-form/context denominator; every admitted or removed S1/S2 key with manual locator; each range/model/L2 decision; per-key S2 current-route/status correction; verifier input/output counts; focused test and documentation-gate outcomes; and an explicit remaining implementation boundary. |
-| Stop Conditions | Stop for an 80186 form whose manual status cannot be established from the authorized corpus, an unresolved decoder/manual contradiction, a required new external source/license decision, an ABI/runtime change, or a boundary that belongs to board/device timing. Never hide a difference by excluding it from the denominator. |
-| Exit Criteria | The complete successful 80186 decoder universe and legal contexts have a reproducible zero-difference S1/S2 partition; every S1 row has a primary-manual locator and L3/L2 disposition; every S2 key has an honest current route/status and no aggregate-only claim; all differences have a recorded decision; required gates pass; the P is committed, pushed and independently accepted. |
-| Original Owner Request | Re-audit the 80186 S1 manual instruction register and S2 gap audit to the same trustworthy standard prompted by the 8086 misses, then make the 80186 audit documents complete before implementation. |
-| Similar-Issue Sweep | Sweep inherited 8086 rows, all 80186 additions (`60`--`6F`, `C0/C1`, `C8/C9`, `62`, `69/6B`), ModR/M extension/profile gates, prefix/context legality, Table 1-16 parenthetical values, S1 grouped forms, S2 manifest expansion/statuses, current selector observations and verifier coverage. |
+**M5 T435 remains open between subtasks.** S6/80186 re-audit is accepted:
+[its closure audit](../etc/cpu-timing/t435-s6-80186-decoder-ledger-audit.md)
+proves the finite manual-to-decoder-to-S1-to-S2 register.  The next
+owner-admitted batch must implement--not re-audit--the 603 explicit 80186
+nonconforming keys.
 ## Current Technical Baseline
 
 - **Current developer artifact:** target `vm-0-5-0434`; T434 S2 `nxvm_0_5_0434.exe` / `build/output/nxvm_0_5_0434.exe`, SHA-256 `0252F8FDA17BEC2131606F19E3547B46894AC6B56DD37EC3B16BD302494FAFDC`. T434 has one copied Core timing-plan publication route for default PC/AT, IBM 5170 Model 339 and Model-40 BYOB session composition.
@@ -48,7 +31,7 @@ any 80186 timing implementation is admitted.
 
 | Task | Compact result |
 | --- | --- |
-| T435 S4 | Closed: [S4 execution evidence](../etc/evidence/t435-s4-8086-manifest-execution.md) proves every frozen 8086 key through a real Core retirement: 617 L3 and 32 named L2:G3 results, no unallocated successful retirement, all 291 current-gate tests passed, and the current 0.5.0434 artifact rebuilt. S5/80186 remains the next owner-admitted batch. |
+| T435 S6 | Closed: [S6 audit](../etc/cpu-timing/t435-s6-80186-decoder-ledger-audit.md) proves 23 primary-manual locators, 279 decoder-backed base keys, a 247-primary opcode partition, and all 603 generated key dispositions. It deliberately accepts no 80186 runtime timing result; the 102 wrong-value, 81 unallocated, 144 missing-input and 276 missing-test keys are the complete next implementation batch. |
 | T434 | Closed: all 30 copied plan declarations/dispositions, every current VM materializer and atomic Core publication route are reconciled; full task closure proof is retained in the [S3 audit](../etc/evidence/t434-s3-task-closure-audit.md) and [task history](../history/M5-T434-core-timing-contract-machine-plan.md). |
 | T433 | Closed after corrective S7: 30 frozen Core capabilities have a source-sufficiency and ownership disposition; chip/manual semantics are separated from VM-profile inputs, host/product boundaries and the explicit ATA/HDC source block. [S7 ledger](../etc/evidence/t433-s7-core-source-sufficiency-ledger.md). |
 | T432 | Closed: separate Core-private Set-2 translation and typematic break states prevent released keys from restarting typematic; focused regression, Model-339 contract and owner Console/Window verification pass. [Record](../history/M5-T432-keyboard-keyup-reliability-repair.md). |
