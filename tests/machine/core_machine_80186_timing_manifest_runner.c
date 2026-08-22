@@ -34,6 +34,11 @@ typedef struct timing_80186_manifest_recipe {
     core_machine_retirement_timing_origin origin;
 } timing_80186_manifest_recipe;
 
+typedef struct timing_80186_manifest_flag_recipe {
+    timing_80186_manifest_recipe recipe;
+    type_unsigned_32 eflags;
+} timing_80186_manifest_flag_recipe;
+
 typedef struct timing_80186_manifest_inputs {
     const C_CHAR *key_id;
     type_unsigned_16 cx;
@@ -49,6 +54,8 @@ static C_INT timing_80186_manifest_observed[
 static core_machine_retirement_observation timing_80186_manifest_results[
     sizeof(timing_80186_manifest_records) / sizeof(timing_80186_manifest_records[0])];
 static C_INT timing_80186_manifest_current_index = -1;
+static C_INT timing_80186_manifest_flags_active = 0;
+static type_unsigned_32 timing_80186_manifest_eflags;
 
 static C_VOID timing_80186_manifest_execution_reset(C_VOID *opaque)
 {
@@ -225,6 +232,9 @@ static C_INT timing_80186_manifest_prepare(core_machine **out_machine,
         machine->executor_cpu.data.ax = 1u;
         machine->executor_cpu.data.dx = 0u;
     }
+    if (status == TYPE_STATUS_OK && timing_80186_manifest_flags_active) {
+        machine->executor_cpu.data.eflags = timing_80186_manifest_eflags;
+    }
     if (status == TYPE_STATUS_OK && inputs != STD_NULL) {
         type_unsigned_32 memory_value = inputs->memory_value;
 
@@ -268,6 +278,19 @@ static C_INT timing_80186_manifest_run_recipe(
                 CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED;
     }
     core_machine_destroy(machine);
+    return failed;
+}
+
+static C_INT timing_80186_manifest_run_flag_recipe(
+    const timing_80186_manifest_flag_recipe *recipe)
+{
+    C_INT failed;
+
+    if (recipe == STD_NULL) return 1;
+    timing_80186_manifest_eflags = recipe->eflags;
+    timing_80186_manifest_flags_active = 1;
+    failed = timing_80186_manifest_run_recipe(&recipe->recipe);
+    timing_80186_manifest_flags_active = 0;
     return failed;
 }
 
@@ -639,6 +662,44 @@ C_INT main(C_VOID)
         { "I186-ALU-XOR-AI", { 0x34u,1u }, 2u, 4u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY }
     };
+#define TIMING_80186_JCC(KEY, OPCODE, FLAGS, TICKS) \
+    { { KEY, { OPCODE,1u }, 2u, TICKS, \
+        CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY }, FLAGS }
+    static const timing_80186_manifest_flag_recipe branch_recipes[] = {
+        TIMING_80186_JCC("I186-JCC-JO-TAKEN", 0x70u, VCPU_EFLAGS_OF, 13u),
+        TIMING_80186_JCC("I186-JCC-JO-NOT", 0x70u, 0u, 4u),
+        TIMING_80186_JCC("I186-JCC-JNO-TAKEN", 0x71u, 0u, 13u),
+        TIMING_80186_JCC("I186-JCC-JNO-NOT", 0x71u, VCPU_EFLAGS_OF, 4u),
+        TIMING_80186_JCC("I186-JCC-JB-TAKEN", 0x72u, VCPU_EFLAGS_CF, 13u),
+        TIMING_80186_JCC("I186-JCC-JB-NOT", 0x72u, 0u, 4u),
+        TIMING_80186_JCC("I186-JCC-JAE-TAKEN", 0x73u, 0u, 13u),
+        TIMING_80186_JCC("I186-JCC-JAE-NOT", 0x73u, VCPU_EFLAGS_CF, 4u),
+        TIMING_80186_JCC("I186-JCC-JE-TAKEN", 0x74u, VCPU_EFLAGS_ZF, 13u),
+        TIMING_80186_JCC("I186-JCC-JE-NOT", 0x74u, 0u, 4u),
+        TIMING_80186_JCC("I186-JCC-JNE-TAKEN", 0x75u, 0u, 13u),
+        TIMING_80186_JCC("I186-JCC-JNE-NOT", 0x75u, VCPU_EFLAGS_ZF, 4u),
+        TIMING_80186_JCC("I186-JCC-JBE-TAKEN", 0x76u, VCPU_EFLAGS_CF, 13u),
+        TIMING_80186_JCC("I186-JCC-JBE-NOT", 0x76u, 0u, 4u),
+        TIMING_80186_JCC("I186-JCC-JA-TAKEN", 0x77u, 0u, 13u),
+        TIMING_80186_JCC("I186-JCC-JA-NOT", 0x77u, VCPU_EFLAGS_CF, 4u),
+        TIMING_80186_JCC("I186-JCC-JS-TAKEN", 0x78u, VCPU_EFLAGS_SF, 13u),
+        TIMING_80186_JCC("I186-JCC-JS-NOT", 0x78u, 0u, 4u),
+        TIMING_80186_JCC("I186-JCC-JNS-TAKEN", 0x79u, 0u, 13u),
+        TIMING_80186_JCC("I186-JCC-JNS-NOT", 0x79u, VCPU_EFLAGS_SF, 4u),
+        TIMING_80186_JCC("I186-JCC-JP-TAKEN", 0x7au, VCPU_EFLAGS_PF, 13u),
+        TIMING_80186_JCC("I186-JCC-JP-NOT", 0x7au, 0u, 4u),
+        TIMING_80186_JCC("I186-JCC-JNP-TAKEN", 0x7bu, 0u, 13u),
+        TIMING_80186_JCC("I186-JCC-JNP-NOT", 0x7bu, VCPU_EFLAGS_PF, 4u),
+        TIMING_80186_JCC("I186-JCC-JL-TAKEN", 0x7cu, VCPU_EFLAGS_SF, 13u),
+        TIMING_80186_JCC("I186-JCC-JL-NOT", 0x7cu, 0u, 4u),
+        TIMING_80186_JCC("I186-JCC-JGE-TAKEN", 0x7du, 0u, 13u),
+        TIMING_80186_JCC("I186-JCC-JGE-NOT", 0x7du, VCPU_EFLAGS_SF, 4u),
+        TIMING_80186_JCC("I186-JCC-JLE-TAKEN", 0x7eu, VCPU_EFLAGS_ZF, 13u),
+        TIMING_80186_JCC("I186-JCC-JLE-NOT", 0x7eu, 0u, 4u),
+        TIMING_80186_JCC("I186-JCC-JG-TAKEN", 0x7fu, 0u, 13u),
+        TIMING_80186_JCC("I186-JCC-JG-NOT", 0x7fu, VCPU_EFLAGS_ZF, 4u)
+    };
+#undef TIMING_80186_JCC
     STD_SIZE_T index;
     STD_SIZE_T observed = 0u;
 
@@ -646,7 +707,13 @@ C_INT main(C_VOID)
         if (timing_80186_manifest_run_recipe(&recipes[index])) return 1;
         ++observed;
     }
-    if (observed != sizeof(recipes) / sizeof(recipes[0])) return 1;
+    for (index = 0u; index < sizeof(branch_recipes) / sizeof(branch_recipes[0]);
+            ++index) {
+        if (timing_80186_manifest_run_flag_recipe(&branch_recipes[index])) return 1;
+        ++observed;
+    }
+    if (observed != sizeof(recipes) / sizeof(recipes[0]) +
+            sizeof(branch_recipes) / sizeof(branch_recipes[0])) return 1;
     STD_PRINTF("M5:T435:S9:I186-MANIFEST-OBSERVED:%u\n",
         (type_unsigned_32)observed);
     return 0;
