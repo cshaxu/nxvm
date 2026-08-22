@@ -2487,6 +2487,18 @@ C_INT core_machine_control_stack_source_instruction_cost(
         (data->opcodes[prefixes + 1u] >> 3u) & 7u : 8u;
 
     switch (opcode) {
+    case 0x06u: case 0x0eu: case 0x16u: case 0x1eu:
+        if (machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_80286) return 0;
+        *out_ticks = core_machine_control_stack_source_lookup(machine,
+            CORE_MACHINE_SOURCE_TIMING_PUSH_REGISTER);
+        return 1;
+    case 0x07u: case 0x17u: case 0x1fu:
+        if (machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_80286 || protected_mode) {
+            return 0;
+        }
+        *out_ticks = core_machine_control_stack_source_lookup(machine,
+            CORE_MACHINE_SOURCE_TIMING_POP_REGISTER);
+        return 1;
     case 0xe8u:
         return core_machine_control_stack_add_next_term(machine,
             core_machine_control_stack_source_lookup(machine,

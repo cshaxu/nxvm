@@ -89,9 +89,21 @@ static C_INT timing_80286_manifest_is_interrupt(const C_CHAR *key_id)
 
 static C_INT timing_80286_manifest_uses_stack(const C_CHAR *key_id)
 {
-    return key_id != STD_NULL && (STD_STRCMP(key_id,
-        "I286-CALL-NEAR-DIRECT-NEXT-BYTE-1") == 0 || STD_STRCMP(key_id,
-        "I286-RET-NEAR-NEXT-BYTE-1") == 0);
+    static const C_CHAR *const stack_keys[] = {
+        "I286-CALL-NEAR-DIRECT-NEXT-BYTE-1",
+        "I286-RET-NEAR-NEXT-BYTE-1", "I286-STACK-PUSH-R",
+        "I286-STACK-PUSH-SEG", "I286-STACK-PUSH-IMM",
+        "I286-STACK-PUSHA", "I286-STACK-PUSHF", "I286-STACK-POP-R",
+        "I286-STACK-POP-SEG-REAL", "I286-STACK-POPA",
+        "I286-STACK-POPF", "I286-STACK-LEAVE"
+    };
+    STD_SIZE_T index;
+
+    if (key_id == STD_NULL) return 0;
+    for (index = 0u; index < sizeof(stack_keys) / sizeof(stack_keys[0]); ++index) {
+        if (STD_STRCMP(key_id, stack_keys[index]) == 0) return 1;
+    }
+    return 0;
 }
 
 static C_INT timing_80286_manifest_uses_far_target(const C_CHAR *key_id)
@@ -232,6 +244,10 @@ static C_INT timing_80286_manifest_prepare(core_machine **out_machine,
         machine->executor_cpu.data.sp = TIMING_80286_MANIFEST_STACK_LINEAR;
         status = core_machine_memory_write(machine,
             TIMING_80286_MANIFEST_STACK_LINEAR, &return_ip, sizeof(return_ip));
+    }
+    if (status == TYPE_STATUS_OK && STD_STRCMP(key_id,
+            "I286-STACK-LEAVE") == 0) {
+        machine->executor_cpu.data.ebp = TIMING_80286_MANIFEST_STACK_LINEAR;
     }
     if (status == TYPE_STATUS_OK && timing_80286_manifest_uses_far_target(key_id)) {
         static const type_unsigned_8 one_byte_target[] = { 0x90u };
@@ -608,6 +624,26 @@ C_INT main(C_VOID)
         { "I286-JMP-FAR-REAL-NEXT-BYTE-2", { 0xeau, 0xf5u, 0xffu, 0x00u, 0xf0u },
             5u, 13u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
         { "I286-RET-NEAR-NEXT-BYTE-1", { 0xc3u }, 1u, 12u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
+        { "I286-STACK-PUSH-R", { 0x50u }, 1u, 3u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
+        { "I286-STACK-PUSH-SEG", { 0x06u }, 1u, 3u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
+        { "I286-STACK-PUSH-IMM", { 0x68u, 0x01u, 0x00u }, 3u, 3u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
+        { "I286-STACK-PUSHA", { 0x60u }, 1u, 17u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
+        { "I286-STACK-PUSHF", { 0x9cu }, 1u, 3u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
+        { "I286-STACK-POP-R", { 0x58u }, 1u, 5u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
+        { "I286-STACK-POP-SEG-REAL", { 0x1fu }, 1u, 5u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
+        { "I286-STACK-POPA", { 0x61u }, 1u, 19u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
+        { "I286-STACK-POPF", { 0x9du }, 1u, 5u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
+        { "I286-STACK-LEAVE", { 0xc9u }, 1u, 8u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK }
     };
     static const timing_80286_manifest_control_recipe control_recipes[] = {
