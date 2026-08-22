@@ -135,3 +135,10 @@ outcomes and one-through-six-byte inputs; their direct IP checks distinguish
 taken, handler and fall-through destinations. The runner captures 603 records,
 all 54 S5 keys are classified with their correct origin and input, and final
 result emission remains refused until S6/S7 complete.
+
+The coordinator reviewed P1 `7f4ca142`: 12 files, no public ABI or board/event
+policy change, one Core-private timing repair and one normalized control input
+publication. The final focused runner reports 603 observations and 54/54 S5
+coverage; manifest, partition, decoder-ledger and documentation governance
+checks pass. The review accepts S5 and transfers only the already partitioned
+S6 protected-control records.
