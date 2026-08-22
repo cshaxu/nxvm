@@ -30,7 +30,7 @@ typedef struct timing_80186_manifest_capture {
 
 typedef struct timing_80186_manifest_recipe {
     const C_CHAR *key_id;
-    type_unsigned_8 program[5];
+    type_unsigned_8 program[8];
     STD_SIZE_T bytes;
     type_unsigned_64 ticks;
     core_machine_retirement_timing_origin origin;
@@ -1036,11 +1036,52 @@ C_INT main(C_VOID)
         { "I186-REP-OUTS-B", 0xf3u, 0x6eu, 16u, 8u, 8u },
         { "I186-REP-OUTS-W", 0xf3u, 0x6fu, 16u, 8u, 8u }
     };
+    static const timing_80186_manifest_recipe lock_recipes[] = {
+        { "I186-ALU-ADD-MR-LOCK", { 0xf0u,0x01u,0x06u,0u,0x10u }, 5u, 12u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I186-ALU-OR-MR-LOCK", { 0xf0u,0x09u,0x06u,0u,0x10u }, 5u, 12u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I186-ALU-ADC-MR-LOCK", { 0xf0u,0x11u,0x06u,0u,0x10u }, 5u, 12u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I186-ALU-SBB-MR-LOCK", { 0xf0u,0x19u,0x06u,0u,0x10u }, 5u, 12u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I186-ALU-AND-MR-LOCK", { 0xf0u,0x21u,0x06u,0u,0x10u }, 5u, 12u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I186-ALU-SUB-MR-LOCK", { 0xf0u,0x29u,0x06u,0u,0x10u }, 5u, 12u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I186-ALU-XOR-MR-LOCK", { 0xf0u,0x31u,0x06u,0u,0x10u }, 5u, 12u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I186-ALU-ADD-MI-LOCK", { 0xf0u,0x81u,0x06u,0u,0x10u,1u,0u }, 7u, 18u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I186-ALU-OR-MI-LOCK", { 0xf0u,0x81u,0x0eu,0u,0x10u,1u,0u }, 7u, 18u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I186-ALU-ADC-MI-LOCK", { 0xf0u,0x81u,0x16u,0u,0x10u,1u,0u }, 7u, 18u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I186-ALU-SBB-MI-LOCK", { 0xf0u,0x81u,0x1eu,0u,0x10u,1u,0u }, 7u, 18u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I186-ALU-AND-MI-LOCK", { 0xf0u,0x81u,0x26u,0u,0x10u,1u,0u }, 7u, 18u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I186-ALU-SUB-MI-LOCK", { 0xf0u,0x81u,0x2eu,0u,0x10u,1u,0u }, 7u, 18u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I186-ALU-XOR-MI-LOCK", { 0xf0u,0x81u,0x36u,0u,0x10u,1u,0u }, 7u, 18u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I186-INC-M-LOCK", { 0xf0u,0xffu,0x06u,0u,0x10u }, 5u, 17u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I186-DEC-M-LOCK", { 0xf0u,0xffu,0x0eu,0u,0x10u }, 5u, 17u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I186-NOT-M-LOCK", { 0xf0u,0xf7u,0x16u,0u,0x10u }, 5u, 5u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I186-NEG-M-LOCK", { 0xf0u,0xf7u,0x1eu,0u,0x10u }, 5u, 5u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I186-XCHG-MR-LOCK", { 0xf0u,0x87u,0x06u,0u,0x10u }, 5u, 19u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY }
+    };
 #undef TIMING_80186_JCC
     STD_SIZE_T index;
     STD_SIZE_T observed = 0u;
     STD_SIZE_T base_records = 0u;
     STD_SIZE_T repeat_phase_records = 0u;
+    STD_SIZE_T lock_records = 0u;
 
     for (index = 0u; index < sizeof(recipes) / sizeof(recipes[0]); ++index) {
         if (timing_80186_manifest_run_recipe(&recipes[index])) {
@@ -1066,6 +1107,13 @@ C_INT main(C_VOID)
         }
         ++observed;
     }
+    for (index = 0u; index < sizeof(lock_recipes) / sizeof(lock_recipes[0]);
+            ++index) {
+        if (timing_80186_manifest_run_recipe(&lock_recipes[index])) {
+            timing_80186_manifest_report_failure(&lock_recipes[index]);
+            return 1;
+        }
+    }
     if (observed != sizeof(recipes) / sizeof(recipes[0]) +
             sizeof(branch_recipes) / sizeof(branch_recipes[0]) +
             sizeof(repeat_recipes) / sizeof(repeat_recipes[0])) return 1;
@@ -1089,12 +1137,25 @@ C_INT main(C_VOID)
         if (!timing_80186_manifest_observed[index]) return 1;
         ++repeat_phase_records;
     }
+    for (index = 0u; index < sizeof(timing_80186_manifest_records) /
+            sizeof(timing_80186_manifest_records[0]); ++index) {
+        const timing_80186_manifest_record *record =
+            &timing_80186_manifest_records[index];
+
+        if (!timing_80186_manifest_is_i186(record) ||
+            STD_STRCMP(record->context, "LOCK") != 0) continue;
+        if (!timing_80186_manifest_observed[index]) return 1;
+        ++lock_records;
+    }
     if (base_records != observed) return 1;
     if (repeat_phase_records != 54u) return 1;
+    if (lock_records != 19u) return 1;
     STD_PRINTF("M5:T435:S9:I186-MANIFEST-BASE-COVERAGE:%u\n",
         (type_unsigned_32)base_records);
     STD_PRINTF("M5:T435:S9:I186-MANIFEST-REP-PHASE-COVERAGE:%u\n",
         (type_unsigned_32)repeat_phase_records);
+    STD_PRINTF("M5:T435:S9:I186-MANIFEST-LOCK-COVERAGE:%u\n",
+        (type_unsigned_32)lock_records);
     STD_PRINTF("M5:T435:S9:I186-MANIFEST-OBSERVED:%u\n",
         (type_unsigned_32)observed);
     return 0;

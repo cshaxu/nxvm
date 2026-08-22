@@ -35,7 +35,7 @@ P23 corrects the prior `G2-*` selector typo: the 21 legal odd-addressed
 `ROL`/`ROR`/`RCL`/`RCR`/`SHL`/`SHR`/`SAR` forms. They retain `missing-input`
 until one real result proves their Table 1-16 `+4` term.
 
-P34--P62 add `core-machine-80186-timing-manifest-runner`. All 279 canonical
+P34--P63 add `core-machine-80186-timing-manifest-runner`. All 279 canonical
 base recipes now pass actual retirement observation, and its metadata coverage
 gate rejects a missing base key or a duplicate-only recipe set. P55 corrects
 the former noncanonical `I186-LEA` / `I186-ENTER-LGT1` spellings, makes the
@@ -50,10 +50,11 @@ boundary. P60 proves all fourteen non-repeat string byte-and-word primitives.
 P61 proves every `REP` base key's first, continuation and zero-count phase.
 P62 assigns those three phase observations to all 54 separately generated
 `REP-PHASE-*` metadata keys and rejects a missing key. Recipes check ticks,
-origin, classified disposition and, for repeat, phase and input bits. Prefix
-and combined contexts remain deliberately open; the runner writes no final
-result document and every manifest status remains open until all 624 keys have
-a real recipe.
+origin, classified disposition and, for repeat, phase and input bits. P63
+proves all 19 legal memory-RMW `LOCK` keys and checks the common selector's
+manual `+2` prefix term. Segment and combined contexts remain deliberately
+open; the runner writes no final result document and every manifest status
+remains open until all 624 keys have a real recipe.
 
 ## Per-key implementation map
 
