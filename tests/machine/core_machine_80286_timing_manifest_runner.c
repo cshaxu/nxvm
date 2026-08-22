@@ -114,6 +114,7 @@ static C_INT timing_80286_manifest_prepare(core_machine **out_machine,
         const type_unsigned_16 operand = 1u;
 
         machine->executor_cpu.data.eax = 1u;
+        machine->executor_cpu.data.ecx = 2u;
         machine->executor_cpu.data.edx = 0u;
         status = core_machine_memory_write(machine, 0x1000u, &operand,
             sizeof(operand));
@@ -339,6 +340,27 @@ C_INT main(C_VOID)
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-IMUL-IMM-IMM16-M", { 0x69u, 0x06u, 0u, 0x10u, 1u, 0u }, 6u, 24u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ROL-RM1", { 0xd0u, 0xc0u }, 2u, 2u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80286_FALLBACK },
+        { "I286-ROR-RM1", { 0xd0u, 0xc8u }, 2u, 2u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80286_FALLBACK },
+        { "I286-RCL-RM1", { 0xd0u, 0xd0u }, 2u, 2u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80286_FALLBACK },
+        { "I286-RCR-RM1", { 0xd0u, 0xd8u }, 2u, 2u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80286_FALLBACK },
+        { "I286-SHL-RM1", { 0xd0u, 0xe0u }, 2u, 2u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80286_FALLBACK },
+        { "I286-SHR-RM1", { 0xd0u, 0xe8u }, 2u, 2u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80286_FALLBACK },
+        { "I286-SAR-RM1", { 0xd0u, 0xf8u }, 2u, 2u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80286_FALLBACK },
+        { "I286-ROL-RMCL", { 0xd2u, 0xc0u }, 2u, 7u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80286_FALLBACK },
+        { "I286-ROR-RMCL", { 0xd2u, 0xc8u }, 2u, 7u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80286_FALLBACK },
+        { "I286-RCL-RMCL", { 0xd2u, 0xd0u }, 2u, 7u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80286_FALLBACK },
+        { "I286-RCR-RMCL", { 0xd2u, 0xd8u }, 2u, 7u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80286_FALLBACK },
+        { "I286-SHL-RMCL", { 0xd2u, 0xe0u }, 2u, 7u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80286_FALLBACK },
+        { "I286-SHR-RMCL", { 0xd2u, 0xe8u }, 2u, 7u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80286_FALLBACK },
+        { "I286-SAR-RMCL", { 0xd2u, 0xf8u }, 2u, 7u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80286_FALLBACK },
+        { "I286-ROL-RMIMM8", { 0xc0u, 0xc0u, 2u }, 3u, 7u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80286_FALLBACK },
+        { "I286-ROR-RMIMM8", { 0xc0u, 0xc8u, 2u }, 3u, 7u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80286_FALLBACK },
+        { "I286-RCL-RMIMM8", { 0xc0u, 0xd0u, 2u }, 3u, 7u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80286_FALLBACK },
+        { "I286-RCR-RMIMM8", { 0xc0u, 0xd8u, 2u }, 3u, 7u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80286_FALLBACK },
+        { "I286-SHL-RMIMM8", { 0xc0u, 0xe0u, 2u }, 3u, 7u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80286_FALLBACK },
+        { "I286-SHR-RMIMM8", { 0xc0u, 0xe8u, 2u }, 3u, 7u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80286_FALLBACK },
+        { "I286-SAR-RMIMM8", { 0xc0u, 0xf8u, 2u }, 3u, 7u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80286_FALLBACK },
         { "I286-MOV-RR", { 0x8au, 0xc1u }, 2u, 2u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80286_FALLBACK },
         { "I286-MOV-RM", { 0x8au, 0x06u, 0u, 0x10u }, 4u, 5u,
