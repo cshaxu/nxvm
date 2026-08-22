@@ -2242,6 +2242,21 @@ C_INT core_machine_primary_source_instruction_cost(
         case CORE_MACHINE_SOURCE_TIMING_MOV_RM_IMMEDIATE:
             ticks = shape.memory ? 3u : 2u;
             break;
+        case CORE_MACHINE_SOURCE_TIMING_MOV_REGISTER_REGISTER:
+            ticks = 2u;
+            break;
+        case CORE_MACHINE_SOURCE_TIMING_MOV_RM_REGISTER:
+            ticks = shape.memory ? 3u : 2u;
+            break;
+        case CORE_MACHINE_SOURCE_TIMING_MOV_REGISTER_RM:
+            ticks = shape.memory ? 5u : 2u;
+            break;
+        case CORE_MACHINE_SOURCE_TIMING_MOV_MOFFS_READ:
+            ticks = 5u;
+            break;
+        case CORE_MACHINE_SOURCE_TIMING_MOV_MOFFS_WRITE:
+            ticks = 3u;
+            break;
         case CORE_MACHINE_SOURCE_TIMING_LEA:
             ticks = 3u;
             break;
@@ -3166,7 +3181,6 @@ C_INT core_machine_80286_source_instruction_cost(core_machine *machine,
     type_unsigned_32 prefixes = core_machine_instruction_prefix_count(data);
     type_unsigned_8 opcode;
     type_unsigned_32 fallthrough;
-    type_unsigned_64 memory_ticks;
 
     if (out_ticks == STD_NULL) return 0;
     if (prefixes >= data->oplen) {
@@ -3295,29 +3309,6 @@ C_INT core_machine_80286_source_instruction_cost(core_machine *machine,
             return 1;
         }
         core_machine_source_timing_mark_unallocated(machine, out_ticks);
-        return 1;
-    case 0x88u: case 0x89u: case 0x8au: case 0x8bu:
-        if (!data->flagMem) {
-            *out_ticks = core_machine_80286_source_timing_lookup(machine,
-                CORE_MACHINE_SOURCE_TIMING_MOV_REGISTER_REGISTER);
-            return 1;
-        }
-        memory_ticks = core_machine_80286_timing_effective_address(data,
-            prefixes);
-        *out_ticks = core_machine_80286_source_timing_lookup(machine,
-            opcode == 0x88u || opcode == 0x89u ?
-            CORE_MACHINE_SOURCE_TIMING_MOV_RM_REGISTER :
-            CORE_MACHINE_SOURCE_TIMING_MOV_REGISTER_RM) + memory_ticks +
-            ((opcode == 0x89u || opcode == 0x8bu) ?
-                core_machine_80286_timing_odd_word(data) : 0u);
-        return 1;
-    case 0xa0u: case 0xa1u: case 0xa2u: case 0xa3u:
-        *out_ticks = core_machine_80286_source_timing_lookup(machine,
-            opcode == 0xa0u || opcode == 0xa1u ?
-            CORE_MACHINE_SOURCE_TIMING_MOV_MOFFS_READ :
-            CORE_MACHINE_SOURCE_TIMING_MOV_MOFFS_WRITE) +
-            ((opcode == 0xa1u || opcode == 0xa3u) ?
-                core_machine_80286_timing_odd_word(data) : 0u);
         return 1;
     default:
         if (opcode >= 0xb0u && opcode <= 0xbfu) {
