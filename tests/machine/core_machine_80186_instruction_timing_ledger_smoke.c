@@ -218,6 +218,45 @@ static C_INT timing_80186_alu_matrix(C_VOID)
     return 0;
 }
 
+static C_INT timing_80186_cmp_test_matrix(C_VOID)
+{
+    typedef struct timing_80186_recipe {
+        type_unsigned_8 program[5];
+        STD_SIZE_T bytes;
+        type_unsigned_64 ticks;
+    } timing_80186_recipe;
+    static const timing_80186_recipe recipes[] = {
+        { { 0x3au,0xc1u }, 2u, 3u }, { { 0x3au,0x06u,0u,0x10u }, 4u, 10u },
+        { { 0x38u,0x0eu,0u,0x10u }, 4u, 10u }, { { 0x80u,0xf8u,1u }, 3u, 3u },
+        { { 0x80u,0x3eu,0u,0x10u,1u }, 5u, 10u }, { { 0x3cu,1u }, 2u, 4u },
+        { { 0x84u,0xc1u }, 2u, 3u }, { { 0x84u,0x06u,0u,0x10u }, 4u, 10u },
+        { { 0xf6u,0xc0u,1u }, 3u, 4u }, { { 0xf6u,0x06u,0u,0x10u,1u }, 5u, 10u },
+        { { 0xa8u,1u }, 2u, 4u }
+    };
+    STD_SIZE_T index;
+
+    for (index = 0u; index < sizeof(recipes) / sizeof(recipes[0]); ++index) {
+        const type_unsigned_16 value = 1u;
+        timing_80186_state state = { 0u, 0u, 0u };
+        core_machine *machine = STD_NULL;
+        C_INT failed = !timing_80186_prepare(&machine, &state) ||
+            !timing_80186_load(machine, recipes[index].program,
+                recipes[index].bytes) || core_machine_memory_write(machine,
+                0x1000u, &value, sizeof(value)) != TYPE_STATUS_OK ||
+            ((machine->executor_cpu.data.ax = 1u),
+                (machine->executor_cpu.data.cx = 1u), 0) ||
+            !timing_80186_run(machine, &state, 1u, recipes[index].ticks);
+
+        core_machine_destroy(machine);
+        if (failed) {
+            STD_PRINTF("I186 CMP/TEST timing case failed: index=%u\n",
+                (type_unsigned_32)index);
+            return 1;
+        }
+    }
+    return 0;
+}
+
 static C_INT timing_80186_stack_frame(C_VOID)
 {
     static const type_unsigned_8 enter[] = { 0xc8u, 0u, 0u, 0u };
@@ -419,6 +458,7 @@ C_INT main(C_VOID)
         timing_80186_pointer_loads() ||
         timing_80186_bound() ||
         timing_80186_alu_matrix() ||
+        timing_80186_cmp_test_matrix() ||
         timing_80186_stack_frame() ||
         timing_80186_case(near_call, sizeof(near_call), 15u) ||
         timing_80186_case(direct_jump, sizeof(direct_jump), 13u) ||

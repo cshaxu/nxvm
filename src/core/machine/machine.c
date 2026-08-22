@@ -2058,13 +2058,14 @@ C_INT core_machine_primary_source_instruction_cost(
             ticks = shape.memory ? 10u : 3u;
             break;
         case CORE_MACHINE_SOURCE_TIMING_CMP_RM_IMMEDIATE:
-            ticks = shape.memory ? 10u : (shape.word ? 4u : 3u);
+            ticks = (opcode == 0x3cu || opcode == 0x3du) ? 4u :
+                (shape.memory ? 10u : (shape.word ? 4u : 3u));
             break;
         case CORE_MACHINE_SOURCE_TIMING_TEST_RM_REGISTER:
             ticks = shape.memory ? 10u : 3u;
             break;
         case CORE_MACHINE_SOURCE_TIMING_TEST_ACCUMULATOR_IMMEDIATE:
-            ticks = shape.word ? 4u : 3u;
+            ticks = 4u;
             break;
         case CORE_MACHINE_SOURCE_TIMING_TEST_REGISTER_IMMEDIATE:
             ticks = 4u;
