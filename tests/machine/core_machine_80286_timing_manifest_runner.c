@@ -1513,6 +1513,52 @@ static C_INT timing_80286_manifest_run_protected_far_call_next_byte_recipe(
     return failed;
 }
 
+static C_INT timing_80286_manifest_run_protected_far_memory_jmp_next_byte_recipe(
+    type_unsigned_8 next_bytes)
+{
+    static const type_unsigned_8 target[][6] = {
+        { 0u,0u,0u,0u,0u,0u },
+        { 0x90u,0u,0u,0u,0u,0u },
+        { 0x00u,0xc0u,0u,0u,0u,0u },
+        { 0x80u,0xc0u,1u,0u,0u,0u },
+        { 0xc6u,0x46u,0u,1u,0u,0u },
+        { 0xc6u,0x06u,0u,0x10u,1u,0u },
+        { 0xc7u,0x06u,0u,0x10u,1u,0u }
+    };
+    const type_unsigned_16 pointer[] = { 0x0010u, 0x0008u };
+    const core_machine_run_budget budget = { 1u, 0u };
+    const type_unsigned_8 program[] = { 0xffu,0x2eu,0u,0x10u };
+    timing_80286_manifest_capture capture = { { 0 }, 0u };
+    core_machine_run_result run = { 0 };
+    core_machine *machine = STD_NULL;
+    C_CHAR key_id[96];
+    C_INT failed;
+
+    if (next_bytes == 0u || next_bytes >= sizeof(target) / sizeof(target[0]) ||
+        STD_SNPRINTF(key_id, sizeof(key_id),
+            "I286-JMP-FAR-PM-NEXT-BYTE-%u",
+            (type_unsigned_32)next_bytes) < 0) return 1;
+    failed = !timing_80286_manifest_prepare_protected_system(&machine, &capture,
+        key_id, program, sizeof(program));
+    if (!failed) {
+        failed = core_machine_memory_write(machine, 0x4000u, pointer,
+            sizeof(pointer)) != TYPE_STATUS_OK || core_machine_memory_write(machine,
+            0x2010u, target[next_bytes], next_bytes) != TYPE_STATUS_OK;
+    }
+    if (!failed) {
+        failed = core_machine_run(machine, budget, &run) != TYPE_STATUS_OK ||
+            run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
+            run.ticks != 26u + next_bytes || capture.count != 1u ||
+            capture.observation.source_ticks != 26u + next_bytes ||
+            capture.observation.timing_origin !=
+                CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
+            capture.observation.timing_disposition !=
+                CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED;
+    }
+    core_machine_destroy(machine);
+    return failed;
+}
+
 static C_INT timing_80286_manifest_run_protected_system(
     const timing_80286_manifest_recipe *recipe)
 {
@@ -2093,8 +2139,6 @@ C_INT main(C_VOID)
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
         { "I286-RET-IRET-NORMAL-NEXT-BYTE-2", { 0xcfu }, 1u, 33u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
-        { "I286-JMP-FAR-PM-NEXT-BYTE-2", { 0xffu,0x2eu,0u,0x10u },
-            4u, 28u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
         { "I286-ARPL", { 0x63u, 0xc8u }, 2u, 10u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY }
     };
@@ -2449,6 +2493,14 @@ C_INT main(C_VOID)
             return 1;
         }
     }
+    for (index = 1u; index <= 6u; ++index) {
+        if (timing_80286_manifest_run_protected_far_memory_jmp_next_byte_recipe(
+                (type_unsigned_8)index)) {
+            STD_PRINTF("M5:T435:S10:I286-PROTECTED-FAR-MEMORY-JMP-NEXT-BYTE-RECIPE:FAIL:%u\n",
+                (type_unsigned_32)index);
+            return 1;
+        }
+    }
     for (index = 0u; index < sizeof(protected_system_recipes) /
         sizeof(protected_system_recipes[0]); ++index) {
         if (timing_80286_manifest_run_protected_system(
@@ -2539,7 +2591,7 @@ C_INT main(C_VOID)
     STD_PRINTF("M5:T435:S10:I286-MANIFEST-FOUNDATION:PASS:observed=%u\n",
         (type_unsigned_32)(sizeof(recipes) / sizeof(recipes[0]) +
             sizeof(control_recipes) / sizeof(control_recipes[0]) +
-            89u +
+            95u +
             sizeof(protected_system_recipes) /
                 sizeof(protected_system_recipes[0]) +
             sizeof(segment_recipes) / sizeof(segment_recipes[0]) +
