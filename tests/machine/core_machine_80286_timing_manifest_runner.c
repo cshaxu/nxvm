@@ -1659,13 +1659,19 @@ static C_INT timing_80286_manifest_run_protected_iret_next_byte_recipe(
     return failed;
 }
 
-static C_INT timing_80286_manifest_run_protected_outer_ret_recipe(C_VOID)
+static C_INT timing_80286_manifest_run_protected_outer_ret_recipe(
+    type_unsigned_8 next_bytes)
 {
+    static const type_unsigned_8 target[][6] = {
+        { 0u,0u,0u,0u,0u,0u }, { 0x90u,0u,0u,0u,0u,0u },
+        { 0x00u,0xc0u,0u,0u,0u,0u }, { 0x80u,0xc0u,1u,0u,0u,0u },
+        { 0xc6u,0x46u,0u,1u,0u,0u }, { 0xc6u,0x06u,0u,0x10u,1u,0u },
+        { 0xc7u,0x06u,0u,0x10u,1u,0u }
+    };
     static const type_unsigned_8 user_data[] = {
         0xffu,0xffu,0,0,0,0xf2u,0,0
     };
     static const type_unsigned_8 retf[] = { 0xcbu };
-    static const type_unsigned_8 target[] = { 0x00u,0xc0u };
     static const type_unsigned_16 frame[] = { 0x0010u,0x001bu,0x4000u,0x0023u };
     const core_machine_run_budget budget = { 1u, 0u };
     timing_80286_manifest_capture capture = { { 0 }, 0u };
@@ -1677,7 +1683,12 @@ static C_INT timing_80286_manifest_run_protected_outer_ret_recipe(C_VOID)
     s3_gate_machine state;
     C_INT failed;
 
-    record = timing_80286_manifest_find("I286-RET-FAR-LESS-NEXT-BYTE-2");
+    C_CHAR key_id[96];
+
+    if (next_bytes == 0u || next_bytes >= sizeof(target) / sizeof(target[0]) ||
+        STD_SNPRINTF(key_id, sizeof(key_id), "I286-RET-FAR-LESS-NEXT-BYTE-%u",
+            (type_unsigned_32)next_bytes) < 0) return 1;
+    record = timing_80286_manifest_find(key_id);
     failed = record == STD_NULL || !timing_80286_manifest_is_i286(record) ||
         !s3_gate_prepare(&state, CORE_MACHINE_CPU_PROFILE_80286, TYPE_FALSE,
             VCPU_DESC_SYS_TYPE_INTGATE_16, 0u, TYPE_TRUE);
@@ -1685,7 +1696,7 @@ static C_INT timing_80286_manifest_run_protected_outer_ret_recipe(C_VOID)
         failed = !s3_gate_write(&state, S3_GDT_BASE + 32u, user_data,
             sizeof(user_data)) || !s3_gate_write(&state, S3_CODE_BASE, retf,
             sizeof(retf)) || !s3_gate_write(&state, S3_CODE_BASE + 0x10u,
-            target, sizeof(target)) || !s3_gate_write(&state, S3_STACK_TOP,
+            target[next_bytes], next_bytes) || !s3_gate_write(&state, S3_STACK_TOP,
             frame, sizeof(frame));
         state.machine->executor_cpu.data.gdtr.limit = 39u;
         state.machine->executor_cpu.data.esp = 0x12348000u;
@@ -1696,8 +1707,8 @@ static C_INT timing_80286_manifest_run_protected_outer_ret_recipe(C_VOID)
     if (!failed) {
         failed = core_machine_run(state.machine, budget, &run) != TYPE_STATUS_OK ||
             run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
-            run.ticks != 57u || capture.count != 1u ||
-            capture.observation.source_ticks != 57u ||
+            run.ticks != 55u + next_bytes || capture.count != 1u ||
+            capture.observation.source_ticks != 55u + next_bytes ||
             capture.observation.timing_origin !=
                 CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
             capture.observation.timing_disposition !=
@@ -2711,9 +2722,13 @@ C_INT main(C_VOID)
             return 1;
         }
     }
-    if (timing_80286_manifest_run_protected_outer_ret_recipe()) {
-        STD_PRINTF("M5:T435:S10:I286-PROTECTED-OUTER-RET-RECIPE:FAIL\n");
-        return 1;
+    for (index = 1u; index <= 6u; ++index) {
+        if (timing_80286_manifest_run_protected_outer_ret_recipe(
+                (type_unsigned_8)index)) {
+            STD_PRINTF("M5:T435:S10:I286-PROTECTED-OUTER-RET-RECIPE:FAIL:%u\n",
+                (type_unsigned_32)index);
+            return 1;
+        }
     }
     if (timing_80286_manifest_run_protected_outer_iret_recipe()) {
         STD_PRINTF("M5:T435:S10:I286-PROTECTED-OUTER-IRET-RECIPE:FAIL\n");
@@ -2809,7 +2824,7 @@ C_INT main(C_VOID)
     STD_PRINTF("M5:T435:S10:I286-MANIFEST-FOUNDATION:PASS:observed=%u\n",
         (type_unsigned_32)(sizeof(recipes) / sizeof(recipes[0]) +
             sizeof(control_recipes) / sizeof(control_recipes[0]) +
-            109u +
+            114u +
             sizeof(protected_system_recipes) /
                 sizeof(protected_system_recipes[0]) +
             sizeof(segment_recipes) / sizeof(segment_recipes[0]) +
