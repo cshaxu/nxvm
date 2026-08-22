@@ -2,9 +2,29 @@
 
 ## Current Work
 
-**Between accepted S units: M5 T436.** S1 has a verified, disjoint partition;
-the next admitted unit is S2, the 80286 result-contract producer and sole
-publication seam.
+**Active: M5 T436 S2.** The owner-approved continuation establishes the 80286
+result-contract producer and verifies the one timing-publication seam.
+
+## M5 T436 S2 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; M5 T436 S2 follows accepted S1 in the latest open numeric task. |
+| Admission And Approval | Owner explicitly directed single-person dual-role implementation of S2 on 2026-08-22. S1's accepted partition supplies its bounded ownership and proof plan. |
+| Objective | Make the 80286 manifest runner capture canonical per-key retirement observations and enforce that a final result document can be written only when every one of the 807 keys has real, complete result-contract evidence. |
+| Non-goals | Do not fabricate an 807-key result document, mark any key conforming, implement an S3--S7 instruction family, change Appendix-B timing values or instruction semantics, add board timing, alter public ABI, import source, or admit another S. |
+| Reference Baseline | [S1 partition](../etc/cpu-timing/t436-s1-80286-key-partition.md), [80286 manifest](../etc/cpu-timing/t435-s2-80286-timing-manifest.json), [result contract](../etc/cpu-timing/t435-s2-manifest-result-contract.md), [implementation tracker](../etc/cpu-timing/t435-s2-80286-implementation-tracker.md), [80186 result producer](../../tests/machine/core_machine_80186_timing_manifest_runner.c), and current 80286 manifest runner. |
+| Candidate Proposal | [M5 80286 instruction timing closure](../proposals/m5-80286-instruction-timing-closure.md). |
+| Files And ABI Surface | Core-private observation/test plumbing in the 80286 manifest runner and metadata catalog as required, focused verifier/test registration, indexed evidence, task history and CURRENT. No public header, external ABI, device, board or product-artifact change is allowed. |
+| Applicable Rules | Execution: bounded P lifecycle, dual-role review, artifact discipline and cleanup. Architecture: one Core timing/publishing path; no board policy. Coding: C11 private cohesive test support; no unowned selector. Documentation: CURRENT is sole active contract. Source policy: retained manual evidence only. |
+| Verification | Run the 80286 manifest runner, manifest/decoder-ledger and S1 partition verifiers, result-contract verifier against a deliberately incomplete output when available, focused retirement-observation tests, documentation governance, actual diff review and relevant build target. |
+| Expected Markers | Retain the S1 partition markers; add `M5:T436:S2:I286-RESULT-PRODUCER:PASS:observed=<n>:canonical=807` and `M5:T436:S2:I286-INCOMPLETE-RESULT-REFUSED:PASS`. |
+| Asset Needs | Existing owner-managed Intel manual evidence and repository test fixtures only. No firmware, guest media, downloads, Microsoft components or third-party code is permitted. |
+| Reporting Requirements | Report the observation schema fields, exact count of real captured records, missing-record behavior, changed source/test/doc files, focused proof and any result-contract limitation transferred to S3--S7. The executor completes one bounded P; the same session then reviews it against this packet. |
+| Stop Conditions | Stop for result-contract/manifest contradiction, inability to identify a canonical record at retirement without altering the approved Core boundary, required public ABI/board timing, source-policy issue, or a verifier contradiction. Do not manufacture a record or silently treat a missing field as conforming. |
+| Exit Criteria | The runner captures real observations keyed to canonical I286 metadata, preserves first valid capture per key, checks origin/ticks/form/input/unallocated fields, and refuses final-result emission unless exactly 807 records exist. Existing partial coverage remains explicitly incomplete; all gates and dual-role review pass. |
+| Original Owner Request | Owner request, faithfully translated: implement the reasonable 80286 S2 task under the single-person dual-role lifecycle. |
+| Similar-Issue Sweep | Defect class: any 80286 successful retirement that bypasses canonical result capture, overwrites a valid result, or allows incomplete evidence to be emitted as final. Scope: 80286 runner, metadata catalog, retirement observation interfaces, result verifiers, focused tests and timing documentation. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** target `vm-0-5-0434`; T434 S2 `nxvm_0_5_0434.exe` / `build/output/nxvm_0_5_0434.exe`, SHA-256 `0252F8FDA17BEC2131606F19E3547B46894AC6B56DD37EC3B16BD302494FAFDC`. T434 has one copied Core timing-plan publication route for default PC/AT, IBM 5170 Model 339 and Model-40 BYOB session composition.

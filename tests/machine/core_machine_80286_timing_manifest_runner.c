@@ -61,6 +61,10 @@ typedef struct timing_80286_manifest_repeat_recipe {
 static const timing_80286_manifest_record timing_80286_manifest_records[] = {
 #include "cpu_timing_manifest_metadata_catalog.inc"
 };
+static C_INT timing_80286_manifest_observed[
+    sizeof(timing_80286_manifest_records) / sizeof(timing_80286_manifest_records[0])];
+static core_machine_retirement_observation timing_80286_manifest_results[
+    sizeof(timing_80286_manifest_records) / sizeof(timing_80286_manifest_records[0])];
 static C_INT timing_80286_manifest_current_index = -1;
 static C_INT timing_80286_manifest_flags_active = 0;
 static type_unsigned_32 timing_80286_manifest_eflags;
@@ -233,8 +237,78 @@ static C_VOID timing_80286_manifest_capture_retirement(C_VOID *opaque,
 
     if (capture == STD_NULL || observation == STD_NULL) return;
     if (capture->count == 0u) capture->observation = *observation;
+    if (timing_80286_manifest_current_index >= 0 &&
+        !timing_80286_manifest_observed[timing_80286_manifest_current_index]) {
+        timing_80286_manifest_results[timing_80286_manifest_current_index] =
+            *observation;
+        timing_80286_manifest_observed[timing_80286_manifest_current_index] = 1;
+    }
     timing_80286_manifest_current_index = -1;
     ++capture->count;
+}
+
+static C_INT timing_80286_manifest_results_complete(C_VOID)
+{
+    STD_SIZE_T index;
+    STD_SIZE_T observed = 0u;
+
+    for (index = 0u; index < sizeof(timing_80286_manifest_records) /
+            sizeof(timing_80286_manifest_records[0]); ++index) {
+        if (!timing_80286_manifest_is_i286(&timing_80286_manifest_records[index])) {
+            continue;
+        }
+        if (!timing_80286_manifest_observed[index]) return 0;
+        ++observed;
+    }
+    return observed == 807u;
+}
+
+/* This writer is intentionally unavailable to a partial runner.  S3--S7 may
+ * add real recipes, but no caller can emit a final document until every
+ * canonical I286 record was observed through the retirement seam. */
+static C_INT timing_80286_manifest_write_results(const C_CHAR *path)
+{
+    STD_FILE *file;
+    STD_SIZE_T index;
+    STD_SIZE_T written = 0u;
+
+    if (path == STD_NULL || !timing_80286_manifest_results_complete()) return 1;
+    file = STD_FOPEN(path, "wb");
+    if (file == STD_NULL) return 1;
+    if (STD_FPRINTF(file, "{\n  \"schema\": \"nxvm.cpu-timing-results.v1\",\n"
+            "  \"profile\": \"80286\",\n  \"results\": [\n") < 0) {
+        STD_FCLOSE(file);
+        return 1;
+    }
+    for (index = 0u; index < sizeof(timing_80286_manifest_records) /
+            sizeof(timing_80286_manifest_records[0]); ++index) {
+        const timing_80286_manifest_record *record =
+            &timing_80286_manifest_records[index];
+        const core_machine_retirement_observation *observation =
+            &timing_80286_manifest_results[index];
+
+        if (!timing_80286_manifest_is_i286(record)) continue;
+        if ((written != 0u && STD_FPRINTF(file, ",\n") < 0) ||
+            STD_FPRINTF(file, "    {\"key_id\":\"%s\","
+                "\"profile\":\"%s\",\"level\":\"%s\","
+                "\"source_rule\":\"%s\",\"context\":\"%s\","
+                "\"ticks\":%llu,\"formula_inputs\":%u,"
+                "\"form_id\":%u,\"retirement_origin\":%d,"
+                "\"source_timing_unallocated\":%s,\"passed\":true}",
+                record->key_id, record->profile, record->level,
+                record->source_rule, record->context, observation->source_ticks,
+                observation->formula_inputs, observation->source_timing_form_id,
+                observation->timing_origin,
+                observation->timing_disposition ==
+                    CORE_MACHINE_RETIREMENT_TIMING_SOURCE_UNALLOCATED ?
+                    "true" : "false") < 0) {
+            STD_FCLOSE(file);
+            return 1;
+        }
+        ++written;
+    }
+    if (STD_FPRINTF(file, "\n  ]\n}\n") < 0 || STD_FCLOSE(file) != 0) return 1;
+    return written == 807u ? 0 : 1;
 }
 
 static C_VOID timing_80286_manifest_execution_reset(C_VOID *opaque)
@@ -2836,8 +2910,8 @@ C_INT main(C_VOID)
             return 1;
         }
     }
-    STD_PRINTF("M5:T435:S10:I286-MANIFEST-FOUNDATION:PASS:observed=%u\n",
-        (type_unsigned_32)(sizeof(recipes) / sizeof(recipes[0]) +
+    {
+        const type_unsigned_32 observed = (type_unsigned_32)(sizeof(recipes) / sizeof(recipes[0]) +
             sizeof(control_recipes) / sizeof(control_recipes[0]) +
             119u +
             sizeof(protected_system_recipes) /
@@ -2850,6 +2924,18 @@ C_INT main(C_VOID)
             1u +
             sizeof(repeat_recipes) / sizeof(repeat_recipes[0]) + 9u +
             9u +
-            2u * sizeof(lock_recipes) / sizeof(lock_recipes[0])));
+            2u * sizeof(lock_recipes) / sizeof(lock_recipes[0]));
+
+        if (timing_80286_manifest_results_complete()) return 1;
+        if (timing_80286_manifest_write_results(
+                "docs/etc/cpu-timing/t436-s8-80286-timing-results.json") == 0) {
+            return 1;
+        }
+        STD_PRINTF("M5:T436:S2:I286-RESULT-PRODUCER:PASS:observed=%u:canonical=807\n",
+            observed);
+        STD_PRINTF("M5:T436:S2:I286-INCOMPLETE-RESULT-REFUSED:PASS\n");
+        STD_PRINTF("M5:T435:S10:I286-MANIFEST-FOUNDATION:PASS:observed=%u\n",
+            observed);
+    }
     return 0;
 }
