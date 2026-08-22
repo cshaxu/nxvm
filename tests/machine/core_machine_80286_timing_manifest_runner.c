@@ -1,5 +1,6 @@
 #include "type.h"
 
+#include "core/machine/cpu.h"
 #include "core/machine/machine_interface.h"
 #include "core/machine/retirement_observation_interface.h"
 #include "../support/core_machine_cpu_fixture.h"
@@ -32,10 +33,19 @@ typedef struct timing_80286_manifest_recipe {
     core_machine_retirement_timing_origin origin;
 } timing_80286_manifest_recipe;
 
+typedef struct timing_80286_manifest_control_recipe {
+    const C_CHAR *key_id;
+    type_unsigned_8 opcode;
+    type_unsigned_32 eflags;
+    type_unsigned_64 ticks;
+} timing_80286_manifest_control_recipe;
+
 static const timing_80286_manifest_record timing_80286_manifest_records[] = {
 #include "cpu_timing_manifest_metadata_catalog.inc"
 };
 static C_INT timing_80286_manifest_current_index = -1;
+static C_INT timing_80286_manifest_flags_active = 0;
+static type_unsigned_32 timing_80286_manifest_eflags;
 
 static type_status timing_80286_manifest_port_read(C_VOID *owner,
     type_unsigned_16 port, type_unsigned_32 *out_value)
@@ -113,7 +123,7 @@ static const core_machine_execution_provider timing_80286_manifest_execution = {
 
 static C_INT timing_80286_manifest_prepare(core_machine **out_machine,
     timing_80286_manifest_capture *capture,
-    const timing_80286_manifest_recipe *recipe)
+    const C_CHAR *key_id, const type_unsigned_8 *program, STD_SIZE_T bytes)
 {
     const core_machine_config config = {
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_80286,
@@ -126,7 +136,8 @@ static C_INT timing_80286_manifest_prepare(core_machine **out_machine,
     core_machine *machine = STD_NULL;
     type_status status;
 
-    if (out_machine == STD_NULL || capture == STD_NULL || recipe == STD_NULL) return 0;
+    if (out_machine == STD_NULL || capture == STD_NULL || key_id == STD_NULL ||
+        program == STD_NULL || bytes == 0u) return 0;
     status = core_machine_create(&config, &machine);
     if (status == TYPE_STATUS_OK) status =
         test_core_machine_fixture_register_reset_mapping(machine,
@@ -140,20 +151,23 @@ static C_INT timing_80286_manifest_prepare(core_machine **out_machine,
     if (status == TYPE_STATUS_OK) status = core_machine_freeze_execution_providers(machine);
     if (status == TYPE_STATUS_OK) status = core_machine_reset(machine);
     if (status == TYPE_STATUS_OK) status = core_machine_memory_write(machine,
-        TIMING_80286_MANIFEST_RESET_LINEAR, recipe->program, recipe->bytes);
+        TIMING_80286_MANIFEST_RESET_LINEAR, program, bytes);
     if (status == TYPE_STATUS_OK) {
         const type_unsigned_16 operand = 1u;
 
         machine->executor_cpu.data.eax = 1u;
         machine->executor_cpu.data.ecx = 2u;
         machine->executor_cpu.data.edx = 0u;
-        if (timing_80286_manifest_is_dx_port(recipe->key_id)) {
+        if (timing_80286_manifest_is_dx_port(key_id)) {
             machine->executor_cpu.data.edx = 0x0080u;
         }
         status = core_machine_memory_write(machine, 0x1000u, &operand,
             sizeof(operand));
     }
-    if (status == TYPE_STATUS_OK && STD_STRCMP(recipe->key_id, "I286-XLAT") == 0) {
+    if (status == TYPE_STATUS_OK && timing_80286_manifest_flags_active) {
+        machine->executor_cpu.data.eflags = timing_80286_manifest_eflags;
+    }
+    if (status == TYPE_STATUS_OK && STD_STRCMP(key_id, "I286-XLAT") == 0) {
         static const type_unsigned_8 value[] = { 0x5au };
 
         machine->executor_cpu.data.ebx = 0x1000u;
@@ -184,7 +198,8 @@ static C_INT timing_80286_manifest_run(
     record = timing_80286_manifest_find(recipe->key_id);
     failed = record == STD_NULL || !timing_80286_manifest_is_i286(record) ||
         STD_STRCMP(record->profile, "80286") != 0 ||
-        !timing_80286_manifest_prepare(&machine, &capture, recipe);
+        !timing_80286_manifest_prepare(&machine, &capture, recipe->key_id,
+            recipe->program, recipe->bytes);
     if (!failed) {
         failed = core_machine_run(machine, budget, &run) != TYPE_STATUS_OK ||
             run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
@@ -202,6 +217,52 @@ static C_INT timing_80286_manifest_run(
             (type_unsigned_32)capture.observation.timing_disposition);
     }
     core_machine_destroy(machine);
+    return failed;
+}
+
+static C_INT timing_80286_manifest_run_control(
+    const timing_80286_manifest_control_recipe *recipe)
+{
+    const core_machine_run_budget budget = { 1u, 0u };
+    type_unsigned_8 program[3];
+    timing_80286_manifest_capture capture = { { 0 }, 0u };
+    const timing_80286_manifest_record *record;
+    core_machine_run_result run = { 0 };
+    core_machine *machine = STD_NULL;
+    C_INT failed;
+
+    if (recipe == STD_NULL) return 1;
+    program[0] = recipe->opcode;
+    /* A nonzero displacement makes a taken branch observably distinct from
+     * fall-through; the selector classifies the post-execution EIP. */
+    program[1] = 0x01u;
+    program[2] = 0x90u;
+    timing_80286_manifest_eflags = recipe->eflags;
+    timing_80286_manifest_flags_active = 1;
+    record = timing_80286_manifest_find(recipe->key_id);
+    failed = record == STD_NULL || !timing_80286_manifest_is_i286(record) ||
+        STD_STRCMP(record->profile, "80286") != 0 ||
+        !timing_80286_manifest_prepare(&machine, &capture, recipe->key_id,
+            program, sizeof(program));
+    if (!failed) {
+        failed = core_machine_run(machine, budget, &run) != TYPE_STATUS_OK ||
+            run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
+            run.ticks != recipe->ticks || capture.count != 1u ||
+            capture.observation.source_ticks != recipe->ticks ||
+            capture.observation.timing_origin !=
+                CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80286_FALLBACK ||
+            capture.observation.timing_disposition !=
+                CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED;
+    }
+    if (failed) {
+        STD_PRINTF("M5:T435:S10:I286-CONTROL-DETAIL:%s:expected=%llu:run=%llu:source=%llu:count=%u:origin=%u:disposition=%u\\n",
+            recipe->key_id, recipe->ticks, run.ticks,
+            capture.observation.source_ticks, capture.count,
+            (type_unsigned_32)capture.observation.timing_origin,
+            (type_unsigned_32)capture.observation.timing_disposition);
+    }
+    core_machine_destroy(machine);
+    timing_80286_manifest_flags_active = 0;
     return failed;
 }
 
@@ -454,6 +515,40 @@ C_INT main(C_VOID)
         { "I286-OUT-DX-B", { 0xeeu }, 1u, 3u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO },
         { "I286-OUT-DX-W", { 0xefu }, 1u, 3u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO }
     };
+    static const timing_80286_manifest_control_recipe control_recipes[] = {
+        { "I286-JCC-JO-TAKEN", 0x70u, VCPU_EFLAGS_OF, 7u },
+        { "I286-JCC-JO-NOT", 0x70u, 0u, 3u },
+        { "I286-JCC-JNO-TAKEN", 0x71u, 0u, 7u },
+        { "I286-JCC-JNO-NOT", 0x71u, VCPU_EFLAGS_OF, 3u },
+        { "I286-JCC-JB-TAKEN", 0x72u, VCPU_EFLAGS_CF, 7u },
+        { "I286-JCC-JB-NOT", 0x72u, 0u, 3u },
+        { "I286-JCC-JAE-TAKEN", 0x73u, 0u, 7u },
+        { "I286-JCC-JAE-NOT", 0x73u, VCPU_EFLAGS_CF, 3u },
+        { "I286-JCC-JE-TAKEN", 0x74u, VCPU_EFLAGS_ZF, 7u },
+        { "I286-JCC-JE-NOT", 0x74u, 0u, 3u },
+        { "I286-JCC-JNE-TAKEN", 0x75u, 0u, 7u },
+        { "I286-JCC-JNE-NOT", 0x75u, VCPU_EFLAGS_ZF, 3u },
+        { "I286-JCC-JBE-TAKEN", 0x76u, VCPU_EFLAGS_CF, 7u },
+        { "I286-JCC-JBE-NOT", 0x76u, 0u, 3u },
+        { "I286-JCC-JA-TAKEN", 0x77u, 0u, 7u },
+        { "I286-JCC-JA-NOT", 0x77u, VCPU_EFLAGS_CF, 3u },
+        { "I286-JCC-JS-TAKEN", 0x78u, VCPU_EFLAGS_SF, 7u },
+        { "I286-JCC-JS-NOT", 0x78u, 0u, 3u },
+        { "I286-JCC-JNS-TAKEN", 0x79u, 0u, 7u },
+        { "I286-JCC-JNS-NOT", 0x79u, VCPU_EFLAGS_SF, 3u },
+        { "I286-JCC-JP-TAKEN", 0x7au, VCPU_EFLAGS_PF, 7u },
+        { "I286-JCC-JP-NOT", 0x7au, 0u, 3u },
+        { "I286-JCC-JNP-TAKEN", 0x7bu, 0u, 7u },
+        { "I286-JCC-JNP-NOT", 0x7bu, VCPU_EFLAGS_PF, 3u },
+        { "I286-JCC-JL-TAKEN", 0x7cu, VCPU_EFLAGS_SF, 7u },
+        { "I286-JCC-JL-NOT", 0x7cu, 0u, 3u },
+        { "I286-JCC-JGE-TAKEN", 0x7du, 0u, 7u },
+        { "I286-JCC-JGE-NOT", 0x7du, VCPU_EFLAGS_SF, 3u },
+        { "I286-JCC-JLE-TAKEN", 0x7eu, VCPU_EFLAGS_ZF, 7u },
+        { "I286-JCC-JLE-NOT", 0x7eu, 0u, 3u },
+        { "I286-JCC-JG-TAKEN", 0x7fu, 0u, 7u },
+        { "I286-JCC-JG-NOT", 0x7fu, VCPU_EFLAGS_ZF, 3u }
+    };
     STD_SIZE_T index;
 
     for (index = 0u; index < sizeof(recipes) / sizeof(recipes[0]); ++index) {
@@ -463,7 +558,16 @@ C_INT main(C_VOID)
             return 1;
         }
     }
+    for (index = 0u; index < sizeof(control_recipes) / sizeof(control_recipes[0]);
+        ++index) {
+        if (timing_80286_manifest_run_control(&control_recipes[index])) {
+            STD_PRINTF("M5:T435:S10:I286-CONTROL-RECIPE:FAIL:%s\n",
+                control_recipes[index].key_id);
+            return 1;
+        }
+    }
     STD_PRINTF("M5:T435:S10:I286-MANIFEST-FOUNDATION:PASS:observed=%u\n",
-        (type_unsigned_32)(sizeof(recipes) / sizeof(recipes[0])));
+        (type_unsigned_32)(sizeof(recipes) / sizeof(recipes[0]) +
+            sizeof(control_recipes) / sizeof(control_recipes[0])));
     return 0;
 }
