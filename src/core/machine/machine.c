@@ -332,6 +332,7 @@ typedef enum core_machine_source_timing_form {
     CORE_MACHINE_SOURCE_TIMING_POPF,
     CORE_MACHINE_SOURCE_TIMING_ENTER_LEVEL_ZERO,
     CORE_MACHINE_SOURCE_TIMING_ENTER_LEVEL_ONE,
+    CORE_MACHINE_SOURCE_TIMING_BOUND,
     CORE_MACHINE_SOURCE_TIMING_LEAVE,
     CORE_MACHINE_SOURCE_TIMING_HLT,
     CORE_MACHINE_SOURCE_TIMING_INT3,
@@ -446,6 +447,7 @@ static const core_machine_source_timing_entry
     { CORE_MACHINE_SOURCE_TIMING_POPF, 8u },
     { CORE_MACHINE_SOURCE_TIMING_ENTER_LEVEL_ZERO, 15u },
     { CORE_MACHINE_SOURCE_TIMING_ENTER_LEVEL_ONE, 25u },
+    { CORE_MACHINE_SOURCE_TIMING_BOUND, 34u },
     { CORE_MACHINE_SOURCE_TIMING_LEAVE, 8u },
     { CORE_MACHINE_SOURCE_TIMING_HLT, 2u },
     { CORE_MACHINE_SOURCE_TIMING_INT3, 45u },
@@ -2458,6 +2460,12 @@ C_INT core_machine_control_stack_source_instruction_cost(
         *out_ticks = core_machine_control_stack_source_lookup(machine,
             CORE_MACHINE_SOURCE_TIMING_POPA);
         return machine->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80186;
+    case 0x62u:
+        if (machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_80186 ||
+            !memory) return 0;
+        *out_ticks = core_machine_control_stack_source_lookup(machine,
+            CORE_MACHINE_SOURCE_TIMING_BOUND);
+        return 1;
     case 0x68u: case 0x6au:
         *out_ticks = core_machine_control_stack_source_lookup(machine,
             CORE_MACHINE_SOURCE_TIMING_PUSH_IMMEDIATE);
@@ -2490,7 +2498,9 @@ C_INT core_machine_control_stack_source_instruction_cost(
             *out_ticks = core_machine_control_stack_source_lookup(machine,
                 CORE_MACHINE_SOURCE_TIMING_ENTER_LEVEL_ONE);
         } else {
-            ticks = machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 ?
+            ticks = machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80186 ?
+                22u + 16u * (extension - 1u) :
+                machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 ?
                 12u + 4u * extension : 15u + 4u * (extension - 1u);
             *out_ticks = ticks;
         }
