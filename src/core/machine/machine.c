@@ -1969,6 +1969,22 @@ C_INT core_machine_primary_source_instruction_cost(
         }
     }
     memory = core_machine_source_timing_modrm_is_memory(data, prefixes);
+    if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 && prefixes == 0u &&
+        (opcode == 0xd0u || opcode == 0xd1u || opcode == 0xd2u ||
+            opcode == 0xd3u || opcode == 0xc0u || opcode == 0xc1u) &&
+        prefixes + 1u < data->oplen &&
+        ((data->opcodes[prefixes + 1u] >> 3u) & 7u) != 6u) {
+        if (opcode == 0xd0u || opcode == 0xd1u) {
+            ticks = data->flagMem ? 7u + core_machine_80286_timing_effective_address(
+                data, prefixes) : 2u;
+        } else {
+            ticks = core_machine_80286_group2_count(data, prefixes, opcode);
+            ticks += data->flagMem ? 8u + core_machine_80286_timing_effective_address(
+                data, prefixes) : 5u;
+        }
+        *out_ticks = ticks;
+        return 1;
+    }
     if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 &&
         (opcode == 0x8cu || opcode == 0x8eu) && prefixes + 1u < data->oplen &&
         ((data->opcodes[prefixes + 1u] >> 3u) & 7u) <= 3u &&
@@ -3302,32 +3318,6 @@ C_INT core_machine_80286_source_instruction_cost(core_machine *machine,
             CORE_MACHINE_SOURCE_TIMING_MOV_MOFFS_WRITE) +
             ((opcode == 0xa1u || opcode == 0xa3u) ?
                 core_machine_80286_timing_odd_word(data) : 0u);
-        return 1;
-    case 0xd0u: case 0xd1u:
-        if (!data->flagMem && prefixes + 1u < data->oplen &&
-            ((data->opcodes[prefixes + 1u] >> 3u) & 7u) != 6u) {
-            *out_ticks = 2u;
-            return 1;
-        }
-        if (data->flagMem && prefixes + 1u < data->oplen &&
-            ((data->opcodes[prefixes + 1u] >> 3u) & 7u) != 6u) {
-            *out_ticks = 7u + core_machine_80286_timing_effective_address(
-                data, prefixes);
-            return 1;
-        }
-        core_machine_source_timing_mark_unallocated(machine, out_ticks);
-        return 1;
-    case 0xc0u: case 0xc1u: case 0xd2u: case 0xd3u:
-        if (prefixes + 1u < data->oplen &&
-            ((data->opcodes[prefixes + 1u] >> 3u) & 7u) != 6u) {
-            memory_ticks = core_machine_80286_group2_count(data, prefixes,
-                opcode);
-            *out_ticks = data->flagMem ? 8u + memory_ticks +
-                core_machine_80286_timing_effective_address(data, prefixes) :
-                5u + memory_ticks;
-            return 1;
-        }
-        core_machine_source_timing_mark_unallocated(machine, out_ticks);
         return 1;
     default:
         if (opcode >= 0xb0u && opcode <= 0xbfu) {
