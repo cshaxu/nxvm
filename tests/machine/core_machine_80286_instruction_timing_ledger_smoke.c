@@ -113,6 +113,25 @@ static C_INT timing_80286_case(const type_unsigned_8 *program, STD_SIZE_T bytes,
     return failed;
 }
 
+static C_INT timing_80286_xlat(C_VOID)
+{
+    static const type_unsigned_8 program[] = { 0xd7u };
+    static const type_unsigned_8 value[] = { 0x5au };
+    timing_80286_state state = { 0u, 0u, 0u };
+    core_machine *machine = STD_NULL;
+    C_INT failed = !timing_80286_prepare(&machine, &state) ||
+        !timing_80286_load(machine, program, sizeof(program)) ||
+        ((machine->executor_cpu.data.ebx = 0x1000u),
+            (machine->executor_cpu.data.eax = 1u), 0) ||
+        core_machine_memory_write(machine, 0x1001u, value, sizeof(value)) !=
+            TYPE_STATUS_OK || !timing_80286_run(machine, &state, 1u, 5u) ||
+        TYPE_MASK_UNSIGNED_8(machine->executor_cpu.data.eax) != value[0] ||
+        machine->source_timing_unallocated;
+
+    core_machine_destroy(machine);
+    return failed;
+}
+
 static C_INT timing_80286_lahf_sahf(C_VOID)
 {
     static const type_unsigned_8 lahf[] = { 0x9fu };
@@ -1149,6 +1168,7 @@ C_INT main(C_VOID)
         timing_80286_case(lahf, sizeof(lahf), 2u) ||
         timing_80286_case(immediate, sizeof(immediate), 2u) ||
         timing_80286_case(registers, sizeof(registers), 2u)) return 1;
+    if (timing_80286_xlat()) return 22;
     if (timing_80286_lahf_sahf()) return 5;
     if (timing_80286_sreg_store()) return 6;
     if (timing_80286_sreg_load()) return 7;

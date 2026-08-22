@@ -23,8 +23,10 @@ unallocated bit under the shared [manifest result contract](t435-s2-manifest-res
 
 The existing 80286 ledger smoke is named evidence for its representative
 vectors only; it is not a manifest-key result producer. Therefore the initial
-manifest reports 238 `missing-test`, 47 `missing-input`, one `unallocated`
-(`I286-XLAT`), and zero conforming.
+manifest reports 239 `missing-test`, 47 `missing-input`, zero `unallocated`,
+and zero conforming. `I286-XLAT` has a real 5-clock smoke vector through the
+80286 fallback; it remains `missing-test` until the generated-key runner
+records its complete result-contract observation.
 No aggregate smoke outcome may change an individual key's status.
 
 `B0` is one sole 80286 form/context publisher. `B1` makes all 286 manual
