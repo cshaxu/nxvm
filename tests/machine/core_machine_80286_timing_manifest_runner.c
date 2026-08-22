@@ -301,7 +301,7 @@ static C_INT timing_80286_manifest_prepare(core_machine **out_machine,
  * records only the canonical target retirement. */
 static C_INT timing_80286_manifest_prepare_protected_system(
     core_machine **out_machine, timing_80286_manifest_capture *capture,
-    const type_unsigned_8 *program, STD_SIZE_T bytes)
+    const C_CHAR *key_id, const type_unsigned_8 *program, STD_SIZE_T bytes)
 {
     static const type_unsigned_8 gdt_pointer[] = { 0x37u, 0u, 0u, 0x03u,
         0u, 0u };
@@ -331,8 +331,8 @@ static C_INT timing_80286_manifest_prepare_protected_system(
     core_machine *machine = STD_NULL;
     type_status status;
 
-    if (out_machine == STD_NULL || capture == STD_NULL || program == STD_NULL ||
-        bytes == 0u) return 0;
+    if (out_machine == STD_NULL || capture == STD_NULL || key_id == STD_NULL ||
+        program == STD_NULL || bytes == 0u) return 0;
     status = core_machine_create(&config, &machine);
     if (status == TYPE_STATUS_OK) status = core_machine_install_port_provider(
         machine, 0x0080u, 0x0080u, &timing_80286_manifest_ports, STD_NULL);
@@ -361,7 +361,10 @@ static C_INT timing_80286_manifest_prepare_protected_system(
     if (status == TYPE_STATUS_OK) status = core_machine_memory_write(machine,
         0x2000u, program, bytes);
     if (status == TYPE_STATUS_OK) {
-        machine->executor_cpu.data.eax = 0x0010u;
+        machine->executor_cpu.data.eax = STD_STRCMP(key_id,
+            "I286-SYSTEM-LLDT-R") == 0 ? 0x0028u :
+            (STD_STRCMP(key_id, "I286-SYSTEM-LTR-R") == 0 ? 0x0030u :
+                0x0010u);
         machine->elapsed_ticks = 0u;
         test_core_machine_fixture_resume_after_halt_at(machine, 0u);
     }
@@ -426,7 +429,7 @@ static C_INT timing_80286_manifest_run_protected_system(
     failed = record == STD_NULL || !timing_80286_manifest_is_i286(record) ||
         STD_STRCMP(record->profile, "80286") != 0 ||
         !timing_80286_manifest_prepare_protected_system(&machine, &capture,
-            recipe->program, recipe->bytes);
+            recipe->key_id, recipe->program, recipe->bytes);
     if (!failed) {
         failed = core_machine_run(machine, budget, &run) != TYPE_STATUS_OK ||
             run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
@@ -846,6 +849,18 @@ C_INT main(C_VOID)
         { "I286-SYSTEM-LAR-R", { 0x0fu, 0x02u, 0xc8u }, 3u, 14u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-SYSTEM-LSL-R", { 0x0fu, 0x03u, 0xc8u }, 3u, 14u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-SYSTEM-LLDT-R", { 0x0fu, 0x00u, 0xd0u }, 3u, 17u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-SYSTEM-LTR-R", { 0x0fu, 0x00u, 0xd8u }, 3u, 17u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-SYSTEM-LMSW-R", { 0x0fu, 0x01u, 0xf0u }, 3u, 3u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-SYSTEM-SLDT-R", { 0x0fu, 0x00u, 0xc0u }, 3u, 2u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-SYSTEM-SMSW-R", { 0x0fu, 0x01u, 0xe0u }, 3u, 2u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-SYSTEM-STR-R", { 0x0fu, 0x00u, 0xc8u }, 3u, 2u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY }
     };
     STD_SIZE_T index;
