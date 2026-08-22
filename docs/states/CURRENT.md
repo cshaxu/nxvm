@@ -2,28 +2,28 @@
 
 ## Current Work
 
-**M5 T435 S5 is active.** This corrective reopens the 8086 coverage claim at
-its boundary: reconcile every successful 8086 decoder form against S1/S2,
-then close every discovered omission. The planned 80186 batch follows as S6.
+**M5 T435 S6 is active.** This continuation is the owner-approved 80186
+**re-audit**: re-establish the manual-to-decoder-to-S1-to-S2 audit chain before
+any 80186 timing implementation is admitted.
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | `Corrective`; M5 T435 S5 follows accepted S4 after its whole-8086 claim was shown to omit successful opcode `XLAT` (`D7`). |
-| Admission And Approval | Owner: user. Approval: repair S1/S2 and implementation as a reopened S4 P, 2026-08-21. Governance maps this to the next legal corrective S5. No exception is approved. |
-| Objective | Mechanically reconcile the successful 8086 decoder corpus with the S1 ledger and S2 manifest; add every omitted instruction/form/context, implement its manual L3 or named L2 timing and required semantics, and publish an exhaustive actual result universe. |
-| Non-goals | No 80186/80286/80386 timing implementation; no board, transaction, DMA, prefetch, INTA, device-service or physical-cycle timing; no public ABI. |
-| Reference Baseline | Accepted S4 P1 `a2d66c19` and governance P2 `c4156333`; S1 8086 ledger, S2 manifest/context contract, and the Intel 1979 Table 2-21 primary manual. |
-| Candidate Proposal | [M5 Core CPU Instruction Timing Programs](../proposals/m5-core-cpu-instruction-timing-program.md), corrective S5 row. |
-| Files And ABI Surface | S1/S2 8086 ledger, manifest, tracker/audit and result artifact; Core-private 8086 timing/decoder-owned functional code only where the difference requires it; owned runner/verifier/tests, CMake and evidence. No public or cross-module ABI change. |
-| Applicable Rules | One Core timing owner and no duplicate selector; C11 and cohesive owner-local changes; source material is reference-only and no external code/import; coverage ledger requires a finite, zero-difference completion predicate; report source/test delta and retired paths. |
-| Verification | Add a reproducible decoder-to-ledger difference verifier; execute every expanded 8086 key on a real Core machine; verify result provenance/ticks/inputs and absence of unallocated success; run focused and full current-gate CTest, static timing seams, documentation governance, configured build and artifact verification. |
-| Expected Markers | The existing `M5:T435:S5:I86-XLAT-CORRECTION-SLICE:PASS` proves only the repaired XLAT slice. S5 P2 must replace it with a decoder-derived zero-difference marker whose input is every accepted 8086 opcode/form/context; every expanded key is unique, passed, allocated and L3/L2-proven. |
-| Asset Needs | Existing owner-authorized manual corpus only. No source, firmware, media or emulator-code import. |
-| Reporting Requirements | Record the complete pre/post decoder-to-ledger difference, every newly admitted key/context and its manual locator, functional/timing implementation mapping, actual result count, test/static/build outcomes, delta and any remaining boundary. |
-| Stop Conditions | Stop for a decoder form whose accepted/manual status cannot be determined, a required source/license import, public ABI change, board input, or a difference that changes the 8086 profile's admitted instruction boundary. Do not hide an unresolved difference by excluding it from the verifier. |
-| Exit Criteria | The reproducible successful-decoder-to-ledger difference is empty; every newly discovered instruction/form and legal context has S1 source/L3-or-L2 disposition, S2 manifest key, functional proof and successful actual retirement result; prior S4 evidence is corrected to its 649-key scope; all required gates pass and the complete P is pushed and independently accepted. |
-| Original Owner Request | Repair the omitted `XLAT` manual/timing entry and implementation, and re-close the same 8086 work without leaving any other unledgered successful instruction. |
-| Similar-Issue Sweep | Sweep all 8086 decoder table registrations, prefix/context legality, S1/S2 key expansion, runner recipes, result verifier and historical S4 whole-coverage language. The mechanically detectable class is any successful 8086 opcode/form absent from the manifest-derived ledger. |
+| Identifier Mode | `Continuation`; M5 T435 S6 follows the owner-approved 8086 S5 closure audit and performs the next CPU block as a bounded re-audit. |
+| Admission And Approval | Owner: user. Approval: owner authorized the named 80186 re-audit and requested immediate execution, 2026-08-21. No exception is approved. |
+| Objective | Re-read the authorized Intel 80186 manual corpus; mechanically reconcile every successful 80186 decoder form and legal context against S1 and S2; correct all S1 source/model/register omissions and all S2 actual-state/deficit omissions; publish a finite, reproducible audit artifact. |
+| Non-goals | No 80186 runtime timing or semantic implementation, no 80286/80386 re-audit, no public ABI, and no board, transaction, DMA, prefetch, INTA, device-service or physical-cycle timing. |
+| Reference Baseline | Intel 1985 iAPX 86/88/186/188 User's Manual Table 1-16 and named Part I/II cross-checks; current 80186 decoder/executor; T435 S1/S2 80186 ledger, manifest, tracker and context contract; accepted 8086 S5 reconciliation method. |
+| Candidate Proposal | [M5 Core CPU Instruction Timing Programs](../proposals/m5-core-cpu-instruction-timing-program.md), S6 / 80186 row. |
+| Files And ABI Surface | `docs/etc/cpu-timing/t435-s1-80186-ledger.md`, S2 80186 manifest/audit/tracker, `t435-s6-80186-manual-rebaseline.md`, new 80186 reconciliation contract/inventory/verifier and task evidence only. No runtime source, CMake, public or cross-module ABI change. |
+| Applicable Rules | Documentation and execution governance; source material remains reference-only; one finite coverage ledger with a zero-difference predicate; no source import; preserve manual L3 versus labelled L2 midpoint distinction; distinguish decoder success, semantic fault and external event boundaries. |
+| Verification | Run the 80186 manifest integrity gate; compile/run a decoder inventory probe or equivalent current-Core scan; run a new decoder-to-S1/S2 verifier in both directions; independently check S1/manual locators and S2 status-count arithmetic; run documentation governance and focused current CPU decoder/profile tests. |
+| Expected Markers | `M5:T435:S6:I186-MANUAL-DECODER-PARTITION:OK`; `M5:T435:S6:I186-DECODER-LEDGER-ZERO-DIFFERENCE:PASS`; `M5:T435:S6:I186-S2-STATUS-RECONCILED:PASS`. |
+| Asset Needs | Existing owner-authorized manual corpus recorded by the S1 primary-corpus table and already-recorded reference research only. No third-party source, firmware, media or code import. |
+| Reporting Requirements | Record the old and revised successful-form/context denominator; every admitted or removed S1/S2 key with manual locator; each range/model/L2 decision; per-key S2 current-route/status correction; verifier input/output counts; focused test and documentation-gate outcomes; and an explicit remaining implementation boundary. |
+| Stop Conditions | Stop for an 80186 form whose manual status cannot be established from the authorized corpus, an unresolved decoder/manual contradiction, a required new external source/license decision, an ABI/runtime change, or a boundary that belongs to board/device timing. Never hide a difference by excluding it from the denominator. |
+| Exit Criteria | The complete successful 80186 decoder universe and legal contexts have a reproducible zero-difference S1/S2 partition; every S1 row has a primary-manual locator and L3/L2 disposition; every S2 key has an honest current route/status and no aggregate-only claim; all differences have a recorded decision; required gates pass; the P is committed, pushed and independently accepted. |
+| Original Owner Request | Re-audit the 80186 S1 manual instruction register and S2 gap audit to the same trustworthy standard prompted by the 8086 misses, then make the 80186 audit documents complete before implementation. |
+| Similar-Issue Sweep | Sweep inherited 8086 rows, all 80186 additions (`60`--`6F`, `C0/C1`, `C8/C9`, `62`, `69/6B`), ModR/M extension/profile gates, prefix/context legality, Table 1-16 parenthetical values, S1 grouped forms, S2 manifest expansion/statuses, current selector observations and verifier coverage. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** target `vm-0-5-0434`; T434 S2 `nxvm_0_5_0434.exe` / `build/output/nxvm_0_5_0434.exe`, SHA-256 `0252F8FDA17BEC2131606F19E3547B46894AC6B56DD37EC3B16BD302494FAFDC`. T434 has one copied Core timing-plan publication route for default PC/AT, IBM 5170 Model 339 and Model-40 BYOB session composition.

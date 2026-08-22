@@ -42,10 +42,13 @@ be conforming.
 
 ## Exact initial accounting
 
-`Verify-80186TimingManifest.ps1` expands 278 base keys: 253 L3 and 25
+`Verify-80186TimingManifest.ps1` expands 279 base keys: 253 L3 and 26
 L2:midpoint.  The intentionally strict initial state is 0 conforming, 14
-wrong-value, 42 unallocated and 222 missing-test.  The 14 are every accepted
-midpoint Group-3/immediate-IMUL key; the 42 are the Group-2 formula keys.
+wrong-value, 43 unallocated and 222 missing-test.  The 14 are every accepted
+midpoint Group-3/immediate-IMUL key; `BOUND` is the independently retained
+Table 2-9 midpoint key; the 42 are the Group-2 formula keys. `XLAT` is an
+explicit L3 base key, not an implied member of `MOV`, and its current 80186
+route is terminal `source_timing_unallocated`.
 `missing-test` is not a pass: it means a
 source route may exist, but no focused key result has yet proved the required
 value and inputs.
@@ -64,7 +67,7 @@ combinations or redundant prefix byte streams.
 | --- | --- | --- |
 | B0 | one explicit 80186 form/context publisher replaces successful legacy selection | any accepted successful form continues to select independently, reaches unallocated, or lacks a stable key ID |
 | B1 | all exact/formula L3 base keys, including Group-2, publish Table 1-16 value/formula inputs | one L3 base key nonconforming or an omitted low-five-bit/branch/outcome partition |
-| B2 | all 25 L2 keys use their declared fixed midpoint, with no endpoint or constrained-model substitution | one midpoint form lacks its operand partition result |
+| B2 | all 26 L2 keys use their declared fixed midpoint, with no endpoint or constrained-model substitution | one midpoint form lacks its operand partition result |
 | B3 | legal segment, odd-word, lock and repeat-phase axes have one generated key and one explicit term policy | an inherited 8086 EA term is applied without an 80186 source rule, or any legal axis is prose-only |
 | B4 | focused test consumes every generated base/context key and emits value, inputs, origin and unallocated bit | any key is not `conforming`, or any obsolete successful selector remains |
 
