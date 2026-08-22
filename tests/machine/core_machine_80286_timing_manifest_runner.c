@@ -296,6 +296,85 @@ static C_INT timing_80286_manifest_prepare(core_machine **out_machine,
     return 1;
 }
 
+/* System descriptor instructions must execute after the 80286's protected
+ * transition.  Bootstrap runs without the observer; the observer therefore
+ * records only the canonical target retirement. */
+static C_INT timing_80286_manifest_prepare_protected_system(
+    core_machine **out_machine, timing_80286_manifest_capture *capture,
+    const type_unsigned_8 *program, STD_SIZE_T bytes)
+{
+    static const type_unsigned_8 gdt_pointer[] = { 0x37u, 0u, 0u, 0x03u,
+        0u, 0u };
+    static const type_unsigned_8 gdt[] = {
+        0,0,0,0,0,0,0,0, 0xffu,0xffu,0,0x20u,0,0x9au,0,0,
+        0xffu,0xffu,0,0x30u,0,0x92u,0,0,
+        0xffu,0xffu,0,0x30u,0,0x12u,0,0,
+        0xffu,0xffu,0,0x30u,0,0x98u,0,0,
+        0x0fu,0,0,0x50u,0,0x82u,0,0,
+        0xffu,0xffu,0,0,0,0x89u,0,0
+    };
+    static const type_unsigned_8 boot[] = {
+        0x0fu,0x01u,0x16u,0x00u,0x01u, 0xb8u,0x01u,0u,
+        0x0fu,0x01u,0xf0u, 0xb8u,0x10u,0u, 0x8eu,0xd0u,
+        0x8eu,0xd8u, 0xeau,0u,0u,0x08u,0u
+    };
+    static const type_unsigned_8 halt[] = { 0xf4u };
+    const core_machine_config config = {
+        .cpu_profile = CORE_MACHINE_CPU_PROFILE_80286,
+        .ticks_per_instruction = 29u,
+        .instruction_timing = { 29u, 7u, 31u, 37u, 41u, 43u }
+    };
+    const core_machine_retirement_observation_provider provider = {
+        timing_80286_manifest_capture_retirement, capture
+    };
+    core_machine_run_result run = { 0 };
+    core_machine *machine = STD_NULL;
+    type_status status;
+
+    if (out_machine == STD_NULL || capture == STD_NULL || program == STD_NULL ||
+        bytes == 0u) return 0;
+    status = core_machine_create(&config, &machine);
+    if (status == TYPE_STATUS_OK) status = core_machine_install_port_provider(
+        machine, 0x0080u, 0x0080u, &timing_80286_manifest_ports, STD_NULL);
+    if (status == TYPE_STATUS_OK) status = core_machine_bind_execution_provider(
+        machine, &timing_80286_manifest_execution, STD_NULL);
+    if (status == TYPE_STATUS_OK) status = core_machine_freeze_execution_providers(machine);
+    if (status == TYPE_STATUS_OK) status = core_machine_reset(machine);
+    if (status == TYPE_STATUS_OK) {
+        machine->executor_cpu.data.cr0 = 0u;
+        status = test_core_machine_fixture_reset_real_mode(machine) ?
+            TYPE_STATUS_OK : TYPE_STATUS_INVALID_ARGUMENT;
+    }
+    if (status == TYPE_STATUS_OK) status = core_machine_memory_write(machine,
+        0x100u, gdt_pointer, sizeof(gdt_pointer));
+    if (status == TYPE_STATUS_OK) status = core_machine_memory_write(machine,
+        0x300u, gdt, sizeof(gdt));
+    if (status == TYPE_STATUS_OK) status = core_machine_memory_write(machine,
+        0u, boot, sizeof(boot));
+    if (status == TYPE_STATUS_OK) status = core_machine_memory_write(machine,
+        0x2000u, halt, sizeof(halt));
+    if (status == TYPE_STATUS_OK && (core_machine_run(machine,
+            (core_machine_run_budget){64u, 0u}, &run) != TYPE_STATUS_OK ||
+            run.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT)) {
+        status = TYPE_STATUS_INVALID_ARGUMENT;
+    }
+    if (status == TYPE_STATUS_OK) status = core_machine_memory_write(machine,
+        0x2000u, program, bytes);
+    if (status == TYPE_STATUS_OK) {
+        machine->executor_cpu.data.eax = 0x0010u;
+        machine->elapsed_ticks = 0u;
+        test_core_machine_fixture_resume_after_halt_at(machine, 0u);
+    }
+    if (status == TYPE_STATUS_OK) status =
+        core_machine_set_retirement_observation_provider(machine, &provider);
+    if (status != TYPE_STATUS_OK) {
+        core_machine_destroy(machine);
+        return 0;
+    }
+    *out_machine = machine;
+    return 1;
+}
+
 static C_INT timing_80286_manifest_run(
     const timing_80286_manifest_recipe *recipe)
 {
@@ -323,6 +402,42 @@ static C_INT timing_80286_manifest_run(
     }
     if (failed) {
         STD_PRINTF("M5:T435:S10:I286-MANIFEST-DETAIL:%s:expected=%llu:run=%llu:source=%llu:count=%u:origin=%u:disposition=%u\n",
+            recipe->key_id, recipe->ticks, run.ticks,
+            capture.observation.source_ticks, capture.count,
+            (type_unsigned_32)capture.observation.timing_origin,
+            (type_unsigned_32)capture.observation.timing_disposition);
+    }
+    core_machine_destroy(machine);
+    return failed;
+}
+
+static C_INT timing_80286_manifest_run_protected_system(
+    const timing_80286_manifest_recipe *recipe)
+{
+    const core_machine_run_budget budget = { 1u, 0u };
+    timing_80286_manifest_capture capture = { { 0 }, 0u };
+    const timing_80286_manifest_record *record;
+    core_machine_run_result run = { 0 };
+    core_machine *machine = STD_NULL;
+    C_INT failed;
+
+    if (recipe == STD_NULL) return 1;
+    record = timing_80286_manifest_find(recipe->key_id);
+    failed = record == STD_NULL || !timing_80286_manifest_is_i286(record) ||
+        STD_STRCMP(record->profile, "80286") != 0 ||
+        !timing_80286_manifest_prepare_protected_system(&machine, &capture,
+            recipe->program, recipe->bytes);
+    if (!failed) {
+        failed = core_machine_run(machine, budget, &run) != TYPE_STATUS_OK ||
+            run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
+            run.ticks != recipe->ticks || capture.count != 1u ||
+            capture.observation.source_ticks != recipe->ticks ||
+            capture.observation.timing_origin != recipe->origin ||
+            capture.observation.timing_disposition !=
+                CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED;
+    }
+    if (failed) {
+        STD_PRINTF("M5:T435:S10:I286-PROTECTED-DETAIL:%s:expected=%llu:run=%llu:source=%llu:count=%u:origin=%u:disposition=%u\n",
             recipe->key_id, recipe->ticks, run.ticks,
             capture.observation.source_ticks, capture.count,
             (type_unsigned_32)capture.observation.timing_origin,
@@ -723,6 +838,16 @@ C_INT main(C_VOID)
         { "I286-INTO-TAKEN-NEXT-BYTE-2", 0xceu, VCPU_EFLAGS_OF, 26u },
         { "I286-INTO-NOT", 0xceu, 0u, 3u }
     };
+    static const timing_80286_manifest_recipe protected_system_recipes[] = {
+        { "I286-SYSTEM-VERR-R", { 0x0fu, 0x00u, 0xe0u }, 3u, 14u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-SYSTEM-VERW-R", { 0x0fu, 0x00u, 0xe8u }, 3u, 14u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-SYSTEM-LAR-R", { 0x0fu, 0x02u, 0xc8u }, 3u, 14u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-SYSTEM-LSL-R", { 0x0fu, 0x03u, 0xc8u }, 3u, 14u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY }
+    };
     STD_SIZE_T index;
 
     for (index = 0u; index < sizeof(recipes) / sizeof(recipes[0]); ++index) {
@@ -740,8 +865,19 @@ C_INT main(C_VOID)
             return 1;
         }
     }
+    for (index = 0u; index < sizeof(protected_system_recipes) /
+        sizeof(protected_system_recipes[0]); ++index) {
+        if (timing_80286_manifest_run_protected_system(
+                &protected_system_recipes[index])) {
+            STD_PRINTF("M5:T435:S10:I286-PROTECTED-RECIPE:FAIL:%s\n",
+                protected_system_recipes[index].key_id);
+            return 1;
+        }
+    }
     STD_PRINTF("M5:T435:S10:I286-MANIFEST-FOUNDATION:PASS:observed=%u\n",
         (type_unsigned_32)(sizeof(recipes) / sizeof(recipes[0]) +
-            sizeof(control_recipes) / sizeof(control_recipes[0])));
+            sizeof(control_recipes) / sizeof(control_recipes[0]) +
+            sizeof(protected_system_recipes) /
+                sizeof(protected_system_recipes[0])));
     return 0;
 }

@@ -31,7 +31,8 @@ No aggregate smoke outcome may change an individual key's status.
 
 S10's `core-machine-80286-timing-manifest-runner` is the real-observation
 foundation: it consumes the generated manifest metadata and currently checks
-137 exact fallback/primary base recipes through retirement observation. It writes
+208 exact base recipes through retirement observation, including four
+protected-mode descriptor-query forms (`VERR`, `VERW`, `LAR`, `LSL`). It writes
 no result artifact until all 807 canonical recipes exist; the separate
 `Verify-80286TimingResults.ps1` gate remains the only all-key acceptance
 mechanism.
