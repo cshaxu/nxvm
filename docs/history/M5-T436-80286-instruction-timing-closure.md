@@ -5,7 +5,7 @@
 T436 owns the complete 80286 successful-retirement instruction function and
 timing closure transferred from the owner-approved requeue of the former
 four-profile program. Its fixed universe is the 286 all-L3 base forms and 521
-finite legal context/combined keys in the retained 80286 manifest: 807
+finite legal context/combined keys in the retained 80286 manifest: 800
 canonical keys. It must implement every key through one Core-private timing
 selection and retirement-publication route, with the Appendix-B value/formula,
 actual normalized inputs, origin and `source_timing_unallocated=false`.
@@ -20,7 +20,7 @@ work, source import, or a new profile.
 
 | S | owned closure boundary |
 | --- | --- |
-| S1 | freeze an executable, disjoint 807-key partition and proof plan |
+| S1 | freeze an executable, disjoint 800-key partition and proof plan |
 | S2 | result-contract producer and single 80286 publisher |
 | S3 | non-control forms, r/m, EA, odd-word and legal LOCK inputs |
 | S4 | strings, port strings, repeat phases and overrides |
@@ -42,6 +42,16 @@ strict nonconforming baseline, and record the focused evidence that later S
 units must produce. It creates no timing result or implementation claim.
 
 ## Accepted Progress
+
+### S3 Correction To The Frozen Universe
+
+S3 found that the inherited `ODD-WORD` selector had included seven non-memory
+forms, contrary to the retained context-legality contract, and that
+`I286-INT-TASK` plus its next-byte contexts belonged to S6. The revised
+manifest is 286 base + 452 contexts + 62 combinations = 800 legal canonical
+keys; S3/S4/S5/S6/S7 own 303/129/56/220/92 respectively. This preserves the
+S1 and S2 historical acceptance facts while superseding their 807-key
+cardinality for all later work.
 
 ### S1: Canonical-Key Partition
 

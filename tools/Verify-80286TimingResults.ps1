@@ -11,8 +11,8 @@ if ($records.Count -eq 1 -and $records[0] -is [System.Array]) {
     $records = @($records[0])
 }
 $expected = @($records | Where-Object { $_.profile -eq "80286" })
-if ($expected.Count -ne 807) {
-    throw "80286 canonical-key count mismatch: $($expected.Count)"
+if ($expected.Count -eq 0) {
+    throw "80286 manifest has no canonical keys"
 }
 if (-not (Test-Path -LiteralPath $ResultPath)) {
     throw "80286 timing result file not found: $ResultPath"

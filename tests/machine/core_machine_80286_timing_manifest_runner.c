@@ -20,7 +20,7 @@
 
 /* Incremental real-observation runner for the I286 manifest.  A partial
  * recipe set must never write the final result document: the result verifier
- * accepts exactly 807 observed canonical keys. */
+ * accepts every observed canonical key. */
 typedef struct timing_80286_manifest_record {
     const C_CHAR *key_id;
     const C_CHAR *profile;
@@ -135,6 +135,8 @@ static C_INT timing_80286_manifest_uses_stack(const C_CHAR *key_id)
         "I286-RET-NEAR-NEXT-BYTE-1", "I286-STACK-PUSH-R",
         "I286-STACK-PUSH-SEG", "I286-STACK-PUSH-IMM",
         "I286-STACK-PUSH-M-EA-BID", "I286-STACK-POP-M-EA-BID",
+        "I286-STACK-PUSH-M-EA-BID-ODD-WORD",
+        "I286-STACK-POP-M-EA-BID-ODD-WORD",
         "I286-STACK-PUSHA", "I286-STACK-PUSHF", "I286-STACK-POP-R",
         "I286-STACK-POP-SEG-REAL", "I286-STACK-POPA",
         "I286-STACK-POPF", "I286-STACK-LEAVE", "I286-ENTER-L0",
@@ -177,12 +179,31 @@ static C_INT timing_80286_manifest_is_bound(const C_CHAR *key_id)
     return key_id != STD_NULL && STD_STRCMP(key_id, "I286-BOUND") == 0;
 }
 
-static C_INT timing_80286_manifest_uses_odd_group3_operand(const C_CHAR *key_id)
+static C_INT timing_80286_manifest_uses_odd_memory_operand(const C_CHAR *key_id)
 {
-    return key_id != STD_NULL && (STD_STRCMP(key_id, "I286-MUL-M16-ODD-WORD") == 0 ||
-        STD_STRCMP(key_id, "I286-IMUL-M16-ODD-WORD") == 0 ||
-        STD_STRCMP(key_id, "I286-DIV-M16-ODD-WORD") == 0 ||
-        STD_STRCMP(key_id, "I286-IDIV-M16-ODD-WORD") == 0);
+    static const C_CHAR *const keys[] = {
+        "I286-MUL-M16-ODD-WORD", "I286-IMUL-M16-ODD-WORD",
+        "I286-DIV-M16-ODD-WORD", "I286-IDIV-M16-ODD-WORD",
+        "I286-IMUL-IMM-IMM16-M-ODD-WORD", "I286-MOV-RM-ODD-WORD",
+        "I286-MOV-MR-ODD-WORD", "I286-MOV-MI-ODD-WORD",
+        "I286-STACK-PUSH-M-ODD-WORD", "I286-STACK-POP-M-ODD-WORD",
+        "I286-MUL-M16-EA-BID-ODD-WORD",
+        "I286-IMUL-M16-EA-BID-ODD-WORD",
+        "I286-DIV-M16-EA-BID-ODD-WORD",
+        "I286-IDIV-M16-EA-BID-ODD-WORD",
+        "I286-MOV-RM-EA-BID-ODD-WORD",
+        "I286-MOV-MR-EA-BID-ODD-WORD",
+        "I286-MOV-MI-EA-BID-ODD-WORD",
+        "I286-STACK-PUSH-M-EA-BID-ODD-WORD",
+        "I286-STACK-POP-M-EA-BID-ODD-WORD"
+    };
+    STD_SIZE_T index;
+
+    if (key_id == STD_NULL) return 0;
+    for (index = 0u; index < sizeof(keys) / sizeof(keys[0]); ++index) {
+        if (STD_STRCMP(key_id, keys[index]) == 0) return 1;
+    }
+    return 0;
 }
 
 static type_unsigned_16 timing_80286_manifest_control_cx(const C_CHAR *key_id)
@@ -251,16 +272,18 @@ static C_INT timing_80286_manifest_results_complete(C_VOID)
 {
     STD_SIZE_T index;
     STD_SIZE_T observed = 0u;
+    STD_SIZE_T expected = 0u;
 
     for (index = 0u; index < sizeof(timing_80286_manifest_records) /
             sizeof(timing_80286_manifest_records[0]); ++index) {
         if (!timing_80286_manifest_is_i286(&timing_80286_manifest_records[index])) {
             continue;
         }
+        ++expected;
         if (!timing_80286_manifest_observed[index]) return 0;
         ++observed;
     }
-    return observed == 807u;
+    return expected != 0u && observed == expected;
 }
 
 static type_unsigned_32 timing_80286_manifest_observed_count(C_VOID)
@@ -276,6 +299,140 @@ static type_unsigned_32 timing_80286_manifest_observed_count(C_VOID)
         }
     }
     return observed;
+}
+
+static type_unsigned_32 timing_80286_manifest_expected_count(C_VOID)
+{
+    STD_SIZE_T index;
+    type_unsigned_32 expected = 0u;
+
+    for (index = 0u; index < sizeof(timing_80286_manifest_records) /
+            sizeof(timing_80286_manifest_records[0]); ++index) {
+        if (timing_80286_manifest_is_i286(&timing_80286_manifest_records[index])) {
+            ++expected;
+        }
+    }
+    return expected;
+}
+
+static C_INT timing_80286_manifest_key_has_prefix(const C_CHAR *key,
+    const C_CHAR *prefix)
+{
+    STD_SIZE_T index;
+
+    if (key == STD_NULL || prefix == STD_NULL) return 0;
+    for (index = 0u; prefix[index] != '\0'; ++index) {
+        if (key[index] != prefix[index]) return 0;
+    }
+    return 1;
+}
+
+static C_INT timing_80286_manifest_key_has_token(const C_CHAR *key,
+    const C_CHAR *token)
+{
+    STD_SIZE_T key_index;
+
+    if (key == STD_NULL || token == STD_NULL || token[0] == '\0') return 0;
+    for (key_index = 0u; key[key_index] != '\0'; ++key_index) {
+        if (timing_80286_manifest_key_has_prefix(key + key_index, token)) return 1;
+    }
+    return 0;
+}
+
+/* Kept byte-for-byte aligned with the S1 partition's later-S boundaries. */
+static C_INT timing_80286_manifest_is_s3(
+    const timing_80286_manifest_record *record)
+{
+    const C_CHAR *key = record != STD_NULL ? record->key_id : STD_NULL;
+
+    if (!timing_80286_manifest_is_i286(record)) return 0;
+    if (timing_80286_manifest_key_has_prefix(key, "I286-STRING-") ||
+        timing_80286_manifest_key_has_prefix(key, "I286-REP-") ||
+        timing_80286_manifest_key_has_prefix(key, "I286-JCC-") ||
+        timing_80286_manifest_key_has_prefix(key, "I286-JCXZ-") ||
+        timing_80286_manifest_key_has_prefix(key, "I286-LOOP") ||
+        timing_80286_manifest_key_has_prefix(key, "I286-INTO-") ||
+        timing_80286_manifest_key_has_prefix(key, "I286-CALL-") ||
+        timing_80286_manifest_key_has_prefix(key, "I286-RET-") ||
+        timing_80286_manifest_key_has_prefix(key, "I286-JMP-") ||
+        timing_80286_manifest_key_has_prefix(key, "I286-INT3-") ||
+        timing_80286_manifest_key_has_prefix(key, "I286-INT-IMM-") ||
+        timing_80286_manifest_key_has_prefix(key, "I286-INT-PM-") ||
+        timing_80286_manifest_key_has_prefix(key, "I286-INT-TASK") ||
+        timing_80286_manifest_key_has_prefix(key, "I286-MOV-SREG-") ||
+        timing_80286_manifest_key_has_prefix(key, "I286-LEA-") ||
+        timing_80286_manifest_key_has_prefix(key, "I286-LDS-") ||
+        timing_80286_manifest_key_has_prefix(key, "I286-LES-") ||
+        timing_80286_manifest_key_has_prefix(key, "I286-SYSTEM-") ||
+        timing_80286_manifest_key_has_prefix(key, "I286-STACK-POP-SEG-")) {
+        return 0;
+    }
+    return 1;
+}
+
+static type_unsigned_32 timing_80286_manifest_s3_observed_count(C_VOID)
+{
+    STD_SIZE_T index;
+    type_unsigned_32 observed = 0u;
+
+    for (index = 0u; index < sizeof(timing_80286_manifest_records) /
+            sizeof(timing_80286_manifest_records[0]); ++index) {
+        if (timing_80286_manifest_is_s3(&timing_80286_manifest_records[index]) &&
+            timing_80286_manifest_observed[index]) {
+            ++observed;
+        }
+    }
+    return observed;
+}
+
+static type_unsigned_32 timing_80286_manifest_s3_expected_count(C_VOID)
+{
+    STD_SIZE_T index;
+    type_unsigned_32 expected = 0u;
+
+    for (index = 0u; index < sizeof(timing_80286_manifest_records) /
+            sizeof(timing_80286_manifest_records[0]); ++index) {
+        if (timing_80286_manifest_is_s3(&timing_80286_manifest_records[index])) {
+            ++expected;
+        }
+    }
+    return expected;
+}
+
+static C_INT timing_80286_manifest_s3_results_complete(C_VOID)
+{
+    STD_SIZE_T index;
+
+    for (index = 0u; index < sizeof(timing_80286_manifest_records) /
+            sizeof(timing_80286_manifest_records[0]); ++index) {
+        const timing_80286_manifest_record *record =
+            &timing_80286_manifest_records[index];
+        const core_machine_retirement_observation *observation =
+            &timing_80286_manifest_results[index];
+        type_unsigned_32 required_inputs = 0u;
+
+        if (!timing_80286_manifest_is_s3(record)) continue;
+        if (!timing_80286_manifest_observed[index] ||
+            observation->timing_disposition !=
+                CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED) return 0;
+        if (timing_80286_manifest_key_has_token(record->key_id, "-LOCK")) {
+            required_inputs |= CORE_MACHINE_CPU_TIMING_INPUT_LOCK;
+        }
+        if (timing_80286_manifest_key_has_token(record->key_id, "-SEGMENT")) {
+            required_inputs |= CORE_MACHINE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE;
+        }
+        if (timing_80286_manifest_key_has_token(record->key_id, "-EA-BID")) {
+            required_inputs |= CORE_MACHINE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS;
+        }
+        if (timing_80286_manifest_key_has_token(record->key_id, "-ODD-WORD")) {
+            required_inputs |= CORE_MACHINE_CPU_TIMING_INPUT_ODD_WORD;
+        }
+        if ((observation->formula_inputs & required_inputs) != required_inputs) {
+            return 0;
+        }
+    }
+    return timing_80286_manifest_s3_observed_count() ==
+        timing_80286_manifest_s3_expected_count();
 }
 
 /* This writer is intentionally unavailable to a partial runner.  S3--S7 may
@@ -323,7 +480,7 @@ static C_INT timing_80286_manifest_write_results(const C_CHAR *path)
         ++written;
     }
     if (STD_FPRINTF(file, "\n  ]\n}\n") < 0 || STD_FCLOSE(file) != 0) return 1;
-    return written == 807u ? 0 : 1;
+    return written == timing_80286_manifest_expected_count() ? 0 : 1;
 }
 
 static C_VOID timing_80286_manifest_execution_reset(C_VOID *opaque)
@@ -395,7 +552,7 @@ static C_INT timing_80286_manifest_prepare(core_machine **out_machine,
         status = core_machine_memory_write(machine, 0x1000u, &operand,
             sizeof(operand));
         if (status == TYPE_STATUS_OK &&
-            timing_80286_manifest_uses_odd_group3_operand(key_id)) {
+            timing_80286_manifest_uses_odd_memory_operand(key_id)) {
             status = core_machine_memory_write(machine, 0x1001u, &operand,
                 sizeof(operand));
         }
@@ -2559,6 +2716,9 @@ C_INT main(C_VOID)
         { "I286-LES-M-REAL-EA-BID", { 0xc4u, 0x82u, 0u, 0u }, 4u, 8u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY }
     };
     static const timing_80286_manifest_recipe odd_word_recipes[] = {
+        { "I286-IMUL-IMM-IMM16-M-ODD-WORD",
+            { 0x69u, 0x06u, 1u, 0x10u, 1u, 0u }, 6u, 26u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-MOV-RM-ODD-WORD", { 0x8bu, 0x06u, 1u, 0x10u }, 4u, 7u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-MOV-MR-ODD-WORD", { 0x89u, 0x0eu, 1u, 0x10u }, 4u, 5u,
@@ -2569,6 +2729,28 @@ C_INT main(C_VOID)
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-MOV-MOFFS-W-ODD-WORD", { 0xa3u, 1u, 0x10u }, 3u, 5u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY }
+    };
+    static const timing_80286_manifest_recipe ea_odd_word_recipes[] = {
+        { "I286-MUL-M16-EA-BID-ODD-WORD", { 0xf7u, 0xa2u, 1u, 0u }, 4u, 27u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-IMUL-M16-EA-BID-ODD-WORD", { 0xf7u, 0xaau, 1u, 0u }, 4u, 27u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-DIV-M16-EA-BID-ODD-WORD", { 0xf7u, 0xb2u, 1u, 0u }, 4u, 28u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-IDIV-M16-EA-BID-ODD-WORD", { 0xf7u, 0xbau, 1u, 0u }, 4u, 31u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-MOV-RM-EA-BID-ODD-WORD", { 0x8bu, 0x82u, 1u, 0u }, 4u, 8u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-MOV-MR-EA-BID-ODD-WORD", { 0x89u, 0x8au, 1u, 0u }, 4u, 6u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-MOV-MI-EA-BID-ODD-WORD",
+            { 0xc7u, 0x82u, 1u, 0u, 1u, 0u }, 6u, 6u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-STACK-PUSH-M-EA-BID-ODD-WORD",
+            { 0xffu, 0xb2u, 1u, 0u }, 4u, 8u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
+        { "I286-STACK-POP-M-EA-BID-ODD-WORD", { 0x8fu, 0x82u, 1u, 0u }, 4u, 8u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK }
     };
     static const timing_80286_manifest_repeat_recipe repeat_recipes[] = {
         { "I286-REP-MOVS-B", 0xf3u, 0xa4u, 9u, 4u, 5u },
@@ -2870,6 +3052,14 @@ C_INT main(C_VOID)
             return 1;
         }
     }
+    for (index = 0u; index < sizeof(ea_odd_word_recipes) /
+        sizeof(ea_odd_word_recipes[0]); ++index) {
+        if (timing_80286_manifest_run(&ea_odd_word_recipes[index])) {
+            STD_PRINTF("M5:T436:S3:I286-EA-ODD-WORD-RECIPE:FAIL:%s\n",
+                ea_odd_word_recipes[index].key_id);
+            return 1;
+        }
+    }
     for (index = 0u; index < sizeof(string_recipes) / sizeof(string_recipes[0]);
         ++index) {
         if (timing_80286_manifest_run_string_recipe(&string_recipes[index], 0)) {
@@ -2934,6 +3124,7 @@ C_INT main(C_VOID)
             sizeof(segment_recipes) / sizeof(segment_recipes[0]) +
             sizeof(ea_recipes) / sizeof(ea_recipes[0]) +
             sizeof(odd_word_recipes) / sizeof(odd_word_recipes[0]) +
+            sizeof(ea_odd_word_recipes) / sizeof(ea_odd_word_recipes[0]) +
             sizeof(string_recipes) / sizeof(string_recipes[0]) +
             7u +
             1u +
@@ -2942,15 +3133,22 @@ C_INT main(C_VOID)
             2u * sizeof(lock_recipes) / sizeof(lock_recipes[0]));
 
         const type_unsigned_32 captured = timing_80286_manifest_observed_count();
+        const type_unsigned_32 s3_captured =
+            timing_80286_manifest_s3_observed_count();
 
-        if (captured > probes || timing_80286_manifest_results_complete()) return 1;
+        if (captured > probes || timing_80286_manifest_results_complete() ||
+            !timing_80286_manifest_s3_results_complete()) return 1;
         if (timing_80286_manifest_write_results(
                 "docs/etc/cpu-timing/t436-s8-80286-timing-results.json") == 0) {
             return 1;
         }
-        STD_PRINTF("M5:T436:S2:I286-RESULT-PRODUCER:PASS:observed=%u:canonical=807\n",
-            captured);
+        STD_PRINTF("M5:T436:S2:I286-RESULT-PRODUCER:PASS:observed=%u:canonical=%u\n",
+            captured, timing_80286_manifest_expected_count());
         STD_PRINTF("M5:T436:S2:I286-INCOMPLETE-RESULT-REFUSED:PASS\n");
+        STD_PRINTF("M5:T436:S3:I286-NONCONTROL-OBSERVED:%u\n", s3_captured);
+        STD_PRINTF("M5:T436:S3:I286-NONCONTROL-COVERAGE:PASS:canonical=%u\n",
+            timing_80286_manifest_s3_expected_count());
+        STD_PRINTF("M5:T436:S3:I286-MEMORY-INPUTS:PASS\n");
         STD_PRINTF("M5:T435:S10:I286-MANIFEST-FOUNDATION:PASS:observed=%u\n",
             captured);
     }

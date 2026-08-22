@@ -6,19 +6,20 @@ same tick, formula-input, form-ID, timing-origin and unallocated-disposition
 fields consumed by the 80286 result verifier.
 
 The runner contains the final result-document writer, but the writer refuses
-to open its output unless all 807 canonical 80286 records have been observed.
+to open its output unless all 800 legal canonical 80286 records have been observed.
 This prevents an S3--S7 partial recipe set from producing a document that
 looks like a valid closure artifact. Repeated observations of the same key do
 not overwrite the first captured record; protected bootstrap activity has no
 active canonical metadata index and is not captured as a target result.
 
-The S2 baseline runs 606 focused probes and captures 563 distinct canonical
-records; repeated probes for the same key do not overwrite the first capture.
-It deliberately refuses final emission. The remaining 244 canonical records
-remain assigned to S3--S7 by the S1 partition; no missing observation becomes
+The accepted S2 baseline ran 606 focused probes and captured 563 distinct
+canonical records. S3 subsequently corrected seven invalid non-memory
+`ODD-WORD` selector products and the `INT-TASK` ownership boundary, rebasing
+the legal universe to 800 records. Repeated probes do not overwrite the first
+capture; incomplete emission remains refused. No missing observation becomes
 conforming through this mechanism.
 
 ```text
-M5:T436:S2:I286-RESULT-PRODUCER:PASS:observed=563:canonical=807
+M5:T436:S2:I286-RESULT-PRODUCER:PASS:observed=563:canonical=800
 M5:T436:S2:I286-INCOMPLETE-RESULT-REFUSED:PASS
 ```

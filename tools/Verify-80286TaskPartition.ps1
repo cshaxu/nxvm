@@ -33,7 +33,8 @@ function Get-Owner {
     if ($Key -match '^I286-(JCC|JCXZ|LOOP|LOOPE|LOOPNE|INTO)-') { return 'S5' }
     if ($Key -match '^I286-(CALL|RET|JMP)-' -or
         $Key -match '^I286-INT3-' -or
-        $Key -match '^I286-INT-(IMM|PM|TASK)-') { return 'S6' }
+        $Key -match '^I286-INT-(IMM|PM|TASK)-' -or
+        $Key -eq 'I286-INT-TASK') { return 'S6' }
     if ($Key -match '^I286-(MOV-SREG|LEA|LDS|LES|SYSTEM)-' -or
         $Key -match '^I286-STACK-POP-SEG-') { return 'S7' }
     return 'S3'

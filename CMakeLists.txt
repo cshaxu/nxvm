@@ -421,7 +421,7 @@ if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
 endif()
 
 # S10 starts the 80286 generated-key runner with real retirement observations.
-# It does not write the final 807-key result document until every recipe exists.
+# It does not write the final result document until every legal recipe exists.
 add_executable(core-machine-80286-timing-manifest-runner
     tests/machine/core_machine_80286_timing_manifest_runner.c)
 target_link_libraries(core-machine-80286-timing-manifest-runner PRIVATE
