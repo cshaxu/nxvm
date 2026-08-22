@@ -412,6 +412,14 @@ static C_INT timing_80286_manifest_prepare_protected_system(
         status = core_machine_memory_write(machine, 0x4000u, table_pointer,
             sizeof(table_pointer));
     }
+    if (status == TYPE_STATUS_OK && STD_STRCMP(key_id,
+            "I286-STACK-POP-SEG-PM") == 0) {
+        const type_unsigned_16 selector = 0x0010u;
+
+        machine->executor_cpu.data.sp = 0x1000u;
+        status = core_machine_memory_write(machine, 0x4000u, &selector,
+            sizeof(selector));
+    }
     if (status == TYPE_STATUS_OK) {
         machine->executor_cpu.data.eax = operand;
         machine->executor_cpu.data.ebp = 0x0800u;
@@ -1087,6 +1095,8 @@ C_INT main(C_VOID)
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-LES-M-PM", { 0xc4u, 0x06u, 0u, 0x10u }, 4u, 21u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-STACK-POP-SEG-PM", { 0x1fu }, 1u, 20u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
         { "I286-SYSTEM-VERR-R", { 0x0fu, 0x00u, 0xe0u }, 3u, 14u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-SYSTEM-VERW-R", { 0x0fu, 0x00u, 0xe8u }, 3u, 14u,

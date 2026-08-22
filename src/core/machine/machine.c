@@ -2608,8 +2608,11 @@ C_INT core_machine_control_stack_source_instruction_cost(
         if (machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_80286) {
             return 0;
         }
-        *out_ticks = core_machine_control_stack_source_lookup(machine,
-            CORE_MACHINE_SOURCE_TIMING_POP_REGISTER);
+        /* Appendix B distinguishes the protected selector-validation path
+         * from the real-mode stack transfer. */
+        *out_ticks = protected_mode ? 20u :
+            core_machine_control_stack_source_lookup(machine,
+                CORE_MACHINE_SOURCE_TIMING_POP_REGISTER);
         return 1;
     case 0xe8u:
         return core_machine_control_stack_add_next_term(machine,
