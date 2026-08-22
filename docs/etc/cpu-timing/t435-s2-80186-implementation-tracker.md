@@ -35,7 +35,7 @@ P23 corrects the prior `G2-*` selector typo: the 21 legal odd-addressed
 `ROL`/`ROR`/`RCL`/`RCR`/`SHL`/`SHR`/`SAR` forms. They retain `missing-input`
 until one real result proves their Table 1-16 `+4` term.
 
-P34--P58 add `core-machine-80186-timing-manifest-runner`. Its first 242
+P34--P59 add `core-machine-80186-timing-manifest-runner`. Its first 247
 canonical recipes now pass actual retirement observation. P55 corrects the
 former noncanonical `I186-LEA` / `I186-ENTER-LGT1` spellings, makes the runner
 fail with observed facts, aligns each recipe's Core origin, and fixes the
@@ -44,7 +44,9 @@ P57 adds a mapped real-mode return frame for all five return forms and closes
 the missing 80186 `RETF` / `RETF imm16` control-stack source rows (22 / 25
 clocks). P58 adds real-mode IVT and stack preparation for `INT3`, `INT imm8`,
 and both `INTO` outcomes, plus all four scalar `IN`/`OUT` forms. Recipes are
-captured from actual retirement observations and check ticks,
+P59 adds a successful bounded range, both `ESC` forms, zero-wait `WAIT`, and
+the `HLT` retired-then-waiting boundary. Recipes are captured from actual
+retirement observations and check ticks,
 origin and classified disposition. The runner is deliberately outside the
 passing gate and writes no final result document until all 624 keys have a
 real recipe; consequently every manifest status remains open.
@@ -62,7 +64,7 @@ real recipe; consequently every manifest status remains open.
 | `I186-DIV-*` | L3 exact | source scalar exists; proof absent | B0+B1+B3+B4 |
 | `I186-{ROL,ROR,RCL,RCR,SHL,SHR,SAR}-*` | L3 formula; count modulo 32 | 80186 sole selector; every count/form result remains to be proved | B1+B3+B4 |
 | `I186-STRING-*`, `I186-REP-*` | L3 primitive/repeat formula | source table exists; phase/termination proof absent | B0+B1+B3+B4 |
-| `I186-BOUND` | L2:midpoint, Table 2-9 range 33--35 | mixed/unallocated as manifest records | B0+B2+B4 |
+| `I186-BOUND` | L2:midpoint, Table 2-9 range 33--35 | successful in-range result proves the fixed midpoint; prefix contexts remain open | B0+B2+B4 |
 | `I186-{ENTER-*,LEAVE}`, `I186-FLAG-*` | L3 exact/formula | mixed/unallocated as manifest records | B0+B1+B3+B4 |
 | generated `-SEGMENT`, `-ODD-WORD`, `-LOCK`, `-REP-PHASE-*` and legal combined suffixes | S1 Table 1-16 context rule | no complete independent input/result stream | B3+B4 |
 

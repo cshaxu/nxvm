@@ -93,6 +93,16 @@ static C_INT timing_80186_manifest_is_interrupt_recipe(const C_CHAR *key_id)
         STD_STRCMP(key_id, "I186-INTO-NOT") == 0);
 }
 
+static C_INT timing_80186_manifest_is_halt_recipe(const C_CHAR *key_id)
+{
+    return key_id != STD_NULL && STD_STRCMP(key_id, "I186-HLT") == 0;
+}
+
+static C_INT timing_80186_manifest_is_bound_recipe(const C_CHAR *key_id)
+{
+    return key_id != STD_NULL && STD_STRCMP(key_id, "I186-BOUND") == 0;
+}
+
 static const timing_80186_manifest_record *timing_80186_manifest_find(
     const C_CHAR *key_id)
 {
@@ -298,6 +308,12 @@ static C_INT timing_80186_manifest_prepare(core_machine **out_machine,
         if (status == TYPE_STATUS_OK) status = core_machine_memory_write(machine,
             0x60u * 4u, handler, sizeof(handler));
     }
+    if (status == TYPE_STATUS_OK && timing_80186_manifest_is_bound_recipe(key_id)) {
+        const type_unsigned_16 bounds[] = { 0u, 2u };
+
+        status = core_machine_memory_write(machine, 0x1000u, bounds,
+            sizeof(bounds));
+    }
     if (status == TYPE_STATUS_OK) status =
         core_machine_set_retirement_observation_provider(machine, &provider);
     if (status != TYPE_STATUS_OK) {
@@ -327,7 +343,9 @@ static C_INT timing_80186_manifest_run_recipe(
             recipe->key_id);
     if (!failed) {
         failed = core_machine_run(machine, budget, &run) != TYPE_STATUS_OK ||
-            run.reason != CORE_MACHINE_STOP_BUDGET || run.executed != 1u ||
+            run.reason != (timing_80186_manifest_is_halt_recipe(recipe->key_id) ?
+                CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT : CORE_MACHINE_STOP_BUDGET) ||
+            run.executed != 1u ||
             run.ticks != recipe->ticks || capture.count != 1u ||
             capture.observation.source_ticks != recipe->ticks ||
             capture.observation.timing_origin != recipe->origin ||
@@ -665,6 +683,16 @@ C_INT main(C_VOID)
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO },
         { "I186-OUT-DX", { 0xeeu }, 1u, 7u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO },
+        { "I186-BOUND", { 0x62u,0x06u,0u,0x10u }, 4u, 34u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
+        { "I186-ESC-R", { 0xd8u,0xc0u }, 2u, 2u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80186_FALLBACK },
+        { "I186-ESC-M", { 0xd8u,0x06u,0u,0x10u }, 4u, 6u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80186_FALLBACK },
+        { "I186-WAIT", { 0x9bu }, 1u, 6u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80186_FALLBACK },
+        { "I186-HLT", { 0xf4u }, 1u, 2u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
         { "I186-XLAT", { 0xd7u }, 1u, 11u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80186_FALLBACK },
         { "I186-LEA-M", { 0x8du,0x06u,0u,0x10u }, 4u, 6u,
