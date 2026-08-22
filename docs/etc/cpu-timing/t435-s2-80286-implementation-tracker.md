@@ -58,7 +58,7 @@ next-byte lengths 1 through 6, and real IRET next-byte lengths 1 through 6.
 It also observes protected same-level RETF with a two-byte next instruction.
 It also observes protected normal IRET with a two-byte next instruction.
 It also observes protected same-level far CALL with a two-byte next instruction.
-It also observes protected same-level far JMP with a two-byte next instruction.
+It also observes protected same-level memory far JMP with a two-byte next instruction.
 It also observes protected same-level memory far CALL with a two-byte next instruction.
 It writes no result artifact until all 807 canonical recipes exist; the separate
 `Verify-80286TimingResults.ps1` gate remains the only all-key acceptance

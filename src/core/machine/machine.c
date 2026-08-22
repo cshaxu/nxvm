@@ -2863,8 +2863,8 @@ C_INT core_machine_control_stack_source_instruction_cost(
                 (protected_mode && extension == 5u && data->crm !=
                     machine->executor_cpu.data.cs.selector)) return 0;
             if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 &&
-                protected_mode && extension == 3u) {
-                *out_ticks = 29u;
+                protected_mode) {
+                *out_ticks = extension == 3u ? 29u : 26u;
             } else {
                 *out_ticks = core_machine_control_stack_source_lookup(machine,
                     extension == 3u ? CORE_MACHINE_SOURCE_TIMING_CALL_FAR_MEMORY :
