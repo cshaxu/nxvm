@@ -908,6 +908,8 @@ C_INT main(C_VOID)
         { "I286-SYSTEM-SMSW-M-EA-BID", { 0x0fu, 0x01u, 0xa2u, 0u, 0u }, 5u, 4u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-SYSTEM-STR-M-EA-BID", { 0x0fu, 0x00u, 0x8au, 0u, 0u }, 5u, 4u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ARPL", { 0x63u, 0xc8u }, 2u, 10u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY }
     };
     STD_SIZE_T index;
