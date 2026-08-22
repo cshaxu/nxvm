@@ -771,6 +771,37 @@ static C_INT timing_80286_manifest_run_repeat_odd_base_recipe(
     return failed;
 }
 
+static C_INT timing_80286_manifest_run_jmp_next_byte_recipe(
+    type_unsigned_8 next_bytes)
+{
+    static const type_unsigned_8 target[][6] = {
+        { 0u,0u,0u,0u,0u,0u },
+        { 0x90u,0u,0u,0u,0u,0u },
+        { 0x00u,0xc0u,0u,0u,0u,0u },
+        { 0x80u,0xc0u,1u,0u,0u,0u },
+        { 0xc6u,0x46u,0u,1u,0u,0u },
+        { 0xc6u,0x06u,0u,0x10u,1u,0u },
+        { 0xc7u,0x06u,0u,0x10u,1u,0u }
+    };
+    timing_80286_manifest_recipe recipe = {
+        STD_NULL, { 0xebu, 0u, 0u, 0u, 0u, 0u, 0u, 0u }, 0u, 0u,
+        CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK
+    };
+    C_CHAR key_id[96];
+    STD_SIZE_T index;
+
+    if (next_bytes == 0u || next_bytes >= sizeof(target) / sizeof(target[0]) ||
+        STD_SNPRINTF(key_id, sizeof(key_id), "I286-JMP-NEAR-NEXT-BYTE-%u",
+            (type_unsigned_32)next_bytes) < 0) return 1;
+    recipe.key_id = key_id;
+    recipe.bytes = (STD_SIZE_T)next_bytes + 2u;
+    recipe.ticks = 7u + next_bytes;
+    for (index = 0u; index < next_bytes; ++index) {
+        recipe.program[index + 2u] = target[next_bytes][index];
+    }
+    return timing_80286_manifest_run(&recipe);
+}
+
 static C_INT timing_80286_manifest_run_protected_system(
     const timing_80286_manifest_recipe *recipe)
 {
@@ -1580,6 +1611,13 @@ C_INT main(C_VOID)
             return 1;
         }
     }
+    for (index = 2u; index <= 6u; ++index) {
+        if (timing_80286_manifest_run_jmp_next_byte_recipe((type_unsigned_8)index)) {
+            STD_PRINTF("M5:T435:S10:I286-JMP-NEXT-BYTE-RECIPE:FAIL:%u\n",
+                (type_unsigned_32)index);
+            return 1;
+        }
+    }
     for (index = 0u; index < sizeof(protected_system_recipes) /
         sizeof(protected_system_recipes[0]); ++index) {
         if (timing_80286_manifest_run_protected_system(
@@ -1670,6 +1708,7 @@ C_INT main(C_VOID)
     STD_PRINTF("M5:T435:S10:I286-MANIFEST-FOUNDATION:PASS:observed=%u\n",
         (type_unsigned_32)(sizeof(recipes) / sizeof(recipes[0]) +
             sizeof(control_recipes) / sizeof(control_recipes[0]) +
+            5u +
             sizeof(protected_system_recipes) /
                 sizeof(protected_system_recipes[0]) +
             sizeof(segment_recipes) / sizeof(segment_recipes[0]) +
