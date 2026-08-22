@@ -3119,6 +3119,10 @@ C_INT core_machine_80286_source_instruction_cost(core_machine *machine,
             CORE_MACHINE_80286_JCC_TAKEN_TICKS;
         return 1;
     }
+    if (opcode >= 0xd8u && opcode <= 0xdfu) {
+        *out_ticks = 1u;
+        return 1;
+    }
     switch (opcode) {
     case 0x0fu:
         if (prefixes + 2u < data->oplen &&

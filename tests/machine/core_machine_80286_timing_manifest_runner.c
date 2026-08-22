@@ -408,6 +408,8 @@ C_INT main(C_VOID)
         { "I286-XLAT", { 0xd7u }, 1u, 5u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80286_FALLBACK },
         { "I286-WAIT", { 0x9bu }, 1u, 3u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80286_FALLBACK },
+        { "I286-ESC", { 0xdbu, 0xe3u }, 2u, 1u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80286_FALLBACK }
     };
     STD_SIZE_T index;
