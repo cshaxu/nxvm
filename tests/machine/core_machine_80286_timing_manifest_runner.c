@@ -93,6 +93,12 @@ static C_INT timing_80286_manifest_uses_stack(const C_CHAR *key_id)
         STD_STRCMP(key_id, "I286-CALL-NEAR-DIRECT-NEXT-BYTE-1") == 0;
 }
 
+static C_INT timing_80286_manifest_uses_far_target(const C_CHAR *key_id)
+{
+    return key_id != STD_NULL &&
+        STD_STRCMP(key_id, "I286-JMP-FAR-REAL-NEXT-BYTE-2") == 0;
+}
+
 static type_unsigned_16 timing_80286_manifest_control_cx(const C_CHAR *key_id)
 {
     if (key_id == STD_NULL) return 2u;
@@ -216,6 +222,12 @@ static C_INT timing_80286_manifest_prepare(core_machine **out_machine,
     if (status == TYPE_STATUS_OK && timing_80286_manifest_uses_stack(key_id)) {
         machine->executor_cpu.data.sp = TIMING_80286_MANIFEST_STACK_LINEAR +
             TIMING_80286_MANIFEST_STACK_BYTES;
+    }
+    if (status == TYPE_STATUS_OK && timing_80286_manifest_uses_far_target(key_id)) {
+        const type_unsigned_8 target_code[] = { 0x00u, 0xc0u };
+
+        status = core_machine_memory_write(machine, 0x000ffff5u, target_code,
+            sizeof(target_code));
     }
     if (status == TYPE_STATUS_OK && timing_80286_manifest_flags_active) {
         machine->executor_cpu.data.eflags = timing_80286_manifest_eflags;
@@ -574,7 +586,11 @@ C_INT main(C_VOID)
         { "I286-INT-IMM-REAL-NEXT-BYTE-2", { 0xcdu, 0x60u }, 2u, 25u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
         { "I286-CALL-NEAR-DIRECT-NEXT-BYTE-1", { 0xe8u, 0x01u, 0x00u, 0x90u,
-            0x90u }, 5u, 8u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK }
+            0x90u }, 5u, 8u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
+        { "I286-JMP-NEAR-NEXT-BYTE-1", { 0xebu, 0x01u, 0x90u, 0x90u }, 4u, 8u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
+        { "I286-JMP-FAR-REAL-NEXT-BYTE-2", { 0xeau, 0xf5u, 0xffu, 0x00u, 0xf0u },
+            5u, 13u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK }
     };
     static const timing_80286_manifest_control_recipe control_recipes[] = {
         { "I286-JCC-JO-TAKEN", 0x70u, VCPU_EFLAGS_OF, 7u },
