@@ -112,6 +112,17 @@ static C_INT timing_80186_manifest_is_bound_recipe(const C_CHAR *key_id)
     return key_id != STD_NULL && STD_STRCMP(key_id, "I186-BOUND") == 0;
 }
 
+static C_INT timing_80186_manifest_is_repeat_phase_context(
+    const timing_80186_manifest_record *record)
+{
+    return record != STD_NULL && record->context[0] == 'R' &&
+        record->context[1] == 'E' && record->context[2] == 'P' &&
+        record->context[3] == '-' && record->context[4] == 'P' &&
+        record->context[5] == 'H' && record->context[6] == 'A' &&
+        record->context[7] == 'S' && record->context[8] == 'E' &&
+        record->context[9] == '-';
+}
+
 static const timing_80186_manifest_record *timing_80186_manifest_find(
     const C_CHAR *key_id)
 {
@@ -380,15 +391,15 @@ static C_INT timing_80186_manifest_run_flag_recipe(
 
 static C_INT timing_80186_manifest_run_repeat_step(core_machine *machine,
     timing_80186_manifest_capture *capture,
-    const timing_80186_manifest_repeat_recipe *recipe,
+    const C_CHAR *key_id,
     core_machine_retirement_repeat_phase expected_phase,
     type_unsigned_64 expected_ticks)
 {
     const core_machine_run_budget budget = { 1u, 0u };
     core_machine_run_result run = { 0 };
 
-    if (machine == STD_NULL || capture == STD_NULL || recipe == STD_NULL ||
-        timing_80186_manifest_find(recipe->key_id) == STD_NULL) return 1;
+    if (machine == STD_NULL || capture == STD_NULL || key_id == STD_NULL ||
+        timing_80186_manifest_find(key_id) == STD_NULL) return 1;
     capture->count = 0u;
     STD_MEMSET(&capture->observation, 0, sizeof(capture->observation));
     return core_machine_run(machine, budget, &run) != TYPE_STATUS_OK ||
@@ -415,11 +426,19 @@ static C_INT timing_80186_manifest_run_repeat_recipe(
         recipe == STD_NULL ? 0u : recipe->opcode };
     const type_unsigned_16 source = 1u;
     type_unsigned_16 destination;
+    C_CHAR first_key[96];
+    C_CHAR continuation_key[96];
+    C_CHAR zero_key[96];
     timing_80186_manifest_capture capture = { { 0 }, 0u };
     core_machine *machine = STD_NULL;
     C_INT failed;
 
     if (recipe == STD_NULL) return 1;
+    if (STD_SNPRINTF(first_key, sizeof(first_key), "%s-REP-PHASE-FIRST",
+            recipe->key_id) < 0 || STD_SNPRINTF(continuation_key,
+            sizeof(continuation_key), "%s-REP-PHASE-CONTINUE", recipe->key_id) < 0 ||
+        STD_SNPRINTF(zero_key, sizeof(zero_key), "%s-REP-PHASE-ZERO",
+            recipe->key_id) < 0) return 1;
     record = timing_80186_manifest_find(recipe->key_id);
     failed = record == STD_NULL || !timing_80186_manifest_is_i186(record) ||
         STD_STRCMP(record->profile, "80186") != 0 ||
@@ -438,9 +457,11 @@ static C_INT timing_80186_manifest_run_repeat_recipe(
         machine->executor_cpu.data.di = 0x1100u;
         machine->executor_cpu.data.ax = 1u;
         machine->executor_cpu.data.cx = 2u;
-        failed = timing_80186_manifest_run_repeat_step(machine, &capture, recipe,
+        failed = timing_80186_manifest_run_repeat_step(machine, &capture,
+            recipe->key_id,
             CORE_MACHINE_RETIREMENT_REPEAT_FIRST, recipe->first_ticks) ||
-            timing_80186_manifest_run_repeat_step(machine, &capture, recipe,
+            timing_80186_manifest_run_repeat_step(machine, &capture,
+                continuation_key,
                 CORE_MACHINE_RETIREMENT_REPEAT_CONTINUATION,
                 recipe->continuation_ticks);
     }
@@ -450,8 +471,28 @@ static C_INT timing_80186_manifest_run_repeat_recipe(
         program, sizeof(program), STD_NULL, recipe->key_id);
     if (!failed) {
         machine->executor_cpu.data.cx = 0u;
-        failed = timing_80186_manifest_run_repeat_step(machine, &capture, recipe,
+        failed = timing_80186_manifest_run_repeat_step(machine, &capture, zero_key,
             CORE_MACHINE_RETIREMENT_REPEAT_ZERO_COUNT, recipe->zero_ticks);
+    }
+    core_machine_destroy(machine);
+    machine = STD_NULL;
+    if (!failed) failed = !timing_80186_manifest_prepare(&machine, &capture,
+        program, sizeof(program), STD_NULL, first_key);
+    if (!failed) {
+        machine->executor_cpu.data.es.base = machine->executor_cpu.data.ds.base;
+        machine->executor_cpu.data.es.selector = machine->executor_cpu.data.ds.selector;
+        destination = recipe->prefix == 0xf3u ? source : 0u;
+        failed = core_machine_memory_write(machine, 0x1000u, &source,
+            sizeof(source)) != TYPE_STATUS_OK || core_machine_memory_write(machine,
+            0x1100u, &destination, sizeof(destination)) != TYPE_STATUS_OK;
+    }
+    if (!failed) {
+        machine->executor_cpu.data.si = 0x1000u;
+        machine->executor_cpu.data.di = 0x1100u;
+        machine->executor_cpu.data.ax = 1u;
+        machine->executor_cpu.data.cx = 2u;
+        failed = timing_80186_manifest_run_repeat_step(machine, &capture, first_key,
+            CORE_MACHINE_RETIREMENT_REPEAT_FIRST, recipe->first_ticks);
     }
     core_machine_destroy(machine);
     return failed;
@@ -999,6 +1040,7 @@ C_INT main(C_VOID)
     STD_SIZE_T index;
     STD_SIZE_T observed = 0u;
     STD_SIZE_T base_records = 0u;
+    STD_SIZE_T repeat_phase_records = 0u;
 
     for (index = 0u; index < sizeof(recipes) / sizeof(recipes[0]); ++index) {
         if (timing_80186_manifest_run_recipe(&recipes[index])) {
@@ -1037,9 +1079,22 @@ C_INT main(C_VOID)
         if (!timing_80186_manifest_observed[index]) return 1;
         ++base_records;
     }
+    for (index = 0u; index < sizeof(timing_80186_manifest_records) /
+            sizeof(timing_80186_manifest_records[0]); ++index) {
+        const timing_80186_manifest_record *record =
+            &timing_80186_manifest_records[index];
+
+        if (!timing_80186_manifest_is_i186(record) ||
+            !timing_80186_manifest_is_repeat_phase_context(record)) continue;
+        if (!timing_80186_manifest_observed[index]) return 1;
+        ++repeat_phase_records;
+    }
     if (base_records != observed) return 1;
+    if (repeat_phase_records != 54u) return 1;
     STD_PRINTF("M5:T435:S9:I186-MANIFEST-BASE-COVERAGE:%u\n",
         (type_unsigned_32)base_records);
+    STD_PRINTF("M5:T435:S9:I186-MANIFEST-REP-PHASE-COVERAGE:%u\n",
+        (type_unsigned_32)repeat_phase_records);
     STD_PRINTF("M5:T435:S9:I186-MANIFEST-OBSERVED:%u\n",
         (type_unsigned_32)observed);
     return 0;
