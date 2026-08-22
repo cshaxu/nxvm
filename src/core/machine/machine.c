@@ -2646,12 +2646,24 @@ C_INT core_machine_control_stack_source_instruction_cost(
     case 0xcau:
         if (machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_80186 &&
             machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_80286) return 0;
+        if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 &&
+            protected_mode) {
+            *out_ticks = same_privilege ? 25u : 55u;
+            return core_machine_control_stack_add_next_term(machine,
+                *out_ticks, out_ticks);
+        }
         return core_machine_control_stack_add_next_term(machine,
             core_machine_control_stack_source_lookup(machine,
                 CORE_MACHINE_SOURCE_TIMING_RET_FAR_IMMEDIATE), out_ticks);
     case 0xcbu:
         if (machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_80186 &&
             machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_80286) return 0;
+        if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 &&
+            protected_mode) {
+            *out_ticks = same_privilege ? 25u : 55u;
+            return core_machine_control_stack_add_next_term(machine,
+                *out_ticks, out_ticks);
+        }
         return core_machine_control_stack_add_next_term(machine,
             core_machine_control_stack_source_lookup(machine,
                 CORE_MACHINE_SOURCE_TIMING_RET_FAR), out_ticks);
