@@ -2860,12 +2860,17 @@ C_INT core_machine_control_stack_source_instruction_cost(
         }
         if (extension == 3u || extension == 5u) {
             if (!memory || !same_privilege ||
-                (protected_mode && (extension != 5u || data->crm !=
-                    machine->executor_cpu.data.cs.selector))) return 0;
-            *out_ticks = core_machine_control_stack_source_lookup(machine,
-                extension == 3u ? CORE_MACHINE_SOURCE_TIMING_CALL_FAR_MEMORY :
-                protected_mode ? CORE_MACHINE_SOURCE_TIMING_JMP_FAR_MEMORY_PROTECTED :
-                CORE_MACHINE_SOURCE_TIMING_JMP_FAR_MEMORY);
+                (protected_mode && extension == 5u && data->crm !=
+                    machine->executor_cpu.data.cs.selector)) return 0;
+            if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 &&
+                protected_mode && extension == 3u) {
+                *out_ticks = 29u;
+            } else {
+                *out_ticks = core_machine_control_stack_source_lookup(machine,
+                    extension == 3u ? CORE_MACHINE_SOURCE_TIMING_CALL_FAR_MEMORY :
+                    protected_mode ? CORE_MACHINE_SOURCE_TIMING_JMP_FAR_MEMORY_PROTECTED :
+                    CORE_MACHINE_SOURCE_TIMING_JMP_FAR_MEMORY);
+            }
             *out_ticks += core_machine_control_stack_memory_additions(machine,
                 data, prefixes, 2u);
             return core_machine_control_stack_add_next_term(machine, *out_ticks,
