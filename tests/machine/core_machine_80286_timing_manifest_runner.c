@@ -615,6 +615,35 @@ static C_INT timing_80286_manifest_run_string_recipe(
     return failed;
 }
 
+static C_INT timing_80286_manifest_run_hlt_recipe(C_VOID)
+{
+    const core_machine_run_budget budget = { 1u, 0u };
+    const type_unsigned_8 program[] = { 0xf4u };
+    timing_80286_manifest_capture capture = { { 0 }, 0u };
+    core_machine_run_result run = { 0 };
+    core_machine *machine = STD_NULL;
+    C_INT failed;
+
+    failed = timing_80286_manifest_find("I286-HLT") == STD_NULL ||
+        !timing_80286_manifest_prepare(&machine, &capture, "I286-HLT",
+            program, sizeof(program));
+    if (!failed) {
+        failed = core_machine_run(machine, budget, &run) != TYPE_STATUS_OK ||
+            run.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
+            run.executed != 1u || run.ticks != 2u || capture.count != 1u ||
+            capture.observation.source_ticks != 2u ||
+            capture.observation.timing_origin !=
+                CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
+            capture.observation.timing_disposition !=
+                CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED;
+    }
+    if (failed) STD_PRINTF("M5:T435:S10:I286-HLT-DETAIL:run=%llu:source=%llu:count=%u:reason=%u\n",
+        run.ticks, capture.observation.source_ticks, capture.count,
+        (type_unsigned_32)run.reason);
+    core_machine_destroy(machine);
+    return failed;
+}
+
 static C_INT timing_80286_manifest_run_protected_system(
     const timing_80286_manifest_recipe *recipe)
 {
@@ -1400,6 +1429,10 @@ C_INT main(C_VOID)
             return 1;
         }
     }
+    if (timing_80286_manifest_run_hlt_recipe()) {
+        STD_PRINTF("M5:T435:S10:I286-HLT-RECIPE:FAIL\n");
+        return 1;
+    }
     for (index = 0u; index < sizeof(repeat_recipes) / sizeof(repeat_recipes[0]);
         ++index) {
         if (timing_80286_manifest_run_repeat_recipe(&repeat_recipes[index], 0)) {
@@ -1431,6 +1464,7 @@ C_INT main(C_VOID)
             sizeof(ea_recipes) / sizeof(ea_recipes[0]) +
             sizeof(odd_word_recipes) / sizeof(odd_word_recipes[0]) +
             sizeof(string_recipes) / sizeof(string_recipes[0]) +
+            1u +
             sizeof(repeat_recipes) / sizeof(repeat_recipes[0]) + 9u +
             sizeof(lock_recipes) / sizeof(lock_recipes[0])));
     return 0;
