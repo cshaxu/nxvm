@@ -1667,9 +1667,19 @@ static C_INT core_machine_legacy_source_instruction_cost(core_machine *machine,
                 core_machine_8086_timing_odd_word(data) : 0u);
         return 1;
     case 0x8cu:
-        if (machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_8086 ||
+        if ((machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_8086 &&
+             machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_80186) ||
             prefixes + 1u >= data->oplen ||
             ((data->opcodes[prefixes + 1u] >> 3u) & 7u) > 3u) break;
+        if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80186) {
+            machine->source_timing_form_id =
+                CORE_MACHINE_SOURCE_TIMING_MOV_SREG_MEMORY;
+            *out_ticks = data->flagMem ? 9u +
+                core_machine_8086_timing_odd_word(data) +
+                (segment_override ? CORE_MACHINE_8086_SEGMENT_OVERRIDE_TICKS : 0u) :
+                2u;
+            return 1;
+        }
         if (!data->flagMem) {
             machine->source_timing_form_id =
                 CORE_MACHINE_SOURCE_TIMING_MOV_SREG_REGISTER;
@@ -1682,10 +1692,20 @@ static C_INT core_machine_legacy_source_instruction_cost(core_machine *machine,
             (segment_override ? CORE_MACHINE_8086_SEGMENT_OVERRIDE_TICKS : 0u);
         return 1;
     case 0x8eu:
-        if (machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_8086 ||
+        if ((machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_8086 &&
+             machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_80186) ||
             prefixes + 1u >= data->oplen ||
             ((data->opcodes[prefixes + 1u] >> 3u) & 7u) == 1u ||
             ((data->opcodes[prefixes + 1u] >> 3u) & 7u) > 3u) break;
+        if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80186) {
+            machine->source_timing_form_id =
+                CORE_MACHINE_SOURCE_TIMING_MOV_SREG_MEMORY;
+            *out_ticks = data->flagMem ? 11u +
+                core_machine_8086_timing_odd_word(data) +
+                (segment_override ? CORE_MACHINE_8086_SEGMENT_OVERRIDE_TICKS : 0u) :
+                2u;
+            return 1;
+        }
         if (!data->flagMem) {
             machine->source_timing_form_id =
                 CORE_MACHINE_SOURCE_TIMING_MOV_SREG_REGISTER;
@@ -1698,8 +1718,17 @@ static C_INT core_machine_legacy_source_instruction_cost(core_machine *machine,
             (segment_override ? CORE_MACHINE_8086_SEGMENT_OVERRIDE_TICKS : 0u);
         return 1;
     case 0xc4u: case 0xc5u:
-        if (machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_8086 ||
+        if ((machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_8086 &&
+             machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_80186) ||
             !data->flagMem) break;
+        if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80186) {
+            machine->source_timing_form_id =
+                CORE_MACHINE_SOURCE_TIMING_8086_LOAD_POINTER;
+            *out_ticks = 18u + (type_unsigned_64)2u *
+                core_machine_8086_timing_odd_word(data) +
+                (segment_override ? CORE_MACHINE_8086_SEGMENT_OVERRIDE_TICKS : 0u);
+            return 1;
+        }
         machine->source_timing_form_id = CORE_MACHINE_SOURCE_TIMING_8086_LOAD_POINTER;
         *out_ticks = 16u + core_machine_8086_timing_effective_address(data,
             prefixes) + (type_unsigned_64)2u *
