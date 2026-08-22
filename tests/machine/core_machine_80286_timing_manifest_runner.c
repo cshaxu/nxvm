@@ -329,6 +329,7 @@ static C_INT timing_80286_manifest_prepare_protected_system(
     };
     core_machine_run_result run = { 0 };
     core_machine *machine = STD_NULL;
+    type_unsigned_16 operand = 0x0010u;
     type_status status;
 
     if (out_machine == STD_NULL || capture == STD_NULL || key_id == STD_NULL ||
@@ -360,11 +361,17 @@ static C_INT timing_80286_manifest_prepare_protected_system(
     }
     if (status == TYPE_STATUS_OK) status = core_machine_memory_write(machine,
         0x2000u, program, bytes);
+    if (STD_STRCMP(key_id, "I286-SYSTEM-LLDT-R") == 0 ||
+        STD_STRCMP(key_id, "I286-SYSTEM-LLDT-M") == 0) {
+        operand = 0x0028u;
+    } else if (STD_STRCMP(key_id, "I286-SYSTEM-LTR-R") == 0 ||
+        STD_STRCMP(key_id, "I286-SYSTEM-LTR-M") == 0) {
+        operand = 0x0030u;
+    }
+    if (status == TYPE_STATUS_OK) status = core_machine_memory_write(machine,
+        0x4000u, &operand, sizeof(operand));
     if (status == TYPE_STATUS_OK) {
-        machine->executor_cpu.data.eax = STD_STRCMP(key_id,
-            "I286-SYSTEM-LLDT-R") == 0 ? 0x0028u :
-            (STD_STRCMP(key_id, "I286-SYSTEM-LTR-R") == 0 ? 0x0030u :
-                0x0010u);
+        machine->executor_cpu.data.eax = operand;
         machine->elapsed_ticks = 0u;
         test_core_machine_fixture_resume_after_halt_at(machine, 0u);
     }
@@ -861,6 +868,26 @@ C_INT main(C_VOID)
         { "I286-SYSTEM-SMSW-R", { 0x0fu, 0x01u, 0xe0u }, 3u, 2u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-SYSTEM-STR-R", { 0x0fu, 0x00u, 0xc8u }, 3u, 2u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-SYSTEM-VERR-M", { 0x0fu, 0x00u, 0x26u, 0u, 0x10u }, 5u, 16u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-SYSTEM-VERW-M", { 0x0fu, 0x00u, 0x2eu, 0u, 0x10u }, 5u, 16u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-SYSTEM-LAR-M", { 0x0fu, 0x02u, 0x0eu, 0u, 0x10u }, 5u, 16u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-SYSTEM-LSL-M", { 0x0fu, 0x03u, 0x0eu, 0u, 0x10u }, 5u, 16u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-SYSTEM-LLDT-M", { 0x0fu, 0x00u, 0x16u, 0u, 0x10u }, 5u, 19u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-SYSTEM-LTR-M", { 0x0fu, 0x00u, 0x1eu, 0u, 0x10u }, 5u, 19u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-SYSTEM-LMSW-M", { 0x0fu, 0x01u, 0x36u, 0u, 0x10u }, 5u, 6u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-SYSTEM-SLDT-M", { 0x0fu, 0x00u, 0x06u, 0u, 0x10u }, 5u, 3u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-SYSTEM-SMSW-M", { 0x0fu, 0x01u, 0x26u, 0u, 0x10u }, 5u, 3u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-SYSTEM-STR-M", { 0x0fu, 0x00u, 0x0eu, 0u, 0x10u }, 5u, 3u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY }
     };
     STD_SIZE_T index;
