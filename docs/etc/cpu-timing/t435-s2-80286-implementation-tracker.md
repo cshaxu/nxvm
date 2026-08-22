@@ -31,7 +31,7 @@ No aggregate smoke outcome may change an individual key's status.
 
 S10's `core-machine-80286-timing-manifest-runner` is the real-observation
 foundation: it consumes the generated manifest metadata and currently checks
-482 exact base/context recipes through retirement observation, including all
+484 exact base/context recipes through retirement observation, including all
 ten protected-mode system register forms, their direct-memory forms, eight
 protected EA-BID forms, all seventy-two legal segment-override contexts and
 all fifty-five newly exercised generic EA-BID forms, five odd-word memory
@@ -45,7 +45,8 @@ the real-mode PUSH/POP memory base forms and protected-mode POP-segment
 selector-validation path, and all seven primitive word-string odd-address
 forms, all nine REP word-string odd-address base forms and four real-mode
 memory/stack odd-address forms plus four successful Group-3 m16 odd-address
-forms. It writes no result artifact until
+forms and two real-mode segment-register odd-address forms. It writes no
+result artifact until
 all 807 canonical recipes exist; the separate
 `Verify-80286TimingResults.ps1` gate remains the only all-key acceptance
 mechanism.
