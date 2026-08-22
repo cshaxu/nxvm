@@ -1962,8 +1962,8 @@ C_INT core_machine_primary_source_instruction_cost(
         return 0;
     }
     opcode = data->opcodes[prefixes];
-    if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 && prefixes == 0u &&
-        opcode == 0x0fu) {
+    if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 &&
+        opcode == 0x0fu && !lock_prefix) {
         return core_machine_80286_system_source_instruction_cost(machine,
             out_ticks);
     }
@@ -1993,7 +1993,8 @@ C_INT core_machine_primary_source_instruction_cost(
         *out_ticks = 1u;
         return 1;
     }
-    if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 && prefixes == 0u) {
+    if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 &&
+        (prefixes == 0u || segment_override) && !lock_prefix) {
         switch (opcode) {
         case 0x90u: *out_ticks = 3u; return 1;
         case 0xf8u: case 0xf5u: case 0xf9u: case 0xfcu: case 0xfdu:
@@ -2039,7 +2040,8 @@ C_INT core_machine_primary_source_instruction_cost(
     }
     if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 &&
         (opcode == 0xc4u || opcode == 0xc5u) && data->flagMem) {
-        *out_ticks = 7u;
+        *out_ticks = (core_machine_control_stack_is_protected(data) ? 21u : 7u) +
+            core_machine_80286_timing_effective_address(data, prefixes);
         return 1;
     }
     if (!core_machine_source_timing_primary_shape(data, prefixes, &shape)) {
@@ -3229,7 +3231,7 @@ static C_INT core_machine_80286_system_source_instruction_cost(core_machine *mac
     }
     opcode = data->opcodes[prefixes];
     machine->source_repeat_active = TYPE_FALSE;
-    if (prefixes != 0u || opcode != 0x0fu) return 0;
+    if (opcode != 0x0fu) return 0;
     switch (opcode) {
     case 0x0fu:
         if (prefixes + 2u < data->oplen &&

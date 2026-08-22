@@ -90,9 +90,11 @@ static C_INT timing_80286_manifest_is_interrupt(const C_CHAR *key_id)
 static C_INT timing_80286_manifest_uses_stack(const C_CHAR *key_id)
 {
     static const C_CHAR *const stack_keys[] = {
-        "I286-CALL-NEAR-DIRECT-NEXT-BYTE-1",
+        "I286-CALL-NEAR-DIRECT-NEXT-BYTE-1", "I286-CALL-NEAR-RM-SEGMENT",
+        "I286-CALL-NEAR-RM-EA-BID",
         "I286-RET-NEAR-NEXT-BYTE-1", "I286-STACK-PUSH-R",
         "I286-STACK-PUSH-SEG", "I286-STACK-PUSH-IMM",
+        "I286-STACK-PUSH-M-EA-BID", "I286-STACK-POP-M-EA-BID",
         "I286-STACK-PUSHA", "I286-STACK-PUSHF", "I286-STACK-POP-R",
         "I286-STACK-POP-SEG-REAL", "I286-STACK-POPA",
         "I286-STACK-POPF", "I286-STACK-LEAVE", "I286-ENTER-L0",
@@ -236,6 +238,8 @@ static C_INT timing_80286_manifest_prepare(core_machine **out_machine,
         machine->executor_cpu.data.eax = 1u;
         machine->executor_cpu.data.ecx = 2u;
         machine->executor_cpu.data.edx = 0u;
+        machine->executor_cpu.data.ebp = 0x0800u;
+        machine->executor_cpu.data.esi = 0x0800u;
         if (timing_80286_manifest_is_dx_port(key_id)) {
             machine->executor_cpu.data.edx = 0x0080u;
         }
@@ -279,7 +283,8 @@ static C_INT timing_80286_manifest_prepare(core_machine **out_machine,
     if (status == TYPE_STATUS_OK && timing_80286_manifest_flags_active) {
         machine->executor_cpu.data.eflags = timing_80286_manifest_eflags;
     }
-    if (status == TYPE_STATUS_OK && STD_STRCMP(key_id, "I286-XLAT") == 0) {
+    if (status == TYPE_STATUS_OK && (STD_STRCMP(key_id, "I286-XLAT") == 0 ||
+            STD_STRCMP(key_id, "I286-XLAT-SEGMENT") == 0)) {
         static const type_unsigned_8 value[] = { 0x5au };
 
         machine->executor_cpu.data.ebx = 0x1000u;
@@ -316,7 +321,7 @@ static C_INT timing_80286_manifest_prepare_protected_system(
     static const type_unsigned_8 boot[] = {
         0x0fu,0x01u,0x16u,0x00u,0x01u, 0xb8u,0x01u,0u,
         0x0fu,0x01u,0xf0u, 0xb8u,0x10u,0u, 0x8eu,0xd0u,
-        0x8eu,0xd8u, 0xeau,0u,0u,0x08u,0u
+        0x8eu,0xd8u, 0x8eu,0xc0u, 0xeau,0u,0u,0x08u,0u
     };
     static const type_unsigned_8 halt[] = { 0xf4u };
     static const type_unsigned_8 table_pointer[] = { 0x37u, 0u, 0u, 0x03u,
@@ -365,27 +370,39 @@ static C_INT timing_80286_manifest_prepare_protected_system(
         0x2000u, program, bytes);
     if (STD_STRCMP(key_id, "I286-SYSTEM-LLDT-R") == 0 ||
         STD_STRCMP(key_id, "I286-SYSTEM-LLDT-M") == 0 ||
-        STD_STRCMP(key_id, "I286-SYSTEM-LLDT-M-EA-BID") == 0) {
+        STD_STRCMP(key_id, "I286-SYSTEM-LLDT-M-EA-BID") == 0 ||
+        STD_STRCMP(key_id, "I286-SYSTEM-LLDT-M-SEGMENT") == 0) {
         operand = 0x0028u;
     } else if (STD_STRCMP(key_id, "I286-SYSTEM-LTR-R") == 0 ||
         STD_STRCMP(key_id, "I286-SYSTEM-LTR-M") == 0 ||
-        STD_STRCMP(key_id, "I286-SYSTEM-LTR-M-EA-BID") == 0) {
+        STD_STRCMP(key_id, "I286-SYSTEM-LTR-M-EA-BID") == 0 ||
+        STD_STRCMP(key_id, "I286-SYSTEM-LTR-M-SEGMENT") == 0) {
         operand = 0x0030u;
     }
     if (status == TYPE_STATUS_OK) status = core_machine_memory_write(machine,
         0x4000u, &operand, sizeof(operand));
     if (status == TYPE_STATUS_OK && (STD_STRCMP(key_id,
+            "I286-LDS-M-PM-SEGMENT") == 0 || STD_STRCMP(key_id,
+            "I286-LES-M-PM-SEGMENT") == 0 || STD_STRCMP(key_id,
+            "I286-LDS-M-PM-EA-BID") == 0 || STD_STRCMP(key_id,
+            "I286-LES-M-PM-EA-BID") == 0)) {
+        const type_unsigned_16 pointer[] = { 1u, 0x0010u };
+
+        status = core_machine_memory_write(machine, 0x4000u, pointer,
+            sizeof(pointer));
+    }
+    if (status == TYPE_STATUS_OK && (STD_STRCMP(key_id,
             "I286-SYSTEM-LGDT-M-EA-BID") == 0 || STD_STRCMP(key_id,
-            "I286-SYSTEM-LIDT-M-EA-BID") == 0)) {
+            "I286-SYSTEM-LIDT-M-EA-BID") == 0 || STD_STRCMP(key_id,
+            "I286-SYSTEM-LGDT-M-SEGMENT") == 0 || STD_STRCMP(key_id,
+            "I286-SYSTEM-LIDT-M-SEGMENT") == 0)) {
         status = core_machine_memory_write(machine, 0x4000u, table_pointer,
             sizeof(table_pointer));
     }
     if (status == TYPE_STATUS_OK) {
         machine->executor_cpu.data.eax = operand;
-        if (bytes >= 5u && (program[2] & 0xc7u) == 0x82u) {
-            machine->executor_cpu.data.ebp = 0x0800u;
-            machine->executor_cpu.data.esi = 0x0800u;
-        }
+        machine->executor_cpu.data.ebp = 0x0800u;
+        machine->executor_cpu.data.esi = 0x0800u;
         machine->elapsed_ticks = 0u;
         test_core_machine_fixture_resume_after_halt_at(machine, 0u);
     }
@@ -931,7 +948,174 @@ C_INT main(C_VOID)
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-SYSTEM-STR-M-EA-BID", { 0x0fu, 0x00u, 0x8au, 0u, 0u }, 5u, 4u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-SYSTEM-VERR-M-SEGMENT", { 0x26u, 0x0fu, 0x00u, 0x26u, 0u, 0x10u }, 6u, 16u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-SYSTEM-VERW-M-SEGMENT", { 0x26u, 0x0fu, 0x00u, 0x2eu, 0u, 0x10u }, 6u, 16u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-SYSTEM-LAR-M-SEGMENT", { 0x26u, 0x0fu, 0x02u, 0x0eu, 0u, 0x10u }, 6u, 16u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-SYSTEM-LSL-M-SEGMENT", { 0x26u, 0x0fu, 0x03u, 0x0eu, 0u, 0x10u }, 6u, 16u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-SYSTEM-LLDT-M-SEGMENT", { 0x26u, 0x0fu, 0x00u, 0x16u, 0u, 0x10u }, 6u, 19u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-SYSTEM-LTR-M-SEGMENT", { 0x26u, 0x0fu, 0x00u, 0x1eu, 0u, 0x10u }, 6u, 19u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-SYSTEM-LMSW-M-SEGMENT", { 0x26u, 0x0fu, 0x01u, 0x36u, 0u, 0x10u }, 6u, 6u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-SYSTEM-SLDT-M-SEGMENT", { 0x26u, 0x0fu, 0x00u, 0x06u, 0u, 0x10u }, 6u, 3u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-SYSTEM-SMSW-M-SEGMENT", { 0x26u, 0x0fu, 0x01u, 0x26u, 0u, 0x10u }, 6u, 3u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-SYSTEM-STR-M-SEGMENT", { 0x26u, 0x0fu, 0x00u, 0x0eu, 0u, 0x10u }, 6u, 3u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-SYSTEM-SGDT-M-SEGMENT", { 0x26u, 0x0fu, 0x01u, 0x06u, 0u, 0x10u }, 6u, 11u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-SYSTEM-SIDT-M-SEGMENT", { 0x26u, 0x0fu, 0x01u, 0x0eu, 0u, 0x10u }, 6u, 12u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-SYSTEM-LGDT-M-SEGMENT", { 0x26u, 0x0fu, 0x01u, 0x16u, 0u, 0x10u }, 6u, 11u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-SYSTEM-LIDT-M-SEGMENT", { 0x26u, 0x0fu, 0x01u, 0x1eu, 0u, 0x10u }, 6u, 12u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-MOV-SREG-LOAD-PM-SEGMENT", { 0x26u, 0x8eu, 0x1eu, 0u, 0x10u }, 5u, 19u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-LDS-M-PM-SEGMENT", { 0x26u, 0xc5u, 0x06u, 0u, 0x10u }, 5u, 21u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-LES-M-PM-SEGMENT", { 0x26u, 0xc4u, 0x06u, 0u, 0x10u }, 5u, 21u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-MOV-SREG-LOAD-PM-EA-BID", { 0x8eu, 0x9au, 0u, 0u }, 4u, 20u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-LDS-M-PM-EA-BID", { 0xc5u, 0x82u, 0u, 0u }, 4u, 22u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-LES-M-PM-EA-BID", { 0xc4u, 0x82u, 0u, 0u }, 4u, 22u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-ARPL", { 0x63u, 0xc8u }, 2u, 10u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY }
+    };
+    static const timing_80286_manifest_recipe segment_recipes[] = {
+        { "I286-ALU-ADD-RM-SEGMENT", { 0x26u, 0x02u, 0x06u, 0u, 0x10u }, 5u, 7u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-ADD-MR-SEGMENT", { 0x26u, 0x00u, 0x0eu, 0u, 0x10u }, 5u, 7u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-ADD-RMI-SEGMENT", { 0x26u, 0x80u, 0x06u, 0u, 0x10u, 1u }, 6u, 7u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-OR-RM-SEGMENT", { 0x26u, 0x0au, 0x06u, 0u, 0x10u }, 5u, 7u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-OR-MR-SEGMENT", { 0x26u, 0x08u, 0x0eu, 0u, 0x10u }, 5u, 7u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-OR-RMI-SEGMENT", { 0x26u, 0x80u, 0x0eu, 0u, 0x10u, 1u }, 6u, 7u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-ADC-RM-SEGMENT", { 0x26u, 0x12u, 0x06u, 0u, 0x10u }, 5u, 7u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-ADC-MR-SEGMENT", { 0x26u, 0x10u, 0x0eu, 0u, 0x10u }, 5u, 7u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-ADC-RMI-SEGMENT", { 0x26u, 0x80u, 0x16u, 0u, 0x10u, 1u }, 6u, 7u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-SBB-RM-SEGMENT", { 0x26u, 0x1au, 0x06u, 0u, 0x10u }, 5u, 7u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-SBB-MR-SEGMENT", { 0x26u, 0x18u, 0x0eu, 0u, 0x10u }, 5u, 7u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-SBB-RMI-SEGMENT", { 0x26u, 0x80u, 0x1eu, 0u, 0x10u, 1u }, 6u, 7u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-AND-RM-SEGMENT", { 0x26u, 0x22u, 0x06u, 0u, 0x10u }, 5u, 7u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-AND-MR-SEGMENT", { 0x26u, 0x20u, 0x0eu, 0u, 0x10u }, 5u, 7u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-AND-RMI-SEGMENT", { 0x26u, 0x80u, 0x26u, 0u, 0x10u, 1u }, 6u, 7u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-SUB-RM-SEGMENT", { 0x26u, 0x2au, 0x06u, 0u, 0x10u }, 5u, 7u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-SUB-MR-SEGMENT", { 0x26u, 0x28u, 0x0eu, 0u, 0x10u }, 5u, 7u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-SUB-RMI-SEGMENT", { 0x26u, 0x80u, 0x2eu, 0u, 0x10u, 1u }, 6u, 7u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-XOR-RM-SEGMENT", { 0x26u, 0x32u, 0x06u, 0u, 0x10u }, 5u, 7u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-XOR-MR-SEGMENT", { 0x26u, 0x30u, 0x0eu, 0u, 0x10u }, 5u, 7u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-XOR-RMI-SEGMENT", { 0x26u, 0x80u, 0x36u, 0u, 0x10u, 1u }, 6u, 7u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-CMP-RM-SEGMENT", { 0x26u, 0x3au, 0x06u, 0u, 0x10u }, 5u, 6u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-CMP-MR-SEGMENT", { 0x26u, 0x38u, 0x0eu, 0u, 0x10u }, 5u, 7u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-CMP-RMI-SEGMENT", { 0x26u, 0x80u, 0x3eu, 0u, 0x10u, 1u }, 6u, 6u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-TEST-RM-SEGMENT", { 0x26u, 0x84u, 0x06u, 0u, 0x10u }, 5u, 6u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-TEST-RMI-SEGMENT", { 0x26u, 0xf6u, 0x06u, 0u, 0x10u, 1u }, 6u, 6u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-INC-M-SEGMENT", { 0x26u, 0xfeu, 0x06u, 0u, 0x10u }, 5u, 7u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-DEC-M-SEGMENT", { 0x26u, 0xfeu, 0x0eu, 0u, 0x10u }, 5u, 7u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-NEG-M-SEGMENT", { 0x26u, 0xf6u, 0x1eu, 0u, 0x10u }, 5u, 7u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-NOT-M-SEGMENT", { 0x26u, 0xf6u, 0x16u, 0u, 0x10u }, 5u, 7u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-XCHG-MR-SEGMENT", { 0x26u, 0x86u, 0x0eu, 0u, 0x10u }, 5u, 5u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-MUL-M8-SEGMENT", { 0x26u, 0xf6u, 0x26u, 0u, 0x10u }, 5u, 16u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-MUL-M16-SEGMENT", { 0x26u, 0xf7u, 0x26u, 0u, 0x10u }, 5u, 24u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-IMUL-M8-SEGMENT", { 0x26u, 0xf6u, 0x2eu, 0u, 0x10u }, 5u, 16u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-IMUL-M16-SEGMENT", { 0x26u, 0xf7u, 0x2eu, 0u, 0x10u }, 5u, 24u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-DIV-M8-SEGMENT", { 0x26u, 0xf6u, 0x36u, 0u, 0x10u }, 5u, 17u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-DIV-M16-SEGMENT", { 0x26u, 0xf7u, 0x36u, 0u, 0x10u }, 5u, 25u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-IDIV-M8-SEGMENT", { 0x26u, 0xf6u, 0x3eu, 0u, 0x10u }, 5u, 20u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-IDIV-M16-SEGMENT", { 0x26u, 0xf7u, 0x3eu, 0u, 0x10u }, 5u, 28u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-IMUL-IMM-IMM8-M-SEGMENT", { 0x26u, 0x6bu, 0x06u, 0u, 0x10u, 1u }, 6u, 24u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-IMUL-IMM-IMM16-M-SEGMENT", { 0x26u, 0x69u, 0x06u, 0u, 0x10u, 1u, 0u }, 7u, 24u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-MOV-RM-SEGMENT", { 0x26u, 0x8au, 0x06u, 0u, 0x10u }, 5u, 5u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-MOV-MR-SEGMENT", { 0x26u, 0x88u, 0x0eu, 0u, 0x10u }, 5u, 3u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-MOV-MI-SEGMENT", { 0x26u, 0xc6u, 0x06u, 0u, 0x10u, 1u }, 6u, 3u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-MOV-MOFFS-R-SEGMENT", { 0x26u, 0xa0u, 0u, 0x10u }, 4u, 5u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-MOV-MOFFS-W-SEGMENT", { 0x26u, 0xa2u, 0u, 0x10u }, 4u, 3u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-XLAT-SEGMENT", { 0x26u, 0xd7u }, 2u, 5u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-MOV-SREG-STORE-SEGMENT", { 0x26u, 0x8cu, 0x06u, 0u, 0x10u }, 5u, 3u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-MOV-SREG-LOAD-REAL-SEGMENT", { 0x26u, 0x8eu, 0x1eu, 0u, 0x10u }, 5u, 5u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-LDS-M-REAL-SEGMENT", { 0x26u, 0xc5u, 0x06u, 0u, 0x10u }, 5u, 7u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-LES-M-REAL-SEGMENT", { 0x26u, 0xc4u, 0x06u, 0u, 0x10u }, 5u, 7u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-STACK-PUSH-M-SEGMENT", { 0x26u, 0xffu, 0x36u, 0u, 0x10u }, 5u, 5u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
+        { "I286-STACK-POP-M-SEGMENT", { 0x26u, 0x8fu, 0x06u, 0u, 0x10u }, 5u, 5u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
+        { "I286-CALL-NEAR-RM-SEGMENT", { 0x26u, 0xffu, 0x16u, 0u, 0x10u }, 5u, 13u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
+        { "I286-JMP-RM-SEGMENT", { 0x26u, 0xffu, 0x26u, 0u, 0x10u }, 5u, 13u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
+        { "I286-STACK-PUSH-M-EA-BID", { 0xffu, 0xb2u, 0u, 0u }, 4u, 6u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
+        { "I286-STACK-POP-M-EA-BID", { 0x8fu, 0x82u, 0u, 0u }, 4u, 6u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
+        { "I286-CALL-NEAR-RM-EA-BID", { 0xffu, 0x92u, 0u, 0u }, 4u, 14u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK },
+        { "I286-JMP-RM-EA-BID", { 0xffu, 0xa2u, 0u, 0u }, 4u, 14u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK }
+    };
+    static const timing_80286_manifest_recipe ea_recipes[] = {
+        { "I286-ALU-ADD-RM-EA-BID", { 0x02u, 0x82u, 0u, 0u }, 4u, 8u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-ADD-MR-EA-BID", { 0x00u, 0x8au, 0u, 0u }, 4u, 8u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-ADD-RMI-EA-BID", { 0x80u, 0x82u, 0u, 0u, 1u }, 5u, 8u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-OR-RM-EA-BID", { 0x0au, 0x82u, 0u, 0u }, 4u, 8u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-OR-MR-EA-BID", { 0x08u, 0x8au, 0u, 0u }, 4u, 8u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-OR-RMI-EA-BID", { 0x80u, 0x8au, 0u, 0u, 1u }, 5u, 8u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-ADC-RM-EA-BID", { 0x12u, 0x82u, 0u, 0u }, 4u, 8u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-ADC-MR-EA-BID", { 0x10u, 0x8au, 0u, 0u }, 4u, 8u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-ADC-RMI-EA-BID", { 0x80u, 0x92u, 0u, 0u, 1u }, 5u, 8u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-SBB-RM-EA-BID", { 0x1au, 0x82u, 0u, 0u }, 4u, 8u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-SBB-MR-EA-BID", { 0x18u, 0x8au, 0u, 0u }, 4u, 8u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-SBB-RMI-EA-BID", { 0x80u, 0x9au, 0u, 0u, 1u }, 5u, 8u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-AND-RM-EA-BID", { 0x22u, 0x82u, 0u, 0u }, 4u, 8u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-AND-MR-EA-BID", { 0x20u, 0x8au, 0u, 0u }, 4u, 8u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-AND-RMI-EA-BID", { 0x80u, 0xa2u, 0u, 0u, 1u }, 5u, 8u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-SUB-RM-EA-BID", { 0x2au, 0x82u, 0u, 0u }, 4u, 8u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-SUB-MR-EA-BID", { 0x28u, 0x8au, 0u, 0u }, 4u, 8u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-SUB-RMI-EA-BID", { 0x80u, 0xaau, 0u, 0u, 1u }, 5u, 8u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-XOR-RM-EA-BID", { 0x32u, 0x82u, 0u, 0u }, 4u, 8u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-XOR-MR-EA-BID", { 0x30u, 0x8au, 0u, 0u }, 4u, 8u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-ALU-XOR-RMI-EA-BID", { 0x80u, 0xb2u, 0u, 0u, 1u }, 5u, 8u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-CMP-RM-EA-BID", { 0x3au, 0x82u, 0u, 0u }, 4u, 7u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-CMP-MR-EA-BID", { 0x38u, 0x8au, 0u, 0u }, 4u, 8u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-CMP-RMI-EA-BID", { 0x80u, 0xbau, 0u, 0u, 1u }, 5u, 7u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-TEST-RM-EA-BID", { 0x84u, 0x82u, 0u, 0u }, 4u, 7u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-TEST-RMI-EA-BID", { 0xf6u, 0x82u, 0u, 0u, 1u }, 5u, 7u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-INC-M-EA-BID", { 0xfeu, 0x82u, 0u, 0u }, 4u, 8u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-DEC-M-EA-BID", { 0xfeu, 0x8au, 0u, 0u }, 4u, 8u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-NEG-M-EA-BID", { 0xf6u, 0x9au, 0u, 0u }, 4u, 8u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-NOT-M-EA-BID", { 0xf6u, 0x92u, 0u, 0u }, 4u, 8u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-XCHG-MR-EA-BID", { 0x86u, 0x8au, 0u, 0u }, 4u, 6u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-MUL-M8-EA-BID", { 0xf6u, 0xa2u, 0u, 0u }, 4u, 17u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-MUL-M16-EA-BID", { 0xf7u, 0xa2u, 0u, 0u }, 4u, 25u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-IMUL-M8-EA-BID", { 0xf6u, 0xaau, 0u, 0u }, 4u, 17u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-IMUL-M16-EA-BID", { 0xf7u, 0xaau, 0u, 0u }, 4u, 25u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-DIV-M8-EA-BID", { 0xf6u, 0xb2u, 0u, 0u }, 4u, 18u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-DIV-M16-EA-BID", { 0xf7u, 0xb2u, 0u, 0u }, 4u, 26u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-IDIV-M8-EA-BID", { 0xf6u, 0xbau, 0u, 0u }, 4u, 21u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-IDIV-M16-EA-BID", { 0xf7u, 0xbau, 0u, 0u }, 4u, 29u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-IMUL-IMM-IMM8-M-EA-BID", { 0x6bu, 0x82u, 0u, 0u, 1u }, 5u, 25u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-IMUL-IMM-IMM16-M-EA-BID", { 0x69u, 0x82u, 0u, 0u, 1u, 0u }, 6u, 25u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-MOV-RM-EA-BID", { 0x8au, 0x82u, 0u, 0u }, 4u, 6u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-MOV-MR-EA-BID", { 0x88u, 0x8au, 0u, 0u }, 4u, 4u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-MOV-MI-EA-BID", { 0xc6u, 0x82u, 0u, 0u, 1u }, 5u, 4u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-MOV-SREG-STORE-EA-BID", { 0x8cu, 0x82u, 0u, 0u }, 4u, 4u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-MOV-SREG-LOAD-REAL-EA-BID", { 0x8eu, 0x9au, 0u, 0u }, 4u, 6u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-LDS-M-REAL-EA-BID", { 0xc5u, 0x82u, 0u, 0u }, 4u, 8u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-LES-M-REAL-EA-BID", { 0xc4u, 0x82u, 0u, 0u }, 4u, 8u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY }
+    };
+    static const timing_80286_manifest_recipe odd_word_recipes[] = {
+        { "I286-MOV-RM-ODD-WORD", { 0x8bu, 0x06u, 1u, 0x10u }, 4u, 7u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-MOV-MR-ODD-WORD", { 0x89u, 0x0eu, 1u, 0x10u }, 4u, 5u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-MOV-MI-ODD-WORD", { 0xc7u, 0x06u, 1u, 0x10u, 1u, 0u }, 6u, 5u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-MOV-MOFFS-R-ODD-WORD", { 0xa1u, 1u, 0x10u }, 3u, 7u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
+        { "I286-MOV-MOFFS-W-ODD-WORD", { 0xa3u, 1u, 0x10u }, 3u, 5u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY }
+    };
+    static const timing_80286_manifest_recipe lock_recipes[] = {
+        { "I286-ALU-ADD-MR-LOCK", { 0xf0u, 0x00u, 0x0eu, 0u, 0x10u }, 5u, 7u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY }
     };
     STD_SIZE_T index;
@@ -960,10 +1144,45 @@ C_INT main(C_VOID)
             return 1;
         }
     }
+    for (index = 0u; index < sizeof(segment_recipes) / sizeof(segment_recipes[0]);
+        ++index) {
+        if (timing_80286_manifest_run(&segment_recipes[index])) {
+            STD_PRINTF("M5:T435:S10:I286-SEGMENT-RECIPE:FAIL:%s\n",
+                segment_recipes[index].key_id);
+            return 1;
+        }
+    }
+    for (index = 0u; index < sizeof(ea_recipes) / sizeof(ea_recipes[0]); ++index) {
+        if (timing_80286_manifest_run(&ea_recipes[index])) {
+            STD_PRINTF("M5:T435:S10:I286-EA-RECIPE:FAIL:%s\n",
+                ea_recipes[index].key_id);
+            return 1;
+        }
+    }
+    for (index = 0u; index < sizeof(odd_word_recipes) /
+        sizeof(odd_word_recipes[0]); ++index) {
+        if (timing_80286_manifest_run(&odd_word_recipes[index])) {
+            STD_PRINTF("M5:T435:S10:I286-ODD-WORD-RECIPE:FAIL:%s\n",
+                odd_word_recipes[index].key_id);
+            return 1;
+        }
+    }
+    for (index = 0u; index < sizeof(lock_recipes) / sizeof(lock_recipes[0]);
+        ++index) {
+        if (timing_80286_manifest_run(&lock_recipes[index])) {
+            STD_PRINTF("M5:T435:S10:I286-LOCK-RECIPE:FAIL:%s\n",
+                lock_recipes[index].key_id);
+            return 1;
+        }
+    }
     STD_PRINTF("M5:T435:S10:I286-MANIFEST-FOUNDATION:PASS:observed=%u\n",
         (type_unsigned_32)(sizeof(recipes) / sizeof(recipes[0]) +
             sizeof(control_recipes) / sizeof(control_recipes[0]) +
             sizeof(protected_system_recipes) /
-                sizeof(protected_system_recipes[0])));
+                sizeof(protected_system_recipes[0]) +
+            sizeof(segment_recipes) / sizeof(segment_recipes[0]) +
+            sizeof(ea_recipes) / sizeof(ea_recipes[0]) +
+            sizeof(odd_word_recipes) / sizeof(odd_word_recipes[0]) +
+            sizeof(lock_recipes) / sizeof(lock_recipes[0])));
     return 0;
 }
