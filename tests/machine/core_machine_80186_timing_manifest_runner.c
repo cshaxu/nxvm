@@ -1082,6 +1082,7 @@ C_INT main(C_VOID)
     STD_SIZE_T base_records = 0u;
     STD_SIZE_T repeat_phase_records = 0u;
     STD_SIZE_T lock_records = 0u;
+    STD_SIZE_T lock_segment_records = 0u;
 
     for (index = 0u; index < sizeof(recipes) / sizeof(recipes[0]); ++index) {
         if (timing_80186_manifest_run_recipe(&recipes[index])) {
@@ -1111,6 +1112,26 @@ C_INT main(C_VOID)
             ++index) {
         if (timing_80186_manifest_run_recipe(&lock_recipes[index])) {
             timing_80186_manifest_report_failure(&lock_recipes[index]);
+            return 1;
+        }
+    }
+    for (index = 0u; index < sizeof(lock_recipes) / sizeof(lock_recipes[0]);
+            ++index) {
+        timing_80186_manifest_recipe recipe = lock_recipes[index];
+        C_CHAR key_id[96];
+        STD_SIZE_T offset;
+
+        if (recipe.bytes >= sizeof(recipe.program) || STD_SNPRINTF(key_id,
+                sizeof(key_id), "%s-SEGMENT", recipe.key_id) < 0) return 1;
+        for (offset = recipe.bytes; offset > 0u; --offset) {
+            recipe.program[offset] = recipe.program[offset - 1u];
+        }
+        recipe.program[0] = 0x26u;
+        ++recipe.bytes;
+        recipe.ticks += 2u;
+        recipe.key_id = key_id;
+        if (timing_80186_manifest_run_recipe(&recipe)) {
+            timing_80186_manifest_report_failure(&recipe);
             return 1;
         }
     }
@@ -1147,15 +1168,28 @@ C_INT main(C_VOID)
         if (!timing_80186_manifest_observed[index]) return 1;
         ++lock_records;
     }
+    for (index = 0u; index < sizeof(timing_80186_manifest_records) /
+            sizeof(timing_80186_manifest_records[0]); ++index) {
+        const timing_80186_manifest_record *record =
+            &timing_80186_manifest_records[index];
+
+        if (!timing_80186_manifest_is_i186(record) ||
+            STD_STRCMP(record->context, "LOCK-SEGMENT") != 0) continue;
+        if (!timing_80186_manifest_observed[index]) return 1;
+        ++lock_segment_records;
+    }
     if (base_records != observed) return 1;
     if (repeat_phase_records != 54u) return 1;
     if (lock_records != 19u) return 1;
+    if (lock_segment_records != 19u) return 1;
     STD_PRINTF("M5:T435:S9:I186-MANIFEST-BASE-COVERAGE:%u\n",
         (type_unsigned_32)base_records);
     STD_PRINTF("M5:T435:S9:I186-MANIFEST-REP-PHASE-COVERAGE:%u\n",
         (type_unsigned_32)repeat_phase_records);
     STD_PRINTF("M5:T435:S9:I186-MANIFEST-LOCK-COVERAGE:%u\n",
         (type_unsigned_32)lock_records);
+    STD_PRINTF("M5:T435:S9:I186-MANIFEST-LOCK-SEGMENT-COVERAGE:%u\n",
+        (type_unsigned_32)lock_segment_records);
     STD_PRINTF("M5:T435:S9:I186-MANIFEST-OBSERVED:%u\n",
         (type_unsigned_32)observed);
     return 0;
