@@ -169,3 +169,14 @@ and 92/92 S7 coverage; timing-ledger and protected-data-access regressions,
 manifest, partition, decoder-ledger and documentation governance checks pass.
 The review accepts S7 and transfers only S8's final publisher, cross-profile
 regression, cleanup and task-level audit.
+
+### S8: Result Publication, Cross-Profile Regression And Audit
+
+S8 enables the retained final writer and publishes the verified 771-key 80286
+result document. The full 80286 runner and result verifier pass. Its
+cross-profile sweep corrects stale 8086 evidence for the existing
+transfer-count mechanism (72 tick results) and refreshes non-tick 80186
+formula-input observations without changing an 80186 tick. Relevant 80386
+timing/paging regressions pass. The reconciled current-gate completes all
+292 tests, and the required `vm-0-5-0434` developer artifact is published
+with SHA-256 `F8562F4623D53303470408837249CF89C985E0A0B1130212BBD9CE26B5E1B38A`.

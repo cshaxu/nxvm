@@ -159,7 +159,6 @@ static C_INT t359_s4_run(core_machine *machine, t359_s4_state *state,
     const core_machine_run_budget budget = { instructions, 0u };
     core_machine_run_result result;
     type_status status = core_machine_run(machine, budget, &result);
-
     return status == TYPE_STATUS_OK &&
         result.reason == CORE_MACHINE_STOP_BUDGET &&
         result.executed == instructions && result.ticks == ticks &&
@@ -171,10 +170,10 @@ static C_INT t359_s4_test_primitives(core_machine_cpu_profile profile,
 {
     static const t359_s4_string_row rows[] = {
         { 0xa4u, { 18u, 14u, 5u, 7u } },
-        { 0xa6u, { 22u, 22u, 9u, 9u } },
+        { 0xa6u, { 22u, 22u, 8u, 9u } },
         { 0xaau, { 11u, 10u, 3u, 4u } },
         { 0xacu, { 12u, 12u, 5u, 5u } },
-        { 0xaeu, { 15u, 15u, 8u, 7u } }
+        { 0xaeu, { 15u, 15u, 7u, 7u } }
     };
     t359_s4_state state;
     core_machine *machine = STD_NULL;

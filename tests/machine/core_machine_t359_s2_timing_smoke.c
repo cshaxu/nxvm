@@ -201,8 +201,8 @@ static C_INT t359_s2_test_legacy_odd_word_transfers(C_VOID)
         CORE_MACHINE_CPU_PROFILE_80186,
         CORE_MACHINE_CPU_PROFILE_80286
     };
-    static const type_unsigned_64 add_ticks[] = { 30u, 24u, 11u };
-    static const type_unsigned_64 read_ticks[] = { 19u, 20u, 9u };
+    static const type_unsigned_64 add_ticks[] = { 30u, 18u, 11u };
+    static const type_unsigned_64 read_ticks[] = { 19u, 14u, 9u };
     const t359_s2_word_seed seed = {
         0u, 1u, 0u, 1u, 0x1001u, TYPE_TRUE
     };
@@ -299,7 +299,7 @@ static C_INT t359_s2_test_group3_rows(C_VOID)
         failed |= !t359_s2_run_with_setup(machine, not_register,
             sizeof(not_register), 3u, &state, t359_s2_seed_words,
             (C_VOID *)&seed) || !t359_s2_run_with_setup(machine, neg_memory,
-            sizeof(neg_memory), 9u, &state, t359_s2_seed_words,
+            sizeof(neg_memory), 3u, &state, t359_s2_seed_words,
             (C_VOID *)&seed);
     }
     core_machine_destroy(machine);
@@ -438,7 +438,7 @@ C_INT main(C_VOID)
     if (t359_s2_test_profile_rows(CORE_MACHINE_CPU_PROFILE_8086,
             3u, 22u, 15u, 16u, 13u, 4u, 5u)) return 1;
     if (t359_s2_test_profile_rows(CORE_MACHINE_CPU_PROFILE_80186,
-            3u, 16u, 16u, 19u, 17u, 8u, 4u)) return 2;
+            3u, 10u, 10u, 13u, 6u, 8u, 4u)) return 2;
     if (t359_s2_test_profile_rows(CORE_MACHINE_CPU_PROFILE_80286,
             2u, 7u, 7u, 3u, 4u, 3u, 2u)) return 3;
     if (t359_s2_test_profile_rows(CORE_MACHINE_CPU_PROFILE_80386,

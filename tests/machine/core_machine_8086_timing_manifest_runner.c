@@ -2799,7 +2799,7 @@ static C_INT timing_manifest_probe_group2_odd_word_contexts(C_VOID)
     for (index = 0u; index < sizeof(extensions) / sizeof(extensions[0]); ++index) {
         timing_manifest_memory_recipe recipe = {
             one_keys[index], { 0xd1u, (type_unsigned_8)(0x06u |
-                (extensions[index] << 3u)), 1u, 0x10u }, 4u, 25u,
+                (extensions[index] << 3u)), 1u, 0x10u }, 4u, 29u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY,
             0u, 0u, 2u, 0u, 0u, one_results[index]
         };
@@ -2808,7 +2808,7 @@ static C_INT timing_manifest_probe_group2_odd_word_contexts(C_VOID)
                 CORE_MACHINE_CPU_TIMING_INPUT_ODD_WORD)) return 1;
         recipe.key_id = cl_keys[index];
         recipe.program[0] = 0xd3u;
-        recipe.expected_ticks = 38u;
+        recipe.expected_ticks = 42u;
         recipe.initial_cx = 2u;
         recipe.expected_cx = 2u;
         recipe.expected_memory_value = cl_results[index];
@@ -2844,7 +2844,7 @@ static C_INT timing_manifest_probe_group2_segment_odd_word_contexts(C_VOID)
     for (index = 0u; index < sizeof(extensions) / sizeof(extensions[0]); ++index) {
         timing_manifest_memory_recipe recipe = {
             one_keys[index], { 0x26u, 0xd1u, (type_unsigned_8)(0x06u |
-                (extensions[index] << 3u)), 1u, 0x10u }, 5u, 27u,
+                (extensions[index] << 3u)), 1u, 0x10u }, 5u, 31u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY,
             0u, 0u, 2u, 0u, 0u, one_results[index]
         };
@@ -2853,7 +2853,7 @@ static C_INT timing_manifest_probe_group2_segment_odd_word_contexts(C_VOID)
                 CORE_MACHINE_CPU_TIMING_INPUT_ODD_WORD)) return 1;
         recipe.key_id = cl_keys[index];
         recipe.program[1] = 0xd3u;
-        recipe.expected_ticks = 40u;
+        recipe.expected_ticks = 44u;
         recipe.initial_cx = 2u;
         recipe.expected_cx = 2u;
         recipe.expected_memory_value = cl_results[index];
@@ -3441,12 +3441,12 @@ static C_INT timing_manifest_probe_indirect_control_transfers(C_VOID)
             CORE_MACHINE_CPU_TIMING_INPUT_MODRM |
             CORE_MACHINE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS |
             CORE_MACHINE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE },
-        { "I86-CALL-RM16-ODD-WORD", { 0xffu, 0x16u, 1u, 0x10u }, 4u, 35u,
+        { "I86-CALL-RM16-ODD-WORD", { 0xffu, 0x16u, 1u, 0x10u }, 4u, 31u,
             0x0200u, 0u, 0x7ffeu, 0x1001u, 0,
             CORE_MACHINE_CPU_TIMING_INPUT_MODRM |
             CORE_MACHINE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS |
             CORE_MACHINE_CPU_TIMING_INPUT_ODD_WORD },
-        { "I86-CALL-M1616-ODD-WORD", { 0xffu, 0x1eu, 1u, 0x10u }, 4u, 59u,
+        { "I86-CALL-M1616-ODD-WORD", { 0xffu, 0x1eu, 1u, 0x10u }, 4u, 51u,
             0x0200u, 0xf000u, 0x7ffcu, 0x1001u, 1,
             CORE_MACHINE_CPU_TIMING_INPUT_MODRM |
             CORE_MACHINE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS |
@@ -3462,13 +3462,13 @@ static C_INT timing_manifest_probe_indirect_control_transfers(C_VOID)
             CORE_MACHINE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS |
             CORE_MACHINE_CPU_TIMING_INPUT_ODD_WORD },
         { "I86-CALL-RM16-SEGMENT-ODD-WORD", { 0x26u, 0xffu, 0x16u, 1u, 0x10u },
-            5u, 37u, 0x0200u, 0u, 0x7ffeu, 0x1001u, 0,
+            5u, 33u, 0x0200u, 0u, 0x7ffeu, 0x1001u, 0,
             CORE_MACHINE_CPU_TIMING_INPUT_MODRM |
             CORE_MACHINE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS |
             CORE_MACHINE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE |
             CORE_MACHINE_CPU_TIMING_INPUT_ODD_WORD },
         { "I86-CALL-M1616-SEGMENT-ODD-WORD", { 0x26u, 0xffu, 0x1eu, 1u, 0x10u },
-            5u, 61u, 0x0200u, 0xf000u, 0x7ffcu, 0x1001u, 1,
+            5u, 53u, 0x0200u, 0xf000u, 0x7ffcu, 0x1001u, 1,
             CORE_MACHINE_CPU_TIMING_INPUT_MODRM |
             CORE_MACHINE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS |
             CORE_MACHINE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE |
@@ -3736,20 +3736,20 @@ static C_INT timing_manifest_probe_memory_stack_forms(C_VOID)
             CORE_MACHINE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS |
             CORE_MACHINE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE },
         { "I86-PUSH-M-ODD-WORD", { 0xffu, 0x36u, 1u, 0x10u }, 4u, 0x1001u,
-            30u, 1, CORE_MACHINE_CPU_TIMING_INPUT_MODRM |
+            26u, 1, CORE_MACHINE_CPU_TIMING_INPUT_MODRM |
             CORE_MACHINE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS |
             CORE_MACHINE_CPU_TIMING_INPUT_ODD_WORD },
         { "I86-POP-M-ODD-WORD", { 0x8fu, 0x06u, 1u, 0x10u }, 4u, 0x1001u,
-            31u, 0, CORE_MACHINE_CPU_TIMING_INPUT_MODRM |
+            27u, 0, CORE_MACHINE_CPU_TIMING_INPUT_MODRM |
             CORE_MACHINE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS |
             CORE_MACHINE_CPU_TIMING_INPUT_ODD_WORD },
         { "I86-PUSH-M-SEGMENT-ODD-WORD", { 0x26u, 0xffu, 0x36u, 1u, 0x10u },
-            5u, 0x1001u, 32u, 1, CORE_MACHINE_CPU_TIMING_INPUT_MODRM |
+            5u, 0x1001u, 28u, 1, CORE_MACHINE_CPU_TIMING_INPUT_MODRM |
             CORE_MACHINE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS |
             CORE_MACHINE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE |
             CORE_MACHINE_CPU_TIMING_INPUT_ODD_WORD },
         { "I86-POP-M-SEGMENT-ODD-WORD", { 0x26u, 0x8fu, 0x06u, 1u, 0x10u },
-            5u, 0x1001u, 33u, 0, CORE_MACHINE_CPU_TIMING_INPUT_MODRM |
+            5u, 0x1001u, 29u, 0, CORE_MACHINE_CPU_TIMING_INPUT_MODRM |
             CORE_MACHINE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS |
             CORE_MACHINE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE |
             CORE_MACHINE_CPU_TIMING_INPUT_ODD_WORD },
@@ -3772,23 +3772,23 @@ static C_INT timing_manifest_probe_memory_stack_forms(C_VOID)
             CORE_MACHINE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE |
             CORE_MACHINE_CPU_TIMING_INPUT_LOCK },
         { "I86-PUSH-M-LOCK-ODD-WORD", { 0xf0u, 0xffu, 0x36u, 1u, 0x10u }, 5u,
-            0x1001u, 32u, 1, CORE_MACHINE_CPU_TIMING_INPUT_MODRM |
+            0x1001u, 28u, 1, CORE_MACHINE_CPU_TIMING_INPUT_MODRM |
             CORE_MACHINE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS |
             CORE_MACHINE_CPU_TIMING_INPUT_ODD_WORD |
             CORE_MACHINE_CPU_TIMING_INPUT_LOCK },
         { "I86-POP-M-LOCK-ODD-WORD", { 0xf0u, 0x8fu, 0x06u, 1u, 0x10u }, 5u,
-            0x1001u, 33u, 0, CORE_MACHINE_CPU_TIMING_INPUT_MODRM |
+            0x1001u, 29u, 0, CORE_MACHINE_CPU_TIMING_INPUT_MODRM |
             CORE_MACHINE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS |
             CORE_MACHINE_CPU_TIMING_INPUT_ODD_WORD |
             CORE_MACHINE_CPU_TIMING_INPUT_LOCK },
         { "I86-PUSH-M-LOCK-SEGMENT-ODD-WORD", { 0xf0u, 0x26u, 0xffu, 0x36u, 1u, 0x10u }, 6u,
-            0x1001u, 34u, 1, CORE_MACHINE_CPU_TIMING_INPUT_MODRM |
+            0x1001u, 30u, 1, CORE_MACHINE_CPU_TIMING_INPUT_MODRM |
             CORE_MACHINE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS |
             CORE_MACHINE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE |
             CORE_MACHINE_CPU_TIMING_INPUT_ODD_WORD |
             CORE_MACHINE_CPU_TIMING_INPUT_LOCK },
         { "I86-POP-M-LOCK-SEGMENT-ODD-WORD", { 0xf0u, 0x26u, 0x8fu, 0x06u, 1u, 0x10u }, 6u,
-            0x1001u, 35u, 0, CORE_MACHINE_CPU_TIMING_INPUT_MODRM |
+            0x1001u, 31u, 0, CORE_MACHINE_CPU_TIMING_INPUT_MODRM |
             CORE_MACHINE_CPU_TIMING_INPUT_EFFECTIVE_ADDRESS |
             CORE_MACHINE_CPU_TIMING_INPUT_SEGMENT_OVERRIDE |
             CORE_MACHINE_CPU_TIMING_INPUT_ODD_WORD |

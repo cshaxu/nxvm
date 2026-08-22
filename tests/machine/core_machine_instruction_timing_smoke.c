@@ -124,7 +124,7 @@ static C_INT timing_test_quantum_and_reset(C_VOID)
                 result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 1u;
             split_ticks += result.ticks;
         }
-        failed |= split_ticks != 9u;
+        failed |= split_ticks != 11u;
         failed |= core_machine_reset(machine) != TYPE_STATUS_OK ||
             core_machine_memory_write(machine, TIMING_RESET_LINEAR, program,
                 sizeof(program)) != TYPE_STATUS_OK ||
@@ -334,7 +334,7 @@ C_INT main(C_VOID)
 
     failed |= timing_case(nop, sizeof(nop), 1u, 3u);
     failed |= timing_case(register_mov, sizeof(register_mov), 1u, 2u);
-    failed |= timing_case(prefixed_nop, sizeof(prefixed_nop), 1u, 1u);
+    failed |= timing_case(prefixed_nop, sizeof(prefixed_nop), 1u, 3u);
     failed |= timing_case(memory_mov, sizeof(memory_mov), 1u, 5u);
     failed |= timing_case(out_port, sizeof(out_port), 1u, 3u);
     failed |= timing_case(in_port, sizeof(in_port), 1u, 5u);

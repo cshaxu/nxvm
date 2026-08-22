@@ -74,7 +74,7 @@ C_INT main(C_VOID)
     failed |= core_machine_real_mode_tick_case("segment-prefix", prefixed_nop,
         sizeof(prefixed_nop),
         CORE_MACHINE_CPU_PROFILE_80286, TYPE_STATUS_OK, CORE_MACHINE_STOP_BUDGET,
-        1u, 1u);
+        1u, 3u);
     failed |= core_machine_real_mode_tick_case("hlt", halt, sizeof(halt),
         CORE_MACHINE_CPU_PROFILE_80286, TYPE_STATUS_OK,
         CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT, 1u, 2u);

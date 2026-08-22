@@ -560,7 +560,7 @@ static C_INT timing_8086_test_group2_forms(C_VOID)
         if (failed) return 1;
     }
     return timing_8086_case((const type_unsigned_8[]){
-        0x26u, 0xd1u, 0x06u, 0x01u, 0x10u }, 5u, 1u, 27u);
+        0x26u, 0xd1u, 0x06u, 0x01u, 0x10u }, 5u, 1u, 31u);
 }
 
 static C_INT timing_8086_test_control_repeat_and_ports(C_VOID)

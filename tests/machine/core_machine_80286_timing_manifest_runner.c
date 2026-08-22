@@ -4038,13 +4038,13 @@ C_INT main(C_VOID)
             return 1;
         }
         if (timing_80286_manifest_write_results(
-                "docs/etc/cpu-timing/t436-s8-80286-timing-results.json", 0) == 0) {
+                "docs/etc/cpu-timing/t436-s8-80286-timing-results.json", 1) != 0) {
             return 1;
         }
         STD_PRINTF("M5:T436:S2:I286-RESULT-PRODUCER:PASS:observed=%u:canonical=%u\n",
             captured, timing_80286_manifest_expected_count());
-        STD_PRINTF("M5:T436:S2:I286-INCOMPLETE-RESULT-REFUSED:PASS\n");
-        STD_PRINTF("M5:T436:S7:I286-FINAL-RESULT-DEFERRED:PASS\n");
+        STD_PRINTF("M5:T436:S8:I286-RESULT-CLOSURE:PASS:canonical=%u\n",
+            timing_80286_manifest_expected_count());
         STD_PRINTF("M5:T436:S3:I286-NONCONTROL-OBSERVED:%u\n", s3_captured);
         STD_PRINTF("M5:T436:S3:I286-NONCONTROL-COVERAGE:PASS:canonical=%u\n",
             timing_80286_manifest_s3_expected_count());

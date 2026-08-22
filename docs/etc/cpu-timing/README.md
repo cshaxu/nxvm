@@ -63,7 +63,9 @@ correction.
 T436 S7's [segment, descriptor and system closure](t436-s7-80286-system-closure.md)
 proves all 92 remaining legal 80286 records through real retirement, including
 the formerly missing effective-address plus odd-word intersections; final
-all-key result publication remains an S8 responsibility.
+all-key result publication is completed by the S8
+[result closure](t436-s8-80286-result-closure.md), whose generated 771-key
+result artifact is verified against the manifest contract.
 
 The active final profile block uses the [80386DX manifest](t435-s2-80386-timing-manifest.json), [audit](t435-s2-80386-implementation-audit.md), [tracker](t435-s2-80386-implementation-tracker.md), and S8's executable [decoder-ledger verifier](../../../tools/Verify-80386DecoderLedger.ps1).
 

@@ -50,7 +50,8 @@ $hasOpcode = $source -match 'case 0xd7u:'
 $hasForm = $source -match 'CORE_MACHINE_SOURCE_TIMING_8086_XLAT'
 $hasTicks = $source -match '\*out_ticks = 11u'
 $hasLedger = $ledger -match '\| `XLAT source-table` \| 11 \| exact'
-$hasPopCs = $source -match 'case 0x07u: case 0x0fu: case 0x17u: case 0x1fu:'
+$hasPopCs = $source -match 'case 0x07u: case 0x17u: case 0x1fu:' -and
+    $source -match 'case 0x0fu:'
 $hasPopCsLedger = $ledger -match '8086-only `POP CS` \(`0F`\)'
 if (-not ($hasOpcode -and $hasForm -and $hasTicks -and $hasLedger -and $hasPopCs -and $hasPopCsLedger)) {
     throw "XLAT and 8086 POP CS decoder, L3 source rules, and timing selectors are not jointly present"

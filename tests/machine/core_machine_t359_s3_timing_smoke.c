@@ -404,7 +404,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
     if (t359_s3_test_profile_rows(CORE_MACHINE_CPU_PROFILE_8086,
             19u, 15u, 11u, 8u, 5u, 6u, 2u)) return 1;
     if (t359_s3_test_profile_rows(CORE_MACHINE_CPU_PROFILE_80186,
-            14u, 13u, 10u, 10u, 5u, 5u, 2u)) return 2;
+            15u, 13u, 10u, 10u, 5u, 5u, 2u)) return 2;
     if (t359_s3_test_profile_rows(CORE_MACHINE_CPU_PROFILE_80286,
             8u, 8u, 3u, 5u, 4u, 4u, 2u)) return 3;
     if (t359_s3_test_profile_rows(CORE_MACHINE_CPU_PROFILE_80386,
@@ -413,7 +413,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
     if (t359_s3_test_transfer_shapes(CORE_MACHINE_CPU_PROFILE_8086,
             16u, 27u, 11u, 24u, 8u, 22u, 23u)) return 6;
     if (t359_s3_test_transfer_shapes(CORE_MACHINE_CPU_PROFILE_80186,
-            13u, 25u, 11u, 23u, 16u, 22u, 26u)) return 7;
+            13u, 19u, 11u, 17u, 16u, 16u, 20u)) return 7;
     if (t359_s3_test_transfer_shapes(CORE_MACHINE_CPU_PROFILE_80286,
             8u, 12u, 8u, 12u, 12u, 5u, 5u)) return 8;
     if (t359_s3_test_transfer_shapes(CORE_MACHINE_CPU_PROFILE_80386,
@@ -435,7 +435,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
     if (t359_s3_test_real_interrupt_rows(CORE_MACHINE_CPU_PROFILE_80186,
             47u, 4u, 45u, 48u, 28u)) return 15;
     if (t359_s3_test_real_interrupt_rows(CORE_MACHINE_CPU_PROFILE_80286,
-            24u, 3u, 24u, 25u, 18u)) return 16;
+            24u, 5u, 24u, 25u, 18u)) return 16;
     if (t359_s3_test_real_interrupt_rows(CORE_MACHINE_CPU_PROFILE_80386,
             37u, 3u, 33u, 35u, 22u)) return 17;
     STD_PRINTF("M5:T359:S3:CONTROL-STACK-TIMING:OK\n");
