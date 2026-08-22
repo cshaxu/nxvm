@@ -35,7 +35,7 @@ P23 corrects the prior `G2-*` selector typo: the 21 legal odd-addressed
 `ROL`/`ROR`/`RCL`/`RCR`/`SHL`/`SHR`/`SAR` forms. They retain `missing-input`
 until one real result proves their Table 1-16 `+4` term.
 
-P34--P42 add `core-machine-80186-timing-manifest-runner`. Its first 81 canonical
+P34--P43 add `core-machine-80186-timing-manifest-runner`. Its first 92 canonical
 recipes are captured from actual retirement observations and check ticks,
 origin and classified disposition. The runner is deliberately outside the
 passing gate and writes no final result document until all 624 keys have a
