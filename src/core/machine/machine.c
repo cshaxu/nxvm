@@ -1970,6 +1970,11 @@ C_INT core_machine_primary_source_instruction_cost(
         *out_ticks = ticks;
         return 1;
     }
+    if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 &&
+        (opcode == 0xc4u || opcode == 0xc5u) && data->flagMem) {
+        *out_ticks = 7u;
+        return 1;
+    }
     if (!core_machine_source_timing_primary_shape(data, prefixes, &shape)) {
         return 0;
     }
