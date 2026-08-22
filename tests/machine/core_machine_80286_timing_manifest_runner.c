@@ -668,6 +668,26 @@ static C_INT timing_80286_manifest_run_hlt_recipe(C_VOID)
     return failed;
 }
 
+static C_INT timing_80286_manifest_run_lock_ea_recipe(
+    const timing_80286_manifest_recipe *base_recipe)
+{
+    timing_80286_manifest_recipe recipe;
+    C_CHAR key_id[96];
+
+    if (base_recipe == STD_NULL || base_recipe->bytes < 5u ||
+        STD_SNPRINTF(key_id, sizeof(key_id), "%s-EA-BID", base_recipe->key_id) < 0 ||
+        timing_80286_manifest_find(key_id) == STD_NULL) return 1;
+    recipe = *base_recipe;
+    /* All LOCK base recipes are direct disp16 memory forms.  Re-select the
+     * same reg/extension with 16-bit [BP+SI+disp16] addressing at 0x1000. */
+    recipe.program[2] = (type_unsigned_8)((recipe.program[2] & 0x38u) | 0x82u);
+    recipe.program[3] = 0u;
+    recipe.program[4] = 0u;
+    recipe.key_id = key_id;
+    recipe.ticks += 1u;
+    return timing_80286_manifest_run(&recipe);
+}
+
 static C_INT timing_80286_manifest_run_protected_system(
     const timing_80286_manifest_recipe *recipe)
 {
@@ -1523,6 +1543,14 @@ C_INT main(C_VOID)
             return 1;
         }
     }
+    for (index = 0u; index < sizeof(lock_recipes) / sizeof(lock_recipes[0]);
+        ++index) {
+        if (timing_80286_manifest_run_lock_ea_recipe(&lock_recipes[index])) {
+            STD_PRINTF("M5:T435:S10:I286-LOCK-EA-RECIPE:FAIL:%s\n",
+                lock_recipes[index].key_id);
+            return 1;
+        }
+    }
     STD_PRINTF("M5:T435:S10:I286-MANIFEST-FOUNDATION:PASS:observed=%u\n",
         (type_unsigned_32)(sizeof(recipes) / sizeof(recipes[0]) +
             sizeof(control_recipes) / sizeof(control_recipes[0]) +
@@ -1535,6 +1563,6 @@ C_INT main(C_VOID)
             7u +
             1u +
             sizeof(repeat_recipes) / sizeof(repeat_recipes[0]) + 9u +
-            sizeof(lock_recipes) / sizeof(lock_recipes[0])));
+            2u * sizeof(lock_recipes) / sizeof(lock_recipes[0])));
     return 0;
 }
