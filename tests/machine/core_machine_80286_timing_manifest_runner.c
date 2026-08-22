@@ -263,6 +263,21 @@ static C_INT timing_80286_manifest_results_complete(C_VOID)
     return observed == 807u;
 }
 
+static type_unsigned_32 timing_80286_manifest_observed_count(C_VOID)
+{
+    STD_SIZE_T index;
+    type_unsigned_32 observed = 0u;
+
+    for (index = 0u; index < sizeof(timing_80286_manifest_records) /
+            sizeof(timing_80286_manifest_records[0]); ++index) {
+        if (timing_80286_manifest_is_i286(&timing_80286_manifest_records[index]) &&
+            timing_80286_manifest_observed[index]) {
+            ++observed;
+        }
+    }
+    return observed;
+}
+
 /* This writer is intentionally unavailable to a partial runner.  S3--S7 may
  * add real recipes, but no caller can emit a final document until every
  * canonical I286 record was observed through the retirement seam. */
@@ -2911,7 +2926,7 @@ C_INT main(C_VOID)
         }
     }
     {
-        const type_unsigned_32 observed = (type_unsigned_32)(sizeof(recipes) / sizeof(recipes[0]) +
+        const type_unsigned_32 probes = (type_unsigned_32)(sizeof(recipes) / sizeof(recipes[0]) +
             sizeof(control_recipes) / sizeof(control_recipes[0]) +
             119u +
             sizeof(protected_system_recipes) /
@@ -2926,16 +2941,18 @@ C_INT main(C_VOID)
             9u +
             2u * sizeof(lock_recipes) / sizeof(lock_recipes[0]));
 
-        if (timing_80286_manifest_results_complete()) return 1;
+        const type_unsigned_32 captured = timing_80286_manifest_observed_count();
+
+        if (captured > probes || timing_80286_manifest_results_complete()) return 1;
         if (timing_80286_manifest_write_results(
                 "docs/etc/cpu-timing/t436-s8-80286-timing-results.json") == 0) {
             return 1;
         }
         STD_PRINTF("M5:T436:S2:I286-RESULT-PRODUCER:PASS:observed=%u:canonical=807\n",
-            observed);
+            captured);
         STD_PRINTF("M5:T436:S2:I286-INCOMPLETE-RESULT-REFUSED:PASS\n");
         STD_PRINTF("M5:T435:S10:I286-MANIFEST-FOUNDATION:PASS:observed=%u\n",
-            observed);
+            captured);
     }
     return 0;
 }

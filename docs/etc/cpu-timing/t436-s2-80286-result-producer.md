@@ -12,11 +12,13 @@ looks like a valid closure artifact. Repeated observations of the same key do
 not overwrite the first captured record; protected bootstrap activity has no
 active canonical metadata index and is not captured as a target result.
 
-The S2 baseline run observes 606 real records and deliberately refuses final
-emission. The remaining 201 observations remain assigned to S3--S7 by the S1
-partition; no missing observation becomes conforming through this mechanism.
+The S2 baseline runs 606 focused probes and captures 563 distinct canonical
+records; repeated probes for the same key do not overwrite the first capture.
+It deliberately refuses final emission. The remaining 244 canonical records
+remain assigned to S3--S7 by the S1 partition; no missing observation becomes
+conforming through this mechanism.
 
 ```text
-M5:T436:S2:I286-RESULT-PRODUCER:PASS:observed=606:canonical=807
+M5:T436:S2:I286-RESULT-PRODUCER:PASS:observed=563:canonical=807
 M5:T436:S2:I286-INCOMPLETE-RESULT-REFUSED:PASS
 ```
