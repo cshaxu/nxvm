@@ -56,3 +56,8 @@ initialization result.
 The developer artifact target is `vm-0-5-0439`; copied artifact
 `build/output/nxvm_0_5_0439.exe` has SHA-256
 `CDBA47D65F97C8BD4764BD00F8CF80D19AEE4C7732AADD3BE5E66B0628BE412D`.
+
+The counted tracked source/test change is 152 added and 34 removed lines, net
++118. The positive delta is focused regression coverage for synchronous and
+asynchronous reset failure/retry plus the returned-status plumbing that replaces
+the discarded void paths; no duplicate reset or outcome implementation remains.

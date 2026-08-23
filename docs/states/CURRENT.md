@@ -2,28 +2,8 @@
 
 ## Current Work
 
-**M5 T439 S1 active -- VM session reset and startup outcome propagation.**
+**Idle.** T439 closed at S1; the next candidate requires a separate admission.
 
-## M5 T439 S1 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | New |
-| Admission And Approval | Owner approved proposal revision and direct admission to S1 in this conversation on 2026-08-23. Scope is the existing VM session reset/startup result path and required FDD initialization status only; no exception is approved. |
-| Objective | Consume T438's Core reset-failure contract so session reset/startup and required device initialization return truthful status, stop on failure, and safely retry through their existing paths. |
-| Non-goals | No Core reset change, session-manager/public-product contract redesign, second fault or outcome model, profile-policy change, guest-media format change, generic rollback framework, or parallel startup/reset path. |
-| Reference Baseline | Pushed `03c08347`; T438 closed; first queued candidate `m5-vm-session-reset-startup-outcomes.md`. |
-| Candidate Proposal | [VM session reset and startup outcome propagation](../proposals/m5-vm-session-reset-startup-outcomes.md). |
-| Files And ABI Surface | Expected: VM session lifecycle/control/execution callback chain, session device initialization/provider lifecycle, focused VM session smokes and task evidence. Public session-manager and Core public ABI are excluded unless stop conditions apply. |
-| Applicable Rules | Architecture: unique mutable outcome owner, one reset/startup production path, and VM-to-Core-only dependency flow. Coding: propagate status at the owning boundary; use existing narrow interfaces; remove discarded status/obsolete void route; no forwarding layer or framework. Execution: complete P, actual-change review, caller sweep, artifact/current-gate and closure evidence. |
-| Verification | Focused injected Core-reset failure through `vm_session_start`; failed lifecycle/no-resume/outcome assertion; repaired retry; FDD initialization failure and cleanup; running reset completion outcome; caller sweep; configured build, documentation gate and current gates; artifact identity/hash. |
-| Expected Markers | Reset failure reaches the existing session outcome and start caller; session is stopped and does not publish successful start after failure; retry succeeds after repair; FDD initialization failure propagates without a live session; every reset callback/caller has a disposition; no duplicate outcome state, reset route or reverse dependency exists. |
-| Asset Needs | None. Use existing project-owned synthetic fixtures and fault injection only; no firmware, guest media, Microsoft component, third-party import or research. |
-| Reporting Requirements | Report the single owner/path review, caller-sweep dispositions, focused and current-gate results, artifact hash, code-size delta, all retained live paths, and any transferred issue. |
-| Stop Conditions | Stop and request direction if truthful delivery requires public session-manager/product API redesign, changes profile policy or guest-media behavior, requires a second session outcome model, or cannot represent asynchronous reset completion through the existing session boundary. |
-| Exit Criteria | Existing reset callback-to-session and device initialization status paths no longer discard errors; start resumes only after successful reset; failure/retry and cleanup proofs pass; review proves unique session outcome ownership, one production path, downward configuration/upward status flow, deleted obsolete truncations, and no needless abstraction; complete P is committed and pushed. |
-| Original Owner Request | Owner asked that the next candidate embody hard minimalism, then approved revising its proposal and entering S1 without an intermediate proposal commit. |
-| Similar-Issue Sweep | Enumerate every VM session reset callback, execution-context/control/lifecycle reset caller, start/resume caller, and required device initialization status; mark each fixed, intentionally asynchronous through the same outcome, not applicable, or transferred with a receiver. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** target `vm-0-5-0439`; `nxvm_0_5_0439.exe` / `build/output/nxvm_0_5_0439.exe`, SHA-256 `CDBA47D65F97C8BD4764BD00F8CF80D19AEE4C7732AADD3BE5E66B0628BE412D`. T434 has one copied Core timing-plan publication route for default PC/AT, IBM 5170 Model 339 and Model-40 BYOB session composition.
@@ -48,6 +28,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T439 | Closed: session reset and startup now return Core failure through one lifecycle outcome; required FDD initialization also propagates status, and no-HDD Model 339 reset avoids an unnecessary unmapped BIOS-table write. [Evidence](../etc/evidence/t439-s1-vm-session-reset-startup-outcomes.md). |
 | T438 | Closed: Core is the sole firmware-reset failure owner; discarded firmware-operation errors now return through `core_machine_reset`, leave the machine non-runnable and permit repaired retry. [Evidence](../etc/evidence/t438-s1-core-reset-firmware-failure-atomicity.md). |
 | T437 | Closed: the retained [task audit](../history/M5-T437-80386dx-instruction-timing-closure.md) proves all 1,410 legal keys: 1,409 classified CPU retirements and one separate, verified ESC MCP-domain handoff; results, decoder/partition, fresh configuration and 292-test current-gate verification pass. |
 | T436 | Closed: [result closure](../etc/cpu-timing/t436-s8-80286-result-closure.md) proves the verified 771-key result set, 8086/80186/80286/80386 regression disposition, current-gate completion and developer artifact. |
@@ -55,7 +36,6 @@
 | T434 | Closed: all 30 copied plan declarations/dispositions, every current VM materializer and atomic Core publication route are reconciled; full task closure proof is retained in the [S3 audit](../etc/evidence/t434-s3-task-closure-audit.md) and [task history](../history/M5-T434-core-timing-contract-machine-plan.md). |
 | T433 | Closed after corrective S7: 30 frozen Core capabilities have a source-sufficiency and ownership disposition; chip/manual semantics are separated from VM-profile inputs, host/product boundaries and the explicit ATA/HDC source block. [S7 ledger](../etc/evidence/t433-s7-core-source-sufficiency-ledger.md). |
 | T432 | Closed: separate Core-private Set-2 translation and typematic break states prevent released keys from restarting typematic; focused regression, Model-339 contract and owner Console/Window verification pass. [Record](../history/M5-T432-keyboard-keyup-reliability-repair.md). |
-| T431 | Closed: Model-40 selects a reference-derived unready-drive READ `ST0=48h`/IRQ/result completion through one Core policy; generic PC/AT stays generic, and physical FDC/L3 timing remains transferred. [Evidence](../etc/evidence/t431-s1-deskpro-fdc-not-ready-reference.md). |
 
 
 ## Recent Governance
