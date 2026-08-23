@@ -74,6 +74,57 @@ adopts them.
 
 ## CPU, Time, And Debugging Debt
 
+- [ ] **Legacy VM media type/public-name retirement (`TODO(Medium)`).** Manual
+  audit Td S125 found cross-module headers `vm/machine/fdd.h` and
+  `vm/machine/hdd.h` export mutable `t_fdd`, `t_hdd`, `t_*_data`, and
+  `t_*_connect` layouts. The unowned legacy names violate searchable
+  ownership-path naming, while their public fields make callers depend on
+  storage internals. After the cross-module contract task is admitted, retire
+  these exported layouts in favor of owner-prefixed opaque media handles plus
+  copied geometry/status observations. Inventory every production and test
+  field access; do not do a cosmetic typedef rename or leave alias types.
+
+- [ ] **VDM skeleton forwarding-layer disposition (`TODO(Medium)`).** Manual
+  audit Td S125 found `src/vdm/composition/session.c` provides a second public
+  API that, except for allocation and null checks, only forwards every
+  operation to `vdm_machine_dos_minimal_*`. It performs no composition,
+  translation, validation, or lifecycle policy and is therefore a pure
+  forwarding abstraction prohibited by the coding rule. Before M6/M8 work,
+  admit a bounded decision: remove the wrapper and consume the machine boundary
+  directly, or give the composition root a real mantle/dos session-assembly
+  responsibility with explicit lifetime and failure semantics. Preserve the
+  current non-runnable VDM skeleton boundary; do not promote it to a product or
+  add compatibility aliases.
+
+- [ ] **Core machine coordinator decomposition (`TODO(High)`).** Manual audit
+  Td S125 found `src/core/machine/machine.c` conflates distinct owners:
+  source-timing models, external-cycle accounting, plan validation, scheduler
+  advancement, firmware access, display/DMA/FDC/HDC/RTC/D4/PC-AT board
+  configuration, lifecycle, and fault publication. These already have real
+  interface and subsystem boundaries, so the single approximately 7,000-line
+  coordinator is not a cohesive owner-local implementation. Admit an
+  implementation task to define the coordinator's narrow assembly/lifecycle
+  responsibility, move each independent mechanism behind its existing or one
+  new owner-local boundary, preserve one Core transaction path and all current
+  plan validation/rollback semantics, and update focused regressions. Do not
+  mechanically split by line count, duplicate machine state, or create a new
+  generic framework.
+
+- [ ] **Cross-module VM contract boundary normalization (`TODO(High)`).** Manual
+  architecture/code audit Td S125 found `vm/composition/session`, `vm/main`,
+  and tests directly consuming non-contract headers such as
+  `vm/platform/platform.h`, `vm/machine/fdd.h`, `vm/machine/hdd.h`,
+  `vm/machine/debug.h`, `vm/product/console.h`, and
+  `vm/profile/default_profile/pc_at_profile.h`. These headers expose concrete
+  mutable layouts or owner-local lifecycle operations across declared module
+  boundaries, contrary to the required minimal `*_interface.h` contract
+  boundary. Admit one implementation task to inventory every cross-owner
+  consumer, define opaque/copied/bounded interfaces with explicit lifetime and
+  failure semantics, move owner-private layouts behind them, update tests to
+  prove the public boundary, and remove the direct paths atomically. Do not
+  rename headers without retiring the exposed layouts and direct production
+  consumers.
+
 - [ ] **Architectural reset, shutdown, and triple-fault policy (`TODO(Medium)`).**
   The machine currently exposes a KBC-originated reset request and lifecycle
   stop, but it has no Intel-defined CPU reset/shutdown/triple-fault contract.
@@ -200,6 +251,69 @@ admissions, not the default definition of NXVM completion.
   not create a second bus or device-timing owner.
 
 ## Architecture And Portability Debt
+
+- [ ] **Session-manager raw-object escape removal (`TODO(High)`).** Manual
+  audit Td S125 found the public Core product session contract exposes
+  `core_product_session_manager_borrow_selected(..., C_VOID **out_session)`,
+  while its provider `open` callback returns the same untyped session object.
+  `vm/composition/session/console_machine_adapter.c` casts that escape back to
+  `vm_session *`. This is a raw cross-module session pointer with no typed
+  lifetime, close, or failure contract, forbidden by the architecture rule.
+  Admit one Core-product/VM-composition task to replace it with an opaque
+  selected-session capability or bounded manager-dispatched operations, make
+  the borrow/close lifetime explicit, and migrate console and tests. Do not
+  expose a typed `vm_session *`, add test-only casts, or make the manager own
+  VM machine internals.
+
+- [ ] **Public raw-borrow verifier scope repair (`TODO(Medium)`).** Manual
+  audit Td S125 found `tools/VerifyPublicRawBorrowClosure.ps1` reports success
+  while the public session-manager contract exports
+  `C_VOID **out_session` and VM casts that object to `vm_session *`. The script
+  only recognizes a narrow historical set of Core borrow names, profile words,
+  and private Core layouts, so its success is not evidence of the stated
+  generic closure. After the raw-session escape is removed, admit one bounded
+  verifier task to encode that concrete forbidden public object-escape shape
+  and a positive/negative self-test. Keep the rule narrow and source-shape
+  specific; do not build a general natural-language architecture classifier.
+
+- [ ] **VM profile implementation-boundary repair (`TODO(High)`).** Manual
+  audit Td S125 found `vm/profile/default_profile/pc_at_profile.h` and
+  `vm/profile/model40/model40.h` publish owner-local composition state across
+  module boundaries. The latter exposes a writable 128 KiB D4 backing array,
+  parity state, and `core_machine *`; the former publishes the full PC/AT
+  topology/configuration representation. Consumers and tests consequently
+  couple to profile storage and Core object representation rather than declared
+  profile operations or copied observations. Admit one profile-owner task to
+  separate immutable profile selection data from private, stateful composition
+  devices; define bounded initialization/materialization and observation
+  contracts with lifetime/failure semantics; and migrate every consumer and
+  test atomically. Preserve the existing profile-specific hardware semantics;
+  do not hide the problem behind typedef renames or a generic profile framework.
+
+- [ ] **Product and platform test-boundary repair (`TODO(High)`).** Manual
+  audit Td S125 found product/platform tests directly depend on private
+  `vm_session`, `core_machine`, media, and platform-handle fields. Examples
+  include `tests/products/nxvm_default_profile_smoke.c`,
+  `tests/products/vm_session_media_lifecycle_s3_smoke.c`,
+  `tests/products/vm_model40_hdc_s26_smoke.c`, and
+  `tests/platform/vm_multi_window_session_smoke.c`; the HDC test reaches the
+  embedded executor port directly. Admit one test-boundary task to classify
+  same-owner Core fixtures separately from cross-owner product/platform tests,
+  replace the latter with declared operations and copied observations, and
+  preserve each test's behavioral assertion. Do not make test-only getters or
+  expand production public layouts to keep fixtures compiling.
+
+- [ ] **VM platform adapter contract encapsulation (`TODO(High)`).** Manual
+  audit Td S125 found `vm/platform/platform.h` exports mutable
+  `vm_platform_run_context` and `vm_platform_run_handle` layouts across the
+  composition/platform boundary, including native handles, renderers, backend,
+  execution transport, and display-transition state. This lets composition
+  couple to host-adapter representation rather than a bounded operation with
+  explicit lifetime/failure semantics. Admit one platform-owner task to make
+  these opaque or owner-private, expose only needed display/input/run
+  operations and copied observations, and preserve Linux/Win32 exclusive
+  surface lease cleanup. Do not move host policy into Core or replace the two
+  host adapters with a generic host framework.
 
 - [ ] **Dormant VM request-bridge smoke interface drift (`TODO(Medium)`).**
   A T345 whole-tree audit reproduced that non-current

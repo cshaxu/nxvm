@@ -14,6 +14,7 @@ principal documents named in [docs/README.md](../README.md).
 | `architecture/vm-profile-resolution-design.md` | Architecture owner | Supporting target design for two-root built-in VM profiles, profile resolution, the copied Core machine plan, and the custom `nxvm-session` YAML grammar. It does not change current runtime architecture, Queue, or ABI. |
 | `requirements/` | Product and profile owners | Future DOS, NXVDM, and profile admissions. |
 | `evidence/` | Verification owner | Capability, verification, baseline, and fixture evidence. |
+| `evidence/td-s125-manual-architecture-coding-audit.md` | Governance owner | Td S125's manual source, test, build, and authority disposition matrix; it records review evidence and deferred repairs without changing an architecture or coding authority. |
 | `cpu-timing/` | CPU timing owner | T435 per-profile manual corpus manifests, exhaustive form/context ledgers, and non-imported L2 reference-model assessments. Retain until the queued CPU timing program closes or supersedes the evidence. |
 | `cpu-timing/t435-s7-80286-decoder-ledger-audit.md` | CPU timing closure owner | T435 S7's manual-to-decoder-to-S1/S2 80286 reconciliation result, with the linked rebaseline, inventory and verifier contract. Retain until T435 closes or supersedes it. |
 | `cpu-timing/t436-s1-80286-key-partition.md` | CPU timing closure owner | T436 S1's executable, disjoint 80286 canonical-key ownership partition for the later implementation S units. Retain through the 80286 closure audit. |

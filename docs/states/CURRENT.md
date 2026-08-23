@@ -2,7 +2,7 @@
 
 ## Current Work
 
-**Idle.** T437 is closed; its task-level audit and retained proposal are in
+**Idle.** T437 remains closed; its task-level audit and retained proposal are in
 [history](../history/M5-T437-80386dx-instruction-timing-closure.md).
 ## Current Technical Baseline
 
@@ -40,7 +40,14 @@
 
 ## Recent Governance
 
-- **M5 Td S124 P1:** completed a full static architecture and coding audit using the referenced governance skills and local authorities. All present source roots, CMake ownership/dependency declarations, cross-owner includes, public interface headers, platform SDK sites, file-scope mutable state, unsafe input-flush patterns and test ownership were swept. Dependency DAG and C-facade gates pass with zero migration edges. The three file-scope mutable objects are explicitly owned: DMA nonce allocation and one host-surface lease per Linux/Win32 adapter. No invariant violation or repair admission was found; this is static conformance evidence, not a new runtime qualification.
+- **M5 Td S125 P1:** manually audited the current authorities, source owners,
+  composition paths, public contracts, platform adapters, VDM skeleton, tests,
+  CMake declarations, and corroborating structural gates. The indexed
+  [audit evidence](../etc/evidence/td-s125-manual-architecture-coding-audit.md)
+  records nine concrete architecture/coding findings and explicit non-findings;
+  all repair work is bounded in TODO. This is not a runtime-correctness claim.
+
+- **M5 Td S124 P1:** ran limited static dependency and C-facade checks. Those checks passed, but they were not a full manual architecture/code audit and do not establish absence of invariant violations; Td S125 performs the required source and documentation review.
 
 - **M5 Td S123 P1:** audited the repository against the documentation and execution authorities: topology, links, indexes, packet/identifier/state, Queue/TODO boundaries and current artifact identity pass the required governance gate. The worktree is clean. Read-only Git integrity inspection reports only unreachable temporary objects; it is not a current integrity failure and no destructive cleanup was admitted.
 
@@ -53,24 +60,3 @@
 - **M5 Td S119 P1:** compressed Td S118's code-size/cleanup rule without weakening its baseline, default non-positive budget, prior numeric approval, final reconciliation, retirement or closure-block requirements. T434 remains unallocated.
 
 - **M5 Td S118 P1:** made a reproducible code-size baseline, default non-positive net code, owner-approved positive cap, obsolete-path disposition and actual-delta report mandatory for every code-changing S. T434 remains unallocated.
-
-- **M5 Td S117 P1:** froze T434's complete 30-ID seam/default-disposition ledger, three current VM session materialization families and two bounded implementation batches; it requires one atomic plan-only publication cutover and records architecture/coding proof as a task-local closure barrier. T434 remains unallocated.
-
-- **M5 Td S116 P1:** made default-plan equivalence concrete and prohibits T434 closure when any public capability is undisposed, any production path bypasses the plan, or plan semantics conflict with Core/VM ownership; T434 remains unallocated.
-
-- **M5 Td S115 P1:** made the Core timing-plan candidate require one production publication path, all current consumer seams, explicit runnable L2 dispositions, atomic invalid-plan/required-L3 rejection, and no audit-only handoff; T434 remains unallocated.
-
-- **M5 Td S114 P1:** established the mandatory three-level hardware implementation ledger for every M5 hardware candidate: document-primary complete implementation first, reproducible mature-emulator reference contract second, then deterministic explicit maintained boundary; no Rules, runtime or source import changed.
-
-- **M5 Td S113 P1:** linked every Core L3 proposal directly to the shared timing design and its exact finite admission batch; the five earliest receiver batches cover all 30 frozen Core capability IDs once, without changing Queue order, runtime or architecture authority.
-
-- **M5 Td S112 P1:** replaced pre-Windows Queue positions 7-10 with PC/AT 5170 root normalization, DeskPro child convergence, AT resolver/default-at migration, and YAML cutover; each has a proposal. The VM design now makes the current AT tree direct under pc-at-5170; XT remains deferred.
-
-- **M5 Td S111 P1:** reordered all pre-Windows M5 candidates: six Core L3 tasks, 5170-derived runnable DeskPro, VM profile foundation, retained XT closure, then Windows; withdrew four stale candidates while preserving their evidence links.
-
-
-- **M5 Td S110 P1:** recorded the target VM profile resolver and copied Core machine-plan design: 5160 and 5170 are the two roots; YAML has one built-in profile selector, no variant or compatibility-version layer; 486/P5 is deferred. No runtime, Queue, proposal, or ABI changed.
-
-- **M5 Td S109 P1:** made Project timing levels explicit: L1 is ordered functional boot without timing guarantee; L2 is implemented macro-scale proportional timing; L3 is the current documentation-driven constant/formula/range target; L4 hardware-real timing is prohibited from implementation.
-
-- **M5 Td S108 P1:** established Project A's Core specification-driven instruction and transaction timing design: L1--L4 vocabulary, admitted capability universe, explicit L2 exception ledger, and a neutral Core-to-VM timing-contract boundary; no runtime or Queue change.
