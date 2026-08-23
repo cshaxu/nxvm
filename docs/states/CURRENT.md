@@ -40,6 +40,8 @@
 
 ## Recent Governance
 
+- **M5 Td S124 P1:** completed a full static architecture and coding audit using the referenced governance skills and local authorities. All present source roots, CMake ownership/dependency declarations, cross-owner includes, public interface headers, platform SDK sites, file-scope mutable state, unsafe input-flush patterns and test ownership were swept. Dependency DAG and C-facade gates pass with zero migration edges. The three file-scope mutable objects are explicitly owned: DMA nonce allocation and one host-surface lease per Linux/Win32 adapter. No invariant violation or repair admission was found; this is static conformance evidence, not a new runtime qualification.
+
 - **M5 Td S123 P1:** audited the repository against the documentation and execution authorities: topology, links, indexes, packet/identifier/state, Queue/TODO boundaries and current artifact identity pass the required governance gate. The worktree is clean. Read-only Git integrity inspection reports only unreachable temporary objects; it is not a current integrity failure and no destructive cleanup was admitted.
 
 - **M5 Td S122 P1:** decomposed the queued 80286 timing closure by observable timing and architectural path: coverage freeze, result-contract publication, non-control forms, strings, ordinary and protected control transfer, protected system forms, then full closure. No numeric task, source, artifact, ABI or runtime behavior changed.
@@ -72,5 +74,3 @@
 - **M5 Td S109 P1:** made Project timing levels explicit: L1 is ordered functional boot without timing guarantee; L2 is implemented macro-scale proportional timing; L3 is the current documentation-driven constant/formula/range target; L4 hardware-real timing is prohibited from implementation.
 
 - **M5 Td S108 P1:** established Project A's Core specification-driven instruction and transaction timing design: L1--L4 vocabulary, admitted capability universe, explicit L2 exception ledger, and a neutral Core-to-VM timing-contract boundary; no runtime or Queue change.
-
-- **M5 Td S107 P1:** retired the completed tiered-fallback foundation from the active Queue, promoted the DeskPro physical-cycle program, and ordered CPU-to-board timing, device phases, Compaq fixed disk, CECG, BYOB lifecycle, and independent L3 re-audit with retained evidence tiers.
