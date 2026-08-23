@@ -29,7 +29,7 @@ work, source import, or a new profile.
 | S7 | protected segment, descriptor and system forms |
 | S8 | full generated-key closure, regression, cleanup and task audit |
 
-The retained [candidate proposal](../proposals/m5-80286-instruction-timing-closure.md)
+The retained [candidate proposal](M5-T436-80286-instruction-timing-closure-proposal.md)
 defines the exact exit standard for each S. S8 cannot absorb unimplemented
 families: each must remain assigned to its originating implementation S.
 

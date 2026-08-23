@@ -862,7 +862,7 @@ static C_INT lar_lsl_s57_test_80386_timing_granularity(C_VOID)
     const type_unsigned_8 *codes[] = { lsl, lsl, lsl_memory, lsl_memory };
     const core_machine_run_budget budget = { 1u, 0u };
     const type_unsigned_16 selectors[] = { 0x0010u, 0x0028u, 0x0010u, 0x0028u };
-    const type_unsigned_64 expected[] = { 20u, 25u, 21u, 26u };
+    const type_unsigned_64 expected[] = { 21u, 25u, 22u, 26u };
     type_unsigned_8 index;
 
     for (index = 0u; index < 4u; ++index) {

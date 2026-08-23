@@ -5,6 +5,7 @@
 
 #define T359_S6_RESET_LINEAR 0xfffffff0u
 #define T359_S6_RESET_PHYSICAL 0x000ffff0u
+#define T359_S6_CODE_LINEAR 0u
 #define T359_S6_DATA 0x00001000u
 
 typedef struct t359_s6_state {
@@ -36,10 +37,43 @@ static const core_machine_execution_provider t359_s6_execution = {
     t359_s6_reset, STD_NULL, t359_s6_advance
 };
 
+static C_VOID t359_s6_enter_protected(core_machine *machine)
+{
+    t_cpu_data_sreg data = { 0 };
+
+    if (machine == STD_NULL) return;
+    TYPE_SET_BIT(machine->executor_cpu.data.cr0, VCPU_CR0_PE);
+    machine->executor_cpu.data.gdtr.flagValid = TYPE_TRUE;
+    machine->executor_cpu.data.gdtr.sregtype = SREG_GDTR;
+    machine->executor_cpu.data.gdtr.base = 0x0300u;
+    machine->executor_cpu.data.gdtr.limit = 0x0017u;
+    data.selector = 0x0008u;
+    data.base = 0u;
+    data.limit = 0xffffu;
+    data.dpl = 0u;
+    data.flagValid = TYPE_TRUE;
+    data.sregtype = SREG_CODE;
+    data.seg.executable = TYPE_TRUE;
+    data.seg.exec.readable = TYPE_TRUE;
+    machine->executor_cpu.data.cs = data;
+    data.selector = 0x0010u;
+    data.sregtype = SREG_DATA;
+    data.seg.executable = TYPE_FALSE;
+    data.seg.data.writable = TYPE_TRUE;
+    machine->executor_cpu.data.ds = data;
+    data.sregtype = SREG_STACK;
+    machine->executor_cpu.data.ss = data;
+}
+
 static C_INT t359_s6_prepare(core_machine **out_machine, t359_s6_state *state)
 {
     const core_machine_config config = {
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386
+    };
+    static const type_unsigned_8 gdt[] = {
+        0u,0u,0u,0u,0u,0u,0u,0u,
+        0xffu,0xffu,0u,0u,0u,0x9au,0u,0u,
+        0xffu,0xffu,0u,0u,0u,0x92u,0u,0u
     };
     core_machine *machine = STD_NULL;
 
@@ -48,10 +82,14 @@ static C_INT t359_s6_prepare(core_machine **out_machine, t359_s6_state *state)
         test_core_machine_fixture_register_reset_mapping(machine,
             T359_S6_RESET_LINEAR, T359_S6_RESET_PHYSICAL, 64u) !=
             TYPE_STATUS_OK ||
+        test_core_machine_fixture_register_reset_mapping(machine,
+            T359_S6_CODE_LINEAR, T359_S6_CODE_LINEAR, 64u) != TYPE_STATUS_OK ||
         test_core_machine_fixture_register_reset_mapping(machine, T359_S6_DATA,
             T359_S6_DATA, 64u) != TYPE_STATUS_OK ||
         !test_core_machine_fixture_bind_freeze_reset(machine,
-            &t359_s6_execution, state)) {
+            &t359_s6_execution, state) ||
+        core_machine_memory_write(machine, 0x0300u, gdt, sizeof(gdt)) !=
+            TYPE_STATUS_OK) {
         core_machine_destroy(machine);
         return 0;
     }
@@ -65,15 +103,20 @@ static C_INT t359_s6_run(core_machine *machine, t359_s6_state *state,
     const core_machine_run_budget budget = { 1u, 0u };
     core_machine_run_result result;
     type_unsigned_64 data = UINT64_C(0x8877665544332211);
+    type_status status;
 
     if (machine == STD_NULL || state == STD_NULL || row == STD_NULL ||
         core_machine_reset(machine) != TYPE_STATUS_OK ||
-        core_machine_memory_write(machine, T359_S6_RESET_LINEAR, row->program,
+        !test_core_machine_fixture_reset_real_mode(machine) ||
+        core_machine_memory_write(machine, T359_S6_CODE_LINEAR, row->program,
             row->program_bytes) != TYPE_STATUS_OK ||
         core_machine_memory_write(machine, T359_S6_DATA, &data, sizeof(data)) !=
             TYPE_STATUS_OK) return 0;
+    t359_s6_enter_protected(machine);
+    machine->executor_cpu.data.eip = 0u;
     machine->executor_cpu.data.eax = row->eax;
-    return core_machine_run(machine, budget, &result) == TYPE_STATUS_OK &&
+    status = core_machine_run(machine, budget, &result);
+    return status == TYPE_STATUS_OK &&
         result.reason == CORE_MACHINE_STOP_BUDGET && result.executed == 1u &&
         result.ticks == row->ticks && result.elapsed_ticks == row->ticks &&
         state->advanced_ticks == row->ticks;
@@ -96,15 +139,15 @@ static C_INT t359_s6_test_fixed_real_rows(C_VOID)
     static const type_unsigned_8 lmsw_register[] = { 0x0fu, 0x01u, 0xf0u };
     static const type_unsigned_8 push_fs[] = { 0x0fu, 0xa0u };
     static const t359_s6_row rows[] = {
-        { clts, sizeof(clts), 5u, 0u },
+        { clts, sizeof(clts), 6u, 0u },
         { mov_from_cr0, sizeof(mov_from_cr0), 6u, 0u },
-        { mov_to_cr0, sizeof(mov_to_cr0), 10u, 0u },
+        { mov_to_cr0, sizeof(mov_to_cr0), 11u, 0u },
         { mov_from_tr6, sizeof(mov_from_tr6), 12u, 0u },
         { mov_to_tr6, sizeof(mov_to_tr6), 12u, 0u },
         { sgdt, sizeof(sgdt), 9u, 0u },
         { smsw_register, sizeof(smsw_register), 2u, 0u },
-        { smsw_memory, sizeof(smsw_memory), 3u, 0u },
-        { lmsw_register, sizeof(lmsw_register), 10u, 0u },
+        { smsw_memory, sizeof(smsw_memory), 2u, 0u },
+        { lmsw_register, sizeof(lmsw_register), 11u, 0u },
         { push_fs, sizeof(push_fs), 2u, 0u }
     };
     t359_s6_state state = { 0u };

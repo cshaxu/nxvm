@@ -257,7 +257,7 @@ static C_INT timing_test_physical_contract(C_VOID)
     static const type_unsigned_8 exact[] = { 0x90u };
     static const type_unsigned_8 jcc[] = { 0x75u, 0xfeu };
     static const type_unsigned_8 classified_unqualified[] = { 0xb8u, 0x34u, 0x12u };
-    static const type_unsigned_8 unallocated[] = { 0x26u, 0x90u };
+    static const type_unsigned_8 equivalent_prefixed_nop[] = { 0x26u, 0x90u };
     core_machine_retirement_eligibility_key entries[2];
     const core_machine_retirement_qualification_descriptor qualification = {
         entries, sizeof(entries) / sizeof(entries[0])
@@ -306,11 +306,12 @@ static C_INT timing_test_physical_contract(C_VOID)
             result.reason != CORE_MACHINE_STOP_FAULT || result.executed != 0u ||
             result.ticks != 0u || result.elapsed_ticks != 0u ||
             core_machine_reset(machine) != TYPE_STATUS_OK ||
-            core_machine_memory_write(machine, TIMING_RESET_LINEAR, unallocated,
-                sizeof(unallocated)) != TYPE_STATUS_OK ||
-            core_machine_run(machine, budget, &result) != TYPE_STATUS_FAULT ||
-            result.reason != CORE_MACHINE_STOP_FAULT || result.executed != 0u ||
-            result.ticks != 0u || result.elapsed_ticks != 0u;
+            core_machine_memory_write(machine, TIMING_RESET_LINEAR,
+                equivalent_prefixed_nop, sizeof(equivalent_prefixed_nop)) !=
+                TYPE_STATUS_OK || core_machine_run(machine, budget, &result) !=
+                TYPE_STATUS_OK || result.reason != CORE_MACHINE_STOP_BUDGET ||
+            result.executed != 1u || result.ticks != 3u ||
+            result.elapsed_ticks != 3u;
     }
     if (!failed) {
         STD_PRINTF("M5:T394:S4:ELIGIBILITY-KEY:OK\n");

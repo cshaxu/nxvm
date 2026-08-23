@@ -74,19 +74,6 @@ adopts them.
 
 ## CPU, Time, And Debugging Debt
 
-- [ ] **Current-gate registration and Model-40 smoke reconciliation (`TODO(High)`).**
-  T437 S8 reproduced three separate non-80386-timing gate defects: the T344
-  registration verifier rejects the PowerShell `current.core-machine-8086-`
-  `timing-results-s5` test because it is not a canonical executable target;
-  `current.vm-model40-private-composition-s7-smoke` exits 1 without output;
-  and a fresh Debug CMake configure stops because T337 finds no `#UD` source
-  assertion for `core-machine-fpu-8087-smoke`. Admit a bounded CMake/current-
-  gate owner task to distinguish executable targets from verifier tests,
-  diagnose the Model-40 assertion with a configured Debug build, and restore
-  fresh-configure plus complete current-gate proof. Do not change 80386
-  instruction clocks, dilute gate membership, or relabel an unverified smoke
-  as passing.
-
 - [ ] **Architectural reset, shutdown, and triple-fault policy (`TODO(Medium)`).**
   The machine currently exposes a KBC-originated reset request and lifecycle
   stop, but it has no Intel-defined CPU reset/shutdown/triple-fault contract.

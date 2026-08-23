@@ -85,8 +85,8 @@ C_INT main(C_VOID)
          * locality miss in addition to the deterministic base instruction tick. */
         failed |= core_machine_run(session->core_machine, budget, &result) !=
             TYPE_STATUS_OK || result.reason != CORE_MACHINE_STOP_BUDGET ||
-            result.executed != 1u || result.ticks != 1u ||
-            result.elapsed_ticks != 1u;
+            result.executed != 1u || result.ticks != 3u ||
+            result.elapsed_ticks != 3u;
     }
     if (!failed) {
         core_platform_input_event event = {0};

@@ -26,12 +26,11 @@ has a final result-contract artifact or an all-keys-conforming marker.
 
 ## Owner-Approved Stop And Requeue
 
-The remaining profile work is explicitly transferred to the separate
-[80286 instruction timing closure](../proposals/m5-80286-instruction-timing-closure.md)
-and [80386DX instruction timing closure](../proposals/m5-80386dx-instruction-timing-closure.md)
-candidates. They are the first and second entries in the M5 Queue and preserve
-the required 80286-before-80386DX dependency. The former four-profile proposal
-is retained as non-candidate planning history.
+The remaining profile work was transferred to the separate 80286 and 80386DX
+closure candidates, preserving the required 80286-before-80386DX dependency.
+Both subsequently closed as [T436](M5-T436-80286-instruction-timing-closure.md)
+and [T437](M5-T437-80386dx-instruction-timing-closure.md); the former
+four-profile proposal remains non-candidate planning history.
 
 ## Task Outcome
 

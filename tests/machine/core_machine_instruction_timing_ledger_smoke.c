@@ -537,7 +537,7 @@ static C_INT timing_ledger_test_jcc_and_repeat(C_VOID)
 
 static C_INT timing_ledger_test_unavailable_and_fault(C_VOID)
 {
-    static const type_unsigned_8 unallocated[] = { 0xd0u, 0xc0u };
+    static const type_unsigned_8 rol_register_one[] = { 0xd0u, 0xc0u };
     static const type_unsigned_8 fault[] = { 0xf0u, 0x90u };
     timing_ledger_state state = { 0u, 0u, 0u };
     const core_machine_run_budget budget = { 1u, 0u };
@@ -546,8 +546,8 @@ static C_INT timing_ledger_test_unavailable_and_fault(C_VOID)
     C_INT failed = !timing_ledger_prepare(&machine, &state);
 
     if (!failed) {
-        failed |= !timing_ledger_load(machine, unallocated,
-            sizeof(unallocated)) || !timing_ledger_execute(machine, 1u, 1u,
+        failed |= !timing_ledger_load(machine, rol_register_one,
+            sizeof(rol_register_one)) || !timing_ledger_execute(machine, 1u, 3u,
                 &state);
     }
     if (!failed) {
@@ -623,7 +623,7 @@ static C_INT timing_ledger_test_compatibility_is_not_source_truth(C_VOID)
             prefixed_nop, sizeof(prefixed_nop)) != TYPE_STATUS_OK ||
         core_machine_run(machine, budget, &result) != TYPE_STATUS_OK ||
         result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 1u ||
-        result.ticks != 1u || result.elapsed_ticks != 1u;
+        result.ticks != 3u || result.elapsed_ticks != 3u;
 
     core_machine_destroy(machine);
     return failed;

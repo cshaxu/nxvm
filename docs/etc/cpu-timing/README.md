@@ -74,6 +74,9 @@ implementation S before any new runtime timing result is claimed.
 T437 S2's [result producer](t437-s2-80386-result-producer.md) captures real
 80386DX retirement observations but refuses final result emission until all
 1,410 canonical keys have been observed.
+T437 S8's [result closure](t437-s8-80386-result-closure.md) publishes the
+complete 1,410-key result artifact: 1,409 classified CPU retirements and the
+manual-required separate ESC MCP-domain handoff.
 
 All four profiles share the [context-legality contract](t435-s2-context-legality.md) and implementation-time [manifest result contract](t435-s2-manifest-result-contract.md). Together they require legal semantic contexts, frozen expansion cardinalities and canonical per-key runtime proof; tracker expansion alone cannot close a key.
 

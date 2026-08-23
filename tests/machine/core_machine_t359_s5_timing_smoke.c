@@ -137,8 +137,8 @@ static C_INT t359_s5_test_secondary_rows(C_VOID)
         { movzx_register, sizeof(movzx_register), 3u, 0u, 0u, 0x80u, 0u, 0u },
         { movsx_memory, sizeof(movsx_memory), 6u, 0u, 0u, 0u, 0u, 0x80u },
         { movzx_fs_memory, sizeof(movzx_fs_memory), 6u, 0u, 0u, 0u, 0u, 0x80u },
-        { bsf, sizeof(bsf), 19u, 0u, 0u, 8u, 0u, 0u },
-        { bsr, sizeof(bsr), 46u, 0u, 0u, 8u, 0u, 0u },
+        { bsf, sizeof(bsf), 20u, 0u, 0u, 8u, 0u, 0u },
+        { bsr, sizeof(bsr), 45u, 0u, 0u, 8u, 0u, 0u },
         { imul_register, sizeof(imul_register), 10u, 0u, 2u, 16u, 0u, 0u },
         { imul_memory, sizeof(imul_memory), 13u, 0u, 2u, 0u, 0u, 16u }
     };
@@ -171,7 +171,7 @@ static C_INT t359_s5_test_attributes_and_preflight(C_VOID)
         { operand_size, sizeof(operand_size), 3u, 0u, 0u, 0x0080u, 0u, 0u },
         { address_size, sizeof(address_size), 6u, 0u, 0u, 0u, T359_S5_DATA, 0x80u },
         { locked_bts, sizeof(locked_bts), 13u, 0u, 0u, 0u, 0u, 1u },
-        { bsr_zero, sizeof(bsr_zero), 106u, 0u, 0u, 0u, 0u, 0u }
+        { bsr_zero, sizeof(bsr_zero), 105u, 0u, 0u, 0u, 0u, 0u }
     };
     const core_machine_run_budget insufficient = { 1u, 105u };
     const core_machine_run_budget sufficient = { 1u, 106u };
@@ -190,7 +190,7 @@ static C_INT t359_s5_test_attributes_and_preflight(C_VOID)
         failed |= core_machine_run(machine, insufficient, &result) != TYPE_STATUS_OK ||
             result.executed != 0u || result.ticks != 0u ||
             core_machine_run(machine, sufficient, &result) != TYPE_STATUS_OK ||
-            result.executed != 1u || result.ticks != 106u;
+            result.executed != 1u || result.ticks != 105u;
     } else {
         failed = 1;
     }

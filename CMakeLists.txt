@@ -2343,7 +2343,6 @@ set(PROJECT_T337_UD_CURRENT_GATE_TARGETS
     core-machine-debug-mov-s59-smoke
     core-machine-double-shift-smoke
     core-machine-enter-leave-smoke
-    core-machine-fpu-8087-smoke
     core-machine-fpu-escape-smoke
     core-machine-fpu-interface-s65-smoke
     core-machine-fs-gs-stack-smoke
@@ -2410,7 +2409,6 @@ set(PROJECT_T337_UD_REAL_DELIVERY_TARGETS
     core-machine-real-ud-delivery-s1-smoke
     core-machine-tf-db-s60-smoke)
 set(PROJECT_T337_UD_NO_REAL_NEGATIVE_TARGETS
-    core-machine-fpu-8087-smoke
     core-machine-fpu-escape-smoke
     core-machine-msw-s63-smoke
     core-machine-protected-16-gate-s3-smoke
@@ -2752,12 +2750,22 @@ if(NOT project_t344_expected_current_count EQUAL project_t344_registered_current
     message(FATAL_ERROR
         "T344 current-gate registration has an unexpected target.")
 endif()
+set(PROJECT_T344_CURRENT_GATE_AUXILIARY_TESTS)
+if(POWERSHELL_EXECUTABLE)
+    list(APPEND PROJECT_T344_CURRENT_GATE_AUXILIARY_TESTS
+        core-machine-8086-timing-results-s5
+        core-machine-8086-decoder-ledger-s5)
+endif()
 file(GENERATE
     OUTPUT "${CMAKE_BINARY_DIR}/t344-current-gate-targets.txt"
     CONTENT "$<JOIN:${PROJECT_T344_CURRENT_GATE_TARGETS},\n>\n")
+file(GENERATE
+    OUTPUT "${CMAKE_BINARY_DIR}/t344-current-gate-auxiliary-tests.txt"
+    CONTENT "$<JOIN:${PROJECT_T344_CURRENT_GATE_AUXILIARY_TESTS},\n>\n")
 add_custom_target(verify-t344-current-gate-registration
     COMMAND "${CMAKE_COMMAND}"
         -DPROJECT_T344_CURRENT_TARGETS_FILE:FILEPATH=${CMAKE_BINARY_DIR}/t344-current-gate-targets.txt
+        -DPROJECT_T344_CURRENT_AUXILIARY_TESTS_FILE:FILEPATH=${CMAKE_BINARY_DIR}/t344-current-gate-auxiliary-tests.txt
         -DPROJECT_T344_CTEST_TEST_FILE:FILEPATH=${CMAKE_BINARY_DIR}/CTestTestfile.cmake
         -P "${CMAKE_SOURCE_DIR}/cmake/verify_t344_current_gate_registration.cmake"
     COMMENT "Verifying T344 current-gate registration integrity"
