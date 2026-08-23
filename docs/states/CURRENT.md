@@ -40,6 +40,11 @@
 
 ## Recent Governance
 
+- **M5 Td S131 P1:** admitted nine bounded repair candidates ahead of future
+  M5 capability work, promoted firmware materialization from TODO, and refined
+  the queued YAML candidate's grammar/selection acceptance surface. The
+  documentation-governance gate passes; this changes no runtime behavior.
+
 - **M5 Td S130 P1:** sixth-pass manual review of selected VM production
   dependencies on Core-private machine headers confirms a keyboard scan-set
   contract gap and five unused include residues. The indexed
@@ -91,5 +96,3 @@
   all repair work is bounded in TODO. This is not a runtime-correctness claim.
 
 - **M5 Td S124 P1:** ran limited static dependency and C-facade checks. Those checks passed, but they were not a full manual architecture/code audit and do not establish absence of invariant violations; Td S125 performs the required source and documentation review.
-
-- **M5 Td S123 P1:** audited the repository against the documentation and execution authorities: topology, links, indexes, packet/identifier/state, Queue/TODO boundaries and current artifact identity pass the required governance gate. The worktree is clean. Read-only Git integrity inspection reports only unreachable temporary objects; it is not a current integrity failure and no destructive cleanup was admitted.

@@ -8,6 +8,21 @@ is retained separately so this queue remains a short ordering surface.
 
 ## M5 Candidates
 
+The following bounded repairs are first. They preserve the current
+architecture and deliberately prefer direct owner-local corrections over new
+layers; each implementation admission must still establish its own finite
+sweep and regression evidence.
+
+1. [Core reset and firmware failure atomicity](../proposals/m5-core-reset-firmware-failure-atomicity.md).
+1. [VM session reset and startup outcome propagation](../proposals/m5-vm-session-reset-startup-outcomes.md).
+1. [Model-40 immutable configuration enforcement](../proposals/m5-model40-immutable-configuration.md).
+1. [VM media persistence failure hygiene](../proposals/m5-vm-media-persistence-failure-hygiene.md).
+1. [Core CPU and physical-memory boundary correctness](../proposals/m5-core-cpu-memory-boundary-correctness.md).
+1. [Core platform primitive initialization and outcome contract](../proposals/m5-core-platform-primitive-outcomes.md).
+1. [VM native display resource lifetime repair](../proposals/m5-vm-native-display-resource-lifetime.md).
+1. [VM debugger state and recording lifecycle repair](../proposals/m5-vm-debugger-recording-lifecycle.md).
+1. [VM firmware materialization portability and dead-code closure](../proposals/m5-vm-firmware-materialization-portability.md).
+
 The [four-profile CPU-completeness program](../proposals/m5-four-profile-cpu-completeness-program.md)
 is the shared admission context for this dependency-ordered sequence.
 

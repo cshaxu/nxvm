@@ -74,18 +74,6 @@ adopts them.
 
 ## CPU, Time, And Debugging Debt
 
-- [ ] **VM firmware materialization and dead-code closure (`TODO(Medium)`).**
-  Manual audit Td S127 reconfirmed the retained T345 evidence: composition
-  `profile_firmware.c` materializes five generated-firmware C string literals
-  above the C11 guaranteed translation limit, while `session.c` retains the
-  unused `vm_session_read_u16` helper. Neither condition has a current TODO
-  transfer. Admit one bounded firmware-owner task to replace oversized source
-  literals with an explicit chunk/capacity materialization contract that proves
-  byte-for-byte ROM equivalence, and remove or give a real caller to the dead
-  helper. Do not silence warnings, mechanically reflow generated instruction
-  text without equivalence proof, or use this cleanup to change firmware
-  behavior.
-
 - [ ] **Product session-command authority unification (`TODO(High)`).** Manual
   audit Td S127 found `core_product_session_command_execute()` implements a
   full `SESSION LIST/OPEN/SELECT/CLOSE` grammar but has no production caller;
