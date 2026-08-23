@@ -142,13 +142,20 @@ adopts them.
   composition `control.h`/`fault.h`. These headers expose concrete mutable
   layouts, owner-local lifecycle operations, and--in `bios.h`--large generated
   firmware implementation macros across declared module boundaries, contrary
-  to the required minimal `*_interface.h` contract boundary. Admit one
+  to the required minimal `*_interface.h` contract boundary. Td S128 further
+  confirms that `console.h` exports parser/provider/session-manager/catalog
+  state and `session_catalog.h` exports all mutable parsed records; the same
+  pass found composition's `provider.h` includes that outer product contract
+  and implements its adapter, reversing the intended dependency direction.
+  Admit one
   implementation task to inventory every cross-owner consumer, define
   opaque/copied/bounded interfaces with explicit lifetime and failure semantics,
-  move owner-private layouts and firmware construction behind them, update tests
-  to prove the public boundary, and remove the direct paths atomically. Do not
-  rename headers without retiring the exposed layouts and direct production
-  consumers.
+  move owner-private layouts and firmware construction behind them, relocate
+  product adaptation to the composition root, update tests to prove the public
+  boundary, and remove the direct paths atomically. Do not rename headers
+  without retiring the exposed layouts/direct production consumers, retain the
+  reverse product include through a forwarding header, or add test-only state
+  accessors.
 
 - [ ] **Architectural reset, shutdown, and triple-fault policy (`TODO(Medium)`).**
   The machine currently exposes a KBC-originated reset request and lifecycle
@@ -402,12 +409,17 @@ admissions, not the default definition of NXVM completion.
   parity state, and `core_machine *`; the former publishes the full PC/AT
   topology/configuration representation. Consumers and tests consequently
   couple to profile storage and Core object representation rather than declared
-  profile operations or copied observations. Admit one profile-owner task to
+  profile operations or copied observations. Td S128 additionally found the
+  test-only `vm_session_create_model40_private()` public construction path
+  duplicates the production BYOB constructor's Model-40 Core configuration
+  before both enter one lifecycle. Admit one profile-owner task to
   separate immutable profile selection data from private, stateful composition
-  devices; define bounded initialization/materialization and observation
-  contracts with lifetime/failure semantics; and migrate every consumer and
+  devices; retain one production construction/materialization route with
+  copied synthetic-ROM fixture input; define bounded initialization,
+  observation, lifetime, and failure contracts; and migrate every consumer and
   test atomically. Preserve the existing profile-specific hardware semantics;
-  do not hide the problem behind typedef renames or a generic profile framework.
+  do not hide the problem behind typedef renames, a parallel test constructor,
+  or a generic profile framework.
 
 - [ ] **Cross-owner test-boundary repair (`TODO(High)`).** Manual
   audit Td S125/S126/S127 found product, platform, and machine integration

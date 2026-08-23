@@ -40,6 +40,15 @@
 
 ## Recent Governance
 
+- **M5 Td S128 P1:** fourth-pass manual review of VM composition, profile,
+  product, and public-contract implementation confirms mutable VM-product
+  console/catalog state escapes, a test-only duplicated Model-40 construction
+  path, and a composition-to-product reverse adapter dependency. The indexed
+  [evidence](../etc/evidence/td-s128-fourth-pass-audit.md) also records bounded
+  lifecycle/profile-direction non-findings and remaining scope; all repairs
+  extend existing non-overlapping TODO admissions. This is not a
+  whole-repository completion or runtime-correctness claim.
+
 - **M5 Td S127 P1:** third-pass manual review of CMake platform/source
   ownership, duplicate product command authority, and Core/VM test boundaries
   confirms four additional concrete findings, including systemic VM test
@@ -73,5 +82,3 @@
 - **M5 Td S122 P1:** decomposed the queued 80286 timing closure by observable timing and architectural path: coverage freeze, result-contract publication, non-control forms, strings, ordinary and protected control transfer, protected system forms, then full closure. No numeric task, source, artifact, ABI or runtime behavior changed.
 
 - **M5 Td S121 P1:** bound the queued CPU timing program to complete 8086/80186 evidence/model research before implementation audit, then finite repair and closure; manual/reference-derived models are labelled L2, only an exhausted ladder may declare L1, and no emulator model lowers the L3 source threshold. T435 remains unallocated.
-
-- **M5 Td S120 P1:** changed code-size restraint from a hard numerical admission/closure gate to a soft concise-design goal; actual-delta reporting, explanation and obsolete-path retirement/disposition remain mandatory. T434 remains unallocated.
