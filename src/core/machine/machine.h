@@ -79,6 +79,8 @@ typedef struct core_machine_absent_memory {
 
 struct core_machine_firmware_context {
     core_machine *machine;
+    type_status operation_status;
+    C_INT track_operation_failures;
     C_INT active;
     C_INT configuring;
 };

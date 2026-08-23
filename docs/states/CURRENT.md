@@ -2,11 +2,31 @@
 
 ## Current Work
 
-**Idle.** T437 remains closed; its task-level audit and retained proposal are in
-[history](../history/M5-T437-80386dx-instruction-timing-closure.md).
+**M5 T438 S1 active -- Core reset and firmware failure atomicity.**
+
+## M5 T438 S1 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New |
+| Admission And Approval | Owner approved this candidate and single-person implementation in this conversation on 2026-08-23, after approving the described failure-propagation plan. No exception is requested. |
+| Objective | Propagate VM firmware reset failures through Core reset truthfully and leave the machine in one defined non-runnable lifecycle state on failure. |
+| Non-goals | No firmware-byte, success-reset-vector, profile-policy, timing, public-ABI, generic rollback-framework, or second session-lifecycle change. |
+| Reference Baseline | Pushed `1d18cd6d`; pre-T438 developer artifact; T437 closed; queued proposal `m5-core-reset-firmware-failure-atomicity.md`. T438 publishes `vm-0-5-0438`. |
+| Candidate Proposal | [Core reset and firmware failure atomicity](../proposals/m5-core-reset-firmware-failure-atomicity.md). |
+| Files And ABI Surface | Expected: Core machine reset owner, VM default-profile firmware reset helpers/callback, focused Core/VM tests, CMake test registration if required, evidence/history/current records. No public ABI change is admitted. |
+| Applicable Rules | Architecture invariants: one lifecycle/failure owner, one production path, and dependency flow only toward Core; Coding Rules: owner-local C11 repair, minimal existing boundary, no framework or forwarding layer, and every added abstraction must delete an old duplicate; Execution Rules: complete P, actual-change review, similar-issue sweep, artifact/current-gate requirements. |
+| Verification | Focused firmware reset memory-write and port-write failure/retry proof; reset lifecycle assertion; caller/helper similar-issue sweep; configured build/current gates; documentation-governance gate; artifact identity/hash. |
+| Expected Markers | Firmware helper failure is propagated through one Core reset result boundary; Core does not publish STOPPED/reset trace after failed firmware reset; retry from the defined failure state is deterministic; successful reset remains unchanged; no VM-to-Core reverse dependency, duplicate reset path, callback-specific failure abstraction, or parallel owner remains. |
+| Asset Needs | None. Existing project-owned synthetic firmware/test fixtures only; no external source, firmware, guest media, Microsoft component, or research import. |
+| Reporting Requirements | Report pushed implementation P, focused and current-gate results, artifact hash, code-size delta, exact sweep dispositions, and any transfer. |
+| Stop Conditions | Stop for a required public lifecycle contract, unrepresentable defined failure state, firmware behavior/byte change, or unavailable required gate; request owner direction rather than expanding scope. |
+| Exit Criteria | Every reset callback/helper hit has a disposition; failure reaches caller without false success through the existing single Core boundary; focused failure/retry proof and current gates pass; actual changes prove unique state ownership, one production path, downward configuration/upward status flow, and no needless abstraction or retained duplicate; one complete P is committed and pushed. |
+| Original Owner Request | Owner approved the first repair plan and requested single-person implementation. |
+| Similar-Issue Sweep | Search all tracked production firmware reset callbacks/helpers and Core reset callers for discarded status/void reset paths; record every hit as fixed, not applicable, or transferred with a receiver. |
 ## Current Technical Baseline
 
-- **Current developer artifact:** target `vm-0-5-0434`; `nxvm_0_5_0434.exe` / `build/output/nxvm_0_5_0434.exe`, SHA-256 `F8562F4623D53303470408837249CF89C985E0A0B1130212BBD9CE26B5E1B38A`. T434 has one copied Core timing-plan publication route for default PC/AT, IBM 5170 Model 339 and Model-40 BYOB session composition.
+- **Current developer artifact:** target `vm-0-5-0438`; `nxvm_0_5_0438.exe` / `build/output/nxvm_0_5_0438.exe`, SHA-256 `C2A096C62DE932AC3D15A4107D53B001D981EA1A9FE6E3E81D40964309785920`. T434 has one copied Core timing-plan publication route for default PC/AT, IBM 5170 Model 339 and Model-40 BYOB session composition.
   T386 closes selected-device functional completeness at S29; its retained
   [closure audit](../etc/evidence/t386-s29-functional-closure-audit.md) fixes
   HDC current-gate coverage and transfers board, firmware and physical work.

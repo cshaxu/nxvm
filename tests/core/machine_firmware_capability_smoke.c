@@ -94,6 +94,10 @@ static type_status firmware_probe_reset(C_VOID *opaque,
     if (core_machine_request_stop(probe->machine) != TYPE_STATUS_INVALID_STATE) {
         return TYPE_STATUS_FAULT;
     }
+    if (probe->port_status != TYPE_STATUS_OK) {
+        (C_VOID)core_machine_firmware_port_write(firmware, 0x00e0u, 0x05u);
+        return TYPE_STATUS_OK;
+    }
     return core_machine_firmware_memory_write(firmware, 0x500u, &value,
         sizeof(value));
 }
@@ -213,6 +217,15 @@ C_INT main(C_VOID)
         TYPE_STATUS_OK || value != 0xf4u;
     failed |= core_machine_get_lifecycle(machine, &lifecycle) != TYPE_STATUS_OK ||
         lifecycle != CORE_MACHINE_STOPPED;
+    probe.port_status = TYPE_STATUS_FAULT;
+    failed |= core_machine_reset(machine) != TYPE_STATUS_FAULT;
+    failed |= core_machine_get_lifecycle(machine, &lifecycle) != TYPE_STATUS_OK ||
+        lifecycle != CORE_MACHINE_INITIALIZED;
+    failed |= core_machine_run(machine, budget, &result) != TYPE_STATUS_INVALID_STATE;
+    probe.port_status = TYPE_STATUS_OK;
+    failed |= core_machine_reset(machine) != TYPE_STATUS_OK;
+    failed |= core_machine_get_lifecycle(machine, &lifecycle) != TYPE_STATUS_OK ||
+        lifecycle != CORE_MACHINE_STOPPED;
     run_status = core_machine_run(machine, budget, &result);
     failed |= run_status != TYPE_STATUS_OK ||
         result.reason != CORE_MACHINE_STOP_BUDGET || probe.after_run_calls != 1;
@@ -228,5 +241,6 @@ C_INT main(C_VOID)
     }
     puts("M5:T297:S3:FIRMWARE-CAPABILITY:OK");
     puts("M5:T386:S25:ROM-ALIAS-LIFECYCLE:OK");
+    puts("M5:T438:S1:FIRMWARE-FAILURE-PROPAGATION:OK");
     return 0;
 }
