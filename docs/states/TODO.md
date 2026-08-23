@@ -115,13 +115,15 @@ adopts them.
   and tests directly consuming non-contract headers such as
   `vm/platform/platform.h`, `vm/machine/fdd.h`, `vm/machine/hdd.h`,
   `vm/machine/debug.h`, `vm/product/console.h`, and
-  `vm/profile/default_profile/pc_at_profile.h`. These headers expose concrete
-  mutable layouts or owner-local lifecycle operations across declared module
-  boundaries, contrary to the required minimal `*_interface.h` contract
-  boundary. Admit one implementation task to inventory every cross-owner
-  consumer, define opaque/copied/bounded interfaces with explicit lifetime and
-  failure semantics, move owner-private layouts behind them, update tests to
-  prove the public boundary, and remove the direct paths atomically. Do not
+  `vm/profile/default_profile/pc_at_profile.h`, default-firmware `bios.h`, and
+  composition `control.h`/`fault.h`. These headers expose concrete mutable
+  layouts, owner-local lifecycle operations, and--in `bios.h`--large generated
+  firmware implementation macros across declared module boundaries, contrary
+  to the required minimal `*_interface.h` contract boundary. Admit one
+  implementation task to inventory every cross-owner consumer, define
+  opaque/copied/bounded interfaces with explicit lifetime and failure semantics,
+  move owner-private layouts and firmware construction behind them, update tests
+  to prove the public boundary, and remove the direct paths atomically. Do not
   rename headers without retiring the exposed layouts and direct production
   consumers.
 
@@ -252,6 +254,75 @@ admissions, not the default definition of NXVM completion.
 
 ## Architecture And Portability Debt
 
+- [ ] **Core platform stateful-interface encapsulation (`TODO(High)`).** Manual
+  audit Td S126 found public Core platform headers expose owner-local mutable
+  layouts across module boundaries: `core_platform_backing_resource` publishes
+  its context/provider/closed state, `core_platform_input_source` publishes its
+  lock/sink/context, and `core_platform_presentation_mailbox` publishes its
+  lock/activity/frame. VM composition embeds and passes these layouts to host
+  adapters and tests. Admit one Core-platform task to make the stateful
+  instances opaque or owner-allocated, retain only bounded create/close,
+  submit/publish/capture and copied-frame operations with explicit lifetime
+  semantics, and migrate VM consumers atomically. Do not move host policy into
+  Core, expose test-only fields, or replace the three mechanisms with a generic
+  callback framework.
+
+- [ ] **Host backing-resource production-path convergence (`TODO(High)`).**
+  Manual audit Td S126 found `core_platform_backing_resource` is consumed only
+  by its implementation and tests, while production FDD/HDD, media-save,
+  Model-40 BYOB firmware, session catalog, and debugger paths independently
+  call the global C file facade. This leaves a duplicate, unconsumed host-I/O
+  abstraction and scattered open/read/write/flush/close failure semantics.
+  Admit one bounded storage-boundary task to select one owned production path,
+  map the current file-backed media and BYOB lifecycle/error behavior through
+  it, and retire or narrow the unused parallel contract with focused native
+  tests. Preserve synchronous guest-media semantics, atomic media-save
+  behavior, and source-policy containment; do not introduce a generic
+  filesystem API, asynchronous host I/O into guest callbacks, or change guest
+  media formats.
+
+- [ ] **Core machine collaborator-state interface sealing (`TODO(High)`).**
+  Manual audit Td S126 found `core_machine_media_registry` and
+  `core_machine_display_provider_slot` in public Core machine interfaces
+  expose mutable provider/context bindings and frozen state, then are embedded
+  directly in `vm_session`. These are Core-owned runtime collaborator states,
+  not copied configuration or observations, so their public layouts violate
+  the minimal cross-module contract boundary. Admit one Core-machine task to
+  make the registry and display binding owner-private or opaque, provide only
+  bounded setup/freeze/finalize and media/display operations with explicit
+  lifetime/error semantics, and migrate VM composition/tests as one cutover.
+  Preserve Core-owned routing and copied display/media observations; do not
+  turn this into a second machine object, public owner token, or generic device
+  registry.
+
+- [ ] **Core machine-plan provider-endpoint closure (`TODO(High)`).** Manual
+  audit Td S126 found the public `core_machine_plan` is not solely copied
+  configuration: `core_machine_plan_memory_device` exports callback tables and
+  an owner pointer; the topology also carries a D4 parity-mask pointer, display
+  provider-slot pointer, and media-registry pointers. VM composition/profile
+  code fills those endpoints directly before `core_machine_create_from_plan()`.
+  This exposes raw device/registry state and lifetime across the Core/VM plan
+  boundary, contrary to the cross-module contract rule despite Core copying the
+  plan structure. Admit one Core-plan task to retain declarative copied board
+  values while replacing endpoint storage with bounded, opaque registrations
+  and explicit create/reset/destroy failure semantics; migrate default,
+  Model-339, and Model-40 composition together. Do not remove atomic plan
+  validation, reintroduce post-create mutable topology, or create a generic
+  plugin/device framework.
+
+- [ ] **Core product debugger context boundary repair (`TODO(High)`).** Manual
+  audit Td S126 found `core/product/debug/debug.h` exports the mutable
+  `core_product_debug_context` layout--command buffers, parse/address state,
+  debug target, input provider, and wait dependency--and VM composition embeds
+  it directly in `vm_session`. The roughly 2,600-line command interpreter owns
+  that state, so the public layout is neither a minimal interface nor a copied
+  observation. Admit one Core-product task to introduce an opaque debugger
+  session/capability with bounded create, command, observation, and destroy
+  operations; make target and wait lifetimes explicit; and migrate VM and
+  focused tests. Preserve the retained debugger UX and Core/VM direction; do
+  not add a second command interpreter, test-only field access, or a generic
+  console framework.
+
 - [ ] **Session-manager raw-object escape removal (`TODO(High)`).** Manual
   audit Td S125 found the public Core product session contract exposes
   `core_product_session_manager_borrow_selected(..., C_VOID **out_session)`,
@@ -290,30 +361,35 @@ admissions, not the default definition of NXVM completion.
   test atomically. Preserve the existing profile-specific hardware semantics;
   do not hide the problem behind typedef renames or a generic profile framework.
 
-- [ ] **Product and platform test-boundary repair (`TODO(High)`).** Manual
-  audit Td S125 found product/platform tests directly depend on private
-  `vm_session`, `core_machine`, media, and platform-handle fields. Examples
-  include `tests/products/nxvm_default_profile_smoke.c`,
+- [ ] **Cross-owner test-boundary repair (`TODO(High)`).** Manual
+  audit Td S125/S126 found product, platform, and machine integration tests
+  directly depend on private `vm_session`, `core_machine`, media, firmware,
+  control, and platform-handle fields. Examples include
+  `tests/products/nxvm_default_profile_smoke.c`,
   `tests/products/vm_session_media_lifecycle_s3_smoke.c`,
   `tests/products/vm_model40_hdc_s26_smoke.c`, and
-  `tests/platform/vm_multi_window_session_smoke.c`; the HDC test reaches the
-  embedded executor port directly. Admit one test-boundary task to classify
-  same-owner Core fixtures separately from cross-owner product/platform tests,
-  replace the latter with declared operations and copied observations, and
-  preserve each test's behavioral assertion. Do not make test-only getters or
-  expand production public layouts to keep fixtures compiling.
+  `tests/platform/vm_multi_window_session_smoke.c`; many
+  `tests/machine/vm_*` integration tests include session control/fault or BIOS
+  internals, and the HDC test reaches the embedded executor port directly.
+  Admit one test-boundary task to classify same-owner Core fixtures separately
+  from cross-owner product/platform/machine tests, replace the latter with
+  declared operations and copied observations, and preserve each test's
+  behavioral assertion. Do not make test-only getters or expand production
+  public layouts to keep fixtures compiling.
 
 - [ ] **VM platform adapter contract encapsulation (`TODO(High)`).** Manual
-  audit Td S125 found `vm/platform/platform.h` exports mutable
-  `vm_platform_run_context` and `vm_platform_run_handle` layouts across the
-  composition/platform boundary, including native handles, renderers, backend,
-  execution transport, and display-transition state. This lets composition
-  couple to host-adapter representation rather than a bounded operation with
-  explicit lifetime/failure semantics. Admit one platform-owner task to make
-  these opaque or owner-private, expose only needed display/input/run
-  operations and copied observations, and preserve Linux/Win32 exclusive
-  surface lease cleanup. Do not move host policy into Core or replace the two
-  host adapters with a generic host framework.
+  audit Td S125/S126 found `vm/platform/platform.h` exports mutable
+  `vm_platform_run_context` and `vm_platform_run_handle` layouts, while sibling
+  `host_surface.h`, request transport, execution, and virtual-time headers
+  similarly publish native handles, leases, locks, callback contexts, backend,
+  execution transport, and display-transition state across the
+  composition/platform boundary. This lets composition couple to host-adapter
+  representation rather than bounded operations with explicit
+  lifetime/failure semantics. Admit one platform-owner task to make stateful
+  instances opaque or owner-private, expose only needed display/input/run and
+  copied-observation operations, and preserve Linux/Win32 exclusive surface
+  lease cleanup. Do not move host policy into Core or replace the two host
+  adapters with a generic host framework.
 
 - [ ] **Dormant VM request-bridge smoke interface drift (`TODO(Medium)`).**
   A T345 whole-tree audit reproduced that non-current

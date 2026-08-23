@@ -40,6 +40,15 @@
 
 ## Recent Governance
 
+- **M5 Td S126 P1:** second-pass manual review of Core stateful contracts,
+  collaborator and plan endpoints, Core debugger context, VM/VDM equivalent
+  headers, and host resource/input paths records five additional concrete
+  architecture/coding findings. The indexed
+  [evidence](../etc/evidence/td-s126-second-pass-audit.md) records the exact
+  source paths, one positive input-route disposition, and remaining scope; all
+  repairs are transferred to TODO. This is not a whole-repository completion or
+  runtime-correctness claim.
+
 - **M5 Td S125 P1:** manually audited the current authorities, source owners,
   composition paths, public contracts, platform adapters, VDM skeleton, tests,
   CMake declarations, and corroborating structural gates. The indexed
@@ -58,5 +67,3 @@
 - **M5 Td S120 P1:** changed code-size restraint from a hard numerical admission/closure gate to a soft concise-design goal; actual-delta reporting, explanation and obsolete-path retirement/disposition remain mandatory. T434 remains unallocated.
 
 - **M5 Td S119 P1:** compressed Td S118's code-size/cleanup rule without weakening its baseline, default non-positive budget, prior numeric approval, final reconciliation, retirement or closure-block requirements. T434 remains unallocated.
-
-- **M5 Td S118 P1:** made a reproducible code-size baseline, default non-positive net code, owner-approved positive cap, obsolete-path disposition and actual-delta report mandatory for every code-changing S. T434 remains unallocated.
