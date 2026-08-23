@@ -40,6 +40,14 @@
 
 ## Recent Governance
 
+- **M5 Td S129 P1:** fifth-pass manual review of Core product-session payloads,
+  selected machine state headers, debug/execution providers, and utilities
+  confirms raw mutable option/command storage crosses the public session
+  boundary. The indexed [evidence](../etc/evidence/td-s129-fifth-pass-audit.md)
+  records bounded non-findings and remaining scope; the repair extends the
+  existing session-manager boundary task rather than duplicating it. This is
+  not a whole-repository completion or runtime-correctness claim.
+
 - **M5 Td S128 P1:** fourth-pass manual review of VM composition, profile,
   product, and public-contract implementation confirms mutable VM-product
   console/catalog state escapes, a test-only duplicated Model-40 construction
@@ -80,5 +88,3 @@
 - **M5 Td S123 P1:** audited the repository against the documentation and execution authorities: topology, links, indexes, packet/identifier/state, Queue/TODO boundaries and current artifact identity pass the required governance gate. The worktree is clean. Read-only Git integrity inspection reports only unreachable temporary objects; it is not a current integrity failure and no destructive cleanup was admitted.
 
 - **M5 Td S122 P1:** decomposed the queued 80286 timing closure by observable timing and architectural path: coverage freeze, result-contract publication, non-control forms, strings, ordinary and protected control transfer, protected system forms, then full closure. No numeric task, source, artifact, ABI or runtime behavior changed.
-
-- **M5 Td S121 P1:** bound the queued CPU timing program to complete 8086/80186 evidence/model research before implementation audit, then finite repair and closure; manual/reference-derived models are labelled L2, only an exhausted ladder may declare L1, and no emulator model lowers the L3 source threshold. T435 remains unallocated.

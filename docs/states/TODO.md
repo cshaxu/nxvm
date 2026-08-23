@@ -385,11 +385,15 @@ admissions, not the default definition of NXVM completion.
   `vm/composition/session/console_machine_adapter.c` casts that escape back to
   `vm_session *`. This is a raw cross-module session pointer with no typed
   lifetime, close, or failure contract, forbidden by the architecture rule.
-  Admit one Core-product/VM-composition task to replace it with an opaque
-  selected-session capability or bounded manager-dispatched operations, make
-  the borrow/close lifetime explicit, and migrate console and tests. Do not
-  expose a typed `vm_session *`, add test-only casts, or make the manager own
-  VM machine internals.
+  Td S129 additionally found that the same public contract passes caller-owned,
+  mutable `C_CHAR **arguments` through `core_product_session_open_options` and
+  the command interface without a copy, capacity, constness, or lifetime
+  contract. Admit one Core-product/VM-composition task to replace it with an
+  opaque selected-session capability or bounded manager-dispatched operations,
+  and a bounded immutable option/command payload whose borrow/copy lifetime is
+  explicit; make close behavior explicit and migrate console/tests. Do not
+  expose a typed `vm_session *`, add test-only casts, retain raw mutable
+  argument arrays, or make the manager own VM machine internals.
 
 - [ ] **Public raw-borrow verifier scope repair (`TODO(Medium)`).** Manual
   audit Td S125 found `tools/VerifyPublicRawBorrowClosure.ps1` reports success
