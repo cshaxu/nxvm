@@ -59,3 +59,9 @@ retirement ticks.
 
 The source material was consulted as behavioral evidence only; no third-party
 source, firmware, or guest media was imported into this repository.
+
+## Closure record
+
+S3's 807 ordinary 80386DX keys and the separate CPU/FPU handoff proof passed
+before S4 admission.  This retained record is the committed S3 evidence used
+by the continuation-identifier verifier; it does not enlarge the x87 scope.
