@@ -966,7 +966,9 @@ static C_INT preview_test_system_group_profiles(C_VOID)
     type_unsigned_8 profile;
     type_unsigned_8 extension;
 
-    if (core_machine_cpu_instruction_lexeme_scan(legal_memory, sizeof(legal_memory),
+    if (!preview_expect((const type_unsigned_8[]){0x0fu}, 1u,
+            CORE_MACHINE_CPU_PROFILE_8086, TYPE_FALSE, 1u, 1u) ||
+        core_machine_cpu_instruction_lexeme_scan(legal_memory, sizeof(legal_memory),
             CORE_MACHINE_CPU_PROFILE_80186, TYPE_FALSE, &lexeme) || lexeme.available)
         return 0;
     for (profile = 0u; profile < sizeof(profiles) / sizeof(profiles[0]); ++profile)
@@ -1785,5 +1787,6 @@ C_INT main(C_VOID)
     STD_PRINTF("M5:T401:S69:TEST-MOV-PREVIEW-PROFILES:OK\n");
     STD_PRINTF("M5:T401:S70:SYSTEM-GROUP-PREVIEW-PROFILES:OK\n");
     STD_PRINTF("M5:T401:S71:SYSTEM-SELECTOR-GROUP-PREVIEW-PROFILES:OK\n");
+    STD_PRINTF("M5:T442:S1:CPU-LEXEME-PROFILE-BOUNDARY:OK\n");
     return 0;
 }

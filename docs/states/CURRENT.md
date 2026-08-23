@@ -2,12 +2,33 @@
 
 ## Current Work
 
-**Idle.** T441 closed at S1; the next candidate requires a separate admission.
+**Active: M5 T442 S1.**
+
+## M5 T442 S1 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New |
+| Admission And Approval | Owner approved the queue candidate on 2026-08-23 and directed that its minimalism constraints be written into the proposal and implemented. |
+| Objective | Repair the confirmed Core CPU lexical guard and physical-memory span-validation boundaries at their sole owning modules. |
+| Non-goals | No instruction/profile expansion, memory topology change, new memory layer, public ABI, VM change, or physical timing work. |
+| Reference Baseline | `master` at `9efe4ebe`; updated proposal and existing CPU lexeme/memory mapping owners. |
+| Candidate Proposal | [Core CPU and physical-memory boundary correctness](../proposals/m5-core-cpu-memory-boundary-correctness.md); task record [T442](../history/M5-T442-core-cpu-memory-boundary-correctness.md). |
+| Files And ABI Surface | Expected Core-private CPU decode guard, memory mapping validation, focused Core smoke and task evidence; no public ABI change. |
+| Applicable Rules | One owner per guard/range decision; callers consume returned status; helper only if it deletes duplicate arithmetic; actual source/test line delta and all equivalent hits recorded. |
+| Verification | Prove intended 0F profile predicate and invalid-span/overflow rejection before mapping mutation; sweep equivalent guards/ranges across Core production; run focused and current gates. |
+| Expected Markers | Existing focused CPU/memory markers plus a T442 marker if new coverage needs a distinct assertion. |
+| Asset Needs | None. |
+| Reporting Requirements | Record the original contradictory guard, every mapped range hit/disposition, removed duplicate logic, net line change and gate result. |
+| Stop Conditions | Stop if a hit changes an independently owned execution contract or requires semantic/profile expansion. |
+| Exit Criteria | Both owners reject their invalid input before mutation/publication, focused regressions and sweep pass, no duplicate boundary path remains, and an updated T442 artifact/evidence is pushed. |
+| Original Owner Request | Write the minimalism constraints into the proposal and begin implementation. |
+| Similar-Issue Sweep | Search tracked Core production paths for equivalent CPU profile guards and physical range addition/subtraction patterns; fix or classify every hit. |
 
 
 ## Current Technical Baseline
 
-- **Current developer artifact:** target `vm-0-5-0441`; `nxvm_0_5_0441.exe` / `build/output/nxvm_0_5_0441.exe`, SHA-256 `C06CF7C46553E53FE7592ABF9C7900110DB3F6A1FF4183C300F4EC8B4D40273F`. T434 has one copied Core timing-plan publication route for default PC/AT, IBM 5170 Model 339 and Model-40 BYOB session composition.
+- **Current developer artifact:** target `vm-0-5-0442`; `nxvm_0_5_0442.exe` / `build/output/nxvm_0_5_0442.exe`, SHA-256 `B94C6355E4ADD9EF982E4713A15860F23D4B24BC912BBA9608D4DA3B7A2BBE1E`. T434 has one copied Core timing-plan publication route for default PC/AT, IBM 5170 Model 339 and Model-40 BYOB session composition.
   T386 closes selected-device functional completeness at S29; its retained
   [closure audit](../etc/evidence/t386-s29-functional-closure-audit.md) fixes
   HDC current-gate coverage and transfers board, firmware and physical work.

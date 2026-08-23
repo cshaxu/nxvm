@@ -17,6 +17,19 @@ tracked Core production paths and classify every hit.
 Completion requires focused positive/negative instruction and mapping tests,
 boundary/overflow probes, the recorded similar-issue sweep, and current gates.
 
+## Minimalism Constraints
+
+- The CPU lexical/decode owner contains the one intended finite instruction
+  predicate; callers do not restate profile or opcode validity.
+- The physical-memory mapping owner rejects invalid or overflowing spans before
+  it appends or mutates mapping state; access callers consume its status rather
+  than recalculate ranges.
+- A shared owner-local helper is allowed only when it deletes duplicated range
+  arithmetic. No facade, cached validity state, compatibility branch, or new
+  memory layer is permitted.
+- Acceptance records the net source/test line change and each removed duplicate
+  guard. A net addition requires a named, non-duplicable responsibility.
+
 ## Non-goals And Stop Conditions
 
 Do not broaden CPU emulation, alter legal instruction semantics beyond the

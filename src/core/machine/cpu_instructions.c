@@ -7843,8 +7843,9 @@ static type_bool core_machine_cpu_instruction_lexeme_scan_with_options(
             address_bytes = code_32 ? 2u : 4u;
     }
     if (opcode == 0x0fu && profile != CORE_MACHINE_CPU_PROFILE_8086) {
-        if (profile < CORE_MACHINE_CPU_PROFILE_80286 || index >= available_bytes ||
-            index >= 15u) return TYPE_FALSE;
+        if (profile != CORE_MACHINE_CPU_PROFILE_80286 &&
+            profile != CORE_MACHINE_CPU_PROFILE_80386) return TYPE_FALSE;
+        if (index >= available_bytes || index >= 15u) return TYPE_FALSE;
         opcode = bytes[index++];
         ++components;
         extended = TYPE_TRUE;

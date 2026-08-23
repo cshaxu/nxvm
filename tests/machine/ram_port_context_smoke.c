@@ -55,6 +55,13 @@ C_INT main(C_VOID)
     result |= observed != value;
     result |= core_machine_memory_register_mapping(&first_memory, 0xfffffff0u,
         0x000ffff0u, 16u) != TYPE_STATUS_OK;
+    {
+        const type_native_unsigned mapping_count = first_memory.connect.mapping_count;
+
+        result |= core_machine_memory_register_mapping(&first_memory, 0xfffffff0u,
+            0x000ffff0u, 17u) != TYPE_STATUS_INVALID_ARGUMENT;
+        result |= first_memory.connect.mapping_count != mapping_count;
+    }
     value = 0xebu;
     result |= core_machine_memory_write_physical(&first_memory, 0x000ffff0u,
         (type_virtual_address)&value, 1u) != TYPE_STATUS_OK;
@@ -83,5 +90,6 @@ C_INT main(C_VOID)
     if (result != 0) return 1;
 
     puts("M5:T171:S1:RAM-PORT-CONTEXT:OK");
+    puts("M5:T442:S1:PHYSICAL-MAPPING-SPAN-BOUNDARY:OK");
     return 0;
 }

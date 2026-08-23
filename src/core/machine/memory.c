@@ -149,7 +149,9 @@ type_status core_machine_memory_register_mapping(t_ram *ram,
 
     if (ram == STD_NULL || ram->connect.mappings_frozen || bytes == 0u ||
         backing_start > ram->connect.installed_bytes ||
-        bytes > ram->connect.installed_bytes - backing_start) {
+        bytes > ram->connect.installed_bytes - backing_start ||
+        (type_unsigned_64)physical_start + bytes >
+            (type_unsigned_64)TYPE_MAX_UNSIGNED_32 + 1u) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
     if (ram->connect.mapping_count >= CORE_MACHINE_MEMORY_MAPPING_CAPACITY) {
