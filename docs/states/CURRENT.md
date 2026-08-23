@@ -50,6 +50,7 @@ sole Core timing publisher and real retirements.
 
 | Task | Compact result |
 | --- | --- |
+| T437 S4 | Accepted: all 162 direct-I/O and primitive/REP-string 80386DX keys retire with classified non-unallocated results, including real segment and repeat-phase contexts; [S4 evidence](../etc/cpu-timing/t437-s4-string-io-execution.md) retains the direct-port and continuation proof. |
 | T437 S3 | Accepted: 807 ordinary scalar/formula 80386DX keys retire with classified results; ESC is separately verified as the cross-profile CPU/FPU handoff, BUSY/WAIT, transaction and 80387-range contract in [S3 x87 evidence](../etc/cpu-timing/t437-s3-x87-interface-contract.md). |
 | T437 S2 | Closed: the private 80386DX [result producer](../etc/cpu-timing/t437-s2-80386-result-producer.md) captures real retirement metadata and refuses final emission until all 1,411 keys exist; S3--S7 retain the missing recipes. |
 | T436 | Closed: [result closure](../etc/cpu-timing/t436-s8-80286-result-closure.md) proves the verified 771-key result set, 8086/80186/80286/80386 regression disposition, current-gate completion and developer artifact. |

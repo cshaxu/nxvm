@@ -33,6 +33,43 @@ static core_machine_retirement_observation timing_80386_manifest_results[
     sizeof(timing_80386_manifest_records) / sizeof(timing_80386_manifest_records[0])];
 static C_INT timing_80386_manifest_current_index = -1;
 
+typedef struct timing_80386_manifest_port_state {
+    type_unsigned_32 reads;
+    type_unsigned_32 writes;
+} timing_80386_manifest_port_state;
+
+static type_status timing_80386_manifest_port_read(C_VOID *opaque,
+    type_unsigned_16 port, type_unsigned_32 *out_value)
+{
+    timing_80386_manifest_port_state *state =
+        (timing_80386_manifest_port_state *)opaque;
+
+    if (state == STD_NULL || out_value == STD_NULL || port != 0x0080u) {
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
+    ++state->reads;
+    *out_value = 0x5au;
+    return TYPE_STATUS_OK;
+}
+
+static type_status timing_80386_manifest_port_write(C_VOID *opaque,
+    type_unsigned_16 port, type_unsigned_32 value)
+{
+    timing_80386_manifest_port_state *state =
+        (timing_80386_manifest_port_state *)opaque;
+
+    if (state == STD_NULL || port != 0x0080u) {
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
+    (C_VOID)value;
+    ++state->writes;
+    return TYPE_STATUS_OK;
+}
+
+static const core_machine_port_provider timing_80386_manifest_ports = {
+    timing_80386_manifest_port_read, timing_80386_manifest_port_write
+};
+
 static C_VOID timing_80386_manifest_execution_reset(C_VOID *opaque)
 {
     (C_VOID)opaque;
@@ -135,6 +172,14 @@ static C_INT timing_80386_manifest_key_is_s3(const C_CHAR *key_id)
     return 1;
 }
 
+static C_INT timing_80386_manifest_key_is_s4(const C_CHAR *key_id)
+{
+    return key_id != STD_NULL && (timing_80386_manifest_key_has_prefix(key_id,
+        "I386-STRING-") || timing_80386_manifest_key_has_prefix(key_id,
+        "I386-REP-") || timing_80386_manifest_key_has_prefix(key_id,
+        "I386-IN-") || timing_80386_manifest_key_has_prefix(key_id, "I386-OUT-"));
+}
+
 static C_VOID timing_80386_manifest_capture_retirement(C_VOID *opaque,
     const core_machine_retirement_observation *observation)
 {
@@ -190,6 +235,20 @@ static type_unsigned_32 timing_80386_manifest_s3_count(C_INT observed_only)
         if (timing_80386_manifest_is_i386(&timing_80386_manifest_records[index]) &&
             timing_80386_manifest_key_is_s3(
                 timing_80386_manifest_records[index].key_id) &&
+            (!observed_only || timing_80386_manifest_observed[index])) ++count;
+    }
+    return count;
+}
+
+static type_unsigned_32 timing_80386_manifest_s4_count(C_INT observed_only)
+{
+    STD_SIZE_T index;
+    type_unsigned_32 count = 0u;
+
+    for (index = 0u; index < sizeof(timing_80386_manifest_records) /
+            sizeof(timing_80386_manifest_records[0]); ++index) {
+        if (timing_80386_manifest_is_i386(&timing_80386_manifest_records[index]) &&
+            timing_80386_manifest_key_is_s4(timing_80386_manifest_records[index].key_id) &&
             (!observed_only || timing_80386_manifest_observed[index])) ++count;
     }
     return count;
@@ -268,6 +327,100 @@ static C_INT timing_80386_manifest_write_results(const C_CHAR *path,
 
 static C_INT timing_80386_manifest_run_recipe(const C_CHAR *key_id,
     const type_unsigned_8 *program, STD_SIZE_T program_bytes);
+
+static type_status timing_80386_manifest_prepare_recipe_machine(
+    core_machine *machine, const C_CHAR *key_id, const type_unsigned_8 *program,
+    STD_SIZE_T program_bytes)
+{
+    type_status status;
+
+    status = core_machine_memory_write(machine, TIMING_80386_MANIFEST_RESET_PHYSICAL,
+        program, program_bytes);
+    if (status == TYPE_STATUS_OK && timing_80386_manifest_key_has_prefix(key_id,
+            "I386-XLAT")) {
+        static const type_unsigned_8 xlat_value[] = { 0x5au };
+
+        machine->executor_cpu.data.ebx = 0x1000u;
+        machine->executor_cpu.data.eax = 1u;
+        status = core_machine_memory_write(machine, 0x1001u, xlat_value,
+            sizeof(xlat_value));
+    }
+    if (status == TYPE_STATUS_OK && key_id[5] == 'M' &&
+        (key_id[6] == 'U' || key_id[6] == 'I')) {
+        type_unsigned_32 multiplier = 2u;
+
+        if (timing_80386_manifest_key_has_suffix(key_id, "-MULTIPLIER-ZERO")) {
+            multiplier = 0u;
+        } else if (timing_80386_manifest_key_has_suffix(key_id,
+                "-MULTIPLIER-HIGH")) {
+            multiplier = 0x8000u;
+        }
+        machine->executor_cpu.data.ecx = multiplier;
+        status = core_machine_memory_write(machine, 0x1000u, &multiplier,
+            sizeof(multiplier));
+    }
+    if (status == TYPE_STATUS_OK &&
+        ((key_id[5] == 'D' && key_id[6] == 'I' && key_id[7] == 'V') ||
+         (key_id[5] == 'I' && key_id[6] == 'D' && key_id[7] == 'I' &&
+          key_id[8] == 'V'))) {
+        static const type_unsigned_32 divisor = 2u;
+
+        machine->executor_cpu.data.eax = 4u;
+        machine->executor_cpu.data.edx = 0u;
+        machine->executor_cpu.data.ecx = divisor;
+        status = core_machine_memory_write(machine, 0x1000u, &divisor,
+            sizeof(divisor));
+    }
+    if (status == TYPE_STATUS_OK && key_id[5] == 'B' && key_id[6] == 'S' &&
+        (key_id[7] == 'F' || key_id[7] == 'R')) {
+        static const type_unsigned_32 scanned_value = 2u;
+
+        machine->executor_cpu.data.ecx = scanned_value;
+        status = core_machine_memory_write(machine, 0x1000u, &scanned_value,
+            sizeof(scanned_value));
+    }
+    if (status == TYPE_STATUS_OK && key_id[5] == 'S' && key_id[6] == 'H' &&
+        key_id[7] == 'L' && (key_id[8] == 'D' || key_id[8] == 'R')) {
+        machine->executor_cpu.data.ecx = 1u;
+    }
+    if (status == TYPE_STATUS_OK && (timing_80386_manifest_key_has_prefix(key_id,
+            "I386-IN-") || timing_80386_manifest_key_has_prefix(key_id,
+            "I386-OUT-") || timing_80386_manifest_key_has_prefix(key_id,
+            "I386-STRING-INS") || timing_80386_manifest_key_has_prefix(key_id,
+            "I386-STRING-OUTS") || timing_80386_manifest_key_has_prefix(key_id,
+            "I386-REP-INS") || timing_80386_manifest_key_has_prefix(key_id,
+            "I386-REP-OUTS"))) {
+        machine->executor_cpu.data.edx = 0x0080u;
+    }
+    if (status == TYPE_STATUS_OK && (timing_80386_manifest_key_has_prefix(key_id,
+            "I386-STRING-") || timing_80386_manifest_key_has_prefix(key_id,
+            "I386-REP-"))) {
+        static const type_unsigned_32 string_input = 0x11223344u;
+
+        machine->executor_cpu.data.esi = 0x1000u;
+        machine->executor_cpu.data.edi = 0x1100u;
+        machine->executor_cpu.data.ecx = timing_80386_manifest_key_has_prefix(
+            key_id, "I386-REP-") ? 1u : 0u;
+        if (timing_80386_manifest_key_has_suffix(key_id, "-REP-PHASE-ZERO")) {
+            machine->executor_cpu.data.ecx = 0u;
+        } else if (timing_80386_manifest_key_has_suffix(key_id,
+                "-REP-PHASE-CONTINUE")) {
+            machine->executor_cpu.data.ecx = 2u;
+        }
+        status = core_machine_memory_write(machine, 0x1000u, &string_input,
+            sizeof(string_input));
+        if (status == TYPE_STATUS_OK && (timing_80386_manifest_key_has_prefix(key_id,
+                "I386-REP-CMPS-REPE") || timing_80386_manifest_key_has_prefix(key_id,
+                "I386-REP-SCAS-"))) {
+            status = core_machine_memory_write(machine, 0x1100u, &string_input,
+                sizeof(string_input));
+        }
+        if (timing_80386_manifest_key_has_prefix(key_id, "I386-REP-SCAS-REPE")) {
+            machine->executor_cpu.data.eax = string_input;
+        }
+    }
+    return status;
+}
 
 static C_INT timing_80386_manifest_run_size_contexts(const C_CHAR *base_key_id,
     const type_unsigned_8 *program, STD_SIZE_T program_bytes)
@@ -374,6 +527,7 @@ static C_INT timing_80386_manifest_run_recipe(const C_CHAR *key_id,
     timing_80386_manifest_capture capture = { { 0 }, 0u };
     const timing_80386_manifest_record *record;
     core_machine *machine = STD_NULL;
+    timing_80386_manifest_port_state port_state = { 0u, 0u };
     type_status status;
     C_INT halt_recipe;
 
@@ -390,6 +544,8 @@ static C_INT timing_80386_manifest_run_recipe(const C_CHAR *key_id,
             TIMING_80386_MANIFEST_WINDOW_BYTES);
     if (status == TYPE_STATUS_OK) status = core_machine_bind_execution_provider(
         machine, &timing_80386_manifest_execution, STD_NULL);
+    if (status == TYPE_STATUS_OK) status = core_machine_install_port_provider(
+        machine, 0x0080u, 0x0080u, &timing_80386_manifest_ports, &port_state);
     if (status == TYPE_STATUS_OK) status = core_machine_freeze_execution_providers(machine);
     if (status == TYPE_STATUS_OK) status = core_machine_reset(machine);
     if (status == TYPE_STATUS_OK) status = core_machine_memory_write(machine,
@@ -443,6 +599,39 @@ static C_INT timing_80386_manifest_run_recipe(const C_CHAR *key_id,
         key_id[7] == 'L' && (key_id[8] == 'D' || key_id[8] == 'R')) {
         machine->executor_cpu.data.ecx = 1u;
     }
+    if (status == TYPE_STATUS_OK && (timing_80386_manifest_key_has_prefix(key_id,
+            "I386-IN-") || timing_80386_manifest_key_has_prefix(key_id,
+            "I386-OUT-") || timing_80386_manifest_key_has_prefix(key_id,
+            "I386-STRING-INS") || timing_80386_manifest_key_has_prefix(key_id,
+            "I386-STRING-OUTS") || timing_80386_manifest_key_has_prefix(key_id,
+            "I386-REP-INS") || timing_80386_manifest_key_has_prefix(key_id,
+            "I386-REP-OUTS"))) {
+        machine->executor_cpu.data.edx = 0x0080u;
+    }
+    if (status == TYPE_STATUS_OK && (timing_80386_manifest_key_has_prefix(key_id,
+            "I386-STRING-") || timing_80386_manifest_key_has_prefix(key_id,
+            "I386-REP-"))) {
+        static const type_unsigned_32 string_input = 0x11223344u;
+
+        machine->executor_cpu.data.esi = 0x1000u;
+        machine->executor_cpu.data.edi = 0x1100u;
+        machine->executor_cpu.data.ecx = timing_80386_manifest_key_has_prefix(
+            key_id, "I386-REP-") ? 1u : 0u;
+        if (timing_80386_manifest_key_has_suffix(key_id, "-REP-PHASE-ZERO")) {
+            machine->executor_cpu.data.ecx = 0u;
+        }
+        status = core_machine_memory_write(machine, 0x1000u, &string_input,
+            sizeof(string_input));
+        if (status == TYPE_STATUS_OK && (timing_80386_manifest_key_has_prefix(key_id,
+                "I386-REP-CMPS-REPE") || timing_80386_manifest_key_has_prefix(key_id,
+                "I386-REP-SCAS-"))) {
+            status = core_machine_memory_write(machine, 0x1100u, &string_input,
+                sizeof(string_input));
+        }
+        if (timing_80386_manifest_key_has_prefix(key_id, "I386-REP-SCAS-REPE")) {
+            machine->executor_cpu.data.eax = string_input;
+        }
+    }
     if (status == TYPE_STATUS_OK) status =
         core_machine_set_retirement_observation_provider(machine, &active_provider);
     if (status == TYPE_STATUS_OK) status = core_machine_run(machine, budget, &run);
@@ -454,7 +643,11 @@ static C_INT timing_80386_manifest_run_recipe(const C_CHAR *key_id,
         capture.observation.source_timing_form_id ==
             CORE_MACHINE_RETIREMENT_SOURCE_FORM_UNATTRIBUTED ||
         capture.observation.timing_origin ==
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_UNATTRIBUTED) {
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_UNATTRIBUTED ||
+        (timing_80386_manifest_key_has_suffix(key_id, "-REP-PHASE-FIRST") &&
+         capture.observation.repeat_phase != CORE_MACHINE_RETIREMENT_REPEAT_FIRST) ||
+        (timing_80386_manifest_key_has_suffix(key_id, "-REP-PHASE-ZERO") &&
+         capture.observation.repeat_phase != CORE_MACHINE_RETIREMENT_REPEAT_ZERO_COUNT)) {
         STD_PRINTF("M5:T437:S3:I386-RECIPE-DETAIL:%s:status=%d:reason=%d:executed=%llu:capture=%u:disposition=%d:form=%u:origin=%d\n",
             key_id, status, run.reason, run.executed, capture.count,
             capture.observation.timing_disposition,
@@ -464,6 +657,190 @@ static C_INT timing_80386_manifest_run_recipe(const C_CHAR *key_id,
         return 1;
     }
     core_machine_destroy(machine);
+    return 0;
+}
+
+static C_INT timing_80386_manifest_run_s4_base_recipes(C_VOID)
+{
+    static const C_CHAR *const io_names[] = { "IN", "OUT" };
+    static const C_CHAR *const ports[] = { "IMM", "DX" };
+    static const C_CHAR *const widths[] = { "B", "W", "D" };
+    static const C_CHAR *const string_names[] = {
+        "MOVS", "CMPS", "STOS", "LODS", "SCAS", "INS", "OUTS"
+    };
+    static const C_CHAR *const rep_names[] = {
+        "MOVS", "CMPS-REPE", "CMPS-REPNE", "STOS", "LODS",
+        "SCAS-REPE", "SCAS-REPNE", "INS", "OUTS"
+    };
+    STD_SIZE_T io; STD_SIZE_T port; STD_SIZE_T width; STD_SIZE_T string;
+
+    for (io = 0u; io < 2u; ++io) for (port = 0u; port < 2u; ++port)
+    for (width = 0u; width < 3u; ++width) {
+        C_CHAR key_id[48];
+        type_unsigned_8 program[3];
+        STD_SIZE_T bytes = 0u;
+        type_unsigned_8 opcode = (type_unsigned_8)((io == 0u ?
+            (port == 0u ? 0xe4u : 0xecu) : (port == 0u ? 0xe6u : 0xeeu)) +
+            (width == 0u ? 0u : 1u));
+
+        if (width == 2u) program[bytes++] = 0x66u;
+        program[bytes++] = opcode;
+        if (port == 0u) program[bytes++] = 0x80u;
+        if (STD_SNPRINTF(key_id, sizeof(key_id), "I386-%s-%s-%s", io_names[io],
+                ports[port], widths[width]) < 0 ||
+            timing_80386_manifest_run_recipe(key_id, program, bytes)) return 1;
+    }
+    for (string = 0u; string < 7u; ++string) for (width = 0u; width < 3u; ++width) {
+        C_CHAR key_id[48];
+        type_unsigned_8 program[2];
+        STD_SIZE_T bytes = 0u;
+        type_unsigned_8 opcode = (type_unsigned_8)((string < 5u ? 0xa4u +
+            string * 2u : 0x6cu + (string - 5u) * 2u) + (width == 0u ? 0u : 1u));
+
+        if (width == 2u) program[bytes++] = 0x66u;
+        program[bytes++] = opcode;
+        if (STD_SNPRINTF(key_id, sizeof(key_id), "I386-STRING-%s-%s",
+                string_names[string], widths[width]) < 0 ||
+            timing_80386_manifest_run_recipe(key_id, program, bytes)) return 1;
+    }
+    for (string = 0u; string < 9u; ++string) for (width = 0u; width < 3u; ++width) {
+        C_CHAR key_id[56];
+        type_unsigned_8 program[3];
+        STD_SIZE_T bytes = 0u;
+        type_unsigned_8 base = string == 0u ? 0xa4u : string < 3u ? 0xa6u :
+            string == 3u ? 0xaau : string == 4u ? 0xacu : string < 7u ? 0xaeu :
+            string == 7u ? 0x6cu : 0x6eu;
+
+        program[bytes++] = (string == 2u || string == 6u) ? 0xf2u : 0xf3u;
+        if (width == 2u) program[bytes++] = 0x66u;
+        program[bytes++] = (type_unsigned_8)(base + (width == 0u ? 0u : 1u));
+        if (STD_SNPRINTF(key_id, sizeof(key_id), "I386-REP-%s-%s",
+                rep_names[string], widths[width]) < 0 ||
+            timing_80386_manifest_run_recipe(key_id, program, bytes)) return 1;
+    }
+    return 0;
+}
+
+static C_INT timing_80386_manifest_run_s4_repeat_continuation(
+    const C_CHAR *key_id, const type_unsigned_8 *program, STD_SIZE_T program_bytes)
+{
+    const core_machine_config config = { .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386 };
+    const core_machine_retirement_observation_provider provider = {
+        timing_80386_manifest_capture_retirement, STD_NULL
+    };
+    core_machine_retirement_observation_provider active_provider = provider;
+    const core_machine_run_budget budget = { 1u, 0u };
+    core_machine_run_result run = { 0 };
+    timing_80386_manifest_capture capture = { { 0 }, 0u };
+    timing_80386_manifest_port_state port_state = { 0u, 0u };
+    const timing_80386_manifest_record *record;
+    core_machine *machine = STD_NULL;
+    type_status status;
+
+    record = timing_80386_manifest_find(key_id);
+    if (record == STD_NULL || !timing_80386_manifest_is_i386(record)) return 1;
+    active_provider.context = &capture;
+    status = core_machine_create(&config, &machine);
+    if (status == TYPE_STATUS_OK) status = test_core_machine_fixture_register_reset_mapping(
+        machine, TIMING_80386_MANIFEST_RESET_LINEAR,
+        TIMING_80386_MANIFEST_RESET_PHYSICAL, TIMING_80386_MANIFEST_WINDOW_BYTES);
+    if (status == TYPE_STATUS_OK) status = core_machine_bind_execution_provider(
+        machine, &timing_80386_manifest_execution, STD_NULL);
+    if (status == TYPE_STATUS_OK) status = core_machine_install_port_provider(machine,
+        0x0080u, 0x0080u, &timing_80386_manifest_ports, &port_state);
+    if (status == TYPE_STATUS_OK) status = core_machine_freeze_execution_providers(machine);
+    if (status == TYPE_STATUS_OK) status = core_machine_reset(machine);
+    if (status == TYPE_STATUS_OK) status = timing_80386_manifest_prepare_recipe_machine(
+        machine, key_id, program, program_bytes);
+    if (status == TYPE_STATUS_OK) status = core_machine_set_retirement_observation_provider(
+        machine, &active_provider);
+
+    /* The first iteration establishes the CPU-owned repeat identity.  It is
+     * deliberately unrecorded: the continuation key must capture iteration two. */
+    timing_80386_manifest_current_index = -1;
+    if (status == TYPE_STATUS_OK) status = core_machine_run(machine, budget, &run);
+    if (status != TYPE_STATUS_OK || run.reason != CORE_MACHINE_STOP_BUDGET ||
+        run.executed != 1u || capture.count != 1u ||
+        capture.observation.repeat_phase != CORE_MACHINE_RETIREMENT_REPEAT_FIRST) {
+        STD_PRINTF("M5:T437:S4:I386-REPEAT-FIRST-DETAIL:%s:status=%d:executed=%llu:phase=%d\n",
+            key_id, status, run.executed, capture.observation.repeat_phase);
+        core_machine_destroy(machine);
+        return 1;
+    }
+    capture.count = 0u;
+    timing_80386_manifest_find(key_id);
+    status = core_machine_run(machine, budget, &run);
+    if (status != TYPE_STATUS_OK || run.reason != CORE_MACHINE_STOP_BUDGET ||
+        run.executed != 1u || capture.count != 1u ||
+        capture.observation.repeat_phase !=
+            CORE_MACHINE_RETIREMENT_REPEAT_CONTINUATION ||
+        capture.observation.timing_disposition ==
+            CORE_MACHINE_RETIREMENT_TIMING_SOURCE_UNALLOCATED ||
+        capture.observation.source_timing_form_id ==
+            CORE_MACHINE_RETIREMENT_SOURCE_FORM_UNATTRIBUTED) {
+        STD_PRINTF("M5:T437:S4:I386-REPEAT-CONTINUE-DETAIL:%s:status=%d:executed=%llu:phase=%d\n",
+            key_id, status, run.executed, capture.observation.repeat_phase);
+        core_machine_destroy(machine);
+        return 1;
+    }
+    core_machine_destroy(machine);
+    return 0;
+}
+
+static C_INT timing_80386_manifest_run_s4_context_recipes(C_VOID)
+{
+    static const C_CHAR *const widths[] = { "B", "W", "D" };
+    static const C_CHAR *const primitive_names[] = { "MOVS", "CMPS", "LODS" };
+    static const C_CHAR *const rep_names[] = { "MOVS", "CMPS-REPE", "CMPS-REPNE", "LODS" };
+    static const C_CHAR *const phase_names[] = { "FIRST", "CONTINUE", "ZERO" };
+    static const C_CHAR *const all_rep_names[] = { "MOVS", "CMPS-REPE", "CMPS-REPNE",
+        "STOS", "LODS", "SCAS-REPE", "SCAS-REPNE", "INS", "OUTS" };
+    STD_SIZE_T width; STD_SIZE_T name; STD_SIZE_T phase;
+
+    for (name = 0u; name < 3u; ++name) for (width = 0u; width < 3u; ++width) {
+        C_CHAR key_id[64];
+        type_unsigned_8 program[3] = { 0x26u, 0u, 0u };
+        STD_SIZE_T bytes = 1u;
+        type_unsigned_8 base = name == 0u ? 0xa4u : name == 1u ? 0xa6u : 0xacu;
+        type_unsigned_8 opcode = (type_unsigned_8)(base + (width == 0u ? 0u : 1u));
+
+        if (width == 2u) program[bytes++] = 0x66u;
+        program[bytes++] = opcode;
+        if (STD_SNPRINTF(key_id, sizeof(key_id), "I386-STRING-%s-%s-SEGMENT",
+                primitive_names[name], widths[width]) < 0 ||
+            timing_80386_manifest_run_recipe(key_id, program, bytes)) return 1;
+    }
+    for (name = 0u; name < 4u; ++name) for (width = 0u; width < 3u; ++width) {
+        C_CHAR key_id[72];
+        type_unsigned_8 program[4] = { 0x26u, 0xf3u, 0u, 0u };
+        STD_SIZE_T bytes = 2u;
+        type_unsigned_8 base = name == 0u ? 0xa4u : name < 3u ? 0xa6u : 0xacu;
+
+        if (name == 2u) program[1] = 0xf2u;
+        if (width == 2u) program[bytes++] = 0x66u;
+        program[bytes++] = (type_unsigned_8)(base + (width == 0u ? 0u : 1u));
+        if (STD_SNPRINTF(key_id, sizeof(key_id), "I386-REP-%s-%s-SEGMENT",
+                rep_names[name], widths[width]) < 0 ||
+            timing_80386_manifest_run_recipe(key_id, program, bytes)) return 1;
+    }
+    for (name = 0u; name < 9u; ++name) for (width = 0u; width < 3u; ++width)
+    for (phase = 0u; phase < 3u; ++phase) {
+        C_CHAR key_id[88];
+        type_unsigned_8 program[3];
+        STD_SIZE_T bytes = 0u;
+        type_unsigned_8 base = name == 0u ? 0xa4u : name < 3u ? 0xa6u :
+            name == 3u ? 0xaau : name == 4u ? 0xacu : name < 7u ? 0xaeu :
+            name == 7u ? 0x6cu : 0x6eu;
+
+        program[bytes++] = (name == 2u || name == 6u) ? 0xf2u : 0xf3u;
+        if (width == 2u) program[bytes++] = 0x66u;
+        program[bytes++] = (type_unsigned_8)(base + (width == 0u ? 0u : 1u));
+        if (STD_SNPRINTF(key_id, sizeof(key_id), "I386-REP-%s-%s-REP-PHASE-%s",
+                all_rep_names[name], widths[width], phase_names[phase]) < 0 ||
+            (phase == 1u ? timing_80386_manifest_run_s4_repeat_continuation(
+                key_id, program, bytes) : timing_80386_manifest_run_recipe(
+                key_id, program, bytes))) return 1;
+    }
     return 0;
 }
 
@@ -1412,6 +1789,16 @@ C_INT main(C_VOID)
             }
         }
     }
+    if (timing_80386_manifest_run_s4_base_recipes()) {
+        STD_PRINTF("M5:T437:S4:I386-STRING-IO-BASE-RECIPE-FAIL\n");
+        return 1;
+    }
+    if (timing_80386_manifest_run_s4_context_recipes() ||
+        timing_80386_manifest_s4_count(0) != 162u ||
+        timing_80386_manifest_s4_count(1) != 162u) {
+        STD_PRINTF("M5:T437:S4:I386-STRING-IO-CONTEXT-RECIPE-FAIL\n");
+        return 1;
+    }
     if (timing_80386_manifest_verify_esc_handoff() ||
         timing_80386_manifest_s3_count(0) != 807u ||
         timing_80386_manifest_observed_count() == 0u ||
@@ -1425,6 +1812,11 @@ C_INT main(C_VOID)
     STD_PRINTF("M5:T437:S2:I386-INCOMPLETE-RESULT-REFUSED:PASS\n");
     STD_PRINTF("M5:T437:S3:I386-NONCONTROL-COVERAGE:observed=%u:canonical=%u\n",
         timing_80386_manifest_s3_count(1), timing_80386_manifest_s3_count(0));
+    STD_PRINTF("M5:T437:S4:I386-STRING-IO-OBSERVED:%u\n",
+        timing_80386_manifest_s4_count(1));
+    STD_PRINTF("M5:T437:S4:I386-STRING-IO-COVERAGE:PASS:canonical=%u\n",
+        timing_80386_manifest_s4_count(0));
+    STD_PRINTF("M5:T437:S4:I386-STRING-IO-INPUTS:PASS\n");
     if (timing_80386_manifest_s3_count(1) ==
         timing_80386_manifest_s3_count(0)) {
         STD_PRINTF("M5:T437:S3:I386-NONCONTROL-OBSERVED:807\n");
