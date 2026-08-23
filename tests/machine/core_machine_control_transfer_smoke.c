@@ -107,7 +107,7 @@ static C_INT ct_prepare_real(ct_machine *state, core_machine_cpu_profile profile
     STD_MEMSET(state, 0, sizeof(*state));
     if (core_machine_create(&config, &state->machine) != TYPE_STATUS_OK ||
         test_core_machine_fixture_register_reset_mapping(state->machine,
-            0xfffffff0u, 0x000ffff0u, 64u) != TYPE_STATUS_OK ||
+            0xfffffff0u, 0x000ffff0u, 16u) != TYPE_STATUS_OK ||
         core_machine_freeze_execution_providers(state->machine) != TYPE_STATUS_OK ||
         core_machine_reset(state->machine) != TYPE_STATUS_OK ||
         core_machine_memory_write(state->machine, 0xfffffff0u, reset_jump,

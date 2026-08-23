@@ -6,7 +6,7 @@
 
 #define TIMING_LEDGER_RESET_LINEAR 0xfffffff0u
 #define TIMING_LEDGER_RESET_PHYSICAL 0x000ffff0u
-#define TIMING_LEDGER_WINDOW_BYTES 64u
+#define TIMING_LEDGER_WINDOW_BYTES 16u
 
 typedef struct timing_ledger_state {
     type_unsigned_32 reads;

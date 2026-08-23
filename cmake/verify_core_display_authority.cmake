@@ -20,9 +20,13 @@ foreach(required IN ITEMS "core_machine_display_config"
     endif()
 endforeach()
 
-string(FIND "${session_source}" "core_machine_configure_display" position)
+string(FIND "${session_source}" "topology.display = display_config" position)
 if(position EQUAL -1)
-    message(FATAL_ERROR "T296 S2 VM session does not submit display configuration to core")
+    message(FATAL_ERROR "T296 S2 VM session does not publish display configuration in the Core plan")
+endif()
+string(FIND "${core_source}" "topology->display_present && (status = core_machine_configure_display(" position)
+if(position EQUAL -1)
+    message(FATAL_ERROR "T296 S2 Core does not materialize the display plan")
 endif()
 
 foreach(forbidden IN ITEMS "core_machine_profile_binding_configure_"

@@ -159,7 +159,7 @@ static C_INT rtc_cmos_s3_test_cmos_adapter(C_VOID)
     if (core_machine_create(&config, &machine) != TYPE_STATUS_OK ||
         core_machine_configure_rtc_cmos(machine, &rtc_config) != TYPE_STATUS_OK ||
         test_core_machine_fixture_register_reset_mapping(machine, 0xfffffff0u,
-            0x000ffff0u, 64u) != TYPE_STATUS_OK ||
+            0x000ffff0u, 16u) != TYPE_STATUS_OK ||
         core_machine_freeze_execution_providers(machine) != TYPE_STATUS_OK ||
         core_machine_reset(machine) != TYPE_STATUS_OK ||
         core_machine_bus_write(machine, 0x0070u, 0x94u) != TYPE_STATUS_OK ||

@@ -87,6 +87,27 @@ if(NOT project_t344_unique_count EQUAL 71)
     message(FATAL_ERROR "T344 fixture-shape inventory contains a duplicate source.")
 endif()
 
+# The four timing-manifest result producers deliberately keep their own
+# per-profile preparation because their generated corpus is not one of T344's
+# historical fixture shapes.  Name them here so a new direct constructor
+# cannot hide behind the historical count.
+set(project_t344_timing_manifest_sources
+    "tests/machine/core_machine_8086_timing_manifest_runner.c"
+    "tests/machine/core_machine_80186_timing_manifest_runner.c"
+    "tests/machine/core_machine_80286_timing_manifest_runner.c"
+    "tests/machine/core_machine_80386_timing_manifest_runner.c")
+set(project_t344_constructor_sources ${project_t344_inventory}
+    ${project_t344_timing_manifest_sources})
+list(LENGTH project_t344_constructor_sources project_t344_constructor_count)
+if(NOT project_t344_constructor_count EQUAL 75)
+    message(FATAL_ERROR "T344 constructor-source classification must contain 75 entries.")
+endif()
+list(REMOVE_DUPLICATES project_t344_constructor_sources)
+list(LENGTH project_t344_constructor_sources project_t344_constructor_unique_count)
+if(NOT project_t344_constructor_unique_count EQUAL 75)
+    message(FATAL_ERROR "T344 constructor-source classification contains a duplicate source.")
+endif()
+
 file(GLOB project_t344_machine_sources
     RELATIVE "${PROJECT_T344_SOURCE_DIR}"
     "${PROJECT_T344_SOURCE_DIR}/tests/machine/*.c")
@@ -100,11 +121,11 @@ foreach(project_t344_source IN LISTS project_t344_machine_sources)
 endforeach()
 list(SORT project_t344_direct_sources)
 list(LENGTH project_t344_direct_sources project_t344_direct_count)
-if(NOT project_t344_direct_count EQUAL 71)
-    message(FATAL_ERROR "T344 expected 71 direct machine constructors, found ${project_t344_direct_count}.")
+if(NOT project_t344_direct_count EQUAL 75)
+    message(FATAL_ERROR "T344 expected 75 classified direct machine constructors, found ${project_t344_direct_count}.")
 endif()
 foreach(project_t344_source IN LISTS project_t344_direct_sources)
-    list(FIND project_t344_inventory "${project_t344_source}" project_t344_index)
+    list(FIND project_t344_constructor_sources "${project_t344_source}" project_t344_index)
     if(project_t344_index EQUAL -1)
         message(FATAL_ERROR "T344 direct constructor is unclassified: ${project_t344_source}")
     endif()
@@ -120,4 +141,4 @@ foreach(project_t344_source IN LISTS project_t344_migrated_sources)
     endif()
 endforeach()
 
-message(STATUS "T344 historical fixture shapes passed: 71 direct constructors, 22 shared tails, 48 retained shapes.")
+message(STATUS "T344 historical fixture shapes passed: 71 historical and 4 timing-manifest direct constructors, 22 shared tails, 48 retained shapes.")

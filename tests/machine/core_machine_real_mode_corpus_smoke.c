@@ -11,7 +11,7 @@
 
 #define CORPUS_RESET_LINEAR 0xfffffff0u
 #define CORPUS_RESET_PHYSICAL 0x000ffff0u
-#define CORPUS_RESET_WINDOW 64u
+#define CORPUS_RESET_WINDOW 16u
 
 typedef struct corpus_port_event {
     C_INT write;

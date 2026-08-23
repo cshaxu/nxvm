@@ -22,14 +22,21 @@ foreach(required IN ITEMS "core_machine_configure_dma"
     endif()
 endforeach()
 
-string(FIND "${session_source}" "core_machine_configure_dma" position)
+string(FIND "${session_source}" "topology.dma = dma_wiring" position)
 if(position EQUAL -1)
-    message(FATAL_ERROR "T296 S3 VM session does not submit DMA wiring to core")
+    message(FATAL_ERROR "T296 S3 VM session does not publish DMA wiring in the Core plan")
 endif()
-string(FIND "${session_source}" "core_machine_configure_rtc_cmos" position)
+string(FIND "${session_source}" "topology.rtc_cmos = rtc_cmos_config" position)
 if(position EQUAL -1)
-    message(FATAL_ERROR "T296 S3 VM session does not submit RTC/CMOS wiring to core")
+    message(FATAL_ERROR "T296 S3 VM session does not publish RTC/CMOS wiring in the Core plan")
 endif()
+foreach(required IN ITEMS "topology->dma_present && (status = core_machine_configure_dma("
+    "topology->rtc_cmos_present && (status = core_machine_configure_rtc_cmos(")
+    string(FIND "${core_source}" "${required}" position)
+    if(position EQUAL -1)
+        message(FATAL_ERROR "T296 S3 Core plan materialization is incomplete: ${required}")
+    endif()
+endforeach()
 
 foreach(vm_source IN ITEMS "${session_source}" "${provider_lifecycle_source}"
     "${lifecycle_source}")

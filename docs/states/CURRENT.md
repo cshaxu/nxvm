@@ -2,12 +2,31 @@
 
 ## Current Work
 
-**Idle.**
+## M5 T444 S1 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New |
+| Admission And Approval | Owner approved the queue-head candidate and explicitly required immediate, non-transfer repair of every audited gap on 2026-08-23. No exception is allowed. |
+| Objective | Restore truthful passing `current-gates-gcc` and `current-fast-smokes-gcc`: reconcile T344's constructor classifier with the documented fixture universe and repair every one of the frozen 20 fast-smoke failures. |
+| Non-goals | No timing-value rebaseline, smoke skip, expected-failure conversion, hidden environment bypass, fixture deletion, public ABI expansion, or unrelated cleanup. |
+| Reference Baseline | `master` at `2f8d12a9`; current CMake artifact is 0443 and the full fast aggregate has 20 named failures plus the T344 71-versus-75 static failure. |
+| Candidate Proposal | [Current-gate regression restoration](../proposals/m5-current-gate-regression-restoration.md). |
+| Files And ABI Surface | `cmake/verify_t344_historical_fixture_shapes.cmake`, CMake dependency/fixture declarations, affected Core test/runtime owners, artifact target and evidence. No public ABI change is expected. |
+| Applicable Rules | Architecture: one owner and one production path; Coding: correct repeated mechanism at its owner and no wrapper/parallel path; Execution: complete P, similar-issue sweep, artifact and full-gate closure; Documentation: packet/history/evidence topology. |
+| Verification | Freeze failing CTest identities and output; prove source-truth T344 inventory; run each repaired focused regression, `cmake --build --preset current-fast-smokes-gcc`, `cmake --build --preset current-gates-gcc`, documentation governance, and a fresh/incremental build comparison. |
+| Expected Markers | T344 fixture-shape pass marker; all 277 current-fast CTests pass; current specialized gates pass; current artifact-truth marker for 0444. |
+| Asset Needs | None; no imported source, firmware, guest media, or third-party asset. |
+| Reporting Requirements | Record root cause, frozen failure set, owner/path sweep, tests, artifact hash, source/test line accounting, and any unavoidable blocker in indexed evidence. |
+| Stop Conditions | Stop only for an unavoidable external authority or environmental failure after retaining exact repro evidence; independent root causes remain in this T444 scope. |
+| Exit Criteria | T344 and every originally failing fast smoke pass, full `current-fast-smokes-gcc` and `current-gates-gcc` pass without suppression, artifact 0444 is built/hashed, evidence documents the complete sweep, and the actual diff passes coordinator review. |
+| Original Owner Request | Owner directive: do not transfer; immediately repair and verify every audited gap. |
+| Similar-Issue Sweep | Search all tracked `tests/machine/*.c`, CMake gate definitions and runtime aggregate dependencies for direct constructor classification and stale-layout/dependency forms; every hit is repaired or shown inapplicable by source truth. |
 
 
 ## Current Technical Baseline
 
-- **Current developer artifact:** target `vm-0-5-0443`; `nxvm_0_5_0443.exe` / `build/output/nxvm_0_5_0443.exe`, SHA-256 `16BE1A019DFB61D9E28EFD9396E70134F6FA1834FC72365577E49C6BA2D1EC40`. T434 has one copied Core timing-plan publication route for default PC/AT, IBM 5170 Model 339 and Model-40 BYOB session composition.
+- **Current developer artifact:** target `vm-0-5-0444`; `nxvm_0_5_0444.exe` / `build/output/nxvm_0_5_0444.exe`, SHA-256 `93A5307AD2A27CFEFDEAB491872FB7D918921B541CE73171F004F822E51EF230`. T434 has one copied Core timing-plan publication route for default PC/AT, IBM 5170 Model 339 and Model-40 BYOB session composition.
   T386 closes selected-device functional completeness at S29; its retained
   [closure audit](../etc/evidence/t386-s29-functional-closure-audit.md) fixes
   HDC current-gate coverage and transfers board, firmware and physical work.

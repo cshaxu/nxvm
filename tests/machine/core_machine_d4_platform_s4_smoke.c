@@ -63,7 +63,7 @@ C_INT main(C_VOID)
         core_machine_configure_d4_platform(machine, &d4) != TYPE_STATUS_OK ||
         core_machine_configure_rtc_cmos(machine, &cmos) != TYPE_STATUS_OK ||
         test_core_machine_fixture_register_reset_mapping(machine, 0xfffffff0u,
-            0x000ffff0u, 64u) != TYPE_STATUS_OK ||
+            0x000ffff0u, 16u) != TYPE_STATUS_OK ||
         core_machine_freeze_execution_providers(machine) != TYPE_STATUS_OK ||
         core_machine_reset(machine) != TYPE_STATUS_OK ||
         core_machine_bus_read(machine, 0x0061u, &value) != TYPE_STATUS_OK ||

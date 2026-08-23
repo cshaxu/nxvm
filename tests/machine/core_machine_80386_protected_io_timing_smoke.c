@@ -76,7 +76,7 @@ static C_INT timing_s7_prepare(core_machine **out_machine, timing_s7_state *stat
     if (out_machine == STD_NULL || state == STD_NULL ||
         core_machine_create(&config, &machine) != TYPE_STATUS_OK ||
         test_core_machine_fixture_register_reset_mapping(machine,
-            TIMING_S7_RESET_LINEAR, TIMING_S7_RESET_PHYSICAL, 64u) !=
+            TIMING_S7_RESET_LINEAR, TIMING_S7_RESET_PHYSICAL, 16u) !=
             TYPE_STATUS_OK || core_machine_install_port_provider(machine,
             0x0080u, 0x0080u, &timing_s7_ports, state) != TYPE_STATUS_OK ||
         !test_core_machine_fixture_bind_freeze_reset(machine,

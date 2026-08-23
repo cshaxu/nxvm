@@ -5,7 +5,7 @@
 
 #define TIMING_RESET_LINEAR 0xfffffff0u
 #define TIMING_RESET_PHYSICAL 0x000ffff0u
-#define TIMING_WINDOW_BYTES 64u
+#define TIMING_WINDOW_BYTES 16u
 
 typedef struct timing_port_state {
     type_unsigned_32 reads;

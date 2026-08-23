@@ -8,6 +8,7 @@ file(READ "${PROJECT_SOURCE_DIR}/src/vm/profile/default_profile/pc_at_profile.c"
     profile_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/vm/composition/session/session.c"
     session_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/machine.c" machine_source)
 
 if(vadp_source MATCHES "#include[ \t]+\"(vm/|vdm/|core/platform/|core/product/)")
     message(FATAL_ERROR "T236 VADP imports a product or platform owner")
@@ -22,17 +23,21 @@ foreach(required IN ITEMS
     "0x03ceu"
     "0x03cfu"
     "0x03c0u"
-    "0x03c1u"
-    "core_machine_configure_display")
-    if(required STREQUAL "core_machine_configure_display")
-        set(source_text "${session_source}")
-    else()
-        set(source_text "${profile_source}")
-    endif()
+    "0x03c1u")
+    set(source_text "${profile_source}")
     string(FIND "${source_text}" "${required}" position)
     if(position EQUAL -1)
         message(FATAL_ERROR "T236 profile/composition binding is missing ${required}")
     endif()
 endforeach()
+
+string(FIND "${session_source}" "topology.display = display_config" position)
+if(position EQUAL -1)
+    message(FATAL_ERROR "T236 composition does not publish its display plan")
+endif()
+string(FIND "${machine_source}" "topology->display_present && (status = core_machine_configure_display(" position)
+if(position EQUAL -1)
+    message(FATAL_ERROR "T236 Core plan materialization is missing core_machine_configure_display")
+endif()
 
 message("M5:T236:EGA-CONTROLLER:BOUNDARY:OK")

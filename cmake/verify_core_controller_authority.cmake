@@ -52,11 +52,19 @@ endforeach()
 
 file(READ "${session_source}" session_text)
 foreach(required IN ITEMS "core_machine_fdc_topology" "core_machine_hdc_topology"
-    "core_machine_configure_fdc" "core_machine_configure_hdc"
-    "media_registry" "fdc_dma_request")
+    "topology.fdc_present" "topology.hdc_present"
+    "media_registry" "dma_channel")
     string(FIND "${session_text}" "${required}" position)
     if(position EQUAL -1)
         message(FATAL_ERROR "T296 S4 typed controller submission is incomplete: ${required}")
+    endif()
+endforeach()
+
+foreach(required IN ITEMS "topology->fdc_present" "core_machine_configure_fdc"
+    "topology->hdc_present" "core_machine_configure_hdc")
+    string(FIND "${machine_text}" "${required}" position)
+    if(position EQUAL -1)
+        message(FATAL_ERROR "T296 S4 Core plan materialization is incomplete: ${required}")
     endif()
 endforeach()
 

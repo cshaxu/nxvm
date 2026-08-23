@@ -16,7 +16,7 @@ try {
         & $runner -FilePath 'powershell.exe' -ArgumentList @(
             '-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', $childScript,
             '-MarkerPath', $marker
-        ) -DeadlineSeconds 2 -DiagnosticPrefix 'T382:CURRENT-GATE-SELFTEST'
+        ) -DeadlineSeconds 5 -DiagnosticPrefix 'T382:CURRENT-GATE-SELFTEST'
     }
     catch {
         if ($_.Exception.Message -match 'T382:CURRENT-GATE-SELFTEST:DEADLINE') {

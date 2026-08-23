@@ -73,7 +73,7 @@ int main(C_VOID)
         core_machine_configure_dma(machine, &dma_wiring, &fdc_request) !=
             TYPE_STATUS_INVALID_STATE ||
         test_core_machine_fixture_register_reset_mapping(machine, 0xfffffff0u,
-            0x000ffff0u, 64u) != TYPE_STATUS_OK ||
+            0x000ffff0u, 16u) != TYPE_STATUS_OK ||
         core_machine_freeze_execution_providers(machine) != TYPE_STATUS_OK ||
         core_machine_reset(machine) != TYPE_STATUS_OK ||
         machine->shared_dma_primary.connect.device_owner[2u] != &machine->fdc ||

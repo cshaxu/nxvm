@@ -88,7 +88,7 @@ static C_INT t359_s4_prepare(core_machine_cpu_profile profile,
     if (out_machine == STD_NULL || state == STD_NULL ||
         core_machine_create(&config, &machine) != TYPE_STATUS_OK ||
         test_core_machine_fixture_register_reset_mapping(machine,
-            T359_S4_RESET_LINEAR, T359_S4_RESET_PHYSICAL, 64u) !=
+            T359_S4_RESET_LINEAR, T359_S4_RESET_PHYSICAL, 16u) !=
             TYPE_STATUS_OK ||
         test_core_machine_fixture_register_reset_mapping(machine, 0x00001000u,
             0x00001000u, 64u) != TYPE_STATUS_OK ||

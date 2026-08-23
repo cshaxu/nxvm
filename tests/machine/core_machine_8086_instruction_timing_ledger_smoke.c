@@ -5,7 +5,7 @@
 
 #define TIMING_8086_RESET_LINEAR 0xfffffff0u
 #define TIMING_8086_RESET_PHYSICAL 0x000ffff0u
-#define TIMING_8086_WINDOW_BYTES 64u
+#define TIMING_8086_WINDOW_BYTES 16u
 
 typedef struct timing_8086_state {
     type_unsigned_32 reads;

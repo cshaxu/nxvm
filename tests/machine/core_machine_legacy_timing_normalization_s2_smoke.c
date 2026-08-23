@@ -46,7 +46,7 @@ static C_INT t362_s2_prepare(core_machine_cpu_profile profile,
     if (out_machine == STD_NULL || state == STD_NULL ||
         core_machine_create(&config, &machine) != TYPE_STATUS_OK ||
         test_core_machine_fixture_register_reset_mapping(machine,
-            T362_S2_RESET_LINEAR, T362_S2_RESET_PHYSICAL, 64u) !=
+            T362_S2_RESET_LINEAR, T362_S2_RESET_PHYSICAL, 16u) !=
             TYPE_STATUS_OK ||
         test_core_machine_fixture_register_reset_mapping(machine,
             T362_S2_OPERAND_LINEAR, T362_S2_OPERAND_LINEAR, 64u) !=

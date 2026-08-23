@@ -5,7 +5,7 @@
 
 #define T359_S2_RESET_LINEAR 0xfffffff0u
 #define T359_S2_RESET_PHYSICAL 0x000ffff0u
-#define T359_S2_WINDOW_BYTES 64u
+#define T359_S2_WINDOW_BYTES 16u
 
 typedef struct t359_s2_timing_state {
     type_unsigned_64 advanced_ticks;

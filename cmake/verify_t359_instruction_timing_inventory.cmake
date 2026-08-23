@@ -251,10 +251,15 @@ foreach(t359_s6_anchor IN ITEMS
     t359_require("${t359_machine_text}" "${t359_s6_anchor}"
         "missing S6 privileged timing anchor ${t359_s6_anchor}")
 endforeach()
-string(FIND "${t359_timing_text}"
-    "CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80386_PRIVILEGED"
+string(FIND "${t359_timing_text}" "core_machine_80386_privileged_source_instruction_cost"
     t359_s6_publisher)
-if(t359_s6_publisher LESS 0 OR t359_s6_publisher GREATER t359_s2_primary_publisher)
+if(t359_s6_publisher LESS 0)
+    message(FATAL_ERROR "T359 S6 privileged classifier is missing")
+endif()
+string(SUBSTRING "${t359_timing_text}" ${t359_s6_publisher} -1 t359_s6_tail)
+string(FIND "${t359_s6_tail}" "CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY"
+    t359_s6_primary_after)
+if(t359_s6_primary_after LESS 0)
     message(FATAL_ERROR
         "T359 S6 privileged classifier must precede the primary and unallocated receivers")
 endif()
