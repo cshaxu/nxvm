@@ -294,6 +294,7 @@ static CONST UCHAR fontBitmap[256][16] = {
 #define FONT_NCOLOR 256 /* 128 */
 
 struct w32adisp_context {
+    WIN32_HWND window;
     HDC window_dc;
     HDC buffer_dc;
     HBITMAP buffer_bitmap;
@@ -423,6 +424,7 @@ C_VOID w32adispInit(w32adisp_context *context, WIN32_HWND window,
                   const core_platform_presentation_mailbox *mailbox) {
     UINT i, j;
     if (context == STD_NULL) return;
+    context->window = window;
     context->window_dc = GetDC(window);
     context->buffer_dc = CreateCompatibleDC(STD_NULL);
     context->buffer_bitmap = STD_NULL;
@@ -577,4 +579,8 @@ C_VOID w32adispFinal(w32adisp_context *context) {
     DeleteObject(context->font_bitmap);
     DeleteDC(context->buffer_dc);
     DeleteObject(context->buffer_bitmap);
+    if (context->window_dc != STD_NULL) {
+        ReleaseDC(context->window, context->window_dc);
+        context->window_dc = STD_NULL;
+    }
 }

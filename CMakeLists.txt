@@ -2870,8 +2870,8 @@ function(add_current_vm_artifact target version)
             "${CMAKE_SOURCE_DIR}/build/output/${task_artifact_filename}")
 endfunction()
 
-set(PROJECT_CURRENT_VM_ARTIFACT_TARGET vm-0-5-0444)
-add_current_vm_artifact(vm-0-5-0444 "0.5.0444")
+set(PROJECT_CURRENT_VM_ARTIFACT_TARGET vm-0-5-0445)
+add_current_vm_artifact(vm-0-5-0445 "0.5.0445")
 option(PROJECT_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
 
@@ -2989,6 +2989,12 @@ if(PROJECT_VERIFY_DEPENDENCY_DAG)
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
             -P "${CMAKE_SOURCE_DIR}/cmake/verify_linux_platform_contract.cmake"
         COMMENT "Verifying Linux platform source contract"
+        VERBATIM)
+
+    add_custom_target(verify-t445-vm-native-display-resource-lifetime
+        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_t445_vm_native_display_resource_lifetime.cmake"
+        COMMENT "Verifying VM native display resource lifecycle ownership"
         VERBATIM)
 
     add_custom_target(verify-current-artifact-target
@@ -3334,6 +3340,7 @@ set(PROJECT_CURRENT_SPECIALIZED_VERIFIER_CANDIDATES
     verify-vm-provider-composition
     verify-ram-reconfigure-closure
     verify-linux-platform-contract
+    verify-t445-vm-native-display-resource-lifetime
     verify-current-artifact-target
     verify-request-transport-closure
     verify-keyboard-ingress-boundary

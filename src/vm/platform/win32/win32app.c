@@ -95,6 +95,14 @@ static C_INT win32app_test_should_fail(C_INT stage)
 #endif
 }
 
+static C_VOID win32app_display_renderer_finalize(vm_platform_run_context *platform)
+{
+    if (platform->window_renderer == STD_NULL) return;
+    w32adispFinal((w32adisp_context *)platform->window_renderer);
+    w32adisp_context_destroy((w32adisp_context *)platform->window_renderer);
+    platform->window_renderer = STD_NULL;
+}
+
 static LRESULT CALLBACK win32app_window_procedure(HWND window, UINT message,
     WPARAM wParam, LPARAM lParam)
 {
@@ -115,6 +123,9 @@ static LRESULT CALLBACK win32app_window_procedure(HWND window, UINT message,
     case WM_CREATE:
         SetTimer(window, TIMER_PAINT, 50u, STD_NULL);
         return 0;
+    case WM_CLOSE:
+        win32app_display_renderer_finalize((vm_platform_run_context *)handle->platform);
+        return DefWindowProc(window, message, wParam, lParam);
     case WM_DESTROY:
         vm_platform_run_handle_report(handle->owner,
             vm_platform_run_handle_get_last_event(handle->owner) ==
@@ -242,6 +253,7 @@ static DWORD WINAPI win32app_display_thread(LPVOID opaque)
             win32app_start_wait_cancelled, handle);
     }
     if (win32app_atomic_read(&handle->stop_requested)) {
+        win32app_display_renderer_finalize(platform);
         DestroyWindow(handle->window);
         return 0;
     }
@@ -254,6 +266,7 @@ static DWORD WINAPI win32app_display_thread(LPVOID opaque)
         TranslateMessage(&message);
         DispatchMessage(&message);
     }
+    win32app_display_renderer_finalize(platform);
     return 0;
 }
 
@@ -342,11 +355,6 @@ C_VOID vm_platform_win32app_run_handle_finalize(vm_platform_run_handle *owner)
     platform = (vm_platform_run_context *)handle->platform;
     if (handle->kernel_thread != STD_NULL) CloseHandle(handle->kernel_thread);
     if (handle->display_thread != STD_NULL) CloseHandle(handle->display_thread);
-    if (platform->window_renderer != STD_NULL) {
-        w32adispFinal((w32adisp_context *)platform->window_renderer);
-        w32adisp_context_destroy((w32adisp_context *)platform->window_renderer);
-    }
-    platform->window_renderer = STD_NULL;
     platform->window_surface.native_handle = STD_NULL;
     STD_FREE(handle);
     vm_platform_run_handle_initialize(owner);

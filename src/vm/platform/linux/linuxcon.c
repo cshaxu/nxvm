@@ -235,7 +235,6 @@ struct linuxcon_run_handle {
     pthread_t display_thread;
     C_INT kernel_started;
     C_INT display_started;
-    C_INT terminal_initialized;
     STD_ATOMIC_BOOL display_ready;
     STD_ATOMIC_BOOL display_failed;
 };
@@ -266,7 +265,6 @@ static C_VOID *linuxcon_display_thread(C_VOID *arg) {
             VM_PLATFORM_RUN_EVENT_STARTUP_FAILED);
         return STD_NULL;
     }
-    handle->terminal_initialized = 1;
     STD_ATOMIC_STORE(&handle->display_ready, TYPE_TRUE);
     vm_platform_linuxcon_paint(context, 1);
     while (vm_platform_execution_is_running_for(context->execution)) {
@@ -275,6 +273,7 @@ static C_VOID *linuxcon_display_thread(C_VOID *arg) {
         (C_VOID)core_platform_wait_milliseconds(20u,
             linuxcon_display_wait_cancelled, handle);
     }
+    vm_platform_linuxcon_terminal_finalize();
     return 0;
 }
 
@@ -494,7 +493,6 @@ C_VOID vm_platform_linuxcon_run_handle_finalize(vm_platform_run_handle *owner) {
     linuxcon_run_handle *handle = owner == STD_NULL ? STD_NULL : owner->backend;
 
     if (handle == STD_NULL) return;
-    if (handle->terminal_initialized) vm_platform_linuxcon_terminal_finalize();
     vm_platform_host_surface_lease_release(&linux_terminal_lease,
         handle->platform);
     STD_FREE(handle);

@@ -2,11 +2,30 @@
 
 ## Current Work
 
-**Idle.**
+## M5 T445 S1 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New |
+| Admission And Approval | Owner approved the queue-head candidate on 2026-08-23 and required a correct, minimalist repair that reduces unnecessary complexity and redundancy. No exception is allowed. |
+| Objective | Give each native display adapter one complete owner-local resource lifecycle: every Win32 `GetDC` is paired with `ReleaseDC`, and Linux curses initialization and `endwin` occur on the display thread. |
+| Non-goals | No cross-platform renderer or lifecycle framework; no guest display timing, copied-frame, exclusive-surface, Core, host-support, or public cross-module ABI change; no unrelated display cleanup. |
+| Reference Baseline | `master` at `9d5cb849`; current CMake artifact is 0444. `w32adisp` owns the acquired window DC but omits its release, while `linuxcon` initializes curses in its display thread and finalizes it after join in the caller thread. |
+| Candidate Proposal | [VM native display resource lifetime repair](../proposals/m5-vm-native-display-resource-lifetime.md). |
+| Files And ABI Surface | Expected owners: `src/vm/platform/win32/w32adisp.[ch]`, `src/vm/platform/win32/win32app.c`, `src/vm/platform/linux/linuxcon.c`, existing or narrow adapter-local tests, CMake registration/static checks, artifact and evidence. No public ABI change is expected. |
+| Applicable Rules | Architecture: platform adapters own only their host resources and retain one lifecycle path; Coding: repair the repeated mechanism at its owner, reuse current boundaries, add no forwarding framework, and remove obsolete lifecycle state/path; Execution: complete P, similar-issue sweep, artifact and gate closure; Documentation: packet/history/evidence topology. |
+| Verification | Freeze the current Win32 and Linux lifecycle paths; add deterministic owner-local seams or focused tests for normal and startup-failure cleanup; statically sweep tracked production and test sources for `GetDC`/`ReleaseDC`, `initscr`/`endwin`, and display-thread finalization; run supported-host builds, relevant focused CTests, `current-fast-smokes-gcc`, `current-gates-gcc`, documentation governance, and a fresh/incremental build comparison. |
+| Expected Markers | One `ReleaseDC` pair at the Win32 owning context; `endwin` is reachable only from the initializing Linux display thread; adapter lifecycle regression/static markers pass; current artifact-truth marker for 0445. |
+| Asset Needs | None; no imported source, firmware, guest media, or third-party asset. |
+| Reporting Requirements | Record each acquisition/finalization owner, success and failure paths, exact similar-issue search/dispositions, supported-host verification boundary, artifact hash, and source/test line accounting in indexed evidence. |
+| Stop Conditions | Stop only for an unavailable required native runtime environment after recording the deterministic/static verification boundary; do not replace it with a host-support claim. Any newly found display lifecycle variant is in scope only if it uses the same APIs/owner; otherwise record it for separate admission. |
+| Exit Criteria | Every relevant Win32 DC acquisition has its owning release on all completed paths; Linux curses initialization, failure rollback, and normal shutdown finalize on the initializing display thread; no duplicate lifecycle authority or obsolete path remains; focused tests/static sweeps and admitted gates pass; artifact 0445 is built/hashed; evidence and coordinator actual-change review prove the complete sweep. |
+| Original Owner Request | Owner approved the first queued task and asked for its brief, one-sentence target, design, and a minimalist repair that reduces complexity and redundant code. |
+| Similar-Issue Sweep | Search tracked `src/`, `tests/`, CMake and relevant task records for `GetDC`, `ReleaseDC`, `initscr`, `endwin`, `newterm`, `delscreen`, native renderer creation/finalization, and caller-thread cleanup after adapter-thread initialization; record every production hit as fixed, inapplicable with reason, or separately deferred. |
 
 ## Current Technical Baseline
 
-- **Current developer artifact:** target `vm-0-5-0444`; `nxvm_0_5_0444.exe` / `build/output/nxvm_0_5_0444.exe`, SHA-256 `93A5307AD2A27CFEFDEAB491872FB7D918921B541CE73171F004F822E51EF230`. T434 has one copied Core timing-plan publication route for default PC/AT, IBM 5170 Model 339 and Model-40 BYOB session composition.
+- **Current developer artifact:** target `vm-0-5-0445`; `nxvm_0_5_0445.exe` / `build/output/nxvm_0_5_0445.exe`, SHA-256 `2D369C04936536F987ECD59826037949E70DF6BCC33241C131530E4BA724808D`. T434 has one copied Core timing-plan publication route for default PC/AT, IBM 5170 Model 339 and Model-40 BYOB session composition.
   T386 closes selected-device functional completeness at S29; its retained
   [closure audit](../etc/evidence/t386-s29-functional-closure-audit.md) fixes
   HDC current-gate coverage and transfers board, firmware and physical work.
