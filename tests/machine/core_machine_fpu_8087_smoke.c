@@ -195,7 +195,7 @@ static C_INT test_profile_gates(C_VOID)
     failed |= !metadata.valid || metadata.minimum_cpu != CORE_MACHINE_CPU_PROFILE_8086 ||
         metadata.minimum_fpu != CORE_MACHINE_FPU_PROFILE_8087 ||
         metadata.operation != CORE_MACHINE_FPU_OPERATION_FLD_M32;
-    for (type_unsigned_8 index = 0u; index < sizeof(profiles) / sizeof(profiles[0]); ++index) {
+    for (type_unsigned_8 index = 0u; index < 2u; ++index) {
         fpu_test_machine state;
         failed |= !fpu_test_prepare(&state, profiles[index],
             CORE_MACHINE_FPU_PROFILE_8087);
@@ -207,31 +207,25 @@ static C_INT test_profile_gates(C_VOID)
     }
     {
         fpu_test_machine state;
-        core_machine_cpu_diagnostic diagnostic;
         failed |= !fpu_test_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386,
             CORE_MACHINE_FPU_PROFILE_80287);
         if (state.machine != STD_NULL) {
             failed |= !fpu_test_write(&state, 0u, fninit, sizeof(fninit));
-            failed |= !fpu_test_run(&state, 1u, TYPE_STATUS_FAULT, &diagnostic);
-            failed |= !TYPE_GET_BIT(diagnostic.first_fault.exception_mask,
-                VCPUINS_EXCEPT_FPU_UNSUPPORTED) || TYPE_GET_BIT(
-                diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_UD);
+            failed |= !fpu_test_run(&state, 1u, TYPE_STATUS_OK, STD_NULL) ||
+                !state.machine->fpu.busy;
         }
         core_machine_destroy(state.machine);
     }
     {
         fpu_test_machine state;
-        core_machine_cpu_diagnostic diagnostic;
         failed |= !fpu_test_prepare(&state, CORE_MACHINE_CPU_PROFILE_8086,
             CORE_MACHINE_FPU_PROFILE_8087);
         if (state.machine != STD_NULL) {
             failed |= !fpu_test_write(&state, 0u, unsupported_m32,
                 sizeof(unsupported_m32));
             failed |= !fpu_test_write(&state, FPU_TEST_ONE, &nan, sizeof(nan));
-            failed |= !fpu_test_run(&state, 1u, TYPE_STATUS_FAULT, &diagnostic);
-            failed |= !TYPE_GET_BIT(diagnostic.first_fault.exception_mask,
-                VCPUINS_EXCEPT_FPU_UNSUPPORTED) || TYPE_GET_BIT(
-                diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_UD);
+            failed |= !fpu_test_run(&state, 1u, TYPE_STATUS_OK, STD_NULL) ||
+                !state.machine->fpu.busy;
         }
         core_machine_destroy(state.machine);
     }

@@ -29,6 +29,14 @@ struct core_machine_fpu {
     core_machine_fpu_tag tags[8];
     core_machine_fpu_value registers[8];
     type_bool pending_unmasked_exception;
+    /* BUSY and ERROR are independent processor-extension signals.  The
+     * operation interval is source data for a later FPU semantic/timeline
+     * owner; it is never folded into CPU ESC retirement time. */
+    type_bool busy;
+    type_unsigned_8 last_escape_opcode;
+    type_unsigned_8 last_escape_modrm;
+    type_unsigned_32 operation_ticks_min;
+    type_unsigned_32 operation_ticks_max;
     /* Core-private TEST-pin wait work.  A timing-capable FPU owner supplies
      * the remaining iterations; FWAIT consumes them atomically on successful
      * retirement and retains the consumed count for CPU timing publication. */
@@ -38,6 +46,8 @@ struct core_machine_fpu {
 
 typedef enum core_machine_fpu_escape_action {
     CORE_MACHINE_FPU_ESCAPE_CONSUME_NONE,
+    CORE_MACHINE_FPU_ESCAPE_HANDOFF,
+    CORE_MACHINE_FPU_ESCAPE_EXECUTE_8087,
     CORE_MACHINE_FPU_ESCAPE_UNSUPPORTED
 } core_machine_fpu_escape_action;
 
@@ -49,8 +59,12 @@ typedef enum core_machine_fpu_execute_result {
 C_VOID core_machine_fpu_initialize(core_machine_fpu *fpu,
     core_machine_fpu_profile profile);
 C_VOID core_machine_fpu_reset(core_machine_fpu *fpu);
+type_bool core_machine_fpu_profile_allows_cpu(core_machine_cpu_profile cpu,
+    core_machine_fpu_profile fpu);
 core_machine_fpu_escape_action core_machine_fpu_escape_dispatch(
-    const core_machine_fpu *fpu, C_UCHAR escape_opcode, C_UCHAR modrm);
+    core_machine_fpu *fpu, core_machine_cpu_profile cpu,
+    C_UCHAR escape_opcode, C_UCHAR modrm);
+type_bool core_machine_fpu_busy(const core_machine_fpu *fpu);
 C_VOID core_machine_fpu_get_state(const core_machine_fpu *fpu,
     core_machine_fpu_state *out_state);
 core_machine_fpu_execute_result core_machine_fpu_load_m32(core_machine_fpu *fpu,

@@ -243,9 +243,29 @@ typedef enum core_machine_source_timing_form {
     CORE_MACHINE_SOURCE_TIMING_NOP,
     CORE_MACHINE_SOURCE_TIMING_CLC,
     CORE_MACHINE_SOURCE_TIMING_CLD,
-    CORE_MACHINE_SOURCE_TIMING_SAL_REGISTER_ONE,
-    CORE_MACHINE_SOURCE_TIMING_RCL_REGISTER_ONE_32,
-    CORE_MACHINE_SOURCE_TIMING_RCL_REGISTER_CL_32,
+    CORE_MACHINE_SOURCE_TIMING_CMC,
+    CORE_MACHINE_SOURCE_TIMING_STC,
+    CORE_MACHINE_SOURCE_TIMING_STD,
+    CORE_MACHINE_SOURCE_TIMING_STI,
+    CORE_MACHINE_SOURCE_TIMING_GROUP2_ROTATE_REGISTER,
+    CORE_MACHINE_SOURCE_TIMING_GROUP2_ROTATE_MEMORY,
+    CORE_MACHINE_SOURCE_TIMING_GROUP2_CARRY_REGISTER,
+    CORE_MACHINE_SOURCE_TIMING_GROUP2_CARRY_MEMORY,
+    CORE_MACHINE_SOURCE_TIMING_MOV_EXTEND_REGISTER,
+    CORE_MACHINE_SOURCE_TIMING_MOV_EXTEND_MEMORY,
+    CORE_MACHINE_SOURCE_TIMING_MOV_POINTER_REAL,
+    CORE_MACHINE_SOURCE_TIMING_DYNAMIC_MUL,
+    CORE_MACHINE_SOURCE_TIMING_DYNAMIC_IMUL,
+    CORE_MACHINE_SOURCE_TIMING_DYNAMIC_IMUL_IMMEDIATE,
+    CORE_MACHINE_SOURCE_TIMING_DYNAMIC_IMUL_TWO_OPERAND,
+    CORE_MACHINE_SOURCE_TIMING_DYNAMIC_BSF,
+    CORE_MACHINE_SOURCE_TIMING_DYNAMIC_BSR,
+    CORE_MACHINE_SOURCE_TIMING_DYNAMIC_BT,
+    CORE_MACHINE_SOURCE_TIMING_DYNAMIC_BTC,
+    CORE_MACHINE_SOURCE_TIMING_DYNAMIC_BTR,
+    CORE_MACHINE_SOURCE_TIMING_DYNAMIC_BTS,
+    CORE_MACHINE_SOURCE_TIMING_DYNAMIC_SHLD,
+    CORE_MACHINE_SOURCE_TIMING_DYNAMIC_SHRD,
     CORE_MACHINE_SOURCE_TIMING_CLI,
     CORE_MACHINE_SOURCE_TIMING_SAHF,
     CORE_MACHINE_SOURCE_TIMING_LAHF,
@@ -344,7 +364,7 @@ typedef enum core_machine_source_timing_form {
     CORE_MACHINE_SOURCE_TIMING_8086_RET_FAR,
     CORE_MACHINE_SOURCE_TIMING_8086_GROUP2,
     CORE_MACHINE_SOURCE_TIMING_8086_FLAG,
-    CORE_MACHINE_SOURCE_TIMING_8086_WAIT,
+    CORE_MACHINE_SOURCE_TIMING_WAIT,
     CORE_MACHINE_SOURCE_TIMING_8086_ESC,
     CORE_MACHINE_SOURCE_TIMING_8086_JCC,
     CORE_MACHINE_SOURCE_TIMING_8086_LOOP,
@@ -517,9 +537,18 @@ static const core_machine_source_timing_entry
     { CORE_MACHINE_SOURCE_TIMING_NOP, 3u },
     { CORE_MACHINE_SOURCE_TIMING_CLC, 2u },
     { CORE_MACHINE_SOURCE_TIMING_CLD, 2u },
-    { CORE_MACHINE_SOURCE_TIMING_SAL_REGISTER_ONE, 3u },
-    { CORE_MACHINE_SOURCE_TIMING_RCL_REGISTER_ONE_32, 9u },
-    { CORE_MACHINE_SOURCE_TIMING_RCL_REGISTER_CL_32, 9u },
+    { CORE_MACHINE_SOURCE_TIMING_CMC, 2u },
+    { CORE_MACHINE_SOURCE_TIMING_STC, 2u },
+    { CORE_MACHINE_SOURCE_TIMING_STD, 2u },
+    { CORE_MACHINE_SOURCE_TIMING_STI, 3u },
+    { CORE_MACHINE_SOURCE_TIMING_GROUP2_ROTATE_REGISTER, 3u },
+    { CORE_MACHINE_SOURCE_TIMING_GROUP2_ROTATE_MEMORY, 7u },
+    { CORE_MACHINE_SOURCE_TIMING_GROUP2_CARRY_REGISTER, 9u },
+    { CORE_MACHINE_SOURCE_TIMING_GROUP2_CARRY_MEMORY, 10u },
+    { CORE_MACHINE_SOURCE_TIMING_MOV_EXTEND_REGISTER, 3u },
+    { CORE_MACHINE_SOURCE_TIMING_MOV_EXTEND_MEMORY, 6u },
+    { CORE_MACHINE_SOURCE_TIMING_MOV_POINTER_REAL, 7u },
+    { CORE_MACHINE_SOURCE_TIMING_BOUND, 10u },
     { CORE_MACHINE_SOURCE_TIMING_CLI, 3u },
     { CORE_MACHINE_SOURCE_TIMING_SAHF, 3u },
     { CORE_MACHINE_SOURCE_TIMING_LAHF, 2u },
@@ -569,6 +598,7 @@ static const core_machine_source_timing_entry
     { CORE_MACHINE_SOURCE_TIMING_ENTER_LEVEL_ONE, 12u },
     { CORE_MACHINE_SOURCE_TIMING_LEAVE, 4u },
     { CORE_MACHINE_SOURCE_TIMING_HLT, 5u },
+    { CORE_MACHINE_SOURCE_TIMING_WAIT, 7u },
     { CORE_MACHINE_SOURCE_TIMING_INT3, 33u },
     { CORE_MACHINE_SOURCE_TIMING_INT_IMMEDIATE, 37u },
     { CORE_MACHINE_SOURCE_TIMING_IRET, 22u }
@@ -1836,7 +1866,7 @@ static C_INT core_machine_legacy_source_instruction_cost(core_machine *machine,
     case 0x9bu:
         if (machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_8086 &&
             machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_80186) break;
-        machine->source_timing_form_id = CORE_MACHINE_SOURCE_TIMING_8086_WAIT;
+        machine->source_timing_form_id = CORE_MACHINE_SOURCE_TIMING_WAIT;
         *out_ticks = (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80186 ?
             6u : 3u) + (type_unsigned_64)5u *
             core_machine_fpu_last_wait_iterations(&machine->fpu);
@@ -1998,6 +2028,36 @@ C_INT core_machine_primary_source_instruction_cost(
     if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 && prefixes == 0u &&
         opcode >= 0xd8u && opcode <= 0xdfu) {
         *out_ticks = 1u;
+        return 1;
+    }
+    if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80386 &&
+        !data->flagLock && core_machine_80386_timing_has_source_prefixes(data,
+            prefixes) && opcode == 0xd7u) {
+        machine->source_timing_form_id = CORE_MACHINE_SOURCE_TIMING_8086_XLAT;
+        *out_ticks = 5u;
+        return 1;
+    }
+    if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80386 &&
+        !data->flagLock && prefixes == 0u && opcode == 0x9bu) {
+        *out_ticks = core_machine_80386_source_timing_lookup(machine,
+            CORE_MACHINE_SOURCE_TIMING_WAIT);
+        return 1;
+    }
+    if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80386 &&
+        !data->flagLock && core_machine_80386_timing_has_source_prefixes(data,
+            prefixes) && opcode == 0x62u &&
+        core_machine_source_timing_modrm_is_memory(data, prefixes)) {
+        *out_ticks = core_machine_80386_source_timing_lookup(machine,
+            CORE_MACHINE_SOURCE_TIMING_BOUND);
+        return 1;
+    }
+    if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80386 &&
+        !core_machine_control_stack_is_protected(data) && !data->flagLock &&
+        core_machine_80386_timing_has_source_prefixes(data, prefixes) &&
+        (opcode == 0xc4u || opcode == 0xc5u) &&
+        core_machine_source_timing_modrm_is_memory(data, prefixes)) {
+        *out_ticks = core_machine_80386_source_timing_lookup(machine,
+            CORE_MACHINE_SOURCE_TIMING_MOV_POINTER_REAL);
         return 1;
     }
     if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 &&
@@ -3040,6 +3100,7 @@ C_INT core_machine_80386_dynamic_multiply_cost(core_machine *machine,
     type_unsigned_64 multiplier;
     type_unsigned_64 magnitude;
     type_unsigned_64 scale;
+    core_machine_source_timing_form form;
     C_INT signed_multiplier;
     C_INT memory_multiplier;
 
@@ -3065,21 +3126,26 @@ C_INT core_machine_80386_dynamic_multiply_cost(core_machine *machine,
         signed_multiplier = extension == 5u;
         memory_multiplier = core_machine_source_timing_modrm_is_memory(data,
             prefixes);
+        form = signed_multiplier ? CORE_MACHINE_SOURCE_TIMING_DYNAMIC_IMUL :
+            CORE_MACHINE_SOURCE_TIMING_DYNAMIC_MUL;
     } else if (opcode == 0x69u) {
         multiplier = data->crm;
         signed_multiplier = TYPE_TRUE;
         memory_multiplier = core_machine_source_timing_modrm_is_memory(data,
             prefixes);
+        form = CORE_MACHINE_SOURCE_TIMING_DYNAMIC_IMUL_IMMEDIATE;
     } else if (opcode == 0x6bu) {
         multiplier = data->cimm;
         operand_bytes = 1u;
         signed_multiplier = TYPE_TRUE;
+        form = CORE_MACHINE_SOURCE_TIMING_DYNAMIC_IMUL_IMMEDIATE;
     } else if (opcode == 0x0fu && prefixes + 2u < data->oplen &&
         data->opcodes[prefixes + 1u] == 0xafu) {
         multiplier = data->crm;
         signed_multiplier = TYPE_TRUE;
         memory_multiplier = core_machine_source_timing_modrm_is_memory(data,
             prefixes + 1u);
+        form = CORE_MACHINE_SOURCE_TIMING_DYNAMIC_IMUL_TWO_OPERAND;
     } else {
         return 0;
     }
@@ -3090,6 +3156,7 @@ C_INT core_machine_80386_dynamic_multiply_cost(core_machine *machine,
     scale = core_machine_80386_timing_ceiling_log2(magnitude);
     *out_ticks = magnitude == 0u ? 9u : (scale < 3u ? 3u : scale) + 6u;
     if (memory_multiplier) *out_ticks += 3u;
+    machine->source_timing_form_id = (type_unsigned_32)form;
     return 1;
 }
 
@@ -3164,29 +3231,51 @@ C_INT core_machine_80386_secondary_source_instruction_cost(
     switch (secondary) {
     case 0xa3u:
         *out_ticks = memory ? 12u : 3u;
+        machine->source_timing_form_id =
+            CORE_MACHINE_SOURCE_TIMING_DYNAMIC_BT;
         return 1;
     case 0xabu: case 0xb3u: case 0xbbu:
         *out_ticks = memory ? 13u : 6u;
+        machine->source_timing_form_id = (type_unsigned_32)(secondary == 0xabu ?
+            CORE_MACHINE_SOURCE_TIMING_DYNAMIC_BTS : secondary == 0xb3u ?
+            CORE_MACHINE_SOURCE_TIMING_DYNAMIC_BTR :
+            CORE_MACHINE_SOURCE_TIMING_DYNAMIC_BTC);
         return 1;
     case 0xbau:
         if (extension == 4u) {
             *out_ticks = memory ? 6u : 3u;
+            machine->source_timing_form_id =
+                CORE_MACHINE_SOURCE_TIMING_DYNAMIC_BT;
             return 1;
         }
         if (extension >= 5u) {
             *out_ticks = memory ? 8u : 6u;
+            machine->source_timing_form_id = (type_unsigned_32)(extension == 5u ?
+                CORE_MACHINE_SOURCE_TIMING_DYNAMIC_BTS : extension == 6u ?
+                CORE_MACHINE_SOURCE_TIMING_DYNAMIC_BTR :
+                CORE_MACHINE_SOURCE_TIMING_DYNAMIC_BTC);
             return 1;
         }
         return 0;
     case 0xa4u: case 0xa5u: case 0xacu: case 0xadu:
         *out_ticks = memory ? 7u : 3u;
+        machine->source_timing_form_id = (type_unsigned_32)(
+            secondary == 0xa4u || secondary == 0xa5u ?
+            CORE_MACHINE_SOURCE_TIMING_DYNAMIC_SHLD :
+            CORE_MACHINE_SOURCE_TIMING_DYNAMIC_SHRD);
         return 1;
     case 0xb6u: case 0xb7u: case 0xbeu: case 0xbfu:
-        *out_ticks = memory ? 6u : 3u;
+        *out_ticks = core_machine_80386_source_timing_lookup(machine,
+            memory ? CORE_MACHINE_SOURCE_TIMING_MOV_EXTEND_MEMORY :
+            CORE_MACHINE_SOURCE_TIMING_MOV_EXTEND_REGISTER);
         return 1;
     case 0xbcu: case 0xbdu:
-        *out_ticks = 10u + 3u * core_machine_80386_timing_zero_scan_count(
-            data->crm, operand_bytes, secondary == 0xbdu);
+        *out_ticks = (secondary == 0xbcu ? 11u : 9u) + 3u *
+            core_machine_80386_timing_zero_scan_count(data->crm, operand_bytes,
+                secondary == 0xbdu);
+        machine->source_timing_form_id = (type_unsigned_32)(secondary == 0xbcu ?
+            CORE_MACHINE_SOURCE_TIMING_DYNAMIC_BSF :
+            CORE_MACHINE_SOURCE_TIMING_DYNAMIC_BSR);
         return 1;
     default:
         return 0;
@@ -3248,7 +3337,8 @@ C_INT core_machine_80386_privileged_source_instruction_cost(
     }
     if (secondary == 0xb2u || secondary == 0xb4u || secondary == 0xb5u) {
         if (!protected_mode) {
-            *out_ticks = 7u;
+            *out_ticks = core_machine_80386_source_timing_lookup(machine,
+                CORE_MACHINE_SOURCE_TIMING_MOV_POINTER_REAL);
             return 1;
         }
         if ((data->oldcpu.data.eflags & VCPU_EFLAGS_VM) != 0u) return 0;
@@ -3527,6 +3617,8 @@ C_INT core_machine_80386_source_instruction_cost(core_machine *machine,
     const t_cpuins_data *data = &machine->executor_cpu_instructions.data;
     type_unsigned_32 prefixes = core_machine_instruction_prefix_count(data);
     type_unsigned_8 opcode;
+    type_unsigned_8 group2_extension;
+    C_INT group2_memory;
     type_unsigned_32 fallthrough;
     core_machine_cpu_instruction_lexeme lexeme;
 
@@ -3538,8 +3630,8 @@ C_INT core_machine_80386_source_instruction_cost(core_machine *machine,
     }
     opcode = data->opcodes[prefixes];
     machine->source_repeat_active = TYPE_FALSE;
-    if (prefixes != 0u && !(prefixes == 1u && data->opcodes[0] == 0x66u &&
-            (opcode == 0xd1u || opcode == 0xd3u))) {
+    if (data->flagLock ||
+        !core_machine_80386_timing_has_source_prefixes(data, prefixes)) {
         core_machine_source_timing_mark_unallocated(machine, out_ticks);
         return 1;
     }
@@ -3562,34 +3654,25 @@ C_INT core_machine_80386_source_instruction_cost(core_machine *machine,
         *out_ticks = core_machine_80386_source_timing_lookup(machine,
             CORE_MACHINE_SOURCE_TIMING_NOP);
         return 1;
-    case 0xd0u:
-        if (prefixes + 1u < data->oplen &&
-            !core_machine_source_timing_modrm_is_memory(data, prefixes) &&
-            ((data->opcodes[prefixes + 1u] >> 3u) & 7u) == 4u) {
-            *out_ticks = core_machine_80386_source_timing_lookup(machine,
-                CORE_MACHINE_SOURCE_TIMING_SAL_REGISTER_ONE);
-        } else {
+    case 0xd0u: case 0xd1u: case 0xd2u: case 0xd3u:
+    case 0xc0u: case 0xc1u:
+        if (prefixes + 1u >= data->oplen) {
             core_machine_source_timing_mark_unallocated(machine, out_ticks);
+            return 1;
         }
-        return 1;
-    case 0xd1u:
-        if (prefixes == 1u && data->opcodes[0] == 0x66u &&
-            prefixes + 1u < data->oplen &&
-            !core_machine_source_timing_modrm_is_memory(data, prefixes) &&
-            ((data->opcodes[prefixes + 1u] >> 3u) & 7u) == 2u) {
+        group2_extension = (data->opcodes[prefixes + 1u] >> 3u) & 7u;
+        group2_memory = core_machine_source_timing_modrm_is_memory(data,
+            prefixes);
+        if (group2_extension == 0u || group2_extension == 1u ||
+            group2_extension == 4u || group2_extension == 5u ||
+            group2_extension == 7u) {
             *out_ticks = core_machine_80386_source_timing_lookup(machine,
-                CORE_MACHINE_SOURCE_TIMING_RCL_REGISTER_ONE_32);
-        } else {
-            core_machine_source_timing_mark_unallocated(machine, out_ticks);
-        }
-        return 1;
-    case 0xd3u:
-        if (prefixes == 1u && data->opcodes[0] == 0x66u &&
-            prefixes + 1u < data->oplen &&
-            !core_machine_source_timing_modrm_is_memory(data, prefixes) &&
-            ((data->opcodes[prefixes + 1u] >> 3u) & 7u) == 2u) {
+                group2_memory ? CORE_MACHINE_SOURCE_TIMING_GROUP2_ROTATE_MEMORY :
+                CORE_MACHINE_SOURCE_TIMING_GROUP2_ROTATE_REGISTER);
+        } else if (group2_extension == 2u || group2_extension == 3u) {
             *out_ticks = core_machine_80386_source_timing_lookup(machine,
-                CORE_MACHINE_SOURCE_TIMING_RCL_REGISTER_CL_32);
+                group2_memory ? CORE_MACHINE_SOURCE_TIMING_GROUP2_CARRY_MEMORY :
+                CORE_MACHINE_SOURCE_TIMING_GROUP2_CARRY_REGISTER);
         } else {
             core_machine_source_timing_mark_unallocated(machine, out_ticks);
         }
@@ -3598,13 +3681,29 @@ C_INT core_machine_80386_source_instruction_cost(core_machine *machine,
         *out_ticks = core_machine_80386_source_timing_lookup(machine,
             CORE_MACHINE_SOURCE_TIMING_CLC);
         return 1;
+    case 0xf5u:
+        *out_ticks = core_machine_80386_source_timing_lookup(machine,
+            CORE_MACHINE_SOURCE_TIMING_CMC);
+        return 1;
+    case 0xf9u:
+        *out_ticks = core_machine_80386_source_timing_lookup(machine,
+            CORE_MACHINE_SOURCE_TIMING_STC);
+        return 1;
     case 0xfcu:
         *out_ticks = core_machine_80386_source_timing_lookup(machine,
             CORE_MACHINE_SOURCE_TIMING_CLD);
         return 1;
+    case 0xfdu:
+        *out_ticks = core_machine_80386_source_timing_lookup(machine,
+            CORE_MACHINE_SOURCE_TIMING_STD);
+        return 1;
     case 0xfau:
         *out_ticks = core_machine_80386_source_timing_lookup(machine,
             CORE_MACHINE_SOURCE_TIMING_CLI);
+        return 1;
+    case 0xfbu:
+        *out_ticks = core_machine_80386_source_timing_lookup(machine,
+            CORE_MACHINE_SOURCE_TIMING_STI);
         return 1;
     case 0x9eu:
         *out_ticks = core_machine_80386_source_timing_lookup(machine,

@@ -8036,7 +8036,6 @@ static C_VOID UndefinedOpcode(core_machine_cpu_execution_context *context)
 static C_VOID FPU_ESCAPE(core_machine_cpu_execution_context *context)
 {
     core_machine_fpu_escape_action action;
-    core_machine_fpu_execute_result result;
     core_machine_cpu_instruction_metadata metadata;
     core_machine_fpu_operation_metadata fpu_metadata;
     type_unsigned_8 escape_opcode;
@@ -8062,16 +8061,24 @@ static C_VOID FPU_ESCAPE(core_machine_cpu_execution_context *context)
     }
     else
     {
-        action = core_machine_fpu_escape_dispatch(context->fpu, escape_opcode, modrm);
+        action = core_machine_fpu_escape_dispatch(context->fpu,
+            context->cpu_profile, escape_opcode, modrm);
         if (action == CORE_MACHINE_FPU_ESCAPE_UNSUPPORTED)
         {
             TYPE_TRACE_CHECK_RETURN(_SetExcept_FPU_UNSUPPORTED(0));
         }
-        else if (context->fpu != STD_NULL &&
-            context->fpu->profile == CORE_MACHINE_FPU_PROFILE_8087)
+        else if (action != CORE_MACHINE_FPU_ESCAPE_CONSUME_NONE &&
+            !context->preview_mode && context->transaction != STD_NULL &&
+            core_machine_transaction_begin(context->transaction,
+                CORE_MACHINE_TRANSACTION_OWNER_CPU,
+                CORE_MACHINE_TRANSACTION_CPU_FPU_COMMAND, escape_opcode, modrm,
+                (type_unsigned_32)context->fpu->profile) == TYPE_STATUS_OK)
+        {
+            core_machine_transaction_commit(context->transaction);
+        }
+        if (action == CORE_MACHINE_FPU_ESCAPE_EXECUTE_8087)
         {
             fpu_metadata = core_machine_fpu_operation_metadata_get(escape_opcode, modrm);
-            result = CORE_MACHINE_FPU_EXECUTE_COMPLETED;
             switch (fpu_metadata.operation)
             {
             case CORE_MACHINE_FPU_OPERATION_FNINIT:
@@ -8079,12 +8086,12 @@ static C_VOID FPU_ESCAPE(core_machine_cpu_execution_context *context)
                 break;
             case CORE_MACHINE_FPU_OPERATION_FLD_M32:
                 TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 4));
-                result = core_machine_fpu_load_m32(context->fpu,
+                (C_VOID)core_machine_fpu_load_m32(context->fpu,
                     TYPE_MASK_UNSIGNED_32(instruction_state.data.crm));
                 break;
             case CORE_MACHINE_FPU_OPERATION_FSTP_M32:
-                result = core_machine_fpu_store_m32(context->fpu, &fpu_m32);
-                if (result == CORE_MACHINE_FPU_EXECUTE_COMPLETED) {
+                if (core_machine_fpu_store_m32(context->fpu, &fpu_m32) ==
+                    CORE_MACHINE_FPU_EXECUTE_COMPLETED) {
                     instruction_state.data.crm = fpu_m32;
                     TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, 4));
                 }
@@ -8098,15 +8105,14 @@ static C_VOID FPU_ESCAPE(core_machine_cpu_execution_context *context)
             case CORE_MACHINE_FPU_OPERATION_FMUL_ST0_STI:
             case CORE_MACHINE_FPU_OPERATION_FSUB_ST0_STI:
             case CORE_MACHINE_FPU_OPERATION_FDIV_ST0_STI:
-                result = core_machine_fpu_binary_st0_sti(context->fpu,
+                (C_VOID)core_machine_fpu_binary_st0_sti(context->fpu,
                     fpu_metadata.operation, (type_unsigned_8)(modrm & 7u));
                 break;
-            default:
-                result = CORE_MACHINE_FPU_EXECUTE_UNSUPPORTED;
-                break;
+            default: break;
             }
-            if (result == CORE_MACHINE_FPU_EXECUTE_UNSUPPORTED)
-                TYPE_TRACE_CHECK_RETURN(_SetExcept_FPU_UNSUPPORTED(0));
+            /* Arithmetic coverage is deliberately partial.  An operation
+             * outside that semantic subset remains a valid coprocessor
+             * command handoff; it is not a CPU #UD or model-only fault. */
         }
     }
     TYPE_TRACE_CALL_END;

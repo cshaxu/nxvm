@@ -2,9 +2,29 @@
 
 ## Current Work
 
-**Between accepted S units: M5 T437.** S2 has a real result producer and
-guarded final writer; the next admitted unit is S3, ordinary 80386DX forms,
-their inputs and the formerly unallocated XLAT route.
+**Active: M5 T437 S3.** The owner-approved continuation closes the S3 ordinary
+80386DX partition through the sole Core timing publisher and real retirements.
+
+## M5 T437 S3 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; M5 T437 S3 follows accepted S2 in the latest open numeric task. |
+| Admission And Approval | The owner directed continuous complete 80386DX implementation on 2026-08-22 and, on 2026-08-22, expanded S3 to directly implement correct x87 CPU/FPU interface and timing support across 8086, 80186, 80286 and 80386, using 8087/80287/80387 manuals. This authorizes the shared Core handoff, BUSY/WAIT and operation-timing mechanism, but not a wholesale x87 arithmetic-semantics rewrite. Accepted S1 assigns this exact 808-key partition to S3. |
+| Objective | Implement and prove every S3 ordinary 80386DX canonical key: arithmetic/data/bit/shift/multiply/divide, r/m and effective-address forms, size/segment/LOCK contexts, XLAT, and a four-profile x87 CPU/FPU interface that correctly decodes ESC, selects 8087/80287/80387 protocol, handles CPU-side exception/BUSY/WAIT rules, records required coprocessor transactions, and publishes manual-derived operation timing/range inputs for a future full x87 semantic owner. |
+| Non-goals | Do not claim S4 string/I/O, S5 ordinary control, S6 protected transfer or S7 system forms; do not rewrite every x87 arithmetic/transcendental semantic; do not assign board READY/HOLD/BUSLOCK arbitration, prefetch or host/device timing, alter public ABI, import source, fabricate results or admit another S. Coprocessor-requested physical bus service remains the later transaction owner. |
+| Reference Baseline | [S1 partition](../etc/cpu-timing/t437-s1-80386-key-partition.md), [S2 producer](../etc/cpu-timing/t437-s2-80386-result-producer.md), [80386DX ledger](../etc/cpu-timing/t435-s1-80386-ledger.md), [manifest](../etc/cpu-timing/t435-s2-80386-timing-manifest.json), [audit](../etc/cpu-timing/t435-s2-80386-implementation-audit.md), [result contract](../etc/cpu-timing/t435-s2-manifest-result-contract.md), [S3 x87 contract](../etc/cpu-timing/t437-s3-x87-interface-contract.md), retained Intel 8087/80287/80387 manuals, `fpu.*`, `transaction.*`, `cpu_instructions.c`, `cpu_timing.c`, `machine.c`, and the 80286 S3 closure evidence. |
+| Candidate Proposal | [M5 80386DX instruction timing closure](../proposals/m5-80386dx-instruction-timing-closure.md). |
+| Files And ABI Surface | Core-private CPU/FPU handoff, x87 timing metadata and transaction selectors, the 80386DX manifest runner, cross-profile focused tests, evidence, history and CURRENT only. No public header, external ABI, device, board or artifact identity change. |
+| Applicable Rules | Execution: bounded continuation/P lifecycle, dual-role review and similar-issue sweep. Architecture: one Core CPU/FPU handoff and retirement publisher, with no board policy. Coding: C11 cohesive private helpers and no parallel selector. Documentation: CURRENT is the active contract. Source: retained Intel manual evidence, no source import. |
+| Verification | Build/run the 80386DX manifest runner in the isolated WinLibs GCC tree; require the 807 scalar/formula S3 keys observed with classified non-unallocated origin, source form and required inputs; add 8086/80186/80286/80386 ESC decode, selected-FPU protocol, exception, transaction, BUSY/WAIT and timing-range proofs; retain a distinct escaped-FPU timing disposition instead of fabricating an ESC scalar; run manifest, decoder-ledger, partition, documentation and relevant cross-profile checks. |
+| Expected Markers | Retain S1/S2 markers; add `M5:T437:S3:I386-NONCONTROL-OBSERVED:807`, `M5:T437:S3:I386-NONCONTROL-COVERAGE:PASS:canonical=807`, `M5:T437:S3:I386-ESC-HANDOFF:PASS`, `M5:T437:S3:X87-CROSS-PROFILE-INTERFACE:PASS`, and `M5:T437:S3:I386-MEMORY-INPUTS:PASS`. |
+| Asset Needs | Existing owner-managed Intel 80386DX/80287/80387 manual evidence and repository fixtures only; no firmware, guest media, source download, Microsoft component or third-party code. |
+| Reporting Requirements | Record the 807 scalar/formula S3 results, XLAT disposition, every CPU/FPU ownership/handoff, profile/exception inputs, BUSY/WAIT and operation-timing-range proof across four CPU profiles, code delta, focused proof, actual changed files, and every transfer to S4--S7 or the later x87 semantic owner. The executor delivers one complete P and the same session then performs actual-change review. |
+| Stop Conditions | Stop for manual/manifest/decoder contradiction, unrepresentable legal S3 key, unbounded or undocumented FPU timing input, required public ABI or board timing, source-policy issue, or verifier contradiction. Do not guess ticks, omit a key or retain a generic successful fallback. |
+| Exit Criteria | Every scalar/formula S3 key except the explicitly transferred x87 arithmetic result duration behind `I386-ESC` has a real classified, non-unallocated result with required source form/origin/ticks/formula inputs; XLAT is no longer unallocated; all four CPU profiles have a documented selected-FPU ESC handoff, exception, BUSY/WAIT, operation-timing-range and transaction result that a later x87 semantic owner can consume without replacing the interface; S2 final writer still rejects the incomplete whole-task result; all gates and dual-role review pass. |
+| Original Owner Request | Owner request, faithfully translated: continuously and completely implement the correct 80386 instruction function and timing model, under the single-person dual-role governance lifecycle. |
+| Similar-Issue Sweep | Defect class: an ordinary 80386DX successful retirement with missing/incorrect Core timing ownership, context input, result capture or unallocated fallback. Scope: all S3 manifest keys, sole timing selector, decoder routes, runner recipes and adjacent 8086/80186/80286 profile paths; non-S3 hits transfer through their existing partition. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** target `vm-0-5-0434`; `nxvm_0_5_0434.exe` / `build/output/nxvm_0_5_0434.exe`, SHA-256 `F8562F4623D53303470408837249CF89C985E0A0B1130212BBD9CE26B5E1B38A`. T434 has one copied Core timing-plan publication route for default PC/AT, IBM 5170 Model 339 and Model-40 BYOB session composition.

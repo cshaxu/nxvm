@@ -155,7 +155,7 @@ C_INT main(C_VOID)
         VCPU_CR0_TS, 0u, 1u);
     failed |= run_nm_delivery_case(fwait, sizeof(fwait),
         VCPU_CR0_TS | VCPU_CR0_MP);
-    failed |= run_case(fninit, sizeof(fninit), CORE_MACHINE_FPU_PROFILE_8087,
+    failed |= run_case(fninit, sizeof(fninit), CORE_MACHINE_FPU_PROFILE_80387,
         0u, 0u, 2u);
     if (failed) return 1;
     STD_PRINTF("M5:T156:S1:FPU-ESC:OK\n");

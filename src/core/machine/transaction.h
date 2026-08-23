@@ -22,7 +22,11 @@ typedef enum core_machine_transaction_kind {
     CORE_MACHINE_TRANSACTION_DMA_MEMORY_READ,
     CORE_MACHINE_TRANSACTION_DMA_MEMORY_WRITE,
     CORE_MACHINE_TRANSACTION_DMA_MEMORY_COPY,
-    CORE_MACHINE_TRANSACTION_REFRESH_MEMORY_CYCLE
+    CORE_MACHINE_TRANSACTION_REFRESH_MEMORY_CYCLE,
+    /* ESC command issue is CPU-owned control traffic.  It deliberately is
+     * not a HOLD grant: an 80287/80387 asks its paired CPU to move operands
+     * through the processor-extension channel. */
+    CORE_MACHINE_TRANSACTION_CPU_FPU_COMMAND
 } core_machine_transaction_kind;
 
 typedef enum core_machine_transaction_phase {
