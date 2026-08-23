@@ -2,29 +2,9 @@
 
 ## Current Work
 
-**Active: M5 T437 S2.** The owner-approved continuation establishes the
-80386DX result-contract producer and verifies the one timing-publication seam.
-
-## M5 T437 S2 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation; M5 T437 S2 follows accepted S1 in the latest open numeric task. |
-| Admission And Approval | The owner explicitly directed continuous single-person dual-role implementation on 2026-08-22. S1's accepted partition supplies its bounded ownership and proof plan. |
-| Objective | Make an 80386DX manifest runner capture canonical per-key retirement observations and enforce that a final result document can be written only when every one of the 1,411 keys has real, complete result-contract evidence. |
-| Non-goals | Do not fabricate a 1,411-key result document, mark any key conforming, implement an S3--S7 instruction family, change Chapter-17 timing values or instruction semantics, add board timing, alter public ABI, import source or admit another S. |
-| Reference Baseline | [S1 partition](../etc/cpu-timing/t437-s1-80386-key-partition.md), [80386DX manifest](../etc/cpu-timing/t435-s2-80386-timing-manifest.json), [result contract](../etc/cpu-timing/t435-s2-manifest-result-contract.md), [implementation tracker](../etc/cpu-timing/t435-s2-80386-implementation-tracker.md), [80286 result producer](../etc/cpu-timing/t436-s2-80286-result-producer.md), current generated metadata catalog and retirement-observation interface. |
-| Candidate Proposal | [M5 80386DX instruction timing closure](../proposals/m5-80386dx-instruction-timing-closure.md). |
-| Files And ABI Surface | Core-private observation/test plumbing in the 80386DX manifest runner and metadata catalog as required, focused verifier/test registration, indexed evidence, task history and CURRENT. No public header, external ABI, device, board or product-artifact change is allowed. |
-| Applicable Rules | Execution: bounded P lifecycle, dual-role review, artifact discipline and cleanup. Architecture: one Core timing/publishing path; no board policy. Coding: C11 private cohesive test support; no unowned selector. Documentation: CURRENT is sole active contract. Source policy: retained manual evidence only. |
-| Verification | Run the 80386DX manifest runner, manifest/decoder-ledger and S1 partition verifiers, result-contract verifier against a deliberately incomplete output when available, focused retirement-observation tests, documentation governance, actual diff review and the relevant build target. |
-| Expected Markers | Retain the S1 partition markers; add `M5:T437:S2:I386-RESULT-PRODUCER:PASS:observed=<n>:canonical=1411` and `M5:T437:S2:I386-INCOMPLETE-RESULT-REFUSED:PASS`. |
-| Asset Needs | Existing owner-managed Intel manual evidence and repository test fixtures only. No firmware, guest media, downloads, Microsoft components or third-party code is permitted. |
-| Reporting Requirements | Report the observation schema fields, exact count of real captured records, missing-record behavior, changed source/test/doc files, focused proof and any result-contract limitation transferred to S3--S7. The executor completes one bounded P; the same session then reviews it against this packet. |
-| Stop Conditions | Stop for result-contract/manifest contradiction, inability to identify a canonical record at retirement without altering the approved Core boundary, required public ABI/board timing, source-policy issue or a verifier contradiction. Do not manufacture a record or silently treat a missing field as conforming. |
-| Exit Criteria | The runner captures real observations keyed to canonical I386 metadata, preserves first valid capture per key, checks origin/ticks/form/input/unallocated fields, and refuses final-result emission unless exactly 1,411 records exist. Existing partial coverage remains explicitly incomplete; all gates and dual-role review pass. |
-| Original Owner Request | Owner request, faithfully translated: implement the reasonably split 80386DX task under the single-person dual-role lifecycle until its complete function and timing closure is proven. |
-| Similar-Issue Sweep | Defect class: any 80386DX successful retirement that bypasses canonical result capture, overwrites a valid result or allows incomplete evidence to be emitted as final. Scope: 80386DX runner, metadata catalog, retirement observation interfaces, result verifiers, focused tests and timing documentation. |
+**Between accepted S units: M5 T437.** S2 has a real result producer and
+guarded final writer; the next admitted unit is S3, ordinary 80386DX forms,
+their inputs and the formerly unallocated XLAT route.
 ## Current Technical Baseline
 
 - **Current developer artifact:** target `vm-0-5-0434`; `nxvm_0_5_0434.exe` / `build/output/nxvm_0_5_0434.exe`, SHA-256 `F8562F4623D53303470408837249CF89C985E0A0B1130212BBD9CE26B5E1B38A`. T434 has one copied Core timing-plan publication route for default PC/AT, IBM 5170 Model 339 and Model-40 BYOB session composition.
@@ -49,7 +29,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T437 S1 | Closed: the executable [partition](../etc/cpu-timing/t437-s1-80386-key-partition.md) assigns all 1,411 canonical keys exactly once: S3=808, S4=162, S5=232, S6=94 and S7=115. The strict nonconforming baseline is retained for S2--S8. |
+| T437 S2 | Closed: the private 80386DX [result producer](../etc/cpu-timing/t437-s2-80386-result-producer.md) captures real retirement metadata and refuses final emission until all 1,411 keys exist; S3--S7 retain the missing recipes. |
 | T436 | Closed: [result closure](../etc/cpu-timing/t436-s8-80286-result-closure.md) proves the verified 771-key result set, 8086/80186/80286/80386 regression disposition, current-gate completion and developer artifact. |
 | T435 | Stopped by owner-approved requeue; not completed. Its profile-specific 80286 and 80386DX closure candidates now lead the Queue. [Record](../history/M5-T435-core-cpu-instruction-timing-program-requeue.md). |
 | T434 | Closed: all 30 copied plan declarations/dispositions, every current VM materializer and atomic Core publication route are reconciled; full task closure proof is retained in the [S3 audit](../etc/evidence/t434-s3-task-closure-audit.md) and [task history](../history/M5-T434-core-timing-contract-machine-plan.md). |

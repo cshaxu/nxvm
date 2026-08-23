@@ -62,3 +62,22 @@ the retained current-source inventory runner replayed successfully and produced
 no inventory diff. The code and evidence changes are confined to partition
 proof and task governance; the review found no duplicate, orphaned or silently
 reassigned canonical key.
+
+### S2: Result Producer
+
+S2 adds the private 80386DX manifest runner, its generated-catalog dependency
+and a guarded final JSON writer. It captures the first real retirement per
+canonical record, preserves origin/ticks/form/formula/disposition state, and
+checks the full 1,411-record denominator before opening an output file. The
+initial real `NOP` capture proves one record; final emission is refused and no
+result artifact is created until S3--S7 supply every remaining recipe.
+
+## Coordinator Acceptance
+
+The single-session coordinator reviewed P1 `4658ce26` against the S2 packet.
+The isolated WinLibs GCC C11 build compiled the new runner with warnings as
+errors; it captured one classified 80386DX retirement, emitted both S2 markers
+and verified no partial final-result file exists. Manifest, decoder-ledger,
+S1 partition and documentation-governance gates passed. The change adds one
+Core-private test consumer only, leaves runtime ownership and public ABI intact,
+and transfers the 1,410 unobserved keys to their existing S3--S7 partitions.
