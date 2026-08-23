@@ -49,34 +49,32 @@ core_machine_display_kind vm_session_publish_display(vm_session *machine,
         STD_MEMCPY(frame.pixels, snapshot.pixels, sizeof(frame.pixels));
         STD_MEMCPY(frame.palette_rgb, snapshot.palette_rgb,
             sizeof(frame.palette_rgb));
-        frame.generation = ++machine->display_generation;
-        (C_VOID)core_platform_presentation_mailbox_publish(&machine->presentation_mailbox,
-                                                  &frame);
-        return snapshot.kind;
-    }
-    frame.columns = snapshot.columns;
-    frame.rows = snapshot.rows;
-    if (frame.columns > CORE_PLATFORM_DISPLAY_MAX_COLUMNS) {
-        frame.columns = CORE_PLATFORM_DISPLAY_MAX_COLUMNS;
-    }
-    if (frame.rows > CORE_PLATFORM_DISPLAY_MAX_ROWS) {
-        frame.rows = CORE_PLATFORM_DISPLAY_MAX_ROWS;
-    }
-    frame.cursor_top = snapshot.cursor_top;
-    frame.cursor_bottom = snapshot.cursor_bottom;
-    frame.cursor_x = snapshot.cursor_x;
-    frame.cursor_y = snapshot.cursor_y;
-    frame.cursor_visible = snapshot.cursor_visible;
-    for (row = 0u; row < frame.rows; ++row) {
-        for (column = 0u; column < frame.columns; ++column) {
-            type_unsigned_16 index = row * CORE_PLATFORM_DISPLAY_MAX_COLUMNS + column;
-            frame.characters[index] = snapshot.characters[index];
-            frame.attributes[index] = snapshot.attributes[index];
+    } else {
+        frame.columns = snapshot.columns;
+        frame.rows = snapshot.rows;
+        if (frame.columns > CORE_PLATFORM_DISPLAY_MAX_COLUMNS) {
+            frame.columns = CORE_PLATFORM_DISPLAY_MAX_COLUMNS;
+        }
+        if (frame.rows > CORE_PLATFORM_DISPLAY_MAX_ROWS) {
+            frame.rows = CORE_PLATFORM_DISPLAY_MAX_ROWS;
+        }
+        frame.cursor_top = snapshot.cursor_top;
+        frame.cursor_bottom = snapshot.cursor_bottom;
+        frame.cursor_x = snapshot.cursor_x;
+        frame.cursor_y = snapshot.cursor_y;
+        frame.cursor_visible = snapshot.cursor_visible;
+        for (row = 0u; row < frame.rows; ++row) {
+            for (column = 0u; column < frame.columns; ++column) {
+                type_unsigned_16 index = row * CORE_PLATFORM_DISPLAY_MAX_COLUMNS + column;
+                frame.characters[index] = snapshot.characters[index];
+                frame.attributes[index] = snapshot.attributes[index];
+            }
         }
     }
-    frame.generation = ++machine->display_generation;
-    (C_VOID)core_platform_presentation_mailbox_publish(&machine->presentation_mailbox,
-                                              &frame);
+    frame.generation = machine->display_generation + 1u;
+    if (core_platform_presentation_mailbox_publish(&machine->presentation_mailbox,
+            &frame) != TYPE_STATUS_OK) return snapshot.kind;
+    machine->display_generation = frame.generation;
     return snapshot.kind;
 }
 

@@ -451,8 +451,8 @@ C_VOID w32adispSetScreen(w32adisp_context *context, WIN32_HWND window,
     HGDIOBJ previousBitmap;
     core_platform_display_frame frame;
 
-    if (context == STD_NULL) return;
-    (C_VOID)core_platform_presentation_mailbox_capture(mailbox, &frame);
+    if (context == STD_NULL || core_platform_presentation_mailbox_capture(mailbox,
+            &frame) != TYPE_STATUS_OK) return;
     context->rows = frame.kind == CORE_PLATFORM_DISPLAY_KIND_INDEXED_PIXELS ?
         frame.pixel_width : frame.columns;
     context->columns = frame.kind == CORE_PLATFORM_DISPLAY_KIND_INDEXED_PIXELS ?
@@ -533,8 +533,8 @@ C_VOID w32adispPaint(w32adisp_context *context, WIN32_HWND window,
     BOOL changed;
     core_platform_display_frame frame;
 
-    if (context == STD_NULL) return;
-    (C_VOID)core_platform_presentation_mailbox_capture(mailbox, &frame);
+    if (context == STD_NULL || core_platform_presentation_mailbox_capture(mailbox,
+            &frame) != TYPE_STATUS_OK) return;
     context->flash_count = (context->flash_count + 1) % 10;
     changed = flagForce || frame.generation != context->displayed_generation;
     if (changed) {

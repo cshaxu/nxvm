@@ -46,6 +46,7 @@ C_INT main(C_VOID)
     type_unsigned_8 ega_pixel = 0xa5u;
     type_unsigned_64 text_generation;
     type_unsigned_64 cga_generation;
+    type_unsigned_64 generation_before_failed_publish;
     C_INT failed = 0;
 
     if (vm_session_create(STD_NULL, &session) != TYPE_STATUS_OK ||
@@ -110,8 +111,16 @@ C_INT main(C_VOID)
         frame.pixels[0] != 0u || frame.pixel_width != 320u ||
         frame.pixel_height != 200u;
 
+    generation_before_failed_publish = session->display_generation;
+    core_platform_presentation_mailbox_finalize(&session->presentation_mailbox);
+    (C_VOID)vm_session_publish_display(session, TYPE_TRUE);
+    failed |= session->display_generation != generation_before_failed_publish ||
+        core_platform_presentation_mailbox_capture(&session->presentation_mailbox,
+            &frame) != TYPE_STATUS_INVALID_STATE;
+
     vm_session_destroy(session);
     if (failed) return 1;
     STD_PRINTF("M5:T352:S5:DISPLAY-COMPOSITION:OK\n");
+    STD_PRINTF("M5:T443:S1:DISPLAY-PUBLISH-FAILURE:OK\n");
     return 0;
 }

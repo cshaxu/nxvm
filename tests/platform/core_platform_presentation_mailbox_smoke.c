@@ -29,10 +29,14 @@ C_INT main(C_VOID)
         TYPE_STATUS_OK) return 1;
     if (captured.characters[0] != 'B' || captured.generation != 2u) return 1;
     core_platform_presentation_mailbox_finalize(&first);
+    captured.characters[0] = 'C';
+    captured.generation = 3u;
     if (core_platform_presentation_mailbox_capture(&first, &captured) !=
         TYPE_STATUS_INVALID_STATE || core_platform_presentation_mailbox_publish(
-        &first, &published) != TYPE_STATUS_INVALID_STATE) return 1;
+        &first, &published) != TYPE_STATUS_INVALID_STATE ||
+        captured.characters[0] != 'C' || captured.generation != 3u) return 1;
     core_platform_presentation_mailbox_finalize(&second);
     puts("M5:T250:S2:CORE-PLATFORM-PRESENTATION:OK");
+    puts("M5:T443:S1:MAILBOX-INITIALIZATION-AND-OUTCOMES:OK");
     return 0;
 }

@@ -60,8 +60,8 @@ C_VOID w32cdispSetScreen(w32cdisp_context *context, WIN32_HANDLE output,
                        const core_platform_presentation_mailbox *mailbox) {
     core_platform_display_frame frame;
 
-    if (context == STD_NULL) return;
-    (C_VOID)core_platform_presentation_mailbox_capture(mailbox, &frame);
+    if (context == STD_NULL || core_platform_presentation_mailbox_capture(mailbox,
+            &frame) != TYPE_STATUS_OK) return;
     if (frame.kind != CORE_PLATFORM_DISPLAY_KIND_TEXT) return;
     context->columns = frame.rows;
     context->rows = frame.columns;
@@ -93,8 +93,8 @@ C_VOID w32cdispPaint(w32cdisp_context *context, WIN32_HANDLE output,
     COORD curPos;
     CONSOLE_CURSOR_INFO curInfo;
     BOOL changed;
-    (C_VOID)core_platform_presentation_mailbox_capture(mailbox, &frame);
-    if (context == STD_NULL || !context->char_buffer) {
+    if (context == STD_NULL || !context->char_buffer ||
+        core_platform_presentation_mailbox_capture(mailbox, &frame) != TYPE_STATUS_OK) {
         return;
     }
     changed = flagForce || frame.generation != context->displayed_generation;

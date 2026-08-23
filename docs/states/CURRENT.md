@@ -2,12 +2,33 @@
 
 ## Current Work
 
-**Idle.**
+**Active: M5 T443 S1.**
+
+## M5 T443 S1 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New |
+| Admission And Approval | Owner directed implementation of the queue head on 2026-08-23. |
+| Objective | Make the Core presentation mailbox C11-initialized and make every production display consumer stop on a failed mailbox capture; publish advances generation only on accepted frame publication. |
+| Non-goals | No opaque-interface refactor, callback wrapper, copied-frame format change, host pacing change, public ABI change, or renderer fallback frame. |
+| Reference Baseline | `master` at `6746d400`; existing Core mailbox, VM display publisher, and Linux/Win32 display consumers. |
+| Candidate Proposal | [Core platform primitive initialization and outcome contract](../proposals/m5-core-platform-primitive-outcomes.md); task record [T443](../history/M5-T443-core-platform-primitive-outcomes.md). |
+| Files And ABI Surface | Expected Core-private mailbox initialization, VM-private display publication, existing Linux/Win32 renderer entry guards, focused smoke, artifact, and evidence; no public ABI change. |
+| Applicable Rules | Mailbox has one state/failure owner; callers consume returned status; Core remains VM-independent; no duplicated frame state, wrapper, or host policy enters Core; actual source/test delta and all caller hits are recorded. |
+| Verification | Prove initialized mailbox capture/publish behavior, failed capture leaves caller storage unconsumed, and failed publication preserves prior mailbox generation; sweep every production capture/publish call and run focused/current gates. |
+| Expected Markers | Existing presentation/mailbox markers plus T443-specific status and publication markers where direct assertions are added. |
+| Asset Needs | None. |
+| Reporting Requirements | Record the C11 initialization mechanism, every capture/publish production hit and disposition, prior-frame/generation failure behavior, net line change, artifact hash, and gate result. |
+| Stop Conditions | Stop if a caller requires a new public failure channel, changes frame layout, or requires host policy; transfer that work to the existing platform-encapsulation candidate. |
+| Exit Criteria | No mailbox operation touches an uninitialized flag, no production renderer consumes a frame after capture failure, failed publication preserves the mailbox's prior state and display generation, focused proof and sweep pass, and the T443 artifact/evidence is pushed. |
+| Original Owner Request | Implement the next queued Core platform primitive initialization and outcome-contract task. |
+| Similar-Issue Sweep | Search tracked production Core/VM sources for atomic flags and all mailbox capture/publish consumers; fix or classify each hit. |
 
 
 ## Current Technical Baseline
 
-- **Current developer artifact:** target `vm-0-5-0442`; `nxvm_0_5_0442.exe` / `build/output/nxvm_0_5_0442.exe`, SHA-256 `B94C6355E4ADD9EF982E4713A15860F23D4B24BC912BBA9608D4DA3B7A2BBE1E`. T434 has one copied Core timing-plan publication route for default PC/AT, IBM 5170 Model 339 and Model-40 BYOB session composition.
+- **Current developer artifact:** target `vm-0-5-0443`; `nxvm_0_5_0443.exe` / `build/output/nxvm_0_5_0443.exe`, SHA-256 `16BE1A019DFB61D9E28EFD9396E70134F6FA1834FC72365577E49C6BA2D1EC40`. T434 has one copied Core timing-plan publication route for default PC/AT, IBM 5170 Model 339 and Model-40 BYOB session composition.
   T386 closes selected-device functional completeness at S29; its retained
   [closure audit](../etc/evidence/t386-s29-functional-closure-audit.md) fixes
   HDC current-gate coverage and transfers board, firmware and physical work.

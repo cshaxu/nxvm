@@ -14,6 +14,7 @@ C_VOID core_platform_presentation_mailbox_initialize(
     core_platform_presentation_mailbox *mailbox)
 {
     if (mailbox == STD_NULL) return;
+    mailbox->lock = (STD_ATOMIC_FLAG)ATOMIC_FLAG_INIT;
     STD_ATOMIC_FLAG_CLEAR_EXPLICIT(&mailbox->lock, STD_MEMORY_ORDER_RELEASE);
     mailbox->active = TYPE_TRUE;
     STD_MEMSET(&mailbox->frame, 0, sizeof(mailbox->frame));
