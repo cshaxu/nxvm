@@ -2,26 +2,7 @@
 
 ## Current Work
 
-## M5 T445 S1 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | New |
-| Admission And Approval | Owner approved the queue-head candidate on 2026-08-23 and required a correct, minimalist repair that reduces unnecessary complexity and redundancy. No exception is allowed. |
-| Objective | Give each native display adapter one complete owner-local resource lifecycle: every Win32 `GetDC` is paired with `ReleaseDC`, and Linux curses initialization and `endwin` occur on the display thread. |
-| Non-goals | No cross-platform renderer or lifecycle framework; no guest display timing, copied-frame, exclusive-surface, Core, host-support, or public cross-module ABI change; no unrelated display cleanup. |
-| Reference Baseline | `master` at `9d5cb849`; current CMake artifact is 0444. `w32adisp` owns the acquired window DC but omits its release, while `linuxcon` initializes curses in its display thread and finalizes it after join in the caller thread. |
-| Candidate Proposal | [VM native display resource lifetime repair](../proposals/m5-vm-native-display-resource-lifetime.md). |
-| Files And ABI Surface | Expected owners: `src/vm/platform/win32/w32adisp.[ch]`, `src/vm/platform/win32/win32app.c`, `src/vm/platform/linux/linuxcon.c`, existing or narrow adapter-local tests, CMake registration/static checks, artifact and evidence. No public ABI change is expected. |
-| Applicable Rules | Architecture: platform adapters own only their host resources and retain one lifecycle path; Coding: repair the repeated mechanism at its owner, reuse current boundaries, add no forwarding framework, and remove obsolete lifecycle state/path; Execution: complete P, similar-issue sweep, artifact and gate closure; Documentation: packet/history/evidence topology. |
-| Verification | Freeze the current Win32 and Linux lifecycle paths; add deterministic owner-local seams or focused tests for normal and startup-failure cleanup; statically sweep tracked production and test sources for `GetDC`/`ReleaseDC`, `initscr`/`endwin`, and display-thread finalization; run supported-host builds, relevant focused CTests, `current-fast-smokes-gcc`, `current-gates-gcc`, documentation governance, and a fresh/incremental build comparison. |
-| Expected Markers | One `ReleaseDC` pair at the Win32 owning context; `endwin` is reachable only from the initializing Linux display thread; adapter lifecycle regression/static markers pass; current artifact-truth marker for 0445. |
-| Asset Needs | None; no imported source, firmware, guest media, or third-party asset. |
-| Reporting Requirements | Record each acquisition/finalization owner, success and failure paths, exact similar-issue search/dispositions, supported-host verification boundary, artifact hash, and source/test line accounting in indexed evidence. |
-| Stop Conditions | Stop only for an unavailable required native runtime environment after recording the deterministic/static verification boundary; do not replace it with a host-support claim. Any newly found display lifecycle variant is in scope only if it uses the same APIs/owner; otherwise record it for separate admission. |
-| Exit Criteria | Every relevant Win32 DC acquisition has its owning release on all completed paths; Linux curses initialization, failure rollback, and normal shutdown finalize on the initializing display thread; no duplicate lifecycle authority or obsolete path remains; focused tests/static sweeps and admitted gates pass; artifact 0445 is built/hashed; evidence and coordinator actual-change review prove the complete sweep. |
-| Original Owner Request | Owner approved the first queued task and asked for its brief, one-sentence target, design, and a minimalist repair that reduces complexity and redundant code. |
-| Similar-Issue Sweep | Search tracked `src/`, `tests/`, CMake and relevant task records for `GetDC`, `ReleaseDC`, `initscr`, `endwin`, `newterm`, `delscreen`, native renderer creation/finalization, and caller-thread cleanup after adapter-thread initialization; record every production hit as fixed, inapplicable with reason, or separately deferred. |
+**Idle.**
 
 ## Current Technical Baseline
 
@@ -47,6 +28,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T445 | Closed: each VM native display adapter now owns its host resource lifecycle; Win32 pairs its DC before window destruction, and Linux curses terminates on the initializing display thread. [Evidence](../etc/evidence/t445-s1-vm-native-display-resource-lifetime.md). |
 | T444 | Closed: the 20 fast-smoke fixture failures use the legal 16-byte reset window; T344 classifies four manifest producers separately from 71 historical fixtures; every discovered stale gate now proves the current single Core plan route. [Evidence](../etc/evidence/t444-s1-current-gate-regression-restoration.md). |
 | T443 | Closed: the mailbox C11-initializes its sole lock, every production renderer stops on failed capture, and VM display generation commits only after one accepted publication path. [Evidence](../etc/evidence/t443-s1-core-platform-primitive-outcomes.md). |
 | T442 | Closed: one Core lexical owner keeps 8086 `0F` primary, rejects it on 80186, and consumes it as extended on 80286/80386; one RAM mapping owner rejects a 32-bit physical span overflow before publishing state. [Evidence](../etc/evidence/t442-s1-core-cpu-memory-boundary-correctness.md). |
@@ -54,7 +36,6 @@
 | T440 | Closed: Model-40 configuration has one private initializer; incompatible creation/runtime memory changes are rejected at the VM boundary, with generic session reconfiguration retained. [Evidence](../etc/evidence/t440-s1-model40-immutable-configuration.md). |
 | T439 | Closed: session reset and startup now return Core failure through one lifecycle outcome; required FDD initialization also propagates status, and no-HDD Model 339 reset avoids an unnecessary unmapped BIOS-table write. [Evidence](../etc/evidence/t439-s1-vm-session-reset-startup-outcomes.md). |
 | T438 | Closed: Core is the sole firmware-reset failure owner; discarded firmware-operation errors now return through `core_machine_reset`, leave the machine non-runnable and permit repaired retry. [Evidence](../etc/evidence/t438-s1-core-reset-firmware-failure-atomicity.md). |
-| T437 | Closed: the retained [task audit](../history/M5-T437-80386dx-instruction-timing-closure.md) proves all 1,410 legal keys: 1,409 classified CPU retirements and one separate, verified ESC MCP-domain handoff; results, decoder/partition, fresh configuration and 292-test current-gate verification pass. |
 
 
 ## Recent Governance

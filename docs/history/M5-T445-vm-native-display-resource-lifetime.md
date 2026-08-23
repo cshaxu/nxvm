@@ -1,7 +1,7 @@
 # M5 T445: VM Native Display Resource Lifetime Repair
 
 T445 is admitted from the owner-approved
-[proposal](../proposals/m5-vm-native-display-resource-lifetime.md).
+[proposal companion](M5-T445-vm-native-display-resource-lifetime-proposal.md).
 S1 repairs the owner-local Win32 window-DC and Linux curses lifecycles without
 merging their distinct host policies.
 
