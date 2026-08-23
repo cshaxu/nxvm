@@ -12,3 +12,10 @@ and 80286/80386 extended `0F`; the one RAM mapping owner rejects an overflowing
 physical span before mapping publication. Focused proof, sweep dispositions,
 minimalism accounting, and the 0442 artifact are retained in the
 [S1 evidence](../etc/evidence/t442-s1-core-cpu-memory-boundary-correctness.md).
+
+## Identifier Record
+
+The implementation (`f882abe7`) and closure (`6746d400`) were pushed before
+their commit subjects were found not to carry the required immutable S/P
+identifier. This record preserves those source commits and supplies the T442
+S1 P1 identifier without rewriting published history.
