@@ -1,7 +1,7 @@
 # M5 T443: Core Platform Primitive Initialization And Outcome Contract
 
-T443 is admitted from the owner-approved queue candidate
-[Core platform primitive initialization and outcome contract](../proposals/m5-core-platform-primitive-outcomes.md).
+T443 is admitted from the owner-approved queue candidate retained as its
+[proposal companion](M5-T443-core-platform-primitive-outcomes-proposal.md).
 S1 freezes the C11 mailbox initialization and failed capture/publication
 boundary without changing frame format, host pacing, or public ABI.
 

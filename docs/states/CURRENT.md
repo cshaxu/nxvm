@@ -2,28 +2,7 @@
 
 ## Current Work
 
-**Active: M5 T443 S1.**
-
-## M5 T443 S1 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | New |
-| Admission And Approval | Owner directed implementation of the queue head on 2026-08-23. |
-| Objective | Make the Core presentation mailbox C11-initialized and make every production display consumer stop on a failed mailbox capture; publish advances generation only on accepted frame publication. |
-| Non-goals | No opaque-interface refactor, callback wrapper, copied-frame format change, host pacing change, public ABI change, or renderer fallback frame. |
-| Reference Baseline | `master` at `6746d400`; existing Core mailbox, VM display publisher, and Linux/Win32 display consumers. |
-| Candidate Proposal | [Core platform primitive initialization and outcome contract](../proposals/m5-core-platform-primitive-outcomes.md); task record [T443](../history/M5-T443-core-platform-primitive-outcomes.md). |
-| Files And ABI Surface | Expected Core-private mailbox initialization, VM-private display publication, existing Linux/Win32 renderer entry guards, focused smoke, artifact, and evidence; no public ABI change. |
-| Applicable Rules | Mailbox has one state/failure owner; callers consume returned status; Core remains VM-independent; no duplicated frame state, wrapper, or host policy enters Core; actual source/test delta and all caller hits are recorded. |
-| Verification | Prove initialized mailbox capture/publish behavior, failed capture leaves caller storage unconsumed, and failed publication preserves prior mailbox generation; sweep every production capture/publish call and run focused/current gates. |
-| Expected Markers | Existing presentation/mailbox markers plus T443-specific status and publication markers where direct assertions are added. |
-| Asset Needs | None. |
-| Reporting Requirements | Record the C11 initialization mechanism, every capture/publish production hit and disposition, prior-frame/generation failure behavior, net line change, artifact hash, and gate result. |
-| Stop Conditions | Stop if a caller requires a new public failure channel, changes frame layout, or requires host policy; transfer that work to the existing platform-encapsulation candidate. |
-| Exit Criteria | No mailbox operation touches an uninitialized flag, no production renderer consumes a frame after capture failure, failed publication preserves the mailbox's prior state and display generation, focused proof and sweep pass, and the T443 artifact/evidence is pushed. |
-| Original Owner Request | Implement the next queued Core platform primitive initialization and outcome-contract task. |
-| Similar-Issue Sweep | Search tracked production Core/VM sources for atomic flags and all mailbox capture/publish consumers; fix or classify each hit. |
+**Idle.**
 
 
 ## Current Technical Baseline
@@ -50,6 +29,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T443 | Closed: the mailbox C11-initializes its sole lock, every production renderer stops on failed capture, and VM display generation commits only after one accepted publication path. [Evidence](../etc/evidence/t443-s1-core-platform-primitive-outcomes.md). |
 | T442 | Closed: one Core lexical owner keeps 8086 `0F` primary, rejects it on 80186, and consumes it as extended on 80286/80386; one RAM mapping owner rejects a 32-bit physical span overflow before publishing state. [Evidence](../etc/evidence/t442-s1-core-cpu-memory-boundary-correctness.md). |
 | T441 | Closed: VM media saving has one staging owner; FDD now releases derived sidecar state on failed paired persistence, and focused failure smoke proves resident/file/temporary preservation. [Evidence](../etc/evidence/t441-s1-vm-media-persistence-failure-hygiene.md). |
 | T440 | Closed: Model-40 configuration has one private initializer; incompatible creation/runtime memory changes are rejected at the VM boundary, with generic session reconfiguration retained. [Evidence](../etc/evidence/t440-s1-model40-immutable-configuration.md). |
@@ -57,7 +37,6 @@
 | T438 | Closed: Core is the sole firmware-reset failure owner; discarded firmware-operation errors now return through `core_machine_reset`, leave the machine non-runnable and permit repaired retry. [Evidence](../etc/evidence/t438-s1-core-reset-firmware-failure-atomicity.md). |
 | T437 | Closed: the retained [task audit](../history/M5-T437-80386dx-instruction-timing-closure.md) proves all 1,410 legal keys: 1,409 classified CPU retirements and one separate, verified ESC MCP-domain handoff; results, decoder/partition, fresh configuration and 292-test current-gate verification pass. |
 | T436 | Closed: [result closure](../etc/cpu-timing/t436-s8-80286-result-closure.md) proves the verified 771-key result set, 8086/80186/80286/80386 regression disposition, current-gate completion and developer artifact. |
-| T435 | Stopped by owner-approved requeue; not completed. Its successor 80286 and 80386DX timing closures are now retained as T436 and T437 history. [Record](../history/M5-T435-core-cpu-instruction-timing-program-requeue.md). |
 
 
 ## Recent Governance
