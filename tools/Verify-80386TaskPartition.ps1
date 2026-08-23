@@ -19,7 +19,7 @@ function Expand-Template {
 function Get-Owner {
     param([string]$Key)
     if ($Key -match '^I386-(STRING|REP)-' -or $Key -match '^I386-(IN|OUT)-') { return 'S4' }
-    if ($Key -match '^I386-(JCC|SETCC|INTO-NOT|STACK)-' -or $Key -match '^I386-(CALL|JMP)-.*(NEAR|FAR-REAL)' -or $Key -match '^I386-RET-(NEAR|FAR-REAL)' -or $Key -match '^I386-(INT3|INT-IMM|INTO)-REAL$') { return 'S5' }
+    if ($Key -match '^I386-(JCC|STACK)-' -or $Key -match '^I386-INTO-NOT($|-)' -or $Key -match '^I386-(CALL|JMP)-.*(NEAR|FAR-REAL)' -or $Key -match '^I386-RET-(NEAR|FAR-REAL)' -or $Key -match '^I386-IRET-REAL' -or $Key -match '^I386-(INT3|INT-IMM|INTO)-REAL$') { return 'S5' }
     if ($Key -match '^I386-(CALL|JMP|RET|IRET)-' -or $Key -match '^I386-(INT3|INT-IMM|INTO)-') { return 'S6' }
     if ($Key -match '^I386-MOV-(SREG|LDS|LES|LFS|LGS|LSS|R32-(CR|DR|TR)|CR|DR|TR)' -or $Key -match '^I386-(ARPL|SYSTEM)-') { return 'S7' }
     return 'S3'

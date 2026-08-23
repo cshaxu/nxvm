@@ -14,7 +14,7 @@ conforming: 257 keys lack a focused result, 192 dynamic/path/privilege keys
 lack one or more normalized inputs, and `I386-XLAT` is unallocated because the
 legacy selector admits it only for 8086. No L2 or L1 is permitted by S1.
 
-The manifest generates 961 legal size, repeat-phase, multiplier, segment and memory-RMW
+The manifest generates 960 legal size, repeat-phase, multiplier, segment and memory-RMW
 `LOCK` contexts under the [shared legality contract](t435-s2-context-legality.md).
 Operand width is already part of string and multiply base keys, so no redundant
 cross-product is generated. B0

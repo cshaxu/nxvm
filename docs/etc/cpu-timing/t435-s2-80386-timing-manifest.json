@@ -1,6 +1,6 @@
 {
   "schema":"nxvm.cpu-timing-manifest.v1", "profile":"80386DX", "source_ledger":"t435-s1-80386-ledger.md",
-  "expected":{"base":450,"L3":450,"L2":0,"contexts":961,"combinations":0},
+  "expected":{"base":450,"L3":450,"L2":0,"contexts":960,"combinations":0},
   "status_values":["conforming","wrong-value","unallocated","missing-input","missing-test"],
   "legal_context_contract":"t435-s2-context-legality.md",
   "key_rule":"Each successful Intel386 DX Chapter 17 form has one L3 key. Operand/address size, r/m, mode, privilege/path, dynamic multiplier, next instruction components, repeat phase and legal LOCK state are semantic inputs; prefixes never retire alone; external waits, bus ownership and events are excluded.",
@@ -42,7 +42,7 @@
   ],
   "context_policy":"r/m, operand/address size, real/PM/VM86, privilege/path, multiplier, next-component, REP phase and legal LOCK state are canonical axes; no redundant prefix byte streams or external-event time is generated.",
   "context_key_sets":[
-    {"id_suffix":"SIZE16","base_selector":"I386-(ALU|INC|DEC|NEG|NOT|XCHG|MUL|IMUL|DIV|IDIV|ROL|ROR|RCL|RCR|SHL|SHR|SAR|SHLD|SHRD|MOV|STACK|CALL|JMP|RET|IRET|JCC|BSF|BSR|BT|BTC|BTR|BTS)-.*|I386-XLAT","source_rule":"Ch.17 operand/address-size context","route":"mixed","status":"missing-input","batch":"B3+B4","test":"i386_timing_{id}"},
+    {"id_suffix":"SIZE16","base_selector":"I386-(ALU|INC|DEC|NEG|NOT|XCHG|MUL|IMUL|DIV|IDIV|ROL|ROR|RCL|RCR|SHL|SHR|SAR|SHLD|SHRD|MOV|STACK|CALL|JMP|RET|IRET(?!-PM-VM86$)|JCC|BSF|BSR|BT|BTC|BTR|BTS)-.*|I386-XLAT","source_rule":"Ch.17 operand/address-size context; IRET PM-to-VM86 is 32-bit-only","route":"mixed","status":"missing-input","batch":"B3+B4","test":"i386_timing_{id}"},
     {"id_suffix":"SIZE32","base_selector":"I386-(ALU|INC|DEC|NEG|NOT|XCHG|MUL|IMUL|DIV|IDIV|ROL|ROR|RCL|RCR|SHL|SHR|SAR|SHLD|SHRD|MOV|STACK|CALL|JMP|RET|IRET|JCC|BSF|BSR|BT|BTC|BTR|BTS)-.*|I386-XLAT","source_rule":"Ch.17 operand/address-size context","route":"mixed","status":"missing-input","batch":"B3+B4","test":"i386_timing_{id}"},
     {"id_suffix":"SEGMENT","base_selector":"I386-(ALU-.*-(RM|MR|RMI)|(INC|DEC|NEG|NOT|XCHG)-M|(MUL|IMUL1|DIV|IDIV)-M(8|16|32)|IMUL[23]-MR.*|(ROL|ROR|RCL|RCR|SHL|SHR|SAR|SHLD|SHRD)-RM.*|MOV-(RM|MR|MI|MOFFS-R|MOFFS-W|LDS|LES|LFS|LGS|LSS)|STACK-(PUSH-M|POP-M)|STRING-(MOVS|CMPS|LODS)-.*|REP-(MOVS|CMPS-REPE|CMPS-REPNE|LODS)-.*|SYSTEM-.*-M.*|ARPL-M|BOUND-M.*|(BSF|BSR)-M.*|(BT|BTC|BTR|BTS)-M.*|XLAT)","source_rule":"Ch.17 legal segment-override memory operand","route":"mixed","status":"missing-input","batch":"B3+B4","test":"i386_timing_{id}"},
     {"id_suffix":"REP-PHASE-{phase}","base_selector":"I386-REP-.*","phase":["FIRST","CONTINUE","ZERO"],"source_rule":"Ch.17 n/termination formula","route":"string-io","status":"missing-test","batch":"B0+B3+B4","test":"i386_timing_{id}"},

@@ -11,7 +11,7 @@ paths, system and special-register forms, XLAT and flag/control instructions.
 
 ```text
 M5:T435:S8:I386-MANUAL-DECODER-PARTITION:OK:base=450:primary=253
-M5:T435:S8:I386-DECODER-LEDGER-ZERO-DIFFERENCE:PASS:canonical=1411
+M5:T435:S8:I386-DECODER-LEDGER-ZERO-DIFFERENCE:PASS:canonical=1410
 M5:T435:S8:I386-S2-CANONICAL-STATUS-RECONCILED:PASS:missing-test=257:missing-input=192:unallocated=1
 M5:T435:S8:I386-CANONICAL-STATUS-RECONCILED:PASS:missing-test=338:missing-input=1053:unallocated=20
 ```
@@ -23,7 +23,7 @@ conforming.
 
 ## Transfer
 
-The complete 1,411-key nonconforming universe transfers intact to S11. No
+The complete 1,410-key nonconforming universe transfers intact to S11. No
 manual row, valid decoder family, or legal context is left as an unnamed later
 audit. The remaining work is implementation and focused per-key proof under
 the existing manifest-result contract.

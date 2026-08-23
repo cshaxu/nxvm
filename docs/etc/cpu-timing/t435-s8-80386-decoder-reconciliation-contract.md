@@ -7,8 +7,8 @@ It requires each S2 base key to have a source-located Chapter 17 rule and a
 concrete accepted primary or `0F` decoder recipe. It then expands every legal
 semantic context and rejects cardinality, family-partition or status drift.
 
-The current closed input universe is 450 base forms plus 961 legal contexts:
-1,411 canonical keys. It excludes invalid encodings, faults, event delivery,
+The current closed input universe is 450 base forms plus 960 legal contexts:
+1,410 canonical keys. It excludes invalid encodings, faults, event delivery,
 external waits and device response; those are not silently treated as L1.
 
 ## Current implementation disposition

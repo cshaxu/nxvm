@@ -1,7 +1,7 @@
 # T437 S4 80386DX string and I/O execution
 
 S4 closes its 162-key partition through the existing sole Core retirement
-publisher.  It does not publish a partial final 1,411-key result set.
+publisher.  It does not publish a partial final 1,410-key result set.
 
 ## Observed execution
 

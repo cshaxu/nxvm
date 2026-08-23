@@ -2641,12 +2641,17 @@ static C_INT core_machine_control_stack_direct_target_is_task_gate(
     const t_cpuins_data *data, type_unsigned_32 prefixes, const t_cpu *cpu)
 {
     type_unsigned_16 selector;
+    type_unsigned_32 selector_index;
+    C_INT operand32;
 
-    if (data == STD_NULL || cpu == STD_NULL || prefixes + 4u >= data->oplen) {
+    if (data == STD_NULL || cpu == STD_NULL || prefixes >= data->oplen) {
         return 0;
     }
-    selector = (type_unsigned_16)data->opcodes[prefixes + 3u] |
-        (type_unsigned_16)((type_unsigned_16)data->opcodes[prefixes + 4u] << 8u);
+    operand32 = data->oldcpu.data.cs.seg.exec.defsize != data->prefix_oprsize;
+    selector_index = prefixes + (operand32 ? 5u : 3u);
+    if (selector_index + 1u >= data->oplen) return 0;
+    selector = (type_unsigned_16)data->opcodes[selector_index] |
+        (type_unsigned_16)((type_unsigned_16)data->opcodes[selector_index + 1u] << 8u);
     return selector != cpu->data.tr.selector;
 }
 
@@ -2654,12 +2659,17 @@ static C_INT core_machine_control_stack_direct_target_is_gate(
     const t_cpuins_data *data, type_unsigned_32 prefixes, const t_cpu *cpu)
 {
     type_unsigned_16 selector;
+    type_unsigned_32 selector_index;
+    C_INT operand32;
 
-    if (data == STD_NULL || cpu == STD_NULL || prefixes + 4u >= data->oplen) {
+    if (data == STD_NULL || cpu == STD_NULL || prefixes >= data->oplen) {
         return 0;
     }
-    selector = (type_unsigned_16)data->opcodes[prefixes + 3u] |
-        (type_unsigned_16)((type_unsigned_16)data->opcodes[prefixes + 4u] << 8u);
+    operand32 = data->oldcpu.data.cs.seg.exec.defsize != data->prefix_oprsize;
+    selector_index = prefixes + (operand32 ? 5u : 3u);
+    if (selector_index + 1u >= data->oplen) return 0;
+    selector = (type_unsigned_16)data->opcodes[selector_index] |
+        (type_unsigned_16)((type_unsigned_16)data->opcodes[selector_index + 1u] << 8u);
     return TYPE_MASK_UNSIGNED_16(selector & VCPU_SELECTOR_IDX) !=
         TYPE_MASK_UNSIGNED_16(cpu->data.cs.selector & VCPU_SELECTOR_IDX);
 }
@@ -2670,16 +2680,49 @@ static C_INT core_machine_control_stack_direct_call_gate_parameters(
 {
     type_unsigned_16 selector;
     type_unsigned_32 table_base;
+    type_unsigned_32 selector_index;
+    C_INT operand32;
 
     if (machine == STD_NULL || data == STD_NULL || out_parameters == STD_NULL ||
-        prefixes + 4u >= data->oplen) return 0;
-    selector = (type_unsigned_16)data->opcodes[prefixes + 3u] |
-        (type_unsigned_16)((type_unsigned_16)data->opcodes[prefixes + 4u] << 8u);
+        prefixes >= data->oplen) return 0;
+    operand32 = data->oldcpu.data.cs.seg.exec.defsize != data->prefix_oprsize;
+    selector_index = prefixes + (operand32 ? 5u : 3u);
+    if (selector_index + 1u >= data->oplen) return 0;
+    selector = (type_unsigned_16)data->opcodes[selector_index] |
+        (type_unsigned_16)((type_unsigned_16)data->opcodes[selector_index + 1u] << 8u);
     table_base = (selector & VCPU_SELECTOR_TI) != 0u ?
         data->oldcpu.data.ldtr.base : data->oldcpu.data.gdtr.base;
     return core_machine_memory_read_physical(&machine->executor_memory,
         table_base + (selector & VCPU_SELECTOR_IDX) + 4u,
         (type_virtual_address)out_parameters, 1u) == TYPE_STATUS_OK;
+}
+
+static C_INT core_machine_control_stack_call_gate_parameters(core_machine *machine,
+    type_unsigned_16 selector, type_unsigned_8 *out_parameters)
+{
+    type_unsigned_32 table_base;
+
+    if (machine == STD_NULL || out_parameters == STD_NULL) return 0;
+    table_base = (selector & VCPU_SELECTOR_TI) != 0u ?
+        machine->executor_cpu.data.ldtr.base : machine->executor_cpu.data.gdtr.base;
+    return core_machine_memory_read_physical(&machine->executor_memory,
+        table_base + (selector & VCPU_SELECTOR_IDX) + 4u,
+        (type_virtual_address)out_parameters, 1u) == TYPE_STATUS_OK;
+}
+
+static C_INT core_machine_control_stack_selector_is_task_gate(core_machine *machine,
+    type_unsigned_16 selector)
+{
+    type_unsigned_32 table_base;
+    type_unsigned_8 access;
+
+    if (machine == STD_NULL) return 0;
+    table_base = (selector & VCPU_SELECTOR_TI) != 0u ?
+        machine->executor_cpu.data.ldtr.base : machine->executor_cpu.data.gdtr.base;
+    if (core_machine_memory_read_physical(&machine->executor_memory,
+            table_base + (selector & VCPU_SELECTOR_IDX) + 5u,
+            (type_virtual_address)&access, 1u) != TYPE_STATUS_OK) return 0;
+    return (access & 0x0fu) == VCPU_DESC_SYS_TYPE_TASKGATE;
 }
 
 C_INT core_machine_control_stack_source_instruction_cost(
@@ -2692,6 +2735,7 @@ C_INT core_machine_control_stack_source_instruction_cost(
     type_unsigned_64 ticks;
     C_INT memory;
     C_INT protected_mode;
+    C_INT protected_execution;
     C_INT same_privilege;
     C_INT task_switch;
     C_INT direct_gate;
@@ -2706,15 +2750,19 @@ C_INT core_machine_control_stack_source_instruction_cost(
     }
     opcode = data->opcodes[prefixes];
     protected_mode = core_machine_control_stack_is_protected(data);
-    same_privilege = !protected_mode ||
-        data->oldcpu.data.cs.dpl == machine->executor_cpu.data.cs.dpl;
+    protected_execution = (data->oldcpu.data.cr0 & VCPU_CR0_PE) != 0u;
+    same_privilege = !protected_execution ||
+        ((data->oldcpu.data.eflags & VCPU_EFLAGS_VM) == 0u &&
+        data->oldcpu.data.cs.dpl == machine->executor_cpu.data.cs.dpl);
     /* A successful 80286 task transfer replaces TR.  Select this published
      * outcome before the code-segment and privilege paths: task switches can
      * otherwise look like ordinary same-level far transfers after refresh. */
-    task_switch = machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 &&
-        protected_mode && data->oldcpu.data.tr.selector !=
+    task_switch = (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 ||
+        machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80386) &&
+        protected_execution && data->oldcpu.data.tr.selector !=
         machine->executor_cpu.data.tr.selector;
-    direct_gate = machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 &&
+    direct_gate = (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 ||
+        machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80386) &&
         protected_mode && core_machine_control_stack_direct_target_is_gate(data,
             prefixes, &machine->executor_cpu);
     memory = core_machine_source_timing_modrm_is_memory(data, prefixes);
@@ -2745,6 +2793,14 @@ C_INT core_machine_control_stack_source_instruction_cost(
                 CORE_MACHINE_SOURCE_TIMING_CALL_NEAR_DIRECT), out_ticks);
     case 0x9au:
         if (task_switch) {
+            if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80386) {
+                (C_VOID)core_machine_control_stack_source_lookup(machine,
+                    CORE_MACHINE_SOURCE_TIMING_CALL_FAR_DIRECT);
+                *out_ticks = core_machine_control_stack_direct_target_is_task_gate(
+                    data, prefixes, &machine->executor_cpu) ? 401u : 392u;
+                return core_machine_control_stack_add_next_term(machine,
+                    *out_ticks, out_ticks);
+            }
             *out_ticks = core_machine_control_stack_direct_target_is_task_gate(
                 data, prefixes, &machine->executor_cpu) ? 182u : 177u;
             return core_machine_control_stack_add_next_term(machine,
@@ -2756,6 +2812,14 @@ C_INT core_machine_control_stack_source_instruction_cost(
             if (!same_privilege &&
                 !core_machine_control_stack_direct_call_gate_parameters(machine,
                     data, prefixes, &parameters)) return 0;
+            if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80386) {
+                (C_VOID)core_machine_control_stack_source_lookup(machine,
+                    CORE_MACHINE_SOURCE_TIMING_CALL_FAR_DIRECT);
+                *out_ticks = same_privilege ? 52u :
+                    (parameters == 0u ? 86u : 94u + 4u * parameters);
+                return core_machine_control_stack_add_next_term(machine,
+                    *out_ticks, out_ticks);
+            }
             *out_ticks = same_privilege ? 41u : 82u + 4u * parameters;
             return core_machine_control_stack_add_next_term(machine,
                 *out_ticks, out_ticks);
@@ -2765,6 +2829,13 @@ C_INT core_machine_control_stack_source_instruction_cost(
             *out_ticks = 26u;
             return core_machine_control_stack_add_next_term(machine,
                 *out_ticks, out_ticks);
+        }
+        if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80386 &&
+            protected_mode && same_privilege) {
+            (C_VOID)core_machine_control_stack_source_lookup(machine,
+                CORE_MACHINE_SOURCE_TIMING_CALL_FAR_DIRECT);
+            return core_machine_control_stack_add_next_term(machine, 34u,
+                out_ticks);
         }
         if (!same_privilege || protected_mode) return 0;
         ticks = core_machine_control_stack_source_lookup(machine,
@@ -2776,12 +2847,26 @@ C_INT core_machine_control_stack_source_instruction_cost(
                 CORE_MACHINE_SOURCE_TIMING_JMP_DIRECT), out_ticks);
     case 0xeau:
         if (task_switch) {
+            if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80386) {
+                (C_VOID)core_machine_control_stack_source_lookup(machine,
+                    CORE_MACHINE_SOURCE_TIMING_JMP_FAR_DIRECT);
+                *out_ticks = core_machine_control_stack_direct_target_is_task_gate(
+                    data, prefixes, &machine->executor_cpu) ? 401u : 392u;
+                return core_machine_control_stack_add_next_term(machine,
+                    *out_ticks, out_ticks);
+            }
             *out_ticks = core_machine_control_stack_direct_target_is_task_gate(
                 data, prefixes, &machine->executor_cpu) ? 180u : 175u;
             return core_machine_control_stack_add_next_term(machine,
                 *out_ticks, out_ticks);
         }
         if (direct_gate && same_privilege) {
+            if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80386) {
+                (C_VOID)core_machine_control_stack_source_lookup(machine,
+                    CORE_MACHINE_SOURCE_TIMING_JMP_FAR_DIRECT);
+                return core_machine_control_stack_add_next_term(machine, 45u,
+                    out_ticks);
+            }
             *out_ticks = 38u;
             return core_machine_control_stack_add_next_term(machine,
                 *out_ticks, out_ticks);
@@ -2791,6 +2876,13 @@ C_INT core_machine_control_stack_source_instruction_cost(
             *out_ticks = 23u;
             return core_machine_control_stack_add_next_term(machine,
                 *out_ticks, out_ticks);
+        }
+        if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80386 &&
+            protected_mode && same_privilege) {
+            (C_VOID)core_machine_control_stack_source_lookup(machine,
+                CORE_MACHINE_SOURCE_TIMING_JMP_FAR_DIRECT);
+            return core_machine_control_stack_add_next_term(machine, 27u,
+                out_ticks);
         }
         if (!same_privilege || protected_mode) return 0;
         ticks = core_machine_control_stack_source_lookup(machine,
@@ -2814,6 +2906,17 @@ C_INT core_machine_control_stack_source_instruction_cost(
             return core_machine_control_stack_add_next_term(machine,
                 *out_ticks, out_ticks);
         }
+        if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80386 &&
+            protected_mode) {
+            (C_VOID)core_machine_control_stack_source_lookup(machine,
+                CORE_MACHINE_SOURCE_TIMING_RET_FAR_IMMEDIATE);
+            if (!same_privilege) {
+                *out_ticks = 69u;
+                return 1;
+            }
+            return core_machine_control_stack_add_next_term(machine, 32u,
+                out_ticks);
+        }
         return core_machine_control_stack_add_next_term(machine,
             core_machine_control_stack_source_lookup(machine,
                 CORE_MACHINE_SOURCE_TIMING_RET_FAR_IMMEDIATE), out_ticks);
@@ -2826,6 +2929,17 @@ C_INT core_machine_control_stack_source_instruction_cost(
             *out_ticks = same_privilege ? 25u : 55u;
             return core_machine_control_stack_add_next_term(machine,
                 *out_ticks, out_ticks);
+        }
+        if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80386 &&
+            protected_mode) {
+            (C_VOID)core_machine_control_stack_source_lookup(machine,
+                CORE_MACHINE_SOURCE_TIMING_RET_FAR);
+            if (!same_privilege) {
+                *out_ticks = 69u;
+                return 1;
+            }
+            return core_machine_control_stack_add_next_term(machine, 32u,
+                out_ticks);
         }
         return core_machine_control_stack_add_next_term(machine,
             core_machine_control_stack_source_lookup(machine,
@@ -2959,6 +3073,13 @@ C_INT core_machine_control_stack_source_instruction_cost(
         return 1;
     case 0xccu: case 0xcdu:
         if (task_switch) {
+            if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80386) {
+                (C_VOID)core_machine_control_stack_source_lookup(machine,
+                    opcode == 0xccu ? CORE_MACHINE_SOURCE_TIMING_INT3 :
+                    CORE_MACHINE_SOURCE_TIMING_INT_IMMEDIATE);
+                *out_ticks = 309u;
+                return 1;
+            }
             *out_ticks = 167u;
             return core_machine_control_stack_add_next_term(machine,
                 *out_ticks, out_ticks);
@@ -2968,6 +3089,16 @@ C_INT core_machine_control_stack_source_instruction_cost(
             *out_ticks = same_privilege ? 40u : 78u;
             return core_machine_control_stack_add_next_term(machine,
                 *out_ticks, out_ticks);
+        }
+        if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80386 &&
+            protected_execution) {
+            (C_VOID)core_machine_control_stack_source_lookup(machine,
+                opcode == 0xccu ? CORE_MACHINE_SOURCE_TIMING_INT3 :
+                CORE_MACHINE_SOURCE_TIMING_INT_IMMEDIATE);
+            return core_machine_control_stack_add_next_term(machine,
+                same_privilege ? 59u :
+                ((data->oldcpu.data.eflags & VCPU_EFLAGS_VM) != 0u ? 119u : 99u),
+                out_ticks);
         }
         if (!same_privilege) return 0;
         if (protected_mode) return 0;
@@ -2991,8 +3122,18 @@ C_INT core_machine_control_stack_source_instruction_cost(
                 core_machine_control_stack_add_next_term(machine, *out_ticks,
                     out_ticks) : 1;
         }
-        if (!same_privilege) return 0;
-        if (protected_mode) return 0;
+        if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80386 &&
+            protected_execution) {
+            if (task_switch) {
+                *out_ticks = 309u;
+                return 1;
+            }
+            return core_machine_control_stack_add_next_term(machine,
+                same_privilege ? 59u :
+                ((data->oldcpu.data.eflags & VCPU_EFLAGS_VM) != 0u ? 119u : 99u),
+                out_ticks);
+        }
+        if (!same_privilege || protected_mode) return 0;
         if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80386) {
             *out_ticks = 35u;
         } else if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286) {
@@ -3006,6 +3147,12 @@ C_INT core_machine_control_stack_source_instruction_cost(
                 out_ticks) : 1;
     case 0xcfu:
         if (task_switch) {
+            if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80386) {
+                (C_VOID)core_machine_control_stack_source_lookup(machine,
+                    CORE_MACHINE_SOURCE_TIMING_IRET);
+                *out_ticks = 275u;
+                return 1;
+            }
             *out_ticks = 169u;
             return core_machine_control_stack_add_next_term(machine,
                 *out_ticks, out_ticks);
@@ -3015,6 +3162,21 @@ C_INT core_machine_control_stack_source_instruction_cost(
             *out_ticks = same_privilege ? 31u : 55u;
             return core_machine_control_stack_add_next_term(machine,
                 *out_ticks, out_ticks);
+        }
+        if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80386 &&
+            protected_mode) {
+            (C_VOID)core_machine_control_stack_source_lookup(machine,
+                CORE_MACHINE_SOURCE_TIMING_IRET);
+            if ((machine->executor_cpu.data.eflags & VCPU_EFLAGS_VM) != 0u) {
+                *out_ticks = 60u;
+                return 1;
+            }
+            if (!same_privilege) {
+                *out_ticks = 82u;
+                return 1;
+            }
+            return core_machine_control_stack_add_next_term(machine, 38u,
+                out_ticks);
         }
         if (!same_privilege || protected_mode) return 0;
         *out_ticks = core_machine_control_stack_source_lookup(machine,
@@ -3038,18 +3200,51 @@ C_INT core_machine_control_stack_source_instruction_cost(
         }
         if (extension == 3u || extension == 5u) {
             if (task_switch) {
+                if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80386) {
+                    (C_VOID)core_machine_control_stack_source_lookup(machine,
+                        extension == 3u ? CORE_MACHINE_SOURCE_TIMING_CALL_FAR_MEMORY :
+                        CORE_MACHINE_SOURCE_TIMING_JMP_FAR_MEMORY_PROTECTED);
+                    *out_ticks = 397u + (core_machine_control_stack_selector_is_task_gate(
+                        machine, data->crm) ? 9u : 0u);
+                    return core_machine_control_stack_add_next_term(machine,
+                        *out_ticks, out_ticks);
+                }
                 *out_ticks = extension == 3u ? 180u : 178u;
                 *out_ticks += core_machine_control_stack_memory_additions(
                     machine, data, prefixes, 2u);
                 return core_machine_control_stack_add_next_term(machine,
                     *out_ticks, out_ticks);
             }
-            if (!memory || !same_privilege ||
-                (protected_mode && extension == 5u && data->crm !=
-                    machine->executor_cpu.data.cs.selector)) return 0;
+            if (!memory || (!same_privilege && !(machine->cpu_profile ==
+                CORE_MACHINE_CPU_PROFILE_80386 && protected_mode && extension == 3u &&
+                data->crm != machine->executor_cpu.data.cs.selector)) ||
+                (protected_mode && extension == 5u &&
+                data->crm != machine->executor_cpu.data.cs.selector &&
+                machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_80386)) return 0;
+            if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80386 &&
+                protected_mode && data->crm != machine->executor_cpu.data.cs.selector) {
+                type_unsigned_8 parameters = 0u;
+
+                if (extension == 3u && !same_privilege &&
+                    !core_machine_control_stack_call_gate_parameters(machine,
+                        data->crm, &parameters)) return 0;
+                (C_VOID)core_machine_control_stack_source_lookup(machine,
+                    extension == 3u ? CORE_MACHINE_SOURCE_TIMING_CALL_FAR_MEMORY :
+                    CORE_MACHINE_SOURCE_TIMING_JMP_FAR_MEMORY_PROTECTED);
+                *out_ticks = extension == 3u ? (same_privilege ? 56u :
+                    (parameters == 0u ? 90u : 98u + 4u * parameters)) : 49u;
+                return core_machine_control_stack_add_next_term(machine,
+                    *out_ticks, out_ticks);
+            }
             if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 &&
                 protected_mode) {
                 *out_ticks = extension == 3u ? 29u : 26u;
+            } else if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80386 &&
+                protected_mode) {
+                (C_VOID)core_machine_control_stack_source_lookup(machine,
+                    extension == 3u ? CORE_MACHINE_SOURCE_TIMING_CALL_FAR_MEMORY :
+                    CORE_MACHINE_SOURCE_TIMING_JMP_FAR_MEMORY_PROTECTED);
+                *out_ticks = extension == 3u ? 38u : 31u;
             } else {
                 *out_ticks = core_machine_control_stack_source_lookup(machine,
                     extension == 3u ? CORE_MACHINE_SOURCE_TIMING_CALL_FAR_MEMORY :

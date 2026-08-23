@@ -4045,6 +4045,7 @@ static C_VOID _ser_jmp_far_call_gate(core_machine_cpu_execution_context *context
     type_unsigned_64 code_desc;
     type_unsigned_16 target_selector;
     type_unsigned_8 cpl;
+    type_bool gate32;
     t_cpu_data_sreg newcs_cache;
 
     TYPE_TRACE_CALL_BEGIN("_ser_jmp_far_call_gate");
@@ -4052,10 +4053,11 @@ static C_VOID _ser_jmp_far_call_gate(core_machine_cpu_execution_context *context
         TYPE_TRACE_IMPOSSIBLE_RETURN;
     TYPE_TRACE_CHECK_RETURN(_s_read_xdt(context, gate_selector,
         TYPE_REFERENCE_OF(gate_desc)));
-    /* Appendix B permits JMP only through a same-privilege 16-bit call gate
-     * on the 80286.  It transfers directly to the gate target: no return
+    /* The 80386 extends the same-privilege JMP gate route to both 16- and
+     * 32-bit call gates.  It transfers directly to the target: no return
      * frame, stack switch, or parameter copy is performed. */
-    if (!_IsDescCallGate16(gate_desc))
+    gate32 = _IsDescCallGate32(gate_desc);
+    if (!_IsDescCallGate16(gate_desc) && !gate32)
         TYPE_TRACE_IMPOSSIBLE_RETURN;
     cpl = _GetCPL;
     if (_GetDesc_DPL(gate_desc) < cpl ||
@@ -4081,11 +4083,14 @@ static C_VOID _ser_jmp_far_call_gate(core_machine_cpu_execution_context *context
     TYPE_TRACE_CHECK_RETURN(_ksa_prepare_code_sreg(context, target_selector,
         cpl, &newcs_cache, &code_desc));
     TYPE_TRACE_CHECK_RETURN(_kma_test_access(context, &newcs_cache,
+        gate32 ? TYPE_MASK_UNSIGNED_32(_GetDescGate_Offset(gate_desc)) :
         TYPE_MASK_UNSIGNED_16(_GetDescGate_Offset(gate_desc)), 1u, 0, cpl, 1));
     TYPE_TRACE_CHECK_RETURN(_s_write_xdt(context, target_selector,
         TYPE_REFERENCE_OF(code_desc)));
     cpu_state.data.cs = newcs_cache;
-    cpu_state.data.ip = TYPE_MASK_UNSIGNED_16(_GetDescGate_Offset(gate_desc));
+    if (gate32) cpu_state.data.eip = TYPE_MASK_UNSIGNED_32(
+        _GetDescGate_Offset(gate_desc));
+    else cpu_state.data.ip = TYPE_MASK_UNSIGNED_16(_GetDescGate_Offset(gate_desc));
     TYPE_TRACE_CALL_END;
 }
 static C_VOID _ser_jmp_far_task_gate(core_machine_cpu_execution_context *context,
