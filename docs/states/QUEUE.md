@@ -13,7 +13,6 @@ architecture and deliberately prefer direct owner-local corrections over new
 layers; each implementation admission must still establish its own finite
 sweep and regression evidence.
 
-1. [VM media persistence failure hygiene](../proposals/m5-vm-media-persistence-failure-hygiene.md).
 1. [Core CPU and physical-memory boundary correctness](../proposals/m5-core-cpu-memory-boundary-correctness.md).
 1. [Core platform primitive initialization and outcome contract](../proposals/m5-core-platform-primitive-outcomes.md).
 1. [VM native display resource lifetime repair](../proposals/m5-vm-native-display-resource-lifetime.md).

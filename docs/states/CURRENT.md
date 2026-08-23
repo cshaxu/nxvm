@@ -2,28 +2,7 @@
 
 ## Current Work
 
-**Active: M5 T441 S1.**
-
-## M5 T441 S1 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | New |
-| Admission And Approval | Owner approved the first queued candidate on 2026-08-23 and required the implementation to minimize logic and code. This admits the linked media-persistence proposal and one bounded S1 implementation. |
-| Objective | Make VM-owned removable-media pair saving and HDD single-file saving return failure without leaked temporary/sidecar allocations or falsely reporting a completed paired save; retain one owner-local staging/commit/rollback path. |
-| Non-goals | No new media format, filesystem layer, asynchronous I/O, cross-file atomicity claim beyond current host rename semantics, Core change, physical-media semantics, or unrelated session storage cleanup. |
-| Reference Baseline | `master` at `de93c6ba`; prior current developer artifact; proposal `m5-vm-media-persistence-failure-hygiene.md`; existing `vm_machine_media_save_atomically` and `vm_machine_media_save_pair_atomically` owners. |
-| Candidate Proposal | [VM media persistence failure hygiene](../proposals/m5-vm-media-persistence-failure-hygiene.md); task record [T441](../history/M5-T441-vm-media-persistence-failure-hygiene.md). |
-| Files And ABI Surface | Expected private VM-machine save owner, FDD caller, focused VM media smoke, build artifact identity and task evidence/status. Existing `vm_machine_media_save_*` interface may be reduced only if all callers remain covered; no new public cross-module ABI. |
-| Applicable Rules | Architecture: one mutable persistence/failure owner and one production path; Coding: owner-local helper only when it deletes duplication, no forwarding layer or unused compatibility route; Execution: mechanism-defect shared-owner/caller sweep, focused proof, artifact and actual-change review; Documentation: indexed evidence/history/current-status boundaries. |
-| Verification | Enumerate all `vm_machine_media_save_*` callers; add deterministic focused coverage for FDD serialization/allocation and paired staging/replacement/rollback cleanup plus HDD single-save failure preservation; build/run affected smoke, fast current smokes, documentation governance, and record any independent full-gate baseline. |
-| Expected Markers | Existing `M5:T376:S2:RAW-IMG-SIDECAR-LIFECYCLE:OK`, `M5:T280:S2:ATOMIC-MEDIA:OK`, `M5:T283:S6:ATOMIC-SAVE:OK`; a new T441 failure-hygiene marker only if a focused executable assertion needs one. |
-| Asset Needs | None; synthetic VM media and repository-owned temporary test files only. |
-| Reporting Requirements | Evidence must identify the shared save owner, every FDD/HDD caller, each allocation/temp/replacement/rollback stage, cleanup result, source/test line delta and the no-stronger-than-host-rename boundary. |
-| Stop Conditions | Stop for owner direction if portable behavior cannot preserve both prior files after a cross-file replacement failure, if failure injection requires a new broad test-only or public filesystem abstraction, or if an external filesystem policy decision is required. |
-| Exit Criteria | One minimal save mechanism owns staging and cleanup; FDD/HDD callers have one observable failure path; injected failure stages prove retained state and no owned temporary/sidecar allocation/file tail; caller sweep is complete; focused and applicable gates pass; a `0.5.0441` artifact, evidence, review and closure records are pushed. |
-| Original Owner Request | Implement the next queued task while keeping logic and code as small as possible. |
-| Similar-Issue Sweep | Search every tracked production/test caller of `vm_machine_media_save_atomically` and `vm_machine_media_save_pair_atomically`, plus direct FDD sidecar serialization. Dispose each as corrected, covered by the shared owner, or explicitly out of scope with reason. |
+**Idle.** T441 closed at S1; the next candidate requires a separate admission.
 
 
 ## Current Technical Baseline
@@ -50,6 +29,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T441 | Closed: VM media saving has one staging owner; FDD now releases derived sidecar state on failed paired persistence, and focused failure smoke proves resident/file/temporary preservation. [Evidence](../etc/evidence/t441-s1-vm-media-persistence-failure-hygiene.md). |
 | T440 | Closed: Model-40 configuration has one private initializer; incompatible creation/runtime memory changes are rejected at the VM boundary, with generic session reconfiguration retained. [Evidence](../etc/evidence/t440-s1-model40-immutable-configuration.md). |
 | T439 | Closed: session reset and startup now return Core failure through one lifecycle outcome; required FDD initialization also propagates status, and no-HDD Model 339 reset avoids an unnecessary unmapped BIOS-table write. [Evidence](../etc/evidence/t439-s1-vm-session-reset-startup-outcomes.md). |
 | T438 | Closed: Core is the sole firmware-reset failure owner; discarded firmware-operation errors now return through `core_machine_reset`, leave the machine non-runnable and permit repaired retry. [Evidence](../etc/evidence/t438-s1-core-reset-firmware-failure-atomicity.md). |
@@ -57,7 +37,6 @@
 | T436 | Closed: [result closure](../etc/cpu-timing/t436-s8-80286-result-closure.md) proves the verified 771-key result set, 8086/80186/80286/80386 regression disposition, current-gate completion and developer artifact. |
 | T435 | Stopped by owner-approved requeue; not completed. Its successor 80286 and 80386DX timing closures are now retained as T436 and T437 history. [Record](../history/M5-T435-core-cpu-instruction-timing-program-requeue.md). |
 | T434 | Closed: all 30 copied plan declarations/dispositions, every current VM materializer and atomic Core publication route are reconciled; full task closure proof is retained in the [S3 audit](../etc/evidence/t434-s3-task-closure-audit.md) and [task history](../history/M5-T434-core-timing-contract-machine-plan.md). |
-| T433 | Closed after corrective S7: 30 frozen Core capabilities have a source-sufficiency and ownership disposition; chip/manual semantics are separated from VM-profile inputs, host/product boundaries and the explicit ATA/HDC source block. [S7 ledger](../etc/evidence/t433-s7-core-source-sufficiency-ledger.md). |
 
 
 ## Recent Governance
