@@ -2,28 +2,8 @@
 
 ## Current Work
 
-**M5 T440 S1 active -- Model-40 immutable configuration enforcement.**
+**Idle.** T440 closed at S1; the next candidate requires a separate admission.
 
-## M5 T440 S1 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | New |
-| Admission And Approval | Owner approved the first queued Model-40 immutable-configuration candidate for direct admission on 2026-08-23. Scope is profile/session enforcement of the selected DeskPro 386 Model 40 fixed configuration, initially its fixed 1 MiB memory, with no exception. |
-| Objective | Prevent generic session configuration mutation from silently changing a materialized Model-40 while retaining legal configurable behavior for profiles that declare it; consolidate the identical private Model-40 fixed-configuration literals into their one owning initializer. |
-| Non-goals | No Model-40 hardware-composition change, mutable profile state, Core machine-name branch, public configuration framework, firmware/media policy change or test-only parallel construction path. |
-| Reference Baseline | Pushed `05a00edf`; T439 is closed; its recorded developer artifact is the admission baseline. |
-| Candidate Proposal | [Model-40 immutable configuration enforcement](../proposals/m5-model40-immutable-configuration.md). |
-| Files And ABI Surface | Expected: VM session profile/configuration seam, the two Model-40 constructors' identical private fixed configuration, existing memory reconfiguration entry point, focused Model-40 and generic-session smoke, task evidence and artifact cutover. Core public configuration APIs and product-session public contracts are excluded. |
-| Applicable Rules | Architecture: VM profile owns machine selection and its invariants; dependency remains VM to Core. Coding: one profile/session validation owner and one private Model-40 fixed-configuration initializer, status returned to its caller, no parallel configuration route or wrapper. Execution: route sweep, state-unchanged proof, focused and current gates, actual-change review and artifact evidence. |
-| Verification | Enumerate Model-40 construction and runtime configuration mutation routes; prove Model-40 rejects an incompatible memory request without changing session/Core state; prove its fixed 1 MiB state; prove a legal generic session reconfiguration remains valid; run focused Model-40 and generic smokes, documentation governance and current gates. |
-| Expected Markers | Every in-scope configuration mutation route has a disposition; Model-40 rejection reaches its existing caller, changes neither observed Core memory nor retained session configuration, and adds no Core machine-name condition; generic reconfiguration behavior remains intact. |
-| Asset Needs | None. Use existing synthetic Model-40 ROM fixtures only; do not import firmware, guest media, Microsoft components or third-party code. |
-| Reporting Requirements | Report configuration-route dispositions, the unique policy owner, Model-40/generic proofs, artifact hash, source/test size delta, retained live routes and any transferred issue. |
-| Stop Conditions | Stop and request direction if a correct fixed-profile policy cannot be represented at the existing profile/session seam, requires public API redesign, changes Model-40 hardware composition, or requires Core to identify a machine name. |
-| Exit Criteria | All in-scope Model-40 memory mutation routes are rejected or made inapplicable at the VM boundary; failed requests preserve state; the duplicated constructor literal is deleted in favor of one private initializer; legal generic behavior passes; review proves a unique owner and no new configuration framework; complete P is committed and pushed. |
-| Original Owner Request | Owner approved this next queued candidate after confirming that Model-40 means Compaq DeskPro 386 Model 40, not IBM 5170. |
-| Similar-Issue Sweep | Inventory Model-40 constructor inputs, retained session configuration, runtime reconfiguration APIs, factory/YAML routes and direct Core handoffs; mark each fixed, already profile-fixed, legal generic-only, not applicable or transferred. |
 
 ## Current Technical Baseline
 
@@ -49,6 +29,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T440 | Closed: Model-40 configuration has one private initializer; incompatible creation/runtime memory changes are rejected at the VM boundary, with generic session reconfiguration retained. [Evidence](../etc/evidence/t440-s1-model40-immutable-configuration.md). |
 | T439 | Closed: session reset and startup now return Core failure through one lifecycle outcome; required FDD initialization also propagates status, and no-HDD Model 339 reset avoids an unnecessary unmapped BIOS-table write. [Evidence](../etc/evidence/t439-s1-vm-session-reset-startup-outcomes.md). |
 | T438 | Closed: Core is the sole firmware-reset failure owner; discarded firmware-operation errors now return through `core_machine_reset`, leave the machine non-runnable and permit repaired retry. [Evidence](../etc/evidence/t438-s1-core-reset-firmware-failure-atomicity.md). |
 | T437 | Closed: the retained [task audit](../history/M5-T437-80386dx-instruction-timing-closure.md) proves all 1,410 legal keys: 1,409 classified CPU retirements and one separate, verified ESC MCP-domain handoff; results, decoder/partition, fresh configuration and 292-test current-gate verification pass. |
@@ -56,7 +37,6 @@
 | T435 | Stopped by owner-approved requeue; not completed. Its successor 80286 and 80386DX timing closures are now retained as T436 and T437 history. [Record](../history/M5-T435-core-cpu-instruction-timing-program-requeue.md). |
 | T434 | Closed: all 30 copied plan declarations/dispositions, every current VM materializer and atomic Core publication route are reconciled; full task closure proof is retained in the [S3 audit](../etc/evidence/t434-s3-task-closure-audit.md) and [task history](../history/M5-T434-core-timing-contract-machine-plan.md). |
 | T433 | Closed after corrective S7: 30 frozen Core capabilities have a source-sufficiency and ownership disposition; chip/manual semantics are separated from VM-profile inputs, host/product boundaries and the explicit ATA/HDC source block. [S7 ledger](../etc/evidence/t433-s7-core-source-sufficiency-ledger.md). |
-| T432 | Closed: separate Core-private Set-2 translation and typematic break states prevent released keys from restarting typematic; focused regression, Model-339 contract and owner Console/Window verification pass. [Record](../history/M5-T432-keyboard-keyup-reliability-repair.md). |
 
 
 ## Recent Governance
