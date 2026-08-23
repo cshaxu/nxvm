@@ -5,6 +5,7 @@
 #include "vm/composition/session/execution.h"
 #include "vm/composition/session/display.h"
 #include "vm/composition/session/fault.h"
+#include "vm/composition/session/lifecycle.h"
 #include "vm/composition/session/session.h"
 #include "vm/composition/session/control.h"
 #include "vm/composition/session/runner.h"
@@ -29,7 +30,11 @@ C_VOID vm_session_runner_run(vm_session *session)
             continue;
         }
         if (STD_ATOMIC_EXCHANGE(&control->flagReset, TYPE_FALSE)) {
-            vm_session_execution_context_reset(&control->execution_context);
+            type_status reset_status = vm_session_execution_context_reset(
+                &control->execution_context);
+
+            (C_VOID)vm_session_finish_reset(session, reset_status);
+            if (reset_status != TYPE_STATUS_OK) continue;
         }
         if (STD_ATOMIC_LOAD(&control->pauseRequested)) {
             STD_ATOMIC_STORE(&control->paused, TYPE_TRUE);

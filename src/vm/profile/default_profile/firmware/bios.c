@@ -65,6 +65,8 @@ static C_VOID bios_load_data(t_bios *bios, core_machine_firmware_context *firmwa
 static C_VOID bios_load_additional(core_machine_firmware_context *firmware,
     const core_machine_media_registry *media_registry, core_machine_media_id hdd_media_id) {
     core_machine_media_info media = bios_media_info(media_registry, hdd_media_id);
+
+    if (!media.present) return;
     /* hard disk param table */
     bios_write_word(firmware, 0u, VBIOS_ADDR_HDD_PARAM_OFFSET, VBIOS_ADDR_HDD_PARAM);
     bios_write_word(firmware, 0u, VBIOS_ADDR_HDD_PARAM_SEGMENT, VBIOS_ADDR_START_SEG);

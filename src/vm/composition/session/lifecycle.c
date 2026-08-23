@@ -206,23 +206,38 @@ static type_status vm_session_start_outcome_record(vm_session *machine,
 }
 
 type_status vm_session_start(vm_session *machine) {
+    type_status status;
+
     if (machine == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
-    vm_session_reset(machine);
+    status = vm_session_reset(machine);
+    if (status != TYPE_STATUS_OK) return status;
     return vm_session_resume(machine);
 }
 
-C_VOID vm_session_reset(vm_session *machine) {
-    if (machine == STD_NULL) return;
-    if (vm_platform_run_handle_is_active(&machine->platform_run_handle) &&
-        !vm_session_control_is_running(&machine->control)) {
-        vm_session_platform_join_and_finalize(machine);
-    }
-    vm_session_control_reset(&machine->control);
+type_status vm_session_finish_reset(vm_session *machine, type_status status)
+{
+    if (machine == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (status != TYPE_STATUS_OK) return vm_session_start_outcome_record(machine,
+        status);
     machine->model40_fdc_terminal_observation_valid = TYPE_FALSE;
     vm_session_start_outcome_clear(machine);
     if (!vm_session_control_is_running(&machine->control)) {
         vm_session_publish_display(machine, 1);
     }
+    return TYPE_STATUS_OK;
+}
+
+type_status vm_session_reset(vm_session *machine) {
+    type_status status;
+
+    if (machine == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (vm_platform_run_handle_is_active(&machine->platform_run_handle) &&
+        !vm_session_control_is_running(&machine->control)) {
+        vm_session_platform_join_and_finalize(machine);
+    }
+    status = vm_session_control_reset(&machine->control);
+    if (vm_session_control_is_running(&machine->control)) return status;
+    return vm_session_finish_reset(machine, status);
 }
 
 C_VOID vm_session_stop(vm_session *machine) {

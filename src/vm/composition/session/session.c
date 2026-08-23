@@ -469,7 +469,11 @@ static type_status vm_session_create_model40_byob(const vm_session_config *confi
     }
     if (config->boot_hdd) session->boot_preference = VM_SESSION_BOOT_PREFERENCE_HDD;
     vm_session_apply_boot_preference(session);
-    vm_session_control_reset(&session->control);
+    status = vm_session_reset(session);
+    if (status != TYPE_STATUS_OK) {
+        vm_session_destroy(session);
+        return status;
+    }
     *out_session = session;
     return TYPE_STATUS_OK;
 }
@@ -528,7 +532,11 @@ type_status vm_session_create_model40_private(
     };
     status = vm_session_initialize(session);
     if (status != TYPE_STATUS_OK) { STD_FREE(session); return status; }
-    vm_session_control_reset(&session->control);
+    status = vm_session_reset(session);
+    if (status != TYPE_STATUS_OK) {
+        vm_session_destroy(session);
+        return status;
+    }
     *out_session = session;
     return TYPE_STATUS_OK;
 }
@@ -616,7 +624,14 @@ C_INT vm_session_create(const vm_session_config *config, vm_session **out_sessio
         session->boot_preference = VM_SESSION_BOOT_PREFERENCE_HDD;
     }
     vm_session_apply_boot_preference(session);
-    vm_session_control_reset(&session->control);
+    {
+        type_status status = vm_session_reset(session);
+
+        if (status != TYPE_STATUS_OK) {
+            vm_session_destroy(session);
+            return status;
+        }
+    }
     *out_session = session;
     return TYPE_STATUS_OK;
 }

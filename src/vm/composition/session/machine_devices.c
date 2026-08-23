@@ -9,15 +9,16 @@
 #include "vm/machine/fdd.h"
 #include "vm/machine/hdd.h"
 
-C_VOID vm_session_machine_devices_initialize_media(vm_session *session)
+type_status vm_session_machine_devices_initialize_media(vm_session *session)
 {
-    if (session == STD_NULL) return;
-    (C_VOID)vm_machine_fdd_initialize_with_geometry(&session->fdd,
-        vm_profile_floppy_geometry_get(session->floppy_kind));
+    if (session == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (vm_machine_fdd_initialize_with_geometry(&session->fdd,
+            vm_profile_floppy_geometry_get(session->floppy_kind))) return TYPE_STATUS_FAULT;
     if (session->model40_private ||
         (session->profile != STD_NULL && session->profile->hdc_present)) {
         vm_machine_hdd_initialize(&session->hdd);
     }
+    return TYPE_STATUS_OK;
 }
 
 static type_status vm_session_machine_devices_materialize_fdc(vm_session *session,

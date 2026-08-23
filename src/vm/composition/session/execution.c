@@ -39,12 +39,11 @@ C_VOID vm_session_execution_context_bind_callbacks(
     }
 }
 
-C_VOID vm_session_execution_context_reset(vm_session_execution_context *context)
+type_status vm_session_execution_context_reset(vm_session_execution_context *context)
 {
-    if (context != 0 && context->callbacks != 0 &&
-        context->callbacks->reset != 0) {
-        context->callbacks->reset(context->session);
-    }
+    if (context == 0 || context->callbacks == 0 ||
+        context->callbacks->reset == 0) return TYPE_STATUS_INVALID_STATE;
+    return context->callbacks->reset(context->session);
 }
 
 C_VOID vm_session_execution_context_debug_refresh(vm_session_execution_context *context)

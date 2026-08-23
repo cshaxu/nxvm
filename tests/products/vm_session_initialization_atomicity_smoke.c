@@ -1,11 +1,63 @@
 #include "type.h"
 
 #include "vm/composition/session/lifecycle.h"
+#include "vm/composition/session/runner.h"
 #include "vm/composition/session/session.h"
 #include "vm/composition/session/session_interface.h"
 #include "vm/profile/default_profile/pc_at_profile.h"
 
 static C_INT verify_recovery(C_VOID);
+
+static C_INT verify_reset_outcome(C_VOID)
+{
+    vm_session *session = STD_NULL;
+    core_machine_lifecycle lifecycle;
+    C_INT failed = 0;
+
+    if (vm_session_create(STD_NULL, &session) != TYPE_STATUS_OK || session == STD_NULL) {
+        vm_session_destroy(session);
+        return 1;
+    }
+    session->default_profile_context.bios = STD_NULL;
+    failed |= vm_session_start(session) != TYPE_STATUS_FAULT;
+    failed |= !session->start_outcome.valid ||
+        session->start_outcome.status != TYPE_STATUS_FAULT;
+    failed |= vm_session_control_is_running(&session->control) ||
+        vm_platform_run_handle_is_active(&session->platform_run_handle);
+    failed |= core_machine_get_lifecycle(session->core_machine, &lifecycle) !=
+        TYPE_STATUS_OK || lifecycle != CORE_MACHINE_INITIALIZED;
+    session->default_profile_context.bios = &session->default_bios;
+    failed |= vm_session_reset(session) != TYPE_STATUS_OK ||
+        session->start_outcome.valid;
+    failed |= core_machine_get_lifecycle(session->core_machine, &lifecycle) !=
+        TYPE_STATUS_OK || lifecycle != CORE_MACHINE_STOPPED;
+    vm_session_destroy(session);
+    return failed;
+}
+
+static C_INT verify_running_reset_outcome(C_VOID)
+{
+    vm_session *session = STD_NULL;
+    C_INT failed = 0;
+
+    if (vm_session_create(STD_NULL, &session) != TYPE_STATUS_OK || session == STD_NULL) {
+        vm_session_destroy(session);
+        return 1;
+    }
+    session->default_profile_context.bios = STD_NULL;
+    STD_ATOMIC_STORE(&session->control.flagRun, TYPE_TRUE);
+    STD_ATOMIC_STORE(&session->control.flagReset, TYPE_TRUE);
+    vm_session_runner_run(session);
+    failed |= !session->start_outcome.valid ||
+        session->start_outcome.status != TYPE_STATUS_FAULT ||
+        vm_session_control_is_running(&session->control) ||
+        vm_platform_run_handle_is_active(&session->platform_run_handle);
+    session->default_profile_context.bios = &session->default_bios;
+    failed |= vm_session_reset(session) != TYPE_STATUS_OK ||
+        session->start_outcome.valid;
+    vm_session_destroy(session);
+    return failed;
+}
 
 static C_VOID initialize_config(vm_session *session,
     const vm_profile_default_pc_at_descriptor *profile)
@@ -150,6 +202,22 @@ static C_INT verify_core_failure(
     return 0;
 }
 
+static C_INT verify_fdd_initialization_failure(
+    const vm_profile_default_pc_at_descriptor *profile)
+{
+    vm_session session = {0};
+
+    initialize_config(&session, profile);
+    session.floppy_kind = (vm_profile_floppy_kind)0xffu;
+    if (vm_session_initialize(&session) != TYPE_STATUS_FAULT || session.active ||
+        session.core_machine != STD_NULL ||
+        vm_platform_run_handle_is_active(&session.platform_run_handle)) {
+        vm_session_finalize(&session);
+        return 1;
+    }
+    return 0;
+}
+
 static C_INT verify_controller_failure(
     const vm_profile_default_pc_at_descriptor *source)
 {
@@ -230,16 +298,19 @@ C_INT main(C_VOID)
 
     if (profile == STD_NULL || verify_create_materialization(profile) != 0 ||
         verify_core_failure(profile) != 0 ||
+        verify_fdd_initialization_failure(profile) != 0 ||
         verify_firmware_failure(profile) != 0 ||
         verify_controller_failure(profile) != 0 || verify_hdc_failure(profile) != 0 ||
         verify_fdc_bounce_failure(profile) != 0 ||
         verify_image_failure(profile, "t332-missing-fdd.img", STD_NULL) != 0 ||
         verify_image_failure(profile, STD_NULL, "t332-missing-hdd.img") != 0 ||
-        verify_recovery() != 0) {
+        verify_recovery() != 0 || verify_reset_outcome() != 0 ||
+        verify_running_reset_outcome() != 0) {
         return 1;
     }
     STD_PRINTF("M5:T300:S3:SESSION-INITIALIZATION-ATOMICITY:OK\n");
     STD_PRINTF("M5:T332:S1:SESSION-CONFIG-MATERIALIZATION:OK\n");
     STD_PRINTF("M5:T332:S2:SESSION-CONSTRUCTION-TRANSACTION:OK\n");
+    STD_PRINTF("M5:T439:S1:SESSION-RESET-OUTCOME:OK\n");
     return 0;
 }

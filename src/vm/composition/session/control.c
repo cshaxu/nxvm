@@ -28,17 +28,21 @@
 #include "vm/composition/session/display.h"
 #include "vm/composition/session/virtual_time.h"
 
-static C_VOID vm_session_execution_context_reset_callback(vm_session *machine)
+static type_status vm_session_execution_context_reset_callback(vm_session *machine)
 {
-    if (machine == STD_NULL) return;
+    type_status status;
+
+    if (machine == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
     vm_machine_debug_reset(&machine->debug);
     vm_session_virtual_time_reset(machine);
     vm_session_apply_boot_preference(machine);
-    if (core_machine_reset(machine->core_machine) != TYPE_STATUS_OK) {
+    status = core_machine_reset(machine->core_machine);
+    if (status != TYPE_STATUS_OK) {
         vm_session_control_stop(&machine->control);
     } else {
         vm_session_fault_clear(machine);
     }
+    return status;
 }
 
 static C_VOID vm_session_execution_context_debug_refresh_callback(
@@ -70,13 +74,17 @@ C_VOID vm_session_control_start(vm_session_control_state *control) {
 }
 
 /* Issues resetting signal to device thread */
-C_VOID vm_session_control_reset(vm_session_control_state *control) {
-    if (control == STD_NULL) return;
+type_status vm_session_control_reset(vm_session_control_state *control) {
+    if (control == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
     if (STD_ATOMIC_LOAD(&control->flagRun)) {
         STD_ATOMIC_STORE(&control->flagReset, TYPE_TRUE);
+        return TYPE_STATUS_OK;
     } else {
-        vm_session_execution_context_reset(&control->execution_context);
+        type_status status = vm_session_execution_context_reset(
+            &control->execution_context);
+
         STD_ATOMIC_STORE(&control->flagReset, TYPE_FALSE);
+        return status;
     }
 }
 

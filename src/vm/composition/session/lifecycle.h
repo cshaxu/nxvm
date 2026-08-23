@@ -12,7 +12,8 @@ extern "C" {
 #include "vm/composition/session/session_interface.h"
 
 type_status vm_session_start(vm_session *machine);
-C_VOID vm_session_reset(vm_session *machine);
+type_status vm_session_reset(vm_session *machine);
+type_status vm_session_finish_reset(vm_session *machine, type_status status);
 C_VOID vm_session_stop(vm_session *machine);
 type_status vm_session_resume(vm_session *machine);
 

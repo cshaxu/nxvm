@@ -18,7 +18,8 @@ type_status vm_session_provider_lifecycle_initialize(vm_session *session)
 
     if (session == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
 
-    vm_session_machine_devices_initialize_media(session);
+    status = vm_session_machine_devices_initialize_media(session);
+    if (status != TYPE_STATUS_OK) return status;
     if (session->model40_private) {
         return vm_session_bind_media(session);
     }

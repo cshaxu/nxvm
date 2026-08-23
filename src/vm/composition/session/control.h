@@ -33,7 +33,7 @@ typedef struct vm_session_control_state {
 #include "vm/composition/session/session_interface.h"
 
 C_VOID vm_session_control_start(vm_session_control_state *control);
-C_VOID vm_session_control_reset(vm_session_control_state *control);
+type_status vm_session_control_reset(vm_session_control_state *control);
 C_VOID vm_session_control_stop(vm_session_control_state *control);
 C_VOID vm_session_control_yield_for_display_transition(
     vm_session_control_state *control);

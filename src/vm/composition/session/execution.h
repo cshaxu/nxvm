@@ -8,7 +8,7 @@
 typedef struct vm_session vm_session;
 
 typedef struct vm_session_execution_context_callbacks {
-    C_VOID (*reset)(vm_session *session);
+    type_status (*reset)(vm_session *session);
     C_VOID (*debug_refresh)(vm_session *session);
 } vm_session_execution_context_callbacks;
 
@@ -31,7 +31,7 @@ C_VOID vm_session_execution_context_bind_session(
 C_VOID vm_session_execution_context_bind_callbacks(
     vm_session_execution_context *context,
     const vm_session_execution_context_callbacks *callbacks);
-C_VOID vm_session_execution_context_reset(vm_session_execution_context *context);
+type_status vm_session_execution_context_reset(vm_session_execution_context *context);
 C_VOID vm_session_execution_context_debug_refresh(vm_session_execution_context *context);
 C_VOID vm_session_execution_context_bind_command_boundary(
     vm_session_execution_context *context,
