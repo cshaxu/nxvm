@@ -2,29 +2,9 @@
 
 ## Current Work
 
-**Active: M5 T437 S1.** The owner-approved 80386DX queue candidate is admitted
-for a single-person dual-role implementation lifecycle.
-
-## M5 T437 S1 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | New; M5 T437 S1 is the next numeric task after the accepted T436 closure. |
-| Admission And Approval | The owner directed the separate 80286 and 80386DX queue packages on 2026-08-22, required reasonable S decomposition, and instructed continuous complete implementation. The second Queue candidate is now admitted without exception after T436 closed. |
-| Objective | Freeze one executable, complete and non-overlapping 80386DX implementation partition for all 1,411 canonical successful-retirement keys, so later S units have exact bounded ownership and proof obligations. |
-| Non-goals | Do not claim a key conforming, change timing selection or instruction semantics, add a CPU profile, assign board/READY/HOLD/DMA/prefetch/device timing, create a public ABI, import source or start another S. |
-| Reference Baseline | [80386DX manual ledger](../etc/cpu-timing/t435-s1-80386-ledger.md), [manifest](../etc/cpu-timing/t435-s2-80386-timing-manifest.json), [tracker](../etc/cpu-timing/t435-s2-80386-implementation-tracker.md), [audit](../etc/cpu-timing/t435-s2-80386-implementation-audit.md), [decoder reconciliation](../etc/cpu-timing/t435-s8-80386-decoder-reconciliation-contract.md), [result contract](../etc/cpu-timing/t435-s2-manifest-result-contract.md), and the owner-approved [S decomposition](../proposals/m5-80386dx-instruction-timing-closure.md). |
-| Candidate Proposal | [M5 80386DX instruction timing closure](../proposals/m5-80386dx-instruction-timing-closure.md). |
-| Files And ABI Surface | S1 may add only indexed 80386DX partition evidence, its verifier if necessary, task history and current status. It must not change runtime source, public headers, CMake products, the developer artifact or external ABI. |
-| Applicable Rules | Execution: new-task allocation, S/P lifecycle, dual-role review and closure. Architecture: one Core timing/publishing path and no board policy. Documentation: CURRENT is the active contract and Queue remains unnumbered. Source policy: retained manual evidence only; no source import. |
-| Verification | Run `Verify-80386TimingManifest.ps1`, `Verify-80386DecoderLedger.ps1`, the existing 80386 decoder inventory runner, documentation governance, and a static comparison proving every materialized key has exactly one later-S owner. |
-| Expected Markers | Retain the S1/S2/S8 markers; add `M5:T437:S1:I386-PARTITION-COMPLETE:PASS:canonical=1411` and `M5:T437:S1:I386-PARTITION-NO-OVERLAP:PASS`. |
-| Asset Needs | Existing owner-managed Intel manual evidence only. No firmware, guest media, downloads, Microsoft components or third-party code is permitted. |
-| Reporting Requirements | Record the generated partition, per-S key totals, every nontrivial boundary decision, baseline verifier totals and actual changed files. The executor performs one bounded delivery; the same session then independently reviews the actual changes against this packet before accepting or issuing one corrective brief. |
-| Stop Conditions | Stop for a manifest/manual/decoder contradiction, an unrepresentable required key, a partition that cannot be made disjoint without changing the approved CPU boundary, a source-policy issue or a verifier contradiction. Report evidence; do not guess, exclude a key or invent a fallback. |
-| Exit Criteria | A durable mechanically verified partition assigns each of the 450 base and 961 context keys to exactly one S2--S7 owner; S8 owns closure only. The baseline statuses remain truthful, the partition verifier passes, all required baseline gates pass, and dual-role review accepts the actual change. |
-| Original Owner Request | Owner request, faithfully translated: create separate 80386DX work after 80286, reasonably split its S tasks, and continue the complete, correct 80386 instruction function and timing implementation under governance rules. |
-| Similar-Issue Sweep | Defect class: orphaned, duplicate or silently reassigned 80386DX manifest keys. Scope: 80386DX ledger, manifest, tracker, decoder inventory/verifiers, result contract, queue proposal and the new partition evidence. Search and mechanically reconcile every generated key; no runtime source is in S1 scope. |
+**Between accepted S units: M5 T437.** S1 has a verified, disjoint partition;
+the next admitted unit is S2, the 80386DX result-contract producer and sole
+publication seam.
 ## Current Technical Baseline
 
 - **Current developer artifact:** target `vm-0-5-0434`; `nxvm_0_5_0434.exe` / `build/output/nxvm_0_5_0434.exe`, SHA-256 `F8562F4623D53303470408837249CF89C985E0A0B1130212BBD9CE26B5E1B38A`. T434 has one copied Core timing-plan publication route for default PC/AT, IBM 5170 Model 339 and Model-40 BYOB session composition.
@@ -49,6 +29,7 @@ for a single-person dual-role implementation lifecycle.
 
 | Task | Compact result |
 | --- | --- |
+| T437 S1 | Closed: the executable [partition](../etc/cpu-timing/t437-s1-80386-key-partition.md) assigns all 1,411 canonical keys exactly once: S3=808, S4=162, S5=232, S6=94 and S7=115. The strict nonconforming baseline is retained for S2--S8. |
 | T436 | Closed: [result closure](../etc/cpu-timing/t436-s8-80286-result-closure.md) proves the verified 771-key result set, 8086/80186/80286/80386 regression disposition, current-gate completion and developer artifact. |
 | T435 | Stopped by owner-approved requeue; not completed. Its profile-specific 80286 and 80386DX closure candidates now lead the Queue. [Record](../history/M5-T435-core-cpu-instruction-timing-program-requeue.md). |
 | T434 | Closed: all 30 copied plan declarations/dispositions, every current VM materializer and atomic Core publication route are reconciled; full task closure proof is retained in the [S3 audit](../etc/evidence/t434-s3-task-closure-audit.md) and [task history](../history/M5-T434-core-timing-contract-machine-plan.md). |
