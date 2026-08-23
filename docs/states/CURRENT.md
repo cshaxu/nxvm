@@ -2,28 +2,7 @@
 
 ## Current Work
 
-**Active: M5 T442 S1.**
-
-## M5 T442 S1 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | New |
-| Admission And Approval | Owner approved the queue candidate on 2026-08-23 and directed that its minimalism constraints be written into the proposal and implemented. |
-| Objective | Repair the confirmed Core CPU lexical guard and physical-memory span-validation boundaries at their sole owning modules. |
-| Non-goals | No instruction/profile expansion, memory topology change, new memory layer, public ABI, VM change, or physical timing work. |
-| Reference Baseline | `master` at `9efe4ebe`; updated proposal and existing CPU lexeme/memory mapping owners. |
-| Candidate Proposal | [Core CPU and physical-memory boundary correctness](../proposals/m5-core-cpu-memory-boundary-correctness.md); task record [T442](../history/M5-T442-core-cpu-memory-boundary-correctness.md). |
-| Files And ABI Surface | Expected Core-private CPU decode guard, memory mapping validation, focused Core smoke and task evidence; no public ABI change. |
-| Applicable Rules | One owner per guard/range decision; callers consume returned status; helper only if it deletes duplicate arithmetic; actual source/test line delta and all equivalent hits recorded. |
-| Verification | Prove intended 0F profile predicate and invalid-span/overflow rejection before mapping mutation; sweep equivalent guards/ranges across Core production; run focused and current gates. |
-| Expected Markers | Existing focused CPU/memory markers plus a T442 marker if new coverage needs a distinct assertion. |
-| Asset Needs | None. |
-| Reporting Requirements | Record the original contradictory guard, every mapped range hit/disposition, removed duplicate logic, net line change and gate result. |
-| Stop Conditions | Stop if a hit changes an independently owned execution contract or requires semantic/profile expansion. |
-| Exit Criteria | Both owners reject their invalid input before mutation/publication, focused regressions and sweep pass, no duplicate boundary path remains, and an updated T442 artifact/evidence is pushed. |
-| Original Owner Request | Write the minimalism constraints into the proposal and begin implementation. |
-| Similar-Issue Sweep | Search tracked Core production paths for equivalent CPU profile guards and physical range addition/subtraction patterns; fix or classify every hit. |
+**Idle.**
 
 
 ## Current Technical Baseline
@@ -50,6 +29,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T442 | Closed: one Core lexical owner keeps 8086 `0F` primary, rejects it on 80186, and consumes it as extended on 80286/80386; one RAM mapping owner rejects a 32-bit physical span overflow before publishing state. [Evidence](../etc/evidence/t442-s1-core-cpu-memory-boundary-correctness.md). |
 | T441 | Closed: VM media saving has one staging owner; FDD now releases derived sidecar state on failed paired persistence, and focused failure smoke proves resident/file/temporary preservation. [Evidence](../etc/evidence/t441-s1-vm-media-persistence-failure-hygiene.md). |
 | T440 | Closed: Model-40 configuration has one private initializer; incompatible creation/runtime memory changes are rejected at the VM boundary, with generic session reconfiguration retained. [Evidence](../etc/evidence/t440-s1-model40-immutable-configuration.md). |
 | T439 | Closed: session reset and startup now return Core failure through one lifecycle outcome; required FDD initialization also propagates status, and no-HDD Model 339 reset avoids an unnecessary unmapped BIOS-table write. [Evidence](../etc/evidence/t439-s1-vm-session-reset-startup-outcomes.md). |
@@ -57,7 +37,6 @@
 | T437 | Closed: the retained [task audit](../history/M5-T437-80386dx-instruction-timing-closure.md) proves all 1,410 legal keys: 1,409 classified CPU retirements and one separate, verified ESC MCP-domain handoff; results, decoder/partition, fresh configuration and 292-test current-gate verification pass. |
 | T436 | Closed: [result closure](../etc/cpu-timing/t436-s8-80286-result-closure.md) proves the verified 771-key result set, 8086/80186/80286/80386 regression disposition, current-gate completion and developer artifact. |
 | T435 | Stopped by owner-approved requeue; not completed. Its successor 80286 and 80386DX timing closures are now retained as T436 and T437 history. [Record](../history/M5-T435-core-cpu-instruction-timing-program-requeue.md). |
-| T434 | Closed: all 30 copied plan declarations/dispositions, every current VM materializer and atomic Core publication route are reconciled; full task closure proof is retained in the [S3 audit](../etc/evidence/t434-s3-task-closure-audit.md) and [task history](../history/M5-T434-core-timing-contract-machine-plan.md). |
 
 
 ## Recent Governance

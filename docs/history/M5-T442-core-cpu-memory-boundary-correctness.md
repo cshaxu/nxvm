@@ -1,7 +1,7 @@
 # M5 T442: Core CPU And Physical-Memory Boundary Correctness
 
-T442 is admitted from the owner-approved queue candidate
-[Core CPU and physical-memory boundary correctness](../proposals/m5-core-cpu-memory-boundary-correctness.md).
+T442 is admitted from the owner-approved queue candidate retained as its
+[proposal companion](M5-T442-core-cpu-memory-boundary-correctness-proposal.md).
 S1 freezes the confirmed CPU lexical-guard and physical-mapping span boundary,
 then repairs them at their respective Core owners without adding a memory layer.
 
