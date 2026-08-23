@@ -463,6 +463,17 @@ if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
         -Wall -Wextra -Wpedantic -Werror)
 endif()
 
+add_executable(core-machine-80386-timing-manifest-runner
+    tests/machine/core_machine_80386_timing_manifest_runner.c)
+target_link_libraries(core-machine-80386-timing-manifest-runner PRIVATE
+    core-machine)
+add_dependencies(core-machine-80386-timing-manifest-runner
+    cpu-timing-manifest-catalog)
+if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
+    target_compile_options(core-machine-80386-timing-manifest-runner PRIVATE
+        -Wall -Wextra -Wpedantic -Werror)
+endif()
+
 add_executable(core-machine-legacy-timing-normalization-s2-smoke
     tests/machine/core_machine_legacy_timing_normalization_s2_smoke.c)
 target_link_libraries(core-machine-legacy-timing-normalization-s2-smoke PRIVATE

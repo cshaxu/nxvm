@@ -71,6 +71,9 @@ The active final profile block uses the [80386DX manifest](t435-s2-80386-timing-
 T437 S1's executable [canonical-key partition](t437-s1-80386-key-partition.md)
 assigns every retained 80386DX base and legal context key to one later
 implementation S before any new runtime timing result is claimed.
+T437 S2's [result producer](t437-s2-80386-result-producer.md) captures real
+80386DX retirement observations but refuses final result emission until all
+1,411 canonical keys have been observed.
 
 All four profiles share the [context-legality contract](t435-s2-context-legality.md) and implementation-time [manifest result contract](t435-s2-manifest-result-contract.md). Together they require legal semantic contexts, frozen expansion cardinalities and canonical per-key runtime proof; tracker expansion alone cannot close a key.
 
