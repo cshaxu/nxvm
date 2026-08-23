@@ -45,6 +45,7 @@ not relaxed.
 
 ## Verification
 
+- Implementation commit: `73e06f36` (`M5 T444 S1 P1: restore current gate regressions`).
 - Fresh GCC/Ninja `build/t444-clean` `run-current-fast-smokes`: 277/277 pass.
 - Normal GCC preset `current-fast-smokes-gcc`: 277/277 pass.
 - Normal GCC preset `current-gates-gcc`: all 69 specialized gates pass,

@@ -13,7 +13,6 @@ architecture and deliberately prefer direct owner-local corrections over new
 layers; each implementation admission must still establish its own finite
 sweep and regression evidence.
 
-1. [Current-gate regression restoration](../proposals/m5-current-gate-regression-restoration.md).
 1. [VM native display resource lifetime repair](../proposals/m5-vm-native-display-resource-lifetime.md).
 1. [VM debugger state and recording lifecycle repair](../proposals/m5-vm-debugger-recording-lifecycle.md).
 1. [VM firmware materialization portability and dead-code closure](../proposals/m5-vm-firmware-materialization-portability.md).

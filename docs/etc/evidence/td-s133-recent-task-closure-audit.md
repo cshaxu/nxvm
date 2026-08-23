@@ -39,9 +39,6 @@ gate has the T344 historical fixture mismatch (71 expected direct machine
 constructors; 75 found). Those failures mean no audited task may truthfully
 claim a currently passing global gate.
 
-The new [current-gate regression restoration](../../proposals/m5-current-gate-regression-restoration.md)
-candidate is the required transfer. It first classifies a common owner or
-splits the distinct owners; it may not weaken tests or rebaseline counts without
-evidence. This makes the prior task behavior closures truthful while treating
-their shared global-gate exit condition as open project work rather than a
-hidden exception.
+The [current-gate regression restoration](../../history/M5-T444-current-gate-regression-restoration-proposal.md)
+was the required transfer. T444 closed it without weakening tests or
+rebaselining counts, preserving the truthfulness of the prior task closures.

@@ -1,7 +1,7 @@
 # M5 T444: Current-Gate Regression Restoration
 
 T444 is admitted from the owner-approved
-[proposal](../proposals/m5-current-gate-regression-restoration.md).
+[proposal companion](M5-T444-current-gate-regression-restoration-proposal.md).
 S1 repairs the frozen T344 classifier regression and every failure in the
 current-fast aggregate without weakening a gate or transferring a failure.
 

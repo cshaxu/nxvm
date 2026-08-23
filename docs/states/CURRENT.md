@@ -2,27 +2,7 @@
 
 ## Current Work
 
-## M5 T444 S1 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | New |
-| Admission And Approval | Owner approved the queue-head candidate and explicitly required immediate, non-transfer repair of every audited gap on 2026-08-23. No exception is allowed. |
-| Objective | Restore truthful passing `current-gates-gcc` and `current-fast-smokes-gcc`: reconcile T344's constructor classifier with the documented fixture universe and repair every one of the frozen 20 fast-smoke failures. |
-| Non-goals | No timing-value rebaseline, smoke skip, expected-failure conversion, hidden environment bypass, fixture deletion, public ABI expansion, or unrelated cleanup. |
-| Reference Baseline | `master` at `2f8d12a9`; current CMake artifact is 0443 and the full fast aggregate has 20 named failures plus the T344 71-versus-75 static failure. |
-| Candidate Proposal | [Current-gate regression restoration](../proposals/m5-current-gate-regression-restoration.md). |
-| Files And ABI Surface | `cmake/verify_t344_historical_fixture_shapes.cmake`, CMake dependency/fixture declarations, affected Core test/runtime owners, artifact target and evidence. No public ABI change is expected. |
-| Applicable Rules | Architecture: one owner and one production path; Coding: correct repeated mechanism at its owner and no wrapper/parallel path; Execution: complete P, similar-issue sweep, artifact and full-gate closure; Documentation: packet/history/evidence topology. |
-| Verification | Freeze failing CTest identities and output; prove source-truth T344 inventory; run each repaired focused regression, `cmake --build --preset current-fast-smokes-gcc`, `cmake --build --preset current-gates-gcc`, documentation governance, and a fresh/incremental build comparison. |
-| Expected Markers | T344 fixture-shape pass marker; all 277 current-fast CTests pass; current specialized gates pass; current artifact-truth marker for 0444. |
-| Asset Needs | None; no imported source, firmware, guest media, or third-party asset. |
-| Reporting Requirements | Record root cause, frozen failure set, owner/path sweep, tests, artifact hash, source/test line accounting, and any unavoidable blocker in indexed evidence. |
-| Stop Conditions | Stop only for an unavoidable external authority or environmental failure after retaining exact repro evidence; independent root causes remain in this T444 scope. |
-| Exit Criteria | T344 and every originally failing fast smoke pass, full `current-fast-smokes-gcc` and `current-gates-gcc` pass without suppression, artifact 0444 is built/hashed, evidence documents the complete sweep, and the actual diff passes coordinator review. |
-| Original Owner Request | Owner directive: do not transfer; immediately repair and verify every audited gap. |
-| Similar-Issue Sweep | Search all tracked `tests/machine/*.c`, CMake gate definitions and runtime aggregate dependencies for direct constructor classification and stale-layout/dependency forms; every hit is repaired or shown inapplicable by source truth. |
-
+**Idle.**
 
 ## Current Technical Baseline
 
@@ -48,6 +28,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T444 | Closed: the 20 fast-smoke fixture failures use the legal 16-byte reset window; T344 classifies four manifest producers separately from 71 historical fixtures; every discovered stale gate now proves the current single Core plan route. [Evidence](../etc/evidence/t444-s1-current-gate-regression-restoration.md). |
 | T443 | Closed: the mailbox C11-initializes its sole lock, every production renderer stops on failed capture, and VM display generation commits only after one accepted publication path. [Evidence](../etc/evidence/t443-s1-core-platform-primitive-outcomes.md). |
 | T442 | Closed: one Core lexical owner keeps 8086 `0F` primary, rejects it on 80186, and consumes it as extended on 80286/80386; one RAM mapping owner rejects a 32-bit physical span overflow before publishing state. [Evidence](../etc/evidence/t442-s1-core-cpu-memory-boundary-correctness.md). |
 | T441 | Closed: VM media saving has one staging owner; FDD now releases derived sidecar state on failed paired persistence, and focused failure smoke proves resident/file/temporary preservation. [Evidence](../etc/evidence/t441-s1-vm-media-persistence-failure-hygiene.md). |
@@ -55,7 +36,6 @@
 | T439 | Closed: session reset and startup now return Core failure through one lifecycle outcome; required FDD initialization also propagates status, and no-HDD Model 339 reset avoids an unnecessary unmapped BIOS-table write. [Evidence](../etc/evidence/t439-s1-vm-session-reset-startup-outcomes.md). |
 | T438 | Closed: Core is the sole firmware-reset failure owner; discarded firmware-operation errors now return through `core_machine_reset`, leave the machine non-runnable and permit repaired retry. [Evidence](../etc/evidence/t438-s1-core-reset-firmware-failure-atomicity.md). |
 | T437 | Closed: the retained [task audit](../history/M5-T437-80386dx-instruction-timing-closure.md) proves all 1,410 legal keys: 1,409 classified CPU retirements and one separate, verified ESC MCP-domain handoff; results, decoder/partition, fresh configuration and 292-test current-gate verification pass. |
-| T436 | Closed: [result closure](../etc/cpu-timing/t436-s8-80286-result-closure.md) proves the verified 771-key result set, 8086/80186/80286/80386 regression disposition, current-gate completion and developer artifact. |
 
 
 ## Recent Governance
