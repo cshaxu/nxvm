@@ -8,6 +8,8 @@
 #define TIMING_80386_MANIFEST_RESET_LINEAR 0xfffffff0u
 #define TIMING_80386_MANIFEST_RESET_PHYSICAL 0x000ffff0u
 #define TIMING_80386_MANIFEST_WINDOW_BYTES 16u
+#define TIMING_80386_MANIFEST_REAL_LINEAR 0x00000000u
+#define TIMING_80386_MANIFEST_REAL_BYTES 0x00002000u
 
 /* S2 owns capture and final-emission containment, not any later form family.
  * S3--S7 add recipes; this runner never treats an absent recipe as a result. */
@@ -180,6 +182,24 @@ static C_INT timing_80386_manifest_key_is_s4(const C_CHAR *key_id)
         "I386-IN-") || timing_80386_manifest_key_has_prefix(key_id, "I386-OUT-"));
 }
 
+static C_INT timing_80386_manifest_key_is_s5(const C_CHAR *key_id)
+{
+    return key_id != STD_NULL && (timing_80386_manifest_key_has_prefix(key_id,
+        "I386-STACK-") || timing_80386_manifest_key_has_prefix(key_id,
+        "I386-JCC-") || timing_80386_manifest_key_has_prefix(key_id,
+        "I386-CALL-NEAR-") || timing_80386_manifest_key_has_prefix(key_id,
+        "I386-CALL-FAR-REAL-") || timing_80386_manifest_key_has_prefix(key_id,
+        "I386-JMP-NEAR-") || timing_80386_manifest_key_has_prefix(key_id,
+        "I386-JMP-FAR-REAL-") || timing_80386_manifest_key_has_prefix(key_id,
+        "I386-RET-NEAR") || timing_80386_manifest_key_has_prefix(key_id,
+        "I386-RET-FAR-REAL") || timing_80386_manifest_key_has_prefix(key_id,
+        "I386-IRET-REAL") || timing_80386_manifest_key_has_prefix(key_id,
+        "I386-INT3-REAL") || timing_80386_manifest_key_has_prefix(key_id,
+        "I386-INT-IMM-REAL") || timing_80386_manifest_key_has_prefix(key_id,
+        "I386-INTO-REAL") || timing_80386_manifest_key_has_prefix(key_id,
+        "I386-INTO-NOT"));
+}
+
 static C_VOID timing_80386_manifest_capture_retirement(C_VOID *opaque,
     const core_machine_retirement_observation *observation)
 {
@@ -249,6 +269,20 @@ static type_unsigned_32 timing_80386_manifest_s4_count(C_INT observed_only)
             sizeof(timing_80386_manifest_records[0]); ++index) {
         if (timing_80386_manifest_is_i386(&timing_80386_manifest_records[index]) &&
             timing_80386_manifest_key_is_s4(timing_80386_manifest_records[index].key_id) &&
+            (!observed_only || timing_80386_manifest_observed[index])) ++count;
+    }
+    return count;
+}
+
+static type_unsigned_32 timing_80386_manifest_s5_count(C_INT observed_only)
+{
+    STD_SIZE_T index;
+    type_unsigned_32 count = 0u;
+
+    for (index = 0u; index < sizeof(timing_80386_manifest_records) /
+            sizeof(timing_80386_manifest_records[0]); ++index) {
+        if (timing_80386_manifest_is_i386(&timing_80386_manifest_records[index]) &&
+            timing_80386_manifest_key_is_s5(timing_80386_manifest_records[index].key_id) &&
             (!observed_only || timing_80386_manifest_observed[index])) ++count;
     }
     return count;
@@ -327,6 +361,24 @@ static C_INT timing_80386_manifest_write_results(const C_CHAR *path,
 
 static C_INT timing_80386_manifest_run_recipe(const C_CHAR *key_id,
     const type_unsigned_8 *program, STD_SIZE_T program_bytes);
+
+static C_INT timing_80386_manifest_key_is_s5_real_control(const C_CHAR *key_id)
+{
+    return key_id != STD_NULL && (timing_80386_manifest_key_has_prefix(key_id,
+        "I386-STACK-") || timing_80386_manifest_key_has_prefix(key_id,
+        "I386-JCC-") || timing_80386_manifest_key_has_suffix(key_id, "-NEAR-REL") ||
+        timing_80386_manifest_key_has_suffix(key_id, "-NEAR-R") ||
+        timing_80386_manifest_key_has_suffix(key_id, "-NEAR-M") ||
+        timing_80386_manifest_key_has_prefix(key_id, "I386-CALL-FAR-REAL") ||
+        timing_80386_manifest_key_has_prefix(key_id, "I386-JMP-FAR-REAL") ||
+        timing_80386_manifest_key_has_prefix(key_id, "I386-RET-NEAR") ||
+        timing_80386_manifest_key_has_prefix(key_id, "I386-RET-FAR-REAL") ||
+        STD_STRCMP(key_id, "I386-IRET-REAL") == 0 ||
+        STD_STRCMP(key_id, "I386-INT3-REAL") == 0 ||
+        STD_STRCMP(key_id, "I386-INT-IMM-REAL") == 0 ||
+        STD_STRCMP(key_id, "I386-INTO-REAL") == 0 ||
+        STD_STRCMP(key_id, "I386-INTO-NOT") == 0);
+}
 
 static type_status timing_80386_manifest_prepare_recipe_machine(
     core_machine *machine, const C_CHAR *key_id, const type_unsigned_8 *program,
@@ -542,6 +594,12 @@ static C_INT timing_80386_manifest_run_recipe(const C_CHAR *key_id,
             TIMING_80386_MANIFEST_RESET_LINEAR,
             TIMING_80386_MANIFEST_RESET_PHYSICAL,
             TIMING_80386_MANIFEST_WINDOW_BYTES);
+    if (status == TYPE_STATUS_OK && timing_80386_manifest_key_is_s5_real_control(key_id)) {
+        status = test_core_machine_fixture_register_reset_mapping(machine,
+            TIMING_80386_MANIFEST_REAL_LINEAR,
+            TIMING_80386_MANIFEST_REAL_LINEAR,
+            TIMING_80386_MANIFEST_REAL_BYTES);
+    }
     if (status == TYPE_STATUS_OK) status = core_machine_bind_execution_provider(
         machine, &timing_80386_manifest_execution, STD_NULL);
     if (status == TYPE_STATUS_OK) status = core_machine_install_port_provider(
@@ -631,6 +689,54 @@ static C_INT timing_80386_manifest_run_recipe(const C_CHAR *key_id,
         if (timing_80386_manifest_key_has_prefix(key_id, "I386-REP-SCAS-REPE")) {
             machine->executor_cpu.data.eax = string_input;
         }
+    }
+    if (status == TYPE_STATUS_OK && timing_80386_manifest_key_has_prefix(key_id,
+            "I386-JCC-")) {
+        type_unsigned_32 flags = 0u;
+        C_INT taken = timing_80386_manifest_key_has_suffix(key_id, "-TAKEN");
+
+        if (timing_80386_manifest_key_has_prefix(key_id, "I386-JCC-JO-")) {
+            flags = taken ? VCPU_EFLAGS_OF : 0u;
+        } else if (timing_80386_manifest_key_has_prefix(key_id, "I386-JCC-JNO-")) {
+            flags = taken ? 0u : VCPU_EFLAGS_OF;
+        } else if (timing_80386_manifest_key_has_prefix(key_id, "I386-JCC-JB-") ||
+            timing_80386_manifest_key_has_prefix(key_id, "I386-JCC-JAE-") ||
+            timing_80386_manifest_key_has_prefix(key_id, "I386-JCC-JBE-") ||
+            timing_80386_manifest_key_has_prefix(key_id, "I386-JCC-JA-")) {
+            flags = (timing_80386_manifest_key_has_prefix(key_id, "I386-JCC-JB-") ||
+                timing_80386_manifest_key_has_prefix(key_id, "I386-JCC-JBE-")) == taken ?
+                VCPU_EFLAGS_CF : 0u;
+        } else if (timing_80386_manifest_key_has_prefix(key_id, "I386-JCC-JE-") ||
+            timing_80386_manifest_key_has_prefix(key_id, "I386-JCC-JNE-") ||
+            timing_80386_manifest_key_has_prefix(key_id, "I386-JCC-JLE-") ||
+            timing_80386_manifest_key_has_prefix(key_id, "I386-JCC-JG-")) {
+            flags = (timing_80386_manifest_key_has_prefix(key_id, "I386-JCC-JE-") ||
+                timing_80386_manifest_key_has_prefix(key_id, "I386-JCC-JLE-")) == taken ?
+                VCPU_EFLAGS_ZF : 0u;
+        } else if (timing_80386_manifest_key_has_prefix(key_id, "I386-JCC-JS-") ||
+            timing_80386_manifest_key_has_prefix(key_id, "I386-JCC-JNS-") ||
+            timing_80386_manifest_key_has_prefix(key_id, "I386-JCC-JL-")) {
+            flags = (timing_80386_manifest_key_has_prefix(key_id, "I386-JCC-JS-") ||
+                timing_80386_manifest_key_has_prefix(key_id, "I386-JCC-JL-")) == taken ?
+                VCPU_EFLAGS_SF : 0u;
+        } else if (timing_80386_manifest_key_has_prefix(key_id, "I386-JCC-JP-") ||
+            timing_80386_manifest_key_has_prefix(key_id, "I386-JCC-JNP-")) {
+            flags = (timing_80386_manifest_key_has_prefix(key_id, "I386-JCC-JP-")) == taken ?
+                VCPU_EFLAGS_PF : 0u;
+        }
+        machine->executor_cpu.data.eflags = flags;
+        if (timing_80386_manifest_key_has_prefix(key_id, "I386-JCC-JCXZ-")) {
+            machine->executor_cpu.data.ecx = taken ? 0u : 1u;
+        } else if (timing_80386_manifest_key_has_prefix(key_id, "I386-JCC-JECXZ-")) {
+            machine->executor_cpu.data.ecx = taken ? 0u : 1u;
+        } else if (timing_80386_manifest_key_has_prefix(key_id, "I386-JCC-LOOP")) {
+            machine->executor_cpu.data.ecx = taken ? 2u : 1u;
+        }
+        if (timing_80386_manifest_key_has_prefix(key_id, "I386-JCC-LOOPE-") &&
+            taken) machine->executor_cpu.data.eflags = VCPU_EFLAGS_ZF;
+    }
+    if (status == TYPE_STATUS_OK && STD_STRCMP(key_id, "I386-INTO-REAL") == 0) {
+        machine->executor_cpu.data.eflags = VCPU_EFLAGS_OF;
     }
     if (status == TYPE_STATUS_OK) status =
         core_machine_set_retirement_observation_provider(machine, &active_provider);
@@ -752,6 +858,33 @@ static C_INT timing_80386_manifest_run_s4_repeat_continuation(
     if (status == TYPE_STATUS_OK) status = core_machine_reset(machine);
     if (status == TYPE_STATUS_OK) status = timing_80386_manifest_prepare_recipe_machine(
         machine, key_id, program, program_bytes);
+    if (status == TYPE_STATUS_OK && timing_80386_manifest_key_is_s5_real_control(key_id)) {
+        const type_unsigned_16 return_frame[] = { 0xfff5u, 0xf000u, 0x0002u };
+        const type_unsigned_16 handler[] = { 0xfff5u, 0xf000u };
+
+        machine->executor_cpu.data.esp = 0x00001000u;
+        if (timing_80386_manifest_key_has_prefix(key_id, "I386-RET-") ||
+            STD_STRCMP(key_id, "I386-IRET-REAL") == 0) {
+            status = core_machine_memory_write(machine, 0x1000u, return_frame,
+                sizeof(return_frame));
+        }
+        if (status == TYPE_STATUS_OK && (timing_80386_manifest_key_has_prefix(key_id,
+                "I386-INT") || STD_STRCMP(key_id, "I386-INTO-REAL") == 0)) {
+            status = core_machine_memory_write(machine, 3u * 4u, handler,
+                sizeof(handler));
+            if (status == TYPE_STATUS_OK) status = core_machine_memory_write(machine,
+                0x60u * 4u, handler, sizeof(handler));
+        }
+        if (status == TYPE_STATUS_OK && (timing_80386_manifest_key_has_suffix(key_id,
+                "-NEAR-M") || timing_80386_manifest_key_has_prefix(key_id,
+                "I386-CALL-FAR-REAL-M") || timing_80386_manifest_key_has_prefix(key_id,
+                "I386-JMP-FAR-REAL-M"))) {
+            const type_unsigned_16 indirect_target[] = { 0xfff5u, 0xf000u };
+
+            status = core_machine_memory_write(machine, 0x1000u, indirect_target,
+                sizeof(indirect_target));
+        }
+    }
     if (status == TYPE_STATUS_OK) status = core_machine_set_retirement_observation_provider(
         machine, &active_provider);
 
@@ -842,6 +975,118 @@ static C_INT timing_80386_manifest_run_s4_context_recipes(C_VOID)
                 key_id, program, bytes))) return 1;
     }
     return 0;
+}
+
+static C_INT timing_80386_manifest_run_s5_real_base_recipes(C_VOID)
+{
+    static const struct {
+        const C_CHAR *key_id;
+        type_unsigned_8 bytes[6];
+        STD_SIZE_T count;
+    } recipes[] = {
+        { "I386-STACK-PUSH-R", { 0x50u }, 1u },
+        { "I386-STACK-PUSH-M", { 0xffu, 0x36u, 0u, 0x10u }, 4u },
+        { "I386-STACK-PUSH-IMM", { 0x68u, 1u, 0u }, 3u },
+        { "I386-STACK-PUSH-SREG", { 0x06u }, 1u },
+        { "I386-STACK-POP-R", { 0x58u }, 1u },
+        { "I386-STACK-POP-M", { 0x8fu, 0x06u, 0u, 0x10u }, 4u },
+        { "I386-STACK-POP-SREG", { 0x07u }, 1u },
+        { "I386-STACK-PUSHA", { 0x60u }, 1u },
+        { "I386-STACK-PUSHAD", { 0x66u, 0x60u }, 2u },
+        { "I386-STACK-POPA", { 0x61u }, 1u },
+        { "I386-STACK-POPAD", { 0x66u, 0x61u }, 2u },
+        { "I386-STACK-PUSHF", { 0x9cu }, 1u },
+        { "I386-STACK-PUSHFD", { 0x66u, 0x9cu }, 2u },
+        { "I386-STACK-POPF", { 0x9du }, 1u },
+        { "I386-STACK-POPFD", { 0x66u, 0x9du }, 2u },
+        { "I386-STACK-ENTER-L0", { 0xc8u, 0u, 0u, 0u }, 4u },
+        { "I386-STACK-ENTER-L1", { 0xc8u, 0u, 0u, 1u }, 4u },
+        { "I386-STACK-ENTER-LN", { 0xc8u, 0u, 0u, 2u }, 4u },
+        { "I386-STACK-LEAVE", { 0xc9u }, 1u },
+        { "I386-CALL-NEAR-REL", { 0xe8u, 0u, 0u }, 3u },
+        { "I386-CALL-NEAR-R", { 0xffu, 0xd0u }, 2u },
+        { "I386-CALL-NEAR-M", { 0xffu, 0x16u, 0u, 0x10u }, 4u },
+        { "I386-JMP-NEAR-REL", { 0xe9u, 0u, 0u }, 3u },
+        { "I386-JMP-NEAR-R", { 0xffu, 0xe0u }, 2u },
+        { "I386-JMP-NEAR-M", { 0xffu, 0x26u, 0u, 0x10u }, 4u },
+        { "I386-CALL-FAR-REAL-DIRECT", { 0x9au, 0u, 0u, 0u, 0xf0u }, 5u },
+        { "I386-CALL-FAR-REAL-M", { 0xffu, 0x1eu, 0u, 0x10u }, 4u },
+        { "I386-JMP-FAR-REAL-DIRECT", { 0xeau, 0u, 0u, 0u, 0xf0u }, 5u },
+        { "I386-JMP-FAR-REAL-M", { 0xffu, 0x2eu, 0u, 0x10u }, 4u },
+        { "I386-RET-NEAR", { 0xc3u }, 1u },
+        { "I386-RET-NEAR-IMM", { 0xc2u, 0u, 0u }, 3u },
+        { "I386-RET-FAR-REAL", { 0xcbu }, 1u },
+        { "I386-RET-FAR-REAL-IMM", { 0xcau, 0u, 0u }, 3u },
+        { "I386-IRET-REAL", { 0xcfu }, 1u },
+        { "I386-INT3-REAL", { 0xccu }, 1u },
+        { "I386-INT-IMM-REAL", { 0xcdu, 0x60u }, 2u },
+        { "I386-INTO-REAL", { 0xceu }, 1u },
+        { "I386-INTO-NOT", { 0xceu }, 1u }
+    };
+    STD_SIZE_T index;
+
+    for (index = 0u; index < sizeof(recipes) / sizeof(recipes[0]); ++index) {
+        if (timing_80386_manifest_run_recipe(recipes[index].key_id,
+                recipes[index].bytes, recipes[index].count) ||
+            timing_80386_manifest_run_size_contexts(recipes[index].key_id,
+                recipes[index].bytes, recipes[index].count)) return 1;
+    }
+    return 0;
+}
+
+static C_INT timing_80386_manifest_run_s5_branch_recipes(C_VOID)
+{
+    static const C_CHAR *const names[] = { "JO", "JNO", "JB", "JAE", "JE", "JNE",
+        "JBE", "JA", "JS", "JNS", "JP", "JNP", "JL", "JGE", "JLE", "JG" };
+    static const C_CHAR *const outcomes[] = { "TAKEN", "NOT" };
+    STD_SIZE_T name; STD_SIZE_T outcome;
+
+    for (name = 0u; name < 16u; ++name) for (outcome = 0u; outcome < 2u; ++outcome) {
+        C_CHAR key_id[48];
+        const type_unsigned_8 program[] = { (type_unsigned_8)(0x70u + name), 0u };
+
+        if (STD_SNPRINTF(key_id, sizeof(key_id), "I386-JCC-%s-%s", names[name],
+                outcomes[outcome]) < 0 || timing_80386_manifest_run_recipe(key_id,
+                program, sizeof(program)) || timing_80386_manifest_run_size_contexts(
+                key_id, program, sizeof(program))) return 1;
+    }
+    for (name = 0u; name < 2u; ++name) {
+        C_CHAR key_id[48];
+        const type_unsigned_8 jcxz[] = { 0xe3u, 0u };
+        const type_unsigned_8 jecxz[] = { 0x67u, 0xe3u, 0u };
+        const type_unsigned_8 loop[] = { 0xe2u, 0u };
+        const type_unsigned_8 loope[] = { 0xe1u, 0u };
+        const type_unsigned_8 loopne[] = { 0xe0u, 0u };
+        const C_CHAR *outcome_name = outcomes[name];
+
+        if (STD_SNPRINTF(key_id, sizeof(key_id), "I386-JCC-JCXZ-%s", outcome_name) < 0 ||
+            timing_80386_manifest_run_recipe(key_id, jcxz, sizeof(jcxz)) ||
+            timing_80386_manifest_run_size_contexts(key_id, jcxz, sizeof(jcxz)) ||
+            STD_SNPRINTF(key_id, sizeof(key_id), "I386-JCC-JECXZ-%s", outcome_name) < 0 ||
+            timing_80386_manifest_run_recipe(key_id, jecxz, sizeof(jecxz)) ||
+            timing_80386_manifest_run_size_contexts(key_id, jecxz, sizeof(jecxz)) ||
+            STD_SNPRINTF(key_id, sizeof(key_id), "I386-JCC-LOOP-%s", outcome_name) < 0 ||
+            timing_80386_manifest_run_recipe(key_id, loop, sizeof(loop)) ||
+            timing_80386_manifest_run_size_contexts(key_id, loop, sizeof(loop)) ||
+            STD_SNPRINTF(key_id, sizeof(key_id), "I386-JCC-LOOPE-%s", outcome_name) < 0 ||
+            timing_80386_manifest_run_recipe(key_id, loope, sizeof(loope)) ||
+            timing_80386_manifest_run_size_contexts(key_id, loope, sizeof(loope)) ||
+            STD_SNPRINTF(key_id, sizeof(key_id), "I386-JCC-LOOPNE-%s", outcome_name) < 0 ||
+            timing_80386_manifest_run_recipe(key_id, loopne, sizeof(loopne)) ||
+            timing_80386_manifest_run_size_contexts(key_id, loopne, sizeof(loopne))) return 1;
+    }
+    return 0;
+}
+
+static C_INT timing_80386_manifest_run_s5_segment_recipes(C_VOID)
+{
+    static const type_unsigned_8 push_memory[] = { 0x26u, 0xffu, 0x36u, 0u, 0x10u };
+    static const type_unsigned_8 pop_memory[] = { 0x26u, 0x8fu, 0x06u, 0u, 0x10u };
+
+    return timing_80386_manifest_run_recipe("I386-STACK-PUSH-M-SEGMENT",
+        push_memory, sizeof(push_memory)) ||
+        timing_80386_manifest_run_recipe("I386-STACK-POP-M-SEGMENT",
+            pop_memory, sizeof(pop_memory));
 }
 
 C_INT main(C_VOID)
@@ -1799,6 +2044,24 @@ C_INT main(C_VOID)
         STD_PRINTF("M5:T437:S4:I386-STRING-IO-CONTEXT-RECIPE-FAIL\n");
         return 1;
     }
+    if (timing_80386_manifest_run_s5_real_base_recipes()) {
+        STD_PRINTF("M5:T437:S5:I386-REAL-CONTROL-BASE-RECIPE-FAIL\n");
+        return 1;
+    }
+    if (timing_80386_manifest_run_s5_branch_recipes()) {
+        STD_PRINTF("M5:T437:S5:I386-BRANCH-RECIPE-FAIL\n");
+        return 1;
+    }
+    if (timing_80386_manifest_run_s5_segment_recipes()) {
+        STD_PRINTF("M5:T437:S5:I386-SEGMENT-RECIPE-FAIL\n");
+        return 1;
+    }
+    if (timing_80386_manifest_s5_count(0) != 234u ||
+        timing_80386_manifest_s5_count(1) != 234u) {
+        STD_PRINTF("M5:T437:S5:I386-ORDINARY-CONTROL-COVERAGE-FAIL:observed=%u:canonical=%u\n",
+            timing_80386_manifest_s5_count(1), timing_80386_manifest_s5_count(0));
+        return 1;
+    }
     if (timing_80386_manifest_verify_esc_handoff() ||
         timing_80386_manifest_s3_count(0) != 807u ||
         timing_80386_manifest_observed_count() == 0u ||
@@ -1817,6 +2080,11 @@ C_INT main(C_VOID)
     STD_PRINTF("M5:T437:S4:I386-STRING-IO-COVERAGE:PASS:canonical=%u\n",
         timing_80386_manifest_s4_count(0));
     STD_PRINTF("M5:T437:S4:I386-STRING-IO-INPUTS:PASS\n");
+    STD_PRINTF("M5:T437:S5:I386-ORDINARY-CONTROL-OBSERVED:%u\n",
+        timing_80386_manifest_s5_count(1));
+    STD_PRINTF("M5:T437:S5:I386-ORDINARY-CONTROL-COVERAGE:PASS:canonical=%u\n",
+        timing_80386_manifest_s5_count(0));
+    STD_PRINTF("M5:T437:S5:I386-ORDINARY-CONTROL-INPUTS:PASS\n");
     if (timing_80386_manifest_s3_count(1) ==
         timing_80386_manifest_s3_count(0)) {
         STD_PRINTF("M5:T437:S3:I386-NONCONTROL-OBSERVED:807\n");

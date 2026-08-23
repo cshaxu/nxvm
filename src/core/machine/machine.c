@@ -356,6 +356,8 @@ typedef enum core_machine_source_timing_form {
     CORE_MACHINE_SOURCE_TIMING_ENTER_LEVEL_ONE,
     CORE_MACHINE_SOURCE_TIMING_BOUND,
     CORE_MACHINE_SOURCE_TIMING_LEAVE,
+    CORE_MACHINE_SOURCE_TIMING_JCC,
+    CORE_MACHINE_SOURCE_TIMING_INTO,
     CORE_MACHINE_SOURCE_TIMING_HLT,
     CORE_MACHINE_SOURCE_TIMING_INT3,
     CORE_MACHINE_SOURCE_TIMING_INT_IMMEDIATE,
@@ -585,6 +587,8 @@ static const core_machine_source_timing_entry
     { CORE_MACHINE_SOURCE_TIMING_JMP_FAR_MEMORY_PROTECTED, 31u },
     { CORE_MACHINE_SOURCE_TIMING_RET_NEAR, 10u },
     { CORE_MACHINE_SOURCE_TIMING_RET_NEAR_IMMEDIATE, 10u },
+    { CORE_MACHINE_SOURCE_TIMING_RET_FAR, 18u },
+    { CORE_MACHINE_SOURCE_TIMING_RET_FAR_IMMEDIATE, 18u },
     { CORE_MACHINE_SOURCE_TIMING_PUSH_REGISTER, 2u },
     { CORE_MACHINE_SOURCE_TIMING_PUSH_MEMORY, 5u },
     { CORE_MACHINE_SOURCE_TIMING_PUSH_IMMEDIATE, 2u },
@@ -2719,12 +2723,14 @@ C_INT core_machine_control_stack_source_instruction_cost(
 
     switch (opcode) {
     case 0x06u: case 0x0eu: case 0x16u: case 0x1eu:
-        if (machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_80286) return 0;
+        if (machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_80286 &&
+            machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_80386) return 0;
         *out_ticks = core_machine_control_stack_source_lookup(machine,
             CORE_MACHINE_SOURCE_TIMING_PUSH_REGISTER);
         return 1;
     case 0x07u: case 0x17u: case 0x1fu:
-        if (machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_80286) {
+        if (machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_80286 &&
+            machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_80386) {
             return 0;
         }
         /* Appendix B distinguishes the protected selector-validation path
@@ -2800,7 +2806,8 @@ C_INT core_machine_control_stack_source_instruction_cost(
                 CORE_MACHINE_SOURCE_TIMING_RET_NEAR), out_ticks);
     case 0xcau:
         if (machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_80186 &&
-            machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_80286) return 0;
+            machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_80286 &&
+            machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_80386) return 0;
         if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 &&
             protected_mode) {
             *out_ticks = same_privilege ? 25u : 55u;
@@ -2812,7 +2819,8 @@ C_INT core_machine_control_stack_source_instruction_cost(
                 CORE_MACHINE_SOURCE_TIMING_RET_FAR_IMMEDIATE), out_ticks);
     case 0xcbu:
         if (machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_80186 &&
-            machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_80286) return 0;
+            machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_80286 &&
+            machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_80386) return 0;
         if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 &&
             protected_mode) {
             *out_ticks = same_privilege ? 25u : 55u;
@@ -2887,6 +2895,11 @@ C_INT core_machine_control_stack_source_instruction_cost(
                 22u + 16u * (extension - 1u) :
                 machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 ?
                 12u + 4u * extension : 15u + 4u * (extension - 1u);
+            /* ENTER's level-N row is a documented formula derived from the
+             * level-one family; retain its concrete form identity rather than
+             * publishing a classified-but-unattributed retirement. */
+            machine->source_timing_form_id =
+                CORE_MACHINE_SOURCE_TIMING_ENTER_LEVEL_ONE;
             *out_ticks = ticks;
         }
         return 1;
@@ -2899,6 +2912,7 @@ C_INT core_machine_control_stack_source_instruction_cost(
             machine->source_timing_form_id = CORE_MACHINE_SOURCE_TIMING_8086_LOOP;
         }
         if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80386) {
+            machine->source_timing_form_id = CORE_MACHINE_SOURCE_TIMING_JCC;
             ticks = opcode == 0xe3u ?
                 (machine->executor_cpu.data.eip == data->oldcpu.data.eip +
                     prefixes + 2u ? 5u : 9u) : 11u;
@@ -2964,6 +2978,9 @@ C_INT core_machine_control_stack_source_instruction_cost(
             core_machine_control_stack_add_next_term(machine, *out_ticks,
                 out_ticks) : 1;
     case 0xceu:
+        if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80386) {
+            machine->source_timing_form_id = CORE_MACHINE_SOURCE_TIMING_INTO;
+        }
         if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_8086) {
             machine->source_timing_form_id = CORE_MACHINE_SOURCE_TIMING_8086_INTO;
         }
@@ -3212,6 +3229,7 @@ C_INT core_machine_80386_secondary_source_instruction_cost(
     if (data->prefix_oprsize) operand_bytes = operand_bytes == 4u ? 2u : 4u;
 
     if (secondary >= 0x80u && secondary <= 0x8fu) {
+        machine->source_timing_form_id = CORE_MACHINE_SOURCE_TIMING_JCC;
         fallthrough = data->oldcpu.data.eip + prefixes + 2u + operand_bytes;
         if (!data->oldcpu.data.cs.seg.exec.defsize) fallthrough &= 0xffffu;
         if (machine->executor_cpu.data.eip == fallthrough) {
@@ -3636,6 +3654,7 @@ C_INT core_machine_80386_source_instruction_cost(core_machine *machine,
         return 1;
     }
     if (opcode >= 0x70u && opcode <= 0x7fu) {
+        machine->source_timing_form_id = CORE_MACHINE_SOURCE_TIMING_JCC;
         fallthrough = data->oldcpu.data.eip + 2u;
         if (!data->oldcpu.data.cs.seg.exec.defsize) fallthrough &= 0xffffu;
         if (machine->executor_cpu.data.eip == fallthrough) {
