@@ -15,11 +15,12 @@ console-provider command ABI.
 
 ## Focused Proof
 
-`vm-debugger-recording-lifecycle-smoke` uses two independent session-owned
-debug instances and test-local C-runtime substitution for the one VM debug
-source. It proves cursor/recorder isolation plus failed open, first write,
-explicit stop close, and finalizer close. Every failure clears the active file
-pointer and records a non-success status. Its marker is
+`vm-two-session-isolation-smoke` now mutates one actual session's debugger
+cursor and trace state, then proves its peer remains unchanged.
+`vm-debugger-recording-lifecycle-smoke` uses test-local C-runtime substitution
+for the one VM debug source. It proves failed open, first write, explicit stop
+close, and finalizer close. Every failure clears the active file pointer and
+records a non-success status. Its marker is
 `M5:T446:S1:VM-DEBUGGER-RECORDING-LIFECYCLE:OK`.
 
 The direct source build is a deliberately narrow T345 embedded-production test
@@ -63,10 +64,11 @@ Production dispositions:
 
 ## Minimalism Accounting
 
-`git diff --numstat` records 151 added and 21 removed lines across the three
-tracked source/test paths (`debug.c`, `debug.h`, and the focused smoke), for a
-net +130. The added state is one owner-local status needed to distinguish
-successful and failed recording; the test is 76 lines of failure injection.
-No recorder facade, callback, compatibility path, second stream owner, or
-command interpreter was added; the former ignored close/write outcomes were
-replaced rather than preserved.
+`git diff --numstat` records 158 added and 21 removed lines across four
+tracked source/test paths (`debug.c`, `debug.h`, the focused smoke, and the
+existing two-session smoke), for a net +137. The added state is one owner-local
+status needed to distinguish successful and failed recording; the focused test
+is 76 lines of failure injection and the retained two-session smoke adds seven
+direct isolation assertions. No recorder facade, callback, compatibility path,
+second stream owner, or command interpreter was added; the former ignored
+close/write outcomes were replaced rather than preserved.
