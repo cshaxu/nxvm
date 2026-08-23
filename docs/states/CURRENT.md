@@ -2,30 +2,30 @@
 
 ## Current Work
 
-**Active: M5 T437 S4.** The owner-approved continuation now closes the S4
-80386DX direct-I/O, primitive-string, and REP-string partition through the
-sole Core timing publisher and real retirements.
+**Active: M5 T437 S5.** The owner-approved continuation now closes the S5
+80386DX ordinary-stack, conditional-control, real-mode-transfer and interrupt
+partition through the sole Core timing publisher and real retirements.
 
-## M5 T437 S4 Packet
+## M5 T437 S5 Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation; M5 T437 S4 follows accepted S3 in the latest open numeric task. |
-| Admission And Approval | The owner directed continuous complete 80386DX implementation on 2026-08-22 and on 2026-08-22 directed continued thorough 80386 investigation and remediation after accepting S3. Accepted S1 assigns this exact 162-key partition to S4. |
-| Objective | Implement and prove every S4 80386DX canonical key: direct IN/OUT, primitive MOVS/CMPS/STOS/LODS/SCAS/INS/OUTS, and all REP forms, including their legal width, address-size, segment-override, repeat phase and termination contexts. |
-| Non-goals | Do not claim S5 ordinary control, S6 protected transfer or S7 system forms; do not alter the accepted S3 x87 contract; do not assign board READY/HOLD/BUSLOCK arbitration, prefetch or host/device timing, alter public ABI, import source, fabricate results or admit another S. |
+| Identifier Mode | Continuation; M5 T437 S5 follows accepted S4 in the latest open numeric task. |
+| Admission And Approval | The owner directed continuous complete 80386DX implementation on 2026-08-22 and continued thorough 80386 investigation after accepting S3/S4. Accepted S1 assigns this exact 232-key partition to S5. |
+| Objective | Implement and prove every S5 80386DX canonical key: ordinary stack, conditional control, real-mode direct/indirect transfer and real interrupt paths, including outcome, next-component and inherited contexts. |
+| Non-goals | Do not claim S6 protected transfer or S7 system forms; do not alter accepted S3/S4 contracts; do not assign board or host timing, alter public ABI, import source or fabricate results. |
 | Reference Baseline | [S1 partition](../etc/cpu-timing/t437-s1-80386-key-partition.md), [S2 producer](../etc/cpu-timing/t437-s2-80386-result-producer.md), [80386DX ledger](../etc/cpu-timing/t435-s1-80386-ledger.md), [manifest](../etc/cpu-timing/t435-s2-80386-timing-manifest.json), [audit](../etc/cpu-timing/t435-s2-80386-implementation-audit.md), [result contract](../etc/cpu-timing/t435-s2-manifest-result-contract.md), `cpu_instructions.c`, `cpu_timing.c`, `machine.c`, and the accepted S3 result and x87-interface evidence. |
 | Candidate Proposal | [M5 80386DX instruction timing closure](../proposals/m5-80386dx-instruction-timing-closure.md). |
-| Files And ABI Surface | The private 80386DX timing selector and manifest runner, direct/string I/O and REP-focused tests, evidence, history and CURRENT only. No public header, external ABI, device, board or artifact identity change. |
+| Files And ABI Surface | The private 80386DX timing selector and manifest runner, ordinary stack/control and real-transfer focused tests, evidence, history and CURRENT only. No public header, external ABI, device, board or artifact identity change. |
 | Applicable Rules | Execution: bounded continuation/P lifecycle, dual-role review and similar-issue sweep. Architecture: one Core CPU/port/memory transaction and retirement publisher, with no board policy. Coding: C11 cohesive private helpers and no parallel selector. Documentation: CURRENT is the active contract. Source: no import. |
-| Verification | Build/run the 80386DX manifest runner in the isolated WinLibs GCC tree; require all 162 S4 canonical keys observed with classified non-unallocated origin, source form and required inputs; run direct-I/O, string/REP, prefix, decoder-ledger, partition, documentation and relevant 8086/80186/80286 regression checks. |
-| Expected Markers | Retain S1/S2/S3 markers; add `M5:T437:S4:I386-STRING-IO-OBSERVED:162`, `M5:T437:S4:I386-STRING-IO-COVERAGE:PASS:canonical=162`, and `M5:T437:S4:I386-STRING-IO-INPUTS:PASS`. |
+| Verification | Build/run the 80386DX manifest runner in the isolated WinLibs GCC tree; require all 232 S5 canonical keys observed with classified non-unallocated origin, source form and required inputs; run stack/control, real-transfer, prefix, decoder-ledger, partition, documentation and relevant cross-profile regression checks. |
+| Expected Markers | Retain S1--S4 markers; add S5 ordinary-control observed, coverage and input markers before acceptance. |
 | Asset Needs | Repository fixtures and retained 80386DX manual evidence only; no firmware, guest media, source download, Microsoft component or third-party code. |
-| Reporting Requirements | Record all 162 S4 results, direct-port and string/REP phase inputs, prefixes and size contexts, code delta, focused proof, actual changed files, and every transfer to S5--S8. The executor delivers one complete P and the same session then performs actual-change review. |
-| Stop Conditions | Stop for manual/manifest/decoder contradiction, unrepresentable legal S4 key, required public ABI or board timing, source-policy issue, or verifier contradiction. Do not guess ticks, omit a key or retain a generic successful fallback. |
-| Exit Criteria | Every S4 key has a real classified, non-unallocated result with required source form/origin/ticks/formula inputs; S2 final writer still rejects the incomplete whole-task result; all gates and dual-role review pass. |
+| Reporting Requirements | Record all 232 S5 results, outcome/next-component and real-mode inputs, code delta, focused proof, actual changed files, and every transfer to S6--S8. The executor delivers one complete P and the same session then performs actual-change review. |
+| Stop Conditions | Stop for manual/manifest/decoder contradiction, unrepresentable legal S5 key, required public ABI or board timing, source-policy issue, or verifier contradiction. Do not guess ticks, omit a key or retain a generic successful fallback. |
+| Exit Criteria | Every S5 key has a real classified, non-unallocated result with required source form/origin/ticks/formula inputs; S2 final writer still rejects the incomplete whole-task result; all gates and dual-role review pass. |
 | Original Owner Request | Owner request, faithfully translated: continuously and completely implement the correct 80386 instruction function and timing model, under the single-person dual-role governance lifecycle. |
-| Similar-Issue Sweep | Defect class: a direct-I/O or string/REP 80386DX successful retirement with missing/incorrect Core timing ownership, context input, result capture or unallocated fallback. Scope: all S4 manifest keys, sole timing selector, decoder routes, runner recipes and adjacent 8086/80186/80286 profile paths; non-S4 hits transfer through their existing partition. |
+| Similar-Issue Sweep | Defect class: an ordinary stack/control or real transfer 80386DX successful retirement with missing/incorrect Core timing ownership, outcome input, result capture or unallocated fallback. Scope: all S5 manifest keys, sole timing selector, decoder routes, runner recipes and adjacent profile paths; non-S5 hits transfer through their existing partition. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** target `vm-0-5-0434`; `nxvm_0_5_0434.exe` / `build/output/nxvm_0_5_0434.exe`, SHA-256 `F8562F4623D53303470408837249CF89C985E0A0B1130212BBD9CE26B5E1B38A`. T434 has one copied Core timing-plan publication route for default PC/AT, IBM 5170 Model 339 and Model-40 BYOB session composition.
