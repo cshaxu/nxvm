@@ -41,6 +41,11 @@
 
 ## Recent Governance
 
+- **M5 Td S132 P1:** republished the generated T435 S5 8086 result artifact
+  after current Core-private source-form IDs evolved. The runner and both
+  8086 result/decoder gates pass; all 1,053 records retain identical
+  non-form-ID observations. [Evidence](../etc/evidence/td-s132-8086-derived-result-reconciliation.md).
+
 - **M5 Td S131 P1:** admitted nine bounded repair candidates ahead of future
   M5 capability work, promoted firmware materialization from TODO, and refined
   the queued YAML candidate's grammar/selection acceptance surface. The
