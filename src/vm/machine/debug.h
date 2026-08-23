@@ -32,6 +32,7 @@ typedef struct {
     C_VOID *disassembleContext;
     core_machine_debug_instruction_observation observation;
     type_bool observation_valid;
+    type_status record_status;
 } t_debug_connect;
 
 typedef struct {
@@ -65,8 +66,9 @@ C_VOID vm_machine_debug_clear_breakpoint_linear(t_debug *debug);
 STD_SIZE_T vm_machine_debug_get_breakpoint_count(const t_debug *debug);
 C_VOID vm_machine_debug_set_trace(t_debug *debug, STD_SIZE_T instruction_count);
 C_VOID vm_machine_debug_clear_trace(t_debug *debug);
-C_VOID vm_machine_debug_record_start(t_debug *debug, const C_CHAR *file_name);
-C_VOID vm_machine_debug_record_stop(t_debug *debug);
+type_status vm_machine_debug_record_start(t_debug *debug, const C_CHAR *file_name);
+type_status vm_machine_debug_record_stop(t_debug *debug);
+type_status vm_machine_debug_record_status(const t_debug *debug);
 
 #ifdef __cplusplus
 }/*_EOCD_*/

@@ -17,6 +17,32 @@ static C_VOID debug_request_pause(t_debug *debug,
     }
 }
 
+static type_status debug_record_close(t_debug *debug)
+{
+    C_INT close_result;
+
+    if (debug == STD_NULL || debug->connect.recordFile == STD_NULL) {
+        return TYPE_STATUS_INVALID_STATE;
+    }
+    close_result = STD_FCLOSE(debug->connect.recordFile);
+    debug->connect.recordFile = STD_NULL;
+    debug->connect.record_status = close_result == 0 ? TYPE_STATUS_OK :
+        TYPE_STATUS_FAULT;
+    return debug->connect.record_status;
+}
+
+static C_INT debug_record_write_failed(t_debug *debug)
+{
+    (C_VOID)debug_record_close(debug);
+    debug->connect.record_status = TYPE_STATUS_FAULT;
+    STD_PRINTF("ERROR:\trecorder write failed.\n");
+    return 0;
+}
+
+#define debug_record_write(debug, ...) \
+    (STD_FPRINTF((debug)->connect.recordFile, __VA_ARGS__) >= 0 || \
+        debug_record_write_failed(debug))
+
 C_VOID vm_machine_debug_initialize(t_debug *debug)
 {
     if (debug == STD_NULL) return;
@@ -55,7 +81,7 @@ C_VOID vm_machine_debug_refresh(t_debug *debug,
     if (debug->connect.recordFile) {
         type_native_unsigned i;
         type_string_buffer stmt;
-        STD_FPRINTF(debug->connect.recordFile, _expression,
+        if (!debug_record_write(debug, _expression,
                 debug->connect.observation.cs, debug->connect.observation.eip,
                 debug->connect.observation.cs_base + debug->connect.observation.eip,
                 debug->connect.observation.ss, debug->connect.observation.esp,
@@ -80,7 +106,7 @@ C_VOID vm_machine_debug_refresh(t_debug *debug,
                 (debug->connect.observation.eflags & CORE_MACHINE_DEBUG_EFLAGS_NT) ? "NT" : "nt",
                 debug->connect.observation.instruction_cs,
                 debug->connect.observation.instruction_eip,
-                debug->connect.observation.instruction_linear);
+                debug->connect.observation.instruction_linear)) return;
 
         /* disassemble opcode */
         if (debug->connect.observation.instruction_byte_count) {
@@ -110,31 +136,37 @@ C_VOID vm_machine_debug_refresh(t_debug *debug,
 
         /* print opcode, at least print 8 bytes */
         for (i = 0; i < debug->connect.observation.instruction_byte_count; ++i) {
-            STD_FPRINTF(debug->connect.recordFile, "%02X", debug->connect.observation.instruction_bytes[i]);
+            if (!debug_record_write(debug, "%02X", debug->connect.observation.instruction_bytes[i])) return;
         }
         for (i = debug->connect.observation.instruction_byte_count; i < 8; ++i) {
-            STD_FPRINTF(debug->connect.recordFile, "  ");
+            if (!debug_record_write(debug, "  ")) return;
         }
 
         /* print assembly, at least 40 char in length */
-        STD_FPRINTF(debug->connect.recordFile, "%s ", stmt);
+        if (!debug_record_write(debug, "%s ", stmt)) return;
         for (i = STD_STRLEN(stmt); i < 40; ++i) {
-            STD_FPRINTF(debug->connect.recordFile, " ");
+            if (!debug_record_write(debug, " ")) return;
         }
 
         /* print memory usage */
         for (i = 0; i < debug->connect.observation.memory_access_count; ++i) {
-            STD_FPRINTF(debug->connect.recordFile, "[%c:L%08x/%1d/%016llx] ",
+            if (!debug_record_write(debug, "[%c:L%08x/%1d/%016llx] ",
                     debug->connect.observation.memory_accesses[i].write ? 'W' : 'R',
                     debug->connect.observation.memory_accesses[i].linear,
                     debug->connect.observation.memory_accesses[i].bytes,
-                    debug->connect.observation.memory_accesses[i].data);
+                    debug->connect.observation.memory_accesses[i].data)) return;
         }
 
-        STD_FPRINTF(debug->connect.recordFile, "\n");
+        (C_VOID)debug_record_write(debug, "\n");
     }
 }
-C_VOID vm_machine_debug_finalize(t_debug *debug) { (C_VOID)debug; }
+C_VOID vm_machine_debug_finalize(t_debug *debug)
+{
+    if (debug != STD_NULL && debug->connect.recordFile != STD_NULL &&
+        debug_record_close(debug) != TYPE_STATUS_OK) {
+        STD_PRINTF("ERROR:\trecorder close failed.\n");
+    }
+}
 
 C_VOID vm_machine_debug_bind_pause(t_debug *debug,
     vm_machine_debug_pause_callback callback, C_VOID *context)
@@ -186,25 +218,45 @@ C_VOID vm_machine_debug_clear_trace(t_debug *debug) {
     if (debug == STD_NULL) return;
     debug->data.flagTrace = TYPE_FALSE;
 }
-C_VOID vm_machine_debug_record_start(t_debug *debug, const C_CHAR *file_name) {
-    if (debug == STD_NULL) return;
-    if (debug->connect.recordFile) {
-        STD_FCLOSE(debug->connect.recordFile);
+type_status vm_machine_debug_record_start(t_debug *debug, const C_CHAR *file_name) {
+    if (debug == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (file_name == STD_NULL) {
+        debug->connect.record_status = TYPE_STATUS_INVALID_ARGUMENT;
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
+    if (debug->connect.recordFile != STD_NULL && debug_record_close(debug) !=
+        TYPE_STATUS_OK) {
+        STD_PRINTF("ERROR:\trecorder close failed.\n");
+        return TYPE_STATUS_FAULT;
     }
     debug->connect.recordFile = STD_FOPEN(file_name, "w");
     if (!debug->connect.recordFile) {
+        debug->connect.record_status = TYPE_STATUS_FAULT;
         STD_PRINTF("ERROR:\tcannot write dump file.\n");
     } else {
+        debug->connect.record_status = TYPE_STATUS_OK;
         STD_PRINTF("Record started.\n");
     }
+    return debug->connect.record_status;
 }
-C_VOID vm_machine_debug_record_stop(t_debug *debug) {
-    if (debug == STD_NULL) return;
+type_status vm_machine_debug_record_stop(t_debug *debug) {
+    type_status status;
+
+    if (debug == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
     if (!debug->connect.recordFile) {
+        debug->connect.record_status = TYPE_STATUS_INVALID_STATE;
         STD_PRINTF("ERROR:\trecorder not turned on.\n");
+        return TYPE_STATUS_INVALID_STATE;
     } else {
-        STD_PRINTF("Record finished.\n");
-        STD_FCLOSE(debug->connect.recordFile);
-        debug->connect.recordFile = (STD_FILE *) STD_NULL;
+        status = debug_record_close(debug);
+        STD_PRINTF(status == TYPE_STATUS_OK ? "Record finished.\n" :
+            "ERROR:\trecorder close failed.\n");
+        return status;
     }
+}
+
+type_status vm_machine_debug_record_status(const t_debug *debug)
+{
+    return debug == STD_NULL ? TYPE_STATUS_INVALID_ARGUMENT :
+        debug->connect.record_status;
 }

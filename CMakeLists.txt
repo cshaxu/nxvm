@@ -1977,6 +1977,18 @@ add_executable(vm-debug-target-smoke
 target_link_libraries(vm-debug-target-smoke PRIVATE
     vm-composition
 )
+add_executable(vm-debugger-recording-lifecycle-smoke
+    tests/machine/vm_debugger_recording_lifecycle_smoke.c
+    src/vm/machine/debug.c)
+# Failure injection must compile the sole recorder owner directly; this remains
+# a test-local T345 embedded-production exception, not another production path.
+target_include_directories(vm-debugger-recording-lifecycle-smoke PRIVATE
+    "${CMAKE_SOURCE_DIR}/src")
+target_compile_definitions(vm-debugger-recording-lifecycle-smoke PRIVATE
+    STD_FOPEN=test_debug_record_open
+    STD_FPRINTF=test_debug_record_write
+    STD_FCLOSE=test_debug_record_close)
+target_link_libraries(vm-debugger-recording-lifecycle-smoke PRIVATE type-facade)
 
 add_executable(vm-full-pc-session-smoke
     tests/products/nxvm_full_pc_session_smoke.c
@@ -2310,6 +2322,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     vm-product-console-lifecycle-smoke
     vm-product-console-memory-roundtrip-smoke
     vm-debug-target-smoke
+    vm-debugger-recording-lifecycle-smoke
     vm-product-session-smoke
     vm-session-initialization-atomicity-smoke
     vm-session-manager-smoke
@@ -2870,8 +2883,8 @@ function(add_current_vm_artifact target version)
             "${CMAKE_SOURCE_DIR}/build/output/${task_artifact_filename}")
 endfunction()
 
-set(PROJECT_CURRENT_VM_ARTIFACT_TARGET vm-0-5-0445)
-add_current_vm_artifact(vm-0-5-0445 "0.5.0445")
+set(PROJECT_CURRENT_VM_ARTIFACT_TARGET vm-0-5-0446)
+add_current_vm_artifact(vm-0-5-0446 "0.5.0446")
 option(PROJECT_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
 
@@ -2995,6 +3008,12 @@ if(PROJECT_VERIFY_DEPENDENCY_DAG)
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
             -P "${CMAKE_SOURCE_DIR}/cmake/verify_t445_vm_native_display_resource_lifetime.cmake"
         COMMENT "Verifying VM native display resource lifecycle ownership"
+        VERBATIM)
+
+    add_custom_target(verify-t446-vm-debugger-recording-lifecycle
+        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_t446_vm_debugger_recording_lifecycle.cmake"
+        COMMENT "Verifying VM debugger recorder lifecycle ownership"
         VERBATIM)
 
     add_custom_target(verify-current-artifact-target
@@ -3341,6 +3360,7 @@ set(PROJECT_CURRENT_SPECIALIZED_VERIFIER_CANDIDATES
     verify-ram-reconfigure-closure
     verify-linux-platform-contract
     verify-t445-vm-native-display-resource-lifetime
+    verify-t446-vm-debugger-recording-lifecycle
     verify-current-artifact-target
     verify-request-transport-closure
     verify-keyboard-ingress-boundary
@@ -3478,9 +3498,9 @@ endforeach()
 list(LENGTH PROJECT_T345_S2_OWNER_TEST_STRICT_TARGETS project_t345_s2_pure_count)
 list(LENGTH PROJECT_T345_S2_MIXED_OWNER_TEST_TARGETS project_t345_s2_mixed_count)
 if(NOT project_t345_s2_pure_count EQUAL 173 OR
-        NOT project_t345_s2_mixed_count EQUAL 3)
+        NOT project_t345_s2_mixed_count EQUAL 4)
     message(FATAL_ERROR
-        "T345 S2 expected 173 pure and 3 mixed owner-test targets; found ${project_t345_s2_pure_count} pure and ${project_t345_s2_mixed_count} mixed.")
+        "T345 S2 expected 173 pure and 4 mixed owner-test targets; found ${project_t345_s2_pure_count} pure and ${project_t345_s2_mixed_count} mixed.")
 endif()
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     foreach(project_t345_target IN LISTS PROJECT_T345_S2_OWNER_TEST_STRICT_TARGETS)
@@ -3558,6 +3578,7 @@ set(PROJECT_T345_S4_RESIDUAL_DIRECT_ENTRIES
     "core-product-xasm-contract-smoke|src/core/product/debug/xasm32/dasm32.c|debug-xasm-contract"
     "core-product-debug-input-failure-smoke|src/core/product/debug/debug.c|debug-input-failure"
     "core-product-debug-input-failure-smoke|src/core/product/debug/debug_access.c|debug-input-failure"
+    "vm-debugger-recording-lifecycle-smoke|src/vm/machine/debug.c|debugger-recording-failure"
     "vm-product-console-input-failure-smoke|src/vm/product/console.c|console-input-failure"
     "vm-product-console-input-failure-smoke|src/vm/product/session_catalog.c|console-input-failure"
     "vm-product|src/vm/product/console.c|console-product"

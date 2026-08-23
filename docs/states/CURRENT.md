@@ -2,11 +2,30 @@
 
 ## Current Work
 
-**Idle.**
+## M5 T446 S1 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New; `M5 T446 S1`, single-session coordinator/executor then coordinator closure review. |
+| Admission And Approval | Owner approval: active thread goal, 2026-08-23, single-agent minimalist completion of VM debugger-state and recording-lifecycle repair. Admits Queue head only; no exception. |
+| Objective | Make debugger cursor state session-instance-owned and make recorder start/write/stop/finalize outcomes truthful at the existing VM debug boundary. |
+| Non-goals | No Core debugger redesign, command-interpreter replacement, console command ABI change, trace-format change, asynchronous recording, or new abstraction layer. |
+| Reference Baseline | `5f6256e6` prior T445 source commit; Queue head proposal. |
+| Candidate Proposal | [M5 VM debugger state and recording lifecycle repair](../proposals/m5-vm-debugger-recording-lifecycle.md). |
+| Files And ABI Surface | `src/vm/machine/debug.[ch]`, VM session lifecycle/control/console adapter only if needed, focused smoke/CMake registration, current artifact/version, evidence/history/status. Preserve retained console commands and record format. |
+| Applicable Rules | `docs/rules/EXECUTION.md`: packet, P lifecycle, similar sweep, artifact, closure; architecture: one mutable-state owner/production path and `vm -> core`; coding: owner-local cohesive repair, no forwarding facade, remove obsolete path; documentation topology/index rules. No exception. |
+| Verification | New focused two-session cursor isolation plus recorder start/write/stop/finalize-failure smoke; complete recorder-call sweep; static recurrence gate when mechanically feasible; `current-fast-smokes-gcc`, `current-gates-gcc`, documentation governance; fresh exact-source `vm-0-5-0446` build and SHA-256. |
+| Expected Markers | `M5:T446:S1:VM-DEBUGGER-RECORDING-LIFECYCLE:OK`; static gate marker; all current gates pass. |
+| Asset Needs | None; no firmware, guest media, trace fixture, or external source. |
+| Reporting Requirements | Report admission/brief confirmation, implementation P1 pushed, coordinator actual-change review, P2 closure pushed; evidence maps every proposal requirement, call-site disposition, source line accounting, artifact identity/SHA, and retained boundary. |
+| Stop Conditions | Stop and obtain owner direction only if making failures observable requires a console command-status ABI change or a Core debugger-context redesign. |
+| Exit Criteria | Each session owns its cursor state; all start/write/stop/finalize recorder failures leave no false active state and are observable at the existing VM debug boundary; destruction closes once; every recorder caller is disposed; focused tests/current gates/fresh artifact pass; actual-diff review finds no duplicate lifecycle path. |
+| Original Owner Request | Single-agent minimalist completion of VM debugger-state and recording-lifecycle repair. |
+| Similar-Issue Sweep | Search all tracked production, tests, CMake and governance records for `recordFile`, `vm_machine_debug_record_`, `STD_FOPEN`, `STD_FCLOSE`, `STD_FPRINTF` and debugger cursor/context state. Classify every production hit; repair the shared VM debug owner or transfer any out-of-scope hit. |
 
 ## Current Technical Baseline
 
-- **Current developer artifact:** target `vm-0-5-0445`; `nxvm_0_5_0445.exe` / `build/output/nxvm_0_5_0445.exe`, SHA-256 `2D369C04936536F987ECD59826037949E70DF6BCC33241C131530E4BA724808D`. T434 has one copied Core timing-plan publication route for default PC/AT, IBM 5170 Model 339 and Model-40 BYOB session composition.
+- **Current developer artifact:** target `vm-0-5-0446`; `nxvm_0_5_0446.exe` / `build/output/nxvm_0_5_0446.exe`, SHA-256 `2265CC4B0182EF66063327FC55118BAA44C95F270B7B0680131E8813EA412CBF`. T434 has one copied Core timing-plan publication route for default PC/AT, IBM 5170 Model 339 and Model-40 BYOB session composition.
   T386 closes selected-device functional completeness at S29; its retained
   [closure audit](../etc/evidence/t386-s29-functional-closure-audit.md) fixes
   HDC current-gate coverage and transfers board, firmware and physical work.
