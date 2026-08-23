@@ -74,6 +74,29 @@ adopts them.
 
 ## CPU, Time, And Debugging Debt
 
+- [ ] **VM firmware materialization and dead-code closure (`TODO(Medium)`).**
+  Manual audit Td S127 reconfirmed the retained T345 evidence: composition
+  `profile_firmware.c` materializes five generated-firmware C string literals
+  above the C11 guaranteed translation limit, while `session.c` retains the
+  unused `vm_session_read_u16` helper. Neither condition has a current TODO
+  transfer. Admit one bounded firmware-owner task to replace oversized source
+  literals with an explicit chunk/capacity materialization contract that proves
+  byte-for-byte ROM equivalence, and remove or give a real caller to the dead
+  helper. Do not silence warnings, mechanically reflow generated instruction
+  text without equivalence proof, or use this cleanup to change firmware
+  behavior.
+
+- [ ] **Product session-command authority unification (`TODO(High)`).** Manual
+  audit Td S127 found `core_product_session_command_execute()` implements a
+  full `SESSION LIST/OPEN/SELECT/CLOSE` grammar but has no production caller;
+  `vm/product/console.c` independently implements the same command family with
+  different profile-open and final-session-close behavior. This is a duplicate
+  product command abstraction with no single owner or contract. Admit one
+  Core-product/VM-product task to select one command authority, define the
+  product-specific profile-selection seam and exact error/output semantics, and
+  retire the unused parallel path with focused regressions. Do not add aliases,
+  leave two parsers, or move VM profile policy into generic Core session state.
+
 - [ ] **Legacy VM media type/public-name retirement (`TODO(Medium)`).** Manual
   audit Td S125 found cross-module headers `vm/machine/fdd.h` and
   `vm/machine/hdd.h` export mutable `t_fdd`, `t_hdd`, `t_*_data`, and
@@ -254,6 +277,31 @@ admissions, not the default definition of NXVM completion.
 
 ## Architecture And Portability Debt
 
+- [ ] **CMake VM-composition native-link separation (`TODO(High)`).** Manual
+  audit Td S127 found `CMakeLists.txt` unconditionally links the
+  cross-platform `vm-composition` static library publicly to `user32` and
+  `gdi32`, despite separate Linux and Win32 adapters. No alias or platform
+  conditional surrounds those names. This makes every Linux composition/test
+  consumer inherit Windows link requirements and contradicts the declared
+  platform-adapter boundary. Admit one build-ownership task to move native
+  libraries to the owning Win32 adapter/selected runnable target behind a
+  platform condition, keep Linux link requirements in the Linux adapter, and
+  verify both target graphs. Do not fork composition sources by host, add fake
+  Unix `user32` targets, or make native GUI libraries a Core dependency.
+
+- [ ] **CMake duplicate production-source ownership repair (`TODO(Medium)`).**
+  Manual audit Td S127 found `src/vm/composition/session/machine_info.c` is in
+  `VM_COMPOSITION_SOURCES` and therefore `vm-composition`, but
+  `add_current_vm_artifact()` also compiles it directly while linking that same
+  library; the unused `VM_RUNTIME_SOURCES` aggregate is a second stale build
+  declaration. Static-archive extraction can mask duplicate symbols, yet the
+  current product has two compilation/ownership routes for one composition
+  source and dead target vocabulary. Admit one build-graph task to retain a
+  single owning target, make the artifact consume its public composition
+  capability, retire stale aggregates, and add a narrow source-to-target
+  uniqueness check. Do not paper over the duplicate with linker ordering,
+  object-library aliases, or a second forwarding wrapper.
+
 - [ ] **Core platform stateful-interface encapsulation (`TODO(High)`).** Manual
   audit Td S126 found public Core platform headers expose owner-local mutable
   layouts across module boundaries: `core_platform_backing_resource` publishes
@@ -362,20 +410,27 @@ admissions, not the default definition of NXVM completion.
   do not hide the problem behind typedef renames or a generic profile framework.
 
 - [ ] **Cross-owner test-boundary repair (`TODO(High)`).** Manual
-  audit Td S125/S126 found product, platform, and machine integration tests
-  directly depend on private `vm_session`, `core_machine`, media, firmware,
-  control, and platform-handle fields. Examples include
+  audit Td S125/S126/S127 found product, platform, and machine integration
+  tests directly depend on private `vm_session`, `core_machine`, media,
+  firmware, control, and platform-handle fields. S127 confirmed that this is
+  systemic rather than confined to a few fixtures: at least 33 `vm_*` machine
+  tests dereference `session->core_machine` internals, including CPU, memory,
+  port, topology, KBC, FDC, and HDC state; the shared
+  `tests/support/core_machine_cpu_fixture.h` also exposes prepared Core
+  storage to both Core and VM consumers. Examples include
   `tests/products/nxvm_default_profile_smoke.c`,
   `tests/products/vm_session_media_lifecycle_s3_smoke.c`,
   `tests/products/vm_model40_hdc_s26_smoke.c`, and
   `tests/platform/vm_multi_window_session_smoke.c`; many
   `tests/machine/vm_*` integration tests include session control/fault or BIOS
-  internals, and the HDC test reaches the embedded executor port directly.
-  Admit one test-boundary task to classify same-owner Core fixtures separately
-  from cross-owner product/platform/machine tests, replace the latter with
-  declared operations and copied observations, and preserve each test's
-  behavioral assertion. Do not make test-only getters or expand production
-  public layouts to keep fixtures compiling.
+  internals, and `vm_model40_integration_s8_smoke.c` reaches embedded executor
+  port/device state directly. Admit one test-boundary task to classify
+  same-owner Core fixtures separately from cross-owner product/platform/machine
+  tests, move any shared fixture to the owning test layer, replace the latter
+  with declared operations and copied observations, and preserve each test's
+  behavioral assertion. Do not make test-only getters, retain a cross-owner
+  white-box fixture, or expand production public layouts to keep fixtures
+  compiling.
 
 - [ ] **VM platform adapter contract encapsulation (`TODO(High)`).** Manual
   audit Td S125/S126 found `vm/platform/platform.h` exports mutable

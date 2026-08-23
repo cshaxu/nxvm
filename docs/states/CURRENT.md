@@ -40,6 +40,16 @@
 
 ## Recent Governance
 
+- **M5 Td S127 P1:** third-pass manual review of CMake platform/source
+  ownership, duplicate product command authority, and Core/VM test boundaries
+  confirms four additional concrete findings, including systemic VM test
+  access to embedded Core state. Named allocator-failure source builds are
+  separately confirmed as narrow, recorded test instrumentation rather than a
+  new production path. The indexed
+  [evidence](../etc/evidence/td-s127-third-pass-audit.md) retains exact
+  paths, transfers, and remaining audit limit; this is not a whole-repository
+  completion or runtime-correctness claim.
+
 - **M5 Td S126 P1:** second-pass manual review of Core stateful contracts,
   collaborator and plan endpoints, Core debugger context, VM/VDM equivalent
   headers, and host resource/input paths records five additional concrete
@@ -65,5 +75,3 @@
 - **M5 Td S121 P1:** bound the queued CPU timing program to complete 8086/80186 evidence/model research before implementation audit, then finite repair and closure; manual/reference-derived models are labelled L2, only an exhausted ladder may declare L1, and no emulator model lowers the L3 source threshold. T435 remains unallocated.
 
 - **M5 Td S120 P1:** changed code-size restraint from a hard numerical admission/closure gate to a soft concise-design goal; actual-delta reporting, explanation and obsolete-path retirement/disposition remain mandatory. T434 remains unallocated.
-
-- **M5 Td S119 P1:** compressed Td S118's code-size/cleanup rule without weakening its baseline, default non-positive budget, prior numeric approval, final reconciliation, retirement or closure-block requirements. T434 remains unallocated.
