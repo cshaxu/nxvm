@@ -558,7 +558,7 @@ C_INT vm_machine_fdd_insert_for(t_fdd *fdd, const C_CHAR *file_name)
 C_INT vm_machine_fdd_remove_for(t_fdd *fdd, const C_CHAR *file_name)
 {
     C_CHAR *sidecar_name;
-    C_VOID *sidecar_bytes;
+    C_VOID *sidecar_bytes = STD_NULL;
     STD_SIZE_T sidecar_byte_count;
 
     if (fdd == STD_NULL) return TYPE_TRUE;
@@ -570,6 +570,7 @@ C_INT vm_machine_fdd_remove_for(t_fdd *fdd, const C_CHAR *file_name)
             vm_machine_media_save_pair_atomically(file_name,
                 (const C_VOID *)fdd->connect.pImgBase, vm_machine_fdd_image_size(fdd),
                 sidecar_name, sidecar_bytes, sidecar_byte_count) != TYPE_FALSE) {
+            STD_FREE(sidecar_bytes);
             STD_FREE(sidecar_name);
             return TYPE_TRUE;
         }

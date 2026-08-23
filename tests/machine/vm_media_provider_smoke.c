@@ -17,6 +17,12 @@ static const C_CHAR vm_media_provider_malformed_metadata[] =
     "vm_media_provider_t376_malformed.img.json";
 static const C_CHAR vm_media_provider_sidecar_backup_collision[] =
     "vm_media_provider_t376.img.json.ntvdm64.bak";
+static const C_CHAR vm_media_provider_sidecar_image_temporary[] =
+    "vm_media_provider_t376.img.ntvdm64.tmp.000";
+static const C_CHAR vm_media_provider_sidecar_metadata_temporary[] =
+    "vm_media_provider_t376.img.json.ntvdm64.tmp.000";
+static const C_CHAR vm_media_provider_invalid_path_temporary[] =
+    "..ntvdm64.tmp.000";
 
 static C_INT vm_media_provider_write_byte_file(const C_CHAR *file_name, type_unsigned_8 byte)
 {
@@ -36,6 +42,15 @@ static C_INT vm_media_provider_read_byte_file(const C_CHAR *file_name, type_unsi
 
     if (file != STD_NULL && STD_FCLOSE(file) != 0) failed = 1;
     return failed;
+}
+
+static C_INT vm_media_provider_file_exists(const C_CHAR *file_name)
+{
+    STD_FILE *file = STD_FOPEN(file_name, "rb");
+
+    if (file == STD_NULL) return 0;
+    (C_VOID)STD_FCLOSE(file);
+    return 1;
 }
 
 static C_INT vm_media_provider_expect_hdd_capacity(t_hdd *hdd,
@@ -119,7 +134,6 @@ C_INT main(C_VOID)
     type_unsigned_64 hdd_generation;
     type_virtual_address fdd_image;
     type_virtual_address hdd_image;
-    STD_FILE *temporary_image;
     STD_FILE *stale_image;
     STD_FILE *malformed_image;
     C_INT stale_write_failed;
@@ -274,7 +288,11 @@ C_INT main(C_VOID)
     if (!failed && (vm_media_provider_write_byte_file(
             vm_media_provider_sidecar_backup_collision, 0x31u) ||
         vm_machine_fdd_remove_for(&fdd, vm_media_provider_sidecar_image) != TYPE_TRUE ||
-        !fdd.connect.flagDiskExist)) {
+        !fdd.connect.flagDiskExist ||
+        vm_media_provider_read_byte_file(vm_media_provider_sidecar_image, 0x6du) ||
+        !vm_media_provider_file_exists(vm_media_provider_sidecar_metadata) ||
+        vm_media_provider_file_exists(vm_media_provider_sidecar_image_temporary) ||
+        vm_media_provider_file_exists(vm_media_provider_sidecar_metadata_temporary))) {
         failed = 1;
     }
     (C_VOID)STD_REMOVE(vm_media_provider_sidecar_backup_collision);
@@ -285,9 +303,8 @@ C_INT main(C_VOID)
         fdd.connect.pImgBase != fdd_image)) {
         failed = 1;
     }
-    temporary_image = STD_FOPEN("..ntvdm64.tmp", "rb");
-    if (!failed && temporary_image != STD_NULL) failed = 1;
-    if (temporary_image != STD_NULL) (C_VOID)STD_FCLOSE(temporary_image);
+    if (!failed && vm_media_provider_file_exists(
+            vm_media_provider_invalid_path_temporary)) failed = 1;
     if (!failed && (vm_machine_hdd_replace_bytes(&hdd, STD_NULL, 0u) != TYPE_FALSE ||
         hdd.connect.geometry_cylinders != 0u || hdd.connect.geometry_heads != 16u ||
         hdd.connect.geometry_sectors_per_track != 63u ||
@@ -329,9 +346,8 @@ C_INT main(C_VOID)
         hdd.connect.pImgBase != hdd_image || hdd.connect.raw_byte_count != 1024u)) {
         failed = 1;
     }
-    temporary_image = STD_FOPEN("..ntvdm64.tmp", "rb");
-    if (!failed && temporary_image != STD_NULL) failed = 1;
-    if (temporary_image != STD_NULL) (C_VOID)STD_FCLOSE(temporary_image);
+    if (!failed && vm_media_provider_file_exists(
+            vm_media_provider_invalid_path_temporary)) failed = 1;
     core_machine_media_registry_finalize(&registry);
     vm_machine_fdd_finalize(&fdd);
     vm_machine_fdd_finalize(&failed_fdd);
@@ -352,5 +368,6 @@ C_INT main(C_VOID)
     STD_PRINTF("M5:T283:S6:ATOMIC-SAVE:OK\n");
     STD_PRINTF("M5:T376:S2:RAW-IMG-SIDECAR-LIFECYCLE:OK\n");
     STD_PRINTF("M5:T376:S6:MALFORMED-SIDECAR:OK\n");
+    STD_PRINTF("M5:T441:S1:MEDIA-SAVE-FAILURE-HYGIENE:OK\n");
     return 0;
 }

@@ -2,12 +2,33 @@
 
 ## Current Work
 
-**Idle.** T440 closed at S1; the next candidate requires a separate admission.
+**Active: M5 T441 S1.**
+
+## M5 T441 S1 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New |
+| Admission And Approval | Owner approved the first queued candidate on 2026-08-23 and required the implementation to minimize logic and code. This admits the linked media-persistence proposal and one bounded S1 implementation. |
+| Objective | Make VM-owned removable-media pair saving and HDD single-file saving return failure without leaked temporary/sidecar allocations or falsely reporting a completed paired save; retain one owner-local staging/commit/rollback path. |
+| Non-goals | No new media format, filesystem layer, asynchronous I/O, cross-file atomicity claim beyond current host rename semantics, Core change, physical-media semantics, or unrelated session storage cleanup. |
+| Reference Baseline | `master` at `de93c6ba`; prior current developer artifact; proposal `m5-vm-media-persistence-failure-hygiene.md`; existing `vm_machine_media_save_atomically` and `vm_machine_media_save_pair_atomically` owners. |
+| Candidate Proposal | [VM media persistence failure hygiene](../proposals/m5-vm-media-persistence-failure-hygiene.md); task record [T441](../history/M5-T441-vm-media-persistence-failure-hygiene.md). |
+| Files And ABI Surface | Expected private VM-machine save owner, FDD caller, focused VM media smoke, build artifact identity and task evidence/status. Existing `vm_machine_media_save_*` interface may be reduced only if all callers remain covered; no new public cross-module ABI. |
+| Applicable Rules | Architecture: one mutable persistence/failure owner and one production path; Coding: owner-local helper only when it deletes duplication, no forwarding layer or unused compatibility route; Execution: mechanism-defect shared-owner/caller sweep, focused proof, artifact and actual-change review; Documentation: indexed evidence/history/current-status boundaries. |
+| Verification | Enumerate all `vm_machine_media_save_*` callers; add deterministic focused coverage for FDD serialization/allocation and paired staging/replacement/rollback cleanup plus HDD single-save failure preservation; build/run affected smoke, fast current smokes, documentation governance, and record any independent full-gate baseline. |
+| Expected Markers | Existing `M5:T376:S2:RAW-IMG-SIDECAR-LIFECYCLE:OK`, `M5:T280:S2:ATOMIC-MEDIA:OK`, `M5:T283:S6:ATOMIC-SAVE:OK`; a new T441 failure-hygiene marker only if a focused executable assertion needs one. |
+| Asset Needs | None; synthetic VM media and repository-owned temporary test files only. |
+| Reporting Requirements | Evidence must identify the shared save owner, every FDD/HDD caller, each allocation/temp/replacement/rollback stage, cleanup result, source/test line delta and the no-stronger-than-host-rename boundary. |
+| Stop Conditions | Stop for owner direction if portable behavior cannot preserve both prior files after a cross-file replacement failure, if failure injection requires a new broad test-only or public filesystem abstraction, or if an external filesystem policy decision is required. |
+| Exit Criteria | One minimal save mechanism owns staging and cleanup; FDD/HDD callers have one observable failure path; injected failure stages prove retained state and no owned temporary/sidecar allocation/file tail; caller sweep is complete; focused and applicable gates pass; a `0.5.0441` artifact, evidence, review and closure records are pushed. |
+| Original Owner Request | Implement the next queued task while keeping logic and code as small as possible. |
+| Similar-Issue Sweep | Search every tracked production/test caller of `vm_machine_media_save_atomically` and `vm_machine_media_save_pair_atomically`, plus direct FDD sidecar serialization. Dispose each as corrected, covered by the shared owner, or explicitly out of scope with reason. |
 
 
 ## Current Technical Baseline
 
-- **Current developer artifact:** target `vm-0-5-0440`; `nxvm_0_5_0440.exe` / `build/output/nxvm_0_5_0440.exe`, SHA-256 `E0A144BC0DBF50F10DB65D718F02485C29BBCA72694F3CA246ACEEC592C69D1F`. T434 has one copied Core timing-plan publication route for default PC/AT, IBM 5170 Model 339 and Model-40 BYOB session composition.
+- **Current developer artifact:** target `vm-0-5-0441`; `nxvm_0_5_0441.exe` / `build/output/nxvm_0_5_0441.exe`, SHA-256 `C06CF7C46553E53FE7592ABF9C7900110DB3F6A1FF4183C300F4EC8B4D40273F`. T434 has one copied Core timing-plan publication route for default PC/AT, IBM 5170 Model 339 and Model-40 BYOB session composition.
   T386 closes selected-device functional completeness at S29; its retained
   [closure audit](../etc/evidence/t386-s29-functional-closure-audit.md) fixes
   HDC current-gate coverage and transfers board, firmware and physical work.
