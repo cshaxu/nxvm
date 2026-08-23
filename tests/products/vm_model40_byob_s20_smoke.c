@@ -1,6 +1,8 @@
 #include "type.h"
 
+#include "core/machine/machine_interface.h"
 #include "vm/composition/session/session.h"
+#include "vm/composition/session/session_interface.h"
 
 static C_INT write_chip(const C_CHAR *path, type_unsigned_8 value)
 {
@@ -21,6 +23,8 @@ C_INT main(C_VOID)
     vm_session *session = STD_NULL;
     vm_session_reset_vector reset_vector = {0};
     core_machine_run_result result = {0};
+    STD_SIZE_T memory_bytes = 0u;
+    STD_SIZE_T retained_memory_bytes;
     C_INT failed = 0;
 
     if (!write_chip("t386-s20-even.bin", 0u) || !write_chip("t386-s20-odd.bin", 1u)) failed = 1;
@@ -39,6 +43,13 @@ C_INT main(C_VOID)
         session->model40_rom.odd_bytes[0] != 1u;
     failed |= !failed && (vm_session_get_reset_vector(session, &reset_vector) != TYPE_STATUS_OK ||
         reset_vector.cs != 0xf000u || reset_vector.ip != 0xfff0u);
+    retained_memory_bytes = session->retained_config.memory_bytes;
+    failed |= !failed && vm_session_reconfigure_memory(session, 2u * 1024u * 1024u) !=
+        TYPE_STATUS_INVALID_STATE;
+    failed |= !failed && (core_machine_get_memory_bytes(session->core_machine,
+        &memory_bytes) != TYPE_STATUS_OK || memory_bytes != 1024u * 1024u ||
+        session->core_machine_config.memory_bytes != 1024u * 1024u ||
+        session->retained_config.memory_bytes != retained_memory_bytes);
     failed |= !failed && (core_machine_run(session->core_machine,
         (core_machine_run_budget) {1u, 0u}, &result) != TYPE_STATUS_OK ||
         result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 1u);
@@ -50,10 +61,14 @@ C_INT main(C_VOID)
         session->model40_rom.odd_bytes[0] != 1u);
     vm_session_destroy(session);
     session = STD_NULL;
+    config.memory_bytes = 2u * 1024u * 1024u;
+    failed |= vm_session_create(&config, &session) != TYPE_STATUS_INVALID_ARGUMENT ||
+        session != STD_NULL;
+    config.memory_bytes = 0u;
     config.model40_firmware.even_sha256 = odd_sha256;
     failed |= vm_session_create(&config, &session) != TYPE_STATUS_FAULT || session != STD_NULL;
     (C_VOID)STD_REMOVE("t386-s20-even.bin");
     (C_VOID)STD_REMOVE("t386-s20-odd.bin");
-    if (!failed) STD_PRINTF("M5:T386:S20:MODEL40-BYOB-MANIFEST:OK\nM5:T386:S20:MODEL40-BYOB-VALIDATION:OK\nM5:T386:S20:MODEL40-PUBLIC-COMPOSITION:OK\nM5:T424:S1:MODEL40-BYOB-RESET-LIFECYCLE:OK\n");
+    if (!failed) STD_PRINTF("M5:T386:S20:MODEL40-BYOB-MANIFEST:OK\nM5:T386:S20:MODEL40-BYOB-VALIDATION:OK\nM5:T386:S20:MODEL40-PUBLIC-COMPOSITION:OK\nM5:T424:S1:MODEL40-BYOB-RESET-LIFECYCLE:OK\nM5:T440:S1:MODEL40-IMMUTABLE-CONFIGURATION:OK\n");
     return failed;
 }
