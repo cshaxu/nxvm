@@ -2,28 +2,7 @@
 
 ## Current Work
 
-**Active: M5 Td S133.**
-
-## M5 Td S133 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Governance |
-| Admission And Approval | Owner directed closure review of the current and preceding task chain on 2026-08-23. This packet audits T438--T443, including T442 identifier correction. |
-| Objective | Inspect actual task changes, evidence, artifact records, exit criteria, single-owner data flow, duplicate paths, and gate dispositions for the six most recent closure tasks. |
-| Non-goals | No runtime repair, artifact revision, historical rewrite, or broad historical-M5 completeness claim. A discovered defect is transferred to a corrective S or new T rather than repaired within this audit. |
-| Reference Baseline | `master` at `bc7bd16a`; current artifact `vm-0-5-0443`; closed-chain records T438 through T443 and their indexed evidence. |
-| Candidate Proposal | Not applicable: owner-approved standalone governance audit. |
-| Files And ABI Surface | Current status, one indexed audit evidence record, and only any required task-transfer record; no source or ABI change. |
-| Applicable Rules | Read and inspect actual changes against execution closure requirements, documentation authority boundaries, one-owner/data-flow architecture rules, and coding minimalism; do not infer completion from a green structural gate. |
-| Verification | Verify task identifiers/commit subjects, proposal/history/evidence topology, artifact hashes, focused proof claims, gate dispositions, current source ownership, and worktree/remote state. |
-| Expected Markers | Documentation-governance pass and one indexed Td S133 audit record; no runtime marker. |
-| Asset Needs | None. |
-| Reporting Requirements | Record per-task exit-criterion disposition, source/evidence reviewed, exact transfers or corrective admission need, duplicated-path/owner conclusion, gate status, and audit scope limit. |
-| Stop Conditions | Stop and request direction only if a finding requires authority beyond a narrow corrective/new task, conflicts with source-of-truth rules, or cannot be classified from current evidence. |
-| Exit Criteria | T438--T443 each has a truthful closure/transfer disposition; no unrecorded identifier/topology/artifact defect remains; every non-passing gate is named with ownership; any newly found repair has a bounded admission path; audit evidence and governance closure are pushed. |
-| Original Owner Request | Continue closing the current and previous T tasks so they satisfy exit conditions and the correct-repair/minimal-unnecessary-code principle. |
-| Similar-Issue Sweep | Inspect all T438--T443 task files, evidence, commits, artifacts, focused tests, and current owner paths; classify each exit-criterion or minimalism gap. |
+**Idle.**
 
 
 ## Current Technical Baseline
@@ -61,6 +40,11 @@
 
 
 ## Recent Governance
+
+- **M5 Td S133 P1:** audited actual T438--T443 owner paths, focused regressions,
+  artifacts, commits and topology; it archived the two retained completed
+  proposals and transferred T344 plus 20 current-fast failures to the queued
+  current-gate restoration candidate. [Evidence](../etc/evidence/td-s133-recent-task-closure-audit.md).
 
 - **M5 Td S132 P1:** republished the generated T435 S5 8086 result artifact
   after current Core-private source-form IDs evolved. The runner and both
