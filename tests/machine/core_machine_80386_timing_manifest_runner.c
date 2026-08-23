@@ -236,6 +236,25 @@ static C_INT timing_80386_manifest_key_is_s6(const C_CHAR *key_id)
         timing_80386_manifest_key_has_prefix(key_id, "I386-INTO-TASK");
 }
 
+static C_INT timing_80386_manifest_key_is_s7(const C_CHAR *key_id)
+{
+    return key_id != STD_NULL && (timing_80386_manifest_key_has_prefix(key_id,
+        "I386-MOV-SREG") || timing_80386_manifest_key_has_prefix(key_id,
+        "I386-MOV-LDS") || timing_80386_manifest_key_has_prefix(key_id,
+        "I386-MOV-LES") || timing_80386_manifest_key_has_prefix(key_id,
+        "I386-MOV-LFS") || timing_80386_manifest_key_has_prefix(key_id,
+        "I386-MOV-LGS") || timing_80386_manifest_key_has_prefix(key_id,
+        "I386-MOV-LSS") || timing_80386_manifest_key_has_prefix(key_id,
+        "I386-MOV-R32-CR") || timing_80386_manifest_key_has_prefix(key_id,
+        "I386-MOV-R32-DR") || timing_80386_manifest_key_has_prefix(key_id,
+        "I386-MOV-R32-TR") || timing_80386_manifest_key_has_prefix(key_id,
+        "I386-MOV-CR") || timing_80386_manifest_key_has_prefix(key_id,
+        "I386-MOV-DR") || timing_80386_manifest_key_has_prefix(key_id,
+        "I386-MOV-TR") || timing_80386_manifest_key_has_prefix(key_id,
+        "I386-ARPL-") || timing_80386_manifest_key_has_prefix(key_id,
+        "I386-SYSTEM-"));
+}
+
 static C_VOID timing_80386_manifest_capture_retirement(C_VOID *opaque,
     const core_machine_retirement_observation *observation)
 {
@@ -338,6 +357,18 @@ static type_unsigned_32 timing_80386_manifest_s6_count(C_INT observed_only)
     return count;
 }
 
+static type_unsigned_32 timing_80386_manifest_s7_count(C_INT observed_only)
+{
+    STD_SIZE_T index; type_unsigned_32 count = 0u;
+    for (index = 0u; index < sizeof(timing_80386_manifest_records) /
+            sizeof(timing_80386_manifest_records[0]); ++index) {
+        if (timing_80386_manifest_is_i386(&timing_80386_manifest_records[index]) &&
+            timing_80386_manifest_key_is_s7(timing_80386_manifest_records[index].key_id) &&
+            (!observed_only || timing_80386_manifest_observed[index])) ++count;
+    }
+    return count;
+}
+
 static C_VOID timing_80386_manifest_print_missing_s3(C_VOID)
 {
     STD_SIZE_T index;
@@ -367,6 +398,19 @@ static C_VOID timing_80386_manifest_print_missing_s6(C_VOID)
             STD_PRINTF("M5:T437:S6:I386-PROTECTED-MISSING:%s\n",
                 timing_80386_manifest_records[index].key_id);
         }
+    }
+}
+
+static C_VOID timing_80386_manifest_print_missing_s7(C_VOID)
+{
+    STD_SIZE_T index;
+    for (index = 0u; index < sizeof(timing_80386_manifest_records) /
+            sizeof(timing_80386_manifest_records[0]); ++index) {
+        if (timing_80386_manifest_is_i386(&timing_80386_manifest_records[index]) &&
+            timing_80386_manifest_key_is_s7(timing_80386_manifest_records[index].key_id) &&
+            !timing_80386_manifest_observed[index]) STD_PRINTF(
+                "M5:T437:S7:I386-PROTECTED-SYSTEM-MISSING:%s\n",
+                timing_80386_manifest_records[index].key_id);
     }
 }
 
@@ -830,6 +874,494 @@ static C_INT timing_80386_manifest_run_recipe(const C_CHAR *key_id,
     }
     core_machine_destroy(machine);
     return 0;
+}
+
+/* S7 deliberately starts from the retained 80386 protected gate fixture,
+ * rather than borrowing a 80286 runner.  The fixture supplies a frozen
+ * protected-mode machine; this wrapper supplies the legal data segments and
+ * captures exactly one 80386 retirement. */
+static C_INT timing_80386_manifest_run_s7_protected_recipe(
+    const C_CHAR *key_id, const type_unsigned_8 *program, STD_SIZE_T program_bytes,
+    const C_VOID *operand, STD_SIZE_T operand_bytes, type_unsigned_64 expected_ticks)
+{
+    const core_machine_retirement_observation_provider provider = {
+        timing_80386_manifest_capture_retirement, STD_NULL
+    };
+    core_machine_retirement_observation_provider active_provider = provider;
+    const core_machine_run_budget budget = { 1u, 0u };
+    core_machine_run_result run = { 0 };
+    timing_80386_manifest_capture capture = { { 0 }, 0u };
+    const timing_80386_manifest_record *record;
+    s3_gate_machine state;
+    t_cpu *cpu;
+    type_status status = TYPE_STATUS_OK;
+
+    record = timing_80386_manifest_find(key_id);
+    if (record == STD_NULL || !timing_80386_manifest_is_i386(record) ||
+        program == STD_NULL || program_bytes == 0u) return 1;
+    if (!s3_gate_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, TYPE_FALSE,
+            VCPU_DESC_SYS_TYPE_INTGATE_16, 0u, TYPE_TRUE)) return 1;
+    cpu = &state.machine->executor_cpu;
+    cpu->data.ds.selector = 0x0010u;
+    cpu->data.ds.base = 0u;
+    cpu->data.ds.limit = 0xffffu;
+    cpu->data.ds.dpl = 0u;
+    cpu->data.ds.flagValid = TYPE_TRUE;
+    cpu->data.ds.sregtype = SREG_DATA;
+    cpu->data.ds.seg.executable = TYPE_FALSE;
+    cpu->data.ds.seg.data.writable = TYPE_TRUE;
+    cpu->data.es = cpu->data.ds;
+    /* The inherited gate smoke enables TF to test interrupt delivery.  S7
+     * measures the instruction itself, so suppress the unrelated #DB path. */
+    cpu->data.eflags = VCPU_EFLAGS_CF;
+    cpu->data.eax = 1u;
+    if (timing_80386_manifest_key_has_prefix(key_id, "I386-MOV-CR3-R32"))
+        cpu->data.eax = 0x00001000u;
+    cpu->data.ecx = 0x0010u;
+    if (timing_80386_manifest_key_has_prefix(key_id, "I386-SYSTEM-LLDT")) {
+        static const type_unsigned_8 ldt_descriptor[] = {
+            0x17u,0u,0u,0x09u,0u,0x82u,0u,0u
+        };
+
+        cpu->data.gdtr.limit = 0x002fu;
+        cpu->data.ecx = 0x0018u;
+        if (!s3_gate_write(&state, S3_GDT_BASE + 0x18u, ldt_descriptor,
+                sizeof(ldt_descriptor))) {
+            core_machine_destroy(state.machine);
+            return 1;
+        }
+    }
+    if (timing_80386_manifest_key_has_prefix(key_id, "I386-SYSTEM-LTR")) {
+        static const type_unsigned_8 tss_descriptor[] = {
+            0x67u,0u,0u,0x06u,0u,0x89u,0u,0u
+        };
+
+        cpu->data.gdtr.limit = 0x002fu;
+        cpu->data.ecx = 0x0020u;
+        if (!s3_gate_write(&state, S3_GDT_BASE + 0x20u, tss_descriptor,
+                sizeof(tss_descriptor))) {
+            core_machine_destroy(state.machine);
+            return 1;
+        }
+    }
+    if (timing_80386_manifest_key_has_prefix(key_id, "I386-SYSTEM-STR")) {
+        static const type_unsigned_8 tss_descriptor[] = {
+            0x67u,0u,0u,0x06u,0u,0x89u,0u,0u
+        };
+        static const type_unsigned_8 ltr[] = { 0x0fu,0x00u,0xd9u };
+        core_machine_run_result precondition = { 0 };
+
+        cpu->data.gdtr.limit = 0x002fu;
+        cpu->data.ecx = 0x0020u;
+        if (!s3_gate_write(&state, S3_GDT_BASE + 0x20u, tss_descriptor,
+                sizeof(tss_descriptor)) || !s3_gate_write(&state, S3_CODE_BASE,
+                ltr, sizeof(ltr)) || core_machine_run(state.machine,
+                (core_machine_run_budget){ 1u,0u }, &precondition) != TYPE_STATUS_OK ||
+            precondition.reason != CORE_MACHINE_STOP_BUDGET ||
+            precondition.executed != 1u) {
+            core_machine_destroy(state.machine);
+            return 1;
+        }
+        cpu->data.eip = 0u;
+        cpu->data.flagHalt = TYPE_FALSE;
+    }
+    if (!s3_gate_write(&state, S3_CODE_BASE, program, program_bytes)) {
+        core_machine_destroy(state.machine);
+        return 1;
+    }
+    if (operand != STD_NULL && operand_bytes != 0u &&
+        !s3_gate_write(&state, 0x1000u, operand, operand_bytes)) {
+        core_machine_destroy(state.machine);
+        return 1;
+    }
+    active_provider.context = &capture;
+    status = core_machine_set_retirement_observation_provider(state.machine,
+        &active_provider);
+    if (status == TYPE_STATUS_OK) status = core_machine_run(state.machine, budget, &run);
+    if (status != TYPE_STATUS_OK || run.reason != CORE_MACHINE_STOP_BUDGET ||
+        run.executed != 1u || capture.count != 1u ||
+        capture.observation.timing_disposition ==
+            CORE_MACHINE_RETIREMENT_TIMING_SOURCE_UNALLOCATED ||
+        capture.observation.source_ticks != expected_ticks) {
+        STD_PRINTF("M5:T437:S7:I386-PROTECTED-RECIPE-DETAIL:%s:status=%d:reason=%d:executed=%llu:capture=%u:ticks=%llu:expected=%llu\\n",
+            key_id, status, run.reason, run.executed, capture.count,
+            capture.observation.source_ticks, expected_ticks);
+        core_machine_destroy(state.machine);
+        return 1;
+    }
+    core_machine_destroy(state.machine);
+    return 0;
+}
+
+static C_INT timing_80386_manifest_run_s7_arpl_recipes(C_VOID)
+{
+    static const type_unsigned_8 arpl_r[] = { 0x63u, 0xc8u };
+    static const type_unsigned_8 arpl_m[] = { 0x63u, 0x0eu, 0u, 0x10u };
+    static const type_unsigned_8 arpl_m_segment[] = {
+        0x26u, 0x63u, 0x0eu, 0u, 0x10u
+    };
+    static const type_unsigned_16 selector = 0x0001u;
+
+    return timing_80386_manifest_run_s7_protected_recipe("I386-ARPL-R",
+            arpl_r, sizeof(arpl_r), STD_NULL, 0u, 20u) ||
+        timing_80386_manifest_run_s7_protected_recipe("I386-ARPL-M",
+            arpl_m, sizeof(arpl_m), &selector, sizeof(selector), 21u) ||
+        timing_80386_manifest_run_s7_protected_recipe("I386-ARPL-M-SEGMENT",
+            arpl_m_segment, sizeof(arpl_m_segment), &selector, sizeof(selector), 21u);
+}
+
+static C_INT timing_80386_manifest_run_s7_lar_lsl_recipes(C_VOID)
+{
+    static const type_unsigned_8 lar_r16[] = { 0x0fu, 0x02u, 0xc1u };
+    static const type_unsigned_8 lar_m16[] = { 0x0fu, 0x02u, 0x06u, 0u, 0x10u };
+    static const type_unsigned_8 lar_r32[] = { 0x66u, 0x0fu, 0x02u, 0xc1u };
+    static const type_unsigned_8 lar_m32[] = {
+        0x66u, 0x0fu, 0x02u, 0x06u, 0u, 0x10u
+    };
+    static const type_unsigned_8 lar_m16_segment[] = {
+        0x26u, 0x0fu, 0x02u, 0x06u, 0u, 0x10u
+    };
+    static const type_unsigned_8 lar_m32_segment[] = {
+        0x26u, 0x66u, 0x0fu, 0x02u, 0x06u, 0u, 0x10u
+    };
+    static const type_unsigned_8 lsl_r16[] = { 0x0fu, 0x03u, 0xc1u };
+    static const type_unsigned_8 lsl_m16[] = { 0x0fu, 0x03u, 0x06u, 0u, 0x10u };
+    static const type_unsigned_8 lsl_r32[] = { 0x66u, 0x0fu, 0x03u, 0xc1u };
+    static const type_unsigned_8 lsl_m32[] = {
+        0x66u, 0x0fu, 0x03u, 0x06u, 0u, 0x10u
+    };
+    static const type_unsigned_8 lsl_m16_segment[] = {
+        0x26u, 0x0fu, 0x03u, 0x06u, 0u, 0x10u
+    };
+    static const type_unsigned_8 lsl_m32_segment[] = {
+        0x26u, 0x66u, 0x0fu, 0x03u, 0x06u, 0u, 0x10u
+    };
+    static const type_unsigned_16 selector = 0x0010u;
+
+    return timing_80386_manifest_run_s7_protected_recipe("I386-SYSTEM-LAR-R16",
+            lar_r16, sizeof(lar_r16), STD_NULL, 0u, 15u) ||
+        timing_80386_manifest_run_s7_protected_recipe("I386-SYSTEM-LAR-M16",
+            lar_m16, sizeof(lar_m16), &selector, sizeof(selector), 16u) ||
+        timing_80386_manifest_run_s7_protected_recipe("I386-SYSTEM-LAR-R32",
+            lar_r32, sizeof(lar_r32), STD_NULL, 0u, 15u) ||
+        timing_80386_manifest_run_s7_protected_recipe("I386-SYSTEM-LAR-M32",
+            lar_m32, sizeof(lar_m32), &selector, sizeof(selector), 16u) ||
+        timing_80386_manifest_run_s7_protected_recipe("I386-SYSTEM-LAR-M16-SEGMENT",
+            lar_m16_segment, sizeof(lar_m16_segment), &selector, sizeof(selector), 16u) ||
+        timing_80386_manifest_run_s7_protected_recipe("I386-SYSTEM-LAR-M32-SEGMENT",
+            lar_m32_segment, sizeof(lar_m32_segment), &selector, sizeof(selector), 16u) ||
+        timing_80386_manifest_run_s7_protected_recipe("I386-SYSTEM-LSL-R16",
+            lsl_r16, sizeof(lsl_r16), STD_NULL, 0u, 21u) ||
+        timing_80386_manifest_run_s7_protected_recipe("I386-SYSTEM-LSL-M16",
+            lsl_m16, sizeof(lsl_m16), &selector, sizeof(selector), 22u) ||
+        timing_80386_manifest_run_s7_protected_recipe("I386-SYSTEM-LSL-R32",
+            lsl_r32, sizeof(lsl_r32), STD_NULL, 0u, 21u) ||
+        timing_80386_manifest_run_s7_protected_recipe("I386-SYSTEM-LSL-M32",
+            lsl_m32, sizeof(lsl_m32), &selector, sizeof(selector), 22u) ||
+        timing_80386_manifest_run_s7_protected_recipe("I386-SYSTEM-LSL-M16-SEGMENT",
+            lsl_m16_segment, sizeof(lsl_m16_segment), &selector, sizeof(selector), 22u) ||
+        timing_80386_manifest_run_s7_protected_recipe("I386-SYSTEM-LSL-M32-SEGMENT",
+            lsl_m32_segment, sizeof(lsl_m32_segment), &selector, sizeof(selector), 22u);
+}
+
+static C_INT timing_80386_manifest_run_s7_verify_recipes(C_VOID)
+{
+    static const type_unsigned_8 verr_r[] = { 0x0fu, 0x00u, 0xe1u };
+    static const type_unsigned_8 verr_m[] = { 0x0fu, 0x00u, 0x26u, 0u, 0x10u };
+    static const type_unsigned_8 verr_m_segment[] = {
+        0x26u, 0x0fu, 0x00u, 0x26u, 0u, 0x10u
+    };
+    static const type_unsigned_8 verw_r[] = { 0x0fu, 0x00u, 0xe9u };
+    static const type_unsigned_8 verw_m[] = { 0x0fu, 0x00u, 0x2eu, 0u, 0x10u };
+    static const type_unsigned_8 verw_m_segment[] = {
+        0x26u, 0x0fu, 0x00u, 0x2eu, 0u, 0x10u
+    };
+    static const type_unsigned_16 selector = 0x0010u;
+
+    return timing_80386_manifest_run_s7_protected_recipe("I386-SYSTEM-VERR-R",
+            verr_r, sizeof(verr_r), STD_NULL, 0u, 10u) ||
+        timing_80386_manifest_run_s7_protected_recipe("I386-SYSTEM-VERR-M",
+            verr_m, sizeof(verr_m), &selector, sizeof(selector), 11u) ||
+        timing_80386_manifest_run_s7_protected_recipe("I386-SYSTEM-VERR-M-SEGMENT",
+            verr_m_segment, sizeof(verr_m_segment), &selector, sizeof(selector), 11u) ||
+        timing_80386_manifest_run_s7_protected_recipe("I386-SYSTEM-VERW-R",
+            verw_r, sizeof(verw_r), STD_NULL, 0u, 15u) ||
+        timing_80386_manifest_run_s7_protected_recipe("I386-SYSTEM-VERW-M",
+            verw_m, sizeof(verw_m), &selector, sizeof(selector), 16u) ||
+        timing_80386_manifest_run_s7_protected_recipe("I386-SYSTEM-VERW-M-SEGMENT",
+            verw_m_segment, sizeof(verw_m_segment), &selector, sizeof(selector), 16u);
+}
+
+static C_INT timing_80386_manifest_run_s7_clts_recipe(C_VOID)
+{
+    static const type_unsigned_8 clts[] = { 0x0fu, 0x06u };
+
+    return timing_80386_manifest_run_s7_protected_recipe("I386-SYSTEM-CLTS",
+        clts, sizeof(clts), STD_NULL, 0u, 6u);
+}
+
+static C_INT timing_80386_manifest_run_s7_descriptor_table_recipes(C_VOID)
+{
+    static const C_CHAR *const names[] = { "LGDT", "LIDT", "SGDT", "SIDT" };
+    static const type_unsigned_8 extensions[] = { 2u, 3u, 0u, 1u };
+    static const type_unsigned_8 table_pointer[] = { 0x1fu, 0u, 0u, 3u, 0u, 0u };
+    STD_SIZE_T index;
+
+    for (index = 0u; index < sizeof(names) / sizeof(names[0]); ++index) {
+        C_CHAR key_id[64];
+        type_unsigned_8 program[7];
+        type_unsigned_64 ticks = index < 2u ? 11u : 9u;
+        STD_SIZE_T bytes;
+        type_bool size32;
+        type_bool segment;
+
+        for (size32 = TYPE_FALSE; size32 <= TYPE_TRUE; ++size32)
+        for (segment = TYPE_FALSE; segment <= TYPE_TRUE; ++segment) {
+            bytes = 0u;
+            if (segment) program[bytes++] = 0x26u;
+            if (size32) program[bytes++] = 0x66u;
+            program[bytes++] = 0x0fu;
+            program[bytes++] = 0x01u;
+            program[bytes++] = (type_unsigned_8)(extensions[index] << 3u | 0x06u);
+            program[bytes++] = 0u;
+            program[bytes++] = 0x10u;
+            if (STD_SNPRINTF(key_id, sizeof(key_id), "I386-SYSTEM-%s-M%s%s",
+                    names[index], size32 ? "32" : "16",
+                    segment ? "-SEGMENT" : "") < 0 ||
+                timing_80386_manifest_run_s7_protected_recipe(key_id, program, bytes,
+                    table_pointer, sizeof(table_pointer), ticks)) return 1;
+        }
+    }
+    return 0;
+}
+
+static C_INT timing_80386_manifest_run_s7_smsw_recipes(C_VOID)
+{
+    static const type_unsigned_8 smsw_r[] = { 0x0fu, 0x01u, 0xe1u };
+    static const type_unsigned_8 smsw_m[] = { 0x0fu, 0x01u, 0x26u, 0u, 0x10u };
+    static const type_unsigned_8 smsw_m_segment[] = {
+        0x26u, 0x0fu, 0x01u, 0x26u, 0u, 0x10u
+    };
+
+    return timing_80386_manifest_run_s7_protected_recipe("I386-SYSTEM-SMSW-R",
+            smsw_r, sizeof(smsw_r), STD_NULL, 0u, 2u) ||
+        timing_80386_manifest_run_s7_protected_recipe("I386-SYSTEM-SMSW-M",
+            smsw_m, sizeof(smsw_m), STD_NULL, 0u, 2u) ||
+        timing_80386_manifest_run_s7_protected_recipe("I386-SYSTEM-SMSW-M-SEGMENT",
+            smsw_m_segment, sizeof(smsw_m_segment), STD_NULL, 0u, 2u);
+}
+
+static C_INT timing_80386_manifest_run_s7_control_register_recipes(C_VOID)
+{
+    static const C_CHAR *const read_keys[] = {
+        "I386-MOV-R32-CR0", "I386-MOV-R32-CR2", "I386-MOV-R32-CR3"
+    };
+    static const C_CHAR *const write_keys[] = {
+        "I386-MOV-CR0-R32", "I386-MOV-CR2-R32", "I386-MOV-CR3-R32"
+    };
+    static const type_unsigned_8 registers[] = { 0u, 2u, 3u };
+    STD_SIZE_T index;
+
+    for (index = 0u; index < sizeof(registers) / sizeof(registers[0]); ++index) {
+        type_unsigned_8 read[] = { 0x0fu, 0x20u,
+            (type_unsigned_8)(0xc0u | registers[index] << 3u) };
+        type_unsigned_8 write[] = { 0x0fu, 0x22u,
+            (type_unsigned_8)(0xc0u | registers[index] << 3u) };
+        type_unsigned_64 write_ticks = registers[index] == 0u ? 11u :
+            (registers[index] == 2u ? 4u : 5u);
+
+        if (timing_80386_manifest_run_s7_protected_recipe(read_keys[index], read,
+                sizeof(read), STD_NULL, 0u, 6u) ||
+            timing_80386_manifest_run_s7_protected_recipe(write_keys[index], write,
+                sizeof(write), STD_NULL, 0u, write_ticks)) return 1;
+    }
+    return 0;
+}
+
+static C_INT timing_80386_manifest_run_s7_debug_test_register_recipes(C_VOID)
+{
+    static const C_CHAR *const keys[] = {
+        "I386-MOV-R32-DR0-3", "I386-MOV-R32-DR6-7",
+        "I386-MOV-DR0-3-R32", "I386-MOV-DR6-7-R32",
+        "I386-MOV-R32-TR6-7", "I386-MOV-TR6-7-R32"
+    };
+    static const type_unsigned_8 secondary[] = {
+        0x21u, 0x21u, 0x23u, 0x23u, 0x24u, 0x26u
+    };
+    static const type_unsigned_8 registers[] = { 0u, 6u, 0u, 6u, 6u, 6u };
+    static const type_unsigned_64 ticks[] = { 22u, 14u, 22u, 16u, 12u, 12u };
+    STD_SIZE_T index;
+
+    for (index = 0u; index < sizeof(keys) / sizeof(keys[0]); ++index) {
+        const type_unsigned_8 program[] = { 0x0fu, secondary[index],
+            (type_unsigned_8)(0xc0u | registers[index] << 3u) };
+
+        if (timing_80386_manifest_run_s7_protected_recipe(keys[index], program,
+                sizeof(program), STD_NULL, 0u, ticks[index])) return 1;
+    }
+    return 0;
+}
+
+static C_INT timing_80386_manifest_run_s7_special_register_size_contexts(C_VOID)
+{
+    static const C_CHAR *const bases[] = {
+        "I386-MOV-R32-CR0", "I386-MOV-R32-CR2", "I386-MOV-R32-CR3",
+        "I386-MOV-CR0-R32", "I386-MOV-CR2-R32", "I386-MOV-CR3-R32",
+        "I386-MOV-R32-DR0-3", "I386-MOV-R32-DR6-7",
+        "I386-MOV-DR0-3-R32", "I386-MOV-DR6-7-R32",
+        "I386-MOV-R32-TR6-7", "I386-MOV-TR6-7-R32"
+    };
+    static const type_unsigned_8 secondary[] = {
+        0x20u,0x20u,0x20u,0x22u,0x22u,0x22u,
+        0x21u,0x21u,0x23u,0x23u,0x24u,0x26u
+    };
+    static const type_unsigned_8 registers[] = { 0u,2u,3u,0u,2u,3u,0u,6u,0u,6u,6u,6u };
+    static const type_unsigned_64 ticks[] = { 6u,6u,6u,11u,4u,5u,22u,14u,22u,16u,12u,12u };
+    STD_SIZE_T index;
+
+    for (index = 0u; index < sizeof(bases) / sizeof(bases[0]); ++index) {
+        C_CHAR key_id[64];
+        type_unsigned_8 program[] = { 0x0fu, secondary[index],
+            (type_unsigned_8)(0xc0u | registers[index] << 3u) };
+        type_bool size32;
+
+        for (size32 = TYPE_FALSE; size32 <= TYPE_TRUE; ++size32) {
+            if (STD_SNPRINTF(key_id, sizeof(key_id), "%s-SIZE%s", bases[index],
+                    size32 ? "32" : "16") < 0) return 1;
+            if (size32) {
+                const type_unsigned_8 prefixed[] = { 0x66u, program[0], program[1], program[2] };
+                if (timing_80386_manifest_run_s7_protected_recipe(key_id, prefixed,
+                        sizeof(prefixed), STD_NULL, 0u, ticks[index])) return 1;
+            } else if (timing_80386_manifest_run_s7_protected_recipe(key_id, program,
+                    sizeof(program), STD_NULL, 0u, ticks[index])) return 1;
+        }
+    }
+    return 0;
+}
+
+static C_INT timing_80386_manifest_run_s7_lmsw_sldt_recipes(C_VOID)
+{
+    static const type_unsigned_8 lmsw_r[] = { 0x0fu, 0x01u, 0xf0u };
+    static const type_unsigned_8 lmsw_m[] = { 0x0fu, 0x01u, 0x36u, 0u, 0x10u };
+    static const type_unsigned_8 lmsw_m_segment[] = {
+        0x26u, 0x0fu, 0x01u, 0x36u, 0u, 0x10u
+    };
+    static const type_unsigned_8 sldt_r[] = { 0x0fu, 0x00u, 0xc0u };
+    static const type_unsigned_8 sldt_m[] = { 0x0fu, 0x00u, 0x06u, 0u, 0x10u };
+    static const type_unsigned_8 sldt_m_segment[] = {
+        0x26u, 0x0fu, 0x00u, 0x06u, 0u, 0x10u
+    };
+    static const type_unsigned_16 msw = 1u;
+
+    return timing_80386_manifest_run_s7_protected_recipe("I386-SYSTEM-LMSW-R",
+            lmsw_r, sizeof(lmsw_r), STD_NULL, 0u, 11u) ||
+        timing_80386_manifest_run_s7_protected_recipe("I386-SYSTEM-LMSW-M",
+            lmsw_m, sizeof(lmsw_m), &msw, sizeof(msw), 14u) ||
+        timing_80386_manifest_run_s7_protected_recipe("I386-SYSTEM-LMSW-M-SEGMENT",
+            lmsw_m_segment, sizeof(lmsw_m_segment), &msw, sizeof(msw), 14u) ||
+        timing_80386_manifest_run_s7_protected_recipe("I386-SYSTEM-SLDT-R",
+            sldt_r, sizeof(sldt_r), STD_NULL, 0u, 2u) ||
+        timing_80386_manifest_run_s7_protected_recipe("I386-SYSTEM-SLDT-M",
+            sldt_m, sizeof(sldt_m), STD_NULL, 0u, 2u) ||
+        timing_80386_manifest_run_s7_protected_recipe("I386-SYSTEM-SLDT-M-SEGMENT",
+            sldt_m_segment, sizeof(sldt_m_segment), STD_NULL, 0u, 2u);
+}
+
+static C_INT timing_80386_manifest_run_s7_pointer_size_recipes(C_VOID)
+{
+    static const C_CHAR *const keys[] = {
+        "I386-MOV-LDS", "I386-MOV-LES", "I386-MOV-LFS", "I386-MOV-LGS", "I386-MOV-LSS"
+    };
+    static const type_unsigned_8 primary[] = { 0xc5u, 0xc4u, 0u, 0u, 0u };
+    static const type_unsigned_8 secondary[] = { 0u, 0u, 0xb4u, 0xb5u, 0xb2u };
+    static const type_unsigned_8 pointer16[] = { 0u, 0u, 0x10u, 0u };
+    static const type_unsigned_8 pointer32[] = { 0u, 0u, 0u, 0u, 0x10u, 0u };
+    STD_SIZE_T index;
+
+    for (index = 0u; index < sizeof(keys) / sizeof(keys[0]); ++index) {
+        C_CHAR key_id[64];
+        type_unsigned_8 program16[5];
+        type_unsigned_8 program32[6];
+        STD_SIZE_T bytes16 = 0u;
+        STD_SIZE_T bytes32 = 0u;
+        type_unsigned_64 ticks16 = index < 2u || index == 4u ? 26u : 29u;
+        type_unsigned_64 ticks32 = index < 2u || index == 4u ? 28u : 31u;
+
+        if (secondary[index] == 0u) {
+            program16[bytes16++] = primary[index];
+            program32[bytes32++] = 0x66u;
+            program32[bytes32++] = primary[index];
+        } else {
+            program16[bytes16++] = 0x0fu;
+            program16[bytes16++] = secondary[index];
+            program32[bytes32++] = 0x66u;
+            program32[bytes32++] = 0x0fu;
+            program32[bytes32++] = secondary[index];
+        }
+        program16[bytes16++] = 0x06u;
+        program16[bytes16++] = 0u;
+        program16[bytes16++] = 0x10u;
+        program32[bytes32++] = 0x06u;
+        program32[bytes32++] = 0u;
+        program32[bytes32++] = 0x10u;
+        if (STD_SNPRINTF(key_id, sizeof(key_id), "%s-SIZE16", keys[index]) < 0 ||
+            timing_80386_manifest_run_s7_protected_recipe(key_id, program16,
+                bytes16, pointer16, sizeof(pointer16), ticks16)) return 1;
+        if (STD_SNPRINTF(key_id, sizeof(key_id), "%s-SIZE32", keys[index]) < 0 ||
+            timing_80386_manifest_run_s7_protected_recipe(key_id, program32,
+                bytes32, pointer32, sizeof(pointer32), ticks32)) return 1;
+    }
+    return 0;
+}
+
+static C_INT timing_80386_manifest_run_s7_lldt_recipes(C_VOID)
+{
+    static const type_unsigned_8 lldt_r[] = { 0x0fu, 0x00u, 0xd1u };
+    static const type_unsigned_8 lldt_m[] = { 0x0fu, 0x00u, 0x16u, 0u, 0x10u };
+    static const type_unsigned_8 lldt_m_segment[] = {
+        0x26u, 0x0fu, 0x00u, 0x16u, 0u, 0x10u
+    };
+    static const type_unsigned_16 selector = 0x0018u;
+
+    return timing_80386_manifest_run_s7_protected_recipe("I386-SYSTEM-LLDT-R",
+            lldt_r, sizeof(lldt_r), STD_NULL, 0u, 20u) ||
+        timing_80386_manifest_run_s7_protected_recipe("I386-SYSTEM-LLDT-M",
+            lldt_m, sizeof(lldt_m), &selector, sizeof(selector), 24u) ||
+        timing_80386_manifest_run_s7_protected_recipe("I386-SYSTEM-LLDT-M-SEGMENT",
+            lldt_m_segment, sizeof(lldt_m_segment), &selector, sizeof(selector), 24u);
+}
+
+static C_INT timing_80386_manifest_run_s7_ltr_recipes(C_VOID)
+{
+    static const type_unsigned_8 ltr_r[] = { 0x0fu, 0x00u, 0xd9u };
+    static const type_unsigned_8 ltr_m[] = { 0x0fu, 0x00u, 0x1eu, 0u, 0x10u };
+    static const type_unsigned_8 ltr_m_segment[] = {
+        0x26u, 0x0fu, 0x00u, 0x1eu, 0u, 0x10u
+    };
+    static const type_unsigned_16 selector = 0x0020u;
+
+    return timing_80386_manifest_run_s7_protected_recipe("I386-SYSTEM-LTR-R",
+            ltr_r, sizeof(ltr_r), STD_NULL, 0u, 23u) ||
+        timing_80386_manifest_run_s7_protected_recipe("I386-SYSTEM-LTR-M",
+            ltr_m, sizeof(ltr_m), &selector, sizeof(selector), 27u) ||
+        timing_80386_manifest_run_s7_protected_recipe("I386-SYSTEM-LTR-M-SEGMENT",
+            ltr_m_segment, sizeof(ltr_m_segment), &selector, sizeof(selector), 27u);
+}
+
+static C_INT timing_80386_manifest_run_s7_str_recipes(C_VOID)
+{
+    static const type_unsigned_8 str_r[] = { 0x0fu, 0x00u, 0xc9u };
+    static const type_unsigned_8 str_m[] = { 0x0fu, 0x00u, 0x0eu, 0u, 0x10u };
+    static const type_unsigned_8 str_m_segment[] = {
+        0x26u, 0x0fu, 0x00u, 0x0eu, 0u, 0x10u
+    };
+
+    return timing_80386_manifest_run_s7_protected_recipe("I386-SYSTEM-STR-R",
+            str_r, sizeof(str_r), STD_NULL, 0u, 23u) ||
+        timing_80386_manifest_run_s7_protected_recipe("I386-SYSTEM-STR-M",
+            str_m, sizeof(str_m), STD_NULL, 0u, 27u) ||
+        timing_80386_manifest_run_s7_protected_recipe("I386-SYSTEM-STR-M-SEGMENT",
+            str_m_segment, sizeof(str_m_segment), STD_NULL, 0u, 27u);
 }
 
 static C_INT timing_80386_manifest_run_s4_base_recipes(C_VOID)
@@ -3132,6 +3664,23 @@ C_INT main(C_VOID)
         STD_PRINTF("M5:T437:S6:I386-PROTECTED-DIRECT-RECIPE-FAIL\n");
         return 1;
     }
+    if (timing_80386_manifest_run_s7_arpl_recipes() ||
+        timing_80386_manifest_run_s7_lar_lsl_recipes() ||
+        timing_80386_manifest_run_s7_verify_recipes() ||
+        timing_80386_manifest_run_s7_clts_recipe() ||
+        timing_80386_manifest_run_s7_descriptor_table_recipes() ||
+        timing_80386_manifest_run_s7_smsw_recipes() ||
+        timing_80386_manifest_run_s7_control_register_recipes() ||
+        timing_80386_manifest_run_s7_debug_test_register_recipes() ||
+        timing_80386_manifest_run_s7_special_register_size_contexts() ||
+        timing_80386_manifest_run_s7_lmsw_sldt_recipes() ||
+        timing_80386_manifest_run_s7_pointer_size_recipes() ||
+        timing_80386_manifest_run_s7_lldt_recipes() ||
+        timing_80386_manifest_run_s7_ltr_recipes() ||
+        timing_80386_manifest_run_s7_str_recipes()) {
+        STD_PRINTF("M5:T437:S7:I386-PROTECTED-SYSTEM-RECIPE-FAIL\n");
+        return 1;
+    }
     if (timing_80386_manifest_s5_count(0) != 234u ||
         timing_80386_manifest_s5_count(1) != 234u) {
         STD_PRINTF("M5:T437:S5:I386-ORDINARY-CONTROL-COVERAGE-FAIL:observed=%u:canonical=%u\n",
@@ -3173,6 +3722,10 @@ C_INT main(C_VOID)
     } else {
         timing_80386_manifest_print_missing_s6();
     }
+    STD_PRINTF("M5:T437:S7:I386-PROTECTED-SYSTEM-OBSERVED:%u:canonical=%u\n",
+        timing_80386_manifest_s7_count(1), timing_80386_manifest_s7_count(0));
+    if (timing_80386_manifest_s7_count(1) != timing_80386_manifest_s7_count(0))
+        timing_80386_manifest_print_missing_s7();
     if (timing_80386_manifest_s3_count(1) ==
         timing_80386_manifest_s3_count(0)) {
         STD_PRINTF("M5:T437:S3:I386-NONCONTROL-OBSERVED:809\n");

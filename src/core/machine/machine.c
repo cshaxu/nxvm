@@ -2735,6 +2735,7 @@ C_INT core_machine_control_stack_source_instruction_cost(
     type_unsigned_64 ticks;
     C_INT memory;
     C_INT protected_mode;
+    C_INT operand32;
     C_INT protected_execution;
     C_INT same_privilege;
     C_INT task_switch;
@@ -2750,6 +2751,8 @@ C_INT core_machine_control_stack_source_instruction_cost(
     }
     opcode = data->opcodes[prefixes];
     protected_mode = core_machine_control_stack_is_protected(data);
+    operand32 = data->oldcpu.data.cs.seg.exec.defsize;
+    if (data->prefix_oprsize) operand32 = !operand32;
     protected_execution = (data->oldcpu.data.cr0 & VCPU_CR0_PE) != 0u;
     same_privilege = !protected_execution ||
         ((data->oldcpu.data.eflags & VCPU_EFLAGS_VM) == 0u &&
@@ -3512,6 +3515,8 @@ C_INT core_machine_80386_privileged_source_instruction_cost(
     C_INT memory;
     C_INT protected_mode;
 
+    C_INT operand32;
+
     if (machine == STD_NULL || out_ticks == STD_NULL ||
         machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_80386) return 0;
     data = &machine->executor_cpu_instructions.data;
@@ -3522,6 +3527,8 @@ C_INT core_machine_80386_privileged_source_instruction_cost(
     }
     opcode = data->opcodes[prefixes];
     protected_mode = core_machine_control_stack_is_protected(data);
+    operand32 = data->oldcpu.data.cs.seg.exec.defsize;
+    if (data->prefix_oprsize) operand32 = !operand32;
 
     if (opcode == 0x63u) {
         if (!protected_mode || (data->oldcpu.data.eflags & VCPU_EFLAGS_VM) != 0u ||
@@ -3536,7 +3543,7 @@ C_INT core_machine_80386_privileged_source_instruction_cost(
     if (secondary == 0x06u) {
         if ((data->oldcpu.data.eflags & VCPU_EFLAGS_VM) != 0u ||
             (protected_mode && data->oldcpu.data.cs.dpl != 0u)) return 0;
-        *out_ticks = 5u;
+        *out_ticks = 6u;
         return 1;
     }
     if (secondary == 0xa0u || secondary == 0xa8u) {
@@ -3555,7 +3562,8 @@ C_INT core_machine_80386_privileged_source_instruction_cost(
             return 1;
         }
         if ((data->oldcpu.data.eflags & VCPU_EFLAGS_VM) != 0u) return 0;
-        *out_ticks = secondary == 0xb2u ? 22u : 25u;
+        if (secondary == 0xb2u) *out_ticks = operand32 ? 28u : 26u;
+        else *out_ticks = operand32 ? 31u : 29u;
         return 1;
     }
     if (prefixes + 2u >= data->oplen) return 0;
@@ -3576,7 +3584,7 @@ C_INT core_machine_80386_privileged_source_instruction_cost(
             *out_ticks = memory ? 27u : 23u;
             return 1;
         case 2u:
-            *out_ticks = 20u;
+            *out_ticks = memory ? 24u : 20u;
             return 1;
         case 3u:
             *out_ticks = memory ? 27u : 23u;
@@ -3611,7 +3619,7 @@ C_INT core_machine_80386_privileged_source_instruction_cost(
         case 6u:
             if ((data->oldcpu.data.eflags & VCPU_EFLAGS_VM) != 0u ||
                 (protected_mode && data->oldcpu.data.cs.dpl != 0u)) return 0;
-            *out_ticks = memory ? 13u : 10u;
+            *out_ticks = memory ? 14u : 11u;
             return 1;
         default:
             return 0;
@@ -3630,7 +3638,7 @@ C_INT core_machine_80386_privileged_source_instruction_cost(
         if (data->source_lsl_page_granular) {
             *out_ticks = memory ? 26u : 25u;
         } else {
-            *out_ticks = memory ? 21u : 20u;
+            *out_ticks = memory ? 22u : 21u;
         }
         return 1;
     case 0x20u:
@@ -3652,7 +3660,7 @@ C_INT core_machine_80386_privileged_source_instruction_cost(
             (protected_mode && data->oldcpu.data.cs.dpl != 0u) ||
             (memory && !machine->cpu_80386_cr_mov_ignores_mod) ||
             (extension != 0u && extension != 2u && extension != 3u)) return 0;
-        *out_ticks = extension == 0u ? 10u : (extension == 2u ? 4u : 5u);
+        *out_ticks = extension == 0u ? 11u : (extension == 2u ? 4u : 5u);
         return 1;
     case 0x23u:
         if ((data->oldcpu.data.eflags & VCPU_EFLAGS_VM) != 0u ||
@@ -3846,6 +3854,15 @@ C_INT core_machine_80386_source_instruction_cost(core_machine *machine,
     if (data->flagLock ||
         !core_machine_80386_timing_has_source_prefixes(data, prefixes)) {
         core_machine_source_timing_mark_unallocated(machine, out_ticks);
+        return 1;
+    }
+    if ((opcode == 0xc4u || opcode == 0xc5u) &&
+        core_machine_control_stack_is_protected(data) &&
+        core_machine_source_timing_modrm_is_memory(data, prefixes)) {
+        C_INT operand32 = data->oldcpu.data.cs.seg.exec.defsize;
+
+        if (data->prefix_oprsize) operand32 = !operand32;
+        *out_ticks = operand32 ? 28u : 26u;
         return 1;
     }
     if (opcode >= 0x70u && opcode <= 0x7fu) {
