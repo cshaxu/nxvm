@@ -2,29 +2,29 @@
 
 ## Current Work
 
-**Active: M5 T437 S7.** The owner-approved continuation closes the remaining
-80386DX protected segment, descriptor, system and special-register partition.
+**Active: M5 T437 S8.** The owner-approved final continuation closes the
+complete 80386DX result set and task-level audit.
 
-## M5 T437 S7 Packet
+## M5 T437 S8 Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation; M5 T437 S7 follows accepted S6 in the latest open numeric task. |
-| Admission And Approval | The owner directed continuous complete 80386DX implementation on 2026-08-22. Accepted S1 assigns protected segment, descriptor, system and special-register forms to S7. |
-| Objective | Implement and prove every S7 80386DX canonical key through the sole Core retirement publisher, including legal memory, segment and operand-size contexts. |
-| Non-goals | Do not reopen accepted S3--S6 control contracts or claim S8 final-result closure; do not assign board or host timing, alter public ABI, import source or fabricate results. |
-| Reference Baseline | [S1 partition](../etc/cpu-timing/t437-s1-80386-key-partition.md), [S2 producer](../etc/cpu-timing/t437-s2-80386-result-producer.md), [80386DX ledger](../etc/cpu-timing/t435-s1-80386-ledger.md), [manifest](../etc/cpu-timing/t435-s2-80386-timing-manifest.json), [audit](../etc/cpu-timing/t435-s2-80386-implementation-audit.md), [result contract](../etc/cpu-timing/t435-s2-manifest-result-contract.md), `cpu_instructions.c`, `cpu_timing.c`, `machine.c`, and the accepted S3 result and x87-interface evidence. |
+| Identifier Mode | Continuation; M5 T437 S8 follows accepted S7 in the latest open numeric task. |
+| Admission And Approval | The owner directed continuous complete 80386DX implementation on 2026-08-22. Accepted S1 assigns final result publication, regression, obsolete-route disposition and task audit to S8. |
+| Objective | Publish and prove the complete 1,410-key 80386DX result set, preserving the manual's separate MCP clock domain for ESC while every scalar CPU key remains an actual retirement observation. |
+| Non-goals | Do not reopen accepted S3--S7 instruction semantics or replace the CPU/FPU handoff with x87 arithmetic emulation; do not assign board or host timing, alter public ABI, import source or fabricate CPU clocks. |
+| Reference Baseline | [S1 partition](../etc/cpu-timing/t437-s1-80386-key-partition.md), [S2 producer](../etc/cpu-timing/t437-s2-80386-result-producer.md), [80386DX ledger](../etc/cpu-timing/t435-s1-80386-ledger.md), [manifest](../etc/cpu-timing/t435-s2-80386-timing-manifest.json), [audit](../etc/cpu-timing/t435-s2-80386-implementation-audit.md), [result contract](../etc/cpu-timing/t435-s2-manifest-result-contract.md), [S3 x87 contract](../etc/cpu-timing/t437-s3-x87-interface-contract.md), [S7 evidence](../etc/cpu-timing/t437-s7-protected-system-execution.md), and the retained Intel 80386DX / 80387 manuals. |
 | Candidate Proposal | [M5 80386DX instruction timing closure](../proposals/m5-80386dx-instruction-timing-closure.md). |
-| Files And ABI Surface | The private 80386DX timing selector and manifest runner, protected-system focused tests, evidence and CURRENT only. No public header, external ABI, device, board or artifact identity change. |
-| Applicable Rules | Execution: bounded continuation/P lifecycle, dual-role review and similar-issue sweep. Architecture: one Core CPU/port/memory transaction and retirement publisher, with no board policy. Coding: C11 cohesive private helpers and no parallel selector. Documentation: CURRENT is the active contract. Source: no import. |
-| Verification | Build/run the 80386DX manifest runner; require every S7 key observed with classified non-unallocated origin and legal memory/segment/size inputs; run decoder, prefix, partition, documentation and cross-profile regression checks. |
-| Expected Markers | Retain S1--S6 markers; add S7 protected-system observed, coverage and input markers before acceptance. |
+| Files And ABI Surface | The private 80386DX manifest runner, shared result verifier/contract, result artifact, S8 evidence and CURRENT only. No public header, external ABI, device, board or artifact identity change. |
+| Applicable Rules | Execution: bounded continuation/P lifecycle, dual-role review, actual-change review and similar-issue sweep. Architecture: one Core CPU/port/memory transaction and retirement publisher, with no board policy; the existing CPU/FPU transaction remains its single handoff owner. Coding: C11 cohesive private helpers and no parallel selector. Documentation: CURRENT is the active contract. Source: no import. |
+| Verification | Build/run the 80386DX manifest runner; require 1,409 classified CPU retirement records plus one verified ESC MCP-domain handoff; run `Verify-CpuTimingResults.ps1` for the result, the partition and documentation gates, and relevant decoder/prefix/cross-profile regressions. |
+| Expected Markers | Retain S1--S7 markers; add S8 result-closure, ESC-domain and task-audit markers before acceptance. |
 | Asset Needs | Repository fixtures and retained 80386DX manual evidence only; no firmware, guest media, source download, Microsoft component or third-party code. |
-| Reporting Requirements | Record every S7 result, legal form/context inputs, code delta, focused proof, actual changed files, and transfer to S8. The executor delivers one complete P and the same session then performs actual-change review. |
-| Stop Conditions | Stop for manual/manifest/decoder contradiction, unrepresentable legal S7 key, required public ABI or board timing, source-policy issue, or verifier contradiction. Do not guess ticks, omit a key or retain a generic successful fallback. |
-| Exit Criteria | Every S7 key has a real classified, non-unallocated result with required source form/origin/ticks/formula inputs; S2 final writer still rejects the incomplete whole-task result; all gates and dual-role review pass. |
+| Reporting Requirements | Record final result shape, ESC-domain evidence, code delta, focused proof, actual changed files, cross-profile disposition and task closure audit. The executor delivers one complete P and the same session then performs actual-change review. |
+| Stop Conditions | Stop for manual/manifest/contract contradiction, unrepresentable ESC-domain result, required public ABI or board timing, source-policy issue, or verifier contradiction. Do not guess clocks, omit a key or retain a generic successful fallback. |
+| Exit Criteria | The writer emits exactly 1,410 legal keys: 1,409 real classified CPU observations and one verified ESC MCP-domain handoff with no scalar CPU clock claim; result and all applicable gates pass; task-level audit and dual-role review accept the complete implementation. |
 | Original Owner Request | Owner request, faithfully translated: continuously and completely implement the correct 80386 instruction function and timing model, under the single-person dual-role governance lifecycle. |
-| Similar-Issue Sweep | Defect class: a legal S7 protected segment/descriptor/system/special-register retirement with missing/incorrect Core timing ownership, context input, result capture or unallocated fallback. Scope: all S7 manifest keys, sole timing selector, decoder routes, runner recipes and adjacent profile paths; non-S7 hits transfer through their existing partition. |
+| Similar-Issue Sweep | Defect class: a completed 80386 legal key that cannot be truthfully represented by the final result contract, including non-CPU clock domains, missing/incorrect ownership, result capture or unallocated fallback. Scope: all 1,410 manifest keys, shared result verifier, sole timing publisher, CPU/FPU handoff and adjacent profile result records; non-80386 changes are limited to contract compatibility and otherwise transfer through their own task. |
 ## Current Technical Baseline
 
 - **Current developer artifact:** target `vm-0-5-0434`; `nxvm_0_5_0434.exe` / `build/output/nxvm_0_5_0434.exe`, SHA-256 `F8562F4623D53303470408837249CF89C985E0A0B1130212BBD9CE26B5E1B38A`. T434 has one copied Core timing-plan publication route for default PC/AT, IBM 5170 Model 339 and Model-40 BYOB session composition.
@@ -49,6 +49,8 @@
 
 | Task | Compact result |
 | --- | --- |
+| T437 S7 | Accepted: all 115 protected segment, descriptor, system and special-register keys are classified through the sole retirement publisher; [S7 evidence](../etc/cpu-timing/t437-s7-protected-system-execution.md) retains real protected descriptors and manual-first corrections. |
+| T437 S6 | Accepted: all 89 protected, privilege, gate, task and VM86 control-transfer keys are classified through the sole retirement publisher; [S6 evidence](../etc/cpu-timing/t437-s6-protected-control-execution.md) retains the successful-path fixtures and manual corrections. |
 | T437 S5 | Accepted: 234 corrected ordinary-control 80386DX keys retire with classified non-unallocated results; the two omitted stack-memory segment contexts are executed, while protected/VM86/task paths remain S6. [S5 evidence](../etc/cpu-timing/t437-s5-ordinary-control-execution.md) retains the real-mode and formula inputs. |
 | T437 S4 | Accepted: all 162 direct-I/O and primitive/REP-string 80386DX keys retire with classified non-unallocated results, including real segment and repeat-phase contexts; [S4 evidence](../etc/cpu-timing/t437-s4-string-io-execution.md) retains the direct-port and continuation proof. |
 | T437 S3 | Accepted: 809 ordinary scalar/formula 80386DX keys retire with classified results, including SETcc; ESC is separately verified as the cross-profile CPU/FPU handoff, BUSY/WAIT, transaction and 80387-range contract in [S3 x87 evidence](../etc/cpu-timing/t437-s3-x87-interface-contract.md). |

@@ -29,6 +29,7 @@ The focused result file contains exactly one result for each generated key:
 ```json
 {
   "key_id": "I86-...",
+  "timing_domain": "cpu",
   "ticks": 0,
   "formula_inputs": {"name": "value"},
   "form_id": "published decoder form",
@@ -38,17 +39,28 @@ The focused result file contains exactly one result for each generated key:
 }
 ```
 
+`timing_domain` defaults to `cpu` for retained result files.  A key may use
+the non-CPU `mcp` domain only where its Intel CPU manual expressly delegates
+clock accounting to the selected coprocessor.  The current sole instance is
+`I386-ESC`: its record has `ticks: null`, `handoff_kind:
+CPU_FPU_COMMAND`, the executed escape opcode and ModR/M, a selected
+coprocessor profile, and a positive ordered `coprocessor_ticks_min`/
+`coprocessor_ticks_max` interval.  That interval is never a CPU-retirement
+tick value.
+
 The test may emit multiple probes for one key only when the key's S1 formula
 requires partitions. The reducer must retain all probe identities and marks
 the key conforming only when every required partition passes.
 
 ## Required verifier behaviour
 
-For each profile, the result verifier rejects: missing/duplicate key results;
-unknown keys; wrong source rule or level; missing required formula input;
-unallocated successful retirement; a route/origin mismatch; a target value or
-manual-bound failure; or any result that does not pass. It derives, rather
-than hand-edits, the manifest status totals.
+For each profile, the result verifier selects its profile-specific canonical
+catalog and rejects: missing/duplicate key results; unknown keys; wrong
+profile, source rule, level or context; missing required formula input;
+unallocated successful retirement; an invalid CPU or MCP-domain record; a
+route/origin mismatch; a target value or manual-bound failure; or any result
+that does not pass. It derives, rather than hand-edits, the manifest status
+totals.
 
 `encoding` and `context` are generated records, not free prose in a test.
 Template IDs and axes remain the compact authoring form, but B0 must emit the

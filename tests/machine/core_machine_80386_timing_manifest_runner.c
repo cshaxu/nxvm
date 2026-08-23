@@ -37,6 +37,17 @@ typedef struct timing_80386_manifest_capture {
     type_unsigned_32 count;
 } timing_80386_manifest_capture;
 
+/* Chapter 17 explicitly directs ESC clock accounting to the selected 80287
+ * or 80387 data sheet.  Preserve that non-CPU result as a verified handoff,
+ * rather than manufacturing a scalar source_ticks observation. */
+typedef struct timing_80386_manifest_esc_handoff {
+    C_INT verified;
+    type_unsigned_8 opcode;
+    type_unsigned_8 modrm;
+    type_unsigned_64 ticks_min;
+    type_unsigned_64 ticks_max;
+} timing_80386_manifest_esc_handoff;
+
 static const timing_80386_manifest_record timing_80386_manifest_records[] = {
 #include "cpu_timing_manifest_metadata_catalog.inc"
 };
@@ -45,6 +56,7 @@ static C_INT timing_80386_manifest_observed[
 static core_machine_retirement_observation timing_80386_manifest_results[
     sizeof(timing_80386_manifest_records) / sizeof(timing_80386_manifest_records[0])];
 static C_INT timing_80386_manifest_current_index = -1;
+static timing_80386_manifest_esc_handoff timing_80386_manifest_esc;
 
 typedef struct timing_80386_manifest_port_state {
     type_unsigned_32 reads;
@@ -300,6 +312,13 @@ static type_unsigned_32 timing_80386_manifest_observed_count(C_VOID)
     return observed;
 }
 
+static C_INT timing_80386_manifest_is_esc(
+    const timing_80386_manifest_record *record)
+{
+    return timing_80386_manifest_is_i386(record) &&
+        STD_STRCMP(record->key_id, "I386-ESC") == 0;
+}
+
 static type_unsigned_32 timing_80386_manifest_s3_count(C_INT observed_only)
 {
     STD_SIZE_T index;
@@ -417,8 +436,9 @@ static C_VOID timing_80386_manifest_print_missing_s7(C_VOID)
 static C_INT timing_80386_manifest_results_complete(C_VOID)
 {
     return timing_80386_manifest_expected_count() != 0u &&
-        timing_80386_manifest_observed_count() ==
-            timing_80386_manifest_expected_count();
+        timing_80386_manifest_observed_count() + 1u ==
+            timing_80386_manifest_expected_count() &&
+        timing_80386_manifest_esc.verified;
 }
 
 /* The completeness check precedes any file operation.  Later S units may use
@@ -446,12 +466,13 @@ static C_INT timing_80386_manifest_write_results(const C_CHAR *path,
         const core_machine_retirement_observation *observation =
             &timing_80386_manifest_results[index];
 
-        if (!timing_80386_manifest_is_i386(record)) continue;
+        if (!timing_80386_manifest_is_i386(record) ||
+            timing_80386_manifest_is_esc(record)) continue;
         if ((written != 0u && STD_FPRINTF(file, ",\n") < 0) ||
             STD_FPRINTF(file, "    {\"key_id\":\"%s\","
                 "\"profile\":\"%s\",\"level\":\"%s\","
                 "\"source_rule\":\"%s\",\"context\":\"%s\","
-                "\"ticks\":%llu,\"formula_inputs\":%u,"
+                "\"timing_domain\":\"cpu\",\"ticks\":%llu,\"formula_inputs\":%u,"
                 "\"form_id\":%u,\"retirement_origin\":%d,"
                 "\"source_timing_unallocated\":%s,\"passed\":true}",
                 record->key_id, record->profile, record->level,
@@ -465,6 +486,24 @@ static C_INT timing_80386_manifest_write_results(const C_CHAR *path,
         }
         ++written;
     }
+    if ((written != 0u && STD_FPRINTF(file, ",\n") < 0) ||
+        STD_FPRINTF(file, "    {\"key_id\":\"I386-ESC\","
+            "\"profile\":\"80386DX\",\"level\":\"L3\","
+            "\"source_rule\":\"I386DX-PRM-1990 Ch.17 processor-extension row; 80287/80387 data sheet clocks\","
+            "\"context\":\"BASE\",\"timing_domain\":\"mcp\","
+            "\"ticks\":null,\"formula_inputs\":0,\"form_id\":4294967295,"
+            "\"retirement_origin\":0,\"source_timing_unallocated\":false,"
+            "\"coprocessor_profile\":\"80387\","
+            "\"escape_opcode\":%u,\"escape_modrm\":%u,"
+            "\"coprocessor_ticks_min\":%llu,\"coprocessor_ticks_max\":%llu,"
+            "\"handoff_kind\":\"CPU_FPU_COMMAND\",\"passed\":true}",
+            timing_80386_manifest_esc.opcode, timing_80386_manifest_esc.modrm,
+            timing_80386_manifest_esc.ticks_min,
+            timing_80386_manifest_esc.ticks_max) < 0) {
+        STD_FCLOSE(file);
+        return 1;
+    }
+    ++written;
     if (STD_FPRINTF(file, "\n  ]\n}\n") < 0 || STD_FCLOSE(file) != 0) return 1;
     return written == timing_80386_manifest_expected_count() ? 0 : 1;
 }
@@ -668,6 +707,10 @@ static C_INT timing_80386_manifest_verify_esc_handoff(C_VOID)
         machine->fpu.operation_ticks_min != 12u ||
         machine->fpu.operation_ticks_max != 26u ||
         machine->transaction.kind != CORE_MACHINE_TRANSACTION_CPU_FPU_COMMAND;
+    if (!failed) timing_80386_manifest_esc = (timing_80386_manifest_esc_handoff) {
+        1, fadd[0], fadd[1], machine->fpu.operation_ticks_min,
+        machine->fpu.operation_ticks_max
+    };
     core_machine_destroy(machine);
     return failed;
 }
@@ -3691,7 +3734,7 @@ C_INT main(C_VOID)
         timing_80386_manifest_s3_count(0) != 809u ||
         timing_80386_manifest_observed_count() == 0u ||
         timing_80386_manifest_write_results(
-            "docs/etc/cpu-timing/t437-s8-80386-timing-results.json", 1) == 0) {
+            "docs/etc/cpu-timing/t437-s8-80386-timing-results.json", 1) != 0) {
         STD_PRINTF("M5:T437:S3:I386-POSTCHECK-FAIL:canonical=%u:observed=%u:total=%u\n",
             timing_80386_manifest_s3_count(0), timing_80386_manifest_s3_count(1),
             timing_80386_manifest_observed_count());
@@ -3700,7 +3743,8 @@ C_INT main(C_VOID)
     STD_PRINTF("M5:T437:S2:I386-RESULT-PRODUCER:PASS:observed=%u:canonical=%u\n",
         timing_80386_manifest_observed_count(),
         timing_80386_manifest_expected_count());
-    STD_PRINTF("M5:T437:S2:I386-INCOMPLETE-RESULT-REFUSED:PASS\n");
+    STD_PRINTF("M5:T437:S8:I386-RESULT-CLOSURE:PASS:canonical=%u:cpu=1409:mcp=1\n",
+        timing_80386_manifest_expected_count());
     STD_PRINTF("M5:T437:S3:I386-NONCONTROL-COVERAGE:observed=%u:canonical=%u\n",
         timing_80386_manifest_s3_count(1), timing_80386_manifest_s3_count(0));
     STD_PRINTF("M5:T437:S4:I386-STRING-IO-OBSERVED:%u\n",
