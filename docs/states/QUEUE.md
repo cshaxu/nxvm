@@ -13,7 +13,6 @@ architecture and deliberately prefer direct owner-local corrections over new
 layers; each implementation admission must still establish its own finite
 sweep and regression evidence.
 
-1. [Core reset and firmware failure atomicity](../proposals/m5-core-reset-firmware-failure-atomicity.md).
 1. [VM session reset and startup outcome propagation](../proposals/m5-vm-session-reset-startup-outcomes.md).
 1. [Model-40 immutable configuration enforcement](../proposals/m5-model40-immutable-configuration.md).
 1. [VM media persistence failure hygiene](../proposals/m5-vm-media-persistence-failure-hygiene.md).
