@@ -2,26 +2,7 @@
 
 ## Current Work
 
-## M5 T446 S1 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | New; `M5 T446 S1`, single-session coordinator/executor then coordinator closure review. |
-| Admission And Approval | Owner approval: active thread goal, 2026-08-23, single-agent minimalist completion of VM debugger-state and recording-lifecycle repair. Admits Queue head only; no exception. |
-| Objective | Make debugger cursor state session-instance-owned and make recorder start/write/stop/finalize outcomes truthful at the existing VM debug boundary. |
-| Non-goals | No Core debugger redesign, command-interpreter replacement, console command ABI change, trace-format change, asynchronous recording, or new abstraction layer. |
-| Reference Baseline | `5f6256e6` prior T445 source commit; Queue head proposal. |
-| Candidate Proposal | [M5 VM debugger state and recording lifecycle repair](../proposals/m5-vm-debugger-recording-lifecycle.md). |
-| Files And ABI Surface | `src/vm/machine/debug.[ch]`, VM session lifecycle/control/console adapter only if needed, focused smoke/CMake registration, current artifact/version, evidence/history/status. Preserve retained console commands and record format. |
-| Applicable Rules | `docs/rules/EXECUTION.md`: packet, P lifecycle, similar sweep, artifact, closure; architecture: one mutable-state owner/production path and `vm -> core`; coding: owner-local cohesive repair, no forwarding facade, remove obsolete path; documentation topology/index rules. No exception. |
-| Verification | New focused two-session cursor isolation plus recorder start/write/stop/finalize-failure smoke; complete recorder-call sweep; static recurrence gate when mechanically feasible; `current-fast-smokes-gcc`, `current-gates-gcc`, documentation governance; fresh exact-source `vm-0-5-0446` build and SHA-256. |
-| Expected Markers | `M5:T446:S1:VM-DEBUGGER-RECORDING-LIFECYCLE:OK`; static gate marker; all current gates pass. |
-| Asset Needs | None; no firmware, guest media, trace fixture, or external source. |
-| Reporting Requirements | Report admission/brief confirmation, implementation P1 pushed, coordinator actual-change review, P2 closure pushed; evidence maps every proposal requirement, call-site disposition, source line accounting, artifact identity/SHA, and retained boundary. |
-| Stop Conditions | Stop and obtain owner direction only if making failures observable requires a console command-status ABI change or a Core debugger-context redesign. |
-| Exit Criteria | Each session owns its cursor state; all start/write/stop/finalize recorder failures leave no false active state and are observable at the existing VM debug boundary; destruction closes once; every recorder caller is disposed; focused tests/current gates/fresh artifact pass; actual-diff review finds no duplicate lifecycle path. |
-| Original Owner Request | Single-agent minimalist completion of VM debugger-state and recording-lifecycle repair. |
-| Similar-Issue Sweep | Search all tracked production, tests, CMake and governance records for `recordFile`, `vm_machine_debug_record_`, `STD_FOPEN`, `STD_FCLOSE`, `STD_FPRINTF` and debugger cursor/context state. Classify every production hit; repair the shared VM debug owner or transfer any out-of-scope hit. |
+**Idle.**
 
 ## Current Technical Baseline
 
@@ -47,6 +28,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T446 | Closed: each VM session owns its debugger cursor state; the sole recorder owner closes on stop, write failure and destruction, clearing failed streams and reporting lifecycle outcomes. [Evidence](../etc/evidence/t446-s1-vm-debugger-recording-lifecycle.md). |
 | T445 | Closed: each VM native display adapter now owns its host resource lifecycle; Win32 pairs its DC before window destruction, and Linux curses terminates on the initializing display thread. [Evidence](../etc/evidence/t445-s1-vm-native-display-resource-lifetime.md). |
 | T444 | Closed: the 20 fast-smoke fixture failures use the legal 16-byte reset window; T344 classifies four manifest producers separately from 71 historical fixtures; every discovered stale gate now proves the current single Core plan route. [Evidence](../etc/evidence/t444-s1-current-gate-regression-restoration.md). |
 | T443 | Closed: the mailbox C11-initializes its sole lock, every production renderer stops on failed capture, and VM display generation commits only after one accepted publication path. [Evidence](../etc/evidence/t443-s1-core-platform-primitive-outcomes.md). |
@@ -54,7 +36,6 @@
 | T441 | Closed: VM media saving has one staging owner; FDD now releases derived sidecar state on failed paired persistence, and focused failure smoke proves resident/file/temporary preservation. [Evidence](../etc/evidence/t441-s1-vm-media-persistence-failure-hygiene.md). |
 | T440 | Closed: Model-40 configuration has one private initializer; incompatible creation/runtime memory changes are rejected at the VM boundary, with generic session reconfiguration retained. [Evidence](../etc/evidence/t440-s1-model40-immutable-configuration.md). |
 | T439 | Closed: session reset and startup now return Core failure through one lifecycle outcome; required FDD initialization also propagates status, and no-HDD Model 339 reset avoids an unnecessary unmapped BIOS-table write. [Evidence](../etc/evidence/t439-s1-vm-session-reset-startup-outcomes.md). |
-| T438 | Closed: Core is the sole firmware-reset failure owner; discarded firmware-operation errors now return through `core_machine_reset`, leave the machine non-runnable and permit repaired retry. [Evidence](../etc/evidence/t438-s1-core-reset-firmware-failure-atomicity.md). |
 
 
 ## Recent Governance
