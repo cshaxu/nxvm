@@ -40,6 +40,13 @@
 
 ## Recent Governance
 
+- **M5 Td S130 P1:** sixth-pass manual review of selected VM production
+  dependencies on Core-private machine headers confirms a keyboard scan-set
+  contract gap and five unused include residues. The indexed
+  [evidence](../etc/evidence/td-s130-sixth-pass-audit.md) records exact paths,
+  bounded non-findings, and the existing TODO transfer; this is not a
+  whole-repository completion or runtime-correctness claim.
+
 - **M5 Td S129 P1:** fifth-pass manual review of Core product-session payloads,
   selected machine state headers, debug/execution providers, and utilities
   confirms raw mutable option/command storage crosses the public session
@@ -86,5 +93,3 @@
 - **M5 Td S124 P1:** ran limited static dependency and C-facade checks. Those checks passed, but they were not a full manual architecture/code audit and do not establish absence of invariant violations; Td S125 performs the required source and documentation review.
 
 - **M5 Td S123 P1:** audited the repository against the documentation and execution authorities: topology, links, indexes, packet/identifier/state, Queue/TODO boundaries and current artifact identity pass the required governance gate. The worktree is clean. Read-only Git integrity inspection reports only unreachable temporary objects; it is not a current integrity failure and no destructive cleanup was admitted.
-
-- **M5 Td S122 P1:** decomposed the queued 80286 timing closure by observable timing and architectural path: coverage freeze, result-contract publication, non-control forms, strings, ordinary and protected control transfer, protected system forms, then full closure. No numeric task, source, artifact, ABI or runtime behavior changed.

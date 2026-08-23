@@ -146,13 +146,19 @@ adopts them.
   confirms that `console.h` exports parser/provider/session-manager/catalog
   state and `session_catalog.h` exports all mutable parsed records; the same
   pass found composition's `provider.h` includes that outer product contract
-  and implements its adapter, reversing the intended dependency direction.
+  and implements its adapter, reversing the intended dependency direction. Td
+  S130 further confirms that `vm/profile/default_profile/keyboard_mapper.c`
+  reaches the private `core/machine/kbc.h` solely for scan-set constants that
+  are absent from the public machine contract; three other selected VM files
+  retain five unused private Core header includes.
   Admit one
   implementation task to inventory every cross-owner consumer, define
   opaque/copied/bounded interfaces with explicit lifetime and failure semantics,
   move owner-private layouts and firmware construction behind them, relocate
   product adaptation to the composition root, update tests to prove the public
-  boundary, and remove the direct paths atomically. Do not rename headers
+  boundary, expose the bounded keyboard scan-set vocabulary at the existing
+  public operation boundary (without exposing KBC state), and remove unused
+  implementation dependencies atomically. Do not rename headers
   without retiring the exposed layouts/direct production consumers, retain the
   reverse product include through a forwarding header, or add test-only state
   accessors.
