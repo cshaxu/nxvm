@@ -2,26 +2,7 @@
 
 ## Current Work
 
-## M5 T447 S1 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | New; `M5 T447 S1`, single-session coordinator/executor then coordinator closure review. |
-| Admission And Approval | Owner approved the queued architecture-boundary debt closure on 2026-08-23. This admits its S1 build-ownership batch only. |
-| Objective | Freeze the T447 ledger and give every current VM build source and host-native library one truthful owning target. |
-| Non-goals | No VM/Core runtime behavior, public API, platform adapter redesign, session-contract repair, or source-code relocation outside the build ownership findings. |
-| Reference Baseline | `b9d3a659`; prior 0446 artifact; Td S125--S130 rows and T447 proposal S1. |
-| Candidate Proposal | [M5 Architecture-Boundary Debt Closure](../proposals/m5-architecture-boundary-debt-closure.md), S1. |
-| Files And ABI Surface | `CMakeLists.txt`, one narrow CMake verifier/test only if needed, T447 history/evidence/status, and current artifact version. No runtime ABI surface. |
-| Applicable Rules | Execution packet/P/ledger/closure requirements; architecture one-owner target and host-boundary direction; coding deletion of stale aggregate/duplicate route and no wrapper target; documentation topology. No exception. |
-| Verification | Inventory every VM source-to-target and native-library edge before/after; configure/build the current artifact and focused composition consumers on the supported host; run the narrow uniqueness/static verifier, current gates, and documentation governance. |
-| Expected Markers | `M5:T447:S1:BUILD-OWNERSHIP:OK`; no `VM_RUNTIME_SOURCES`, no direct `machine_info.c` artifact compile, and no Win32 library propagated by `vm-composition`. |
-| Asset Needs | None. |
-| Reporting Requirements | Record the frozen T447 ledger, each S1 source/edge disposition, code-size accounting, focused/full verification, artifact SHA, and actual-diff review; commit and push the complete implementation P before coordinator closure. |
-| Stop Conditions | Stop for owner direction if a target consumer needs an undiscovered native dependency, if one source has a real independent second owner, or if a required target-graph change alters VM behavior. |
-| Exit Criteria | The full S1 inventory has one source owner and host-native edge owner; stale declarations are deleted; focused graph proof and current gates pass; artifact builds; no duplicate production route or platform leak remains. |
-| Original Owner Request | Execute the newly approved code-governance closure T using the proposal's dependency-ordered S tasks. |
-| Similar-Issue Sweep | Inspect every CMake source aggregate, `add_library`/`add_executable`, `target_link_libraries`, artifact helper, platform library edge, and verifier inventory; do not repair only the two originally named lines. |
+**Active.** T447 remains open between accepted subtasks.
 
 ## Current Technical Baseline
 
@@ -47,6 +28,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T447 S1 | Accepted P1 `9a81283d`: each current VM build source and native GUI edge has one owner; the duplicate artifact source route is removed. The 0447 artifact, 293 current smoke tests, and 67 specialized verifiers pass. [Evidence](../etc/evidence/t447-s1-build-ownership.md). |
 | T446 | Closed: each VM session owns its debugger cursor state; the sole recorder owner closes on stop, write failure and destruction, clearing failed streams and reporting lifecycle outcomes. [Evidence](../etc/evidence/t446-s1-vm-debugger-recording-lifecycle.md). |
 | T445 | Closed: each VM native display adapter now owns its host resource lifecycle; Win32 pairs its DC before window destruction, and Linux curses terminates on the initializing display thread. [Evidence](../etc/evidence/t445-s1-vm-native-display-resource-lifetime.md). |
 | T444 | Closed: the 20 fast-smoke fixture failures use the legal 16-byte reset window; T344 classifies four manifest producers separately from 71 historical fixtures; every discovered stale gate now proves the current single Core plan route. [Evidence](../etc/evidence/t444-s1-current-gate-regression-restoration.md). |
