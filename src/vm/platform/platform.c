@@ -8,16 +8,20 @@
 
 #include "core/platform/display_frame.h"
 
-#include "vm/platform/platform.h"
+#include "vm/platform/platform_internal.h"
 
-C_VOID vm_platform_run_context_initialize(
-    vm_platform_run_context *context,
+type_status vm_platform_run_context_create(
     const vm_platform_execution_transport *execution,
     const vm_platform_host_input_sink *input_sink,
     const core_platform_presentation_mailbox *presentation,
-    const core_utils_wait_scope *wait_scope)
+    const core_utils_wait_scope *wait_scope, vm_platform_run_context **out_context)
 {
-    if (context == STD_NULL) return;
+    vm_platform_run_context *context;
+
+    if (out_context == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    *out_context = STD_NULL;
+    context = STD_MALLOC(sizeof(*context));
+    if (context == STD_NULL) return TYPE_STATUS_NO_MEMORY;
     context->execution = execution;
     context->input_sink = input_sink == STD_NULL ?
         (vm_platform_host_input_sink){0} : *input_sink;
@@ -33,6 +37,13 @@ C_VOID vm_platform_run_context_initialize(
     context->display_mode = VM_PLATFORM_DISPLAY_CONSOLE;
     context->auto_window_active = 0;
     context->auto_promotion_pending = 0;
+    *out_context = context;
+    return TYPE_STATUS_OK;
+}
+
+C_VOID vm_platform_run_context_destroy(vm_platform_run_context *context)
+{
+    STD_FREE(context);
 }
 
 type_status vm_platform_host_input_sink_submit(
@@ -95,13 +106,31 @@ C_INT vm_platform_run_context_take_auto_promotion(
     return TYPE_TRUE;
 }
 
+type_status vm_platform_run_handle_create(vm_platform_run_handle **out_handle)
+{
+    vm_platform_run_handle *handle;
+
+    if (out_handle == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    *out_handle = STD_NULL;
+    handle = STD_CALLOC(1u, sizeof(*handle));
+    if (handle == STD_NULL) return TYPE_STATUS_NO_MEMORY;
+    vm_platform_run_handle_initialize(handle);
+    *out_handle = handle;
+    return TYPE_STATUS_OK;
+}
+
 C_VOID vm_platform_run_handle_initialize(vm_platform_run_handle *handle)
 {
-    if (handle != STD_NULL) {
-        STD_MEMSET(handle, 0, sizeof(*handle));
-        STD_ATOMIC_INIT(&handle->last_event, VM_PLATFORM_RUN_EVENT_NONE);
-        STD_ATOMIC_INIT(&handle->stop_reported, TYPE_FALSE);
-    }
+    if (handle == STD_NULL) return;
+    STD_MEMSET(handle, 0, sizeof(*handle));
+    STD_ATOMIC_INIT(&handle->last_event, VM_PLATFORM_RUN_EVENT_NONE);
+    STD_ATOMIC_INIT(&handle->stop_reported, TYPE_FALSE);
+}
+
+C_VOID vm_platform_run_handle_destroy(vm_platform_run_handle *handle)
+{
+    if (handle == STD_NULL) return;
+    STD_FREE(handle);
 }
 
 C_INT vm_platform_run_handle_is_active(const vm_platform_run_handle *handle)

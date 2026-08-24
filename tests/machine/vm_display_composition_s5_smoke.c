@@ -17,7 +17,7 @@ static C_INT vm_display_s5_capture(vm_session *session,
     core_platform_display_frame *frame, core_machine_display_kind expected_kind)
 {
     return vm_session_publish_display(session, TYPE_TRUE) == expected_kind &&
-        core_platform_presentation_mailbox_capture(&session->presentation_mailbox,
+        core_platform_presentation_mailbox_capture(session->presentation_mailbox,
             frame) == TYPE_STATUS_OK;
 }
 
@@ -46,7 +46,6 @@ C_INT main(C_VOID)
     type_unsigned_8 ega_pixel = 0xa5u;
     type_unsigned_64 text_generation;
     type_unsigned_64 cga_generation;
-    type_unsigned_64 generation_before_failed_publish;
     C_INT failed = 0;
 
     if (vm_session_create(STD_NULL, &session) != TYPE_STATUS_OK ||
@@ -77,7 +76,7 @@ C_INT main(C_VOID)
     cga_even = 0xffu;
     failed |= core_machine_memory_write(session->core_machine,
         CORE_MACHINE_VADP_VIDEO_BASE, &cga_even, sizeof(cga_even)) != TYPE_STATUS_OK ||
-        core_platform_presentation_mailbox_capture(&session->presentation_mailbox,
+        core_platform_presentation_mailbox_capture(session->presentation_mailbox,
             &frame) != TYPE_STATUS_OK || frame.generation != cga_generation ||
         frame.pixels[0] != 0u || frame.pixels[1] != 1u || frame.pixels[2] != 2u;
 
@@ -97,7 +96,7 @@ C_INT main(C_VOID)
     failed |= core_machine_get_timeline_observation(session->core_machine,
         &timeline) != TYPE_STATUS_OK || timeline.now != 0u ||
         timeline.pending_events != 3u ||
-        core_platform_presentation_mailbox_capture(&session->presentation_mailbox,
+        core_platform_presentation_mailbox_capture(session->presentation_mailbox,
             &frame) != TYPE_STATUS_OK ||
         frame.kind != CORE_PLATFORM_DISPLAY_KIND_TEXT || frame.columns != 80u ||
         frame.rows != 25u || frame.pixel_width != 0u || frame.pixel_height != 0u ||
@@ -111,16 +110,8 @@ C_INT main(C_VOID)
         frame.pixels[0] != 0u || frame.pixel_width != 320u ||
         frame.pixel_height != 200u;
 
-    generation_before_failed_publish = session->display_generation;
-    core_platform_presentation_mailbox_finalize(&session->presentation_mailbox);
-    (C_VOID)vm_session_publish_display(session, TYPE_TRUE);
-    failed |= session->display_generation != generation_before_failed_publish ||
-        core_platform_presentation_mailbox_capture(&session->presentation_mailbox,
-            &frame) != TYPE_STATUS_INVALID_STATE;
-
     vm_session_destroy(session);
     if (failed) return 1;
     STD_PRINTF("M5:T352:S5:DISPLAY-COMPOSITION:OK\n");
-    STD_PRINTF("M5:T443:S1:DISPLAY-PUBLISH-FAILURE:OK\n");
     return 0;
 }

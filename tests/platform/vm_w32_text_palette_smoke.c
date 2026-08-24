@@ -8,7 +8,7 @@
 C_INT main(C_VOID)
 {
     const COLORREF expected_background = RGB(0u, 0u, 255u);
-    core_platform_presentation_mailbox mailbox;
+    core_platform_presentation_mailbox *mailbox = STD_NULL;
     core_platform_display_frame frame = {0};
     w32adisp_context *context = STD_NULL;
     HWND window = STD_NULL;
@@ -20,19 +20,19 @@ C_INT main(C_VOID)
     if (window == STD_NULL) return 1;
     ShowWindow(window, SW_SHOWNOACTIVATE);
     UpdateWindow(window);
-    core_platform_presentation_mailbox_initialize(&mailbox);
+    if (core_platform_presentation_mailbox_create(&mailbox) != TYPE_STATUS_OK) return 1;
     frame.kind = CORE_PLATFORM_DISPLAY_KIND_TEXT;
     frame.columns = 1u;
     frame.rows = 1u;
     frame.characters[0] = ' ';
     frame.attributes[0] = 0x14u;
     frame.generation = 1u;
-    if (core_platform_presentation_mailbox_publish(&mailbox, &frame) !=
+    if (core_platform_presentation_mailbox_publish(mailbox, &frame) !=
         TYPE_STATUS_OK || (context = w32adisp_context_create()) == STD_NULL) {
         failed = 1;
         goto done;
     }
-    w32adispInit(context, window, &mailbox);
+    w32adispInit(context, window, mailbox);
     dc = GetDC(window);
     if (dc == STD_NULL || GetPixel(dc, 0, 0) != expected_background) failed = 1;
 
@@ -42,7 +42,7 @@ done:
         w32adispFinal(context);
         w32adisp_context_destroy(context);
     }
-    core_platform_presentation_mailbox_finalize(&mailbox);
+    core_platform_presentation_mailbox_destroy(mailbox);
     DestroyWindow(window);
     if (failed) return 1;
     STD_PRINTF("M5:T287:S18:W32-TEXT-PALETTE:OK\n");

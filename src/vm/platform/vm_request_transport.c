@@ -2,6 +2,15 @@
 
 #include "vm/platform/vm_request_transport.h"
 
+struct vm_platform_request_transport {
+    STD_ATOMIC_BOOL locked;
+    C_INT accepting;
+    C_UINT execution_boundary_count;
+    vm_platform_request_consumer consumer;
+    C_VOID *consumer_opaque;
+    vm_platform_request_bridge ingress;
+};
+
 static C_VOID vm_platform_request_transport_lock(
     vm_platform_request_transport *transport)
 {
@@ -16,10 +25,15 @@ static C_VOID vm_platform_request_transport_unlock(
     STD_ATOMIC_STORE_EXPLICIT(&transport->locked, 0, STD_MEMORY_ORDER_RELEASE);
 }
 
-C_VOID vm_platform_request_transport_initialize(
-    vm_platform_request_transport *transport)
+type_status vm_platform_request_transport_create(
+    vm_platform_request_transport **out_transport)
 {
-    if (transport == STD_NULL) return;
+    vm_platform_request_transport *transport;
+
+    if (out_transport == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    *out_transport = STD_CALLOC(1u, sizeof(*transport));
+    transport = *out_transport;
+    if (transport == STD_NULL) return TYPE_STATUS_NO_MEMORY;
 
     STD_ATOMIC_INIT(&transport->locked, 0);
     transport->accepting = 1;
@@ -27,6 +41,15 @@ C_VOID vm_platform_request_transport_initialize(
     transport->consumer = STD_NULL;
     transport->consumer_opaque = STD_NULL;
     vm_platform_request_bridge_initialize(&transport->ingress);
+    return TYPE_STATUS_OK;
+}
+
+C_VOID vm_platform_request_transport_destroy(
+    vm_platform_request_transport *transport)
+{
+    if (transport == STD_NULL) return;
+    vm_platform_request_transport_discard(transport);
+    STD_FREE(transport);
 }
 
 type_status vm_platform_request_transport_enqueue_ingress(

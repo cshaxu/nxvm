@@ -25,7 +25,7 @@ C_VOID vm_session_runner_run(vm_session *session)
     if (session == STD_NULL || session->core_machine == STD_NULL) return;
     control = &session->control;
     while (STD_ATOMIC_LOAD(&control->flagRun)) {
-        if (vm_platform_run_handle_take_stop_report(&session->platform_run_handle)) {
+        if (vm_platform_run_handle_take_stop_report(session->platform_run_handle)) {
             vm_session_control_stop(control);
             continue;
         }
@@ -68,9 +68,9 @@ C_VOID vm_session_runner_run(vm_session *session)
         if (vm_session_publish_display(session, TYPE_FALSE) !=
             CORE_MACHINE_DISPLAY_KIND_TEXT &&
             !vm_platform_run_context_get_window_display(
-                &session->platform_run_context)) {
+                session->platform_run_context)) {
             if (vm_platform_run_context_request_graphics_promotion(
-                    &session->platform_run_context)) {
+                    session->platform_run_context)) {
                 vm_session_control_yield_for_display_transition(&session->control);
                 continue;
             }

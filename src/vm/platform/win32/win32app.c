@@ -10,6 +10,8 @@
 #include "vm/platform/win32/w32adisp.h"
 #include "vm/platform/win32/win32app.h"
 
+#include "vm/platform/platform_internal.h"
+
 #define TIMER_PAINT 0
 #define WIN32APP_DISPLAY_READY_TIMEOUT_MILLISECONDS 5000u
 

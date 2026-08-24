@@ -53,7 +53,7 @@ C_INT main(C_VOID)
     for (elapsed = 0u; elapsed < VM_RUNNER_DISPLAY_CADENCE_TIMEOUT_MILLISECONDS;
          ++elapsed) {
         (C_VOID)core_platform_presentation_mailbox_capture(
-            &session->presentation_mailbox, &frame);
+            session->presentation_mailbox, &frame);
         if (vm_runner_display_cadence_contains(&frame, "Invalid boot disk")) {
             seen = 1;
             break;

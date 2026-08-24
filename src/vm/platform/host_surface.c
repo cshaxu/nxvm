@@ -1,6 +1,6 @@
 #include "type.h"
 
-#include "vm/platform/host_surface.h"
+#include "vm/platform/platform_internal.h"
 
 C_VOID vm_platform_host_surface_context_initialize(
     vm_platform_host_surface_context *context,
@@ -11,10 +11,22 @@ C_VOID vm_platform_host_surface_context_initialize(
     context->native_handle = native_handle;
 }
 
-C_VOID vm_platform_host_surface_lease_initialize(
-    vm_platform_host_surface_lease *lease)
+type_status vm_platform_host_surface_lease_create(
+    vm_platform_host_surface_lease **out_lease)
 {
-    if (lease != STD_NULL) STD_ATOMIC_INIT(&lease->owner, (type_unsigned_pointer)0u);
+    vm_platform_host_surface_lease *lease;
+
+    if (out_lease == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    *out_lease = STD_CALLOC(1u, sizeof(*lease));
+    lease = *out_lease;
+    if (lease == STD_NULL) return TYPE_STATUS_NO_MEMORY;
+    STD_ATOMIC_INIT(&lease->owner, (type_unsigned_pointer)0u);
+    return TYPE_STATUS_OK;
+}
+
+C_VOID vm_platform_host_surface_lease_destroy(vm_platform_host_surface_lease *lease)
+{
+    STD_FREE(lease);
 }
 
 type_status vm_platform_host_surface_lease_acquire(

@@ -32,21 +32,21 @@ C_INT main(C_VOID)
     if (vm_session_submit_host_input(session, &event) != TYPE_STATUS_OK) goto fail;
     if (!vm_keyboard_host_ingress_read_byte(session,
             QDKEYB_VBIOS_ADDR_KEYB_FLAG0, &after) || after != before ||
-        vm_platform_request_transport_dequeue_ingress(&session->request_transport,
+        vm_platform_request_transport_dequeue_ingress(session->request_transport,
             &request) != TYPE_STATUS_OK ||
         request.kind != VM_PLATFORM_REQUEST_KEY_EVENT ||
         request.data.key_event.scan_code != 0x2au ||
         !request.data.key_event.pressed) goto fail;
-    vm_platform_win32_keyboard_make_key_for(&session->platform_run_context,
-        &session->platform_run_handle, 0x2au, 0x10u, TYPE_TRUE);
-    if (vm_platform_request_transport_dequeue_ingress(&session->request_transport,
+    vm_platform_win32_keyboard_make_key_for(session->platform_run_context,
+        session->platform_run_handle, 0x2au, 0x10u, TYPE_TRUE);
+    if (vm_platform_request_transport_dequeue_ingress(session->request_transport,
             &request) != TYPE_STATUS_OK ||
         request.kind != VM_PLATFORM_REQUEST_KEY_EVENT ||
         request.data.key_event.scan_code != 0x2au ||
         !request.data.key_event.pressed) goto fail;
     event.kind = (core_platform_input_kind)2;
     if (vm_session_submit_host_input(session, &event) != TYPE_STATUS_INVALID_ARGUMENT ||
-        vm_platform_request_transport_dequeue_ingress(&session->request_transport,
+        vm_platform_request_transport_dequeue_ingress(session->request_transport,
             &request) == TYPE_STATUS_OK) goto fail;
     vm_session_destroy(session);
     STD_PRINTF("M5:T226:S2:HOST-INGRESS:OK\n");
@@ -55,7 +55,7 @@ C_INT main(C_VOID)
 fail:
     event.kind = (core_platform_input_kind)2;
     if (vm_session_submit_host_input(session, &event) != TYPE_STATUS_INVALID_ARGUMENT ||
-        vm_platform_request_transport_dequeue_ingress(&session->request_transport,
+        vm_platform_request_transport_dequeue_ingress(session->request_transport,
             &request) == TYPE_STATUS_OK) goto fail;
     vm_session_destroy(session);
     return 1;

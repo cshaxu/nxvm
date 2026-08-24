@@ -1,5 +1,26 @@
 # Project Status
 
+## M5 T447 S5 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; `M5 T447 S5`, single-session coordinator/executor followed by coordinator closure review. |
+| Admission And Approval | The owner-approved T447 proposal and accepted S4 P1 `38f5097e` admit the next dependency-ordered S5 batch on 2026-08-23. No exception. |
+| Objective | Seal Core platform objects and VM platform lifecycle state behind owner-created opaque handles and bounded operations, preserving host behavior. |
+| Non-goals | No generic host framework, host-policy move into Core, product UX change, new asynchronous contract, session/profile redesign, media-format change, or unrelated cross-owner-test migration. |
+| Reference Baseline | Accepted S4 P1 `38f5097e`; Td S125 E, Td S126 A, T445, and T447 proposal S5. |
+| Candidate Proposal | [M5 Architecture-Boundary Debt Closure](../proposals/m5-architecture-boundary-debt-closure.md), S5. |
+| Files And ABI Surface | Core input-source and presentation-mailbox contracts/implementations; VM composition consumers; VM platform run, host-surface, request transport, execution, virtual-time contracts/implementations and focused tests; CMake gates; T447 history/evidence/status and current artifact. |
+| Applicable Rules | Execution P/closure and code-size requirements; architecture single-state-owner, Core-directed dependencies, opaque public contracts and composition-only integration; coding minimal durable capabilities with no forwarding wrappers; documentation topology. No exception. |
+| Verification | Inventory every public mutable layout, direct field access, construction/finalize path, and host callback in the named Core/VM surfaces; prove each replacement has one owner and every caller uses bounded operations or copied observations; run focused lifecycle/platform failure tests, static boundary proof, T345, current artifact/smokes, specialized gates, and documentation governance. |
+| Expected Markers | Retained T445/platform markers plus T447 S5 marker; no public mutable Core platform or VM run/host-surface/request/execution/virtual-time layout, no reverse dependency, no duplicate lifecycle route, and no changed host lifetime behavior. |
+| Asset Needs | Existing non-committed test media only; no new source, firmware, guest-media, or third-party asset. |
+| Reporting Requirements | Record complete layout/caller/lifecycle inventory, selected owner and failure semantics, deleted layouts/routes, code-size accounting, artifact SHA, focused/full verification, and actual-diff review; commit and push one complete implementation P before coordinator closure. |
+| Stop Conditions | Stop for owner direction if closure requires a new asynchronous host contract, changes Linux/Win32 resource lifetime or product-visible behavior, needs a test-only public seam, or cannot preserve copied-frame and input-cancellation behavior. |
+| Exit Criteria | Every named Core/VM stateful contract is opaque or owner-allocated; all consumers use bounded lifecycle/operation paths and copied frames; Linux/Win32 lifetime proof remains valid; no compatibility layout or parallel lifecycle path remains. |
+| Original Owner Request | Execute the approved architecture-boundary closure in dependency order, applying minimalism as a hard constraint rather than a later refactor. |
+| Similar-Issue Sweep | Inspect every Core platform stateful header/source, VM composition/platform/public header and CMake consumer, Linux/Win32 adapter, direct field/callback access, platform and integration test, T345 entry, and prior T445/T443 evidence; do not repair only the first exposed layout. |
+
 ## Current Technical Baseline
 
 - **Current developer artifact:** target `vm-0-5-0447`; `nxvm_0_5_0447.exe` / `build/output/nxvm_0_5_0447.exe`, SHA-256 `A38E741BE21C3E4C4E5D3E0802694D64D0221BF114D960A53CF68C61BC82E852`. T434 has one copied Core timing-plan publication route for default PC/AT, IBM 5170 Model 339 and Model-40 BYOB session composition.

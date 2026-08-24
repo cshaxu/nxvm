@@ -21,18 +21,17 @@ static C_INT run_and_stop(vm_session *session)
 
     if (pthread_create(&thread, STD_NULL, run_session, session) != 0) return 0;
     for (waited = 0u; waited < 5000u; ++waited) {
-        if (vm_platform_run_handle_is_active(&session->platform_run_handle)) break;
+        if (vm_platform_run_handle_is_active(session->platform_run_handle)) break;
         core_platform_sleep_milliseconds(1u);
     }
-    if (!vm_platform_run_handle_is_active(&session->platform_run_handle)) {
+    if (!vm_platform_run_handle_is_active(session->platform_run_handle)) {
         (C_VOID)pthread_join(thread, STD_NULL);
         return 0;
     }
-    vm_platform_run_handle_report(&session->platform_run_handle,
+    vm_platform_run_handle_report(session->platform_run_handle,
         VM_PLATFORM_RUN_EVENT_STOP_REQUESTED);
     if (pthread_join(thread, STD_NULL) != 0) return 0;
-    return !vm_platform_run_handle_is_active(&session->platform_run_handle) &&
-        session->platform_run_handle.backend == STD_NULL;
+    return !vm_platform_run_handle_is_active(session->platform_run_handle);
 }
 
 int main(void)

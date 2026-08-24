@@ -13,7 +13,7 @@
 
 #include "core/platform/display_frame.h"
 
-#include "vm/platform/platform.h"
+#include "vm/platform/platform_internal.h"
 
 
 #include "vm/platform/linux/linuxcon.h"

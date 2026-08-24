@@ -83,7 +83,7 @@ static type_status vm_session_machine_read_display_mode(vm_session *session,
     vm_product_console_display_mode *mode =
         (vm_product_console_display_mode *)context;
     C_INT platform_mode = vm_platform_run_context_get_display_mode(
-        &session->platform_run_context);
+        session->platform_run_context);
 
     *mode = platform_mode == VM_PLATFORM_DISPLAY_WINDOW ?
         VM_PRODUCT_CONSOLE_DISPLAY_WINDOW : platform_mode == VM_PLATFORM_DISPLAY_AUTO ?
@@ -109,7 +109,7 @@ static type_status vm_session_machine_write_display_mode(vm_session *session,
         VM_PLATFORM_DISPLAY_WINDOW : mode == VM_PRODUCT_CONSOLE_DISPLAY_AUTO ?
         VM_PLATFORM_DISPLAY_AUTO : VM_PLATFORM_DISPLAY_CONSOLE;
 
-    vm_platform_run_context_set_display_mode(&session->platform_run_context,
+    vm_platform_run_context_set_display_mode(session->platform_run_context,
         platform_mode);
     return TYPE_STATUS_OK;
 }

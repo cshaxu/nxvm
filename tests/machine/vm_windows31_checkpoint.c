@@ -29,7 +29,7 @@ static C_INT vm_t287_has_text(const vm_session *session, const C_CHAR *text)
     STD_SIZE_T length = STD_STRLEN(text);
 
     if (session == STD_NULL || text == STD_NULL || length == 0u ||
-        core_platform_presentation_mailbox_capture(&session->presentation_mailbox,
+        core_platform_presentation_mailbox_capture(session->presentation_mailbox,
             &frame) != TYPE_STATUS_OK) return 0;
     for (cell = 0u; cell + length <= VM_T287_TEXT_CELLS; ++cell) {
         for (character = 0u; character < length; ++character) {
@@ -100,7 +100,7 @@ static C_VOID vm_t287_report(const vm_session *session, const C_CHAR *stage)
                 diagnostic.recent[index].bytes[2]);
         }
     }
-    if (core_platform_presentation_mailbox_capture(&session->presentation_mailbox,
+    if (core_platform_presentation_mailbox_capture(session->presentation_mailbox,
             &frame) != TYPE_STATUS_OK) return;
     for (row = 0u; row < 25u; ++row) {
         for (column = 0u; column < 80u; ++column) {
@@ -118,7 +118,7 @@ static C_VOID vm_t287_report_frame(const vm_session *session)
     STD_SIZE_T column;
 
     if (session == STD_NULL || core_platform_presentation_mailbox_capture(
-            &session->presentation_mailbox, &frame) != TYPE_STATUS_OK) return;
+            session->presentation_mailbox, &frame) != TYPE_STATUS_OK) return;
     for (row = 0u; row < 25u; ++row) {
         for (column = 0u; column < 80u; ++column) {
             C_UCHAR character = frame.characters[row * 80u + column];

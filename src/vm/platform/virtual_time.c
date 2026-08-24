@@ -10,6 +10,12 @@
 
 #define VM_PLATFORM_VIRTUAL_TIME_MAX_BATCH_TICKS 800000u
 
+struct vm_platform_virtual_time_source {
+    type_unsigned_64 last_units, remainder, pending_ticks, units_per_second;
+    type_unsigned_64 source_ticks_per_second;
+    C_INT initialized;
+};
+
 static type_status vm_platform_virtual_time_read_units(type_unsigned_64 *out_units,
     type_unsigned_64 *out_units_per_second)
 {
@@ -96,17 +102,27 @@ static C_VOID vm_platform_virtual_time_source_reset(C_VOID *context)
     source->initialized = TYPE_FALSE;
 }
 
-type_status vm_platform_virtual_time_source_initialize(
-    vm_platform_virtual_time_source *source, type_unsigned_64 source_ticks_per_second,
-    vm_virtual_time_source *out_source)
+type_status vm_platform_virtual_time_source_create(
+    type_unsigned_64 source_ticks_per_second, vm_virtual_time_source *out_source,
+    vm_platform_virtual_time_source **out_source_owner)
 {
-    if (source == STD_NULL || out_source == STD_NULL || source_ticks_per_second == 0u) {
+    vm_platform_virtual_time_source *source;
+
+    if (out_source == STD_NULL || out_source_owner == STD_NULL || source_ticks_per_second == 0u) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
-    STD_MEMSET(source, 0, sizeof(*source));
+    *out_source_owner = STD_NULL;
+    source = STD_CALLOC(1u, sizeof(*source));
+    if (source == STD_NULL) return TYPE_STATUS_NO_MEMORY;
     source->source_ticks_per_second = source_ticks_per_second;
     out_source->next = vm_platform_virtual_time_source_next;
     out_source->reset = vm_platform_virtual_time_source_reset;
     out_source->context = source;
+    *out_source_owner = source;
     return TYPE_STATUS_OK;
+}
+
+C_VOID vm_platform_virtual_time_source_destroy(vm_platform_virtual_time_source *source)
+{
+    STD_FREE(source);
 }

@@ -136,7 +136,7 @@ C_INT main(C_VOID)
     }
     if (!vm_kbc_aux_read_count(session, &count) || count != 1u) goto done;
     vm_platform_request_transport_observe_execution_boundary(
-        &session->request_transport);
+        session->request_transport);
     if (!vm_kbc_aux_run_until_count(session, 4u) ||
         core_machine_memory_read(session->core_machine, VM_KBC_AUX_BYTES_ADDRESS,
             bytes, sizeof(bytes)) != TYPE_STATUS_OK ||

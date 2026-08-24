@@ -35,7 +35,7 @@ static C_INT vm_t287_has_text(const vm_session *session, const C_CHAR *text)
     STD_SIZE_T length = STD_STRLEN(text);
 
     if (session == STD_NULL || text == STD_NULL || length == 0u ||
-        core_platform_presentation_mailbox_capture(&session->presentation_mailbox,
+        core_platform_presentation_mailbox_capture(session->presentation_mailbox,
             &frame) != TYPE_STATUS_OK) return 0;
     for (cell = 0u; cell + length <= VM_T287_TEXT_CELLS; ++cell) {
         for (character = 0u; character < length; ++character) {
@@ -52,7 +52,7 @@ static C_INT vm_t287_has_prompt(const vm_session *session)
     STD_SIZE_T cell;
 
     if (session == STD_NULL || core_platform_presentation_mailbox_capture(
-            &session->presentation_mailbox, &frame) != TYPE_STATUS_OK) return 0;
+            session->presentation_mailbox, &frame) != TYPE_STATUS_OK) return 0;
     for (cell = 0u; cell + 1u < VM_T287_TEXT_CELLS; ++cell) {
         if (frame.characters[cell] == 'C' && frame.characters[cell + 1u] == '>') {
             return 1;
@@ -110,11 +110,11 @@ static C_INT vm_t287_type_setup(vm_session *session)
 
     if (session == STD_NULL) return 0;
     for (index = 0u; index < sizeof(scan_codes); ++index) {
-        vm_platform_win32_keyboard_make_key_for(&session->platform_run_context,
-            &session->platform_run_handle, scan_codes[index], virtual_keys[index], 1);
+        vm_platform_win32_keyboard_make_key_for(session->platform_run_context,
+            session->platform_run_handle, scan_codes[index], virtual_keys[index], 1);
         Sleep(25u);
-        vm_platform_win32_keyboard_make_key_for(&session->platform_run_context,
-            &session->platform_run_handle, scan_codes[index], virtual_keys[index], 0);
+        vm_platform_win32_keyboard_make_key_for(session->platform_run_context,
+            session->platform_run_handle, scan_codes[index], virtual_keys[index], 0);
         Sleep(25u);
     }
     return 1;
@@ -132,11 +132,11 @@ static C_INT vm_t288_type_windows(vm_session *session)
 
     if (session == STD_NULL) return 0;
     for (index = 0u; index < sizeof(scan_codes); ++index) {
-        vm_platform_win32_keyboard_make_key_for(&session->platform_run_context,
-            &session->platform_run_handle, scan_codes[index], virtual_keys[index], 1);
+        vm_platform_win32_keyboard_make_key_for(session->platform_run_context,
+            session->platform_run_handle, scan_codes[index], virtual_keys[index], 1);
         Sleep(25u);
-        vm_platform_win32_keyboard_make_key_for(&session->platform_run_context,
-            &session->platform_run_handle, scan_codes[index], virtual_keys[index], 0);
+        vm_platform_win32_keyboard_make_key_for(session->platform_run_context,
+            session->platform_run_handle, scan_codes[index], virtual_keys[index], 0);
         Sleep(25u);
     }
     return 1;
@@ -149,7 +149,7 @@ static C_VOID vm_t287_print_frame(const vm_session *session)
     STD_SIZE_T column;
 
     if (session == STD_NULL || core_platform_presentation_mailbox_capture(
-            &session->presentation_mailbox, &frame) != TYPE_STATUS_OK) return;
+            session->presentation_mailbox, &frame) != TYPE_STATUS_OK) return;
     for (row = 0u; row < 25u; ++row) {
         for (column = 0u; column < 80u; ++column) {
             C_UCHAR character = frame.characters[row * 80u + column];

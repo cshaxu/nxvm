@@ -17,6 +17,10 @@ static C_VOID vm_session_model40_capture_fdc_terminal(C_VOID *opaque,
 static C_VOID vm_session_model40_storage_rollback(vm_session *session)
 {
     if (session == STD_NULL) return;
+    core_platform_presentation_mailbox_destroy(session->presentation_mailbox);
+    session->presentation_mailbox = STD_NULL;
+    core_product_debugger_destroy(session->debugger);
+    session->debugger = STD_NULL;
     core_machine_display_provider_slot_finalize(&session->display_provider);
     core_machine_destroy(session->core_machine);
     session->core_machine = STD_NULL;
@@ -137,7 +141,8 @@ type_status vm_session_model40_storage_initialize(vm_session *session)
             &session->fdc_dma_request);
     }
     if (status != TYPE_STATUS_OK) { vm_session_model40_storage_rollback(session); return status; }
-    core_platform_presentation_mailbox_initialize(&session->presentation_mailbox);
+    status = core_platform_presentation_mailbox_create(&session->presentation_mailbox);
+    if (status != TYPE_STATUS_OK) { vm_session_model40_storage_rollback(session); return status; }
     status = core_product_debugger_create(&session->debugger);
     if (status != TYPE_STATUS_OK) { vm_session_model40_storage_rollback(session); return status; }
     return TYPE_STATUS_OK;

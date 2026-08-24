@@ -3,6 +3,12 @@
 
 #include "type.h"
 
+struct core_platform_presentation_mailbox {
+    STD_ATOMIC_FLAG lock;
+    C_INT active;
+    core_platform_display_frame frame;
+};
+
 static C_VOID core_platform_presentation_mailbox_lock(
     core_platform_presentation_mailbox *mailbox)
 {
@@ -10,16 +16,23 @@ static C_VOID core_platform_presentation_mailbox_lock(
                                              STD_MEMORY_ORDER_ACQUIRE)) {}
 }
 
-C_VOID core_platform_presentation_mailbox_initialize(
-    core_platform_presentation_mailbox *mailbox)
+type_status core_platform_presentation_mailbox_create(
+    core_platform_presentation_mailbox **out_mailbox)
 {
-    if (mailbox == STD_NULL) return;
+    core_platform_presentation_mailbox *mailbox;
+
+    if (out_mailbox == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    *out_mailbox = STD_NULL;
+    mailbox = STD_MALLOC(sizeof(*mailbox));
+    if (mailbox == STD_NULL) return TYPE_STATUS_NO_MEMORY;
     mailbox->lock = (STD_ATOMIC_FLAG)ATOMIC_FLAG_INIT;
     STD_ATOMIC_FLAG_CLEAR_EXPLICIT(&mailbox->lock, STD_MEMORY_ORDER_RELEASE);
     mailbox->active = TYPE_TRUE;
     STD_MEMSET(&mailbox->frame, 0, sizeof(mailbox->frame));
     mailbox->frame.columns = CORE_PLATFORM_DISPLAY_MAX_COLUMNS;
     mailbox->frame.rows = CORE_PLATFORM_DISPLAY_MAX_ROWS;
+    *out_mailbox = mailbox;
+    return TYPE_STATUS_OK;
 }
 
 type_status core_platform_presentation_mailbox_publish(
@@ -38,7 +51,7 @@ type_status core_platform_presentation_mailbox_publish(
     return status;
 }
 
-C_VOID core_platform_presentation_mailbox_finalize(
+C_VOID core_platform_presentation_mailbox_destroy(
     core_platform_presentation_mailbox *mailbox)
 {
     if (mailbox == STD_NULL) return;
@@ -46,6 +59,7 @@ C_VOID core_platform_presentation_mailbox_finalize(
     mailbox->active = TYPE_FALSE;
     STD_MEMSET(&mailbox->frame, 0, sizeof(mailbox->frame));
     STD_ATOMIC_FLAG_CLEAR_EXPLICIT(&mailbox->lock, STD_MEMORY_ORDER_RELEASE);
+    STD_FREE(mailbox);
 }
 
 type_status core_platform_presentation_mailbox_capture(

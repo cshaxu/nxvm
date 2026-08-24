@@ -7,15 +7,11 @@
 
 #include "core/platform/display_frame.h"
 
-typedef struct core_platform_presentation_mailbox {
-    STD_ATOMIC_FLAG lock;
-    C_INT active;
-    core_platform_display_frame frame;
-} core_platform_presentation_mailbox;
+typedef struct core_platform_presentation_mailbox core_platform_presentation_mailbox;
 
-C_VOID core_platform_presentation_mailbox_initialize(
-    core_platform_presentation_mailbox *mailbox);
-C_VOID core_platform_presentation_mailbox_finalize(
+type_status core_platform_presentation_mailbox_create(
+    core_platform_presentation_mailbox **out_mailbox);
+C_VOID core_platform_presentation_mailbox_destroy(
     core_platform_presentation_mailbox *mailbox);
 type_status core_platform_presentation_mailbox_publish(
     core_platform_presentation_mailbox *mailbox,

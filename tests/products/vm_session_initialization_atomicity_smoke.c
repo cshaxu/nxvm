@@ -23,7 +23,7 @@ static C_INT verify_reset_outcome(C_VOID)
     failed |= !session->start_outcome.valid ||
         session->start_outcome.status != TYPE_STATUS_FAULT;
     failed |= vm_session_control_is_running(&session->control) ||
-        vm_platform_run_handle_is_active(&session->platform_run_handle);
+        vm_platform_run_handle_is_active(session->platform_run_handle);
     failed |= core_machine_get_lifecycle(session->core_machine, &lifecycle) !=
         TYPE_STATUS_OK || lifecycle != CORE_MACHINE_INITIALIZED;
     session->default_profile_context.bios = &session->default_bios;
@@ -51,7 +51,7 @@ static C_INT verify_running_reset_outcome(C_VOID)
     failed |= !session->start_outcome.valid ||
         session->start_outcome.status != TYPE_STATUS_FAULT ||
         vm_session_control_is_running(&session->control) ||
-        vm_platform_run_handle_is_active(&session->platform_run_handle);
+        vm_platform_run_handle_is_active(session->platform_run_handle);
     session->default_profile_context.bios = &session->default_bios;
     failed |= vm_session_reset(session) != TYPE_STATUS_OK ||
         session->start_outcome.valid;
@@ -162,7 +162,7 @@ static C_INT verify_failure(const vm_profile_default_pc_at_descriptor *profile)
     initialize_config(&session, profile);
     if (vm_session_initialize(&session) != TYPE_STATUS_INVALID_ARGUMENT ||
         session.active || session.core_machine != STD_NULL ||
-        vm_platform_run_handle_is_active(&session.platform_run_handle)) {
+        vm_platform_run_handle_is_active(session.platform_run_handle)) {
         vm_session_finalize(&session);
         return 1;
     }
@@ -211,7 +211,7 @@ static C_INT verify_fdd_initialization_failure(
     session.floppy_kind = (vm_profile_floppy_kind)0xffu;
     if (vm_session_initialize(&session) != TYPE_STATUS_FAULT || session.active ||
         session.core_machine != STD_NULL ||
-        vm_platform_run_handle_is_active(&session.platform_run_handle)) {
+        vm_platform_run_handle_is_active(session.platform_run_handle)) {
         vm_session_finalize(&session);
         return 1;
     }

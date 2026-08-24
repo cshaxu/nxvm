@@ -33,7 +33,7 @@ static type_status configure_session(C_VOID *context, C_VOID *opaque)
         (startup_failure_session_check *)context;
 
     if (check == STD_NULL || opaque == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
-    vm_platform_run_context_set_window_display(&((vm_session *)opaque)->platform_run_context,
+    vm_platform_run_context_set_window_display(((vm_session *)opaque)->platform_run_context,
         check->window);
     return TYPE_STATUS_OK;
 }
@@ -48,7 +48,7 @@ static type_status verify_session(C_VOID *context, C_VOID *opaque)
     check->failed = session->start_outcome.valid &&
         session->start_outcome.status != TYPE_STATUS_OK &&
         !vm_session_control_is_running(&session->control) &&
-        !vm_platform_run_handle_is_active(&session->platform_run_handle);
+        !vm_platform_run_handle_is_active(session->platform_run_handle);
     return TYPE_STATUS_OK;
 }
 

@@ -10,19 +10,15 @@ typedef enum vm_platform_host_surface_kind {
     VM_PLATFORM_HOST_SURFACE_TERMINAL
 } vm_platform_host_surface_kind;
 
-typedef struct vm_platform_host_surface_context {
-    vm_platform_host_surface_kind kind;
-    C_VOID *native_handle;
-} vm_platform_host_surface_context;
-
-typedef struct vm_platform_host_surface_lease {
-    STD_ATOMIC_UINTPTR_T owner;
-} vm_platform_host_surface_lease;
+typedef struct vm_platform_host_surface_context vm_platform_host_surface_context;
+typedef struct vm_platform_host_surface_lease vm_platform_host_surface_lease;
 
 C_VOID vm_platform_host_surface_context_initialize(
     vm_platform_host_surface_context *context,
     vm_platform_host_surface_kind kind, C_VOID *native_handle);
-C_VOID vm_platform_host_surface_lease_initialize(
+type_status vm_platform_host_surface_lease_create(
+    vm_platform_host_surface_lease **out_lease);
+C_VOID vm_platform_host_surface_lease_destroy(
     vm_platform_host_surface_lease *lease);
 type_status vm_platform_host_surface_lease_acquire(
     vm_platform_host_surface_lease *lease, const C_VOID *owner);

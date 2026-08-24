@@ -16,12 +16,11 @@ static C_INT stage_uses_window(C_INT stage)
 
 static C_INT assert_failed_start(vm_session *session)
 {
-    type_status status = vm_platform_start(&session->platform_run_context,
-        &session->platform_run_handle);
+    type_status status = vm_platform_start(session->platform_run_context,
+        session->platform_run_handle);
 
     return status != TYPE_STATUS_OK &&
-        !vm_platform_run_handle_is_active(&session->platform_run_handle) &&
-        session->platform_run_handle.backend == STD_NULL;
+        !vm_platform_run_handle_is_active(session->platform_run_handle);
 }
 
 static C_INT assert_failed_session_start(vm_session *session)
@@ -31,8 +30,7 @@ static C_INT assert_failed_session_start(vm_session *session)
     return status != TYPE_STATUS_OK && session->start_outcome.valid &&
         session->start_outcome.status == status &&
         !vm_session_control_is_running(&session->control) &&
-        !vm_platform_run_handle_is_active(&session->platform_run_handle) &&
-        session->platform_run_handle.backend == STD_NULL;
+        !vm_platform_run_handle_is_active(session->platform_run_handle);
 }
 
 int main(void)
@@ -44,7 +42,7 @@ int main(void)
     if (session == STD_NULL) return 1;
     vm_session_initialize(session);
     if (!session->active) goto done;
-    vm_platform_run_context_set_window_display(&session->platform_run_context,
+    vm_platform_run_context_set_window_display(session->platform_run_context,
         stage_uses_window(stage));
 
     /* Repeating the branch proves the first cleanup left its owner reusable. */

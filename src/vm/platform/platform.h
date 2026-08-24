@@ -28,20 +28,7 @@ typedef enum vm_platform_display_mode {
     VM_PLATFORM_DISPLAY_AUTO
 } vm_platform_display_mode;
 
-typedef struct vm_platform_run_context {
-    const vm_platform_execution_transport *execution;
-    vm_platform_host_input_sink input_sink;
-    const core_platform_presentation_mailbox *presentation;
-    const core_utils_wait_scope *wait_scope;
-    vm_platform_host_surface_context console_surface;
-    vm_platform_host_surface_context window_surface;
-    C_VOID *console_renderer;
-    C_VOID *window_renderer;
-    type_unsigned_64 terminal_displayed_generation;
-    vm_platform_display_mode display_mode;
-    C_INT auto_window_active;
-    C_INT auto_promotion_pending;
-} vm_platform_run_context;
+typedef struct vm_platform_run_context vm_platform_run_context;
 
 typedef enum vm_platform_run_event {
     VM_PLATFORM_RUN_EVENT_NONE,
@@ -51,21 +38,14 @@ typedef enum vm_platform_run_event {
     VM_PLATFORM_RUN_EVENT_STARTUP_FAILED
 } vm_platform_run_event;
 
-typedef struct vm_platform_run_handle {
-    const vm_platform_run_context *context;
-    C_VOID *backend;
-    STD_ATOMIC_INT last_event;
-    STD_ATOMIC_BOOL stop_reported;
-    C_INT active;
-    C_INT window_display;
-} vm_platform_run_handle;
+typedef struct vm_platform_run_handle vm_platform_run_handle;
 
-C_VOID vm_platform_run_context_initialize(
-    vm_platform_run_context *context,
+type_status vm_platform_run_context_create(
     const vm_platform_execution_transport *execution,
     const vm_platform_host_input_sink *input_sink,
     const core_platform_presentation_mailbox *presentation,
-    const core_utils_wait_scope *wait_scope);
+    const core_utils_wait_scope *wait_scope, vm_platform_run_context **out_context);
+C_VOID vm_platform_run_context_destroy(vm_platform_run_context *context);
 type_status vm_platform_host_input_sink_submit(
     const vm_platform_host_input_sink *sink,
     const core_platform_input_event *event);
@@ -81,7 +61,8 @@ C_INT vm_platform_run_context_request_graphics_promotion(
     vm_platform_run_context *context);
 C_INT vm_platform_run_context_take_auto_promotion(
     vm_platform_run_context *context);
-C_VOID vm_platform_run_handle_initialize(vm_platform_run_handle *handle);
+type_status vm_platform_run_handle_create(vm_platform_run_handle **out_handle);
+C_VOID vm_platform_run_handle_destroy(vm_platform_run_handle *handle);
 C_INT vm_platform_run_handle_is_active(const vm_platform_run_handle *handle);
 C_INT vm_platform_run_handle_is_window_display(
     const vm_platform_run_handle *handle);

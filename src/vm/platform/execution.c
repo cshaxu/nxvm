@@ -5,13 +5,31 @@
 
 
 
-C_VOID vm_platform_execution_transport_initialize(
-    vm_platform_execution_transport *transport,
-    const vm_platform_execution_sink *sink, C_VOID *context)
+struct vm_platform_execution_transport {
+    const vm_platform_execution_sink *sink;
+    C_VOID *context;
+};
+
+type_status vm_platform_execution_transport_create(
+    const vm_platform_execution_sink *sink, C_VOID *context,
+    vm_platform_execution_transport **out_transport)
 {
-    if (transport == STD_NULL) return;
+    vm_platform_execution_transport *transport;
+
+    if (out_transport == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    *out_transport = STD_NULL;
+    transport = STD_MALLOC(sizeof(*transport));
+    if (transport == STD_NULL) return TYPE_STATUS_NO_MEMORY;
     transport->sink = sink;
     transport->context = context;
+    *out_transport = transport;
+    return TYPE_STATUS_OK;
+}
+
+C_VOID vm_platform_execution_transport_destroy(
+    vm_platform_execution_transport *transport)
+{
+    STD_FREE(transport);
 }
 
 C_INT vm_platform_execution_is_running_for(

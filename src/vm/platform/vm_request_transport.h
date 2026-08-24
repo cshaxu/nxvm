@@ -8,16 +8,11 @@
 typedef C_VOID (*vm_platform_request_consumer)(
     C_VOID *opaque, const vm_platform_request *request);
 
-typedef struct vm_platform_request_transport {
-    STD_ATOMIC_BOOL locked;
-    C_INT accepting;
-    C_UINT execution_boundary_count;
-    vm_platform_request_consumer consumer;
-    C_VOID *consumer_opaque;
-    vm_platform_request_bridge ingress;
-} vm_platform_request_transport;
+typedef struct vm_platform_request_transport vm_platform_request_transport;
 
-C_VOID vm_platform_request_transport_initialize(
+type_status vm_platform_request_transport_create(
+    vm_platform_request_transport **out_transport);
+C_VOID vm_platform_request_transport_destroy(
     vm_platform_request_transport *transport);
 type_status vm_platform_request_transport_enqueue_ingress(
     vm_platform_request_transport *transport,

@@ -8,6 +8,8 @@
 #include "vm/platform/win32/w32cdisp.h"
 #include "vm/platform/win32/win32con.h"
 
+#include "vm/platform/platform_internal.h"
+
 typedef struct win32con_run_handle {
     vm_platform_run_handle *owner;
     const vm_platform_run_context *platform;

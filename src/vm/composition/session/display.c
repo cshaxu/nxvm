@@ -72,7 +72,7 @@ core_machine_display_kind vm_session_publish_display(vm_session *machine,
         }
     }
     frame.generation = machine->display_generation + 1u;
-    if (core_platform_presentation_mailbox_publish(&machine->presentation_mailbox,
+    if (core_platform_presentation_mailbox_publish(machine->presentation_mailbox,
             &frame) != TYPE_STATUS_OK) return snapshot.kind;
     machine->display_generation = frame.generation;
     return snapshot.kind;
@@ -83,7 +83,7 @@ static C_VOID vmCompositionDisplayModeChanged(C_VOID *context)
     vm_session *machine = context;
 
     vm_session_publish_display(machine, 1);
-    vm_platform_display_set_screen(&machine->platform_run_context);
+    vm_platform_display_set_screen(machine->platform_run_context);
 }
 
 C_VOID vm_session_bind_display(vm_session *machine)

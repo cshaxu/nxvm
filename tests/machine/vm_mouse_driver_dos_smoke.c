@@ -379,7 +379,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
         if (vm_session_submit_host_input(session, &event) !=
             TYPE_STATUS_OK) goto done;
     }
-    vm_platform_request_transport_observe_execution_boundary(&session->request_transport);
+    vm_platform_request_transport_observe_execution_boundary(session->request_transport);
     if (!vm_mouse_dos_run_until_packet(session, bytes_address, expected) ||
         core_machine_capture_display_snapshot(session->core_machine, &snapshot) !=
             TYPE_STATUS_OK || snapshot.kind != CORE_MACHINE_DISPLAY_KIND_TEXT ||

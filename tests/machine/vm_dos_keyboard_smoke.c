@@ -30,7 +30,7 @@ static C_INT vm_dos_keyboard_has_text(const vm_session *session,
     STD_SIZE_T length = STD_STRLEN(text);
 
     (C_VOID)core_platform_presentation_mailbox_capture(
-        &session->presentation_mailbox, &frame);
+        session->presentation_mailbox, &frame);
     for (cell = 0u; cell + length <= TEXT_VIDEO_CELLS; ++cell) {
         for (character = 0u; character < length; ++character) {
             if (frame.characters[cell + character] != (C_UCHAR)text[character]) break;
@@ -46,7 +46,7 @@ static C_INT vm_dos_keyboard_has_prompt(const vm_session *session)
     STD_SIZE_T cell;
 
     (C_VOID)core_platform_presentation_mailbox_capture(
-        &session->presentation_mailbox, &frame);
+        session->presentation_mailbox, &frame);
     for (cell = 0u; cell + 3u < TEXT_VIDEO_CELLS; ++cell) {
         if (STD_ISALPHA(frame.characters[cell]) &&
             frame.characters[cell + 1u] == ':' &&
@@ -87,7 +87,7 @@ static C_INT vm_dos_keyboard_verify_text_frame(const vm_session *session)
         return 0;
     }
     (C_VOID)core_platform_presentation_mailbox_capture(
-        &session->presentation_mailbox, &frame);
+        session->presentation_mailbox, &frame);
     if (frame.kind != CORE_PLATFORM_DISPLAY_KIND_TEXT || frame.columns != 80u ||
         frame.rows != 25u) {
         STD_PRINTF("edit display: kind=%u columns=%u rows=%u\n", frame.kind,
@@ -139,7 +139,7 @@ static C_VOID vm_dos_keyboard_report_failure(const vm_session *session,
     (C_VOID)core_machine_keyboard_get_native_scan_set(session->core_machine,
         &scan_set);
     (C_VOID)core_platform_presentation_mailbox_capture(
-        &session->presentation_mailbox, &frame);
+        session->presentation_mailbox, &frame);
     STD_PRINTF("keyboard smoke timed out: BDA head=%04x tail=%04x\n", head, tail);
     for (cell = 0u; cell < 25u; ++cell) {
         for (index = 0u; index < 80u; ++index) {
@@ -222,11 +222,11 @@ C_INT main(C_INT argc, C_CHAR **argv)
         }
     }
     for (index = 0u; index < sizeof(scan_codes); ++index) {
-        vm_platform_win32_keyboard_make_key_for(&session->platform_run_context,
-            &session->platform_run_handle, scan_codes[index], virtual_keys[index], 1);
+        vm_platform_win32_keyboard_make_key_for(session->platform_run_context,
+            session->platform_run_handle, scan_codes[index], virtual_keys[index], 1);
         Sleep(25u);
-        vm_platform_win32_keyboard_make_key_for(&session->platform_run_context,
-            &session->platform_run_handle, scan_codes[index], virtual_keys[index], 0);
+        vm_platform_win32_keyboard_make_key_for(session->platform_run_context,
+            session->platform_run_handle, scan_codes[index], virtual_keys[index], 0);
         Sleep(25u);
     }
     for (elapsed = 0u; elapsed < edit_timeout; elapsed += 10u) {

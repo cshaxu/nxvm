@@ -80,7 +80,7 @@ static C_VOID vm_session_input_submit(C_VOID *context,
         return;
     }
     (C_VOID)vm_platform_request_transport_enqueue_ingress(
-        &machine->request_transport, &request);
+        machine->request_transport, &request);
 }
 
 static C_VOID vm_session_execution_provider_refresh(C_VOID *context)
@@ -174,19 +174,19 @@ static C_VOID vm_session_debug_request_pause(C_VOID *context,
 static C_VOID vm_session_platform_join_and_finalize(vm_session *machine)
 {
     if (machine == STD_NULL || !vm_platform_run_handle_is_active(
-            &machine->platform_run_handle)) return;
-    vm_platform_run_handle_join(&machine->platform_run_handle);
-    vm_platform_run_handle_finalize(&machine->platform_run_handle);
+            machine->platform_run_handle)) return;
+    vm_platform_run_handle_join(machine->platform_run_handle);
+    vm_platform_run_handle_finalize(machine->platform_run_handle);
 }
 
 static C_VOID vm_session_platform_request_stop(vm_session *machine)
 {
     if (machine == STD_NULL) return;
-    if (!vm_platform_run_handle_is_active(&machine->platform_run_handle)) {
+    if (!vm_platform_run_handle_is_active(machine->platform_run_handle)) {
         vm_session_control_stop(&machine->control);
         return;
     }
-    vm_platform_run_handle_request_stop(&machine->platform_run_handle);
+    vm_platform_run_handle_request_stop(machine->platform_run_handle);
 }
 
 static C_VOID vm_session_start_outcome_clear(vm_session *machine)
@@ -231,7 +231,7 @@ type_status vm_session_reset(vm_session *machine) {
     type_status status;
 
     if (machine == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
-    if (vm_platform_run_handle_is_active(&machine->platform_run_handle) &&
+    if (vm_platform_run_handle_is_active(machine->platform_run_handle) &&
         !vm_session_control_is_running(&machine->control)) {
         vm_session_platform_join_and_finalize(machine);
     }
@@ -245,7 +245,7 @@ C_VOID vm_session_stop(vm_session *machine) {
     vm_session_platform_request_stop(machine);
     /* Console runs synchronously in vm_session_resume(), which remains its
      * sole joiner. Window runs return here and need their async teardown. */
-    if (vm_platform_run_handle_is_window_display(&machine->platform_run_handle)) {
+    if (vm_platform_run_handle_is_window_display(machine->platform_run_handle)) {
         vm_session_platform_join_and_finalize(machine);
     }
 }
@@ -259,18 +259,18 @@ type_status vm_session_resume(vm_session *machine) {
         return vm_session_start_outcome_record(machine, TYPE_STATUS_OK);
     } else {
         do {
-            status = vm_platform_start(&machine->platform_run_context,
-                &machine->platform_run_handle);
+            status = vm_platform_start(machine->platform_run_context,
+                machine->platform_run_handle);
             if (status != TYPE_STATUS_OK) {
                 return vm_session_start_outcome_record(machine, status);
             }
             if (vm_platform_run_handle_is_window_display(
-                    &machine->platform_run_handle)) {
+                    machine->platform_run_handle)) {
                 break;
             }
             vm_session_platform_join_and_finalize(machine);
         } while (vm_platform_run_context_take_auto_promotion(
-            &machine->platform_run_context));
+            machine->platform_run_context));
     }
     return vm_session_start_outcome_record(machine, TYPE_STATUS_OK);
 }
@@ -294,22 +294,31 @@ type_status vm_session_initialize(vm_session *machine) {
         vm_session_debug_request_pause, STD_NULL);
     vm_machine_debug_bind_disassembler(&machine->debug,
         vm_session_debug_disassemble, STD_NULL);
-    vm_platform_execution_transport_initialize(&machine->execution_transport,
-        &vm_session_execution_sink, machine);
-    vm_platform_request_transport_initialize(&machine->request_transport);
-    vm_platform_request_transport_bind_consumer(&machine->request_transport,
+    status = vm_platform_execution_transport_create(&vm_session_execution_sink,
+        machine, &machine->execution_transport);
+    if (status != TYPE_STATUS_OK) { vm_session_finalize(machine); return status; }
+    status = vm_platform_request_transport_create(&machine->request_transport);
+    if (status != TYPE_STATUS_OK) { vm_session_finalize(machine); return status; }
+    vm_platform_request_transport_bind_consumer(machine->request_transport,
         vm_session_consume_request, machine);
-    core_platform_input_source_initialize(&machine->input_source,
-        &vm_session_input_sink, machine);
+    status = core_platform_input_source_create(&vm_session_input_sink, machine,
+        &machine->input_source);
+    if (status != TYPE_STATUS_OK) {
+        vm_session_finalize(machine);
+        return status;
+    }
     host_input_sink.context = machine;
-    vm_platform_run_context_initialize(&machine->platform_run_context,
-        &machine->execution_transport, &host_input_sink,
-        &machine->presentation_mailbox, &machine->wait_scope);
-    vm_platform_run_handle_initialize(&machine->platform_run_handle);
+    status = vm_platform_run_context_create(
+        machine->execution_transport, &host_input_sink,
+        machine->presentation_mailbox, &machine->wait_scope,
+        &machine->platform_run_context);
+    if (status != TYPE_STATUS_OK) { vm_session_finalize(machine); return status; }
+    status = vm_platform_run_handle_create(&machine->platform_run_handle);
+    if (status != TYPE_STATUS_OK) { vm_session_finalize(machine); return status; }
     vm_session_start_outcome_clear(machine);
     vm_session_control_bind_command_boundary(&machine->control,
         vm_platform_request_transport_observe_execution_boundary,
-        &machine->request_transport);
+        machine->request_transport);
     machine->active = 1;
     return TYPE_STATUS_OK;
 }
@@ -318,10 +327,18 @@ C_VOID vm_session_finalize(vm_session *machine) {
     if (machine == STD_NULL || machine->core_machine == STD_NULL) return;
     vm_session_platform_request_stop(machine);
     vm_session_platform_join_and_finalize(machine);
+    vm_platform_run_handle_destroy(machine->platform_run_handle);
+    machine->platform_run_handle = STD_NULL;
+    vm_platform_run_context_destroy(machine->platform_run_context);
+    machine->platform_run_context = STD_NULL;
+    vm_platform_execution_transport_destroy(machine->execution_transport);
+    machine->execution_transport = STD_NULL;
     vm_session_control_bind_command_boundary(&machine->control, STD_NULL, STD_NULL);
-    core_platform_input_source_stop(&machine->input_source);
-    vm_platform_request_transport_close(&machine->request_transport);
-    vm_platform_request_transport_discard(&machine->request_transport);
+    core_platform_input_source_destroy(machine->input_source);
+    machine->input_source = STD_NULL;
+    vm_platform_request_transport_close(machine->request_transport);
+    vm_platform_request_transport_destroy(machine->request_transport);
+    machine->request_transport = STD_NULL;
     machine->active = 0;
     vm_session_control_finalize(&machine->control, machine);
     vm_machine_debug_bind_pause(&machine->debug, STD_NULL, STD_NULL);

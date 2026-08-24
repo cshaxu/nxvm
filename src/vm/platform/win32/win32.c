@@ -13,6 +13,8 @@
 
 #include "vm/platform/win32/win32.h"
 
+#include "vm/platform/platform_internal.h"
+
 C_VOID vm_platform_win32_keyboard_make_key_for(
     const vm_platform_run_context *context, vm_platform_run_handle *owner,
     type_unsigned_16 scanCode, type_unsigned_16 virtualKey, C_INT pressed)

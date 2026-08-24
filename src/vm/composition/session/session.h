@@ -41,7 +41,7 @@ typedef struct vm_session_start_outcome {
 
 struct vm_session {
     C_INT active;
-    vm_platform_request_transport request_transport;
+    vm_platform_request_transport *request_transport;
     core_machine_config core_machine_config;
     core_machine_plan core_machine_plan;
     const vm_profile_default_pc_at_descriptor *profile;
@@ -55,12 +55,12 @@ struct vm_session {
     vm_profile_default_context default_profile_context;
     core_machine_media_registry media_registry;
     core_machine_display_provider_slot display_provider;
-    core_platform_presentation_mailbox presentation_mailbox;
-    vm_platform_execution_transport execution_transport;
-    core_platform_input_source input_source;
+    core_platform_presentation_mailbox *presentation_mailbox;
+    vm_platform_execution_transport *execution_transport;
+    core_platform_input_source *input_source;
     core_utils_wait_scope wait_scope;
-    vm_platform_run_context platform_run_context;
-    vm_platform_run_handle platform_run_handle;
+    vm_platform_run_context *platform_run_context;
+    vm_platform_run_handle *platform_run_handle;
     vm_session_start_outcome start_outcome;
     core_product_debugger *debugger;
     type_unsigned_64 display_generation;
@@ -69,7 +69,7 @@ struct vm_session {
     vm_session_control_state control;
     vm_session_config retained_config;
     vm_session_virtual_time_source virtual_time_source;
-    vm_platform_virtual_time_source model_339_virtual_time_source;
+    vm_platform_virtual_time_source *model_339_virtual_time_source;
     vm_session_boot_preference boot_preference;
     C_INT model40_private;
     vm_profile_floppy_kind floppy_kind;

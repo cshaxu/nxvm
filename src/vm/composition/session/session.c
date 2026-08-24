@@ -101,7 +101,7 @@ type_status vm_session_submit_host_input(vm_session *session,
         event->kind != CORE_PLATFORM_INPUT_RELATIVE_MOUSE)) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
-    return core_platform_input_source_submit(&session->input_source, event);
+    return core_platform_input_source_submit(session->input_source, event);
 }
 
 static C_INT vm_session_materialize_profile_core_config(vm_session *session,
@@ -163,6 +163,10 @@ static C_INT vm_session_cpu_contract_select(const vm_session *session,
 static C_VOID vm_session_storage_rollback(vm_session *machine)
 {
     if (machine == STD_NULL) return;
+    core_platform_presentation_mailbox_destroy(machine->presentation_mailbox);
+    machine->presentation_mailbox = STD_NULL;
+    core_product_debugger_destroy(machine->debugger);
+    machine->debugger = STD_NULL;
     core_machine_display_provider_slot_finalize(&machine->display_provider);
     core_machine_destroy(machine->core_machine);
     machine->core_machine = STD_NULL;
@@ -383,7 +387,11 @@ type_status vm_session_storage_initialize(vm_session *machine)
     vm_profile_default_context_initialize(&machine->default_profile_context,
         &machine->default_bios, &machine->media_registry, VM_SESSION_MEDIA_HDD_ID,
         machine->profile->firmware_slot);
-    core_platform_presentation_mailbox_initialize(&machine->presentation_mailbox);
+    if (core_platform_presentation_mailbox_create(&machine->presentation_mailbox) !=
+        TYPE_STATUS_OK) {
+        vm_session_storage_rollback(machine);
+        return TYPE_STATUS_NO_MEMORY;
+    }
     status = core_product_debugger_create(&machine->debugger);
     if (status != TYPE_STATUS_OK) {
         vm_session_storage_rollback(machine);
@@ -398,7 +406,8 @@ C_VOID vm_session_storage_finalize(vm_session *machine)
     if (machine == STD_NULL || machine->core_machine == STD_NULL) return;
     core_product_debugger_destroy(machine->debugger);
     machine->debugger = STD_NULL;
-    core_platform_presentation_mailbox_finalize(&machine->presentation_mailbox);
+    core_platform_presentation_mailbox_destroy(machine->presentation_mailbox);
+    machine->presentation_mailbox = STD_NULL;
     core_machine_media_registry_finalize(&machine->media_registry);
     core_machine_display_provider_slot_finalize(&machine->display_provider);
     core_machine_destroy(machine->core_machine);
@@ -560,9 +569,9 @@ C_INT vm_session_create(const vm_session_config *config, vm_session **out_sessio
     }
     if (session->profile == vm_profile_ibm_5170_model_339_descriptor_get() &&
         session->virtual_time_source.next == STD_NULL &&
-        vm_platform_virtual_time_source_initialize(
-            &session->model_339_virtual_time_source, 8000000u,
-            &session->virtual_time_source) != TYPE_STATUS_OK) {
+        vm_platform_virtual_time_source_create(8000000u,
+            &session->virtual_time_source,
+            &session->model_339_virtual_time_source) != TYPE_STATUS_OK) {
         STD_FREE(session);
         return TYPE_STATUS_FAULT;
     }
@@ -570,12 +579,12 @@ C_INT vm_session_create(const vm_session_config *config, vm_session **out_sessio
         type_status status = vm_session_initialize(session);
 
         if (status != TYPE_STATUS_OK) {
-            STD_FREE(session);
+            vm_session_destroy(session);
             return status;
         }
     }
     if (session->core_machine == STD_NULL) {
-        STD_FREE(session);
+        vm_session_destroy(session);
         return TYPE_STATUS_FAULT;
     }
     if (config != STD_NULL &&
@@ -612,7 +621,7 @@ type_status vm_session_reconfigure_memory(vm_session *session,
     if (session == STD_NULL ||
         session->model40_private ||
         vm_session_control_is_running(&session->control) ||
-        vm_platform_run_handle_is_active(&session->platform_run_handle)) {
+        vm_platform_run_handle_is_active(session->platform_run_handle)) {
         return TYPE_STATUS_INVALID_STATE;
     }
     if (core_machine_reconfigure_memory(session->core_machine, memory_bytes) !=
@@ -628,6 +637,7 @@ C_VOID vm_session_destroy(vm_session *session)
 {
     if (session == STD_NULL) return;
     vm_session_finalize(session);
+    vm_platform_virtual_time_source_destroy(session->model_339_virtual_time_source);
     STD_FREE(session);
 }
 

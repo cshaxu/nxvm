@@ -12,14 +12,13 @@ typedef struct vm_platform_execution_sink {
     C_VOID (*stop)(C_VOID *context);
 } vm_platform_execution_sink;
 
-typedef struct vm_platform_execution_transport {
-    const vm_platform_execution_sink *sink;
-    C_VOID *context;
-} vm_platform_execution_transport;
+typedef struct vm_platform_execution_transport vm_platform_execution_transport;
 
-C_VOID vm_platform_execution_transport_initialize(
-    vm_platform_execution_transport *transport,
-    const vm_platform_execution_sink *sink, C_VOID *context);
+type_status vm_platform_execution_transport_create(
+    const vm_platform_execution_sink *sink, C_VOID *context,
+    vm_platform_execution_transport **out_transport);
+C_VOID vm_platform_execution_transport_destroy(
+    vm_platform_execution_transport *transport);
 C_INT vm_platform_execution_is_running_for(
     const vm_platform_execution_transport *transport);
 C_INT vm_platform_execution_get_flip_for(

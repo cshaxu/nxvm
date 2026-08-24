@@ -15,18 +15,18 @@ C_INT main(C_VOID)
 
     if (vm_session_create(STD_NULL, &first) != TYPE_STATUS_OK ||
         vm_session_create(STD_NULL, &second) != TYPE_STATUS_OK) goto done;
-    vm_platform_run_context_set_window_display(&first->platform_run_context, 1);
-    vm_platform_run_context_set_window_display(&second->platform_run_context, 1);
+    vm_platform_run_context_set_window_display(first->platform_run_context, 1);
+    vm_platform_run_context_set_window_display(second->platform_run_context, 1);
     vm_session_start(first);
     vm_session_start(second);
-    if (!vm_platform_run_handle_is_active(&first->platform_run_handle) ||
-        !vm_platform_run_handle_is_active(&second->platform_run_handle)) failed = 1;
+    if (!vm_platform_run_handle_is_active(first->platform_run_handle) ||
+        !vm_platform_run_handle_is_active(second->platform_run_handle)) failed = 1;
     Sleep(50u);
     vm_session_stop(first);
-    if (vm_platform_run_handle_is_active(&first->platform_run_handle) ||
-        !vm_platform_run_handle_is_active(&second->platform_run_handle)) failed = 1;
+    if (vm_platform_run_handle_is_active(first->platform_run_handle) ||
+        !vm_platform_run_handle_is_active(second->platform_run_handle)) failed = 1;
     vm_session_stop(second);
-    if (vm_platform_run_handle_is_active(&second->platform_run_handle)) failed = 1;
+    if (vm_platform_run_handle_is_active(second->platform_run_handle)) failed = 1;
 done:
     vm_session_destroy(second);
     vm_session_destroy(first);
