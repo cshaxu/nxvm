@@ -40,6 +40,12 @@
 
 ## Recent Governance
 
+- **M5 Td S142 P1:** added the single execution rule that current product
+  artifacts are stripped Release builds without compiler debug information;
+  admitted runtime debuggers remain product functionality, while Debug builds
+  are development/gate-only. Documentation governance passes; no code or
+  artifact changed.
+
 - **M5 Td S141 P1:** recorded three deferred, source-gated controller
   admissions: XT/AT PIC topology, later-AT ELCR/PCI routing, and APIC/IOAPIC.
   Core owns every guest-visible controller state; profile only selects an

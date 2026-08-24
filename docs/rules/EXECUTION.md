@@ -440,6 +440,8 @@ design-only work creates none. Local artifacts are not release evidence, carry
 no protected media or Microsoft binaries, and are replaced only by a newly
 verified build of the same named task.
 
+A current product artifact is a stripped Release build with no compiler debug information; this never removes an admitted runtime debugger, and Debug builds are for development and gates only.
+
 ## Build Tree Hygiene
 
 After every build, test, smoke, sanitizer, or failed verification, remove owned
