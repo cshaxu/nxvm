@@ -1074,11 +1074,6 @@ set(VM_PROFILE_SOURCES
     src/vm/profile/model40/model40.c
 )
 
-set(VM_RUNTIME_SOURCES
-    ${CORE_PRODUCT_SOURCES}
-    ${VM_PROFILE_SOURCES}
-)
-
 set(VM_PRODUCT_SOURCES
     src/vm/product/console.c
     src/vm/product/session_catalog.c
@@ -1355,6 +1350,9 @@ target_link_libraries(vm-platform PUBLIC
     type-facade
     core-utils
     core-platform)
+if(WIN32)
+    target_link_libraries(vm-platform PUBLIC user32 gdi32)
+endif()
 if(NOT WIN32)
     target_include_directories(vm-platform PRIVATE ${CURSES_INCLUDE_DIRS})
     target_link_libraries(vm-platform PUBLIC ${CURSES_LIBRARIES} Threads::Threads)
@@ -1457,10 +1455,8 @@ target_link_libraries(vm-composition PUBLIC
     "$<LINK_GROUP:RESCAN,core-product-debug,core-product-utils>"
     vm-profile
     vm-product
-    vm-request-transport
-    vm-platform
-    user32
-    gdi32)
+    vm-request-transport)
+target_link_libraries(vm-composition PRIVATE vm-platform)
 
 add_library(vm-machine STATIC ${VM_MACHINE_SOURCES})
 target_include_directories(vm-machine PUBLIC
@@ -2859,8 +2855,7 @@ function(add_current_vm_artifact target version)
     endif()
 
     add_executable(${target} EXCLUDE_FROM_ALL
-        src/vm/main.c
-        src/vm/composition/session/machine_info.c)
+        src/vm/main.c)
     target_compile_definitions(${target} PRIVATE "PRODUCT_BUILD_VERSION=\"${version}\"")
     target_include_directories(${target} PRIVATE
         "${CMAKE_SOURCE_DIR}/src")
@@ -2883,8 +2878,8 @@ function(add_current_vm_artifact target version)
             "${CMAKE_SOURCE_DIR}/build/output/${task_artifact_filename}")
 endfunction()
 
-set(PROJECT_CURRENT_VM_ARTIFACT_TARGET vm-0-5-0446)
-add_current_vm_artifact(vm-0-5-0446 "0.5.0446")
+set(PROJECT_CURRENT_VM_ARTIFACT_TARGET vm-0-5-0447)
+add_current_vm_artifact(vm-0-5-0447 "0.5.0447")
 option(PROJECT_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
 
@@ -3014,6 +3009,12 @@ if(PROJECT_VERIFY_DEPENDENCY_DAG)
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
             -P "${CMAKE_SOURCE_DIR}/cmake/verify_t446_vm_debugger_recording_lifecycle.cmake"
         COMMENT "Verifying VM debugger recorder lifecycle ownership"
+        VERBATIM)
+
+    add_custom_target(verify-t447-build-ownership
+        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_t447_build_ownership.cmake"
+        COMMENT "Verifying VM build source and native-library ownership"
         VERBATIM)
 
     add_custom_target(verify-current-artifact-target
@@ -3361,6 +3362,7 @@ set(PROJECT_CURRENT_SPECIALIZED_VERIFIER_CANDIDATES
     verify-linux-platform-contract
     verify-t445-vm-native-display-resource-lifetime
     verify-t446-vm-debugger-recording-lifecycle
+    verify-t447-build-ownership
     verify-current-artifact-target
     verify-request-transport-closure
     verify-keyboard-ingress-boundary

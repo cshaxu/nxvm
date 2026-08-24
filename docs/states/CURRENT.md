@@ -2,11 +2,30 @@
 
 ## Current Work
 
-**Idle.**
+## M5 T447 S1 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New; `M5 T447 S1`, single-session coordinator/executor then coordinator closure review. |
+| Admission And Approval | Owner approved the queued architecture-boundary debt closure on 2026-08-23. This admits its S1 build-ownership batch only. |
+| Objective | Freeze the T447 ledger and give every current VM build source and host-native library one truthful owning target. |
+| Non-goals | No VM/Core runtime behavior, public API, platform adapter redesign, session-contract repair, or source-code relocation outside the build ownership findings. |
+| Reference Baseline | `b9d3a659`; prior 0446 artifact; Td S125--S130 rows and T447 proposal S1. |
+| Candidate Proposal | [M5 Architecture-Boundary Debt Closure](../proposals/m5-architecture-boundary-debt-closure.md), S1. |
+| Files And ABI Surface | `CMakeLists.txt`, one narrow CMake verifier/test only if needed, T447 history/evidence/status, and current artifact version. No runtime ABI surface. |
+| Applicable Rules | Execution packet/P/ledger/closure requirements; architecture one-owner target and host-boundary direction; coding deletion of stale aggregate/duplicate route and no wrapper target; documentation topology. No exception. |
+| Verification | Inventory every VM source-to-target and native-library edge before/after; configure/build the current artifact and focused composition consumers on the supported host; run the narrow uniqueness/static verifier, current gates, and documentation governance. |
+| Expected Markers | `M5:T447:S1:BUILD-OWNERSHIP:OK`; no `VM_RUNTIME_SOURCES`, no direct `machine_info.c` artifact compile, and no Win32 library propagated by `vm-composition`. |
+| Asset Needs | None. |
+| Reporting Requirements | Record the frozen T447 ledger, each S1 source/edge disposition, code-size accounting, focused/full verification, artifact SHA, and actual-diff review; commit and push the complete implementation P before coordinator closure. |
+| Stop Conditions | Stop for owner direction if a target consumer needs an undiscovered native dependency, if one source has a real independent second owner, or if a required target-graph change alters VM behavior. |
+| Exit Criteria | The full S1 inventory has one source owner and host-native edge owner; stale declarations are deleted; focused graph proof and current gates pass; artifact builds; no duplicate production route or platform leak remains. |
+| Original Owner Request | Execute the newly approved code-governance closure T using the proposal's dependency-ordered S tasks. |
+| Similar-Issue Sweep | Inspect every CMake source aggregate, `add_library`/`add_executable`, `target_link_libraries`, artifact helper, platform library edge, and verifier inventory; do not repair only the two originally named lines. |
 
 ## Current Technical Baseline
 
-- **Current developer artifact:** target `vm-0-5-0446`; `nxvm_0_5_0446.exe` / `build/output/nxvm_0_5_0446.exe`, SHA-256 `2265CC4B0182EF66063327FC55118BAA44C95F270B7B0680131E8813EA412CBF`. T434 has one copied Core timing-plan publication route for default PC/AT, IBM 5170 Model 339 and Model-40 BYOB session composition.
+- **Current developer artifact:** target `vm-0-5-0447`; `nxvm_0_5_0447.exe` / `build/output/nxvm_0_5_0447.exe`, SHA-256 `2D11FAB64183514AB1CFC7609C5A063403B42DDC7E171D0642B3394C49E3DB29`. T434 has one copied Core timing-plan publication route for default PC/AT, IBM 5170 Model 339 and Model-40 BYOB session composition.
   T386 closes selected-device functional completeness at S29; its retained
   [closure audit](../etc/evidence/t386-s29-functional-closure-audit.md) fixes
   HDC current-gate coverage and transfers board, firmware and physical work.

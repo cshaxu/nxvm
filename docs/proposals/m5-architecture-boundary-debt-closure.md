@@ -51,7 +51,7 @@ passing structural gate alone is never an accepted disposition.
 
 ## Required Subtasks
 
-### S1 — Freeze the closure ledger and build ownership
+### S1 -- Freeze the closure ledger and build ownership
 
 Create the durable per-row ledger, establish pre-change caller/source-target
 inventories, then repair the Td S127 CMake findings: native Win32 libraries
@@ -60,7 +60,7 @@ production target owner, and `VM_RUNTIME_SOURCES` is retired. Add narrow
 source-to-target proof. Do not fork composition by host or use linker order to
 hide duplicate compilation.
 
-### S2 — Make product session commands and selected-session access single-owner
+### S2 -- Make product session commands and selected-session access single-owner
 
 Unify `SESSION LIST/OPEN/SELECT/CLOSE` under one product authority while
 keeping VM profile policy at VM's explicit seam. Replace the public untyped
@@ -70,7 +70,7 @@ close, and failure semantics. Delete the unused parser and every VM cast of a
 raw session object. Extend the raw-borrow verifier with positive and negative
 self-tests; do not add aliases, test-only accessors, or a second parser.
 
-### S3 — Seal the Core product debugger boundary
+### S3 -- Seal the Core product debugger boundary
 
 Make debugger interpreter state owner-private and expose only the smallest
 session creation, command, observation, and destruction operations. Migrate VM
@@ -78,7 +78,7 @@ composition and focused tests without changing retained debugger UX. Preserve
 the Core-to-VM dependency direction and one command interpreter; do not make a
 generic console framework.
 
-### S4 — Converge host backing-resource ownership
+### S4 -- Converge host backing-resource ownership
 
 Select one owned synchronous backing-resource route for FDD, HDD, media save,
 Model-40 BYOB, session catalog, and debugger recording, preserving existing
@@ -87,7 +87,7 @@ unconsumed parallel resource contract. As part of the recorder migration,
 remove the T446 direct-source test-build exception without adding a test-only
 public production seam.
 
-### S5 — Encapsulate Core platform state and VM platform lifecycle state
+### S5 -- Encapsulate Core platform state and VM platform lifecycle state
 
 Make Core backing-resource, input-source, and presentation-mailbox instances
 opaque or owner-allocated; migrate VM consumers to bounded create/close,
@@ -97,7 +97,7 @@ minimal composition-to-platform contract. Preserve the distinct Linux and
 Win32 resource lifetimes repaired by T445; do not add a generic host framework
 or move host policy into Core.
 
-### S6 — Close Core machine collaborator and plan endpoints
+### S6 -- Close Core machine collaborator and plan endpoints
 
 Move mutable media-registry, display-provider, memory-device, and topology
 endpoint state behind Core-owned registrations or private storage. Keep plans
@@ -105,7 +105,7 @@ declarative and copied, retain atomic create/reset/destroy behavior, and
 migrate default PC/AT, Model-339, and Model-40 together. Do not create a
 second machine object, generic plugin framework, or mutable post-create plan.
 
-### S7 — Normalize VM session, media, profile, product, and composition contracts
+### S7 -- Normalize VM session, media, profile, product, and composition contracts
 
 Replace cross-owner mutable VM layouts with opaque handles, immutable copied
 selection data, and bounded observations. This includes retiring public
@@ -116,7 +116,7 @@ scan-set access, and the five unused private includes. Retain exactly one
 Model-40 construction/materialization route with copied fixture input; do not
 use typedef renames, compatibility aliases, or generic profile machinery.
 
-### S8 — Repair cross-owner tests and direct-build exceptions
+### S8 -- Repair cross-owner tests and direct-build exceptions
 
 Classify every audited test as same-owner white-box setup or cross-owner
 behavioral proof. Move only legitimate setup fixtures to their owner; convert
@@ -126,14 +126,14 @@ S1--S7 with the T345 ledger; no new production source is directly compiled by
 a test unless the task records an unavoidable, narrow exception and an
 earliest removal receiver. Do not widen production APIs for tests.
 
-### S9 — Dispose of the VDM forwarding layer
+### S9 -- Dispose of the VDM forwarding layer
 
 Either remove `vdm/composition/session.c` and consume the machine boundary
 directly, or give it one real mantle/DOS assembly responsibility with explicit
 lifetime and failure semantics. Preserve the non-runnable VDM scope. No
 compatibility wrapper or product promotion is allowed.
 
-### S10 — Decompose the Core machine coordinator by existing ownership
+### S10 -- Decompose the Core machine coordinator by existing ownership
 
 Reduce `core/machine/machine.c` to assembly/lifecycle coordination by moving
 the already distinct timing, validation, scheduling, firmware, board-device,
@@ -142,7 +142,7 @@ Preserve exactly one Core execution and transaction path, all rollback
 semantics, and public behavior. This is not a line-count split and may not
 duplicate machine state or introduce a generic framework.
 
-### S11 — Independent closure audit
+### S11 -- Independent closure audit
 
 Re-run the frozen ledger against actual code, build graph, public headers, and
 tests; inspect every changed path; prove each original row's accepted or
