@@ -384,7 +384,11 @@ type_status vm_session_storage_initialize(vm_session *machine)
         &machine->default_bios, &machine->media_registry, VM_SESSION_MEDIA_HDD_ID,
         machine->profile->firmware_slot);
     core_platform_presentation_mailbox_initialize(&machine->presentation_mailbox);
-    core_product_debug_context_initialize(&machine->debugger_context);
+    status = core_product_debugger_create(&machine->debugger);
+    if (status != TYPE_STATUS_OK) {
+        vm_session_storage_rollback(machine);
+        return status;
+    }
     machine->display_generation = 0u;
     return TYPE_STATUS_OK;
 }
@@ -392,6 +396,8 @@ type_status vm_session_storage_initialize(vm_session *machine)
 C_VOID vm_session_storage_finalize(vm_session *machine)
 {
     if (machine == STD_NULL || machine->core_machine == STD_NULL) return;
+    core_product_debugger_destroy(machine->debugger);
+    machine->debugger = STD_NULL;
     core_platform_presentation_mailbox_finalize(&machine->presentation_mailbox);
     core_machine_media_registry_finalize(&machine->media_registry);
     core_machine_display_provider_slot_finalize(&machine->display_provider);

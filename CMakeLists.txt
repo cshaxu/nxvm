@@ -3023,6 +3023,12 @@ if(PROJECT_VERIFY_DEPENDENCY_DAG)
         COMMENT "Verifying product session command and access ownership"
         VERBATIM)
 
+    add_custom_target(verify-t447-debugger-boundary
+        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_t447_debugger_boundary.cmake"
+        COMMENT "Verifying Core debugger interpreter ownership"
+        VERBATIM)
+
     add_custom_target(verify-current-artifact-target
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
             -P "${CMAKE_SOURCE_DIR}/cmake/verify_current_artifact_target.cmake"
@@ -3370,6 +3376,7 @@ set(PROJECT_CURRENT_SPECIALIZED_VERIFIER_CANDIDATES
     verify-t446-vm-debugger-recording-lifecycle
     verify-t447-build-ownership
     verify-t447-session-boundary
+    verify-t447-debugger-boundary
     verify-current-artifact-target
     verify-request-transport-closure
     verify-keyboard-ingress-boundary

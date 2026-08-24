@@ -163,10 +163,8 @@ static type_status vm_session_machine_debug_selected(vm_session *session,
             return TYPE_STATUS_INVALID_STATE;
         }
     }
-    core_product_debug_context_initialize(&session->debugger_context);
-    session->debugger_context.wait_scope = &session->wait_scope;
-    core_product_debug_main(&session->debugger_context,
-        vm_session_debug_target(session), input);
+    core_product_debugger_run(session->debugger, vm_session_debug_target(session),
+        input, &session->wait_scope);
     return TYPE_STATUS_OK;
 }
 

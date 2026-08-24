@@ -58,7 +58,7 @@ static C_INT write_register(C_VOID *context, core_product_debug_register reg,
 
 static C_INT run_case(const C_CHAR *text, C_INT fail_allocation)
 {
-    core_product_debug_context context;
+    core_product_debugger *debugger = STD_NULL;
     core_product_debug_target target = {0};
     STD_SIZE_T writes = 0u;
     STD_FILE *input = tmpfile();
@@ -70,23 +70,22 @@ static C_INT run_case(const C_CHAR *text, C_INT fail_allocation)
     target.get_code_base = code_base;
     target.context = &writes;
     if (input == STD_NULL || (text != STD_NULL && STD_FPUTS(text, input) < 0) ||
-        fflush(input) != 0 || STD_FSEEK(input, 0L, STD_SEEK_SET) != 0) goto done;
+        fflush(input) != 0 || STD_FSEEK(input, 0L, STD_SEEK_SET) != 0 ||
+        core_product_debugger_create(&debugger) != TYPE_STATUS_OK) goto done;
     saved = TEST_DUP(TEST_FILENO(STD_STDIN));
     if (saved < 0 || TEST_DUP2(TEST_FILENO(input), TEST_FILENO(STD_STDIN)) < 0) goto done;
     clearerr(STD_STDIN);
     allocation_failure = fail_allocation;
     allocation_attempts = 0u;
-    core_product_debug_main(&context, &target, STD_NULL);
-    if (context.arguments != STD_NULL || context.target != STD_NULL ||
-        context.input_provider != STD_NULL || allocation_attempts != 1u || writes != 0u) {
+    core_product_debugger_run(debugger, &target, STD_NULL, STD_NULL);
+    if (allocation_attempts != 1u || writes != 0u) {
         goto done;
     }
     if (!fail_allocation) {
         if (STD_FSEEK(input, 0L, STD_SEEK_SET) != 0) goto done;
         clearerr(STD_STDIN);
-        core_product_debug_main(&context, &target, STD_NULL);
-        if (context.arguments != STD_NULL || context.target != STD_NULL ||
-            context.input_provider != STD_NULL || allocation_attempts != 2u || writes != 0u) {
+        core_product_debugger_run(debugger, &target, STD_NULL, STD_NULL);
+        if (allocation_attempts != 2u || writes != 0u) {
             goto done;
         }
     }
@@ -98,6 +97,7 @@ done:
         TEST_CLOSE(saved);
     }
     clearerr(STD_STDIN);
+    core_product_debugger_destroy(debugger);
     if (input != STD_NULL) STD_FCLOSE(input);
     return passed;
 }

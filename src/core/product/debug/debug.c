@@ -14,6 +14,29 @@
 #define DEBUG_MAXNARG 256
 #define DEBUG_MAXNASMARG 4
 
+struct core_product_debugger {
+    const core_product_debug_target *target;
+    const core_product_debug_input_provider *input_provider;
+    const core_utils_wait_scope *wait_scope;
+    STD_SIZE_T error_position;
+    STD_SIZE_T argument_count;
+    C_CHAR **arguments;
+    C_INT exit_requested;
+    C_CHAR command_buffer[0x100];
+    C_CHAR command_copy[0x100];
+    C_CHAR file_name[0x100];
+    type_unsigned_16 dump_segment;
+    type_unsigned_16 dump_offset;
+    type_unsigned_16 assemble_segment;
+    type_unsigned_16 assemble_offset;
+    type_unsigned_16 unassemble_segment;
+    type_unsigned_16 unassemble_offset;
+    type_unsigned_16 parsed_segment;
+    type_unsigned_16 parsed_offset;
+};
+
+typedef core_product_debugger core_product_debug_context;
+
 static C_VOID core_product_debug_flush_console_input(core_product_debug_context *debugContext)
 {
     if (debugContext->input_provider != STD_NULL &&
@@ -2598,24 +2621,41 @@ static C_VOID exec(core_product_debug_context *debugContext)
     }
 }
 
-C_VOID core_product_debug_context_initialize(core_product_debug_context *context)
+static C_VOID core_product_debug_context_initialize(core_product_debug_context *context)
 {
     if (context != STD_NULL)
         STD_MEMSET(context, 0, sizeof(*context));
 }
 
-C_VOID core_product_debug_main(core_product_debug_context *context,
-                               const core_product_debug_target *target,
-                               const core_product_debug_input_provider *input_provider)
+type_status core_product_debugger_create(core_product_debugger **out_debugger)
 {
-    const core_utils_wait_scope *wait_scope;
+    core_product_debugger *debugger;
+
+    if (out_debugger == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    debugger = (core_product_debugger *)STD_CALLOC(1u, sizeof(*debugger));
+    if (debugger == STD_NULL) return TYPE_STATUS_NO_MEMORY;
+    *out_debugger = debugger;
+    return TYPE_STATUS_OK;
+}
+
+C_VOID core_product_debugger_destroy(core_product_debugger *debugger)
+{
+    if (debugger == STD_NULL) return;
+    core_product_debug_finalize_arguments(debugger);
+    STD_FREE(debugger);
+}
+
+C_VOID core_product_debugger_run(core_product_debugger *context,
+    const core_product_debug_target *target,
+    const core_product_debug_input_provider *input_provider,
+    const core_utils_wait_scope *wait_scope)
+{
     core_product_debug_context *debugContext = context;
     STD_SIZE_T i;
     core_product_debug_fault_outcome fault;
 
     if (context == STD_NULL || target == STD_NULL)
         return;
-    wait_scope = context->wait_scope;
     core_product_debug_context_initialize(context);
     context->target = target;
     context->input_provider = input_provider;

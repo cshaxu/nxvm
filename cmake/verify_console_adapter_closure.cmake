@@ -36,8 +36,7 @@ endforeach()
 foreach(required
     "vm_session_control_request_pause"
     "vm_session_control_wait_for_pause"
-    "core_product_debug_context_initialize"
-    "core_product_debug_main")
+    "core_product_debugger_run")
     string(FIND "${adapter_source}" "${required}" debug_position)
     if(debug_position EQUAL -1)
         message(FATAL_ERROR "Console debugger callback lost required behavior: ${required}")

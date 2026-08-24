@@ -138,7 +138,8 @@ type_status vm_session_model40_storage_initialize(vm_session *session)
     }
     if (status != TYPE_STATUS_OK) { vm_session_model40_storage_rollback(session); return status; }
     core_platform_presentation_mailbox_initialize(&session->presentation_mailbox);
-    core_product_debug_context_initialize(&session->debugger_context);
+    status = core_product_debugger_create(&session->debugger);
+    if (status != TYPE_STATUS_OK) { vm_session_model40_storage_rollback(session); return status; }
     return TYPE_STATUS_OK;
 }
 

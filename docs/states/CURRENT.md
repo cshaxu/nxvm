@@ -1,11 +1,25 @@
 # Project Status
 
-## Current Work
+## M5 T447 S3 Packet
 
-| Task | Compact result |
+| Field | Required record |
 | --- | --- |
-| T447 S1 | Accepted P1 `9a81283d` and P2 `496024b3`: each current VM build source and native GUI edge has one owner; 0447, 293 current smokes, and 67 specialized verifiers pass. [Evidence](../etc/evidence/t447-s1-build-ownership.md). |
-| T447 S2 | Accepted P1 `52d140a8`: one Core `SESSION` grammar, immutable command/open tokens, a copied selected snapshot, and callback-bounded selected VM actions replace public raw borrowing and VM duplicate dispatch. The 0447 artifact SHA is recorded in [evidence](../etc/evidence/t447-s2-session-boundary.md); 293 current smokes and 150 specialized build steps pass. |
+| Identifier Mode | Continuation; `M5 T447 S3`, single-session coordinator/executor then coordinator closure review. |
+| Admission And Approval | The owner-approved T447 proposal and accepted S2 progress admit the next dependency-ordered S3 batch on 2026-08-23. No exception. |
+| Objective | Make the Core product debugger interpreter state owner-private while retaining one debugger command interpreter and its current VM console behavior. |
+| Non-goals | No debugger UX expansion, command grammar redesign, generic console framework, debugger target redesign, machine/session layout normalization, or host-resource convergence. |
+| Reference Baseline | Accepted S2 P2 `ebabe689`; Td S126 D and T447 proposal S3. |
+| Candidate Proposal | [M5 Architecture-Boundary Debt Closure](../proposals/m5-architecture-boundary-debt-closure.md), S3. |
+| Files And ABI Surface | Core debugger public/private interface and implementation; VM session/composition debugger invocation; focused Core/VM debugger tests; narrow closure verifier; T447 history/evidence/status and current artifact. Retained debugger command UX is unchanged. |
+| Applicable Rules | Execution mechanism/ledger/P/closure requirements; architecture one mutable-state owner, Core-directed dependency and bounded capability; coding removal of exposed layout and no forwarding abstraction; documentation topology. No exception. |
+| Verification | Inventory every `core_product_debug_context` declaration, field access, initialize/main call, target/input use, test-only access, and debugger command path; prove state is owner-private and one interpreter remains; run focused debugger/input/session isolation/console consumers plus invalid-input behavior; configure/build current artifact, current smokes, specialized gates, and documentation governance. |
+| Expected Markers | Retained debugger/console markers plus a T447 S3 marker; no public mutable debugger context layout, no VM embedded Core interpreter state, no duplicate interpreter or command path, and no test-only raw state access across owners. |
+| Asset Needs | Existing non-committed test media only; no new source, firmware, guest-media, or third-party asset. |
+| Reporting Requirements | Record complete state/caller/test inventory, new capability lifetime/failure semantics, deleted layout access, retained UX proof, code-size accounting, artifact SHA, focused/full verification, and actual-diff review; commit and push one complete implementation P before coordinator closure. |
+| Stop Conditions | Stop for owner direction if preserving debugger behavior requires a new public target mutation capability, a second interpreter, an expanded VM-to-Core dependency, or an unapproved change to debugger interaction semantics. |
+| Exit Criteria | Core alone owns mutable interpreter state; VM can create, run, observe, and destroy it only through bounded declared operations; every caller/test migrates or is explicitly transferred; one retained command interpreter preserves UX; focused/full proof passes with no exposed layout or compatibility route. |
+| Original Owner Request | Execute the approved architecture-boundary closure in dependency order, applying minimalism as a hard constraint rather than a later refactor. |
+| Similar-Issue Sweep | Inspect all public/private debugger headers and source, VM session/composition/model-40 initialization, debugger target/input consumers, direct state field access, direct test builds, CMake registration, and command paths; do not repair only the first embedded context. |
 
 ## Current Technical Baseline
 

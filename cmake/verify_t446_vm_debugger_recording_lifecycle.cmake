@@ -22,10 +22,10 @@ foreach(required "type_status record_status" "type_status vm_machine_debug_recor
     endif()
 endforeach()
 
-string(FIND "${session_header}" "core_product_debug_context debugger_context;"
-    session_context_position)
-if(session_context_position EQUAL -1)
-    message(FATAL_ERROR "VM session no longer owns its debugger context")
+string(FIND "${session_header}" "core_product_debugger *debugger;"
+    session_debugger_position)
+if(session_debugger_position EQUAL -1)
+    message(FATAL_ERROR "VM session no longer owns its debugger lifecycle handle")
 endif()
 
 string(REGEX MATCHALL "static[^\n]*dumpSegRec|static[^\n]*asmSegRec|static[^\n]*uasmSegRec"
