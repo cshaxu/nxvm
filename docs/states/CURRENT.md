@@ -2,7 +2,28 @@
 
 ## Current Work
 
-**Idle.**
+**Active: M5 T451 S1 - VM request-bridge contract and build-failure baseline.**
+
+## M5 T451 S1 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New |
+| Admission And Approval | Owner approved admission of the first queued repair on 2026-08-24, requesting its brief, implementation approach and S split first. Scope is the bounded VM request-bridge full-build restoration proposal; no exceptions are approved. |
+| Objective | Establish the factual current VM request contract and configured-build result, then determine the smallest correct retirement path for a proven-stale build-debt report. |
+| Non-goals | Do not change production request semantics, reintroduce removed request aliases or fields, add a compatibility wrapper, alter Console behavior, alter current-gate membership, or add a replacement test framework. |
+| Reference Baseline | `8bfc3e68` (M5 Td S140 P2); the request bridge exposes `KEY_EVENT`, `MOUSE_EVENT`, `STOP` and `DISPLAY_MODE`, the smoke names `KEY_EVENT/key_event`, and the declared build route is `mingw-gcc-x64` plus `current-gcc`. |
+| Candidate Proposal | [M5 VM Request-Bridge Current-Build Restoration](../proposals/m5-vm-request-bridge-current-build-restoration.md). |
+| Files And ABI Surface | Inspect `src/vm/platform/request_bridge.{h,c}`, `src/vm/platform/vm_request_transport.{h,c}`, request producers/consumer, `tests/platform/vm_request_bridge_smoke.c`, `CMakeLists.txt`, `CMakePresets.json`, `docs/states/TODO.md` and `docs/etc/operations/build/toolchain.md`. S1 changes only task documentation and evidence; no ABI change. |
+| Applicable Rules | `design/ARCHITECTURE.md`: VM owns product composition and Core remains independent. `rules/ARCHITECTURE.md`: one explicit request route and no second authority. `design/CODING.md`: test follows behavior owner. `rules/CODING.md`: no wrapper or duplicate path; tests prove owned behavior. `rules/DOCUMENT.md` and `rules/EXECUTION.md`: active-packet, evidence and closure requirements. |
+| Verification | Record the request-kind/payload/producers/consumer ledger; use the declared preset without editing it; run the bridge executable, request-transport CTest, `current-gcc` and `build/mingw-gcc-x64 --target all`, retaining exact dispositions. Run `git diff --check` and the documentation-governance gate before S1 acceptance. |
+| Expected Markers | One finite ledger, one exact build disposition, no production source change, and a documentation-only S2 decision. |
+| Asset Needs | None; no external source, firmware, guest media or third-party material is used. |
+| Reporting Requirements | Report the exact build disposition, whether the reported obsolete contract exists at the current baseline, and the S2 boundary; link durable evidence rather than paste build logs. |
+| Stop Conditions | Stop and request owner direction if a product request-semantics decision or a second production request authority is required. Stop S1 if the configured build environment itself cannot be identified from repository inputs. |
+| Exit Criteria | Current contract and every in-scope caller are recorded; the smoke and complete configured build have reproducible dispositions; evidence proves the code repair unnecessary and defines the stale-debt retirement S2; documentation gates pass. |
+| Original Owner Request | Insert the request-bridge full-build restoration and parallel current-gate isolation repairs at the Queue front; then admit the first and provide its brief, implementation approach and S split first. |
+| Similar-Issue Sweep | Search all registered build targets and VM request-contract callers for obsolete request kinds or payload fields; S1 records only in-scope instances and transfers unrelated failures rather than broadening the repair. |
 
 ## Current Technical Baseline
 
