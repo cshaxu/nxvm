@@ -11,7 +11,7 @@ typedef struct core_product_session_output_provider {
 } core_product_session_output_provider;
 
 C_INT core_product_session_command_execute(core_product_session_manager *manager,
-    C_INT argument_count, C_CHAR **arguments,
+    C_INT argument_count, const C_CHAR *const *arguments,
     const core_product_session_output_provider *output);
 
 #endif

@@ -22,8 +22,11 @@ typedef enum core_product_session_display {
 
 typedef struct core_product_session_open_options {
     C_INT argument_count;
-    C_CHAR **arguments;
+    const C_CHAR *const *arguments;
 } core_product_session_open_options;
+
+typedef type_status (*core_product_session_selected_operation)(
+    C_VOID *context, C_VOID *session);
 
 typedef struct core_product_session_snapshot {
     core_product_session_id id;
@@ -61,10 +64,14 @@ type_status core_product_session_manager_select(
     core_product_session_manager *manager, core_product_session_id id);
 type_status core_product_session_manager_get_selected_id(
     const core_product_session_manager *manager, core_product_session_id *out_id);
+type_status core_product_session_manager_get_selected_snapshot(
+    const core_product_session_manager *manager,
+    core_product_session_snapshot *out_snapshot);
 type_status core_product_session_manager_get_count(
     const core_product_session_manager *manager, STD_SIZE_T *out_count);
-type_status core_product_session_manager_borrow_selected(
-    core_product_session_manager *manager, C_VOID **out_session);
+type_status core_product_session_manager_apply_selected(
+    core_product_session_manager *manager,
+    core_product_session_selected_operation operation, C_VOID *context);
 type_status core_product_session_manager_list(
     const core_product_session_manager *manager,
     core_product_session_snapshot *out_snapshots, STD_SIZE_T capacity,

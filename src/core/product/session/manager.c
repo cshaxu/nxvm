@@ -174,6 +174,25 @@ type_status core_product_session_manager_get_selected_id(
     return TYPE_STATUS_OK;
 }
 
+type_status core_product_session_manager_get_selected_snapshot(
+    const core_product_session_manager *manager,
+    core_product_session_snapshot *out_snapshot)
+{
+    STD_SIZE_T index;
+    type_status status;
+
+    if (manager == STD_NULL || out_snapshot == STD_NULL || manager->count == 0u ||
+        !core_product_session_manager_find(manager, manager->selected_id, &index)) {
+        return TYPE_STATUS_INVALID_STATE;
+    }
+    status = manager->provider.describe(manager->provider.context,
+        manager->entries[index].session, out_snapshot);
+    if (status != TYPE_STATUS_OK) return status;
+    out_snapshot->id = manager->entries[index].id;
+    out_snapshot->selected = 1;
+    return TYPE_STATUS_OK;
+}
+
 type_status core_product_session_manager_get_count(
     const core_product_session_manager *manager, STD_SIZE_T *out_count)
 {
@@ -184,17 +203,17 @@ type_status core_product_session_manager_get_count(
     return TYPE_STATUS_OK;
 }
 
-type_status core_product_session_manager_borrow_selected(
-    core_product_session_manager *manager, C_VOID **out_session)
+type_status core_product_session_manager_apply_selected(
+    core_product_session_manager *manager,
+    core_product_session_selected_operation operation, C_VOID *context)
 {
     STD_SIZE_T index;
 
-    if (manager == STD_NULL || out_session == STD_NULL || manager->count == 0u ||
+    if (manager == STD_NULL || operation == STD_NULL || manager->count == 0u ||
         !core_product_session_manager_find(manager, manager->selected_id, &index)) {
         return TYPE_STATUS_INVALID_STATE;
     }
-    *out_session = manager->entries[index].session;
-    return TYPE_STATUS_OK;
+    return operation(context, manager->entries[index].session);
 }
 
 type_status core_product_session_manager_list(

@@ -22,13 +22,45 @@ static C_INT stage_uses_window(C_INT stage)
     return stage >= 1 && stage <= 5;
 }
 
+typedef struct startup_failure_session_check {
+    C_INT window;
+    C_INT failed;
+} startup_failure_session_check;
+
+static type_status configure_session(C_VOID *context, C_VOID *opaque)
+{
+    startup_failure_session_check *check =
+        (startup_failure_session_check *)context;
+
+    if (check == STD_NULL || opaque == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    vm_platform_run_context_set_window_display(&((vm_session *)opaque)->platform_run_context,
+        check->window);
+    return TYPE_STATUS_OK;
+}
+
+static type_status verify_session(C_VOID *context, C_VOID *opaque)
+{
+    startup_failure_session_check *check =
+        (startup_failure_session_check *)context;
+    vm_session *session = (vm_session *)opaque;
+
+    if (check == STD_NULL || session == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    check->failed = session->start_outcome.valid &&
+        session->start_outcome.status != TYPE_STATUS_OK &&
+        !vm_session_control_is_running(&session->control) &&
+        !vm_platform_run_handle_is_active(&session->platform_run_handle);
+    return TYPE_STATUS_OK;
+}
+
 int main(void)
 {
     core_product_session_provider session_provider;
     core_product_session_manager *session_manager = STD_NULL;
     vm_product_console_machine_provider machine_provider;
     vm_product_console_context console_context;
-    vm_session *session = STD_NULL;
+    startup_failure_session_check session_check = {
+        stage_uses_window(VM_PLATFORM_TEST_FAILURE_STAGE), 0
+    };
     STD_FILE *input = STD_NULL;
     STD_FILE *output = STD_NULL;
     C_CHAR text[4096];
@@ -50,11 +82,8 @@ int main(void)
     }
     vm_session_provider_initialize(&session_provider);
     if (core_product_session_manager_create(&session_provider, &session_manager) !=
-            TYPE_STATUS_OK || core_product_session_manager_borrow_selected(
-            session_manager, (C_VOID **)&session) != TYPE_STATUS_OK ||
-        session == STD_NULL) goto done;
-    vm_platform_run_context_set_window_display(&session->platform_run_context,
-        stage_uses_window(VM_PLATFORM_TEST_FAILURE_STAGE));
+            TYPE_STATUS_OK || core_product_session_manager_apply_selected(
+            session_manager, configure_session, &session_check) != TYPE_STATUS_OK) goto done;
     vm_session_machine_provider_initialize(&machine_provider, session_manager);
     vm_product_console_main(&console_context, &machine_provider, session_manager, ".");
     fflush(STD_STDOUT);
@@ -64,10 +93,9 @@ int main(void)
     if (STD_FSEEK(output, 0L, STD_SEEK_SET) != 0 ||
         STD_FREAD(text, 1u, sizeof(text) - 1u, output) == 0u) goto done;
     text[sizeof(text) - 1u] = '\0';
-    if (!session->start_outcome.valid ||
-        session->start_outcome.status == TYPE_STATUS_OK ||
-        vm_session_control_is_running(&session->control) ||
-        vm_platform_run_handle_is_active(&session->platform_run_handle) ||
+    if (core_product_session_manager_apply_selected(session_manager,
+            verify_session, &session_check) != TYPE_STATUS_OK ||
+        !session_check.failed ||
         strstr(text, "START failed:") == STD_NULL) goto done;
     passed = 1;
 
