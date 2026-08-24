@@ -2,7 +2,26 @@
 
 ## Current Work
 
-**Active: M5 T450, between accepted subtasks.**
+**Active: M5 T450 S13 - uPD765 FDC and logical-media original function and timing checklist.**
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation - M5 T450 S13; the next exclusive FDC/media batch after accepted S12. |
+| Admission And Approval | Repository owner approved T450's paired source-list/code-audit work and requires every checklist 1 to retain source-PDF form and primary-manual sufficiency fields for S19. S13 uses only the S1-admitted NEC uPD765 and IBM AT sources. |
+| Objective | Create one finite source checklist for uPD765 command/status/result and mode transitions, DRQ/IRQ/reset timing, selected IBM AT DMA2/IRQ6/drive bindings, and the explicitly missing logical-media/drive facts. |
+| Non-goals | No FDC/media/runtime/test change; no firmware/media import; no selection of an unadmitted disk image format, drive personality, motor/rotation formula or external emulator reference. |
+| Reference Baseline | S1 admitted NEC uPD765A/uPD765B manual and IBM 5170 Technical Reference; accepted S2 ledger, T433/T449 evidence and existing FDC/media owner paths only as context. |
+| Candidate Proposal | [M5 Core controller manual admission and gap inventory](../proposals/m5-core-controller-manuals-and-gap-inventory.md). |
+| Files And ABI Surface | Add only one indexed S13 research checklist; inspect admitted PDFs and existing sources without code, test, ABI or asset changes. |
+| Applicable Rules | `docs/README.md` fixed reading set; `EXECUTION.md` continuation/coverage/P/closure review rules; `DOCUMENT.md` authority/index/state rules; source policy governs research and forbids third-party or media import. Architecture/coding rules are inspection criteria only. |
+| Verification | Read admitted manual/board pages; enumerate command/result/mode/terminal states, timing formula or explicit absence, reset, DRQ/IRQ and board/media relations; record source PDF form and manual-sufficiency gaps; run diff check and documentation governance before P1/P2. |
+| Expected Markers | One finite checklist keeps FDC chip behavior separate from host media/drive policy, assigns no unselected medium geometry as fact, and leaves each non-primary timing/media need explicitly L2, L4 or blocked. |
+| Asset Needs | None; inspect the admitted owner-managed PDFs only. No disk, firmware or third-party source becomes a repository asset. |
+| Reporting Requirements | Record source pages/form, finite function, reset/cancellation, timing/absence, DRQ/IRQ/board relation, manual sufficiency and L3/L2/L4/blocked disposition; report concise source boundary. |
+| Stop Conditions | Stop for a needed original drive/media/controller source absent from S1, a source conflict, ambiguity that needs owner profile selection, or a requested runtime change; transfer rather than expand. |
+| Exit Criteria | The source checklist covers uPD765 phases and command families, selected AT bindings and all missing media/drive inputs; source-form/sufficiency fields are present; it is indexed, reviewed, committed, pushed and accepted for S14. |
+| Original Owner Request | Establish original manual archives, complete function/timing checklist 1 and current-code gap checklist 2 for all eight controllers, with S19 validating PDF form and manual sufficiency. |
+| Similar-Issue Sweep | Cover data-rate specification, command/result FIFO, MSR, DOR/DSR/CCR, DMA/IRQ, reset/Sense, drive select/motor/seek/read/write/format/read-ID paths, scheduler advance, media registry/image geometry and selected PC/AT/Model-40 composition boundaries. |
 
 ## Current Technical Baseline
 
