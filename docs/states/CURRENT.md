@@ -1,25 +1,25 @@
 # Project Status
 
-## M5 T447 S9 Packet
+## M5 T447 S10 Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation; `M5 T447 S9`, single-session coordinator/executor followed by coordinator closure review. |
-| Admission And Approval | The owner-approved T447 proposal, accepted S8 P1 `acf3f7cc`, and the owner's standing instruction to continue the approved governance closure admit the next dependency-ordered S9 batch on 2026-08-23. No exception. |
-| Objective | Dispose of the policy-free VDM session forwarding layer without promoting VDM to a runnable product. |
-| Non-goals | No mantle or DOS implementation, VDM runnable target, compatibility wrapper, product promotion, generic session framework, guest-media import, or change to the retained `nxvm.exe` product path. |
-| Reference Baseline | Accepted S8 P1 `acf3f7cc`; Td S125 F; T447 proposal S9; retained S8 evidence and current artifact. |
-| Candidate Proposal | [M5 Architecture-Boundary Debt Closure](../proposals/m5-architecture-boundary-debt-closure.md), S9. |
-| Files And ABI Surface | `vdm/composition/session.c` and its headers/callers, machine-boundary ownership, VDM tests/build descriptions, T447 evidence/history/status and current artifact. |
-| Applicable Rules | Execution P/closure and code-size requirements; architecture one-owner and dependency direction; coding minimal durable capabilities with no forwarding layer; source policy; documentation topology. No exception. |
-| Verification | Inventory every VDM session forwarding caller and build entry; either remove the layer or establish one real mantle/DOS assembly responsibility with explicit lifetime and failure proof; prove VDM remains non-runnable; run focused static/build proof, current artifact/smokes, specialized gates, and documentation governance. |
-| Expected Markers | No policy-free VDM forwarding layer, no VDM runnable/product target, one declared owner for every retained session operation, and no compatibility route. |
-| Asset Needs | None; no new source, firmware, guest-media, or third-party asset. |
-| Reporting Requirements | Record before/after caller and target inventory, removal or retained-responsibility rationale, code-size accounting, artifact SHA, focused/full verification, and actual-diff review; commit and push one complete implementation P before coordinator closure. |
-| Stop Conditions | Stop for owner direction if removal changes a documented VDM future boundary, a retained caller requires an unapproved public capability, or a runnable mantle/DOS product becomes necessary. |
-| Exit Criteria | The VDM forwarding layer is absent or has one necessary documented assembly responsibility; every caller uses the single retained boundary; VDM stays non-runnable and no wrapper or duplicate session path remains. |
+| Identifier Mode | Continuation; `M5 T447 S10`, single-session coordinator/executor followed by coordinator closure review. |
+| Admission And Approval | The owner-approved T447 proposal, accepted S9 P1 `e44f3369`, and the owner's standing instruction to continue the approved governance closure admit the next dependency-ordered S10 batch on 2026-08-23. No exception. |
+| Objective | Reduce `core/machine/machine.c` to Core assembly and lifecycle coordination by restoring its distinct mechanisms to their existing owners. |
+| Non-goals | No second machine object, generic plugin/framework, duplicate execution or transaction path, public behavior change, VM/VDM dependency, guest-media import, or split undertaken merely for line count. |
+| Reference Baseline | Accepted S9 P1 `e44f3369`; Td S125 A; T447 proposal S10; existing Core mechanism owners, rollback evidence, and current artifact. |
+| Candidate Proposal | [M5 Architecture-Boundary Debt Closure](../proposals/m5-architecture-boundary-debt-closure.md), S10. |
+| Files And ABI Surface | `src/core/machine/machine.c` and owner-local collaborators for timing, validation, scheduling, firmware, board-device configuration and fault/lifecycle publication; affected Core tests/build descriptions, T447 evidence/history/status and current artifact. |
+| Applicable Rules | Execution P/closure, similar-issue sweep and code-size requirements; architecture one-owner, neutral dependency direction and one production path; coding cohesive owner-local responsibilities; source policy; documentation topology. No exception. |
+| Verification | Inventory all machine coordinator mechanisms, state fields, call paths and failure/rollback transitions; assign each to an existing or one necessary owner-local boundary; preserve one execution/transaction path and public behavior; run focused owner/failure regressions, current artifact/smokes, specialized gates, documentation governance and full review. |
+| Expected Markers | One Core assembly/lifecycle coordinator, no duplicated machine state or execution route, named owner for every moved mechanism, preserved rollback/fault behavior, and no reverse dependency. |
+| Asset Needs | Existing non-committed test media only; no new source, firmware, guest-media, or third-party asset. |
+| Reporting Requirements | Record before/after mechanism and caller inventory, ownership graph, failure/rollback proof, code-size accounting, artifact SHA, focused/full verification, and actual-diff review; commit and push one complete implementation P before coordinator closure. |
+| Stop Conditions | Stop for owner direction if a required boundary has no neutral owner, preserving a rollback/fault contract requires public API expansion, a new async contract appears, or a proposed split would duplicate live machine state. |
+| Exit Criteria | `machine.c` retains only assembly/lifecycle coordination; each moved mechanism has one owner and one path; all callers and rollback behavior remain proven; no framework, duplicate state, or behavior regression remains. |
 | Original Owner Request | Execute the approved architecture-boundary closure in dependency order, applying minimalism as a hard constraint rather than a later refactor. |
-| Similar-Issue Sweep | Inspect every VDM composition source/header, CMake target, include/call path, public VDM declaration, and equivalent forwarding layer in Core/VM/product; record every hit and its disposition rather than repairing only `session.c`. |
+| Similar-Issue Sweep | Inspect every `core/machine` coordinator mechanism, state field, public/internal header, CMake source owner, caller, test fixture, and equivalent cross-owner mechanism in Core; record every hit and disposition rather than moving only the first large function. |
 
 ## Current Technical Baseline
 
@@ -45,6 +45,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T447 S9 | Accepted P1 `e44f3369`: removed the VDM session forwarding facade; the machine owner now supplies its direct opaque lifetime contract and composition retains only its input/capture adapter responsibility. The 0447 artifact, 292 current smokes, 77 specialized gates, T345, and documentation governance pass. [Evidence](../etc/evidence/t447-s9-vdm-forwarding-closure.md). |
 | T447 S8 | Accepted P1 `acf3f7cc`: all 98 S7 private-layout test consumers have an owner-local or declared-boundary disposition; eighteen VM-composition tests moved unchanged to their owner, and a static gate prevents product/platform regressions. The 0447 artifact, 292 current smokes, 76 specialized gates, exact T345 reconciliation, and documentation governance pass. [Evidence](../etc/evidence/t447-s8-test-boundary-closure.md). |
 | T447 S7 | Accepted P1 `b2bf42da`: VM session/media/profile/product layouts are opaque, Console owns its contract while composition performs the binding, and Model-40 has exactly one BYOB construction route. The 0447 artifact, 292 current smokes, 76 specialized gates, T345, and documentation governance pass. [Evidence](../etc/evidence/t447-s7-vm-contract-boundary.md). |
 | T447 S5 | Accepted P1 `13f2a5bc` and corrective P2 `af805310`: Core input/presentation and VM platform lifecycle state have one owner-created opaque handle route; stale shape-sensitive gates now prove bounded behavior, and the new S5 guard rejects public-layout regressions. The 0447 artifact, 292 current smokes, 75 specialized gates, T345, and documentation governance pass. [Evidence](../etc/evidence/t447-s5-platform-lifecycle-boundary.md). |
@@ -52,7 +53,6 @@
 | T446 | Closed: each VM session owns its debugger cursor state; the sole recorder owner closes on stop, write failure and destruction, clearing failed streams and reporting lifecycle outcomes. [Evidence](../etc/evidence/t446-s1-vm-debugger-recording-lifecycle.md). |
 | T445 | Closed: each VM native display adapter now owns its host resource lifecycle; Win32 pairs its DC before window destruction, and Linux curses terminates on the initializing display thread. [Evidence](../etc/evidence/t445-s1-vm-native-display-resource-lifetime.md). |
 | T444 | Closed: the 20 fast-smoke fixture failures use the legal 16-byte reset window; T344 classifies four manifest producers separately from 71 historical fixtures; every discovered stale gate now proves the current single Core plan route. [Evidence](../etc/evidence/t444-s1-current-gate-regression-restoration.md). |
-| T443 | Closed: the mailbox C11-initializes its sole lock, every production renderer stops on failed capture, and VM display generation commits only after one accepted publication path. [Evidence](../etc/evidence/t443-s1-core-platform-primitive-outcomes.md). |
 
 
 ## Recent Governance
