@@ -2,26 +2,7 @@
 
 ## Current Work
 
-## M5 T449 S3 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation; T449 S2 is accepted in `312c0320`. |
-| Admission And Approval | The owner-approved T449 objective and accepted S1/S2 evidence authorize this bounded continuation under one-session coordinator/executor review. |
-| Objective | Reconcile every in-scope CPU/DMA fetch, memory and port transaction class against the one transaction owner and copied contract; repair only a proven lifecycle, classification, cancellation/reset or duplicate-commit gap. |
-| Non-goals | Do not add a bus framework, change board timing values, make instructions resumable, include x87 control traffic or controller device phases, alter stopped APIs, or introduce a second transaction/scheduler path. |
-| Reference Baseline | Accepted T449 S1 route ledger and S2 transaction contract; retained T354 S2/S3/S4 transaction proofs and current `vm-0-5-0448` baseline. |
-| Candidate Proposal | [Core CPU-to-board transaction and arbitration contracts](../proposals/m5-core-cpu-board-transaction-contracts.md). |
-| Files And ABI Surface | Core CPU instruction helpers, DMA transfer implementation, transaction owner, Core focused transaction tests/evidence/status only. No public API or VM profile surface is expected. |
-| Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`, `docs/design/ARCHITECTURE.md`, `docs/design/CODING.md`; one validation-to-commit owner, one transaction path per equivalent class, atomic cancellation/reset and no duplicate state. |
-| Verification | Finite kind-to-caller/cancel/reset ledger; focused CPU/DMA/port/competition/lifecycle regression; source sweep for begin/commit/cancel; documentation governance, `git diff --check`, actual-change review. |
-| Expected Markers | T449 S3 classification marker plus retained T354 transaction, competition and lifecycle markers. |
-| Asset Needs | None. |
-| Reporting Requirements | Report every in-scope kind, caller, commit/cancel/reset disposition, any repaired mechanism and equivalent-path sweep; include source/test line accounting, commit/push and S4 prerequisite. |
-| Stop Conditions | Stop for owner direction if a missing class requires new device semantics, CPU microstep/resume, source admission, an x87 contract expansion, a timing value, or a public cross-module interface. |
-| Exit Criteria | Every in-scope CPU/DMA class has one begin/commit/cancel/reset owner and one regression/disposition; no duplicate direct path remains; any excluded class is explicitly transferred; no code changes occur unless they remove a demonstrated mechanism defect. |
-| Original Owner Request | Complete the active T in one-session coordinator/executor mode; use a whole-system, minimalist design, prohibit incremental patch stacking, and leave no unfinished path. |
-| Similar-Issue Sweep | Search all production `core_machine_transaction_begin`, `commit`, `cancel`, reset and external-cycle callers; classify CPU read/write/port, DMA read/write/copy, refresh, and separately transfer FPU control traffic. |
+**Active.** T449 remains open between accepted subtasks.
 
 ## Current Technical Baseline
 
@@ -47,7 +28,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T449 S2 | Accepted P1 `32f190f2`: one copied transaction contract replaces six raw selection fields; Core validates it before publication, invalid plans reject, and default PC/AT, Model-339, Model-40, transaction, prefetch and DMA regressions pass. [Evidence](../etc/evidence/t449-s2-transaction-contract.md). |
+| T449 S3 | Accepted P1 `390517a2`: the complete CPU/DMA/refresh class ledger confirms one begin/commit/cancel/reset lifecycle, transfers x87 and device phases explicitly, and adds no duplicate wrapper or path. [Evidence](../etc/evidence/t449-s3-transaction-classification.md). |
 | T448 | Closed: six over-limit generated firmware sources now use the one bounded byte-identical materialization route; the unused session helper is removed. [Evidence](../etc/evidence/t448-s1-firmware-materialization.md). |
 | T447 | Closed: all S1--S11 ledger receivers are accepted; one Core execution path, bounded VM contracts, no VDM forwarding facade, owner-local test boundaries and the decomposed Core coordinator are retained. [History](../history/M5-T447-architecture-boundary-debt-closure.md). |
 | T446 | Closed: each VM session owns its debugger cursor state; the sole recorder owner closes on stop, write failure and destruction, clearing failed streams and reporting lifecycle outcomes. [Evidence](../etc/evidence/t446-s1-vm-debugger-recording-lifecycle.md). |
