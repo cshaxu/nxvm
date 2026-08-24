@@ -29,7 +29,6 @@
 | Task | Compact result |
 | --- | --- |
 | T449 S2 | Accepted P1 `32f190f2`: one copied transaction contract replaces six raw selection fields; Core validates it before publication, invalid plans reject, and default PC/AT, Model-339, Model-40, transaction, prefetch and DMA regressions pass. [Evidence](../etc/evidence/t449-s2-transaction-contract.md). |
-| T449 S1 | Accepted P1 `e21d80c6`: the finite five-capability sweep confirms one transaction state, arbitration callback, virtual-time publisher and CPU retirement publisher; raw transaction selection remains the S2 plan-boundary receiver. [Evidence](../etc/evidence/t449-s1-transaction-route-ledger.md). |
 | T448 | Closed: six over-limit generated firmware sources now use the one bounded byte-identical materialization route; the unused session helper is removed. [Evidence](../etc/evidence/t448-s1-firmware-materialization.md). |
 | T447 | Closed: all S1--S11 ledger receivers are accepted; one Core execution path, bounded VM contracts, no VDM forwarding facade, owner-local test boundaries and the decomposed Core coordinator are retained. [History](../history/M5-T447-architecture-boundary-debt-closure.md). |
 | T446 | Closed: each VM session owns its debugger cursor state; the sole recorder owner closes on stop, write failure and destruction, clearing failed streams and reporting lifecycle outcomes. [Evidence](../etc/evidence/t446-s1-vm-debugger-recording-lifecycle.md). |
