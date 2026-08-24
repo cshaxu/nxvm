@@ -2,7 +2,26 @@
 
 ## Current Work
 
-**Active.** T449 remains open between accepted subtasks.
+## M5 T449 S5 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; T449 S4 is accepted in `19eced1c`. |
+| Admission And Approval | The owner-approved T449 objective and accepted S1--S4 evidence authorize this bounded continuation under one-session coordinator/executor review. |
+| Objective | Reconcile CPU, DMA and refresh arbitration with RAM/ROM/A20/parity access classification; repair only a demonstrated double grant, partial commit, owner bypass, cancellation/reset gap or duplicate memory-class decision. |
+| Non-goals | Do not create a bus framework, invent electrical latency, change device/controller command phases, alter CPU resume behavior, add a profile callback or public interface, or remodel an explicit L2 physical timing boundary. |
+| Reference Baseline | Accepted T449 S1 route ledger, S2 copied contract, S3 class lifecycle and S4 availability ledger; retained T354 competition/lifecycle, T369 HOLD, T386 DMA and existing ROM/A20/parity contract regressions. |
+| Candidate Proposal | [Core CPU-to-board transaction and arbitration contracts](../proposals/m5-core-cpu-board-transaction-contracts.md). |
+| Files And ABI Surface | Core scheduler/DMA/transaction/memory classification owners, focused Core regressions/evidence/status only. No public API or VM profile surface is expected. |
+| Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`, `docs/design/ARCHITECTURE.md`, `docs/design/CODING.md`; one owner per grant/classification/state, no peer bypass, explicit L2 fallback, atomic cancel/reset and no forwarding wrapper. |
+| Verification | Finite owner-to-grant/release/commit/reset and RAM/ROM/A20/parity classifier ledger; source sweep for HOLD, DMA advancement, memory route/classification and reset callers; retained competition, DMA, reset, ROM/A20/parity direct regressions; documentation governance, `git diff --check`, actual-change review. |
+| Expected Markers | T449 S5 arbitration marker plus retained T354, T369, T386 and memory-boundary markers. |
+| Asset Needs | None. |
+| Reporting Requirements | Report every contender/classifier and its sole owner, grant/release/commit/reset disposition, any repaired shared mechanism, source/test line accounting, commit/push and S6 prerequisite. |
+| Stop Conditions | Stop for owner direction if proof requires a source import, board waveform/timing value, controller phase semantics, CPU microstep/resume, changed product behavior or public cross-module interface. |
+| Exit Criteria | CPU, DMA and refresh have one arbitration/grant/release owner; each RAM/ROM/A20/parity class has one route decision owner; cancellation/reset cannot retain an access/grant or double-charge it; unsupported physical latency remains explicit L2. |
+| Original Owner Request | Complete the active T in one-session coordinator/executor mode; use a whole-system, minimalist design, prohibit incremental patch stacking, and leave no unfinished path. |
+| Similar-Issue Sweep | Search all production HOLD/grant/release, DMA advance, memory route/A20/parity/ROM decisions and reset paths; classify each hit as sole owner, intentional stopped API, test observation or explicit L2 transfer. |
 
 ## Current Technical Baseline
 
