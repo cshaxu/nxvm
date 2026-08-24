@@ -2,26 +2,7 @@
 
 ## Current Work
 
-## M5 T449 S1 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | New; first implementation subtask of the owner-approved Core CPU-to-board transaction and arbitration task. |
-| Admission And Approval | Owner's active-thread objective on 2026-08-23 approves single-session coordinator/executor implementation and requires complete closure, minimalism, and no parallel/unfinished paths. |
-| Objective | Freeze a finite, actual-code ledger for `CPU-PREFETCH`, `TXN-MEMORY`, `TXN-PORT`, `TXN-ARBITRATION`, and `MEM-RAM-A20-PARITY`: every current route, mutable-state owner, direct-path residue, default behavior, evidence tier, and earliest receiver. |
-| Non-goals | Do not change runtime behavior, Core ABI, timing values, controller command/phase semantics, VM profile selection, Queue order beyond admission, or claim L3 implementation. |
-| Reference Baseline | `vm-0-5-0448`, commit `bda3859a`; [T449 proposal](../proposals/m5-core-cpu-board-transaction-contracts.md), T433 S6/S7 ledgers, T354/T369 route evidence, and retained T419/T423 transaction evidence. |
-| Candidate Proposal | [Core CPU-to-board transaction and arbitration contracts](../proposals/m5-core-cpu-board-transaction-contracts.md). |
-| Files And ABI Surface | Ledger evidence, its `etc` index, Current/Queue/task-history records only. Read-only inspection may cover Core CPU, memory, port, DMA, refresh, BUSRDY, prefetch, plan and VM materialization paths; no code or ABI change is allowed. |
-| Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`, `docs/design/ARCHITECTURE.md`, and `docs/design/CODING.md`; one owner/path, neutral dependency direction, copied cross-module boundary, no second state or publication path. |
-| Verification | Reconcile the complete five-capability ledger against actual source/route searches and retained evidence; run documentation governance, `git diff --check`, and actual-change review. |
-| Expected Markers | `M5:T449:S1:TRANSACTION-ROUTE-LEDGER:OK` and `Documentation governance checks passed for vm-0-5-0448.` |
-| Asset Needs | None. |
-| Reporting Requirements | Report S1 route/owner dispositions, direct-path or transfer result, commit/push, verification, and exact S2 prerequisite. |
-| Stop Conditions | Stop for owner direction if the finite route sweep discovers an unrecorded public capability, a source admission need, a runtime behavior change, or a controller-phase semantic change. |
-| Exit Criteria | Ledger exhausts the five frozen capability batches; every route has one owner and disposition, every direct duplicate has an S2--S6 receiver or explicit transfer, default behavior is recorded, and no code is changed. |
-| Original Owner Request | Complete the active T in one-session coordinator/executor mode; use a whole-system, minimalist design, prohibit incremental patch stacking, and leave no unfinished path. |
-| Similar-Issue Sweep | Search all Core CPU/DMA memory/port, prefetch, BUSRDY, HOLD/refresh and VM plan-materialization callers rather than treating a single Model-40 or 5170 route as representative. |
+**Active.** T449 remains open between accepted subtasks.
 
 ## Current Technical Baseline
 
@@ -47,6 +28,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T449 S1 | Accepted P1 `e21d80c6`: the finite five-capability sweep confirms one transaction state, arbitration callback, virtual-time publisher and CPU retirement publisher; raw transaction selection remains the S2 plan-boundary receiver. [Evidence](../etc/evidence/t449-s1-transaction-route-ledger.md). |
 | T448 | Closed: six over-limit generated firmware sources now use the one bounded byte-identical materialization route; the unused session helper is removed. [Evidence](../etc/evidence/t448-s1-firmware-materialization.md). |
 | T447 | Closed: all S1--S11 ledger receivers are accepted; one Core execution path, bounded VM contracts, no VDM forwarding facade, owner-local test boundaries and the decomposed Core coordinator are retained. [History](../history/M5-T447-architecture-boundary-debt-closure.md). |
 | T446 | Closed: each VM session owns its debugger cursor state; the sole recorder owner closes on stop, write failure and destruction, clearing failed streams and reporting lifecycle outcomes. [Evidence](../etc/evidence/t446-s1-vm-debugger-recording-lifecycle.md). |
