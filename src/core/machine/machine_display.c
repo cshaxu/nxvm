@@ -95,4 +95,3 @@ type_status core_machine_configure_display(core_machine *machine,
     machine->display_configured = TYPE_TRUE;
     return TYPE_STATUS_OK;
 }
-

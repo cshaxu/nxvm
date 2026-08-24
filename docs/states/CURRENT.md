@@ -1,29 +1,29 @@
 # Project Status
 
-## M5 T447 S10 Packet
+## M5 T447 S11 Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation; `M5 T447 S10`, single-session coordinator/executor followed by coordinator closure review. |
-| Admission And Approval | The owner-approved T447 proposal, accepted S9 P1 `e44f3369`, and the owner's standing instruction to continue the approved governance closure admit the next dependency-ordered S10 batch on 2026-08-23. No exception. |
-| Objective | Reduce `core/machine/machine.c` to Core assembly and lifecycle coordination by restoring its distinct mechanisms to their existing owners. |
-| Non-goals | No second machine object, generic plugin/framework, duplicate execution or transaction path, public behavior change, VM/VDM dependency, guest-media import, or split undertaken merely for line count. |
-| Reference Baseline | Accepted S9 P1 `e44f3369`; Td S125 A; T447 proposal S10; existing Core mechanism owners, rollback evidence, and current artifact. |
-| Candidate Proposal | [M5 Architecture-Boundary Debt Closure](../proposals/m5-architecture-boundary-debt-closure.md), S10. |
-| Files And ABI Surface | `src/core/machine/machine.c` and owner-local collaborators for timing, validation, scheduling, firmware, board-device configuration and fault/lifecycle publication; affected Core tests/build descriptions, T447 evidence/history/status and current artifact. |
-| Applicable Rules | Execution P/closure, similar-issue sweep and code-size requirements; architecture one-owner, neutral dependency direction and one production path; coding cohesive owner-local responsibilities; source policy; documentation topology. No exception. |
-| Verification | Inventory all machine coordinator mechanisms, state fields, call paths and failure/rollback transitions; assign each to an existing or one necessary owner-local boundary; preserve one execution/transaction path and public behavior; run focused owner/failure regressions, current artifact/smokes, specialized gates, documentation governance and full review. |
-| Expected Markers | One Core assembly/lifecycle coordinator, no duplicated machine state or execution route, named owner for every moved mechanism, preserved rollback/fault behavior, and no reverse dependency. |
+| Identifier Mode | Continuation; `M5 T447 S11`, single-session independent closure audit. |
+| Admission And Approval | Accepted S10 P1 `9e05faf8`, the owner-approved T447 proposal, and the owner's standing instruction to continue the dependency-ordered governance closure admit S11 on 2026-08-23. No exception. |
+| Objective | Independently reconcile the complete Td S125--S130/T446 closure ledger against current code, build graph, headers, tests, evidence, commits and artifact without making a broader unsupported claim. |
+| Non-goals | No new feature, generic framework, duplicate repair path, speculative architectural finding, source/firmware import, or claim of whole-repository perfection. |
+| Reference Baseline | Accepted S1--S10 P work, the frozen T447 proposal ledger, Td S125--S130 evidence, current TODO/Queue, and the rebuilt artifact. |
+| Candidate Proposal | [M5 Architecture-Boundary Debt Closure](../proposals/m5-architecture-boundary-debt-closure.md), S11. |
+| Files And ABI Surface | T447 evidence/status/queue records plus every changed S1--S10 path required for read-only reconciliation. No runtime ABI change is authorized unless an audit proves a current T447 gap that must be repaired. |
+| Applicable Rules | Execution P/closure and code-size accounting; architecture one-owner/dependency direction/one production path; coding cohesive owner-local responsibilities; source policy; documentation topology. No exception. |
+| Verification | Re-run the frozen row ledger against actual code, build targets, public headers, current tests, committed evidence and artifact; inspect every S1--S10 changed path; record per-row disposition, code-size accounting, focused/full test and gate evidence. |
+| Expected Markers | Every ledger row is either accepted with current proof or transferred to an earlier approved receiver with precise reason; no unsupported completion claim; clean artifact and worktree. |
 | Asset Needs | Existing non-committed test media only; no new source, firmware, guest-media, or third-party asset. |
-| Reporting Requirements | Record before/after mechanism and caller inventory, ownership graph, failure/rollback proof, code-size accounting, artifact SHA, focused/full verification, and actual-diff review; commit and push one complete implementation P before coordinator closure. |
-| Stop Conditions | Stop for owner direction if a required boundary has no neutral owner, preserving a rollback/fault contract requires public API expansion, a new async contract appears, or a proposed split would duplicate live machine state. |
-| Exit Criteria | `machine.c` retains only assembly/lifecycle coordination; each moved mechanism has one owner and one path; all callers and rollback behavior remain proven; no framework, duplicate state, or behavior regression remains. |
+| Reporting Requirements | Produce a complete closure-audit evidence record with row-by-row proof, actual caller/source-owner reconciliation, per-S code accounting, final artifact SHA, all verification and diff review. |
+| Stop Conditions | Stop for owner direction if a required row has no current evidence and resolving it would expand scope into unapproved implementation, or a claimed row conflicts with a controlling authority. |
+| Exit Criteria | The finite T447 ledger is fully reconciled, every S1--S10 P result is accepted or corrected, no remaining T447 TODO/queue receiver remains, and the audit makes no broader claim. |
 | Original Owner Request | Execute the approved architecture-boundary closure in dependency order, applying minimalism as a hard constraint rather than a later refactor. |
-| Similar-Issue Sweep | Inspect every `core/machine` coordinator mechanism, state field, public/internal header, CMake source owner, caller, test fixture, and equivalent cross-owner mechanism in Core; record every hit and disposition rather than moving only the first large function. |
+| Similar-Issue Sweep | Inspect every ledger row and every affected S1--S10 source/build/test/evidence path; distinguish a resolved finding from a related but out-of-ledger concern and record both dispositions. |
 
 ## Current Technical Baseline
 
-- **Current developer artifact:** target `vm-0-5-0447`; `nxvm_0_5_0447.exe` / `build/output/nxvm_0_5_0447.exe`, SHA-256 `CAA87452E18E90C5E72114D8C8B6C04FD830920BB45DA160CA6562787AA3B920`. T434 has one copied Core timing-plan publication route for default PC/AT, IBM 5170 Model 339 and Model-40 BYOB session composition.
+- **Current developer artifact:** target `vm-0-5-0447`; `nxvm_0_5_0447.exe` / `build/output/nxvm_0_5_0447.exe`, SHA-256 `8279CA97F977C40EDDF014D03DB21E1A89839E602E81F7D4829D6A14E1BF2601`. T434 has one copied Core timing-plan publication route for default PC/AT, IBM 5170 Model 339 and Model-40 BYOB session composition.
   T386 closes selected-device functional completeness at S29; its retained
   [closure audit](../etc/evidence/t386-s29-functional-closure-audit.md) fixes
   HDC current-gate coverage and transfers board, firmware and physical work.
@@ -45,6 +45,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T447 S10 | Accepted P1 `9e05faf8`: `machine.c` is now the 1,090-line Core aggregate/lifecycle coordinator; timing, plan, scheduler, firmware, display, board-device and diagnostic mechanisms each have one owner-local path. The rebuilt artifact, 292 current smokes, 77 specialized gates, documentation governance, exact rollback inventory and actual-diff review pass. [Evidence](../etc/evidence/t447-s10-core-machine-coordinator.md). |
 | T447 S9 | Accepted P1 `e44f3369`: removed the VDM session forwarding facade; the machine owner now supplies its direct opaque lifetime contract and composition retains only its input/capture adapter responsibility. The 0447 artifact, 292 current smokes, 77 specialized gates, T345, and documentation governance pass. [Evidence](../etc/evidence/t447-s9-vdm-forwarding-closure.md). |
 | T447 S8 | Accepted P1 `acf3f7cc`: all 98 S7 private-layout test consumers have an owner-local or declared-boundary disposition; eighteen VM-composition tests moved unchanged to their owner, and a static gate prevents product/platform regressions. The 0447 artifact, 292 current smokes, 76 specialized gates, exact T345 reconciliation, and documentation governance pass. [Evidence](../etc/evidence/t447-s8-test-boundary-closure.md). |
 | T447 S7 | Accepted P1 `b2bf42da`: VM session/media/profile/product layouts are opaque, Console owns its contract while composition performs the binding, and Model-40 has exactly one BYOB construction route. The 0447 artifact, 292 current smokes, 76 specialized gates, T345, and documentation governance pass. [Evidence](../etc/evidence/t447-s7-vm-contract-boundary.md). |
@@ -52,7 +53,6 @@
 | T447 S6 | Accepted P1 `e342a516`: Core machine collaborators and plan endpoints are opaque, declarative plans are copied, and default PC/AT, Model-339, and Model-40 share bounded creation/rollback operations. The 0447 artifact, 290 current smokes, specialized gates, T345, and documentation governance pass. [Evidence](../etc/evidence/t447-s6-collaborator-plan-boundary.md). |
 | T446 | Closed: each VM session owns its debugger cursor state; the sole recorder owner closes on stop, write failure and destruction, clearing failed streams and reporting lifecycle outcomes. [Evidence](../etc/evidence/t446-s1-vm-debugger-recording-lifecycle.md). |
 | T445 | Closed: each VM native display adapter now owns its host resource lifecycle; Win32 pairs its DC before window destruction, and Linux curses terminates on the initializing display thread. [Evidence](../etc/evidence/t445-s1-vm-native-display-resource-lifetime.md). |
-| T444 | Closed: the 20 fast-smoke fixture failures use the legal 16-byte reset window; T344 classifies four manifest producers separately from 71 historical fixtures; every discovered stale gate now proves the current single Core plan route. [Evidence](../etc/evidence/t444-s1-current-gate-regression-restoration.md). |
 
 
 ## Recent Governance
