@@ -40,6 +40,21 @@ static type_status vm_platform_virtual_time_read_units(type_unsigned_64 *out_uni
     return TYPE_STATUS_OK;
 }
 
+type_status vm_platform_host_milliseconds(type_unsigned_64 *out_milliseconds)
+{
+    type_unsigned_64 units;
+    type_unsigned_64 units_per_second;
+
+    if (out_milliseconds == STD_NULL ||
+        vm_platform_virtual_time_read_units(&units, &units_per_second) != TYPE_STATUS_OK ||
+        units_per_second == 0u || units / units_per_second > UINT64_MAX / 1000u) {
+        return TYPE_STATUS_FAULT;
+    }
+    *out_milliseconds = (units / units_per_second) * 1000u +
+        ((units % units_per_second) * 1000u) / units_per_second;
+    return TYPE_STATUS_OK;
+}
+
 static type_status vm_platform_virtual_time_source_next(C_VOID *context,
     type_unsigned_64 *out_source_ticks)
 {

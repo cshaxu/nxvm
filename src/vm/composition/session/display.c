@@ -7,8 +7,27 @@
 #include "core/platform/display_frame.h"
 
 #include "vm/platform/platform.h"
+#include "vm/platform/virtual_time.h"
 
 #include "vm/composition/session/session_private.h"
+
+#define VM_SESSION_DISPLAY_CADENCE_MILLISECONDS 16u
+
+static C_INT vm_session_display_publish_is_due(vm_session *machine, C_INT force)
+{
+    type_unsigned_64 now;
+
+    if (machine == STD_NULL || vm_platform_host_milliseconds(&now) != TYPE_STATUS_OK) {
+        return TYPE_TRUE;
+    }
+    if (!force && now >= machine->last_display_publish_milliseconds &&
+        now - machine->last_display_publish_milliseconds <
+            VM_SESSION_DISPLAY_CADENCE_MILLISECONDS) {
+        return TYPE_FALSE;
+    }
+    machine->last_display_publish_milliseconds = now;
+    return TYPE_TRUE;
+}
 
 static C_INT vm_session_capture_display_snapshot(C_VOID *context,
     core_machine_display_snapshot *out_snapshot)
@@ -31,9 +50,10 @@ core_machine_display_kind vm_session_publish_display(vm_session *machine,
     core_machine_display_snapshot snapshot;
 
     if (machine == STD_NULL) return CORE_MACHINE_DISPLAY_KIND_TEXT;
-    STD_MEMSET(&snapshot, 0, sizeof(snapshot));
+    if (!vm_session_display_publish_is_due(machine, force)) return machine->display_kind;
     if (!core_machine_display_capture_snapshot_from(machine->display_provider,
-        &snapshot)) return CORE_MACHINE_DISPLAY_KIND_TEXT;
+        &snapshot)) return machine->display_kind;
+    machine->display_kind = snapshot.kind;
     buffer_changed = snapshot.buffer_changed;
     cursor_changed = snapshot.cursor_changed;
     if (!force && !buffer_changed && !cursor_changed) return snapshot.kind;

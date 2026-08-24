@@ -2892,24 +2892,26 @@ function(add_current_vm_artifact target version)
         target_link_options(${target} PRIVATE -Wl,--strip-debug)
     endif()
 
-    add_custom_command(TARGET ${target} PRE_LINK
-        COMMAND ${CMAKE_COMMAND}
-            -DPROJECT_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
-            -P "${CMAKE_SOURCE_DIR}/cmake/verify_current_artifact_optimized.cmake"
-        COMMENT "Verifying current NXVM artifact is optimized Release")
-    add_custom_command(TARGET ${target} POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_BINARY_DIR}/output"
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            "$<TARGET_FILE:${target}>"
-            "${CMAKE_BINARY_DIR}/output/${task_artifact_filename}"
-        COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_SOURCE_DIR}/build/output"
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            "$<TARGET_FILE:${target}>"
-            "${CMAKE_SOURCE_DIR}/build/output/${task_artifact_filename}")
+    if(CMAKE_BUILD_TYPE STREQUAL "Release")
+        add_custom_command(TARGET ${target} PRE_LINK
+            COMMAND ${CMAKE_COMMAND}
+                -DPROJECT_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
+                -P "${CMAKE_SOURCE_DIR}/cmake/verify_current_artifact_optimized.cmake"
+            COMMENT "Verifying current NXVM artifact is optimized Release")
+        add_custom_command(TARGET ${target} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_BINARY_DIR}/output"
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                "$<TARGET_FILE:${target}>"
+                "${CMAKE_BINARY_DIR}/output/${task_artifact_filename}"
+            COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_SOURCE_DIR}/build/output"
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                "$<TARGET_FILE:${target}>"
+                "${CMAKE_SOURCE_DIR}/build/output/${task_artifact_filename}")
+    endif()
 endfunction()
 
-set(PROJECT_CURRENT_VM_ARTIFACT_TARGET vm-0-5-0457)
-add_current_vm_artifact(vm-0-5-0457 "0.5.0457")
+set(PROJECT_CURRENT_VM_ARTIFACT_TARGET vm-0-5-0458)
+add_current_vm_artifact(vm-0-5-0458 "0.5.0458")
 option(PROJECT_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
 

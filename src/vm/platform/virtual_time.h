@@ -7,6 +7,7 @@
 
 typedef struct vm_platform_virtual_time_source vm_platform_virtual_time_source;
 
+type_status vm_platform_host_milliseconds(type_unsigned_64 *out_milliseconds);
 type_status vm_platform_virtual_time_source_create(
     type_unsigned_64 source_ticks_per_second, vm_virtual_time_source *out_source,
     vm_platform_virtual_time_source **out_source_owner);

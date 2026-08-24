@@ -2,11 +2,30 @@
 
 ## Current Work
 
-**Idle.**
+## M5 T458 S1 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New |
+| Admission And Approval | Owner request on 2026-08-24: optimize the too-slow VM, including default PC/AT; the owner-approved scope is the first queued VM runner presentation-cadence repair. |
+| Objective | Decouple expensive display capture/publication from the 256-instruction runner control quantum without changing guest execution or display ownership. |
+| Non-goals | No CPU/device timing, profile, guest-clock, debugger, Console grammar, frame-content, or turbo-policy change. |
+| Reference Baseline | `05255615`; prior stripped Release current artifact; real DOS prompt smoke measures 1.281--1.372 seconds over three runs. |
+| Candidate Proposal | [VM runner presentation cadence](../proposals/m5-vm-runner-presentation-cadence.md). |
+| Files And ABI Surface | VM session runner/display and VM platform host-clock capability as needed; focused machine and current-artifact publication boundary. Core display snapshots remain copied and Core-owned; no public mutable layout. |
+| Applicable Rules | README Task Reading Set; EXECUTION S/P lifecycle and similar-issue sweep; ARCHITECTURE sole-owner/dependency/product-behavior invariants; CODING owner-local/minimal-interface rules; DOCUMENT status and proposal boundaries. |
+| Verification | Build Release and Debug presets; run the focused runner display cadence, DOS prompt, mode/presentation and debugger lifecycle smokes; run the current gate; compare repeated Release DOS-prompt measurements before/after. |
+| Expected Markers | Existing focused markers remain; a new cadence marker proves bounded host-rate publication while immediate mode/lifecycle publication remains correct. |
+| Asset Needs | Existing project-owned DOS smoke media only; no imported source, firmware, Windows media or external emulator. |
+| Reporting Requirements | Record the old per-quantum snapshot mechanism, the shared-owner sweep across all profile callers, before/after benchmark ranges, changed/deleted line count, artifact SHA-256 and every retained boundary. |
+| Stop Conditions | Stop for a required Core display ABI change beyond a bounded query/copy capability, a guest-visible frame correctness regression, or a need to alter guest timing or default turbo policy. |
+| Exit Criteria | One shared runner cadence owns normal presentation; no normal 256-instruction path forces a maximum-size snapshot; all selected profile routes retain immediate mode/lifecycle output; focused proof, current gate, documentation governance and stripped Release 0458 artifact pass. |
+| Original Owner Request | Owner reports that the 256-instruction cadence is too dense and default PC/AT is also too slow; optimize the shared runtime path. |
+| Similar-Issue Sweep | Search all production/session runners, display publication callers, Core snapshot consumers and profile branches for instruction-coupled frame capture. Fix shared production hits or record an explicit boundary/debt; add a focused regression for the forbidden coupling. |
 
 ## Current Technical Baseline
 
-- **Current developer artifact:** target `vm-0-5-0457`; `nxvm_0_5_0457.exe` / `build/output/nxvm_0_5_0457.exe`, SHA-256 `B1DC3B723CC03B19E8C9298D08B9909D5182D9BB8EEEEBE9D8016115F8E67455`. It is built only from the stripped Release current-artifact route; Debug remains the current-gate route. T434 has one copied Core timing-plan publication route for default PC/AT, IBM 5170 Model 339 and Model-40 BYOB session composition.
+- **Current developer artifact:** target `vm-0-5-0458`; `nxvm_0_5_0458.exe` / `build/output/nxvm_0_5_0458.exe`, SHA-256 `F9A77CDE35A4DEC18CC566800D59205EC43A41C4B30F533E2EF132E0DE14F71D`. It is built only from the stripped Release current-artifact route; Debug remains the current-gate route. T434 has one copied Core timing-plan publication route for default PC/AT, IBM 5170 Model 339 and Model-40 BYOB session composition.
   T386 closes selected-device functional completeness at S29; its retained
   [closure audit](../etc/evidence/t386-s29-functional-closure-audit.md) fixes
   HDC current-gate coverage and transfers board, firmware and physical work.
@@ -28,7 +47,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T457 | Closed: F9 remains a single host run-handle stop report and no longer enters the guest key route; the corrected host-cancellation assertion and two-epoch regression preserve it. `nxvm_0_5_0457.exe` is stripped Release-only, retains the production debugger/trace commands, excludes automatic Core trace events, and 293/293 current-gate tests pass. [History](../history/M5-T457-session-input-restart-recovery.md). |
+| T457 | Closed: F9 remains a single host run-handle stop report and no longer enters the guest key route; the corrected host-cancellation assertion and two-epoch regression preserve it. Its artifact is stripped Release-only, retains the production debugger/trace commands, excludes automatic Core trace events, and 293/293 current-gate tests pass. [History](../history/M5-T457-session-input-restart-recovery.md). |
 | T456 | Closed at L3: all 18 retained 8259A rows have focused proof or an explicit boundary; one CPU path, programmed cascade, corrected specific-EOI, command/poll lifecycle and default-IR7 acknowledgement remain PIC-owned. Full current-gate is 293/293. PIC-T3 L4 electrical timing is deliberately excluded. [History](../history/M5-T456-core-pic-8259a-phase-contract.md). |
 | T455 | Closed: the sole 8086 decoder-ledger guard now checks current decoder and timing owners instead of the retired monolithic layout; all 1,053 records and 292 current-gate tests pass. [History](../history/M5-T455-8086-decoder-ledger-guard-reconciliation.md). |
 | T454 | Closed: the three fixed-write Console catalog smokes have one CTest-owned build workspace each; serial and repeated parallel replays pass with no source-tree residue. The independent 8086 decoder-ledger guard failure is recorded as CPU debt. [History](../history/M5-T454-parallel-console-profile-smoke-isolation.md). |
