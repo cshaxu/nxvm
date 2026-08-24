@@ -2,11 +2,32 @@
 
 ## Current Work
 
-**Idle.**
+**Active: M5 T457 S2 - optimized debug artifact and trace audit.**
+
+## M5 T457 S2 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Corrective |
+| Admission And Approval | Owner explicitly reopened T457 on 2026-08-24 to govern its artifact performance: every T closure must build its corresponding `build/output/nxvm_0_5_xxxx.exe` as an optimized debug artifact and exclude speed-reducing internal debug logs/traces. |
+| Objective | Rebuild T457's current `nxvm_0_5_0457.exe` through one optimized-with-debug-information publication route, and audit every trace/diagnostic hot-path mechanism for release inclusion. |
+| Non-goals | Do not change guest timing or device semantics; do not remove a live fault, debugger, trace-provider, or retirement-observation contract without its proven consumer disposition; do not create T458. |
+| Reference Baseline | `e9b8fe2d`; `nxvm_0_5_0457.exe` was Debug (`-g`) and the same DOS-prompt smoke measured 4.61 s Debug versus 1.52 s isolated `-O3 -DNDEBUG` Release. |
+| Candidate Proposal | [Corrective artifact and trace proposal](../proposals/optimized-artifact-trace-audit.md), limited to the owner-approved scope recorded here; the retained S1 proposal remains historical evidence. |
+| Files And ABI Surface | CMake/Preset artifact route, trace/diagnostic source audit, the stale T457 F9 test assertion, focused proof, evidence/history/Current. No public guest or Core ABI unless the audit proves a distinct later S is required. |
+| Applicable Rules | `rules/EXECUTION.md`, `rules/ARCHITECTURE.md`, `rules/CODING.md`, `rules/DOCUMENT.md`; one artifact owner, immutable task identity, one diagnostic owner, and no duplicate runtime route. |
+| Verification | Build `vm-0-5-0457` from RelWithDebInfo; prove the artifact compiler flags and version; prove Debug configuration cannot publish it; compare the fixed DOS workload; run trace/diagnostic consumers and the full current gate plus documentation governance. |
+| Expected Markers | One optimized-debug current-artifact preset, one build-time non-optimized publication rejection, updated 0457 hash, and a finite trace/diagnostic disposition ledger. |
+| Asset Needs | Existing DOS smoke fixture only; no new guest media, third-party source, or external trace. |
+| Reporting Requirements | Record compiler flags, artifact hash, Debug/optimized timing comparison, each trace/diagnostic owner and consumer, retained versus excluded status, gates, and any later-S receiver. |
+| Stop Conditions | Stop for a required guest-visible timing change, a public Core diagnostic ABI break, a trace consumer outside the audited universe, or a need to discard fault evidence. |
+| Exit Criteria | `build/output/nxvm_0_5_0457.exe` is rebuilt only by an optimized-debug route, no inactive logging/trace path is included in it, all live diagnostic mechanisms have an explicit disposition, and required gates pass. |
+| Original Owner Request | Use T457 to govern compilation/release performance; every T closes with its optimized debug `build/output` executable and excludes internal debug logging/trace that slows normal execution. |
+| Similar-Issue Sweep | Sweep CMake current-artifact and gate presets, all artifact-copy commands, `TYPE_TRACE` macros, Core trace provider calls, per-instruction diagnostics, retirement observation, debugger consumers, and every trace-provider installation. |
 
 ## Current Technical Baseline
 
-- **Current developer artifact:** target `vm-0-5-0457`; `nxvm_0_5_0457.exe` / `build/output/nxvm_0_5_0457.exe`, SHA-256 `371B4DE04324A5B4C046A9C69C3C82FCAE7B945D628934B867C2C45C522B1166`. T434 has one copied Core timing-plan publication route for default PC/AT, IBM 5170 Model 339 and Model-40 BYOB session composition.
+- **Current developer artifact:** target `vm-0-5-0457`; `nxvm_0_5_0457.exe` / `build/output/nxvm_0_5_0457.exe`, SHA-256 `D2351D8940209DBB9BAB82FDA0AB33155223F00EDB7B1C74B59B210C855B5E36`. It is built only from the RelWithDebInfo current-artifact route; Debug remains the current-gate route. T434 has one copied Core timing-plan publication route for default PC/AT, IBM 5170 Model 339 and Model-40 BYOB session composition.
   T386 closes selected-device functional completeness at S29; its retained
   [closure audit](../etc/evidence/t386-s29-functional-closure-audit.md) fixes
   HDC current-gate coverage and transfers board, firmware and physical work.

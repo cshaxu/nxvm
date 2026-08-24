@@ -1,5 +1,6 @@
 #include "type.h"
 
+#define CORE_MACHINE_TRACE_IMPLEMENTATION 1
 #include "core/machine/machine.h"
 
 

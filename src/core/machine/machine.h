@@ -47,6 +47,10 @@
 #define CORE_MACHINE_RETIREMENT_QUALIFICATION_CAPACITY 128u
 #define CORE_MACHINE_PLAN_MEMORY_DEVICE_COUNT 4u
 
+#ifndef CORE_MACHINE_RUNTIME_TRACE_ENABLED
+#define CORE_MACHINE_RUNTIME_TRACE_ENABLED 1
+#endif
+
 typedef struct core_machine_plan_memory_device {
     type_unsigned_32 physical_start;
     STD_SIZE_T bytes;
@@ -254,6 +258,7 @@ struct core_machine {
 
 type_status core_machine_bus_initialize(core_machine *machine);
 C_VOID core_machine_bus_finalize(core_machine *machine);
+#if CORE_MACHINE_RUNTIME_TRACE_ENABLED || defined(CORE_MACHINE_TRACE_IMPLEMENTATION)
 C_VOID core_machine_trace_initialize(core_machine *machine);
 C_VOID core_machine_trace_finalize(core_machine *machine);
 C_VOID core_machine_trace_record(
@@ -262,6 +267,18 @@ C_VOID core_machine_trace_record(
     type_unsigned_32 address,
     type_unsigned_32 value,
     type_unsigned_32 detail);
+#else
+#define core_machine_trace_initialize(machine) ((C_VOID)(machine))
+#define core_machine_trace_finalize(machine) ((C_VOID)(machine))
+#define core_machine_trace_record(machine, type, address, value, detail) \
+    do { \
+        (C_VOID)sizeof(machine); \
+        (C_VOID)sizeof(type); \
+        (C_VOID)sizeof(address); \
+        (C_VOID)sizeof(value); \
+        (C_VOID)sizeof(detail); \
+    } while (0)
+#endif
 C_VOID core_machine_cpu_diagnostic_initialize(core_machine *machine);
 C_VOID core_machine_cpu_diagnostic_reset(core_machine *machine);
 C_VOID core_machine_retirement_observation_initialize(core_machine *machine);

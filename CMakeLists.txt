@@ -94,6 +94,13 @@ target_include_directories(core-machine PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
     "${CMAKE_BINARY_DIR}/generated"
 )
+if(CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
+    target_compile_definitions(core-machine PUBLIC
+        CORE_MACHINE_RUNTIME_TRACE_ENABLED=0)
+else()
+    target_compile_definitions(core-machine PUBLIC
+        CORE_MACHINE_RUNTIME_TRACE_ENABLED=1)
+endif()
 
 add_executable(core-machine-contract-smoke
     tests/core/core_contract_smoke.c
@@ -2884,6 +2891,11 @@ function(add_current_vm_artifact target version)
         target_compile_options(${target} PRIVATE -Wall -Wextra -Wpedantic -Werror)
     endif()
 
+    add_custom_command(TARGET ${target} PRE_LINK
+        COMMAND ${CMAKE_COMMAND}
+            -DPROJECT_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_current_artifact_optimized.cmake"
+        COMMENT "Verifying current NXVM artifact is optimized with debug information")
     add_custom_command(TARGET ${target} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_BINARY_DIR}/output"
         COMMAND ${CMAKE_COMMAND} -E copy_if_different

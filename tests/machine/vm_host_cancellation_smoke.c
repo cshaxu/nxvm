@@ -20,11 +20,7 @@ C_INT main(C_VOID)
     if (!vm_platform_run_handle_take_stop_report(session->platform_run_handle) ||
         vm_platform_run_handle_take_stop_report(session->platform_run_handle) ||
         vm_platform_request_transport_dequeue_ingress(session->request_transport,
-            &request) != TYPE_STATUS_OK ||
-        request.kind != VM_PLATFORM_REQUEST_KEY_EVENT ||
-        request.data.key_event.scan_code != VM_HOST_CANCELLATION_F9_SCAN_CODE ||
-        request.data.key_event.virtual_key !=
-            VM_HOST_CANCELLATION_F9_VIRTUAL_KEY) goto fail;
+            &request) == TYPE_STATUS_OK) goto fail;
     vm_session_destroy(session);
     STD_PRINTF("M5:T201:S3:HOST-CANCELLATION:OK\n");
     return 0;
