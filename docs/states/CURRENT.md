@@ -2,30 +2,14 @@
 
 ## Current Work
 
-## M5 T447 S2 Packet
-
-| Field | Required record |
+| Task | Compact result |
 | --- | --- |
-| Identifier Mode | Continuation; `M5 T447 S2`, single-session coordinator/executor then coordinator closure review. |
-| Admission And Approval | The owner-approved T447 proposal and accepted S1 progress admit the next dependency-ordered S2 batch on 2026-08-23. No exception. |
-| Objective | Give `SESSION LIST/OPEN/SELECT/CLOSE` one product command authority and remove public raw selected-session and mutable command/open payload escapes without changing VM profile policy. |
-| Non-goals | No VM session-layout normalization, debugger redesign, generic command framework, console UX expansion, platform lifecycle work, or cross-owner test-wide migration reserved for later S tasks. |
-| Reference Baseline | Accepted S1 P2 `496024b3`; Td S125 B/I, Td S127 C, Td S129 A, T447 ledger S2. |
-| Candidate Proposal | [M5 Architecture-Boundary Debt Closure](../proposals/m5-architecture-boundary-debt-closure.md), S2. |
-| Files And ABI Surface | Core session manager/provider/command interfaces and implementation; VM session provider, console adapter and console; focused product/VM tests and one narrow raw-borrow verifier only if needed; T447 history/evidence/status and current artifact. Public command behavior must remain equivalent. |
-| Applicable Rules | Execution mechanism/ledger/P/closure requirements; architecture single owner, no raw cross-module session pointer, Core-directed dependency; coding deletion of the uncalled parser and VM duplicate grammar, no forwarding abstraction; documentation topology. No exception. |
-| Verification | Inventory every command parser, `open_with_options`, `borrow_selected`, `C_VOID **`, and VM cast before change; prove one command route and provider-owned VM policy seam; run focused manager/console/profile/lifecycle consumers plus negative invalid-payload and no-selected cases; extend raw-borrow proof; configure/build current artifact, current smokes, specialized gates, and documentation governance. |
-| Expected Markers | Existing retained session/console markers plus a T447 S2 marker; no public selected raw-borrow API, no mutable `C_CHAR **` command/open payload, no uncalled Core parser, and no VM duplicate `SESSION` grammar. |
-| Asset Needs | Existing non-committed test media only; no new source, firmware, guest-media, or third-party asset. |
-| Reporting Requirements | Record complete caller and parser inventory, command/policy disposition, failure/copy/lifetime semantics, deleted routes, code-size accounting, artifact SHA, focused/full verification, and actual-diff review; commit and push one complete implementation P before coordinator closure. |
-| Stop Conditions | Stop for owner direction if a discovered consumer requires a new public VM session capability outside the frozen S2 command/access boundary, if preserving retained console behavior requires an independent grammar, or if making options copied changes selected profile semantics. |
-| Exit Criteria | One reachable `SESSION` grammar owns all list/open/select/close dispatch; VM supplies only frozen profile/open policy through a declared seam; no external raw selected session or mutable token array crosses the Core product boundary; all callers and tests migrate or are explicitly transferred; focused/full proof passes with no duplicate parser or compatibility path. |
-| Original Owner Request | Execute the approved architecture-boundary closure in dependency order, applying minimalism as a hard constraint rather than a later refactor. |
-| Similar-Issue Sweep | Inspect every session manager/provider/command declaration and call, console `SESSION` branch, parser, profile-open construction, raw `C_VOID`/`C_CHAR **` payload, selected-session cast, and raw-borrow verifier/test surface; do not repair only the adapter's first cast. |
+| T447 S1 | Accepted P1 `9a81283d` and P2 `496024b3`: each current VM build source and native GUI edge has one owner; 0447, 293 current smokes, and 67 specialized verifiers pass. [Evidence](../etc/evidence/t447-s1-build-ownership.md). |
+| T447 S2 | Accepted P1 `52d140a8`: one Core `SESSION` grammar, immutable command/open tokens, a copied selected snapshot, and callback-bounded selected VM actions replace public raw borrowing and VM duplicate dispatch. The 0447 artifact SHA is recorded in [evidence](../etc/evidence/t447-s2-session-boundary.md); 293 current smokes and 150 specialized build steps pass. |
 
 ## Current Technical Baseline
 
-- **Current developer artifact:** target `vm-0-5-0447`; `nxvm_0_5_0447.exe` / `build/output/nxvm_0_5_0447.exe`, SHA-256 `2D11FAB64183514AB1CFC7609C5A063403B42DDC7E171D0642B3394C49E3DB29`. T434 has one copied Core timing-plan publication route for default PC/AT, IBM 5170 Model 339 and Model-40 BYOB session composition.
+- **Current developer artifact:** target `vm-0-5-0447`; `nxvm_0_5_0447.exe` / `build/output/nxvm_0_5_0447.exe`, SHA-256 `BEA8A10910776C8E23090A6CDCAB6AAB174B7382A71CDCC421DA416F82265BA0`. T434 has one copied Core timing-plan publication route for default PC/AT, IBM 5170 Model 339 and Model-40 BYOB session composition.
   T386 closes selected-device functional completeness at S29; its retained
   [closure audit](../etc/evidence/t386-s29-functional-closure-audit.md) fixes
   HDC current-gate coverage and transfers board, firmware and physical work.
