@@ -51,7 +51,7 @@ foreach(required
     "pthread_create"
     "VM_PLATFORM_RUN_EVENT_STOP_REQUESTED"
     "pthread_join"
-    "backend == STD_NULL")
+    "!vm_platform_run_handle_is_active")
     string(FIND "${linux_smoke_source}" "${required}" position)
     if(position EQUAL -1)
         message(FATAL_ERROR "Linux run-handle smoke is incomplete: ${required}")

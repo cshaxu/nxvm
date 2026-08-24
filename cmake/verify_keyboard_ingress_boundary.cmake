@@ -22,11 +22,11 @@ if(win32_submit_position EQUAL -1 OR NOT win32_direct_position EQUAL -1)
     message(FATAL_ERROR "Win32 keyboard events bypass the transport ingress operation")
 endif()
 
-string(FIND "${lifecycle_source}" "core_platform_input_source_initialize"
+string(FIND "${lifecycle_source}" "core_platform_input_source_create"
     source_position)
 string(FIND "${session_source}" "core_platform_input_source_submit"
     ingress_position)
-string(FIND "${session_source}" "VM_PLATFORM_REQUEST_KEY_EVENT"
+string(FIND "${lifecycle_source}" "VM_PLATFORM_REQUEST_KEY_EVENT"
     request_position)
 string(FIND "${session_source}" "core_machine_keyboard_receive_native_bytes"
     consume_position)

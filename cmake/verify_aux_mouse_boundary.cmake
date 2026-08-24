@@ -33,7 +33,7 @@ foreach(source_text IN ITEMS "${win32_source}" "${win32app_source}" "${mapper_so
     endforeach()
 endforeach()
 
-string(FIND "${lifecycle_source}" "core_platform_input_source_initialize"
+string(FIND "${lifecycle_source}" "core_platform_input_source_create"
     source_position)
 string(FIND "${session_source}" "core_platform_input_source_submit"
     ingress_position)

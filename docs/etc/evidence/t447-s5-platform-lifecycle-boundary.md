@@ -43,5 +43,21 @@ their existing Linux/Win32 resource finalization order.
   host-surface lease, and session initialization atomicity.
 - The final session-initialization regression passed after the virtual-time
   rollback correction.
+- The full `current-gate` CTest suite passed 292/292 with no failures
+  (89.80 seconds real time).
+- All 75 specialized gates passed, including T345's 237-row ownership ledger
+  and the new `M5:T447:S5:PLATFORM-LIFECYCLE-BOUNDARY:OK` layout guard.
+- The rebuilt `vm-0-5-0447` developer artifact has SHA-256
+  `A0EE72A5519B7CDACF5B23AAB0D50C795D6EBFE13B2F7932C1B0F112A70FB795`.
+
+## Gate correction
+
+S5 intentionally removed the public `backend` member and replaced embedded
+input-source initialization with owner allocation.  The Linux run-handle,
+keyboard, and AUX-mouse gates still searched for those retired implementation
+shapes.  They now prove the same observable contracts through the public
+active-state and submit/create operations.  The S5 guard makes every named
+Core/VM lifecycle contract remain an opaque declaration and fails if a public
+layout returns.
 
 This evidence proves only S5's stated owner/opaque-lifecycle boundary.

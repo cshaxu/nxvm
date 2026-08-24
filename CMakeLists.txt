@@ -3029,6 +3029,12 @@ if(PROJECT_VERIFY_DEPENDENCY_DAG)
         COMMENT "Verifying Core file-resource ownership"
         VERBATIM)
 
+    add_custom_target(verify-t447-platform-lifecycle-boundary
+        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_t447_platform_lifecycle_boundary.cmake"
+        COMMENT "Verifying Core and VM platform lifecycle ownership"
+        VERBATIM)
+
     add_custom_target(verify-current-artifact-target
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
             -P "${CMAKE_SOURCE_DIR}/cmake/verify_current_artifact_target.cmake"
@@ -3378,6 +3384,7 @@ set(PROJECT_CURRENT_SPECIALIZED_VERIFIER_CANDIDATES
     verify-t447-session-boundary
     verify-t447-debugger-boundary
     verify-t447-file-resource-boundary
+    verify-t447-platform-lifecycle-boundary
     verify-current-artifact-target
     verify-request-transport-closure
     verify-keyboard-ingress-boundary
