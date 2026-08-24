@@ -10,3 +10,14 @@ execution cannot share a catalog or profile workspace.
   workspaces through existing test setup, and proves serial plus repeated
   parallel execution. Its evidence will record the exact path ownership and
   residual-file sweep.
+
+## Closure
+
+The three registered CTest cases now each own one build-tree workspace; no
+product catalog route, Console selection, or standard-input path changed. The
+[S1 evidence](../etc/evidence/t454-s1-parallel-console-profile-smoke-isolation.md)
+records the complete sweep, serial control, three parallel executions and
+source-root residue check. The independent 8086 decoder-ledger verifier failure
+transfers once to `TODO.md`; it is neither hidden nor attributed to this
+fixture repair. The consumed [proposal](M5-T454-parallel-console-profile-smoke-isolation-proposal.md)
+is retained beside this record.

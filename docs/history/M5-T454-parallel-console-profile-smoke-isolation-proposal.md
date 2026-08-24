@@ -7,10 +7,10 @@ giving each test an owned catalog/profile workspace.
 
 ## Boundary
 
-The task changes only test/CMake fixture isolation.  It preserves the product
+The task changes only test/CMake fixture isolation. It preserves the product
 catalog discovery route, Console selection semantics, standard-input
-restoration and existing production profile paths.  It does not add a second
-catalog implementation or hide either smoke from the current gate.
+restoration and existing production profile paths. It does not add a second
+catalog implementation or hide any smoke from the current gate.
 
 ## Approach And Acceptance
 

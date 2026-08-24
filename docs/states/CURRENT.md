@@ -2,28 +2,7 @@
 
 ## Current Work
 
-**Active: M5 T454 S1 - parallel Console profile-smoke isolation.**
-
-## M5 T454 S1 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | New |
-| Admission And Approval | Owner approved the first queued candidate, Parallel Console profile-smoke isolation, on 2026-08-24. |
-| Objective | Give each affected Console profile smoke an owned catalog/profile workspace so parallel CTest execution is deterministic. |
-| Non-goals | Do not change product catalog discovery, Console selection semantics, standard-input restoration, production profile paths, menu ordering, or add a second catalog path. |
-| Reference Baseline | T453 closed at `83c397a1`; the fixed-write/discovery sweep identifies three current-gate Console smoke paths: lifecycle, Model-40, and memory-roundtrip. |
-| Candidate Proposal | [Parallel Console profile-smoke isolation](../proposals/m5-parallel-console-profile-smoke-isolation.md). |
-| Files And ABI Surface | Tests, their existing setup support, CMake test properties if required, T454 history, evidence index, Current and Queue only. No public or product ABI change. |
-| Applicable Rules | `rules/EXECUTION.md`, `rules/DOCUMENT.md`, `rules/ARCHITECTURE.md`, and `rules/CODING.md`: one owned test workspace, no parallel catalog implementation, owner-local tests, and no reverse dependency. |
-| Verification | Inventory fixed writes and discovery callers; run a serial control; run repeated parallel selection of both affected smokes; run the applicable configured build and documentation governance gate; verify no source-working-directory residue. |
-| Expected Markers | All three same-mechanism smokes select their expected profile under serial and parallel execution, with no shared fixed profile/catalog path or residual source-tree test files. |
-| Asset Needs | None; tests use project-owned synthetic inputs only. |
-| Reporting Requirements | Record the inventory, workspace owner, exact serial/parallel commands and results, changed test paths, and source/test line delta. |
-| Stop Conditions | Stop for a necessary product catalog-path contract change or if isolation would alter Console menu ordering or selection semantics. |
-| Exit Criteria | Both affected smokes have distinct owned workspaces, repeated parallel replay and serial control pass, no residual source-tree files remain, and actual-diff review confirms one test setup route. |
-| Original Owner Request | Admit and implement the next queued task. |
-| Similar-Issue Sweep | Inspect every current-gate Console/profile smoke for fixed profile/catalog writes and either include all same-mechanism cases or record a bounded non-applicable disposition. |
+**Idle.**
 
 ## Current Technical Baseline
 
@@ -49,6 +28,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T454 | Closed: the three fixed-write Console catalog smokes have one CTest-owned build workspace each; serial and repeated parallel replays pass with no source-tree residue. The independent 8086 decoder-ledger guard failure is recorded as CPU debt. [History](../history/M5-T454-parallel-console-profile-smoke-isolation.md). |
 | T453 | Closed: fresh default tree uses one WinLibs toolchain family; the one FDC test include is corrected; 44 obsolete build trees are removed; current build operations are reduced to preset-backed commands. [History](../history/M5-T453-toolchain-build-tree-hygiene.md). |
 | T452 | Closed: optional isolated ccache presets provide measured repeat-build hits and byte-identical output; default route remains unchanged and task temporary cache/build trees are removed. [History](../history/M5-T452-optional-ccache-build-acceleration.md). |
 | T451 | Closed: one current VM request contract, bridge/transport smoke and complete configured build pass; stale request-bridge debt and invalid build instructions are removed without source, CMake or ABI changes. [History](../history/M5-T451-vm-request-bridge-current-build-restoration.md). |
@@ -56,7 +36,6 @@
 | T449 | Closed: one copied transaction contract, transaction lifecycle, scheduler arbitrator, memory classifier and retirement/time/observation route; all S1--S6 evidence is reconciled and physical/controller/x87 boundaries transfer explicitly. [History](../history/M5-T449-core-cpu-board-transaction-contracts.md). |
 | T448 | Closed: six over-limit generated firmware sources now use the one bounded byte-identical materialization route; the unused session helper is removed. [Evidence](../etc/evidence/t448-s1-firmware-materialization.md). |
 | T447 | Closed: all S1--S11 ledger receivers are accepted; one Core execution path, bounded VM contracts, no VDM forwarding facade, owner-local test boundaries and the decomposed Core coordinator are retained. [History](../history/M5-T447-architecture-boundary-debt-closure.md). |
-| T446 | Closed: each VM session owns its debugger cursor state; the sole recorder owner closes on stop, write failure and destruction, clearing failed streams and reporting lifecycle outcomes. [Evidence](../etc/evidence/t446-s1-vm-debugger-recording-lifecycle.md). |
 
 
 ## Recent Governance
