@@ -22,3 +22,23 @@ The retained [proposal](M5-T459-vm-session-speed-policy-proposal.md) and
 caller sweep, measured non-result for a larger runner quantum, and the
 separate source-backed profile-timebase/controller-deadline prerequisite for
 full host-paced synchronization.
+
+## Corrective S2 And Final Reclosure
+
+The owner correctly rejected S1's VM-generated one-tick Turbo path: preserving
+the Core's per-tick order was insufficient because VM still supplied the guest
+clock input. S2 is accepted at `17e53ebc`. It removes that branch completely;
+the only remaining VM Core-time call consumes the pre-existing configured
+virtual-time source, never a speed choice or host backoff result. The runner's
+fixed `Sleep(1)` is now explicitly L2 HLT host-load backoff, not a
+synchronization algorithm.
+
+`standard` and `turbo` remain visible stopped-session product selections, but
+Turbo does not busy-spin, manufacture guest time or claim deadline
+fast-forward. Correct Standard pacing and Turbo advancement remain explicitly
+transferred to the source-backed profile-timebase and Core-composed observable
+controller-deadline contract. The [corrective proposal](M5-T459-vm-session-speed-policy-corrective-proposal.md)
+and [S2 evidence](../etc/evidence/t459-s2-guest-clock-ownership-correction.md)
+retain that disposition. The serial Debug current gate passes 294/294, and the
+rebuilt stripped `nxvm_0_5_0459.exe` is SHA-256
+`ED4E79BF67C5A1B0C7953601933853247B0CC475E7DB67D883D15F65802F0973`.

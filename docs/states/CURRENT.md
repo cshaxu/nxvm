@@ -2,26 +2,7 @@
 
 ## Current Work
 
-## M5 T459 S2 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Corrective |
-| Admission And Approval | Owner corrected T459 on 2026-08-24: Core device state/deadline alone drives guest ticks; VM wall clock may only pace an already-advanced guest. This narrow corrective removes VM-generated Turbo guest ticks. |
-| Objective | Retain the two stopped-session product selections while removing the VM Turbo one-tick Core-advance path and documenting `Sleep(1)` as an L2 HLT host-load backoff, not synchronization. |
-| Non-goals | No Core deadline API, profile physical timebase, Core/device timing, host-clock-to-guest conversion, fast-forward, CPU multiplier, runner split, busy spin, YAML, debugger or display change. |
-| Reference Baseline | `cf44f9e5` / `9d7fa652`; current stripped Release artifact `0.5.0459`, SHA-256 `ED4E79BF67C5A1B0C7953601933853247B0CC475E7DB67D883D15F65802F0973`. |
-| Candidate Proposal | [VM session speed policy corrective](../proposals/m5-vm-session-speed-policy-corrective.md). |
-| Files And ABI Surface | VM session virtual-time helper and runner HLT fallback; existing session/Console product state and focused smoke. Core API and scheduler are unchanged. |
-| Applicable Rules | README Task Reading Set; EXECUTION corrective-S/P lifecycle and actual-diff review; ARCHITECTURE sole Core guest-clock owner; CODING deletion/one-path discipline; DOCUMENT active-packet boundary; UI retained NXVM Console interaction. |
-| Verification | Focused speed/session, virtual-time, Console and DOS prompt regressions; current gate; documentation governance; stripped Release artifact inspection. |
-| Expected Markers | `M5:T459:S2:SESSION-SPEED-POLICY:OK`; retained virtual-time and Console markers. |
-| Asset Needs | None; project-owned tests only. |
-| Reporting Requirements | Record removal of the generated tick, all remaining Core-time callers, exact L2 fallback meaning, code delta, artifact SHA-256 and the existing host-paced deadline/timebase transfer. |
-| Stop Conditions | Stop for any required Core deadline/timebase contract, VM-generated guest tick, host-clock-derived Core advance, changed device order or product requirement to claim present fast-forward. |
-| Exit Criteria | Turbo cannot generate or advance guest ticks; all speed selections remain observable/rejected while running; the source-less halted path remains host-backoff rather than busy spin; all required gates pass. |
-| Original Owner Request | Correct data flow: Core state/deadline drives guest progress; VM only compares already-advanced guest progress to wall-clock budget and waits when ahead. T459 must not claim that unavailable L3 contract. |
-| Similar-Issue Sweep | Search every VM caller of `core_machine_advance_time`, virtual-time source and HLT sleep; retain only existing source-selected Core time, and record every L2 host backoff boundary. |
+**Idle.**
 
 ## Current Technical Baseline
 
@@ -47,7 +28,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T459 | Closed: one VM session owner now exposes stopped-session `standard`/`turbo` selection through the retained Console selected-session route. Turbo advances a halted Core by exactly one existing tick with no host wait; it has no arbitrary batch, mode-specific runner or Core speed API. The full gate passes 294/294; current artifact `0.5.0459` is stripped Release-only. [History](../history/M5-T459-vm-session-speed-policy.md). |
+| T459 | Closed after S2 correction: `standard`/`turbo` remain stopped-session Console selections, but neither VM speed branch manufactures guest ticks. `Sleep(1)` is explicitly L2 HLT host-load backoff; true Standard pacing and Turbo fast-forward remain transferred to Core deadlines plus profile timebases. The full gate passes 294/294; current artifact `0.5.0459` is stripped Release-only. [History](../history/M5-T459-vm-session-speed-policy.md). |
 | T458 | Closed: the shared runner retains its 256-instruction control quantum but captures/publishes normal frames no more than once per 16 host milliseconds; forced mode and lifecycle frames remain immediate. The current artifact is stripped Release-only, and the full gate passes 293/293. [History](../history/M5-T458-vm-runner-presentation-cadence.md). |
 | T457 | Closed: F9 remains a single host run-handle stop report and no longer enters the guest key route; the corrected host-cancellation assertion and two-epoch regression preserve it. Its artifact is stripped Release-only, retains the production debugger/trace commands, excludes automatic Core trace events, and 293/293 current-gate tests pass. [History](../history/M5-T457-session-input-restart-recovery.md). |
 | T456 | Closed at L3: all 18 retained 8259A rows have focused proof or an explicit boundary; one CPU path, programmed cascade, corrected specific-EOI, command/poll lifecycle and default-IR7 acknowledgement remain PIC-owned. Full current-gate is 293/293. PIC-T3 L4 electrical timing is deliberately excluded. [History](../history/M5-T456-core-pic-8259a-phase-contract.md). |
