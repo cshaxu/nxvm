@@ -2,7 +2,26 @@
 
 ## Current Work
 
-**Active.** T449 remains open between accepted subtasks.
+## M5 T449 S6 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; T449 S5 is accepted in `7640b710`. |
+| Admission And Approval | The owner-approved T449 objective and accepted S1--S5 evidence authorize this bounded final continuation under one-session coordinator/executor review. |
+| Objective | Reconcile the sole CPU execution/retirement, virtual-time publication and observation route against the complete T449 ledger, repair only a demonstrated duplicate publisher, stale observation/reset state, unpaired failure path or uncovered in-scope route, then perform the T-level closure audit. |
+| Non-goals | Do not add a tracing framework, expose mutable Core state, invent timing, alter instruction semantics, model controller/device phases or x87 behavior, create a profile callback, or retain a wrapper/parallel observation path. |
+| Reference Baseline | Accepted T449 S1 route ledger, S2 copied contract, S3 classification, S4 availability and S5 arbitration/memory ledgers; retained T354 transaction/lifecycle, T409--T411 CPU locality and T434 plan publication proofs. |
+| Candidate Proposal | [Core CPU-to-board transaction and arbitration contracts](../proposals/m5-core-cpu-board-transaction-contracts.md). |
+| Files And ABI Surface | Core execution, timeline, transaction trace and observation owners, focused regressions/evidence/status/history only. No public API or VM profile surface is expected. |
+| Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`, `docs/design/ARCHITECTURE.md`, `docs/design/CODING.md`; one publisher/owner/path, copied immutable input, atomic failure/reset, explicit L2 transfer, actual-diff review and complete coverage ledger. |
+| Verification | Finite retirement/time/trace/reset ledger; source sweep for elapsed-time publication, successful retirement, transaction trace binding/recording and observer registration; retained transaction, lifecycle, CPU locality, plan and Model-40 regressions; documentation governance, `git diff --check`, T-level proposal/evidence/TODO/history audit. |
+| Expected Markers | T449 S6 closure marker plus retained T354, T409--T411, T434 and Model-40 markers. |
+| Asset Needs | None. |
+| Reporting Requirements | Report every publisher/observer/reset owner and disposition, full S1--S6 completion mapping, all source/test line accounting, commit/push, task-history migration and any explicit receiver for residual work. |
+| Stop Conditions | Stop for owner direction if a missing route requires a public observation API, new device phase, source admission, timing value, changed profile behavior or CPU resumability. |
+| Exit Criteria | One CPU retirement/time publication and trace-observation path remains; reset leaves no stale transaction/grant/observation state; every T449 proposal batch is evidenced or explicitly transferred; no open in-scope TODO remains; task history/status/proposal topology, gates and actual-change review prove closure. |
+| Original Owner Request | Complete the active T in one-session coordinator/executor mode; use a whole-system, minimalist design, prohibit incremental patch stacking, and leave no unfinished path. |
+| Similar-Issue Sweep | Search all production elapsed-time, retirement, transaction trace and observer publication/reset call sites, then reconcile proposal S1--S6 against evidence, Queue and TODO records. |
 
 ## Current Technical Baseline
 
