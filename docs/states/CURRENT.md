@@ -2,28 +2,7 @@
 
 ## Current Work
 
-**Active: M5 T456 S1 - PIC source, reference and contract reconciliation.**
-
-## M5 T456 S1 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | New |
-| Admission And Approval | Owner approved the first queued Core PIC 8259A phase-contract candidate and requested a manual-first scope, gap, and S-task breakdown on 2026-08-24. |
-| Objective | Consume T450's frozen 18-row 8259A ledger, inspect the rendered Intel/IBM source pages, cross-check independent emulator implementations as non-normative observations, audit current Core PIC behavior, and commit the implementation S breakdown before any PIC behavior change. |
-| Non-goals | Do not duplicate T450's source inventory, change PIC, CPU delivery, transaction, VM wiring, or timing behavior, treat an emulator as primary authority, or import any external source. |
-| Reference Baseline | `a42242e9`; T449 is the transaction prerequisite, T450 retains the PIC source/code audit baseline, and the shared simulation admission program governs classification. |
-| Candidate Proposal | [Core PIC 8259A phase contract](../proposals/m5-core-pic-8259a-phase-contract.md). |
-| Files And ABI Surface | T456 history, one indexed PIC S1 reconciliation record, proposal refinement, Current and Queue only. No source or ABI change in S1. |
-| Applicable Rules | `rules/EXECUTION.md`, `rules/DOCUMENT.md`, `rules/ARCHITECTURE.md`, `rules/CODING.md`, source policy, and the specification-driven complete simulation admission program. |
-| Verification | Inspect Intel 8259A rendered functional, command, cascade and timing pages and selected IBM AT wiring; verify OCR form; map every retained row against current owners/tests; inspect 86Box, Bochs, MAME, PCjs and QEMU PIC implementations at recorded versions; record agreement, divergence or inapplicability without elevating a reference to specification. |
-| Expected Markers | The retained 18-row count; primary-source provenance/form result; exact code/test owner map; five recorded emulator observations; a distinction between Level-1 manual facts, Level-2 absent facts and Level-3 boundaries; and numbered future S plan. |
-| Asset Needs | Local manual/archive and read-only external reference source inspection; no firmware, guest media or external source import. |
-| Reporting Requirements | Report the retained row count, primary-source gaps, reference set and observed divergences, current-code gap count, and the proposed S2+ implementation order. |
-| Stop Conditions | Stop before implementation if the original manual or selected AT cascade wiring cannot be located, primary sources conflict, or a proposed reference observation would replace a manual fact. |
-| Exit Criteria | The retained universe is reconciled rather than duplicated; source form/ambiguities and reference divergences are recorded; all current code/test owners are mapped; and a minimally partitioned S plan is committed for owner review. |
-| Original Owner Request | Admit the PIC task; define scope like the 8086/80186/80286/80386 programs before implementation, including manual/reference coverage and S breakdown; then require manual and several emulator implementations to cross-validate the scanned PDF. |
-| Similar-Issue Sweep | Inspect PIC command, priority, cascade, acknowledgement, EOI, mask, cancellation, reset and IRQ-delivery paths; no uncovered same-mechanism row may be omitted. |
+**Active: M5 T456, between accepted subtasks.**
 
 ## Current Technical Baseline
 
@@ -49,6 +28,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T456 S1 | Accepted: T450's retained 18-row PIC universe is rendered-source checked and reconciled against five independently versioned emulator observations; ICW3's accepted-but-ignored state and the unowned logical delivery phase are assigned once to S2/S3. [Evidence](../etc/evidence/t456-s1-pic-source-reference-contract-reconciliation.md). |
 | T455 | Closed: the sole 8086 decoder-ledger guard now checks current decoder and timing owners instead of the retired monolithic layout; all 1,053 records and 292 current-gate tests pass. [History](../history/M5-T455-8086-decoder-ledger-guard-reconciliation.md). |
 | T454 | Closed: the three fixed-write Console catalog smokes have one CTest-owned build workspace each; serial and repeated parallel replays pass with no source-tree residue. The independent 8086 decoder-ledger guard failure is recorded as CPU debt. [History](../history/M5-T454-parallel-console-profile-smoke-isolation.md). |
 | T453 | Closed: fresh default tree uses one WinLibs toolchain family; the one FDC test include is corrected; 44 obsolete build trees are removed; current build operations are reduced to preset-backed commands. [History](../history/M5-T453-toolchain-build-tree-hygiene.md). |
@@ -56,7 +36,6 @@
 | T451 | Closed: one current VM request contract, bridge/transport smoke and complete configured build pass; stale request-bridge debt and invalid build instructions are removed without source, CMake or ABI changes. [History](../history/M5-T451-vm-request-bridge-current-build-restoration.md). |
 | T450 | Closed: all eight controller pairs are archived with 128 source rows and 128 code-audit rows; S19 verifies the source form of every admitted PDF and preserves all selected-board/personality/media gaps as explicit transfers. [History](../history/M5-T450-core-controller-manuals-and-gap-inventory.md). |
 | T449 | Closed: one copied transaction contract, transaction lifecycle, scheduler arbitrator, memory classifier and retirement/time/observation route; all S1--S6 evidence is reconciled and physical/controller/x87 boundaries transfer explicitly. [History](../history/M5-T449-core-cpu-board-transaction-contracts.md). |
-| T448 | Closed: six over-limit generated firmware sources now use the one bounded byte-identical materialization route; the unused session helper is removed. [Evidence](../etc/evidence/t448-s1-firmware-materialization.md). |
 
 
 ## Recent Governance
