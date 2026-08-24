@@ -4,18 +4,16 @@
 #include "core/machine/machine.h"
 #include "core/machine/port.h"
 #include "vm/composition/session/lifecycle.h"
-#include "vm/composition/session/session.h"
+#include "vm/composition/session/session_private.h"
 #include "vm/composition/session/session_interface.h"
+#include "../support/vm_model40_byob_fixture.h"
 
 C_INT main(C_VOID)
 {
-    static type_unsigned_8 even[VM_PROFILE_MODEL40_ROM_CHIP_BYTES];
-    static type_unsigned_8 odd[VM_PROFILE_MODEL40_ROM_CHIP_BYTES];
-    const vm_profile_model40_external_rom rom = { even, odd, sizeof(even) };
     vm_session *session = STD_NULL;
     C_INT failed = 0;
 
-    if (vm_session_create_model40_private(&rom, &session) != TYPE_STATUS_OK ||
+    if (vm_model40_fixture_create("t386-s17-even.bin", "t386-s17-odd.bin", &session) != TYPE_STATUS_OK ||
         session == STD_NULL || !session->core_machine->dma_configured ||
         session->core_machine->dma_cycle_wait_quanta != 1u ||
         !session->core_machine->dma_cycle_bus_ready_gate_enabled ||
@@ -68,6 +66,7 @@ C_INT main(C_VOID)
 
 done:
     vm_session_destroy(session);
+    vm_model40_fixture_remove("t386-s17-even.bin", "t386-s17-odd.bin");
     if (failed) return 1;
     STD_PRINTF("M5:T386:S17:DUAL-DMA-TOPOLOGY:OK\n");
     STD_PRINTF("M5:T386:S17:DMA-WORD-CASCADE:OK\n");

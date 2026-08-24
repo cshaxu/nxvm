@@ -3,7 +3,7 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
 endif()
 
 file(READ "${PROJECT_SOURCE_DIR}/src/core/product/debug/debug.h" interface)
-file(READ "${PROJECT_SOURCE_DIR}/src/vm/composition/session/session.h" session)
+file(READ "${PROJECT_SOURCE_DIR}/src/vm/composition/session/session_private.h" session)
 file(READ "${PROJECT_SOURCE_DIR}/src/vm/composition/session/console_machine_adapter.c" adapter)
 
 foreach(forbidden

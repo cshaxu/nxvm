@@ -6,7 +6,7 @@
 #include "core/machine/machine.h"
 #include "core/machine/machine_interface.h"
 #include "vm/composition/session/session_interface.h"
-#include "vm/composition/session/session.h"
+#include "vm/composition/session/session_private.h"
 
 #define VM_FDC_BOUNDARY_IMAGE_BYTES (1440u * 1024u)
 #define VM_FDC_BOUNDARY_RESULT_ADDRESS 0x0500u

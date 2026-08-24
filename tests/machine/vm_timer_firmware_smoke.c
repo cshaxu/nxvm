@@ -8,7 +8,7 @@
 #include "vm/composition/session/control.h"
 #include "vm/composition/session/lifecycle.h"
 #include "vm/composition/session/session_interface.h"
-#include "vm/composition/session/session.h"
+#include "vm/composition/session/session_private.h"
 #include "vm/machine/fdd.h"
 #include "../support/core_machine_cpu_fixture.h"
 

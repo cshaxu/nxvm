@@ -2,8 +2,9 @@
 
 #include "core/machine/machine.h"
 #include "core/machine/machine_interface.h"
-#include "vm/composition/session/session.h"
+#include "vm/composition/session/session_private.h"
 #include "vm/composition/session/session_interface.h"
+#include "../support/vm_model40_byob_fixture.h"
 
 static C_INT vm_model40_d4_read(core_machine *machine,
     type_unsigned_32 physical, type_unsigned_8 expected)
@@ -18,9 +19,9 @@ C_INT main(C_VOID)
 {
     static type_unsigned_8 even[VM_PROFILE_MODEL40_ROM_CHIP_BYTES];
     static type_unsigned_8 odd[VM_PROFILE_MODEL40_ROM_CHIP_BYTES];
-    vm_profile_model40_external_rom invalid = { even, odd,
-        VM_PROFILE_MODEL40_ROM_CHIP_BYTES - 1u };
-    vm_profile_model40_external_rom valid = { even, odd, sizeof(even) };
+    vm_session_config invalid_config = {
+        .profile_kind = VM_SESSION_PROFILE_COMPAQ_DESKPRO_386_MODEL_40
+    };
     vm_session *session = STD_NULL;
     core_machine_run_result result;
     type_unsigned_8 write = 0u;
@@ -31,9 +32,13 @@ C_INT main(C_VOID)
     odd[0u] = 0x22u;
     even[0x3ff8u] = 0xf4u;
 
-    failed |= vm_session_create_model40_private(&invalid, &session) !=
+    failed |= vm_session_create(&invalid_config, &session) !=
         TYPE_STATUS_INVALID_ARGUMENT || session != STD_NULL;
-    if (!failed) failed |= vm_session_create_model40_private(&valid, &session) !=
+    if (!failed) failed |= vm_model40_fixture_create_bytes("t386-s25-even.bin", even,
+        "f7eb6af712d2cbc0ee03468e664d089fa67bfc48591b071c3bcaf8ab830653af",
+        "t386-s25-odd.bin", odd,
+        "bd99701a5fbeb22a5d990331ad56a7164935b8229a6410007d4f5f08dfd93335",
+        &session) !=
         TYPE_STATUS_OK || session == STD_NULL ||
         core_machine_bus_read(session->core_machine, CORE_MACHINE_PC_AT_PORT_B,
             &port_b) != TYPE_STATUS_OK || (port_b & 0x10u) == 0u ||
@@ -67,5 +72,6 @@ C_INT main(C_VOID)
     if (!failed) STD_PRINTF("M5:T386:S25:D4-COMPATIBILITY-RESET:OK\n");
     if (!failed) STD_PRINTF("M5:T386:S25:AT-REFRESH-CLOCK:OK\n");
     vm_session_destroy(session);
+    vm_model40_fixture_remove("t386-s25-even.bin", "t386-s25-odd.bin");
     return failed ? 1 : 0;
 }

@@ -31,8 +31,8 @@ C_VOID *test_console_input_malloc(STD_SIZE_T size)
 
 static C_INT run_case(C_INT fail_allocation)
 {
-    vm_product_console_context context;
-    vm_product_console_machine_provider provider = {0};
+    vm_product_console_context *context = STD_NULL;
+    vm_session_machine_provider provider = {0};
     STD_FILE *input = tmpfile();
     C_INT saved = -1;
     C_INT passed = 0;
@@ -44,14 +44,15 @@ static C_INT run_case(C_INT fail_allocation)
     clearerr(STD_STDIN);
     allocation_failure = fail_allocation;
     allocation_attempts = 0u;
-    vm_product_console_main(&context, &provider,
+    if (vm_product_console_context_create(&context) != TYPE_STATUS_OK) goto done;
+    vm_product_console_main(context, &provider,
         (core_product_session_manager *)(type_native_unsigned)1u, ".");
-    if (context.arguments != STD_NULL || allocation_attempts != 1u) goto done;
+    if (allocation_attempts != 1u) goto done;
     if (!fail_allocation) {
         clearerr(STD_STDIN);
-        vm_product_console_main(&context, &provider,
+        vm_product_console_main(context, &provider,
             (core_product_session_manager *)(type_native_unsigned)1u, ".");
-        if (context.arguments != STD_NULL || allocation_attempts != 2u) goto done;
+        if (allocation_attempts != 2u) goto done;
     }
     passed = 1;
 done:
@@ -61,6 +62,7 @@ done:
         TEST_CLOSE(saved);
     }
     clearerr(STD_STDIN);
+    vm_product_console_context_destroy(context);
     if (input != STD_NULL) STD_FCLOSE(input);
     return passed;
 }

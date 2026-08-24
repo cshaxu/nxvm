@@ -1,4 +1,4 @@
-#include "vm/profile/model40/model40.h"
+#include "vm/profile/model40/model40_private.h"
 
 #include "core/platform/file.h"
 

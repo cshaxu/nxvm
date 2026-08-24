@@ -16,17 +16,17 @@
 #include "vm/composition/session/model40_composition.h"
 #include "vm/machine/debug.h"
 #include "core/machine/fdc.h"
-#include "vm/machine/fdd.h"
+#include "vm/machine/fdd_private.h"
 #include "core/machine/hdc.h"
-#include "vm/machine/hdd.h"
+#include "vm/machine/hdd_private.h"
 #include "vm/platform/platform.h"
 #include "vm/platform/virtual_time.h"
 #include "vm/platform/vm_request_transport.h"
 #include "vm/profile/default_profile/firmware/bios.h"
 #include "vm/profile/default_profile/firmware/context.h"
-#include "vm/profile/default_profile/pc_at_profile.h"
+#include "vm/profile/default_profile/pc_at_profile_private.h"
 #include "vm/profile/device/floppy.h"
-#include "vm/profile/model40/model40.h"
+#include "vm/profile/model40/model40_private.h"
 
 typedef enum vm_session_boot_preference {
     VM_SESSION_BOOT_PREFERENCE_AUTO,
@@ -91,7 +91,4 @@ C_VOID vm_session_set_boot_hdd(vm_session *session, C_INT enabled);
 C_INT vm_session_remove_fdd(vm_session *session, const C_CHAR *path);
 C_VOID vm_session_consume_request(C_VOID *opaque,
     const vm_platform_request *request);
-type_status vm_session_create_model40_private(
-    const vm_profile_model40_external_rom *rom, vm_session **out_session);
-
 #endif

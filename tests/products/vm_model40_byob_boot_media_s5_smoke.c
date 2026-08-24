@@ -2,7 +2,7 @@
 
 #include "core/machine/media_interface.h"
 #include "vm/composition/session/media.h"
-#include "vm/composition/session/session.h"
+#include "vm/composition/session/session_private.h"
 
 #define MODEL40_FDD_BYTES (80u * 2u * 15u * 512u)
 

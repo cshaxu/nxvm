@@ -11,7 +11,7 @@
 #include "vm/composition/session/fault.h"
 #include "vm/composition/session/lifecycle.h"
 #include "vm/composition/session/session_interface.h"
-#include "vm/composition/session/session.h"
+#include "vm/composition/session/session_private.h"
 #include "vm/platform/win32/win32.h"
 #include "../support/core_machine_cpu_fixture.h"
 

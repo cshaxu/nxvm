@@ -10,7 +10,7 @@ string(FIND "${adapter_source}" "core_product_session_manager_apply_selected"
 string(FIND "${adapter_source}" "vm_session_machine_apply(context"
     adapter_apply_position)
 if(selected_operation_position EQUAL -1 OR adapter_apply_position EQUAL -1)
-    message(FATAL_ERROR "Selected-session operations are not converged in composition")
+    message(FATAL_ERROR "Selected-session operations are not converged in the product adapter")
 endif()
 
 foreach(obsolete_helper

@@ -73,7 +73,7 @@ endforeach()
 find_program(project_t317_git_executable git REQUIRED)
 execute_process(
     COMMAND "${project_t317_git_executable}" -C "${PROJECT_T317_TYPE_SOURCE_DIR}"
-        ls-files -- src tests cmake tools CMakeLists.txt
+        ls-files --cached --others --exclude-standard -- src tests cmake tools CMakeLists.txt
     RESULT_VARIABLE project_t317_git_result
     OUTPUT_VARIABLE project_t317_tracked_paths
     ERROR_VARIABLE project_t317_git_error)
@@ -108,6 +108,9 @@ endif()
 set(project_t317_checked_files 0)
 foreach(project_t317_file IN LISTS project_t317_code_files)
     set(project_t317_path "${PROJECT_T317_TYPE_SOURCE_DIR}/${project_t317_file}")
+    if(NOT EXISTS "${project_t317_path}")
+        continue()
+    endif()
     file(READ "${project_t317_path}" project_t317_content)
     if(project_t317_file STREQUAL "src/type.h")
         project_t317_type_facade_is_foundational("${project_t317_content}"

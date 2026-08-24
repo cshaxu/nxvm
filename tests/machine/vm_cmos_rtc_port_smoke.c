@@ -5,7 +5,7 @@
 #include "core/machine/machine.h"
 #include "vm/composition/session/lifecycle.h"
 #include "vm/composition/session/session_interface.h"
-#include "vm/composition/session/session.h"
+#include "vm/composition/session/session_private.h"
 #include "core/machine/rtc.h"
 
 static C_VOID cmos_write(t_port *port, type_unsigned_8 reg, type_unsigned_8 value)

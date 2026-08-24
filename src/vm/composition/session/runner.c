@@ -6,7 +6,7 @@
 #include "vm/composition/session/display.h"
 #include "vm/composition/session/fault.h"
 #include "vm/composition/session/lifecycle.h"
-#include "vm/composition/session/session.h"
+#include "vm/composition/session/session_private.h"
 #include "vm/composition/session/control.h"
 #include "vm/composition/session/runner.h"
 #include "vm/composition/session/virtual_time.h"

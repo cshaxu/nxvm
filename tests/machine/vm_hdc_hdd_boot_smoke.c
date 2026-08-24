@@ -5,7 +5,7 @@
 #include "core/machine/machine.h"
 #include "vm/composition/session/lifecycle.h"
 #include "vm/composition/session/session_interface.h"
-#include "vm/composition/session/session.h"
+#include "vm/composition/session/session_private.h"
 
 #define VM_HDC_HDD_BOOT_ADDRESS 0x00007c00u
 #define VM_HDC_HDD_BOOT_BYTES 512u

@@ -5,7 +5,7 @@
 #include "vm/composition/session/display.h"
 #include "vm/composition/session/lifecycle.h"
 #include "vm/composition/session/session_interface.h"
-#include "vm/composition/session/session.h"
+#include "vm/composition/session/session_private.h"
 
 static C_VOID vm_display_s5_port_write(vm_session *session, type_unsigned_16 port,
     type_unsigned_8 value)

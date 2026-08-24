@@ -4,7 +4,7 @@
 
 #include "type.h"
 
-#include "vm/composition/session/session.h"
+#include "vm/composition/session/session_private.h"
 
 #include "vm/composition/session/media.h"
 #include "vm/composition/session/machine_devices.h"

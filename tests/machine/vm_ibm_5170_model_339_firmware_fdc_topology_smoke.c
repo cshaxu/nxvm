@@ -2,7 +2,7 @@
 
 #include "core/machine/machine.h"
 #include "core/machine/port.h"
-#include "vm/composition/session/session.h"
+#include "vm/composition/session/session_private.h"
 #include "vm/composition/session/session_interface.h"
 #include "vm/profile/default_profile/pc_at_profile.h"
 

@@ -5,7 +5,7 @@
 
 #include "core/machine/firmware_interface.h"
 #include "core/machine/media_interface.h"
-#include "vm/profile/default_profile/pc_at_profile.h"
+#include "vm/profile/default_profile/pc_at_profile_private.h"
 
 typedef struct t_bios t_bios;
 

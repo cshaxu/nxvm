@@ -1,6 +1,6 @@
 #include "type.h"
 
-#include "vm/profile/default_profile/pc_at_profile.h"
+#include "vm/profile/default_profile/pc_at_profile_private.h"
 
 C_INT main(C_VOID)
 {

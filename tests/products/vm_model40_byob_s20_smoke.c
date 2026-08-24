@@ -1,7 +1,7 @@
 #include "type.h"
 
 #include "core/machine/machine_interface.h"
-#include "vm/composition/session/session.h"
+#include "vm/composition/session/session_private.h"
 #include "vm/composition/session/session_interface.h"
 
 static C_INT write_chip(const C_CHAR *path, type_unsigned_8 value)

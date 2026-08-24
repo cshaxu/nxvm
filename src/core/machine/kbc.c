@@ -2,6 +2,8 @@
 
 #include "type.h"
 
+#include "core/machine/machine_interface.h"
+
 #include "core/machine/cpu.h"
 #include "core/machine/memory.h"
 #include "core/machine/pic.h"
@@ -163,7 +165,7 @@ static C_VOID core_machine_kbc_set_defaults(t_kbc *controller)
     if (controller == STD_NULL) return;
     /* The selected 101-key AT keyboard emits Set 2; the 8042's command-byte
      * translation, when enabled by firmware, is the separate guest boundary. */
-    controller->data.scan_set = CORE_MACHINE_KBC_SCAN_SET_2;
+    controller->data.scan_set = CORE_MACHINE_KEYBOARD_SCAN_SET_2;
     controller->data.led_state = 0u;
     core_machine_kbc_set_typematic(controller, CORE_MACHINE_KBC_DEFAULT_TYPEMATIC);
     controller->data.typematic_active = TYPE_FALSE;
@@ -265,7 +267,7 @@ static type_status core_machine_kbc_publish_native_byte(t_kbc *controller,
     type_unsigned_8 native_byte)
 {
     if (controller == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
-    if (controller->data.scan_set == CORE_MACHINE_KBC_SCAN_SET_2 &&
+    if (controller->data.scan_set == CORE_MACHINE_KEYBOARD_SCAN_SET_2 &&
         (controller->data.command_byte & CORE_MACHINE_KBC_COMMAND_TRANSLATION) != 0u) {
         return core_machine_kbc_translate_set2_byte(controller, native_byte);
     }
@@ -644,8 +646,8 @@ static C_VOID core_machine_kbc_write_data(t_port *port, type_unsigned_16 port_id
                 controller->data.scan_set };
             core_machine_kbc_schedule_response(controller, response,
                 sizeof(response), CORE_MACHINE_KBC_OUTPUT_KEYBOARD);
-        } else if (value == CORE_MACHINE_KBC_SCAN_SET_1 ||
-            value == CORE_MACHINE_KBC_SCAN_SET_2) {
+        } else if (value == CORE_MACHINE_KEYBOARD_SCAN_SET_1 ||
+            value == CORE_MACHINE_KEYBOARD_SCAN_SET_2) {
             controller->data.scan_set = value;
             core_machine_kbc_schedule_response_byte(controller,
                 CORE_MACHINE_KBC_ACK, CORE_MACHINE_KBC_OUTPUT_KEYBOARD);
@@ -926,15 +928,15 @@ static type_status core_machine_kbc_admit_native_byte(t_kbc *controller,
     }
     /* Break-prefix state belongs to the native keyboard stream even while
      * firmware has disabled 8042 translation; typematic must still see it. */
-    if (controller->data.scan_set == CORE_MACHINE_KBC_SCAN_SET_2 &&
+    if (controller->data.scan_set == CORE_MACHINE_KEYBOARD_SCAN_SET_2 &&
         native_byte == 0xf0u) {
         controller->data.set2_typematic_break_pending = TYPE_TRUE;
     }
-    if (controller->data.scan_set == CORE_MACHINE_KBC_SCAN_SET_1 &&
+    if (controller->data.scan_set == CORE_MACHINE_KEYBOARD_SCAN_SET_1 &&
         (native_byte & 0x80u) != 0u &&
         (native_byte & 0x7fu) == controller->data.typematic_scan_code) {
         controller->data.typematic_active = TYPE_FALSE;
-    } else if (controller->data.scan_set == CORE_MACHINE_KBC_SCAN_SET_1 &&
+    } else if (controller->data.scan_set == CORE_MACHINE_KEYBOARD_SCAN_SET_1 &&
         controller->data.typematic_initial_ticks != 0u &&
         controller->data.typematic_repeat_ticks != 0u &&
         (native_byte & 0x80u) == 0u &&
@@ -944,7 +946,7 @@ static type_status core_machine_kbc_admit_native_byte(t_kbc *controller,
             controller->data.typematic_initial_ticks;
         controller->data.typematic_active = TYPE_TRUE;
     }
-    if (controller->data.scan_set == CORE_MACHINE_KBC_SCAN_SET_2) {
+    if (controller->data.scan_set == CORE_MACHINE_KEYBOARD_SCAN_SET_2) {
         set1 = core_machine_kbc_set2_to_set1(native_byte, &known);
         if (controller->data.set2_typematic_break_pending && known &&
             native_byte == controller->data.typematic_scan_code) {
@@ -960,7 +962,7 @@ static type_status core_machine_kbc_admit_native_byte(t_kbc *controller,
             controller->data.typematic_active = TYPE_TRUE;
         }
     }
-    if (controller->data.scan_set == CORE_MACHINE_KBC_SCAN_SET_2 &&
+    if (controller->data.scan_set == CORE_MACHINE_KEYBOARD_SCAN_SET_2 &&
         native_byte != 0xe0u && native_byte != 0xe1u && native_byte != 0xf0u) {
         controller->data.set2_typematic_break_pending = TYPE_FALSE;
     }

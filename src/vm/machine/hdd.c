@@ -6,7 +6,7 @@
 
 
 
-#include "vm/machine/hdd.h"
+#include "vm/machine/hdd_private.h"
 #include "vm/machine/media_save.h"
 
 #include "core/platform/file.h"
@@ -115,6 +115,18 @@ const core_machine_media_provider *vm_machine_hdd_media_provider(C_VOID)
 
 STD_SIZE_T vm_machine_hdd_image_size(const t_hdd *hdd) {
     return hdd == STD_NULL ? 0u : hdd->connect.virtual_byte_count;
+}
+
+STD_SIZE_T vm_machine_hdd_raw_byte_count(const t_hdd *hdd) {
+    return hdd == STD_NULL ? 0u : hdd->connect.raw_byte_count;
+}
+
+type_unsigned_32 vm_machine_hdd_cylinders(const t_hdd *hdd) {
+    return hdd == STD_NULL ? 0u : hdd->data.ncyl;
+}
+
+C_INT vm_machine_hdd_has_media(const t_hdd *hdd) {
+    return hdd != STD_NULL && hdd->connect.flagDiskExist;
 }
 
 static C_INT vm_machine_hdd_capacity_from_raw(STD_SIZE_T raw_byte_count,

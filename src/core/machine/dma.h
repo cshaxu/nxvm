@@ -191,14 +191,6 @@ extern "C"
     C_VOID core_machine_dma_finalize(t_latch *latch, t_dma *primary,
                                      t_dma *secondary);
 
-#define VDMA_POST "\
-; init vdma      \n\
-mov al, 00       \n\
-out 08, al ;     \n\
-out d0, al ;     \n\
-mov al, c0       \n\
-out d6, al ;     \n"
-
 #ifdef __cplusplus
 } /*_EOCD_*/
 #endif

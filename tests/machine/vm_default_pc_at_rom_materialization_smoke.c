@@ -3,7 +3,7 @@
 #include "core/machine/machine_interface.h"
 #include "vm/composition/session/lifecycle.h"
 #include "vm/composition/session/session_interface.h"
-#include "vm/composition/session/session.h"
+#include "vm/composition/session/session_private.h"
 #include "vm/profile/default_profile/firmware/bios.h"
 
 #define TEST_ROM_CODE_PHYSICAL 0x000fe010u

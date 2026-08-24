@@ -3,7 +3,7 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
 endif()
 
 set(public_header "${PROJECT_SOURCE_DIR}/src/vm/composition/session/session_interface.h")
-set(private_header "${PROJECT_SOURCE_DIR}/src/vm/composition/session/session.h")
+set(private_header "${PROJECT_SOURCE_DIR}/src/vm/composition/session/session_private.h")
 foreach(file IN ITEMS "${public_header}" "${private_header}")
     if(NOT EXISTS "${file}")
         message(FATAL_ERROR "M5 T234 S6 missing session layout boundary file: ${file}")
@@ -27,8 +27,9 @@ foreach(file IN LISTS source_files)
         continue()
     endif()
     file(READ "${file}" source)
-    if(source MATCHES "#include[ \t]+\"vm/composition/session/session.h\"" AND
-        NOT file MATCHES "/src/vm/composition/")
+    if(source MATCHES "#include[ \t]+\"vm/composition/session/session_private.h\"" AND
+        NOT file MATCHES "/src/vm/composition/" AND
+        NOT file STREQUAL "${PROJECT_SOURCE_DIR}/src/vm/composition/session/console_machine_adapter.c")
         message(FATAL_ERROR "M5 T234 S6 private session header escapes composition: ${file}")
     endif()
 endforeach()

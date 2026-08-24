@@ -14,23 +14,16 @@ extern "C"
 #include "vm/product/session_catalog.h"
 #include "core/product/session/session_interface.h"
 
-    typedef struct vm_product_console_context
-    {
-        STD_SIZE_T argument_count;
-        C_CHAR **arguments;
-        C_INT exit_requested;
-        C_CHAR command_buffer[0x100];
-        const vm_product_console_machine_provider *machine_provider;
-        core_product_session_manager *session_manager;
-        vm_product_session_catalog catalog;
-    } vm_product_console_context;
+    typedef struct vm_product_console_context vm_product_console_context;
 
-    C_VOID vm_product_console_context_initialize(
+    type_status vm_product_console_context_create(
+        vm_product_console_context **out_context);
+    C_VOID vm_product_console_context_destroy(
         vm_product_console_context *context);
 
     /* Entry point of product console */
     C_VOID vm_product_console_main(vm_product_console_context *context,
-                                   const vm_product_console_machine_provider *machine_provider,
+                                   const vm_session_machine_provider *machine_provider,
                                    core_product_session_manager *session_manager,
                                    const C_CHAR *profile_directory);
 

@@ -453,6 +453,11 @@ type_status core_machine_get_nmi_mask(const core_machine *machine,
 /* A serial byte received from the keyboard attached to this machine's 8042.
  * Product host adapters query the selected scan set before forming this
  * device-native stream. */
+typedef enum core_machine_keyboard_scan_set {
+    CORE_MACHINE_KEYBOARD_SCAN_SET_1 = 1u,
+    CORE_MACHINE_KEYBOARD_SCAN_SET_2 = 2u
+} core_machine_keyboard_scan_set;
+
 type_status core_machine_keyboard_get_native_scan_set(const core_machine *machine,
     type_unsigned_8 *out_scan_set);
 type_status core_machine_keyboard_receive_native_byte(core_machine *machine,

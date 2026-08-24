@@ -1,4 +1,4 @@
-#include "vm/profile/default_profile/pc_at_profile.h"
+#include "vm/profile/default_profile/pc_at_profile_private.h"
 
 static const vm_profile_default_pc_at_port_leaf default_pc_at_port_leaves[] = {
     { VM_PROFILE_DEFAULT_PC_AT_DEVICE_PIC, 0x0020u, TYPE_TRUE, TYPE_TRUE },

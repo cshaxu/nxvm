@@ -6,7 +6,7 @@
 #include "vm/composition/session/control.h"
 #include "vm/composition/session/lifecycle.h"
 #include "vm/composition/session/session_interface.h"
-#include "vm/composition/session/session.h"
+#include "vm/composition/session/session_private.h"
 #include "core/platform/presentation_mailbox_interface.h"
 
 #define VM_RUNNER_DISPLAY_CADENCE_TIMEOUT_MILLISECONDS 1000u

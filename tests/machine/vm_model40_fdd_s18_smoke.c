@@ -4,16 +4,14 @@
 #include "core/machine/media_interface.h"
 #include "vm/composition/session/lifecycle.h"
 #include "vm/composition/session/media.h"
-#include "vm/composition/session/session.h"
+#include "vm/composition/session/session_private.h"
+#include "../support/vm_model40_byob_fixture.h"
 
 #define MODEL40_FDD_BYTES (80u * 2u * 15u * 512u)
 
 C_INT main(C_VOID)
 {
-    static type_unsigned_8 even[VM_PROFILE_MODEL40_ROM_CHIP_BYTES];
-    static type_unsigned_8 odd[VM_PROFILE_MODEL40_ROM_CHIP_BYTES];
     static type_unsigned_8 image[MODEL40_FDD_BYTES];
-    const vm_profile_model40_external_rom rom = { even, odd, sizeof(even) };
     vm_session_config model339_config = {0};
     vm_session *model40 = STD_NULL;
     vm_session *default_session = STD_NULL;
@@ -22,7 +20,7 @@ C_INT main(C_VOID)
     core_machine_media_result result;
     C_INT failed = 0;
 
-    if (vm_session_create_model40_private(&rom, &model40) != TYPE_STATUS_OK ||
+    if (vm_model40_fixture_create("t386-s18-even.bin", "t386-s18-odd.bin", &model40) != TYPE_STATUS_OK ||
         model40 == STD_NULL || model40->floppy_kind != VM_PROFILE_FLOPPY_525_1200K ||
         model40->fdd.data.ncyl != 80u || model40->fdd.data.nhead != 2u ||
         model40->fdd.data.nsector != 15u || model40->fdd.data.nbyte != 512u ||
@@ -61,6 +59,7 @@ done:
     vm_session_destroy(model339);
     vm_session_destroy(default_session);
     vm_session_destroy(model40);
+    vm_model40_fixture_remove("t386-s18-even.bin", "t386-s18-odd.bin");
     if (failed) return 1;
     STD_PRINTF("M5:T386:S18:MODEL40-FDD-GEOMETRY:OK\n");
     STD_PRINTF("M5:T386:S18:MODEL40-FDD-MEDIA:OK\n");

@@ -10,7 +10,8 @@
 
 #include "core/product/session/session_interface.h"
 #include "vm/composition/session/provider.h"
-#include "vm/composition/session/session.h"
+#include "vm/composition/session/console_machine_adapter.h"
+#include "vm/composition/session/session_private.h"
 #include "vm/product/console.h"
 
 #if !defined(VM_PLATFORM_TEST_FAILURE_STAGE)
@@ -56,8 +57,8 @@ int main(void)
 {
     core_product_session_provider session_provider;
     core_product_session_manager *session_manager = STD_NULL;
-    vm_product_console_machine_provider machine_provider;
-    vm_product_console_context console_context;
+    vm_session_machine_provider machine_provider;
+    vm_product_console_context *console_context = STD_NULL;
     startup_failure_session_check session_check = {
         stage_uses_window(VM_PLATFORM_TEST_FAILURE_STAGE), 0
     };
@@ -84,8 +85,9 @@ int main(void)
     if (core_product_session_manager_create(&session_provider, &session_manager) !=
             TYPE_STATUS_OK || core_product_session_manager_apply_selected(
             session_manager, configure_session, &session_check) != TYPE_STATUS_OK) goto done;
-    vm_session_machine_provider_initialize(&machine_provider, session_manager);
-    vm_product_console_main(&console_context, &machine_provider, session_manager, ".");
+    vm_composition_console_machine_provider_initialize(&machine_provider, session_manager);
+    if (vm_product_console_context_create(&console_context) != TYPE_STATUS_OK) goto done;
+    vm_product_console_main(console_context, &machine_provider, session_manager, ".");
     fflush(STD_STDOUT);
     if (TEST_CONSOLE_DUP2(saved_stdout, TEST_CONSOLE_FILENO(STD_STDOUT)) < 0) goto done;
     TEST_CONSOLE_CLOSE(saved_stdout);
@@ -109,6 +111,7 @@ done:
         TEST_CONSOLE_CLOSE(saved_stdout);
     }
     if (session_manager != STD_NULL) core_product_session_manager_destroy(session_manager);
+    vm_product_console_context_destroy(console_context);
     if (input != STD_NULL) STD_FCLOSE(input);
     if (output != STD_NULL) STD_FCLOSE(output);
     if (!passed) return 1;

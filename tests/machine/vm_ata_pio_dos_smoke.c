@@ -5,7 +5,7 @@
 #include "core/machine/machine_interface.h"
 #include "core/machine/hdc.h"
 #include "vm/composition/session/session_interface.h"
-#include "vm/composition/session/session.h"
+#include "vm/composition/session/session_private.h"
 
 #define VM_ATA253_BOOT_BUDGET 800000u
 #define VM_ATA253_RUN_BUDGET 400000u

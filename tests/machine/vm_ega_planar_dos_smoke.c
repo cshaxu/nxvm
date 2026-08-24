@@ -4,7 +4,7 @@
 
 #include "core/machine/machine_interface.h"
 #include "vm/composition/session/session_interface.h"
-#include "vm/composition/session/session.h"
+#include "vm/composition/session/session_private.h"
 
 #define VM_EGA_DOS_BOOT_BUDGET 800000u
 #define VM_EGA_DOS_RUN_BUDGET 400000u

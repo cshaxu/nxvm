@@ -1,8 +1,8 @@
 #include "type.h"
 
 #include "core/machine/media_interface.h"
-#include "vm/machine/fdd.h"
-#include "vm/machine/hdd.h"
+#include "vm/machine/fdd_private.h"
+#include "vm/machine/hdd_private.h"
 #include "vm/machine/media_save.h"
 
 static type_unsigned_8 vm_media_provider_fdd_image[80u * 2u * 18u * 512u];

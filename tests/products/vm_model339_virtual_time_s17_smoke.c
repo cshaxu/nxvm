@@ -1,7 +1,7 @@
 #include "type.h"
 
 #include "core/platform/sleep.h"
-#include "vm/composition/session/session.h"
+#include "vm/composition/session/session_private.h"
 
 C_INT main(C_VOID)
 {

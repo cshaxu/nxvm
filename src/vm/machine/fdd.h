@@ -10,39 +10,13 @@ extern "C" {
 #include "type.h"
 #include "core/machine/media_interface.h"
 
-typedef struct t_latch t_latch;
+typedef struct t_fdd t_fdd;
 
 #define VM_MACHINE_DEVICE_FDD "Floppy Disk Drive"
-
-typedef struct {
-    type_unsigned_16 cyl;     /* vfdc.C; cylinder id */
-    type_unsigned_16 head;    /* vfdc.H; head id */
-    type_unsigned_16 sector;  /* vfdc.R; sector id */
-    type_unsigned_8  gpl;     /* vfdc.GPL; gap length of sector */
-    type_unsigned_16 ncyl;    /* configured number of cylinders */
-    type_unsigned_16 nhead;   /* configured number of heads */
-    type_unsigned_16 nsector; /* configured sectors per track */
-    type_unsigned_16 nbyte;   /* configured bytes per sector */
-} t_fdd_data;
-
-typedef struct {
-    type_bool flagReadOnly;  /* write protect status */
-    type_bool flagDiskExist; /* flag of floppy disk existance */
-
-    type_virtual_address pImgBase;   /* pointer to disk in ram */
-    type_virtual_address pAddressMarks; /* one Deleted-Data flag per logical sector */
-    type_unsigned_32 media_generation; /* advances on every insert/remove/create */
-} t_fdd_connect;
-
-typedef struct {
-    core_machine_media_geometry geometry;
-    t_fdd_data data;
-    t_fdd_connect connect;
-} t_fdd;
-
 #define VFDD_BYTE_PER_MB ((1 << 10) * 1000)
 
 STD_SIZE_T vm_machine_fdd_image_size(const t_fdd *fdd);
+C_INT vm_machine_fdd_has_media(const t_fdd *fdd);
 C_INT vm_machine_fdd_chs_valid(const t_fdd *fdd, type_unsigned_16 cylinder,
     type_unsigned_16 head, type_unsigned_16 sector, type_unsigned_16 bytes);
 C_INT vm_machine_fdd_read_byte(const t_fdd *fdd, type_unsigned_16 cylinder,
@@ -64,12 +38,11 @@ C_INT vm_machine_fdd_replace_bytes(t_fdd *fdd, const C_VOID *bytes,
     STD_SIZE_T byte_count);
 C_INT vm_machine_fdd_insert_for(t_fdd *fdd, const C_CHAR *file_name);
 C_INT vm_machine_fdd_remove_for(t_fdd *fdd, const C_CHAR *file_name);
-
 C_VOID vm_machine_fdd_print(const t_fdd *fdd);
 const core_machine_media_provider *vm_machine_fdd_media_provider(C_VOID);
 
 #ifdef __cplusplus
-}/*_EOCD_*/
+}
 #endif
 
 #endif

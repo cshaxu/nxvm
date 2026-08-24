@@ -9,7 +9,7 @@
 | Objective | Normalize VM session, media, profile, product, and composition contracts so mutable state and selection data have one owner and consumers receive only bounded operations or copied observations. |
 | Non-goals | No typedef rename or compatibility alias, generic profile framework, VM-to-Core runtime-state exposure, test-only production seam, product behavior change, media-format change, or new Model-40 construction route. |
 | Reference Baseline | Accepted S6 P1 `e342a516`; Td S125--S130 ledger rows assigned to S7; T447 proposal S7; retained S6 evidence. |
-| Candidate Proposal | [M5 Architecture-Boundary Debt Closure](../proposals/m5-architecture-boundary-debt-closure.md), S6. |
+| Candidate Proposal | [M5 Architecture-Boundary Debt Closure](../proposals/m5-architecture-boundary-debt-closure.md), S7. |
 | Files And ABI Surface | VM session/media/profile/product/composition public contracts and private implementations; Model-40 creation/materialization; console/catalog and keyboard seams; relevant tests/build exceptions; T447 evidence/history/status and current artifact. |
 | Applicable Rules | Execution P/closure and code-size requirements; architecture one-owner and dependency direction; coding minimal durable capabilities with no aliases, wrappers, or generic machinery; documentation topology. No exception. |
 | Verification | Inventory every named layout and caller; prove one Model-40 route, copied selection/observation boundaries, no reverse composition-to-product dependency, and no cross-owner mutable state access; run focused lifecycle/profile/product tests, narrow static guards, T345, current artifact/smokes, specialized gates, and documentation governance. |

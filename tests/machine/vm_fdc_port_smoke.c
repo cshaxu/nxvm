@@ -5,7 +5,7 @@
 #include "core/machine/machine.h"
 #include "vm/composition/session/lifecycle.h"
 #include "vm/composition/session/session_interface.h"
-#include "vm/composition/session/session.h"
+#include "vm/composition/session/session_private.h"
 #include "core/machine/fdc.h"
 #include "vm/machine/fdd.h"
 

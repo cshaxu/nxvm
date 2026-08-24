@@ -4,7 +4,7 @@
 
 #include "core/machine/machine_interface.h"
 #include "vm/composition/session/session_interface.h"
-#include "vm/composition/session/session.h"
+#include "vm/composition/session/session_private.h"
 
 #define T285_MODE10_IMAGE_BYTES (1440u * 1024u)
 #define T285_MODE10_BOOT_BUDGET 2000u

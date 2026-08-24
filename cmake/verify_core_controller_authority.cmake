@@ -4,8 +4,9 @@ endif()
 
 set(machine_source "${PROJECT_SOURCE_DIR}/src/core/machine/machine.c")
 set(session_source "${PROJECT_SOURCE_DIR}/src/vm/composition/session/machine_devices.c")
+set(composition_source "${PROJECT_SOURCE_DIR}/src/vm/composition/session/session.c")
 set(fixture "${PROJECT_SOURCE_DIR}/tests/machine/core_machine_controller_authority_smoke.c")
-foreach(source IN ITEMS "${machine_source}" "${session_source}" "${fixture}")
+foreach(source IN ITEMS "${machine_source}" "${session_source}" "${composition_source}" "${fixture}")
     if(NOT EXISTS "${source}")
         message(FATAL_ERROR "T296 S4 authority source missing: ${source}")
     endif()
@@ -51,12 +52,19 @@ foreach(source IN LISTS vm_composition_sources)
 endforeach()
 
 file(READ "${session_source}" session_text)
-foreach(required IN ITEMS "core_machine_fdc_topology" "core_machine_hdc_topology"
-    "topology.fdc_present" "topology.hdc_present"
-    "media_registry" "dma_channel")
+foreach(required IN ITEMS "core_machine_plan_configure_fdc"
+    "core_machine_plan_configure_hdc" "config.dma_channel")
     string(FIND "${session_text}" "${required}" position)
     if(position EQUAL -1)
         message(FATAL_ERROR "T296 S4 typed controller submission is incomplete: ${required}")
+    endif()
+endforeach()
+file(READ "${composition_source}" composition_text)
+foreach(required IN ITEMS "core_machine_media_registry_create"
+    "core_machine_plan_bind_media_registry")
+    string(FIND "${composition_text}" "${required}" position)
+    if(position EQUAL -1)
+        message(FATAL_ERROR "T296 S4 composition plan submission is incomplete: ${required}")
     endif()
 endforeach()
 

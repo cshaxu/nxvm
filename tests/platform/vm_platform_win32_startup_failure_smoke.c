@@ -2,7 +2,7 @@
 
 #include "vm/composition/session/lifecycle.h"
 #include "vm/composition/session/session_interface.h"
-#include "vm/composition/session/session.h"
+#include "vm/composition/session/session_private.h"
 #include "vm/platform/platform.h"
 
 #if !defined(VM_PLATFORM_TEST_FAILURE_STAGE)

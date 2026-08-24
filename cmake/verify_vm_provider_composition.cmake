@@ -8,10 +8,9 @@ set(devices "${session_dir}/machine_devices.c")
 set(firmware "${session_dir}/profile_firmware.c")
 set(info "${session_dir}/machine_info.c")
 set(factory "${session_dir}/session_factory.c")
-set(console_adapter "${session_dir}/console_machine_adapter.c")
 
 foreach(file IN ITEMS "${coordinator}" "${devices}" "${firmware}" "${info}"
-    "${factory}" "${console_adapter}")
+    "${factory}")
     if(NOT EXISTS "${file}")
         message(FATAL_ERROR "M5 T161 missing provider composition source: ${file}")
     endif()

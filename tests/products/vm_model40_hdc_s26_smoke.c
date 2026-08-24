@@ -4,7 +4,7 @@
 #include "core/machine/machine.h"
 #include "core/machine/port.h"
 #include "vm/composition/session/media.h"
-#include "vm/composition/session/session.h"
+#include "vm/composition/session/session_private.h"
 
 #define MODEL40_HDC_BYTES (925u * 5u * 17u * 512u)
 

@@ -23,14 +23,15 @@
 
 
 #include "vm/composition/session/provider.h"
+#include "vm/composition/session/console_machine_adapter.h"
 #include "vm/product/console.h"
 
 C_INT main(C_VOID)
 {
     core_product_session_provider session_provider;
     core_product_session_manager *session_manager = STD_NULL;
-    vm_product_console_machine_provider machine_provider;
-    vm_product_console_context console_context;
+    vm_session_machine_provider machine_provider;
+    vm_product_console_context *console_context = STD_NULL;
     core_product_session_snapshot snapshots[2];
     const C_CHAR *configuration = "nxvm_console_lifecycle.yaml";
     STD_FILE *input;
@@ -67,8 +68,15 @@ C_INT main(C_VOID)
         STD_FCLOSE(input);
         return 1;
     }
-    vm_session_machine_provider_initialize(&machine_provider, session_manager);
-    vm_product_console_main(&console_context, &machine_provider, session_manager, ".");
+    vm_composition_console_machine_provider_initialize(&machine_provider, session_manager);
+    if (vm_product_console_context_create(&console_context) != TYPE_STATUS_OK) {
+        TEST_CONSOLE_DUP2(saved_stdin, TEST_CONSOLE_FILENO(STD_STDIN));
+        TEST_CONSOLE_CLOSE(saved_stdin);
+        STD_FCLOSE(input);
+        core_product_session_manager_destroy(session_manager);
+        return 1;
+    }
+    vm_product_console_main(console_context, &machine_provider, session_manager, ".");
 
     TEST_CONSOLE_DUP2(saved_stdin, TEST_CONSOLE_FILENO(STD_STDIN));
     TEST_CONSOLE_CLOSE(saved_stdin);
@@ -79,11 +87,13 @@ C_INT main(C_VOID)
             "profile=ibm-5170-model-339 cpu=80286 fpu=none")) {
         STD_FCLOSE(input);
         (C_VOID)STD_REMOVE(configuration);
+        vm_product_console_context_destroy(console_context);
         core_product_session_manager_destroy(session_manager);
         return 1;
     }
     STD_FCLOSE(input);
     (C_VOID)STD_REMOVE(configuration);
+    vm_product_console_context_destroy(console_context);
     core_product_session_manager_destroy(session_manager);
     puts("M5:T96:S1:CONSOLE-LIFECYCLE:OK");
     return 0;

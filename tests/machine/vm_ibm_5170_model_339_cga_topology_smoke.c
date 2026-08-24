@@ -4,7 +4,7 @@
 #include "core/machine/port.h"
 #include "core/machine/vadp.h"
 #include "vm/composition/session/lifecycle.h"
-#include "vm/composition/session/session.h"
+#include "vm/composition/session/session_private.h"
 #include "vm/composition/session/session_interface.h"
 
 static C_INT vm_model_339_cga_topology(C_VOID)

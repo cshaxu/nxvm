@@ -125,27 +125,6 @@ type_bool core_machine_pic_scan_interrupt(t_pic *master, t_pic *slave);
 type_unsigned_8 core_machine_pic_peek_interrupt(t_pic *master, t_pic *slave);
 type_unsigned_8 core_machine_pic_get_interrupt(t_pic *master, t_pic *slave);
 
-#define VPIC_POST "           \
-; init pic master           \n\
-mov al, 11 ; icw1 0001 0001 \n\
-out 20, al                  \n\
-mov al, 08 ; icw2 0000 1000 \n\
-out 21, al                  \n\
-mov al, 04 ; icw3 0000 0100 \n\
-out 21, al                  \n\
-mov al, 11 ; icw4 0001 0001 \n\
-out 21, al                  \n\
-\
-; init pic slave            \n\
-mov al, 11 ; icw1 0001 0001 \n\
-out a0, al                  \n\
-mov al, 70 ; icw2 0111 0000 \n\
-out a1, al                  \n\
-mov al, 02 ; icw3 0000 0010 \n\
-out a1, al                  \n\
-mov al, 01 ; icw4 0000 0001 \n\
-out a1, al                  \n"
-
 #ifdef __cplusplus
 }/*_EOCD_*/
 #endif

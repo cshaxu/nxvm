@@ -23,15 +23,14 @@ typedef struct vm_product_session_catalog_entry {
     STD_SIZE_T memory_bytes;
 } vm_product_session_catalog_entry;
 
-typedef struct vm_product_session_catalog {
-    vm_product_session_catalog_entry entries[VM_PRODUCT_SESSION_CATALOG_MAX];
-    STD_SIZE_T count;
-    STD_SIZE_T rejected;
-} vm_product_session_catalog;
+typedef struct vm_product_session_catalog vm_product_session_catalog;
 
-C_VOID vm_product_session_catalog_initialize(vm_product_session_catalog *catalog,
-    const C_CHAR *directory);
-const vm_product_session_catalog_entry *vm_product_session_catalog_get(
-    const vm_product_session_catalog *catalog, STD_SIZE_T index);
+type_status vm_product_session_catalog_create(const C_CHAR *directory,
+    vm_product_session_catalog **out_catalog);
+C_VOID vm_product_session_catalog_destroy(vm_product_session_catalog *catalog);
+STD_SIZE_T vm_product_session_catalog_count(const vm_product_session_catalog *catalog);
+STD_SIZE_T vm_product_session_catalog_rejected(const vm_product_session_catalog *catalog);
+type_status vm_product_session_catalog_get(const vm_product_session_catalog *catalog,
+    STD_SIZE_T index, vm_product_session_catalog_entry *out_entry);
 
 #endif

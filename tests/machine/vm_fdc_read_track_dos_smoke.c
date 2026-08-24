@@ -5,7 +5,7 @@
 #include "core/machine/machine_interface.h"
 #include "core/machine/memory_interface.h"
 #include "vm/composition/session/session_interface.h"
-#include "vm/composition/session/session.h"
+#include "vm/composition/session/session_private.h"
 
 #define VM_FDC242_BOOT_BUDGET 800000u
 #define VM_FDC242_RUN_BUDGET 400000u

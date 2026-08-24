@@ -4,6 +4,12 @@
 
 #include "vm/product/session_catalog.h"
 
+struct vm_product_session_catalog {
+    vm_product_session_catalog_entry entries[VM_PRODUCT_SESSION_CATALOG_MAX];
+    STD_SIZE_T count;
+    STD_SIZE_T rejected;
+};
+
 #include "core/platform/file.h"
 #include "core/product/utils.h"
 
@@ -234,15 +240,21 @@ static C_INT vm_product_session_catalog_compare(const C_VOID *left, const C_VOID
     return STD_STRCMP(a->file_name, b->file_name);
 }
 
-C_VOID vm_product_session_catalog_initialize(vm_product_session_catalog *catalog,
-    const C_CHAR *directory)
+type_status vm_product_session_catalog_create(const C_CHAR *directory,
+    vm_product_session_catalog **out_catalog)
 {
+    vm_product_session_catalog *catalog;
     DIR *dir;
     struct dirent *item;
 
-    if (catalog == STD_NULL) return;
-    STD_MEMSET(catalog, 0, sizeof(*catalog));
-    if (directory == STD_NULL || (dir = opendir(directory)) == STD_NULL) return;
+    if (out_catalog == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    *out_catalog = STD_NULL;
+    catalog = (vm_product_session_catalog *)STD_CALLOC(1u, sizeof(*catalog));
+    if (catalog == STD_NULL) return TYPE_STATUS_NO_MEMORY;
+    if (directory == STD_NULL || (dir = opendir(directory)) == STD_NULL) {
+        *out_catalog = catalog;
+        return TYPE_STATUS_OK;
+    }
     while ((item = readdir(dir)) != STD_NULL) {
         STD_SIZE_T length = STD_STRLEN(item->d_name);
         const C_CHAR *extension;
@@ -261,10 +273,31 @@ C_VOID vm_product_session_catalog_initialize(vm_product_session_catalog *catalog
     closedir(dir);
     qsort(catalog->entries, catalog->count, sizeof(catalog->entries[0]),
         vm_product_session_catalog_compare);
+    *out_catalog = catalog;
+    return TYPE_STATUS_OK;
 }
 
-const vm_product_session_catalog_entry *vm_product_session_catalog_get(
-    const vm_product_session_catalog *catalog, STD_SIZE_T index)
+C_VOID vm_product_session_catalog_destroy(vm_product_session_catalog *catalog)
 {
-    return catalog != STD_NULL && index < catalog->count ? &catalog->entries[index] : STD_NULL;
+    STD_FREE(catalog);
+}
+
+STD_SIZE_T vm_product_session_catalog_count(const vm_product_session_catalog *catalog)
+{
+    return catalog == STD_NULL ? 0u : catalog->count;
+}
+
+STD_SIZE_T vm_product_session_catalog_rejected(const vm_product_session_catalog *catalog)
+{
+    return catalog == STD_NULL ? 0u : catalog->rejected;
+}
+
+type_status vm_product_session_catalog_get(const vm_product_session_catalog *catalog,
+    STD_SIZE_T index, vm_product_session_catalog_entry *out_entry)
+{
+    if (catalog == STD_NULL || out_entry == STD_NULL || index >= catalog->count) {
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
+    *out_entry = catalog->entries[index];
+    return TYPE_STATUS_OK;
 }

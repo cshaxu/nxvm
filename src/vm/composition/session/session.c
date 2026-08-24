@@ -1,6 +1,6 @@
 #include "type.h"
 
-#include "vm/composition/session/session.h"
+#include "vm/composition/session/session_private.h"
 
 #include "core/machine/machine_interface.h"
 #include "vm/composition/session/control.h"
@@ -232,7 +232,8 @@ C_VOID vm_session_apply_boot_preference(vm_session *session)
     }
     boot_hdd = session->boot_preference == VM_SESSION_BOOT_PREFERENCE_HDD ||
         (session->boot_preference == VM_SESSION_BOOT_PREFERENCE_AUTO &&
-            !session->fdd.connect.flagDiskExist && session->hdd.connect.flagDiskExist);
+            !vm_machine_fdd_has_media(&session->fdd) &&
+            vm_machine_hdd_has_media(&session->hdd));
     vm_profile_default_bios_set_boot_hdd(&session->default_bios, boot_hdd);
 }
 
@@ -526,31 +527,6 @@ static type_status vm_session_create_model40_byob(const vm_session_config *confi
     *out_session = session;
     return TYPE_STATUS_OK;
 }
-type_status vm_session_create_model40_private(
-    const vm_profile_model40_external_rom *rom, vm_session **out_session)
-{
-    vm_session *session;
-    type_status status;
-
-    if (out_session == STD_NULL || !vm_profile_model40_external_rom_is_valid(rom)) {
-        return TYPE_STATUS_INVALID_ARGUMENT;
-    }
-    *out_session = STD_NULL;
-    session = (vm_session *)STD_CALLOC(1u, sizeof(*session));
-    if (session == STD_NULL) return TYPE_STATUS_NO_MEMORY;
-    vm_session_initialize_model40_configuration(session);
-    session->model40_rom = *rom;
-    status = vm_session_initialize(session);
-    if (status != TYPE_STATUS_OK) { STD_FREE(session); return status; }
-    status = vm_session_reset(session);
-    if (status != TYPE_STATUS_OK) {
-        vm_session_destroy(session);
-        return status;
-    }
-    *out_session = session;
-    return TYPE_STATUS_OK;
-}
-
 C_INT vm_session_create(const vm_session_config *config, vm_session **out_session)
 {
     vm_session *session;

@@ -1,7 +1,7 @@
 #include "type.h"
 
 #include "vm/composition/session/control.h"
-#include "vm/composition/session/session.h"
+#include "vm/composition/session/session_private.h"
 #include "vm/composition/session/virtual_time.h"
 
 type_status vm_session_virtual_time_on_waiting(vm_session *session,

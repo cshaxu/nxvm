@@ -5,10 +5,8 @@
 #include "core/machine/machine_interface.h"
 #include "core/product/utils.h"
 #include "vm/composition/session/profile_firmware.h"
-#include "vm/composition/session/session.h"
-#include "core/machine/dma.h"
-#include "core/machine/pic.h"
-#include "core/machine/pit.h"
+#include "vm/composition/session/session_private.h"
+#include "vm/profile/default_profile/firmware/post_firmware.h"
 #include "vm/profile/default_profile/firmware/rtc_firmware.h"
 #include "vm/profile/default_profile/firmware/fdc_firmware.h"
 #include "vm/profile/default_profile/firmware/bios.h"
@@ -165,7 +163,7 @@ static C_VOID vm_session_profile_firmware_apply(
             VBIOS_INT_SOFT_KEYBOARD_16, vector);
         break;
     case VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_DMA_POST:
-        vm_session_profile_firmware_add_post(session, VDMA_POST);
+        vm_session_profile_firmware_add_post(session, VM_PROFILE_DEFAULT_DMA_POST);
         break;
     case VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_FDC_POST:
         vm_session_profile_firmware_add_post(session, VFDC_POST);
@@ -184,10 +182,10 @@ static C_VOID vm_session_profile_firmware_apply(
             VHDC_INT_SOFT_HDD_13, vector);
         break;
     case VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_PIT_POST:
-        vm_session_profile_firmware_add_post(session, VPIT_POST);
+        vm_session_profile_firmware_add_post(session, VM_PROFILE_DEFAULT_PIT_POST);
         break;
     case VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_PIC_POST:
-        vm_session_profile_firmware_add_post(session, VPIC_POST);
+        vm_session_profile_firmware_add_post(session, VM_PROFILE_DEFAULT_PIC_POST);
         break;
     }
 }

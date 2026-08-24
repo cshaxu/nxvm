@@ -6,11 +6,10 @@
 
 
 
-#include "core/machine/dma.h"
 #include "core/platform/file.h"
 
 
-#include "vm/machine/fdd.h"
+#include "vm/machine/fdd_private.h"
 #include "vm/machine/media_save.h"
 
 static C_CHAR *vm_machine_fdd_sidecar_name(const C_CHAR *image_name)
@@ -366,6 +365,11 @@ STD_SIZE_T vm_machine_fdd_image_size(const t_fdd *fdd)
 {
     return (STD_SIZE_T)fdd->data.nbyte * fdd->data.nsector * fdd->data.nhead *
         fdd->data.ncyl;
+}
+
+C_INT vm_machine_fdd_has_media(const t_fdd *fdd)
+{
+    return fdd != STD_NULL && fdd->connect.flagDiskExist;
 }
 
 static C_VOID vm_machine_fdd_commit_candidate(t_fdd *fdd,

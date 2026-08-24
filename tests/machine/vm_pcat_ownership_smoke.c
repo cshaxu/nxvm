@@ -4,7 +4,7 @@
 #include "core/machine/machine.h"
 #include "core/machine/port.h"
 #include "vm/composition/session/lifecycle.h"
-#include "vm/composition/session/session.h"
+#include "vm/composition/session/session_private.h"
 
 C_INT main(C_VOID)
 {

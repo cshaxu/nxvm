@@ -64,7 +64,7 @@ static type_status console_memory_close(C_VOID *context, C_VOID *session)
 }
 
 static C_VOID console_memory_set_display(C_VOID *context,
-    vm_product_console_display_mode mode)
+    vm_session_display_mode mode)
 {
     (C_VOID)context;
     (C_VOID)mode;
@@ -78,8 +78,8 @@ C_INT main(C_VOID)
     };
     core_product_session_provider configured_provider = provider;
     console_memory_probe probe = {0};
-    vm_product_console_machine_provider machine_provider = {0};
-    vm_product_console_context console_context;
+    vm_session_machine_provider machine_provider = {0};
+    vm_product_console_context *console_context = STD_NULL;
     core_product_session_manager *manager = STD_NULL;
     STD_FILE *profile = STD_FOPEN(configuration, "wb");
     STD_FILE *input = tmpfile();
@@ -98,7 +98,8 @@ C_INT main(C_VOID)
     saved_stdin = TEST_DUP(TEST_FILENO(STD_STDIN));
     if (saved_stdin < 0 || TEST_DUP2(TEST_FILENO(input),
             TEST_FILENO(STD_STDIN)) < 0) goto done;
-    vm_product_console_main(&console_context, &machine_provider, manager, ".");
+    if (vm_product_console_context_create(&console_context) != TYPE_STATUS_OK) goto done;
+    vm_product_console_main(console_context, &machine_provider, manager, ".");
     if (probe.exact_memory_seen) result = 0;
 done:
     if (saved_stdin >= 0) {
@@ -108,6 +109,7 @@ done:
     if (profile != STD_NULL) STD_FCLOSE(profile);
     if (input != STD_NULL) STD_FCLOSE(input);
     (C_VOID)STD_REMOVE(configuration);
+    vm_product_console_context_destroy(console_context);
     core_product_session_manager_destroy(manager);
     if (result == 0) STD_PRINTF("M5:T382:S8:CONSOLE-MEMORY:OK\n");
     return result;

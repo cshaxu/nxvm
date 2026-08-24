@@ -1,6 +1,6 @@
 #include "type.h"
 
-#include "core/machine/kbc.h"
+#include "core/machine/machine_interface.h"
 #include "vm/profile/default_profile/keyboard_mapper.h"
 
 static type_unsigned_8 vm_profile_default_keyboard_map_ascii(type_unsigned_16 value)
@@ -74,7 +74,7 @@ type_status vm_profile_default_keyboard_map_host_key_for_scan_set(
     /* Win32 identifies Pause by virtual key. */
     if (host_virtual_key == 0x13u) {
         if (!pressed) return TYPE_STATUS_OK;
-        if (native_scan_set == CORE_MACHINE_KBC_SCAN_SET_1) {
+        if (native_scan_set == CORE_MACHINE_KEYBOARD_SCAN_SET_1) {
             static const type_unsigned_8 pause_set1[] = {
                 0xe1u, 0x1du, 0x45u, 0xe1u, 0x9du, 0xc5u
             };
@@ -100,7 +100,7 @@ type_status vm_profile_default_keyboard_map_host_key_for_scan_set(
         scan_code = vm_profile_default_keyboard_map_ascii(host_virtual_key);
         if (scan_code == 0u) return TYPE_STATUS_UNSUPPORTED;
     }
-    if (native_scan_set == CORE_MACHINE_KBC_SCAN_SET_1) {
+    if (native_scan_set == CORE_MACHINE_KEYBOARD_SCAN_SET_1) {
         if (!pressed) scan_code |= 0x80u;
         if ((host_scan_code & 0x0100u) != 0u) {
             out_sequence->bytes[out_sequence->count++] = 0xe0u;
@@ -124,5 +124,5 @@ type_status vm_profile_default_keyboard_map_host_key(type_unsigned_16 host_scan_
     vm_profile_default_keyboard_sequence *out_sequence)
 {
     return vm_profile_default_keyboard_map_host_key_for_scan_set(host_scan_code,
-        host_virtual_key, pressed, CORE_MACHINE_KBC_SCAN_SET_2, out_sequence);
+        host_virtual_key, pressed, CORE_MACHINE_KEYBOARD_SCAN_SET_2, out_sequence);
 }

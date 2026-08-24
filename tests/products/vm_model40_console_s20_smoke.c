@@ -19,6 +19,7 @@
 #endif
 
 #include "vm/composition/session/provider.h"
+#include "vm/composition/session/console_machine_adapter.h"
 #include "vm/product/console.h"
 
 static C_INT write_chip(const C_CHAR *path, type_unsigned_8 value)
@@ -36,8 +37,8 @@ C_INT main(C_VOID)
     static const C_CHAR yaml[] = "schema: nxvm-session/v1\nmachine:\n  profile: compaq-deskpro-386-model-40\n  display: console\n  boot: rom\nmedia:\n  floppy: null\n  hard_disk: null\nfirmware:\n  provenance: project-owned synthetic test input\n  rom_even:\n    slot: system-rom-even\n    path: t386-s20-console-even.bin\n    bytes: 16384\n    sha256: 4fe7b59af6de3b665b67788cc2f99892ab827efae3a467342b3bb4e3bc8e5bfe\n    map: read-only\n  rom_odd:\n    slot: system-rom-odd\n    path: t386-s20-console-odd.bin\n    bytes: 16384\n    sha256: 111ce3c2a38d83a2e4706bde4abddd509d7f8248116c6832b06745bdc349e09f\n    map: read-only\n";
     core_product_session_provider provider;
     core_product_session_manager *manager = STD_NULL;
-    vm_product_console_machine_provider machine_provider;
-    vm_product_console_context console;
+    vm_session_machine_provider machine_provider;
+    vm_product_console_context *console = STD_NULL;
     core_product_session_snapshot snapshot;
     STD_FILE *profile = STD_NULL;
     STD_FILE *input = STD_NULL;
@@ -59,8 +60,11 @@ C_INT main(C_VOID)
         failed = core_product_session_manager_create(&provider, &manager) != TYPE_STATUS_OK;
     }
     if (!failed) {
-        vm_session_machine_provider_initialize(&machine_provider, manager);
-        vm_product_console_main(&console, &machine_provider, manager, ".");
+        vm_composition_console_machine_provider_initialize(&machine_provider, manager);
+        failed = vm_product_console_context_create(&console) != TYPE_STATUS_OK;
+    }
+    if (!failed) {
+        vm_product_console_main(console, &machine_provider, manager, ".");
         failed = core_product_session_manager_list(manager, &snapshot, 1u, &(STD_SIZE_T){0u}) != TYPE_STATUS_OK ||
             !snapshot.selected || STD_STRCMP(snapshot.details,
                 "profile=compaq-deskpro-386-model-40 cpu=80386 fpu=none");
@@ -68,6 +72,7 @@ C_INT main(C_VOID)
     if (stdin_copy >= 0) { TEST_DUP2(stdin_copy, TEST_FILENO(STD_STDIN)); TEST_CLOSE(stdin_copy); }
     if (input != STD_NULL) STD_FCLOSE(input);
     if (profile != STD_NULL) STD_FCLOSE(profile);
+    vm_product_console_context_destroy(console);
     if (manager != STD_NULL) core_product_session_manager_destroy(manager);
     (C_VOID)STD_REMOVE("t386-s20-console.yaml");
     (C_VOID)STD_REMOVE("t386-s20-console-even.bin");

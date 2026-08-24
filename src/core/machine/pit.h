@@ -101,18 +101,6 @@ C_VOID core_machine_pit_set_gate(t_pit *pit, type_unsigned_8 id,
     type_bool asserted);
 type_bool core_machine_pit_get_output(const t_pit *pit, type_unsigned_8 id);
 
-#define VPIT_POST "                                 \
-; init pit                                        \n\
-mov al, 36 ; 0011 0110 mode = 3, counter = 0, 16b \n\
-out 43, al                                        \n\
-mov al, 00                                        \n\
-out 40, al ; initial count (0x10000)              \n\
-out 40, al                                        \n\
-mov al, 54 ; 0101 0100 mode = 2, counter = 1, LSB \n\
-out 43, al                                        \n\
-mov al, 12                                        \n\
-out 41, al ; initial count (0x12)                 \n"
-
 #ifdef __cplusplus
 }/*_EOCD_*/
 #endif

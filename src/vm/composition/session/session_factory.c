@@ -1,6 +1,6 @@
 #include "type.h"
 
-#include "vm/composition/session/session.h"
+#include "vm/composition/session/session_private.h"
 
 #include "vm/composition/session/provider.h"
 
@@ -8,7 +8,6 @@
 #include "vm/composition/session/debug_target.h"
 #include "vm/composition/session/lifecycle.h"
 #include "vm/composition/session/machine_info.h"
-#include "core/machine/memory.h"
 #include "core/product/debug/debug.h"
 #include "core/product/utils.h"
 #include "vm/machine/debug.h"

@@ -1,7 +1,8 @@
 #include "type.h"
 
 #include "core/machine/machine_interface.h"
-#include "vm/composition/session/session.h"
+#include "vm/composition/session/session_private.h"
+#include "../support/vm_model40_byob_fixture.h"
 
 static C_INT read_byte(core_machine *machine, type_unsigned_32 physical,
     type_unsigned_8 expected)
@@ -22,7 +23,6 @@ C_INT main(C_VOID)
 {
     static type_unsigned_8 even[VM_PROFILE_MODEL40_ROM_CHIP_BYTES];
     static type_unsigned_8 odd[VM_PROFILE_MODEL40_ROM_CHIP_BYTES];
-    vm_profile_model40_external_rom rom = { even, odd, sizeof(even) };
     vm_session *session = STD_NULL;
     type_unsigned_8 replacement_enabled = 0xfeu;
     type_unsigned_8 replacement_protected = 0xfcu;
@@ -33,7 +33,11 @@ C_INT main(C_VOID)
 #define CHECK(expression) do { ++step; if (!(expression)) { failed = step; } } while (0)
     C_INT step = 0;
 
-    CHECK(vm_session_create_model40_private(&rom, &session) == TYPE_STATUS_OK &&
+    CHECK(vm_model40_fixture_create_bytes("t386-s16-even.bin", even,
+        "d092911222403113ac32ef6cb11c180b9be48ad644f776c7a0d907db4bea6628",
+        "t386-s16-odd.bin", odd,
+        "bd99701a5fbeb22a5d990331ad56a7164935b8229a6410007d4f5f08dfd93335",
+        &session) == TYPE_STATUS_OK &&
         session != STD_NULL);
     if (!failed) {
         CHECK(read_byte(session->core_machine,
@@ -128,5 +132,6 @@ C_INT main(C_VOID)
     if (!failed) STD_PRINTF("M5:T386:S16:D4-RESET-ALIAS:OK\n");
     if (!failed) STD_PRINTF("M5:T390:S29:MODEL40-ROM-DECODE:OK\n");
     vm_session_destroy(session);
+    vm_model40_fixture_remove("t386-s16-even.bin", "t386-s16-odd.bin");
     return failed ? 1 : 0;
 }

@@ -24,7 +24,10 @@ C_INT main(C_VOID)
 {
     const C_CHAR *directory = "t381-session-catalog";
     const C_CHAR *valid = "schema: nxvm-session/v1\nmachine:\n  profile: default-pc-at\n  memory_kib: 1\n  display: console\n  boot: rom\nmedia:\n  floppy: null\n  hard_disk: null\n";
-    vm_product_session_catalog catalog;
+    vm_product_session_catalog *catalog = STD_NULL;
+    vm_product_session_catalog_entry first;
+    vm_product_session_catalog_entry second;
+    vm_product_session_catalog_entry third;
     C_INT result = 1;
 
     (C_VOID)TEST_RMDIR(directory);
@@ -37,17 +40,24 @@ C_INT main(C_VOID)
         !write_file("t381-session-catalog/g.yaml", "schema: nxvm-session/v1\nmachine:\n  profile: default-pc-at\n  memory_kib: 18014398509481983\n  display: console\n  boot: rom\nmedia:\n  floppy: null\n  hard_disk: null\n")) goto done;
     if (!write_file("t381-session-catalog/j.yaml", "schema: nxvm-session/v1\nmachine:\n  profile: default-pc-at\n  cpu: 80486\n  display: console\n  boot: rom\nmedia:\n  floppy: null\n  hard_disk: null\n") ||
         !write_file("t381-session-catalog/k.yaml", "schema: nxvm-session/v1\nmachine:\n  profile: default-pc-at\n  fpu: 8087\n  display: console\n  boot: rom\nmedia:\n  floppy: null\n  hard_disk: null\n")) goto done;
-    if (!write_file("t381-session-catalog/h.yaml", "schema: nxvm-session/v1\nmachine:\n  profile: compaq-deskpro-386-model-40\n  display: console\n  boot: rom\nmedia:\n  floppy: null\n  hard_disk: null\nfirmware:\n  provenance: project-owned synthetic test input\n  rom_even:\n    slot: system-rom-even\n    path: even.bin\n    bytes: 16384\n    sha256: 4fe7b59af6de3b665b67788cc2f99892ab827efae3a467342b3bb4e3bc8e5bfe\n    map: read-only\n  rom_odd:\n    slot: system-rom-odd\n    path: odd.bin\n    bytes: 16384\n    sha256: 111ce3c2a38d83a2e4706bde4abddd509d7f8248116c6832b06745bdc349e09f\n    map: read-only\n")) goto done;    if (!write_file("t381-session-catalog/i.yaml", "schema: nxvm-session/v1\nmachine:\n  profile: compaq-deskpro-386-model-40\n  display: console\n  boot: rom\nmedia:\n  floppy: null\n  hard_disk: null\nfirmware:\n  provenance: project-owned synthetic test input\n  rom_even:\n    slot: system-rom-even\n    path: even.bin\n    bytes: 16384\n    sha256: invalid\n    map: read-only\n  rom_odd:\n    slot: system-rom-odd\n    path: odd.bin\n    bytes: 16384\n    sha256: 111ce3c2a38d83a2e4706bde4abddd509d7f8248116c6832b06745bdc349e09f\n    map: read-only\n")) goto done;    vm_product_session_catalog_initialize(&catalog, directory);
-    if (catalog.count == 3u && catalog.rejected == 8u &&
-        !STD_STRCMP(catalog.entries[0].file_name, "a.yaml") &&
-        !STD_STRCMP(catalog.entries[0].profile, "default-pc-at") &&
-        catalog.entries[0].memory_bytes == 1024u &&
-        !STD_STRCMP(catalog.entries[1].file_name, "g.yaml") &&
-        catalog.entries[1].memory_bytes ==
+    if (!write_file("t381-session-catalog/h.yaml", "schema: nxvm-session/v1\nmachine:\n  profile: compaq-deskpro-386-model-40\n  display: console\n  boot: rom\nmedia:\n  floppy: null\n  hard_disk: null\nfirmware:\n  provenance: project-owned synthetic test input\n  rom_even:\n    slot: system-rom-even\n    path: even.bin\n    bytes: 16384\n    sha256: 4fe7b59af6de3b665b67788cc2f99892ab827efae3a467342b3bb4e3bc8e5bfe\n    map: read-only\n  rom_odd:\n    slot: system-rom-odd\n    path: odd.bin\n    bytes: 16384\n    sha256: 111ce3c2a38d83a2e4706bde4abddd509d7f8248116c6832b06745bdc349e09f\n    map: read-only\n")) goto done;
+    if (!write_file("t381-session-catalog/i.yaml", "schema: nxvm-session/v1\nmachine:\n  profile: compaq-deskpro-386-model-40\n  display: console\n  boot: rom\nmedia:\n  floppy: null\n  hard_disk: null\nfirmware:\n  provenance: project-owned synthetic test input\n  rom_even:\n    slot: system-rom-even\n    path: even.bin\n    bytes: 16384\n    sha256: invalid\n    map: read-only\n  rom_odd:\n    slot: system-rom-odd\n    path: odd.bin\n    bytes: 16384\n    sha256: 111ce3c2a38d83a2e4706bde4abddd509d7f8248116c6832b06745bdc349e09f\n    map: read-only\n")) goto done;
+    if (vm_product_session_catalog_create(directory, &catalog) != TYPE_STATUS_OK) goto done;
+    if (vm_product_session_catalog_get(catalog, 0u, &first) != TYPE_STATUS_OK ||
+        vm_product_session_catalog_get(catalog, 1u, &second) != TYPE_STATUS_OK ||
+        vm_product_session_catalog_get(catalog, 2u, &third) != TYPE_STATUS_OK) goto done;
+    if (vm_product_session_catalog_count(catalog) == 3u &&
+        vm_product_session_catalog_rejected(catalog) == 8u &&
+        !STD_STRCMP(first.file_name, "a.yaml") &&
+        !STD_STRCMP(first.profile, "default-pc-at") &&
+        first.memory_bytes == 1024u &&
+        !STD_STRCMP(second.file_name, "g.yaml") &&
+        second.memory_bytes ==
             (~(STD_SIZE_T)0u & ~((STD_SIZE_T)1023u)) &&
-        !STD_STRCMP(catalog.entries[2].profile, "compaq-deskpro-386-model-40") &&
-        !STD_STRCMP(catalog.entries[2].model40_provenance, "project-owned synthetic test input")) result = 0;
+        !STD_STRCMP(third.profile, "compaq-deskpro-386-model-40") &&
+        !STD_STRCMP(third.model40_provenance, "project-owned synthetic test input")) result = 0;
 done:
+    vm_product_session_catalog_destroy(catalog);
     (C_VOID)STD_REMOVE("t381-session-catalog/a.yaml");
     (C_VOID)STD_REMOVE("t381-session-catalog/b.yaml");
     (C_VOID)STD_REMOVE("t381-session-catalog/c.yaml");

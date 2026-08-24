@@ -2,7 +2,7 @@
 
 #include "vm/composition/session/display.h"
 #include "vm/composition/session/media.h"
-#include "vm/composition/session/session.h"
+#include "vm/composition/session/session_private.h"
 
 static C_VOID vm_session_model40_capture_fdc_terminal(C_VOID *opaque,
     const core_machine_fdc_terminal_observation *observation)
@@ -176,8 +176,9 @@ C_INT vm_session_model40_insert_hdd_at_startup(vm_session *session, const C_CHAR
     STD_SIZE_T path_length;
 
     if (session == STD_NULL || !session->model40_private || path == STD_NULL ||
-        session->hdd.connect.flagDiskExist || vm_machine_hdd_insert(&session->hdd, path) != 0 ||
-        session->hdd.connect.raw_byte_count != expected_bytes) return -1;
+        vm_machine_hdd_has_media(&session->hdd) ||
+        vm_machine_hdd_insert(&session->hdd, path) != 0 ||
+        vm_machine_hdd_raw_byte_count(&session->hdd) != expected_bytes) return -1;
     path_length = STD_STRLEN(path);
     if (path_length >= sizeof(session->hdd_image_path)) return -1;
     STD_MEMCPY(session->hdd_image_path, path, path_length + 1u);
@@ -194,9 +195,9 @@ C_INT vm_session_model40_insert_hdd_slave_at_startup(vm_session *session, const 
     STD_SIZE_T path_length;
 
     if (session == STD_NULL || !session->model40_private || path == STD_NULL ||
-        session->hdd_slave.connect.flagDiskExist ||
+        vm_machine_hdd_has_media(&session->hdd_slave) ||
         vm_machine_hdd_insert(&session->hdd_slave, path) != 0 ||
-        session->hdd_slave.connect.raw_byte_count != expected_bytes) return -1;
+        vm_machine_hdd_raw_byte_count(&session->hdd_slave) != expected_bytes) return -1;
     path_length = STD_STRLEN(path);
     if (path_length >= sizeof(session->hdd_slave_image_path)) return -1;
     STD_MEMCPY(session->hdd_slave_image_path, path, path_length + 1u);

@@ -5,7 +5,7 @@
 #include "core/platform/sleep.h"
 #include "vm/composition/session/lifecycle.h"
 #include "vm/composition/session/session_interface.h"
-#include "vm/composition/session/session.h"
+#include "vm/composition/session/session_private.h"
 #include "vm/platform/platform.h"
 
 static C_VOID *run_session(C_VOID *opaque)

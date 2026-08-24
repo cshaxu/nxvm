@@ -3,7 +3,7 @@
 #include "core/machine/machine.h"
 #include "core/machine/machine_interface.h"
 #include "vm/composition/session/session_interface.h"
-#include "vm/composition/session/session.h"
+#include "vm/composition/session/session_private.h"
 
 #define VM_T287_TRACE_BUDGET 2000000u
 

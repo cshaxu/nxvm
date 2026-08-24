@@ -1,6 +1,6 @@
 #include "type.h"
 
-#include "vm/composition/session/session.h"
+#include "vm/composition/session/session_private.h"
 #include "vm/composition/session/session_interface.h"
 #include "vm/composition/session/lifecycle.h"
 #include "core/machine/fdc.h"
@@ -8,6 +8,7 @@
 #include "core/machine/kbc.h"
 #include "core/machine/machine.h"
 #include "core/machine/port.h"
+#include "../support/vm_model40_byob_fixture.h"
 
 static C_INT vm_model40_fdc_sense_reset(core_machine *machine,
     type_unsigned_8 expected_status)
@@ -29,9 +30,9 @@ C_INT main(C_VOID)
 {
     static type_unsigned_8 even[VM_PROFILE_MODEL40_ROM_CHIP_BYTES];
     static type_unsigned_8 odd[VM_PROFILE_MODEL40_ROM_CHIP_BYTES];
-    vm_profile_model40_external_rom invalid = { even, odd,
-        VM_PROFILE_MODEL40_ROM_CHIP_BYTES - 1u };
-    vm_profile_model40_external_rom valid = { even, odd, sizeof(even) };
+    vm_session_config invalid_config = {
+        .profile_kind = VM_SESSION_PROFILE_COMPAQ_DESKPRO_386_MODEL_40
+    };
     vm_session *session = STD_NULL;
     core_machine_cpu_profile cpu_profile;
     STD_SIZE_T memory_bytes;
@@ -45,9 +46,13 @@ C_INT main(C_VOID)
 
     even[0x3ff8u] = 0xa5u;
 
-    failed |= vm_session_create_model40_private(&invalid, &session) !=
+    failed |= vm_session_create(&invalid_config, &session) !=
         TYPE_STATUS_INVALID_ARGUMENT || session != STD_NULL;
-    if (!failed) failed |= vm_session_create_model40_private(&valid, &session) !=
+    if (!failed) failed |= vm_model40_fixture_create_bytes("t386-s8-even.bin", even,
+        "a5059e5343dc620dfdc23ebb0477362bffa4296960c052305c64258b1a4da245",
+        "t386-s8-odd.bin", odd,
+        "4fe7b59af6de3b665b67788cc2f99892ab827efae3a467342b3bb4e3bc8e5bfe",
+        &session) !=
         TYPE_STATUS_OK || session == STD_NULL || !session->model40_private ||
         session->profile != STD_NULL ||
         core_machine_get_cpu_profile(session->core_machine, &cpu_profile) !=
@@ -153,5 +158,6 @@ C_INT main(C_VOID)
     if (!failed) STD_PRINTF("M5:T386:S8:MODEL40-INTEGRATION:OK\n");
     if (!failed) STD_PRINTF("M5:T386:S8:MODEL40-CONTROLS:OK\n");
     vm_session_destroy(session);
+    vm_model40_fixture_remove("t386-s8-even.bin", "t386-s8-odd.bin");
     return failed ? 1 : 0;
 }

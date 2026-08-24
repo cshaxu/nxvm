@@ -2,7 +2,7 @@
 
 #include "core/machine/debug_interface.h"
 #include "vm/composition/session/session_interface.h"
-#include "vm/composition/session/session.h"
+#include "vm/composition/session/session_private.h"
 #include "vm/platform/vm_request_transport.h"
 #include "vm/platform/win32/win32.h"
 #include "vm/profile/default_profile/firmware/qdkeyb.h"

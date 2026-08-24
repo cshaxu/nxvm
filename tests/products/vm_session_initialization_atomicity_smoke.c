@@ -2,9 +2,9 @@
 
 #include "vm/composition/session/lifecycle.h"
 #include "vm/composition/session/runner.h"
-#include "vm/composition/session/session.h"
+#include "vm/composition/session/session_private.h"
 #include "vm/composition/session/session_interface.h"
-#include "vm/profile/default_profile/pc_at_profile.h"
+#include "vm/profile/default_profile/pc_at_profile_private.h"
 
 static C_INT verify_recovery(C_VOID);
 

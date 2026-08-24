@@ -4,9 +4,9 @@
 #include "core/machine/machine.h"
 #include "vm/composition/session/media.h"
 #include "vm/composition/session/session_interface.h"
-#include "vm/composition/session/session.h"
+#include "vm/composition/session/session_private.h"
 #include "core/machine/hdc.h"
-#include "vm/profile/default_profile/pc_at_profile.h"
+#include "vm/profile/default_profile/pc_at_profile_private.h"
 
 #define HDC_DATA_PORT 0x01f0u
 #define HDC_ERROR_PORT 0x01f1u

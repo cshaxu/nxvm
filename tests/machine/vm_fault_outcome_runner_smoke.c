@@ -10,7 +10,7 @@
 #include "vm/composition/session/fault.h"
 #include "vm/composition/session/lifecycle.h"
 #include "vm/composition/session/session_interface.h"
-#include "vm/composition/session/session.h"
+#include "vm/composition/session/session_private.h"
 #include "../support/core_machine_cpu_fixture.h"
 
 static C_INT vm_fault_outcome_prepare(vm_session *session)

@@ -7,7 +7,7 @@
 #include "core/machine/memory_interface.h"
 #include "core/machine/port.h"
 #include "vm/composition/session/session_interface.h"
-#include "vm/composition/session/session.h"
+#include "vm/composition/session/session_private.h"
 #include "core/machine/fdc.h"
 #include "vm/machine/fdd.h"
 

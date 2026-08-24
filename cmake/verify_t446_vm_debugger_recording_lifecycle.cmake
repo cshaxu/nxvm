@@ -4,7 +4,7 @@ endif()
 
 file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/debug.c" debug_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/debug.h" debug_header)
-file(READ "${PROJECT_SOURCE_DIR}/src/vm/composition/session/session.h" session_header)
+file(READ "${PROJECT_SOURCE_DIR}/src/vm/composition/session/session_private.h" session_header)
 
 foreach(required "debug_record_close" "debug_record_write_failed"
         "vm_machine_debug_record_status" "vm_machine_debug_finalize")

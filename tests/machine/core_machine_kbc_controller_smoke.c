@@ -1,5 +1,7 @@
 #include "type.h"
 
+#include "core/machine/machine_interface.h"
+
 #include "core/machine/cpu_instructions.h"
 #include "core/machine/kbc.h"
 #include "core/machine/memory.h"
@@ -261,19 +263,19 @@ C_INT main(C_VOID)
     core_machine_port_write(&port, 0x0060u, 0x00u);
     failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0xfau;
     failed |= core_machine_kbc_read_byte(&port, 0x0060u) !=
-        CORE_MACHINE_KBC_SCAN_SET_2;
+        CORE_MACHINE_KEYBOARD_SCAN_SET_2;
     core_machine_port_write(&port, 0x0060u, 0xf0u);
     failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0xfau;
     core_machine_port_write(&port, 0x0060u, 0x01u);
     failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0xfau ||
-        kbc.data.scan_set != CORE_MACHINE_KBC_SCAN_SET_1;
+        kbc.data.scan_set != CORE_MACHINE_KEYBOARD_SCAN_SET_1;
     failed |= core_machine_kbc_submit_native_byte(&kbc, 0x1eu) != TYPE_STATUS_OK ||
         core_machine_kbc_read_byte(&port, 0x0060u) != 0x1eu;
     core_machine_port_write(&port, 0x0060u, 0xf0u);
     failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0xfau;
     core_machine_port_write(&port, 0x0060u, 0x02u);
     failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0xfau ||
-        kbc.data.scan_set != CORE_MACHINE_KBC_SCAN_SET_2;
+        kbc.data.scan_set != CORE_MACHINE_KEYBOARD_SCAN_SET_2;
 
     core_machine_port_write(&port, 0x0060u, 0xedu);
     failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0xfau;
@@ -331,7 +333,7 @@ C_INT main(C_VOID)
         kbc.data.led_state != 0u || kbc.data.typematic != 0x2cu ||
         kbc.data.typematic_initial_ticks != 3u ||
         kbc.data.typematic_repeat_ticks != 2u ||
-        kbc.data.scan_set != CORE_MACHINE_KBC_SCAN_SET_2 ||
+        kbc.data.scan_set != CORE_MACHINE_KEYBOARD_SCAN_SET_2 ||
         kbc.data.scanning_enabled || kbc.data.typematic_active ||
         core_machine_kbc_submit_native_byte(&kbc, 0x1eu) !=
             TYPE_STATUS_INVALID_STATE;
@@ -354,7 +356,7 @@ C_INT main(C_VOID)
     core_machine_port_write(&port, 0x0060u, 0xffu);
     failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0xfau ||
         core_machine_kbc_read_byte(&port, 0x0060u) != 0xaau ||
-        kbc.data.scan_set != CORE_MACHINE_KBC_SCAN_SET_2;
+        kbc.data.scan_set != CORE_MACHINE_KEYBOARD_SCAN_SET_2;
     core_machine_port_write(&port, 0x0060u, 0x00u);
     failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0xfeu;
     core_machine_port_write(&port, 0x0060u, 0xfeu);

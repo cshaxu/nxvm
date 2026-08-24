@@ -7,10 +7,17 @@
 
 #include "type.h"
 
-#include "core/product/session/command_interface.h"
-
 #include "vm/product/console.h"
 
+struct vm_product_console_context {
+    STD_SIZE_T argument_count;
+    C_CHAR **arguments;
+    C_INT exit_requested;
+    C_CHAR command_buffer[0x100];
+    const vm_session_machine_provider *machine_provider;
+    core_product_session_manager *session_manager;
+    vm_product_session_catalog *catalog;
+};
 #include "core/product/session/command_interface.h"
 
 #define CONSOLE_MAXNARG 256
@@ -233,10 +240,10 @@ static C_VOID doInfo(vm_product_console_context *context)
     STD_PRINTF("Platform Info\n");
     STD_PRINTF("==================\n");
     switch (machineProvider->get_display_mode(machineProvider->context)) {
-    case VM_PRODUCT_CONSOLE_DISPLAY_WINDOW:
+    case VM_SESSION_DISPLAY_WINDOW:
         STD_PRINTF("Display Type: Window\n");
         break;
-    case VM_PRODUCT_CONSOLE_DISPLAY_AUTO:
+    case VM_SESSION_DISPLAY_AUTO:
         STD_PRINTF("Display Type: Auto\n");
         break;
     default:
@@ -319,33 +326,38 @@ static C_VOID doFloppy(vm_product_console_context *context)
     STD_PRINTF("Usage: FLOPPY INSERT <image> | EJECT\n");
 }
 
-static const vm_product_session_catalog_entry *vm_product_console_choose_profile(
-    const vm_product_console_context *context)
+static C_INT vm_product_console_choose_profile(const vm_product_console_context *context,
+    vm_product_session_catalog_entry *out_entry)
 {
     C_CHAR selection[32];
     STD_SIZE_T index;
+    STD_SIZE_T count;
     C_INT choice;
 
-    if (context == STD_NULL || context->catalog.count == 0u) {
+    if (context == STD_NULL || out_entry == STD_NULL ||
+        (count = vm_product_session_catalog_count(context->catalog)) == 0u) {
         STD_PRINTF("No session configuration files found.\n");
-        return STD_NULL;
+        return 0;
     }
     STD_PRINTF("Available session profiles:\n");
-    for (index = 0u; index < context->catalog.count; ++index) {
-        STD_PRINTF("  %u  %s\n", (unsigned int)(index + 1u),
-            context->catalog.entries[index].file_name);
+    for (index = 0u; index < count; ++index) {
+        vm_product_session_catalog_entry entry;
+
+        if (vm_product_session_catalog_get(context->catalog, index, &entry) !=
+            TYPE_STATUS_OK) return 0;
+        STD_PRINTF("  %u  %s\n", (unsigned int)(index + 1u), entry.file_name);
     }
     STD_PRINTF("Select profile [1-%u, Enter to cancel]: ",
-        (unsigned int)context->catalog.count);
-    if (!vm_product_console_read_line(selection, sizeof(selection))) return STD_NULL;
-    if (selection[0] == '\n' || selection[0] == '\r' || selection[0] == '\0') return STD_NULL;
+        (unsigned int)count);
+    if (!vm_product_console_read_line(selection, sizeof(selection))) return 0;
+    if (selection[0] == '\n' || selection[0] == '\r' || selection[0] == '\0') return 0;
     choice = STD_ATOI(selection);
-    if (choice > 0 && (STD_SIZE_T)choice <= context->catalog.count) {
-        return vm_product_session_catalog_get(&context->catalog,
-            (STD_SIZE_T)(choice - 1));
+    if (choice > 0 && (STD_SIZE_T)choice <= count) {
+        return vm_product_session_catalog_get(context->catalog,
+            (STD_SIZE_T)(choice - 1), out_entry) == TYPE_STATUS_OK;
     }
     STD_PRINTF("Unknown profile selection.\n");
-    return STD_NULL;
+    return 0;
 }
 
 static C_VOID vm_product_console_write_line(C_VOID *context, const C_CHAR *line)
@@ -356,7 +368,8 @@ static C_VOID vm_product_console_write_line(C_VOID *context, const C_CHAR *line)
 
 static C_VOID vm_product_console_open_profile(vm_product_console_context *context)
 {
-    const vm_product_session_catalog_entry *entry = vm_product_console_choose_profile(context);
+    vm_product_session_catalog_entry selected_entry;
+    const vm_product_session_catalog_entry *entry = &selected_entry;
     C_CHAR option[] = "--profile";
     C_CHAR option_fdd[] = "--fdd";
     C_CHAR option_hdd[] = "--hdd";
@@ -380,7 +393,8 @@ static C_VOID vm_product_console_open_profile(vm_product_console_context *contex
     core_product_session_output_provider output;
     C_INT argument_count = 10;
 
-    if (entry == STD_NULL || context == STD_NULL) return;
+    if (context == STD_NULL || !vm_product_console_choose_profile(context,
+            &selected_entry)) return;
     arguments[1] = entry->profile;
     arguments[3] = entry->floppy[0] ? entry->floppy : "null";
     arguments[5] = entry->hard_disk[0] ? entry->hard_disk : "null";
@@ -418,9 +432,9 @@ static C_VOID vm_product_console_open_profile(vm_product_console_context *contex
     if (!core_product_session_command_execute(context->session_manager,
             argument_count + 2, command_arguments, &output)) return;
     machineProvider->set_display_mode(machineProvider->context,
-        !STD_STRCMP(entry->display, "window") ? VM_PRODUCT_CONSOLE_DISPLAY_WINDOW :
-        !STD_STRCMP(entry->display, "auto") ? VM_PRODUCT_CONSOLE_DISPLAY_AUTO :
-        VM_PRODUCT_CONSOLE_DISPLAY_CONSOLE);
+        !STD_STRCMP(entry->display, "window") ? VM_SESSION_DISPLAY_WINDOW :
+        !STD_STRCMP(entry->display, "auto") ? VM_SESSION_DISPLAY_AUTO :
+        VM_SESSION_DISPLAY_CONSOLE);
 }
 
 static C_VOID vm_product_console_session(vm_product_console_context *context)
@@ -515,8 +529,11 @@ static C_INT vm_product_console_initialize(vm_product_console_context *context,
     argArray = (C_CHAR **)STD_MALLOC(CONSOLE_MAXNARG * sizeof(C_CHAR *));
     if (argArray == STD_NULL) return TYPE_FALSE;
     flagExit = 0;
-    vm_product_session_catalog_initialize(&context->catalog, profile_directory);
-    return TYPE_TRUE;
+    if (vm_product_session_catalog_create(profile_directory, &context->catalog) ==
+            TYPE_STATUS_OK) return TYPE_TRUE;
+    STD_FREE(argArray);
+    argArray = STD_NULL;
+    return TYPE_FALSE;
 }
 
 /* Finalizes console */
@@ -527,25 +544,38 @@ static C_VOID vm_product_console_finalize(vm_product_console_context *context)
         STD_FREE((C_VOID *)argArray);
     }
     argArray = STD_NULL;
+    vm_product_session_catalog_destroy(context->catalog);
+    context->catalog = STD_NULL;
 }
 
-/* Entry point of product console */
-C_VOID vm_product_console_context_initialize(
-    vm_product_console_context *context)
+type_status vm_product_console_context_create(
+    vm_product_console_context **out_context)
 {
-    if (context != STD_NULL)
-        STD_MEMSET(context, 0, sizeof(*context));
+    vm_product_console_context *context;
+
+    if (out_context == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    *out_context = STD_NULL;
+    context = (vm_product_console_context *)STD_CALLOC(1u, sizeof(*context));
+    if (context == STD_NULL) return TYPE_STATUS_NO_MEMORY;
+    *out_context = context;
+    return TYPE_STATUS_OK;
+}
+
+C_VOID vm_product_console_context_destroy(vm_product_console_context *context)
+{
+    if (context == STD_NULL) return;
+    vm_product_session_catalog_destroy(context->catalog);
+    STD_FREE(context);
 }
 
 C_VOID vm_product_console_main(vm_product_console_context *context,
-                               const vm_product_console_machine_provider *machine_provider,
+                               const vm_session_machine_provider *machine_provider,
                                core_product_session_manager *session_manager,
                                const C_CHAR *profile_directory)
 {
     if (context == STD_NULL || machine_provider == STD_NULL ||
         session_manager == STD_NULL)
         return;
-    vm_product_console_context_initialize(context);
     machineProvider = machine_provider;
     sessionManager = session_manager;
     if (!vm_product_console_initialize(context, profile_directory)) return;

@@ -4,9 +4,10 @@
 #include "core/machine/fdc.h"
 #include "core/machine/machine.h"
 #include "core/machine/port.h"
-#include "vm/composition/session/session.h"
+#include "vm/composition/session/session_private.h"
 #include "vm/composition/session/lifecycle.h"
 #include "vm/machine/fdd.h"
+#include "../support/vm_model40_byob_fixture.h"
 
 #define MODEL40_FDC_BYTES (80u * 2u * 15u * 512u)
 static C_VOID model40_fdc_command(core_machine_fdc *fdc, t_port *port,
@@ -45,7 +46,6 @@ C_INT main(C_INT argc, C_CHAR **argv)
     static type_unsigned_8 even[VM_PROFILE_MODEL40_ROM_CHIP_BYTES];
     static type_unsigned_8 odd[VM_PROFILE_MODEL40_ROM_CHIP_BYTES];
     static type_unsigned_8 image[MODEL40_FDC_BYTES];
-    const vm_profile_model40_external_rom rom = { even, odd, sizeof(even) };
     const vm_session_config byob_config = {
         .profile_kind = VM_SESSION_PROFILE_COMPAQ_DESKPRO_386_MODEL_40,
         .model40_firmware = {
@@ -83,7 +83,11 @@ C_INT main(C_INT argc, C_CHAR **argv)
     if (argc == 6) {
         create_status = (type_status)vm_session_create(&byob_config, &session);
     } else {
-        create_status = vm_session_create_model40_private(&rom, &session);
+        create_status = vm_model40_fixture_create_bytes("t386-s24-even.bin", even,
+            "4fe7b59af6de3b665b67788cc2f99892ab827efae3a467342b3bb4e3bc8e5bfe",
+            "t386-s24-odd.bin", odd,
+            "4fe7b59af6de3b665b67788cc2f99892ab827efae3a467342b3bb4e3bc8e5bfe",
+            &session);
     }
     failed |= create_status != TYPE_STATUS_OK || session == STD_NULL || vm_machine_fdd_replace_bytes(&session->fdd, image,
         sizeof(image)) != TYPE_FALSE;
@@ -184,6 +188,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
         STD_PRINTF("M5:T386:S25:BYOB-CONSUMER:NOT-REACHED\n");
     }
     vm_session_destroy(session);
+    if (argc != 6) vm_model40_fixture_remove("t386-s24-even.bin", "t386-s24-odd.bin");
     if (failed) return 1;
     STD_PRINTF("M5:T386:S24:FDC-12MB-LOGICAL:OK\n");
     STD_PRINTF("M5:T386:S24:FDC-DMA2-IRQ6:OK\n");

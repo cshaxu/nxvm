@@ -1,8 +1,8 @@
 #include "type.h"
 
-#include "vm/composition/session/session.h"
+#include "vm/composition/session/session_private.h"
 
-#include "vm/composition/session/provider.h"
+#include "vm/composition/session/console_machine_adapter.h"
 
 #include "vm/composition/session/control.h"
 #include "vm/composition/session/debug_target.h"
@@ -80,20 +80,20 @@ static C_VOID vm_session_machine_print(C_VOID *context)
 static type_status vm_session_machine_read_display_mode(vm_session *session,
     C_VOID *context)
 {
-    vm_product_console_display_mode *mode =
-        (vm_product_console_display_mode *)context;
+    vm_session_display_mode *mode =
+        (vm_session_display_mode *)context;
     C_INT platform_mode = vm_platform_run_context_get_display_mode(
         session->platform_run_context);
 
     *mode = platform_mode == VM_PLATFORM_DISPLAY_WINDOW ?
-        VM_PRODUCT_CONSOLE_DISPLAY_WINDOW : platform_mode == VM_PLATFORM_DISPLAY_AUTO ?
-        VM_PRODUCT_CONSOLE_DISPLAY_AUTO : VM_PRODUCT_CONSOLE_DISPLAY_CONSOLE;
+        VM_SESSION_DISPLAY_WINDOW : platform_mode == VM_PLATFORM_DISPLAY_AUTO ?
+        VM_SESSION_DISPLAY_AUTO : VM_SESSION_DISPLAY_CONSOLE;
     return TYPE_STATUS_OK;
 }
 
-static vm_product_console_display_mode vm_session_machine_get_display_mode(C_VOID *context)
+static vm_session_display_mode vm_session_machine_get_display_mode(C_VOID *context)
 {
-    vm_product_console_display_mode mode = VM_PRODUCT_CONSOLE_DISPLAY_CONSOLE;
+    vm_session_display_mode mode = VM_SESSION_DISPLAY_CONSOLE;
 
     (C_VOID)vm_session_machine_apply(context, vm_session_machine_read_display_mode,
         &mode);
@@ -103,10 +103,9 @@ static vm_product_console_display_mode vm_session_machine_get_display_mode(C_VOI
 static type_status vm_session_machine_write_display_mode(vm_session *session,
     C_VOID *context)
 {
-    vm_product_console_display_mode mode =
-        *(vm_product_console_display_mode *)context;
-    vm_platform_display_mode platform_mode = mode == VM_PRODUCT_CONSOLE_DISPLAY_WINDOW ?
-        VM_PLATFORM_DISPLAY_WINDOW : mode == VM_PRODUCT_CONSOLE_DISPLAY_AUTO ?
+    vm_session_display_mode mode = *(vm_session_display_mode *)context;
+    vm_platform_display_mode platform_mode = mode == VM_SESSION_DISPLAY_WINDOW ?
+        VM_PLATFORM_DISPLAY_WINDOW : mode == VM_SESSION_DISPLAY_AUTO ?
         VM_PLATFORM_DISPLAY_AUTO : VM_PLATFORM_DISPLAY_CONSOLE;
 
     vm_platform_run_context_set_display_mode(session->platform_run_context,
@@ -115,7 +114,7 @@ static type_status vm_session_machine_write_display_mode(vm_session *session,
 }
 
 static C_VOID vm_session_machine_set_display_mode(C_VOID *context,
-    vm_product_console_display_mode mode)
+    vm_session_display_mode mode)
 {
     (C_VOID)vm_session_machine_apply(context, vm_session_machine_write_display_mode,
         &mode);
@@ -301,7 +300,7 @@ static type_status vm_session_machine_resume(C_VOID *context)
         STD_NULL);
 }
 
-static const vm_product_console_machine_provider vmSessionMachineProviderTemplate = {
+static const vm_session_machine_provider vmSessionMachineProviderTemplate = {
     vm_session_machine_is_running,
     vm_session_machine_print,
     vm_session_machine_get_display_mode,
@@ -320,8 +319,8 @@ static const vm_product_console_machine_provider vmSessionMachineProviderTemplat
     STD_NULL
 };
 
-C_VOID vm_session_machine_provider_initialize(
-    vm_product_console_machine_provider *machine_provider,
+C_VOID vm_composition_console_machine_provider_initialize(
+    vm_session_machine_provider *machine_provider,
     core_product_session_manager *manager)
 {
     if (machine_provider == STD_NULL) return;

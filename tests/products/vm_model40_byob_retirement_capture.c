@@ -2,7 +2,7 @@
 
 #include "core/machine/machine_interface.h"
 #include "core/machine/retirement_observation_interface.h"
-#include "vm/composition/session/session.h"
+#include "vm/composition/session/session_private.h"
 
 #define MODEL40_CAPTURE_FORM_LIMIT 128u
 #define MODEL40_CAPTURE_RETIREMENT_LIMIT 2000000u
