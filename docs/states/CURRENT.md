@@ -40,6 +40,13 @@
 
 ## Recent Governance
 
+- **M5 Td S143 P1:** made the eighth Core L3 integration candidate the sole
+  planned receiver for host-paced guest-time synchronization: Core owns
+  deadline composition and guest progression; VM only paces completed guest
+  progress. The duplicate TODO is removed, T459 evidence links to the receiver,
+  queue order and runtime behavior are unchanged, and documentation governance
+  passes.
+
 - **M5 Td S142 P1:** added the single execution rule that current product
   artifacts are stripped Release builds without compiler debug information;
   admitted runtime debuggers remain product functionality, while Debug builds

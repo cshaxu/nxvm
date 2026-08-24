@@ -7,6 +7,11 @@ device-phase contracts into one Core L3 capability surface. Publish the stable,
 validated contract catalog that a later VM profile resolver may select, without
 implementing that resolver or changing a profile in this task.
 
+This candidate is also the sole planned receiver for the host-paced guest-time
+contract deferred by T459. It completes that contract only from the validated
+controller deadline capabilities accepted by the preceding candidates; it does
+not promote an L2 polling backoff into a clock model.
+
 ## Shared Admission Baseline
 
 This final candidate verifies and exports the boundary defined by the
@@ -32,6 +37,23 @@ applicable or unsupported disposition. Export only neutral contract IDs,
 versions, validation requirements and observability declarations. VM machine
 identity, inheritance, provenance and YAML policy remain outside Core.
 
+For each selected profile with a verified physical guest-timebase, compose the
+earliest validated guest-observable deadline of every timed controller that can
+wake or visibly change the guest. Core remains the sole owner of guest time:
+it selects and advances the ordered guest timeline, including reset and
+cancellation effects, before publishing a bounded copied observation. VM may
+use only that already-advanced observation and the selected profile timebase to
+pace against its monotonic wall-clock budget: Standard waits only when guest
+progress is ahead. Turbo uses the same Core-owned progression without that
+host pacing wait. Neither mode may manufacture, compensate, skip or infer
+guest ticks from QPC, `Sleep`, or recurring maintenance callbacks.
+
+The exported Core/VM boundary must be opaque and value-based. It exposes no
+controller pointer, timeline internals or second scheduler. A controller or
+profile without the required validated deadline/timebase keeps its explicit L2
+or unsupported disposition; this candidate must not claim L3 synchronization
+for that configuration.
+
 ## Dependencies
 
 Last in the ordered Core L3 sequence. A later VM/profile program may consume
@@ -43,11 +65,17 @@ Require end-to-end Core composition tests across the supported CPU and shared
 controller configurations, immutable-plan and rejection tests, trace checks,
 all current gates, and an independent ledger-to-code closure audit. The audit
 must prove no profile name or profile-local timing algorithm entered Core and
-no public capability lacks a declared disposition.
+no public capability lacks a declared disposition. Where the host-paced
+contract is eligible, proof must cover deadline composition, ordered Core
+advance, reset/cancellation, bounded export, Standard's ahead-only pacing and
+Turbo's no-wait use of the same progression. Where it is not eligible, proof
+must retain the declared fallback without fabricated time.
 
 ## Non-goals And Stop Conditions
 
 Do not claim every historical machine is L3, implement profile inheritance or
 user YAML, admit new CPUs/devices/chipsets, import firmware/media, or perform
 L4 work. Stop if a remaining gap belongs to VM/profile ownership; transfer it
-explicitly to that later program.
+explicitly to that later program. Do not substitute a fixed host sleep, host
+clock tick injection, or a controller-private deadline query for this composed
+contract.

@@ -227,19 +227,6 @@ admissions, not the default definition of NXVM completion.
   not create a second bus or device-timing owner.
 
 ## Architecture And Portability Debt
-
-- [ ] **Host-paced guest-time contract (`TODO(High)`).** The current Model-339
-  virtual-time source can publish host-clock-derived ticks only while the CPU
-  waits, while the default profile has no corresponding source.  This is not a
-  complete host/guest synchronization model and must not be generalized by
-  treating `Sleep`, QPC, or the recurring Core timeline callbacks as a guest
-  clock/deadline.  Re-admit one shared Core/VM contract only after each
-  selected profile supplies a source-backed guest-timebase and every timed
-  controller that can wake or visibly change the guest contributes a
-  Core-owned deadline with reset/cancellation proof.  Core advances its own
-  ordered guest timeline; VM maps that completed guest time to a cancellable
-  host pacing wait.  Do not expose controller pointers/timeline internals to
-  VM or add a second scheduler.
 - [ ] **Residual direct-production strict compilation (`TODO(Medium)`).**
   T345 closes the whole configured direct-command ledger but retains 52
   production-source entries that cannot truthfully receive target-local

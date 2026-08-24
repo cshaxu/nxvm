@@ -32,12 +32,12 @@ cover the retained source path and selected-session route.  A production scan
 of the VM session/product sources finds no `VM_SESSION_SPEED_TURBO` branch at
 the remaining `core_machine_advance_time()` call.
 
-The complete Standard pacing and Turbo deadline-fast-forward contract remains
-the existing **Host-paced guest-time contract** debt: every selected profile
-needs a verified physical timebase, and every relevant timed controller must
-contribute a Core-owned, reset/cancellation-safe observable deadline.  QPC,
-`Sleep`, and recurring timeline callbacks remain ineligible as guest clocks or
-deadlines.
+The complete Standard pacing and Turbo deadline-fast-forward contract is
+received by the [Core L3 integration and VM contract export proposal](../../proposals/m5-core-l3-integration-vm-contract-export.md): every selected
+profile needs a verified physical timebase, and every relevant timed controller
+must contribute a Core-owned, reset/cancellation-safe observable deadline.
+QPC, `Sleep`, and recurring timeline callbacks remain ineligible as guest
+clocks or deadlines.
 
 ## Verification
 
