@@ -2674,6 +2674,20 @@ foreach(target IN LISTS PROJECT_CURRENT_ALL_SMOKE_TARGETS)
     endif()
 endforeach()
 
+# Console profile smokes discover every YAML file in their working directory.
+# Give each fixed-write fixture an owned build-tree directory so CTest jobs
+# cannot contribute profiles to another smoke's catalog.
+foreach(target IN ITEMS
+    vm-product-console-lifecycle-smoke
+    vm-product-console-memory-roundtrip-smoke
+    vm-model40-console-s20-smoke)
+    set(project_console_smoke_workspace
+        "${CMAKE_CURRENT_BINARY_DIR}/tests/${target}")
+    file(MAKE_DIRECTORY "${project_console_smoke_workspace}")
+    set_tests_properties("current.${target}" PROPERTIES
+        WORKING_DIRECTORY "${project_console_smoke_workspace}")
+endforeach()
+
 set_tests_properties("current.core-machine-8086-timing-manifest-runner" PROPERTIES
     WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
 if(POWERSHELL_EXECUTABLE)
