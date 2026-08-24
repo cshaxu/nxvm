@@ -152,8 +152,8 @@ C_INT main(C_VOID)
     C_INT failed = 0;
 
     config.cpu_profile = CORE_MACHINE_CPU_PROFILE_80386;
-    config.dma_cycle_wait_quanta = 1u;
-    config.dma_cycle_bus_ready_gate_enabled = TYPE_TRUE;
+    config.transaction_contract.dma_cycle_wait_quanta = 1u;
+    config.transaction_contract.dma_cycle_bus_ready_gate_enabled = TYPE_TRUE;
     config.auxiliary_pit_present = TYPE_TRUE;
     config.auxiliary_pit_base_port = 0x0048u;
     trace.callback = refresh_trace;

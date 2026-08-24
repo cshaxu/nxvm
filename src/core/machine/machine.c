@@ -264,18 +264,10 @@ static type_status core_machine_create_internal(
         !core_machine_clock_plan_is_valid(&config->clock_plan) ||
         !core_machine_retirement_time_contract_is_valid(
             config->retirement_time_contract) ||
-        !core_machine_external_cycle_timing_is_valid(
-            &config->external_cycle_timing) ||
-        !core_machine_external_access_wait_windows_are_valid(
-            config->external_access_wait_windows) ||
-        (config->cpu_cycle_bus_ready_gate_enabled != TYPE_FALSE &&
-        config->cpu_cycle_bus_ready_gate_enabled != TYPE_TRUE) ||
-        (config->cpu_prefetch_reservation_enabled != TYPE_FALSE &&
-        config->cpu_prefetch_reservation_enabled != TYPE_TRUE) ||
+        !core_machine_transaction_contract_is_valid(
+            &config->transaction_contract) ||
         (config->auxiliary_pit_present != TYPE_FALSE &&
         config->auxiliary_pit_present != TYPE_TRUE) ||
-        (config->dma_cycle_bus_ready_gate_enabled != TYPE_FALSE &&
-        config->dma_cycle_bus_ready_gate_enabled != TYPE_TRUE) ||
         (config->auxiliary_pit_present && config->auxiliary_pit_base_port > 0xfffcu)) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
@@ -292,14 +284,7 @@ static type_status core_machine_create_internal(
     machine->lifecycle = CORE_MACHINE_INITIALIZED;
     machine->cpu_profile = core_machine_resolve_cpu_profile(config->cpu_profile);
     machine->retirement_time_contract = config->retirement_time_contract;
-    machine->external_cycle_timing = config->external_cycle_timing;
-    STD_MEMCPY(machine->external_access_wait_windows,
-        config->external_access_wait_windows,
-        sizeof(machine->external_access_wait_windows));
-    machine->dma_cycle_wait_quanta = config->dma_cycle_wait_quanta;
-    machine->dma_cycle_bus_ready_gate_enabled = config->dma_cycle_bus_ready_gate_enabled;
-    machine->cpu_cycle_bus_ready_gate_enabled = config->cpu_cycle_bus_ready_gate_enabled;
-    machine->cpu_prefetch_reservation_enabled = config->cpu_prefetch_reservation_enabled;
+    machine->transaction_contract = config->transaction_contract;
     machine->dma_cycle_bus_ready = TYPE_TRUE;
     machine->cpu_cycle_bus_ready = TYPE_TRUE;
     if (config->retirement_qualification != STD_NULL) {
@@ -788,7 +773,8 @@ type_status core_machine_run(
                 return TYPE_STATUS_OK;
             }
             if (machine->cpu_retirement_wait_pending) {
-                if (machine->cpu_cycle_bus_ready_gate_enabled && !machine->cpu_cycle_bus_ready) {
+                if (machine->transaction_contract.cpu_cycle_bus_ready_gate_enabled &&
+                    !machine->cpu_cycle_bus_ready) {
                     if (result->ticks == UINT64_MAX || machine->elapsed_ticks == UINT64_MAX) {
                         (C_VOID)core_machine_report_fault(machine, 0x54494d45u);
                         result->reason = CORE_MACHINE_STOP_FAULT;
@@ -925,7 +911,7 @@ type_status core_machine_run(
                     result->elapsed_ticks = machine->elapsed_ticks;
                     return TYPE_STATUS_OK;
                 }
-                if (machine->cpu_prefetch_reservation_enabled) {
+                if (machine->transaction_contract.cpu_prefetch_reservation_enabled) {
                     core_machine_cpu_execution_reserve_prefetch(
                         &machine->executor_cpu_execution);
                 }

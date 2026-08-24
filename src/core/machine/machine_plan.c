@@ -73,7 +73,11 @@ type_status core_machine_plan_validate(const core_machine_plan *plan)
     STD_SIZE_T index;
 
     if (plan == STD_NULL || plan->declaration_count !=
-        CORE_MACHINE_TIMING_CAPABILITY_COUNT) return TYPE_STATUS_INVALID_ARGUMENT;
+        CORE_MACHINE_TIMING_CAPABILITY_COUNT ||
+        !core_machine_transaction_contract_is_valid(
+            &plan->configuration.transaction_contract)) {
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
     if ((plan->topology.absent_memory_present != TYPE_FALSE &&
          plan->topology.absent_memory_present != TYPE_TRUE) ||
         (plan->topology.planar_parity_present != TYPE_FALSE &&
@@ -379,6 +383,22 @@ C_INT core_machine_external_access_wait_windows_are_valid(
                 window->last_address > 0xffffu)) return 0;
     }
     return 1;
+}
+
+C_INT core_machine_transaction_contract_is_valid(
+    const core_machine_transaction_contract *contract)
+{
+    return contract != STD_NULL &&
+        core_machine_external_cycle_timing_is_valid(
+            &contract->external_cycle_timing) &&
+        core_machine_external_access_wait_windows_are_valid(
+            contract->external_access_wait_windows) &&
+        (contract->dma_cycle_bus_ready_gate_enabled == TYPE_FALSE ||
+         contract->dma_cycle_bus_ready_gate_enabled == TYPE_TRUE) &&
+        (contract->cpu_cycle_bus_ready_gate_enabled == TYPE_FALSE ||
+         contract->cpu_cycle_bus_ready_gate_enabled == TYPE_TRUE) &&
+        (contract->cpu_prefetch_reservation_enabled == TYPE_FALSE ||
+         contract->cpu_prefetch_reservation_enabled == TYPE_TRUE);
 }
 
 C_INT core_machine_clock_plan_is_valid(

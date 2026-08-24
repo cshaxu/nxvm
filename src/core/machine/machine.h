@@ -134,9 +134,7 @@ struct core_machine {
     type_unsigned_8 *d4_plan_parity_mask;
     core_machine_transaction_state transaction;
     core_machine_instruction_timing instruction_timing;
-    core_machine_external_cycle_timing external_cycle_timing;
-    core_machine_external_access_wait_window external_access_wait_windows[
-        CORE_MACHINE_EXTERNAL_ACCESS_WAIT_WINDOW_CAPACITY];
+    core_machine_transaction_contract transaction_contract;
     type_unsigned_32 external_cycle_page_tag;
     type_unsigned_64 external_cycle_round_ticks;
     type_unsigned_64 cpu_retirement_wait_ticks;
@@ -244,13 +242,9 @@ struct core_machine {
     C_VOID *execution_provider_context;
     C_INT execution_provider_frozen;
     /* Append-only scheduler state keeps existing internal offsets stable. */
-    type_unsigned_32 dma_cycle_wait_quanta;
     type_unsigned_32 dma_cycle_wait_remaining;
-    type_bool dma_cycle_bus_ready_gate_enabled;
     type_bool dma_cycle_bus_ready;
-    type_bool cpu_cycle_bus_ready_gate_enabled;
     type_bool cpu_cycle_bus_ready;
-    type_bool cpu_prefetch_reservation_enabled;
     /* D4 refresh request state; it is serviced at the shared arbitration point. */
     type_bool d4_refresh_hold_pending;
     type_bool d4_refresh_pulse_active;
@@ -338,6 +332,8 @@ C_INT core_machine_external_cycle_timing_is_valid(
     const core_machine_external_cycle_timing *timing);
 C_INT core_machine_external_access_wait_windows_are_valid(
     const core_machine_external_access_wait_window *windows);
+C_INT core_machine_transaction_contract_is_valid(
+    const core_machine_transaction_contract *contract);
 C_INT core_machine_clock_plan_is_valid(const core_machine_clock_plan *plan);
 const core_machine_timing_declaration *core_machine_plan_declaration_find(
     const core_machine_plan *plan, core_machine_timing_capability capability);

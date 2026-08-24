@@ -61,16 +61,17 @@ C_VOID core_machine_arbitration_tick(C_VOID *opaque,
     pit_ticks = core_machine_clock_domain_advance(&machine->pit_clock, 1u);
     refresh_pending = machine->d4_refresh_hold_pending;
     core_machine_d4_refresh_hold_advance(machine);
-    if (machine->dma_cycle_wait_quanta != 0u && dma_ticks != 0u) {
+    if (machine->transaction_contract.dma_cycle_wait_quanta != 0u && dma_ticks != 0u) {
         type_unsigned_64 tick;
         for (tick = 0u; tick < dma_ticks; ++tick) {
             if (core_machine_dma_has_pending_request(&machine->shared_dma_primary,
                     &machine->shared_dma_secondary)) {
-                if (machine->dma_cycle_bus_ready_gate_enabled &&
+                if (machine->transaction_contract.dma_cycle_bus_ready_gate_enabled &&
                     !machine->dma_cycle_bus_ready) {
                     continue;
                 }
-                if (machine->dma_cycle_wait_remaining < machine->dma_cycle_wait_quanta) {
+                if (machine->dma_cycle_wait_remaining <
+                    machine->transaction_contract.dma_cycle_wait_quanta) {
                     ++machine->dma_cycle_wait_remaining;
                 } else {
                     core_machine_dma_grant_advance(machine);
@@ -98,7 +99,7 @@ C_VOID core_machine_arbitration_tick(C_VOID *opaque,
             &machine->shared_dma_primary, &machine->shared_dma_secondary,
             &machine->executor_memory, &machine->transaction, dma_ticks);
     }
-    if (machine->cpu_prefetch_reservation_enabled && !refresh_pending &&
+    if (machine->transaction_contract.cpu_prefetch_reservation_enabled && !refresh_pending &&
         !machine->d4_refresh_hold_pending &&
         !core_machine_dma_has_pending_request(&machine->shared_dma_primary,
             &machine->shared_dma_secondary) &&

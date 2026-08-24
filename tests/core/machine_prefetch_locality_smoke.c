@@ -27,7 +27,7 @@ static C_INT run_halt(const core_machine_external_cycle_timing *timing,
     C_INT failed = 0;
 
     config.cpu_profile = CORE_MACHINE_CPU_PROFILE_80386;
-    config.external_cycle_timing = *timing;
+    config.transaction_contract.external_cycle_timing = *timing;
     failed |= core_machine_create(&config, &machine) != TYPE_STATUS_OK;
     failed |= test_core_machine_fixture_register_reset_mapping(machine,
         0xfffffff0u, 0x000ffff0u, 16u) != TYPE_STATUS_OK;
@@ -53,7 +53,7 @@ static C_INT run_halt_with_port_wait(type_unsigned_64 *out_ticks)
     C_INT failed = 0;
 
     config.cpu_profile = CORE_MACHINE_CPU_PROFILE_80386;
-    config.external_access_wait_windows[0] =
+    config.transaction_contract.external_access_wait_windows[0] =
         (core_machine_external_access_wait_window) {
             CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_PORT, 0x00e0u, 0x00e0u, 1u};
     failed |= core_machine_create(&config, &machine) != TYPE_STATUS_OK;
@@ -82,7 +82,7 @@ static C_INT run_write(const core_machine_external_cycle_timing *timing,
     C_INT failed = 0;
 
     config.cpu_profile = CORE_MACHINE_CPU_PROFILE_80386;
-    config.external_cycle_timing = *timing;
+    config.transaction_contract.external_cycle_timing = *timing;
     failed |= core_machine_create(&config, &machine) != TYPE_STATUS_OK;
     failed |= test_core_machine_fixture_register_reset_mapping(machine,
         0xfffffff0u, 0x000ffff0u, 16u) != TYPE_STATUS_OK;
@@ -110,7 +110,7 @@ static C_INT run_read(const core_machine_external_cycle_timing *timing,
     C_INT failed = 0;
 
     config.cpu_profile = CORE_MACHINE_CPU_PROFILE_80386;
-    config.external_cycle_timing = *timing;
+    config.transaction_contract.external_cycle_timing = *timing;
     failed |= core_machine_create(&config, &machine) != TYPE_STATUS_OK;
     failed |= test_core_machine_fixture_register_reset_mapping(machine,
         0xfffffff0u, 0x000ffff0u, 16u) != TYPE_STATUS_OK;
@@ -136,7 +136,7 @@ static C_INT external_cycle_observer_contract(C_VOID)
     C_VOID *context;
     C_INT failed = 0;
 
-    config.external_cycle_timing = explicit_timing;
+    config.transaction_contract.external_cycle_timing = explicit_timing;
     failed |= core_machine_create(&config, &machine) != TYPE_STATUS_OK;
     failed |= core_machine_freeze_execution_providers(machine) != TYPE_STATUS_OK;
     failed |= core_machine_reset(machine) != TYPE_STATUS_OK;
@@ -207,8 +207,8 @@ static C_INT d4_refresh_external_cycle_contract(C_VOID)
     C_VOID *context;
     C_INT failed = 0;
 
-    config.external_cycle_timing = timing;
-    config.cpu_cycle_bus_ready_gate_enabled = TYPE_TRUE;
+    config.transaction_contract.external_cycle_timing = timing;
+    config.transaction_contract.cpu_cycle_bus_ready_gate_enabled = TYPE_TRUE;
     config.auxiliary_pit_present = TYPE_TRUE;
     config.auxiliary_pit_base_port = 0x0048u;
     failed |= core_machine_create(&config, &machine) != TYPE_STATUS_OK;
@@ -252,8 +252,8 @@ static C_INT retirement_wait_contract(C_VOID)
     C_INT failed = 0;
 
     config.cpu_profile = CORE_MACHINE_CPU_PROFILE_80386;
-    config.external_cycle_timing = timing;
-    config.cpu_cycle_bus_ready_gate_enabled = TYPE_TRUE;
+    config.transaction_contract.external_cycle_timing = timing;
+    config.transaction_contract.cpu_cycle_bus_ready_gate_enabled = TYPE_TRUE;
     failed |= core_machine_create(&config, &machine) != TYPE_STATUS_OK;
     failed |= test_core_machine_fixture_register_reset_mapping(machine,
         0xfffffff0u, 0x000ffff0u, 16u) != TYPE_STATUS_OK;
@@ -291,7 +291,7 @@ static C_INT cecg_aperture_wait_contract(C_VOID)
     C_VOID *context;
     C_INT failed = 0;
 
-    config.external_access_wait_windows[0] =
+    config.transaction_contract.external_access_wait_windows[0] =
         (core_machine_external_access_wait_window) {
             CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_MEMORY, 0x000a0000u,
             0x000affffu, 1u};
@@ -327,7 +327,7 @@ static C_INT d4_cecg_memory_class_contract(C_VOID)
     C_VOID *context;
     C_INT failed = 0;
 
-    config.external_cycle_timing = (core_machine_external_cycle_timing) {
+    config.transaction_contract.external_cycle_timing = (core_machine_external_cycle_timing) {
         2048u, 2u, 0u, CORE_MACHINE_EXTERNAL_CYCLE_OVERLAP_DISABLED,
         0u, 0x0009ffffu};
     failed |= core_machine_create(&config, &machine) != TYPE_STATUS_OK;
@@ -357,7 +357,7 @@ static C_INT cecg_port_wait_contract(C_VOID)
     C_VOID *context;
     C_INT failed = 0;
 
-    config.external_access_wait_windows[0] =
+    config.transaction_contract.external_access_wait_windows[0] =
         (core_machine_external_access_wait_window) {
             CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_PORT, 0x03c0u, 0x03cfu, 1u};
     failed |= core_machine_create(&config, &machine) != TYPE_STATUS_OK;
@@ -409,8 +409,8 @@ static C_INT prefetch_reservation_contract(C_VOID)
     C_INT failed = 0;
 
     config.cpu_profile = CORE_MACHINE_CPU_PROFILE_80386;
-    config.external_cycle_timing = timing;
-    config.cpu_prefetch_reservation_enabled = TYPE_TRUE;
+    config.transaction_contract.external_cycle_timing = timing;
+    config.transaction_contract.cpu_prefetch_reservation_enabled = TYPE_TRUE;
     failed |= core_machine_create(&config, &machine) != TYPE_STATUS_OK;
     failed |= core_machine_freeze_execution_providers(machine) != TYPE_STATUS_OK;
     failed |= core_machine_reset(machine) != TYPE_STATUS_OK;

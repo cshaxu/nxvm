@@ -97,6 +97,19 @@ typedef struct core_machine_external_access_wait_window {
     type_unsigned_32 wait_ticks;
 } core_machine_external_access_wait_window;
 
+/* Immutable plan-selected policy for the existing Core transaction,
+ * availability and arbitration owners. It carries values only: CPU, DMA and
+ * device owners retain their state machines and do not receive callbacks. */
+typedef struct core_machine_transaction_contract {
+    core_machine_external_cycle_timing external_cycle_timing;
+    core_machine_external_access_wait_window external_access_wait_windows[
+        CORE_MACHINE_EXTERNAL_ACCESS_WAIT_WINDOW_CAPACITY];
+    type_unsigned_32 dma_cycle_wait_quanta;
+    type_bool dma_cycle_bus_ready_gate_enabled;
+    type_bool cpu_cycle_bus_ready_gate_enabled;
+    type_bool cpu_prefetch_reservation_enabled;
+} core_machine_transaction_contract;
+
 typedef struct core_machine_config {
     STD_SIZE_T memory_bytes;
     core_machine_cpu_profile cpu_profile;
@@ -108,11 +121,7 @@ typedef struct core_machine_config {
     /* Compatibility base-cost shorthand when instruction_timing.base_ticks is 0. */
     type_unsigned_32 ticks_per_instruction;
     core_machine_instruction_timing instruction_timing;
-    core_machine_external_cycle_timing external_cycle_timing;
-    /* Bounded profile-selected external access windows.  They add a declared
-     * logical wait only after a matching CPU lifecycle commit. */
-    core_machine_external_access_wait_window external_access_wait_windows[
-        CORE_MACHINE_EXTERNAL_ACCESS_WAIT_WINDOW_CAPACITY];
+    core_machine_transaction_contract transaction_contract;
     core_machine_clock_plan clock_plan;
     /* Physical mode refuses an unallocated successful retirement before it can
      * be published into a clock-domain plan. */
@@ -129,15 +138,6 @@ typedef struct core_machine_config {
     type_unsigned_16 auxiliary_pit_base_port;
     /* False preserves PC/AT AUX; true selects a keyboard-only 8042 topology. */
     type_bool kbc_aux_absent;
-    /* Per-DMA-cycle delay in delivered DMA clock quanta; zero preserves generic timing. */
-    type_unsigned_32 dma_cycle_wait_quanta;
-    /* Enables a Core-owned DMA BUSRDY input; reset defaults the input ready. */
-    type_bool dma_cycle_bus_ready_gate_enabled;
-    /* Enables a Core-owned CPU BUSRDY input for pending external-cycle waits. */
-    type_bool cpu_cycle_bus_ready_gate_enabled;
-    /* Enables the bounded Core prefetch reservation producer.  It has no
-     * physical-cycle overlap or scalar-timing meaning by itself. */
-    type_bool cpu_prefetch_reservation_enabled;
 } core_machine_config;
 
 #define CORE_MACHINE_TIMING_CAPABILITY_COUNT 30u

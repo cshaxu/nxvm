@@ -3959,7 +3959,7 @@ static type_unsigned_32 core_machine_external_access_wait_ticks(
     for (index = 0u; index < CORE_MACHINE_EXTERNAL_ACCESS_WAIT_WINDOW_CAPACITY;
             ++index) {
         const core_machine_external_access_wait_window *window =
-            &machine->external_access_wait_windows[index];
+            &machine->transaction_contract.external_access_wait_windows[index];
         if (window->wait_ticks != 0u && window->space == space &&
             address >= window->first_address && address <= window->last_address) {
             return window->wait_ticks;
@@ -3989,11 +3989,11 @@ C_VOID core_machine_cpu_external_cycle_trace(C_VOID *opaque,
 
     if (machine == STD_NULL) return;
     page_timing_enabled = space == CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_MEMORY &&
-        machine->external_cycle_timing.page_bytes != 0u &&
-        ((machine->external_cycle_timing.first_eligible_address == 0u &&
-          machine->external_cycle_timing.last_eligible_address == 0u) ||
-         (address >= machine->external_cycle_timing.first_eligible_address &&
-          address <= machine->external_cycle_timing.last_eligible_address));
+        machine->transaction_contract.external_cycle_timing.page_bytes != 0u &&
+        ((machine->transaction_contract.external_cycle_timing.first_eligible_address == 0u &&
+          machine->transaction_contract.external_cycle_timing.last_eligible_address == 0u) ||
+         (address >= machine->transaction_contract.external_cycle_timing.first_eligible_address &&
+          address <= machine->transaction_contract.external_cycle_timing.last_eligible_address));
     switch (phase) {
     case CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_BEGIN:
         if (machine->external_cycle_pending_valid) {
@@ -4011,7 +4011,7 @@ C_VOID core_machine_cpu_external_cycle_trace(C_VOID *opaque,
         type = CORE_MACHINE_TRACE_CPU_EXTERNAL_CYCLE_BEGIN;
         break;
     case CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_OVERLAP_DECLARE:
-        if (page_timing_enabled && machine->external_cycle_timing.overlap_policy ==
+        if (page_timing_enabled && machine->transaction_contract.external_cycle_timing.overlap_policy ==
                 CORE_MACHINE_EXTERNAL_CYCLE_OVERLAP_EXPLICIT_SEQUENTIAL &&
             machine->external_cycle_pending_valid &&
             machine->external_cycle_pending_space ==
@@ -4034,13 +4034,14 @@ C_VOID core_machine_cpu_external_cycle_trace(C_VOID *opaque,
             space, address, bytes, write, provenance);
         if (pending_matches && page_timing_enabled &&
             core_machine_external_cycle_access_is_chargeable(write, provenance)) {
-            type_unsigned_32 page_tag = address / machine->external_cycle_timing.page_bytes;
+            type_unsigned_32 page_tag = address /
+                machine->transaction_contract.external_cycle_timing.page_bytes;
             type_unsigned_32 wait_ticks = !machine->external_cycle_page_valid ||
                 !machine->external_cycle_overlap_valid ||
                 machine->external_cycle_overlap_next_physical != address ||
                 machine->external_cycle_page_tag != page_tag ?
-                machine->external_cycle_timing.page_miss_ticks :
-                machine->external_cycle_timing.page_hit_ticks;
+                machine->transaction_contract.external_cycle_timing.page_miss_ticks :
+                machine->transaction_contract.external_cycle_timing.page_hit_ticks;
             if (machine->external_cycle_overlap_valid &&
                 machine->external_cycle_overlap_next_physical == address) {
                 machine->external_cycle_overlap_valid = TYPE_FALSE;

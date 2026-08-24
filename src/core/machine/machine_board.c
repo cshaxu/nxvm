@@ -395,7 +395,7 @@ type_status core_machine_get_fdc_dma_request_binding(const core_machine *machine
 type_status core_machine_set_dma_bus_ready(core_machine *machine, C_INT ready)
 {
     if (machine == STD_NULL || !core_machine_mutable_operation_is_allowed(machine) ||
-        !machine->dma_cycle_bus_ready_gate_enabled) {
+        !machine->transaction_contract.dma_cycle_bus_ready_gate_enabled) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
     machine->dma_cycle_bus_ready = ready ? TYPE_TRUE : TYPE_FALSE;
@@ -404,7 +404,9 @@ type_status core_machine_set_dma_bus_ready(core_machine *machine, C_INT ready)
 type_status core_machine_set_cpu_bus_ready(core_machine *machine, C_INT ready)
 {
     if (machine == STD_NULL || !core_machine_mutable_operation_is_allowed(machine) ||
-        !machine->cpu_cycle_bus_ready_gate_enabled) return TYPE_STATUS_INVALID_ARGUMENT;
+        !machine->transaction_contract.cpu_cycle_bus_ready_gate_enabled) {
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
     machine->cpu_cycle_bus_ready = ready ? TYPE_TRUE : TYPE_FALSE;
     return TYPE_STATUS_OK;
 }

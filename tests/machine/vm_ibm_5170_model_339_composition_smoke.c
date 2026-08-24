@@ -57,12 +57,12 @@ static C_INT vm_model_339_selected_contract(C_VOID)
     failed |= session->profile != profile;
     /* 5170 selects no board-specific external-cycle policy; it reuses the
      * same Core owner with the disabled default rather than a parallel path. */
-    failed |= session->core_machine->cpu_cycle_bus_ready_gate_enabled != TYPE_FALSE ||
-        session->core_machine->cpu_prefetch_reservation_enabled != TYPE_FALSE ||
-        session->core_machine->external_cycle_timing.page_bytes != 0u ||
-        session->core_machine->external_cycle_timing.page_miss_ticks != 0u ||
-        session->core_machine->external_cycle_timing.page_hit_ticks != 0u ||
-        session->core_machine->external_cycle_timing.overlap_policy !=
+    failed |= session->core_machine->transaction_contract.cpu_cycle_bus_ready_gate_enabled != TYPE_FALSE ||
+        session->core_machine->transaction_contract.cpu_prefetch_reservation_enabled != TYPE_FALSE ||
+        session->core_machine->transaction_contract.external_cycle_timing.page_bytes != 0u ||
+        session->core_machine->transaction_contract.external_cycle_timing.page_miss_ticks != 0u ||
+        session->core_machine->transaction_contract.external_cycle_timing.page_hit_ticks != 0u ||
+        session->core_machine->transaction_contract.external_cycle_timing.overlap_policy !=
             CORE_MACHINE_EXTERNAL_CYCLE_OVERLAP_DISABLED;
     failed |= core_machine_bus_write(session->core_machine, CORE_MACHINE_PC_AT_PORT_B,
         0x02u) != TYPE_STATUS_OK || core_machine_get_speaker_observation(

@@ -40,23 +40,23 @@ C_INT main(C_VOID)
         session->profile != STD_NULL ||
         session->core_machine->retirement_time_contract !=
             CORE_MACHINE_RETIREMENT_TIME_DETERMINISTIC ||
-        session->core_machine->external_cycle_timing.page_bytes != 2048u ||
-        session->core_machine->external_cycle_timing.page_miss_ticks != 2u ||
-        session->core_machine->external_cycle_timing.page_hit_ticks != 0u ||
-        session->core_machine->external_cycle_timing.first_eligible_address != 0u ||
-        session->core_machine->external_cycle_timing.last_eligible_address != 0x0009ffffu ||
-        session->core_machine->external_access_wait_windows[0].space !=
+        session->core_machine->transaction_contract.external_cycle_timing.page_bytes != 2048u ||
+        session->core_machine->transaction_contract.external_cycle_timing.page_miss_ticks != 2u ||
+        session->core_machine->transaction_contract.external_cycle_timing.page_hit_ticks != 0u ||
+        session->core_machine->transaction_contract.external_cycle_timing.first_eligible_address != 0u ||
+        session->core_machine->transaction_contract.external_cycle_timing.last_eligible_address != 0x0009ffffu ||
+        session->core_machine->transaction_contract.external_access_wait_windows[0].space !=
             CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_PORT ||
-        session->core_machine->external_access_wait_windows[0].first_address != 0x03b4u ||
-        session->core_machine->external_access_wait_windows[2].last_address != 0x03dcu ||
-        session->core_machine->external_access_wait_windows[5].first_address != 0x0fc6u ||
-        session->core_machine->external_access_wait_windows[5].wait_ticks != 1u ||
-        session->core_machine->external_access_wait_windows[6].space != CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_MEMORY ||
-        session->core_machine->external_access_wait_windows[6].first_address != 0x000a0000u ||
-        session->core_machine->external_access_wait_windows[6].last_address != 0x000affffu ||
-        session->core_machine->cpu_cycle_bus_ready_gate_enabled != TYPE_TRUE ||
-        session->core_machine->cpu_prefetch_reservation_enabled != TYPE_TRUE ||
-        session->core_machine->external_cycle_timing.overlap_policy !=
+        session->core_machine->transaction_contract.external_access_wait_windows[0].first_address != 0x03b4u ||
+        session->core_machine->transaction_contract.external_access_wait_windows[2].last_address != 0x03dcu ||
+        session->core_machine->transaction_contract.external_access_wait_windows[5].first_address != 0x0fc6u ||
+        session->core_machine->transaction_contract.external_access_wait_windows[5].wait_ticks != 1u ||
+        session->core_machine->transaction_contract.external_access_wait_windows[6].space != CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_MEMORY ||
+        session->core_machine->transaction_contract.external_access_wait_windows[6].first_address != 0x000a0000u ||
+        session->core_machine->transaction_contract.external_access_wait_windows[6].last_address != 0x000affffu ||
+        session->core_machine->transaction_contract.cpu_cycle_bus_ready_gate_enabled != TYPE_TRUE ||
+        session->core_machine->transaction_contract.cpu_prefetch_reservation_enabled != TYPE_TRUE ||
+        session->core_machine->transaction_contract.external_cycle_timing.overlap_policy !=
             CORE_MACHINE_EXTERNAL_CYCLE_OVERLAP_EXPLICIT_SEQUENTIAL ||
         core_machine_get_cpu_profile(session->core_machine, &cpu_profile) !=
             TYPE_STATUS_OK || cpu_profile != CORE_MACHINE_CPU_PROFILE_80386 ||

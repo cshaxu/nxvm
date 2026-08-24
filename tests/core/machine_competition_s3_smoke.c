@@ -106,8 +106,8 @@ static C_INT competition_dma_wait_contract(C_VOID)
     C_INT failed = 0;
 
     config.cpu_profile = CORE_MACHINE_CPU_PROFILE_80386;
-    config.dma_cycle_wait_quanta = 1u;
-    config.dma_cycle_bus_ready_gate_enabled = TYPE_TRUE;
+    config.transaction_contract.dma_cycle_wait_quanta = 1u;
+    config.transaction_contract.dma_cycle_bus_ready_gate_enabled = TYPE_TRUE;
     failed |= core_machine_create(&config, &machine) != TYPE_STATUS_OK;
     failed |= test_core_machine_fixture_register_reset_mapping(machine, 0xfffffff0u,
         0x000ffff0u, 16u) != TYPE_STATUS_OK;
