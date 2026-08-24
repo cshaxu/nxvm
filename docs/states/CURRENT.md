@@ -2,7 +2,26 @@
 
 ## Current Work
 
-**Active: M5 T450, between accepted subtasks.**
+**Active: M5 T450 S14 - uPD765 FDC and logical-media current-code gap audit.**
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation - M5 T450 S14; the next exclusive FDC/media gap-audit batch after accepted S13. |
+| Admission And Approval | Repository owner approved T450's paired source-list/code-audit work and requires source-form/manual-sufficiency fields for S19. S14 audits only the frozen S13 universe. |
+| Objective | Give every `FDC-R1` through `FDC-T5` current owner, observed behavior, focused proof, disposition and one receiver where nonconforming or blocked. |
+| Non-goals | No FDC/media/runtime/test change; no media or firmware import; no new drive/image format selection; no external-emulator research or dependency. |
+| Reference Baseline | Accepted S13 checklist at `e191ec68`; current FDC/media/Core transaction/DMA/PIC/scheduler and VM composition paths; focused existing tests and retained T433/T449 evidence. |
+| Candidate Proposal | [M5 Core controller manual admission and gap inventory](../proposals/m5-core-controller-manuals-and-gap-inventory.md). |
+| Files And ABI Surface | Add only one indexed S14 audit under `docs/etc/evidence/`; inspect FDC/media owners and tests without changing code, tests, ABI or assets. |
+| Applicable Rules | `docs/README.md` fixed reading set; `EXECUTION.md` continuation, coverage-ledger, P/closure and actual-change-review rules; `DOCUMENT.md` authority/index/state rules; source policy prohibits source/media import. Architecture/coding rules are inspection criteria only. |
+| Verification | Directly inspect every S13 row and all named FDC/media/transaction/DMA/PIC/scheduler/composition/test paths; reconcile exactly 15 rows; run diff check and documentation governance before P1/P2. |
+| Expected Markers | One audit preserves one FDC and media-owner path, distinguishes chip-function coverage from blocked logical-media/drive inputs, and assigns each gap once. |
+| Asset Needs | None; no source or media acquisition. |
+| Reporting Requirements | Record code owner/symbol, observed behavior, focused test, disposition and sole receiver for each row; report accepted commit and blocked media boundary concisely. |
+| Stop Conditions | Stop for a needed unadmitted drive/media source, a source conflict, an owner profile choice or requested runtime change; transfer rather than expand. |
+| Exit Criteria | All fifteen S13 rows are dispositioned once, all gaps/blocked inputs have one receiver or rationale, no code/test changes occur, and the indexed audit is reviewed, committed, pushed and accepted. |
+| Original Owner Request | Establish original manual archives, complete function/timing checklist 1 and current-code gap checklist 2 for eight controllers, with S19 validating PDF form and manual sufficiency. |
+| Similar-Issue Sweep | Inspect data/status/control ports, command/result queue, resets/Sense, DMA/IRQ/FDC request bindings, scheduler execution/readiness, drive state/motor/geometry/media registry, all FDC tests and PC/AT/Model-40 composition. |
 
 ## Current Technical Baseline
 
