@@ -2,11 +2,32 @@
 
 ## Current Work
 
-**Idle.**
+**Active: M5 T457 S3 - release artifact without compiler debug information.**
+
+## M5 T457 S3 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Corrective |
+| Admission And Approval | Owner explicitly corrected the S2 interpretation on 2026-08-24: the 0457 executable must be optimized and carry no compiler debug information, while the NXVM runtime debugger remains a production path. |
+| Objective | Change the current 0457 artifact publication route from RelWithDebInfo to Release and prove the resulting PE has no compiler debug sections while retaining runtime debugger behavior. |
+| Non-goals | Do not remove or conditionally compile out the NXVM debugger, its trace command, pause, step, break/watch, recorder, or CPU fault diagnostics; do not change guest timing, device semantics, public ABI, artifact identity, or create T458. |
+| Reference Baseline | `e96d778e`; the current 0457 artifact is RelWithDebInfo and SHA-256 `D2351D8940209DBB9BAB82FDA0AB33155223F00EDB7B1C74B59B210C855B5E36`. |
+| Candidate Proposal | [Optimized artifact without compiler debug information](../proposals/optimized-artifact-no-debug-info.md). |
+| Files And ABI Surface | CMake preset and publication guard, evidence/current/history/Queue. No product source or public ABI change is expected. |
+| Applicable Rules | `rules/EXECUTION.md`, `rules/ARCHITECTURE.md`, `rules/CODING.md`, `rules/DOCUMENT.md`; one artifact owner, production debugger retained, and no parallel publication route. |
+| Verification | Configure and build current Release artifact; inspect cache flags and PE sections; prove RelWithDebInfo and Debug publication rejection; run optimized debugger smokes, full Debug current gate, and documentation governance. |
+| Expected Markers | `CMAKE_BUILD_TYPE=Release`, `-O3 -DNDEBUG` without `-g`, no `.debug*` PE section, retained runtime debugger symbols/tests, and updated 0457 hash. |
+| Asset Needs | Existing smoke media only; no import or new guest media. |
+| Reporting Requirements | Record Release flags, PE-section result, publication rejection result, debugger proof, artifact hash, gates, and any contrary finding. |
+| Stop Conditions | Stop for a requirement to remove a runtime debugger feature, an unexpected debug-info section caused by the toolchain, a public ABI change, or any guest-visible behavior change. |
+| Exit Criteria | `build/output/nxvm_0_5_0457.exe` is Release-only and carries no compiler debug information while all NXVM runtime debugger capabilities remain intact and required gates pass. |
+| Original Owner Request | The executable must be optimized and not contain compiler debug information; the debugger itself remains available for product use. |
+| Similar-Issue Sweep | Sweep all current-artifact presets, artifact-copy commands, build-type guards, compiler flags, PE debug sections, and debugger feature tests. |
 
 ## Current Technical Baseline
 
-- **Current developer artifact:** target `vm-0-5-0457`; `nxvm_0_5_0457.exe` / `build/output/nxvm_0_5_0457.exe`, SHA-256 `D2351D8940209DBB9BAB82FDA0AB33155223F00EDB7B1C74B59B210C855B5E36`. It is built only from the RelWithDebInfo current-artifact route; Debug remains the current-gate route. T434 has one copied Core timing-plan publication route for default PC/AT, IBM 5170 Model 339 and Model-40 BYOB session composition.
+- **Current developer artifact:** target `vm-0-5-0457`; `nxvm_0_5_0457.exe` / `build/output/nxvm_0_5_0457.exe`, SHA-256 `B1DC3B723CC03B19E8C9298D08B9909D5182D9BB8EEEEBE9D8016115F8E67455`. It is built only from the stripped Release current-artifact route; Debug remains the current-gate route. T434 has one copied Core timing-plan publication route for default PC/AT, IBM 5170 Model 339 and Model-40 BYOB session composition.
   T386 closes selected-device functional completeness at S29; its retained
   [closure audit](../etc/evidence/t386-s29-functional-closure-audit.md) fixes
   HDC current-gate coverage and transfers board, firmware and physical work.

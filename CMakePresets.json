@@ -27,16 +27,16 @@
     },
     {
       "name": "mingw-gcc-x64-release",
-      "displayName": "MinGW-w64 GCC x64 optimized debug",
+      "displayName": "MinGW-w64 GCC x64 optimized release",
       "inherits": "mingw-gcc-x64",
       "binaryDir": "${sourceDir}/build/mingw-gcc-x64-release",
       "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "RelWithDebInfo"
+        "CMAKE_BUILD_TYPE": "Release"
       }
     },
     {
       "name": "mingw-gcc-x64-release-ccache",
-      "displayName": "MinGW-w64 GCC x64 optimized debug with ccache",
+      "displayName": "MinGW-w64 GCC x64 optimized release with ccache",
       "inherits": "mingw-gcc-x64-release",
       "binaryDir": "${sourceDir}/build/mingw-gcc-x64-release-ccache",
       "cacheVariables": {
