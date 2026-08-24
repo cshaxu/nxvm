@@ -2,26 +2,7 @@
 
 ## Current Work
 
-**Active: M5 T450 S12 - KBC 8042/NMI current-code gap audit and S19 source-sufficiency plan update.**
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation - M5 T450 S12; the next exclusive KBC/8042 gap-audit batch after accepted S11. |
-| Admission And Approval | Repository owner approved T450's paired source-list/code-audit work and now explicitly requires S19 to verify every admitted PDF's text/OCR form and every primary-manual precision/sufficiency gap, recorded in checklist 1 with a bounded mature-emulator reference need where applicable. |
-| Objective | Audit every `KBC-R1` through `KBC-T5` source row against current code/tests, and update the T450 proposal/ledger so S19 performs the owner-required cross-controller PDF-form and manual-sufficiency reconciliation. |
-| Non-goals | No KBC, keyboard, NMI, CPU, VM input, test or runtime behavior change; no current external-emulator research or dependency; no treating a mature emulator as a primary manual or as a product dependency. |
-| Reference Baseline | Accepted S11 checklist at `9ae2e204`; current Core KBC/board/scheduler/input owners and focused tests; T450 proposal/S2 ledger; source policy; retained T351/T370/T374/T403 evidence only where directly applicable. |
-| Candidate Proposal | [M5 Core controller manual admission and gap inventory](../proposals/m5-core-controller-manuals-and-gap-inventory.md). |
-| Files And ABI Surface | Add one indexed S12 audit under `docs/etc/evidence/`; update only the T450 proposal and S2 ledger to define S19 PDF-form/sufficiency evidence and checklist-1 recording; inspect KBC code/tests without changing them. |
-| Applicable Rules | `docs/README.md` fixed reading set; `EXECUTION.md` continuation, coverage-ledger, material-scope-revision, P/closure and actual-change-review rules; `DOCUMENT.md` authority/index/state rules; source policy prohibits source import and requires primary-manual authority. Architecture/coding rules are inspection criteria only because no source changes. |
-| Verification | Directly inspect every S11 row and named KBC/board/scheduler/input/test surface; reconcile exactly 16 rows; review proposal/ledger wording against the owner's S19 requirement; run `git diff --check` and documentation governance before P1/P2. |
-| Expected Markers | One row-level KBC audit preserves one KBC owner and assigns each nonconformance once; the S19 plan distinguishes born-digital text, scan/OCR and mixed PDFs from manual-semantic sufficiency, and forbids unlabelled secondary-source facts. |
-| Asset Needs | None; S12 uses S1/S11 admitted manuals only. S19 may inspect their metadata/text layers but acquires no new material unless a later owner-approved source admission is needed. |
-| Reporting Requirements | Record KBC owner/symbol, observed behavior, focused test, disposition and sole receiver; record S19's required proof fields and secondary-reference labelling boundary; report accepted commits and transfers concisely. |
-| Stop Conditions | Stop for conflict in admitted primary sources, a need to obtain a missing primary source, ambiguity whether a secondary emulator reference can be admitted, or any runtime change; transfer rather than expand. |
-| Exit Criteria | All sixteen S11 rows have one code/test disposition and receiver; S19 is explicitly required to record PDF text/OCR form, primary-manual precision gaps, and bounded reference-derived needs in each checklist 1; changed documentation is indexed, reviewed, committed, pushed and accepted. |
-| Original Owner Request | Establish original manual archives, complete function/timing checklist 1 and current-code gap checklist 2 for eight controllers; owner further requires S19 to validate source-PDF form and manual gaps/ambiguities that may require a named mature-emulator reference. |
-| Similar-Issue Sweep | Inspect 0060h/0064h port and status paths, command and keyboard/AUX state, FIFO/IRQ1/IRQ12, output-port A20/reset, NMI separation, host-input submission, scheduler timing, reset/finalization, selected profiles and all original-checklist schema/ledger recipients. |
+**Active: M5 T450, between accepted subtasks.**
 
 ## Current Technical Baseline
 
@@ -47,7 +28,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T450 S11 | Accepted: the 16-row UPI-42/IBM AT source universe freezes the 8042 host, command, serial, IRQ1, A20/reset and NMI-separation facts for S12's code-gap audit. [Checklist](../etc/research/t450-s11-kbc-8042-nmi-function-timing-checklist.md). |
+| T450 S12 | Accepted: the 16-row KBC audit keeps one KBC owner and transfers only source, serial, status, phase and extension gaps; owner-required S19 PDF-form/manual-sufficiency reconciliation is now mandatory for every checklist 1. [Audit](../etc/evidence/t450-s12-kbc-8042-nmi-code-gap-audit.md). |
 | T449 | Closed: one copied transaction contract, transaction lifecycle, scheduler arbitrator, memory classifier and retirement/time/observation route; all S1--S6 evidence is reconciled and physical/controller/x87 boundaries transfer explicitly. [History](../history/M5-T449-core-cpu-board-transaction-contracts.md). |
 | T448 | Closed: six over-limit generated firmware sources now use the one bounded byte-identical materialization route; the unused session helper is removed. [Evidence](../etc/evidence/t448-s1-firmware-materialization.md). |
 | T447 | Closed: all S1--S11 ledger receivers are accepted; one Core execution path, bounded VM contracts, no VDM forwarding facade, owner-local test boundaries and the decomposed Core coordinator are retained. [History](../history/M5-T447-architecture-boundary-debt-closure.md). |
