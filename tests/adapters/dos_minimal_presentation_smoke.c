@@ -6,8 +6,8 @@
 
 C_INT main(C_VOID)
 {
-    vdm_session *first = STD_NULL;
-    vdm_session *second = STD_NULL;
+    vdm_machine_dos_minimal *first = STD_NULL;
+    vdm_machine_dos_minimal *second = STD_NULL;
     vdm_presentation *first_presentation = STD_NULL;
     vdm_presentation *second_presentation = STD_NULL;
     vdm_composition_input_event first_event = { 42u, 0x5au };
@@ -16,8 +16,8 @@ C_INT main(C_VOID)
     vdm_presentation_snapshot second_snapshot;
     type_unsigned_32 key;
 
-    if (vdm_session_create(&first) != TYPE_STATUS_OK ||
-        vdm_session_create(&second) != TYPE_STATUS_OK ||
+    if (vdm_machine_dos_minimal_create(&first) != TYPE_STATUS_OK ||
+        vdm_machine_dos_minimal_create(&second) != TYPE_STATUS_OK ||
         vdm_presentation_create(first, &first_presentation) !=
             TYPE_STATUS_OK ||
         vdm_presentation_create(second, &second_presentation) !=
@@ -30,10 +30,10 @@ C_INT main(C_VOID)
             TYPE_STATUS_OK ||
         vdm_presentation_apply_input(first_presentation) !=
             TYPE_STATUS_OK ||
-        vdm_session_port_read(first, 0x60u, &key) !=
+        vdm_machine_dos_minimal_port_read(first, 0x60u, &key) !=
             TYPE_STATUS_OK ||
         key != 0x1cu ||
-        vdm_session_write_text(first, 0u, 'P', 0x2eu) !=
+        vdm_machine_dos_minimal_write_text(first, 0u, 'P', 0x2eu) !=
             TYPE_STATUS_OK ||
         vdm_presentation_capture_text(first_presentation, 99u,
                                                    &first_snapshot) !=
@@ -47,20 +47,20 @@ C_INT main(C_VOID)
         second_snapshot.text.characters[0] != ' ' ||
         vdm_presentation_apply_input(second_presentation) !=
             TYPE_STATUS_OK ||
-        vdm_session_port_read(second, 0x60u, &key) !=
+        vdm_machine_dos_minimal_port_read(second, 0x60u, &key) !=
             TYPE_STATUS_OK ||
         key != 0x32u) {
         vdm_presentation_destroy(second_presentation);
         vdm_presentation_destroy(first_presentation);
-        vdm_session_destroy(second);
-        vdm_session_destroy(first);
+        vdm_machine_dos_minimal_destroy(second);
+        vdm_machine_dos_minimal_destroy(first);
         return 1;
     }
 
     vdm_presentation_destroy(second_presentation);
     vdm_presentation_destroy(first_presentation);
-    vdm_session_destroy(second);
-    vdm_session_destroy(first);
+    vdm_machine_dos_minimal_destroy(second);
+    vdm_machine_dos_minimal_destroy(first);
     puts("M5:T94:S1:VDM-PRESENTATION-ISOLATION:OK");
     return 0;
 }

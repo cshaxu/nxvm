@@ -95,18 +95,6 @@ adopts them.
   copied geometry/status observations. Inventory every production and test
   field access; do not do a cosmetic typedef rename or leave alias types.
 
-- [ ] **VDM skeleton forwarding-layer disposition (`TODO(Medium)`).** Manual
-  audit Td S125 found `src/vdm/composition/session.c` provides a second public
-  API that, except for allocation and null checks, only forwards every
-  operation to `vdm_machine_dos_minimal_*`. It performs no composition,
-  translation, validation, or lifecycle policy and is therefore a pure
-  forwarding abstraction prohibited by the coding rule. Before M6/M8 work,
-  admit a bounded decision: remove the wrapper and consume the machine boundary
-  directly, or give the composition root a real mantle/dos session-assembly
-  responsibility with explicit lifetime and failure semantics. Preserve the
-  current non-runnable VDM skeleton boundary; do not promote it to a product or
-  add compatibility aliases.
-
 - [ ] **Core machine coordinator decomposition (`TODO(High)`).** Manual audit
   Td S125 found `src/core/machine/machine.c` conflates distinct owners:
   source-timing models, external-cycle accounting, plan validation, scheduler

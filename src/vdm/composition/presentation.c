@@ -7,13 +7,13 @@
 #define VDM_COMPOSITION_DOS_MINIMAL_INPUT_CAPACITY 32u
 
 struct vdm_presentation {
-    vdm_session *session;
+    vdm_machine_dos_minimal *session;
     vdm_composition_input_event input[VDM_COMPOSITION_DOS_MINIMAL_INPUT_CAPACITY];
     C_UINT count;
 };
 
 type_status vdm_presentation_create(
-    vdm_session *session,
+    vdm_machine_dos_minimal *session,
     vdm_presentation **out_presentation)
 {
     vdm_presentation *presentation;
@@ -56,7 +56,7 @@ type_status vdm_presentation_apply_input(
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
     for (index = 0u; index < presentation->count; ++index) {
-        status = vdm_session_submit_native_keyboard_byte(
+        status = vdm_machine_dos_minimal_submit_native_keyboard_byte(
             presentation->session, presentation->input[index].native_byte);
         if (status != TYPE_STATUS_OK) {
             return status;
@@ -78,7 +78,7 @@ type_status vdm_presentation_capture_text(
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
     out_snapshot->timestamp = timestamp;
-    status = vdm_session_get_snapshot(presentation->session, &text);
+    status = vdm_machine_dos_minimal_get_snapshot(presentation->session, &text);
     if (status != TYPE_STATUS_OK) return status;
     out_snapshot->text = text.text;
     return TYPE_STATUS_OK;

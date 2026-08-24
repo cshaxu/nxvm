@@ -2014,7 +2014,6 @@ target_include_directories(vdm-machine PUBLIC
 target_link_libraries(vdm-machine PUBLIC core-machine)
 
 add_library(vdm-composition STATIC
-    src/vdm/composition/session.c
     src/vdm/composition/presentation.c
 )
 target_include_directories(vdm-composition PUBLIC
@@ -2023,10 +2022,10 @@ target_include_directories(vdm-composition PUBLIC
 target_link_libraries(vdm-composition PUBLIC vdm-machine)
 
 add_executable(vdm-minimal-session-smoke
-    tests/products/ntvdm64_minimal_session_smoke.c
+    tests/machine/vdm_minimal_machine_session_smoke.c
 )
 target_link_libraries(vdm-minimal-session-smoke PRIVATE
-    vdm-composition
+    vdm-machine
 )
 
 add_executable(vdm-minimal-presentation-smoke
@@ -3041,6 +3040,12 @@ if(PROJECT_VERIFY_DEPENDENCY_DAG)
         COMMENT "Verifying Core-owned machine collaborator and plan endpoints"
         VERBATIM)
 
+    add_custom_target(verify-t447-vdm-forwarding-closure
+        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_t447_vdm_forwarding_closure.cmake"
+        COMMENT "Verifying VDM forwarding-layer closure"
+        VERBATIM)
+
     add_custom_target(verify-current-artifact-target
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
             -P "${CMAKE_SOURCE_DIR}/cmake/verify_current_artifact_target.cmake"
@@ -3392,6 +3397,7 @@ set(PROJECT_CURRENT_SPECIALIZED_VERIFIER_CANDIDATES
     verify-t447-file-resource-boundary
     verify-t447-platform-lifecycle-boundary
     verify-t447-collaborator-plan-boundary
+    verify-t447-vdm-forwarding-closure
     verify-current-artifact-target
     verify-request-transport-closure
     verify-keyboard-ingress-boundary

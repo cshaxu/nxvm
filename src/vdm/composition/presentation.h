@@ -5,7 +5,7 @@
 
 #include "vdm/composition/input_event.h"
 
-#include "vdm/composition/session.h"
+#include "vdm/machine/dos_minimal.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -19,7 +19,7 @@ typedef struct vdm_presentation_snapshot {
 } vdm_presentation_snapshot;
 
 type_status vdm_presentation_create(
-    vdm_session *session,
+    vdm_machine_dos_minimal *session,
     vdm_presentation **out_presentation);
 type_status vdm_presentation_enqueue_input(
     vdm_presentation *presentation,
@@ -38,4 +38,3 @@ C_VOID vdm_presentation_destroy(
 #endif
 
 #endif
-

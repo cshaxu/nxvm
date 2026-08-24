@@ -25,7 +25,7 @@ first-path history.
 | `vm-machine` | `src/vm/machine/fdd.c`, `hdd.c`, `media_save.c`, `debug.c`. | NXVM: retained VM devices/debugger. | None. | Deferred: inherited-unit diagnostic baseline and substantive owned change. |
 | `vm-product` | `src/vm/product/console.c`. | NXVM: retained Console. | None. | Deferred: retained Console diagnostic baseline and owned change. |
 | `vdm-machine` | `src/vdm/machine/dos_minimal.c`. | NXVM: moved non-runnable VDM scaffold. | Strict. | **Retained target-local strict**: it covers this scaffold source only, with no provenance or transitive-coverage claim. |
-| `vdm-composition` | `src/vdm/composition/session.c`, `presentation.c`. | NXVM: moved non-runnable VDM scaffold composition. | Strict. | **Retained target-local strict**: it covers these scaffold sources only, with no provenance or transitive-coverage claim. |
+| `vdm-composition` | `src/vdm/composition/presentation.c`. | NXVM: moved non-runnable VDM presentation adapter. | Strict. | **Retained target-local strict**: it covers this scaffold source only, with no provenance or transitive-coverage claim. |
 | `vm-0-5-0315` | `src/vm/main.c`, `src/vm/composition/session/machine_info.c`; links the libraries above. | Mixed: retained NXVM entry and mixed product graph. | Strict on artifact sources only. | **Retained target-local strict**: it covers only the two artifact sources and makes no linked-graph coverage claim. |
 
 ## Verification Record
