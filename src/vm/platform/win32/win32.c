@@ -23,7 +23,9 @@ C_VOID vm_platform_win32_keyboard_make_key_for(
 
     if (context == STD_NULL) return;
     if (pressed && virtualKey == VK_F9) {
-        vm_platform_run_handle_report(owner, VM_PLATFORM_RUN_EVENT_STOP_REQUESTED);
+        vm_platform_run_handle_report(owner,
+            VM_PLATFORM_RUN_EVENT_STOP_REQUESTED);
+        return;
     }
     event.kind = CORE_PLATFORM_INPUT_KEY;
     event.data.key.scan_code = scanCode;

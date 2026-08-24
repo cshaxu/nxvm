@@ -2,11 +2,32 @@
 
 ## Current Work
 
-**Idle.**
+**Active: M5 T457 S1 - session input restart recovery.**
+
+## M5 T457 S1 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New |
+| Admission And Approval | Owner reported and requested correction of the current 0448 build's F9-stop then START keyboard failure on 2026-08-24. |
+| Objective | Make ordinary host keyboard input work after an F9 stop and subsequent START through the existing session/platform ingress route. |
+| Non-goals | No guest keyboard scan-set, KBC/PIC, media, Console grammar, or extra input-path change. |
+| Reference Baseline | `f08008cd`; reported 0448 artifact; Win32 run-handle, session lifecycle and input transport owners. |
+| Candidate Proposal | [Session input restart recovery](../proposals/m5-session-input-restart-recovery.md). |
+| Files And ABI Surface | Expected VM session/platform source, one lifecycle regression, evidence/history/Current and current artifact metadata. No public Core ABI. |
+| Applicable Rules | `rules/EXECUTION.md`, `rules/ARCHITECTURE.md`, `rules/CODING.md`, `rules/DOCUMENT.md`; VM owns composition, platform reports through its input contract, and one ingress path remains authoritative. |
+| Verification | Reproduce both input epochs around an F9-equivalent stop; prove second input reaches the existing consumer; run affected lifecycle/input tests, configured build, current gate and documentation governance. |
+| Expected Markers | One run handle per epoch, no stale stop/input state after reset, no duplicate input sink, and a focused two-epoch regression. |
+| Asset Needs | No guest media; existing synthetic/session test fixtures only. |
+| Reporting Requirements | Record reproducer, owner/caller sweep, actual state transition, code delta, focused/full gates and any retained platform boundary. |
+| Stop Conditions | Stop for a required public interface, host-global input policy, guest semantic change, or a nonreproducible external-only condition. |
+| Exit Criteria | The original sequence and analogous platform restart route accept second-epoch input; all gates pass and no parallel path is added. |
+| Original Owner Request | Fix the reported 0448 product: first keyboard input works, F9 exits, then a second START leaves keyboard unresponsive. |
+| Similar-Issue Sweep | Sweep all Win32/Linux F9 stop reporters, run-handle reset/finalize paths, session reset/start routes and host-input ingress consumers. |
 
 ## Current Technical Baseline
 
-- **Current developer artifact:** target `vm-0-5-0448`; `nxvm_0_5_0448.exe` / `build/output/nxvm_0_5_0448.exe`, SHA-256 `A294EA4AEBBB14C7D44B5F2141F6E457505C67808D25E985ECC37AE823BA7462`. T434 has one copied Core timing-plan publication route for default PC/AT, IBM 5170 Model 339 and Model-40 BYOB session composition.
+- **Current developer artifact:** target `vm-0-5-0457`; `nxvm_0_5_0457.exe` / `build/output/nxvm_0_5_0457.exe`, SHA-256 `371B4DE04324A5B4C046A9C69C3C82FCAE7B945D628934B867C2C45C522B1166`. T434 has one copied Core timing-plan publication route for default PC/AT, IBM 5170 Model 339 and Model-40 BYOB session composition.
   T386 closes selected-device functional completeness at S29; its retained
   [closure audit](../etc/evidence/t386-s29-functional-closure-audit.md) fixes
   HDC current-gate coverage and transfers board, firmware and physical work.

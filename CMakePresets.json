@@ -30,12 +30,12 @@
     {
       "name": "current-gcc",
       "configurePreset": "mingw-gcc-x64",
-      "targets": ["vm-0-5-0448"]
+      "targets": ["vm-0-5-0457"]
     },
     {
       "name": "current-gcc-ccache",
       "configurePreset": "mingw-gcc-x64-ccache",
-      "targets": ["vm-0-5-0448"]
+      "targets": ["vm-0-5-0457"]
     },
     {
       "name": "current-gates-gcc",

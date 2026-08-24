@@ -1,10 +1,27 @@
 #include "type.h"
 
+#include "core/machine/machine.h"
 #include "core/platform/sleep.h"
 #include "vm/composition/session/session_interface.h"
 #include "vm/composition/session/session_private.h"
 #include "vm/composition/session/lifecycle.h"
 #include "vm/platform/platform.h"
+#include "vm/platform/win32/win32.h"
+
+static C_INT vm_platform_run_handle_wait_for_keyboard(vm_session *session,
+    type_unsigned_8 previous)
+{
+    C_UINT waited;
+
+    for (waited = 0u; waited != 1000u; ++waited) {
+        if (session->core_machine->shared_kbc.data.keyboard_has_output &&
+            session->core_machine->shared_kbc.data.last_keyboard_output_byte != previous) {
+            return 1;
+        }
+        core_platform_sleep_milliseconds(1u);
+    }
+    return 0;
+}
 
 int main(void)
 {
@@ -33,8 +50,8 @@ int main(void)
         session->start_outcome.status != TYPE_STATUS_OK) goto fail;
     if (!vm_platform_run_handle_is_active(session->platform_run_handle)) goto fail;
     core_platform_sleep_milliseconds(50u);
-    vm_platform_run_handle_report(session->platform_run_handle,
-        VM_PLATFORM_RUN_EVENT_STOP_REQUESTED);
+    vm_platform_win32_keyboard_make_key_for(session->platform_run_context,
+        session->platform_run_handle, 0x43u, VK_F9, 1);
     core_platform_sleep_milliseconds(50u);
     if (vm_session_control_is_running(&session->control)) goto fail;
     vm_session_reset(session);
@@ -44,6 +61,18 @@ int main(void)
         !session->start_outcome.valid ||
         session->start_outcome.status != TYPE_STATUS_OK) goto fail;
     if (!vm_platform_run_handle_is_active(session->platform_run_handle)) goto fail;
+    core_platform_sleep_milliseconds(50u);
+    if (session->core_machine->shared_kbc.data.last_keyboard_output_byte == 0x43u) {
+        goto fail;
+    }
+    {
+        type_unsigned_8 previous =
+            session->core_machine->shared_kbc.data.last_keyboard_output_byte;
+
+        vm_platform_win32_keyboard_make_key_for(session->platform_run_context,
+            session->platform_run_handle, 0x1eu, 'A', 1);
+        if (!vm_platform_run_handle_wait_for_keyboard(session, previous)) goto fail;
+    }
     vm_session_stop(session);
     if (vm_platform_run_handle_is_active(session->platform_run_handle)) goto fail;
     vm_session_finalize(session);
