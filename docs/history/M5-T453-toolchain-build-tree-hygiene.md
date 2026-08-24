@@ -19,3 +19,10 @@ The default preset remains PATH-based, while a clean tree selects one WinLibs
 toolchain family. The sole test correction is a direct owner-header include;
 no production source, target, preset or product behavior changed. The consumed
 proposal companion is retained beside this record.
+
+## Corrective S4
+
+S4 corrects the closed-state record: it expires the oldest compact T445 row to
+retain the mandated eight-row closure window and records the SHA-256 emitted by
+the fresh S1 default-tree build. No toolchain, source, output, or historical
+closure fact changes.

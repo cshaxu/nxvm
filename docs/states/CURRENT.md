@@ -2,11 +2,32 @@
 
 ## Current Work
 
-**Idle.**
+**Active: M5 T453 S4 - closure summary cap correction.**
+
+## M5 T453 S4 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Corrective |
+| Admission And Approval | Owner requested T452 be reopened on 2026-08-24; its closed identifier cannot be reused, so the in-scope successor T453 was admitted and its closure is now corrected. The owner also approved completion of the toolchain/configuration/documentation cleanup. |
+| Objective | Restore the required eight-row maximum for recent task closures and make T453's developer-artifact checksum match its fresh default-tree evidence. |
+| Non-goals | Do not alter toolchain configuration, source, output bytes, queue ordering, or any retained closure fact beyond the required oldest-summary expiry. |
+| Reference Baseline | `573ff40b`; documentation governance reports nine retained task-level closure rows, while the current artifact has SHA-256 `A294EA4AEBBB14C7D44B5F2141F6E457505C67808D25E985ECC37AE823BA7462`. |
+| Candidate Proposal | [Closure-state correction](../proposals/m5-closure-state-correction.md). |
+| Files And ABI Surface | Modify current-state, corrective-proposal, queue-reference, and T453 history records only. No ABI changes. |
+| Applicable Rules | `rules/DOCUMENT.md` and `rules/EXECUTION.md`: `CURRENT.md` caps recent closures at eight and detailed facts remain in history. |
+| Verification | Remove only the oldest T445 summary row; verify the artifact hash; run documentation governance and diff hygiene. |
+| Expected Markers | Exactly eight recent task-level closure rows, matching current artifact hash, and passing governance gate. |
+| Asset Needs | None. |
+| Reporting Requirements | Report removed status-summary row, corrected current checksum, and retained history boundary. |
+| Stop Conditions | Stop if any retained closure row is not a task-level row or cap calculation differs from the gate. |
+| Exit Criteria | The gate passes with exactly eight closure rows, the current checksum equals the existing artifact, and no unrelated diff. |
+| Original Owner Request | Complete the current toolchain/configuration/documentation cleanup task. |
+| Similar-Issue Sweep | Count every recent task-level closure row after the edit; no other status section is changed. |
 
 ## Current Technical Baseline
 
-- **Current developer artifact:** target `vm-0-5-0448`; `nxvm_0_5_0448.exe` / `build/output/nxvm_0_5_0448.exe`, SHA-256 `A89C1901B3D631DFD7482432E74C4CB799BB2A549FA5C6BE93F7205A0BB83677`. T434 has one copied Core timing-plan publication route for default PC/AT, IBM 5170 Model 339 and Model-40 BYOB session composition.
+- **Current developer artifact:** target `vm-0-5-0448`; `nxvm_0_5_0448.exe` / `build/output/nxvm_0_5_0448.exe`, SHA-256 `A294EA4AEBBB14C7D44B5F2141F6E457505C67808D25E985ECC37AE823BA7462`. T434 has one copied Core timing-plan publication route for default PC/AT, IBM 5170 Model 339 and Model-40 BYOB session composition.
   T386 closes selected-device functional completeness at S29; its retained
   [closure audit](../etc/evidence/t386-s29-functional-closure-audit.md) fixes
   HDC current-gate coverage and transfers board, firmware and physical work.
@@ -36,7 +57,6 @@
 | T448 | Closed: six over-limit generated firmware sources now use the one bounded byte-identical materialization route; the unused session helper is removed. [Evidence](../etc/evidence/t448-s1-firmware-materialization.md). |
 | T447 | Closed: all S1--S11 ledger receivers are accepted; one Core execution path, bounded VM contracts, no VDM forwarding facade, owner-local test boundaries and the decomposed Core coordinator are retained. [History](../history/M5-T447-architecture-boundary-debt-closure.md). |
 | T446 | Closed: each VM session owns its debugger cursor state; the sole recorder owner closes on stop, write failure and destruction, clearing failed streams and reporting lifecycle outcomes. [Evidence](../etc/evidence/t446-s1-vm-debugger-recording-lifecycle.md). |
-| T445 | Closed: each VM native display adapter now owns its host resource lifecycle; Win32 pairs its DC before window destruction, and Linux curses terminates on the initializing display thread. [Evidence](../etc/evidence/t445-s1-vm-native-display-resource-lifetime.md). |
 
 
 ## Recent Governance
