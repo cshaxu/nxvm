@@ -59,3 +59,16 @@ specialized gates including T345, and documentation governance pass; the
 complete ownership, failure-cleanup, artifact, and verification record is in
 [S5 evidence](../etc/evidence/t447-s5-platform-lifecycle-boundary.md). T447
 remains open; its next proposal-defined batch requires a new admitted packet.
+
+## Accepted S6
+
+P1 `e342a516` is accepted after coordinator actual-diff review. It makes the
+Core media registry, display-provider slot, and machine plan opaque handles;
+keeps copied declarative topology while accepting runtime endpoints only
+through bounded Core registrations; and migrates default PC/AT, Model 339, and
+Model-40 to one create/register/create/destroy route. The implementation
+removes the test-only stack initialization route, adds the S6 public-layout
+guard, and preserves failure rollback. Full build, 290 current smokes,
+specialized gates, documentation governance, and the 0447 artifact pass. The
+complete record is in [S6 evidence](../etc/evidence/t447-s6-collaborator-plan-boundary.md).
+T447 remains open; S7 is the next dependency-ordered proposal batch.
