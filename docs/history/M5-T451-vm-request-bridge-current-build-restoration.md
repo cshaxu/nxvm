@@ -4,14 +4,14 @@ T451 is the owner-approved first repair candidate. It restores the configured
 full build through the one VM request-bridge contract, without reviving an
 obsolete production request interface or hiding its smoke target.
 
-## Planned Subtasks
+## Accepted Subtasks
 
-- S1 freezes the request contract, caller ledger and build-failure baseline.
-- S2 makes any required repair only in the owner-local smoke fixture or its
-  registration, retaining copied-payload and lifecycle coverage.
-- S3 verifies the complete configured build, relevant target control and
-  finite obsolete-contract sweep, then closes or explicitly transfers an
-  independently proven unrelated failure.
+- S1 freezes the request contract, caller ledger and configured-build baseline
+  in [evidence](../etc/evidence/t451-s1-request-bridge-build-baseline.md). It
+  proves the reported source defect is already absent and isolates the stale
+  build instruction and debt record as the sole remaining in-scope repair.
+- S2 retires that stale documentation/debt path and closes T451 without a
+  source, CMake, ABI or compatibility-layer change.
 
 ## Constraints
 
