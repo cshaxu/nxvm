@@ -17,14 +17,9 @@ type_status vm_session_virtual_time_on_waiting(vm_session *session,
         !vm_session_control_is_running(&session->control)) {
         return TYPE_STATUS_INVALID_STATE;
     }
-    if (session->speed == VM_SESSION_SPEED_TURBO) {
-        source_ticks = 1u;
-        status = TYPE_STATUS_OK;
-    } else {
-        if (session->virtual_time_source.next == STD_NULL) return TYPE_STATUS_OK;
-        status = session->virtual_time_source.next(
-            session->virtual_time_source.context, &source_ticks);
-    }
+    if (session->virtual_time_source.next == STD_NULL) return TYPE_STATUS_OK;
+    status = session->virtual_time_source.next(
+        session->virtual_time_source.context, &source_ticks);
     if (status != TYPE_STATUS_OK || source_ticks == 0u) return status;
     status = core_machine_advance_time(session->core_machine, source_ticks);
     if (status == TYPE_STATUS_OK) *out_advanced = 1;

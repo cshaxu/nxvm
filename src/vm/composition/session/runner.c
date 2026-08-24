@@ -95,6 +95,7 @@ C_VOID vm_session_runner_run(vm_session *session)
             if (time_status != TYPE_STATUS_OK) {
                 vm_session_control_stop(control);
             } else if (!advanced) {
+                /* L2 host-load backoff only: this does not advance guest time. */
                 core_platform_sleep_milliseconds(1u);
             }
         }

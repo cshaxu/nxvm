@@ -120,8 +120,8 @@ static C_VOID doHelp(vm_product_console_context *context)
         {
             STD_PRINTF("Show or select the selected session speed\n");
             STD_PRINTF("\nSPEED [STANDARD|TURBO]\n");
-            STD_PRINTF("  standard: preserve the profile's current host-time behavior\n");
-            STD_PRINTF("  turbo:    run guest waits without host throttling\n");
+            STD_PRINTF("  standard: retain L2 HLT host-load backoff\n");
+            STD_PRINTF("  turbo:    reserved for Core-deadline fast-forward\n");
             break;
         }
         else if (!STD_STRCMP(argArray[1], "debug"))

@@ -2,11 +2,30 @@
 
 ## Current Work
 
-**Idle.**
+## M5 T459 S2 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Corrective |
+| Admission And Approval | Owner corrected T459 on 2026-08-24: Core device state/deadline alone drives guest ticks; VM wall clock may only pace an already-advanced guest. This narrow corrective removes VM-generated Turbo guest ticks. |
+| Objective | Retain the two stopped-session product selections while removing the VM Turbo one-tick Core-advance path and documenting `Sleep(1)` as an L2 HLT host-load backoff, not synchronization. |
+| Non-goals | No Core deadline API, profile physical timebase, Core/device timing, host-clock-to-guest conversion, fast-forward, CPU multiplier, runner split, busy spin, YAML, debugger or display change. |
+| Reference Baseline | `cf44f9e5` / `9d7fa652`; current stripped Release artifact `0.5.0459`, SHA-256 `ED4E79BF67C5A1B0C7953601933853247B0CC475E7DB67D883D15F65802F0973`. |
+| Candidate Proposal | [VM session speed policy corrective](../proposals/m5-vm-session-speed-policy-corrective.md). |
+| Files And ABI Surface | VM session virtual-time helper and runner HLT fallback; existing session/Console product state and focused smoke. Core API and scheduler are unchanged. |
+| Applicable Rules | README Task Reading Set; EXECUTION corrective-S/P lifecycle and actual-diff review; ARCHITECTURE sole Core guest-clock owner; CODING deletion/one-path discipline; DOCUMENT active-packet boundary; UI retained NXVM Console interaction. |
+| Verification | Focused speed/session, virtual-time, Console and DOS prompt regressions; current gate; documentation governance; stripped Release artifact inspection. |
+| Expected Markers | `M5:T459:S2:SESSION-SPEED-POLICY:OK`; retained virtual-time and Console markers. |
+| Asset Needs | None; project-owned tests only. |
+| Reporting Requirements | Record removal of the generated tick, all remaining Core-time callers, exact L2 fallback meaning, code delta, artifact SHA-256 and the existing host-paced deadline/timebase transfer. |
+| Stop Conditions | Stop for any required Core deadline/timebase contract, VM-generated guest tick, host-clock-derived Core advance, changed device order or product requirement to claim present fast-forward. |
+| Exit Criteria | Turbo cannot generate or advance guest ticks; all speed selections remain observable/rejected while running; the source-less halted path remains host-backoff rather than busy spin; all required gates pass. |
+| Original Owner Request | Correct data flow: Core state/deadline drives guest progress; VM only compares already-advanced guest progress to wall-clock budget and waits when ahead. T459 must not claim that unavailable L3 contract. |
+| Similar-Issue Sweep | Search every VM caller of `core_machine_advance_time`, virtual-time source and HLT sleep; retain only existing source-selected Core time, and record every L2 host backoff boundary. |
 
 ## Current Technical Baseline
 
-- **Current developer artifact:** target `vm-0-5-0459`; `nxvm_0_5_0459.exe` / `build/output/nxvm_0_5_0459.exe`, SHA-256 `D859A76FA522633E5CCB990BB44A1BBED22A24B97876EEE1826717B3DDA2B312`. It is built only from the stripped Release current-artifact route; Debug remains the current-gate route. T434 has one copied Core timing-plan publication route for default PC/AT, IBM 5170 Model 339 and Model-40 BYOB session composition.
+- **Current developer artifact:** target `vm-0-5-0459`; `nxvm_0_5_0459.exe` / `build/output/nxvm_0_5_0459.exe`, SHA-256 `ED4E79BF67C5A1B0C7953601933853247B0CC475E7DB67D883D15F65802F0973`. It is built only from the stripped Release current-artifact route; Debug remains the current-gate route. T434 has one copied Core timing-plan publication route for default PC/AT, IBM 5170 Model 339 and Model-40 BYOB session composition.
   T386 closes selected-device functional completeness at S29; its retained
   [closure audit](../etc/evidence/t386-s29-functional-closure-audit.md) fixes
   HDC current-gate coverage and transfers board, firmware and physical work.
