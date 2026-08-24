@@ -2,7 +2,28 @@
 
 ## Current Work
 
-**Active: M5 T450, between accepted subtasks.**
+**Active: M5 T450 S7.**
+
+## M5 T450 S7 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner: repository user. Continuing the paired T450 controller plan. Scope: freeze only original 8254 function, counter modes, read/write/latch/reset and timing universe with IBM AT oscillator/channel/output bindings. |
+| Objective | Produce the finite `PIT-R*`, `PIT-F*` and `PIT-T*` source checklist that S8 will audit unchanged against current Core PIT code and tests. |
+| Non-goals | Do not alter PIT code/tests, audit implementation, broaden to DMA/RTC, import source bytes, or turn electrical clock requirements into invented Core timing. |
+| Reference Baseline | T450 S1 source ledger (`052177b8`), S2 paired ledger (`a36a54f7`), Intel 8254 Programmable Interval Timer 231164-005 (Sep. 1993), IBM Personal Computer AT Technical Reference 1502243 (Mar. 1984), and T433/T449 retained device/transaction evidence. |
+| Candidate Proposal | [Core controller manual admission and gap inventory](../proposals/m5-core-controller-manuals-and-gap-inventory.md). |
+| Files And ABI Surface | One indexed `docs/etc/research/` checklist and `docs/states/CURRENT.md`; production source, ABI and external manual archive are read-only inputs. |
+| Applicable Rules | `docs/README.md` Task Reading Set; `docs/rules/EXECUTION.md` finite coverage and actual-review rules; `docs/rules/DOCUMENT.md` supporting research boundary; `docs/etc/operations/policy/source-policy.md` provenance and non-redistribution boundary; architecture/coding rules as audit criteria, with no production change. |
+| Verification | Direct manual/page and retained-evidence inspection; every row names function, timing/absence, reset/cancellation, channel/output relation and L3/L2/blocked disposition; documentation governance gate and `git diff --check` pass. |
+| Expected Markers | One PIT checklist with a finite closed universe, source/page identity, no machine-local paths or source bytes, and explicit S8 transfer. |
+| Asset Needs | Existing owner-managed 8254 and IBM AT research archive only; no repository asset or download. |
+| Reporting Requirements | Record source identity/pages, oscillator/channel/output binding, timing classification, L2/L4 exclusions and exact S8 transfer boundary. |
+| Stop Conditions | Stop and record rather than manufacture a rate or cycle phase if sources give only electrical characteristics or board facts do not select it. |
+| Exit Criteria | The complete original 8254 plus selected IBM AT binding universe is checklisted once, every row has required source/timing/reset/signal disposition, and no current-code judgment or runtime change enters S7. |
+| Original Owner Request | For each of the eight controllers, first establish the original complete function and timing list, then audit its current-code gap list. |
+| Similar-Issue Sweep | Inspect source-ledger PIT references and T433/T449 records for all channel, clock, gate, output, refresh, IRQ and speaker bindings; retain only PIT facts in this list. |
 
 ## Current Technical Baseline
 
