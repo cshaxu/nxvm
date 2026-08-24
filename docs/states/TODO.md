@@ -15,6 +15,32 @@ adopts them.
 
 ## Hardware And Compatibility Debt
 
+- [ ] **XT/AT PIC topology and profile composition (`TODO(High)`).** T456
+  implements the 8259A chip contract, not every machine wiring personality.
+  A later task may add one immutable machine-composition declaration selecting
+  a single XT PIC or an AT master/slave pair, including ports, source-to-line
+  wiring and the selected cascade relation. Core owns PIC state, port behavior,
+  interrupt arbitration and all guest-visible routing; VM/profile may only
+  resolve and pass the frozen topology before Core machine creation. Admit only
+  with IBM PC/XT and PC/AT board sources, a finite topology ledger, reset and
+  IRQ/vector proof for each selected profile, and no second PIC dispatch path.
+- [ ] **Later-AT ELCR and PCI interrupt routing (`TODO(High)`).** ELCR
+  `4D0h/4D1h`, PIRQ/PCI INTx routing and any southbridge-specific masks are
+  later chipset functions, not 8259A registers. Admit each concrete chipset or
+  routing unit from its original manual as a separate Core-owned device and
+  register/state contract; an extension profile may select the device, its
+  immutable port map, wired inputs and supported configuration only. Do not add
+  ELCR fields to `pic.c`, let VM mutate guest interrupt state, or infer one
+  chipset's behavior from another's emulator implementation.
+- [ ] **Local-APIC/IOAPIC transition (`TODO(Medium)`).** APIC and IOAPIC are
+  separate interrupt-controller architectures, not a PIC extension. Admit them
+  only after selected CPU/profile requirements, Intel APIC/IOAPIC primary
+  manuals, register/delivery/reset ledgers and an explicit 8259A coexistence or
+  handoff contract exist. Core owns their guest-visible state and delivery;
+  profile chooses an immutable board presence/topology. Do not overload PIC
+  ICW/OCW state, reuse PIC delivery helpers as a hidden second owner, or claim
+  APIC support from PCI/ELCR work.
+
 - [ ] **Advanced 8042 AUX protocol (`TODO(Medium)`).** T267 adds bounded
   sample-rate, resolution, and `E9h` status through the existing IRQ12 path.
   Defer wheel IDs/sample-rate handshake, scaling effect, remote/read-data,
