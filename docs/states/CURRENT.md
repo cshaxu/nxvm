@@ -2,28 +2,7 @@
 
 ## Current Work
 
-**Active: M5 T453 S1 - fresh default toolchain baseline.**
-
-## M5 T453 S1 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | New |
-| Admission And Approval | Owner approved implementing the audited toolchain/build-tree remediation on 2026-08-24. T452 is closed, so T453 is the next numeric task; no exceptions are approved. |
-| Objective | Replace the mixed cached default toolchain state with a fresh, one-family default build configuration and prove unchanged artifact behavior. |
-| Non-goals | Do not commit absolute tool paths, modify C source/CMake targets, change product identity, replace default compiler family or rely on ccache. |
-| Reference Baseline | `73cf8202`; current default cache records a WinLibs GCC with MSYS2 UCRT archiver/ranlib and stale CMake compiler generations. |
-| Candidate Proposal | [M5 Toolchain And Build-Tree Hygiene](../proposals/m5-toolchain-build-tree-hygiene.md). |
-| Files And ABI Surface | Recreate ignored `build/mingw-gcc-x64` after preserving `build/output`; add the direct FDC-owner header include to `tests/machine/vm_fdc_read_track_dos_smoke.c`, then modify task evidence/history/status. No ABI surface changes. |
-| Applicable Rules | `rules/EXECUTION.md`: fresh runnable evidence and verified cleanup. `rules/DOCUMENT.md`: active-packet/evidence ownership. `rules/CODING.md` and `rules/ARCHITECTURE.md`: no production source or behavior path change. |
-| Verification | Record old cache provenance; verify `build/output` is outside the replacement target; remove only resolved `build/mingw-gcc-x64`; configure default preset; inspect compiler/ar/ranlib paths; build current artifact and current gates; compare artifact identity/hash. |
-| Expected Markers | One GCC/ar/ranlib family in fresh CMake compiler record, a passing default artifact and gates, one direct owner-header test fix, and no production diff. |
-| Asset Needs | None. |
-| Reporting Requirements | Record old/new tool paths, commands, artifact hash and whether a machine-local tool path would have been required. |
-| Stop Conditions | Stop if fresh configuration cannot select one toolchain family or artifact identity changes. |
-| Exit Criteria | Fresh default tree is proven one-family, current artifact/gates pass, the sole surfaced FDC test include is corrected at its owner boundary, evidence documents the result and closure gates pass. |
-| Original Owner Request | Add decomposed S tasks to implement the audit findings for clean, readable toolchain and build configuration. |
-| Similar-Issue Sweep | Inspect active CMake compiler-record generations and all configured default tools; inspect every current `core_machine_fdc_ST0_ABNORMAL` consumer for its owner header; transfer build-tree cleanup and document convergence to S2/S3. |
+**Active: M5 T453, between accepted subtasks.**
 
 ## Current Technical Baseline
 
@@ -49,6 +28,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T453 S1 | Accepted: fresh default tree records one WinLibs toolchain family; the one surfaced FDC smoke now includes its direct owner header; clean-tree current gates pass. [Evidence](../etc/evidence/t453-s1-default-toolchain-baseline.md). |
 | T452 | Closed: optional isolated ccache presets provide measured repeat-build hits and byte-identical output; default route remains unchanged and task temporary cache/build trees are removed. [History](../history/M5-T452-optional-ccache-build-acceleration.md). |
 | T451 | Closed: one current VM request contract, bridge/transport smoke and complete configured build pass; stale request-bridge debt and invalid build instructions are removed without source, CMake or ABI changes. [History](../history/M5-T451-vm-request-bridge-current-build-restoration.md). |
 | T450 | Closed: all eight controller pairs are archived with 128 source rows and 128 code-audit rows; S19 verifies the source form of every admitted PDF and preserves all selected-board/personality/media gaps as explicit transfers. [History](../history/M5-T450-core-controller-manuals-and-gap-inventory.md). |
