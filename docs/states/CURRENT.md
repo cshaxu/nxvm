@@ -2,7 +2,7 @@
 
 ## Current Work
 
-**Idle.** T449 is closed.
+**Idle.** Td S138 is closed.
 
 ## Current Technical Baseline
 
@@ -36,6 +36,11 @@
 
 
 ## Recent Governance
+
+- **M5 Td S138 P1:** replaced the aggregate controller/device implementation
+  candidate with ordered PIC, DMA, PIT, RTC, KBC, FDC/media, VADP and
+  source-blocked HDC proposals; the aggregate now supplies shared context only.
+  [Evidence](../etc/evidence/td-s138-controller-phase-program-decomposition.md).
 
 - **M5 Td S137 P1:** clarified the queued CPU-to-board transaction candidate's
   sole-owner data flow, direct-path removal constraint, L2/rejection boundary,

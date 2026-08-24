@@ -1,11 +1,10 @@
-# M5 Core Controller And Device Phase Contracts
+# M5 Core Controller And Device Phase Program
 
-## Purpose
-
-Move every currently public shared controller, device and integration phase
-onto the Core timing-plan and transaction lifecycle: command acceptance,
-service readiness, DRQ/IRQ assertion and withdrawal, acknowledgement, reset,
-cancellation, error/result completion and presentation boundaries.
+This is shared context, not a Queue candidate. T449 supplies the only Core
+transaction, arbitration, reset and observation routes. The following
+candidates attach one controller or one inseparable controller-plus-media
+chain at a time; no candidate may introduce a generic device framework,
+machine-name branch or private time publisher.
 
 ## Shared Admission Baseline
 
@@ -24,35 +23,15 @@ is mandatory for each row. In particular, chip manuals admit semantics but not
 unselected clock/wiring/personality facts, and `CTRL-HDC` is blocked pending an
 ATA/IDE source admission as well as a selected profile contract.
 
-## Required Scope
+Every candidate first admits its named original manual and selected board or
+personality facts under the source policy. It freezes a finite command/phase
+matrix with producer, consumer, transaction or clock relation, cancellation,
+reset, source tier and regression. A fact without those sources remains an
+explicit L2 fallback or blocked row, never an inferred delay.
 
-Consume the reconciled device ledger and retained PIC/DMA/PIT/RTC/KBC/FDC/HDC/
-display/device-service evidence. Work by frozen controller capability batches,
-not by guest symptom or machine name. Each batch must state its producer,
-consumer, phase rule, clock/transaction relationship, reset/cancel behavior,
-source tier and regression owner.
+## Candidate Order
 
-Use an L3 rule where the retained contract supports it; otherwise preserve the
-current deterministic L2 behavior as an explicit exception. Special machine
-personality selection remains data supplied through the timing plan, never a
-Core machine-name branch.
-
-## Dependencies
-
-Consumes the plan, CPU timing and transaction/arbitration contracts. It
-precedes the integrated Core closure and VM contract export.
-
-## Evidence And Completion Standard
-
-Require complete finite capability batches for all currently public shared
-controllers/devices/integrations, command-to-event traces, reset/cancellation
-proof, focused regressions and current gates. Every batch row must close as
-L3, accepted L2 fallback, not applicable or unsupported, with no silent
-compatibility behavior.
-
-## Non-goals And Stop Conditions
-
-Do not expand the supported device surface, implement VM profiles, claim
-monitor/electrical behavior without a contract, or undertake L4 work. A
-profile-local or unknown hardware fact is transferred to an explicit receiver,
-not made a generic Core rule.
+PIC, DMA, PIT, RTC/CMOS, KBC/NMI, FDC plus logical media, VADP, then HDC/ATA.
+The existing integration/export candidate follows them and reconciles only
+their accepted copied contracts. HDC is source-blocked; IBM MFM/ST-506 is not
+ATA and remains a separate future capability.

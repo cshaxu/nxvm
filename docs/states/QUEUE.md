@@ -43,7 +43,14 @@ linked proposal identifies its finite implementation-admission baseline and
 exclusive earliest capability batch; a later candidate may consume a registered
 contract but does not redefine its L3 or Core/VM boundary.
 
-1. [Core controller and device phase contracts](../proposals/m5-core-controller-device-phase-contracts.md).
+1. [Core PIC 8259A phase contract](../proposals/m5-core-pic-8259a-phase-contract.md).
+1. [Core DMA 8237A phase contract](../proposals/m5-core-dma-8237a-phase-contract.md).
+1. [Core PIT 8254 phase contract](../proposals/m5-core-pit-8254-phase-contract.md).
+1. [Core RTC CMOS phase contract](../proposals/m5-core-rtc-cmos-phase-contract.md).
+1. [Core KBC 8042 and NMI phase contract](../proposals/m5-core-kbc-8042-nmi-phase-contract.md).
+1. [Core uPD765 and logical media phase contract](../proposals/m5-core-fdc-upd765-logical-media-phase-contract.md).
+1. [Core VADP phase contract](../proposals/m5-core-vadp-phase-contract.md).
+1. [Core HDC ATA phase contract](../proposals/m5-core-hdc-ata-phase-contract.md).
 1. [Core L3 integration closure and VM contract export](../proposals/m5-core-l3-integration-vm-contract-export.md).
 
 1. [PC/AT 5170 root profile normalization](../proposals/m5-pc-at-5170-root-profile-normalization.md).
@@ -60,7 +67,7 @@ contract but does not redefine its L3 or Core/VM boundary.
 1. [Windows 3.1 386 Enhanced Mode lifecycle](../proposals/m5-windows31-enhanced-mode-lifecycle.md).
 1. [M5 final Windows closure audit](../proposals/m5-final-l3-windows-closure-audit.md).
 
-Retained non-candidate proposal index: [prior four-profile CPU instruction timing program](../proposals/m5-core-cpu-instruction-timing-program.md), [withdrawn DeskPro physical-cycle and phase-timing closure](../proposals/m5-deskpro-physical-cycle-and-phase-timing.md), [withdrawn generic PC backbone foundation](../proposals/m5-generic-pc-backbone-foundation.md), [withdrawn separate 8088 CPU-profile closure](../proposals/m5-8088-cpu-profile.md), [withdrawn current-product device-capability L3 closure](../proposals/m5-current-product-device-l3-closure.md), [DeskPro 386 dual fixed-disk selection](../proposals/m5-deskpro-386-dual-fixed-disk-selection.md), [VM profile-contract ownership migration](../proposals/m5-vm-profile-contract-ownership.md), [80286 successful-retirement timing closure](../proposals/m5-80286-retirement-timing-closure.md), [cross-mode mechanism coherence](../proposals/m5-cross-mode-mechanism-coherence.md), [instruction-timed execution](../proposals/m5-instruction-timed-execution.md), and [L3 bus-timing convergence](../proposals/m5-l3-bus-timing-convergence.md). These withdrawn records remain outside the candidate ordering and preserve historical planning and evidence links. Their completed task records are retained in history.
+Retained non-candidate proposal index: [Core controller and device phase program](../proposals/m5-core-controller-device-phase-contracts.md), [prior four-profile CPU instruction timing program](../proposals/m5-core-cpu-instruction-timing-program.md), [withdrawn DeskPro physical-cycle and phase-timing closure](../proposals/m5-deskpro-physical-cycle-and-phase-timing.md), [withdrawn generic PC backbone foundation](../proposals/m5-generic-pc-backbone-foundation.md), [withdrawn separate 8088 CPU-profile closure](../proposals/m5-8088-cpu-profile.md), [withdrawn current-product device-capability L3 closure](../proposals/m5-current-product-device-l3-closure.md), [DeskPro 386 dual fixed-disk selection](../proposals/m5-deskpro-386-dual-fixed-disk-selection.md), [VM profile-contract ownership migration](../proposals/m5-vm-profile-contract-ownership.md), [80286 successful-retirement timing closure](../proposals/m5-80286-retirement-timing-closure.md), [cross-mode mechanism coherence](../proposals/m5-cross-mode-mechanism-coherence.md), [instruction-timed execution](../proposals/m5-instruction-timed-execution.md), and [L3 bus-timing convergence](../proposals/m5-l3-bus-timing-convergence.md). These retained contexts remain outside candidate ordering and preserve planning and evidence links.
 
 
 ## M6 Candidates
