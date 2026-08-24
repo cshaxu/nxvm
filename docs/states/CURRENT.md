@@ -2,7 +2,26 @@
 
 ## Current Work
 
-**Active: M5 T450, between accepted subtasks.**
+**Active: M5 T450 S17 - ATA/HDC original function and timing checklist.**
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation - M5 T450 S17; the next exclusive HDC/ATA source-list batch after accepted S16. |
+| Admission And Approval | Repository owner approved T450's paired controller source-list/code-audit work and requires S19 PDF-form/manual-sufficiency reconciliation. |
+| Objective | Freeze a finite ATA-3 source universe with command/register/protocol/timing facts, and distinguish it from the unselected controller personality and backing-media contract needed for an actual HDC implementation. |
+| Non-goals | No HDC/ATA/runtime/test change; no controller or disk personality selection; no disk/firmware import; no external-emulator research or dependency. |
+| Reference Baseline | Admitted X3T13 ATA-3 Rev. 7b plus current Core HDC/media/board/VM composition paths; S1's explicit ATA-personality/backing-media block remains authoritative. |
+| Candidate Proposal | [M5 Core controller manual admission and gap inventory](../proposals/m5-core-controller-manuals-and-gap-inventory.md). |
+| Files And ABI Surface | Add only one indexed S17 checklist under `docs/etc/research/`; inspect ATA source/current owner names without changing code, tests, ABI or assets. |
+| Applicable Rules | `docs/README.md` fixed reading set; `EXECUTION.md` continuation, coverage-ledger, P/closure and actual-change-review rules; `DOCUMENT.md` authority/index/state rules; source policy prohibits import. |
+| Verification | Directly inspect admitted ATA-3 pages; reconcile finite source rows and every source insufficiency before P1; run diff check and documentation governance before P1/P2. |
+| Expected Markers | One source list preserves ATA transport facts separately from the existing non-ATA HDC and blocks unselected controller, cable, backing-media and board timing facts once. |
+| Asset Needs | None; admitted manual only. |
+| Reporting Requirements | Record source page, command/register/phase, reset and signal/timing relation, source form/sufficiency and one receiver for every blocked required fact. |
+| Stop Conditions | Stop for a needed controller/backing-media/board source, source conflict, personality choice or requested runtime change; record and transfer rather than infer. |
+| Exit Criteria | Finite ATA/HDC checklist covers host/device task-file, command/protocol/reset/error/timing and selected-board/media boundaries; all rows dispositioned once; no code/test change occurs; the indexed list is reviewed, committed, pushed and accepted. |
+| Original Owner Request | Establish original manual archives, complete function/timing checklist 1 and current-code gap checklist 2 for eight controllers, with S19 validating PDF form and manual sufficiency. |
+| Similar-Issue Sweep | Inspect ATA task-file and alternate-status/control ports, commands/data PIO/DMA/interrupt/reset/error paths, identifying/configuration, backing media, HDC board binding, VM composition/profile choices and all HDC tests. |
 
 ## Current Technical Baseline
 
