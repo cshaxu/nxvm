@@ -1,29 +1,29 @@
 # Project Status
 
-## M5 T447 S7 Packet
+## M5 T447 S8 Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation; `M5 T447 S7`, single-session coordinator/executor followed by coordinator closure review. |
-| Admission And Approval | The owner-approved T447 proposal, accepted S6 P1 `e342a516`, and the owner's standing instruction to continue the approved governance closure admit the next dependency-ordered S7 batch on 2026-08-23. No exception. |
-| Objective | Normalize VM session, media, profile, product, and composition contracts so mutable state and selection data have one owner and consumers receive only bounded operations or copied observations. |
-| Non-goals | No typedef rename or compatibility alias, generic profile framework, VM-to-Core runtime-state exposure, test-only production seam, product behavior change, media-format change, or new Model-40 construction route. |
-| Reference Baseline | Accepted S6 P1 `e342a516`; Td S125--S130 ledger rows assigned to S7; T447 proposal S7; retained S6 evidence. |
-| Candidate Proposal | [M5 Architecture-Boundary Debt Closure](../proposals/m5-architecture-boundary-debt-closure.md), S7. |
-| Files And ABI Surface | VM session/media/profile/product/composition public contracts and private implementations; Model-40 creation/materialization; console/catalog and keyboard seams; relevant tests/build exceptions; T447 evidence/history/status and current artifact. |
-| Applicable Rules | Execution P/closure and code-size requirements; architecture one-owner and dependency direction; coding minimal durable capabilities with no aliases, wrappers, or generic machinery; documentation topology. No exception. |
-| Verification | Inventory every named layout and caller; prove one Model-40 route, copied selection/observation boundaries, no reverse composition-to-product dependency, and no cross-owner mutable state access; run focused lifecycle/profile/product tests, narrow static guards, T345, current artifact/smokes, specialized gates, and documentation governance. |
-| Expected Markers | Retained VM lifecycle markers plus S7 contract guards; no public `t_fdd`/`t_hdd` storage, console/catalog parser-state escape, Model-40 duplicate constructor, reverse composition-product include, or private keyboard scan-set access. |
+| Identifier Mode | Continuation; `M5 T447 S8`, single-session coordinator/executor followed by coordinator closure review. |
+| Admission And Approval | The owner-approved T447 proposal, accepted S7 P1 `b2bf42da`, and the owner's standing instruction to continue the approved governance closure admit the next dependency-ordered S8 batch on 2026-08-23. No exception. |
+| Objective | Repair cross-owner tests and direct-build exceptions so every retained assertion reaches its owner through declared operations or copied observations. |
+| Non-goals | No production API widened for tests, compatibility alias, generic fixture framework, direct compilation of new production source, product behavior change, or guest-media import. |
+| Reference Baseline | Accepted S7 P1 `b2bf42da`; Td S125--S130 ledger rows assigned to S8; T447 proposal S8; retained S7 evidence. |
+| Candidate Proposal | [M5 Architecture-Boundary Debt Closure](../proposals/m5-architecture-boundary-debt-closure.md), S8. |
+| Files And ABI Surface | Cross-owner tests, owner-local test fixtures, public copied observations, T345 direct-build ledger and verification, T447 evidence/history/status and current artifact. |
+| Applicable Rules | Execution P/closure and code-size requirements; architecture one-owner and dependency direction; coding minimal durable capabilities with no test-only production seam; documentation topology. No exception. |
+| Verification | Classify every affected test as owner-local white-box setup or cross-owner behavioral proof; preserve each assertion; prove no production seam or unrecorded direct production build remains; run focused tests, T345, current artifact/smokes, specialized gates, and documentation governance. |
+| Expected Markers | Retained behavioral markers plus T345 closure; no cross-owner private-layout include, unrecorded direct production build, or widened production API for tests. |
 | Asset Needs | Existing non-committed test media only; no new source, firmware, guest-media, or third-party asset. |
-| Reporting Requirements | Record complete layout/caller/lifecycle inventory, selected Core owner and failure semantics, deleted layouts/routes, code-size accounting, artifact SHA, focused/full verification, and actual-diff review; commit and push one complete implementation P before coordinator closure. |
-| Stop Conditions | Stop for owner direction if closure requires a new Core-to-VM asynchronous contract, changes selected profile/device behavior, needs a test-only public seam, cannot preserve atomic create/reset/destroy, or exposes a platform lifetime conflict. |
-| Exit Criteria | Every named VM/product/profile boundary has a single mutable owner; consumers use opaque handles, immutable copied selection data, or bounded observations; Model-40 has one construction/materialization route; no compatibility layout, alias, reverse dependency, or parallel parser/construction route remains. |
+| Reporting Requirements | Record complete test/disposition inventory, retained owner-local fixtures, removed cross-owner accesses and build exceptions, code-size accounting, artifact SHA, focused/full verification, and actual-diff review; commit and push one complete implementation P before coordinator closure. |
+| Stop Conditions | Stop for owner direction if preserving an assertion requires a public test seam, runtime behavior change, unclassified direct production build, or a new cross-owner asynchronous contract. |
+| Exit Criteria | Every affected test is either same-owner setup or a behavioral proof over declared boundaries; all direct-build exceptions have a recorded disposition; no test-only production path, compatibility fixture path, or cross-owner mutable-layout access remains. |
 | Original Owner Request | Execute the approved architecture-boundary closure in dependency order, applying minimalism as a hard constraint rather than a later refactor. |
-| Similar-Issue Sweep | Inspect all Core machine public/private headers and implementations, every plan producer and direct endpoint/callback access, default PC/AT/Model-339/Model-40 composition, construction/reset/failure paths, related tests, T345 entries, and T126 evidence; do not repair only the first exposed collaborator. |
+| Similar-Issue Sweep | Inspect every S1--S7 test include and construction path, Core/VM/product/platform tests, all T345 rows, test-only helpers, direct production source references, and Td S125--S130 evidence; do not repair only the first test class. |
 
 ## Current Technical Baseline
 
-- **Current developer artifact:** target `vm-0-5-0447`; `nxvm_0_5_0447.exe` / `build/output/nxvm_0_5_0447.exe`, SHA-256 `730D47609C8978838990254D467729977C315CA1ABFF8ECB5885318CCD83A4F3`. T434 has one copied Core timing-plan publication route for default PC/AT, IBM 5170 Model 339 and Model-40 BYOB session composition.
+- **Current developer artifact:** target `vm-0-5-0447`; `nxvm_0_5_0447.exe` / `build/output/nxvm_0_5_0447.exe`, SHA-256 `CAA87452E18E90C5E72114D8C8B6C04FD830920BB45DA160CA6562787AA3B920`. T434 has one copied Core timing-plan publication route for default PC/AT, IBM 5170 Model 339 and Model-40 BYOB session composition.
   T386 closes selected-device functional completeness at S29; its retained
   [closure audit](../etc/evidence/t386-s29-functional-closure-audit.md) fixes
   HDC current-gate coverage and transfers board, firmware and physical work.
@@ -45,6 +45,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T447 S7 | Accepted P1 `b2bf42da`: VM session/media/profile/product layouts are opaque, Console owns its contract while composition performs the binding, and Model-40 has exactly one BYOB construction route. The 0447 artifact, 292 current smokes, 76 specialized gates, T345, and documentation governance pass. [Evidence](../etc/evidence/t447-s7-vm-contract-boundary.md). |
 | T447 S5 | Accepted P1 `13f2a5bc` and corrective P2 `af805310`: Core input/presentation and VM platform lifecycle state have one owner-created opaque handle route; stale shape-sensitive gates now prove bounded behavior, and the new S5 guard rejects public-layout regressions. The 0447 artifact, 292 current smokes, 75 specialized gates, T345, and documentation governance pass. [Evidence](../etc/evidence/t447-s5-platform-lifecycle-boundary.md). |
 | T447 S6 | Accepted P1 `e342a516`: Core machine collaborators and plan endpoints are opaque, declarative plans are copied, and default PC/AT, Model-339, and Model-40 share bounded creation/rollback operations. The 0447 artifact, 290 current smokes, specialized gates, T345, and documentation governance pass. [Evidence](../etc/evidence/t447-s6-collaborator-plan-boundary.md). |
 | T446 | Closed: each VM session owns its debugger cursor state; the sole recorder owner closes on stop, write failure and destruction, clearing failed streams and reporting lifecycle outcomes. [Evidence](../etc/evidence/t446-s1-vm-debugger-recording-lifecycle.md). |
@@ -52,9 +53,6 @@
 | T444 | Closed: the 20 fast-smoke fixture failures use the legal 16-byte reset window; T344 classifies four manifest producers separately from 71 historical fixtures; every discovered stale gate now proves the current single Core plan route. [Evidence](../etc/evidence/t444-s1-current-gate-regression-restoration.md). |
 | T443 | Closed: the mailbox C11-initializes its sole lock, every production renderer stops on failed capture, and VM display generation commits only after one accepted publication path. [Evidence](../etc/evidence/t443-s1-core-platform-primitive-outcomes.md). |
 | T442 | Closed: one Core lexical owner keeps 8086 `0F` primary, rejects it on 80186, and consumes it as extended on 80286/80386; one RAM mapping owner rejects a 32-bit physical span overflow before publishing state. [Evidence](../etc/evidence/t442-s1-core-cpu-memory-boundary-correctness.md). |
-| T441 | Closed: VM media saving has one staging owner; FDD now releases derived sidecar state on failed paired persistence, and focused failure smoke proves resident/file/temporary preservation. [Evidence](../etc/evidence/t441-s1-vm-media-persistence-failure-hygiene.md). |
-| T440 | Closed: Model-40 configuration has one private initializer; incompatible creation/runtime memory changes are rejected at the VM boundary, with generic session reconfiguration retained. [Evidence](../etc/evidence/t440-s1-model40-immutable-configuration.md). |
-| T439 | Closed: session reset and startup now return Core failure through one lifecycle outcome; required FDD initialization also propagates status, and no-HDD Model 339 reset avoids an unnecessary unmapped BIOS-table write. [Evidence](../etc/evidence/t439-s1-vm-session-reset-startup-outcomes.md). |
 
 
 ## Recent Governance
