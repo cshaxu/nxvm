@@ -2,28 +2,28 @@
 
 ## Current Work
 
-**Active: M5 T453, between accepted subtasks.**
+**Active: M5 T453 S3 - operational toolchain document convergence.**
 
-## M5 T453 S2 Packet
+## M5 T453 S3 Packet
 
 | Field | Required record |
 | --- | --- |
 | Identifier Mode | Continuation |
-| Admission And Approval | Owner approved T453's decomposed build-tree hygiene implementation on 2026-08-24; S1 acceptance at `7cb07fd1` authorizes this classified cleanup. |
-| Objective | Remove every verified obsolete task/experiment build tree while preserving the fresh default tree and developer artifact directory. |
-| Non-goals | Do not remove `build/mingw-gcc-x64`, `build/output`, source, assets, active process outputs, user data or an unclassified path. |
-| Reference Baseline | `7cb07fd1`; audit finds 43 non-default build directories totaling 11,567,486,950 bytes. |
+| Admission And Approval | Owner approved T453's decomposed toolchain/documentation hygiene implementation on 2026-08-24; S2 cleanup is accepted for this final current-document receiver. |
+| Objective | Reduce current toolchain documentation to its supported commands, dependencies and explicit optional ccache route. |
+| Non-goals | Do not change CMake presets, compiler support policy, historical records, release policy, product behavior or artifact identity. |
+| Reference Baseline | `b9af9548`; current default route is MinGW GCC/CMake/Ninja, and ccache is an opt-in isolated route. |
 | Candidate Proposal | [M5 Toolchain And Build-Tree Hygiene](../proposals/m5-toolchain-build-tree-hygiene.md). |
-| Files And ABI Surface | Create task evidence/history/status records; delete only classified ignored directories below `build/`. No ABI changes. |
-| Applicable Rules | `rules/EXECUTION.md`: verify resolved targets under `build/`, exclude `build/output`, stop owned processes and retain evidence. `rules/DOCUMENT.md`: index evidence without creating a competing authority. |
-| Verification | Record every target name/size/classification; confirm no CMake/Ninja/CTest process uses it; resolve each path and verify it is below `build/` and not retained; delete; confirm absent; rebuild default artifact and run documentation governance/diff checks. |
-| Expected Markers | Zero obsolete task/experiment trees, preserved default/output directories, no running build process and recorded reclaimed byte total. |
+| Files And ABI Surface | Modify only `docs/etc/operations/build/toolchain.md`, task evidence/history/status and support index. No ABI changes. |
+| Applicable Rules | `rules/DOCUMENT.md`: current operations document owns only current operational guidance; historical facts remain in history/evidence. `rules/EXECUTION.md`: actual-change review and closure gates. |
+| Verification | Compare every retained operational command against `CMakePresets.json`; search current operational docs for M0/M1/MSVC command residue; run documentation governance, diff hygiene and default build. |
+| Expected Markers | One concise default route, one gate command, one optional ccache route, and no historic milestone or unsupported-command residue in the current operations document. |
 | Asset Needs | None. |
-| Reporting Requirements | Report target count, reclaimed bytes, retained paths and any path not deleted with its reason. |
-| Stop Conditions | Stop for an unclassifiable directory, running process, path outside `build/`, or a request to preserve a named tree. |
-| Exit Criteria | Every S2 target has a classification/disposition, all safe targets are absent, retained directories are intact, and verification passes. |
+| Reporting Requirements | Report retained commands, deleted non-operational narrative and verification result. |
+| Stop Conditions | Stop for an operation rule that cannot be expressed without historic context or a command not represented by current presets. |
+| Exit Criteria | Current toolchain instructions are concise and fully match presets; documentation/default-build verification passes. |
 | Original Owner Request | Implement the audited clean, readable toolchain/build configuration and documentation hygiene through decomposed S tasks. |
-| Similar-Issue Sweep | Include all non-default directories immediately under `build/`; do not infer cleanup from a name alone. |
+| Similar-Issue Sweep | Inspect README and current operations documentation; preserve public README guidance and remove only operations-document residue. |
 
 ## Current Technical Baseline
 

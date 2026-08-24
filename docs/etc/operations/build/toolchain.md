@@ -15,13 +15,7 @@ versions impractical, Windows 11 usability takes priority. Record the Windows 7
 gap as an evidence-backed `TODO(High)` or `TODO(Medium)` with its activation
 condition; do not silently narrow the supported range.
 
-The first supported compiler contract is GCC with C11 support. The M0 baseline
-is WinLibs MinGW-w64 GCC 16.1.0, Ninja 1.13.2, and CMake 4.4.0. M1
-project-owned compatibility and boundary code uses warnings equivalent to
-`-Wall -Wextra -Wpedantic -Werror`; the imported whole-NXVM baseline records
-its warning inventory before later units are migrated under that policy. Visual
-Studio 2022/MSVC remains an optional compatibility build, not the primary
-developer or release toolchain.
+The supported compiler contract is GCC with C11 support.
 
 The one supported current build route from the repository root is:
 
@@ -39,12 +33,3 @@ task-specific verification inputs, not supported development commands.
 When `ccache` is installed, `mingw-gcc-x64-ccache` and `current-gcc-ccache`
 provide an opt-in isolated build tree. They are an acceleration aid only; the
 default route remains the supported route and never requires ccache.
-
-## Binary Size Policy
-
-GCC selection makes the development toolchain lighter; it does not by itself
-guarantee a smaller executable. After M1 has a runtime target, release builds
-will measure size and startup behavior. Candidate release flags are `-O2`,
-`-ffunction-sections`, `-fdata-sections`, and linker garbage collection. Stripping
-and static runtime linking require separate reproducibility and diagnostics
-review; they are not enabled by default.

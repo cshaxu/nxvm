@@ -11,3 +11,4 @@ trees after classification, and keeps current build instructions operational.
 - S2 removes every classified obsolete build tree while preserving the default
   tree and artifact directory. Its [evidence](../etc/evidence/t453-s2-build-tree-cleanup.md)
   records every disposition; S3 remains required.
+- S3 retains only current operational build guidance in the toolchain document.
