@@ -2,26 +2,7 @@
 
 ## Current Work
 
-**Active: M5 T450 S16 - VADP current-code gap audit.**
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation - M5 T450 S16; the next exclusive VADP code-audit batch after accepted S15. |
-| Admission And Approval | Repository owner approved T450's paired source-list/code-audit work. S16 audits only the frozen S15 universe. |
-| Objective | Give every `VADP-R1` through `VADP-T5` a current owner, observed behavior, focused proof, disposition and one receiver where nonconforming or blocked. |
-| Non-goals | No VADP/display/runtime/test change; no adapter/monitor selection; no firmware import; no external-emulator research or dependency. |
-| Reference Baseline | Accepted S15 IBM EGA checklist at `a6e78573`; current VADP/display/Core transaction/scheduler/profile/composition paths and focused tests. |
-| Candidate Proposal | [M5 Core controller manual admission and gap inventory](../proposals/m5-core-controller-manuals-and-gap-inventory.md). |
-| Files And ABI Surface | Add only one indexed S16 audit under `docs/etc/evidence/`; inspect VADP/display owners and tests without changing code, tests, ABI or assets. |
-| Applicable Rules | `docs/README.md` fixed reading set; `EXECUTION.md` continuation, coverage-ledger, P/closure and actual-change-review rules; `DOCUMENT.md` authority/index/state rules; source policy prohibits import. |
-| Verification | Directly inspect every S15 row and named VADP/display/transaction/scheduler/profile/composition/test path; reconcile exactly 15 rows; run diff check and documentation governance before P1/P2. |
-| Expected Markers | One audit preserves one Core VADP state owner and copied display-output boundary, distinguishes IBM EGA coverage from Compaq/CGA/profile facts, and assigns each gap once. |
-| Asset Needs | None. |
-| Reporting Requirements | Record code owner/symbol, observed behavior, focused test, disposition and sole receiver for each row; report selected-adapter/source boundary concisely. |
-| Stop Conditions | Stop for a needed selected-adapter/monitor source, source conflict, owner profile choice or requested runtime change; transfer rather than expand. |
-| Exit Criteria | All fifteen S15 rows are dispositioned once, all gaps/blocked inputs have one receiver or rationale, no code/test changes occur, and the indexed audit is reviewed, committed, pushed and accepted. |
-| Original Owner Request | Establish original manual archives, complete function/timing checklist 1 and current-code gap checklist 2 for eight controllers, with S19 validating PDF form and manual sufficiency. |
-| Similar-Issue Sweep | Inspect VADP port/register groups and reset, sequencer/CRTC/graphics/attribute state, VRAM mapping/plane selection, status/retrace, scheduler clock inputs, display snapshot production, profile/composition personality binding and every focused VADP test. |
+**Active: M5 T450, between accepted subtasks.**
 
 ## Current Technical Baseline
 
@@ -47,7 +28,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T450 S15 | Accepted: the 15-row IBM EGA source universe records register/plane/clock/display facts while explicitly blocking substitution for CECG, monitor and board-arbitration facts. [Checklist](../etc/research/t450-s15-vadp-function-timing-checklist.md). |
+| T450 S16 | Accepted: the 15-row VADP audit retains one Core VADP/VRAM/snapshot path, identifies bounded IBM-EGA register/timing/personality gaps, and transfers each once to the VADP phase contract. [Audit](../etc/evidence/t450-s16-vadp-code-gap-audit.md). |
 | T449 | Closed: one copied transaction contract, transaction lifecycle, scheduler arbitrator, memory classifier and retirement/time/observation route; all S1--S6 evidence is reconciled and physical/controller/x87 boundaries transfer explicitly. [History](../history/M5-T449-core-cpu-board-transaction-contracts.md). |
 | T448 | Closed: six over-limit generated firmware sources now use the one bounded byte-identical materialization route; the unused session helper is removed. [Evidence](../etc/evidence/t448-s1-firmware-materialization.md). |
 | T447 | Closed: all S1--S11 ledger receivers are accepted; one Core execution path, bounded VM contracts, no VDM forwarding facade, owner-local test boundaries and the decomposed Core coordinator are retained. [History](../history/M5-T447-architecture-boundary-debt-closure.md). |
