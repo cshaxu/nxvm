@@ -2,28 +2,7 @@
 
 ## Current Work
 
-**Active: M5 T450 S1.**
-
-## M5 T450 S1 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | New |
-| Admission And Approval | Owner: repository user. Approval: persistent objective received 2026-08-24: establish original archives under the external manuals asset root plus complete function/timing and current-code gap inventories for the eight named controllers; single-session coordinator/executor mode. Scope: create the finite source and code coverage universe, audit current repository ownership, and admit lawful original documentation. |
-| Objective | Freeze the full eight-controller corpus and current-code audit baseline that every later T450 subtask consumes. |
-| Non-goals | Do not change emulator behavior, import third-party source or firmware, claim unverified timing facts, or assign work to any later controller implementation candidate. |
-| Reference Baseline | `c51d84ea` / Td S139; first Queue candidate `m5-core-controller-manuals-and-gap-inventory.md`; retained T433 S6/S7 and T449 controller transfer evidence. |
-| Candidate Proposal | [Core controller manual admission and gap inventory](../proposals/m5-core-controller-manuals-and-gap-inventory.md). |
-| Files And ABI Surface | External owner-managed manuals archive plus indexed `docs/etc/` research/evidence and T450 task history; repository source is read-only audit input and no product ABI changes. |
-| Applicable Rules | `docs/README.md` Task Reading Set; `docs/rules/EXECUTION.md` coverage-bearing lifecycle and closure evidence; `docs/rules/DOCUMENT.md` authority/index discipline; `docs/etc/operations/policy/source-policy.md` research/provenance boundary; `docs/design/ARCHITECTURE.md`, `docs/design/CODING.md`, `docs/rules/ARCHITECTURE.md`, and `docs/rules/CODING.md` for current-code owner-path audit. |
-| Verification | Exact source-file inventory and SHA-256 records in the external archive; finite eight-unit ledger review; source/path symbol searches; documentation governance gate; `git diff --check`; coordinator actual-change review. |
-| Expected Markers | One frozen coverage ledger names all eight units, their source categories and code owners; each unit is either source-admissible, L2-ready, or blocked; no repository copy of manual bytes or protected material. |
-| Asset Needs | Original controller, system-board, media-format, display-adapter and ATA/IDE documentation may be acquired only into the external manuals archive after provenance and redistributability review; no firmware or guest media is in scope. |
-| Reporting Requirements | Record source identity, origin, checksum, archive-relative location, permitted-use disposition, code audit evidence, missing facts, and later-S transfer; report any source/license block immediately. |
-| Stop Conditions | Stop the affected source row for uncertain provenance/license, inaccessible primary source, required proprietary firmware/media, or an unresolved selected-board/personality fact; retain other independent rows. |
-| Exit Criteria | A complete, reviewable eight-unit source/code coverage baseline exists with exact dispositions and no uncovered controller; all allowed source acquisitions and documentation records pass review. |
-| Original Owner Request | Establish the requested external original-manual archive, complete instruction/function/timing lists, and current-code gap audits for eight controllers. |
-| Similar-Issue Sweep | Compare all eight candidate proposals, T433 controller rows and current Core device owners so a shared component, source or code route appears once in the frozen universe rather than as duplicated per-controller work. |
+**Active: M5 T450, between accepted subtasks.**
 
 ## Current Technical Baseline
 
@@ -49,6 +28,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T450 S1 | Accepted: external controller manual corpus is source-provenanced and checksum-recorded; the finite eight-unit code-owner baseline transfers function/timing inventory to S2 and row-level gap audit to S3. [Ledger](../etc/research/t450-s1-controller-source-and-code-baseline.md). |
 | T449 | Closed: one copied transaction contract, transaction lifecycle, scheduler arbitrator, memory classifier and retirement/time/observation route; all S1--S6 evidence is reconciled and physical/controller/x87 boundaries transfer explicitly. [History](../history/M5-T449-core-cpu-board-transaction-contracts.md). |
 | T448 | Closed: six over-limit generated firmware sources now use the one bounded byte-identical materialization route; the unused session helper is removed. [Evidence](../etc/evidence/t448-s1-firmware-materialization.md). |
 | T447 | Closed: all S1--S11 ledger receivers are accepted; one Core execution path, bounded VM contracts, no VDM forwarding facade, owner-local test boundaries and the decomposed Core coordinator are retained. [History](../history/M5-T447-architecture-boundary-debt-closure.md). |
