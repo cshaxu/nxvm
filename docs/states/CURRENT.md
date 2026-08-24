@@ -4,6 +4,27 @@
 
 **Active: M5 T451, between accepted subtasks.**
 
+## M5 T451 S2 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner approved T451 execution on 2026-08-24 after requesting a global, minimalist resolution. S1 acceptance at `70a98933` authorizes this finite documentation/debt receiver; no exceptions are approved. |
+| Objective | Retire the stale request-bridge build-debt path and make supporting build instructions name the one current preset route. |
+| Non-goals | Do not modify C source, headers, CMake targets or presets; do not add aliases, wrappers, duplicate smoke paths, current-gate changes or product behavior. |
+| Reference Baseline | `70a98933`; S1 proves the source contract, registered bridge, transport smoke, `current-gcc` and configured `all` build are healthy. |
+| Candidate Proposal | [M5 VM Request-Bridge Current-Build Restoration](../proposals/m5-vm-request-bridge-current-build-restoration.md). |
+| Files And ABI Surface | Modify only `docs/states/TODO.md`, `docs/states/QUEUE.md`, `docs/etc/operations/build/toolchain.md`, task proposal/history/status and necessary evidence index records. No ABI surface changes. |
+| Applicable Rules | `rules/EXECUTION.md`: use the sole active packet and retire consumed Queue/debt paths at closure. `rules/DOCUMENT.md`: preserve authority separation and topology. `rules/ARCHITECTURE.md` and `rules/CODING.md`: no second request path, wrapper or compatibility surface. |
+| Verification | Confirm the retired TODO text and Queue candidate no longer occur in current authorities; confirm only `current-gcc` is named as the current build preset; run documentation governance and `git diff --check`; rerun `current-gcc` after documentation-only change. |
+| Expected Markers | No open stale request-bridge debt, no consumed candidate in Queue, one accurate supporting build command and no production diff. |
+| Asset Needs | None. |
+| Reporting Requirements | Report deleted debt/candidate paths, the retained canonical command, verification and zero production-code change. |
+| Stop Conditions | Stop for a discovered active caller or build failure that contradicts S1, or a required product/build-semantics decision. |
+| Exit Criteria | The stale debt and Queue candidate are removed, supporting toolchain instructions match `CMakePresets.json`, the proposal is retained with T451 history at task closure, and verification passes. |
+| Original Owner Request | Complete the current T in single-session coordinator/executor mode, restore request-bridge full-build health and thoroughly resolve similar issues using a global minimalist approach. |
+| Similar-Issue Sweep | Search current principal and supporting build instructions for nonexistent build preset names; retire only stale current guidance, leaving history as historical evidence. |
+
 ## Current Technical Baseline
 
 - **Current developer artifact:** target `vm-0-5-0448`; `nxvm_0_5_0448.exe` / `build/output/nxvm_0_5_0448.exe`, SHA-256 `A89C1901B3D631DFD7482432E74C4CB799BB2A549FA5C6BE93F7205A0BB83677`. T434 has one copied Core timing-plan publication route for default PC/AT, IBM 5170 Model 339 and Model-40 BYOB session composition.

@@ -23,35 +23,18 @@ its warning inventory before later units are migrated under that policy. Visual
 Studio 2022/MSVC remains an optional compatibility build, not the primary
 developer or release toolchain.
 
-From the repository root:
+The one supported current build route from the repository root is:
 
 ```powershell
 cmake --preset mingw-gcc-x64
-cmake --build --preset m0-probe-gcc
-Get-FileHash build/mingw-gcc-x64/probes/m1-text-exit.com -Algorithm SHA256
-Get-Content build/mingw-gcc-x64/probes/m1-text-exit.json
+cmake --build --preset current-gcc
 ```
 
-The CMake configuration itself is the compiler smoke test: it must identify a
-64-bit GCC C compiler and accept C11. The build generates the deterministic
-M1 COM probe. The manifest must report marker `NTVDM64:M1:TEXT:OK`, exit code
-`42`, the two DOS interrupt contracts, and the SHA-256 of the adjacent COM
-file.
-
-Every M1 baseline record also captures the exact `gcc`, `cmake`, and `ninja`
-versions, executable SHA-256 values, host Windows edition/build, and target
-architecture. A Windows 7 claim remains pending until the same record exists
-from a Windows 7 host or an evidence-backed compatibility limitation is filed.
-
-## Optional MSVC Verification
-
-```powershell
-cmake --preset vs2022-x64
-cmake --build --preset m0-probe-msvc
-```
-
-MSVC may be used for periodic portability checks, but is not required for an
-ordinary contributor or for the initial release path.
+The configure preset creates `build/mingw-gcc-x64`; the `current-gcc` build
+preset builds the current developer artifact. The top-level `build/` directory
+is a container, not a build directory. Run current gates through the separate
+`current-gates-gcc` build preset. Other compilers or temporary build trees are
+task-specific verification inputs, not supported development commands.
 
 ## Binary Size Policy
 
