@@ -8,3 +8,6 @@ trees after classification, and keeps current build instructions operational.
 - S1 establishes the one-family default toolchain record and repairs the one
   surfaced FDC smoke include. Its [evidence](../etc/evidence/t453-s1-default-toolchain-baseline.md)
   records the fresh-build result; S2 and S3 remain required.
+- S2 removes every classified obsolete build tree while preserving the default
+  tree and artifact directory. Its [evidence](../etc/evidence/t453-s2-build-tree-cleanup.md)
+  records every disposition; S3 remains required.

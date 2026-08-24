@@ -4,6 +4,27 @@
 
 **Active: M5 T453, between accepted subtasks.**
 
+## M5 T453 S2 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner approved T453's decomposed build-tree hygiene implementation on 2026-08-24; S1 acceptance at `7cb07fd1` authorizes this classified cleanup. |
+| Objective | Remove every verified obsolete task/experiment build tree while preserving the fresh default tree and developer artifact directory. |
+| Non-goals | Do not remove `build/mingw-gcc-x64`, `build/output`, source, assets, active process outputs, user data or an unclassified path. |
+| Reference Baseline | `7cb07fd1`; audit finds 43 non-default build directories totaling 11,567,486,950 bytes. |
+| Candidate Proposal | [M5 Toolchain And Build-Tree Hygiene](../proposals/m5-toolchain-build-tree-hygiene.md). |
+| Files And ABI Surface | Create task evidence/history/status records; delete only classified ignored directories below `build/`. No ABI changes. |
+| Applicable Rules | `rules/EXECUTION.md`: verify resolved targets under `build/`, exclude `build/output`, stop owned processes and retain evidence. `rules/DOCUMENT.md`: index evidence without creating a competing authority. |
+| Verification | Record every target name/size/classification; confirm no CMake/Ninja/CTest process uses it; resolve each path and verify it is below `build/` and not retained; delete; confirm absent; rebuild default artifact and run documentation governance/diff checks. |
+| Expected Markers | Zero obsolete task/experiment trees, preserved default/output directories, no running build process and recorded reclaimed byte total. |
+| Asset Needs | None. |
+| Reporting Requirements | Report target count, reclaimed bytes, retained paths and any path not deleted with its reason. |
+| Stop Conditions | Stop for an unclassifiable directory, running process, path outside `build/`, or a request to preserve a named tree. |
+| Exit Criteria | Every S2 target has a classification/disposition, all safe targets are absent, retained directories are intact, and verification passes. |
+| Original Owner Request | Implement the audited clean, readable toolchain/build configuration and documentation hygiene through decomposed S tasks. |
+| Similar-Issue Sweep | Include all non-default directories immediately under `build/`; do not infer cleanup from a name alone. |
+
 ## Current Technical Baseline
 
 - **Current developer artifact:** target `vm-0-5-0448`; `nxvm_0_5_0448.exe` / `build/output/nxvm_0_5_0448.exe`, SHA-256 `A89C1901B3D631DFD7482432E74C4CB799BB2A549FA5C6BE93F7205A0BB83677`. T434 has one copied Core timing-plan publication route for default PC/AT, IBM 5170 Model 339 and Model-40 BYOB session composition.
