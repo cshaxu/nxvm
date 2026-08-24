@@ -2,7 +2,28 @@
 
 ## Current Work
 
-**Active: M5 T450, between accepted subtasks.**
+**Active: M5 T450 S6.**
+
+## M5 T450 S6 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner: repository user. Continuing the paired T450 controller plan. Scope: audit only the 16-row DMA source universe frozen by S5 against current Core DMA code, composition wiring and focused tests. |
+| Objective | Give every `DMA-R1`--`DMA-T5` row a current owner, test evidence and conforming/wrong-value/missing/unallocated/missing-input/missing-test disposition. |
+| Non-goals | Do not alter DMA code, add tests, broaden to PIC/PIT/other controllers, modify S5 source facts, or manufacture an L2 timing contract. |
+| Reference Baseline | T450 S5 DMA checklist (`3e542e6e`); `src/core/machine/dma.c`, `dma.h`, machine wiring, composition and DMA-focused tests; retained T433/T449 evidence. |
+| Candidate Proposal | [Core controller manual admission and gap inventory](../proposals/m5-core-controller-manuals-and-gap-inventory.md). |
+| Files And ABI Surface | Indexed `docs/etc/evidence/` only; production source, ABI and external manual archive are read-only audit inputs. |
+| Applicable Rules | `docs/README.md` Task Reading Set; `docs/rules/EXECUTION.md` row-level coverage and actual-review rules; `docs/rules/DOCUMENT.md` supporting evidence boundary; architecture/coding rules as audit criteria, with no production change. |
+| Verification | Direct source, composition and test-path inspection for every S5 identifier; exhaustive symbol/path search; documentation governance gate and `git diff --check` pass. |
+| Expected Markers | One DMA gap checklist preserves all 16 S5 identifiers, has no uncovered row, and assigns every nonconforming production gap once to the queued DMA implementation candidate or a truthful L2/blocked boundary. |
+| Asset Needs | No new asset; S5 checklist and current repository source/tests only. |
+| Reporting Requirements | Record exact code/test paths, row disposition, missing fact/test distinction, owner/receiver and architecture/minimality concerns. |
+| Stop Conditions | Stop and record rather than modify code if a row needs a selected board contract, timing plan or wider implementation admission. |
+| Exit Criteria | Every S5 row is independently audited, all real code gaps are uniquely transferred, and no DMA code change is hidden in this audit S. |
+| Original Owner Request | The second S for each controller audits the current code gaps against that controller's original list. |
+| Similar-Issue Sweep | Search DMA public API, Core machine/transaction wiring, VM composition and focused tests for all consumers; do not classify other controllers. |
 
 ## Current Technical Baseline
 
