@@ -1,5 +1,7 @@
 #include "vm/profile/model40/model40.h"
 
+#include "core/platform/file.h"
+
 C_INT vm_profile_model40_external_rom_is_valid(
     const vm_profile_model40_external_rom *rom)
 {
@@ -123,15 +125,16 @@ static type_status vm_profile_model40_byob_read_chip(const C_CHAR *path,
     const C_CHAR *expected_sha256, type_unsigned_8 *bytes)
 {
     type_unsigned_8 digest[32];
-    STD_FILE *file;
+    C_VOID *loaded = STD_NULL;
+    STD_SIZE_T count;
     if (path == STD_NULL || expected_sha256 == STD_NULL || bytes == STD_NULL ||
-        (file = STD_FOPEN(path, "rb")) == STD_NULL) return TYPE_STATUS_FAULT;
-    if (STD_FREAD(bytes, 1u, VM_PROFILE_MODEL40_ROM_CHIP_BYTES, file) !=
-        VM_PROFILE_MODEL40_ROM_CHIP_BYTES || STD_FGETC(file) != STD_EOF) {
-        (C_VOID)STD_FCLOSE(file);
+        core_platform_file_read_all(path, VM_PROFILE_MODEL40_ROM_CHIP_BYTES,
+            &loaded, &count) != TYPE_FALSE || count != VM_PROFILE_MODEL40_ROM_CHIP_BYTES) {
+        STD_FREE(loaded);
         return TYPE_STATUS_FAULT;
     }
-    if (STD_FCLOSE(file) != 0) return TYPE_STATUS_FAULT;
+    STD_MEMCPY(bytes, loaded, count);
+    STD_FREE(loaded);
     vm_profile_model40_sha256(bytes, VM_PROFILE_MODEL40_ROM_CHIP_BYTES, digest);
     return vm_profile_model40_sha256_matches(digest, expected_sha256) ? TYPE_STATUS_OK : TYPE_STATUS_FAULT;
 }

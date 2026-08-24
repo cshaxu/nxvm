@@ -1125,7 +1125,7 @@ set(CORE_MACHINE_SOURCES
     src/core/machine/transaction.c
 )
 add_library(core-platform STATIC
-    src/core/platform/backing_resource_interface.c
+    src/core/platform/file.c
     src/core/platform/input.c
     src/core/platform/presentation_mailbox.c
     src/core/platform/wait.c)
@@ -1301,6 +1301,7 @@ target_compile_definitions(vm-product-console-input-failure-smoke PRIVATE
 target_link_libraries(vm-product-console-input-failure-smoke PRIVATE
     core-product-session
     core-product-utils
+    core-platform
     type-facade
 )
 
@@ -1340,6 +1341,7 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
 endif()
 target_link_libraries(vm-profile PUBLIC
     core-machine
+    core-platform
     type-facade)
 
 add_library(vm-platform STATIC ${VM_PLATFORM_SOURCES})
@@ -1366,10 +1368,6 @@ add_executable(core-platform-wait-smoke
     tests/platform/core_platform_wait_smoke.c
 )
 target_link_libraries(core-platform-wait-smoke PRIVATE core-platform)
-add_executable(core-platform-backing-resource-smoke
-    tests/platform/core_platform_backing_resource_smoke.c
-)
-target_link_libraries(core-platform-backing-resource-smoke PRIVATE core-platform)
 
 add_executable(vm-keyboard-host-ingress-smoke
     tests/platform/vm_keyboard_host_ingress_smoke.c
@@ -1463,14 +1461,16 @@ target_include_directories(vm-machine PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
 )
 target_link_libraries(vm-machine PUBLIC
-    core-machine)
+    core-machine
+    core-platform)
 
 add_library(vm-product STATIC ${VM_PRODUCT_SOURCES})
 target_include_directories(vm-product PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
 )
 target_link_libraries(vm-product PUBLIC
-    core-product-utils)
+    core-product-utils
+    core-platform)
 
 add_executable(vm-cpu-probe-smoke
     tests/adapters/nxvm_vm_cpu_probe_smoke.c
@@ -1974,17 +1974,8 @@ target_link_libraries(vm-debug-target-smoke PRIVATE
     vm-composition
 )
 add_executable(vm-debugger-recording-lifecycle-smoke
-    tests/machine/vm_debugger_recording_lifecycle_smoke.c
-    src/vm/machine/debug.c)
-# Failure injection must compile the sole recorder owner directly; this remains
-# a test-local T345 embedded-production exception, not another production path.
-target_include_directories(vm-debugger-recording-lifecycle-smoke PRIVATE
-    "${CMAKE_SOURCE_DIR}/src")
-target_compile_definitions(vm-debugger-recording-lifecycle-smoke PRIVATE
-    STD_FOPEN=test_debug_record_open
-    STD_FPRINTF=test_debug_record_write
-    STD_FCLOSE=test_debug_record_close)
-target_link_libraries(vm-debugger-recording-lifecycle-smoke PRIVATE type-facade)
+    tests/machine/vm_debugger_recording_lifecycle_smoke.c)
+target_link_libraries(vm-debugger-recording-lifecycle-smoke PRIVATE vm-machine)
 
 add_executable(vm-full-pc-session-smoke
     tests/products/nxvm_full_pc_session_smoke.c
@@ -2296,7 +2287,6 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     vm-multi-window-session-smoke
     core-platform-input-source-smoke
     core-platform-wait-smoke
-    core-platform-backing-resource-smoke
     vm-keyboard-host-ingress-smoke
     vm-host-cancellation-smoke
     core-platform-presentation-mailbox-smoke
@@ -2708,7 +2698,11 @@ foreach(target IN LISTS PROJECT_CURRENT_FDD_SMOKE_TARGETS)
     project_add_current_smoke_test(${target} "${PROJECT_FDD_SMOKE_IMAGE}")
 endforeach()
 foreach(target IN LISTS PROJECT_LEGACY_M1_FDD_SMOKE_TARGETS)
-    project_add_current_smoke_test(${target} "${PROJECT_M1_FDD_SMOKE_IMAGE}")
+    if(target STREQUAL "vm-dos-keyboard-smoke")
+        project_add_current_smoke_test(${target} "${PROJECT_M1_FDD_SMOKE_IMAGE}" extended)
+    else()
+        project_add_current_smoke_test(${target} "${PROJECT_M1_FDD_SMOKE_IMAGE}")
+    endif()
 endforeach()
 foreach(target IN LISTS PROJECT_CURRENT_HDD_SMOKE_TARGETS)
     project_add_current_smoke_test(${target} "${PROJECT_HDD_SMOKE_IMAGE}")
@@ -3027,6 +3021,12 @@ if(PROJECT_VERIFY_DEPENDENCY_DAG)
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
             -P "${CMAKE_SOURCE_DIR}/cmake/verify_t447_debugger_boundary.cmake"
         COMMENT "Verifying Core debugger interpreter ownership"
+        VERBATIM)
+
+    add_custom_target(verify-t447-file-resource-boundary
+        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_t447_file_resource_boundary.cmake"
+        COMMENT "Verifying Core file-resource ownership"
         VERBATIM)
 
     add_custom_target(verify-current-artifact-target
@@ -3377,6 +3377,7 @@ set(PROJECT_CURRENT_SPECIALIZED_VERIFIER_CANDIDATES
     verify-t447-build-ownership
     verify-t447-session-boundary
     verify-t447-debugger-boundary
+    verify-t447-file-resource-boundary
     verify-current-artifact-target
     verify-request-transport-closure
     verify-keyboard-ingress-boundary
@@ -3454,7 +3455,6 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(core-platform-input-source-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-platform-presentation-mailbox-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-platform-wait-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
-    target_compile_options(core-platform-backing-resource-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-full-pc-session-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-core-executor-storage-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-machine-executor-run-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
@@ -3513,10 +3513,10 @@ foreach(project_t345_target IN LISTS PROJECT_T344_CURRENT_GATE_TARGETS)
 endforeach()
 list(LENGTH PROJECT_T345_S2_OWNER_TEST_STRICT_TARGETS project_t345_s2_pure_count)
 list(LENGTH PROJECT_T345_S2_MIXED_OWNER_TEST_TARGETS project_t345_s2_mixed_count)
-if(NOT project_t345_s2_pure_count EQUAL 173 OR
-        NOT project_t345_s2_mixed_count EQUAL 4)
+if(NOT project_t345_s2_pure_count EQUAL 174 OR
+        NOT project_t345_s2_mixed_count EQUAL 3)
     message(FATAL_ERROR
-        "T345 S2 expected 173 pure and 4 mixed owner-test targets; found ${project_t345_s2_pure_count} pure and ${project_t345_s2_mixed_count} mixed.")
+        "T345 S2 expected 174 pure and 3 mixed owner-test targets; found ${project_t345_s2_pure_count} pure and ${project_t345_s2_mixed_count} mixed.")
 endif()
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     foreach(project_t345_target IN LISTS PROJECT_T345_S2_OWNER_TEST_STRICT_TARGETS)
@@ -3594,7 +3594,6 @@ set(PROJECT_T345_S4_RESIDUAL_DIRECT_ENTRIES
     "core-product-xasm-contract-smoke|src/core/product/debug/xasm32/dasm32.c|debug-xasm-contract"
     "core-product-debug-input-failure-smoke|src/core/product/debug/debug.c|debug-input-failure"
     "core-product-debug-input-failure-smoke|src/core/product/debug/debug_access.c|debug-input-failure"
-    "vm-debugger-recording-lifecycle-smoke|src/vm/machine/debug.c|debugger-recording-failure"
     "vm-product-console-input-failure-smoke|src/vm/product/console.c|console-input-failure"
     "vm-product-console-input-failure-smoke|src/vm/product/session_catalog.c|console-input-failure"
     "vm-product|src/vm/product/console.c|console-product"

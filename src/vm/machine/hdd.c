@@ -9,6 +9,8 @@
 #include "vm/machine/hdd.h"
 #include "vm/machine/media_save.h"
 
+#include "core/platform/file.h"
+
 static core_machine_media_result vm_machine_hdd_media_query(C_VOID *context,
     core_machine_media_info *out_info)
 {
@@ -251,43 +253,32 @@ C_INT vm_machine_hdd_replace_bytes(t_hdd *hdd, const C_VOID *bytes,
     return TYPE_FALSE;
 }
 C_INT vm_machine_hdd_insert(t_hdd *hdd, const C_CHAR *file_name) {
-    type_signed_64 raw_length;
     STD_SIZE_T raw_byte_count;
     STD_SIZE_T virtual_byte_count;
     type_unsigned_32 cylinders;
     type_virtual_address candidate;
-    STD_FILE *image;
+    C_VOID *loaded = STD_NULL;
 
     if (hdd == STD_NULL || file_name == STD_NULL ||
-        (image = STD_FOPEN(file_name, "rb")) == STD_NULL) {
+        core_platform_file_read_all(file_name, (STD_SIZE_T)-1, &loaded,
+            &raw_byte_count) != TYPE_FALSE) {
         return TYPE_TRUE;
     }
-    if (STD_FSEEK_64(image, 0, STD_SEEK_END) != 0 ||
-        (raw_length = STD_FTELL_64(image)) < 0 ||
-        STD_FSEEK_64(image, 0, STD_SEEK_SET) != 0) {
-        (C_VOID)STD_FCLOSE(image);
-        return TYPE_TRUE;
-    }
-    raw_byte_count = (STD_SIZE_T)raw_length;
     if (vm_machine_hdd_capacity_from_raw(raw_byte_count, &virtual_byte_count,
             &cylinders) ||
         (virtual_byte_count != 0u &&
             (candidate = vm_machine_hdd_allocate_candidate(virtual_byte_count)) ==
                 (type_virtual_address)STD_NULL)) {
-        (C_VOID)STD_FCLOSE(image);
+        STD_FREE(loaded);
         return TYPE_TRUE;
     }
     if (virtual_byte_count == 0u) {
         candidate = (type_virtual_address)STD_NULL;
     }
-    if ((raw_byte_count != 0u && STD_FREAD((C_VOID *)candidate,
-            sizeof(type_unsigned_8), raw_byte_count, image) != raw_byte_count) ||
-        STD_FCLOSE(image) != 0) {
-        if (candidate != (type_virtual_address)STD_NULL) {
-            STD_FREE((C_VOID *)candidate);
-        }
-        return TYPE_TRUE;
+    if (raw_byte_count != 0u) {
+        STD_MEMCPY((C_VOID *)candidate, loaded, raw_byte_count);
     }
+    STD_FREE(loaded);
     vm_machine_hdd_commit_candidate(hdd, candidate, raw_byte_count,
         virtual_byte_count, cylinders);
     return TYPE_FALSE;

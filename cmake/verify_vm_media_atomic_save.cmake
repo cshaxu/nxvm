@@ -25,10 +25,16 @@ if(NOT fdd_direct_position EQUAL -1)
     message(FATAL_ERROR "fdd_source still truncates a media target directly")
 endif()
 
-foreach(required IN ITEMS "STD_FOPEN_EXCLUSIVE_WRITE" "STD_FWRITE" "STD_FCLOSE" "STD_RENAME_REPLACE"
-    "STD_REMOVE")
+foreach(required IN ITEMS "core/platform/file.h" "core_platform_file_write_exclusive"
+    "core_platform_file_replace" "core_platform_file_remove")
     if(NOT "${save_source}" MATCHES "${required}")
         message(FATAL_ERROR "VM atomic media save omits ${required}")
+    endif()
+endforeach()
+foreach(forbidden IN ITEMS "STD_FOPEN_EXCLUSIVE_WRITE" "STD_FWRITE" "STD_FCLOSE"
+    "STD_RENAME_REPLACE" "STD_REMOVE")
+    if("${save_source}" MATCHES "${forbidden}")
+        message(FATAL_ERROR "VM atomic media save bypasses Core file ownership: ${forbidden}")
     endif()
 endforeach()
 

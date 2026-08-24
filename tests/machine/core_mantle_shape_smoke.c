@@ -4,14 +4,12 @@
 #include "core/machine/machine_interface.h"
 #include "core/machine/media_interface.h"
 #include "core/machine/rtc.h"
-#include "core/platform/backing_resource_interface.h"
 #include "../support/core_machine_cpu_fixture.h"
 
 typedef struct mantle_fixture {
     core_machine_rtc rtc;
     core_machine_media_registry media;
     type_unsigned_8 media_byte;
-    type_unsigned_8 backing_byte;
 } mantle_fixture;
 
 static C_VOID fixture_reset(C_VOID *context)
@@ -65,36 +63,6 @@ static const core_machine_media_provider fixture_media_provider = {
     STD_NULL
 };
 
-static core_platform_backing_resource_result fixture_backing_size(C_VOID *context,
-    type_unsigned_64 *out_size)
-{
-    if (context == STD_NULL || out_size == STD_NULL) {
-        return CORE_PLATFORM_BACKING_RESOURCE_PERMANENT;
-    }
-    *out_size = 1u;
-    return CORE_PLATFORM_BACKING_RESOURCE_OK;
-}
-
-static core_platform_backing_resource_result fixture_backing_read(C_VOID *context,
-    type_unsigned_64 offset, C_VOID *buffer, type_unsigned_32 requested, type_unsigned_32 *out_transferred)
-{
-    if (context == STD_NULL || buffer == STD_NULL || out_transferred == STD_NULL ||
-        offset != 0u || requested != 1u) {
-        return CORE_PLATFORM_BACKING_RESOURCE_INVALID_RANGE;
-    }
-    *(type_unsigned_8 *)buffer = *(type_unsigned_8 *)context;
-    *out_transferred = 1u;
-    return CORE_PLATFORM_BACKING_RESOURCE_OK;
-}
-
-static const core_platform_backing_resource_provider fixture_backing_provider = {
-    fixture_backing_size,
-    fixture_backing_read,
-    STD_NULL,
-    STD_NULL,
-    STD_NULL
-};
-
 C_INT main(C_VOID)
 {
     static const type_unsigned_8 halt[] = { 0xf4u };
@@ -109,21 +77,14 @@ C_INT main(C_VOID)
     core_machine_entry_plan plan = { 0 };
     core_machine_run_budget budget = { 1u, 0u };
     core_machine_run_result result;
-    core_platform_backing_resource backing;
-    core_platform_backing_resource_result backing_result;
     core_machine_media_info media_info;
     core_machine_media_result media_result;
     core_machine *machine = STD_NULL;
     mantle_fixture fixture = { 0 };
-    type_unsigned_8 observed = 0u;
-    type_unsigned_32 transferred = 0u;
     C_INT failed = 0;
 
     fixture.media_byte = 0xa5u;
-    fixture.backing_byte = 0x5au;
     core_machine_media_registry_initialize(&fixture.media);
-    core_platform_backing_resource_initialize(&backing, &fixture.backing_byte,
-        &fixture_backing_provider);
     if (core_machine_create(&config, &machine) != TYPE_STATUS_OK) failed |= 0x01;
     if (!failed) {
         test_core_machine_fixture_initialize_rtc_with_shared_pic(machine,
@@ -150,10 +111,6 @@ C_INT main(C_VOID)
         if (core_machine_media_query(&fixture.media, 1u, &media_info,
             &media_result) != TYPE_STATUS_OK || media_result != CORE_MACHINE_MEDIA_RESULT_OK ||
             !media_info.present) failed |= 0x100;
-        if (core_platform_backing_resource_read(&backing, 0u, &observed,
-            1u, &transferred, &backing_result) != TYPE_STATUS_OK ||
-            backing_result != CORE_PLATFORM_BACKING_RESOURCE_OK ||
-            transferred != 1u || observed != 0x5au) failed |= 0x200;
     }
     core_machine_destroy(machine);
     core_machine_rtc_finalize(&fixture.rtc);

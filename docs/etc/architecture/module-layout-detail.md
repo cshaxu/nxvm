@@ -236,12 +236,13 @@ copy of a core controller. The `vm/` root composition selects a profile,
 submits typed frozen configuration/provider bindings, owns provider lifetime
 and the bounded product execution pump, and never duplicates the core
 scheduler or borrows raw core state.
-`core/platform` owns policy-free opaque host capability contracts and shared
-Win32/Linux implementations. T271 currently supplies backing-resource, copied
-input, and wait/cancellation surfaces. T282 audits those existing surfaces and
-the host-surface lease: it must keep native handles opaque to core or move that
-VM-specific contract to `vm/platform`; it does not admit file, directory,
-stream, or sampled-clock APIs without a real consumer. `vm/platform` owns only full-machine
+`core/platform` owns the synchronous file route used by VM media, profile,
+catalog, and recorder lifecycles, plus policy-free copied input, presentation,
+and wait/cancellation surfaces. It owns native file handles and returns copied
+bytes or opaque reader/writer lifecycles; it does not interpret mount, profile,
+or product policy. T282 audits the host-surface lease: it must keep native
+handles opaque to core or move that VM-specific contract to `vm/platform`.
+`vm/platform` owns only full-machine
 policy adapters: image selection, mount/persistence, Console/window behavior,
 and PC/AT host choices. `vm/product` owns retained NXVM user experience: Console, hardware
 debugger UX, media commands, and presentation policy. `vm/profile` owns VM

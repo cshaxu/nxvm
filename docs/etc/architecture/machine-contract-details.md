@@ -573,48 +573,25 @@ registry and return a core lifecycle status separately from the typed media
 result. The registry owns no provider backing bytes and never returns a
 provider-owned pointer.
 
-T271 admits only the distinct `core/platform` opaque backing resource needed
-for the media adapter: copied byte-range read/write, size, flush, close, typed
-result, and ownership. Existing copied input, wait, and cancellation contracts
-are reused rather than duplicated. Composition selects a host path or other
-product policy before constructing that opaque resource, then adapts it into a
-device-level media provider. Paths, mounts, persistence, drive letters, DOS
-namespace, wildcard semantics, and sandbox policy remain above core.
+### Core Platform File Route (T447 S4)
 
-### Opaque Core Platform Backing Resource (T271)
-
-The T271 backing resource is a synchronous, composition-created provider with
-copied byte-range `read`/`write`, copied `size`, `flush`, and one synchronous
-`close`. It returns a typed resource outcome independently of the core API
-lifecycle status: short transfer, read-only, invalid range, transient failure,
-permanent failure, unsupported operation, and closed state are explicit.
-`close` is the unique transition to closed and guarantees no later provider
-call; resource state is then released by its creator. Calls return copied bytes
-only, never a native handle or provider-owned buffer.
-
-The resource has no path, directory, stream grammar, mount/eject, sharing,
-drive, sandbox, or DOS policy. It creates no thread and invokes no host
-callback. Composition owns cancellation and may reuse the existing copied
-input/cancellable-wait facilities around bounded resource work; resource I/O
-does not create a second cancellation protocol or mutate guest state.
-
-T282 audits and normalizes only existing host-surface contracts with real NXVM
-consumers: copied input, wait/cancellation, and presentation/host-surface
-leasing. It also records the T271 backing resource as a neutral facility that
-does not yet have a production VM consumer. `file`, `directory`, `stream`, and
-sampled-host-clock APIs are not admitted merely for symmetry; each needs a real
-consumer before a later task may define it. The audit must either make the
-public host-surface context opaque to core, or relocate that VM-specific
-surface below `vm/platform`; core may manage a lease but never interpret or
-operate a native handle.
+`core/platform/file` is the one synchronous owner of host file handles for
+the current FDD/HDD load, atomic media-save staging, Model-40 BYOB, session
+catalog, and instruction-recorder paths. Its calls return copied bytes or an
+opaque reader/writer that it alone opens and closes. A VM caller supplies a
+selected path and retains its own media, profile, catalog, or recorder state;
+Core does not interpret mounts, directories, DOS paths, source provenance, or
+product policy. The retired T271 generic backing-resource callback contract
+had no production consumer and has no compatibility route.
 
 ### VM Media Adapter Boundary (T272)
 
 T272 keeps the VM FDD and HDD backing objects as the sole owners of their
 media bytes, geometry, read-only state, insertion state, and generation. Each
 implements the frozen core media-provider contract; composition binds those
-providers under stable floppy/HDD identities and supplies an already-selected
-opaque backing resource only at mount/eject/persistence boundaries. Firmware
+providers under stable floppy/HDD identities. Their selected path reaches host
+storage only through the Core synchronous file route at mount/eject/persistence
+boundaries. Firmware
 may query copied geometry through the media registry but cannot read media
 bytes. ATA/HDC retains its direct backing-object use until T277. The FDC is
 rebound to the registry in T275 and moves as a neutral controller in T276;
@@ -652,13 +629,11 @@ it is not supplied by this resident-image implementation.
 
 ### Existing Host-Surface Boundary (T282)
 
-`core/platform` retains only policy-free copied input, copied presentation, and
-cancellable host-wait contracts. A native window, console, or terminal handle
+`core/platform` retains the synchronous file route plus policy-free copied
+input, copied presentation, and cancellable host-wait contracts. A native window, console, or terminal handle
 is VM platform policy: its kind, handle storage, and exclusive lease belong in
 `vm/platform`, where platform teardown owns release. Core never interprets or
-stores a native handle. The generic backing-resource facility has no production
-VM consumer and remains a neutral deferred facility; this decision admits no
-file, directory, stream, sampled-clock, DOS-path, mount, or guest-time API.
+stores a native window/console/terminal handle.
 
 ### Neutral RTC Boundary (T273)
 
@@ -774,16 +749,14 @@ T274 is a test-only consumer of existing core contracts, not a new runtime
 layer. Its permitted sequence is: create one `core_machine`; borrow only during
 the initialized configuration window; bind one fixture-owned execution provider
 that advances a fixture-owned `core_machine_rtc`; bind and freeze a
-fixture-owned `core_machine_media_registry`; initialize an independent opaque
-`core_platform_backing_resource`; freeze the machine; reset; atomically apply
+fixture-owned `core_machine_media_registry`; freeze the machine; reset; atomically apply
 one copied entry plan; then run bounded slices through `core_machine_run`.
 
 The fixture owns every fake provider/context and destroys them only after the
 machine has stopped and been destroyed. It asserts typed lifecycle/run results
 and copied state only. It includes no VM header, PC/AT port/IRQ default,
 firmware, UI, DOS vocabulary, host path/handle, session manager, or second
-executor. The backing resource is observed through its synchronous copied API;
-it is not connected to a new host I/O path.
+executor. It is not connected to a host I/O path.
 
 ## Core Machine: Hardware IRQ
 

@@ -3,6 +3,8 @@
 #include <dirent.h>
 
 #include "vm/product/session_catalog.h"
+
+#include "core/platform/file.h"
 #include "core/product/utils.h"
 
 static C_CHAR *vm_product_session_catalog_trim(C_CHAR *value)
@@ -85,7 +87,7 @@ static C_INT vm_product_session_catalog_parse(const C_CHAR *directory,
     C_CHAR path[VM_PRODUCT_SESSION_CATALOG_PATH_MAX];
     C_CHAR line[512];
     C_CHAR *value;
-    STD_FILE *file;
+    core_platform_file_reader *file = STD_NULL;
     C_INT section = 0;
     C_INT media = 0;
     C_INT firmware_slot = 0;
@@ -102,9 +104,9 @@ static C_INT vm_product_session_catalog_parse(const C_CHAR *directory,
     C_INT boot = 0;
 
     if (!vm_product_session_catalog_path(path, sizeof(path), directory, name) ||
-        (file = STD_FOPEN(path, "rb")) == STD_NULL) return 0;
+        core_platform_file_reader_open(path, &file) != TYPE_STATUS_OK) return 0;
     STD_MEMSET(entry, 0, sizeof(*entry));
-    while (STD_FGETS(line, (C_INT)sizeof(line), file) != STD_NULL) {
+    while (core_platform_file_reader_next(file, line, sizeof(line))) {
         C_CHAR *text = vm_product_session_catalog_trim(line);
         if (*text == '\0' || *text == '#') continue;
         if (!STD_STRCMP(text, "machine:")) { section = 1; media = 0; firmware_slot = 0; continue; }
@@ -193,7 +195,7 @@ static C_INT vm_product_session_catalog_parse(const C_CHAR *directory,
         }
         break;
     }
-    STD_FCLOSE(file);
+    core_platform_file_reader_close(file);
     if (!schema || !profile || !display || !boot || media != 0) return 0;
     if (STD_STRCMP(entry->profile, "default-pc-at") &&
         STD_STRCMP(entry->profile, "ibm-5170-model-339") &&

@@ -7,6 +7,7 @@
 
 #include "type.h"
 
+#include "core/platform/file.h"
 #include "vm/machine/debug.h"
 
 static C_VOID debug_request_pause(t_debug *debug,
@@ -19,15 +20,12 @@ static C_VOID debug_request_pause(t_debug *debug,
 
 static type_status debug_record_close(t_debug *debug)
 {
-    C_INT close_result;
-
     if (debug == STD_NULL || debug->connect.recordFile == STD_NULL) {
         return TYPE_STATUS_INVALID_STATE;
     }
-    close_result = STD_FCLOSE(debug->connect.recordFile);
+    debug->connect.record_status = core_platform_file_writer_close(
+        debug->connect.recordFile);
     debug->connect.recordFile = STD_NULL;
-    debug->connect.record_status = close_result == 0 ? TYPE_STATUS_OK :
-        TYPE_STATUS_FAULT;
     return debug->connect.record_status;
 }
 
@@ -39,9 +37,10 @@ static C_INT debug_record_write_failed(t_debug *debug)
     return 0;
 }
 
-#define debug_record_write(debug, ...) \
-    (STD_FPRINTF((debug)->connect.recordFile, __VA_ARGS__) >= 0 || \
-        debug_record_write_failed(debug))
+#define debug_record_write(debug, buffer, ...) \
+    (STD_SNPRINTF((buffer), sizeof(buffer), __VA_ARGS__) >= 0 && \
+        core_platform_file_writer_write((debug)->connect.recordFile, (buffer)) == \
+            TYPE_STATUS_OK || debug_record_write_failed(debug))
 
 C_VOID vm_machine_debug_initialize(t_debug *debug)
 {
@@ -81,7 +80,8 @@ C_VOID vm_machine_debug_refresh(t_debug *debug,
     if (debug->connect.recordFile) {
         type_native_unsigned i;
         type_string_buffer stmt;
-        if (!debug_record_write(debug, _expression,
+        type_string_buffer record;
+        if (!debug_record_write(debug, record, _expression,
                 debug->connect.observation.cs, debug->connect.observation.eip,
                 debug->connect.observation.cs_base + debug->connect.observation.eip,
                 debug->connect.observation.ss, debug->connect.observation.esp,
@@ -136,28 +136,28 @@ C_VOID vm_machine_debug_refresh(t_debug *debug,
 
         /* print opcode, at least print 8 bytes */
         for (i = 0; i < debug->connect.observation.instruction_byte_count; ++i) {
-            if (!debug_record_write(debug, "%02X", debug->connect.observation.instruction_bytes[i])) return;
+            if (!debug_record_write(debug, record, "%02X", debug->connect.observation.instruction_bytes[i])) return;
         }
         for (i = debug->connect.observation.instruction_byte_count; i < 8; ++i) {
-            if (!debug_record_write(debug, "  ")) return;
+            if (!debug_record_write(debug, record, "  ")) return;
         }
 
         /* print assembly, at least 40 char in length */
-        if (!debug_record_write(debug, "%s ", stmt)) return;
+        if (!debug_record_write(debug, record, "%s ", stmt)) return;
         for (i = STD_STRLEN(stmt); i < 40; ++i) {
-            if (!debug_record_write(debug, " ")) return;
+            if (!debug_record_write(debug, record, " ")) return;
         }
 
         /* print memory usage */
         for (i = 0; i < debug->connect.observation.memory_access_count; ++i) {
-            if (!debug_record_write(debug, "[%c:L%08x/%1d/%016llx] ",
+            if (!debug_record_write(debug, record, "[%c:L%08x/%1d/%016llx] ",
                     debug->connect.observation.memory_accesses[i].write ? 'W' : 'R',
                     debug->connect.observation.memory_accesses[i].linear,
                     debug->connect.observation.memory_accesses[i].bytes,
                     debug->connect.observation.memory_accesses[i].data)) return;
         }
 
-        (C_VOID)debug_record_write(debug, "\n");
+        (C_VOID)debug_record_write(debug, record, "\n");
     }
 }
 C_VOID vm_machine_debug_finalize(t_debug *debug)
@@ -229,9 +229,9 @@ type_status vm_machine_debug_record_start(t_debug *debug, const C_CHAR *file_nam
         STD_PRINTF("ERROR:\trecorder close failed.\n");
         return TYPE_STATUS_FAULT;
     }
-    debug->connect.recordFile = STD_FOPEN(file_name, "w");
-    if (!debug->connect.recordFile) {
-        debug->connect.record_status = TYPE_STATUS_FAULT;
+    debug->connect.record_status = core_platform_file_writer_open(file_name,
+        &debug->connect.recordFile);
+    if (debug->connect.record_status != TYPE_STATUS_OK) {
         STD_PRINTF("ERROR:\tcannot write dump file.\n");
     } else {
         debug->connect.record_status = TYPE_STATUS_OK;

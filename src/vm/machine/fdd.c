@@ -7,6 +7,7 @@
 
 
 #include "core/machine/dma.h"
+#include "core/platform/file.h"
 
 
 #include "vm/machine/fdd.h"
@@ -77,9 +78,9 @@ static C_INT vm_machine_fdd_sidecar_load(const t_fdd *fdd, const C_CHAR *image_n
     const C_VOID *image_bytes, type_virtual_address marks)
 {
     C_CHAR *sidecar_name;
-    STD_FILE *file;
-    type_signed_64 length;
     C_CHAR *text;
+    C_VOID *loaded;
+    STD_SIZE_T length;
     const C_CHAR *cursor;
     type_unsigned_32 version;
     type_unsigned_32 raw_size;
@@ -91,21 +92,24 @@ static C_INT vm_machine_fdd_sidecar_load(const t_fdd *fdd, const C_CHAR *image_n
 
     sidecar_name = vm_machine_fdd_sidecar_name(image_name);
     if (sidecar_name == STD_NULL) return TYPE_TRUE;
-    file = STD_FOPEN(sidecar_name, "rb");
+    if (!core_platform_file_exists(sidecar_name)) {
+        STD_FREE(sidecar_name);
+        return TYPE_FALSE;
+    }
+    loaded = STD_NULL;
+    if (core_platform_file_read_all(sidecar_name, 65536u, &loaded,
+            &length) != TYPE_FALSE) {
+        STD_FREE(sidecar_name);
+        return TYPE_TRUE;
+    }
     STD_FREE(sidecar_name);
-    if (file == STD_NULL) return TYPE_FALSE;
-    if (STD_FSEEK_64(file, 0, STD_SEEK_END) != 0 ||
-        (length = STD_FTELL_64(file)) < 0 || (type_unsigned_64)length > 65536u ||
-        STD_FSEEK_64(file, 0, STD_SEEK_SET) != 0 ||
-        (text = (C_CHAR *)STD_MALLOC((STD_SIZE_T)length + 1u)) == STD_NULL) {
-        (C_VOID)STD_FCLOSE(file);
+    text = (C_CHAR *)STD_MALLOC(length + 1u);
+    if (text == STD_NULL) {
+        STD_FREE(loaded);
         return TYPE_TRUE;
     }
-    if (STD_FREAD(text, 1u, (STD_SIZE_T)length, file) != (STD_SIZE_T)length ||
-        STD_FCLOSE(file) != 0) {
-        STD_FREE(text);
-        return TYPE_TRUE;
-    }
+    STD_MEMCPY(text, loaded, length);
+    STD_FREE(loaded);
     text[length] = '\0';
     cursor = text;
     sector_count = (STD_SIZE_T)fdd->data.ncyl * fdd->data.nhead *
@@ -518,33 +522,28 @@ C_VOID vm_machine_fdd_create_for(t_fdd *fdd)
 
 C_INT vm_machine_fdd_insert_for(t_fdd *fdd, const C_CHAR *file_name)
 {
-    type_signed_64 image_length;
     STD_SIZE_T image_size;
+    STD_SIZE_T loaded_count;
     type_virtual_address candidate = (type_virtual_address)STD_NULL;
     type_virtual_address marks = (type_virtual_address)STD_NULL;
-    STD_FILE *image;
+    C_VOID *loaded = STD_NULL;
 
     if (fdd == STD_NULL || file_name == STD_NULL ||
-        (image = STD_FOPEN(file_name, "rb")) == STD_NULL) return TYPE_TRUE;
+        core_platform_file_read_all(file_name, vm_machine_fdd_image_size(fdd),
+            &loaded, &loaded_count) != TYPE_FALSE) return TYPE_TRUE;
     image_size = vm_machine_fdd_image_size(fdd);
-    if (STD_FSEEK_64(image, 0, STD_SEEK_END) != 0 ||
-        (image_length = STD_FTELL_64(image)) < 0 || (STD_SIZE_T)image_length != image_size ||
-        STD_FSEEK_64(image, 0, STD_SEEK_SET) != 0 ||
+    if (loaded_count != image_size ||
         (candidate = (type_virtual_address)STD_MALLOC(image_size)) ==
             (type_virtual_address)STD_NULL ||
         (marks = (type_virtual_address)STD_CALLOC((STD_SIZE_T)fdd->data.ncyl *
             fdd->data.nhead * fdd->data.nsector, sizeof(type_unsigned_8))) ==
             (type_virtual_address)STD_NULL) {
         if (candidate != (type_virtual_address)STD_NULL) STD_FREE((C_VOID *)candidate);
-        (C_VOID)STD_FCLOSE(image);
+        STD_FREE(loaded);
         return TYPE_TRUE;
     }
-    if (STD_FREAD((C_VOID *)candidate, sizeof(type_unsigned_8), image_size, image) !=
-            image_size || STD_FCLOSE(image) != 0) {
-        STD_FREE((C_VOID *)candidate);
-        STD_FREE((C_VOID *)marks);
-        return TYPE_TRUE;
-    }
+    STD_MEMCPY((C_VOID *)candidate, loaded, image_size);
+    STD_FREE(loaded);
     if (vm_machine_fdd_sidecar_load(fdd, file_name, (const C_VOID *)candidate,
         marks) != TYPE_FALSE) {
         STD_FREE((C_VOID *)candidate);

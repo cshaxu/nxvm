@@ -37,3 +37,14 @@ and removes cross-owner test field access. The updated T446 lifecycle check and
 the narrow S3 boundary gate pass with the focused tests, 293-current-smoke,
 73-specialized-gate, documentation, and artifact proof in
 [S3 evidence](../etc/evidence/t447-s3-debugger-boundary.md). T447 remains open.
+
+## Accepted S4
+
+P1 retires the unused generic backing-resource callback contract and converges
+FDD/HDD, atomic save, Model-40 BYOB, catalog, and recording on the one
+Core-owned synchronous file route. The recorder lifecycle smoke now links the
+production VM library rather than compiling `debug.c` directly. The focused
+media/recorder proof, 75 specialized gates, 292-current-smoke, documentation,
+and 0447 artifact are recorded in
+[S4 evidence](../etc/evidence/t447-s4-file-resource-boundary.md). T447 remains
+open; the next proposal-defined batch requires its own admitted packet.

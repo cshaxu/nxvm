@@ -1,5 +1,7 @@
 #include "vm/machine/media_save.h"
 
+#include "core/platform/file.h"
+
 static const C_CHAR vm_machine_media_save_suffix[] = ".ntvdm64.tmp.000";
 static const STD_SIZE_T vm_machine_media_save_candidate_count = 1000u;
 
@@ -9,10 +11,8 @@ static C_INT vm_machine_media_stage(const C_CHAR *file_name, const C_VOID *bytes
     STD_SIZE_T file_name_length;
     STD_SIZE_T suffix_length = sizeof(vm_machine_media_save_suffix);
     C_CHAR *temporary_name;
-    STD_FILE *image;
     STD_SIZE_T candidate_index;
-    C_INT write_failed;
-    C_INT close_failed;
+    C_INT stage_result;
 
     if (file_name == STD_NULL || out_temporary_name == STD_NULL ||
         (byte_count != 0u && bytes == STD_NULL)) return TYPE_TRUE;
@@ -23,7 +23,6 @@ static C_INT vm_machine_media_stage(const C_CHAR *file_name, const C_VOID *bytes
     STD_MEMCPY(temporary_name, file_name, file_name_length);
     STD_MEMCPY(temporary_name + file_name_length, vm_machine_media_save_suffix,
         suffix_length);
-    image = STD_NULL;
     for (candidate_index = 0u; candidate_index < vm_machine_media_save_candidate_count;
          ++candidate_index) {
         temporary_name[file_name_length + suffix_length - 4u] =
@@ -32,18 +31,15 @@ static C_INT vm_machine_media_stage(const C_CHAR *file_name, const C_VOID *bytes
             (C_CHAR)('0' + ((candidate_index / 10u) % 10u));
         temporary_name[file_name_length + suffix_length - 2u] =
             (C_CHAR)('0' + (candidate_index % 10u));
-        image = STD_FOPEN_EXCLUSIVE_WRITE(temporary_name);
-        if (image != STD_NULL) break;
+        stage_result = core_platform_file_write_exclusive(temporary_name, bytes,
+            byte_count);
+        if (stage_result == CORE_PLATFORM_FILE_WRITE_OK) break;
+        if (stage_result != CORE_PLATFORM_FILE_WRITE_EXISTS) {
+            STD_FREE(temporary_name);
+            return TYPE_TRUE;
+        }
     }
-    if (image == STD_NULL) {
-        STD_FREE(temporary_name);
-        return TYPE_TRUE;
-    }
-    write_failed = byte_count != 0u &&
-        STD_FWRITE(bytes, sizeof(type_unsigned_8), byte_count, image) != byte_count;
-    close_failed = STD_FCLOSE(image) != 0;
-    if (write_failed || close_failed) {
-        (C_VOID)STD_REMOVE(temporary_name);
+    if (candidate_index == vm_machine_media_save_candidate_count) {
         STD_FREE(temporary_name);
         return TYPE_TRUE;
     }
@@ -53,10 +49,7 @@ static C_INT vm_machine_media_stage(const C_CHAR *file_name, const C_VOID *bytes
 
 static C_INT vm_machine_media_exists(const C_CHAR *file_name)
 {
-    STD_FILE *file = STD_FOPEN(file_name, "rb");
-
-    if (file == STD_NULL) return TYPE_FALSE;
-    return STD_FCLOSE(file) == 0 ? TYPE_TRUE : TYPE_FALSE;
+    return core_platform_file_exists(file_name);
 }
 
 static C_CHAR *vm_machine_media_backup_name(const C_CHAR *file_name)
@@ -85,8 +78,8 @@ C_INT vm_machine_media_save_atomically(const C_CHAR *file_name,
 
     if (vm_machine_media_stage(file_name, bytes, byte_count, &temporary_name) !=
         TYPE_FALSE) return TYPE_TRUE;
-    if (STD_RENAME_REPLACE(temporary_name, file_name) != 0) {
-        (C_VOID)STD_REMOVE(temporary_name);
+    if (core_platform_file_replace(temporary_name, file_name) != TYPE_FALSE) {
+        (C_VOID)core_platform_file_remove(temporary_name);
         STD_FREE(temporary_name);
         return TYPE_TRUE;
     }
@@ -118,27 +111,27 @@ C_INT vm_machine_media_save_pair_atomically(const C_CHAR *first_name,
         (second_backup = vm_machine_media_backup_name(second_name)) == STD_NULL) goto done;
     first_old = vm_machine_media_exists(first_name);
     second_old = vm_machine_media_exists(second_name);
-    if ((first_old && STD_RENAME_REPLACE(first_name, first_backup) != 0) ||
-        (second_old && STD_RENAME_REPLACE(second_name, second_backup) != 0) ||
-        STD_RENAME_REPLACE(first_temporary, first_name) != 0) goto rollback;
+    if ((first_old && core_platform_file_replace(first_name, first_backup) != TYPE_FALSE) ||
+        (second_old && core_platform_file_replace(second_name, second_backup) != TYPE_FALSE) ||
+        core_platform_file_replace(first_temporary, first_name) != TYPE_FALSE) goto rollback;
     first_new = TYPE_TRUE;
-    if (STD_RENAME_REPLACE(second_temporary, second_name) != 0) goto rollback;
+    if (core_platform_file_replace(second_temporary, second_name) != TYPE_FALSE) goto rollback;
     second_new = TYPE_TRUE;
-    if ((first_old && STD_REMOVE(first_backup) != 0) ||
-        (second_old && STD_REMOVE(second_backup) != 0)) goto done;
+    if ((first_old && core_platform_file_remove(first_backup) != TYPE_FALSE) ||
+        (second_old && core_platform_file_remove(second_backup) != TYPE_FALSE)) goto done;
     failed = TYPE_FALSE;
     goto done;
 rollback:
-    if (first_new) (C_VOID)STD_REMOVE(first_name);
-    if (second_new) (C_VOID)STD_REMOVE(second_name);
-    if (first_old) (C_VOID)STD_RENAME_REPLACE(first_backup, first_name);
-    if (second_old) (C_VOID)STD_RENAME_REPLACE(second_backup, second_name);
+    if (first_new) (C_VOID)core_platform_file_remove(first_name);
+    if (second_new) (C_VOID)core_platform_file_remove(second_name);
+    if (first_old) (C_VOID)core_platform_file_replace(first_backup, first_name);
+    if (second_old) (C_VOID)core_platform_file_replace(second_backup, second_name);
 done:
-    if (first_temporary != STD_NULL) (C_VOID)STD_REMOVE(first_temporary);
-    if (second_temporary != STD_NULL) (C_VOID)STD_REMOVE(second_temporary);
+    if (first_temporary != STD_NULL) (C_VOID)core_platform_file_remove(first_temporary);
+    if (second_temporary != STD_NULL) (C_VOID)core_platform_file_remove(second_temporary);
     if (!failed) {
-        if (first_backup != STD_NULL) (C_VOID)STD_REMOVE(first_backup);
-        if (second_backup != STD_NULL) (C_VOID)STD_REMOVE(second_backup);
+        if (first_backup != STD_NULL) (C_VOID)core_platform_file_remove(first_backup);
+        if (second_backup != STD_NULL) (C_VOID)core_platform_file_remove(second_backup);
     }
     STD_FREE(first_temporary);
     STD_FREE(second_temporary);

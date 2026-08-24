@@ -10,6 +10,8 @@ extern "C" {
 #include "type.h"
 #include "core/machine/debug_interface.h"
 
+typedef struct core_platform_file_writer core_platform_file_writer;
+
 #define VM_MACHINE_DEVICE_DEBUG "Unknown Hardware Debugger"
 
 typedef enum vm_machine_debug_pause_reason {
@@ -25,7 +27,7 @@ typedef type_status (*vm_machine_debug_disassemble_provider)(C_VOID *context,
     STD_SIZE_T *out_code_bytes, C_INT flag32);
 
 typedef struct {
-    STD_FILE *recordFile; /* pointer to dump file */
+    core_platform_file_writer *recordFile;
     vm_machine_debug_pause_callback pauseCallback;
     C_VOID *pauseContext;
     vm_machine_debug_disassemble_provider disassembleProvider;

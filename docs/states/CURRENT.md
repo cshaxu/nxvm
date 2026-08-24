@@ -1,16 +1,8 @@
 # Project Status
 
-## Current Work
-
-| Task | Compact result |
-| --- | --- |
-| T447 S1 | Accepted P1 `9a81283d` and P2 `496024b3`: each current VM build source and native GUI edge has one owner; 0447, 293 current smokes, and 67 specialized verifiers pass. [Evidence](../etc/evidence/t447-s1-build-ownership.md). |
-| T447 S2 | Accepted P1 `52d140a8` and P2 `ebabe689`: one Core `SESSION` grammar, immutable command/open tokens, copied selected observations, and callback-bounded VM actions replace raw borrowing and duplicate dispatch. [Evidence](../etc/evidence/t447-s2-session-boundary.md). |
-| T447 S3 | Accepted P1 `d67c4892`: Core owns the opaque debugger interpreter; VM owns one handle lifecycle and retains one command route. The 0447 artifact SHA and 293-current/73-specialized proof are in [evidence](../etc/evidence/t447-s3-debugger-boundary.md). |
-
 ## Current Technical Baseline
 
-- **Current developer artifact:** target `vm-0-5-0447`; `nxvm_0_5_0447.exe` / `build/output/nxvm_0_5_0447.exe`, SHA-256 `D3473D442BADAE8A7102D16B55FC1BEBECDDA477DD8C4BCB0A435FE391F73568`. T434 has one copied Core timing-plan publication route for default PC/AT, IBM 5170 Model 339 and Model-40 BYOB session composition.
+- **Current developer artifact:** target `vm-0-5-0447`; `nxvm_0_5_0447.exe` / `build/output/nxvm_0_5_0447.exe`, SHA-256 `A38E741BE21C3E4C4E5D3E0802694D64D0221BF114D960A53CF68C61BC82E852`. T434 has one copied Core timing-plan publication route for default PC/AT, IBM 5170 Model 339 and Model-40 BYOB session composition.
   T386 closes selected-device functional completeness at S29; its retained
   [closure audit](../etc/evidence/t386-s29-functional-closure-audit.md) fixes
   HDC current-gate coverage and transfers board, firmware and physical work.
@@ -32,7 +24,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T447 S1 | Accepted P1 `9a81283d`: each current VM build source and native GUI edge has one owner; the duplicate artifact source route is removed. The 0447 artifact, 293 current smoke tests, and 67 specialized verifiers pass. [Evidence](../etc/evidence/t447-s1-build-ownership.md). |
+| T447 S4 | Accepted P1: one Core-owned synchronous file route now serves named VM consumers; the unused callback route and recorder source-build exception are deleted. The current 0447 artifact, 292 current smokes, and 75 specialized gates pass. [Evidence](../etc/evidence/t447-s4-file-resource-boundary.md). |
 | T446 | Closed: each VM session owns its debugger cursor state; the sole recorder owner closes on stop, write failure and destruction, clearing failed streams and reporting lifecycle outcomes. [Evidence](../etc/evidence/t446-s1-vm-debugger-recording-lifecycle.md). |
 | T445 | Closed: each VM native display adapter now owns its host resource lifecycle; Win32 pairs its DC before window destruction, and Linux curses terminates on the initializing display thread. [Evidence](../etc/evidence/t445-s1-vm-native-display-resource-lifetime.md). |
 | T444 | Closed: the 20 fast-smoke fixture failures use the legal 16-byte reset window; T344 classifies four manifest producers separately from 71 historical fixtures; every discovered stale gate now proves the current single Core plan route. [Evidence](../etc/evidence/t444-s1-current-gate-regression-restoration.md). |
