@@ -13,6 +13,7 @@ architecture and deliberately prefer direct owner-local corrections over new
 layers; each implementation admission must still establish its own finite
 sweep and regression evidence.
 
+1. [Toolchain and build-tree hygiene](../proposals/m5-toolchain-build-tree-hygiene.md).
 1. [Parallel Console profile-smoke isolation](../proposals/m5-parallel-console-profile-smoke-isolation.md).
 
 The [four-profile CPU-completeness program](../proposals/m5-four-profile-cpu-completeness-program.md)

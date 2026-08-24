@@ -2,6 +2,7 @@
 
 #include <windows.h>
 
+#include "core/machine/fdc.h"
 #include "core/machine/machine_interface.h"
 #include "core/machine/memory_interface.h"
 #include "vm/composition/session/session_interface.h"
