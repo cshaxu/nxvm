@@ -3,7 +3,7 @@
 T456 implements the finite Core 8259A command, priority, cascade,
 acknowledgement, EOI, mask and reset contract after a manual-first inventory.
 
-## Active Subtask
+## Completed Subtasks
 
 - S1 reconciles T450's original-source and current-code ledger with rendered
   manual pages and independently versioned emulator observations before
@@ -41,8 +41,25 @@ retained poll-command receiver. The configured build, focused 11-test group,
 documentation governance, and independent 293/293 current-gate replay pass.
 No VM/profile topology or additional selector is introduced.
 
-S4 is implemented pending independent acceptance. Its
+S4 is accepted at `c3fbe185`. Its
 [closure evidence](../etc/evidence/t456-s4-pic-retained-command-closure.md)
 maps every retained row to its source-backed logical proof or maintained
 boundary, records the specific-EOI repair, and preserves the selected-board and
 electrical non-claims.
+
+The P1 actual-change review confirms the one PIC-local command correction,
+removed pseudo-public priority helpers and OCW1 alias, the two missing
+command/poll regressions, and no new dispatch or state owner. Its focused
+group, configured build, documentation gate and isolated 293/293 current-gate
+replay satisfy the bounded task exit.
+
+## Closure
+
+T456 closes the prepared 8259A implementation increment. S1 reconciled every
+source row; S2 supplied the sole CPU logical acknowledgement boundary; S3 made
+the one selector consume programmed cascade state; S4 closes the retained
+commands and lifecycle. The retained [proposal](M5-T456-core-pic-8259a-phase-contract-proposal.md)
+and S1--S4 evidence preserve all source, proof and maintained-boundary detail.
+XT/AT personality selection, later ELCR/PCI routing and APIC/IOAPIC remain the
+separate source-gated TODO receivers; neither is evidence of an incomplete
+8259A chip contract.
