@@ -47,14 +47,6 @@ C_VOID vm_session_consume_request(
     }
 }
 
-static type_unsigned_16 vm_session_read_u16(const C_VOID *source)
-{
-    type_unsigned_16 value;
-
-    STD_MEMCPY(&value, source, sizeof(value));
-    return value;
-}
-
 static const vm_profile_default_pc_at_descriptor *
 vm_session_profile_select(vm_session_profile_kind kind)
 {

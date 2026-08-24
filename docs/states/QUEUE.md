@@ -13,8 +13,6 @@ architecture and deliberately prefer direct owner-local corrections over new
 layers; each implementation admission must still establish its own finite
 sweep and regression evidence.
 
-1. [VM firmware materialization portability and dead-code closure](../proposals/m5-vm-firmware-materialization-portability.md).
-
 The [four-profile CPU-completeness program](../proposals/m5-four-profile-cpu-completeness-program.md)
 is the shared admission context for this dependency-ordered sequence.
 
