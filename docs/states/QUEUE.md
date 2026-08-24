@@ -43,6 +43,7 @@ linked proposal identifies its finite implementation-admission baseline and
 exclusive earliest capability batch; a later candidate may consume a registered
 contract but does not redefine its L3 or Core/VM boundary.
 
+1. [Core controller manual admission and gap inventory](../proposals/m5-core-controller-manuals-and-gap-inventory.md).
 1. [Core PIC 8259A phase contract](../proposals/m5-core-pic-8259a-phase-contract.md).
 1. [Core DMA 8237A phase contract](../proposals/m5-core-dma-8237a-phase-contract.md).
 1. [Core PIT 8254 phase contract](../proposals/m5-core-pit-8254-phase-contract.md).

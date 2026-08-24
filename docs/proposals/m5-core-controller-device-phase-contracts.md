@@ -31,7 +31,9 @@ explicit L2 fallback or blocked row, never an inferred delay.
 
 ## Candidate Order
 
-PIC, DMA, PIT, RTC/CMOS, KBC/NMI, FDC plus logical media, VADP, then HDC/ATA.
-The existing integration/export candidate follows them and reconciles only
-their accepted copied contracts. HDC is source-blocked; IBM MFM/ST-506 is not
-ATA and remains a separate future capability.
+The controller manual-admission and gap-inventory candidate first freezes the
+shared source and repository evidence for all eight units. PIC, DMA, PIT,
+RTC/CMOS, KBC/NMI, FDC plus logical media, VADP, then HDC/ATA follow. The
+existing integration/export candidate follows them and reconciles only their
+accepted copied contracts. HDC is source-blocked; IBM MFM/ST-506 is not ATA
+and remains a separate future capability.

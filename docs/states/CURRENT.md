@@ -2,7 +2,7 @@
 
 ## Current Work
 
-**Idle.** Td S138 is closed.
+**Idle.** Td S139 is closed.
 
 ## Current Technical Baseline
 
@@ -36,6 +36,11 @@
 
 
 ## Recent Governance
+
+- **M5 Td S139 P1:** inserted one source-admission and implementation-gap
+  inventory candidate ahead of the eight controller implementations; it
+  requires two finite checklists per controller and makes no source or runtime
+  change. [Evidence](../etc/evidence/td-s139-controller-manual-inventory-admission.md).
 
 - **M5 Td S138 P1:** replaced the aggregate controller/device implementation
   candidate with ordered PIC, DMA, PIT, RTC, KBC, FDC/media, VADP and
