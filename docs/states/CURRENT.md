@@ -2,7 +2,28 @@
 
 ## Current Work
 
-**Active: M5 T450, between accepted subtasks.**
+**Active: M5 T450 S3.**
+
+## M5 T450 S3 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner: repository user. Continuing the approved per-controller paired T450 plan. Scope: PIC 8259A original source/function/timing checklist only; S4 owns its current-code gap audit. |
+| Objective | Record the complete 8259A register, initialization/operation command, priority/cascade/interrupt lifecycle, reset and admissible timing universe from the admitted Intel and IBM sources. |
+| Non-goals | Do not audit current PIC implementation or tests, change code, infer INTA waveform/board timing, or create non-PIC checklist rows. |
+| Reference Baseline | T450 S1 source ledger, T450 S2 controller-subtask ledger, Intel 8259A 231468-003 and IBM 5170 technical reference. |
+| Candidate Proposal | [Core controller manual admission and gap inventory](../proposals/m5-core-controller-manuals-and-gap-inventory.md). |
+| Files And ABI Surface | Indexed `docs/etc/research/` only; external manuals are read-only; no product source, ABI or artifact change. |
+| Applicable Rules | `docs/README.md` Task Reading Set; `docs/rules/EXECUTION.md` finite-ledger/actual-review requirements; `docs/rules/DOCUMENT.md` supporting-detail boundary; source policy; no production architecture or coding change. |
+| Verification | Reconcile every 8259A command/register/mode family against the source table/section pages; verify each timing/board fact has a source or explicit L2 boundary; documentation governance gate and `git diff --check` pass. |
+| Expected Markers | One PIC-only checklist has source page, function, timing, reset/cancellation, IRQ/cascade relation and L3/L2/blocked disposition for all finite 8259A families. |
+| Asset Needs | T450 S1 Intel 8259A and IBM 5170 external PDFs only. |
+| Reporting Requirements | Record exact Intel and IBM page references, the finite PIC universe, every source-limited timing disposition and S4 transfer. |
+| Stop Conditions | Mark a row L2 when selected IBM board timing cannot be cited; never infer INTA waveform or another controller's route. |
+| Exit Criteria | The indexed PIC original checklist covers all 8259A command/register/mode/lifecycle families once and only once and transfers unchanged row identifiers to S4. |
+| Original Owner Request | One controller S establishes its original function/timing checklist; the following S audits its current-code gaps. |
+| Similar-Issue Sweep | Compare master/slave cascade, IRQ source, CPU acknowledgement and reset facts within PIC only; do not inspect implementation gaps. |
 
 ## Current Technical Baseline
 
