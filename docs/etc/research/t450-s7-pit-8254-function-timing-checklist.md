@@ -1,5 +1,9 @@
 # T450 S7 PIT 8254 Original Function And Timing Checklist
 
+> S19 direct PDF check: scan with OCR text layer (not born-digital); rendered
+> pages govern timing tables. Chip facts are sufficient; oscillator/wiring and
+> board visibility remain L2. No external emulator is primary.
+
 ## Scope And Source Key
 
 This is the complete PIT source universe transferred unchanged to T450 S8.

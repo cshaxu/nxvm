@@ -1,5 +1,9 @@
 # T450 S5 DMA 8237A Original Function And Timing Checklist
 
+> S19 direct PDF check: scan with OCR text layer (not born-digital); rendered
+> pages govern diagrams/tables. Chip facts are sufficient; AT wiring/service
+> phase remains L2. No external emulator is primary.
+
 ## Scope And Source Key
 
 This is the complete DMA source universe transferred unchanged to T450 S6.

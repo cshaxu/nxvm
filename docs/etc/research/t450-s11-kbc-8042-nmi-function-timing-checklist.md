@@ -1,5 +1,9 @@
 # T450 S11 KBC 8042/NMI Original Function And Timing Checklist
 
+> S19 direct PDF check: scan with OCR text layer (not born-digital); rendered
+> pages govern pin/timing tables. Chip facts are sufficient; keyboard and AT
+> board phases remain L2. No external emulator is primary.
+
 ## Scope And Source Key
 
 This complete KBC source universe transfers unchanged to T450 S12. `UPI`

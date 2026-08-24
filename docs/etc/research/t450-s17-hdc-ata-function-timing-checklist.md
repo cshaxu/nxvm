@@ -2,6 +2,9 @@
 
 ## Scope, Source Form And Sufficiency
 
+**S19 verification:** direct rendered-page inspection confirms born-digital
+text, including searchable tables and figures.
+
 `ATA` denotes X3T13 *AT Attachment-3 Interface*, 2008D Rev. 7b (Jan. 1997).
 The admitted PDF is a born-digital text document with searchable tables and
 figures; S19 must directly verify this classification and every cited page

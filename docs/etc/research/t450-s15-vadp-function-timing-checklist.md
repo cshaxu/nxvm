@@ -2,6 +2,9 @@
 
 ## Scope, Source Form And Sufficiency
 
+**S19 verification:** direct rendered-page inspection confirms mixed form:
+scanned pages with OCR body text and a cover without text layer.
+
 `VADP` here means the IBM *Enhanced Graphics Adapter (EGA)* chapter in the
 admitted *Technical Reference: Options and Adapters, Volume 2* (revised Apr.
 1984, EGA chapter pp. 1--84).  The admitted PDF is an archival scan with OCR:

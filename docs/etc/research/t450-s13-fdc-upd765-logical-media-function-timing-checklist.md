@@ -2,6 +2,9 @@
 
 ## Scope, Source Form And Sufficiency
 
+**S19 verification:** direct rendered-page inspection confirms scan with OCR
+text layer; OCR errors remain visible, so the rendered source governs.
+
 `FDC` denotes NEC *uPD765A/uPD765B Single/Double Density Floppy-Disk
 Controller*; `AT` denotes IBM *Personal Computer AT Technical Reference*,
 1502243 (Mar. 1984). The admitted FDC PDF is a scanned/OCR document: extracted

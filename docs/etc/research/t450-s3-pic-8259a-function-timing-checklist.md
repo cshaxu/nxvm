@@ -1,5 +1,9 @@
 # T450 S3 PIC 8259A Original Function And Timing Checklist
 
+> S19 direct PDF check: scan with OCR text layer (not born-digital); rendered
+> pages govern diagrams/tables. Chip facts are sufficient; selected AT cascade
+> and board acknowledge phase remain L2. No external emulator is primary.
+
 ## Scope And Source Key
 
 This list is the complete 8259A source universe transferred unchanged to T450

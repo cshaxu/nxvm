@@ -1,5 +1,9 @@
 # T450 S9 MC146818A RTC/CMOS Original Function And Timing Checklist
 
+> S19 direct PDF check: scan without usable text layer (122 extracted bytes);
+> rendered pages govern every value. Chip facts are sufficient; crystal/IRQ8
+> and persistence remain L2. No external emulator is primary.
+
 ## Scope And Source Key
 
 This is the complete RTC/CMOS source universe transferred unchanged to T450
