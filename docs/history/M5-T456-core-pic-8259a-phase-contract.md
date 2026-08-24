@@ -31,9 +31,10 @@ records the manual-derived phase order, one production-caller sweep, focused
 trace proof, corrected protected-mode rejection observations, full 293-test
 current-gate result and retained ICW3/SNGL and physical-boundary receivers.
 
-S3 is implemented pending independent acceptance. Its
+S3 is accepted at `92df2836`. Its
 [evidence](../etc/evidence/t456-s3-pic-programmed-cascade-contract.md)
 records the one PIC-local ICW3/SNGL relation, its separate synthesized cascade
 request, AT/custom/mismatch/single-mode/reinitialization proof and the
-retained poll-command receiver. No VM/profile topology or additional selector
-is introduced.
+retained poll-command receiver. The configured build, focused 11-test group,
+documentation governance, and independent 293/293 current-gate replay pass.
+No VM/profile topology or additional selector is introduced.
