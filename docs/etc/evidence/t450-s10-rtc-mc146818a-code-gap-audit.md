@@ -1,0 +1,46 @@
+# T450 S10 MC146818A RTC/CMOS Current-Code Gap Audit
+
+## Scope And Method
+
+This audit consumes, without changing, all 16 rows in the T450 S9
+[RTC/CMOS source checklist](../research/t450-s9-rtc-mc146818a-function-timing-checklist.md).
+The reviewed production owners are `src/core/machine/rtc.c`, `rtc.h`,
+`machine_board.c`, `machine.c` and `machine_scheduler.c`; selected VM profile
+and composition paths supply board inputs only. Focused proof is
+`tests/machine/core_machine_rtc_smoke.c`, `core_machine_rtc_cmos_s3_smoke.c`,
+`core_machine_dma_rtc_authority_smoke.c`, `vm_cmos_rtc_port_smoke.c`, and
+`vm_model_339_clock_contract_smoke.c`. Every nonconforming row transfers once
+to the queued [Core RTC CMOS phase contract](../../proposals/m5-core-rtc-cmos-phase-contract.md).
+No source or test is modified by this audit.
+
+## Row Dispositions
+
+| S9 ID | Current owner and observed behavior | Current proof | Disposition and unique receiver |
+| --- | --- | --- | --- |
+| RTC-R1 | `rtc.h` retains 128 bytes, although the admitted device exposes 64; `rtc.c` implements time/calendar/alarm locations, A--D and NVRAM access. Time values are generated from private calendar state, so storage is duplicated for the time locations; writes accept values while UIP is asserted and do not protect seconds' high bit. | RTC, S3 and VM port smokes cover calendar form, alarm don't-care, BCD/24-hour selection, register-C/D writes and NVRAM retention. | Partial: core register form exists, but 64-location/update-access contract is not exact. Receiver: queued RTC CMOS phase contract. |
+| RTC-R2 | `rtc.c` implements SET, PIE/AIE/UIE, BCD/binary and 24/12 mode; it stores all other A/B bits without divider-selection effects and has no SQW output. `core_machine_rtc_periodic_hz` assumes a fixed 32.768 kHz base and RS 3--15. | S3 and VM port smokes cover SET and interrupt enables; no test covers divider selections or SQWE. | Partial: retained mode and enable function conforms; divider/base/SQWE semantics and test are missing. Receiver: queued RTC CMOS phase contract. |
+| RTC-R3 | `core_machine_rtc_read_register` returns and clears C, then deasserts IRQ; D is reset to VRT and rejects writes. A subsequent new event is not specially preserved across the read operation, and VRT never models board/power validity. | Core RTC and S3 smokes prove C acknowledgement, PF/AF/UF/IRQF combination and IRQ release; VM port smoke proves D=VRT. | Partial: logical flags/acknowledgement conform; concurrent-event and VRT/power policy are unselected. Receiver: queued RTC CMOS phase contract. |
+| RTC-R4 | `core_machine_rtc_select_register` masks bit 7; `machine_board.c` owns the one 0070h/0071h adapter. Calendar encoding/rollover is private to `rtc.c`, including century. Access is allowed during the synthetic UIP condition and no electrical relation is claimed. | VM port and S3 adapter smokes cover index/data access, BCD/binary, 12/24-hour and rollover use. | Partial: indexed logical access conforms; UIP access window and update representation remain missing. Receiver: queued RTC CMOS phase contract. |
+| RTC-F1 | `core_machine_rtc_advance` advances private calendar state at `ticks_per_second`, inhibits all advance whenever SET is set, sets UF and compares alarm. UIP is a one-tick look-ahead rather than the manual's 248/1,984-microsecond update interval, and divider-reset selections do not stop/phase the update chain. | S3 and VM port smokes cover SET hold, second/calendar movement and UF. | Partial: one-second causal update exists; selected divider/UIP/update phase is missing. Receiver: queued RTC CMOS phase contract. |
+| RTC-F2 | `core_machine_rtc_alarm_matches` implements equality and C0h don't-care bytes, sets AF independently of AIE, and `core_machine_rtc_raise_if_enabled` gates delivery by AIE. | S3 and VM port smokes program alarm values and observe AF/IRQ8. | Conforming retained logical alarm behavior; precise update-phase timing remains under RTC-F1. |
+| RTC-F3 | `core_machine_rtc_periodic_hz` and `core_machine_rtc_advance` set PF from RS bits and the configured abstract tick rate, independently of PIE. There is no SQW state or output route and the accepted rate formula ignores Register-A divider base. | S3 and VM port smokes prove a selected periodic PF/IRQ path only. | Partial: selected PF path exists; full divider-derived rate and SQW are missing. Receiver: queued RTC CMOS phase contract. |
+| RTC-F4 | `core_machine_rtc_raise_if_enabled` is the sole logical IRQ source and binds it through `core_machine_pic_irq_source`; C read and finalization release it. `machine_scheduler.c` advances RTC on the retained readiness boundary and PIC visibility follows retained scheduler order. | Core RTC, S3, DMA/RTC authority and VM port smokes prove enabled OR semantics, IRQ8/vector 70h and C-read release. | Partial L2: logical IRQ source conforms; selected RTC-edge-to-PIC/CPU visibility phase is unallocated. Receiver: queued RTC CMOS phase contract. |
+| RTC-F5 | `rtc.c` synthesizes UIP only on Register-A reads, permits all accesses and keeps NVRAM through `core_machine_rtc_reset`; no static/power-loss lifecycle exists. | Core RTC, S3 and VM port smokes prove NVRAM survives reset, but do not probe update-window validity or power loss. | Partial: reset-retained NVRAM is explicit; UIP valid-data window and power transition are missing. Receiver: queued RTC CMOS phase contract. |
+| RTC-F6 | `core_machine_rtc_reset` resets private calendar plus A--D defaults and drops IRQ, while retaining general NVRAM. The manual instead retains clock/calendar/RAM and selected divider/SET state across chip RESET. `machine.c` intentionally invokes this project cold-reset boundary. | Core RTC, S3, DMA/RTC authority and VM port smokes prove the selected cold-reset/NVRAM result. | Wrong-value against MC146818 RESET; project cold-reset policy needs an explicit separate board/device-reset distinction. Receiver: queued RTC CMOS phase contract. |
+| RTC-F7 | The sole clock consumer is `core_machine_rtc_advance`; its configuration accepts only a scalar `ticks_per_second`. It has no 22-stage divider state, base selection or divider-reset/start relation. | Model-339 clock-contract smoke proves selected 32.768 kHz rational input and reset phase for one profile, not device divider behavior. | Missing selected divider mechanism. Receiver: queued RTC CMOS phase contract. |
+| RTC-T1 | `core_machine_configure_rtc_cmos` validates one adjacent index/data pair and atomically installs the two providers; `machine_board.c` selects the index and owns the NMI-mask side effect. VM profile/composition supplies 0070h/0071h defaults. CMOS checksum/firmware interpretation is not implemented here. | S3 adapter, DMA/RTC authority, VM port, PC/AT topology and ownership smokes prove route/configuration/rejection boundaries. | Conforming selected topology; firmware checksum policy correctly remains outside RTC. |
+| RTC-T2 | `machine_board.c` separates index bit 7 into `core_machine_set_nmi_mask`; `rtc.c` binds configured IRQ 8 through the secondary PIC. Model-339 profile clock data selects 32.768 kHz and the retained clock domain supplies exact rational ticks. Generic PC/AT uses an abstract 50,000-tick setting. | S3, DMA/RTC authority, VM port, PC/AT ownership and Model-339 clock-contract smokes prove NMI, IRQ8, route and selected Model-339 rate. | Partial L2: wiring and one selected clock input conform; 5170-specific profile selection and device-phase interpretation are not one complete contract. Receiver: queued RTC CMOS phase contract. |
+| RTC-T3 | `core_machine_rtc_write_nvram` and machine reset retain configuration bytes; VM profile/composition provides immutable startup defaults. No host persistence, battery failure, VRT transition, checksum or firmware recovery owner is selected. | Core RTC, S3, DMA/RTC authority and VM default-PC/AT smokes prove reset retention and defaults. | Partial: one in-memory CMOS owner exists; host persistence and battery/firmware recovery are unallocated L2 policy. Receiver: queued RTC CMOS phase contract. |
+| RTC-T4 | No owner turns oscillator, RESET, IRQ-release or bus AC electrical tables into Core ticks. | Source inspection. | Correctly L4 excluded. |
+| RTC-T5 | T449's timeline/clock-domain route is the sole scheduler, while `rtc.c` only consumes supplied ticks and PIC owns IRQ delivery. The selected RTC divider/update/board phase declaration has not been admitted into that route. | Scheduler inspection, T449 evidence and Model-339 clock-contract smoke prove the one advancement route. | Unallocated L2 input, not a second-scheduler defect. Receiver: queued RTC CMOS phase contract. |
+
+## Completeness, Minimality And Transfer
+
+All `RTC-R1`--`RTC-R4`, `RTC-F1`--`RTC-F7` and `RTC-T1`--`RTC-T5` rows have
+one disposition. The audit finds one Core RTC owner, one board port adapter,
+one clock-domain consumer and one PIC IRQ publisher. The later receiver must
+repair the existing `rtc.c` mechanism and consume the retained clock domain;
+it must not add a second RTC clock, a parallel CMOS store, a second 0070h/0071h
+adapter, or an RTC-owned NMI/PIC policy. The material gaps are the 64-byte
+register/update contract, divider/SQW and update phase, RESET distinction,
+VRT/persistence policy, and selected AT board/visibility timing.
