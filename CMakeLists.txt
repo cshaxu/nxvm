@@ -157,16 +157,16 @@ add_executable(vm-model40-fdd-s18-smoke
     tests/machine/vm_model40_fdd_s18_smoke.c)
 target_link_libraries(vm-model40-fdd-s18-smoke PRIVATE vm-composition)
 add_executable(vm-model40-byob-s20-smoke
-    tests/products/vm_model40_byob_s20_smoke.c)
+    tests/machine/vm_model40_byob_s20_smoke.c)
 target_link_libraries(vm-model40-byob-s20-smoke PRIVATE vm-composition)
 add_executable(vm-model40-byob-retirement-capture
-    tests/products/vm_model40_byob_retirement_capture.c)
+    tests/machine/vm_model40_byob_retirement_capture.c)
 target_link_libraries(vm-model40-byob-retirement-capture PRIVATE vm-composition)
 add_executable(vm-model40-byob-boot-media-s5-smoke
-    tests/products/vm_model40_byob_boot_media_s5_smoke.c)
+    tests/machine/vm_model40_byob_boot_media_s5_smoke.c)
 target_link_libraries(vm-model40-byob-boot-media-s5-smoke PRIVATE vm-composition)
 add_executable(vm-model40-hdc-s26-smoke
-    tests/products/vm_model40_hdc_s26_smoke.c)
+    tests/machine/vm_model40_hdc_s26_smoke.c)
 target_link_libraries(vm-model40-hdc-s26-smoke PRIVATE vm-composition)
 add_executable(vm-model40-console-s20-smoke
     tests/products/vm_model40_console_s20_smoke.c)
@@ -196,7 +196,7 @@ target_link_libraries(vm-default-pc-at-rom-materialization-smoke PRIVATE vm-comp
 add_executable(vm-timer-firmware-smoke
     tests/machine/vm_timer_firmware_smoke.c)
 target_link_libraries(vm-timer-firmware-smoke PRIVATE vm-composition)
-add_executable(vm-product-default-profile-smoke tests/products/nxvm_default_profile_smoke.c)
+add_executable(vm-product-default-profile-smoke tests/machine/nxvm_default_profile_smoke.c)
 target_link_libraries(vm-product-default-profile-smoke PRIVATE vm-composition)
 add_executable(vm-product-console-smoke
     tests/products/nxvm_console_smoke.c
@@ -215,10 +215,10 @@ target_link_libraries(vm-product-console-memory-roundtrip-smoke PRIVATE
 add_executable(vm-product-session-catalog-smoke
     tests/products/nxvm_session_catalog_smoke.c)
 target_link_libraries(vm-product-session-catalog-smoke PRIVATE vm-product)
-add_executable(vm-product-session-smoke tests/products/nxvm_session_smoke.c)
+add_executable(vm-product-session-smoke tests/machine/nxvm_session_smoke.c)
 target_link_libraries(vm-product-session-smoke PRIVATE vm-composition)
 add_executable(vm-session-initialization-atomicity-smoke
-    tests/products/vm_session_initialization_atomicity_smoke.c)
+    tests/machine/vm_session_initialization_atomicity_smoke.c)
 target_link_libraries(vm-session-initialization-atomicity-smoke PRIVATE vm-composition)
 add_executable(vm-session-manager-smoke
     tests/products/nxvm_session_manager_smoke.c)
@@ -227,16 +227,16 @@ add_executable(vm-session-profile-smoke
     tests/products/nxvm_session_profile_smoke.c)
 target_link_libraries(vm-session-profile-smoke PRIVATE vm-composition)
 add_executable(vm-session-reconfigure-smoke
-    tests/products/nxvm_session_reconfigure_smoke.c)
+    tests/machine/nxvm_session_reconfigure_smoke.c)
 target_link_libraries(vm-session-reconfigure-smoke PRIVATE vm-composition)
 add_executable(vm-session-media-lifecycle-s3-smoke
-    tests/products/vm_session_media_lifecycle_s3_smoke.c)
+    tests/machine/vm_session_media_lifecycle_s3_smoke.c)
 target_link_libraries(vm-session-media-lifecycle-s3-smoke PRIVATE vm-composition)
 add_executable(vm-session-virtual-time-s6-smoke
-    tests/products/vm_session_virtual_time_s6_smoke.c)
+    tests/machine/vm_session_virtual_time_s6_smoke.c)
 target_link_libraries(vm-session-virtual-time-s6-smoke PRIVATE vm-composition)
 add_executable(vm-model339-virtual-time-s17-smoke
-    tests/products/vm_model339_virtual_time_s17_smoke.c)
+    tests/machine/vm_model339_virtual_time_s17_smoke.c)
 target_link_libraries(vm-model339-virtual-time-s17-smoke PRIVATE vm-composition)
 
 target_link_libraries(core-machine-contract-smoke PRIVATE core-machine)
@@ -1370,7 +1370,7 @@ add_executable(core-platform-wait-smoke
 target_link_libraries(core-platform-wait-smoke PRIVATE core-platform)
 
 add_executable(vm-keyboard-host-ingress-smoke
-    tests/platform/vm_keyboard_host_ingress_smoke.c
+    tests/machine/vm_keyboard_host_ingress_smoke.c
 )
 target_link_libraries(vm-keyboard-host-ingress-smoke PRIVATE
     vm-composition)
@@ -1384,7 +1384,7 @@ if(WIN32)
     target_link_libraries(vm-w32-text-palette-smoke PRIVATE vm-platform)
 endif()
 add_executable(vm-host-cancellation-smoke
-    tests/platform/vm_host_cancellation_smoke.c
+    tests/machine/vm_host_cancellation_smoke.c
 )
 target_link_libraries(vm-host-cancellation-smoke PRIVATE
     vm-composition)
@@ -1394,31 +1394,31 @@ add_executable(vm-platform-execution-smoke
 )
 target_link_libraries(vm-platform-execution-smoke PRIVATE vm-platform)
 add_executable(vm-platform-run-handle-smoke
-    tests/platform/vm_platform_run_handle_smoke.c
+    tests/machine/vm_platform_run_handle_smoke.c
 )
 target_link_libraries(vm-platform-run-handle-smoke PRIVATE
     vm-composition)
 if(NOT PROJECT_VM_PLATFORM_TEST_FAILURE_STAGE STREQUAL "0")
     add_executable(vm-platform-win32-startup-failure-smoke
-        tests/platform/vm_platform_win32_startup_failure_smoke.c
+        tests/machine/vm_platform_win32_startup_failure_smoke.c
     )
     target_link_libraries(vm-platform-win32-startup-failure-smoke PRIVATE
         vm-composition)
     add_executable(vm-session-startup-failure-smoke
-        tests/platform/vm_session_startup_failure_smoke.c
+        tests/machine/vm_session_startup_failure_smoke.c
     )
     target_link_libraries(vm-session-startup-failure-smoke PRIVATE
         vm-product vm-composition)
 endif()
 if(NOT WIN32)
     add_executable(vm-platform-linux-run-handle-smoke
-        tests/platform/vm_platform_linux_run_handle_smoke.c
+        tests/machine/vm_platform_linux_run_handle_smoke.c
     )
     target_link_libraries(vm-platform-linux-run-handle-smoke PRIVATE
         vm-composition)
 endif()
 add_executable(vm-multi-window-session-smoke
-    tests/platform/vm_multi_window_session_smoke.c
+    tests/machine/vm_multi_window_session_smoke.c
 )
 target_link_libraries(vm-multi-window-session-smoke PRIVATE
     vm-composition)

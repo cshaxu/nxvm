@@ -34,4 +34,15 @@ foreach(file IN LISTS source_files)
     endif()
 endforeach()
 
+file(GLOB_RECURSE cross_owner_tests
+    "${PROJECT_SOURCE_DIR}/tests/products/*.c"
+    "${PROJECT_SOURCE_DIR}/tests/platform/*.c")
+foreach(file IN LISTS cross_owner_tests)
+    file(READ "${file}" source)
+    if(source MATCHES "#include[ 	]+\"vm/(composition/session/session_private|profile/default_profile/pc_at_profile_private|profile/model40/model40_private|machine/fdd_private|machine/hdd_private)\\.h\"")
+        message(FATAL_ERROR "M5 T447 S8 cross-owner test includes a VM private layout: ${file}")
+    endif()
+endforeach()
+
+message(STATUS "M5 T447 S8 cross-owner test private-layout closure: OK")
 message(STATUS "M5 T234 S6 session layout boundary: OK")
