@@ -1,7 +1,7 @@
 # M5 T447: Architecture-Boundary Debt Closure
 
 T447 is admitted from the owner-approved
-[candidate proposal](../proposals/m5-architecture-boundary-debt-closure.md).
+[retained proposal companion](M5-T447-architecture-boundary-debt-closure-proposal.md).
 It is the finite, coverage-bearing receiver for the Td S125--S130 manual
 architecture/coding findings and the T446 recorder test-build exception. S1
 freezes the ledger and closes CMake build ownership; later S work remains
@@ -72,3 +72,42 @@ guard, and preserves failure rollback. Full build, 290 current smokes,
 specialized gates, documentation governance, and the 0447 artifact pass. The
 complete record is in [S6 evidence](../etc/evidence/t447-s6-collaborator-plan-boundary.md).
 T447 remains open; S7 is the next dependency-ordered proposal batch.
+
+## Accepted S7
+
+P1 `b2bf42da` normalizes VM session, media, profile, product and composition
+contracts: private layouts stay owner-local, Console owns its contract,
+composition supplies only binding, and Model-40 has one BYOB construction
+route. The accepted boundary proof is in
+[S7 evidence](../etc/evidence/t447-s7-vm-contract-boundary.md).
+
+## Accepted S8
+
+P1 `acf3f7cc` classifies every S7 private-layout test consumer. Eighteen
+legitimate VM-composition owner tests moved unchanged to their owner and the
+session-layout gate prevents product/platform regressions. The accepted record
+is in [S8 evidence](../etc/evidence/t447-s8-test-boundary-closure.md).
+
+## Accepted S9
+
+P1 `e44f3369` removes the VDM session forwarding facade. The machine owner now
+provides the direct opaque lifetime contract, while composition retains only
+its input/capture adapter responsibility. The accepted record is in
+[S9 evidence](../etc/evidence/t447-s9-vdm-forwarding-closure.md).
+
+## Accepted S10
+
+P1 `9e05faf8` makes `machine.c` the Core aggregate/lifecycle coordinator and
+moves timing, plan, scheduler, firmware, display, board-device and diagnostic
+mechanisms to owner-local files. Corrective acceptance P2 `29fa6190` removes
+the remaining redundant display source line. The accepted source, rollback,
+gate and artifact record is in
+[S10 evidence](../etc/evidence/t447-s10-core-machine-coordinator.md).
+
+## Accepted S11 And T447 Closure
+
+P1 `4258dbe1` independently reconciles the finite Td S125--S130/T446 ledger,
+removes 15 stale resolved TODO entries, and limits the result to that ledger.
+P2 `218140da` accepts the audit. The complete row-by-row proof is in
+[S11 evidence](../etc/evidence/t447-s11-independent-closure-audit.md).
+T447 is closed.

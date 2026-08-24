@@ -3,7 +3,7 @@
 ## Scope and method
 
 This is a finite reconciliation of the T447 ledger in
-[the approved proposal](../../proposals/m5-architecture-boundary-debt-closure.md).
+[the retained proposal companion](../../history/M5-T447-architecture-boundary-debt-closure-proposal.md).
 It does not claim that unrelated TODO rows, future CPU work, physical timing,
 or the entire repository are complete. The audit inspected the accepted S1--S10
 implementation commits, their current evidence, current source/build guards,
