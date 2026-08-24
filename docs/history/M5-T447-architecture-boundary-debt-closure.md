@@ -27,3 +27,13 @@ the prior console list/no-selection behavior, and records focused, failure-path,
 293-current-smoke, 150-specialized-step, documentation, and artifact proof in
 [S2 evidence](../etc/evidence/t447-s2-session-boundary.md). T447 remains open;
 the next proposal-defined S is selected only through a later approved packet.
+
+## Accepted S3
+
+P1 `d67c4892` is accepted after coordinator actual-diff review. It replaces
+the public embedded debugger context with one Core-owned opaque interpreter and
+one VM-owned lifecycle handle, keeps the existing pause/wait and command route,
+and removes cross-owner test field access. The updated T446 lifecycle check and
+the narrow S3 boundary gate pass with the focused tests, 293-current-smoke,
+73-specialized-gate, documentation, and artifact proof in
+[S3 evidence](../etc/evidence/t447-s3-debugger-boundary.md). T447 remains open.
