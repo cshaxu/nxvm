@@ -2,7 +2,28 @@
 
 ## Current Work
 
-**Idle.**
+**Active: M5 T456 S1 - PIC source, reference and contract reconciliation.**
+
+## M5 T456 S1 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New |
+| Admission And Approval | Owner approved the first queued Core PIC 8259A phase-contract candidate and requested a manual-first scope, gap, and S-task breakdown on 2026-08-24. |
+| Objective | Consume T450's frozen 18-row 8259A ledger, inspect the rendered Intel/IBM source pages, cross-check independent emulator implementations as non-normative observations, audit current Core PIC behavior, and commit the implementation S breakdown before any PIC behavior change. |
+| Non-goals | Do not duplicate T450's source inventory, change PIC, CPU delivery, transaction, VM wiring, or timing behavior, treat an emulator as primary authority, or import any external source. |
+| Reference Baseline | `a42242e9`; T449 is the transaction prerequisite, T450 retains the PIC source/code audit baseline, and the shared simulation admission program governs classification. |
+| Candidate Proposal | [Core PIC 8259A phase contract](../proposals/m5-core-pic-8259a-phase-contract.md). |
+| Files And ABI Surface | T456 history, one indexed PIC S1 reconciliation record, proposal refinement, Current and Queue only. No source or ABI change in S1. |
+| Applicable Rules | `rules/EXECUTION.md`, `rules/DOCUMENT.md`, `rules/ARCHITECTURE.md`, `rules/CODING.md`, source policy, and the specification-driven complete simulation admission program. |
+| Verification | Inspect Intel 8259A rendered functional, command, cascade and timing pages and selected IBM AT wiring; verify OCR form; map every retained row against current owners/tests; inspect 86Box, Bochs, MAME, PCjs and QEMU PIC implementations at recorded versions; record agreement, divergence or inapplicability without elevating a reference to specification. |
+| Expected Markers | The retained 18-row count; primary-source provenance/form result; exact code/test owner map; five recorded emulator observations; a distinction between Level-1 manual facts, Level-2 absent facts and Level-3 boundaries; and numbered future S plan. |
+| Asset Needs | Local manual/archive and read-only external reference source inspection; no firmware, guest media or external source import. |
+| Reporting Requirements | Report the retained row count, primary-source gaps, reference set and observed divergences, current-code gap count, and the proposed S2+ implementation order. |
+| Stop Conditions | Stop before implementation if the original manual or selected AT cascade wiring cannot be located, primary sources conflict, or a proposed reference observation would replace a manual fact. |
+| Exit Criteria | The retained universe is reconciled rather than duplicated; source form/ambiguities and reference divergences are recorded; all current code/test owners are mapped; and a minimally partitioned S plan is committed for owner review. |
+| Original Owner Request | Admit the PIC task; define scope like the 8086/80186/80286/80386 programs before implementation, including manual/reference coverage and S breakdown; then require manual and several emulator implementations to cross-validate the scanned PDF. |
+| Similar-Issue Sweep | Inspect PIC command, priority, cascade, acknowledgement, EOI, mask, cancellation, reset and IRQ-delivery paths; no uncovered same-mechanism row may be omitted. |
 
 ## Current Technical Baseline
 
