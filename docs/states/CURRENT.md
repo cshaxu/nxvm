@@ -2,28 +2,7 @@
 
 ## Current Work
 
-**Active: M5 T451, between accepted subtasks.**
-
-## M5 T451 S2 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner approved T451 execution on 2026-08-24 after requesting a global, minimalist resolution. S1 acceptance at `70a98933` authorizes this finite documentation/debt receiver; no exceptions are approved. |
-| Objective | Retire the stale request-bridge build-debt path and make supporting build instructions name the one current preset route. |
-| Non-goals | Do not modify C source, headers, CMake targets or presets; do not add aliases, wrappers, duplicate smoke paths, current-gate changes or product behavior. |
-| Reference Baseline | `70a98933`; S1 proves the source contract, registered bridge, transport smoke, `current-gcc` and configured `all` build are healthy. |
-| Candidate Proposal | [M5 VM Request-Bridge Current-Build Restoration](../proposals/m5-vm-request-bridge-current-build-restoration.md). |
-| Files And ABI Surface | Modify only `docs/states/TODO.md`, `docs/states/QUEUE.md`, `docs/etc/operations/build/toolchain.md`, task proposal/history/status and necessary evidence index records. No ABI surface changes. |
-| Applicable Rules | `rules/EXECUTION.md`: use the sole active packet and retire consumed Queue/debt paths at closure. `rules/DOCUMENT.md`: preserve authority separation and topology. `rules/ARCHITECTURE.md` and `rules/CODING.md`: no second request path, wrapper or compatibility surface. |
-| Verification | Confirm the retired TODO text and Queue candidate no longer occur in current authorities; confirm only `current-gcc` is named as the current build preset; run documentation governance and `git diff --check`; rerun `current-gcc` after documentation-only change. |
-| Expected Markers | No open stale request-bridge debt, no consumed candidate in Queue, one accurate supporting build command and no production diff. |
-| Asset Needs | None. |
-| Reporting Requirements | Report deleted debt/candidate paths, the retained canonical command, verification and zero production-code change. |
-| Stop Conditions | Stop for a discovered active caller or build failure that contradicts S1, or a required product/build-semantics decision. |
-| Exit Criteria | The stale debt and Queue candidate are removed, supporting toolchain instructions match `CMakePresets.json`, the proposal is retained with T451 history at task closure, and verification passes. |
-| Original Owner Request | Complete the current T in single-session coordinator/executor mode, restore request-bridge full-build health and thoroughly resolve similar issues using a global minimalist approach. |
-| Similar-Issue Sweep | Search current principal and supporting build instructions for nonexistent build preset names; retire only stale current guidance, leaving history as historical evidence. |
+**Idle.**
 
 ## Current Technical Baseline
 
@@ -49,7 +28,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T451 S1 | Accepted: one VM request contract has no obsolete-field callers; direct/transport smoke, `current-gcc` and configured `all` build pass. The only in-scope repair is retirement of stale build debt and build-entry documentation. [Evidence](../etc/evidence/t451-s1-request-bridge-build-baseline.md). |
+| T451 | Closed: one current VM request contract, bridge/transport smoke and complete configured build pass; stale request-bridge debt and invalid build instructions are removed without source, CMake or ABI changes. [History](../history/M5-T451-vm-request-bridge-current-build-restoration.md). |
 | T450 | Closed: all eight controller pairs are archived with 128 source rows and 128 code-audit rows; S19 verifies the source form of every admitted PDF and preserves all selected-board/personality/media gaps as explicit transfers. [History](../history/M5-T450-core-controller-manuals-and-gap-inventory.md). |
 | T449 | Closed: one copied transaction contract, transaction lifecycle, scheduler arbitrator, memory classifier and retirement/time/observation route; all S1--S6 evidence is reconciled and physical/controller/x87 boundaries transfer explicitly. [History](../history/M5-T449-core-cpu-board-transaction-contracts.md). |
 | T448 | Closed: six over-limit generated firmware sources now use the one bounded byte-identical materialization route; the unused session helper is removed. [Evidence](../etc/evidence/t448-s1-firmware-materialization.md). |

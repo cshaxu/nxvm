@@ -18,3 +18,17 @@ obsolete production request interface or hiding its smoke target.
 The bridge remains the single request-queue owner. VM composition remains the
 consumer boundary for host-originated requests. No compatibility alias, second
 request authority, Console semantic change or concealed target is permitted.
+
+## Closure
+
+S2 removes the disproven request-bridge TODO and the consumed Queue candidate.
+It replaces the invalid `m0-probe-gcc` supporting instruction with the one
+current `mingw-gcc-x64` configure plus `current-gcc` build route, and removes
+the unsupported MSVC command. No C source, header, CMake preset/target,
+request ABI, current-gate membership or product behavior changed.
+
+The S1 source sweep finds no obsolete request field or second request owner.
+The direct bridge executable, request-transport CTest, `current-gcc` and the
+configured complete `all` build pass. The complete evidence is retained in
+[S1 baseline evidence](../etc/evidence/t451-s1-request-bridge-build-baseline.md);
+the consumed proposal companion is retained beside this record.
