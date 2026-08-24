@@ -6,9 +6,6 @@ reserve a numeric task identifier, or define a technical baseline.
 Each candidate links to its proposal. The shared admission and program context
 is retained separately so this queue remains a short ordering surface.
 
-The active closure-state correction is linked here solely while its narrow
-corrective S is active: [closure-state correction](../proposals/m5-closure-state-correction.md).
-
 ## M5 Candidates
 
 The following bounded repairs are first. They preserve the current

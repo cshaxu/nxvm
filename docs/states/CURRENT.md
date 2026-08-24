@@ -2,28 +2,7 @@
 
 ## Current Work
 
-**Active: M5 T453 S4 - closure summary cap correction.**
-
-## M5 T453 S4 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Corrective |
-| Admission And Approval | Owner requested T452 be reopened on 2026-08-24; its closed identifier cannot be reused, so the in-scope successor T453 was admitted and its closure is now corrected. The owner also approved completion of the toolchain/configuration/documentation cleanup. |
-| Objective | Restore the required eight-row maximum for recent task closures and make T453's developer-artifact checksum match its fresh default-tree evidence. |
-| Non-goals | Do not alter toolchain configuration, source, output bytes, queue ordering, or any retained closure fact beyond the required oldest-summary expiry. |
-| Reference Baseline | `573ff40b`; documentation governance reports nine retained task-level closure rows, while the current artifact has SHA-256 `A294EA4AEBBB14C7D44B5F2141F6E457505C67808D25E985ECC37AE823BA7462`. |
-| Candidate Proposal | [Closure-state correction](../proposals/m5-closure-state-correction.md). |
-| Files And ABI Surface | Modify current-state, corrective-proposal, queue-reference, and T453 history records only. No ABI changes. |
-| Applicable Rules | `rules/DOCUMENT.md` and `rules/EXECUTION.md`: `CURRENT.md` caps recent closures at eight and detailed facts remain in history. |
-| Verification | Remove only the oldest T445 summary row; verify the artifact hash; run documentation governance and diff hygiene. |
-| Expected Markers | Exactly eight recent task-level closure rows, matching current artifact hash, and passing governance gate. |
-| Asset Needs | None. |
-| Reporting Requirements | Report removed status-summary row, corrected current checksum, and retained history boundary. |
-| Stop Conditions | Stop if any retained closure row is not a task-level row or cap calculation differs from the gate. |
-| Exit Criteria | The gate passes with exactly eight closure rows, the current checksum equals the existing artifact, and no unrelated diff. |
-| Original Owner Request | Complete the current toolchain/configuration/documentation cleanup task. |
-| Similar-Issue Sweep | Count every recent task-level closure row after the edit; no other status section is changed. |
+**Idle.**
 
 ## Current Technical Baseline
 

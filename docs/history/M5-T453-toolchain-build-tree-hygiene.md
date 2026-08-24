@@ -25,4 +25,5 @@ proposal companion is retained beside this record.
 S4 corrects the closed-state record: it expires the oldest compact T445 row to
 retain the mandated eight-row closure window and records the SHA-256 emitted by
 the fresh S1 default-tree build. No toolchain, source, output, or historical
-closure fact changes.
+closure fact changes. Its [corrective proposal](M5-T453-closure-state-correction-proposal.md)
+is retained beside this record.
