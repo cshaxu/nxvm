@@ -2,7 +2,26 @@
 
 ## Current Work
 
-**Active: M5 T450, between accepted subtasks.**
+**Active: M5 T450 S15 - VADP original function and timing checklist.**
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation - M5 T450 S15; the next exclusive VADP source-list batch after accepted S14. |
+| Admission And Approval | Repository owner approved T450's paired controller source-list/code-audit work and requires source-form/manual-sufficiency verification in S19. |
+| Objective | Freeze a finite original-source VADP function/timing universe with source page, selected-adapter scope, reset/signal relation and explicit sufficiency/disposition for S16. |
+| Non-goals | No VADP/display/runtime/test change; no personality selection; no firmware/media import; no external-emulator research or dependency. |
+| Reference Baseline | Admitted IBM *Technical Reference: Options and Adapters, Volume 2* EGA material, IBM AT board reference and current VADP/profile topology only for boundary identification. |
+| Candidate Proposal | [M5 Core controller manual admission and gap inventory](../proposals/m5-core-controller-manuals-and-gap-inventory.md). |
+| Files And ABI Surface | Add only one indexed S15 checklist under `docs/etc/research/`; inspect sources and current owner names without changing code, tests, ABI or assets. |
+| Applicable Rules | `docs/README.md` fixed reading set; `EXECUTION.md` continuation, coverage-ledger, P/closure and actual-change-review rules; `DOCUMENT.md` authority/index/state rules; source policy prohibits import. |
+| Verification | Directly inspect the admitted EGA/AT source pages; reconcile the finite checklist before P1; run diff check and documentation governance before P1/P2. |
+| Expected Markers | One original-source list distinguishes IBM EGA facts from unselected CGA/Compaq personalities, records clock/CRTC/status/VRAM/monitor boundaries, and assigns every source insufficiency once. |
+| Asset Needs | None; admitted manuals only. |
+| Reporting Requirements | Record page-grounded function/timing rows, exact selected-personality limits, source form/sufficiency note and one receiver for every blocked fact. |
+| Stop Conditions | Stop for a required selected-adapter or monitor source, a source conflict, a personality choice or requested runtime change; record and transfer rather than infer. |
+| Exit Criteria | Finite VADP checklist covers programming, reset, memory, display/status/clock and board boundaries; every row is source/dispositioned once; no code/test change occurs; the indexed list is reviewed, committed, pushed and accepted. |
+| Original Owner Request | Establish original manual archives, complete function/timing checklist 1 and current-code gap checklist 2 for eight controllers, with S19 validating PDF form and manual sufficiency. |
+| Similar-Issue Sweep | Inspect adapter register groups, CRTC/sequencer/graphics/attribute behavior, VRAM aperture and planes, display enable/status, timing/clock/monitor dependencies, bus contention, reset/initialization, PC/AT mapping, every profile personality and focused VADP test. |
 
 ## Current Technical Baseline
 
