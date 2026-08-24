@@ -52,3 +52,23 @@ in 105.09 seconds; and documentation governance passes.  The retained
 [S2 evidence](../etc/evidence/t457-s2-optimized-artifact-trace-audit.md)
 preserve the consumer sweep and artifact proof.  No further in-scope gap
 remains.
+
+## Corrective S3 and Final Reclosure
+
+The owner clarified that the debugger is a permanent product capability, but
+compiler debug information is not.  S3 is accepted at `b7e99a19`: the current
+artifact publication route is CMake Release (`-O3 -DNDEBUG`), accepts only
+Release in its pre-link guard, and strips debug sections at the artifact link
+boundary.  This is necessary because the MinGW static-link route can otherwise
+retain DWARF sections despite Release source compile flags.
+
+The fresh PE has no `.debug*` section.  It retains
+`core_machine_debug_step`, `core_product_debug_set_trace`, and
+`vm_machine_debug_set_trace`; optimized debugger smokes pass 3/3, and the
+Debug current gate passes 293/293 in 105.12 seconds.  The rebuilt 0457
+artifact is SHA-256
+`B1DC3B723CC03B19E8C9298D08B9909D5182D9BB8EEEEBE9D8016115F8E67455`.
+The retained [S3 proposal](M5-T457-release-artifact-no-debug-info-proposal.md)
+and [S3 evidence](../etc/evidence/t457-s3-release-artifact-no-debug-info.md)
+record the build-versus-runtime-debugger distinction.  T457 is closed again
+with no residual artifact-scope gap.

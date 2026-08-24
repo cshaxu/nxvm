@@ -2,28 +2,7 @@
 
 ## Current Work
 
-**Active: M5 T457 S3 - release artifact without compiler debug information.**
-
-## M5 T457 S3 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Corrective |
-| Admission And Approval | Owner explicitly corrected the S2 interpretation on 2026-08-24: the 0457 executable must be optimized and carry no compiler debug information, while the NXVM runtime debugger remains a production path. |
-| Objective | Change the current 0457 artifact publication route from RelWithDebInfo to Release and prove the resulting PE has no compiler debug sections while retaining runtime debugger behavior. |
-| Non-goals | Do not remove or conditionally compile out the NXVM debugger, its trace command, pause, step, break/watch, recorder, or CPU fault diagnostics; do not change guest timing, device semantics, public ABI, artifact identity, or create T458. |
-| Reference Baseline | `e96d778e`; the current 0457 artifact is RelWithDebInfo and SHA-256 `D2351D8940209DBB9BAB82FDA0AB33155223F00EDB7B1C74B59B210C855B5E36`. |
-| Candidate Proposal | [Optimized artifact without compiler debug information](../proposals/optimized-artifact-no-debug-info.md). |
-| Files And ABI Surface | CMake preset and publication guard, evidence/current/history/Queue. No product source or public ABI change is expected. |
-| Applicable Rules | `rules/EXECUTION.md`, `rules/ARCHITECTURE.md`, `rules/CODING.md`, `rules/DOCUMENT.md`; one artifact owner, production debugger retained, and no parallel publication route. |
-| Verification | Configure and build current Release artifact; inspect cache flags and PE sections; prove RelWithDebInfo and Debug publication rejection; run optimized debugger smokes, full Debug current gate, and documentation governance. |
-| Expected Markers | `CMAKE_BUILD_TYPE=Release`, `-O3 -DNDEBUG` without `-g`, no `.debug*` PE section, retained runtime debugger symbols/tests, and updated 0457 hash. |
-| Asset Needs | Existing smoke media only; no import or new guest media. |
-| Reporting Requirements | Record Release flags, PE-section result, publication rejection result, debugger proof, artifact hash, gates, and any contrary finding. |
-| Stop Conditions | Stop for a requirement to remove a runtime debugger feature, an unexpected debug-info section caused by the toolchain, a public ABI change, or any guest-visible behavior change. |
-| Exit Criteria | `build/output/nxvm_0_5_0457.exe` is Release-only and carries no compiler debug information while all NXVM runtime debugger capabilities remain intact and required gates pass. |
-| Original Owner Request | The executable must be optimized and not contain compiler debug information; the debugger itself remains available for product use. |
-| Similar-Issue Sweep | Sweep all current-artifact presets, artifact-copy commands, build-type guards, compiler flags, PE debug sections, and debugger feature tests. |
+**Idle.**
 
 ## Current Technical Baseline
 
@@ -49,7 +28,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T457 | Closed: F9 remains a single host run-handle stop report and no longer enters the guest key route; the corrected host-cancellation assertion and two-epoch regression preserve it. `nxvm_0_5_0457.exe` is RelWithDebInfo-only, retains production debugger/trace commands, excludes automatic Core trace events, and 293/293 current-gate tests pass. [History](../history/M5-T457-session-input-restart-recovery.md). |
+| T457 | Closed: F9 remains a single host run-handle stop report and no longer enters the guest key route; the corrected host-cancellation assertion and two-epoch regression preserve it. `nxvm_0_5_0457.exe` is stripped Release-only, retains the production debugger/trace commands, excludes automatic Core trace events, and 293/293 current-gate tests pass. [History](../history/M5-T457-session-input-restart-recovery.md). |
 | T456 | Closed at L3: all 18 retained 8259A rows have focused proof or an explicit boundary; one CPU path, programmed cascade, corrected specific-EOI, command/poll lifecycle and default-IR7 acknowledgement remain PIC-owned. Full current-gate is 293/293. PIC-T3 L4 electrical timing is deliberately excluded. [History](../history/M5-T456-core-pic-8259a-phase-contract.md). |
 | T455 | Closed: the sole 8086 decoder-ledger guard now checks current decoder and timing owners instead of the retired monolithic layout; all 1,053 records and 292 current-gate tests pass. [History](../history/M5-T455-8086-decoder-ledger-guard-reconciliation.md). |
 | T454 | Closed: the three fixed-write Console catalog smokes have one CTest-owned build workspace each; serial and repeated parallel replays pass with no source-tree residue. The independent 8086 decoder-ledger guard failure is recorded as CPU debt. [History](../history/M5-T454-parallel-console-profile-smoke-isolation.md). |
