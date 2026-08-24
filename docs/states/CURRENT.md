@@ -2,26 +2,7 @@
 
 ## Current Work
 
-**Active: M5 T450 S18 - ATA/HDC current-code gap audit.**
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation - M5 T450 S18; the next exclusive HDC/ATA code-audit batch after accepted S17. |
-| Admission And Approval | Repository owner approved T450's paired controller source-list/code-audit work. S18 audits only the frozen S17 universe. |
-| Objective | Give every `ATA-R1` through `ATA-T5` a current owner, observed behavior, focused proof, disposition and one receiver where nonconforming or blocked. |
-| Non-goals | No HDC/ATA/runtime/test change; no controller/device/media selection; no external-emulator research or dependency. |
-| Reference Baseline | Accepted S17 ATA-3 checklist at `bbc0d8ca`; current Core HDC/media/PIC/scheduler and VM composition paths and focused HDC tests. |
-| Candidate Proposal | [M5 Core controller manual admission and gap inventory](../proposals/m5-core-controller-manuals-and-gap-inventory.md). |
-| Files And ABI Surface | Add only one indexed S18 audit under `docs/etc/evidence/`; inspect HDC/media owners and tests without changing code, tests, ABI or assets. |
-| Applicable Rules | `docs/README.md` fixed reading set; `EXECUTION.md` continuation, coverage-ledger, P/closure and actual-change-review rules; `DOCUMENT.md` authority/index/state rules; source policy prohibits import. |
-| Verification | Directly inspect every S17 row and HDC/media/PIC/scheduler/composition/test path; reconcile exactly 15 rows; run diff check and documentation governance before P1/P2. |
-| Expected Markers | One audit retains the existing HDC and media owners, never claims ATA conformance from compatible ports, and transfers each missing ATA personality/phase input once. |
-| Asset Needs | None. |
-| Reporting Requirements | Record code owner/symbol, observed behavior, focused test, disposition and sole receiver per row; report the ATA-personality block concisely. |
-| Stop Conditions | Stop for a required controller/device/backing-media source, source conflict, profile choice or requested runtime change; transfer rather than expand. |
-| Exit Criteria | All fifteen S17 rows are dispositioned once, all gaps/blocked inputs have one receiver or rationale, no code/test changes occur, and the indexed audit is reviewed, committed, pushed and accepted. |
-| Original Owner Request | Establish original manual archives, complete function/timing checklist 1 and current-code gap checklist 2 for eight controllers, with S19 validating PDF form and manual sufficiency. |
-| Similar-Issue Sweep | Inspect task-file/data/status/control ports, command dispatch/read/write/identify/diagnostic/reset/error, IRQ14/PIC, scheduler advance, media registry/provider, current PC/AT/Compaq profile selection and all HDC tests. |
+**Active: M5 T450, between accepted subtasks.**
 
 ## Current Technical Baseline
 
@@ -47,7 +28,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T450 S17 | Accepted: the 15-row ATA-3 source universe records task-file/protocol/reset/timing facts and explicitly blocks unselected controller, device, backing-media and board terms. [Checklist](../etc/research/t450-s17-hdc-ata-function-timing-checklist.md). |
+| T450 S18 | Accepted: the 15-row ATA/HDC audit retains one HDC/PIO/media/IRQ path, declines ATA conformance without selected controller/device facts, and transfers every ATA gap once. [Audit](../etc/evidence/t450-s18-hdc-ata-code-gap-audit.md). |
 | T449 | Closed: one copied transaction contract, transaction lifecycle, scheduler arbitrator, memory classifier and retirement/time/observation route; all S1--S6 evidence is reconciled and physical/controller/x87 boundaries transfer explicitly. [History](../history/M5-T449-core-cpu-board-transaction-contracts.md). |
 | T448 | Closed: six over-limit generated firmware sources now use the one bounded byte-identical materialization route; the unused session helper is removed. [Evidence](../etc/evidence/t448-s1-firmware-materialization.md). |
 | T447 | Closed: all S1--S11 ledger receivers are accepted; one Core execution path, bounded VM contracts, no VDM forwarding facade, owner-local test boundaries and the decomposed Core coordinator are retained. [History](../history/M5-T447-architecture-boundary-debt-closure.md). |
