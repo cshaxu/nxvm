@@ -2,7 +2,26 @@
 
 ## Current Work
 
-**Active: M5 T450, between accepted subtasks.**
+**Active: M5 T450 S11 - KBC 8042/NMI original function and timing checklist.**
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation - M5 T450 S11; the next exclusive KBC/8042 batch after accepted S10. |
+| Admission And Approval | Repository owner approved T450's two-checklist, eight-controller inventory and paired S sequence; S11 freezes only the S1-admitted UPI-41/42 and IBM AT KBC/NMI source universe. No exception is requested. |
+| Objective | Create one finite original-source checklist for the selected 8042 host interface, controller state, command/output-port behavior, keyboard/AUX serial boundary, timing, reset/A20/NMI and AT routes for S12. |
+| Non-goals | No KBC, keyboard, NMI, CPU, VM input, test, queue or emulator-behavior change; no implementation-completeness claim; no new source acquisition or import. |
+| Reference Baseline | S1 admitted Intel UPI-41A/41AH/42/42AH User's Manual and IBM 5170 Technical Reference; accepted T450 S2 ledger, retained T351/T370/T374/T403 evidence and current owner map only as corroborating context. |
+| Candidate Proposal | [M5 Core controller manual admission and gap inventory](../proposals/m5-core-controller-manuals-and-gap-inventory.md). |
+| Files And ABI Surface | Add only one indexed S11 research checklist; inspect the manual archive and retained board source, without changing code, test, public ABI or source assets. |
+| Applicable Rules | `docs/README.md` fixed reading set; `EXECUTION.md` continuation, coverage-ledger, P/closure and actual-change review rules; `DOCUMENT.md` authority/index/state rules; source policy governs the already-admitted external documents and forbids source-byte import. Architecture/coding rules are inspection criteria only. |
+| Verification | Read the admitted source/manual pages; enumerate finite register/command/mode/result and signal/timing states; distinguish selected board L3 facts, unselected L2 inputs and L4 electrical exclusions; run `git diff --check` and documentation governance before P1/P2. |
+| Expected Markers | One source checklist covers every named controller/host and board route once, does not mistake keyboard protocol for generic 8042 firmware, and leaves one later KBC phase-contract receiver for S12 gaps. |
+| Asset Needs | None; the S1-admitted owner-managed manuals are read as research inputs and no manual content enters the repository. |
+| Reporting Requirements | Record source identity/pages, finite function, reset/cancellation, timing or explicit absence, IRQ/A20/NMI/board relation and L3/L2/L4 disposition; report accepted commit and source boundary concisely. |
+| Stop Conditions | Stop for source conflict, a needed original 8042 or IBM board document outside S1, a new keyboard/AUX protocol source, or an implementation request; transfer rather than expanding research scope. |
+| Exit Criteria | The finite KBC checklist covers host interface, controller command/status/output-port, keyboard/AUX boundary, timing/reset and selected AT routes; it is indexed, reviewed, committed, pushed and accepted for S12. |
+| Original Owner Request | Build, for each of the eight key controllers, an original source/function/timing list and a distinct current-code gap audit; the user explicitly requires these as separate artifacts. |
+| Similar-Issue Sweep | Cover both 0060h and 0064h access paths, status/input/output buffers, controller and device command paths, FIFO/IRQ1/IRQ12 behavior, output-port A20/reset, NMI/port-61 board relation, host input boundary, scheduler cadence, reset/finalization and all selected profiles. |
 
 ## Current Technical Baseline
 
