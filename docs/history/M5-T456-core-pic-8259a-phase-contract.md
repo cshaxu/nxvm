@@ -23,7 +23,8 @@ to specification. The result identifies the one current configuration conflict
 request-to-CPU acknowledgement phase). The [S1 evidence](../etc/evidence/t456-s1-pic-source-reference-contract-reconciliation.md)
 defines the bounded S2--S4 order; no runtime code or artifact changed.
 
-S2 is implemented for coordinator review. Its
+S2 is accepted at `66d68469`. Its
 [evidence](../etc/evidence/t456-s2-pic-logical-acknowledgement-contract.md)
 records the manual-derived phase order, one production-caller sweep, focused
-trace proof and retained ICW3/SNGL and physical-boundary receivers.
+trace proof, corrected protected-mode rejection observations, full 293-test
+current-gate result and retained ICW3/SNGL and physical-boundary receivers.

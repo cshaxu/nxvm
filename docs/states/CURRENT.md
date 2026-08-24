@@ -2,28 +2,7 @@
 
 ## Current Work
 
-**Active: M5 T456 S2 - PIC logical acknowledgement visibility contract.**
-
-## M5 T456 S2 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner approved implementation of the prepared 8259A PIC repair on 2026-08-24, after accepting T456 S1's manual/reference reconciliation. |
-| Objective | Establish one Core-owned logical PIC request-visible-first-acknowledgement-second-vector contract through the existing transaction/arbitration boundary, preserving PIC state ownership and without inventing an elapsed electrical delay. |
-| Non-goals | Do not implement electrical INTA waveforms, propagation values, spurious-race reproduction, ICW3/SNGL topology repair (S3), ELCR/APIC/PCI routing, a second PIC dispatch path, or a VM/profile-owned interrupt state. |
-| Reference Baseline | `372ab6ef`; Intel 8259A `PIC-F8`, `PIC-T2` and `PIC-T5` from T450 S3/T456 S1; T449 owns the existing Core transaction/arbitration boundary. |
-| Candidate Proposal | [Core PIC 8259A phase contract](../proposals/m5-core-pic-8259a-phase-contract.md). |
-| Files And ABI Surface | Expected owner-local PIC, CPU execution/transaction-arbitration and focused Core test files; T456 history/evidence/index and Current. Public VM/profile ABI must not change. |
-| Applicable Rules | `rules/EXECUTION.md`, `rules/DOCUMENT.md`, `rules/ARCHITECTURE.md`, `rules/CODING.md`, the T449 transaction contract, and the specification-driven simulation admission record. One PIC state owner, one CPU delivery path and a maintained L2 duration boundary are mandatory. |
-| Verification | Establish before/after focused PIC/CPU traces proving request visibility, first acknowledgement state transition, second vector publication, cancellation/reset behavior and no duplicate delivery; run affected PIC/CPU/transaction smokes, required build/current gate and documentation governance. |
-| Expected Markers | A named logical phase contract, no source-backed elapsed delay, one transition owner, one CPU consumer, focused first/second-acknowledgement proof, and no altered unrelated PIC command behavior. |
-| Asset Needs | Existing admitted Intel/IBM sources and local code only; no external source import, firmware or guest media. |
-| Reporting Requirements | Record exact owner/caller sweep, before/after phase observables, source/test line delta, gates, retained physical boundary and any transfer to S3/S4. |
-| Stop Conditions | Stop if the only correct solution requires a second CPU/PIC delivery path, a public ABI/VM-profile change, a fabricated duration, or conflicts with the retained CPU interrupt-frame contract. |
-| Exit Criteria | The existing sole Core path has a tested request-visible/first-acknowledgement/second-vector order, PIC retains all mutable controller state, reset/cancellation are defined, no timing number is claimed, and all required evidence/gates pass. |
-| Original Owner Request | Implement the 8259A repair after the manual and external-emulator cross-validation. |
-| Similar-Issue Sweep | Review every `scan`/`peek`/`get` PIC caller, CPU interrupt delivery, transaction trace/arbitration route, reset path and focused PIC tests; do not leave a bypass or duplicate acknowledgement path. |
+**Active: M5 T456, between accepted subtasks.**
 
 ## Current Technical Baseline
 
@@ -49,7 +28,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T456 S1 | Accepted: T450's retained 18-row PIC universe is rendered-source checked and reconciled against five independently versioned emulator observations; ICW3's accepted-but-ignored state and the unowned logical delivery phase are assigned once to S2/S3. [Evidence](../etc/evidence/t456-s1-pic-source-reference-contract-reconciliation.md). |
+| T456 S2 | Accepted: the sole CPU IRQ route now commits a logical first INTA before its existing vector/frame entry; PIC remains the IRR/ISR owner, rejection preserves that acknowledged ISR state, and isolated current-gate is 293/293. [Evidence](../etc/evidence/t456-s2-pic-logical-acknowledgement-contract.md). |
 | T455 | Closed: the sole 8086 decoder-ledger guard now checks current decoder and timing owners instead of the retired monolithic layout; all 1,053 records and 292 current-gate tests pass. [History](../history/M5-T455-8086-decoder-ledger-guard-reconciliation.md). |
 | T454 | Closed: the three fixed-write Console catalog smokes have one CTest-owned build workspace each; serial and repeated parallel replays pass with no source-tree residue. The independent 8086 decoder-ledger guard failure is recorded as CPU debt. [History](../history/M5-T454-parallel-console-profile-smoke-isolation.md). |
 | T453 | Closed: fresh default tree uses one WinLibs toolchain family; the one FDC test include is corrected; 44 obsolete build trees are removed; current build operations are reduced to preset-backed commands. [History](../history/M5-T453-toolchain-build-tree-hygiene.md). |
