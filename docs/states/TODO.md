@@ -74,14 +74,6 @@ adopts them.
 
 ## CPU, Time, And Debugging Debt
 
-- [ ] **Reconcile the 8086 decoder-ledger guard (`TODO(High)`).** The direct
-  `Verify-8086DecoderLedger.ps1` current-gate verifier now fails its joint
-  XLAT/8086-only `POP CS` source-rule predicate, although the 1,053-record
-  timing runner and result verifier pass. Admit one CPU evidence/source-form
-  reconciliation task that identifies the stale predicate or source-form
-  mismatch, regenerates only the required derived result if justified, and
-  reruns the complete 8086 runner/result/decoder sequence. Do not weaken the
-  decoder predicate or infer timing behavior from a stale artifact.
 
 - [ ] **Architectural reset, shutdown, and triple-fault policy (`TODO(Medium)`).**
   The machine currently exposes a KBC-originated reset request and lifecycle

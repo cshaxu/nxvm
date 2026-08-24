@@ -6,9 +6,6 @@ reserve a numeric task identifier, or define a technical baseline.
 Each candidate links to its proposal. The shared admission and program context
 is retained separately so this queue remains a short ordering surface.
 
-The active decoder-ledger guard proposal remains linked while its admitted
-subtask executes: [8086 decoder-ledger guard reconciliation](../proposals/m5-8086-decoder-ledger-guard-reconciliation.md).
-
 ## M5 Candidates
 
 The following bounded repairs are first. They preserve the current
