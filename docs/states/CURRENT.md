@@ -36,6 +36,11 @@
 
 ## Recent Governance
 
+- **M5 Td S137 P1:** clarified the queued CPU-to-board transaction candidate's
+  sole-owner data flow, direct-path removal constraint, L2/rejection boundary,
+  and bounded S1--S6 implementation sequence; no runtime behavior or Queue
+  order changed. [Evidence](../etc/evidence/td-s137-core-transaction-proposal-clarification.md).
+
 - **M5 Td S136 P1:** independently rebuilt the complete Td S135 revision with
   WinLibs UCRT GCC and Ninja (108/108), recorded its output hash, and removed
   the temporary verification tree. [Evidence](../etc/evidence/td-s136-t447-compile-verification.md).
