@@ -2,7 +2,28 @@
 
 ## Current Work
 
-**Idle.**
+**Active: M5 T455 S1 - 8086 decoder-ledger guard reconciliation.**
+
+## M5 T455 S1 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New |
+| Admission And Approval | Owner requested a repair for the T454-discovered 8086 decoder-ledger failure on 2026-08-24. The defect is outside closed T454's Console scope, so it is admitted as next task T455. |
+| Objective | Make the 8086 decoder-ledger guard inspect the current decoder and source-timing owners rather than the retired monolithic file/layout. |
+| Non-goals | Do not change 8086 instruction behavior, canonical keys, timing rules, generated result records, CPU interfaces, or weaken the guard. |
+| Reference Baseline | `53d2a7f3`; direct `Verify-8086DecoderLedger.ps1` fails only because its source path and POP-CS case shape predate T447's Core split, while the 1,053-key runner and result verifier pass. |
+| Candidate Proposal | [8086 decoder-ledger guard reconciliation](../proposals/m5-8086-decoder-ledger-guard-reconciliation.md). |
+| Files And ABI Surface | The verifier, T455 history/evidence/index, Current, Queue, and TODO records only. No public or product ABI change. |
+| Applicable Rules | `rules/EXECUTION.md`, `rules/DOCUMENT.md`, `rules/ARCHITECTURE.md`, and `rules/CODING.md`: validate the current unique owners, retain one guard path, and avoid a behavior/timing change without evidence. |
+| Verification | Prove pre-fix failure; inspect current owner markers; run the 8086 manifest runner, result verifier, repaired decoder verifier, complete current-gates target, documentation governance, and diff hygiene. |
+| Expected Markers | Guard checks `cpu_instructions.c` and `cpu_timing_model.c`, all 1,053 results remain conforming, and no current-gate failure remains. |
+| Asset Needs | None. |
+| Reporting Requirements | Record the stale-path/case-shape cause, exact owner markers, all verification results, and source/test line delta. |
+| Stop Conditions | Stop if any runner/result record differs, a CPU behavior/timing mismatch appears, or repair would require changing source timing rather than the guard. |
+| Exit Criteria | The guard's complete semantic checks pass against current owners, runner/result records are unchanged and conforming, full current-gate passes, and the T454 TODO is removed. |
+| Original Owner Request | Reopen T454 and append a repair S for the decoder-ledger failure. |
+| Similar-Issue Sweep | Inspect every source-file assumption in this verifier; replace only assumptions invalidated by the T447 owner split and retain unrelated contract checks. |
 
 ## Current Technical Baseline
 
