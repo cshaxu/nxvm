@@ -2,7 +2,7 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-set(t360_machine "${PROJECT_SOURCE_DIR}/src/core/machine/machine.c")
+set(t360_machine "${PROJECT_SOURCE_DIR}/src/core/machine/cpu_timing_model.c")
 set(t360_timing "${PROJECT_SOURCE_DIR}/src/core/machine/cpu_timing.c")
 set(t360_inventory
     "${PROJECT_SOURCE_DIR}/docs/etc/evidence/t360-s1-four-profile-source-authority-consumer-inventory.md")

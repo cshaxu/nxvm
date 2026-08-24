@@ -4,6 +4,7 @@ endif()
 
 set(t359_source "${PROJECT_SOURCE_DIR}/src/core/machine/cpu_instructions.c")
 set(t359_machine "${PROJECT_SOURCE_DIR}/src/core/machine/machine.c")
+set(t359_timing_model "${PROJECT_SOURCE_DIR}/src/core/machine/cpu_timing_model.c")
 set(t359_timing "${PROJECT_SOURCE_DIR}/src/core/machine/cpu_timing.c")
 set(t359_inventory
     "${PROJECT_SOURCE_DIR}/docs/etc/evidence/t359-s1-four-profile-instruction-timing-inventory.md")
@@ -19,7 +20,7 @@ set(t359_s6_ledger
     "${PROJECT_SOURCE_DIR}/docs/etc/evidence/t359-s6-privileged-source-ledger.md")
 set(t359_s7_audit
     "${PROJECT_SOURCE_DIR}/docs/etc/evidence/t359-s7-complete-instruction-timing-closure-audit.md")
-foreach(t359_file IN ITEMS "${t359_source}" "${t359_machine}" "${t359_timing}" "${t359_inventory}"
+foreach(t359_file IN ITEMS "${t359_source}" "${t359_machine}" "${t359_timing_model}" "${t359_timing}" "${t359_inventory}"
     "${t359_s2_ledger}" "${t359_s3_ledger}" "${t359_s4_ledger}"
     "${t359_s5_ledger}" "${t359_s6_ledger}" "${t359_s7_audit}")
     if(NOT EXISTS "${t359_file}")
@@ -28,6 +29,8 @@ foreach(t359_file IN ITEMS "${t359_source}" "${t359_machine}" "${t359_timing}" "
 endforeach()
 file(READ "${t359_source}" t359_source_text)
 file(READ "${t359_machine}" t359_machine_text)
+file(READ "${t359_timing_model}" t359_timing_model_text)
+set(t359_machine_text "${t359_machine_text}${t359_timing_model_text}")
 file(READ "${t359_timing}" t359_timing_text)
 file(READ "${t359_inventory}" t359_inventory_text)
 file(READ "${t359_s2_ledger}" t359_s2_ledger_text)

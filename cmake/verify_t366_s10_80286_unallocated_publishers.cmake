@@ -1,7 +1,7 @@
 if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
-file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/machine.c" source)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/cpu_timing_model.c" source)
 file(READ "${PROJECT_SOURCE_DIR}/docs/etc/evidence/t366-s10-80286-unallocated-publisher-inventory.md" evidence)
 foreach(anchor IN ITEMS "if (prefixes != 0u)" "opcode >= 0xb0u && opcode <= 0xbfu" "core_machine_80286_source_timing_lookup" "CORE_MACHINE_SOURCE_UNALLOCATED_TICKS")
     string(FIND "${source}" "${anchor}" source_position)

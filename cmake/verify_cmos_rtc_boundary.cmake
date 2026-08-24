@@ -3,7 +3,8 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
 endif()
 
 file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/rtc.c" rtc_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/machine.c" machine_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/machine_scheduler.c" scheduler_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/machine_board.c" board_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/vm/composition/session/provider_lifecycle.c"
     lifecycle_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/vm/composition/session/machine_devices.c"
@@ -31,8 +32,8 @@ foreach(required IN ITEMS "core_machine_rtc_advance"
     endif()
 endforeach()
 
-string(FIND "${machine_source}" "core_machine_rtc_advance" machine_advance_position)
-string(FIND "${machine_source}" "core_machine_configure_rtc_cmos"
+string(FIND "${scheduler_source}" "core_machine_rtc_advance" machine_advance_position)
+string(FIND "${board_source}" "core_machine_configure_rtc_cmos"
     machine_binding_position)
 string(FIND "${lifecycle_source}" "vm_session_machine_devices_advance"
     lifecycle_position)

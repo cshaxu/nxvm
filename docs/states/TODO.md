@@ -95,20 +95,6 @@ adopts them.
   copied geometry/status observations. Inventory every production and test
   field access; do not do a cosmetic typedef rename or leave alias types.
 
-- [ ] **Core machine coordinator decomposition (`TODO(High)`).** Manual audit
-  Td S125 found `src/core/machine/machine.c` conflates distinct owners:
-  source-timing models, external-cycle accounting, plan validation, scheduler
-  advancement, firmware access, display/DMA/FDC/HDC/RTC/D4/PC-AT board
-  configuration, lifecycle, and fault publication. These already have real
-  interface and subsystem boundaries, so the single approximately 7,000-line
-  coordinator is not a cohesive owner-local implementation. Admit an
-  implementation task to define the coordinator's narrow assembly/lifecycle
-  responsibility, move each independent mechanism behind its existing or one
-  new owner-local boundary, preserve one Core transaction path and all current
-  plan validation/rollback semantics, and update focused regressions. Do not
-  mechanically split by line count, duplicate machine state, or create a new
-  generic framework.
-
 - [ ] **Cross-module VM contract boundary normalization (`TODO(High)`).** Manual
   architecture/code audit Td S125 found `vm/composition/session`, `vm/main`,
   and tests directly consuming non-contract headers such as

@@ -66,11 +66,17 @@ add_custom_target(cpu-timing-manifest-catalog
 add_library(core-machine STATIC
     src/core/machine/clock.c
     src/core/machine/cpu_timing.c
+    src/core/machine/cpu_timing_model.c
     src/core/machine/debug.c
     src/core/machine/entry_plan_interface.c
     src/core/machine/fdc.c
     src/core/machine/hdc.c
     src/core/machine/machine.c
+    src/core/machine/machine_board.c
+    src/core/machine/machine_plan.c
+    src/core/machine/machine_scheduler.c
+    src/core/machine/machine_firmware.c
+    src/core/machine/machine_display.c
     src/core/machine/memory_interface.c
     src/core/machine/media_interface.c
     src/core/machine/port_interface.c

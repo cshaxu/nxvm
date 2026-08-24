@@ -299,4 +299,46 @@ type_status core_machine_configure_fdc(core_machine *machine,
     const core_machine_fdc_topology *topology);
 type_status core_machine_configure_hdc(core_machine *machine,
     const core_machine_hdc_topology *topology);
+type_unsigned_32 core_machine_linear_pc(const core_machine *machine);
+C_VOID core_machine_external_cycle_invalidate(core_machine *machine);
+C_VOID core_machine_transaction_trace(C_VOID *opaque,
+    core_machine_transaction_owner owner, core_machine_transaction_kind kind,
+    core_machine_transaction_phase phase, type_unsigned_32 address,
+    type_unsigned_32 value, type_unsigned_32 detail);
+C_VOID core_machine_cpu_external_cycle_trace(C_VOID *opaque,
+    core_machine_cpu_external_cycle_phase phase,
+    core_machine_cpu_external_cycle_space space, type_unsigned_32 address,
+    type_unsigned_8 bytes, type_bool write,
+    core_machine_cpu_memory_access_provenance provenance);
+C_VOID core_machine_cpu_diagnostic_capture(const core_machine *machine,
+    core_machine_cpu_diagnostic *out_diagnostic);
+C_VOID core_machine_cpu_diagnostic_initialize(core_machine *machine);
+C_VOID core_machine_cpu_diagnostic_reset(core_machine *machine);
+extern const core_machine_cpu_execution_diagnostic_provider
+    core_machine_cpu_diagnostic_provider;
+C_VOID core_machine_board_cold_reset(core_machine *machine);
+C_VOID core_machine_board_after_pit_reset(core_machine *machine);
+C_VOID core_machine_board_refresh_nmi(core_machine *machine);
+type_status core_machine_publish_elapsed_ticks(core_machine *machine,
+    type_unsigned_64 elapsed_ticks, type_bool cpu_retired);
+C_VOID core_machine_arbitration_tick(C_VOID *opaque, type_unsigned_64 due_tick);
+C_VOID core_machine_readiness_tick(C_VOID *opaque, type_unsigned_64 due_tick);
+C_VOID core_machine_peripheral_tick(C_VOID *opaque, type_unsigned_64 due_tick);
+type_status core_machine_firmware_invoke(core_machine *machine,
+    C_INT configuring, C_INT track_operation_failures,
+    type_status (*callback)(C_VOID *, core_machine_firmware_context *));
+type_status core_machine_plan_validate(const core_machine_plan *plan);
+type_status core_machine_plan_apply_topology(core_machine *machine,
+    const core_machine_plan *plan);
+C_INT core_machine_retirement_time_contract_is_valid(
+    core_machine_retirement_time_contract contract);
+C_INT core_machine_timing_capability_is_valid(
+    core_machine_timing_capability capability);
+C_INT core_machine_external_cycle_timing_is_valid(
+    const core_machine_external_cycle_timing *timing);
+C_INT core_machine_external_access_wait_windows_are_valid(
+    const core_machine_external_access_wait_window *windows);
+C_INT core_machine_clock_plan_is_valid(const core_machine_clock_plan *plan);
+const core_machine_timing_declaration *core_machine_plan_declaration_find(
+    const core_machine_plan *plan, core_machine_timing_capability capability);
 #endif

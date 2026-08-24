@@ -3,6 +3,7 @@
 
 #include "type.h"
 
+#include "core/machine/machine_interface.h"
 #include "core/machine/retirement_observation_interface.h"
 
 #ifdef __cplusplus
@@ -39,6 +40,12 @@ typedef struct core_machine_cpu_timing_result {
 C_INT core_machine_cpu_timing_select(core_machine *machine,
     core_machine_cpu_timing_result *out_result);
 STD_SIZE_T core_machine_cpu_timing_manifest_key_count(C_VOID);
+/* Shared checked accumulation for timing selection and the retained run loop. */
+C_INT core_machine_timing_add_ticks(type_unsigned_64 *value,
+    type_unsigned_64 delta);
+type_unsigned_64 core_machine_cpu_timing_maximum_ticks(
+    core_machine_cpu_profile profile,
+    const core_machine_instruction_timing *timing);
 
 /* Legacy rule evaluators remain private to Core. They calculate a candidate
  * only; origin assignment and result publication belong exclusively to the

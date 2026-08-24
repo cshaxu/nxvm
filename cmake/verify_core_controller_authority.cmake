@@ -2,17 +2,22 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-set(machine_source "${PROJECT_SOURCE_DIR}/src/core/machine/machine.c")
+set(machine_source "${PROJECT_SOURCE_DIR}/src/core/machine/machine_board.c")
+set(machine_lifecycle_source "${PROJECT_SOURCE_DIR}/src/core/machine/machine.c")
+set(machine_plan_source "${PROJECT_SOURCE_DIR}/src/core/machine/machine_plan.c")
 set(session_source "${PROJECT_SOURCE_DIR}/src/vm/composition/session/machine_devices.c")
 set(composition_source "${PROJECT_SOURCE_DIR}/src/vm/composition/session/session.c")
 set(fixture "${PROJECT_SOURCE_DIR}/tests/machine/core_machine_controller_authority_smoke.c")
-foreach(source IN ITEMS "${machine_source}" "${session_source}" "${composition_source}" "${fixture}")
+foreach(source IN ITEMS "${machine_source}" "${machine_lifecycle_source}" "${machine_plan_source}" "${session_source}" "${composition_source}" "${fixture}")
     if(NOT EXISTS "${source}")
         message(FATAL_ERROR "T296 S4 authority source missing: ${source}")
     endif()
 endforeach()
 
-file(READ "${machine_source}" machine_text)
+file(READ "${machine_source}" machine_board_text)
+file(READ "${machine_lifecycle_source}" machine_lifecycle_text)
+file(READ "${machine_plan_source}" machine_plan_text)
+set(machine_text "${machine_board_text}${machine_lifecycle_text}${machine_plan_text}")
 foreach(required IN ITEMS "core_machine_configure_fdc" "core_machine_configure_hdc"
     "core_machine_fdc_connect" "core_machine_fdc_initialize"
     "core_machine_hdc_connect" "core_machine_hdc_initialize"

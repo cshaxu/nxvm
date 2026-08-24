@@ -2,7 +2,10 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/machine.c" core_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/machine_plan.c" core_plan_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/machine_board.c" core_board_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/machine_scheduler.c" core_scheduler_source)
+set(core_source "${core_plan_source}${core_board_source}${core_scheduler_source}")
 file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/machine_interface.h" core_header)
 file(READ "${PROJECT_SOURCE_DIR}/src/vm/composition/session/session.c" session_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/vm/composition/session/provider_lifecycle.c"

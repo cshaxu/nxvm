@@ -32,7 +32,7 @@ foreach(forbidden "t_cpu" "t_ram" "execution_context" "set_cr" "set_mode")
     endif()
 endforeach()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/machine.c" firmware_machine)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/machine_firmware.c" firmware_machine)
 foreach(required "rom_mapping_boundary" "core_machine_rollback_immutable_rom_mappings"
         "STD_MEMSET(&machine->firmware_context")
     string(FIND "${firmware_machine}" "${required}" found)

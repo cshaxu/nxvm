@@ -366,3 +366,137 @@ CORE_MACHINE_DEBUG_PRINT(core_machine_debug_print_watchpoints,
     core_machine_cpu_print_watchpoints)
 
 #undef CORE_MACHINE_DEBUG_PRINT
+
+static C_VOID core_machine_cpu_diagnostic_copy_point(
+    core_machine_cpu_execution_point *point, const t_cpu *cpu,
+    const t_cpuins *instructions, type_bool fault_origin)
+{
+    const t_cpu *source;
+
+    if (point == STD_NULL || cpu == STD_NULL || instructions == STD_NULL) return;
+    source = fault_origin ? &instructions->data.oldcpu : cpu;
+    point->cs = source->data.cs.selector;
+    point->cs_base = source->data.cs.base;
+    point->eip = source->data.eip;
+    point->linear_pc = instructions->data.linear;
+    point->byte_count = (type_unsigned_8)instructions->data.oplen;
+    STD_MEMCPY(point->bytes, instructions->data.opcodes, sizeof(point->bytes));
+}
+
+static C_VOID core_machine_cpu_diagnostic_record_instruction(C_VOID *opaque,
+    const C_VOID *opaque_cpu, const t_cpuins *instructions)
+{
+    core_machine *machine = (core_machine *)opaque;
+    const t_cpu *cpu = (const t_cpu *)opaque_cpu;
+    core_machine_cpu_diagnostic_state *state;
+
+    if (machine == STD_NULL) return;
+    state = &machine->cpu_diagnostic;
+    core_machine_cpu_diagnostic_copy_point(
+        &state->snapshot.recent[state->next_index], cpu, instructions, TYPE_FALSE);
+    core_machine_retirement_observation_capture_instruction(machine, cpu, instructions);
+    state->next_index = (state->next_index + 1u) % CORE_MACHINE_CPU_DIAGNOSTIC_WINDOW_CAPACITY;
+    if (state->snapshot.recent_count < CORE_MACHINE_CPU_DIAGNOSTIC_WINDOW_CAPACITY) {
+        ++state->snapshot.recent_count;
+    }
+}
+
+static C_VOID core_machine_cpu_diagnostic_record_fault(C_VOID *opaque,
+    const C_VOID *opaque_cpu, const t_cpuins *instructions)
+{
+    core_machine *machine = (core_machine *)opaque;
+    const t_cpu *cpu = (const t_cpu *)opaque_cpu;
+    core_machine_cpu_fault_snapshot *fault;
+
+    if (machine == STD_NULL || cpu == STD_NULL || instructions == STD_NULL) return;
+    fault = &machine->cpu_diagnostic.snapshot.first_fault;
+    if (fault->valid) return;
+    STD_MEMSET(fault, 0, sizeof(*fault));
+    fault->valid = 1;
+    fault->exception_mask = instructions->data.except;
+    fault->exception_code = instructions->data.excode;
+    core_machine_cpu_diagnostic_copy_point(&fault->point, cpu, instructions, TYPE_TRUE);
+    fault->eax = cpu->data.eax;
+    fault->ebx = cpu->data.ebx;
+    fault->ecx = cpu->data.ecx;
+    fault->edx = cpu->data.edx;
+    fault->cr2 = cpu->data.cr2;
+    fault->esp = cpu->data.esp;
+    fault->ebp = cpu->data.ebp;
+    fault->esi = cpu->data.esi;
+    fault->edi = cpu->data.edi;
+    fault->eflags = cpu->data.eflags;
+    (C_VOID)core_machine_report_fault(machine, fault->exception_mask);
+}
+
+static C_VOID core_machine_cpu_diagnostic_record_delivered_exception(
+    C_VOID *opaque, const C_VOID *opaque_cpu, const t_cpuins *instructions)
+{
+    core_machine *machine = (core_machine *)opaque;
+    const t_cpu *cpu = (const t_cpu *)opaque_cpu;
+    core_machine_cpu_fault_snapshot *exception;
+
+    if (machine == STD_NULL || cpu == STD_NULL || instructions == STD_NULL) return;
+    exception = &machine->cpu_diagnostic.snapshot.last_delivered_exception;
+    STD_MEMSET(exception, 0, sizeof(*exception));
+    exception->valid = 1;
+    exception->exception_mask = instructions->data.except;
+    exception->exception_code = instructions->data.excode;
+    core_machine_cpu_diagnostic_copy_point(&exception->point, cpu, instructions, TYPE_TRUE);
+    exception->eax = cpu->data.eax;
+    exception->ebx = cpu->data.ebx;
+    exception->ecx = cpu->data.ecx;
+    exception->edx = cpu->data.edx;
+    exception->cr2 = cpu->data.cr2;
+    exception->esp = cpu->data.esp;
+    exception->ebp = cpu->data.ebp;
+    exception->esi = cpu->data.esi;
+    exception->edi = cpu->data.edi;
+    exception->eflags = cpu->data.eflags;
+    machine->cpu_diagnostic.snapshot.delivered_exception_count++;
+}
+
+const core_machine_cpu_execution_diagnostic_provider
+    core_machine_cpu_diagnostic_provider = {
+        core_machine_cpu_diagnostic_record_instruction,
+        core_machine_cpu_diagnostic_record_delivered_exception,
+        core_machine_cpu_diagnostic_record_fault
+    };
+
+static C_VOID core_machine_cpu_diagnostic_ordered_copy(
+    const core_machine_cpu_diagnostic_state *state,
+    core_machine_cpu_diagnostic *out_diagnostic)
+{
+    STD_SIZE_T index;
+    STD_SIZE_T first;
+
+    *out_diagnostic = state->snapshot;
+    if (state->snapshot.recent_count < CORE_MACHINE_CPU_DIAGNOSTIC_WINDOW_CAPACITY ||
+        state->next_index == 0u) return;
+    first = state->next_index;
+    for (index = 0u; index < CORE_MACHINE_CPU_DIAGNOSTIC_WINDOW_CAPACITY; ++index) {
+        out_diagnostic->recent[index] = state->snapshot.recent[
+            (first + index) % CORE_MACHINE_CPU_DIAGNOSTIC_WINDOW_CAPACITY];
+    }
+}
+
+C_VOID core_machine_cpu_diagnostic_capture(const core_machine *machine,
+    core_machine_cpu_diagnostic *out_diagnostic)
+{
+    if (machine != STD_NULL && out_diagnostic != STD_NULL) {
+        core_machine_cpu_diagnostic_ordered_copy(&machine->cpu_diagnostic,
+            out_diagnostic);
+    }
+}
+
+C_VOID core_machine_cpu_diagnostic_initialize(core_machine *machine)
+{
+    if (machine != STD_NULL) {
+        STD_MEMSET(&machine->cpu_diagnostic, 0, sizeof(machine->cpu_diagnostic));
+    }
+}
+
+C_VOID core_machine_cpu_diagnostic_reset(core_machine *machine)
+{
+    core_machine_cpu_diagnostic_initialize(machine);
+}
