@@ -2,28 +2,7 @@
 
 ## Current Work
 
-**Active: M5 Td S140 - admit front-queue build and parallel-test repairs.**
-
-## M5 Td S140 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Governance |
-| Admission And Approval | Repository owner approved creating the two proposals and placing them at the front of Queue, with later implementation admission reserved to the owner. |
-| Objective | Add bounded proposals for the dormant request-bridge full-build failure and parallel Console profile-smoke interference, then order them first. |
-| Non-goals | No production/test/CMake behavior change; no numeric task allocation; no implementation admission. |
-| Reference Baseline | TODO entries for request-bridge drift and parallel Console isolation; current Queue ordering. |
-| Candidate Proposal | Add the two named M5 proposals. |
-| Files And ABI Surface | Add two proposal documents; update Queue and Current only. |
-| Applicable Rules | Documentation and execution governance only; no architecture/coding change. |
-| Verification | Inspect proposal/Queue links, run diff check and documentation governance. |
-| Expected Markers | Two unnumbered candidates precede all existing M5 candidates, each preserves one current production path. |
-| Asset Needs | None. |
-| Reporting Requirements | Record both bounded repair objectives, stop conditions and deferred implementation admission. |
-| Stop Conditions | Stop for an owner request to admit implementation now or a conflicting existing proposal. |
-| Exit Criteria | Both proposals are linked first in Queue, governance passes, the Td change is reviewed, committed and pushed. |
-| Original Owner Request | Insert full-build request-bridge restoration and parallel current-gate isolation repairs at Queue front; govern documentation before later admission. |
-| Similar-Issue Sweep | Documentation-only: inspect Queue, TODO and existing proposal links; no production defect repair occurs. |
+**Idle.**
 
 ## Current Technical Baseline
 
@@ -58,6 +37,10 @@
 
 
 ## Recent Governance
+
+- **M5 Td S140 P1:** added and ordered first the bounded request-bridge
+  full-build restoration and parallel Console profile-smoke isolation
+  candidates; no runtime behavior changed.
 
 - **M5 Td S139 P1:** inserted one source-admission and implementation-gap
   inventory candidate ahead of the eight controller implementations; it
