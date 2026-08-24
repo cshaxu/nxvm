@@ -2,28 +2,7 @@
 
 ## Current Work
 
-**Active: M5 T450 S5.**
-
-## M5 T450 S5 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner: repository user. Continuing the paired T450 controller plan. Scope: freeze only the original 8237A function, signal, reset and timing universe with IBM AT request, grant, page and refresh bindings. |
-| Objective | Produce the finite `DMA-R*`, `DMA-F*` and `DMA-T*` source checklist consumed unchanged by S6's current-code gap audit. |
-| Non-goals | Do not alter DMA code or tests, audit current implementation, combine another controller, import source bytes, or invent L2 timing from electrical waveforms. |
-| Reference Baseline | T450 S1 source ledger (`052177b8`), S2 paired ledger (`a36a54f7`), Intel 8237A High Performance Programmable DMA Controller 231466-005 (Sep. 1993), IBM Personal Computer AT Technical Reference 1502243 (Mar. 1984), and T433/T449 retained device and transaction evidence. |
-| Candidate Proposal | [Core controller manual admission and gap inventory](../proposals/m5-core-controller-manuals-and-gap-inventory.md). |
-| Files And ABI Surface | One indexed `docs/etc/research/` checklist and `docs/states/CURRENT.md`; production source, ABI and external manual archive are read-only inputs. |
-| Applicable Rules | `docs/README.md` Task Reading Set; `docs/rules/EXECUTION.md` finite coverage and actual-review rules; `docs/rules/DOCUMENT.md` supporting research boundary; `docs/etc/operations/policy/source-policy.md` provenance and non-redistribution boundary; architecture/coding rules as audit criteria, with no production change. |
-| Verification | Direct manual/page and retained-evidence inspection; every source row names function, timing/absence, reset or cancellation, signal relation and L3/L2/blocked disposition; documentation governance gate and `git diff --check` pass. |
-| Expected Markers | One DMA checklist with a closed finite row universe, clear source/page identity, no machine-local paths or source bytes, and a transfer statement that S6 must preserve every identifier. |
-| Asset Needs | Existing owner-managed 8237A and IBM AT research archive only; no repository asset or download. |
-| Reporting Requirements | Record source identity/pages, board binding, timing classification, all L2/L4 exclusions and the exact S6 transfer boundary. |
-| Stop Conditions | Stop and record rather than manufacture a timing value if the source gives only electrical characteristics or board facts do not select a rate/binding. |
-| Exit Criteria | The complete original 8237A plus selected IBM AT binding universe is checklisted once, every row has required source/timing/reset/signal disposition, and no current-code judgment or runtime change enters S5. |
-| Original Owner Request | For each of the eight controllers, first establish the original complete function and timing list, then audit its current-code gap list. |
-| Similar-Issue Sweep | Inspect source-ledger DMA references and T433/T449 records for all DMA request, grant, page, refresh, cascade and transaction boundaries; retain only DMA facts in this list. |
+**Active: M5 T450, between accepted subtasks.**
 
 ## Current Technical Baseline
 
@@ -49,7 +28,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T450 S4 | Accepted: every PIC source row is audited; generic ICW3/SNGL cascade selection and a selected delivery timing input transfer once to the queued PIC candidate. [Audit](../etc/evidence/t450-s4-pic-8259a-code-gap-audit.md). |
+| T450 S5 | Accepted: the 16-row 8237A and selected AT source universe freezes register/program, service/transfer, page/cascade and refresh timing facts for S6's code-gap audit. [Checklist](../etc/research/t450-s5-dma-8237a-function-timing-checklist.md). |
 | T449 | Closed: one copied transaction contract, transaction lifecycle, scheduler arbitrator, memory classifier and retirement/time/observation route; all S1--S6 evidence is reconciled and physical/controller/x87 boundaries transfer explicitly. [History](../history/M5-T449-core-cpu-board-transaction-contracts.md). |
 | T448 | Closed: six over-limit generated firmware sources now use the one bounded byte-identical materialization route; the unused session helper is removed. [Evidence](../etc/evidence/t448-s1-firmware-materialization.md). |
 | T447 | Closed: all S1--S11 ledger receivers are accepted; one Core execution path, bounded VM contracts, no VDM forwarding facade, owner-local test boundaries and the decomposed Core coordinator are retained. [History](../history/M5-T447-architecture-boundary-debt-closure.md). |
