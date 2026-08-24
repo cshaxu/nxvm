@@ -2,7 +2,28 @@
 
 ## Current Work
 
-**Active: M5 T450, between accepted subtasks.**
+**Active: M5 T450 S4.**
+
+## M5 T450 S4 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner: repository user. Continuing the paired T450 controller plan. Scope: audit only the PIC source universe frozen by S3 against current Core PIC code and tests. |
+| Objective | Give every `PIC-R1`--`PIC-T5` row a current owner, test evidence and conforming/wrong-value/missing/unallocated/missing-input/missing-test disposition. |
+| Non-goals | Do not alter PIC code, add tests, broaden to DMA or other controllers, modify S3 source facts, or silently treat L2/L4 timing as a defect. |
+| Reference Baseline | T450 S3 PIC checklist (`88b9a902`); `src/core/machine/pic.c`, `pic.h`, machine wiring and PIC-focused tests. |
+| Candidate Proposal | [Core controller manual admission and gap inventory](../proposals/m5-core-controller-manuals-and-gap-inventory.md). |
+| Files And ABI Surface | Indexed `docs/etc/evidence/` only; production source and ABI are read-only audit inputs. |
+| Applicable Rules | `docs/README.md` Task Reading Set; `docs/rules/EXECUTION.md` row-level coverage and actual-review rules; `docs/rules/DOCUMENT.md` supporting evidence boundary; architecture/coding rules as audit criteria, with no production change. |
+| Verification | Direct source and test-path inspection for every S3 identifier; exhaustive symbol/path search; documentation governance gate and `git diff --check` pass. |
+| Expected Markers | One PIC gap checklist preserves all 18 S3 identifiers, has no uncovered row, and assigns every nonconforming production gap to the queued PIC implementation candidate or a truthful L2/blocked boundary. |
+| Asset Needs | No new asset; S3 checklist and current repository source/tests only. |
+| Reporting Requirements | Record exact code/test paths, row disposition, missing fact/test distinction, owner/receiver and any architecture/minimality concern. |
+| Stop Conditions | Stop and record rather than modify code if a row needs a selected board contract, timing plan, or wider implementation admission. |
+| Exit Criteria | Every S3 row is independently audited, all real code gaps are uniquely transferred, and no PIC code change is hidden in this audit S. |
+| Original Owner Request | The second S for each controller audits the current code gaps against that controller's original list. |
+| Similar-Issue Sweep | Search PIC public API, Core machine wiring, CPU interrupt delivery and PIC tests for all consumers; do not classify other controllers. |
 
 ## Current Technical Baseline
 
