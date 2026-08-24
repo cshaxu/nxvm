@@ -2,7 +2,28 @@
 
 ## Current Work
 
-**Active: M5 T456, between accepted subtasks.**
+**Active: M5 T456 S3 - PIC programmed cascade and initialization contract.**
+
+## M5 T456 S3 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner approved implementation of the prepared 8259A PIC repair on 2026-08-24; T456 S1 accepted the ICW3/SNGL gap and T456 S2 is accepted at `ecaff977`. |
+| Objective | Make the existing sole Core PIC selection and refresh mechanism consume programmed ICW1.SNGL and ICW3 master/slave topology, while retaining the IBM AT default as initialization data. |
+| Non-goals | Do not add a VM/profile PIC state owner, alternate dispatch path, electrical timing claim, ELCR/PCI/APIC routing, multi-slave topology, or unrelated OCW/EOI rewrite. |
+| Reference Baseline | `ecaff977`; T450 PIC-F3/PIC-F8 and PIC-T1/T2/T5; Intel 8259A `231468-003` rendered-source findings recorded by T456 S1. |
+| Candidate Proposal | [Core PIC 8259A phase contract](../proposals/m5-core-pic-8259a-phase-contract.md). |
+| Files And ABI Surface | Expected owner-local `pic.c`/`pic.h`, PIC focused smoke/CMake registration, T456 evidence/history/index and Current. Public VM/profile ABI must not change. |
+| Applicable Rules | `rules/EXECUTION.md`, `rules/DOCUMENT.md`, `rules/ARCHITECTURE.md`, `rules/CODING.md`, the T456 S1 source reconciliation, and T449 transaction boundary. PIC owns mutable controller/topology interpretation; Core CPU remains its only delivery consumer. |
+| Verification | Prove programmed AT cascade, single mode, disabled/mismatched cascade, ICW1 reinitialization and reset through the sole selection/refresh/get path; run affected PIC/IRQ smokes, configured build/current gate and documentation governance. |
+| Expected Markers | ICW3/SNGL are no longer accepted-but-ignored; default AT behavior remains; no hard-coded cascade decision survives in a selection or refresh path; one selection mechanism and one topology interpretation remain. |
+| Asset Needs | Existing admitted Intel/IBM sources and local code only; no external source import, firmware or guest media. |
+| Reporting Requirements | Record every topology caller/condition sweep, before/after ICW3/SNGL observables, source/test line delta, gates, retained unsupported topologies and any S4 receiver. |
+| Stop Conditions | Stop if correct consumption needs public VM/profile API, a second PIC selection/dispatch mechanism, undocumented topology policy beyond one selected master/slave pair, or conflicts with the manual source boundary. |
+| Exit Criteria | One PIC-local selection/refresh interpretation consumes SNGL and both ICW3 forms, AT `04h/02h` still passes, reinitialization/reset are covered, no hard-coded cascade selection remains, and all required evidence/gates pass. |
+| Original Owner Request | Implement the 8259A repair after manual and external-emulator cross-validation, with minimal single-owner logic. |
+| Similar-Issue Sweep | Review all master-ID-2 cascade tests, slave selection, cascade refresh/assertion, ICW1/ICW3 initialization, poll semantics and direct PIC test fixtures; classify every hard-coded topology condition. |
 
 ## Current Technical Baseline
 

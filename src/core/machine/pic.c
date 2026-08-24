@@ -54,6 +54,11 @@ static type_bool core_machine_pic_request_can_interrupt(const t_pic *pic,
     return request_rank < service_rank;
 }
 
+static type_unsigned_8 core_machine_pic_pending_requests(const t_pic *pic)
+{
+    return pic->data.irr | pic->data.cascade_irr;
+}
+
 static type_bool core_machine_pic_select_controller(const t_pic *pic,
     type_unsigned_8 *out_id)
 {
@@ -63,7 +68,8 @@ static type_bool core_machine_pic_select_controller(const t_pic *pic,
     if (pic == STD_NULL || out_id == STD_NULL) return TYPE_FALSE;
     for (offset = 0u; offset < VPIC_MAX_IRQ_COUNT; ++offset) {
         id = (type_unsigned_8)((pic->data.irx + offset) % VPIC_MAX_IRQ_COUNT);
-        if (TYPE_GET_BIT(pic->data.irr & ~pic->data.imr, VPIC_IRR_IRQ(id)) &&
+        if (TYPE_GET_BIT(core_machine_pic_pending_requests(pic) & ~pic->data.imr,
+                VPIC_IRR_IRQ(id)) &&
             core_machine_pic_request_can_interrupt(pic, id)) {
             *out_id = id;
             return TYPE_TRUE;
@@ -72,14 +78,37 @@ static type_bool core_machine_pic_select_controller(const t_pic *pic,
     return TYPE_FALSE;
 }
 
+static type_bool core_machine_pic_cascade_line(const t_pic *master,
+    const t_pic *slave, type_unsigned_8 *out_line)
+{
+    type_unsigned_8 line;
+
+    if (master == STD_NULL || slave == STD_NULL || out_line == STD_NULL ||
+        TYPE_GET_BIT(master->data.icw1, VPIC_ICW1_SNGL) ||
+        TYPE_GET_BIT(slave->data.icw1, VPIC_ICW1_SNGL)) return TYPE_FALSE;
+    line = slave->data.icw3 & 0x07u;
+    if (!TYPE_GET_BIT(master->data.icw3, VPIC_ICW3_S(line))) return TYPE_FALSE;
+    *out_line = line;
+    return TYPE_TRUE;
+}
+
+static type_bool core_machine_pic_master_declares_slave(const t_pic *master,
+    type_unsigned_8 line)
+{
+    return !TYPE_GET_BIT(master->data.icw1, VPIC_ICW1_SNGL) &&
+        TYPE_GET_BIT(master->data.icw3, VPIC_ICW3_S(line));
+}
+
 static type_bool core_machine_pic_sfnm_cascade_can_interrupt(
     const t_pic *master, type_unsigned_8 master_id, const t_pic *slave)
 {
+    type_unsigned_8 cascade_line;
     type_unsigned_8 slave_id;
 
-    return master_id == 2u &&
+    return core_machine_pic_cascade_line(master, slave, &cascade_line) &&
+        master_id == cascade_line &&
         TYPE_GET_BIT(master->data.icw4, VPIC_ICW4_SFNM) &&
-        VPIC_GetIsrTopId((t_pic *)master) == 2u &&
+        VPIC_GetIsrTopId((t_pic *)master) == cascade_line &&
         core_machine_pic_select_controller(slave, &slave_id);
 }
 
@@ -89,13 +118,15 @@ static type_bool core_machine_pic_select(t_pic *master, t_pic *slave,
     type_unsigned_8 offset;
     type_unsigned_8 master_id;
     type_unsigned_8 slave_id;
+    type_unsigned_8 cascade_line;
 
     if (master == STD_NULL || slave == STD_NULL || out_master_id == STD_NULL ||
         out_slave_id == STD_NULL) return TYPE_FALSE;
     for (offset = 0u; offset < VPIC_MAX_IRQ_COUNT; ++offset) {
         master_id = (type_unsigned_8)((master->data.irx + offset) %
             VPIC_MAX_IRQ_COUNT);
-        if (!TYPE_GET_BIT(master->data.irr & ~master->data.imr,
+        if (!TYPE_GET_BIT(core_machine_pic_pending_requests(master) &
+                ~master->data.imr,
                 VPIC_IRR_IRQ(master_id))) {
             continue;
         }
@@ -104,9 +135,12 @@ static type_bool core_machine_pic_select(t_pic *master, t_pic *slave,
                 slave)) {
             continue;
         }
-        if (master_id == 2u) {
+        if (core_machine_pic_cascade_line(master, slave, &cascade_line) &&
+            master_id == cascade_line) {
             if (!core_machine_pic_select_controller(slave, &slave_id)) continue;
             *out_slave_id = slave_id;
+        } else if (core_machine_pic_master_declares_slave(master, master_id)) {
+            continue;
         } else {
             *out_slave_id = VPIC_MAX_IRQ_COUNT;
         }
@@ -117,11 +151,16 @@ static type_bool core_machine_pic_select(t_pic *master, t_pic *slave,
 }
 /*
  * RespondINTR: Internal function
- * Adds INTR to IRR and removes it from ISR
+ * Acknowledges the selected request by moving it to ISR.
  */
-static C_VOID RespondINTR(t_pic *rpic, type_unsigned_8 id) {
+static C_VOID RespondINTR(t_pic *rpic, type_unsigned_8 id,
+    type_bool cascade_request) {
     TYPE_SET_BIT(rpic->data.isr, VPIC_ISR_IRQ(id)); /* put C_INT into ISR */
-    TYPE_CLEAR_BIT(rpic->data.irr, VPIC_IRR_IRQ(id)); /* remove C_INT from  IRR */
+    if (cascade_request) {
+        TYPE_CLEAR_BIT(rpic->data.cascade_irr, VPIC_IRR_IRQ(id));
+    } else {
+        TYPE_CLEAR_BIT(rpic->data.irr, VPIC_IRR_IRQ(id));
+    }
     if (TYPE_GET_BIT(rpic->data.icw4, VPIC_ICW4_AEOI)) {
         /* Auto EOI Mode */
         TYPE_CLEAR_BIT(rpic->data.isr, VPIC_ISR_IRQ(id));
@@ -146,6 +185,7 @@ static C_VOID core_machine_pic_begin_initialization(t_pic *pic,
     pic->data.ocw2 = TYPE_ZERO_8;
     pic->data.ocw3 = VPIC_OCW3_RR;
     pic->data.irx = TYPE_ZERO_8;
+    pic->data.cascade_irr = TYPE_ZERO_8;
     pic->data.status = ICW2;
 }
 
@@ -196,14 +236,15 @@ static C_VOID io_read_00x0(t_pic *rpic, t_port *port) {
         } else {
             /* A poll read acknowledges the selected controller request. */
             port->data.ioByte = VPIC_POLL_I | id;
-            RespondINTR(rpic, id);
+            RespondINTR(rpic, id, TYPE_GET_BIT(rpic->data.cascade_irr,
+                VPIC_IRR_IRQ(id)));
         }
         TYPE_CLEAR_BIT(rpic->data.ocw3, VPIC_OCW3_P);
     } else {
         switch (rpic->data.ocw3 & (VPIC_OCW3_RR | VPIC_OCW3_RIS)) {
         case 0x02:
             /* RR=1, RIS=0, Read IRR */
-            port->data.ioByte = rpic->data.irr;
+            port->data.ioByte = core_machine_pic_pending_requests(rpic);
             break;
         case 0x03:
             /* RR=1, RIS=1, Read ISR */
@@ -505,7 +546,7 @@ type_unsigned_8 core_machine_pic_peek_interrupt(t_pic *master, t_pic *slave) {
     type_unsigned_8 reqId2;
 
     if (!core_machine_pic_select(master, slave, &reqId1, &reqId2)) return 0;
-    if (reqId1 == 0x02) {
+    if (reqId2 != VPIC_MAX_IRQ_COUNT) {
         return (type_unsigned_8)(reqId2 | slave->data.icw2);
     }
     return (type_unsigned_8)(reqId1 | master->data.icw2);
@@ -514,15 +555,15 @@ type_unsigned_8 core_machine_pic_get_interrupt(t_pic *master, t_pic *slave) {
     type_unsigned_8 reqId1; /* top requested C_INT id in master pic */
     type_unsigned_8 reqId2; /* top requested C_INT id in slave pic */
     if (!core_machine_pic_select(master, slave, &reqId1, &reqId2)) return 0;
-    RespondINTR(master, reqId1);
-    if (reqId1 == 0x02) {
-        /* if IR2 has C_INT request, then test slave pic */
-        RespondINTR(slave, reqId2);
+    RespondINTR(master, reqId1, reqId2 != VPIC_MAX_IRQ_COUNT);
+    if (reqId2 != VPIC_MAX_IRQ_COUNT) {
+        /* The selected paired slave supplies the vector. */
+        RespondINTR(slave, reqId2, TYPE_FALSE);
         core_machine_pic_refresh(master, slave);
-        /* find the final C_INT id based on slave ICW2 */
+        /* Find the final C_INT id based on the slave ICW2. */
         return (reqId2 | slave->data.icw2);
     } else {
-        /* find the final C_INT id based on master ICW2 */
+        /* Find the final C_INT id based on the master ICW2. */
         return (reqId1 | master->data.icw2);
     }
 }
@@ -550,6 +591,7 @@ C_VOID core_machine_pic_reset(t_pic *master, t_pic *slave) {
 }
 C_VOID core_machine_pic_refresh(t_pic *master, t_pic *slave) {
     type_unsigned_8 id;
+    type_unsigned_8 cascade_line;
     if (master == STD_NULL || slave == STD_NULL) return;
     if (core_machine_pic_is_level(master)) {
         for (id = 0u; id < VPIC_MAX_IRQ_COUNT; ++id) {
@@ -565,13 +607,10 @@ C_VOID core_machine_pic_refresh(t_pic *master, t_pic *slave) {
             }
         }
     }
-    if (core_machine_pic_select_controller(slave, &id)) {
-        /* if slave pic has requested C_INT, then
-         * pass the request into IR2 of master pic */
-        TYPE_SET_BIT(master->data.irr, VPIC_IRR_IRQ(2));
-    } else {
-        /* remove IR2 from master pic */
-        TYPE_CLEAR_BIT(master->data.irr, VPIC_IRR_IRQ(2));
+    master->data.cascade_irr = TYPE_ZERO_8;
+    if (core_machine_pic_cascade_line(master, slave, &cascade_line) &&
+        core_machine_pic_select_controller(slave, &id)) {
+        TYPE_SET_BIT(master->data.cascade_irr, VPIC_IRR_IRQ(cascade_line));
     }
 }
 C_VOID core_machine_pic_finalize(t_pic *master, t_pic *slave) {

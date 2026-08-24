@@ -12,6 +12,8 @@ acknowledgement, EOI, mask and reset contract after a manual-first inventory.
 - S2 gives the existing sole CPU delivery route a traceable logical first-INTA
   acknowledgement before its existing vector/frame entry. PIC remains the sole
   owner of IRR/ISR state; it claims no electrical duration or waveform.
+- S3 makes the existing paired-controller selector consume ICW1.SNGL and both
+  ICW3 forms rather than treating IR2 as an unconditional cascade line.
 
 ## Accepted Progress
 
@@ -28,3 +30,10 @@ S2 is accepted at `66d68469`. Its
 records the manual-derived phase order, one production-caller sweep, focused
 trace proof, corrected protected-mode rejection observations, full 293-test
 current-gate result and retained ICW3/SNGL and physical-boundary receivers.
+
+S3 is implemented pending independent acceptance. Its
+[evidence](../etc/evidence/t456-s3-pic-programmed-cascade-contract.md)
+records the one PIC-local ICW3/SNGL relation, its separate synthesized cascade
+request, AT/custom/mismatch/single-mode/reinitialization proof and the
+retained poll-command receiver. No VM/profile topology or additional selector
+is introduced.

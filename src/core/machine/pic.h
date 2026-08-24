@@ -24,6 +24,7 @@ typedef struct {
     t_pic_init_status status; /* initialization status */
     type_unsigned_8 irx; /* id of current top potential ir */
     type_unsigned_8 asserted[VPIC_MAX_IRQ_COUNT]; /* source levels */
+    type_unsigned_8 cascade_irr; /* paired slave's synthesized request */
 } t_pic_data;
 
 typedef struct t_pic {
