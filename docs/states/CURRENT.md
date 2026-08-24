@@ -2,7 +2,28 @@
 
 ## Current Work
 
-**Active: M5 T450, between accepted subtasks.**
+**Active: M5 T450 S2.**
+
+## M5 T450 S2 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner: repository user. The owner clarified on 2026-08-24 that T450 must use two subtasks per controller: original function/timing inventory, then current-code gap audit. Scope: freeze the S3--S18 sequence and one common ledger schema; S1 remains the sole shared source-admission prerequisite. |
+| Objective | Replace the all-controller S2 inventory plan with fixed original-list then gap-audit batches for each controller and a common evidence schema. |
+| Non-goals | Do not extract a controller checklist, alter controller code, infer a board fact absent from source, or claim an L3 timing result in this planning S. |
+| Reference Baseline | T450 S1 source/code ledger (`318aab03`), accepted in `052177b8`; retained T433 S6/S7 controller rows. |
+| Candidate Proposal | [Core controller manual admission and gap inventory](../proposals/m5-core-controller-manuals-and-gap-inventory.md). |
+| Files And ABI Surface | Indexed `docs/etc/research/` and `docs/etc/evidence/` only; external manuals are read-only inputs; no source, ABI or artifact change. |
+| Applicable Rules | `docs/README.md` Task Reading Set; `docs/rules/EXECUTION.md` coverage ledger and actual-change review; `docs/rules/DOCUMENT.md` supporting-detail boundary; `docs/etc/operations/policy/source-policy.md` source use; architecture/coding rules are not changed because production code is not changed. |
+| Verification | The ledger lists exactly paired S3--S18 batches, one original-list and one gap-audit batch per controller, plus a final S19 cross-controller audit; it carries every required checklist column; documentation governance gate and `git diff --check` pass. |
+| Expected Markers | One source-backed ledger assigns PIC, DMA, PIT, RTC/CMOS, KBC/NMI, FDC/media, VADP and HDC/ATA exactly two distinct batches each; no all-controller implementation S, duplicate batch, or unowned cross-cutting fact remains. |
+| Asset Needs | T450 S1's external PDFs only; no new acquisition, source import, firmware or guest media. |
+| Reporting Requirements | Record the exact paired S-to-controller mapping, common checklist columns, per-S evidence requirements and S19 reconciliation obligation. |
+| Stop Conditions | Stop if an in-scope controller cannot be assigned a unique S, if a shared fact would require duplicate ownership, or if the owner requests a different controller grouping. |
+| Exit Criteria | The indexed ledger contains sixteen paired controller batches and the S19 reconciliation batch; the retained proposal and active-packet transfer agree. |
+| Original Owner Request | Complete the eight-controller instruction/function/timing checklists from original files, then audit current-code gaps. |
+| Similar-Issue Sweep | Compare common IRQ, DRQ, reset, clock and backing-media rules across all eight batches so shared facts have one ledger field but each controller retains its distinct receiver boundary. |
 
 ## Current Technical Baseline
 

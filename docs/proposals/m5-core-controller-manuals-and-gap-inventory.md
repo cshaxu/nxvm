@@ -67,6 +67,40 @@ controller is implemented or L3-complete; it ends with the eight existing
 implementation candidates still ordered PIC, DMA, PIT, RTC, KBC, FDC/media,
 VADP, HDC/ATA.
 
+## Controller-Scoped Subtask Sequence
+
+S1 is the shared source-admission baseline. S2 freezes the common ledger and
+the following exclusive paired execution batches; it does not combine
+controller analysis into a second shared implementation path.
+
+| Subtask | Exclusive checklist boundary |
+| --- | --- |
+| S3 | PIC 8259A original function/timing list |
+| S4 | PIC 8259A current-code gap audit |
+| S5 | DMA 8237A original function/timing list |
+| S6 | DMA 8237A current-code gap audit |
+| S7 | PIT 8254 original function/timing list |
+| S8 | PIT 8254 current-code gap audit |
+| S9 | RTC/CMOS original function/timing list |
+| S10 | RTC/CMOS current-code gap audit |
+| S11 | KBC 8042/NMI original function/timing list |
+| S12 | KBC 8042/NMI current-code gap audit |
+| S13 | uPD765 FDC plus logical media original function/timing list |
+| S14 | uPD765 FDC plus logical media current-code gap audit |
+| S15 | VADP original function/timing list |
+| S16 | VADP current-code gap audit |
+| S17 | HDC/ATA original function/timing list |
+| S18 | HDC/ATA current-code gap audit |
+| S19 | Cross-controller coverage and gap-audit reconciliation only; no new controller behavior. |
+
+Each odd-numbered controller S produces only its finite source/function/timing
+checklist. Its immediately following even-numbered S audits that exact row
+universe against current code and tests. The shared columns record source page,
+function or command/register/mode, timing or explicit absence, reset and
+cancellation, IRQ/DRQ or equivalent relation, owner path, current test,
+disposition, and later implementation receiver. S19 verifies that the eight
+pairs cover the S1 universe once and only once.
+
 ## Minimality Constraint
 
 The inventory is one shared evidence collection with one checklist pair per
