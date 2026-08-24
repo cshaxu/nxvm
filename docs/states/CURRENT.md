@@ -2,7 +2,28 @@
 
 ## Current Work
 
-**Active: M5 T450, between accepted subtasks.**
+**Active: M5 T450 S8.**
+
+## M5 T450 S8 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner: repository user. Continuing the paired T450 controller plan. Scope: audit only the 17-row PIT source universe frozen by S7 against current Core PIT code, machine wiring and focused tests. |
+| Objective | Give every `PIT-R1`--`PIT-T5` row a current owner, test evidence and conforming/wrong-value/missing/unallocated/missing-input/missing-test disposition. |
+| Non-goals | Do not alter PIT code/tests, broaden to DMA/RTC/other controllers, modify S7 source facts, or manufacture an L2 timing contract. |
+| Reference Baseline | T450 S7 PIT checklist (`3701ab8c`); `src/core/machine/pit.c`, `pit.h`, machine wiring and PIT-focused tests; retained T433/T449 evidence. |
+| Candidate Proposal | [Core controller manual admission and gap inventory](../proposals/m5-core-controller-manuals-and-gap-inventory.md). |
+| Files And ABI Surface | Indexed `docs/etc/evidence/` only; production source, ABI and external manual archive are read-only audit inputs. |
+| Applicable Rules | `docs/README.md` Task Reading Set; `docs/rules/EXECUTION.md` row-level coverage and actual-review rules; `docs/rules/DOCUMENT.md` supporting evidence boundary; architecture/coding rules as audit criteria, with no production change. |
+| Verification | Direct source, machine-wiring and test-path inspection for every S7 identifier; exhaustive symbol/path search; documentation governance gate and `git diff --check` pass. |
+| Expected Markers | One PIT gap checklist preserves all 17 S7 identifiers, has no uncovered row, and assigns every nonconforming production gap once to the queued PIT implementation candidate or a truthful L2/blocked boundary. |
+| Asset Needs | No new asset; S7 checklist and current repository source/tests only. |
+| Reporting Requirements | Record exact code/test paths, row disposition, missing fact/test distinction, owner/receiver and architecture/minimality concerns. |
+| Stop Conditions | Stop and record rather than modify code if a row needs a selected board contract, timing plan or wider implementation admission. |
+| Exit Criteria | Every S7 row is independently audited, all real code gaps are uniquely transferred, and no PIT code change is hidden in this audit S. |
+| Original Owner Request | The second S for each controller audits the current code gaps against that controller's original list. |
+| Similar-Issue Sweep | Search PIT public API, Core machine wiring, PIC/DMA/speaker consumers and focused tests for all owners; do not classify other controllers. |
 
 ## Current Technical Baseline
 
