@@ -48,3 +48,14 @@ media/recorder proof, 75 specialized gates, 292-current-smoke, documentation,
 and 0447 artifact are recorded in
 [S4 evidence](../etc/evidence/t447-s4-file-resource-boundary.md). T447 remains
 open; the next proposal-defined batch requires its own admitted packet.
+
+## Accepted S5
+
+P1 `13f2a5bc` seals Core input/presentation primitives and VM platform
+lifecycle state behind owner-created opaque handles, while P2 `af805310`
+corrects the three retained gates that had depended on the layouts S5 removed
+and adds the S5 public-layout guard. The 0447 artifact, 292 current smokes, 75
+specialized gates including T345, and documentation governance pass; the
+complete ownership, failure-cleanup, artifact, and verification record is in
+[S5 evidence](../etc/evidence/t447-s5-platform-lifecycle-boundary.md). T447
+remains open; its next proposal-defined batch requires a new admitted packet.
