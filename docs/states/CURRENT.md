@@ -2,7 +2,26 @@
 
 ## Current Work
 
-**Active.** T449 remains open between accepted subtasks.
+## M5 T449 S4 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; T449 S3 is accepted in `043a7bcc`. |
+| Admission And Approval | The owner-approved T449 objective and accepted S1--S3 evidence authorize this bounded continuation under one-session coordinator/executor review. |
+| Objective | Reconcile the selected external availability, CPU/DMA BUSRDY gates and CPU prefetch reservation against the sole copied transaction contract and lifecycle; repair only a demonstrated duplicate owner, stale state, unpaired wait/reset or unsourced selection. |
+| Non-goals | Do not add a bus framework, invent board timing values, add a CPU resume/microstep mechanism, change device/controller phases or x87 traffic, alter stopped APIs, or introduce profile callbacks, a second scheduler or a second prefetch producer. |
+| Reference Baseline | Accepted T449 S1 route ledger, S2 copied transaction contract and S3 class ledger; retained T410/T411 CPU locality, T419 BUSRDY, T354 transaction lifecycle and T369 PC/AT HOLD proofs. |
+| Candidate Proposal | [Core CPU-to-board transaction and arbitration contracts](../proposals/m5-core-cpu-board-transaction-contracts.md). |
+| Files And ABI Surface | Core timing model, scheduler, board input and CPU prefetch owner, focused Core regressions/evidence/status only. No public API or VM profile surface is expected. |
+| Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`, `docs/design/ARCHITECTURE.md`, `docs/design/CODING.md`; copied immutable selections, one mutable owner, one production route, explicit L2 fallback, atomic reset and no forwarding layer. |
+| Verification | Finite selection-to-consumer/wait/reset ledger; source sweep for transaction-contract availability/BUSRDY/prefetch consumers and stale raw paths; retained prefetch, BUSRDY, HOLD and lifecycle direct regressions; documentation governance, `git diff --check`, actual-change review. |
+| Expected Markers | T449 S4 availability marker plus retained T410, T411, T419, T354 and T369 markers. |
+| Asset Needs | None. |
+| Reporting Requirements | Report each selection consumer, owner, wait/clear/reset disposition, any repaired shared mechanism, source/test line accounting, commit/push and S5 prerequisite. |
+| Stop Conditions | Stop for owner direction if proof needs a new timing value, device electrical phase, CPU resumability, public cross-module interface, source admission, or changed profile behavior. |
+| Exit Criteria | Every selected availability/BUSRDY/prefetch value has one copied-contract consumer and dynamic-state owner; waiting, HOLD pause, fill/consume/flush and reset have one disposition; no stale direct selection or duplicate prefetch/wait path remains; excluded physical timing is explicit L2. |
+| Original Owner Request | Complete the active T in one-session coordinator/executor mode; use a whole-system, minimalist design, prohibit incremental patch stacking, and leave no unfinished path. |
+| Similar-Issue Sweep | Search all production reads of `transaction_contract`, BUSRDY/availability/wait state and prefetch fill/consume/flush/reset paths; classify every hit as sole consumer, dynamic owner, intentional test observation or transferred physical timing. |
 
 ## Current Technical Baseline
 
