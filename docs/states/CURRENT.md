@@ -40,6 +40,12 @@
 
 ## Recent Governance
 
+- **M5 Td S134 P1:** created and placed first the coverage-bearing
+  [architecture-boundary debt closure proposal](../proposals/m5-architecture-boundary-debt-closure.md).
+  It maps every Td S125--S130 finding and the T446 direct-test exception to
+  bounded dependency-ordered S work; documentation governance passes. This
+  creates no numeric task or runtime change.
+
 - **M5 Td S133 P1:** audited actual T438--T443 owner paths, focused regressions,
   artifacts, commits and topology; it archived the two retained completed
   proposals and transferred T344 plus 20 current-fast failures to the queued
