@@ -62,6 +62,13 @@ build. Run the current project gates with:
 cmake --build --preset current-gates-gcc
 ```
 
+When `ccache` is installed, an optional isolated repeat-build route is:
+
+```powershell
+cmake --preset mingw-gcc-x64-ccache
+cmake --build --preset current-gcc-ccache
+```
+
 Visual Studio is not required for the supported development path. The legacy
 manual-project, Autotools, and Makefile instructions are retired.
 

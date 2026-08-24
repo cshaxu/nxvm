@@ -2,7 +2,28 @@
 
 ## Current Work
 
-**Idle.**
+**Active: M5 T452 S1 - optional ccache build acceleration.**
+
+## M5 T452 S1 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New |
+| Admission And Approval | Owner approved adding an S implementation for ccache acceleration on 2026-08-24. Because T451 is closed and this is new build capability, this is the next numeric task; no exceptions are approved. |
+| Objective | Add and verify an opt-in ccache CMake preset that accelerates repeat MinGW builds without changing the default build route. |
+| Non-goals | Do not alter C source, CMakeLists, default presets, artifact identity, build gates, global ccache configuration, remote caching or require ccache for ordinary builds. |
+| Reference Baseline | `25e659de`; `ccache 4.13.6` is installed but `mingw-gcc-x64` has no compiler launcher and its observed ccache statistics have zero hits. |
+| Candidate Proposal | [M5 Optional Ccache Build Acceleration](../proposals/m5-optional-ccache-build-acceleration.md). |
+| Files And ABI Surface | Change only `CMakePresets.json`, `README.md`, `docs/etc/operations/build/toolchain.md`, task evidence/history/status and supporting index. No ABI changes. |
+| Applicable Rules | `rules/EXECUTION.md`: new-task packet, evidence and closure. `rules/DOCUMENT.md`: one authority per build instruction. `rules/CODING.md`: no production wrapper or duplicate source path. `rules/ARCHITECTURE.md`: no product behavior change. |
+| Verification | Configure the opt-in preset with a task-local ccache directory; build the current artifact; clean generated objects only; rebuild; compare ccache miss/hit statistics; run the executable hash comparison and the default `current-gcc`; run documentation governance and diff hygiene. |
+| Expected Markers | One opt-in ccache preset, one matching build preset, measurable hits after a clean rebuild, unchanged default preset and byte-identical artifact from the same source/toolchain. |
+| Asset Needs | None. |
+| Reporting Requirements | Record ccache version, task-local cache path, cold/warm hit and miss counts, commands, artifact hashes and the default-route result. |
+| Stop Conditions | Stop if ccache is not effective, changes output identity or must become a default dependency. |
+| Exit Criteria | The optional path is documented and verified, default route still passes, temporary task cache/tree are removed after evidence, and closure gates pass. |
+| Original Owner Request | Approve adding an S task to implement ccache acceleration after reviewing current compile efficiency and cache availability. |
+| Similar-Issue Sweep | Inspect every current preset and current build instruction for accidental default ccache dependence; retain only one opt-in route and one default route. |
 
 ## Current Technical Baseline
 

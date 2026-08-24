@@ -36,6 +36,10 @@ is a container, not a build directory. Run current gates through the separate
 `current-gates-gcc` build preset. Other compilers or temporary build trees are
 task-specific verification inputs, not supported development commands.
 
+When `ccache` is installed, `mingw-gcc-x64-ccache` and `current-gcc-ccache`
+provide an opt-in isolated build tree. They are an acceleration aid only; the
+default route remains the supported route and never requires ccache.
+
 ## Binary Size Policy
 
 GCC selection makes the development toolchain lighter; it does not by itself
