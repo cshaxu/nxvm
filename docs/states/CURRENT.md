@@ -2,26 +2,7 @@
 
 ## Current Work
 
-## M5 T459 S1 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | New |
-| Admission And Approval | Owner approved T459 on 2026-08-24: expose `standard` and `turbo` speed selection after opening/selecting an NXVM session; Turbo replaces the withdrawn `uncapped` name and must be the sole unrestricted mode. |
-| Objective | Implement one session-owned standard/Turbo host-speed policy and selected-session Console control; Turbo reuses the existing one-tick Core advance rather than guessed time batches or a second runner path. |
-| Non-goals | No CPU, device, PIT/DMA/RTC, event-order, profile, YAML, debugger or display-cadence change; no JIT, arbitrary CPU instruction-rate multiplier, separate `uncapped` mode, invented Core deadline query, or host-clock-as-guest-clock rule. |
-| Reference Baseline | `fa86b38e`; prior stripped Release revision `0.5.0458`, SHA-256 `F9A77CDE35A4DEC18CC566800D59205EC43A41C4B30F533E2EF132E0DE14F71D`. |
-| Candidate Proposal | [VM session speed policy](../proposals/m5-vm-session-speed-policy.md). |
-| Files And ABI Surface | Existing Core machine time-advance operation; VM session runner/virtual-time owner and private state; existing VM product Console/provider selected-session operation; focused tests, CMake registration and current-artifact target. Core exposes no speed names, profile or host-clock policy. |
-| Applicable Rules | README Task Reading Set; EXECUTION S/P lifecycle, artifact and similar-issue sweep; ARCHITECTURE sole-owner, dependency and product-behavior invariants; CODING minimal durable interface and no duplicate policy; DOCUMENT authority/status boundaries; UI retained NXVM Console interaction. |
-| Verification | Debug and Release focused virtual-time and Console command regressions across default PC/AT, Model 339 and Model-40; current gate; documentation governance; stripped Release artifact inspection. |
-| Expected Markers | Existing virtual-time and Console markers remain; one new T459 marker proves standard/Turbo selection, one-tick Core advancement and running-state rejection. |
-| Asset Needs | None; project-owned tests only. No external source, firmware, guest media, Windows media or emulator is imported. |
-| Reporting Requirements | Record the one policy owner, all selected-session callers, fixed advance bounds, standard-mode preservation, source/test line delta, artifact SHA-256 and every excluded boundary, including the profile-timebase/controller-deadline prerequisite for host pacing. |
-| Stop Conditions | Stop for a required Core speed API, a required profile/YAML speed decision, changed guest event ordering, a running-session mutation requirement, or a request to treat a recurring timeline callback as a guest-observable deadline. |
-| Exit Criteria | `SPEED` reports and selects `standard` or `turbo` on a stopped selected session; standard is unchanged; Turbo advances one Core tick only after Core interrupt waits; all shared-runner profile routes and gates pass; `nxvm_0_5_0459.exe` is a stripped Release artifact. |
-| Original Owner Request | Owner simplified the request to two modes: `standard` and `turbo`, with Turbo meaning the prior unrestricted/uncapped intent. |
-| Similar-Issue Sweep | Search all VM session virtual-time sources, runner wait branches, Console product commands and selected-session adapter operations. Consolidate all production speed decisions under the session policy; record non-product fixture sources and any excluded profile-specific source as boundaries. |
+**Idle.**
 
 ## Current Technical Baseline
 
@@ -47,6 +28,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T459 | Closed: one VM session owner now exposes stopped-session `standard`/`turbo` selection through the retained Console selected-session route. Turbo advances a halted Core by exactly one existing tick with no host wait; it has no arbitrary batch, mode-specific runner or Core speed API. The full gate passes 294/294; current artifact `0.5.0459` is stripped Release-only. [History](../history/M5-T459-vm-session-speed-policy.md). |
 | T458 | Closed: the shared runner retains its 256-instruction control quantum but captures/publishes normal frames no more than once per 16 host milliseconds; forced mode and lifecycle frames remain immediate. The current artifact is stripped Release-only, and the full gate passes 293/293. [History](../history/M5-T458-vm-runner-presentation-cadence.md). |
 | T457 | Closed: F9 remains a single host run-handle stop report and no longer enters the guest key route; the corrected host-cancellation assertion and two-epoch regression preserve it. Its artifact is stripped Release-only, retains the production debugger/trace commands, excludes automatic Core trace events, and 293/293 current-gate tests pass. [History](../history/M5-T457-session-input-restart-recovery.md). |
 | T456 | Closed at L3: all 18 retained 8259A rows have focused proof or an explicit boundary; one CPU path, programmed cascade, corrected specific-EOI, command/poll lifecycle and default-IR7 acknowledgement remain PIC-owned. Full current-gate is 293/293. PIC-T3 L4 electrical timing is deliberately excluded. [History](../history/M5-T456-core-pic-8259a-phase-contract.md). |
@@ -54,7 +36,6 @@
 | T454 | Closed: the three fixed-write Console catalog smokes have one CTest-owned build workspace each; serial and repeated parallel replays pass with no source-tree residue. The independent 8086 decoder-ledger guard failure is recorded as CPU debt. [History](../history/M5-T454-parallel-console-profile-smoke-isolation.md). |
 | T453 | Closed: fresh default tree uses one WinLibs toolchain family; the one FDC test include is corrected; 44 obsolete build trees are removed; current build operations are reduced to preset-backed commands. [History](../history/M5-T453-toolchain-build-tree-hygiene.md). |
 | T452 | Closed: optional isolated ccache presets provide measured repeat-build hits and byte-identical output; default route remains unchanged and task temporary cache/build trees are removed. [History](../history/M5-T452-optional-ccache-build-acceleration.md). |
-| T451 | Closed: one current VM request contract, bridge/transport smoke and complete configured build pass; stale request-bridge debt and invalid build instructions are removed without source, CMake or ABI changes. [History](../history/M5-T451-vm-request-bridge-current-build-restoration.md). |
 
 
 ## Recent Governance
