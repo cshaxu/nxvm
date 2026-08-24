@@ -2,28 +2,7 @@
 
 ## Current Work
 
-**Active: M5 T457 S1 - session input restart recovery.**
-
-## M5 T457 S1 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | New |
-| Admission And Approval | Owner reported and requested correction of the current 0448 build's F9-stop then START keyboard failure on 2026-08-24. |
-| Objective | Make ordinary host keyboard input work after an F9 stop and subsequent START through the existing session/platform ingress route. |
-| Non-goals | No guest keyboard scan-set, KBC/PIC, media, Console grammar, or extra input-path change. |
-| Reference Baseline | `f08008cd`; reported 0448 artifact; Win32 run-handle, session lifecycle and input transport owners. |
-| Candidate Proposal | [Session input restart recovery](../proposals/m5-session-input-restart-recovery.md). |
-| Files And ABI Surface | Expected VM session/platform source, one lifecycle regression, evidence/history/Current and current artifact metadata. No public Core ABI. |
-| Applicable Rules | `rules/EXECUTION.md`, `rules/ARCHITECTURE.md`, `rules/CODING.md`, `rules/DOCUMENT.md`; VM owns composition, platform reports through its input contract, and one ingress path remains authoritative. |
-| Verification | Reproduce both input epochs around an F9-equivalent stop; prove second input reaches the existing consumer; run affected lifecycle/input tests, configured build, current gate and documentation governance. |
-| Expected Markers | One run handle per epoch, no stale stop/input state after reset, no duplicate input sink, and a focused two-epoch regression. |
-| Asset Needs | No guest media; existing synthetic/session test fixtures only. |
-| Reporting Requirements | Record reproducer, owner/caller sweep, actual state transition, code delta, focused/full gates and any retained platform boundary. |
-| Stop Conditions | Stop for a required public interface, host-global input policy, guest semantic change, or a nonreproducible external-only condition. |
-| Exit Criteria | The original sequence and analogous platform restart route accept second-epoch input; all gates pass and no parallel path is added. |
-| Original Owner Request | Fix the reported 0448 product: first keyboard input works, F9 exits, then a second START leaves keyboard unresponsive. |
-| Similar-Issue Sweep | Sweep all Win32/Linux F9 stop reporters, run-handle reset/finalize paths, session reset/start routes and host-input ingress consumers. |
+**Idle.**
 
 ## Current Technical Baseline
 
@@ -49,6 +28,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T457 | Closed: F9 remains a single host run-handle stop report and no longer enters the guest key route; the two-epoch regression proves second-START `A` reaches KBC. `nxvm_0_5_0457.exe` is built and 293/293 current-gate tests pass. [History](../history/M5-T457-session-input-restart-recovery.md). |
 | T456 | Closed at L3: all 18 retained 8259A rows have focused proof or an explicit boundary; one CPU path, programmed cascade, corrected specific-EOI, command/poll lifecycle and default-IR7 acknowledgement remain PIC-owned. Full current-gate is 293/293. PIC-T3 L4 electrical timing is deliberately excluded. [History](../history/M5-T456-core-pic-8259a-phase-contract.md). |
 | T455 | Closed: the sole 8086 decoder-ledger guard now checks current decoder and timing owners instead of the retired monolithic layout; all 1,053 records and 292 current-gate tests pass. [History](../history/M5-T455-8086-decoder-ledger-guard-reconciliation.md). |
 | T454 | Closed: the three fixed-write Console catalog smokes have one CTest-owned build workspace each; serial and repeated parallel replays pass with no source-tree residue. The independent 8086 decoder-ledger guard failure is recorded as CPU debt. [History](../history/M5-T454-parallel-console-profile-smoke-isolation.md). |
@@ -56,7 +36,6 @@
 | T452 | Closed: optional isolated ccache presets provide measured repeat-build hits and byte-identical output; default route remains unchanged and task temporary cache/build trees are removed. [History](../history/M5-T452-optional-ccache-build-acceleration.md). |
 | T451 | Closed: one current VM request contract, bridge/transport smoke and complete configured build pass; stale request-bridge debt and invalid build instructions are removed without source, CMake or ABI changes. [History](../history/M5-T451-vm-request-bridge-current-build-restoration.md). |
 | T450 | Closed: all eight controller pairs are archived with 128 source rows and 128 code-audit rows; S19 verifies the source form of every admitted PDF and preserves all selected-board/personality/media gaps as explicit transfers. [History](../history/M5-T450-core-controller-manuals-and-gap-inventory.md). |
-| T449 | Closed: one copied transaction contract, transaction lifecycle, scheduler arbitrator, memory classifier and retirement/time/observation route; all S1--S6 evidence is reconciled and physical/controller/x87 boundaries transfer explicitly. [History](../history/M5-T449-core-cpu-board-transaction-contracts.md). |
 
 
 ## Recent Governance
