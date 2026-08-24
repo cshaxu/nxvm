@@ -2,26 +2,7 @@
 
 ## Current Work
 
-**Active: M5 T450 S19 - controller-source form, sufficiency and coverage reconciliation.**
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation - M5 T450 S19; final cross-controller reconciliation after accepted S18. |
-| Admission And Approval | Repository owner approved T450's eight paired inventories and specifically requires PDF text/OCR form plus primary-manual sufficiency/ambiguity verification. |
-| Objective | Directly inspect every admitted PDF; reconcile all eight source lists and gap audits for source form, exact manual omissions/ambiguities, reference-derived needs, row coverage, unique ownership and transfer. |
-| Non-goals | No controller/runtime/test change; no manual/media import; no selected personality choice; no external-emulator source import or dependency. |
-| Reference Baseline | T450 S1 source identities; accepted S3--S18 checklists/audits; admitted external PDFs in the owner-managed manual archive. |
-| Candidate Proposal | [M5 Core controller manual admission and gap inventory](../proposals/m5-core-controller-manuals-and-gap-inventory.md). |
-| Files And ABI Surface | Add one indexed S19 reconciliation evidence file and make only narrowly necessary source-checklist form/sufficiency corrections; no code, tests, ABI or assets. |
-| Applicable Rules | `docs/README.md` fixed reading set; `EXECUTION.md` coverage/closure rules; `DOCUMENT.md` authority/index/state rules; source policy: manuals primary, external emulators reference-derived only. |
-| Verification | Open/render and extract every admitted PDF; compare rendered pages to extracted text; inspect all source-list and gap-audit row IDs; prove each pair has 15 rows and all remaining gaps have one receiver/block. Run diff check and documentation governance before P1/P2. |
-| Expected Markers | One evidence matrix records PDF form and per-manual sufficiency/ambiguity disposition; no filename or extractor-success inference, no duplicated row/receiver and no unlabelled external-source reliance. |
-| Asset Needs | Existing admitted PDFs only; no acquisition. |
-| Reporting Requirements | Report each PDF form, concrete ambiguity/missing exact formula, whether an external reference is needed and labelled reference-derived, and final eight-pair coverage result. |
-| Stop Conditions | Stop for a missing/admission-conflicting source or a required controller/personality choice; explicitly block it rather than infer. |
-| Exit Criteria | All admitted PDFs are directly form-verified; all eight source lists have truthful form/sufficiency records; all 128 frozen source and 128 audit rows reconcile exactly once; every gap has one receiver/block; evidence is indexed, reviewed, committed, pushed and accepted. |
-| Original Owner Request | Establish original manual archives, complete function/timing checklist 1 and current-code gap checklist 2 for eight controllers, with source-form/manual-sufficiency verification in checklist 1. |
-| Similar-Issue Sweep | Inspect all nine PDFs, all S3/S5/S7/S9/S11/S13/S15/S17 source lists, S4/S6/S8/S10/S12/S14/S16/S18 audits, S1 coverage baseline, S2 ledger, proposal completion standard and supporting-document index. |
+**Idle.**
 
 ## Current Technical Baseline
 
@@ -47,7 +28,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T450 S18 | Accepted: the 15-row ATA/HDC audit retains one HDC/PIO/media/IRQ path, declines ATA conformance without selected controller/device facts, and transfers every ATA gap once. [Audit](../etc/evidence/t450-s18-hdc-ata-code-gap-audit.md). |
+| T450 | Closed: all eight controller pairs are archived with 128 source rows and 128 code-audit rows; S19 verifies the source form of every admitted PDF and preserves all selected-board/personality/media gaps as explicit transfers. [History](../history/M5-T450-core-controller-manuals-and-gap-inventory.md). |
 | T449 | Closed: one copied transaction contract, transaction lifecycle, scheduler arbitrator, memory classifier and retirement/time/observation route; all S1--S6 evidence is reconciled and physical/controller/x87 boundaries transfer explicitly. [History](../history/M5-T449-core-cpu-board-transaction-contracts.md). |
 | T448 | Closed: six over-limit generated firmware sources now use the one bounded byte-identical materialization route; the unused session helper is removed. [Evidence](../etc/evidence/t448-s1-firmware-materialization.md). |
 | T447 | Closed: all S1--S11 ledger receivers are accepted; one Core execution path, bounded VM contracts, no VDM forwarding facade, owner-local test boundaries and the decomposed Core coordinator are retained. [History](../history/M5-T447-architecture-boundary-debt-closure.md). |
