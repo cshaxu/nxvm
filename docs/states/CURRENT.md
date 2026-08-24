@@ -2,28 +2,7 @@
 
 ## Current Work
 
-**Active: M5 T450 S9.**
-
-## M5 T450 S9 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner: repository user. Continuing the paired T450 controller plan. Scope: freeze only original MC146818A-compatible RTC/CMOS register, timekeeping, alarm/periodic/update/IRQ and reset universe with IBM AT clock/IRQ/CMOS bindings. |
-| Objective | Produce the finite `RTC-R*`, `RTC-F*` and `RTC-T*` source checklist that S10 will audit unchanged against current Core RTC/CMOS code and tests. |
-| Non-goals | Do not alter RTC code/tests, audit implementation, broaden to PIT/PIC/other controllers, import source bytes, or manufacture oscillator phase from electrical data. |
-| Reference Baseline | T450 S1 source ledger (`052177b8`), S2 paired ledger (`a36a54f7`), Motorola MC146818A Real-Time Clock Plus RAM, IBM Personal Computer AT Technical Reference 1502243 (Mar. 1984), and T433/T449 retained evidence. |
-| Candidate Proposal | [Core controller manual admission and gap inventory](../proposals/m5-core-controller-manuals-and-gap-inventory.md). |
-| Files And ABI Surface | One indexed `docs/etc/research/` checklist and `docs/states/CURRENT.md`; production source, ABI and external manual archive are read-only inputs. |
-| Applicable Rules | `docs/README.md` Task Reading Set; `docs/rules/EXECUTION.md` finite coverage and actual-review rules; `docs/rules/DOCUMENT.md` supporting research boundary; `docs/etc/operations/policy/source-policy.md` provenance and non-redistribution boundary; architecture/coding rules as audit criteria, with no production change. |
-| Verification | Direct manual/OCR page and retained-evidence inspection; every row names function, timing/absence, reset/cancellation, IRQ or clock relation and L3/L2/blocked disposition; documentation governance gate and `git diff --check` pass. |
-| Expected Markers | One RTC checklist with a finite closed universe, source/page identity, no machine-local paths or source bytes, and explicit S10 transfer. |
-| Asset Needs | Existing owner-managed MC146818A and IBM AT research archive only; no repository asset or download. |
-| Reporting Requirements | Record source identity/pages, clock/IRQ/CMOS binding, timing classification, L2/L4 exclusions and exact S10 transfer boundary. |
-| Stop Conditions | Stop and record rather than manufacture a rate, oscillator phase or CMOS ownership fact if the admitted sources do not select it. |
-| Exit Criteria | The complete original RTC/CMOS plus selected IBM AT binding universe is checklisted once, every row has required source/timing/reset/signal disposition, and no current-code judgment or runtime change enters S9. |
-| Original Owner Request | For each of the eight controllers, first establish the original complete function and timing list, then audit its current-code gap list. |
-| Similar-Issue Sweep | Inspect source-ledger RTC references and T433/T449 records for clock, divider, update, alarm, periodic, IRQ8, NMI-mask and CMOS ownership facts; retain only RTC facts in this list. |
+**Active: M5 T450, between accepted subtasks.**
 
 ## Current Technical Baseline
 
@@ -49,7 +28,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T450 S8 | Accepted: all 17 PIT rows are audited; six modes retain one owner while their common load/GATE/clock phase and selected AT oscillator/refresh inputs transfer once to the queued PIT candidate. [Audit](../etc/evidence/t450-s8-pit-8254-code-gap-audit.md). |
+| T450 S9 | Accepted: the 16-row MC146818A and selected AT source universe freezes RTC/CMOS registers, update/periodic/alarm/IRQ states and 32.768 kHz/IRQ8/CMOS bindings for S10's code-gap audit. [Checklist](../etc/research/t450-s9-rtc-mc146818a-function-timing-checklist.md). |
 | T449 | Closed: one copied transaction contract, transaction lifecycle, scheduler arbitrator, memory classifier and retirement/time/observation route; all S1--S6 evidence is reconciled and physical/controller/x87 boundaries transfer explicitly. [History](../history/M5-T449-core-cpu-board-transaction-contracts.md). |
 | T448 | Closed: six over-limit generated firmware sources now use the one bounded byte-identical materialization route; the unused session helper is removed. [Evidence](../etc/evidence/t448-s1-firmware-materialization.md). |
 | T447 | Closed: all S1--S11 ledger receivers are accepted; one Core execution path, bounded VM contracts, no VDM forwarding facade, owner-local test boundaries and the decomposed Core coordinator are retained. [History](../history/M5-T447-architecture-boundary-debt-closure.md). |
