@@ -15,10 +15,14 @@ the selected board or personality facts required to interpret it. It then
 records two durable, per-controller checklists in indexed supporting material:
 
 1. A source, function, and timing checklist names document identity, revision,
-   provenance and permitted use; finite register/command/mode/result phases;
-   functional rule; timing source or formula; reset/cancellation/IRQ/DRQ or
-   equivalent signal relation; board binding; source pages; and an L3, L2, or
-   blocked disposition.
+   provenance, permitted use and source form (born-digital text, scan with OCR,
+   scan without text layer, or mixed); finite register/command/mode/result
+   phases; functional rule; timing source or formula; reset/cancellation/IRQ/
+   DRQ or equivalent signal relation; board binding; source pages; an L3, L2,
+   or blocked disposition; and every primary-manual ambiguity or missing exact
+   value/formula needed by the row. A listed mature-emulator reference is only
+   a bounded, explicitly reference-derived follow-up need; it never replaces
+   primary-manual facts or becomes a product dependency.
 1. An implementation-gap checklist names the current owner paths and symbols,
    observed behavior and tests, then classifies every checklist row as
    conforming, wrong-value, missing, unallocated, missing-input, or
@@ -61,8 +65,12 @@ references rather than source bytes or machine-local paths.
 ## Completion Standard
 
 All eight units have both checklists and a finite L3, L2, or blocked
-disposition. Every missing source, machine fact, test, or implementation route
-is assigned once or explicitly blocked. The task makes no claim that any
+disposition. Every admitted PDF has a verified text/OCR form; every
+primary-manual ambiguity or absent implementation value/formula is recorded in
+its source checklist with an explicit primary, L2, L4 or blocked disposition
+and, if useful, one labelled mature-emulator reference need. Every missing
+source, machine fact, test, or implementation route is assigned once or
+explicitly blocked. The task makes no claim that any
 controller is implemented or L3-complete; it ends with the eight existing
 implementation candidates still ordered PIC, DMA, PIT, RTC, KBC, FDC/media,
 VADP, HDC/ATA.
@@ -91,14 +99,20 @@ controller analysis into a second shared implementation path.
 | S16 | VADP current-code gap audit |
 | S17 | HDC/ATA original function/timing list |
 | S18 | HDC/ATA current-code gap audit |
-| S19 | Cross-controller coverage and gap-audit reconciliation only; no new controller behavior. |
+| S19 | Cross-controller coverage, gap-audit, PDF-form and primary-manual-sufficiency reconciliation only; no new controller behavior. |
 
 Each odd-numbered controller S produces only its finite source/function/timing
 checklist. Its immediately following even-numbered S audits that exact row
 universe against current code and tests. The shared columns record source page,
 function or command/register/mode, timing or explicit absence, reset and
 cancellation, IRQ/DRQ or equivalent relation, owner path, current test,
-disposition, and later implementation receiver. S19 verifies that the eight
+disposition, and later implementation receiver. Each source checklist also
+records the admitted PDF's observed text/OCR form and a row-level manual
+sufficiency field: primary-manual sufficient, primary-manual ambiguous/missing
+exact value or formula, or physical/unselected exclusion. An ambiguity names
+the exact missing fact and may name one mature emulator as a later,
+reference-derived investigation only. S19 verifies the PDF form directly,
+confirms those fields for all eight source lists, and verifies that the eight
 pairs cover the S1 universe once and only once.
 
 ## Minimality Constraint

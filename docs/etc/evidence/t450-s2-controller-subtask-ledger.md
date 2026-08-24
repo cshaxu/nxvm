@@ -26,16 +26,26 @@ or consume another controller's unclassified rows.
 | S16 | VADP gap audit | S15 list and Core VADP owner | Row-level code/test disposition. |
 | S17 | HDC/ATA original list | ATA-3 plus selected ATA controller/backing-media facts | Complete source/function/timing checklist; blocked rows remain explicit. |
 | S18 | HDC/ATA gap audit | S17 list and Core HDC/media owners | Row-level code/test disposition. |
-| S19 | Cross-controller audit | T450 S1--S18 evidence | Completeness, duplicate-row, ownership and transfer audit; no new function rows. |
+| S19 | Cross-controller audit | T450 S1--S18 evidence and the admitted PDF files | Completeness, duplicate-row, ownership and transfer audit; directly verify every PDF's born-digital/scan/OCR/mixed form and every checklist-1 primary-manual sufficiency field; label any mature-emulator follow-up as reference-derived only; no new controller behavior. |
 
 ## Required Checklist Columns
 
 Every odd-numbered original-list S uses source identity and page, finite
 function/command/register/mode, deterministic timing formula or explicit
 absence, reset/cancellation, IRQ/DRQ or equivalent relation, and an L3/L2 or
-blocked disposition. Its following gap-audit S adds current owner path and
-test, current implementation disposition, and exactly one later implementation
-receiver or blocked rationale.
+blocked disposition. It also carries a source-form/sufficiency record: observed
+born-digital text, scan/OCR, scan-without-text or mixed form; and for every
+manual ambiguity or missing exact value/formula, the exact gap plus its
+primary/L2/L4/blocked disposition. A mature-emulator name, if later needed,
+is a labelled reference-derived investigation and not a manual substitute. Its
+following gap-audit S adds current owner path and test, current implementation
+disposition, and exactly one later implementation receiver or blocked rationale.
+
+S19 is the sole cross-controller verifier of those source-form/sufficiency
+records. It inspects the admitted PDFs rather than trusting filenames or a
+successful text extractor, adds the result to each existing checklist 1, and
+checks that each identified manual gap is either source-sufficient, explicitly
+excluded, blocked, or has one bounded reference-derived receiver.
 
 Shared board facts are cited in each dependent controller row but have one
 source identity in T450 S1. A shared IRQ, DRQ, clock or backing-media fact never
