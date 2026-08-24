@@ -553,7 +553,12 @@ type_unsigned_8 core_machine_pic_peek_interrupt(t_pic *master, t_pic *slave) {
 type_unsigned_8 core_machine_pic_get_interrupt(t_pic *master, t_pic *slave) {
     type_unsigned_8 reqId1; /* top requested C_INT id in master pic */
     type_unsigned_8 reqId2; /* top requested C_INT id in slave pic */
-    if (!core_machine_pic_select(master, slave, &reqId1, &reqId2)) return 0;
+    if (!core_machine_pic_select(master, slave, &reqId1, &reqId2)) {
+        if (master != STD_NULL && master->data.status == OCW1) {
+            return (type_unsigned_8)(master->data.icw2 | 7u);
+        }
+        return 0;
+    }
     RespondINTR(master, reqId1, reqId2 != VPIC_MAX_IRQ_COUNT);
     if (reqId2 != VPIC_MAX_IRQ_COUNT) {
         /* The selected paired slave supplies the vector. */

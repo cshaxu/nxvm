@@ -16,6 +16,8 @@ acknowledgement, EOI, mask and reset contract after a manual-first inventory.
   ICW3 forms rather than treating IR2 as an unconditional cascade line.
 - S4 closes the retained command/lifecycle matrix, including the corrected
   rotate-on-specific-EOI state transition and a full minimalism audit.
+- S5 corrects the omitted initialized no-request acknowledgement result to the
+  manual's default master IR7 vector without an electrical-race claim.
 
 ## Accepted Progress
 
@@ -63,3 +65,10 @@ and S1--S4 evidence preserve all source, proof and maintained-boundary detail.
 XT/AT personality selection, later ELCR/PCI routing and APIC/IOAPIC remain the
 separate source-gated TODO receivers; neither is evidence of an incomplete
 8259A chip contract.
+
+## Corrective S5
+
+The owner reopened the most recently closed T456 after the S4 `PIC-F8` claim
+was found to omit default-IR7 acknowledgement. S5 is active until its focused
+proof and gates are independently accepted; its evidence is
+[T456 S5 default-IR7 acknowledgement](../etc/evidence/t456-s5-pic-default-ir7-acknowledgement.md).

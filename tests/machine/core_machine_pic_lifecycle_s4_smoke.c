@@ -144,7 +144,7 @@ static C_INT pic_lifecycle_test_edge_empty_and_bind(C_VOID)
     failed |= source.master != STD_NULL || source.slave != STD_NULL || source.asserted;
     core_machine_pic_irq_source_bind(&source, &fixture.master, &fixture.slave, 16u);
     failed |= source.master != STD_NULL || source.slave != STD_NULL || source.asserted;
-    failed |= core_machine_pic_get_interrupt(&fixture.master, &fixture.slave) != 0u ||
+    failed |= core_machine_pic_get_interrupt(&fixture.master, &fixture.slave) != 0x0fu ||
         fixture.master.data.isr != 0u || fixture.slave.data.isr != 0u;
     core_machine_pic_irq_source_bind(&source, &fixture.master, &fixture.slave, 1u);
     core_machine_pic_irq_source_assert(&source);

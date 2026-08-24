@@ -82,6 +82,13 @@ static C_INT pic_command_priority_test_initialization_and_registers(C_VOID)
     failed |= core_machine_pic_get_interrupt(&fixture.master, &fixture.slave) != 0u ||
         fixture.master.data.isr != 0u;
     pic_command_priority_finalize(&fixture);
+
+    pic_command_priority_initialize(&fixture, 0x01u, 0x01u);
+    failed |= core_machine_pic_scan_interrupt(&fixture.master, &fixture.slave) ||
+        core_machine_pic_peek_interrupt(&fixture.master, &fixture.slave) != 0u ||
+        core_machine_pic_get_interrupt(&fixture.master, &fixture.slave) != 0x0fu ||
+        fixture.master.data.irr != 0u || fixture.master.data.isr != 0u;
+    pic_command_priority_finalize(&fixture);
     return failed;
 }
 

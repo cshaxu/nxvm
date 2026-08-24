@@ -25,7 +25,7 @@ board topology is introduced.
 | PIC-F5 | Master and paired slave poll acknowledgements; OCW3 smoke. | Proven. |
 | PIC-F6 | One ICW1.SNGL/ICW3 paired relation for selection/refresh/SFNM; S3 command smoke. | Proven for one paired controller. |
 | PIC-F7 | AT ports and IRQ8--15 cascade route; initialization, lifecycle and device smokes. | Proven for selected AT wiring. |
-| PIC-F8 | One CPU route: logical acknowledgement then vector/frame entry; phase S2 and hardware-delivery smokes. | Proven logically; waveform excluded. |
+| PIC-F8 | One CPU route: logical acknowledgement then vector/frame entry; S2/hardware-delivery smokes and S5 default-IR7 acknowledgement proof. | Proven logically; waveform excluded. |
 | PIC-T1 | No PIC advance loop or clock state; source operation/lifecycle sweep. | Static device property, proven. |
 | PIC-T2 | Request/priority/acknowledgement causal order; S2 transaction trace. | Logical order proven; elapsed latency remains L2. |
 | PIC-T3 | No Core conversion of electrical tables/waveforms. | Explicit L4 boundary retained. |
@@ -67,7 +67,8 @@ outside this admitted contract, as recorded in `TODO(High)` and T456 S1.
   539 steps; documentation governance passes; and the isolated full
   current-gate replay passes 293/293 in 205.60 seconds.
 
-The production change is one corrected level selection plus deletion of the
+The S4 production change is one corrected level selection plus deletion of the
 unused priority macros and OCW1 alias; test additions exercise the missing
-nested specific-EOI and cascade-poll distinctions. No new target, wrapper,
-state copy or ABI is present.
+nested specific-EOI and cascade-poll distinctions. S5 corrects the subsequently
+found default-IR7 acknowledgement omission. No new target, wrapper, state copy
+or ABI is present.

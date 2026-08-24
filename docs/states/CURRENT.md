@@ -2,7 +2,28 @@
 
 ## Current Work
 
-**Idle.**
+**Active: M5 T456 S5 - PIC spurious acknowledgement correction.**
+
+## M5 T456 S5 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Corrective |
+| Admission And Approval | Owner explicitly directed the repair on 2026-08-24 after the T456 closure claim was found to omit the manual's no-request acknowledge/default-IR7 behavior. This is a narrow defect in the most recently closed numeric task. |
+| Objective | Make the sole PIC acknowledgement operation return the master default IR7 vector when it finds no request, without manufacturing an ISR transition or a second CPU delivery path. |
+| Non-goals | Do not model electrical spurious-race timing, async request withdrawal, slave-specific race variants, a new CPU route, topology policy, ELCR/APIC, or a physical INTA waveform. |
+| Reference Baseline | `fe091cac`; T450 `PIC-F8`; T456 S1 rendered Intel 8259A `231468-003` finding that no request at acknowledge yields default IR7 behavior. |
+| Candidate Proposal | [PIC default-IR7 correction](../proposals/m5-pic-default-ir7-correction.md); [retained T456 proposal](../history/M5-T456-core-pic-8259a-phase-contract-proposal.md). |
+| Files And ABI Surface | Expected PIC-local `pic.c`, existing PIC command smoke, T456 evidence/history/index and Current. No public VM/profile ABI or new source/artifact. |
+| Applicable Rules | `rules/EXECUTION.md`, `rules/DOCUMENT.md`, `rules/ARCHITECTURE.md`, `rules/CODING.md`, design architecture/coding, T450 PIC-F8 and T456 S1/S2 evidence. PIC owns acknowledgement state; CPU remains the sole ordinary delivery consumer. |
+| Verification | Prove initialized-master no-request `get` returns ICW2 base plus IR7 with no IRR/ISR mutation; prove ordinary master and slave acknowledgement remain unchanged; run affected PIC/CPU smokes, configured build, full current-gate and documentation governance. |
+| Expected Markers | `get` has one explicit no-selection default-vector result; it does not set ISR7, clear unrelated IRR, alter scan/peek semantics, or bypass the S2 CPU gate. |
+| Asset Needs | Existing admitted Intel source, local code and existing test fixture only. |
+| Reporting Requirements | Record source-to-behavior mapping, caller/race-boundary sweep, before/after observable state, code delta, gates and retained physical/slave-race boundary. |
+| Stop Conditions | Stop if exact behavior needs an asynchronous electrical race model, a second acknowledgement API, public composition change or unsourced slave policy; retain it as a separate boundary. |
+| Exit Criteria | A focused no-request acknowledgement regression passes, ordinary PIC paths remain green, all gates pass, and T456 closure is corrected without overclaiming physical timing. |
+| Original Owner Request | Implement 8259A manual-level function/timing behavior with minimalist single-owner design; after correction request, repair the omitted default IR7 behavior immediately. |
+| Similar-Issue Sweep | Sweep every `core_machine_pic_get_interrupt` caller/test, `scan`/`peek` no-selection handling, vector construction, ISR mutation and all references to spurious/default IR7; classify slave-race and physical timing separately. |
 
 ## Current Technical Baseline
 
