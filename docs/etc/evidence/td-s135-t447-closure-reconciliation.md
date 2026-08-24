@@ -29,12 +29,12 @@ artifact, or product behavior.
 - `git diff --check` passed; actual-diff review confirmed one code deletion
   mechanism and one documentation-topology migration, with no ABI or artifact
   change.
-- Direct MinGW `-fsyntax-only` checks of three session composition units could
-  not complete: the Windows execution environment started GCC/`cc1.exe` then
-  returned status 1 without a compiler diagnostic, matching the concurrent
-  stalled Ninja/CMake executor condition. This is recorded as environment
-  limitation, not a source failure. The changed header's required types are
-  directly declared by headers already included through `machine_interface.h`.
+- Td S136 supersedes the prior MSYS2 compiler-environment limitation: a clean
+  WinLibs UCRT GCC 16.1.0/Ninja configuration built the complete
+  `vm-0-5-0447` product from Td S135 P1 `00ee2cde` in 108 steps, including all
+  VM session-composition objects, and linked the executable successfully. The
+  temporary verification output SHA-256 was
+  `F0555CE8CE32D7D4C7345D65E8C13298B03921818705247C8DB38D3E0B4660C9`.
 
 ## Code Accounting
 

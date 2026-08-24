@@ -35,6 +35,10 @@
 
 ## Recent Governance
 
+- **M5 Td S136 P1:** independently rebuilt the complete Td S135 revision with
+  WinLibs UCRT GCC and Ninja (108/108), recorded its output hash, and removed
+  the temporary verification tree. [Evidence](../etc/evidence/td-s136-t447-compile-verification.md).
+
 - **M5 Td S135 P1:** removed the two unnecessary VM-to-Core device
   implementation includes and completed T447's history/proposal/status
   migration. [Evidence](../etc/evidence/td-s135-t447-closure-reconciliation.md).
