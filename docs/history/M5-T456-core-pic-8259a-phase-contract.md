@@ -49,6 +49,12 @@ maps every retained row to its source-backed logical proof or maintained
 boundary, records the specific-EOI repair, and preserves the selected-board and
 electrical non-claims.
 
+S5 is accepted at `727c2ae5`. Its [default-IR7 acknowledgement evidence](../etc/evidence/t456-s5-pic-default-ir7-acknowledgement.md)
+corrects S4's omission: an initialized empty acknowledgement returns the
+master's ICW2 base plus IR7 and leaves IRR/ISR intact. It preserves one
+scan-gated CPU delivery path; the 293/293 current gate and documentation
+governance pass.
+
 The P1 actual-change review confirms the one PIC-local command correction,
 removed pseudo-public priority helpers and OCW1 alias, the two missing
 command/poll regressions, and no new dispatch or state owner. Its focused
@@ -57,18 +63,20 @@ replay satisfy the bounded task exit.
 
 ## Closure
 
-T456 closes the prepared 8259A implementation increment. S1 reconciled every
-source row; S2 supplied the sole CPU logical acknowledgement boundary; S3 made
-the one selector consume programmed cascade state; S4 closes the retained
-commands and lifecycle. The retained [proposal](M5-T456-core-pic-8259a-phase-contract-proposal.md)
-and S1--S4 evidence preserve all source, proof and maintained-boundary detail.
-XT/AT personality selection, later ELCR/PCI routing and APIC/IOAPIC remain the
-separate source-gated TODO receivers; neither is evidence of an incomplete
-8259A chip contract.
+T456 closes the prepared 8259A L3 implementation increment. S1 reconciled
+every source row; S2 supplied the sole CPU logical acknowledgement boundary;
+S3 made the one selector consume programmed cascade state; S4 closed the
+retained commands and lifecycle; and S5 restored the missing default-IR7
+result. The retained [proposal](M5-T456-core-pic-8259a-phase-contract-proposal.md)
+and S1--S5 evidence preserve all source, proof and maintained-boundary detail.
+L4 electrical timing is deliberately outside this task. XT/AT personality
+selection, later ELCR/PCI routing and APIC/IOAPIC remain the separate
+source-gated TODO receivers; none is evidence of an incomplete L3 contract.
 
 ## Corrective S5
 
 The owner reopened the most recently closed T456 after the S4 `PIC-F8` claim
-was found to omit default-IR7 acknowledgement. S5 is active until its focused
-proof and gates are independently accepted; its evidence is
+was found to omit default-IR7 acknowledgement. S5 is accepted at `727c2ae5`:
+its focused regression, configured build, documentation governance and 293/293
+current gate close the correction without an L4 claim. Its evidence is
 [T456 S5 default-IR7 acknowledgement](../etc/evidence/t456-s5-pic-default-ir7-acknowledgement.md).

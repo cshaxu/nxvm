@@ -2,28 +2,7 @@
 
 ## Current Work
 
-**Active: M5 T456 S5 - PIC spurious acknowledgement correction.**
-
-## M5 T456 S5 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Corrective |
-| Admission And Approval | Owner explicitly directed the repair on 2026-08-24 after the T456 closure claim was found to omit the manual's no-request acknowledge/default-IR7 behavior. This is a narrow defect in the most recently closed numeric task. |
-| Objective | Make the sole PIC acknowledgement operation return the master default IR7 vector when it finds no request, without manufacturing an ISR transition or a second CPU delivery path. |
-| Non-goals | Do not model electrical spurious-race timing, async request withdrawal, slave-specific race variants, a new CPU route, topology policy, ELCR/APIC, or a physical INTA waveform. |
-| Reference Baseline | `fe091cac`; T450 `PIC-F8`; T456 S1 rendered Intel 8259A `231468-003` finding that no request at acknowledge yields default IR7 behavior. |
-| Candidate Proposal | [PIC default-IR7 correction](../proposals/m5-pic-default-ir7-correction.md); [retained T456 proposal](../history/M5-T456-core-pic-8259a-phase-contract-proposal.md). |
-| Files And ABI Surface | Expected PIC-local `pic.c`, existing PIC command smoke, T456 evidence/history/index and Current. No public VM/profile ABI or new source/artifact. |
-| Applicable Rules | `rules/EXECUTION.md`, `rules/DOCUMENT.md`, `rules/ARCHITECTURE.md`, `rules/CODING.md`, design architecture/coding, T450 PIC-F8 and T456 S1/S2 evidence. PIC owns acknowledgement state; CPU remains the sole ordinary delivery consumer. |
-| Verification | Prove initialized-master no-request `get` returns ICW2 base plus IR7 with no IRR/ISR mutation; prove ordinary master and slave acknowledgement remain unchanged; run affected PIC/CPU smokes, configured build, full current-gate and documentation governance. |
-| Expected Markers | `get` has one explicit no-selection default-vector result; it does not set ISR7, clear unrelated IRR, alter scan/peek semantics, or bypass the S2 CPU gate. |
-| Asset Needs | Existing admitted Intel source, local code and existing test fixture only. |
-| Reporting Requirements | Record source-to-behavior mapping, caller/race-boundary sweep, before/after observable state, code delta, gates and retained physical/slave-race boundary. |
-| Stop Conditions | Stop if exact behavior needs an asynchronous electrical race model, a second acknowledgement API, public composition change or unsourced slave policy; retain it as a separate boundary. |
-| Exit Criteria | A focused no-request acknowledgement regression passes, ordinary PIC paths remain green, all gates pass, and T456 closure is corrected without overclaiming physical timing. |
-| Original Owner Request | Implement 8259A manual-level function/timing behavior with minimalist single-owner design; after correction request, repair the omitted default IR7 behavior immediately. |
-| Similar-Issue Sweep | Sweep every `core_machine_pic_get_interrupt` caller/test, `scan`/`peek` no-selection handling, vector construction, ISR mutation and all references to spurious/default IR7; classify slave-race and physical timing separately. |
+**Idle.**
 
 ## Current Technical Baseline
 
@@ -49,7 +28,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T456 | Closed: all 18 retained 8259A rows have a focused proof or explicit L2/L4 boundary; one CPU delivery path, programmed cascade, corrected specific-EOI and command/poll lifecycle remain PIC-owned. Full current-gate is 293/293. [History](../history/M5-T456-core-pic-8259a-phase-contract.md). |
+| T456 | Closed at L3: all 18 retained 8259A rows have focused proof or an explicit boundary; one CPU path, programmed cascade, corrected specific-EOI, command/poll lifecycle and default-IR7 acknowledgement remain PIC-owned. Full current-gate is 293/293. PIC-T3 L4 electrical timing is deliberately excluded. [History](../history/M5-T456-core-pic-8259a-phase-contract.md). |
 | T455 | Closed: the sole 8086 decoder-ledger guard now checks current decoder and timing owners instead of the retired monolithic layout; all 1,053 records and 292 current-gate tests pass. [History](../history/M5-T455-8086-decoder-ledger-guard-reconciliation.md). |
 | T454 | Closed: the three fixed-write Console catalog smokes have one CTest-owned build workspace each; serial and repeated parallel replays pass with no source-tree residue. The independent 8086 decoder-ledger guard failure is recorded as CPU debt. [History](../history/M5-T454-parallel-console-profile-smoke-isolation.md). |
 | T453 | Closed: fresh default tree uses one WinLibs toolchain family; the one FDC test include is corrected; 44 obsolete build trees are removed; current build operations are reduced to preset-backed commands. [History](../history/M5-T453-toolchain-build-tree-hygiene.md). |
