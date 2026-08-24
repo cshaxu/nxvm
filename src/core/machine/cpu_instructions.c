@@ -18443,14 +18443,21 @@ static C_VOID ExecInt(core_machine_cpu_execution_context *context)
         core_machine_pic_scan_interrupt(
                              context->pic_master, context->pic_slave))
     {
-        intr = core_machine_pic_peek_interrupt(context->pic_master,
-                                               context->pic_slave);
+        if (context->transaction != STD_NULL && core_machine_transaction_begin(
+                context->transaction, CORE_MACHINE_TRANSACTION_OWNER_CPU,
+                CORE_MACHINE_TRANSACTION_CPU_INTERRUPT_ACKNOWLEDGE, 0u, 0u,
+                0u) != TYPE_STATUS_OK) return;
+        /* 8259A first INTA: the PIC owns the IRR-to-ISR transition before the
+         * CPU consumes the vector through its existing interrupt-entry path. */
+        intr = core_machine_pic_get_interrupt(context->pic_master,
+            context->pic_slave);
+        if (context->transaction != STD_NULL) {
+            core_machine_transaction_commit(context->transaction);
+        }
         ExecInit(context);
         _e_intr_n(context, intr, _GetOperandSize, TYPE_TRUE);
         if (!instruction_state.data.except) {
             cpu_state.data.flagHalt = TYPE_FALSE;
-            (C_VOID)core_machine_pic_get_interrupt(context->pic_master,
-                context->pic_slave);
             instruction_state.data.flagIgnore = TYPE_TRUE;
         }
         ExecFinal(context);

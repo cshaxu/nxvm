@@ -285,9 +285,9 @@ static C_INT s4_rejected_event(type_unsigned_8 gate_type, type_bool present,
         if (!failed && nmi) {
             failed |= !state.machine->executor_cpu.data.flagNMI;
         } else if (!failed) {
-            failed |= !TYPE_GET_BIT(state.machine->shared_pic_master.data.irr,
-                VPIC_IRR_IRQ(0u)) || TYPE_GET_BIT(state.machine->shared_pic_master.data.isr,
-                VPIC_ISR_IRQ(0u));
+            failed |= !TYPE_GET_BIT(state.machine->shared_pic_master.data.isr,
+                VPIC_ISR_IRQ(0u)) || TYPE_GET_BIT(state.machine->shared_pic_master.data.irr,
+                VPIC_IRR_IRQ(0u));
         }
     }
     core_machine_destroy(state.machine);

@@ -123,6 +123,8 @@ C_VOID core_machine_pic_irq_source_deassert(core_machine_pic_irq_source *source)
 C_VOID core_machine_pic_timer_output(C_VOID *owner, type_bool asserted);
 type_bool core_machine_pic_scan_interrupt(t_pic *master, t_pic *slave);
 type_unsigned_8 core_machine_pic_peek_interrupt(t_pic *master, t_pic *slave);
+/* First logical INTA: select the request, transfer it from IRR to ISR, and
+ * return the vector reserved for the CPU's following interrupt entry. */
 type_unsigned_8 core_machine_pic_get_interrupt(t_pic *master, t_pic *slave);
 
 #ifdef __cplusplus

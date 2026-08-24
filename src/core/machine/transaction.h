@@ -26,7 +26,10 @@ typedef enum core_machine_transaction_kind {
     /* ESC command issue is CPU-owned control traffic.  It deliberately is
      * not a HOLD grant: an 80287/80387 asks its paired CPU to move operands
      * through the processor-extension channel. */
-    CORE_MACHINE_TRANSACTION_CPU_FPU_COMMAND
+    CORE_MACHINE_TRANSACTION_CPU_FPU_COMMAND,
+    /* The first logical INTA acknowledges the selected PIC request.  Vector
+     * delivery remains the CPU interrupt-entry operation that follows. */
+    CORE_MACHINE_TRANSACTION_CPU_INTERRUPT_ACKNOWLEDGE
 } core_machine_transaction_kind;
 
 typedef enum core_machine_transaction_phase {

@@ -184,8 +184,8 @@ static C_INT s5_rejected_outer(type_bool invalid_tr, type_bool invalid_ss,
             S5_KERNEL_STACK_TOP - sizeof(sentinel_after), sentinel_after,
             sizeof(sentinel_after)) || STD_MEMCMP(sentinel_before, sentinel_after,
             sizeof(sentinel_before)) != 0 || !TYPE_GET_BIT(
-            state.machine->shared_pic_master.data.irr, VPIC_IRR_IRQ(0u)) ||
-            TYPE_GET_BIT(state.machine->shared_pic_master.data.isr, VPIC_ISR_IRQ(0u));
+            state.machine->shared_pic_master.data.isr, VPIC_ISR_IRQ(0u)) ||
+            TYPE_GET_BIT(state.machine->shared_pic_master.data.irr, VPIC_IRR_IRQ(0u));
     }
     core_machine_destroy(state.machine);
     return !failed;

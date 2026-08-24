@@ -405,8 +405,8 @@ static C_INT ie_test_external_origin(C_INT nmi, C_INT reject)
             failed |= after.data.cs.selector != before.data.cs.selector ||
                 after.data.esp != before.data.esp || after.data.eflags != before.data.eflags ||
                 (nmi ? !state.machine->executor_cpu.data.flagNMI :
-                    (!TYPE_GET_BIT(state.machine->shared_pic_master.data.irr, 1u) ||
-                     TYPE_GET_BIT(state.machine->shared_pic_master.data.isr, 1u)));
+                    (!TYPE_GET_BIT(state.machine->shared_pic_master.data.isr, 1u) ||
+                     TYPE_GET_BIT(state.machine->shared_pic_master.data.irr, 1u)));
         }
     }
     core_machine_destroy(state.machine);
