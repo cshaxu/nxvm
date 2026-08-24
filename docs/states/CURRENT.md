@@ -2,26 +2,7 @@
 
 ## Current Work
 
-## M5 T449 S2 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation; T449 S1 is accepted in `e5e771f2`. |
-| Admission And Approval | The owner-approved T449 objective and accepted S1 ledger authorize this bounded continuation under one-session coordinator/executor review. |
-| Objective | Make registered, copied `core_machine_plan` transaction/arbitration declarations the sole selection boundary for current external-cycle availability, CPU/DMA BUSRDY gates, prefetch reservation and explicit L2 fallback; reject incomplete or incompatible selection before machine publication. |
-| Non-goals | Do not add a second bus/transaction/scheduler owner, change CPU/DMA/device semantics or timing values, admit source facts, implement controller phases, add profile callbacks/names to Core, or migrate S3--S6 lifecycle work. |
-| Reference Baseline | Accepted T449 S1 ledger `e21d80c6`; current `vm-0-5-0448` baseline; T434 copied plan boundary and T433 S6/S7 transaction rows. |
-| Candidate Proposal | [Core CPU-to-board transaction and arbitration contracts](../proposals/m5-core-cpu-board-transaction-contracts.md). |
-| Files And ABI Surface | Expected Core plan/config validation and materialization paths, VM default/Model-339/Model-40 plan inputs, owner-local focused tests, CMake registration, evidence/index/status. Public ABI changes only if the existing plan declaration boundary cannot express the required copied selection; stop before introducing a broad interface. |
-| Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`, `docs/design/ARCHITECTURE.md`, `docs/design/CODING.md`, and S1 ledger: one owner/path, Core-neutral dependency direction, immutable copied data, no forwarding facade or retained raw parallel selection. |
-| Verification | Focused valid default PC/AT, Model-339 and Model-40 materialization; invalid/unregistered/incompatible plan rejection before machine publication; reset/copy isolation; current transaction/arbitration regressions; documentation governance, `git diff --check`, and actual-change review. |
-| Expected Markers | New T449 S2 plan-selection marker plus retained transaction/competition/lifecycle markers; documentation governance marker for `vm-0-5-0448`. |
-| Asset Needs | None. |
-| Reporting Requirements | Report the selected contract representation, deleted/replaced raw path, every profile materializer disposition, proof commands/results, source/test line accounting, commit/push, and S3 prerequisite. |
-| Stop Conditions | Stop for owner direction if a complete selection requires a new source admission, profile algorithm callback, new public broad facade, changed timing value, or controller/device phase semantics. |
-| Exit Criteria | Exactly one validated copied plan path selects each in-scope contract; raw duplicate selection is removed or proved semantically distinct; every current materializer and invalid case is covered; reset and stopped APIs remain unchanged; no deferred residue lacks a named S3--S6 receiver. |
-| Original Owner Request | Complete the active T in one-session coordinator/executor mode; use a whole-system, minimalist design, prohibit incremental patch stacking, and leave no unfinished path. |
-| Similar-Issue Sweep | Inspect all `core_machine_config` external-cycle, wait-window, BUSRDY, prefetch and DMA-wait fields; all timing declarations; every `core_machine_plan_create` caller; and all test/direct configuration construction. |
+**Active.** T449 remains open between accepted subtasks.
 
 ## Current Technical Baseline
 
@@ -47,6 +28,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T449 S2 | Accepted P1 `32f190f2`: one copied transaction contract replaces six raw selection fields; Core validates it before publication, invalid plans reject, and default PC/AT, Model-339, Model-40, transaction, prefetch and DMA regressions pass. [Evidence](../etc/evidence/t449-s2-transaction-contract.md). |
 | T449 S1 | Accepted P1 `e21d80c6`: the finite five-capability sweep confirms one transaction state, arbitration callback, virtual-time publisher and CPU retirement publisher; raw transaction selection remains the S2 plan-boundary receiver. [Evidence](../etc/evidence/t449-s1-transaction-route-ledger.md). |
 | T448 | Closed: six over-limit generated firmware sources now use the one bounded byte-identical materialization route; the unused session helper is removed. [Evidence](../etc/evidence/t448-s1-firmware-materialization.md). |
 | T447 | Closed: all S1--S11 ledger receivers are accepted; one Core execution path, bounded VM contracts, no VDM forwarding facade, owner-local test boundaries and the decomposed Core coordinator are retained. [History](../history/M5-T447-architecture-boundary-debt-closure.md). |
