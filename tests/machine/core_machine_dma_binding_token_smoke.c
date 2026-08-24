@@ -40,7 +40,7 @@ static core_machine_fdc_topology core_machine_dma_binding_token_topology(
 
 C_INT main(C_VOID)
 {
-    core_machine_media_registry media = {0};
+    core_machine_media_registry *media = STD_NULL;
     core_machine_dma_request_binding first_request = {0};
     core_machine_dma_request_binding second_request = {0};
     core_machine_fdc_topology first_topology;
@@ -49,8 +49,8 @@ C_INT main(C_VOID)
     core_machine *second = STD_NULL;
     C_INT failed = 0;
 
-    core_machine_media_registry_initialize(&media);
-    if (core_machine_create(&core_machine_dma_binding_token_config, &first) !=
+    if (core_machine_media_registry_create(&media) != TYPE_STATUS_OK ||
+        core_machine_create(&core_machine_dma_binding_token_config, &first) !=
             TYPE_STATUS_OK ||
         core_machine_create(&core_machine_dma_binding_token_config, &second) !=
             TYPE_STATUS_OK ||
@@ -64,8 +64,8 @@ C_INT main(C_VOID)
         goto done;
     }
 
-    first_topology = core_machine_dma_binding_token_topology(&media, first_request);
-    second_topology = core_machine_dma_binding_token_topology(&media, second_request);
+    first_topology = core_machine_dma_binding_token_topology(media, first_request);
+    second_topology = core_machine_dma_binding_token_topology(media, second_request);
     if (core_machine_configure_fdc(first, &second_topology) !=
             TYPE_STATUS_INVALID_ARGUMENT ||
         core_machine_configure_fdc(second, &first_topology) !=
@@ -82,7 +82,7 @@ C_INT main(C_VOID)
 done:
     core_machine_destroy(second);
     core_machine_destroy(first);
-    core_machine_media_registry_finalize(&media);
+    core_machine_media_registry_destroy(media);
     if (failed) return 1;
     puts("M5:T300:S4:DMA-BINDING-TOKEN:OK");
     return 0;

@@ -2,18 +2,25 @@
 
 #include "core/machine/display_interface.h"
 
+struct core_machine_display_provider_slot {
+    C_VOID *mode_context;
+    core_machine_display_provider mode_provider;
+    C_VOID *snapshot_context;
+    core_machine_display_snapshot_provider snapshot_provider;
+    C_INT frozen;
+};
 
-
-C_VOID core_machine_display_provider_slot_initialize(
-    core_machine_display_provider_slot *slot)
+type_status core_machine_display_provider_slot_create(
+    core_machine_display_provider_slot **out_slot)
 {
-    if (slot != STD_NULL) {
-        slot->mode_context = STD_NULL;
-        slot->mode_provider = STD_NULL;
-        slot->snapshot_context = STD_NULL;
-        slot->snapshot_provider = STD_NULL;
-        slot->frozen = 0;
-    }
+    core_machine_display_provider_slot *slot;
+
+    if (out_slot == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    *out_slot = STD_NULL;
+    slot = (core_machine_display_provider_slot *)STD_CALLOC(1u, sizeof(*slot));
+    if (slot == STD_NULL) return TYPE_STATUS_NO_MEMORY;
+    *out_slot = slot;
+    return TYPE_STATUS_OK;
 }
 
 C_VOID core_machine_display_provider_slot_bind(
@@ -34,10 +41,10 @@ C_VOID core_machine_display_provider_slot_freeze(
     if (slot != STD_NULL) slot->frozen = 1;
 }
 
-C_VOID core_machine_display_provider_slot_finalize(
+C_VOID core_machine_display_provider_slot_destroy(
     core_machine_display_provider_slot *slot)
 {
-    core_machine_display_provider_slot_initialize(slot);
+    STD_FREE(slot);
 }
 
 C_VOID core_machine_display_notify_mode_changed_to(

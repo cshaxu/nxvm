@@ -121,7 +121,7 @@ int main(C_VOID)
         .cascade_channel = CORE_MACHINE_DMA_CASCADE_CHANNEL };
     core_machine_fdc_change_media drive0 = {.generation = 10u, .present = TYPE_TRUE};
     core_machine_fdc_change_media drive1 = {.generation = 30u, .present = TYPE_TRUE};
-    core_machine_media_registry media = {0};
+    core_machine_media_registry *media = STD_NULL;
     core_machine_dma_request_binding dma_request = {0};
     core_machine_fdc_topology topology = {0};
     core_machine *machine = STD_NULL;
@@ -132,23 +132,23 @@ int main(C_VOID)
     C_INT failed = 0;
     C_INT first_failure = 0;
 
-    core_machine_media_registry_initialize(&media);
-    if (core_machine_create(&config, &machine) != TYPE_STATUS_OK) failed = 1;
+    if (core_machine_media_registry_create(&media) != TYPE_STATUS_OK ||
+        core_machine_create(&config, &machine) != TYPE_STATUS_OK) failed = 1;
     if (!failed) {
         fdc = &machine->fdc;
         dma = &machine->shared_dma_primary;
         port = &machine->executor_port;
         if (fdc == STD_NULL || dma == STD_NULL || port == STD_NULL ||
-            core_machine_media_registry_bind(&media, 21u, &drive0,
+            core_machine_media_registry_bind(media, 21u, &drive0,
                 &core_machine_fdc_change_provider) != TYPE_STATUS_OK ||
-            core_machine_media_registry_bind(&media, 22u, &drive1,
+            core_machine_media_registry_bind(media, 22u, &drive1,
                 &core_machine_fdc_change_provider) != TYPE_STATUS_OK ||
-            core_machine_media_registry_freeze(&media) != TYPE_STATUS_OK ||
+            core_machine_media_registry_freeze(media) != TYPE_STATUS_OK ||
             core_machine_configure_dma(machine, &dma_wiring, &dma_request) !=
                 TYPE_STATUS_OK) {
             failed = 1;
         } else {
-            topology.media_registry = &media;
+            topology.media_registry = media;
             topology.drives = drives;
             topology.dma_request = dma_request;
             topology.config = fdc_config;
@@ -262,7 +262,7 @@ int main(C_VOID)
         }
     }
     core_machine_destroy(machine);
-    core_machine_media_registry_finalize(&media);
+    core_machine_media_registry_destroy(media);
     if (failed) {
         STD_FPRINTF(stderr, "M5:T380:S2:FDC-MEDIA-CHANGE:FAIL:step=%d\n",
             first_failure);

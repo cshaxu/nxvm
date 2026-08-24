@@ -163,7 +163,7 @@ C_INT main(C_VOID)
         .forced_read_result = CORE_MACHINE_MEDIA_RESULT_OK,
         .forced_write_result = CORE_MACHINE_MEDIA_RESULT_OK
     };
-    core_machine_media_registry registry = {0};
+    core_machine_media_registry *registry = STD_NULL;
     core_machine_hdc_topology topology = {0};
     core_machine *machine = STD_NULL;
     core_machine_hdc *hdc;
@@ -175,19 +175,19 @@ C_INT main(C_VOID)
 
     media.sector[0][0] = 0x34u;
     media.sector[0][1] = 0x12u;
-    core_machine_media_registry_initialize(&registry);
-    if (core_machine_create(&config, &machine) != TYPE_STATUS_OK) failed |= 0x01;
+    if (core_machine_media_registry_create(&registry) != TYPE_STATUS_OK ||
+        core_machine_create(&config, &machine) != TYPE_STATUS_OK) failed |= 0x01;
     if (!failed) {
         hdc = &machine->hdc;
         if (hdc == STD_NULL ||
-            core_machine_media_registry_bind(&registry, 1u, &media,
+            core_machine_media_registry_bind(registry, 1u, &media,
                 &core_machine_hdc_fixture_provider) != TYPE_STATUS_OK ||
-            core_machine_media_registry_freeze(&registry) != TYPE_STATUS_OK ||
-            core_machine_media_registry_bind(&registry, 2u, &media,
+            core_machine_media_registry_freeze(registry) != TYPE_STATUS_OK ||
+            core_machine_media_registry_bind(registry, 2u, &media,
                 &core_machine_hdc_fixture_provider) != TYPE_STATUS_INVALID_STATE) {
             failed |= 0x02;
         } else {
-            topology.media_registry = &registry;
+            topology.media_registry = registry;
             topology.media_id = 1u;
             topology.config = hdc_config;
             if (core_machine_configure_hdc(machine, &topology) != TYPE_STATUS_OK ||
@@ -416,7 +416,7 @@ C_INT main(C_VOID)
         }
     }
     core_machine_destroy(machine);
-    core_machine_media_registry_finalize(&registry);
+    core_machine_media_registry_destroy(registry);
     if (failed) {
         STD_FPRINTF(STD_STDERR, "M5:T286:S1:ATA-NIEN:PORT:FAIL bits=%x status=%02x error=%02x word=%04x\n",
             failed, status, error, word);

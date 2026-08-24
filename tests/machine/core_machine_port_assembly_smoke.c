@@ -95,10 +95,10 @@ static C_INT port_assembly_fdc_transaction(C_VOID)
     const core_machine_dma_wiring wiring = { .fdc_channel = 2u,
         .controller_count = CORE_MACHINE_DMA_CONTROLLER_COUNT,
         .cascade_channel = CORE_MACHINE_DMA_CASCADE_CHANNEL };
-    core_machine_media_registry media = {0};
+    core_machine_media_registry *media = STD_NULL;
     core_machine_dma_request_binding request = {0};
     core_machine_fdc_topology topology = {
-        .media_registry = &media,
+        .media_registry = STD_NULL,
         .drives = {{1u, CORE_MACHINE_MEDIA_ID_INVALID, CORE_MACHINE_MEDIA_ID_INVALID,
             CORE_MACHINE_MEDIA_ID_INVALID}},
         .config = {.dor_port = 0x03f2u, .status_port = 0x03f4u,
@@ -111,9 +111,10 @@ static C_INT port_assembly_fdc_transaction(C_VOID)
     core_machine_fdc_topology topology_zero = {0};
     C_INT failed = 0;
 
-    core_machine_media_registry_initialize(&media);
-    failed |= core_machine_create(&config, &machine) != TYPE_STATUS_OK ||
+    failed |= core_machine_media_registry_create(&media) != TYPE_STATUS_OK ||
+        core_machine_create(&config, &machine) != TYPE_STATUS_OK ||
         core_machine_configure_dma(machine, &wiring, &request) != TYPE_STATUS_OK;
+    topology.media_registry = media;
     topology.dma_request = request;
     if (!failed) {
         core_machine_port_set_test_allocation(&machine->executor_port, &allocation);
@@ -132,7 +133,7 @@ static C_INT port_assembly_fdc_transaction(C_VOID)
             !machine->fdc_configured;
     }
     core_machine_destroy(machine);
-    core_machine_media_registry_finalize(&media);
+    core_machine_media_registry_destroy(media);
     return failed || port_assembly_fresh_default_create();
 }
 
@@ -176,9 +177,9 @@ static C_INT port_assembly_hdc_transaction(C_VOID)
     const core_machine_config machine_config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES
     };
-    core_machine_media_registry media = {0};
+    core_machine_media_registry *media = STD_NULL;
     core_machine_hdc_topology topology = {
-        .media_registry = &media, .media_id = 1u,
+        .media_registry = STD_NULL, .media_id = 1u,
         .config = {.data_port = 0x01f0u, .error_features_port = 0x01f1u,
             .sector_count_port = 0x01f2u, .sector_number_port = 0x01f3u,
             .cylinder_low_port = 0x01f4u, .cylinder_high_port = 0x01f5u,
@@ -192,8 +193,9 @@ static C_INT port_assembly_hdc_transaction(C_VOID)
     core_machine *machine = STD_NULL;
     C_INT failed = 0;
 
-    core_machine_media_registry_initialize(&media);
-    failed |= core_machine_create(&machine_config, &machine) != TYPE_STATUS_OK;
+    failed |= core_machine_media_registry_create(&media) != TYPE_STATUS_OK ||
+        core_machine_create(&machine_config, &machine) != TYPE_STATUS_OK;
+    topology.media_registry = media;
     if (!failed) {
         core_machine_port_set_test_allocation(&machine->executor_port, &allocation);
         failed |= core_machine_configure_hdc(machine, &topology) != TYPE_STATUS_NO_MEMORY ||
@@ -210,7 +212,7 @@ static C_INT port_assembly_hdc_transaction(C_VOID)
             !machine->hdc_configured;
     }
     core_machine_destroy(machine);
-    core_machine_media_registry_finalize(&media);
+    core_machine_media_registry_destroy(media);
     return failed || port_assembly_fresh_default_create();
 }
 

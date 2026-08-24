@@ -31,7 +31,7 @@ C_INT main(C_VOID)
             TYPE_FALSE ||
         vm_machine_fdd_replace_bytes(&model40->fdd, image, sizeof(image)) !=
             TYPE_FALSE ||
-        core_machine_media_query(&model40->media_registry, VM_SESSION_MEDIA_FDD_ID,
+        core_machine_media_query(model40->media_registry, VM_SESSION_MEDIA_FDD_ID,
             &info, &result) != TYPE_STATUS_OK || result != CORE_MACHINE_MEDIA_RESULT_OK ||
         !info.present || info.geometry.cylinders != 80u || info.geometry.heads != 2u ||
         info.geometry.sectors_per_track != 15u || info.geometry.bytes_per_sector != 512u ||

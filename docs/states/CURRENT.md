@@ -1,5 +1,26 @@
 # Project Status
 
+## M5 T447 S6 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; `M5 T447 S6`, single-session coordinator/executor followed by coordinator closure review. |
+| Admission And Approval | The owner-approved T447 proposal, accepted S5 P3 `8754a662`, and the owner's standing instruction to continue the approved governance closure admit the next dependency-ordered S6 batch on 2026-08-23. No exception. |
+| Objective | Seal mutable Core machine collaborator and plan endpoint state behind Core-owned registrations or private storage while retaining declarative copied plans and atomic lifecycle behavior. |
+| Non-goals | No second machine object, generic plugin framework, mutable post-create plan, VM-owned Core runtime state, host-policy move, profile behavior change, media-format change, or test-only public seam. |
+| Reference Baseline | Accepted S5 P3 `8754a662`; Td S126 B/C; T447 proposal S6; retained default PC/AT, Model-339, Model-40 and T445/S5 evidence. |
+| Candidate Proposal | [M5 Architecture-Boundary Debt Closure](../proposals/m5-architecture-boundary-debt-closure.md), S6. |
+| Files And ABI Surface | Core machine media/display/plan contracts and private implementations; machine create/reset/destroy paths; VM session and three profile composition/materialization callers; focused Core/VM lifecycle tests; CMake gates; T447 evidence/history/status and current artifact. |
+| Applicable Rules | Execution P/closure and code-size requirements; architecture one-owner, Core-directed dependency, opaque public contract, copied-plan and atomic lifecycle invariants; coding minimal durable capabilities with no forwarding wrappers; documentation topology. No exception. |
+| Verification | Inventory every public collaborator/endpoint layout, direct field access, plan construction and lifecycle path; prove each mutable runtime endpoint has one Core owner, plans retain copied declarative values, and all three profile variants use bounded registration/creation operations; run focused create/reset/destroy and failure-path tests, a narrow S6 static guard, T345, current artifact/smokes, specialized gates, and documentation governance. |
+| Expected Markers | Retained Core/VM lifecycle markers plus `M5:T447:S6:COLLABORATOR-PLAN-BOUNDARY:OK`; no public mutable media registry, display slot, memory-device callback/owner, or topology endpoint pointer; no VM direct Core-runtime layout ownership or post-create plan mutation. |
+| Asset Needs | Existing non-committed test media only; no new source, firmware, guest-media, or third-party asset. |
+| Reporting Requirements | Record complete layout/caller/lifecycle inventory, selected Core owner and failure semantics, deleted layouts/routes, code-size accounting, artifact SHA, focused/full verification, and actual-diff review; commit and push one complete implementation P before coordinator closure. |
+| Stop Conditions | Stop for owner direction if closure requires a new Core-to-VM asynchronous contract, changes selected profile/device behavior, needs a test-only public seam, cannot preserve atomic create/reset/destroy, or exposes a platform lifetime conflict. |
+| Exit Criteria | All named mutable collaborator and endpoint layouts are Core-private or owner-created opaque handles; every consumer uses bounded registration/plan/create/reset/destroy operations; default PC/AT, Model-339 and Model-40 preserve behavior through copied declarative plans; no compatibility layout or parallel lifecycle route remains. |
+| Original Owner Request | Execute the approved architecture-boundary closure in dependency order, applying minimalism as a hard constraint rather than a later refactor. |
+| Similar-Issue Sweep | Inspect all Core machine public/private headers and implementations, every plan producer and direct endpoint/callback access, default PC/AT/Model-339/Model-40 composition, construction/reset/failure paths, related tests, T345 entries, and T126 evidence; do not repair only the first exposed collaborator. |
+
 ## Current Technical Baseline
 
 - **Current developer artifact:** target `vm-0-5-0447`; `nxvm_0_5_0447.exe` / `build/output/nxvm_0_5_0447.exe`, SHA-256 `A0EE72A5519B7CDACF5B23AAB0D50C795D6EBFE13B2F7932C1B0F112A70FB795`. T434 has one copied Core timing-plan publication route for default PC/AT, IBM 5170 Model 339 and Model-40 BYOB session composition.

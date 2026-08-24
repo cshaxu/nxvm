@@ -210,8 +210,8 @@ typedef struct core_machine_display_port_topology {
     type_unsigned_16 crtc_last;
 } core_machine_display_port_topology;
 
-/* Composition binds the neutral provider slot; core freezes it when this
- * one-time display declaration has been applied. */
+/* This remains a copied board declaration. Its output provider is registered
+ * separately on the Core-owned plan. */
 typedef struct core_machine_display_config {
     core_machine_vadp_text_timing text_timing;
     type_bool cga_vram_present;
@@ -221,7 +221,6 @@ typedef struct core_machine_display_config {
     core_machine_vadp_ega_sequencer_config ega_sequencer;
     core_machine_vadp_ega_controller_config ega_controllers;
     core_machine_display_port_topology ports;
-    core_machine_display_provider_slot *provider;
 } core_machine_display_config;
 
 #define CORE_MACHINE_RTC_DEFAULT_COUNT 6u
@@ -301,35 +300,9 @@ typedef struct core_machine_dma_wiring {
     type_unsigned_8 cascade_channel;
 } core_machine_dma_wiring;
 
-/* Composition retains the media provider policy, while core copies this
- * neutral controller topology and owns the connected controller state. */
-typedef struct core_machine_fdc_topology {
-    const core_machine_media_registry *media_registry;
-    core_machine_fdc_drive_bindings drives;
-    core_machine_dma_request_binding dma_request;
-    core_machine_fdc_config config;
-    core_machine_fdc_terminal_observation_provider observation_provider;
-} core_machine_fdc_topology;
-
-typedef struct core_machine_hdc_topology {
-    const core_machine_media_registry *media_registry;
-    core_machine_media_id media_id;
-    core_machine_media_id slave_media_id;
-    core_machine_hdc_config config;
-} core_machine_hdc_topology;
-
-#define CORE_MACHINE_PLAN_MEMORY_DEVICE_COUNT 4u
-
-typedef struct core_machine_plan_memory_device {
-    type_unsigned_32 physical_start;
-    STD_SIZE_T bytes;
-    core_machine_memory_device_callbacks callbacks;
-    C_VOID *owner;
-} core_machine_plan_memory_device;
-
-/* Every optional topology is copied with the plan and applied by Core before
- * publication.  Provider endpoints retain their existing composition-owned
- * lifetime; Core copies the endpoint declaration, never VM state. */
+/* Every optional topology is copied into the Core-owned plan before machine
+ * creation. Runtime endpoints are registered separately and never enter this
+ * public declaration. */
 typedef struct core_machine_plan_topology {
     type_bool absent_memory_present;
     core_machine_absent_memory_config absent_memory;
@@ -337,11 +310,6 @@ typedef struct core_machine_plan_topology {
     core_machine_planar_parity_config planar_parity;
     type_bool d4_platform_present;
     core_machine_d4_platform_config d4_platform;
-    core_machine_plan_memory_device memory_devices[
-        CORE_MACHINE_PLAN_MEMORY_DEVICE_COUNT];
-    STD_SIZE_T memory_device_count;
-    type_bool d4_memory_parity_present;
-    type_unsigned_8 *d4_memory_parity_mask;
     type_bool display_present;
     core_machine_display_config display;
     type_bool dma_present;
@@ -349,18 +317,15 @@ typedef struct core_machine_plan_topology {
     type_bool rtc_cmos_present;
     core_machine_rtc_cmos_config rtc_cmos;
     type_bool fdc_present;
-    core_machine_fdc_topology fdc;
+    core_machine_fdc_drive_bindings fdc_drives;
+    core_machine_fdc_config fdc;
     type_bool hdc_present;
-    core_machine_hdc_topology hdc;
+    core_machine_media_id hdc_media_id;
+    core_machine_media_id hdc_slave_media_id;
+    core_machine_hdc_config hdc;
 } core_machine_plan_topology;
 
-typedef struct core_machine_plan {
-    core_machine_config configuration;
-    core_machine_plan_topology topology;
-    core_machine_timing_declaration declarations[
-        CORE_MACHINE_TIMING_CAPABILITY_COUNT];
-    STD_SIZE_T declaration_count;
-} core_machine_plan;
+typedef struct core_machine_plan core_machine_plan;
 
 typedef enum core_machine_stop_reason {
     CORE_MACHINE_STOP_NONE = 0,
@@ -406,8 +371,28 @@ type_status core_machine_create(
     const core_machine_config *config,
     core_machine **out_machine);
 
-C_VOID core_machine_plan_initialize(core_machine_plan *out_plan,
-    const core_machine_config *configuration);
+type_status core_machine_plan_create(const core_machine_config *configuration,
+    core_machine_plan **out_plan);
+C_VOID core_machine_plan_destroy(core_machine_plan *plan);
+type_status core_machine_plan_set_topology(core_machine_plan *plan,
+    const core_machine_plan_topology *topology);
+type_status core_machine_plan_bind_media_registry(core_machine_plan *plan,
+    const core_machine_media_registry *registry);
+type_status core_machine_plan_bind_display_provider(core_machine_plan *plan,
+    core_machine_display_provider_slot *provider);
+type_status core_machine_plan_bind_fdc_terminal_observation(core_machine_plan *plan,
+    core_machine_fdc_terminal_observation_provider provider);
+type_status core_machine_plan_configure_fdc(core_machine_plan *plan,
+    const core_machine_fdc_drive_bindings *drives,
+    const core_machine_fdc_config *config);
+type_status core_machine_plan_configure_hdc(core_machine_plan *plan,
+    core_machine_media_id media_id, core_machine_media_id slave_media_id,
+    const core_machine_hdc_config *config);
+type_status core_machine_plan_register_memory_device(core_machine_plan *plan,
+    type_unsigned_32 physical_start, STD_SIZE_T bytes,
+    const core_machine_memory_device_callbacks *callbacks, C_VOID *owner);
+type_status core_machine_plan_enable_d4_memory_parity(core_machine_plan *plan,
+    type_unsigned_8 *mask);
 type_status core_machine_create_from_plan(const core_machine_plan *plan,
     core_machine **out_machine);
 type_status core_machine_get_timing_disposition(const core_machine *machine,
@@ -508,10 +493,6 @@ type_status core_machine_get_d4_platform_observation(const core_machine *machine
     core_machine_d4_platform_observation *out_observation);
 type_status core_machine_get_speaker_observation(const core_machine *machine,
     core_machine_speaker_observation *out_observation);
-type_status core_machine_configure_fdc(core_machine *machine,
-    const core_machine_fdc_topology *topology);
-type_status core_machine_configure_hdc(core_machine *machine,
-    const core_machine_hdc_topology *topology);
 
 type_status core_machine_report_fault(
     core_machine *machine,

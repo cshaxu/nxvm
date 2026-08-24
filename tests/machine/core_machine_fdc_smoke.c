@@ -235,7 +235,7 @@ C_INT main(C_VOID)
         .forced_write_result = CORE_MACHINE_MEDIA_RESULT_OK,
         .forced_format_result = CORE_MACHINE_MEDIA_RESULT_OK
     };
-    core_machine_media_registry media = {0};
+    core_machine_media_registry *media = STD_NULL;
     core_machine_dma_request_binding dma_request = {0};
     core_machine_fdc_topology topology = {0};
     core_machine *machine = STD_NULL;
@@ -247,22 +247,22 @@ C_INT main(C_VOID)
     C_INT failed = 0;
 
     fixture.bytes[0] = 0x4au;
-    core_machine_media_registry_initialize(&media);
-    if (core_machine_create(&config, &machine) != TYPE_STATUS_OK) failed |= 0x01;
+    if (core_machine_media_registry_create(&media) != TYPE_STATUS_OK ||
+        core_machine_create(&config, &machine) != TYPE_STATUS_OK) failed |= 0x01;
     if (!failed) {
         fdc = &machine->fdc;
         port = &machine->executor_port;
         if (fdc == STD_NULL || port == STD_NULL ||
-            core_machine_media_registry_bind(&media, 1u, &fixture,
+            core_machine_media_registry_bind(media, 1u, &fixture,
                 &core_machine_fdc_fixture_provider) != TYPE_STATUS_OK ||
-            core_machine_media_registry_freeze(&media) != TYPE_STATUS_OK ||
-            core_machine_media_registry_bind(&media, 2u, &fixture,
+            core_machine_media_registry_freeze(media) != TYPE_STATUS_OK ||
+            core_machine_media_registry_bind(media, 2u, &fixture,
                 &core_machine_fdc_fixture_provider) != TYPE_STATUS_INVALID_STATE ||
             core_machine_configure_dma(machine, &dma_wiring, &dma_request) !=
                 TYPE_STATUS_OK) {
             failed |= 0x02;
         } else {
-            topology.media_registry = &media;
+            topology.media_registry = media;
             topology.drives = drives;
             topology.dma_request = dma_request;
             topology.config = fdc_config;
@@ -588,7 +588,7 @@ C_INT main(C_VOID)
         }
     }
     core_machine_destroy(machine);
-    core_machine_media_registry_finalize(&media);
+    core_machine_media_registry_destroy(media);
     if (failed) {
         STD_FPRINTF(STD_STDERR, "M5:T376:S4:8272A-SCAN:FAIL %x\n", failed);
         return 1;

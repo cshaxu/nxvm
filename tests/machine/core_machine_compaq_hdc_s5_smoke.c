@@ -97,7 +97,7 @@ C_INT main(C_VOID)
     };
     core_machine_compaq_hdc_media media = {{0}};
     core_machine_compaq_hdc_media slave_media = {{0}};
-    core_machine_media_registry registry = {0};
+    core_machine_media_registry *registry = STD_NULL;
     core_machine_hdc hdc = {0};
     t_port port = {0};
     t_pic master = {0};
@@ -111,17 +111,17 @@ C_INT main(C_VOID)
     slave_media.sector[1] = 0x56u;
     core_machine_port_initialize(&port);
     core_machine_pic_initialize(&master, &slave, &port);
-    core_machine_media_registry_initialize(&registry);
-    if (core_machine_media_registry_bind(&registry, 1u, &media, &media_provider) !=
+    if (core_machine_media_registry_create(&registry) != TYPE_STATUS_OK ||
+        core_machine_media_registry_bind(registry, 1u, &media, &media_provider) !=
             TYPE_STATUS_OK) {
         failed |= 0x01;
-    } else if (core_machine_media_registry_bind(&registry, 2u, &slave_media, &media_provider) !=
+    } else if (core_machine_media_registry_bind(registry, 2u, &slave_media, &media_provider) !=
             TYPE_STATUS_OK) {
         failed |= 0x02;
-    } else if (core_machine_media_registry_freeze(&registry) != TYPE_STATUS_OK) {
+    } else if (core_machine_media_registry_freeze(registry) != TYPE_STATUS_OK) {
         failed |= 0x02;
     } else {
-        core_machine_hdc_connect(&hdc, &registry, 1u, 2u, &master, &slave, &config);
+        core_machine_hdc_connect(&hdc, registry, 1u, 2u, &master, &slave, &config);
         core_machine_hdc_initialize(&hdc);
         if (!core_machine_compaq_hdc_install(&port, &hdc)) {
             failed |= 0x02;
@@ -193,12 +193,12 @@ C_INT main(C_VOID)
     if (failed) {
         STD_FPRINTF(STD_STDERR, "M5:T386:S5:COMPAQ-HDC-ROUTE:FAIL %x status=%x error=%x phase=%u irq=%u chs=%x:%x:%x\n", failed, hdc.data.status, hdc.data.error, hdc.data.phase, hdc.data.irq_pending, hdc.data.cylinder_high, hdc.data.cylinder_low, hdc.data.sector_number);
         core_machine_hdc_finalize(&hdc);
-        core_machine_media_registry_finalize(&registry);
+        core_machine_media_registry_destroy(registry);
         core_machine_port_finalize(&port);
         return 1;
     }
     core_machine_hdc_finalize(&hdc);
-    core_machine_media_registry_finalize(&registry);
+    core_machine_media_registry_destroy(registry);
     core_machine_port_finalize(&port);
     puts("M5:T386:S5:COMPAQ-HDC-ROUTE:OK");
     puts("M5:T386:S5:PORT-WIRED-OR:OK");

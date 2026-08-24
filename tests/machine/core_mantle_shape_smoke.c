@@ -8,7 +8,7 @@
 
 typedef struct mantle_fixture {
     core_machine_rtc rtc;
-    core_machine_media_registry media;
+    core_machine_media_registry *media;
     type_unsigned_8 media_byte;
 } mantle_fixture;
 
@@ -84,16 +84,16 @@ C_INT main(C_VOID)
     C_INT failed = 0;
 
     fixture.media_byte = 0xa5u;
-    core_machine_media_registry_initialize(&fixture.media);
-    if (core_machine_create(&config, &machine) != TYPE_STATUS_OK) failed |= 0x01;
+    if (core_machine_media_registry_create(&fixture.media) != TYPE_STATUS_OK ||
+        core_machine_create(&config, &machine) != TYPE_STATUS_OK) failed |= 0x01;
     if (!failed) {
         test_core_machine_fixture_initialize_rtc_with_shared_pic(machine,
             &fixture.rtc, &rtc_config);
         if (core_machine_bind_execution_provider(machine,
             &fixture_execution_provider, &fixture) != TYPE_STATUS_OK) failed |= 0x02;
-        if (core_machine_media_registry_bind(&fixture.media, 1u,
+        if (core_machine_media_registry_bind(fixture.media, 1u,
             &fixture.media_byte, &fixture_media_provider) != TYPE_STATUS_OK) failed |= 0x04;
-        if (core_machine_media_registry_freeze(&fixture.media) != TYPE_STATUS_OK) failed |= 0x08;
+        if (core_machine_media_registry_freeze(fixture.media) != TYPE_STATUS_OK) failed |= 0x08;
         if (core_machine_freeze_execution_providers(machine) != TYPE_STATUS_OK) failed |= 0x10;
         if (core_machine_reset(machine) != TYPE_STATUS_OK) failed |= 0x20;
     }
@@ -108,13 +108,13 @@ C_INT main(C_VOID)
         if (core_machine_apply_entry_plan(machine, &plan) != TYPE_STATUS_OK) failed |= 0x40;
         if (core_machine_run(machine, budget, &result) != TYPE_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) failed |= 0x80;
-        if (core_machine_media_query(&fixture.media, 1u, &media_info,
+        if (core_machine_media_query(fixture.media, 1u, &media_info,
             &media_result) != TYPE_STATUS_OK || media_result != CORE_MACHINE_MEDIA_RESULT_OK ||
             !media_info.present) failed |= 0x100;
     }
     core_machine_destroy(machine);
     core_machine_rtc_finalize(&fixture.rtc);
-    core_machine_media_registry_finalize(&fixture.media);
+    core_machine_media_registry_destroy(fixture.media);
     if (failed) {
         STD_PRINTF("mantle shape failed=%x reason=%u\n", failed, result.reason);
         return 1;

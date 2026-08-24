@@ -167,9 +167,14 @@ static C_VOID vm_session_storage_rollback(vm_session *machine)
     machine->presentation_mailbox = STD_NULL;
     core_product_debugger_destroy(machine->debugger);
     machine->debugger = STD_NULL;
-    core_machine_display_provider_slot_finalize(&machine->display_provider);
     core_machine_destroy(machine->core_machine);
     machine->core_machine = STD_NULL;
+    core_machine_display_provider_slot_destroy(machine->display_provider);
+    machine->display_provider = STD_NULL;
+    core_machine_media_registry_destroy(machine->media_registry);
+    machine->media_registry = STD_NULL;
+    core_machine_plan_destroy(machine->core_machine_plan);
+    machine->core_machine_plan = STD_NULL;
 }
 
 C_INT vm_session_insert_fdd(vm_session *session, const C_CHAR *path)
@@ -260,6 +265,7 @@ type_status vm_session_storage_initialize(vm_session *machine)
     core_machine_display_config display_config = {0};
     core_machine_dma_wiring dma_wiring = {0};
     core_machine_rtc_cmos_config rtc_cmos_config = {0};
+    core_machine_plan_topology topology = {0};
     type_status status;
 
     if (machine == STD_NULL || machine->core_machine != STD_NULL) {
@@ -274,19 +280,28 @@ type_status vm_session_storage_initialize(vm_session *machine)
     if (!vm_profile_default_pc_at_descriptor_is_valid(machine->profile)) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
-    core_machine_plan_initialize(&machine->core_machine_plan,
-        &machine->core_machine_config);
-    core_machine_media_registry_initialize(&machine->media_registry);
-    core_machine_display_provider_slot_initialize(&machine->display_provider);
+    status = core_machine_plan_create(&machine->core_machine_config,
+        &machine->core_machine_plan);
+    if (status != TYPE_STATUS_OK) return status;
+    status = core_machine_media_registry_create(&machine->media_registry);
+    if (status != TYPE_STATUS_OK) {
+        vm_session_storage_rollback(machine);
+        return status;
+    }
+    status = core_machine_display_provider_slot_create(&machine->display_provider);
+    if (status != TYPE_STATUS_OK) {
+        vm_session_storage_rollback(machine);
+        return status;
+    }
     vm_session_bind_display(machine);
     if (machine->profile->unpopulated_extended_memory) {
-        machine->core_machine_plan.topology.absent_memory_present = TYPE_TRUE;
-        machine->core_machine_plan.topology.absent_memory =
+        topology.absent_memory_present = TYPE_TRUE;
+        topology.absent_memory =
             (core_machine_absent_memory_config) { 0x00100000u, 0x00f00000u, 0xffu };
     }
     if (machine->profile->planar_parity_present) {
-        machine->core_machine_plan.topology.planar_parity_present = TYPE_TRUE;
-        machine->core_machine_plan.topology.planar_parity =
+        topology.planar_parity_present = TYPE_TRUE;
+        topology.planar_parity =
             (core_machine_planar_parity_config) { CORE_MACHINE_PC_AT_PORT_B,
                 machine->profile->default_memory_bytes };
     }
@@ -338,7 +353,6 @@ type_status vm_session_storage_initialize(vm_session *machine)
     }
     display_config.ports.crtc_first = crtc_first->port;
     display_config.ports.crtc_last = crtc_last->port;
-    display_config.provider = &machine->display_provider;
     dma_wiring.fdc_channel = fdc_route->dma_channel;
     dma_wiring.controller_count = CORE_MACHINE_DMA_CONTROLLER_COUNT;
     dma_wiring.cascade_channel = CORE_MACHINE_DMA_CASCADE_CHANNEL;
@@ -362,19 +376,32 @@ type_status vm_session_storage_initialize(vm_session *machine)
     rtc_cmos_config.defaults[5].value = TYPE_MASK_UNSIGNED_8(
         machine->profile->cmos.base_memory_kib >> 8);
     rtc_cmos_config.default_count = CORE_MACHINE_RTC_DEFAULT_COUNT;
-    machine->core_machine_plan.topology.display_present = TYPE_TRUE;
-    machine->core_machine_plan.topology.display = display_config;
-    machine->core_machine_plan.topology.dma_present = TYPE_TRUE;
-    machine->core_machine_plan.topology.dma = dma_wiring;
-    machine->core_machine_plan.topology.rtc_cmos_present = TYPE_TRUE;
-    machine->core_machine_plan.topology.rtc_cmos = rtc_cmos_config;
-    status = vm_session_machine_devices_materialize_plan(machine,
-        &machine->core_machine_plan);
+    topology.display_present = TYPE_TRUE;
+    topology.display = display_config;
+    topology.dma_present = TYPE_TRUE;
+    topology.dma = dma_wiring;
+    topology.rtc_cmos_present = TYPE_TRUE;
+    topology.rtc_cmos = rtc_cmos_config;
+    status = core_machine_plan_set_topology(machine->core_machine_plan, &topology);
+    if (status == TYPE_STATUS_OK) {
+        status = core_machine_plan_bind_media_registry(machine->core_machine_plan,
+            machine->media_registry);
+    }
+    if (status == TYPE_STATUS_OK) {
+        status = core_machine_plan_bind_display_provider(machine->core_machine_plan,
+            machine->display_provider);
+    }
     if (status != TYPE_STATUS_OK) {
         vm_session_storage_rollback(machine);
         return status;
     }
-    status = core_machine_create_from_plan(&machine->core_machine_plan,
+    status = vm_session_machine_devices_materialize_plan(machine,
+        machine->core_machine_plan);
+    if (status != TYPE_STATUS_OK) {
+        vm_session_storage_rollback(machine);
+        return status;
+    }
+    status = core_machine_create_from_plan(machine->core_machine_plan,
         &machine->core_machine);
     if (status == TYPE_STATUS_OK) {
         status = core_machine_get_fdc_dma_request_binding(machine->core_machine,
@@ -385,7 +412,7 @@ type_status vm_session_storage_initialize(vm_session *machine)
         return status;
     }
     vm_profile_default_context_initialize(&machine->default_profile_context,
-        &machine->default_bios, &machine->media_registry, VM_SESSION_MEDIA_HDD_ID,
+        &machine->default_bios, machine->media_registry, VM_SESSION_MEDIA_HDD_ID,
         machine->profile->firmware_slot);
     if (core_platform_presentation_mailbox_create(&machine->presentation_mailbox) !=
         TYPE_STATUS_OK) {
@@ -403,15 +430,19 @@ type_status vm_session_storage_initialize(vm_session *machine)
 
 C_VOID vm_session_storage_finalize(vm_session *machine)
 {
-    if (machine == STD_NULL || machine->core_machine == STD_NULL) return;
+    if (machine == STD_NULL) return;
     core_product_debugger_destroy(machine->debugger);
     machine->debugger = STD_NULL;
     core_platform_presentation_mailbox_destroy(machine->presentation_mailbox);
     machine->presentation_mailbox = STD_NULL;
-    core_machine_media_registry_finalize(&machine->media_registry);
-    core_machine_display_provider_slot_finalize(&machine->display_provider);
     core_machine_destroy(machine->core_machine);
     machine->core_machine = STD_NULL;
+    core_machine_display_provider_slot_destroy(machine->display_provider);
+    machine->display_provider = STD_NULL;
+    core_machine_media_registry_destroy(machine->media_registry);
+    machine->media_registry = STD_NULL;
+    core_machine_plan_destroy(machine->core_machine_plan);
+    machine->core_machine_plan = STD_NULL;
 }
 
 static C_VOID vm_session_initialize_model40_configuration(vm_session *session)

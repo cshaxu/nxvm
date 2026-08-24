@@ -115,7 +115,7 @@ C_INT main(C_VOID)
     };
     core_machine_compaq_hdc_machine_fdc_media fdc_media = {.byte = 0x5au};
     type_unsigned_8 hdc_sector[512] = {0};
-    core_machine_media_registry media = {0};
+    core_machine_media_registry *media = STD_NULL;
     core_machine_dma_request_binding dma_request = {0};
     core_machine_fdc_topology fdc_topology = {0};
     core_machine_hdc_topology hdc_topology = {0};
@@ -123,21 +123,21 @@ C_INT main(C_VOID)
     type_unsigned_32 drive_address;
     C_INT failed = 0;
 
-    core_machine_media_registry_initialize(&media);
-    if (core_machine_create(&config, &machine) != TYPE_STATUS_OK ||
-        core_machine_media_registry_bind(&media, 11u, &fdc_media,
+    if (core_machine_media_registry_create(&media) != TYPE_STATUS_OK ||
+        core_machine_create(&config, &machine) != TYPE_STATUS_OK ||
+        core_machine_media_registry_bind(media, 11u, &fdc_media,
             &core_machine_compaq_hdc_machine_fdc_provider) != TYPE_STATUS_OK ||
-        core_machine_media_registry_bind(&media, 12u, hdc_sector,
+        core_machine_media_registry_bind(media, 12u, hdc_sector,
             &core_machine_compaq_hdc_machine_hdc_provider) != TYPE_STATUS_OK ||
-        core_machine_media_registry_freeze(&media) != TYPE_STATUS_OK ||
+        core_machine_media_registry_freeze(media) != TYPE_STATUS_OK ||
         core_machine_configure_dma(machine, &dma_wiring, &dma_request) != TYPE_STATUS_OK) {
         failed = 0x01;
     } else {
-        fdc_topology.media_registry = &media;
+        fdc_topology.media_registry = media;
         fdc_topology.drives = drives;
         fdc_topology.dma_request = dma_request;
         fdc_topology.config = fdc_config;
-        hdc_topology.media_registry = &media;
+        hdc_topology.media_registry = media;
         hdc_topology.media_id = 12u;
         hdc_topology.config = hdc_config;
         if (core_machine_configure_fdc(machine, &fdc_topology) != TYPE_STATUS_OK ||
@@ -152,7 +152,7 @@ C_INT main(C_VOID)
         }
     }
     core_machine_destroy(machine);
-    core_machine_media_registry_finalize(&media);
+    core_machine_media_registry_destroy(media);
     if (failed) {
         STD_FPRINTF(stderr, "M5:T386:S5:COMPAQ-HDC-MACHINE:FAIL:%x\n", failed);
         return 1;

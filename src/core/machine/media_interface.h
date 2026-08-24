@@ -78,24 +78,14 @@ typedef struct core_machine_media_provider {
     core_machine_media_set_address_mark_provider set_address_mark;
 } core_machine_media_provider;
 
-typedef struct core_machine_media_binding {
-    core_machine_media_id id;
-    C_VOID *context;
-    const core_machine_media_provider *provider;
-} core_machine_media_binding;
+typedef struct core_machine_media_registry core_machine_media_registry;
 
-typedef struct core_machine_media_registry {
-    core_machine_media_binding bindings[CORE_MACHINE_MEDIA_MAX_DEVICES];
-    type_unsigned_32 binding_count;
-    type_bool frozen;
-} core_machine_media_registry;
-
-C_VOID core_machine_media_registry_initialize(core_machine_media_registry *registry);
+type_status core_machine_media_registry_create(core_machine_media_registry **out_registry);
 type_status core_machine_media_registry_bind(core_machine_media_registry *registry,
     core_machine_media_id id, C_VOID *context,
     const core_machine_media_provider *provider);
 type_status core_machine_media_registry_freeze(core_machine_media_registry *registry);
-C_VOID core_machine_media_registry_finalize(core_machine_media_registry *registry);
+C_VOID core_machine_media_registry_destroy(core_machine_media_registry *registry);
 
 type_status core_machine_media_query(const core_machine_media_registry *registry,
     core_machine_media_id id, core_machine_media_info *out_info,

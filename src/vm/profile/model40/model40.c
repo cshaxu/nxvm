@@ -452,26 +452,26 @@ type_status vm_profile_model40_d4_memory_materialize_plan(
     static const core_machine_memory_device_callbacks control_callbacks = {
         vm_profile_model40_d4_control_read, vm_profile_model40_d4_control_write,
         vm_profile_model40_d4_control_query };
-    core_machine_plan_memory_device *devices;
+    type_status status;
 
     if (memory == STD_NULL || plan == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
-    devices = plan->topology.memory_devices;
-    devices[0] = (core_machine_plan_memory_device) {
+    status = core_machine_plan_register_memory_device(plan,
         VM_PROFILE_MODEL40_D4_REPLACEMENT_START, VM_PROFILE_MODEL40_D4_REPLACEMENT_BYTES,
-        memory_callbacks, memory };
-    devices[1] = (core_machine_plan_memory_device) {
+        &memory_callbacks, memory);
+    if (status != TYPE_STATUS_OK) return status;
+    status = core_machine_plan_register_memory_device(plan,
         VM_PROFILE_MODEL40_D4_COMPATIBILITY_START, VM_PROFILE_MODEL40_D4_COMPATIBILITY_BYTES,
-        memory_callbacks, memory };
-    devices[2] = (core_machine_plan_memory_device) {
-        VM_PROFILE_MODEL40_D4_COMPATIBILITY_HIGH_START, VM_PROFILE_MODEL40_D4_COMPATIBILITY_BYTES,
-        memory_callbacks, memory };
-    devices[3] = (core_machine_plan_memory_device) {
-        VM_PROFILE_MODEL40_D4_CONTROL_PHYSICAL, VM_PROFILE_MODEL40_D4_CONTROL_WINDOW_BYTES,
-        control_callbacks, memory };
-    plan->topology.memory_device_count = CORE_MACHINE_PLAN_MEMORY_DEVICE_COUNT;
-    plan->topology.d4_memory_parity_present = TYPE_TRUE;
-    plan->topology.d4_memory_parity_mask = &memory->parity_fault_mask;
-    return TYPE_STATUS_OK;
+        &memory_callbacks, memory);
+    if (status != TYPE_STATUS_OK) return status;
+    status = core_machine_plan_register_memory_device(plan,
+        VM_PROFILE_MODEL40_D4_COMPATIBILITY_HIGH_START,
+        VM_PROFILE_MODEL40_D4_COMPATIBILITY_BYTES, &memory_callbacks, memory);
+    if (status != TYPE_STATUS_OK) return status;
+    status = core_machine_plan_register_memory_device(plan,
+        VM_PROFILE_MODEL40_D4_CONTROL_PHYSICAL,
+        VM_PROFILE_MODEL40_D4_CONTROL_WINDOW_BYTES, &control_callbacks, memory);
+    if (status != TYPE_STATUS_OK) return status;
+    return core_machine_plan_enable_d4_memory_parity(plan, &memory->parity_fault_mask);
 }
 
 type_status vm_profile_model40_d4_memory_enable_parity(core_machine *machine,

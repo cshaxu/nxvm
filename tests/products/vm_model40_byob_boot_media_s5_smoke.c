@@ -56,7 +56,7 @@ C_INT main(C_VOID)
         session->retained_config.fdd_image == STD_NULL ||
         session->fdd.data.ncyl != 80u || session->fdd.data.nhead != 2u ||
         session->fdd.data.nsector != 15u || session->fdd.data.nbyte != 512u ||
-        core_machine_media_query(&session->media_registry, VM_SESSION_MEDIA_FDD_ID,
+        core_machine_media_query(session->media_registry, VM_SESSION_MEDIA_FDD_ID,
             &info, &result) != TYPE_STATUS_OK || result != CORE_MACHINE_MEDIA_RESULT_OK ||
         !info.present || info.geometry.logical_sector_count != 2400u ||
         info.geometry.bytes_per_sector != 512u);

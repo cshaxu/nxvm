@@ -147,6 +147,8 @@ C_INT main(C_VOID)
     vm_session_config config = {0};
     vm_session *session = STD_NULL;
     vm_session *no_media = STD_NULL;
+    core_machine_media_info media_info = {0};
+    core_machine_media_result media_result = {0};
     type_unsigned_32 value;
     type_unsigned_32 invalid_lba;
     type_unsigned_16 word = 0u;
@@ -158,13 +160,10 @@ C_INT main(C_VOID)
         session == STD_NULL || session->core_machine == STD_NULL) goto fail;
     invalid_lba = (type_unsigned_32)session->hdd.data.ncyl * session->hdd.data.nhead *
         session->hdd.data.nsector;
-    if (!session->media_registry.frozen || session->media_registry.binding_count != 2u ||
-        session->media_registry.bindings[VM_SESSION_MEDIA_HDD_ID - 1u].context !=
-            &session->hdd ||
-        session->media_registry.bindings[VM_SESSION_MEDIA_HDD_ID - 1u].provider !=
-            vm_machine_hdd_media_provider() ||
-        session->core_machine->hdc.connect.media_registry != &session->media_registry ||
-        session->core_machine->hdc.connect.media_id != VM_SESSION_MEDIA_HDD_ID ||
+    if (core_machine_media_query(session->media_registry, VM_SESSION_MEDIA_HDD_ID,
+            &media_info, &media_result) != TYPE_STATUS_OK ||
+        media_result != CORE_MACHINE_MEDIA_RESULT_OK || !media_info.present ||
+        media_info.geometry.cylinders != 2u ||
         session->core_machine->hdc.connect.irq_source.master == STD_NULL ||
         session->core_machine->hdc.connect.irq_source.slave == STD_NULL ||
         !vm_hdc_write(session->core_machine, HDC_STATUS_COMMAND_PORT, 0xecu) ||

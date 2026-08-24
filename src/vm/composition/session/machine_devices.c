@@ -33,7 +33,7 @@ static type_status vm_session_machine_devices_materialize_fdc(vm_session *sessio
         {VM_SESSION_MEDIA_FDD_ID, CORE_MACHINE_MEDIA_ID_INVALID,
             CORE_MACHINE_MEDIA_ID_INVALID, CORE_MACHINE_MEDIA_ID_INVALID}
     };
-    core_machine_fdc_topology topology = {0};
+    core_machine_fdc_config config = {0};
 
     if (session == STD_NULL || plan == STD_NULL) {
         return TYPE_STATUS_INVALID_ARGUMENT;
@@ -52,25 +52,21 @@ static type_status vm_session_machine_devices_materialize_fdc(vm_session *sessio
         control_port == STD_NULL || route == STD_NULL) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
-    topology.media_registry = &session->media_registry;
-    topology.drives = drives;
-    topology.config.dor_port = dor_port->port;
-    topology.config.status_port = status_port->port;
-    topology.config.data_port = data_port->port;
-    topology.config.direction_port = control_port->port;
-    topology.config.control_port = control_port->port;
-    topology.config.irq = route->irq;
-    topology.config.dma_channel = route->dma_channel;
-    plan->topology.fdc_present = TYPE_TRUE;
-    plan->topology.fdc = topology;
-    return TYPE_STATUS_OK;
+    config.dor_port = dor_port->port;
+    config.status_port = status_port->port;
+    config.data_port = data_port->port;
+    config.direction_port = control_port->port;
+    config.control_port = control_port->port;
+    config.irq = route->irq;
+    config.dma_channel = route->dma_channel;
+    return core_machine_plan_configure_fdc(plan, &drives, &config);
 }
 
 static type_status vm_session_machine_devices_materialize_hdc(vm_session *session,
     core_machine_plan *plan)
 {
     const vm_profile_default_pc_at_hdc_pio *ports;
-    core_machine_hdc_topology topology = {0};
+    core_machine_hdc_config config = {0};
 
     if (session == STD_NULL || session->profile == STD_NULL || plan == STD_NULL) {
         return TYPE_STATUS_INVALID_ARGUMENT;
@@ -80,23 +76,20 @@ static type_status vm_session_machine_devices_materialize_hdc(vm_session *sessio
     if (!vm_profile_default_pc_at_descriptor_is_valid(session->profile)) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
-    topology.media_registry = &session->media_registry;
-    topology.media_id = VM_SESSION_MEDIA_HDD_ID;
-    topology.config.data_port = ports->data_port;
-    topology.config.error_features_port = ports->error_features_port;
-    topology.config.sector_count_port = ports->sector_count_port;
-    topology.config.sector_number_port = ports->sector_number_port;
-    topology.config.cylinder_low_port = ports->cylinder_low_port;
-    topology.config.cylinder_high_port = ports->cylinder_high_port;
-    topology.config.drive_head_port = ports->drive_head_port;
-    topology.config.status_command_port = ports->status_command_port;
-    topology.config.alternate_status_device_control_port =
+    config.data_port = ports->data_port;
+    config.error_features_port = ports->error_features_port;
+    config.sector_count_port = ports->sector_count_port;
+    config.sector_number_port = ports->sector_number_port;
+    config.cylinder_low_port = ports->cylinder_low_port;
+    config.cylinder_high_port = ports->cylinder_high_port;
+    config.drive_head_port = ports->drive_head_port;
+    config.status_command_port = ports->status_command_port;
+    config.alternate_status_device_control_port =
         ports->alternate_status_device_control_port;
-    topology.config.irq = ports->irq;
-    topology.config.lba28_supported = ports->lba28_supported;
-    plan->topology.hdc_present = TYPE_TRUE;
-    plan->topology.hdc = topology;
-    return TYPE_STATUS_OK;
+    config.irq = ports->irq;
+    config.lba28_supported = ports->lba28_supported;
+    return core_machine_plan_configure_hdc(plan, VM_SESSION_MEDIA_HDD_ID,
+        CORE_MACHINE_MEDIA_ID_INVALID, &config);
 }
 
 type_status vm_session_machine_devices_materialize_plan(vm_session *session,

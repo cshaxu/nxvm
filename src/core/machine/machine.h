@@ -45,6 +45,44 @@
 #define CORE_MACHINE_TRACE_CAPACITY 32u
 #define CORE_MACHINE_IMMUTABLE_ROM_MAPPING_CAPACITY 4u
 #define CORE_MACHINE_RETIREMENT_QUALIFICATION_CAPACITY 128u
+#define CORE_MACHINE_PLAN_MEMORY_DEVICE_COUNT 4u
+
+typedef struct core_machine_plan_memory_device {
+    type_unsigned_32 physical_start;
+    STD_SIZE_T bytes;
+    core_machine_memory_device_callbacks callbacks;
+    C_VOID *owner;
+} core_machine_plan_memory_device;
+
+typedef struct core_machine_fdc_topology {
+    const core_machine_media_registry *media_registry;
+    core_machine_fdc_drive_bindings drives;
+    core_machine_dma_request_binding dma_request;
+    core_machine_fdc_config config;
+    core_machine_fdc_terminal_observation_provider observation_provider;
+} core_machine_fdc_topology;
+
+typedef struct core_machine_hdc_topology {
+    const core_machine_media_registry *media_registry;
+    core_machine_media_id media_id;
+    core_machine_media_id slave_media_id;
+    core_machine_hdc_config config;
+} core_machine_hdc_topology;
+
+struct core_machine_plan {
+    core_machine_config configuration;
+    core_machine_plan_topology topology;
+    core_machine_timing_declaration declarations[
+        CORE_MACHINE_TIMING_CAPABILITY_COUNT];
+    STD_SIZE_T declaration_count;
+    core_machine_plan_memory_device memory_devices[
+        CORE_MACHINE_PLAN_MEMORY_DEVICE_COUNT];
+    STD_SIZE_T memory_device_count;
+    type_unsigned_8 *d4_memory_parity_mask;
+    const core_machine_media_registry *media_registry;
+    core_machine_display_provider_slot *display_provider;
+    core_machine_fdc_terminal_observation_provider fdc_observation_provider;
+};
 
 typedef struct core_machine_trace_state {
     core_machine_trace_provider provider;
@@ -257,4 +295,8 @@ type_status core_machine_create_with_test_memory_allocation(
 type_status core_machine_create_with_test_port_allocation(
     const core_machine_config *config, core_machine **out_machine,
     core_machine_port_test_allocation *test_allocation);
+type_status core_machine_configure_fdc(core_machine *machine,
+    const core_machine_fdc_topology *topology);
+type_status core_machine_configure_hdc(core_machine *machine,
+    const core_machine_hdc_topology *topology);
 #endif

@@ -1,5 +1,17 @@
 #include "core/machine/media_interface.h"
 
+typedef struct core_machine_media_binding {
+    core_machine_media_id id;
+    C_VOID *context;
+    const core_machine_media_provider *provider;
+} core_machine_media_binding;
+
+struct core_machine_media_registry {
+    core_machine_media_binding bindings[CORE_MACHINE_MEDIA_MAX_DEVICES];
+    type_unsigned_32 binding_count;
+    type_bool frozen;
+};
+
 static C_VOID core_machine_media_set_result(core_machine_media_result *out_result,
     core_machine_media_result result)
 {
@@ -67,9 +79,16 @@ static type_status core_machine_media_get_sector_range(
     return TYPE_STATUS_OK;
 }
 
-C_VOID core_machine_media_registry_initialize(core_machine_media_registry *registry)
+type_status core_machine_media_registry_create(core_machine_media_registry **out_registry)
 {
-    if (registry != STD_NULL) STD_MEMSET(registry, TYPE_ZERO_8, sizeof(*registry));
+    core_machine_media_registry *registry;
+
+    if (out_registry == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    *out_registry = STD_NULL;
+    registry = (core_machine_media_registry *)STD_CALLOC(1u, sizeof(*registry));
+    if (registry == STD_NULL) return TYPE_STATUS_NO_MEMORY;
+    *out_registry = registry;
+    return TYPE_STATUS_OK;
 }
 
 type_status core_machine_media_registry_bind(core_machine_media_registry *registry,
@@ -99,9 +118,9 @@ type_status core_machine_media_registry_freeze(core_machine_media_registry *regi
     return TYPE_STATUS_OK;
 }
 
-C_VOID core_machine_media_registry_finalize(core_machine_media_registry *registry)
+C_VOID core_machine_media_registry_destroy(core_machine_media_registry *registry)
 {
-    if (registry != STD_NULL) STD_MEMSET(registry, TYPE_ZERO_8, sizeof(*registry));
+    STD_FREE(registry);
 }
 
 type_status core_machine_media_query(const core_machine_media_registry *registry,

@@ -43,7 +43,7 @@ struct vm_session {
     C_INT active;
     vm_platform_request_transport *request_transport;
     core_machine_config core_machine_config;
-    core_machine_plan core_machine_plan;
+    core_machine_plan *core_machine_plan;
     const vm_profile_default_pc_at_descriptor *profile;
     core_machine *core_machine;
     core_machine_dma_request_binding fdc_dma_request;
@@ -53,8 +53,8 @@ struct vm_session {
     t_debug debug;
     t_bios default_bios;
     vm_profile_default_context default_profile_context;
-    core_machine_media_registry media_registry;
-    core_machine_display_provider_slot display_provider;
+    core_machine_media_registry *media_registry;
+    core_machine_display_provider_slot *display_provider;
     core_platform_presentation_mailbox *presentation_mailbox;
     vm_platform_execution_transport *execution_transport;
     core_platform_input_source *input_source;

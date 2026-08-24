@@ -93,10 +93,10 @@ static C_INT core_machine_port_probe_fdc_read_is_independent(C_VOID)
     const core_machine_dma_wiring dma_wiring = { .fdc_channel = 2u,
         .controller_count = CORE_MACHINE_DMA_CONTROLLER_COUNT,
         .cascade_channel = CORE_MACHINE_DMA_CASCADE_CHANNEL };
-    core_machine_media_registry media = {0};
+    core_machine_media_registry *media = STD_NULL;
     core_machine_dma_request_binding dma_request = {0};
     core_machine_fdc_topology topology = {
-        .media_registry = &media,
+        .media_registry = media,
         .drives = {{1u, CORE_MACHINE_MEDIA_ID_INVALID,
             CORE_MACHINE_MEDIA_ID_INVALID, CORE_MACHINE_MEDIA_ID_INVALID}},
         .config = {
@@ -109,12 +109,14 @@ static C_INT core_machine_port_probe_fdc_read_is_independent(C_VOID)
         TYPE_STATUS_OK};
     core_machine *machine = STD_NULL;
     type_unsigned_32 value = 0u;
-    C_INT failed = core_machine_create(&config, &machine) != TYPE_STATUS_OK ||
+    C_INT failed = core_machine_media_registry_create(&media) != TYPE_STATUS_OK ||
+        core_machine_create(&config, &machine) != TYPE_STATUS_OK ||
         core_machine_configure_dma(machine, &dma_wiring, &dma_request) !=
             TYPE_STATUS_OK ||
         core_machine_install_port_provider(machine, 0x03f2u, 0x03f2u,
             &read_provider, &state) != TYPE_STATUS_OK;
 
+    topology.media_registry = media;
     topology.dma_request = dma_request;
     failed |= !failed && core_machine_configure_fdc(machine, &topology) !=
         TYPE_STATUS_OK;
@@ -126,6 +128,7 @@ static C_INT core_machine_port_probe_fdc_read_is_independent(C_VOID)
         core_machine_bus_write(machine, 0x03f2u, 0x1cu) != TYPE_STATUS_OK ||
         machine->fdc.data.dor != 0x1cu || state.writes != 0u);
     core_machine_destroy(machine);
+    core_machine_media_registry_destroy(media);
     return failed;
 }
 
@@ -143,10 +146,10 @@ static C_INT core_machine_port_probe_fdc_write_conflict_is_retained(C_VOID)
     const core_machine_dma_wiring dma_wiring = { .fdc_channel = 2u,
         .controller_count = CORE_MACHINE_DMA_CONTROLLER_COUNT,
         .cascade_channel = CORE_MACHINE_DMA_CASCADE_CHANNEL };
-    core_machine_media_registry media = {0};
+    core_machine_media_registry *media = STD_NULL;
     core_machine_dma_request_binding dma_request = {0};
     core_machine_fdc_topology topology = {
-        .media_registry = &media,
+        .media_registry = media,
         .drives = {{1u, CORE_MACHINE_MEDIA_ID_INVALID,
             CORE_MACHINE_MEDIA_ID_INVALID, CORE_MACHINE_MEDIA_ID_INVALID}},
         .config = {
@@ -158,12 +161,14 @@ static C_INT core_machine_port_probe_fdc_write_conflict_is_retained(C_VOID)
     core_machine_port_probe_state state = {0u, 0u, 0u, TYPE_STATUS_OK,
         TYPE_STATUS_OK};
     core_machine *machine = STD_NULL;
-    C_INT failed = core_machine_create(&config, &machine) != TYPE_STATUS_OK ||
+    C_INT failed = core_machine_media_registry_create(&media) != TYPE_STATUS_OK ||
+        core_machine_create(&config, &machine) != TYPE_STATUS_OK ||
         core_machine_configure_dma(machine, &dma_wiring, &dma_request) !=
             TYPE_STATUS_OK ||
         core_machine_install_port_provider(machine, 0x03f2u, 0x03f2u,
             &write_provider, &state) != TYPE_STATUS_OK;
 
+    topology.media_registry = media;
     topology.dma_request = dma_request;
     failed |= !failed && core_machine_configure_fdc(machine, &topology) !=
         TYPE_STATUS_INVALID_STATE;
@@ -173,6 +178,7 @@ static C_INT core_machine_port_probe_fdc_write_conflict_is_retained(C_VOID)
     failed |= !failed && (core_machine_bus_write(machine, 0x03f2u, 0x4du) !=
             TYPE_STATUS_OK || state.writes != 1u || state.last_write != 0x4du);
     core_machine_destroy(machine);
+    core_machine_media_registry_destroy(media);
     return failed;
 }
 

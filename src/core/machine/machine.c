@@ -4360,14 +4360,13 @@ static type_status core_machine_plan_validate(const core_machine_plan *plan)
          plan->topology.hdc_present != TYPE_TRUE) ||
         (plan->topology.fdc_present && !plan->topology.dma_present) ||
         (plan->topology.hdc_present && !plan->topology.fdc_present &&
-         plan->topology.hdc.config.protocol ==
+         plan->topology.hdc.protocol ==
              CORE_MACHINE_HDC_PROTOCOL_COMPAQ_WD_40MB) ||
-        plan->topology.memory_device_count > CORE_MACHINE_PLAN_MEMORY_DEVICE_COUNT ||
-        (plan->topology.d4_memory_parity_present != TYPE_FALSE &&
-         plan->topology.d4_memory_parity_present != TYPE_TRUE) ||
-        (plan->topology.d4_memory_parity_present &&
-         (!plan->topology.d4_platform_present ||
-          plan->topology.d4_memory_parity_mask == STD_NULL))) {
+        plan->memory_device_count > CORE_MACHINE_PLAN_MEMORY_DEVICE_COUNT ||
+        (plan->d4_memory_parity_mask != STD_NULL &&
+         !plan->topology.d4_platform_present) ||
+        ((plan->topology.fdc_present || plan->topology.hdc_present) &&
+         plan->media_registry == STD_NULL)) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
     for (index = 0u; index < plan->declaration_count; ++index) {
@@ -4418,17 +4417,21 @@ static C_VOID core_machine_plan_d4_memory_write(C_VOID *owner,
 }
 
 static type_status core_machine_plan_apply_topology(core_machine *machine,
-    const core_machine_plan_topology *topology)
+    const core_machine_plan *plan)
 {
     core_machine_fdc_topology fdc;
+    core_machine_hdc_topology hdc;
+    core_machine_display_config display;
+    const core_machine_plan_topology *topology;
     type_status status;
     STD_SIZE_T index;
 
-    if (machine == STD_NULL || topology == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (machine == STD_NULL || plan == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    topology = &plan->topology;
     if (topology->absent_memory_present && (status = core_machine_configure_absent_memory(
             machine, &topology->absent_memory)) != TYPE_STATUS_OK) return status;
-    for (index = 0u; index < topology->memory_device_count; ++index) {
-        const core_machine_plan_memory_device *device = &topology->memory_devices[index];
+    for (index = 0u; index < plan->memory_device_count; ++index) {
+        const core_machine_plan_memory_device *device = &plan->memory_devices[index];
 
         if ((status = core_machine_register_memory_device(machine,
                 device->physical_start, device->bytes, &device->callbacks,
@@ -4438,8 +4441,8 @@ static type_status core_machine_plan_apply_topology(core_machine *machine,
             machine, &topology->planar_parity)) != TYPE_STATUS_OK) return status;
     if (topology->d4_platform_present && (status = core_machine_configure_d4_platform(
             machine, &topology->d4_platform)) != TYPE_STATUS_OK) return status;
-    if (topology->d4_memory_parity_present) {
-        machine->d4_plan_parity_mask = topology->d4_memory_parity_mask;
+    if (plan->d4_memory_parity_mask != STD_NULL) {
+        machine->d4_plan_parity_mask = plan->d4_memory_parity_mask;
         status = core_machine_enable_memory_parity(machine, 1024u * 1024u,
             core_machine_plan_d4_parity_fault, machine);
         if (status != TYPE_STATUS_OK) return status;
@@ -4447,21 +4450,35 @@ static type_status core_machine_plan_apply_topology(core_machine *machine,
             core_machine_plan_d4_memory_write, machine);
         if (status != TYPE_STATUS_OK) return status;
     }
-    if (topology->display_present && (status = core_machine_configure_display(
-            machine, &topology->display)) != TYPE_STATUS_OK) return status;
+    if (topology->display_present) {
+        display = topology->display;
+        if ((status = core_machine_configure_display(machine, &display)) !=
+                TYPE_STATUS_OK) return status;
+        core_machine_display_provider_slot_freeze(plan->display_provider);
+    }
     if (topology->dma_present && (status = core_machine_configure_dma(machine,
             &topology->dma, &machine->fdc_dma_request)) != TYPE_STATUS_OK) return status;
     if (topology->rtc_cmos_present && (status = core_machine_configure_rtc_cmos(
             machine, &topology->rtc_cmos)) != TYPE_STATUS_OK) return status;
     if (topology->fdc_present) {
-        fdc = topology->fdc;
+        fdc.media_registry = plan->media_registry;
+        fdc.drives = topology->fdc_drives;
+        fdc.config = topology->fdc;
+        fdc.observation_provider = plan->fdc_observation_provider;
         fdc.dma_request = machine->fdc_dma_request;
         if ((status = core_machine_configure_fdc(machine, &fdc)) != TYPE_STATUS_OK) {
             return status;
         }
     }
-    if (topology->hdc_present && (status = core_machine_configure_hdc(machine,
-            &topology->hdc)) != TYPE_STATUS_OK) return status;
+    if (topology->hdc_present) {
+        hdc.media_registry = plan->media_registry;
+        hdc.media_id = topology->hdc_media_id;
+        hdc.slave_media_id = topology->hdc_slave_media_id;
+        hdc.config = topology->hdc;
+        if ((status = core_machine_configure_hdc(machine, &hdc)) != TYPE_STATUS_OK) {
+            return status;
+        }
+    }
     return TYPE_STATUS_OK;
 }
 
@@ -4480,27 +4497,123 @@ core_machine_plan_declaration_find(const core_machine_plan *plan,
     return STD_NULL;
 }
 
-C_VOID core_machine_plan_initialize(core_machine_plan *out_plan,
-    const core_machine_config *configuration)
+type_status core_machine_plan_create(const core_machine_config *configuration,
+    core_machine_plan **out_plan)
 {
     STD_SIZE_T index;
+    core_machine_plan *plan;
 
-    if (out_plan == STD_NULL) return;
-    STD_MEMSET(out_plan, 0, sizeof(*out_plan));
-    if (configuration != STD_NULL) out_plan->configuration = *configuration;
-    out_plan->declaration_count = CORE_MACHINE_TIMING_CAPABILITY_COUNT;
-    for (index = 0u; index < out_plan->declaration_count; ++index) {
+    if (out_plan == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    *out_plan = STD_NULL;
+    plan = (core_machine_plan *)STD_CALLOC(1u, sizeof(*plan));
+    if (plan == STD_NULL) return TYPE_STATUS_NO_MEMORY;
+    if (configuration != STD_NULL) plan->configuration = *configuration;
+    plan->declaration_count = CORE_MACHINE_TIMING_CAPABILITY_COUNT;
+    for (index = 0u; index < plan->declaration_count; ++index) {
         core_machine_timing_capability capability =
             (core_machine_timing_capability)index;
 
-        out_plan->declarations[index].capability = capability;
-        out_plan->declarations[index].seam =
+        plan->declarations[index].capability = capability;
+        plan->declarations[index].seam =
             core_machine_timing_capability_seam(capability);
-        out_plan->declarations[index].disposition =
+        plan->declarations[index].disposition =
             core_machine_timing_capability_is_non_guest_time(capability) ?
             CORE_MACHINE_TIMING_DISPOSITION_NON_GUEST_TIME :
             CORE_MACHINE_TIMING_DISPOSITION_L2_FALLBACK;
     }
+    *out_plan = plan;
+    return TYPE_STATUS_OK;
+}
+
+C_VOID core_machine_plan_destroy(core_machine_plan *plan)
+{
+    STD_FREE(plan);
+}
+
+type_status core_machine_plan_set_topology(core_machine_plan *plan,
+    const core_machine_plan_topology *topology)
+{
+    if (plan == STD_NULL || topology == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    plan->topology = *topology;
+    return TYPE_STATUS_OK;
+}
+
+type_status core_machine_plan_bind_media_registry(core_machine_plan *plan,
+    const core_machine_media_registry *registry)
+{
+    if (plan == STD_NULL || registry == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    plan->media_registry = registry;
+    return TYPE_STATUS_OK;
+}
+
+type_status core_machine_plan_bind_display_provider(core_machine_plan *plan,
+    core_machine_display_provider_slot *provider)
+{
+    if (plan == STD_NULL || provider == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    plan->display_provider = provider;
+    return TYPE_STATUS_OK;
+}
+
+type_status core_machine_plan_bind_fdc_terminal_observation(core_machine_plan *plan,
+    core_machine_fdc_terminal_observation_provider provider)
+{
+    if (plan == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    plan->fdc_observation_provider = provider;
+    return TYPE_STATUS_OK;
+}
+
+type_status core_machine_plan_configure_fdc(core_machine_plan *plan,
+    const core_machine_fdc_drive_bindings *drives,
+    const core_machine_fdc_config *config)
+{
+    if (plan == STD_NULL || drives == STD_NULL || config == STD_NULL) {
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
+    plan->topology.fdc_present = TYPE_TRUE;
+    plan->topology.fdc_drives = *drives;
+    plan->topology.fdc = *config;
+    return TYPE_STATUS_OK;
+}
+
+type_status core_machine_plan_configure_hdc(core_machine_plan *plan,
+    core_machine_media_id media_id, core_machine_media_id slave_media_id,
+    const core_machine_hdc_config *config)
+{
+    if (plan == STD_NULL || config == STD_NULL ||
+        media_id == CORE_MACHINE_MEDIA_ID_INVALID || slave_media_id == media_id) {
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
+    plan->topology.hdc_present = TYPE_TRUE;
+    plan->topology.hdc_media_id = media_id;
+    plan->topology.hdc_slave_media_id = slave_media_id;
+    plan->topology.hdc = *config;
+    return TYPE_STATUS_OK;
+}
+
+type_status core_machine_plan_register_memory_device(core_machine_plan *plan,
+    type_unsigned_32 physical_start, STD_SIZE_T bytes,
+    const core_machine_memory_device_callbacks *callbacks, C_VOID *owner)
+{
+    core_machine_plan_memory_device *device;
+
+    if (plan == STD_NULL || callbacks == STD_NULL || bytes == 0u ||
+        plan->memory_device_count >= CORE_MACHINE_PLAN_MEMORY_DEVICE_COUNT) {
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
+    device = &plan->memory_devices[plan->memory_device_count++];
+    device->physical_start = physical_start;
+    device->bytes = bytes;
+    device->callbacks = *callbacks;
+    device->owner = owner;
+    return TYPE_STATUS_OK;
+}
+
+type_status core_machine_plan_enable_d4_memory_parity(core_machine_plan *plan,
+    type_unsigned_8 *mask)
+{
+    if (plan == STD_NULL || mask == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    plan->d4_memory_parity_mask = mask;
+    return TYPE_STATUS_OK;
 }
 static C_INT core_machine_external_cycle_timing_is_valid(
     const core_machine_external_cycle_timing *timing)
@@ -5081,9 +5194,6 @@ type_status core_machine_configure_display(core_machine *machine,
     }
     machine->display_ports = config->ports;
     machine->display_configured = TYPE_TRUE;
-    if (config->provider != STD_NULL) {
-        core_machine_display_provider_slot_freeze(config->provider);
-    }
     return TYPE_STATUS_OK;
 }
 
@@ -6336,7 +6446,7 @@ type_status core_machine_create_from_plan(const core_machine_plan *plan,
     status = core_machine_create_internal(&plan->configuration, out_machine,
         STD_NULL, STD_NULL);
     if (status != TYPE_STATUS_OK) return status;
-    status = core_machine_plan_apply_topology(*out_machine, &plan->topology);
+    status = core_machine_plan_apply_topology(*out_machine, plan);
     if (status != TYPE_STATUS_OK) {
         core_machine_destroy(*out_machine);
         *out_machine = STD_NULL;

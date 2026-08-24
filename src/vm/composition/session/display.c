@@ -32,7 +32,7 @@ core_machine_display_kind vm_session_publish_display(vm_session *machine,
 
     if (machine == STD_NULL) return CORE_MACHINE_DISPLAY_KIND_TEXT;
     STD_MEMSET(&snapshot, 0, sizeof(snapshot));
-    if (!core_machine_display_capture_snapshot_from(&machine->display_provider,
+    if (!core_machine_display_capture_snapshot_from(machine->display_provider,
         &snapshot)) return CORE_MACHINE_DISPLAY_KIND_TEXT;
     buffer_changed = snapshot.buffer_changed;
     cursor_changed = snapshot.cursor_changed;
@@ -89,7 +89,7 @@ static C_VOID vmCompositionDisplayModeChanged(C_VOID *context)
 C_VOID vm_session_bind_display(vm_session *machine)
 {
     if (machine == STD_NULL) return;
-    core_machine_display_provider_slot_bind(&machine->display_provider,
+    core_machine_display_provider_slot_bind(machine->display_provider,
         machine, vmCompositionDisplayModeChanged,
         machine, vm_session_capture_display_snapshot);
 }

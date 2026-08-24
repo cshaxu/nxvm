@@ -74,10 +74,10 @@ C_INT main(C_VOID)
         .alternate_status_device_control_port = 0x03f6u,
         .irq = 14u, .lba28_supported = TYPE_TRUE
     };
-    core_machine_media_registry media = {0};
+    core_machine_media_registry *media = STD_NULL;
     core_machine_dma_request_binding dma_request = {0};
     core_machine_fdc_topology fdc_topology = {
-        .media_registry = &media,
+        .media_registry = STD_NULL,
         .drives = {{1u, CORE_MACHINE_MEDIA_ID_INVALID,
             CORE_MACHINE_MEDIA_ID_INVALID, CORE_MACHINE_MEDIA_ID_INVALID}},
         .config = {
@@ -87,7 +87,7 @@ C_INT main(C_VOID)
         }
     };
     core_machine_hdc_topology hdc_topology = {
-        .media_registry = &media,
+        .media_registry = STD_NULL,
         .media_id = 2u,
         .config = {
             .data_port = 0x01f0u, .error_features_port = 0x01f1u,
@@ -109,9 +109,11 @@ C_INT main(C_VOID)
     type_status hdc_status = TYPE_STATUS_OK;
     C_INT failed = 0;
 
-    core_machine_media_registry_initialize(&media);
-    if (core_machine_create(&config, &machine) != TYPE_STATUS_OK) failed |= 0x01;
+    if (core_machine_media_registry_create(&media) != TYPE_STATUS_OK ||
+        core_machine_create(&config, &machine) != TYPE_STATUS_OK) failed |= 0x01;
     if (!failed) {
+        fdc_topology.media_registry = media;
+        hdc_topology.media_registry = media;
         fdc_topology.dma_request = dma_request;
         fdc_before_dma = core_machine_configure_fdc(machine, &fdc_topology);
         dma_status = core_machine_configure_dma(machine, &dma_wiring, &dma_request);
@@ -128,7 +130,7 @@ C_INT main(C_VOID)
             hdc_status != TYPE_STATUS_OK ||
             core_machine_configure_hdc(machine, &hdc_topology) !=
                 TYPE_STATUS_INVALID_STATE ||
-            core_machine_media_registry_freeze(&media) != TYPE_STATUS_OK ||
+            core_machine_media_registry_freeze(media) != TYPE_STATUS_OK ||
             core_machine_freeze_execution_providers(machine) != TYPE_STATUS_OK ||
             core_machine_reset(machine) != TYPE_STATUS_OK) {
             failed |= 0x04;
@@ -183,7 +185,7 @@ C_INT main(C_VOID)
         }
     }
     core_machine_destroy(machine);
-    core_machine_media_registry_finalize(&media);
+    core_machine_media_registry_destroy(media);
     if (failed) {
         STD_FPRINTF(STD_STDERR,
             "M5:T296:S4:CONTROLLER-AUTHORITY:FAIL bits=%x status=%02x error=%02x fdc0=%d dma=%d fdc=%d hdc=%d\n",

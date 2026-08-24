@@ -33,12 +33,12 @@ C_INT main(C_VOID)
         core_machine_port_write(&session->core_machine->executor_port,
             CORE_MACHINE_VADP_PORT_GRAPHICS_DATA, 0x07u);
         failed |= !t386_s28_session_write(session, 0x80u) ||
-            !core_machine_display_capture_snapshot_from(&session->display_provider,
+            !core_machine_display_capture_snapshot_from(session->display_provider,
             &snapshot) || snapshot.pixels[0] != 15u;
         core_machine_port_write(&session->core_machine->executor_port,
             CORE_MACHINE_VADP_PORT_COMPAQ_MISCELLANEOUS_OUTPUT, 0x20u);
         failed |= !t386_s28_session_write(session, 0x00u) ||
-            !core_machine_display_capture_snapshot_from(&session->display_provider,
+            !core_machine_display_capture_snapshot_from(session->display_provider,
             &snapshot) || snapshot.pixels[0] != 0u;
     }
     if (!failed) {
@@ -47,7 +47,7 @@ C_INT main(C_VOID)
             CORE_MACHINE_VADP_PORT_GRAPHICS_INDEX, 6u);
         core_machine_port_write(&session->core_machine->executor_port,
             CORE_MACHINE_VADP_PORT_GRAPHICS_DATA, 0x07u);
-        failed |= !core_machine_display_capture_snapshot_from(&session->display_provider,
+        failed |= !core_machine_display_capture_snapshot_from(session->display_provider,
             &snapshot) || snapshot.pixels[0] != 0u;
     }
     vm_session_destroy(session);

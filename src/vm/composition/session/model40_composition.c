@@ -21,9 +21,14 @@ static C_VOID vm_session_model40_storage_rollback(vm_session *session)
     session->presentation_mailbox = STD_NULL;
     core_product_debugger_destroy(session->debugger);
     session->debugger = STD_NULL;
-    core_machine_display_provider_slot_finalize(&session->display_provider);
     core_machine_destroy(session->core_machine);
     session->core_machine = STD_NULL;
+    core_machine_display_provider_slot_destroy(session->display_provider);
+    session->display_provider = STD_NULL;
+    core_machine_media_registry_destroy(session->media_registry);
+    session->media_registry = STD_NULL;
+    core_machine_plan_destroy(session->core_machine_plan);
+    session->core_machine_plan = STD_NULL;
 }
 
 static type_status vm_session_model40_materialize_controllers(vm_session *session,
@@ -32,31 +37,26 @@ static type_status vm_session_model40_materialize_controllers(vm_session *sessio
     const core_machine_fdc_drive_bindings drives = {{VM_SESSION_MEDIA_FDD_ID,
         CORE_MACHINE_MEDIA_ID_INVALID, CORE_MACHINE_MEDIA_ID_INVALID,
         CORE_MACHINE_MEDIA_ID_INVALID}};
-    core_machine_fdc_topology fdc = {0};
-    core_machine_hdc_topology hdc = {0};
+    core_machine_fdc_config fdc = {0};
+    core_machine_hdc_config hdc = {0};
 
     if (session == STD_NULL || plan == STD_NULL || !session->model40_private) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
-    fdc.media_registry = &session->media_registry;
-    fdc.drives = drives;
-    fdc.config = (core_machine_fdc_config) { 0x03f2u, 0x03f4u, 0x03f5u,
+    fdc = (core_machine_fdc_config) { 0x03f2u, 0x03f4u, 0x03f5u,
         0x03f7u, 0x03f7u, 6u, 2u, CORE_MACHINE_FDC_UNREADY_READ_DESKPRO_REFERENCE };
-    fdc.observation_provider = (core_machine_fdc_terminal_observation_provider) {
-        vm_session_model40_capture_fdc_terminal, session };
-    hdc.media_registry = &session->media_registry;
-    hdc.media_id = VM_SESSION_MEDIA_HDD_ID;
-    if (session->retained_config.hdd_slave_image != STD_NULL) {
-        hdc.slave_media_id = VM_SESSION_MEDIA_HDD_SLAVE_ID;
-    }
-    hdc.config = (core_machine_hdc_config) { 0x01f0u, 0x01f1u, 0x01f2u,
+    hdc = (core_machine_hdc_config) { 0x01f0u, 0x01f1u, 0x01f2u,
         0x01f3u, 0x01f4u, 0x01f5u, 0x01f6u, 0x01f7u, 0x03f6u, 0x03f7u,
         14u, TYPE_FALSE, CORE_MACHINE_HDC_PROTOCOL_COMPAQ_WD_40MB };
-    plan->topology.fdc_present = TYPE_TRUE;
-    plan->topology.fdc = fdc;
-    plan->topology.hdc_present = TYPE_TRUE;
-    plan->topology.hdc = hdc;
-    return TYPE_STATUS_OK;
+    if (core_machine_plan_configure_fdc(plan, &drives, &fdc) != TYPE_STATUS_OK ||
+        core_machine_plan_bind_fdc_terminal_observation(plan,
+            (core_machine_fdc_terminal_observation_provider) {
+                vm_session_model40_capture_fdc_terminal, session }) != TYPE_STATUS_OK) {
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
+    return core_machine_plan_configure_hdc(plan, VM_SESSION_MEDIA_HDD_ID,
+        session->retained_config.hdd_slave_image == STD_NULL ?
+            CORE_MACHINE_MEDIA_ID_INVALID : VM_SESSION_MEDIA_HDD_SLAVE_ID, &hdc);
 }
 
 type_status vm_session_model40_storage_initialize(vm_session *session)
@@ -67,6 +67,7 @@ type_status vm_session_model40_storage_initialize(vm_session *session)
         .cascade_channel = CORE_MACHINE_DMA_CASCADE_CHANNEL };
     core_machine_d4_platform_config d4 = { CORE_MACHINE_PC_AT_PORT_B, 0u, 2u };
     core_machine_rtc_cmos_config rtc = {0};
+    core_machine_plan_topology topology = {0};
     type_status status;
 
     if (session == STD_NULL || session->core_machine != STD_NULL ||
@@ -78,13 +79,22 @@ type_status vm_session_model40_storage_initialize(vm_session *session)
     status = vm_profile_model40_d4_memory_load_compatibility(
         &session->model40_d4_memory, &session->model40_rom);
     if (status != TYPE_STATUS_OK) return status;
-    core_machine_display_provider_slot_initialize(&session->display_provider);
+    status = core_machine_display_provider_slot_create(&session->display_provider);
+    if (status != TYPE_STATUS_OK) return status;
     vm_session_bind_display(session);
-    core_machine_media_registry_initialize(&session->media_registry);
-    core_machine_plan_initialize(&session->core_machine_plan,
-        &session->core_machine_config);
-    status = vm_profile_model40_d4_memory_materialize_plan(&session->model40_d4_memory,
+    status = core_machine_media_registry_create(&session->media_registry);
+    if (status != TYPE_STATUS_OK) {
+        vm_session_model40_storage_rollback(session);
+        return status;
+    }
+    status = core_machine_plan_create(&session->core_machine_config,
         &session->core_machine_plan);
+    if (status != TYPE_STATUS_OK) {
+        vm_session_model40_storage_rollback(session);
+        return status;
+    }
+    status = vm_profile_model40_d4_memory_materialize_plan(&session->model40_d4_memory,
+        session->core_machine_plan);
     if (status != TYPE_STATUS_OK) {
         vm_session_model40_storage_rollback(session);
         return status;
@@ -107,7 +117,6 @@ type_status vm_session_model40_storage_initialize(vm_session *session)
     display.ports = (core_machine_display_port_topology) {
         0x03c0u, 0x03c1u, 0x03c4u, 0x03c5u, 0x03ceu, 0x03cfu,
         0x03d4u, 0x03dau };
-    display.provider = &session->display_provider;
     rtc.index_port = 0x0070u;
     rtc.data_port = 0x0071u;
     rtc.irq = 8u;
@@ -120,21 +129,34 @@ type_status vm_session_model40_storage_initialize(vm_session *session)
     rtc.defaults[4] = (core_machine_rtc_default_byte) { CORE_MACHINE_RTC_BASEMEM_LSB, 0u };
     rtc.defaults[5] = (core_machine_rtc_default_byte) { CORE_MACHINE_RTC_BASEMEM_MSB, 0x04u };
     rtc.default_count = CORE_MACHINE_RTC_DEFAULT_COUNT;
-    session->core_machine_plan.topology.d4_platform_present = TYPE_TRUE;
-    session->core_machine_plan.topology.d4_platform = d4;
-    session->core_machine_plan.topology.display_present = TYPE_TRUE;
-    session->core_machine_plan.topology.display = display;
-    session->core_machine_plan.topology.dma_present = TYPE_TRUE;
-    session->core_machine_plan.topology.dma = dma;
-    session->core_machine_plan.topology.rtc_cmos_present = TYPE_TRUE;
-    session->core_machine_plan.topology.rtc_cmos = rtc;
-    status = vm_session_model40_materialize_controllers(session,
-        &session->core_machine_plan);
+    topology.d4_platform_present = TYPE_TRUE;
+    topology.d4_platform = d4;
+    topology.display_present = TYPE_TRUE;
+    topology.display = display;
+    topology.dma_present = TYPE_TRUE;
+    topology.dma = dma;
+    topology.rtc_cmos_present = TYPE_TRUE;
+    topology.rtc_cmos = rtc;
+    status = core_machine_plan_set_topology(session->core_machine_plan, &topology);
+    if (status == TYPE_STATUS_OK) {
+        status = core_machine_plan_bind_media_registry(session->core_machine_plan,
+            session->media_registry);
+    }
+    if (status == TYPE_STATUS_OK) {
+        status = core_machine_plan_bind_display_provider(session->core_machine_plan,
+            session->display_provider);
+    }
     if (status != TYPE_STATUS_OK) {
         vm_session_model40_storage_rollback(session);
         return status;
     }
-    status = core_machine_create_from_plan(&session->core_machine_plan,
+    status = vm_session_model40_materialize_controllers(session,
+        session->core_machine_plan);
+    if (status != TYPE_STATUS_OK) {
+        vm_session_model40_storage_rollback(session);
+        return status;
+    }
+    status = core_machine_create_from_plan(session->core_machine_plan,
         &session->core_machine);
     if (status == TYPE_STATUS_OK) {
         status = core_machine_get_fdc_dma_request_binding(session->core_machine,
