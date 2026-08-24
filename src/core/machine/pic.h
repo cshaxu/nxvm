@@ -14,7 +14,6 @@ extern "C" {
 
 typedef enum {ICW1, ICW2, ICW3, ICW4, OCW1} t_pic_init_status;
 
-#define ocw1 imr
 #define VPIC_MAX_IRQ_COUNT 8
 typedef struct {
     type_unsigned_8 irr;  /* Interrupt Request Register */
@@ -105,13 +104,6 @@ typedef struct core_machine_pic_irq_source {
 
 /* POLL bits */
 #define VPIC_POLL_I 0x80 /* must be 1 for poll command */
-
-/* Get id of highest priority interrupts in different registers */
-#define VPIC_GetIntrTopId(rpic) (GetRegTopId((rpic), \
-    ((rpic)->data.irr & (~((rpic)->data.imr)))))
-#define VPIC_GetIsrTopId(rpic)  (GetRegTopId((rpic), (rpic)->data.isr))
-#define VPIC_GetIrrTopId(rpic)  (GetRegTopId((rpic), (rpic)->data.irr))
-#define VPIC_GetImrTopId(rpic)  (GetRegTopId((rpic), (rpic)->data.imr))
 
 C_VOID core_machine_pic_initialize(t_pic *master, t_pic *slave, t_port *port);
 C_VOID core_machine_pic_reset(t_pic *master, t_pic *slave);

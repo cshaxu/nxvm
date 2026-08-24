@@ -2,7 +2,28 @@
 
 ## Current Work
 
-**Active: M5 T456, between accepted subtasks.**
+**Active: M5 T456 S4 - PIC retained-command proof and closure.**
+
+## M5 T456 S4 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | The owner approved implementation of the prepared 8259A repair and requested continued execution on 2026-08-24. S1 accepted the bounded S2--S4 plan; S3 is accepted at `98ccd796`. |
+| Objective | Close the retained 18-row 8259A command, priority, poll, mask, EOI, AEOI, reset, cascade and logical-delivery contract with focused proof and remove any superseded PIC path. |
+| Non-goals | Do not add electrical timing, spurious-race emulation, arbitrary/multi-slave board topology, ELCR/PCI/APIC routing, VM/profile state, a second CPU dispatch route, or an external-source-derived behavior. |
+| Reference Baseline | `98ccd796`; T450 PIC-R1--R5, PIC-F1--F8 and PIC-T1--T5; T456 S1 source reconciliation; Intel 8259A `231468-003`; IBM AT selected wiring. |
+| Candidate Proposal | [Core PIC 8259A phase contract](../proposals/m5-core-pic-8259a-phase-contract.md). |
+| Files And ABI Surface | Expected PIC-local source/tests and T456 evidence/history/index/Current only. No public VM/profile ABI, firmware, guest media or source import is permitted. |
+| Applicable Rules | `rules/EXECUTION.md`, `rules/DOCUMENT.md`, `rules/ARCHITECTURE.md`, `rules/CODING.md`, design architecture/coding, T456 S1 and S2/S3 evidence. PIC remains sole owner of controller state and Core CPU the only delivery consumer. |
+| Verification | Reconcile all 18 retained rows to focused command/state traces or an explicit maintained boundary; run affected PIC/IRQ/CPU smokes, configured build, full current-gate and documentation governance. |
+| Expected Markers | Every row has a source-backed proof/disposition; poll, masks, EOI/AEOI, rotation, special-mask, SFNM, reset, programmed cascade and CPU acknowledgement retain one owner/path; dead or parallel PIC code is absent. |
+| Asset Needs | Existing admitted Intel/IBM sources, T450 ledgers and local code only; no new artifact, firmware, guest media, third-party code or research import. |
+| Reporting Requirements | Record the 18-row closure table, every command/caller sweep, actual code delta, complete gate results, non-claims and any newly discovered defect disposition. |
+| Stop Conditions | Stop for a defect needing a public composition interface, a new topology policy, electrical timing value, source admission, or a mechanism outside the finite PIC contract; record/transfer rather than extend scope. |
+| Exit Criteria | All 18 rows are evidenced, required regressions/gates pass, actual-change/minimalism review finds no retained superseded path, and the T456 closure record maps every owner request to evidence. |
+| Original Owner Request | Implement the 8259A repair after manual and external-emulator cross-validation, with minimal single-owner logic, then continue through the complete task. |
+| Similar-Issue Sweep | Sweep PIC command parsing, `scan`/`peek`/`get` delivery callers, port read/poll, EOI/AEOI/rotation, masking/special-mask/SFNM, lifecycle/reset, cascade relation and every focused PIC fixture; classify all remaining hits. |
 
 ## Current Technical Baseline
 

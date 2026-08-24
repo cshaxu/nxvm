@@ -108,7 +108,7 @@ static type_bool core_machine_pic_sfnm_cascade_can_interrupt(
     return core_machine_pic_cascade_line(master, slave, &cascade_line) &&
         master_id == cascade_line &&
         TYPE_GET_BIT(master->data.icw4, VPIC_ICW4_SFNM) &&
-        VPIC_GetIsrTopId((t_pic *)master) == cascade_line &&
+        GetRegTopId((t_pic *)master, master->data.isr) == cascade_line &&
         core_machine_pic_select_controller(slave, &slave_id);
 }
 
@@ -181,7 +181,6 @@ static C_VOID core_machine_pic_begin_initialization(t_pic *pic,
     pic->data.icw2 = TYPE_ZERO_8;
     pic->data.icw3 = TYPE_ZERO_8;
     pic->data.icw4 = TYPE_ZERO_8;
-    pic->data.ocw1 = TYPE_ZERO_8;
     pic->data.ocw2 = TYPE_ZERO_8;
     pic->data.ocw3 = VPIC_OCW3_RR;
     pic->data.irx = TYPE_ZERO_8;
@@ -357,7 +356,7 @@ static C_VOID io_write_00x0(t_pic *rpic, t_port *port) {
                 /* 111: Rotate Priority on Specific EOI Command */
                 rpic->data.ocw2 = port->data.ioByte;
                 if (rpic->data.isr) {
-                    id = VPIC_GetIsrTopId(rpic);
+                    id = rpic->data.ocw2 & VPIC_OCW2_L;
                     TYPE_CLEAR_BIT(rpic->data.isr, VPIC_ISR_IRQ(id));
                     rpic->data.irx = ((rpic->data.ocw2 & VPIC_OCW2_L) + 1) % VPIC_MAX_IRQ_COUNT;
                 }
@@ -442,7 +441,7 @@ static C_VOID io_write_00x1(t_pic *rpic, t_port *port) {
         rpic->data.status = OCW1;
         break;
     case OCW1:
-        rpic->data.ocw1 = port->data.ioByte;
+        rpic->data.imr = port->data.ioByte;
         break;
     default:
         break;

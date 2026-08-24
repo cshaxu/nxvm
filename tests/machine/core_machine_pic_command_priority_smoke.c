@@ -75,7 +75,7 @@ static C_INT pic_command_priority_test_initialization_and_registers(C_VOID)
     failed |= fixture.master.data.irr != 0u || fixture.master.data.imr != 0u ||
         fixture.master.data.isr != 0u || fixture.master.data.irx != 0u ||
         fixture.master.data.icw2 != 0u || fixture.master.data.icw3 != 0u ||
-        fixture.master.data.icw4 != 0u || fixture.master.data.ocw1 != 0u ||
+        fixture.master.data.icw4 != 0u || fixture.master.data.imr != 0u ||
         fixture.master.data.ocw2 != 0u ||
         fixture.master.data.ocw3 != VPIC_OCW3_RR ||
         fixture.master.data.status != ICW2;
@@ -115,6 +115,18 @@ static C_INT pic_command_priority_test_eoi_and_rotation(C_VOID)
     core_machine_port_write(&fixture.port, 0x0020u, 0x20u);
     failed |= core_machine_pic_get_interrupt(&fixture.master, &fixture.slave) != 0x08u;
     core_machine_port_write(&fixture.port, 0x0020u, 0x20u);
+    pic_command_priority_finalize(&fixture);
+
+    pic_command_priority_initialize(&fixture, 0x01u, 0x01u);
+    pic_command_priority_raise(&fixture, &irq5, 5u);
+    failed |= core_machine_pic_get_interrupt(&fixture.master, &fixture.slave) != 0x0du;
+    pic_command_priority_raise(&fixture, &irq3, 3u);
+    failed |= core_machine_pic_get_interrupt(&fixture.master, &fixture.slave) != 0x0bu;
+    core_machine_port_write(&fixture.port, 0x0020u, 0xe5u);
+    failed |= !TYPE_GET_BIT(fixture.master.data.isr, VPIC_ISR_IRQ(3u)) ||
+        TYPE_GET_BIT(fixture.master.data.isr, VPIC_ISR_IRQ(5u)) ||
+        fixture.master.data.irx != 6u;
+    core_machine_port_write(&fixture.port, 0x0020u, 0x63u);
     pic_command_priority_finalize(&fixture);
     return failed;
 }

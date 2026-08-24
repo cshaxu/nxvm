@@ -45,6 +45,7 @@ static C_INT pic_ocw3_test_read_and_poll(C_VOID)
     pic_ocw3_fixture fixture;
     core_machine_pic_irq_source irq4;
     core_machine_pic_irq_source irq5;
+    core_machine_pic_irq_source irq14;
     C_INT failed = 0;
 
     pic_ocw3_initialize(&fixture, 0x01u);
@@ -69,6 +70,18 @@ static C_INT pic_ocw3_test_read_and_poll(C_VOID)
     core_machine_port_write(&fixture.port, 0x0020u, 0x0cu);
     failed |= core_machine_port_read(&fixture.port, 0x0020u) !=
         (VPIC_POLL_I | 5u) || fixture.master.data.isr != 0u;
+    pic_ocw3_finalize(&fixture);
+
+    pic_ocw3_initialize(&fixture, 0x01u);
+    pic_ocw3_raise(&fixture, &irq14, 14u);
+    core_machine_pic_refresh(&fixture.master, &fixture.slave);
+    core_machine_port_write(&fixture.port, 0x0020u, 0x0cu);
+    failed |= core_machine_port_read(&fixture.port, 0x0020u) !=
+        (VPIC_POLL_I | 2u) || fixture.master.data.cascade_irr != 0u ||
+        fixture.master.data.isr != VPIC_ISR_IRQ(2u);
+    core_machine_port_write(&fixture.port, 0x00a0u, 0x0cu);
+    failed |= core_machine_port_read(&fixture.port, 0x00a0u) !=
+        (VPIC_POLL_I | 6u) || fixture.slave.data.isr != VPIC_ISR_IRQ(6u);
     pic_ocw3_finalize(&fixture);
     return failed;
 }

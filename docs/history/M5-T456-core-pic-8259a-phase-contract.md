@@ -14,6 +14,8 @@ acknowledgement, EOI, mask and reset contract after a manual-first inventory.
   owner of IRR/ISR state; it claims no electrical duration or waveform.
 - S3 makes the existing paired-controller selector consume ICW1.SNGL and both
   ICW3 forms rather than treating IR2 as an unconditional cascade line.
+- S4 closes the retained command/lifecycle matrix, including the corrected
+  rotate-on-specific-EOI state transition and a full minimalism audit.
 
 ## Accepted Progress
 
@@ -38,3 +40,9 @@ request, AT/custom/mismatch/single-mode/reinitialization proof and the
 retained poll-command receiver. The configured build, focused 11-test group,
 documentation governance, and independent 293/293 current-gate replay pass.
 No VM/profile topology or additional selector is introduced.
+
+S4 is implemented pending independent acceptance. Its
+[closure evidence](../etc/evidence/t456-s4-pic-retained-command-closure.md)
+maps every retained row to its source-backed logical proof or maintained
+boundary, records the specific-EOI repair, and preserves the selected-board and
+electrical non-claims.
