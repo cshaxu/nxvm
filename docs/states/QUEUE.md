@@ -31,9 +31,6 @@ its evidence-tier discipline remains a shared constraint, not a candidate.
 Detailed scope, acceptance conditions, and common constraints remain in these
 shared proposals and in each candidate's linked proposal.
 
-The owner-approved active [corrective artifact and trace audit](../proposals/optimized-artifact-trace-audit.md)
-does not alter this ordering.
-
 The [Core specification-driven timing design](../etc/architecture/specification-driven-l3-timing.md)
 is the shared architecture context for the following ordered Project A sequence.
 The [specification-driven complete simulation admission program](../proposals/m5-specification-driven-complete-simulation-admission-program.md)
