@@ -1,25 +1,25 @@
 # Project Status
 
-## M5 T447 S8 Packet
+## M5 T447 S9 Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation; `M5 T447 S8`, single-session coordinator/executor followed by coordinator closure review. |
-| Admission And Approval | The owner-approved T447 proposal, accepted S7 P1 `b2bf42da`, and the owner's standing instruction to continue the approved governance closure admit the next dependency-ordered S8 batch on 2026-08-23. No exception. |
-| Objective | Repair cross-owner tests and direct-build exceptions so every retained assertion reaches its owner through declared operations or copied observations. |
-| Non-goals | No production API widened for tests, compatibility alias, generic fixture framework, direct compilation of new production source, product behavior change, or guest-media import. |
-| Reference Baseline | Accepted S7 P1 `b2bf42da`; Td S125--S130 ledger rows assigned to S8; T447 proposal S8; retained S7 evidence. |
-| Candidate Proposal | [M5 Architecture-Boundary Debt Closure](../proposals/m5-architecture-boundary-debt-closure.md), S8. |
-| Files And ABI Surface | Cross-owner tests, owner-local test fixtures, public copied observations, T345 direct-build ledger and verification, T447 evidence/history/status and current artifact. |
-| Applicable Rules | Execution P/closure and code-size requirements; architecture one-owner and dependency direction; coding minimal durable capabilities with no test-only production seam; documentation topology. No exception. |
-| Verification | Classify every affected test as owner-local white-box setup or cross-owner behavioral proof; preserve each assertion; prove no production seam or unrecorded direct production build remains; run focused tests, T345, current artifact/smokes, specialized gates, and documentation governance. |
-| Expected Markers | Retained behavioral markers plus T345 closure; no cross-owner private-layout include, unrecorded direct production build, or widened production API for tests. |
-| Asset Needs | Existing non-committed test media only; no new source, firmware, guest-media, or third-party asset. |
-| Reporting Requirements | Record complete test/disposition inventory, retained owner-local fixtures, removed cross-owner accesses and build exceptions, code-size accounting, artifact SHA, focused/full verification, and actual-diff review; commit and push one complete implementation P before coordinator closure. |
-| Stop Conditions | Stop for owner direction if preserving an assertion requires a public test seam, runtime behavior change, unclassified direct production build, or a new cross-owner asynchronous contract. |
-| Exit Criteria | Every affected test is either same-owner setup or a behavioral proof over declared boundaries; all direct-build exceptions have a recorded disposition; no test-only production path, compatibility fixture path, or cross-owner mutable-layout access remains. |
+| Identifier Mode | Continuation; `M5 T447 S9`, single-session coordinator/executor followed by coordinator closure review. |
+| Admission And Approval | The owner-approved T447 proposal, accepted S8 P1 `acf3f7cc`, and the owner's standing instruction to continue the approved governance closure admit the next dependency-ordered S9 batch on 2026-08-23. No exception. |
+| Objective | Dispose of the policy-free VDM session forwarding layer without promoting VDM to a runnable product. |
+| Non-goals | No mantle or DOS implementation, VDM runnable target, compatibility wrapper, product promotion, generic session framework, guest-media import, or change to the retained `nxvm.exe` product path. |
+| Reference Baseline | Accepted S8 P1 `acf3f7cc`; Td S125 F; T447 proposal S9; retained S8 evidence and current artifact. |
+| Candidate Proposal | [M5 Architecture-Boundary Debt Closure](../proposals/m5-architecture-boundary-debt-closure.md), S9. |
+| Files And ABI Surface | `vdm/composition/session.c` and its headers/callers, machine-boundary ownership, VDM tests/build descriptions, T447 evidence/history/status and current artifact. |
+| Applicable Rules | Execution P/closure and code-size requirements; architecture one-owner and dependency direction; coding minimal durable capabilities with no forwarding layer; source policy; documentation topology. No exception. |
+| Verification | Inventory every VDM session forwarding caller and build entry; either remove the layer or establish one real mantle/DOS assembly responsibility with explicit lifetime and failure proof; prove VDM remains non-runnable; run focused static/build proof, current artifact/smokes, specialized gates, and documentation governance. |
+| Expected Markers | No policy-free VDM forwarding layer, no VDM runnable/product target, one declared owner for every retained session operation, and no compatibility route. |
+| Asset Needs | None; no new source, firmware, guest-media, or third-party asset. |
+| Reporting Requirements | Record before/after caller and target inventory, removal or retained-responsibility rationale, code-size accounting, artifact SHA, focused/full verification, and actual-diff review; commit and push one complete implementation P before coordinator closure. |
+| Stop Conditions | Stop for owner direction if removal changes a documented VDM future boundary, a retained caller requires an unapproved public capability, or a runnable mantle/DOS product becomes necessary. |
+| Exit Criteria | The VDM forwarding layer is absent or has one necessary documented assembly responsibility; every caller uses the single retained boundary; VDM stays non-runnable and no wrapper or duplicate session path remains. |
 | Original Owner Request | Execute the approved architecture-boundary closure in dependency order, applying minimalism as a hard constraint rather than a later refactor. |
-| Similar-Issue Sweep | Inspect every S1--S7 test include and construction path, Core/VM/product/platform tests, all T345 rows, test-only helpers, direct production source references, and Td S125--S130 evidence; do not repair only the first test class. |
+| Similar-Issue Sweep | Inspect every VDM composition source/header, CMake target, include/call path, public VDM declaration, and equivalent forwarding layer in Core/VM/product; record every hit and its disposition rather than repairing only `session.c`. |
 
 ## Current Technical Baseline
 
@@ -45,6 +45,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T447 S8 | Accepted P1 `acf3f7cc`: all 98 S7 private-layout test consumers have an owner-local or declared-boundary disposition; eighteen VM-composition tests moved unchanged to their owner, and a static gate prevents product/platform regressions. The 0447 artifact, 292 current smokes, 76 specialized gates, exact T345 reconciliation, and documentation governance pass. [Evidence](../etc/evidence/t447-s8-test-boundary-closure.md). |
 | T447 S7 | Accepted P1 `b2bf42da`: VM session/media/profile/product layouts are opaque, Console owns its contract while composition performs the binding, and Model-40 has exactly one BYOB construction route. The 0447 artifact, 292 current smokes, 76 specialized gates, T345, and documentation governance pass. [Evidence](../etc/evidence/t447-s7-vm-contract-boundary.md). |
 | T447 S5 | Accepted P1 `13f2a5bc` and corrective P2 `af805310`: Core input/presentation and VM platform lifecycle state have one owner-created opaque handle route; stale shape-sensitive gates now prove bounded behavior, and the new S5 guard rejects public-layout regressions. The 0447 artifact, 292 current smokes, 75 specialized gates, T345, and documentation governance pass. [Evidence](../etc/evidence/t447-s5-platform-lifecycle-boundary.md). |
 | T447 S6 | Accepted P1 `e342a516`: Core machine collaborators and plan endpoints are opaque, declarative plans are copied, and default PC/AT, Model-339, and Model-40 share bounded creation/rollback operations. The 0447 artifact, 290 current smokes, specialized gates, T345, and documentation governance pass. [Evidence](../etc/evidence/t447-s6-collaborator-plan-boundary.md). |
@@ -52,7 +53,6 @@
 | T445 | Closed: each VM native display adapter now owns its host resource lifecycle; Win32 pairs its DC before window destruction, and Linux curses terminates on the initializing display thread. [Evidence](../etc/evidence/t445-s1-vm-native-display-resource-lifetime.md). |
 | T444 | Closed: the 20 fast-smoke fixture failures use the legal 16-byte reset window; T344 classifies four manifest producers separately from 71 historical fixtures; every discovered stale gate now proves the current single Core plan route. [Evidence](../etc/evidence/t444-s1-current-gate-regression-restoration.md). |
 | T443 | Closed: the mailbox C11-initializes its sole lock, every production renderer stops on failed capture, and VM display generation commits only after one accepted publication path. [Evidence](../etc/evidence/t443-s1-core-platform-primitive-outcomes.md). |
-| T442 | Closed: one Core lexical owner keeps 8086 `0F` primary, rejects it on 80186, and consumes it as extended on 80286/80386; one RAM mapping owner rejects a 32-bit physical span overflow before publishing state. [Evidence](../etc/evidence/t442-s1-core-cpu-memory-boundary-correctness.md). |
 
 
 ## Recent Governance
