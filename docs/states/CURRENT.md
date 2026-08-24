@@ -29,7 +29,6 @@
 | Task | Compact result |
 | --- | --- |
 | T450 S2 | Accepted: one original-list S and one gap-audit S are fixed for every controller; S19 reconciles the eight pairs without adding behavior. [Ledger](../etc/evidence/t450-s2-controller-subtask-ledger.md). |
-| T450 S1 | Accepted: external controller manual corpus is source-provenanced and checksum-recorded; the finite eight-unit code-owner baseline transfers function/timing inventory to S2 and row-level gap audit to S3. [Ledger](../etc/research/t450-s1-controller-source-and-code-baseline.md). |
 | T449 | Closed: one copied transaction contract, transaction lifecycle, scheduler arbitrator, memory classifier and retirement/time/observation route; all S1--S6 evidence is reconciled and physical/controller/x87 boundaries transfer explicitly. [History](../history/M5-T449-core-cpu-board-transaction-contracts.md). |
 | T448 | Closed: six over-limit generated firmware sources now use the one bounded byte-identical materialization route; the unused session helper is removed. [Evidence](../etc/evidence/t448-s1-firmware-materialization.md). |
 | T447 | Closed: all S1--S11 ledger receivers are accepted; one Core execution path, bounded VM contracts, no VDM forwarding facade, owner-local test boundaries and the decomposed Core coordinator are retained. [History](../history/M5-T447-architecture-boundary-debt-closure.md). |
