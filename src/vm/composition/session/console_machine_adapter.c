@@ -149,6 +149,44 @@ static C_VOID vm_session_machine_print_status(C_VOID *context)
         vm_session_machine_print_status_selected, STD_NULL);
 }
 
+static type_status vm_session_machine_read_speed(vm_session *session,
+    C_VOID *context)
+{
+    vm_session_speed speed;
+    vm_product_console_speed *out_speed = (vm_product_console_speed *)context;
+
+    if (out_speed == STD_NULL || vm_session_get_speed(session, &speed) != TYPE_STATUS_OK) {
+        return TYPE_STATUS_INVALID_STATE;
+    }
+    *out_speed = speed == VM_SESSION_SPEED_TURBO ? VM_PRODUCT_CONSOLE_SPEED_TURBO :
+        VM_PRODUCT_CONSOLE_SPEED_STANDARD;
+    return TYPE_STATUS_OK;
+}
+
+static type_status vm_session_machine_get_speed(C_VOID *context,
+    vm_product_console_speed *out_speed)
+{
+    return out_speed == STD_NULL ? TYPE_STATUS_INVALID_ARGUMENT :
+        vm_session_machine_apply(context, vm_session_machine_read_speed, out_speed);
+}
+
+static type_status vm_session_machine_write_speed(vm_session *session,
+    C_VOID *context)
+{
+    vm_product_console_speed speed = *(vm_product_console_speed *)context;
+
+    return vm_session_set_speed(session, speed == VM_PRODUCT_CONSOLE_SPEED_TURBO ?
+        VM_SESSION_SPEED_TURBO : VM_SESSION_SPEED_STANDARD);
+}
+
+static type_status vm_session_machine_set_speed(C_VOID *context,
+    vm_product_console_speed speed)
+{
+    if (speed != VM_PRODUCT_CONSOLE_SPEED_STANDARD &&
+        speed != VM_PRODUCT_CONSOLE_SPEED_TURBO) return TYPE_STATUS_INVALID_ARGUMENT;
+    return vm_session_machine_apply(context, vm_session_machine_write_speed, &speed);
+}
+
 static type_status vm_session_machine_debug_selected(vm_session *session,
     C_VOID *context)
 {
@@ -307,6 +345,8 @@ static const vm_session_machine_provider vmSessionMachineProviderTemplate = {
     vm_session_machine_set_display_mode,
     vm_session_machine_print_bios,
     vm_session_machine_print_status,
+    vm_session_machine_get_speed,
+    vm_session_machine_set_speed,
     vm_session_machine_debug,
     vm_session_machine_record_start,
     vm_session_machine_record_stop,

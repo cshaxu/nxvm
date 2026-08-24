@@ -116,6 +116,14 @@ static C_VOID doHelp(vm_product_console_context *context)
             STD_PRINTF("  close:  destroy one stopped session; the final session stays\n");
             break;
         }
+        else if (!STD_STRCMP(argArray[1], "speed"))
+        {
+            STD_PRINTF("Show or select the selected session speed\n");
+            STD_PRINTF("\nSPEED [STANDARD|TURBO]\n");
+            STD_PRINTF("  standard: preserve the profile's current host-time behavior\n");
+            STD_PRINTF("  turbo:    run guest waits without host throttling\n");
+            break;
+        }
         else if (!STD_STRCMP(argArray[1], "debug"))
         {
             STD_PRINTF("Launch VM hardware debugger\n");
@@ -174,6 +182,7 @@ static C_VOID doHelp(vm_product_console_context *context)
         STD_PRINTF("EXIT    Quit the console\n");
         STD_PRINTF("INFO    List all device info\n");
         STD_PRINTF("SESSION Manage sessions\n");
+        STD_PRINTF("SPEED   Show or select selected-session speed\n");
         STD_PRINTF("\n");
         STD_PRINTF("DEBUG   Launch hardware debugger\n");
         STD_PRINTF("RECORD  Record cpu status for each instruction\n");
@@ -297,6 +306,40 @@ static C_VOID doRecord(vm_product_console_context *context)
     else
     {
         GetHelp;
+    }
+}
+
+static const C_CHAR *vm_product_console_speed_name(vm_product_console_speed speed)
+{
+    return speed == VM_PRODUCT_CONSOLE_SPEED_TURBO ? "turbo" : "standard";
+}
+
+static C_VOID doSpeed(vm_product_console_context *context)
+{
+    vm_product_console_speed speed;
+    type_status status;
+
+    if (machineProvider->get_speed == STD_NULL || machineProvider->set_speed == STD_NULL) {
+        STD_PRINTF("Speed control is unavailable.\n");
+        return;
+    }
+    if (numArgs == 1u) {
+        if (machineProvider->get_speed(machineProvider->context, &speed) == TYPE_STATUS_OK) {
+            STD_PRINTF("Speed: %s\n", vm_product_console_speed_name(speed));
+        }
+        return;
+    }
+    if (numArgs != 2u) { GetHelp; }
+    if (!STD_STRCMP(argArray[1], "standard")) speed = VM_PRODUCT_CONSOLE_SPEED_STANDARD;
+    else if (!STD_STRCMP(argArray[1], "turbo")) speed = VM_PRODUCT_CONSOLE_SPEED_TURBO;
+    else { GetHelp; }
+    status = machineProvider->set_speed(machineProvider->context, speed);
+    if (status == TYPE_STATUS_OK) {
+        STD_PRINTF("Speed: %s\n", vm_product_console_speed_name(speed));
+    } else if (status == TYPE_STATUS_INVALID_STATE) {
+        STD_PRINTF("Cannot change speed while session is running.\n");
+    } else {
+        STD_PRINTF("Cannot change speed.\n");
     }
 }
 
@@ -488,6 +531,10 @@ static C_VOID execute(vm_product_console_context *context)
     else if (!STD_STRCMP(argArray[0], "record"))
     {
         doRecord(context);
+    }
+    else if (!STD_STRCMP(argArray[0], "speed"))
+    {
+        doSpeed(context);
     }
     else if (!STD_STRCMP(argArray[0], "floppy"))
     {

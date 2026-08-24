@@ -24,7 +24,17 @@
 
 #include "vm/composition/session/provider.h"
 #include "vm/composition/session/console_machine_adapter.h"
+#include "vm/composition/session/session_interface.h"
 #include "vm/product/console.h"
+
+static type_status verify_selected_speed(C_VOID *context, C_VOID *opaque)
+{
+    vm_session_speed speed;
+
+    (C_VOID)context;
+    return vm_session_get_speed((vm_session *)opaque, &speed) == TYPE_STATUS_OK &&
+        speed == VM_SESSION_SPEED_TURBO ? TYPE_STATUS_OK : TYPE_STATUS_FAULT;
+}
 
 C_INT main(C_VOID)
 {
@@ -43,7 +53,7 @@ C_INT main(C_VOID)
     if (profile == STD_NULL || input == STD_NULL ||
         STD_FPUTS("schema: nxvm-session/v1\nmachine:\n  profile: ibm-5170-model-339\n  display: console\n  boot: rom\nmedia:\n  floppy: null\n  hard_disk: null\n", profile) < 0 ||
         STD_FCLOSE(profile) != 0 ||
-        STD_FPUTS("1\nsession list\nhelp\ninfo\nexit\n", input) < 0 ||
+        STD_FPUTS("1\nspeed turbo\nsession list\nhelp\ninfo\nexit\n", input) < 0 ||
         fflush(input) != 0 ||
         STD_FSEEK(input, 0L, STD_SEEK_SET) != 0) {
         if (profile != STD_NULL) STD_FCLOSE(profile);
@@ -83,6 +93,8 @@ C_INT main(C_VOID)
     if (core_product_session_manager_list(session_manager, snapshots, 2u,
             &(STD_SIZE_T){0u}) != TYPE_STATUS_OK ||
         !snapshots[0].selected ||
+        core_product_session_manager_apply_selected(session_manager,
+            verify_selected_speed, STD_NULL) != TYPE_STATUS_OK ||
         STD_STRCMP(snapshots[0].details,
             "profile=ibm-5170-model-339 cpu=80286 fpu=none")) {
         STD_FCLOSE(input);

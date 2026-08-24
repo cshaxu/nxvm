@@ -56,25 +56,29 @@ C_INT main(C_INT argc, C_CHAR **argv)
     DWORD result;
     DWORD elapsed;
     C_INT prompt_seen = 0;
-    vm_session *session;
+    vm_session *session = STD_NULL;
     C_INT owns_session = 0;
+    C_INT turbo = 0;
 
     if (argc != 2 && argc != 3) return 1;
-    if (argc == 3) {
+    if (argc == 3 && !STD_STRCMP(argv[2], "8086")) {
         const vm_session_config config = {
             .fdd_image = argv[1],
             .cpu_profile = CORE_MACHINE_CPU_PROFILE_8086,
             .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
         };
 
-        if (STD_STRCMP(argv[2], "8086") ||
-            vm_session_create(&config, &session) != TYPE_STATUS_OK) return 1;
+        if (vm_session_create(&config, &session) != TYPE_STATUS_OK) return 1;
         owns_session = 1;
-    } else if (vm_session_create(STD_NULL, &session) != TYPE_STATUS_OK) {
-        return 1;
+    } else if ((argc == 2 || !STD_STRCMP(argv[2], "turbo")) &&
+        vm_session_create(STD_NULL, &session) == TYPE_STATUS_OK) {
+        turbo = argc == 3;
+        owns_session = 1;
+        if (vm_machine_fdd_insert_for(&session->fdd, argv[1]) != 0 ||
+            (turbo && vm_session_set_speed(session, VM_SESSION_SPEED_TURBO) !=
+                TYPE_STATUS_OK)) goto fail;
     } else {
-        owns_session = 1;
-        if (vm_machine_fdd_insert_for(&session->fdd, argv[1]) != 0) goto fail;
+        return 1;
     }
     thread = CreateThread(STD_NULL, 0u, run_full_pc, session, 0u, STD_NULL);
     if (thread == STD_NULL) goto fail;
@@ -102,8 +106,8 @@ C_INT main(C_INT argc, C_CHAR **argv)
         goto fail;
     }
     if (owns_session) vm_session_destroy(session);
-    puts(argc == 3 ? "M5:T209:S3:DOS-PROMPT-8086:OK" :
-        "M5:T70:S2:DOS-PROMPT:OK");
+    puts(argc == 3 && !turbo ? "M5:T209:S3:DOS-PROMPT-8086:OK" :
+        turbo ? "M5:T459:S1:DOS-PROMPT-TURBO:OK" : "M5:T70:S2:DOS-PROMPT:OK");
     return 0;
 
 fail:

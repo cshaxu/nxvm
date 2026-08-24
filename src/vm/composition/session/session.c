@@ -5,6 +5,7 @@
 #include "core/machine/machine_interface.h"
 #include "vm/composition/session/control.h"
 #include "vm/composition/session/lifecycle.h"
+#include "vm/composition/session/virtual_time.h"
 #include "vm/composition/session/display.h"
 #include "vm/composition/session/media.h"
 #include "vm/composition/session/machine_devices.h"
@@ -94,6 +95,28 @@ type_status vm_session_submit_host_input(vm_session *session,
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
     return core_platform_input_source_submit(session->input_source, event);
+}
+
+type_status vm_session_get_speed(const vm_session *session,
+    vm_session_speed *out_speed)
+{
+    if (session == STD_NULL || !session->active || out_speed == STD_NULL) {
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
+    *out_speed = session->speed;
+    return TYPE_STATUS_OK;
+}
+
+type_status vm_session_set_speed(vm_session *session, vm_session_speed speed)
+{
+    if (session == STD_NULL || !session->active ||
+        (speed != VM_SESSION_SPEED_STANDARD && speed != VM_SESSION_SPEED_TURBO)) {
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
+    if (vm_session_control_is_running(&session->control)) return TYPE_STATUS_INVALID_STATE;
+    session->speed = speed;
+    vm_session_virtual_time_reset(session);
+    return TYPE_STATUS_OK;
 }
 
 static C_INT vm_session_materialize_profile_core_config(vm_session *session,

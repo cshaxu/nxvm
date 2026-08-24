@@ -67,6 +67,7 @@ struct vm_session {
     core_product_debug_target *debug_target;
     vm_session_fault_outcome fault_outcome;
     vm_session_control_state control;
+    vm_session_speed speed;
     vm_session_config retained_config;
     vm_session_virtual_time_source virtual_time_source;
     vm_platform_virtual_time_source *model_339_virtual_time_source;

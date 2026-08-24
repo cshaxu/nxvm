@@ -2,11 +2,30 @@
 
 ## Current Work
 
-**Idle.**
+## M5 T459 S1 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New |
+| Admission And Approval | Owner approved T459 on 2026-08-24: expose `standard` and `turbo` speed selection after opening/selecting an NXVM session; Turbo replaces the withdrawn `uncapped` name and must be the sole unrestricted mode. |
+| Objective | Implement one session-owned standard/Turbo host-speed policy and selected-session Console control; Turbo reuses the existing one-tick Core advance rather than guessed time batches or a second runner path. |
+| Non-goals | No CPU, device, PIT/DMA/RTC, event-order, profile, YAML, debugger or display-cadence change; no JIT, arbitrary CPU instruction-rate multiplier, separate `uncapped` mode, invented Core deadline query, or host-clock-as-guest-clock rule. |
+| Reference Baseline | `fa86b38e`; prior stripped Release revision `0.5.0458`, SHA-256 `F9A77CDE35A4DEC18CC566800D59205EC43A41C4B30F533E2EF132E0DE14F71D`. |
+| Candidate Proposal | [VM session speed policy](../proposals/m5-vm-session-speed-policy.md). |
+| Files And ABI Surface | Existing Core machine time-advance operation; VM session runner/virtual-time owner and private state; existing VM product Console/provider selected-session operation; focused tests, CMake registration and current-artifact target. Core exposes no speed names, profile or host-clock policy. |
+| Applicable Rules | README Task Reading Set; EXECUTION S/P lifecycle, artifact and similar-issue sweep; ARCHITECTURE sole-owner, dependency and product-behavior invariants; CODING minimal durable interface and no duplicate policy; DOCUMENT authority/status boundaries; UI retained NXVM Console interaction. |
+| Verification | Debug and Release focused virtual-time and Console command regressions across default PC/AT, Model 339 and Model-40; current gate; documentation governance; stripped Release artifact inspection. |
+| Expected Markers | Existing virtual-time and Console markers remain; one new T459 marker proves standard/Turbo selection, one-tick Core advancement and running-state rejection. |
+| Asset Needs | None; project-owned tests only. No external source, firmware, guest media, Windows media or emulator is imported. |
+| Reporting Requirements | Record the one policy owner, all selected-session callers, fixed advance bounds, standard-mode preservation, source/test line delta, artifact SHA-256 and every excluded boundary, including the profile-timebase/controller-deadline prerequisite for host pacing. |
+| Stop Conditions | Stop for a required Core speed API, a required profile/YAML speed decision, changed guest event ordering, a running-session mutation requirement, or a request to treat a recurring timeline callback as a guest-observable deadline. |
+| Exit Criteria | `SPEED` reports and selects `standard` or `turbo` on a stopped selected session; standard is unchanged; Turbo advances one Core tick only after Core interrupt waits; all shared-runner profile routes and gates pass; `nxvm_0_5_0459.exe` is a stripped Release artifact. |
+| Original Owner Request | Owner simplified the request to two modes: `standard` and `turbo`, with Turbo meaning the prior unrestricted/uncapped intent. |
+| Similar-Issue Sweep | Search all VM session virtual-time sources, runner wait branches, Console product commands and selected-session adapter operations. Consolidate all production speed decisions under the session policy; record non-product fixture sources and any excluded profile-specific source as boundaries. |
 
 ## Current Technical Baseline
 
-- **Current developer artifact:** target `vm-0-5-0458`; `nxvm_0_5_0458.exe` / `build/output/nxvm_0_5_0458.exe`, SHA-256 `F9A77CDE35A4DEC18CC566800D59205EC43A41C4B30F533E2EF132E0DE14F71D`. It is built only from the stripped Release current-artifact route; Debug remains the current-gate route. T434 has one copied Core timing-plan publication route for default PC/AT, IBM 5170 Model 339 and Model-40 BYOB session composition.
+- **Current developer artifact:** target `vm-0-5-0459`; `nxvm_0_5_0459.exe` / `build/output/nxvm_0_5_0459.exe`, SHA-256 `D859A76FA522633E5CCB990BB44A1BBED22A24B97876EEE1826717B3DDA2B312`. It is built only from the stripped Release current-artifact route; Debug remains the current-gate route. T434 has one copied Core timing-plan publication route for default PC/AT, IBM 5170 Model 339 and Model-40 BYOB session composition.
   T386 closes selected-device functional completeness at S29; its retained
   [closure audit](../etc/evidence/t386-s29-functional-closure-audit.md) fixes
   HDC current-gate coverage and transfers board, firmware and physical work.

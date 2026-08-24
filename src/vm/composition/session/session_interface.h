@@ -15,6 +15,11 @@ typedef enum vm_session_profile_kind {
     VM_SESSION_PROFILE_COMPAQ_DESKPRO_386_MODEL_40
 } vm_session_profile_kind;
 
+typedef enum vm_session_speed {
+    VM_SESSION_SPEED_STANDARD,
+    VM_SESSION_SPEED_TURBO
+} vm_session_speed;
+
 const C_CHAR *vm_session_profile_name(vm_session_profile_kind kind);
 
 /* Supplies source ticks already selected and converted by VM composition.
@@ -47,6 +52,9 @@ C_INT vm_session_create(const vm_session_config *config, vm_session **out_sessio
 C_VOID vm_session_destroy(vm_session *session);
 type_status vm_session_reconfigure_memory(vm_session *session,
     STD_SIZE_T memory_bytes);
+type_status vm_session_get_speed(const vm_session *session,
+    vm_session_speed *out_speed);
+type_status vm_session_set_speed(vm_session *session, vm_session_speed speed);
 C_INT vm_session_insert_fdd(vm_session *session, const C_CHAR *path);
 C_INT vm_session_insert_hdd(vm_session *session, const C_CHAR *path);
 /* Production host-input ingress.  Events are copied into the session's
