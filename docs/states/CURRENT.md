@@ -2,28 +2,7 @@
 
 ## Current Work
 
-**Active: M5 T453 S3 - operational toolchain document convergence.**
-
-## M5 T453 S3 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner approved T453's decomposed toolchain/documentation hygiene implementation on 2026-08-24; S2 cleanup is accepted for this final current-document receiver. |
-| Objective | Reduce current toolchain documentation to its supported commands, dependencies and explicit optional ccache route. |
-| Non-goals | Do not change CMake presets, compiler support policy, historical records, release policy, product behavior or artifact identity. |
-| Reference Baseline | `b9af9548`; current default route is MinGW GCC/CMake/Ninja, and ccache is an opt-in isolated route. |
-| Candidate Proposal | [M5 Toolchain And Build-Tree Hygiene](../proposals/m5-toolchain-build-tree-hygiene.md). |
-| Files And ABI Surface | Modify only `docs/etc/operations/build/toolchain.md`, task evidence/history/status and support index. No ABI changes. |
-| Applicable Rules | `rules/DOCUMENT.md`: current operations document owns only current operational guidance; historical facts remain in history/evidence. `rules/EXECUTION.md`: actual-change review and closure gates. |
-| Verification | Compare every retained operational command against `CMakePresets.json`; search current operational docs for M0/M1/MSVC command residue; run documentation governance, diff hygiene and default build. |
-| Expected Markers | One concise default route, one gate command, one optional ccache route, and no historic milestone or unsupported-command residue in the current operations document. |
-| Asset Needs | None. |
-| Reporting Requirements | Report retained commands, deleted non-operational narrative and verification result. |
-| Stop Conditions | Stop for an operation rule that cannot be expressed without historic context or a command not represented by current presets. |
-| Exit Criteria | Current toolchain instructions are concise and fully match presets; documentation/default-build verification passes. |
-| Original Owner Request | Implement the audited clean, readable toolchain/build configuration and documentation hygiene through decomposed S tasks. |
-| Similar-Issue Sweep | Inspect README and current operations documentation; preserve public README guidance and remove only operations-document residue. |
+**Idle.**
 
 ## Current Technical Baseline
 
@@ -49,7 +28,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T453 S1 | Accepted: fresh default tree records one WinLibs toolchain family; the one surfaced FDC smoke now includes its direct owner header; clean-tree current gates pass. [Evidence](../etc/evidence/t453-s1-default-toolchain-baseline.md). |
+| T453 | Closed: fresh default tree uses one WinLibs toolchain family; the one FDC test include is corrected; 44 obsolete build trees are removed; current build operations are reduced to preset-backed commands. [History](../history/M5-T453-toolchain-build-tree-hygiene.md). |
 | T452 | Closed: optional isolated ccache presets provide measured repeat-build hits and byte-identical output; default route remains unchanged and task temporary cache/build trees are removed. [History](../history/M5-T452-optional-ccache-build-acceleration.md). |
 | T451 | Closed: one current VM request contract, bridge/transport smoke and complete configured build pass; stale request-bridge debt and invalid build instructions are removed without source, CMake or ABI changes. [History](../history/M5-T451-vm-request-bridge-current-build-restoration.md). |
 | T450 | Closed: all eight controller pairs are archived with 128 source rows and 128 code-audit rows; S19 verifies the source form of every admitted PDF and preserves all selected-board/personality/media gaps as explicit transfers. [History](../history/M5-T450-core-controller-manuals-and-gap-inventory.md). |
