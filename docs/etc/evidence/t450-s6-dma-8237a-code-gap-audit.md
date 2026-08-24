@@ -34,6 +34,33 @@ No source or test is modified by this audit.
 | DMA-T4 | Opaque request bindings, two-controller cascade and FDC channel 2 prevent cross-machine/invalid-channel mutation. No peripheral-visible DACK lifecycle or selected DRQ source contract exists beyond FDC's current direct binding. | Binding-token, DMA/RTC authority and FDC DMA-boundary tests prove isolation and FDC channel route. | Partial: board DRQ/DACK/page/refresh interaction needs one selected contract. Receiver: queued DMA phase contract. |
 | DMA-T5 | T449 owns transaction, arbitration, reset, time and observation; DMA calls only its transaction/hold APIs. The explicit 8237A selection has not yet supplied the required request/grant/page/refresh terms. | Competition smoke proves the single owner path and reset release. | Unallocated L2 input, not a code defect. Receiver: queued DMA phase contract. |
 
+## Cross-Source Reconciliation
+
+The S5 qualification is the source-tier authority for these same 16 IDs.
+`Manual L3` below means the existing code audit is judged against a direct
+Intel/IBM requirement. `Other L3` identifies only corroborating emulator
+behavior; it never upgrades an unproven current path. Where neither tier
+supports a specific Core claim, this audit records `fallback to L2`.
+
+| S5 ID | Qualification | Cross-check result for current disposition |
+| --- | --- | --- |
+| DMA-R1 | Manual L3; Other L3: MAME/QEMU/86Box/PCjs. | Conforming register behavior remains accepted; service ordering is fallback to L2. |
+| DMA-R2 | Manual L3; Other L3: MAME. | MAME's fuller command consumption confirms NXVM's unconsumed polarity/write/compressed bits are a real gap; fallback to L2. |
+| DMA-R3 | Manual L3; Other L3: MAME/QEMU/86Box/PCjs. | Conforming retained register behavior; peripheral request origin remains fallback to L2. |
+| DMA-R4 | Manual L3; Other L3: MAME/QEMU. | Conforming command/reset behavior; no host-delay claim. |
+| DMA-F1 | Manual L3; Other L3: MAME/Bochs. | Missing DACK/polarity lifecycle remains a DMA-task gap; fallback to L2. |
+| DMA-F2 | Manual L3; Other L3: MAME. | MAME's explicit service states confirm generic hold/transaction proof is insufficient; fallback to L2. |
+| DMA-F3 | Manual L3; Other L3: MAME/Bochs. | Immediate cascade completion is nonconforming; delegated cascade service is required before L3. |
+| DMA-F4 | Manual L3; Other L3: MAME/QEMU. | Retained logical transfer behavior conforms; waveform work remains excluded. |
+| DMA-F5 | Manual L3; Other L3: MAME/Bochs. | Retained logical TC/EOP behavior conforms; no physical-pin claim. |
+| DMA-F6 | Manual L3; Other L3: MAME. | Atomic M2M copy lacks the required source/destination service phases; fallback to L2. |
+| DMA-F7 | Manual L3; Other L3: MAME. | Stored compressed bit without a state path is a gap; selected clock/latch timing is fallback to L2. |
+| DMA-T1 | Manual L3; Other L3: QEMU/Bochs/PCjs. | Selected topology conforms. |
+| DMA-T2 | Manual L3; Other L3: QEMU/86Box/PCjs. | Selected page/address behavior conforms; unselected reset detail remains fallback to L2. |
+| DMA-T3 | Manual L3; Other L3: none. | IBM formula/refresh route is absent from Core; fallback to L2 until the DMA and PIT owners compose it. |
+| DMA-T4 | Manual L3; Other L3: MAME/Bochs/PCjs. | Binding isolation conforms, but peripheral-visible DACK and selected DRQ/page/refresh lifecycle are fallback to L2. |
+| DMA-T5 | fallback to L2. | T449's owner boundary is retained, but the selected 8237A integration terms are still unallocated L2 input. |
+
 ## Completeness, Minimality And Transfer
 
 All `DMA-R1`--`DMA-R4`, `DMA-F1`--`DMA-F7` and `DMA-T1`--`DMA-T5` rows have

@@ -40,6 +40,12 @@
 
 ## Recent Governance
 
+- **M5 Td S144 P1:** governed all 16 8237A source and code-gap rows with
+  `Manual L3`, bounded `Other L3` corroboration and explicit `fallback to L2`
+  boundaries. Intel/IBM remains normative; emulator behavior neither overrides
+  it nor creates a Core claim. DMA implementation, artifact and Queue order
+  are unchanged; documentation governance passes.
+
 - **M5 Td S143 P1:** made the eighth Core L3 integration candidate the sole
   planned receiver for host-paced guest-time synchronization: Core owns
   deadline composition and guest progression; VM only paces completed guest

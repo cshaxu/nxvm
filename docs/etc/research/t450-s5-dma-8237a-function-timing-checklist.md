@@ -46,6 +46,46 @@ invented from them.
 | DMA-T4 | AT pp. 1-25--1-26; I8237 pp. 2--5 | AT exposes DRQ0--3 and DRQ5--7, reserves DRQ4 for the board cascade, and provides active-low DACK lines. A peripheral holds DRQ until DACK; cascade-capable adapters use a DMA cascade channel. | Device completion follows the selected channel's DACK/EOP lifecycle. | L3 wiring/polarity; actual DREQ production, grant, page and refresh transaction binding are L2 inputs for the later DMA candidate. |
 | DMA-T5 | T433 S6/S7; T449 | Core has one transaction/arbitration/time owner. The DMA controller must eventually consume a selected request, grant, page and refresh contract rather than schedule itself or add a second publisher. | No implementation conclusion is made here. | L2 receiver: queued Core DMA 8237A phase contract. |
 
+## Cross-Source Qualification
+
+Each row keeps the admitted Intel/IBM source as its sole normative authority.
+`Manual L3` means that source directly defines the retained logical or selected
+board fact. `Other L3` is a dated, read-only corroboration from a named
+emulator implementation; it cannot add a requirement or override the manual.
+Every remaining Core assertion is `fallback to L2`, not inferred from an
+emulator's host scheduler, compatibility workaround or non-8237 extension.
+
+The corroborating observations were made on 2026-08-24 from
+[MAME AM9517A](https://github.com/mamedev/mame/blob/master/src/devices/machine/am9517a.cpp),
+[QEMU i8257](https://github.com/qemu/qemu/blob/master/hw/dma/i8257.c),
+[86Box DMA](https://github.com/86Box/86Box/blob/master/src/dma.c),
+[PCjs chipset](https://github.com/jeffpar/pcjs/blob/master/machines/pcx86/modules/v2/chipset.js),
+and the retained Bochs compatibility source. MAME is the only observed
+reference with an explicit per-state 8237-compatible engine. QEMU explicitly
+rejects several command features; PCjs retains mask-command TODOs and a
+machine-specific terminal-count workaround; 86Box includes later-machine DMA
+extensions. Those limitations are evidence boundaries, not defects in the
+manual ledger.
+
+| ID | Manual L3 | Other L3 corroboration | Residual fallback to L2 |
+| --- | --- | --- | --- |
+| DMA-R1 | Base/current address and count, first/last access, increment/decrement and TC. | MAME, QEMU, 86Box and PCjs retain base/current pairs and byte selector. | No selected Core programming/service interleave. |
+| DMA-R2 | Command/mode bit meanings and Program Condition. | MAME consumes the command and mode choices; QEMU/PCjs explicitly leave subsets unsupported. | No selected Core command-to-service phase. |
+| DMA-R3 | Request, mask, status and temporary-register lifecycle. | MAME/QEMU model software request and read-to-clear TC; 86Box/PCjs corroborate register shape. | No peripheral DREQ production contract. |
+| DMA-R4 | First/last clear, master clear and mask commands. | MAME/QEMU implement the command family; PCjs' missing mask handlers are a negative boundary. | No host transaction delay is inferred. |
+| DMA-F1 | DREQ recognition, fixed/rotating priority and DACK relation. | MAME models polarity and DACK; Bochs models DACK and cascading request propagation. | Selected peripheral request cadence and visible acknowledge route. |
+| DMA-F2 | SI/S0/S1--S4, READY wait and HRQ/HLDA service order. | MAME has explicit SI/S0/S1--S4/SW states. | Core transaction/arbitration publication and physical clock conversion. |
+| DMA-F3 | Demand, single, block and cascade service semantics. | MAME models mode exits and cascade state; Bochs propagates the master/slave cascade request. | Selected CPU interleave duration and controller-to-controller topology beyond AT. |
+| DMA-F4 | Read/write/verify data-control semantics. | MAME and QEMU preserve transfer-type separation. | Signal pulse widths and unselected device behavior. |
+| DMA-F5 | TC/EOP, masking and auto-init consequences. | MAME and Bochs drive terminal/EOP and DACK release. | Physical EOP pin waveform. |
+| DMA-F6 | Channel-0/1 memory-to-memory sequence and temporary byte. | MAME represents the separate S11--S14/S21--S24 state groups; 86Box corroborates M2M function only. | Exact board cycle conversion. |
+| DMA-F7 | Compressed-state selection and address-latch relation. | MAME selects compressed state flow. | CLK/latch propagation and any unselected timing formula. |
+| DMA-T1 | IBM AT dual-controller widths, cascade and channel bindings. | QEMU, Bochs and PCjs instantiate the two-controller AT pattern. | Non-AT topology. |
+| DMA-T2 | IBM AT page mapping and 8-/16-bit boundary rules. | QEMU, 86Box and PCjs corroborate AT page/word-controller mapping. | Page-register reset details not selected by the board source. |
+| DMA-T3 | IBM AT 3 MHz/five-clock transfer formula and PIT1 refresh route. | No external implementation elevates a board timing rule. | Core publication of this selected formula and refresh chain. |
+| DMA-T4 | IBM AT DRQ/DACK polarity, channel reservation and peripheral hold rule. | MAME/Bochs model DACK; PCjs/Bochs corroborate AT cascade routing. | Selected DREQ producer, DACK consumer and page/refresh transaction contract. |
+| DMA-T5 | None: this is an internal owner boundary, not an Intel/IBM chip fact. | None. | One Core-owned request/grant/page/refresh integration contract. |
+
 ## Completeness And S6 Transfer
 
 The finite universe is `DMA-R1`--`DMA-R4`, `DMA-F1`--`DMA-F7`, and
