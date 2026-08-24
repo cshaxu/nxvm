@@ -2,28 +2,7 @@
 
 ## Current Work
 
-**Active: M5 Td S141 - PIC extension Core/profile debt admission.**
-
-## M5 Td S141 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Governance |
-| Admission And Approval | Owner requested explicit TODO admission for future PIC extensions, separating Core device ownership from VM/profile selection, on 2026-08-24. |
-| Objective | Record finite, non-overlapping deferred admissions for XT/AT PIC topology, later AT interrupt-routing extensions, and APIC/IOAPIC, with Core/profile responsibility and source gates. |
-| Non-goals | Do not change T456's 8259A scope, queue an implementation task, modify Core/VM source, infer any chipset behavior, or make a profile own guest-visible mutable state. |
-| Reference Baseline | `4884b1cb`; T456 S1 retains the 8259A manual/reference reconciliation and explicitly excludes unselected board wiring and later interrupt controllers. |
-| Candidate Proposal | T456's [Core PIC 8259A phase contract](../proposals/m5-core-pic-8259a-phase-contract.md) is the immediate boundary context; this Td creates debt only. |
-| Files And ABI Surface | `states/TODO.md` and `states/CURRENT.md` only. No source, ABI, build or artifact change. |
-| Applicable Rules | `rules/EXECUTION.md`, `rules/DOCUMENT.md`, and `rules/ARCHITECTURE.md`: one owner and production path, profile selection without reverse ownership, and unplanned debt only in TODO. |
-| Verification | Review the new entries for overlap with T456, explicit Core/profile ownership, primary-source admission conditions, no `pic.c` scope creep and documentation-governance success. |
-| Expected Markers | Three bounded TODO entries: XT/AT topology, ELCR/PCI routing, and APIC/IOAPIC; each records its Core owner, immutable profile selection boundary and separate source/task requirement. |
-| Asset Needs | None. |
-| Reporting Requirements | Report each deferred boundary and its admission condition; state that no runtime change or queue admission occurred. |
-| Stop Conditions | Stop if an entry duplicates an existing TODO, moves guest-visible controller state into VM/profile, or requires an unsourced behavioral claim. |
-| Exit Criteria | The three deferred units have one future admission path each, T456 remains limited to 8259A behavior, and documentation governance passes. |
-| Original Owner Request | Add a TODO for PIC follow-on extensions, with the correct division between Core and profile. |
-| Similar-Issue Sweep | Check XT/AT topology, ELCR, PCI/PIRQ and APIC/IOAPIC so no later interrupt-controller family is hidden in the PIC TODO. |
+**Active: M5 T456, between accepted subtasks.**
 
 ## Current Technical Baseline
 
@@ -60,6 +39,11 @@
 
 
 ## Recent Governance
+
+- **M5 Td S141 P1:** recorded three deferred, source-gated controller
+  admissions: XT/AT PIC topology, later-AT ELCR/PCI routing, and APIC/IOAPIC.
+  Core owns every guest-visible controller state; profile only selects an
+  immutable topology. No queue, source or runtime behavior changed.
 
 - **M5 Td S140 P1:** added and ordered first the bounded request-bridge
   full-build restoration and parallel Console profile-smoke isolation
