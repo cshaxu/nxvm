@@ -15,6 +15,38 @@ specifies the selected 8042 firmware-visible host interface, keyboard serial
 handling and board wiring. Keyboard command protocol is included only where AT
 assigns it to this selected controller boundary.
 
+## T464 S1 Cross-Validation
+
+The rendered local PDFs remain normative: Intel defines the programmable
+UPI-42 substrate and IBM defines the selected 5170 wiring and firmware-visible
+contract.  The PDFs are OCR scans, so their pin/timing tables were checked on
+rendered pages.  No emulator replaces a manual statement.  The following
+read-only comparison was completed on 2026-08-25: 86Box `4fef696`
+(`src/device/kbc_at.c` and `keyboard_at.c`), local PCjs `c7f21b4fa`
+(`machines/pcx86/modules/v2/keyboard.js` plus its 8042 material), the local
+Bochs 2.6 compatibility tree (`iodev/keyboard.cc`), current MAME
+`src/devices/machine/at_keybc.cpp`, and current QEMU `hw/input/pckbd.c` /
+`ps2.c`.  MAME is especially useful corroboration because it runs the selected
+8042 ROM through an emulated UPI-41 core; QEMU, 86Box and Bochs instead carry
+behavioural compatibility models.  PCjs is a useful AT integration model, not
+a source for chip-level timing.
+
+| Checklist rows | Manual conclusion | Cross-check conclusion | Final tier |
+| --- | --- | --- | --- |
+| KBC-R1--R2 | UPI host buffers and IBM 0060h/0064h status are specified. | 86Box, Bochs, MAME and QEMU all retain the single host command/data and output/status interface. | Manual L3 for register semantics; exact firmware service delay requires board L3 or falls back to L2. |
+| KBC-R3--R4 | IBM specifies the selected commands, command byte and ports. | 86Box/Bochs/QEMU implement 20h/60h/AAh/ABh/AC/ADh/AEh/C0h/D0h/D1h/E0h/F0h--FFh; MAME obtains the selected behaviour from ROM. PS/2/AUX commands are later-machine extensions. | Manual L3 for selected AT commands and port fields; extensions are Other L3 only when an explicitly selected profile admits them. |
+| KBC-F1 | UPI defines internal instruction/interrupt relations but not IBM's ROM schedule in Core ticks. | MAME confirms that instruction cadence belongs to the UPI/ROM model; the behavioural models intentionally do not agree on a universal delay. | Manual L3 relation; board L3 input or fallback to L2 for selected cadence. |
+| KBC-F2--F3 | IBM defines the AT serial frame, error/timeout rules and keyboard-visible protocol boundary. | 86Box, Bochs, MAME and QEMU all model a distinct keyboard endpoint; their concrete delay choices differ. PCjs deliberately abstracts host keyboard delivery. | Manual L3 for frame/error/protocol semantics; board L3 input or fallback to L2 for clock-derived delivery and exact selected-keyboard coverage. |
+| KBC-F4--F5 | IBM defines IRQ1 and reset/A20 output-port bindings. | All five references retain separate output-buffer/IRQ and A20/reset paths; QEMU and Bochs explicitly reduce the pulse to reset rather than claim a universal pulse model. | Manual L3 for logical publication/binding; board L3 input or fallback to L2 for PIC/CPU visibility. The 6-us electrical pulse is L4. |
+| KBC-F6--F7 | IBM separates NMI board logic from the KBC; UPI electrical tables are not Core tick contracts. | The reference models likewise keep NMI outside the KBC and do not derive Core time from AC limits. | Manual L3 negative boundary; L4 electrical limits excluded. |
+| KBC-T1--T4 | IBM fixes 5170 topology and owner separation. | 86Box/Bochs/MAME/QEMU agree on 0060h/0064h, IRQ1 and A20/reset; AUX/IRQ12 is an explicit PS/2/later extension. | Manual L3 for 5170 topology and separation; Other L3 only for selected extension profiles. |
+| KBC-T5 | No source supplies a selected Core tick conversion. | Behavioural models use incompatible schedulers, confirming that none is a substitute for a board contract. | board L3 when a selected profile supplies it; otherwise fallback to L2. |
+
+Every row below uses this final tier. `Manual L3` means a directly selected
+Intel/IBM semantic relation; `Other L3` is reserved for an explicitly selected
+later-model profile corroborated by a named emulator; `fallback to L2` means
+the source provides neither a selected Core-tick relation nor a board value.
+
 ## Host Interface, Controller And Port Universe
 
 | ID | Source | Finite function | Reset/cancellation | Timing or signal relation | Disposition |
