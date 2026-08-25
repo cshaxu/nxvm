@@ -2,27 +2,6 @@
 
 ## Current Work
 
-## M5 T466 S1 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | New |
-| Admission And Approval | Owner goal dated 2026-08-25 directs completion of the remaining controller tasks; T465 is closed. |
-| Objective | Reconcile the selected VADP source/function/timing ledger and current-code gap audit against original adapter manuals plus 86Box, MAME, PCjs, Bochs and QEMU. |
-| Non-goals | No display implementation, timing invention, host-presentation work, profile change, public ABI, source import or unrelated repair. |
-| Reference Baseline | `35e1a2b5`; retained VADP source/checklist and gap-audit evidence, selected Core VADP owner, Queue proposal. |
-| Candidate Proposal | [Core VADP phase contract](../proposals/m5-core-vadp-phase-contract.md). |
-| Files And ABI Surface | VADP research/audit/history/status/queue/proposal records only. No code, build, artifact or ABI change. |
-| Applicable Rules | Original selected adapter/board manuals control; emulator sources are read-only cross-checks; every finite row is Manual L3, Other/board L3, or fallback to L2; VADP does not own host time or memory transactions. |
-| Verification | Inspect each source row and five reference implementations, reconcile source tier and one code receiver per gap, then run documentation governance and `git diff --check`. |
-| Expected Markers | No unlabelled VADP row, no emulator extension presented as manual fact, one owner/receiver and explicit L2 for every unsourced term. |
-| Asset Needs | No source, firmware, display capture or guest media import. |
-| Reporting Requirements | Record selected adapter identity, original manual pages, external disagreements, every L2 boundary, code-gap receiver and no-new-path conclusion. |
-| Stop Conditions | Stop for missing selected manual, conflicting selected adapter identity, or a row without a truthful tier/receiver. |
-| Exit Criteria | All finite VADP source and code rows are cross-validated, source-labelled and assigned exactly one current owner/receiver. |
-| Original Owner Request | Complete remaining controllers source-first with minimalist single-owner implementation and explicit L2 rather than guessed timing. |
-| Similar-Issue Sweep | Re-read VADP CRTC/raster/status/aperture/reset, Core display/VRAM ownership, composition/presentation boundary, current tests and proposal/queue links. |
-
 
 ## Current Technical Baseline
 
@@ -48,6 +27,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T466 S1 | Accepted: all IBM EGA/VADP source and code rows are manual- or model-labelled; external references cannot extend the selected adapter, and every gap remains with the sole Core VADP owner or explicit L2 boundary. |
 | T465 | Closed: selected Intel 8272A source reconciliation, command/reset repair and per-drive parallel Seek close the logical controller contract; physical media and board-time conversion remain explicit L2. Release 0465 is stripped and the 294/294 serial gate is recorded in [history](../history/M5-T465-core-intel-8272a-logical-media-phase-contract.md). |
 | T464 | Closed: all sixteen KBC rows are Manual L3 or explicit L2/L4. One Core owner now covers selected command/input/test state; 294/294 serial current-gate tests pass and stripped Release 0464 is recorded in history. |
 | T463 | Closed: the 16-row MC146818A/IBM AT ledger has one Core phase owner, a copied L3/L2 board timing plan, explicit L2/L4 boundaries and focused proof. The full current gate ran 294/294; stripped Release 0463 is recorded in [history](../history/M5-T463-core-rtc-cmos-phase-contract.md). |
