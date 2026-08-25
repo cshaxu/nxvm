@@ -42,3 +42,22 @@ Accepted at `3c2d5c3d`. Model 339 selects its existing source-qualified PIT
 and DMA values through the descriptor-to-copied-Core-plan path; default and
 PIC remain L2. Focused profile/reset/disposition regressions and documentation
 governance pass. [Evidence](../etc/evidence/t462-s3-controller-profile-selection.md).
+
+### S4
+
+Accepted at `e4c5e9af`. PIC remains a deliberate L2 logical-order boundary;
+Model-339's qualified PIT/DMA selections remain the sole copied-plan inputs.
+The corrective sweep aligns seven legacy regressions with the PIT CR-to-CE
+input-clock transition, confirms one profile-to-owner route, and retains no
+placeholder field, dynamic setter or second scheduler. The serial current gate
+passes 294/294, specialized gates pass 77/77, documentation governance passes,
+and the stripped `nxvm_0_5_0462.exe` artifact has SHA-256
+`3E93ECCEF5ED8AC904EE63ECA081F966E9611C98F2912263CFF213F0D1D6D4AA`.
+[Closure evidence](../etc/evidence/t462-s4-controller-contract-closure.md).
+
+## Task Closure
+
+All 11 ledger rows have a durable qualified L3, explicit L2, or transferred
+disposition. T462 adds no unqualified board fact: physical/electrical timing,
+alternate topology, and host pacing remain outside this task's controller
+contract and are received only by their named later candidates.

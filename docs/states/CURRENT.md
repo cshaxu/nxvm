@@ -2,26 +2,7 @@
 
 ## Current Work
 
-## M5 T462 S4 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Coordinator accepted S3 implementation `3c2d5c3d` after actual code/test/diff review and documentation governance. Owner-approved single-person dual-role execution admitted S4 on 2026-08-24; owner then approved this in-S4 corrective extension after the serial current gate exposed PIT-transition regression evidence. |
-| Objective | Close the finite T462 ledger: verify PIC's only valid current disposition is explicit L2, reconcile all three controller owner paths, repair the PIT-transition regressions exposed by the gate, and publish the verified T462 Release artifact. |
-| Non-goals | No new clock domain, scheduler, controller state, route callback, runtime timing setter, profile name in Core, host time, L4 work, DMA five-clock numeric invention, PIC elapsed-delay field or topology expansion; no test expectation weakening or gate exclusion. |
-| Reference Baseline | `3c2d5c3d`; accepted T462 S1--S3 evidence; closed T456/T460/T461 controller contracts and the current Release 0461 artifact. |
-| Candidate Proposal | [Core controller board-timing contract](../proposals/m5-core-controller-board-timing-contract.md). |
-| Files And ABI Surface | Existing controller/plan/profile and PIT-dependent regressions, their sole controller owner, T462 ledger/evidence/history/current state and artifact metadata; no new Core or VM runtime ABI unless the diagnosed owner requires it. |
-| Applicable Rules | README Task Reading Set; EXECUTION S/P lifecycle, closure audit, artifact and code-size accounting; DOCUMENT evidence indexing; ARCHITECTURE single copied plan and neutral dependency; CODING no wrapper/no duplicate owner; source policy; specification-driven L3 timing design. |
-| Verification | Reconcile all 11 ledger rows against final code and evidence; identify and repair the PIT-transition failures exposed by the serial current gate, with focused regressions and a repository-wide affected-test sweep; then run PIC/DMA/PIT and profile focused regressions, serial full current gate, documentation governance and diff hygiene; build, verify and hash the stripped Release 0462 artifact. |
-| Expected Markers | `M5:T462:S4:CONTROLLER-LEDGER-CLOSURE:OK`; `M5:T462:S4:PIC-L2-BOUNDARY:OK`; retained S3 markers; full current gate passes. |
-| Asset Needs | T462 S1--S3 ledger/evidence, current tracked source and approved local build toolchain only; no external import. |
-| Reporting Requirements | Record every ledger disposition, PIC L2 rationale, owner/direction sweep, full-gate/artifact evidence, source/test code-size accounting and any explicit transfer. |
-| Stop Conditions | Stop and transfer if closure requires a profile name in Core, unqualified conversion, new dynamic callback/topology, source-less PIC delay or a second timing path. |
-| Exit Criteria | Every T462 ledger row is accepted or transferred; PIC remains explicit L2 without a placeholder field; PIT/DMA retain qualified copied selections; all controller owners remain single-path; full gate and stripped 0462 artifact are verified. |
-| Original Owner Request | Execute single-person dual-role implementation of L3-precision interfaces for all three controllers, allowing profile-provided L3 values or explicitly L2-derived deterministic ratios without provenance promotion. |
-| Similar-Issue Sweep | Sweep plan construction/validation, profile descriptors, all PIT-dependent current-gate tests, PIC/DMA/PIT dynamic inputs and controller-order consumers; confirm no second timing route, profile-to-Core reverse dependency, live setter, source-less L3 promotion or stale immediate-PIT-load expectation remains. |
+**Idle.**
 
 ## Current Technical Baseline
 
@@ -47,8 +28,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T462 S2 | Accepted at `df6d28a7`: the one copied plan rule value permits qualified PIT/DMA L3 declarations only with explicit existing ratios and service rule, rejects invalid combinations, and keeps PIC L2. [Evidence](../etc/evidence/t462-s2-controller-rule-plan.md). |
-| T462 S1 | Accepted at `e88124db`: 11 PIC/DMA/PIT board-timing rows are frozen with one disposition; existing `clock_plan`/transaction owners are reused, no placeholder route/delay field is allowed, and S2 is admitted for the one copied rule qualification. [Evidence](../etc/evidence/t462-s1-controller-board-timing-ledger.md). |
+| T462 | Closed: one immutable copied plan carries only qualified Model-339 PIT/DMA selections; PIC remains explicit L2. The seven corrected PIT-transition regressions, 294/294 serial current gate, 77/77 specialized gates, documentation governance and stripped 0462 artifact complete the controller-board contract. [History](../history/M5-T462-core-controller-board-timing-contract.md). |
 | T461 | Closed: one Core PIT owner covers manual P1--P14 and one `OUT0 -> IRQ0 -> PIC refresh` route closes P15; P16--P18 remain explicit L2. Full current-gate is 294/294 and its stripped artifact is retained in history. [History](../history/M5-T461-core-pit-8254-phase-contract.md). |
 | T460 | Closed: all 16 DMA rows are disposed through the sole `dma.c` owner; normal/compressed and M2M service phases have focused proof, the five-clock conversion remains explicit L2, serial current-gate is 294/294, and the stripped 0460 artifact is recorded. [History](../history/M5-T460-core-dma-8237a-phase-contract.md). |
 
@@ -57,7 +37,6 @@
 | T457 | Closed: F9 remains a single host run-handle stop report and no longer enters the guest key route; the corrected host-cancellation assertion and two-epoch regression preserve it. Its artifact is stripped Release-only, retains the production debugger/trace commands, excludes automatic Core trace events, and 293/293 current-gate tests pass. [History](../history/M5-T457-session-input-restart-recovery.md). |
 | T456 | Closed at L3: all 18 retained 8259A rows have focused proof or an explicit boundary; one CPU path, programmed cascade, corrected specific-EOI, command/poll lifecycle and default-IR7 acknowledgement remain PIC-owned. Full current-gate is 293/293. PIC-T3 L4 electrical timing is deliberately excluded. [History](../history/M5-T456-core-pic-8259a-phase-contract.md). |
 | T455 | Closed: the sole 8086 decoder-ledger guard now checks current decoder and timing owners instead of the retired monolithic layout; all 1,053 records and 292 current-gate tests pass. [History](../history/M5-T455-8086-decoder-ledger-guard-reconciliation.md). |
-| T454 | Closed: the three fixed-write Console catalog smokes have one CTest-owned build workspace each; serial and repeated parallel replays pass with no source-tree residue. The independent 8086 decoder-ledger guard failure is recorded as CPU debt. [History](../history/M5-T454-parallel-console-profile-smoke-isolation.md). |
 ## Recent Governance
 
 - **M5 Td S146 P1:** refined the queue-first controller board-timing candidate
