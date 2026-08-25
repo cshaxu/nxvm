@@ -19,6 +19,34 @@ Those gaps are L2 or blocked, not inferred implementation requirements. No
 mature-emulator reference is yet selected; S19 may name one only as a labelled
 reference-derived investigation for an exact identified gap.
 
+## T465 S1 Cross-Validation
+
+Rendered NEC pages remain normative. On 2026-08-25, read-only comparison used
+86Box `4fef696` (`src/floppy/fdc.c`), local Bochs 2.6
+(`iodev/floppy.cc`), local PCjs (`machines/pcx86/modules/v2/fdc.js`), current
+MAME `src/devices/machine/upd765.cpp`, and current QEMU `hw/block/fdc.c`.
+MAME models the uPD765 family directly; QEMU models a later 82078 and its
+format autodetection is not a uPD765 or IBM AT authority. No reference source
+is imported.
+
+| Row | Cross-check result | Final tier |
+| --- | --- | --- |
+| FDC-R1 | All five models retain MSR/data phase and reset state. | Manual L3. |
+| FDC-R2 | All implement command/result phase families; Version differs by selected variant. | Manual L3 for named forms; variant is board L3 or fallback to L2. |
+| FDC-R3 | All model result/status and transfer phases, but differ on image error/CHRN mapping. | Manual L3 chip phase; media mapping is board L3 or fallback to L2. |
+| FDC-R4 | All retain Specify/Seek/Sense; none supplies universal physical drive timing. | Manual L3 register relation; drive phase is board L3 or fallback to L2. |
+| FDC-R5 | MAME/86Box expose variant behavior; QEMU is a later controller. | Manual L3 difference; selected revision is board L3 or fallback to L2. |
+| FDC-F1 | References model drive signals at differing abstraction levels. | Manual L3 pin relation; mechanics fallback to L2. |
+| FDC-F2 | References agree on DMA/IRQ logical sequencing. | Manual L3; bus service phase fallback to L2. |
+| FDC-F3 | Reference delays are scheduler-specific. | Manual L3 only for stated formulas; AC conversion L4 or board L3. |
+| FDC-F4 | References retain per-drive seeks but choose incompatible mechanical timing. | Manual L3 logical state; mechanics fallback to L2. |
+| FDC-F5 | Every reference adds a media grammar/format table beyond NEC. | Manual L3 capability; selected grammar is Other/board L3 or fallback to L2. |
+| FDC-T1 | AT ports/IRQ6/DMA2 are represented consistently. | Manual L3 topology. |
+| FDC-T2 | Drive-type mapping is platform-specific in every reference. | fallback to L2 until selected drive source. |
+| FDC-T3 | BIOS/motor policy is deliberately outside controller models. | fallback to L2. |
+| FDC-T4 | Format autodetection/CHS mapping differs materially across references. | fallback to L2 absent an admitted grammar. |
+| FDC-T5 | References keep controller scheduling separate from board time. | board L3 when selected; otherwise fallback to L2. |
+
 ## Registers, Commands And Result Universe
 
 | ID | Source | Finite function | Reset/cancellation | Timing or signal relation | Sufficiency and disposition |
