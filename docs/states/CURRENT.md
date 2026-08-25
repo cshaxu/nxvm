@@ -2,30 +2,9 @@
 
 ## Current Work
 
-## M5 T461 S3 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner approved single-person dual-role execution of T461 on 2026-08-24. Coordinator accepts S2 implementation `a1ea0fa1` after actual diff, focused 4/4 and complete 294/294 current-gate review, and admits S3 only. |
-| Objective | Prove the existing sole PIT channel-0 OUT to PIC IRQ0 binding, deterministic scheduler visibility and reset/finalize lifecycle; close T461 without elevating board-order or physical-clock facts beyond their documented L2 boundary. |
-| Non-goals | No PIT chip state-machine redesign, host-clock pacing, oscillator/electrical claim, speaker/PPI/audio implementation, second scheduler, profile wiring change, public ABI addition, or external-code import. |
-| Reference Baseline | `a1ea0fa1`; accepted T456 PIC and T460 DMA contracts; accepted T461 S1 Lists 1--2 and S2 phase evidence. |
-| Candidate Proposal | [Core PIT 8254 phase contract](../proposals/m5-core-pit-8254-phase-contract.md). |
-| Files And ABI Surface | `machine.c`/scheduler composition and existing PIT/PIC focused smokes only; existing Core-local API, no public ABI. |
-| Applicable Rules | README Task Reading Set; EXECUTION S/P lifecycle; DOCUMENT governance; architecture single-owner rule; coding no-wrapper/owner-local repair rule; source policy; specification-driven L3 timing design. |
-| Verification | Sweep every PIT output provider, channel-0 binding and scheduler consumer; run the focused PIT/IRQ0/divider corpus, full current-gate, documentation gate and diff hygiene. |
-| Expected Markers | `M5:T461:S3:PIT-INTEGRATION-CLOSURE:OK`; P15 has one owner, named focused proof and every retained L2 boundary is explicit. |
-| Asset Needs | T461 S1 admitted Intel manual evidence; read-only external observations only as corroboration, never import. |
-| Reporting Requirements | Record the output-to-PIC route, ordering owner, reset/finalize release path, code-size delta and each retained L2 boundary. |
-| Stop Conditions | Stop for a physical time derivation, an unselected topology, a required second mutable owner or any material chip-contract defect outside the accepted S2 evidence. |
-| Exit Criteria | P15's chip OUT and selected Core binding are proven through one route; scheduler order/reset are either proven or retained as L2 with receiver; no duplicate path/state/API is introduced; full gate and documentation gate pass; closure evidence, history and current artifact are recorded and accepted. |
-| Original Owner Request | Execute the current PIT task in single-person dual-role mode, using global minimalist design and no accretion. |
-| Similar-Issue Sweep | Sweep every PIT output provider, channel-0 binding, PIC timer consumer, scheduler caller and reset/finalize release path; classify every hit at its one owner. |
-
 ## Current Technical Baseline
 
-- **Current developer artifact:** target `vm-0-5-0460`; `nxvm_0_5_0460.exe` / `build/output/nxvm_0_5_0460.exe`, SHA-256 `29FB7AC3D715B45D60A82F4D32F3B4D17C8B4A8601C60FBE482DBB332CE0AF62`. It is built only from the stripped Release current-artifact route; Debug remains the current-gate route. T434 has one copied Core timing-plan publication route for default PC/AT, IBM 5170 Model 339 and Model-40 BYOB session composition.
+- **Current developer artifact:** target `vm-0-5-0461`; `nxvm_0_5_0461.exe` / `build/output/nxvm_0_5_0461.exe`, SHA-256 `D875AB15C1E63A3FFBBC1A064315AE9516773A65F70FC4783957FE21DE45829A`. It is built only from the stripped Release current-artifact route; Debug remains the current-gate route. T434 has one copied Core timing-plan publication route for default PC/AT, IBM 5170 Model 339 and Model-40 BYOB session composition.
   T386 closes selected-device functional completeness at S29; its retained
   [closure audit](../etc/evidence/t386-s29-functional-closure-audit.md) fixes
   HDC current-gate coverage and transfers board, firmware and physical work.
@@ -47,8 +26,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T461 S1 | Accepted at `1c9428b1`: manual-first 8254 Lists 1--2 dispose every selected row as Manual-L3 or explicit L2; `pit.c` remains the sole owner and S2 is admitted for the control/latch contract. [Evidence](../etc/evidence/t461-s1-pit-8254-function-timing-ledger.md). |
-| T461 S2 | Accepted at `a1ea0fa1`: one PIT owner now covers P1--P14 CR-to-CE, latches, modes, GATE and CE phases; focused 4/4 and full current-gate 294/294 pass. [Evidence](../etc/evidence/t461-s2-pit-chip-phase-contract.md). |
+| T461 S3 | Implementation is complete pending coordinator acceptance: one `OUT0 -> IRQ0 -> PIC refresh` route, P16--P18 retained as L2, full gate 294/294, and stripped artifact `nxvm_0_5_0461.exe` recorded. [Evidence](../etc/evidence/t461-s3-pit-integration-closure.md). |
 | T460 | Closed: all 16 DMA rows are disposed through the sole `dma.c` owner; normal/compressed and M2M service phases have focused proof, the five-clock conversion remains explicit L2, serial current-gate is 294/294, and the stripped 0460 artifact is recorded. [History](../history/M5-T460-core-dma-8237a-phase-contract.md). |
 
 | T459 | Closed after S2 correction: `standard`/`turbo` remain stopped-session Console selections, but neither VM speed branch manufactures guest ticks. `Sleep(1)` is explicitly L2 HLT host-load backoff; true Standard pacing and Turbo fast-forward remain transferred to Core deadlines plus profile timebases. The full gate passes 294/294; current artifact `0.5.0459` is stripped Release-only. [History](../history/M5-T459-vm-session-speed-policy.md). |

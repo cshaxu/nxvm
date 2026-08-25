@@ -10,7 +10,7 @@ The reviewed owners are `src/core/machine/pit.c`, `pit.h`, `machine.c`,
 `core_machine_pit_readback_smoke.c`, `core_machine_pit_irq0_s2_smoke.c`,
 `tests/core/machine_pit_divider_smoke.c`, plus PC/AT topology and speaker
 smokes. Every nonconforming row transfers once to the queued
-[Core PIT 8254 phase contract](../../proposals/m5-core-pit-8254-phase-contract.md).
+[Core PIT 8254 phase contract](../../history/M5-T461-core-pit-8254-phase-contract-proposal.md).
 No source or test is modified by this audit.
 
 ## Row Dispositions
