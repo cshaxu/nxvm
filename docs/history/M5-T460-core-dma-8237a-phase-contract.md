@@ -41,3 +41,10 @@ the actual sole production path: `dma.c` state, board binding, and T449
 scheduler/transaction ownership. It records the immediate cascade completion,
 atomic M2M copy and inert command bits as the concrete implementation gaps;
 S2--S5 are bounded accordingly. No runtime behavior or artifact changed.
+
+S2 is accepted at `434411d4`. Its
+[logical-service evidence](../etc/evidence/t460-s2-dma-logical-service.md)
+records the one private DMA acknowledgement/service-release state and the
+centralized entry/release helpers. It removes repeated ISR-clearing paths,
+does not expose a pin API or change T449/board ownership, and preserves the
+focused DMA/transaction/FDC regression group.
