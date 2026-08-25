@@ -2,26 +2,6 @@
 
 ## Current Work
 
-## M5 T464 S1 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | New |
-| Admission And Approval | Owner goal dated 2026-08-25 approves completing the remaining four controller tasks in queue order. KBC is first; no exception is approved. |
-| Objective | Reconcile the complete 8042/KBC/NMI source ledger and current code-gap audit against original manuals and named emulator references, recording one Manual L3, Other/board L3, or explicit L2 disposition for every finite row. |
-| Non-goals | No runtime implementation, host input timestamp, external-source import, firmware import, profile policy change, or claim beyond available authority. |
-| Reference Baseline | `09f5bfdf`; KBC proposal, `t450-s11-kbc-8042-nmi-function-timing-checklist.md`, and `t450-s12-kbc-8042-nmi-code-gap-audit.md`. |
-| Candidate Proposal | [Core KBC 8042 and NMI phase contract](../proposals/m5-core-kbc-8042-nmi-phase-contract.md). |
-| Files And ABI Surface | Research checklist, code-gap audit, T464 S1 evidence, current status and task history only. No source, public ABI or artifact change. |
-| Applicable Rules | Source policy governs manual/reference research; documentation rule governs retained ledger language; execution rule requires complete row coverage and provenance. |
-| Verification | Render/check original manual pages where necessary; inspect named reference implementations without import; prove every finite row has one tier and a current-code disposition; run documentation governance. |
-| Expected Markers | Named original manual pages, pinned or dated reference revisions, `Manual L3`, `Other L3`, or `fallback to L2` for each row, and no ambiguous tier. |
-| Asset Needs | Read-only controller manuals and existing external emulator trees only. |
-| Reporting Requirements | Record source/revision and every changed row; report any manual ambiguity or source gap before implementation planning. |
-| Stop Conditions | Stop for missing manual material, conflicting authoritative sources, or an unbounded ledger; record the exact gap rather than inventing a timing rule. |
-| Exit Criteria | Every KBC checklist row and every current-code gap row has a truthful source-tier disposition and unique implementation receiver or retained boundary. |
-| Original Owner Request | For each remaining controller, cross-check manuals and external simulators before filling implementation gaps; use L2 only where Manual, Other-model, and board L3 evidence are unavailable. |
-| Similar-Issue Sweep | Search KBC, NMI, A20, reset, keyboard serial and AUX source paths, all controller checklist rows and all composition clock inputs. |
 
 ## Current Technical Baseline
 
@@ -47,6 +27,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T464 S1 | Accepted: rendered Intel/IBM manuals remain normative; 86Box, Bochs, PCjs, MAME and QEMU corroborate each of the 16 rows without elevating divergent emulator delays to hardware timing. The bounded Manual-L3 implementation gaps are ready for S2. |
 | T463 | Closed: the 16-row MC146818A/IBM AT ledger has one Core phase owner, a copied L3/L2 board timing plan, explicit L2/L4 boundaries and focused proof. The full current gate ran 294/294; stripped Release 0463 is recorded in [history](../history/M5-T463-core-rtc-cmos-phase-contract.md). |
 | T462 | Closed: one immutable copied plan carries only qualified Model-339 PIT/DMA selections; PIC remains explicit L2. The seven corrected PIT-transition regressions, 294/294 serial current gate, 77/77 specialized gates, documentation governance and stripped 0462 artifact complete the controller-board contract. [History](../history/M5-T462-core-controller-board-timing-contract.md). |
 | T461 | Closed: one Core PIT owner covers manual P1--P14 and one `OUT0 -> IRQ0 -> PIC refresh` route closes P15; P16--P18 remain explicit L2. Full current-gate is 294/294 and its stripped artifact is retained in history. [History](../history/M5-T461-core-pit-8254-phase-contract.md). |
