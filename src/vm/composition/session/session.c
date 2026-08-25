@@ -138,6 +138,7 @@ static C_INT vm_session_materialize_profile_core_config(vm_session *session,
         .kbc_typematic_repeat_ticks = contract->kbc_typematic_repeat_ticks,
         .kbc_command_response_ticks = contract->kbc_command_response_ticks
     };
+    session->controller_timing_rules = contract->controller_timing_rules;
     return 1;
 }
 
@@ -298,6 +299,9 @@ type_status vm_session_storage_initialize(vm_session *machine)
     }
     status = core_machine_plan_create(&machine->core_machine_config,
         &machine->core_machine_plan);
+    if (status != TYPE_STATUS_OK) return status;
+    status = core_machine_plan_set_controller_timing_rules(
+        machine->core_machine_plan, &machine->controller_timing_rules);
     if (status != TYPE_STATUS_OK) return status;
     status = core_machine_media_registry_create(&machine->media_registry);
     if (status != TYPE_STATUS_OK) {

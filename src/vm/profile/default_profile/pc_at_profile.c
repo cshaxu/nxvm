@@ -136,6 +136,10 @@ static const vm_profile_default_pc_at_descriptor default_pc_at_descriptor = {
     { 1u, 0u, 0u, 0u, 0u, 0u },
     { { 1u, 1u, 0u }, { 1u, 4u, 0u }, { 1u, 1u, 0u }, { 1u, 1u, 0u },
         { 1u, 1u, 0u }, { 1u, 1u, 0u } },
+    { CORE_MACHINE_CONTROLLER_TIMING_RULE_L2_FALLBACK,
+        CORE_MACHINE_CONTROLLER_TIMING_RULE_L2_FALLBACK,
+        CORE_MACHINE_CONTROLLER_TIMING_RULE_L2_FALLBACK,
+        CORE_MACHINE_CONTROLLER_TIMING_RULE_L2_FALLBACK },
     0u,
     0u,
     0u,
@@ -182,8 +186,12 @@ static const vm_profile_default_pc_at_descriptor ibm_5170_model_339_descriptor =
      * 86Box IBM-CGA reference rate 157500000/88 Hz. Ratios are to this
      * profile's nominal 8 MHz CPU source; they do not model availability,
      * waits, monitor output, or host elapsed time. */
-    { { 1u, 1u, 0u }, { 596591u, 4000000u, 0u }, { 64u, 15625u, 0u },
+    { { 3u, 8u, 0u }, { 596591u, 4000000u, 0u }, { 64u, 15625u, 0u },
         { 315u, 1408u, 0u }, { 1u, 1u, 0u }, { 1u, 1u, 0u } },
+    { CORE_MACHINE_CONTROLLER_TIMING_RULE_L2_FALLBACK,
+        CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_RATIONAL_CLOCK,
+        CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_DMA_SERVICE_PHASES,
+        CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_RATIONAL_CLOCK },
     /* IBM 6280099 Keyboard: default 500 ms delay and 10 cps typematic,
      * each with +/-20 percent tolerance. These are nominal Model-339 values. */
     4000000u,
@@ -279,6 +287,7 @@ C_INT vm_profile_default_pc_at_cpu_contract_select(
         descriptor->ticks_per_instruction,
         descriptor->instruction_timing,
         descriptor->clock_plan,
+        descriptor->controller_timing_rules,
         descriptor->kbc_typematic_initial_ticks,
         descriptor->kbc_typematic_repeat_ticks,
         descriptor->kbc_command_response_ticks

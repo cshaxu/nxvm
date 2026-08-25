@@ -26,7 +26,9 @@ static C_INT vm_model_339_clock_contract_is_selected(C_VOID)
         return 1;
     }
 
-    failed |= model_339->clock_plan.pit.numerator != 596591u ||
+    failed |= model_339->clock_plan.dma.numerator != 3u ||
+        model_339->clock_plan.dma.denominator != 8u ||
+        model_339->clock_plan.pit.numerator != 596591u ||
         model_339->clock_plan.pit.denominator != 4000000u ||
         model_339->clock_plan.pit.reset_phase != 0u ||
         model_339->clock_plan.rtc.numerator != 64u ||
@@ -45,6 +47,8 @@ static C_INT vm_model_339_clock_contract_is_selected(C_VOID)
         generic->clock_plan.rtc.denominator != 1u ||
         generic->rtc_ticks_per_second != 50000u;
     failed |= session->profile != model_339 ||
+        session->core_machine->dma_clock.numerator != 3u ||
+        session->core_machine->dma_clock.denominator != 8u ||
         session->core_machine->pit_clock.numerator != 596591u ||
         session->core_machine->pit_clock.denominator != 4000000u ||
         session->core_machine->pit_clock.reset_phase != 0u ||
@@ -55,6 +59,25 @@ static C_INT vm_model_339_clock_contract_is_selected(C_VOID)
         session->core_machine->vadp_clock.denominator != 1408u ||
         session->core_machine->vadp_clock.reset_phase != 0u ||
         session->core_machine->shared_rtc.ticks_per_second != 32768u;
+    failed |= session->core_machine->timing_plan.controller_timing.dma_clock !=
+        CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_RATIONAL_CLOCK ||
+        session->core_machine->timing_plan.controller_timing.dma_service !=
+        CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_DMA_SERVICE_PHASES ||
+        session->core_machine->timing_plan.controller_timing.pit_clock !=
+        CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_RATIONAL_CLOCK;
+    {
+        core_machine_timing_disposition disposition;
+
+        failed |= core_machine_get_timing_disposition(session->core_machine,
+            CORE_MACHINE_TIMING_CAPABILITY_CTRL_PIC, &disposition) != TYPE_STATUS_OK ||
+            disposition != CORE_MACHINE_TIMING_DISPOSITION_L2_FALLBACK;
+        failed |= core_machine_get_timing_disposition(session->core_machine,
+            CORE_MACHINE_TIMING_CAPABILITY_CTRL_DMA, &disposition) != TYPE_STATUS_OK ||
+            disposition != CORE_MACHINE_TIMING_DISPOSITION_L3_REQUIRED;
+        failed |= core_machine_get_timing_disposition(session->core_machine,
+            CORE_MACHINE_TIMING_CAPABILITY_CTRL_PIT, &disposition) != TYPE_STATUS_OK ||
+            disposition != CORE_MACHINE_TIMING_DISPOSITION_L3_REQUIRED;
+    }
     failed |= session->core_machine->kbc_typematic_initial_ticks != 4000000u ||
         session->core_machine->kbc_typematic_repeat_ticks != 800000u ||
         session->core_machine->kbc_command_response_ticks != 0u;
@@ -95,5 +118,7 @@ C_INT main(C_VOID)
     STD_PRINTF("M5:T375:S13:MODEL339-CGA-REFERENCE-CONTRACT:OK\n");
     STD_PRINTF("M5:T375:S22:MODEL339-TYPEMATIC:OK\n");
     STD_PRINTF("M5:T375:S23:KBC-F3-CADENCE:OK\n");
+    STD_PRINTF("M5:T462:S3:CONTROLLER-PROFILE-SELECTION:OK\n");
+    STD_PRINTF("M5:T462:S3:CONTROLLER-OWNER-CONSUMPTION:OK\n");
     return 0;
 }

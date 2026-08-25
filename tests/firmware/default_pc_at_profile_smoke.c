@@ -35,6 +35,14 @@ C_INT main(C_VOID)
         profile->clock_plan.kbc.denominator != 1u ||
         profile->clock_plan.provider.numerator != 1u ||
         profile->clock_plan.provider.denominator != 1u ||
+        profile->controller_timing_rules.pic_visibility !=
+            CORE_MACHINE_CONTROLLER_TIMING_RULE_L2_FALLBACK ||
+        profile->controller_timing_rules.dma_clock !=
+            CORE_MACHINE_CONTROLLER_TIMING_RULE_L2_FALLBACK ||
+        profile->controller_timing_rules.dma_service !=
+            CORE_MACHINE_CONTROLLER_TIMING_RULE_L2_FALLBACK ||
+        profile->controller_timing_rules.pit_clock !=
+            CORE_MACHINE_CONTROLLER_TIMING_RULE_L2_FALLBACK ||
         profile->kbc_typematic_initial_ticks != 0u ||
         profile->kbc_typematic_repeat_ticks != 0u ||
         profile->kbc_command_response_ticks != 0u ||
@@ -57,6 +65,9 @@ C_INT main(C_VOID)
             sizeof(contract.instruction_timing)) != 0 ||
         STD_MEMCMP(&contract.clock_plan, &profile->clock_plan,
             sizeof(contract.clock_plan)) != 0 ||
+        STD_MEMCMP(&contract.controller_timing_rules,
+            &profile->controller_timing_rules,
+            sizeof(contract.controller_timing_rules)) != 0 ||
         !vm_profile_default_pc_at_cpu_contract_select(profile,
             CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_FPU_PROFILE_8087,
             &contract) || contract.cpu_profile != CORE_MACHINE_CPU_PROFILE_8086 ||
