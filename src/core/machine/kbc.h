@@ -23,15 +23,17 @@ typedef struct core_machine_cpu_execution_context
 #define CORE_MACHINE_KBC_RESPONSE_CAPACITY 4u
 
 #define CORE_MACHINE_KBC_COMMAND_TRANSLATION 0x40u
+#define CORE_MACHINE_KBC_COMMAND_PC_MODE 0x20u
 #define CORE_MACHINE_KBC_COMMAND_IRQ12 0x02u
 #define CORE_MACHINE_KBC_COMMAND_DISABLE_KEYBOARD 0x10u
 #define CORE_MACHINE_KBC_COMMAND_DISABLE_AUX 0x20u
+#define CORE_MACHINE_KBC_COMMAND_INHIBIT_OVERRIDE 0x08u
 
 #define VKBC_STATUS_OBF 0x01 /* output buffer contains a byte */
 #define VKBC_STATUS_IBF 0x02 /* synchronous command/data processing */
 #define VKBC_STATUS_SYS 0x04 /* controller self test/system flag */
 #define VKBC_STATUS_CD  0x08 /* last write selected the command port */
-#define VKBC_STATUS_KE  0x10 /* keyboard interface enabled */
+#define VKBC_STATUS_INHIBIT 0x10 /* keyboard inhibit switch is released */
 #define VKBC_STATUS_AUX 0x20 /* current output byte has AUX origin */
 
 typedef enum core_machine_kbc_output_origin {
@@ -63,6 +65,8 @@ typedef enum core_machine_kbc_aux_pending_parameter {
 typedef struct t_kbc_data {
     type_unsigned_8 command_byte;
     type_unsigned_8 output_port;
+    type_unsigned_8 input_port;
+    type_unsigned_8 test_inputs;
     type_unsigned_8 fifo[CORE_MACHINE_KBC_FIFO_CAPACITY];
     core_machine_kbc_output_origin fifo_origin[CORE_MACHINE_KBC_FIFO_CAPACITY];
     type_unsigned_8 fifo_head;
@@ -74,7 +78,6 @@ typedef struct t_kbc_data {
     core_machine_kbc_aux_pending_parameter aux_pending_parameter;
     type_bool keyboard_enabled;
     type_bool scanning_enabled;
-    type_bool system_flag;
     type_bool input_buffer_full;
     type_bool last_write_command;
     type_bool irq1_asserted;
@@ -135,6 +138,8 @@ C_VOID core_machine_kbc_bind_core_services(t_kbc *controller, t_pic *pic_master,
     core_machine_cpu_execution_context *execution, type_bool aux_present);
 C_INT core_machine_kbc_bind_output_port(t_kbc *controller,
     core_machine_kbc_output_port_provider provider, C_VOID *owner);
+C_VOID core_machine_kbc_set_input_port(t_kbc *controller, type_unsigned_8 value);
+C_VOID core_machine_kbc_set_test_inputs(t_kbc *controller, type_unsigned_8 value);
 C_VOID core_machine_kbc_reset(t_kbc *controller);
 C_VOID core_machine_kbc_refresh(t_kbc *controller);
 C_VOID core_machine_kbc_advance(t_kbc *controller, type_unsigned_64 elapsed_ticks);

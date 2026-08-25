@@ -268,7 +268,8 @@ static type_status core_machine_kbc_publish_native_byte(t_kbc *controller,
 {
     if (controller == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
     if (controller->data.scan_set == CORE_MACHINE_KEYBOARD_SCAN_SET_2 &&
-        (controller->data.command_byte & CORE_MACHINE_KBC_COMMAND_TRANSLATION) != 0u) {
+        (controller->data.command_byte & CORE_MACHINE_KBC_COMMAND_TRANSLATION) != 0u &&
+        (controller->data.command_byte & CORE_MACHINE_KBC_COMMAND_PC_MODE) == 0u) {
         return core_machine_kbc_translate_set2_byte(controller, native_byte);
     }
     return core_machine_kbc_enqueue(controller, native_byte,
@@ -340,9 +341,11 @@ static type_unsigned_8 core_machine_kbc_status(const t_kbc *controller)
     if (controller == STD_NULL) return status;
     if (controller->data.fifo_count != 0u) status |= VKBC_STATUS_OBF;
     if (controller->data.input_buffer_full) status |= VKBC_STATUS_IBF;
-    if (controller->data.system_flag) status |= VKBC_STATUS_SYS;
+    if ((controller->data.command_byte & CORE_MACHINE_KBC_COMMAND_SYSTEM) != 0u) {
+        status |= VKBC_STATUS_SYS;
+    }
     if (controller->data.last_write_command) status |= VKBC_STATUS_CD;
-    if (controller->data.keyboard_enabled) status |= VKBC_STATUS_KE;
+    if ((controller->data.input_port & 0x80u) != 0u) status |= VKBC_STATUS_INHIBIT;
     if (controller->data.fifo_count != 0u &&
         controller->data.fifo_origin[controller->data.fifo_head] ==
             CORE_MACHINE_KBC_OUTPUT_AUX) status |= VKBC_STATUS_AUX;
@@ -458,6 +461,16 @@ static C_VOID core_machine_kbc_handle_keyboard_command(t_kbc *controller,
             CORE_MACHINE_KBC_OUTPUT_KEYBOARD);
         break;
     }
+}
+
+C_VOID core_machine_kbc_set_input_port(t_kbc *controller, type_unsigned_8 value)
+{
+    if (controller != STD_NULL) controller->data.input_port = value;
+}
+
+C_VOID core_machine_kbc_set_test_inputs(t_kbc *controller, type_unsigned_8 value)
+{
+    if (controller != STD_NULL) controller->data.test_inputs = value & 0x03u;
 }
 
 static C_VOID core_machine_kbc_set_aux_defaults(t_kbc *controller)
@@ -612,7 +625,10 @@ static C_VOID core_machine_kbc_write_data(t_port *port, type_unsigned_16 port_id
     controller->data.last_write_command = TYPE_FALSE;
     switch (controller->data.pending_write) {
     case CORE_MACHINE_KBC_PENDING_COMMAND_BYTE:
-        controller->data.command_byte = value;
+        controller->data.command_byte = value & 0x7du;
+        if (controller->connect.aux_present) {
+            controller->data.command_byte |= value & CORE_MACHINE_KBC_COMMAND_IRQ12;
+        }
         controller->data.keyboard_enabled =
             (value & CORE_MACHINE_KBC_COMMAND_DISABLE_KEYBOARD) == 0u;
         controller->data.aux_enabled = controller->connect.aux_present &&
@@ -695,7 +711,7 @@ static C_VOID core_machine_kbc_write_command(t_port *port,
          * The host must explicitly re-enable it with AEh or a command byte. */
         controller->data.keyboard_enabled = TYPE_FALSE;
         controller->data.command_byte |= CORE_MACHINE_KBC_COMMAND_DISABLE_KEYBOARD;
-        controller->data.system_flag = TYPE_TRUE;
+        controller->data.command_byte |= CORE_MACHINE_KBC_COMMAND_SYSTEM;
         core_machine_kbc_refresh_current_irq(controller);
         core_machine_kbc_schedule_response_byte(controller, 0x55u,
             CORE_MACHINE_KBC_OUTPUT_CONTROLLER);
@@ -733,6 +749,10 @@ static C_VOID core_machine_kbc_write_command(t_port *port,
             controller->connect.aux_present ? 0x00u : 0x01u,
             CORE_MACHINE_KBC_OUTPUT_CONTROLLER);
         break;
+    case 0xc0u:
+        core_machine_kbc_schedule_response_byte(controller,
+            controller->data.input_port, CORE_MACHINE_KBC_OUTPUT_CONTROLLER);
+        break;
     case 0xd0u:
         core_machine_kbc_schedule_response_byte(controller,
             controller->data.output_port, CORE_MACHINE_KBC_OUTPUT_CONTROLLER);
@@ -744,6 +764,10 @@ static C_VOID core_machine_kbc_write_command(t_port *port,
         controller->data.pending_write = controller->connect.aux_present ?
             CORE_MACHINE_KBC_PENDING_AUX_DEVICE :
             CORE_MACHINE_KBC_PENDING_AUX_DISCARD;
+        break;
+    case 0xe0u:
+        core_machine_kbc_schedule_response_byte(controller,
+            controller->data.test_inputs, CORE_MACHINE_KBC_OUTPUT_CONTROLLER);
         break;
     default:
         /* IBM PC/AT 8042 commands F0h--FFh pulse output-port bits selected
@@ -828,7 +852,7 @@ C_VOID core_machine_kbc_reset(t_kbc *controller)
     core_machine_kbc_set_defaults(controller);
     controller->data.scanning_enabled = TYPE_TRUE;
     core_machine_kbc_set_aux_defaults(controller);
-    controller->data.system_flag = TYPE_TRUE;
+    controller->data.input_port = 0x80u;
     core_machine_kbc_apply_output_port(controller, controller->data.output_port);
 }
 C_VOID core_machine_kbc_refresh(t_kbc *controller) { (C_VOID)controller; }
@@ -923,7 +947,10 @@ static type_status core_machine_kbc_admit_native_byte(t_kbc *controller,
     type_unsigned_8 set1;
 
     if (controller == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
-    if (!controller->data.keyboard_enabled || !controller->data.scanning_enabled) {
+    if (!controller->data.keyboard_enabled || !controller->data.scanning_enabled ||
+        ((controller->data.input_port & 0x80u) == 0u &&
+            (controller->data.command_byte &
+                CORE_MACHINE_KBC_COMMAND_INHIBIT_OVERRIDE) == 0u)) {
         return TYPE_STATUS_INVALID_STATE;
     }
     /* Break-prefix state belongs to the native keyboard stream even while
@@ -1001,7 +1028,10 @@ type_status core_machine_kbc_submit_native_bytes(t_kbc *controller,
     if (controller == STD_NULL || (native_bytes == STD_NULL && count != 0u)) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
-    if (!controller->data.keyboard_enabled || !controller->data.scanning_enabled) {
+    if (!controller->data.keyboard_enabled || !controller->data.scanning_enabled ||
+        ((controller->data.input_port & 0x80u) == 0u &&
+            (controller->data.command_byte &
+                CORE_MACHINE_KBC_COMMAND_INHIBIT_OVERRIDE) == 0u)) {
         return TYPE_STATUS_INVALID_STATE;
     }
     if (count > CORE_MACHINE_KBC_KEYBOARD_SERIAL_CAPACITY -
