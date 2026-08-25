@@ -47,7 +47,6 @@ static type_unsigned_8 core_machine_fdc_msr(const core_machine_fdc *fdc)
 
     switch (fdc->data.phase) {
     case core_machine_fdc_PHASE_PENDING_COMMAND:
-    case core_machine_fdc_PHASE_PENDING_SEEK:
     case core_machine_fdc_PHASE_PENDING_COMPLETE:
         value = VFDC_MSR_CB; break;
     case core_machine_fdc_PHASE_RESULT:
@@ -366,12 +365,18 @@ static C_VOID core_machine_fdc_begin_seek(core_machine_fdc *fdc, type_unsigned_1
     core_machine_fdc_command_phase(fdc);
 }
 
+static C_INT core_machine_fdc_drive_ready_for(const core_machine_fdc *fdc,
+    type_unsigned_8 drive)
+{
+    return drive == (fdc->data.dor & VFDC_DOR_DS) &&
+        (fdc->data.dor & VFDC_DOR_NRS) != 0u &&
+        (fdc->data.dor & VFDC_DOR_ME(drive)) != 0u &&
+        core_machine_fdc_drive_media_ready(fdc, drive);
+}
+
 static C_INT core_machine_fdc_drive_ready(const core_machine_fdc *fdc)
 {
-    return fdc->data.selected_drive == (fdc->data.dor & VFDC_DOR_DS) &&
-        (fdc->data.dor & VFDC_DOR_NRS) != 0u &&
-        (fdc->data.dor & VFDC_DOR_ME(fdc->data.selected_drive)) != 0u &&
-        core_machine_fdc_drive_media_ready(fdc, fdc->data.selected_drive);
+    return core_machine_fdc_drive_ready_for(fdc, fdc->data.selected_drive);
 }
 
 static C_VOID core_machine_fdc_advance_position(core_machine_fdc *fdc)
@@ -1081,7 +1086,7 @@ C_VOID core_machine_fdc_advance_at(core_machine_fdc *fdc,
             fdc->data.cylinder = fdc->data.seek_target[drive];
             core_machine_fdc_observe_drive(fdc, drive);
             fdc->data.seek_result_st0[fdc->data.seek_result_count] =
-                core_machine_fdc_drive_ready(fdc) ? core_machine_fdc_ST0_NORMAL |
+                core_machine_fdc_drive_ready_for(fdc, drive) ? core_machine_fdc_ST0_NORMAL |
                 VFDC_ST0_SEEK_END | drive : core_machine_fdc_ST0_ABNORMAL |
                 VFDC_ST0_SEEK_END | drive;
             fdc->data.seek_result_cylinder[fdc->data.seek_result_count++] =

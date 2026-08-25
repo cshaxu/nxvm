@@ -24,7 +24,6 @@ typedef struct t_port t_port;
 typedef enum core_machine_fdc_phase {
     core_machine_fdc_PHASE_COMMAND = 0,
     core_machine_fdc_PHASE_PENDING_COMMAND,
-    core_machine_fdc_PHASE_PENDING_SEEK,
     core_machine_fdc_PHASE_EXECUTION_READ,
     core_machine_fdc_PHASE_EXECUTION_WRITE,
     core_machine_fdc_PHASE_EXECUTION_SCAN,

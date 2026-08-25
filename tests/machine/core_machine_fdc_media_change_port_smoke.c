@@ -77,8 +77,10 @@ static C_VOID core_machine_fdc_change_command(core_machine_fdc *fdc, t_port *por
 
 static C_VOID core_machine_fdc_change_ack_irq(core_machine_fdc *fdc, t_port *port)
 {
-    if (fdc->data.phase == core_machine_fdc_PHASE_PENDING_SEEK) {
-        core_machine_fdc_advance_at(fdc, fdc->data.seek_due_tick);
+    for (type_unsigned_8 drive = 0u; drive < CORE_MACHINE_FDC_DRIVE_COUNT; ++drive) {
+        if (fdc->data.seek_pending[drive]) {
+            core_machine_fdc_advance_at(fdc, fdc->data.seek_due_tick[drive]);
+        }
     }
     core_machine_fdc_change_command(fdc, port, (const type_unsigned_8[]){0x08u}, 1u);
     (C_VOID)core_machine_port_read(port, 0x03f5u);
@@ -252,7 +254,7 @@ int main(C_VOID)
                 core_machine_fdc_change_drain_reset(fdc, port);
                 core_machine_fdc_change_command(fdc, port, recalibrate_0,
                     sizeof(recalibrate_0));
-                core_machine_fdc_advance_at(fdc, fdc->data.seek_due_tick);
+                core_machine_fdc_advance_at(fdc, fdc->data.seek_due_tick[0u]);
                 core_machine_fdc_change_require(&failed, &first_failure, 16,
                     !fdc->data.flagINTR || !fdc->connect.irq_source.asserted);
                 core_machine_port_write(port, 0x03f2u, 0x00u);
