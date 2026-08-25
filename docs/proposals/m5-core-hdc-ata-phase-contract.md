@@ -1,5 +1,8 @@
 # M5 Core HDC ATA Phase Contract
 
+**Status: closed as M5 T468.** The accepted record is retained in
+[`M5-T468-core-hdc-ata-phase-contract.md`](../history/M5-T468-core-hdc-ata-phase-contract.md).
+
 ## Purpose
 
 Define one selected ATA/IDE PIO controller and logical-media phase contract.

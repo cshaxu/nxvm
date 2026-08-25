@@ -61,3 +61,19 @@ otherwise valid write, while the Core/VM ATA and Compaq/Model-40 HDC smokes and
 controller authority gates remain green. The change is 42 added / 100 removed
 tracked source-and-test lines (-58); it adds no media cache, provider contract,
 controller selection, board timing or public ABI.
+
+## S5 Accepted Closure
+
+All fifteen frozen ATA rows reconcile to their S1/S2 disposition and the
+single `hdc.c` task-file/phase owner, existing media provider and PIC route.
+The static ATA ownership verifier, focused HDC/ATA/Compaq/Model-40 smokes,
+documentation governance and serial current gate pass. The gate exposed and
+closed a VADP duplicate CECG/CGA light-pen registration and the matching
+firmware text-mode output-disable regression; both now use their respective
+single VADP and BIOS paths. No ATA L2 transfer changed.
+
+Release `nxvm_0_5_0468.exe` is optimized, has no `.debug` section, retains
+the product runtime debugger, and has SHA-256
+`99100D6B99ABD98FF584F6B4179B6BC8B96519B53F234FBE4CC45DDBAC860BF5`.
+The serial current gate passes 295/295 in 159.84 seconds. Full evidence is
+retained in [T468 S5 closure audit](../etc/evidence/t468-s5-ata-closure-audit.md).

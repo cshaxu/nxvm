@@ -6,7 +6,7 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation; T468 S5, one-session coordinator, executor and closure review. |
+| Identifier Mode | Accepted closure; T468 S5 P3, one-session coordinator, executor and closure review. |
 | Admission And Approval | The persistent owner objective and accepted T468 S1--S4 authorize bounded ATA closure and the required task artifact. The owner also requires every discovered controller completeness gap to be repaired immediately: this packet therefore includes the one current-gate-blocking VADP duplicate CECG/CGA light-pen port registration. |
 | Objective | Reconcile every frozen ATA row and its sole owner, restore the one VADP port-owner path blocking Model-40 construction, run the serial current gate, and publish stripped Release 0468. |
 | Non-goals | No new ATA or VADP feature, controller/device/media selection, DMA, physical drive model, timing number, host wait, profile value, public ABI, source import or new presentation path. |
@@ -20,6 +20,7 @@
 | Reporting Requirements | Record row dispositions, sweep, gate results, artifact identity/hash/strip proof, source/test delta, retained owners, exact L2 transfers and T-level conclusion. |
 | Stop Conditions | Stop for an undisposed row, a required new device/presentation model, compiler-debug artifact, source/import issue or a feature gap that cannot be repaired through the admitted owner. |
 | Exit Criteria | All 15 rows reconcile; CECG/CGA `3DB/3DC` has one owner and Model-40 constructs; all required gates pass; Release 0468 is stripped and recorded; T468 history/proposal/status truthfully close with only exact L2 transfers. |
+| Closure | Accepted: all exit criteria hold; T468 leaves no active implementation packet and the next queued candidate requires a fresh owner admission. |
 | Original Owner Request | Complete the remaining controller tasks with manual authority, cross-model verification, exact L2 boundaries and minimalist single-owner design. |
 | Similar-Issue Sweep | Search HDC source/tests, media registry, PIC route, VADP personality/light-pen writers, Model-40 composition, CMake/presets and T468 records for task-file, phase, IRQ, media read/write, reset, artifact and duplicate-owner paths; disposition every production hit. |
 
@@ -52,7 +53,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T468 S4 | Accepted: ATA write admission now shares logical-sector validation with read/write completion but does not read its destination; one test proves a permanent read failure cannot block a valid write. The changed mechanism is -58 tracked source/test lines. [Evidence](../etc/evidence/t468-s4-ata-write-media-closure.md) and [history](../history/M5-T468-core-hdc-ata-phase-contract.md). |
+| T468 | Closed: the ATA-3 15-row task-file/media contract has one HDC owner, one media owner and one PIC route; the serial current gate passes 295/295 and stripped Release 0468 is recorded in [history](../history/M5-T468-core-hdc-ata-phase-contract.md). |
 | T467 | Closed: all 17 selected IBM-CGA rows reconcile to one VADP/Core/profile/snapshot path. Manual-L3 digital behavior and bounded Model-339 Other-L3 cadence are complete; only exact 160x100, default/ISA-wait timing, light-pen lifecycle and physical-monitor boundaries remain L2. Serial current-gate passes 295/295; stripped Release 0467 is recorded in [history](../history/M5-T467-core-ibm-cga-completeness.md). |
 | T466 | Closed: Manual-L3 D/E/10 geometry reaches the single VADP state owner through real firmware and guest port writes. The profile declaration, cold-start/text routing and all fixtures now agree; unknown planar geometry falls through existing legacy selection rather than inventing a frame. The stripped Release 0466 artifact and its hash are recorded in [history](../history/M5-T466-core-vadp-phase-contract.md). |
 | T465 | Closed: selected Intel 8272A source reconciliation, command/reset repair and per-drive parallel Seek close the logical controller contract; physical media and board-time conversion remain explicit L2. Release 0465 is stripped and the 294/294 serial gate is recorded in [history](../history/M5-T465-core-intel-8272a-logical-media-phase-contract.md). |
