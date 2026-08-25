@@ -59,3 +59,15 @@ and later completion; both FDC focused regressions pass.  The former
 `PENDING_SEEK` phase and its duplicate single-result route were removed.  The
 fixed step-duration constant remains an explicit L2 board-time conversion;
 no VM path, public API, controller selector or second scheduler was added.
+
+## Closure
+
+S6 built the stripped Release 0465 artifact
+`build/output/nxvm_0_5_0465.exe` (SHA-256
+`410981B728E7FEE4BC199C7593AF0DE2A692546A22AB2D2A5B62988600C243C9`).
+The serial current gate passed 294/294: CTest completed 1--283, and the
+Windows runner's residual-handle condition after a DOS smoke required direct
+serial execution of the unchanged CTest commands 284--294; each completed
+successfully.  The retained boundaries are physical drive/media grammar and
+the board-validated conversion of the fixed FDC step constant, both explicit
+L2.  The accepted proposal is archived beside this record.

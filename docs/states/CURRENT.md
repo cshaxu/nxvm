@@ -3,9 +3,10 @@
 ## Current Work
 
 
+
 ## Current Technical Baseline
 
-- **Current developer artifact:** target `vm-0-5-0464`; `nxvm_0_5_0464.exe` / `build/output/nxvm_0_5_0464.exe`, SHA-256 `92BF67903AF9F7725F9BFC8182373FDF615DD5026EDA1857C87BF8249912F674`. It is built only from the stripped Release current-artifact route; Debug remains the current-gate route. T434 has one copied Core timing-plan publication route for default PC/AT, IBM 5170 Model 339 and Model-40 BYOB session composition.
+- **Current developer artifact:** target `vm-0-5-0465`; `nxvm_0_5_0465.exe` / `build/output/nxvm_0_5_0465.exe`, SHA-256 `410981B728E7FEE4BC199C7593AF0DE2A692546A22AB2D2A5B62988600C243C9`. It is built only from the stripped Release current-artifact route; Debug remains the current-gate route. T434 has one copied Core timing-plan publication route for default PC/AT, IBM 5170 Model 339 and Model-40 BYOB session composition.
   T386 closes selected-device functional completeness at S29; its retained
   [closure audit](../etc/evidence/t386-s29-functional-closure-audit.md) fixes
   HDC current-gate coverage and transfers board, firmware and physical work.
@@ -27,7 +28,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T465 S5 | Accepted: the sole Core FDC owner now holds per-drive 8272A Seek state plus one Sense completion FIFO; MSR busy bits and two-drive ordering have focused proof. Fixed step duration remains explicit board-time L2. |
+| T465 | Closed: selected Intel 8272A source reconciliation, command/reset repair and per-drive parallel Seek close the logical controller contract; physical media and board-time conversion remain explicit L2. Release 0465 is stripped and the 294/294 serial gate is recorded in [history](../history/M5-T465-core-intel-8272a-logical-media-phase-contract.md). |
 | T464 | Closed: all sixteen KBC rows are Manual L3 or explicit L2/L4. One Core owner now covers selected command/input/test state; 294/294 serial current-gate tests pass and stripped Release 0464 is recorded in history. |
 | T463 | Closed: the 16-row MC146818A/IBM AT ledger has one Core phase owner, a copied L3/L2 board timing plan, explicit L2/L4 boundaries and focused proof. The full current gate ran 294/294; stripped Release 0463 is recorded in [history](../history/M5-T463-core-rtc-cmos-phase-contract.md). |
 | T462 | Closed: one immutable copied plan carries only qualified Model-339 PIT/DMA selections; PIC remains explicit L2. The seven corrected PIT-transition regressions, 294/294 serial current gate, 77/77 specialized gates, documentation governance and stripped 0462 artifact complete the controller-board contract. [History](../history/M5-T462-core-controller-board-timing-contract.md). |
