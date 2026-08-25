@@ -7,25 +7,25 @@
 | Field | Required record |
 | --- | --- |
 | Identifier Mode | Continuation |
-| Admission And Approval | Coordinator accepted S3 implementation `3c2d5c3d` after actual code/test/diff review and documentation governance. Owner-approved single-person dual-role execution admits S4 only on 2026-08-24. |
-| Objective | Close the finite T462 ledger: verify PIC's only valid current disposition is explicit L2, reconcile all three controller owner paths and publish the verified T462 Release artifact. |
-| Non-goals | No new clock domain, scheduler, controller state, route callback, runtime timing setter, profile name in Core, host time, L4 work, DMA five-clock numeric invention, PIC elapsed-delay field or topology expansion. |
+| Admission And Approval | Coordinator accepted S3 implementation `3c2d5c3d` after actual code/test/diff review and documentation governance. Owner-approved single-person dual-role execution admitted S4 on 2026-08-24; owner then approved this in-S4 corrective extension after the serial current gate exposed PIT-transition regression evidence. |
+| Objective | Close the finite T462 ledger: verify PIC's only valid current disposition is explicit L2, reconcile all three controller owner paths, repair the PIT-transition regressions exposed by the gate, and publish the verified T462 Release artifact. |
+| Non-goals | No new clock domain, scheduler, controller state, route callback, runtime timing setter, profile name in Core, host time, L4 work, DMA five-clock numeric invention, PIC elapsed-delay field or topology expansion; no test expectation weakening or gate exclusion. |
 | Reference Baseline | `3c2d5c3d`; accepted T462 S1--S3 evidence; closed T456/T460/T461 controller contracts and the current Release 0461 artifact. |
 | Candidate Proposal | [Core controller board-timing contract](../proposals/m5-core-controller-board-timing-contract.md). |
-| Files And ABI Surface | Existing controller/plan/profile focused regressions, T462 ledger/evidence/history/current state and artifact metadata; no new Core or VM runtime ABI unless an identified ledger row proves it necessary. |
+| Files And ABI Surface | Existing controller/plan/profile and PIT-dependent regressions, their sole controller owner, T462 ledger/evidence/history/current state and artifact metadata; no new Core or VM runtime ABI unless the diagnosed owner requires it. |
 | Applicable Rules | README Task Reading Set; EXECUTION S/P lifecycle, closure audit, artifact and code-size accounting; DOCUMENT evidence indexing; ARCHITECTURE single copied plan and neutral dependency; CODING no wrapper/no duplicate owner; source policy; specification-driven L3 timing design. |
-| Verification | Reconcile all 11 ledger rows against final code and evidence; run PIC/DMA/PIT and profile focused regressions, serial full current gate, documentation governance and diff hygiene; build, verify and hash the stripped Release 0462 artifact. |
+| Verification | Reconcile all 11 ledger rows against final code and evidence; identify and repair the PIT-transition failures exposed by the serial current gate, with focused regressions and a repository-wide affected-test sweep; then run PIC/DMA/PIT and profile focused regressions, serial full current gate, documentation governance and diff hygiene; build, verify and hash the stripped Release 0462 artifact. |
 | Expected Markers | `M5:T462:S4:CONTROLLER-LEDGER-CLOSURE:OK`; `M5:T462:S4:PIC-L2-BOUNDARY:OK`; retained S3 markers; full current gate passes. |
 | Asset Needs | T462 S1--S3 ledger/evidence, current tracked source and approved local build toolchain only; no external import. |
 | Reporting Requirements | Record every ledger disposition, PIC L2 rationale, owner/direction sweep, full-gate/artifact evidence, source/test code-size accounting and any explicit transfer. |
 | Stop Conditions | Stop and transfer if closure requires a profile name in Core, unqualified conversion, new dynamic callback/topology, source-less PIC delay or a second timing path. |
 | Exit Criteria | Every T462 ledger row is accepted or transferred; PIC remains explicit L2 without a placeholder field; PIT/DMA retain qualified copied selections; all controller owners remain single-path; full gate and stripped 0462 artifact are verified. |
 | Original Owner Request | Execute single-person dual-role implementation of L3-precision interfaces for all three controllers, allowing profile-provided L3 values or explicitly L2-derived deterministic ratios without provenance promotion. |
-| Similar-Issue Sweep | Sweep plan construction/validation, all profile descriptors, PIC/DMA/PIT dynamic inputs and controller-order consumers; confirm no second timing route, profile-to-Core reverse dependency, live setter or source-less L3 promotion remains. |
+| Similar-Issue Sweep | Sweep plan construction/validation, profile descriptors, all PIT-dependent current-gate tests, PIC/DMA/PIT dynamic inputs and controller-order consumers; confirm no second timing route, profile-to-Core reverse dependency, live setter, source-less L3 promotion or stale immediate-PIT-load expectation remains. |
 
 ## Current Technical Baseline
 
-- **Current developer artifact:** target `vm-0-5-0461`; `nxvm_0_5_0461.exe` / `build/output/nxvm_0_5_0461.exe`, SHA-256 `D875AB15C1E63A3FFBBC1A064315AE9516773A65F70FC4783957FE21DE45829A`. It is built only from the stripped Release current-artifact route; Debug remains the current-gate route. T434 has one copied Core timing-plan publication route for default PC/AT, IBM 5170 Model 339 and Model-40 BYOB session composition.
+- **Current developer artifact:** target `vm-0-5-0462`; `nxvm_0_5_0462.exe` / `build/output/nxvm_0_5_0462.exe`, SHA-256 `3E93ECCEF5ED8AC904EE63ECA081F966E9611C98F2912263CFF213F0D1D6D4AA`. It is built only from the stripped Release current-artifact route; Debug remains the current-gate route. T434 has one copied Core timing-plan publication route for default PC/AT, IBM 5170 Model 339 and Model-40 BYOB session composition.
   T386 closes selected-device functional completeness at S29; its retained
   [closure audit](../etc/evidence/t386-s29-functional-closure-audit.md) fixes
   HDC current-gate coverage and transfers board, firmware and physical work.
@@ -49,7 +49,7 @@
 | --- | --- |
 | T462 S2 | Accepted at `df6d28a7`: the one copied plan rule value permits qualified PIT/DMA L3 declarations only with explicit existing ratios and service rule, rejects invalid combinations, and keeps PIC L2. [Evidence](../etc/evidence/t462-s2-controller-rule-plan.md). |
 | T462 S1 | Accepted at `e88124db`: 11 PIC/DMA/PIT board-timing rows are frozen with one disposition; existing `clock_plan`/transaction owners are reused, no placeholder route/delay field is allowed, and S2 is admitted for the one copied rule qualification. [Evidence](../etc/evidence/t462-s1-controller-board-timing-ledger.md). |
-| T461 | Closed: one Core PIT owner covers manual P1--P14 and one `OUT0 -> IRQ0 -> PIC refresh` route closes P15; P16--P18 remain explicit L2. Full current-gate is 294/294 and stripped artifact `nxvm_0_5_0461.exe` is recorded. [History](../history/M5-T461-core-pit-8254-phase-contract.md). |
+| T461 | Closed: one Core PIT owner covers manual P1--P14 and one `OUT0 -> IRQ0 -> PIC refresh` route closes P15; P16--P18 remain explicit L2. Full current-gate is 294/294 and its stripped artifact is retained in history. [History](../history/M5-T461-core-pit-8254-phase-contract.md). |
 | T460 | Closed: all 16 DMA rows are disposed through the sole `dma.c` owner; normal/compressed and M2M service phases have focused proof, the five-clock conversion remains explicit L2, serial current-gate is 294/294, and the stripped 0460 artifact is recorded. [History](../history/M5-T460-core-dma-8237a-phase-contract.md). |
 
 | T459 | Closed after S2 correction: `standard`/`turbo` remain stopped-session Console selections, but neither VM speed branch manufactures guest ticks. `Sleep(1)` is explicitly L2 HLT host-load backoff; true Standard pacing and Turbo fast-forward remain transferred to Core deadlines plus profile timebases. The full gate passes 294/294; current artifact `0.5.0459` is stripped Release-only. [History](../history/M5-T459-vm-session-speed-policy.md). |

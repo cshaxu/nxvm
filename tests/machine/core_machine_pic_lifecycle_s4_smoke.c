@@ -115,7 +115,8 @@ static C_INT pic_lifecycle_test_pit_reset(C_VOID)
     core_machine_port_write(&fixture.port, 0x0043u, 0x34u);
     core_machine_port_write(&fixture.port, 0x0040u, 3u);
     core_machine_port_write(&fixture.port, 0x0040u, 0u);
-    core_machine_pit_advance(&pit, 4u);
+    /* The first clock transfers CR to CE; the IRQ0 edge is the fifth clock. */
+    core_machine_pit_advance(&pit, 5u);
     failed |= !irq0.asserted || fixture.master.data.asserted[0u] != 1u;
     core_machine_pic_reset(&fixture.master, &fixture.slave);
     core_machine_pit_reset(&pit);
@@ -123,7 +124,7 @@ static C_INT pic_lifecycle_test_pit_reset(C_VOID)
     core_machine_port_write(&fixture.port, 0x0043u, 0x34u);
     core_machine_port_write(&fixture.port, 0x0040u, 3u);
     core_machine_port_write(&fixture.port, 0x0040u, 0u);
-    core_machine_pit_advance(&pit, 4u);
+    core_machine_pit_advance(&pit, 5u);
     failed |= !irq0.asserted || fixture.master.data.asserted[0u] != 1u ||
         (fixture.master.data.irr & VPIC_IRR_IRQ(0u)) == 0u;
     core_machine_pit_finalize(&pit);

@@ -6,8 +6,10 @@
 #include "core/machine/transaction.h"
 #include "../support/core_machine_cpu_fixture.h"
 
+#define REFRESH_PROBE_EVENT_CAPACITY 1024u
+
 typedef struct refresh_probe {
-    core_machine_trace_event events[512];
+    core_machine_trace_event events[REFRESH_PROBE_EVENT_CAPACITY];
     type_unsigned_32 count;
 } refresh_probe;
 
@@ -19,7 +21,8 @@ static C_VOID refresh_trace(C_VOID *opaque, const core_machine_trace_event *even
 {
     refresh_probe *probe = (refresh_probe *)opaque;
 
-    if (probe != STD_NULL && event != STD_NULL && probe->count < 512u) {
+    if (probe != STD_NULL && event != STD_NULL &&
+        probe->count < REFRESH_PROBE_EVENT_CAPACITY) {
         probe->events[probe->count++] = *event;
     }
 }
@@ -178,12 +181,12 @@ C_INT main(C_VOID)
     core_machine_port_write(&machine->executor_port, 0x0064u, 0xd1u);
     core_machine_port_write(&machine->executor_port, 0x0060u, 0x01u);
     failed |= !machine->d4_slowdown_enabled;
-    failed |= core_machine_advance_time(machine, 18u) != TYPE_STATUS_OK ||
+    failed |= core_machine_advance_time(machine, 19u) != TYPE_STATUS_OK ||
         core_machine_pit_get_output(&machine->auxiliary_pit, 2u);
-    slowdown_budget.ticks = machine->maximum_instruction_ticks + 1u;
+    slowdown_budget.ticks = machine->maximum_instruction_ticks + 2u;
     failed |= core_machine_run(machine, slowdown_budget, &slowdown_result) != TYPE_STATUS_OK ||
         slowdown_result.reason != CORE_MACHINE_STOP_BUDGET ||
-        slowdown_result.executed != 0u || slowdown_result.ticks != 2u ||
+        slowdown_result.executed != 0u || slowdown_result.ticks != 3u ||
         !core_machine_pit_get_output(&machine->auxiliary_pit, 2u);
     core_machine_port_write(&machine->executor_port, 0x0064u, 0xd1u);
     core_machine_port_write(&machine->executor_port, 0x0060u, 0x09u);
@@ -194,7 +197,7 @@ C_INT main(C_VOID)
         &machine->shared_dma_secondary, &binding);
     failed |= core_machine_set_dma_bus_ready(machine, 0) != TYPE_STATUS_OK;
     start = probe.count;
-    failed |= core_machine_advance_time(machine, 18u) != TYPE_STATUS_OK;
+    failed |= core_machine_advance_time(machine, 19u) != TYPE_STATUS_OK;
     failed |= !machine->d4_refresh_hold_pending ||
         machine->d4_refresh_address != 0u ||
         machine->dma_cycle_wait_remaining != 0u;
@@ -202,7 +205,7 @@ C_INT main(C_VOID)
     /* BUSRDY releases the DMA cycle gate; normal 8237A timing then needs
      * channel selection plus S1..S4, with this contract's one wait quantum
      * per controller step. */
-    failed |= core_machine_advance_time(machine, 10u) != TYPE_STATUS_OK;
+    failed |= core_machine_advance_time(machine, 11u) != TYPE_STATUS_OK;
     failed |= machine->d4_refresh_hold_pending ||
         machine->d4_refresh_address != 1u ||
         machine->dma_cycle_wait_remaining != 0u;

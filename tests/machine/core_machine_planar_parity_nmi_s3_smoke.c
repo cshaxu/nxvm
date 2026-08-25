@@ -73,7 +73,7 @@ C_INT main(C_VOID)
         core_machine_reset(machine) != TYPE_STATUS_OK ||
         core_machine_bus_read(machine, 0x0061u, &value) != TYPE_STATUS_OK ||
         (value & 0x94u) != 0x14u ||
-        (core_machine_pit_advance(&machine->shared_pit, 18u),
+        (core_machine_pit_advance(&machine->shared_pit, 19u),
          core_machine_bus_read(machine, 0x0061u, &value) != TYPE_STATUS_OK) ||
         (value & 0x10u) != 0u ||
 

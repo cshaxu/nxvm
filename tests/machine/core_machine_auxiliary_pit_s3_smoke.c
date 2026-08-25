@@ -31,6 +31,10 @@ C_INT main(C_VOID)
         failed |= core_machine_reset(machine) != TYPE_STATUS_OK;
         program_counter0(machine, 0x0040u, 0x30u, 3u);
         program_counter0(machine, 0x0048u, 0x30u, 2u);
+        /* A completed count write reaches CE on the following clock. */
+        failed |= machine->shared_pit.data.count[0u] != 0u ||
+            machine->auxiliary_pit.data.count[0u] != 0u;
+        failed |= core_machine_advance_time(machine, 1u) != TYPE_STATUS_OK;
         failed |= machine->shared_pit.data.count[0u] != 3u ||
             machine->auxiliary_pit.data.count[0u] != 2u;
         failed |= core_machine_advance_time(machine, 1u) != TYPE_STATUS_OK;

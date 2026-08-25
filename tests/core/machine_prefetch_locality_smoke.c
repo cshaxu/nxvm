@@ -226,7 +226,7 @@ static C_INT d4_refresh_external_cycle_contract(C_VOID)
         failed |= !machine->external_cycle_page_valid ||
             machine->external_cycle_round_ticks != 2u;
         machine->external_cycle_round_ticks = 0u;
-        failed |= core_machine_advance_time(machine, 18u) != TYPE_STATUS_OK;
+        failed |= core_machine_advance_time(machine, 19u) != TYPE_STATUS_OK;
         failed |= machine->external_cycle_page_valid || machine->external_cycle_pending_valid;
         external_cycle_begin_and_commit(provider, context, 0x804u, 4u, TYPE_FALSE,
             CORE_MACHINE_CPU_MEMORY_ACCESS_PAGE_TABLE_READ);

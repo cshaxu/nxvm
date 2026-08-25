@@ -39,8 +39,8 @@ static C_INT core_machine_clock_ratio_is_explicit(
         ratio->denominator != 0u;
 }
 
-static core_machine_timing_disposition
-core_machine_controller_timing_disposition(const core_machine_plan *plan,
+static core_machine_timing_disposition core_machine_controller_timing_disposition(
+    const core_machine_plan *plan,
     core_machine_timing_capability capability)
 {
     if (capability == CORE_MACHINE_TIMING_CAPABILITY_CTRL_PIT &&

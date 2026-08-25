@@ -82,7 +82,7 @@ C_INT main(C_VOID)
             TYPE_STATUS_OK || core_machine_bus_read(machine, 0x0061u, &value) !=
             TYPE_STATUS_OK || (value & 0x30u) != 0x30u ||
         core_machine_bus_write(machine, 0x0061u, 0x0au) != TYPE_STATUS_OK ||
-        core_machine_advance_time(machine, 2u) != TYPE_STATUS_OK ||
+        core_machine_advance_time(machine, 3u) != TYPE_STATUS_OK ||
         core_machine_bus_read(machine, 0x0061u, &value) != TYPE_STATUS_OK ||
         (value & 0x30u) != 0x20u ||
         core_machine_bus_write(machine, 0x0061u, 0x0bu) != TYPE_STATUS_OK ||
@@ -104,7 +104,7 @@ C_INT main(C_VOID)
         TYPE_STATUS_OK || core_machine_get_speaker_observation(machine, &speaker) !=
         TYPE_STATUS_OK || !speaker.timer_gate || !speaker.data_enabled ||
         !speaker.timer_output || !speaker.output || core_machine_advance_time(machine,
-        2u) != TYPE_STATUS_OK || core_machine_get_speaker_observation(machine,
+        3u) != TYPE_STATUS_OK || core_machine_get_speaker_observation(machine,
         &speaker) != TYPE_STATUS_OK || speaker.timer_output || speaker.output ||
         core_machine_advance_time(machine, 1u) != TYPE_STATUS_OK ||
         core_machine_get_speaker_observation(machine, &speaker) != TYPE_STATUS_OK ||
@@ -134,7 +134,7 @@ C_INT main(C_VOID)
         core_machine_bus_write(machine, 0x004bu, 0x30u) != TYPE_STATUS_OK ||
         core_machine_bus_write(machine, 0x0048u, 1u) != TYPE_STATUS_OK ||
         core_machine_bus_write(machine, 0x0048u, 0u) != TYPE_STATUS_OK ||
-        core_machine_advance_time(machine, 1u) != TYPE_STATUS_OK ||
+        core_machine_advance_time(machine, 2u) != TYPE_STATUS_OK ||
         core_machine_get_d4_platform_observation(machine, &observation) !=
             TYPE_STATUS_OK || !observation.failsafe_enabled ||
         !observation.failsafe_latched || !observation.nmi_signaled ||
