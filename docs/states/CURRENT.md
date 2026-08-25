@@ -2,26 +2,7 @@
 
 ## Current Work
 
-## M5 Td S147 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Governance |
-| Admission And Approval | Owner approved single-person execution on 2026-08-24 after the documentation/code audit. |
-| Objective | Correct the three confirmed current-document consistency defects and the one DMA-local static helper name without changing architecture, runtime behavior, public ABI, or task/artifact identity. |
-| Non-goals | No rule redesign, historical terminology rewrite, generated/history-wide cleanup, behavior change, source restructuring, public symbol rename, new test/gate, artifact rebuild, or release-version update. |
-| Reference Baseline | Closed T462 at `19269d25`; audit findings for the current M5 checklist, etc evidence index, machine-contract detail record, and `dma.c`. |
-| Candidate Proposal | Owner-approved bounded audit remediation; standalone Td work requires no Queue candidate or proposal. |
-| Files And ABI Surface | `docs/etc/operations/policy/m5-closure-checklist.md`, `docs/etc/README.md`, `docs/etc/architecture/machine-contract-details.md`, `src/core/machine/dma.c`, Current status and compact governance record only; no public declaration or caller changes. |
-| Applicable Rules | README Task Reading Set; EXECUTION Td lifecycle and immediate push; DOCUMENT authority/indexing; CODING clear searchable internal names; ARCHITECTURE unchanged single-owner/dependency boundaries. |
-| Verification | Re-run the exact stale-term searches, confirm the DMA helper has no remaining `doReset` spelling, run documentation governance, source dependency/C-facade checks, and diff hygiene; independently inspect the actual change. |
-| Expected Markers | `Documentation governance checks passed`; `M5:T113:C-FACADE-HEADERS:OK`; no `STATUS.md`, `ntvdm64_status`, or `Retain through T461/T462 closure` in the corrected current-support surface. |
-| Asset Needs | Tracked repository text and existing local PowerShell/static tools only; no external source, firmware, media, or artifact. |
-| Reporting Requirements | Record each corrected fact, exact scope exclusions, source line delta, verification commands/results, and confirmation that the two user rule-file edits remain excluded. |
-| Stop Conditions | Stop for an authority conflict, required historical rewrite, changed source behavior/public name, or a finding outside the four named corrections; report it rather than expanding scope. |
-| Exit Criteria | All four named corrections are minimal and factual, no stale current-support wording remains in their defined scope, required static/documentation checks pass, and one pushed Td P is independently reviewed. |
-| Original Owner Request | Admit a Td to repair the three documentation issues and the residual `dma.c` `doReset` naming inconsistency, using single-person execution. |
-| Similar-Issue Sweep | Search current support/policy/index records for the obsolete status and status-type terms, all T461/T462 retention phrases in the etc index, and all `doReset` occurrences; historical files are read-only unless a current-support record falsely claims present state. |
+**Idle.**
 
 ## Current Technical Baseline
 
@@ -57,6 +38,12 @@
 | T456 | Closed at L3: all 18 retained 8259A rows have focused proof or an explicit boundary; one CPU path, programmed cascade, corrected specific-EOI, command/poll lifecycle and default-IR7 acknowledgement remain PIC-owned. Full current-gate is 293/293. PIC-T3 L4 electrical timing is deliberately excluded. [History](../history/M5-T456-core-pic-8259a-phase-contract.md). |
 | T455 | Closed: the sole 8086 decoder-ledger guard now checks current decoder and timing owners instead of the retired monolithic layout; all 1,053 records and 292 current-gate tests pass. [History](../history/M5-T455-8086-decoder-ledger-guard-reconciliation.md). |
 ## Recent Governance
+
+- **M5 Td S147 P2:** reconciled current support terminology (`states/CURRENT.md`,
+  `type_status`, and completed T461/T462 evidence retention) and renamed the
+  DMA-local reset helper without changing behavior, ABI, artifact, or ownership.
+  Documentation governance, dependency, C-facade, and Debug `core-machine`
+  rebuild checks pass.
 
 - **M5 Td S146 P1:** refined the queue-first controller board-timing candidate
   into construction-only typed values, retained dynamic device inputs, and
