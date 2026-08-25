@@ -51,6 +51,7 @@ extern "C"
         type_bool flagMSB;       /* flip-flop for msb/lsb */
         type_bool flagEOP;       /* end of process */
         type_bool flagM2MWrite;  /* channel-0 read completed; channel-1 write next */
+        type_unsigned_8 phase;   /* Intel 8237A logical service phase */
 
         /* id of request in service in D5-D4, flag of in service in D0 */
         type_unsigned_8 isr;
@@ -169,6 +170,20 @@ extern "C"
 /* project defined vdma in-service-register bits */
 #define VDMA_GetISR_ISR(cisr) (((cisr) & VDMA_ISR_ISR) >> 4)
 #define VDMA_SetISR(cisr, id) ((cisr) = (VDMA_ISR_IS | ((id) << 4)))
+
+#define VDMA_PHASE_IDLE 0u
+#define VDMA_PHASE_S1 1u
+#define VDMA_PHASE_S2 2u
+#define VDMA_PHASE_S3 3u
+#define VDMA_PHASE_S4 4u
+#define VDMA_PHASE_S11 5u
+#define VDMA_PHASE_S12 6u
+#define VDMA_PHASE_S13 7u
+#define VDMA_PHASE_S14 8u
+#define VDMA_PHASE_S21 9u
+#define VDMA_PHASE_S22 10u
+#define VDMA_PHASE_S23 11u
+#define VDMA_PHASE_S24 12u
 
     C_VOID core_machine_dma_initialize(t_latch *latch, t_dma *primary,
                                        t_dma *secondary, t_port *port);

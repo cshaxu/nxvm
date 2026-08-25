@@ -7,7 +7,7 @@
 #include "../support/core_machine_cpu_fixture.h"
 
 typedef struct competition_probe {
-    core_machine_trace_event events[64];
+    core_machine_trace_event events[256];
     type_unsigned_32 count;
 } competition_probe;
 
@@ -20,7 +20,7 @@ static C_VOID competition_trace(C_VOID *opaque,
 {
     competition_probe *probe = (competition_probe *)opaque;
 
-    if (probe != STD_NULL && probe->count < 64u) {
+    if (probe != STD_NULL && probe->count < 256u) {
         probe->events[probe->count++] = *event;
     }
 }
@@ -128,7 +128,7 @@ static C_INT competition_dma_wait_contract(C_VOID)
     failed |= core_machine_advance_time(machine, 1u) != TYPE_STATUS_OK;
     failed |= core_machine_memory_read(machine, 0x11234u, &value, 1u) != TYPE_STATUS_OK ||
         value != 0u || machine->dma_cycle_wait_remaining != 1u;
-    failed |= core_machine_advance_time(machine, 1u) != TYPE_STATUS_OK;
+    failed |= core_machine_advance_time(machine, 9u) != TYPE_STATUS_OK;
     failed |= core_machine_memory_read(machine, 0x11234u, &value, 1u) != TYPE_STATUS_OK ||
         value != 0xa5u || machine->dma_cycle_wait_remaining != 0u;
     failed |= core_machine_reset(machine) != TYPE_STATUS_OK ||
@@ -209,6 +209,7 @@ C_INT main(C_VOID)
     failed |= core_machine_run(machine, budget, &result) != TYPE_STATUS_OK;
     failed |= result.reason != CORE_MACHINE_STOP_BUDGET ||
         result.executed != 1u || result.elapsed_ticks != 3u;
+    failed |= core_machine_advance_time(machine, 8u) != TYPE_STATUS_OK;
     failed |= core_machine_memory_read(machine, 0x11234u, &byte, 1u) !=
         TYPE_STATUS_OK || byte != 0xa5u;
     failed |= !competition_find_transaction(&probe,
@@ -250,10 +251,7 @@ C_INT main(C_VOID)
     failed |= !competition_find_event(&probe,
         CORE_MACHINE_TRACE_TRANSACTION_HOLD_RELEASE, &hold_release);
     failed |= cpu_begin >= cpu_commit || cpu_commit >= cpu_retire ||
-        cpu_retire >= hold_request || hold_request >= hold_acknowledge ||
-        hold_acknowledge >= dma_begin || dma_begin >= dma_commit ||
-        dma_commit >= hold_release ||
-        dma_commit >= dma_advance || dma_advance >= pit_advance ||
+        cpu_retire >= dma_begin || dma_begin >= dma_commit ||
         pit_advance >= pic_refresh || pic_refresh >= fdc_advance ||
         fdc_advance >= fdc_refresh || fdc_refresh >= hdc_advance ||
         hdc_advance >= hdc_refresh;

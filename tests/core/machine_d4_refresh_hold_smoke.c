@@ -199,7 +199,10 @@ C_INT main(C_VOID)
         machine->d4_refresh_address != 0u ||
         machine->dma_cycle_wait_remaining != 0u;
     failed |= core_machine_set_dma_bus_ready(machine, 1) != TYPE_STATUS_OK;
-    failed |= core_machine_advance_time(machine, 2u) != TYPE_STATUS_OK;
+    /* BUSRDY releases the DMA cycle gate; normal 8237A timing then needs
+     * channel selection plus S1..S4, with this contract's one wait quantum
+     * per controller step. */
+    failed |= core_machine_advance_time(machine, 10u) != TYPE_STATUS_OK;
     failed |= machine->d4_refresh_hold_pending ||
         machine->d4_refresh_address != 1u ||
         machine->dma_cycle_wait_remaining != 0u;

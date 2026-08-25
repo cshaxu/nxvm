@@ -1,31 +1,8 @@
 # Project Status
 
-## Current Work
-
-## M5 T460 S5 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | T460 remains owner-approved; S3/S4 implementation is pushed and S5 is admitted for the required closure audit and product proof. |
-| Objective | Reconcile all 16 DMA rows against the accepted implementation and maintained boundaries, prove the current gate and stripped 0460 artifact, then close the task without a second owner or untracked gap. |
-| Non-goals | No electrical waveforms or clock conversion, no generic third-controller API, no second transaction/page state, no VM/FDC ownership change and no external-code import. |
-| Reference Baseline | `7d314fb9`; T460 S1/S2 evidence and T450 S5/S6 ledger. |
-| Candidate Proposal | [Core DMA 8237A phase contract](../proposals/m5-core-dma-8237a-phase-contract.md). |
-| Files And ABI Surface | S5 changes closure evidence, task history, CURRENT baseline and artifact identity only; no runtime ABI. |
-| Applicable Rules | README Task Reading Set; EXECUTION S/P lifecycle; ARCHITECTURE single Core owner; CODING no wrapper/duplicate path; source policy. |
-| Verification | Reconcile every `DMA-R1`--`DMA-T5` row; inspect actual diff/owners, 282-test current gate, Release 0460 hash, documentation governance and diff hygiene. |
-| Expected Markers | `M5:T460:S5:DMA-CLOSURE:OK`; every row has direct proof or an explicit maintained L2/L4 boundary. |
-| Asset Needs | Existing admitted manuals and read-only S1 corroboration. |
-| Reporting Requirements | Record the full row matrix, test/artifact evidence, code-size/owner audit and every retained boundary. |
-| Stop Conditions | Stop for an unselected third-controller personality, required pin-level interface or a need to derive a physical time value. |
-| Exit Criteria | All rows are disposed, current gate and artifact proof pass, no duplicate owner/path remains, status/history/proposal are closed and pushed. |
-| Original Owner Request | Complete DMA 8237A Manual-L3 under minimalism and anti-accretion constraints. |
-| Similar-Issue Sweep | Sweep `Execute`, `Transmission`, M2M, terminal/auto-init, cascade and all mode-command consumers in production/tests; classify each hit once. |
-
 ## Current Technical Baseline
 
-- **Current developer artifact:** target `vm-0-5-0460`; `nxvm_0_5_0460.exe` / `build/output/nxvm_0_5_0460.exe`, SHA-256 `CED00F5946FB8CC9DA8DA8273486F073C19B611B10B9EF0D109A783D874F12EC`. It is built only from the stripped Release current-artifact route; Debug remains the current-gate route. T434 has one copied Core timing-plan publication route for default PC/AT, IBM 5170 Model 339 and Model-40 BYOB session composition.
+- **Current developer artifact:** target `vm-0-5-0460`; `nxvm_0_5_0460.exe` / `build/output/nxvm_0_5_0460.exe`, SHA-256 `29FB7AC3D715B45D60A82F4D32F3B4D17C8B4A8601C60FBE482DBB332CE0AF62`. It is built only from the stripped Release current-artifact route; Debug remains the current-gate route. T434 has one copied Core timing-plan publication route for default PC/AT, IBM 5170 Model 339 and Model-40 BYOB session composition.
   T386 closes selected-device functional completeness at S29; its retained
   [closure audit](../etc/evidence/t386-s29-functional-closure-audit.md) fixes
   HDC current-gate coverage and transfers board, firmware and physical work.
@@ -47,7 +24,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T460 S2 | Accepted at `434411d4`: `dma.c` has one private logical acknowledgement/service-release owner; transaction, board binding and scheduler ownership remain unchanged. Focused DMA regressions and documentation governance pass. [Evidence](../etc/evidence/t460-s2-dma-logical-service.md). |
+| T460 S5 | Accepted: all 16 DMA rows are disposed through the sole `dma.c` owner; normal/compressed and M2M service phases have focused proof, the five-clock conversion remains explicit L2, serial current-gate is 294/294, and the stripped 0460 artifact is recorded. [Closure audit](../etc/evidence/t460-s5-dma-closure-audit.md). |
 
 | T459 | Closed after S2 correction: `standard`/`turbo` remain stopped-session Console selections, but neither VM speed branch manufactures guest ticks. `Sleep(1)` is explicitly L2 HLT host-load backoff; true Standard pacing and Turbo fast-forward remain transferred to Core deadlines plus profile timebases. The full gate passes 294/294; current artifact `0.5.0459` is stripped Release-only. [History](../history/M5-T459-vm-session-speed-policy.md). |
 | T458 | Closed: the shared runner retains its 256-instruction control quantum but captures/publishes normal frames no more than once per 16 host milliseconds; forced mode and lifecycle frames remain immediate. The current artifact is stripped Release-only, and the full gate passes 293/293. [History](../history/M5-T458-vm-runner-presentation-cadence.md). |

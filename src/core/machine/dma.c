@@ -36,6 +36,8 @@ static C_VOID dma_service_begin(t_dma *dma, type_unsigned_8 channel)
 {
     VDMA_SetISR(dma->data.isr, channel);
     TYPE_SET_BIT(dma->data.acknowledged, VDMA_REQUEST_DRQ(channel));
+    dma->data.phase = channel == 0u && TYPE_GET_BIT(dma->data.command,
+        VDMA_COMMAND_M2M) ? VDMA_PHASE_S11 : VDMA_PHASE_S1;
 }
 
 static C_VOID dma_service_end(t_dma *dma)
@@ -45,6 +47,7 @@ static C_VOID dma_service_end(t_dma *dma)
             VDMA_REQUEST_DRQ(VDMA_GetISR_ISR(dma->data.isr)));
     }
     dma->data.flagM2MWrite = TYPE_FALSE;
+    dma->data.phase = VDMA_PHASE_IDLE;
     dma->data.isr = TYPE_ZERO_8;
 }
 
@@ -438,15 +441,16 @@ static C_VOID Execute(t_dma *rdma, t_latch *latch, t_ram *ram,
             core_machine_transaction_commit(transaction);
             rdma->data.flagM2MWrite = TYPE_FALSE;
             rdma->data.currCount[1]--;
-            if (TYPE_GET_BIT(rdma->data.mode[id], VDMA_MODE_AIDS)) {
-                DecreaseCurrAddr(rdma, 1);
-                if (!TYPE_GET_BIT(rdma->data.command, VDMA_COMMAND_C0AD)) {
-                    DecreaseCurrAddr(rdma, 0);
-                }
+            if (TYPE_GET_BIT(rdma->data.mode[1u], VDMA_MODE_AIDS)) {
+                DecreaseCurrAddr(rdma, 1u);
             } else {
-                IncreaseCurrAddr(rdma, 1);
-                if (!TYPE_GET_BIT(rdma->data.command, VDMA_COMMAND_C0AD)) {
-                    IncreaseCurrAddr(rdma, 0);
+                IncreaseCurrAddr(rdma, 1u);
+            }
+            if (!TYPE_GET_BIT(rdma->data.command, VDMA_COMMAND_C0AD)) {
+                if (TYPE_GET_BIT(rdma->data.mode[0u], VDMA_MODE_AIDS)) {
+                    DecreaseCurrAddr(rdma, 0u);
+                } else {
+                    IncreaseCurrAddr(rdma, 0u);
                 }
             }
         }
@@ -465,7 +469,7 @@ static C_VOID Execute(t_dma *rdma, t_latch *latch, t_ram *ram,
                     return;
                 }
             }
-            if (!rdma->data.flagEOP) dma_service_end(rdma);
+            if (!rdma->data.flagEOP && !request_asserted) dma_service_end(rdma);
             break;
         case 0x01:
             /* single */
@@ -502,6 +506,76 @@ static C_VOID Execute(t_dma *rdma, t_latch *latch, t_ram *ram,
         dma_complete_transfer(rdma, latch, id, flagM2M);
     }
     rdma->data.flagEOP = TYPE_FALSE;
+}
+
+static type_bool dma_address_high_changed(type_unsigned_16 before,
+    type_unsigned_16 after)
+{
+    return (before & 0xff00u) != (after & 0xff00u);
+}
+
+static C_VOID dma_service_advance(t_dma *dma, t_latch *latch, t_ram *ram,
+    core_machine_transaction_state *transaction, type_unsigned_8 channel,
+    type_bool word)
+{
+    type_unsigned_16 source_before;
+    type_unsigned_16 channel_before;
+
+    switch (dma->data.phase) {
+    case VDMA_PHASE_S1:
+        dma->data.phase = VDMA_PHASE_S2;
+        break;
+    case VDMA_PHASE_S2:
+        dma->data.phase = TYPE_GET_BIT(dma->data.command, VDMA_COMMAND_TM) ?
+            VDMA_PHASE_S4 : VDMA_PHASE_S3;
+        break;
+    case VDMA_PHASE_S3:
+        dma->data.phase = VDMA_PHASE_S4;
+        break;
+    case VDMA_PHASE_S4:
+        channel_before = dma->data.currAddr[channel];
+        Execute(dma, latch, ram, transaction, channel, word);
+        if (TYPE_GET_BIT(dma->data.isr, VDMA_ISR_IS)) {
+            dma->data.phase = dma_address_high_changed(channel_before,
+                dma->data.currAddr[channel]) ? VDMA_PHASE_S1 : VDMA_PHASE_S2;
+        }
+        break;
+    case VDMA_PHASE_S11:
+        dma->data.phase = VDMA_PHASE_S12;
+        break;
+    case VDMA_PHASE_S12:
+        dma->data.phase = VDMA_PHASE_S13;
+        break;
+    case VDMA_PHASE_S13:
+        dma->data.phase = VDMA_PHASE_S14;
+        break;
+    case VDMA_PHASE_S14:
+        Execute(dma, latch, ram, transaction, channel, TYPE_FALSE);
+        if (TYPE_GET_BIT(dma->data.isr, VDMA_ISR_IS) && dma->data.flagM2MWrite) {
+            dma->data.phase = VDMA_PHASE_S21;
+        }
+        break;
+    case VDMA_PHASE_S21:
+        dma->data.phase = VDMA_PHASE_S22;
+        break;
+    case VDMA_PHASE_S22:
+        dma->data.phase = VDMA_PHASE_S23;
+        break;
+    case VDMA_PHASE_S23:
+        dma->data.phase = VDMA_PHASE_S24;
+        break;
+    case VDMA_PHASE_S24:
+        source_before = dma->data.currAddr[0u];
+        Execute(dma, latch, ram, transaction, channel, TYPE_FALSE);
+        if (TYPE_GET_BIT(dma->data.isr, VDMA_ISR_IS)) {
+            dma->data.phase = dma_address_high_changed(source_before,
+                dma->data.currAddr[0u]) ? VDMA_PHASE_S11 : VDMA_PHASE_S12;
+        }
+        break;
+    default:
+        dma_service_end(dma);
+        break;
+    }
 }
 
 static C_VOID core_machine_dma_set_drq(t_dma *primary, t_dma *secondary,
@@ -684,21 +758,22 @@ static C_VOID core_machine_dma_advance_one(t_latch *latch, t_dma *primary,
     }
     if (TYPE_GET_BIT(secondary->data.isr, VDMA_ISR_IS)) {
         if (VDMA_GetISR_ISR(secondary->data.isr)) {
-            Execute(secondary, latch, ram, transaction,
+            dma_service_advance(secondary, latch, ram, transaction,
                 VDMA_GetISR_ISR(secondary->data.isr), TYPE_TRUE);
+            return;
         } else if (!TYPE_GET_BIT(primary->data.command, VDMA_COMMAND_CTRL) &&
             TYPE_GET_BIT(primary->data.isr, VDMA_ISR_IS)) {
-            Execute(primary, latch, ram, transaction,
+            dma_service_advance(primary, latch, ram, transaction,
                 VDMA_GetISR_ISR(primary->data.isr), TYPE_FALSE);
-        }
-        if (!TYPE_GET_BIT(primary->data.isr, VDMA_ISR_IS)) {
-            dma_service_end(secondary);
+            if (!TYPE_GET_BIT(primary->data.isr, VDMA_ISR_IS)) {
+                dma_service_end(secondary);
+            }
         }
         return;
     }
     if (!TYPE_GET_BIT(primary->data.command, VDMA_COMMAND_CTRL) &&
         TYPE_GET_BIT(primary->data.isr, VDMA_ISR_IS)) {
-        Execute(primary, latch, ram, transaction,
+        dma_service_advance(primary, latch, ram, transaction,
             VDMA_GetISR_ISR(primary->data.isr), TYPE_FALSE);
         return;
     }
@@ -724,10 +799,6 @@ static C_VOID core_machine_dma_advance_one(t_latch *latch, t_dma *primary,
                 secondary->data.drx = 1u;
             }
             dma_service_begin(primary, id);
-            Execute(primary, latch, ram, transaction, id, TYPE_FALSE);
-            if (!TYPE_GET_BIT(primary->data.isr, VDMA_ISR_IS)) {
-                dma_service_end(secondary);
-            }
             if (!VDMA_GetSTATUS_DRQS(primary->data.status)) {
                 TYPE_CLEAR_BIT(secondary->data.status, VDMA_STATUS_DRQ(0));
             }
@@ -765,8 +836,59 @@ C_INT core_machine_dma_has_pending_request(const t_dma *primary,
 C_VOID core_machine_dma_advance(t_latch *latch, t_dma *primary,
     t_dma *secondary, t_ram *ram, type_unsigned_64 elapsed_ticks)
 {
-    core_machine_dma_advance_transaction(latch, primary, secondary, ram,
-        STD_NULL, elapsed_ticks);
+    type_unsigned_64 tick;
+
+    /* This non-transaction entry point is retained for focused controller
+     * fixtures: one requested tick means one logical DMA primitive. Machine
+     * execution always uses core_machine_dma_advance_transaction() below,
+     * where each elapsed DMA tick advances exactly one Intel service phase. */
+    for (tick = 0u; tick < elapsed_ticks; ++tick) {
+        type_unsigned_16 primary_address[VDMA_CHANNEL_COUNT];
+        type_unsigned_16 primary_count[VDMA_CHANNEL_COUNT];
+        type_unsigned_16 secondary_address[VDMA_CHANNEL_COUNT];
+        type_unsigned_16 secondary_count[VDMA_CHANNEL_COUNT];
+        type_unsigned_8 index;
+        type_unsigned_8 phase;
+        type_bool m2m;
+        type_bool m2m_write;
+
+        if (primary == STD_NULL || secondary == STD_NULL) return;
+        m2m = TYPE_GET_BIT(primary->data.command, VDMA_COMMAND_M2M) &&
+            VDMA_GetREQUEST_DRQ(primary->data.request, 0u);
+        m2m_write = primary->data.flagM2MWrite;
+        for (index = 0u; index < VDMA_CHANNEL_COUNT; ++index) {
+            primary_address[index] = primary->data.currAddr[index];
+            primary_count[index] = primary->data.currCount[index];
+            secondary_address[index] = secondary->data.currAddr[index];
+            secondary_count[index] = secondary->data.currCount[index];
+        }
+        for (phase = 0u; phase < 16u; ++phase) {
+            core_machine_dma_advance_one(latch, primary, secondary, ram, STD_NULL);
+            if (m2m ? primary->data.flagM2MWrite != m2m_write ||
+                    (!TYPE_GET_BIT(primary->data.isr, VDMA_ISR_IS) &&
+                        !TYPE_GET_BIT(secondary->data.isr, VDMA_ISR_IS)) :
+                primary->data.currAddr[0u] != primary_address[0u] ||
+                primary->data.currAddr[1u] != primary_address[1u] ||
+                primary->data.currAddr[2u] != primary_address[2u] ||
+                primary->data.currAddr[3u] != primary_address[3u] ||
+                primary->data.currCount[0u] != primary_count[0u] ||
+                primary->data.currCount[1u] != primary_count[1u] ||
+                primary->data.currCount[2u] != primary_count[2u] ||
+                primary->data.currCount[3u] != primary_count[3u] ||
+                secondary->data.currAddr[0u] != secondary_address[0u] ||
+                secondary->data.currAddr[1u] != secondary_address[1u] ||
+                secondary->data.currAddr[2u] != secondary_address[2u] ||
+                secondary->data.currAddr[3u] != secondary_address[3u] ||
+                secondary->data.currCount[0u] != secondary_count[0u] ||
+                secondary->data.currCount[1u] != secondary_count[1u] ||
+                secondary->data.currCount[2u] != secondary_count[2u] ||
+                secondary->data.currCount[3u] != secondary_count[3u] ||
+                (!TYPE_GET_BIT(primary->data.isr, VDMA_ISR_IS) &&
+                    !TYPE_GET_BIT(secondary->data.isr, VDMA_ISR_IS))) {
+                break;
+            }
+        }
+    }
 }
 
 C_VOID core_machine_dma_advance_transaction(t_latch *latch, t_dma *primary,

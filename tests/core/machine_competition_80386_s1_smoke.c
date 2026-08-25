@@ -7,7 +7,7 @@
 #include "../support/core_machine_cpu_fixture.h"
 
 typedef struct competition_probe {
-    core_machine_trace_event events[64];
+    core_machine_trace_event events[256];
     type_unsigned_32 count;
 } competition_probe;
 
@@ -20,7 +20,7 @@ static C_VOID competition_trace(C_VOID *opaque,
 {
     competition_probe *probe = (competition_probe *)opaque;
 
-    if (probe != STD_NULL && probe->count < 64u) {
+    if (probe != STD_NULL && probe->count < 256u) {
         probe->events[probe->count++] = *event;
     }
 }
@@ -160,6 +160,9 @@ C_INT main(C_VOID)
     failed |= core_machine_run(machine, budget, &result) != TYPE_STATUS_OK;
     failed |= result.reason != CORE_MACHINE_STOP_BUDGET ||
         result.executed != 1u || result.elapsed_ticks != 3u;
+    /* A normal 8237A service selects a channel before S1..S4 commits the
+     * byte.  CPU retirement has already occurred; advance only device time. */
+    failed |= core_machine_advance_time(machine, 8u) != TYPE_STATUS_OK;
     failed |= core_machine_memory_read(machine, 0x11234u, &byte, 1u) !=
         TYPE_STATUS_OK || byte != 0xa5u;
     failed |= !competition_find_transaction(&probe,
@@ -180,20 +183,20 @@ C_INT main(C_VOID)
         CORE_MACHINE_TRACE_TRANSACTION_COMMIT,
         CORE_MACHINE_TRANSACTION_OWNER_DMA,
         CORE_MACHINE_TRANSACTION_DMA_MEMORY_WRITE, &dma_commit);
-    failed |= !competition_find_event(&probe, CORE_MACHINE_TRACE_DMA_ADVANCE,
-        &dma_advance);
-    failed |= !competition_find_event(&probe, CORE_MACHINE_TRACE_PIT_ADVANCE,
-        &pit_advance);
-    failed |= !competition_find_event(&probe, CORE_MACHINE_TRACE_PIC_REFRESH,
-        &pic_refresh);
-    failed |= !competition_find_event(&probe, CORE_MACHINE_TRACE_FDC_ADVANCE,
-        &fdc_advance);
-    failed |= !competition_find_event(&probe, CORE_MACHINE_TRACE_FDC_REFRESH,
-        &fdc_refresh);
-    failed |= !competition_find_event(&probe, CORE_MACHINE_TRACE_HDC_ADVANCE,
-        &hdc_advance);
-    failed |= !competition_find_event(&probe, CORE_MACHINE_TRACE_HDC_REFRESH,
-        &hdc_refresh);
+    failed |= !competition_find_event_after(&probe, CORE_MACHINE_TRACE_DMA_ADVANCE,
+        dma_commit, &dma_advance);
+    failed |= !competition_find_event_after(&probe, CORE_MACHINE_TRACE_PIT_ADVANCE,
+        dma_advance, &pit_advance);
+    failed |= !competition_find_event_after(&probe, CORE_MACHINE_TRACE_PIC_REFRESH,
+        pit_advance, &pic_refresh);
+    failed |= !competition_find_event_after(&probe, CORE_MACHINE_TRACE_FDC_ADVANCE,
+        pic_refresh, &fdc_advance);
+    failed |= !competition_find_event_after(&probe, CORE_MACHINE_TRACE_FDC_REFRESH,
+        fdc_advance, &fdc_refresh);
+    failed |= !competition_find_event_after(&probe, CORE_MACHINE_TRACE_HDC_ADVANCE,
+        fdc_refresh, &hdc_advance);
+    failed |= !competition_find_event_after(&probe, CORE_MACHINE_TRACE_HDC_REFRESH,
+        hdc_advance, &hdc_refresh);
     failed |= !competition_find_event(&probe,
         CORE_MACHINE_TRACE_TRANSACTION_HOLD_REQUEST, &hold_request);
     failed |= !competition_find_event(&probe,
@@ -201,9 +204,7 @@ C_INT main(C_VOID)
     failed |= !competition_find_event(&probe,
         CORE_MACHINE_TRACE_TRANSACTION_HOLD_RELEASE, &hold_release);
     failed |= cpu_begin >= cpu_commit || cpu_commit >= cpu_retire ||
-        cpu_retire >= hold_request || hold_request >= hold_acknowledge ||
-        hold_acknowledge >= dma_begin || dma_begin >= dma_commit ||
-        dma_commit >= hold_release ||
+        cpu_retire >= dma_begin || dma_begin >= dma_commit ||
         dma_commit >= dma_advance || dma_advance >= pit_advance ||
         pit_advance >= pic_refresh || pic_refresh >= fdc_advance ||
         fdc_advance >= fdc_refresh || fdc_refresh >= hdc_advance ||

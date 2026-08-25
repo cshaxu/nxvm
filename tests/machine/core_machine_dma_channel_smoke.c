@@ -149,6 +149,13 @@ static type_unsigned_16 core_machine_dma_read_pair(t_port *port,
         (core_machine_port_read(port, value_port) << 8u));
 }
 
+static C_VOID core_machine_dma_advance_phases(t_latch *latch, t_dma *primary,
+    t_dma *secondary, t_ram *memory, type_unsigned_64 ticks)
+{
+    core_machine_dma_advance_transaction(latch, primary, secondary, memory,
+        STD_NULL, ticks);
+}
+
 C_INT main(C_VOID)
 {
     static const core_machine_dma_channel_provider provider = {
@@ -220,6 +227,40 @@ C_INT main(C_VOID)
     eop_fixture.primary = &primary;
     eop_fixture.secondary = &secondary;
     eop_fixture.binding = &eop_binding;
+
+    /* Intel's normal service is S1 -> S2 -> S3 -> S4, while TM removes
+     * S3. Memory/I/O work commits only in S4. */
+    core_machine_dma_write_channel2(&port, 0x1200u, 0u, 0u, 0x86u);
+    core_machine_port_write(&port, 0x000au, 0x02u);
+    core_machine_port_write(&port, 0x00d4u, 0u);
+    core_machine_dma_request_assert(&primary, &secondary, &binding);
+    core_machine_dma_advance_phases(&latch, &primary, &secondary, &memory, 1u);
+    core_machine_dma_advance_phases(&latch, &primary, &secondary, &memory, 3u);
+    if (fixture.next != 0u || primary.data.phase != VDMA_PHASE_S4) {
+        failed = 1;
+    }
+    core_machine_dma_advance_phases(&latch, &primary, &secondary, &memory, 1u);
+    if (fixture.next != 1u || primary.data.isr != 0u) {
+        failed = 1;
+    }
+    core_machine_dma_reset(&latch, &primary, &secondary);
+    fixture.next = 0u;
+    core_machine_dma_write_channel2(&port, 0x1200u, 0u, 0u, 0x86u);
+    core_machine_port_write(&port, 0x0008u, VDMA_COMMAND_TM);
+    core_machine_port_write(&port, 0x000au, 0x02u);
+    core_machine_port_write(&port, 0x00d4u, 0u);
+    core_machine_dma_request_assert(&primary, &secondary, &binding);
+    core_machine_dma_advance_phases(&latch, &primary, &secondary, &memory, 3u);
+    if (fixture.next != 0u || primary.data.phase != VDMA_PHASE_S4) {
+        failed = 1;
+    }
+    core_machine_dma_advance_phases(&latch, &primary, &secondary, &memory, 1u);
+    if (fixture.next != 1u || primary.data.isr != 0u) {
+        failed = 1;
+    }
+    core_machine_dma_reset(&latch, &primary, &secondary);
+    fixture.next = 0u;
+    fixture.terminal_count = 0u;
 
     /* Block-mode device -> RAM: count is inclusive, but each core DMA grant
      * may expose only one byte. */
@@ -378,6 +419,33 @@ C_INT main(C_VOID)
         bytes[0] != 0x55u || bytes[1] != 0x66u ||
         (primary.data.status & VDMA_STATUS_TC(1u)) == 0u ||
         primary.data.request != 0u || primary.data.isr != 0u) {
+        failed = 1;
+    }
+
+    /* In M2M the source and destination each use their own address-direction
+     * mode bit; channel 0's direction must not leak into channel 1. */
+    bytes[0] = 0x31u;
+    bytes[1] = 0x32u;
+    if (core_machine_memory_write_physical(&memory, 0x0220u,
+            (type_virtual_address)bytes, sizeof(bytes)) != TYPE_STATUS_OK ||
+        core_machine_memory_write_physical(&memory, 0x0320u,
+            (type_virtual_address)zeroes, sizeof(zeroes)) != TYPE_STATUS_OK) {
+        failed = 1;
+        goto done;
+    }
+    core_machine_dma_reset(&latch, &primary, &secondary);
+    core_machine_dma_write_primary_channel(&port, 0u, 0x0221u, 1u, 0xa0u);
+    core_machine_dma_write_primary_channel(&port, 1u, 0x0320u, 1u, 0x81u);
+    core_machine_port_write(&port, 0x0008u, VDMA_COMMAND_M2M);
+    core_machine_port_write(&port, 0x000eu, 0u);
+    core_machine_port_write(&port, 0x00d4u, 0u);
+    core_machine_port_write(&port, 0x0009u, 0x04u);
+    core_machine_dma_advance(&latch, &primary, &secondary, &memory, 4u);
+    if (core_machine_memory_read_physical(&memory, 0x0320u,
+            (type_virtual_address)bytes, sizeof(bytes)) != TYPE_STATUS_OK ||
+        bytes[0] != 0x32u || bytes[1] != 0x31u ||
+        primary.data.currAddr[0] != 0x021fu ||
+        primary.data.currAddr[1] != 0x0322u) {
         failed = 1;
     }
 

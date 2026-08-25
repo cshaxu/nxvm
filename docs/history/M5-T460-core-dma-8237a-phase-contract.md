@@ -48,3 +48,29 @@ records the one private DMA acknowledgement/service-release state and the
 centralized entry/release helpers. It removes repeated ISR-clearing paths,
 does not expose a pin API or change T449/board ownership, and preserves the
 focused DMA/transaction/FDC regression group.
+
+S3 is accepted at `2ae6457a` with the final in-scope correction in the later
+S5 delivery: M2M has one read then write phase through the existing transaction
+owner, cascade is a delegated slot rather than a false terminal transfer, and
+the source and destination each use their own address-direction mode bit.
+The [mode-phase evidence](../etc/evidence/t460-s3-dma-mode-phases.md) and the
+DMA channel smoke cover the sequence and failure release.
+
+S4 is accepted at `d08e38d5`: PIT counter 1 reaches the sole Core-owned DMA1
+refresh request binding, and FDC selection rejects that reserved channel. The
+[AT binding evidence](../etc/evidence/t460-s4-dma-at-refresh-binding.md)
+retains the uncalibrated five-clock/3 MHz conversion as an explicit L2 timing
+boundary rather than inventing a board clock.
+
+S5 records the final M2M direction regression and source-backed compressed
+timing transition: normal service is `S1 -> S2 -> S3 -> S4`, and `TM` removes
+exactly `S3`. Its [closure audit](../etc/evidence/t460-s5-dma-closure-audit.md)
+retains the only remaining selected L2 boundary, the IBM AT numeric
+3 MHz/five-clock conversion, pending its existing Core timing-plan receiver.
+
+T460 closes with all 16 ledger rows disposed: the manual-backed logical
+service states, compressed `TM` transition, M2M source/destination phases,
+mode release rules and selected AT binding have direct focused proof; the one
+uncalibrated numeric conversion remains an explicit L2 boundary. The final
+serial current gate is 294/294 and the stripped `nxvm_0_5_0460.exe` artifact
+has SHA-256 `29FB7AC3D715B45D60A82F4D32F3B4D17C8B4A8601C60FBE482DBB332CE0AF62`.

@@ -10,7 +10,7 @@ input only. Focused evidence is `tests/machine/core_machine_dma_channel_smoke.c`
 `core_machine_dma_binding_token_smoke.c`,
 `core_machine_dma_rtc_authority_smoke.c`, and
 `tests/core/machine_competition_s3_smoke.c`. Every nonconforming row transfers
-once to the queued [Core DMA 8237A phase contract](../../proposals/m5-core-dma-8237a-phase-contract.md).
+once to the completed [Core DMA 8237A phase contract](../../history/M5-T460-core-dma-8237a-phase-contract-proposal.md).
 No source or test is modified by this audit.
 
 ## Row Dispositions

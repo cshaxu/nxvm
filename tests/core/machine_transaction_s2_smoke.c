@@ -285,8 +285,10 @@ C_INT main(C_VOID)
     STD_MEMSET(&state_probe, 0, sizeof(state_probe));
     core_machine_transaction_bind_trace(&transaction, transaction_state_trace,
         &state_probe);
+    /* 8237A normal timing selects the channel, then completes S1..S4 before
+     * the actual memory write.  One transaction tick is one controller phase. */
     core_machine_dma_advance_transaction(&latch, &primary, &secondary, &memory,
-        &transaction, 1u);
+        &transaction, 5u);
     failed |= transaction.owner != CORE_MACHINE_TRANSACTION_OWNER_NONE ||
         transaction.committed_count != 1u;
     failed |= state_probe.begin_count != 1u || state_probe.commit_count != 1u ||
