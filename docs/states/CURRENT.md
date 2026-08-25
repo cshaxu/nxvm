@@ -2,26 +2,7 @@
 
 ## Current Work
 
-## M5 T463 S3 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner-approved T463 goal dated 2026-08-24; S1 and S2 are accepted in the retained progress table. This final S is the proposal's convergence, verification and release batch. No exception is approved. |
-| Objective | Independently audit the accepted RTC phase owner, prove the complete current gate, create the required stripped Release `nxvm_0_5_0463.exe`, and close T463 only if every ledger disposition and source-quality requirement is evidenced. |
-| Non-goals | No new RTC behavior, host-clock route, timing setter, guest media, external-code import, unrelated refactor, or rule change. A discovered defect stops closure and becomes a bounded corrective S. |
-| Reference Baseline | `ad80dad5`; accepted S2 evidence `t463-s2-rtc-phase-owner.md`; current artifact baseline 0462. |
-| Candidate Proposal | [M5 Core RTC CMOS Phase Contract](../proposals/m5-core-rtc-cmos-phase-contract.md), S1 source ledger, S10 gap audit, and S2 evidence. This S consumes the complete R1-R4/F1-F7/T1-T5 closure set. |
-| Files And ABI Surface | Expected only T463 evidence/history/status/release records, the generated artifact, and the current-artifact CMake/preset version declarations. Runtime source changes are prohibited unless a discovered correctness defect requires a new corrective packet. |
-| Applicable Rules | `EXECUTION.md`: full actual-diff review, task closure audit, source/test line accounting and immediate push. `ARCHITECTURE.md`: one Core RTC owner and immutable profile inputs. `CODING.md`: no retained duplicate path or unjustified wrapper. `DOCUMENT.md`: accurate L2/L3/L4 boundary and release records. |
-| Verification | Rebuild the full current gate, run all registered current-gate tests, run documentation governance, build the stripped Release artifact and record its SHA-256. Inspect committed source and ledger-to-proof mapping before closure. |
-| Expected Markers | 294/294-or-current full gate, `build/output/nxvm_0_5_0463.exe`, recorded SHA-256, T463 history, no unclassified RTC ledger member. |
-| Asset Needs | Existing local build toolchain only; no source, firmware, guest-media or third-party asset import. |
-| Reporting Requirements | Report the full-gate count, artifact hash, source/test added/removed/net count for P2, retained owner/path, all L2/L4 boundaries and any transfer. Coordinator actual-diff review precedes T closure. |
-| Stop Conditions | Stop if a gate fails, Release artifact cannot be produced, current code contradicts the manuals/evidence, a new defect needs source change, or any ledger row lacks a truthful disposition. |
-| Exit Criteria | Full gate and documentation governance pass; stripped artifact is recorded; all 16 ledger rows map to code/proof or an explicit retained L2/L4 boundary; actual changes are reviewed; no uncommitted changes remain after pushed closure. |
-| Original Owner Request | Complete the Core RTC/CMOS phase contract with manual-defined function/timing behavior and a minimalist audited architecture. |
-| Similar-Issue Sweep | Re-check every RTC construction caller, direct calendar/register access, reset call, controller timing declaration and public artifact route. Ensure no other controller was accidentally altered. |
+**Active.** T463 is closed.
 
 ## Current Technical Baseline
 
@@ -47,8 +28,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T463 S2 | One 64-byte MC146818 RTC owner now consumes only the existing guest clock-domain route plus a copied board phase plan. It implements divider hold/restart, UIP/update, periodic/SQW, alarm/IRQ flags, Register-C acknowledgement and manual RESET retention; Model 339 is declared L3 and default PC/AT remains L2. P2 `8a384476` passed focused CTest 8/8 and documentation governance. |
-| T463 S1 | Reconciled all 16 MC146818A/IBM-AT rows against rendered Motorola/IBM manuals and named reference-only emulator sources. The 32h century convention is corrected to board-map state; all L2/L4 boundaries remain explicit. No runtime or artifact changed. |
+| T463 | Closed: the 16-row MC146818A/IBM AT ledger has one Core phase owner, a copied L3/L2 board timing plan, explicit L2/L4 boundaries and focused proof. The full current gate ran 294/294; stripped Release 0463 is recorded in [history](../history/M5-T463-core-rtc-cmos-phase-contract.md). |
 | T462 | Closed: one immutable copied plan carries only qualified Model-339 PIT/DMA selections; PIC remains explicit L2. The seven corrected PIT-transition regressions, 294/294 serial current gate, 77/77 specialized gates, documentation governance and stripped 0462 artifact complete the controller-board contract. [History](../history/M5-T462-core-controller-board-timing-contract.md). |
 | T461 | Closed: one Core PIT owner covers manual P1--P14 and one `OUT0 -> IRQ0 -> PIC refresh` route closes P15; P16--P18 remain explicit L2. Full current-gate is 294/294 and its stripped artifact is retained in history. [History](../history/M5-T461-core-pit-8254-phase-contract.md). |
 | T460 | Closed: all 16 DMA rows are disposed through the sole `dma.c` owner; normal/compressed and M2M service phases have focused proof, the five-clock conversion remains explicit L2, serial current-gate is 294/294, and the stripped 0460 artifact is recorded. [History](../history/M5-T460-core-dma-8237a-phase-contract.md). |
