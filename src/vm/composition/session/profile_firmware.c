@@ -111,15 +111,16 @@ static C_VOID vm_session_profile_firmware_add_interrupt(vm_session *session,
 }
 
 static C_VOID vm_session_profile_firmware_add_interrupt_chunks(vm_session *session,
-    const C_CHAR *const *chunks, STD_SIZE_T count, type_unsigned_8 vector)
+    const C_CHAR *const *chunks, STD_SIZE_T count, type_unsigned_16 offset,
+    type_unsigned_8 vector)
 {
     type_unsigned_8 *bytes;
     type_unsigned_16 length;
 
     if (session == STD_NULL) return;
     length = vm_session_profile_firmware_assemble_chunks(chunks, count, &bytes);
-    vm_profile_default_bios_add_interrupt_code(&session->default_bios, bytes,
-        length, vector);
+    vm_profile_default_bios_add_interrupt_code_at(&session->default_bios, bytes,
+        length, offset, vector);
 }
 
 /* The FDC service is one firmware program, but its DMA-boundary bounce page is
@@ -196,7 +197,8 @@ static C_VOID vm_session_profile_firmware_apply(
     case VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_VIDEO_INT10:
         vm_session_profile_firmware_add_interrupt_chunks(session,
             VM_SESSION_PROFILE_FIRMWARE_CHUNKS(VBIOS_INT_SOFT_VIDEO_10),
-            VM_SESSION_PROFILE_FIRMWARE_CHUNK_COUNT(VBIOS_INT_SOFT_VIDEO_10), vector);
+            VM_SESSION_PROFILE_FIRMWARE_CHUNK_COUNT(VBIOS_INT_SOFT_VIDEO_10),
+            VBIOS_ADDR_VIDEO_SERVICE, vector);
         break;
     case VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_CMOS_POST:
         vm_session_profile_firmware_add_post(session, VCMOS_POST);
@@ -208,17 +210,20 @@ static C_VOID vm_session_profile_firmware_apply(
     case VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_TIMER_INT1A:
         vm_session_profile_firmware_add_interrupt_chunks(session,
             VM_SESSION_PROFILE_FIRMWARE_CHUNKS(VCMOS_INT_SOFT_TIMER_1A),
-            VM_SESSION_PROFILE_FIRMWARE_CHUNK_COUNT(VCMOS_INT_SOFT_TIMER_1A), vector);
+            VM_SESSION_PROFILE_FIRMWARE_CHUNK_COUNT(VCMOS_INT_SOFT_TIMER_1A),
+            TYPE_MAX_UNSIGNED_16, vector);
         break;
     case VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_KEYBOARD_IRQ1:
         vm_session_profile_firmware_add_interrupt_chunks(session,
             VM_SESSION_PROFILE_FIRMWARE_CHUNKS(VBIOS_INT_HARD_KEYBOARD_09),
-            VM_SESSION_PROFILE_FIRMWARE_CHUNK_COUNT(VBIOS_INT_HARD_KEYBOARD_09), vector);
+            VM_SESSION_PROFILE_FIRMWARE_CHUNK_COUNT(VBIOS_INT_HARD_KEYBOARD_09),
+            TYPE_MAX_UNSIGNED_16, vector);
         break;
     case VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_KEYBOARD_INT16:
         vm_session_profile_firmware_add_interrupt_chunks(session,
             VM_SESSION_PROFILE_FIRMWARE_CHUNKS(VBIOS_INT_SOFT_KEYBOARD_16),
-            VM_SESSION_PROFILE_FIRMWARE_CHUNK_COUNT(VBIOS_INT_SOFT_KEYBOARD_16), vector);
+            VM_SESSION_PROFILE_FIRMWARE_CHUNK_COUNT(VBIOS_INT_SOFT_KEYBOARD_16),
+            TYPE_MAX_UNSIGNED_16, vector);
         break;
     case VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_DMA_POST:
         vm_session_profile_firmware_add_post(session, VM_PROFILE_DEFAULT_DMA_POST);
@@ -238,7 +243,8 @@ static C_VOID vm_session_profile_firmware_apply(
     case VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_HDC_INT13:
         vm_session_profile_firmware_add_interrupt_chunks(session,
             VM_SESSION_PROFILE_FIRMWARE_CHUNKS(VHDC_INT_SOFT_HDD_13),
-            VM_SESSION_PROFILE_FIRMWARE_CHUNK_COUNT(VHDC_INT_SOFT_HDD_13), vector);
+            VM_SESSION_PROFILE_FIRMWARE_CHUNK_COUNT(VHDC_INT_SOFT_HDD_13),
+            TYPE_MAX_UNSIGNED_16, vector);
         break;
     case VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_PIT_POST:
         vm_session_profile_firmware_add_post(session, VM_PROFILE_DEFAULT_PIT_POST);

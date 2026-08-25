@@ -22,6 +22,7 @@
 #define CORE_MACHINE_VADP_CRTC_VERTICAL_TOTAL 0x04u
 #define CORE_MACHINE_VADP_CRTC_VERTICAL_TOTAL_ADJUST 0x05u
 #define CORE_MACHINE_VADP_CRTC_VERTICAL_DISPLAYED 0x06u
+#define CORE_MACHINE_VADP_CRTC_OVERFLOW 0x07u
 #define CORE_MACHINE_VADP_CRTC_VERTICAL_SYNC_POSITION 0x07u
 #define CORE_MACHINE_VADP_CRTC_INTERLACE_SKEW 0x08u
 #define CORE_MACHINE_VADP_CRTC_MAXIMUM_RASTER_ADDRESS 0x09u
@@ -32,6 +33,7 @@
 #define CORE_MACHINE_VADP_CRTC_CURSOR_HIGH 0x0eu
 #define CORE_MACHINE_VADP_CRTC_CURSOR_LOW 0x0fu
 #define CORE_MACHINE_VADP_CRTC_OFFSET 0x13u
+#define CORE_MACHINE_VADP_CRTC_VERTICAL_DISPLAY_END 0x12u
 #define CORE_MACHINE_VADP_CRTC_VERTICAL_RETRACE_END 0x11u
 #define CORE_MACHINE_VADP_CRTC_UNDERLINE_LOCATION 0x14u
 #define CORE_MACHINE_VADP_CRTC_END_VERTICAL_BLANK 0x16u
@@ -42,7 +44,10 @@
 #define CORE_MACHINE_VADP_GRAPHICS_BYTES_PER_ROW 80u
 #define CORE_MACHINE_VADP_GRAPHICS_ODD_ROW_OFFSET 0x2000u
 #define CORE_MACHINE_VADP_EGA_320X200_ROW_BYTES 40u
+#define CORE_MACHINE_VADP_EGA_640X200_ROW_BYTES 80u
 #define CORE_MACHINE_VADP_EGA_640X350_ROW_BYTES 80u
+#define CORE_MACHINE_VADP_EGA_320X200_CRTC_OFFSET 20u
+#define CORE_MACHINE_VADP_EGA_640X200_CRTC_OFFSET 40u
 #define CORE_MACHINE_VADP_EGA_640X350_CRTC_OFFSET 40u
 
 _Static_assert(CORE_MACHINE_VADP_CRTC_CURSOR_TOP <
@@ -195,7 +200,6 @@ static C_INT core_machine_vadp_ega_output_active(const t_vadp *adapter)
 static C_INT core_machine_vadp_ega_planar_active(const t_vadp *adapter)
 {
     return core_machine_vadp_ega_output_active(adapter) &&
-        adapter->data.ega_planar_armed &&
         (adapter->data.graphics[6] & 0x0cu) == 0x04u &&
         (adapter->data.attribute[16] & 0x01u) != 0u;
 }
@@ -488,13 +492,43 @@ static type_unsigned_16 core_machine_vadp_crtc_word(const t_vadp *adapter,
         adapter->data.crtc[low_index]);
 }
 
-static core_machine_display_kind core_machine_vadp_ega_display_kind(
+static type_unsigned_16 core_machine_vadp_ega_vertical_displayed(
     const t_vadp *adapter)
 {
-    return adapter != STD_NULL && adapter->data.crtc[CORE_MACHINE_VADP_CRTC_OFFSET] ==
-        CORE_MACHINE_VADP_EGA_640X350_CRTC_OFFSET ?
-        CORE_MACHINE_DISPLAY_KIND_EGA_640X350X16 :
-        CORE_MACHINE_DISPLAY_KIND_EGA_320X200X16;
+    return adapter == STD_NULL ? 0u : (type_unsigned_16)(
+        adapter->data.crtc[CORE_MACHINE_VADP_CRTC_VERTICAL_DISPLAY_END] +
+        ((adapter->data.crtc[CORE_MACHINE_VADP_CRTC_OVERFLOW] & 0x02u) << 7u) + 1u);
+}
+
+static C_INT core_machine_vadp_ega_display_kind(const t_vadp *adapter,
+    core_machine_display_kind *out_kind)
+{
+    type_unsigned_16 horizontal;
+    type_unsigned_16 vertical;
+
+    if (adapter == STD_NULL || out_kind == STD_NULL) return TYPE_FALSE;
+    horizontal = (type_unsigned_16)adapter->data.crtc[
+        CORE_MACHINE_VADP_CRTC_HORIZONTAL_DISPLAYED] + 1u;
+    vertical = core_machine_vadp_ega_vertical_displayed(adapter);
+    if (horizontal == 40u && vertical == 200u &&
+        adapter->data.crtc[CORE_MACHINE_VADP_CRTC_OFFSET] ==
+        CORE_MACHINE_VADP_EGA_320X200_CRTC_OFFSET) {
+        *out_kind = CORE_MACHINE_DISPLAY_KIND_EGA_320X200X16;
+        return TYPE_TRUE;
+    }
+    if (horizontal == 80u && vertical == 200u &&
+        adapter->data.crtc[CORE_MACHINE_VADP_CRTC_OFFSET] ==
+        CORE_MACHINE_VADP_EGA_640X200_CRTC_OFFSET) {
+        *out_kind = CORE_MACHINE_DISPLAY_KIND_EGA_640X200X16;
+        return TYPE_TRUE;
+    }
+    if (horizontal == 80u && vertical == 350u &&
+        adapter->data.crtc[CORE_MACHINE_VADP_CRTC_OFFSET] ==
+        CORE_MACHINE_VADP_EGA_640X350_CRTC_OFFSET) {
+        *out_kind = CORE_MACHINE_DISPLAY_KIND_EGA_640X350X16;
+        return TYPE_TRUE;
+    }
+    return TYPE_FALSE;
 }
 
 static C_VOID core_machine_vadp_mark_dirty(t_vadp *adapter)
@@ -1086,14 +1120,6 @@ static C_VOID core_machine_vadp_write_graphics_data(t_port *port,
     index = adapter->data.graphics_index;
     if (!core_machine_vadp_graphics_index_supported(index)) return;
     value = port->data.ioByte & core_machine_vadp_graphics_mask(index);
-    if (index == 6u && adapter->data.ega_planar_enabled) {
-        type_bool armed = (value & 0x0cu) == 0x04u;
-
-        if (adapter->data.ega_planar_armed != armed) {
-            adapter->data.ega_planar_armed = armed;
-            core_machine_vadp_mark_dirty(adapter);
-        }
-    }
     if (adapter->data.graphics[index] != value) {
         adapter->data.graphics[index] = value;
         core_machine_vadp_mark_dirty(adapter);
@@ -1790,19 +1816,18 @@ static C_INT core_machine_vadp_capture_ega_planar_snapshot(t_vadp *adapter,
         !core_machine_vadp_ega_planar_active(adapter)) {
         return TYPE_FALSE;
     }
-    kind = core_machine_vadp_ega_display_kind(adapter);
-    width = kind == CORE_MACHINE_DISPLAY_KIND_EGA_640X350X16 ?
-        CORE_MACHINE_DISPLAY_CGA_HIGH_RES_WIDTH : CORE_MACHINE_DISPLAY_GRAPHICS_WIDTH;
+    if (!core_machine_vadp_ega_display_kind(adapter, &kind)) return TYPE_FALSE;
+    width = kind == CORE_MACHINE_DISPLAY_KIND_EGA_320X200X16 ?
+        CORE_MACHINE_DISPLAY_GRAPHICS_WIDTH : CORE_MACHINE_DISPLAY_CGA_HIGH_RES_WIDTH;
     height = kind == CORE_MACHINE_DISPLAY_KIND_EGA_640X350X16 ?
         CORE_MACHINE_DISPLAY_EGA_HIGH_RES_HEIGHT : CORE_MACHINE_DISPLAY_GRAPHICS_HEIGHT;
-    row_bytes = kind == CORE_MACHINE_DISPLAY_KIND_EGA_640X350X16 ?
-        CORE_MACHINE_VADP_EGA_640X350_ROW_BYTES :
-        CORE_MACHINE_VADP_EGA_320X200_ROW_BYTES;
+    row_bytes = kind == CORE_MACHINE_DISPLAY_KIND_EGA_320X200X16 ?
+        CORE_MACHINE_VADP_EGA_320X200_ROW_BYTES :
+        CORE_MACHINE_VADP_EGA_640X200_ROW_BYTES;
     /* EGA CRTC start is a word address; 64 KiB plane addressing wraps. */
-    start_byte = kind == CORE_MACHINE_DISPLAY_KIND_EGA_640X350X16 ?
-        ((type_unsigned_32)core_machine_vadp_crtc_word(adapter,
-            CORE_MACHINE_VADP_CRTC_START_HIGH) * 2u) &
-            (CORE_MACHINE_VADP_EGA_PLANE_BYTES - 1u) : 0u;
+    start_byte = ((type_unsigned_32)core_machine_vadp_crtc_word(adapter,
+        CORE_MACHINE_VADP_CRTC_START_HIGH) * 2u) &
+        (CORE_MACHINE_VADP_EGA_PLANE_BYTES - 1u);
     if (core_machine_vadp_compaq_odd_even_page_active(adapter)) {
         start_byte = (start_byte & (CORE_MACHINE_VADP_EGA_ODD_EVEN_PAGE_BYTES - 1u)) |
             (adapter->data.compaq_odd_even_high_page ?

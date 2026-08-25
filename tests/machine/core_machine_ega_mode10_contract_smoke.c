@@ -55,6 +55,12 @@ C_INT main(C_VOID)
     core_machine_port_write(&port, 0x03d4u, 0x13u);
     failed |= core_machine_port_read(&port, 0x03d5u) != 0u ||
         vadp.data.crtc[0x13u] != 0x28u;
+    core_machine_port_write(&port, 0x03d4u, 0x01u);
+    core_machine_port_write(&port, 0x03d5u, 0x4fu);
+    core_machine_port_write(&port, 0x03d4u, 0x07u);
+    core_machine_port_write(&port, 0x03d5u, 0x02u);
+    core_machine_port_write(&port, 0x03d4u, 0x12u);
+    core_machine_port_write(&port, 0x03d5u, 0x5du);
     core_machine_port_write(&port, 0x03d4u, 0x0cu);
     core_machine_port_write(&port, 0x03d5u, 0x00u);
     core_machine_port_write(&port, 0x03d4u, 0x0du);

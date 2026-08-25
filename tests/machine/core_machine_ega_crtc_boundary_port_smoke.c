@@ -70,19 +70,29 @@ C_INT main(C_VOID)
     core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_COLOR, 0x35u);
     mode = core_machine_port_read(&port, CORE_MACHINE_VADP_PORT_MODE);
     color = core_machine_port_read(&port, CORE_MACHINE_VADP_PORT_COLOR);
-    vadp.data.crtc[T314_CRTC_ADJACENT_INDEX] = 0x5au;
+    vadp.data.crtc[T314_CRTC_ADJACENT_INDEX] = 0x5du;
+    core_machine_ega_crtc_write(&port, 0x01u, 0x4fu);
+    core_machine_ega_crtc_write(&port, 0x07u, 0x02u);
     core_machine_ega_crtc_write(&port, 0x13u, 0x28u);
 
     failed |= core_machine_ega_crtc_read(&port, 0x13u) != 0u ||
         vadp.data.crtc[0x13u] != 0x28u ||
-        vadp.data.crtc[T314_CRTC_ADJACENT_INDEX] != 0x5au ||
+        vadp.data.crtc[T314_CRTC_ADJACENT_INDEX] != 0x5du ||
         core_machine_port_read(&port, CORE_MACHINE_VADP_PORT_MODE) != mode ||
         core_machine_port_read(&port, CORE_MACHINE_VADP_PORT_COLOR) != color;
     STD_MEMSET(&snapshot, 0, sizeof(snapshot));
     failed |= !core_machine_vadp_capture_snapshot(&vadp, &memory, &snapshot) ||
         snapshot.kind != CORE_MACHINE_DISPLAY_KIND_EGA_640X350X16;
 
-    core_machine_ega_crtc_write(&port, 0x13u, 0x00u);
+    core_machine_ega_crtc_write(&port, 0x07u, 0x00u);
+    core_machine_ega_crtc_write(&port, 0x12u, 0xc7u);
+    STD_MEMSET(&snapshot, 0, sizeof(snapshot));
+    failed |= !core_machine_vadp_capture_snapshot(&vadp, &memory, &snapshot) ||
+        snapshot.kind != CORE_MACHINE_DISPLAY_KIND_EGA_640X200X16 ||
+        snapshot.pixel_width != 640u || snapshot.pixel_height != 200u;
+
+    core_machine_ega_crtc_write(&port, 0x01u, 0x27u);
+    core_machine_ega_crtc_write(&port, 0x13u, 0x14u);
     STD_MEMSET(&snapshot, 0, sizeof(snapshot));
     failed |= !core_machine_vadp_capture_snapshot(&vadp, &memory, &snapshot) ||
         snapshot.kind != CORE_MACHINE_DISPLAY_KIND_EGA_320X200X16;

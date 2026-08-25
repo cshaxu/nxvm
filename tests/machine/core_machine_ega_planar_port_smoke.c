@@ -25,6 +25,18 @@ static C_VOID core_machine_ega_graphics_write(t_port *port, type_unsigned_8 inde
     core_machine_port_write(port, 0x03cfu, value);
 }
 
+static C_VOID core_machine_ega_planar_select_mode_d(t_port *port)
+{
+    core_machine_port_write(port, CORE_MACHINE_VADP_PORT_CRTC_INDEX, 0x01u);
+    core_machine_port_write(port, CORE_MACHINE_VADP_PORT_CRTC_DATA, 0x27u);
+    core_machine_port_write(port, CORE_MACHINE_VADP_PORT_CRTC_INDEX, 0x07u);
+    core_machine_port_write(port, CORE_MACHINE_VADP_PORT_CRTC_DATA, 0x00u);
+    core_machine_port_write(port, CORE_MACHINE_VADP_PORT_CRTC_INDEX, 0x12u);
+    core_machine_port_write(port, CORE_MACHINE_VADP_PORT_CRTC_DATA, 0xc7u);
+    core_machine_port_write(port, CORE_MACHINE_VADP_PORT_CRTC_INDEX, 0x13u);
+    core_machine_port_write(port, CORE_MACHINE_VADP_PORT_CRTC_DATA, 0x14u);
+}
+
 C_INT main(C_VOID)
 {
     const core_machine_vadp_ega_sequencer_config sequencer = {
@@ -60,6 +72,7 @@ C_INT main(C_VOID)
         &sequencer) != TYPE_STATUS_OK;
     failed |= core_machine_vadp_configure_ega_controllers(&vadp,
         &controllers) != TYPE_STATUS_OK;
+    core_machine_ega_planar_select_mode_d(&port);
 
     status_first = core_machine_port_read(&port, 0x03dau);
     status_second = core_machine_port_read(&port, 0x03dau);
@@ -213,6 +226,7 @@ C_INT main(C_VOID)
 
     /* Reset clears the transient planar store; a guest mode write re-arms it. */
     core_machine_vadp_reset(&vadp);
+    core_machine_ega_planar_select_mode_d(&port);
     core_machine_port_write(&port, 0x03ceu, 6u);
     core_machine_port_write(&port, 0x03cfu, 0x05u);
     status_first = core_machine_port_read(&port, 0x03dau);

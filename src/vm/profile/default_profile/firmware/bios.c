@@ -96,10 +96,17 @@ static C_INT bios_image_write_code(type_unsigned_8 *image, type_unsigned_16 offs
 static C_INT bios_image_write_fixed_code(type_unsigned_8 *image,
     const vm_profile_default_bios_code *code)
 {
-    if (code == STD_NULL || code->offset == TYPE_MAX_UNSIGNED_16 ||
-        code->offset < VBIOS_ADDR_FDC_SERVICE ||
-        code->offset >= VBIOS_ADDR_FDC_SERVICE_LIMIT ||
-        code->length > VBIOS_ADDR_FDC_SERVICE_LIMIT - code->offset) return 0;
+    type_unsigned_16 limit;
+
+    if (code == STD_NULL || code->offset == TYPE_MAX_UNSIGNED_16) return 0;
+    if (code->offset == VBIOS_ADDR_FDC_SERVICE) {
+        limit = VBIOS_ADDR_FDC_SERVICE_LIMIT;
+    } else if (code->offset == VBIOS_ADDR_VIDEO_SERVICE) {
+        limit = VBIOS_ADDR_VIDEO_SERVICE_LIMIT;
+    } else {
+        return 0;
+    }
+    if (code->length > limit - code->offset) return 0;
     return bios_image_write_code(image, code->offset, code);
 }
 

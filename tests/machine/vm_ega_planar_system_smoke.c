@@ -14,6 +14,8 @@ static type_unsigned_8 vm_ega_planar_image[VM_EGA_PLANAR_IMAGE_BYTES];
 static C_INT vm_ega_planar_write_fixture(C_CHAR path[MAX_PATH])
 {
     static const type_unsigned_8 boot_code[] = {
+        0xb8u, 0x0du, 0x00u,       /* mov ax, 000dh */
+        0xcdu, 0x10u,              /* int 10h */
         0xb8u, 0x00u, 0xa0u,       /* mov ax, a000h */
         0x8eu, 0xc0u,              /* mov es, ax */
         0xbau, 0xc4u, 0x03u,       /* mov dx, 3c4h */

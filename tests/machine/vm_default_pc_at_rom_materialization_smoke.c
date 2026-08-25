@@ -13,6 +13,7 @@
 #define TEST_IVT_VIDEO 0x00000040u
 #define TEST_IVT_FDC 0x00000100u
 #define TEST_FDC_SERVICE_PHYSICAL (0x000f0000u + VBIOS_ADDR_FDC_SERVICE)
+#define TEST_VIDEO_SERVICE_PHYSICAL (0x000f0000u + VBIOS_ADDR_VIDEO_SERVICE)
 
 int main(C_VOID)
 {
@@ -25,6 +26,7 @@ int main(C_VOID)
     type_unsigned_8 bda_mode = 0u;
     type_unsigned_8 ivt_before[4] = {0};
     type_unsigned_8 ivt_after[4] = {0};
+    type_unsigned_8 video_vector[4] = {0};
     type_unsigned_8 fdc_vector[4] = {0};
     C_INT failed = vm_session_create(STD_NULL, &session) != TYPE_STATUS_OK ||
         session == STD_NULL;
@@ -55,6 +57,11 @@ int main(C_VOID)
             code_after != code_before;
         failed |= core_machine_memory_read(session->core_machine, TEST_IVT_VIDEO,
             ivt_before, sizeof(ivt_before)) != TYPE_STATUS_OK;
+        failed |= core_machine_memory_read(session->core_machine, TEST_IVT_VIDEO,
+            video_vector, sizeof(video_vector)) != TYPE_STATUS_OK ||
+            video_vector[0] != TYPE_MASK_UNSIGNED_8(VBIOS_ADDR_VIDEO_SERVICE) ||
+            video_vector[1] != TYPE_MASK_UNSIGNED_8(VBIOS_ADDR_VIDEO_SERVICE >> 8) ||
+            video_vector[2] != 0x00u || video_vector[3] != 0xf0u;
         failed |= core_machine_memory_read(session->core_machine, TEST_IVT_FDC,
             fdc_vector, sizeof(fdc_vector)) != TYPE_STATUS_OK ||
             fdc_vector[0] != TYPE_MASK_UNSIGNED_8(VBIOS_ADDR_FDC_SERVICE) ||
@@ -62,6 +69,9 @@ int main(C_VOID)
             fdc_vector[2] != 0x00u || fdc_vector[3] != 0xf0u;
         failed |= core_machine_memory_query(session->core_machine,
             TEST_FDC_SERVICE_PHYSICAL, 1u, CORE_MACHINE_MEMORY_ACCESS_READ,
+            &route) != TYPE_STATUS_OK || route != CORE_MACHINE_MEMORY_ROUTE_PROVIDER;
+        failed |= core_machine_memory_query(session->core_machine,
+            TEST_VIDEO_SERVICE_PHYSICAL, 1u, CORE_MACHINE_MEMORY_ACCESS_READ,
             &route) != TYPE_STATUS_OK || route != CORE_MACHINE_MEMORY_ROUTE_PROVIDER;
         failed |= core_machine_memory_write(session->core_machine, TEST_IVT_VIDEO,
             &overwrite, sizeof(overwrite)) != TYPE_STATUS_OK;

@@ -74,9 +74,9 @@ C_INT main(C_VOID)
     }
     for (instruction = 0u; instruction < VM_ROM_EGA_BOOT_BUDGET; ++instruction) {
         if (core_machine_run(session->core_machine, budget, &result) !=
-                TYPE_STATUS_OK || result.reason == CORE_MACHINE_STOP_FAULT ||
-            core_machine_capture_display_snapshot(session->core_machine,
-                &snapshot) != TYPE_STATUS_OK) goto done;
+                TYPE_STATUS_OK || result.reason == CORE_MACHINE_STOP_FAULT) goto done;
+        if (core_machine_capture_display_snapshot(session->core_machine,
+                &snapshot) != TYPE_STATUS_OK) continue;
         if (snapshot.kind == CORE_MACHINE_DISPLAY_KIND_EGA_320X200X16 &&
             snapshot.pixels[0] == 15u && snapshot.pixels[1] == 0u &&
             snapshot.pixels[2] == 15u && snapshot.palette_rgb[15] == 0xffffffu &&

@@ -63,6 +63,12 @@ C_INT main(C_VOID)
         0x01u;
     failed |= !t386_s6_configure_ega(&vadp, &memory);
 
+    core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_CRTC_INDEX, 0x01u);
+    core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_CRTC_DATA, 0x4fu);
+    core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_CRTC_INDEX, 0x07u);
+    core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_CRTC_DATA, 0x02u);
+    core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_CRTC_INDEX, 0x12u);
+    core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_CRTC_DATA, 0x5du);
     core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_CRTC_INDEX, 0x13u);
     core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_CRTC_DATA, 0x28u);
     core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_SEQUENCER_INDEX, 2u);

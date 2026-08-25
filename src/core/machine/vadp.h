@@ -85,7 +85,6 @@ typedef struct t_vadp_data {
     type_bool ega_status_diagnostic_high;
     type_bool ega_controller_configured;
     type_bool ega_planar_enabled;
-    type_bool ega_planar_armed;
     type_virtual_address ega_planar_vram;
     type_unsigned_8 ega_latches[CORE_MACHINE_VADP_EGA_PLANES];
     type_unsigned_64 captured_ega_dirty_generation;
