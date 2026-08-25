@@ -40,6 +40,13 @@ C_INT main(C_VOID)
     core_machine_display_snapshot snapshot;
     type_unsigned_8 mode;
     type_unsigned_8 color;
+    type_unsigned_8 index;
+    static const type_unsigned_8 masks[CORE_MACHINE_VADP_CRTC_REGISTER_COUNT] = {
+        0xffu, 0xffu, 0xffu, 0x7fu, 0xffu, 0xffu, 0xffu, 0x3fu,
+        0x1fu, 0x1fu, 0x1fu, 0x7fu, 0xffu, 0xffu, 0xffu, 0xffu,
+        0xffu, 0x3fu, 0xffu, 0xffu, 0x1fu, 0xffu, 0x1fu, 0xffu,
+        0xffu
+    };
     C_INT failed = 0;
 
     STD_MEMSET(&memory, 0, sizeof(memory));
@@ -66,7 +73,8 @@ C_INT main(C_VOID)
     vadp.data.crtc[T314_CRTC_ADJACENT_INDEX] = 0x5au;
     core_machine_ega_crtc_write(&port, 0x13u, 0x28u);
 
-    failed |= core_machine_ega_crtc_read(&port, 0x13u) != 0x28u ||
+    failed |= core_machine_ega_crtc_read(&port, 0x13u) != 0u ||
+        vadp.data.crtc[0x13u] != 0x28u ||
         vadp.data.crtc[T314_CRTC_ADJACENT_INDEX] != 0x5au ||
         core_machine_port_read(&port, CORE_MACHINE_VADP_PORT_MODE) != mode ||
         core_machine_port_read(&port, CORE_MACHINE_VADP_PORT_COLOR) != color;
@@ -78,6 +86,17 @@ C_INT main(C_VOID)
     STD_MEMSET(&snapshot, 0, sizeof(snapshot));
     failed |= !core_machine_vadp_capture_snapshot(&vadp, &memory, &snapshot) ||
         snapshot.kind != CORE_MACHINE_DISPLAY_KIND_EGA_320X200X16;
+
+    for (index = 0u; index <= CORE_MACHINE_VADP_CRTC_EGA_LAST; ++index) {
+        core_machine_ega_crtc_write(&port, index, 0xffu);
+        failed |= vadp.data.crtc[index] != masks[index] ||
+            core_machine_ega_crtc_read(&port, index) !=
+            (index >= 0x0cu && index <= 0x0fu ? masks[index] : 0u);
+    }
+    core_machine_vadp_reset(&vadp);
+    failed |= vadp.data.crtc[CORE_MACHINE_VADP_CRTC_EGA_LAST] != 0u ||
+        vadp.data.crtc[0x17u] != 0u || vadp.data.crtc[0x0au] != 6u ||
+        vadp.data.crtc[0x0bu] != 7u;
 
     core_machine_vadp_finalize(&vadp);
     core_machine_memory_finalize(&memory);

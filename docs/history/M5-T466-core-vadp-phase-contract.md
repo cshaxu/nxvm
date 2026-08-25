@@ -38,3 +38,14 @@ recovery; sequencer, mode-10, external-port and VADP status smokes pass.
 Clocking Mode propagation, asynchronous-reset DRAM loss and Core tick/board
 conversion remain explicit L2. No memory route, scheduler, API or state mirror
 was added.
+
+## S4 Accepted Evidence
+
+The existing VADP CRTC bank now spans IBM EGA 00h--18h. Its one
+personality-aware access path retains the CGA rules, applies the IBM EGA masks,
+allows readback only for 0Ch--0Fh and returns the explicit L2 zero light-pen
+input for 10h/11h; all other EGA write-only reads no longer echo stored state.
+The extended CRTC smoke proves every mask, access class and reset state; the
+planar, Mode 10, CECG and CGA status regressions pass. Raster tick conversion,
+vertical IRQ delivery and physical inputs remain L2. No scheduler, renderer,
+memory route, public ABI or compatibility readback path was added.

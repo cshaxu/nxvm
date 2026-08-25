@@ -32,6 +32,9 @@
 #define CORE_MACHINE_VADP_CRTC_CURSOR_HIGH 0x0eu
 #define CORE_MACHINE_VADP_CRTC_CURSOR_LOW 0x0fu
 #define CORE_MACHINE_VADP_CRTC_OFFSET 0x13u
+#define CORE_MACHINE_VADP_CRTC_VERTICAL_RETRACE_END 0x11u
+#define CORE_MACHINE_VADP_CRTC_UNDERLINE_LOCATION 0x14u
+#define CORE_MACHINE_VADP_CRTC_END_VERTICAL_BLANK 0x16u
 #define CORE_MACHINE_VADP_MODE_GRAPHICS 0x02u
 #define CORE_MACHINE_VADP_MODE_VIDEO_ENABLE 0x08u
 #define CORE_MACHINE_VADP_MODE_HIGH_RES 0x10u
@@ -380,12 +383,36 @@ static C_INT core_machine_vadp_supported_crtc_index(const t_vadp *adapter,
             (index >= CORE_MACHINE_VADP_CRTC_CURSOR_TOP &&
             index <= CORE_MACHINE_VADP_CRTC_CURSOR_LOW));
     }
-    return (index >= CORE_MACHINE_VADP_CRTC_CURSOR_TOP &&
-        index <= CORE_MACHINE_VADP_CRTC_CURSOR_LOW) || index == CORE_MACHINE_VADP_CRTC_OFFSET;
+    return index <= CORE_MACHINE_VADP_CRTC_EGA_LAST;
 }
 
-static type_unsigned_8 core_machine_vadp_crtc_mask(type_unsigned_8 index)
+static C_INT core_machine_vadp_crtc_index_readable(const t_vadp *adapter,
+    type_unsigned_8 index)
 {
+    if (!core_machine_vadp_supported_crtc_index(adapter, index)) return TYPE_FALSE;
+    if (!adapter->data.ega_controller_configured) return TYPE_TRUE;
+    return index >= CORE_MACHINE_VADP_CRTC_START_HIGH &&
+        index <= CORE_MACHINE_VADP_CRTC_CURSOR_LOW;
+}
+
+static type_unsigned_8 core_machine_vadp_crtc_mask(const t_vadp *adapter,
+    type_unsigned_8 index)
+{
+    if (adapter != STD_NULL && adapter->data.ega_controller_configured) {
+        switch (index) {
+        case 0x03u: return 0x7fu;
+        case 0x07u: return 0x3fu;
+        case CORE_MACHINE_VADP_CRTC_INTERLACE_SKEW:
+        case CORE_MACHINE_VADP_CRTC_MAXIMUM_RASTER_ADDRESS:
+        case CORE_MACHINE_VADP_CRTC_CURSOR_TOP:
+        case CORE_MACHINE_VADP_CRTC_UNDERLINE_LOCATION:
+        case CORE_MACHINE_VADP_CRTC_END_VERTICAL_BLANK:
+            return 0x1fu;
+        case CORE_MACHINE_VADP_CRTC_CURSOR_BOTTOM: return 0x7fu;
+        case CORE_MACHINE_VADP_CRTC_VERTICAL_RETRACE_END: return 0x3fu;
+        default: return 0xffu;
+        }
+    }
     switch (index) {
     case CORE_MACHINE_VADP_CRTC_VERTICAL_TOTAL:
     case CORE_MACHINE_VADP_CRTC_VERTICAL_DISPLAYED:
@@ -676,7 +703,8 @@ static C_VOID core_machine_vadp_write_crtc_index(t_port *port,
         core_machine_vadp_compaq_io_route_active(adapter, port_id,
         CORE_MACHINE_VADP_PORT_MONO_CRTC_INDEX,
         CORE_MACHINE_VADP_PORT_CRTC_INDEX)) {
-        adapter->data.crtc_index = port->data.ioByte;
+        adapter->data.crtc_index = adapter->data.ega_controller_configured ?
+            port->data.ioByte & 0x1fu : port->data.ioByte;
     }
 }
 
@@ -692,7 +720,7 @@ static C_VOID core_machine_vadp_read_crtc_data(t_port *port,
         port->data.ioByte = 0u;
         return;
     }
-    port->data.ioByte = core_machine_vadp_supported_crtc_index(adapter,
+    port->data.ioByte = core_machine_vadp_crtc_index_readable(adapter,
         adapter->data.crtc_index) ?
         adapter->data.crtc[adapter->data.crtc_index] : 0u;
 }
@@ -711,7 +739,7 @@ static C_VOID core_machine_vadp_write_crtc_data(t_port *port,
     }
     {
         type_unsigned_8 value = port->data.ioByte &
-            core_machine_vadp_crtc_mask(adapter->data.crtc_index);
+            core_machine_vadp_crtc_mask(adapter, adapter->data.crtc_index);
 
         if (adapter->data.crtc[adapter->data.crtc_index] == value) return;
         adapter->data.crtc[adapter->data.crtc_index] = value;
