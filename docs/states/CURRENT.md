@@ -39,6 +39,11 @@
 
 ## Recent Governance
 
+- **M5 Td S145 P1:** placed the Core controller board-timing-contract candidate
+  first in Queue. Its proposal freezes the PIC/DMA/PIT L2 exception ledger and
+  requires one copied profile-value-to-Core-owner path; exact arithmetic from
+  an L2 premise remains L2 board provenance. No runtime or artifact changed.
+
 - **M5 Td S144 P1:** governed all 16 8237A source and code-gap rows with
   `Manual L3`, bounded `Other L3` corroboration and explicit `fallback to L2`
   boundaries. Intel/IBM remains normative; emulator behavior neither overrides
