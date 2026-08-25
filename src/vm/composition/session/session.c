@@ -386,13 +386,7 @@ type_status vm_session_storage_initialize(vm_session *machine)
         rtc_cmos_config.timing = (core_machine_rtc_timing_plan) {8u, 65u,
             CORE_MACHINE_RTC_TIMING_L3_SOURCE};
     } else {
-    if (machine->controller_timing_rules.rtc_clock ==
-        CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_RATIONAL_CLOCK) {
-        rtc_cmos_config.timing = (core_machine_rtc_timing_plan) {8u, 65u,
-            CORE_MACHINE_RTC_TIMING_L3_SOURCE};
-    } else {
         rtc_cmos_config.timing.provenance = CORE_MACHINE_RTC_TIMING_L2_RATIO;
-    }
     }
     rtc_cmos_config.defaults[0].index = CORE_MACHINE_RTC_TYPE_DISK_FLOPPY;
     rtc_cmos_config.defaults[0].value = machine->profile->cmos.floppy_type;

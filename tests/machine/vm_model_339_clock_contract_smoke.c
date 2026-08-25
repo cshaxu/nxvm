@@ -58,7 +58,9 @@ static C_INT vm_model_339_clock_contract_is_selected(C_VOID)
         session->core_machine->vadp_clock.numerator != 315u ||
         session->core_machine->vadp_clock.denominator != 1408u ||
         session->core_machine->vadp_clock.reset_phase != 0u ||
-        session->core_machine->shared_rtc.ticks_per_second != 32768u;
+        session->core_machine->shared_rtc.ticks_per_second != 32768u ||
+        session->core_machine->rtc_cmos_config.timing.provenance !=
+            CORE_MACHINE_RTC_TIMING_L3_SOURCE;
     failed |= session->core_machine->timing_plan.controller_timing.dma_clock !=
         CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_RATIONAL_CLOCK ||
         session->core_machine->timing_plan.controller_timing.dma_service !=

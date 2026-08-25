@@ -51,6 +51,8 @@ static C_INT vm_pcat_s4_topology_matches(
         session->core_machine->shared_kbc.connect.irq12_source.irq !=
             aux_route->irq ||
         session->core_machine->rtc_cmos_config.irq != cmos_route->irq ||
+        session->core_machine->rtc_cmos_config.timing.provenance !=
+            CORE_MACHINE_RTC_TIMING_L2_RATIO ||
         session->core_machine->fdc_topology.config.irq != fdc_route->irq ||
         session->core_machine->fdc_topology.config.dma_channel !=
             fdc_route->dma_channel ||

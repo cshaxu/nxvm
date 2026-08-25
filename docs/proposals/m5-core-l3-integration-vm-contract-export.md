@@ -59,6 +59,48 @@ for that configuration.
 Last in the ordered Core L3 sequence. A later VM/profile program may consume
 its exported catalog only after this candidate accepts it.
 
+## T469 Subtask Plan
+
+The task is admitted as T469.  Each S consumes one complete batch and must not
+create a second scheduler, device clock or VM-to-Core mutation path.
+
+1. **S1 - deadline eligibility ledger and session cleanup.** Freeze every
+   currently timed Core owner and its wake/visible-event condition; classify
+   it as a source/model/Input-L3 deadline, L2 estimate, L1 order-only, L0
+   missing logic, L4 physical exclusion or unsupported.  Correct Td S148's
+   accidental L4-to-L0 wording before consuming it through a complete
+   corrective re-audit of all 145 PIC, DMA, PIT, RTC, KBC, 8272A FDC,
+   VADP-CGA, VADP-EGA and ATA/HDC rows.  Audit the actual Core/VM call path
+   and repair the duplicated RTC timing conditional in `session.c` through
+   the one session construction path.  This S creates no deadline API or
+   synthetic timing value.  A manual numeric value or formula remains Manual
+   L3; only an unsourced conversion of it into Core ticks can be L2.
+2. **S2 - composed Core deadline observation.** Add the smallest opaque,
+   copied Core observation that reports the earliest eligible guest-observable
+   deadline and its reset/cancellation validity.  Core, not VM, selects order
+   and advances all intervening controller state.  An ineligible controller or
+   profile remains explicitly L2/L1/unsupported.
+3. **S3 - immutable plan qualification and contract export.** Validate that a
+   selected profile has every required deadline contributor and physical
+   guest-timebase before exposing the bounded contract metadata.  Reject an
+   incomplete selection; do not expose controller pointers, timeline internals
+   or profile names.
+4. **S4 - two-mode VM pacing.** Retain the existing `SPEED STANDARD|TURBO`
+   command and sole session speed state.  Standard waits only when an eligible
+   already-advanced guest observation is ahead of its wall-clock budget;
+   Turbo omits that wait while using the same Core-owned progression.  Remove
+   the fixed `Sleep(1)` fallback only where the composed contract makes that
+   safe; do not generate, compensate or batch guest ticks in VM.
+5. **S5 - integration closure.** Reconcile the frozen capability ledger with
+   code and regressions; prove reset/cancellation, input, debugger, selected
+   profile isolation, Standard/Turbo behavior and ineligible fallback.  Build
+   the stripped Release `nxvm_0_5_0469.exe`, run all applicable gates and
+   perform the independent closure audit.
+
+The RTC cleanup is deliberately limited to the duplicate conditional found by
+Td S148.  It is in S1 because it is the same session-construction mechanism;
+it must not grow into an unrelated RTC feature or timing repair.
+
 ## Evidence And Completion Standard
 
 Require end-to-end Core composition tests across the supported CPU and shared

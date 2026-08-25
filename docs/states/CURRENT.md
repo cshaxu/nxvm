@@ -2,27 +2,26 @@
 
 ## Current Work
 
-## M5 Td S148 Packet
+## M5 T469 S1 Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Governance |
-| Admission And Approval | Owner request in this turn authorizes a full re-audit of PIC, DMA, PIT, RTC-CMOS, KBC, Intel 8272A FDC, VADP CGA/EGA and ATA/HDC against the stated L3/L2/L1/L0 rule. |
-| Objective | Reclassify every existing controller checklist row by whether its evidence is a direct manual/model/board L3 fact, an external L3 input receiver, estimated L2 timing, L1 logical ordering, or L0 missing ordering. |
-| Non-goals | No controller feature, timing number, profile selection, API, source import, artifact or runtime-code change unless a concrete audit contradiction requires a separately admitted repair. |
-| Reference Baseline | T460--T468 controller histories; their Checklist 1/2 evidence; T462 board-contract record; T467 CGA and T468 ATA ledgers; current architecture and source policy. |
-| Candidate Proposal | The completed controller phase records are audit subjects; Td S148 creates no new implementation proposal. |
-| Files And ABI Surface | `docs/states/CURRENT.md`, one indexed Td evidence record and only the existing checklist/evidence records whose classification wording must change; no ABI. |
-| Applicable Rules | Manual authority remains normative; external emulator behavior is a separately labelled model L3; a copied, externally supplied board term consumed by its sole owner is Board L3; unproved internal estimates are L2; logical-only order is L1; absent order is L0; no L4 category is used. |
-| Verification | Enumerate every finite row across the eight controllers and separate VADP CGA/EGA modes; verify one source/owner/proof/disposition per row; run documentation governance and inspect the actual documentation diff. |
-| Expected Markers | Every prior generic L2 is either promoted to a qualified L3 receiver or explicitly retained as L2/L1/L0 with a reason; no row silently becomes L3 merely by arithmetic. |
-| Asset Needs | Existing archived manuals, read-only external-model findings and prior evidence only; no new source import or firmware/media acquisition. |
-| Reporting Requirements | Record the taxonomy, row counts per controller, every promotion/demotion, retained non-L3 reason, affected owner and any separately required code repair. |
-| Stop Conditions | Stop for missing authoritative evidence that cannot be classified from the existing ledger, or for a discovered runtime defect needing new implementation authority. |
-| Exit Criteria | All eight controller ledgers use the requested hierarchy consistently, VADP CGA and EGA are separate, all changed records are indexed, and documentation governance passes. |
-| Original Owner Request | Treat external L3 inputs as L3; reserve L2 for internal proportional estimates, L1 for logic-only order and L0 for absent order; re-audit all eight controllers including VADP CGA/EGA. |
-| Similar-Issue Sweep | Search every controller Checklist 1/2, board-timing contract, history closure and current-summary L-level statement for stale generic `L2`, `L4` or ambiguous receiver wording. |
-| Closure | Accepted: the indexed Td S148 evidence covers all 145 frozen rows, separates VADP CGA/EGA, records every receiver/value distinction and residual L2/L1/L0 reason, and documentation governance passes. |
+| Identifier Mode | New |
+| Admission And Approval | Owner approved T469 in this turn: admit the queue-front Core L3 integration and VM contract export task, retain only Standard/Turbo, repair Td S148's RTC duplicate conditional within S1, and re-audit all eight controller domains against their original manuals. |
+| Objective | Correct Td S148's L4-versus-L0 terminology; re-audit every original manual function/timing row for PIC, DMA, PIT, RTC, KBC, 8272A FDC, VADP CGA/EGA and ATA/HDC; freeze the complete deadline eligibility universe and remove the duplicate RTC timing conditional without changing guest-time ownership, then establish the evidence baseline for Core-owned Standard/Turbo synchronization. |
+| Non-goals | S1 adds no deadline API, host-clock tick injection, controller pointer exposure, profile name in Core, new speed mode, fixed sleep replacement, invented timing number, source import, firmware/media or release artifact. |
+| Reference Baseline | T459 S1/S2 speed evidence; Td S148 145-row reclassification; the nine original controller Checklist 1 records and matching Checklist 2 code-gap audits; T460--T468 controller histories/input contracts; Core timing design; existing session construction, clock domains, scheduler and controller owners. |
+| Candidate Proposal | [M5 Core L3 integration closure and VM contract export](../proposals/m5-core-l3-integration-vm-contract-export.md), T469 S1. |
+| Files And ABI Surface | Expected: Td S148 evidence, T469 ledger/evidence, `docs/states/CURRENT.md`, `docs/states/QUEUE.md`, proposal, `src/vm/composition/session/session.c` and its focused tests only; no public ABI in S1. |
+| Applicable Rules | Core is sole guest-clock/timeline owner; VM only paces completed observations; one session construction route and one RTC timing-plan decision; copied immutable plan data only; every manual number/formula is Manual L3, while only an unsourced Core-tick conversion is L2; existing external input receivers are L3; logical-only relations are L1, absent Core logic L0, and sourced physical timing L4 outside implementation scope. |
+| Verification | Reconcile every frozen manual row across all eight controller domains, including all Manual numeric/formula facts, against its manual/model/input provenance before reusing Td S148; enumerate every current deadline contributor and its owner/reset/cancellation/eligibility state; inspect every session RTC timing-plan construction branch; add focused regression for the retained one branch; run relevant session/time/controller tests, documentation governance, actual-diff review and appropriate build gates. |
+| Expected Markers | One row-complete eight-controller re-audit ledger with no Manual numeric/formula demoted below Manual L3; Td S148 keeps L4 physical facts distinct from L0 missing logic; one deadline eligibility ledger with no missing contributor; one RTC timing conditional; no VM call site supplies a guest tick based on Standard/Turbo; no public or profile-specific deadline API. |
+| Asset Needs | Existing source, T459/T460--T468 evidence and project-owned tests only; no new external source, firmware, guest media or emulator import. |
+| Reporting Requirements | Record the corrected row-complete eight-controller disposition and every Manual-L3 numeric/formula preservation, frozen contributor count and disposition, exact deleted duplicate branch, source/test line delta, retained owner/path, focused and gate results, and any prerequisite that blocks S2. |
+| Stop Conditions | Stop and revise before code if the contributor universe requires a new controller timing value, exposes mutable internals, needs new external authority, or cannot separate a deadline from a recurring maintenance callback. |
+| Exit Criteria | All 145 frozen controller rows have a corrected Manual-L3/Input-L3/L2/L1/L0/L4 disposition; every timed owner has one S1 eligibility disposition; the RTC construction route has one conditional; all focused checks and documentation governance pass; the accepted S1 evidence transfers exactly one bounded S2 mechanism. |
+| Original Owner Request | Admit the next T to realize correct Standard/Turbo host pacing, include the RTC duplicate-condition cleanup rather than leaving it behind, preserve the owner-defined L0 < L1 < L2 < L3 < L4 hierarchy, and use T469 S1 to re-audit all eight controllers against manual function/timing requirements. |
+| Similar-Issue Sweep | Sweep all VM session construction and virtual-time branches for duplicated controller timing decisions, all controller scheduler callbacks for non-observable maintenance deadlines, and Console/session speed routes for a second speed owner or uncapped alias. |
 
 ## Current Technical Baseline
 
@@ -64,11 +63,11 @@
 
 ## Recent Governance
 
-- **M5 Td S148 (active):** re-audits all 145 frozen PIC, DMA, PIT, RTC, KBC,
+- **M5 Td S148:** re-audits all 145 frozen PIC, DMA, PIT, RTC, KBC,
   8272A FDC, VADP EGA/CGA and ATA/HDC rows under the owner-approved hierarchy:
   direct manual/model facts and real sole-owner external inputs are L3; only
   internal estimates are L2; causal-only relations are L1; absent Core logic
-  is L0.  The [row-complete evidence](../etc/evidence/td-s148-eight-controller-l-level-reclassification-audit.md)
+  is L0; source-backed physical timing is L4 and remains out of scope.  The [row-complete evidence](../etc/evidence/td-s148-eight-controller-l-level-reclassification-audit.md)
   supersedes earlier L-level vocabulary without rewriting historical source
   records.
 

@@ -15,15 +15,17 @@ state, Queue order, a machine profile, or a physical-hardware claim.
 
 | Level | Project definition |
 | --- | --- |
-| L1 | No timing guarantee. Devices are connected and ordered sufficiently for their functional state to compose and for the machine to boot. This is the earliest NXVM level. |
+| L0 | No Core-owned logical order is defined for the capability. |
+| L1 | The functional causal order is defined, but no numerical model, proportional estimate or admitted timing input supplies the missing timing behaviour. |
 | L2 | Implemented macro-scale proportional timing. The shared virtual clock preserves deterministic relative rates, event ordering, IRQ/DRQ lifecycle, acknowledgement, reset and cancellation, but does not claim instruction- or transaction-specific manual timing. |
 | L3 | The current project target: documentation-driven instruction- and transaction-level timing. Each admitted rule is a documented constant, formula, or bounded range with a declared deterministic selection; a clearly labelled reference-derived contract may fill a documented gap. L3 is scheduled through L2's shared virtual clock. |
 | L4 | Hardware-level real timing: electrical waveforms, propagation and measurement correlation. It is not NXVM's standard, is not an L3 prerequisite, and is prohibited from implementation scope. |
 
 L3 is neither a guest-OS checkpoint nor a claim that every undocumented
-physical detail is known. A component can be L3 for one admitted capability and
-remain L2 for a separately recorded capability. L4 is never a fallback, a
-completion condition, or a later Project A work item.
+physical detail is known. Every manual number or formula is a Manual-L3 source
+fact even if its current Core-tick conversion is only L2; a component can
+therefore contain both dispositions for separate parts of one capability. L4
+is never a fallback, a completion condition, or a later Project A work item.
 
 ## Coverage Universe And Completion Rule
 
