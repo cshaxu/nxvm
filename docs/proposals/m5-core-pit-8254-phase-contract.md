@@ -19,14 +19,11 @@ counter transitions and reset phase without host-clock dependence.
 
 1. **S1: source and gap reconciliation.** Freeze manual-first Lists 1--2 and
    distinguish chip semantics from board/electrical boundaries.
-2. **S2: control and observation contract.** Complete control/count write,
-   latch/read-back, null-count and initial-output semantics in the existing
-   PIT owner.
-3. **S3: modes 0--2.** Implement delayed load, terminal, one-shot,
-   rate-generator and gate transitions through that same owner.
-4. **S4: modes 3--5.** Implement square-wave odd/even phases and both
-   strobe/retrigger contracts without a parallel timer.
-5. **S5: integration and closure.** Prove selected OUT-to-IRQ0 routing,
+2. **S2: unified chip phase contract.** Complete control/count write,
+   latch/read-back, null-count, delayed load and all mode 0--5 transitions in
+   the existing PIT owner. These rules share the same CR-to-CE boundary and
+   must not be split into an invalid intermediate state machine.
+3. **S3: integration and closure.** Prove selected OUT-to-IRQ0 routing,
    scheduler order, reset/finalize and each retained L2 boundary.
 
 ## Boundary

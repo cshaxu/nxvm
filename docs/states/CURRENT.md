@@ -8,18 +8,18 @@
 | --- | --- |
 | Identifier Mode | Continuation |
 | Admission And Approval | Owner approved single-person dual-role execution of T461 on 2026-08-24. Coordinator accepts S1 at `1c9428b1` after actual ledger/owner review and admits S2 only. |
-| Objective | Correct the one existing PIT owner's control, count-write, read/latch/status/null-count and initial-output semantics against Intel 8254 P1--P7/P14, with a focused complete form regression corpus. |
-| Non-goals | No mode 0--5 running-transition rewrite, host-clock pacing, oscillator/electrical claim, speaker/PPI/audio implementation, second scheduler, profile wiring change, public ABI addition, or external-code import. |
+| Objective | Correct the one existing PIT owner's coupled control/count-write/read-latch-status/null-count/load and modes 0--5 transition semantics against Intel 8254 P1--P14, with a focused complete regression corpus. |
+| Non-goals | No host-clock pacing, oscillator/electrical claim, speaker/PPI/audio implementation, second scheduler, profile wiring change, public ABI addition, or external-code import. |
 | Reference Baseline | `1c9428b1`; accepted T456 PIC and T460 DMA contracts; T461 S1 Lists 1--2. |
 | Candidate Proposal | [Core PIT 8254 phase contract](../proposals/m5-core-pit-8254-phase-contract.md). |
 | Files And ABI Surface | `pit.c`/`pit.h` private counter phase/latch state and `tests/machine` PIT smoke(s); existing Core-local API only, no public ABI. |
 | Applicable Rules | README Task Reading Set; EXECUTION S/P lifecycle; DOCUMENT governance; architecture single-owner rule; coding no-wrapper/owner-local repair rule; source policy; specification-driven L3 timing design. |
-| Verification | Add focused manual-form regressions for RW forms, zero/BCD, count/status latches, null-count timing and control-write initial output; build target(s), run focused CTest, documentation gate, diff hygiene. |
-| Expected Markers | `M5:T461:S2:PIT-CONTROL-LATCH:OK`; every P1--P7/P14 assertion has a named focused probe. |
+| Verification | Add focused manual-form regressions for RW forms, zero/BCD, count/status latches, null-count timing, control-write output, delayed load, all six modes and every gate/retrigger/rewrite transition; build target(s), run focused CTest, documentation gate, diff hygiene. |
+| Expected Markers | `M5:T461:S2:PIT-PHASE-CONTRACT:OK`; every P1--P14 assertion has a named focused probe. |
 | Asset Needs | T461 S1 admitted Intel manual evidence; read-only external observations only as corroboration, never import. |
 | Reporting Requirements | Record before/after state ownership, manual-section mapping, every removed/retained field, test evidence, code-size delta and any deferred mode rule. |
 | Stop Conditions | Stop for a manual ambiguity needing a rendered-figure decision, a physical time derivation, an unselected topology, or a requirement for a second mutable PIT owner. |
-| Exit Criteria | P1--P7/P14 match manual rules under focused tests; no duplicate path/state/API is introduced; all remaining mode transitions transfer exactly once to S3/S4; gate passes and the accepted P commit is pushed. |
+| Exit Criteria | P1--P14 match manual rules under focused tests; no duplicate path/state/API is introduced; P15 alone transfers to the integration/closure S3; gate passes and the accepted P commit is pushed. |
 | Original Owner Request | Execute the current PIT task in single-person dual-role mode, using global minimalist design and no accretion. |
 | Similar-Issue Sweep | Sweep every control-word, data-port, latch/status, reset and output initialization consumer in `pit.c`, tests and Core composition; repair shared state at its one owner. |
 
