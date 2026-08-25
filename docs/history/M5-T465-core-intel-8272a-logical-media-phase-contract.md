@@ -47,3 +47,15 @@ pass.  The audit leaves two Manual-L3 implementation gaps explicit--parallel
 Seek state and a board-validated clock conversion--and leaves unselected
 physical/media/firmware terms at L2.  No source, ABI, controller path, parser,
 scheduler, media owner or artifact changed.
+
+## S5 Accepted Evidence
+
+`639eeff5` and reviewed consumer correction `773286d8` replace the global
+pending Seek record with per-drive target/due/busy state and one bounded
+completion FIFO consumed only by existing Sense Interrupt Status.  MSR drive
+busy bits now derive from the same state.  The new deterministic two-drive
+trace proves overlapping Seek, earliest completion, per-drive result identity
+and later completion; both FDC focused regressions pass.  The former
+`PENDING_SEEK` phase and its duplicate single-result route were removed.  The
+fixed step-duration constant remains an explicit L2 board-time conversion;
+no VM path, public API, controller selector or second scheduler was added.

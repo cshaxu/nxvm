@@ -2,27 +2,6 @@
 
 ## Current Work
 
-## M5 T465 S5 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner goal dated 2026-08-25 approves completion of active controller tasks; accepted T465 S4 identifies this as the remaining selected-controller functional gap. |
-| Objective | Implement Intel 8272A logical parallel Seek/Recalibrate state through the sole Core FDC owner, keeping one completion record per drive and preserving existing Sense Interrupt semantics. |
-| Non-goals | No physical drive mechanics, clock conversion, new board/profile API, media grammar, controller selector, scheduler, VM policy or timing claim beyond existing L2 step duration. |
-| Reference Baseline | `f9a8553f`; accepted Intel 8272A S13/S14 ledgers and current `fdc.c` state machine. |
-| Candidate Proposal | [Core Intel 8272A and logical media phase contract](../proposals/m5-core-intel-8272a-logical-media-phase-contract.md). |
-| Files And ABI Surface | `src/core/machine/fdc.c`, `fdc.h`, focused FDC smoke and T465 evidence/status only. No public ABI or profile surface. |
-| Applicable Rules | Intel manual governs parallel Seek state; each drive owns only its pending completion and Core retains the sole FDC/Sense/DMA/IRQ path. Fixed step time remains explicit L2. |
-| Verification | Add a deterministic independent-two-drive Seek/Recalibrate trace, preserve existing focused markers, run focused FDC smoke, documentation governance and `git diff --check`. |
-| Expected Markers | A seek for drive B does not overwrite due state for drive A; each completion is delivered exactly once through existing Sense Interrupt Status order. |
-| Asset Needs | None. |
-| Reporting Requirements | Record the per-drive ownership, completion order, retained L2 timing boundary and removal of the global single-pending limitation. |
-| Stop Conditions | Stop for Intel-manual conflict over concurrent Seek semantics, a need for board inputs to represent logical completion, or required public API expansion. |
-| Exit Criteria | The source has no global pending-seek state, simultaneous different-drive Seeks complete independently through one Sense route, and all existing command/reset/DMA behavior remains proved. |
-| Original Owner Request | Complete remaining controller tasks source-first, with precise L2 rather than invented timing and no additive parallel architecture. |
-| Similar-Issue Sweep | Re-read seek/recalibrate, reset, Sense Interrupt, drive busy MSR, cancellation, scheduler advance and focused FDC tests. |
-
 
 ## Current Technical Baseline
 
@@ -48,6 +27,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T465 S5 | Accepted: the sole Core FDC owner now holds per-drive 8272A Seek state plus one Sense completion FIFO; MSR busy bits and two-drive ordering have focused proof. Fixed step duration remains explicit board-time L2. |
 | T465 S4 | Accepted: source and code ledgers are rebuilt around selected Intel 8272A; each external emulator disagreement is explicit. Parallel Seek and clock conversion are retained as bounded Manual-L3 code gaps, not uPD765 extensions or guessed L3. |
 | T464 | Closed: all sixteen KBC rows are Manual L3 or explicit L2/L4. One Core owner now covers selected command/input/test state; 294/294 serial current-gate tests pass and stripped Release 0464 is recorded in history. |
 | T463 | Closed: the 16-row MC146818A/IBM AT ledger has one Core phase owner, a copied L3/L2 board timing plan, explicit L2/L4 boundaries and focused proof. The full current gate ran 294/294; stripped Release 0463 is recorded in [history](../history/M5-T463-core-rtc-cmos-phase-contract.md). |
