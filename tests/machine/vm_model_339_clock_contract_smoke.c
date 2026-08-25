@@ -64,6 +64,8 @@ static C_INT vm_model_339_clock_contract_is_selected(C_VOID)
         session->core_machine->timing_plan.controller_timing.dma_service !=
         CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_DMA_SERVICE_PHASES ||
         session->core_machine->timing_plan.controller_timing.pit_clock !=
+        CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_RATIONAL_CLOCK ||
+        session->core_machine->timing_plan.controller_timing.rtc_clock !=
         CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_RATIONAL_CLOCK;
     {
         core_machine_timing_disposition disposition;
@@ -71,6 +73,9 @@ static C_INT vm_model_339_clock_contract_is_selected(C_VOID)
         failed |= core_machine_get_timing_disposition(session->core_machine,
             CORE_MACHINE_TIMING_CAPABILITY_CTRL_PIC, &disposition) != TYPE_STATUS_OK ||
             disposition != CORE_MACHINE_TIMING_DISPOSITION_L2_FALLBACK;
+        failed |= core_machine_get_timing_disposition(session->core_machine,
+            CORE_MACHINE_TIMING_CAPABILITY_CTRL_RTC_CMOS, &disposition) !=
+            TYPE_STATUS_OK || disposition != CORE_MACHINE_TIMING_DISPOSITION_L3_REQUIRED;
         failed |= core_machine_get_timing_disposition(session->core_machine,
             CORE_MACHINE_TIMING_CAPABILITY_CTRL_DMA, &disposition) != TYPE_STATUS_OK ||
             disposition != CORE_MACHINE_TIMING_DISPOSITION_L3_REQUIRED;

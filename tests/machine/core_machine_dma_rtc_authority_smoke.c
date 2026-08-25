@@ -126,8 +126,8 @@ int main(C_VOID)
         stage = 5;
     } else if (core_machine_reset(machine) != TYPE_STATUS_OK ||
         core_machine_dma_rtc_cmos_read(machine, CORE_MACHINE_RTC_EQUIPMENT) !=
-            0x5au || core_machine_dma_rtc_cmos_read(machine,
-            CORE_MACHINE_RTC_SECOND) != 0x00u) {
+        0x5au || core_machine_dma_rtc_cmos_read(machine,
+            CORE_MACHINE_RTC_SECOND) != 0x05u) {
         failed = 1;
         stage = 6;
     }

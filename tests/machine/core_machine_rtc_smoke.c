@@ -22,7 +22,7 @@ C_INT main(C_VOID)
     t_pic master;
     t_pic slave;
     core_machine_rtc rtc;
-    core_machine_rtc_config config = { 8u, 50000u };
+    core_machine_rtc_config config = { .irq = 8u, .ticks_per_second = 50000u };
     C_INT failed = 0;
 
     core_machine_port_initialize(&port);

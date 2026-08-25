@@ -9,7 +9,13 @@ static C_INT core_machine_rtc_cmos_config_is_valid(
 
     if (config == STD_NULL || config->data_port !=
         (type_unsigned_16)(config->index_port + 1u) || config->nmi_mask_bit == 0u ||
-        config->default_count > CORE_MACHINE_RTC_DEFAULT_COUNT) {
+        config->ticks_per_second == 0u || config->default_count > CORE_MACHINE_RTC_DEFAULT_COUNT ||
+        (config->timing.provenance != CORE_MACHINE_RTC_TIMING_L2_RATIO &&
+         config->timing.provenance != CORE_MACHINE_RTC_TIMING_L3_SOURCE) ||
+        (config->timing.provenance == CORE_MACHINE_RTC_TIMING_L3_SOURCE &&
+         (config->timing.uip_lead_ticks == 0u || config->timing.update_ticks == 0u ||
+          (type_unsigned_64)config->timing.uip_lead_ticks +
+              config->timing.update_ticks >= config->ticks_per_second))) {
         return TYPE_FALSE;
     }
     for (index = 0u; index < config->default_count; ++index) {
@@ -473,6 +479,7 @@ type_status core_machine_configure_rtc_cmos(core_machine *machine,
     }
     rtc_config.irq = config->irq;
     rtc_config.ticks_per_second = config->ticks_per_second;
+    rtc_config.timing = config->timing;
     core_machine_rtc_initialize(&machine->shared_rtc, &machine->shared_pic_master,
         &machine->shared_pic_slave, &rtc_config);
     for (index = 0u; index < config->default_count; ++index) {

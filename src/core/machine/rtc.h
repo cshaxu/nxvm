@@ -7,7 +7,7 @@
 #include "core/machine/machine_interface.h"
 #include "core/machine/pic.h"
 
-#define CORE_MACHINE_RTC_REGISTER_COUNT 0x80u
+#define CORE_MACHINE_RTC_REGISTER_COUNT 0x40u
 
 #define CORE_MACHINE_RTC_SECOND       0x00u
 #define CORE_MACHINE_RTC_SECOND_ALARM 0x01u
@@ -23,13 +23,13 @@
 #define CORE_MACHINE_RTC_REG_B        0x0bu
 #define CORE_MACHINE_RTC_REG_C        0x0cu
 #define CORE_MACHINE_RTC_REG_D        0x0du
-#define CORE_MACHINE_RTC_CENTURY      0x32u
 
 #define CORE_MACHINE_RTC_REG_A_UIP 0x80u
 #define CORE_MACHINE_RTC_REG_B_SET 0x80u
 #define CORE_MACHINE_RTC_REG_B_PIE 0x40u
 #define CORE_MACHINE_RTC_REG_B_AIE 0x20u
 #define CORE_MACHINE_RTC_REG_B_UIE 0x10u
+#define CORE_MACHINE_RTC_REG_B_SQWE 0x08u
 #define CORE_MACHINE_RTC_REG_B_DM  0x04u
 #define CORE_MACHINE_RTC_REG_B_24H 0x02u
 #define CORE_MACHINE_RTC_REG_C_IRQF 0x80u
@@ -41,6 +41,7 @@
 typedef struct core_machine_rtc_config {
     type_unsigned_8 irq;
     type_unsigned_32 ticks_per_second;
+    core_machine_rtc_timing_plan timing;
 } core_machine_rtc_config;
 
 typedef struct core_machine_rtc_calendar {
@@ -51,7 +52,6 @@ typedef struct core_machine_rtc_calendar {
     type_unsigned_8 day_month;
     type_unsigned_8 month;
     type_unsigned_8 year;
-    type_unsigned_8 century;
     type_unsigned_64 second_ticks;
     type_unsigned_64 periodic_ticks;
 } core_machine_rtc_calendar;
@@ -62,6 +62,10 @@ typedef struct core_machine_rtc {
     core_machine_rtc_calendar calendar;
     core_machine_pic_irq_source irq_source;
     type_unsigned_32 ticks_per_second;
+    type_unsigned_32 uip_lead_ticks;
+    type_unsigned_32 update_ticks;
+    core_machine_rtc_timing_provenance timing_provenance;
+    type_bool square_wave;
 } core_machine_rtc;
 
 C_VOID core_machine_rtc_initialize(core_machine_rtc *rtc, t_pic *pic_master,
@@ -74,5 +78,6 @@ type_unsigned_8 core_machine_rtc_read_selected(core_machine_rtc *rtc);
 C_VOID core_machine_rtc_write_selected(core_machine_rtc *rtc, type_unsigned_8 value);
 C_VOID core_machine_rtc_write_nvram(core_machine_rtc *rtc, type_unsigned_8 index,
     type_unsigned_8 value);
+type_bool core_machine_rtc_get_square_wave(const core_machine_rtc *rtc);
 
 #endif

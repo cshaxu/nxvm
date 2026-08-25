@@ -27,7 +27,7 @@ static C_VOID rtc_cmos_s3_initialize_pic(t_port *port)
 
 static C_VOID rtc_cmos_s3_initialize(rtc_cmos_s3_fixture *fixture)
 {
-    core_machine_rtc_config config = { 8u, 4u };
+    core_machine_rtc_config config = { .irq = 8u, .ticks_per_second = 4u };
 
     core_machine_port_initialize(&fixture->port);
     core_machine_pic_initialize(&fixture->master, &fixture->slave, &fixture->port);
@@ -132,6 +132,7 @@ static C_INT rtc_cmos_s3_test_calendar_and_reset(C_VOID)
     core_machine_rtc_write_nvram(&fixture.rtc, CORE_MACHINE_RTC_EQUIPMENT, 0x5au);
     core_machine_rtc_reset(&fixture.rtc);
     failed |= rtc_cmos_s3_read(&fixture.rtc, CORE_MACHINE_RTC_EQUIPMENT) != 0x5au ||
+        rtc_cmos_s3_read(&fixture.rtc, CORE_MACHINE_RTC_MINUTE) != 0x01u ||
         rtc_cmos_s3_read(&fixture.rtc, CORE_MACHINE_RTC_SECOND) != 0x00u ||
         fixture.rtc.irq_source.asserted;
     rtc_cmos_s3_finalize(&fixture);
@@ -156,7 +157,14 @@ static C_INT rtc_cmos_s3_test_cmos_adapter(C_VOID)
     rtc_config.defaults[0].index = CORE_MACHINE_RTC_EQUIPMENT;
     rtc_config.defaults[0].value = 0x5au;
     rtc_config.default_count = 1u;
+    rtc_config.timing.provenance = CORE_MACHINE_RTC_TIMING_L3_SOURCE;
     if (core_machine_create(&config, &machine) != TYPE_STATUS_OK ||
+        core_machine_configure_rtc_cmos(machine, &rtc_config) != TYPE_STATUS_INVALID_ARGUMENT) {
+        failed = 1;
+    }
+    rtc_config.timing = (core_machine_rtc_timing_plan) {1u, 1u,
+        CORE_MACHINE_RTC_TIMING_L3_SOURCE};
+    if (failed ||
         core_machine_configure_rtc_cmos(machine, &rtc_config) != TYPE_STATUS_OK ||
         test_core_machine_fixture_register_reset_mapping(machine, 0xfffffff0u,
             0x000ffff0u, 16u) != TYPE_STATUS_OK ||
@@ -175,6 +183,50 @@ static C_INT rtc_cmos_s3_test_cmos_adapter(C_VOID)
     return failed;
 }
 
+static C_INT rtc_cmos_s3_test_phase_and_divider(C_VOID)
+{
+    rtc_cmos_s3_fixture fixture;
+    core_machine_rtc_config config = { .irq = 8u, .ticks_per_second = 32768u,
+        .timing = {8u, 65u, CORE_MACHINE_RTC_TIMING_L3_SOURCE} };
+    C_INT failed = 0;
+
+    core_machine_port_initialize(&fixture.port);
+    core_machine_pic_initialize(&fixture.master, &fixture.slave, &fixture.port);
+    rtc_cmos_s3_initialize_pic(&fixture.port);
+    core_machine_rtc_initialize(&fixture.rtc, &fixture.master, &fixture.slave,
+        &config);
+    core_machine_rtc_advance(&fixture.rtc, 32768u - 73u);
+    failed |= (rtc_cmos_s3_read(&fixture.rtc, CORE_MACHINE_RTC_REG_A) &
+        CORE_MACHINE_RTC_REG_A_UIP) == 0u;
+    core_machine_rtc_reset(&fixture.rtc);
+    failed |= (rtc_cmos_s3_read(&fixture.rtc, CORE_MACHINE_RTC_REG_A) &
+        CORE_MACHINE_RTC_REG_A_UIP) != 0u;
+    core_machine_rtc_advance(&fixture.rtc, 32768u);
+    failed |=
+        fixture.rtc.calendar.second != 1u ||
+        (fixture.rtc.registers[CORE_MACHINE_RTC_REG_C] & CORE_MACHINE_RTC_REG_C_UF) == 0u;
+    rtc_cmos_s3_write(&fixture.rtc, CORE_MACHINE_RTC_REG_A, 0x06u);
+    core_machine_rtc_advance(&fixture.rtc, 32768u);
+    failed |= fixture.rtc.calendar.second != 1u;
+    rtc_cmos_s3_write(&fixture.rtc, CORE_MACHINE_RTC_REG_A, 0x26u);
+    core_machine_rtc_advance(&fixture.rtc, 16383u);
+    failed |= fixture.rtc.calendar.second != 1u;
+    core_machine_rtc_advance(&fixture.rtc, 1u);
+    failed |= fixture.rtc.calendar.second != 2u;
+    rtc_cmos_s3_write(&fixture.rtc, CORE_MACHINE_RTC_REG_B,
+        CORE_MACHINE_RTC_REG_B_24H | CORE_MACHINE_RTC_REG_B_SQWE);
+    rtc_cmos_s3_write(&fixture.rtc, CORE_MACHINE_RTC_REG_A, 0x2fu);
+    core_machine_rtc_advance(&fixture.rtc, 16384u);
+    failed |= !core_machine_rtc_get_square_wave(&fixture.rtc);
+    core_machine_rtc_reset(&fixture.rtc);
+    failed |= core_machine_rtc_get_square_wave(&fixture.rtc) ||
+        (fixture.rtc.registers[CORE_MACHINE_RTC_REG_B] & CORE_MACHINE_RTC_REG_B_SQWE) != 0u;
+    rtc_cmos_s3_write(&fixture.rtc, 0x32u, 0x5au);
+    failed |= rtc_cmos_s3_read(&fixture.rtc, 0x32u) != 0x5au;
+    rtc_cmos_s3_finalize(&fixture);
+    return failed;
+}
+
 C_INT main(C_VOID)
 {
     C_INT failed = 0;
@@ -182,6 +234,7 @@ C_INT main(C_VOID)
     failed |= rtc_cmos_s3_test_events_and_irq8();
     failed |= rtc_cmos_s3_test_calendar_and_reset();
     failed |= rtc_cmos_s3_test_cmos_adapter();
+    failed |= rtc_cmos_s3_test_phase_and_divider();
     if (failed != 0) return 1;
     STD_PRINTF("M5:T350:S3:RTC-CMOS:OK\n");
     return 0;

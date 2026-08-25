@@ -55,6 +55,11 @@ static core_machine_timing_disposition core_machine_controller_timing_dispositio
             CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_DMA_SERVICE_PHASES) {
         return CORE_MACHINE_TIMING_DISPOSITION_L3_REQUIRED;
     }
+    if (capability == CORE_MACHINE_TIMING_CAPABILITY_CTRL_RTC_CMOS &&
+        plan->controller_timing.rtc_clock ==
+            CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_RATIONAL_CLOCK) {
+        return CORE_MACHINE_TIMING_DISPOSITION_L3_REQUIRED;
+    }
     return CORE_MACHINE_TIMING_DISPOSITION_L2_FALLBACK;
 }
 
@@ -68,6 +73,7 @@ static C_INT core_machine_controller_timing_rules_are_valid(
         !core_machine_controller_timing_rule_is_valid(rules->dma_clock) ||
         !core_machine_controller_timing_rule_is_valid(rules->dma_service) ||
         !core_machine_controller_timing_rule_is_valid(rules->pit_clock) ||
+        !core_machine_controller_timing_rule_is_valid(rules->rtc_clock) ||
         rules->pic_visibility != CORE_MACHINE_CONTROLLER_TIMING_RULE_L2_FALLBACK ||
         (rules->dma_clock != CORE_MACHINE_CONTROLLER_TIMING_RULE_L2_FALLBACK &&
          rules->dma_clock !=
@@ -77,6 +83,9 @@ static C_INT core_machine_controller_timing_rules_are_valid(
             CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_DMA_SERVICE_PHASES) ||
         (rules->pit_clock != CORE_MACHINE_CONTROLLER_TIMING_RULE_L2_FALLBACK &&
          rules->pit_clock !=
+            CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_RATIONAL_CLOCK) ||
+        (rules->rtc_clock != CORE_MACHINE_CONTROLLER_TIMING_RULE_L2_FALLBACK &&
+         rules->rtc_clock !=
             CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_RATIONAL_CLOCK)) {
         return 0;
     }
@@ -90,6 +99,12 @@ static C_INT core_machine_controller_timing_rules_are_valid(
         !core_machine_clock_ratio_is_explicit(&plan->configuration.clock_plan.dma)) {
         return 0;
     }
+    if (rules->rtc_clock ==
+            CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_RATIONAL_CLOCK &&
+        (!core_machine_clock_ratio_is_explicit(&plan->configuration.clock_plan.rtc) ||
+         !plan->topology.rtc_cmos_present ||
+         plan->topology.rtc_cmos.timing.provenance !=
+            CORE_MACHINE_RTC_TIMING_L3_SOURCE)) return 0;
     return rules->dma_service !=
             CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_DMA_SERVICE_PHASES ||
         rules->dma_clock ==
@@ -361,6 +376,9 @@ type_status core_machine_plan_set_controller_timing_rules(core_machine_plan *pla
     plan->declarations[CORE_MACHINE_TIMING_CAPABILITY_CTRL_PIT].disposition =
         core_machine_controller_timing_disposition(plan,
             CORE_MACHINE_TIMING_CAPABILITY_CTRL_PIT);
+    plan->declarations[CORE_MACHINE_TIMING_CAPABILITY_CTRL_RTC_CMOS].disposition =
+        core_machine_controller_timing_disposition(plan,
+            CORE_MACHINE_TIMING_CAPABILITY_CTRL_RTC_CMOS);
     return TYPE_STATUS_OK;
 }
 

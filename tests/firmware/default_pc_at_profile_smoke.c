@@ -43,6 +43,8 @@ C_INT main(C_VOID)
             CORE_MACHINE_CONTROLLER_TIMING_RULE_L2_FALLBACK ||
         profile->controller_timing_rules.pit_clock !=
             CORE_MACHINE_CONTROLLER_TIMING_RULE_L2_FALLBACK ||
+        profile->controller_timing_rules.rtc_clock !=
+            CORE_MACHINE_CONTROLLER_TIMING_RULE_L2_FALLBACK ||
         profile->kbc_typematic_initial_ticks != 0u ||
         profile->kbc_typematic_repeat_ticks != 0u ||
         profile->kbc_command_response_ticks != 0u ||

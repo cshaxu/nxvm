@@ -114,7 +114,7 @@ C_INT main(C_VOID)
     cmos_write(port, CORE_MACHINE_RTC_EQUIPMENT, 0x5au);
     core_machine_rtc_reset(&session->core_machine->shared_rtc);
     if (cmos_read(port, CORE_MACHINE_RTC_EQUIPMENT) != 0x5au) failed |= 0x2000;
-    if (cmos_read(port, CORE_MACHINE_RTC_SECOND) != 0x00u) failed |= 0x4000;
+    if (cmos_read(port, CORE_MACHINE_RTC_SECOND) != 0x59u) failed |= 0x4000;
 
     if (failed) {
         STD_PRINTF("RTC probe failed=%04x: second=%u hour=%u C=%02x B=%02x IRR=%02x/%02x ISR=%02x/%02x\n", failed,

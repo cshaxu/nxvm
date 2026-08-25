@@ -122,6 +122,8 @@ type_status vm_session_model40_storage_initialize(vm_session *session)
     rtc.irq = 8u;
     rtc.nmi_mask_bit = 0x80u;
     rtc.ticks_per_second = 32768u;
+    rtc.timing = (core_machine_rtc_timing_plan) {8u, 65u,
+        CORE_MACHINE_RTC_TIMING_L3_SOURCE};
     rtc.defaults[0] = (core_machine_rtc_default_byte) { CORE_MACHINE_RTC_TYPE_DISK_FLOPPY, 0x20u };
     rtc.defaults[1] = (core_machine_rtc_default_byte) { CORE_MACHINE_RTC_TYPE_DISK_FIXED, 0x2fu };
     rtc.defaults[2] = (core_machine_rtc_default_byte) { CORE_MACHINE_RTC_TYPE_DISK_FIXED_EXTENDED_0, 0u };

@@ -72,7 +72,7 @@ C_INT main(C_VOID)
         .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE,
         .ticks_per_instruction = 1u
     };
-    const core_machine_rtc_config rtc_config = { 8u, 1u };
+    const core_machine_rtc_config rtc_config = { .irq = 8u, .ticks_per_second = 1u };
     const core_machine_entry_plan_preload preload = { 0x0200u, halt, sizeof(halt) };
     core_machine_entry_plan plan = { 0 };
     core_machine_run_budget budget = { 1u, 0u };

@@ -212,6 +212,7 @@ typedef struct core_machine_controller_timing_rules {
     core_machine_controller_timing_rule dma_clock;
     core_machine_controller_timing_rule dma_service;
     core_machine_controller_timing_rule pit_clock;
+    core_machine_controller_timing_rule rtc_clock;
 } core_machine_controller_timing_rules;
 
 typedef struct core_machine_display_port_topology {
@@ -240,6 +241,20 @@ typedef struct core_machine_display_config {
 
 #define CORE_MACHINE_RTC_DEFAULT_COUNT 6u
 
+/* Board composition supplies a copied RTC phase scale.  L3 means the values
+ * are a direct selected-board conversion; L2 means a board ratio estimate.
+ * Core consumes ticks only and never receives a host clock or callback. */
+typedef enum core_machine_rtc_timing_provenance {
+    CORE_MACHINE_RTC_TIMING_L2_RATIO = 0,
+    CORE_MACHINE_RTC_TIMING_L3_SOURCE = 1
+} core_machine_rtc_timing_provenance;
+
+typedef struct core_machine_rtc_timing_plan {
+    type_unsigned_32 uip_lead_ticks;
+    type_unsigned_32 update_ticks;
+    core_machine_rtc_timing_provenance provenance;
+} core_machine_rtc_timing_plan;
+
 typedef struct core_machine_rtc_default_byte {
     type_unsigned_8 index;
     type_unsigned_8 value;
@@ -251,6 +266,7 @@ typedef struct core_machine_rtc_cmos_config {
     type_unsigned_8 irq;
     type_unsigned_8 nmi_mask_bit;
     type_unsigned_32 ticks_per_second;
+    core_machine_rtc_timing_plan timing;
     core_machine_rtc_default_byte defaults[CORE_MACHINE_RTC_DEFAULT_COUNT];
     STD_SIZE_T default_count;
 } core_machine_rtc_cmos_config;

@@ -139,6 +139,7 @@ static const vm_profile_default_pc_at_descriptor default_pc_at_descriptor = {
     { CORE_MACHINE_CONTROLLER_TIMING_RULE_L2_FALLBACK,
         CORE_MACHINE_CONTROLLER_TIMING_RULE_L2_FALLBACK,
         CORE_MACHINE_CONTROLLER_TIMING_RULE_L2_FALLBACK,
+        CORE_MACHINE_CONTROLLER_TIMING_RULE_L2_FALLBACK,
         CORE_MACHINE_CONTROLLER_TIMING_RULE_L2_FALLBACK },
     0u,
     0u,
@@ -191,6 +192,7 @@ static const vm_profile_default_pc_at_descriptor ibm_5170_model_339_descriptor =
     { CORE_MACHINE_CONTROLLER_TIMING_RULE_L2_FALLBACK,
         CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_RATIONAL_CLOCK,
         CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_DMA_SERVICE_PHASES,
+        CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_RATIONAL_CLOCK,
         CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_RATIONAL_CLOCK },
     /* IBM 6280099 Keyboard: default 500 ms delay and 10 cps typematic,
      * each with +/-20 percent tolerance. These are nominal Model-339 values. */

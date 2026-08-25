@@ -86,7 +86,8 @@ C_INT main(C_VOID)
         machine->shared_rtc.calendar.second != second_before_explicit_time + 5u;
     failed |= core_machine_reset(machine) != TYPE_STATUS_OK ||
         core_machine_get_elapsed_ticks(machine, &elapsed) != TYPE_STATUS_OK ||
-        elapsed != 0u || machine->shared_rtc.calendar.second != 0u ||
+        elapsed != 0u || machine->shared_rtc.calendar.second !=
+            second_before_explicit_time + 5u ||
         core_machine_advance_time(machine, 1u) != TYPE_STATUS_OK ||
         core_machine_get_elapsed_ticks(machine, &elapsed) != TYPE_STATUS_OK ||
         elapsed != 1u;
