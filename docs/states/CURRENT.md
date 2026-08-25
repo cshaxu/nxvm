@@ -2,7 +2,26 @@
 
 ## Current Work
 
-**T468 is open; accepted subtask progress appears in Recent M5 Closures.**
+## M5 T468 S5 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; T468 S5, one-session coordinator, executor and closure review. |
+| Admission And Approval | The persistent owner objective and accepted T468 S1--S4 authorize complete bounded ATA closure and the required task artifact. |
+| Objective | Reconcile every frozen ATA row and its sole owner, sweep all HDC paths, run the serial current gate, and publish stripped Release 0468. |
+| Non-goals | No new ATA feature, controller/device/media selection, DMA, physical drive model, timing number, host wait, profile value, public ABI, Compaq behavior or source import. |
+| Reference Baseline | T468 S1 Checklist 1, S2 Checklist 2, S3/S4 evidence and [M5 Core HDC ATA Phase Contract](../proposals/m5-core-hdc-ata-phase-contract.md). The sole current artifact remains 0467 and must move to T468 identity. |
+| Candidate Proposal | [M5 Core HDC ATA Phase Contract](../proposals/m5-core-hdc-ata-phase-contract.md), S5 complete closure audit. |
+| Files And ABI Surface | Expected: four-line CMake/preset artifact identity, closure evidence/history/status and generated ignored Release artifact only. No HDC, media, controller, VM or public ABI change absent a newly proven in-scope defect. |
+| Applicable Rules | One HDC task-file/phase owner, one media-provider owner and one PIC IRQ route; checklist L3/L2 disposition remains source-qualified; current artifact is stripped Release with runtime debugger retained; closure reviews actual paths and removes no product debugger. |
+| Verification | Reconcile 15 ATA rows; sweep all HDC/media/PIC writers and consumers; inspect actual diff; configure/build and run serial current gate; build Release 0468; verify banner, SHA-256 and no `.debug` section; run static and documentation governance gates. |
+| Expected Markers | Every ATA row has one final evidence-backed disposition; no duplicate HDC/media/IRQ path or stale artifact identity; one stripped 0468 executable; only exact source-blocked L2 boundaries transfer. |
+| Asset Needs | Existing manual, read-only corroboration and fixtures only; no source, firmware, guest media or external code import. |
+| Reporting Requirements | Record row dispositions, sweep, gate results, artifact identity/hash/strip proof, source/test delta, retained owners, exact L2 transfers and T-level conclusion. |
+| Stop Conditions | Stop for an undisposed row, duplicate owner, gate failure, compiler-debug artifact, source/import issue or newly discovered feature gap that cannot be transferred exactly. |
+| Exit Criteria | All 15 rows reconcile, all required gates pass, Release 0468 is stripped and recorded, and T468 history/proposal/status truthfully close with only exact L2 transfers. |
+| Original Owner Request | Complete the remaining controller tasks with manual authority, cross-model verification, exact L2 boundaries and minimalist single-owner design. |
+| Similar-Issue Sweep | Search HDC source/tests, media registry, PIC route, VM HDC composition, CMake/presets and T468 records for task-file, phase, IRQ, media read/write, reset, artifact and duplicate-owner paths; disposition every production hit. |
 
 ## Current Technical Baseline
 
