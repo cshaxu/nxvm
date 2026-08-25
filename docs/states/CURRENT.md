@@ -2,26 +2,9 @@
 
 ## Current Work
 
-## M5 T466 S7 Packet
-
-| Field | Required record |
+| Task | Compact progress |
 | --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner goal dated 2026-08-25 directs completion of the remaining controller tasks; accepted T466 S6 permits this remaining VADP memory-capacity batch. |
-| Objective | Reconcile IBM EGA's selected 64/128/256-KiB installed-memory and aperture behavior through one immutable board configuration and the existing VADP planar provider. |
-| Non-goals | No run-time setter, second VRAM route, renderer, monitor model, host presentation, arbitrary EGA card import, profile policy or public mutable machine layout. |
-| Reference Baseline | `3e3116b2`; IBM EGA pp. 2--4, 18--24 and 62--68, VADP-F1 ledger/audit, existing sequencer/planar/provider tests and frozen display configuration path. |
-| Candidate Proposal | [Core VADP phase contract](../proposals/m5-core-vadp-phase-contract.md). |
-| Files And ABI Surface | Immutable EGA display/sequencer construction configuration, private VADP plane capacity/offset helpers, existing planar/provider focused smoke(s), VADP evidence/status. No runtime setter or public mutable state. |
-| Applicable Rules | IBM manual is primary; Core VADP owns plane allocation and CPU mapping. VM/profile may submit one frozen installed-card choice only. Preserve the existing provider rather than creating per-capacity maps. |
-| Verification | Render/manual-review memory expansion and Memory Mode pages, cross-check address-capacity behavior against labelled emulator models, prove 64/128/256-KiB allocation/mapping/rejection/reset cases through the existing route, then run planar/sequencer/EGA/CECG regressions plus diff and documentation gates. |
-| Expected Markers | One immutable capacity selects allocation and legal plane offsets; one planar provider accepts only the chosen board-visible range; no hidden maximum-capacity fallback remains. |
-| Asset Needs | No source, firmware, display capture or guest-media import. |
-| Reporting Requirements | Record capacity source/cross-model matrix, exact selected card inputs, each L2 board/clock boundary, removed unconditional allocation and focused proof. |
-| Stop Conditions | Stop if the manual cannot define a mapping formula, if capacity selection would require a second memory owner, or if an external-model conflict would extend IBM EGA rather than clarify a labelled fallback. |
-| Exit Criteria | The selected IBM EGA capacity and aperture model is frozen at construction and correctly enforced by the one VADP provider; unsupported card wiring and board arbitration remain L2. |
-| Original Owner Request | Complete remaining controllers source-first with minimalist single-owner implementation and explicit L2 rather than guessed timing. |
-| Similar-Issue Sweep | Inspect all EGA allocation sizes, aperture bounds, physical query/read/write paths, offset wrapping, reset retention, configuration copies, Model-40/profile inputs and all EGA/CECG tests. |
+| T466 S7 | Accepted: IBM's 64/128/256-KiB capacity and aperture facts are Manual L3; no source establishes the exact extended-bank CPU mapping, so current unconditional backing and unselected card capacity are explicit L2 rather than a false 86Box-derived L3. |
 
 ## Current Technical Baseline
 

@@ -74,3 +74,15 @@ Other L3 rather than mislabelled Manual L3.  The 14h--1Fh range, external
 status/color pins, monitor effects and panning/raster conversion remain L2.
 Focused EGA controller/planar/CRTC/mode/external, CECG and VM-system smokes
 pass.  No renderer, route, ABI or compatibility state was added.
+
+## S7 Accepted Evidence
+
+Rendered IBM pages establish only the 64/128/256-KiB capacity facts and four
+aperture locations.  The manual does not define the exact CPU address formula
+for the 128-KiB aperture's extended banks; 86Box's comparable branch also
+marks that mapping for real-hardware confirmation.  The audit therefore
+corrects the former vague code-gap claim to explicit L2 for the unselected card
+capacity and extended-bank mapping, while retaining Manual L3 for the facts
+the source actually states.  The future receiver remains the one VADP
+construction/provider route; no guessed mapping, card profile, memory path or
+state was added.
