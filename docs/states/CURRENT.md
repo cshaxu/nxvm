@@ -2,26 +2,7 @@
 
 ## Current Work
 
-## M5 T468 S3 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation; T468 S3, one-session coordinator, executor and closure review. |
-| Admission And Approval | S2 authorizes only its three generic ATA defects: task-file writes during BSY/DRQ, nIEN loss of a pending interrupt condition, and logical reset signature. |
-| Objective | Repair those ATA-3 task-file, interrupt and reset semantics through the existing HDC and PIC owners, with focused Core and VM port proof. |
-| Non-goals | No controller/device/media selection, DMA, timing number, host wait, profile value, public ABI, Compaq WD behavior, source import or artifact cutover. |
-| Reference Baseline | ATA-3 rendered pages 16, 21--22, 27 and 106--110; [Checklist 1](../etc/research/t468-s1-ata3-function-timing-checklist.md) and [Checklist 2](../etc/evidence/t468-s2-ata-code-gap-audit.md). |
-| Candidate Proposal | [M5 Core HDC ATA Phase Contract](../proposals/m5-core-hdc-ata-phase-contract.md), S3 task-file/reset/command closure. |
-| Files And ABI Surface | `hdc.c`, focused HDC smoke tests and the stale HDC portal static verifier, plus task evidence/history/status. No public layout or build-graph change. |
-| Applicable Rules | Existing `hdc.c` owns task-file/phase/condition state; existing PIC IRQ source is the only line route; generic ATA rules never enter the Compaq branch; shared predicates must remove repeated conditions rather than add wrapper paths. |
-| Verification | Focused Core and VM HDC smokes prove blocked busy/DRQ writes, nIEN mask/unmask restoration, status acknowledgement and reset fields; static branch/writer sweep, documentation governance, diff check and relevant configured build. |
-| Expected Markers | One generic task-file-writable predicate, one interrupt-condition-to-PIC synchronization path, no lost pending condition, source-defined logical reset fields and no duplicate state/IRQ route. |
-| Asset Needs | No new asset. |
-| Reporting Requirements | Record affected ledger IDs, source pages, focused tests, unchanged Compaq/board/device/media/timing boundaries and code-size result. |
-| Stop Conditions | Stop for a required controller/device policy, a need for a new IRQ route/public ABI, or behavior contradicted by the manual. |
-| Exit Criteria | ATA-R1/R2/R4/F3 defects are repaired and focused evidence passes without changing excluded owners or L2 boundaries. |
-| Original Owner Request | Complete the remaining controller tasks with manual authority, cross-model verification, exact L2 boundaries and minimalist single-owner design. |
-| Similar-Issue Sweep | Review every HDC task-file write, command capture, interrupt clear/raise/mask transition and reset caller; prove generic-only changes cannot leak into Compaq. |
+**T468 is open; accepted subtask progress appears in Recent M5 Closures.**
 
 ## Current Technical Baseline
 
@@ -52,7 +33,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T468 S2 | Accepted: Checklist 2 maps the same 15 ATA IDs to one HDC/media/PIC/timeline path. Only generic task-file/IRQ/reset and write-validation defects proceed to S3/S4; controller, device, media, DMA and time selection remain exact L2. [Audit](../etc/evidence/t468-s2-ata-code-gap-audit.md) and [history](../history/M5-T468-core-hdc-ata-phase-contract.md). |
+| T468 S3 | Accepted: generic ATA now gates BSY/DRQ task-file writes, retains masked IRQ conditions through the sole PIC route and restores its logical reset signature; Compaq proof remains green. The stale HDC portal gate now verifies the sole plan route. [Evidence](../etc/evidence/t468-s3-ata-task-file-closure.md) and [history](../history/M5-T468-core-hdc-ata-phase-contract.md). |
 | T467 | Closed: all 17 selected IBM-CGA rows reconcile to one VADP/Core/profile/snapshot path. Manual-L3 digital behavior and bounded Model-339 Other-L3 cadence are complete; only exact 160x100, default/ISA-wait timing, light-pen lifecycle and physical-monitor boundaries remain L2. Serial current-gate passes 295/295; stripped Release 0467 is recorded in [history](../history/M5-T467-core-ibm-cga-completeness.md). |
 | T466 | Closed: Manual-L3 D/E/10 geometry reaches the single VADP state owner through real firmware and guest port writes. The profile declaration, cold-start/text routing and all fixtures now agree; unknown planar geometry falls through existing legacy selection rather than inventing a frame. The stripped Release 0466 artifact and its hash are recorded in [history](../history/M5-T466-core-vadp-phase-contract.md). |
 | T465 | Closed: selected Intel 8272A source reconciliation, command/reset repair and per-drive parallel Seek close the logical controller contract; physical media and board-time conversion remain explicit L2. Release 0465 is stripped and the 294/294 serial gate is recorded in [history](../history/M5-T465-core-intel-8272a-logical-media-phase-contract.md). |

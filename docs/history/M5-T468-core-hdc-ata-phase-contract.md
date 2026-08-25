@@ -37,3 +37,16 @@ on a successful prior media read by sharing address validation with the one
 media owner. Neither repair chooses a controller, device identity, image
 grammar, DMA path or timing number. All remaining L2 boundaries have their
 existing or named future receiver in the audit.
+
+## S3 Accepted Evidence
+
+S3 implements the four source-backed generic-ATA corrections through the
+single HDC owner: a shared BSY/DRQ task-file gate, masked-but-retained interrupt
+condition synchronized through the existing PIC source, reset Error/Count/
+Number signature and a Command gate that cannot replace an active data phase.
+The Compaq WD branch remains unchanged. Core ATA, VM ATA, Core Compaq and
+Model-40 HDC smokes pass, as do the corrected HDC portal and controller-
+authority static gates. The portal verifier now follows the post-T434 plan
+route rather than asserting a removed VM-to-Core private topology path. No
+public ABI, controller/device/media selection, DMA path, timing value or
+product artifact changed.
