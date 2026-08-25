@@ -20,7 +20,7 @@ No source or test is modified by this audit.
 | RTC-R1 | `rtc.h` retains 128 bytes, although the admitted device exposes 64; `rtc.c` implements time/calendar/alarm locations, A--D and NVRAM access. Time values are generated from private calendar state, so storage is duplicated for the time locations; writes accept values while UIP is asserted and do not protect seconds' high bit. | RTC, S3 and VM port smokes cover calendar form, alarm don't-care, BCD/24-hour selection, register-C/D writes and NVRAM retention. | Partial: core register form exists, but 64-location/update-access contract is not exact. Receiver: queued RTC CMOS phase contract. |
 | RTC-R2 | `rtc.c` implements SET, PIE/AIE/UIE, BCD/binary and 24/12 mode; it stores all other A/B bits without divider-selection effects and has no SQW output. `core_machine_rtc_periodic_hz` assumes a fixed 32.768 kHz base and RS 3--15. | S3 and VM port smokes cover SET and interrupt enables; no test covers divider selections or SQWE. | Partial: retained mode and enable function conforms; divider/base/SQWE semantics and test are missing. Receiver: queued RTC CMOS phase contract. |
 | RTC-R3 | `core_machine_rtc_read_register` returns and clears C, then deasserts IRQ; D is reset to VRT and rejects writes. A subsequent new event is not specially preserved across the read operation, and VRT never models board/power validity. | Core RTC and S3 smokes prove C acknowledgement, PF/AF/UF/IRQF combination and IRQ release; VM port smoke proves D=VRT. | Partial: logical flags/acknowledgement conform; concurrent-event and VRT/power policy are unselected. Receiver: queued RTC CMOS phase contract. |
-| RTC-R4 | `core_machine_rtc_select_register` masks bit 7; `machine_board.c` owns the one 0070h/0071h adapter. Calendar encoding/rollover is private to `rtc.c`, including century. Access is allowed during the synthetic UIP condition and no electrical relation is claimed. | VM port and S3 adapter smokes cover index/data access, BCD/binary, 12/24-hour and rollover use. | Partial: indexed logical access conforms; UIP access window and update representation remain missing. Receiver: queued RTC CMOS phase contract. |
+| RTC-R4 | `core_machine_rtc_select_register` masks bit 7; `machine_board.c` owns the one 0070h/0071h adapter. Calendar encoding/rollover is private to `rtc.c`, which also treats 32h as a dedicated century register even though Motorola defines it as general RAM and IBM assigns its century meaning at the board map. Access is allowed during the synthetic UIP condition and no electrical relation is claimed. | VM port and S3 adapter smokes cover index/data access, BCD/binary, 12/24-hour and rollover use. | Partial: indexed logical access conforms; UIP access window/update representation and the generic-Core versus IBM-board 32h ownership boundary are missing. Receiver: queued RTC CMOS phase contract. |
 | RTC-F1 | `core_machine_rtc_advance` advances private calendar state at `ticks_per_second`, inhibits all advance whenever SET is set, sets UF and compares alarm. UIP is a one-tick look-ahead rather than the manual's 248/1,984-microsecond update interval, and divider-reset selections do not stop/phase the update chain. | S3 and VM port smokes cover SET hold, second/calendar movement and UF. | Partial: one-second causal update exists; selected divider/UIP/update phase is missing. Receiver: queued RTC CMOS phase contract. |
 | RTC-F2 | `core_machine_rtc_alarm_matches` implements equality and C0h don't-care bytes, sets AF independently of AIE, and `core_machine_rtc_raise_if_enabled` gates delivery by AIE. | S3 and VM port smokes program alarm values and observe AF/IRQ8. | Conforming retained logical alarm behavior; precise update-phase timing remains under RTC-F1. |
 | RTC-F3 | `core_machine_rtc_periodic_hz` and `core_machine_rtc_advance` set PF from RS bits and the configured abstract tick rate, independently of PIE. There is no SQW state or output route and the accepted rate formula ignores Register-A divider base. | S3 and VM port smokes prove a selected periodic PF/IRQ path only. | Partial: selected PF path exists; full divider-derived rate and SQW are missing. Receiver: queued RTC CMOS phase contract. |
@@ -37,10 +37,14 @@ No source or test is modified by this audit.
 ## Completeness, Minimality And Transfer
 
 All `RTC-R1`--`RTC-R4`, `RTC-F1`--`RTC-F7` and `RTC-T1`--`RTC-T5` rows have
-one disposition. The audit finds one Core RTC owner, one board port adapter,
-one clock-domain consumer and one PIC IRQ publisher. The later receiver must
-repair the existing `rtc.c` mechanism and consume the retained clock domain;
-it must not add a second RTC clock, a parallel CMOS store, a second 0070h/0071h
-adapter, or an RTC-owned NMI/PIC policy. The material gaps are the 64-byte
+one disposition. T463 S1's rendered-manual and reference-only cross-check
+retains every manual result and tightens one boundary: IBM's 32h century byte
+is board-map meaning layered on MC146818 general RAM, not a generic chip
+register. The audit finds one Core RTC owner, one board port adapter, one
+clock-domain consumer and one PIC IRQ publisher. The later receiver must repair
+the existing `rtc.c` mechanism and consume the retained clock domain; it must
+not add a second RTC clock, a parallel CMOS store, a second 0070h/0071h adapter,
+or an RTC-owned NMI/PIC policy. The material gaps are the 64-byte
 register/update contract, divider/SQW and update phase, RESET distinction,
-VRT/persistence policy, and selected AT board/visibility timing.
+the 32h board mapping, VRT/persistence policy, and selected AT board/visibility
+timing.

@@ -2,7 +2,7 @@
 
 ## Current Work
 
-**Idle.**
+**Active.** T463 remains open between accepted subtasks.
 
 ## Current Technical Baseline
 
@@ -28,6 +28,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T463 S1 | Reconciled all 16 MC146818A/IBM-AT rows against rendered Motorola/IBM manuals and named reference-only emulator sources. The 32h century convention is corrected to board-map state; all L2/L4 boundaries remain explicit. No runtime or artifact changed. |
 | T462 | Closed: one immutable copied plan carries only qualified Model-339 PIT/DMA selections; PIC remains explicit L2. The seven corrected PIT-transition regressions, 294/294 serial current gate, 77/77 specialized gates, documentation governance and stripped 0462 artifact complete the controller-board contract. [History](../history/M5-T462-core-controller-board-timing-contract.md). |
 | T461 | Closed: one Core PIT owner covers manual P1--P14 and one `OUT0 -> IRQ0 -> PIC refresh` route closes P15; P16--P18 remain explicit L2. Full current-gate is 294/294 and its stripped artifact is retained in history. [History](../history/M5-T461-core-pit-8254-phase-contract.md). |
 | T460 | Closed: all 16 DMA rows are disposed through the sole `dma.c` owner; normal/compressed and M2M service phases have focused proof, the five-clock conversion remains explicit L2, serial current-gate is 294/294, and the stripped 0460 artifact is recorded. [History](../history/M5-T460-core-dma-8237a-phase-contract.md). |
