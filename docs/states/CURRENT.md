@@ -2,27 +2,6 @@
 
 ## Current Work
 
-## M5 T465 S1 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | New |
-| Admission And Approval | Owner goal dated 2026-08-25 approves the remaining queued controller tasks in order; FDC follows the closed KBC task. |
-| Objective | Reconcile every uPD765/logical-media ledger row and current-code gap against NEC/IBM originals plus 86Box, MAME, PCjs, Bochs and QEMU, assigning Manual L3, Other/board L3 or fallback L2 truthfully. |
-| Non-goals | No media import, firmware import, runtime implementation, host-storage timing, new parser, scheduler or profile policy. |
-| Reference Baseline | `fd562e0d`; T450 S13/S14 FDC ledgers and queued FDC proposal. |
-| Candidate Proposal | [Core uPD765 and logical media phase contract](../proposals/m5-core-fdc-upd765-logical-media-phase-contract.md). |
-| Files And ABI Surface | FDC checklist/audit, T465 history/status and S1 evidence only. No source, ABI or artifact change. |
-| Applicable Rules | Original manuals remain normative; source policy prohibits external code/media import; documentation/execution require one tier and receiver per finite row. |
-| Verification | Inspect rendered NEC pages, pinned/datestamped reference implementations, and all fifteen S13/S14 rows; run documentation governance. |
-| Expected Markers | Every row names Manual L3, Other/board L3 or fallback L2, with no emulator claim overriding NEC/IBM authority. |
-| Asset Needs | Read-only NEC/IBM manuals and reference trees only. |
-| Reporting Requirements | Record revisions, manual ambiguity and any source-blocked media/timing terms before S2 planning. |
-| Stop Conditions | Stop for a missing manual, source conflict or required protected media; preserve the exact boundary rather than infer it. |
-| Exit Criteria | All fifteen source and code-audit rows are reconciled with a truthful tier and unique implementation receiver/boundary. |
-| Original Owner Request | Apply the completed-controller source-first method to each remaining controller and use L2 only where Manual, external model and board-L3 evidence do not support a claim. |
-| Similar-Issue Sweep | Search FDC command/result, DMA/IRQ, drive/media, timing, composition and all existing FDC evidence paths. |
-
 
 ## Current Technical Baseline
 
@@ -48,6 +27,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T465 S1 | Accepted: rendered NEC/IBM records remain normative, with 86Box/MAME/PCjs/Bochs/QEMU only as corroboration. All fifteen FDC rows now state Manual L3, Other/board L3 or fallback to L2; finite command/revision gaps are ready for S2. |
 | T464 | Closed: all sixteen KBC rows are Manual L3 or explicit L2/L4. One Core owner now covers selected command/input/test state; 294/294 serial current-gate tests pass and stripped Release 0464 is recorded in history. |
 | T463 | Closed: the 16-row MC146818A/IBM AT ledger has one Core phase owner, a copied L3/L2 board timing plan, explicit L2/L4 boundaries and focused proof. The full current gate ran 294/294; stripped Release 0463 is recorded in [history](../history/M5-T463-core-rtc-cmos-phase-contract.md). |
 | T462 | Closed: one immutable copied plan carries only qualified Model-339 PIT/DMA selections; PIC remains explicit L2. The seven corrected PIT-transition regressions, 294/294 serial current gate, 77/77 specialized gates, documentation governance and stripped 0462 artifact complete the controller-board contract. [History](../history/M5-T462-core-controller-board-timing-contract.md). |
