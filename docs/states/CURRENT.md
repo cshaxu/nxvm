@@ -16,7 +16,7 @@
 | Applicable Rules | README Task Reading Set; EXECUTION S/P lifecycle; DOCUMENT governance; source policy; specification-driven L3 timing design. Architecture/Coding rules are read for the owner/path audit even though no code changes are authorized. |
 | Verification | Verify the admitted PDF is readable and classify text/OCR quality; reconcile all selected counter/control/read-back/gate/output/IRQ0/reset/clock rows; verify documentation governance and diff hygiene. |
 | Expected Markers | `M5:T461:S1:PIT-MANUAL-LEDGER:OK`; one functional/timing list and one implementation-gap list, each row labelled Manual-L3, Other-L3 corroboration, or fallback-to-L2. |
-| Asset Needs | `O:\assets\manuals\controllers\intel\231164-005_8254_Programmable_Interval_Timer_Sep1993.pdf`; admitted read-only emulator source only for cross-checking, never import. |
+| Asset Needs | Admitted Intel manual `231164-005`, *8254 Programmable Interval Timer* (September 1993), from the approved controller-manual archive; admitted read-only emulator source only for cross-checking, never import. |
 | Reporting Requirements | Record manual page/section provenance, PDF text/OCR confidence, any manual ambiguity, corroboration disagreements, selected-owner mapping, and a finite S2+ plan. |
 | Stop Conditions | Stop for a missing/illegible primary rule that cannot be resolved from the rendered pages, a required unselected board topology, a physical frequency derivation, or an import/license request. |
 | Exit Criteria | Every selected PIT row has an evidence tier and current owner/gap disposition; all deferred work has one named receiver; no implementation starts; governance gate passes and the S1 evidence is committed. |
