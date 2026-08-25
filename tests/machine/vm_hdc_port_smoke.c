@@ -252,8 +252,12 @@ C_INT main(C_VOID)
         value != (CORE_MACHINE_HDC_STATUS_DRDY | CORE_MACHINE_HDC_STATUS_DSC |
             CORE_MACHINE_HDC_STATUS_DRQ) || core_machine_hdc_irq_pending(
                 &session->core_machine->hdc) ||
-        !vm_hdc_drain_data(session->core_machine, &word) ||
         !vm_hdc_write(session->core_machine, HDC_ALT_STATUS_CONTROL_PORT, 0x00u) ||
+        !core_machine_hdc_irq_pending(&session->core_machine->hdc) ||
+        !vm_hdc_read(session->core_machine, HDC_STATUS_COMMAND_PORT, &value) ||
+        core_machine_hdc_irq_pending(&session->core_machine->hdc) ||
+        !vm_hdc_drain_data(session->core_machine, &word) ||
+        !vm_hdc_read(session->core_machine, HDC_STATUS_COMMAND_PORT, &value) ||
         !vm_hdc_write(session->core_machine, HDC_STATUS_COMMAND_PORT, 0xecu) ||
         !vm_hdc_complete_command(session->core_machine) ||
         !core_machine_hdc_irq_pending(&session->core_machine->hdc) ||

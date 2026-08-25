@@ -12,7 +12,7 @@
 | Non-goals | No controller/device/media selection, DMA, timing number, host wait, profile value, public ABI, Compaq WD behavior, source import or artifact cutover. |
 | Reference Baseline | ATA-3 rendered pages 16, 21--22, 27 and 106--110; [Checklist 1](../etc/research/t468-s1-ata3-function-timing-checklist.md) and [Checklist 2](../etc/evidence/t468-s2-ata-code-gap-audit.md). |
 | Candidate Proposal | [M5 Core HDC ATA Phase Contract](../proposals/m5-core-hdc-ata-phase-contract.md), S3 task-file/reset/command closure. |
-| Files And ABI Surface | `hdc.c` and focused HDC smoke tests only, plus task evidence/history/status. No public layout or CMake change. |
+| Files And ABI Surface | `hdc.c`, focused HDC smoke tests and the stale HDC portal static verifier, plus task evidence/history/status. No public layout or build-graph change. |
 | Applicable Rules | Existing `hdc.c` owns task-file/phase/condition state; existing PIC IRQ source is the only line route; generic ATA rules never enter the Compaq branch; shared predicates must remove repeated conditions rather than add wrapper paths. |
 | Verification | Focused Core and VM HDC smokes prove blocked busy/DRQ writes, nIEN mask/unmask restoration, status acknowledgement and reset fields; static branch/writer sweep, documentation governance, diff check and relevant configured build. |
 | Expected Markers | One generic task-file-writable predicate, one interrupt-condition-to-PIC synchronization path, no lost pending condition, source-defined logical reset fields and no duplicate state/IRQ route. |

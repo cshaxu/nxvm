@@ -17,10 +17,18 @@ endforeach()
 
 file(READ "${PROJECT_SOURCE_DIR}/src/vm/composition/session/machine_devices.c"
     machine_devices)
-foreach(required "core_machine_hdc_topology" "core_machine_configure_hdc")
+foreach(required "core_machine_plan_configure_hdc")
     string(FIND "${machine_devices}" "${required}" position)
     if(position EQUAL -1)
-        message(FATAL_ERROR "T213 HDC typed composition submission missing: ${required}")
+        message(FATAL_ERROR "T213 HDC plan submission missing: ${required}")
+    endif()
+endforeach()
+
+file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/machine_plan.c" machine_plan)
+foreach(required "core_machine_configure_hdc")
+    string(FIND "${machine_plan}" "${required}" position)
+    if(position EQUAL -1)
+        message(FATAL_ERROR "T213 HDC Core plan application missing: ${required}")
     endif()
 endforeach()
 

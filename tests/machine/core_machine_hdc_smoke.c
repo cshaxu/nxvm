@@ -195,7 +195,9 @@ C_INT main(C_VOID)
                 core_machine_reset(machine) != TYPE_STATUS_OK) {
                 failed |= 0x04;
             } else {
-                if (!core_machine_hdc_write(machine,
+                if (hdc->data.error != 0x01u || hdc->data.sector_count != 1u ||
+                    hdc->data.sector_number != 1u ||
+                    !core_machine_hdc_write(machine,
                         hdc_config.alternate_status_device_control_port,
                         CORE_MACHINE_HDC_DEVICE_CONTROL_NIEN) ||
                     !core_machine_hdc_program_chs(machine, &hdc_config) ||
@@ -205,10 +207,14 @@ C_INT main(C_VOID)
                     status != (CORE_MACHINE_HDC_STATUS_DRDY |
                         CORE_MACHINE_HDC_STATUS_DSC | CORE_MACHINE_HDC_STATUS_DRQ) ||
                     core_machine_hdc_irq_pending(hdc) ||
-                    !core_machine_hdc_drain(machine, &hdc_config, &word) ||
-                    word != 0x1234u ||
                     !core_machine_hdc_write(machine,
                         hdc_config.alternate_status_device_control_port, 0u) ||
+                    !core_machine_hdc_irq_pending(hdc) ||
+                    !core_machine_hdc_read(machine, hdc_config.status_command_port, &status) ||
+                    core_machine_hdc_irq_pending(hdc) ||
+                    !core_machine_hdc_drain(machine, &hdc_config, &word) ||
+                    word != 0x1234u ||
+                    !core_machine_hdc_read(machine, hdc_config.status_command_port, &status) ||
                     !core_machine_hdc_program_chs(machine, &hdc_config) ||
                     !core_machine_hdc_command(machine, &hdc_config, 0x20u) ||
                     !core_machine_hdc_irq_pending(hdc) ||
@@ -259,12 +265,17 @@ C_INT main(C_VOID)
                     hdc->data.phase != CORE_MACHINE_HDC_PHASE_PENDING_COMMAND ||
                     hdc->data.status != CORE_MACHINE_HDC_STATUS_BSY ||
                     core_machine_hdc_irq_pending(hdc) ||
-                    !core_machine_hdc_write(machine, hdc_config.sector_number_port, 0u)) {
+                    !core_machine_hdc_write(machine, hdc_config.sector_number_port, 0u) ||
+                    hdc->data.sector_number != 1u) {
                     failed |= 0x200;
                 }
                 core_machine_hdc_advance(hdc);
                 failed |= hdc->data.phase != CORE_MACHINE_HDC_PHASE_DATA_READ ||
                     hdc->data.sector_number != 1u ||
+                    hdc->data.status != (CORE_MACHINE_HDC_STATUS_DRDY |
+                        CORE_MACHINE_HDC_STATUS_DSC | CORE_MACHINE_HDC_STATUS_DRQ) ||
+                    !core_machine_hdc_write(machine, hdc_config.status_command_port, 0x30u) ||
+                    hdc->data.phase != CORE_MACHINE_HDC_PHASE_DATA_READ ||
                     hdc->data.status != (CORE_MACHINE_HDC_STATUS_DRDY |
                         CORE_MACHINE_HDC_STATUS_DSC | CORE_MACHINE_HDC_STATUS_DRQ) ||
                     !core_machine_hdc_irq_pending(hdc) ||

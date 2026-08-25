@@ -21,6 +21,13 @@ static C_INT core_machine_hdc_is_compaq_wd_40mb(const core_machine_hdc *hdc)
         CORE_MACHINE_HDC_PROTOCOL_COMPAQ_WD_40MB;
 }
 
+static C_INT core_machine_hdc_task_file_is_writable(const core_machine_hdc *hdc)
+{
+    return hdc != STD_NULL && (core_machine_hdc_is_compaq_wd_40mb(hdc) ||
+        (hdc->data.status & (CORE_MACHINE_HDC_STATUS_BSY |
+            CORE_MACHINE_HDC_STATUS_DRQ)) == 0u);
+}
+
 static C_INT core_machine_hdc_selected_master(const core_machine_hdc *hdc)
 { return hdc != STD_NULL && (hdc->data.drive_head & 0x10u) == 0u; }
 
@@ -48,23 +55,29 @@ static C_INT core_machine_hdc_command_is_write(const core_machine_hdc *hdc,
     return command == CORE_MACHINE_HDC_COMMAND_WRITE_SECTORS;
 }
 
+static C_VOID core_machine_hdc_sync_irq(core_machine_hdc *hdc)
+{
+    if (hdc == STD_NULL) return;
+    if (hdc->data.irq_pending &&
+        (hdc->data.device_control & CORE_MACHINE_HDC_DEVICE_CONTROL_NIEN) == 0u) {
+        core_machine_pic_irq_source_assert(&hdc->connect.irq_source);
+    } else {
+        core_machine_pic_irq_source_deassert(&hdc->connect.irq_source);
+    }
+}
+
 static C_VOID core_machine_hdc_clear_irq(core_machine_hdc *hdc)
 {
     if (hdc == STD_NULL) return;
     hdc->data.irq_pending = TYPE_FALSE;
-    core_machine_pic_irq_source_deassert(&hdc->connect.irq_source);
+    core_machine_hdc_sync_irq(hdc);
 }
 
 static C_VOID core_machine_hdc_raise_irq(core_machine_hdc *hdc)
 {
     if (hdc == STD_NULL) return;
-    if ((hdc->data.device_control & CORE_MACHINE_HDC_DEVICE_CONTROL_NIEN) != 0u) {
-        hdc->data.irq_pending = TYPE_FALSE;
-        core_machine_pic_irq_source_deassert(&hdc->connect.irq_source);
-        return;
-    }
     hdc->data.irq_pending = TYPE_TRUE;
-    core_machine_pic_irq_source_assert(&hdc->connect.irq_source);
+    core_machine_hdc_sync_irq(hdc);
 }
 
 static type_unsigned_32 core_machine_hdc_lba(const core_machine_hdc *hdc)
@@ -414,7 +427,8 @@ static C_VOID core_machine_hdc_next_write_sector(core_machine_hdc *hdc)
 static C_VOID core_machine_hdc_capture_command(core_machine_hdc *hdc,
     type_unsigned_8 command)
 {
-    if (hdc == STD_NULL || hdc->data.reset_asserted) return;
+    if (hdc == STD_NULL || hdc->data.reset_asserted ||
+        !core_machine_hdc_task_file_is_writable(hdc)) return;
     hdc->data.pending_command = command;
     hdc->data.pending_features = hdc->data.features;
     hdc->data.pending_sector_count = hdc->data.sector_count;
@@ -585,6 +599,13 @@ static type_status core_machine_hdc_port_write(C_VOID *opaque, type_unsigned_16 
         }
         return TYPE_STATUS_OK;
     }
+    if (!core_machine_hdc_task_file_is_writable(hdc) &&
+        (port == hdc->connect.config.error_features_port ||
+            port == hdc->connect.config.sector_count_port ||
+            port == hdc->connect.config.sector_number_port ||
+            port == hdc->connect.config.cylinder_low_port ||
+            port == hdc->connect.config.cylinder_high_port ||
+            port == hdc->connect.config.drive_head_port)) return TYPE_STATUS_OK;
     if (port == hdc->connect.config.error_features_port) {
         hdc->data.features = (type_unsigned_8)value;
     } else if (port == hdc->connect.config.sector_count_port) {
@@ -605,9 +626,7 @@ static type_status core_machine_hdc_port_write(C_VOID *opaque, type_unsigned_16 
             CORE_MACHINE_HDC_DEVICE_CONTROL_SRST) != 0u;
 
         hdc->data.device_control = device_control;
-        if ((device_control & CORE_MACHINE_HDC_DEVICE_CONTROL_NIEN) != 0u) {
-            core_machine_hdc_clear_irq(hdc);
-        }
+        core_machine_hdc_sync_irq(hdc);
         if (reset_asserted && !hdc->data.reset_asserted) {
             hdc->data.reset_asserted = TYPE_TRUE;
             hdc->data.phase = CORE_MACHINE_HDC_PHASE_IDLE;
@@ -658,6 +677,11 @@ C_VOID core_machine_hdc_reset(core_machine_hdc *hdc)
     if (hdc == STD_NULL) return;
     STD_MEMSET(&hdc->data, 0, sizeof(hdc->data));
     core_machine_hdc_clear_irq(hdc);
+    if (!core_machine_hdc_is_compaq_wd_40mb(hdc)) {
+        hdc->data.error = CORE_MACHINE_HDC_ERROR_DIAGNOSTIC_OK;
+        hdc->data.sector_count = 1u;
+        hdc->data.sector_number = 1u;
+    }
     hdc->data.status = CORE_MACHINE_HDC_STATUS_DRDY | CORE_MACHINE_HDC_STATUS_DSC;
 }
 
@@ -699,5 +723,6 @@ const core_machine_port_provider *core_machine_hdc_port_provider(C_VOID)
 
 type_bool core_machine_hdc_irq_pending(const core_machine_hdc *hdc)
 {
-    return hdc != STD_NULL && hdc->data.irq_pending;
+    return hdc != STD_NULL && hdc->data.irq_pending &&
+        (hdc->data.device_control & CORE_MACHINE_HDC_DEVICE_CONTROL_NIEN) == 0u;
 }
