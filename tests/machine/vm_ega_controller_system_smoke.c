@@ -28,9 +28,9 @@ C_INT main(C_VOID)
     failed |= core_machine_memory_read(session->core_machine, 0x000b0000u,
         &read_value, sizeof(read_value)) != TYPE_STATUS_OK || read_value != value;
     failed |= core_machine_debug_write_port(session->core_machine, 0x03c0u, 0x32u) != TYPE_STATUS_OK || core_machine_debug_write_port(session->core_machine, 0x03c0u, 0xffu) != TYPE_STATUS_OK;
-    failed |= core_machine_debug_read_port(session->core_machine, 0x03c1u, &port_value) != TYPE_STATUS_OK || port_value != 0x0fu;
+    failed |= core_machine_debug_read_port(session->core_machine, 0x03c1u, &port_value) != TYPE_STATUS_OK || port_value != 0u;
     (C_VOID)core_machine_debug_read_port(session->core_machine, 0x03dau, &port_value);
-    failed |= core_machine_debug_write_port(session->core_machine, 0x03c0u, 0x10u) != TYPE_STATUS_OK || core_machine_debug_read_port(session->core_machine, 0x03c1u, &port_value) != TYPE_STATUS_OK || port_value != 0x01u;
+    failed |= core_machine_debug_write_port(session->core_machine, 0x03c0u, 0x10u) != TYPE_STATUS_OK || core_machine_debug_read_port(session->core_machine, 0x03c1u, &port_value) != TYPE_STATUS_OK || port_value != 0u;
 
     vm_session_destroy(session);
     if (failed) return 1;

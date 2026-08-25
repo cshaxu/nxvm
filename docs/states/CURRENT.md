@@ -2,9 +2,26 @@
 
 ## Current Work
 
-| Task | Compact progress |
+## M5 T466 S6 Packet
+
+| Field | Required record |
 | --- | --- |
-| T466 S5 | Accepted: IBM EGA Graphics Controller 00h--08h modes 0--2, Read Map/Color Compare, Test Condition and write-only access semantics now use the one VADP planar path. Unassigned maps, odd/even/shift, invalid mode 3, serializer clocks and board arbitration remain explicit L2. |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner goal dated 2026-08-25 directs completion of the remaining controller tasks; accepted T466 S5 permits this next VADP ledger batch. |
+| Objective | Reconcile the selected IBM EGA Attribute Controller 00h--13h access grammar, masks and retained palette/plane consumers in the existing VADP owner. |
+| Non-goals | No alternate renderer, memory provider, host presentation, monitor/clock model, board arbitration, profile change, public ABI or source import. |
+| Reference Baseline | `b4550051`; IBM EGA pp. 56--62 and register summary, VADP-R5 ledger/audit, existing attribute/controller/snapshot tests and `vadp.c`. |
+| Candidate Proposal | [Core VADP phase contract](../proposals/m5-core-vadp-phase-contract.md). |
+| Files And ABI Surface | Existing private VADP attribute state/masks/port handler and focused controller/snapshot smoke(s), plus T466 evidence/status. No public API or VM ABI change. |
+| Applicable Rules | IBM manual is primary. Retain one VADP attribute state owner and its existing snapshot consumer; remove false readback rather than adding a compatibility register path. External models corroborate only labelled gaps. |
+| Verification | Render and inspect the original pages; reconcile each 00h--13h register, port phase, mask and consumer; prove palette/mode/overscan/plane/panning writes, Status-1 phase cancellation and write-only access, then run EGA/CECG regressions, `git diff --check` and documentation governance. |
+| Expected Markers | One Attribute-port phase machine stores only manual-defined values; one snapshot consumer observes the retained palette/plane state; unsupported monitor and raster details remain L2. |
+| Asset Needs | No source, firmware, display capture or guest-media import. |
+| Reporting Requirements | Record source/cross-model outcome, exact retained L2 terms, false readback removal, one state owner and focused proof. |
+| Stop Conditions | Stop if a necessary IBM register has no reliable source rule, a correction needs a second renderer/state owner, or an external-model conflict cannot be classified without extending IBM EGA. |
+| Exit Criteria | IBM EGA Attribute Controller register/phase grammar is correct through one VADP owner and all remaining physical/board terms are explicit L2. |
+| Original Owner Request | Complete remaining controllers source-first with minimalist single-owner implementation and explicit L2 rather than guessed timing. |
+| Similar-Issue Sweep | Inspect all Attribute port reads/writes, register masks/index range, palette/plane/panning consumers, Status-1 flip-flop resets, EGA/CECG variants and their focused/system tests. |
 
 ## Current Technical Baseline
 

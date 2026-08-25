@@ -69,6 +69,26 @@ Every Graphics Controller data read returns zero: the selected IBM manual
 declares these registers write-only, and Core does not mirror private VADP
 state through a false port readback.
 
+### VADP-R5 Attribute Controller Reconciliation
+
+Rendered inspection of IBM EGA pp. 56--62 establishes the write-only 3C0h
+address/data flip-flop and registers 00h--13h: sixteen six-bit palette values,
+four-bit Mode Control, six-bit Overscan, four-bit Color Plane Enable and
+four-bit Horizontal Pel Panning.  Status-1 read resets the phase.  QEMU and
+Bochs expose readback and index 14h for later VGA; neither is an IBM EGA rule.
+
+| Index | IBM EGA manual rule | Selected disposition |
+| --- | --- | --- |
+| 00h--0Fh | Six-bit write-only palette values. | Manual L3. |
+| 10h | Four-bit write-only Mode Control. | Manual L3. |
+| 11h | Six-bit write-only Overscan Color. | Manual L3. |
+| 12h | Four-bit write-only Color Plane Enable; bits 4--5 select status wiring. | Manual L3 for state/mask; external color pins remain fallback to L2. |
+| 13h | The manual's Horizontal Pel Panning page mistakenly repeats 12h, which would collide with Color Plane Enable.  86Box, QEMU and Bochs agree on the distinct 13h four-bit register. | Other L3 for index/value/phase; raster shift remains fallback to L2. |
+| 14h--1Fh | No selected IBM EGA register definition. | fallback to L2; ignore writes and return zero. |
+
+The retained 3C1h read route returns zero rather than exposing a false mirror
+of write-only Attribute state.
+
 ## Register And Programming Universe
 
 | ID | Source | Finite function | Reset/cancellation | Timing or signal relation | Sufficiency and disposition |

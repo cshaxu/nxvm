@@ -529,14 +529,14 @@ static type_unsigned_8 core_machine_vadp_graphics_mask(type_unsigned_8 index)
 
 static C_INT core_machine_vadp_attribute_index_supported(type_unsigned_8 index)
 {
-    return index < CORE_MACHINE_VADP_ATTRIBUTE_REGISTER_COUNT;
+    return index < 20u;
 }
 
 static type_unsigned_8 core_machine_vadp_attribute_mask(type_unsigned_8 index)
 {
     if (index < 16u) return 0x3fu;
     switch (index) {
-    case 16u: return 0xffu;
+    case 16u: return 0x0fu;
     case 17u: return 0x3fu;
     case 18u: return 0x0fu;
     case 19u: return 0x0fu;
@@ -1098,13 +1098,9 @@ static C_VOID core_machine_vadp_write_graphics_data(t_port *port,
 static C_VOID core_machine_vadp_read_attribute_data(t_port *port,
     type_unsigned_16 port_id, C_VOID *owner)
 {
-    const t_vadp *adapter = (const t_vadp *)owner;
-
     (C_VOID)port_id;
-    if (port == STD_NULL || adapter == STD_NULL) return;
-    port->data.ioByte = adapter->data.ega_controller_configured &&
-        core_machine_vadp_attribute_index_supported(adapter->data.attribute_index) ?
-        adapter->data.attribute[adapter->data.attribute_index] : 0xffu;
+    (C_VOID)owner;
+    if (port != STD_NULL) port->data.ioByte = 0u;
 }
 
 static C_VOID core_machine_vadp_write_attribute(t_port *port,

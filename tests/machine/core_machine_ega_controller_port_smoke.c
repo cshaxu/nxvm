@@ -90,22 +90,39 @@ C_INT main(C_VOID)
 
     core_machine_port_write(&port, 0x03c0u, 0x31u);
     core_machine_port_write(&port, 0x03c0u, 0xffu);
-    failed |= core_machine_port_read(&port, 0x03c1u) != 0x3fu ||
+    failed |= core_machine_port_read(&port, 0x03c1u) != 0u ||
+        vadp.data.attribute[17] != 0x3fu ||
         !vadp.data.attribute_display_enabled;
     (C_VOID)core_machine_port_read(&port, 0x03dau);
     core_machine_port_write(&port, 0x03c0u, 0x00u);
-    failed |= core_machine_port_read(&port, 0x03c1u) != 0x3fu;
+    failed |= core_machine_port_read(&port, 0x03c1u) != 0u ||
+        vadp.data.attribute[0] != 0x3fu;
     (C_VOID)core_machine_port_read(&port, 0x03dau);
     core_machine_port_write(&port, 0x03c0u, 0x12u);
     core_machine_port_write(&port, 0x03c0u, 0xf5u);
-    failed |= core_machine_port_read(&port, 0x03c1u) != 0x05u;
+    failed |= core_machine_port_read(&port, 0x03c1u) != 0u ||
+        vadp.data.attribute[18] != 0x05u;
     (C_VOID)core_machine_port_read(&port, 0x03dau);
     core_machine_port_write(&port, 0x03c0u, 0x1fu);
     core_machine_port_write(&port, 0x03c0u, 0xffu);
-    failed |= core_machine_port_read(&port, 0x03c1u) != 0xffu;
+    failed |= core_machine_port_read(&port, 0x03c1u) != 0u;
     (C_VOID)core_machine_port_read(&port, 0x03dau);
     core_machine_port_write(&port, 0x03c0u, 0x12u);
-    failed |= core_machine_port_read(&port, 0x03c1u) != 0x05u;
+    failed |= core_machine_port_read(&port, 0x03c1u) != 0u ||
+        vadp.data.attribute[18] != 0x05u;
+
+    (C_VOID)core_machine_port_read(&port, 0x03dau);
+    core_machine_port_write(&port, 0x03c0u, 0x10u);
+    core_machine_port_write(&port, 0x03c0u, 0xffu);
+    failed |= vadp.data.attribute[16] != 0x0fu;
+    (C_VOID)core_machine_port_read(&port, 0x03dau);
+    core_machine_port_write(&port, 0x03c0u, 0x13u);
+    core_machine_port_write(&port, 0x03c0u, 0xffu);
+    failed |= vadp.data.attribute[19] != 0x0fu;
+    (C_VOID)core_machine_port_read(&port, 0x03dau);
+    core_machine_port_write(&port, 0x03c0u, 0x14u);
+    core_machine_port_write(&port, 0x03c0u, 0xffu);
+    failed |= vadp.data.attribute[20] != 0u;
 
     core_machine_port_write(&port, 0x03c4u, 2u);
     core_machine_port_write(&port, 0x03c5u, 0x05u);
