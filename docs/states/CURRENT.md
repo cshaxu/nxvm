@@ -2,27 +2,6 @@
 
 ## Current Work
 
-## M5 T465 S3 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner goal dated 2026-08-25 approves completing the active FDC task after accepted S1/S2 evidence. |
-| Objective | Correct the FDC ledger's controller identity: Intel 8272A-compatible is the selected Core model, so its original command table governs `10h` invalid behavior; NEC uPD765 Version/variant features are comparative or conditional, not an active defect. |
-| Non-goals | No new controller model, runtime model selector, Version response, Read Diagnostic approximation, media grammar, drive mechanics, timing conversion, scheduler, profile policy or external source import. |
-| Reference Baseline | `b217f893`; accepted T465 S1/S2 evidence, `CORE_MACHINE_DEVICE_FDC`, Intel 8272 original command-table record, NEC rendered PDF and IBM AT topology record. |
-| Candidate Proposal | [Core uPD765 and logical media phase contract](../proposals/m5-core-fdc-upd765-logical-media-phase-contract.md). |
-| Files And ABI Surface | FDC checklist/audit/history/status and existing focused FDC smoke marker only. No production source, ABI or composition change. |
-| Applicable Rules | Selected original hardware manual is normative; Core has one selected controller identity and command path; NEC/external models only corroborate or provide conditional Other/board L3; source policy prohibits import. |
-| Verification | Reconcile all affected R2/R5 source and code rows, prove existing `10h -> 80h`, no IRQ and command-phase return through focused smoke; inspect controller identity/dispatch sweep and run documentation governance. |
-| Expected Markers | `M5:T465:S3:FDC-8272-command:OK`, no Version dispatch case, no model selector and no ambiguous Manual-L3 claim. |
-| Asset Needs | Read-only Intel 8272 and NEC/IBM originals plus reference observations only; no asset is imported. |
-| Reporting Requirements | Record why the two manuals do not conflict, every retained conditional uPD765 feature and the zero-production-code result. |
-| Stop Conditions | Stop for proof that the selected Core device is not 8272A-compatible or an original-manual conflict that requires a profile/controller selection decision. |
-| Exit Criteria | R2/R5 distinguish selected 8272 Manual L3 from conditional uPD765 behavior, and the existing invalid-command route has focused proof without a second model/path. |
-| Original Owner Request | Use manuals as authority and only claim Manual L3, Other/board L3 or fallback L2 truthfully while completing controllers without additive mechanisms. |
-| Similar-Issue Sweep | Search controller identity, all command-length/execute dispatch cases, `10h`/`90h` references, profile FDC configuration, and every Version/Read Diagnostic statement in current FDC evidence. |
-
 
 ## Current Technical Baseline
 
@@ -48,7 +27,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T465 S2 | Accepted: `fdc.c` preserves only NEC-mandated Specify SRT/HUT/HLT through both DOR reset edges; reset-Sense and NDMA reset remain on the single existing path. Focused FDC smoke and documentation governance pass. |
+| T465 S3 | Accepted: Intel 8272A is the selected Core command authority, so `10h -> 80h` is verified L3 invalid behavior; uPD765 Version/overrun differences remain conditional Other/board L3 or L2. No second model or code path was added. |
 | T464 | Closed: all sixteen KBC rows are Manual L3 or explicit L2/L4. One Core owner now covers selected command/input/test state; 294/294 serial current-gate tests pass and stripped Release 0464 is recorded in history. |
 | T463 | Closed: the 16-row MC146818A/IBM AT ledger has one Core phase owner, a copied L3/L2 board timing plan, explicit L2/L4 boundaries and focused proof. The full current gate ran 294/294; stripped Release 0463 is recorded in [history](../history/M5-T463-core-rtc-cmos-phase-contract.md). |
 | T462 | Closed: one immutable copied plan carries only qualified Model-339 PIT/DMA selections; PIC remains explicit L2. The seven corrected PIT-transition regressions, 294/294 serial current gate, 77/77 specialized gates, documentation governance and stripped 0462 artifact complete the controller-board contract. [History](../history/M5-T462-core-controller-board-timing-contract.md). |

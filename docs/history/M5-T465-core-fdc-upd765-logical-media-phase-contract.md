@@ -24,3 +24,14 @@ all cancellation behavior retain their pre-existing reset path. The focused
 smoke passes and prints `M5:T465:S2:FDC-reset:OK` after both DOR reset edges
 and reset-Sense drain. Production code grows by six lines; no ABI, profile,
 scheduler, controller, media path or compatibility branch was added.
+
+## S3 Accepted Evidence
+
+`bcbc3040` corrects the ledger rather than adding a second FDC model: Core's
+selected Intel 8272A-compatible identity makes `10h` the existing invalid ST0
+`80h` command, while NEC uPD765 Version/overrun differences remain conditional
+Other/board L3 or fallback to L2. The focused smoke proves `10h` returns
+`80h`, raises no IRQ and returns to command phase, then prints
+`M5:T465:S3:FDC-8272-command:OK`. Production code is unchanged; the only test
+addition publishes this existing proof. No model selector or media/timing path
+was introduced.
