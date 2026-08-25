@@ -2,7 +2,26 @@
 
 ## Current Work
 
-**T468 is open; accepted subtask progress appears in Recent M5 Closures.**
+## M5 T468 S4 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; T468 S4, one-session coordinator, executor and closure review. |
+| Admission And Approval | The owner-approved T468 scope and accepted S2 audit authorize its sole remaining data/media defect: generic ATA WRITE SECTORS reads the destination before entering the data-out phase. |
+| Objective | Make generic ATA write admission validate its logical destination without reading it, through one shared HDC sector-resolution path. |
+| Non-goals | No controller/device/media selection, DMA, timing number, host wait, profile value, public ABI, Compaq WD behavior, source import or artifact cutover. |
+| Reference Baseline | ATA-3 rendered pages 48 and 106--110; [Checklist 1](../etc/research/t468-s1-ata3-function-timing-checklist.md) and [Checklist 2](../etc/evidence/t468-s2-ata-code-gap-audit.md), ATA-T3. |
+| Candidate Proposal | [M5 Core HDC ATA Phase Contract](../proposals/m5-core-hdc-ata-phase-contract.md), S4 data/media/cancellation closure. |
+| Files And ABI Surface | `src/core/machine/hdc.c`, the owned Core HDC smoke and S4 evidence/history/status. No public layout, configuration or build-graph change. |
+| Applicable Rules | `hdc.c` remains the single task-file/phase owner and the media provider remains the sole backing owner; one shared address validation path must replace duplicated CHS/LBA preparation without adding a media cache, shadow state or write route. |
+| Verification | Focused Core HDC proof forces a read failure yet admits and completes a valid PIO write; existing Core/VM ATA and Compaq/Model-40 HDC smokes, static HDC/controller gates, documentation governance, diff check and configured build pass. |
+| Expected Markers | One resolved logical-sector helper used by read, write and write admission; no destination `media_read_bytes` before DATA_WRITE; unchanged error disposition, completion and Compaq route. |
+| Asset Needs | No new asset. |
+| Reporting Requirements | Record ATA-T3 source/external basis, source/test line delta, retained HDC/media ownership, changed write proof and unchanged L2 controller/device/media/timing boundaries. |
+| Stop Conditions | Stop for a need to choose physical geometry, media grammar, controller timing or a new public/provider contract. |
+| Exit Criteria | ATA-T3 no longer has an implementation gap: WRITE SECTORS validates a writable destination without reading it; common resolution removes duplicate validation; all focused regression evidence passes. |
+| Original Owner Request | Complete the remaining controller tasks with manual authority, cross-model verification, exact L2 boundaries and minimalist single-owner design. |
+| Similar-Issue Sweep | Review all HDC read/write/verify/chained-sector admission paths and both CHS/LBA address forms; prove each retains exactly one validation and one media operation appropriate to its direction. |
 
 ## Current Technical Baseline
 
