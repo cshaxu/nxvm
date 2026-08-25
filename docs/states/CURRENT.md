@@ -28,7 +28,6 @@
 | Task | Compact result |
 | --- | --- |
 | T465 S5 | Accepted: the sole Core FDC owner now holds per-drive 8272A Seek state plus one Sense completion FIFO; MSR busy bits and two-drive ordering have focused proof. Fixed step duration remains explicit board-time L2. |
-| T465 S4 | Accepted: source and code ledgers are rebuilt around selected Intel 8272A; each external emulator disagreement is explicit. Parallel Seek and clock conversion are retained as bounded Manual-L3 code gaps, not uPD765 extensions or guessed L3. |
 | T464 | Closed: all sixteen KBC rows are Manual L3 or explicit L2/L4. One Core owner now covers selected command/input/test state; 294/294 serial current-gate tests pass and stripped Release 0464 is recorded in history. |
 | T463 | Closed: the 16-row MC146818A/IBM AT ledger has one Core phase owner, a copied L3/L2 board timing plan, explicit L2/L4 boundaries and focused proof. The full current gate ran 294/294; stripped Release 0463 is recorded in [history](../history/M5-T463-core-rtc-cmos-phase-contract.md). |
 | T462 | Closed: one immutable copied plan carries only qualified Model-339 PIT/DMA selections; PIC remains explicit L2. The seven corrected PIT-transition regressions, 294/294 serial current gate, 77/77 specialized gates, documentation governance and stripped 0462 artifact complete the controller-board contract. [History](../history/M5-T462-core-controller-board-timing-contract.md). |
