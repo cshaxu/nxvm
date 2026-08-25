@@ -21,6 +21,35 @@ are L2 or blocked until their selected primary source is admitted.  No
 mature-emulator reference is selected; S19 may name one only as labelled
 reference-derived investigation for a precisely identified primary-source gap.
 
+## T466 S1 Cross-Validation
+
+The IBM EGA chapter remains the only authority for an IBM-EGA row. Direct
+read-only comparison on 2026-08-25 used 86Box `4fef696`
+(`src/video/vid_ega.c`), Bochs 2.6 (`iodev/vga.cc`), PCjs PCx86 v2 (no IBM-EGA
+device implementation), current MAME (general video core, with no selected
+IBM-EGA device evidence) and current QEMU (`hw/display/vga.c`). Bochs and QEMU
+model later VGA-compatible state; 86Box has vendor/card variants; PCjs/MAME do
+not establish a selected IBM-EGA adapter. None can add an IBM register, clock
+or board fact. No reference code is imported.
+
+| ID | Cross-check result | Final source tier |
+| --- | --- | --- |
+| VADP-R1 | 86Box retains external/status paths; Bochs/QEMU merge them into later VGA state. | Manual L3 IBM ports; selected board decode fallback to L2. |
+| VADP-R2 | 86Box, Bochs and QEMU keep sequencer/reset state but choose different rendering and reset timing. | Manual L3 fields/order; board clock propagation fallback to L2. |
+| VADP-R3 | 86Box derives CRTC raster state; later VGA models add registers/masking beyond IBM EGA. | Manual L3 IBM CRTC subset; selected raster clock fallback to L2. |
+| VADP-R4 | 86Box/QEMU implement planar latch/write logic; QEMU additionally has VGA write-mode semantics. | Manual L3 IBM graphics subset; later variants fallback to L2. |
+| VADP-R5 | 86Box and VGA implementations keep attribute flip-flop/palette state; status source differs by adapter. | Manual L3 IBM attribute behavior; external-status wiring fallback to L2. |
+| VADP-F1 | Detailed models use planes/apertures, but capacity/decode are card-specific. | Manual L3 IBM plane/map facts; installed card memory fallback to L2. |
+| VADP-F2 | 86Box renders EGA modes; later VGA and PCjs use different mode surfaces. | Manual L3 IBM modes; current CECG personality is Other/board L3 only when selected. |
+| VADP-F3 | Every implementation owns a different scheduler or clock conversion. | Manual L3 chip values; Core tick conversion fallback to L2. |
+| VADP-F4 | 86Box models display timing internally; Bochs/QEMU define no ISA wait-state authority. | Manual L3 allocation rule; board arbitration fallback to L2. |
+| VADP-F5 | Reference models expose host renderers rather than monitor electrical interfaces. | Manual L3 signal names; monitor/host boundary fallback to L2. |
+| VADP-T1 | Reference cards choose their own ROM/decode integration. | Manual L3 IBM topology; selected board integration fallback to L2. |
+| VADP-T2 | Switch/jumper state is card configuration in 86Box; absent from generic VGA paths. | Manual L3 option facts; unselected profile fallback to L2. |
+| VADP-T3 | Monitor choice is outside every emulator's hardware oracle. | fallback to L2. |
+| VADP-T4 | References keep display scheduling distinct from host presentation, not one shared ISA timing rule. | Manual L3 adapter allocation; board service fallback to L2. |
+| VADP-T5 | References have separate host consumer paths. | Current Core/VM ownership is a project boundary; unselected inputs fallback to L2. |
+
 ## Register And Programming Universe
 
 | ID | Source | Finite function | Reset/cancellation | Timing or signal relation | Sufficiency and disposition |
