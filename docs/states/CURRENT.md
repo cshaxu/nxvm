@@ -2,7 +2,26 @@
 
 ## Current Work
 
-**Idle.**
+## M5 T468 S1 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New; T468 S1, one-session coordinator, executor and closure review. |
+| Admission And Approval | The persistent owner objective authorizes the next queued controller task. T468 selects only the existing generic ATA-3 PIO task-file personality and logical 512-byte media provider; it does not select IBM MFM/ST-506 or Model-339 fixed disk. |
+| Objective | Freeze the complete source-qualified ATA-3 generic PIO function/timing ledger through rendered manual inspection and cross-model comparison before auditing or changing code. |
+| Non-goals | No HDC implementation, controller chipset claim, MFM/ST-506 support, physical drive/media model, host-latency timing, external source import, firmware/guest-media import or profile mutation. |
+| Reference Baseline | X3T13 ATA-3 2008D Rev. 7b is in the owner-managed manual archive; `t450-s1-controller-source-and-code-baseline.md` records its hash and the former missing-personality concern. Current `hdc.c` is evidence only, never a specification. |
+| Candidate Proposal | [M5 Core HDC ATA Phase Contract](../proposals/m5-core-hdc-ata-phase-contract.md), S1 source and cross-model ledger. |
+| Files And ABI Surface | Research Checklist 1, evidence/index/history/status only. No Core, VM, test, CMake, public ABI or artifact change. |
+| Applicable Rules | Source/research, architecture, coding, execution and documentation rules: manual remains normative; external emulators are bounded corroborators; generic ATA never aliases MFM; no second HDC/media/IRQ owner. |
+| Verification | Hash and render the ATA-3 source; record scan/OCR limits and page ranges; inspect selected external models/read-only code; ensure every finite row is Manual L3, Other L3, Board-L3-capable/current-data L2 or exact fallback L2; run documentation governance. |
+| Expected Markers | One finite ledger, authoritative source per row, external disagreement recorded rather than averaged, exact receiver for every L2 gap, no product change. |
+| Asset Needs | Existing ATA-3 PDF and read-only external source trees only; no import or asset copy. |
+| Reporting Requirements | Record source identity/quality, row count, each model's applicability, provenance tier, manual ambiguity, exact L2 receiver and no-runtime-change proof. |
+| Stop Conditions | Stop for unavailable/illegible primary material, a requirement for a specific controller/drive personality outside ATA-3, contradictory source without bounded resolution, or any need to import external code. |
+| Exit Criteria | Checklist 1 is exhaustive for the selected generic ATA_PIO surface; every row has a source/tier and an implementation or L2 receiver; S2 has a fixed ledger universe. |
+| Original Owner Request | Complete the remaining controller tasks with manual authority, cross-model verification, exact L2 boundaries and minimalist single-owner design. |
+| Similar-Issue Sweep | Inspect all existing ATA/HDC source, tests, profile routes, media bindings and prior HDC evidence for alternate controller personalities, MFM aliases, duplicate task-file state or unqualified timing claims; record each disposition. |
 
 ## Current Technical Baseline
 
