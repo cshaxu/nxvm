@@ -25,3 +25,15 @@ L2 until S2 proves a source-qualified board/device/media input and its one
 existing HDC consumer. A verified receiver promotes its supplied term to Board
 L3 without creating a second owner. T5 prohibits ATA-to-MFM substitution. No
 runtime code, ABI, source import or product artifact changed.
+
+## S2 Accepted Evidence
+
+Checklist 2 traces every inherited ID exactly once through the existing HDC,
+media, PIC, timeline, plan and profile paths. It confirms one ownership chain
+and identifies two finite repairs only: S3 gates generic task-file writes while
+BSY/DRQ is active, preserves an interrupt condition across nIEN and restores
+the ATA logical reset signature; S4 removes the erroneous Data-Out dependency
+on a successful prior media read by sharing address validation with the one
+media owner. Neither repair chooses a controller, device identity, image
+grammar, DMA path or timing number. All remaining L2 boundaries have their
+existing or named future receiver in the audit.

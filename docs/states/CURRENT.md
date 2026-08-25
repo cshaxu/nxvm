@@ -2,26 +2,7 @@
 
 ## Current Work
 
-## M5 T468 S2 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation; T468 S2, one-session coordinator, executor and closure review. |
-| Admission And Approval | S1's accepted 15-row ledger authorizes its implementation-gap audit. S2 may classify current behavior and name a sole repair owner; it may not implement, select a controller/device/media personality, or promote resemblance to ATA conformance. |
-| Objective | Trace every ATA-R1--R5, ATA-F1--F5 and ATA-T1--T5 row through current HDC, logical media, PIC, scheduler, profile and focused tests; freeze Checklist 2 with behavior, proof, gap, exact owner and disposition. |
-| Non-goals | No runtime, public ABI, CMake, profile, fixture, firmware, guest-media, external source or artifact change. |
-| Reference Baseline | [T468 S1 Checklist](../etc/research/t468-s1-ata3-function-timing-checklist.md) and [T450 S18 audit](../etc/evidence/t450-s18-hdc-ata-code-gap-audit.md). Current code remains evidence only. |
-| Candidate Proposal | [M5 Core HDC ATA Phase Contract](../proposals/m5-core-hdc-ata-phase-contract.md), S2 implementation-gap audit. |
-| Files And ABI Surface | Checklist 2, history/status and evidence/index only. Inspect `hdc.c`, its public contracts, Core machine/media/PIC/scheduler/profile paths and relevant tests read-only. |
-| Applicable Rules | Source/research, architecture, coding, execution and documentation rules: one HDC/media/PIC/scheduler owner path; manual is normative; external models do not choose a personality; L2 only for a genuinely absent sourced input/receiver. |
-| Verification | Exhaustive writer/consumer search, row-by-row source trace, focused-test inventory, no-runtime-change proof, documentation governance and diff check. |
-| Expected Markers | One 15-row Checklist 2; every gap is either an S3/S4 repair through an existing owner or an exact L2 transfer; no duplicate state, profile mutation, generic setter or host bridge. |
-| Asset Needs | Existing repository and already-admitted read-only sources only; no asset import. |
-| Reporting Requirements | Record exact paths/tests, behavior and absence separately, selected-current versus capable receiver status, each repair owner and every retained L2 boundary. |
-| Stop Conditions | Stop for a required personality decision, a conflict with ATA-3, a missing owner that would require architectural expansion, or any implementation work. |
-| Exit Criteria | Checklist 2 has all 15 IDs once; S3/S4 scope is finite, source-backed and carries no hidden controller/device/media selection. |
-| Original Owner Request | Complete the remaining controller tasks with manual authority, cross-model verification, exact L2 boundaries and minimalist single-owner design. |
-| Similar-Issue Sweep | Search all HDC protocol branches, media bindings, IRQ publication sites, profile construction inputs, port accessors, reset/detach paths and focused tests for duplicated state, MFM aliasing or unqualified timing claims. |
+**T468 is open; accepted subtask progress appears in Recent M5 Closures.**
 
 ## Current Technical Baseline
 
@@ -52,7 +33,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T468 S1 | Accepted: the ATA/HDC Checklist 1 retains all 15 inherited row IDs. Rendered ATA-3 is normative; 86Box, Bochs, QEMU and MAME are bounded corroborators, while PCjs is inapplicable. No current HDC personality is presumed ATA. Manual interface facts are L3; only a source-qualified value consumed through the existing sole HDC path can become Board L3. [Checklist](../etc/research/t468-s1-ata3-function-timing-checklist.md) and [history](../history/M5-T468-core-hdc-ata-phase-contract.md). |
+| T468 S2 | Accepted: Checklist 2 maps the same 15 ATA IDs to one HDC/media/PIC/timeline path. Only generic task-file/IRQ/reset and write-validation defects proceed to S3/S4; controller, device, media, DMA and time selection remain exact L2. [Audit](../etc/evidence/t468-s2-ata-code-gap-audit.md) and [history](../history/M5-T468-core-hdc-ata-phase-contract.md). |
 | T467 | Closed: all 17 selected IBM-CGA rows reconcile to one VADP/Core/profile/snapshot path. Manual-L3 digital behavior and bounded Model-339 Other-L3 cadence are complete; only exact 160x100, default/ISA-wait timing, light-pen lifecycle and physical-monitor boundaries remain L2. Serial current-gate passes 295/295; stripped Release 0467 is recorded in [history](../history/M5-T467-core-ibm-cga-completeness.md). |
 | T466 | Closed: Manual-L3 D/E/10 geometry reaches the single VADP state owner through real firmware and guest port writes. The profile declaration, cold-start/text routing and all fixtures now agree; unknown planar geometry falls through existing legacy selection rather than inventing a frame. The stripped Release 0466 artifact and its hash are recorded in [history](../history/M5-T466-core-vadp-phase-contract.md). |
 | T465 | Closed: selected Intel 8272A source reconciliation, command/reset repair and per-drive parallel Seek close the logical controller contract; physical media and board-time conversion remain explicit L2. Release 0465 is stripped and the 294/294 serial gate is recorded in [history](../history/M5-T465-core-intel-8272a-logical-media-phase-contract.md). |
