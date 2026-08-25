@@ -63,8 +63,12 @@ typedef struct {
     type_bool scan_sector_satisfies;
     type_unsigned_16 cylinder;
     type_unsigned_16 drive_cylinder[CORE_MACHINE_FDC_DRIVE_COUNT];
-    type_unsigned_16 seek_target;
-    type_unsigned_64 seek_due_tick;
+    type_unsigned_16 seek_target[CORE_MACHINE_FDC_DRIVE_COUNT];
+    type_unsigned_64 seek_due_tick[CORE_MACHINE_FDC_DRIVE_COUNT];
+    type_bool seek_pending[CORE_MACHINE_FDC_DRIVE_COUNT];
+    type_unsigned_8 seek_result_st0[CORE_MACHINE_FDC_DRIVE_COUNT];
+    type_unsigned_8 seek_result_cylinder[CORE_MACHINE_FDC_DRIVE_COUNT];
+    type_unsigned_8 seek_result_count;
     type_unsigned_16 head;
     type_unsigned_16 sector;
     type_unsigned_16 eot;

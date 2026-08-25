@@ -2,6 +2,28 @@
 
 ## Current Work
 
+## M5 T465 S5 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner goal dated 2026-08-25 approves completion of active controller tasks; accepted T465 S4 identifies this as the remaining selected-controller functional gap. |
+| Objective | Implement Intel 8272A logical parallel Seek/Recalibrate state through the sole Core FDC owner, keeping one completion record per drive and preserving existing Sense Interrupt semantics. |
+| Non-goals | No physical drive mechanics, clock conversion, new board/profile API, media grammar, controller selector, scheduler, VM policy or timing claim beyond existing L2 step duration. |
+| Reference Baseline | `f9a8553f`; accepted Intel 8272A S13/S14 ledgers and current `fdc.c` state machine. |
+| Candidate Proposal | [Core Intel 8272A and logical media phase contract](../proposals/m5-core-intel-8272a-logical-media-phase-contract.md). |
+| Files And ABI Surface | `src/core/machine/fdc.c`, `fdc.h`, focused FDC smoke and T465 evidence/status only. No public ABI or profile surface. |
+| Applicable Rules | Intel manual governs parallel Seek state; each drive owns only its pending completion and Core retains the sole FDC/Sense/DMA/IRQ path. Fixed step time remains explicit L2. |
+| Verification | Add a deterministic independent-two-drive Seek/Recalibrate trace, preserve existing focused markers, run focused FDC smoke, documentation governance and `git diff --check`. |
+| Expected Markers | A seek for drive B does not overwrite due state for drive A; each completion is delivered exactly once through existing Sense Interrupt Status order. |
+| Asset Needs | None. |
+| Reporting Requirements | Record the per-drive ownership, completion order, retained L2 timing boundary and removal of the global single-pending limitation. |
+| Stop Conditions | Stop for Intel-manual conflict over concurrent Seek semantics, a need for board inputs to represent logical completion, or required public API expansion. |
+| Exit Criteria | The source has no global pending-seek state, simultaneous different-drive Seeks complete independently through one Sense route, and all existing command/reset/DMA behavior remains proved. |
+| Original Owner Request | Complete remaining controller tasks source-first, with precise L2 rather than invented timing and no additive parallel architecture. |
+| Similar-Issue Sweep | Re-read seek/recalibrate, reset, Sense Interrupt, drive busy MSR, cancellation, scheduler advance and focused FDC tests. |
+
+
 ## Current Technical Baseline
 
 - **Current developer artifact:** target `vm-0-5-0464`; `nxvm_0_5_0464.exe` / `build/output/nxvm_0_5_0464.exe`, SHA-256 `92BF67903AF9F7725F9BFC8182373FDF615DD5026EDA1857C87BF8249912F674`. It is built only from the stripped Release current-artifact route; Debug remains the current-gate route. T434 has one copied Core timing-plan publication route for default PC/AT, IBM 5170 Model 339 and Model-40 BYOB session composition.

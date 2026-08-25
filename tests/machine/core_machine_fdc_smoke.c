@@ -150,8 +150,10 @@ static C_VOID core_machine_fdc_command(core_machine_fdc *fdc, t_port *port,
         core_machine_port_write(port, 0x03f5u, bytes[index]);
     }
     core_machine_fdc_advance(fdc);
-    if (fdc->data.phase == core_machine_fdc_PHASE_PENDING_SEEK) {
-        core_machine_fdc_advance_at(fdc, fdc->data.seek_due_tick);
+    for (type_unsigned_8 drive = 0u; drive < CORE_MACHINE_FDC_DRIVE_COUNT; ++drive) {
+        if (fdc->data.seek_pending[drive]) {
+            core_machine_fdc_advance_at(fdc, fdc->data.seek_due_tick[drive]);
+        }
     }
 }
 
@@ -316,17 +318,45 @@ C_INT main(C_VOID)
                 core_machine_port_write(port, fdc_config.data_port, 0x00u);
                 core_machine_port_write(port, fdc_config.data_port, 0x03u);
                 core_machine_fdc_advance_at(fdc, 100u);
-                failed |= fdc->data.phase != core_machine_fdc_PHASE_PENDING_SEEK ||
+                failed |= fdc->data.seek_pending[0u] == TYPE_FALSE ||
                     fdc->data.cylinder != 0u || fdc->connect.irq_source.asserted ||
-                    fdc->data.seek_due_tick != 72100u;
+                    fdc->data.seek_due_tick[0u] != 72100u;
                 core_machine_fdc_advance_at(fdc, 72099u);
-                failed |= fdc->data.phase != core_machine_fdc_PHASE_PENDING_SEEK ||
+                failed |= fdc->data.seek_pending[0u] == TYPE_FALSE ||
                     fdc->connect.irq_source.asserted;
                 core_machine_fdc_advance_at(fdc, 72100u);
                 failed |= fdc->data.cylinder != 3u || !fdc->connect.irq_source.asserted;
                 core_machine_fdc_command(fdc, port, (const type_unsigned_8[]){0x08u}, 1u);
                 failed |= !core_machine_fdc_read_result(fdc, port, result, 2u) ||
                     result[1] != 3u;
+
+                /* Intel 8272A permits one drive to seek while another is
+                   commanded.  Each completion must remain associated with
+                   its own drive until Sense Interrupt Status consumes it. */
+                core_machine_port_write(port, fdc_config.data_port, 0x0fu);
+                core_machine_port_write(port, fdc_config.data_port, 0x00u);
+                core_machine_port_write(port, fdc_config.data_port, 0x07u);
+                core_machine_fdc_advance_at(fdc, 72101u);
+                core_machine_port_write(port, fdc_config.data_port, 0x0fu);
+                core_machine_port_write(port, fdc_config.data_port, 0x01u);
+                core_machine_port_write(port, fdc_config.data_port, 0x01u);
+                core_machine_fdc_advance_at(fdc, 72102u);
+                failed |= !fdc->data.seek_pending[0u] || !fdc->data.seek_pending[1u] ||
+                    (core_machine_port_read(port, fdc_config.status_port) &
+                    (VFDC_MSR_DB(0u) | VFDC_MSR_DB(1u))) !=
+                    (VFDC_MSR_DB(0u) | VFDC_MSR_DB(1u));
+                core_machine_fdc_advance_at(fdc, 96102u);
+                failed |= fdc->data.seek_pending[1u] || !fdc->data.seek_pending[0u] ||
+                    !fdc->connect.irq_source.asserted;
+                core_machine_port_write(port, fdc_config.data_port, 0x08u);
+                core_machine_fdc_advance_at(fdc, 96103u);
+                failed |= !core_machine_fdc_read_result(fdc, port, result, 2u) ||
+                    (result[0] & 3u) != 1u || result[1] != 1u;
+                core_machine_fdc_advance_at(fdc, 168101u);
+                core_machine_port_write(port, fdc_config.data_port, 0x08u);
+                core_machine_fdc_advance_at(fdc, 168102u);
+                failed |= !core_machine_fdc_read_result(fdc, port, result, 2u) ||
+                    (result[0] & 3u) != 0u || result[1] != 7u;
 
                 for (type_unsigned_32 index = 0u; index < sizeof(read_sector); ++index) {
                     core_machine_port_write(port, fdc_config.data_port, read_sector[index]);
@@ -623,5 +653,6 @@ C_INT main(C_VOID)
     puts("M5:T376:S4:8272A-SCAN:OK");
     puts("M5:T465:S2:FDC-reset:OK");
     puts("M5:T465:S3:FDC-8272-command:OK");
+    puts("M5:T465:S5:FDC-parallel-seek:OK");
     return 0;
 }

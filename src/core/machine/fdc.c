@@ -42,24 +42,31 @@ static type_unsigned_8 core_machine_fdc_sector_size(type_unsigned_8 code)
 
 static type_unsigned_8 core_machine_fdc_msr(const core_machine_fdc *fdc)
 {
+    type_unsigned_8 value;
+    type_unsigned_8 drive;
+
     switch (fdc->data.phase) {
     case core_machine_fdc_PHASE_PENDING_COMMAND:
     case core_machine_fdc_PHASE_PENDING_SEEK:
     case core_machine_fdc_PHASE_PENDING_COMPLETE:
-        return VFDC_MSR_CB;
+        value = VFDC_MSR_CB; break;
     case core_machine_fdc_PHASE_RESULT:
-        return VFDC_MSR_RQM | VFDC_MSR_DIO | VFDC_MSR_CB;
+        value = VFDC_MSR_RQM | VFDC_MSR_DIO | VFDC_MSR_CB; break;
     case core_machine_fdc_PHASE_EXECUTION_READ:
-        return fdc->data.flagNDMA && !fdc->data.ndma_byte_gate_pending ? VFDC_MSR_RQM | VFDC_MSR_DIO |
-            VFDC_MSR_NDM | VFDC_MSR_CB : VFDC_MSR_CB;
+        value = fdc->data.flagNDMA && !fdc->data.ndma_byte_gate_pending ? VFDC_MSR_RQM | VFDC_MSR_DIO |
+            VFDC_MSR_NDM | VFDC_MSR_CB : VFDC_MSR_CB; break;
     case core_machine_fdc_PHASE_EXECUTION_WRITE:
     case core_machine_fdc_PHASE_EXECUTION_SCAN:
     case core_machine_fdc_PHASE_EXECUTION_FORMAT:
-        return fdc->data.flagNDMA && !fdc->data.ndma_byte_gate_pending ? VFDC_MSR_RQM | VFDC_MSR_NDM |
-            VFDC_MSR_CB : VFDC_MSR_CB;
+        value = fdc->data.flagNDMA && !fdc->data.ndma_byte_gate_pending ? VFDC_MSR_RQM | VFDC_MSR_NDM |
+            VFDC_MSR_CB : VFDC_MSR_CB; break;
     default:
-        return VFDC_MSR_RQM;
+        value = VFDC_MSR_RQM; break;
     }
+    for (drive = 0u; drive < CORE_MACHINE_FDC_DRIVE_COUNT; ++drive) {
+        if (fdc->data.seek_pending[drive]) value |= VFDC_MSR_DB(drive);
+    }
+    return value;
 }
 
 static core_machine_media_id core_machine_fdc_drive_media_id(
@@ -346,24 +353,17 @@ static C_VOID core_machine_fdc_complete_unready_read(core_machine_fdc *fdc,
     core_machine_fdc_complete_transfer(fdc, core_machine_fdc_ST1_NO_DATA);
 }
 
-static C_VOID core_machine_fdc_complete_simple(core_machine_fdc *fdc, type_unsigned_8 st0,
-    type_unsigned_8 cylinder)
-{
-    fdc->data.ret[0] = st0;
-    fdc->data.ret[1] = cylinder;
-    fdc->data.st0 = st0;
-    core_machine_fdc_result_phase(fdc, 2u);
-}
-
 static C_VOID core_machine_fdc_begin_seek(core_machine_fdc *fdc, type_unsigned_16 target)
 {
-    type_unsigned_16 current = fdc->data.drive_cylinder[fdc->data.selected_drive];
+    type_unsigned_8 drive = fdc->data.selected_drive;
+    type_unsigned_16 current = fdc->data.drive_cylinder[drive];
     type_unsigned_16 distance = current > target ? current - target : target - current;
 
-    fdc->data.seek_target = target;
-    fdc->data.seek_due_tick = fdc->data.elapsed_ticks +
+    fdc->data.seek_target[drive] = target;
+    fdc->data.seek_due_tick[drive] = fdc->data.elapsed_ticks +
         (type_unsigned_64)distance * CORE_MACHINE_FDC_SEEK_TRACK_TICKS;
-    fdc->data.phase = core_machine_fdc_PHASE_PENDING_SEEK;
+    fdc->data.seek_pending[drive] = TYPE_TRUE;
+    core_machine_fdc_command_phase(fdc);
 }
 
 static C_INT core_machine_fdc_drive_ready(const core_machine_fdc *fdc)
@@ -771,6 +771,18 @@ static C_VOID core_machine_fdc_execute(core_machine_fdc *fdc)
             fdc->data.reset_sense_count--;
             fdc->data.flagINTR = TYPE_FALSE;
             core_machine_pic_irq_source_deassert(&fdc->connect.irq_source);
+        } else if (fdc->data.seek_result_count != 0u) {
+            type_unsigned_8 index;
+
+            fdc->data.ret[0] = fdc->data.seek_result_st0[0u];
+            fdc->data.ret[1] = fdc->data.seek_result_cylinder[0u];
+            for (index = 1u; index < fdc->data.seek_result_count; ++index) {
+                fdc->data.seek_result_st0[index - 1u] = fdc->data.seek_result_st0[index];
+                fdc->data.seek_result_cylinder[index - 1u] = fdc->data.seek_result_cylinder[index];
+            }
+            fdc->data.seek_result_count--;
+            fdc->data.flagINTR = fdc->data.seek_result_count != 0u;
+            if (!fdc->data.flagINTR) core_machine_pic_irq_source_deassert(&fdc->connect.irq_source);
         } else if (fdc->data.flagINTR) {
             fdc->data.ret[0] = fdc->data.st0;
             fdc->data.ret[1] = (type_unsigned_8)fdc->data.cylinder;
@@ -1053,18 +1065,6 @@ C_VOID core_machine_fdc_advance_at(core_machine_fdc *fdc,
     fdc->data.elapsed_ticks = elapsed_ticks;
     if (fdc->data.phase == core_machine_fdc_PHASE_PENDING_COMMAND) {
         core_machine_fdc_execute(fdc);
-    } else if (fdc->data.phase == core_machine_fdc_PHASE_PENDING_SEEK &&
-        elapsed_ticks >= fdc->data.seek_due_tick) {
-        fdc->data.cylinder = fdc->data.seek_target;
-        fdc->data.drive_cylinder[fdc->data.selected_drive] = fdc->data.seek_target;
-        core_machine_fdc_observe_drive(fdc, fdc->data.selected_drive);
-        core_machine_fdc_complete_simple(fdc, core_machine_fdc_drive_ready(fdc) ?
-            core_machine_fdc_ST0_NORMAL | VFDC_ST0_SEEK_END |
-            fdc->data.selected_drive : core_machine_fdc_ST0_ABNORMAL |
-            VFDC_ST0_SEEK_END | fdc->data.selected_drive,
-            (type_unsigned_8)fdc->data.cylinder);
-        core_machine_fdc_raise_irq(fdc);
-        core_machine_fdc_command_phase(fdc);
     } else if (fdc->data.phase == core_machine_fdc_PHASE_PENDING_COMPLETE) {
         core_machine_fdc_set_result(fdc, fdc->data.pending_st0 != 0u ?
             fdc->data.pending_st0 : (fdc->data.pending_st1 == 0u ?
@@ -1073,6 +1073,21 @@ C_VOID core_machine_fdc_advance_at(core_machine_fdc *fdc,
         core_machine_fdc_result_phase(fdc, 7u);
         core_machine_fdc_publish_terminal_result(fdc);
         core_machine_fdc_raise_irq(fdc);
+    }
+    for (type_unsigned_8 drive = 0u; drive < CORE_MACHINE_FDC_DRIVE_COUNT; ++drive) {
+        if (fdc->data.seek_pending[drive] && elapsed_ticks >= fdc->data.seek_due_tick[drive]) {
+            fdc->data.seek_pending[drive] = TYPE_FALSE;
+            fdc->data.drive_cylinder[drive] = fdc->data.seek_target[drive];
+            fdc->data.cylinder = fdc->data.seek_target[drive];
+            core_machine_fdc_observe_drive(fdc, drive);
+            fdc->data.seek_result_st0[fdc->data.seek_result_count] =
+                core_machine_fdc_drive_ready(fdc) ? core_machine_fdc_ST0_NORMAL |
+                VFDC_ST0_SEEK_END | drive : core_machine_fdc_ST0_ABNORMAL |
+                VFDC_ST0_SEEK_END | drive;
+            fdc->data.seek_result_cylinder[fdc->data.seek_result_count++] =
+                (type_unsigned_8)fdc->data.drive_cylinder[drive];
+            core_machine_fdc_raise_irq(fdc);
+        }
     }
     core_machine_fdc_publish_due_dma_byte(fdc);
     core_machine_fdc_publish_due_ndma_byte(fdc);
