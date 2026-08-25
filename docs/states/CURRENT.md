@@ -2,26 +2,8 @@
 
 ## Current Work
 
-## M5 T467 S3 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation; T467 S3, one-session coordinator, executor and closure review. |
-| Admission And Approval | The persistent owner objective approves completion of the CGA controller task. S2 is accepted at `dbbf29bc`; S3 consumes its finite CGA-R1--R5/CGA-F7 port/register/reset batch. |
-| Objective | Close the sourced selected IBM-CGA 3D4h--3DAh register grammar, reset/cancellation and light-pen disposition through the sole VADP owner, with a complete port sweep. |
-| Non-goals | Do not create a renderer, duplicate VADP state, infer 160x100, add host timing, model electrical waveforms, import third-party code, or add generic profile callbacks/live setters. |
-| Reference Baseline | `dbbf29bc` records one VADP owner and the exact R1--R5/F7 gaps. Checklist 1's rendered IBM/Motorola authority governs; external simulators only corroborate. |
-| Candidate Proposal | [M5 Core IBM CGA Completeness](../proposals/m5-core-ibm-cga-completeness.md), S3 port/register/reset closure. |
-| Files And ABI Surface | Expected: `vadp.c`/private VADP state and focused CGA smoke tests/evidence/status. Public profile, VM presentation and a second memory/renderer owner are forbidden. |
-| Applicable Rules | `docs/design/ARCHITECTURE.md`, `docs/design/CODING.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md` and `docs/rules/EXECUTION.md`: VADP owns all mutable CGA state; Core owns time; configuration is construction-only; remove stale special admission rather than layering a parallel path. |
-| Verification | Add focused tests for every selected 3D4h--3DAh access direction/mask/reset and mode-disable observation; run affected CGA/VADP tests, configured build and documentation governance. |
-| Expected Markers | One VADP port route, full source-qualified selected grammar, no readback added for write-only CGA ports, no Compaq light-pen state reused as IBM-CGA state, and every retained L2 item has a receiver. |
-| Asset Needs | Existing rendered IBM/Motorola sources and read-only comparison evidence only; no new asset or import. |
-| Reporting Requirements | Record the complete port/register sweep, source-backed repair, removed special-case code, tests, source/test line delta and every exact retained L2 boundary. |
-| Stop Conditions | Stop if the primary material cannot settle an access class/reset rule, if selected IBM-CGA light-pen needs an unowned profile input lifecycle, or if repair requires a second VADP/video owner. |
-| Exit Criteria | R1--R5/F7 have a sole source-backed code path and focused proof, exact unresolved light-pen lifecycle is transferred, no duplicate mode/CRTC/palette/raster state exists, and required gates pass. |
-| Original Owner Request | Complete controllers through manual-authoritative, minimalist L3 implementation; accept external L3 data at existing sole-owner inputs and retain only true L2 boundaries. |
-| Similar-Issue Sweep | Inspect all CGA and EGA/Compaq overlapping port registrations, CRTC masks/readability/reset behavior, mode/color capture consumers, firmware writers, default and Model-339/CECG profiles, and tests for stale special values. |
+**Between admitted subtasks.** T467 S3 is accepted at `b4f244fc`; no
+subsequent S is active.
 
 ## Current Technical Baseline
 
@@ -51,7 +33,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T467 S2 | Accepted: the complete 17-row code-gap ledger preserves one VADP owner and classifies CGA timing input as Board-L3-capable while its default values remain Current data L2. The prior PIC/DMA/PIT/RTC/KBC retained boundaries receive the same review: existing copied sole-owner inputs are Board-L3-capable; only absent complete inputs or unspecifiable Core facts remain L2. No source or production path changed. |
+| T467 S3 | Accepted: VADP now retains the selected IBM-CGA 6845 access classes, five-bit 3D4 index, six-bit output registers and complete control-address decode. The obsolete `1Ah` admission is deleted; 4/4 focused CGA/VADP tests and documentation governance pass. The missing physical light-pen input lifecycle remains exact L2 and does not borrow Compaq state. |
 | T466 | Closed: Manual-L3 D/E/10 geometry reaches the single VADP state owner through real firmware and guest port writes. The profile declaration, cold-start/text routing and all fixtures now agree; unknown planar geometry falls through existing legacy selection rather than inventing a frame. The stripped Release 0466 artifact and its hash are recorded in [history](../history/M5-T466-core-vadp-phase-contract.md). |
 | T465 | Closed: selected Intel 8272A source reconciliation, command/reset repair and per-drive parallel Seek close the logical controller contract; physical media and board-time conversion remain explicit L2. Release 0465 is stripped and the 294/294 serial gate is recorded in [history](../history/M5-T465-core-intel-8272a-logical-media-phase-contract.md). |
 | T464 | Closed: all sixteen KBC rows are Manual L3 or explicit L2/L4. One Core owner now covers selected command/input/test state; 294/294 serial current-gate tests pass and stripped Release 0464 is recorded in history. |

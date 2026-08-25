@@ -39,4 +39,8 @@ passes 4/4 after a rebuild in `build/mingw-gcc-x64`.
 Production paths: one `vadp.c` CRTC route, one mode/colour route and one
 copied snapshot route remain. No header, profile, VM, renderer, time source
 or second light-pen state was added. The obsolete high-resolution special case
-was deleted; the source/test delta is recorded at coordinator review.
+was deleted. Coordinator review measures tracked source/test changes as
+`+59/-22` (net `+37`): production `vadp.c` is `+39/-21` (net `+18`) because
+one access-class predicate replaces the narrower condition and two real IBM
+port decodes are added; the focused regression is `+20/-1` (net `+19`). No
+parallel path or obsolete production state remains.
