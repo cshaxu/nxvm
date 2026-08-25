@@ -49,3 +49,16 @@ The extended CRTC smoke proves every mask, access class and reset state; the
 planar, Mode 10, CECG and CGA status regressions pass. Raster tick conversion,
 vertical IRQ delivery and physical inputs remain L2. No scheduler, renderer,
 memory route, public ABI or compatibility readback path was added.
+
+## S5 Accepted Evidence
+
+The sole VADP planar provider now implements IBM EGA Graphics Controller
+00h--08h modes 0--2: rotate/set-reset/logical/bit-mask writes, latch-copy and
+processor-bit expansion writes, and read-map or Color Compare reads.  Test
+Condition is the same provider's high-impedance gate.  Graphics Controller
+data reads now return zero because the IBM registers are write-only; private
+state no longer leaks through false readback.  The detailed source ledger
+retains L2 for unassigned read maps, Odd/Even/Shift Register, invalid mode 3,
+serializer clocks and board arbitration.  Focused planar/controller, EGA
+CRTC/mode-10, CECG and VM-system smokes pass; no renderer, memory path, API or
+compatibility route was added.
