@@ -58,8 +58,10 @@ C_INT main(C_VOID)
         CORE_MACHINE_VADP_EGA_PERSONALITY_GENERIC) != TYPE_STATUS_OK;
     failed |= !core_machine_port_has_write(&port,
         CORE_MACHINE_VADP_PORT_COMPAQ_MISCELLANEOUS_OUTPUT) ||
-        core_machine_port_has_write(&generic_port,
-        CORE_MACHINE_VADP_PORT_COMPAQ_MISCELLANEOUS_OUTPUT);
+        !core_machine_port_has_write(&generic_port,
+        CORE_MACHINE_VADP_PORT_EGA_MISCELLANEOUS_OUTPUT) ||
+        core_machine_port_has_read(&generic_port,
+        CORE_MACHINE_VADP_PORT_COMPAQ_CONTROL_MODE);
     core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_GRAPHICS_INDEX, 6u);
     core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_GRAPHICS_DATA, 0x07u);
     failed |= !t386_s28_write(&memory, 0x80u) || !t386_s28_read(&memory, &value) ||

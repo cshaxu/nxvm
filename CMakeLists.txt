@@ -1701,6 +1701,10 @@ add_executable(core-machine-vadp-text-status-smoke
     tests/machine/core_machine_vadp_text_status_smoke.c
 )
 target_link_libraries(core-machine-vadp-text-status-smoke PRIVATE core-machine)
+add_executable(core-machine-ega-external-port-smoke
+    tests/machine/core_machine_ega_external_port_smoke.c
+)
+target_link_libraries(core-machine-ega-external-port-smoke PRIVATE core-machine)
 add_executable(core-machine-display-authority-smoke
     tests/machine/core_machine_display_authority_smoke.c
 )
@@ -2255,6 +2259,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     vm-keyboard-set1-mapper-smoke
     core-machine-vadp-text-smoke
     core-machine-vadp-text-status-smoke
+    core-machine-ega-external-port-smoke
     core-machine-display-authority-smoke
     core-machine-dma-rtc-authority-smoke
     core-machine-cga-graphics-port-smoke
@@ -3576,10 +3581,10 @@ foreach(project_t345_target IN LISTS PROJECT_T344_CURRENT_GATE_TARGETS)
 endforeach()
 list(LENGTH PROJECT_T345_S2_OWNER_TEST_STRICT_TARGETS project_t345_s2_pure_count)
 list(LENGTH PROJECT_T345_S2_MIXED_OWNER_TEST_TARGETS project_t345_s2_mixed_count)
-if(NOT project_t345_s2_pure_count EQUAL 176 OR
+if(NOT project_t345_s2_pure_count EQUAL 177 OR
         NOT project_t345_s2_mixed_count EQUAL 3)
     message(FATAL_ERROR
-        "T345 S2 expected 176 pure and 3 mixed owner-test targets; found ${project_t345_s2_pure_count} pure and ${project_t345_s2_mixed_count} mixed.")
+        "T345 S2 expected 177 pure and 3 mixed owner-test targets; found ${project_t345_s2_pure_count} pure and ${project_t345_s2_mixed_count} mixed.")
 endif()
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     foreach(project_t345_target IN LISTS PROJECT_T345_S2_OWNER_TEST_STRICT_TARGETS)

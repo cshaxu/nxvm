@@ -43,6 +43,10 @@ extern "C" {
 #define CORE_MACHINE_VADP_PORT_MODE 0x03d8u
 #define CORE_MACHINE_VADP_PORT_COLOR 0x03d9u
 #define CORE_MACHINE_VADP_PORT_STATUS 0x03dau
+#define CORE_MACHINE_VADP_PORT_EGA_MISCELLANEOUS_OUTPUT 0x03c2u
+#define CORE_MACHINE_VADP_PORT_EGA_INPUT_STATUS_0 0x03c2u
+#define CORE_MACHINE_VADP_PORT_EGA_FEATURE_CONTROL_MONO 0x03bau
+#define CORE_MACHINE_VADP_PORT_EGA_FEATURE_CONTROL_COLOR 0x03dau
 #define CORE_MACHINE_VADP_PORT_COMPAQ_MISCELLANEOUS_OUTPUT 0x03c2u
 #define CORE_MACHINE_VADP_PORT_COMPAQ_FEATURE_CONTROL \
     CORE_MACHINE_VADP_PORT_STATUS
@@ -62,6 +66,9 @@ typedef struct t_vadp_data {
     type_unsigned_8 mode_control;
     type_unsigned_8 color_select;
     core_machine_vadp_ega_personality ega_personality;
+    type_bool ega_external_configured;
+    type_unsigned_8 ega_miscellaneous_output;
+    type_unsigned_8 ega_feature_control;
     core_machine_vadp_ega_sequencer_config ega_sequencer;
     type_unsigned_8 sequencer_index;
     type_unsigned_8 sequencer[CORE_MACHINE_VADP_SEQUENCER_REGISTER_COUNT];

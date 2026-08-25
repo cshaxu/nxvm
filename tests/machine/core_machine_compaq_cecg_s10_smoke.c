@@ -28,10 +28,15 @@ C_INT main(C_VOID)
         core_machine_vadp_configure_cecg(&vadp, &config) != TYPE_STATUS_OK;
     failed |= !core_machine_port_has_write(&port,
         CORE_MACHINE_VADP_PORT_COMPAQ_FEATURE_CONTROL) ||
-        core_machine_port_has_write(&generic_port,
-        CORE_MACHINE_VADP_PORT_COMPAQ_FEATURE_CONTROL) ||
+        !core_machine_port_has_write(&generic_port,
+        CORE_MACHINE_VADP_PORT_EGA_FEATURE_CONTROL_COLOR) ||
+        core_machine_port_has_read(&generic_port,
+        CORE_MACHINE_VADP_PORT_COMPAQ_ENVIRONMENT) ||
         core_machine_port_read(&port, CORE_MACHINE_VADP_PORT_COMPAQ_ENVIRONMENT) !=
             0x05u;
+    core_machine_port_write(&generic_port,
+        CORE_MACHINE_VADP_PORT_EGA_FEATURE_CONTROL_COLOR, 0x02u);
+    failed |= generic_vadp.data.ega_feature_control != 0x02u;
     core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_COMPAQ_FEATURE_CONTROL,
         0x03u);
     failed |= core_machine_port_read(&port, CORE_MACHINE_VADP_PORT_COMPAQ_ENVIRONMENT) !=

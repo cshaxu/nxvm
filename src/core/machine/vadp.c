@@ -653,11 +653,16 @@ static C_INT core_machine_vadp_compaq_io_route_active(const t_vadp *adapter,
     type_unsigned_16 color_port)
 {
     if (adapter == STD_NULL) return TYPE_FALSE;
-    if (adapter->data.ega_personality !=
+    if (adapter->data.ega_personality ==
         CORE_MACHINE_VADP_EGA_PERSONALITY_COMPAQ_ENHANCED_COLOR) {
+        return port_id == (adapter->data.compaq_color_io_base ? color_port :
+            monochrome_port);
+    }
+    if (!adapter->data.ega_external_configured) {
         return port_id == color_port;
     }
-    return port_id == (adapter->data.compaq_color_io_base ? color_port :
+    return port_id == ((adapter->data.ega_miscellaneous_output & 0x01u) != 0u ?
+        color_port :
         monochrome_port);
 }
 
@@ -898,6 +903,41 @@ static C_VOID core_machine_vadp_write_compaq_feature_control(t_port *port,
         CORE_MACHINE_VADP_PORT_MONO_STATUS,
         CORE_MACHINE_VADP_PORT_COMPAQ_FEATURE_CONTROL)) return;
     adapter->data.compaq_feature_control = port->data.ioByte & 0x03u;
+}
+
+static C_VOID core_machine_vadp_read_ega_input_status_0(t_port *port,
+    type_unsigned_16 port_id, C_VOID *owner)
+{
+    const t_vadp *adapter = (const t_vadp *)owner;
+
+    (C_VOID)port_id;
+    if (port == STD_NULL || adapter == STD_NULL) return;
+    port->data.ioByte = (core_machine_vadp_status(adapter) &
+        CORE_MACHINE_VADP_STATUS_DISPLAY_ENABLE) != 0u ? 0x80u : 0u;
+}
+
+static C_VOID core_machine_vadp_write_ega_miscellaneous_output(t_port *port,
+    type_unsigned_16 port_id, C_VOID *owner)
+{
+    t_vadp *adapter = (t_vadp *)owner;
+
+    (C_VOID)port_id;
+    if (port == STD_NULL || adapter == STD_NULL) return;
+    if (adapter->data.ega_miscellaneous_output != port->data.ioByte) {
+        adapter->data.ega_miscellaneous_output = port->data.ioByte;
+        core_machine_vadp_mark_dirty(adapter);
+    }
+}
+
+static C_VOID core_machine_vadp_write_ega_feature_control(t_port *port,
+    type_unsigned_16 port_id, C_VOID *owner)
+{
+    t_vadp *adapter = (t_vadp *)owner;
+
+    (C_VOID)port_id;
+    if (port != STD_NULL && adapter != STD_NULL) {
+        adapter->data.ega_feature_control = port->data.ioByte & 0x03u;
+    }
 }
 
 static C_VOID core_machine_vadp_read_compaq_environment(t_port *port,
@@ -1150,7 +1190,31 @@ type_status core_machine_vadp_configure_ega_personality(t_vadp *adapter,
         personality != CORE_MACHINE_VADP_EGA_PERSONALITY_COMPAQ_ENHANCED_COLOR)) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
-    if (personality == CORE_MACHINE_VADP_EGA_PERSONALITY_COMPAQ_ENHANCED_COLOR) {
+    if (personality == CORE_MACHINE_VADP_EGA_PERSONALITY_GENERIC) {
+        core_machine_port_add_read(port, CORE_MACHINE_VADP_PORT_EGA_INPUT_STATUS_0,
+            core_machine_vadp_read_ega_input_status_0, adapter);
+        core_machine_port_add_write(port,
+            CORE_MACHINE_VADP_PORT_EGA_MISCELLANEOUS_OUTPUT,
+            core_machine_vadp_write_ega_miscellaneous_output, adapter);
+        core_machine_port_add_write(port,
+            CORE_MACHINE_VADP_PORT_EGA_FEATURE_CONTROL_MONO,
+            core_machine_vadp_write_ega_feature_control, adapter);
+        core_machine_port_add_write(port,
+            CORE_MACHINE_VADP_PORT_EGA_FEATURE_CONTROL_COLOR,
+            core_machine_vadp_write_ega_feature_control, adapter);
+        core_machine_port_add_write(port, CORE_MACHINE_VADP_PORT_MONO_CRTC_INDEX,
+            core_machine_vadp_write_crtc_index, adapter);
+        core_machine_port_add_read(port, CORE_MACHINE_VADP_PORT_MONO_CRTC_DATA,
+            core_machine_vadp_read_crtc_data, adapter);
+        core_machine_port_add_write(port, CORE_MACHINE_VADP_PORT_MONO_CRTC_DATA,
+            core_machine_vadp_write_crtc_data, adapter);
+        core_machine_port_add_read(port, CORE_MACHINE_VADP_PORT_MONO_STATUS,
+            core_machine_vadp_read_status, adapter);
+        if (core_machine_port_registration_status(port) != TYPE_STATUS_OK) {
+            return core_machine_port_registration_status(port);
+        }
+        adapter->data.ega_external_configured = TYPE_TRUE;
+    } else {
         core_machine_port_add_read(port, CORE_MACHINE_VADP_PORT_COMPAQ_MISCELLANEOUS_OUTPUT,
             core_machine_vadp_read_compaq_input_status_0, adapter);
         core_machine_port_add_read(port, CORE_MACHINE_VADP_PORT_COMPAQ_CONTROL_MODE,
@@ -1245,6 +1309,7 @@ C_VOID core_machine_vadp_reset(t_vadp *adapter)
     type_bool crtc_initialized;
     type_bool ega_sequencer_configured;
     type_bool ega_controller_configured;
+    type_bool ega_external_configured;
     type_bool ega_planar_enabled;
     type_virtual_address ega_planar_vram;
 
@@ -1259,6 +1324,7 @@ C_VOID core_machine_vadp_reset(t_vadp *adapter)
     cecg = adapter->data.cecg;
     ega_sequencer = adapter->data.ega_sequencer;
     ega_sequencer_configured = adapter->data.ega_sequencer_configured;
+    ega_external_configured = adapter->data.ega_external_configured;
     ega_controller = adapter->data.ega_controller;
     ega_controller_configured = adapter->data.ega_controller_configured;
     ega_planar_enabled = adapter->data.ega_planar_enabled;
@@ -1294,6 +1360,7 @@ C_VOID core_machine_vadp_reset(t_vadp *adapter)
     adapter->data.compaq_odd_even_high_page = cecg.odd_even_high_page;
     adapter->data.ega_sequencer = ega_sequencer;
     adapter->data.ega_sequencer_configured = ega_sequencer_configured;
+    adapter->data.ega_external_configured = ega_external_configured;
     core_machine_vadp_reset_sequencer(adapter);
     adapter->data.ega_controller = ega_controller;
     adapter->data.ega_controller_configured = ega_controller_configured;

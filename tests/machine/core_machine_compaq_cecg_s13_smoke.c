@@ -28,10 +28,14 @@ C_INT main(C_VOID)
         CORE_MACHINE_VADP_EGA_PERSONALITY_GENERIC) != TYPE_STATUS_OK;
     failed |= !core_machine_port_has_read(&port,
         CORE_MACHINE_VADP_PORT_COMPAQ_MISCELLANEOUS_OUTPUT) ||
+        !core_machine_port_has_read(&generic_port,
+        CORE_MACHINE_VADP_PORT_EGA_INPUT_STATUS_0) ||
         core_machine_port_has_read(&generic_port,
-        CORE_MACHINE_VADP_PORT_COMPAQ_MISCELLANEOUS_OUTPUT);
+        CORE_MACHINE_VADP_PORT_COMPAQ_ENVIRONMENT);
     failed |= core_machine_port_read(&port,
         CORE_MACHINE_VADP_PORT_COMPAQ_MISCELLANEOUS_OUTPUT) != 0xe0u;
+    failed |= (core_machine_port_read(&generic_port,
+        CORE_MACHINE_VADP_PORT_EGA_INPUT_STATUS_0) & 0x70u) != 0u;
     core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_COMPAQ_MISCELLANEOUS_OUTPUT,
         0x00u);
     failed |= core_machine_port_read(&port,

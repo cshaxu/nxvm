@@ -14,3 +14,15 @@ selected IBM-EGA device). Every row now names Manual L3, bounded Other/board
 L3, or fallback to L2 and assigns any current code gap to the existing single
 Core VADP path. No source, asset, display consumer, scheduler, parser or ABI
 was added.
+
+## S2 Accepted Evidence
+
+The IBM EGA external-register subset now remains in the existing `vadp.c`
+owner: Miscellaneous Output resets to zero and selects mono/color CRTC and
+Status-1 routing; both Feature Control write addresses share one field; Input
+Status 0 reports only the Core-known CRT display state. The new
+`core-machine-ega-external-port-smoke` proves reset, port selection, feature
+state and Status-1 attribute-phase cancellation. The seven affected CECG and
+VADP smokes pass with the same address values but distinct personality
+semantics. Switch sense, feature pins and board decode remain L2; no renderer,
+scheduler, display-memory path, public ABI or source import was added.

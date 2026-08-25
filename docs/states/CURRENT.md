@@ -2,7 +2,6 @@
 
 ## Current Work
 
-
 ## Current Technical Baseline
 
 - **Current developer artifact:** target `vm-0-5-0465`; `nxvm_0_5_0465.exe` / `build/output/nxvm_0_5_0465.exe`, SHA-256 `410981B728E7FEE4BC199C7593AF0DE2A692546A22AB2D2A5B62988600C243C9`. It is built only from the stripped Release current-artifact route; Debug remains the current-gate route. T434 has one copied Core timing-plan publication route for default PC/AT, IBM 5170 Model 339 and Model-40 BYOB session composition.
@@ -27,7 +26,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T466 S1 | Accepted: all IBM EGA/VADP source and code rows are manual- or model-labelled; external references cannot extend the selected adapter, and every gap remains with the sole Core VADP owner or explicit L2 boundary. |
+| T466 S2 | Accepted: IBM EGA external register/reset/mono-color routing now uses the sole VADP path; CECG retains its distinct shared-address semantics, while board inputs remain explicit L2. |
 | T465 | Closed: selected Intel 8272A source reconciliation, command/reset repair and per-drive parallel Seek close the logical controller contract; physical media and board-time conversion remain explicit L2. Release 0465 is stripped and the 294/294 serial gate is recorded in [history](../history/M5-T465-core-intel-8272a-logical-media-phase-contract.md). |
 | T464 | Closed: all sixteen KBC rows are Manual L3 or explicit L2/L4. One Core owner now covers selected command/input/test state; 294/294 serial current-gate tests pass and stripped Release 0464 is recorded in history. |
 | T463 | Closed: the 16-row MC146818A/IBM AT ledger has one Core phase owner, a copied L3/L2 board timing plan, explicit L2/L4 boundaries and focused proof. The full current gate ran 294/294; stripped Release 0463 is recorded in [history](../history/M5-T463-core-rtc-cmos-phase-contract.md). |

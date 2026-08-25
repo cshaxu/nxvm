@@ -29,8 +29,10 @@ C_INT main(C_VOID)
     failed |= !core_machine_port_has_write(&port,
         CORE_MACHINE_VADP_PORT_MONO_CRTC_INDEX) ||
         !core_machine_port_has_read(&port, CORE_MACHINE_VADP_PORT_MONO_STATUS) ||
-        core_machine_port_has_write(&generic_port,
-        CORE_MACHINE_VADP_PORT_MONO_CRTC_INDEX);
+        !core_machine_port_has_write(&generic_port,
+        CORE_MACHINE_VADP_PORT_MONO_CRTC_INDEX) ||
+        core_machine_port_has_read(&generic_port,
+        CORE_MACHINE_VADP_PORT_COMPAQ_ENVIRONMENT);
 
     core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_CRTC_INDEX, 0x0eu);
     core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_CRTC_DATA, 0x12u);

@@ -63,8 +63,10 @@ C_INT main(C_VOID)
     core_machine_port_write(&generic_port, CORE_MACHINE_VADP_PORT_GRAPHICS_DATA, 0x05u);
     failed |= !core_machine_port_has_write(&port,
         CORE_MACHINE_VADP_PORT_COMPAQ_MISCELLANEOUS_OUTPUT) ||
-        core_machine_port_has_write(&generic_port,
-        CORE_MACHINE_VADP_PORT_COMPAQ_MISCELLANEOUS_OUTPUT) ||
+        !core_machine_port_has_write(&generic_port,
+        CORE_MACHINE_VADP_PORT_EGA_MISCELLANEOUS_OUTPUT) ||
+        core_machine_port_has_read(&generic_port,
+        CORE_MACHINE_VADP_PORT_COMPAQ_CONTROL_MODE) ||
         !t386_s11_query_route(&memory, CORE_MACHINE_MEMORY_ROUTE_PROVIDER);
     core_machine_port_write(&port,
         CORE_MACHINE_VADP_PORT_COMPAQ_MISCELLANEOUS_OUTPUT, 0x02u);
