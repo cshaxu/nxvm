@@ -50,6 +50,25 @@ or board fact. No reference code is imported.
 | VADP-T4 | References keep display scheduling distinct from host presentation, not one shared ISA timing rule. | Manual L3 adapter allocation; board service fallback to L2. |
 | VADP-T5 | References have separate host consumer paths. | Current Core/VM ownership is a project boundary; unselected inputs fallback to L2. |
 
+### VADP-R4 Graphics Controller Reconciliation
+
+Rendered inspection of IBM EGA pp. 46--55 is the source for this finite
+register grammar.  86Box corroborates the four-plane/latch shape; QEMU and
+Bochs use later VGA behavior, notably a two-bit read-map selection and a valid
+VGA write mode 3.  Those later details do not extend IBM EGA.
+
+| Index | IBM EGA manual rule | Selected disposition |
+| --- | --- | --- |
+| 00h--02h | Set/Reset, Enable Set/Reset and Color Compare are four-bit write-only values. | Manual L3. |
+| 03h | Data Rotate is rotate count 0--2 plus Replace/AND/OR/XOR. | Manual L3. |
+| 04h | Read Map Select is a write-only three-bit value.  The selected four-plane model has no manual-defined recipient for values 4--7. | Manual L3 for maps 0--3; fallback to L2 returns zero for 4--7. |
+| 05h | Modes 0--2 define source/read behavior; bit 2 makes graphics outputs high impedance; bit 3 selects map or color-compare reads; odd/even and shift control are specified but require board/serializer context.  Mode 3 is not valid. | Manual L3 for modes 0--2, Test Condition and Read Mode; fallback to L2 for odd/even/shift and invalid mode 3. |
+| 06h--08h | Miscellaneous map, Color Don't Care and Bit Mask are write-only values with masks 0Fh, 0Fh and FFh. | Manual L3. |
+
+Every Graphics Controller data read returns zero: the selected IBM manual
+declares these registers write-only, and Core does not mirror private VADP
+state through a false port readback.
+
 ## Register And Programming Universe
 
 | ID | Source | Finite function | Reset/cancellation | Timing or signal relation | Sufficiency and disposition |

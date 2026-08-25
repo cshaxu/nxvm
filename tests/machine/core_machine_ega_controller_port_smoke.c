@@ -50,17 +50,19 @@ C_INT main(C_VOID)
     failed |= core_machine_port_read(&port, 0x03ceu) != 0u;
     failed |= core_machine_port_read(&port, 0x03cfu) != 0u;
     core_machine_port_write(&port, 0x03ceu, 6u);
-    failed |= core_machine_port_read(&port, 0x03cfu) != 0x05u;
+    failed |= core_machine_port_read(&port, 0x03cfu) != 0u;
     core_machine_port_write(&port, 0x03ceu, 0u);
     failed |= core_machine_port_read(&port, 0x03cfu) != 0u;
     core_machine_port_write(&port, 0x03ceu, 6u);
     core_machine_port_write(&port, 0x03cfu, 0xffu);
-    failed |= core_machine_port_read(&port, 0x03cfu) != 0x0fu;
+    failed |= core_machine_port_read(&port, 0x03cfu) != 0u ||
+        vadp.data.graphics[6] != 0x0fu;
     core_machine_port_write(&port, 0x03ceu, 31u);
     core_machine_port_write(&port, 0x03cfu, 0xa5u);
-    failed |= core_machine_port_read(&port, 0x03cfu) != 0xffu;
+    failed |= core_machine_port_read(&port, 0x03cfu) != 0u;
     core_machine_port_write(&port, 0x03ceu, 6u);
-    failed |= core_machine_port_read(&port, 0x03cfu) != 0x0fu;
+    failed |= core_machine_port_read(&port, 0x03cfu) != 0u ||
+        vadp.data.graphics[6] != 0x0fu;
 
     core_machine_port_write(&port, 0x03ceu, 6u);
     core_machine_port_write(&port, 0x03cfu, 0x00u);

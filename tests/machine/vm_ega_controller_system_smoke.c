@@ -20,9 +20,9 @@ C_INT main(C_VOID)
     }
     vm_session_reset(session);
     failed |= core_machine_debug_write_port(session->core_machine, 0x03ceu, 6u) != TYPE_STATUS_OK;
-    failed |= core_machine_debug_read_port(session->core_machine, 0x03cfu, &port_value) != TYPE_STATUS_OK || port_value != 0x05u;
+    failed |= core_machine_debug_read_port(session->core_machine, 0x03cfu, &port_value) != TYPE_STATUS_OK || port_value != 0u;
     failed |= core_machine_debug_write_port(session->core_machine, 0x03cfu, 0x09u) != TYPE_STATUS_OK;
-    failed |= core_machine_debug_read_port(session->core_machine, 0x03cfu, &port_value) != TYPE_STATUS_OK || port_value != 0x09u;
+    failed |= core_machine_debug_read_port(session->core_machine, 0x03cfu, &port_value) != TYPE_STATUS_OK || port_value != 0u;
     failed |= core_machine_memory_write(session->core_machine, 0x000b0000u,
         &value, sizeof(value)) != TYPE_STATUS_OK;
     failed |= core_machine_memory_read(session->core_machine, 0x000b0000u,

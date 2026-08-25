@@ -2,6 +2,27 @@
 
 ## Current Work
 
+## M5 T466 S5 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner goal dated 2026-08-25 directs completion of the remaining controller tasks; accepted T466 S4 permits this next ledger-defined VADP batch. |
+| Objective | Reconcile and implement the selected IBM EGA Graphics Controller 00h--08h read/write data-path modes through the existing single VADP planar route. |
+| Non-goals | No alternate renderer, memory provider, host presentation, raw flux/monitor model, board arbitration, clock invention, profile change, public ABI or source import. |
+| Reference Baseline | `5c7fde89`; IBM EGA pp. 46--55 and 62--68, VADP-R4 ledger/audit, existing graphics/planar tests and `vadp.c` planar read/write path. |
+| Candidate Proposal | [Core VADP phase contract](../proposals/m5-core-vadp-phase-contract.md). |
+| Files And ABI Surface | Existing private VADP graphics/latch state and planar read/write helpers, focused graphics/planar smoke(s), CMake only if an existing smoke cannot carry the contract, and T466 evidence/status. No public API or VM ABI change. |
+| Applicable Rules | IBM manual is primary; the existing VADP planar provider remains the sole CPU-to-plane data path. Extract only a shared owner-local operation when it deletes duplicated per-mode logic; do not copy simulator source or add a compatibility route. |
+| Verification | Cross-check every Graphics Controller index/mask and read/write mode against the manual, extend focused planar proof for every supported manual mode and latch/set-reset/bit-mask interaction, then run EGA CRTC/planar/mode and CECG regressions plus `git diff --check` and documentation governance. |
+| Expected Markers | One planar write path selects documented source/operation per Graphics Mode; one planar read path selects documented Read Map or Color Compare; unsupported board/clock terms remain L2. |
+| Asset Needs | No source, firmware, display capture or guest-media import. |
+| Reporting Requirements | Record manual mode/bit coverage, exact L2 boundaries, removed partial-mode condition(s), one retained data path and focused proof. |
+| Stop Conditions | Stop if a necessary mode lacks a manual rule, a correct implementation would require a second memory owner, or a physical timing term has no honest L2 receiver. |
+| Exit Criteria | The manual-defined selected Graphics Controller register/mode data path is implemented and tested through one VADP provider; display timing and board arbitration remain explicit L2. |
+| Original Owner Request | Complete remaining controllers source-first with minimalist single-owner implementation and explicit L2 rather than guessed timing. |
+| Similar-Issue Sweep | Inspect every graphics register mask/consumer, planar read/write/latch helper, snapshot palette/mode interaction, CECG odd/even branch and all graphics/planar system tests; consolidate every same-operation duplicate. |
+
 ## Current Technical Baseline
 
 - **Current developer artifact:** target `vm-0-5-0465`; `nxvm_0_5_0465.exe` / `build/output/nxvm_0_5_0465.exe`, SHA-256 `410981B728E7FEE4BC199C7593AF0DE2A692546A22AB2D2A5B62988600C243C9`. It is built only from the stripped Release current-artifact route; Debug remains the current-gate route. T434 has one copied Core timing-plan publication route for default PC/AT, IBM 5170 Model 339 and Model-40 BYOB session composition.
