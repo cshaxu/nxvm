@@ -862,12 +862,18 @@ static C_VOID core_machine_fdc_execute(core_machine_fdc *fdc)
 static C_VOID core_machine_fdc_reset_controller(core_machine_fdc *fdc)
 {
     type_unsigned_8 ccr = fdc->data.ccr;
+    type_unsigned_4 hut = fdc->data.hut;
+    type_unsigned_4 hlt = fdc->data.hlt;
+    type_unsigned_8 srt = fdc->data.srt;
     type_unsigned_64 observed_media_generation[CORE_MACHINE_FDC_DRIVE_COUNT];
     STD_MEMCPY(observed_media_generation, fdc->data.observed_media_generation,
         sizeof(observed_media_generation));
     core_machine_fdc_cancel_execution(fdc);
     STD_MEMSET(&fdc->data, TYPE_ZERO_8, sizeof(fdc->data));
     fdc->data.ccr = ccr;
+    fdc->data.hut = hut;
+    fdc->data.hlt = hlt;
+    fdc->data.srt = srt;
     STD_MEMCPY(fdc->data.observed_media_generation, observed_media_generation,
         sizeof(observed_media_generation));
     core_machine_fdc_sample_ready(fdc);

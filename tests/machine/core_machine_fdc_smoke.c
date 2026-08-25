@@ -289,6 +289,27 @@ C_INT main(C_VOID)
                     !core_machine_fdc_read_result(fdc, port, result, 1u) ||
                     result[0] != 0x80u || fdc->data.phase != core_machine_fdc_PHASE_COMMAND;
 
+                /* The rendered uPD765 reset record preserves Specify's SRT,
+                   HUT and HLT fields across either DOR reset edge. */
+                failed |= fdc->data.srt != 0x0du || fdc->data.hut != 0x0fu ||
+                    fdc->data.hlt != 0x01u;
+                core_machine_port_write(port, fdc_config.dor_port, 0x18u);
+                failed |= fdc->data.srt != 0x0du || fdc->data.hut != 0x0fu ||
+                    fdc->data.hlt != 0x01u;
+                core_machine_port_write(port, fdc_config.dor_port, 0x1cu);
+                failed |= fdc->data.srt != 0x0du || fdc->data.hut != 0x0fu ||
+                    fdc->data.hlt != 0x01u;
+                for (type_unsigned_8 reset_drive = 0u;
+                    reset_drive < CORE_MACHINE_FDC_DRIVE_COUNT; ++reset_drive) {
+                    core_machine_fdc_command(fdc, port,
+                        (const type_unsigned_8[]){0x08u}, 1u);
+                    failed |= !core_machine_fdc_read_result(fdc, port, result, 2u) ||
+                        result[0] != (core_machine_fdc_ST0_READY_CHANGE | reset_drive) ||
+                        result[1] != 0u || fdc->connect.irq_source.asserted;
+                }
+                core_machine_fdc_command(fdc, port, specify_non_dma,
+                    sizeof(specify_non_dma));
+
                 /* Seek must retain the prior cylinder and IRQ state until the
                    source-labelled 3-ms-per-track deadline has elapsed. */
                 core_machine_port_write(port, fdc_config.data_port, 0x0fu);
@@ -600,5 +621,6 @@ C_INT main(C_VOID)
     puts("M5:T375:S24:FDC-NDMA-CADENCE:OK");
     puts("M5:T376:S3:8272A-DELETED-DATA:OK");
     puts("M5:T376:S4:8272A-SCAN:OK");
+    puts("M5:T465:S2:FDC-reset:OK");
     return 0;
 }
