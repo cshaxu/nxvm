@@ -2,27 +2,6 @@
 
 ## Current Work
 
-## M5 T465 S2 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner goal dated 2026-08-25 approves completing the active FDC task after accepted source reconciliation. |
-| Objective | Repair the one directly proven uPD765 reset defect: DOR/reset must preserve prior Specify SRT/HUT/HLT state while cancelling active work and restoring the documented command phase. |
-| Non-goals | No selected uPD765A/B choice, Version fabrication, Read Diagnostic approximation, media grammar, drive mechanics, board-clock conversion, new configuration field, scheduler or profile policy. |
-| Reference Baseline | `f8301ec6`; accepted FDC S1 checklist/audit, rendered NEC reset page and queued FDC proposal. |
-| Candidate Proposal | [Core uPD765 and logical media phase contract](../proposals/m5-core-fdc-upd765-logical-media-phase-contract.md). |
-| Files And ABI Surface | `src/core/machine/fdc.c`, focused FDC smoke, S13/S14 audit/history/status. No public ABI, composition path or artifact change. |
-| Applicable Rules | Core FDC remains sole mutable owner; coding requires one reset path and no mirror/compatibility path; rendered NEC is normative; source policy prohibits external implementation import. |
-| Verification | Focused smoke proves Specify then both DOR reset directions preserve SRT/HUT/HLT while cancellation/reset-Sense behavior remains intact; compile its target, search reset paths, run documentation governance. |
-| Expected Markers | `M5:T465:S2:FDC-reset` proof, one reset helper, no new public setter/configuration and no unrelated command implementation. |
-| Asset Needs | Read-only rendered NEC pages only; no source, firmware or media asset is imported. |
-| Reporting Requirements | Record the exact before/after register state, retained L2 command/media boundaries and code-size/owner-path result. |
-| Stop Conditions | Stop if preserving Specify state conflicts with a rendered manual condition, existing reset-Sense behavior, or requires selected board/drive timing. |
-| Exit Criteria | Both reset edges preserve SRT/HUT/HLT and existing cancellation/result behavior passes through the one `fdc.c` reset path. |
-| Original Owner Request | Complete remaining controllers source-first, repairing real manual L3 gaps without adding redundant paths or pretending L2 media/board facts are L3. |
-| Similar-Issue Sweep | Search every FDC reset entry, state-clearing helper, Specify field, DOR transition and reset-Sense test. |
-
 
 ## Current Technical Baseline
 
@@ -48,7 +27,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T465 S1 | Accepted: rendered NEC/IBM records remain normative, with 86Box/MAME/PCjs/Bochs/QEMU only as corroboration. All fifteen FDC rows now state Manual L3, Other/board L3 or fallback to L2; finite command/revision gaps are ready for S2. |
+| T465 S2 | Accepted: `fdc.c` preserves only NEC-mandated Specify SRT/HUT/HLT through both DOR reset edges; reset-Sense and NDMA reset remain on the single existing path. Focused FDC smoke and documentation governance pass. |
 | T464 | Closed: all sixteen KBC rows are Manual L3 or explicit L2/L4. One Core owner now covers selected command/input/test state; 294/294 serial current-gate tests pass and stripped Release 0464 is recorded in history. |
 | T463 | Closed: the 16-row MC146818A/IBM AT ledger has one Core phase owner, a copied L3/L2 board timing plan, explicit L2/L4 boundaries and focused proof. The full current gate ran 294/294; stripped Release 0463 is recorded in [history](../history/M5-T463-core-rtc-cmos-phase-contract.md). |
 | T462 | Closed: one immutable copied plan carries only qualified Model-339 PIT/DMA selections; PIC remains explicit L2. The seven corrected PIT-transition regressions, 294/294 serial current gate, 77/77 specialized gates, documentation governance and stripped 0462 artifact complete the controller-board contract. [History](../history/M5-T462-core-controller-board-timing-contract.md). |
