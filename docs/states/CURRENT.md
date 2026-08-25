@@ -2,9 +2,30 @@
 
 ## Current Work
 
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation `T466 S12`, single-person coordinator then executor then coordinator actual-change review. |
+| Admission And Approval | The persistent owner objective approves completion of the remaining controller tasks. S11 ruled out the proposed reset conflict and transferred the actual firmware-materialization defect from unaccepted S10. No exception is requested. |
+| Objective | Make the existing generated INT 10h program demonstrably materialize and execute the sourced D/E/10 CRTC tuples before its return, then keep the sole VADP tuple classifier dependent only on those port transactions. |
+| Non-goals | Do not use BDA/BIOS mode numbers as Core state, add a renderer or VRAM path, alter profile reset ownership, invent a BIOS register table, or implement F chained odd/even/alpha character generation in this S. |
+| Reference Baseline | `7f35b0cb` accepts the color-CRTC route. S11 proves both generic EGA and Model-339 select the same one cold-start text path; at the mode-10 replay boundary BDA/query are `10h` but the output-enabled VADP has CRTC `01h/07h/12h/13h = 0`, while the generated INT 10h materializer receives all nine source chunks. |
+| Candidate Proposal | [M5 Core VADP Phase Contract](../proposals/m5-core-vadp-phase-contract.md), F2 transfer. |
+| Files And ABI Surface | Expected: default-profile `bios.h`, existing firmware materializer and focused VM EGA smoke, plus VADP direct tests and F2 evidence/history/status. No public Core ABI or display snapshot expansion. |
+| Applicable Rules | `docs/design/ARCHITECTURE.md` and `docs/rules/ARCHITECTURE.md`: Core VADP has one state owner and never consumes BIOS state; VM firmware owns its program text. `docs/design/CODING.md` and `docs/rules/CODING.md`: one generated program path, no duplicate mode state or compatibility mirror. `docs/etc/operations/policy/source-policy.md`: no source import. |
+| Verification | Prove source-program materialization and execution through the existing port route; run direct D/E/10 tuple tests and affected VM EGA regressions, diff check and applicable governance checks. |
+| Expected Markers | Existing VADP direct and VM EGA markers remain green; a focused firmware marker names the exact D/E/10 tuple and does not use BDA as a Core classifier. |
+| Asset Needs | Existing local IBM EGA scan and project-owned firmware only; no source, firmware image or asset import. |
+| Reporting Requirements | Record every repaired materialization/execution path, retained owner, code-size count and explicit L2 transfer at implementation acceptance. |
+| Stop Conditions | Stop if source program assembly cannot represent the required port sequence without a second firmware path, if manual and cross-check evidence conflict, or if an ABI/presentation expansion becomes necessary. |
+| Exit Criteria | The generated D/E/10 program reaches its sourced tuple through the existing port path, the VADP classifier has one implementation and focused VM/direct proof passes; underdetermined layouts remain explicit L2. |
+| Original Owner Request | Complete the remaining controllers using manual/external cross-check ledgers, L3 only when sourced, L2 otherwise, with minimalist implementation and no additive patchwork. |
+| Similar-Issue Sweep | Audit every current VADP geometry decision and all CRTC fields it uses; consolidate duplicate mode tests/classifiers, and record rather than silently infer any unread controller or monitor field. |
+
 | Task | Compact progress |
 | --- | --- |
 | T466 S9 | Accepted: one BIOS `3C2` selection routes retained color-CRTC writes into the sole VADP; VADP now separates output availability from the A000 planar map, so mode 10 yields its frame and mode 03 returns text. |
+| T466 S10 | Transferred: direct D/E/10 tuple work is unaccepted. Its VM replay exposed the pre-existing default-profile display-reset ownership conflict; S11 owns that prerequisite before S10 may resume. |
+| T466 S11 | Accepted diagnostic: generic EGA and Model-339 intentionally share the one cold-start text initializer; no second reset writer or profile branch exists to repair. The mode-10 replay instead proves sourced CRTC writes do not reach VADP despite all nine program chunks reaching the assembler; S12 owns that firmware path. |
 | T466 S8 | Accepted: IBM D/E/10/F layout facts are Manual L3; the actual offset-only snapshot conflation and generated-firmware mode-10 frame failure are now a reproducible single-owner VADP receiver, not hidden behind BDA or renderer state. |
 | T466 S7 | Accepted: IBM's 64/128/256-KiB capacity and aperture facts are Manual L3; no source establishes the exact extended-bank CPU mapping, so current unconditional backing and unselected card capacity are explicit L2 rather than a false 86Box-derived L3. |
 
