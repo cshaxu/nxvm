@@ -13,7 +13,7 @@ has changed.
 An M5-close decision requires every applicable item to be evidenced or an
 owner-approved deferral to be recorded in `TODO.md` with its target milestone.
 M6 mantle work must not use an unfinished M5 boundary or corpus item as an
-implicit waiver. Current milestone state remains in `STATUS.md`.
+implicit waiver. Current milestone state remains in `states/CURRENT.md`.
 
 ## 1. Current Build Graph
 
@@ -87,7 +87,7 @@ implicit waiver. Current milestone state remains in `STATUS.md`.
 
 ## 5. Documentation And Deferred Work
 
-- [ ] `STATUS.md`, `design/ROADMAP.md`, architecture/layout detail, CMake presets,
+- [ ] `states/CURRENT.md`, `design/ROADMAP.md`, architecture/layout detail, CMake presets,
   task tracking, and verification records agree on the current implementation,
   active subtask, artifact identity, and M5 scope.
 - [ ] Every remaining compatibility, hardware, platform, or product gap is
@@ -95,7 +95,7 @@ implicit waiver. Current milestone state remains in `STATUS.md`.
   remain non-runnable until their respective M6/M8 admission work begins.
 - [ ] The final M5 verification record links this checklist item-by-item to
   commands and evidence, states every approved deferral, and explicitly says
-  whether M5 may close. Only then may `TODO.md`, `STATUS.md`, and `design/ROADMAP.md`
+  whether M5 may close. Only then may `TODO.md`, `states/CURRENT.md`, and `design/ROADMAP.md`
   record M5 closure.
 
 ## Evidence Sources

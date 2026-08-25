@@ -13,7 +13,7 @@ task record and history.
 
 ## Foundation
 
-`src/type.h` is the common system type header. It defines `ntvdm64_status`,
+`src/type.h` is the common system type header. It defines `type_status`,
 retained NXVM numeric aliases, common bit/constant helpers, and product-neutral
 legacy C-runtime and trace primitives. `src/type.c` owns their non-inline
 implementations. [rules/CODING.md](../../rules/CODING.md) defines the current C
@@ -45,7 +45,7 @@ continues to define the semantics of those public contracts.
   only resources owned by that module and accepts `NULL`.
 - Inputs are borrowed unless an API explicitly registers or retains them.
   Outputs are copied into caller-provided storage or copied callback payloads.
-- `ntvdm64_status` distinguishes invalid arguments, invalid state,
+- `type_status` distinguishes invalid arguments, invalid state,
   unsupported capability, no memory, and fault. It never carries product
   policy.
 - Callbacks state their thread, synchronization, ownership, and teardown rule.
@@ -991,7 +991,7 @@ defaults a vendor ROM. Core sees only an immutable generic mapping provider.
 ## Cross-Module: Resource, Failure, And Callback Rules
 
 Creation, registration, freeze, and reset failures return a factual
-`ntvdm64_status` synchronously. They leave no half-registered or half-frozen
+`type_status` synchronously. They leave no half-registered or half-frozen
 object; callers still destroy every object whose creation succeeded. Runtime
 providers may continue normally, request a safe machine stop, or report a
 machine fault. They never exit a process, close a window, or interpret a

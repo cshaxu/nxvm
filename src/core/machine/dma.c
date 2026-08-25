@@ -27,7 +27,7 @@ static type_native_unsigned core_machine_dma_request_token_allocate(C_VOID)
     return 0u;
 }
 
-static C_VOID doReset(t_dma *rdma) {
+static C_VOID core_machine_dma_controller_reset(t_dma *rdma) {
     STD_MEMSET((C_VOID *)(&rdma->data), TYPE_ZERO_8, sizeof(t_dma_data));
     rdma->data.mask = VDMA_MASK_VALID;
 }
@@ -207,7 +207,7 @@ static C_VOID dma_port_write(t_port *port, type_unsigned_16 port_id, C_VOID *own
         dma->data.mode[VDMA_GetMODE_CS(port->data.ioByte)] = port->data.ioByte;
         break;
     case 0x000c: dma->data.flagMSB = TYPE_FALSE; break;
-    case 0x000d: doReset(dma); break;
+    case 0x000d: core_machine_dma_controller_reset(dma); break;
     case 0x000e: dma->data.mask = TYPE_ZERO_8; break;
     case 0x000f: dma->data.mask = port->data.ioByte & VDMA_MASKAC_VALID; break;
     default: break;
@@ -744,8 +744,8 @@ C_VOID core_machine_dma_reset(t_latch *latch, t_dma *primary,
     t_dma *secondary) {
     if (latch == STD_NULL || primary == STD_NULL || secondary == STD_NULL) return;
     STD_MEMSET((C_VOID *)(&latch->data), TYPE_ZERO_8, sizeof(t_latch_data));
-    doReset(primary);
-    doReset(secondary);
+    core_machine_dma_controller_reset(primary);
+    core_machine_dma_controller_reset(secondary);
 }
 
 static C_VOID core_machine_dma_advance_one(t_latch *latch, t_dma *primary,
