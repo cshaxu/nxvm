@@ -165,14 +165,19 @@ static C_VOID core_machine_vadp_graphics_palette(const t_vadp *adapter,
     type_unsigned_32 palette[4])
 {
     C_INT alternate;
+    C_INT intensified;
 
     if (adapter == STD_NULL || palette == STD_NULL) return;
     alternate = (adapter->data.color_select &
         CORE_MACHINE_VADP_COLOR_PALETTE_SELECT) != 0u;
+    intensified = (adapter->data.color_select & 0x10u) != 0u;
     palette[0] = core_machine_vadp_rgbi_color(adapter->data.color_select);
-    palette[1] = core_machine_vadp_rgbi_color(alternate ? 3u : 2u);
-    palette[2] = core_machine_vadp_rgbi_color(alternate ? 5u : 4u);
-    palette[3] = core_machine_vadp_rgbi_color(alternate ? 7u : 6u);
+    palette[1] = core_machine_vadp_rgbi_color((alternate ? 3u : 2u) |
+        (intensified ? 8u : 0u));
+    palette[2] = core_machine_vadp_rgbi_color((alternate ? 5u : 4u) |
+        (intensified ? 8u : 0u));
+    palette[3] = core_machine_vadp_rgbi_color((alternate ? 7u : 6u) |
+        (intensified ? 8u : 0u));
     if ((adapter->data.mode_control & CORE_MACHINE_VADP_MODE_VIDEO_ENABLE) == 0u) {
         palette[0] = 0u;
         palette[1] = 0u;
@@ -1678,6 +1683,12 @@ C_INT core_machine_vadp_capture_text_snapshot(t_vadp *adapter, t_ram *memory,
             CORE_MACHINE_VADP_TEXT_BASE, (type_virtual_address)(cells + first_bytes),
             visible_bytes - first_bytes) != TYPE_STATUS_OK)) {
         return TYPE_FALSE;
+    }
+    if ((adapter->data.mode_control & CORE_MACHINE_VADP_MODE_VIDEO_ENABLE) == 0u) {
+        for (row = 0u; row < visible_bytes; row += 2u) {
+            cells[row] = 0x20u;
+            cells[row + 1u] = 0u;
+        }
     }
     out_snapshot->columns = columns;
     out_snapshot->rows = rows;

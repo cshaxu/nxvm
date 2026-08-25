@@ -2,8 +2,26 @@
 
 ## Current Work
 
-**Between admitted subtasks.** T467 S3 is accepted at `b4f244fc`; no
-subsequent S is active.
+## M5 T467 S4 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; T467 S4, one-session coordinator, executor and closure review. |
+| Admission And Approval | The persistent owner objective approves completion of T467. S3 is accepted at `b4f244fc`; S4 consumes the finite CGA-F1--F5/F7 mode, memory and palette batch identified by S2. |
+| Objective | Close source-qualified CGA text/320/640 B8000h layouts, page/interlace addressing, palette and video-enable effects through the sole VADP memory and copied-snapshot path. |
+| Non-goals | No new renderer, VRAM owner, BIOS/BDA mode mirror, 160x100 inference, composite/electrical monitor model, host timing, profile callback or live setter. |
+| Reference Baseline | `dbbf29bc` identifies the F1--F5/F7 gaps; `874e002a` closes port grammar. IBM manual is normative; the existing snapshot path is the only consumer. |
+| Candidate Proposal | [M5 Core IBM CGA Completeness](../proposals/m5-core-ibm-cga-completeness.md), S4 digital memory/mode/palette closure. |
+| Files And ABI Surface | Expected: VADP-local decode/snapshot code, focused CGA tests/evidence/status only. VM presentation, profile ABI and memory ownership are forbidden. |
+| Applicable Rules | Architecture/coding/execution rules: VADP is sole state owner; Core memory is the sole routing owner; copied snapshots are immutable consumer data; remove obsolete special cases rather than add parallel selection. |
+| Verification | Reconcile each source mode and palette bit, test text/320/640 output-enable and even/odd B8000h mapping, run focused VADP/CGA tests, configured build and documentation governance. |
+| Expected Markers | One B8000h provider, one VADP snapshot path, sourced digital mode/palette semantics, no second presentation state, and explicit retained 160x100/physical-monitor L2 boundaries. |
+| Asset Needs | Existing IBM/Motorola rendered source and read-only corroboration only. |
+| Reporting Requirements | Record every F-row owner, source-backed behavior, focused proof, source/test delta, retained production path and exact L2 transfer. |
+| Stop Conditions | Stop if a source-defined layout needs a distinct state owner, if a source fact cannot determine digital semantics, or if implementation would infer 160x100/composite behavior. |
+| Exit Criteria | F1--F3/F5/F7 have one source-backed path and proof; F4 and physical output remain exact L2; no duplicate ownership and all required gates pass. |
+| Original Owner Request | Complete remaining controller L3 work with manual authority, valid external/board L3 inputs and minimalist code. |
+| Similar-Issue Sweep | Inspect all VADP capture branches, text start/cursor reads, graphics address calculations, mode/color writers, EGA fallback conditions, profile firmware mode writers and CGA tests. |
 
 ## Current Technical Baseline
 

@@ -69,6 +69,12 @@ C_INT main(C_VOID)
         snapshot.palette_rgb[2] != 0xaa00aau ||
         snapshot.palette_rgb[3] != 0xaaaaaau || !snapshot.buffer_changed;
 
+    core_machine_port_write(&port, 0x03d9u, 0x10u);
+    failed |= !core_machine_vadp_capture_snapshot(&vadp, &memory, &snapshot) ||
+        snapshot.palette_rgb[1] != 0x55ff55u ||
+        snapshot.palette_rgb[2] != 0xff5555u ||
+        snapshot.palette_rgb[3] != 0xffff55u || !snapshot.buffer_changed;
+
     core_machine_port_write(&port, 0x03d8u, 0x1au);
     core_machine_port_write(&port, 0x03d8u, 0x1bu);
     failed |= !core_machine_vadp_capture_snapshot(&vadp, &memory, &snapshot) ||
@@ -76,6 +82,9 @@ C_INT main(C_VOID)
     core_machine_port_write(&port, 0x03d8u, 0x0du);
     failed |= !core_machine_vadp_capture_snapshot(&vadp, &memory, &snapshot);
     failed |= snapshot.kind != CORE_MACHINE_DISPLAY_KIND_TEXT;
+    core_machine_port_write(&port, 0x03d8u, 0x05u);
+    failed |= !core_machine_vadp_capture_snapshot(&vadp, &memory, &snapshot) ||
+        snapshot.characters[0] != 0x20u || snapshot.attributes[0] != 0u;
 
     core_machine_vadp_finalize(&vadp);
     core_machine_memory_finalize(&memory);
