@@ -62,3 +62,15 @@ retains L2 for unassigned read maps, Odd/Even/Shift Register, invalid mode 3,
 serializer clocks and board arbitration.  Focused planar/controller, EGA
 CRTC/mode-10, CECG and VM-system smokes pass; no renderer, memory path, API or
 compatibility route was added.
+
+## S6 Accepted Evidence
+
+The existing VADP Attribute-port phase machine now accepts only 00h--13h,
+keeps its existing palette and plane consumer, applies the IBM masks and
+returns zero from 3C1h rather than mirroring write-only state.  IBM's
+Horizontal Pel Panning page itself repeats index 12h; the read-only 86Box,
+QEMU and Bochs comparison agrees on 13h, so that one index is explicitly
+Other L3 rather than mislabelled Manual L3.  The 14h--1Fh range, external
+status/color pins, monitor effects and panning/raster conversion remain L2.
+Focused EGA controller/planar/CRTC/mode/external, CECG and VM-system smokes
+pass.  No renderer, route, ABI or compatibility state was added.
