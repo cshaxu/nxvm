@@ -2,27 +2,6 @@
 
 ## Current Work
 
-## M5 T467 S6 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation; T467 S6, one-session coordinator, executor and closure review. |
-| Admission And Approval | The persistent owner objective approves completion of T467. S3 and S4 are accepted at `b4f244fc` and `6131a8c8`; S5 records the existing qualified timing-plan receiver. S6 consumes the firmware/profile and guest-path proof batch in the admitted proposal. |
-| Objective | Prove that reset and selected guest `INT 10h` mode changes reach the sole VADP state through ordinary firmware ports and B8000h memory, and that presentation consumes only the resulting copied snapshot. |
-| Non-goals | No new renderer, VRAM owner, BIOS/BDA mode mirror, 160x100 inference, composite/electrical monitor model, timing formula, profile callback or live setter. |
-| Reference Baseline | `34611ca4` records the existing Board-L3-capable timing receiver; `c6db2994` closes the digital VADP changes. The IBM ledger remains normative and the existing port/memory/snapshot route is the only candidate path. |
-| Candidate Proposal | [M5 Core IBM CGA Completeness](../proposals/m5-core-ibm-cga-completeness.md), S6 firmware/profile and guest-path proof. |
-| Files And ABI Surface | Evidence, status and existing focused/system tests only unless a demonstrated path violates the contract. VADP ownership, profile ABI, VM presentation and memory ownership are forbidden change surfaces. |
-| Applicable Rules | Architecture/execution/documentation/source rules: firmware emits guest-visible operations only; VADP is sole mutable display owner; Core memory is the sole routing owner; snapshots are copied consumer data; evidence must not promote external firmware or media into product source. |
-| Verification | Inspect QDCGA reset and BIOS writers, profile port topology and snapshot consumers; run Model-339 topology plus CGA 320, 640 and DOS guest-path system tests, configured build and documentation governance. |
-| Expected Markers | One firmware-to-port route, one B8000h provider, one VADP state owner, copied snapshot isolation, and explicit retained light-pen/160x100/physical-output L2 boundaries. |
-| Asset Needs | Existing abstract firmware source, IBM/Motorola rendered references and read-only DOS fixture only; no firmware, guest media or third-party source import. |
-| Reporting Requirements | Record the precise reset/INT 10h port and BDA roles, each system-test observation, source/test delta, retained production path and exact L2 transfer. |
-| Stop Conditions | Stop if a real mode path requires a BDA-derived VADP state, a second snapshot/renderer owner, an unsourced timing conversion or protected-asset import. |
-| Exit Criteria | Reset, 320, 640 and DOS paths prove the same VADP route; BDA is firmware bookkeeping only; no duplicate ownership is introduced; all required gates pass. |
-| Original Owner Request | Complete remaining controller L3 work with manual authority, valid external/board L3 inputs and minimalist code. |
-| Similar-Issue Sweep | Inspect every default-profile CGA reset/INT 10h writer, registered 3D4/3D5/3D8/3D9/3DA route, B8000h provider, snapshot consumer, Model-339 topology proof and CGA guest/system fixture; classify each as the retained route, unrelated EGA/CECG path or explicit L2. |
-
 ## Current Technical Baseline
 
 - **Current developer artifact:** target `vm-0-5-0466`; the stripped Release
@@ -51,6 +30,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T467 S6 | Accepted: reset, selected firmware/guest `INT 10h` writers and B8000h all reach the same VADP-owned port/memory/snapshot route; BDA remains firmware bookkeeping. Model-339 topology plus 320, 640 and DOS CGA system tests pass 4/4, and the documentation gate passes. |
 | T467 S3 | Accepted: VADP now retains the selected IBM-CGA 6845 access classes, five-bit 3D4 index, six-bit output registers and complete control-address decode. The obsolete `1Ah` admission is deleted; 4/4 focused CGA/VADP tests and documentation governance pass. The missing physical light-pen input lifecycle remains exact L2 and does not borrow Compaq state. |
 | T466 | Closed: Manual-L3 D/E/10 geometry reaches the single VADP state owner through real firmware and guest port writes. The profile declaration, cold-start/text routing and all fixtures now agree; unknown planar geometry falls through existing legacy selection rather than inventing a frame. The stripped Release 0466 artifact and its hash are recorded in [history](../history/M5-T466-core-vadp-phase-contract.md). |
 | T465 | Closed: selected Intel 8272A source reconciliation, command/reset repair and per-drive parallel Seek close the logical controller contract; physical media and board-time conversion remain explicit L2. Release 0465 is stripped and the 294/294 serial gate is recorded in [history](../history/M5-T465-core-intel-8272a-logical-media-phase-contract.md). |
