@@ -47,6 +47,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T461 S1 | Accepted at `1c9428b1`: manual-first 8254 Lists 1--2 dispose every selected row as Manual-L3 or explicit L2; `pit.c` remains the sole owner and S2 is admitted for the control/latch contract. [Evidence](../etc/evidence/t461-s1-pit-8254-function-timing-ledger.md). |
 | T460 | Closed: all 16 DMA rows are disposed through the sole `dma.c` owner; normal/compressed and M2M service phases have focused proof, the five-clock conversion remains explicit L2, serial current-gate is 294/294, and the stripped 0460 artifact is recorded. [History](../history/M5-T460-core-dma-8237a-phase-contract.md). |
 
 | T459 | Closed after S2 correction: `standard`/`turbo` remain stopped-session Console selections, but neither VM speed branch manufactures guest ticks. `Sleep(1)` is explicitly L2 HLT host-load backoff; true Standard pacing and Turbo fast-forward remain transferred to Core deadlines plus profile timebases. The full gate passes 294/294; current artifact `0.5.0459` is stripped Release-only. [History](../history/M5-T459-vm-session-speed-policy.md). |
