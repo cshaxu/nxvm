@@ -2,27 +2,27 @@
 
 ## Current Work
 
-## M5 T468 S6 Packet
+## M5 Td S148 Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Corrective; T468 S6 restores the task-status grammar after P3 closure. |
-| Admission And Approval | The persistent owner objective requires immediate repair of discovered closure defects; this bounded corrective S repairs the invalid P3 state record only. |
-| Objective | Restore valid documentation-governance state for the accepted T468 closure. |
-| Non-goals | No runtime, ATA, VADP, artifact, source, API or queue-scope change. |
-| Reference Baseline | T468 S1 Checklist 1, S2 Checklist 2, S3/S4 evidence and [M5 Core HDC ATA Phase Contract](../proposals/m5-core-hdc-ata-phase-contract.md). The sole current artifact identity moves from 0467 to T468 in this closure. |
-| Candidate Proposal | [M5 Core HDC ATA Phase Contract](../proposals/m5-core-hdc-ata-phase-contract.md), S5 complete closure audit. |
-| Files And ABI Surface | `states/CURRENT.md` only; no ABI or product surface. |
-| Applicable Rules | One HDC task-file/phase owner, one media-provider owner, one PIC IRQ route and one VADP port owner; a personality may select semantics but cannot register a second writer for an already owned physical port; checklist L3/L2 disposition remains source-qualified; current artifact is stripped Release with runtime debugger retained. |
-| Verification | Inspect the one-line status correction; run `git diff --check` and documentation governance. |
-| Expected Markers | Documentation governance accepts Corrective T468 S6 with no runtime diff. |
-| Asset Needs | Existing manual, read-only corroboration and fixtures only; no source, firmware, guest media or external code import. |
-| Reporting Requirements | Record the corrective reason, one-file diff and governance result. |
-| Stop Conditions | Stop if correcting the status requires reopening runtime scope or changing T468 evidence. |
-| Exit Criteria | The status grammar passes and T468 remains closed. |
-| Closure | Accepted: this corrective S changes only packet grammar; T468 remains closed. |
-| Original Owner Request | Complete the remaining controller tasks with manual authority, cross-model verification, exact L2 boundaries and minimalist single-owner design. |
-| Similar-Issue Sweep | Review numeric task packet mode and subtask rules; no other status record changes. |
+| Identifier Mode | Governance |
+| Admission And Approval | Owner request in this turn authorizes a full re-audit of PIC, DMA, PIT, RTC-CMOS, KBC, Intel 8272A FDC, VADP CGA/EGA and ATA/HDC against the stated L3/L2/L1/L0 rule. |
+| Objective | Reclassify every existing controller checklist row by whether its evidence is a direct manual/model/board L3 fact, an external L3 input receiver, estimated L2 timing, L1 logical ordering, or L0 missing ordering. |
+| Non-goals | No controller feature, timing number, profile selection, API, source import, artifact or runtime-code change unless a concrete audit contradiction requires a separately admitted repair. |
+| Reference Baseline | T460--T468 controller histories; their Checklist 1/2 evidence; T462 board-contract record; T467 CGA and T468 ATA ledgers; current architecture and source policy. |
+| Candidate Proposal | The completed controller phase records are audit subjects; Td S148 creates no new implementation proposal. |
+| Files And ABI Surface | `docs/states/CURRENT.md`, one indexed Td evidence record and only the existing checklist/evidence records whose classification wording must change; no ABI. |
+| Applicable Rules | Manual authority remains normative; external emulator behavior is a separately labelled model L3; a copied, externally supplied board term consumed by its sole owner is Board L3; unproved internal estimates are L2; logical-only order is L1; absent order is L0; no L4 category is used. |
+| Verification | Enumerate every finite row across the eight controllers and separate VADP CGA/EGA modes; verify one source/owner/proof/disposition per row; run documentation governance and inspect the actual documentation diff. |
+| Expected Markers | Every prior generic L2 is either promoted to a qualified L3 receiver or explicitly retained as L2/L1/L0 with a reason; no row silently becomes L3 merely by arithmetic. |
+| Asset Needs | Existing archived manuals, read-only external-model findings and prior evidence only; no new source import or firmware/media acquisition. |
+| Reporting Requirements | Record the taxonomy, row counts per controller, every promotion/demotion, retained non-L3 reason, affected owner and any separately required code repair. |
+| Stop Conditions | Stop for missing authoritative evidence that cannot be classified from the existing ledger, or for a discovered runtime defect needing new implementation authority. |
+| Exit Criteria | All eight controller ledgers use the requested hierarchy consistently, VADP CGA and EGA are separate, all changed records are indexed, and documentation governance passes. |
+| Original Owner Request | Treat external L3 inputs as L3; reserve L2 for internal proportional estimates, L1 for logic-only order and L0 for absent order; re-audit all eight controllers including VADP CGA/EGA. |
+| Similar-Issue Sweep | Search every controller Checklist 1/2, board-timing contract, history closure and current-summary L-level statement for stale generic `L2`, `L4` or ambiguous receiver wording. |
+| Closure | Accepted: the indexed Td S148 evidence covers all 145 frozen rows, separates VADP CGA/EGA, records every receiver/value distinction and residual L2/L1/L0 reason, and documentation governance passes. |
 
 ## Current Technical Baseline
 
@@ -54,15 +54,23 @@
 | Task | Compact result |
 | --- | --- |
 | T468 | Closed: the ATA-3 15-row task-file/media contract has one HDC owner, one media owner and one PIC route; the serial current gate passes 295/295 and stripped Release 0468 is recorded in [history](../history/M5-T468-core-hdc-ata-phase-contract.md). |
-| T467 | Closed: all 17 selected IBM-CGA rows reconcile to one VADP/Core/profile/snapshot path. Manual-L3 digital behavior and bounded Model-339 Other-L3 cadence are complete; only exact 160x100, default/ISA-wait timing, light-pen lifecycle and physical-monitor boundaries remain L2. Serial current-gate passes 295/295; stripped Release 0467 is recorded in [history](../history/M5-T467-core-ibm-cga-completeness.md). |
+| T467 | Closed: all 17 selected IBM-CGA rows reconcile to one VADP/Core/profile/snapshot path. Source and model facts remain retained; their current L3/L2/L1/L0 interpretation is [Td S148](../etc/evidence/td-s148-eight-controller-l-level-reclassification-audit.md). Serial current-gate passes 295/295; stripped Release 0467 is recorded in [history](../history/M5-T467-core-ibm-cga-completeness.md). |
 | T466 | Closed: Manual-L3 D/E/10 geometry reaches the single VADP state owner through real firmware and guest port writes. The profile declaration, cold-start/text routing and all fixtures now agree; unknown planar geometry falls through existing legacy selection rather than inventing a frame. The stripped Release 0466 artifact and its hash are recorded in [history](../history/M5-T466-core-vadp-phase-contract.md). |
-| T465 | Closed: selected Intel 8272A source reconciliation, command/reset repair and per-drive parallel Seek close the logical controller contract; physical media and board-time conversion remain explicit L2. Release 0465 is stripped and the 294/294 serial gate is recorded in [history](../history/M5-T465-core-intel-8272a-logical-media-phase-contract.md). |
-| T464 | Closed: all sixteen KBC rows are Manual L3 or explicit L2/L4. One Core owner now covers selected command/input/test state; 294/294 serial current-gate tests pass and stripped Release 0464 is recorded in history. |
-| T463 | Closed: the 16-row MC146818A/IBM AT ledger has one Core phase owner, a copied L3/L2 board timing plan, explicit L2/L4 boundaries and focused proof. The full current gate ran 294/294; stripped Release 0463 is recorded in [history](../history/M5-T463-core-rtc-cmos-phase-contract.md). |
-| T462 | Closed: one immutable copied plan carries only qualified Model-339 PIT/DMA selections; PIC remains explicit L2. The seven corrected PIT-transition regressions, 294/294 serial current gate, 77/77 specialized gates, documentation governance and stripped 0462 artifact complete the controller-board contract. [History](../history/M5-T462-core-controller-board-timing-contract.md). |
-| T461 | Closed: one Core PIT owner covers manual P1--P14 and one `OUT0 -> IRQ0 -> PIC refresh` route closes P15; P16--P18 remain explicit L2. Full current-gate is 294/294 and its stripped artifact is retained in history. [History](../history/M5-T461-core-pit-8254-phase-contract.md). |
+| T465 | Closed: selected Intel 8272A source reconciliation, command/reset repair and per-drive parallel Seek close the logical controller contract. The retained physical/media/time boundaries use the current [Td S148](../etc/evidence/td-s148-eight-controller-l-level-reclassification-audit.md) classification. Release 0465 is stripped and the 294/294 serial gate is recorded in [history](../history/M5-T465-core-intel-8272a-logical-media-phase-contract.md). |
+| T464 | Closed: all sixteen KBC rows retain their selected command/input/test owner. Their current source/input/estimate/order classification is [Td S148](../etc/evidence/td-s148-eight-controller-l-level-reclassification-audit.md); 294/294 serial current-gate tests pass and stripped Release 0464 is recorded in history. |
+| T463 | Closed: the 16-row MC146818A/IBM AT ledger has one Core phase owner and copied board input plan. Its current L3/L2/L1/L0 interpretation is [Td S148](../etc/evidence/td-s148-eight-controller-l-level-reclassification-audit.md). The full current gate ran 294/294; stripped Release 0463 is recorded in [history](../history/M5-T463-core-rtc-cmos-phase-contract.md). |
+| T462 | Closed: one immutable copied plan carries the qualified Model-339 PIT/DMA selections; the current receiver/value distinction and PIC residual are in [Td S148](../etc/evidence/td-s148-eight-controller-l-level-reclassification-audit.md). The seven corrected PIT-transition regressions, 294/294 serial current gate, 77/77 specialized gates, documentation governance and stripped 0462 artifact complete the controller-board contract. [History](../history/M5-T462-core-controller-board-timing-contract.md). |
+| T461 | Closed: one Core PIT owner covers manual P1--P14 and one `OUT0 -> IRQ0 -> PIC refresh` route closes P15. Its retained boundaries are reclassified by [Td S148](../etc/evidence/td-s148-eight-controller-l-level-reclassification-audit.md). Full current-gate is 294/294 and its stripped artifact is retained in history. [History](../history/M5-T461-core-pit-8254-phase-contract.md). |
 
 ## Recent Governance
+
+- **M5 Td S148 (active):** re-audits all 145 frozen PIC, DMA, PIT, RTC, KBC,
+  8272A FDC, VADP EGA/CGA and ATA/HDC rows under the owner-approved hierarchy:
+  direct manual/model facts and real sole-owner external inputs are L3; only
+  internal estimates are L2; causal-only relations are L1; absent Core logic
+  is L0.  The [row-complete evidence](../etc/evidence/td-s148-eight-controller-l-level-reclassification-audit.md)
+  supersedes earlier L-level vocabulary without rewriting historical source
+  records.
 
 - **M5 Td S147 P3:** made result simplicity enforceable: a correct repair must
   consolidate duplicate paths, mirrored state, obsolete ownership, and avoidable
