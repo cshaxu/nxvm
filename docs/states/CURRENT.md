@@ -1,5 +1,28 @@
 # Project Status
 
+## Current Work
+
+## M5 T461 S1 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New |
+| Admission And Approval | Owner approved the next queued controller task on 2026-08-24: admit the Core PIT 8254 phase contract after T460. S1 is limited to source/owner reconciliation and no runtime implementation. |
+| Objective | Freeze the complete selected 8254 functional and logical-timing ledger, cross-check Intel primary material against bounded emulator observations, and record every current-code gap with a direct Manual-L3, Other-L3 corroboration, or explicit fallback-to-L2 disposition. |
+| Non-goals | No counter behavior change, host-clock pacing, oscillator/electrical waveform claim, speaker/PPI/audio implementation, second scheduler, profile wiring change, or external-code import. |
+| Reference Baseline | `6579ee80`; accepted T456 PIC and T460 DMA contracts; T350 PIT lifecycle evidence. |
+| Candidate Proposal | [Core PIT 8254 phase contract](../proposals/m5-core-pit-8254-phase-contract.md). |
+| Files And ABI Surface | Documentation/evidence and task history only. Inspect `pit.c`/`pit.h`, machine arbitration and selected port/IRQ binding; S1 changes no source ABI. |
+| Applicable Rules | README Task Reading Set; EXECUTION S/P lifecycle; DOCUMENT governance; source policy; specification-driven L3 timing design. Architecture/Coding rules are read for the owner/path audit even though no code changes are authorized. |
+| Verification | Verify the admitted PDF is readable and classify text/OCR quality; reconcile all selected counter/control/read-back/gate/output/IRQ0/reset/clock rows; verify documentation governance and diff hygiene. |
+| Expected Markers | `M5:T461:S1:PIT-MANUAL-LEDGER:OK`; one functional/timing list and one implementation-gap list, each row labelled Manual-L3, Other-L3 corroboration, or fallback-to-L2. |
+| Asset Needs | `O:\assets\manuals\controllers\intel\231164-005_8254_Programmable_Interval_Timer_Sep1993.pdf`; admitted read-only emulator source only for cross-checking, never import. |
+| Reporting Requirements | Record manual page/section provenance, PDF text/OCR confidence, any manual ambiguity, corroboration disagreements, selected-owner mapping, and a finite S2+ plan. |
+| Stop Conditions | Stop for a missing/illegible primary rule that cannot be resolved from the rendered pages, a required unselected board topology, a physical frequency derivation, or an import/license request. |
+| Exit Criteria | Every selected PIT row has an evidence tier and current owner/gap disposition; all deferred work has one named receiver; no implementation starts; governance gate passes and the S1 evidence is committed. |
+| Original Owner Request | Admit the next task and provide its task brief, under the same manual-first L3 and anti-accretion standard as DMA. |
+| Similar-Issue Sweep | Inspect all PIT counter, port, callback, clock-domain, reset/finalize and IRQ0 consumers; classify duplicate scheduler/output/latch ownership once rather than patching call sites. |
+
 ## Current Technical Baseline
 
 - **Current developer artifact:** target `vm-0-5-0460`; `nxvm_0_5_0460.exe` / `build/output/nxvm_0_5_0460.exe`, SHA-256 `29FB7AC3D715B45D60A82F4D32F3B4D17C8B4A8601C60FBE482DBB332CE0AF62`. It is built only from the stripped Release current-artifact route; Debug remains the current-gate route. T434 has one copied Core timing-plan publication route for default PC/AT, IBM 5170 Model 339 and Model-40 BYOB session composition.
@@ -24,7 +47,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T460 S5 | Accepted: all 16 DMA rows are disposed through the sole `dma.c` owner; normal/compressed and M2M service phases have focused proof, the five-clock conversion remains explicit L2, serial current-gate is 294/294, and the stripped 0460 artifact is recorded. [Closure audit](../etc/evidence/t460-s5-dma-closure-audit.md). |
+| T460 | Closed: all 16 DMA rows are disposed through the sole `dma.c` owner; normal/compressed and M2M service phases have focused proof, the five-clock conversion remains explicit L2, serial current-gate is 294/294, and the stripped 0460 artifact is recorded. [History](../history/M5-T460-core-dma-8237a-phase-contract.md). |
 
 | T459 | Closed after S2 correction: `standard`/`turbo` remain stopped-session Console selections, but neither VM speed branch manufactures guest ticks. `Sleep(1)` is explicitly L2 HLT host-load backoff; true Standard pacing and Turbo fast-forward remain transferred to Core deadlines plus profile timebases. The full gate passes 294/294; current artifact `0.5.0459` is stripped Release-only. [History](../history/M5-T459-vm-session-speed-policy.md). |
 | T458 | Closed: the shared runner retains its 256-instruction control quantum but captures/publishes normal frames no more than once per 16 host milliseconds; forced mode and lifecycle frames remain immediate. The current artifact is stripped Release-only, and the full gate passes 293/293. [History](../history/M5-T458-vm-runner-presentation-cadence.md). |
@@ -33,8 +56,6 @@
 | T455 | Closed: the sole 8086 decoder-ledger guard now checks current decoder and timing owners instead of the retired monolithic layout; all 1,053 records and 292 current-gate tests pass. [History](../history/M5-T455-8086-decoder-ledger-guard-reconciliation.md). |
 | T454 | Closed: the three fixed-write Console catalog smokes have one CTest-owned build workspace each; serial and repeated parallel replays pass with no source-tree residue. The independent 8086 decoder-ledger guard failure is recorded as CPU debt. [History](../history/M5-T454-parallel-console-profile-smoke-isolation.md). |
 | T453 | Closed: fresh default tree uses one WinLibs toolchain family; the one FDC test include is corrected; 44 obsolete build trees are removed; current build operations are reduced to preset-backed commands. [History](../history/M5-T453-toolchain-build-tree-hygiene.md). |
-| T452 | Closed: optional isolated ccache presets provide measured repeat-build hits and byte-identical output; default route remains unchanged and task temporary cache/build trees are removed. [History](../history/M5-T452-optional-ccache-build-acceleration.md). |
-
 
 ## Recent Governance
 
