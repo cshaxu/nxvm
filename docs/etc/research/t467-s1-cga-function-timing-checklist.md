@@ -44,8 +44,8 @@ the source does not define an implementable selected profile/board contract.
 | CGA-F5 | IBM pp. 1--2, 22: adapter storage is 16 KiB and processor-accessible; the selected PC aperture is B8000h. | 86Box and PCjs use a 16-KiB B8000h buffer. | Manual L3 for capacity/aperture and digital addressing facts. |
 | CGA-F6 | IBM pp. 3--6, 15--17: CRTC counts govern character/raster/display timing and start/cursor addressing; Motorola supplies their defined units. | 86Box recomputes raster from CRTC writes; PCjs derives display geometry from its register state. | Manual L3 for CRTC-to-raster relation; Core tick formula is CGA-T2 L2. |
 | CGA-F7 | IBM p. 21: mode change requires disabling video, programming the mode/CRTC state, then enabling video. | 86Box/PCjs honour output-enable as display suppression; their intermediate scheduling differs. | Manual L3 for ordering and output-enable effect. |
-| CGA-T1 | IBM pp. 3--6, 20--21: timing generator arbitrates display-buffer access and produces 6845/DRAM timing; status exposes horizontal/vertical observable intervals. | 86Box has a per-card timer; PCjs estimates from host CPU cycles; MAME, Bochs and QEMU do not supply IBM-CGA board timing. | Manual L3 for logical relation only; numerical Core timeline conversion falls back to L2. |
-| CGA-T2 | IBM pp. 3--6, 23--25: oscillator/signal and display-rate specifications describe adapter operation, but not the selected Core tick source, ISA arbitration or CPU wait-cycle formula. | 86Box's wait-state table and PCjs's cycle estimates disagree in mechanism; later VGA models are inapplicable. | fallback to L2; receiver is the VADP/profile board-timing contract. |
+| CGA-T1 | IBM pp. 3--6, 20--21: timing generator arbitrates display-buffer access and produces 6845/DRAM timing; status exposes horizontal/vertical observable intervals. | 86Box has a per-card timer; PCjs estimates from host CPU cycles; MAME, Bochs and QEMU do not supply IBM-CGA board timing. | Manual L3 for logical relation. The existing copied profile -> VADP timing declaration is Board-L3-capable; its current unsourced values are L2 data. |
+| CGA-T2 | IBM pp. 3--6, 23--25: oscillator/signal and display-rate specifications describe adapter operation, but not the selected Core tick source, ISA arbitration or CPU wait-cycle formula. | 86Box's wait-state table and PCjs's cycle estimates disagree in mechanism; later VGA models are inapplicable. | Board-L3-capable receiver for a sourced external timing declaration; current default data and unmodelled ISA wait formula remain L2. |
 | CGA-T3 | IBM pp. 1, 15--17: light-pen hardware interface and latch exist. | 86Box can synthesize a latch; PCjs has no selected NXVM-like input lifecycle. | fallback to L2 until an admitted profile supplies an input source, cancellation and consumer. |
 | CGA-T4 | IBM pp. 1--6, 23--25: composite/direct-drive outputs, RF-modulator interface and monitor options are named. | 86Box adds selectable composite/RGB algorithms; PCjs renders to a browser; MAME/Bochs/QEMU do not define IBM monitor electrical behaviour. | Manual L3 for named interface facts; waveform, phosphor/composite and host presentation fall back to L2. |
 | CGA-T5 | IBM pp. 22--25: port/memory/card facts are adapter-local, not a new VM/renderer owner. | All useful models retain private video state and a host rendering endpoint. | Project boundary: one VADP state owner and copied snapshot consumer; no external model creates a second owner. |
@@ -53,9 +53,10 @@ the source does not define an implementable selected profile/board contract.
 ## S1 Result And Transfer
 
 The frozen universe has 17 rows: 13 Manual-L3 digital/interface relations, no
-Other-L3 or board-L3 claim, and four precise L2 transfers: complete 160x100
-generation (CGA-F4), Core/ISA timing conversion (CGA-T2), light-pen lifecycle
-(CGA-T3), and physical/host monitor rendering (CGA-T4). S2 must audit exactly
-these identifiers against the current VADP, memory, clock, profile firmware
-and copied-snapshot path. It cannot turn an L2 row into L3 from reference-code
-similarity.
+Other-L3 claim, and one existing Board-L3-capable VADP timing-input path. Its
+current default values remain L2 because they have no recorded source
+provenance. Complete 160x100 generation (CGA-F4), the unmodelled ISA wait
+formula (CGA-T2), light-pen lifecycle (CGA-T3), and physical/host monitor
+rendering (CGA-T4) remain explicit L2. S2 audits exactly these identifiers
+against the current VADP, memory, clock, profile firmware and copied-snapshot
+path. It cannot turn L2 data into L3 from reference-code similarity.

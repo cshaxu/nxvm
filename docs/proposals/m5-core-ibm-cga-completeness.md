@@ -59,7 +59,12 @@ duplicate VRAM, palette, mode, raster or presentation state was introduced.
    L3/L2 disposition.
 2. **S2 - implementation-gap audit.** Create Checklist 2 with the same row
    IDs; trace each current writer, VADP state, Core-time input and copied-frame
-   consumer; record all missing or contradictory behaviour before repair.
+   consumer; record all missing or contradictory behaviour before repair.  The
+   owner-approved S2 scope also reconciles the retained PIC/DMA/PIT/RTC/KBC L2
+   entries: an existing construction-only receiver able to consume
+   source-qualified board data is recorded as Board-L3-capable, while only a
+   missing complete receiver remains L2.  This reconciliation creates no
+   runtime path or new controller claim.
 3. **S3 - port/register/reset closure.** Repair the complete admitted
    `3D4h`--`3DAh` grammar, reset/cancellation and status/light-pen disposition
    in the single VADP owner, with a complete port sweep.

@@ -2,7 +2,26 @@
 
 ## Current Work
 
-**Between admitted subtasks.** T467 S1 is accepted; no subsequent S is active.
+## M5 T467 S2 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; T467 S2, one-session coordinator, executor and closure review. |
+| Admission And Approval | The persistent owner objective approves the controller ledger/code-gap sequence. S1 is accepted at `92833507`; the owner explicitly expands S2 to re-audit the retained PIC/DMA/PIT/RTC/KBC L2 items by the same Board-L3-capability versus current-data rule, before auditing CGA implementation gaps. |
+| Objective | Produce Checklist 2 for all CGA-R1--R5/F1--F7/T1--T5 rows, tracing current state, port/memory/timeline/profile/firmware consumers and proof; also reconcile every retained L2 item of PIC, DMA, PIT, RTC and KBC as an existing Board-L3 capability/current data distinction or an exact missing-interface receiver. |
+| Non-goals | Do not implement a mode, synthesize a board rate, promote unqualified values, add a renderer/VRAM path, mutate host presentation, import third-party code or change public ABI. |
+| Reference Baseline | `92833507` accepts Checklist 1. VADP's copied `core_machine_vadp_text_timing` construction input is the sole known Board-L3-capable receiver; current default 48/8/8 has no recorded L3 provenance. |
+| Candidate Proposal | [M5 Core IBM CGA Completeness](../proposals/m5-core-ibm-cga-completeness.md), S2 implementation-gap audit and owner-approved prior-controller L2 capability reconciliation. |
+| Files And ABI Surface | Expected: Checklist 1 correction, CGA Checklist 2 and cross-controller reconciliation evidence/status only; source and ABI changes are forbidden in S2. |
+| Applicable Rules | `docs/rules/EXECUTION.md`: every frozen row gets a code/proof/receiver disposition. `docs/rules/ARCHITECTURE.md` and `docs/rules/CODING.md`: VADP remains sole mutable owner and profile data is construction-only. `docs/etc/operations/policy/source-policy.md`: references remain read-only. |
+| Verification | Trace every frozen CGA row through VADP, machine scheduler, display configuration, profile firmware and existing tests; trace every prior-controller retained L2 item through its existing plan/input owner; verify every Board-L3-capable route is copied at construction, not a live setter; run documentation governance and diff checks. |
+| Expected Markers | Checklist 2 has exactly the same 17 IDs; every gap is an admitted future S candidate or exact L2 transfer; CGA-T1/T2 and every prior-controller boundary distinguish input capability from data provenance. |
+| Asset Needs | Existing local source, Checklist 1, and source archive only; no new external or protected asset. |
+| Reporting Requirements | Record each CGA row's current owner/path/proof, every gap, the retained VADP input path, every prior-controller L2 reclassification/receiver, and the no-code-change result. |
+| Stop Conditions | Stop if a second VADP/video state path is found, any prior-controller L2 item lacks a finite owner/receiver disposition, or a necessary implementation would expand beyond its existing sole owner. |
+| Exit Criteria | Both CGA checklists share the complete 17-row universe; all current CGA implementation gaps and all prior-controller L2/Board-L3 receivers are explicit; governance passes without code changes. |
+| Original Owner Request | Complete remaining controllers through authoritative cross-check and gap-ledger work, accepting external L3 input where the interface supports it and avoiding additive patchwork. |
+| Similar-Issue Sweep | Inspect all CGA ports, memory registration, snapshot capture, clock advance, profile display configuration, default firmware and Model-339/CECG coexistence; also inspect prior PIC/DMA/PIT/RTC/KBC timing/input plans and reset/profile routes; reject duplicate ownership or stale fixture assumptions. |
 
 ## Current Technical Baseline
 
