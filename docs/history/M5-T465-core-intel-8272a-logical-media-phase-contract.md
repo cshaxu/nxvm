@@ -35,3 +35,15 @@ Other/board L3 or fallback to L2. The focused smoke proves `10h` returns
 `M5:T465:S3:FDC-8272-command:OK`. Production code is unchanged; the only test
 addition publishes this existing proof. No model selector or media/timing path
 was introduced.
+
+## S4 Accepted Evidence
+
+`c43958b3` corrects the active task's chip authority and rebuilds both finite
+ledgers around Intel 8272A.  Rendered Intel pages, IBM AT facts and each of
+86Box, MAME, PCjs, Bochs and QEMU are recorded with their actual disagreement:
+family extension, limited subset, or later-controller behavior cannot extend
+the selected command set.  The focused FDC smoke and documentation governance
+pass.  The audit leaves two Manual-L3 implementation gaps explicit--parallel
+Seek state and a board-validated clock conversion--and leaves unselected
+physical/media/firmware terms at L2.  No source, ABI, controller path, parser,
+scheduler, media owner or artifact changed.

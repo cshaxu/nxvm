@@ -2,28 +2,6 @@
 
 ## Current Work
 
-## M5 T465 S4 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner goal dated 2026-08-25 approves completion of the active FDC task after accepted S1--S3 evidence. |
-| Objective | Rebuild both FDC checklists around the selected Intel 8272A original manual, cross-check every row against 86Box, MAME, PCjs, Bochs and QEMU, then assign Manual L3, Other/board L3 or fallback to L2 without carrying forward uPD765-led conclusions. |
-| Non-goals | No final T465 closure/artifact, new FDC behavior, controller selection, uPD765 identity, media grammar, drive mechanics, timing conversion, profile policy, runtime debugger change or unrelated repair. |
-| Reference Baseline | `f00f7b7c`; accepted T465 history, Intel 8272A source record, current `fdc.c`, renamed S13/S14 ledger and queued 8272A proposal. |
-| Candidate Proposal | [Core Intel 8272A and logical media phase contract](../proposals/m5-core-intel-8272a-logical-media-phase-contract.md). |
-| Files And ABI Surface | Intel 8272A proposal/history/status/queue/checklist names and FDC code-gap evidence only. No source, public ABI, CMake or artifact change. |
-| Applicable Rules | The selected original 8272A manual controls controller identity; all ledger gaps must be explicit rather than inferred; source policy prohibits external-code import; no L4 claim or second FDC owner/path. |
-| Verification | Inspect Intel original pages and the five named emulator implementations, reconcile every S13/S14 row and receiver, run FDC focused smoke plus documentation governance and `git diff --check`. |
-| Expected Markers | No active FDC proposal/checklist names uPD765 as the selected chip; every row names Manual L3, Other/board L3 or fallback to L2 and identifies one receiver/boundary. |
-| Asset Needs | Existing build outputs only; no source, firmware or media asset is imported. |
-| Reporting Requirements | Record Intel page/table/revision, each emulator disagreement, every retained L2/Other-board boundary, current-code gap and no-new-path conclusion. |
-| Stop Conditions | Stop for a missing selected manual, conflict that changes the selected 8272A identity, or a row that cannot receive a truthful tier/receiver. |
-| Exit Criteria | All active FDC names/selectors/checklists use Intel 8272A, every one of the finite source and code-gap rows is re-derived from Intel plus labelled comparison, and no inherited uPD765 conclusion remains. |
-| Original Owner Request | Complete remaining controller tasks with source-first L3 where evidenced and precise L2 otherwise, rejecting additive or duplicate design. |
-| Similar-Issue Sweep | Re-read all FDC-R/F/T rows, selected controller identity, FDC command/reset paths, artifact target/presets, queue/proposal/history links and all current-gate results. |
-
-
 ## Current Technical Baseline
 
 - **Current developer artifact:** target `vm-0-5-0464`; `nxvm_0_5_0464.exe` / `build/output/nxvm_0_5_0464.exe`, SHA-256 `92BF67903AF9F7725F9BFC8182373FDF615DD5026EDA1857C87BF8249912F674`. It is built only from the stripped Release current-artifact route; Debug remains the current-gate route. T434 has one copied Core timing-plan publication route for default PC/AT, IBM 5170 Model 339 and Model-40 BYOB session composition.
@@ -48,7 +26,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T465 S3 | Accepted: Intel 8272A is the selected Core command authority, so `10h -> 80h` is verified L3 invalid behavior; uPD765 Version/overrun differences remain conditional Other/board L3 or L2. No second model or code path was added. |
+| T465 S4 | Accepted: source and code ledgers are rebuilt around selected Intel 8272A; each external emulator disagreement is explicit. Parallel Seek and clock conversion are retained as bounded Manual-L3 code gaps, not uPD765 extensions or guessed L3. |
 | T464 | Closed: all sixteen KBC rows are Manual L3 or explicit L2/L4. One Core owner now covers selected command/input/test state; 294/294 serial current-gate tests pass and stripped Release 0464 is recorded in history. |
 | T463 | Closed: the 16-row MC146818A/IBM AT ledger has one Core phase owner, a copied L3/L2 board timing plan, explicit L2/L4 boundaries and focused proof. The full current gate ran 294/294; stripped Release 0463 is recorded in [history](../history/M5-T463-core-rtc-cmos-phase-contract.md). |
 | T462 | Closed: one immutable copied plan carries only qualified Model-339 PIT/DMA selections; PIC remains explicit L2. The seven corrected PIT-transition regressions, 294/294 serial current gate, 77/77 specialized gates, documentation governance and stripped 0462 artifact complete the controller-board contract. [History](../history/M5-T462-core-controller-board-timing-contract.md). |
