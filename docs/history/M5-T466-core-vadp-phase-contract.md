@@ -26,3 +26,15 @@ state and Status-1 attribute-phase cancellation. The seven affected CECG and
 VADP smokes pass with the same address values but distinct personality
 semantics. Switch sense, feature pins and board decode remain L2; no renderer,
 scheduler, display-memory path, public ABI or source import was added.
+
+## S3 Accepted Evidence
+
+The existing `ega_planar_active` predicate is the sole operational sequencer
+gate: either Reset bit clear makes the provider high impedance, so the frozen
+memory resolver falls back to ordinary RAM and EGA capture is unavailable;
+both bits set restore the original planar provider and retained plane contents.
+`core-machine-ega-planar-port-smoke` proves both reset forms, fallback and
+recovery; sequencer, mode-10, external-port and VADP status smokes pass.
+Clocking Mode propagation, asynchronous-reset DRAM loss and Core tick/board
+conversion remain explicit L2. No memory route, scheduler, API or state mirror
+was added.

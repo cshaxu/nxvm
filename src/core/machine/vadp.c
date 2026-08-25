@@ -184,6 +184,7 @@ static C_INT core_machine_vadp_ega_planar_active(const t_vadp *adapter)
         adapter->data.ega_planar_armed &&
         adapter->data.ega_planar_vram != 0u &&
         adapter->data.ega_sequencer_configured &&
+        (adapter->data.sequencer[0] & 0x03u) == 0x03u &&
         adapter->data.ega_controller_configured &&
         (adapter->data.graphics[6] & 0x0cu) == 0x04u &&
         (adapter->data.graphics[5] & 0x0bu) == 0u &&
@@ -1783,8 +1784,10 @@ static C_INT core_machine_vadp_capture_ega_planar_snapshot(t_vadp *adapter,
 C_INT core_machine_vadp_capture_snapshot(t_vadp *adapter, t_ram *memory,
     core_machine_display_snapshot *out_snapshot)
 {
-    if (core_machine_vadp_ega_planar_active(adapter)) {
-        return core_machine_vadp_capture_ega_planar_snapshot(adapter, out_snapshot);
+    if (adapter != STD_NULL && adapter->data.ega_planar_enabled) {
+        return core_machine_vadp_ega_planar_active(adapter) ?
+            core_machine_vadp_capture_ega_planar_snapshot(adapter, out_snapshot) :
+            TYPE_FALSE;
     }
     if (core_machine_vadp_is_high_res_graphics_mode(adapter)) {
         return core_machine_vadp_capture_high_res_graphics_snapshot(adapter, memory,

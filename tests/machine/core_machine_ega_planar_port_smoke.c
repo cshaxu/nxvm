@@ -41,6 +41,7 @@ C_INT main(C_VOID)
     type_unsigned_8 copied_pixel_zero;
     type_unsigned_8 copied_pixel_two;
     type_unsigned_32 copied_palette_fifteen;
+    core_machine_memory_route route;
     C_INT failed = 0;
 
     STD_MEMSET(&memory, 0, sizeof(memory));
@@ -90,6 +91,28 @@ C_INT main(C_VOID)
     copied_pixel_zero = snapshot.pixels[0];
     copied_pixel_two = snapshot.pixels[2];
     copied_palette_fifteen = snapshot.palette_rgb[15];
+
+    core_machine_port_write(&port, 0x03c4u, 0u);
+    core_machine_port_write(&port, 0x03c5u, 0x02u);
+    failed |= core_machine_port_read(&port, 0x03c5u) != 0x02u ||
+        !core_machine_ega_planar_write(&memory, 0x000a0000u, 0x00u) ||
+        core_machine_memory_query_physical(&memory, 0x000a0000u, 1u,
+        CORE_MACHINE_MEMORY_ACCESS_WRITE, &route) != TYPE_STATUS_OK ||
+        route != CORE_MACHINE_MEMORY_ROUTE_ORDINARY_RAM ||
+        core_machine_vadp_capture_snapshot(&vadp, &memory, &snapshot);
+    core_machine_port_write(&port, 0x03c5u, 0x01u);
+    failed |= core_machine_port_read(&port, 0x03c5u) != 0x01u ||
+        !core_machine_ega_planar_read(&memory, 0x000a0000u, &value) ||
+        core_machine_memory_query_physical(&memory, 0x000a0000u, 1u,
+        CORE_MACHINE_MEMORY_ACCESS_READ, &route) != TYPE_STATUS_OK ||
+        route != CORE_MACHINE_MEMORY_ROUTE_ORDINARY_RAM ||
+        core_machine_vadp_capture_snapshot(&vadp, &memory, &snapshot);
+    core_machine_port_write(&port, 0x03c5u, 0x03u);
+    failed |= core_machine_port_read(&port, 0x03c5u) != 0x03u ||
+        !core_machine_ega_planar_read(&memory, 0x000a0000u, &value) ||
+        value != 0xa5u || core_machine_memory_query_physical(&memory,
+        0x000a0000u, 1u, CORE_MACHINE_MEMORY_ACCESS_READ, &route) !=
+        TYPE_STATUS_OK || route != CORE_MACHINE_MEMORY_ROUTE_PROVIDER;
 
     core_machine_port_write(&port, 0x03c4u, 2u);
     core_machine_port_write(&port, 0x03c5u, 0x02u);
