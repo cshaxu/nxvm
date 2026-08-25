@@ -24,3 +24,11 @@ the existing AUX/serial paths have focused passing smoke proof. `AC` is not
 faked: its 60 scan-code dump requires selected 8042 RAM, PSW and ROM firmware.
 Serial error latches, UPI service cadence and output-pulse consumption remain
 explicit L2/L4 boundaries.
+
+## Closure
+
+S3 built the stripped Release 0464 artifact (SHA-256
+`92BF67903AF9F7725F9BFC8182373FDF615DD5026EDA1857C87BF8249912F674`) and
+ran the isolated serial current gate successfully: 294/294 in 113.34 seconds.
+The retained S3 audit maps all ledger rows and confirms no duplicate KBC state
+or path was introduced.

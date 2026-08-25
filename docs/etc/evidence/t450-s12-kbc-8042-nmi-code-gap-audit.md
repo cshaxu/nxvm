@@ -10,7 +10,7 @@ The reviewed owners are `src/core/machine/kbc.c`, `kbc.h`, `machine.c`,
 `core_machine_kbc_serial_cadence_smoke.c`, `core_machine_kbc_aux_port_smoke.c`,
 keyboard-host-ingress, PC/AT topology/composition and Model-339 clock smokes.
 Every nonconforming row transfers once to the queued
-[Core KBC 8042 and NMI phase contract](../../proposals/m5-core-kbc-8042-nmi-phase-contract.md).
+[Core KBC 8042 and NMI phase contract](../../history/M5-T464-core-kbc-8042-nmi-phase-contract-proposal.md).
 No source or test is modified by this audit.
 
 T464 S1 rechecked every row against the checklist's rendered Intel/IBM PDFs

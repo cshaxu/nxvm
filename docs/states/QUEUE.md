@@ -44,7 +44,6 @@ exclusive earliest capability batch; a later candidate may consume a registered
 contract but does not redefine its L3 or Core/VM boundary.
 
 1. [Core RTC CMOS phase contract](../proposals/m5-core-rtc-cmos-phase-contract.md).
-1. [Core KBC 8042 and NMI phase contract](../proposals/m5-core-kbc-8042-nmi-phase-contract.md).
 1. [Core uPD765 and logical media phase contract](../proposals/m5-core-fdc-upd765-logical-media-phase-contract.md).
 1. [Core VADP phase contract](../proposals/m5-core-vadp-phase-contract.md).
 1. [Core HDC ATA phase contract](../proposals/m5-core-hdc-ata-phase-contract.md).
