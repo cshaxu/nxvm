@@ -350,13 +350,31 @@ static C_VOID core_machine_fdc_dma_request_deassert(C_VOID *owner,
         &machine->shared_dma_secondary, binding);
 }
 
+static C_VOID core_machine_dma_refresh_pit_output(C_VOID *owner, type_bool asserted)
+{
+    core_machine *machine = owner;
+
+    if (machine == STD_NULL) return;
+    if (asserted) {
+        core_machine_dma_request_deassert(&machine->shared_dma_primary,
+            &machine->shared_dma_secondary, &machine->refresh_dma_request);
+    } else {
+        core_machine_dma_request_assert(&machine->shared_dma_primary,
+            &machine->shared_dma_secondary, &machine->refresh_dma_request);
+    }
+}
+
+static const core_machine_dma_channel_provider core_machine_dma_refresh_provider = {
+    STD_NULL, STD_NULL, STD_NULL
+};
+
 static type_bool core_machine_dma_wiring_is_valid(
     const core_machine_dma_wiring *wiring)
 {
     return wiring != STD_NULL &&
         wiring->controller_count == CORE_MACHINE_DMA_CONTROLLER_COUNT &&
         wiring->cascade_channel == CORE_MACHINE_DMA_CASCADE_CHANNEL &&
-        wiring->fdc_channel < VDMA_CHANNEL_COUNT;
+        wiring->fdc_channel < VDMA_CHANNEL_COUNT && wiring->fdc_channel != 1u;
 }
 
 type_status core_machine_configure_dma(core_machine *machine,
@@ -376,6 +394,12 @@ type_status core_machine_configure_dma(core_machine *machine,
         wiring->fdc_channel, core_machine_fdc_dma_provider(), &machine->fdc,
         &machine->fdc_dma_request);
     if (status != TYPE_STATUS_OK) return status;
+    status = core_machine_dma_bind_channel(&machine->shared_dma_latch,
+        &machine->shared_dma_primary, &machine->shared_dma_secondary, 1u,
+        &core_machine_dma_refresh_provider, machine, &machine->refresh_dma_request);
+    if (status != TYPE_STATUS_OK) return status;
+    core_machine_pit_set_output(&machine->shared_pit, 1u,
+        core_machine_dma_refresh_pit_output, machine);
     machine->dma_wiring = *wiring;
     machine->dma_configured = TYPE_TRUE;
     *out_fdc_request = machine->fdc_dma_request;

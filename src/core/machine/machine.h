@@ -189,6 +189,7 @@ struct core_machine {
     type_bool display_configured;
     core_machine_dma_wiring dma_wiring;
     core_machine_dma_request_binding fdc_dma_request;
+    core_machine_dma_request_binding refresh_dma_request;
     type_bool dma_configured;
     core_machine_rtc_cmos_config rtc_cmos_config;
     type_bool rtc_cmos_configured;

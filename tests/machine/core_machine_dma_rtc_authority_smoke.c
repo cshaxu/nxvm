@@ -66,6 +66,9 @@ int main(C_VOID)
     if (core_machine_create(&machine_config, &machine) != TYPE_STATUS_OK ||
         core_machine_configure_dma(machine, &invalid_wiring, &fdc_request) !=
             TYPE_STATUS_INVALID_ARGUMENT ||
+        (invalid_wiring = dma_wiring, invalid_wiring.fdc_channel = 1u,
+            core_machine_configure_dma(machine, &invalid_wiring, &fdc_request)) !=
+            TYPE_STATUS_INVALID_ARGUMENT ||
         core_machine_configure_dma(machine, &dma_wiring, &fdc_request) !=
             TYPE_STATUS_OK ||
         core_machine_configure_rtc_cmos(machine, &rtc_config) != TYPE_STATUS_OK ||
@@ -77,6 +80,9 @@ int main(C_VOID)
         core_machine_freeze_execution_providers(machine) != TYPE_STATUS_OK ||
         core_machine_reset(machine) != TYPE_STATUS_OK ||
         machine->shared_dma_primary.connect.device_owner[2u] != &machine->fdc ||
+        machine->shared_dma_primary.connect.device_owner[1u] != machine ||
+        machine->refresh_dma_request.core_token == 0u ||
+        machine->refresh_dma_request.channel != 1u ||
         machine->shared_dma_primary.data.mask != VDMA_MASK_VALID ||
         core_machine_dma_rtc_cmos_read(machine, CORE_MACHINE_RTC_EQUIPMENT) !=
             0x5au) {
