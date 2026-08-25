@@ -155,3 +155,7 @@ frame state; later VGA is an extension of this route, not a second video path.
 The final serialized current gate passes 295/295, documentation governance
 passes, and the retained code contains no renderer, BIOS-state classifier,
 second VRAM path or public ABI.
+
+The stripped Release `nxvm_0_5_0466.exe` was built from `1d61e888`, has
+SHA-256 `D1FD75D22510E01DA434312545596717564C9A64DC4653CD1B51EE40314E7241`,
+and identifies itself as version `0.5.0466`.

@@ -43,7 +43,6 @@ linked proposal identifies its finite implementation-admission baseline and
 exclusive earliest capability batch; a later candidate may consume a registered
 contract but does not redefine its L3 or Core/VM boundary.
 
-1. [Core VADP phase contract](../proposals/m5-core-vadp-phase-contract.md).
 1. [Core HDC ATA phase contract](../proposals/m5-core-hdc-ata-phase-contract.md).
 1. [Core L3 integration closure and VM contract export](../proposals/m5-core-l3-integration-vm-contract-export.md).
 

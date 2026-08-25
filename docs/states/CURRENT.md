@@ -2,33 +2,7 @@
 
 ## Current Work
 
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation `T466 S14`, single-person coordinator then executor then coordinator closure review. |
-| Admission And Approval | The persistent owner objective approves completion of the remaining controller tasks and the owner approved a new S. S13's serialized gate exposed stale VADP fixtures and one false profile port declaration; S14 is the necessary linear closure step. No exception is requested. |
-| Objective | Make the finite VADP gate describe only real controller state: retain exact CRTC tuples for planar snapshots and correct the sole default-PC/AT port declaration, then close the ledger with the verified stripped Release 0466 artifact. |
-| Non-goals | Do not reintroduce an implicit mode default, renderer, adapter profile, board scheduler, guessed monitor model, BDA-derived Core state, or new controller behavior merely to make an L2 row look complete. |
-| Reference Baseline | `08ac04f1` materializes the one generated INT 10h program in the fixed Video ROM slot, proves D/E/10 port-driven tuples, and retains the one VADP classifier. The authoritative universe is R1--R5, F1--F5 and T1--T5 in the T466 ledger. |
-| Candidate Proposal | [M5 Core VADP Phase Contract](../proposals/m5-core-vadp-phase-contract.md), fixture and declaration closure. |
-| Files And ABI Surface | Expected: current-artifact CMake/preset, T345 ownership-count verifier, default profile port declaration, affected VADP smoke fixtures, status/history/evidence and ignored `build/output/nxvm_0_5_0466.exe`; no public ABI and no second production path. VADP remains the one guest-state/port/mapping/snapshot owner; internal CGA/EGA/future-VGA boundaries cannot duplicate that state or create a parallel presentation route. The gate exposes the new retained-strict VM smoke as the one in-scope count revision. |
-| Applicable Rules | `docs/design/ARCHITECTURE.md` and `docs/rules/ARCHITECTURE.md`: one Core VADP owner and copied consumer boundary. `docs/design/CODING.md` and `docs/rules/CODING.md`: no duplicate production path or state mirror. `docs/rules/EXECUTION.md`: closure audit, documentation governance and stripped Release artifact. |
-| Verification | Re-run the affected profile/display corpus and the full serialized current gate; review all R1--R5/F1--F5/T1--T5 dispositions and source diff; build the release artifact, record hash, run documentation governance and diff checks. |
-| Expected Markers | Every planar fixture programs its sourced CRTC tuple; the default profile accurately declares `3DAh` write ownership; the 0466 artifact is stripped Release and `build/output` contains its hash-recorded executable. |
-| Asset Needs | Existing local IBM EGA scan and project-owned firmware only; no source, firmware image or asset import. |
-| Reporting Requirements | Record the finite ledger result, retained owner/path, code-size count, artifact identity/hash, and every explicit L2 transfer. |
-| Stop Conditions | Stop closure if a ledger row remains undisposed, a focused regression fails, the artifact cannot be built, or a defect requires a second production path. |
-| Exit Criteria | Every finite VADP row is proven or explicitly transferred; profile declarations and fixtures describe real port-driven state; the full serialized gate, artifact and governance gates pass; history/status record the closure without a second renderer, VRAM path or BIOS-state dependency. |
-| Original Owner Request | Complete the remaining controllers using manual/external cross-check ledgers, L3 only when sourced, L2 otherwise, with minimalist implementation and no additive patchwork. |
-| Similar-Issue Sweep | Reinspect all VADP geometry, ROM fixed-service placement, state ownership and residual L2 rows; reject an apparent closure that relies on an implicit mode default, a stale test fixture or an unrecorded physical assumption. |
-
-| Task | Compact progress |
-| --- | --- |
-| T466 S9 | Accepted: one BIOS `3C2` selection routes retained color-CRTC writes into the sole VADP; VADP now separates output availability from the A000 planar map, so mode 10 yields its frame and mode 03 returns text. |
-| T466 S10 | Transferred: direct D/E/10 tuple work is unaccepted. Its VM replay exposed the pre-existing default-profile display-reset ownership conflict; S11 owns that prerequisite before S10 may resume. |
-| T466 S11 | Accepted diagnostic: generic EGA and Model-339 intentionally share the one cold-start text initializer; no second reset writer or profile branch exists to repair. The mode-10 replay instead proves sourced CRTC writes do not reach VADP despite all nine program chunks reaching the assembler; S12 owns that firmware path. |
-| T466 S12 | Accepted: `08ac04f1` places one generated INT 10h program into a named Video ROM slot, preserving FDC placement. The sole VADP tuple classifier receives actual D/E/10 CRTC port writes; 14 direct/VM/ROM focused regressions pass, and F chained odd/even plus alpha generation remain explicit later work. |
-| T466 S8 | Accepted: IBM D/E/10/F layout facts are Manual L3; the actual offset-only snapshot conflation and generated-firmware mode-10 frame failure are now a reproducible single-owner VADP receiver, not hidden behind BDA or renderer state. |
-| T466 S7 | Accepted: IBM's 64/128/256-KiB capacity and aperture facts are Manual L3; no source establishes the exact extended-bank CPU mapping, so current unconditional backing and unselected card capacity are explicit L2 rather than a false 86Box-derived L3. |
+**Idle.** T466 is closed; no subsequent candidate is admitted.
 
 ## Current Technical Baseline
 
@@ -58,7 +32,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T466 S4 | Accepted: IBM EGA external routing, Sequencer Reset and CRTC 00h--18h use the sole VADP/memory route; clock, IRQ and physical inputs remain L2. |
+| T466 | Closed: Manual-L3 D/E/10 geometry reaches the single VADP state owner through real firmware and guest port writes. The profile declaration, cold-start/text routing and all fixtures now agree; unknown planar geometry falls through existing legacy selection rather than inventing a frame. The stripped Release 0466 artifact and its hash are recorded in [history](../history/M5-T466-core-vadp-phase-contract.md). |
 | T465 | Closed: selected Intel 8272A source reconciliation, command/reset repair and per-drive parallel Seek close the logical controller contract; physical media and board-time conversion remain explicit L2. Release 0465 is stripped and the 294/294 serial gate is recorded in [history](../history/M5-T465-core-intel-8272a-logical-media-phase-contract.md). |
 | T464 | Closed: all sixteen KBC rows are Manual L3 or explicit L2/L4. One Core owner now covers selected command/input/test state; 294/294 serial current-gate tests pass and stripped Release 0464 is recorded in history. |
 | T463 | Closed: the 16-row MC146818A/IBM AT ledger has one Core phase owner, a copied L3/L2 board timing plan, explicit L2/L4 boundaries and focused proof. The full current gate ran 294/294; stripped Release 0463 is recorded in [history](../history/M5-T463-core-rtc-cmos-phase-contract.md). |
@@ -66,7 +40,6 @@
 | T461 | Closed: one Core PIT owner covers manual P1--P14 and one `OUT0 -> IRQ0 -> PIC refresh` route closes P15; P16--P18 remain explicit L2. Full current-gate is 294/294 and its stripped artifact is retained in history. [History](../history/M5-T461-core-pit-8254-phase-contract.md). |
 | T460 | Closed: all 16 DMA rows are disposed through the sole `dma.c` owner; normal/compressed and M2M service phases have focused proof, the five-clock conversion remains explicit L2, serial current-gate is 294/294, and the stripped 0460 artifact is recorded. [History](../history/M5-T460-core-dma-8237a-phase-contract.md). |
 
-| T459 | Closed after S2 correction: `standard`/`turbo` remain stopped-session Console selections, but neither VM speed branch manufactures guest ticks. `Sleep(1)` is explicitly L2 HLT host-load backoff; true Standard pacing and Turbo fast-forward remain transferred to Core deadlines plus profile timebases. The full gate passes 294/294; current artifact `0.5.0459` is stripped Release-only. [History](../history/M5-T459-vm-session-speed-policy.md). |
 | T458 | Closed: the shared runner retains its 256-instruction control quantum but captures/publishes normal frames no more than once per 16 host milliseconds; forced mode and lifecycle frames remain immediate. The current artifact is stripped Release-only, and the full gate passes 293/293. [History](../history/M5-T458-vm-runner-presentation-cadence.md). |
 ## Recent Governance
 
