@@ -36,6 +36,9 @@ typedef struct {
     type_bool flagOutput[3]; /* retained counter-model OUT state */
     type_bool flagActive[3]; /* a loaded waveform is currently counting */
     type_bool flagPulseLow[3]; /* one elapsed-tick low strobe is pending */
+    type_bool flagLoadPending[3]; /* completed CR write awaits CE load */
+    type_bool flagTrigger[3]; /* rising GATE trigger for modes 1/5 */
+    type_bool flagRestart[3]; /* rising GATE reload for modes 2/3 */
 
     type_unsigned_32 reload[3]; /* effective binary/BCD reload; zero is never stored */
     type_unsigned_32 remaining[3]; /* effective count exposed through count[] */

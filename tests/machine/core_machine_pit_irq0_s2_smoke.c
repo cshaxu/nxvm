@@ -61,7 +61,7 @@ static C_INT pit_irq0_test_mode2_edge(C_VOID)
     failed |= fixture.irq0.asserted ||
         !core_machine_pit_get_output(&fixture.pit, 0u) ||
         core_machine_pic_scan_interrupt(&fixture.master, &fixture.slave);
-    core_machine_pit_advance(&fixture.pit, 3u);
+    core_machine_pit_advance(&fixture.pit, 4u);
     failed |= core_machine_pit_get_output(&fixture.pit, 0u) ||
         fixture.irq0.asserted || core_machine_pic_scan_interrupt(&fixture.master,
             &fixture.slave);
@@ -91,12 +91,15 @@ static C_INT pit_irq0_test_counter_forms(C_VOID)
     failed |= fixture.pit.data.flagReady[1u] || fixture.pit.data.flagActive[1u] ||
         fixture.pit.data.flagWrite[1u] != VPIT_STATUS_RW_MSB;
     core_machine_port_write(&fixture.port, 0x0041u, 0x12u);
+    failed |= fixture.pit.data.flagReady[1u] || !fixture.pit.data.flagLoadPending[1u] ||
+        fixture.pit.data.count[1u] != 0u;
+    core_machine_pit_advance(&fixture.pit, 1u);
     failed |= !fixture.pit.data.flagReady[1u] || fixture.pit.data.count[1u] != 0x1234u;
     core_machine_port_write(&fixture.port, 0x0043u, 0x00d8u);
     failed |= core_machine_port_read(&fixture.port, 0x0041u) != 0x34u ||
         core_machine_port_read(&fixture.port, 0x0041u) != 0x12u;
     pit_irq0_program(&fixture.port, 0x75u, 0x0003u);
-    core_machine_pit_advance(&fixture.pit, 3u);
+    core_machine_pit_advance(&fixture.pit, 4u);
     failed |= core_machine_pit_get_output(&fixture.pit, 1u);
     core_machine_pit_advance(&fixture.pit, 1u);
     failed |= !core_machine_pit_get_output(&fixture.pit, 1u) ||
@@ -120,7 +123,7 @@ static C_INT pit_irq0_test_gate_and_reset(C_VOID)
     core_machine_pit_advance(&fixture.pit, 4u);
     failed |= !core_machine_pit_get_output(&fixture.pit, 0u) || fixture.irq0.asserted;
     core_machine_pit_set_gate(&fixture.pit, 0u, TYPE_TRUE);
-    core_machine_pit_advance(&fixture.pit, 3u);
+    core_machine_pit_advance(&fixture.pit, 4u);
     failed |= !core_machine_pit_get_output(&fixture.pit, 0u) || !fixture.irq0.asserted;
     core_machine_pic_reset(&fixture.master, &fixture.slave);
     core_machine_pit_reset(&fixture.pit);

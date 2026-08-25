@@ -83,21 +83,28 @@ static type_unsigned_32 core_machine_pit_mode3_low_length(const t_pit *pit,
     return pit->data.reload[id] / 2u;
 }
 
+static type_unsigned_32 core_machine_pit_mode3_count(const t_pit *pit,
+    type_unsigned_8 id)
+{
+    return pit->data.reload[id] - (pit->data.reload[id] & 1u);
+}
+
 static C_VOID core_machine_pit_load(t_pit *pit, type_unsigned_8 id)
 {
     type_unsigned_8 mode = core_machine_pit_mode(pit, id);
 
     pit->data.reload[id] = core_machine_pit_decode_reload(pit, id);
-    pit->data.remaining[id] = pit->data.reload[id];
+    pit->data.remaining[id] = mode == 3u ?
+        core_machine_pit_mode3_count(pit, id) : pit->data.reload[id];
     pit->data.phase[id] = mode == 3u ?
         core_machine_pit_mode3_high_length(pit, id) : 0u;
     pit->data.flagReady[id] = TYPE_TRUE;
+    pit->data.flagLoadPending[id] = TYPE_FALSE;
+    pit->data.flagRestart[id] = TYPE_FALSE;
     pit->data.flagActive[id] = mode != 1u && mode != 5u;
     pit->data.flagPulseLow[id] = TYPE_FALSE;
     core_machine_pit_sync_count(pit, id);
 
-    /* Programming establishes an initial pin level, but not an IRQ edge. */
-    core_machine_pit_set_output_level(pit, id, mode != 0u, TYPE_FALSE);
 }
 
 static t_pit_data_status_rw core_machine_pit_read_start(const t_pit *pit,
@@ -197,6 +204,12 @@ static C_VOID core_machine_pit_write(t_pit *pit, t_port *port,
         } else {
             pit->data.init[id] = TYPE_MASK_UNSIGNED_16(port->data.ioByte);
             pit->data.flagWrite[id] = VPIT_STATUS_RW_MSB;
+            if (core_machine_pit_mode(pit, id) == 0u) {
+                pit->data.flagReady[id] = TYPE_FALSE;
+                pit->data.flagActive[id] = TYPE_FALSE;
+                pit->data.flagPulseLow[id] = TYPE_FALSE;
+                core_machine_pit_set_output_level(pit, id, TYPE_FALSE, TYPE_TRUE);
+            }
         }
         break;
     default:
@@ -204,12 +217,22 @@ static C_VOID core_machine_pit_write(t_pit *pit, t_port *port,
     }
     if (complete) {
         pit->data.flagWrite[id] = VPIT_STATUS_RW_READY;
-        core_machine_pit_load(pit, id);
+        pit->data.flagReady[id] = TYPE_FALSE;
+        pit->data.flagLoadPending[id] = TYPE_TRUE;
     }
+}
+
+static C_VOID core_machine_pit_commit_pending(t_pit *pit, type_unsigned_8 id)
+{
+    core_machine_pit_load(pit, id);
 }
 
 static C_VOID core_machine_pit_tick_mode0(t_pit *pit, type_unsigned_8 id)
 {
+    if (pit->data.flagLoadPending[id]) {
+        core_machine_pit_commit_pending(pit, id);
+        return;
+    }
     if (!pit->data.flagActive[id] || !pit->connect.flagGate[id]) return;
     if (--pit->data.remaining[id] == 0u) {
         pit->data.flagActive[id] = TYPE_FALSE;
@@ -220,6 +243,18 @@ static C_VOID core_machine_pit_tick_mode0(t_pit *pit, type_unsigned_8 id)
 
 static C_VOID core_machine_pit_tick_mode1(t_pit *pit, type_unsigned_8 id)
 {
+    if (pit->data.flagTrigger[id]) {
+        pit->data.flagTrigger[id] = TYPE_FALSE;
+        if (pit->data.flagLoadPending[id]) core_machine_pit_commit_pending(pit, id);
+        else {
+            pit->data.remaining[id] = pit->data.reload[id];
+            pit->data.flagPulseLow[id] = TYPE_FALSE;
+            core_machine_pit_sync_count(pit, id);
+        }
+        pit->data.flagActive[id] = TYPE_TRUE;
+        core_machine_pit_set_output_level(pit, id, TYPE_FALSE, TYPE_TRUE);
+        return;
+    }
     if (!pit->data.flagActive[id]) return;
     if (--pit->data.remaining[id] == 0u) {
         pit->data.flagActive[id] = TYPE_FALSE;
@@ -230,10 +265,19 @@ static C_VOID core_machine_pit_tick_mode1(t_pit *pit, type_unsigned_8 id)
 
 static C_VOID core_machine_pit_tick_mode2(t_pit *pit, type_unsigned_8 id)
 {
+    if (pit->data.flagRestart[id]) {
+        core_machine_pit_commit_pending(pit, id);
+        return;
+    }
+    if (pit->data.flagLoadPending[id] && !pit->data.flagActive[id]) {
+        core_machine_pit_commit_pending(pit, id);
+        return;
+    }
     if (!pit->data.flagActive[id] || !pit->connect.flagGate[id]) return;
     if (pit->data.flagPulseLow[id]) {
         pit->data.flagPulseLow[id] = TYPE_FALSE;
-        pit->data.remaining[id] = pit->data.reload[id];
+        if (pit->data.flagLoadPending[id]) core_machine_pit_commit_pending(pit, id);
+        else pit->data.remaining[id] = pit->data.reload[id];
         core_machine_pit_set_output_level(pit, id, TYPE_TRUE, TYPE_TRUE);
         if (pit->data.remaining[id] > 0u) --pit->data.remaining[id];
     } else if (pit->data.remaining[id] <= 1u) {
@@ -248,19 +292,30 @@ static C_VOID core_machine_pit_tick_mode2(t_pit *pit, type_unsigned_8 id)
 
 static C_VOID core_machine_pit_tick_mode3(t_pit *pit, type_unsigned_8 id)
 {
+    type_bool was_output;
+    if (pit->data.flagRestart[id]) {
+        core_machine_pit_commit_pending(pit, id);
+        return;
+    }
+    if (pit->data.flagLoadPending[id] && !pit->data.flagActive[id]) {
+        core_machine_pit_commit_pending(pit, id);
+        return;
+    }
     if (!pit->data.flagActive[id] || !pit->connect.flagGate[id]) return;
-    if (pit->data.remaining[id] > 0u) --pit->data.remaining[id];
+    if (pit->data.remaining[id] > 1u) pit->data.remaining[id] -= 2u;
+    else pit->data.remaining[id] = 0u;
     if (--pit->data.phase[id] == 0u) {
-        if (pit->data.flagOutput[id]) {
+        was_output = pit->data.flagOutput[id];
+        if (pit->data.flagLoadPending[id]) core_machine_pit_commit_pending(pit, id);
+        pit->data.remaining[id] = core_machine_pit_mode3_count(pit, id);
+        if (was_output) {
             pit->data.phase[id] = core_machine_pit_mode3_low_length(pit, id);
             if (pit->data.phase[id] == 0u) {
-                pit->data.remaining[id] = pit->data.reload[id];
                 pit->data.phase[id] = core_machine_pit_mode3_high_length(pit, id);
             } else {
                 core_machine_pit_set_output_level(pit, id, TYPE_FALSE, TYPE_TRUE);
             }
         } else {
-            pit->data.remaining[id] = pit->data.reload[id];
             pit->data.phase[id] = core_machine_pit_mode3_high_length(pit, id);
             core_machine_pit_set_output_level(pit, id, TYPE_TRUE, TYPE_TRUE);
         }
@@ -271,6 +326,22 @@ static C_VOID core_machine_pit_tick_mode3(t_pit *pit, type_unsigned_8 id)
 static C_VOID core_machine_pit_tick_mode4_or_5(t_pit *pit,
     type_unsigned_8 id)
 {
+    if (core_machine_pit_mode(pit, id) == 4u && pit->data.flagLoadPending[id]) {
+        core_machine_pit_commit_pending(pit, id);
+        return;
+    }
+    if (core_machine_pit_mode(pit, id) == 5u && pit->data.flagTrigger[id]) {
+        pit->data.flagTrigger[id] = TYPE_FALSE;
+        if (pit->data.flagLoadPending[id]) core_machine_pit_commit_pending(pit, id);
+        else {
+            pit->data.remaining[id] = pit->data.reload[id];
+            pit->data.flagPulseLow[id] = TYPE_FALSE;
+            core_machine_pit_sync_count(pit, id);
+        }
+        pit->data.flagActive[id] = TYPE_TRUE;
+        core_machine_pit_set_output_level(pit, id, TYPE_TRUE, TYPE_FALSE);
+        return;
+    }
     if (!pit->data.flagActive[id]) return;
     if (core_machine_pit_mode(pit, id) == 4u && !pit->connect.flagGate[id]) {
         return;
@@ -288,7 +359,10 @@ static C_VOID core_machine_pit_tick_mode4_or_5(t_pit *pit,
 
 static C_VOID core_machine_pit_tick(t_pit *pit, type_unsigned_8 id)
 {
-    if (!pit->data.flagReady[id]) return;
+    /* A completed CR write is intentionally not ready until this CLK commits
+     * it into CE; it must nevertheless reach its mode-specific load edge. */
+    if (!pit->data.flagReady[id] && !pit->data.flagLoadPending[id] &&
+        !pit->data.flagTrigger[id]) return;
     switch (core_machine_pit_mode(pit, id)) {
     case 0u: core_machine_pit_tick_mode0(pit, id); break;
     case 1u: core_machine_pit_tick_mode1(pit, id); break;
@@ -339,6 +413,9 @@ static C_VOID io_write_0043(t_port *port, type_unsigned_16 port_id, C_VOID *owne
     pit->data.flagStatusLatch[id] = TYPE_FALSE;
     pit->data.cw[id] = port->data.ioByte;
     pit->data.flagReady[id] = TYPE_FALSE;
+    pit->data.flagLoadPending[id] = TYPE_FALSE;
+    pit->data.flagTrigger[id] = TYPE_FALSE;
+    pit->data.flagRestart[id] = TYPE_FALSE;
     pit->data.flagActive[id] = TYPE_FALSE;
     pit->data.flagPulseLow[id] = TYPE_FALSE;
     pit->data.remaining[id] = 0u;
@@ -372,30 +449,18 @@ C_VOID core_machine_pit_set_gate(t_pit *pit, type_unsigned_8 id,
     mode = core_machine_pit_mode(pit, id);
     if (!asserted) {
         if (mode == 2u || mode == 3u) {
-            pit->data.remaining[id] = pit->data.reload[id];
-            pit->data.phase[id] = mode == 3u ?
-                core_machine_pit_mode3_high_length(pit, id) : 0u;
             pit->data.flagPulseLow[id] = TYPE_FALSE;
             core_machine_pit_set_output_level(pit, id, TYPE_TRUE, TYPE_FALSE);
-            core_machine_pit_sync_count(pit, id);
         }
         return;
     }
     if (mode == 1u || mode == 5u) {
-        if (!pit->data.flagReady[id]) return;
-        pit->data.remaining[id] = pit->data.reload[id];
-        pit->data.flagActive[id] = TYPE_TRUE;
-        pit->data.flagPulseLow[id] = TYPE_FALSE;
-        core_machine_pit_set_output_level(pit, id, mode == 5u, TYPE_FALSE);
-        core_machine_pit_sync_count(pit, id);
+        if (!pit->data.flagReady[id] && !pit->data.flagLoadPending[id]) return;
+        pit->data.flagTrigger[id] = TYPE_TRUE;
     } else if (mode == 2u || mode == 3u) {
-        pit->data.remaining[id] = pit->data.reload[id];
-        pit->data.phase[id] = mode == 3u ?
-            core_machine_pit_mode3_high_length(pit, id) : 0u;
-        pit->data.flagActive[id] = TYPE_TRUE;
-        pit->data.flagPulseLow[id] = TYPE_FALSE;
-        core_machine_pit_set_output_level(pit, id, TYPE_TRUE, TYPE_FALSE);
-        core_machine_pit_sync_count(pit, id);
+        if (pit->data.flagReady[id] || pit->data.flagLoadPending[id]) {
+            pit->data.flagRestart[id] = TYPE_TRUE;
+        }
     }
 }
 

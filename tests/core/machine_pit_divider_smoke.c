@@ -47,10 +47,10 @@ C_INT main(C_VOID)
         failed |= core_machine_run(machine, four_instruction_budget, &result) !=
             TYPE_STATUS_OK;
         failed |= result.executed != 4u || probe.low_transitions != 1u ||
-            probe.high_transitions != 1u;
+            probe.high_transitions != 0u;
         failed |= core_machine_run(machine, four_instruction_budget, &result) !=
             TYPE_STATUS_OK;
-        failed |= result.executed != 4u || probe.low_transitions != 3u ||
+        failed |= result.executed != 4u || probe.low_transitions != 2u ||
             probe.high_transitions != 2u;
 
         /* A cold reset must discard a partial elapsed-to-PIT conversion. */
@@ -63,7 +63,7 @@ C_INT main(C_VOID)
             sizeof(program)) != TYPE_STATUS_OK;
         failed |= core_machine_run(machine, two_instruction_budget, &result) !=
             TYPE_STATUS_OK;
-        failed |= result.executed != 2u || probe.high_transitions != 1u;
+        failed |= result.executed != 2u || probe.high_transitions != 0u;
         failed |= core_machine_run(machine, two_instruction_budget, &result) !=
             TYPE_STATUS_OK;
         failed |= result.executed != 2u || probe.high_transitions != 1u;
@@ -79,10 +79,10 @@ C_INT main(C_VOID)
         failed |= core_machine_run(machine, four_instruction_budget, &result) !=
             TYPE_STATUS_OK;
         failed |= result.executed != 4u || probe.low_transitions != 1u ||
-            probe.high_transitions != 1u;
+            probe.high_transitions != 0u;
         failed |= core_machine_run(machine, four_instruction_budget, &result) !=
             TYPE_STATUS_OK;
-        failed |= result.executed != 4u || probe.low_transitions != 3u ||
+        failed |= result.executed != 4u || probe.low_transitions != 2u ||
             probe.high_transitions != 2u;
     }
     core_machine_destroy(machine);
