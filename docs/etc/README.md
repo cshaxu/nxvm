@@ -65,6 +65,7 @@ principal documents named in [docs/README.md](../README.md).
 | `evidence/t460-s2-dma-logical-service.md` | Core DMA phase-contract owner | T460 S2's sole DMA-owned logical acknowledgement/service-release state, caller sweep and focused proof. Retain with T460 closure. |
 | `evidence/t460-s3-dma-mode-phases.md` | Core DMA phase-contract owner | T460 S3's cascade and two-phase memory-to-memory correction through the sole DMA transaction path. Retain with T460 closure. |
 | `evidence/t460-s4-dma-at-refresh-binding.md` | Core DMA phase-contract owner | T460 S4's selected IBM AT PIT1-to-DMA1 binding and reserved-channel proof. Retain with T460 closure. |
+| `evidence/t460-s5-dma-closure-audit.md` | Core DMA phase-contract owner | T460 S5's 16-row closure, owner audit, gate and artifact proof. Retain with T460 closure. |
 | `evidence/t457-s2-optimized-artifact-trace-audit.md` | Verification owner | T457 S2's optimized-debug artifact route, publication guard, trace/diagnostic consumer audit, retained production debugger proof and updated 0457 hash. Retain with T457 closure. |
 | `evidence/t457-s3-release-artifact-no-debug-info.md` | Verification owner | T457 S3's Release-only stripped artifact, no-PE-debug-section proof, retained runtime-debugger proof, and updated 0457 hash. Retain with T457 closure. |
 | `research/t450-s11-kbc-8042-nmi-function-timing-checklist.md` | Core controller inventory owner | T450 S11's complete UPI-42/IBM AT 8042 source, function and timing universe for the following code-gap audit. Retain until T450 reconciliation. |

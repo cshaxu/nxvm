@@ -2,30 +2,30 @@
 
 ## Current Work
 
-## M5 T460 S3 Packet
+## M5 T460 S5 Packet
 
 | Field | Required record |
 | --- | --- |
 | Identifier Mode | Continuation |
-| Admission And Approval | T460 remains owner-approved; S2 is accepted at `7d314fb9`, and its frozen S3 transfer-mode/cascade receiver is admitted. |
-| Objective | Correct the existing DMA owner's demand/single/block/cascade, TC/EOP/auto-init, M2M and compressed logical-state behavior through its one transaction route. |
+| Admission And Approval | T460 remains owner-approved; S3/S4 implementation is pushed and S5 is admitted for the required closure audit and product proof. |
+| Objective | Reconcile all 16 DMA rows against the accepted implementation and maintained boundaries, prove the current gate and stripped 0460 artifact, then close the task without a second owner or untracked gap. |
 | Non-goals | No electrical waveforms or clock conversion, no generic third-controller API, no second transaction/page state, no VM/FDC ownership change and no external-code import. |
 | Reference Baseline | `7d314fb9`; T460 S1/S2 evidence and T450 S5/S6 ledger. |
 | Candidate Proposal | [Core DMA 8237A phase contract](../proposals/m5-core-dma-8237a-phase-contract.md). |
-| Files And ABI Surface | `dma.[ch]`, existing DMA smoke and S3 evidence; private Core state only. |
+| Files And ABI Surface | S5 changes closure evidence, task history, CURRENT baseline and artifact identity only; no runtime ABI. |
 | Applicable Rules | README Task Reading Set; EXECUTION S/P lifecycle; ARCHITECTURE single Core owner; CODING no wrapper/duplicate path; source policy. |
-| Verification | Focused demand/single/block/cascade, M2M, TC/EOP, auto-init and compressed-state tests plus documentation governance. |
-| Expected Markers | `M5:T460:S3:DMA-MODE-PHASES:OK`; `DMA-F3`--`DMA-F7` have source-backed proof or explicit L4/L2 boundary. |
+| Verification | Reconcile every `DMA-R1`--`DMA-T5` row; inspect actual diff/owners, 282-test current gate, Release 0460 hash, documentation governance and diff hygiene. |
+| Expected Markers | `M5:T460:S5:DMA-CLOSURE:OK`; every row has direct proof or an explicit maintained L2/L4 boundary. |
 | Asset Needs | Existing admitted manuals and read-only S1 corroboration. |
-| Reporting Requirements | Record removed atomic/terminal shortcuts, one surviving production path and every retained boundary. |
+| Reporting Requirements | Record the full row matrix, test/artifact evidence, code-size/owner audit and every retained boundary. |
 | Stop Conditions | Stop for an unselected third-controller personality, required pin-level interface or a need to derive a physical time value. |
-| Exit Criteria | Manual logical mode/service behavior is proven without duplicate state/transaction owners; focused and documentation checks pass; reviewed result is pushed. |
+| Exit Criteria | All rows are disposed, current gate and artifact proof pass, no duplicate owner/path remains, status/history/proposal are closed and pushed. |
 | Original Owner Request | Complete DMA 8237A Manual-L3 under minimalism and anti-accretion constraints. |
 | Similar-Issue Sweep | Sweep `Execute`, `Transmission`, M2M, terminal/auto-init, cascade and all mode-command consumers in production/tests; classify each hit once. |
 
 ## Current Technical Baseline
 
-- **Current developer artifact:** target `vm-0-5-0459`; `nxvm_0_5_0459.exe` / `build/output/nxvm_0_5_0459.exe`, SHA-256 `ED4E79BF67C5A1B0C7953601933853247B0CC475E7DB67D883D15F65802F0973`. It is built only from the stripped Release current-artifact route; Debug remains the current-gate route. T434 has one copied Core timing-plan publication route for default PC/AT, IBM 5170 Model 339 and Model-40 BYOB session composition.
+- **Current developer artifact:** target `vm-0-5-0460`; `nxvm_0_5_0460.exe` / `build/output/nxvm_0_5_0460.exe`, SHA-256 `CED00F5946FB8CC9DA8DA8273486F073C19B611B10B9EF0D109A783D874F12EC`. It is built only from the stripped Release current-artifact route; Debug remains the current-gate route. T434 has one copied Core timing-plan publication route for default PC/AT, IBM 5170 Model 339 and Model-40 BYOB session composition.
   T386 closes selected-device functional completeness at S29; its retained
   [closure audit](../etc/evidence/t386-s29-functional-closure-audit.md) fixes
   HDC current-gate coverage and transfers board, firmware and physical work.
