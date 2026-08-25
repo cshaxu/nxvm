@@ -2,26 +2,7 @@
 
 ## Current Work
 
-## M5 T460 S1 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | New |
-| Admission And Approval | Owner approved on 2026-08-24 to admit the first Queue candidate and complete the DMA 8237A Manual-L3 contract with the prior CPU/PIC standard, including functional and logical timing completeness. No exception is approved. |
-| Objective | Reconcile the frozen 16-row 8237A/IBM-AT ledger into the durable T460 convergence record, inspect every remaining production owner/caller against it, and publish the bounded implementation/proof sequence before changing DMA behavior. |
-| Non-goals | No L4 pin waveform, analog/electrical timing, new board personality, FDC implementation, host-time clock, VM policy, second scheduler, source import, or external implementation copy. |
-| Reference Baseline | `b68087a5`; [T450 S5 source checklist](../etc/research/t450-s5-dma-8237a-function-timing-checklist.md), [T450 S6 code-gap audit](../etc/evidence/t450-s6-dma-8237a-code-gap-audit.md), [T449 transaction contract](../etc/evidence/t449-s2-transaction-contract.md), and the 8237A/IBM AT documents named by T450. |
-| Candidate Proposal | [Core DMA 8237A phase contract](../proposals/m5-core-dma-8237a-phase-contract.md). |
-| Files And ABI Surface | S1 may add `docs/etc/evidence/t460-s1-dma-contract-reconciliation.md`, refine the candidate proposal/history/current state, and inspect `src/core/machine/dma.*`, scheduler/board/transaction owners and DMA tests. No runtime ABI change in S1. |
-| Applicable Rules | README Task Reading Set; EXECUTION coverage-bearing ledger, S/P lifecycle and closure audit; ARCHITECTURE one Core DMA/transaction owner and no reverse VM dependency; CODING one path/no wrapper/owner-local mechanism; DOCUMENT evidence/history boundaries; source policy makes external emulators corroboration only. |
-| Verification | Reconcile all `DMA-R1`--`DMA-R4`, `DMA-F1`--`DMA-F7`, `DMA-T1`--`DMA-T5` rows once; static-sweep every DMA service/transaction caller and test; run documentation governance and focused pre-change DMA tests. |
-| Expected Markers | `M5:T460:S1:DMA-CONTRACT-RECONCILIATION:OK`; every row names Manual L3, bounded Other L3 or fallback L2, owner, proof and an S2--S5 receiver/disposition. |
-| Asset Needs | Existing admitted Intel 8237A and IBM 5170 manuals plus read-only MAME/Bochs/QEMU/86Box/PCjs observations; no third-party material enters source or artifacts. |
-| Reporting Requirements | Record the exact 16-row before state, all production-path hits, the approved S2--S5 batches, each L2/L4 boundary and the code-size/ownership constraints for later changes. |
-| Stop Conditions | Stop for a missing primary board source, source/manual conflict that changes a frozen row, required new machine personality, or a need to let DMA own time/CPU state; report it rather than infer behavior. |
-| Exit Criteria | The 16-row convergence ledger is exhaustive and source-qualified, all present owners/callers have a disposition, no direct implementation contradiction remains undispositioned, S2--S5 are bounded, and focused/documentation checks pass. |
-| Original Owner Request | Complete DMA 8237A L3 to the previous 8086/186/286/386 and PIC standard: manual-correct functional and logical timing completeness, under minimalism and anti-accretion constraints. |
-| Similar-Issue Sweep | Sweep all tracked Core DMA service, transaction/arbitration, page, reset, request-binding and test routes using `rg -n -i "core_machine_dma|dma_|VDMA|DREQ|DACK|HRQ|HLDA" src tests CMakeLists.txt cmake`; classify every production hit against the 16 rows and defer only with a named receiver. |
+**Active.** T460 remains open between accepted subtasks.
 
 ## Current Technical Baseline
 
@@ -47,6 +28,8 @@
 
 | Task | Compact result |
 | --- | --- |
+| T460 S1 | Accepted at `12aa90d3`: the 16-row Intel/IBM DMA universe is reconciled to the actual one-owner Core path, source-qualified external corroboration, maintained L2/L4 boundaries and bounded S2--S5 implementation/proof batches. Focused DMA/transaction/FDC regressions and documentation governance pass. [History](../history/M5-T460-core-dma-8237a-phase-contract.md). |
+
 | T459 | Closed after S2 correction: `standard`/`turbo` remain stopped-session Console selections, but neither VM speed branch manufactures guest ticks. `Sleep(1)` is explicitly L2 HLT host-load backoff; true Standard pacing and Turbo fast-forward remain transferred to Core deadlines plus profile timebases. The full gate passes 294/294; current artifact `0.5.0459` is stripped Release-only. [History](../history/M5-T459-vm-session-speed-policy.md). |
 | T458 | Closed: the shared runner retains its 256-instruction control quantum but captures/publishes normal frames no more than once per 16 host milliseconds; forced mode and lifecycle frames remain immediate. The current artifact is stripped Release-only, and the full gate passes 293/293. [History](../history/M5-T458-vm-runner-presentation-cadence.md). |
 | T457 | Closed: F9 remains a single host run-handle stop report and no longer enters the guest key route; the corrected host-cancellation assertion and two-epoch regression preserve it. Its artifact is stripped Release-only, retains the production debugger/trace commands, excludes automatic Core trace events, and 293/293 current-gate tests pass. [History](../history/M5-T457-session-input-restart-recovery.md). |

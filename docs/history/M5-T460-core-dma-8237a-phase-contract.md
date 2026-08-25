@@ -30,3 +30,14 @@ Every row must have direct Manual-L3 proof, an explicit maintained fallback or
 a named earliest receiver. The task cannot claim completion with an
 undispositioned DMA state/mode/board row, an emulator-only requirement, a
 second DMA/transaction/time owner, or L4 waveform work.
+
+## Accepted Progress
+
+S1 is accepted at `12aa90d3`. Its
+[reconciliation evidence](../etc/evidence/t460-s1-dma-contract-reconciliation.md)
+preserves all 16 Intel/IBM rows, rechecks the rendered scanned manual, retains
+the Td S144 emulator observations strictly as corroboration, and identifies
+the actual sole production path: `dma.c` state, board binding, and T449
+scheduler/transaction ownership. It records the immediate cascade completion,
+atomic M2M copy and inert command bits as the concrete implementation gaps;
+S2--S5 are bounded accordingly. No runtime behavior or artifact changed.
