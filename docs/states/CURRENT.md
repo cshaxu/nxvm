@@ -2,26 +2,26 @@
 
 ## Current Work
 
-## M5 T461 S1 Packet
+## M5 T461 S2 Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | New |
-| Admission And Approval | Owner approved the next queued controller task on 2026-08-24: admit the Core PIT 8254 phase contract after T460. S1 is limited to source/owner reconciliation and no runtime implementation. |
-| Objective | Freeze the complete selected 8254 functional and logical-timing ledger, cross-check Intel primary material against bounded emulator observations, and record every current-code gap with a direct Manual-L3, Other-L3 corroboration, or explicit fallback-to-L2 disposition. |
-| Non-goals | No counter behavior change, host-clock pacing, oscillator/electrical waveform claim, speaker/PPI/audio implementation, second scheduler, profile wiring change, or external-code import. |
-| Reference Baseline | `6579ee80`; accepted T456 PIC and T460 DMA contracts; T350 PIT lifecycle evidence. |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner approved single-person dual-role execution of T461 on 2026-08-24. Coordinator accepts S1 at `1c9428b1` after actual ledger/owner review and admits S2 only. |
+| Objective | Correct the one existing PIT owner's control, count-write, read/latch/status/null-count and initial-output semantics against Intel 8254 P1--P7/P14, with a focused complete form regression corpus. |
+| Non-goals | No mode 0--5 running-transition rewrite, host-clock pacing, oscillator/electrical claim, speaker/PPI/audio implementation, second scheduler, profile wiring change, public ABI addition, or external-code import. |
+| Reference Baseline | `1c9428b1`; accepted T456 PIC and T460 DMA contracts; T461 S1 Lists 1--2. |
 | Candidate Proposal | [Core PIT 8254 phase contract](../proposals/m5-core-pit-8254-phase-contract.md). |
-| Files And ABI Surface | Documentation/evidence and task history only. Inspect `pit.c`/`pit.h`, machine arbitration and selected port/IRQ binding; S1 changes no source ABI. |
-| Applicable Rules | README Task Reading Set; EXECUTION S/P lifecycle; DOCUMENT governance; source policy; specification-driven L3 timing design. Architecture/Coding rules are read for the owner/path audit even though no code changes are authorized. |
-| Verification | Verify the admitted PDF is readable and classify text/OCR quality; reconcile all selected counter/control/read-back/gate/output/IRQ0/reset/clock rows; verify documentation governance and diff hygiene. |
-| Expected Markers | `M5:T461:S1:PIT-MANUAL-LEDGER:OK`; one functional/timing list and one implementation-gap list, each row labelled Manual-L3, Other-L3 corroboration, or fallback-to-L2. |
-| Asset Needs | Admitted Intel manual `231164-005`, *8254 Programmable Interval Timer* (September 1993), from the approved controller-manual archive; admitted read-only emulator source only for cross-checking, never import. |
-| Reporting Requirements | Record manual page/section provenance, PDF text/OCR confidence, any manual ambiguity, corroboration disagreements, selected-owner mapping, and a finite S2+ plan. |
-| Stop Conditions | Stop for a missing/illegible primary rule that cannot be resolved from the rendered pages, a required unselected board topology, a physical frequency derivation, or an import/license request. |
-| Exit Criteria | Every selected PIT row has an evidence tier and current owner/gap disposition; all deferred work has one named receiver; no implementation starts; governance gate passes and the S1 evidence is committed. |
-| Original Owner Request | Admit the next task and provide its task brief, under the same manual-first L3 and anti-accretion standard as DMA. |
-| Similar-Issue Sweep | Inspect all PIT counter, port, callback, clock-domain, reset/finalize and IRQ0 consumers; classify duplicate scheduler/output/latch ownership once rather than patching call sites. |
+| Files And ABI Surface | `pit.c`/`pit.h` private counter phase/latch state and `tests/machine` PIT smoke(s); existing Core-local API only, no public ABI. |
+| Applicable Rules | README Task Reading Set; EXECUTION S/P lifecycle; DOCUMENT governance; architecture single-owner rule; coding no-wrapper/owner-local repair rule; source policy; specification-driven L3 timing design. |
+| Verification | Add focused manual-form regressions for RW forms, zero/BCD, count/status latches, null-count timing and control-write initial output; build target(s), run focused CTest, documentation gate, diff hygiene. |
+| Expected Markers | `M5:T461:S2:PIT-CONTROL-LATCH:OK`; every P1--P7/P14 assertion has a named focused probe. |
+| Asset Needs | T461 S1 admitted Intel manual evidence; read-only external observations only as corroboration, never import. |
+| Reporting Requirements | Record before/after state ownership, manual-section mapping, every removed/retained field, test evidence, code-size delta and any deferred mode rule. |
+| Stop Conditions | Stop for a manual ambiguity needing a rendered-figure decision, a physical time derivation, an unselected topology, or a requirement for a second mutable PIT owner. |
+| Exit Criteria | P1--P7/P14 match manual rules under focused tests; no duplicate path/state/API is introduced; all remaining mode transitions transfer exactly once to S3/S4; gate passes and the accepted P commit is pushed. |
+| Original Owner Request | Execute the current PIT task in single-person dual-role mode, using global minimalist design and no accretion. |
+| Similar-Issue Sweep | Sweep every control-word, data-port, latch/status, reset and output initialization consumer in `pit.c`, tests and Core composition; repair shared state at its one owner. |
 
 ## Current Technical Baseline
 
