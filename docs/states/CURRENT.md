@@ -2,7 +2,26 @@
 
 ## Current Work
 
-**Idle.**
+## M5 T460 S1 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New |
+| Admission And Approval | Owner approved on 2026-08-24 to admit the first Queue candidate and complete the DMA 8237A Manual-L3 contract with the prior CPU/PIC standard, including functional and logical timing completeness. No exception is approved. |
+| Objective | Reconcile the frozen 16-row 8237A/IBM-AT ledger into the durable T460 convergence record, inspect every remaining production owner/caller against it, and publish the bounded implementation/proof sequence before changing DMA behavior. |
+| Non-goals | No L4 pin waveform, analog/electrical timing, new board personality, FDC implementation, host-time clock, VM policy, second scheduler, source import, or external implementation copy. |
+| Reference Baseline | `b68087a5`; [T450 S5 source checklist](../etc/research/t450-s5-dma-8237a-function-timing-checklist.md), [T450 S6 code-gap audit](../etc/evidence/t450-s6-dma-8237a-code-gap-audit.md), [T449 transaction contract](../etc/evidence/t449-s2-transaction-contract.md), and the 8237A/IBM AT documents named by T450. |
+| Candidate Proposal | [Core DMA 8237A phase contract](../proposals/m5-core-dma-8237a-phase-contract.md). |
+| Files And ABI Surface | S1 may add `docs/etc/evidence/t460-s1-dma-contract-reconciliation.md`, refine the candidate proposal/history/current state, and inspect `src/core/machine/dma.*`, scheduler/board/transaction owners and DMA tests. No runtime ABI change in S1. |
+| Applicable Rules | README Task Reading Set; EXECUTION coverage-bearing ledger, S/P lifecycle and closure audit; ARCHITECTURE one Core DMA/transaction owner and no reverse VM dependency; CODING one path/no wrapper/owner-local mechanism; DOCUMENT evidence/history boundaries; source policy makes external emulators corroboration only. |
+| Verification | Reconcile all `DMA-R1`--`DMA-R4`, `DMA-F1`--`DMA-F7`, `DMA-T1`--`DMA-T5` rows once; static-sweep every DMA service/transaction caller and test; run documentation governance and focused pre-change DMA tests. |
+| Expected Markers | `M5:T460:S1:DMA-CONTRACT-RECONCILIATION:OK`; every row names Manual L3, bounded Other L3 or fallback L2, owner, proof and an S2--S5 receiver/disposition. |
+| Asset Needs | Existing admitted Intel 8237A and IBM 5170 manuals plus read-only MAME/Bochs/QEMU/86Box/PCjs observations; no third-party material enters source or artifacts. |
+| Reporting Requirements | Record the exact 16-row before state, all production-path hits, the approved S2--S5 batches, each L2/L4 boundary and the code-size/ownership constraints for later changes. |
+| Stop Conditions | Stop for a missing primary board source, source/manual conflict that changes a frozen row, required new machine personality, or a need to let DMA own time/CPU state; report it rather than infer behavior. |
+| Exit Criteria | The 16-row convergence ledger is exhaustive and source-qualified, all present owners/callers have a disposition, no direct implementation contradiction remains undispositioned, S2--S5 are bounded, and focused/documentation checks pass. |
+| Original Owner Request | Complete DMA 8237A L3 to the previous 8086/186/286/386 and PIC standard: manual-correct functional and logical timing completeness, under minimalism and anti-accretion constraints. |
+| Similar-Issue Sweep | Sweep all tracked Core DMA service, transaction/arbitration, page, reset, request-binding and test routes using `rg -n -i "core_machine_dma|dma_|VDMA|DREQ|DACK|HRQ|HLDA" src tests CMakeLists.txt cmake`; classify every production hit against the 16 rows and defer only with a named receiver. |
 
 ## Current Technical Baseline
 

@@ -1,0 +1,32 @@
+# M5 T460: Core DMA 8237A Phase Contract
+
+T460 completes the frozen 8237A logical service-phase contract through the
+existing Core DMA, transaction, arbitration and selected IBM AT topology
+owners. The coverage universe is exactly `DMA-R1`--`DMA-R4`,
+`DMA-F1`--`DMA-F7` and `DMA-T1`--`DMA-T5` in the T450 checklists.
+
+## Planned Subtasks
+
+1. **S1: source, reference and owner reconciliation.** Consume the qualified
+   16-row ledger, inspect current production paths, and freeze the complete
+   implementation and proof batches. No runtime behavior changes.
+2. **S2: request-to-service state contract.** Give the existing DMA owner the
+   one logical SI/S0/service/release lifecycle, including DREQ/DACK polarity,
+   arbitration handoff, cancellation and reset, without a second scheduler.
+3. **S3: transfer-mode and cascade completion.** Complete demand/single/block/
+   cascade, EOP/TC/auto-init, M2M and compressed/address-latch logical phases
+   through the same owner and transaction route.
+4. **S4: selected AT binding integration.** Consume the one existing Core
+   transaction/time owner for selected dual-controller, page, refresh and
+   five-clock terms; retain any unavailable producer as a named fallback rather
+   than inventing board time.
+5. **S5: closure audit and product proof.** Reconcile all 16 rows to focused
+   regressions, run the current gate, rebuild the T460 artifact, and prove no
+   duplicate DMA state, time owner or consumer path remains.
+
+## Completion Standard
+
+Every row must have direct Manual-L3 proof, an explicit maintained fallback or
+a named earliest receiver. The task cannot claim completion with an
+undispositioned DMA state/mode/board row, an emulator-only requirement, a
+second DMA/transaction/time owner, or L4 waveform work.
