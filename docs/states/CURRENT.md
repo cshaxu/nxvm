@@ -2,6 +2,27 @@
 
 ## Current Work
 
+## M5 T465 S4 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner goal dated 2026-08-25 approves completion of the active FDC task after accepted S1--S3 evidence. |
+| Objective | Rebuild both FDC checklists around the selected Intel 8272A original manual, cross-check every row against 86Box, MAME, PCjs, Bochs and QEMU, then assign Manual L3, Other/board L3 or fallback to L2 without carrying forward uPD765-led conclusions. |
+| Non-goals | No final T465 closure/artifact, new FDC behavior, controller selection, uPD765 identity, media grammar, drive mechanics, timing conversion, profile policy, runtime debugger change or unrelated repair. |
+| Reference Baseline | `f00f7b7c`; accepted T465 history, Intel 8272A source record, current `fdc.c`, renamed S13/S14 ledger and queued 8272A proposal. |
+| Candidate Proposal | [Core Intel 8272A and logical media phase contract](../proposals/m5-core-intel-8272a-logical-media-phase-contract.md). |
+| Files And ABI Surface | Intel 8272A proposal/history/status/queue/checklist names and FDC code-gap evidence only. No source, public ABI, CMake or artifact change. |
+| Applicable Rules | The selected original 8272A manual controls controller identity; all ledger gaps must be explicit rather than inferred; source policy prohibits external-code import; no L4 claim or second FDC owner/path. |
+| Verification | Inspect Intel original pages and the five named emulator implementations, reconcile every S13/S14 row and receiver, run FDC focused smoke plus documentation governance and `git diff --check`. |
+| Expected Markers | No active FDC proposal/checklist names uPD765 as the selected chip; every row names Manual L3, Other/board L3 or fallback to L2 and identifies one receiver/boundary. |
+| Asset Needs | Existing build outputs only; no source, firmware or media asset is imported. |
+| Reporting Requirements | Record Intel page/table/revision, each emulator disagreement, every retained L2/Other-board boundary, current-code gap and no-new-path conclusion. |
+| Stop Conditions | Stop for a missing selected manual, conflict that changes the selected 8272A identity, or a row that cannot receive a truthful tier/receiver. |
+| Exit Criteria | All active FDC names/selectors/checklists use Intel 8272A, every one of the finite source and code-gap rows is re-derived from Intel plus labelled comparison, and no inherited uPD765 conclusion remains. |
+| Original Owner Request | Complete remaining controller tasks with source-first L3 where evidenced and precise L2 otherwise, rejecting additive or duplicate design. |
+| Similar-Issue Sweep | Re-read all FDC-R/F/T rows, selected controller identity, FDC command/reset paths, artifact target/presets, queue/proposal/history links and all current-gate results. |
+
 
 ## Current Technical Baseline
 

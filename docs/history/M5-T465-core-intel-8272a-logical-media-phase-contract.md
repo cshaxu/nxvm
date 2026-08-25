@@ -1,19 +1,19 @@
-# M5 T465 Core uPD765 Logical Media Phase Contract
+# M5 T465 Core Intel 8272A Logical Media Phase Contract
 
 ## Active Record
 
-T465 owns the queued uPD765/controller-media phase contract. Its source and
+T465 owns the queued Intel 8272A/controller-media phase contract. Its source and
 code-ledger reconciliation must complete before implementation is admitted.
 
 ## S1 Accepted Evidence
 
-`6d2a96a5` reconciles all fifteen FDC source and code-gap rows. Rendered NEC
-and IBM material remains normative; 86Box, MAME, PCjs, Bochs and QEMU only
-corroborate labelled model observations, and QEMU's 82078 model is excluded as
-a uPD765/AT authority. Each row now names Manual L3, Other/board L3 or
-fallback to L2, with all gaps retained by the existing Core FDC/media path.
-The next batch may implement only the finite Manual-L3 command/revision cases;
-no media grammar, drive mechanics, board clock or second owner is admitted.
+`6d2a96a5` reconciled the original fifteen FDC rows, but its uPD765-led source
+wording was superseded by T465 S4. Intel's original 8272A material is the sole
+selected chip authority; IBM remains the AT board authority; NEC and the five
+emulators are comparison only. The renamed S13/S14 ledgers re-derive every row
+as Manual L3, Other/board L3 or fallback to L2 and retain all gaps in the one
+Core FDC/media path. No media grammar, drive mechanics, board clock or second
+owner is admitted by that correction.
 
 ## S2 Accepted Evidence
 
