@@ -7,21 +7,21 @@
 | Field | Required record |
 | --- | --- |
 | Identifier Mode | Continuation; T467 S6, one-session coordinator, executor and closure review. |
-| Admission And Approval | The persistent owner objective approves completion of T467. S3 is accepted at `b4f244fc`; S4 consumes the finite CGA-F1--F5/F7 mode, memory and palette batch identified by S2. |
-| Objective | Close source-qualified CGA text/320/640 B8000h layouts, page/interlace addressing, palette and video-enable effects through the sole VADP memory and copied-snapshot path. |
-| Non-goals | No new renderer, VRAM owner, BIOS/BDA mode mirror, 160x100 inference, composite/electrical monitor model, host timing, profile callback or live setter. |
-| Reference Baseline | `dbbf29bc` identifies the F1--F5/F7 gaps; `874e002a` closes port grammar. IBM manual is normative; the existing snapshot path is the only consumer. |
-| Candidate Proposal | [M5 Core IBM CGA Completeness](../proposals/m5-core-ibm-cga-completeness.md), S4 digital memory/mode/palette closure. |
-| Files And ABI Surface | Expected: VADP-local decode/snapshot code, focused CGA tests/evidence/status only. VM presentation, profile ABI and memory ownership are forbidden. |
-| Applicable Rules | Architecture/coding/execution rules: VADP is sole state owner; Core memory is the sole routing owner; copied snapshots are immutable consumer data; remove obsolete special cases rather than add parallel selection. |
-| Verification | Reconcile each source mode and palette bit, test text/320/640 output-enable and even/odd B8000h mapping, run focused VADP/CGA tests, configured build and documentation governance. |
-| Expected Markers | One B8000h provider, one VADP snapshot path, sourced digital mode/palette semantics, no second presentation state, and explicit retained 160x100/physical-monitor L2 boundaries. |
-| Asset Needs | Existing IBM/Motorola rendered source and read-only corroboration only. |
-| Reporting Requirements | Record every F-row owner, source-backed behavior, focused proof, source/test delta, retained production path and exact L2 transfer. |
-| Stop Conditions | Stop if a source-defined layout needs a distinct state owner, if a source fact cannot determine digital semantics, or if implementation would infer 160x100/composite behavior. |
-| Exit Criteria | F1--F3/F5/F7 have one source-backed path and proof; F4 and physical output remain exact L2; no duplicate ownership and all required gates pass. |
+| Admission And Approval | The persistent owner objective approves completion of T467. S3 and S4 are accepted at `b4f244fc` and `6131a8c8`; S5 records the existing qualified timing-plan receiver. S6 consumes the firmware/profile and guest-path proof batch in the admitted proposal. |
+| Objective | Prove that reset and selected guest `INT 10h` mode changes reach the sole VADP state through ordinary firmware ports and B8000h memory, and that presentation consumes only the resulting copied snapshot. |
+| Non-goals | No new renderer, VRAM owner, BIOS/BDA mode mirror, 160x100 inference, composite/electrical monitor model, timing formula, profile callback or live setter. |
+| Reference Baseline | `34611ca4` records the existing Board-L3-capable timing receiver; `c6db2994` closes the digital VADP changes. The IBM ledger remains normative and the existing port/memory/snapshot route is the only candidate path. |
+| Candidate Proposal | [M5 Core IBM CGA Completeness](../proposals/m5-core-ibm-cga-completeness.md), S6 firmware/profile and guest-path proof. |
+| Files And ABI Surface | Evidence, status and existing focused/system tests only unless a demonstrated path violates the contract. VADP ownership, profile ABI, VM presentation and memory ownership are forbidden change surfaces. |
+| Applicable Rules | Architecture/execution/documentation/source rules: firmware emits guest-visible operations only; VADP is sole mutable display owner; Core memory is the sole routing owner; snapshots are copied consumer data; evidence must not promote external firmware or media into product source. |
+| Verification | Inspect QDCGA reset and BIOS writers, profile port topology and snapshot consumers; run Model-339 topology plus CGA 320, 640 and DOS guest-path system tests, configured build and documentation governance. |
+| Expected Markers | One firmware-to-port route, one B8000h provider, one VADP state owner, copied snapshot isolation, and explicit retained light-pen/160x100/physical-output L2 boundaries. |
+| Asset Needs | Existing abstract firmware source, IBM/Motorola rendered references and read-only DOS fixture only; no firmware, guest media or third-party source import. |
+| Reporting Requirements | Record the precise reset/INT 10h port and BDA roles, each system-test observation, source/test delta, retained production path and exact L2 transfer. |
+| Stop Conditions | Stop if a real mode path requires a BDA-derived VADP state, a second snapshot/renderer owner, an unsourced timing conversion or protected-asset import. |
+| Exit Criteria | Reset, 320, 640 and DOS paths prove the same VADP route; BDA is firmware bookkeeping only; no duplicate ownership is introduced; all required gates pass. |
 | Original Owner Request | Complete remaining controller L3 work with manual authority, valid external/board L3 inputs and minimalist code. |
-| Similar-Issue Sweep | Inspect all VADP capture branches, text start/cursor reads, graphics address calculations, mode/color writers, EGA fallback conditions, profile firmware mode writers and CGA tests. |
+| Similar-Issue Sweep | Inspect every default-profile CGA reset/INT 10h writer, registered 3D4/3D5/3D8/3D9/3DA route, B8000h provider, snapshot consumer, Model-339 topology proof and CGA guest/system fixture; classify each as the retained route, unrelated EGA/CECG path or explicit L2. |
 
 ## Current Technical Baseline
 

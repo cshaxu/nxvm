@@ -574,6 +574,9 @@ condition. The governance gate verifies that every supporting Markdown file is
 covered by one of those index forms. `etc/` is not a shortcut for adding
 another principal document.
 
+| `evidence/t467-s5-cga-board-timing-closure.md` | Verification owner | T467 S5 records the existing construction-only VADP timing-plan receiver: Model-339's qualified selected value is Board L3, while unqualified default values remain Current data L2. Retain with T467 history. |
+| `evidence/t467-s6-cga-firmware-profile-guest-proof.md` | Verification owner | T467 S6 proves reset, selected firmware/guest CGA port writes, B8000h memory and copied snapshots use one VADP-owned route; retain with T467 history. |
+
 | evidence/t405-s1-x86-gcc-host-build-compatibility.md | Verification owner | T405 S1 records isolated i686 GCC provenance, host-width repairs, PE-i386 proof, x86/x64 286/286 current-gate results and the retained x64 artifact hash; no L3 claim. Retain with T405 history. |
 | evidence/t430-s1-deskpro-dual-fixed-disk.md | Verification owner | T430 S1 records original-source DeskPro C:/D: capability, controller-matched WD selection, frozen Core media topology, Model-40 VM composition, focused proof, and physical/L3 transfers. Retain with T430 history. |
 | `evidence/t431-s1-deskpro-fdc-not-ready-reference.md` | Verification owner | T431 S1 records reference-derived Model-40 unready READ `ST0=48h` completion, generic-PC/AT isolation, result/IRQ/reset/Sense proof, and physical FDC/L3 transfer. Retain with T431 history. |

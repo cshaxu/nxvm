@@ -30,7 +30,7 @@ Core fact.  No L4 electrical fact is relabelled.
 
 ## Result
 
-The previous five controllers do not have one undifferentiated “L2 gap.”
+The previous five controllers do not have one undifferentiated "L2 gap."
 DMA, PIT, RTC and KBC already have a copied, sole-owner path capable of
 consuming Board-L3 input; PIC deliberately does not for elapsed latency because
 its authority supplies no digital elapsed term.  The remaining L2 entries are
