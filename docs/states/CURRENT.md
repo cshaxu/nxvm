@@ -2,26 +2,7 @@
 
 ## Current Work
 
-## M5 T467 S7 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation; T467 S7, one-session coordinator, executor and closure review. |
-| Admission And Approval | The persistent owner objective approves completion of T467. S1--S6 have supplied the frozen 17-row ledger, code reconciliation, port/mode repair, Board-L3 receiver review and guest-path proof. |
-| Objective | Perform the complete T467 closure audit: reconcile every ledger row to the retained sole owner and exact L2 transfer, verify the defect-class sweep, run the serial current gate, and publish stripped Release artifact 0467. |
-| Non-goals | No additional CGA feature, renderer, state owner, profile callback, timing formula, external import, 160x100 inference, light-pen lifecycle, composite/monitor model or host-pacing work. |
-| Reference Baseline | T467 S1 Checklist 1, S2 Checklist 2, S3--S6 evidence and the accepted `aa2faebe` guest-path proof. The CMake current artifact still selects 0466 and must move once to the required T467 identity. |
-| Candidate Proposal | [M5 Core IBM CGA Completeness](../proposals/m5-core-ibm-cga-completeness.md), S7 complete closure audit. |
-| Files And ABI Surface | Expected: CMake current-artifact identity, closure evidence/history/status and generated local Release artifact only. No controller, VADP, firmware, profile, VM or public ABI change absent a newly proven in-scope defect. |
-| Applicable Rules | Architecture/coding/execution/documentation/source rules: one VADP state owner, one B8000h route, copied snapshot consumer boundary, source-qualified L3 vocabulary, serial gate before closure, and stripped Release artifact without compiler debug information. |
-| Verification | Reconcile 17 rows and all CGA writers/consumers; inspect diff/ownership; build configured current targets; run serial `current-gate`; build Release 0467, check banner/hash and absence of debug sections; run documentation governance. |
-| Expected Markers | Every eligible digital row has one tested owner; Board-L3 capability and Current data L2 are distinct; only F4/T2/T3/T4 retained boundaries remain; one artifact identity and one stripped product executable. |
-| Asset Needs | Existing source ledgers, read-only corroboration and test fixtures only; no asset import, recording or guest-media persistence. |
-| Reporting Requirements | Record row-by-row disposition, exact sweep commands/results, gates, artifact identity/hash/strip proof, source/test delta, retained path, open L2 transfers and task-level conclusion. |
-| Stop Conditions | Stop for any undisposed row, duplicate owner, failing gate, artifact debug section, source/import issue or newly discovered feature gap that cannot be bounded as an explicit transfer. |
-| Exit Criteria | All 17 rows and relevant prior-controller capability wording reconcile; all required gates pass; 0467 is stripped and recorded; T467 history/proposal/status truthfully close with only exact L2 transfers. |
-| Original Owner Request | Complete remaining controller L3 work with manual authority, valid external/board L3 inputs and minimalist code. |
-| Similar-Issue Sweep | Search all tracked VADP, Core memory, default-profile firmware/topology, VM display consumer, tests, CMake and T467 records for CGA register/memory/frame writers, duplicate state, current-data labels and artifact identity; disposition every production-path hit. |
+**Idle.**
 
 ## Current Technical Baseline
 
@@ -52,7 +33,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T467 S6 | Accepted: reset, selected firmware/guest `INT 10h` writers and B8000h all reach the same VADP-owned port/memory/snapshot route; BDA remains firmware bookkeeping. Model-339 topology plus 320, 640 and DOS CGA system tests pass 4/4, and the documentation gate passes. |
+| T467 | Closed: all 17 selected IBM-CGA rows reconcile to one VADP/Core/profile/snapshot path. Manual-L3 digital behavior and bounded Model-339 Other-L3 cadence are complete; only exact 160x100, default/ISA-wait timing, light-pen lifecycle and physical-monitor boundaries remain L2. Serial current-gate passes 295/295; stripped Release 0467 is recorded in [history](../history/M5-T467-core-ibm-cga-completeness.md). |
 | T466 | Closed: Manual-L3 D/E/10 geometry reaches the single VADP state owner through real firmware and guest port writes. The profile declaration, cold-start/text routing and all fixtures now agree; unknown planar geometry falls through existing legacy selection rather than inventing a frame. The stripped Release 0466 artifact and its hash are recorded in [history](../history/M5-T466-core-vadp-phase-contract.md). |
 | T465 | Closed: selected Intel 8272A source reconciliation, command/reset repair and per-drive parallel Seek close the logical controller contract; physical media and board-time conversion remain explicit L2. Release 0465 is stripped and the 294/294 serial gate is recorded in [history](../history/M5-T465-core-intel-8272a-logical-media-phase-contract.md). |
 | T464 | Closed: all sixteen KBC rows are Manual L3 or explicit L2/L4. One Core owner now covers selected command/input/test state; 294/294 serial current-gate tests pass and stripped Release 0464 is recorded in history. |
@@ -61,7 +42,6 @@
 | T461 | Closed: one Core PIT owner covers manual P1--P14 and one `OUT0 -> IRQ0 -> PIC refresh` route closes P15; P16--P18 remain explicit L2. Full current-gate is 294/294 and its stripped artifact is retained in history. [History](../history/M5-T461-core-pit-8254-phase-contract.md). |
 | T460 | Closed: all 16 DMA rows are disposed through the sole `dma.c` owner; normal/compressed and M2M service phases have focused proof, the five-clock conversion remains explicit L2, serial current-gate is 294/294, and the stripped 0460 artifact is recorded. [History](../history/M5-T460-core-dma-8237a-phase-contract.md). |
 
-| T458 | Closed: the shared runner retains its 256-instruction control quantum but captures/publishes normal frames no more than once per 16 host milliseconds; forced mode and lifecycle frames remain immediate. The current artifact is stripped Release-only, and the full gate passes 293/293. [History](../history/M5-T458-vm-runner-presentation-cadence.md). |
 ## Recent Governance
 
 - **M5 Td S147 P3:** made result simplicity enforceable: a correct repair must
