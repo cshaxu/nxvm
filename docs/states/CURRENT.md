@@ -2,26 +2,7 @@
 
 ## Current Work
 
-## M5 T469 S1 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | New |
-| Admission And Approval | Owner approved T469 in this turn: admit the queue-front Core L3 integration and VM contract export task, retain only Standard/Turbo, repair Td S148's RTC duplicate conditional within S1, and re-audit all eight controller domains against their original manuals. |
-| Objective | Correct Td S148's L4-versus-L0 terminology; re-audit every original manual function/timing row for PIC, DMA, PIT, RTC, KBC, 8272A FDC, VADP CGA/EGA and ATA/HDC; freeze the complete deadline eligibility universe and remove the duplicate RTC timing conditional without changing guest-time ownership, then establish the evidence baseline for Core-owned Standard/Turbo synchronization. |
-| Non-goals | S1 adds no deadline API, host-clock tick injection, controller pointer exposure, profile name in Core, new speed mode, fixed sleep replacement, invented timing number, source import, firmware/media or release artifact. |
-| Reference Baseline | T459 S1/S2 speed evidence; Td S148 145-row reclassification; the nine original controller Checklist 1 records and matching Checklist 2 code-gap audits; T460--T468 controller histories/input contracts; Core timing design; existing session construction, clock domains, scheduler and controller owners. |
-| Candidate Proposal | [M5 Core L3 integration closure and VM contract export](../proposals/m5-core-l3-integration-vm-contract-export.md), T469 S1. |
-| Files And ABI Surface | Expected: Td S148 evidence, T469 ledger/evidence, `docs/states/CURRENT.md`, `docs/states/QUEUE.md`, proposal, `src/vm/composition/session/session.c` and its focused tests only; no public ABI in S1. |
-| Applicable Rules | Core is sole guest-clock/timeline owner; VM only paces completed observations; one session construction route and one RTC timing-plan decision; copied immutable plan data only; every manual number/formula is Manual L3, while only an unsourced Core-tick conversion is L2; existing external input receivers are L3; logical-only relations are L1, absent Core logic L0, and sourced physical timing L4 outside implementation scope. |
-| Verification | Reconcile every frozen manual row across all eight controller domains, including all Manual numeric/formula facts, against its manual/model/input provenance before reusing Td S148; enumerate every current deadline contributor and its owner/reset/cancellation/eligibility state; inspect every session RTC timing-plan construction branch; add focused regression for the retained one branch; run relevant session/time/controller tests, documentation governance, actual-diff review and appropriate build gates. |
-| Expected Markers | One row-complete eight-controller re-audit ledger with no Manual numeric/formula demoted below Manual L3; Td S148 keeps L4 physical facts distinct from L0 missing logic; one deadline eligibility ledger with no missing contributor; one RTC timing conditional; no VM call site supplies a guest tick based on Standard/Turbo; no public or profile-specific deadline API. |
-| Asset Needs | Existing source, T459/T460--T468 evidence and project-owned tests only; no new external source, firmware, guest media or emulator import. |
-| Reporting Requirements | Record the corrected row-complete eight-controller disposition and every Manual-L3 numeric/formula preservation, frozen contributor count and disposition, exact deleted duplicate branch, source/test line delta, retained owner/path, focused and gate results, and any prerequisite that blocks S2. |
-| Stop Conditions | Stop and revise before code if the contributor universe requires a new controller timing value, exposes mutable internals, needs new external authority, or cannot separate a deadline from a recurring maintenance callback. |
-| Exit Criteria | All 145 frozen controller rows have a corrected Manual-L3/Input-L3/L2/L1/L0/L4 disposition; every timed owner has one S1 eligibility disposition; the RTC construction route has one conditional; all focused checks and documentation governance pass; the accepted S1 evidence transfers exactly one bounded S2 mechanism. |
-| Original Owner Request | Admit the next T to realize correct Standard/Turbo host pacing, include the RTC duplicate-condition cleanup rather than leaving it behind, preserve the owner-defined L0 < L1 < L2 < L3 < L4 hierarchy, and use T469 S1 to re-audit all eight controllers against manual function/timing requirements. |
-| Similar-Issue Sweep | Sweep all VM session construction and virtual-time branches for duplicated controller timing decisions, all controller scheduler callbacks for non-observable maintenance deadlines, and Console/session speed routes for a second speed owner or uncapped alias. |
+**Between accepted subtasks.**
 
 ## Current Technical Baseline
 
@@ -52,6 +33,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T469 S1 | Accepted implementation `43831b9b` re-audits all 145 controller rows, preserves Manual/Input L3 versus L2/L1/L0/L4 boundaries, and deletes the RTC duplicate construction decision. Its [evidence](../etc/evidence/t469-s1-controller-deadline-eligibility-reaudit.md) transfers only an opaque Core deadline observation to S2: recurring scheduler maintenance callbacks are not deadlines and VM cannot mutate guest time. Default PC/AT, Model-339, speed-policy and documentation gates pass. |
 | T468 | Closed: the ATA-3 15-row task-file/media contract has one HDC owner, one media owner and one PIC route; the serial current gate passes 295/295 and stripped Release 0468 is recorded in [history](../history/M5-T468-core-hdc-ata-phase-contract.md). |
 | T467 | Closed: all 17 selected IBM-CGA rows reconcile to one VADP/Core/profile/snapshot path. Source and model facts remain retained; their current L3/L2/L1/L0 interpretation is [Td S148](../etc/evidence/td-s148-eight-controller-l-level-reclassification-audit.md). Serial current-gate passes 295/295; stripped Release 0467 is recorded in [history](../history/M5-T467-core-ibm-cga-completeness.md). |
 | T466 | Closed: Manual-L3 D/E/10 geometry reaches the single VADP state owner through real firmware and guest port writes. The profile declaration, cold-start/text routing and all fixtures now agree; unknown planar geometry falls through existing legacy selection rather than inventing a frame. The stripped Release 0466 artifact and its hash are recorded in [history](../history/M5-T466-core-vadp-phase-contract.md). |
@@ -59,7 +41,6 @@
 | T464 | Closed: all sixteen KBC rows retain their selected command/input/test owner. Their current source/input/estimate/order classification is [Td S148](../etc/evidence/td-s148-eight-controller-l-level-reclassification-audit.md); 294/294 serial current-gate tests pass and stripped Release 0464 is recorded in history. |
 | T463 | Closed: the 16-row MC146818A/IBM AT ledger has one Core phase owner and copied board input plan. Its current L3/L2/L1/L0 interpretation is [Td S148](../etc/evidence/td-s148-eight-controller-l-level-reclassification-audit.md). The full current gate ran 294/294; stripped Release 0463 is recorded in [history](../history/M5-T463-core-rtc-cmos-phase-contract.md). |
 | T462 | Closed: one immutable copied plan carries the qualified Model-339 PIT/DMA selections; the current receiver/value distinction and PIC residual are in [Td S148](../etc/evidence/td-s148-eight-controller-l-level-reclassification-audit.md). The seven corrected PIT-transition regressions, 294/294 serial current gate, 77/77 specialized gates, documentation governance and stripped 0462 artifact complete the controller-board contract. [History](../history/M5-T462-core-controller-board-timing-contract.md). |
-| T461 | Closed: one Core PIT owner covers manual P1--P14 and one `OUT0 -> IRQ0 -> PIC refresh` route closes P15. Its retained boundaries are reclassified by [Td S148](../etc/evidence/td-s148-eight-controller-l-level-reclassification-audit.md). Full current-gate is 294/294 and its stripped artifact is retained in history. [History](../history/M5-T461-core-pit-8254-phase-contract.md). |
 
 ## Recent Governance
 
