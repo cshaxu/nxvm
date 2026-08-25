@@ -50,6 +50,7 @@ extern "C"
         type_unsigned_8 drx;     /* dreq id of highest priority */
         type_bool flagMSB;       /* flip-flop for msb/lsb */
         type_bool flagEOP;       /* end of process */
+        type_bool flagM2MWrite;  /* channel-0 read completed; channel-1 write next */
 
         /* id of request in service in D5-D4, flag of in service in D0 */
         type_unsigned_8 isr;

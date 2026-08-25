@@ -2,7 +2,26 @@
 
 ## Current Work
 
-**Active.** T460 remains open between accepted subtasks.
+## M5 T460 S3 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | T460 remains owner-approved; S2 is accepted at `7d314fb9`, and its frozen S3 transfer-mode/cascade receiver is admitted. |
+| Objective | Correct the existing DMA owner's demand/single/block/cascade, TC/EOP/auto-init, M2M and compressed logical-state behavior through its one transaction route. |
+| Non-goals | No electrical waveforms or clock conversion, no generic third-controller API, no second transaction/page state, no VM/FDC ownership change and no external-code import. |
+| Reference Baseline | `7d314fb9`; T460 S1/S2 evidence and T450 S5/S6 ledger. |
+| Candidate Proposal | [Core DMA 8237A phase contract](../proposals/m5-core-dma-8237a-phase-contract.md). |
+| Files And ABI Surface | `dma.[ch]`, existing DMA smoke and S3 evidence; private Core state only. |
+| Applicable Rules | README Task Reading Set; EXECUTION S/P lifecycle; ARCHITECTURE single Core owner; CODING no wrapper/duplicate path; source policy. |
+| Verification | Focused demand/single/block/cascade, M2M, TC/EOP, auto-init and compressed-state tests plus documentation governance. |
+| Expected Markers | `M5:T460:S3:DMA-MODE-PHASES:OK`; `DMA-F3`--`DMA-F7` have source-backed proof or explicit L4/L2 boundary. |
+| Asset Needs | Existing admitted manuals and read-only S1 corroboration. |
+| Reporting Requirements | Record removed atomic/terminal shortcuts, one surviving production path and every retained boundary. |
+| Stop Conditions | Stop for an unselected third-controller personality, required pin-level interface or a need to derive a physical time value. |
+| Exit Criteria | Manual logical mode/service behavior is proven without duplicate state/transaction owners; focused and documentation checks pass; reviewed result is pushed. |
+| Original Owner Request | Complete DMA 8237A Manual-L3 under minimalism and anti-accretion constraints. |
+| Similar-Issue Sweep | Sweep `Execute`, `Transmission`, M2M, terminal/auto-init, cascade and all mode-command consumers in production/tests; classify each hit once. |
 
 ## Current Technical Baseline
 

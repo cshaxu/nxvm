@@ -44,6 +44,7 @@ static C_VOID dma_service_end(t_dma *dma)
         TYPE_CLEAR_BIT(dma->data.acknowledged,
             VDMA_REQUEST_DRQ(VDMA_GetISR_ISR(dma->data.isr)));
     }
+    dma->data.flagM2MWrite = TYPE_FALSE;
     dma->data.isr = TYPE_ZERO_8;
 }
 
@@ -398,28 +399,36 @@ static C_VOID Execute(t_dma *rdma, t_latch *latch, t_ram *ram,
         rdma->data.drx = (id + 1) % VDMA_CHANNEL_COUNT;
     }
     if (flagM2M) {
-        /* memory-to-memory */
+        /* Memory-to-memory is two logical services: channel 0 reads the
+         * temporary register first, then channel 1 writes it. */
         if (rdma->data.currCount[1] != 0xffff && !rdma->data.flagEOP) {
             type_unsigned_32 source = dma_physical_address(rdma, 0u, TYPE_FALSE);
             type_unsigned_32 destination = dma_physical_address(rdma, 1u,
                 TYPE_FALSE);
 
-            if (!dma_memory_route_is_valid(ram, source, 1u,
-                    CORE_MACHINE_MEMORY_ACCESS_READ) ||
-                !dma_memory_route_is_valid(ram, destination, 1u,
-                    CORE_MACHINE_MEMORY_ACCESS_WRITE)) {
-                dma_service_end(rdma);
+            if (!rdma->data.flagM2MWrite) {
+                if (!dma_memory_route_is_valid(ram, source, 1u,
+                        CORE_MACHINE_MEMORY_ACCESS_READ) ||
+                    (transaction != STD_NULL && core_machine_transaction_begin(
+                        transaction, CORE_MACHINE_TRANSACTION_OWNER_DMA,
+                        CORE_MACHINE_TRANSACTION_DMA_MEMORY_READ, source, 1u,
+                        0u) != TYPE_STATUS_OK) ||
+                    core_machine_memory_read_physical(ram, source,
+                        (type_virtual_address)(&rdma->data.temp), 1u) != TYPE_STATUS_OK) {
+                    core_machine_transaction_cancel(transaction);
+                    dma_service_end(rdma);
+                    return;
+                }
+                core_machine_transaction_commit(transaction);
+                rdma->data.flagM2MWrite = TYPE_TRUE;
                 return;
             }
-            if (transaction != STD_NULL && core_machine_transaction_begin(
+            if (!dma_memory_route_is_valid(ram, destination, 1u,
+                    CORE_MACHINE_MEMORY_ACCESS_WRITE) ||
+                (transaction != STD_NULL && core_machine_transaction_begin(
                     transaction, CORE_MACHINE_TRANSACTION_OWNER_DMA,
-                    CORE_MACHINE_TRANSACTION_DMA_MEMORY_COPY, source,
-                    destination, 0u) != TYPE_STATUS_OK) {
-                dma_service_end(rdma);
-                return;
-            }
-            if (core_machine_memory_read_physical(ram, source,
-                    (type_virtual_address)(&rdma->data.temp), 1u) != TYPE_STATUS_OK ||
+                    CORE_MACHINE_TRANSACTION_DMA_MEMORY_WRITE, destination, 1u,
+                    1u) != TYPE_STATUS_OK) ||
                 core_machine_memory_write_physical(ram, destination,
                     (type_virtual_address)(&rdma->data.temp), 1u) != TYPE_STATUS_OK) {
                 core_machine_transaction_cancel(transaction);
@@ -427,6 +436,7 @@ static C_VOID Execute(t_dma *rdma, t_latch *latch, t_ram *ram,
                 return;
             }
             core_machine_transaction_commit(transaction);
+            rdma->data.flagM2MWrite = TYPE_FALSE;
             rdma->data.currCount[1]--;
             if (TYPE_GET_BIT(rdma->data.mode[id], VDMA_MODE_AIDS)) {
                 DecreaseCurrAddr(rdma, 1);
@@ -476,10 +486,11 @@ static C_VOID Execute(t_dma *rdma, t_latch *latch, t_ram *ram,
             }
             break;
         case 0x03:
-            /* cascade */
-            /* do nothing */
-            rdma->data.flagEOP = TYPE_TRUE;
-            break;
+            /* Cascade delegates the selected priority slot; it is neither a
+             * transfer nor a terminal condition. The paired AT controllers
+             * already delegate through core_machine_dma_advance_one(). */
+            dma_service_end(rdma);
+            return;
         default:
             break;
         }

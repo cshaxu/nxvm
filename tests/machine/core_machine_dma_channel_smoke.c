@@ -361,11 +361,18 @@ C_INT main(C_VOID)
     core_machine_dma_advance(&latch, &primary, &secondary, &memory, 1u);
     if (core_machine_memory_read_physical(&memory, 0x0300u,
             (type_virtual_address)bytes, sizeof(bytes)) != TYPE_STATUS_OK ||
-        bytes[0] != 0x55u || bytes[1] != 0u ||
+        bytes[0] != 0u || bytes[1] != 0u || primary.data.temp != 0x55u ||
         (primary.data.status & VDMA_STATUS_TC(0u)) != 0u) {
         failed = 1;
     }
     core_machine_dma_advance(&latch, &primary, &secondary, &memory, 1u);
+    if (core_machine_memory_read_physical(&memory, 0x0300u,
+            (type_virtual_address)bytes, sizeof(bytes)) != TYPE_STATUS_OK ||
+        bytes[0] != 0x55u || bytes[1] != 0u ||
+        (primary.data.status & VDMA_STATUS_TC(1u)) != 0u) {
+        failed = 1;
+    }
+    core_machine_dma_advance(&latch, &primary, &secondary, &memory, 2u);
     if (core_machine_memory_read_physical(&memory, 0x0300u,
             (type_virtual_address)bytes, sizeof(bytes)) != TYPE_STATUS_OK ||
         bytes[0] != 0x55u || bytes[1] != 0x66u ||
@@ -566,6 +573,22 @@ C_INT main(C_VOID)
     if (core_machine_memory_read_physical(&memory, 0x1810u,
             (type_virtual_address)bytes, 1u) != TYPE_STATUS_OK || bytes[0] != 0u ||
         !VDMA_GetREQUEST_DRQ(primary.data.request, 2u)) {
+        failed = 1;
+    }
+
+    /* A programmed cascade slot delegates priority only: it must not invent
+     * a transfer, terminal count, mask update or device completion. */
+    core_machine_dma_reset(&latch, &primary, &secondary);
+    fixture.next = 0u;
+    fixture.terminal_count = 0u;
+    core_machine_dma_write_channel2(&port, 0x1820u, 0u, 0u, 0xc6u);
+    core_machine_port_write(&port, 0x000eu, 0u);
+    core_machine_dma_request_assert(&primary, &secondary, &binding);
+    core_machine_dma_advance(&latch, &primary, &secondary, &memory, 1u);
+    if (fixture.next != 0u || fixture.terminal_count != 0u ||
+        (primary.data.status & VDMA_STATUS_TC(2u)) != 0u ||
+        (primary.data.mask & VDMA_MASK_DRQ(2u)) != 0u ||
+        primary.data.isr != 0u) {
         failed = 1;
     }
 
@@ -787,7 +810,7 @@ C_INT main(C_VOID)
     core_machine_port_write(&port, 0x0008u, VDMA_COMMAND_M2M);
     core_machine_port_write(&port, 0x000eu, 0u);
     core_machine_port_write(&port, 0x0009u, 0x04u);
-    core_machine_dma_advance(&latch, &primary, &secondary, &memory, 1u);
+    core_machine_dma_advance(&latch, &primary, &secondary, &memory, 2u);
     if (core_machine_memory_read_physical(&memory, 0x0310u,
             (type_virtual_address)bytes, 1u) != TYPE_STATUS_OK || bytes[0] != 0x5cu ||
         primary.data.currAddr[0] != 0x0210u || primary.data.currCount[0] != 0u ||
@@ -819,7 +842,7 @@ C_INT main(C_VOID)
     core_machine_port_write(&port, 0x0008u, VDMA_COMMAND_M2M);
     core_machine_port_write(&port, 0x000eu, 0u);
     core_machine_port_write(&port, 0x0009u, 0x04u);
-    core_machine_dma_advance(&latch, &primary, &secondary, &memory, 1u);
+    core_machine_dma_advance(&latch, &primary, &secondary, &memory, 2u);
     core_machine_dma_request_terminate(&primary, &secondary, &failure_binding);
     core_machine_dma_advance(&latch, &primary, &secondary, &memory, 1u);
     if (core_machine_memory_read_physical(&memory, 0x0320u,
@@ -858,7 +881,7 @@ C_INT main(C_VOID)
     core_machine_port_write(&port, 0x0008u, VDMA_COMMAND_M2M);
     core_machine_port_write(&port, 0x000eu, 0u);
     core_machine_port_write(&port, 0x0009u, 0x04u);
-    core_machine_dma_advance(&latch, &primary, &secondary, &memory, 1u);
+    core_machine_dma_advance(&latch, &primary, &secondary, &memory, 2u);
     if (primary.data.currAddr[0] != 0x0410u || primary.data.currAddr[1] != 0u ||
         primary.data.currCount[1] != 0u || !VDMA_GetREQUEST_DRQ(
             primary.data.request, 0u) || primary.data.isr != 0u ||
