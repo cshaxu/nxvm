@@ -28,7 +28,23 @@ C_INT main(C_VOID)
         core_machine_port_has_read(&port, CORE_MACHINE_VADP_PORT_MODE) ||
         core_machine_port_has_read(&port, CORE_MACHINE_VADP_PORT_COLOR) ||
         !core_machine_port_has_read(&port, CORE_MACHINE_VADP_PORT_CRTC_DATA) ||
-        !core_machine_port_has_read(&port, CORE_MACHINE_VADP_PORT_STATUS);
+        !core_machine_port_has_read(&port, CORE_MACHINE_VADP_PORT_STATUS) ||
+        !core_machine_port_has_write(&port, 0x03dbu) ||
+        !core_machine_port_has_write(&port, 0x03dcu);
+
+    core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_CRTC_INDEX, 0x00u);
+    core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_CRTC_DATA, 0x38u);
+    failed |= core_machine_port_read(&port, CORE_MACHINE_VADP_PORT_CRTC_DATA) != 0u;
+    core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_CRTC_INDEX, 0x0eu);
+    core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_CRTC_DATA, 0xffu);
+    failed |= core_machine_port_read(&port, CORE_MACHINE_VADP_PORT_CRTC_DATA) != 0x3fu;
+    core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_CRTC_INDEX, 0xeeu);
+    failed |= core_machine_port_read(&port, CORE_MACHINE_VADP_PORT_CRTC_DATA) != 0x3fu;
+    core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_CRTC_INDEX, 0x10u);
+    core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_CRTC_DATA, 0xffu);
+    failed |= core_machine_port_read(&port, CORE_MACHINE_VADP_PORT_CRTC_DATA) != 0u;
+    core_machine_port_write(&port, 0x03dbu, 0u);
+    core_machine_port_write(&port, 0x03dcu, 0u);
 
     core_machine_port_write(&port, 0x03d8u, 0x0au);
     core_machine_port_write(&port, 0x03d9u, 0x00u);
@@ -54,6 +70,9 @@ C_INT main(C_VOID)
         snapshot.palette_rgb[3] != 0xaaaaaau || !snapshot.buffer_changed;
 
     core_machine_port_write(&port, 0x03d8u, 0x1au);
+    core_machine_port_write(&port, 0x03d8u, 0x1bu);
+    failed |= !core_machine_vadp_capture_snapshot(&vadp, &memory, &snapshot) ||
+        snapshot.kind != CORE_MACHINE_DISPLAY_KIND_CGA_640X200X2;
     core_machine_port_write(&port, 0x03d8u, 0x0du);
     failed |= !core_machine_vadp_capture_snapshot(&vadp, &memory, &snapshot);
     failed |= snapshot.kind != CORE_MACHINE_DISPLAY_KIND_TEXT;

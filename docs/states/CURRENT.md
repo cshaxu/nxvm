@@ -2,8 +2,26 @@
 
 ## Current Work
 
-**Between admitted subtasks.** T467 S2 is accepted at `dbbf29bc`; no
-subsequent S is active.
+## M5 T467 S3 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; T467 S3, one-session coordinator, executor and closure review. |
+| Admission And Approval | The persistent owner objective approves completion of the CGA controller task. S2 is accepted at `dbbf29bc`; S3 consumes its finite CGA-R1--R5/CGA-F7 port/register/reset batch. |
+| Objective | Close the sourced selected IBM-CGA 3D4h--3DAh register grammar, reset/cancellation and light-pen disposition through the sole VADP owner, with a complete port sweep. |
+| Non-goals | Do not create a renderer, duplicate VADP state, infer 160x100, add host timing, model electrical waveforms, import third-party code, or add generic profile callbacks/live setters. |
+| Reference Baseline | `dbbf29bc` records one VADP owner and the exact R1--R5/F7 gaps. Checklist 1's rendered IBM/Motorola authority governs; external simulators only corroborate. |
+| Candidate Proposal | [M5 Core IBM CGA Completeness](../proposals/m5-core-ibm-cga-completeness.md), S3 port/register/reset closure. |
+| Files And ABI Surface | Expected: `vadp.c`/private VADP state and focused CGA smoke tests/evidence/status. Public profile, VM presentation and a second memory/renderer owner are forbidden. |
+| Applicable Rules | `docs/design/ARCHITECTURE.md`, `docs/design/CODING.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md` and `docs/rules/EXECUTION.md`: VADP owns all mutable CGA state; Core owns time; configuration is construction-only; remove stale special admission rather than layering a parallel path. |
+| Verification | Add focused tests for every selected 3D4h--3DAh access direction/mask/reset and mode-disable observation; run affected CGA/VADP tests, configured build and documentation governance. |
+| Expected Markers | One VADP port route, full source-qualified selected grammar, no readback added for write-only CGA ports, no Compaq light-pen state reused as IBM-CGA state, and every retained L2 item has a receiver. |
+| Asset Needs | Existing rendered IBM/Motorola sources and read-only comparison evidence only; no new asset or import. |
+| Reporting Requirements | Record the complete port/register sweep, source-backed repair, removed special-case code, tests, source/test line delta and every exact retained L2 boundary. |
+| Stop Conditions | Stop if the primary material cannot settle an access class/reset rule, if selected IBM-CGA light-pen needs an unowned profile input lifecycle, or if repair requires a second VADP/video owner. |
+| Exit Criteria | R1--R5/F7 have a sole source-backed code path and focused proof, exact unresolved light-pen lifecycle is transferred, no duplicate mode/CRTC/palette/raster state exists, and required gates pass. |
+| Original Owner Request | Complete controllers through manual-authoritative, minimalist L3 implementation; accept external L3 data at existing sole-owner inputs and retain only true L2 boundaries. |
+| Similar-Issue Sweep | Inspect all CGA and EGA/Compaq overlapping port registrations, CRTC masks/readability/reset behavior, mode/color capture consumers, firmware writers, default and Model-339/CECG profiles, and tests for stale special values. |
 
 ## Current Technical Baseline
 

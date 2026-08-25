@@ -41,6 +41,8 @@
 #define CORE_MACHINE_VADP_MODE_VIDEO_ENABLE 0x08u
 #define CORE_MACHINE_VADP_MODE_HIGH_RES 0x10u
 #define CORE_MACHINE_VADP_COLOR_PALETTE_SELECT 0x20u
+#define CORE_MACHINE_VADP_PORT_CGA_LIGHTPEN_CLEAR 0x03dbu
+#define CORE_MACHINE_VADP_PORT_CGA_LIGHTPEN_PRESET 0x03dcu
 #define CORE_MACHINE_VADP_GRAPHICS_BYTES_PER_ROW 80u
 #define CORE_MACHINE_VADP_GRAPHICS_ODD_ROW_OFFSET 0x2000u
 #define CORE_MACHINE_VADP_EGA_320X200_ROW_BYTES 40u
@@ -115,7 +117,9 @@ static C_INT core_machine_vadp_is_graphics_mode(const t_vadp *adapter)
 
 static C_INT core_machine_vadp_is_high_res_graphics_mode(const t_vadp *adapter)
 {
-    return adapter != STD_NULL && adapter->data.mode_control == 0x1au;
+    return adapter != STD_NULL && (adapter->data.mode_control &
+        (CORE_MACHINE_VADP_MODE_GRAPHICS | CORE_MACHINE_VADP_MODE_HIGH_RES)) ==
+        (CORE_MACHINE_VADP_MODE_GRAPHICS | CORE_MACHINE_VADP_MODE_HIGH_RES);
 }
 
 static type_unsigned_32 core_machine_vadp_rgbi_color(type_unsigned_8 index)
@@ -433,12 +437,7 @@ static C_INT core_machine_vadp_supported_crtc_index(const t_vadp *adapter,
     type_unsigned_8 index)
 {
     if (adapter == STD_NULL || index >= CORE_MACHINE_VADP_CRTC_REGISTER_COUNT) return TYPE_FALSE;
-    if (!adapter->data.ega_controller_configured) {
-        return (index <= CORE_MACHINE_VADP_CRTC_VERTICAL_SYNC_POSITION ||
-            index == CORE_MACHINE_VADP_CRTC_MAXIMUM_RASTER_ADDRESS ||
-            (index >= CORE_MACHINE_VADP_CRTC_CURSOR_TOP &&
-            index <= CORE_MACHINE_VADP_CRTC_CURSOR_LOW));
-    }
+    if (!adapter->data.ega_controller_configured) return index <= 0x11u;
     return index <= CORE_MACHINE_VADP_CRTC_EGA_LAST;
 }
 
@@ -446,8 +445,18 @@ static C_INT core_machine_vadp_crtc_index_readable(const t_vadp *adapter,
     type_unsigned_8 index)
 {
     if (!core_machine_vadp_supported_crtc_index(adapter, index)) return TYPE_FALSE;
-    if (!adapter->data.ega_controller_configured) return TYPE_TRUE;
+    if (!adapter->data.ega_controller_configured) {
+        return index >= CORE_MACHINE_VADP_CRTC_CURSOR_HIGH;
+    }
     return index >= CORE_MACHINE_VADP_CRTC_START_HIGH &&
+        index <= CORE_MACHINE_VADP_CRTC_CURSOR_LOW;
+}
+
+static C_INT core_machine_vadp_crtc_index_writable(const t_vadp *adapter,
+    type_unsigned_8 index)
+{
+    if (!core_machine_vadp_supported_crtc_index(adapter, index)) return TYPE_FALSE;
+    return adapter->data.ega_controller_configured ||
         index <= CORE_MACHINE_VADP_CRTC_CURSOR_LOW;
 }
 
@@ -789,8 +798,7 @@ static C_VOID core_machine_vadp_write_crtc_index(t_port *port,
         core_machine_vadp_compaq_io_route_active(adapter, port_id,
         CORE_MACHINE_VADP_PORT_MONO_CRTC_INDEX,
         CORE_MACHINE_VADP_PORT_CRTC_INDEX)) {
-        adapter->data.crtc_index = adapter->data.ega_controller_configured ?
-            port->data.ioByte & 0x1fu : port->data.ioByte;
+        adapter->data.crtc_index = port->data.ioByte & 0x1fu;
     }
 }
 
@@ -820,7 +828,7 @@ static C_VOID core_machine_vadp_write_crtc_data(t_port *port,
         !core_machine_vadp_compaq_io_route_active(adapter, port_id,
         CORE_MACHINE_VADP_PORT_MONO_CRTC_DATA,
         CORE_MACHINE_VADP_PORT_CRTC_DATA) ||
-        !core_machine_vadp_supported_crtc_index(adapter, adapter->data.crtc_index)) {
+        !core_machine_vadp_crtc_index_writable(adapter, adapter->data.crtc_index)) {
         return;
     }
     {
@@ -850,14 +858,7 @@ static C_VOID core_machine_vadp_write_mode(t_port *port, type_unsigned_16 port_i
 
     (C_VOID)port_id;
     if (port == STD_NULL || adapter == STD_NULL) return;
-    value = port->data.ioByte;
-    /* T254 admits exactly 1Ah for the digital 640x200x2 CGA slice. */
-    if ((value & (CORE_MACHINE_VADP_MODE_GRAPHICS |
-        CORE_MACHINE_VADP_MODE_HIGH_RES)) ==
-        (CORE_MACHINE_VADP_MODE_GRAPHICS | CORE_MACHINE_VADP_MODE_HIGH_RES) &&
-        value != 0x1au) {
-        return;
-    }
+    value = port->data.ioByte & 0x3fu;
     if (adapter->data.mode_control != value) {
         adapter->data.mode_control = value;
         adapter->data.columns = (value & 0x01u) != 0u ? 80u : 40u;
@@ -879,13 +880,26 @@ static C_VOID core_machine_vadp_write_color(t_port *port,
     type_unsigned_16 port_id, C_VOID *owner)
 {
     t_vadp *adapter = (t_vadp *)owner;
+    type_unsigned_8 value;
 
     (C_VOID)port_id;
     if (port == STD_NULL || adapter == STD_NULL) return;
-    if (adapter->data.color_select != port->data.ioByte) {
-        adapter->data.color_select = port->data.ioByte;
+    value = port->data.ioByte & 0x3fu;
+
+    if (adapter->data.color_select != value) {
+        adapter->data.color_select = value;
         core_machine_vadp_mark_dirty(adapter);
     }
+}
+
+static C_VOID core_machine_vadp_write_cga_lightpen(t_port *port,
+    type_unsigned_16 port_id, C_VOID *owner)
+{
+    (C_VOID)port;
+    (C_VOID)port_id;
+    (C_VOID)owner;
+    /* The address-activated controls cannot fabricate an absent external
+     * light-pen edge, switch state or latched address. */
 }
 
 static C_VOID core_machine_vadp_read_status(t_port *port,
@@ -1241,6 +1255,10 @@ static C_VOID core_machine_vadp_register_cga_ports(t_vadp *adapter, t_port *port
         core_machine_vadp_write_color, adapter);
     core_machine_port_add_read(port, CORE_MACHINE_VADP_PORT_STATUS,
         core_machine_vadp_read_status, adapter);
+    core_machine_port_add_write(port, CORE_MACHINE_VADP_PORT_CGA_LIGHTPEN_CLEAR,
+        core_machine_vadp_write_cga_lightpen, adapter);
+    core_machine_port_add_write(port, CORE_MACHINE_VADP_PORT_CGA_LIGHTPEN_PRESET,
+        core_machine_vadp_write_cga_lightpen, adapter);
 }
 
 C_VOID core_machine_vadp_initialize(t_vadp *adapter, t_port *port)
