@@ -26,7 +26,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T461 S3 | Implementation is complete pending coordinator acceptance: one `OUT0 -> IRQ0 -> PIC refresh` route, P16--P18 retained as L2, full gate 294/294, and stripped artifact `nxvm_0_5_0461.exe` recorded. [Evidence](../etc/evidence/t461-s3-pit-integration-closure.md). |
+| T461 S3 | Accepted and closed: one Core PIT owner covers manual P1--P14 and one `OUT0 -> IRQ0 -> PIC refresh` route closes P15; P16--P18 remain explicit L2. Full current-gate is 294/294 and stripped artifact `nxvm_0_5_0461.exe` is recorded. [History](../history/M5-T461-core-pit-8254-phase-contract.md). |
 | T460 | Closed: all 16 DMA rows are disposed through the sole `dma.c` owner; normal/compressed and M2M service phases have focused proof, the five-clock conversion remains explicit L2, serial current-gate is 294/294, and the stripped 0460 artifact is recorded. [History](../history/M5-T460-core-dma-8237a-phase-contract.md). |
 
 | T459 | Closed after S2 correction: `standard`/`turbo` remain stopped-session Console selections, but neither VM speed branch manufactures guest ticks. `Sleep(1)` is explicitly L2 HLT host-load backoff; true Standard pacing and Turbo fast-forward remain transferred to Core deadlines plus profile timebases. The full gate passes 294/294; current artifact `0.5.0459` is stripped Release-only. [History](../history/M5-T459-vm-session-speed-policy.md). |
