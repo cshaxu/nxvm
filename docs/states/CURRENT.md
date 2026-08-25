@@ -2,9 +2,7 @@
 
 ## Current Work
 
-| Task | Compact progress |
-| --- | --- |
-| T467 S1 | Accepted: the 17-row Checklist 1 uses rendered IBM/Motorola authority, labels 86Box/PCjs as corroborators and MAME/Bochs/QEMU as non-IBM-CGA boundaries. Thirteen selected digital/interface relations are Manual L3; CGA-F4/T2/T3/T4 remain explicit L2. No source or production path changed. |
+**Between admitted subtasks.** T467 S1 is accepted; no subsequent S is active.
 
 ## Current Technical Baseline
 
@@ -34,6 +32,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T467 S1 | Accepted: the 17-row Checklist 1 uses rendered IBM/Motorola authority, labels 86Box/PCjs as corroborators and MAME/Bochs/QEMU as non-IBM-CGA boundaries. Thirteen selected digital/interface relations are Manual L3; CGA-F4/T2/T3/T4 remain explicit L2. No source or production path changed. |
 | T466 | Closed: Manual-L3 D/E/10 geometry reaches the single VADP state owner through real firmware and guest port writes. The profile declaration, cold-start/text routing and all fixtures now agree; unknown planar geometry falls through existing legacy selection rather than inventing a frame. The stripped Release 0466 artifact and its hash are recorded in [history](../history/M5-T466-core-vadp-phase-contract.md). |
 | T465 | Closed: selected Intel 8272A source reconciliation, command/reset repair and per-drive parallel Seek close the logical controller contract; physical media and board-time conversion remain explicit L2. Release 0465 is stripped and the 294/294 serial gate is recorded in [history](../history/M5-T465-core-intel-8272a-logical-media-phase-contract.md). |
 | T464 | Closed: all sixteen KBC rows are Manual L3 or explicit L2/L4. One Core owner now covers selected command/input/test state; 294/294 serial current-gate tests pass and stripped Release 0464 is recorded in history. |
