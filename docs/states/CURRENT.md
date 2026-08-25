@@ -2,26 +2,26 @@
 
 ## Current Work
 
-## M5 T462 S3 Packet
+## M5 T462 S4 Packet
 
 | Field | Required record |
 | --- | --- |
 | Identifier Mode | Continuation |
-| Admission And Approval | Coordinator accepted S2 implementation `df6d28a7` after actual code/test/diff review and documentation governance. Owner-approved single-person dual-role execution admits S3 only on 2026-08-24. |
-| Objective | Have VM profile descriptors select the accepted copied PIT/DMA rules and existing ratios, prove their existing controller-owner consumption/reset behavior, and preserve default/PIC L2 fallbacks. |
-| Non-goals | No new clock domain, scheduler, controller state, route callback, runtime timing setter, profile name in Core, host time, L4 work, DMA five-clock numeric invention, PIC elapsed-delay field, topology expansion, or artifact update. |
-| Reference Baseline | `df6d28a7`; accepted T462 S1 ledger and S2 plan-rule proof; T375 Model-339 clock evidence and closed T456/T460/T461 contracts. |
+| Admission And Approval | Coordinator accepted S3 implementation `3c2d5c3d` after actual code/test/diff review and documentation governance. Owner-approved single-person dual-role execution admits S4 only on 2026-08-24. |
+| Objective | Close the finite T462 ledger: verify PIC's only valid current disposition is explicit L2, reconcile all three controller owner paths and publish the verified T462 Release artifact. |
+| Non-goals | No new clock domain, scheduler, controller state, route callback, runtime timing setter, profile name in Core, host time, L4 work, DMA five-clock numeric invention, PIC elapsed-delay field or topology expansion. |
+| Reference Baseline | `3c2d5c3d`; accepted T462 S1--S3 evidence; closed T456/T460/T461 controller contracts and the current Release 0461 artifact. |
 | Candidate Proposal | [Core controller board-timing contract](../proposals/m5-core-controller-board-timing-contract.md). |
-| Files And ABI Surface | VM default-profile descriptor/contract and session plan materialization, focused Model-339/default-profile/controller regressions and T462 evidence/current/history; no new Core API or runtime device ABI. |
-| Applicable Rules | README Task Reading Set; EXECUTION S/P lifecycle and code-size accounting; DOCUMENT evidence indexing; ARCHITECTURE single copied plan and neutral dependency; CODING minimal durable public header/no wrapper; source policy; specification-driven L3 timing design. |
-| Verification | Sweep all profile descriptors and plan factories; prove Model-339 selects sourced PIT/DMA rules with existing clocks, default remains L2, reset replays values, DMA/PIT service/route paths remain single-owner; configured build, focused regressions, documentation governance and diff hygiene. |
-| Expected Markers | `M5:T462:S3:CONTROLLER-PROFILE-SELECTION:OK`; `M5:T462:S3:CONTROLLER-OWNER-CONSUMPTION:OK`; no duplicate clock/transaction/route owner. |
-| Asset Needs | T462 S1 ledger and existing Core/profile sources only; no external import. |
-| Reporting Requirements | Record profile-selected values, copied plan declarations, dynamic-input ownership, source/test line counts and every retained L2 boundary. |
-| Stop Conditions | Stop if a profile needs a Core name, unqualified numeric conversion, new dynamic callback or topology; retain L2 and transfer it to S4 or a later task. |
-| Exit Criteria | Model-339 selects qualified PIT/DMA rules through descriptor to copied plan, default and PIC remain L2, existing controller execution/reset is proven, and no second timing path is introduced. |
+| Files And ABI Surface | Existing controller/plan/profile focused regressions, T462 ledger/evidence/history/current state and artifact metadata; no new Core or VM runtime ABI unless an identified ledger row proves it necessary. |
+| Applicable Rules | README Task Reading Set; EXECUTION S/P lifecycle, closure audit, artifact and code-size accounting; DOCUMENT evidence indexing; ARCHITECTURE single copied plan and neutral dependency; CODING no wrapper/no duplicate owner; source policy; specification-driven L3 timing design. |
+| Verification | Reconcile all 11 ledger rows against final code and evidence; run PIC/DMA/PIT and profile focused regressions, serial full current gate, documentation governance and diff hygiene; build, verify and hash the stripped Release 0462 artifact. |
+| Expected Markers | `M5:T462:S4:CONTROLLER-LEDGER-CLOSURE:OK`; `M5:T462:S4:PIC-L2-BOUNDARY:OK`; retained S3 markers; full current gate passes. |
+| Asset Needs | T462 S1--S3 ledger/evidence, current tracked source and approved local build toolchain only; no external import. |
+| Reporting Requirements | Record every ledger disposition, PIC L2 rationale, owner/direction sweep, full-gate/artifact evidence, source/test code-size accounting and any explicit transfer. |
+| Stop Conditions | Stop and transfer if closure requires a profile name in Core, unqualified conversion, new dynamic callback/topology, source-less PIC delay or a second timing path. |
+| Exit Criteria | Every T462 ledger row is accepted or transferred; PIC remains explicit L2 without a placeholder field; PIT/DMA retain qualified copied selections; all controller owners remain single-path; full gate and stripped 0462 artifact are verified. |
 | Original Owner Request | Execute single-person dual-role implementation of L3-precision interfaces for all three controllers, allowing profile-provided L3 values or explicitly L2-derived deterministic ratios without provenance promotion. |
-| Similar-Issue Sweep | Sweep config and plan create paths, all VM plan factories, timing declaration validation, clock/transaction consumers and controller dynamic inputs; remove any superseded construction route rather than layering another plan. |
+| Similar-Issue Sweep | Sweep plan construction/validation, all profile descriptors, PIC/DMA/PIT dynamic inputs and controller-order consumers; confirm no second timing route, profile-to-Core reverse dependency, live setter or source-less L3 promotion remains. |
 
 ## Current Technical Baseline
 

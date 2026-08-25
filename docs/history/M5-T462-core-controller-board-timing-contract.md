@@ -22,3 +22,23 @@ electrical recreation is excluded.
    focused lifecycle proof.
 4. S4 binds the accepted PIC field or preserves its explicit fallback, then
    audits provenance, controller order, artifact and complete ledger closure.
+
+## Accepted Progress
+
+### S1
+
+Accepted at `e88124db`. The finite 11-row ledger establishes the existing
+clock/transaction/route owners and rejects placeholder controller fields.
+
+### S2
+
+Accepted at `df6d28a7`. One construction-only copied rule value qualifies
+existing PIT/DMA clocks and service phases, rejects invalid combinations and
+retains PIC L2.
+
+### S3
+
+Accepted at `3c2d5c3d`. Model 339 selects its existing source-qualified PIT
+and DMA values through the descriptor-to-copied-Core-plan path; default and
+PIC remain L2. Focused profile/reset/disposition regressions and documentation
+governance pass. [Evidence](../etc/evidence/t462-s3-controller-profile-selection.md).
