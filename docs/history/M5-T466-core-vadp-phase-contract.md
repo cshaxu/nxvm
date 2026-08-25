@@ -86,3 +86,18 @@ capacity and extended-bank mapping, while retaining Manual L3 for the facts
 the source actually states.  The future receiver remains the one VADP
 construction/provider route; no guessed mapping, card profile, memory path or
 state was added.
+
+## S8 Accepted Evidence
+
+Rendered IBM pages 5--10 distinguish the retained CGA-compatible modes from
+EGA D (`320x200x16`), E (`640x200x16`), 10h (`640x350` four-plane graphics)
+and F (`640x350` chained monochrome) layouts. The finite F2 ledger now records
+those Manual L3 facts and the precise current gap: VADP's Offset-13h-only
+classification cannot distinguish E from 10h, while the generated-firmware
+mode-10 VM replay advertises `5010h` but never observes the expected VADP
+frame. Reverting the rejected CRTC-geometry experiment reproduces that
+failure, so it is baseline evidence rather than a new regression. The next S
+owns one repair across the existing generated-firmware port route and the sole
+VADP snapshot path; BDA coupling, a second renderer and a second VRAM route
+are excluded. F chained odd/even and alpha character generation remain
+separate later batches.
