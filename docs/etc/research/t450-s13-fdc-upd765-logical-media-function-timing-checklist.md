@@ -5,24 +5,28 @@
 **S19 verification:** direct rendered-page inspection confirms scan with OCR
 text layer; OCR errors remain visible, so the rendered source governs.
 
-`FDC` denotes NEC *uPD765A/uPD765B Single/Double Density Floppy-Disk
-Controller*; `AT` denotes IBM *Personal Computer AT Technical Reference*,
-1502243 (Mar. 1984). The admitted FDC PDF is a scanned/OCR document: extracted
-text is usable for headings and tables but contains visible recognition errors;
-S19 must directly verify this form and every cited page against the rendered
-PDF. The AT source supplies selected IRQ6, DMA2, port-range and CMOS drive-type
-facts, but not a complete logical image/sector-layout or motor/rotation contract.
+`I8272` denotes Intel *8272 Single/Double Density Floppy Disk Controller* in
+the [1981 Intel Peripheral Design Handbook](https://www.bitsavers.org/components/intel/_dataBooks/1981_Intel_Peripheral_Design_Handbook.pdf);
+it is the original-manual command authority for Core's selected `Intel
+8272A`-compatible model. `FDC` denotes
+NEC *uPD765A/uPD765B Single/Double Density Floppy-Disk Controller*; it is a
+rendered scanned/OCR comparative manual, so its pages govern only after direct
+visual verification. `AT` denotes IBM *Personal Computer AT Technical
+Reference*, 1502243 (Mar. 1984). The AT source supplies selected IRQ6, DMA2,
+port-range and CMOS drive-type facts, but not a complete logical
+image/sector-layout or motor/rotation contract.
 
-The manual is sufficient for the chip command/state/timing rows below except
-where a row explicitly names a missing exact selected-board or media fact.
-Those gaps are fallback to L2, not inferred implementation requirements.
-Mature-emulator sources may corroborate a labelled model L3, but do not replace
-the rendered NEC/IBM authority.
+The Intel table is sufficient for the selected 8272 command/state rows below;
+NEC is primary only for its conditional uPD765 extensions or shared chip facts.
+Where neither selected manual identifies a board/media fact, the gap is
+fallback to L2, not an inferred implementation requirement. Mature-emulator
+sources may corroborate a labelled model L3, but do not replace either manual.
 
 ## T465 S1 Cross-Validation
 
-Rendered NEC pages remain normative. On 2026-08-25, read-only comparison used
-86Box `4fef696` (`src/floppy/fdc.c`), local Bochs 2.6
+Intel's 8272 command table is normative for the selected Core identity;
+rendered NEC pages remain normative for the named shared/conditional uPD765
+facts. On 2026-08-25, read-only comparison used 86Box `4fef696` (`src/floppy/fdc.c`), local Bochs 2.6
 (`iodev/floppy.cc`), local PCjs (`machines/pcx86/modules/v2/fdc.js`), current
 MAME `src/devices/machine/upd765.cpp`, and current QEMU `hw/block/fdc.c`.
 MAME models the uPD765 family directly; QEMU models a later 82078 and its
@@ -32,10 +36,10 @@ is imported.
 | Row | Cross-check result | Final tier |
 | --- | --- | --- |
 | FDC-R1 | All five models retain MSR/data phase and reset state. | Manual L3. |
-| FDC-R2 | All implement command/result phase families; Version differs by selected variant. | Manual L3 for named forms; variant is Other/board L3 or fallback to L2. |
+| FDC-R2 | All implement command/result phase families; Intel's selected 8272 table has fifteen forms and `10h` is invalid, while NEC Version differs by variant. | Manual L3 selected forms/invalid result; NEC extension is Other/board L3 or fallback to L2. |
 | FDC-R3 | All model result/status and transfer phases, but differ on image error/CHRN mapping. | Manual L3 chip phase; media mapping is Other/board L3 or fallback to L2. |
 | FDC-R4 | All retain Specify/Seek/Sense; none supplies universal physical drive timing. | Manual L3 register relation; drive phase is Other/board L3 or fallback to L2. |
-| FDC-R5 | MAME/86Box expose variant behavior; QEMU is a later controller. | Manual L3 difference; selected revision is Other/board L3 or fallback to L2. |
+| FDC-R5 | MAME/86Box expose uPD765 variant behavior; QEMU is a later controller. | Manual L3 for selected 8272 `10h` invalid result; NEC variant behavior is Other/board L3 or fallback to L2. |
 | FDC-F1 | References model drive signals at differing abstraction levels. | Manual L3 pin relation; mechanics fallback to L2. |
 | FDC-F2 | References agree on DMA/IRQ logical sequencing. | Manual L3; bus service phase fallback to L2. |
 | FDC-F3 | Reference delays are scheduler-specific. | Manual L3 only for stated formulas; selected-clock conversion is Other/board L3 or fallback to L2. |
@@ -52,10 +56,10 @@ is imported.
 | ID | Source | Finite function | Reset/cancellation | Timing or signal relation | Sufficiency and disposition |
 | --- | --- | --- | --- | --- | --- |
 | FDC-R1 | FDC pp. 1--5, 10--11 | A0 selects main-status versus data register. Main status reports RQM, DIO, NDMA, controller/execution and per-drive seek busy; data register carries every command, execution byte and result byte. | RESET enters idle, clears drive outputs/INT/DRQ and leaves Specify SRT/HUT/HLT unchanged. | RQM gates each command, execution and result transfer. | Primary sufficient for chip register state: L3. |
-| FDC-R2 | FDC pp. 1, 10--15, Table 4 | Command phase accepts every named command form: Read Data, Read Deleted Data, Write Data, Write Deleted Data, Read Diagnostic, Read ID, Format Write, Scan Equal/Low-or-Equal/High-or-Equal, Specify, Sense Drive Status, Recalibrate, Sense Interrupt Status, Seek and Version. Table 4 fixes command/result byte forms. The manual's summary/table command count is internally ambiguous around Version and must not be silently normalized. | Command acceptance is constrained by busy/phase; invalid/unsupported forms receive their documented status outcome. | Commands progress Command -> Execution where applicable -> Result. | Primary sufficient for named forms/state; command-count wording is an explicit manual ambiguity for S19. |
+| FDC-R2 | I8272 Table 2; FDC pp. 1, 10--15, Table 4 | The selected 8272 accepts Read/Write Data, Read Track, Specify, Sense Drive Status, Read ID, Recalibrate, Sense Interrupt, Format Write, Read/Write Deleted, Scan Equal/Low/High and Seek: fifteen forms. Its other opcodes return one-byte ST0 `80h` without interrupt. NEC additionally names Version and Read Diagnostic for its own family. | Command acceptance is constrained by busy/phase; the selected 8272 invalid result is a completed one-byte command path. | Commands progress Command -> Execution where applicable -> Result. | Intel is Manual L3 for selected forms and invalid result. NEC-only Version/diagnostic behavior is Other/board L3 only after an immutable controller selection, otherwise fallback to L2. |
 | FDC-R3 | FDC pp. 10--15, Tables 3--4 | Read/write/deleted/diagnostic/scan commands use MT/MF/SK, drive/head, C/H/R/N, EOT, GPL and DTL; return ST0--ST2 plus resulting C/H/R/N. Read ID returns its seven result bytes; Format Write consumes N/SC/GPL/fill and ID fields. | TC ends transfer; result status records abnormal termination, no-data, CRC, overrun, write-protect and related outcomes. | Execution transfers sector bytes through DRQ/DACK or non-DMA byte interrupts. | Primary sufficient for chip function; physical drive/media encoding is separate L2. |
 | FDC-R4 | FDC pp. 10--15 | Specify supplies SRT, HUT, HLT and ND; Seek/Recalibrate select drive/head and update present cylinder; Sense Interrupt Status returns completion state/PCN; Sense Drive Status reports fault/write-protect/ready/track-zero/two-side/head/unit state. | RESET leaves Specify parameters; Sense Interrupt Status clears reset/seek completion interrupt state as specified. | SRT is 1--16 ms in 1-ms increments; HLT 2--254 ms in 2-ms increments; HUT 16--240 ms in 16-ms increments. | Primary sufficient for chip parameters/formula: L3. |
-| FDC-R5 | FDC pp. 1, 5--7, 10--15 | Version distinguishes uPD765A/B; scan commands compare host and disk data; multi-sector/multi-track and FM/MFM selections are command fields. | A/B differ in overrun and DRQ-reset detail. | uPD765B clears DRQ before result phase independent of DACK; uPD765A requires DACK after overrun. | Primary sufficient for variant difference: L3; selected revision is an L2 input. |
+| FDC-R5 | I8272 Table 2; FDC pp. 1, 5--7, 10--15 | Selected 8272 treats `10h` as invalid ST0 `80h`; NEC Version distinguishes uPD765A/B. Scan commands compare host and disk data; multi-sector/multi-track and FM/MFM are command fields. | NEC A/B differ in overrun and DRQ-reset detail. | uPD765B clears DRQ before result phase independent of DACK; uPD765A requires DACK after overrun. | Intel is Manual L3 for the selected invalid result. NEC variant difference is Other/board L3 only when selected, otherwise fallback to L2. |
 
 ## Data, Drive, DMA/IRQ And Timing Universe
 

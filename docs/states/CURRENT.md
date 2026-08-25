@@ -2,6 +2,27 @@
 
 ## Current Work
 
+## M5 T465 S3 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner goal dated 2026-08-25 approves completing the active FDC task after accepted S1/S2 evidence. |
+| Objective | Correct the FDC ledger's controller identity: Intel 8272A-compatible is the selected Core model, so its original command table governs `10h` invalid behavior; NEC uPD765 Version/variant features are comparative or conditional, not an active defect. |
+| Non-goals | No new controller model, runtime model selector, Version response, Read Diagnostic approximation, media grammar, drive mechanics, timing conversion, scheduler, profile policy or external source import. |
+| Reference Baseline | `b217f893`; accepted T465 S1/S2 evidence, `CORE_MACHINE_DEVICE_FDC`, Intel 8272 original command-table record, NEC rendered PDF and IBM AT topology record. |
+| Candidate Proposal | [Core uPD765 and logical media phase contract](../proposals/m5-core-fdc-upd765-logical-media-phase-contract.md). |
+| Files And ABI Surface | FDC checklist/audit/history/status and existing focused FDC smoke marker only. No production source, ABI or composition change. |
+| Applicable Rules | Selected original hardware manual is normative; Core has one selected controller identity and command path; NEC/external models only corroborate or provide conditional Other/board L3; source policy prohibits import. |
+| Verification | Reconcile all affected R2/R5 source and code rows, prove existing `10h -> 80h`, no IRQ and command-phase return through focused smoke; inspect controller identity/dispatch sweep and run documentation governance. |
+| Expected Markers | `M5:T465:S3:FDC-8272-command:OK`, no Version dispatch case, no model selector and no ambiguous Manual-L3 claim. |
+| Asset Needs | Read-only Intel 8272 and NEC/IBM originals plus reference observations only; no asset is imported. |
+| Reporting Requirements | Record why the two manuals do not conflict, every retained conditional uPD765 feature and the zero-production-code result. |
+| Stop Conditions | Stop for proof that the selected Core device is not 8272A-compatible or an original-manual conflict that requires a profile/controller selection decision. |
+| Exit Criteria | R2/R5 distinguish selected 8272 Manual L3 from conditional uPD765 behavior, and the existing invalid-command route has focused proof without a second model/path. |
+| Original Owner Request | Use manuals as authority and only claim Manual L3, Other/board L3 or fallback L2 truthfully while completing controllers without additive mechanisms. |
+| Similar-Issue Sweep | Search controller identity, all command-length/execute dispatch cases, `10h`/`90h` references, profile FDC configuration, and every Version/Read Diagnostic statement in current FDC evidence. |
+
 
 ## Current Technical Baseline
 

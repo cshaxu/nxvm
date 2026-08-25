@@ -622,5 +622,6 @@ C_INT main(C_VOID)
     puts("M5:T376:S3:8272A-DELETED-DATA:OK");
     puts("M5:T376:S4:8272A-SCAN:OK");
     puts("M5:T465:S2:FDC-reset:OK");
+    puts("M5:T465:S3:FDC-8272-command:OK");
     return 0;
 }

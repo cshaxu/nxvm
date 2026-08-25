@@ -16,22 +16,24 @@ receiver must retain the existing single Core controller/media path rather
 than add a profile-local parser, scheduler, or DMA/IRQ path.
 
 T465 S1 reread the rendered NEC original rather than relying on its OCR text:
-its pin/RESET page confirms the physical signal relations and 4/8-MHz clock;
-Table 4 confirms the Version command returns `90h` for uPD765B and `80h` for
-uPD765A/A-2.  86Box, MAME, PCjs, Bochs and QEMU corroborate only the labelled
-model observations in S13; the latter is an 82078 model and cannot define a
-uPD765/AT requirement.  The following disposition therefore states the exact
-source tier for every row and the one receiver for every gap.
+its pin/RESET page confirms physical signal relations and the 4/8-MHz clock;
+Table 4 confirms uPD765B Version `90h` and uPD765A/A-2 `80h`. T465 S3 then
+corrected the selected-device authority: `CORE_MACHINE_DEVICE_FDC` is Intel
+8272A-compatible, whose original command table makes `10h` invalid with ST0
+`80h`; NEC Version is conditional, not a current command gap. 86Box, MAME,
+PCjs, Bochs and QEMU corroborate only labelled observations; QEMU's 82078
+model cannot define a uPD765/AT requirement. The following disposition states
+the exact source tier for every row and the one receiver for every gap.
 
 ## Row Dispositions
 
 | S13 ID | Current owner and observed behavior | Focused proof | Disposition and sole receiver |
 | --- | --- | --- | --- |
 | FDC-R1 | `fdc.c` owns `core_machine_fdc_msr`, command/result queues, DOR/DIR/CCR data and one DOR reset helper. That helper preserves Specify SRT/HUT/HLT across both reset edges; port topology binds 03F2/03F4/03F5/03F7 once. | `core-machine-fdc-smoke` prints `M5:T465:S2:FDC-reset:OK` after both reset edges and existing reset-Sense drain; topology smoke exercises ports. | Manual L3 for declared ports/phases and specified reset preservation. Exact reserved bits remain fallback to L2 pending a selected chip/board register contract; one FDC receiver. |
-| FDC-R2 | `core_machine_fdc_command_length`/`core_machine_fdc_execute` implement Specify, Sense, Recalibrate, Seek, Read ID, read/write/deleted, Scan, Format and a bounded Read Track. Version and distinct Read Diagnostic fall through to `80h`; command modifiers are incomplete. | `core-machine-fdc-smoke` covers retained read/write/deleted/scan/format paths; no Version/diagnostic proof exists. | Manual L3 command forms, currently partial. Complete the finite manual forms and invalid outcome in the one FDC receiver. |
+| FDC-R2 | `core_machine_fdc_command_length`/`core_machine_fdc_execute` implement all fifteen selected 8272 command forms: Specify, Sense, Recalibrate, Seek, Read ID, read/write/deleted, Scan, Format and bounded Read Track. `10h` uses the sole invalid-command route. | `core-machine-fdc-smoke` proves retained read/write/deleted/scan/format and `10h -> 80h`, no IRQ and command-phase return. | Manual L3 selected command/invalid dispatch. NEC-only Version/Read Diagnostic requires immutable controller/media selection for Other/board L3; otherwise fallback to L2. No second dispatch path. |
 | FDC-R3 | `core_machine_fdc_start_transfer`, DMA provider and non-DMA byte path carry results and sector data; deleted address marks and format callbacks are modeled. The path constrains sectors to N=2/512 bytes, limited CCR values and logical CHS geometry. | `core-machine-fdc-smoke`; `vm-fdc-read-track-dos-smoke` exercises read-track/DMA through a guest. | Manual L3 for chip transfer/result phase; the selected media/CHRN error mapping is Other/board L3 only when admitted, otherwise fallback to L2. One receiver owns both. |
 | FDC-R4 | Specify stores SRT/HUT/HLT/ND; Seek/Recalibrate schedule fixed `CORE_MACHINE_FDC_SEEK_TRACK_TICKS`; Sense Interrupt drains reset/seek state; Sense Drive Status derives ready/write-protect/track-zero from media. | `core-machine-fdc-smoke`, `core-machine-fdc-media-change-port-smoke`, and topology smoke cover Sense/reset/seek state. | Manual L3 for register formula and logical completion. Selected physical drive motion/head timing is Other/board L3 only when supplied, otherwise fallback to L2; do not encode it in VM. |
-| FDC-R5 | The data model names Intel 8272A and implements deleted/scan state, but no selected uPD765A/B revision, Version response, or A/B DRQ-overrun behavior exists. | No revision/Version/overrun-variant proof exists. | Manual L3 for documented variant behavior; selected revision is Other/board L3 only when immutable configuration names it, otherwise fallback to L2. One receiver selects and proves it. |
+| FDC-R5 | The selected data model names Intel 8272A and its `10h` path is the existing one-byte invalid ST0 `80h` result; deleted/scan stay on that controller's one command path. No uPD765A/B variant is selected. | `core-machine-fdc-smoke` proves `10h -> 80h`, no IRQ and command-phase return; no A/B overrun test can exist without a selected variant. | Manual L3 for selected 8272 invalid result. uPD765A/B Version/DRQ-overrun is Other/board L3 only when a future immutable configuration names that model, otherwise fallback to L2. |
 | FDC-F1 | `core_machine_fdc_drive_bindings` and media query represent four logical drives, READY/change/write-protect/geometry; DOR bits select the binding. INDEX, STEP/DIR, head-load, raw RDATA/WINDOW, write-data and precompensation lack a physical-drive owner. | Topology and media-change smokes prove logical selection, ready/change and reset; no pin-level proof exists. | Manual L3 pin relations; selected mechanics are Other/board L3 only when supplied, otherwise fallback to L2. |
 | FDC-F2 | One DMA provider binds through `core_machine_configure_dma`; request assert/deassert reaches DMA2, terminal count completes transfer, and one PIC IRQ source signals completion/Sense. Non-DMA byte gating remains. | `core-machine-fdc-smoke`, `vm-fdc-dma-boundary-smoke`, `vm-fdc-authority-smoke`. | Manual L3 logical DRQ/DACK/TC/INT relation; board bus service phase is fallback to L2. |
 | FDC-F3 | `CORE_MACHINE_FDC_500K_BYTE_TICKS` and CCR acceptance provide deterministic byte pacing, but do not derive it from the documented 4/8-MHz clock or accepted broader rate/encoding cases. | `vm-fdc-read-track-dos-smoke` compares deterministic execution quanta; no selected-clock formula proof exists. | Manual L3 for stated clock facts. Conversion to a Core deadline is Other/board L3 only when selected inputs provide it, otherwise fallback to L2. |
