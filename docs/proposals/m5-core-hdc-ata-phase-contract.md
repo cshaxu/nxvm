@@ -10,8 +10,9 @@ The admitted original source is X3T13, *AT Attachment-3 Interface*, 2008D
 Rev. 7b (January 1997), stored in the owner-managed archive as
 `X3T13_2008D_ATA-3_Rev7b_Jan1997.pdf`, SHA-256
 `FC9D1C42B0B3EF916C790BAFED05E96D9EBA3B221C0E0D3E914E6F948DDD0237`.
-This task selects exactly the current generic `ATA_PIO` task-file personality and
-the existing logical 512-byte media provider. It consumes PIC and T449; it
+S1 evaluates, rather than presumes, whether the current generic `ATA_PIO`
+task-file shape plus the existing logical 512-byte media provider can form a
+bounded ATA-3/Other-L3 personality. It consumes PIC and T449; it
 does not consume, represent or imply IBM MFM/ST-506, a specific IDE chipset,
 physical drive media or Model-339 fixed-disk support.
 

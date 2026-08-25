@@ -7,7 +7,7 @@
 | Field | Required record |
 | --- | --- |
 | Identifier Mode | New; T468 S1, one-session coordinator, executor and closure review. |
-| Admission And Approval | The persistent owner objective authorizes the next queued controller task. T468 selects only the existing generic ATA-3 PIO task-file personality and logical 512-byte media provider; it does not select IBM MFM/ST-506 or Model-339 fixed disk. |
+| Admission And Approval | The persistent owner objective authorizes the next queued controller task. S1 tests whether the existing generic PIO task-file shape and logical 512-byte provider can form a bounded ATA-3/Other-L3 personality; it does not select IBM MFM/ST-506 or Model-339 fixed disk. |
 | Objective | Freeze the complete source-qualified ATA-3 generic PIO function/timing ledger through rendered manual inspection and cross-model comparison before auditing or changing code. |
 | Non-goals | No HDC implementation, controller chipset claim, MFM/ST-506 support, physical drive/media model, host-latency timing, external source import, firmware/guest-media import or profile mutation. |
 | Reference Baseline | X3T13 ATA-3 2008D Rev. 7b is in the owner-managed manual archive; `t450-s1-controller-source-and-code-baseline.md` records its hash and the former missing-personality concern. Current `hdc.c` is evidence only, never a specification. |
