@@ -171,6 +171,7 @@ C_INT main(C_VOID)
     type_unsigned_32 error = 0u;
     type_unsigned_16 word = 0u;
     type_unsigned_32 queries_before;
+    type_unsigned_32 reads_before;
     C_INT failed = 0;
 
     media.sector[0][0] = 0x34u;
@@ -248,6 +249,18 @@ C_INT main(C_VOID)
                     !core_machine_hdc_read(machine, hdc_config.error_features_port, &error) ||
                     status != (CORE_MACHINE_HDC_STATUS_DRDY | CORE_MACHINE_HDC_STATUS_ERR) ||
                     error != CORE_MACHINE_HDC_ERROR_ID_NOT_FOUND) failed |= 0x40;
+                media.forced_read_result = CORE_MACHINE_MEDIA_RESULT_OK;
+
+                reads_before = media.read_count;
+                media.forced_read_result = CORE_MACHINE_MEDIA_RESULT_PERMANENT;
+                if (!core_machine_hdc_program_chs(machine, &hdc_config) ||
+                    !core_machine_hdc_command(machine, &hdc_config, 0x30u) ||
+                    hdc->data.phase != CORE_MACHINE_HDC_PHASE_DATA_WRITE ||
+                    !core_machine_hdc_fill(machine, &hdc_config, 0xa55au) ||
+                    media.read_count != reads_before || media.write_count != 2u ||
+                    media.sector[0][0] != 0x5au || media.sector[0][1] != 0xa5u) {
+                    failed |= 0x10000;
+                }
                 media.forced_read_result = CORE_MACHINE_MEDIA_RESULT_OK;
 
                 media.read_only = TYPE_TRUE;
@@ -361,7 +374,7 @@ C_INT main(C_VOID)
                 core_machine_hdc_advance(hdc);
                 failed |= hdc->data.phase != CORE_MACHINE_HDC_PHASE_DATA_WRITE ||
                     hdc->data.sector_number != 2u || hdc->data.sector_count != 1u ||
-                    media.write_count != 3u || media.sector[0][0] != 0x11u ||
+                    media.write_count != 4u || media.sector[0][0] != 0x11u ||
                     media.sector[0][1] != 0x22u || !core_machine_hdc_irq_pending(hdc) ||
                     !core_machine_hdc_read(machine,
                         hdc_config.alternate_status_device_control_port, &status) ||
@@ -377,7 +390,7 @@ C_INT main(C_VOID)
                     core_machine_hdc_irq_pending(hdc);
                 core_machine_hdc_advance(hdc);
                 failed |= hdc->data.phase != CORE_MACHINE_HDC_PHASE_IDLE ||
-                    hdc->data.sector_count != 0u || media.write_count != 4u ||
+                    hdc->data.sector_count != 0u || media.write_count != 5u ||
                     media.sector[1][0] != 0x33u || media.sector[1][1] != 0x44u ||
                     !core_machine_hdc_irq_pending(hdc) ||
                     !core_machine_hdc_read(machine, hdc_config.status_command_port, &status) ||

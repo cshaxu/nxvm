@@ -130,141 +130,57 @@ static C_VOID core_machine_hdc_fail(core_machine_hdc *hdc, type_unsigned_8 error
     core_machine_hdc_raise_irq(hdc);
 }
 
-static C_INT core_machine_hdc_load_chs_sector(core_machine_hdc *hdc)
+static C_INT core_machine_hdc_resolve_sector(core_machine_hdc *hdc,
+    type_bool write_to_media, STD_SIZE_T *out_offset)
 {
     core_machine_media_info info;
     core_machine_media_result media_result;
     type_unsigned_16 cylinder;
     type_unsigned_8 head;
     type_unsigned_8 sector;
-    STD_SIZE_T offset;
+    type_unsigned_32 lba;
 
-    if (hdc == STD_NULL || !core_machine_hdc_media_info(hdc, &info, &media_result) ||
-        !info.present) {
+    if (hdc == STD_NULL || out_offset == STD_NULL ||
+        !core_machine_hdc_media_info(hdc, &info, &media_result) || !info.present ||
+        (write_to_media && (info.capabilities & CORE_MACHINE_MEDIA_CAPABILITY_READ_ONLY) != 0u)) {
         core_machine_hdc_fail(hdc, CORE_MACHINE_HDC_ERROR_ABORT);
         return 0;
+    }
+    if (core_machine_hdc_lba_mode(hdc)) {
+        lba = core_machine_hdc_lba(hdc);
+        if (!core_machine_hdc_selected_master(hdc) ||
+            (STD_SIZE_T)lba >= core_machine_hdc_sector_capacity(&info) ||
+            info.geometry.bytes_per_sector != sizeof(hdc->data.data)) {
+            core_machine_hdc_fail(hdc, CORE_MACHINE_HDC_ERROR_ID_NOT_FOUND);
+            return 0;
+        }
+        *out_offset = (STD_SIZE_T)lba * info.geometry.bytes_per_sector;
+        return 1;
     }
     cylinder = (type_unsigned_16)hdc->data.cylinder_low |
         ((type_unsigned_16)hdc->data.cylinder_high << 8u);
     head = hdc->data.drive_head & 0x0fu;
     sector = hdc->data.sector_number;
-    if ((!core_machine_hdc_is_compaq_wd_40mb(hdc) && !core_machine_hdc_selected_master(hdc)) || core_machine_hdc_lba_mode(hdc) ||
+    if ((!core_machine_hdc_is_compaq_wd_40mb(hdc) && !core_machine_hdc_selected_master(hdc)) ||
         sector == 0u || cylinder >= info.geometry.cylinders ||
         head >= info.geometry.heads || sector > info.geometry.sectors_per_track ||
         info.geometry.bytes_per_sector != sizeof(hdc->data.data)) {
         core_machine_hdc_fail(hdc, CORE_MACHINE_HDC_ERROR_ID_NOT_FOUND);
         return 0;
     }
-    offset = (((STD_SIZE_T)cylinder * info.geometry.heads + head) *
+    *out_offset = (((STD_SIZE_T)cylinder * info.geometry.heads + head) *
         info.geometry.sectors_per_track + (sector - 1u)) * info.geometry.bytes_per_sector;
-    if (core_machine_media_read_bytes(hdc->connect.media_registry,
-            core_machine_hdc_selected_media_id(hdc), offset, hdc->data.data, sizeof(hdc->data.data),
-            &media_result) != TYPE_STATUS_OK ||
-        media_result != CORE_MACHINE_MEDIA_RESULT_OK) {
-        core_machine_hdc_fail(hdc, media_result == CORE_MACHINE_MEDIA_RESULT_INVALID_RANGE ?
-            CORE_MACHINE_HDC_ERROR_ID_NOT_FOUND : CORE_MACHINE_HDC_ERROR_ABORT);
-        return 0;
-    }
-    return 1;
-}
-
-static C_INT core_machine_hdc_load_lba_sector(core_machine_hdc *hdc)
-{
-    core_machine_media_info info;
-    core_machine_media_result media_result;
-    type_unsigned_32 lba;
-    STD_SIZE_T offset;
-
-    if (hdc == STD_NULL || !core_machine_hdc_media_info(hdc, &info, &media_result) ||
-        !info.present) {
-        core_machine_hdc_fail(hdc, CORE_MACHINE_HDC_ERROR_ABORT);
-        return 0;
-    }
-    lba = core_machine_hdc_lba(hdc);
-    if (!core_machine_hdc_selected_master(hdc) || !core_machine_hdc_lba_mode(hdc) ||
-        (STD_SIZE_T)lba >= core_machine_hdc_sector_capacity(&info) ||
-        info.geometry.bytes_per_sector != sizeof(hdc->data.data)) {
-        core_machine_hdc_fail(hdc, CORE_MACHINE_HDC_ERROR_ID_NOT_FOUND);
-        return 0;
-    }
-    offset = (STD_SIZE_T)lba * info.geometry.bytes_per_sector;
-    if (core_machine_media_read_bytes(hdc->connect.media_registry,
-            core_machine_hdc_selected_media_id(hdc), offset, hdc->data.data, sizeof(hdc->data.data),
-            &media_result) != TYPE_STATUS_OK ||
-        media_result != CORE_MACHINE_MEDIA_RESULT_OK) {
-        core_machine_hdc_fail(hdc, media_result == CORE_MACHINE_MEDIA_RESULT_INVALID_RANGE ?
-            CORE_MACHINE_HDC_ERROR_ID_NOT_FOUND : CORE_MACHINE_HDC_ERROR_ABORT);
-        return 0;
-    }
     return 1;
 }
 
 static C_INT core_machine_hdc_load_sector(core_machine_hdc *hdc)
 {
-    return core_machine_hdc_lba_mode(hdc) ? core_machine_hdc_load_lba_sector(hdc) :
-        core_machine_hdc_load_chs_sector(hdc);
-}
-
-static C_INT core_machine_hdc_store_chs_sector(core_machine_hdc *hdc)
-{
-    core_machine_media_info info;
     core_machine_media_result media_result;
-    type_unsigned_16 cylinder;
-    type_unsigned_8 head;
-    type_unsigned_8 sector;
     STD_SIZE_T offset;
 
-    if (hdc == STD_NULL || !core_machine_hdc_media_info(hdc, &info, &media_result) ||
-        !info.present || (info.capabilities & CORE_MACHINE_MEDIA_CAPABILITY_READ_ONLY) != 0u) {
-        core_machine_hdc_fail(hdc, CORE_MACHINE_HDC_ERROR_ABORT);
-        return 0;
-    }
-    cylinder = (type_unsigned_16)hdc->data.cylinder_low |
-        ((type_unsigned_16)hdc->data.cylinder_high << 8u);
-    head = hdc->data.drive_head & 0x0fu;
-    sector = hdc->data.sector_number;
-    if ((!core_machine_hdc_is_compaq_wd_40mb(hdc) && !core_machine_hdc_selected_master(hdc)) || core_machine_hdc_lba_mode(hdc) ||
-        sector == 0u || cylinder >= info.geometry.cylinders ||
-        head >= info.geometry.heads || sector > info.geometry.sectors_per_track ||
-        info.geometry.bytes_per_sector != sizeof(hdc->data.data)) {
-        core_machine_hdc_fail(hdc, CORE_MACHINE_HDC_ERROR_ID_NOT_FOUND);
-        return 0;
-    }
-    offset = (((STD_SIZE_T)cylinder * info.geometry.heads + head) *
-        info.geometry.sectors_per_track + (sector - 1u)) * info.geometry.bytes_per_sector;
-    if (core_machine_media_write_bytes(hdc->connect.media_registry,
-            core_machine_hdc_selected_media_id(hdc), offset, hdc->data.data, sizeof(hdc->data.data),
-            &media_result) != TYPE_STATUS_OK ||
-        media_result != CORE_MACHINE_MEDIA_RESULT_OK) {
-        core_machine_hdc_fail(hdc, media_result == CORE_MACHINE_MEDIA_RESULT_INVALID_RANGE ?
-            CORE_MACHINE_HDC_ERROR_ID_NOT_FOUND : CORE_MACHINE_HDC_ERROR_ABORT);
-        return 0;
-    }
-    return 1;
-}
-
-static C_INT core_machine_hdc_store_lba_sector(core_machine_hdc *hdc)
-{
-    core_machine_media_info info;
-    core_machine_media_result media_result;
-    type_unsigned_32 lba;
-    STD_SIZE_T offset;
-
-    if (hdc == STD_NULL || !core_machine_hdc_media_info(hdc, &info, &media_result) ||
-        !info.present || (info.capabilities & CORE_MACHINE_MEDIA_CAPABILITY_READ_ONLY) != 0u) {
-        core_machine_hdc_fail(hdc, CORE_MACHINE_HDC_ERROR_ABORT);
-        return 0;
-    }
-    lba = core_machine_hdc_lba(hdc);
-    if (!core_machine_hdc_selected_master(hdc) || !core_machine_hdc_lba_mode(hdc) ||
-        (STD_SIZE_T)lba >= core_machine_hdc_sector_capacity(&info) ||
-        info.geometry.bytes_per_sector != sizeof(hdc->data.data)) {
-        core_machine_hdc_fail(hdc, CORE_MACHINE_HDC_ERROR_ID_NOT_FOUND);
-        return 0;
-    }
-    offset = (STD_SIZE_T)lba * info.geometry.bytes_per_sector;
-    if (core_machine_media_write_bytes(hdc->connect.media_registry,
-            core_machine_hdc_selected_media_id(hdc), offset, hdc->data.data, sizeof(hdc->data.data),
+    if (!core_machine_hdc_resolve_sector(hdc, TYPE_FALSE, &offset)) return 0;
+    if (core_machine_media_read_bytes(hdc->connect.media_registry,
+        core_machine_hdc_selected_media_id(hdc), offset, hdc->data.data, sizeof(hdc->data.data),
             &media_result) != TYPE_STATUS_OK ||
         media_result != CORE_MACHINE_MEDIA_RESULT_OK) {
         core_machine_hdc_fail(hdc, media_result == CORE_MACHINE_MEDIA_RESULT_INVALID_RANGE ?
@@ -276,8 +192,19 @@ static C_INT core_machine_hdc_store_lba_sector(core_machine_hdc *hdc)
 
 static C_INT core_machine_hdc_store_sector(core_machine_hdc *hdc)
 {
-    return core_machine_hdc_lba_mode(hdc) ? core_machine_hdc_store_lba_sector(hdc) :
-        core_machine_hdc_store_chs_sector(hdc);
+    core_machine_media_result media_result;
+    STD_SIZE_T offset;
+
+    if (!core_machine_hdc_resolve_sector(hdc, TYPE_TRUE, &offset)) return 0;
+    if (core_machine_media_write_bytes(hdc->connect.media_registry,
+            core_machine_hdc_selected_media_id(hdc), offset, hdc->data.data, sizeof(hdc->data.data),
+            &media_result) != TYPE_STATUS_OK ||
+        media_result != CORE_MACHINE_MEDIA_RESULT_OK) {
+        core_machine_hdc_fail(hdc, media_result == CORE_MACHINE_MEDIA_RESULT_INVALID_RANGE ?
+            CORE_MACHINE_HDC_ERROR_ID_NOT_FOUND : CORE_MACHINE_HDC_ERROR_ABORT);
+        return 0;
+    }
+    return 1;
 }
 
 static C_VOID core_machine_hdc_identify(core_machine_hdc *hdc)
@@ -456,7 +383,9 @@ static C_VOID core_machine_hdc_begin_read(core_machine_hdc *hdc)
 
 static C_VOID core_machine_hdc_begin_write(core_machine_hdc *hdc)
 {
-    if (!core_machine_hdc_load_sector(hdc)) return;
+    STD_SIZE_T offset;
+
+    if (!core_machine_hdc_resolve_sector(hdc, TYPE_TRUE, &offset)) return;
     hdc->data.phase = CORE_MACHINE_HDC_PHASE_DATA_WRITE;
     hdc->data.sectors_remaining = hdc->data.sector_count == 0u ? 256u :
         hdc->data.sector_count;
