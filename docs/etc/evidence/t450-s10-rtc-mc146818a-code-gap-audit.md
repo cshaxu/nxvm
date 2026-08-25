@@ -10,7 +10,7 @@ and composition paths supply board inputs only. Focused proof is
 `tests/machine/core_machine_rtc_smoke.c`, `core_machine_rtc_cmos_s3_smoke.c`,
 `core_machine_dma_rtc_authority_smoke.c`, `vm_cmos_rtc_port_smoke.c`, and
 `vm_model_339_clock_contract_smoke.c`. Every nonconforming row transfers once
-to the queued [Core RTC CMOS phase contract](../../proposals/m5-core-rtc-cmos-phase-contract.md).
+to the accepted [Core RTC CMOS phase contract](../../history/M5-T463-core-rtc-cmos-phase-contract-proposal.md).
 No source or test is modified by this audit.
 
 ## Row Dispositions
