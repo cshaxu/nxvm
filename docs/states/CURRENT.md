@@ -2,6 +2,25 @@
 
 ## Current Work
 
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation `T466 S9`, single-person coordinator then executor then coordinator actual-change review. |
+| Admission And Approval | Owner request is the persistent four-controller completion objective, reaffirmed in this thread on 2026-08-25; T466 already owns the selected VADP contract. S8 accepted the exact F2 baseline gap. No exception is requested. |
+| Objective | Repair the generated generic-BIOS color-CRTC route so selected EGA modes write their existing controller state through the sole VADP owner; prove the mode-10 guest replay reaches the retained 640x350 planar snapshot. |
+| Non-goals | Do not change VADP reset semantics, create BDA coupling, a second renderer/VRAM path, or derive mode E/F geometry in this S. Do not claim physical monitor/clock timing. |
+| Reference Baseline | `fd82abed` S8 acceptance; current `vm-ega-planar-system-smoke` passes while `vm-ega-mode10-boot-smoke` fails after BDA reports `10h`. The direct EGA routing rule is Manual L3 `VADP-R1`; S8 proves the active CRTC route is the missing mechanism. |
+| Candidate Proposal | [M5 Core VADP Phase Contract](../proposals/m5-core-vadp-phase-contract.md), S8 transfer. |
+| Files And ABI Surface | Expected: `src/vm/profile/default_profile/firmware/bios.h`, `tests/machine/vm_ega_mode10_boot_smoke.c`, `docs/etc/evidence/t450-s16-vadp-code-gap-audit.md`, `docs/history/M5-T466-core-vadp-phase-contract.md`, and this status file. No public ABI. |
+| Applicable Rules | `docs/design/ARCHITECTURE.md`: Core remains VADP state owner and VM BIOS writes only guest ports. `docs/rules/ARCHITECTURE.md`: one production route/no mutable layout exposure. `docs/design/CODING.md` and `docs/rules/CODING.md`: bounded cohesive firmware change, no wrapper or duplicate state. `docs/etc/operations/policy/source-policy.md`: no external code/firmware import. |
+| Verification | Build affected tests; run `vm-ega-planar-system-smoke`, `vm-ega-mode10-boot-smoke`, `core-machine-ega-external-port-smoke`, and relevant direct CRTC/mode tests; documentation governance and diff check. |
+| Expected Markers | `M5:T238:S3:EGA-PLANAR:SYSTEM:OK`; `M5:T285:S3:EGA-MODE10:BOOT:OK`; external-port and CRTC/mode smoke success markers. |
+| Asset Needs | Existing project-generated firmware and local IBM EGA evidence only; no asset acquisition or packaging. |
+| Reporting Requirements | Report the discovered single-route cause, retained ownership, tests, code-size count and any remaining F2 transfer only after complete P and coordinator review. |
+| Stop Conditions | Stop for a contradicting manual rule, an ABI/owner expansion, inability to prove the route with focused tests, or an unrelated source/import requirement. |
+| Exit Criteria | One real guest `3C2` color selection precedes the generic-BIOS color-CRTC sequences and remains their sole route; mode-10 replay observes the existing 640x350 frame and returns to text; no duplicate state/route; S16/history accurately retain remaining F2 work. |
+| Original Owner Request | Complete the remaining controllers using manual/external cross-check ledgers, L3 only when sourced, L2 otherwise, with minimalist implementation and no additive patchwork. |
+| Similar-Issue Sweep | The generated BIOS owns one color-route selection before its booted guest executes any retained `03D4/03D5` sequence; cursor/page writes inherit that same selected route. No reset default or snapshot capture override is added. |
+
 | Task | Compact progress |
 | --- | --- |
 | T466 S8 | Accepted: IBM D/E/10/F layout facts are Manual L3; the actual offset-only snapshot conflation and generated-firmware mode-10 frame failure are now a reproducible single-owner VADP receiver, not hidden behind BDA or renderer state. |

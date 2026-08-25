@@ -101,3 +101,16 @@ owns one repair across the existing generated-firmware port route and the sole
 VADP snapshot path; BDA coupling, a second renderer and a second VRAM route
 are excluded. F chained odd/even and alpha character generation remain
 separate later batches.
+
+## S9 Implementation Evidence
+
+The generic BIOS now makes its color-CRTC selection as one real `3C2` guest
+write before booting, so its existing color `3D4/3D5` mode programming reaches
+the sole VADP owner.  VADP now distinguishes enabled EGA output from the
+selected A000 planar map: reset/test-condition still make capture unavailable,
+the A000 graphics map produces the retained planar snapshot, and a non-planar
+map returns through the existing text snapshot.  This removes the prior
+`ega_planar_armed` conflation without adding a renderer, memory path, BDA
+dependency or public API.  The focused mode-10 and ROM EGA replays now pass;
+Offset-only E-versus-10 classification, F chained odd/even and alpha character
+generation remain explicitly transferred.

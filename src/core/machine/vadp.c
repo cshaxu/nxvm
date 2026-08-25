@@ -181,18 +181,23 @@ static C_VOID core_machine_vadp_high_res_palette(const t_vadp *adapter,
     }
 }
 
-static C_INT core_machine_vadp_ega_planar_active(const t_vadp *adapter)
+static C_INT core_machine_vadp_ega_output_active(const t_vadp *adapter)
 {
     return adapter != STD_NULL && adapter->data.ega_planar_enabled &&
-        adapter->data.ega_planar_armed &&
         adapter->data.ega_planar_vram != 0u &&
         adapter->data.ega_sequencer_configured &&
         (adapter->data.sequencer[0] & 0x03u) == 0x03u &&
         adapter->data.ega_controller_configured &&
-        (adapter->data.graphics[6] & 0x0cu) == 0x04u &&
         (adapter->data.graphics[5] & 0x04u) == 0u &&
-        (adapter->data.attribute[16] & 0x01u) != 0u &&
         adapter->data.attribute_display_enabled;
+}
+
+static C_INT core_machine_vadp_ega_planar_active(const t_vadp *adapter)
+{
+    return core_machine_vadp_ega_output_active(adapter) &&
+        adapter->data.ega_planar_armed &&
+        (adapter->data.graphics[6] & 0x0cu) == 0x04u &&
+        (adapter->data.attribute[16] & 0x01u) != 0u;
 }
 
 static type_unsigned_8 core_machine_vadp_rotate_right(type_unsigned_8 value, type_unsigned_8 count)
@@ -1842,9 +1847,11 @@ C_INT core_machine_vadp_capture_snapshot(t_vadp *adapter, t_ram *memory,
     core_machine_display_snapshot *out_snapshot)
 {
     if (adapter != STD_NULL && adapter->data.ega_planar_enabled) {
-        return core_machine_vadp_ega_planar_active(adapter) ?
-            core_machine_vadp_capture_ega_planar_snapshot(adapter, out_snapshot) :
-            TYPE_FALSE;
+        if (!core_machine_vadp_ega_output_active(adapter)) return TYPE_FALSE;
+        if (core_machine_vadp_ega_planar_active(adapter)) {
+            return core_machine_vadp_capture_ega_planar_snapshot(adapter, out_snapshot);
+        }
+        return core_machine_vadp_capture_text_snapshot(adapter, memory, out_snapshot);
     }
     if (core_machine_vadp_is_high_res_graphics_mode(adapter)) {
         return core_machine_vadp_capture_high_res_graphics_snapshot(adapter, memory,

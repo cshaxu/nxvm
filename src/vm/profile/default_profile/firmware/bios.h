@@ -281,6 +281,10 @@ $(label_post_boot_succ):  \n\
 xor bx, bx                \n\
 mov cx, 0001              \n\
 xor dx, dx                \n\
+mov dx, 03c2              \n\
+mov al, 01                \n\
+out dx, al                \n\
+xor dx, dx                \n\
 mov sp, fffe              \n\
  jmp 0000:7c00             \n"
 
