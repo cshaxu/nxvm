@@ -2,7 +2,26 @@
 
 ## Current Work
 
-**Idle.**
+## M5 T466 S1 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New |
+| Admission And Approval | Owner goal dated 2026-08-25 directs completion of the remaining controller tasks; T465 is closed. |
+| Objective | Reconcile the selected VADP source/function/timing ledger and current-code gap audit against original adapter manuals plus 86Box, MAME, PCjs, Bochs and QEMU. |
+| Non-goals | No display implementation, timing invention, host-presentation work, profile change, public ABI, source import or unrelated repair. |
+| Reference Baseline | `35e1a2b5`; retained VADP source/checklist and gap-audit evidence, selected Core VADP owner, Queue proposal. |
+| Candidate Proposal | [Core VADP phase contract](../proposals/m5-core-vadp-phase-contract.md). |
+| Files And ABI Surface | VADP research/audit/history/status/queue/proposal records only. No code, build, artifact or ABI change. |
+| Applicable Rules | Original selected adapter/board manuals control; emulator sources are read-only cross-checks; every finite row is Manual L3, Other/board L3, or fallback to L2; VADP does not own host time or memory transactions. |
+| Verification | Inspect each source row and five reference implementations, reconcile source tier and one code receiver per gap, then run documentation governance and `git diff --check`. |
+| Expected Markers | No unlabelled VADP row, no emulator extension presented as manual fact, one owner/receiver and explicit L2 for every unsourced term. |
+| Asset Needs | No source, firmware, display capture or guest media import. |
+| Reporting Requirements | Record selected adapter identity, original manual pages, external disagreements, every L2 boundary, code-gap receiver and no-new-path conclusion. |
+| Stop Conditions | Stop for missing selected manual, conflicting selected adapter identity, or a row without a truthful tier/receiver. |
+| Exit Criteria | All finite VADP source and code rows are cross-validated, source-labelled and assigned exactly one current owner/receiver. |
+| Original Owner Request | Complete remaining controllers source-first with minimalist single-owner implementation and explicit L2 rather than guessed timing. |
+| Similar-Issue Sweep | Re-read VADP CRTC/raster/status/aperture/reset, Core display/VRAM ownership, composition/presentation boundary, current tests and proposal/queue links. |
 
 
 ## Current Technical Baseline
