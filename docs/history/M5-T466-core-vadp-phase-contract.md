@@ -102,7 +102,7 @@ VADP snapshot path; BDA coupling, a second renderer and a second VRAM route
 are excluded. F chained odd/even and alpha character generation remain
 separate later batches.
 
-## S9 Implementation Evidence
+## S9 Accepted Evidence
 
 The generic BIOS now makes its color-CRTC selection as one real `3C2` guest
 write before booting, so its existing color `3D4/3D5` mode programming reaches
