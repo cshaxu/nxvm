@@ -2,6 +2,27 @@
 
 ## Current Work
 
+## M5 T462 S1 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New |
+| Admission And Approval | Owner approved single-person dual-role execution of the queue-first controller board-timing-contract candidate on 2026-08-24. This admits T462 S1 only. |
+| Objective | Freeze the finite PIC/DMA/PIT board-timing exception ledger, exact construction-field vocabulary, owner/caller sweep, validation matrix and migration decision needed before any runtime interface change. |
+| Non-goals | No runtime/source/build change, profile resolver, numeric timing invention, external source import, L4 electrical model, new controller state, runtime timing setter, callback, second scheduler or artifact update. |
+| Reference Baseline | `f8144830`; closed T456/T460/T461 histories and evidence; [Core controller board-timing contract](../proposals/m5-core-controller-board-timing-contract.md). |
+| Candidate Proposal | [Core controller board-timing contract](../proposals/m5-core-controller-board-timing-contract.md). |
+| Files And ABI Surface | `docs/etc/evidence/t462-s1-controller-board-timing-ledger.md`, `docs/etc/README.md`, `docs/states/CURRENT.md`, and T462 history only; no API or ABI change. |
+| Applicable Rules | README Task Reading Set; EXECUTION coverage-bearing ledger/lifecycle; DOCUMENT evidence indexing; ARCHITECTURE single owner, neutral dependency and copied value boundary; CODING no speculative wrapper/setter; source policy for existing evidence and any admitted observation. |
+| Verification | Sweep `core_machine_config`, clock/transaction contracts, PIC/DMA/PIT owners, scheduler, machine composition and existing profile factories; reconcile every frozen row to one disposition; documentation governance and diff hygiene. |
+| Expected Markers | `M5:T462:S1:CONTROLLER-BOARD-TIMING-LEDGER:OK`; every row has source/provenance, unit, validator, consumer, lifecycle, regression and receiver/disposition. |
+| Asset Needs | Existing Intel/IBM evidence from T456/T460/T461 and read-only code/evidence inspection; no new source is imported. |
+| Reporting Requirements | Record coverage universe, all retained L2 facts, L3 eligibility, candidate field versus rejected placeholder, current owner/caller and S2 migration surface. |
+| Stop Conditions | Stop for a field with no stable semantic unit, no single existing Core consumer, an unresolved primary-source claim, or a required new board/profile policy; retain it as L2 with a receiver rather than designing a placeholder. |
+| Exit Criteria | The durable ledger completely disposes PIC/DMA/PIT timing/topology exceptions; exact proposed S2 field set is finite and non-duplicative; every rejected/retained fact has a reason; no runtime code changes; documentation governance passes. |
+| Original Owner Request | Execute single-person dual-role implementation of L3-precision interfaces for all three controllers, allowing profile-provided L3 values or explicitly L2-derived deterministic ratios without provenance promotion. |
+| Similar-Issue Sweep | Inspect all clock-plan, transaction-contract, route-binding and controller dynamic-input surfaces; ensure no controller gets a separate timing plan, profile callback, mutable state path or scheduler. |
+
 ## Current Technical Baseline
 
 - **Current developer artifact:** target `vm-0-5-0461`; `nxvm_0_5_0461.exe` / `build/output/nxvm_0_5_0461.exe`, SHA-256 `D875AB15C1E63A3FFBBC1A064315AE9516773A65F70FC4783957FE21DE45829A`. It is built only from the stripped Release current-artifact route; Debug remains the current-gate route. T434 has one copied Core timing-plan publication route for default PC/AT, IBM 5170 Model 339 and Model-40 BYOB session composition.
@@ -26,7 +47,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T461 S3 | Accepted and closed: one Core PIT owner covers manual P1--P14 and one `OUT0 -> IRQ0 -> PIC refresh` route closes P15; P16--P18 remain explicit L2. Full current-gate is 294/294 and stripped artifact `nxvm_0_5_0461.exe` is recorded. [History](../history/M5-T461-core-pit-8254-phase-contract.md). |
+| T461 | Closed: one Core PIT owner covers manual P1--P14 and one `OUT0 -> IRQ0 -> PIC refresh` route closes P15; P16--P18 remain explicit L2. Full current-gate is 294/294 and stripped artifact `nxvm_0_5_0461.exe` is recorded. [History](../history/M5-T461-core-pit-8254-phase-contract.md). |
 | T460 | Closed: all 16 DMA rows are disposed through the sole `dma.c` owner; normal/compressed and M2M service phases have focused proof, the five-clock conversion remains explicit L2, serial current-gate is 294/294, and the stripped 0460 artifact is recorded. [History](../history/M5-T460-core-dma-8237a-phase-contract.md). |
 
 | T459 | Closed after S2 correction: `standard`/`turbo` remain stopped-session Console selections, but neither VM speed branch manufactures guest ticks. `Sleep(1)` is explicitly L2 HLT host-load backoff; true Standard pacing and Turbo fast-forward remain transferred to Core deadlines plus profile timebases. The full gate passes 294/294; current artifact `0.5.0459` is stripped Release-only. [History](../history/M5-T459-vm-session-speed-policy.md). |
@@ -35,8 +56,6 @@
 | T456 | Closed at L3: all 18 retained 8259A rows have focused proof or an explicit boundary; one CPU path, programmed cascade, corrected specific-EOI, command/poll lifecycle and default-IR7 acknowledgement remain PIC-owned. Full current-gate is 293/293. PIC-T3 L4 electrical timing is deliberately excluded. [History](../history/M5-T456-core-pic-8259a-phase-contract.md). |
 | T455 | Closed: the sole 8086 decoder-ledger guard now checks current decoder and timing owners instead of the retired monolithic layout; all 1,053 records and 292 current-gate tests pass. [History](../history/M5-T455-8086-decoder-ledger-guard-reconciliation.md). |
 | T454 | Closed: the three fixed-write Console catalog smokes have one CTest-owned build workspace each; serial and repeated parallel replays pass with no source-tree residue. The independent 8086 decoder-ledger guard failure is recorded as CPU debt. [History](../history/M5-T454-parallel-console-profile-smoke-isolation.md). |
-| T453 | Closed: fresh default tree uses one WinLibs toolchain family; the one FDC test include is corrected; 44 obsolete build trees are removed; current build operations are reduced to preset-backed commands. [History](../history/M5-T453-toolchain-build-tree-hygiene.md). |
-
 ## Recent Governance
 
 - **M5 Td S146 P1:** refined the queue-first controller board-timing candidate
