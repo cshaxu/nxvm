@@ -2,26 +2,9 @@
 
 ## Current Work
 
-## M5 T467 S1 Packet
-
-| Field | Required record |
+| Task | Compact progress |
 | --- | --- |
-| Identifier Mode | New; T467 S1, one-session coordinator, executor and closure review. |
-| Admission And Approval | The persistent owner objective approves completing the remaining controller tasks under the existing PIC/DMA/PIT/RTC source-ledger method. The next queued Core IBM CGA candidate is admitted after closed T466. No exception is requested. |
-| Objective | Freeze CGA Checklist 1: cross-check original IBM/Motorola material with 86Box, MAME, PCjs, Bochs and QEMU; assign every finite row Manual L3, bounded Other/board L3, or explicit L2 without implementation. |
-| Non-goals | Do not change Core, VADP, firmware, profiles, tests, artifacts, guest media, external sources, scheduler, renderer, state ownership or timing behavior. |
-| Reference Baseline | `028f30d8` closes T466 with one VADP owner. The T467 proposal freezes CGA reset/register/memory/frame/timing rows; T466's VADP ownership constraint remains mandatory. |
-| Candidate Proposal | [M5 Core IBM CGA Completeness](../proposals/m5-core-ibm-cga-completeness.md), S1 source archive and cross-model matrix. |
-| Files And ABI Surface | Expected: T467 history plus Checklist 1 evidence and current-status/proposal references only; no source, ABI, CMake, media or artifact changes. |
-| Applicable Rules | `docs/rules/EXECUTION.md`: finite convergence ledger and S1 evidence. `docs/rules/ARCHITECTURE.md` and `docs/rules/CODING.md`: retain sole VADP state/path. `docs/etc/operations/policy/source-policy.md`: sources and external implementations remain research only. `docs/rules/DOCUMENT.md`: concise linked records. |
-| Verification | Verify every frozen row has a source/provenance and disposition; inspect source quality, repository code references and external-model scope; run documentation governance and diff checks. |
-| Expected Markers | Checklist 1 contains the complete frozen CGA universe, per-row evidence tier and source ambiguity; no row gains L3 merely because an emulator implements it. |
-| Asset Needs | Existing owner-managed manual archive and read-only external source checkouts only. No asset, firmware, code or media import. |
-| Reporting Requirements | Record row count, original-source availability/OCR result, corroborator agreement or limits, every L2 transfer and no-code-change result. |
-| Stop Conditions | Stop S1 if no original source can be identified, a required source needs import, the universe cannot be finite, or an external-model finding contradicts the proposed boundary. |
-| Exit Criteria | Checklist 1 exhausts every selected CGA row with a cited source state and Manual/Other/board L3 or L2 disposition; documentation gates pass and no implementation is performed. |
-| Original Owner Request | Complete the remaining controllers through manual/external cross-check ledgers; accept L3 only when sourced and retain L2 only where no valid authority exists, without additive patchwork. |
-| Similar-Issue Sweep | Include every existing CGA port, B8000 aperture, CRTC/raster/status, snapshot and profile/firmware writer in the frozen universe; record EGA/CECG overlap as a boundary rather than duplicating it. |
+| T467 S1 | Accepted: the 17-row Checklist 1 uses rendered IBM/Motorola authority, labels 86Box/PCjs as corroborators and MAME/Bochs/QEMU as non-IBM-CGA boundaries. Thirteen selected digital/interface relations are Manual L3; CGA-F4/T2/T3/T4 remain explicit L2. No source or production path changed. |
 
 ## Current Technical Baseline
 
