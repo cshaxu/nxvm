@@ -6,7 +6,8 @@ VADP already has one construction-only board input: profile composition copies
 raster phase and status relation. No host clock, live setter, device callback
 or second scheduler participates.
 
-The selected Model 339 route is Board L3: its profile supplies the qualified
+The selected Model 339 route carries bounded Other L3 data through the
+Board-L3-capable receiver: its profile supplies the qualified 86Box-derived
 `315/1408` VADP clock ratio and the direct smoke emits
 `M5:T375:S2:MODEL339-CLOCK-CONTRACT:OK` and
 `M5:T375:S13:MODEL339-CGA-REFERENCE-CONTRACT:OK`. Its reset replay is covered
@@ -15,6 +16,7 @@ they flow through the same Board-L3-capable route but have no recorded source
 qualification. The IBM source supplies logical raster/status relations, not a
 selected Core-tick/ISA-wait conversion; no formula is invented.
 
-This closes CGA-T1/T2 at the correct boundary. Physical display-buffer
-contention, composite/monitor waveform and any absent light-pen lifecycle
-remain exact L2 inputs, not VADP timing defects.
+This closes the receiver and selected Model-339 cadence at the correct
+boundary. The unqualified default ratios, physical display-buffer contention,
+the ISA wait formula, composite/monitor waveform and any absent light-pen
+lifecycle remain exact L2 inputs, not VADP timing defects.

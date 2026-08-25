@@ -25,9 +25,10 @@
 
 ## Current Technical Baseline
 
-- **Current developer artifact:** target `vm-0-5-0466`; the stripped Release
-  `nxvm_0_5_0466.exe` and its SHA-256 are recorded at T466 closure. Debug
-  remains the current-gate route. T434 has one copied Core timing-plan
+- **Current developer artifact:** target `vm-0-5-0467`; the stripped Release
+  `nxvm_0_5_0467.exe` has SHA-256
+  `CD99B2E1A0F0AC0FB8982838BEC56237C29C1DA24BD9E5E3B608117B20EAF6C1`.
+  Debug remains the current-gate route. T434 has one copied Core timing-plan
   publication route for default PC/AT, IBM 5170 Model 339 and Model-40 BYOB
   session composition.
   T386 closes selected-device functional completeness at S29; its retained
