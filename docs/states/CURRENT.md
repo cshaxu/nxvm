@@ -39,6 +39,12 @@
 | T455 | Closed: the sole 8086 decoder-ledger guard now checks current decoder and timing owners instead of the retired monolithic layout; all 1,053 records and 292 current-gate tests pass. [History](../history/M5-T455-8086-decoder-ledger-guard-reconciliation.md). |
 ## Recent Governance
 
+- **M5 Td S147 P3:** made result simplicity enforceable: a correct repair must
+  consolidate duplicate paths, mirrored state, obsolete ownership, and avoidable
+  reverse dependencies when the admitted mechanism permits it. Closure records
+  the retained path and owner; forwarding wrappers and parallel compatibility
+  paths do not qualify as simplification. No runtime, API, or artifact changed.
+
 - **M5 Td S147 P2:** reconciled current support terminology (`states/CURRENT.md`,
   `type_status`, and completed T461/T462 evidence retention) and renamed the
   DMA-local reset helper without changing behavior, ABI, artifact, or ownership.

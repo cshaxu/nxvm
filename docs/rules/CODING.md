@@ -26,15 +26,22 @@ The concrete source tree and naming map is
 - Prefer an existing clear boundary over a duplicate abstraction. A helper,
   adapter, or compatibility layer needs a named responsibility and cannot
   merely forward the same object.
+- Optimize for the simplest correct resulting design, not the smallest local
+  diff. When a patch would preserve duplicate production paths, mirrored state,
+  split authority, or an avoidable reverse dependency, replace and consolidate
+  the affected mechanism at its owner instead of layering a workaround.
 - Repair a repeated mechanism defect at its owning boundary; do not add a
   duplicate side path. Separate code needs a real semantic, layout, lifetime,
-  or platform difference. Prefer a bounded owner-local helper to a broad
-  framework when it expresses the complete shared contract.
-- Treat new code as a cost with a named responsibility; prefer deletion,
-  consolidation or an existing narrow boundary over wrappers and parallel paths.
+  failure-boundary, or platform difference. Prefer a bounded owner-local helper
+  to a broad framework when it expresses the complete shared contract.
+- Treat new code as a cost with a named responsibility. An abstraction is
+  justified only when it removes duplicate implementation, state, or dependency
+  complexity; a forwarding wrapper or parallel compatibility path is not a
+  simplification.
 - A replacement removes its obsolete implementation, forwarding layer and
-  retired-path tests in the same task, unless evidence names a live caller and
-  behavioral reason. Report the actual code-size change under the execution rule.
+  retired-path tests in the same task, unless evidence names a live caller,
+  distinct behavior, and planned receiver. Report the actual code-size change
+  and retained paths under the execution rule.
 
 ## Test Boundaries
 

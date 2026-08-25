@@ -139,13 +139,19 @@ the admitted objective and non-goals. A revision that expands scope, risk,
 authority, or exit criteria requires renewed owner approval before work
 continues.
 
-**Code-size and cleanup.** Prefer the smallest cohesive change; non-positive
-net code is a design goal, not an admission or closure gate. A code-changing S
-records its counted tracked source/test paths, excluding documentation and
-generated/artifact paths. At closure, report added, removed and net lines with
-the method, and explain any material positive increase. Remove
+**Result simplicity, code-size and cleanup.** Prefer the simplest resulting
+mechanism, not merely the fewest edited lines. A local patch is insufficient
+when it leaves duplicate production paths, mirrored state, an obsolete owner,
+or a reversed dependency that the admitted work can correctly retire. A
+code-changing S records its counted tracked source/test paths, excluding
+documentation and generated/artifact paths. At closure, report added, removed
+and net lines with the method, identify the retained production path and state
+owner, and explain any material positive increase. Non-positive net code is a
+design goal, not an admission or closure gate: a broader cohesive replacement
+is required when it produces the simpler correct result. Remove
 obsolete/duplicate/unreachable code in the changed mechanism, or name each
-live retained path and reason in the evidence.
+live retained path, its distinct semantic reason, and its planned receiver in
+the evidence.
 
 The S brief is the task-specific delivery instruction recorded in the active
 packet, not an independent contract. A coordinator message may reproduce or
