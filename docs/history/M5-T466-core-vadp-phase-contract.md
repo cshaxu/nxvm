@@ -135,4 +135,23 @@ production path is profile firmware -> guest port transaction -> Core VADP ->
 copied snapshot.  No BDA classifier, renderer, VRAM route or public ABI was
 added.  F chained odd/even and alpha character generation remain explicit
 later batches; F3--F5 and T1--T5 retain their recorded L2 board/monitor/timing
-boundaries.
+ boundaries.
+
+## S14 Accepted Evidence
+
+The default PC/AT profile now declares the actual EGA Feature Control write at
+3DAh and Miscellaneous Output at 3C2h. Its cold-start and text-mode firmware
+select the colour CRTC through 3C2h before issuing retained 3D4h/3D5h writes.
+Every affected fixture likewise supplies the Manual-L3 D/E/10 tuple through
+the real VADP port route. The one VADP owner keeps CPU planar-window
+eligibility separate from recognised planar-frame geometry: an enabled but
+unknown tuple falls back through the existing CGA/text snapshot selection,
+while output-disabled EGA produces no frame.
+
+The fixed ownership flow is guest or firmware port/memory writes -> VADP sole
+state -> copied display snapshot -> VM presentation. Internal common, CGA,
+EGA and future VGA implementation boundaries may not duplicate mode, VRAM or
+frame state; later VGA is an extension of this route, not a second video path.
+The final serialized current gate passes 295/295, documentation governance
+passes, and the retained code contains no renderer, BIOS-state classifier,
+second VRAM path or public ABI.

@@ -17,6 +17,26 @@ static C_INT t386_s28_session_write(vm_session *session, type_unsigned_8 value)
         sizeof(value)) == TYPE_STATUS_OK;
 }
 
+static C_VOID t386_s28_select_ega_320(vm_session *session)
+{
+    core_machine_port_write(&session->core_machine->executor_port,
+        CORE_MACHINE_VADP_PORT_CRTC_INDEX, 0x01u);
+    core_machine_port_write(&session->core_machine->executor_port,
+        CORE_MACHINE_VADP_PORT_CRTC_DATA, 0x27u);
+    core_machine_port_write(&session->core_machine->executor_port,
+        CORE_MACHINE_VADP_PORT_CRTC_INDEX, 0x07u);
+    core_machine_port_write(&session->core_machine->executor_port,
+        CORE_MACHINE_VADP_PORT_CRTC_DATA, 0x00u);
+    core_machine_port_write(&session->core_machine->executor_port,
+        CORE_MACHINE_VADP_PORT_CRTC_INDEX, 0x12u);
+    core_machine_port_write(&session->core_machine->executor_port,
+        CORE_MACHINE_VADP_PORT_CRTC_DATA, 0xc7u);
+    core_machine_port_write(&session->core_machine->executor_port,
+        CORE_MACHINE_VADP_PORT_CRTC_INDEX, 0x13u);
+    core_machine_port_write(&session->core_machine->executor_port,
+        CORE_MACHINE_VADP_PORT_CRTC_DATA, 0x14u);
+}
+
 C_INT main(C_VOID)
 {
     vm_session *session = STD_NULL;
@@ -26,6 +46,7 @@ C_INT main(C_VOID)
     failed |= vm_model40_fixture_create("t386-s28-even.bin", "t386-s28-odd.bin", &session) !=
         TYPE_STATUS_OK || session == STD_NULL;
     if (!failed) {
+        t386_s28_select_ega_320(session);
         core_machine_port_write(&session->core_machine->executor_port,
             CORE_MACHINE_VADP_PORT_GRAPHICS_INDEX, 6u);
         core_machine_port_write(&session->core_machine->executor_port,
@@ -41,6 +62,7 @@ C_INT main(C_VOID)
     }
     if (!failed) {
         vm_session_reset(session);
+        t386_s28_select_ega_320(session);
         core_machine_port_write(&session->core_machine->executor_port,
             CORE_MACHINE_VADP_PORT_GRAPHICS_INDEX, 6u);
         core_machine_port_write(&session->core_machine->executor_port,

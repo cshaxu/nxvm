@@ -29,9 +29,18 @@ static C_INT vm_display_s5_enable_planar(vm_session *session)
     vm_display_s5_port_write(session, 0x03cfu, 0x00u);
     vm_display_s5_port_write(session, 0x03ceu, 6u);
     vm_display_s5_port_write(session, 0x03cfu, 0x05u);
+    vm_display_s5_port_write(session, 0x03c2u, 0x01u);
     (C_VOID)core_machine_port_read(&session->core_machine->executor_port, 0x03dau);
     vm_display_s5_port_write(session, 0x03c0u, 0x30u);
     vm_display_s5_port_write(session, 0x03c0u, 0x01u);
+    vm_display_s5_port_write(session, 0x03d4u, 0x01u);
+    vm_display_s5_port_write(session, 0x03d5u, 0x27u);
+    vm_display_s5_port_write(session, 0x03d4u, 0x07u);
+    vm_display_s5_port_write(session, 0x03d5u, 0x00u);
+    vm_display_s5_port_write(session, 0x03d4u, 0x12u);
+    vm_display_s5_port_write(session, 0x03d5u, 0xc7u);
+    vm_display_s5_port_write(session, 0x03d4u, 0x13u);
+    vm_display_s5_port_write(session, 0x03d5u, 0x14u);
     return 1;
 }
 

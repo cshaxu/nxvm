@@ -4,20 +4,20 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation `T466 S13`, single-person coordinator then executor then coordinator closure review. |
-| Admission And Approval | The persistent owner objective approves completion of the remaining controller tasks. S12 is accepted at `08ac04f1`; this final in-scope audit is the next linear T466 step. No exception is requested. |
-| Objective | Close the finite VADP ledger only if every R/F/T row is now either directly proven Manual/Other/board L3 or explicitly transferred as L2, and produce the verified stripped Release 0466 developer artifact. |
-| Non-goals | Do not add a renderer, adapter profile, board scheduler, guessed monitor model, BDA-derived Core state, or new controller behavior merely to make an L2 row look complete. |
+| Identifier Mode | Continuation `T466 S14`, single-person coordinator then executor then coordinator closure review. |
+| Admission And Approval | The persistent owner objective approves completion of the remaining controller tasks and the owner approved a new S. S13's serialized gate exposed stale VADP fixtures and one false profile port declaration; S14 is the necessary linear closure step. No exception is requested. |
+| Objective | Make the finite VADP gate describe only real controller state: retain exact CRTC tuples for planar snapshots and correct the sole default-PC/AT port declaration, then close the ledger with the verified stripped Release 0466 artifact. |
+| Non-goals | Do not reintroduce an implicit mode default, renderer, adapter profile, board scheduler, guessed monitor model, BDA-derived Core state, or new controller behavior merely to make an L2 row look complete. |
 | Reference Baseline | `08ac04f1` materializes the one generated INT 10h program in the fixed Video ROM slot, proves D/E/10 port-driven tuples, and retains the one VADP classifier. The authoritative universe is R1--R5, F1--F5 and T1--T5 in the T466 ledger. |
-| Candidate Proposal | [M5 Core VADP Phase Contract](../proposals/m5-core-vadp-phase-contract.md), completion audit. |
-| Files And ABI Surface | Expected: status/history/evidence and ignored `build/output/nxvm_0_5_0466.exe`; no public ABI or production-source change unless the audit finds one in-scope defect requiring a later corrective S. |
+| Candidate Proposal | [M5 Core VADP Phase Contract](../proposals/m5-core-vadp-phase-contract.md), fixture and declaration closure. |
+| Files And ABI Surface | Expected: current-artifact CMake/preset, T345 ownership-count verifier, default profile port declaration, affected VADP smoke fixtures, status/history/evidence and ignored `build/output/nxvm_0_5_0466.exe`; no public ABI and no second production path. VADP remains the one guest-state/port/mapping/snapshot owner; internal CGA/EGA/future-VGA boundaries cannot duplicate that state or create a parallel presentation route. The gate exposes the new retained-strict VM smoke as the one in-scope count revision. |
 | Applicable Rules | `docs/design/ARCHITECTURE.md` and `docs/rules/ARCHITECTURE.md`: one Core VADP owner and copied consumer boundary. `docs/design/CODING.md` and `docs/rules/CODING.md`: no duplicate production path or state mirror. `docs/rules/EXECUTION.md`: closure audit, documentation governance and stripped Release artifact. |
-| Verification | Re-run the affected EGA/ROM corpus; review all R1--R5/F1--F5/T1--T5 dispositions and source diff; build the release artifact, record hash, run documentation governance and diff checks. |
-| Expected Markers | The 14 focused EGA/ROM markers remain green; the 0466 artifact is stripped Release and `build/output` contains its hash-recorded executable. |
+| Verification | Re-run the affected profile/display corpus and the full serialized current gate; review all R1--R5/F1--F5/T1--T5 dispositions and source diff; build the release artifact, record hash, run documentation governance and diff checks. |
+| Expected Markers | Every planar fixture programs its sourced CRTC tuple; the default profile accurately declares `3DAh` write ownership; the 0466 artifact is stripped Release and `build/output` contains its hash-recorded executable. |
 | Asset Needs | Existing local IBM EGA scan and project-owned firmware only; no source, firmware image or asset import. |
 | Reporting Requirements | Record the finite ledger result, retained owner/path, code-size count, artifact identity/hash, and every explicit L2 transfer. |
-| Stop Conditions | Stop closure if a ledger row remains undisposed, a focused regression fails, the artifact cannot be built, or an audit defect needs unapproved scope. |
-| Exit Criteria | Every finite VADP row is proven or explicitly transferred; the focused corpus, artifact and governance gates pass; history/status record the closure without a second renderer, VRAM path or BIOS-state dependency. |
+| Stop Conditions | Stop closure if a ledger row remains undisposed, a focused regression fails, the artifact cannot be built, or a defect requires a second production path. |
+| Exit Criteria | Every finite VADP row is proven or explicitly transferred; profile declarations and fixtures describe real port-driven state; the full serialized gate, artifact and governance gates pass; history/status record the closure without a second renderer, VRAM path or BIOS-state dependency. |
 | Original Owner Request | Complete the remaining controllers using manual/external cross-check ledgers, L3 only when sourced, L2 otherwise, with minimalist implementation and no additive patchwork. |
 | Similar-Issue Sweep | Reinspect all VADP geometry, ROM fixed-service placement, state ownership and residual L2 rows; reject an apparent closure that relies on an implicit mode default, a stale test fixture or an unrecorded physical assumption. |
 
@@ -32,7 +32,11 @@
 
 ## Current Technical Baseline
 
-- **Current developer artifact:** target `vm-0-5-0465`; `nxvm_0_5_0465.exe` / `build/output/nxvm_0_5_0465.exe`, SHA-256 `410981B728E7FEE4BC199C7593AF0DE2A692546A22AB2D2A5B62988600C243C9`. It is built only from the stripped Release current-artifact route; Debug remains the current-gate route. T434 has one copied Core timing-plan publication route for default PC/AT, IBM 5170 Model 339 and Model-40 BYOB session composition.
+- **Current developer artifact:** target `vm-0-5-0466`; the stripped Release
+  `nxvm_0_5_0466.exe` and its SHA-256 are recorded at T466 closure. Debug
+  remains the current-gate route. T434 has one copied Core timing-plan
+  publication route for default PC/AT, IBM 5170 Model 339 and Model-40 BYOB
+  session composition.
   T386 closes selected-device functional completeness at S29; its retained
   [closure audit](../etc/evidence/t386-s29-functional-closure-audit.md) fixes
   HDC current-gate coverage and transfers board, firmware and physical work.

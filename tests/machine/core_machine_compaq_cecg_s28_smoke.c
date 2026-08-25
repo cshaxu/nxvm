@@ -16,6 +16,18 @@ static C_INT t386_s28_read(t_ram *memory, type_unsigned_8 *value)
         (type_virtual_address)value, sizeof(*value)) == TYPE_STATUS_OK;
 }
 
+static C_VOID t386_s28_select_ega_320(t_port *port)
+{
+    core_machine_port_write(port, CORE_MACHINE_VADP_PORT_CRTC_INDEX, 0x01u);
+    core_machine_port_write(port, CORE_MACHINE_VADP_PORT_CRTC_DATA, 0x27u);
+    core_machine_port_write(port, CORE_MACHINE_VADP_PORT_CRTC_INDEX, 0x07u);
+    core_machine_port_write(port, CORE_MACHINE_VADP_PORT_CRTC_DATA, 0x00u);
+    core_machine_port_write(port, CORE_MACHINE_VADP_PORT_CRTC_INDEX, 0x12u);
+    core_machine_port_write(port, CORE_MACHINE_VADP_PORT_CRTC_DATA, 0xc7u);
+    core_machine_port_write(port, CORE_MACHINE_VADP_PORT_CRTC_INDEX, 0x13u);
+    core_machine_port_write(port, CORE_MACHINE_VADP_PORT_CRTC_DATA, 0x14u);
+}
+
 C_INT main(C_VOID)
 {
     const core_machine_vadp_cecg_config config = {
@@ -62,6 +74,7 @@ C_INT main(C_VOID)
         CORE_MACHINE_VADP_PORT_EGA_MISCELLANEOUS_OUTPUT) ||
         core_machine_port_has_read(&generic_port,
         CORE_MACHINE_VADP_PORT_COMPAQ_CONTROL_MODE);
+    t386_s28_select_ega_320(&port);
     core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_GRAPHICS_INDEX, 6u);
     core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_GRAPHICS_DATA, 0x07u);
     failed |= !t386_s28_write(&memory, 0x80u) || !t386_s28_read(&memory, &value) ||
@@ -78,6 +91,7 @@ C_INT main(C_VOID)
         !core_machine_vadp_capture_snapshot(&vadp, &memory, &snapshot) ||
         snapshot.pixels[0] != 15u || !snapshot.buffer_changed;
     core_machine_vadp_reset(&vadp);
+    t386_s28_select_ega_320(&port);
     core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_GRAPHICS_INDEX, 6u);
     core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_GRAPHICS_DATA, 0x07u);
     failed |= !t386_s28_read(&memory, &value) || value != 0u ||

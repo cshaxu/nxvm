@@ -98,6 +98,7 @@ C_VOID vm_profile_default_cga_reset(vm_profile_default_context *profile,
     core_machine_firmware_context *firmware)
 {
     if (profile == STD_NULL) return;
+    (C_VOID)core_machine_firmware_port_write(firmware, 0x03c2u, 0x01u);
     (C_VOID)core_machine_firmware_port_write(firmware, 0x03d8u,
         0x05u);
     if (profile->firmware_slot ==
