@@ -42,3 +42,12 @@ Every direct `core_machine_rtc_config` initializer was converted to designated
 initialization, every RTC reset expectation was reviewed for the manual's
 calendar retention rule, and every controller-timing-rule initializer received
 the new RTC member. No generic century reference remains.
+
+## S3 Closure Inputs
+
+The tracked source/test surface in P2 is +368/-177, net +191 lines by `git
+diff --numstat -- src tests`. The positive result replaces the prior partial
+calendar path with the required divider, phase and copied-plan state; no old
+production RTC path remains. Full Debug current gate ran all 294 registered
+tests successfully (`current-gate = 116.25 sec*proc`), and the stripped Release
+0463 artifact hash is recorded in CURRENT.md.

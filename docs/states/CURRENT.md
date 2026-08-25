@@ -2,11 +2,30 @@
 
 ## Current Work
 
-**Active.** T463 remains open between accepted subtasks.
+## M5 T463 S3 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner-approved T463 goal dated 2026-08-24; S1 and S2 are accepted in the retained progress table. This final S is the proposal's convergence, verification and release batch. No exception is approved. |
+| Objective | Independently audit the accepted RTC phase owner, prove the complete current gate, create the required stripped Release `nxvm_0_5_0463.exe`, and close T463 only if every ledger disposition and source-quality requirement is evidenced. |
+| Non-goals | No new RTC behavior, host-clock route, timing setter, guest media, external-code import, unrelated refactor, or rule change. A discovered defect stops closure and becomes a bounded corrective S. |
+| Reference Baseline | `ad80dad5`; accepted S2 evidence `t463-s2-rtc-phase-owner.md`; current artifact baseline 0462. |
+| Candidate Proposal | [M5 Core RTC CMOS Phase Contract](../proposals/m5-core-rtc-cmos-phase-contract.md), S1 source ledger, S10 gap audit, and S2 evidence. This S consumes the complete R1-R4/F1-F7/T1-T5 closure set. |
+| Files And ABI Surface | Expected only T463 evidence/history/status/release records, the generated artifact, and the current-artifact CMake/preset version declarations. Runtime source changes are prohibited unless a discovered correctness defect requires a new corrective packet. |
+| Applicable Rules | `EXECUTION.md`: full actual-diff review, task closure audit, source/test line accounting and immediate push. `ARCHITECTURE.md`: one Core RTC owner and immutable profile inputs. `CODING.md`: no retained duplicate path or unjustified wrapper. `DOCUMENT.md`: accurate L2/L3/L4 boundary and release records. |
+| Verification | Rebuild the full current gate, run all registered current-gate tests, run documentation governance, build the stripped Release artifact and record its SHA-256. Inspect committed source and ledger-to-proof mapping before closure. |
+| Expected Markers | 294/294-or-current full gate, `build/output/nxvm_0_5_0463.exe`, recorded SHA-256, T463 history, no unclassified RTC ledger member. |
+| Asset Needs | Existing local build toolchain only; no source, firmware, guest-media or third-party asset import. |
+| Reporting Requirements | Report the full-gate count, artifact hash, source/test added/removed/net count for P2, retained owner/path, all L2/L4 boundaries and any transfer. Coordinator actual-diff review precedes T closure. |
+| Stop Conditions | Stop if a gate fails, Release artifact cannot be produced, current code contradicts the manuals/evidence, a new defect needs source change, or any ledger row lacks a truthful disposition. |
+| Exit Criteria | Full gate and documentation governance pass; stripped artifact is recorded; all 16 ledger rows map to code/proof or an explicit retained L2/L4 boundary; actual changes are reviewed; no uncommitted changes remain after pushed closure. |
+| Original Owner Request | Complete the Core RTC/CMOS phase contract with manual-defined function/timing behavior and a minimalist audited architecture. |
+| Similar-Issue Sweep | Re-check every RTC construction caller, direct calendar/register access, reset call, controller timing declaration and public artifact route. Ensure no other controller was accidentally altered. |
 
 ## Current Technical Baseline
 
-- **Current developer artifact:** target `vm-0-5-0462`; `nxvm_0_5_0462.exe` / `build/output/nxvm_0_5_0462.exe`, SHA-256 `3E93ECCEF5ED8AC904EE63ECA081F966E9611C98F2912263CFF213F0D1D6D4AA`. It is built only from the stripped Release current-artifact route; Debug remains the current-gate route. T434 has one copied Core timing-plan publication route for default PC/AT, IBM 5170 Model 339 and Model-40 BYOB session composition.
+- **Current developer artifact:** target `vm-0-5-0463`; `nxvm_0_5_0463.exe` / `build/output/nxvm_0_5_0463.exe`, SHA-256 `AFA07C1DF22C624B3E1562E002F9FBC92F55AE4EB64DA254EF7F4DA75C34C7FB`. It is built only from the stripped Release current-artifact route; Debug remains the current-gate route. T434 has one copied Core timing-plan publication route for default PC/AT, IBM 5170 Model 339 and Model-40 BYOB session composition.
   T386 closes selected-device functional completeness at S29; its retained
   [closure audit](../etc/evidence/t386-s29-functional-closure-audit.md) fixes
   HDC current-gate coverage and transfers board, firmware and physical work.
