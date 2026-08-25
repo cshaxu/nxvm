@@ -2,24 +2,24 @@
 
 ## Current Work
 
-## M5 T462 S2 Packet
+## M5 T462 S3 Packet
 
 | Field | Required record |
 | --- | --- |
 | Identifier Mode | Continuation |
-| Admission And Approval | Coordinator accepted S1 implementation `e88124db` after actual ledger/diff review and documentation governance. Owner-approved single-person dual-role execution admits S2 only on 2026-08-24. |
-| Objective | Add the smallest copied controller-rule qualification to the existing Core plan so PIT clock and DMA clock/service may be selected as source-backed L3 only with valid existing values, while PIC visibility and all unsupported values remain explicit L2. |
+| Admission And Approval | Coordinator accepted S2 implementation `df6d28a7` after actual code/test/diff review and documentation governance. Owner-approved single-person dual-role execution admits S3 only on 2026-08-24. |
+| Objective | Have VM profile descriptors select the accepted copied PIT/DMA rules and existing ratios, prove their existing controller-owner consumption/reset behavior, and preserve default/PIC L2 fallbacks. |
 | Non-goals | No new clock domain, scheduler, controller state, route callback, runtime timing setter, profile name in Core, host time, L4 work, DMA five-clock numeric invention, PIC elapsed-delay field, topology expansion, or artifact update. |
-| Reference Baseline | `e88124db`; accepted T462 S1 ledger; closed T434 plan boundary and T456/T460/T461 controller contracts. |
+| Reference Baseline | `df6d28a7`; accepted T462 S1 ledger and S2 plan-rule proof; T375 Model-339 clock evidence and closed T456/T460/T461 contracts. |
 | Candidate Proposal | [Core controller board-timing contract](../proposals/m5-core-controller-board-timing-contract.md). |
-| Files And ABI Surface | `machine_interface.h`, `machine.h`, `machine_plan.c`, `machine.c`, `tests/core/core_machine_plan_smoke.c`, focused plan tests and T462 evidence/current/history; Core public construction-plan value types only. |
+| Files And ABI Surface | VM default-profile descriptor/contract and session plan materialization, focused Model-339/default-profile/controller regressions and T462 evidence/current/history; no new Core API or runtime device ABI. |
 | Applicable Rules | README Task Reading Set; EXECUTION S/P lifecycle and code-size accounting; DOCUMENT evidence indexing; ARCHITECTURE single copied plan and neutral dependency; CODING minimal durable public header/no wrapper; source policy; specification-driven L3 timing design. |
-| Verification | Add focused plan construction/copy/rejection tests for every controller rule/value combination; sweep `core_machine_create`, `core_machine_create_from_plan`, plan validation, all plan factories and timing declarations; configured build, focused CTest, documentation governance and diff hygiene. |
-| Expected Markers | `M5:T462:S2:CONTROLLER-RULE-PLAN:OK`; `M5:T462:S2:CONTROLLER-RULE-REJECTION:OK`; no duplicate clock/transaction/route owner. |
+| Verification | Sweep all profile descriptors and plan factories; prove Model-339 selects sourced PIT/DMA rules with existing clocks, default remains L2, reset replays values, DMA/PIT service/route paths remain single-owner; configured build, focused regressions, documentation governance and diff hygiene. |
+| Expected Markers | `M5:T462:S3:CONTROLLER-PROFILE-SELECTION:OK`; `M5:T462:S3:CONTROLLER-OWNER-CONSUMPTION:OK`; no duplicate clock/transaction/route owner. |
 | Asset Needs | T462 S1 ledger and existing Core/profile sources only; no external import. |
-| Reporting Requirements | Record exact public value types, valid/invalid matrix, copied-lifetime proof, selected L3 versus explicit L2 dispositions, source/test line counts and removed/reused paths. |
-| Stop Conditions | Stop if an L3 rule requires a profile-specific source name in Core, an unqualified numeric conversion, a new dynamic callback or topology; retain L2 and transfer it to S3/S4 or a later task. |
-| Exit Criteria | Plan has one typed controller qualification, validates/copies it before machine publication, allows only PIT/DMA ledger-approved L3 selections with required existing values, rejects invalid combinations, preserves PIC L2, and introduces no second timing path. |
+| Reporting Requirements | Record profile-selected values, copied plan declarations, dynamic-input ownership, source/test line counts and every retained L2 boundary. |
+| Stop Conditions | Stop if a profile needs a Core name, unqualified numeric conversion, new dynamic callback or topology; retain L2 and transfer it to S4 or a later task. |
+| Exit Criteria | Model-339 selects qualified PIT/DMA rules through descriptor to copied plan, default and PIC remain L2, existing controller execution/reset is proven, and no second timing path is introduced. |
 | Original Owner Request | Execute single-person dual-role implementation of L3-precision interfaces for all three controllers, allowing profile-provided L3 values or explicitly L2-derived deterministic ratios without provenance promotion. |
 | Similar-Issue Sweep | Sweep config and plan create paths, all VM plan factories, timing declaration validation, clock/transaction consumers and controller dynamic inputs; remove any superseded construction route rather than layering another plan. |
 
@@ -47,6 +47,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T462 S2 | Accepted at `df6d28a7`: the one copied plan rule value permits qualified PIT/DMA L3 declarations only with explicit existing ratios and service rule, rejects invalid combinations, and keeps PIC L2. [Evidence](../etc/evidence/t462-s2-controller-rule-plan.md). |
 | T462 S1 | Accepted at `e88124db`: 11 PIC/DMA/PIT board-timing rows are frozen with one disposition; existing `clock_plan`/transaction owners are reused, no placeholder route/delay field is allowed, and S2 is admitted for the one copied rule qualification. [Evidence](../etc/evidence/t462-s1-controller-board-timing-ledger.md). |
 | T461 | Closed: one Core PIT owner covers manual P1--P14 and one `OUT0 -> IRQ0 -> PIC refresh` route closes P15; P16--P18 remain explicit L2. Full current-gate is 294/294 and stripped artifact `nxvm_0_5_0461.exe` is recorded. [History](../history/M5-T461-core-pit-8254-phase-contract.md). |
 | T460 | Closed: all 16 DMA rows are disposed through the sole `dma.c` owner; normal/compressed and M2M service phases have focused proof, the five-clock conversion remains explicit L2, serial current-gate is 294/294, and the stripped 0460 artifact is recorded. [History](../history/M5-T460-core-dma-8237a-phase-contract.md). |
