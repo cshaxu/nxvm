@@ -39,6 +39,12 @@
 
 ## Recent Governance
 
+- **M5 Td S146 P1:** refined the queue-first controller board-timing candidate
+  into construction-only typed values, retained dynamic device inputs, and
+  bounded S1--S4 ownership. It prohibits live timing setters and preserves L2
+  provenance after deterministic ratio normalization. No runtime or artifact
+  changed.
+
 - **M5 Td S145 P1:** placed the Core controller board-timing-contract candidate
   first in Queue. Its proposal freezes the PIC/DMA/PIT L2 exception ledger and
   requires one copied profile-value-to-Core-owner path; exact arithmetic from

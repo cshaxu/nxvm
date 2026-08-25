@@ -57,22 +57,61 @@ unsupported.  No row may be silently promoted by a guest boot or by arithmetic.
    wall time.  Complete the current gate and the required current Release
    artifact after the implementation task is admitted.
 
+## Contract Shape And Ownership
+
+The contract is construction input, not a runtime timing-setter surface.  A
+profile resolver writes neutral values once; Core validates and copies them;
+the existing shared timeline advances the existing controller owner.  A profile
+never changes a selected ratio, delay or route after construction.  Rebuilding
+or resetting a machine selects a new validated contract; it does not mutate a
+live controller through a profile callback.
+
+The implementation must first determine whether the existing clock-plan and
+transaction-contract fields can be consolidated directly.  If a new nested
+value is necessary, it replaces rather than shadows the affected existing
+input.  It contains only typed values and neutral contract IDs, never a
+machine name, controller pointer, function pointer or generic `delay` field.
+
+| Owner | Eligible construction fields | Existing runtime inputs retained | Prohibited shape |
+| --- | --- | --- | --- |
+| PIT | Input-clock rational ratio, reset phase, selected OUT route and selected GATE-source contract IDs. | `core_machine_pit_set_gate` remains a dynamic board signal; `pit.c` retains count/mode/OUT state. | A live frequency/delay setter, profile-owned PIT state or a second PIT tick loop. |
+| DMA | Input-clock rational ratio, admitted service-phase contract ID and admitted refresh/DRQ route ID; selected values must feed the existing transaction/arbitration contract. | DREQ, EOP, BUSRDY and transaction lifecycle remain dynamic inputs at their current owners. | A per-transfer cycles setter, direct board mutation of DMA phase, or a DMA-local scheduler. |
+| PIC | Programmed cascade/IRQ route ID and, only if source-backed with a Core tick meaning, a discrete request-visible contract ID. | IRQ source assertion/deassertion and PIC acknowledgement remain dynamic inputs at their current owners. | A naked nanosecond/delay setter, a clocked PIC loop without a source-backed contract, or profile-owned IRR/ISR state. |
+
+The existing Core elapsed-tick path is the only timing driver:
+
+`CPU retirement/timeline -> validated clock or transaction term -> controller
+owner -> existing route/observation`.
+
+An L2 ratio may be normalized outside Core into an exact integer or rational
+value so that the owner executes deterministically.  Its profile provenance
+and the selected fallback contract remain L2; Core observations must not label
+the resulting board interval as source-backed L3.  A source-backed L3 value
+must name its rule, conversion, lifecycle and focused proof in the S1 ledger.
+
 ## Planned Subtasks
 
-1. **S1 - finite ledger and contract design.** Reconcile every retained
-   PIC/DMA/PIT L2 row with actual owners and callers; define the minimum value
-   vocabulary, validation matrix, source/provenance record and migration set.
-   No runtime change.
-2. **S2 - one copied plan boundary.** Implement and validate the smallest
-   immutable board-timing input at the existing Core configuration boundary;
-   migrate existing clock/transaction inputs without a parallel legacy path.
-3. **S3 - controller consumption and proof.** Bind the admitted PIC/DMA/PIT
-   values at their current owners, delete superseded plumbing, and prove route,
-   phase, reset and rejection behaviour using the frozen ledger.
-4. **S4 - closure and profile-export audit.** Verify provenance preservation,
-   no profile-to-device reverse dependency, all ledger dispositions, current
-   gate and artifact; transfer any unqualified board/electrical facts rather
-   than encoding guesses.
+1. **S1 - finite ledger, field vocabulary and migration decision.** Reconcile
+   every retained PIC/DMA/PIT L2 row with actual owners and callers.  For every
+   prospective field, record its unit, source/provenance, validator, consumer,
+   reset/cancellation semantics and regression.  Decide field-by-field whether
+   existing clock/transaction input absorbs it or one replacement nested value
+   is needed.  No runtime change.
+2. **S2 - one copied construction-plan boundary.** Implement the accepted
+   typed values and contract IDs at the existing Core configuration boundary;
+   validate/copy them before machine construction and delete superseded input
+   plumbing.  Prove that invalid ratios, phases, routes and contract IDs reject
+   before publication, with no profile callback or device-pointer escape.
+3. **S3 - PIT and DMA owner consumption.** Bind PIT's clock/route/GATE contract
+   and DMA's clock/service/refresh contract at their existing owners.  Prove
+   the shared-timeline path, route selection, service/reset/cancellation and
+   explicit L2 fallback provenance; do not add a PIT/DMA setter or scheduler.
+4. **S4 - PIC consumption and whole-contract closure.** Bind PIC's selected
+   route and any qualified discrete visibility contract through its existing
+   acknowledgement path, or retain the current logical L2 fallback where no
+   source admits a field.  Audit all ledger dispositions, provenance,
+   controller order, profile-direction boundary, current gate and artifact;
+   transfer unqualified electrical facts rather than encoding guesses.
 
 ## Non-goals And Stop Conditions
 
