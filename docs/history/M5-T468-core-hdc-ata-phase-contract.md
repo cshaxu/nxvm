@@ -50,3 +50,14 @@ authority static gates. The portal verifier now follows the post-T434 plan
 route rather than asserting a removed VM-to-Core private topology path. No
 public ABI, controller/device/media selection, DMA path, timing value or
 product artifact changed.
+
+## S4 Accepted Evidence
+
+S4 replaces four separate CHS/LBA read/write preparations with one HDC-local
+logical-sector resolver. Read, write completion and write admission retain one
+validation owner; the latter no longer reads the destination. The focused
+regression proves a permanent provider read failure does not prevent an
+otherwise valid write, while the Core/VM ATA and Compaq/Model-40 HDC smokes and
+controller authority gates remain green. The change is 42 added / 100 removed
+tracked source-and-test lines (-58); it adds no media cache, provider contract,
+controller selection, board timing or public ABI.
