@@ -12,15 +12,17 @@ state-transition rule, not a claim about host time or electrical waveform.
 External implementations are read-only corroboration, never imported or made
 normative: [86Box PIT](https://github.com/86Box/86Box/blob/master/src/pit.c),
 [MAME PIT8253/8254](https://github.com/mamedev/mame/blob/master/src/devices/machine/pit8253.cpp),
-[PCjs PIT](https://github.com/jeffpar/pcjs/blob/master/machines/pcx86/modules/v2/pit.js),
 [Bochs 82C54](https://github.com/bochs-emu/Bochs/blob/master/bochs/iodev/pit82c54.cc),
 and [QEMU i8254](https://github.com/qemu/qemu/blob/master/hw/timer/i8254.c).
 They independently model counter-local control/count/latch/gate/output state;
 their host-time adapters and platform speaker wiring are outside this ledger.
+PCjs was requested but its current public tree did not yield a PIT source at
+the historical path; it is recorded as unavailable corroboration and no row
+depends on it.
 
 | ID | Selected contract and Intel provenance | Cross-check disposition | Required level |
 | --- | --- | --- | --- |
-| P1 | Three independent counters; ports select counter 0--2/control. Manual pp. 3--5, Fig. 4, Fig. 14. | All five models retain three counter-local state records. | Manual-L3 |
+| P1 | Three independent counters; ports select counter 0--2/control. Manual pp. 3--5, Fig. 4, Fig. 14. | All inspected models retain three counter-local state records. | Manual-L3 |
 | P2 | Control word: SC, RW, modes 0--5 (6=2, 7=3), binary/BCD. Manual p. 5, Fig. 7. | 86Box/MAME/Bochs/QEMU normalize aliases and retain BCD. | Manual-L3 |
 | P3 | Count write obeys LSB/MSB/LSB-then-MSB; two-byte write becomes effective only after byte two. Manual pp. 5--6. | All observed models retain write-byte state. | Manual-L3 |
 | P4 | Binary zero denotes 65536; BCD zero denotes 10000. Manual mode definitions pp. 9--13. | 86Box/MAME/Bochs/QEMU explicitly expand both zero values. | Manual-L3 |
