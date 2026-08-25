@@ -2,6 +2,27 @@
 
 ## Current Work
 
+## M5 T466 S8 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner goal dated 2026-08-25 directs completion of the remaining controller tasks; accepted T466 S7 permits the next finite VADP-F2 graphics-mode batch. |
+| Objective | Reconcile the complete VADP-F2 IBM mode-layout batch against current code and prove the earliest single-owner receiver for the observed D/E/10 snapshot and generated-firmware port-programming gaps. |
+| Non-goals | No speculative geometry heuristic, F-mode odd/even implementation, alpha character generation, BIOS mode parser, VADP clock conversion, monitor model, board contention, profile policy or mutable mode setter. |
+| Reference Baseline | `9cf7577d`; IBM EGA pp. 5--10, VADP-F2 ledger/audit, current planar provider/snapshot path, mode-10 and EGA planar tests. |
+| Candidate Proposal | [Core VADP phase contract](../proposals/m5-core-vadp-phase-contract.md). |
+| Files And ABI Surface | VADP F2 checklist/audit/history/status and focused test evidence only. The next implementation S owns `vadp.c`, generated firmware and exact D/E/10 tests; no public configuration API or additional state owner. |
+| Applicable Rules | IBM manual is primary. Core VADP exclusively owns register/plane state and copied snapshot construction. CRTC programmed geometry, not a guessed BIOS number or a host renderer, selects the frame arrangement. Preserve one VRAM/provider route and one copied-frame boundary. |
+| Verification | Visually review IBM mode and memory-layout pages; cross-check limited layout facts against labelled external EGA/VGA models; replay direct and VM mode-10 evidence before and after the audit; run diff and documentation gates. |
+| Expected Markers | Every F2 mode class has a Manual L3 or explicit L2 disposition; current offset-only D/10 classification and the failing generated-firmware-to-VADP observation are recorded as one in-scope receiver, not concealed by a new renderer or BDA coupling. |
+| Asset Needs | No source, firmware, display capture or guest-media import; temporary manual renders stay untracked. |
+| Reporting Requirements | Record the exact Manual L3 mode facts, limited external corroboration, the mode-10 replay result, one earliest implementation receiver, and zero production code lines in this reconciliation S. |
+| Stop Conditions | Stop if the manual does not distinguish a layout, if the receiver would require a second renderer/VRAM route, or if an external model conflicts with the IBM layout rather than clarifying an explicit L2 boundary. |
+| Exit Criteria | The finite F2 layout batch is fully disposed, including a reproducible current mode-10 failure and one next implementation scope that will repair the production route without a BDA/host shortcut. |
+| Original Owner Request | Complete remaining controllers source-first with minimalist single-owner implementation and explicit L2 rather than guessed timing. |
+| Similar-Issue Sweep | Inspect all display-kind switches, planar snapshot dimensions/stride/start address, CRTC register use, direct EGA mode setup, VM copied-frame consumers, CECG snapshots and tests for assumptions that offset 28h means only mode 10. |
+
 | Task | Compact progress |
 | --- | --- |
 | T466 S7 | Accepted: IBM's 64/128/256-KiB capacity and aperture facts are Manual L3; no source establishes the exact extended-bank CPU mapping, so current unconditional backing and unselected card capacity are explicit L2 rather than a false 86Box-derived L3. |
