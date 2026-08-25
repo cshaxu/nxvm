@@ -29,7 +29,6 @@
 | Task | Compact result |
 | --- | --- |
 | T460 S2 | Accepted at `434411d4`: `dma.c` has one private logical acknowledgement/service-release owner; transaction, board binding and scheduler ownership remain unchanged. Focused DMA regressions and documentation governance pass. [Evidence](../etc/evidence/t460-s2-dma-logical-service.md). |
-| T460 S1 | Accepted at `12aa90d3`: the 16-row Intel/IBM DMA universe is reconciled to the actual one-owner Core path, source-qualified external corroboration, maintained L2/L4 boundaries and bounded S2--S5 implementation/proof batches. Focused DMA/transaction/FDC regressions and documentation governance pass. [History](../history/M5-T460-core-dma-8237a-phase-contract.md). |
 
 | T459 | Closed after S2 correction: `standard`/`turbo` remain stopped-session Console selections, but neither VM speed branch manufactures guest ticks. `Sleep(1)` is explicitly L2 HLT host-load backoff; true Standard pacing and Turbo fast-forward remain transferred to Core deadlines plus profile timebases. The full gate passes 294/294; current artifact `0.5.0459` is stripped Release-only. [History](../history/M5-T459-vm-session-speed-policy.md). |
 | T458 | Closed: the shared runner retains its 256-instruction control quantum but captures/publishes normal frames no more than once per 16 host milliseconds; forced mode and lifecycle frames remain immediate. The current artifact is stripped Release-only, and the full gate passes 293/293. [History](../history/M5-T458-vm-runner-presentation-cadence.md). |
