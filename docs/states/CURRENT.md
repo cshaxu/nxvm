@@ -2,11 +2,11 @@
 
 ## Current Work
 
-## M5 T467 S4 Packet
+## M5 T467 S6 Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation; T467 S4, one-session coordinator, executor and closure review. |
+| Identifier Mode | Continuation; T467 S6, one-session coordinator, executor and closure review. |
 | Admission And Approval | The persistent owner objective approves completion of T467. S3 is accepted at `b4f244fc`; S4 consumes the finite CGA-F1--F5/F7 mode, memory and palette batch identified by S2. |
 | Objective | Close source-qualified CGA text/320/640 B8000h layouts, page/interlace addressing, palette and video-enable effects through the sole VADP memory and copied-snapshot path. |
 | Non-goals | No new renderer, VRAM owner, BIOS/BDA mode mirror, 160x100 inference, composite/electrical monitor model, host timing, profile callback or live setter. |
