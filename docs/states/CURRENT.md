@@ -2,7 +2,26 @@
 
 ## Current Work
 
-**Active.** T460 remains open between accepted subtasks.
+## M5 T460 S2 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | The owner-approved T460 DMA completion request remains active; S1 was accepted at `b6f922ee` and its bounded S2 receiver is now admitted. |
+| Objective | Make the existing Core DMA owner represent and prove the Manual-L3 logical request, selection, acknowledge, service, cancellation/reset and release lifecycle without introducing any new scheduler, time owner or device dispatch path. |
+| Non-goals | No electrical DACK/HRQ/HLDA waveform, physical clock conversion, new peripheral API, board personality, FDC behavior change, VM policy, source import or external-code copy. |
+| Reference Baseline | `b6f922ee`; [T460 S1 reconciliation](../etc/evidence/t460-s1-dma-contract-reconciliation.md), T450 S5/S6 and T449's transaction contract. |
+| Candidate Proposal | [Core DMA 8237A phase contract](../proposals/m5-core-dma-8237a-phase-contract.md). |
+| Files And ABI Surface | `src/core/machine/dma.[ch]`, existing DMA smokes and S2 evidence only. Any state is DMA-private and consumes the existing binding/scheduler/transaction path; no VM or public product ABI. |
+| Applicable Rules | README Task Reading Set; EXECUTION S/P lifecycle and similar-issue sweep; ARCHITECTURE one Core DMA/transaction owner; CODING owner-local mechanism, one path and no wrapper; source policy. |
+| Verification | Exercise request polarity/eligibility, fixed/rotating selection, service entry, demand/single release, cancellation, reset and transaction failure through existing DMA tests; sweep every production caller and documentation governance. |
+| Expected Markers | `M5:T460:S2:DMA-LOGICAL-SERVICE:OK`; `DMA-R2`, `DMA-F1`, `DMA-F2` and their reset/cancellation portions have Manual-L3 proof or an explicit maintained boundary. |
+| Asset Needs | The admitted Intel/IBM manuals and S1's read-only corroboration only. |
+| Reporting Requirements | Record the old collapsed path, the one retained route, every state/owner change, test coverage and why physical signals or time are not claimed. |
+| Stop Conditions | Stop for a need to expose a peripheral-visible pin API, add a second scheduler/time owner, alter the selected board personality, or infer an elapsed duration from the manual. |
+| Exit Criteria | The retained DMA path has one source-backed logical lifecycle, cancellation/reset releases it, no producer bypasses the binding route, all production callers are classified, focused tests and documentation governance pass, and the actual change is reviewed/pushed. |
+| Original Owner Request | Complete the DMA 8237A Manual-L3 functional and logical timing contract with the previous CPU/PIC standard while applying minimalism and anti-accretion discipline. |
+| Similar-Issue Sweep | Sweep `core_machine_dma_advance*`, `core_machine_dma_has_pending_request`, request assert/deassert/terminate, DMA scheduler grant/hold calls and all `VDMA_COMMAND_*` consumers in `src`, `tests`, `CMakeLists.txt` and `cmake`; classify every hit as the retained route, test-only, or a named later receiver. |
 
 ## Current Technical Baseline
 

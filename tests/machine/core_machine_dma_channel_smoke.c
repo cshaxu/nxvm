@@ -874,7 +874,8 @@ C_INT main(C_VOID)
     if (primary.connect.read_provider[2] != core_machine_dma_fixture_read ||
         primary.connect.device_owner[2] != &fixture ||
         primary.data.status != 0u || primary.data.request != 0u ||
-        primary.data.isr != 0u || primary.data.temp != 0u ||
+        primary.data.isr != 0u || primary.data.acknowledged != 0u ||
+        primary.data.temp != 0u ||
         primary.data.flagEOP || primary.data.mask != VDMA_MASK_VALID) {
         failed = 1;
     }

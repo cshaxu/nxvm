@@ -42,6 +42,10 @@ extern "C"
         type_unsigned_8 status;  /* status register */
         type_unsigned_8 mask;    /* mask register */
         type_unsigned_8 request; /* request register */
+        /* Logical DACK state: set only after the controller accepts a
+         * request for service, and cleared when that service releases. This
+         * is not an electrical pin-level model. */
+        type_unsigned_8 acknowledged;
         type_unsigned_8 temp;    /* temporary register */
         type_unsigned_8 drx;     /* dreq id of highest priority */
         type_bool flagMSB;       /* flip-flop for msb/lsb */
