@@ -2,26 +2,8 @@
 
 ## Current Work
 
-## M5 T467 S2 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation; T467 S2, one-session coordinator, executor and closure review. |
-| Admission And Approval | The persistent owner objective approves the controller ledger/code-gap sequence. S1 is accepted at `92833507`; the owner explicitly expands S2 to re-audit the retained PIC/DMA/PIT/RTC/KBC L2 items by the same Board-L3-capability versus current-data rule, before auditing CGA implementation gaps. |
-| Objective | Produce Checklist 2 for all CGA-R1--R5/F1--F7/T1--T5 rows, tracing current state, port/memory/timeline/profile/firmware consumers and proof; also reconcile every retained L2 item of PIC, DMA, PIT, RTC and KBC as an existing Board-L3 capability/current data distinction or an exact missing-interface receiver. |
-| Non-goals | Do not implement a mode, synthesize a board rate, promote unqualified values, add a renderer/VRAM path, mutate host presentation, import third-party code or change public ABI. |
-| Reference Baseline | `92833507` accepts Checklist 1. VADP's copied `core_machine_vadp_text_timing` construction input is the sole known Board-L3-capable receiver; current default 48/8/8 has no recorded L3 provenance. |
-| Candidate Proposal | [M5 Core IBM CGA Completeness](../proposals/m5-core-ibm-cga-completeness.md), S2 implementation-gap audit and owner-approved prior-controller L2 capability reconciliation. |
-| Files And ABI Surface | Expected: Checklist 1 correction, CGA Checklist 2 and cross-controller reconciliation evidence/status only; source and ABI changes are forbidden in S2. |
-| Applicable Rules | `docs/rules/EXECUTION.md`: every frozen row gets a code/proof/receiver disposition. `docs/rules/ARCHITECTURE.md` and `docs/rules/CODING.md`: VADP remains sole mutable owner and profile data is construction-only. `docs/etc/operations/policy/source-policy.md`: references remain read-only. |
-| Verification | Trace every frozen CGA row through VADP, machine scheduler, display configuration, profile firmware and existing tests; trace every prior-controller retained L2 item through its existing plan/input owner; verify every Board-L3-capable route is copied at construction, not a live setter; run documentation governance and diff checks. |
-| Expected Markers | Checklist 2 has exactly the same 17 IDs; every gap is an admitted future S candidate or exact L2 transfer; CGA-T1/T2 and every prior-controller boundary distinguish input capability from data provenance. |
-| Asset Needs | Existing local source, Checklist 1, and source archive only; no new external or protected asset. |
-| Reporting Requirements | Record each CGA row's current owner/path/proof, every gap, the retained VADP input path, every prior-controller L2 reclassification/receiver, and the no-code-change result. |
-| Stop Conditions | Stop if a second VADP/video state path is found, any prior-controller L2 item lacks a finite owner/receiver disposition, or a necessary implementation would expand beyond its existing sole owner. |
-| Exit Criteria | Both CGA checklists share the complete 17-row universe; all current CGA implementation gaps and all prior-controller L2/Board-L3 receivers are explicit; governance passes without code changes. |
-| Original Owner Request | Complete remaining controllers through authoritative cross-check and gap-ledger work, accepting external L3 input where the interface supports it and avoiding additive patchwork. |
-| Similar-Issue Sweep | Inspect all CGA ports, memory registration, snapshot capture, clock advance, profile display configuration, default firmware and Model-339/CECG coexistence; also inspect prior PIC/DMA/PIT/RTC/KBC timing/input plans and reset/profile routes; reject duplicate ownership or stale fixture assumptions. |
+**Between admitted subtasks.** T467 S2 is accepted at `dbbf29bc`; no
+subsequent S is active.
 
 ## Current Technical Baseline
 
@@ -51,7 +33,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T467 S1 | Accepted: the 17-row Checklist 1 uses rendered IBM/Motorola authority, labels 86Box/PCjs as corroborators and MAME/Bochs/QEMU as non-IBM-CGA boundaries. Thirteen selected digital/interface relations are Manual L3; CGA-F4/T2/T3/T4 remain explicit L2. No source or production path changed. |
+| T467 S2 | Accepted: the complete 17-row code-gap ledger preserves one VADP owner and classifies CGA timing input as Board-L3-capable while its default values remain Current data L2. The prior PIC/DMA/PIT/RTC/KBC retained boundaries receive the same review: existing copied sole-owner inputs are Board-L3-capable; only absent complete inputs or unspecifiable Core facts remain L2. No source or production path changed. |
 | T466 | Closed: Manual-L3 D/E/10 geometry reaches the single VADP state owner through real firmware and guest port writes. The profile declaration, cold-start/text routing and all fixtures now agree; unknown planar geometry falls through existing legacy selection rather than inventing a frame. The stripped Release 0466 artifact and its hash are recorded in [history](../history/M5-T466-core-vadp-phase-contract.md). |
 | T465 | Closed: selected Intel 8272A source reconciliation, command/reset repair and per-drive parallel Seek close the logical controller contract; physical media and board-time conversion remain explicit L2. Release 0465 is stripped and the 294/294 serial gate is recorded in [history](../history/M5-T465-core-intel-8272a-logical-media-phase-contract.md). |
 | T464 | Closed: all sixteen KBC rows are Manual L3 or explicit L2/L4. One Core owner now covers selected command/input/test state; 294/294 serial current-gate tests pass and stripped Release 0464 is recorded in history. |
