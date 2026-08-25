@@ -33,6 +33,7 @@ C_INT main(C_VOID)
     failed |= core_machine_vadp_configure_text_timing(&vadp, &timing) !=
         TYPE_STATUS_OK;
     core_machine_vadp_reset(&vadp);
+    core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_MODE, 0x0du);
     failed |= core_machine_port_read(&port, 0x03dau) != 0x00u;
     value = 'A';
     failed |= core_machine_memory_write_physical(&memory,

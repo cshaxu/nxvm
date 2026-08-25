@@ -7,27 +7,27 @@
 | Field | Required record |
 | --- | --- |
 | Identifier Mode | Continuation; T468 S5, one-session coordinator, executor and closure review. |
-| Admission And Approval | The persistent owner objective and accepted T468 S1--S4 authorize complete bounded ATA closure and the required task artifact. |
-| Objective | Reconcile every frozen ATA row and its sole owner, sweep all HDC paths, run the serial current gate, and publish stripped Release 0468. |
-| Non-goals | No new ATA feature, controller/device/media selection, DMA, physical drive model, timing number, host wait, profile value, public ABI, Compaq behavior or source import. |
-| Reference Baseline | T468 S1 Checklist 1, S2 Checklist 2, S3/S4 evidence and [M5 Core HDC ATA Phase Contract](../proposals/m5-core-hdc-ata-phase-contract.md). The sole current artifact remains 0467 and must move to T468 identity. |
+| Admission And Approval | The persistent owner objective and accepted T468 S1--S4 authorize bounded ATA closure and the required task artifact. The owner also requires every discovered controller completeness gap to be repaired immediately: this packet therefore includes the one current-gate-blocking VADP duplicate CECG/CGA light-pen port registration. |
+| Objective | Reconcile every frozen ATA row and its sole owner, restore the one VADP port-owner path blocking Model-40 construction, run the serial current gate, and publish stripped Release 0468. |
+| Non-goals | No new ATA or VADP feature, controller/device/media selection, DMA, physical drive model, timing number, host wait, profile value, public ABI, source import or new presentation path. |
+| Reference Baseline | T468 S1 Checklist 1, S2 Checklist 2, S3/S4 evidence and [M5 Core HDC ATA Phase Contract](../proposals/m5-core-hdc-ata-phase-contract.md). The sole current artifact identity moves from 0467 to T468 in this closure. |
 | Candidate Proposal | [M5 Core HDC ATA Phase Contract](../proposals/m5-core-hdc-ata-phase-contract.md), S5 complete closure audit. |
-| Files And ABI Surface | Expected: four-line CMake/preset artifact identity, closure evidence/history/status and generated ignored Release artifact only. No HDC, media, controller, VM or public ABI change absent a newly proven in-scope defect. |
-| Applicable Rules | One HDC task-file/phase owner, one media-provider owner and one PIC IRQ route; checklist L3/L2 disposition remains source-qualified; current artifact is stripped Release with runtime debugger retained; closure reviews actual paths and removes no product debugger. |
-| Verification | Reconcile 15 ATA rows; sweep all HDC/media/PIC writers and consumers; inspect actual diff; configure/build and run serial current gate; build Release 0468; verify banner, SHA-256 and no `.debug` section; run static and documentation governance gates. |
-| Expected Markers | Every ATA row has one final evidence-backed disposition; no duplicate HDC/media/IRQ path or stale artifact identity; one stripped 0468 executable; only exact source-blocked L2 boundaries transfer. |
+| Files And ABI Surface | Expected: four-line CMake/preset artifact identity, the existing VADP handler, closure evidence/history/status and generated ignored Release artifact only. No HDC/media/controller/VM public ABI or new video path. |
+| Applicable Rules | One HDC task-file/phase owner, one media-provider owner, one PIC IRQ route and one VADP port owner; a personality may select semantics but cannot register a second writer for an already owned physical port; checklist L3/L2 disposition remains source-qualified; current artifact is stripped Release with runtime debugger retained. |
+| Verification | Reconcile 15 ATA rows; sweep HDC/media/PIC and the affected VADP light-pen writers; inspect actual diff; run focused CECG/Model-40 smokes and serial current gate; build Release 0468; verify banner, SHA-256 and no `.debug` section; run static and documentation governance gates. |
+| Expected Markers | Every ATA row has one final evidence-backed disposition; one VADP handler owns `3DB/3DC` across CGA/CECG semantics; no duplicate HDC/media/IRQ path or stale artifact identity; one stripped 0468 executable. |
 | Asset Needs | Existing manual, read-only corroboration and fixtures only; no source, firmware, guest media or external code import. |
 | Reporting Requirements | Record row dispositions, sweep, gate results, artifact identity/hash/strip proof, source/test delta, retained owners, exact L2 transfers and T-level conclusion. |
-| Stop Conditions | Stop for an undisposed row, duplicate owner, gate failure, compiler-debug artifact, source/import issue or newly discovered feature gap that cannot be transferred exactly. |
-| Exit Criteria | All 15 rows reconcile, all required gates pass, Release 0468 is stripped and recorded, and T468 history/proposal/status truthfully close with only exact L2 transfers. |
+| Stop Conditions | Stop for an undisposed row, a required new device/presentation model, compiler-debug artifact, source/import issue or a feature gap that cannot be repaired through the admitted owner. |
+| Exit Criteria | All 15 rows reconcile; CECG/CGA `3DB/3DC` has one owner and Model-40 constructs; all required gates pass; Release 0468 is stripped and recorded; T468 history/proposal/status truthfully close with only exact L2 transfers. |
 | Original Owner Request | Complete the remaining controller tasks with manual authority, cross-model verification, exact L2 boundaries and minimalist single-owner design. |
-| Similar-Issue Sweep | Search HDC source/tests, media registry, PIC route, VM HDC composition, CMake/presets and T468 records for task-file, phase, IRQ, media read/write, reset, artifact and duplicate-owner paths; disposition every production hit. |
+| Similar-Issue Sweep | Search HDC source/tests, media registry, PIC route, VADP personality/light-pen writers, Model-40 composition, CMake/presets and T468 records for task-file, phase, IRQ, media read/write, reset, artifact and duplicate-owner paths; disposition every production hit. |
 
 ## Current Technical Baseline
 
-- **Current developer artifact:** target `vm-0-5-0467`; the stripped Release
-  `nxvm_0_5_0467.exe` has SHA-256
-  `CD99B2E1A0F0AC0FB8982838BEC56237C29C1DA24BD9E5E3B608117B20EAF6C1`.
+- **Current developer artifact:** target `vm-0-5-0468`; the stripped Release
+  `nxvm_0_5_0468.exe` has SHA-256
+  `99100D6B99ABD98FF584F6B4179B6BC8B96519B53F234FBE4CC45DDBAC860BF5`.
   Debug remains the current-gate route. T434 has one copied Core timing-plan
   publication route for default PC/AT, IBM 5170 Model 339 and Model-40 BYOB
   session composition.

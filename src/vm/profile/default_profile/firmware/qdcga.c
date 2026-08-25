@@ -100,7 +100,7 @@ C_VOID vm_profile_default_cga_reset(vm_profile_default_context *profile,
     if (profile == STD_NULL) return;
     (C_VOID)core_machine_firmware_port_write(firmware, 0x03c2u, 0x01u);
     (C_VOID)core_machine_firmware_port_write(firmware, 0x03d8u,
-        0x05u);
+        0x0du);
     if (profile->firmware_slot ==
         VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_SLOT_IBM_5170_REV3_ABSTRACT) {
         qdcga_program_crtc(firmware, qdcga_ibm_5170_rev3_mode_3_crtc,

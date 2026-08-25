@@ -900,11 +900,20 @@ static C_VOID core_machine_vadp_write_color(t_port *port,
 static C_VOID core_machine_vadp_write_cga_lightpen(t_port *port,
     type_unsigned_16 port_id, C_VOID *owner)
 {
+    t_vadp *adapter = (t_vadp *)owner;
+
     (C_VOID)port;
-    (C_VOID)port_id;
-    (C_VOID)owner;
-    /* The address-activated controls cannot fabricate an absent external
-     * light-pen edge, switch state or latched address. */
+    if (adapter == STD_NULL || adapter->data.ega_personality !=
+        CORE_MACHINE_VADP_EGA_PERSONALITY_COMPAQ_ENHANCED_COLOR) return;
+    if (port_id == (adapter->data.compaq_color_io_base ?
+        CORE_MACHINE_VADP_PORT_COMPAQ_LIGHTPEN_LATCH_RESET :
+        CORE_MACHINE_VADP_PORT_MONO_LIGHTPEN_LATCH_RESET)) {
+        adapter->data.compaq_lightpen_latched = TYPE_FALSE;
+    } else if (port_id == (adapter->data.compaq_color_io_base ?
+        CORE_MACHINE_VADP_PORT_COMPAQ_LIGHTPEN_LATCH_SET :
+        CORE_MACHINE_VADP_PORT_MONO_LIGHTPEN_LATCH_SET)) {
+        adapter->data.compaq_lightpen_latched = TYPE_TRUE;
+    }
 }
 
 static C_VOID core_machine_vadp_read_status(t_port *port,
@@ -961,32 +970,6 @@ static C_VOID core_machine_vadp_write_compaq_control_mode(t_port *port,
     if (adapter->data.compaq_control_mode != value) {
         adapter->data.compaq_control_mode = value;
         core_machine_vadp_mark_dirty(adapter);
-    }
-}
-
-static C_VOID core_machine_vadp_write_compaq_lightpen_latch_reset(t_port *port,
-    type_unsigned_16 port_id, C_VOID *owner)
-{
-    t_vadp *adapter = (t_vadp *)owner;
-
-    (C_VOID)port;
-    if (adapter != STD_NULL && core_machine_vadp_compaq_io_route_active(adapter,
-        port_id, CORE_MACHINE_VADP_PORT_MONO_LIGHTPEN_LATCH_RESET,
-        CORE_MACHINE_VADP_PORT_COMPAQ_LIGHTPEN_LATCH_RESET)) {
-        adapter->data.compaq_lightpen_latched = TYPE_FALSE;
-    }
-}
-
-static C_VOID core_machine_vadp_write_compaq_lightpen_latch_set(t_port *port,
-    type_unsigned_16 port_id, C_VOID *owner)
-{
-    t_vadp *adapter = (t_vadp *)owner;
-
-    (C_VOID)port;
-    if (adapter != STD_NULL && core_machine_vadp_compaq_io_route_active(adapter,
-        port_id, CORE_MACHINE_VADP_PORT_MONO_LIGHTPEN_LATCH_SET,
-        CORE_MACHINE_VADP_PORT_COMPAQ_LIGHTPEN_LATCH_SET)) {
-        adapter->data.compaq_lightpen_latched = TYPE_TRUE;
     }
 }
 
@@ -1343,10 +1326,6 @@ type_status core_machine_vadp_configure_ega_personality(t_vadp *adapter,
             core_machine_vadp_read_compaq_control_mode, adapter);
         core_machine_port_add_write(port, CORE_MACHINE_VADP_PORT_COMPAQ_CONTROL_MODE,
             core_machine_vadp_write_compaq_control_mode, adapter);
-        core_machine_port_add_write(port, CORE_MACHINE_VADP_PORT_COMPAQ_LIGHTPEN_LATCH_RESET,
-            core_machine_vadp_write_compaq_lightpen_latch_reset, adapter);
-        core_machine_port_add_write(port, CORE_MACHINE_VADP_PORT_COMPAQ_LIGHTPEN_LATCH_SET,
-            core_machine_vadp_write_compaq_lightpen_latch_set, adapter);
         core_machine_port_add_write(port, CORE_MACHINE_VADP_PORT_COMPAQ_MISCELLANEOUS_OUTPUT,
             core_machine_vadp_write_compaq_miscellaneous_output, adapter);
         core_machine_port_add_write(port, CORE_MACHINE_VADP_PORT_COMPAQ_FEATURE_CONTROL,
@@ -1363,10 +1342,10 @@ type_status core_machine_vadp_configure_ega_personality(t_vadp *adapter,
             core_machine_vadp_write_compaq_feature_control, adapter);
         core_machine_port_add_write(port,
             CORE_MACHINE_VADP_PORT_MONO_LIGHTPEN_LATCH_RESET,
-            core_machine_vadp_write_compaq_lightpen_latch_reset, adapter);
+            core_machine_vadp_write_cga_lightpen, adapter);
         core_machine_port_add_write(port,
             CORE_MACHINE_VADP_PORT_MONO_LIGHTPEN_LATCH_SET,
-            core_machine_vadp_write_compaq_lightpen_latch_set, adapter);
+            core_machine_vadp_write_cga_lightpen, adapter);
         core_machine_port_add_read(port, CORE_MACHINE_VADP_PORT_COMPAQ_ENVIRONMENT,
             core_machine_vadp_read_compaq_environment, adapter);
         core_machine_port_add_read(port, CORE_MACHINE_VADP_PORT_COMPAQ_DISPLAY_TYPE,

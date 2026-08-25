@@ -37,8 +37,8 @@ foreach(forbidden IN ITEMS "core_machine_memory_" "vm_profile_default_firmware"
     endif()
 endforeach()
 
-foreach(required IN ITEMS "core_machine_hdc_load_lba_sector"
-    "core_machine_hdc_store_lba_sector" "core_machine_hdc_selected_master"
+foreach(required IN ITEMS "core_machine_hdc_resolve_sector"
+    "core_machine_hdc_lba" "core_machine_hdc_selected_master"
     "CORE_MACHINE_HDC_DEVICE_CONTROL_NIEN" "CORE_MACHINE_HDC_DEVICE_CONTROL_SRST"
     "core_machine_hdc_clear_irq"
     "core_machine_pic_irq_source_assert" "core_machine_media_query"
@@ -46,6 +46,15 @@ foreach(required IN ITEMS "core_machine_hdc_load_lba_sector"
     string(FIND "${hdc_source}" "${required}" position)
     if(position EQUAL -1)
         message(FATAL_ERROR "ATA PIO feature contract is incomplete: ${required}")
+    endif()
+endforeach()
+
+foreach(forbidden IN ITEMS "core_machine_hdc_load_lba_sector"
+    "core_machine_hdc_store_lba_sector" "core_machine_hdc_load_chs_sector"
+    "core_machine_hdc_store_chs_sector")
+    string(FIND "${hdc_source}" "${forbidden}" position)
+    if(NOT position EQUAL -1)
+        message(FATAL_ERROR "ATA PIO retains a duplicate sector path: ${forbidden}")
     endif()
 endforeach()
 

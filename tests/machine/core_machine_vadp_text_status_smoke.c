@@ -41,6 +41,7 @@ C_INT main(C_VOID)
     failed |= core_machine_vadp_configure_text_timing(&vadp, &timing) !=
         TYPE_STATUS_OK;
     core_machine_vadp_reset(&vadp);
+    core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_MODE, 0x0du);
 
     initial_status = core_machine_port_read(&port, 0x03dau);
     failed |= initial_status != 0x00u ||
@@ -50,9 +51,9 @@ C_INT main(C_VOID)
     vadp_write_crtc(&port, 0x0bu, 0xffu);
     vadp_write_crtc(&port, 0x0cu, 0xffu);
     vadp_write_crtc(&port, 0x0eu, 0xffu);
-    failed |= vadp_read_crtc(&port, 0x0au) != 0x3fu ||
-        vadp_read_crtc(&port, 0x0bu) != 0x1fu ||
-        vadp_read_crtc(&port, 0x0cu) != 0x3fu ||
+    failed |= vadp_read_crtc(&port, 0x0au) != 0u ||
+        vadp_read_crtc(&port, 0x0bu) != 0u ||
+        vadp_read_crtc(&port, 0x0cu) != 0u ||
         vadp_read_crtc(&port, 0x0eu) != 0x3fu;
 
     value = 'P';
@@ -110,16 +111,16 @@ C_INT main(C_VOID)
     vadp_write_crtc(&port, 0x07u, 0xffu);
     vadp_write_crtc(&port, 0x08u, 0xffu);
     vadp_write_crtc(&port, 0x09u, 0xffu);
-    failed |= vadp_read_crtc(&port, 0x00u) != 0x04u ||
-        vadp_read_crtc(&port, 0x01u) != 0x03u ||
-        vadp_read_crtc(&port, 0x02u) != 0x03u ||
-        vadp_read_crtc(&port, 0x03u) != 0x11u ||
-        vadp_read_crtc(&port, 0x04u) != 0x7fu ||
-        vadp_read_crtc(&port, 0x05u) != 0x1fu ||
-        vadp_read_crtc(&port, 0x06u) != 0x7fu ||
-        vadp_read_crtc(&port, 0x07u) != 0x7fu ||
+    failed |= vadp_read_crtc(&port, 0x00u) != 0u ||
+        vadp_read_crtc(&port, 0x01u) != 0u ||
+        vadp_read_crtc(&port, 0x02u) != 0u ||
+        vadp_read_crtc(&port, 0x03u) != 0u ||
+        vadp_read_crtc(&port, 0x04u) != 0u ||
+        vadp_read_crtc(&port, 0x05u) != 0u ||
+        vadp_read_crtc(&port, 0x06u) != 0u ||
+        vadp_read_crtc(&port, 0x07u) != 0u ||
         vadp_read_crtc(&port, 0x08u) != 0u ||
-        vadp_read_crtc(&port, 0x09u) != 0x1fu;
+        vadp_read_crtc(&port, 0x09u) != 0u;
     vadp_write_crtc(&port, 0x04u, 0x02u);
     vadp_write_crtc(&port, 0x05u, 0x01u);
     vadp_write_crtc(&port, 0x06u, 0x02u);
