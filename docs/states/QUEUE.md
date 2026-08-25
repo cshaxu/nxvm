@@ -61,6 +61,8 @@ contract but does not redefine its L3 or Core/VM boundary.
 
 Retained non-candidate proposal index: [Core controller and device phase program](../proposals/m5-core-controller-device-phase-contracts.md), [prior four-profile CPU instruction timing program](../proposals/m5-core-cpu-instruction-timing-program.md), [withdrawn DeskPro physical-cycle and phase-timing closure](../proposals/m5-deskpro-physical-cycle-and-phase-timing.md), [withdrawn generic PC backbone foundation](../proposals/m5-generic-pc-backbone-foundation.md), [withdrawn separate 8088 CPU-profile closure](../proposals/m5-8088-cpu-profile.md), [withdrawn current-product device-capability L3 closure](../proposals/m5-current-product-device-l3-closure.md), [DeskPro 386 dual fixed-disk selection](../proposals/m5-deskpro-386-dual-fixed-disk-selection.md), [VM profile-contract ownership migration](../proposals/m5-vm-profile-contract-ownership.md), [80286 successful-retirement timing closure](../proposals/m5-80286-retirement-timing-closure.md), [cross-mode mechanism coherence](../proposals/m5-cross-mode-mechanism-coherence.md), [instruction-timed execution](../proposals/m5-instruction-timed-execution.md), [L3 bus-timing convergence](../proposals/m5-l3-bus-timing-convergence.md), and [PIC default-IR7 correction](../proposals/m5-pic-default-ir7-correction.md). These retained contexts remain outside candidate ordering and preserve planning and evidence links.
 
+Closed retained proposal: [Core HDC ATA phase contract](../proposals/m5-core-hdc-ata-phase-contract.md).
+
 
 ## M6 Candidates
 

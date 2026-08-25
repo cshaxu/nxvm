@@ -2,27 +2,27 @@
 
 ## Current Work
 
-## M5 T468 S5 Packet
+## M5 T468 S6 Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Accepted closure; T468 S5 P3, one-session coordinator, executor and closure review. |
-| Admission And Approval | The persistent owner objective and accepted T468 S1--S4 authorize bounded ATA closure and the required task artifact. The owner also requires every discovered controller completeness gap to be repaired immediately: this packet therefore includes the one current-gate-blocking VADP duplicate CECG/CGA light-pen port registration. |
-| Objective | Reconcile every frozen ATA row and its sole owner, restore the one VADP port-owner path blocking Model-40 construction, run the serial current gate, and publish stripped Release 0468. |
-| Non-goals | No new ATA or VADP feature, controller/device/media selection, DMA, physical drive model, timing number, host wait, profile value, public ABI, source import or new presentation path. |
+| Identifier Mode | Corrective; T468 S6 restores the task-status grammar after P3 closure. |
+| Admission And Approval | The persistent owner objective requires immediate repair of discovered closure defects; this bounded corrective S repairs the invalid P3 state record only. |
+| Objective | Restore valid documentation-governance state for the accepted T468 closure. |
+| Non-goals | No runtime, ATA, VADP, artifact, source, API or queue-scope change. |
 | Reference Baseline | T468 S1 Checklist 1, S2 Checklist 2, S3/S4 evidence and [M5 Core HDC ATA Phase Contract](../proposals/m5-core-hdc-ata-phase-contract.md). The sole current artifact identity moves from 0467 to T468 in this closure. |
 | Candidate Proposal | [M5 Core HDC ATA Phase Contract](../proposals/m5-core-hdc-ata-phase-contract.md), S5 complete closure audit. |
-| Files And ABI Surface | Expected: four-line CMake/preset artifact identity, the existing VADP handler, closure evidence/history/status and generated ignored Release artifact only. No HDC/media/controller/VM public ABI or new video path. |
+| Files And ABI Surface | `states/CURRENT.md` only; no ABI or product surface. |
 | Applicable Rules | One HDC task-file/phase owner, one media-provider owner, one PIC IRQ route and one VADP port owner; a personality may select semantics but cannot register a second writer for an already owned physical port; checklist L3/L2 disposition remains source-qualified; current artifact is stripped Release with runtime debugger retained. |
-| Verification | Reconcile 15 ATA rows; sweep HDC/media/PIC and the affected VADP light-pen writers; inspect actual diff; run focused CECG/Model-40 smokes and serial current gate; build Release 0468; verify banner, SHA-256 and no `.debug` section; run static and documentation governance gates. |
-| Expected Markers | Every ATA row has one final evidence-backed disposition; one VADP handler owns `3DB/3DC` across CGA/CECG semantics; no duplicate HDC/media/IRQ path or stale artifact identity; one stripped 0468 executable. |
+| Verification | Inspect the one-line status correction; run `git diff --check` and documentation governance. |
+| Expected Markers | Documentation governance accepts Corrective T468 S6 with no runtime diff. |
 | Asset Needs | Existing manual, read-only corroboration and fixtures only; no source, firmware, guest media or external code import. |
-| Reporting Requirements | Record row dispositions, sweep, gate results, artifact identity/hash/strip proof, source/test delta, retained owners, exact L2 transfers and T-level conclusion. |
-| Stop Conditions | Stop for an undisposed row, a required new device/presentation model, compiler-debug artifact, source/import issue or a feature gap that cannot be repaired through the admitted owner. |
-| Exit Criteria | All 15 rows reconcile; CECG/CGA `3DB/3DC` has one owner and Model-40 constructs; all required gates pass; Release 0468 is stripped and recorded; T468 history/proposal/status truthfully close with only exact L2 transfers. |
-| Closure | Accepted: all exit criteria hold; T468 leaves no active implementation packet and the next queued candidate requires a fresh owner admission. |
+| Reporting Requirements | Record the corrective reason, one-file diff and governance result. |
+| Stop Conditions | Stop if correcting the status requires reopening runtime scope or changing T468 evidence. |
+| Exit Criteria | The status grammar passes and T468 remains closed. |
+| Closure | Accepted: this corrective S changes only packet grammar; T468 remains closed. |
 | Original Owner Request | Complete the remaining controller tasks with manual authority, cross-model verification, exact L2 boundaries and minimalist single-owner design. |
-| Similar-Issue Sweep | Search HDC source/tests, media registry, PIC route, VADP personality/light-pen writers, Model-40 composition, CMake/presets and T468 records for task-file, phase, IRQ, media read/write, reset, artifact and duplicate-owner paths; disposition every production hit. |
+| Similar-Issue Sweep | Review numeric task packet mode and subtask rules; no other status record changes. |
 
 ## Current Technical Baseline
 
@@ -61,7 +61,6 @@
 | T463 | Closed: the 16-row MC146818A/IBM AT ledger has one Core phase owner, a copied L3/L2 board timing plan, explicit L2/L4 boundaries and focused proof. The full current gate ran 294/294; stripped Release 0463 is recorded in [history](../history/M5-T463-core-rtc-cmos-phase-contract.md). |
 | T462 | Closed: one immutable copied plan carries only qualified Model-339 PIT/DMA selections; PIC remains explicit L2. The seven corrected PIT-transition regressions, 294/294 serial current gate, 77/77 specialized gates, documentation governance and stripped 0462 artifact complete the controller-board contract. [History](../history/M5-T462-core-controller-board-timing-contract.md). |
 | T461 | Closed: one Core PIT owner covers manual P1--P14 and one `OUT0 -> IRQ0 -> PIC refresh` route closes P15; P16--P18 remain explicit L2. Full current-gate is 294/294 and its stripped artifact is retained in history. [History](../history/M5-T461-core-pit-8254-phase-contract.md). |
-| T460 | Closed: all 16 DMA rows are disposed through the sole `dma.c` owner; normal/compressed and M2M service phases have focused proof, the five-clock conversion remains explicit L2, serial current-gate is 294/294, and the stripped 0460 artifact is recorded. [History](../history/M5-T460-core-dma-8237a-phase-contract.md). |
 
 ## Recent Governance
 
