@@ -114,3 +114,25 @@ map returns through the existing text snapshot.  This removes the prior
 dependency or public API.  The focused mode-10 and ROM EGA replays now pass;
 Offset-only E-versus-10 classification, F chained odd/even and alpha character
 generation remain explicitly transferred.
+
+## S12 Accepted Evidence
+
+`08ac04f1` repairs the rejected S10 materialization path without a second
+firmware or display path.  The one generated INT 10h program now occupies the
+named fixed Video ROM slot, while the FDC retains its own non-overlapping slot;
+the ROM materialization smoke proves both vectors and provider mappings.  The
+program emits the Manual-L3 D, E and 10h CRTC tuples through actual ports.
+The sole VADP classifier derives 320x200, 640x200 and 640x350 only from
+Horizontal Display End, Overflow, Vertical Display End and Offset.  Unknown
+tuples publish no planar snapshot.
+
+The D/E/10 VM boot replay, ROM EGA replay, planar system replay and seven
+affected Core EGA routes pass, as do the fixed-ROM materialization proof and
+the final fourteen-target focused corpus.  Tests that formerly relied on an
+implicit zero CRTC state now establish Mode D through the same firmware route
+or wait for a valid snapshot; no default mode is inferred.  The retained
+production path is profile firmware -> guest port transaction -> Core VADP ->
+copied snapshot.  No BDA classifier, renderer, VRAM route or public ABI was
+added.  F chained odd/even and alpha character generation remain explicit
+later batches; F3--F5 and T1--T5 retain their recorded L2 board/monitor/timing
+boundaries.
