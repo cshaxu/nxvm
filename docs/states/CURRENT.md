@@ -2,27 +2,6 @@
 
 ## Current Work
 
-## M5 T464 S2 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner goal dated 2026-08-25 approves completion of the active KBC task after its accepted S1 research ledger. |
-| Objective | Close the bounded, source-proven KBC functional gaps: AT input/test port reads, input-port-derived inhibit status, command-byte selected semantics, and proof of the retained single owner. |
-| Non-goals | No UPI firmware/ROM import, synthetic 6-us pulse, fabricated controller RAM dump, host-time input, separate scheduler, NMI owner, or later-profile feature expansion. |
-| Reference Baseline | `71422aa2`; accepted KBC S1 checklist/audit and the T464 proposal. |
-| Candidate Proposal | [Core KBC 8042 and NMI phase contract](../proposals/m5-core-kbc-8042-nmi-phase-contract.md). |
-| Files And ABI Surface | `kbc.c`, `kbc.h`, focused KBC controller smoke, KBC checklist/audit and task history. A bounded Core board-signal setter is allowed only if it removes no existing owner and carries no timing policy. |
-| Applicable Rules | Architecture requires Core as the sole KBC state owner and no KBC NMI ownership; coding requires one direct command/status path; source policy prohibits external implementation or firmware import; execution requires the similar-command sweep. |
-| Verification | Focused KBC controller smoke proves C0h/E0h, inhibit/status and command-byte behavior; static search covers command/status paths; compile the focused target and run documentation governance. |
-| Expected Markers | `M5:T464:S2:KBC` success marker, no new port provider/FIFO/scheduler, and every remaining unsupported manual command is explicitly retained as L2 with its reason. |
-| Asset Needs | Accepted rendered manuals and read-only emulator observations only; no asset is imported. |
-| Reporting Requirements | Record each implemented row, every retained L2 reason and the exact similar-command search scope. |
-| Stop Conditions | Stop if source requires the selected IBM controller ROM, a new machine-profile decision, physical waveform model, or a conflicting board owner. |
-| Exit Criteria | All implementable Manual-L3 KBC functional gaps are closed with focused proof; unavailable firmware/physical/tick relations are explicit L2/L4 boundaries rather than partial emulation claims. |
-| Original Owner Request | Complete the remaining controller tasks using the PIC/DMA/PIT/RTC source-first method, with L2 only where manual, external model and board L3 evidence do not support a truthful implementation. |
-| Similar-Issue Sweep | Search all 0060h/0064h commands, status-bit assembly, command-byte consumers, keyboard admission and reset/A20/NMI boundaries. |
-
 
 ## Current Technical Baseline
 
@@ -48,7 +27,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T464 S1 | Accepted: rendered Intel/IBM manuals remain normative; 86Box, Bochs, PCjs, MAME and QEMU corroborate each of the 16 rows without elevating divergent emulator delays to hardware timing. The bounded Manual-L3 implementation gaps are ready for S2. |
+| T464 S2 | Accepted: one KBC owner now supplies C0h/E0h and selected input/test/inhibit/command-byte state. AC needs undistributed selected 8042 ROM state; physical serial and pulse/tick relations remain explicit L2/L4, not invented. Focused controller, AUX and serial smokes pass. |
 | T463 | Closed: the 16-row MC146818A/IBM AT ledger has one Core phase owner, a copied L3/L2 board timing plan, explicit L2/L4 boundaries and focused proof. The full current gate ran 294/294; stripped Release 0463 is recorded in [history](../history/M5-T463-core-rtc-cmos-phase-contract.md). |
 | T462 | Closed: one immutable copied plan carries only qualified Model-339 PIT/DMA selections; PIC remains explicit L2. The seven corrected PIT-transition regressions, 294/294 serial current gate, 77/77 specialized gates, documentation governance and stripped 0462 artifact complete the controller-board contract. [History](../history/M5-T462-core-controller-board-timing-contract.md). |
 | T461 | Closed: one Core PIT owner covers manual P1--P14 and one `OUT0 -> IRQ0 -> PIC refresh` route closes P15; P16--P18 remain explicit L2. Full current-gate is 294/294 and its stripped artifact is retained in history. [History](../history/M5-T461-core-pit-8254-phase-contract.md). |

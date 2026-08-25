@@ -14,3 +14,13 @@ A20/reset models, but disagree on scheduler details and therefore do not
 manufacture a hardware tick rule. The retained gaps are one UPI-style input
 service phase, selected status/input/test/diagnostic state, and explicit
 board-timing boundaries; no KBC NMI owner or external source import is allowed.
+
+## S2 Accepted Evidence
+
+`8319dd91` removes the duplicate `system_flag` mirror: the command byte is the
+sole status-bit owner. It adds only the selected input/test state and C0h/E0h
+command cases to the existing KBC path. C0h, E0h, inhibit status/override and
+the existing AUX/serial paths have focused passing smoke proof. `AC` is not
+faked: its 60 scan-code dump requires selected 8042 RAM, PSW and ROM firmware.
+Serial error latches, UPI service cadence and output-pulse consumption remain
+explicit L2/L4 boundaries.
