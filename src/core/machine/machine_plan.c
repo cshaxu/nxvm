@@ -24,6 +24,78 @@ static C_INT core_machine_timing_disposition_is_valid(
         disposition == CORE_MACHINE_TIMING_DISPOSITION_L3_REQUIRED;
 }
 
+static C_INT core_machine_controller_timing_rule_is_valid(
+    core_machine_controller_timing_rule rule)
+{
+    return rule == CORE_MACHINE_CONTROLLER_TIMING_RULE_L2_FALLBACK ||
+        rule == CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_RATIONAL_CLOCK ||
+        rule == CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_DMA_SERVICE_PHASES;
+}
+
+static C_INT core_machine_clock_ratio_is_explicit(
+    const core_machine_clock_ratio *ratio)
+{
+    return ratio != STD_NULL && ratio->numerator != 0u &&
+        ratio->denominator != 0u;
+}
+
+static core_machine_timing_disposition
+core_machine_controller_timing_disposition(const core_machine_plan *plan,
+    core_machine_timing_capability capability)
+{
+    if (capability == CORE_MACHINE_TIMING_CAPABILITY_CTRL_PIT &&
+        plan->controller_timing.pit_clock ==
+            CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_RATIONAL_CLOCK) {
+        return CORE_MACHINE_TIMING_DISPOSITION_L3_REQUIRED;
+    }
+    if (capability == CORE_MACHINE_TIMING_CAPABILITY_CTRL_DMA &&
+        plan->controller_timing.dma_clock ==
+            CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_RATIONAL_CLOCK &&
+        plan->controller_timing.dma_service ==
+            CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_DMA_SERVICE_PHASES) {
+        return CORE_MACHINE_TIMING_DISPOSITION_L3_REQUIRED;
+    }
+    return CORE_MACHINE_TIMING_DISPOSITION_L2_FALLBACK;
+}
+
+static C_INT core_machine_controller_timing_rules_are_valid(
+    const core_machine_plan *plan)
+{
+    const core_machine_controller_timing_rules *rules =
+        &plan->controller_timing;
+
+    if (!core_machine_controller_timing_rule_is_valid(rules->pic_visibility) ||
+        !core_machine_controller_timing_rule_is_valid(rules->dma_clock) ||
+        !core_machine_controller_timing_rule_is_valid(rules->dma_service) ||
+        !core_machine_controller_timing_rule_is_valid(rules->pit_clock) ||
+        rules->pic_visibility != CORE_MACHINE_CONTROLLER_TIMING_RULE_L2_FALLBACK ||
+        (rules->dma_clock != CORE_MACHINE_CONTROLLER_TIMING_RULE_L2_FALLBACK &&
+         rules->dma_clock !=
+            CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_RATIONAL_CLOCK) ||
+        (rules->dma_service != CORE_MACHINE_CONTROLLER_TIMING_RULE_L2_FALLBACK &&
+         rules->dma_service !=
+            CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_DMA_SERVICE_PHASES) ||
+        (rules->pit_clock != CORE_MACHINE_CONTROLLER_TIMING_RULE_L2_FALLBACK &&
+         rules->pit_clock !=
+            CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_RATIONAL_CLOCK)) {
+        return 0;
+    }
+    if (rules->pit_clock ==
+            CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_RATIONAL_CLOCK &&
+        !core_machine_clock_ratio_is_explicit(&plan->configuration.clock_plan.pit)) {
+        return 0;
+    }
+    if (rules->dma_clock ==
+            CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_RATIONAL_CLOCK &&
+        !core_machine_clock_ratio_is_explicit(&plan->configuration.clock_plan.dma)) {
+        return 0;
+    }
+    return rules->dma_service !=
+            CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_DMA_SERVICE_PHASES ||
+        rules->dma_clock ==
+            CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_RATIONAL_CLOCK;
+}
+
 static C_INT core_machine_timing_capability_is_non_guest_time(
     core_machine_timing_capability capability)
 {
@@ -75,7 +147,8 @@ type_status core_machine_plan_validate(const core_machine_plan *plan)
     if (plan == STD_NULL || plan->declaration_count !=
         CORE_MACHINE_TIMING_CAPABILITY_COUNT ||
         !core_machine_transaction_contract_is_valid(
-            &plan->configuration.transaction_contract)) {
+            &plan->configuration.transaction_contract) ||
+        !core_machine_controller_timing_rules_are_valid(plan)) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
     if ((plan->topology.absent_memory_present != TYPE_FALSE &&
@@ -122,8 +195,8 @@ type_status core_machine_plan_validate(const core_machine_plan *plan)
                 return TYPE_STATUS_INVALID_ARGUMENT;
             }
         } else if (declaration->disposition !=
-            CORE_MACHINE_TIMING_DISPOSITION_L2_FALLBACK) {
-            /* S1 has no registered L3 rule; it must reject such a request. */
+            core_machine_controller_timing_disposition(plan,
+                declaration->capability)) {
             return TYPE_STATUS_INVALID_ARGUMENT;
         }
         seen[declaration->capability] = TYPE_TRUE;
@@ -271,6 +344,23 @@ type_status core_machine_plan_set_topology(core_machine_plan *plan,
 {
     if (plan == STD_NULL || topology == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
     plan->topology = *topology;
+    return TYPE_STATUS_OK;
+}
+
+type_status core_machine_plan_set_controller_timing_rules(core_machine_plan *plan,
+    const core_machine_controller_timing_rules *rules)
+{
+    if (plan == STD_NULL || rules == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    plan->controller_timing = *rules;
+    plan->declarations[CORE_MACHINE_TIMING_CAPABILITY_CTRL_PIC].disposition =
+        core_machine_controller_timing_disposition(plan,
+            CORE_MACHINE_TIMING_CAPABILITY_CTRL_PIC);
+    plan->declarations[CORE_MACHINE_TIMING_CAPABILITY_CTRL_DMA].disposition =
+        core_machine_controller_timing_disposition(plan,
+            CORE_MACHINE_TIMING_CAPABILITY_CTRL_DMA);
+    plan->declarations[CORE_MACHINE_TIMING_CAPABILITY_CTRL_PIT].disposition =
+        core_machine_controller_timing_disposition(plan,
+            CORE_MACHINE_TIMING_CAPABILITY_CTRL_PIT);
     return TYPE_STATUS_OK;
 }
 

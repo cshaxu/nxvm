@@ -79,6 +79,7 @@ struct core_machine_plan {
     core_machine_timing_declaration declarations[
         CORE_MACHINE_TIMING_CAPABILITY_COUNT];
     STD_SIZE_T declaration_count;
+    core_machine_controller_timing_rules controller_timing;
     core_machine_plan_memory_device memory_devices[
         CORE_MACHINE_PLAN_MEMORY_DEVICE_COUNT];
     STD_SIZE_T memory_device_count;

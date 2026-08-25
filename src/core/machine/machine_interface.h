@@ -199,6 +199,21 @@ typedef struct core_machine_timing_declaration {
     core_machine_timing_seam seam;
 } core_machine_timing_declaration;
 
+/* Construction-plan qualifications consume copied Core values. They are not
+ * runtime controller setters; profile provenance remains outside Core. */
+typedef enum core_machine_controller_timing_rule {
+    CORE_MACHINE_CONTROLLER_TIMING_RULE_L2_FALLBACK = 0,
+    CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_RATIONAL_CLOCK,
+    CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_DMA_SERVICE_PHASES
+} core_machine_controller_timing_rule;
+
+typedef struct core_machine_controller_timing_rules {
+    core_machine_controller_timing_rule pic_visibility;
+    core_machine_controller_timing_rule dma_clock;
+    core_machine_controller_timing_rule dma_service;
+    core_machine_controller_timing_rule pit_clock;
+} core_machine_controller_timing_rules;
+
 typedef struct core_machine_display_port_topology {
     type_unsigned_16 attribute_first;
     type_unsigned_16 attribute_last;
@@ -376,6 +391,8 @@ type_status core_machine_plan_create(const core_machine_config *configuration,
 C_VOID core_machine_plan_destroy(core_machine_plan *plan);
 type_status core_machine_plan_set_topology(core_machine_plan *plan,
     const core_machine_plan_topology *topology);
+type_status core_machine_plan_set_controller_timing_rules(core_machine_plan *plan,
+    const core_machine_controller_timing_rules *rules);
 type_status core_machine_plan_bind_media_registry(core_machine_plan *plan,
     const core_machine_media_registry *registry);
 type_status core_machine_plan_bind_display_provider(core_machine_plan *plan,

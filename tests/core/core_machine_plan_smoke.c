@@ -184,11 +184,93 @@ static C_INT plan_rejects_invalid_transaction_contract_before_publication(C_VOID
     return failed;
 }
 
+static C_INT plan_controller_timing_rules_are_copied_and_validated(C_VOID)
+{
+    core_machine_config configuration = { .memory_bytes =
+        CORE_MACHINE_MINIMUM_MEMORY_BYTES };
+    const core_machine_controller_timing_rules source_rules = {
+        CORE_MACHINE_CONTROLLER_TIMING_RULE_L2_FALLBACK,
+        CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_RATIONAL_CLOCK,
+        CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_DMA_SERVICE_PHASES,
+        CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_RATIONAL_CLOCK
+    };
+    core_machine_plan *plan = STD_NULL;
+    core_machine *machine = STD_NULL;
+    core_machine_timing_disposition disposition;
+    C_INT failed = 0;
+
+    configuration.clock_plan.dma = (core_machine_clock_ratio) {3u, 8u, 0u};
+    configuration.clock_plan.pit = (core_machine_clock_ratio) {1193182u, 8000000u, 0u};
+    failed |= core_machine_plan_create(&configuration, &plan) != TYPE_STATUS_OK;
+    failed |= !failed && core_machine_plan_set_controller_timing_rules(plan,
+        &source_rules) != TYPE_STATUS_OK;
+    failed |= !failed && core_machine_create_from_plan(plan, &machine) !=
+        TYPE_STATUS_OK;
+    failed |= !failed && core_machine_get_timing_disposition(machine,
+        CORE_MACHINE_TIMING_CAPABILITY_CTRL_PIC, &disposition) != TYPE_STATUS_OK;
+    failed |= !failed && disposition != CORE_MACHINE_TIMING_DISPOSITION_L2_FALLBACK;
+    failed |= !failed && core_machine_get_timing_disposition(machine,
+        CORE_MACHINE_TIMING_CAPABILITY_CTRL_DMA, &disposition) != TYPE_STATUS_OK;
+    failed |= !failed && disposition != CORE_MACHINE_TIMING_DISPOSITION_L3_REQUIRED;
+    failed |= !failed && core_machine_get_timing_disposition(machine,
+        CORE_MACHINE_TIMING_CAPABILITY_CTRL_PIT, &disposition) != TYPE_STATUS_OK;
+    failed |= !failed && disposition != CORE_MACHINE_TIMING_DISPOSITION_L3_REQUIRED;
+    failed |= !failed && machine->timing_plan.controller_timing.pit_clock !=
+        CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_RATIONAL_CLOCK;
+    core_machine_destroy(machine);
+    core_machine_plan_destroy(plan);
+    return failed;
+}
+
+static C_INT plan_rejects_invalid_controller_timing_rules(C_VOID)
+{
+    core_machine_config configuration = { .memory_bytes =
+        CORE_MACHINE_MINIMUM_MEMORY_BYTES };
+    core_machine_controller_timing_rules rules = {
+        CORE_MACHINE_CONTROLLER_TIMING_RULE_L2_FALLBACK,
+        CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_RATIONAL_CLOCK,
+        CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_DMA_SERVICE_PHASES,
+        CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_RATIONAL_CLOCK
+    };
+    core_machine_plan *plan = STD_NULL;
+    core_machine *machine = (core_machine *)(type_virtual_address)1u;
+    C_INT failed = 0;
+
+    failed |= core_machine_plan_create(&configuration, &plan) != TYPE_STATUS_OK;
+    failed |= !failed && core_machine_plan_set_controller_timing_rules(plan,
+        &rules) != TYPE_STATUS_OK;
+    failed |= !failed && core_machine_create_from_plan(plan, &machine) !=
+        TYPE_STATUS_INVALID_ARGUMENT || machine != STD_NULL;
+    core_machine_plan_destroy(plan);
+    configuration.clock_plan.dma = (core_machine_clock_ratio) {3u, 8u, 0u};
+    configuration.clock_plan.pit = (core_machine_clock_ratio) {1u, 4u, 0u};
+    failed |= core_machine_plan_create(&configuration, &plan) != TYPE_STATUS_OK;
+    rules.pic_visibility = CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_RATIONAL_CLOCK;
+    failed |= !failed && core_machine_plan_set_controller_timing_rules(plan,
+        &rules) != TYPE_STATUS_OK;
+    machine = (core_machine *)(type_virtual_address)1u;
+    failed |= !failed && core_machine_create_from_plan(plan, &machine) !=
+        TYPE_STATUS_INVALID_ARGUMENT || machine != STD_NULL;
+    core_machine_plan_destroy(plan);
+    rules.pic_visibility = CORE_MACHINE_CONTROLLER_TIMING_RULE_L2_FALLBACK;
+    rules.dma_clock = CORE_MACHINE_CONTROLLER_TIMING_RULE_L2_FALLBACK;
+    failed |= core_machine_plan_create(&configuration, &plan) != TYPE_STATUS_OK;
+    failed |= !failed && core_machine_plan_set_controller_timing_rules(plan,
+        &rules) != TYPE_STATUS_OK;
+    machine = (core_machine *)(type_virtual_address)1u;
+    failed |= !failed && core_machine_create_from_plan(plan, &machine) !=
+        TYPE_STATUS_INVALID_ARGUMENT || machine != STD_NULL;
+    core_machine_plan_destroy(plan);
+    return failed;
+}
+
 C_INT main(C_VOID)
 {
     if (plan_default_and_copy() || plan_rejects_incomplete_or_unavailable() ||
         plan_rejects_topology_before_publication() ||
-        plan_rejects_invalid_transaction_contract_before_publication()) {
+        plan_rejects_invalid_transaction_contract_before_publication() ||
+        plan_controller_timing_rules_are_copied_and_validated() ||
+        plan_rejects_invalid_controller_timing_rules()) {
         return 1;
     }
     puts("M5:T434:S1:PLAN-DECLARATIONS:OK");
@@ -197,5 +279,7 @@ C_INT main(C_VOID)
     puts("M5:T434:S2:ROLLBACK-EQUIVALENCE:OK");
     puts("M5:T434:S3:ALL-DECLARATIONS:OK");
     puts("M5:T449:S2:TRANSACTION-CONTRACT:OK");
+    puts("M5:T462:S2:CONTROLLER-RULE-PLAN:OK");
+    puts("M5:T462:S2:CONTROLLER-RULE-REJECTION:OK");
     return 0;
 }
