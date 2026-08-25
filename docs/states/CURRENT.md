@@ -2,26 +2,26 @@
 
 ## Current Work
 
-## M5 T461 S2 Packet
+## M5 T461 S3 Packet
 
 | Field | Required record |
 | --- | --- |
 | Identifier Mode | Continuation |
-| Admission And Approval | Owner approved single-person dual-role execution of T461 on 2026-08-24. Coordinator accepts S1 at `1c9428b1` after actual ledger/owner review and admits S2 only. |
-| Objective | Correct the one existing PIT owner's coupled control/count-write/read-latch-status/null-count/load and modes 0--5 transition semantics against Intel 8254 P1--P14, with a focused complete regression corpus. |
-| Non-goals | No host-clock pacing, oscillator/electrical claim, speaker/PPI/audio implementation, second scheduler, profile wiring change, public ABI addition, or external-code import. |
-| Reference Baseline | `1c9428b1`; accepted T456 PIC and T460 DMA contracts; T461 S1 Lists 1--2. |
+| Admission And Approval | Owner approved single-person dual-role execution of T461 on 2026-08-24. Coordinator accepts S2 implementation `a1ea0fa1` after actual diff, focused 4/4 and complete 294/294 current-gate review, and admits S3 only. |
+| Objective | Prove the existing sole PIT channel-0 OUT to PIC IRQ0 binding, deterministic scheduler visibility and reset/finalize lifecycle; close T461 without elevating board-order or physical-clock facts beyond their documented L2 boundary. |
+| Non-goals | No PIT chip state-machine redesign, host-clock pacing, oscillator/electrical claim, speaker/PPI/audio implementation, second scheduler, profile wiring change, public ABI addition, or external-code import. |
+| Reference Baseline | `a1ea0fa1`; accepted T456 PIC and T460 DMA contracts; accepted T461 S1 Lists 1--2 and S2 phase evidence. |
 | Candidate Proposal | [Core PIT 8254 phase contract](../proposals/m5-core-pit-8254-phase-contract.md). |
-| Files And ABI Surface | `pit.c`/`pit.h` private counter phase/latch state and `tests/machine` PIT smoke(s); existing Core-local API only, no public ABI. |
+| Files And ABI Surface | `machine.c`/scheduler composition and existing PIT/PIC focused smokes only; existing Core-local API, no public ABI. |
 | Applicable Rules | README Task Reading Set; EXECUTION S/P lifecycle; DOCUMENT governance; architecture single-owner rule; coding no-wrapper/owner-local repair rule; source policy; specification-driven L3 timing design. |
-| Verification | Add focused manual-form regressions for RW forms, zero/BCD, count/status latches, null-count timing, control-write output, delayed load, all six modes and every gate/retrigger/rewrite transition; build target(s), run focused CTest, documentation gate, diff hygiene. |
-| Expected Markers | `M5:T461:S2:PIT-PHASE-CONTRACT:OK`; every P1--P14 assertion has a named focused probe. |
+| Verification | Sweep every PIT output provider, channel-0 binding and scheduler consumer; run the focused PIT/IRQ0/divider corpus, full current-gate, documentation gate and diff hygiene. |
+| Expected Markers | `M5:T461:S3:PIT-INTEGRATION-CLOSURE:OK`; P15 has one owner, named focused proof and every retained L2 boundary is explicit. |
 | Asset Needs | T461 S1 admitted Intel manual evidence; read-only external observations only as corroboration, never import. |
-| Reporting Requirements | Record before/after state ownership, manual-section mapping, every removed/retained field, test evidence, code-size delta and any deferred mode rule. |
-| Stop Conditions | Stop for a manual ambiguity needing a rendered-figure decision, a physical time derivation, an unselected topology, or a requirement for a second mutable PIT owner. |
-| Exit Criteria | P1--P14 match manual rules under focused tests; no duplicate path/state/API is introduced; P15 alone transfers to the integration/closure S3; gate passes and the accepted P commit is pushed. |
+| Reporting Requirements | Record the output-to-PIC route, ordering owner, reset/finalize release path, code-size delta and each retained L2 boundary. |
+| Stop Conditions | Stop for a physical time derivation, an unselected topology, a required second mutable owner or any material chip-contract defect outside the accepted S2 evidence. |
+| Exit Criteria | P15's chip OUT and selected Core binding are proven through one route; scheduler order/reset are either proven or retained as L2 with receiver; no duplicate path/state/API is introduced; full gate and documentation gate pass; closure evidence, history and current artifact are recorded and accepted. |
 | Original Owner Request | Execute the current PIT task in single-person dual-role mode, using global minimalist design and no accretion. |
-| Similar-Issue Sweep | Sweep every control-word, data-port, latch/status, reset and output initialization consumer in `pit.c`, tests and Core composition; repair shared state at its one owner. |
+| Similar-Issue Sweep | Sweep every PIT output provider, channel-0 binding, PIC timer consumer, scheduler caller and reset/finalize release path; classify every hit at its one owner. |
 
 ## Current Technical Baseline
 
@@ -48,6 +48,7 @@
 | Task | Compact result |
 | --- | --- |
 | T461 S1 | Accepted at `1c9428b1`: manual-first 8254 Lists 1--2 dispose every selected row as Manual-L3 or explicit L2; `pit.c` remains the sole owner and S2 is admitted for the control/latch contract. [Evidence](../etc/evidence/t461-s1-pit-8254-function-timing-ledger.md). |
+| T461 S2 | Accepted at `a1ea0fa1`: one PIT owner now covers P1--P14 CR-to-CE, latches, modes, GATE and CE phases; focused 4/4 and full current-gate 294/294 pass. [Evidence](../etc/evidence/t461-s2-pit-chip-phase-contract.md). |
 | T460 | Closed: all 16 DMA rows are disposed through the sole `dma.c` owner; normal/compressed and M2M service phases have focused proof, the five-clock conversion remains explicit L2, serial current-gate is 294/294, and the stripped 0460 artifact is recorded. [History](../history/M5-T460-core-dma-8237a-phase-contract.md). |
 
 | T459 | Closed after S2 correction: `standard`/`turbo` remain stopped-session Console selections, but neither VM speed branch manufactures guest ticks. `Sleep(1)` is explicitly L2 HLT host-load backoff; true Standard pacing and Turbo fast-forward remain transferred to Core deadlines plus profile timebases. The full gate passes 294/294; current artifact `0.5.0459` is stripped Release-only. [History](../history/M5-T459-vm-session-speed-policy.md). |
