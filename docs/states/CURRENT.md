@@ -2,24 +2,7 @@
 
 ## Current Work
 
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation - M5 T463 S2, implementation P2. |
-| Admission And Approval | Owner-approved goal received 2026-08-24: complete the Core RTC/CMOS phase contract, including board timing inputs that preserve L3 provenance or an explicit L2 provenance. T463 is the latest open numeric task; T463 S1 is accepted. No rule exception is approved. |
-| Objective | Replace the current RTC's partial calendar counter with one manual-bounded MC146818A phase owner: divider/reset state, update-in-progress window, update-ended/alarm/periodic flags, Register-C acknowledgement and IRQ8. Accept one immutable board timing plan at construction; Core alone consumes that plan while guest time advances. |
-| Non-goals | No host-clock source, wall-time pacing, live timing setters, battery persistence, firmware CMOS policy, PC/AT century ownership, L4 oscillator/electrical claims, or copying/importing external-emulator code. |
-| Reference Baseline | `9caca828` (accepted S1 ledger reconciliation); clean post-S1 worktree. The Motorola MC146818A and IBM 5170 manuals are normative; named 86Box, MAME, PCjs, Bochs and QEMU implementations are corroboration-only in the S1 checklist. |
-| Candidate Proposal | [M5 Core RTC CMOS Phase Contract](../proposals/m5-core-rtc-cmos-phase-contract.md), S1 checklist and S10 code-gap audit. This S consumes checklist rows R1-R16, beginning with the phase/reset/register batch; board-owned 32h remains outside the generic RTC calendar owner. |
-| Files And ABI Surface | Expected: `src/core/machine/rtc.[ch]`, `machine_interface.h`, `machine_board.c`, selected composition/configuration callers, focused Core/machine smoke tests, S2 evidence, proposal and current status. The public construction config may gain one copied immutable timing-plan field; no mutable post-construction API. |
-| Applicable Rules | `ARCHITECTURE.md`: Core owns guest-visible RTC state and VM/profile supplies immutable selection only; no reverse dependency. `CODING.md`: single owner, explicit state transitions, validated boundary inputs, no forwarding wrapper or duplicate calendar path. `DOCUMENT.md`: status/evidence accurately retain manual-vs-L2 provenance. `EXECUTION.md`: one complete P, actual-diff review, similar-issue sweep, line accounting and immediate push. |
-| Verification | Add focused phase/reset/acknowledgement and board-plan validation smoke coverage; run the affected Core/machine CTest labels and applicable structural/documentation gates before P2. Full current gate and stripped artifact are T-level closure work, not a substitute for S2 proof. |
-| Expected Markers | `core_machine_rtc_timing_plan`; finite 64-byte MC146818 register file; explicit divider/update phases; no generic `CORE_MACHINE_RTC_CENTURY`; focused proof names for reset, UIP/update and Register-C. |
-| Asset Needs | Existing local Motorola and IBM PDFs and read-only external reference trees only; no asset import or generated guest media. |
-| Reporting Requirements | Executor reports the design confirmation, changes, focused proof and blockers. At completion, record tracked source/test added/removed/net lines, retained owner/path, provenance of every timing value, evidence link and P2 hash. Coordinator then performs actual-diff review before accepting S2. |
-| Stop Conditions | Stop for a manual contradiction, a needed profile callback/live setter, an ABI consumer that cannot be migrated atomically, or a timing requirement that lacks L3 source and cannot be honestly retained L2; revise or transfer before proceeding. |
-| Exit Criteria | One RTC state owner has all S2 ledger dispositions; construction rejects malformed timing plans; calendar/update/periodic/alarm/IRQ/reset semantics have focused proof; generic century side path is removed; no host time enters Core; changed mechanism has no duplicate production path. |
-| Original Owner Request | In single-agent dual-role mode, complete the Core RTC/CMOS phase contract as PIC/DMA/PIT were completed: close manual functional and timing gaps; accept board-supplied L3 timing or explicitly L2 ratio-derived timing values; audit to the architecture and coding rules; retain a minimalist result and prohibit additive patchwork. |
-| Similar-Issue Sweep | Inspect every RTC construction caller, direct register-file assumption, reset caller and `ticks_per_second` consumer. The shared Board/PIT/DMA timing-plan contract is outside this S unless RTC needs an existing compatible value type; no parallel generic board timing layer may be introduced. |
+**Active.** T463 remains open between accepted subtasks.
 
 ## Current Technical Baseline
 
@@ -45,6 +28,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T463 S2 | One 64-byte MC146818 RTC owner now consumes only the existing guest clock-domain route plus a copied board phase plan. It implements divider hold/restart, UIP/update, periodic/SQW, alarm/IRQ flags, Register-C acknowledgement and manual RESET retention; Model 339 is declared L3 and default PC/AT remains L2. P2 `8a384476` passed focused CTest 8/8 and documentation governance. |
 | T463 S1 | Reconciled all 16 MC146818A/IBM-AT rows against rendered Motorola/IBM manuals and named reference-only emulator sources. The 32h century convention is corrected to board-map state; all L2/L4 boundaries remain explicit. No runtime or artifact changed. |
 | T462 | Closed: one immutable copied plan carries only qualified Model-339 PIT/DMA selections; PIC remains explicit L2. The seven corrected PIT-transition regressions, 294/294 serial current gate, 77/77 specialized gates, documentation governance and stripped 0462 artifact complete the controller-board contract. [History](../history/M5-T462-core-controller-board-timing-contract.md). |
 | T461 | Closed: one Core PIT owner covers manual P1--P14 and one `OUT0 -> IRQ0 -> PIC refresh` route closes P15; P16--P18 remain explicit L2. Full current-gate is 294/294 and its stripped artifact is retained in history. [History](../history/M5-T461-core-pit-8254-phase-contract.md). |
