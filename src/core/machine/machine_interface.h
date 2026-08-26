@@ -55,7 +55,10 @@ typedef struct core_machine_clock_plan {
 
 typedef enum core_machine_time_axis_kind {
     CORE_MACHINE_TIME_AXIS_UNQUALIFIED = 0,
-    CORE_MACHINE_TIME_AXIS_VERIFIED_PHYSICAL = 1
+    /* A profile-owned nominal rate can bound host pacing, but does not
+     * qualify the Core clock as physical instruction/transaction time. */
+    CORE_MACHINE_TIME_AXIS_MACRO_PROPORTIONAL = 1,
+    CORE_MACHINE_TIME_AXIS_VERIFIED_PHYSICAL = 2
 } core_machine_time_axis_kind;
 
 /* This qualifies the existing Core-owned elapsed-tick axis.  It is immutable
@@ -411,8 +414,10 @@ typedef struct core_machine_observation {
 typedef struct core_machine_time_observation {
     type_unsigned_64 elapsed_ticks;
     type_unsigned_64 next_deadline_tick;
+    type_unsigned_64 pacing_ticks_per_second;
     type_unsigned_64 physical_ticks_per_second;
     type_bool next_deadline_valid;
+    type_bool pacing_time_available;
     type_bool physical_time_available;
 } core_machine_time_observation;
 

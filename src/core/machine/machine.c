@@ -285,10 +285,11 @@ static type_status core_machine_create_internal(
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
     if ((config->time_axis.kind != CORE_MACHINE_TIME_AXIS_UNQUALIFIED &&
+        config->time_axis.kind != CORE_MACHINE_TIME_AXIS_MACRO_PROPORTIONAL &&
         config->time_axis.kind != CORE_MACHINE_TIME_AXIS_VERIFIED_PHYSICAL) ||
         (config->time_axis.kind == CORE_MACHINE_TIME_AXIS_UNQUALIFIED &&
         config->time_axis.ticks_per_second != 0u) ||
-        (config->time_axis.kind == CORE_MACHINE_TIME_AXIS_VERIFIED_PHYSICAL &&
+        (config->time_axis.kind != CORE_MACHINE_TIME_AXIS_UNQUALIFIED &&
         config->time_axis.ticks_per_second == 0u) ||
         (config->retirement_time_contract == CORE_MACHINE_RETIREMENT_TIME_PHYSICAL &&
         config->time_axis.kind != CORE_MACHINE_TIME_AXIS_VERIFIED_PHYSICAL)) {

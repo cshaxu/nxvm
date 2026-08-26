@@ -32,12 +32,18 @@ C_INT main(C_VOID)
         failed |= core_machine_create(&invalid, &rejected) != TYPE_STATUS_INVALID_ARGUMENT ||
             rejected != STD_NULL;
         invalid = config;
-        invalid.time_axis.kind = (core_machine_time_axis_kind)2;
+        invalid.time_axis.kind = (core_machine_time_axis_kind)3;
         failed |= core_machine_create(&invalid, &rejected) != TYPE_STATUS_INVALID_ARGUMENT ||
             rejected != STD_NULL;
         invalid = config;
         invalid.time_axis = (core_machine_time_axis) {
             CORE_MACHINE_TIME_AXIS_UNQUALIFIED, 0u };
+        invalid.retirement_time_contract = CORE_MACHINE_RETIREMENT_TIME_PHYSICAL;
+        failed |= core_machine_create(&invalid, &rejected) != TYPE_STATUS_INVALID_ARGUMENT ||
+            rejected != STD_NULL;
+        invalid = config;
+        invalid.time_axis = (core_machine_time_axis) {
+            CORE_MACHINE_TIME_AXIS_MACRO_PROPORTIONAL, 8000000u };
         invalid.retirement_time_contract = CORE_MACHINE_RETIREMENT_TIME_PHYSICAL;
         failed |= core_machine_create(&invalid, &rejected) != TYPE_STATUS_INVALID_ARGUMENT ||
             rejected != STD_NULL;
@@ -52,7 +58,9 @@ C_INT main(C_VOID)
     failed |= core_machine_capture_time_observation(machine, &time_observation) !=
         TYPE_STATUS_OK || time_observation.elapsed_ticks != 0u ||
         time_observation.next_deadline_tick != 0u ||
-        time_observation.next_deadline_valid || !time_observation.physical_time_available ||
+        time_observation.next_deadline_valid || !time_observation.pacing_time_available ||
+        time_observation.pacing_ticks_per_second != 8000000u ||
+        !time_observation.physical_time_available ||
         time_observation.physical_ticks_per_second != 8000000u;
     failed |= core_machine_memory_write(machine, 0xfffffff0u, &nop, sizeof(nop)) !=
         TYPE_STATUS_OK;

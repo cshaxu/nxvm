@@ -100,7 +100,9 @@ static C_INT vm_model_339_clock_contract_is_selected(C_VOID)
         session->core_machine->shared_kbc.data.typematic_initial_ticks != 4000000u ||
         session->core_machine->shared_kbc.data.typematic_repeat_ticks != 800000u;
     failed |= core_machine_capture_time_observation(session->core_machine,
-        &time_observation) != TYPE_STATUS_OK || time_observation.physical_time_available ||
+        &time_observation) != TYPE_STATUS_OK || !time_observation.pacing_time_available ||
+        time_observation.pacing_ticks_per_second != 8000000u ||
+        time_observation.physical_time_available ||
         time_observation.physical_ticks_per_second != 0u;
     core_machine_port_write(&session->core_machine->executor_port, 0x0060u, 0xf3u);
     failed |= core_machine_port_read(&session->core_machine->executor_port, 0x0060u) != 0xfau;
@@ -156,12 +158,12 @@ static C_INT vm_model_339_clock_contract_is_selected(C_VOID)
     core_machine_pit_set_gate(&session->core_machine->shared_pit, 1u, TYPE_FALSE);
     failed |= core_machine_capture_time_observation(session->core_machine,
         &time_observation) != TYPE_STATUS_OK || !time_observation.next_deadline_valid ||
-        time_observation.next_deadline_tick != 7813u;
+        time_observation.next_deadline_tick != 27u;
     advanced = TYPE_FALSE;
     failed |= core_machine_advance_to_next_deadline(session->core_machine,
         &advanced) != TYPE_STATUS_OK || !advanced ||
         core_machine_capture_time_observation(session->core_machine,
-        &time_observation) != TYPE_STATUS_OK || time_observation.elapsed_ticks != 7813u;
+        &time_observation) != TYPE_STATUS_OK || time_observation.elapsed_ticks != 27u;
     failed |= core_machine_reset(session->core_machine) != TYPE_STATUS_OK;
     core_machine_port_write(&session->core_machine->executor_port, 0x0043u, 0x34u);
     core_machine_port_write(&session->core_machine->executor_port, 0x0040u, 4u);
@@ -220,6 +222,7 @@ static C_INT vm_model_339_clock_contract_is_selected(C_VOID)
     core_machine_port_write(&fallback->core_machine->executor_port, 0x0040u, 0u);
     failed |= core_machine_capture_time_observation(fallback->core_machine,
         &time_observation) != TYPE_STATUS_OK || time_observation.next_deadline_valid ||
+        time_observation.pacing_time_available || time_observation.pacing_ticks_per_second != 0u ||
         time_observation.physical_time_available ||
         time_observation.physical_ticks_per_second != 0u;
     advanced = TYPE_FALSE;

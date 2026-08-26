@@ -137,6 +137,7 @@ static const vm_profile_default_pc_at_descriptor default_pc_at_descriptor = {
     { 1u, 0u, 0u, 0u, 0u, 0u },
     { { 1u, 1u, 0u }, { 1u, 4u, 0u }, { 1u, 1u, 0u }, { 1u, 1u, 0u },
         { 1u, 1u, 0u }, { 1u, 1u, 0u } },
+    { CORE_MACHINE_TIME_AXIS_UNQUALIFIED, 0u },
     { CORE_MACHINE_CONTROLLER_TIMING_RULE_L2_FALLBACK,
         CORE_MACHINE_CONTROLLER_TIMING_RULE_L2_FALLBACK,
         CORE_MACHINE_CONTROLLER_TIMING_RULE_L2_FALLBACK,
@@ -190,6 +191,7 @@ static const vm_profile_default_pc_at_descriptor ibm_5170_model_339_descriptor =
      * waits, monitor output, or host elapsed time. */
     { { 3u, 8u, 0u }, { 596591u, 4000000u, 0u }, { 64u, 15625u, 0u },
         { 315u, 1408u, 0u }, { 1u, 1u, 0u }, { 1u, 1u, 0u } },
+    { CORE_MACHINE_TIME_AXIS_MACRO_PROPORTIONAL, 8000000u },
     { CORE_MACHINE_CONTROLLER_TIMING_RULE_L2_FALLBACK,
         CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_RATIONAL_CLOCK,
         CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_DMA_SERVICE_PHASES,
@@ -290,6 +292,7 @@ C_INT vm_profile_default_pc_at_cpu_contract_select(
         descriptor->ticks_per_instruction,
         descriptor->instruction_timing,
         descriptor->clock_plan,
+        descriptor->time_axis,
         descriptor->controller_timing_rules,
         descriptor->kbc_typematic_initial_ticks,
         descriptor->kbc_typematic_repeat_ticks,
@@ -364,6 +367,8 @@ C_INT vm_profile_default_pc_at_descriptor_is_valid(
 
     if (descriptor == &ibm_5170_model_339_descriptor) {
         return descriptor->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 &&
+            descriptor->time_axis.kind == CORE_MACHINE_TIME_AXIS_MACRO_PROPORTIONAL &&
+            descriptor->time_axis.ticks_per_second == 8000000u &&
             descriptor->default_memory_bytes == 512u * 1024u &&
             descriptor->unpopulated_extended_memory &&
             descriptor->fdc_bounce_segment == 0x7000u &&
@@ -397,6 +402,8 @@ C_INT vm_profile_default_pc_at_descriptor_is_valid(
                 sizeof(default_pc_at_routes[index])) != 0) return 0;
     }
     return descriptor->hdc_present && !descriptor->planar_parity_present &&
+        descriptor->time_axis.kind == CORE_MACHINE_TIME_AXIS_UNQUALIFIED &&
+        descriptor->time_axis.ticks_per_second == 0u &&
         descriptor->ega_present && !descriptor->cga_vram_present &&
         descriptor->firmware_slot == VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_SLOT_GENERIC &&
         !descriptor->diskette_drive_a_field_upgrade &&

@@ -132,6 +132,7 @@ static C_INT vm_session_materialize_profile_core_config(vm_session *session,
         .ticks_per_instruction = contract->ticks_per_instruction,
         .instruction_timing = contract->instruction_timing,
         .clock_plan = contract->clock_plan,
+        .time_axis = contract->time_axis,
         .kbc_typematic_initial_ticks = contract->kbc_typematic_initial_ticks,
         .kbc_typematic_repeat_ticks = contract->kbc_typematic_repeat_ticks,
         .kbc_command_response_ticks = contract->kbc_command_response_ticks
