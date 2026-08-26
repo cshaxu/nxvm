@@ -76,5 +76,17 @@ type_status vm_profile_xt_5160_268_resolve(
         CORE_MACHINE_MEDIA_ID_INVALID, CORE_MACHINE_MEDIA_ID_INVALID}};
     out_profile->topology.fdc = (core_machine_fdc_config) {0x03f2u, 0x03f4u,
         0x03f5u, 0u, 0u, 6u, 2u, CORE_MACHINE_FDC_UNREADY_READ_GENERIC};
+    out_profile->topology.hdc_present = TYPE_TRUE;
+    out_profile->topology.hdc_media_id = VM_PROFILE_XT_5160_268_HDD_MEDIA_ID;
+    out_profile->topology.hdc_slave_media_id = CORE_MACHINE_MEDIA_ID_INVALID;
+    out_profile->topology.hdc = (core_machine_hdc_config) {
+        CORE_MACHINE_HDC_PROTOCOL_XEBEC_XT, 5u,
+        {.xebec = {0x0320u, 0x0321u, 0x0322u, 0x0323u, 3u,
+            CORE_MACHINE_XEBEC_DRIVE_TYPE_2,
+            {CORE_MACHINE_XEBEC_TYPE_2_LOGICAL_SECTOR_COUNT,
+             CORE_MACHINE_XEBEC_TYPE_2_BYTES_PER_SECTOR,
+             CORE_MACHINE_XEBEC_TYPE_2_CYLINDERS,
+             CORE_MACHINE_XEBEC_TYPE_2_HEADS,
+             CORE_MACHINE_XEBEC_TYPE_2_SECTORS_PER_TRACK}}}};
     return TYPE_STATUS_OK;
 }

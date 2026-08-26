@@ -29,7 +29,14 @@ C_INT main(C_VOID)
                 .hardware_status_reset_port = 0x0321u,
                 .jumpers_select_port = 0x0322u,
                 .dma_irq_mask_port = 0x0323u,
-                .dma_channel = 3u
+                .dma_channel = 3u,
+                .drive_type = CORE_MACHINE_XEBEC_DRIVE_TYPE_2,
+                .expected_media_geometry = {
+                    CORE_MACHINE_XEBEC_TYPE_2_LOGICAL_SECTOR_COUNT,
+                    CORE_MACHINE_XEBEC_TYPE_2_BYTES_PER_SECTOR,
+                    CORE_MACHINE_XEBEC_TYPE_2_CYLINDERS,
+                    CORE_MACHINE_XEBEC_TYPE_2_HEADS,
+                    CORE_MACHINE_XEBEC_TYPE_2_SECTORS_PER_TRACK}
             }
         }
     };

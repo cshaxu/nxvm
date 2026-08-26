@@ -4,6 +4,7 @@
 #include "vm/profile/profile_resolver_interface.h"
 
 #define VM_PROFILE_XT_5160_268_FDD_MEDIA_ID 1u
+#define VM_PROFILE_XT_5160_268_HDD_MEDIA_ID 2u
 
 /* This is a construction-only snapshot.  The copied Core topology records
  * only B2-selected shared board facts; later device batches own their own

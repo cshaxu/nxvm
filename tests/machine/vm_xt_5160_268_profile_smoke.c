@@ -65,7 +65,28 @@ static C_INT vm_xt_5160_268_declaration_is_fixed(C_VOID)
         profile.topology.dma.cascade_channel != 0u ||
         !profile.topology.fdc_present ||
         profile.topology.dma.fdc_channel != 2u ||
-        profile.topology.rtc_cmos_present) return 1;
+        profile.topology.rtc_cmos_present || !profile.topology.hdc_present ||
+        profile.topology.hdc_media_id != VM_PROFILE_XT_5160_268_HDD_MEDIA_ID ||
+        profile.topology.hdc_slave_media_id != CORE_MACHINE_MEDIA_ID_INVALID ||
+        profile.topology.hdc.protocol != CORE_MACHINE_HDC_PROTOCOL_XEBEC_XT ||
+        profile.topology.hdc.irq != 5u ||
+        profile.topology.hdc.bus.xebec.data_port != 0x0320u ||
+        profile.topology.hdc.bus.xebec.hardware_status_reset_port != 0x0321u ||
+        profile.topology.hdc.bus.xebec.jumpers_select_port != 0x0322u ||
+        profile.topology.hdc.bus.xebec.dma_irq_mask_port != 0x0323u ||
+        profile.topology.hdc.bus.xebec.dma_channel != 3u ||
+        profile.topology.hdc.bus.xebec.drive_type !=
+            CORE_MACHINE_XEBEC_DRIVE_TYPE_2 ||
+        profile.topology.hdc.bus.xebec.expected_media_geometry.logical_sector_count !=
+            CORE_MACHINE_XEBEC_TYPE_2_LOGICAL_SECTOR_COUNT ||
+        profile.topology.hdc.bus.xebec.expected_media_geometry.bytes_per_sector !=
+            CORE_MACHINE_XEBEC_TYPE_2_BYTES_PER_SECTOR ||
+        profile.topology.hdc.bus.xebec.expected_media_geometry.cylinders !=
+            CORE_MACHINE_XEBEC_TYPE_2_CYLINDERS ||
+        profile.topology.hdc.bus.xebec.expected_media_geometry.heads !=
+            CORE_MACHINE_XEBEC_TYPE_2_HEADS ||
+        profile.topology.hdc.bus.xebec.expected_media_geometry.sectors_per_track !=
+            CORE_MACHINE_XEBEC_TYPE_2_SECTORS_PER_TRACK) return 1;
     if (profile.topology.fdc_drives.media_id[0] !=
             VM_PROFILE_XT_5160_268_FDD_MEDIA_ID ||
         profile.topology.fdc_drives.media_id[1] != CORE_MACHINE_MEDIA_ID_INVALID ||
@@ -79,7 +100,7 @@ static C_INT vm_xt_5160_268_declaration_is_fixed(C_VOID)
     return profile.resolved.values.core.configuration.memory_bytes != 256u * 1024u;
 }
 
-static C_INT vm_xt_5160_268_topology_constructs_one_xt_fdc_route(C_VOID)
+static C_INT vm_xt_5160_268_topology_constructs_one_xt_route(C_VOID)
 {
     vm_profile_xt_5160_268_resolved_profile profile;
     core_machine_plan *plan = STD_NULL;
@@ -119,7 +140,19 @@ static C_INT vm_xt_5160_268_topology_constructs_one_xt_fdc_route(C_VOID)
         !core_machine_port_has_write(&machine->executor_port, 0x03d8u) ||
         !core_machine_port_has_write(&machine->executor_port, 0x03d9u) ||
         !core_machine_port_has_read(&machine->executor_port, 0x03dau) ||
-        core_machine_port_has_read(&machine->executor_port, 0x03c0u));
+        core_machine_port_has_read(&machine->executor_port, 0x03c0u) ||
+        !machine->hdc_configured ||
+        machine->hdc.connect.config.protocol != CORE_MACHINE_HDC_PROTOCOL_XEBEC_XT ||
+        machine->hdc.connect.config.bus.xebec.drive_type !=
+            CORE_MACHINE_XEBEC_DRIVE_TYPE_2 ||
+        !core_machine_port_has_read(&machine->executor_port, 0x0320u) ||
+        !core_machine_port_has_write(&machine->executor_port, 0x0320u) ||
+        !core_machine_port_has_read(&machine->executor_port, 0x0321u) ||
+        !core_machine_port_has_write(&machine->executor_port, 0x0321u) ||
+        !core_machine_port_has_read(&machine->executor_port, 0x0322u) ||
+        !core_machine_port_has_write(&machine->executor_port, 0x0322u) ||
+        core_machine_port_has_read(&machine->executor_port, 0x0323u) ||
+        !core_machine_port_has_write(&machine->executor_port, 0x0323u));
     failed |= !failed && core_machine_freeze_execution_providers(machine) !=
         TYPE_STATUS_OK;
     failed |= !failed && core_machine_reset(machine) != TYPE_STATUS_OK;
@@ -177,7 +210,7 @@ static C_INT vm_xt_5160_268_request_is_fixed(C_VOID)
 int main(void)
 {
     if (vm_xt_5160_268_declaration_is_fixed() ||
-        vm_xt_5160_268_topology_constructs_one_xt_fdc_route() ||
+        vm_xt_5160_268_topology_constructs_one_xt_route() ||
         vm_xt_5160_268_is_not_a_runnable_at_alias() ||
         vm_xt_5160_268_request_is_fixed()) return 1;
     STD_PRINTF("M5:T484:S3:XT-FIXED-PROFILE:OK\n");
@@ -186,5 +219,6 @@ int main(void)
     STD_PRINTF("M5:T484:S10:XT-NO-AT-FDC-ALIAS:OK\n");
     STD_PRINTF("M5:T484:S11:XT-CGA-PLAN:OK\n");
     STD_PRINTF("M5:T484:S11:XT-NO-VIDEO-ALIAS:OK\n");
+    STD_PRINTF("M5:T484:S16:XT-TYPE2:OK\n");
     return 0;
 }

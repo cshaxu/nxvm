@@ -6,6 +6,11 @@
 #include "core/machine/media_interface.h"
 
 #define CORE_MACHINE_FDC_DRIVE_COUNT 4u
+#define CORE_MACHINE_XEBEC_TYPE_2_LOGICAL_SECTOR_COUNT 41820u
+#define CORE_MACHINE_XEBEC_TYPE_2_BYTES_PER_SECTOR 512u
+#define CORE_MACHINE_XEBEC_TYPE_2_CYLINDERS 615u
+#define CORE_MACHINE_XEBEC_TYPE_2_HEADS 4u
+#define CORE_MACHINE_XEBEC_TYPE_2_SECTORS_PER_TRACK 17u
 
 /* A controller may retain this frozen core-issued nonce, but never DMA
  * registers, guest memory, a controller implementation pointer, or an address.
@@ -63,12 +68,22 @@ typedef struct core_machine_hdc_task_file_config {
     type_unsigned_32 clock_ticks_per_second;
 } core_machine_hdc_task_file_config;
 
+/* This is an immutable adapter/drive pairing selected by a profile at
+ * construction. It is not a runtime media choice; the media provider remains
+ * the sole owner of inserted bytes and current media state. */
+typedef enum core_machine_xebec_drive_type {
+    CORE_MACHINE_XEBEC_DRIVE_TYPE_INVALID = 0,
+    CORE_MACHINE_XEBEC_DRIVE_TYPE_2
+} core_machine_xebec_drive_type;
+
 typedef struct core_machine_hdc_xebec_config {
     type_unsigned_16 data_port;
     type_unsigned_16 hardware_status_reset_port;
     type_unsigned_16 jumpers_select_port;
     type_unsigned_16 dma_irq_mask_port;
     type_unsigned_8 dma_channel;
+    core_machine_xebec_drive_type drive_type;
+    core_machine_media_geometry expected_media_geometry;
 } core_machine_hdc_xebec_config;
 
 typedef struct core_machine_hdc_config {

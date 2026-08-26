@@ -772,7 +772,18 @@ static C_INT core_machine_hdc_topology_is_valid(
         xebec_ports[3] = config->bus.xebec.dma_irq_mask_port;
         ports = xebec_ports;
         port_count = sizeof(xebec_ports) / sizeof(xebec_ports[0]);
-        if (config->irq != 5u || config->bus.xebec.dma_channel != 3u) return 0;
+        if (config->irq != 5u || config->bus.xebec.dma_channel != 3u ||
+            config->bus.xebec.drive_type != CORE_MACHINE_XEBEC_DRIVE_TYPE_2 ||
+            config->bus.xebec.expected_media_geometry.logical_sector_count !=
+                CORE_MACHINE_XEBEC_TYPE_2_LOGICAL_SECTOR_COUNT ||
+            config->bus.xebec.expected_media_geometry.bytes_per_sector !=
+                CORE_MACHINE_XEBEC_TYPE_2_BYTES_PER_SECTOR ||
+            config->bus.xebec.expected_media_geometry.cylinders !=
+                CORE_MACHINE_XEBEC_TYPE_2_CYLINDERS ||
+            config->bus.xebec.expected_media_geometry.heads !=
+                CORE_MACHINE_XEBEC_TYPE_2_HEADS ||
+            config->bus.xebec.expected_media_geometry.sectors_per_track !=
+                CORE_MACHINE_XEBEC_TYPE_2_SECTORS_PER_TRACK) return 0;
     } else {
         task_file_ports[0] = config->bus.task_file.data_port;
         task_file_ports[1] = config->bus.task_file.error_features_port;
