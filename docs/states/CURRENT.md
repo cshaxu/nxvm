@@ -2,28 +2,28 @@
 
 ## Current Work
 
-**Active: M5 T484 S18.**
+**Active: M5 T484 S19.**
 
-## M5 T484 S18 Packet
+## M5 T484 S19 Packet
 
 | Field | Required record |
 | --- | --- |
 | Identifier Mode | Continuation |
-| Admission And Approval | Owner-approved continuous execution; S17 implementation `9a579416` is accepted by this P2 review. |
-| Objective | Prove the accepted Xebec Type-2 HDC DMA3 route reaches Core guest RAM and returns from Core guest RAM to the sole media provider through the actual 8237 service path. |
-| Non-goals | No new Xebec command semantics, runtime drive choice, VM memory/media route, second CHS/buffer/cache, guessed 323h enable semantics, physical MFM/ECC/service time, hardware-status bits, ROM, or session/runnable XT route. |
-| Reference Baseline | Accepted T484 S12--S17 Xebec contract, immutable Type-2 descriptor and sole HDC/DMA/media owner boundary; IBM 6139790 remains normative for DCB/DMA ordering. |
+| Admission And Approval | Owner-approved continuous execution; S18 implementation `b935ca2e` is accepted by this P2 review. |
+| Objective | Source-check and implement the selected IBM 5160 8255/PPI port-B parity/I/O-check NMI controls through the existing sole XT PPI owner. |
+| Non-goals | No PC/AT planar-parity reuse, separate NMI owner, guessed fault source, physical parity timing, ATA/HDC change, runtime device choice, ROM, or session/runnable XT route. |
+| Reference Baseline | Accepted T484 S5--S8 board/PPI owner boundary and T484 S6 IBM source matrix; rendered IBM 5160 technical-reference material is normative for PPI port-B semantics. |
 | Candidate Proposal | [IBM PC/XT 5160-268 selected-device functional closure](../proposals/m5-xt-5160-268-device-functional-closure.md). |
-| Files And ABI Surface | Existing focused Xebec smoke, Core DMA configuration helpers and evidence only; production HDC/board code changes only if the actual service path reveals an owner-bound defect. No VM session or product request surface. |
+| Files And ABI Surface | Existing Core XT PPI/board NMI boundary, fixed XT profile topology, focused XT PPI smoke and evidence only. No VM session or product request surface. |
 | Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, `docs/design/ARCHITECTURE.md`, `docs/design/CODING.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`, source policy and the one HDC/media-owner boundary. |
-| Verification | A configured actual DMA3 read places all 512 Type-2 bytes in Core RAM and a configured actual DMA3 write persists 512 Core-RAM bytes through the frozen media registry; direction, terminal count, DRQ release and no ATA alias prove the sole route. Retained HDC regressions, Debug all-target build, current-gate and documentation governance pass. |
-| Expected Markers | `M5:T484:S18:XEBEC-DMA-RAM:OK`; retained `M5:T484:S17:XEBEC-DMA-MEDIA:OK`. |
+| Verification | Source-backed PPI-B control and status lines have one explicit owner-to-Core-NMI path, reset/error behavior and focused port/IRQ/NMI proof; retained XT keyboard and PC/AT parity regressions, Debug all-target build, current-gate and documentation governance pass. |
+| Expected Markers | `M5:T484:S19:XT-PPI-PARITY:OK`; retained `M5:T484:S8:XT-PPI-KEYBOARD:OK`. |
 | Asset Needs | Accepted project evidence and project-owned unit state only; no third-party code, firmware, guest media, local path or code import enters the repository. |
-| Reporting Requirements | Retain one Core HDC/media/DMA/PIC owner; record the actual DMA service proof and transfer 323h enable semantics, status ambiguity, ROM and physical timing. |
+| Reporting Requirements | Retain one Core PPI/NMI owner; record each source-qualified control/status bit and transfer unsourced fault generation and physical timing. |
 | Original Owner Request | Continue the ordered minimalist queue toward the pre-Windows L3 admission audit. |
-| Stop Conditions | Stop and request a revised packet if actual DMA service needs a second data path, cannot use the existing Core RAM/DMA owner, needs guessed enable bits, or changes a product boundary. |
-| Exit Criteria | Both byte directions are proven through configured 8237 channel 3, Core RAM and the sole HDC/media owner with no bypass or new production path; unsupported physical/ambiguous behavior remains explicit. |
-| Similar-Issue Sweep | Xebec HDC, board DMA binding and all HDC personalities: prove only Xebec's registered byte-DMA path; ATA, Compaq and WD1003 retain their existing PIO paths. |
+| Stop Conditions | Stop and request a revised packet if a bit's logical relation cannot be sourced, needs a PC/AT alias, requires a second NMI state owner, or changes a product boundary. |
+| Exit Criteria | Every implemented XT PPI-B parity/I/O-check line is source-qualified, has one Core owner and focused reset/error proof; all other behavior remains explicit. |
+| Similar-Issue Sweep | XT PPI, board NMI and PC/AT planar/D4 parity variants: only the selected XT PPI route changes; other board personalities retain their distinct state and port contracts. |
 
 ## Current Technical Baseline
 
