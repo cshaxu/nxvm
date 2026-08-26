@@ -43,6 +43,7 @@ linked proposal identifies its finite implementation-admission baseline and
 exclusive earliest capability batch; a later candidate may consume a registered
 contract but does not redefine its L3 or Core/VM boundary.
 
+1. [Core physical time axis and Standard pacing qualification](../proposals/m5-core-physical-time-axis-standard-pacing.md).
 1. [PC/AT 5170 root profile normalization](../proposals/m5-pc-at-5170-root-profile-normalization.md).
 1. [DeskPro 386 5170-derived runnable profile](../proposals/m5-deskpro-386-5170-derived-runnable-profile.md).
 1. [VM AT profile resolution foundation](../proposals/m5-vm-at-profile-resolution-foundation.md).
