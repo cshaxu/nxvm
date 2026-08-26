@@ -7,4 +7,4 @@ and preserves the existing ATA PIO path only as one explicit personality.
 
 | Subtask | Accepted result |
 | --- | --- |
-| S1 | Active: freeze the source/cross-model and current-gap ledgers before changing controller behavior. |
+| S1 | Accepted: 27-row source/cross-model and current-gap ledgers retain one current HDC owner, source-qualified Compaq/ATA behavior, IBM/ESDI boundaries and S2's finite caller sweep. |
