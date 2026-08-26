@@ -17,7 +17,7 @@ profile path.
 
 The focused `core-machine-retirement-observation-s3-smoke` passes, and the
 isolated Debug current specialized gate passes (356 targets). The implementation changes
-three tracked code/test paths: 111 added and one removed line by `git diff
+three tracked code/test paths: 112 added and two removed lines by `git diff
 --numstat` before evidence. The retained production route is the existing
 private Core timing chain; no legacy evaluator was reattached and no duplicate
 state or compatibility implementation was introduced.
