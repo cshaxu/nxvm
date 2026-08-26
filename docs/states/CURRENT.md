@@ -2,28 +2,11 @@
 
 ## Current Work
 
-**Active: M5 T485 S18.**
+**Open: M5 T485.**
 
-## M5 T485 S18 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner-approved continuous execution; accepted T485 S17 `2c5fc86d` closes the preceding software-delivery batch. |
-| Objective | Audit all 8088 Group-3 dynamic arithmetic forms (`MUL`, `IMUL`, `DIV`, `IDIV`) against Intel range rows, current selector ownership and the L2 fallback boundary. |
-| Non-goals | No external-model promotion, guessed exact value, new dynamic timing model, 8088 selector implementation, decoder, state owner, physical-time or API change. |
-| Reference Baseline | Existing primary shape/transfer plan, current L2 dynamic arithmetic model and Intel Table 2-21 range rows. |
-| Candidate Proposal | [IBM PC/XT 5160-268 board and device phase-timing closure](../proposals/m5-8088-5150-xt-l3-baseline.md). |
-| Files And ABI Surface | Evidence, T485 history and supporting index only; no runtime source change or public ABI. |
-| Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, `docs/design/ARCHITECTURE.md`, `docs/design/CODING.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md` and source policy. |
-| Verification | Visual source review, finite opcode/form/selector sweep and documentation governance. |
-| Expected Markers | Four-form source/owner/disposition ledger; no Manual-L3 claim from a range or external behavior model. |
-| Asset Needs | Existing manual and prior reference evidence only; no imported source, firmware or media. |
-| Reporting Requirements | Record source range, present selector path, external-model provenance and exact L2/blocked disposition for every form. |
-| Original Owner Request | Continue the ordered minimalist queue toward the pre-Windows L3 admission audit. |
-| Stop Conditions | Stop if any conclusion would require choosing an undocumented point in a range or treating external emulator behavior as Intel authority. |
-| Exit Criteria | All four forms have one source-labelled L2/transfer disposition; no misleading 8088 L3 receiver remains implied. |
-| Similar-Issue Sweep | Inspect Group-3 forms, immediate IMUL, transfer-plan completeness, current 8088 selector order and every external-model reference. |
+T485 S18 is accepted at `4b9fbbe5`: all four 8088 Group-3 arithmetic forms
+remain source-unallocated because Intel supplies ranges rather than an exact
+selection formula; no external emulator model is promoted to Manual-L3.
 
 ## Current Technical Baseline
 
@@ -60,7 +43,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T485 S17 | Accepted: the retained evaluator classifies all finite 8088 HLT/software-delivery rows before compatibility, including `CD 03`'s type-3 distinction; INTR/NMI remain excluded. The 299/299 current gate passes. [Evidence](../etc/evidence/t485-s17-8088-delivery-halting-source-evaluator.md). |
+| T485 S18 | Accepted: all 8088 Group-3 arithmetic rows are source ranges, not exact operand-to-clock formulas. They remain source-unallocated without an external-model or endpoint guess. [Evidence](../etc/evidence/t485-s18-8088-group3-range-disposition.md). |
 | T484 | Closed: IBM 5160-268 now has one immutable 8088/profile plan, XT PPI/FDC/CGA/Xebec functional owners and one typed external-ROM BYOB product route; all remaining board/device timing transfers to T485. [Closure audit](../etc/evidence/t484-s22-xt-functional-closure-audit.md). |
 | T482 | Closed: one strict root YAML request reaches the sole `SESSION OPEN` authority and resolver without CLI re-encoding; 296/296 current-gate tests and stripped Release 0480 pass. [Closure audit](../etc/evidence/t482-s4-closure-audit.md). |
 | T483 | Closed: the IBM 5160-268 BOM, complete current-owner capability matrix and Manual-L3/unresolved timing partition establish one functional and one timing receiver without implying an XT runtime path. [Closure evidence](../etc/evidence/t483-s3-xt-timing-source-partition.md). |

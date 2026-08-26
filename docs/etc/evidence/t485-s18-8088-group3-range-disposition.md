@@ -1,6 +1,6 @@
 # T485 S18 8088 Group-3 Range Disposition
 
-`M5:T485:S18:8088-GROUP3-RANGE-DISPOSITION:ACCEPTANCE-CANDIDATE`
+`M5:T485:S18:8088-GROUP3-RANGE-DISPOSITION:ACCEPTED`
 
 Visual review of Intel Table 2-21's `MUL`, `IMUL`, `DIV`, and `IDIV` rows
 confirms that every 8088 Group-3 arithmetic form is specified as a clock range,
