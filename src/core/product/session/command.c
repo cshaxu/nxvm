@@ -40,6 +40,7 @@ static C_INT core_product_session_command_list(core_product_session_manager *man
 
 C_INT core_product_session_command_execute(core_product_session_manager *manager,
     C_INT argument_count, const C_CHAR *const *arguments,
+    const core_product_session_open_options *open_options,
     const core_product_session_output_provider *output)
 {
     core_product_session_id id;
@@ -54,11 +55,17 @@ C_INT core_product_session_command_execute(core_product_session_manager *manager
         return core_product_session_command_list(manager, output);
     }
     if (!STD_STRCMP(arguments[1], "open")) {
-        const core_product_session_open_options options = {
+        const core_product_session_open_options argument_options = {
             argument_count - 2, arguments + 2, STD_NULL, 0u
         };
+        if (open_options != STD_NULL && argument_count != 2) {
+            core_product_session_command_write(output, "Invalid session options.");
+            return 0;
+        }
+        const core_product_session_open_options *options = open_options == STD_NULL ?
+            &argument_options : open_options;
         type_status status = core_product_session_manager_open_with_options(
-            manager, &options, &id);
+            manager, options, &id);
         if (status != TYPE_STATUS_OK) {
             core_product_session_command_write(output,
                 status == TYPE_STATUS_INVALID_ARGUMENT ?

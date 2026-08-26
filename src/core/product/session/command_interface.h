@@ -12,6 +12,7 @@ typedef struct core_product_session_output_provider {
 
 C_INT core_product_session_command_execute(core_product_session_manager *manager,
     C_INT argument_count, const C_CHAR *const *arguments,
+    const core_product_session_open_options *open_options,
     const core_product_session_output_provider *output);
 
 #endif

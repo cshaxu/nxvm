@@ -27,7 +27,7 @@ C_INT main(C_VOID)
     vm_session_provider_initialize(&provider);
     if (core_product_session_manager_create(&provider, &manager) != TYPE_STATUS_OK ||
         core_product_session_command_execute(manager, 1, invalid_command,
-            STD_NULL) ||
+            STD_NULL, STD_NULL) ||
         core_product_session_manager_get_selected_snapshot(manager, &snapshots[0]) !=
             TYPE_STATUS_INVALID_STATE ||
         core_product_session_manager_apply_selected(manager, count_selected,

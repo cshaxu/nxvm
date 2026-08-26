@@ -416,19 +416,15 @@ static C_VOID vm_product_console_open_profile(vm_product_console_context *contex
     const core_product_session_open_options options = {
         0, STD_NULL, entry, sizeof(*entry)
     };
-    core_product_session_id id;
-    type_status status;
+    const C_CHAR *arguments[] = { "session", "open" };
+    core_product_session_output_provider output;
 
     if (context == STD_NULL || !vm_product_console_choose_profile(context,
             &selected_entry)) return;
-    status = core_product_session_manager_open_with_options(context->session_manager,
-        &options, &id);
-    if (status != TYPE_STATUS_OK || core_product_session_manager_select(
-            context->session_manager, id) != TYPE_STATUS_OK) {
-        STD_PRINTF("Unable to open the selected session.\n");
-        return;
-    }
-    STD_PRINTF("Opened and selected session %u.\n", (unsigned int)id);
+    output.write_line = vm_product_console_write_line;
+    output.context = STD_NULL;
+    if (!core_product_session_command_execute(context->session_manager, 2,
+            arguments, &options, &output)) return;
     machineProvider->set_display_mode(machineProvider->context,
         !STD_STRCMP(entry->display, "window") ? VM_SESSION_DISPLAY_WINDOW :
         !STD_STRCMP(entry->display, "auto") ? VM_SESSION_DISPLAY_AUTO :
@@ -450,7 +446,7 @@ static C_VOID vm_product_console_session(vm_product_console_context *context)
     output.write_line = vm_product_console_write_line;
     output.context = STD_NULL;
     (C_VOID)core_product_session_command_execute(context->session_manager,
-        numArgs, arguments, &output);
+        numArgs, arguments, STD_NULL, &output);
 }
 
 /* Executes commands */
