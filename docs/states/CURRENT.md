@@ -2,7 +2,28 @@
 
 ## Current Work
 
-**T480 retains accepted progress between subtasks.**
+**Active: M5 T480 S2.**
+
+## M5 T480 S2 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | T480 S1 accepted at `cd7b66c6`; owner standing queue-execution approval and VADP sole-owner architecture instruction remain in force. |
+| Objective | Map every T480 S1 VGA row to the present VADP, port/memory and snapshot implementation, prove the current owner boundary, and produce a finite code-gap/receiver ledger for S3 and S4. |
+| Non-goals | No VGA code, new profile/card, firmware/ROM/media import, renderer cache, parallel video path, VBE/SVGA, public setter, or artifact revision. |
+| Reference Baseline | Accepted T480 S1 source ledger; T285/T352 VADP planar and copied snapshot path; `cd7b66c6`. |
+| Candidate Proposal | [VADP IBM VGA L3 capability](../proposals/m5-vadp-ibm-vga-l3-capability.md). |
+| Files And ABI Surface | VADP/VM caller and test audit plus T480 evidence/history/status only; no ABI or code change. |
+| Applicable Rules | `docs/rules/EXECUTION.md` continuation and similar-issue sweep; `docs/rules/ARCHITECTURE.md` one VADP state and one product composition root; `docs/rules/CODING.md` owner-local simplification; documentation/source rules; T480 proposal data-flow constraint. |
+| Verification | Search all VADP public calls, port providers, physical-memory mappings, display snapshot consumers and profile declarations; reconcile every S1 row and run documentation governance. |
+| Expected Markers | `M5:T480:S2:OWNER:OK`; `M5:T480:S2:GAPS:OK`; `M5:T480:S2:PROFILE-UNSELECTED:OK`. |
+| Asset Needs | No acquisition or import. T480 S1's IBM and read-only external references remain source evidence only. |
+| Reporting Requirements | Record per-row current path/gap/disposition, all production caller hits, deleted-path opportunity or explicit none, S3/S4 ownership partition and no-current-profile conclusion. |
+| Stop Conditions | Stop and transfer any row that needs a second VADP state, VM-owned video state, an invented board route or an unsupported source inference. |
+| Exit Criteria | A row-complete code-gap ledger proves one mutable VADP and copied snapshot route, bounds common EGA/VGA work to S3 and VGA-only work to S4, and leaves profile binding to S5. |
+| Original Owner Request | Keep VADP as the sole owner of guest state, ports, memory mappings and snapshots while preparing IBM VGA through common EGA mechanisms plus bounded VGA-only extensions. |
+| Similar-Issue Sweep | All `vadp` Core source/headers, VADP port and memory binding, VM display consumers, profile port declarations, BIOS video paths and VADP tests. |
 
 ## Current Technical Baseline
 

@@ -7,3 +7,4 @@ only owner of guest video state, ports, mapped memory and copied snapshots.
 | Subtask | Accepted result |
 | --- | --- |
 | S1 | Accepted: the finite IBM primary/cross-model ledger classifies controller state, attribute access, chain-4, aperture, latches, DAC, Mode 13h, CRTC mapping, timing and profile binding. It records PCjs/QEMU chain-4 limits and leaves every current profile unselected. |
+| S2 | In progress: reconcile each ledger row with the existing VADP owner, port/memory routing and copied snapshot path; identify the smallest owner-local S3/S4 receiver partition. |
