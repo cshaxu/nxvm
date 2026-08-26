@@ -12,3 +12,7 @@ facts rather than treating it as either an alias of the 5170 root or a generic
 S1 is accepted. Its [ledger](../etc/evidence/t478-s1-default-at-delta-ledger.md)
 classifies all fields and limits S2 to one child resolver path using existing
 policy representation.
+
+S2 is accepted. Its [resolver evidence](../etc/evidence/t478-s2-default-at-child-resolver.md)
+records the one Default-AT child result, its pre-freeze request validation and
+the retained S3 direct-session deletion boundary.
