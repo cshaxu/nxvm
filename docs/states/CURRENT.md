@@ -2,28 +2,28 @@
 
 ## Current Work
 
-**Active: M5 T483 S2.**
+**Active: M5 T483 S3.**
 
-## M5 T483 S2 Packet
+## M5 T483 S3 Packet
 
 | Field | Required record |
 | --- | --- |
 | Identifier Mode | Continuation |
-| Admission And Approval | The owner-approved T483 scope continues after one-session review accepts S1 P1 `f5392efa` and its source-quality/BOM evidence. |
-| Objective | Map every selected 5160-268 component to the actual current Core/VM capability gap, sole owner and earliest functional receiver without implementing XT behavior. |
-| Non-goals | No 5160 runtime profile, device repair, firmware/media import, PC/AT borrowing, timing implementation, Windows claim or L3 decision. |
-| Reference Baseline | Accepted T483 S1 BOM, T479 S6 IBM/Xebec ledgers, current Core/VM source and retained 8088 semantic ledger. |
+| Admission And Approval | The owner-approved T483 scope continues after independent review accepts S2 P1 `58c3735a` and its complete selected-BOM owner/gap matrix. |
+| Objective | Partition the source-qualified 8088/XT board timing facts and every remaining evidence gap to one later timing/source receiver, then close this read-only audit. |
+| Non-goals | No 5160 runtime profile, device repair, firmware/media import, PC/AT borrowing, timing implementation, physical/L3 conclusion or Windows claim. |
+| Reference Baseline | Accepted T483 S1 BOM and S2 capability matrix, T479 S6 IBM/Xebec ledgers, retained 8088 semantic ledger and current Core/VM time boundary. |
 | Candidate Proposal | [IBM PC/XT 5160-268 profile and capability-gap audit](../proposals/m5-xt-5160-268-profile-capability-audit.md). |
-| Files And ABI Surface | Read-only Core/VM/profile/controller inspection plus indexed gap evidence/history/status; no source, build, runtime, asset or ABI change. |
+| Files And ABI Surface | Read-only source/evidence inspection plus indexed timing partition/history/status; no source, build, runtime, asset or ABI change. |
 | Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, architecture/coding rules, source policy and the proposal's no-implementation stop boundary. |
-| Verification | Exact source-path and symbol sweep, T479 Xebec cross-check, ownership-direction review and documentation governance. |
-| Expected Markers | `M5:T483:S2:XT-CAPABILITY-MATRIX:OK`; `M5:T483:S2:XT-OWNER-PARTITION:OK`. |
+| Verification | Primary-source fact/provenance sweep, current Core time-boundary cross-check, receiver uniqueness review and documentation governance. |
+| Expected Markers | `M5:T483:S3:XT-TIMING-PARTITION:OK`; `M5:T483:S3:XT-AUDIT-CLOSURE:OK`. |
 | Asset Needs | No acquisition or import. |
-| Reporting Requirements | Record current support/absence per BOM item, state/reset/IRQ/DMA/media gaps, sole current owner and one earliest functional receiver. |
+| Reporting Requirements | Separate source-proved 8088/board clock facts from unresolved timing inputs; retain exactly one later timing/source receiver without inventing a physical-axis qualification. |
 | Original Owner Request | Continue the ordered minimalist queue toward the pre-Windows L3 admission audit. |
 | Stop Conditions | Stop if a selected component lacks a single current owner or would require implementation to classify; retain one bounded functional/source receiver rather than infer from PC/AT behavior. |
-| Exit Criteria | Every BOM item has a source-labelled current capability disposition, one current owner/absence statement and one earliest functional receiver; no XT path is implemented or implied runnable. |
-| Similar-Issue Sweep | Core controllers, CPU/profile resolver, VM composition/media/session code, 5160/XT/Xebec documents and product tests. |
+| Exit Criteria | The timing partition is complete, does not duplicate the functional receiver, and records no unsupported time claim; T483 can close with no XT path implemented or implied runnable. |
+| Similar-Issue Sweep | 8088 and Core time-axis code/evidence, PIC/DMA/PIT/refresh, FDC/HDC service boundaries, profile time contracts and 5160/Xebec source records. |
 
 ## Current Technical Baseline
 
