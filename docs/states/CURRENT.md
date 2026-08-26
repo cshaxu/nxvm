@@ -38,6 +38,7 @@ current-owner/profile sweep.
 
 | Task | Compact result |
 | --- | --- |
+| T479 S1 | Accepted: the [27-row source ledger](../etc/evidence/t479-s1-at-fixed-disk-source-ledger.md) and [gap ledger](../etc/evidence/t479-s1-at-fixed-disk-gap-ledger.md) preserve one HDC owner and bound S2's caller/profile sweep. |
 | T478 | Closed: Default-AT is an immutable `pc-at-5170` child and all three AT profiles have one resolver-to-copied-Core-input route. [Closure audit](../etc/evidence/t478-s4-closure-audit.md) records frozen parity, the 294-target gate, and stripped Release 0478. |
 | T477 | Closed: DeskPro is an immutable `pc-at-5170` child with one copied Core-plan materialization path; the Model-40 session retains only dynamic resources. [Closure audit](../etc/evidence/t477-s4-closure-audit.md) records frozen parity, the 294-target gate and stripped Release 0477. |
 | T476 | Closed: IBM 5170 sessions consume one copied `pc-at-5170` root and one Core-plan materialization path; the former duplicate exception aggregate is retired while its independent owners remain. [Closure audit](../etc/evidence/t476-s4-closure-audit.md) records the 294-target gate and stripped Release 0476. |
