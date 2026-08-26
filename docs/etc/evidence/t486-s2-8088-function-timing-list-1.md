@@ -1,6 +1,6 @@
 # T486 S2 8088 Function And Timing List 1
 
-`M5:T486:S2:8088-FUNCTION-TIMING-LIST-1:ACCEPTANCE-CANDIDATE`
+`M5:T486:S2:8088-FUNCTION-TIMING-LIST-1:ACCEPTED`
 
 This finite ledger covers the whole Table 2-21 surface. `p` is the printed
 page of Intel's 1981 *iAPX 86,88 User's Manual*. `EA` is Table 2-20's exact

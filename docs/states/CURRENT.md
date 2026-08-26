@@ -2,28 +2,11 @@
 
 ## Current Work
 
-**Open: M5 T486 S2.**
+**Open: M5 T486.**
 
-## M5 T486 S2 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner-approved Td S152 per-unit program and continuous execution on 2026-08-26; accepted T486 S1 at `0dc37321` supplies the required original-source corpus. |
-| Objective | Create the complete List-1 function and timing ledger for every Intel Table 2-21 8088 instruction, prefix and explicit non-instruction entry. |
-| Non-goals | No code, decoder, timing-selector, test, board/bus, controller, profile, VM, artifact or List-2 code-gap change. |
-| Reference Baseline | T486 S1 original-source ledger and retained T485 S19 coverage inventory. |
-| Candidate Proposal | [8088 instruction function and timing completeness](../proposals/m5-8088-instruction-timing-completeness.md). |
-| Files And ABI Surface | T486 List-1 evidence, evidence index, history and Current only; no C ABI or runtime surface. |
-| Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md` and the source policy. The later implementation remains at the existing private Core timing-selector owner. |
-| Verification | Reconcile every rendered Table 2-21 row against the finite ledger; visually verify page citations and run documentation governance. |
-| Expected Markers | One row-complete ledger records semantics, operand/form, clocks/transfers/formula or range, source page, L3/L2/boundary disposition and explicit exclusions. |
-| Asset Needs | Read-only owner-managed Intel manual archive only; no third-party source import. |
-| Reporting Requirements | Report the finite row count, all uncertain/range/non-instruction boundaries and no-code result. |
-| Stop Conditions | Stop if a source row cannot be read or assigned a truthful source disposition; do not infer a row from code or emulator behavior. |
-| Exit Criteria | Every selected Table 2-21 row has exactly one source-backed List-1 entry; List 2 and implementation remain prohibited. |
-| Original Owner Request | Establish the complete instruction function/timing list before auditing or implementing, rather than repairing isolated opcode findings. |
-| Similar-Issue Sweep | Sweep all Table 2-21 instruction, prefix, range, formula and non-instruction rows and reconcile each retained T485 family grouping to the new exact ledger. |
+T486 S2 is accepted at `ed0cb97b`: every Table 2-21 mnemonic, prefix and
+explicit non-instruction entry has a source-backed function/timing disposition.
+The next required stage is List 2; implementation remains prohibited.
 
 ## Current Technical Baseline
 
@@ -60,6 +43,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T486 S2 | Accepted: complete Table-2-21 List 1 defines every mnemonic, prefix and explicit non-instruction boundary; no code or timing claim changed. [Evidence](../etc/evidence/t486-s2-8088-function-timing-list-1.md). |
 | T486 S1 | Accepted: the original Intel 1981 source corpus and Table-2-21 visual review are fixed before List 1; no code or timing claim changed. [Evidence](../etc/evidence/t486-s1-8088-original-source-ledger.md). |
 | T485 | Withdrawn, not completed: accepted S1--S20 evidence remains retained, but Td S152 transfers the uncompleted aggregate XT scope to independent CPU/board/controller candidates. [Record](../etc/evidence/td-s152-unit-task-admission-governance.md). |
 | T484 | Closed: IBM 5160-268 now has one immutable 8088/profile plan, XT PPI/FDC/CGA/Xebec functional owners and one typed external-ROM BYOB product route; all remaining board/device timing transfers to T485. [Closure audit](../etc/evidence/t484-s22-xt-functional-closure-audit.md). |
