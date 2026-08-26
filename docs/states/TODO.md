@@ -225,6 +225,14 @@ admissions, not the default definition of NXVM completion.
   product, and a historical clone without an approved primary contract. Admit
   one boundary only after the M5 L3 audit records why it is not supported; do
   not create a second bus or device-timing owner.
+- [ ] **Profile physical-timebase closure (`TODO(Medium)`).** T470 retains
+  default PC/AT, Model-339 and Model-40 at `UNQUALIFIED` because none proves a
+  complete CPU retirement, transaction/wait, controller-deadline and
+  oscillator/divider chain on the one Core axis. Admit a profile only after
+  primary-backed evidence closes every named chain and its immutable rate;
+  then add Standard's ahead-only host wait as a VM consumer of copied Core
+  progress. Do not use nominal MHz, PIT ratios, host elapsed time, a VM tick
+  accumulator or a second scheduler to bridge the gap.
 
 ## Architecture And Portability Debt
 - [ ] **Residual direct-production strict compilation (`TODO(Medium)`).**

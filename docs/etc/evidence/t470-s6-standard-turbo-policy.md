@@ -36,6 +36,10 @@ time pacing.
   the unavailable Core observation: neither changes elapsed guest time.
 - `current.vm-runner-display-cadence-smoke` passes after the runner policy
   change.
+- The T388 physical-timebase inventory now names
+  `core_machine_capture_time_observation`, the retained copied-observation
+  reader, instead of the S2-deleted pacing-contract accessor.  This keeps the
+  current-gate inventory aligned without restoring a parallel contract.
 
 The S6 closure audit records the release build, full closure reconciliation and
 the required future receiver for physically paced Standard mode.

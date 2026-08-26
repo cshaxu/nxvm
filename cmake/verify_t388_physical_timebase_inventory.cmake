@@ -38,6 +38,6 @@ foreach(token IN ITEMS
 endforeach()
 t388_require("${evidence_text}" "core_machine_instruction_cost")
 t388_require("${session_text}" "core_machine_advance_to_next_deadline")
-t388_require("${session_text}" "core_machine_get_pacing_contract")
+t388_require("${session_text}" "core_machine_capture_time_observation")
 t388_require("${evidence_text}" "waiting for interrupt")
 message(STATUS "T388 four-profile physical-timebase inventory passed.")
