@@ -172,13 +172,14 @@ static const vm_profile_default_pc_at_descriptor default_pc_at_descriptor = {
     sizeof(default_pc_at_port_leaves) / sizeof(default_pc_at_port_leaves[0]),
     default_pc_at_routes,
     sizeof(default_pc_at_routes) / sizeof(default_pc_at_routes[0]),
-    { .protocol = CORE_MACHINE_HDC_PROTOCOL_ATA_PIO,
-        .data_port = 0x01f0u, .error_features_port = 0x01f1u,
-        .sector_count_port = 0x01f2u, .sector_number_port = 0x01f3u,
-        .cylinder_low_port = 0x01f4u, .cylinder_high_port = 0x01f5u,
-        .drive_head_port = 0x01f6u, .status_command_port = 0x01f7u,
-        .alternate_status_device_control_port = 0x03f6u, .irq = 14u,
-        .lba28_supported = TYPE_TRUE },
+    { .protocol = CORE_MACHINE_HDC_PROTOCOL_ATA_PIO, .irq = 14u,
+        .bus.task_file = {
+            .data_port = 0x01f0u, .error_features_port = 0x01f1u,
+            .sector_count_port = 0x01f2u, .sector_number_port = 0x01f3u,
+            .cylinder_low_port = 0x01f4u, .cylinder_high_port = 0x01f5u,
+            .drive_head_port = 0x01f6u, .status_command_port = 0x01f7u,
+            .alternate_status_device_control_port = 0x03f6u,
+            .lba28_supported = TYPE_TRUE }},
     default_pc_at_firmware_services,
     sizeof(default_pc_at_firmware_services) /
         sizeof(default_pc_at_firmware_services[0])
@@ -234,13 +235,14 @@ static const vm_profile_default_pc_at_descriptor ibm_5170_model_339_descriptor =
     sizeof(default_pc_at_port_leaves) / sizeof(default_pc_at_port_leaves[0]),
     default_pc_at_routes,
     sizeof(default_pc_at_routes) / sizeof(default_pc_at_routes[0]),
-    { .protocol = CORE_MACHINE_HDC_PROTOCOL_IBM_WD1003_ST506,
-        .data_port = 0x01f0u, .error_features_port = 0x01f1u,
-        .sector_count_port = 0x01f2u, .sector_number_port = 0x01f3u,
-        .cylinder_low_port = 0x01f4u, .cylinder_high_port = 0x01f5u,
-        .drive_head_port = 0x01f6u, .status_command_port = 0x01f7u,
-        .alternate_status_device_control_port = 0x03f6u, .irq = 14u,
-        .lba28_supported = TYPE_FALSE, .clock_ticks_per_second = 8000000u },
+    { .protocol = CORE_MACHINE_HDC_PROTOCOL_IBM_WD1003_ST506, .irq = 14u,
+        .bus.task_file = {
+            .data_port = 0x01f0u, .error_features_port = 0x01f1u,
+            .sector_count_port = 0x01f2u, .sector_number_port = 0x01f3u,
+            .cylinder_low_port = 0x01f4u, .cylinder_high_port = 0x01f5u,
+            .drive_head_port = 0x01f6u, .status_command_port = 0x01f7u,
+            .alternate_status_device_control_port = 0x03f6u,
+            .lba28_supported = TYPE_FALSE, .clock_ticks_per_second = 8000000u }},
     ibm_5170_model_339_firmware_services,
     sizeof(ibm_5170_model_339_firmware_services) /
         sizeof(ibm_5170_model_339_firmware_services[0])
@@ -813,17 +815,17 @@ C_INT vm_profile_default_pc_at_descriptor_is_valid(
             descriptor->cmos.fixed_disk_type == 0x30u &&
             descriptor->cmos.fixed_disk_type_extended_0 == 0u &&
             descriptor->hdc.protocol == CORE_MACHINE_HDC_PROTOCOL_IBM_WD1003_ST506 &&
-            descriptor->hdc.data_port == 0x01f0u &&
-            descriptor->hdc.error_features_port == 0x01f1u &&
-            descriptor->hdc.sector_count_port == 0x01f2u &&
-            descriptor->hdc.sector_number_port == 0x01f3u &&
-            descriptor->hdc.cylinder_low_port == 0x01f4u &&
-            descriptor->hdc.cylinder_high_port == 0x01f5u &&
-            descriptor->hdc.drive_head_port == 0x01f6u &&
-            descriptor->hdc.status_command_port == 0x01f7u &&
-            descriptor->hdc.alternate_status_device_control_port == 0x03f6u &&
-            descriptor->hdc.irq == 14u && !descriptor->hdc.lba28_supported &&
-            descriptor->hdc.clock_ticks_per_second == 8000000u &&
+            descriptor->hdc.bus.task_file.data_port == 0x01f0u &&
+            descriptor->hdc.bus.task_file.error_features_port == 0x01f1u &&
+            descriptor->hdc.bus.task_file.sector_count_port == 0x01f2u &&
+            descriptor->hdc.bus.task_file.sector_number_port == 0x01f3u &&
+            descriptor->hdc.bus.task_file.cylinder_low_port == 0x01f4u &&
+            descriptor->hdc.bus.task_file.cylinder_high_port == 0x01f5u &&
+            descriptor->hdc.bus.task_file.drive_head_port == 0x01f6u &&
+            descriptor->hdc.bus.task_file.status_command_port == 0x01f7u &&
+            descriptor->hdc.bus.task_file.alternate_status_device_control_port == 0x03f6u &&
+            descriptor->hdc.irq == 14u && !descriptor->hdc.bus.task_file.lba28_supported &&
+            descriptor->hdc.bus.task_file.clock_ticks_per_second == 8000000u &&
             descriptor->firmware_services != STD_NULL &&
             descriptor->firmware_service_count ==
                 sizeof(ibm_5170_model_339_firmware_services) /
@@ -842,14 +844,14 @@ C_INT vm_profile_default_pc_at_descriptor_is_valid(
         descriptor->firmware_slot == VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_SLOT_GENERIC &&
         !descriptor->diskette_drive_a_field_upgrade &&
         descriptor->hdc.protocol == CORE_MACHINE_HDC_PROTOCOL_ATA_PIO &&
-        descriptor->hdc.data_port == 0x01f0u &&
-        descriptor->hdc.error_features_port == 0x01f1u &&
-        descriptor->hdc.sector_count_port == 0x01f2u &&
-        descriptor->hdc.sector_number_port == 0x01f3u &&
-        descriptor->hdc.cylinder_low_port == 0x01f4u &&
-        descriptor->hdc.cylinder_high_port == 0x01f5u &&
-        descriptor->hdc.drive_head_port == 0x01f6u &&
-        descriptor->hdc.status_command_port == 0x01f7u &&
-        descriptor->hdc.alternate_status_device_control_port == 0x03f6u &&
-        descriptor->hdc.irq == 14u && descriptor->hdc.lba28_supported;
+        descriptor->hdc.bus.task_file.data_port == 0x01f0u &&
+        descriptor->hdc.bus.task_file.error_features_port == 0x01f1u &&
+        descriptor->hdc.bus.task_file.sector_count_port == 0x01f2u &&
+        descriptor->hdc.bus.task_file.sector_number_port == 0x01f3u &&
+        descriptor->hdc.bus.task_file.cylinder_low_port == 0x01f4u &&
+        descriptor->hdc.bus.task_file.cylinder_high_port == 0x01f5u &&
+        descriptor->hdc.bus.task_file.drive_head_port == 0x01f6u &&
+        descriptor->hdc.bus.task_file.status_command_port == 0x01f7u &&
+        descriptor->hdc.bus.task_file.alternate_status_device_control_port == 0x03f6u &&
+        descriptor->hdc.irq == 14u && descriptor->hdc.bus.task_file.lba28_supported;
 }

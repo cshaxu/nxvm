@@ -93,16 +93,16 @@ static C_INT vm_hdc_profile_contract_is_valid(C_VOID)
     if (profile == STD_NULL) return 0;
     hdc = &profile->hdc;
     return hdc->protocol == CORE_MACHINE_HDC_PROTOCOL_ATA_PIO &&
-        hdc->data_port == HDC_DATA_PORT &&
-        hdc->error_features_port == HDC_ERROR_PORT &&
-        hdc->sector_count_port == HDC_SECTOR_COUNT_PORT &&
-        hdc->sector_number_port == HDC_SECTOR_NUMBER_PORT &&
-        hdc->cylinder_low_port == HDC_CYLINDER_LOW_PORT &&
-        hdc->cylinder_high_port == HDC_CYLINDER_HIGH_PORT &&
-        hdc->drive_head_port == HDC_DRIVE_HEAD_PORT &&
-        hdc->status_command_port == HDC_STATUS_COMMAND_PORT &&
-        hdc->alternate_status_device_control_port == HDC_ALT_STATUS_CONTROL_PORT &&
-        hdc->irq == 14u && hdc->lba28_supported;
+        hdc->bus.task_file.data_port == HDC_DATA_PORT &&
+        hdc->bus.task_file.error_features_port == HDC_ERROR_PORT &&
+        hdc->bus.task_file.sector_count_port == HDC_SECTOR_COUNT_PORT &&
+        hdc->bus.task_file.sector_number_port == HDC_SECTOR_NUMBER_PORT &&
+        hdc->bus.task_file.cylinder_low_port == HDC_CYLINDER_LOW_PORT &&
+        hdc->bus.task_file.cylinder_high_port == HDC_CYLINDER_HIGH_PORT &&
+        hdc->bus.task_file.drive_head_port == HDC_DRIVE_HEAD_PORT &&
+        hdc->bus.task_file.status_command_port == HDC_STATUS_COMMAND_PORT &&
+        hdc->bus.task_file.alternate_status_device_control_port == HDC_ALT_STATUS_CONTROL_PORT &&
+        hdc->irq == 14u && hdc->bus.task_file.lba28_supported;
 }
 
 static C_INT vm_hdc_progress_probe(vm_session *session)

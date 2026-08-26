@@ -101,7 +101,7 @@ static C_INT core_machine_hdc_read(core_machine *machine, type_unsigned_16 port,
 }
 
 static C_INT core_machine_hdc_command(core_machine *machine,
-    const core_machine_hdc_config *config, type_unsigned_8 command)
+    const core_machine_hdc_task_file_config *config, type_unsigned_8 command)
 {
     if (!core_machine_hdc_write(machine, config->status_command_port, command)) return 0;
     core_machine_hdc_advance(&machine->hdc);
@@ -109,7 +109,7 @@ static C_INT core_machine_hdc_command(core_machine *machine,
 }
 
 static C_INT core_machine_hdc_program_chs(core_machine *machine,
-    const core_machine_hdc_config *config)
+    const core_machine_hdc_task_file_config *config)
 {
     return core_machine_hdc_write(machine, config->sector_count_port, 1u) &&
         core_machine_hdc_write(machine, config->sector_number_port, 1u) &&
@@ -119,7 +119,7 @@ static C_INT core_machine_hdc_program_chs(core_machine *machine,
 }
 
 static C_INT core_machine_hdc_drain(core_machine *machine,
-    const core_machine_hdc_config *config, type_unsigned_16 *first_word)
+    const core_machine_hdc_task_file_config *config, type_unsigned_16 *first_word)
 {
     type_unsigned_32 word;
 
@@ -132,7 +132,7 @@ static C_INT core_machine_hdc_drain(core_machine *machine,
 }
 
 static C_INT core_machine_hdc_fill(core_machine *machine,
-    const core_machine_hdc_config *config, type_unsigned_16 first_word)
+    const core_machine_hdc_task_file_config *config, type_unsigned_16 first_word)
 {
     for (type_unsigned_32 index = 0u; index < 256u; ++index) {
         if (!core_machine_hdc_write(machine, config->data_port,
@@ -150,15 +150,17 @@ static C_INT core_machine_hdc_test_ibm_wd1003(C_VOID)
         .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE,
         .ticks_per_instruction = 1u
     };
-    const core_machine_hdc_config hdc_config = {
+    const core_machine_hdc_task_file_config hdc_config = {
+            .data_port = 0x01f0u, .error_features_port = 0x01f1u,
+            .sector_count_port = 0x01f2u, .sector_number_port = 0x01f3u,
+            .cylinder_low_port = 0x01f4u, .cylinder_high_port = 0x01f5u,
+            .drive_head_port = 0x01f6u, .status_command_port = 0x01f7u,
+            .alternate_status_device_control_port = 0x03f6u,
+            .lba28_supported = TYPE_FALSE, .clock_ticks_per_second = 8000000u
+    };
+    const core_machine_hdc_config hdc_plan = {
         .protocol = CORE_MACHINE_HDC_PROTOCOL_IBM_WD1003_ST506,
-        .data_port = 0x01f0u, .error_features_port = 0x01f1u,
-        .sector_count_port = 0x01f2u, .sector_number_port = 0x01f3u,
-        .cylinder_low_port = 0x01f4u, .cylinder_high_port = 0x01f5u,
-        .drive_head_port = 0x01f6u, .status_command_port = 0x01f7u,
-        .alternate_status_device_control_port = 0x03f6u,
-        .irq = 14u, .lba28_supported = TYPE_FALSE,
-        .clock_ticks_per_second = 8000000u
+        .irq = 14u, .bus.task_file = hdc_config
     };
     core_machine_hdc_fixture_media media = {
         .generation = 1u, .present = TYPE_TRUE,
@@ -183,7 +185,7 @@ static C_INT core_machine_hdc_test_ibm_wd1003(C_VOID)
     } else {
         topology.media_registry = registry;
         topology.media_id = 1u;
-        topology.config = hdc_config;
+            topology.config = hdc_plan;
         if (core_machine_configure_hdc(machine, &topology) != TYPE_STATUS_OK ||
             core_machine_freeze_execution_providers(machine) != TYPE_STATUS_OK ||
             core_machine_reset(machine) != TYPE_STATUS_OK ||
@@ -237,14 +239,17 @@ C_INT main(C_VOID)
         .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE,
         .ticks_per_instruction = 1u
     };
-    const core_machine_hdc_config hdc_config = {
+    const core_machine_hdc_task_file_config hdc_config = {
+            .data_port = 0x01f0u, .error_features_port = 0x01f1u,
+            .sector_count_port = 0x01f2u, .sector_number_port = 0x01f3u,
+            .cylinder_low_port = 0x01f4u, .cylinder_high_port = 0x01f5u,
+            .drive_head_port = 0x01f6u, .status_command_port = 0x01f7u,
+            .alternate_status_device_control_port = 0x03f6u,
+            .lba28_supported = TYPE_TRUE
+    };
+    const core_machine_hdc_config hdc_plan = {
         .protocol = CORE_MACHINE_HDC_PROTOCOL_ATA_PIO,
-        .data_port = 0x01f0u, .error_features_port = 0x01f1u,
-        .sector_count_port = 0x01f2u, .sector_number_port = 0x01f3u,
-        .cylinder_low_port = 0x01f4u, .cylinder_high_port = 0x01f5u,
-        .drive_head_port = 0x01f6u, .status_command_port = 0x01f7u,
-        .alternate_status_device_control_port = 0x03f6u,
-        .irq = 14u, .lba28_supported = TYPE_TRUE
+        .irq = 14u, .bus.task_file = hdc_config
     };
     core_machine_hdc_fixture_media media = {
         .generation = 1u, .present = TYPE_TRUE,
@@ -283,7 +288,7 @@ C_INT main(C_VOID)
                 TYPE_STATUS_INVALID_ARGUMENT) {
                 failed |= 0x04;
             }
-            topology.config = hdc_config;
+            topology.config = hdc_plan;
             if (!failed && (core_machine_configure_hdc(machine, &topology) != TYPE_STATUS_OK ||
                 core_machine_freeze_execution_providers(machine) != TYPE_STATUS_OK ||
                 core_machine_reset(machine) != TYPE_STATUS_OK)) {

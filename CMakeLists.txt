@@ -1634,6 +1634,9 @@ add_executable(core-machine-compaq-hdc-machine-s5-smoke
 target_link_libraries(core-machine-compaq-hdc-machine-s5-smoke PRIVATE core-machine)
 add_executable(core-machine-hdc-smoke tests/machine/core_machine_hdc_smoke.c)
 target_link_libraries(core-machine-hdc-smoke PRIVATE core-machine)
+add_executable(core-machine-xebec-wiring-smoke
+    tests/machine/core_machine_xebec_wiring_smoke.c)
+target_link_libraries(core-machine-xebec-wiring-smoke PRIVATE core-machine)
 add_executable(core-machine-controller-authority-smoke
     tests/machine/core_machine_controller_authority_smoke.c)
 target_link_libraries(core-machine-controller-authority-smoke PRIVATE core-machine)
@@ -2254,6 +2257,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     core-machine-fdc-topology-port-smoke
     core-machine-fdc-media-change-port-smoke
     core-machine-hdc-smoke
+    core-machine-xebec-wiring-smoke
     core-machine-compaq-hdc-s5-smoke
     core-machine-compaq-hdc-machine-s5-smoke
     core-machine-controller-authority-smoke
@@ -3587,10 +3591,10 @@ foreach(project_t345_target IN LISTS PROJECT_T344_CURRENT_GATE_TARGETS)
 endforeach()
 list(LENGTH PROJECT_T345_S2_OWNER_TEST_STRICT_TARGETS project_t345_s2_pure_count)
 list(LENGTH PROJECT_T345_S2_MIXED_OWNER_TEST_TARGETS project_t345_s2_mixed_count)
-if(NOT project_t345_s2_pure_count EQUAL 181 OR
+if(NOT project_t345_s2_pure_count EQUAL 182 OR
         NOT project_t345_s2_mixed_count EQUAL 3)
     message(FATAL_ERROR
-        "T345 S2 expected 181 pure and 3 mixed owner-test targets; found ${project_t345_s2_pure_count} pure and ${project_t345_s2_mixed_count} mixed.")
+        "T345 S2 expected 182 pure and 3 mixed owner-test targets; found ${project_t345_s2_pure_count} pure and ${project_t345_s2_mixed_count} mixed.")
 endif()
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     foreach(project_t345_target IN LISTS PROJECT_T345_S2_OWNER_TEST_STRICT_TARGETS)

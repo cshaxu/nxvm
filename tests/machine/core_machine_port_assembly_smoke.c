@@ -180,13 +180,14 @@ static C_INT port_assembly_hdc_transaction(C_VOID)
     core_machine_media_registry *media = STD_NULL;
     core_machine_hdc_topology topology = {
         .media_registry = STD_NULL, .media_id = 1u,
-        .config = {.data_port = 0x01f0u, .error_features_port = 0x01f1u,
-            .sector_count_port = 0x01f2u, .sector_number_port = 0x01f3u,
-            .cylinder_low_port = 0x01f4u, .cylinder_high_port = 0x01f5u,
-            .drive_head_port = 0x01f6u, .status_command_port = 0x01f7u,
-            .alternate_status_device_control_port = 0x03f6u, .irq = 14u,
-            .lba28_supported = TYPE_TRUE,
-            .protocol = CORE_MACHINE_HDC_PROTOCOL_ATA_PIO}
+        .config = {.protocol = CORE_MACHINE_HDC_PROTOCOL_ATA_PIO, .irq = 14u,
+            .bus.task_file = {
+                .data_port = 0x01f0u, .error_features_port = 0x01f1u,
+                .sector_count_port = 0x01f2u, .sector_number_port = 0x01f3u,
+                .cylinder_low_port = 0x01f4u, .cylinder_high_port = 0x01f5u,
+                .drive_head_port = 0x01f6u, .status_command_port = 0x01f7u,
+                .alternate_status_device_control_port = 0x03f6u,
+                .lba28_supported = TYPE_TRUE}}
     };
     core_machine_port_test_allocation allocation = {17u, 0u};
     core_machine_hdc hdc_zero = {0};

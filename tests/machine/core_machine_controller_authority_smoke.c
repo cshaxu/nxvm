@@ -31,15 +31,15 @@ static C_INT core_machine_controller_fdc_result(core_machine_fdc *fdc, t_port *p
 static C_INT core_machine_controller_hdc_program_chs(core_machine *machine,
     const core_machine_hdc_config *config)
 {
-    return core_machine_bus_write(machine, config->sector_count_port, 1u) ==
+    return core_machine_bus_write(machine, config->bus.task_file.sector_count_port, 1u) ==
             TYPE_STATUS_OK &&
-        core_machine_bus_write(machine, config->sector_number_port, 1u) ==
+        core_machine_bus_write(machine, config->bus.task_file.sector_number_port, 1u) ==
             TYPE_STATUS_OK &&
-        core_machine_bus_write(machine, config->cylinder_low_port, 0u) ==
+        core_machine_bus_write(machine, config->bus.task_file.cylinder_low_port, 0u) ==
             TYPE_STATUS_OK &&
-        core_machine_bus_write(machine, config->cylinder_high_port, 0u) ==
+        core_machine_bus_write(machine, config->bus.task_file.cylinder_high_port, 0u) ==
             TYPE_STATUS_OK &&
-        core_machine_bus_write(machine, config->drive_head_port, 0u) ==
+        core_machine_bus_write(machine, config->bus.task_file.drive_head_port, 0u) ==
             TYPE_STATUS_OK;
 }
 
@@ -68,12 +68,13 @@ C_INT main(C_VOID)
     };
     const core_machine_hdc_config hdc_config = {
         .protocol = CORE_MACHINE_HDC_PROTOCOL_ATA_PIO,
-        .data_port = 0x01f0u, .error_features_port = 0x01f1u,
-        .sector_count_port = 0x01f2u, .sector_number_port = 0x01f3u,
-        .cylinder_low_port = 0x01f4u, .cylinder_high_port = 0x01f5u,
-        .drive_head_port = 0x01f6u, .status_command_port = 0x01f7u,
-        .alternate_status_device_control_port = 0x03f6u,
-        .irq = 14u, .lba28_supported = TYPE_TRUE
+        .irq = 14u, .bus.task_file = {
+            .data_port = 0x01f0u, .error_features_port = 0x01f1u,
+            .sector_count_port = 0x01f2u, .sector_number_port = 0x01f3u,
+            .cylinder_low_port = 0x01f4u, .cylinder_high_port = 0x01f5u,
+            .drive_head_port = 0x01f6u, .status_command_port = 0x01f7u,
+            .alternate_status_device_control_port = 0x03f6u,
+            .lba28_supported = TYPE_TRUE}
     };
     core_machine_media_registry *media = STD_NULL;
     core_machine_dma_request_binding dma_request = {0};
@@ -91,13 +92,14 @@ C_INT main(C_VOID)
         .media_registry = STD_NULL,
         .media_id = 2u,
         .config = {
-            .data_port = 0x01f0u, .error_features_port = 0x01f1u,
-            .sector_count_port = 0x01f2u, .sector_number_port = 0x01f3u,
-            .cylinder_low_port = 0x01f4u, .cylinder_high_port = 0x01f5u,
-            .drive_head_port = 0x01f6u, .status_command_port = 0x01f7u,
-            .alternate_status_device_control_port = 0x03f6u,
-            .irq = 14u, .lba28_supported = TYPE_TRUE,
-            .protocol = CORE_MACHINE_HDC_PROTOCOL_ATA_PIO
+            .protocol = CORE_MACHINE_HDC_PROTOCOL_ATA_PIO, .irq = 14u,
+            .bus.task_file = {
+                .data_port = 0x01f0u, .error_features_port = 0x01f1u,
+                .sector_count_port = 0x01f2u, .sector_number_port = 0x01f3u,
+                .cylinder_low_port = 0x01f4u, .cylinder_high_port = 0x01f5u,
+                .drive_head_port = 0x01f6u, .status_command_port = 0x01f7u,
+                .alternate_status_device_control_port = 0x03f6u,
+                .lba28_supported = TYPE_TRUE}
         }
     };
     core_machine *machine = STD_NULL;
@@ -161,17 +163,17 @@ C_INT main(C_VOID)
                 result[1] != 0x04u;
 
             if (!core_machine_controller_hdc_program_chs(machine, &hdc_config) ||
-                core_machine_bus_write(machine, hdc_config.status_command_port,
+                core_machine_bus_write(machine, hdc_config.bus.task_file.status_command_port,
                     0x20u) != TYPE_STATUS_OK ||
-                core_machine_bus_read(machine, hdc_config.status_command_port,
+                core_machine_bus_read(machine, hdc_config.bus.task_file.status_command_port,
                     &status) != TYPE_STATUS_OK ||
                 status != CORE_MACHINE_HDC_STATUS_BSY) {
                 failed |= 0x08;
             } else {
                 core_machine_hdc_advance(&machine->hdc);
-                if (core_machine_bus_read(machine, hdc_config.status_command_port,
+                if (core_machine_bus_read(machine, hdc_config.bus.task_file.status_command_port,
                         &status) != TYPE_STATUS_OK ||
-                core_machine_bus_read(machine, hdc_config.error_features_port,
+                core_machine_bus_read(machine, hdc_config.bus.task_file.error_features_port,
                     &error) != TYPE_STATUS_OK ||
                 status != (CORE_MACHINE_HDC_STATUS_DRDY | CORE_MACHINE_HDC_STATUS_ERR) ||
                 error != CORE_MACHINE_HDC_ERROR_ABORT) {

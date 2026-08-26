@@ -83,13 +83,14 @@ static C_INT core_machine_compaq_hdc_install(t_port *port, core_machine_hdc *hdc
 C_INT main(C_VOID)
 {
     const core_machine_hdc_config config = {
-        .data_port = 0x01f0u, .error_features_port = 0x01f1u,
-        .sector_count_port = 0x01f2u, .sector_number_port = 0x01f3u,
-        .cylinder_low_port = 0x01f4u, .cylinder_high_port = 0x01f5u,
-        .drive_head_port = 0x01f6u, .status_command_port = 0x01f7u,
-        .alternate_status_device_control_port = 0x03f6u, .drive_address_port = 0x03f7u,
-        .irq = 14u, .lba28_supported = TYPE_FALSE,
-        .protocol = CORE_MACHINE_HDC_PROTOCOL_COMPAQ_WD_40MB
+        .protocol = CORE_MACHINE_HDC_PROTOCOL_COMPAQ_WD_40MB, .irq = 14u,
+        .bus.task_file = {
+            .data_port = 0x01f0u, .error_features_port = 0x01f1u,
+            .sector_count_port = 0x01f2u, .sector_number_port = 0x01f3u,
+            .cylinder_low_port = 0x01f4u, .cylinder_high_port = 0x01f5u,
+            .drive_head_port = 0x01f6u, .status_command_port = 0x01f7u,
+            .alternate_status_device_control_port = 0x03f6u,
+            .drive_address_port = 0x03f7u, .lba28_supported = TYPE_FALSE}
     };
     const core_machine_media_provider media_provider = {
         core_machine_compaq_hdc_query, core_machine_compaq_hdc_read,

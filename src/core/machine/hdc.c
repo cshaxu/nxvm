@@ -27,6 +27,12 @@ static C_INT core_machine_hdc_is_ibm_wd1003(const core_machine_hdc *hdc)
         CORE_MACHINE_HDC_PROTOCOL_IBM_WD1003_ST506;
 }
 
+static C_INT core_machine_hdc_is_xebec_xt(const core_machine_hdc *hdc)
+{
+    return hdc != STD_NULL && hdc->connect.config.protocol ==
+        CORE_MACHINE_HDC_PROTOCOL_XEBEC_XT;
+}
+
 static C_INT core_machine_hdc_task_file_is_writable(const core_machine_hdc *hdc)
 {
     return hdc != STD_NULL && (core_machine_hdc_is_compaq_wd_40mb(hdc) ||
@@ -68,7 +74,8 @@ static C_VOID core_machine_hdc_set_current_head(core_machine_hdc *hdc,
 static C_INT core_machine_hdc_lba_mode(const core_machine_hdc *hdc)
 {
     return hdc != STD_NULL && !core_machine_hdc_is_compaq_wd_40mb(hdc) &&
-        hdc->connect.config.lba28_supported && (hdc->data.drive_head & 0x40u) != 0u;
+        hdc->connect.config.bus.task_file.lba28_supported &&
+        (hdc->data.drive_head & 0x40u) != 0u;
 }
 
 static C_INT core_machine_hdc_command_is_read(const core_machine_hdc *hdc,
@@ -101,7 +108,7 @@ static C_VOID core_machine_hdc_select_ibm_step_rate(core_machine_hdc *hdc,
     type_unsigned_32 ticks_per_second;
 
     if (!core_machine_hdc_is_ibm_wd1003(hdc)) return;
-    ticks_per_second = hdc->connect.config.clock_ticks_per_second;
+    ticks_per_second = hdc->connect.config.bus.task_file.clock_ticks_per_second;
     hdc->data.step_rate_selector = selector;
     hdc->data.step_pulse_limit = pulse_limit;
     hdc->data.step_rate_ticks = selector == 0u ?
@@ -459,7 +466,7 @@ static C_VOID core_machine_hdc_execute_command(core_machine_hdc *hdc, type_unsig
     if (!core_machine_hdc_selected_master(hdc) ||
         (!core_machine_hdc_is_compaq_wd_40mb(hdc) && !core_machine_hdc_is_ibm_wd1003(hdc) &&
             (hdc->data.drive_head & 0x40u) != 0u &&
-            !hdc->connect.config.lba28_supported)) {
+            !hdc->connect.config.bus.task_file.lba28_supported)) {
         core_machine_hdc_fail(hdc, CORE_MACHINE_HDC_ERROR_ABORT);
         return;
     }
@@ -528,7 +535,8 @@ static type_status core_machine_hdc_port_read(C_VOID *opaque, type_unsigned_16 p
 
     if (hdc == STD_NULL || out_value == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
     *out_value = 0u;
-    if (port == hdc->connect.config.data_port) {
+    if (core_machine_hdc_is_xebec_xt(hdc)) return TYPE_STATUS_UNSUPPORTED;
+    if (port == hdc->connect.config.bus.task_file.data_port) {
         if (hdc->data.phase != CORE_MACHINE_HDC_PHASE_DATA_READ ||
             hdc->data.data_index >= sizeof(hdc->data.data)) {
             return TYPE_STATUS_OK;
@@ -542,25 +550,25 @@ static type_status core_machine_hdc_port_read(C_VOID *opaque, type_unsigned_16 p
         }
         return TYPE_STATUS_OK;
     }
-    if (port == hdc->connect.config.error_features_port) {
+    if (port == hdc->connect.config.bus.task_file.error_features_port) {
         *out_value = hdc->data.error;
-    } else if (port == hdc->connect.config.sector_count_port) {
+    } else if (port == hdc->connect.config.bus.task_file.sector_count_port) {
         *out_value = hdc->data.sector_count;
-    } else if (port == hdc->connect.config.sector_number_port) {
+    } else if (port == hdc->connect.config.bus.task_file.sector_number_port) {
         *out_value = hdc->data.sector_number;
-    } else if (port == hdc->connect.config.cylinder_low_port) {
+    } else if (port == hdc->connect.config.bus.task_file.cylinder_low_port) {
         *out_value = hdc->data.cylinder_low;
-    } else if (port == hdc->connect.config.cylinder_high_port) {
+    } else if (port == hdc->connect.config.bus.task_file.cylinder_high_port) {
         *out_value = hdc->data.cylinder_high;
-    } else if (port == hdc->connect.config.drive_head_port) {
+    } else if (port == hdc->connect.config.bus.task_file.drive_head_port) {
         *out_value = hdc->data.drive_head;
-    } else if (port == hdc->connect.config.status_command_port) {
+    } else if (port == hdc->connect.config.bus.task_file.status_command_port) {
         *out_value = hdc->data.status;
         core_machine_hdc_clear_irq(hdc);
-    } else if (port == hdc->connect.config.alternate_status_device_control_port) {
+    } else if (port == hdc->connect.config.bus.task_file.alternate_status_device_control_port) {
         if (core_machine_hdc_is_ibm_wd1003(hdc)) return TYPE_STATUS_UNSUPPORTED;
         *out_value = hdc->data.status;
-    } else if (port == hdc->connect.config.drive_address_port &&
+    } else if (port == hdc->connect.config.bus.task_file.drive_address_port &&
         core_machine_hdc_is_compaq_wd_40mb(hdc)) {
         *out_value = hdc->data.drive_head & 0x1fu;
     } else {
@@ -575,7 +583,8 @@ static type_status core_machine_hdc_port_write(C_VOID *opaque, type_unsigned_16 
     core_machine_hdc *hdc = (core_machine_hdc *)opaque;
 
     if (hdc == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
-    if (port == hdc->connect.config.data_port) {
+    if (core_machine_hdc_is_xebec_xt(hdc)) return TYPE_STATUS_UNSUPPORTED;
+    if (port == hdc->connect.config.bus.task_file.data_port) {
         type_unsigned_16 word = (type_unsigned_16)value;
         if (hdc->data.phase != CORE_MACHINE_HDC_PHASE_DATA_WRITE ||
             hdc->data.data_index >= sizeof(hdc->data.data)) {
@@ -590,30 +599,30 @@ static type_status core_machine_hdc_port_write(C_VOID *opaque, type_unsigned_16 
         return TYPE_STATUS_OK;
     }
     if (!core_machine_hdc_task_file_is_writable(hdc) &&
-        (port == hdc->connect.config.error_features_port ||
-            port == hdc->connect.config.sector_count_port ||
-            port == hdc->connect.config.sector_number_port ||
-            port == hdc->connect.config.cylinder_low_port ||
-            port == hdc->connect.config.cylinder_high_port ||
-            port == hdc->connect.config.drive_head_port)) return TYPE_STATUS_OK;
-    if (port == hdc->connect.config.error_features_port) {
+        (port == hdc->connect.config.bus.task_file.error_features_port ||
+            port == hdc->connect.config.bus.task_file.sector_count_port ||
+            port == hdc->connect.config.bus.task_file.sector_number_port ||
+            port == hdc->connect.config.bus.task_file.cylinder_low_port ||
+            port == hdc->connect.config.bus.task_file.cylinder_high_port ||
+            port == hdc->connect.config.bus.task_file.drive_head_port)) return TYPE_STATUS_OK;
+    if (port == hdc->connect.config.bus.task_file.error_features_port) {
         hdc->data.features = (type_unsigned_8)value;
-    } else if (port == hdc->connect.config.sector_count_port) {
+    } else if (port == hdc->connect.config.bus.task_file.sector_count_port) {
         hdc->data.sector_count = (type_unsigned_8)value;
-    } else if (port == hdc->connect.config.sector_number_port) {
+    } else if (port == hdc->connect.config.bus.task_file.sector_number_port) {
         hdc->data.sector_number = (type_unsigned_8)value;
-    } else if (port == hdc->connect.config.cylinder_low_port) {
+    } else if (port == hdc->connect.config.bus.task_file.cylinder_low_port) {
         hdc->data.cylinder_low = (type_unsigned_8)value;
-    } else if (port == hdc->connect.config.cylinder_high_port) {
+    } else if (port == hdc->connect.config.bus.task_file.cylinder_high_port) {
         hdc->data.cylinder_high = (type_unsigned_8)value;
-    } else if (port == hdc->connect.config.drive_head_port) {
+    } else if (port == hdc->connect.config.bus.task_file.drive_head_port) {
         hdc->data.drive_head = (type_unsigned_8)value;
-    } else if (port == hdc->connect.config.status_command_port) {
+    } else if (port == hdc->connect.config.bus.task_file.status_command_port) {
         core_machine_hdc_capture_command(hdc, (type_unsigned_8)value);
-    } else if (port == hdc->connect.config.alternate_status_device_control_port &&
+    } else if (port == hdc->connect.config.bus.task_file.alternate_status_device_control_port &&
         core_machine_hdc_is_ibm_wd1003(hdc)) {
         hdc->data.fixed_disk_register = (type_unsigned_8)value & 0x08u;
-    } else if (port == hdc->connect.config.alternate_status_device_control_port) {
+    } else if (port == hdc->connect.config.bus.task_file.alternate_status_device_control_port) {
         type_unsigned_8 device_control = (type_unsigned_8)value;
         type_bool reset_asserted = (device_control &
             CORE_MACHINE_HDC_DEVICE_CONTROL_SRST) != 0u;

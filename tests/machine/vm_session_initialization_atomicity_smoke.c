@@ -248,7 +248,7 @@ static C_INT verify_hdc_failure(
 {
     vm_profile_default_pc_at_descriptor profile = *source;
 
-    profile.hdc.data_port = 0u;
+    profile.hdc.bus.task_file.data_port = 0u;
     return verify_failure(&profile);
 }
 
