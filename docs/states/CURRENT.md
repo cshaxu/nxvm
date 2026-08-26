@@ -2,12 +2,28 @@
 
 ## Current Work
 
-**Open: M5 T485.**
+**Active: M5 T485 S20.**
 
-T485 S19 is accepted at `f592d1ed`: the complete 8088 Table 2-21 universe now
-has one accepted receiver, explicit boundary, finite next batch, or
-non-instruction exclusion.  The next implementation batch is fixed scalar
-rows only; memory/segment, Group-2, prefixes and FPU remain separate.
+## M5 T485 S20 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner-approved continuous execution under the admitted T485 queue task; accepted S19 `0c1129f1` fixes the finite next implementation batch. |
+| Objective | Add one 8088 source-attributed fixed-scalar receiver for unprefixed NOP, CLC/CLD/CLI/CMC/STC/STD/STI, LAHF and SAHF, using their exact Intel Table 2-21 clock rows. |
+| Non-goals | No prefix behavior, XLAT, MOV/segment/pointer, Group-2, ESC/WAIT/FPU, dynamic range, hardware interrupt, decoder, public API, board-cycle, physical-axis or VM change. |
+| Reference Baseline | T485 S19 inventory; rendered Intel Table 2-21 printed pages 2-51, 2-53, 2-59, 2-62, 2-64 and 2-66; existing primary source evaluator and retirement-observation smoke. |
+| Candidate Proposal | [IBM PC/XT 5160-268 board and device phase-timing closure](../proposals/m5-8088-5150-xt-l3-baseline.md). |
+| Files And ABI Surface | Private Core timing evaluator, its focused smoke, T485 evidence/history/index and Current; no public ABI, decoder, machine state, profile or artifact change. |
+| Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, `docs/design/ARCHITECTURE.md`, `docs/design/CODING.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md` and source policy. The sole owner remains the private primary timing evaluator; no mutable state or parallel timing route is permitted. |
+| Verification | Focused retirement-observation smoke proves all ten opcodes are primary-origin, source-attributed and exactly 3, 2 or 4 clocks; relevant build/test and complete current gate; documentation governance. |
+| Expected Markers | One private 8088/unprefixed scalar branch in the existing evaluator; no new helper, ledger, decoder, timing-plan type or selector stage. |
+| Asset Needs | Existing Intel manual and project-owned tests only; no imported source, firmware or guest media. |
+| Reporting Requirements | Record the exact source values, opcode universe, retained owner, test result, code-size accounting, and every excluded prefix/memory/FPU boundary. |
+| Stop Conditions | Stop if any opcode needs prefix legality, memory/segment input, FPU collaboration or an undocumented timing rule; transfer it to its S19-designated batch. |
+| Exit Criteria | Every listed unprefixed opcode selects the existing primary owner with the exact source value; all other S19 residual categories remain outside the code path and no compatibility/second owner is added. |
+| Original Owner Request | Continue the ordered minimalist queue toward the pre-Windows L3 admission audit without additive or parallel timing paths. |
+| Similar-Issue Sweep | Sweep all listed fixed scalar opcodes, existing 8086/80186/80286 scalar handling, all prefix cases, source-form attribution, selector ordering and current fallback assertions. |
 
 ## Current Technical Baseline
 

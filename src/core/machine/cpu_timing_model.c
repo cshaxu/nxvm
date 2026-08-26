@@ -1920,6 +1920,52 @@ C_INT core_machine_primary_source_instruction_cost(
         return 0;
     }
     opcode = data->opcodes[prefixes];
+    if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_8088 && prefixes == 0u) {
+        switch (opcode) {
+        case 0x90u:
+            machine->source_timing_form_id = CORE_MACHINE_SOURCE_TIMING_NOP;
+            *out_ticks = 3u;
+            return 1;
+        case 0xf8u:
+            machine->source_timing_form_id = CORE_MACHINE_SOURCE_TIMING_CLC;
+            *out_ticks = 2u;
+            return 1;
+        case 0xfcu:
+            machine->source_timing_form_id = CORE_MACHINE_SOURCE_TIMING_CLD;
+            *out_ticks = 2u;
+            return 1;
+        case 0xfau:
+            machine->source_timing_form_id = CORE_MACHINE_SOURCE_TIMING_CLI;
+            *out_ticks = 2u;
+            return 1;
+        case 0xf5u:
+            machine->source_timing_form_id = CORE_MACHINE_SOURCE_TIMING_CMC;
+            *out_ticks = 2u;
+            return 1;
+        case 0xf9u:
+            machine->source_timing_form_id = CORE_MACHINE_SOURCE_TIMING_STC;
+            *out_ticks = 2u;
+            return 1;
+        case 0xfdu:
+            machine->source_timing_form_id = CORE_MACHINE_SOURCE_TIMING_STD;
+            *out_ticks = 2u;
+            return 1;
+        case 0xfbu:
+            machine->source_timing_form_id = CORE_MACHINE_SOURCE_TIMING_STI;
+            *out_ticks = 2u;
+            return 1;
+        case 0x9eu:
+            machine->source_timing_form_id = CORE_MACHINE_SOURCE_TIMING_SAHF;
+            *out_ticks = 4u;
+            return 1;
+        case 0x9fu:
+            machine->source_timing_form_id = CORE_MACHINE_SOURCE_TIMING_LAHF;
+            *out_ticks = 4u;
+            return 1;
+        default:
+            break;
+        }
+    }
     if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 &&
         opcode == 0x0fu && !lock_prefix) {
         return core_machine_80286_system_source_instruction_cost(machine,

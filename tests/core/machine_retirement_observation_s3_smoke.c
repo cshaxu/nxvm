@@ -247,7 +247,9 @@ static C_INT retirement_8088_primary_case(const type_unsigned_8 *program,
             probe.records[0].timing_disposition !=
                 CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED ||
             probe.records[0].timing_origin !=
-                expected_origin;
+                expected_origin ||
+            probe.records[0].source_timing_form_id ==
+                CORE_MACHINE_RETIREMENT_SOURCE_FORM_UNATTRIBUTED;
     }
     core_machine_destroy(machine);
     return failed;
@@ -406,7 +408,15 @@ C_INT main(C_VOID)
     core_machine_run_result result;
     core_machine_timeline_observation timeline;
     retirement_probe probe = { STD_NULL, { { 0 } }, 0u, TYPE_STATUS_OK };
+    STD_SIZE_T index;
     type_unsigned_8 nop = 0x90u;
+    static const type_unsigned_8 scalar_opcodes[] = {
+        0x90u, 0xf8u, 0xfcu, 0xfau, 0xf5u,
+        0xf9u, 0xfdu, 0xfbu, 0x9eu, 0x9fu
+    };
+    static const type_unsigned_64 scalar_ticks[] = {
+        3u, 2u, 2u, 2u, 2u, 2u, 2u, 2u, 4u, 4u
+    };
     type_unsigned_8 rep_nop[] = { 0xf3u, 0x90u };
     const type_unsigned_8 add_register[] = { 0x01u, 0xc8u };
     const type_unsigned_8 add_register_memory[] = { 0x03u, 0x06u, 0x00u, 0x10u };
@@ -503,6 +513,11 @@ C_INT main(C_VOID)
         retirement_unallocated_profile_case(CORE_MACHINE_CPU_PROFILE_80386,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80386_FALLBACK, rep_nop,
             sizeof(rep_nop), 1);
+    for (index = 0u; index < sizeof(scalar_opcodes) / sizeof(scalar_opcodes[0]);
+        ++index) {
+        failed |= retirement_8088_primary_case(&scalar_opcodes[index], 1u,
+            scalar_ticks[index], CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY);
+    }
     failed |= retirement_control_context_case(0x75u,
         CORE_MACHINE_RETIREMENT_CONTROL_TAKEN, 1u) ||
         retirement_control_context_case(0x74u,
