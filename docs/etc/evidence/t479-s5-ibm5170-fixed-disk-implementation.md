@@ -40,3 +40,9 @@ HDC owner; it adds no controller object, media cache, compatibility wrapper or
 runtime-selectable profile state. The changed source and tests are +221/-42
 lines before evidence/status closure. The only generic ATA wording in the
 shared firmware route is replaced with fixed-disk PIO wording.
+
+## Artifact
+
+The stripped Release artifact is
+`build/output/nxvm_0_5_0479.exe` at source revision `38b04eed`. Its SHA-256 is
+`1422E42CF5AAAC3ED86BB83E298B4759C82C9E362C1E0044436521245BEFED73`.
