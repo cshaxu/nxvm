@@ -38,6 +38,7 @@ typedef struct vm_profile_model40_external_rom {
 
 C_INT vm_profile_model40_external_rom_is_valid(
     const vm_profile_model40_external_rom *rom);
+C_VOID vm_profile_model40_core_config_initialize(core_machine_config *out_config);
 type_status vm_profile_model40_byob_manifest_load(
     const vm_profile_model40_byob_manifest *manifest,
     type_unsigned_8 *even_bytes, type_unsigned_8 *odd_bytes,

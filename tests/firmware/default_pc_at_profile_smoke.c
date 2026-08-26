@@ -65,6 +65,8 @@ C_INT main(C_VOID)
         contract.ticks_per_instruction != profile->ticks_per_instruction ||
         STD_MEMCMP(&contract.instruction_timing, &profile->instruction_timing,
             sizeof(contract.instruction_timing)) != 0 ||
+        STD_MEMCMP(&contract.transaction_contract, &profile->transaction_contract,
+            sizeof(contract.transaction_contract)) != 0 ||
         STD_MEMCMP(&contract.clock_plan, &profile->clock_plan,
             sizeof(contract.clock_plan)) != 0 ||
         STD_MEMCMP(&contract.controller_timing_rules,

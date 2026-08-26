@@ -2,26 +2,26 @@
 
 ## Current Work
 
-## M5 T474 S2 Packet
+## M5 T474 S3 Packet
 
 | Field | Required record |
 | --- | --- |
 | Identifier Mode | Continuation |
 | Admission And Approval | Owner approved on 2026-08-25: admit the queue-first Core unified guest-time-axis and Core-to-VM boundary task before IBM 5170, DeskPro and default-at profile connections. |
-| Objective | Verify and consolidate the existing immutable Core timing-plan and copied observation boundary without adding a parallel configuration, time or pacing path. |
-| Non-goals | No profile data/resolver, timing formula, controller behavior, host-generated tick, device pointer exposure, firmware/media, L4 claim or Release artifact. |
+| Objective | Make profile-selected CPU and transaction timing values reach the existing immutable Core plan through one copied profile contract; remove Model-40 session ownership of its Core configuration. |
+| Non-goals | No resolver, new timing formula, controller behavior, host-generated tick, device pointer exposure, firmware/media, L4 claim or Release artifact. |
 | Reference Baseline | T469--T472 historical time/deadline/pacing contracts; Td S149/S150 dependency order; target `vm-0-5-0472`, SHA-256 `C2B9B95B8A124B96106369E4D88D592A6A7A090D16401C176E93B91349E28BDE`. |
 | Candidate Proposal | [Core unified guest-time axis and VM boundary](../proposals/m5-core-unified-guest-time-axis-and-vm-boundary.md). |
-| Files And ABI Surface | `core_machine_plan`, `core_machine_time_axis`, controller timing rules, time observation, VM session waiting consumers, focused tests and S2 evidence; no new public abstraction is permitted. |
+| Files And ABI Surface | default PC/AT descriptor/CPU contract, Model-40 private profile contract, VM session materialization, focused profile/session tests and S3 evidence; Core's existing `core_machine_config`/plan ABI is reused unchanged. |
 | Applicable Rules | `docs/design/ARCHITECTURE.md`, `docs/design/CODING.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`, `docs/rules/DOCUMENT.md`, `docs/rules/EXECUTION.md`, `docs/etc/architecture/specification-driven-l3-timing.md`, and source policy: Core is sole mutable time owner; cross-boundary values are copied/immutable; profiles are consumers; L2 provenance remains explicit; no external source import. |
-| Verification | Plan validation/creation and session pacing focused tests, source-to-plan-to-observation sweep, documentation governance and actual-diff review. |
-| Expected Markers | `M5:T474:S2:ONE-PLAN-ONE-OBSERVATION:OK`. |
+| Verification | Default-profile contract selection, Model-40 session initialization, Core plan validation/creation and session pacing focused tests, source-to-plan sweep, documentation governance and actual-diff review. |
+| Expected Markers | `M5:T474:S3:PROFILE-CONTRACT-TO-PLAN:OK`. |
 | Asset Needs | Existing project-owned timing/controller evidence and read-only source citations only when required to classify an existing generic rule; no third-party source, firmware, guest media or machine-local path enters the repository. |
-| Reporting Requirements | Record every plan field that carries timing/provenance, every dynamic non-time resource boundary, every observation reader and any duplicate route removed or explicitly retained. Report code-size delta. |
-| Stop Conditions | Stop for owner direction if validation requires a profile name in Core, a dynamic callback to select timing, a second plan/observation path or a host-time writer. |
-| Exit Criteria | One immutable plan and one copied observation remain the sole timing boundary; all dynamic resource pointers are classified non-time; focused proof and documentation governance pass. |
+| Reporting Requirements | Record the profile-to-contract-to-config-to-plan route, the removed Model-40 session route, retained L2/default values, focused proof and code-size delta. |
+| Stop Conditions | Stop for owner direction if validation requires a profile name in Core, a dynamic callback to select timing, a second plan/observation path, a host-time writer or a public forwarding facade. |
+| Exit Criteria | All selected CPU/transaction timing values travel through the copied contract and existing plan; Model-40 session composition owns no Core configuration constants; focused proof and documentation governance pass. |
 | Original Owner Request | Establish correct whole-machine L3 structure and interfaces first, then connect IBM 5170, DeskPro 386 and default-at in that order. |
-| Similar-Issue Sweep | Sweep Core scheduler/executor/machine/controller sources, VM composition/session/profile sources, tests, CMake and retained T469--T472 evidence for any additional time writer, raw owner exposure, duplicate observation, host-generated tick or profile-specific Core branch. |
+| Similar-Issue Sweep | Sweep all VM profile-to-session `core_machine_config` construction and contract selectors, Core plan validation and focused tests for direct session timing constants, copied-field omissions, profile-specific Core branches or an alternate plan route. |
 
 ## Current Technical Baseline
 

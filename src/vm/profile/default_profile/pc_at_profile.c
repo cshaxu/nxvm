@@ -135,6 +135,8 @@ static const vm_profile_default_pc_at_descriptor default_pc_at_descriptor = {
     CORE_MACHINE_FPU_PROFILE_NONE,
     1u,
     { 1u, 0u, 0u, 0u, 0u, 0u },
+    { { 0u, 0u, 0u, CORE_MACHINE_EXTERNAL_CYCLE_OVERLAP_DISABLED, 0u, 0u },
+        {{0}}, 0u, TYPE_FALSE, TYPE_FALSE, TYPE_FALSE },
     { { 1u, 1u, 0u }, { 1u, 4u, 0u }, { 1u, 1u, 0u }, { 1u, 1u, 0u },
         { 1u, 1u, 0u }, { 1u, 1u, 0u } },
     { CORE_MACHINE_TIME_AXIS_UNQUALIFIED, 0u },
@@ -184,6 +186,8 @@ static const vm_profile_default_pc_at_descriptor ibm_5170_model_339_descriptor =
     CORE_MACHINE_FPU_PROFILE_NONE,
     1u,
     { 1u, 0u, 0u, 0u, 0u, 0u },
+    { { 0u, 0u, 0u, CORE_MACHINE_EXTERNAL_CYCLE_OVERLAP_DISABLED, 0u, 0u },
+        {{0}}, 0u, TYPE_FALSE, TYPE_FALSE, TYPE_FALSE },
     /* IBM 6280099, System Board 1-22 and 1-57: 8254 at 1.193182 MHz,
      * RTC at 32.768 kHz. The CGA character rate is the constrained v6.0
      * 86Box IBM-CGA reference rate 157500000/88 Hz. Ratios are to this
@@ -291,6 +295,7 @@ C_INT vm_profile_default_pc_at_cpu_contract_select(
         requested_fpu,
         descriptor->ticks_per_instruction,
         descriptor->instruction_timing,
+        descriptor->transaction_contract,
         descriptor->clock_plan,
         descriptor->time_axis,
         descriptor->controller_timing_rules,

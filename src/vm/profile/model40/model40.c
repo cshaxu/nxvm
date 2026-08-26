@@ -2,6 +2,46 @@
 
 #include "core/platform/file.h"
 
+C_VOID vm_profile_model40_core_config_initialize(core_machine_config *out_config)
+{
+    if (out_config == STD_NULL) return;
+    *out_config = (core_machine_config) {
+        .memory_bytes = 1024u * 1024u,
+        .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
+        .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE,
+        .cpu_80386_cr_mov_ignores_mod = TYPE_TRUE,
+        .a20_wrap_policy = CORE_MACHINE_A20_WRAP_FIRST_TO_SECOND_MIB,
+        .ticks_per_instruction = 1u,
+        .instruction_timing = {1u, 0u, 0u, 0u, 0u, 0u},
+        .transaction_contract = {
+            .external_cycle_timing = {.page_bytes = 2048u, .page_miss_ticks = 2u,
+                .page_hit_ticks = 0u,
+                .overlap_policy = CORE_MACHINE_EXTERNAL_CYCLE_OVERLAP_EXPLICIT_SEQUENTIAL,
+                .first_eligible_address = 0x00000000u,
+                .last_eligible_address = 0x0009ffffu},
+            .external_access_wait_windows = {
+                {CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_PORT, 0x03b4u, 0x03bau, 1u},
+                {CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_PORT, 0x03c0u, 0x03cfu, 1u},
+                {CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_PORT, 0x03d4u, 0x03dcu, 1u},
+                {CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_PORT, 0x07c6u, 0x07c6u, 1u},
+                {CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_PORT, 0x0bc6u, 0x0bc6u, 1u},
+                {CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_PORT, 0x0fc6u, 0x0fc6u, 1u},
+                {CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_MEMORY, 0x000a0000u,
+                    0x000affffu, 1u}},
+            .dma_cycle_wait_quanta = 1u,
+            .dma_cycle_bus_ready_gate_enabled = TYPE_TRUE,
+            .cpu_cycle_bus_ready_gate_enabled = TYPE_TRUE,
+            .cpu_prefetch_reservation_enabled = TYPE_TRUE},
+        .retirement_time_contract = CORE_MACHINE_RETIREMENT_TIME_DETERMINISTIC,
+        .kbc_serial_delivery_ticks = 1u,
+        .clock_plan = {{1u, 1u, 0u}, {1u, 1u, 0u}, {1u, 1u, 0u},
+            {1u, 1u, 0u}, {1u, 1u, 0u}, {1u, 1u, 0u}},
+        .auxiliary_pit_present = TYPE_TRUE,
+        .auxiliary_pit_base_port = 0x0048u,
+        .kbc_aux_absent = TYPE_TRUE
+    };
+}
+
 C_INT vm_profile_model40_external_rom_is_valid(
     const vm_profile_model40_external_rom *rom)
 {

@@ -115,6 +115,7 @@ typedef struct vm_profile_default_pc_at_cpu_contract {
     core_machine_fpu_profile fpu_profile;
     type_unsigned_32 ticks_per_instruction;
     core_machine_instruction_timing instruction_timing;
+    core_machine_transaction_contract transaction_contract;
     core_machine_clock_plan clock_plan;
     core_machine_time_axis time_axis;
     core_machine_controller_timing_rules controller_timing_rules;
@@ -130,6 +131,7 @@ typedef struct vm_profile_default_pc_at_descriptor {
     core_machine_fpu_profile fpu_profile;
     type_unsigned_32 ticks_per_instruction;
     core_machine_instruction_timing instruction_timing;
+    core_machine_transaction_contract transaction_contract;
     core_machine_clock_plan clock_plan;
     core_machine_time_axis time_axis;
     core_machine_controller_timing_rules controller_timing_rules;

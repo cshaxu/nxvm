@@ -131,6 +131,7 @@ static C_INT vm_session_materialize_profile_core_config(vm_session *session,
         .fpu_profile = contract->fpu_profile,
         .ticks_per_instruction = contract->ticks_per_instruction,
         .instruction_timing = contract->instruction_timing,
+        .transaction_contract = contract->transaction_contract,
         .clock_plan = contract->clock_plan,
         .time_axis = contract->time_axis,
         .kbc_typematic_initial_ticks = contract->kbc_typematic_initial_ticks,
@@ -476,41 +477,7 @@ static C_VOID vm_session_initialize_model40_configuration(vm_session *session)
     if (session == STD_NULL) return;
     session->model40_private = 1;
     session->floppy_kind = VM_PROFILE_FLOPPY_525_1200K;
-    session->core_machine_config = (core_machine_config) {
-        .memory_bytes = 1024u * 1024u,
-        .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
-        .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE,
-        .cpu_80386_cr_mov_ignores_mod = TYPE_TRUE,
-        .a20_wrap_policy = CORE_MACHINE_A20_WRAP_FIRST_TO_SECOND_MIB,
-        .ticks_per_instruction = 1u,
-        .instruction_timing = {1u, 0u, 0u, 0u, 0u, 0u},
-        .transaction_contract = {
-            .external_cycle_timing = {.page_bytes = 2048u, .page_miss_ticks = 2u,
-                .page_hit_ticks = 0u,
-                .overlap_policy = CORE_MACHINE_EXTERNAL_CYCLE_OVERLAP_EXPLICIT_SEQUENTIAL,
-                .first_eligible_address = 0x00000000u,
-                .last_eligible_address = 0x0009ffffu},
-            .external_access_wait_windows = {
-                {CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_PORT, 0x03b4u, 0x03bau, 1u},
-                {CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_PORT, 0x03c0u, 0x03cfu, 1u},
-                {CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_PORT, 0x03d4u, 0x03dcu, 1u},
-                {CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_PORT, 0x07c6u, 0x07c6u, 1u},
-                {CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_PORT, 0x0bc6u, 0x0bc6u, 1u},
-                {CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_PORT, 0x0fc6u, 0x0fc6u, 1u},
-                {CORE_MACHINE_CPU_EXTERNAL_CYCLE_SPACE_MEMORY, 0x000a0000u,
-                    0x000affffu, 1u}},
-            .dma_cycle_wait_quanta = 1u,
-            .dma_cycle_bus_ready_gate_enabled = TYPE_TRUE,
-            .cpu_cycle_bus_ready_gate_enabled = TYPE_TRUE,
-            .cpu_prefetch_reservation_enabled = TYPE_TRUE},
-        .retirement_time_contract = CORE_MACHINE_RETIREMENT_TIME_DETERMINISTIC,
-        .kbc_serial_delivery_ticks = 1u,
-        .clock_plan = {{1u, 1u, 0u}, {1u, 1u, 0u}, {1u, 1u, 0u},
-            {1u, 1u, 0u}, {1u, 1u, 0u}, {1u, 1u, 0u}},
-        .auxiliary_pit_present = TYPE_TRUE,
-        .auxiliary_pit_base_port = 0x0048u,
-        .kbc_aux_absent = TYPE_TRUE
-    };
+    vm_profile_model40_core_config_initialize(&session->core_machine_config);
 }
 
 static type_status vm_session_create_model40_byob(const vm_session_config *config,
