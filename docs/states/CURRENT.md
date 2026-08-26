@@ -2,26 +2,7 @@
 
 ## Current Work
 
-## M5 T477 S4 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner approved T477; accepted S1-S3 provide the frozen delta, child resolver and session cutover. |
-| Objective | Audit the complete T477 proposal, run the frozen DeskPro parity universe, publish stripped Release 0477 and close only if no duplicate Model-40 Core-input path remains. |
-| Non-goals | No new functionality, topology/timing change, external asset, YAML/default-at migration or L3 claim. |
-| Reference Baseline | T477 S1 ledger, S2 resolver, S3 cutover and T476 closure. |
-| Candidate Proposal | [DeskPro 386 5170-derived runnable profile](../proposals/m5-deskpro-386-5170-derived-runnable-profile.md). |
-| Files And ABI Surface | Artifact target/preset, evidence/history/status and no runtime ABI beyond accepted S3. |
-| Applicable Rules | One resolved Core-input path; session-only dynamic resources; stripped Release and task closure rules. |
-| Verification | Frozen Model-40 corpus, full current gate, source sweep, artifact banner/SHA/debug-section check, documentation governance and proposal exit mapping. |
-| Expected Markers | Existing T477 markers and `nxvm_0_5_0477.exe` banner `0.5.0477`. |
-| Asset Needs | Existing build/test inputs only. |
-| Reporting Requirements | Record artifact hash/source commit, parity/gate results, exact code delta and retained dynamic owners. |
-| Stop Conditions | Stop if parity differs, a second Core-input path remains, or artifact/gates cannot be proven. |
-| Exit Criteria | Proposal mapped to evidence; frozen parity and full gate pass; artifact is stripped Release; history/status accurate and proposal moved to history. |
-| Original Owner Request | Connect profiles in order through minimal single-owner interfaces. |
-| Similar-Issue Sweep | Artifact/preset/status identity, Model-40 construction and all S1 parity owners. |
+**Idle.**
 
 ## Current Technical Baseline
 
@@ -56,7 +37,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T477 S3 | Accepted: Model-40 session construction consumes copied DeskPro resolver data, and the old direct Core-config session path is removed; [evidence](../etc/evidence/t477-s3-deskpro-session-cutover.md) records dynamic-owner preservation and parity. |
+| T477 | Closed: DeskPro is an immutable `pc-at-5170` child with one copied Core-plan materialization path; the Model-40 session retains only dynamic resources. [Closure audit](../etc/evidence/t477-s4-closure-audit.md) records frozen parity, the 294-target gate and stripped Release 0477. |
 | T476 | Closed: IBM 5170 sessions consume one copied `pc-at-5170` root and one Core-plan materialization path; the former duplicate exception aggregate is retired while its independent owners remain. [Closure audit](../etc/evidence/t476-s4-closure-audit.md) records the 294-target gate and stripped Release 0476. |
 | T475 | Closed: one VM-only immutable resolver copies parent-patched values and per-field provenance to the existing Core-plan API, rejects invalid ownership/bindings/windows/routes/contracts/policy, and leaves current routes for ordered profile migrations. [Closure audit](../etc/evidence/t475-s3-integration-closure-audit.md) records the 294-target gate and stripped Release 0475. |
 | T474 | Closed: one Core-owned guest-time axis, immutable plan and copied observation now join profile timing values, source-qualified PIT/RTC deadlines, explicit controller blockers and Standard/Turbo consumer policy. [Closure audit](../etc/evidence/t474-s6-integration-closure-audit.md) records the 293-target gate and stripped Release 0474. |
@@ -64,7 +45,6 @@
 | T472 | Closed: Model-339 has a retained L2 macro rate; Standard uses it without host-generated guest time, Turbo skips only its wait, and unqualified profiles no longer take a fixed HLT sleep. [Closure audit](../etc/evidence/t472-s3-integration-closure-audit.md) records Release 0472. |
 | T471 | Closed: Standard compares copied completed Core time with a monotonic host budget and waits only for a positive lead; Turbo omits that wait and HLT deadline advancement is budget-gated. The [closure audit](../etc/evidence/t471-s3-integration-closure-audit.md) records Release 0471. |
 | T470 | Closed: S1--S6 establish one copied Core physical-axis contract, retain every current profile at unqualified/zero, separate Standard's L2 HLT backoff from Turbo's no-wait behavior, and record stripped Release 0470 in the [closure audit](../etc/evidence/t470-s6-integration-closure-audit.md). |
-| T469 | Closed: S1--S6 reconcile the 145-row controller deadline ledger to one Core-owned deadline/timebase/waiting path; VM host-tick injection is deleted, current profiles retain explicit L2 fallback, and stripped Release 0469 is recorded in [closure audit](../etc/evidence/t469-s6-integration-closure-audit.md). |
 
 ## Recent Governance
 

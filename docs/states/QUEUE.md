@@ -43,7 +43,6 @@ linked proposal identifies its finite implementation-admission baseline and
 exclusive earliest capability batch; a later candidate may consume a registered
 contract but does not redefine its L3 or Core/VM boundary.
 
-1. [DeskPro 386 5170-derived runnable profile](../proposals/m5-deskpro-386-5170-derived-runnable-profile.md).
 1. [Default-AT 5170-derived profile](../proposals/m5-default-at-5170-derived-profile.md).
 1. [VM session profile YAML cutover](../proposals/m5-vm-session-profile-yaml-cutover.md).
 1. [IBM PC/XT 5160-268 profile and capability-gap audit](../proposals/m5-xt-5160-268-profile-capability-audit.md).

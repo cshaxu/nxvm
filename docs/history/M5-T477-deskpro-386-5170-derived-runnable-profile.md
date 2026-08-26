@@ -4,6 +4,9 @@ T477 makes the existing Model-40 composition an explicit immutable child of
 `pc-at-5170` without changing its selected device behavior or claiming a new
 physical/L3 result.
 
+The accepted [proposal](M5-T477-deskpro-386-5170-derived-runnable-profile-proposal.md)
+is retained with this closure record.
+
 | Subtask | Accepted result |
 | --- | --- |
 | S1 | [Delta ledger](../etc/evidence/t477-s1-deskpro-delta-ledger.md) freezes every inherited, child and dynamic field. |
