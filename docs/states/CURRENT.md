@@ -16,7 +16,7 @@
 | Candidate Proposal | [IBM 5160 8088 board, memory, ROM and ISA phase contract](../proposals/m5-xt-8088-board-bus-phase.md). |
 | Files And ABI Surface | `core_machine_time_axis`/time observation, the existing VM pacing consumer, Core CPU/transaction code, XT profile, focused tests/evidence and the T487 artifact. |
 | Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, `docs/design/ARCHITECTURE.md`, `docs/design/CODING.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`. Core owns time and transactions; VM only compares completed progress to host time. |
-| Verification | Focused rational-axis, XT cycle-classification, reset/NMI/map and session-pacing tests; full current gate and stripped `nxvm_0_5_0487.exe`. |
+| Verification | Focused rational-axis, XT cycle-classification, reset/NMI/map and session-pacing tests; full current gate and the stripped T487 artifact after its version target is admitted. |
 | Expected Markers | One copied rational-rate observation, one Core 5160 cycle classifier, one immutable XT selection and no duplicate/legacy timing path. |
 | Asset Needs | No new source material, firmware or guest media. |
 | Reporting Requirements | Record exact retained owner, removed/avoided duplicate paths, source-unclassified boundary, code-size result, focused/full gates and Release artifact hash. |
