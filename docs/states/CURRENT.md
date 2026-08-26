@@ -2,26 +2,7 @@
 
 ## Current Work
 
-## M5 T478 S3 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner approved T478's ordered Default-AT migration on 2026-08-25; accepted S1/S2 freeze the delta and child resolver. |
-| Objective | Make Default-AT session construction consume exactly one copied resolved child input, then delete its direct descriptor selection, Core materialization, CPU/FPU selector and post-copy memory override path. |
-| Non-goals | No resolver-kernel change, request grammar change, timing/topology/firmware/media behavior change, YAML, new public ABI, or physical/L3 claim. |
-| Reference Baseline | T478 S1 ledger and S2 resolver evidence, existing `vm_session_create` behavior, Default-AT profile/session atomicity/topology/HDC smokes. |
-| Candidate Proposal | [Default-AT 5170-derived profile](../proposals/m5-default-at-5170-derived-profile.md). |
-| Files And ABI Surface | VM private session/profile sources and existing owner smokes; private storage only, with no public Core/VM ABI change. |
-| Applicable Rules | Architecture: VM resolves immutable profile data before Core plan creation; Core remains sole mutable machine/device owner. Coding: delete obsolete production path, retain one session request conversion and one copied resolved input, with no forwarding wrapper. |
-| Verification | Default/overridden CPU/FPU/memory construction parity, profile identity, ATA/CGA/ports, reset and rollback smokes; focused resolver smokes; full current gate before acceptance. |
-| Expected Markers | `M5:T478:S3:DEFAULT-AT-SESSION-CUTOVER:OK` plus retained Default-AT and 5170 markers. |
-| Asset Needs | None; existing build/test inputs only. |
-| Reporting Requirements | Record deleted direct paths, dynamic owners retained in session, source/test delta, exact parity corpus and any observable identity change. |
-| Stop Conditions | Stop if an existing allowed request cannot be represented before resolution, a session-owned dynamic resource would enter declaration data, parity differs, or the cutover needs resolver-kernel/public-ABI change. |
-| Exit Criteria | Default-AT reaches Core only from copied child resolution; old direct Core-config and override helpers have no production path; focused and full gates pass; evidence maps every S1 parity member. |
-| Original Owner Request | Build correct Core/VM integration with single ownership, L3-ready typed inputs, Standard/Turbo support, minimal code and no additive parallel paths. |
-| Similar-Issue Sweep | Search all session profile selections/materializers/overrides and every `vm_profile_default_pc_at_*` Core configuration call; delete or classify every Default-AT direct-construction hit. |
+**No active subtask.**
 
 ## Current Technical Baseline
 
@@ -56,7 +37,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T478 S2 | Accepted: Default-AT now resolves as a typed 5170 child with its finite CPU/FPU/memory selection validated before freeze; [evidence](../etc/evidence/t478-s2-default-at-child-resolver.md) records provenance and rejection cases. |
+| T478 S3 | Accepted: Default-AT session construction now consumes one copied child result and deletes direct Core materialization/overrides; [evidence](../etc/evidence/t478-s3-default-at-session-cutover.md) records 257-step gate parity. |
 | T477 | Closed: DeskPro is an immutable `pc-at-5170` child with one copied Core-plan materialization path; the Model-40 session retains only dynamic resources. [Closure audit](../etc/evidence/t477-s4-closure-audit.md) records frozen parity, the 294-target gate and stripped Release 0477. |
 | T476 | Closed: IBM 5170 sessions consume one copied `pc-at-5170` root and one Core-plan materialization path; the former duplicate exception aggregate is retired while its independent owners remain. [Closure audit](../etc/evidence/t476-s4-closure-audit.md) records the 294-target gate and stripped Release 0476. |
 | T475 | Closed: one VM-only immutable resolver copies parent-patched values and per-field provenance to the existing Core-plan API, rejects invalid ownership/bindings/windows/routes/contracts/policy, and leaves current routes for ordered profile migrations. [Closure audit](../etc/evidence/t475-s3-integration-closure-audit.md) records the 294-target gate and stripped Release 0475. |

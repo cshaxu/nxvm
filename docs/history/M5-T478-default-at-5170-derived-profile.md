@@ -16,3 +16,7 @@ policy representation.
 S2 is accepted. Its [resolver evidence](../etc/evidence/t478-s2-default-at-child-resolver.md)
 records the one Default-AT child result, its pre-freeze request validation and
 the retained S3 direct-session deletion boundary.
+
+S3 is accepted. Its [cutover evidence](../etc/evidence/t478-s3-default-at-session-cutover.md)
+records the deleted direct construction path, retained session owners and
+257-step current-gate parity.
