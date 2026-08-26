@@ -14,7 +14,16 @@
 | Non-goals | No PIC code repair, AT cascade work, firmware/media import or inferred timing. |
 | Reference Baseline | Closed T487, queued 8259A proposal, source policy and existing external manual archive. |
 | Candidate Proposal | [IBM 5160 8259A interrupt-controller phase contract](../proposals/m5-xt-8259a-board-phase.md). |
+| Files And ABI Surface | Source-ledger evidence, evidence index, history and Current only; no code or ABI change. |
+| Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, `docs/etc/operations/policy/source-policy.md`. |
+| Verification | Visually inspect original Intel 8259A and IBM 5160 source pages; record OCR condition and reference boundary. |
+| Expected Markers | One finite primary-source PIC ledger suitable for a complete List 1. |
+| Asset Needs | Lawful external owner-managed documentation only; no source, firmware or media import. |
+| Reporting Requirements | Record source identity, page authority, uncertainty and bounded emulator-reference use. |
+| Stop Conditions | Record an unavailable fact rather than infer it or use an emulator as primary authority. |
 | Exit Criteria | Original source pages/formulae or explicit absence for every intended PIC topic. |
+| Original Owner Request | Independent full-unit source/List-1/List-2/one-owner implementation path; no symptom repair. |
+| Similar-Issue Sweep | Search existing external manuals and indexed PIC research for original-source provenance. |
 
 ## Current Technical Baseline
 
