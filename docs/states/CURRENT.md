@@ -2,28 +2,7 @@
 
 ## Current Work
 
-**Active: M5 T481 S5.**
-
-## M5 T481 S5 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | T481 S4 implementation is `20c4f098`; this one-session coordinator transition accepts its bounded Core/VM audit before S5 begins. The owner-approved ordered M5 queue remains the task authority. |
-| Objective | Independently reconcile S1--S4 evidence, current source/gates and every remaining L0--L2/source-blocked transfer into one non-duplicated ordered result. |
-| Non-goals | No runtime code, public ABI, source import, controller reimplementation, profile claim, or L4 reconstruction. |
-| Reference Baseline | T481 S1--S4 evidence, current Queue/TODO, T343/T449/T474/T475 and selected controller closures. |
-| Candidate Proposal | [Global function and L3 interface completeness audit](../proposals/m5-global-function-and-l3-interface-completeness-audit.md). |
-| Files And ABI Surface | Audit evidence, Queue/TODO/status and focused gates only; no runtime ABI change. |
-| Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, source policy, and the proposal's L0--L3 meanings. |
-| Verification | Independent source/evidence reconciliation, focused static/runtime gates, documentation governance and actual-diff review. |
-| Expected Markers | `M5:T481:S5:RECONCILIATION:OK`; `M5:T481:S5:TRANSFERS:OK`; `M5:T481:S5:AUDIT-CLOSURE:OK`. |
-| Asset Needs | No acquisition or import; accepted sources and repositories remain evidence only. |
-| Reporting Requirements | Record every audit family, exact evidence/gate, final L0--L3 result, one transfer receiver and closure conclusion. |
-| Original Owner Request | Reach the pre-Windows L3 admission audit through a global, minimalist, one-owner completeness review. |
-| Stop Conditions | Stop and record a concrete unresolved transfer if independent reconciliation finds a missing or contradictory row. |
-| Exit Criteria | No unrecorded gap, duplicate owner, hidden host-time injection or false capability claim remains in the frozen audit universe. |
-| Similar-Issue Sweep | All S1--S4 ledgers, Queue/TODO transfers, active source ownership and focused audit gates. |
+**Idle.**
 
 ## Current Technical Baseline
 
@@ -60,10 +39,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T481 S4 | Accepted: Core is the sole guest-time writer; copied observations pace Standard and Turbo remains no-wait without host tick injection. [Evidence](../etc/evidence/t481-s4-core-vm-time-audit.md). |
-| T481 S3 | Accepted: each selected controller has one function owner, one explicit deadline/blocker disposition and no second scheduler. [Evidence](../etc/evidence/t481-s3-controller-audit.md). |
-| T481 S2 | Accepted: one CPU function/delivery/retirement/transaction audit retains exact L3 facts and transfers L2/L1/L0 timing honestly. [Evidence](../etc/evidence/t481-s2-cpu-audit.md). |
-| T481 S1 | Accepted: one de-duplicated CPU/controller/time/profile/VM universe indexes final ledgers without a parallel row set. [Evidence](../etc/evidence/t481-s1-audit-universe.md). |
+| T481 | Closed: one global CPU/controller/Core-time/profile/VM audit leaves no unrecorded duplicate owner, host-to-Core tick injection or false capability claim; residuals have one ordered receiver. [Closure audit](../etc/evidence/t481-s5-global-reconciliation.md). |
 | T480 | Closed: VADP remains the sole guest-video owner; IBM VGA DAC, chain-4 and Mode-13 frame capability is source-backed but unselected by every current profile/card. The 296-target gate and stripped Release 0480 pass. [Closure audit](../etc/evidence/t480-s5-profile-closure-audit.md). |
 | T479 | Closed: one Core HDC/media boundary retains explicit ATA, Compaq and IBM WD1003 personalities; seven focused regressions, the 294-target gate and stripped Release 0479 hash pass. IBM 5160/Xebec and WD1007A-WAH ESDI contracts transfer only to their missing immutable profile receivers. [Closure audit](../etc/evidence/t479-s8-closure-audit.md). |
 | T478 | Closed: Default-AT is an immutable `pc-at-5170` child and all three AT profiles have one resolver-to-copied-Core-input route. [Closure audit](../etc/evidence/t478-s4-closure-audit.md) records frozen parity, the 294-target gate, and stripped Release 0478. |

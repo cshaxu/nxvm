@@ -10,4 +10,8 @@ runtime behavior or interface.
 | S2 | Accepted: one CPU function, delivery, retirement and transaction-owner audit preserves explicit L0--L3 transfers without a duplicate timing path. |
 | S3 | Accepted: every selected controller has one function owner and an explicit deadline or blocking disposition without a second scheduler. |
 | S4 | Accepted: Core is the only guest-time writer; copied observations support Standard pacing and Turbo no-wait without host tick injection. |
-| S5 | Active: independently reconcile audit evidence, gates and the one ordered transfer list. |
+| S5 | Accepted: independent reconciliation retains one ordered transfer per residual and no unrecorded duplicate owner, host-time injection or false capability claim. |
+
+T481 closes as an evidence-led audit. It changes no runtime behavior or product
+artifact; its retained transfer list is
+[S5 reconciliation](../etc/evidence/t481-s5-global-reconciliation.md).
