@@ -1,6 +1,9 @@
 #include "vm/profile/model40/model40_private.h"
 
 #include "core/platform/file.h"
+#include "vm/profile/default_profile/pc_at_profile_private.h"
+
+static const type_unsigned_32 vm_profile_model40_contract_ids[] = {1u};
 
 C_VOID vm_profile_model40_core_config_initialize(core_machine_config *out_config)
 {
@@ -40,6 +43,48 @@ C_VOID vm_profile_model40_core_config_initialize(core_machine_config *out_config
         .auxiliary_pit_base_port = 0x0048u,
         .kbc_aux_absent = TYPE_TRUE
     };
+}
+
+type_status vm_profile_model40_child_declaration_create(
+    const vm_profile_resolver_declaration *parent,
+    vm_profile_resolver_declaration *out_declaration)
+{
+    vm_profile_resolver_declaration declaration = {0};
+
+    if (parent == STD_NULL || out_declaration == STD_NULL ||
+        STD_STRCMP(parent->identity, "pc-at-5170") != 0) {
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
+    declaration.identity = "compaq-deskpro-386-model-40";
+    declaration.parent = parent;
+    declaration.provided_fields = VM_PROFILE_RESOLVER_FIELD_CORE |
+        VM_PROFILE_RESOLVER_FIELD_POLICY;
+    declaration.owned_fields = declaration.provided_fields;
+    declaration.values.core.contract_id = vm_profile_model40_contract_ids[0];
+    vm_profile_model40_core_config_initialize(&declaration.values.core.configuration);
+    declaration.values.firmware_policy = VM_PROFILE_RESOLVER_FIRMWARE_POLICY_BYOB;
+    declaration.values.media_policy = VM_PROFILE_RESOLVER_MEDIA_POLICY_SESSION;
+    declaration.values.allowed_session_options = 0u;
+    *out_declaration = declaration;
+    return TYPE_STATUS_OK;
+}
+
+type_status vm_profile_model40_child_resolve(vm_resolved_profile *out_profile)
+{
+    vm_profile_resolver_declaration root;
+    vm_profile_resolver_declaration child;
+    const vm_profile_resolver_contract_catalog catalog = {
+        vm_profile_model40_contract_ids,
+        sizeof(vm_profile_model40_contract_ids) /
+            sizeof(vm_profile_model40_contract_ids[0])};
+
+    if (out_profile == STD_NULL ||
+        vm_profile_ibm_5170_root_declaration_create(&root) != TYPE_STATUS_OK ||
+        vm_profile_model40_child_declaration_create(&root, &child) != TYPE_STATUS_OK) {
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
+    return vm_profile_resolver_resolve(&child, &catalog,
+        &(vm_profile_resolver_session_request) {0u}, out_profile);
 }
 
 C_INT vm_profile_model40_external_rom_is_valid(

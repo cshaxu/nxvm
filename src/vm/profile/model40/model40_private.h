@@ -5,6 +5,7 @@
 #include "core/machine/firmware_interface.h"
 #include "core/machine/machine_interface.h"
 #include "vm/profile/model40/model40.h"
+#include "vm/profile/profile_resolver_interface.h"
 
 #define VM_PROFILE_MODEL40_ROM_LOGICAL_BYTES (2u * VM_PROFILE_MODEL40_ROM_CHIP_BYTES)
 #define VM_PROFILE_MODEL40_ROM_WINDOW_BYTES VM_PROFILE_MODEL40_ROM_LOGICAL_BYTES
@@ -39,6 +40,10 @@ typedef struct vm_profile_model40_external_rom {
 C_INT vm_profile_model40_external_rom_is_valid(
     const vm_profile_model40_external_rom *rom);
 C_VOID vm_profile_model40_core_config_initialize(core_machine_config *out_config);
+type_status vm_profile_model40_child_declaration_create(
+    const vm_profile_resolver_declaration *parent,
+    vm_profile_resolver_declaration *out_declaration);
+type_status vm_profile_model40_child_resolve(vm_resolved_profile *out_profile);
 type_status vm_profile_model40_byob_manifest_load(
     const vm_profile_model40_byob_manifest *manifest,
     type_unsigned_8 *even_bytes, type_unsigned_8 *odd_bytes,

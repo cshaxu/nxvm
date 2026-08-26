@@ -2,9 +2,26 @@
 
 ## Current Work
 
-**T477 S1 accepted.** The [DeskPro delta ledger](../etc/evidence/t477-s1-deskpro-delta-ledger.md)
-freezes every inherited, explicit-delta and session-owned dynamic field before
-the resolver child is introduced.
+## M5 T477 S2 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner approved T477's ordered DeskPro migration; accepted S1 ledger bounds this child-declaration implementation. |
+| Objective | Add one immutable DeskPro child declaration over the copied `pc-at-5170` root and prove its copied Core input contains exactly the frozen CPU/core delta. |
+| Non-goals | No session cutover, deletion of the legacy Model-40 constructor, topology/firmware/media/D4 rewrite, Core change, physical-time claim, profile/YAML rename, or external import. |
+| Reference Baseline | T476 root resolver/cutover; T477 S1 DeskPro delta ledger; existing resolver and Model-40 private-composition smokes. |
+| Candidate Proposal | [DeskPro 386 5170-derived runnable profile](../proposals/m5-deskpro-386-5170-derived-runnable-profile.md). |
+| Files And ABI Surface | VM profile resolver declarations/root result and focused resolver smoke only; no public Core ABI or runtime session behavior change. |
+| Applicable Rules | Resolver owns immutable inheritance/provenance only; child copies rather than aliases parent data; Core stays neutral; dynamic ROM/media/D4 remain session-owned; no forwarding or parallel config builder. |
+| Verification | Direct root/child resolution and negative validation smoke; assert parent identity, child field owners and copied 80386/1 MiB/Core timing values; current resolver smoke and documentation governance. |
+| Expected Markers | `M5:T477:S2:DESKPRO-CHILD-RESOLVER:OK` and `M5:T477:S2:DESKPRO-CHILD-NEGATIVE:OK`. |
+| Asset Needs | Existing committed sources/tests only; no firmware, media or third-party material. |
+| Reporting Requirements | Record the exact declaration fields, retained non-representable dynamic fields and why they remain out of resolver data; report code/test delta and resolved-data ownership. |
+| Stop Conditions | Stop if the resolver must expose a mutable runtime resource, if the Core input cannot represent the frozen CPU delta, or if a child declaration would silently duplicate a session topology constructor. |
+| Exit Criteria | One validated immutable child derives from 5170, deep-copy/provenance and negative validation are proven, and no session behavior/path changes. |
+| Original Owner Request | Build correct whole-machine interfaces first, then connect IBM 5170, DeskPro 386 and default-at in order without duplicate paths. |
+| Similar-Issue Sweep | Sweep parent/child resolver declarations, root-result copying and all direct Model-40 Core-config initializers for aliases, stale static identity or second immutable configuration creation. |
 
 ## Current Technical Baseline
 

@@ -2,6 +2,7 @@
 
 #include "core/machine/machine_interface.h"
 #include "vm/profile/default_profile/pc_at_profile_private.h"
+#include "vm/profile/model40/model40_private.h"
 
 static const type_unsigned_32 vm_ibm_5170_root_contract_ids[] = {1u};
 
@@ -149,11 +150,51 @@ static C_INT vm_ibm_5170_root_rejects_invalid_declaration(C_VOID)
         TYPE_STATUS_OK;
 }
 
+static C_INT vm_model40_child_resolves_copy(C_VOID)
+{
+    vm_profile_resolver_declaration root;
+    vm_profile_resolver_declaration child;
+    vm_resolved_profile resolved;
+
+    if (vm_profile_ibm_5170_root_declaration_create(&root) != TYPE_STATUS_OK ||
+        vm_profile_model40_child_declaration_create(&root, &child) != TYPE_STATUS_OK ||
+        vm_profile_model40_child_resolve(&resolved) != TYPE_STATUS_OK ||
+        STD_STRCMP(resolved.identity, "compaq-deskpro-386-model-40") != 0 ||
+        STD_STRCMP(resolved.parent_identity, "pc-at-5170") != 0 ||
+        STD_STRCMP(resolved.field_owner[0], "compaq-deskpro-386-model-40") != 0 ||
+        STD_STRCMP(resolved.field_owner[1], "pc-at-5170") != 0 ||
+        STD_STRCMP(resolved.field_owner[6], "compaq-deskpro-386-model-40") != 0 ||
+        resolved.values.core.configuration.cpu_profile !=
+            CORE_MACHINE_CPU_PROFILE_80386 ||
+        resolved.values.core.configuration.memory_bytes != 1024u * 1024u ||
+        resolved.values.firmware_policy != VM_PROFILE_RESOLVER_FIRMWARE_POLICY_BYOB ||
+        resolved.values.media_policy != VM_PROFILE_RESOLVER_MEDIA_POLICY_SESSION) {
+        return 1;
+    }
+    child.values.core.configuration.memory_bytes = 512u * 1024u;
+    return resolved.values.core.configuration.memory_bytes != 1024u * 1024u;
+}
+
+static C_INT vm_model40_child_rejects_invalid_parent(C_VOID)
+{
+    vm_profile_resolver_declaration invalid = {0};
+    vm_profile_resolver_declaration child;
+
+    invalid.identity = "not-5170";
+    return vm_profile_model40_child_declaration_create(&invalid, &child) ==
+        TYPE_STATUS_OK;
+}
+
 int main(void)
 {
     if (vm_ibm_5170_root_is_copied_and_complete() ||
-        vm_ibm_5170_root_rejects_invalid_declaration()) return 1;
+        vm_ibm_5170_root_rejects_invalid_declaration() ||
+        vm_model40_child_resolves_copy() || vm_model40_child_rejects_invalid_parent()) {
+        return 1;
+    }
     STD_PRINTF("M5:T476:S2:IBM5170-ROOT-RESOLVER:OK\n");
     STD_PRINTF("M5:T476:S2:IBM5170-ROOT-NEGATIVE:OK\n");
+    STD_PRINTF("M5:T477:S2:DESKPRO-CHILD-RESOLVER:OK\n");
+    STD_PRINTF("M5:T477:S2:DESKPRO-CHILD-NEGATIVE:OK\n");
     return 0;
 }
