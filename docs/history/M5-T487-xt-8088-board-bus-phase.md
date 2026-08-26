@@ -8,7 +8,7 @@ cannot recreate a controller or repair a controller-local symptom.
 | --- | --- |
 | S1 | Accepted: visually verified IBM board, clock, cycle, reset, map, ISA and NMI source facts establish the finite List-1 basis without importing a manual or firmware. [Evidence](../etc/evidence/t487-s1-5160-original-source-ledger.md). |
 | S2 | Accepted: every admitted board clock, cycle, reset, map, ISA and NMI fact has one Manual-L3 List-1 row and a controller/CPU/host boundary before code inspection. [Evidence](../etc/evidence/t487-s2-5160-board-function-timing-list-1.md). |
-| S3 | Accepted: every board row maps to one production owner/path; the retained Core boundary requires rational time publication and total-cycle classification rather than additive waits. [Evidence](../etc/evidence/t487-s3-5160-board-current-code-gap-list-2.md). |
+| S3 | Accepted: every board row maps to one production owner/path; the retained Core boundary uses its existing rational clock plan and requires total-cycle classification rather than additive waits. [Evidence](../etc/evidence/t487-s3-5160-board-current-code-gap-list-2.md). |
 
 The active contract is in [Current](../states/CURRENT.md). Its admitted scope
 and the mandatory source/List-1/List-2/one-owner sequence are in the active

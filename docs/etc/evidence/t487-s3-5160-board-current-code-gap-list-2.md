@@ -15,7 +15,7 @@ memory map or NMI owner was found. The source sweep covered `src/core/machine`,
 
 | List-1 keys | Current owner and production path | Current disposition | Whole-batch action |
 | --- | --- | --- | --- |
-| XT-B01--B02 | `vm_profile_xt_5160_268_declaration_create` copies `ticks_per_instruction = 1`; `core_machine_create_internal` copies `time_axis` and clock domains; `core_machine_capture_time_observation` publishes the copied result. | The profile declares 8088 and 256 KiB but contributes no IBM rational board clock. The time axis represents ticks/second as an integer, while the primary formula is `14,318,180 / 3`; no physical qualification is present. | Extend the existing copied Core time-axis contract, not the profile, so it can retain a source rational rate. Then the XT profile selects it once. |
+| XT-B01--B02 | `vm_profile_xt_5160_268_declaration_create` copies `ticks_per_instruction = 1`; `core_machine_create_internal` copies `time_axis` and clock domains; `core_machine_capture_time_observation` publishes the copied result. | The profile declares 8088 and 256 KiB but contributes no IBM board clock plan. The Core clock-domain ratios already express exact device-to-CPU-clock fractions; only the optional host-pacing rate is integer-only. | Select the IBM board clock relations through the existing copied Core clock plan. Keep exact host pacing unavailable rather than expanding the global time-axis contract merely to represent `14,318,180 / 3`. |
 | XT-B03 | `core_machine_cold_reset` is the sole reset path; Core resets XT PPI, PIC, DMA, PIT, memory-facing state and providers. | Reset has one owner. No source-selected board-edge relation is represented; the manual states edge synchronization but no reset duration. | Preserve Core reset ownership. Add no delay or second reset path; the implementation proof must show reset is not charged as invented time. |
 | XT-B04--B06 | `core_machine_cpu_external_cycle_trace` collects a CPU external-cycle lifecycle, and `machine.c` publishes an external wait only after a Core lifecycle commit. | The generic `external_access_wait_windows` is an **additive** wait mechanism. Filling it with IBM's four/five clocks would double-count cycles already included by 8088 Table-2-21 transfer timing. The XT profile leaves it unselected. | At the existing Core CPU/transaction seam, add one source-qualified 5160 cycle classifier that selects the documented total cycle relation without an additive profile wait, or retain an explicit boundary for accesses the IBM source does not classify. |
 | XT-B07 | Core PIT output 1 is already bound to the DMA refresh callback; DMA and PIT own their state. | XT topology selects one DMA controller, but no 5160 source ratio/cycle relation reaches the shared Core axis. The PC/AT refresh programming is explicitly a different board path. | Make the selected XT relation consume the same rational board axis and existing PIT/DMA owners; do not reuse PC/AT port-61/AT refresh policy. |
@@ -29,8 +29,8 @@ memory map or NMI owner was found. The source sweep covered `src/core/machine`,
 
 S4 is one coherent Core/XT-board batch, not a profile-only constant edit:
 
-1. represent the IBM source rational clock exactly through the existing copied
-   Core configuration/observation boundary;
+1. select the IBM source clock relations through the existing copied Core
+   clock-plan boundary;
 2. let the XT profile select that immutable board contract once;
 3. classify the documented normal-memory, I/O and DMA board cycles at the
    Core CPU/transaction owner without recharging 8088 timing; and
