@@ -2,7 +2,28 @@
 
 ## Current Work
 
-**Idle.**
+**Active: M5 T482 S1.**
+
+## M5 T482 S1 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New |
+| Admission And Approval | Owner-approved ordered M5 queue; T481 closure at `bfe4aaa9` is the required predecessor. |
+| Objective | Freeze the current profile/console/parser/resolver selection universe and one root-only `nxvm-session` grammar with its permitted session choices. |
+| Non-goals | No compatibility grammar, user hardware authoring, profile topology/CPU/ROM/timing field, XT admission, asset import or L4 work. |
+| Reference Baseline | T475--T478 immutable resolver/profile closures, T481 audit closure and the YAML cutover proposal. |
+| Candidate Proposal | [VM session profile YAML cutover](../proposals/m5-vm-session-profile-yaml-cutover.md). |
+| Files And ABI Surface | Parser/console/profile/resolver inspection plus T482 history/evidence/index and Current only; no ABI change in S1. |
+| Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, source policy and the proposal's one-production-path constraint. |
+| Verification | Parser/selection/resolver caller inventory, root-field grammar sweep, all-profile choice matrix and documentation governance. |
+| Expected Markers | `M5:T482:S1:SELECTION-UNIVERSE:OK`; `M5:T482:S1:GRAMMAR:OK`; `M5:T482:S1:CHOICES:OK`. |
+| Asset Needs | No acquisition or import. |
+| Reporting Requirements | Record every current selector/parser/consumer, accepted root fields, rejected legacy fields, declared choice owner and transfer. |
+| Original Owner Request | Continue the ordered minimalist queue toward the pre-Windows L3 admission audit. |
+| Stop Conditions | Stop if a required choice needs a profile declaration or a second production composition path. |
+| Exit Criteria | One finite current selection universe and a source-backed grammar/choice matrix are recorded without a parallel request model. |
+| Similar-Issue Sweep | VM profile files, console startup/options, YAML/parser sources, resolver callers, composition builders and relevant tests. |
 
 ## Current Technical Baseline
 
