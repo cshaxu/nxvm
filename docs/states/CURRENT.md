@@ -2,26 +2,7 @@
 
 ## Current Work
 
-## M5 T475 S3 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner approved the dependency-ordered implementation sequence on 2026-08-25; accepted T475 S1/S2 establish the complete ledger and resolver, authorizing task-level integration closure before profile connections. |
-| Objective | Audit the complete T475 ledger and resolver implementation, publish stripped Release 0475, run full current gates, and close the resolver-kernel task with all real profile migrations explicitly transferred. |
-| Non-goals | No default/5170/DeskPro migration, profile registration, YAML/CLI change, Core behavior/API change, firmware/media work, source import, host callback, second configuration route, L4 claim or unrelated cleanup. |
-| Reference Baseline | Accepted [T475 S1 ledger](../etc/evidence/t475-s1-profile-resolver-ledger.md) and [S2 resolver proof](../etc/evidence/t475-s2-profile-resolver.md); closed T474 time boundary; resolver candidate and downstream Queue proposals. |
-| Candidate Proposal | [VM profile resolver kernel](../proposals/m5-vm-profile-resolver-kernel.md). |
-| Files And ABI Surface | Current CMake artifact target/preset, ignored `build/output/nxvm_0_5_0475.exe`, Current baseline/history/closure evidence/proposal retention and Queue; no new runtime API or behavior beyond the already-accepted resolver module. |
-| Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`, architecture/source-layout authorities: complete ledger audit, stripped Release artifact, one resolver/one Core-plan handoff, no mutable pointer exposure and actual-diff review. |
-| Verification | `cmake --build --preset current-gates-gcc`; Release configure/build of `vm-0-5-0475`; focused resolver smoke; artifact banner/size/SHA-256 inspection; documentation governance; source sweep for resolver consumers and duplicate Core-plan API; complete ledger/Queue/TODO/diff audit. |
-| Expected Markers | `M5:T475:S2:PROFILE-RESOLVER:OK`, `M5:T475:S2:PROFILE-RESOLVER-NEGATIVE:OK`, `M5:T475:S3:INTEGRATION-CLOSURE:OK`, and `M5:T197:S1:CURRENT-ARTIFACT-TARGET:vm-0-5-0475:OK`. |
-| Asset Needs | Existing source/build outputs only; no guest media, firmware, third-party source or machine-local path enters the repository. |
-| Reporting Requirements | Map S1/S2 to evidence, report complete-gate result, artifact path/banner/size/hash, actual source/test line delta, retained production route/owner, transfer recipients and actual-diff review. |
-| Stop Conditions | Stop for owner direction on an unresolved full-gate failure, artifact identity conflict, need for a Core/API change, selected profile migration, source import, or evidence of a second resolver/Core-plan path. |
-| Exit Criteria | S1/S2 ledger is fully accepted; every resolver conflict/provenance/handoff condition is proved; full gate and governance pass; stripped Release 0475 is built and verified; status/history/proposal/Queue state is consistent; IBM 5170, DeskPro and default-at remain explicit downstream consumers. |
-| Original Owner Request | Establish correct whole-machine L3 structure and interfaces first, then connect IBM 5170, DeskPro 386 and default-at in that order, without layered or duplicate paths. |
-| Similar-Issue Sweep | Sweep resolver header/implementation/test, CMake source and exact target counts, profile/session direct constructors, Core-plan create/configure calls, artifact/preset identity, Queue/proposal/history/current links and all T475 changed files for duplicate path, mutable leak or stale 0474 identity. |
+**Idle.**
 
 ## Current Technical Baseline
 
@@ -56,7 +37,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T475 S2 | Accepted: one VM-only immutable resolver copies parent-patched values and per-field provenance to the existing Core-plan API, rejecting invalid ownership, bindings, windows, routes, contracts and session policy. [Evidence](../etc/evidence/t475-s2-profile-resolver.md) records the focused proof; no profile is yet migrated. |
+| T475 | Closed: one VM-only immutable resolver copies parent-patched values and per-field provenance to the existing Core-plan API, rejects invalid ownership/bindings/windows/routes/contracts/policy, and leaves current routes for ordered profile migrations. [Closure audit](../etc/evidence/t475-s3-integration-closure-audit.md) records the 294-target gate and stripped Release 0475. |
 | T474 | Closed: one Core-owned guest-time axis, immutable plan and copied observation now join profile timing values, source-qualified PIT/RTC deadlines, explicit controller blockers and Standard/Turbo consumer policy. [Closure audit](../etc/evidence/t474-s6-integration-closure-audit.md) records the 293-target gate and stripped Release 0474. |
 | T473 | Withdrawn before implementation: the profile-first time-axis admission was split by Td S149 so machine-neutral Core time integration precedes all profile connections. Its identifier and proposal are retained in history; no runtime or artifact changed. |
 | T472 | Closed: Model-339 has a retained L2 macro rate; Standard uses it without host-generated guest time, Turbo skips only its wait, and unqualified profiles no longer take a fixed HLT sleep. [Closure audit](../etc/evidence/t472-s3-integration-closure-audit.md) records Release 0472. |
@@ -64,7 +45,6 @@
 | T470 | Closed: S1--S6 establish one copied Core physical-axis contract, retain every current profile at unqualified/zero, separate Standard's L2 HLT backoff from Turbo's no-wait behavior, and record stripped Release 0470 in the [closure audit](../etc/evidence/t470-s6-integration-closure-audit.md). |
 | T469 | Closed: S1--S6 reconcile the 145-row controller deadline ledger to one Core-owned deadline/timebase/waiting path; VM host-tick injection is deleted, current profiles retain explicit L2 fallback, and stripped Release 0469 is recorded in [closure audit](../etc/evidence/t469-s6-integration-closure-audit.md). |
 | T468 | Closed: the ATA-3 15-row task-file/media contract has one HDC owner, one media owner and one PIC route; the serial current gate passes 295/295 and stripped Release 0468 is recorded in [history](../history/M5-T468-core-hdc-ata-phase-contract.md). |
-| T467 | Closed: all 17 selected IBM-CGA rows reconcile to one VADP/Core/profile/snapshot path. Source and model facts remain retained; their current L3/L2/L1/L0 interpretation is [Td S148](../etc/evidence/td-s148-eight-controller-l-level-reclassification-audit.md). Serial current-gate passes 295/295; stripped Release 0467 is recorded in [history](../history/M5-T467-core-ibm-cga-completeness.md). |
 
 ## Recent Governance
 

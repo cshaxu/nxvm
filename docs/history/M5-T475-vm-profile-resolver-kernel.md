@@ -4,6 +4,9 @@ T475 establishes the VM-only profile resolver that follows T474's
 machine-neutral Core time boundary and precedes every PC/AT profile connection.
 It does not migrate a runnable profile.
 
+The original approved [proposal](M5-T475-vm-profile-resolver-kernel-proposal.md)
+is retained beside this closure record.
+
 ## Accepted Work
 
 | Subtask | Accepted result |
