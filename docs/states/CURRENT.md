@@ -60,10 +60,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T484 S16 | Accepted: owner-selected Xebec Type 2 is frozen in one copied 5160 profile/Core descriptor, retaining the sole HDC/media route and no runtime type choice. [Evidence](../etc/evidence/t484-s16-xebec-type2-selection.md). |
-| T484 S17 | Accepted: Type-2 Xebec logical Read/Write now use the sole Core HDC buffer, frozen media registry and DMA3 request boundary; no ATA alias or second state owner was added. [Evidence](../etc/evidence/t484-s17-xebec-dma-media.md). |
-| T484 S18 | Accepted: the configured 8237A channel-3 service path now proves the one Xebec HDC/media-to-Core-RAM route in both directions. [Evidence](../etc/evidence/t484-s18-xebec-dma-ram.md). |
-| T484 S15 | Accepted: Xebec now has one HDC-owned select/DCB/completion/request-sense/reset stack and raw 323h pattern state; selected-media DMA transfer, enable-bit semantics, physical status/timing and ROM remain explicit transfers. [Evidence](../etc/evidence/t484-s15-xebec-command-stack.md). |
+| T484 | Closed: IBM 5160-268 now has one immutable 8088/profile plan, XT PPI/FDC/CGA/Xebec functional owners and one typed external-ROM BYOB product route; all remaining board/device timing transfers to T485. [Closure audit](../etc/evidence/t484-s22-xt-functional-closure-audit.md). |
 | T484 S14 | Accepted: X1--X17 now have one source-bounded Xebec Core receiver: byte-stack/command state and DMA callbacks stay in the sole HDC owner; ATA reuse, selected geometry, ROM, physical behavior and guessed hardware status remain explicit transfers. [Evidence](../etc/evidence/t484-s14-xebec-logical-implementation-brief.md). |
 | T484 S2 | Accepted: rendered Intel/IBM evidence permits shared 8086 semantics but requires a Core-owned four-byte 8088 queue policy and forbids a false 8086 alias. [Evidence](../etc/evidence/t484-s2-xt-8088-compatibility-matrix.md). |
 | T482 | Closed: one strict root YAML request reaches the sole `SESSION OPEN` authority and resolver without CLI re-encoding; 296/296 current-gate tests and stripped Release 0480 pass. [Closure audit](../etc/evidence/t482-s4-closure-audit.md). |
