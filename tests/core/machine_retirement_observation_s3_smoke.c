@@ -98,7 +98,8 @@ static C_INT retirement_pre_mode_snapshot_case(C_VOID)
     return failed;
 }
 static C_INT retirement_unallocated_profile_case(core_machine_cpu_profile profile,
-    core_machine_retirement_timing_origin expected_origin)
+    core_machine_retirement_timing_origin expected_origin,
+    const type_unsigned_8 *program, STD_SIZE_T bytes, C_INT expected_repeat)
 {
     const core_machine_config physical = {
         .cpu_profile = profile,
@@ -106,13 +107,12 @@ static C_INT retirement_unallocated_profile_case(core_machine_cpu_profile profil
         .retirement_time_contract = CORE_MACHINE_RETIREMENT_TIME_PHYSICAL
     };
     const core_machine_run_budget budget = { 1u, 0u };
-    const type_unsigned_8 rep_nop[] = { 0xf3u, 0x90u };
     core_machine_retirement_observation_provider provider;
     core_machine_run_result result;
     core_machine_timeline_observation timeline;
     retirement_probe probe = { STD_NULL, { { 0 } }, 0u, TYPE_STATUS_OK };
     core_machine *machine = STD_NULL;
-    C_INT failed = !retirement_prepare(&machine, &physical, rep_nop, sizeof(rep_nop));
+    C_INT failed = !retirement_prepare(&machine, &physical, program, bytes);
 
     provider.callback = retirement_capture;
     provider.context = &probe;
@@ -129,8 +129,8 @@ static C_INT retirement_unallocated_profile_case(core_machine_cpu_profile profil
                 CORE_MACHINE_RETIREMENT_SOURCE_FORM_UNATTRIBUTED ||
             probe.records[0].timing_key_id !=
                 CORE_MACHINE_RETIREMENT_SOURCE_FORM_UNATTRIBUTED ||
-            (probe.records[0].formula_inputs &
-                CORE_MACHINE_CPU_TIMING_INPUT_REPEAT) == 0u ||
+            (expected_repeat && (probe.records[0].formula_inputs &
+                CORE_MACHINE_CPU_TIMING_INPUT_REPEAT) == 0u) ||
             probe.records[0].timing_origin != expected_origin ||
             probe.records[0].elapsed_ticks != 0u || probe.records[0].timeline_ticks != 0u ||
             core_machine_get_timeline_observation(machine, &timeline) != TYPE_STATUS_OK ||
@@ -219,7 +219,8 @@ static C_INT retirement_8086_context_formula_case(C_VOID)
 }
 
 static C_INT retirement_8088_primary_case(const type_unsigned_8 *program,
-    STD_SIZE_T bytes, type_unsigned_64 expected_ticks)
+    STD_SIZE_T bytes, type_unsigned_64 expected_ticks,
+    core_machine_retirement_timing_origin expected_origin)
 {
     const core_machine_config config = {
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_8088
@@ -246,7 +247,7 @@ static C_INT retirement_8088_primary_case(const type_unsigned_8 *program,
             probe.records[0].timing_disposition !=
                 CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED ||
             probe.records[0].timing_origin !=
-                CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY;
+                expected_origin;
     }
     core_machine_destroy(machine);
     return failed;
@@ -311,6 +312,16 @@ C_INT main(C_VOID)
     const type_unsigned_8 add_register[] = { 0x01u, 0xc8u };
     const type_unsigned_8 add_register_memory[] = { 0x03u, 0x06u, 0x00u, 0x10u };
     const type_unsigned_8 add_memory_register[] = { 0x01u, 0x06u, 0x00u, 0x10u };
+    const type_unsigned_8 push_register[] = { 0x50u };
+    const type_unsigned_8 pop_register[] = { 0x58u };
+    const type_unsigned_8 call_near[] = { 0xe8u, 0x00u, 0x00u };
+    const type_unsigned_8 ret_near[] = { 0xc3u };
+    const type_unsigned_8 ret_far[] = { 0xcbu };
+    const type_unsigned_8 call_memory[] = { 0xffu, 0x16u, 0x00u, 0x10u };
+    const type_unsigned_8 push_memory[] = { 0xffu, 0x36u, 0x00u, 0x10u };
+    const type_unsigned_8 pop_memory[] = { 0x8fu, 0x06u, 0x00u, 0x10u };
+    const type_unsigned_8 int3[] = { 0xccu };
+    const type_unsigned_8 hlt[] = { 0xf4u };
     const type_unsigned_8 movsb[] = { 0xa4u };
     const type_unsigned_8 movsw[] = { 0xa5u };
     const type_unsigned_8 cmpsb[] = { 0xa6u };
@@ -363,26 +374,56 @@ C_INT main(C_VOID)
         probe.records[0].address_size_32 || probe.records[0].lock_prefix ||
         probe.records[0].repeat_prefix != 0u;
     failed |= retirement_unallocated_profile_case(CORE_MACHINE_CPU_PROFILE_8086,
-        CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY) ||
+        CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY, rep_nop,
+        sizeof(rep_nop), 1) ||
         retirement_unallocated_profile_case(CORE_MACHINE_CPU_PROFILE_8088,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_COMPATIBILITY) ||
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_COMPATIBILITY, rep_nop,
+            sizeof(rep_nop), 1) ||
         retirement_unallocated_profile_case(CORE_MACHINE_CPU_PROFILE_80186,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80186_FALLBACK) ||
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80186_FALLBACK, rep_nop,
+            sizeof(rep_nop), 1) ||
         retirement_unallocated_profile_case(CORE_MACHINE_CPU_PROFILE_80286,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80286_FALLBACK) ||
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80286_FALLBACK, rep_nop,
+            sizeof(rep_nop), 1) ||
         retirement_unallocated_profile_case(CORE_MACHINE_CPU_PROFILE_80386,
-            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80386_FALLBACK);
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80386_FALLBACK, rep_nop,
+            sizeof(rep_nop), 1) ||
+        retirement_unallocated_profile_case(CORE_MACHINE_CPU_PROFILE_8088,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK, int3,
+            sizeof(int3), 0) ||
+        retirement_unallocated_profile_case(CORE_MACHINE_CPU_PROFILE_8088,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK, hlt,
+            sizeof(hlt), 0);
     failed |= retirement_control_context_case(0x75u,
         CORE_MACHINE_RETIREMENT_CONTROL_TAKEN, 1u) ||
         retirement_control_context_case(0x74u,
             CORE_MACHINE_RETIREMENT_CONTROL_FALLTHROUGH,
             CORE_MACHINE_RETIREMENT_CONTEXT_UNAVAILABLE) ||
         retirement_pre_mode_snapshot_case() || retirement_8086_context_formula_case() ||
-        retirement_8088_primary_case(add_register, sizeof(add_register), 3u) ||
+        retirement_8088_primary_case(add_register, sizeof(add_register), 3u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY) ||
         retirement_8088_primary_case(add_register_memory,
-            sizeof(add_register_memory), 19u) ||
+            sizeof(add_register_memory), 19u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY) ||
         retirement_8088_primary_case(add_memory_register,
-            sizeof(add_memory_register), 30u) ||
+            sizeof(add_memory_register), 30u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY) ||
+        retirement_8088_primary_case(push_register, sizeof(push_register), 15u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK) ||
+        retirement_8088_primary_case(pop_register, sizeof(pop_register), 12u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK) ||
+        retirement_8088_primary_case(call_near, sizeof(call_near), 23u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK) ||
+        retirement_8088_primary_case(ret_near, sizeof(ret_near), 12u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK) ||
+        retirement_8088_primary_case(ret_far, sizeof(ret_far), 26u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK) ||
+        retirement_8088_primary_case(call_memory, sizeof(call_memory), 35u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK) ||
+        retirement_8088_primary_case(push_memory, sizeof(push_memory), 30u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK) ||
+        retirement_8088_primary_case(pop_memory, sizeof(pop_memory), 31u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK) ||
         retirement_8088_string_case(movsb, sizeof(movsb), 0u, 1u, 18u, 0u) ||
         retirement_8088_string_case(movsw, sizeof(movsw), 0u, 1u, 26u, 0u) ||
         retirement_8088_string_case(cmpsb, sizeof(cmpsb), 0u, 1u, 22u, 0u) ||

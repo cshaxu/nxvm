@@ -242,6 +242,9 @@ C_INT core_machine_cpu_timing_select(core_machine *machine,
                 CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY,
                 core_machine_primary_source_instruction_cost) &&
             !core_machine_cpu_timing_try(machine, &result,
+                CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK,
+                core_machine_control_stack_source_instruction_cost) &&
+            !core_machine_cpu_timing_try(machine, &result,
                 CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_COMPATIBILITY,
                 core_machine_compatibility_instruction_cost)) return 0;
     } else if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80186) {
