@@ -62,4 +62,3 @@ construction paths and the Core time/speed/model contract tests.  Static sweeps
 confirm that VM production calls `core_machine_advance_to_next_deadline()` only
 through `vm_session_waiting_advance()` and contains no production caller of
 `core_machine_advance_time()`.
-
