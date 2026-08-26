@@ -59,6 +59,15 @@ type_status vm_profile_xt_5160_268_resolve(
         &(vm_profile_resolver_session_request) {0u}, &out_profile->resolved);
     if (status != TYPE_STATUS_OK) return status;
     out_profile->topology = (core_machine_plan_topology) {0};
+    /* The selected IBM CGA is one VADP-owned aperture and port grammar.
+     * These scheduling quanta are the existing non-physical VADP contract;
+     * selected-adapter physical timing remains a later receiver. */
+    out_profile->topology.display_present = TYPE_TRUE;
+    out_profile->topology.display = (core_machine_display_config) {
+        .text_timing = {48u, 8u, 8u},
+        .cga_vram_present = TYPE_TRUE,
+        .ports = {0u, 0u, 0u, 0u, 0u, 0u, 0x03d4u, 0x03dau}
+    };
     out_profile->topology.dma_present = TYPE_TRUE;
     out_profile->topology.dma = (core_machine_dma_wiring) {2u, 1u, 0u};
     out_profile->topology.fdc_present = TYPE_TRUE;

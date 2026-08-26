@@ -56,6 +56,11 @@ static C_INT vm_xt_5160_268_declaration_is_fixed(C_VOID)
         profile.resolved.values.irq_route_count != 0u ||
         profile.resolved.values.drq_route_count != 0u ||
         !profile.topology.dma_present ||
+        !profile.topology.display_present ||
+        !profile.topology.display.cga_vram_present ||
+        profile.topology.display.ega_present ||
+        profile.topology.display.ports.crtc_first != 0x03d4u ||
+        profile.topology.display.ports.crtc_last != 0x03dau ||
         profile.topology.dma.controller_count != 1u ||
         profile.topology.dma.cascade_channel != 0u ||
         !profile.topology.fdc_present ||
@@ -81,6 +86,8 @@ static C_INT vm_xt_5160_268_topology_constructs_one_xt_fdc_route(C_VOID)
     core_machine *machine = STD_NULL;
     core_machine_dma_request_binding binding = {0};
     core_machine_media_registry *media = STD_NULL;
+    core_machine_display_snapshot snapshot = {0};
+    const type_unsigned_8 cells[] = { 'X', 0x1fu };
     C_INT failed = 0;
 
     failed |= vm_profile_xt_5160_268_resolve(&profile) != TYPE_STATUS_OK;
@@ -106,7 +113,23 @@ static C_INT vm_xt_5160_268_topology_constructs_one_xt_fdc_route(C_VOID)
         !core_machine_port_has_write(&machine->executor_port, 0x03f2u) ||
         !core_machine_port_has_write(&machine->executor_port, 0x03f5u) ||
         core_machine_port_has_read(&machine->executor_port, 0x03f7u) ||
-        core_machine_port_has_write(&machine->executor_port, 0x03f7u));
+        core_machine_port_has_write(&machine->executor_port, 0x03f7u) ||
+        !core_machine_port_has_write(&machine->executor_port, 0x03d4u) ||
+        !core_machine_port_has_read(&machine->executor_port, 0x03d5u) ||
+        !core_machine_port_has_write(&machine->executor_port, 0x03d8u) ||
+        !core_machine_port_has_write(&machine->executor_port, 0x03d9u) ||
+        !core_machine_port_has_read(&machine->executor_port, 0x03dau) ||
+        core_machine_port_has_read(&machine->executor_port, 0x03c0u));
+    failed |= !failed && core_machine_freeze_execution_providers(machine) !=
+        TYPE_STATUS_OK;
+    failed |= !failed && core_machine_reset(machine) != TYPE_STATUS_OK;
+    core_machine_port_write(&machine->executor_port, 0x03d8u, 0x0du);
+    failed |= !failed && core_machine_memory_write(machine, 0x000b8000u,
+        cells, sizeof(cells)) != TYPE_STATUS_OK;
+    failed |= !failed && core_machine_capture_display_snapshot(machine, &snapshot) !=
+        TYPE_STATUS_OK;
+    failed |= !failed && (snapshot.kind != CORE_MACHINE_DISPLAY_KIND_TEXT ||
+        snapshot.characters[0] != 'X' || snapshot.attributes[0] != 0x1fu);
     core_machine_destroy(machine);
     core_machine_media_registry_destroy(media);
     core_machine_plan_destroy(plan);
@@ -161,5 +184,7 @@ int main(void)
     STD_PRINTF("M5:T484:S5:XT-B2-SHARED-TOPOLOGY:OK\n");
     STD_PRINTF("M5:T484:S10:XT-FDC-PLAN:OK\n");
     STD_PRINTF("M5:T484:S10:XT-NO-AT-FDC-ALIAS:OK\n");
+    STD_PRINTF("M5:T484:S11:XT-CGA-PLAN:OK\n");
+    STD_PRINTF("M5:T484:S11:XT-NO-VIDEO-ALIAS:OK\n");
     return 0;
 }
