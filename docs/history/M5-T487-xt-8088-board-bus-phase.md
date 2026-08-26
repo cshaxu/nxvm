@@ -13,6 +13,5 @@ cannot recreate a controller or repair a controller-local symptom.
 | S5 | Accepted: complete board closure retains one owner per row, explicit L2 boundaries and no unnecessary production change. [Closure audit](../etc/evidence/t487-s5-5160-board-closure-audit.md). |
 
 The active contract is in [Current](../states/CURRENT.md). Its admitted scope
-and the mandatory source/List-1/List-2/one-owner sequence are in the active
-[proposal](../proposals/m5-xt-8088-board-bus-phase.md), which moves beside this
-record when T487 closes.
+and the mandatory source/List-1/List-2/one-owner sequence are retained in the
+[proposal companion](M5-T487-xt-8088-board-bus-phase-proposal.md).
