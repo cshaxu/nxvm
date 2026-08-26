@@ -30,11 +30,16 @@ The focused VADP proof now emits the DAC and snapshot markers it already verifie
 - `cmake --build --preset current-gates-gcc` passed.
 - `ctest --test-dir build/mingw-gcc-x64 -R "^(current\\.core-machine-ega-external-port-smoke|current\\.core-machine-port-assembly-smoke)$" --output-on-failure` passed 2/2.
 - `powershell -NoProfile -ExecutionPolicy Bypass -File tools/Verify-DocumentationGovernance.ps1 -RepositoryRoot .` passed.
-- Focused fixture regressions pass. Two complete 296-test runs still record
-  `current.core-machine-controller-authority-smoke` as failed in sequence,
-  while its immediate isolated rerun passes. This nondeterminism blocks T480
-  closure; it is not represented as a VADP regression or a passing full gate.
+- Focused fixture regressions pass. The final complete `ctest --test-dir
+  build/mingw-gcc-x64 --output-on-failure` run reached 296/296 with no failures;
+  its retained log reports 111.03 seconds of `current-gate` process time.
+- `cmake --preset mingw-gcc-x64-release` then `cmake --build --preset
+  current-gcc` produced stripped optimized Release
+  `build/output/nxvm_0_5_0480.exe`, SHA-256
+  `7C18DF509A2359554390B3DF981057CB2F476F88F2E612038F2B02FD08A21535`.
 
 `M5:T480:S5:PROFILE-BOUNDARY:OK`
 
 `M5:T480:S5:REGRESSIONS:OK`
+
+`M5:T480:S5:CLOSURE:OK`
