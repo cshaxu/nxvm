@@ -60,3 +60,13 @@ IBM-CGA port and aperture semantics are handled by the accepted VADP route.
 Physical crystal/display generation, monitor behavior, light pen and any
 hardware display deadline remain deliberately absent and transfer to the XT
 board/device phase-timing receiver.
+
+## Coordinator Acceptance
+
+The coordinator reviewed the complete P1 diff rather than relying on its
+markers: one copied XT display declaration and one extension of the existing
+complete-plan smoke.  It found no new production state owner, no VADP/Core
+rewrite, no additional target and no altered AT path.  The focused marker,
+existing shared-CGA/AT regressions, Debug current-gate, Release build/hash and
+documentation-governance result satisfy the S11 packet.  B4 is accepted; B5
+Xebec source qualification is the sole next receiver.

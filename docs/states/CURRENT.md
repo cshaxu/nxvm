@@ -2,28 +2,28 @@
 
 ## Current Work
 
-**Active: M5 T484 S11.**
+**Active: M5 T484 S12.**
 
-## M5 T484 S11 Packet
+## M5 T484 S12 Packet
 
 | Field | Required record |
 | --- | --- |
 | Identifier Mode | Continuation |
-| Admission And Approval | Owner-approved continuous execution toward the pre-Windows L3 admission audit; accepted T484 S10 P1 `6a753c4d` closes B3's FDC plan binding and the frozen T484 B4 ledger batch is the next independent receiver. |
-| Objective | Bind the selected IBM CGA adapter to the 5160-268 copied plan through the existing VADP sole owner, its `B8000h` aperture and its source-qualified port grammar. |
-| Non-goals | No VADP/controller rewrite, firmware/ROM mapping, default guest media, EGA/VGA selection, light pen, physical display timing, session/runnable-profile admission, generic XT or duplicate video/mode/frame state. |
-| Reference Baseline | Accepted T483 S1 display selection, T484 S1 B4 ledger and [T484 S4 CGA gap record](../etc/evidence/t484-s4-xt-board-topology-gap-ledger.md); accepted [T467 CGA closure audit](../etc/evidence/t467-s7-cga-closure-audit.md); existing Core VADP/display-plan owner and selected XT resolver. |
+| Admission And Approval | Owner-approved continuous execution toward the pre-Windows L3 admission audit; coordinator acceptance of T484 S11 P1 `f9783aaf` closes B4, and the frozen T484 B5/Xebec ledger batch is the next independent receiver. |
+| Objective | Reconcile the selected IBM 20 MB Fixed Disk Drive Adapter's documented Xebec command, byte-stream, DMA3/IRQ5, reset, option-ROM and BYOB-media facts into one source-qualified implementation contract. |
+| Non-goals | No HDC implementation, ATA shim, guessed geometry, default disk image, option-ROM bytes, firmware/session route, raw MFM, physical service-time claim, generic XT profile or second CHS/media cache. |
+| Reference Baseline | Accepted T483 S1 Xebec baseline, T484 S1 F7/B5 ledger and [T484 S4 Xebec gap record](../etc/evidence/t484-s4-xt-board-topology-gap-ledger.md); accepted T479 HDC personalities/source audit; IBM 6139790 and qualified 86Box/PCjs read-only corroboration. |
 | Candidate Proposal | [IBM PC/XT 5160-268 selected-device functional closure](../proposals/m5-xt-5160-268-device-functional-closure.md). |
-| Files And ABI Surface | `src/vm/profile/xt/xt_5160_268.c`, existing Core display-plan input only if necessary, focused XT/profile-plan test, T484 evidence/history/current status, CMake registration and `build/output/nxvm_0_5_0484.exe`; no public runtime architecture. |
-| Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, `docs/design/ARCHITECTURE.md`, `docs/design/CODING.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`, source policy and the proposal's single-owner/no-parallel-path boundary. |
-| Verification | Focused XT profile/Core-plan smoke proves the selected CGA ports, `B8000h` memory aperture and copied VADP snapshot owner; existing CGA and AT regressions prove no route change; build stripped Release `vm-0-5-0484`, run current-gate, documentation governance and actual-change review. |
-| Expected Markers | `M5:T484:S11:XT-CGA-PLAN:OK`; `M5:T484:S11:XT-NO-VIDEO-ALIAS:OK`. |
-| Asset Needs | Accepted project evidence and project-owned test state only; no third-party source, firmware, guest media, local path or code import enters the repository. |
-| Reporting Requirements | Record the retained VADP/VRAM/snapshot owner, all changed code/test lines, focused/full verification, Release hash, physical-timing transfer and every intentionally absent adapter feature. |
+| Files And ABI Surface | T484 evidence/history/current status and the source/coverage ledgers only; no source, public ABI, CMake target, artifact or runtime architecture changes. |
+| Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, source policy, T479 HDC ownership boundary and the proposal's single-owner/no-parallel-path condition. |
+| Verification | Render/cross-read the accepted IBM source record and reconcile every selected F7 row against retained Other-L3 observations/current HDC code; document source class, agreement/disagreement, unqualified geometry and physical-time transfer; run documentation governance and actual-change review. |
+| Expected Markers | `M5:T484:S12:XEBEC-SOURCE-CONTRACT:OK`; `M5:T484:S12:XEBEC-NO-ATA-ALIAS:OK`. |
+| Asset Needs | Approved external source inspection only; no download, import, firmware, guest media, local path or third-party code enters the repository. |
+| Reporting Requirements | Record source provenance/OCR confidence, each command/port/DMA/IRQ/reset/ROM fact, every external-emulator agreement or non-authoritative divergence, the retained sole HDC/media owner, geometry disposition and timing transfer. |
 | Original Owner Request | Continue the ordered minimalist queue toward the pre-Windows L3 admission audit. |
 | Stop Conditions | Stop and transfer if binding requires a second mode/VRAM/frame owner, BIOS/VM video mirror, PC/AT descriptor borrowing, an EGA/VGA path, unselected adapter ROM, generic XT abstraction or an unsourced display deadline. |
-| Exit Criteria | The selected XT plan materializes exactly one CGA VADP route with the sourced ports/aperture, focused/current-gate proof passes, the stripped 0484 artifact is recorded, and all physical timing remains explicitly transferred. |
-| Similar-Issue Sweep | Selected XT resolver/topology, all VADP display-plan builders, CGA `3D4h`--`3DAh` ports, `B8000h` memory mapping, copied snapshot publication and PC/AT/DeskPro display paths. |
+| Exit Criteria | The complete B5 source contract gives every implementation-relevant fact a Manual-L3, corroborated Other-L3, or explicit unresolved disposition; no ATA/WD personality or media geometry is misrepresented, and all timing/firmware transfers have a named later receiver. |
+| Similar-Issue Sweep | IBM 5160/Xebec, IBM 5170 WD1003, DeskPro Compaq/WD and default-AT ATA HDC personalities; all HDC config/port/DMA/IRQ/media-owner paths and existing T479 source evidence. |
 
 ## Current Technical Baseline
 
