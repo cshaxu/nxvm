@@ -2,7 +2,26 @@
 
 ## Current Work
 
-**Idle.**
+## M5 T475 S1 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New |
+| Admission And Approval | Owner approved the dependency-ordered implementation sequence on 2026-08-25: after the machine-neutral Core time boundary, establish the VM resolver before connecting IBM 5170, DeskPro 386, then default-at. |
+| Objective | Freeze the complete neutral VM profile-resolution/construction universe, map every current profile/session-to-Core configuration route, and establish the exact resolver-kernel boundary and finite S2 migration batch without changing runnable behavior. |
+| Non-goals | No production profile migration, machine registration, YAML selection, Core timing/device behavior, firmware/media work, source import, L4 claim, or compatibility path. |
+| Reference Baseline | Closed T474 Core time boundary; [VM profile resolver kernel](../proposals/m5-vm-profile-resolver-kernel.md); [profile-resolution design](../etc/architecture/vm-profile-resolution-design.md); current default-at, IBM 5170 Model 339, and Model-40 composition sources. |
+| Candidate Proposal | [VM profile resolver kernel](../proposals/m5-vm-profile-resolver-kernel.md). |
+| Files And ABI Surface | Resolver ledger/evidence, Current/Queue/status records, and bounded source/test inventory only. This S adds no production C interface or runtime behavior. |
+| Applicable Rules | `docs/design/ARCHITECTURE.md`, `docs/design/CODING.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`, `docs/rules/DOCUMENT.md`, `docs/rules/EXECUTION.md`: VM-only identity/provenance ownership, one copied Core-plan route, finite convergence ledger, no machine-specific resolver branch, and actual-change review. |
+| Verification | Manual source sweep of every profile/session construction route and relevant CMake ownership; ledger completeness against the three current profiles and their Core-plan inputs; documentation governance; `git diff --check`. |
+| Expected Markers | `M5:T475:S1:PROFILE-RESOLVER-LEDGER:OK` and `M5:T475:S1:PROFILE-RESOLVER-ROUTE-SWEEP:OK`. |
+| Asset Needs | Existing repository sources and retained evidence only; no guest media, firmware, third-party source, external emulator code, or machine-local path enters the repository. |
+| Reporting Requirements | Record the complete frozen field/route universe, unique owner and direct-path disposition for each row, current source references, proposed neutral resolver input/output, no-go branch evidence, and exact S2 receiver. |
+| Stop Conditions | Stop for owner direction if a required current profile fact cannot be represented as immutable neutral VM data, if one copied Core-plan handoff cannot preserve ownership, or if resolution requires a machine-specific production branch. |
+| Exit Criteria | All three current profiles and every current session-to-Core construction route receive a complete ledger disposition; the resolver's neutral input/output and validation boundary are defined; no hidden direct route is left unassigned; evidence and governance checks pass. |
+| Original Owner Request | Implement correct whole-machine L3 structure and interfaces first, then connect IBM 5170, DeskPro 386 and default-at in that order, without layered or duplicate paths. |
+| Similar-Issue Sweep | Sweep VM profile descriptors, Model-40 private composition, session factory/materialization, Core-plan/configuration construction, firmware/media policy setup, profile tests and CMake ownership for duplicate mutable state, direct Core construction, profile-name-in-Core, post-freeze mutation or parallel resolver paths. |
 
 ## Current Technical Baseline
 
