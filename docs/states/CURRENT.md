@@ -2,28 +2,13 @@
 
 ## Current Work
 
-**Active: M5 T485 S15.**
+**Open: M5 T485.**
 
-## M5 T485 S15 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner-approved continuous execution; accepted T485 S14 `5413a6c3` establishes the source-complete branch/loop receiver. |
-| Objective | Implement source-complete 8088 Jcc/LOOP/JCXZ timing in the retained control/stack evaluator from published post-retirement branch outcome. |
-| Non-goals | No branch/loop decoder/table/state owner, flag re-execution, target guess, prefetch/wait estimate, profile clock, host pacing claim, scheduler, controller ratio, external-cycle counting or product/API change. |
-| Reference Baseline | Accepted T485 S14 branch/loop ledger, existing private control/stack evaluator, 8086 source forms and S7/S9/S11/S13 selector ordering. |
-| Candidate Proposal | [IBM PC/XT 5160-268 board and device phase-timing closure](../proposals/m5-8088-5150-xt-l3-baseline.md). |
-| Files And ABI Surface | Existing private Core CPU timing model/selection and focused Core retirement smoke only. No public ABI, profile grammar, transaction contract or product grammar. |
-| Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, `docs/design/ARCHITECTURE.md`, `docs/design/CODING.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md` and source policy. |
-| Verification | Focused 8088 taken/fallthrough Jcc, JCXZ and LOOP-family results with source-origin/form proof; configured build/current gate and documentation governance. |
-| Expected Markers | One retained evaluator, source-form attribution, exact table outcomes and no branch execution or physical-time claim. |
-| Asset Needs | Existing rendered IBM/Intel evidence only; no bytes, paths or third-party code enter the repository. |
-| Reporting Requirements | Record exact source outcome equations, focused proof, retained owner path, deleted 8086-only attribution split and code-size accounting. |
-| Original Owner Request | Continue the ordered minimalist queue toward the pre-Windows L3 admission audit. |
-| Stop Conditions | Stop if a source-complete receiver requires flag re-execution, a new decoder, external-cycle callbacks or board inference. |
-| Exit Criteria | All 16 Jcc plus JCXZ and LOOP-family forms select exact source results in the retained evaluator before compatibility, with no unowned source attribution. |
-| Similar-Issue Sweep | Inspect all 8088 branch/loop selector paths, flags/target outcome inputs, source-form attribution, compatibility fallback and physical-time publications. |
+T485 S15 is accepted at `3ccae601`: the retained control/stack evaluator now
+source-classifies all 16 8088 Jcc plus JCXZ/LOOP-family taken and fallthrough
+outcomes before compatibility.  The 299-test current gate, specialized gates
+and documentation governance pass.  The next bounded S has not yet been
+admitted.
 
 ## Current Technical Baseline
 
@@ -60,12 +45,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T485 S6 | Accepted: the source-transfer plan is a one-use private timing result, not machine state; its exact complete/incomplete input map prevents a dead abstraction or byte-trace shortcut. [Evidence](../etc/evidence/t485-s6-private-source-transfer-plan.md). |
-| T485 S5 | Accepted: no lawful direct 8088 evaluator exists because Core lacks one complete source word-transfer plan; byte external-cycle traces and local timing guesses are explicitly rejected. [Evidence](../etc/evidence/t485-s5-8088-transfer-plan-receiver.md). |
-| T485 S4 | Accepted: the exhaustive current 8088 selector audit proves Table 2-21 needs a complete transfer-count receiver; no existing 8086 route may be silently reused. [Evidence](../etc/evidence/t485-s4-8088-table-2-21-selector-ledger.md). |
-| T485 S3 | Accepted: Intel/IBM facts identify one Core publisher, generic compatibility timing is explicitly nonphysical, and Table-2-21/external-cycle qualification transfers to S4/S5. [Evidence](../etc/evidence/t485-s3-8088-common-axis-ledger.md). |
-| T485 S2 | Accepted: IBM's PIT `1/4` relation is valid only on the 4.77 MHz XT board-clock axis; current deterministic instruction ticks are not that axis, so no false ratio or controller upgrade was published. [Evidence](../etc/evidence/t485-s2-xt-pit-common-axis-boundary.md). |
-| T485 S1 | Accepted: source/owner ledger classifies every selected XT board/device phase; only the Manual-L3 PIT rational clock has an immediate Core receiver, while all other paths retain explicit L2/blocking boundaries. [Evidence](../etc/evidence/t485-s1-xt-board-phase-source-ledger.md). |
+| T485 S15 | Accepted: the retained control/stack evaluator classifies all 16 8088 Jcc plus JCXZ/LOOP-family outcomes before compatibility, with one generic source form and no new decoder or state owner. The 299/299 current gate passes. [Evidence](../etc/evidence/t485-s15-8088-branch-source-evaluator.md). |
 | T484 | Closed: IBM 5160-268 now has one immutable 8088/profile plan, XT PPI/FDC/CGA/Xebec functional owners and one typed external-ROM BYOB product route; all remaining board/device timing transfers to T485. [Closure audit](../etc/evidence/t484-s22-xt-functional-closure-audit.md). |
 | T482 | Closed: one strict root YAML request reaches the sole `SESSION OPEN` authority and resolver without CLI re-encoding; 296/296 current-gate tests and stripped Release 0480 pass. [Closure audit](../etc/evidence/t482-s4-closure-audit.md). |
 | T483 | Closed: the IBM 5160-268 BOM, complete current-owner capability matrix and Manual-L3/unresolved timing partition establish one functional and one timing receiver without implying an XT runtime path. [Closure evidence](../etc/evidence/t483-s3-xt-timing-source-partition.md). |

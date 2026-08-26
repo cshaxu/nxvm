@@ -1,6 +1,6 @@
 # T485 S15 8088 Branch Source Evaluator
 
-`M5:T485:S15:8088-BRANCH-SOURCE-EVALUATOR:ACCEPTANCE-CANDIDATE`
+`M5:T485:S15:8088-BRANCH-SOURCE-EVALUATOR:ACCEPTED`
 
 S14's rendered Intel Table 2-21 rows are consumed by the retained
 `core_machine_control_stack_source_instruction_cost()` owner.  The owner reads
@@ -25,10 +25,12 @@ compatibility path is added.
 The focused retirement smoke executes all sixteen Jcc opcodes in both
 outcomes, plus taken/fallthrough JCXZ, LOOP, LOOPE and LOOPNE.  Every record is
 classified at the control/stack origin and has a non-unattributed source form.
-The focused build and test pass on the implementation revision; complete gate
-results are recorded before acceptance.
+The focused build/test and the complete 299/299 current gate pass at
+`3ccae601`; specialized gates and documentation governance also pass.
 
 Counted tracked code paths are `src/core/machine/cpu_timing_model.c` and
 `tests/core/machine_retirement_observation_s3_smoke.c`; documentation and
 generated build output are excluded.  The mechanism retains one evaluator and
-one outcome calculation.  Code-size accounting is recorded at acceptance.
+one outcome calculation.  The counted code change is `+108/-5` lines
+(`+31/-5` production and `+77/-0` test); the positive test coverage is the
+complete finite source-form proof, not a second production path.
