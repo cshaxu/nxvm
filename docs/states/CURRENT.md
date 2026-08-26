@@ -68,7 +68,6 @@
 | T483 | Closed: the IBM 5160-268 BOM, complete current-owner capability matrix and Manual-L3/unresolved timing partition establish one functional and one timing receiver without implying an XT runtime path. [Closure evidence](../etc/evidence/t483-s3-xt-timing-source-partition.md). |
 | T481 | Closed: one global CPU/controller/Core-time/profile/VM audit leaves no unrecorded duplicate owner, host-to-Core tick injection or false capability claim; residuals have one ordered receiver. [Closure audit](../etc/evidence/t481-s5-global-reconciliation.md). |
 | T480 | Closed: VADP remains the sole guest-video owner; IBM VGA DAC, chain-4 and Mode-13 frame capability is source-backed but unselected by every current profile/card. The 296-target gate and stripped Release 0480 pass. [Closure audit](../etc/evidence/t480-s5-profile-closure-audit.md). |
-| T479 | Closed: one Core HDC/media boundary retains explicit ATA, Compaq and IBM WD1003 personalities; seven focused regressions, the 294-target gate and stripped Release 0479 hash pass. IBM 5160/Xebec and WD1007A-WAH ESDI contracts transfer only to their missing immutable profile receivers. [Closure audit](../etc/evidence/t479-s8-closure-audit.md). |
 
 ## Recent Governance
 
