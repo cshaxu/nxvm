@@ -17,7 +17,7 @@
 | Files And ABI Surface | T486 history, source-ledger evidence, supporting-evidence index, Current and Queue only; no product or public/private C ABI surface changes. |
 | Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md` and the source policy apply. T486 retains the private Core decoder/timing evaluator as the sole future owner; architecture and coding rules are not otherwise triggered because S1 changes no source. |
 | Verification | Read the source policy; inspect the original PDF visually across Table 2-21 and relevant timing/prefix notes; reconcile its provenance against retained T485 evidence; run documentation governance and link validation. |
-| Expected Markers | One source ledger names the exact document, edition/path, rendered-page checks, OCR confidence/uncertainty, usable tables and unresolved source gaps; it makes no timing implementation claim. |
+| Expected Markers | One source ledger names the exact document and archive identity, rendered-page checks, OCR confidence/uncertainty, usable tables and unresolved source gaps; it makes no timing implementation claim. |
 | Asset Needs | Read-only owner-managed Intel manual archive; no firmware, guest media, Microsoft material, or third-party source import. |
 | Reporting Requirements | Record document identity, visually reviewed pages, authoritative versus uncertain material, lawful cross-check need, retained baseline relationship, and the no-code result. |
 | Stop Conditions | Stop and report if the manual is unavailable, corrupt, non-readable, not the required edition, or its scope cannot define the instruction corpus without another original source; do not substitute emulator source or infer a timing row. |
