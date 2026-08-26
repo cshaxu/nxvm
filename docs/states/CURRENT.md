@@ -10,20 +10,20 @@
 | --- | --- |
 | Identifier Mode | Continuation |
 | Admission And Approval | T487 S3 accepted the complete List 2; S4 implements its one Core/XT-board batch. |
-| Objective | Implement one source-qualified XT board clock/cycle contract at the existing Core CPU/transaction owner, then select it immutably from the XT profile. |
-| Non-goals | No second scheduler, host-to-Core tick injection, PIC/DMA/PIT/PPI/FDC/CGA/Xebec state rewrite, ROM/media import, invented reset duration, or verified whole-machine pacing claim. |
+| Objective | Reconcile IBM board cycles against the existing Intel 8088 clock-total owner and reference-emulator evidence, preserving the existing singular path and recording every unresolved physical bus phase as L2. |
+| Non-goals | No second scheduler, host-to-Core tick injection, additive cycle surcharge, PIC/DMA/PIT/PPI/FDC/CGA/Xebec state rewrite, ROM/media import, invented reset duration, or verified whole-machine pacing claim. |
 | Reference Baseline | Accepted T487 S1--S3 evidence, closed T486 and the current Core/VM waiting contract. |
 | Candidate Proposal | [IBM 5160 8088 board, memory, ROM and ISA phase contract](../proposals/m5-xt-8088-board-bus-phase.md). |
-| Files And ABI Surface | Existing Core clock-plan/CPU/transaction code, XT profile, focused tests/evidence and the T487 artifact; host pacing/time observation stays unchanged. |
+| Files And ABI Surface | Evidence, history and Current only; all current code/ABI/profile paths are retained unchanged. |
 | Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, `docs/design/ARCHITECTURE.md`, `docs/design/CODING.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`. Core owns time and transactions; VM only compares completed progress to host time. |
-| Verification | Focused rational-axis, XT cycle-classification, reset/NMI/map and session-pacing tests; full current gate and the stripped T487 artifact after its version target is admitted. |
-| Expected Markers | One copied board clock-plan selection, one Core 5160 cycle classifier, one immutable XT selection and no duplicate/legacy timing path. |
+| Verification | Original Intel wording, IBM source, bounded PCjs/86Box cross-check, existing focused XT/profile tests and documentation governance. |
+| Expected Markers | One retained CPU clock-total owner, unselected additive waits, one immutable XT construction path and one explicit L2 bus-phase boundary. |
 | Asset Needs | No new source material, firmware or guest media. |
-| Reporting Requirements | Record exact retained owner, removed/avoided duplicate paths, source-unclassified boundary, code-size result, focused/full gates and Release artifact hash. |
+| Reporting Requirements | Record exact retained owner, rejected additive path, reference limit and no-code result. |
 | Stop Conditions | Stop if source semantics require changing the frozen unit or a Core cycle replacement cannot be separated from additive waits without a second timing owner. |
-| Exit Criteria | All T487 List-2 batch rows have their specified owner-local disposition and proof; whole-machine physical pacing remains explicitly unclaimed. |
+| Exit Criteria | All T487 List-2 rows have their specified retained-owner or explicit L2 disposition; no false implementation or whole-machine pacing claim remains. |
 | Original Owner Request | Each newly admitted CPU/chip/controller/board category needs original material, complete List 1, complete List 2 and one whole-unit implementation batch; no symptom-led repair path. |
-| Similar-Issue Sweep | Sweep Core clock-plan/cycle writers and XT profile configurations for parallel timing paths; verify host pacing remains a non-claim. |
+| Similar-Issue Sweep | Sweep Core external-cycle writers and XT profile configurations for any additive IBM-cycle surrogate; verify host pacing remains a non-claim. |
 
 ## Current Technical Baseline
 
