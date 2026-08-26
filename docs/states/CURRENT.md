@@ -2,24 +2,24 @@
 
 ## Current Work
 
-## M5 T471 S2 Packet
+## M5 T471 S3 Packet
 
 | Field | Required record |
 | --- | --- |
 | Identifier Mode | Continuation |
-| Admission And Approval | T471 S1 is accepted at `013a24c0`; this S consumes its overflow-safe comparison and lifecycle contract. |
-| Objective | Implement the one session-local, Core-observation-only pacing baseline: Standard waits only when completed verified Core time is ahead of host budget; Turbo never waits. |
+| Admission And Approval | T471 S2 is accepted at `8e156d38`; this S consumes the one session pacing baseline and HLT comparison gate. |
+| Objective | Prove verified-axis HLT advances only after Standard's host budget permits the Core-selected deadline, prove Turbo omission and unavailable fallback, then close the task. |
 | Non-goals | No profile qualification, no nominal rate, host-to-guest tick conversion, controller change, second scheduler, debugger change or external source acquisition. |
-| Reference Baseline | T471 S1 contract, T470 Core observation contract, VM runner/waiting/virtual-time paths and speed-policy smoke. |
-| Candidate Proposal | [M5 Verified-axis ahead-only host pacing](../proposals/m5-verified-axis-ahead-only-host-pacing.md), T471 S2. |
-| Files And ABI Surface | Expected: VM private session pacing state, internal monotonic-counter reader, waiting/runner path and focused tests; no Core public writer or profile API. |
+| Reference Baseline | T471 S1/S2 evidence, copied Core observation, VM waiting/runner/virtual-time paths and Model-339 synthetic deadline fixture. |
+| Candidate Proposal | [M5 Verified-axis ahead-only host pacing](../proposals/m5-verified-axis-ahead-only-host-pacing.md), T471 S3. |
+| Files And ABI Surface | Expected: focused synthetic HLT proof, indexed closure evidence/status/history and stripped Release 0471 artifact; no new Core writer or profile API. |
 | Applicable Rules | Core alone advances guest time. VM reads copied observations and may wait only when completed Core time is ahead of a verified host budget. |
-| Verification | Exercise exact fraction ordering including near-maximum values, unavailable current profiles, reset baseline clearing, Standard verified-axis pacing and Turbo no-wait; run focused VM/Core tests and documentation governance. |
-| Expected Markers | One pacing baseline owner, no host tick accumulator, no VM time writer, Standard wait only on positive lead, Turbo omission only, and unchanged unavailable L2 behavior. |
+| Verification | Exercise Standard and Turbo against a synthetic verified Core deadline, verify no immediate Standard deadline advance, then run focused/current gates, documentation governance and build/hash stripped Release 0471. |
+| Expected Markers | One pacing baseline owner, no host tick accumulator, no VM time writer, Standard deadline gate, Turbo omission only, unchanged unavailable L2 behavior and one release artifact. |
 | Asset Needs | Existing project code/evidence only. |
 | Reporting Requirements | Record the exact rational comparison, overflow/counter-regression handling, reset/stop owner, verified-axis synthetic proof, unchanged unavailable-profile result, and every host-time consumer disposition. |
 | Stop Conditions | Stop if proof needs a rate unavailable from copied observation, nominal MHz, a controller estimate or a VM clock writer. |
-| Exit Criteria | Standard applies the copied verified-axis comparison after normal execution without advancing Core; Turbo and unavailable profiles retain their correct distinct behavior; focused proof is green. |
+| Exit Criteria | Synthetic verified-axis Standard/Turbo, unavailable profiles, lifecycle and full current gates are green; artifact/history/queue reconcile every residual. |
 | Original Owner Request | Core self-drives guest time; host provides only necessary waiting. |
 | Similar-Issue Sweep | Runner, waiting, virtual-time, display cadence, all Core time advances, reset, pause, cancellation and speed paths. |
 
@@ -54,6 +54,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T471 S2 | Accepted: one [session-ahead-only pacing path](../etc/evidence/t471-s2-session-ahead-only-pacing.md) compares copied verified Core progress to a raw monotonic host counter; it never converts host time to guest ticks. |
 | T471 S1 | Accepted: the [ahead-only pacing contract](../etc/evidence/t471-s1-ahead-only-pacing-contract.md) freezes the exact Core-tick/host-counter comparison, reset/cancellation ownership and the verified-axis HLT correction boundary. |
 | T470 | Closed: S1--S6 establish one copied Core physical-axis contract, retain every current profile at unqualified/zero, separate Standard's L2 HLT backoff from Turbo's no-wait behavior, and record stripped Release 0470 in the [closure audit](../etc/evidence/t470-s6-integration-closure-audit.md). |
 | T469 | Closed: S1--S6 reconcile the 145-row controller deadline ledger to one Core-owned deadline/timebase/waiting path; VM host-tick injection is deleted, current profiles retain explicit L2 fallback, and stripped Release 0469 is recorded in [closure audit](../etc/evidence/t469-s6-integration-closure-audit.md). |
