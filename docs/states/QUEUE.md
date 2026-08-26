@@ -44,9 +44,10 @@ exclusive earliest capability batch; a later candidate may consume a registered
 contract but does not redefine its L3 or Core/VM boundary.
 
 1. [Core unified guest-time axis and VM boundary](../proposals/m5-core-unified-guest-time-axis-and-vm-boundary.md).
+1. [VM profile resolver kernel](../proposals/m5-vm-profile-resolver-kernel.md).
 1. [PC/AT 5170 root profile normalization](../proposals/m5-pc-at-5170-root-profile-normalization.md).
 1. [DeskPro 386 5170-derived runnable profile](../proposals/m5-deskpro-386-5170-derived-runnable-profile.md).
-1. [VM AT profile resolution foundation](../proposals/m5-vm-at-profile-resolution-foundation.md).
+1. [Default-AT 5170-derived profile](../proposals/m5-default-at-5170-derived-profile.md).
 1. [VM session profile YAML cutover](../proposals/m5-vm-session-profile-yaml-cutover.md).
 1. [IBM PC/XT 5160-268 profile and capability-gap audit](../proposals/m5-xt-5160-268-profile-capability-audit.md).
 1. [IBM PC/XT 5160-268 selected-device functional closure](../proposals/m5-xt-5160-268-device-functional-closure.md).

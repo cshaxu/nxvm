@@ -48,6 +48,12 @@
 
 ## Recent Governance
 
+- **M5 Td S150 P1:** separated the machine-neutral VM resolver kernel from
+  profile migration and ordered the queue as Core time boundary, resolver,
+  IBM 5170, DeskPro, `default-at`, then YAML. The [evidence](../etc/evidence/td-s150-profile-connection-order.md)
+  records the one-way ownership and deleted combined candidate. No runtime,
+  ABI, build or artifact changed.
+
 - **M5 Td S149 P1:** withdrew the unimplemented profile-first T473 admission,
   inserted the machine-neutral Core unified guest-time-axis candidate before
   PC/AT 5170 root normalization, and corrected the governance gate to retain

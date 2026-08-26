@@ -9,10 +9,10 @@ See [VM Profile Resolution And Core Machine-Plan Design](../etc/architecture/vm-
 
 ## Required Scope
 
-Use one reusable minimal resolver kernel: typed parent patch to immutable
-`vm_resolved_profile`, then copied Core machine plan. Register only the AT
-root and DeskPro child in this candidate, but do not hard-code a DeskPro branch
-in the kernel.
+Use the accepted reusable resolver kernel: typed parent patch to immutable
+`vm_resolved_profile`, then copied Core machine plan. Register only the
+DeskPro child against the existing AT root; do not add a DeskPro branch to the
+kernel.
 
 The DeskPro delta declares only 80386DX, memory/ROM map, Compaq controllers and
 display, firmware policy, and board-route differences already in source or
@@ -23,10 +23,10 @@ Model-40-special production composition path.
 
 ## Dependencies And Completion
 
-Consumes the Core contract export and accepted `pc-at-5170` root candidate.
-It precedes the general VM resolver/default-profile and YAML candidates.
-Completion requires the inherited-versus-delta ledger, immutable configuration
-proof, parity/current regressions, and no DeskPro-only Core mechanism.
+Consumes the accepted Core boundary, resolver kernel and `pc-at-5170` root
+candidate. It precedes the `default-at` child and YAML candidates. Completion
+requires the inherited-versus-delta ledger, immutable configuration proof,
+parity/current regressions, and no DeskPro-only Core mechanism.
 
 ## Non-goals And Stop Conditions
 

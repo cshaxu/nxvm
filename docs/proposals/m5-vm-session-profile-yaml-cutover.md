@@ -29,7 +29,7 @@ regressions for `pc-at-5170`, `default-at`, and DeskPro.
 
 ## Dependencies And Completion
 
-Consumes the accepted VM AT profile-resolution foundation. Completion requires
+Consumes the accepted `default-at` 5170-derived profile. Completion requires
 the `nxvm-session` parser, rejection of undeclared choices, one production
 selection route, all-profile regressions, current gates, and documentation
 governance.

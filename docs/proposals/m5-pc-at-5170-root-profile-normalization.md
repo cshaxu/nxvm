@@ -21,13 +21,14 @@ against the frozen current path.
 
 ## Dependencies And Completion
 
-Consumes the accepted machine-neutral Core unified guest-time axis and VM
-boundary. It is the first Model-339 timing consumer: it selects documented IBM
-board values and explicit L2 provenance through the validated immutable plan,
-but does not implement a CPU, bus, controller or deadline mechanism. It
-precedes every child-profile and YAML migration. Completion requires the finite
-ledger, root/resolved-plan snapshots, focused parity regressions, current gates,
-and one removed source of duplicate 5170 configuration.
+Consumes the accepted machine-neutral Core unified guest-time axis/VM boundary
+and VM profile resolver kernel. It is the first Model-339 timing consumer: it
+selects documented IBM board values and explicit L2 provenance through the
+validated immutable plan, but does not implement a CPU, bus, controller or
+deadline mechanism. It precedes every child-profile and YAML migration.
+Completion requires the finite ledger, root/resolved-plan snapshots, focused
+parity regressions, current gates, and one removed source of duplicate 5170
+configuration.
 
 ## Non-goals And Stop Conditions
 
