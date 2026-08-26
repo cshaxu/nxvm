@@ -2,7 +2,28 @@
 
 ## Current Work
 
-**Idle.**
+**Active: M5 T480 S1.**
+
+## M5 T480 S1 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New |
+| Admission And Approval | Owner's standing queue-execution approval and explicit VADP architecture instruction; next queue candidate after closed T479 and Td S151. |
+| Objective | Produce a finite, source-qualified IBM VGA controller ledger and a bounded external-model cross-check before changing VADP code or profile selection. |
+| Non-goals | No VADP implementation, profile/card binding, firmware/ROM/media import, emulator-code import, VBE/SVGA, physical monitor timing, or artifact revision. |
+| Reference Baseline | `52502183` / Release 0479; T285/T352 VADP planar and copied-snapshot boundary, T467 CGA closure, T479 closed. |
+| Candidate Proposal | [VADP IBM VGA L3 capability](../proposals/m5-vadp-ibm-vga-l3-capability.md). |
+| Files And ABI Surface | New T480 history record and source/cross-model evidence only; no code, public ABI, profile declaration or product artifact. |
+| Applicable Rules | `docs/rules/EXECUTION.md` New-T and coverage ledger lifecycle; `docs/rules/DOCUMENT.md`; `docs/rules/ARCHITECTURE.md` sole owner and source admission; `docs/rules/CODING.md` simplicity; source policy; proposal's VADP ownership constraint. |
+| Verification | Verify the ledger's source links/page or code locations, source-quality disposition, full VGA row count, T285/T352 compatibility boundary and no-profile-claim conclusion; run documentation governance. |
+| Expected Markers | `M5:T480:S1:VGA-SOURCES:OK`; `M5:T480:S1:VGA-CROSSCHECK:OK`; `M5:T480:S1:PROFILE-BOUNDARY:OK`. |
+| Asset Needs | Seek documentary sources only. External emulator trees and any documents are read-only references; no vendor ROM, option ROM, firmware, media or third-party source enters this repository. |
+| Reporting Requirements | Report sources and their limitations, every classified controller row, corroboration/disagreement, identified VADP consumers and whether any current profile may bind VGA. |
+| Stop Conditions | Stop and mark a row L2/unsupported if IBM documentation is unavailable or ambiguous and external references cannot establish a bounded controller fact; stop profile work if no immutable selected-board/card route exists. |
+| Exit Criteria | A row-complete source/cross-model ledger gives every selected VGA behavior a Manual-L3, bounded Other-L3, L2 or unsupported disposition; it names the S2 gap-audit receiver and preserves one VADP owner. |
+| Original Owner Request | Continue the queue under the established VADP architecture: one VADP video-state owner, EGA/VGA common mechanisms within that owner, copied snapshot to VM presentation, and no parallel video path. |
+| Similar-Issue Sweep | Inspect existing VADP CGA/EGA/CRTC, VM presentation and all available IBM VGA/controller references; distinguish controller facts from unselected board/card routing. |
 
 ## Current Technical Baseline
 
