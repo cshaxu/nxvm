@@ -2,28 +2,28 @@
 
 ## Current Work
 
-**Open: M5 T487 S1.**
+**Open: M5 T487 S2.**
 
-## M5 T487 S1 Packet
+## M5 T487 S2 Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | New |
-| Admission And Approval | Owner-approved queue execution on 2026-08-26 and Td S153 complete-unit rule: the next independent unit is the IBM 5160 board/bus contract. |
-| Objective | Establish the original IBM 5160 board/bus source ledger, including visually verified page authority, OCR condition, formulas and any lawful reference-emulator cross-check boundary. |
-| Non-goals | No production code, timing selection, CPU instruction work, controller implementation, ROM/firmware import, guest media, profile/runtime change or inferred timing value. |
-| Reference Baseline | Closed T486, queued IBM 5160 board/bus proposal, source policy and existing external assets. |
+| Identifier Mode | Continuation |
+| Admission And Approval | T487 S1 accepted under the owner-approved complete-unit sequence; S2 freezes the complete board List 1 before any code inspection or repair. |
+| Objective | Establish one finite IBM 5160 board/bus function and timing List 1 from the accepted original-source ledger, with every rule explicitly classified as source fact or boundary. |
+| Non-goals | No production code, code-gap inspection, CPU instruction work, controller implementation, ROM/firmware import, guest media, profile/runtime change or inferred timing value. |
+| Reference Baseline | Accepted T487 S1 IBM source ledger, closed T486 and the queued IBM 5160 board/bus proposal. |
 | Candidate Proposal | [IBM 5160 8088 board, memory, ROM and ISA phase contract](../proposals/m5-xt-8088-board-bus-phase.md). |
-| Files And ABI Surface | Source-ledger evidence, evidence index, history and Current only; inspected assets remain external and no ABI changes. |
-| Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, `docs/etc/operations/policy/source-policy.md`, `docs/design/ARCHITECTURE.md`, `docs/rules/ARCHITECTURE.md`. Core owns timing/transactions; research never imports source or firmware. |
-| Verification | Locate and visually inspect original IBM source pages covering oscillator, bus cycle, RAM/ROM, reset, ISA and NMI-facing facts; distinguish source fact, OCR uncertainty, unavailable fact and external-emulator corroboration. |
-| Expected Markers | One finite page/formula source ledger suitable for List 1, with every unavailable or ambiguous item explicitly marked before implementation planning. |
-| Asset Needs | Lawful external owner-managed documentation only; no firmware image, Microsoft binary, guest media or third-party source import. |
-| Reporting Requirements | Record asset identity, original/source quality, visual page checks, topic coverage, source confidence and reference cross-check limits. |
-| Stop Conditions | Stop if the original board source cannot be lawfully located, page authority is ambiguous, or a required fact exists only in a forbidden asset; record the gap rather than use an emulator as primary authority. |
-| Exit Criteria | Every intended board List-1 topic has an original-source page/formula or an explicit absence/ambiguity finding, and any external implementation is bounded to corroboration. |
-| Original Owner Request | For every newly admitted chip/controller/board unit, start with original material and a complete source/function/timing gap process; do not begin opportunistic repairs. |
-| Similar-Issue Sweep | Search IBM 5160/PC-XT system-board, oscillator, ISA, RAM/ROM, reset, NMI and timing references across the external manual archive and existing repository provenance. |
+| Files And ABI Surface | List-1 evidence, evidence index, history and Current only; no code, ABI or external asset change. |
+| Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, `docs/etc/operations/policy/source-policy.md`, `docs/design/ARCHITECTURE.md`, `docs/rules/ARCHITECTURE.md`. The shared hardware-unit program requires full inventory before implementation. |
+| Verification | Reconcile each intended board rule to a visual IBM page/formula; classify it as Manual-L3 fact, bounded absent fact, or a separate chip/controller receiver. |
+| Expected Markers | One complete board List 1 containing clock, cycle, reset, memory/ROM, ISA signal and NMI-facing rows with no code disposition. |
+| Asset Needs | Accepted external IBM manual only; no firmware, guest media or third-party source import. |
+| Reporting Requirements | Record exact printed page/formula, scope, timing level/boundary and the separate unit that owns excluded chip-local behavior. |
+| Stop Conditions | Stop if a board row lacks original authority and cannot be safely classified as a boundary; do not infer it from a runtime symptom. |
+| Exit Criteria | Every frozen board-surface row has a primary source or an explicit boundary; S3 can map all rows to one owner/path without enlarging the unit. |
+| Original Owner Request | Each newly admitted CPU/chip/controller/board category needs original material, complete List 1, complete List 2 and one whole-unit implementation batch; no symptom-led repair path. |
+| Similar-Issue Sweep | Not applicable: S2 defines the complete board inventory before code inspection; a later implementation S owns the production-path sweep. |
 
 ## Current Technical Baseline
 
@@ -60,6 +60,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T487 S1 | Accepted: visually verified IBM 5160 board-source ledger establishes the finite clock, cycle, reset, map, ISA and NMI basis before List 1. [Evidence](../etc/evidence/t487-s1-5160-original-source-ledger.md). |
 | T486 | Closed: the complete 8088 manual source/List-1/List-2/one-owner implementation chain closes without a parallel timing path; Group-3, WAIT and non-string-prefix source boundaries remain explicit. [Closure audit](../etc/evidence/t486-s5-8088-closure-audit.md). |
 | T485 | Withdrawn, not completed: accepted S1--S20 evidence remains retained, but Td S152 transfers the uncompleted aggregate XT scope to independent CPU/board/controller candidates. [Record](../etc/evidence/td-s152-unit-task-admission-governance.md). |
 | T484 | Closed: IBM 5160-268 now has one immutable 8088/profile plan, XT PPI/FDC/CGA/Xebec functional owners and one typed external-ROM BYOB product route; all remaining board/device timing transfers to T485. [Closure audit](../etc/evidence/t484-s22-xt-functional-closure-audit.md). |

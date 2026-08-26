@@ -6,7 +6,7 @@ cannot recreate a controller or repair a controller-local symptom.
 
 | Subtask | Result |
 | --- | --- |
-| S1 | Active: establish the visually verified IBM original-source ledger before freezing the complete board List 1. |
+| S1 | Accepted: visually verified IBM board, clock, cycle, reset, map, ISA and NMI source facts establish the finite List-1 basis without importing a manual or firmware. [Evidence](../etc/evidence/t487-s1-5160-original-source-ledger.md). |
 
 The active contract is in [Current](../states/CURRENT.md). Its admitted scope
 and the mandatory source/List-1/List-2/one-owner sequence are in the active
