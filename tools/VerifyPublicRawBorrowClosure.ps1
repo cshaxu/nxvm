@@ -14,7 +14,7 @@ foreach ($file in $sourceFiles) {
     if ($text -match 'core_machine_(configuration|debug)_[A-Za-z0-9_]*borrow') {
         $failures += "$relative exports or uses a raw core borrow"
     }
-    if ($text -match 'profile[^\r\n]*(borrow|binding)') {
+    if ($text -match '\bprofile(?:_[A-Za-z0-9]+)*_(?:borrow|binding)\b') {
         $failures += "$relative exports or uses a profile raw binding"
     }
     if ($text -match '#\s*include\s*[<\"](?:\.\./)*tests/support/') {

@@ -1,6 +1,6 @@
 # T485 S3 8088 CPU And XT Bus Common-Axis Ledger
 
-`M5:T485:S3:8088-COMMON-AXIS:PARTIAL`
+`M5:T485:S3:8088-COMMON-AXIS:ACCEPTED`
 
 ## Primary-source facts
 
@@ -47,11 +47,18 @@ owner after each current access class has a source rule.  Neither S may add a
 profile clock, a second scheduler, or a host-time writer.  Until both are
 accepted, the XT time axis, PIT/DMA ratios and physical pacing remain blocked.
 
-## Verification status
+## Gate reconciliation and verification
 
-The rebuilt focused `current.core-machine-retirement-observation-s3-smoke`
-passes.  The configured full current gate was run after the rebuild but is not
-green: unrelated pre-existing static checks report T344's expected 75 versus
-77 direct constructors and reject the existing XT profile raw binding.  They
-are recorded here as an acceptance blocker; this evidence does not claim a
-full-gate pass.
+The focused physical-8088 retirement smoke passes.  The full configured
+current gate then exposed only stale guard expectations, not a second runtime
+path:
+
+| Guard | Current single owner recorded by the repair |
+| --- | --- |
+| T344/T345 direct-source inventories | The two XT device-owner smokes remain direct by design; their 77-constructor and 58-residual inventory is explicit. |
+| Public raw-borrow closure | `core_machine_pic_topology` moved to the minimal public `pic_interface.h`; the private PIC state remains private. |
+| Display/DMA/RTC/ATA and EGA boundary guards | The immutable default-PC/AT profile resolver publishes copied Core topology/configuration; session composition does not regain a duplicate publication path. |
+
+The regenerated full current gate passes: all static ownership checks pass and
+all 297 current-gate tests pass.  No profile clock, host-time writer, guessed
+8088 cost, or controller ratio was added.

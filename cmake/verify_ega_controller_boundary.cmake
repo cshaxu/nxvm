@@ -6,8 +6,6 @@ file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/vadp.c" vadp_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/memory.c" memory_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/vm/profile/default_profile/pc_at_profile.c"
     profile_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/vm/composition/session/session.c"
-    session_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/machine_plan.c" machine_plan_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/machine_display.c" machine_display_source)
 
@@ -32,9 +30,9 @@ foreach(required IN ITEMS
     endif()
 endforeach()
 
-string(FIND "${session_source}" "topology.display = display_config" position)
+string(FIND "${profile_source}" "topology.display = (core_machine_display_config)" position)
 if(position EQUAL -1)
-    message(FATAL_ERROR "T236 composition does not publish its display plan")
+    message(FATAL_ERROR "T236 profile resolver does not publish its display plan")
 endif()
 string(FIND "${machine_plan_source}" "topology->display_present" display_present_position)
 string(FIND "${machine_display_source}" "core_machine_configure_display(" configure_display_position)

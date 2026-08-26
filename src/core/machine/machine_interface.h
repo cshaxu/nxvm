@@ -11,7 +11,7 @@
 #include "core/machine/lifecycle_interface.h"
 #include "core/machine/memory_interface.h"
 #include "core/machine/port_interface.h"
-#include "core/machine/pic.h"
+#include "core/machine/pic_interface.h"
 #include "type.h"
 #include "core/machine/trace_interface.h"
 #include "core/machine/retirement_observation_interface.h"

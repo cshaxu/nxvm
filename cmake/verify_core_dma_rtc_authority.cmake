@@ -8,6 +8,8 @@ file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/machine_scheduler.c" core_sche
 set(core_source "${core_plan_source}${core_board_source}${core_scheduler_source}")
 file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/machine_interface.h" core_header)
 file(READ "${PROJECT_SOURCE_DIR}/src/vm/composition/session/session.c" session_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/vm/profile/default_profile/pc_at_profile.c"
+    profile_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/vm/composition/session/provider_lifecycle.c"
     provider_lifecycle_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/vm/composition/session/lifecycle.c"
@@ -25,13 +27,13 @@ foreach(required IN ITEMS "core_machine_configure_dma"
     endif()
 endforeach()
 
-string(FIND "${session_source}" "topology.dma = dma_wiring" position)
+string(FIND "${profile_source}" "topology.dma = (core_machine_dma_wiring)" position)
 if(position EQUAL -1)
-    message(FATAL_ERROR "T296 S3 VM session does not publish DMA wiring in the Core plan")
+    message(FATAL_ERROR "T296 S3 profile resolver does not publish DMA wiring in the Core plan")
 endif()
-string(FIND "${session_source}" "topology.rtc_cmos = rtc_cmos_config" position)
+string(FIND "${profile_source}" "topology.rtc_cmos = (core_machine_rtc_cmos_config)" position)
 if(position EQUAL -1)
-    message(FATAL_ERROR "T296 S3 VM session does not publish RTC/CMOS wiring in the Core plan")
+    message(FATAL_ERROR "T296 S3 profile resolver does not publish RTC/CMOS wiring in the Core plan")
 endif()
 foreach(required IN ITEMS "topology->dma_present && (status = core_machine_configure_dma("
     "topology->rtc_cmos_present && (status = core_machine_configure_rtc_cmos(")

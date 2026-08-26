@@ -72,7 +72,7 @@ if(lba_mapping_position EQUAL -1)
 endif()
 
 foreach(required IN ITEMS "descriptor->hdc.protocol == CORE_MACHINE_HDC_PROTOCOL_ATA_PIO"
-    "descriptor->hdc.lba28_supported")
+    "descriptor->hdc.bus.task_file.lba28_supported")
     string(FIND "${profile_source}" "${required}" profile_policy_position)
     if(profile_policy_position EQUAL -1)
         message(FATAL_ERROR "ATA PIO profile policy is incomplete: ${required}")

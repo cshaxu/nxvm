@@ -7,6 +7,8 @@ file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/machine_display.c" core_displa
 set(core_source "${core_plan_source}${core_display_source}")
 file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/machine_interface.h" core_header)
 file(READ "${PROJECT_SOURCE_DIR}/src/vm/composition/session/session.c" session_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/vm/profile/default_profile/pc_at_profile.c"
+    profile_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/vm/composition/session/lifecycle.c" lifecycle_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/vm/composition/session/display.c" display_source)
 
@@ -22,9 +24,9 @@ foreach(required IN ITEMS "core_machine_display_config"
     endif()
 endforeach()
 
-string(FIND "${session_source}" "topology.display = display_config" position)
+string(FIND "${profile_source}" "topology.display = (core_machine_display_config)" position)
 if(position EQUAL -1)
-    message(FATAL_ERROR "T296 S2 VM session does not publish display configuration in the Core plan")
+    message(FATAL_ERROR "T296 S2 profile resolver does not publish display configuration in the Core plan")
 endif()
 string(FIND "${core_source}" "topology->display_present" display_present_position)
 string(FIND "${core_source}" "core_machine_configure_display(" configure_display_position)

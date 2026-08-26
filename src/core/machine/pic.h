@@ -8,6 +8,7 @@ extern "C" {
 #endif
 
 #include "type.h"
+#include "core/machine/pic_interface.h"
 #include "core/machine/port.h"
 
 #define CORE_MACHINE_DEVICE_PIC "Intel 8259A"
@@ -104,14 +105,6 @@ typedef struct core_machine_pic_irq_source {
 
 /* POLL bits */
 #define VPIC_POLL_I 0x80 /* must be 1 for poll command */
-
-/* Zero preserves the PC/AT cascaded pair; a selected single-PIC board omits
- * the slave's guest-visible port decode while retaining one private Core
- * owner. */
-typedef enum core_machine_pic_topology {
-    CORE_MACHINE_PIC_TOPOLOGY_CASCADED = 0,
-    CORE_MACHINE_PIC_TOPOLOGY_SINGLE = 1
-} core_machine_pic_topology;
 
 C_VOID core_machine_pic_initialize(t_pic *master, t_pic *slave, t_port *port,
     core_machine_pic_topology topology);

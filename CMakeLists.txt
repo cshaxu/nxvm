@@ -3663,6 +3663,7 @@ set(PROJECT_T345_S4_RESIDUAL_DIRECT_ENTRIES
     "core-machine-executor|src/core/machine/pit.c|machine-executor"
     "core-machine-executor|src/core/machine/dma.c|machine-executor"
     "core-machine-executor|src/core/machine/kbc.c|machine-executor"
+    "core-machine-executor|src/core/machine/xt_ppi_keyboard.c|machine-executor"
     "core-machine-executor|src/core/machine/rtc.c|machine-executor"
     "core-product-debug|src/core/product/debug/debug_access.c|debug-xasm"
     "core-product-debug|src/core/product/debug/debug.c|debug-xasm"
