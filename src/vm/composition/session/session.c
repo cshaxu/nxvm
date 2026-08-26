@@ -47,15 +47,6 @@ C_VOID vm_session_consume_request(
     }
 }
 
-static const vm_profile_default_pc_at_descriptor *
-vm_session_profile_select(vm_session_profile_kind kind)
-{
-    if (kind == VM_SESSION_PROFILE_DEFAULT_PC_AT) {
-        return vm_profile_default_pc_at_descriptor_get();
-    }
-    return STD_NULL;
-}
-
 const C_CHAR *vm_session_profile_name(vm_session_profile_kind kind)
 {
     if (kind == VM_SESSION_PROFILE_DEFAULT_PC_AT) return "default-pc-at";
@@ -114,15 +105,6 @@ type_status vm_session_set_speed(vm_session *session, vm_session_speed speed)
     return TYPE_STATUS_OK;
 }
 
-static C_INT vm_session_materialize_profile_core_config(vm_session *session,
-    const vm_profile_default_pc_at_cpu_contract *contract)
-{
-    if (session == STD_NULL || session->profile == STD_NULL ||
-        contract == STD_NULL) return 0;
-    return vm_profile_default_pc_at_core_config_materialize(session->profile,
-        contract, &session->core_machine_config, &session->controller_timing_rules);
-}
-
 static const vm_profile_default_pc_at_port_leaf *
 vm_session_profile_port_leaf(const vm_profile_default_pc_at_descriptor *profile,
     vm_profile_default_pc_at_device_role device, STD_SIZE_T ordinal)
@@ -130,31 +112,22 @@ vm_session_profile_port_leaf(const vm_profile_default_pc_at_descriptor *profile,
     return vm_profile_default_pc_at_port_leaf_at(profile, device, ordinal);
 }
 
-static C_VOID vm_session_apply_core_config_overrides(vm_session *session,
-    const vm_session_config *config)
+static C_VOID vm_session_default_at_request_create(const vm_session_config *config,
+    vm_profile_default_at_request *out_request)
 {
-    if (session == STD_NULL || config == STD_NULL) return;
-    session->core_machine_config.memory_bytes = config->memory_bytes;
-}
-
-static C_INT vm_session_cpu_contract_select(const vm_session *session,
-    const vm_session_config *config,
-    vm_profile_default_pc_at_cpu_contract *out_contract)
-{
-    core_machine_cpu_profile cpu_profile;
-    core_machine_fpu_profile fpu_profile;
-
-    if (session == STD_NULL || session->profile == STD_NULL ||
-        out_contract == STD_NULL) return 0;
-    cpu_profile = session->profile->cpu_profile;
-    fpu_profile = session->profile->fpu_profile;
-    if (config != STD_NULL &&
-        session->profile == vm_profile_default_pc_at_descriptor_get()) {
-        cpu_profile = config->cpu_profile;
-        fpu_profile = config->fpu_profile;
+    if (out_request == STD_NULL) return;
+    *out_request = (vm_profile_default_at_request) {0};
+    if (config == STD_NULL) return;
+    if (config->cpu_profile != CORE_MACHINE_CPU_PROFILE_DEFAULT ||
+        config->fpu_profile != CORE_MACHINE_FPU_PROFILE_NONE) {
+        out_request->requested_options |= VM_PROFILE_DEFAULT_AT_SESSION_OPTION_CPU_FPU;
+        out_request->cpu_profile = config->cpu_profile;
+        out_request->fpu_profile = config->fpu_profile;
     }
-    return vm_profile_default_pc_at_cpu_contract_select(session->profile,
-        cpu_profile, fpu_profile, out_contract);
+    if (config->memory_bytes != 0u) {
+        out_request->requested_options |= VM_PROFILE_DEFAULT_AT_SESSION_OPTION_MEMORY;
+        out_request->memory_bytes = config->memory_bytes;
+    }
 }
 
 static C_VOID vm_session_storage_rollback(vm_session *machine)
@@ -512,7 +485,6 @@ static type_status vm_session_create_model40_byob(const vm_session_config *confi
 C_INT vm_session_create(const vm_session_config *config, vm_session **out_session)
 {
     vm_session *session;
-    vm_profile_default_pc_at_cpu_contract cpu_contract;
     const vm_session_profile_kind profile_kind = config == STD_NULL ?
         VM_SESSION_PROFILE_DEFAULT_PC_AT : config->profile_kind;
 
@@ -523,7 +495,21 @@ C_INT vm_session_create(const vm_session_config *config, vm_session **out_sessio
     *out_session = STD_NULL;
     session = (vm_session *)STD_CALLOC(1u, sizeof(*session));
     if (session == STD_NULL) return TYPE_STATUS_NO_MEMORY;
-    if (profile_kind == VM_SESSION_PROFILE_IBM_5170_MODEL_339) {
+    if (profile_kind == VM_SESSION_PROFILE_DEFAULT_PC_AT) {
+        vm_profile_default_at_request request;
+
+        vm_session_default_at_request_create(config, &request);
+        if (vm_profile_default_at_child_resolve(&request, &session->default_at_resolved) !=
+            TYPE_STATUS_OK) {
+            STD_FREE(session);
+            return TYPE_STATUS_INVALID_ARGUMENT;
+        }
+        session->profile = &session->default_at_resolved.descriptor;
+        session->core_machine_config =
+            session->default_at_resolved.resolved.values.core.configuration;
+        session->controller_timing_rules =
+            session->default_at_resolved.resolved.values.core.controller_timing_rules;
+    } else if (profile_kind == VM_SESSION_PROFILE_IBM_5170_MODEL_339) {
         if (vm_profile_ibm_5170_root_resolve(&session->ibm_5170_root) !=
             TYPE_STATUS_OK) {
             STD_FREE(session);
@@ -535,19 +521,8 @@ C_INT vm_session_create(const vm_session_config *config, vm_session **out_sessio
         session->controller_timing_rules =
             session->ibm_5170_root.resolved.values.core.controller_timing_rules;
     } else {
-        session->profile = vm_session_profile_select(profile_kind);
-        if (session->profile == STD_NULL) {
-            STD_FREE(session);
-            return TYPE_STATUS_FAULT;
-        }
-        if (!vm_session_cpu_contract_select(session, config, &cpu_contract)) {
-            STD_FREE(session);
-            return TYPE_STATUS_INVALID_ARGUMENT;
-        }
-        if (!vm_session_materialize_profile_core_config(session, &cpu_contract)) {
-            STD_FREE(session);
-            return TYPE_STATUS_FAULT;
-        }
+        STD_FREE(session);
+        return TYPE_STATUS_INVALID_ARGUMENT;
     }
     if (config != STD_NULL) {
         session->retained_config = *config;
@@ -555,9 +530,6 @@ C_INT vm_session_create(const vm_session_config *config, vm_session **out_sessio
             config->create_hdd_cylinders != 0u || config->boot_hdd)) {
             STD_FREE(session);
             return TYPE_STATUS_INVALID_ARGUMENT;
-        }
-        if (session->profile == vm_profile_default_pc_at_descriptor_get()) {
-            vm_session_apply_core_config_overrides(session, config);
         }
     }
     {

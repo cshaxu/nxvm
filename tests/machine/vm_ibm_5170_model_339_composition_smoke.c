@@ -123,7 +123,8 @@ static C_INT vm_default_profile_remains_ata(C_VOID)
     C_INT failed = vm_session_create(STD_NULL, &session) != TYPE_STATUS_OK ||
         session == STD_NULL;
 
-    if (!failed) failed |= session->profile != vm_profile_default_pc_at_descriptor_get() ||
+    if (!failed) failed |= session->profile == vm_profile_default_pc_at_descriptor_get() ||
+        STD_STRCMP(session->profile->identity, "default-at") != 0 ||
         !session->profile->hdc_present ||
         !core_machine_port_has_read(&session->core_machine->executor_port, 0x01f0u) ||
         !core_machine_port_has_write(&session->core_machine->executor_port, 0x01f0u);
@@ -140,5 +141,6 @@ C_INT main(C_VOID)
     STD_PRINTF("M5:T380:S2:MODEL339-NO-XMS-PROBE:OK\n");
     STD_PRINTF("M5:T421:S1:IBM5170-SHARED-SPEAKER:OK\n");
     STD_PRINTF("M5:T476:S3:IBM5170-ROOT-CUTOVER:OK\n");
+    STD_PRINTF("M5:T478:S3:DEFAULT-AT-SESSION-CUTOVER:OK\n");
     return 0;
 }
