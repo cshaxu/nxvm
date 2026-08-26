@@ -2,28 +2,9 @@
 
 ## Current Work
 
-**Active: M5 T480 S3.**
+**No active S packet.**
 
-## M5 T480 S3 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | T480 S2 accepted at `222427d0`; owner standing queue-execution approval and VADP sole-owner architecture constraint remain in force. |
-| Objective | Close selected IBM VGA-common EGA controller semantics in the existing VADP owner: CRTC, attribute, sequencer, graphics, latch and aperture mechanisms remain one production path ready for VGA-only state. |
-| Non-goals | No DAC, chain-4, Mode 13h renderer, profile/card binding, VBE/SVGA, firmware/ROM/media import, VM video state, or second VADP/VRAM object. |
-| Reference Baseline | Accepted T480 S1 source ledger and S2 code-gap ledger; current `src/core/machine/vadp.[ch]` EGA planar state and copied display-snapshot boundary. |
-| Candidate Proposal | [VADP IBM VGA L3 capability](../proposals/m5-vadp-ibm-vga-l3-capability.md). |
-| Files And ABI Surface | `src/core/machine/vadp.[ch]`, affected Core VADP tests/CMake registration and T480 evidence/history/status; no VM presentation or profile ABI expansion. |
-| Applicable Rules | `docs/rules/EXECUTION.md` continuation/P lifecycle/similar sweep; architecture/coding/source authorities; T480 proposal. |
-| Verification | Focused EGA port, mapped-memory, latch/write-mode, snapshot and reset tests; source caller sweep; documentation governance and applicable build registration. |
-| Expected Markers | `M5:T480:S3:COMMON-OWNER:OK`; `M5:T480:S3:EGA-VGA-COMMON:OK`; `M5:T480:S3:REGRESSIONS:OK`. |
-| Asset Needs | No acquisition/import. Accepted IBM VGA source ledger and read-only external comparisons remain reference only. |
-| Reporting Requirements | Record retained/replaced path, code-size change, common-register behavior, test result, no-second-truth proof and S4 residuals. |
-| Stop Conditions | Stop if a claimed common behavior is source-ambiguous, needs a profile board decision, needs VGA-only DAC/chain-4 state, or cannot be made correct without a second owner. |
-| Exit Criteria | One VADP state and one port/memory/snapshot path correctly handle the bounded common controller surface; focused proof passes and only VGA/profile-gated work transfers to S4/S5. |
-| Original Owner Request | Maintain one VADP state owner and guest/firmware ports and memory through copied display snapshots to VM presentation; share genuine EGA/VGA logic without layers or parallel paths. |
-| Similar-Issue Sweep | All VADP register/memory/snapshot code, display configuration and port-routing calls, affected Core VADP tests and CMake registration. |
+**T480 retains accepted progress between subtasks.**
 
 ## Current Technical Baseline
 
