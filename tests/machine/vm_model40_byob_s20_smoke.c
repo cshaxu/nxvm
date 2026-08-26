@@ -23,6 +23,7 @@ C_INT main(C_VOID)
     vm_session *session = STD_NULL;
     vm_session_reset_vector reset_vector = {0};
     core_machine_run_result result = {0};
+    core_machine_pacing_contract pacing_contract = {0};
     STD_SIZE_T memory_bytes = 0u;
     STD_SIZE_T retained_memory_bytes;
     C_INT failed = 0;
@@ -39,6 +40,9 @@ C_INT main(C_VOID)
         session->core_machine_config.cpu_profile != CORE_MACHINE_CPU_PROFILE_80386 ||
         session->core_machine_config.fpu_profile != CORE_MACHINE_FPU_PROFILE_NONE ||
         !session->core_machine_config.cpu_80386_cr_mov_ignores_mod ||
+        core_machine_get_pacing_contract(session->core_machine, &pacing_contract) !=
+            TYPE_STATUS_OK || pacing_contract.available ||
+        pacing_contract.guest_ticks_per_second != 0u ||
         session->fdd.data.nsector != 15u || session->model40_rom.even_bytes[0] != 0u ||
         session->model40_rom.odd_bytes[0] != 1u;
     failed |= !failed && (vm_session_get_reset_vector(session, &reset_vector) != TYPE_STATUS_OK ||

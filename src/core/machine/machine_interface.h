@@ -53,6 +53,23 @@ typedef struct core_machine_clock_plan {
     core_machine_clock_ratio provider;
 } core_machine_clock_plan;
 
+typedef enum core_machine_guest_timebase_kind {
+    CORE_MACHINE_GUEST_TIMEBASE_UNAVAILABLE = 0,
+    CORE_MACHINE_GUEST_TIMEBASE_VERIFIED_PHYSICAL = 1
+} core_machine_guest_timebase_kind;
+
+/* A selected plan may describe a physical source only when its source
+ * evidence qualifies Core elapsed ticks against that source. */
+typedef struct core_machine_guest_timebase {
+    core_machine_guest_timebase_kind kind;
+    type_unsigned_64 source_ticks_per_second;
+} core_machine_guest_timebase;
+
+typedef struct core_machine_pacing_contract {
+    type_unsigned_64 guest_ticks_per_second;
+    type_bool available;
+} core_machine_pacing_contract;
+
 typedef enum core_machine_retirement_time_contract {
     CORE_MACHINE_RETIREMENT_TIME_DETERMINISTIC = 0,
     CORE_MACHINE_RETIREMENT_TIME_PHYSICAL = 1
@@ -123,6 +140,7 @@ typedef struct core_machine_config {
     core_machine_instruction_timing instruction_timing;
     core_machine_transaction_contract transaction_contract;
     core_machine_clock_plan clock_plan;
+    core_machine_guest_timebase guest_timebase;
     /* Physical mode refuses an unallocated successful retirement before it can
      * be published into a clock-domain plan. */
     core_machine_retirement_time_contract retirement_time_contract;
@@ -469,6 +487,8 @@ type_status core_machine_get_elapsed_ticks(
     const core_machine *machine, type_unsigned_64 *out_elapsed_ticks);
 type_status core_machine_capture_time_observation(const core_machine *machine,
     core_machine_time_observation *out_observation);
+type_status core_machine_get_pacing_contract(const core_machine *machine,
+    core_machine_pacing_contract *out_contract);
 /* Core selects and advances to its next valid guest-observable deadline.
  * A false result means an unqualified owner blocks safe fast advance. */
 type_status core_machine_advance_to_next_deadline(core_machine *machine,

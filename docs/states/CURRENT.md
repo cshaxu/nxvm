@@ -2,7 +2,26 @@
 
 ## Current Work
 
-**Between accepted subtasks.**
+## M5 T469 S4 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | The owner's persistent Core-L3 closure authorization and T469 proposal admit the next finite S4 batch after accepted S3. Existing T388 physical-timebase evidence is controlling: no current profile may be promoted merely because it has a nominal device clock ratio. |
+| Objective | Add one immutable, copied Core physical-timebase qualification and value-only export. S5 must combine it with S3's current source-qualified deadline observation; neither value alone claims safe pacing. |
+| Non-goals | No VM pacing, host waiting, QPC conversion, Core advancement from host time, profile-name condition in Core, new physical frequency, controller pointer, timeline exposure, fallback estimate, or claim that Model-339's nominal 8 MHz retirement axis is physical. |
+| Reference Baseline | T469 S1 145-row eligibility ledger, accepted S2 observation and S3 PIT/RTC realization; T388 physical-timebase inventory/eligibility boundary; copied `core_machine_config` plan and the default/Model-339/Model-40 composition routes. |
+| Candidate Proposal | [M5 Core L3 integration closure and VM contract export](../proposals/m5-core-l3-integration-vm-contract-export.md), T469 S4. |
+| Files And ABI Surface | Expected: minimal Core value type/config field, immutable copied Core storage and qualified value getter; default-profile descriptor/contract composition only if a sourced timebase can be represented without profile identity; focused Core/VM contract regression, evidence/index/status. No runner or platform virtual-time implementation change. |
+| Applicable Rules | Core owns virtual guest time and only exports copied values; VM/profile supplies one immutable selected plan but no timing algorithm; a public interface exposes no mutable layout or device/timeline pointer; every unavailable profile remains explicit instead of using a second path or an inferred number. |
+| Verification | Prove malformed timebase input is rejected; prove a verified timebase exports a neutral bounded rate while the S3 observation remains independent; prove unavailable input exports no rate; prove default PC/AT, Model-339 and Model-40 remain unavailable under the retained T388 evidence; run Core plan/time, Model-339 contract, Model-40, session virtual-time/speed and documentation gates. |
+| Expected Markers | One copied `Core -> VM` pacing-contract value; no profile identity in Core; no `next` host-tick source is needed to read it; current profiles return unavailable, while a focused sourced synthetic plan proves the sole positive validation path. |
+| Asset Needs | Existing accepted IBM/Intel and T388 project evidence only; no new research, firmware, media or third-party source. |
+| Reporting Requirements | Record the precise qualification predicate, each existing profile's rejection reason, copied owner path, API/failure semantics, code-size delta, tests/gates and exact S5 receiver. |
+| Stop Conditions | Stop and revise if a positive real profile requires treating a nominal device ratio, retirement tick, host clock or profile name as physical timebase, or if qualifying it would omit an active source-qualified deadline contributor. |
+| Exit Criteria | Core exports one immutable, neutral physical-timebase contract only for a validated input; no current profile falsely qualifies; default/Model-339/Model-40 rejection and synthetic positive validation are tested; S5 has one explicit requirement to combine this static value with S3's dynamic observation; no host clock can advance Core through this surface. |
+| Original Owner Request | Correct host/guest synchronization through Core-owned guest progression and VM-only pacing, with no fabricated tick conversion or fixed-sleep substitute. |
+| Similar-Issue Sweep | Inspect all Core config construction, profile CPU contracts, Model-40 path, virtual-time source installation, time observation/advance APIs and timing-plan validation for duplicate timebase owners, hard-coded source rates, profile identity or host-to-Core mutation paths. |
 
 ## Current Technical Baseline
 
