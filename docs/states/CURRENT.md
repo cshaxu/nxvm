@@ -2,28 +2,28 @@
 
 ## Current Work
 
-**Active: M5 T484 S19.**
+**Active: M5 T484 S20.**
 
-## M5 T484 S19 Packet
+## M5 T484 S20 Packet
 
 | Field | Required record |
 | --- | --- |
 | Identifier Mode | Continuation |
-| Admission And Approval | Owner-approved continuous execution; S18 implementation `b935ca2e` is accepted by this P2 review. |
-| Objective | Source-check and implement the selected IBM 5160 8255/PPI port-B parity/I/O-check NMI controls through the existing sole XT PPI owner. |
-| Non-goals | No PC/AT planar-parity reuse, separate NMI owner, guessed fault source, physical parity timing, ATA/HDC change, runtime device choice, ROM, or session/runnable XT route. |
-| Reference Baseline | Accepted T484 S5--S8 board/PPI owner boundary and T484 S6 IBM source matrix; rendered IBM 5160 technical-reference material is normative for PPI port-B semantics. |
+| Admission And Approval | Owner-approved continuous execution; S19 implementation `3080117f` is accepted by this P2 review. |
+| Objective | Establish the source-qualified, lawful B6 contract and current-code gap for an IBM 5160-268 external-ROM/BYOB session route before any product implementation. |
+| Non-goals | No ROM, firmware, guest media, local path or third-party code import; no session/CLI implementation, runtime model choice, PC/AT alias, timing estimate or artifact. |
+| Reference Baseline | Accepted T482 session-request authority, T483 fixed 5160-268 BOM, T484 S3--S19 copied profile/Core ownership, source policy and existing BYOB ROM mapping rules. |
 | Candidate Proposal | [IBM PC/XT 5160-268 selected-device functional closure](../proposals/m5-xt-5160-268-device-functional-closure.md). |
-| Files And ABI Surface | Existing Core XT PPI/board NMI boundary, fixed XT profile topology, focused XT PPI smoke and evidence only. No VM session or product request surface. |
-| Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, `docs/design/ARCHITECTURE.md`, `docs/design/CODING.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`, source policy and the one HDC/media-owner boundary. |
-| Verification | Source-backed PPI-B control and status lines have one explicit owner-to-Core-NMI path, reset/error behavior and focused port/IRQ/NMI proof; retained XT keyboard and PC/AT parity regressions, Debug all-target build, current-gate and documentation governance pass. |
-| Expected Markers | `M5:T484:S19:XT-PPI-PARITY:OK`; retained `M5:T484:S8:XT-PPI-KEYBOARD:OK`. |
-| Asset Needs | Accepted project evidence and project-owned unit state only; no third-party code, firmware, guest media, local path or code import enters the repository. |
-| Reporting Requirements | Retain one Core PPI/NMI owner; record each source-qualified control/status bit and transfer unsourced fault generation and physical timing. |
+| Files And ABI Surface | Documentation/evidence and existing profile/session/ROM-mapping source inspection only. No implementation file, public ABI, session grammar or product behavior changes. |
+| Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, `docs/design/ARCHITECTURE.md`, `docs/design/CODING.md`, `docs/design/UI.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md` and source policy. |
+| Verification | One finite source-to-session/Core owner matrix identifies required immutable inputs, lifecycle/failure ownership, legal asset boundary, current implementation gap and focused future acceptance route; documentation governance passes. |
+| Expected Markers | `M5:T484:S20:XT-B6-SESSION-CONTRACT:OK`; retained S3--S19 markers. |
+| Asset Needs | Read-only primary/reference material and project source only; no external bytes, paths or code enter the repository. |
+| Reporting Requirements | Record exact BYOB manifest facts versus source-gated facts, one product/session/Core data flow, and every transfer that prevents a runnable XT claim. |
 | Original Owner Request | Continue the ordered minimalist queue toward the pre-Windows L3 admission audit. |
-| Stop Conditions | Stop and request a revised packet if a bit's logical relation cannot be sourced, needs a PC/AT alias, requires a second NMI state owner, or changes a product boundary. |
-| Exit Criteria | Every implemented XT PPI-B parity/I/O-check line is source-qualified, has one Core owner and focused reset/error proof; all other behavior remains explicit. |
-| Similar-Issue Sweep | XT PPI, board NMI and PC/AT planar/D4 parity variants: only the selected XT PPI route changes; other board personalities retain their distinct state and port contracts. |
+| Stop Conditions | Stop and request a revised packet if route availability requires committed vendor bytes, a machine-local path, a second session/Core state owner, a new CLI grammar or an unsourced board/ROM fact. |
+| Exit Criteria | The next implementation S can consume one unambiguous, source-qualified B6 contract without revisiting profile/device ownership or inventing an asset/product path. |
+| Similar-Issue Sweep | Existing default/5170/Model-40 BYOB materialization, root YAML/session open and XT profile-resolver paths: classify each as reusable, distinct or prohibited; no parallel request/session path. |
 
 ## Current Technical Baseline
 
