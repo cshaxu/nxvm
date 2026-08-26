@@ -2,26 +2,7 @@
 
 ## Current Work
 
-## M5 T474 S4 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner approved on 2026-08-25: admit the queue-first Core unified guest-time-axis and Core-to-VM boundary task before IBM 5170, DeskPro and default-at profile connections. |
-| Objective | Reconcile every eligible and blocking controller deadline against the existing copied plan, ensuring only source-qualified PIT/RTC boundaries can drive Core deadline advance and all other active controllers explicitly block it. |
-| Non-goals | No new controller timing formula, estimate, device pointer, scheduler, host-generated tick, profile name in Core, firmware/media, L4 claim or Release artifact. |
-| Reference Baseline | T469 S1/S3/S6 controller deadline evidence; T474 S1 ledger A5--A7; T474 S2 copied plan/observation boundary; target `vm-0-5-0472`. |
-| Candidate Proposal | [Core unified guest-time axis and VM boundary](../proposals/m5-core-unified-guest-time-axis-and-vm-boundary.md). |
-| Files And ABI Surface | Core scheduler deadline composition, copied `core_machine_time_observation`, controller timing-plan validation and Model-339/default deadline regressions; no new interface is permitted. |
-| Applicable Rules | `docs/design/ARCHITECTURE.md`, `docs/design/CODING.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`, `docs/rules/DOCUMENT.md`, `docs/rules/EXECUTION.md`, `docs/etc/architecture/specification-driven-l3-timing.md`, and T469 evidence: Core owns deadline selection and all intermediate progression. |
-| Verification | Source owner/blocker sweep; Model-339 clock-contract, PIT waveform, Core-time and Standard/Turbo focused tests; documentation governance and actual-diff review. |
-| Expected Markers | `M5:T474:S4:CONTROLLER-DEADLINE-COMPOSITION:OK`. |
-| Asset Needs | Existing project-owned controller ledgers and source citations only; no external source, firmware, guest media or machine-local path enters the repository. |
-| Reporting Requirements | Record every eligible deadline owner, each explicit blocker, the copied plan qualification, test coverage, retained route and code-size delta. |
-| Stop Conditions | Stop for owner direction if a new controller deadline needs an unproven estimate, a profile-specific Core branch, a second event queue or a host-time writer. |
-| Exit Criteria | Core retains one deadline composition route: source-qualified PIT/RTC may publish a copied earliest deadline; DMA, KBC, FDC, HDC and unqualified plans block it; focused proof and documentation governance pass. |
-| Original Owner Request | Establish correct whole-machine L3 structure and interfaces first, then connect IBM 5170, DeskPro 386 and default-at in that order. |
-| Similar-Issue Sweep | Sweep all Core controller deadline queries, scheduler callbacks, plan qualifications, VM deadline consumers and relevant tests for an alternate deadline source, omitted blocker or direct VM advance. |
+**Idle.**
 
 ## Current Technical Baseline
 
@@ -56,6 +37,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T474 S4 | Accepted: one copied Core deadline route admits source-qualified PIT/RTC boundaries and explicitly blocks DMA, KBC, FDC, HDC and unqualified plans. [Evidence](../etc/evidence/t474-s4-controller-deadline-composition.md) records the eight-controller sweep and focused proof. |
 | T474 S3 | Accepted: profile-selected transaction contracts now flow once into the existing Core plan; Model-40 Core configuration is profile-owned. [Evidence](../etc/evidence/t474-s3-profile-contract-to-plan.md) records the two-producer sweep and 4/4 focused proof. |
 | T474 S2 | Accepted: one immutable Core timing plan and one copied observation remain; [evidence](../etc/evidence/t474-s2-one-plan-one-observation.md) records the boundary proof. |
 | T474 S1 | Accepted: the production Core time writer/reader/deadline/pacing universe is frozen in its [convergence ledger](../etc/evidence/t474-s1-core-time-convergence-ledger.md); no VM/profile tick writer or second scheduler exists. |
