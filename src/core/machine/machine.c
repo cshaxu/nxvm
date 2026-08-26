@@ -15,6 +15,15 @@ type_unsigned_32 core_machine_linear_pc(const core_machine *machine)
 static C_INT core_machine_retirement_qualification_contains(
     const core_machine *machine);
 
+static type_bool core_machine_xt_ppi_request_nmi(C_VOID *owner)
+{
+    core_machine *machine = (core_machine *)owner;
+
+    if (machine == STD_NULL || machine->executor_cpu.data.flagMaskNMI) return TYPE_FALSE;
+    machine->executor_cpu.data.flagNMI = TYPE_TRUE;
+    return TYPE_TRUE;
+}
+
 /* Both immediate and externally delayed successful retirements meet here.
  * CPU timing selection is complete before this seam; board-cycle time has
  * already been added by the caller and never enters cpu_timing.c. */
@@ -459,6 +468,8 @@ static type_status core_machine_create_internal(
     if (config->keyboard_topology == CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI) {
         core_machine_xt_ppi_keyboard_bind_pic(&machine->xt_ppi_keyboard,
             &machine->shared_pic_master, &machine->shared_pic_slave);
+        core_machine_xt_ppi_keyboard_bind_nmi(&machine->xt_ppi_keyboard,
+            core_machine_xt_ppi_request_nmi, machine);
     } else {
         core_machine_kbc_bind_core_services(&machine->shared_kbc,
             &machine->shared_pic_master, &machine->shared_pic_slave,
@@ -1183,6 +1194,17 @@ type_status core_machine_keyboard_receive_native_bytes(core_machine *machine,
             native_bytes, count);
     }
     return core_machine_kbc_submit_native_bytes(&machine->shared_kbc, native_bytes, count);
+}
+
+type_status core_machine_set_xt_ppi_fault_input(core_machine *machine,
+    core_machine_xt_ppi_fault_input input, C_INT asserted)
+{
+    if (machine == STD_NULL || !core_machine_mutable_operation_is_allowed(machine) ||
+        machine->keyboard_topology != CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI) {
+        return TYPE_STATUS_INVALID_STATE;
+    }
+    return core_machine_xt_ppi_keyboard_set_fault_input(&machine->xt_ppi_keyboard,
+        input, asserted);
 }
 
 type_status core_machine_mouse_receive_relative(core_machine *machine,

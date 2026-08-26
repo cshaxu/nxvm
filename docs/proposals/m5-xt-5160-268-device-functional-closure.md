@@ -31,6 +31,12 @@ device-to-memory Read must enter Core RAM and a memory-to-device Write must
 reach the existing media provider.  Calling a channel provider directly is
 only a component test and cannot replace this route proof.
 
+For IBM 5160 PPI parity/I/O-check controls, the selected XT PPI is the sole
+owner of PB4/PB5 enable latches, PC6/PC7 input levels and NMI request state.
+Board sources submit only typed input levels; Core alone performs CPU NMI
+delivery and mask handling.  Do not borrow PC/AT planar parity state, add a
+second fault latch, or invent fault-generation timing.
+
 ## Non-goals and stop conditions
 
 No PC/AT assumption, generic PC/XT expansion, 8086 replacement, unselected

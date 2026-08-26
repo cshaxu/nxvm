@@ -134,6 +134,13 @@ typedef enum core_machine_keyboard_topology {
     CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI = 1
 } core_machine_keyboard_topology;
 
+/* IBM 5160 PPI port-C fault inputs. A selected board source supplies the
+ * current electrical condition; the XT PPI owns its port and NMI meaning. */
+typedef enum core_machine_xt_ppi_fault_input {
+    CORE_MACHINE_XT_PPI_FAULT_IO_CHECK = 0,
+    CORE_MACHINE_XT_PPI_FAULT_RAM_PARITY = 1
+} core_machine_xt_ppi_fault_input;
+
 typedef struct core_machine_xt_ppi_keyboard_config {
     type_unsigned_16 port_a;
     type_unsigned_16 port_b;
@@ -556,6 +563,8 @@ type_status core_machine_keyboard_receive_native_byte(core_machine *machine,
     type_unsigned_8 native_byte);
 type_status core_machine_keyboard_receive_native_bytes(core_machine *machine,
     const type_unsigned_8 *native_bytes, STD_SIZE_T count);
+type_status core_machine_set_xt_ppi_fault_input(core_machine *machine,
+    core_machine_xt_ppi_fault_input input, C_INT asserted);
 /* A relative report received from the machine's attached pointing device. */
 type_status core_machine_mouse_receive_relative(core_machine *machine,
     type_signed_16 delta_x, type_signed_16 delta_y, type_unsigned_8 buttons);

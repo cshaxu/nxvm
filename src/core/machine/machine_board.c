@@ -263,6 +263,10 @@ C_VOID core_machine_board_after_pit_reset(core_machine *machine)
 
 C_VOID core_machine_board_refresh_nmi(core_machine *machine)
 {
+    if (machine != STD_NULL && machine->keyboard_topology ==
+            CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI) {
+        core_machine_xt_ppi_keyboard_refresh_nmi(&machine->xt_ppi_keyboard);
+    }
     core_machine_planar_parity_refresh_nmi(machine);
     core_machine_d4_platform_refresh_nmi(machine);
 }

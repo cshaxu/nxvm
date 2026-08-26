@@ -5,6 +5,10 @@
 #define CORE_MACHINE_XT_PPI_MODE_SET 0x80u
 #define CORE_MACHINE_XT_PPI_PORT_B_CLOCK_NOT_HELD 0x40u
 #define CORE_MACHINE_XT_PPI_PORT_B_CLEAR_KEYBOARD 0x80u
+#define CORE_MACHINE_XT_PPI_PORT_B_DISABLE_RAM_PARITY 0x10u
+#define CORE_MACHINE_XT_PPI_PORT_B_DISABLE_IO_CHECK 0x20u
+#define CORE_MACHINE_XT_PPI_PORT_C_IO_CHECK 0x40u
+#define CORE_MACHINE_XT_PPI_PORT_C_RAM_PARITY 0x80u
 
 static type_bool core_machine_xt_ppi_keyboard_mode0(const core_machine_xt_ppi_keyboard *keyboard)
 {
@@ -36,8 +40,32 @@ static type_unsigned_8 core_machine_xt_ppi_keyboard_port_c_value(
     }
     if ((keyboard->mode_control & 0x08u) == 0u) {
         value |= keyboard->port_c_latch & 0xf0u;
+    } else {
+        if (keyboard->io_check_asserted) value |= CORE_MACHINE_XT_PPI_PORT_C_IO_CHECK;
+        if (keyboard->ram_parity_asserted) value |= CORE_MACHINE_XT_PPI_PORT_C_RAM_PARITY;
     }
     return value;
+}
+
+static type_bool core_machine_xt_ppi_keyboard_nmi_pending(
+    const core_machine_xt_ppi_keyboard *keyboard)
+{
+    if (!core_machine_xt_ppi_keyboard_port_b_is_output(keyboard)) return TYPE_FALSE;
+    return (keyboard->io_check_asserted &&
+        (keyboard->port_b_latch & CORE_MACHINE_XT_PPI_PORT_B_DISABLE_IO_CHECK) == 0u) ||
+        (keyboard->ram_parity_asserted &&
+        (keyboard->port_b_latch & CORE_MACHINE_XT_PPI_PORT_B_DISABLE_RAM_PARITY) == 0u);
+}
+
+C_VOID core_machine_xt_ppi_keyboard_refresh_nmi(core_machine_xt_ppi_keyboard *keyboard)
+{
+    if (keyboard == STD_NULL) return;
+    if (!core_machine_xt_ppi_keyboard_nmi_pending(keyboard)) {
+        keyboard->nmi_signaled = TYPE_FALSE;
+    } else if (!keyboard->nmi_signaled && keyboard->nmi_request != STD_NULL &&
+        keyboard->nmi_request(keyboard->nmi_owner)) {
+        keyboard->nmi_signaled = TYPE_TRUE;
+    }
 }
 
 static type_bool core_machine_xt_ppi_keyboard_delivery_enabled(
@@ -117,6 +145,7 @@ static type_status core_machine_xt_ppi_keyboard_write(C_VOID *owner,
             core_machine_xt_ppi_keyboard_clear_byte(keyboard);
         }
         core_machine_xt_ppi_keyboard_publish(keyboard);
+        core_machine_xt_ppi_keyboard_refresh_nmi(keyboard);
     } else if (port == keyboard->config.port_c) {
         keyboard->port_c_latch = byte;
     } else if (port == keyboard->config.control_port) {
@@ -130,6 +159,7 @@ static type_status core_machine_xt_ppi_keyboard_write(C_VOID *owner,
             else keyboard->port_c_latch &= (type_unsigned_8)~mask;
         }
         core_machine_xt_ppi_keyboard_publish(keyboard);
+        core_machine_xt_ppi_keyboard_refresh_nmi(keyboard);
     } else {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
@@ -185,6 +215,15 @@ C_VOID core_machine_xt_ppi_keyboard_bind_pic(core_machine_xt_ppi_keyboard *keybo
         keyboard->config.irq);
 }
 
+C_VOID core_machine_xt_ppi_keyboard_bind_nmi(core_machine_xt_ppi_keyboard *keyboard,
+    core_machine_xt_ppi_nmi_request request, C_VOID *owner)
+{
+    if (keyboard == STD_NULL) return;
+    keyboard->nmi_request = request;
+    keyboard->nmi_owner = owner;
+    core_machine_xt_ppi_keyboard_refresh_nmi(keyboard);
+}
+
 C_VOID core_machine_xt_ppi_keyboard_reset(core_machine_xt_ppi_keyboard *keyboard)
 {
     if (keyboard == STD_NULL) return;
@@ -197,6 +236,9 @@ C_VOID core_machine_xt_ppi_keyboard_reset(core_machine_xt_ppi_keyboard *keyboard
     keyboard->queue_count = 0u;
     keyboard->current_byte = 0u;
     keyboard->byte_ready = TYPE_FALSE;
+    keyboard->io_check_asserted = TYPE_FALSE;
+    keyboard->ram_parity_asserted = TYPE_FALSE;
+    keyboard->nmi_signaled = TYPE_FALSE;
 }
 
 C_VOID core_machine_xt_ppi_keyboard_finalize(core_machine_xt_ppi_keyboard *keyboard)
@@ -204,6 +246,22 @@ C_VOID core_machine_xt_ppi_keyboard_finalize(core_machine_xt_ppi_keyboard *keybo
     if (keyboard == STD_NULL) return;
     core_machine_xt_ppi_keyboard_reset(keyboard);
     keyboard->port = STD_NULL;
+    keyboard->nmi_request = STD_NULL;
+    keyboard->nmi_owner = STD_NULL;
+}
+
+type_status core_machine_xt_ppi_keyboard_set_fault_input(
+    core_machine_xt_ppi_keyboard *keyboard, core_machine_xt_ppi_fault_input input,
+    C_INT asserted)
+{
+    if (keyboard == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (input == CORE_MACHINE_XT_PPI_FAULT_IO_CHECK) {
+        keyboard->io_check_asserted = asserted ? TYPE_TRUE : TYPE_FALSE;
+    } else if (input == CORE_MACHINE_XT_PPI_FAULT_RAM_PARITY) {
+        keyboard->ram_parity_asserted = asserted ? TYPE_TRUE : TYPE_FALSE;
+    } else return TYPE_STATUS_INVALID_ARGUMENT;
+    core_machine_xt_ppi_keyboard_refresh_nmi(keyboard);
+    return TYPE_STATUS_OK;
 }
 
 type_status core_machine_xt_ppi_keyboard_submit_native_byte(

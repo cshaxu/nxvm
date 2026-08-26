@@ -9,6 +9,8 @@
 
 #define CORE_MACHINE_XT_PPI_KEYBOARD_QUEUE_CAPACITY 16u
 
+typedef type_bool (*core_machine_xt_ppi_nmi_request)(C_VOID *owner);
+
 /* This owner models the selected IBM XT 8255A Mode-0 board attachment.  It is
  * intentionally not a generic 8255 abstraction: unselected Mode-1/2 board
  * wiring would otherwise become invented guest behavior. */
@@ -26,6 +28,11 @@ typedef struct core_machine_xt_ppi_keyboard {
     type_unsigned_8 current_byte;
     type_bool byte_ready;
     type_bool irq1_asserted;
+    type_bool io_check_asserted;
+    type_bool ram_parity_asserted;
+    type_bool nmi_signaled;
+    core_machine_xt_ppi_nmi_request nmi_request;
+    C_VOID *nmi_owner;
 } core_machine_xt_ppi_keyboard;
 
 C_INT core_machine_xt_ppi_keyboard_config_is_valid(
@@ -35,8 +42,14 @@ type_status core_machine_xt_ppi_keyboard_initialize(
     const core_machine_xt_ppi_keyboard_config *config, t_port *port);
 C_VOID core_machine_xt_ppi_keyboard_bind_pic(core_machine_xt_ppi_keyboard *keyboard,
     t_pic *master, t_pic *slave);
+C_VOID core_machine_xt_ppi_keyboard_bind_nmi(core_machine_xt_ppi_keyboard *keyboard,
+    core_machine_xt_ppi_nmi_request request, C_VOID *owner);
 C_VOID core_machine_xt_ppi_keyboard_reset(core_machine_xt_ppi_keyboard *keyboard);
 C_VOID core_machine_xt_ppi_keyboard_finalize(core_machine_xt_ppi_keyboard *keyboard);
+type_status core_machine_xt_ppi_keyboard_set_fault_input(
+    core_machine_xt_ppi_keyboard *keyboard, core_machine_xt_ppi_fault_input input,
+    C_INT asserted);
+C_VOID core_machine_xt_ppi_keyboard_refresh_nmi(core_machine_xt_ppi_keyboard *keyboard);
 type_status core_machine_xt_ppi_keyboard_submit_native_byte(
     core_machine_xt_ppi_keyboard *keyboard, type_unsigned_8 native_byte);
 type_status core_machine_xt_ppi_keyboard_submit_native_bytes(
