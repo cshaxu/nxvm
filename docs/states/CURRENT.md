@@ -2,28 +2,28 @@
 
 ## Current Work
 
-**Active: M5 T485 S5.**
+**Active: M5 T485 S6.**
 
-## M5 T485 S5 Packet
+## M5 T485 S6 Packet
 
 | Field | Required record |
 | --- | --- |
 | Identifier Mode | Continuation |
-| Admission And Approval | Owner-approved continuous execution; T485 S4 selector ledger `fa8c3fb6` is accepted by this governance review. |
-| Objective | Add one private Core 8088 Table-2-21 evaluator that reuses existing semantic forms and accounts for every source-represented 16-bit transfer, while rejecting unrepresented inputs before physical publication. |
-| Non-goals | No copied decoder, parallel timing path, guessed transfer count, prefetch/wait estimate, profile clock, host pacing claim, scheduler, controller ratio or external-cycle behavior. |
-| Reference Baseline | Accepted T485 S4 selector ledger; existing 8086 source evaluators, one Core retirement publisher and S3 physical-eligibility rejection. |
+| Admission And Approval | Owner-approved continuous execution; T485 S5 receiver evidence `b0f3b4d3` is accepted by this governance review. |
+| Objective | Build the one private Core source-transfer plan for a successful 8088 instruction: its source form, immutable Manual Table-2-21 word-transfer count, and explicit completeness state. |
+| Non-goals | No copied decoder, parallel timing path, guessed transfer count, prefetch/wait estimate, profile clock, host pacing claim, scheduler, controller ratio, external-cycle counting or product/API change. |
+| Reference Baseline | Accepted T485 S5 receiver evidence; existing decoded instruction state, source-form selectors, one Core retirement publisher and S3 physical-eligibility rejection. |
 | Candidate Proposal | [IBM PC/XT 5160-268 board and device phase-timing closure](../proposals/m5-8088-5150-xt-l3-baseline.md). |
 | Files And ABI Surface | Existing private Core CPU timing selection/model and focused Core smoke only. No public ABI, profile grammar, transaction contract or product grammar. |
 | Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, `docs/design/ARCHITECTURE.md`, `docs/design/CODING.md`, `docs/design/UI.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md` and source policy. |
-| Verification | Rendered primary-source Table 2-21 check; focused 8088 source-form/transfer regression; physical-eligibility rejection; configured build/current gate; documentation governance. |
-| Expected Markers | One 8088 selector route, source-backed transfer surcharge only where all inputs exist, and unallocated rejection everywhere else. |
+| Verification | Rendered primary-source Table 2-21 check; focused source-plan forms, byte/word and read/modify/write regressions; physical-eligibility rejection; configured build/current gate; documentation governance. |
+| Expected Markers | One immutable private plan per successful decoded form, no external-cycle dependency, exact count or explicit incomplete disposition. |
 | Asset Needs | Existing rendered IBM/Intel evidence only; no bytes, paths or third-party code enter the repository. |
-| Reporting Requirements | Record reused form owner, each transfer-count input, unallocated cases, deleted compatibility selection for classified forms, and the remaining external-cycle transfer. |
+| Reporting Requirements | Record the plan builder's sole owner, each admitted form/count, all incomplete forms, caller sweep and the later evaluator/external-cycle receivers. |
 | Original Owner Request | Continue the ordered minimalist queue toward the pre-Windows L3 admission audit. |
-| Stop Conditions | Stop if an 8088 form needs a transfer count that the Core instruction/transaction facts cannot provide without duplicating decode or estimating bus behavior. |
-| Exit Criteria | Every classified 8088 form has a sole Core source evaluator with an exact documented surcharge; all others remain visibly unallocated, with no duplicate timing route. |
-| Similar-Issue Sweep | Inspect all 8088 selection paths, 16-bit memory/string/control transfers, compatibility fallback, qualification flags and physical-time publications. |
+| Stop Conditions | Stop if the decoded successful-instruction state cannot establish a form/count without re-executing instructions, using external-cycle callbacks or estimating board behavior. |
+| Exit Criteria | Every admitted form has one exact word-transfer count or an explicit incomplete state; no second decoder, timing writer or external-cycle-derived count exists. |
+| Similar-Issue Sweep | Inspect all source-form evaluators, ModRM/string/control transfer branches, external-cycle callbacks, compatibility fallback and physical-time publications. |
 
 ## Current Technical Baseline
 
@@ -60,6 +60,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T485 S5 | Accepted: no lawful direct 8088 evaluator exists because Core lacks one complete source word-transfer plan; byte external-cycle traces and local timing guesses are explicitly rejected. [Evidence](../etc/evidence/t485-s5-8088-transfer-plan-receiver.md). |
 | T485 S4 | Accepted: the exhaustive current 8088 selector audit proves Table 2-21 needs a complete transfer-count receiver; no existing 8086 route may be silently reused. [Evidence](../etc/evidence/t485-s4-8088-table-2-21-selector-ledger.md). |
 | T485 S3 | Accepted: Intel/IBM facts identify one Core publisher, generic compatibility timing is explicitly nonphysical, and Table-2-21/external-cycle qualification transfers to S4/S5. [Evidence](../etc/evidence/t485-s3-8088-common-axis-ledger.md). |
 | T485 S2 | Accepted: IBM's PIT `1/4` relation is valid only on the 4.77 MHz XT board-clock axis; current deterministic instruction ticks are not that axis, so no false ratio or controller upgrade was published. [Evidence](../etc/evidence/t485-s2-xt-pit-common-axis-boundary.md). |

@@ -11,4 +11,5 @@ writer.
 | S2 | Accepted: IBM's `1/4` PIT relation requires the 4.77 MHz XT board-clock axis; current instruction ticks cannot receive it. [Evidence](../etc/evidence/t485-s2-xt-pit-common-axis-boundary.md). |
 | S3 | Accepted: Intel/IBM facts map to the single Core time publisher; generic compatibility timing is explicitly nonphysical, and Table-2-21/external-cycle qualification transfers to S4/S5. [Evidence](../etc/evidence/t485-s3-8088-common-axis-ledger.md). |
 | S4 | Accepted: the exhaustive current selector ledger proves no 8088 Table-2-21 form is selected today and identifies its one private Core transfer-count receiver. [Evidence](../etc/evidence/t485-s4-8088-table-2-21-selector-ledger.md). |
-| S5 | In implementation: add the one Core 8088 Table-2-21 evaluator where transfer counts are already source-represented; retain every other form unallocated. |
+| S5 | Accepted: current decoded state has no complete word-transfer plan, so an evaluator cannot lawfully reuse local helpers or external byte traces. [Evidence](../etc/evidence/t485-s5-8088-transfer-plan-receiver.md). |
+| S6 | In implementation: build one private Core successful-instruction source-transfer plan before any 8088 evaluator consumes it. |
