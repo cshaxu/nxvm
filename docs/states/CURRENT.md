@@ -2,11 +2,26 @@
 
 ## Current Work
 
-**T476 S2 accepted.** `pc-at-5170` now has one in-place copied root
-snapshot and precise port-leaf declaration; the source descriptor remains the
-sole current session route until T476 S3 consumes the snapshot and removes it.
-The [evidence](../etc/evidence/t476-s2-ibm5170-root-resolver.md) records the
-L3/L2 facts, complete copied configuration and focused proof.
+## M5 T476 S3 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner approved the fixed Core -> resolver -> IBM 5170 -> DeskPro -> default-at order on 2026-08-25; accepted T476 S2 supplies this in-scope cutover receiver. |
+| Objective | Make IBM 5170 session construction consume its one copied `pc-at-5170` root result and remove the direct Model-339 session selection/materialization path without altering selected behavior. |
+| Non-goals | No profile rename in CLI/YAML, DeskPro/default-at change, Core API/device/timing change, firmware/media import, physical-time claim, compatibility path or unrelated cleanup. |
+| Reference Baseline | Accepted [T476 S1 ledger](../etc/evidence/t476-s1-ibm5170-root-ledger.md) and [T476 S2 root evidence](../etc/evidence/t476-s2-ibm5170-root-resolver.md). |
+| Candidate Proposal | [PC/AT 5170 root profile normalization](../proposals/m5-pc-at-5170-root-profile-normalization.md). |
+| Files And ABI Surface | VM session-private root storage/selection, existing profile materializer, Model-339 parity smokes and evidence. No public Core ABI or pointer exposure. |
+| Applicable Rules | One copied root owns IBM configuration for session lifetime; Core receives the resolved copied Core values once; no Model-339 name reaches Core; no static descriptor fallback remains in session construction. |
+| Verification | Frozen S1 parity suite, root/session identity and copied-Core handoff proof, rejection/atomicity check, strict VM-profile/composition build, documentation governance and actual-diff review. |
+| Expected Markers | Existing S1 parity markers plus `M5:T476:S3:IBM5170-ROOT-CUTOVER:OK`. |
+| Asset Needs | Existing source and accepted evidence only; no firmware, guest media or external source enters the repository. |
+| Reporting Requirements | Record deleted direct route, retained root owner/lifetime, parity mapping, source/test delta and any non-S3 current-gate boundary. |
+| Stop Conditions | Stop for owner direction if cutover requires a Core profile-name branch, a second session profile object, a mutable resolver output, dynamic resource in root data or behavior change outside frozen parity. |
+| Exit Criteria | IBM session uses only its copied root result; resolved Core values are the existing plan input; direct selection/materialization is deleted; every S1 parity item passes and source sweep finds no retained IBM direct session route. |
+| Original Owner Request | Establish correct whole-machine L3 structure and interfaces first, then connect IBM 5170, DeskPro 386 and default-at in that order, without layered or duplicate paths. |
+| Similar-Issue Sweep | Sweep session creation, profile selection, copied Core config, session-private storage, all Model-339 pointer/identity assertions and session catalog behavior for static-root leakage or a second configuration route. |
 
 ## Current Technical Baseline
 

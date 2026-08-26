@@ -54,7 +54,14 @@ static C_INT vm_model_339_clock_contract_is_selected(C_VOID)
         generic->clock_plan.rtc.numerator != 1u ||
         generic->clock_plan.rtc.denominator != 1u ||
         generic->rtc_ticks_per_second != 50000u;
-    failed |= session->profile != model_339 ||
+    failed |= session->profile == model_339 ||
+        STD_STRCMP(session->profile->identity, "pc-at-5170") != 0 ||
+        session->core_machine_config.memory_bytes !=
+            session->ibm_5170_root.resolved.values.core.configuration.memory_bytes ||
+        session->core_machine_config.time_axis.kind !=
+            session->ibm_5170_root.resolved.values.core.configuration.time_axis.kind ||
+        session->controller_timing_rules.dma_service !=
+            session->ibm_5170_root.resolved.values.core.controller_timing_rules.dma_service ||
         session->core_machine->dma_clock.numerator != 3u ||
         session->core_machine->dma_clock.denominator != 8u ||
         session->core_machine->pit_clock.numerator != 596591u ||
@@ -242,5 +249,6 @@ C_INT main(C_VOID)
     STD_PRINTF("M5:T462:S3:CONTROLLER-PROFILE-SELECTION:OK\n");
     STD_PRINTF("M5:T462:S3:CONTROLLER-OWNER-CONSUMPTION:OK\n");
     STD_PRINTF("M5:T469:S3:CORE-DEADLINE-SELECTION:OK\n");
+    STD_PRINTF("M5:T476:S3:IBM5170-ROOT-CUTOVER:OK\n");
     return 0;
 }

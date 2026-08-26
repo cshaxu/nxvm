@@ -54,7 +54,9 @@ static C_INT vm_model_339_selected_contract(C_VOID)
         return 1;
     }
     vm_session_reset(session);
-    failed |= session->profile != profile;
+    failed |= session->profile == profile ||
+        STD_STRCMP(session->profile->identity, "pc-at-5170") != 0 ||
+        !vm_profile_default_pc_at_descriptor_is_valid(session->profile);
     /* 5170 selects no board-specific external-cycle policy; it reuses the
      * same Core owner with the disabled default rather than a parallel path. */
     failed |= session->core_machine->transaction_contract.cpu_cycle_bus_ready_gate_enabled != TYPE_FALSE ||
@@ -137,5 +139,6 @@ C_INT main(C_VOID)
     STD_PRINTF("M5:T366:S5:MODEL339-COMPOSITION:OK\n");
     STD_PRINTF("M5:T380:S2:MODEL339-NO-XMS-PROBE:OK\n");
     STD_PRINTF("M5:T421:S1:IBM5170-SHARED-SPEAKER:OK\n");
+    STD_PRINTF("M5:T476:S3:IBM5170-ROOT-CUTOVER:OK\n");
     return 0;
 }

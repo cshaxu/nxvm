@@ -53,9 +53,6 @@ vm_session_profile_select(vm_session_profile_kind kind)
     if (kind == VM_SESSION_PROFILE_DEFAULT_PC_AT) {
         return vm_profile_default_pc_at_descriptor_get();
     }
-    if (kind == VM_SESSION_PROFILE_IBM_5170_MODEL_339) {
-        return vm_profile_ibm_5170_model_339_descriptor_get();
-    }
     return STD_NULL;
 }
 
@@ -508,6 +505,8 @@ C_INT vm_session_create(const vm_session_config *config, vm_session **out_sessio
 {
     vm_session *session;
     vm_profile_default_pc_at_cpu_contract cpu_contract;
+    const vm_session_profile_kind profile_kind = config == STD_NULL ?
+        VM_SESSION_PROFILE_DEFAULT_PC_AT : config->profile_kind;
 
     if (config != STD_NULL && config->profile_kind == VM_SESSION_PROFILE_COMPAQ_DESKPRO_386_MODEL_40) {
         return vm_session_create_model40_byob(config, out_session);
@@ -516,19 +515,31 @@ C_INT vm_session_create(const vm_session_config *config, vm_session **out_sessio
     *out_session = STD_NULL;
     session = (vm_session *)STD_CALLOC(1u, sizeof(*session));
     if (session == STD_NULL) return TYPE_STATUS_NO_MEMORY;
-    session->profile = vm_session_profile_select(config == STD_NULL ?
-        VM_SESSION_PROFILE_DEFAULT_PC_AT : config->profile_kind);
-    if (session->profile == STD_NULL) {
-        STD_FREE(session);
-        return TYPE_STATUS_FAULT;
-    }
-    if (!vm_session_cpu_contract_select(session, config, &cpu_contract)) {
-        STD_FREE(session);
-        return TYPE_STATUS_INVALID_ARGUMENT;
-    }
-    if (!vm_session_materialize_profile_core_config(session, &cpu_contract)) {
-        STD_FREE(session);
-        return TYPE_STATUS_FAULT;
+    if (profile_kind == VM_SESSION_PROFILE_IBM_5170_MODEL_339) {
+        if (vm_profile_ibm_5170_root_resolve(&session->ibm_5170_root) !=
+            TYPE_STATUS_OK) {
+            STD_FREE(session);
+            return TYPE_STATUS_FAULT;
+        }
+        session->profile = &session->ibm_5170_root.descriptor;
+        session->core_machine_config =
+            session->ibm_5170_root.resolved.values.core.configuration;
+        session->controller_timing_rules =
+            session->ibm_5170_root.resolved.values.core.controller_timing_rules;
+    } else {
+        session->profile = vm_session_profile_select(profile_kind);
+        if (session->profile == STD_NULL) {
+            STD_FREE(session);
+            return TYPE_STATUS_FAULT;
+        }
+        if (!vm_session_cpu_contract_select(session, config, &cpu_contract)) {
+            STD_FREE(session);
+            return TYPE_STATUS_INVALID_ARGUMENT;
+        }
+        if (!vm_session_materialize_profile_core_config(session, &cpu_contract)) {
+            STD_FREE(session);
+            return TYPE_STATUS_FAULT;
+        }
     }
     if (config != STD_NULL) {
         session->retained_config = *config;
