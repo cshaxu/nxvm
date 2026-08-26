@@ -6,7 +6,7 @@ that profile's declared session choices; it may not author hardware.
 
 | Subtask | Accepted result |
 | --- | --- |
-| S1 | Active: audit the current parser, console/profile selection and resolver inputs; freeze one root-only grammar and permitted-choice matrix. |
-| S2 | Planned: implement and test one strict YAML request parser. |
+| S1 | Accepted: the v1 catalog plus `--profile` parallel selector is frozen for replacement by one root-only immutable request. |
+| S2 | Active: implement and test one strict YAML request parser. |
 | S3 | Planned: route the immutable request through the existing resolver and remove legacy parallel selection. |
 | S4 | Planned: reconcile all current profiles, parser negatives and gates; publish closure. |

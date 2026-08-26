@@ -2,28 +2,28 @@
 
 ## Current Work
 
-**Active: M5 T482 S1.**
+**Active: M5 T482 S2.**
 
-## M5 T482 S1 Packet
+## M5 T482 S2 Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | New |
-| Admission And Approval | Owner-approved ordered M5 queue; T481 closure at `bfe4aaa9` is the required predecessor. |
-| Objective | Freeze the current profile/console/parser/resolver selection universe and one root-only `nxvm-session` grammar with its permitted session choices. |
+| Identifier Mode | Continuation |
+| Admission And Approval | T482 S1 implementation is `1f32d13a`; this one-session coordinator transition accepts its bounded selection audit before S2 begins. |
+| Objective | Implement one strict root-only `nxvm-session` parser which yields one immutable request without profile-specific hardware policy. |
 | Non-goals | No compatibility grammar, user hardware authoring, profile topology/CPU/ROM/timing field, XT admission, asset import or L4 work. |
-| Reference Baseline | T475--T478 immutable resolver/profile closures, T481 audit closure and the YAML cutover proposal. |
+| Reference Baseline | T482 S1 universe, T475 resolver boundary and current session-catalog parser. |
 | Candidate Proposal | [VM session profile YAML cutover](../proposals/m5-vm-session-profile-yaml-cutover.md). |
-| Files And ABI Surface | Parser/console/profile/resolver inspection plus T482 history/evidence/index and Current only; no ABI change in S1. |
+| Files And ABI Surface | VM product parser/request interface, parser tests and T482 evidence/status; no Core ABI change. |
 | Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, source policy and the proposal's one-production-path constraint. |
-| Verification | Parser/selection/resolver caller inventory, root-field grammar sweep, all-profile choice matrix and documentation governance. |
-| Expected Markers | `M5:T482:S1:SELECTION-UNIVERSE:OK`; `M5:T482:S1:GRAMMAR:OK`; `M5:T482:S1:CHOICES:OK`. |
+| Verification | Positive root-only parse plus nested/v1/duplicate/unknown/hardware-field rejection tests and documentation governance. |
+| Expected Markers | `M5:T482:S2:ROOT-PARSER:OK`; `M5:T482:S2:REJECTIONS:OK`; `M5:T482:S2:IMMUTABLE-REQUEST:OK`. |
 | Asset Needs | No acquisition or import. |
-| Reporting Requirements | Record every current selector/parser/consumer, accepted root fields, rejected legacy fields, declared choice owner and transfer. |
+| Reporting Requirements | Record parser owner, immutable request fields, exact accepted grammar, rejection matrix and no-hardware-authoring proof. |
 | Original Owner Request | Continue the ordered minimalist queue toward the pre-Windows L3 admission audit. |
-| Stop Conditions | Stop if a required choice needs a profile declaration or a second production composition path. |
-| Exit Criteria | One finite current selection universe and a source-backed grammar/choice matrix are recorded without a parallel request model. |
-| Similar-Issue Sweep | VM profile files, console startup/options, YAML/parser sources, resolver callers, composition builders and relevant tests. |
+| Stop Conditions | Stop if parsing a required choice would require profile-specific hardware validation or a second request representation. |
+| Exit Criteria | A single parser accepts only the root grammar and produces one immutable request with no CPU/FPU/topology/ROM/timing field. |
+| Similar-Issue Sweep | Session-catalog parser, parser consumers, YAML fixtures and all profile selection tests. |
 
 ## Current Technical Baseline
 
@@ -60,6 +60,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T482 S1 | Accepted: the v1 catalog and `--profile` parallel selector are frozen for one root-only immutable request replacement. [Evidence](../etc/evidence/t482-s1-yaml-selection-universe.md). |
 | T481 | Closed: one global CPU/controller/Core-time/profile/VM audit leaves no unrecorded duplicate owner, host-to-Core tick injection or false capability claim; residuals have one ordered receiver. [Closure audit](../etc/evidence/t481-s5-global-reconciliation.md). |
 | T480 | Closed: VADP remains the sole guest-video owner; IBM VGA DAC, chain-4 and Mode-13 frame capability is source-backed but unselected by every current profile/card. The 296-target gate and stripped Release 0480 pass. [Closure audit](../etc/evidence/t480-s5-profile-closure-audit.md). |
 | T479 | Closed: one Core HDC/media boundary retains explicit ATA, Compaq and IBM WD1003 personalities; seven focused regressions, the 294-target gate and stripped Release 0479 hash pass. IBM 5160/Xebec and WD1007A-WAH ESDI contracts transfer only to their missing immutable profile receivers. [Closure audit](../etc/evidence/t479-s8-closure-audit.md). |
