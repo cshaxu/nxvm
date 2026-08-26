@@ -2,28 +2,28 @@
 
 ## Current Work
 
-**Active: M5 T482 S2.**
+**Active: M5 T482 S3.**
 
-## M5 T482 S2 Packet
+## M5 T482 S3 Packet
 
 | Field | Required record |
 | --- | --- |
 | Identifier Mode | Continuation |
-| Admission And Approval | T482 S1 implementation is `1f32d13a`; this one-session coordinator transition accepts its bounded selection audit before S2 begins. |
-| Objective | Implement one strict root-only `nxvm-session` parser which yields one immutable request without profile-specific hardware policy. |
-| Non-goals | No compatibility grammar, user hardware authoring, profile topology/ROM/timing field, XT admission, asset import or L4 work. Root CPU/FPU are retained only when the resolved built-in profile declares them as session choices. |
-| Reference Baseline | T482 S1 universe, T475 resolver boundary and current session-catalog parser. |
+| Admission And Approval | The owner-approved T482 scope and explicit default-PC/AT CPU/FPU session-choice clarification admit this continuation. One-session review accepts S2 P1 `2722e5d6` and corrective P2 `ad51f0c2`. |
+| Objective | Route the copied immutable request through the existing resolver/session factory and retain one Console selection path with no CLI re-encoding. |
+| Non-goals | No compatibility grammar, user hardware authoring, profile topology/ROM/timing field, XT admission, asset import or L4 work. Fixed profiles gain no CPU/FPU/memory override. |
+| Reference Baseline | Accepted T482 S2 parser/request, T475 resolver boundary and retained Console startup chooser. |
 | Candidate Proposal | [VM session profile YAML cutover](../proposals/m5-vm-session-profile-yaml-cutover.md). |
-| Files And ABI Surface | VM product parser/request interface, parser tests and T482 evidence/status. Generic product-session open options carry one synchronous opaque request; Core-machine ABI is unchanged. |
-| Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, source policy and the proposal's one-production-path constraint. |
-| Verification | Positive root-only parse plus nested/v1/duplicate/unknown-field rejection, copied-request, declared CPU/FPU choice, fixed-profile override rejection tests and documentation governance. |
-| Expected Markers | `M5:T482:S2:ROOT-PARSER:OK`; `M5:T482:S2:REJECTIONS:OK`; `M5:T482:S2:IMMUTABLE-REQUEST:OK`. |
+| Files And ABI Surface | VM Console, session factory, generic product-session open options, route regressions and T482 evidence/status. Core-machine ABI remains unchanged. |
+| Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, architecture/coding rules and the proposal's one-production-path constraint. |
+| Verification | Console-to-request CPU/FPU propagation for default-PC/AT; fixed-profile override rejection; legacy CLI selection rejection; Model-40 and IBM-5170 Console routes; documentation governance. |
+| Expected Markers | `M5:T482:S3:SESSION-REQUEST:OK`; `M5:T482:S3:CONSOLE-REQUEST:OK`. |
 | Asset Needs | No acquisition or import. |
-| Reporting Requirements | Record parser owner, immutable request fields, exact accepted grammar, rejection matrix and no-hardware-authoring proof. |
+| Reporting Requirements | Record the direct Console request route, request lifetime/owner, declared-choice enforcement and removed CLI bridge. |
 | Original Owner Request | Continue the ordered minimalist queue toward the pre-Windows L3 admission audit. |
-| Stop Conditions | Stop if parsing a required choice would require profile-specific hardware validation or a second request representation. |
-| Exit Criteria | A single parser accepts only the root grammar and produces one immutable request with no user-authored topology/ROM/timing field. CPU/FPU may be carried only as opaque declared-session-choice input for the resolved built-in profile. |
-| Similar-Issue Sweep | Session-catalog parser, parser consumers, YAML fixtures and all profile selection tests. |
+| Stop Conditions | Stop if the route requires a second request representation, Console profile branch, or VM-to-Core machine-policy dependency. |
+| Exit Criteria | Console opens only the copied request returned by the catalog; default-PC/AT declared CPU/FPU choices reach its resolver; fixed profiles reject such overrides; no profile CLI bridge remains. |
+| Similar-Issue Sweep | Console/session-manager callers, session-provider options, YAML fixtures and profile-selection tests. |
 
 ## Current Technical Baseline
 
@@ -61,6 +61,7 @@
 | Task | Compact result |
 | --- | --- |
 | T482 S1 | Accepted: the v1 catalog and `--profile` parallel selector are frozen for one root-only immutable request replacement. [Evidence](../etc/evidence/t482-s1-yaml-selection-universe.md). |
+| T482 S2 | Accepted: one strict root-only parser owns YAML syntax and returns copied immutable requests; duplicate and unknown forms are rejected, while declared CPU/FPU choices are left for the resolver. [Evidence](../etc/evidence/t482-s2-root-parser.md). |
 | T481 | Closed: one global CPU/controller/Core-time/profile/VM audit leaves no unrecorded duplicate owner, host-to-Core tick injection or false capability claim; residuals have one ordered receiver. [Closure audit](../etc/evidence/t481-s5-global-reconciliation.md). |
 | T480 | Closed: VADP remains the sole guest-video owner; IBM VGA DAC, chain-4 and Mode-13 frame capability is source-backed but unselected by every current profile/card. The 296-target gate and stripped Release 0480 pass. [Closure audit](../etc/evidence/t480-s5-profile-closure-audit.md). |
 | T479 | Closed: one Core HDC/media boundary retains explicit ATA, Compaq and IBM WD1003 personalities; seven focused regressions, the 294-target gate and stripped Release 0479 hash pass. IBM 5160/Xebec and WD1007A-WAH ESDI contracts transfer only to their missing immutable profile receivers. [Closure audit](../etc/evidence/t479-s8-closure-audit.md). |
