@@ -10,14 +10,14 @@
 | --- | --- |
 | Identifier Mode | Continuation |
 | Admission And Approval | Owner-approved continuous execution; S14 evidence `52aee9df` is accepted by `39c5cc6b` after complete X1--X17/source/owner reconciliation and documentation-governance proof. |
-| Objective | Implement the source-proven, geometry-independent Xebec byte-stack, finite DCB/command/result/reset state and DMA3/IRQ5 causal contract inside the sole Core HDC owner. |
+| Objective | Implement the source-proven, geometry-independent Xebec byte-stack, finite DCB/command/result/reset state and retain the existing DMA3/IRQ5 binding at its sole Core HDC owner. |
 | Non-goals | No selected image/geometry or profile, logical-media read/write completion, option-ROM bytes/mapping, session/runnable XT route, ATA shim, raw MFM, physical service time, guessed hardware-status bits, second HDC/CHS/media cache or generic XT framework. |
 | Reference Baseline | Accepted T484 S12 X1--X17 source contract, S13 tagged Core wiring and S14 bounded implementation brief; IBM 6139790 is normative and 86Box/PCjs remain non-normative cross-checks. |
 | Candidate Proposal | [IBM PC/XT 5160-268 selected-device functional closure](../proposals/m5-xt-5160-268-device-functional-closure.md). |
 | Files And ABI Surface | Existing `controller_interface.h`, `machine.h`, `machine_board.c`, `hdc.[ch]`, focused Xebec smoke and evidence only. No VM session or public product request surface. |
 | Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, `docs/design/ARCHITECTURE.md`, `docs/design/CODING.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`, source policy and the one HDC/media-owner boundary. |
-| Verification | Focused Xebec proof: exact port directions, six-byte DCB collection, finite response/error-sense bounds, reset/mask behavior, DMA3-only data movement, DREQ/IRQ5 ordering and no ATA alias; retained HDC regressions, Debug all-target build, current-gate, Release 0484 and documentation governance. |
-| Expected Markers | `M5:T484:S15:XEBEC-STACK:OK`; `M5:T484:S15:XEBEC-DMA-IRQ:OK`; `M5:T484:S15:XEBEC-NO-ATA-ALIAS:OK`. |
+| Verification | Focused Xebec proof: exact port directions, select-gated six-byte DCB collection, finite completion/request-sense bounds, reset/raw-pattern behavior and no ATA alias; retained HDC regressions, Debug all-target build, current-gate and documentation governance. DMA byte transfer, DREQ/IRQ enable ordering and physical status are explicit later receivers. |
+| Expected Markers | `M5:T484:S15:XEBEC-STACK:OK`; `M5:T484:S15:XEBEC-NO-ATA-ALIAS:OK`. |
 | Asset Needs | Accepted project evidence and project-owned unit state only; no third-party code, firmware, guest media, local path or code import enters the repository. |
 | Reporting Requirements | Retain one Core HDC/media/DMA/PIC owner; record every implemented source behavior and transfer selected geometry/media read-write, status ambiguity, ROM and physical timing. |
 | Original Owner Request | Continue the ordered minimalist queue toward the pre-Windows L3 admission audit. |
@@ -60,6 +60,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T484 S15 | Accepted: Xebec now has one HDC-owned select/DCB/completion/request-sense/reset stack and raw 323h pattern state; selected-media DMA transfer, enable-bit semantics, physical status/timing and ROM remain explicit transfers. [Evidence](../etc/evidence/t484-s15-xebec-command-stack.md). |
 | T484 S14 | Accepted: X1--X17 now have one source-bounded Xebec Core receiver: byte-stack/command state and DMA callbacks stay in the sole HDC owner; ATA reuse, selected geometry, ROM, physical behavior and guessed hardware status remain explicit transfers. [Evidence](../etc/evidence/t484-s14-xebec-logical-implementation-brief.md). |
 | T484 S2 | Accepted: rendered Intel/IBM evidence permits shared 8086 semantics but requires a Core-owned four-byte 8088 queue policy and forbids a false 8086 alias. [Evidence](../etc/evidence/t484-s2-xt-8088-compatibility-matrix.md). |
 | T482 | Closed: one strict root YAML request reaches the sole `SESSION OPEN` authority and resolver without CLI re-encoding; 296/296 current-gate tests and stripped Release 0480 pass. [Closure audit](../etc/evidence/t482-s4-closure-audit.md). |
