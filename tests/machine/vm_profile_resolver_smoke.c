@@ -82,6 +82,10 @@ static C_INT vm_profile_resolver_rejects_invalid(void)
     if (vm_profile_resolver_resolve(&root, &catalog, &request, &result) ==
         TYPE_STATUS_OK) return 1;
     root = vm_profile_resolver_root();
+    root.values.port_windows[0].last = 0x00010000u;
+    if (vm_profile_resolver_resolve(&root, &catalog, &request, &result) ==
+        TYPE_STATUS_OK) return 1;
+    root = vm_profile_resolver_root();
     root.values.irq_routes[1] = (vm_profile_resolver_route) {1u, 5u};
     root.values.irq_route_count = 2u;
     if (vm_profile_resolver_resolve(&root, &catalog, &request, &result) ==

@@ -26,7 +26,7 @@ static C_INT vm_profile_resolver_catalog_contains(
 
 static C_INT vm_profile_resolver_windows_are_valid(
     const vm_profile_resolver_window *windows, STD_SIZE_T count, STD_SIZE_T capacity,
-    type_unsigned_32 enabled_devices)
+    type_unsigned_32 enabled_devices, type_unsigned_32 maximum_last)
 {
     STD_SIZE_T first;
     STD_SIZE_T second;
@@ -35,7 +35,8 @@ static C_INT vm_profile_resolver_windows_are_valid(
     for (first = 0u; first < count; ++first) {
         if (windows[first].device == 0u ||
             (windows[first].device & enabled_devices) != windows[first].device ||
-            windows[first].last < windows[first].first) return 0;
+            windows[first].last < windows[first].first ||
+            windows[first].last > maximum_last) return 0;
         for (second = first + 1u; second < count; ++second) {
             if (windows[first].first <= windows[second].last &&
                 windows[second].first <= windows[first].last) return 0;
@@ -76,10 +77,10 @@ static C_INT vm_profile_resolver_values_are_valid(
         !vm_profile_resolver_catalog_contains(catalog, values->core.contract_id) ||
         !vm_profile_resolver_windows_are_valid(values->port_windows,
             values->port_window_count, VM_PROFILE_RESOLVER_PORT_WINDOW_CAPACITY,
-            values->enabled_devices) ||
+            values->enabled_devices, TYPE_MAX_UNSIGNED_16) ||
         !vm_profile_resolver_windows_are_valid(values->memory_windows,
             values->memory_window_count, VM_PROFILE_RESOLVER_MEMORY_WINDOW_CAPACITY,
-            values->enabled_devices) ||
+            values->enabled_devices, TYPE_MAX_UNSIGNED_32) ||
         !vm_profile_resolver_routes_are_valid(values->irq_routes,
             values->irq_route_count, VM_PROFILE_RESOLVER_ROUTE_CAPACITY,
             values->enabled_devices) ||

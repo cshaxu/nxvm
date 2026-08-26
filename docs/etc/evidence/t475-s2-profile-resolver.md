@@ -33,6 +33,7 @@ public Core value types already used by the existing plan boundary.
 | Ownership mask without a matching typed replacement | Rejects; a child cannot claim an inherited field as a second owner. |
 | Bound device absent from enabled-device mask | Rejects. |
 | Overlapping port windows | Rejects before any Core plan is constructed. |
+| Port window outside the 16-bit I/O domain | Rejects before any Core plan is constructed. |
 | Duplicate IRQ line or duplicate DRQ line | Rejects before any Core plan is constructed. |
 | Parent cycle/depth violation | Rejects; declarations form a bounded single-parent chain only. |
 | Contract ID absent from the catalog | Rejects. |
