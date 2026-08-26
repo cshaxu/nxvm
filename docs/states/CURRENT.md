@@ -2,26 +2,9 @@
 
 ## Current Work
 
-## M5 T477 S3 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner approved the ordered DeskPro migration; accepted T477 S1-S2 freeze and validate the child declaration. |
-| Objective | Cut Model-40 session creation over to the copied DeskPro child Core input and remove its duplicate Core-config constructor, preserving dynamic BYOB ROM, D4 and media ownership. |
-| Non-goals | No new device semantics, topology redesign, Core change, physical-time claim, firmware/media import, YAML/default-at work or profile rename. |
-| Reference Baseline | T477 S1 delta ledger; T477 S2 child resolver; existing Model-40 integration/parity corpus. |
-| Candidate Proposal | [DeskPro 386 5170-derived runnable profile](../proposals/m5-deskpro-386-5170-derived-runnable-profile.md). |
-| Files And ABI Surface | Model-40 profile/session construction and focused Model-40 smokes; no public Core ABI. |
-| Applicable Rules | One profile/session Core-input path; resolver owns immutable data, session owns dynamic resources, Core owns mutable machine state; delete obsolete duplicate construction rather than add a compatibility layer. |
-| Verification | Existing Model-40 private/integration and full finite parity corpus, source sweep for obsolete initializer, full current gate and no behavior/identity regression. |
-| Expected Markers | Existing Model-40 markers plus `M5:T477:S3:DESKPRO-SESSION-CUTOVER:OK`. |
-| Asset Needs | Existing test-only synthetic BYOB inputs only; no new asset. |
-| Reporting Requirements | Record deleted production path, retained dynamic owner path, parity result and source/test line delta. |
-| Stop Conditions | Stop if cutover changes a frozen behavior, forces mutable state into resolver, or cannot remove the old Core-config path. |
-| Exit Criteria | DeskPro session uses copied resolved Core data, no duplicate Model-40 Core initializer remains, dynamic resource ownership is unchanged, and full parity passes. |
-| Original Owner Request | Connect IBM 5170, DeskPro 386 and default-at in order through minimal single-owner interfaces. |
-| Similar-Issue Sweep | Sweep all Model-40 construction, reset, media, firmware and plan setup for any second Core config or mutable profile mirror. |
+**T477 S3 accepted.** The [cutover evidence](../etc/evidence/t477-s3-deskpro-session-cutover.md)
+proves Model-40 sessions consume the copied DeskPro Core input while keeping
+BYOB ROM, D4 and media at their existing dynamic session owners.
 
 ## Current Technical Baseline
 
@@ -56,7 +39,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T477 S2 | Accepted: one immutable DeskPro child declaration inherits 5170 device/route facts and owns the frozen 80386 Core/BYOB policy delta; [evidence](../etc/evidence/t477-s2-deskpro-child-resolver.md) records copy and negative proof. |
+| T477 S3 | Accepted: Model-40 session construction consumes copied DeskPro resolver data, and the old direct Core-config session path is removed; [evidence](../etc/evidence/t477-s3-deskpro-session-cutover.md) records dynamic-owner preservation and parity. |
 | T476 | Closed: IBM 5170 sessions consume one copied `pc-at-5170` root and one Core-plan materialization path; the former duplicate exception aggregate is retired while its independent owners remain. [Closure audit](../etc/evidence/t476-s4-closure-audit.md) records the 294-target gate and stripped Release 0476. |
 | T475 | Closed: one VM-only immutable resolver copies parent-patched values and per-field provenance to the existing Core-plan API, rejects invalid ownership/bindings/windows/routes/contracts/policy, and leaves current routes for ordered profile migrations. [Closure audit](../etc/evidence/t475-s3-integration-closure-audit.md) records the 294-target gate and stripped Release 0475. |
 | T474 | Closed: one Core-owned guest-time axis, immutable plan and copied observation now join profile timing values, source-qualified PIT/RTC deadlines, explicit controller blockers and Standard/Turbo consumer policy. [Closure audit](../etc/evidence/t474-s6-integration-closure-audit.md) records the 293-target gate and stripped Release 0474. |
