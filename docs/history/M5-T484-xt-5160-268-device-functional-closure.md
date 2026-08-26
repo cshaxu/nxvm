@@ -12,4 +12,5 @@ ATA/Xebec shim or duplicate controller/media/video state.
 | S1 | Accepted: the F1--F9 convergence ledger freezes every selected device, owner/absence, repair batch and timing handoff. |
 | S2 | Accepted: rendered Intel/IBM evidence defines shared semantics and the mandatory Core-owned four-byte 8088 queue boundary. |
 | S3 | Accepted: one Core-owned 8088 four-byte queue producer and one fixed 5160-268 resolver declaration; 297/297 current-gate tests and Release 0484 pass. The declaration remains explicitly unavailable until B2 binds the XT board. [Evidence](../etc/evidence/t484-s3-xt-8088-profile-implementation.md). |
-| S4 | Active: freeze the selected 5160 board topology and its exact current-owner gaps before any board implementation. |
+| S4 | Accepted: complete B2 board-topology matrix identifies the sole owner and exact construction gap for every selected 5160 relation, without an AT alias or runtime path. [Evidence](../etc/evidence/t484-s4-xt-board-topology-gap-ledger.md). |
+| S5 | Active: replace PC/AT-only board materialization with one copied selected-5160 B2 plan; bind only sourced low-memory/ROM, single-PIC, one-DMA/refresh, absent-RTC and reset/NMI facts. |
