@@ -8,4 +8,5 @@ writer.
 | Subtask | Result |
 | --- | --- |
 | S1 | Accepted: every selected timing path has one source-labelled fact, current Core receiver and explicit L2/blocking disposition; only PIT has an immediately eligible rational-clock receiver. [Evidence](../etc/evidence/t485-s1-xt-board-phase-source-ledger.md). |
-| S2 | In implementation: test the IBM-qualified PIT ratio against the actual Core axis; it must reject any false instruction-tick mapping and identify the earliest common-axis receiver. |
+| S2 | Accepted: IBM's `1/4` PIT relation requires the 4.77 MHz XT board-clock axis; current instruction ticks cannot receive it. [Evidence](../etc/evidence/t485-s2-xt-pit-common-axis-boundary.md). |
+| S3 | In implementation: source-map 8088 successful retirement, normal/five-clock external cycles and waits to one Core-owned common-axis receiver, or retain each missing relation as an explicit block. |
