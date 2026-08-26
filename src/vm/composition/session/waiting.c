@@ -7,7 +7,7 @@
 type_status vm_session_waiting_advance(vm_session *session,
     const core_machine_run_result *result, C_INT *out_advanced)
 {
-    core_machine_pacing_contract contract;
+    core_machine_time_observation observation;
     type_bool advanced;
     type_status status;
 
@@ -18,8 +18,9 @@ type_status vm_session_waiting_advance(vm_session *session,
         !vm_session_control_is_running(&session->control)) {
         return TYPE_STATUS_INVALID_STATE;
     }
-    status = core_machine_get_pacing_contract(session->core_machine, &contract);
-    if (status != TYPE_STATUS_OK || !contract.available) return status;
+    status = core_machine_capture_time_observation(session->core_machine,
+        &observation);
+    if (status != TYPE_STATUS_OK || !observation.physical_time_available) return status;
     status = core_machine_advance_to_next_deadline(session->core_machine, &advanced);
     if (status == TYPE_STATUS_OK && advanced) *out_advanced = 1;
     return status;

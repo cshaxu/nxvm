@@ -63,7 +63,13 @@ C_VOID core_machine_capture_time_observation_private(const core_machine *machine
     if (machine == STD_NULL || out_observation == STD_NULL) return;
     out_observation->elapsed_ticks = machine->elapsed_ticks;
     out_observation->next_deadline_tick = 0u;
+    out_observation->physical_ticks_per_second = 0u;
     out_observation->next_deadline_valid = TYPE_FALSE;
+    out_observation->physical_time_available = TYPE_FALSE;
+    if (machine->time_axis.kind == CORE_MACHINE_TIME_AXIS_VERIFIED_PHYSICAL) {
+        out_observation->physical_ticks_per_second = machine->time_axis.ticks_per_second;
+        out_observation->physical_time_available = TYPE_TRUE;
+    }
     if (!machine->timing_plan_copied || core_machine_deadline_is_blocked(machine)) {
         return;
     }

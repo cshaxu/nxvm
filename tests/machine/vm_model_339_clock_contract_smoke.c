@@ -19,7 +19,6 @@ static C_INT vm_model_339_clock_contract_is_selected(C_VOID)
     vm_session *session = STD_NULL;
     vm_session *fallback = STD_NULL;
     core_machine_time_observation time_observation;
-    core_machine_pacing_contract pacing_contract;
     type_bool advanced;
     C_INT failed = 0;
 
@@ -95,9 +94,9 @@ static C_INT vm_model_339_clock_contract_is_selected(C_VOID)
     failed |= session->core_machine->shared_kbc.data.typematic != 0x2cu ||
         session->core_machine->shared_kbc.data.typematic_initial_ticks != 4000000u ||
         session->core_machine->shared_kbc.data.typematic_repeat_ticks != 800000u;
-    failed |= core_machine_get_pacing_contract(session->core_machine,
-        &pacing_contract) != TYPE_STATUS_OK || pacing_contract.available ||
-        pacing_contract.guest_ticks_per_second != 0u;
+    failed |= core_machine_capture_time_observation(session->core_machine,
+        &time_observation) != TYPE_STATUS_OK || time_observation.physical_time_available ||
+        time_observation.physical_ticks_per_second != 0u;
     core_machine_port_write(&session->core_machine->executor_port, 0x0060u, 0xf3u);
     failed |= core_machine_port_read(&session->core_machine->executor_port, 0x0060u) != 0xfau;
     core_machine_port_write(&session->core_machine->executor_port, 0x0060u, 0x7fu);
@@ -179,11 +178,10 @@ static C_INT vm_model_339_clock_contract_is_selected(C_VOID)
     core_machine_port_write(&fallback->core_machine->executor_port, 0x0043u, 0x34u);
     core_machine_port_write(&fallback->core_machine->executor_port, 0x0040u, 4u);
     core_machine_port_write(&fallback->core_machine->executor_port, 0x0040u, 0u);
-    failed |= core_machine_get_pacing_contract(fallback->core_machine,
-        &pacing_contract) != TYPE_STATUS_OK || pacing_contract.available ||
-        pacing_contract.guest_ticks_per_second != 0u;
     failed |= core_machine_capture_time_observation(fallback->core_machine,
-        &time_observation) != TYPE_STATUS_OK || time_observation.next_deadline_valid;
+        &time_observation) != TYPE_STATUS_OK || time_observation.next_deadline_valid ||
+        time_observation.physical_time_available ||
+        time_observation.physical_ticks_per_second != 0u;
     advanced = TYPE_FALSE;
     failed |= core_machine_advance_to_next_deadline(fallback->core_machine,
         &advanced) != TYPE_STATUS_OK || advanced;

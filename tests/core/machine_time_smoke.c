@@ -15,7 +15,6 @@ C_INT main(C_VOID)
     core_machine_run_result result;
     core_machine_observation observation;
     core_machine_time_observation time_observation;
-    core_machine_pacing_contract pacing_contract;
     core_machine *machine = STD_NULL;
     core_machine *rejected = STD_NULL;
     const type_unsigned_8 nop = 0x90u;
@@ -24,12 +23,16 @@ C_INT main(C_VOID)
 
     config.ticks_per_instruction = 3u;
     config.cpu_profile = CORE_MACHINE_CPU_PROFILE_80286;
-    config.guest_timebase = (core_machine_guest_timebase) {
-        CORE_MACHINE_GUEST_TIMEBASE_VERIFIED_PHYSICAL, 8000000u };
+    config.time_axis = (core_machine_time_axis) {
+        CORE_MACHINE_TIME_AXIS_VERIFIED_PHYSICAL, 8000000u };
     {
         core_machine_config invalid = config;
 
-        invalid.guest_timebase.source_ticks_per_second = 0u;
+        invalid.time_axis.ticks_per_second = 0u;
+        failed |= core_machine_create(&invalid, &rejected) != TYPE_STATUS_INVALID_ARGUMENT ||
+            rejected != STD_NULL;
+        invalid = config;
+        invalid.time_axis.kind = (core_machine_time_axis_kind)2;
         failed |= core_machine_create(&invalid, &rejected) != TYPE_STATUS_INVALID_ARGUMENT ||
             rejected != STD_NULL;
     }
@@ -43,10 +46,8 @@ C_INT main(C_VOID)
     failed |= core_machine_capture_time_observation(machine, &time_observation) !=
         TYPE_STATUS_OK || time_observation.elapsed_ticks != 0u ||
         time_observation.next_deadline_tick != 0u ||
-        time_observation.next_deadline_valid;
-    failed |= core_machine_get_pacing_contract(machine, &pacing_contract) !=
-        TYPE_STATUS_OK || !pacing_contract.available ||
-        pacing_contract.guest_ticks_per_second != 8000000u;
+        time_observation.next_deadline_valid || !time_observation.physical_time_available ||
+        time_observation.physical_ticks_per_second != 8000000u;
     failed |= core_machine_memory_write(machine, 0xfffffff0u, &nop, sizeof(nop)) !=
         TYPE_STATUS_OK;
     failed |= core_machine_memory_write(machine, 0xfffffff1u, &nop, sizeof(nop)) !=

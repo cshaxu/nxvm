@@ -215,24 +215,6 @@ type_status core_machine_capture_time_observation(const core_machine *machine,
     return TYPE_STATUS_OK;
 }
 
-type_status core_machine_get_pacing_contract(const core_machine *machine,
-    core_machine_pacing_contract *out_contract)
-{
-    if (machine == STD_NULL || out_contract == STD_NULL ||
-        machine->lifecycle == CORE_MACHINE_INITIALIZED) {
-        return TYPE_STATUS_INVALID_ARGUMENT;
-    }
-    out_contract->guest_ticks_per_second = 0u;
-    out_contract->available = TYPE_FALSE;
-    if (machine->guest_timebase.kind ==
-        CORE_MACHINE_GUEST_TIMEBASE_VERIFIED_PHYSICAL) {
-        out_contract->guest_ticks_per_second =
-            machine->guest_timebase.source_ticks_per_second;
-        out_contract->available = TYPE_TRUE;
-    }
-    return TYPE_STATUS_OK;
-}
-
 type_status core_machine_get_timeline_observation(const core_machine *machine,
     core_machine_timeline_observation *out_observation)
 {
@@ -301,13 +283,12 @@ static type_status core_machine_create_internal(
         (config->auxiliary_pit_present && config->auxiliary_pit_base_port > 0xfffcu)) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
-    if ((config->guest_timebase.kind != CORE_MACHINE_GUEST_TIMEBASE_UNAVAILABLE &&
-        config->guest_timebase.kind !=
-            CORE_MACHINE_GUEST_TIMEBASE_VERIFIED_PHYSICAL) ||
-        (config->guest_timebase.kind == CORE_MACHINE_GUEST_TIMEBASE_UNAVAILABLE &&
-        config->guest_timebase.source_ticks_per_second != 0u) ||
-        (config->guest_timebase.kind == CORE_MACHINE_GUEST_TIMEBASE_VERIFIED_PHYSICAL &&
-        config->guest_timebase.source_ticks_per_second == 0u)) {
+    if ((config->time_axis.kind != CORE_MACHINE_TIME_AXIS_UNQUALIFIED &&
+        config->time_axis.kind != CORE_MACHINE_TIME_AXIS_VERIFIED_PHYSICAL) ||
+        (config->time_axis.kind == CORE_MACHINE_TIME_AXIS_UNQUALIFIED &&
+        config->time_axis.ticks_per_second != 0u) ||
+        (config->time_axis.kind == CORE_MACHINE_TIME_AXIS_VERIFIED_PHYSICAL &&
+        config->time_axis.ticks_per_second == 0u)) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
 
@@ -324,7 +305,7 @@ static type_status core_machine_create_internal(
     machine->cpu_profile = core_machine_resolve_cpu_profile(config->cpu_profile);
     machine->retirement_time_contract = config->retirement_time_contract;
     machine->transaction_contract = config->transaction_contract;
-    machine->guest_timebase = config->guest_timebase;
+    machine->time_axis = config->time_axis;
     machine->dma_cycle_bus_ready = TYPE_TRUE;
     machine->cpu_cycle_bus_ready = TYPE_TRUE;
     if (config->retirement_qualification != STD_NULL) {
