@@ -2,15 +2,32 @@
 
 ## Current Work
 
-**T477 S3 accepted.** The [cutover evidence](../etc/evidence/t477-s3-deskpro-session-cutover.md)
-proves Model-40 sessions consume the copied DeskPro Core input while keeping
-BYOB ROM, D4 and media at their existing dynamic session owners.
+## M5 T477 S4 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner approved T477; accepted S1-S3 provide the frozen delta, child resolver and session cutover. |
+| Objective | Audit the complete T477 proposal, run the frozen DeskPro parity universe, publish stripped Release 0477 and close only if no duplicate Model-40 Core-input path remains. |
+| Non-goals | No new functionality, topology/timing change, external asset, YAML/default-at migration or L3 claim. |
+| Reference Baseline | T477 S1 ledger, S2 resolver, S3 cutover and T476 closure. |
+| Candidate Proposal | [DeskPro 386 5170-derived runnable profile](../proposals/m5-deskpro-386-5170-derived-runnable-profile.md). |
+| Files And ABI Surface | Artifact target/preset, evidence/history/status and no runtime ABI beyond accepted S3. |
+| Applicable Rules | One resolved Core-input path; session-only dynamic resources; stripped Release and task closure rules. |
+| Verification | Frozen Model-40 corpus, full current gate, source sweep, artifact banner/SHA/debug-section check, documentation governance and proposal exit mapping. |
+| Expected Markers | Existing T477 markers and `nxvm_0_5_0477.exe` banner `0.5.0477`. |
+| Asset Needs | Existing build/test inputs only. |
+| Reporting Requirements | Record artifact hash/source commit, parity/gate results, exact code delta and retained dynamic owners. |
+| Stop Conditions | Stop if parity differs, a second Core-input path remains, or artifact/gates cannot be proven. |
+| Exit Criteria | Proposal mapped to evidence; frozen parity and full gate pass; artifact is stripped Release; history/status accurate and proposal moved to history. |
+| Original Owner Request | Connect profiles in order through minimal single-owner interfaces. |
+| Similar-Issue Sweep | Artifact/preset/status identity, Model-40 construction and all S1 parity owners. |
 
 ## Current Technical Baseline
 
-- **Current developer artifact:** target `vm-0-5-0476`; the stripped Release
-  `nxvm_0_5_0476.exe` has SHA-256
-  `F3A5004E6C8932AAB2462B6000B2B8F0BA1F94ABE3CB30E2A3EE68A6487F052A`.
+- **Current developer artifact:** target `vm-0-5-0477`; the stripped Release
+  `nxvm_0_5_0477.exe` has SHA-256
+  `29AF6BCB351A5EE0F1D6C992EDC4BCA71C5BF6897E88B4BE848907547A9E9F01`.
   Debug remains the current-gate route. T471 preserves Core-owned progression:
   a verified axis is Standard-paced only by host waiting against completed
   Core progress. T472 extends that comparison to an explicit L2 macro axis,
