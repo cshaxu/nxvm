@@ -2,28 +2,28 @@
 
 ## Current Work
 
-**Active: M5 T484 S10.**
+**Active: M5 T484 S11.**
 
-## M5 T484 S10 Packet
+## M5 T484 S11 Packet
 
 | Field | Required record |
 | --- | --- |
 | Identifier Mode | Continuation |
-| Admission And Approval | Owner-approved continuous execution toward the pre-Windows L3 admission audit; accepted T484 S9 P1 `b72b2e9e` establishes the selected 360KiB XT FDC/media contract and admits its one bounded Core-plan receiver. |
-| Objective | Bind the existing Core 8272A/media owner to the selected IBM 5160-268 plan through one immutable drive-A `40 x 2 x 9 x 512` declaration and `3F2h`/`3F4h`/`3F5h`, IRQ6/DMA2 route. |
-| Non-goals | No FDC state-machine rewrite, firmware/ROM manifest or mapping, default guest media, Xebec personality, generic XT, ATA shim, PC/AT `3F7h` route, 1.2/1.44MB substitution, physical service-time estimate, protected-mode or Windows claim. |
-| Reference Baseline | Accepted T483 S1--S3 and T484 S1--S9 evidence, especially the IBM-led [S9 FDC source contract](../etc/evidence/t484-s9-xt-fdc-source-contract.md); existing Core FDC/media/DMA/PIC/plan owners and the selected XT resolver. |
+| Admission And Approval | Owner-approved continuous execution toward the pre-Windows L3 admission audit; accepted T484 S10 P1 `6a753c4d` closes B3's FDC plan binding and the frozen T484 B4 ledger batch is the next independent receiver. |
+| Objective | Bind the selected IBM CGA adapter to the 5160-268 copied plan through the existing VADP sole owner, its `B8000h` aperture and its source-qualified port grammar. |
+| Non-goals | No VADP/controller rewrite, firmware/ROM mapping, default guest media, EGA/VGA selection, light pen, physical display timing, session/runnable-profile admission, generic XT or duplicate video/mode/frame state. |
+| Reference Baseline | Accepted T483 S1 display selection, T484 S1 B4 ledger and [T484 S4 CGA gap record](../etc/evidence/t484-s4-xt-board-topology-gap-ledger.md); accepted [T467 CGA closure audit](../etc/evidence/t467-s7-cga-closure-audit.md); existing Core VADP/display-plan owner and selected XT resolver. |
 | Candidate Proposal | [IBM PC/XT 5160-268 selected-device functional closure](../proposals/m5-xt-5160-268-device-functional-closure.md). |
-| Files And ABI Surface | `src/vm/profile/xt/xt_5160_268.c`, Core plan/media public contracts only if an existing configuration field proves insufficient, focused XT/profile plan tests, T484 evidence/history/current status, CMake registration and `build/output/nxvm_0_5_0484.exe`; no new public runtime architecture. |
+| Files And ABI Surface | `src/vm/profile/xt/xt_5160_268.c`, existing Core display-plan input only if necessary, focused XT/profile-plan test, T484 evidence/history/current status, CMake registration and `build/output/nxvm_0_5_0484.exe`; no public runtime architecture. |
 | Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, `docs/design/ARCHITECTURE.md`, `docs/design/CODING.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`, source policy and the proposal's single-owner/no-parallel-path boundary. |
-| Verification | Focused selected-XT profile/Core-plan smoke proving drive-A geometry, `3F2h`/`3F4h`/`3F5h`, IRQ6/DMA2, reset and absent `3F7h`; existing AT FDC regression proves no route change; build the stripped Release `vm-0-5-0484`, run the current gate, documentation governance and actual-change review. |
-| Expected Markers | `M5:T484:S10:XT-FDC-PLAN:OK`; `M5:T484:S10:XT-NO-AT-FDC-ALIAS:OK`. |
-| Asset Needs | Existing accepted IBM source contract and project-owned empty/inserted media test provider only; no third-party source, firmware, guest media, local path or code import enters the repository. |
-| Reporting Requirements | Record the one retained production route and media/FDC state owners, all changed code/test lines, focused/full verification, Release hash, physical-timing transfer and every intentionally absent route. |
+| Verification | Focused XT profile/Core-plan smoke proves the selected CGA ports, `B8000h` memory aperture and copied VADP snapshot owner; existing CGA and AT regressions prove no route change; build stripped Release `vm-0-5-0484`, run current-gate, documentation governance and actual-change review. |
+| Expected Markers | `M5:T484:S11:XT-CGA-PLAN:OK`; `M5:T484:S11:XT-NO-VIDEO-ALIAS:OK`. |
+| Asset Needs | Accepted project evidence and project-owned test state only; no third-party source, firmware, guest media, local path or code import enters the repository. |
+| Reporting Requirements | Record the retained VADP/VRAM/snapshot owner, all changed code/test lines, focused/full verification, Release hash, physical-timing transfer and every intentionally absent adapter feature. |
 | Original Owner Request | Continue the ordered minimalist queue toward the pre-Windows L3 admission audit. |
-| Stop Conditions | Stop and transfer if binding requires an FDC state duplicate, profile/VM-owned guest media state, a PC/AT `3F7h` route, default media/firmware, a generic XT abstraction, or an unsourced mechanical deadline. |
-| Exit Criteria | The selected XT plan materializes exactly one Core FDC/media route with the qualified geometry and no AT alias; focused and current-gate proof pass, the stripped 0484 artifact is recorded, and all physical timing remains explicitly transferred. |
-| Similar-Issue Sweep | Selected XT resolver/topology, all FDC plan builders, media-registry construction, `3F2h`--`3F7h` routes, IRQ6/DMA2 bindings, Core FDC reset/owner lifecycle, and AT/DeskPro FDC paths. |
+| Stop Conditions | Stop and transfer if binding requires a second mode/VRAM/frame owner, BIOS/VM video mirror, PC/AT descriptor borrowing, an EGA/VGA path, unselected adapter ROM, generic XT abstraction or an unsourced display deadline. |
+| Exit Criteria | The selected XT plan materializes exactly one CGA VADP route with the sourced ports/aperture, focused/current-gate proof passes, the stripped 0484 artifact is recorded, and all physical timing remains explicitly transferred. |
+| Similar-Issue Sweep | Selected XT resolver/topology, all VADP display-plan builders, CGA `3D4h`--`3DAh` ports, `B8000h` memory mapping, copied snapshot publication and PC/AT/DeskPro display paths. |
 
 ## Current Technical Baseline
 
