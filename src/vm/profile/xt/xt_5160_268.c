@@ -60,7 +60,12 @@ type_status vm_profile_xt_5160_268_resolve(
     if (status != TYPE_STATUS_OK) return status;
     out_profile->topology = (core_machine_plan_topology) {0};
     out_profile->topology.dma_present = TYPE_TRUE;
-    out_profile->topology.dma = (core_machine_dma_wiring) {
-        CORE_MACHINE_DMA_FDC_CHANNEL_UNBOUND, 1u, 0u};
+    out_profile->topology.dma = (core_machine_dma_wiring) {2u, 1u, 0u};
+    out_profile->topology.fdc_present = TYPE_TRUE;
+    out_profile->topology.fdc_drives = (core_machine_fdc_drive_bindings) {{
+        VM_PROFILE_XT_5160_268_FDD_MEDIA_ID, CORE_MACHINE_MEDIA_ID_INVALID,
+        CORE_MACHINE_MEDIA_ID_INVALID, CORE_MACHINE_MEDIA_ID_INVALID}};
+    out_profile->topology.fdc = (core_machine_fdc_config) {0x03f2u, 0x03f4u,
+        0x03f5u, 0u, 0u, 6u, 2u, CORE_MACHINE_FDC_UNREADY_READ_GENERIC};
     return TYPE_STATUS_OK;
 }

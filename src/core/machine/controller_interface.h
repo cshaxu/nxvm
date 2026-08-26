@@ -24,6 +24,7 @@ typedef struct core_machine_fdc_config {
     type_unsigned_16 dor_port;
     type_unsigned_16 status_port;
     type_unsigned_16 data_port;
+    /* Zero omits an optional direction or control endpoint. */
     type_unsigned_16 direction_port;
     type_unsigned_16 control_port;
     type_unsigned_8 irq;

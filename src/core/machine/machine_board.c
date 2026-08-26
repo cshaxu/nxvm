@@ -831,9 +831,10 @@ type_status core_machine_configure_fdc(core_machine *machine,
         {topology == STD_NULL ? 0u : topology->config.data_port,
             TYPE_TRUE, TYPE_TRUE},
         {topology == STD_NULL ? 0u : topology->config.direction_port,
-            TYPE_TRUE, TYPE_FALSE},
+            topology != STD_NULL && topology->config.direction_port != 0u,
+            TYPE_FALSE},
         {topology == STD_NULL ? 0u : topology->config.control_port,
-            TYPE_FALSE, TYPE_TRUE}
+            TYPE_FALSE, topology != STD_NULL && topology->config.control_port != 0u}
     };
     core_machine_port_provider_entry *port_checkpoint;
     type_status status;

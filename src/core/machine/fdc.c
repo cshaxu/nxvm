@@ -1039,14 +1039,18 @@ C_VOID core_machine_fdc_initialize(core_machine_fdc *fdc)
         core_machine_fdc_read_status, fdc);
     core_machine_port_add_read(fdc->connect.port, fdc->connect.config.data_port,
         core_machine_fdc_read_data, fdc);
-    core_machine_port_add_read(fdc->connect.port, fdc->connect.config.direction_port,
-        core_machine_fdc_read_direction, fdc);
+    if (fdc->connect.config.direction_port != 0u) {
+        core_machine_port_add_read(fdc->connect.port, fdc->connect.config.direction_port,
+            core_machine_fdc_read_direction, fdc);
+    }
     core_machine_port_add_write(fdc->connect.port, fdc->connect.config.dor_port,
         core_machine_fdc_write_dor, fdc);
     core_machine_port_add_write(fdc->connect.port, fdc->connect.config.data_port,
         core_machine_fdc_write_data, fdc);
-    core_machine_port_add_write(fdc->connect.port, fdc->connect.config.control_port,
-        core_machine_fdc_write_control, fdc);
+    if (fdc->connect.config.control_port != 0u) {
+        core_machine_port_add_write(fdc->connect.port, fdc->connect.config.control_port,
+            core_machine_fdc_write_control, fdc);
+    }
 }
 
 C_VOID core_machine_fdc_reset(core_machine_fdc *fdc)
