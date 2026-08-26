@@ -2,28 +2,28 @@
 
 ## Current Work
 
-**Active: M5 T485 S1.**
+**Active: M5 T485 S2.**
 
-## M5 T485 S1 Packet
+## M5 T485 S2 Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | New |
-| Admission And Approval | Owner-approved continuous execution; T484 S22 implementation `e5476feb` is accepted by this P2 review and T484 is closed. |
-| Objective | Establish the finite IBM 5160-268 board/device phase-timing source and owner ledger required before any timing implementation. |
-| Non-goals | No guessed timing, firmware/media import, new device function, PC/AT alias, host-time coupling or L3-ready claim. |
-| Reference Baseline | Closed T484 functional route and its explicit timing transfers; retained Core controller L3 contracts and the selected XT resolver. |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner-approved continuous execution; T485 S1 implementation `d769b539` is accepted by this P2 review. |
+| Objective | Bind the IBM 5160 PIT source ratio to the existing copied Core timing plan and designate it as the sole XT controller L3 input. |
+| Non-goals | No CPU/bus/DMA/PIC/PPI/FDC/CGA/Xebec timing estimate, host pacing claim, new scheduler, profile-side setter or new hardware behavior. |
+| Reference Baseline | Accepted T485 S1 source ledger; existing Core rational-clock plan and selected XT functional plan. |
 | Candidate Proposal | [IBM PC/XT 5160-268 board and device phase-timing closure](../proposals/m5-8088-5150-xt-l3-baseline.md). |
-| Files And ABI Surface | Evidence/ledger only. No code, Core ABI, product grammar or artifact change. |
+| Files And ABI Surface | Existing XT resolver/core-plan fields, focused timing regression and evidence only. No public ABI or product grammar. |
 | Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, `docs/design/ARCHITECTURE.md`, `docs/design/CODING.md`, `docs/design/UI.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md` and source policy. |
-| Verification | Primary-source and non-imported emulator cross-check ledger, actual owner inspection and documentation governance. |
-| Expected Markers | A T485 S1 source/owner timing ledger and explicit eligible-versus-blocked disposition for every selected path. |
-| Asset Needs | Rendered manuals/research only under source policy; no bytes, paths or third-party code enter the repository. |
-| Reporting Requirements | Record primary source, corroboration, exact formula/value or bounded absence, Core/profile owner and later receiver for every selected timing path. |
+| Verification | Focused XT PIT plan/deadline/reset proof, retained XT profile regression, applicable current gate and documentation governance. |
+| Expected Markers | A T485 S2 XT PIT rational-clock proof and unchanged explicit L2 residuals. |
+| Asset Needs | Existing rendered IBM/Intel evidence only; no bytes, paths or third-party code enter the repository. |
+| Reporting Requirements | Record exact ratio, copied owner path, reset/deadline proof and every non-PIT residual unchanged. |
 | Original Owner Request | Continue the ordered minimalist queue toward the pre-Windows L3 admission audit. |
-| Stop Conditions | Stop if an authoritative source or bounded reference cannot establish a fact; record it as blocked rather than infer a timing value. |
-| Exit Criteria | Every selected CPU/board/controller path has one source-labelled timing disposition and no L3 claim outruns its evidence. |
-| Similar-Issue Sweep | Cover CPU/ROM/ISA, PIC/DMA/PIT, PPI keyboard/NMI, FDC, CGA and Xebec; distinguish shared Core timing from XT board phase. |
+| Stop Conditions | Stop if the existing rational plan cannot express the IBM ratio without changing ownership or inventing an epoch/phase. |
+| Exit Criteria | The fixed XT plan publishes one Manual-L3 PIT ratio through the existing Core owner, and no other capability changes classification. |
+| Similar-Issue Sweep | Inspect existing profile PIT rational-clock users and ensure the XT addition neither creates a separate timing route nor upgrades unrelated controller paths. |
 
 ## Current Technical Baseline
 

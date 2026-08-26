@@ -7,4 +7,5 @@ writer.
 
 | Subtask | Result |
 | --- | --- |
-| S1 | In implementation: source/owner ledger for all selected timing paths. |
+| S1 | Accepted: every selected timing path has one source-labelled fact, current Core receiver and explicit L2/blocking disposition; only PIT has an immediately eligible rational-clock receiver. [Evidence](../etc/evidence/t485-s1-xt-board-phase-source-ledger.md). |
+| S2 | In implementation: bind the IBM-qualified XT PIT rational clock through the existing copied Core timing-plan route; retain every other timing path unchanged. |
