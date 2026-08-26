@@ -7,6 +7,7 @@ cannot recreate a controller or repair a controller-local symptom.
 | Subtask | Result |
 | --- | --- |
 | S1 | Accepted: visually verified IBM board, clock, cycle, reset, map, ISA and NMI source facts establish the finite List-1 basis without importing a manual or firmware. [Evidence](../etc/evidence/t487-s1-5160-original-source-ledger.md). |
+| S2 | Accepted: every admitted board clock, cycle, reset, map, ISA and NMI fact has one Manual-L3 List-1 row and a controller/CPU/host boundary before code inspection. [Evidence](../etc/evidence/t487-s2-5160-board-function-timing-list-1.md). |
 
 The active contract is in [Current](../states/CURRENT.md). Its admitted scope
 and the mandatory source/List-1/List-2/one-owner sequence are in the active

@@ -15,6 +15,7 @@ principal documents named in [docs/README.md](../README.md).
 | `requirements/` | Product and profile owners | Future DOS, NXVDM, and profile admissions. |
 | `evidence/` | Verification owner | Capability, verification, baseline, and fixture evidence. |
 | `evidence/t487-s1-5160-original-source-ledger.md` | Core board/timing owner | T487 S1's visually verified IBM 5160 publication ledger, OCR boundary and finite board-source basis for the complete List 1. |
+| `evidence/t487-s2-5160-board-function-timing-list-1.md` | Core board/timing owner | T487 S2's complete IBM 5160 board-only function/timing List 1, with each manual fact separated from chip-local and host-time boundaries. |
 | `evidence/t486-s1-8088-original-source-ledger.md` | Core CPU timing owner | T486 S1's visually verified Intel 1981 source corpus, scan/OCR boundary and finite Table-2-21 basis for the following complete List-1 ledger. |
 | `evidence/t486-s2-8088-function-timing-list-1.md` | Core CPU timing owner | T486 S2's finite 8088 Table-2-21 function/timing List 1, including all mnemonic groups, prefix entries, explicit non-instruction entries and manual timing boundaries. |
 | `evidence/t486-s3-8088-current-code-gap-list-2.md` | Core CPU timing owner | T486 S3's complete List-1-to-code-owner ledger, current 8088 timing dispositions and one-owner implementation boundary. |
