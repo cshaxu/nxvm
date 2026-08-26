@@ -9,4 +9,5 @@ ATA/Xebec shim or duplicate controller/media/video state.
 
 | Subtask | Result |
 | --- | --- |
-| S1 | Active: freeze the complete selected-device functional convergence ledger, finite repair batches and focused-proof owners. |
+| S1 | Accepted: the F1--F9 convergence ledger freezes every selected device, owner/absence, repair batch and timing handoff. |
+| S2 | Active: freeze the primary-source 8088/immutable-profile compatibility matrix for B1 before implementation. |

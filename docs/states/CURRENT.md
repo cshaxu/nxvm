@@ -2,28 +2,28 @@
 
 ## Current Work
 
-**Active: M5 T484 S1.**
+**Active: M5 T484 S2.**
 
-## M5 T484 S1 Packet
+## M5 T484 S2 Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | New |
-| Admission And Approval | The owner approved continual ordered execution toward the pre-Windows L3 audit; the next queued candidate is admitted after T483 closure. Scope is exactly the linked selected-device functional closure, with no owner-approved exception. |
-| Objective | Freeze the complete selected-5160 functional convergence ledger: each selected device and board-facing route, its primary contract, current owner/gap, implementation batch, focused regression and timing handoff. |
-| Non-goals | No runtime profile, source repair, firmware/media import, timing value, generic XT, PC/AT substitution, protected-mode or Windows claim. |
-| Reference Baseline | Closed T483 S1--S3 evidence, T479 S6 Xebec ledger, current Core/VM source, retained controller checklists and the linked functional-closure proposal. |
+| Identifier Mode | Continuation |
+| Admission And Approval | The owner-approved T484 scope continues after coordinator review accepts S1 P1 `8772e0e5` and its complete F1--F9 functional convergence ledger. |
+| Objective | Freeze the source-qualified B1 compatibility matrix for the immutable 5160-268 declaration and 8088 attachment before changing Core or VM code. |
+| Non-goals | No production source change, runtime profile, firmware/media import, board route, timing implementation, generic XT, PC/AT substitution, protected-mode or Windows claim. |
+| Reference Baseline | Accepted T484 S1 F1/F2/F8 rows, T483 primary-source/timing evidence, retained 8086 semantic ledger, current CPU/profile/session source and linked functional-closure proposal. |
 | Candidate Proposal | [IBM PC/XT 5160-268 selected-device functional closure](../proposals/m5-xt-5160-268-device-functional-closure.md). |
-| Files And ABI Surface | Read-only source/evidence inspection plus indexed convergence ledger/history/status; no source, build, runtime, asset or ABI change. |
+| Files And ABI Surface | Read-only Intel/IBM source and current CPU/profile/session inspection plus indexed B1 matrix/history/status; no source, build, runtime, asset or ABI change. |
 | Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, architecture/coding rules, source policy and the proposal's no-implementation stop boundary. |
-| Verification | Selected-BOM-to-ledger completeness sweep, primary-contract provenance review, current-owner/source-path inspection, receiver uniqueness review and documentation governance. |
-| Expected Markers | `M5:T484:S1:XT-FUNCTIONAL-LEDGER:OK`; `M5:T484:S1:XT-FUNCTIONAL-BATCHES:OK`. |
-| Asset Needs | Existing admitted research only; no acquisition/import in S1. |
-| Reporting Requirements | Record every selected functional route once, its correct existing owner or absence, finite first repair batch and focused proof; state each timing transfer without assigning a duration. |
+| Verification | Rendered/document-text source cross-read where applicable, 8086/8088 semantic and profile source sweep, current-time-boundary review and documentation governance. |
+| Expected Markers | `M5:T484:S2:XT-8088-COMPATIBILITY:OK`; `M5:T484:S2:XT-B1-SOURCE-BOUNDARY:OK`. |
+| Asset Needs | Public Intel/IBM documentation may be read in the approved external research archive; no import, firmware or guest media. |
+| Reporting Requirements | Distinguish reusable instruction semantics from separate 8088 configuration/bus/prefetch facts; state the exact B1 implementation and proof boundary without a time claim. |
 | Original Owner Request | Continue the ordered minimalist queue toward the pre-Windows L3 admission audit. |
-| Stop Conditions | Stop and retain a source receiver if a selected functional contract is not primary-qualified; do not manufacture a device behavior from a PC/AT path or emulator. |
-| Exit Criteria | A durable, exhaustive functional convergence ledger exists for the accepted T483 BOM; each row has a disposition, one owner, one repair batch/receiver and a planned proof, with no runtime behavior implied. |
-| Similar-Issue Sweep | All Core controller, CPU/board, VM profile/session/media/product routes, selected XT source evidence, existing focused controller regressions and configuration tests. |
+| Stop Conditions | Stop if primary material cannot distinguish 8088 fact from 8086-compatible behavior; transfer the under-sourced point rather than extrapolate from an emulator or 8086 profile. |
+| Exit Criteria | B1 has a complete source-labelled reuse/separation matrix, one existing owner/absence disposition per row, and an implementation/proof plan that does not claim board or physical time. |
+| Similar-Issue Sweep | CPU profiles/timing/prefetch, Core configuration validation, VM resolver/default-profile declarations, session catalog/YAML selection and relevant CPU/profile tests. |
 
 ## Current Technical Baseline
 
@@ -60,6 +60,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T484 S1 | Accepted: the F1--F9 XT functional convergence ledger fixes the complete implementation universe, unique owner/absence dispositions and finite B1--B6 batches. [Evidence](../etc/evidence/t484-s1-xt-functional-convergence-ledger.md). |
 | T482 | Closed: one strict root YAML request reaches the sole `SESSION OPEN` authority and resolver without CLI re-encoding; 296/296 current-gate tests and stripped Release 0480 pass. [Closure audit](../etc/evidence/t482-s4-closure-audit.md). |
 | T483 | Closed: the IBM 5160-268 BOM, complete current-owner capability matrix and Manual-L3/unresolved timing partition establish one functional and one timing receiver without implying an XT runtime path. [Closure evidence](../etc/evidence/t483-s3-xt-timing-source-partition.md). |
 | T481 | Closed: one global CPU/controller/Core-time/profile/VM audit leaves no unrecorded duplicate owner, host-to-Core tick injection or false capability claim; residuals have one ordered receiver. [Closure audit](../etc/evidence/t481-s5-global-reconciliation.md). |
