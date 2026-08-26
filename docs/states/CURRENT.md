@@ -2,11 +2,28 @@
 
 ## Current Work
 
-**Open: M5 T485.**
+**Active: M5 T485 S19.**
 
-T485 S18 is accepted at `4b9fbbe5`: all four 8088 Group-3 arithmetic forms
-remain source-unallocated because Intel supplies ranges rather than an exact
-selection formula; no external emulator model is promoted to Manual-L3.
+## M5 T485 S19 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner-approved continuous execution under the admitted T485 queue task; accepted S18 `f8b46900` closes the Group-3 range disposition. |
+| Objective | Produce the finite, complete 8088 Table 2-21 selector-coverage inventory after S7--S18, assigning every remaining source-unallocated instruction family to one exact receiver, a source-range/no-formula boundary, or an explicit non-instruction exclusion. |
+| Non-goals | No timing implementation, decoder/state/API change, external-model promotion, endpoint estimate, physical XT board timing claim, or final T485/L3 closure. |
+| Reference Baseline | T485 S4 selector ledger; accepted S7/S9/S11/S13/S15/S17 evaluators; accepted S18 range disposition; Intel 8086/8088 User's Manual Table 2-21. |
+| Candidate Proposal | [IBM PC/XT 5160-268 board and device phase-timing closure](../proposals/m5-8088-5150-xt-l3-baseline.md). |
+| Files And ABI Surface | Evidence, T485 history and supporting index only; no runtime source, public ABI, build or artifact change. |
+| Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, `docs/design/ARCHITECTURE.md`, `docs/design/CODING.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md` and source policy; documentation-only applicability is recorded in evidence. |
+| Verification | Rendered primary-source Table 2-21 review; finite decoded-form/selector sweep; reconciliation against every accepted T485 source receiver; documentation governance. |
+| Expected Markers | One exhaustive family ledger with a source row, selector state, current receiver/disposition and earliest lawful next receiver for every residual family. |
+| Asset Needs | Existing Intel manual and existing project evidence only; no imported source, firmware, guest media or external code. |
+| Reporting Requirements | Record the fixed coverage universe, the S7--S18 covered batches, every residual family, any range/formula limit and the next bounded S batch without claiming implementation completeness. |
+| Stop Conditions | Stop if a residual row cannot be connected to a rendered primary row and existing selector form without expanding the universe; revise the packet before doing so. |
+| Exit Criteria | The inventory exhausts the Table 2-21 8088 instruction universe: each form is either linked to an accepted receiver, a named finite next batch, a range/no-formula boundary, or a justified non-instruction exclusion; no residual can remain hidden behind compatibility timing. |
+| Original Owner Request | Continue the ordered minimalist queue toward the pre-Windows L3 admission audit without additive or parallel timing paths. |
+| Similar-Issue Sweep | Sweep all Table 2-21 instruction families, prefix/repeat variants, software-delivery rows, Group-3 forms, WAIT/ESC, and hardware interrupt rows; compare primary evaluator, string, control/stack, port-I/O and compatibility selector stages. |
 
 ## Current Technical Baseline
 
