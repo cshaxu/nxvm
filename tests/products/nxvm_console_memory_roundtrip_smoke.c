@@ -20,7 +20,7 @@
 #include "vm/product/session_catalog.h"
 
 typedef struct console_memory_probe {
-    C_INT exact_memory_seen;
+    C_INT exact_request_seen;
 } console_memory_probe;
 
 static type_status console_memory_open(C_VOID *context,
@@ -39,8 +39,11 @@ static type_status console_memory_open(C_VOID *context,
         options->request_bytes == sizeof(vm_product_session_request) &&
         options->request != STD_NULL &&
         ((const vm_product_session_request *)options->request)->memory_bytes ==
-            (STD_SIZE_T)4294967296u * 1024u) {
-        probe->exact_memory_seen = 1;
+            (STD_SIZE_T)4294967296u * 1024u &&
+        !STD_STRCMP(((const vm_product_session_request *)options->request)->cpu,
+            "8086") && !STD_STRCMP(((const vm_product_session_request *)options->request)->fpu,
+            "8087")) {
+        probe->exact_request_seen = 1;
     }
     *out_session = session;
     return TYPE_STATUS_OK;
@@ -90,7 +93,7 @@ C_INT main(C_VOID)
     configured_provider.context = &probe;
     machine_provider.set_display_mode = console_memory_set_display;
     if (profile == STD_NULL || input == STD_NULL ||
-        STD_FPUTS("schema: nxvm-session\nprofile: default-pc-at\nmemory_kib: 4294967296\ndisplay: console\nboot: rom\nmedia:\n  floppy: null\n  hard_disk: null\n", profile) < 0 ||
+        STD_FPUTS("schema: nxvm-session\nprofile: default-pc-at\ncpu: 8086\nfpu: 8087\nmemory_kib: 4294967296\ndisplay: console\nboot: rom\nmedia:\n  floppy: null\n  hard_disk: null\n", profile) < 0 ||
         STD_FCLOSE(profile) != 0 || STD_FPUTS("1\nexit\n", input) < 0 ||
         fflush(input) != 0 || STD_FSEEK(input, 0L, STD_SEEK_SET) != 0 ||
         core_product_session_manager_create(&configured_provider, &manager) !=
@@ -101,7 +104,7 @@ C_INT main(C_VOID)
             TEST_FILENO(STD_STDIN)) < 0) goto done;
     if (vm_product_console_context_create(&console_context) != TYPE_STATUS_OK) goto done;
     vm_product_console_main(console_context, &machine_provider, manager, ".");
-    if (probe.exact_memory_seen) result = 0;
+    if (probe.exact_request_seen) result = 0;
 done:
     if (saved_stdin >= 0) {
         (C_VOID)TEST_DUP2(saved_stdin, TEST_FILENO(STD_STDIN));
@@ -112,6 +115,9 @@ done:
     (C_VOID)STD_REMOVE(configuration);
     vm_product_console_context_destroy(console_context);
     core_product_session_manager_destroy(manager);
-    if (result == 0) STD_PRINTF("M5:T382:S8:CONSOLE-MEMORY:OK\n");
+    if (result == 0) {
+        STD_PRINTF("M5:T382:S8:CONSOLE-MEMORY:OK\n");
+        STD_PRINTF("M5:T482:S3:CONSOLE-REQUEST:OK\n");
+    }
     return result;
 }
