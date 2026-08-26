@@ -69,13 +69,16 @@ static C_VOID initialize_config(vm_session *session,
     session->core_machine_config.ticks_per_instruction =
         profile->ticks_per_instruction;
     session->core_machine_config.instruction_timing = profile->instruction_timing;
+    session->core_machine_config.transaction_contract = profile->transaction_contract;
     session->core_machine_config.clock_plan = profile->clock_plan;
+    session->core_machine_config.time_axis = profile->time_axis;
     session->core_machine_config.kbc_typematic_initial_ticks =
         profile->kbc_typematic_initial_ticks;
     session->core_machine_config.kbc_typematic_repeat_ticks =
         profile->kbc_typematic_repeat_ticks;
     session->core_machine_config.kbc_command_response_ticks =
         profile->kbc_command_response_ticks;
+    session->controller_timing_rules = profile->controller_timing_rules;
 }
 
 static C_INT profile_timing_is_materialized(const core_machine_config *config,
@@ -85,8 +88,12 @@ static C_INT profile_timing_is_materialized(const core_machine_config *config,
         config->ticks_per_instruction == profile->ticks_per_instruction &&
         STD_MEMCMP(&config->instruction_timing, &profile->instruction_timing,
             sizeof(config->instruction_timing)) == 0 &&
+        STD_MEMCMP(&config->transaction_contract, &profile->transaction_contract,
+            sizeof(config->transaction_contract)) == 0 &&
         STD_MEMCMP(&config->clock_plan, &profile->clock_plan,
             sizeof(config->clock_plan)) == 0 &&
+        STD_MEMCMP(&config->time_axis, &profile->time_axis,
+            sizeof(config->time_axis)) == 0 &&
         config->kbc_typematic_initial_ticks ==
             profile->kbc_typematic_initial_ticks &&
         config->kbc_typematic_repeat_ticks ==
@@ -132,6 +139,9 @@ static C_INT verify_create_materialization(
             profile->default_memory_bytes ||
         default_session->core_machine_config.cpu_profile != profile->cpu_profile ||
         default_session->core_machine_config.fpu_profile != profile->fpu_profile ||
+        STD_MEMCMP(&default_session->controller_timing_rules,
+            &profile->controller_timing_rules,
+            sizeof(default_session->controller_timing_rules)) != 0 ||
         !profile_timing_is_materialized(&default_session->core_machine_config,
             profile) || !session_core_config_is_applied(default_session,
             profile->default_memory_bytes, profile->cpu_profile,
@@ -147,6 +157,9 @@ static C_INT verify_create_materialization(
         configured_session->retained_config.memory_bytes != overrides.memory_bytes ||
         configured_session->retained_config.cpu_profile != overrides.cpu_profile ||
         configured_session->retained_config.fpu_profile != overrides.fpu_profile ||
+        STD_MEMCMP(&configured_session->controller_timing_rules,
+            &profile->controller_timing_rules,
+            sizeof(configured_session->controller_timing_rules)) != 0 ||
         !profile_timing_is_materialized(&configured_session->core_machine_config,
             profile) || !session_core_config_is_applied(configured_session,
             overrides.memory_bytes, overrides.cpu_profile, overrides.fpu_profile));
