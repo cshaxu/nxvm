@@ -142,6 +142,93 @@ static C_INT core_machine_hdc_fill(core_machine *machine,
     return 1;
 }
 
+static C_INT core_machine_hdc_test_ibm_wd1003(C_VOID)
+{
+    const core_machine_config config = {
+        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .cpu_profile = CORE_MACHINE_CPU_PROFILE_8086,
+        .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE,
+        .ticks_per_instruction = 1u
+    };
+    const core_machine_hdc_config hdc_config = {
+        .protocol = CORE_MACHINE_HDC_PROTOCOL_IBM_WD1003_ST506,
+        .data_port = 0x01f0u, .error_features_port = 0x01f1u,
+        .sector_count_port = 0x01f2u, .sector_number_port = 0x01f3u,
+        .cylinder_low_port = 0x01f4u, .cylinder_high_port = 0x01f5u,
+        .drive_head_port = 0x01f6u, .status_command_port = 0x01f7u,
+        .alternate_status_device_control_port = 0x03f6u,
+        .irq = 14u, .lba28_supported = TYPE_FALSE,
+        .clock_ticks_per_second = 8000000u
+    };
+    core_machine_hdc_fixture_media media = {
+        .generation = 1u, .present = TYPE_TRUE,
+        .forced_read_result = CORE_MACHINE_MEDIA_RESULT_OK,
+        .forced_write_result = CORE_MACHINE_MEDIA_RESULT_OK
+    };
+    core_machine_media_registry *registry = STD_NULL;
+    core_machine_hdc_topology topology = {0};
+    core_machine *machine = STD_NULL;
+    type_unsigned_32 status = 0u;
+    type_unsigned_16 word = 0u;
+    C_INT failed = 0;
+
+    media.sector[0][0] = 0x78u;
+    media.sector[0][1] = 0x56u;
+    if (core_machine_media_registry_create(&registry) != TYPE_STATUS_OK ||
+        core_machine_create(&config, &machine) != TYPE_STATUS_OK ||
+        core_machine_media_registry_bind(registry, 1u, &media,
+            &core_machine_hdc_fixture_provider) != TYPE_STATUS_OK ||
+        core_machine_media_registry_freeze(registry) != TYPE_STATUS_OK) {
+        failed = 1;
+    } else {
+        topology.media_registry = registry;
+        topology.media_id = 1u;
+        topology.config = hdc_config;
+        if (core_machine_configure_hdc(machine, &topology) != TYPE_STATUS_OK ||
+            core_machine_freeze_execution_providers(machine) != TYPE_STATUS_OK ||
+            core_machine_reset(machine) != TYPE_STATUS_OK ||
+            machine->hdc.data.error != CORE_MACHINE_HDC_ERROR_DIAGNOSTIC_OK ||
+            !core_machine_hdc_program_chs(machine, &hdc_config) ||
+            !core_machine_hdc_write(machine, hdc_config.drive_head_port, 0xa0u) ||
+            !core_machine_hdc_command(machine, &hdc_config, 0x22u) ||
+            !core_machine_hdc_read(machine, hdc_config.status_command_port, &status) ||
+            status != (CORE_MACHINE_HDC_STATUS_DRDY | CORE_MACHINE_HDC_STATUS_DSC |
+                CORE_MACHINE_HDC_STATUS_DRQ) ||
+            !core_machine_hdc_drain(machine, &hdc_config, &word) || word != 0x5678u ||
+            !core_machine_hdc_write(machine,
+                hdc_config.alternate_status_device_control_port, 0x08u) ||
+            machine->hdc.data.fixed_disk_register != 0x08u ||
+            machine->hdc.data.drive_head != 0xa0u ||
+            core_machine_bus_read(machine, hdc_config.alternate_status_device_control_port,
+                &status) != TYPE_STATUS_UNSUPPORTED ||
+            !core_machine_hdc_program_chs(machine, &hdc_config) ||
+            !core_machine_hdc_command(machine, &hdc_config, 0x91u) ||
+            !core_machine_hdc_read(machine, hdc_config.status_command_port, &status) ||
+            status != (CORE_MACHINE_HDC_STATUS_DRDY | CORE_MACHINE_HDC_STATUS_DSC) ||
+            !core_machine_hdc_command(machine, &hdc_config, 0x10u) ||
+            machine->hdc.data.step_rate_selector != 0u ||
+            machine->hdc.data.step_rate_ticks != 280u ||
+            machine->hdc.data.step_pulse_limit != 1023u ||
+            !core_machine_hdc_command(machine, &hdc_config, 0x7fu) ||
+            machine->hdc.data.step_rate_selector != 15u ||
+            machine->hdc.data.step_rate_ticks != 60000u ||
+            machine->hdc.data.step_pulse_limit != 0u ||
+            !core_machine_hdc_command(machine, &hdc_config, 0x90u) ||
+            machine->hdc.data.step_rate_selector != 15u ||
+            machine->hdc.data.step_rate_ticks != 60000u ||
+            machine->hdc.data.step_pulse_limit != 1023u ||
+            !core_machine_hdc_command(machine, &hdc_config, 0xecu) ||
+            !core_machine_hdc_read(machine, hdc_config.status_command_port, &status) ||
+            status != (CORE_MACHINE_HDC_STATUS_DRDY | CORE_MACHINE_HDC_STATUS_ERR) ||
+            machine->hdc.data.error != CORE_MACHINE_HDC_ERROR_ABORT) {
+            failed = 1;
+        }
+    }
+    core_machine_destroy(machine);
+    core_machine_media_registry_destroy(registry);
+    return failed;
+}
+
 C_INT main(C_VOID)
 {
     const core_machine_config config = {
@@ -447,6 +534,7 @@ C_INT main(C_VOID)
     }
     core_machine_destroy(machine);
     core_machine_media_registry_destroy(registry);
+    failed |= core_machine_hdc_test_ibm_wd1003();
     if (failed) {
         STD_FPRINTF(STD_STDERR, "M5:T286:S1:ATA-NIEN:PORT:FAIL bits=%x status=%02x error=%02x word=%04x\n",
             failed, status, error, word);
@@ -455,5 +543,6 @@ C_INT main(C_VOID)
     puts("M5:T286:S1:ATA-NIEN:PORT:OK");
     puts("M5:T283:S2:CORE-HDC-MEDIA:OK");
     puts("M5:T347:S3:ATA-SERVICE:OK");
+    puts("M5:T479:S5:IBM-WD1003:OK");
     return 0;
 }

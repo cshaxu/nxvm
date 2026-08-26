@@ -769,11 +769,16 @@ static C_INT core_machine_hdc_topology_is_valid(
         return 0;
     }
     if (config->protocol != CORE_MACHINE_HDC_PROTOCOL_ATA_PIO &&
-        config->protocol != CORE_MACHINE_HDC_PROTOCOL_COMPAQ_WD_40MB) return 0;
+        config->protocol != CORE_MACHINE_HDC_PROTOCOL_COMPAQ_WD_40MB &&
+        config->protocol != CORE_MACHINE_HDC_PROTOCOL_IBM_WD1003_ST506) return 0;
     if ((config->protocol == CORE_MACHINE_HDC_PROTOCOL_ATA_PIO &&
             config->drive_address_port != 0u) ||
         (config->protocol == CORE_MACHINE_HDC_PROTOCOL_COMPAQ_WD_40MB &&
             (config->lba28_supported || config->drive_address_port == 0u))) return 0;
+    if (config->protocol == CORE_MACHINE_HDC_PROTOCOL_IBM_WD1003_ST506 &&
+        (config->lba28_supported || config->drive_address_port != 0u ||
+            config->clock_ticks_per_second == 0u ||
+            config->clock_ticks_per_second % 1000000u != 0u)) return 0;
     for (first = 0u; first < sizeof(ports) / sizeof(ports[0]); ++first) {
         for (second = first + 1u; second < sizeof(ports) / sizeof(ports[0]); ++second) {
             if (ports[first] == ports[second]) return 0;

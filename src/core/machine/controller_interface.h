@@ -38,7 +38,8 @@ typedef struct core_machine_fdc_drive_bindings {
 typedef enum core_machine_hdc_protocol {
     CORE_MACHINE_HDC_PROTOCOL_INVALID = 0,
     CORE_MACHINE_HDC_PROTOCOL_ATA_PIO,
-    CORE_MACHINE_HDC_PROTOCOL_COMPAQ_WD_40MB
+    CORE_MACHINE_HDC_PROTOCOL_COMPAQ_WD_40MB,
+    CORE_MACHINE_HDC_PROTOCOL_IBM_WD1003_ST506
 } core_machine_hdc_protocol;
 
 /* The protocol is explicit, so zero-initialization cannot silently select ATA.
@@ -59,6 +60,9 @@ typedef struct core_machine_hdc_config {
     type_unsigned_16 drive_address_port;
     type_unsigned_8 irq;
     type_bool lba28_supported;
+    /* Required only by IBM WD1003: selected Core axis rate for its manual
+     * step-rate selector, never a host clock or HDC-owned time axis. */
+    type_unsigned_32 clock_ticks_per_second;
 } core_machine_hdc_config;
 
 #endif

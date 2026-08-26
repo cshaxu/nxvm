@@ -14,11 +14,17 @@
 #define CORE_MACHINE_HDC_COMMAND_RECALIBRATE_VALUE 0x10u
 #define CORE_MACHINE_HDC_COMMAND_SEEK_MASK 0xf0u
 #define CORE_MACHINE_HDC_COMMAND_SEEK_VALUE 0x70u
-#define CORE_MACHINE_HDC_ERROR_DIAGNOSTIC_OK 0x01u
+#define CORE_MACHINE_HDC_IBM_RESTORE_STEP_LIMIT 1023u
 static C_INT core_machine_hdc_is_compaq_wd_40mb(const core_machine_hdc *hdc)
 {
     return hdc != STD_NULL && hdc->connect.config.protocol ==
         CORE_MACHINE_HDC_PROTOCOL_COMPAQ_WD_40MB;
+}
+
+static C_INT core_machine_hdc_is_ibm_wd1003(const core_machine_hdc *hdc)
+{
+    return hdc != STD_NULL && hdc->connect.config.protocol ==
+        CORE_MACHINE_HDC_PROTOCOL_IBM_WD1003_ST506;
 }
 
 static C_INT core_machine_hdc_task_file_is_writable(const core_machine_hdc *hdc)
@@ -29,7 +35,35 @@ static C_INT core_machine_hdc_task_file_is_writable(const core_machine_hdc *hdc)
 }
 
 static C_INT core_machine_hdc_selected_master(const core_machine_hdc *hdc)
-{ return hdc != STD_NULL && (hdc->data.drive_head & 0x10u) == 0u; }
+{
+    return hdc != STD_NULL && (core_machine_hdc_is_compaq_wd_40mb(hdc) ?
+        (hdc->data.drive_head & 0x20u) != 0u :
+        (hdc->data.drive_head & 0x10u) == 0u);
+}
+
+static type_unsigned_8 core_machine_hdc_current_head(const core_machine_hdc *hdc)
+{
+    if (hdc == STD_NULL) return 0u;
+    if (core_machine_hdc_is_ibm_wd1003(hdc)) {
+        return (type_unsigned_8)((hdc->data.drive_head & 0x07u) |
+            (hdc->data.fixed_disk_register & 0x08u));
+    }
+    return hdc->data.drive_head & 0x0fu;
+}
+
+static C_VOID core_machine_hdc_set_current_head(core_machine_hdc *hdc,
+    type_unsigned_8 head)
+{
+    if (hdc == STD_NULL) return;
+    if (core_machine_hdc_is_ibm_wd1003(hdc)) {
+        hdc->data.drive_head = (type_unsigned_8)((hdc->data.drive_head & 0xf8u) |
+            (head & 0x07u));
+        hdc->data.fixed_disk_register = (type_unsigned_8)((hdc->data.fixed_disk_register &
+            0xf7u) | (head & 0x08u));
+        return;
+    }
+    hdc->data.drive_head = (type_unsigned_8)((hdc->data.drive_head & 0xf0u) | head);
+}
 
 static C_INT core_machine_hdc_lba_mode(const core_machine_hdc *hdc)
 {
@@ -43,6 +77,9 @@ static C_INT core_machine_hdc_command_is_read(const core_machine_hdc *hdc,
     if (core_machine_hdc_is_compaq_wd_40mb(hdc)) {
         return (command & 0xfeu) == CORE_MACHINE_HDC_COMMAND_READ_SECTORS;
     }
+    if (core_machine_hdc_is_ibm_wd1003(hdc)) {
+        return (command & 0xfcu) == CORE_MACHINE_HDC_COMMAND_READ_SECTORS;
+    }
     return command == CORE_MACHINE_HDC_COMMAND_READ_SECTORS;
 }
 
@@ -52,7 +89,24 @@ static C_INT core_machine_hdc_command_is_write(const core_machine_hdc *hdc,
     if (core_machine_hdc_is_compaq_wd_40mb(hdc)) {
         return (command & 0xfeu) == CORE_MACHINE_HDC_COMMAND_WRITE_SECTORS;
     }
+    if (core_machine_hdc_is_ibm_wd1003(hdc)) {
+        return (command & 0xfcu) == CORE_MACHINE_HDC_COMMAND_WRITE_SECTORS;
+    }
     return command == CORE_MACHINE_HDC_COMMAND_WRITE_SECTORS;
+}
+
+static C_VOID core_machine_hdc_select_ibm_step_rate(core_machine_hdc *hdc,
+    type_unsigned_8 selector, type_unsigned_16 pulse_limit)
+{
+    type_unsigned_32 ticks_per_second;
+
+    if (!core_machine_hdc_is_ibm_wd1003(hdc)) return;
+    ticks_per_second = hdc->connect.config.clock_ticks_per_second;
+    hdc->data.step_rate_selector = selector;
+    hdc->data.step_pulse_limit = pulse_limit;
+    hdc->data.step_rate_ticks = selector == 0u ?
+        (ticks_per_second / 1000000u) * 35u :
+        (ticks_per_second / 2000u) * selector;
 }
 
 static C_VOID core_machine_hdc_sync_irq(core_machine_hdc *hdc)
@@ -159,7 +213,7 @@ static C_INT core_machine_hdc_resolve_sector(core_machine_hdc *hdc,
     }
     cylinder = (type_unsigned_16)hdc->data.cylinder_low |
         ((type_unsigned_16)hdc->data.cylinder_high << 8u);
-    head = hdc->data.drive_head & 0x0fu;
+    head = core_machine_hdc_current_head(hdc);
     sector = hdc->data.sector_number;
     if ((!core_machine_hdc_is_compaq_wd_40mb(hdc) && !core_machine_hdc_selected_master(hdc)) ||
         sector == 0u || cylinder >= info.geometry.cylinders ||
@@ -257,7 +311,7 @@ static C_INT core_machine_hdc_advance_chs(core_machine_hdc *hdc)
     }
     cylinder = (type_unsigned_16)hdc->data.cylinder_low |
         ((type_unsigned_16)hdc->data.cylinder_high << 8u);
-    head = hdc->data.drive_head & 0x0fu;
+    head = core_machine_hdc_current_head(hdc);
     sector = (type_unsigned_8)(hdc->data.sector_number + 1u);
     if (sector > info.geometry.sectors_per_track) {
         sector = 1u;
@@ -274,7 +328,7 @@ static C_INT core_machine_hdc_advance_chs(core_machine_hdc *hdc)
     hdc->data.sector_number = sector;
     hdc->data.cylinder_low = (type_unsigned_8)cylinder;
     hdc->data.cylinder_high = (type_unsigned_8)(cylinder >> 8u);
-    hdc->data.drive_head = (hdc->data.drive_head & 0xf0u) | head;
+    core_machine_hdc_set_current_head(hdc, head);
     return 1;
 }
 
@@ -402,10 +456,8 @@ static C_VOID core_machine_hdc_execute_command(core_machine_hdc *hdc, type_unsig
     if (hdc == STD_NULL) return;
     hdc->data.last_command = command;
     ++hdc->data.command_count;
-    if ((!core_machine_hdc_is_compaq_wd_40mb(hdc) && !core_machine_hdc_selected_master(hdc)) ||
-        (core_machine_hdc_is_compaq_wd_40mb(hdc) &&
-            (hdc->data.drive_head & 0x20u) == 0u) ||
-        (!core_machine_hdc_is_compaq_wd_40mb(hdc) &&
+    if (!core_machine_hdc_selected_master(hdc) ||
+        (!core_machine_hdc_is_compaq_wd_40mb(hdc) && !core_machine_hdc_is_ibm_wd1003(hdc) &&
             (hdc->data.drive_head & 0x40u) != 0u &&
             !hdc->connect.config.lba28_supported)) {
         core_machine_hdc_fail(hdc, CORE_MACHINE_HDC_ERROR_ABORT);
@@ -419,22 +471,29 @@ static C_VOID core_machine_hdc_execute_command(core_machine_hdc *hdc, type_unsig
         core_machine_hdc_begin_write(hdc);
         return;
     }
-    if (core_machine_hdc_is_compaq_wd_40mb(hdc)) {
+    if (core_machine_hdc_is_compaq_wd_40mb(hdc) || core_machine_hdc_is_ibm_wd1003(hdc)) {
         if (command == CORE_MACHINE_HDC_COMMAND_INITIALIZE_DRIVE_PARAMETERS) {
             core_machine_hdc_complete(hdc);
             return;
         }
         if (command == CORE_MACHINE_HDC_COMMAND_EXECUTE_DIAGNOSTICS) {
+            core_machine_hdc_select_ibm_step_rate(hdc, 15u,
+                CORE_MACHINE_HDC_IBM_RESTORE_STEP_LIMIT);
             hdc->data.error = CORE_MACHINE_HDC_ERROR_DIAGNOSTIC_OK;
             core_machine_hdc_complete(hdc);
             return;
         }
-        if (command == CORE_MACHINE_HDC_COMMAND_VERIFY_SECTORS) {
+        if ((core_machine_hdc_is_ibm_wd1003(hdc) &&
+                (command & 0xfeu) == CORE_MACHINE_HDC_COMMAND_VERIFY_SECTORS) ||
+            (!core_machine_hdc_is_ibm_wd1003(hdc) &&
+                command == CORE_MACHINE_HDC_COMMAND_VERIFY_SECTORS)) {
             if (core_machine_hdc_load_sector(hdc)) core_machine_hdc_complete(hdc);
             return;
         }
         if ((command & CORE_MACHINE_HDC_COMMAND_RECALIBRATE_MASK) ==
             CORE_MACHINE_HDC_COMMAND_RECALIBRATE_VALUE) {
+            core_machine_hdc_select_ibm_step_rate(hdc, command & 0x0fu,
+                CORE_MACHINE_HDC_IBM_RESTORE_STEP_LIMIT);
             hdc->data.cylinder_low = 0u;
             hdc->data.cylinder_high = 0u;
             core_machine_hdc_complete(hdc);
@@ -442,6 +501,7 @@ static C_VOID core_machine_hdc_execute_command(core_machine_hdc *hdc, type_unsig
         }
         if ((command & CORE_MACHINE_HDC_COMMAND_SEEK_MASK) ==
             CORE_MACHINE_HDC_COMMAND_SEEK_VALUE) {
+            core_machine_hdc_select_ibm_step_rate(hdc, command & 0x0fu, 0u);
             cylinder = (type_unsigned_16)hdc->data.cylinder_low |
                 ((type_unsigned_16)hdc->data.cylinder_high << 8u);
             if (cylinder > 1023u) {
@@ -498,6 +558,7 @@ static type_status core_machine_hdc_port_read(C_VOID *opaque, type_unsigned_16 p
         *out_value = hdc->data.status;
         core_machine_hdc_clear_irq(hdc);
     } else if (port == hdc->connect.config.alternate_status_device_control_port) {
+        if (core_machine_hdc_is_ibm_wd1003(hdc)) return TYPE_STATUS_UNSUPPORTED;
         *out_value = hdc->data.status;
     } else if (port == hdc->connect.config.drive_address_port &&
         core_machine_hdc_is_compaq_wd_40mb(hdc)) {
@@ -549,6 +610,9 @@ static type_status core_machine_hdc_port_write(C_VOID *opaque, type_unsigned_16 
         hdc->data.drive_head = (type_unsigned_8)value;
     } else if (port == hdc->connect.config.status_command_port) {
         core_machine_hdc_capture_command(hdc, (type_unsigned_8)value);
+    } else if (port == hdc->connect.config.alternate_status_device_control_port &&
+        core_machine_hdc_is_ibm_wd1003(hdc)) {
+        hdc->data.fixed_disk_register = (type_unsigned_8)value & 0x08u;
     } else if (port == hdc->connect.config.alternate_status_device_control_port) {
         type_unsigned_8 device_control = (type_unsigned_8)value;
         type_bool reset_asserted = (device_control &

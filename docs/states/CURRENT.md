@@ -2,7 +2,26 @@
 
 ## Current Work
 
-**No active subtask.** T479 S4 is accepted: its [source ledger](../etc/evidence/t479-s4-ibm5170-fixed-disk-source-ledger.md) corrects 5170-339 to one IBM 30 MB fixed disk/adapter and fixes the finite IBM command/time universe. S5 is the bounded implementation receiver; current source still has the obsolete no-HDC descriptor until that S is admitted.
+## M5 T479 S5 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner's persistent queue-execution approval and requirement to support IBM 5160, IBM 5170, selected DeskPro 386 and `default-at` fixed disks; T479 S4 accepted at `f0545dc7`. |
+| Objective | Replace the false no-HDC IBM 5170-339 runtime declaration with one immutable IBM fixed-disk/diskette-adapter personality through the existing sole Core HDC owner, implementing the source-qualified normal CHS PIO route and its known L3 command/state/timing facts. |
+| Non-goals | No second HDC/media/CHS owner, ATA alias, runtime profile mutation, RLL, second disk, raw MFM, long/ECC transfer, physical format, recovery, rotation/drive-ready time, parity/NMI, firmware/media import, or guessed deadline. |
+| Reference Baseline | T479 S3 immutable personality contract; [S4 IBM source ledger](../etc/evidence/t479-s4-ibm5170-fixed-disk-source-ledger.md) rows A1--A15 and [gap ledger](../etc/evidence/t479-s4-ibm5170-fixed-disk-gap-ledger.md); T474 time owner; retained ATA and Compaq HDC behavior. |
+| Candidate Proposal | [PC fixed-disk controller standardization](../proposals/m5-at-fixed-disk-controller-standardization.md). |
+| Files And ABI Surface | `controller_interface.h`, `hdc.[ch]`, machine plan/port installation only if required by the IBM `3F6h` register, IBM 5170 descriptor/resolver/firmware composition, focused tests/CMake registration, evidence/history/status. |
+| Applicable Rules | Core is the sole mutable controller owner; VM media owns only bytes/persistence; profile provides one copied immutable declaration; public interfaces expose no mutable layout; primary IBM facts are normative and manual numeric step-rate/step-bound facts remain L3; remove obsolete no-HDC assertions and generic-ATA wording in the changed path. |
+| Verification | Focused IBM command/port/IRQ/CHS/geometry/step-rate tests; Model-339 composition and firmware/CMOS assertions; retained ATA and Model-40 HDC corpus; full `current-gates-gcc`; source/test line accounting and complete changed-mechanism sweep. |
+| Expected Markers | `M5:T479:S5:IBM5170-HDC:OK`, `M5:T479:S5:IBM5170-PROFILE:OK`, and `M5:T479:S5:IBM5170-TIMING:OK`. |
+| Asset Needs | Existing source citations and project-owned tests only; no third-party source, firmware, disk image, trace or protected asset import. |
+| Reporting Requirements | Map A1--A15 before/after to code/test/residual; record every command admitted or physically blocked; identify one retained controller/media owner, deleted no-HDC/ATA wording, source/test added/removed/net lines, and any exact receiver for residuals. |
+| Stop Conditions | Stop if implementing a command requires physical-sector/MFM/ECC or a missing drive signal/timing fact, if the current time axis cannot represent a manual step-rate without inventing a conversion, or if a second state owner would be needed. Record and retain the exact boundary rather than synthesize it. |
+| Exit Criteria | Model 339 has one immutable IBM Type-3 fixed-disk configuration; normal boot/read/write/verify/reset/seek/diagnostic/parameter behavior and IBM port/IRQ semantics are source-proven and regressions pass; known manual timing facts are represented without a guess; all non-logical media facts are explicit residuals; no retained default-at/Model-40 regression. |
+| Original Owner Request | Support IBM 5160, IBM 5170, the selected DeskPro 386 configuration and `default-at` hard disks through a minimal correct Core HDC boundary. |
+| Similar-Issue Sweep | Every HDC protocol discriminator/config validator, `1F0h`--`1F7h`/`3F6h` route, command/status/error/IRQ/DRQ phase, media geometry binding, Model-339 resolver/CMOS/INT13 path, HDC tests, and all generic text calling an IBM path ATA. |
 
 ## Current Technical Baseline
 
@@ -20,11 +39,11 @@
   [closure audit](../etc/evidence/t386-s29-functional-closure-audit.md) fixes
   HDC current-gate coverage and transfers board, firmware and physical work.
 - **Model-339 readiness:** T383 S1 accepts the current runnable source graph
-  under the frozen deterministic event-and-bus L3 contract. T479 S4 has found
-  that its retained no-fixed-disk premise is false: IBM identifies 5170-339 as
-  including one 30 MB fixed disk and adapter. T479 S4 has accepted that source
-  correction; the runnable descriptor remains no-HDC only until its admitted
-  S5 implementation replaces it.
+  under the frozen deterministic event-and-bus L3 contract. T479 S5 has
+  replaced the false no-fixed-disk declaration with its one IBM Type-3
+  WD1003/ST-506 personality. The normal logical CHS/PIO path and exact
+  step-selector state are present; physical MFM/ECC/mechanical/parity behavior
+  remains explicitly outside this route.
 - **T285 display implementation:** `INT 10h` modes `0Dh`, `0Eh` and `10h`
   reach the VADP-owned planar frame path through real controller ports; the
   copied-frame consumer boundary has no BIOS mode-state dependency.

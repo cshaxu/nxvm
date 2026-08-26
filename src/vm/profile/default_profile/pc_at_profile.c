@@ -124,6 +124,7 @@ ibm_5170_model_339_firmware_services[] = {
     { VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_FDC_IRQ6, 0x0eu },
     { VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_FDC_INT13, 0x13u },
     { VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_FDC_INT40, 0x40u },
+    { VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_HDC_INT13, 0x13u },
     { VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_PIT_POST, 0u },
     { VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_PIC_POST, 0u }
 };
@@ -157,7 +158,7 @@ static const vm_profile_default_pc_at_descriptor default_pc_at_descriptor = {
             0x08u, 0x09u, 0x0au, 0x0bu, 0x0cu, 0x0du, 0x0eu, 0x0fu,
             0x01u, 0x00u, 0x0fu, 0x00u, 0x00u } },
     16u * 1024u * 1024u,
-    TYPE_FALSE,
+    TYPE_TRUE,
     0x9fc0u,
     TYPE_TRUE,
     TYPE_FALSE,
@@ -221,20 +222,25 @@ static const vm_profile_default_pc_at_descriptor ibm_5170_model_339_descriptor =
     512u * 1024u,
     TYPE_TRUE,
     0x7000u,
-    TYPE_FALSE,
+    TYPE_TRUE,
     TYPE_TRUE,
     TYPE_FALSE,
     TYPE_TRUE,
     VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_SLOT_IBM_5170_REV3_ABSTRACT,
     TYPE_TRUE,
     { 0xfffffff0u, 0x000ffff0u, 16u, 0xf000u, 0xfff0u },
-    { 0x21u, 0x0200u, 0x40u, 0x00u, 0x00u, 0u, 0x80u },
+    { 0x21u, 0x0200u, 0x40u, 0x30u, 0x00u, 0u, 0x80u },
     default_pc_at_port_leaves,
     sizeof(default_pc_at_port_leaves) / sizeof(default_pc_at_port_leaves[0]),
     default_pc_at_routes,
     sizeof(default_pc_at_routes) / sizeof(default_pc_at_routes[0]),
-    { CORE_MACHINE_HDC_PROTOCOL_INVALID,
-        0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, TYPE_FALSE },
+    { .protocol = CORE_MACHINE_HDC_PROTOCOL_IBM_WD1003_ST506,
+        .data_port = 0x01f0u, .error_features_port = 0x01f1u,
+        .sector_count_port = 0x01f2u, .sector_number_port = 0x01f3u,
+        .cylinder_low_port = 0x01f4u, .cylinder_high_port = 0x01f5u,
+        .drive_head_port = 0x01f6u, .status_command_port = 0x01f7u,
+        .alternate_status_device_control_port = 0x03f6u, .irq = 14u,
+        .lba28_supported = TYPE_FALSE, .clock_ticks_per_second = 8000000u },
     ibm_5170_model_339_firmware_services,
     sizeof(ibm_5170_model_339_firmware_services) /
         sizeof(ibm_5170_model_339_firmware_services[0])
@@ -675,15 +681,27 @@ C_INT vm_profile_default_pc_at_descriptor_is_valid(
             descriptor->default_memory_bytes == 512u * 1024u &&
             descriptor->unpopulated_extended_memory &&
             descriptor->fdc_bounce_segment == 0x7000u &&
-            !descriptor->hdc_present && descriptor->planar_parity_present &&
+            descriptor->hdc_present && descriptor->planar_parity_present &&
             !descriptor->ega_present && descriptor->cga_vram_present &&
             descriptor->firmware_slot ==
                 VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_SLOT_IBM_5170_REV3_ABSTRACT &&
             descriptor->diskette_drive_a_field_upgrade &&
             descriptor->cmos.base_memory_kib == 0x0200u &&
             descriptor->cmos.floppy_type == 0x40u &&
-            descriptor->cmos.fixed_disk_type == 0u &&
+            descriptor->cmos.fixed_disk_type == 0x30u &&
             descriptor->cmos.fixed_disk_type_extended_0 == 0u &&
+            descriptor->hdc.protocol == CORE_MACHINE_HDC_PROTOCOL_IBM_WD1003_ST506 &&
+            descriptor->hdc.data_port == 0x01f0u &&
+            descriptor->hdc.error_features_port == 0x01f1u &&
+            descriptor->hdc.sector_count_port == 0x01f2u &&
+            descriptor->hdc.sector_number_port == 0x01f3u &&
+            descriptor->hdc.cylinder_low_port == 0x01f4u &&
+            descriptor->hdc.cylinder_high_port == 0x01f5u &&
+            descriptor->hdc.drive_head_port == 0x01f6u &&
+            descriptor->hdc.status_command_port == 0x01f7u &&
+            descriptor->hdc.alternate_status_device_control_port == 0x03f6u &&
+            descriptor->hdc.irq == 14u && !descriptor->hdc.lba28_supported &&
+            descriptor->hdc.clock_ticks_per_second == 8000000u &&
             descriptor->firmware_services != STD_NULL &&
             descriptor->firmware_service_count ==
                 sizeof(ibm_5170_model_339_firmware_services) /

@@ -18,6 +18,7 @@ typedef struct t_pic t_pic;
 
 #define CORE_MACHINE_HDC_ERROR_ABORT 0x04u
 #define CORE_MACHINE_HDC_ERROR_ID_NOT_FOUND 0x10u
+#define CORE_MACHINE_HDC_ERROR_DIAGNOSTIC_OK 0x01u
 
 #define CORE_MACHINE_HDC_DEVICE_CONTROL_NIEN 0x02u
 #define CORE_MACHINE_HDC_DEVICE_CONTROL_SRST 0x04u
@@ -39,6 +40,12 @@ typedef struct core_machine_hdc_data {
     type_unsigned_8 cylinder_low;
     type_unsigned_8 cylinder_high;
     type_unsigned_8 drive_head;
+    /* IBM's fixed-disk register at 3F6 supplies head bit 3; it is not ATA
+     * device control and must not alter the task-file drive-select bit. */
+    type_unsigned_8 fixed_disk_register;
+    type_unsigned_8 step_rate_selector;
+    type_unsigned_16 step_pulse_limit;
+    type_unsigned_32 step_rate_ticks;
     type_unsigned_8 status;
     type_unsigned_8 device_control;
     type_bool irq_pending;
