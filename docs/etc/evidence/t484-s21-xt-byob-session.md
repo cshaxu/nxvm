@@ -24,6 +24,9 @@ provenance, mapping and ROM materialization.  Model-40 retains its distinct
 even/odd interleave mapping but no longer retains a duplicate SHA-256 reader.
 XT ROM storage is allocated only for an XT session and freed with that session;
 the VM session object no longer carries an unconditional 72 KiB XT buffer.
+The shared replacement deletes 120 lines from the former Model-40 loader and
+retains no parallel integrity implementation; the added code is the distinct
+XT manifest/mapping and product-request behavior required by this S.
 
 Focused verification passed:
 
