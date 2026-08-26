@@ -2,26 +2,7 @@
 
 ## Current Work
 
-## M5 T478 S1 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | New |
-| Admission And Approval | Owner approved the next ordered profile task on 2026-08-25, after T477 closure: migrate `default-at` through the established 5170 resolver route. |
-| Objective | Freeze every current Default-AT construction field, its difference from `pc-at-5170`, real dynamic owner, and finite parity proof before any resolver or session change. |
-| Non-goals | No resolver-kernel change, runtime behavior change, YAML, asset, timing-algorithm, XT, generic-386, or L4 work. |
-| Reference Baseline | T475 resolver closure, T476 5170 root closure, T477 DeskPro closure, [profile design](../etc/architecture/vm-profile-resolution-design.md), current Default-AT source and existing smokes. |
-| Candidate Proposal | [Default-AT 5170-derived profile](../proposals/m5-default-at-5170-derived-profile.md). |
-| Files And ABI Surface | T478 history, S1 evidence and status only; inspect `src/vm/profile/default_profile/`, `src/vm/composition/session/` and relevant tests without changing runtime ABI. |
-| Applicable Rules | Documentation/Execution rules: one current packet, finite evidence-led scope and truthful status. Architecture/coding changes are not applicable because S1 adds no product code; its ledger must nevertheless preserve the Core/VM single-owner boundary. |
-| Verification | Source-to-ledger sweep for all Default-AT descriptor/materialization and session call sites; compare every declarative field to the copied 5170 root; enumerate existing focused smokes; run documentation governance. |
-| Expected Markers | `M5:T478:S1:DEFAULT-AT-DELTA-LEDGER:OK` and `M5:T478:S1:DEFAULT-AT-PARITY-UNIVERSE:OK`. |
-| Asset Needs | None; no firmware, guest media, external source, or third-party import. |
-| Reporting Requirements | Record field dispositions, distinct dynamic owners, exact source/test sweep, next resolver boundary, and that no code path or artifact changed. |
-| Stop Conditions | Stop and return for approval if a Default-AT fact lacks a neutral Core contract, changes frozen behavior, requires profile-kernel expansion, or cannot be classified as immutable declaration versus dynamic session state. |
-| Exit Criteria | Complete finite ledger has no unclassified field; parity universe and S2 one-route/deletion boundary are named; documentation governance passes; review confirms documentation-only change. |
-| Original Owner Request | Connect profiles in order through correct Core/VM boundaries, then support Standard and Turbo without parallel state or invented timing. |
-| Similar-Issue Sweep | Compare every `vm_profile_default_pc_at_*` descriptor/materialization use plus session profile branching; classify each production hit as root, Default-AT child, shared helper, or dynamic session owner. |
+**No active subtask.**
 
 ## Current Technical Baseline
 
@@ -56,6 +37,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T478 S1 | Accepted: the [Default-AT delta ledger](../etc/evidence/t478-s1-default-at-delta-ledger.md) classifies every descriptor/session field, dynamic owner and finite parity corpus; S2 is limited to one child resolver path using existing policy representation. |
 | T477 | Closed: DeskPro is an immutable `pc-at-5170` child with one copied Core-plan materialization path; the Model-40 session retains only dynamic resources. [Closure audit](../etc/evidence/t477-s4-closure-audit.md) records frozen parity, the 294-target gate and stripped Release 0477. |
 | T476 | Closed: IBM 5170 sessions consume one copied `pc-at-5170` root and one Core-plan materialization path; the former duplicate exception aggregate is retired while its independent owners remain. [Closure audit](../etc/evidence/t476-s4-closure-audit.md) records the 294-target gate and stripped Release 0476. |
 | T475 | Closed: one VM-only immutable resolver copies parent-patched values and per-field provenance to the existing Core-plan API, rejects invalid ownership/bindings/windows/routes/contracts/policy, and leaves current routes for ordered profile migrations. [Closure audit](../etc/evidence/t475-s3-integration-closure-audit.md) records the 294-target gate and stripped Release 0475. |
@@ -63,7 +45,6 @@
 | T473 | Withdrawn before implementation: the profile-first time-axis admission was split by Td S149 so machine-neutral Core time integration precedes all profile connections. Its identifier and proposal are retained in history; no runtime or artifact changed. |
 | T472 | Closed: Model-339 has a retained L2 macro rate; Standard uses it without host-generated guest time, Turbo skips only its wait, and unqualified profiles no longer take a fixed HLT sleep. [Closure audit](../etc/evidence/t472-s3-integration-closure-audit.md) records Release 0472. |
 | T471 | Closed: Standard compares copied completed Core time with a monotonic host budget and waits only for a positive lead; Turbo omits that wait and HLT deadline advancement is budget-gated. The [closure audit](../etc/evidence/t471-s3-integration-closure-audit.md) records Release 0471. |
-| T470 | Closed: S1--S6 establish one copied Core physical-axis contract, retain every current profile at unqualified/zero, separate Standard's L2 HLT backoff from Turbo's no-wait behavior, and record stripped Release 0470 in the [closure audit](../etc/evidence/t470-s6-integration-closure-audit.md). |
 
 ## Recent Governance
 
