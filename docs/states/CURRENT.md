@@ -2,26 +2,7 @@
 
 ## Current Work
 
-## M5 T479 S8 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner's persistent queue-execution approval and requirement to support IBM 5160, IBM 5170, selected DeskPro 386 and `default-at` fixed disks; T479 S7 accepted as a source-backed ESDI profile-receiver transfer at `adfb4c51`. |
-| Objective | Reconcile every T479 personality row, prove one Core HDC/media ownership boundary, run the retained controller/profile regressions and full current gate, preserve Release 0479 identity, and close only the exact 5160/ESDI profile and physical-media residuals. |
-| Non-goals | No new HDC personality, machine profile, compatibility shim, physical-media model, ROM/media import, timing estimate, YAML selection, or release version change. |
-| Reference Baseline | Accepted T479 S1--S7 ledgers; S5 source implementation/release evidence; current Core/VM source graph and retained controller/profile regression corpus. |
-| Candidate Proposal | [PC fixed-disk controller standardization](../proposals/m5-at-fixed-disk-controller-standardization.md). |
-| Files And ABI Surface | No runtime/ABI change unless a closure audit finds an in-scope contradiction; closure evidence/history/status and existing build outputs only. |
-| Applicable Rules | One Core HDC state owner and VM media-byte owner; source-backed personality identity; copied immutable profile selection; no false support or artifact claim; documentation and release rules. |
-| Verification | Inspect source ownership and every S1--S7 ledger disposition; focused ATA/Compaq/IBM 5170 HDC and profile tests; documentation governance; `cmake --build --preset current-gates-gcc`; verify the copied stripped `nxvm_0_5_0479.exe` SHA-256 against CURRENT. |
-| Expected Markers | `M5:T479:S8:OWNER:OK`, `M5:T479:S8:REGRESSIONS:OK`, `M5:T479:S8:GATE:OK`, and `M5:T479:S8:RELEASE:OK`. |
-| Asset Needs | No new assets; no third-party source, firmware, disk image, trace or protected asset import. |
-| Reporting Requirements | Record retained source paths, focused tests/gate result, artifact hash/identity, code line accounting, all exact transfers, and evidence that no generic ESDI/Xebec/profile path was introduced. |
-| Stop Conditions | Stop for an in-scope source or ownership contradiction; do not hide it with a documentation closure. Transfer only the already ledged 5160/ESDI profile receivers and physical media/time boundaries. |
-| Exit Criteria | All implemented ATA, Compaq and IBM 5170 rows retain one owner and pass their corpus; 5160 and WD1007A-WAH have source-backed explicit receivers rather than false support; full gate and Release 0479 hash pass; T479 closure audit is complete. |
-| Original Owner Request | Support IBM 5160, IBM 5170, the selected DeskPro 386 configuration and `default-at` hard disks through a minimal correct Core HDC boundary. |
-| Similar-Issue Sweep | All tracked HDC protocol discriminators/config validators, controller port routes, command/status/error/IRQ/DRQ phases, media geometry bindings, resolver/CMOS/firmware receivers, HDC tests, build gates and generic text calling a distinct controller ATA or treating ESDI/Xebec as a selected runnable machine. |
+**Idle.**
 
 ## Current Technical Baseline
 
@@ -58,7 +39,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T479 S4 | Accepted: IBM primary material corrects Model 339 to one 30 MB Type-3 fixed disk/adapter; its finite task-file, command, IRQ14, `3F6h`, geometry and step-rate ledger transfers one bounded Core/profile implementation to S5, while physical-media residuals remain explicit. |
+| T479 | Closed: one Core HDC/media boundary retains explicit ATA, Compaq and IBM WD1003 personalities; seven focused regressions, the 294-target gate and stripped Release 0479 hash pass. IBM 5160/Xebec and WD1007A-WAH ESDI contracts transfer only to their missing immutable profile receivers. [Closure audit](../etc/evidence/t479-s8-closure-audit.md). |
 | T478 | Closed: Default-AT is an immutable `pc-at-5170` child and all three AT profiles have one resolver-to-copied-Core-input route. [Closure audit](../etc/evidence/t478-s4-closure-audit.md) records frozen parity, the 294-target gate, and stripped Release 0478. |
 | T477 | Closed: DeskPro is an immutable `pc-at-5170` child with one copied Core-plan materialization path; the Model-40 session retains only dynamic resources. [Closure audit](../etc/evidence/t477-s4-closure-audit.md) records frozen parity, the 294-target gate and stripped Release 0477. |
 | T476 | Closed: IBM 5170 sessions consume one copied `pc-at-5170` root and one Core-plan materialization path; the former duplicate exception aggregate is retired while its independent owners remain. [Closure audit](../etc/evidence/t476-s4-closure-audit.md) records the 294-target gate and stripped Release 0476. |

@@ -43,7 +43,6 @@ linked proposal identifies its finite implementation-admission baseline and
 exclusive earliest capability batch; a later candidate may consume a registered
 contract but does not redefine its L3 or Core/VM boundary.
 
-1. [PC fixed-disk controller standardization](../proposals/m5-at-fixed-disk-controller-standardization.md).
 1. [VADP IBM VGA L3 capability](../proposals/m5-vadp-ibm-vga-l3-capability.md).
 1. [Global function and L3 interface completeness audit](../proposals/m5-global-function-and-l3-interface-completeness-audit.md).
 1. [VM session profile YAML cutover](../proposals/m5-vm-session-profile-yaml-cutover.md).
