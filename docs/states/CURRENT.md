@@ -61,8 +61,6 @@
 | Task | Compact result |
 | --- | --- |
 | T484 | Closed: IBM 5160-268 now has one immutable 8088/profile plan, XT PPI/FDC/CGA/Xebec functional owners and one typed external-ROM BYOB product route; all remaining board/device timing transfers to T485. [Closure audit](../etc/evidence/t484-s22-xt-functional-closure-audit.md). |
-| T484 S14 | Accepted: X1--X17 now have one source-bounded Xebec Core receiver: byte-stack/command state and DMA callbacks stay in the sole HDC owner; ATA reuse, selected geometry, ROM, physical behavior and guessed hardware status remain explicit transfers. [Evidence](../etc/evidence/t484-s14-xebec-logical-implementation-brief.md). |
-| T484 S2 | Accepted: rendered Intel/IBM evidence permits shared 8086 semantics but requires a Core-owned four-byte 8088 queue policy and forbids a false 8086 alias. [Evidence](../etc/evidence/t484-s2-xt-8088-compatibility-matrix.md). |
 | T482 | Closed: one strict root YAML request reaches the sole `SESSION OPEN` authority and resolver without CLI re-encoding; 296/296 current-gate tests and stripped Release 0480 pass. [Closure audit](../etc/evidence/t482-s4-closure-audit.md). |
 | T483 | Closed: the IBM 5160-268 BOM, complete current-owner capability matrix and Manual-L3/unresolved timing partition establish one functional and one timing receiver without implying an XT runtime path. [Closure evidence](../etc/evidence/t483-s3-xt-timing-source-partition.md). |
 | T481 | Closed: one global CPU/controller/Core-time/profile/VM audit leaves no unrecorded duplicate owner, host-to-Core tick injection or false capability claim; residuals have one ordered receiver. [Closure audit](../etc/evidence/t481-s5-global-reconciliation.md). |
