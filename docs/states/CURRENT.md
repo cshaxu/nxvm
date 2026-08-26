@@ -2,7 +2,26 @@
 
 ## Current Work
 
-**Idle.**
+## M5 T476 S1 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New |
+| Admission And Approval | Owner approved the fixed implementation order on 2026-08-25: after Core time and resolver boundaries, connect IBM 5170 first, then DeskPro 386 and default-at. |
+| Objective | Freeze the complete current IBM 5170 Model-339 construction, configuration and observable-parity universe as the first `pc-at-5170` root migration ledger, with every field, Core input and current direct route mapped before implementation. |
+| Non-goals | No root registration/cutover, DeskPro/default-at migration, YAML/CLI change, Core timing/device behavior, firmware/media import, physical-time/L4 claim, source import or unrelated cleanup. |
+| Reference Baseline | Closed T474 Core time boundary; closed T475 resolver kernel and Release 0475; [PC/AT 5170 root proposal](../proposals/m5-pc-at-5170-root-profile-normalization.md); Model-339 descriptor, session composition and accepted controller timing evidence. |
+| Candidate Proposal | [PC/AT 5170 root profile normalization](../proposals/m5-pc-at-5170-root-profile-normalization.md). |
+| Files And ABI Surface | Ledger/evidence, Current/status records and existing source/test inventory only. This S adds no runtime interface, profile registration, artifact or behavior. |
+| Applicable Rules | `docs/design/ARCHITECTURE.md`, `docs/design/CODING.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`, `docs/rules/DOCUMENT.md`, `docs/rules/EXECUTION.md`: VM owns profile/root/provenance; Core receives copied neutral values; ledger completeness; exact parity scope; no duplicate production path or profile name in Core. |
+| Verification | Manual sweep of Model-339 descriptor, CPU/core plan materialization, topology/device/firmware/media/session setup, current focused Model-339 tests and Core observations; reconcile each field to T475 resolver group; documentation governance and `git diff --check`. |
+| Expected Markers | `M5:T476:S1:IBM5170-ROOT-LEDGER:OK` and `M5:T476:S1:IBM5170-PARITY-UNIVERSE:OK`. |
+| Asset Needs | Existing repository source and accepted evidence only; no guest media, firmware payload, external emulator code or machine-local path enters the repository. |
+| Reporting Requirements | Record all root fields, current source owner, provenance/L3-L2 disposition, resolver group, parity observation and S2 receiver; list every retained direct route and exact migration deletion target. |
+| Stop Conditions | Stop for owner direction if a required Model-339 fact cannot be represented by the resolver's immutable copied values, if preserving behavior needs a machine name in Core, or if a required source/provenance fact is absent. |
+| Exit Criteria | Every selected Model-339 construction/observable field has a ledger disposition; all current direct production routes are mapped; parity checks are finite and source-backed; implementation receiver is bounded; governance checks pass. |
+| Original Owner Request | Establish correct whole-machine L3 structure and interfaces first, then connect IBM 5170, DeskPro 386 and default-at in that order, without layered or duplicate paths. |
+| Similar-Issue Sweep | Sweep all Model-339 descriptor selection, session profile selection, Core config/plan topology/device/firmware construction, existing 5170 tests, timing/controller evidence and resolver fields for duplicated machine identity, mutable leak, direct Core branch, unsupported resolver input or unmatched parity observation. |
 
 ## Current Technical Baseline
 
