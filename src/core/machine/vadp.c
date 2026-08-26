@@ -1240,6 +1240,101 @@ static C_VOID core_machine_vadp_write_sequencer_data(t_port *port,
     }
 }
 
+static C_VOID core_machine_vadp_read_vga_dac_mask(t_port *port,
+    type_unsigned_16 port_id, C_VOID *owner)
+{
+    const t_vadp *adapter = (const t_vadp *)owner;
+
+    (C_VOID)port_id;
+    if (port != STD_NULL) {
+        port->data.ioByte = adapter != STD_NULL && adapter->data.vga_configured ?
+            adapter->data.vga_dac_mask : 0u;
+    }
+}
+
+static C_VOID core_machine_vadp_write_vga_dac_mask(t_port *port,
+    type_unsigned_16 port_id, C_VOID *owner)
+{
+    t_vadp *adapter = (t_vadp *)owner;
+
+    (C_VOID)port_id;
+    if (port == STD_NULL || adapter == STD_NULL || !adapter->data.vga_configured) return;
+    if (adapter->data.vga_dac_mask != port->data.ioByte) {
+        adapter->data.vga_dac_mask = port->data.ioByte;
+        core_machine_vadp_mark_dirty(adapter);
+    }
+}
+
+static C_VOID core_machine_vadp_read_vga_dac_read_index(t_port *port,
+    type_unsigned_16 port_id, C_VOID *owner)
+{
+    const t_vadp *adapter = (const t_vadp *)owner;
+
+    (C_VOID)port_id;
+    if (port != STD_NULL) {
+        port->data.ioByte = adapter != STD_NULL && adapter->data.vga_configured ?
+            adapter->data.vga_dac_read_index : 0u;
+    }
+}
+
+static C_VOID core_machine_vadp_write_vga_dac_read_index(t_port *port,
+    type_unsigned_16 port_id, C_VOID *owner)
+{
+    t_vadp *adapter = (t_vadp *)owner;
+
+    (C_VOID)port_id;
+    if (port == STD_NULL || adapter == STD_NULL || !adapter->data.vga_configured) return;
+    adapter->data.vga_dac_read_index = port->data.ioByte;
+    adapter->data.vga_dac_read_component = 0u;
+}
+
+static C_VOID core_machine_vadp_write_vga_dac_write_index(t_port *port,
+    type_unsigned_16 port_id, C_VOID *owner)
+{
+    t_vadp *adapter = (t_vadp *)owner;
+
+    (C_VOID)port_id;
+    if (port == STD_NULL || adapter == STD_NULL || !adapter->data.vga_configured) return;
+    adapter->data.vga_dac_write_index = port->data.ioByte;
+    adapter->data.vga_dac_write_component = 0u;
+}
+
+static C_VOID core_machine_vadp_read_vga_dac_data(t_port *port,
+    type_unsigned_16 port_id, C_VOID *owner)
+{
+    t_vadp *adapter = (t_vadp *)owner;
+
+    (C_VOID)port_id;
+    if (port == STD_NULL || adapter == STD_NULL || !adapter->data.vga_configured) return;
+    port->data.ioByte = adapter->data.vga_dac[adapter->data.vga_dac_read_index]
+        [adapter->data.vga_dac_read_component];
+    if (++adapter->data.vga_dac_read_component == 3u) {
+        adapter->data.vga_dac_read_component = 0u;
+        ++adapter->data.vga_dac_read_index;
+    }
+}
+
+static C_VOID core_machine_vadp_write_vga_dac_data(t_port *port,
+    type_unsigned_16 port_id, C_VOID *owner)
+{
+    t_vadp *adapter = (t_vadp *)owner;
+    type_unsigned_8 value;
+
+    (C_VOID)port_id;
+    if (port == STD_NULL || adapter == STD_NULL || !adapter->data.vga_configured) return;
+    value = port->data.ioByte & 0x3fu;
+    if (adapter->data.vga_dac[adapter->data.vga_dac_write_index]
+        [adapter->data.vga_dac_write_component] != value) {
+        adapter->data.vga_dac[adapter->data.vga_dac_write_index]
+            [adapter->data.vga_dac_write_component] = value;
+        core_machine_vadp_mark_dirty(adapter);
+    }
+    if (++adapter->data.vga_dac_write_component == 3u) {
+        adapter->data.vga_dac_write_component = 0u;
+        ++adapter->data.vga_dac_write_index;
+    }
+}
+
 static C_VOID core_machine_vadp_register_cga_ports(t_vadp *adapter, t_port *port)
 {
     core_machine_port_add_write(port, CORE_MACHINE_VADP_PORT_CRTC_INDEX,
@@ -1382,6 +1477,36 @@ type_status core_machine_vadp_configure_ega_personality(t_vadp *adapter,
     return TYPE_STATUS_OK;
 }
 
+type_status core_machine_vadp_configure_vga(t_vadp *adapter, t_port *port)
+{
+    if (adapter == STD_NULL || port == STD_NULL || adapter->data.vga_configured ||
+        adapter->data.ega_personality != CORE_MACHINE_VADP_EGA_PERSONALITY_GENERIC ||
+        !adapter->data.ega_sequencer_configured ||
+        !adapter->data.ega_controller_configured) {
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
+    core_machine_port_add_read(port, CORE_MACHINE_VADP_PORT_VGA_DAC_MASK,
+        core_machine_vadp_read_vga_dac_mask, adapter);
+    core_machine_port_add_write(port, CORE_MACHINE_VADP_PORT_VGA_DAC_MASK,
+        core_machine_vadp_write_vga_dac_mask, adapter);
+    core_machine_port_add_read(port, CORE_MACHINE_VADP_PORT_VGA_DAC_READ_INDEX,
+        core_machine_vadp_read_vga_dac_read_index, adapter);
+    core_machine_port_add_write(port, CORE_MACHINE_VADP_PORT_VGA_DAC_READ_INDEX,
+        core_machine_vadp_write_vga_dac_read_index, adapter);
+    core_machine_port_add_write(port, CORE_MACHINE_VADP_PORT_VGA_DAC_WRITE_INDEX,
+        core_machine_vadp_write_vga_dac_write_index, adapter);
+    core_machine_port_add_read(port, CORE_MACHINE_VADP_PORT_VGA_DAC_DATA,
+        core_machine_vadp_read_vga_dac_data, adapter);
+    core_machine_port_add_write(port, CORE_MACHINE_VADP_PORT_VGA_DAC_DATA,
+        core_machine_vadp_write_vga_dac_data, adapter);
+    if (core_machine_port_registration_status(port) != TYPE_STATUS_OK) {
+        return core_machine_port_registration_status(port);
+    }
+    adapter->data.vga_configured = TYPE_TRUE;
+    adapter->data.vga_dac_mask = 0xffu;
+    return TYPE_STATUS_OK;
+}
+
 C_INT core_machine_vadp_cecg_config_is_valid(
     const core_machine_vadp_cecg_config *config)
 {
@@ -1423,6 +1548,7 @@ C_VOID core_machine_vadp_reset(t_vadp *adapter)
     type_bool ega_controller_configured;
     type_bool ega_external_configured;
     type_bool ega_planar_enabled;
+    type_bool vga_configured;
     type_virtual_address ega_planar_vram;
 
     if (adapter == STD_NULL) return;
@@ -1440,6 +1566,7 @@ C_VOID core_machine_vadp_reset(t_vadp *adapter)
     ega_controller = adapter->data.ega_controller;
     ega_controller_configured = adapter->data.ega_controller_configured;
     ega_planar_enabled = adapter->data.ega_planar_enabled;
+    vga_configured = adapter->data.vga_configured;
     ega_planar_vram = adapter->data.ega_planar_vram;
     crtc_initialized = adapter->data.crtc_initialized;
     STD_MEMCPY(crtc, adapter->data.crtc, sizeof(crtc));
@@ -1478,6 +1605,8 @@ C_VOID core_machine_vadp_reset(t_vadp *adapter)
     adapter->data.ega_controller_configured = ega_controller_configured;
     core_machine_vadp_reset_ega_controllers(adapter);
     adapter->data.ega_planar_enabled = ega_planar_enabled;
+    adapter->data.vga_configured = vga_configured;
+    if (vga_configured) adapter->data.vga_dac_mask = 0xffu;
     adapter->data.ega_planar_vram = ega_planar_vram;
     if (core_machine_vadp_cga_logical_raster_active(adapter)) {
         adapter->data.raster_phase = 0u;

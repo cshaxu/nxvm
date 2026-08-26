@@ -46,6 +46,10 @@ extern "C" {
 #define CORE_MACHINE_VADP_PORT_COLOR 0x03d9u
 #define CORE_MACHINE_VADP_PORT_STATUS 0x03dau
 #define CORE_MACHINE_VADP_PORT_EGA_MISCELLANEOUS_OUTPUT 0x03c2u
+#define CORE_MACHINE_VADP_PORT_VGA_DAC_MASK 0x03c6u
+#define CORE_MACHINE_VADP_PORT_VGA_DAC_READ_INDEX 0x03c7u
+#define CORE_MACHINE_VADP_PORT_VGA_DAC_WRITE_INDEX 0x03c8u
+#define CORE_MACHINE_VADP_PORT_VGA_DAC_DATA 0x03c9u
 #define CORE_MACHINE_VADP_PORT_EGA_INPUT_STATUS_0 0x03c2u
 #define CORE_MACHINE_VADP_PORT_EGA_FEATURE_CONTROL_MONO 0x03bau
 #define CORE_MACHINE_VADP_PORT_EGA_FEATURE_CONTROL_COLOR 0x03dau
@@ -84,6 +88,13 @@ typedef struct t_vadp_data {
     type_bool attribute_display_enabled;
     type_bool ega_status_diagnostic_high;
     type_bool ega_controller_configured;
+    type_bool vga_configured;
+    type_unsigned_8 vga_dac_mask;
+    type_unsigned_8 vga_dac_read_index;
+    type_unsigned_8 vga_dac_write_index;
+    type_unsigned_8 vga_dac_read_component;
+    type_unsigned_8 vga_dac_write_component;
+    type_unsigned_8 vga_dac[CORE_MACHINE_DISPLAY_PALETTE_ENTRIES][3u];
     type_bool ega_planar_enabled;
     type_virtual_address ega_planar_vram;
     type_unsigned_8 ega_latches[CORE_MACHINE_VADP_EGA_PLANES];
@@ -132,6 +143,7 @@ C_VOID core_machine_vadp_initialize(t_vadp *adapter, t_port *port);
 C_VOID core_machine_vadp_configure_ega_ports(t_vadp *adapter, t_port *port);
 type_status core_machine_vadp_configure_ega_personality(t_vadp *adapter,
     t_port *port, core_machine_vadp_ega_personality personality);
+type_status core_machine_vadp_configure_vga(t_vadp *adapter, t_port *port);
 C_INT core_machine_vadp_cecg_config_is_valid(
     const core_machine_vadp_cecg_config *config);
 type_status core_machine_vadp_configure_cecg(t_vadp *adapter,

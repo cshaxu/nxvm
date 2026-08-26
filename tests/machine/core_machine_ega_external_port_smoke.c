@@ -44,10 +44,13 @@ C_INT main(C_VOID)
         &sequencer) != TYPE_STATUS_OK ||
         core_machine_vadp_configure_ega_controllers(&vadp, &controllers) !=
         TYPE_STATUS_OK || core_machine_vadp_configure_ega_personality(&vadp,
-        &port, CORE_MACHINE_VADP_EGA_PERSONALITY_GENERIC) != TYPE_STATUS_OK;
+        &port, CORE_MACHINE_VADP_EGA_PERSONALITY_GENERIC) != TYPE_STATUS_OK ||
+        core_machine_vadp_configure_vga(&vadp, &port) != TYPE_STATUS_OK;
     core_machine_vadp_reset(&vadp);
     failed |= !core_machine_port_has_read(&port,
         CORE_MACHINE_VADP_PORT_EGA_INPUT_STATUS_0) ||
+        !core_machine_port_has_read(&port, CORE_MACHINE_VADP_PORT_VGA_DAC_MASK) ||
+        !core_machine_port_has_write(&port, CORE_MACHINE_VADP_PORT_VGA_DAC_DATA) ||
         !core_machine_port_has_write(&port,
         CORE_MACHINE_VADP_PORT_EGA_MISCELLANEOUS_OUTPUT) ||
         !core_machine_port_has_read(&port, CORE_MACHINE_VADP_PORT_MONO_STATUS) ||
@@ -74,6 +77,19 @@ C_INT main(C_VOID)
         0x02u);
     failed |= vadp.data.ega_feature_control != 0x02u;
 
+    core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_VGA_DAC_WRITE_INDEX, 2u);
+    core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_VGA_DAC_DATA, 0x7fu);
+    core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_VGA_DAC_DATA, 0x15u);
+    core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_VGA_DAC_DATA, 0x2au);
+    core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_VGA_DAC_READ_INDEX, 2u);
+    failed |= core_machine_port_read(&port, CORE_MACHINE_VADP_PORT_VGA_DAC_DATA) !=
+        0x3fu || core_machine_port_read(&port, CORE_MACHINE_VADP_PORT_VGA_DAC_DATA) !=
+        0x15u || core_machine_port_read(&port, CORE_MACHINE_VADP_PORT_VGA_DAC_DATA) !=
+        0x2au;
+    core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_VGA_DAC_MASK, 0xa5u);
+    failed |= core_machine_port_read(&port, CORE_MACHINE_VADP_PORT_VGA_DAC_MASK) !=
+        0xa5u;
+
     core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_ATTRIBUTE, 0x00u);
     failed |= !vadp.data.attribute_data_phase;
     (C_VOID)core_machine_port_read(&port, CORE_MACHINE_VADP_PORT_STATUS);
@@ -81,6 +97,7 @@ C_INT main(C_VOID)
     core_machine_vadp_reset(&vadp);
     failed |= vadp.data.ega_miscellaneous_output != 0u ||
         vadp.data.ega_feature_control != 0u ||
+        core_machine_port_read(&port, CORE_MACHINE_VADP_PORT_VGA_DAC_MASK) != 0xffu ||
         ega_read_crtc(&port, CORE_MACHINE_VADP_PORT_MONO_CRTC_INDEX, 0x0eu) !=
         0u;
 
