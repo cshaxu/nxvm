@@ -37,6 +37,17 @@ Board sources submit only typed input levels; Core alone performs CPU NMI
 delivery and mask handling.  Do not borrow PC/AT planar parity state, add a
 second fault latch, or invent fault-generation timing.
 
+For B6 session admission, profile selection is immutable and separate from
+owner-supplied content: one typed session request validates the source-policy
+BYOB manifest, copies the resolved XT plan and presents Core with generic
+read-only mappings only.  The required 64 KiB base system-ROM window is
+`F0000h`--`FFFFFh`; the selected Xebec option-ROM window is optional and
+`C8000h`--`C9FFFh`.  The existing session creator, rather than an XT helper or
+new command grammar, owns validation, resource lifetime and failure.  Fixed
+FDD/HDD images are session resources routed to their existing sole Core media
+owners.  No vendor byte, local path, ROM catalogue, AT synthetic-firmware
+fallback or board-timing assertion may cross that boundary.
+
 ## Non-goals and stop conditions
 
 No PC/AT assumption, generic PC/XT expansion, 8086 replacement, unselected

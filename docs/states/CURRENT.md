@@ -2,27 +2,27 @@
 
 ## Current Work
 
-**Active: M5 T484 S20.**
+**Active: M5 T484 S21.**
 
-## M5 T484 S20 Packet
+## M5 T484 S21 Packet
 
 | Field | Required record |
 | --- | --- |
 | Identifier Mode | Continuation |
-| Admission And Approval | Owner-approved continuous execution; S19 implementation `3080117f` is accepted by this P2 review. |
-| Objective | Establish the source-qualified, lawful B6 contract and current-code gap for an IBM 5160-268 external-ROM/BYOB session route before any product implementation. |
-| Non-goals | No ROM, firmware, guest media, local path or third-party code import; no session/CLI implementation, runtime model choice, PC/AT alias, timing estimate or artifact. |
-| Reference Baseline | Accepted T482 session-request authority, T483 fixed 5160-268 BOM, T484 S3--S19 copied profile/Core ownership, source policy and existing BYOB ROM mapping rules. |
+| Admission And Approval | Owner-approved continuous execution; S20 implementation `8de40ebd` is accepted by this P2 review. |
+| Objective | Make IBM 5160-268 a lawful runnable product session by consuming its frozen external-ROM/BYOB contract through the sole typed session-to-Core construction route. |
+| Non-goals | No ROM, firmware, guest media, local path or third-party code import; no new command grammar, runtime model/device choice, PC/AT alias, board/service timing estimate or artifact claim. |
+| Reference Baseline | Accepted T482 session-request authority, T483 fixed 5160-268 BOM, T484 S3--S20 copied profile/Core ownership and B6 contract, source policy and existing Model-40 BYOB materialization. |
 | Candidate Proposal | [IBM PC/XT 5160-268 selected-device functional closure](../proposals/m5-xt-5160-268-device-functional-closure.md). |
-| Files And ABI Surface | Documentation/evidence and existing profile/session/ROM-mapping source inspection only. No implementation file, public ABI, session grammar or product behavior changes. |
+| Files And ABI Surface | Existing typed product request/session config, profile/session composition and generic immutable firmware mapping only, plus focused session/profile regressions and evidence. No Core public hardware API, CLI grammar or runtime model-selection surface. |
 | Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, `docs/design/ARCHITECTURE.md`, `docs/design/CODING.md`, `docs/design/UI.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md` and source policy. |
-| Verification | One finite source-to-session/Core owner matrix identifies required immutable inputs, lifecycle/failure ownership, legal asset boundary, current implementation gap and focused future acceptance route; documentation governance passes. |
-| Expected Markers | `M5:T484:S20:XT-B6-SESSION-CONTRACT:OK`; retained S3--S19 markers. |
-| Asset Needs | Read-only primary/reference material and project source only; no external bytes, paths or code enter the repository. |
-| Reporting Requirements | Record exact BYOB manifest facts versus source-gated facts, one product/session/Core data flow, and every transfer that prevents a runnable XT claim. |
+| Verification | Focused XT manifest validation (missing/size/hash/optional-slot), immutable mapping/reset-vector, fixed 360 KiB FDD and Type-2 Xebec media, rejected foreign-profile fields/mutations, retained default-PC/AT and Model-40 regressions; full applicable current gate and documentation governance. |
+| Expected Markers | `M5:T484:S21:XT-B6-BYOB-SESSION:OK`; retained S3--S20 markers. |
+| Asset Needs | Synthetic project-owned test bytes only; no external bytes, paths or code enter the repository. |
+| Reporting Requirements | Record exact manifest facts, one product/session/Core data flow, failure/lifetime owner and every remaining Xebec-ROM/timing transfer. |
 | Original Owner Request | Continue the ordered minimalist queue toward the pre-Windows L3 admission audit. |
 | Stop Conditions | Stop and request a revised packet if route availability requires committed vendor bytes, a machine-local path, a second session/Core state owner, a new CLI grammar or an unsourced board/ROM fact. |
-| Exit Criteria | The next implementation S can consume one unambiguous, source-qualified B6 contract without revisiting profile/device ownership or inventing an asset/product path. |
+| Exit Criteria | The typed `SESSION OPEN` authority creates only the fixed 5160-268 plan from a validated owner-supplied base ROM; optional Xebec ROM and fixed-profile media retain one construction owner, all failure paths leave no session, and no default-PC/AT firmware/provider alias remains. |
 | Similar-Issue Sweep | Existing default/5170/Model-40 BYOB materialization, root YAML/session open and XT profile-resolver paths: classify each as reusable, distinct or prohibited; no parallel request/session path. |
 
 ## Current Technical Baseline
