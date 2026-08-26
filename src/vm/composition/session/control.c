@@ -26,7 +26,6 @@
 #include "vm/composition/session/session_private.h"
 
 #include "vm/composition/session/display.h"
-#include "vm/composition/session/virtual_time.h"
 
 static type_status vm_session_execution_context_reset_callback(vm_session *machine)
 {
@@ -34,7 +33,6 @@ static type_status vm_session_execution_context_reset_callback(vm_session *machi
 
     if (machine == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
     vm_machine_debug_reset(&machine->debug);
-    vm_session_virtual_time_reset(machine);
     vm_session_apply_boot_preference(machine);
     status = core_machine_reset(machine->core_machine);
     if (status != TYPE_STATUS_OK) {

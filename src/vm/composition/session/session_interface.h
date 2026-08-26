@@ -6,7 +6,6 @@
 #include "core/machine/cpu_interface.h"
 #include "core/machine/fpu_interface.h"
 #include "core/platform/input_interface.h"
-#include "vm/platform/virtual_time_interface.h"
 #include "vm/profile/model40/model40.h"
 
 typedef enum vm_session_profile_kind {
@@ -22,10 +21,6 @@ typedef enum vm_session_speed {
 
 const C_CHAR *vm_session_profile_name(vm_session_profile_kind kind);
 
-/* Supplies source ticks already selected and converted by VM composition.
- * The caller retains context ownership for the session lifetime. */
-typedef vm_virtual_time_source vm_session_virtual_time_source;
-
 typedef struct vm_session_config {
     vm_session_profile_kind profile_kind;
     STD_SIZE_T memory_bytes;
@@ -37,7 +32,6 @@ typedef struct vm_session_config {
     C_INT boot_hdd;
     core_machine_cpu_profile cpu_profile;
     core_machine_fpu_profile fpu_profile;
-    const vm_session_virtual_time_source *virtual_time_source;
     vm_profile_model40_byob_manifest model40_firmware;
 } vm_session_config;
 

@@ -3,7 +3,7 @@
 #include "core/machine/machine_interface.h"
 #include "vm/composition/session/control.h"
 #include "vm/composition/session/session_private.h"
-#include "vm/composition/session/virtual_time.h"
+#include "vm/composition/session/waiting.h"
 
 static C_INT verify_wait_speed(vm_session *session, vm_session_speed speed)
 {
@@ -19,7 +19,7 @@ static C_INT verify_wait_speed(vm_session *session, vm_session_speed speed)
         return 1;
     }
     STD_ATOMIC_STORE(&session->control.flagRun, TYPE_TRUE);
-    if (vm_session_virtual_time_on_waiting(session, &waiting, &advanced) != TYPE_STATUS_OK ||
+    if (vm_session_waiting_advance(session, &waiting, &advanced) != TYPE_STATUS_OK ||
         advanced || core_machine_get_elapsed_ticks(session->core_machine, &after) !=
             TYPE_STATUS_OK || after != before) {
         STD_ATOMIC_STORE(&session->control.flagRun, TYPE_FALSE);

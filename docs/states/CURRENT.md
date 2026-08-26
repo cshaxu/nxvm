@@ -2,7 +2,26 @@
 
 ## Current Work
 
-**Between accepted subtasks.**
+## M5 T469 S5 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | The owner's persistent Core-L3 closure authorization admits T469 S5 after accepted S4. S4 proves every current profile has no physical pacing timebase; S5 must remove, not retain, the pre-existing inverse host-tick mechanism. |
+| Objective | Delete the VM virtual-time-source route that turns host elapsed time or caller callbacks into `core_machine_advance_time()` input; retain the sole Core-owned S3 deadline operation and the existing L2 HLT load-backoff when the composed pacing contract is unavailable. |
+| Non-goals | No new host pacing algorithm, clock rate, QPC conversion, host timebase, Core API for supplied ticks, profile-specific branch, scheduler, speed mode, debugger behavior, or change to the paused control sleep. |
+| Reference Baseline | Accepted T469 S1--S4; T388 physical-timebase inventory; S4 pacing-contract evidence; current `vm_session_virtual_time_on_waiting`, `vm_virtual_time_source`, Model-339 source installation, runner HLT loop, CMake target and smoke callers. |
+| Candidate Proposal | [M5 Core L3 integration closure and VM contract export](../proposals/m5-core-l3-integration-vm-contract-export.md), T469 S5. |
+| Files And ABI Surface | Expected deletion of VM virtual-time source interfaces/platform implementation/session fields/configuration/call path and its smoke/CMake registration; runner retains one Core deadline call then L2 fallback. No new public ABI. |
+| Applicable Rules | Core is the sole guest-clock and deadline owner; VM may only pace completed Core progress, never supply ticks; one production waiting path and one session speed owner; dependencies remain `vm -> core`; obsolete forwarding/configuration paths are deleted with their tests. |
+| Verification | Static sweep proves no VM source `next`, `core_machine_advance_time` call, `virtual_time_source` config field, Model-339 8 MHz source installation or platform virtual-time source survives; focused session speed/default/Model-339 tests prove waiting does not advance time through VM; Core deadline and pacing-contract tests plus documentation gates pass. |
+| Expected Markers | One waiting sequence: `Core advance_to_next_deadline` then existing no-advance L2 backoff; no caller-provided tick count; Standard and Turbo retain command/state validity and have identical explicit unavailable-contract fallback. |
+| Asset Needs | Existing project source/evidence only; no firmware, media, research or third-party import. |
+| Reporting Requirements | Record every deleted owner/caller/target, retained Core deadline and L2 fallback path, Standard/Turbo disposition, source/test line delta, all focused/static/gate results and S6 integration-audit transfer. |
+| Stop Conditions | Stop and revise if deleting the route breaks a distinct admitted product capability, requires host-time advancement to preserve guest state, or uncovers an alternate VM-to-Core tick injection outside the complete sweep. |
+| Exit Criteria | No VM/public configuration/platform path can manufacture or submit guest ticks; waiting uses only Core-selected advance and otherwise leaves guest time unchanged; all old source/test/build registrations are removed; current profiles retain explicit L2 fallback and focused regressions pass. |
+| Original Owner Request | Correct host/guest synchronization with Core-owned guest time, VM-only pacing and no fixed-sleep or host-tick workaround masquerading as L3. |
+| Similar-Issue Sweep | Search every VM/session/platform/config/test/CMake occurrence of virtual time, host ticks, `advance_time`, QPC, `SPEED`, waiting and Model-339 source rate; inspect any remaining Core external-time caller for a distinct approved owner. |
 
 ## Current Technical Baseline
 

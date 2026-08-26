@@ -5,7 +5,6 @@
 #include "core/machine/machine_interface.h"
 #include "vm/composition/session/control.h"
 #include "vm/composition/session/lifecycle.h"
-#include "vm/composition/session/virtual_time.h"
 #include "vm/composition/session/display.h"
 #include "vm/composition/session/media.h"
 #include "vm/composition/session/machine_devices.h"
@@ -115,7 +114,6 @@ type_status vm_session_set_speed(vm_session *session, vm_session_speed speed)
     }
     if (vm_session_control_is_running(&session->control)) return TYPE_STATUS_INVALID_STATE;
     session->speed = speed;
-    vm_session_virtual_time_reset(session);
     return TYPE_STATUS_OK;
 }
 
@@ -581,17 +579,7 @@ C_INT vm_session_create(const vm_session_config *config, vm_session **out_sessio
         return TYPE_STATUS_FAULT;
     }
     if (config != STD_NULL) {
-        if (config->virtual_time_source != STD_NULL &&
-            config->virtual_time_source->next == STD_NULL) {
-            STD_FREE(session);
-            return TYPE_STATUS_INVALID_ARGUMENT;
-        }
         session->retained_config = *config;
-        if (config->virtual_time_source != STD_NULL) {
-            session->virtual_time_source = *config->virtual_time_source;
-            session->retained_config.virtual_time_source =
-                &session->virtual_time_source;
-        }
         if (!session->profile->hdc_present && (config->hdd_image != STD_NULL ||
             config->create_hdd_cylinders != 0u || config->boot_hdd)) {
             STD_FREE(session);
@@ -600,14 +588,6 @@ C_INT vm_session_create(const vm_session_config *config, vm_session **out_sessio
         if (session->profile == vm_profile_default_pc_at_descriptor_get()) {
             vm_session_apply_core_config_overrides(session, config);
         }
-    }
-    if (session->profile == vm_profile_ibm_5170_model_339_descriptor_get() &&
-        session->virtual_time_source.next == STD_NULL &&
-        vm_platform_virtual_time_source_create(8000000u,
-            &session->virtual_time_source,
-            &session->model_339_virtual_time_source) != TYPE_STATUS_OK) {
-        STD_FREE(session);
-        return TYPE_STATUS_FAULT;
     }
     {
         type_status status = vm_session_initialize(session);
@@ -671,7 +651,6 @@ C_VOID vm_session_destroy(vm_session *session)
 {
     if (session == STD_NULL) return;
     vm_session_finalize(session);
-    vm_platform_virtual_time_source_destroy(session->model_339_virtual_time_source);
     STD_FREE(session);
 }
 

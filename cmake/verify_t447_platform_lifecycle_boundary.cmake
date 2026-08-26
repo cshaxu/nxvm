@@ -10,7 +10,6 @@ set(project_t447_s5_contracts
     "src/vm/platform/host_surface.h|vm_platform_host_surface_lease"
     "src/vm/platform/platform.h|vm_platform_run_context"
     "src/vm/platform/platform.h|vm_platform_run_handle"
-    "src/vm/platform/virtual_time.h|vm_platform_virtual_time_source"
     "src/vm/platform/vm_request_transport.h|vm_platform_request_transport")
 
 foreach(project_t447_s5_contract IN LISTS project_t447_s5_contracts)

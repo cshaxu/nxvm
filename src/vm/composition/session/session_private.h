@@ -18,7 +18,6 @@
 #include "vm/machine/fdd_private.h"
 #include "vm/machine/hdd_private.h"
 #include "vm/platform/platform.h"
-#include "vm/platform/virtual_time.h"
 #include "vm/platform/vm_request_transport.h"
 #include "vm/profile/default_profile/firmware/bios.h"
 #include "vm/profile/default_profile/firmware/context.h"
@@ -70,8 +69,6 @@ struct vm_session {
     vm_session_control_state control;
     vm_session_speed speed;
     vm_session_config retained_config;
-    vm_session_virtual_time_source virtual_time_source;
-    vm_platform_virtual_time_source *model_339_virtual_time_source;
     vm_session_boot_preference boot_preference;
     C_INT model40_private;
     vm_profile_floppy_kind floppy_kind;
