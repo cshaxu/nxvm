@@ -321,6 +321,13 @@ type_status core_machine_publish_elapsed_ticks(core_machine *machine,
         UINT64_MAX - machine->elapsed_ticks < elapsed_ticks) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
+    /* Until S4 supplies a source-qualified transaction/deadline disposition,
+     * only a fully qualified CPU retirement may advance a physical axis.
+     * Deterministic execution retains its existing scheduler behavior. */
+    if (machine->retirement_time_contract == CORE_MACHINE_RETIREMENT_TIME_PHYSICAL &&
+        !cpu_retired) {
+        return TYPE_STATUS_INVALID_STATE;
+    }
     machine->elapsed_ticks += elapsed_ticks;
     if (cpu_retired) {
         core_machine_trace_record(machine, CORE_MACHINE_TRACE_CPU_RETIRE,

@@ -209,6 +209,7 @@ static C_INT timing_ledger_physical_case(const type_unsigned_8 *program,
     };
     core_machine_config config = {
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
+        .time_axis = { CORE_MACHINE_TIME_AXIS_VERIFIED_PHYSICAL, 8000000u },
         .retirement_time_contract = CORE_MACHINE_RETIREMENT_TIME_PHYSICAL
     };
     const core_machine_run_budget budget = { 1u, 0u };
@@ -249,6 +250,7 @@ static C_INT timing_ledger_physical_protected_mov_sreg_memory(C_VOID)
     static const type_unsigned_8 program[] = { 0x8eu, 0x1eu, 0x00u, 0x10u };
     const core_machine_config config = {
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
+        .time_axis = { CORE_MACHINE_TIME_AXIS_VERIFIED_PHYSICAL, 8000000u },
         .retirement_time_contract = CORE_MACHINE_RETIREMENT_TIME_PHYSICAL
     };
     const core_machine_run_budget budget = { 1u, 0u };
@@ -282,6 +284,7 @@ static C_INT timing_ledger_physical_far_jmp_memory(C_INT protected_mode)
     static const type_unsigned_8 target[] = { 0x90u };
     const core_machine_config config = {
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
+        .time_axis = { CORE_MACHINE_TIME_AXIS_VERIFIED_PHYSICAL, 8000000u },
         .retirement_time_contract = CORE_MACHINE_RETIREMENT_TIME_PHYSICAL
     };
     const core_machine_run_budget budget = { 1u, 0u };

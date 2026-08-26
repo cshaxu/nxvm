@@ -266,6 +266,7 @@ static C_INT timing_test_physical_contract(C_VOID)
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
         .ticks_per_instruction = 1u,
         .instruction_timing = { 10u, 2u, 7u, 3u, 5u, 4u },
+        .time_axis = { CORE_MACHINE_TIME_AXIS_VERIFIED_PHYSICAL, 8000000u },
         .retirement_time_contract = CORE_MACHINE_RETIREMENT_TIME_PHYSICAL,
         .retirement_qualification = &qualification
     };

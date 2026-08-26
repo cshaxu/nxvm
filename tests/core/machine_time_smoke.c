@@ -35,6 +35,12 @@ C_INT main(C_VOID)
         invalid.time_axis.kind = (core_machine_time_axis_kind)2;
         failed |= core_machine_create(&invalid, &rejected) != TYPE_STATUS_INVALID_ARGUMENT ||
             rejected != STD_NULL;
+        invalid = config;
+        invalid.time_axis = (core_machine_time_axis) {
+            CORE_MACHINE_TIME_AXIS_UNQUALIFIED, 0u };
+        invalid.retirement_time_contract = CORE_MACHINE_RETIREMENT_TIME_PHYSICAL;
+        failed |= core_machine_create(&invalid, &rejected) != TYPE_STATUS_INVALID_ARGUMENT ||
+            rejected != STD_NULL;
     }
     failed |= machine_time_expect(core_machine_create(&config, &machine));
     failed |= test_core_machine_fixture_register_reset_mapping(machine, 0xfffffff0u,

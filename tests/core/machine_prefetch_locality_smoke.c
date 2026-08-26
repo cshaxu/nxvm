@@ -280,6 +280,18 @@ static C_INT retirement_wait_contract(C_VOID)
         machine->cpu_retirement_wait_pending != TYPE_FALSE;
     failed |= core_machine_reset(machine) != TYPE_STATUS_OK ||
         machine->cpu_cycle_bus_ready != TYPE_TRUE;
+    /* A deferred board wait has no physical source disposition until T470 S4.
+     * It must therefore stop before publishing a synthetic physical tick. */
+    machine->retirement_time_contract = CORE_MACHINE_RETIREMENT_TIME_PHYSICAL;
+    machine->time_axis = (core_machine_time_axis) {
+        CORE_MACHINE_TIME_AXIS_VERIFIED_PHYSICAL, 8000000u };
+    failed |= core_machine_memory_write(machine, 0x000ffff0u, code, sizeof(code)) !=
+        TYPE_STATUS_OK || core_machine_memory_write(machine, 0x10u, &data, 1u) !=
+        TYPE_STATUS_OK;
+    machine->maximum_instruction_ticks = 1u;
+    failed |= core_machine_run(machine, (core_machine_run_budget){0u, 1u},
+        &result) != TYPE_STATUS_FAULT || result.elapsed_ticks != 0u ||
+        machine->elapsed_ticks != 0u;
     core_machine_destroy(machine);
     return !failed;
 }

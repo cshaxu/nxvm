@@ -24,7 +24,8 @@ static C_INT core_machine_publish_successful_retirement(core_machine *machine)
     core_machine_retirement_observation_publish(machine,
         machine->cpu_retirement_source_ticks);
     return machine->retirement_time_contract != CORE_MACHINE_RETIREMENT_TIME_PHYSICAL ||
-        (!machine->source_timing_unallocated &&
+        (machine->time_axis.kind == CORE_MACHINE_TIME_AXIS_VERIFIED_PHYSICAL &&
+         !machine->source_timing_unallocated &&
          core_machine_retirement_qualification_contains(machine));
 }
 
@@ -288,7 +289,9 @@ static type_status core_machine_create_internal(
         (config->time_axis.kind == CORE_MACHINE_TIME_AXIS_UNQUALIFIED &&
         config->time_axis.ticks_per_second != 0u) ||
         (config->time_axis.kind == CORE_MACHINE_TIME_AXIS_VERIFIED_PHYSICAL &&
-        config->time_axis.ticks_per_second == 0u)) {
+        config->time_axis.ticks_per_second == 0u) ||
+        (config->retirement_time_contract == CORE_MACHINE_RETIREMENT_TIME_PHYSICAL &&
+        config->time_axis.kind != CORE_MACHINE_TIME_AXIS_VERIFIED_PHYSICAL)) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
 

@@ -102,6 +102,7 @@ static C_INT retirement_unallocated_profile_case(core_machine_cpu_profile profil
 {
     const core_machine_config physical = {
         .cpu_profile = profile,
+        .time_axis = { CORE_MACHINE_TIME_AXIS_VERIFIED_PHYSICAL, 8000000u },
         .retirement_time_contract = CORE_MACHINE_RETIREMENT_TIME_PHYSICAL
     };
     const core_machine_run_budget budget = { 1u, 0u };
@@ -222,6 +223,7 @@ C_INT main(C_VOID)
     core_machine_config deterministic = { .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386 };
     core_machine_config physical = {
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
+        .time_axis = { CORE_MACHINE_TIME_AXIS_VERIFIED_PHYSICAL, 8000000u },
         .retirement_time_contract = CORE_MACHINE_RETIREMENT_TIME_PHYSICAL
     };
     core_machine_retirement_observation_provider provider;
