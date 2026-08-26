@@ -2,28 +2,28 @@
 
 ## Current Work
 
-**Open: M5 T487 S2.**
+**Open: M5 T487 S3.**
 
-## M5 T487 S2 Packet
+## M5 T487 S3 Packet
 
 | Field | Required record |
 | --- | --- |
 | Identifier Mode | Continuation |
-| Admission And Approval | T487 S1 accepted under the owner-approved complete-unit sequence; S2 freezes the complete board List 1 before any code inspection or repair. |
-| Objective | Establish one finite IBM 5160 board/bus function and timing List 1 from the accepted original-source ledger, with every rule explicitly classified as source fact or boundary. |
-| Non-goals | No production code, code-gap inspection, CPU instruction work, controller implementation, ROM/firmware import, guest media, profile/runtime change or inferred timing value. |
-| Reference Baseline | Accepted T487 S1 IBM source ledger, closed T486 and the queued IBM 5160 board/bus proposal. |
+| Admission And Approval | T487 S2 accepted the complete frozen board List 1. S3 maps every row to current code before any repair may begin. |
+| Objective | Establish the complete T487 List 2: one current owner, production entry, state ownership, consumer path, test/probe and disposition for every frozen board row. |
+| Non-goals | No production repair, new timing/profile value, CPU/controller implementation, ROM/firmware import, guest media or host pacing claim. |
+| Reference Baseline | Accepted T487 S1 source ledger and S2 board List 1, closed T486 and existing retained XT evidence. |
 | Candidate Proposal | [IBM 5160 8088 board, memory, ROM and ISA phase contract](../proposals/m5-xt-8088-board-bus-phase.md). |
-| Files And ABI Surface | List-1 evidence, evidence index, history and Current only; no code, ABI or external asset change. |
-| Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, `docs/etc/operations/policy/source-policy.md`, `docs/design/ARCHITECTURE.md`, `docs/rules/ARCHITECTURE.md`. The shared hardware-unit program requires full inventory before implementation. |
-| Verification | Reconcile each intended board rule to a visual IBM page/formula; classify it as Manual-L3 fact, bounded absent fact, or a separate chip/controller receiver. |
-| Expected Markers | One complete board List 1 containing clock, cycle, reset, memory/ROM, ISA signal and NMI-facing rows with no code disposition. |
-| Asset Needs | Accepted external IBM manual only; no firmware, guest media or third-party source import. |
-| Reporting Requirements | Record exact printed page/formula, scope, timing level/boundary and the separate unit that owns excluded chip-local behavior. |
-| Stop Conditions | Stop if a board row lacks original authority and cannot be safely classified as a boundary; do not infer it from a runtime symptom. |
-| Exit Criteria | Every frozen board-surface row has a primary source or an explicit boundary; S3 can map all rows to one owner/path without enlarging the unit. |
+| Files And ABI Surface | List-2 evidence, evidence index, history and Current only unless the complete mapping proves a later implementation S is needed; no ABI change in S3. |
+| Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, `docs/design/ARCHITECTURE.md`, `docs/design/CODING.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`. One Core owner and one-way profile-to-Core construction remain mandatory. |
+| Verification | Inspect every List-1 row across Core, VM/profile, tests and build declarations; record every production-path hit and reject duplicate or reverse paths. |
+| Expected Markers | A complete List 2 with no unmapped List-1 key, one owner/entry/consumer route per row and one finite whole-batch implementation disposition. |
+| Asset Needs | No new source material; S1 corpus and retained indexed evidence are read-only references. |
+| Reporting Requirements | Record exact searches, each code/test hit, owner/path disposition, duplicate-path finding and any source-backed boundary that prevents implementation. |
+| Stop Conditions | Stop and return to List 1 only if a required board rule falls outside the frozen surface; do not patch it opportunistically. |
+| Exit Criteria | Every List-1 row maps to existing code or an explicit gap at one owner; the next S can implement the whole batch without discovering new board rules. |
 | Original Owner Request | Each newly admitted CPU/chip/controller/board category needs original material, complete List 1, complete List 2 and one whole-unit implementation batch; no symptom-led repair path. |
-| Similar-Issue Sweep | Not applicable: S2 defines the complete board inventory before code inspection; a later implementation S owns the production-path sweep. |
+| Similar-Issue Sweep | Search all tracked Core, VM/profile, product, test and build surfaces for each List-1 signal/map/cycle name; implementation S will complete the post-fix sweep. |
 
 ## Current Technical Baseline
 
@@ -60,6 +60,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T487 S2 | Accepted: complete IBM board-only List 1 freezes 14 Manual-L3 clock/cycle/reset/map/ISA/NMI facts and explicit CPU/controller/host boundaries before code inspection. [Evidence](../etc/evidence/t487-s2-5160-board-function-timing-list-1.md). |
 | T487 S1 | Accepted: visually verified IBM 5160 board-source ledger establishes the finite clock, cycle, reset, map, ISA and NMI basis before List 1. [Evidence](../etc/evidence/t487-s1-5160-original-source-ledger.md). |
 | T486 | Closed: the complete 8088 manual source/List-1/List-2/one-owner implementation chain closes without a parallel timing path; Group-3, WAIT and non-string-prefix source boundaries remain explicit. [Closure audit](../etc/evidence/t486-s5-8088-closure-audit.md). |
 | T485 | Withdrawn, not completed: accepted S1--S20 evidence remains retained, but Td S152 transfers the uncompleted aggregate XT scope to independent CPU/board/controller candidates. [Record](../etc/evidence/td-s152-unit-task-admission-governance.md). |
