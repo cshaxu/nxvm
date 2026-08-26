@@ -9,17 +9,17 @@
 | Field | Required record |
 | --- | --- |
 | Identifier Mode | New |
-| Admission And Approval | T489 is closed.  The first queued independent controller unit, IBM 5160 8254 PIT, is admitted at S1 under the mandatory original-source/List-1/List-2/one-owner-batch order. |
-| Objective | Establish a visually verified, primary-source-only ledger for the selected IBM 5160 8254 PIT before any PIT implementation judgement. |
-| Non-goals | No PIT code change, timing conversion, host pacing, RTC, speaker rendering, profile state mutation or release artifact. |
+| Admission And Approval | T489 is closed.  The first queued independent controller unit is corrected from 8254 to the IBM 5160's actual 8253-5 PIT before any ledger or code judgement. |
+| Objective | Establish a visually verified, primary-source-only ledger for the selected IBM 5160 8253 PIT before any implementation judgement. |
+| Non-goals | No PIT code change, timing conversion, host pacing, RTC, speaker rendering, profile state mutation, 8254 Read-Back feature or release artifact. |
 | Reference Baseline | T489 closure and the shared specification-driven complete-simulation admission program. |
-| Candidate Proposal | [IBM 5160 8254 PIT phase contract](../proposals/m5-xt-8254-board-phase.md). |
-| Files And ABI Surface | Source-ledger evidence, evidence index, history and Current only; no code or ABI change. |
+| Candidate Proposal | [IBM 5160 8253 PIT phase contract](../proposals/m5-xt-8253-board-phase.md). |
+| Files And ABI Surface | Source-ledger evidence, evidence index, history, proposal-name correction, Queue and Current only; no code or ABI change. |
 | Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, `docs/etc/operations/policy/source-policy.md`. |
-| Verification | Visually inspect source pages and record archive identity, page ranges, scan/OCR condition and admissible facts; run documentation governance. |
-| Expected Markers | Finite original-source ledger that bounds the later complete PIT List 1. |
-| Asset Needs | Owner-managed Intel 8254 and IBM 5160 source material; no imported source or asset. |
-| Reporting Requirements | Name every source, its visual-check status, admissible facts, gaps and later-source boundary. |
+| Verification | Visually inspect source pages and record archive identity, page ranges, scan/OCR condition, 8254-superset exclusion and admissible facts; run documentation governance. |
+| Expected Markers | Finite original-source ledger that bounds the later complete 8253 List 1. |
+| Asset Needs | Owner-managed Intel 8253-5 and IBM 5160 source material; no imported source or asset. |
+| Reporting Requirements | Name every source, its visual-check status, admissible facts, 8254 exclusion, gaps and later-source boundary. |
 | Stop Conditions | The selected original source cannot be visually verified, or a required selected-board fact has no authoritative source. |
 | Exit Criteria | S1 evidence establishes a finite primary-source basis; only then may S2 freeze complete List 1. |
 | Original Owner Request | Each chip/controller is one complete T: source ledger, complete List 1, complete List 2, then one coherent owner-local implementation batch; no symptom repairs. |
