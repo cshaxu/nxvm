@@ -2,28 +2,28 @@
 
 ## Current Work
 
-**Active: M5 T483 S3.**
+**Active: M5 T484 S1.**
 
-## M5 T483 S3 Packet
+## M5 T484 S1 Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | The owner-approved T483 scope continues after independent review accepts S2 P1 `58c3735a` and its complete selected-BOM owner/gap matrix. |
-| Objective | Partition the source-qualified 8088/XT board timing facts and every remaining evidence gap to one later timing/source receiver, then close this read-only audit. |
-| Non-goals | No 5160 runtime profile, device repair, firmware/media import, PC/AT borrowing, timing implementation, physical/L3 conclusion or Windows claim. |
-| Reference Baseline | Accepted T483 S1 BOM and S2 capability matrix, T479 S6 IBM/Xebec ledgers, retained 8088 semantic ledger and current Core/VM time boundary. |
-| Candidate Proposal | [IBM PC/XT 5160-268 profile and capability-gap audit](../proposals/m5-xt-5160-268-profile-capability-audit.md). |
-| Files And ABI Surface | Read-only source/evidence inspection plus indexed timing partition/history/status; no source, build, runtime, asset or ABI change. |
+| Identifier Mode | New |
+| Admission And Approval | The owner approved continual ordered execution toward the pre-Windows L3 audit; the next queued candidate is admitted after T483 closure. Scope is exactly the linked selected-device functional closure, with no owner-approved exception. |
+| Objective | Freeze the complete selected-5160 functional convergence ledger: each selected device and board-facing route, its primary contract, current owner/gap, implementation batch, focused regression and timing handoff. |
+| Non-goals | No runtime profile, source repair, firmware/media import, timing value, generic XT, PC/AT substitution, protected-mode or Windows claim. |
+| Reference Baseline | Closed T483 S1--S3 evidence, T479 S6 Xebec ledger, current Core/VM source, retained controller checklists and the linked functional-closure proposal. |
+| Candidate Proposal | [IBM PC/XT 5160-268 selected-device functional closure](../proposals/m5-xt-5160-268-device-functional-closure.md). |
+| Files And ABI Surface | Read-only source/evidence inspection plus indexed convergence ledger/history/status; no source, build, runtime, asset or ABI change. |
 | Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, architecture/coding rules, source policy and the proposal's no-implementation stop boundary. |
-| Verification | Primary-source fact/provenance sweep, current Core time-boundary cross-check, receiver uniqueness review and documentation governance. |
-| Expected Markers | `M5:T483:S3:XT-TIMING-PARTITION:OK`; `M5:T483:S3:XT-AUDIT-CLOSURE:OK`. |
-| Asset Needs | No acquisition or import. |
-| Reporting Requirements | Separate source-proved 8088/board clock facts from unresolved timing inputs; retain exactly one later timing/source receiver without inventing a physical-axis qualification. |
+| Verification | Selected-BOM-to-ledger completeness sweep, primary-contract provenance review, current-owner/source-path inspection, receiver uniqueness review and documentation governance. |
+| Expected Markers | `M5:T484:S1:XT-FUNCTIONAL-LEDGER:OK`; `M5:T484:S1:XT-FUNCTIONAL-BATCHES:OK`. |
+| Asset Needs | Existing admitted research only; no acquisition/import in S1. |
+| Reporting Requirements | Record every selected functional route once, its correct existing owner or absence, finite first repair batch and focused proof; state each timing transfer without assigning a duration. |
 | Original Owner Request | Continue the ordered minimalist queue toward the pre-Windows L3 admission audit. |
-| Stop Conditions | Stop if a selected component lacks a single current owner or would require implementation to classify; retain one bounded functional/source receiver rather than infer from PC/AT behavior. |
-| Exit Criteria | The timing partition is complete, does not duplicate the functional receiver, and records no unsupported time claim; T483 can close with no XT path implemented or implied runnable. |
-| Similar-Issue Sweep | 8088 and Core time-axis code/evidence, PIC/DMA/PIT/refresh, FDC/HDC service boundaries, profile time contracts and 5160/Xebec source records. |
+| Stop Conditions | Stop and retain a source receiver if a selected functional contract is not primary-qualified; do not manufacture a device behavior from a PC/AT path or emulator. |
+| Exit Criteria | A durable, exhaustive functional convergence ledger exists for the accepted T483 BOM; each row has a disposition, one owner, one repair batch/receiver and a planned proof, with no runtime behavior implied. |
+| Similar-Issue Sweep | All Core controller, CPU/board, VM profile/session/media/product routes, selected XT source evidence, existing focused controller regressions and configuration tests. |
 
 ## Current Technical Baseline
 
@@ -61,14 +61,13 @@
 | Task | Compact result |
 | --- | --- |
 | T482 | Closed: one strict root YAML request reaches the sole `SESSION OPEN` authority and resolver without CLI re-encoding; 296/296 current-gate tests and stripped Release 0480 pass. [Closure audit](../etc/evidence/t482-s4-closure-audit.md). |
-| T483 S1 | Accepted: OCR-qualified IBM source baseline selects the 5160-268 BOM and preserves the Xebec/BYOB boundary. [Evidence](../etc/evidence/t483-s1-xt-primary-source-baseline.md). |
+| T483 | Closed: the IBM 5160-268 BOM, complete current-owner capability matrix and Manual-L3/unresolved timing partition establish one functional and one timing receiver without implying an XT runtime path. [Closure evidence](../etc/evidence/t483-s3-xt-timing-source-partition.md). |
 | T481 | Closed: one global CPU/controller/Core-time/profile/VM audit leaves no unrecorded duplicate owner, host-to-Core tick injection or false capability claim; residuals have one ordered receiver. [Closure audit](../etc/evidence/t481-s5-global-reconciliation.md). |
 | T480 | Closed: VADP remains the sole guest-video owner; IBM VGA DAC, chain-4 and Mode-13 frame capability is source-backed but unselected by every current profile/card. The 296-target gate and stripped Release 0480 pass. [Closure audit](../etc/evidence/t480-s5-profile-closure-audit.md). |
 | T479 | Closed: one Core HDC/media boundary retains explicit ATA, Compaq and IBM WD1003 personalities; seven focused regressions, the 294-target gate and stripped Release 0479 hash pass. IBM 5160/Xebec and WD1007A-WAH ESDI contracts transfer only to their missing immutable profile receivers. [Closure audit](../etc/evidence/t479-s8-closure-audit.md). |
 | T478 | Closed: Default-AT is an immutable `pc-at-5170` child and all three AT profiles have one resolver-to-copied-Core-input route. [Closure audit](../etc/evidence/t478-s4-closure-audit.md) records frozen parity, the 294-target gate, and stripped Release 0478. |
 | T477 | Closed: DeskPro is an immutable `pc-at-5170` child with one copied Core-plan materialization path; the Model-40 session retains only dynamic resources. [Closure audit](../etc/evidence/t477-s4-closure-audit.md) records frozen parity, the 294-target gate and stripped Release 0477. |
 | T476 | Closed: IBM 5170 sessions consume one copied `pc-at-5170` root and one Core-plan materialization path; the former duplicate exception aggregate is retired while its independent owners remain. [Closure audit](../etc/evidence/t476-s4-closure-audit.md) records the 294-target gate and stripped Release 0476. |
-| T475 | Closed: one VM-only immutable resolver copies parent-patched values and per-field provenance to the existing Core-plan API, rejects invalid ownership/bindings/windows/routes/contracts/policy, and leaves current routes for ordered profile migrations. [Closure audit](../etc/evidence/t475-s3-integration-closure-audit.md) records the 294-target gate and stripped Release 0475. |
 
 ## Recent Governance
 

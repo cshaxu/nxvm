@@ -9,4 +9,4 @@ it does not import firmware, media, or third-party code.
 | --- | --- |
 | S1 | Accepted: IBM primary-source/BOM evidence fixes the 5160-268 baseline, CGA selection and Xebec/BYOB boundary. |
 | S2 | Accepted: complete selected-BOM owner/absence matrix records one functional receiver and no implied XT runtime path. |
-| S3 | Active: partition 8088/board timing facts and unresolved source gaps to one timing/source receiver; publish audit closure. |
+| S3 | Accepted: complete Manual-L3 versus unresolved timing partition closes the audit without an XT runtime or physical-pacing claim. |

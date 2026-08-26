@@ -43,7 +43,6 @@ linked proposal identifies its finite implementation-admission baseline and
 exclusive earliest capability batch; a later candidate may consume a registered
 contract but does not redefine its L3 or Core/VM boundary.
 
-1. [IBM PC/XT 5160-268 profile and capability-gap audit](../proposals/m5-xt-5160-268-profile-capability-audit.md).
 1. [IBM PC/XT 5160-268 selected-device functional closure](../proposals/m5-xt-5160-268-device-functional-closure.md).
 1. [IBM PC/XT 5160-268 board and device phase-timing closure](../proposals/m5-8088-5150-xt-l3-baseline.md).
 1. [IBM PC/XT 5160-268 final model-L3 audit](../proposals/m5-xt-5160-268-l3-audit.md).
@@ -55,7 +54,7 @@ contract but does not redefine its L3 or Core/VM boundary.
 
 Retained non-candidate proposal index: [Core controller and device phase program](../proposals/m5-core-controller-device-phase-contracts.md), [prior four-profile CPU instruction timing program](../proposals/m5-core-cpu-instruction-timing-program.md), [withdrawn DeskPro physical-cycle and phase-timing closure](../proposals/m5-deskpro-physical-cycle-and-phase-timing.md), [withdrawn generic PC backbone foundation](../proposals/m5-generic-pc-backbone-foundation.md), [withdrawn separate 8088 CPU-profile closure](../proposals/m5-8088-cpu-profile.md), [withdrawn current-product device-capability L3 closure](../proposals/m5-current-product-device-l3-closure.md), [DeskPro 386 dual fixed-disk selection](../proposals/m5-deskpro-386-dual-fixed-disk-selection.md), [VM profile-contract ownership migration](../proposals/m5-vm-profile-contract-ownership.md), [80286 successful-retirement timing closure](../proposals/m5-80286-retirement-timing-closure.md), [cross-mode mechanism coherence](../proposals/m5-cross-mode-mechanism-coherence.md), [instruction-timed execution](../proposals/m5-instruction-timed-execution.md), [L3 bus-timing convergence](../proposals/m5-l3-bus-timing-convergence.md), and [PIC default-IR7 correction](../proposals/m5-pic-default-ir7-correction.md). These retained contexts remain outside candidate ordering and preserve planning and evidence links.
 
-Retained historical context: [Core L3 integration closure and VM contract export](../proposals/m5-core-l3-integration-vm-contract-export.md) and the withdrawn profile-first admission remain outside candidate ordering. The closed 5170 root normalization is the first Core-axis profile consumer.
+Retained historical context: [Core L3 integration closure and VM contract export](../proposals/m5-core-l3-integration-vm-contract-export.md), the closed IBM PC/XT profile/capability audit, and the withdrawn profile-first admission remain outside candidate ordering. The closed 5170 root normalization is the first Core-axis profile consumer.
 
 Closed retained proposal: [Core HDC ATA phase contract](../proposals/m5-core-hdc-ata-phase-contract.md).
 
