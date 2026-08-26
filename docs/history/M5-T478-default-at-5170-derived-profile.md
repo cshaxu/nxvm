@@ -8,4 +8,3 @@ facts rather than treating it as either an alias of the 5170 root or a generic
 | Subtask | Accepted result |
 | --- | --- |
 | S1 | Freeze a complete Default-AT versus 5170 field/dynamic-owner ledger and finite parity universe. |
-
