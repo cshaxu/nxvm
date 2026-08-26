@@ -2,24 +2,24 @@
 
 ## Current Work
 
-## M5 T479 S5 Packet
+## M5 T479 S6 Packet
 
 | Field | Required record |
 | --- | --- |
 | Identifier Mode | Continuation |
-| Admission And Approval | Owner's persistent queue-execution approval and requirement to support IBM 5160, IBM 5170, selected DeskPro 386 and `default-at` fixed disks; T479 S4 accepted at `f0545dc7`. |
-| Objective | Replace the false no-HDC IBM 5170-339 runtime declaration with one immutable IBM fixed-disk/diskette-adapter personality through the existing sole Core HDC owner, implementing the source-qualified normal CHS PIO route and its known L3 command/state/timing facts. |
-| Non-goals | No second HDC/media/CHS owner, ATA alias, runtime profile mutation, RLL, second disk, raw MFM, long/ECC transfer, physical format, recovery, rotation/drive-ready time, parity/NMI, firmware/media import, or guessed deadline. |
-| Reference Baseline | T479 S3 immutable personality contract; [S4 IBM source ledger](../etc/evidence/t479-s4-ibm5170-fixed-disk-source-ledger.md) rows A1--A15 and [gap ledger](../etc/evidence/t479-s4-ibm5170-fixed-disk-gap-ledger.md); T474 time owner; retained ATA and Compaq HDC behavior. |
+| Admission And Approval | Owner's persistent queue-execution approval and requirement to support IBM 5160, IBM 5170, selected DeskPro 386 and `default-at` fixed disks; T479 S5 accepted at `8adf79da`. |
+| Objective | Establish and implement only the primary-backed IBM 5160-268/Xebec fixed-disk adapter contract through the existing sole Core HDC owner and a confirmed frozen XT profile receiver. |
+| Non-goals | No AT task-file compatibility shim, second HDC/media/CHS owner, dynamic profile, raw MFM/ECC/long/format/recovery, drive mechanics, firmware/media import, guessed timing, or invented XT profile. |
+| Reference Baseline | T479 S2 owner/profile audit; T479 S5 accepted IBM WD1003 path; IBM PC/XT Technical Reference Fixed Disk Adapter chapter; retained ATA, Compaq and IBM 5170 personality regressions. |
 | Candidate Proposal | [PC fixed-disk controller standardization](../proposals/m5-at-fixed-disk-controller-standardization.md). |
-| Files And ABI Surface | `controller_interface.h`, `hdc.[ch]`, machine plan/port installation only if required by the IBM `3F6h` register, IBM 5170 descriptor/resolver/firmware composition, focused tests/CMake registration, evidence/history/status. |
-| Applicable Rules | Core is the sole mutable controller owner; VM media owns only bytes/persistence; profile provides one copied immutable declaration; public interfaces expose no mutable layout; primary IBM facts are normative and manual numeric step-rate/step-bound facts remain L3; remove obsolete no-HDC assertions and generic-ATA wording in the changed path. |
-| Verification | Focused IBM command/port/IRQ/CHS/geometry/step-rate tests; Model-339 composition and firmware/CMOS assertions; retained ATA and Model-40 HDC corpus; full `current-gates-gcc`; source/test line accounting and complete changed-mechanism sweep. |
-| Expected Markers | `M5:T479:S5:IBM5170-HDC:OK`, `M5:T479:S5:IBM5170-PROFILE:OK`, and `M5:T479:S5:IBM5170-TIMING:OK`. |
-| Asset Needs | Existing source citations and project-owned tests only; no third-party source, firmware, disk image, trace or protected asset import. |
-| Reporting Requirements | Map A1--A15 before/after to code/test/residual; record every command admitted or physically blocked; identify one retained controller/media owner, deleted no-HDC/ATA wording, source/test added/removed/net lines, and any exact receiver for residuals. |
-| Stop Conditions | Stop if implementing a command requires physical-sector/MFM/ECC or a missing drive signal/timing fact, if the current time axis cannot represent a manual step-rate without inventing a conversion, or if a second state owner would be needed. Record and retain the exact boundary rather than synthesize it. |
-| Exit Criteria | Model 339 has one immutable IBM Type-3 fixed-disk configuration; normal boot/read/write/verify/reset/seek/diagnostic/parameter behavior and IBM port/IRQ semantics are source-proven and regressions pass; known manual timing facts are represented without a guess; all non-logical media facts are explicit residuals; no retained default-at/Model-40 regression. |
+| Files And ABI Surface | Source/gap ledgers first; only then `controller_interface.h`, `hdc.[ch]`, Core DMA/PIC/port-plan integration and the approved XT profile receiver if the cited IBM contract requires them; focused tests/CMake registration, evidence/history/status. |
+| Applicable Rules | One Core HDC state owner and VM media-byte owner; primary IBM material is normative; 86Box/PCjs only corroborate; profile construction is copied and immutable; a non-isomorphic XT host grammar may add a bounded personality but never an ATA compatibility branch. |
+| Verification | Row-complete source and current-gap ledgers; focused byte-stream/controller-select/DMA/IRQ tests; selected XT profile proof; retained IBM-5170/Compaq/default-at HDC corpus; full current gate and stripped artifact at final T479 closure. |
+| Expected Markers | `M5:T479:S6:IBM5160-SOURCE:OK`, `M5:T479:S6:IBM5160-GAPS:OK`, `M5:T479:S6:IBM5160-HDC:OK`, and `M5:T479:S6:IBM5160-PROFILE:OK`. |
+| Asset Needs | Primary documents and read-only external implementation inspection only; no third-party source, firmware, disk image, trace or protected asset import. |
+| Reporting Requirements | Record source quality/OCR form, every command/parameter/status/DMA/IRQ/port/timing row and disposition, single retained owner, line accounting and exact receivers for all physical media or absent-source rows. |
+| Stop Conditions | Stop and transfer if the primary controller contract or selected 5160-268 profile binding is unavailable; do not infer it from AT, 86Box or PCjs. Stop before any second owner, physical-media representation, host timing or generic XT profile framework. |
+| Exit Criteria | A confirmed 5160-268 profile has one immutable IBM/Xebec personality only after every admitted host-visible row is source-proven and focused regressions pass; all nonlogical media/drive timing is explicit residual work; all retained personalities regress. |
 | Original Owner Request | Support IBM 5160, IBM 5170, the selected DeskPro 386 configuration and `default-at` hard disks through a minimal correct Core HDC boundary. |
 | Similar-Issue Sweep | Every HDC protocol discriminator/config validator, `1F0h`--`1F7h`/`3F6h` route, command/status/error/IRQ/DRQ phase, media geometry binding, Model-339 resolver/CMOS/INT13 path, HDC tests, and all generic text calling an IBM path ATA. |
 
