@@ -9,3 +9,4 @@ its own queued task.
 | --- | --- |
 | S1 | Accepted: one visually verified 1981 Intel source corpus distinguishes the scan/OCR container from page authority and fixes the finite Table-2-21 basis before List 1. [Evidence](../etc/evidence/t486-s1-8088-original-source-ledger.md). |
 | S2 | Accepted: every Table-2-21 mnemonic, prefix and explicit non-instruction entry has one finite source-backed function/timing disposition before List 2. [Evidence](../etc/evidence/t486-s2-8088-function-timing-list-1.md). |
+| S3 | Accepted: every List-1 key has one current Core owner, test/proof or explicit timing boundary; the only implementation receiver is the existing selector/primary/control-stack chain. [Evidence](../etc/evidence/t486-s3-8088-current-code-gap-list-2.md). |

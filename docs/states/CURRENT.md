@@ -2,28 +2,12 @@
 
 ## Current Work
 
-**Open: M5 T486 S3.**
+**Open: M5 T486.**
 
-## M5 T486 S3 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner-approved Td S152 per-unit program and continuous execution on 2026-08-26; Td S153 at `c5d4b720` hardens the complete-unit rule; accepted T486 S2 at `ddc4ac3c` fixes the full List-1 universe. |
-| Objective | Create the complete List-2 current-code gap ledger for every T486 List-1 mnemonic, prefix and explicit non-instruction key. |
-| Non-goals | No production code, test, timing selection, decoder, state, board/bus, controller, profile, VM or artifact change. |
-| Reference Baseline | T486 S1 source ledger, T486 S2 function/timing List 1, retained T485 source evaluator evidence and current Core source/tests. |
-| Candidate Proposal | [8088 instruction function and timing completeness](../proposals/m5-8088-instruction-timing-completeness.md). |
-| Files And ABI Surface | List-2 evidence, evidence index, history and Current only; source inspection is read-only and changes no ABI. |
-| Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, `docs/design/ARCHITECTURE.md`, `docs/design/CODING.md`, `docs/rules/ARCHITECTURE.md` and `docs/rules/CODING.md`. Core owns decode/execution/timing; no second timing or state owner may be proposed. |
-| Verification | Search and read every 8088 timing selector, decoder, executor and focused test path; map every List-1 key to one owner/test/disposition; run documentation governance. |
-| Expected Markers | One finite List-2 matrix names present owner/path/test, source-attributed completeness, missing decoded input or a single full-batch implementation disposition for every key. |
-| Asset Needs | Existing source, tests and committed source evidence only; no firmware, guest media or third-party source import. |
-| Reporting Requirements | Record complete key coverage, all current production paths, duplicate-owner findings, exact implementation batch boundary and no-code result. |
-| Stop Conditions | Stop and revise the packet if the audit finds a second production timing owner, a shared mechanism defect outside CPU scope, or missing source authority; do not repair it during S3. |
-| Exit Criteria | Every List-1 key has one current code/test/gap disposition and the remaining implementation work is one coherent owner-local batch rather than a sequence of discovered fixes. |
-| Original Owner Request | Establish the complete code-gap list before implementing; reject one-issue-at-a-time timing repair and preserve one Core owner. |
-| Similar-Issue Sweep | Sweep every source/test/build hit for 8088, Table-2-21, source timing, prefix, Group-2/3, x87/WAIT and compatibility fallback; classify all production hits. |
+T486 S3 is accepted at `493cfd86`: its complete List-2 ledger preserves one
+Core selector/primary/control-stack implementation receiver, identifies every
+present source path and retains only explicit range/x87 boundaries. The next
+stage is one whole-batch implementation; no per-opcode repair is permitted.
 
 ## Current Technical Baseline
 

@@ -1,6 +1,6 @@
 # T486 S3 8088 Current Code Gap List 2
 
-`M5:T486:S3:8088-CURRENT-CODE-GAP-LIST-2:ACCEPTANCE-CANDIDATE`
+`M5:T486:S3:8088-CURRENT-CODE-GAP-LIST-2:ACCEPTED`
 
 This ledger consumes every stable key and form grammar in T486 S2 List 1.
 `cpu_timing.c` has exactly one successful-8088 selection chain: string/I-O,
