@@ -20,6 +20,7 @@ principal documents named in [docs/README.md](../README.md).
 | `evidence/t487-s4-5160-board-one-owner-reconciliation.md` | Core board/timing owner | T487 S4's source/references reconciliation that retains the single Intel clock-total owner and explicitly rejects additive board-cycle timing. |
 | `evidence/t487-s5-5160-board-closure-audit.md` | Closure audit | T487's complete board-source/List-1/List-2/one-owner closure, retained L2 boundaries and no-code simplification result. |
 | `evidence/t488-s1-8259a-original-source-ledger.md` | Core PIC owner | T488 S1's visually verified Intel 8259A and IBM 5160 source corpus, OCR boundary and finite PIC List-1 basis. |
+| `evidence/t488-s2-8259a-function-timing-list-1.md` | Core PIC owner | T488 S2's complete Intel 8259A plus single-PIC IBM XT function/timing List 1 and explicit L2/L4 boundaries. |
 | `evidence/t486-s1-8088-original-source-ledger.md` | Core CPU timing owner | T486 S1's visually verified Intel 1981 source corpus, scan/OCR boundary and finite Table-2-21 basis for the following complete List-1 ledger. |
 | `evidence/t486-s2-8088-function-timing-list-1.md` | Core CPU timing owner | T486 S2's finite 8088 Table-2-21 function/timing List 1, including all mnemonic groups, prefix entries, explicit non-instruction entries and manual timing boundaries. |
 | `evidence/t486-s3-8088-current-code-gap-list-2.md` | Core CPU timing owner | T486 S3's complete List-1-to-code-owner ledger, current 8088 timing dispositions and one-owner implementation boundary. |
