@@ -126,8 +126,8 @@ static C_INT verify_create_materialization(
 {
     const vm_session_config overrides = {
         .memory_bytes = 32u * 1024u * 1024u,
-        .cpu_profile = CORE_MACHINE_CPU_PROFILE_80286,
-        .fpu_profile = CORE_MACHINE_FPU_PROFILE_8087
+        .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
+        .fpu_profile = CORE_MACHINE_FPU_PROFILE_80387
     };
     vm_session *default_session = STD_NULL;
     vm_session *configured_session = STD_NULL;

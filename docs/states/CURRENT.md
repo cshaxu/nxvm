@@ -2,22 +2,22 @@
 
 ## Current Work
 
-**Active: M5 T480 S4.**
+**Active: M5 T480 S5.**
 
-## M5 T480 S4 Packet
+## M5 T480 S5 Packet
 
 | Field | Required record |
 | --- | --- |
 | Identifier Mode | Continuation |
-| Admission And Approval | T480 S3 accepted at `c8d95afb`; standing owner approval covers the queued VADP capability and requires VADP as the only video state/port/memory/snapshot owner. |
-| Objective | Close the finite IBM VGA-only capability batch: DAC/palette mask, VGA aperture/chain-4, 256-colour frame selection and source-qualified timing disposition inside the existing VADP state. |
+| Admission And Approval | T480 S4 accepted at `c67eeda0`; standing owner approval covers the queued VADP capability and requires VADP as the only video state/port/memory/snapshot owner. |
+| Objective | Audit source-qualified profile/card binding for the completed Core VGA capability, retain all unsupported profiles unselected, and close T480 with full verification. |
 | Non-goals | No profile/card binding, VBE/SVGA, option ROM, parallel renderer/VRAM/mode state, guessed board timing, or change to IBM 5170, DeskPro or default-at video claims. |
 | Reference Baseline | T480 S1 IBM VGA source ledger, S2 VADP gap ledger, accepted S3 common-register closure and the sole VADP copied-snapshot production path. |
 | Candidate Proposal | [VADP IBM VGA L3 capability](../proposals/m5-vadp-ibm-vga-l3-capability.md). |
-| Files And ABI Surface | Bounded VADP private/public configuration only if the IBM ledger requires it, existing Core VADP tests/CMake registration and T480 evidence/history/status; no VM presentation state. |
+| Files And ABI Surface | Existing profile/card declarations and VADP tests plus T480 evidence/history/status; no VM presentation state or new public interface. |
 | Applicable Rules | `docs/rules/EXECUTION.md`, `docs/design/ARCHITECTURE.md`, `docs/design/CODING.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`, source policy and T480 source ledger. |
-| Verification | Reconcile every S4 ledger row before implementation; focused DAC/map/chain-4/frame tests and source caller sweep; documentation governance; transfer any unproven physical timing explicitly. |
-| Expected Markers | `M5:T480:S4:DAC:OK`; `M5:T480:S4:CHAIN4:OK`; `M5:T480:S4:SNAPSHOT:OK`; `M5:T480:S4:REGRESSIONS:OK`. |
+| Verification | Sweep every current profile/card declaration and VADP configuration caller; run focused DAC/map/chain-4/frame proof, the full current gate and documentation governance; transfer any unproven physical timing explicitly. |
+| Expected Markers | `M5:T480:S5:PROFILE-BOUNDARY:OK`; `M5:T480:S5:REGRESSIONS:OK`; `M5:T480:S5:CLOSURE:OK`. |
 | Asset Needs | No acquisition/import. The accepted IBM manual and read-only external repositories remain research evidence only. |
 | Reporting Requirements | Record each S4 row's source class and before/after disposition, retained one-owner path, code-size accounting, exact focused results, and the exclusive S5 profile residual. |
 | Stop Conditions | Stop and transfer a row when it lacks an IBM controller fact, requires physical-board/card/firmware selection, or would create a second VADP/video/renderer truth. |

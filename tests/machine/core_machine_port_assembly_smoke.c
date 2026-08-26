@@ -185,7 +185,8 @@ static C_INT port_assembly_hdc_transaction(C_VOID)
             .cylinder_low_port = 0x01f4u, .cylinder_high_port = 0x01f5u,
             .drive_head_port = 0x01f6u, .status_command_port = 0x01f7u,
             .alternate_status_device_control_port = 0x03f6u, .irq = 14u,
-            .lba28_supported = TYPE_TRUE}
+            .lba28_supported = TYPE_TRUE,
+            .protocol = CORE_MACHINE_HDC_PROTOCOL_ATA_PIO}
     };
     core_machine_port_test_allocation allocation = {17u, 0u};
     core_machine_hdc hdc_zero = {0};

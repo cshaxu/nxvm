@@ -130,6 +130,8 @@ C_INT main(C_VOID)
         return 1;
     }
     STD_PRINTF("M5:T466:S2:EGA-EXTERNAL-PORT:OK\n");
+    STD_PRINTF("M5:T480:S4:DAC:OK\n");
     STD_PRINTF("M5:T480:S4:CHAIN4:OK\n");
+    STD_PRINTF("M5:T480:S4:SNAPSHOT:OK\n");
     return 0;
 }

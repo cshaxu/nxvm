@@ -190,7 +190,7 @@ static C_INT vm_default_at_child_resolves_copy(C_VOID)
     const vm_profile_default_at_request request = {
         VM_PROFILE_DEFAULT_AT_SESSION_OPTION_CPU_FPU |
             VM_PROFILE_DEFAULT_AT_SESSION_OPTION_MEMORY,
-        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_FPU_PROFILE_8087,
+        CORE_MACHINE_CPU_PROFILE_80386, CORE_MACHINE_FPU_PROFILE_80387,
         32u * 1024u * 1024u};
     vm_profile_resolver_declaration root;
     vm_profile_resolver_declaration child;
@@ -209,18 +209,18 @@ static C_INT vm_default_at_child_resolves_copy(C_VOID)
         STD_STRCMP(resolved.resolved.field_owner[5], "pc-at-5170") != 0 ||
         STD_STRCMP(resolved.resolved.field_owner[6], "default-at") != 0 ||
         resolved.resolved.values.core.configuration.cpu_profile !=
-            CORE_MACHINE_CPU_PROFILE_80286 ||
+            CORE_MACHINE_CPU_PROFILE_80386 ||
         resolved.resolved.values.core.configuration.fpu_profile !=
-            CORE_MACHINE_FPU_PROFILE_8087 ||
+            CORE_MACHINE_FPU_PROFILE_80387 ||
         resolved.resolved.values.core.configuration.memory_bytes != 32u * 1024u * 1024u ||
         resolved.resolved.values.allowed_session_options !=
             (VM_PROFILE_DEFAULT_AT_SESSION_OPTION_CPU_FPU |
                 VM_PROFILE_DEFAULT_AT_SESSION_OPTION_MEMORY) ||
         STD_STRCMP(resolved.descriptor.identity, "default-at") != 0 ||
-        resolved.descriptor.cpu_profile != CORE_MACHINE_CPU_PROFILE_80286 ||
-        resolved.descriptor.fpu_profile != CORE_MACHINE_FPU_PROFILE_8087 ||
+        resolved.descriptor.cpu_profile != CORE_MACHINE_CPU_PROFILE_80386 ||
+        resolved.descriptor.fpu_profile != CORE_MACHINE_FPU_PROFILE_80387 ||
         resolved.descriptor.default_memory_bytes != 32u * 1024u * 1024u ||
-        !resolved.descriptor.hdc_present || !resolved.descriptor.cga_vram_present) {
+        !resolved.descriptor.hdc_present || !resolved.descriptor.ega_present) {
         return 1;
     }
     child.values.core.configuration.memory_bytes = 512u * 1024u;
