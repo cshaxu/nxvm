@@ -21,7 +21,7 @@
 | Asset Needs | Approved external source inspection only; no download, import, firmware, guest media, local path or third-party code enters the repository. |
 | Reporting Requirements | Record source provenance/OCR confidence, each command/port/DMA/IRQ/reset/ROM fact, every external-emulator agreement or non-authoritative divergence, the retained sole HDC/media owner, geometry disposition and timing transfer. |
 | Original Owner Request | Continue the ordered minimalist queue toward the pre-Windows L3 admission audit. |
-| Stop Conditions | Stop and transfer if binding requires a second mode/VRAM/frame owner, BIOS/VM video mirror, PC/AT descriptor borrowing, an EGA/VGA path, unselected adapter ROM, generic XT abstraction or an unsourced display deadline. |
+| Stop Conditions | Stop and transfer if the IBM source cannot establish a host-visible fact, a result requires imported emulator code or ROM/media bytes, a concrete BYOB geometry would be guessed, the contract requires an ATA/WD task-file alias or duplicate HDC/media state, or a service duration/physical signal would be invented. |
 | Exit Criteria | The complete B5 source contract gives every implementation-relevant fact a Manual-L3, corroborated Other-L3, or explicit unresolved disposition; no ATA/WD personality or media geometry is misrepresented, and all timing/firmware transfers have a named later receiver. |
 | Similar-Issue Sweep | IBM 5160/Xebec, IBM 5170 WD1003, DeskPro Compaq/WD and default-AT ATA HDC personalities; all HDC config/port/DMA/IRQ/media-owner paths and existing T479 source evidence. |
 
