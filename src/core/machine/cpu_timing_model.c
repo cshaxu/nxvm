@@ -788,6 +788,18 @@ C_INT core_machine_string_io_source_instruction_cost(
                 sizeof(core_machine_8086_source_timing_ledger[0]), form);
         return 1;
     }
+    if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_8088) {
+        transfer_plan.form = form;
+        transfer_plan.word_transfers = opcode & 1u;
+        transfer_plan.complete = TYPE_TRUE;
+        *out_ticks = core_machine_source_timing_lookup(machine,
+            core_machine_8086_source_timing_ledger,
+            sizeof(core_machine_8086_source_timing_ledger) /
+                sizeof(core_machine_8086_source_timing_ledger[0]), form);
+        return core_machine_timing_add_ticks(out_ticks,
+            (type_unsigned_64)transfer_plan.word_transfers *
+                CORE_MACHINE_8086_ODD_WORD_TICKS);
+    }
     if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80186) {
         *out_ticks = core_machine_source_timing_lookup(machine,
             core_machine_80186_source_timing_ledger,

@@ -320,6 +320,14 @@ C_INT main(C_VOID)
     const type_unsigned_8 call_memory[] = { 0xffu, 0x16u, 0x00u, 0x10u };
     const type_unsigned_8 push_memory[] = { 0xffu, 0x36u, 0x00u, 0x10u };
     const type_unsigned_8 pop_memory[] = { 0x8fu, 0x06u, 0x00u, 0x10u };
+    const type_unsigned_8 in_immediate_byte[] = { 0xe4u, 0x00u };
+    const type_unsigned_8 in_immediate_word[] = { 0xe5u, 0x00u };
+    const type_unsigned_8 in_dx_byte[] = { 0xecu };
+    const type_unsigned_8 in_dx_word[] = { 0xedu };
+    const type_unsigned_8 out_immediate_byte[] = { 0xe6u, 0x00u };
+    const type_unsigned_8 out_immediate_word[] = { 0xe7u, 0x00u };
+    const type_unsigned_8 out_dx_byte[] = { 0xeeu };
+    const type_unsigned_8 out_dx_word[] = { 0xefu };
     const type_unsigned_8 int3[] = { 0xccu };
     const type_unsigned_8 hlt[] = { 0xf4u };
     const type_unsigned_8 movsb[] = { 0xa4u };
@@ -424,6 +432,26 @@ C_INT main(C_VOID)
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK) ||
         retirement_8088_primary_case(pop_memory, sizeof(pop_memory), 31u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK) ||
+        retirement_8088_primary_case(in_immediate_byte,
+            sizeof(in_immediate_byte), 10u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO) ||
+        retirement_8088_primary_case(in_immediate_word,
+            sizeof(in_immediate_word), 14u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO) ||
+        retirement_8088_primary_case(in_dx_byte, sizeof(in_dx_byte), 8u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO) ||
+        retirement_8088_primary_case(in_dx_word, sizeof(in_dx_word), 12u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO) ||
+        retirement_8088_primary_case(out_immediate_byte,
+            sizeof(out_immediate_byte), 10u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO) ||
+        retirement_8088_primary_case(out_immediate_word,
+            sizeof(out_immediate_word), 14u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO) ||
+        retirement_8088_primary_case(out_dx_byte, sizeof(out_dx_byte), 8u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO) ||
+        retirement_8088_primary_case(out_dx_word, sizeof(out_dx_word), 12u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO) ||
         retirement_8088_string_case(movsb, sizeof(movsb), 0u, 1u, 18u, 0u) ||
         retirement_8088_string_case(movsw, sizeof(movsw), 0u, 1u, 26u, 0u) ||
         retirement_8088_string_case(cmpsb, sizeof(cmpsb), 0u, 1u, 22u, 0u) ||
