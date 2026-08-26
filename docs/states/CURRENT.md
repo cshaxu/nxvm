@@ -2,26 +2,9 @@
 
 ## Current Work
 
-## M5 T477 S2 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner approved T477's ordered DeskPro migration; accepted S1 ledger bounds this child-declaration implementation. |
-| Objective | Add one immutable DeskPro child declaration over the copied `pc-at-5170` root and prove its copied Core input contains exactly the frozen CPU/core delta. |
-| Non-goals | No session cutover, deletion of the legacy Model-40 constructor, topology/firmware/media/D4 rewrite, Core change, physical-time claim, profile/YAML rename, or external import. |
-| Reference Baseline | T476 root resolver/cutover; T477 S1 DeskPro delta ledger; existing resolver and Model-40 private-composition smokes. |
-| Candidate Proposal | [DeskPro 386 5170-derived runnable profile](../proposals/m5-deskpro-386-5170-derived-runnable-profile.md). |
-| Files And ABI Surface | VM profile resolver declarations/root result and focused resolver smoke only; no public Core ABI or runtime session behavior change. |
-| Applicable Rules | Resolver owns immutable inheritance/provenance only; child copies rather than aliases parent data; Core stays neutral; dynamic ROM/media/D4 remain session-owned; no forwarding or parallel config builder. |
-| Verification | Direct root/child resolution and negative validation smoke; assert parent identity, child field owners and copied 80386/1 MiB/Core timing values; current resolver smoke and documentation governance. |
-| Expected Markers | `M5:T477:S2:DESKPRO-CHILD-RESOLVER:OK` and `M5:T477:S2:DESKPRO-CHILD-NEGATIVE:OK`. |
-| Asset Needs | Existing committed sources/tests only; no firmware, media or third-party material. |
-| Reporting Requirements | Record the exact declaration fields, retained non-representable dynamic fields and why they remain out of resolver data; report code/test delta and resolved-data ownership. |
-| Stop Conditions | Stop if the resolver must expose a mutable runtime resource, if the Core input cannot represent the frozen CPU delta, or if a child declaration would silently duplicate a session topology constructor. |
-| Exit Criteria | One validated immutable child derives from 5170, deep-copy/provenance and negative validation are proven, and no session behavior/path changes. |
-| Original Owner Request | Build correct whole-machine interfaces first, then connect IBM 5170, DeskPro 386 and default-at in order without duplicate paths. |
-| Similar-Issue Sweep | Sweep parent/child resolver declarations, root-result copying and all direct Model-40 Core-config initializers for aliases, stale static identity or second immutable configuration creation. |
+**T477 S2 accepted.** The [DeskPro child resolver evidence](../etc/evidence/t477-s2-deskpro-child-resolver.md)
+proves copied Core/policy ownership over the 5170 root while preserving the
+separate session lifetime of ROM, media and D4 resources.
 
 ## Current Technical Baseline
 
@@ -56,6 +39,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T477 S2 | Accepted: one immutable DeskPro child declaration inherits 5170 device/route facts and owns the frozen 80386 Core/BYOB policy delta; [evidence](../etc/evidence/t477-s2-deskpro-child-resolver.md) records copy and negative proof. |
 | T477 S1 | Accepted: the complete DeskPro inherited-versus-delta ledger and finite Model-40 parity universe are frozen in [evidence](../etc/evidence/t477-s1-deskpro-delta-ledger.md). |
 | T476 | Closed: IBM 5170 sessions consume one copied `pc-at-5170` root and one Core-plan materialization path; the former duplicate exception aggregate is retired while its independent owners remain. [Closure audit](../etc/evidence/t476-s4-closure-audit.md) records the 294-target gate and stripped Release 0476. |
 | T475 | Closed: one VM-only immutable resolver copies parent-patched values and per-field provenance to the existing Core-plan API, rejects invalid ownership/bindings/windows/routes/contracts/policy, and leaves current routes for ordered profile migrations. [Closure audit](../etc/evidence/t475-s3-integration-closure-audit.md) records the 294-target gate and stripped Release 0475. |
