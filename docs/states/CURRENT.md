@@ -2,13 +2,32 @@
 
 ## Current Work
 
-**No active subtask.**
+## M5 T478 S4 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner approved T478's ordered Default-AT migration on 2026-08-25; accepted S1--S3 provide its frozen delta, child resolver and session cutover. |
+| Objective | Audit the complete T478 migration, run its frozen parity universe, publish stripped Release 0478, and close only if all three AT profiles have one resolver-to-copied-Core-input route. |
+| Non-goals | No new runtime functionality, timing/topology change, external asset, YAML/XT work, resolver-kernel change, or L3 claim. Owner-approved current HDC/VGA/global-audit candidate documentation is included only to restore the governance gate. |
+| Reference Baseline | T478 S1 ledger, S2 resolver, S3 cutover; T475--T477 closures; current product/release rules. |
+| Candidate Proposal | [Default-AT 5170-derived profile](../proposals/m5-default-at-5170-derived-profile.md). |
+| Files And ABI Surface | Artifact target/preset, evidence/history/status, the owner-approved current HDC/VGA/global-audit candidate documents and queue links; no runtime ABI beyond accepted S3. |
+| Applicable Rules | One resolved Core-input path per AT profile; session-only dynamic resources; stripped Release and task closure rules. |
+| Verification | Frozen Default-AT/5170/DeskPro corpus, full current gate, source sweep, artifact banner/SHA/debug-section check, documentation governance and proposal exit mapping. |
+| Expected Markers | Existing T478 markers and `nxvm_0_5_0478.exe` banner `0.5.0478`. |
+| Asset Needs | Existing build/test inputs only. |
+| Reporting Requirements | Record artifact hash/source commit, all-profile parity/gate results, exact code delta and retained dynamic owners. |
+| Stop Conditions | Stop if parity differs, a second Core-input path remains, artifact/gates cannot be proven, or unrelated dirty work prevents a truthful closure gate. |
+| Exit Criteria | Proposal mapped to evidence; frozen parity and full gate pass; artifact is stripped Release; history/status accurate and proposal moved to history. |
+| Original Owner Request | Connect profiles in order through minimal single-owner interfaces. |
+| Similar-Issue Sweep | Artifact/preset/status identity, all AT profile construction routes, Default-AT session request conversion and all S1 parity owners. |
 
 ## Current Technical Baseline
 
-- **Current developer artifact:** target `vm-0-5-0477`; the stripped Release
-  `nxvm_0_5_0477.exe` has SHA-256
-  `29AF6BCB351A5EE0F1D6C992EDC4BCA71C5BF6897E88B4BE848907547A9E9F01`.
+- **Current developer artifact:** target `vm-0-5-0478`; the stripped Release
+  `nxvm_0_5_0478.exe` has SHA-256
+  `6E34BBDFF74C6BAED6EFBF91FA00A432B4736427018BE9834A4095A0C300E61C`.
   Debug remains the current-gate route. T471 preserves Core-owned progression:
   a verified axis is Standard-paced only by host waiting against completed
   Core progress. T472 extends that comparison to an explicit L2 macro axis,
