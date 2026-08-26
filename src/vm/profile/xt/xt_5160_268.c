@@ -40,6 +40,7 @@ type_status vm_profile_xt_5160_268_resolve(
     vm_profile_xt_5160_268_resolved_profile *out_profile)
 {
     vm_profile_resolver_declaration declaration;
+    type_status status;
     const vm_profile_resolver_contract_catalog catalog = {
         vm_profile_xt_5160_268_contract_ids,
         sizeof(vm_profile_xt_5160_268_contract_ids) /
@@ -49,6 +50,12 @@ type_status vm_profile_xt_5160_268_resolve(
         vm_profile_xt_5160_268_declaration_create(&declaration) != TYPE_STATUS_OK) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
-    return vm_profile_resolver_resolve(&declaration, &catalog,
+    status = vm_profile_resolver_resolve(&declaration, &catalog,
         &(vm_profile_resolver_session_request) {0u}, &out_profile->resolved);
+    if (status != TYPE_STATUS_OK) return status;
+    out_profile->topology = (core_machine_plan_topology) {0};
+    out_profile->topology.dma_present = TYPE_TRUE;
+    out_profile->topology.dma = (core_machine_dma_wiring) {
+        CORE_MACHINE_DMA_FDC_CHANNEL_UNBOUND, 1u, 0u};
+    return TYPE_STATUS_OK;
 }

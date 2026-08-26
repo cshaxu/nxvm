@@ -342,10 +342,11 @@ typedef struct core_machine_absent_memory_config {
 
 #define CORE_MACHINE_DMA_CONTROLLER_COUNT 2u
 #define CORE_MACHINE_DMA_CASCADE_CHANNEL 4u
+#define CORE_MACHINE_DMA_FDC_CHANNEL_UNBOUND 0xffu
 
-/* The current DMA consumer is embedded core FDC storage; composition selects
- * the generic controller topology and receives only the frozen request binding,
- * never DMA controller storage. */
+/* The plan selects the controller/refresh topology independently of an FDC.
+ * When present, fdc_channel is the one Core-issued FDC request binding; the
+ * unbound value leaves that later device route absent. */
 typedef struct core_machine_dma_wiring {
     type_unsigned_8 fdc_channel;
     type_unsigned_8 controller_count;

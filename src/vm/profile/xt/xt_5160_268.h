@@ -3,10 +3,12 @@
 
 #include "vm/profile/profile_resolver_interface.h"
 
-/* This is a construction-only snapshot. It deliberately has no board
- * descriptor: B2 owns the 5160 ports, devices, firmware and media binding. */
+/* This is a construction-only snapshot.  The copied Core topology records
+ * only B2-selected shared board facts; later device batches own their own
+ * source-qualified additions. */
 typedef struct vm_profile_xt_5160_268_resolved_profile {
     vm_resolved_profile resolved;
+    core_machine_plan_topology topology;
 } vm_profile_xt_5160_268_resolved_profile;
 
 type_status vm_profile_xt_5160_268_declaration_create(

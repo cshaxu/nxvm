@@ -1,4 +1,4 @@
-# T484 S5 P2 5160 B2 Core Topology
+# T484 S5 P3 5160 B2 Core Topology
 
 `M5:T484:S5:XT-B2-PLAN:OK`
 
@@ -27,9 +27,25 @@ ports present, and slave PIC/secondary-DMA ports absent.  The 5160 resolver
 smoke proves those values are copied and cannot be changed through a session
 request.
 
+## P3: Refresh Is Not An FDC Claim
+
+The former `core_machine_dma_wiring` incorrectly required an FDC request
+channel whenever a board selected DMA, although the refresh route is
+independent and the 5160 B2 scope selects no FDC.  `fdc_channel` may now be
+the explicit `CORE_MACHINE_DMA_FDC_CHANNEL_UNBOUND` value.  Core still owns
+the refresh channel and all DMA state; it signs an FDC request binding only
+when a later copied FDC topology selects a channel.  A plan that does select
+an FDC rejects the unbound value.
+
+The resolved 5160 snapshot copies exactly that one-controller, no-cascade,
+unbound-FDC topology.  It can therefore construct the selected PIC/PIT/DMA
+board facts without inventing an AT FDC route, RTC/CMOS device or second DMA
+controller.  B3 remains the sole receiver for an evidence-qualified XT FDC
+binding.
+
 ## Limits And Next Receiver
 
-This P1 does not make the 5160 session runnable.  It does not bind a ROM,
+This B2 work does not make the 5160 session runnable.  It does not bind a ROM,
 keyboard/PPI, FDC drive/media, CGA session provider, Xebec, or an XT parity
 port; those remain the admitted later B2/B3--B6 batches.  The private secondary
 DMA storage remains an implementation collaborator for the existing Core DMA
@@ -49,3 +65,5 @@ validation, not a fabricated Core memory limit.
 - `vm-xt-5160-268-profile-smoke.exe` passed.
 - 5170/default-at/Model-40 resolver smoke asserts explicit cascaded/two-DMA
   materialization.
+- The XT profile smoke constructs the copied B2 topology and proves that no
+  FDC request binding exists before B3 selects one.

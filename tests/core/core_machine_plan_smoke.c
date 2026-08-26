@@ -280,7 +280,8 @@ static C_INT plan_selects_single_controller_xt_board(C_VOID)
     C_INT failed = 0;
 
     topology.dma_present = TYPE_TRUE;
-    topology.dma = (core_machine_dma_wiring) {2u, 1u, 0u};
+    topology.dma = (core_machine_dma_wiring) {
+        CORE_MACHINE_DMA_FDC_CHANNEL_UNBOUND, 1u, 0u};
     failed |= core_machine_plan_create(&configuration, &plan) != TYPE_STATUS_OK;
     failed |= !failed && core_machine_plan_set_topology(plan, &topology) !=
         TYPE_STATUS_OK;
@@ -290,6 +291,8 @@ static C_INT plan_selects_single_controller_xt_board(C_VOID)
         !core_machine_port_has_write(&machine->executor_port, 0x0000u) ||
         core_machine_port_has_read(&machine->executor_port, 0x00a0u) ||
         core_machine_port_has_write(&machine->executor_port, 0x00d0u));
+    failed |= !failed && core_machine_get_fdc_dma_request_binding(machine,
+        &(core_machine_dma_request_binding) {0}) != TYPE_STATUS_INVALID_STATE;
     core_machine_destroy(machine);
     core_machine_plan_destroy(plan);
     return failed;

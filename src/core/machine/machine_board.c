@@ -378,12 +378,13 @@ static type_bool core_machine_dma_wiring_is_valid(
     const core_machine_dma_wiring *wiring)
 {
     return wiring != STD_NULL &&
-        ((wiring->controller_count == 1u && wiring->cascade_channel == 0u &&
+        (wiring->fdc_channel == CORE_MACHINE_DMA_FDC_CHANNEL_UNBOUND ||
+         (((wiring->controller_count == 1u && wiring->cascade_channel == 0u &&
             wiring->fdc_channel < 4u) ||
-         (wiring->controller_count == CORE_MACHINE_DMA_CONTROLLER_COUNT &&
+           (wiring->controller_count == CORE_MACHINE_DMA_CONTROLLER_COUNT &&
             wiring->cascade_channel == CORE_MACHINE_DMA_CASCADE_CHANNEL &&
             wiring->fdc_channel < VDMA_CHANNEL_COUNT)) &&
-        wiring->fdc_channel != 1u;
+          wiring->fdc_channel != 1u));
 }
 
 type_status core_machine_configure_dma(core_machine *machine,
@@ -398,11 +399,14 @@ type_status core_machine_configure_dma(core_machine *machine,
     if (!core_machine_dma_wiring_is_valid(wiring) || out_fdc_request == STD_NULL) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
-    status = core_machine_dma_bind_channel(&machine->shared_dma_latch,
-        &machine->shared_dma_primary, &machine->shared_dma_secondary,
-        wiring->fdc_channel, core_machine_fdc_dma_provider(), &machine->fdc,
-        &machine->fdc_dma_request);
-    if (status != TYPE_STATUS_OK) return status;
+    machine->fdc_dma_request = (core_machine_dma_request_binding) {0};
+    if (wiring->fdc_channel != CORE_MACHINE_DMA_FDC_CHANNEL_UNBOUND) {
+        status = core_machine_dma_bind_channel(&machine->shared_dma_latch,
+            &machine->shared_dma_primary, &machine->shared_dma_secondary,
+            wiring->fdc_channel, core_machine_fdc_dma_provider(), &machine->fdc,
+            &machine->fdc_dma_request);
+        if (status != TYPE_STATUS_OK) return status;
+    }
     status = core_machine_dma_bind_channel(&machine->shared_dma_latch,
         &machine->shared_dma_primary, &machine->shared_dma_secondary, 1u,
         &core_machine_dma_refresh_provider, machine, &machine->refresh_dma_request);
@@ -418,7 +422,8 @@ type_status core_machine_configure_dma(core_machine *machine,
 type_status core_machine_get_fdc_dma_request_binding(const core_machine *machine,
     core_machine_dma_request_binding *out_binding)
 {
-    if (machine == STD_NULL || out_binding == STD_NULL || !machine->dma_configured) {
+    if (machine == STD_NULL || out_binding == STD_NULL || !machine->dma_configured ||
+        machine->fdc_dma_request.core_token == 0u) {
         return TYPE_STATUS_INVALID_STATE;
     }
     *out_binding = machine->fdc_dma_request;

@@ -182,7 +182,8 @@ type_status core_machine_plan_validate(const core_machine_plan *plan)
          plan->topology.fdc_present != TYPE_TRUE) ||
         (plan->topology.hdc_present != TYPE_FALSE &&
          plan->topology.hdc_present != TYPE_TRUE) ||
-        (plan->topology.fdc_present && !plan->topology.dma_present) ||
+        (plan->topology.fdc_present && (!plan->topology.dma_present ||
+         plan->topology.dma.fdc_channel == CORE_MACHINE_DMA_FDC_CHANNEL_UNBOUND)) ||
         (plan->topology.hdc_present && !plan->topology.fdc_present &&
          plan->topology.hdc.protocol ==
              CORE_MACHINE_HDC_PROTOCOL_COMPAQ_WD_40MB) ||
