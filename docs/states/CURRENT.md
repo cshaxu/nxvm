@@ -68,7 +68,6 @@
 | T479 | Closed: one Core HDC/media boundary retains explicit ATA, Compaq and IBM WD1003 personalities; seven focused regressions, the 294-target gate and stripped Release 0479 hash pass. IBM 5160/Xebec and WD1007A-WAH ESDI contracts transfer only to their missing immutable profile receivers. [Closure audit](../etc/evidence/t479-s8-closure-audit.md). |
 | T478 | Closed: Default-AT is an immutable `pc-at-5170` child and all three AT profiles have one resolver-to-copied-Core-input route. [Closure audit](../etc/evidence/t478-s4-closure-audit.md) records frozen parity, the 294-target gate, and stripped Release 0478. |
 | T477 | Closed: DeskPro is an immutable `pc-at-5170` child with one copied Core-plan materialization path; the Model-40 session retains only dynamic resources. [Closure audit](../etc/evidence/t477-s4-closure-audit.md) records frozen parity, the 294-target gate and stripped Release 0477. |
-| T476 | Closed: IBM 5170 sessions consume one copied `pc-at-5170` root and one Core-plan materialization path; the former duplicate exception aggregate is retired while its independent owners remain. [Closure audit](../etc/evidence/t476-s4-closure-audit.md) records the 294-target gate and stripped Release 0476. |
 
 ## Recent Governance
 
