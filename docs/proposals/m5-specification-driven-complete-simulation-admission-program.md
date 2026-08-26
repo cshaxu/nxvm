@@ -59,7 +59,24 @@ ordered, finite stages:
    frozen contract through that entry; it does not recreate the controller.
    A partial symptom fix is diagnostic only: it remains in List 2 and cannot
    create its own repair path, parallel owner, compatibility branch, or extra
-   task inside the unit.
+    task inside the unit.
+
+## One-Owner Entry Discipline
+
+List 2 must name one production route before implementation begins: the sole
+guest ingress (instruction, port, memory window, signal or immutable
+construction value), the sole Core state owner, and the sole outward
+publication/consumer boundary. The implementation batch extends that route; it
+may not add a profile-side emulator, a second parser/dispatcher, mirrored
+register or media/frame state, a second scheduler, or a compatibility
+forwarder. A profile may select only frozen construction data and topology;
+it cannot mutate controller structure or become a live execution path.
+
+If a frozen unit proves that the named owner cannot express a required
+documented behavior without a second route, the task stops and transfers one
+bounded architecture receiver before implementation. It does not work around
+the boundary with a local symptom repair. This rule applies equally to CPU
+forms, controllers, media controllers and display units.
 
 No task may substitute one repaired symptom, guest boot, or benchmark for
 either complete ledger.  Similar-looking units may share a neutral Core

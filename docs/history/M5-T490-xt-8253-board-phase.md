@@ -2,8 +2,11 @@
 
 T490 is the independent IBM 5160 8253 PIT unit.  It may not repair PIT
 behavior until a visually verified original-source ledger, complete List 1
-and complete List 2 have been accepted.  Its later implementation consumes
-the entire admitted sole-owner batch rather than individual symptoms.
+and complete List 2 have been accepted. Its later implementation consumes the
+entire admitted sole-owner batch rather than individual symptoms. List 2 must
+identify the single port ingress, Core PIT state owner and output-consumer
+route; T490 may extend that route but may not introduce an XT-only PIT state
+machine, scheduler or compatibility path.
 
 | Subtask | Result |
 | --- | --- |

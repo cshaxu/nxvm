@@ -14,13 +14,13 @@
 | Non-goals | No PIT implementation change, timing conversion, host pacing, RTC, speaker rendering, profile state mutation, 8254 Read-Back behavior or release artifact. |
 | Reference Baseline | T490 S1 source ledger, T490 S2 List 1, current Core machine source and focused PIT/XT tests. |
 | Candidate Proposal | [IBM 5160 8253 PIT phase contract](../proposals/m5-xt-8253-board-phase.md). |
-| Files And ABI Surface | List-2 evidence, evidence index, history and Current only; no code or ABI change. |
+| Files And ABI Surface | List-2 evidence, evidence index, history and Current only; no code or ABI change. The active proposal and Queue may record the owner-approved unit-entry governance constraint only. |
 | Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`. |
 | Verification | Inspect all PIT control/read/write/mode paths, Core output consumers, scheduler advance/deadline paths, immutable XT construction and focused tests; run documentation governance. |
 | Expected Markers | One row-complete List 2 and one coherent implementation batch, or an explicit empty batch. |
 | Asset Needs | Retained S1 primary sources only; no import or external emulator source. |
 | Reporting Requirements | Name sole state owner, code-size baseline, every exact gap, retained L1/L2/L4 boundary and planned focused proof. |
-| Stop Conditions | A source row has no current owner path, or a necessary repair would require a second state/time/board route. |
+| Stop Conditions | A source row has no current owner path, or a necessary repair would require a second state/time/board route. In either case, transfer one bounded architecture receiver; do not create an XT-specific parallel path or symptom repair. |
 | Exit Criteria | Every row has present/gap/transfer disposition and the later implementation batch is finite and owner-local. |
 | Original Owner Request | Each chip/controller is one complete T: source ledger, complete List 1, complete List 2, then one coherent owner-local implementation batch; no symptom repairs. |
 | Similar-Issue Sweep | Inspect all PIT construction sites and all control-word/Read-Back logic; classify every 8254-only exposure and every selected XT output route. |

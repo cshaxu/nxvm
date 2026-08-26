@@ -44,8 +44,12 @@ exclusive earliest capability batch; a later candidate may consume a registered
 contract but does not redefine its L3 or Core/VM boundary. Every CPU/chip/
 controller/display candidate below is one complete unit T: original source
 ledger, complete List 1, complete List 2, then one-owner full-batch
-implementation. The final model and pre-Windows entries are audits only; they
-may transfer a gap to its earliest unit T but may not repair it.
+implementation through its declared sole guest-ingress, state-owner and
+publication route. No candidate may open an implementation S before the first
+three stages are accepted, or create a profile-side emulator, parallel parser,
+state mirror, second scheduler or compatibility-forwarding path. The final
+model and pre-Windows entries are audits only; they may transfer a gap to its
+earliest unit T but may not repair it.
 
 1. [IBM 5160 8253 PIT phase contract](../proposals/m5-xt-8253-board-phase.md).
 1. [IBM 5160 8255 PPI, keyboard and NMI phase contract](../proposals/m5-xt-8255-keyboard-nmi-phase.md).
