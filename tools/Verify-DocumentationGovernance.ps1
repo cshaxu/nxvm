@@ -237,6 +237,25 @@ function Get-StatusClosureRows([string]$status) {
         })
 }
 
+function Get-StatusGovernanceIdentifierRecords([string]$status) {
+    $governanceSection = [regex]::Match(
+        $status,
+        '(?ms)^## Recent Governance\r?\n(?<body>.*?)(?=^## |\z)'
+    )
+    if (-not $governanceSection.Success) {
+        return @()
+    }
+    return @([regex]::Matches(
+        $governanceSection.Groups['body'].Value,
+        '(?m)^- \*\*M(?<milestone>\d+) Td S(?<subtask>\d+)(?: P\d+)?:'
+    ) | ForEach-Object {
+        [pscustomobject]@{
+            Milestone = [int]$_.Groups['milestone'].Value
+            Subtask = [int]$_.Groups['subtask'].Value
+        }
+    })
+}
+
 function Require-ActiveIdentifier([pscustomobject]$packet, [string]$repositoryRoot, [string]$status) {
     $modeMatch = [regex]::Match($packet.Body, '(?m)^\|\s*Identifier Mode\s*\|\s*(?<mode>[^|]+?)\s*\|\s*$')
     Require $modeMatch.Success "Active task packet must declare Identifier Mode."
@@ -249,9 +268,15 @@ function Require-ActiveIdentifier([pscustomobject]$packet, [string]$repositoryRo
     })
     if ($packet.IsDocumentation) {
         Require ($mode -eq 'Governance') "A Td packet must use Identifier Mode Governance."
-        $previous = @($closed | Where-Object {
-            $_.IsDocumentation -and $_.Milestone -eq $packet.Milestone
-        } | Sort-Object Subtask -Descending | Select-Object -First 1)
+        $previous = @(
+            @($closed | Where-Object {
+                $_.IsDocumentation -and $_.Milestone -eq $packet.Milestone
+            }) + @((Get-StatusGovernanceIdentifierRecords $status) | Where-Object {
+                $_.Milestone -eq $packet.Milestone
+            }) |
+            Sort-Object Subtask -Descending |
+            Select-Object -First 1
+        )
         $expected = if ($previous.Count -eq 0) { 1 } else { $previous[0].Subtask + 1 }
         Require ($packet.Subtask -eq $expected) `
             "Active Td packet must use the next M$($packet.Milestone) Td S identifier ($expected)."

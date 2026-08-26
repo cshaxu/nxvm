@@ -1,25 +1,8 @@
 # Project Status
 
-## M5 T473 S1 Packet
+## Current Work
 
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | New |
-| Admission And Approval | Owner approved on 2026-08-25: implement one complete selected-machine L3 guest-time closure, a Core-level immutable profile-input interface, Standard pacing and Turbo no-wait behavior. |
-| Objective | Freeze the full selected IBM 5170 Model-339 CPU, bus, board, controller, media and display time universe and establish the one Core-owned L3/L2 disposition ledger that every later T473 S consumes. |
-| Non-goals | No L4 electrical reproduction, host-to-Core tick injection, second clock/event queue, third-party source import, protected firmware/media import, generic compatibility claim or unrelated profile behavior change. |
-| Reference Baseline | T472 closure: target `vm-0-5-0472`, SHA-256 `C2B9B95B8A124B96106369E4D88D592A6A7A090D16401C176E93B91349E28BDE`. |
-| Candidate Proposal | [M5 IBM 5170 unified L3 guest-time axis](../proposals/m5-5170-unified-l3-guest-time-axis.md). |
-| Files And ABI Surface | Current ledgers/evidence; later S units may change Core time observation/plan, Core scheduler/executor/controller owners, VM resolved profile composition and focused tests. Cross-module observations remain copied and opaque. |
-| Applicable Rules | `docs/design/ARCHITECTURE.md`, `docs/design/CODING.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`, `docs/rules/DOCUMENT.md`, `docs/rules/EXECUTION.md`, `docs/etc/architecture/specification-driven-l3-timing.md`, and `docs/etc/operations/policy/source-policy.md`: one mutable Core time owner, immutable profile plan, no reverse dependency, L2 provenance retention and no external-source import. |
-| Verification | S1 row-complete source/code crosswalk and documentation governance; subsequent S units add focused owner tests. Closure requires full current gate, integration workload, source-to-runtime audit and stripped Release 0473. |
-| Expected Markers | `M5:T473:S1:UNIFIED-GUEST-TIME-LEDGER:OK`; later S markers are frozen by S1's finite partition. |
-| Asset Needs | Read-only selected IBM/Intel controller, system-board and CPU documentation plus read-only external-emulator implementations for corroboration only. No source, firmware, guest media or local machine path enters the repository. |
-| Reporting Requirements | Each row records source tier, formula/selection or L2 input, Core owner, profile value, lifecycle/deadline relation, regression and remaining exception. Report removed duplicate paths and code-size delta per implementation S. |
-| Stop Conditions | Stop and request owner direction for any selected row with neither source-backed rule nor defensible L2 input, any required protected asset/source import, or any requested implementation that would create another time owner. |
-| Exit Criteria | Every selected Model-339 capability is Manual/Other L3 or explicit L2 fallback; Core has one composed axis/deadline interface; VM profiles use one copied construction path; Standard/Turbo share semantics; full verification and Release 0473 close the task. |
-| Original Owner Request | Implement a complete whole-machine L3 closure across controllers, chips, devices, buses and motherboard on one guest axis; expose one Core-level profile input contract; use Standard pacing or Turbo no-wait. |
-| Similar-Issue Sweep | Sweep every elapsed-tick writer, host-clock conversion, device-local time counter, deadline producer and profile timing field across Core, VM, tests and build records. Each hit is consolidated, classified or transferred as a named selected-topology exception. |
+**Idle.**
 
 ## Current Technical Baseline
 
@@ -64,6 +47,14 @@
 | T465 | Closed: selected Intel 8272A source reconciliation, command/reset repair and per-drive parallel Seek close the logical controller contract. The retained physical/media/time boundaries use the current [Td S148](../etc/evidence/td-s148-eight-controller-l-level-reclassification-audit.md) classification. Release 0465 is stripped and the 294/294 serial gate is recorded in [history](../history/M5-T465-core-intel-8272a-logical-media-phase-contract.md). |
 
 ## Recent Governance
+
+- **M5 Td S149 P1:** withdrew the unimplemented profile-first T473 admission,
+  inserted the machine-neutral Core unified guest-time-axis candidate before
+  PC/AT 5170 root normalization, and corrected the governance gate to retain
+  completed Td identifiers from Status as well as commit history. The indexed
+  [evidence](../etc/evidence/td-s149-core-time-before-profile-governance.md)
+  records the predecessor/consumer boundary. No runtime, ABI, build or artifact
+  changed.
 
 - **M5 Td S148:** re-audits all 145 frozen PIC, DMA, PIT, RTC, KBC,
   8272A FDC, VADP EGA/CGA and ATA/HDC rows under the owner-approved hierarchy:
