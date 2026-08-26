@@ -2,8 +2,26 @@
 
 ## Current Work
 
-**No active subtask.** T479 S1 is accepted; its source and gap ledgers bound the next
-current-owner/profile sweep.
+## M5 T479 S2 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner's persistent queue-execution goal, expanded explicitly on 2026-08-25: T479 must source-audit and implement IBM 5160, IBM 5170, DeskPro 386 and default-at fixed-disk personalities, including selected ESDI; T479 S1 remains historical evidence. |
+| Objective | Trace all HDC paths and acquire/select primary sources for the IBM 5160 adapter, IBM 5170 WD1003/ST-506 and ESDI; revise the finite ledger and determine one Core-owned multi-personality boundary plus each named profile's frozen integration. |
+| Non-goals | No controller fact inferred solely from an emulator, raw-flux/ECC/mechanics approximation, guessed service timing/deadline, external-source import, mutable runtime configuration or any unselected profile capability. |
+| Reference Baseline | T479 S1 historical ledgers; T386 Compaq storage contract; T468 ATA closure; T474 Core time boundary; accepted T476--T478 profile routes; owner-expanded T479 result. |
+| Candidate Proposal | [PC fixed-disk controller standardization](../proposals/m5-at-fixed-disk-controller-standardization.md). |
+| Files And ABI Surface | Audit evidence/history/status; inspect `controller_interface`, HDC/Core plan, VM profile/session/model40 composition, HDD/firmware and tests. Runtime edits only if the complete audit proves an owner-local simplification. |
+| Applicable Rules | One mutable controller/media owner; immutable construction input; Core-owned port/IRQ/time; no duplicate product path; source-policy and documentation rules. |
+| Verification | Exact caller/definition inventory; primary IBM 5160/5170/ESDI manual quality and cross-model record; construction-to-freeze trace for ATA, Compaq, 5160, 5170 and ESDI routes; focused HDC/profile smokes and documentation governance. |
+| Expected Markers | `M5:T479:S2:HDC-OWNER-AUDIT:OK` and `M5:T479:S2:HDC-PROFILE-AUDIT:OK`. |
+| Asset Needs | Existing source, tests and S1 references only. |
+| Reporting Requirements | Reconcile historical S1 rows with the newly admitted 5160/IBM/ESDI universe; for every active row name owner/path/test/disposition; identify each real duplicate, its retained semantic reason or one replacement boundary; report code delta if any. |
+| Stop Conditions | Stop only if no legal primary manual can identify the 5160/5170/ESDI controller, a required profile architecture cannot be bounded, or a change would add a parallel controller/media/time owner; then report the exact missing authority. |
+| Exit Criteria | Revised row-complete owner/profile ledger identifies primary-backed 5160, 5170 and ESDI controllers, proves one HDC/media construction path per named personality, establishes replacement scope, and passes focused/governance verification. |
+| Original Owner Request | Continue queue work with global minimalist ownership and no additive workaround. |
+| Similar-Issue Sweep | All `core_machine_hdc_config`, protocol, ports, `lba28_supported`, media IDs, HDC plan calls, HDC lifecycle calls, firmware `1F0h` accesses and HDC smoke definitions. |
 
 ## Current Technical Baseline
 
