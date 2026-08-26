@@ -392,6 +392,15 @@ typedef struct core_machine_observation {
     core_machine_cpu_diagnostic diagnostic;
 } core_machine_observation;
 
+/* A copied guest-time observation. `next_deadline_valid` is true only when
+ * Core has composed an earliest source-qualified guest-observable deadline.
+ * Recurring scheduler maintenance is deliberately not such a deadline. */
+typedef struct core_machine_time_observation {
+    type_unsigned_64 elapsed_ticks;
+    type_unsigned_64 next_deadline_tick;
+    type_bool next_deadline_valid;
+} core_machine_time_observation;
+
 typedef struct core_machine_timeline_observation {
     type_unsigned_64 now;
     type_unsigned_64 next_sequence;
@@ -458,6 +467,8 @@ type_status core_machine_get_memory_bytes(
     const core_machine *machine, STD_SIZE_T *out_memory_bytes);
 type_status core_machine_get_elapsed_ticks(
     const core_machine *machine, type_unsigned_64 *out_elapsed_ticks);
+type_status core_machine_capture_time_observation(const core_machine *machine,
+    core_machine_time_observation *out_observation);
 type_status core_machine_get_timeline_observation(const core_machine *machine,
     core_machine_timeline_observation *out_observation);
 

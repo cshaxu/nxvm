@@ -2,7 +2,26 @@
 
 ## Current Work
 
-**Between accepted subtasks.**
+## M5 T469 S2 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | The owner approved T469's complete Standard/Turbo Core-L3 integration program and its S1--S5 plan. After accepted T469 S1, the coordinator admits the proposal's next bounded S2 contract-export step; no new controller source, profile policy or VM mutation is authorized. |
+| Objective | Add one opaque, copied Core deadline observation with explicit validity, reset and cancellation semantics; prove it cannot expose a controller/timeline pointer or turn recurring maintenance callbacks into a guest deadline. |
+| Non-goals | No host-clock tick injection, VM pacing change, `Sleep(1)` removal, controller-private getter, profile name in Core, new timing number, new controller implementation, deadline fabricated from a scheduler callback, or public mutable state. |
+| Reference Baseline | Accepted T469 S1 evidence and progress; T459 timing-policy evidence; core timing design; `machine.c`, `machine_scheduler.c`, timeline owner and current controller input contracts. |
+| Candidate Proposal | [M5 Core L3 integration closure and VM contract export](../proposals/m5-core-l3-integration-vm-contract-export.md), T469 S2. |
+| Files And ABI Surface | Expected: the minimum `core_machine` public value observation, its Core-private owner/state publication, focused Core/VM boundary smoke, T469 evidence/index/current packet and no VM runner change. Public API growth must be bounded, value-only and documented by test. |
+| Applicable Rules | Core exclusively owns guest time, deadline choice, reset and cancellation; VM reads copied observations only and never advances Core from wall time; one existing Core scheduler/timeline path remains; Core must not depend on VM/profile names; the API exposes no mutable layout or raw owner pointer. |
+| Verification | Sweep every Core-to-VM time query and all timeline/scheduler call sites; prove the observation has no deadline while only recurring maintenance exists; prove lifecycle/reset invalidates it; prove a caller receives copied values and cannot reach the timeline or a controller; run focused Core machine, session virtual-time/speed and documentation gates. |
+| Expected Markers | One `core_machine` value observation, one Core-owned publication path, explicit unavailable disposition for every present profile, no new VM time mutation, no new timing conversion and no duplicate scheduler. |
+| Asset Needs | Existing repository sources, accepted S1 ledger and project tests only; no external source or asset import. |
+| Reporting Requirements | Record public/header and private owner changes, all deadline validity transitions, source/test line delta, repeated-call/similar-issue sweep, focused/gate results and the precise S3 prerequisite. |
+| Stop Conditions | Stop and revise before code if an observation requires a controller pointer, a profile-specific branch in Core, a guessed numerical deadline, or changing a controller's source/timing ownership. |
+| Exit Criteria | A bounded, opaque Core observation exists and is reset/cancellation-safe; it reports no fabricated deadline for current maintenance-only profiles; focused boundary and regression tests plus documentation governance pass; S3 receives the exact immutable-plan qualification work with no hidden L3 claim. |
+| Original Owner Request | Continue the owner-approved complete Core L3 integration under the L0--L4 hierarchy, correct host/guest ownership, Standard/Turbo semantics and minimalist single-owner design. |
+| Similar-Issue Sweep | Inspect all Core observations, timeline queries, VM virtual-time sources, session speed/runner paths and controller scheduling callbacks for a second clock owner, pointer leak, duplicated deadline decision or host-derived guest time. |
 
 ## Current Technical Baseline
 

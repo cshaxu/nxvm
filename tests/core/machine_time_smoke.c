@@ -14,6 +14,7 @@ C_INT main(C_VOID)
     core_machine_run_budget budget = { 2u, 0u };
     core_machine_run_result result;
     core_machine_observation observation;
+    core_machine_time_observation time_observation;
     core_machine *machine = STD_NULL;
     const type_unsigned_8 nop = 0x90u;
     type_unsigned_64 elapsed = 0u;
@@ -28,6 +29,10 @@ C_INT main(C_VOID)
     failed |= machine_time_expect(core_machine_reset(machine));
     failed |= machine_time_expect(core_machine_get_elapsed_ticks(machine, &elapsed));
     failed |= elapsed != 0u;
+    failed |= core_machine_capture_time_observation(machine, &time_observation) !=
+        TYPE_STATUS_OK || time_observation.elapsed_ticks != 0u ||
+        time_observation.next_deadline_tick != 0u ||
+        time_observation.next_deadline_valid;
     failed |= core_machine_memory_write(machine, 0xfffffff0u, &nop, sizeof(nop)) !=
         TYPE_STATUS_OK;
     failed |= core_machine_memory_write(machine, 0xfffffff1u, &nop, sizeof(nop)) !=
@@ -39,6 +44,10 @@ C_INT main(C_VOID)
         result.ticks != 6u || result.elapsed_ticks != 6u;
     failed |= core_machine_capture_observation(machine, &observation) != TYPE_STATUS_OK;
     failed |= observation.elapsed_ticks != 6u;
+    failed |= core_machine_capture_time_observation(machine, &time_observation) !=
+        TYPE_STATUS_OK || time_observation.elapsed_ticks != 6u ||
+        time_observation.next_deadline_tick != 0u ||
+        time_observation.next_deadline_valid;
     budget.instructions = 1u;
     budget.ticks = 28u;
     failed |= core_machine_run(machine, budget, &result) != TYPE_STATUS_OK;
@@ -47,6 +56,10 @@ C_INT main(C_VOID)
     failed |= machine_time_expect(core_machine_reset(machine));
     failed |= machine_time_expect(core_machine_get_elapsed_ticks(machine, &elapsed));
     failed |= elapsed != 0u;
+    failed |= core_machine_capture_time_observation(machine, &time_observation) !=
+        TYPE_STATUS_OK || time_observation.elapsed_ticks != 0u ||
+        time_observation.next_deadline_tick != 0u ||
+        time_observation.next_deadline_valid;
     core_machine_destroy(machine);
     if (failed) return 1;
     STD_PRINTF("M5:T217:S2:TIME:OK\n");

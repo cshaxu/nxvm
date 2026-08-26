@@ -203,6 +203,20 @@ type_status core_machine_get_elapsed_ticks(
     return TYPE_STATUS_OK;
 }
 
+type_status core_machine_capture_time_observation(const core_machine *machine,
+    core_machine_time_observation *out_observation)
+{
+    if (machine == STD_NULL || out_observation == STD_NULL ||
+        machine->lifecycle == CORE_MACHINE_INITIALIZED ||
+        machine->lifecycle == CORE_MACHINE_RUNNING) {
+        return TYPE_STATUS_INVALID_STATE;
+    }
+    out_observation->elapsed_ticks = machine->elapsed_ticks;
+    out_observation->next_deadline_tick = 0u;
+    out_observation->next_deadline_valid = TYPE_FALSE;
+    return TYPE_STATUS_OK;
+}
+
 type_status core_machine_get_timeline_observation(const core_machine *machine,
     core_machine_timeline_observation *out_observation)
 {
