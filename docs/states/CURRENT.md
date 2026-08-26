@@ -2,13 +2,32 @@
 
 ## Current Work
 
-**Between accepted subtasks.**
+## M5 T469 S6 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | The owner's persistent Core-L3 closure authorization admits final T469 S6 after accepted S1--S5. |
+| Objective | Reconcile the frozen 145-row eligibility ledger, S2--S5 implementation and actual Core/VM source graph; build the stripped Release 0469 artifact and close T469 only if every claimed boundary has direct evidence. |
+| Non-goals | No new timing mechanism, profile qualification, host pacing algorithm, source/media import, L4 claim, hidden compatibility path or broad refactor. |
+| Reference Baseline | T469 proposal; accepted S1--S5 evidence; T388 physical-timebase boundary; current Core deadline/timebase APIs, VM waiting path and 145-row ledger. |
+| Candidate Proposal | [M5 Core L3 integration closure and VM contract export](../proposals/m5-core-l3-integration-vm-contract-export.md), T469 S6. |
+| Files And ABI Surface | Expected only closure evidence/history/status and Release artifact record unless audit identifies an in-scope defect requiring a revised packet. |
+| Applicable Rules | One Core guest-time owner, VM never supplies ticks, copied opaque values only, no profile identity in Core, explicit L2 fallback, one waiting production path and removal of obsolete paths. |
+| Verification | Run documentation, static T388/T447, current-gates, focused deadline/timebase/speed/profile tests; inspect all `advance_time` callers and virtual-time residue; build stripped Release 0469, record hash/banner/source commit. |
+| Expected Markers | S1 ledger dispositions retained; S3 deadline and S4 timebase are distinct values; S5 is the only VM wait request; all current profiles remain explicit L2 fallback. |
+| Asset Needs | Existing repository source and evidence only. |
+| Reporting Requirements | Record requirement-to-proof matrix, complete static sweep, gate/artifact results, code-size total, retained owner paths and every residual transfer. |
+| Stop Conditions | Stop instead of closing if any VM host tick path, unqualified profile pacing, missing ledger disposition, failed gate or release artifact discrepancy remains. |
+| Exit Criteria | Evidence proves all T469 S1--S6 requirements and the current artifact is stripped Release 0469; T469 history/status/queue agree and no active packet remains. |
+| Original Owner Request | Complete the Core L3 timing integration correctly and minimally, with Core-owned guest time and clean architecture/code/documentation closure. |
+| Similar-Issue Sweep | Full repository search over Core time APIs, VM waits/speed/platform clock code, profile composition, CMake targets, T469 evidence/index/status and current gate registrations. |
 
 ## Current Technical Baseline
 
-- **Current developer artifact:** target `vm-0-5-0468`; the stripped Release
-  `nxvm_0_5_0468.exe` has SHA-256
-  `99100D6B99ABD98FF584F6B4179B6BC8B96519B53F234FBE4CC45DDBAC860BF5`.
+- **Current developer artifact:** target `vm-0-5-0469`; the stripped Release
+  `nxvm_0_5_0469.exe` has SHA-256
+  `F9A59801F426AC02A367F9DBE1EFF7DAB84EEBC4C868831EF5917890FD37A07F`.
   Debug remains the current-gate route. T434 has one copied Core timing-plan
   publication route for default PC/AT, IBM 5170 Model 339 and Model-40 BYOB
   session composition.
