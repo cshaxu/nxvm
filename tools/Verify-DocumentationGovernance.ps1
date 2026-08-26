@@ -180,7 +180,26 @@ function Get-IdentifierRecordsFromSubjects([string[]]$subjects) {
 function Get-ClosedIdentifierRecords([string]$repositoryRoot) {
     $subjects = @(git -C $repositoryRoot log --format=%s)
     Require ($LASTEXITCODE -eq 0) "Git commit history is required to validate active identifier allocation."
-    return @(Get-IdentifierRecordsFromSubjects $subjects)
+    $records = @(Get-IdentifierRecordsFromSubjects $subjects)
+    $historyRoot = Join-Path $repositoryRoot "docs/history"
+    $historyRecords = @(
+        Get-ChildItem -LiteralPath $historyRoot -File -Filter "M*-T*-*.md" |
+        ForEach-Object {
+            $match = [regex]::Match(
+                $_.Name,
+                '^M(?<milestone>\d+)-T(?<task>\d+)-'
+            )
+            if ($match.Success) {
+                [pscustomobject]@{
+                    Milestone = [int]$match.Groups['milestone'].Value
+                    Task = [int]$match.Groups['task'].Value
+                    Subtask = $null
+                    IsDocumentation = $false
+                }
+            }
+        }
+    )
+    return @($records + $historyRecords)
 }
 
 function Get-ActivePacket([string]$status) {
@@ -263,7 +282,7 @@ function Require-ActiveIdentifier([pscustomobject]$packet, [string]$repositoryRo
     $closed = @(Get-ClosedIdentifierRecords $repositoryRoot | Where-Object {
         $_.Milestone -ne $packet.Milestone -or
         $_.Task -ne $packet.Task -or
-        $_.Subtask -ne $packet.Subtask -or
+        ($null -ne $_.Subtask -and $_.Subtask -ne $packet.Subtask) -or
         $_.IsDocumentation -ne $packet.IsDocumentation
     })
     if ($packet.IsDocumentation) {

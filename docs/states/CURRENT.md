@@ -2,7 +2,26 @@
 
 ## Current Work
 
-**Idle.**
+## M5 T474 S1 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New |
+| Admission And Approval | Owner approved on 2026-08-25: admit the queue-first Core unified guest-time-axis and Core-to-VM boundary task before IBM 5170, DeskPro and default-at profile connections. |
+| Objective | Freeze the complete machine-neutral convergence ledger for current Core guest-time writers, CPU/transaction cost paths, controller deadline owners, copied observations and VM pacing consumers. |
+| Non-goals | No runtime timing change, Core/VM ABI change, profile data, profile resolver, IBM/Compaq/default-at selection, source import, firmware/media use, new timing formula, L4 claim or Release artifact in S1. |
+| Reference Baseline | T469--T472 historical time/deadline/pacing contracts; Td S149/S150 dependency order; target `vm-0-5-0472`, SHA-256 `C2B9B95B8A124B96106369E4D88D592A6A7A090D16401C176E93B91349E28BDE`. |
+| Candidate Proposal | [Core unified guest-time axis and VM boundary](../proposals/m5-core-unified-guest-time-axis-and-vm-boundary.md). |
+| Files And ABI Surface | Current Core machine/scheduler/executor/device time owners, VM session waiting/runner/profile-plan consumers, focused tests, and a new T474 convergence ledger/evidence index; S1 changes documentation/evidence only. |
+| Applicable Rules | `docs/design/ARCHITECTURE.md`, `docs/design/CODING.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`, `docs/rules/DOCUMENT.md`, `docs/rules/EXECUTION.md`, `docs/etc/architecture/specification-driven-l3-timing.md`, and source policy: Core is sole mutable time owner; cross-boundary values are copied/immutable; profiles are consumers; L2 provenance remains explicit; no external source import. |
+| Verification | Complete static route sweep for elapsed-time writers, deadline producers, Core observations, host-clock crossings and profile inputs; ledger completeness check; documentation governance. No build is required unless S1 changes code. |
+| Expected Markers | `M5:T474:S1:CORE-TIME-CONVERGENCE-LEDGER:OK`. |
+| Asset Needs | Existing project-owned timing/controller evidence and read-only source citations only when required to classify an existing generic rule; no third-party source, firmware, guest media or machine-local path enters the repository. |
+| Reporting Requirements | Record the finite universe, each owner and reader, L3/L2/ineligible disposition, duplicated/obsolete path finding, profile-neutral input boundary, regression owner and earliest receiver. Report zero runtime change and code-size delta for S1. |
+| Stop Conditions | Stop for owner direction if a purported generic Core rule requires a machine name, if two mutable time owners cannot be consolidated without profile facts, if no defensible L2 disposition exists, or if source/license policy would require import. |
+| Exit Criteria | One durable row-complete convergence ledger exists; all current time and boundary paths have a disposition and receiver; no profile or VM time writer is misclassified as Core; no implementation or artifact changes; documentation governance passes. |
+| Original Owner Request | Establish correct whole-machine L3 structure and interfaces first, then connect IBM 5170, DeskPro 386 and default-at in that order. |
+| Similar-Issue Sweep | Sweep Core scheduler/executor/machine/controller sources, VM composition/session/profile sources, tests, CMake and retained T469--T472 evidence for any additional time writer, raw owner exposure, duplicate observation, host-generated tick or profile-specific Core branch. |
 
 ## Current Technical Baseline
 
@@ -37,6 +56,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T473 | Withdrawn before implementation: the profile-first time-axis admission was split by Td S149 so machine-neutral Core time integration precedes all profile connections. Its identifier and proposal are retained in history; no runtime or artifact changed. |
 | T472 | Closed: Model-339 has a retained L2 macro rate; Standard uses it without host-generated guest time, Turbo skips only its wait, and unqualified profiles no longer take a fixed HLT sleep. [Closure audit](../etc/evidence/t472-s3-integration-closure-audit.md) records Release 0472. |
 | T471 | Closed: Standard compares copied completed Core time with a monotonic host budget and waits only for a positive lead; Turbo omits that wait and HLT deadline advancement is budget-gated. The [closure audit](../etc/evidence/t471-s3-integration-closure-audit.md) records Release 0471. |
 | T470 | Closed: S1--S6 establish one copied Core physical-axis contract, retain every current profile at unqualified/zero, separate Standard's L2 HLT backoff from Turbo's no-wait behavior, and record stripped Release 0470 in the [closure audit](../etc/evidence/t470-s6-integration-closure-audit.md). |
@@ -44,7 +64,6 @@
 | T468 | Closed: the ATA-3 15-row task-file/media contract has one HDC owner, one media owner and one PIC route; the serial current gate passes 295/295 and stripped Release 0468 is recorded in [history](../history/M5-T468-core-hdc-ata-phase-contract.md). |
 | T467 | Closed: all 17 selected IBM-CGA rows reconcile to one VADP/Core/profile/snapshot path. Source and model facts remain retained; their current L3/L2/L1/L0 interpretation is [Td S148](../etc/evidence/td-s148-eight-controller-l-level-reclassification-audit.md). Serial current-gate passes 295/295; stripped Release 0467 is recorded in [history](../history/M5-T467-core-ibm-cga-completeness.md). |
 | T466 | Closed: Manual-L3 D/E/10 geometry reaches the single VADP state owner through real firmware and guest port writes. The profile declaration, cold-start/text routing and all fixtures now agree; unknown planar geometry falls through existing legacy selection rather than inventing a frame. The stripped Release 0466 artifact and its hash are recorded in [history](../history/M5-T466-core-vadp-phase-contract.md). |
-| T465 | Closed: selected Intel 8272A source reconciliation, command/reset repair and per-drive parallel Seek close the logical controller contract. The retained physical/media/time boundaries use the current [Td S148](../etc/evidence/td-s148-eight-controller-l-level-reclassification-audit.md) classification. Release 0465 is stripped and the 294/294 serial gate is recorded in [history](../history/M5-T465-core-intel-8272a-logical-media-phase-contract.md). |
 
 ## Recent Governance
 
