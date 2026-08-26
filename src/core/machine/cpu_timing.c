@@ -199,7 +199,7 @@ static C_INT core_machine_cpu_timing_has_8086_lock_prefix(
     return 0;
 }
 
-/* Intel's 8086/80186 timing tables assign LOCK a two-clock prefix term.  Its
+/* Intel's 8086/8088/80186 timing tables assign LOCK a two-clock prefix term. Its
  * applicability is a decoder/semantic question; once a valid instruction
  * has retired and one source row owns its base cost, this sole selector owns
  * the additive clock term. */
@@ -210,6 +210,7 @@ static C_INT core_machine_cpu_timing_apply_8086_lock(core_machine *machine,
 
     if (machine == STD_NULL || result == STD_NULL) return 0;
     if (machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_8086 &&
+        machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_8088 &&
         machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_80186) return 1;
     data = &machine->executor_cpu_instructions.data;
     if (!core_machine_cpu_timing_has_8086_lock_prefix(data) ||

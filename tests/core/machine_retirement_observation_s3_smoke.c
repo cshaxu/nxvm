@@ -421,6 +421,17 @@ C_INT main(C_VOID)
     const type_unsigned_8 add_register[] = { 0x01u, 0xc8u };
     const type_unsigned_8 add_register_memory[] = { 0x03u, 0x06u, 0x00u, 0x10u };
     const type_unsigned_8 add_memory_register[] = { 0x01u, 0x06u, 0x00u, 0x10u };
+    const type_unsigned_8 mov_sreg_memory[] = { 0x8cu, 0x06u, 0x00u, 0x10u };
+    const type_unsigned_8 mov_sreg_register[] = { 0x8cu, 0xd8u };
+    const type_unsigned_8 mov_ds_memory[] = { 0x8eu, 0x1eu, 0x00u, 0x10u };
+    const type_unsigned_8 lds_memory[] = { 0xc5u, 0x06u, 0x00u, 0x10u };
+    const type_unsigned_8 xlat[] = { 0xd7u };
+    const type_unsigned_8 shift_memory[] = { 0xd1u, 0x26u, 0x00u, 0x10u };
+    const type_unsigned_8 push_ds[] = { 0x1eu };
+    const type_unsigned_8 pop_ds[] = { 0x1fu };
+    const type_unsigned_8 lock_add_memory[] = { 0xf0u, 0x01u, 0x06u, 0x00u, 0x10u };
+    const type_unsigned_8 mul_al[] = { 0xf6u, 0xe0u };
+    const type_unsigned_8 wait[] = { 0x9bu };
     const type_unsigned_8 push_register[] = { 0x50u };
     const type_unsigned_8 pop_register[] = { 0x58u };
     const type_unsigned_8 call_near[] = { 0xe8u, 0x00u, 0x00u };
@@ -532,6 +543,30 @@ C_INT main(C_VOID)
         retirement_8088_primary_case(add_memory_register,
             sizeof(add_memory_register), 30u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY) ||
+        retirement_8088_primary_case(mov_sreg_memory, sizeof(mov_sreg_memory), 19u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY) ||
+        retirement_8088_primary_case(mov_sreg_register, sizeof(mov_sreg_register),
+            2u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY) ||
+        retirement_8088_primary_case(mov_ds_memory, sizeof(mov_ds_memory), 18u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY) ||
+        retirement_8088_primary_case(lds_memory, sizeof(lds_memory), 30u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY) ||
+        retirement_8088_primary_case(xlat, sizeof(xlat), 15u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY) ||
+        retirement_8088_primary_case(shift_memory, sizeof(shift_memory), 29u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY) ||
+        retirement_8088_primary_case(push_ds, sizeof(push_ds), 14u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK) ||
+        retirement_8088_primary_case(pop_ds, sizeof(pop_ds), 12u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK) ||
+        retirement_8088_primary_case(lock_add_memory, sizeof(lock_add_memory), 32u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY) ||
+        retirement_unallocated_profile_case(CORE_MACHINE_CPU_PROFILE_8088,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_COMPATIBILITY, mul_al,
+            sizeof(mul_al), 1) ||
+        retirement_unallocated_profile_case(CORE_MACHINE_CPU_PROFILE_8088,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_COMPATIBILITY, wait,
+            sizeof(wait), 1) ||
         retirement_8088_primary_case(push_register, sizeof(push_register), 15u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK) ||
         retirement_8088_primary_case(pop_register, sizeof(pop_register), 12u,

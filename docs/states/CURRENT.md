@@ -2,12 +2,28 @@
 
 ## Current Work
 
-**Open: M5 T486.**
+**Open: M5 T486 S4.**
 
-T486 S3 is accepted at `493cfd86`: its complete List-2 ledger preserves one
-Core selector/primary/control-stack implementation receiver, identifies every
-present source path and retains only explicit range/x87 boundaries. The next
-stage is one whole-batch implementation; no per-opcode repair is permitted.
+## M5 T486 S4 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner-approved Td S152 complete-unit program and continuous execution on 2026-08-26; accepted T486 S3 at `1d7058f4` fixes the complete List-2 implementation batch. |
+| Objective | Complete T486's entire List-2 8088 source-timing batch at the existing private Core selector/primary/control-stack owners. |
+| Non-goals | No board/ISA cycle, prefetch, host pacing, profile, VM, controller, FPU-service, new public API or second timing owner. No exact Group-3 range selection or x87 service-time invention. |
+| Reference Baseline | T486 S1/S2/S3 evidence, current `cpu_timing.c`, `cpu_timing_model.c`, `cpu_instructions.c` and retirement-observation smoke. |
+| Candidate Proposal | [8088 instruction function and timing completeness](../proposals/m5-8088-instruction-timing-completeness.md). |
+| Files And ABI Surface | Private Core timing model/selector and focused retirement test/evidence/history/Current only; no public header or ABI change. |
+| Applicable Rules | `docs/design/ARCHITECTURE.md`, `docs/design/CODING.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`, `docs/rules/EXECUTION.md` and `docs/rules/DOCUMENT.md`. Core remains sole decode/execution/timing owner; retain one direct selection chain and delete no live distinct behavior. |
+| Verification | Extend source-to-retirement proof for every newly selected List-2 class; prove valid LOCK term and prefix non-independence; prove Group-3/x87 source-unallocated behavior; run focused smoke, current gate and documentation governance. |
+| Expected Markers | One owner-local source-form classification extension, no new selector or public state, exact Manual-L3 rows selected from S2, and visible source-unallocated boundaries for unresolved range/x87 rows. |
+| Asset Needs | Existing committed Intel evidence and current source/tests only; no third-party source, firmware, guest media or external-service import. |
+| Reporting Requirements | Record every List-2 disposition before/after, retained owner path, source/test coverage, compatibility removal or retained reason, code-line delta and no new state owner. |
+| Stop Conditions | Stop if a row needs a new source authority, board timing, FPU-service contract, public ABI or second owner; transfer that whole row class rather than estimate it. |
+| Exit Criteria | Every exact manual 8088 List-2 row selects at its existing owner with focused proof; Group-3 and x87 boundaries cannot silently claim Manual-L3 through compatibility; no duplicate path or untracked List-2 item remains. |
+| Original Owner Request | Implement only after the complete source/List-1/List-2 sequence, as one correct minimal owner-local result rather than accumulated opcode patches. |
+| Similar-Issue Sweep | Sweep all 8088 prefix, segment-register, pointer, Group-2, XLAT, Group-3, ESC/WAIT and compatibility paths, plus focused test coverage and every selector call site. |
 
 ## Current Technical Baseline
 

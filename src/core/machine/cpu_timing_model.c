@@ -2079,6 +2079,53 @@ C_INT core_machine_primary_source_instruction_cost(
             2u * core_machine_80286_timing_odd_word(data);
         return 1;
     }
+    if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_8088) {
+        type_unsigned_8 extension = prefixes + 1u < data->oplen ?
+            (data->opcodes[prefixes + 1u] >> 3u) & 7u : 8u;
+
+        if (opcode == 0x8cu || opcode == 0x8eu) {
+            if (extension > 3u || (opcode == 0x8eu && extension == 1u)) return 0;
+            machine->source_timing_form_id = data->flagMem ?
+                CORE_MACHINE_SOURCE_TIMING_MOV_SREG_MEMORY :
+                CORE_MACHINE_SOURCE_TIMING_MOV_SREG_REGISTER;
+            if (!data->flagMem) {
+                if (segment_override) return 0;
+                *out_ticks = 2u;
+                return 1;
+            }
+            *out_ticks = (opcode == 0x8cu ? 9u : 8u) +
+                core_machine_8086_timing_effective_address(data, prefixes) + 4u;
+            if (segment_override) *out_ticks += CORE_MACHINE_8086_SEGMENT_OVERRIDE_TICKS;
+            return 1;
+        }
+        if ((opcode == 0xc4u || opcode == 0xc5u) && data->flagMem) {
+            machine->source_timing_form_id = CORE_MACHINE_SOURCE_TIMING_8086_LOAD_POINTER;
+            *out_ticks = 16u + core_machine_8086_timing_effective_address(data,
+                prefixes) + 8u;
+            if (segment_override) *out_ticks += CORE_MACHINE_8086_SEGMENT_OVERRIDE_TICKS;
+            return 1;
+        }
+        if (opcode == 0xd7u) {
+            machine->source_timing_form_id = CORE_MACHINE_SOURCE_TIMING_8086_XLAT;
+            *out_ticks = 15u;
+            if (segment_override) *out_ticks += CORE_MACHINE_8086_SEGMENT_OVERRIDE_TICKS;
+            return 1;
+        }
+        if ((opcode == 0xd0u || opcode == 0xd1u || opcode == 0xd2u ||
+            opcode == 0xd3u) && extension != 6u) {
+            type_unsigned_64 count = (opcode == 0xd0u || opcode == 0xd1u) ?
+                1u : TYPE_MASK_UNSIGNED_8(data->oldcpu.data.cx);
+
+            if (segment_override && !data->flagMem) return 0;
+            machine->source_timing_form_id = CORE_MACHINE_SOURCE_TIMING_8086_GROUP2;
+            *out_ticks = data->flagMem ?
+                ((opcode == 0xd0u || opcode == 0xd1u) ? 15u : 20u + 4u * count) +
+                    core_machine_8086_timing_effective_address(data, prefixes) + 8u :
+                ((opcode == 0xd0u || opcode == 0xd1u) ? 2u : 8u + 4u * count);
+            if (segment_override) *out_ticks += CORE_MACHINE_8086_SEGMENT_OVERRIDE_TICKS;
+            return 1;
+        }
+    }
     if (!core_machine_source_timing_primary_shape(data, prefixes, &shape)) {
         return 0;
     }
@@ -2842,12 +2889,21 @@ C_INT core_machine_control_stack_source_instruction_cost(
 
     switch (opcode) {
     case 0x06u: case 0x0eu: case 0x16u: case 0x1eu:
+        if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_8088) {
+            machine->source_timing_form_id = CORE_MACHINE_SOURCE_TIMING_PUSH_REGISTER;
+            *out_ticks = 14u;
+            return 1;
+        }
         if (machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_80286 &&
             machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_80386) return 0;
         *out_ticks = core_machine_control_stack_source_lookup(machine,
             CORE_MACHINE_SOURCE_TIMING_PUSH_REGISTER);
         return 1;
     case 0x07u: case 0x17u: case 0x1fu:
+        if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_8088) {
+            return core_machine_control_stack_source_result(machine,
+                CORE_MACHINE_SOURCE_TIMING_POP_REGISTER, 0u, 0, out_ticks);
+        }
         if (machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_80286 &&
             machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_80386) {
             return 0;
