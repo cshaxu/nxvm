@@ -2,13 +2,13 @@
 
 ## Current Work
 
-**Open: M5 T488 S1.**
+**Open: M5 T488 S2.**
 
-## M5 T488 S1 Packet
+## M5 T488 S2 Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | New |
+| Identifier Mode | Continuation |
 | Admission And Approval | T487 closed; the next independent Queue unit is IBM 5160 8259A. |
 | Objective | Establish the original 8259A and IBM XT wiring source ledger before a complete PIC List 1. |
 | Non-goals | No PIC code repair, AT cascade work, firmware/media import or inferred timing. |
@@ -60,6 +60,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T488 S1 | Accepted: visually verified Intel 8259A and IBM XT primary source ledger establishes the finite PIC List-1 basis. [Evidence](../etc/evidence/t488-s1-8259a-original-source-ledger.md). |
 | T487 | Closed: complete IBM board source/List-1/List-2 reconciliation retains the single Intel clock-total owner and explicit L2 physical-phase boundaries. [Closure audit](../etc/evidence/t487-s5-5160-board-closure-audit.md). |
 | T486 | Closed: the complete 8088 manual source/List-1/List-2/one-owner implementation chain closes without a parallel timing path; Group-3, WAIT and non-string-prefix source boundaries remain explicit. [Closure audit](../etc/evidence/t486-s5-8088-closure-audit.md). |
 | T485 | Withdrawn, not completed: accepted S1--S20 evidence remains retained, but Td S152 transfers the uncompleted aggregate XT scope to independent CPU/board/controller candidates. [Record](../etc/evidence/td-s152-unit-task-admission-governance.md). |
