@@ -14,7 +14,7 @@
 | Non-goals | No implementation in this S; no selected image/geometry, option-ROM bytes/mapping, session/runnable XT route, ATA shim, raw MFM, physical service time, guessed hardware-status bits, second HDC/CHS/media cache or generic XT framework. |
 | Reference Baseline | Accepted T484 S12 X1--X17 source contract and S13 tagged Core HDC/DMA3/IRQ5 wiring; IBM 6139790 is normative and 86Box/PCjs remain non-normative cross-checks. |
 | Candidate Proposal | [IBM PC/XT 5160-268 selected-device functional closure](../proposals/m5-xt-5160-268-device-functional-closure.md). |
-| Files And ABI Surface | Evidence, history and Current packet only.  A later implementation S may touch the existing Core HDC state/port/DMA callbacks and focused tests only after this brief is accepted; no VM session or public product request surface. |
+| Files And ABI Surface | Evidence, history and Current packet only. A later implementation S may touch the existing Core HDC state/port/DMA callbacks and focused tests only after this brief is accepted; no VM session or public product request surface. |
 | Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, `docs/design/ARCHITECTURE.md`, `docs/design/CODING.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`, source policy and the one HDC/media-owner boundary. |
 | Verification | Row-complete X1--X17 reconciliation: rendered IBM page/section, existing sole Core owner, exact state/port/DMA/IRQ receiver, independent Other-L3 corroboration, explicit L1/unsupported transfer; documentation governance and actual evidence review. |
 | Expected Markers | `M5:T484:S14:XEBEC-LOGICAL-CONTRACT:OK`; `M5:T484:S14:XEBEC-NO-GUESSED-STATUS:OK`; `M5:T484:S14:XEBEC-IMPLEMENTATION-BRIEF:OK`. |
@@ -60,6 +60,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T484 S14 | Accepted: X1--X17 now have one source-bounded Xebec Core receiver: byte-stack/command state and DMA callbacks stay in the sole HDC owner; ATA reuse, selected geometry, ROM, physical behavior and guessed hardware status remain explicit transfers. [Evidence](../etc/evidence/t484-s14-xebec-logical-implementation-brief.md). |
 | T484 S2 | Accepted: rendered Intel/IBM evidence permits shared 8086 semantics but requires a Core-owned four-byte 8088 queue policy and forbids a false 8086 alias. [Evidence](../etc/evidence/t484-s2-xt-8088-compatibility-matrix.md). |
 | T482 | Closed: one strict root YAML request reaches the sole `SESSION OPEN` authority and resolver without CLI re-encoding; 296/296 current-gate tests and stripped Release 0480 pass. [Closure audit](../etc/evidence/t482-s4-closure-audit.md). |
 | T483 | Closed: the IBM 5160-268 BOM, complete current-owner capability matrix and Manual-L3/unresolved timing partition establish one functional and one timing receiver without implying an XT runtime path. [Closure evidence](../etc/evidence/t483-s3-xt-timing-source-partition.md). |
