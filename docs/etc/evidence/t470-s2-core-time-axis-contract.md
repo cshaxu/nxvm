@@ -50,4 +50,3 @@ so runner behavior remains T469's L2 HLT load backoff.
 S3 must qualify CPU normal, deferred-wait, fault/interrupt/halt and transaction
 outcomes against this one axis. It may not set a profile rate, create a second
 counter or relax T388's unallocated-success prohibition.
-
