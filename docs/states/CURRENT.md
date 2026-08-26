@@ -2,34 +2,34 @@
 
 ## Current Work
 
-**Active: M5 T484 S8.**
+**Active: M5 T484 S9.**
 
-## M5 T484 S8 Packet
+## M5 T484 S9 Packet
 
 | Field | Required record |
 | --- | --- |
 | Identifier Mode | Continuation |
-| Admission And Approval | Owner-approved continuous execution toward the pre-Windows L3 admission audit; accepted T484 S7 P1 `6f726c42` supplies the selected IBM keyboard protocol and sole-owner boundary. |
-| Objective | Implement one Core-owned XT 8255/PPI keyboard attachment that owns ports `60h`--`63h`, its byte-ready/reset/line state and PIC IRQ1 publication for the selected 101/102-key protocol, with immutable XT plan selection and no AT alias. |
-| Non-goals | No FDC/drive-media binding, ROM manifest/mapping, Xebec personality, generic XT, ATA shim, AUX/PS2 behavior, 8042 alteration, host-pacing claim, unqualified physical-delay estimate, protected-mode or Windows claim. |
-| Reference Baseline | Accepted T483 S1--S3 and T484 S1--S7 evidence; IBM 5155/5160 Technical Reference; current Core KBC, PIC, ports, machine-plan, resolver and typed-input owners. |
+| Admission And Approval | Owner-approved continuous execution toward the pre-Windows L3 admission audit; accepted T484 S8 P1 `fdbe0c86` closes the independent keyboard half of B3 and leaves the source-gated FDC input as the next finite receiver. |
+| Objective | Qualify the exact selected IBM 5160-268 half-height diskette mechanism, capacity/geometry and immutable media declaration needed to bind the existing Core 8272A/FDC owner through the sourced XT `3F2h`, IRQ6 and DMA2 route. |
+| Non-goals | No FDC/drive-media implementation, ROM manifest/mapping, Xebec personality, generic XT, ATA shim, PC/AT `3F7h` route, 1.44 MB substitution, physical service-time estimate, protected-mode or Windows claim. |
+| Reference Baseline | Accepted T483 S1--S3 and T484 S1--S8 evidence; IBM 5155/5160 Technical Reference, Product Reference and selected-drive source material; existing Core FDC/media/DMA/PIC/plan owners. |
 | Candidate Proposal | [IBM PC/XT 5160-268 selected-device functional closure](../proposals/m5-xt-5160-268-device-functional-closure.md). |
-| Files And ABI Surface | Core XT PPI/keyboard implementation and plan configuration, XT resolver construction, focused Core/profile regressions and evidence/history/status; no public VM command grammar or external asset surface change. |
-| Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`, project architecture/coding design, source policy and the proposal's no-parallel-path boundary. |
-| Verification | Focused make/break, port/latch, clock-inhibit, reset/result and IRQ1 tests; profile-plan/AT-isolation sweep; actual-change and duplicate-owner review; documentation governance and applicable current-gate verification. |
-| Expected Markers | `M5:T484:S8:XT-PPI-KEYBOARD:OK`; `M5:T484:S8:XT-IRQ1-RESET:OK`; `M5:T484:S8:NO-8042-ALIAS:OK`. |
-| Asset Needs | Existing accepted IBM manual baseline and read-only corroboration only; no third-party source, firmware, guest media, local path or code import enters the repository. |
-| Reporting Requirements | Record the retained Core owner, all added/removed tracked source/test lines, immutable plan input, every port/IRQ/reset result, timing transfer, focused proof and AT-isolation sweep. |
+| Files And ABI Surface | Source evidence/history/status plus read-only current FDC/media/plan/profile paths; no runtime, ABI, profile/session construction or artifact change is authorized. |
+| Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, architecture/coding rules, source policy and the proposal's no-parallel-path boundary. |
+| Verification | Rendered/manual-versus-OCR cross-check for each drive/controller assertion; separate primary source from external-emulator corroboration; verify selected capacity/geometry/media input and exact existing owner boundary; documentation governance and actual-change review. |
+| Expected Markers | `M5:T484:S9:XT-FDC-SOURCE:OK`; `M5:T484:S9:XT-NO-AT-FDC-ALIAS:OK`. |
+| Asset Needs | Existing accepted IBM material and read-only corroboration only; no third-party source, firmware, guest media, local path or code import enters the repository. |
+| Reporting Requirements | Record source quality, selected drive/mechanism/capacity/geometry result, every `3F2h`/IRQ6/DMA2/reset fact, missing fact and one minimal implementation or transfer; do not attach an image, firmware or external source code. |
 | Original Owner Request | Continue the ordered minimalist queue toward the pre-Windows L3 admission audit. |
-| Stop Conditions | Stop and transfer any relation that would require 8042 state, a guessed delay conversion, or an unselected keyboard capability; do not add a second host-to-guest queue, a VM guest-state mirror or an XT generic route. |
-| Exit Criteria | One selected XT plan constructs one Core PPI/keyboard owner; focused tests prove guest ports, byte consumption, line controls, reset/result and IRQ1; PC/AT 8042 behavior remains unchanged and no duplicate input state/path exists. |
-| Similar-Issue Sweep | XT/PC/AT keyboard controllers, PPI, port `60h`--`64h`, host-key mapping, native scan-set input, PIC IRQ1, reset, plan validation and profile/session construction paths. |
+| Stop Conditions | Stop and transfer if primary material cannot establish the selected drive mechanism/capacity/geometry or if a claimed route requires `3F7h`, a PC/AT drive descriptor, 1.44 MB media, guessed service duration or profile-owned FDC/media state. |
+| Exit Criteria | One source-qualified immutable XT FDC/media declaration is ready for the next implementation S, or every missing selection fact has an explicit earliest receiver; the matrix proves no PC/AT alias and no second FDC/media owner. |
+| Similar-Issue Sweep | IBM XT/AT diskette source, `3F2h`--`3F7h`, IRQ6, DMA2, reset, Core FDC/media configuration, profile resolver/topology and current PC/AT drive materialization paths. |
 
 ## Current Technical Baseline
 
 - **Current developer artifact:** target `vm-0-5-0484`; the stripped Release
   `nxvm_0_5_0484.exe` has SHA-256
-  `9AEB6BA6F9084270A9902717D60E921E2CD0164189477B7B541BDF3A26F36650`.
+  `06A1252B3928E42C0DEF6504398EF0795BC72A8CA641FD26B216FE9FAA2174B9`.
   Debug remains the current-gate route. T471 preserves Core-owned progression:
   a verified axis is Standard-paced only by host waiting against completed
   Core progress. T472 extends that comparison to an explicit L2 macro axis,
