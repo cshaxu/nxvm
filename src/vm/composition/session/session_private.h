@@ -68,6 +68,10 @@ struct vm_session {
     vm_session_fault_outcome fault_outcome;
     vm_session_control_state control;
     vm_session_speed speed;
+    type_unsigned_64 pacing_host_origin_units;
+    type_unsigned_64 pacing_host_units_per_second;
+    type_unsigned_64 pacing_core_origin_ticks;
+    type_bool pacing_origin_valid;
     vm_session_config retained_config;
     vm_session_boot_preference boot_preference;
     C_INT model40_private;

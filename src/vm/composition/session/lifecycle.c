@@ -39,6 +39,7 @@
 
 
 #include "vm/composition/session/display.h"
+#include "vm/composition/session/waiting.h"
 
 
 #include "vm/composition/session/lifecycle.h"
@@ -219,6 +220,7 @@ type_status vm_session_finish_reset(vm_session *machine, type_status status)
     if (machine == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
     if (status != TYPE_STATUS_OK) return vm_session_start_outcome_record(machine,
         status);
+    vm_session_pacing_reset(machine);
     machine->model40_fdc_terminal_observation_valid = TYPE_FALSE;
     vm_session_start_outcome_clear(machine);
     if (!vm_session_control_is_running(&machine->control)) {

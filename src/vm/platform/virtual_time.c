@@ -33,13 +33,22 @@ static type_status vm_platform_virtual_time_read_units(type_unsigned_64 *out_uni
     return TYPE_STATUS_OK;
 }
 
+type_status vm_platform_host_monotonic_counter(type_unsigned_64 *out_units,
+    type_unsigned_64 *out_units_per_second)
+{
+    if (out_units == STD_NULL || out_units_per_second == STD_NULL) {
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
+    return vm_platform_virtual_time_read_units(out_units, out_units_per_second);
+}
+
 type_status vm_platform_host_milliseconds(type_unsigned_64 *out_milliseconds)
 {
     type_unsigned_64 units;
     type_unsigned_64 units_per_second;
 
     if (out_milliseconds == STD_NULL ||
-        vm_platform_virtual_time_read_units(&units, &units_per_second) != TYPE_STATUS_OK ||
+        vm_platform_host_monotonic_counter(&units, &units_per_second) != TYPE_STATUS_OK ||
         units_per_second == 0u || units / units_per_second > UINT64_MAX / 1000u) {
         return TYPE_STATUS_FAULT;
     }

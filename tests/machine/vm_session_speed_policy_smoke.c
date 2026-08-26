@@ -5,6 +5,17 @@
 #include "vm/composition/session/session_private.h"
 #include "vm/composition/session/waiting.h"
 
+static C_INT verify_ratio_compare(void)
+{
+    return vm_session_pacing_ratio_compare(1u, 2u, 2u, 3u) >= 0 ||
+        vm_session_pacing_ratio_compare(2u, 3u, 1u, 2u) <= 0 ||
+        vm_session_pacing_ratio_compare(7u, 11u, 14u, 22u) != 0 ||
+        vm_session_pacing_ratio_compare(UINT64_MAX - 1u, UINT64_MAX,
+            UINT64_MAX - 2u, UINT64_MAX - 1u) <= 0 ||
+        vm_session_pacing_ratio_compare(UINT64_MAX - 2u, UINT64_MAX - 1u,
+            UINT64_MAX - 1u, UINT64_MAX) >= 0;
+}
+
 static C_INT verify_wait_speed(vm_session *session, vm_session_speed speed)
 {
     const core_machine_run_result waiting = {
@@ -45,6 +56,7 @@ int main(void)
     }
     failed |= vm_session_get_speed(default_session, &speed) != TYPE_STATUS_OK ||
         speed != VM_SESSION_SPEED_STANDARD;
+    failed |= verify_ratio_compare();
     failed |= verify_wait_speed(default_session, VM_SESSION_SPEED_STANDARD);
     failed |= verify_wait_speed(default_session, VM_SESSION_SPEED_TURBO);
     vm_session_destroy(default_session);

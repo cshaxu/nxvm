@@ -65,6 +65,12 @@ C_VOID vm_session_runner_run(vm_session *session)
                 continue;
             }
         }
+        {
+            if (vm_session_pacing_wait(session) != TYPE_STATUS_OK) {
+                vm_session_control_stop(control);
+                continue;
+            }
+        }
         if (vm_session_publish_display(session, TYPE_FALSE) !=
             CORE_MACHINE_DISPLAY_KIND_TEXT &&
             !vm_platform_run_context_get_window_display(
