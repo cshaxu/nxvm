@@ -108,13 +108,6 @@ type_status vm_session_set_speed(vm_session *session, vm_session_speed speed)
     return TYPE_STATUS_OK;
 }
 
-static const vm_profile_default_pc_at_port_leaf *
-vm_session_profile_port_leaf(const vm_profile_default_pc_at_descriptor *profile,
-    vm_profile_default_pc_at_device_role device, STD_SIZE_T ordinal)
-{
-    return vm_profile_default_pc_at_port_leaf_at(profile, device, ordinal);
-}
-
 static C_VOID vm_session_default_at_request_create(const vm_session_config *config,
     vm_profile_default_at_request *out_request)
 {
@@ -282,25 +275,25 @@ type_status vm_session_storage_initialize(vm_session *machine)
             (core_machine_planar_parity_config) { CORE_MACHINE_PC_AT_PORT_B,
                 machine->profile->default_memory_bytes };
     }
-    attribute_first = vm_session_profile_port_leaf(machine->profile,
+    attribute_first = vm_profile_default_pc_at_port_leaf_at(machine->profile,
         VM_PROFILE_DEFAULT_PC_AT_DEVICE_VADP_ATTRIBUTE, 0u);
-    attribute_last = vm_session_profile_port_leaf(machine->profile,
+    attribute_last = vm_profile_default_pc_at_port_leaf_at(machine->profile,
         VM_PROFILE_DEFAULT_PC_AT_DEVICE_VADP_ATTRIBUTE, 1u);
-    sequencer_first = vm_session_profile_port_leaf(machine->profile,
+    sequencer_first = vm_profile_default_pc_at_port_leaf_at(machine->profile,
         VM_PROFILE_DEFAULT_PC_AT_DEVICE_VADP_SEQUENCER, 0u);
-    sequencer_last = vm_session_profile_port_leaf(machine->profile,
+    sequencer_last = vm_profile_default_pc_at_port_leaf_at(machine->profile,
         VM_PROFILE_DEFAULT_PC_AT_DEVICE_VADP_SEQUENCER, 1u);
-    graphics_first = vm_session_profile_port_leaf(machine->profile,
+    graphics_first = vm_profile_default_pc_at_port_leaf_at(machine->profile,
         VM_PROFILE_DEFAULT_PC_AT_DEVICE_VADP_GRAPHICS, 0u);
-    graphics_last = vm_session_profile_port_leaf(machine->profile,
+    graphics_last = vm_profile_default_pc_at_port_leaf_at(machine->profile,
         VM_PROFILE_DEFAULT_PC_AT_DEVICE_VADP_GRAPHICS, 1u);
-    crtc_first = vm_session_profile_port_leaf(machine->profile,
+    crtc_first = vm_profile_default_pc_at_port_leaf_at(machine->profile,
         VM_PROFILE_DEFAULT_PC_AT_DEVICE_VADP, 0u);
-    crtc_last = vm_session_profile_port_leaf(machine->profile,
+    crtc_last = vm_profile_default_pc_at_port_leaf_at(machine->profile,
         VM_PROFILE_DEFAULT_PC_AT_DEVICE_VADP, 4u);
-    cmos_first = vm_session_profile_port_leaf(machine->profile,
+    cmos_first = vm_profile_default_pc_at_port_leaf_at(machine->profile,
         VM_PROFILE_DEFAULT_PC_AT_DEVICE_CMOS, 0u);
-    cmos_last = vm_session_profile_port_leaf(machine->profile,
+    cmos_last = vm_profile_default_pc_at_port_leaf_at(machine->profile,
         VM_PROFILE_DEFAULT_PC_AT_DEVICE_CMOS, 1u);
     cmos_route = vm_profile_default_pc_at_route_find(machine->profile,
         VM_PROFILE_DEFAULT_PC_AT_ROUTE_CMOS_IRQ8);
