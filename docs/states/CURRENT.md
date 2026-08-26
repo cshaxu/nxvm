@@ -2,26 +2,26 @@
 
 ## Current Work
 
-## M5 T479 S6 Packet
+## M5 T479 S7 Packet
 
 | Field | Required record |
 | --- | --- |
 | Identifier Mode | Continuation |
-| Admission And Approval | Owner's persistent queue-execution approval and requirement to support IBM 5160, IBM 5170, selected DeskPro 386 and `default-at` fixed disks; T479 S5 accepted at `8adf79da`. |
-| Objective | Establish and implement only the primary-backed IBM 5160-268/Xebec fixed-disk adapter contract through the existing sole Core HDC owner and a confirmed frozen XT profile receiver. |
-| Non-goals | No AT task-file compatibility shim, second HDC/media/CHS owner, dynamic profile, raw MFM/ECC/long/format/recovery, drive mechanics, firmware/media import, guessed timing, or invented XT profile. |
-| Reference Baseline | T479 S2 owner/profile audit; T479 S5 accepted IBM WD1003 path; IBM PC/XT Technical Reference Fixed Disk Adapter chapter; retained ATA, Compaq and IBM 5170 personality regressions. |
+| Admission And Approval | Owner's persistent queue-execution approval and requirement to support IBM 5160, IBM 5170, selected DeskPro 386 and `default-at` fixed disks; T479 S6 accepted as an explicit 5160-profile transfer at `4ac47b38`. |
+| Objective | Select one ESDI controller only where primary controller material and an existing immutable profile receiver establish a finite host contract; audit and implement its admissible Core HDC personality without weakening the four retained routes. |
+| Non-goals | No generic ESDI category, ATA compatibility shim, second HDC/media/CHS owner, new profile framework, raw ESDI encoding, firmware/media import, drive mechanics, guessed timing, or selection from emulator behavior alone. |
+| Reference Baseline | T479 S1--S6 HDC owner/personality ledgers; retained ATA, Compaq, IBM WD1003 and source-qualified Xebec boundaries; IBM/Compaq profile resolver contracts. |
 | Candidate Proposal | [PC fixed-disk controller standardization](../proposals/m5-at-fixed-disk-controller-standardization.md). |
-| Files And ABI Surface | Source/gap ledgers first; only then `controller_interface.h`, `hdc.[ch]`, Core DMA/PIC/port-plan integration and the approved XT profile receiver if the cited IBM contract requires them; focused tests/CMake registration, evidence/history/status. |
-| Applicable Rules | One Core HDC state owner and VM media-byte owner; primary IBM material is normative; 86Box/PCjs only corroborate; profile construction is copied and immutable; a non-isomorphic XT host grammar may add a bounded personality but never an ATA compatibility branch. |
-| Verification | Row-complete source and current-gap ledgers; focused byte-stream/controller-select/DMA/IRQ tests; selected XT profile proof; retained IBM-5170/Compaq/default-at HDC corpus; full current gate and stripped artifact at final T479 closure. |
-| Expected Markers | `M5:T479:S6:IBM5160-SOURCE:OK`, `M5:T479:S6:IBM5160-GAPS:OK`, `M5:T479:S6:IBM5160-HDC:OK`, and `M5:T479:S6:IBM5160-PROFILE:OK`. |
-| Asset Needs | Primary documents and read-only external implementation inspection only; no third-party source, firmware, disk image, trace or protected asset import. |
-| Reporting Requirements | Record source quality/OCR form, every command/parameter/status/DMA/IRQ/port/timing row and disposition, single retained owner, line accounting and exact receivers for all physical media or absent-source rows. |
-| Stop Conditions | Stop and transfer if the primary controller contract or selected 5160-268 profile binding is unavailable; do not infer it from AT, 86Box or PCjs. Stop before any second owner, physical-media representation, host timing or generic XT profile framework. |
-| Exit Criteria | A confirmed 5160-268 profile has one immutable IBM/Xebec personality only after every admitted host-visible row is source-proven and focused regressions pass; all nonlogical media/drive timing is explicit residual work; all retained personalities regress. |
+| Files And ABI Surface | Source/gap ledgers first; only then `controller_interface.h`, `hdc.[ch]`, Core port/PIC/DMA/plan integration and the named immutable profile receiver if the cited controller requires them; focused tests/CMake registration, evidence/history/status. |
+| Applicable Rules | One Core HDC state owner and VM media-byte owner; primary controller material is normative; external simulators only corroborate; profile construction is copied and immutable; a non-isomorphic host grammar may add one bounded personality but never an ATA branch. |
+| Verification | Row-complete source and current-gap ledgers; focused host-register/command/data/IRQ/DMA tests only if a primary-backed controller/profile pair is admitted; retained Xebec/IBM-5170/Compaq/default-at corpus; full current gate and stripped artifact at final T479 closure. |
+| Expected Markers | `M5:T479:S7:ESDI-SOURCE:OK`, `M5:T479:S7:ESDI-GAPS:OK`, `M5:T479:S7:ESDI-HDC:OK`, and `M5:T479:S7:ESDI-PROFILE:OK`. |
+| Asset Needs | Primary controller documents and read-only external implementation inspection only; no third-party source, firmware, disk image, trace or protected asset import. |
+| Reporting Requirements | Record source quality/OCR form, selected controller identity, every command/parameter/status/DMA/IRQ/port/timing row and disposition, single retained owner, line accounting and exact receiver for every absent profile or physical-media row. |
+| Stop Conditions | Stop and transfer if no one concrete ESDI controller has both primary host-contract material and a named immutable profile receiver; do not promote an emulator or a generic ESDI label into a product personality. Stop before a second owner, physical-media representation, host timing or profile framework. |
+| Exit Criteria | One selected profile has one immutable, source-proven ESDI personality only after every admitted host-visible row and focused regression passes; otherwise the exact controller/profile receiver is transferred with no false support claim; all retained personalities regress. |
 | Original Owner Request | Support IBM 5160, IBM 5170, the selected DeskPro 386 configuration and `default-at` hard disks through a minimal correct Core HDC boundary. |
-| Similar-Issue Sweep | Every HDC protocol discriminator/config validator, `1F0h`--`1F7h`/`3F6h` route, command/status/error/IRQ/DRQ phase, media geometry binding, Model-339 resolver/CMOS/INT13 path, HDC tests, and all generic text calling an IBM path ATA. |
+| Similar-Issue Sweep | Every HDC protocol discriminator/config validator, controller port route, command/status/error/IRQ/DRQ phase, media geometry binding, resolver/CMOS/firmware receiver, HDC tests, and generic text that calls a distinct controller ATA or treats ESDI as a protocol. |
 
 ## Current Technical Baseline
 
