@@ -2,26 +2,11 @@
 
 ## Current Work
 
-## M5 T476 S2 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner approved the fixed Core -> resolver -> IBM 5170 -> DeskPro -> default-at sequence on 2026-08-25; accepted T476 S1 authorizes this bounded resolver representation work. |
-| Objective | Express the frozen IBM 5170 Model-339 root as one immutable `pc-at-5170` resolver declaration and one copied resolved result, with source-backed Core timing values and bounded root validation, while retaining the current production session route unchanged. |
-| Non-goals | No session/profile-kind cutover, CLI/YAML rename, default-at/DeskPro change, Core API/device/timing change, firmware/media import, physical-time claim, second plan builder or unrelated cleanup. |
-| Reference Baseline | Accepted [T476 S1 ledger](../etc/evidence/t476-s1-ibm5170-root-ledger.md), closed T475 resolver kernel, Model-339 descriptor and focused parity smokes. |
-| Candidate Proposal | [PC/AT 5170 root profile normalization](../proposals/m5-pc-at-5170-root-profile-normalization.md). |
-| Files And ABI Surface | VM profile resolver declarations/helpers, focused resolver/root smoke and CMake/evidence records. New interfaces may expose only copied immutable VM/Core value data; no Core/session/device pointer or public Core ABI changes. |
-| Applicable Rules | Architecture/coding/execution authorities: VM owns root identity/provenance; Core remains sole mutable machine owner; values flow once to the existing Core-plan input; no profile-name branch in Core, live setter, wrapper or duplicate production path. |
-| Verification | Focused root resolver smoke proves identity, selected copied Core fields/rules, L3/L2 preservation, policy/route rejection and Core-plan handoff; existing Model-339 parity smokes remain unchanged; strict VM-profile build, documentation governance and diff review. |
-| Expected Markers | `M5:T476:S2:IBM5170-ROOT-RESOLVER:OK` and `M5:T476:S2:IBM5170-ROOT-NEGATIVE:OK`. |
-| Asset Needs | Existing source and accepted evidence only; no guest media, firmware payload, external source or machine-local path enters the repository. |
-| Reporting Requirements | Record declaration-to-ledger mapping, copied owner/provenance, validation matrix, code/test delta, retained direct route and exact next cutover receiver. |
-| Stop Conditions | Stop for owner direction if a selected root field needs a Core pointer/callback, machine name in Core, multiple parent, dynamic resource, new Core plan API or a false L3 conversion. |
-| Exit Criteria | The immutable root represents every S1 resolver-eligible group; copied Core values preserve selected L3/L2 facts; invalid root policy/routes/contracts reject; focused proof passes; old direct route remains singular and explicitly transferred to cutover S3. |
-| Original Owner Request | Establish correct whole-machine L3 structure and interfaces first, then connect IBM 5170, DeskPro 386 and default-at in that order, without layered or duplicate paths. |
-| Similar-Issue Sweep | Sweep root declaration, resolver catalog/result, Model-339 descriptor, timing/core plan inputs, topology/route policies, CMake target ownership and tests for mutable leakage, duplicate values, profile-name-in-Core or premature production consumer. |
+**T476 S2 accepted.** `pc-at-5170` now has one in-place copied root
+snapshot and precise port-leaf declaration; the source descriptor remains the
+sole current session route until T476 S3 consumes the snapshot and removes it.
+The [evidence](../etc/evidence/t476-s2-ibm5170-root-resolver.md) records the
+L3/L2 facts, complete copied configuration and focused proof.
 
 ## Current Technical Baseline
 
