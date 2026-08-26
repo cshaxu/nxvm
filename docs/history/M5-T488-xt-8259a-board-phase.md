@@ -9,4 +9,5 @@ are accepted.
 | S1 | Accepted: original Intel 8259A and IBM XT board-source ledger is retained. |
 | S2 | Accepted: complete 18-row chip and 3-row XT List 1 is frozen before audit. |
 | S3 | Accepted: complete List 2 maps every row to the sole Core owner; the batch is empty. |
-| S4 | Active: reconcile the selected XT single-PIC route and prove no second owner or port window exists. |
+| S4 | Accepted: selected XT construction retains one `pic.c` owner and no secondary PIC port window. |
+| S5 | Closed: complete source/List-1/List-2/one-owner audit accepts the empty implementation batch and transfers only DMA to its independent T. |

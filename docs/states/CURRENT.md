@@ -2,28 +2,28 @@
 
 ## Current Work
 
-**Open: M5 T488 S4.**
+**Open: M5 T489 S1.**
 
-## M5 T488 S4 Packet
+## M5 T489 S1 Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | T488 S1--S3 establish source, List 1 and complete List 2; S4 performs the no-code one-owner reconciliation. |
-| Objective | Prove the empty PIC implementation batch retains every source-required behavior at its sole Core owner and XT single-PIC topology. |
-| Non-goals | No PIC code repair, AT cascade work, firmware/media import or inferred timing. |
-| Reference Baseline | Closed T487, queued 8259A proposal, source policy and existing external manual archive. |
-| Candidate Proposal | [IBM 5160 8259A interrupt-controller phase contract](../proposals/m5-xt-8259a-board-phase.md). |
-| Files And ABI Surface | Source-ledger evidence, evidence index, history and Current only; no code or ABI change. |
+| Identifier Mode | New |
+| Admission And Approval | Owner-approved continuous per-chip XT program; T488 is closed and Queue next is IBM 5160 8237A. |
+| Objective | Establish the original 8237A and IBM XT board-source ledger before any DMA List 1 or code change. |
+| Non-goals | No DMA repair, FDC/Xebec implementation, imported source/media or inferred service timing. |
+| Reference Baseline | Closed T488, queued 8237A proposal, source policy and existing external manual archive. |
+| Candidate Proposal | [IBM 5160 8237A DMA phase contract](../proposals/m5-xt-8237a-board-phase.md). |
+| Files And ABI Surface | Source-ledger evidence, evidence index, T489 history and Current only; no code or ABI change. |
 | Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, `docs/etc/operations/policy/source-policy.md`. |
-| Verification | Trace every frozen List-1 row through the Core PIC owner, XT topology selection and focused tests; confirm the slave port window is absent. |
-| Expected Markers | One row-complete ownership reconciliation; no new PIC path, state, ABI or timing claim. |
-| Asset Needs | No new assets; retained original-source and List-1/List-2 evidence only. |
-| Reporting Requirements | Name the retained owner, source-to-consumer route, test evidence and every L2/L4 boundary. |
-| Stop Conditions | A missing or duplicate route reopens the complete unit List 2; no isolated symptom repair is permitted. |
-| Exit Criteria | All 21 frozen rows have one production owner and one selected XT route, with no admissible implementation batch. |
-| Original Owner Request | Independent full-unit source/List-1/List-2/one-owner implementation path; no symptom repair. |
-| Similar-Issue Sweep | Search existing external manuals and indexed PIC research for original-source provenance. |
+| Verification | Visually inspect selected original Intel 8237A and IBM 5160 pages; record OCR condition, page authority and reference boundary. |
+| Expected Markers | One finite primary-source DMA ledger suitable for a complete List 1. |
+| Asset Needs | Lawful external owner-managed documentation only; no source, firmware or media import. |
+| Reporting Requirements | Record source identity, page authority, uncertainty and bounded emulator-reference use. |
+| Stop Conditions | Record an unavailable fact rather than infer it or use an emulator as primary authority. |
+| Exit Criteria | Original source pages/formulae or explicit absence for every intended DMA topic. |
+| Original Owner Request | One independent controller T: original source, complete List 1, complete List 2, then one owner-local batch; no symptom repair. |
+| Similar-Issue Sweep | Search existing external manuals and indexed DMA research for original-source provenance. |
 
 ## Current Technical Baseline
 
@@ -60,9 +60,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T488 S2 | Accepted: the complete Intel/XT PIC function and timing List 1 freezes 21 rows before code audit. [Evidence](../etc/evidence/t488-s2-8259a-function-timing-list-1.md). |
-| T488 S3 | Accepted: all PIC/XT rows map to the one existing Core owner and the full implementation batch is empty. [Evidence](../etc/evidence/t488-s3-8259a-current-code-gap-list-2.md). |
-| T488 S1 | Accepted: visually verified Intel 8259A and IBM XT primary source ledger establishes the finite PIC List-1 basis. [Evidence](../etc/evidence/t488-s1-8259a-original-source-ledger.md). |
+| T488 | Closed: complete IBM 5160 8259A source/List-1/List-2/one-owner audit retains one Core PIC path and an empty implementation batch. [Closure audit](../etc/evidence/t488-s5-8259a-closure-audit.md). |
 | T487 | Closed: complete IBM board source/List-1/List-2 reconciliation retains the single Intel clock-total owner and explicit L2 physical-phase boundaries. [Closure audit](../etc/evidence/t487-s5-5160-board-closure-audit.md). |
 | T486 | Closed: the complete 8088 manual source/List-1/List-2/one-owner implementation chain closes without a parallel timing path; Group-3, WAIT and non-string-prefix source boundaries remain explicit. [Closure audit](../etc/evidence/t486-s5-8088-closure-audit.md). |
 | T485 | Withdrawn, not completed: accepted S1--S20 evidence remains retained, but Td S152 transfers the uncompleted aggregate XT scope to independent CPU/board/controller candidates. [Record](../etc/evidence/td-s152-unit-task-admission-governance.md). |
@@ -70,7 +68,6 @@
 | T482 | Closed: one strict root YAML request reaches the sole `SESSION OPEN` authority and resolver without CLI re-encoding; 296/296 current-gate tests and stripped Release 0480 pass. [Closure audit](../etc/evidence/t482-s4-closure-audit.md). |
 | T483 | Closed: the IBM 5160-268 BOM, complete current-owner capability matrix and Manual-L3/unresolved timing partition establish one functional and one timing receiver without implying an XT runtime path. [Closure evidence](../etc/evidence/t483-s3-xt-timing-source-partition.md). |
 | T481 | Closed: one global CPU/controller/Core-time/profile/VM audit leaves no unrecorded duplicate owner, host-to-Core tick injection or false capability claim; residuals have one ordered receiver. [Closure audit](../etc/evidence/t481-s5-global-reconciliation.md). |
-| T480 | Closed: VADP remains the sole guest-video owner; IBM VGA DAC, chain-4 and Mode-13 frame capability is source-backed but unselected by every current profile/card. The 296-target gate and stripped Release 0480 pass. [Closure audit](../etc/evidence/t480-s5-profile-closure-audit.md). |
 
 ## Recent Governance
 
