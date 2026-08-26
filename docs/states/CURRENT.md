@@ -10,8 +10,8 @@
 | --- | --- |
 | Identifier Mode | Continuation |
 | Admission And Approval | Owner-approved continuous execution; T485 S1 implementation `d769b539` is accepted by this P2 review. |
-| Objective | Bind the IBM 5160 PIT source ratio to the existing copied Core timing plan and designate it as the sole XT controller L3 input. |
-| Non-goals | No CPU/bus/DMA/PIC/PPI/FDC/CGA/Xebec timing estimate, host pacing claim, new scheduler, profile-side setter or new hardware behavior. |
+| Objective | Verify whether the IBM 5160 PIT ratio can lawfully bind to the existing copied Core timing plan, and record the earliest missing common-axis receiver if it cannot. |
+| Non-goals | No CPU/bus/DMA/PIC/PPI/FDC/CGA/Xebec timing estimate, host pacing claim, new scheduler, profile-side setter or new hardware behavior; never map PIT `1/4` to instruction ticks. |
 | Reference Baseline | Accepted T485 S1 source ledger; existing Core rational-clock plan and selected XT functional plan. |
 | Candidate Proposal | [IBM PC/XT 5160-268 board and device phase-timing closure](../proposals/m5-8088-5150-xt-l3-baseline.md). |
 | Files And ABI Surface | Existing XT resolver/core-plan fields, focused timing regression and evidence only. No public ABI or product grammar. |
@@ -22,7 +22,7 @@
 | Reporting Requirements | Record exact ratio, copied owner path, reset/deadline proof and every non-PIT residual unchanged. |
 | Original Owner Request | Continue the ordered minimalist queue toward the pre-Windows L3 admission audit. |
 | Stop Conditions | Stop if the existing rational plan cannot express the IBM ratio without changing ownership or inventing an epoch/phase. |
-| Exit Criteria | The fixed XT plan publishes one Manual-L3 PIT ratio through the existing Core owner, and no other capability changes classification. |
+| Exit Criteria | Either the plan lawfully publishes the ratio on a qualified common axis, or evidence proves it blocked and names the earliest CPU/board-axis receiver without changing any L-level. |
 | Similar-Issue Sweep | Inspect existing profile PIT rational-clock users and ensure the XT addition neither creates a separate timing route nor upgrades unrelated controller paths. |
 
 ## Current Technical Baseline
