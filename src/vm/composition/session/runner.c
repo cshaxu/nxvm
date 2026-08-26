@@ -98,12 +98,7 @@ C_VOID vm_session_runner_run(vm_session *session)
             type_status time_status = vm_session_waiting_advance(
                 session, &result, &advanced);
 
-            if (time_status != TYPE_STATUS_OK) {
-                vm_session_control_stop(control);
-            } else if (!advanced && session->speed == VM_SESSION_SPEED_STANDARD) {
-                /* L2 host-load backoff only: this does not advance guest time. */
-                core_platform_sleep_milliseconds(1u);
-            }
+            if (time_status != TYPE_STATUS_OK) vm_session_control_stop(control);
         }
         if (STD_ATOMIC_EXCHANGE(&control->stepRequested, TYPE_FALSE)) {
             vm_session_control_request_pause(control, VM_SESSION_PAUSE_STEP);

@@ -49,6 +49,23 @@ C_VOID vm_session_pacing_reset(vm_session *session)
     session->pacing_core_origin_ticks = 0u;
 }
 
+static C_INT vm_session_pacing_waits_at_least_millisecond(
+    const vm_session *session, const core_machine_time_observation *observation,
+    type_unsigned_64 target_tick, type_unsigned_64 host_units)
+{
+    type_unsigned_64 host_lead;
+
+    if (session == STD_NULL || observation == STD_NULL ||
+        session->pacing_host_units_per_second < 1000u) return 0;
+    host_lead = session->pacing_host_units_per_second / 1000u;
+    if (host_units > UINT64_MAX - host_lead) return 0;
+    return vm_session_pacing_ratio_compare(target_tick -
+            session->pacing_core_origin_ticks,
+            observation->pacing_ticks_per_second, host_units -
+            session->pacing_host_origin_units + host_lead,
+            session->pacing_host_units_per_second) > 0;
+}
+
 static C_INT vm_session_pacing_target_due(vm_session *session,
     const core_machine_time_observation *observation,
     type_unsigned_64 target_tick)
@@ -57,8 +74,8 @@ static C_INT vm_session_pacing_target_due(vm_session *session,
     type_unsigned_64 host_units_per_second;
 
     if (session == STD_NULL || observation == STD_NULL ||
-        !observation->physical_time_available ||
-        observation->physical_ticks_per_second == 0u ||
+        !observation->pacing_time_available ||
+        observation->pacing_ticks_per_second == 0u ||
         session->speed != VM_SESSION_SPEED_STANDARD) return TYPE_TRUE;
     if (vm_platform_host_monotonic_counter(&host_units,
             &host_units_per_second) != TYPE_STATUS_OK || host_units_per_second == 0u) {
@@ -76,12 +93,18 @@ static C_INT vm_session_pacing_target_due(vm_session *session,
     }
     while (vm_session_pacing_ratio_compare(target_tick -
             session->pacing_core_origin_ticks,
-            observation->physical_ticks_per_second, host_units -
+            observation->pacing_ticks_per_second, host_units -
             session->pacing_host_origin_units,
             session->pacing_host_units_per_second) > 0) {
         if (!vm_session_control_is_running(&session->control)) return TYPE_FALSE;
-        /* A bounded host-control wait; this is never a guest-time advance. */
-        core_platform_sleep_milliseconds(1u);
+        /* Keep the final sub-millisecond interval responsive without a
+         * fixed 1 ms oversleep. Neither branch advances guest time. */
+        if (vm_session_pacing_waits_at_least_millisecond(session, observation,
+                target_tick, host_units)) {
+            core_platform_sleep_milliseconds(1u);
+        } else {
+            core_platform_yield();
+        }
         if (vm_platform_host_monotonic_counter(&host_units,
                 &host_units_per_second) != TYPE_STATUS_OK ||
             host_units_per_second != session->pacing_host_units_per_second ||
@@ -101,7 +124,7 @@ type_status vm_session_pacing_wait(vm_session *session)
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
     if (core_machine_capture_time_observation(session->core_machine,
-            &observation) != TYPE_STATUS_OK || !observation.physical_time_available ||
+            &observation) != TYPE_STATUS_OK || !observation.pacing_time_available ||
         session->speed != VM_SESSION_SPEED_STANDARD) return TYPE_STATUS_OK;
     (C_VOID)vm_session_pacing_target_due(session, &observation,
         observation.elapsed_ticks);
@@ -124,7 +147,7 @@ type_status vm_session_waiting_advance(vm_session *session,
     }
     status = core_machine_capture_time_observation(session->core_machine,
         &observation);
-    if (status != TYPE_STATUS_OK || !observation.physical_time_available) return status;
+    if (status != TYPE_STATUS_OK || !observation.pacing_time_available) return status;
     if (!observation.next_deadline_valid) return TYPE_STATUS_OK;
     if (session->speed == VM_SESSION_SPEED_STANDARD &&
         !vm_session_pacing_target_due(session, &observation,

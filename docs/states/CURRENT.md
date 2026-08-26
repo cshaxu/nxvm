@@ -2,22 +2,26 @@
 
 ## Current Work
 
+**Active: M5 T472 S2.**
+
+## M5 T472 S2 Packet
+
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | New - M5 T472 S1. |
+| Identifier Mode | Continuation |
 | Admission And Approval | Owner approved on 2026-08-25: replace fixed 1 ms Standard HLT waiting; research IBM 5170 documentation and external emulator implementations as corroboration; retain Core-owned guest time. |
-| Objective | Admit a copied L2 macro pacing qualification with source-backed Model-339 rate evidence, without promoting it to verified physical time. |
+| Objective | Route macro and verified qualifications through the one host-origin/Core-origin pacing path and remove the runner's fixed HLT fallback. |
 | Non-goals | No host-to-Core tick injection, physical-time claim, CPU/controller timing rewrite, external-source import, generic/default-PC-AT rate, Model-40 rate, or debugger/pause waiting change. |
 | Reference Baseline | `master` at T471 closure; target `vm-0-5-0471`, SHA-256 `38D78E1C1AE6B4E877B116B3E3EBF92B6F8E83F378CA9D5075C4871955E8D2FD`. |
 | Candidate Proposal | [M5 L2 profile-proportional pacing](../proposals/m5-l2-profile-proportional-pacing.md). |
 | Files And ABI Surface | `src/core/machine/machine_interface.h`, Core time observation/validation, profile configuration, session pacing, focused tests, evidence and task records. Public observation is copied-only; no raw owner pointer is exposed. |
 | Applicable Rules | `docs/design/ARCHITECTURE.md`, `docs/design/CODING.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`, `docs/rules/DOCUMENT.md`, `docs/rules/EXECUTION.md`, and `docs/etc/operations/policy/source-policy.md`: one Core time owner; immutable profile values; no external-source import; replacement removes obsolete runner path. |
-| Verification | Focused Core time/configuration and VM pacing tests; source crosswalk review; documentation governance. S2/S3 additionally run `current-gates-gcc`, build stripped Release 0472 and record SHA-256. |
-| Expected Markers | `M5:T472:S1:MACRO-PACING-CONTRACT:OK`; existing time/session speed smoke markers remain green. |
+| Verification | Focused session speed/runner and Model-339 pacing tests; static sleep-path sweep; documentation governance. S3 additionally runs `run-current-smokes`, builds stripped Release 0472 and records SHA-256. |
+| Expected Markers | `M5:T472:S2:ONE-PACING-PATH:OK`; existing time/session speed smoke markers remain green. |
 | Asset Needs | Read-only indexed IBM 5170 Technical Reference (1502243, March 1984); read-only 86Box, MAME, PCjs, Bochs and QEMU sources or explicit non-applicability. No asset enters the repository. |
 | Reporting Requirements | Evidence distinguishes manual facts, emulator corroboration, Rev-3 versus 1984 5170 scope, L2 macro claim and retained physical debt. Report code-size delta, retained owner path and artifact at closure. |
 | Stop Conditions | Stop before assigning any profile rate that lacks retained scope evidence, before treating a nominal frequency as verified physical time, or if pacing requires host-created/guessed guest ticks. |
-| Exit Criteria | S1 contract and evidence committed/pushed; S2 one pacing path implemented; S3 removes runner's fixed HLT wait, proves no-rate no-wait plus Model-339 Standard/Turbo behavior, passes gates and publishes Release 0472. |
+| Exit Criteria | S1 contract committed/pushed; S2 has one pacing path and no runner HLT sleep; S3 proves no-rate no-wait plus Model-339 Standard/Turbo behavior, passes gates and publishes Release 0472. |
 | Original Owner Request | The owner requires all three current profiles to avoid a fixed one-millisecond wait; IBM 5170 board/system documentation and external emulator implementations may corroborate a correct replacement. |
 | Similar-Issue Sweep | Sweep every production `core_platform_sleep_milliseconds(1u)` and host-time/Core-time crossing. Classify pause/control waits as non-pacing, remove the runner HLT wait, and test every current profile qualification. |
 
@@ -28,8 +32,8 @@
   `38D78E1C1AE6B4E877B116B3E3EBF92B6F8E83F378CA9D5075C4871955E8D2FD`.
   Debug remains the current-gate route. T471 preserves Core-owned progression:
   a verified axis is Standard-paced only by host waiting against completed
-  Core progress. T472 S1 is admitting L2 macro pacing; until S3, the runner's
-  identified one-millisecond HLT backoff is still present. T434 has one copied Core timing-plan
+  Core progress. T472 S2 applies the L2 macro qualification and removes the
+  identified runner HLT backoff. T434 has one copied Core timing-plan
   publication route for default PC/AT, IBM 5170 Model 339 and Model-40 BYOB
   session composition.
   T386 closes selected-device functional completeness at S29; its retained
@@ -53,7 +57,8 @@
 
 | Task | Compact result |
 | --- | --- |
-| T471 S3 | Closed: Standard compares copied completed Core time with a monotonic host budget and waits only for a positive lead; Turbo omits that wait and HLT deadline advancement is budget-gated. The [closure audit](../etc/evidence/t471-s3-integration-closure-audit.md) records Release 0471. |
+| T472 S1 | Completed: copied L2 macro pacing qualification and Model-339's retained 8 MHz rate are source-crosschecked; physical time remains unavailable. [Evidence](../etc/evidence/t472-s1-macro-pacing-contract.md). |
+| T471 | Closed: Standard compares copied completed Core time with a monotonic host budget and waits only for a positive lead; Turbo omits that wait and HLT deadline advancement is budget-gated. The [closure audit](../etc/evidence/t471-s3-integration-closure-audit.md) records Release 0471. |
 | T470 | Closed: S1--S6 establish one copied Core physical-axis contract, retain every current profile at unqualified/zero, separate Standard's L2 HLT backoff from Turbo's no-wait behavior, and record stripped Release 0470 in the [closure audit](../etc/evidence/t470-s6-integration-closure-audit.md). |
 | T469 | Closed: S1--S6 reconcile the 145-row controller deadline ledger to one Core-owned deadline/timebase/waiting path; VM host-tick injection is deleted, current profiles retain explicit L2 fallback, and stripped Release 0469 is recorded in [closure audit](../etc/evidence/t469-s6-integration-closure-audit.md). |
 | T468 | Closed: the ATA-3 15-row task-file/media contract has one HDC owner, one media owner and one PIC route; the serial current gate passes 295/295 and stripped Release 0468 is recorded in [history](../history/M5-T468-core-hdc-ata-phase-contract.md). |

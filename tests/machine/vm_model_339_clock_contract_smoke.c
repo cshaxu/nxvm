@@ -144,9 +144,9 @@ static C_INT vm_model_339_clock_contract_is_selected(C_VOID)
     core_machine_port_write(&session->core_machine->executor_port, 0x0040u, 4u);
     core_machine_port_write(&session->core_machine->executor_port, 0x0040u, 0u);
     session->core_machine->time_axis = (core_machine_time_axis) {
-        CORE_MACHINE_TIME_AXIS_VERIFIED_PHYSICAL, 8000000u };
+        CORE_MACHINE_TIME_AXIS_MACRO_PROPORTIONAL, 8000000u };
     session->core_machine->retirement_time_contract =
-        CORE_MACHINE_RETIREMENT_TIME_PHYSICAL;
+        CORE_MACHINE_RETIREMENT_TIME_DETERMINISTIC;
     session->speed = VM_SESSION_SPEED_TURBO;
     vm_session_pacing_reset(session);
     session_advanced = 0;
@@ -197,16 +197,16 @@ static C_INT vm_model_339_clock_contract_is_selected(C_VOID)
         core_machine_capture_time_observation(session->core_machine,
         &time_observation) != TYPE_STATUS_OK || time_observation.elapsed_ticks != 7u;
 
-    /* Synthetic Core-only proof: a source-qualified PIT deadline may use an
-     * already verified axis. The Model-339 descriptor remains unavailable. */
+    /* A source-qualified PIT deadline uses the selected macro axis; it stays
+     * distinct from a verified physical Core axis. */
     failed |= core_machine_reset(session->core_machine) != TYPE_STATUS_OK;
     core_machine_port_write(&session->core_machine->executor_port, 0x0043u, 0x34u);
     core_machine_port_write(&session->core_machine->executor_port, 0x0040u, 4u);
     core_machine_port_write(&session->core_machine->executor_port, 0x0040u, 0u);
     session->core_machine->time_axis = (core_machine_time_axis) {
-        CORE_MACHINE_TIME_AXIS_VERIFIED_PHYSICAL, 8000000u };
+        CORE_MACHINE_TIME_AXIS_MACRO_PROPORTIONAL, 8000000u };
     session->core_machine->retirement_time_contract =
-        CORE_MACHINE_RETIREMENT_TIME_PHYSICAL;
+        CORE_MACHINE_RETIREMENT_TIME_DETERMINISTIC;
     advanced = TYPE_FALSE;
     failed |= core_machine_advance_to_next_deadline(session->core_machine,
         &advanced) != TYPE_STATUS_OK || !advanced ||

@@ -5,5 +5,6 @@
 
 
 C_VOID core_platform_sleep_milliseconds(type_unsigned_32 milliseconds);
+C_VOID core_platform_yield(C_VOID);
 
 #endif
