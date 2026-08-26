@@ -5,6 +5,7 @@
 #include "core/machine/machine_interface.h"
 #include "vm/composition/session/session_private.h"
 #include "vm/composition/session/session_interface.h"
+#include "vm/composition/session/waiting.h"
 #include "vm/profile/default_profile/pc_at_profile.h"
 
 static C_INT vm_model_339_clock_contract_is_selected(C_VOID)
@@ -19,7 +20,11 @@ static C_INT vm_model_339_clock_contract_is_selected(C_VOID)
     vm_session *session = STD_NULL;
     vm_session *fallback = STD_NULL;
     core_machine_time_observation time_observation;
+    const core_machine_run_result waiting = {
+        .reason = CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT
+    };
     type_bool advanced;
+    C_INT session_advanced;
     C_INT failed = 0;
 
     if (model_339 == STD_NULL || generic == STD_NULL ||
@@ -124,11 +129,30 @@ static C_INT vm_model_339_clock_contract_is_selected(C_VOID)
     failed |= core_machine_capture_time_observation(session->core_machine,
         &time_observation) != TYPE_STATUS_OK || !time_observation.next_deadline_valid ||
         time_observation.elapsed_ticks != 0u || time_observation.next_deadline_tick != 7u;
-    advanced = TYPE_FALSE;
-    failed |= core_machine_advance_to_next_deadline(session->core_machine,
-        &advanced) != TYPE_STATUS_OK || !advanced ||
+    STD_ATOMIC_STORE(&session->control.flagRun, TYPE_TRUE);
+    session->speed = VM_SESSION_SPEED_STANDARD;
+    vm_session_pacing_reset(session);
+    session_advanced = 0;
+    failed |= vm_session_waiting_advance(session, &waiting, &session_advanced) !=
+        TYPE_STATUS_OK || !session_advanced || !session->pacing_origin_valid ||
         core_machine_capture_time_observation(session->core_machine,
         &time_observation) != TYPE_STATUS_OK || time_observation.elapsed_ticks != 7u;
+    failed |= core_machine_reset(session->core_machine) != TYPE_STATUS_OK;
+    core_machine_port_write(&session->core_machine->executor_port, 0x0043u, 0x34u);
+    core_machine_port_write(&session->core_machine->executor_port, 0x0040u, 4u);
+    core_machine_port_write(&session->core_machine->executor_port, 0x0040u, 0u);
+    session->core_machine->time_axis = (core_machine_time_axis) {
+        CORE_MACHINE_TIME_AXIS_VERIFIED_PHYSICAL, 8000000u };
+    session->core_machine->retirement_time_contract =
+        CORE_MACHINE_RETIREMENT_TIME_PHYSICAL;
+    session->speed = VM_SESSION_SPEED_TURBO;
+    vm_session_pacing_reset(session);
+    session_advanced = 0;
+    failed |= vm_session_waiting_advance(session, &waiting, &session_advanced) !=
+        TYPE_STATUS_OK || !session_advanced || session->pacing_origin_valid ||
+        core_machine_capture_time_observation(session->core_machine,
+        &time_observation) != TYPE_STATUS_OK || time_observation.elapsed_ticks != 7u;
+    STD_ATOMIC_STORE(&session->control.flagRun, TYPE_FALSE);
     core_machine_pit_set_gate(&session->core_machine->shared_pit, 1u, TYPE_FALSE);
     failed |= core_machine_capture_time_observation(session->core_machine,
         &time_observation) != TYPE_STATUS_OK || !time_observation.next_deadline_valid ||
