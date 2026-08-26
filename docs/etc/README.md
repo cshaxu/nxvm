@@ -128,6 +128,7 @@ principal documents named in [docs/README.md](../README.md).
 | `evidence/t485-s5-8088-transfer-plan-receiver.md` | Core timing owner | T485 S5's source-transfer-plan owner sweep, rejected byte-trace shortcut and bounded Core receiver. Retain through T485 closure. |
 | `evidence/t485-s6-private-source-transfer-plan.md` | Core timing owner | T485 S6's one-use private transfer-plan design, complete/incomplete input map and no-state boundary. Retain through T485 closure. |
 | `evidence/t485-s7-8088-primary-source-evaluator.md` | Core timing owner | T485 S7's one-path primary-form 8088 evaluator, Table-2-21 transfer proofs and explicit residual boundary. Retain through T485 closure. |
+| `evidence/t485-s8-8088-string-transfer-ledger.md` | Core timing owner | T485 S8's rendered 8088 string Table-2-21 ledger, complete per-width/repeat transfer plans and one retained evaluator receiver. Retain through T485 closure. |
 | `evidence/t460-s1-dma-contract-reconciliation.md` | Core DMA phase-contract owner | T460 S1's exhaustive 8237A/IBM-AT source-to-owner reconciliation, implementation batches and maintained timing boundaries. Retain with T460 closure. |
 | `evidence/t460-s2-dma-logical-service.md` | Core DMA phase-contract owner | T460 S2's sole DMA-owned logical acknowledgement/service-release state, caller sweep and focused proof. Retain with T460 closure. |
 | `evidence/t460-s3-dma-mode-phases.md` | Core DMA phase-contract owner | T460 S3's cascade and two-phase memory-to-memory correction through the sole DMA transaction path. Retain with T460 closure. |

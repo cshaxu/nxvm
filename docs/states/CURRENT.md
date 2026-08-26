@@ -2,28 +2,28 @@
 
 ## Current Work
 
-**Active: M5 T485 S7.**
+**Active: M5 T485 S8.**
 
-## M5 T485 S7 Packet
+## M5 T485 S8 Packet
 
 | Field | Required record |
 | --- | --- |
 | Identifier Mode | Continuation |
-| Admission And Approval | Owner-approved continuous execution; T485 S6 private-plan design `a8bb2349` is accepted by this governance review. |
-| Objective | Implement and immediately consume the one private Core 8088 source-transfer plan in a Table-2-21 evaluator; source-complete forms leave compatibility while every incomplete form remains unallocated. |
-| Non-goals | No copied decoder, parallel timing path, guessed transfer count, prefetch/wait estimate, profile clock, host pacing claim, scheduler, controller ratio, external-cycle counting or product/API change. |
-| Reference Baseline | Accepted T485 S6 private plan; existing decoded instruction state, source-form selectors, one Core retirement publisher and S3 physical-eligibility rejection. |
+| Admission And Approval | Owner-approved continuous execution; T485 S7 primary-form evaluator `a342707b` is accepted, and its explicit string residual is the next unconsumed T485 source-form batch. |
+| Objective | Establish the finite 8088 string-form Table-2-21 transfer ledger: for every currently decoded MOVS/CMPS/SCAS/LODS/STOS width and repeat outcome, identify the rendered manual row, the existing semantic facts, and whether one complete local word-transfer plan can be implemented. |
+| Non-goals | No timing implementation yet; no copied decoder, parallel timing path, guessed transfer count, prefetch/wait estimate, profile clock, host pacing claim, scheduler, controller ratio, external-cycle counting or product/API change. |
+| Reference Baseline | Accepted T485 S6 private-plan boundary, accepted S7 primary evaluator, rendered Intel 1981 Table 2-21 and the existing private string/repeat selection paths. |
 | Candidate Proposal | [IBM PC/XT 5160-268 board and device phase-timing closure](../proposals/m5-8088-5150-xt-l3-baseline.md). |
-| Files And ABI Surface | Existing private Core CPU timing selection/model and focused Core smoke only. No public ABI, profile grammar, transaction contract or product grammar. |
-| Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, `docs/design/ARCHITECTURE.md`, `docs/design/CODING.md`, `docs/design/UI.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md` and source policy. |
-| Verification | Rendered primary-source Table 2-21 check; focused 8088 source form, zero/one/two transfer and incomplete-form regressions; physical-eligibility rejection; configured build/current gate; documentation governance. |
-| Expected Markers | One 8088 evaluator consumes one-use plan; exact surcharge only for complete forms and unchanged unallocated rejection otherwise. |
+| Files And ABI Surface | Existing private Core CPU timing model/selection and evidence only. No public ABI, profile grammar, transaction contract or product grammar. |
+| Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, `docs/design/ARCHITECTURE.md`, `docs/design/CODING.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md` and source policy. |
+| Verification | Rendered Intel Table-2-21 string rows; complete selector/decoded-fact sweep; repeat termination and width disposition check; physical-eligibility rejection; documentation governance. |
+| Expected Markers | One finite string ledger with direct source evidence, one receiver or explicit incomplete disposition for every covered form, and no code or capability claim. |
 | Asset Needs | Existing rendered IBM/Intel evidence only; no bytes, paths or third-party code enter the repository. |
-| Reporting Requirements | Record each admitted plan/evaluator form, surcharge proof, incomplete-form proof, deleted compatibility path for admitted forms, and later external-cycle transfer. |
+| Reporting Requirements | Record every string-form disposition, manual source row, actual Core fact, repeat/width rule, one possible receiver or exact blocking gap, and the retained physical-time boundary. |
 | Original Owner Request | Continue the ordered minimalist queue toward the pre-Windows L3 admission audit. |
-| Stop Conditions | Stop if an admitted form cannot be tied to a rendered Table-2-21 row and a complete private plan without re-execution, external-cycle callbacks or board inference. |
-| Exit Criteria | Each admitted form has a rendered source rule and one plan/evaluator path; all nonadmitted forms remain unallocated, and no duplicate decoder or timing writer exists. |
-| Similar-Issue Sweep | Inspect all 8088 selection paths, source-form plan branches, ModRM/string/control transfer forms, external-cycle callbacks, compatibility fallback and physical-time publications. |
+| Stop Conditions | Stop and retain an incomplete disposition if a form lacks a rendered Table-2-21 row or a complete existing semantic input without re-execution, external-cycle callbacks or board inference. |
+| Exit Criteria | Every named string form/width/repeat outcome has a rendered-source and Core-fact disposition; any later implementation batch is finite and does not overlap the admitted primary evaluator. |
+| Similar-Issue Sweep | Inspect all 8088 string selectors, repeat termination paths, width/memory roles, timing origins, compatibility fallback and physical-time publications. |
 
 ## Current Technical Baseline
 
