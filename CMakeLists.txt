@@ -1086,6 +1086,7 @@ target_link_libraries(core-utils PUBLIC type-facade)
 
 set(VM_PROFILE_SOURCES
     src/vm/profile/profile_resolver.c
+    src/vm/profile/byob/blob.c
     src/vm/profile/xt/xt_5160_268.c
     src/vm/profile/default_profile/pc_at_profile.c
     src/vm/profile/default_profile/keyboard_mapper.c

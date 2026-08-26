@@ -103,14 +103,24 @@ static const core_machine_execution_provider vm_session_execution_provider = {
 type_status vm_session_bind_execution_provider(vm_session *machine)
 {
     type_status status;
+    const core_machine_firmware_provider *firmware_provider;
+    C_VOID *firmware_context;
 
     if (machine == STD_NULL || machine->core_machine == STD_NULL) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
+    if (machine->firmware_kind == VM_SESSION_FIRMWARE_MODEL40_BYOB) {
+        firmware_provider = vm_profile_model40_firmware_provider();
+        firmware_context = &machine->model40_rom;
+    } else if (machine->firmware_kind == VM_SESSION_FIRMWARE_XT_BYOB) {
+        firmware_provider = vm_profile_xt_5160_268_firmware_provider();
+        firmware_context = &machine->xt_rom;
+    } else {
+        firmware_provider = vm_session_profile_firmware_provider();
+        firmware_context = &machine->default_profile_context;
+    }
     status = core_machine_bind_firmware_provider(machine->core_machine,
-        machine->model40_private ? vm_profile_model40_firmware_provider() :
-        vm_session_profile_firmware_provider(), machine->model40_private ?
-        (C_VOID *)&machine->model40_rom : (C_VOID *)&machine->default_profile_context);
+        firmware_provider, firmware_context);
     if (status != TYPE_STATUS_OK) return status;
     status = core_machine_bind_execution_provider(machine->core_machine,
         &vm_session_execution_provider, machine);

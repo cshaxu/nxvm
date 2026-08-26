@@ -14,7 +14,7 @@ type_status vm_session_machine_devices_initialize_media(vm_session *session)
     if (session == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
     if (vm_machine_fdd_initialize_with_geometry(&session->fdd,
             vm_profile_floppy_geometry_get(session->floppy_kind))) return TYPE_STATUS_FAULT;
-    if (session->model40_private ||
+    if (session->model40_private || session->xt_private ||
         (session->profile != STD_NULL && session->profile->hdc_present)) {
         vm_machine_hdd_initialize(&session->hdd);
     }
@@ -84,6 +84,10 @@ type_status vm_session_machine_devices_materialize_plan(vm_session *session,
     if (session == STD_NULL || plan == STD_NULL || session->model40_private) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
+    /* XT is the only resolved topology that already carries both sourced
+     * storage devices.  PC/AT profiles retain their established descriptor
+     * materialization route. */
+    if (session->xt_private) return TYPE_STATUS_OK;
     if (!vm_profile_default_pc_at_descriptor_is_valid(session->profile)) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
@@ -97,7 +101,7 @@ C_VOID vm_session_machine_devices_refresh(vm_session *session)
 {
     if (session == STD_NULL) return;
     vm_machine_fdd_refresh(&session->fdd);
-    if (session->model40_private ||
+    if (session->model40_private || session->xt_private ||
         (session->profile != STD_NULL && session->profile->hdc_present)) {
         vm_machine_hdd_refresh(&session->hdd);
     }
@@ -107,7 +111,7 @@ C_VOID vm_session_machine_devices_reset(vm_session *session)
 {
     if (session == STD_NULL) return;
     vm_machine_fdd_reset(&session->fdd);
-    if (session->model40_private ||
+    if (session->model40_private || session->xt_private ||
         (session->profile != STD_NULL && session->profile->hdc_present)) {
         vm_machine_hdd_reset(&session->hdd);
     }
@@ -117,7 +121,7 @@ C_VOID vm_session_machine_devices_finalize(vm_session *session)
 {
     if (session == STD_NULL) return;
     vm_machine_fdd_finalize(&session->fdd);
-    if (session->model40_private ||
+    if (session->model40_private || session->xt_private ||
         (session->profile != STD_NULL && session->profile->hdc_present)) {
         vm_machine_hdd_finalize(&session->hdd);
     }

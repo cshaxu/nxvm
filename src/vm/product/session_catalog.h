@@ -20,6 +20,11 @@ typedef struct vm_product_session_request {
     C_CHAR model40_odd_path[VM_PRODUCT_SESSION_CATALOG_PATH_MAX];
     C_CHAR model40_odd_sha256[65];
     C_CHAR model40_provenance[256];
+    C_CHAR xt_system_path[VM_PRODUCT_SESSION_CATALOG_PATH_MAX];
+    C_CHAR xt_system_sha256[65];
+    C_CHAR xt_xebec_path[VM_PRODUCT_SESSION_CATALOG_PATH_MAX];
+    C_CHAR xt_xebec_sha256[65];
+    C_CHAR xt_provenance[256];
     STD_SIZE_T memory_bytes;
 } vm_product_session_request;
 

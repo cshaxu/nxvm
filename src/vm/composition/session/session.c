@@ -189,8 +189,9 @@ static C_INT vm_session_insert_hdd_at_startup(vm_session *session,
 {
     C_CHAR candidate[sizeof(session->hdd_image_path)];
 
-    if (session == STD_NULL || session->model40_private || session->profile == STD_NULL ||
-        !session->profile->hdc_present || !vm_session_copy_path(candidate,
+    if (session == STD_NULL || session->model40_private ||
+        (!session->xt_private && (session->profile == STD_NULL ||
+            !session->profile->hdc_present)) || !vm_session_copy_path(candidate,
             sizeof(candidate), path) || vm_machine_hdd_insert(&session->hdd, candidate) != 0 ||
         !vm_session_copy_path(session->hdd_image_path, sizeof(session->hdd_image_path),
             candidate)) return -1;
@@ -209,7 +210,8 @@ C_VOID vm_session_apply_boot_preference(vm_session *session)
 {
     C_INT boot_hdd;
 
-    if (session == STD_NULL || session->profile == STD_NULL) return;
+    if (session == STD_NULL || session->firmware_kind !=
+        VM_SESSION_FIRMWARE_DEFAULT_PC_AT || session->profile == STD_NULL) return;
     if (!session->profile->hdc_present) {
         vm_profile_default_bios_set_boot_hdd(&session->default_bios, 0);
         return;
@@ -244,11 +246,11 @@ type_status vm_session_storage_initialize(vm_session *machine)
     if (machine->model40_private) {
         return vm_session_model40_storage_initialize(machine);
     }
-    if (machine->profile == STD_NULL &&
+    if (!machine->xt_private && machine->profile == STD_NULL &&
         vm_session_default_at_resolve(machine, STD_NULL) != TYPE_STATUS_OK) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
-    if (!vm_profile_default_pc_at_descriptor_is_valid(machine->profile)) {
+    if (!machine->xt_private && !vm_profile_default_pc_at_descriptor_is_valid(machine->profile)) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
     status = core_machine_plan_create(&machine->core_machine_config,
@@ -309,9 +311,11 @@ type_status vm_session_storage_initialize(vm_session *machine)
         vm_session_storage_rollback(machine);
         return status;
     }
-    vm_profile_default_context_initialize(&machine->default_profile_context,
-        &machine->default_bios, machine->media_registry, VM_SESSION_MEDIA_HDD_ID,
-        machine->profile->firmware_slot);
+    if (machine->firmware_kind == VM_SESSION_FIRMWARE_DEFAULT_PC_AT) {
+        vm_profile_default_context_initialize(&machine->default_profile_context,
+            &machine->default_bios, machine->media_registry, VM_SESSION_MEDIA_HDD_ID,
+            machine->profile->firmware_slot);
+    }
     if (core_platform_presentation_mailbox_create(&machine->presentation_mailbox) !=
         TYPE_STATUS_OK) {
         vm_session_storage_rollback(machine);
@@ -347,7 +351,71 @@ static C_VOID vm_session_initialize_model40_configuration(vm_session *session)
 {
     if (session == STD_NULL) return;
     session->model40_private = 1;
+    session->firmware_kind = VM_SESSION_FIRMWARE_MODEL40_BYOB;
     session->floppy_kind = VM_PROFILE_FLOPPY_525_1200K;
+}
+
+static type_status vm_session_create_xt_byob(const vm_session_config *config,
+    vm_session **out_session)
+{
+    vm_session *session;
+    type_status status;
+
+    if (config == STD_NULL || out_session == STD_NULL || config->memory_bytes != 0u ||
+        config->hdd_slave_image != STD_NULL || config->create_fdd ||
+        config->create_hdd_cylinders != 0u || config->boot_hdd ||
+        config->cpu_profile != CORE_MACHINE_CPU_PROFILE_DEFAULT ||
+        config->fpu_profile != CORE_MACHINE_FPU_PROFILE_NONE ||
+        !vm_profile_xt_5160_268_byob_manifest_is_valid(&config->xt_firmware)) {
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
+    *out_session = STD_NULL;
+    session = (vm_session *)STD_CALLOC(1u, sizeof(*session));
+    if (session == STD_NULL) return TYPE_STATUS_NO_MEMORY;
+    session->xt_private = 1;
+    session->firmware_kind = VM_SESSION_FIRMWARE_XT_BYOB;
+    session->floppy_kind = VM_PROFILE_FLOPPY_525_360K;
+    if (vm_profile_xt_5160_268_resolve(&session->xt_resolved) != TYPE_STATUS_OK) {
+        STD_FREE(session);
+        return TYPE_STATUS_FAULT;
+    }
+    session->profile_topology = &session->xt_resolved.topology;
+    session->core_machine_config = session->xt_resolved.resolved.values.core.configuration;
+    session->controller_timing_rules =
+        session->xt_resolved.resolved.values.core.controller_timing_rules;
+    session->xt_system_rom = (type_unsigned_8 *)STD_MALLOC(
+        VM_PROFILE_XT_5160_268_SYSTEM_ROM_BYTES);
+    session->xt_xebec_rom = (type_unsigned_8 *)STD_MALLOC(
+        VM_PROFILE_XT_5160_268_XEBEC_ROM_BYTES);
+    if (session->xt_system_rom == STD_NULL || session->xt_xebec_rom == STD_NULL) {
+        STD_FREE(session->xt_system_rom);
+        STD_FREE(session->xt_xebec_rom);
+        STD_FREE(session);
+        return TYPE_STATUS_NO_MEMORY;
+    }
+    status = vm_profile_xt_5160_268_byob_manifest_load(&config->xt_firmware,
+        session->xt_system_rom, session->xt_xebec_rom, &session->xt_rom);
+    if (status != TYPE_STATUS_OK) {
+        STD_FREE(session->xt_system_rom);
+        STD_FREE(session->xt_xebec_rom);
+        STD_FREE(session);
+        return status;
+    }
+    session->retained_config = *config;
+    STD_MEMSET(&session->retained_config.xt_firmware, 0,
+        sizeof(session->retained_config.xt_firmware));
+    status = vm_session_initialize(session);
+    if (status != TYPE_STATUS_OK) { vm_session_destroy(session); return status; }
+    if ((config->fdd_image != STD_NULL && vm_session_insert_fdd(session, config->fdd_image)) ||
+        (config->hdd_image != STD_NULL && vm_session_insert_hdd_at_startup(session,
+            config->hdd_image))) {
+        vm_session_destroy(session);
+        return TYPE_STATUS_FAULT;
+    }
+    status = vm_session_reset(session);
+    if (status != TYPE_STATUS_OK) { vm_session_destroy(session); return status; }
+    *out_session = session;
+    return TYPE_STATUS_OK;
 }
 
 static type_status vm_session_create_model40_byob(const vm_session_config *config,
@@ -408,17 +476,11 @@ C_INT vm_session_create(const vm_session_config *config, vm_session **out_sessio
     if (config != STD_NULL && config->profile_kind == VM_SESSION_PROFILE_COMPAQ_DESKPRO_386_MODEL_40) {
         return vm_session_create_model40_byob(config, out_session);
     }
+    if (config != STD_NULL && config->profile_kind == VM_SESSION_PROFILE_IBM_5160_MODEL_268) {
+        return vm_session_create_xt_byob(config, out_session);
+    }
     if (out_session == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
     *out_session = STD_NULL;
-    if (config != STD_NULL &&
-        config->profile_kind == VM_SESSION_PROFILE_IBM_5160_MODEL_268 &&
-        (config->memory_bytes != 0u || config->fdd_image != STD_NULL ||
-         config->hdd_image != STD_NULL || config->hdd_slave_image != STD_NULL ||
-         config->create_fdd || config->create_hdd_cylinders != 0u || config->boot_hdd ||
-         config->cpu_profile != CORE_MACHINE_CPU_PROFILE_DEFAULT ||
-         config->fpu_profile != CORE_MACHINE_FPU_PROFILE_NONE)) {
-        return TYPE_STATUS_INVALID_ARGUMENT;
-    }
     session = (vm_session *)STD_CALLOC(1u, sizeof(*session));
     if (session == STD_NULL) return TYPE_STATUS_NO_MEMORY;
     if (profile_kind == VM_SESSION_PROFILE_DEFAULT_PC_AT) {
@@ -438,17 +500,6 @@ C_INT vm_session_create(const vm_session_config *config, vm_session **out_sessio
             session->ibm_5170_root.resolved.values.core.configuration;
         session->controller_timing_rules =
             session->ibm_5170_root.resolved.values.core.controller_timing_rules;
-    } else if (profile_kind == VM_SESSION_PROFILE_IBM_5160_MODEL_268) {
-        vm_profile_xt_5160_268_resolved_profile xt;
-
-        /* The immutable B1 declaration is resolvable before B2, but cannot
-         * construct a session until B2 binds its real board topology. */
-        if (vm_profile_xt_5160_268_resolve(&xt) != TYPE_STATUS_OK) {
-            STD_FREE(session);
-            return TYPE_STATUS_FAULT;
-        }
-        STD_FREE(session);
-        return TYPE_STATUS_UNSUPPORTED;
     } else {
         STD_FREE(session);
         return TYPE_STATUS_INVALID_ARGUMENT;
@@ -523,6 +574,8 @@ C_VOID vm_session_destroy(vm_session *session)
 {
     if (session == STD_NULL) return;
     vm_session_finalize(session);
+    STD_FREE(session->xt_system_rom);
+    STD_FREE(session->xt_xebec_rom);
     STD_FREE(session);
 }
 

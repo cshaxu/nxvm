@@ -7,6 +7,7 @@
 #include "core/machine/fpu_interface.h"
 #include "core/platform/input_interface.h"
 #include "vm/profile/model40/model40.h"
+#include "vm/profile/xt/xt_5160_268.h"
 
 typedef enum vm_session_profile_kind {
     VM_SESSION_PROFILE_DEFAULT_PC_AT,
@@ -34,6 +35,7 @@ typedef struct vm_session_config {
     core_machine_cpu_profile cpu_profile;
     core_machine_fpu_profile fpu_profile;
     vm_profile_model40_byob_manifest model40_firmware;
+    vm_profile_xt_5160_268_byob_manifest xt_firmware;
 } vm_session_config;
 
 typedef struct vm_session vm_session;

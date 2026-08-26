@@ -32,6 +32,12 @@ typedef enum vm_session_boot_preference {
     VM_SESSION_BOOT_PREFERENCE_HDD
 } vm_session_boot_preference;
 
+typedef enum vm_session_firmware_kind {
+    VM_SESSION_FIRMWARE_DEFAULT_PC_AT,
+    VM_SESSION_FIRMWARE_MODEL40_BYOB,
+    VM_SESSION_FIRMWARE_XT_BYOB
+} vm_session_firmware_kind;
+
 typedef struct vm_session_start_outcome {
     C_INT valid;
     type_status status;
@@ -79,12 +85,18 @@ struct vm_session {
     type_bool pacing_origin_valid;
     vm_session_config retained_config;
     vm_session_boot_preference boot_preference;
+    vm_session_firmware_kind firmware_kind;
     C_INT model40_private;
+    C_INT xt_private;
     vm_profile_floppy_kind floppy_kind;
     vm_profile_model40_external_rom model40_rom;
     type_unsigned_8 model40_even_rom[VM_PROFILE_MODEL40_ROM_CHIP_BYTES];
     type_unsigned_8 model40_odd_rom[VM_PROFILE_MODEL40_ROM_CHIP_BYTES];
     vm_profile_model40_d4_memory model40_d4_memory;
+    vm_profile_xt_5160_268_resolved_profile xt_resolved;
+    vm_profile_xt_5160_268_external_rom xt_rom;
+    type_unsigned_8 *xt_system_rom;
+    type_unsigned_8 *xt_xebec_rom;
     core_machine_fdc_terminal_observation model40_fdc_terminal_observation;
     type_bool model40_fdc_terminal_observation_valid;
     C_CHAR fdd_image_path[1024];

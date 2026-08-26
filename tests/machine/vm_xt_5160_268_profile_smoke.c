@@ -169,27 +169,80 @@ static C_INT vm_xt_5160_268_topology_constructs_one_xt_route(C_VOID)
     return failed;
 }
 
-static C_INT vm_xt_5160_268_is_not_a_runnable_at_alias(C_VOID)
+static C_INT vm_xt_5160_268_write_blob(const C_CHAR *path, STD_SIZE_T bytes)
 {
+    type_unsigned_8 zeroes[512] = {0};
+    STD_FILE *file = STD_FOPEN(path, "wb");
+
+    if (file == STD_NULL) return 0;
+    while (bytes != 0u) {
+        STD_SIZE_T chunk = bytes < sizeof(zeroes) ? bytes : sizeof(zeroes);
+        if (STD_FWRITE(zeroes, 1u, chunk, file) != chunk) {
+            STD_FCLOSE(file);
+            return 0;
+        }
+        bytes -= chunk;
+    }
+    return STD_FCLOSE(file) == 0;
+}
+
+static C_INT vm_xt_5160_268_byob_session_uses_one_xt_route(C_VOID)
+{
+    static const C_CHAR base_path[] = "t484-s21-xt-base.bin";
+    static const C_CHAR option_path[] = "t484-s21-xt-option.bin";
+    static const C_CHAR fdd_path[] = "t484-s21-xt-fdd.img";
+    static const C_CHAR hdd_path[] = "t484-s21-xt-type2.img";
+    static const C_CHAR base_sha256[] =
+        "de2f256064a0af797747c2b97505dc0b9f3df0de4f489eac731c23ae9ca9cc31";
+    static const C_CHAR option_sha256[] =
+        "9f1dcbc35c350d6027f98be0f5c8b43b42ca52b7604459c0c42be3aa88913d47";
     vm_session_config config = {
         .profile_kind = VM_SESSION_PROFILE_IBM_5160_MODEL_268,
-        .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
+        .fdd_image = fdd_path,
+        .hdd_image = hdd_path,
+        .xt_firmware = {base_path, base_sha256, STD_NULL, STD_NULL,
+            "project-owned synthetic test input"}
     };
     vm_session *session = STD_NULL;
+    vm_session_reset_vector vector;
+    C_INT failed = 0;
 
-    if (STD_STRCMP(vm_session_profile_name(config.profile_kind),
-            "ibm-5160-model-268") != 0 ||
-        vm_session_create(&config, &session) != TYPE_STATUS_UNSUPPORTED ||
-        session != STD_NULL) return 1;
+    if (!vm_xt_5160_268_write_blob(base_path,
+            VM_PROFILE_XT_5160_268_SYSTEM_ROM_BYTES) ||
+        !vm_xt_5160_268_write_blob(option_path,
+            VM_PROFILE_XT_5160_268_XEBEC_ROM_BYTES) ||
+        !vm_xt_5160_268_write_blob(fdd_path, 360u * 1024u) ||
+        !vm_xt_5160_268_write_blob(hdd_path,
+            CORE_MACHINE_XEBEC_TYPE_2_LOGICAL_SECTOR_COUNT *
+                CORE_MACHINE_XEBEC_TYPE_2_BYTES_PER_SECTOR)) return 1;
+    failed |= STD_STRCMP(vm_session_profile_name(config.profile_kind),
+        "ibm-5160-model-268") != 0;
+    failed |= vm_session_create(&config, &session) != TYPE_STATUS_OK || session == STD_NULL;
+    failed |= !failed && vm_session_get_reset_vector(session, &vector) != TYPE_STATUS_OK;
+    vm_session_destroy(session);
+    session = STD_NULL;
+    config.xt_firmware.xebec_path = option_path;
+    config.xt_firmware.xebec_sha256 = option_sha256;
+    failed |= vm_session_create(&config, &session) != TYPE_STATUS_OK || session == STD_NULL;
+    vm_session_destroy(session);
+    session = STD_NULL;
+    config.xt_firmware.system_sha256 = "invalid";
+    failed |= vm_session_create(&config, &session) != TYPE_STATUS_FAULT || session != STD_NULL;
+    config.xt_firmware.system_sha256 = base_sha256;
     config.cpu_profile = CORE_MACHINE_CPU_PROFILE_8086;
-    if (vm_session_create(&config, &session) != TYPE_STATUS_INVALID_ARGUMENT) return 1;
-    config.cpu_profile = CORE_MACHINE_CPU_PROFILE_DEFAULT;
-    config.memory_bytes = 512u * 1024u;
-    return vm_session_create(&config, &session) != TYPE_STATUS_INVALID_ARGUMENT;
+    failed |= vm_session_create(&config, &session) != TYPE_STATUS_INVALID_ARGUMENT;
+    (C_VOID)STD_REMOVE(base_path);
+    (C_VOID)STD_REMOVE(option_path);
+    (C_VOID)STD_REMOVE(fdd_path);
+    (C_VOID)STD_REMOVE(hdd_path);
+    return failed;
 }
 
 static C_INT vm_xt_5160_268_request_is_fixed(C_VOID)
 {
+    static const C_CHAR base_path[] = "t484-s21-xt-request.bin";
+    static const C_CHAR base_sha256[] =
+        "de2f256064a0af797747c2b97505dc0b9f3df0de4f489eac731c23ae9ca9cc31";
     vm_product_session_request request = {
         .profile = "ibm-5160-model-268", .display = "console", .boot = "rom"
     };
@@ -198,20 +251,32 @@ static C_INT vm_xt_5160_268_request_is_fixed(C_VOID)
     };
     core_product_session_provider provider;
     C_VOID *session = STD_NULL;
+    C_INT failed = 0;
 
+    if (!vm_xt_5160_268_write_blob(base_path,
+            VM_PROFILE_XT_5160_268_SYSTEM_ROM_BYTES)) return 1;
+    STD_STRCPY(request.xt_system_path, base_path);
+    STD_STRCPY(request.xt_system_sha256, base_sha256);
+    STD_STRCPY(request.xt_provenance, "project-owned synthetic test input");
     vm_session_provider_initialize(&provider);
-    if (provider.open(provider.context, 0u, &options, &session) !=
-        TYPE_STATUS_UNSUPPORTED || session != STD_NULL) return 1;
+    failed |= provider.open(provider.context, 0u, &options, &session) != TYPE_STATUS_OK ||
+        session == STD_NULL;
+    if (session != STD_NULL) {
+        failed |= provider.close(provider.context, session) != TYPE_STATUS_OK;
+        session = STD_NULL;
+    }
     STD_STRCPY(request.cpu, "8086");
-    return provider.open(provider.context, 0u, &options, &session) !=
+    failed |= provider.open(provider.context, 0u, &options, &session) !=
         TYPE_STATUS_INVALID_STATE;
+    (C_VOID)STD_REMOVE(base_path);
+    return failed;
 }
 
 int main(void)
 {
     if (vm_xt_5160_268_declaration_is_fixed() ||
         vm_xt_5160_268_topology_constructs_one_xt_route() ||
-        vm_xt_5160_268_is_not_a_runnable_at_alias() ||
+        vm_xt_5160_268_byob_session_uses_one_xt_route() ||
         vm_xt_5160_268_request_is_fixed()) return 1;
     STD_PRINTF("M5:T484:S3:XT-FIXED-PROFILE:OK\n");
     STD_PRINTF("M5:T484:S5:XT-B2-SHARED-TOPOLOGY:OK\n");
@@ -220,5 +285,6 @@ int main(void)
     STD_PRINTF("M5:T484:S11:XT-CGA-PLAN:OK\n");
     STD_PRINTF("M5:T484:S11:XT-NO-VIDEO-ALIAS:OK\n");
     STD_PRINTF("M5:T484:S16:XT-TYPE2:OK\n");
+    STD_PRINTF("M5:T484:S21:XT-B6-BYOB-SESSION:OK\n");
     return 0;
 }

@@ -98,6 +98,18 @@ static C_INT vm_product_session_catalog_parse(const C_CHAR *directory,
     C_INT firmware_odd_map = 0;
     C_INT firmware_odd_path = 0;
     C_INT firmware_odd_sha256 = 0;
+    C_INT firmware_xt_system_slot = 0;
+    C_INT firmware_xt_system_section = 0;
+    C_INT firmware_xt_system_bytes = 0;
+    C_INT firmware_xt_system_map = 0;
+    C_INT firmware_xt_system_path = 0;
+    C_INT firmware_xt_system_sha256 = 0;
+    C_INT firmware_xt_xebec_slot = 0;
+    C_INT firmware_xt_xebec_section = 0;
+    C_INT firmware_xt_xebec_bytes = 0;
+    C_INT firmware_xt_xebec_map = 0;
+    C_INT firmware_xt_xebec_path = 0;
+    C_INT firmware_xt_xebec_sha256 = 0;
     C_INT firmware_provenance = 0;
     C_INT firmware = 0;
     C_INT media_section = 0;
@@ -110,6 +122,7 @@ static C_INT vm_product_session_catalog_parse(const C_CHAR *directory,
     C_INT boot = 0;
     C_INT floppy = 0;
     C_INT hard_disk = 0;
+    C_CHAR firmware_provenance_text[sizeof(entry->model40_provenance)] = {0};
 
     if (!vm_product_session_catalog_path(path, sizeof(path), directory, name) ||
         core_platform_file_reader_open(path, &file) != TYPE_STATUS_OK) return 0;
@@ -132,6 +145,14 @@ static C_INT vm_product_session_catalog_parse(const C_CHAR *directory,
         if (section == 3 && !STD_STRCMP(text, "rom_odd:")) {
             if (firmware_odd_section) break;
             firmware_slot = 2; firmware_odd_section = 1; continue;
+        }
+        if (section == 3 && !STD_STRCMP(text, "system_rom:")) {
+            if (firmware_xt_system_section) break;
+            firmware_slot = 3; firmware_xt_system_section = 1; continue;
+        }
+        if (section == 3 && !STD_STRCMP(text, "xebec_option:")) {
+            if (firmware_xt_xebec_section) break;
+            firmware_slot = 4; firmware_xt_xebec_section = 1; continue;
         }
         if (section == 0 && vm_product_session_catalog_parse_value(text, "schema", &value)) {
             if (schema || STD_STRCMP(value, "nxvm-session")) break;
@@ -179,48 +200,81 @@ static C_INT vm_product_session_catalog_parse(const C_CHAR *directory,
         }
         if (section == 3 && firmware_slot != 0 && vm_product_session_catalog_parse_value(text, "slot", &value)) {
             if ((firmware_slot == 1 && !STD_STRCMP(value, "system-rom-even")) ||
-                (firmware_slot == 2 && !STD_STRCMP(value, "system-rom-odd"))) {
+                (firmware_slot == 2 && !STD_STRCMP(value, "system-rom-odd")) ||
+                (firmware_slot == 3 && !STD_STRCMP(value, "xt-base-system")) ||
+                (firmware_slot == 4 && !STD_STRCMP(value, "xt-xebec-option"))) {
                 if ((firmware_slot == 1 && firmware_even_slot) ||
-                    (firmware_slot == 2 && firmware_odd_slot)) break;
-                if (firmware_slot == 1) firmware_even_slot = 1; else firmware_odd_slot = 1;
+                    (firmware_slot == 2 && firmware_odd_slot) ||
+                    (firmware_slot == 3 && firmware_xt_system_slot) ||
+                    (firmware_slot == 4 && firmware_xt_xebec_slot)) break;
+                if (firmware_slot == 1) firmware_even_slot = 1;
+                else if (firmware_slot == 2) firmware_odd_slot = 1;
+                else if (firmware_slot == 3) firmware_xt_system_slot = 1;
+                else firmware_xt_xebec_slot = 1;
                 continue;
             }
             break;
         }
         if (section == 3 && firmware_slot != 0 && vm_product_session_catalog_parse_value(text, "path", &value)) {
-            C_CHAR *target = firmware_slot == 1 ? entry->model40_even_path : entry->model40_odd_path;
+            C_CHAR *target = firmware_slot == 1 ? entry->model40_even_path :
+                firmware_slot == 2 ? entry->model40_odd_path : firmware_slot == 3 ?
+                entry->xt_system_path : entry->xt_xebec_path;
             if ((firmware_slot == 1 && firmware_even_path) ||
                 (firmware_slot == 2 && firmware_odd_path) ||
+                (firmware_slot == 3 && firmware_xt_system_path) ||
+                (firmware_slot == 4 && firmware_xt_xebec_path) ||
                 !vm_product_session_catalog_path(target, VM_PRODUCT_SESSION_CATALOG_PATH_MAX,
                     directory, value)) break;
-            if (firmware_slot == 1) firmware_even_path = 1; else firmware_odd_path = 1;
+            if (firmware_slot == 1) firmware_even_path = 1;
+            else if (firmware_slot == 2) firmware_odd_path = 1;
+            else if (firmware_slot == 3) firmware_xt_system_path = 1;
+            else firmware_xt_xebec_path = 1;
             continue;
         }
         if (section == 3 && firmware_slot != 0 && vm_product_session_catalog_parse_value(text, "bytes", &value)) {
-            if (STD_STRCMP(value, "16384")) break;
+            if ((firmware_slot <= 2 && STD_STRCMP(value, "16384")) ||
+                (firmware_slot == 3 && STD_STRCMP(value, "65536")) ||
+                (firmware_slot == 4 && STD_STRCMP(value, "8192"))) break;
             if ((firmware_slot == 1 && firmware_even_bytes) ||
-                (firmware_slot == 2 && firmware_odd_bytes)) break;
-            if (firmware_slot == 1) firmware_even_bytes = 1; else firmware_odd_bytes = 1;
+                (firmware_slot == 2 && firmware_odd_bytes) ||
+                (firmware_slot == 3 && firmware_xt_system_bytes) ||
+                (firmware_slot == 4 && firmware_xt_xebec_bytes)) break;
+            if (firmware_slot == 1) firmware_even_bytes = 1;
+            else if (firmware_slot == 2) firmware_odd_bytes = 1;
+            else if (firmware_slot == 3) firmware_xt_system_bytes = 1;
+            else firmware_xt_xebec_bytes = 1;
             continue;
         }
         if (section == 3 && firmware_slot != 0 && vm_product_session_catalog_parse_value(text, "sha256", &value)) {
-            C_CHAR *target = firmware_slot == 1 ? entry->model40_even_sha256 : entry->model40_odd_sha256;
+            C_CHAR *target = firmware_slot == 1 ? entry->model40_even_sha256 :
+                firmware_slot == 2 ? entry->model40_odd_sha256 : firmware_slot == 3 ?
+                entry->xt_system_sha256 : entry->xt_xebec_sha256;
             if ((firmware_slot == 1 && firmware_even_sha256) ||
                 (firmware_slot == 2 && firmware_odd_sha256) ||
+                (firmware_slot == 3 && firmware_xt_system_sha256) ||
+                (firmware_slot == 4 && firmware_xt_xebec_sha256) ||
                 !vm_product_session_catalog_copy(target, 65u, value)) break;
-            if (firmware_slot == 1) firmware_even_sha256 = 1; else firmware_odd_sha256 = 1;
+            if (firmware_slot == 1) firmware_even_sha256 = 1;
+            else if (firmware_slot == 2) firmware_odd_sha256 = 1;
+            else if (firmware_slot == 3) firmware_xt_system_sha256 = 1;
+            else firmware_xt_xebec_sha256 = 1;
             continue;
         }
         if (section == 3 && firmware_slot != 0 && vm_product_session_catalog_parse_value(text, "map", &value)) {
             if (STD_STRCMP(value, "read-only")) break;
             if ((firmware_slot == 1 && firmware_even_map) ||
-                (firmware_slot == 2 && firmware_odd_map)) break;
-            if (firmware_slot == 1) firmware_even_map = 1; else firmware_odd_map = 1;
+                (firmware_slot == 2 && firmware_odd_map) ||
+                (firmware_slot == 3 && firmware_xt_system_map) ||
+                (firmware_slot == 4 && firmware_xt_xebec_map)) break;
+            if (firmware_slot == 1) firmware_even_map = 1;
+            else if (firmware_slot == 2) firmware_odd_map = 1;
+            else if (firmware_slot == 3) firmware_xt_system_map = 1;
+            else firmware_xt_xebec_map = 1;
             continue;
         }
         if (section == 3 && firmware_slot == 0 && vm_product_session_catalog_parse_value(text, "provenance", &value)) {
-            if (firmware_provenance || *value == '\0' || !vm_product_session_catalog_copy(entry->model40_provenance,
-                    sizeof(entry->model40_provenance), value)) break;
+            if (firmware_provenance || *value == '\0' || !vm_product_session_catalog_copy(
+                    firmware_provenance_text, sizeof(firmware_provenance_text), value)) break;
             firmware_provenance = 1;
             continue;
         }
@@ -235,7 +289,13 @@ static C_INT vm_product_session_catalog_parse(const C_CHAR *directory,
     core_platform_file_reader_close(file);
     if (!schema || !profile || !display || !boot || !media_section || !floppy ||
         !hard_disk || media != 0) return 0;
-    if (firmware &&
+    if (firmware && !STD_STRCMP(entry->profile, "compaq-deskpro-386-model-40") &&
+        !vm_product_session_catalog_copy(entry->model40_provenance,
+            sizeof(entry->model40_provenance), firmware_provenance_text)) return 0;
+    if (firmware && !STD_STRCMP(entry->profile, "ibm-5160-model-268") &&
+        !vm_product_session_catalog_copy(entry->xt_provenance,
+            sizeof(entry->xt_provenance), firmware_provenance_text)) return 0;
+    if (firmware && !STD_STRCMP(entry->profile, "compaq-deskpro-386-model-40") &&
         (!firmware_even_slot || !firmware_even_bytes || !firmware_even_map ||
          !firmware_odd_slot || !firmware_odd_bytes || !firmware_odd_map ||
          !firmware_provenance || entry->model40_even_path[0] == '\0' ||
@@ -243,6 +303,13 @@ static C_INT vm_product_session_catalog_parse(const C_CHAR *directory,
          entry->model40_odd_sha256[0] == '\0' ||
          !vm_product_session_catalog_sha256_is_valid(entry->model40_even_sha256) ||
          !vm_product_session_catalog_sha256_is_valid(entry->model40_odd_sha256))) return 0;
+    if (firmware && !STD_STRCMP(entry->profile, "ibm-5160-model-268") &&
+        (!firmware_xt_system_slot || !firmware_xt_system_bytes || !firmware_xt_system_map ||
+         !firmware_provenance || entry->xt_system_path[0] == '\0' ||
+         !vm_product_session_catalog_sha256_is_valid(entry->xt_system_sha256) ||
+         (firmware_xt_xebec_section && (!firmware_xt_xebec_slot || !firmware_xt_xebec_bytes ||
+          !firmware_xt_xebec_map || entry->xt_xebec_path[0] == '\0' ||
+          !vm_product_session_catalog_sha256_is_valid(entry->xt_xebec_sha256))))) return 0;
     if (!vm_product_session_catalog_copy(entry->file_name, sizeof(entry->file_name), name)) return 0;
     return 1;
 }

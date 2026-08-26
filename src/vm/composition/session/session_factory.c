@@ -88,19 +88,31 @@ static type_status vm_session_provider_request_configure(
         config->model40_firmware.odd_path = request->model40_odd_path;
         config->model40_firmware.odd_sha256 = request->model40_odd_sha256;
         config->model40_firmware.provenance = request->model40_provenance;
+    } else if (config->profile_kind == VM_SESSION_PROFILE_IBM_5160_MODEL_268) {
+        config->xt_firmware.system_path = request->xt_system_path;
+        config->xt_firmware.system_sha256 = request->xt_system_sha256;
+        config->xt_firmware.xebec_path = request->xt_xebec_path[0] == '\0' ?
+            STD_NULL : request->xt_xebec_path;
+        config->xt_firmware.xebec_sha256 = request->xt_xebec_sha256[0] == '\0' ?
+            STD_NULL : request->xt_xebec_sha256;
+        config->xt_firmware.provenance = request->xt_provenance;
     }
     if (config->profile_kind != VM_SESSION_PROFILE_COMPAQ_DESKPRO_386_MODEL_40 &&
         (request->model40_even_path[0] != '\0' || request->model40_even_sha256[0] != '\0' ||
          request->model40_odd_path[0] != '\0' || request->model40_odd_sha256[0] != '\0' ||
          request->model40_provenance[0] != '\0')) return TYPE_STATUS_INVALID_STATE;
+    if (config->profile_kind != VM_SESSION_PROFILE_IBM_5160_MODEL_268 &&
+        (request->xt_system_path[0] != '\0' || request->xt_system_sha256[0] != '\0' ||
+         request->xt_xebec_path[0] != '\0' || request->xt_xebec_sha256[0] != '\0' ||
+         request->xt_provenance[0] != '\0')) return TYPE_STATUS_INVALID_STATE;
     if (config->profile_kind != VM_SESSION_PROFILE_DEFAULT_PC_AT &&
         (config->memory_bytes != 0u || request->cpu[0] != '\0' ||
          request->fpu[0] != '\0')) return TYPE_STATUS_INVALID_STATE;
     if (config->profile_kind == VM_SESSION_PROFILE_COMPAQ_DESKPRO_386_MODEL_40 &&
         STD_STRCMP(request->boot, "rom")) return TYPE_STATUS_INVALID_STATE;
     if (config->profile_kind == VM_SESSION_PROFILE_IBM_5160_MODEL_268 &&
-        (STD_STRCMP(request->boot, "rom") || config->fdd_image != STD_NULL ||
-         config->hdd_image != STD_NULL || config->boot_hdd)) return TYPE_STATUS_INVALID_STATE;
+        (STD_STRCMP(request->boot, "rom") || !vm_profile_xt_5160_268_byob_manifest_is_valid(
+            &config->xt_firmware))) return TYPE_STATUS_INVALID_STATE;
     if ((!STD_STRCMP(request->boot, "floppy") && config->fdd_image == STD_NULL) ||
         (!STD_STRCMP(request->boot, "hard_disk") && config->hdd_image == STD_NULL) ||
         (config->profile_kind == VM_SESSION_PROFILE_IBM_5170_MODEL_339 &&
@@ -115,6 +127,10 @@ static type_status vm_session_provider_request_configure(
          config->model40_firmware.odd_path != STD_NULL ||
          config->model40_firmware.odd_sha256 != STD_NULL ||
          config->model40_firmware.provenance != STD_NULL)) return TYPE_STATUS_INVALID_STATE;
+    if (config->profile_kind != VM_SESSION_PROFILE_IBM_5160_MODEL_268 &&
+        (config->xt_firmware.system_path != STD_NULL || config->xt_firmware.system_sha256 != STD_NULL ||
+         config->xt_firmware.xebec_path != STD_NULL || config->xt_firmware.xebec_sha256 != STD_NULL ||
+         config->xt_firmware.provenance != STD_NULL)) return TYPE_STATUS_INVALID_STATE;
     return TYPE_STATUS_OK;
 }
 
