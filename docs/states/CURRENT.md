@@ -2,28 +2,28 @@
 
 ## Current Work
 
-**Active: M5 T484 S2.**
+**Active: M5 T484 S3.**
 
-## M5 T484 S2 Packet
+## M5 T484 S3 Packet
 
 | Field | Required record |
 | --- | --- |
 | Identifier Mode | Continuation |
-| Admission And Approval | The owner-approved T484 scope continues after coordinator review accepts S1 P1 `8772e0e5` and its complete F1--F9 functional convergence ledger. |
-| Objective | Freeze the source-qualified B1 compatibility matrix for the immutable 5160-268 declaration and 8088 attachment before changing Core or VM code. |
-| Non-goals | No production source change, runtime profile, firmware/media import, board route, timing implementation, generic XT, PC/AT substitution, protected-mode or Windows claim. |
-| Reference Baseline | Accepted T484 S1 F1/F2/F8 rows, T483 primary-source/timing evidence, retained 8086 semantic ledger, current CPU/profile/session source and linked functional-closure proposal. |
+| Admission And Approval | The owner-approved T484 scope continues after coordinator review accepts S2 P1 `d8be8008` and its rendered-source 8088 compatibility matrix. |
+| Objective | Implement B1's 8088 Core profile/queue policy and the fixed immutable 5160-268 declaration through the existing resolver and copied-plan path, with no XT board binding. |
+| Non-goals | No 5160 board route, device repair, firmware/media import, generic XT, host-time/physical timing claim, protected-mode or Windows claim. |
+| Reference Baseline | Accepted T484 S1 F1/F2/F8 ledger, T484 S2 compatibility matrix, T483 BOM/timing evidence, current CPU/profile/session source and linked functional-closure proposal. |
 | Candidate Proposal | [IBM PC/XT 5160-268 selected-device functional closure](../proposals/m5-xt-5160-268-device-functional-closure.md). |
-| Files And ABI Surface | Read-only Intel/IBM source and current CPU/profile/session inspection plus indexed B1 matrix/history/status; no source, build, runtime, asset or ABI change. |
+| Files And ABI Surface | Core CPU profile/prefetch/timing validation, VM profile resolver/session catalog, focused tests/CMake, indexed evidence/history/status and the task's stripped Release artifact; no controller/firmware/media or external ABI expansion. |
 | Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, architecture/coding rules, source policy and the proposal's no-implementation stop boundary. |
-| Verification | Rendered/document-text source cross-read where applicable, 8086/8088 semantic and profile source sweep, current-time-boundary review and documentation governance. |
-| Expected Markers | `M5:T484:S2:XT-8088-COMPATIBILITY:OK`; `M5:T484:S2:XT-B1-SOURCE-BOUNDARY:OK`. |
-| Asset Needs | Public Intel/IBM documentation may be read in the approved external research archive; no import, firmware or guest media. |
-| Reporting Requirements | Distinguish reusable instruction semantics from separate 8088 configuration/bus/prefetch facts; state the exact B1 implementation and proof boundary without a time claim. |
+| Verification | New focused 8088 queue/control-transfer/self-modifying and fixed-profile rejection smokes, existing CPU/profile/session regressions, full current gate, task-version stripped Release hash and documentation governance. |
+| Expected Markers | `M5:T484:S3:XT-8088-QUEUE:OK`; `M5:T484:S3:XT-FIXED-PROFILE:OK`; `M5:T484:S3:XT-B1-REGRESSION:OK`. |
+| Asset Needs | No new acquisition/import; all tests use project-owned synthetic code/fixtures and no firmware or guest media. |
+| Reporting Requirements | Record shared semantic owner, the one 8088 queue policy, fixed selection/rejection behavior, changed-path line accounting, retained timing transfer and artifact result. |
 | Original Owner Request | Continue the ordered minimalist queue toward the pre-Windows L3 admission audit. |
-| Stop Conditions | Stop if primary material cannot distinguish 8088 fact from 8086-compatible behavior; transfer the under-sourced point rather than extrapolate from an emulator or 8086 profile. |
-| Exit Criteria | B1 has a complete source-labelled reuse/separation matrix, one existing owner/absence disposition per row, and an implementation/proof plan that does not claim board or physical time. |
-| Similar-Issue Sweep | CPU profiles/timing/prefetch, Core configuration validation, VM resolver/default-profile declarations, session catalog/YAML selection and relevant CPU/profile tests. |
+| Stop Conditions | Stop if the existing generic prefetch owner cannot realize the sourced 8088 queue policy without a duplicate execution path; retain one bounded Core-owner correction rather than expose a false XT profile. |
+| Exit Criteria | 8088 has one Core configuration/queue policy and shared semantic execution; the immutable XT declaration copies only fixed B1 values, rejects variants and remains unavailable until B2; all named proof and artifact requirements pass. |
+| Similar-Issue Sweep | CPU profile validation, timing selectors, prefetch/flush callers, Core configuration copies, VM resolver/default-profile declarations, session catalog/YAML selection and relevant CPU/profile tests. |
 
 ## Current Technical Baseline
 
@@ -60,7 +60,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T484 S1 | Accepted: the F1--F9 XT functional convergence ledger fixes the complete implementation universe, unique owner/absence dispositions and finite B1--B6 batches. [Evidence](../etc/evidence/t484-s1-xt-functional-convergence-ledger.md). |
+| T484 S2 | Accepted: rendered Intel/IBM evidence permits shared 8086 semantics but requires a Core-owned four-byte 8088 queue policy and forbids a false 8086 alias. [Evidence](../etc/evidence/t484-s2-xt-8088-compatibility-matrix.md). |
 | T482 | Closed: one strict root YAML request reaches the sole `SESSION OPEN` authority and resolver without CLI re-encoding; 296/296 current-gate tests and stripped Release 0480 pass. [Closure audit](../etc/evidence/t482-s4-closure-audit.md). |
 | T483 | Closed: the IBM 5160-268 BOM, complete current-owner capability matrix and Manual-L3/unresolved timing partition establish one functional and one timing receiver without implying an XT runtime path. [Closure evidence](../etc/evidence/t483-s3-xt-timing-source-partition.md). |
 | T481 | Closed: one global CPU/controller/Core-time/profile/VM audit leaves no unrecorded duplicate owner, host-to-Core tick injection or false capability claim; residuals have one ordered receiver. [Closure audit](../etc/evidence/t481-s5-global-reconciliation.md). |

@@ -10,4 +10,5 @@ ATA/Xebec shim or duplicate controller/media/video state.
 | Subtask | Result |
 | --- | --- |
 | S1 | Accepted: the F1--F9 convergence ledger freezes every selected device, owner/absence, repair batch and timing handoff. |
-| S2 | Active: freeze the primary-source 8088/immutable-profile compatibility matrix for B1 before implementation. |
+| S2 | Accepted: rendered Intel/IBM evidence defines shared semantics and the mandatory Core-owned four-byte 8088 queue boundary. |
+| S3 | Active: implement B1's shared-semantic 8088 profile/queue policy and fixed immutable XT declaration, then prove it without a board claim. |
