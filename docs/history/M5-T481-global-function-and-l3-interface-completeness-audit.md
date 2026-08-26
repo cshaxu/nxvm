@@ -7,4 +7,5 @@ runtime behavior or interface.
 | Subtask | Accepted result |
 | --- | --- |
 | S1 | Accepted: one de-duplicated CPU/controller/time/profile/VM universe indexes final ledgers without a parallel row set. |
-| S2 | Active: audit CPU function, retirement, exception/delivery and transaction-timing paths. |
+| S2 | Accepted: one CPU function, delivery, retirement and transaction-owner audit preserves explicit L0--L3 transfers without a duplicate timing path. |
+| S3 | Active: audit every selected controller's function, phase timing, Core deadline eligibility and board/personality receiver. |
