@@ -2111,6 +2111,18 @@ C_INT core_machine_primary_source_instruction_cost(
             if (segment_override) *out_ticks += CORE_MACHINE_8086_SEGMENT_OVERRIDE_TICKS;
             return 1;
         }
+        if (opcode >= 0xd8u && opcode <= 0xdfu) {
+            machine->source_timing_form_id = CORE_MACHINE_SOURCE_TIMING_8086_ESC;
+            if (!data->flagMem) {
+                if (segment_override) return 0;
+                *out_ticks = 2u;
+                return 1;
+            }
+            *out_ticks = 12u + core_machine_8086_timing_effective_address(data,
+                prefixes);
+            if (segment_override) *out_ticks += CORE_MACHINE_8086_SEGMENT_OVERRIDE_TICKS;
+            return 1;
+        }
         if ((opcode == 0xd0u || opcode == 0xd1u || opcode == 0xd2u ||
             opcode == 0xd3u) && extension != 6u) {
             type_unsigned_64 count = (opcode == 0xd0u || opcode == 0xd1u) ?
