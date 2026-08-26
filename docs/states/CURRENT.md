@@ -2,28 +2,28 @@
 
 ## Current Work
 
-**Open: M5 T490 S1.**
+**Open: M5 T490 S2.**
 
-## M5 T490 S1 Packet
+## M5 T490 S2 Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | New |
-| Admission And Approval | T489 is closed.  The first queued independent controller unit is corrected from 8254 to the IBM 5160's actual 8253-5 PIT before any ledger or code judgement. |
-| Objective | Establish a visually verified, primary-source-only ledger for the selected IBM 5160 8253 PIT before any implementation judgement. |
+| Identifier Mode | Continuation |
+| Admission And Approval | T490 S1 accepted a visually checked Intel 8253-5 and IBM 5160 corpus and corrected the prior 8254 name before any ledger or code judgement. |
+| Objective | Freeze one complete selected IBM 5160 8253/PIT function and timing List 1, including every chip command/state rule and every selected board route. |
 | Non-goals | No PIT code change, timing conversion, host pacing, RTC, speaker rendering, profile state mutation, 8254 Read-Back feature or release artifact. |
-| Reference Baseline | T489 closure and the shared specification-driven complete-simulation admission program. |
+| Reference Baseline | T490 S1 source ledger and the shared specification-driven complete-simulation admission program. |
 | Candidate Proposal | [IBM 5160 8253 PIT phase contract](../proposals/m5-xt-8253-board-phase.md). |
-| Files And ABI Surface | Source-ledger evidence, evidence index, history, proposal-name correction, Queue and Current only; no code or ABI change. |
+| Files And ABI Surface | List-1 evidence, evidence index, history and Current only; no code or ABI change. |
 | Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, `docs/etc/operations/policy/source-policy.md`. |
-| Verification | Visually inspect source pages and record archive identity, page ranges, scan/OCR condition, 8254-superset exclusion and admissible facts; run documentation governance. |
-| Expected Markers | Finite original-source ledger that bounds the later complete 8253 List 1. |
-| Asset Needs | Owner-managed Intel 8253-5 and IBM 5160 source material; no imported source or asset. |
-| Reporting Requirements | Name every source, its visual-check status, admissible facts, 8254 exclusion, gaps and later-source boundary. |
-| Stop Conditions | The selected original source cannot be visually verified, or a required selected-board fact has no authoritative source. |
-| Exit Criteria | S1 evidence establishes a finite primary-source basis; only then may S2 freeze complete List 1. |
+| Verification | Cross-check every List-1 row against the S1 visual page set; mechanically verify no 8254-only Read-Back/status row is admitted. |
+| Expected Markers | Finite complete List 1 with each 8253/PPI/PIC/DMA consumer relation and timing claim assigned a source tier. |
+| Asset Needs | Retained S1 owner-managed Intel 8253-5 and IBM 5160 sources only; no imported source or asset. |
+| Reporting Requirements | State row count, primary-source page basis, excluded 8254-only behavior and every source gap/L2 transfer. |
+| Stop Conditions | A selected PIT board route lacks an authoritative source, or an 8254-only behavior is required to explain the XT. |
+| Exit Criteria | Every selected 8253/XT function and timing relation is represented once; only then may S3 map current code gaps. |
 | Original Owner Request | Each chip/controller is one complete T: source ledger, complete List 1, complete List 2, then one coherent owner-local implementation batch; no symptom repairs. |
-| Similar-Issue Sweep | Inventory all selected XT PIT ports, outputs and consumers for later List-1 inclusion; do not modify them in S1. |
+| Similar-Issue Sweep | Include all `40h`--`43h` functions, counter outputs/gates, IRQ0, refresh/DMA and PPI/speaker consumers; do not modify them in S2. |
 
 ## Current Technical Baseline
 
@@ -60,6 +60,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T490 S1 | Accepted: original Intel 8253-5 and IBM 5160 sources are visually checked; the incorrect 8254 label and Read-Back superset are excluded before List 1. [Evidence](../etc/evidence/t490-s1-8253-original-source-ledger.md). |
 | T489 | Closed: complete IBM 5160 8237A source/List-1/List-2/one-owner batch closes the single page-port gap without new state or parallel path; physical-axis conversion remains transferred. [Closure audit](../etc/evidence/t489-s5-8237a-closure-audit.md). |
 | T488 | Closed: complete IBM 5160 8259A source/List-1/List-2/one-owner audit retains one Core PIC path and an empty implementation batch. [Closure audit](../etc/evidence/t488-s5-8259a-closure-audit.md). |
 | T487 | Closed: complete IBM board source/List-1/List-2 reconciliation retains the single Intel clock-total owner and explicit L2 physical-phase boundaries. [Closure audit](../etc/evidence/t487-s5-5160-board-closure-audit.md). |
