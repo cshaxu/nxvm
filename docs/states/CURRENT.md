@@ -2,28 +2,28 @@
 
 ## Current Work
 
-**Active: M5 T484 S3.**
+**Active: M5 T484 S4.**
 
-## M5 T484 S3 Packet
+## M5 T484 S4 Packet
 
 | Field | Required record |
 | --- | --- |
 | Identifier Mode | Continuation |
-| Admission And Approval | The owner-approved T484 scope continues after coordinator review accepts S2 P1 `d8be8008`. The owner explicitly approves the required Core prefetch-producer completion: 8088 joins the existing CPU-profile strategy, shares semantic execution and receives its distinct Core-owned queue/bus policy. |
-| Objective | Implement B1's 8088 Core profile and source-qualified prefetch producer/queue policy, then add the fixed immutable 5160-268 declaration through the existing resolver/copied-profile path, with no XT board binding. |
-| Non-goals | No 5160 board route, device repair, firmware/media import, generic XT, physical bus-duration or host-time claim, protected-mode or Windows claim. |
-| Reference Baseline | Accepted T484 S1 F1/F2/F8 ledger, T484 S2 compatibility matrix, T483 BOM/timing evidence, current CPU/profile/session source and linked functional-closure proposal. |
+| Admission And Approval | The owner-approved T484 functional-closure scope continues. S3 P2 `041fb659` is coordinator-reviewed and accepted: it proves the immutable 8088/5160 B1 boundary without an AT alias. |
+| Objective | Freeze the complete B2 IBM 5160-268 board construction topology and compare it with current Core/VM owners, so the following implementation S can add only missing selected board inputs through one copied profile-to-plan path. |
+| Non-goals | No board/device implementation, firmware/media import, generic XT, ATA/Xebec shim, physical timing or host-pacing claim, protected-mode or Windows claim. |
+| Reference Baseline | Accepted T483 BOM/capability/timing evidence; accepted T484 S1 ledger, S2 source matrix and S3 implementation evidence; current resolver, Core plan and VM composition source. |
 | Candidate Proposal | [IBM PC/XT 5160-268 selected-device functional closure](../proposals/m5-xt-5160-268-device-functional-closure.md). |
-| Files And ABI Surface | Core CPU profile/prefetch/transaction/scheduler validation, VM profile resolver/session catalog, focused tests/CMake, indexed evidence/history/status and the task's stripped Release artifact; no controller/firmware/media or external ABI expansion. |
+| Files And ABI Surface | Profile/resolver/plan and session construction audit, focused topology evidence/history/status only; no production ABI, controller, firmware or media change. |
 | Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, architecture/coding rules, source policy and the proposal's no-implementation stop boundary. |
-| Verification | New focused 8088 queue/producer/control-transfer/self-modifying and fixed-profile rejection smokes, existing CPU/profile/session regressions, full current gate, task-version stripped Release hash and documentation governance. |
-| Expected Markers | `M5:T484:S3:XT-8088-QUEUE:OK`; `M5:T484:S3:XT-FIXED-PROFILE:OK`; `M5:T484:S3:XT-B1-REGRESSION:OK`. |
-| Asset Needs | No new acquisition/import; all tests use project-owned synthetic code/fixtures and no firmware or guest media. |
-| Reporting Requirements | Record shared semantic owner, the one 8088 producer/queue policy, fixed selection/rejection behavior, changed-path line accounting, retained physical-duration transfer and artifact result. |
+| Verification | One board-topology matrix maps every selected B2 port/window/IRQ/DRQ/reset/ROM relation to a source-backed input, current owner, or explicit next-S gap; documentation governance. |
+| Expected Markers | `M5:T484:S4:XT-BOARD-TOPOLOGY:OK`; `M5:T484:S4:XT-B2-GAP-LEDGER:OK`. |
+| Asset Needs | Manual/reference research only; no third-party source, firmware, guest media or local path enters the repository. |
+| Reporting Requirements | Record every B2 relation, its authoritative source tier, sole owner, exact current disposition and earliest implementation receiver; identify forbidden AT borrowing. |
 | Original Owner Request | Continue the ordered minimalist queue toward the pre-Windows L3 admission audit. |
-| Stop Conditions | Stop if a source-required 8088 queue transition cannot be represented in the existing Core CPU/transaction owner without creating a second execution, transaction or scheduler path; retain one bounded Core correction rather than expose a false profile. |
-| Exit Criteria | 8088 has one Core profile plus producer/queue policy and shared semantic execution; the immutable XT declaration copies only fixed B1 values, rejects variants and remains unavailable until B2; all named proof and artifact requirements pass. |
-| Similar-Issue Sweep | CPU profile validation, timing selectors, prefetch producer/flush callers, Core transaction/scheduler/configuration copies, VM resolver/default-profile declarations, session catalog/YAML selection and relevant CPU/profile tests. |
+| Stop Conditions | Stop and transfer a relation if no source-backed selected 5160-268 fact can distinguish it from an AT assumption; do not infer a board value or bind a controller speculatively. |
+| Exit Criteria | Every B2 relation is frozen as direct-source-backed, external-L3 input, deferred timing input, or explicit implementation gap with one owner; no hidden AT topology remains in the future XT route. |
+| Similar-Issue Sweep | All existing profile declarations, resolver field ownership/copies, Core plan topology inputs, VM session construction and T483 selected-device rows. |
 
 ## Current Technical Baseline
 
