@@ -69,3 +69,12 @@ future implementation accepts only a validated selected printed geometry from
 the profile/session construction boundary.  Physical MFM/ECC, drive signals,
 rotation/seek/service duration and adapter ROM mapping remain separate future
 receivers.  This S makes no runnable-5160 or host-pacing claim.
+
+## Coordinator Acceptance
+
+The coordinator rechecked every X1--X17 row against the accepted primary
+source record, the two read-only Other-L3 observations and the actual current
+HDC shape.  The new record imports neither code nor protected resources and
+does not claim a selected disk or timing.  It identifies one cohesive next
+mechanism: a tagged immutable Core HDC plan and DMA3/IRQ5 wiring seam.  S12 is
+accepted and that bounded mechanism is S13's sole receiver.

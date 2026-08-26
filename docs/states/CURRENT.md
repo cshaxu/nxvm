@@ -2,27 +2,27 @@
 
 ## Current Work
 
-**Active: M5 T484 S12.**
+**Active: M5 T484 S13.**
 
-## M5 T484 S12 Packet
+## M5 T484 S13 Packet
 
 | Field | Required record |
 | --- | --- |
 | Identifier Mode | Continuation |
-| Admission And Approval | Owner-approved continuous execution toward the pre-Windows L3 admission audit; coordinator acceptance of T484 S11 P1 `f9783aaf` closes B4, and the frozen T484 B5/Xebec ledger batch is the next independent receiver. |
-| Objective | Reconcile the selected IBM 20 MB Fixed Disk Drive Adapter's documented Xebec command, byte-stream, DMA3/IRQ5, reset, option-ROM and BYOB-media facts into one source-qualified implementation contract. |
-| Non-goals | No HDC implementation, ATA shim, guessed geometry, default disk image, option-ROM bytes, firmware/session route, raw MFM, physical service-time claim, generic XT profile or second CHS/media cache. |
-| Reference Baseline | Accepted T483 S1 Xebec baseline, T484 S1 F7/B5 ledger and [T484 S4 Xebec gap record](../etc/evidence/t484-s4-xt-board-topology-gap-ledger.md); accepted T479 HDC personalities/source audit; IBM 6139790 and qualified 86Box/PCjs read-only corroboration. |
+| Admission And Approval | Owner-approved continuous execution toward the pre-Windows L3 admission audit; coordinator acceptance of T484 S12 P1 `f771aa02` closes the B5 source-contract batch and admits its first implementation seam. |
+| Objective | Replace the universal task-file-only HDC plan shape with one immutable tagged configuration that retains ATA, Compaq WD and IBM WD1003 unchanged while expressing the selected Xebec four-port, DMA3/IRQ5 wiring. |
+| Non-goals | No Xebec command/result state machine, default disk/image/geometry, option-ROM bytes/mapping, session/runnable XT route, ATA shim, raw MFM, physical service time, second HDC/CHS/media cache or generic XT framework. |
+| Reference Baseline | Accepted T484 S12 X1--X17 source contract, T479 S6 source/gap ledgers, existing HDC/media owner and current ATA/Compaq/WD regression paths. |
 | Candidate Proposal | [IBM PC/XT 5160-268 selected-device functional closure](../proposals/m5-xt-5160-268-device-functional-closure.md). |
-| Files And ABI Surface | T484 evidence/history/current status and the source/coverage ledgers only; no source, public ABI, CMake target, artifact or runtime architecture changes. |
-| Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, source policy, T479 HDC ownership boundary and the proposal's single-owner/no-parallel-path condition. |
-| Verification | Render/cross-read the accepted IBM source record and reconcile every selected F7 row against retained Other-L3 observations/current HDC code; document source class, agreement/disagreement, unqualified geometry and physical-time transfer; run documentation governance and actual-change review. |
-| Expected Markers | `M5:T484:S12:XEBEC-SOURCE-CONTRACT:OK`; `M5:T484:S12:XEBEC-NO-ATA-ALIAS:OK`. |
-| Asset Needs | Approved external source inspection only; no download, import, firmware, guest media, local path or third-party code enters the repository. |
-| Reporting Requirements | Record source provenance/OCR confidence, each command/port/DMA/IRQ/reset/ROM fact, every external-emulator agreement or non-authoritative divergence, the retained sole HDC/media owner, geometry disposition and timing transfer. |
+| Files And ABI Surface | `src/core/machine/controller_interface.h`, `machine_board.c`, plan/machine private state only as required, focused Core HDC wiring tests, T484 evidence/history/current state and stripped `nxvm_0_5_0484.exe`; no VM session or public product request surface. |
+| Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, `docs/design/ARCHITECTURE.md`, `docs/design/CODING.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`, source policy and the one HDC/media-owner boundary. |
+| Verification | Focused Core tests prove tagged validation, exact Xebec `320h`--`323h` direction grammar, one Core-issued DMA3 binding and IRQ5 selection, while ATA/Compaq/WD regressions prove unchanged task-file routes; build Release 0484, current-gate, documentation governance and actual-change review. |
+| Expected Markers | `M5:T484:S13:XEBEC-TAGGED-PLAN:OK`; `M5:T484:S13:XEBEC-DMA3-IRQ5:OK`; `M5:T484:S13:HDC-NO-ATA-ALIAS:OK`. |
+| Asset Needs | Accepted project evidence and project-owned test state only; no third-party code, firmware, guest media, local path or code import enters the repository. |
+| Reporting Requirements | Record the tagged shape, sole Core HDC/media/DMA/PIC owners, all retained task-file paths, changed source/test count, focused/full verification, Release hash and all deferred command/geometry/timing work. |
 | Original Owner Request | Continue the ordered minimalist queue toward the pre-Windows L3 admission audit. |
-| Stop Conditions | Stop and transfer if the IBM source cannot establish a host-visible fact, a result requires imported emulator code or ROM/media bytes, a concrete BYOB geometry would be guessed, the contract requires an ATA/WD task-file alias or duplicate HDC/media state, or a service duration/physical signal would be invented. |
-| Exit Criteria | The complete B5 source contract gives every implementation-relevant fact a Manual-L3, corroborated Other-L3, or explicit unresolved disposition; no ATA/WD personality or media geometry is misrepresented, and all timing/firmware transfers have a named later receiver. |
+| Stop Conditions | Stop and transfer if the tagged form requires duplicated controller/media state, mutable profile structure, an ATA task-file emulation path, unproven controller-status behavior, a guessed geometry/service time, option-ROM mapping or a public session/product change. |
+| Exit Criteria | One tagged immutable plan validates all four personalities, expresses only sourced Xebec ports/DMA3/IRQ5 through existing Core owner boundaries, preserves all existing HDC personality regressions and records all deliberately absent Xebec behavior. |
 | Similar-Issue Sweep | IBM 5160/Xebec, IBM 5170 WD1003, DeskPro Compaq/WD and default-AT ATA HDC personalities; all HDC config/port/DMA/IRQ/media-owner paths and existing T479 source evidence. |
 
 ## Current Technical Baseline
