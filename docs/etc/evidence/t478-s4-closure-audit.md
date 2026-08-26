@@ -30,3 +30,10 @@ remains.
 - The closure source sweep confirms one resolver-to-copied-Core-input route per
   AT profile; S1--S3 evidence records the field ledger, child resolver, deleted
   session path, and retained dynamic owners.
+
+## Documentation transfer
+
+The completed proposal moved from `docs/proposals/` to this task's history
+companion. The queue now begins with the independently approved HDC candidate;
+the owner-authorized HDC, VADP, and global-audit proposal documents remain
+unchanged candidates.

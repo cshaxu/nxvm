@@ -2,26 +2,7 @@
 
 ## Current Work
 
-## M5 T478 S4 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner approved T478's ordered Default-AT migration on 2026-08-25; accepted S1--S3 provide its frozen delta, child resolver and session cutover. |
-| Objective | Audit the complete T478 migration, run its frozen parity universe, publish stripped Release 0478, and close only if all three AT profiles have one resolver-to-copied-Core-input route. |
-| Non-goals | No new runtime functionality, timing/topology change, external asset, YAML/XT work, resolver-kernel change, or L3 claim. Owner-approved current HDC/VGA/global-audit candidate documentation is included only to restore the governance gate. |
-| Reference Baseline | T478 S1 ledger, S2 resolver, S3 cutover; T475--T477 closures; current product/release rules. |
-| Candidate Proposal | [Default-AT 5170-derived profile](../proposals/m5-default-at-5170-derived-profile.md). |
-| Files And ABI Surface | Artifact target/preset, evidence/history/status, the owner-approved current HDC/VGA/global-audit candidate documents and queue links; no runtime ABI beyond accepted S3. |
-| Applicable Rules | One resolved Core-input path per AT profile; session-only dynamic resources; stripped Release and task closure rules. |
-| Verification | Frozen Default-AT/5170/DeskPro corpus, full current gate, source sweep, artifact banner/SHA/debug-section check, documentation governance and proposal exit mapping. |
-| Expected Markers | Existing T478 markers and `nxvm_0_5_0478.exe` banner `0.5.0478`. |
-| Asset Needs | Existing build/test inputs only. |
-| Reporting Requirements | Record artifact hash/source commit, all-profile parity/gate results, exact code delta and retained dynamic owners. |
-| Stop Conditions | Stop if parity differs, a second Core-input path remains, artifact/gates cannot be proven, or unrelated dirty work prevents a truthful closure gate. |
-| Exit Criteria | Proposal mapped to evidence; frozen parity and full gate pass; artifact is stripped Release; history/status accurate and proposal moved to history. |
-| Original Owner Request | Connect profiles in order through minimal single-owner interfaces. |
-| Similar-Issue Sweep | Artifact/preset/status identity, all AT profile construction routes, Default-AT session request conversion and all S1 parity owners. |
+**Idle.**
 
 ## Current Technical Baseline
 
@@ -56,7 +37,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T478 S3 | Accepted: Default-AT session construction now consumes one copied child result and deletes direct Core materialization/overrides; [evidence](../etc/evidence/t478-s3-default-at-session-cutover.md) records 257-step gate parity. |
+| T478 | Closed: Default-AT is an immutable `pc-at-5170` child and all three AT profiles have one resolver-to-copied-Core-input route. [Closure audit](../etc/evidence/t478-s4-closure-audit.md) records frozen parity, the 294-target gate, and stripped Release 0478. |
 | T477 | Closed: DeskPro is an immutable `pc-at-5170` child with one copied Core-plan materialization path; the Model-40 session retains only dynamic resources. [Closure audit](../etc/evidence/t477-s4-closure-audit.md) records frozen parity, the 294-target gate and stripped Release 0477. |
 | T476 | Closed: IBM 5170 sessions consume one copied `pc-at-5170` root and one Core-plan materialization path; the former duplicate exception aggregate is retired while its independent owners remain. [Closure audit](../etc/evidence/t476-s4-closure-audit.md) records the 294-target gate and stripped Release 0476. |
 | T475 | Closed: one VM-only immutable resolver copies parent-patched values and per-field provenance to the existing Core-plan API, rejects invalid ownership/bindings/windows/routes/contracts/policy, and leaves current routes for ordered profile migrations. [Closure audit](../etc/evidence/t475-s3-integration-closure-audit.md) records the 294-target gate and stripped Release 0475. |

@@ -20,3 +20,9 @@ the retained S3 direct-session deletion boundary.
 S3 is accepted. Its [cutover evidence](../etc/evidence/t478-s3-default-at-session-cutover.md)
 records the deleted direct construction path, retained session owners and
 257-step current-gate parity.
+
+T478 is closed. Its [closure audit](../etc/evidence/t478-s4-closure-audit.md)
+records all three resolver-to-copied-Core-input routes, the Release 0478
+artifact, and the final full gate. The retained
+[admission proposal](M5-T478-default-at-5170-derived-profile-proposal.md)
+preserves the original pre-admission scope.
