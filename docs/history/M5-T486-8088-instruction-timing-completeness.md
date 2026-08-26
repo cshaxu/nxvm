@@ -7,4 +7,4 @@ its own queued task.
 
 | Subtask | Result |
 | --- | --- |
-| S1 | Active: establish the original Intel source ledger before List 1, List 2, or implementation. |
+| S1 | Accepted: one visually verified 1981 Intel source corpus distinguishes the scan/OCR container from page authority and fixes the finite Table-2-21 basis before List 1. [Evidence](../etc/evidence/t486-s1-8088-original-source-ledger.md). |

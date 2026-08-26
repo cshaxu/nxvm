@@ -2,28 +2,11 @@
 
 ## Current Work
 
-**Open: M5 T486 S1.**
+**Open: M5 T486.**
 
-## M5 T486 S1 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | New |
-| Admission And Approval | Owner approved the Td S152 per-unit hardware program and continuous execution on 2026-08-26. T486 is the first ordered candidate: one 8088 CPU task with source, List 1, List 2, then one implementation closure batch. No exception is authorized. |
-| Objective | Establish a visually verified original-source ledger for the complete selected Intel 8088 instruction universe before any new T486 implementation work. |
-| Non-goals | No runtime-code, test, decoder, timing-selector, CPU state, board/bus, controller, profile, VM, artifact or external-source import change; no List-1 or List-2 disposition yet. |
-| Reference Baseline | Td S152 admission evidence; retained T485 S1--S20 evidence, especially the Table 2-21 coverage inventory; Intel iAPX 86,88 User's Manual PDF already held in the owner-managed manual archive. |
-| Candidate Proposal | [8088 instruction function and timing completeness](../proposals/m5-8088-instruction-timing-completeness.md). |
-| Files And ABI Surface | T486 history, source-ledger evidence, supporting-evidence index, Current and Queue only; no product or public/private C ABI surface changes. |
-| Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md` and the source policy apply. T486 retains the private Core decoder/timing evaluator as the sole future owner; architecture and coding rules are not otherwise triggered because S1 changes no source. |
-| Verification | Read the source policy; inspect the original PDF visually across Table 2-21 and relevant timing/prefix notes; reconcile its provenance against retained T485 evidence; run documentation governance and link validation. |
-| Expected Markers | One source ledger names the exact document and archive identity, rendered-page checks, OCR confidence/uncertainty, usable tables and unresolved source gaps; it makes no timing implementation claim. |
-| Asset Needs | Read-only owner-managed Intel manual archive; no firmware, guest media, Microsoft material, or third-party source import. |
-| Reporting Requirements | Record document identity, visually reviewed pages, authoritative versus uncertain material, lawful cross-check need, retained baseline relationship, and the no-code result. |
-| Stop Conditions | Stop and report if the manual is unavailable, corrupt, non-readable, not the required edition, or its scope cannot define the instruction corpus without another original source; do not substitute emulator source or infer a timing row. |
-| Exit Criteria | The source ledger gives a finite, visually verified original-source basis and explicit uncertainties for T486 S2's complete List 1; all implementation remains prohibited until S1--S3 are accepted. |
-| Original Owner Request | Each new CPU/chip/controller category must be a whole T: collect original manual, create complete function/timing List 1, create code-gap List 2, then implement the complete batch; never discover one issue and patch it ad hoc. |
-| Similar-Issue Sweep | Sweep all retained T485 8088 evidence, Table 2-21 pages, instruction/prefix/delivery exclusions, manual archive variants and source-policy boundaries; ensure no board/controller or external-emulator material silently becomes CPU authority. |
+T486 S1 is accepted at `60bb3c26`: the original Intel source corpus is
+visually verified, and its scan/OCR boundary is explicit. List 1 is the next
+required stage; no implementation is authorized yet.
 
 ## Current Technical Baseline
 
@@ -60,6 +43,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T486 S1 | Accepted: the original Intel 1981 source corpus and Table-2-21 visual review are fixed before List 1; no code or timing claim changed. [Evidence](../etc/evidence/t486-s1-8088-original-source-ledger.md). |
 | T485 | Withdrawn, not completed: accepted S1--S20 evidence remains retained, but Td S152 transfers the uncompleted aggregate XT scope to independent CPU/board/controller candidates. [Record](../etc/evidence/td-s152-unit-task-admission-governance.md). |
 | T484 | Closed: IBM 5160-268 now has one immutable 8088/profile plan, XT PPI/FDC/CGA/Xebec functional owners and one typed external-ROM BYOB product route; all remaining board/device timing transfers to T485. [Closure audit](../etc/evidence/t484-s22-xt-functional-closure-audit.md). |
 | T482 | Closed: one strict root YAML request reaches the sole `SESSION OPEN` authority and resolver without CLI re-encoding; 296/296 current-gate tests and stripped Release 0480 pass. [Closure audit](../etc/evidence/t482-s4-closure-audit.md). |
