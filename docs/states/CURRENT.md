@@ -9,21 +9,21 @@
 | Field | Required record |
 | --- | --- |
 | Identifier Mode | Continuation |
-| Admission And Approval | The owner-approved T484 scope continues after coordinator review accepts S2 P1 `d8be8008` and its rendered-source 8088 compatibility matrix. |
-| Objective | Implement B1's 8088 Core profile/queue policy and the fixed immutable 5160-268 declaration through the existing resolver and copied-plan path, with no XT board binding. |
-| Non-goals | No 5160 board route, device repair, firmware/media import, generic XT, host-time/physical timing claim, protected-mode or Windows claim. |
+| Admission And Approval | The owner-approved T484 scope continues after coordinator review accepts S2 P1 `d8be8008`. The owner explicitly approves the required Core prefetch-producer completion: 8088 joins the existing CPU-profile strategy, shares semantic execution and receives its distinct Core-owned queue/bus policy. |
+| Objective | Implement B1's 8088 Core profile and source-qualified prefetch producer/queue policy, then add the fixed immutable 5160-268 declaration through the existing resolver/copied-profile path, with no XT board binding. |
+| Non-goals | No 5160 board route, device repair, firmware/media import, generic XT, physical bus-duration or host-time claim, protected-mode or Windows claim. |
 | Reference Baseline | Accepted T484 S1 F1/F2/F8 ledger, T484 S2 compatibility matrix, T483 BOM/timing evidence, current CPU/profile/session source and linked functional-closure proposal. |
 | Candidate Proposal | [IBM PC/XT 5160-268 selected-device functional closure](../proposals/m5-xt-5160-268-device-functional-closure.md). |
-| Files And ABI Surface | Core CPU profile/prefetch/timing validation, VM profile resolver/session catalog, focused tests/CMake, indexed evidence/history/status and the task's stripped Release artifact; no controller/firmware/media or external ABI expansion. |
+| Files And ABI Surface | Core CPU profile/prefetch/transaction/scheduler validation, VM profile resolver/session catalog, focused tests/CMake, indexed evidence/history/status and the task's stripped Release artifact; no controller/firmware/media or external ABI expansion. |
 | Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, architecture/coding rules, source policy and the proposal's no-implementation stop boundary. |
-| Verification | New focused 8088 queue/control-transfer/self-modifying and fixed-profile rejection smokes, existing CPU/profile/session regressions, full current gate, task-version stripped Release hash and documentation governance. |
+| Verification | New focused 8088 queue/producer/control-transfer/self-modifying and fixed-profile rejection smokes, existing CPU/profile/session regressions, full current gate, task-version stripped Release hash and documentation governance. |
 | Expected Markers | `M5:T484:S3:XT-8088-QUEUE:OK`; `M5:T484:S3:XT-FIXED-PROFILE:OK`; `M5:T484:S3:XT-B1-REGRESSION:OK`. |
 | Asset Needs | No new acquisition/import; all tests use project-owned synthetic code/fixtures and no firmware or guest media. |
-| Reporting Requirements | Record shared semantic owner, the one 8088 queue policy, fixed selection/rejection behavior, changed-path line accounting, retained timing transfer and artifact result. |
+| Reporting Requirements | Record shared semantic owner, the one 8088 producer/queue policy, fixed selection/rejection behavior, changed-path line accounting, retained physical-duration transfer and artifact result. |
 | Original Owner Request | Continue the ordered minimalist queue toward the pre-Windows L3 admission audit. |
-| Stop Conditions | Stop if the existing generic prefetch owner cannot realize the sourced 8088 queue policy without a duplicate execution path; retain one bounded Core-owner correction rather than expose a false XT profile. |
-| Exit Criteria | 8088 has one Core configuration/queue policy and shared semantic execution; the immutable XT declaration copies only fixed B1 values, rejects variants and remains unavailable until B2; all named proof and artifact requirements pass. |
-| Similar-Issue Sweep | CPU profile validation, timing selectors, prefetch/flush callers, Core configuration copies, VM resolver/default-profile declarations, session catalog/YAML selection and relevant CPU/profile tests. |
+| Stop Conditions | Stop if a source-required 8088 queue transition cannot be represented in the existing Core CPU/transaction owner without creating a second execution, transaction or scheduler path; retain one bounded Core correction rather than expose a false profile. |
+| Exit Criteria | 8088 has one Core profile plus producer/queue policy and shared semantic execution; the immutable XT declaration copies only fixed B1 values, rejects variants and remains unavailable until B2; all named proof and artifact requirements pass. |
+| Similar-Issue Sweep | CPU profile validation, timing selectors, prefetch producer/flush callers, Core transaction/scheduler/configuration copies, VM resolver/default-profile declarations, session catalog/YAML selection and relevant CPU/profile tests. |
 
 ## Current Technical Baseline
 

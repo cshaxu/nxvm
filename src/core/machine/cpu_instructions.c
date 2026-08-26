@@ -6700,7 +6700,7 @@ static C_VOID _a_imul3(core_machine_cpu_execution_context *context, type_unsigne
 static type_unsigned_8 _a_shift_rotate_count(core_machine_cpu_execution_context *context,
     type_unsigned_8 csrc)
 {
-    return context->cpu_profile == CORE_MACHINE_CPU_PROFILE_8086 ? csrc :
+    return core_machine_cpu_profile_has_8086_semantics(context->cpu_profile) ? csrc :
         (type_unsigned_8)(csrc & 0x1fu);
 }
 static C_VOID _a_rol(core_machine_cpu_execution_context *context, type_unsigned_64 cdest, type_unsigned_8 csrc, type_unsigned_8 bit)
@@ -6881,7 +6881,7 @@ static C_VOID _a_rcl(core_machine_cpu_execution_context *context, type_unsigned_
     case 8:
         TYPE_TRACE_BLOCK_BEGIN("bit(8)");
         count = _a_shift_rotate_count(context, csrc);
-        if (context->cpu_profile != CORE_MACHINE_CPU_PROFILE_8086)
+        if (!core_machine_cpu_profile_has_8086_semantics(context->cpu_profile))
             count %= 9;
         instruction_state.data.bit = 8;
         instruction_state.data.opr1 = TYPE_MASK_UNSIGNED_8(cdest);
@@ -6906,7 +6906,7 @@ static C_VOID _a_rcl(core_machine_cpu_execution_context *context, type_unsigned_
     case 16:
         TYPE_TRACE_BLOCK_BEGIN("bit(16)");
         count = _a_shift_rotate_count(context, csrc);
-        if (context->cpu_profile != CORE_MACHINE_CPU_PROFILE_8086)
+        if (!core_machine_cpu_profile_has_8086_semantics(context->cpu_profile))
             count %= 17;
         instruction_state.data.bit = 16;
         instruction_state.data.opr1 = TYPE_MASK_UNSIGNED_16(cdest);
@@ -6969,7 +6969,7 @@ static C_VOID _a_rcr(core_machine_cpu_execution_context *context, type_unsigned_
     case 8:
         TYPE_TRACE_BLOCK_BEGIN("bit(8)");
         count = _a_shift_rotate_count(context, csrc);
-        if (context->cpu_profile != CORE_MACHINE_CPU_PROFILE_8086)
+        if (!core_machine_cpu_profile_has_8086_semantics(context->cpu_profile))
             count %= 9;
         instruction_state.data.bit = 8;
         instruction_state.data.opr1 = TYPE_MASK_UNSIGNED_8(cdest);
@@ -6994,7 +6994,7 @@ static C_VOID _a_rcr(core_machine_cpu_execution_context *context, type_unsigned_
     case 16:
         TYPE_TRACE_BLOCK_BEGIN("bit(16)");
         count = _a_shift_rotate_count(context, csrc);
-        if (context->cpu_profile != CORE_MACHINE_CPU_PROFILE_8086)
+        if (!core_machine_cpu_profile_has_8086_semantics(context->cpu_profile))
             count %= 17;
         instruction_state.data.bit = 16;
         instruction_state.data.opr1 = TYPE_MASK_UNSIGNED_16(cdest);
@@ -7842,7 +7842,7 @@ static type_bool core_machine_cpu_instruction_lexeme_scan_with_options(
         if (address_size_prefix)
             address_bytes = code_32 ? 2u : 4u;
     }
-    if (opcode == 0x0fu && profile != CORE_MACHINE_CPU_PROFILE_8086) {
+    if (opcode == 0x0fu && !core_machine_cpu_profile_has_8086_semantics(profile)) {
         if (profile != CORE_MACHINE_CPU_PROFILE_80286 &&
             profile != CORE_MACHINE_CPU_PROFILE_80386) return TYPE_FALSE;
         if (index >= available_bytes || index >= 15u) return TYPE_FALSE;
@@ -8473,7 +8473,7 @@ static C_VOID INS_0F(core_machine_cpu_execution_context *context)
         }
         TYPE_TRACE_CHECK_RETURN(ExecCpuInstruction(instruction_state.connect.insTable_0f[opcode]));
     }
-    else if (context->cpu_profile == CORE_MACHINE_CPU_PROFILE_8086)
+    else if (core_machine_cpu_profile_has_8086_semantics(context->cpu_profile))
         POP_CS(context);
     else
         UndefinedOpcode(context);
@@ -10170,7 +10170,7 @@ static C_VOID PUSH_ESP(core_machine_cpu_execution_context *context)
     else
     {
         cpu_state.data.ip++;
-        if (context->cpu_profile == CORE_MACHINE_CPU_PROFILE_8086)
+        if (core_machine_cpu_profile_has_8086_semantics(context->cpu_profile))
         {
             type_unsigned_16 value = cpu_state.data.sp - 2;
 
@@ -17921,7 +17921,7 @@ static C_VOID ExecInit(core_machine_cpu_execution_context *context)
     if (!context->prefetch_valid || instruction_state.data.linear <
         context->prefetch_linear || instruction_state.data.linear -
         context->prefetch_linear >= context->prefetch_count) {
-        type_unsigned_8 prefetch_bytes = 15u;
+        type_unsigned_8 prefetch_bytes = context->prefetch_capacity;
 
         core_machine_cpu_execution_invalidate_prefetch(context);
         if (cpu_state.data.eip <= cpu_state.data.cs.limit &&

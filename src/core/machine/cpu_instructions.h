@@ -213,6 +213,7 @@ struct core_machine_cpu_execution_context {
     type_unsigned_32 prefetch_expected_linear;
     type_unsigned_8 prefetch_bytes[15];
     type_unsigned_8 prefetch_count;
+    type_unsigned_8 prefetch_capacity;
     type_bool prefetch_valid;
     type_bool prefetch_expected_valid;
     type_bool prefetch_reservation_valid;

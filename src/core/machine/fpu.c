@@ -305,7 +305,7 @@ type_bool core_machine_fpu_profile_allows_cpu(core_machine_cpu_profile cpu,
 {
     if (fpu == CORE_MACHINE_FPU_PROFILE_NONE) return TYPE_TRUE;
     if (fpu == CORE_MACHINE_FPU_PROFILE_8087) {
-        return cpu == CORE_MACHINE_CPU_PROFILE_8086 ||
+        return core_machine_cpu_profile_has_8086_semantics(cpu) ||
             cpu == CORE_MACHINE_CPU_PROFILE_80186;
     }
     if (fpu == CORE_MACHINE_FPU_PROFILE_80287) {

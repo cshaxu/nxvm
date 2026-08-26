@@ -46,6 +46,8 @@ static C_INT vm_session_provider_parse_profile(const C_CHAR *value,
         *out_profile = VM_SESSION_PROFILE_DEFAULT_PC_AT;
     } else if (!STD_STRCMP(value, "ibm-5170-model-339")) {
         *out_profile = VM_SESSION_PROFILE_IBM_5170_MODEL_339;
+    } else if (!STD_STRCMP(value, "ibm-5160-model-268")) {
+        *out_profile = VM_SESSION_PROFILE_IBM_5160_MODEL_268;
     } else if (!STD_STRCMP(value, "compaq-deskpro-386-model-40")) {
         *out_profile = VM_SESSION_PROFILE_COMPAQ_DESKPRO_386_MODEL_40;
     } else {
@@ -70,7 +72,7 @@ static type_status vm_session_provider_request_configure(
     if (!vm_session_provider_parse_profile(request->profile, &config->profile_kind)) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
-    config->cpu_profile = CORE_MACHINE_CPU_PROFILE_80386;
+    config->cpu_profile = CORE_MACHINE_CPU_PROFILE_DEFAULT;
     config->fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE;
     if ((request->cpu[0] != '\0' && !vm_session_provider_parse_cpu(request->cpu,
             &config->cpu_profile)) ||
@@ -96,6 +98,9 @@ static type_status vm_session_provider_request_configure(
          request->fpu[0] != '\0')) return TYPE_STATUS_INVALID_STATE;
     if (config->profile_kind == VM_SESSION_PROFILE_COMPAQ_DESKPRO_386_MODEL_40 &&
         STD_STRCMP(request->boot, "rom")) return TYPE_STATUS_INVALID_STATE;
+    if (config->profile_kind == VM_SESSION_PROFILE_IBM_5160_MODEL_268 &&
+        (STD_STRCMP(request->boot, "rom") || config->fdd_image != STD_NULL ||
+         config->hdd_image != STD_NULL || config->boot_hdd)) return TYPE_STATUS_INVALID_STATE;
     if ((!STD_STRCMP(request->boot, "floppy") && config->fdd_image == STD_NULL) ||
         (!STD_STRCMP(request->boot, "hard_disk") && config->hdd_image == STD_NULL) ||
         (config->profile_kind == VM_SESSION_PROFILE_IBM_5170_MODEL_339 &&
@@ -118,7 +123,7 @@ static type_status vm_session_provider_parse_options(
 {
     if (config == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
     STD_MEMSET(config, 0, sizeof(*config));
-    config->cpu_profile = CORE_MACHINE_CPU_PROFILE_80386;
+    config->cpu_profile = CORE_MACHINE_CPU_PROFILE_DEFAULT;
     config->fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE;
     if (options == STD_NULL || (options->argument_count == 0 &&
             options->request == STD_NULL && options->request_bytes == 0u)) {

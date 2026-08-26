@@ -13,10 +13,18 @@ typedef enum core_machine_cpu_external_cycle_space {
 typedef enum core_machine_cpu_profile {
     CORE_MACHINE_CPU_PROFILE_DEFAULT = 0,
     CORE_MACHINE_CPU_PROFILE_8086,
+    CORE_MACHINE_CPU_PROFILE_8088,
     CORE_MACHINE_CPU_PROFILE_80186,
     CORE_MACHINE_CPU_PROFILE_80286,
     CORE_MACHINE_CPU_PROFILE_80386
 } core_machine_cpu_profile;
+
+static inline C_INT core_machine_cpu_profile_has_8086_semantics(
+    core_machine_cpu_profile profile)
+{
+    return profile == CORE_MACHINE_CPU_PROFILE_8086 ||
+        profile == CORE_MACHINE_CPU_PROFILE_8088;
+}
 
 #define CORE_MACHINE_CPU_DEVICE_NAME "Intel 8086+"
 

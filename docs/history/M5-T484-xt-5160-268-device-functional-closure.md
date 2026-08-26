@@ -11,4 +11,4 @@ ATA/Xebec shim or duplicate controller/media/video state.
 | --- | --- |
 | S1 | Accepted: the F1--F9 convergence ledger freezes every selected device, owner/absence, repair batch and timing handoff. |
 | S2 | Accepted: rendered Intel/IBM evidence defines shared semantics and the mandatory Core-owned four-byte 8088 queue boundary. |
-| S3 | Active: implement B1's shared-semantic 8088 profile/queue policy and fixed immutable XT declaration, then prove it without a board claim. |
+| S3 | P1 implemented: one Core-owned 8088 four-byte queue producer and one fixed 5160-268 resolver declaration; the declaration remains explicitly unavailable until B2 binds the XT board. [Evidence](../etc/evidence/t484-s3-xt-8088-profile-implementation.md). |

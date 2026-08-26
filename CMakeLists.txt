@@ -254,6 +254,9 @@ target_link_libraries(vm-profile-resolver-smoke PRIVATE vm-profile)
 add_executable(vm-ibm-5170-root-resolver-smoke
     tests/machine/vm_ibm_5170_root_resolver_smoke.c)
 target_link_libraries(vm-ibm-5170-root-resolver-smoke PRIVATE vm-profile)
+add_executable(vm-xt-5160-268-profile-smoke
+    tests/machine/vm_xt_5160_268_profile_smoke.c)
+target_link_libraries(vm-xt-5160-268-profile-smoke PRIVATE vm-composition)
 
 target_link_libraries(core-machine-contract-smoke PRIVATE core-machine)
 
@@ -1082,6 +1085,7 @@ target_link_libraries(core-utils PUBLIC type-facade)
 
 set(VM_PROFILE_SOURCES
     src/vm/profile/profile_resolver.c
+    src/vm/profile/xt/xt_5160_268.c
     src/vm/profile/default_profile/pc_at_profile.c
     src/vm/profile/default_profile/keyboard_mapper.c
     src/vm/profile/default_profile/mouse_mapper.c
@@ -2334,6 +2338,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     vm-session-speed-policy-smoke
     vm-profile-resolver-smoke
     vm-ibm-5170-root-resolver-smoke
+    vm-xt-5160-268-profile-smoke
     vm-platform-host-surface-smoke
     vdm-minimal-session-smoke
     vdm-minimal-presentation-smoke)
@@ -3576,10 +3581,10 @@ foreach(project_t345_target IN LISTS PROJECT_T344_CURRENT_GATE_TARGETS)
 endforeach()
 list(LENGTH PROJECT_T345_S2_OWNER_TEST_STRICT_TARGETS project_t345_s2_pure_count)
 list(LENGTH PROJECT_T345_S2_MIXED_OWNER_TEST_TARGETS project_t345_s2_mixed_count)
-if(NOT project_t345_s2_pure_count EQUAL 179 OR
+if(NOT project_t345_s2_pure_count EQUAL 180 OR
         NOT project_t345_s2_mixed_count EQUAL 3)
     message(FATAL_ERROR
-        "T345 S2 expected 179 pure and 3 mixed owner-test targets; found ${project_t345_s2_pure_count} pure and ${project_t345_s2_mixed_count} mixed.")
+        "T345 S2 expected 180 pure and 3 mixed owner-test targets; found ${project_t345_s2_pure_count} pure and ${project_t345_s2_mixed_count} mixed.")
 endif()
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     foreach(project_t345_target IN LISTS PROJECT_T345_S2_OWNER_TEST_STRICT_TARGETS)

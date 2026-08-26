@@ -234,7 +234,11 @@ C_INT core_machine_cpu_timing_select(core_machine *machine,
     machine->source_timing_repeat_phase = CORE_MACHINE_RETIREMENT_REPEAT_NONE;
     STD_MEMSET(&result, 0, sizeof(result));
 
-    if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80186) {
+    if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_8088) {
+        if (!core_machine_cpu_timing_try(machine, &result,
+                CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_COMPATIBILITY,
+                core_machine_compatibility_instruction_cost)) return 0;
+    } else if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80186) {
         if (!core_machine_cpu_timing_select_80186(machine, &result)) return 0;
     } else if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286) {
         if (!core_machine_cpu_timing_select_80286(machine, &result)) return 0;

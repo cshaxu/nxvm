@@ -44,6 +44,7 @@ C_VOID core_machine_cpu_execution_context_initialize(
     context->preview_mode = TYPE_FALSE;
     context->memory_access_provenance = CORE_MACHINE_CPU_MEMORY_ACCESS_DATA;
     context->prefetch_count = 0u;
+    context->prefetch_capacity = 15u;
     context->prefetch_valid = TYPE_FALSE;
     context->prefetch_expected_valid = TYPE_FALSE;
     context->prefetch_reservation_valid = TYPE_FALSE;
@@ -63,6 +64,8 @@ C_VOID core_machine_cpu_execution_context_bind_profiles(
 {
     if (context == STD_NULL) return;
     context->cpu_profile = cpu_profile;
+    context->prefetch_capacity = cpu_profile == CORE_MACHINE_CPU_PROFILE_8088 ?
+        4u : 15u;
     context->fpu_profile = fpu_profile;
     context->cpu_80386_cr_mov_ignores_mod = cpu_80386_cr_mov_ignores_mod;
 }
@@ -93,6 +96,7 @@ const C_CHAR *core_machine_cpu_profile_name(core_machine_cpu_profile profile)
 {
     switch (profile) {
     case CORE_MACHINE_CPU_PROFILE_8086: return "8086";
+    case CORE_MACHINE_CPU_PROFILE_8088: return "8088";
     case CORE_MACHINE_CPU_PROFILE_80186: return "80186";
     case CORE_MACHINE_CPU_PROFILE_80286: return "80286";
     case CORE_MACHINE_CPU_PROFILE_80386: return "80386";
@@ -133,6 +137,8 @@ C_VOID core_machine_cpu_state_initialize(
         context->debug_rf_before = TYPE_FALSE;
         context->debug_trap_cause = TYPE_ZERO_32;
         context->prefetch_count = 0u;
+        context->prefetch_capacity = context->cpu_profile ==
+            CORE_MACHINE_CPU_PROFILE_8088 ? 4u : 15u;
         context->prefetch_valid = TYPE_FALSE;
         context->prefetch_expected_valid = TYPE_FALSE;
         context->prefetch_reservation_valid = TYPE_FALSE;
@@ -150,6 +156,8 @@ C_VOID core_machine_cpu_state_reset(core_machine_cpu_execution_context *context)
         context->reset_requested = TYPE_FALSE;
         context->shutdown_requested = TYPE_FALSE;
         context->prefetch_count = 0u;
+        context->prefetch_capacity = context->cpu_profile ==
+            CORE_MACHINE_CPU_PROFILE_8088 ? 4u : 15u;
         context->prefetch_valid = TYPE_FALSE;
         context->prefetch_expected_valid = TYPE_FALSE;
         context->prefetch_reservation_valid = TYPE_FALSE;
@@ -231,7 +239,6 @@ C_VOID core_machine_cpu_execution_reserve_prefetch(
     core_machine_cpu_execution_context *context)
 {
     type_unsigned_32 offset;
-    type_unsigned_8 count = 15u;
 
     if (context == STD_NULL || context->cpu == STD_NULL ||
         (context->cpu->data.cr0 & VCPU_CR0_PG) ||
@@ -239,24 +246,33 @@ C_VOID core_machine_cpu_execution_reserve_prefetch(
         context->prefetch_expected_linear < context->prefetch_linear ||
         cpu_state.data.eip > cpu_state.data.cs.limit) return;
     offset = context->prefetch_expected_linear - context->prefetch_linear;
-    if (offset >= context->prefetch_count || context->prefetch_count - offset > 8u) return;
-    if ((type_unsigned_64)cpu_state.data.cs.limit - cpu_state.data.eip + 1u < count) {
-        count = (type_unsigned_8)((type_unsigned_64)cpu_state.data.cs.limit -
-            cpu_state.data.eip + 1u);
+    if (offset >= context->prefetch_count) return;
+    if (offset != 0u) {
+        context->prefetch_count = (type_unsigned_8)(context->prefetch_count - offset);
+        STD_MEMMOVE(context->prefetch_bytes, context->prefetch_bytes + offset,
+            context->prefetch_count);
+        context->prefetch_linear = context->prefetch_expected_linear;
     }
-    if (count == 0u) return;
-    context->prefetch_reservation_linear = context->prefetch_expected_linear;
-    context->prefetch_reservation_count = count;
+    if (context->prefetch_count >= context->prefetch_capacity) return;
+    context->prefetch_reservation_linear = context->prefetch_linear +
+        context->prefetch_count;
+    context->prefetch_reservation_count = 1u;
     context->prefetch_reservation_valid = TYPE_TRUE;
 }
 
 C_VOID core_machine_cpu_execution_advance_prefetch_reservation(
     core_machine_cpu_execution_context *context)
 {
+    type_unsigned_8 byte;
+
     if (context == STD_NULL || !context->prefetch_reservation_valid) return;
-    /* This transition only releases a bounded prefetch reservation.  Existing
-     * instruction execution remains the sole CPU memory-transaction and
-     * exception owner until a source-backed producer contract is admitted. */
+    context->memory_access_provenance = CORE_MACHINE_CPU_MEMORY_ACCESS_INSTRUCTION_PREFETCH;
+    if (!core_machine_cpu_execution_read_linear(context,
+            context->prefetch_reservation_linear, (type_virtual_address)&byte, 1u) &&
+        context->prefetch_count < context->prefetch_capacity) {
+        context->prefetch_bytes[context->prefetch_count++] = byte;
+    }
+    context->memory_access_provenance = CORE_MACHINE_CPU_MEMORY_ACCESS_DATA;
     context->prefetch_reservation_valid = TYPE_FALSE;
     context->prefetch_reservation_linear = 0u;
     context->prefetch_reservation_count = 0u;

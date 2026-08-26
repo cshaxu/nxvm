@@ -53,6 +53,9 @@ const C_CHAR *vm_session_profile_name(vm_session_profile_kind kind)
     if (kind == VM_SESSION_PROFILE_IBM_5170_MODEL_339) {
         return "ibm-5170-model-339";
     }
+    if (kind == VM_SESSION_PROFILE_IBM_5160_MODEL_268) {
+        return "ibm-5160-model-268";
+    }
     if (kind == VM_SESSION_PROFILE_COMPAQ_DESKPRO_386_MODEL_40) {
         return "compaq-deskpro-386-model-40";
     }
@@ -493,6 +496,15 @@ C_INT vm_session_create(const vm_session_config *config, vm_session **out_sessio
     }
     if (out_session == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
     *out_session = STD_NULL;
+    if (config != STD_NULL &&
+        config->profile_kind == VM_SESSION_PROFILE_IBM_5160_MODEL_268 &&
+        (config->memory_bytes != 0u || config->fdd_image != STD_NULL ||
+         config->hdd_image != STD_NULL || config->hdd_slave_image != STD_NULL ||
+         config->create_fdd || config->create_hdd_cylinders != 0u || config->boot_hdd ||
+         config->cpu_profile != CORE_MACHINE_CPU_PROFILE_DEFAULT ||
+         config->fpu_profile != CORE_MACHINE_FPU_PROFILE_NONE)) {
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
     session = (vm_session *)STD_CALLOC(1u, sizeof(*session));
     if (session == STD_NULL) return TYPE_STATUS_NO_MEMORY;
     if (profile_kind == VM_SESSION_PROFILE_DEFAULT_PC_AT) {
@@ -520,6 +532,17 @@ C_INT vm_session_create(const vm_session_config *config, vm_session **out_sessio
             session->ibm_5170_root.resolved.values.core.configuration;
         session->controller_timing_rules =
             session->ibm_5170_root.resolved.values.core.controller_timing_rules;
+    } else if (profile_kind == VM_SESSION_PROFILE_IBM_5160_MODEL_268) {
+        vm_profile_xt_5160_268_resolved_profile xt;
+
+        /* The immutable B1 declaration is resolvable before B2, but cannot
+         * construct a session until B2 binds its real board topology. */
+        if (vm_profile_xt_5160_268_resolve(&xt) != TYPE_STATUS_OK) {
+            STD_FREE(session);
+            return TYPE_STATUS_FAULT;
+        }
+        STD_FREE(session);
+        return TYPE_STATUS_UNSUPPORTED;
     } else {
         STD_FREE(session);
         return TYPE_STATUS_INVALID_ARGUMENT;

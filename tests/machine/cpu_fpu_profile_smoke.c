@@ -36,6 +36,8 @@ C_INT main(C_VOID)
 
     failed |= verify_machine_profiles(CORE_MACHINE_CPU_PROFILE_8086,
         CORE_MACHINE_FPU_PROFILE_NONE);
+    failed |= verify_machine_profiles(CORE_MACHINE_CPU_PROFILE_8088,
+        CORE_MACHINE_FPU_PROFILE_NONE);
     failed |= verify_machine_profiles(CORE_MACHINE_CPU_PROFILE_80186,
         CORE_MACHINE_FPU_PROFILE_8087);
     failed |= verify_machine_profiles(CORE_MACHINE_CPU_PROFILE_80286,

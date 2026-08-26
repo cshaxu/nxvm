@@ -24,6 +24,7 @@
 #include "vm/profile/default_profile/pc_at_profile_private.h"
 #include "vm/profile/device/floppy.h"
 #include "vm/profile/model40/model40_private.h"
+#include "vm/profile/xt/xt_5160_268.h"
 
 typedef enum vm_session_boot_preference {
     VM_SESSION_BOOT_PREFERENCE_AUTO,
