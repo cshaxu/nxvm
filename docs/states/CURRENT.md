@@ -2,26 +2,7 @@
 
 ## Current Work
 
-## M5 T470 S5 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner approved continuous T470 execution in this turn; T470 S4 is accepted at `90fe1948`, and this packet consumes its complete origin matrix. |
-| Objective | Prove or reject a physical time-axis rate for every selected profile against the complete CPU, transaction, controller and oscillator/divider evidence chain; publish a verified rate only for a closed chain. |
-| Non-goals | No VM pacing change, host tick injection, nominal-MHz promotion, CPU/controller timing implementation, new hardware source research, profile feature work or release artifact. |
-| Reference Baseline | T470 S1-S4 evidence, T388 physical inventory/eligibility/closure, T435-T437 CPU result closures, T462 controller plan closure, current three profile descriptors and Core time observation contract. |
-| Candidate Proposal | [M5 Core physical time axis and Standard pacing qualification](../proposals/m5-core-physical-time-axis-standard-pacing.md), T470 S5. |
-| Files And ABI Surface | Expected: profile/time-axis audit evidence and status/index updates only unless an already complete construction declaration needs a truthful correction; no VM API, Core scheduler or mutable profile callback. |
-| Applicable Rules | A profile rate is immutable copied proof data, never a nominal CPU or controller value; Core remains the sole progression owner; every unqualified CPU/transaction/controller/lifecycle row blocks physical selection; no new source-derived claim without admission. |
-| Verification | Sweep default PC/AT, Model-339 and Model-40 configuration construction and copied Core observation; crosswalk each profile to the S3/S4 matrices and T388 residual ledger; confirm no current profile selects verified time axis; run relevant profile/time contract tests and documentation governance. |
-| Expected Markers | One three-profile proof table names CPU, transaction, controller, oscillator/divider and lifecycle disposition; each profile is verified only if every column closes, otherwise unavailable with a named receiver. |
-| Asset Needs | Existing admitted project evidence only. New primary source or third-party research stops and requires source-policy admission. |
-| Reporting Requirements | Record all three profile results, every blocker/receiver, any code delta and exact focused verification; state explicitly whether a rate was selected. |
-| Stop Conditions | Stop a profile at the first incomplete evidence chain; do not estimate a rate, borrow a sibling profile's source or change product pacing. |
-| Exit Criteria | The selected profile universe is fully crosswalked, no false verified rate remains, all current unavailable results are tested, and documentation governance plus focused profile/time checks pass. |
-| Original Owner Request | Make the Core self-driven and let the host provide waiting only after a complete, evidence-backed guest-time axis; do not turn nominal MHz or host elapsed time into guest progression. |
-| Similar-Issue Sweep | Search all profile descriptors, session composition, Core plans, time observations and VM waiting for rate literals, physical-axis selection or host-to-Core time conversion; classify every production hit. |
+**Between accepted subtasks.**
 
 ## Current Technical Baseline
 
@@ -52,7 +33,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T470 S4 | Accepted: the [controller/transaction settlement](../etc/evidence/t470-s4-controller-transaction-settlement.md) replaces the ambiguous publication boolean with private origins, admits only the existing qualified deadline path beside CPU retirement, and retains every other origin as a physical blocker; all current profiles remain unavailable. |
+| T470 S5 | Accepted: the [profile timebase proof](../etc/evidence/t470-s5-profile-timebase-proof.md) crosswalks default PC/AT, Model-339 and Model-40 and retains all three at unqualified/zero; no nominal CPU or controller rate is promoted. |
 | T469 | Closed: S1--S6 reconcile the 145-row controller deadline ledger to one Core-owned deadline/timebase/waiting path; VM host-tick injection is deleted, current profiles retain explicit L2 fallback, and stripped Release 0469 is recorded in [closure audit](../etc/evidence/t469-s6-integration-closure-audit.md). |
 | T468 | Closed: the ATA-3 15-row task-file/media contract has one HDC owner, one media owner and one PIC route; the serial current gate passes 295/295 and stripped Release 0468 is recorded in [history](../history/M5-T468-core-hdc-ata-phase-contract.md). |
 | T467 | Closed: all 17 selected IBM-CGA rows reconcile to one VADP/Core/profile/snapshot path. Source and model facts remain retained; their current L3/L2/L1/L0 interpretation is [Td S148](../etc/evidence/td-s148-eight-controller-l-level-reclassification-audit.md). Serial current-gate passes 295/295; stripped Release 0467 is recorded in [history](../history/M5-T467-core-ibm-cga-completeness.md). |
