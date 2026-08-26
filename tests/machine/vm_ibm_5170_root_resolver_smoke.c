@@ -90,6 +90,10 @@ static C_INT vm_ibm_5170_root_is_copied_and_complete(C_VOID)
         resolved->values.core.configuration.cpu_profile !=
             CORE_MACHINE_CPU_PROFILE_80286 ||
         resolved->values.core.configuration.memory_bytes != 512u * 1024u ||
+        resolved->values.core.configuration.pic_topology !=
+            CORE_MACHINE_PIC_TOPOLOGY_CASCADED ||
+        resolved->values.core.configuration.dma_controller_count !=
+            CORE_MACHINE_DMA_CONTROLLER_COUNT ||
         resolved->values.core.configuration.time_axis.kind !=
             CORE_MACHINE_TIME_AXIS_MACRO_PROPORTIONAL ||
         resolved->values.core.configuration.time_axis.ticks_per_second != 8000000u ||
@@ -167,6 +171,10 @@ static C_INT vm_model40_child_resolves_copy(C_VOID)
         resolved.values.core.configuration.cpu_profile !=
             CORE_MACHINE_CPU_PROFILE_80386 ||
         resolved.values.core.configuration.memory_bytes != 1024u * 1024u ||
+        resolved.values.core.configuration.pic_topology !=
+            CORE_MACHINE_PIC_TOPOLOGY_CASCADED ||
+        resolved.values.core.configuration.dma_controller_count !=
+            CORE_MACHINE_DMA_CONTROLLER_COUNT ||
         resolved.values.firmware_policy != VM_PROFILE_RESOLVER_FIRMWARE_POLICY_BYOB ||
         resolved.values.media_policy != VM_PROFILE_RESOLVER_MEDIA_POLICY_SESSION) {
         return 1;
@@ -213,6 +221,10 @@ static C_INT vm_default_at_child_resolves_copy(C_VOID)
         resolved.resolved.values.core.configuration.fpu_profile !=
             CORE_MACHINE_FPU_PROFILE_80387 ||
         resolved.resolved.values.core.configuration.memory_bytes != 32u * 1024u * 1024u ||
+        resolved.resolved.values.core.configuration.pic_topology !=
+            CORE_MACHINE_PIC_TOPOLOGY_CASCADED ||
+        resolved.resolved.values.core.configuration.dma_controller_count !=
+            CORE_MACHINE_DMA_CONTROLLER_COUNT ||
         resolved.resolved.values.allowed_session_options !=
             (VM_PROFILE_DEFAULT_AT_SESSION_OPTION_CPU_FPU |
                 VM_PROFILE_DEFAULT_AT_SESSION_OPTION_MEMORY) ||

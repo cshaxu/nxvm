@@ -356,6 +356,8 @@ C_INT vm_profile_default_pc_at_core_config_materialize(
         .instruction_timing = contract->instruction_timing,
         .transaction_contract = contract->transaction_contract,
         .clock_plan = contract->clock_plan,
+        .pic_topology = CORE_MACHINE_PIC_TOPOLOGY_CASCADED,
+        .dma_controller_count = CORE_MACHINE_DMA_CONTROLLER_COUNT,
         .time_axis = contract->time_axis,
         .kbc_typematic_initial_ticks = contract->kbc_typematic_initial_ticks,
         .kbc_typematic_repeat_ticks = contract->kbc_typematic_repeat_ticks,

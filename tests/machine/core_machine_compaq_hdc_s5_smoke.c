@@ -110,7 +110,7 @@ C_INT main(C_VOID)
     slave_media.sector[0] = 0x78u;
     slave_media.sector[1] = 0x56u;
     core_machine_port_initialize(&port);
-    core_machine_pic_initialize(&master, &slave, &port);
+    core_machine_pic_initialize(&master, &slave, &port, CORE_MACHINE_PIC_TOPOLOGY_CASCADED);
     if (core_machine_media_registry_create(&registry) != TYPE_STATUS_OK ||
         core_machine_media_registry_bind(registry, 1u, &media, &media_provider) !=
             TYPE_STATUS_OK) {

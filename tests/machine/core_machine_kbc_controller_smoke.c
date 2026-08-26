@@ -36,7 +36,7 @@ static C_INT core_machine_kbc_mixed_fifo_lifecycle(C_VOID)
     C_INT failed = 0;
 
     core_machine_port_initialize(&port);
-    core_machine_pic_initialize(&pic_master, &pic_slave, &port);
+    core_machine_pic_initialize(&pic_master, &pic_slave, &port, CORE_MACHINE_PIC_TOPOLOGY_CASCADED);
     core_machine_kbc_initialize(&kbc, &port);
     core_machine_kbc_bind_core_services(&kbc, &pic_master, &pic_slave,
         &memory, &execution, TYPE_TRUE);
@@ -189,7 +189,7 @@ C_INT main(C_VOID)
     type_unsigned_8 index;
 
     core_machine_port_initialize(&port);
-    core_machine_pic_initialize(&pic_master, &pic_slave, &port);
+    core_machine_pic_initialize(&pic_master, &pic_slave, &port, CORE_MACHINE_PIC_TOPOLOGY_CASCADED);
     core_machine_kbc_initialize(&kbc, &port);
     core_machine_kbc_bind_core_services(&kbc, &pic_master, &pic_slave,
         &memory, &execution, TYPE_TRUE);

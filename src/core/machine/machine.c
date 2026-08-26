@@ -426,10 +426,10 @@ static type_status core_machine_create_internal(
         &machine->executor_port);
     core_machine_vadp_initialize(&machine->shared_vadp, &machine->executor_port);
     core_machine_kbc_initialize(&machine->shared_kbc, &machine->executor_port);
-    core_machine_dma_initialize_with_topology(&machine->shared_dma_latch,
+    core_machine_dma_initialize(&machine->shared_dma_latch,
         &machine->shared_dma_primary, &machine->shared_dma_secondary,
         &machine->executor_port, dma_controller_count);
-    core_machine_pic_initialize_with_topology(&machine->shared_pic_master,
+    core_machine_pic_initialize(&machine->shared_pic_master,
         &machine->shared_pic_slave, &machine->executor_port, config->pic_topology);
     core_machine_cpu_execution_context_bind_pic(&machine->executor_cpu_execution,
         &machine->shared_pic_master, &machine->shared_pic_slave);

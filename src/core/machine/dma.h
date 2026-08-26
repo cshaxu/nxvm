@@ -185,11 +185,8 @@ extern "C"
 #define VDMA_PHASE_S23 11u
 #define VDMA_PHASE_S24 12u
 
-    C_VOID core_machine_dma_initialize(t_latch *latch, t_dma *primary,
-                                       t_dma *secondary, t_port *port);
-    C_VOID core_machine_dma_initialize_with_topology(t_latch *latch,
-        t_dma *primary, t_dma *secondary, t_port *port,
-        type_unsigned_8 controller_count);
+C_VOID core_machine_dma_initialize(t_latch *latch, t_dma *primary,
+    t_dma *secondary, t_port *port, type_unsigned_8 controller_count);
     C_VOID core_machine_dma_reset(t_latch *latch, t_dma *primary,
                                   t_dma *secondary);
     C_VOID core_machine_dma_advance(t_latch *latch, t_dma *primary,

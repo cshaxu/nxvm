@@ -113,9 +113,7 @@ typedef enum core_machine_pic_topology {
     CORE_MACHINE_PIC_TOPOLOGY_SINGLE = 1
 } core_machine_pic_topology;
 
-C_VOID core_machine_pic_initialize(t_pic *master, t_pic *slave, t_port *port);
-C_VOID core_machine_pic_initialize_with_topology(t_pic *master, t_pic *slave,
-    t_port *port,
+C_VOID core_machine_pic_initialize(t_pic *master, t_pic *slave, t_port *port,
     core_machine_pic_topology topology);
 C_VOID core_machine_pic_reset(t_pic *master, t_pic *slave);
 C_VOID core_machine_pic_refresh(t_pic *master, t_pic *slave);

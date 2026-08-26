@@ -14,7 +14,8 @@ static C_VOID pic_lifecycle_initialize(pic_lifecycle_fixture *fixture,
     type_unsigned_8 icw1)
 {
     core_machine_port_initialize(&fixture->port);
-    core_machine_pic_initialize(&fixture->master, &fixture->slave, &fixture->port);
+    core_machine_pic_initialize(&fixture->master, &fixture->slave, &fixture->port,
+        CORE_MACHINE_PIC_TOPOLOGY_CASCADED);
     core_machine_pic_reset(&fixture->master, &fixture->slave);
     core_machine_port_write(&fixture->port, 0x0020u, icw1);
     core_machine_port_write(&fixture->port, 0x0021u, 0x08u);

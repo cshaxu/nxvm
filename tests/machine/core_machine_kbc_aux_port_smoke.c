@@ -61,7 +61,7 @@ C_INT main(C_VOID)
     type_unsigned_8 index;
 
     core_machine_port_initialize(&port);
-    core_machine_pic_initialize(&master, &slave, &port);
+    core_machine_pic_initialize(&master, &slave, &port, CORE_MACHINE_PIC_TOPOLOGY_CASCADED);
     core_machine_kbc_initialize(&kbc, &port);
     core_machine_kbc_bind_core_services(&kbc, &master, &slave, &memory,
         &execution, TYPE_TRUE);

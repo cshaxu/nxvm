@@ -13,7 +13,8 @@ static C_VOID pic_ocw3_initialize(pic_ocw3_fixture *fixture,
     type_unsigned_8 master_icw4)
 {
     core_machine_port_initialize(&fixture->port);
-    core_machine_pic_initialize(&fixture->master, &fixture->slave, &fixture->port);
+    core_machine_pic_initialize(&fixture->master, &fixture->slave, &fixture->port,
+        CORE_MACHINE_PIC_TOPOLOGY_CASCADED);
     core_machine_pic_reset(&fixture->master, &fixture->slave);
     core_machine_port_write(&fixture->port, 0x0020u, 0x11u);
     core_machine_port_write(&fixture->port, 0x0021u, 0x08u);

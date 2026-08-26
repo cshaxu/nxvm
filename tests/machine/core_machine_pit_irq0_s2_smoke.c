@@ -15,7 +15,8 @@ typedef struct pit_irq0_fixture {
 static C_VOID pit_irq0_initialize(pit_irq0_fixture *fixture)
 {
     core_machine_port_initialize(&fixture->port);
-    core_machine_pic_initialize(&fixture->master, &fixture->slave, &fixture->port);
+    core_machine_pic_initialize(&fixture->master, &fixture->slave, &fixture->port,
+        CORE_MACHINE_PIC_TOPOLOGY_CASCADED);
     core_machine_pic_reset(&fixture->master, &fixture->slave);
     core_machine_port_write(&fixture->port, 0x0020u, 0x11u);
     core_machine_port_write(&fixture->port, 0x0021u, 0x08u);

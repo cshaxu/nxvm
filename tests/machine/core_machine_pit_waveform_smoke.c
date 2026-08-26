@@ -105,7 +105,8 @@ C_INT main(C_VOID)
 
     STD_MEMSET(&probe, 0, sizeof(probe));
     core_machine_port_initialize(&port);
-    core_machine_pic_initialize(&master, &slave, &port);
+    core_machine_pic_initialize(&master, &slave, &port,
+        CORE_MACHINE_PIC_TOPOLOGY_CASCADED);
     core_machine_pic_reset(&master, &slave);
     core_machine_pic_irq_source_bind(&irq0, &master, &slave, 0u);
     probe.irq0 = &irq0;

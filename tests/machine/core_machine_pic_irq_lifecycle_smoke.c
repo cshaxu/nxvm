@@ -29,7 +29,8 @@ C_INT main(C_VOID)
     C_INT failed = 0;
 
     core_machine_port_initialize(&port);
-    core_machine_pic_initialize(&master, &slave, &port);
+    core_machine_pic_initialize(&master, &slave, &port,
+        CORE_MACHINE_PIC_TOPOLOGY_CASCADED);
     core_machine_pic_reset(&master, &slave);
     initialize_pic(&master, &slave, &port, 0x11u);
     core_machine_pic_irq_source_bind(&irq1, &master, &slave, 1u);

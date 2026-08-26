@@ -36,7 +36,8 @@ static C_VOID pic_command_priority_initialize(pic_command_priority_fixture *fixt
     type_unsigned_8 master_icw4, type_unsigned_8 slave_icw4)
 {
     core_machine_port_initialize(&fixture->port);
-    core_machine_pic_initialize(&fixture->master, &fixture->slave, &fixture->port);
+    core_machine_pic_initialize(&fixture->master, &fixture->slave, &fixture->port,
+        CORE_MACHINE_PIC_TOPOLOGY_CASCADED);
     core_machine_pic_reset(&fixture->master, &fixture->slave);
     pic_command_priority_program(&fixture->port, 0x11u, 0x04u, master_icw4,
         0x11u, 0x02u, slave_icw4);

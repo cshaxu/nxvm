@@ -205,7 +205,7 @@ C_INT main(C_VOID)
         failed = 1;
         goto done;
     }
-    core_machine_dma_initialize(&latch, &primary, &secondary, &port);
+    core_machine_dma_initialize(&latch, &primary, &secondary, &port, 2u);
     core_machine_dma_reset(&latch, &primary, &secondary);
     if (core_machine_dma_bind_channel(&latch, &primary, &secondary, 2u,
             &provider, &fixture, &binding) != TYPE_STATUS_OK ||

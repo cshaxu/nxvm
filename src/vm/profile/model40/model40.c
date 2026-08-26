@@ -36,6 +36,8 @@ C_VOID vm_profile_model40_core_config_initialize(core_machine_config *out_config
             .cpu_cycle_bus_ready_gate_enabled = TYPE_TRUE,
             .cpu_prefetch_reservation_enabled = TYPE_TRUE},
         .retirement_time_contract = CORE_MACHINE_RETIREMENT_TIME_DETERMINISTIC,
+        .pic_topology = CORE_MACHINE_PIC_TOPOLOGY_CASCADED,
+        .dma_controller_count = CORE_MACHINE_DMA_CONTROLLER_COUNT,
         .kbc_serial_delivery_ticks = 1u,
         .clock_plan = {{1u, 1u, 0u}, {1u, 1u, 0u}, {1u, 1u, 0u},
             {1u, 1u, 0u}, {1u, 1u, 0u}, {1u, 1u, 0u}},

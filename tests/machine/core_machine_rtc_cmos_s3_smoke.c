@@ -30,7 +30,8 @@ static C_VOID rtc_cmos_s3_initialize(rtc_cmos_s3_fixture *fixture)
     core_machine_rtc_config config = { .irq = 8u, .ticks_per_second = 4u };
 
     core_machine_port_initialize(&fixture->port);
-    core_machine_pic_initialize(&fixture->master, &fixture->slave, &fixture->port);
+    core_machine_pic_initialize(&fixture->master, &fixture->slave, &fixture->port,
+        CORE_MACHINE_PIC_TOPOLOGY_CASCADED);
     rtc_cmos_s3_initialize_pic(&fixture->port);
     core_machine_rtc_initialize(&fixture->rtc, &fixture->master, &fixture->slave,
         &config);
@@ -191,7 +192,8 @@ static C_INT rtc_cmos_s3_test_phase_and_divider(C_VOID)
     C_INT failed = 0;
 
     core_machine_port_initialize(&fixture.port);
-    core_machine_pic_initialize(&fixture.master, &fixture.slave, &fixture.port);
+    core_machine_pic_initialize(&fixture.master, &fixture.slave, &fixture.port,
+        CORE_MACHINE_PIC_TOPOLOGY_CASCADED);
     rtc_cmos_s3_initialize_pic(&fixture.port);
     core_machine_rtc_initialize(&fixture.rtc, &fixture.master, &fixture.slave,
         &config);

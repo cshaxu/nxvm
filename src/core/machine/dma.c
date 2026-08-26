@@ -689,12 +689,6 @@ C_VOID core_machine_dma_request_terminate(t_dma *primary, t_dma *secondary,
 }
 
 C_VOID core_machine_dma_initialize(t_latch *latch, t_dma *primary,
-    t_dma *secondary, t_port *port)
-{
-    core_machine_dma_initialize_with_topology(latch, primary, secondary, port, 2u);
-}
-
-C_VOID core_machine_dma_initialize_with_topology(t_latch *latch, t_dma *primary,
     t_dma *secondary, t_port *port, type_unsigned_8 controller_count)
 {
     static const type_unsigned_16 primary_reads[] = {

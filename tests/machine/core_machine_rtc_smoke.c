@@ -26,7 +26,8 @@ C_INT main(C_VOID)
     C_INT failed = 0;
 
     core_machine_port_initialize(&port);
-    core_machine_pic_initialize(&master, &slave, &port);
+    core_machine_pic_initialize(&master, &slave, &port,
+        CORE_MACHINE_PIC_TOPOLOGY_CASCADED);
     initialize_pic(&port);
     core_machine_rtc_initialize(&rtc, &master, &slave, &config);
     core_machine_rtc_select_register(&rtc, CORE_MACHINE_RTC_REG_B);

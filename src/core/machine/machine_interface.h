@@ -140,7 +140,8 @@ typedef struct core_machine_config {
     core_machine_transaction_contract transaction_contract;
     core_machine_clock_plan clock_plan;
     core_machine_pic_topology pic_topology;
-    /* Zero retains the existing two-controller PC/AT decode. */
+    /* Product profiles select one or two controllers explicitly.  Zero is
+     * retained only for direct Core fixture compatibility and resolves to two. */
     type_unsigned_8 dma_controller_count;
     core_machine_time_axis time_axis;
     /* Physical mode refuses an unallocated successful retirement before it can
