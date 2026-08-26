@@ -60,6 +60,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T484 S16 | Accepted: owner-selected Xebec Type 2 is frozen in one copied 5160 profile/Core descriptor, retaining the sole HDC/media route and no runtime type choice. [Evidence](../etc/evidence/t484-s16-xebec-type2-selection.md). |
 | T484 S15 | Accepted: Xebec now has one HDC-owned select/DCB/completion/request-sense/reset stack and raw 323h pattern state; selected-media DMA transfer, enable-bit semantics, physical status/timing and ROM remain explicit transfers. [Evidence](../etc/evidence/t484-s15-xebec-command-stack.md). |
 | T484 S14 | Accepted: X1--X17 now have one source-bounded Xebec Core receiver: byte-stack/command state and DMA callbacks stay in the sole HDC owner; ATA reuse, selected geometry, ROM, physical behavior and guessed hardware status remain explicit transfers. [Evidence](../etc/evidence/t484-s14-xebec-logical-implementation-brief.md). |
 | T484 S2 | Accepted: rendered Intel/IBM evidence permits shared 8086 semantics but requires a Core-owned four-byte 8088 queue policy and forbids a false 8086 alias. [Evidence](../etc/evidence/t484-s2-xt-8088-compatibility-matrix.md). |
