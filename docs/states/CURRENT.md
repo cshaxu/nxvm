@@ -2,7 +2,26 @@
 
 ## Current Work
 
-**Between accepted subtasks.**
+## M5 T470 S6 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner approved continuous T470 execution in this turn; T470 S5 is accepted at `a672067c`, and this packet consumes its three-profile unavailable proof. |
+| Objective | Close Standard/Turbo product pacing around the copied Core time observation: Standard waits only when a future verified Core axis is ahead of host budget, Turbo never waits, and every current unavailable profile retains only L2 HLT load backoff without guest-time injection. |
+| Non-goals | No profile qualification, host-to-Core tick conversion, controller timing change, wall-clock estimate, new sleep polling policy, source acquisition, firmware/media change or product debugger removal. |
+| Reference Baseline | T459 speed policy, T469 waiting ownership, T470 S1-S5 evidence, current VM session waiting/runner/virtual-time code and speed-policy/profile contract tests. |
+| Candidate Proposal | [M5 Core physical time axis and Standard pacing qualification](../proposals/m5-core-physical-time-axis-standard-pacing.md), T470 S6. |
+| Files And ABI Surface | Expected: VM waiting/runner only if a verified-axis ahead-only boundary is incomplete, focused product policy tests, indexed S6 closure evidence/status/history and stripped Release 0470 artifact; no Core clock writer or profile API expansion. |
+| Applicable Rules | Core alone advances guest time; VM consumes copied observation and may only wait; Standard never drives a guest ahead, Turbo differs only by removing host wait, and unavailable profiles never receive fabricated pacing. |
+| Verification | Review current Standard/Turbo branches and all host-time callers; exercise unavailable Standard/Turbo and synthetic verified-axis behavior if the existing test seam permits it; run focused VM/Core tests, documentation governance, appropriate current gate, and build/hash the stripped Release 0470 artifact. |
+| Expected Markers | One-way Core-to-VM data flow, no production `core_machine_advance_time` VM caller, no host tick accumulator, exact unavailable fallback, and explicit Standard/Turbo behavioral evidence. |
+| Asset Needs | Existing project code/evidence only. New source, firmware, guest media or external benchmark acquisition stops and requires separate admission. |
+| Reporting Requirements | Record waiting decision matrix, host-time call sweep, profile result, focused/current-gate results, artifact identity/hash, code delta and retained L2 boundary. |
+| Stop Conditions | Stop if verified-axis pacing would require VM guest-time injection, a second Core scheduler, unproven rate or new controller source; retain unavailable behavior and report the exact missing receiver. |
+| Exit Criteria | Standard/Turbo policy is fully source-reviewed and tested; current profiles remain correctly unavailable; no reverse time flow exists; artifact and closure audit are recorded; all T470 S1-S6 ledgers reconcile or transfer every residual. |
+| Original Owner Request | Make the Core self-driven and let the host provide waiting only after a complete, evidence-backed guest-time axis; do not turn nominal MHz or host elapsed time into guest progression. |
+| Similar-Issue Sweep | Search VM runner/waiting/platform/product paths and all Core public calls for sleep-driven guest advance, host elapsed-to-tick conversion, pacing accumulators, direct Core advance or Turbo-only time semantics. |
 
 ## Current Technical Baseline
 
