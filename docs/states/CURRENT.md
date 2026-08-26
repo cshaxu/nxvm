@@ -2,7 +2,26 @@
 
 ## Current Work
 
-**T470 closed.** Core retains the sole guest-time axis; Standard and Turbo now differ only at the unavailable-axis HLT host wait, and no current profile claims physical wall-clock pacing.
+## M5 T471 S1 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New |
+| Admission And Approval | The owner authorized continuous execution of the Core-self-driven, host-wait-only timing objective. T470 evidence showed that its dormant verified-axis Standard HLT path still advanced before host-budget comparison. |
+| Objective | Define and prove the one completed-Core-tick versus host-budget contract that makes future Standard pacing ahead-only, while preserving Core as the only guest-time writer. |
+| Non-goals | No profile qualification, no nominal rate, host-to-guest tick conversion, controller change, second scheduler, debugger change or external source acquisition. |
+| Reference Baseline | T470 S1--S6 evidence, current copied time observation, VM runner/waiting/virtual-time paths and speed-policy smoke. |
+| Candidate Proposal | [M5 Verified-axis ahead-only host pacing](../proposals/m5-verified-axis-ahead-only-host-pacing.md), T471 S1. |
+| Files And ABI Surface | Expected: evidence plus focused VM/Core test seam only; S1 makes no runtime or public-ABI change. |
+| Applicable Rules | Core alone advances guest time. VM reads copied observations and may wait only when completed Core time is ahead of a verified host budget. |
+| Verification | Sweep all host-time consumers and the verified-axis waiting branch; derive overflow-safe exact integer comparison and lifecycle reset requirements; run documentation governance. |
+| Expected Markers | One pacing baseline owner, no host tick accumulator, no VM time writer, Standard's HLT advance blocked until budget, and unchanged unavailable L2 behavior. |
+| Asset Needs | Existing project code/evidence only. |
+| Reporting Requirements | Record the exact rational comparison, overflow/counter-regression handling, reset/stop owner, verified-axis synthetic proof, unchanged unavailable-profile result, and every host-time consumer disposition. |
+| Stop Conditions | Stop if proof needs a rate unavailable from copied observation, nominal MHz, a controller estimate or a VM clock writer. |
+| Exit Criteria | A bounded S2/S3 delivery plan has a deterministic proof seam and complete lifecycle/overflow disposition. |
+| Original Owner Request | Core self-drives guest time; host provides only necessary waiting. |
+| Similar-Issue Sweep | Runner, waiting, virtual-time, display cadence, all Core time advances, reset, pause, cancellation and speed paths. |
 
 ## Current Technical Baseline
 
@@ -35,7 +54,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T470 S6 | Closed: S1--S6 establish one copied Core physical-axis contract, retain every current profile at unqualified/zero, separate Standard's L2 HLT backoff from Turbo's no-wait behavior, and record stripped Release 0470 in the [closure audit](../etc/evidence/t470-s6-integration-closure-audit.md). |
+| T470 | Closed: S1--S6 establish one copied Core physical-axis contract, retain every current profile at unqualified/zero, separate Standard's L2 HLT backoff from Turbo's no-wait behavior, and record stripped Release 0470 in the [closure audit](../etc/evidence/t470-s6-integration-closure-audit.md). |
 | T469 | Closed: S1--S6 reconcile the 145-row controller deadline ledger to one Core-owned deadline/timebase/waiting path; VM host-tick injection is deleted, current profiles retain explicit L2 fallback, and stripped Release 0469 is recorded in [closure audit](../etc/evidence/t469-s6-integration-closure-audit.md). |
 | T468 | Closed: the ATA-3 15-row task-file/media contract has one HDC owner, one media owner and one PIC route; the serial current gate passes 295/295 and stripped Release 0468 is recorded in [history](../history/M5-T468-core-hdc-ata-phase-contract.md). |
 | T467 | Closed: all 17 selected IBM-CGA rows reconcile to one VADP/Core/profile/snapshot path. Source and model facts remain retained; their current L3/L2/L1/L0 interpretation is [Td S148](../etc/evidence/td-s148-eight-controller-l-level-reclassification-audit.md). Serial current-gate passes 295/295; stripped Release 0467 is recorded in [history](../history/M5-T467-core-ibm-cga-completeness.md). |
