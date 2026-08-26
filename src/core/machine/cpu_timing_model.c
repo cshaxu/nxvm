@@ -3850,6 +3850,10 @@ C_INT core_machine_compatibility_instruction_cost(core_machine *machine,
     type_bool code32;
 
     if (prefixes >= sizeof(data->opcodes)) return 0;
+    /* This retained compatibility recipe has no source-form allocation.  It
+     * may drive deterministic execution, but can never qualify physical
+     * retirement time for any CPU profile. */
+    core_machine_source_timing_mark_unallocated(machine, STD_NULL);
     opcode = data->opcodes[prefixes];
     if (data->prefix_rep != PREFIX_REP_NONE && opcode == 0xa4u) {
         if (!core_machine_timing_add_ticks(&ticks, timing->rep_iteration_surcharge)) {

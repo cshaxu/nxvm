@@ -274,6 +274,8 @@ C_INT main(C_VOID)
         probe.records[0].repeat_prefix != 0u;
     failed |= retirement_unallocated_profile_case(CORE_MACHINE_CPU_PROFILE_8086,
         CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY) ||
+        retirement_unallocated_profile_case(CORE_MACHINE_CPU_PROFILE_8088,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_COMPATIBILITY) ||
         retirement_unallocated_profile_case(CORE_MACHINE_CPU_PROFILE_80186,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_80186_FALLBACK) ||
         retirement_unallocated_profile_case(CORE_MACHINE_CPU_PROFILE_80286,
