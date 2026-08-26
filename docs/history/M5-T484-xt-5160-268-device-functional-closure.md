@@ -30,4 +30,7 @@ ATA/Xebec shim or duplicate controller/media/video state.
 | S19 | Accepted: source-qualified IBM 5160 PPI-B parity/I/O-check controls and PPI-C status inputs use the sole XT PPI owner and one Core NMI request edge; physical fault generation/timing remains transferred. [Evidence](../etc/evidence/t484-s19-xt-ppi-parity-nmi.md). |
 | S20 | Accepted: B6 source/session audit freezes the lawful external-ROM/BYOB manifest, selected XT profile and sole session/Core construction gap before product-route implementation. [Evidence](../etc/evidence/t484-s20-xt-b6-session-contract.md). |
 | S21 | Accepted: the sole typed session route validates and maps owner-provided XT BYOB ROMs, composes the fixed 360 KiB/Type-2 media routes and retains no AT-firmware alias or duplicate integrity loader. [Evidence](../etc/evidence/t484-s21-xt-byob-session.md). |
-| S22 | In implementation: audit the complete frozen F1--F9 functional universe, actual owners and explicit timing transfers before deciding T484 closure. |
+| S22 | Accepted: every frozen F1--F9 selected functional route has one owner and product path; all remaining phase/physical work transfers only to the next XT timing candidate. [Closure audit](../etc/evidence/t484-s22-xt-functional-closure-audit.md). |
+
+T484 is closed.  Its retained proposal is
+[the historical companion](M5-T484-xt-5160-268-device-functional-closure-proposal.md).

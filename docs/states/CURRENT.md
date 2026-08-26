@@ -2,28 +2,28 @@
 
 ## Current Work
 
-**Active: M5 T484 S22.**
+**Active: M5 T485 S1.**
 
-## M5 T484 S22 Packet
+## M5 T485 S1 Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner-approved continuous execution; S21 implementation `89ce2ec1` is accepted by this P2 review. |
-| Objective | Perform the finite T484 closure audit: reconcile S1--S21 against selected 5160-268 functional scope, code owners, the product route, source policy and later timing receivers. |
-| Non-goals | No new hardware behavior, ROM/firmware/media import, command grammar, runtime model choice, AT alias, timing estimate or artifact rebuild unless audit evidence proves a defect. |
-| Reference Baseline | Accepted T482/T483 and T484 S1--S21, including immutable XT plan, PPI/FDC/CGA/Xebec owners and accepted BYOB session route. |
-| Candidate Proposal | [IBM PC/XT 5160-268 selected-device functional closure](../proposals/m5-xt-5160-268-device-functional-closure.md). |
-| Files And ABI Surface | Documentation/evidence and current/history governance only unless audit identifies a bounded defect requiring a separately admitted corrective S. No Core or product ABI change. |
+| Identifier Mode | New queued candidate |
+| Admission And Approval | Owner-approved continuous execution; T484 S22 implementation `e5476feb` is accepted by this P2 review and T484 is closed. |
+| Objective | Establish the finite IBM 5160-268 board/device phase-timing source and owner ledger required before any timing implementation. |
+| Non-goals | No guessed timing, firmware/media import, new device function, PC/AT alias, host-time coupling or L3-ready claim. |
+| Reference Baseline | Closed T484 functional route and its explicit timing transfers; retained Core controller L3 contracts and the selected XT resolver. |
+| Candidate Proposal | [IBM PC/XT 5160-268 board and device phase-timing closure](../proposals/m5-8088-5150-xt-l3-baseline.md). |
+| Files And ABI Surface | Evidence/ledger only. No code, Core ABI, product grammar or artifact change. |
 | Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, `docs/design/ARCHITECTURE.md`, `docs/design/CODING.md`, `docs/design/UI.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md` and source policy. |
-| Verification | Re-read the T484 functional matrix/evidence, inspect actual source and the sole product/session/Core construction flow, classify every remaining timing/firmware/physical boundary, and rerun documentation governance. |
-| Expected Markers | Retained `M5:T484:S1`--`S21` markers and a T484 closure-audit record. |
-| Asset Needs | None. No external bytes, paths or code enter the repository. |
-| Reporting Requirements | Record completed functional owners, all retained non-functional transfers, actual code/authority sweep and whether T484 can close. |
+| Verification | Primary-source and non-imported emulator cross-check ledger, actual owner inspection and documentation governance. |
+| Expected Markers | A T485 S1 source/owner timing ledger and explicit eligible-versus-blocked disposition for every selected path. |
+| Asset Needs | Rendered manuals/research only under source policy; no bytes, paths or third-party code enter the repository. |
+| Reporting Requirements | Record primary source, corroboration, exact formula/value or bounded absence, Core/profile owner and later receiver for every selected timing path. |
 | Original Owner Request | Continue the ordered minimalist queue toward the pre-Windows L3 admission audit. |
-| Stop Conditions | Stop and admit a bounded corrective S if a missing selected functional behavior, duplicate owner, false support claim, or unclassified T484 residual is found. |
-| Exit Criteria | All selected 5160-268 functional routes have one proven owner and product path; every non-functional/physical/firmware residual has exactly one later receiver; documentation and task history truthfully support closure. |
-| Similar-Issue Sweep | Reconcile every T484 source/evidence receiver and adjacent XT board-timing/final-audit candidates; classify no finding as hidden, duplicated or implicitly complete. |
+| Stop Conditions | Stop if an authoritative source or bounded reference cannot establish a fact; record it as blocked rather than infer a timing value. |
+| Exit Criteria | Every selected CPU/board/controller path has one source-labelled timing disposition and no L3 claim outruns its evidence. |
+| Similar-Issue Sweep | Cover CPU/ROM/ISA, PIC/DMA/PIT, PPI keyboard/NMI, FDC, CGA and Xebec; distinguish shared Core timing from XT board phase. |
 
 ## Current Technical Baseline
 
