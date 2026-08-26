@@ -532,6 +532,10 @@ static C_VOID core_machine_hdc_execute_command(core_machine_hdc *hdc, type_unsig
 static C_VOID core_machine_xebec_reset(core_machine_hdc *hdc)
 {
     if (hdc == STD_NULL) return;
+    if (hdc->connect.dma_request_deassert != STD_NULL) {
+        hdc->connect.dma_request_deassert(hdc->connect.dma_request_owner,
+            &hdc->connect.dma_request);
+    }
     STD_MEMSET(&hdc->xebec, 0, sizeof(hdc->xebec));
     hdc->xebec.phase = CORE_MACHINE_XEBEC_PHASE_IDLE;
     core_machine_hdc_clear_irq(hdc);
@@ -551,6 +555,158 @@ static C_VOID core_machine_xebec_response(core_machine_hdc *hdc,
         STD_MEMCPY(hdc->xebec.last_sense, sense, sizeof(hdc->xebec.last_sense));
     }
     hdc->xebec.phase = CORE_MACHINE_XEBEC_PHASE_RESPONSE;
+}
+
+static C_VOID core_machine_xebec_request_dma(core_machine_hdc *hdc)
+{
+    if (hdc != STD_NULL && hdc->connect.dma_request_assert != STD_NULL) {
+        hdc->connect.dma_request_assert(hdc->connect.dma_request_owner,
+            &hdc->connect.dma_request);
+    }
+}
+
+static C_VOID core_machine_xebec_release_dma(core_machine_hdc *hdc)
+{
+    if (hdc != STD_NULL && hdc->connect.dma_request_deassert != STD_NULL) {
+        hdc->connect.dma_request_deassert(hdc->connect.dma_request_owner,
+            &hdc->connect.dma_request);
+    }
+}
+
+static C_INT core_machine_xebec_media_info(const core_machine_hdc *hdc,
+    core_machine_media_info *out_info, core_machine_media_result *out_result)
+{
+    core_machine_media_id media_id;
+    const core_machine_media_geometry *expected;
+
+    if (hdc == STD_NULL || out_info == STD_NULL || out_result == STD_NULL ||
+        hdc->connect.media_registry == STD_NULL ||
+        ((hdc->xebec.dcb[1] >> 5u) & 1u) != 0u) return 0;
+    media_id = hdc->connect.media_id;
+    if (media_id == CORE_MACHINE_MEDIA_ID_INVALID ||
+        core_machine_media_query(hdc->connect.media_registry, media_id, out_info,
+            out_result) != TYPE_STATUS_OK || *out_result != CORE_MACHINE_MEDIA_RESULT_OK ||
+        !out_info->present || (out_info->capabilities &
+            CORE_MACHINE_MEDIA_CAPABILITY_GEOMETRY_KNOWN) == 0u) return 0;
+    expected = &hdc->connect.config.bus.xebec.expected_media_geometry;
+    return out_info->geometry.logical_sector_count == expected->logical_sector_count &&
+        out_info->geometry.bytes_per_sector == expected->bytes_per_sector &&
+        out_info->geometry.cylinders == expected->cylinders &&
+        out_info->geometry.heads == expected->heads &&
+        out_info->geometry.sectors_per_track == expected->sectors_per_track;
+}
+
+static C_INT core_machine_xebec_sector(const core_machine_hdc *hdc,
+    type_unsigned_64 *out_sector)
+{
+    const core_machine_media_geometry *geometry;
+    type_unsigned_16 cylinder;
+    type_unsigned_8 head;
+    type_unsigned_8 sector;
+
+    if (hdc == STD_NULL || out_sector == STD_NULL) return 0;
+    geometry = &hdc->connect.config.bus.xebec.expected_media_geometry;
+    cylinder = (type_unsigned_16)hdc->xebec.dcb[3] |
+        ((type_unsigned_16)(hdc->xebec.dcb[2] & 0xc0u) << 2u);
+    head = hdc->xebec.dcb[1] & 0x1fu;
+    sector = hdc->xebec.dcb[2] & 0x3fu;
+    if (cylinder >= geometry->cylinders || head >= geometry->heads ||
+        sector >= geometry->sectors_per_track) return 0;
+    *out_sector = ((type_unsigned_64)cylinder * geometry->heads + head) *
+        geometry->sectors_per_track + sector;
+    return 1;
+}
+
+static C_INT core_machine_xebec_transfer_sector(core_machine_hdc *hdc,
+    type_bool write_to_media)
+{
+    core_machine_media_info info;
+    core_machine_media_result result;
+    type_unsigned_64 sector;
+    type_status status;
+
+    if (!core_machine_xebec_media_info(hdc, &info, &result) ||
+        !core_machine_xebec_sector(hdc, &sector) ||
+        (write_to_media && (info.capabilities & CORE_MACHINE_MEDIA_CAPABILITY_READ_ONLY) != 0u)) {
+        return 0;
+    }
+    if (write_to_media) {
+        status = core_machine_media_write_sectors(hdc->connect.media_registry,
+            hdc->connect.media_id, sector, 1u, hdc->data.data, &result);
+    } else {
+        status = core_machine_media_read_sectors(hdc->connect.media_registry,
+            hdc->connect.media_id, sector, 1u, hdc->data.data, &result);
+    }
+    return status == TYPE_STATUS_OK && result == CORE_MACHINE_MEDIA_RESULT_OK;
+}
+
+static C_INT core_machine_xebec_can_transfer(const core_machine_hdc *hdc,
+    type_bool write_to_media)
+{
+    core_machine_media_info info;
+    core_machine_media_result result;
+    type_unsigned_64 sector;
+
+    return core_machine_xebec_media_info(hdc, &info, &result) &&
+        core_machine_xebec_sector(hdc, &sector) &&
+        (!write_to_media ||
+            (info.capabilities & CORE_MACHINE_MEDIA_CAPABILITY_READ_ONLY) == 0u);
+}
+
+static C_INT core_machine_xebec_next_sector(core_machine_hdc *hdc)
+{
+    const core_machine_media_geometry *geometry;
+    type_unsigned_16 cylinder;
+    type_unsigned_8 head;
+    type_unsigned_8 sector;
+
+    if (hdc == STD_NULL) return 0;
+    geometry = &hdc->connect.config.bus.xebec.expected_media_geometry;
+    cylinder = (type_unsigned_16)hdc->xebec.dcb[3] |
+        ((type_unsigned_16)(hdc->xebec.dcb[2] & 0xc0u) << 2u);
+    head = hdc->xebec.dcb[1] & 0x1fu;
+    sector = (type_unsigned_8)((hdc->xebec.dcb[2] & 0x3fu) + 1u);
+    if (sector == geometry->sectors_per_track) {
+        sector = 0u;
+        if (++head == geometry->heads) {
+            head = 0u;
+            if (++cylinder == geometry->cylinders) return 0;
+        }
+    }
+    hdc->xebec.dcb[1] = (hdc->xebec.dcb[1] & 0xe0u) | head;
+    hdc->xebec.dcb[2] = (hdc->xebec.dcb[2] & 0x3fu) |
+        (type_unsigned_8)((cylinder >> 2u) & 0xc0u);
+    hdc->xebec.dcb[2] = (hdc->xebec.dcb[2] & 0xc0u) | sector;
+    hdc->xebec.dcb[3] = (type_unsigned_8)cylinder;
+    return 1;
+}
+
+static C_VOID core_machine_xebec_start_transfer(core_machine_hdc *hdc)
+{
+    type_unsigned_8 sense[4] = {0x04u, 0u, 0u, 0u};
+
+    if (hdc == STD_NULL) return;
+    sense[1] = hdc->xebec.dcb[1] & 0x20u;
+    sense[2] = hdc->xebec.dcb[2];
+    sense[3] = hdc->xebec.dcb[3];
+    hdc->xebec.byte_index = 0u;
+    if (hdc->xebec.dcb[0] == 0x08u) {
+        if (!core_machine_xebec_transfer_sector(hdc, TYPE_FALSE)) {
+            core_machine_xebec_response(hdc, 0x02u, sense);
+            return;
+        }
+        hdc->xebec.phase = CORE_MACHINE_XEBEC_PHASE_DMA_READ;
+    } else {
+        if (hdc->xebec.dcb[4] == 0u || !core_machine_xebec_can_transfer(hdc, TYPE_TRUE)) {
+            /* A Write Data block count is documented, but zero's meaning is
+             * not; reject it rather than inventing an implicit 256-sector form. */
+            core_machine_xebec_response(hdc, 0x02u, sense);
+            return;
+        }
+        hdc->xebec.sectors_remaining = hdc->xebec.dcb[4];
+        hdc->xebec.phase = CORE_MACHINE_XEBEC_PHASE_DMA_WRITE;
+    }
+    core_machine_xebec_request_dma(hdc);
 }
 
 static C_INT core_machine_xebec_command_is_defined(type_unsigned_8 command)
@@ -576,6 +732,10 @@ static C_VOID core_machine_xebec_complete_dcb(core_machine_hdc *hdc)
     if (!core_machine_xebec_command_is_defined(hdc->xebec.dcb[0])) {
         sense[0] = 0x20u;
         core_machine_xebec_response(hdc, 0x02u, sense);
+        return;
+    }
+    if (hdc->xebec.dcb[0] == 0x08u || hdc->xebec.dcb[0] == 0x0au) {
+        core_machine_xebec_start_transfer(hdc);
         return;
     }
     /* A selected image/printed geometry is the next receiver. Until then,
@@ -767,8 +927,71 @@ static const core_machine_port_provider core_machine_hdc_ports = {
     core_machine_hdc_port_write
 };
 
+static C_VOID core_machine_xebec_dma_read(C_VOID *owner, t_latch *latch)
+{
+    core_machine_hdc *hdc = owner;
+
+    if (hdc == STD_NULL || latch == STD_NULL ||
+        hdc->xebec.phase != CORE_MACHINE_XEBEC_PHASE_DMA_READ ||
+        hdc->xebec.byte_index >= sizeof(hdc->data.data)) return;
+    latch->data.byte = hdc->data.data[hdc->xebec.byte_index++];
+    if (hdc->xebec.byte_index == sizeof(hdc->data.data)) {
+        core_machine_xebec_release_dma(hdc);
+        core_machine_xebec_response(hdc, 0u, STD_NULL);
+    }
+}
+
+static C_VOID core_machine_xebec_dma_write(C_VOID *owner, t_latch *latch)
+{
+    core_machine_hdc *hdc = owner;
+    type_unsigned_8 sense[4] = {0x04u, 0u, 0u, 0u};
+
+    if (hdc == STD_NULL || latch == STD_NULL ||
+        hdc->xebec.phase != CORE_MACHINE_XEBEC_PHASE_DMA_WRITE ||
+        hdc->xebec.byte_index >= sizeof(hdc->data.data)) return;
+    hdc->data.data[hdc->xebec.byte_index++] = latch->data.byte;
+    if (hdc->xebec.byte_index != sizeof(hdc->data.data)) return;
+    sense[1] = hdc->xebec.dcb[1] & 0x20u;
+    sense[2] = hdc->xebec.dcb[2];
+    sense[3] = hdc->xebec.dcb[3];
+    if (!core_machine_xebec_transfer_sector(hdc, TYPE_TRUE) ||
+        hdc->xebec.sectors_remaining == 0u) {
+        core_machine_xebec_release_dma(hdc);
+        core_machine_xebec_response(hdc, 0x02u, sense);
+        return;
+    }
+    if (--hdc->xebec.sectors_remaining == 0u) {
+        core_machine_xebec_release_dma(hdc);
+        core_machine_xebec_response(hdc, 0u, STD_NULL);
+        return;
+    }
+    if (!core_machine_xebec_next_sector(hdc) ||
+        !core_machine_xebec_can_transfer(hdc, TYPE_TRUE)) {
+        core_machine_xebec_release_dma(hdc);
+        core_machine_xebec_response(hdc, 0x02u, sense);
+        return;
+    }
+    hdc->xebec.byte_index = 0u;
+}
+
+static C_VOID core_machine_xebec_dma_terminal(C_VOID *owner, t_latch *latch)
+{
+    core_machine_hdc *hdc = owner;
+    type_unsigned_8 sense[4] = {0x04u, 0u, 0u, 0u};
+
+    (C_VOID)latch;
+    if (hdc == STD_NULL || (hdc->xebec.phase != CORE_MACHINE_XEBEC_PHASE_DMA_READ &&
+        hdc->xebec.phase != CORE_MACHINE_XEBEC_PHASE_DMA_WRITE)) return;
+    sense[1] = hdc->xebec.dcb[1] & 0x20u;
+    sense[2] = hdc->xebec.dcb[2];
+    sense[3] = hdc->xebec.dcb[3];
+    core_machine_xebec_release_dma(hdc);
+    core_machine_xebec_response(hdc, 0x02u, sense);
+}
+
 static const core_machine_dma_channel_provider core_machine_hdc_dma_channel = {
-    STD_NULL, STD_NULL, STD_NULL
+    core_machine_xebec_dma_read, core_machine_xebec_dma_write,
+    core_machine_xebec_dma_terminal
 };
 
 C_VOID core_machine_hdc_connect(core_machine_hdc *hdc,
@@ -783,6 +1006,21 @@ C_VOID core_machine_hdc_connect(core_machine_hdc *hdc,
     core_machine_pic_irq_source_bind(&hdc->connect.irq_source, pic_master,
         pic_slave, config->irq);
     hdc->connect.config = *config;
+}
+
+C_VOID core_machine_hdc_bind_dma_request(core_machine_hdc *hdc,
+    const core_machine_dma_request_binding *binding,
+    C_VOID (*request_assert)(C_VOID *owner,
+        const core_machine_dma_request_binding *binding),
+    C_VOID (*request_deassert)(C_VOID *owner,
+        const core_machine_dma_request_binding *binding), C_VOID *owner)
+{
+    if (hdc == STD_NULL || binding == STD_NULL || request_assert == STD_NULL ||
+        request_deassert == STD_NULL || owner == STD_NULL) return;
+    hdc->connect.dma_request = *binding;
+    hdc->connect.dma_request_assert = request_assert;
+    hdc->connect.dma_request_deassert = request_deassert;
+    hdc->connect.dma_request_owner = owner;
 }
 
 C_VOID core_machine_hdc_initialize(core_machine_hdc *hdc)

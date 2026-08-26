@@ -20,9 +20,11 @@ belong to the following candidate.
 For storage, close the accepted Xebec logical fixed-disk route: one Core HDC
 personality with the selected byte-stream ports, DMA3/IRQ5 binding,
 source-proven command/result/reset behavior, and the existing sole
-logical-image/geometry/persistence owner. Add a focused inserted-image and
-boot-consumer regression. Do not create an ATA shim, a second CHS or media
-cache, raw-MFM media, or a generic XT profile.
+logical-image/geometry/persistence owner.  `08h` reads its documented one
+logical sector; `0Ah` uses only its documented nonzero block count, with an
+unproven zero convention rejected rather than inferred. Add a focused
+inserted-image and boot-consumer regression. Do not create an ATA shim, a
+second CHS or media cache, raw-MFM media, or a generic XT profile.
 
 ## Non-goals and stop conditions
 

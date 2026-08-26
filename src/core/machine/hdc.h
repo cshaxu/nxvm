@@ -4,13 +4,12 @@
 #include "type.h"
 
 #include "core/machine/controller_interface.h"
+#include "core/machine/dma.h"
 #include "core/machine/media_interface.h"
 #include "core/machine/pic.h"
 #include "core/machine/port_interface.h"
 
 typedef struct t_pic t_pic;
-typedef struct core_machine_dma_channel_provider core_machine_dma_channel_provider;
-
 #define CORE_MACHINE_HDC_STATUS_ERR 0x01u
 #define CORE_MACHINE_HDC_STATUS_DRQ 0x08u
 #define CORE_MACHINE_HDC_STATUS_DSC 0x10u
@@ -37,7 +36,9 @@ typedef enum core_machine_xebec_phase {
     CORE_MACHINE_XEBEC_PHASE_IDLE,
     CORE_MACHINE_XEBEC_PHASE_DCB,
     CORE_MACHINE_XEBEC_PHASE_INITIALIZE,
-    CORE_MACHINE_XEBEC_PHASE_RESPONSE
+    CORE_MACHINE_XEBEC_PHASE_RESPONSE,
+    CORE_MACHINE_XEBEC_PHASE_DMA_READ,
+    CORE_MACHINE_XEBEC_PHASE_DMA_WRITE
 } core_machine_xebec_phase;
 
 typedef struct core_machine_xebec_data {
@@ -50,6 +51,8 @@ typedef struct core_machine_xebec_data {
     type_unsigned_8 response_index;
     type_unsigned_8 last_sense[4];
     type_unsigned_8 mask_pattern;
+    type_unsigned_16 byte_index;
+    type_unsigned_8 sectors_remaining;
     core_machine_xebec_phase phase;
 } core_machine_xebec_data;
 
@@ -91,6 +94,12 @@ typedef struct core_machine_hdc_connection {
     core_machine_media_id media_id;
     core_machine_media_id slave_media_id;
     core_machine_pic_irq_source irq_source;
+    core_machine_dma_request_binding dma_request;
+    C_VOID (*dma_request_assert)(C_VOID *owner,
+        const core_machine_dma_request_binding *binding);
+    C_VOID (*dma_request_deassert)(C_VOID *owner,
+        const core_machine_dma_request_binding *binding);
+    C_VOID *dma_request_owner;
     core_machine_hdc_config config;
 } core_machine_hdc_connection;
 
@@ -104,6 +113,12 @@ C_VOID core_machine_hdc_connect(core_machine_hdc *hdc,
     const core_machine_media_registry *media_registry,
     core_machine_media_id media_id, core_machine_media_id slave_media_id,
     t_pic *pic_master, t_pic *pic_slave, const core_machine_hdc_config *config);
+C_VOID core_machine_hdc_bind_dma_request(core_machine_hdc *hdc,
+    const core_machine_dma_request_binding *binding,
+    C_VOID (*request_assert)(C_VOID *owner,
+        const core_machine_dma_request_binding *binding),
+    C_VOID (*request_deassert)(C_VOID *owner,
+        const core_machine_dma_request_binding *binding), C_VOID *owner);
 C_VOID core_machine_hdc_initialize(core_machine_hdc *hdc);
 C_VOID core_machine_hdc_reset(core_machine_hdc *hdc);
 C_VOID core_machine_hdc_advance(core_machine_hdc *hdc);

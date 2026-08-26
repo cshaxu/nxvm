@@ -356,6 +356,30 @@ static C_VOID core_machine_fdc_dma_request_deassert(C_VOID *owner,
         &machine->shared_dma_secondary, binding);
 }
 
+static C_VOID core_machine_hdc_dma_request_assert(C_VOID *owner,
+    const core_machine_dma_request_binding *binding)
+{
+    core_machine *machine = owner;
+
+    if (machine == STD_NULL || binding == STD_NULL ||
+        binding->core_token != machine->hdc_dma_request.core_token ||
+        binding->channel != machine->hdc_dma_request.channel) return;
+    core_machine_dma_request_assert(&machine->shared_dma_primary,
+        &machine->shared_dma_secondary, binding);
+}
+
+static C_VOID core_machine_hdc_dma_request_deassert(C_VOID *owner,
+    const core_machine_dma_request_binding *binding)
+{
+    core_machine *machine = owner;
+
+    if (machine == STD_NULL || binding == STD_NULL ||
+        binding->core_token != machine->hdc_dma_request.core_token ||
+        binding->channel != machine->hdc_dma_request.channel) return;
+    core_machine_dma_request_deassert(&machine->shared_dma_primary,
+        &machine->shared_dma_secondary, binding);
+}
+
 static C_VOID core_machine_dma_refresh_pit_output(C_VOID *owner, type_bool asserted)
 {
     core_machine *machine = owner;
@@ -1010,6 +1034,9 @@ type_status core_machine_configure_hdc(core_machine *machine,
                 sizeof(machine->hdc_topology));
             return status;
         }
+        core_machine_hdc_bind_dma_request(&machine->hdc, &machine->hdc_dma_request,
+            core_machine_hdc_dma_request_assert, core_machine_hdc_dma_request_deassert,
+            machine);
     }
     machine->hdc_configured = TYPE_TRUE;
     return TYPE_STATUS_OK;

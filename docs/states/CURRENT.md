@@ -2,28 +2,28 @@
 
 ## Current Work
 
-**Active: M5 T484 S16.**
+**Active: M5 T484 S17.**
 
-## M5 T484 S16 Packet
+## M5 T484 S17 Packet
 
 | Field | Required record |
 | --- | --- |
 | Identifier Mode | Continuation |
-| Admission And Approval | Owner approved Xebec Type 2 on 2026-08-26; S15 implementation `c7a61d50` is accepted by `d22a5047`. |
-| Objective | Freeze the IBM 5160 Xebec Type-2 (`615 x 4 x 17`, 512-byte sectors) construction choice in the copied profile-to-Core HDC plan. |
-| Non-goals | No runtime drive-type option, generic XT framework, media-image import, DMA data transfer, DRQ/IRQ-enable semantics, command expansion, option-ROM mapping, physical service timing, ATA shim, or second CHS/media state. |
-| Reference Baseline | Accepted T484 S12--S15 Xebec source/owner/command boundary; IBM 6139790 is normative for Type 2 cylinders/heads and 86Box corroborates 17 sectors/track. |
+| Admission And Approval | Owner-approved continuous execution; S16 implementation `9154bbf2` is accepted by `72eac23e`. |
+| Objective | Implement Type-2 validated logical-media read/write through the existing sole Core HDC buffer and DMA3 provider; IBM Read (`08h`) is one sector, while Write (`0Ah`) alone carries DCB byte-4 block count. |
+| Non-goals | No ATA PIO reuse, runtime drive choice, VM memory or media path, second CHS/buffer/cache, guessed 323h enable semantics, physical MFM/ECC/service time, hardware-status bits, ROM, or session/runnable XT route. |
+| Reference Baseline | Accepted T484 S12--S16 Xebec contract and immutable Type-2 descriptor; IBM 6139790 pp. 7, 11 and 15 is normative for DCB fields, one-sector Read, Write block count, 512-byte logical transfer and DMA ordering. |
 | Candidate Proposal | [IBM PC/XT 5160-268 selected-device functional closure](../proposals/m5-xt-5160-268-device-functional-closure.md). |
-| Files And ABI Surface | Existing HDC configuration, XT resolved profile, focused XT/Xebec smoke and evidence only. No session option or product request surface. |
+| Files And ABI Surface | Existing Core HDC/DMA/PIC/media wiring, focused Xebec smoke and evidence only. No VM session or product request surface. |
 | Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, `docs/design/ARCHITECTURE.md`, `docs/design/CODING.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`, source policy and the one HDC/media-owner boundary. |
-| Verification | Focused XT profile proof establishes the copied Type-2-only HDC plan and its 320h--323h/DMA3/IRQ5 route; focused Xebec and retained HDC regressions, Debug all-target build, current-gate and documentation governance pass. |
-| Expected Markers | `M5:T484:S16:XT-TYPE2:OK`; retained `M5:T484:S15:XEBEC-STACK:OK`. |
+| Verification | Project-owned in-memory Type-2 media proves DCB CHS validation, one-sector Read, positive-count Write, DMA3 request/release, media-only persistence, terminal cleanup and no ATA alias; retained HDC regressions, Debug all-target build, current-gate and documentation governance pass. |
+| Expected Markers | `M5:T484:S17:XEBEC-DMA-MEDIA:OK`; retained `M5:T484:S15:XEBEC-NO-ATA-ALIAS:OK`. |
 | Asset Needs | Accepted project evidence and project-owned unit state only; no third-party code, firmware, guest media, local path or code import enters the repository. |
-| Reporting Requirements | Retain one Core HDC/media/DMA/PIC owner; record the frozen Type-2 choice and transfer logical-media DMA read/write, status ambiguity, ROM and physical timing. |
+| Reporting Requirements | Retain one Core HDC/media/DMA/PIC owner; record exact logical-transfer behavior and transfer 323h enable semantics, status ambiguity, ROM and physical timing. |
 | Original Owner Request | Continue the ordered minimalist queue toward the pre-Windows L3 admission audit. |
-| Stop Conditions | Stop and request a revised packet if the frozen Type-2 descriptor requires a runtime selection surface, imports media, lacks source support, requires a second state owner, or changes a public product boundary. |
-| Exit Criteria | The sole Core HDC accepts exactly the copied Type-2 XT plan and the XT profile proves its frozen attachment without an ATA alias; data transfer and all residual behavior have named later receivers. |
-| Similar-Issue Sweep | All Xebec configuration sites and retained ATA, Compaq WD and IBM WD1003 plans: each keeps its own protocol configuration and no runtime Xebec type-selection path appears. |
+| Stop Conditions | Stop and request a revised packet if logical Xebec command encoding, DMA direction or completion ordering cannot be sourced, needs guessed enable bits, requires a second state owner, or changes a product boundary. |
+| Exit Criteria | Read/write Type-2 DCBs use only the HDC-owned CHS/buffer/media/DMA3 path with focused proof; unsupported physical/ambiguous behavior remains explicit. |
+| Similar-Issue Sweep | Xebec HDC, board DMA binding and all HDC personalities: only Xebec receives byte-DMA behavior; ATA, Compaq and WD1003 retain their existing PIO paths. |
 
 ## Current Technical Baseline
 
@@ -61,6 +61,7 @@
 | Task | Compact result |
 | --- | --- |
 | T484 S16 | Accepted: owner-selected Xebec Type 2 is frozen in one copied 5160 profile/Core descriptor, retaining the sole HDC/media route and no runtime type choice. [Evidence](../etc/evidence/t484-s16-xebec-type2-selection.md). |
+| T484 S17 | Accepted: Type-2 Xebec logical Read/Write now use the sole Core HDC buffer, frozen media registry and DMA3 request boundary; no ATA alias or second state owner was added. [Evidence](../etc/evidence/t484-s17-xebec-dma-media.md). |
 | T484 S15 | Accepted: Xebec now has one HDC-owned select/DCB/completion/request-sense/reset stack and raw 323h pattern state; selected-media DMA transfer, enable-bit semantics, physical status/timing and ROM remain explicit transfers. [Evidence](../etc/evidence/t484-s15-xebec-command-stack.md). |
 | T484 S14 | Accepted: X1--X17 now have one source-bounded Xebec Core receiver: byte-stack/command state and DMA callbacks stay in the sole HDC owner; ATA reuse, selected geometry, ROM, physical behavior and guessed hardware status remain explicit transfers. [Evidence](../etc/evidence/t484-s14-xebec-logical-implementation-brief.md). |
 | T484 S2 | Accepted: rendered Intel/IBM evidence permits shared 8086 semantics but requires a Core-owned four-byte 8088 queue policy and forbids a false 8086 alias. [Evidence](../etc/evidence/t484-s2-xt-8088-compatibility-matrix.md). |
