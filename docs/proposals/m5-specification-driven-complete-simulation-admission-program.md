@@ -27,6 +27,36 @@ Level 2 is not permission to skip documentation research, and Level 3 is not a
 silent fallback. A unit may move upward only by recorded evidence and must
 re-run its applicable regressions.
 
+## Mandatory Per-Unit Admission Sequence
+
+Every newly admitted CPU, chip, controller, media controller, or display
+category is one independent candidate T.  An aggregate machine or board task
+may compose accepted unit contracts, but may not discover and implement a new
+unit by adding successive unrelated subtasks.  Before its implementation S,
+that T must complete these ordered, finite stages:
+
+1. **Original-source ledger:** acquire and visually check the applicable
+   original manual, board reference and selected personality material; record
+   page/formula provenance, OCR uncertainty and any lawful reference-emulator
+   cross-check boundary.
+2. **List 1 - complete function/timing ledger:** freeze every command,
+   register, instruction form, state transition, reset/cancellation rule,
+   producer/consumer route and timing/phase row in the unit's selected
+   surface.  Each row records its source level and exact L3, L2 or maintained
+   boundary disposition.
+3. **List 2 - current-code gap ledger:** map every List-1 row to current code,
+   one owner, test/probe, missing input and implementation disposition.  A
+   missing row cannot be discovered opportunistically during implementation.
+4. **One-owner implementation and closure:** implement the entire admitted
+   List-2 batch at its existing owner, remove obsolete duplicate paths and run
+   the unit's complete source-to-test sweep.  A later board task consumes the
+   frozen contract; it does not recreate the controller.
+
+No task may substitute one repaired symptom, guest boot, or benchmark for
+either complete ledger.  Similar-looking units may share a neutral Core
+mechanism only after their separate List-1/List-2 ledgers prove the same
+semantic, lifecycle and failure boundary.
+
 ## Per-Task Completion Standard
 
 A hardware T may close only when every unit in its frozen ledger has been

@@ -2,11 +2,7 @@
 
 ## Current Work
 
-**Open: M5 T485.**
-
-T485 S20 is accepted at `58d4d896`: all ten unprefixed fixed-scalar rows now
-use the sole primary receiver.  XLAT, move/segment, Group-2, prefix and
-FPU-specific rows retain their separate S19 receiver boundaries.
+**No active task.**
 
 ## Current Technical Baseline
 
@@ -43,7 +39,7 @@ FPU-specific rows retain their separate S19 receiver boundaries.
 
 | Task | Compact result |
 | --- | --- |
-| T485 S20 | Accepted: the sole primary evaluator now classifies all ten exact, unprefixed 8088 fixed-scalar rows; prefix, memory/segment and FPU work remains separate. [Evidence](../etc/evidence/t485-s20-8088-fixed-scalar-source-evaluator.md). |
+| T485 S20 | Accepted: the fixed-scalar 8088 receiver remains evidenced; Td S152 withdraws T485's uncompleted aggregate scope and transfers it to independent CPU/board/controller candidates. This is not a T485 completion claim. [Record](../etc/evidence/td-s152-unit-task-admission-governance.md). |
 | T484 | Closed: IBM 5160-268 now has one immutable 8088/profile plan, XT PPI/FDC/CGA/Xebec functional owners and one typed external-ROM BYOB product route; all remaining board/device timing transfers to T485. [Closure audit](../etc/evidence/t484-s22-xt-functional-closure-audit.md). |
 | T482 | Closed: one strict root YAML request reaches the sole `SESSION OPEN` authority and resolver without CLI re-encoding; 296/296 current-gate tests and stripped Release 0480 pass. [Closure audit](../etc/evidence/t482-s4-closure-audit.md). |
 | T483 | Closed: the IBM 5160-268 BOM, complete current-owner capability matrix and Manual-L3/unresolved timing partition establish one functional and one timing receiver without implying an XT runtime path. [Closure evidence](../etc/evidence/t483-s3-xt-timing-source-partition.md). |
@@ -54,6 +50,12 @@ FPU-specific rows retain their separate S19 receiver boundaries.
 | T477 | Closed: DeskPro is an immutable `pc-at-5170` child with one copied Core-plan materialization path; the Model-40 session retains only dynamic resources. [Closure audit](../etc/evidence/t477-s4-closure-audit.md) records frozen parity, the 294-target gate and stripped Release 0477. |
 
 ## Recent Governance
+
+- **M5 Td S152 P1:** withdrew T485's uncompleted aggregate scope without a
+  false closure and replaced it with per-unit 8088/XT candidates. Every new
+  hardware T must complete original-source, List-1, List-2 and one-owner
+  implementation stages before it may repair code. The [evidence](../etc/evidence/td-s152-unit-task-admission-governance.md)
+  records the transfer. No runtime, ABI, build or artifact changed.
 
 - **M5 Td S151 P1:** made the four-machine fixed-disk result a hard receiver
   sequence: retain `default-at` ATA, IBM 5170 WD1003 and DeskPro Compaq/WD;

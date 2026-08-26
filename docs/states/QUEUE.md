@@ -43,7 +43,15 @@ linked proposal identifies its finite implementation-admission baseline and
 exclusive earliest capability batch; a later candidate may consume a registered
 contract but does not redefine its L3 or Core/VM boundary.
 
-1. [IBM PC/XT 5160-268 board and device phase-timing closure](../proposals/m5-8088-5150-xt-l3-baseline.md).
+1. [8088 instruction function and timing completeness](../proposals/m5-8088-instruction-timing-completeness.md).
+1. [IBM 5160 8088 board, memory, ROM and ISA phase contract](../proposals/m5-xt-8088-board-bus-phase.md).
+1. [IBM 5160 8259A interrupt-controller phase contract](../proposals/m5-xt-8259a-board-phase.md).
+1. [IBM 5160 8237A DMA phase contract](../proposals/m5-xt-8237a-board-phase.md).
+1. [IBM 5160 8254 PIT phase contract](../proposals/m5-xt-8254-board-phase.md).
+1. [IBM 5160 8255 PPI, keyboard and NMI phase contract](../proposals/m5-xt-8255-keyboard-nmi-phase.md).
+1. [IBM 5160 8272A FDC and floppy-media phase contract](../proposals/m5-xt-8272a-fdc-media-phase.md).
+1. [IBM 5160 CGA VADP phase contract](../proposals/m5-xt-cga-vadp-phase.md).
+1. [IBM 5160 Xebec fixed-disk-controller phase contract](../proposals/m5-xt-xebec-fixed-disk-phase.md).
 1. [IBM PC/XT 5160-268 final model-L3 audit](../proposals/m5-xt-5160-268-l3-audit.md).
 1. [M5 pre-Windows L3 admission audit](../proposals/m5-pre-windows-l3-admission-audit.md).
 1. [Windows 3.1 BYOB lifecycle harness](../proposals/m5-windows31-byob-lifecycle-harness.md).

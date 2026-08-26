@@ -5,6 +5,12 @@ connect primary-source board/device timing inputs to the one Core time axis;
 it must not create an XT scheduler, AT alias, guessed timing value or host-time
 writer.
 
+**Withdrawal:** Td S152 withdraws T485's uncompleted aggregate board/device
+scope after accepted S1--S20.  This is not a task-completion or L3 claim.
+Its accepted 8088 evidence remains a baseline; every remaining XT CPU/board
+controller category transfers to a separate queued unit task under the
+mandatory source, List-1, List-2 and one-owner implementation sequence.
+
 | Subtask | Result |
 | --- | --- |
 | S1 | Accepted: every selected timing path has one source-labelled fact, current Core receiver and explicit L2/blocking disposition; only PIT has an immediately eligible rational-clock receiver. [Evidence](../etc/evidence/t485-s1-xt-board-phase-source-ledger.md). |
