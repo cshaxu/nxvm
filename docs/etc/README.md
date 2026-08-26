@@ -77,6 +77,7 @@ principal documents named in [docs/README.md](../README.md).
 | `evidence/t481-s3-controller-audit.md` | Global audit owner | T481 S3's selected-controller sole-owner, IRQ/DRQ/media/snapshot and Core-deadline eligibility reconciliation. |
 | `evidence/t481-s4-core-vm-time-audit.md` | Global audit owner | T481 S4's Core-only time mutation, copied plan/observation and Standard/Turbo consumer audit with the stale console-help transfer. |
 | `evidence/t481-s5-global-reconciliation.md` | Global audit owner | T481 S5's independent global reconciliation, focused verification and single ordered transfer list. |
+| `evidence/t482-s1-yaml-selection-universe.md` | YAML cutover owner | T482 S1's legacy selector/parser inventory and root-only immutable-request grammar/choice matrix. |
 | `evidence/t474-s1-core-time-convergence-ledger.md` | Core timing owner | T474 S1 freezes the complete production time writer/reader/deadline/pacing universe, its sole Core owners, and the S2--S5 receiver partition before generic time-axis implementation. |
 | `evidence/t474-s2-one-plan-one-observation.md` | Core timing owner | T474 S2 proves the retained single copied Core timing plan and observation boundary, classifies dynamic resources as non-time bindings, and transfers CPU/deadline work without adding a wrapper. |
 | `evidence/t474-s3-profile-contract-to-plan.md` | Core timing owner | T474 S3 completes the profile-selected transaction-contract path into the existing Core plan and removes Model-40 session ownership of its Core configuration. |
