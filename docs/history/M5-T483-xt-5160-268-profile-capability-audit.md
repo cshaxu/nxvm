@@ -7,6 +7,6 @@ it does not import firmware, media, or third-party code.
 
 | Subtask | Accepted result |
 | --- | --- |
-| S1 | Active: establish source-labelled board/revision provenance and bill of materials. |
-| S2 | Planned: map selected components to current functional capability gaps and one earliest functional receiver. |
+| S1 | Accepted: IBM primary-source/BOM evidence fixes the 5160-268 baseline, CGA selection and Xebec/BYOB boundary. |
+| S2 | Active: map selected components to current functional capability gaps and one earliest functional receiver. |
 | S3 | Planned: partition 8088/board timing facts and unresolved source gaps to one timing/source receiver; publish audit closure. |

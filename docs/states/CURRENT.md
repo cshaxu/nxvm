@@ -2,28 +2,28 @@
 
 ## Current Work
 
-**Active: M5 T483 S1.**
+**Active: M5 T483 S2.**
 
-## M5 T483 S1 Packet
+## M5 T483 S2 Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | New |
-| Admission And Approval | The owner-approved ordered Queue and the standing instruction to continue toward the pre-Windows L3 admission audit admit the first post-T482 candidate. |
-| Objective | Freeze IBM PC/XT 5160-268 primary-source provenance, selected bill of materials and 8088/Xebec admission boundaries before any XT implementation. |
+| Identifier Mode | Continuation |
+| Admission And Approval | The owner-approved T483 scope continues after one-session review accepts S1 P1 `f5392efa` and its source-quality/BOM evidence. |
+| Objective | Map every selected 5160-268 component to the actual current Core/VM capability gap, sole owner and earliest functional receiver without implementing XT behavior. |
 | Non-goals | No 5160 runtime profile, device repair, firmware/media import, PC/AT borrowing, timing implementation, Windows claim or L3 decision. |
-| Reference Baseline | [XT 5160-268 profile and capability-gap audit](../proposals/m5-xt-5160-268-profile-capability-audit.md), T479 S6 IBM/Xebec ledgers, retained 8086 semantic ledger and current profile resolver boundary. |
+| Reference Baseline | Accepted T483 S1 BOM, T479 S6 IBM/Xebec ledgers, current Core/VM source and retained 8088 semantic ledger. |
 | Candidate Proposal | [IBM PC/XT 5160-268 profile and capability-gap audit](../proposals/m5-xt-5160-268-profile-capability-audit.md). |
-| Files And ABI Surface | T483 history/status, indexed primary-source provenance and bounded audit evidence only; no source, build, runtime, asset or ABI change. |
-| Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, architecture/source policy and the proposal's no-implementation stop boundary. |
-| Verification | Manual source/provenance review, cross-check against T479 S6 ledger and documentation governance. |
-| Expected Markers | `M5:T483:S1:XT-PRIMARY-SOURCE-BASELINE:OK`; `M5:T483:S1:XT-BOM:OK`. |
-| Asset Needs | Primary documentation may be read from the approved external research archive; no firmware, guest media, local path or vendor bytes may enter the repository. |
-| Reporting Requirements | Record selected board/revision, source quality/OCR status, component facts, unresolved facts and exact later receiver boundary. |
+| Files And ABI Surface | Read-only Core/VM/profile/controller inspection plus indexed gap evidence/history/status; no source, build, runtime, asset or ABI change. |
+| Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, architecture/coding rules, source policy and the proposal's no-implementation stop boundary. |
+| Verification | Exact source-path and symbol sweep, T479 Xebec cross-check, ownership-direction review and documentation governance. |
+| Expected Markers | `M5:T483:S2:XT-CAPABILITY-MATRIX:OK`; `M5:T483:S2:XT-OWNER-PARTITION:OK`. |
+| Asset Needs | No acquisition or import. |
+| Reporting Requirements | Record current support/absence per BOM item, state/reset/IRQ/DMA/media gaps, sole current owner and one earliest functional receiver. |
 | Original Owner Request | Continue the ordered minimalist queue toward the pre-Windows L3 admission audit. |
-| Stop Conditions | Stop at an unidentified board fact, ambiguous primary source or source-license boundary; retain a bounded source/probe receiver rather than infer from PC/AT behavior. |
-| Exit Criteria | A source-labelled 5160-268 baseline and bill of materials identify every selected component and preserve the Xebec external-ROM/non-import boundary. |
-| Similar-Issue Sweep | Existing 5160/XT/T479 source ledgers, profile proposals, research indexes and selected-device documents. |
+| Stop Conditions | Stop if a selected component lacks a single current owner or would require implementation to classify; retain one bounded functional/source receiver rather than infer from PC/AT behavior. |
+| Exit Criteria | Every BOM item has a source-labelled current capability disposition, one current owner/absence statement and one earliest functional receiver; no XT path is implemented or implied runnable. |
+| Similar-Issue Sweep | Core controllers, CPU/profile resolver, VM composition/media/session code, 5160/XT/Xebec documents and product tests. |
 
 ## Current Technical Baseline
 
@@ -61,6 +61,7 @@
 | Task | Compact result |
 | --- | --- |
 | T482 | Closed: one strict root YAML request reaches the sole `SESSION OPEN` authority and resolver without CLI re-encoding; 296/296 current-gate tests and stripped Release 0480 pass. [Closure audit](../etc/evidence/t482-s4-closure-audit.md). |
+| T483 S1 | Accepted: OCR-qualified IBM source baseline selects the 5160-268 BOM and preserves the Xebec/BYOB boundary. [Evidence](../etc/evidence/t483-s1-xt-primary-source-baseline.md). |
 | T481 | Closed: one global CPU/controller/Core-time/profile/VM audit leaves no unrecorded duplicate owner, host-to-Core tick injection or false capability claim; residuals have one ordered receiver. [Closure audit](../etc/evidence/t481-s5-global-reconciliation.md). |
 | T480 | Closed: VADP remains the sole guest-video owner; IBM VGA DAC, chain-4 and Mode-13 frame capability is source-backed but unselected by every current profile/card. The 296-target gate and stripped Release 0480 pass. [Closure audit](../etc/evidence/t480-s5-profile-closure-audit.md). |
 | T479 | Closed: one Core HDC/media boundary retains explicit ATA, Compaq and IBM WD1003 personalities; seven focused regressions, the 294-target gate and stripped Release 0479 hash pass. IBM 5160/Xebec and WD1007A-WAH ESDI contracts transfer only to their missing immutable profile receivers. [Closure audit](../etc/evidence/t479-s8-closure-audit.md). |
