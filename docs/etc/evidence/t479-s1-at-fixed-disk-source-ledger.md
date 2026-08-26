@@ -43,6 +43,6 @@ implementation claim.
 | ATA-T5 | ATA and Compaq are distinct personalities. | T386/T468; Manual/Other L3. | Retained; no compatibility shim. |
 | ESDI-1 | No concrete WD1005/WD1007 or other ESDI controller selected. | No primary controller source. | Unsupported; future source-gated admission only. |
 
-The finite universe is 28 rows. S2 traces every row through construction,
+The finite universe is 27 rows. S2 traces every row through construction,
 ports, media, IRQ and timeline owners; it does not replace a missing manual
 with an emulator implementation.
