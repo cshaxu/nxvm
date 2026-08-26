@@ -2,26 +2,7 @@
 
 ## Current Work
 
-## M5 T469 S3 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | The owner's persistent T469/Core-L3 closure authorization requires the real Core deadline work identified by accepted S1/S2, rather than a qualification-only rejection. The coordinator revises the proposal's remaining S order and admits the first finite source-qualified batch. |
-| Objective | Make Core compute and advance to the earliest eligible PIT-output or L3-source RTC IRQ deadline, while conservatively returning unavailable whenever any active non-qualified controller could create an earlier guest-visible event. |
-| Non-goals | No VM wall-clock tick input, profile-name branch in Core, new manual timing value, timeline replacement, controller pointer exposure, KBC/FDC/HDC/DMA timing estimate, default-PC/AT Standard pacing, or host sleep change. |
-| Reference Baseline | Accepted T469 S1 145-row ledger and S2 observation; Intel 8254 and MC146818A checklist rows; current PIT/RTC state owners, copied Model-339 controller timing plan and shared scheduler/clock-domain implementation. |
-| Candidate Proposal | [M5 Core L3 integration closure and VM contract export](../proposals/m5-core-l3-integration-vm-contract-export.md), revised T469 S3. |
-| Files And ABI Surface | Expected: PIT/RTC Core-private next-event helpers, clock-domain inverse helper, Core deadline selection/advance operation, existing copied time observation, focused Core time/controller regression and T469 evidence/index/status. No VM runner or profile API change. |
-| Applicable Rules | Core alone selects and advances guest time; controller owners retain state and calculate only their own next transition; a copied value observation is the only cross-module result; source-qualified values stay L3 and all unqualified active contributors block rather than degrade or be skipped. |
-| Verification | Prove PIT/RTC exact next transition calculations across reset/program/enable changes; prove Core chooses the earliest, processes timeline order through it, clears/recomputes on reset, and refuses active KBC/FDC/HDC/DMA or L2 RTC/PIT configurations; run PIT/RTC/controller time, VM virtual-time/speed and documentation gates. |
-| Expected Markers | One Core deadline selector, no second scheduler; valid observation only for the finite L3 PIT/RTC batch; no valid deadline for default L2 or active unqualified owner; one Core operation advances a Core-selected bounded tick count. |
-| Asset Needs | Existing accepted Intel/IBM controller evidence and project code/tests only; no new source, firmware, media or third-party import. |
-| Reporting Requirements | Record every owner eligibility predicate, source/L2 blocker, reset/cancellation action, code/test delta, retained scheduler path, all focused/gate results and the exact S4 timebase-qualification transfer. |
-| Stop Conditions | Stop and revise before code if PIT/RTC transition math needs an unsourced number, cannot map through the existing rational clock safely, or an unqualified owner can change state before the selected candidate without being detectable. |
-| Exit Criteria | PIT and L3-source RTC deadlines are Core-owned and exact under their existing clock/state models; all unqualified active owners prevent fast advance; copied observation and Core advance operation pass focused regression; no VM component supplies or selects guest tick count. |
-| Original Owner Request | Complete correct host/guest synchronization and usable Standard/Turbo behavior through a minimalist, single-owner Core time design, not a fixed-sleep or host-tick workaround. |
-| Similar-Issue Sweep | Sweep all PIT modes/gates, RTC divider/rate/IRQ enable combinations, clock-domain conversion paths, Core wait/advance callers, and active DMA/KBC/FDC/HDC state for any missing earlier event or parallel time owner. |
+**Between accepted subtasks.**
 
 ## Current Technical Baseline
 
@@ -52,7 +33,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T469 S2 | Accepted implementation `e9792455` adds one value-only Core guest-time observation and keeps every current profile explicitly deadline-unavailable; it exposes neither a controller nor timeline and changes no VM path. Its [evidence](../etc/evidence/t469-s2-core-deadline-observation.md) records reset-safe proof and transfers immutable deadline/timebase qualification to S3. Core time, virtual-time, speed-policy and documentation gates pass. |
+| T469 S3 | Accepted implementation `6a6a9368` makes Core select and advance the earliest eligible PIT/RTC deadline through its existing timeline. It includes all PIT counters, rational-clock phase, default-L2 and active-owner refusal; VM supplies neither a deadline nor ticks. [Evidence](../etc/evidence/t469-s3-core-pit-rtc-deadline.md) transfers physical-timebase qualification to S4. |
 | T468 | Closed: the ATA-3 15-row task-file/media contract has one HDC owner, one media owner and one PIC route; the serial current gate passes 295/295 and stripped Release 0468 is recorded in [history](../history/M5-T468-core-hdc-ata-phase-contract.md). |
 | T467 | Closed: all 17 selected IBM-CGA rows reconcile to one VADP/Core/profile/snapshot path. Source and model facts remain retained; their current L3/L2/L1/L0 interpretation is [Td S148](../etc/evidence/td-s148-eight-controller-l-level-reclassification-audit.md). Serial current-gate passes 295/295; stripped Release 0467 is recorded in [history](../history/M5-T467-core-ibm-cga-completeness.md). |
 | T466 | Closed: Manual-L3 D/E/10 geometry reaches the single VADP state owner through real firmware and guest port writes. The profile declaration, cold-start/text routing and all fixtures now agree; unknown planar geometry falls through existing legacy selection rather than inventing a frame. The stripped Release 0466 artifact and its hash are recorded in [history](../history/M5-T466-core-vadp-phase-contract.md). |
