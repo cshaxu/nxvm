@@ -2,26 +2,7 @@
 
 ## Current Work
 
-## M5 T469 S6 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | The owner's persistent Core-L3 closure authorization admits final T469 S6 after accepted S1--S5. |
-| Objective | Reconcile the frozen 145-row eligibility ledger, S2--S5 implementation and actual Core/VM source graph; build the stripped Release 0469 artifact and close T469 only if every claimed boundary has direct evidence. |
-| Non-goals | No new timing mechanism, profile qualification, host pacing algorithm, source/media import, L4 claim, hidden compatibility path or broad refactor. |
-| Reference Baseline | T469 proposal; accepted S1--S5 evidence; T388 physical-timebase boundary; current Core deadline/timebase APIs, VM waiting path and 145-row ledger. |
-| Candidate Proposal | [M5 Core L3 integration closure and VM contract export](../proposals/m5-core-l3-integration-vm-contract-export.md), T469 S6. |
-| Files And ABI Surface | Expected only closure evidence/history/status and Release artifact record unless audit identifies an in-scope defect requiring a revised packet. |
-| Applicable Rules | One Core guest-time owner, VM never supplies ticks, copied opaque values only, no profile identity in Core, explicit L2 fallback, one waiting production path and removal of obsolete paths. |
-| Verification | Run documentation, static T388/T447, current-gates, focused deadline/timebase/speed/profile tests; inspect all `advance_time` callers and virtual-time residue; build stripped Release 0469, record hash/banner/source commit. |
-| Expected Markers | S1 ledger dispositions retained; S3 deadline and S4 timebase are distinct values; S5 is the only VM wait request; all current profiles remain explicit L2 fallback. |
-| Asset Needs | Existing repository source and evidence only. |
-| Reporting Requirements | Record requirement-to-proof matrix, complete static sweep, gate/artifact results, code-size total, retained owner paths and every residual transfer. |
-| Stop Conditions | Stop instead of closing if any VM host tick path, unqualified profile pacing, missing ledger disposition, failed gate or release artifact discrepancy remains. |
-| Exit Criteria | Evidence proves all T469 S1--S6 requirements and the current artifact is stripped Release 0469; T469 history/status/queue agree and no active packet remains. |
-| Original Owner Request | Complete the Core L3 timing integration correctly and minimally, with Core-owned guest time and clean architecture/code/documentation closure. |
-| Similar-Issue Sweep | Full repository search over Core time APIs, VM waits/speed/platform clock code, profile composition, CMake targets, T469 evidence/index/status and current gate registrations. |
+**T469 closed.** Core owns every admitted guest-time decision; current profiles retain explicit L2 fallback because no physical timebase is qualified.
 
 ## Current Technical Baseline
 
@@ -52,7 +33,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T469 S5 | Accepted implementation `0460702b` deletes every VM host-tick callback/configuration/source route and retains one Core-deadline waiting request guarded by S4's copied contract. Current profiles retain identical L2 fallback. [Evidence](../etc/evidence/t469-s5-vm-waiting-ownership.md) transfers full integration audit and Release 0469 to S6. |
+| T469 S6 | Closed: S1--S6 reconcile the 145-row controller deadline ledger to one Core-owned deadline/timebase/waiting path; VM host-tick injection is deleted, current profiles retain explicit L2 fallback, and stripped Release 0469 is recorded in [closure audit](../etc/evidence/t469-s6-integration-closure-audit.md). |
 | T468 | Closed: the ATA-3 15-row task-file/media contract has one HDC owner, one media owner and one PIC route; the serial current gate passes 295/295 and stripped Release 0468 is recorded in [history](../history/M5-T468-core-hdc-ata-phase-contract.md). |
 | T467 | Closed: all 17 selected IBM-CGA rows reconcile to one VADP/Core/profile/snapshot path. Source and model facts remain retained; their current L3/L2/L1/L0 interpretation is [Td S148](../etc/evidence/td-s148-eight-controller-l-level-reclassification-audit.md). Serial current-gate passes 295/295; stripped Release 0467 is recorded in [history](../history/M5-T467-core-ibm-cga-completeness.md). |
 | T466 | Closed: Manual-L3 D/E/10 geometry reaches the single VADP state owner through real firmware and guest port writes. The profile declaration, cold-start/text routing and all fixtures now agree; unknown planar geometry falls through existing legacy selection rather than inventing a frame. The stripped Release 0466 artifact and its hash are recorded in [history](../history/M5-T466-core-vadp-phase-contract.md). |
