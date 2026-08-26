@@ -52,7 +52,7 @@ $hasForm = $timingSource -match 'CORE_MACHINE_SOURCE_TIMING_8086_XLAT'
 $hasTicks = $timingSource -match '\*out_ticks = 11u'
 $hasLedger = $ledger -match '\| `XLAT source-table` \| 11 \| exact'
 $hasPopCs = $decoderSource -match 'insTable\[0x0f\]\s*=\s*\(core_machine_cpu_instruction_handler\)INS_0F;' -and
-    $decoderSource -match 'context->cpu_profile == CORE_MACHINE_CPU_PROFILE_8086\)\s*\r?\n\s*POP_CS\(context\);' -and
+    $decoderSource -match '(context->cpu_profile == CORE_MACHINE_CPU_PROFILE_8086|core_machine_cpu_profile_has_8086_semantics\(context->cpu_profile\))\)\s*\r?\n\s*POP_CS\(context\);' -and
     $timingSource -match 'case 0x0fu:' -and
     $timingSource -match 'machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_8086\) break;' -and
     $timingSource -match 'CORE_MACHINE_SOURCE_TIMING_POP_REGISTER'

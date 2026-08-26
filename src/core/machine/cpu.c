@@ -245,6 +245,12 @@ C_VOID core_machine_cpu_execution_reserve_prefetch(
         context->prefetch_reservation_valid || !context->prefetch_valid ||
         context->prefetch_expected_linear < context->prefetch_linear ||
         cpu_state.data.eip > cpu_state.data.cs.limit) return;
+    if (context->cpu_profile != CORE_MACHINE_CPU_PROFILE_8088) {
+        context->prefetch_reservation_linear = context->prefetch_expected_linear;
+        context->prefetch_reservation_count = context->prefetch_count;
+        context->prefetch_reservation_valid = TYPE_TRUE;
+        return;
+    }
     offset = context->prefetch_expected_linear - context->prefetch_linear;
     if (offset >= context->prefetch_count) return;
     if (offset != 0u) {
@@ -266,13 +272,16 @@ C_VOID core_machine_cpu_execution_advance_prefetch_reservation(
     type_unsigned_8 byte;
 
     if (context == STD_NULL || !context->prefetch_reservation_valid) return;
-    context->memory_access_provenance = CORE_MACHINE_CPU_MEMORY_ACCESS_INSTRUCTION_PREFETCH;
-    if (!core_machine_cpu_execution_read_linear(context,
-            context->prefetch_reservation_linear, (type_virtual_address)&byte, 1u) &&
-        context->prefetch_count < context->prefetch_capacity) {
-        context->prefetch_bytes[context->prefetch_count++] = byte;
+    if (context->cpu_profile == CORE_MACHINE_CPU_PROFILE_8088) {
+        context->memory_access_provenance =
+            CORE_MACHINE_CPU_MEMORY_ACCESS_INSTRUCTION_PREFETCH;
+        if (!core_machine_cpu_execution_read_linear(context,
+                context->prefetch_reservation_linear, (type_virtual_address)&byte, 1u) &&
+            context->prefetch_count < context->prefetch_capacity) {
+            context->prefetch_bytes[context->prefetch_count++] = byte;
+        }
+        context->memory_access_provenance = CORE_MACHINE_CPU_MEMORY_ACCESS_DATA;
     }
-    context->memory_access_provenance = CORE_MACHINE_CPU_MEMORY_ACCESS_DATA;
     context->prefetch_reservation_valid = TYPE_FALSE;
     context->prefetch_reservation_linear = 0u;
     context->prefetch_reservation_count = 0u;

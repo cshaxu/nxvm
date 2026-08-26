@@ -27,9 +27,9 @@
 
 ## Current Technical Baseline
 
-- **Current developer artifact:** target `vm-0-5-0480`; the stripped Release
-  `nxvm_0_5_0480.exe` has SHA-256
-  `30C75B4463B084A0EEF2CCC33B8FF35B0AD5230EE95F8E5B314EABF1ADF7F779`.
+- **Current developer artifact:** target `vm-0-5-0484`; the stripped Release
+  `nxvm_0_5_0484.exe` has SHA-256
+  `9AEB6BA6F9084270A9902717D60E921E2CD0164189477B7B541BDF3A26F36650`.
   Debug remains the current-gate route. T471 preserves Core-owned progression:
   a verified axis is Standard-paced only by host waiting against completed
   Core progress. T472 extends that comparison to an explicit L2 macro axis,
