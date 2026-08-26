@@ -2,28 +2,28 @@
 
 ## Current Work
 
-**Open: M5 T489 S3.**
+**Open: M5 T489 S5.**
 
-## M5 T489 S3 Packet
+## M5 T489 S5 Packet
 
 | Field | Required record |
 | --- | --- |
 | Identifier Mode | Continuation |
-| Admission And Approval | T489 S1 and S2 accepted the source ledger and complete 16-row List 1; this S maps every row to current owner paths before any repair. |
-| Objective | Produce List 2: one row-complete 8237A/XT source-to-code, state-owner, consumer and regression disposition. |
-| Non-goals | No DMA repair, FDC/Xebec implementation, imported source/media or inferred timing. |
-| Reference Baseline | T489 S1 source ledger, T489 S2 List 1, closed T488 and the queued 8237A proposal. |
+| Admission And Approval | T489 S1--S4 accepted source, complete ledgers and the sole port-topology repair; S5 performs task closure. |
+| Objective | Audit all sixteen DMA/XT rows, code quality, retained L2/L4 boundaries and focused proof before closing T489. |
+| Non-goals | No additional DMA repair, timing-axis claim, AT change, FDC/Xebec work or release artifact. |
+| Reference Baseline | T489 S1--S4 evidence and the queued independent controller program. |
 | Candidate Proposal | [IBM 5160 8237A DMA phase contract](../proposals/m5-xt-8237a-board-phase.md). |
-| Files And ABI Surface | List-2 evidence, evidence index, T489 history and Current only; no code or ABI change. |
+| Files And ABI Surface | Closure evidence, evidence index, history, Queue and Current only; no code or ABI change. |
 | Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, `docs/etc/operations/policy/source-policy.md`. |
-| Verification | Inspect `dma.c`, Core construction/arbitration, XT profile and focused tests for all 16 List-1 rows; identify every gap before implementation. |
-| Expected Markers | One complete List 2 and one coherent owner-local implementation batch, including an empty batch when proven. |
-| Asset Needs | No new assets; retained source and List-1 evidence only. |
-| Reporting Requirements | Name each sole state owner, port/consumer route, reset/finalize path, test/probe and L2/L4 boundary. |
-| Stop Conditions | A missing row or duplicate path reopens List 2; no local symptom patch is allowed. |
-| Exit Criteria | Every List-1 row has a present, gap or explicit boundary disposition and no unmapped route remains. |
+| Verification | Review actual T489 diff and all evidence, rerun documentation governance and retain focused proof results. |
+| Expected Markers | One complete closure matrix with no hidden DMA/XT gap. |
+| Asset Needs | No new assets; retained evidence only. |
+| Reporting Requirements | Name retained owner, code-size result, test coverage and the physical-axis receiver. |
+| Stop Conditions | A newly found DMA row returns to List 2; no audit-stage repair is allowed. |
+| Exit Criteria | All sixteen rows are accepted or explicitly transferred, and no unresolved implementation batch remains. |
 | Original Owner Request | One independent controller T: original source, complete List 1, complete List 2, then one owner-local batch; no symptom repair. |
-| Similar-Issue Sweep | Sweep all production DMA callers and XT port/profile construction, excluding AT-only topology from the selected unit. |
+| Similar-Issue Sweep | Recheck every DMA topology construction and all retained controller-time declarations. |
 
 ## Current Technical Baseline
 
@@ -60,6 +60,8 @@
 
 | Task | Compact result |
 | --- | --- |
+| T489 S4 | Accepted: XT single-DMA now exposes only selected page ports; Core plan, DMA channel and XT profile smokes pass. [Evidence](../etc/evidence/t489-s4-xt-dma-page-port-closure.md). |
+| T489 S3 | Accepted: complete List 2 maps 16 DMA/XT rows; one XT page-port topology correction is the entire implementation batch and physical-axis mapping remains L2. [Evidence](../etc/evidence/t489-s3-8237a-current-code-gap-list-2.md). |
 | T489 S2 | Accepted: complete 16-row Intel/IBM 8237A/XT function and timing List 1 is frozen before code audit. [Evidence](../etc/evidence/t489-s2-8237a-function-timing-list-1.md). |
 | T489 S1 | Accepted: visually checked Intel 8237A and IBM 5160 primary-source ledger establishes the finite DMA List-1 basis. [Evidence](../etc/evidence/t489-s1-8237a-original-source-ledger.md). |
 | T488 | Closed: complete IBM 5160 8259A source/List-1/List-2/one-owner audit retains one Core PIC path and an empty implementation batch. [Closure audit](../etc/evidence/t488-s5-8259a-closure-audit.md). |
