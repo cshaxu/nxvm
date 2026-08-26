@@ -87,19 +87,29 @@ static C_INT vm_product_session_catalog_parse(const C_CHAR *directory,
     C_INT media = 0;
     C_INT firmware_slot = 0;
     C_INT firmware_even_slot = 0;
+    C_INT firmware_even_section = 0;
     C_INT firmware_even_bytes = 0;
     C_INT firmware_even_map = 0;
+    C_INT firmware_even_path = 0;
+    C_INT firmware_even_sha256 = 0;
     C_INT firmware_odd_slot = 0;
+    C_INT firmware_odd_section = 0;
     C_INT firmware_odd_bytes = 0;
     C_INT firmware_odd_map = 0;
+    C_INT firmware_odd_path = 0;
+    C_INT firmware_odd_sha256 = 0;
     C_INT firmware_provenance = 0;
     C_INT firmware = 0;
+    C_INT media_section = 0;
     C_INT schema = 0;
     C_INT profile = 0;
     C_INT cpu = 0;
     C_INT fpu = 0;
+    C_INT memory = 0;
     C_INT display = 0;
     C_INT boot = 0;
+    C_INT floppy = 0;
+    C_INT hard_disk = 0;
 
     if (!vm_product_session_catalog_path(path, sizeof(path), directory, name) ||
         core_platform_file_reader_open(path, &file) != TYPE_STATUS_OK) return 0;
@@ -107,12 +117,22 @@ static C_INT vm_product_session_catalog_parse(const C_CHAR *directory,
     while (core_platform_file_reader_next(file, line, sizeof(line))) {
         C_CHAR *text = vm_product_session_catalog_trim(line);
         if (*text == '\0' || *text == '#') continue;
-        if (!STD_STRCMP(text, "media:")) { section = 2; media = 0; firmware_slot = 0; continue; }
+        if (!STD_STRCMP(text, "media:")) {
+            if (media_section) break;
+            section = 2; media = 0; firmware_slot = 0; media_section = 1; continue;
+        }
         if (!STD_STRCMP(text, "firmware:")) {
+            if (firmware) break;
             section = 3; media = 0; firmware_slot = 0; firmware = 1; continue;
         }
-        if (section == 3 && !STD_STRCMP(text, "rom_even:")) { firmware_slot = 1; continue; }
-        if (section == 3 && !STD_STRCMP(text, "rom_odd:")) { firmware_slot = 2; continue; }
+        if (section == 3 && !STD_STRCMP(text, "rom_even:")) {
+            if (firmware_even_section) break;
+            firmware_slot = 1; firmware_even_section = 1; continue;
+        }
+        if (section == 3 && !STD_STRCMP(text, "rom_odd:")) {
+            if (firmware_odd_section) break;
+            firmware_slot = 2; firmware_odd_section = 1; continue;
+        }
         if (section == 0 && vm_product_session_catalog_parse_value(text, "schema", &value)) {
             if (schema || STD_STRCMP(value, "nxvm-session")) break;
             schema = 1; continue;
@@ -130,8 +150,9 @@ static C_INT vm_product_session_catalog_parse(const C_CHAR *directory,
             fpu = 1; continue;
         }
         if (section == 0 && vm_product_session_catalog_parse_value(text, "memory_kib", &value)) {
-            if (core_product_utils_parse_memory_kib(value,
+            if (memory || core_product_utils_parse_memory_kib(value,
                     &entry->memory_bytes) != TYPE_STATUS_OK) break;
+            memory = 1;
             continue;
         }
         if (section == 0 && vm_product_session_catalog_parse_value(text, "display", &value)) {
@@ -143,11 +164,15 @@ static C_INT vm_product_session_catalog_parse(const C_CHAR *directory,
             boot = 1; continue;
         }
         if (section == 2 && vm_product_session_catalog_parse_value(text, "floppy", &value)) {
+            if (floppy) break;
+            floppy = 1;
             if (!STD_STRCMP(value, "null")) continue;
             if (*value == '\0') { media = 1; continue; }
             break;
         }
         if (section == 2 && vm_product_session_catalog_parse_value(text, "hard_disk", &value)) {
+            if (hard_disk) break;
+            hard_disk = 1;
             if (!STD_STRCMP(value, "null")) continue;
             if (*value == '\0') { media = 2; continue; }
             break;
@@ -155,6 +180,8 @@ static C_INT vm_product_session_catalog_parse(const C_CHAR *directory,
         if (section == 3 && firmware_slot != 0 && vm_product_session_catalog_parse_value(text, "slot", &value)) {
             if ((firmware_slot == 1 && !STD_STRCMP(value, "system-rom-even")) ||
                 (firmware_slot == 2 && !STD_STRCMP(value, "system-rom-odd"))) {
+                if ((firmware_slot == 1 && firmware_even_slot) ||
+                    (firmware_slot == 2 && firmware_odd_slot)) break;
                 if (firmware_slot == 1) firmware_even_slot = 1; else firmware_odd_slot = 1;
                 continue;
             }
@@ -162,26 +189,37 @@ static C_INT vm_product_session_catalog_parse(const C_CHAR *directory,
         }
         if (section == 3 && firmware_slot != 0 && vm_product_session_catalog_parse_value(text, "path", &value)) {
             C_CHAR *target = firmware_slot == 1 ? entry->model40_even_path : entry->model40_odd_path;
-            if (!vm_product_session_catalog_path(target, VM_PRODUCT_SESSION_CATALOG_PATH_MAX, directory, value)) break;
+            if ((firmware_slot == 1 && firmware_even_path) ||
+                (firmware_slot == 2 && firmware_odd_path) ||
+                !vm_product_session_catalog_path(target, VM_PRODUCT_SESSION_CATALOG_PATH_MAX,
+                    directory, value)) break;
+            if (firmware_slot == 1) firmware_even_path = 1; else firmware_odd_path = 1;
             continue;
         }
         if (section == 3 && firmware_slot != 0 && vm_product_session_catalog_parse_value(text, "bytes", &value)) {
             if (STD_STRCMP(value, "16384")) break;
+            if ((firmware_slot == 1 && firmware_even_bytes) ||
+                (firmware_slot == 2 && firmware_odd_bytes)) break;
             if (firmware_slot == 1) firmware_even_bytes = 1; else firmware_odd_bytes = 1;
             continue;
         }
         if (section == 3 && firmware_slot != 0 && vm_product_session_catalog_parse_value(text, "sha256", &value)) {
             C_CHAR *target = firmware_slot == 1 ? entry->model40_even_sha256 : entry->model40_odd_sha256;
-            if (!vm_product_session_catalog_copy(target, 65u, value)) break;
+            if ((firmware_slot == 1 && firmware_even_sha256) ||
+                (firmware_slot == 2 && firmware_odd_sha256) ||
+                !vm_product_session_catalog_copy(target, 65u, value)) break;
+            if (firmware_slot == 1) firmware_even_sha256 = 1; else firmware_odd_sha256 = 1;
             continue;
         }
         if (section == 3 && firmware_slot != 0 && vm_product_session_catalog_parse_value(text, "map", &value)) {
             if (STD_STRCMP(value, "read-only")) break;
+            if ((firmware_slot == 1 && firmware_even_map) ||
+                (firmware_slot == 2 && firmware_odd_map)) break;
             if (firmware_slot == 1) firmware_even_map = 1; else firmware_odd_map = 1;
             continue;
         }
         if (section == 3 && firmware_slot == 0 && vm_product_session_catalog_parse_value(text, "provenance", &value)) {
-            if (*value == '\0' || !vm_product_session_catalog_copy(entry->model40_provenance,
+            if (firmware_provenance || *value == '\0' || !vm_product_session_catalog_copy(entry->model40_provenance,
                     sizeof(entry->model40_provenance), value)) break;
             firmware_provenance = 1;
             continue;
@@ -195,7 +233,8 @@ static C_INT vm_product_session_catalog_parse(const C_CHAR *directory,
         break;
     }
     core_platform_file_reader_close(file);
-    if (!schema || !profile || !display || !boot || media != 0) return 0;
+    if (!schema || !profile || !display || !boot || !media_section || !floppy ||
+        !hard_disk || media != 0) return 0;
     if (firmware &&
         (!firmware_even_slot || !firmware_even_bytes || !firmware_even_map ||
          !firmware_odd_slot || !firmware_odd_bytes || !firmware_odd_map ||

@@ -21,6 +21,9 @@ longer re-encodes it as profile CLI arguments.
 
 The focused `vm-product-session-catalog-smoke` passes with root acceptance,
 v1/nested rejection, and CPU/FPU syntax preservation without catalog policy.
+It also rejects duplicate root and resource fields, unknown root fields,
+unfinished media records, and malformed firmware records. A rejected file is
+not partially listed.
 
 `M5:T482:S2:REJECTIONS:OK`
 

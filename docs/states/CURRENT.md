@@ -14,7 +14,7 @@
 | Non-goals | No compatibility grammar, user hardware authoring, profile topology/ROM/timing field, XT admission, asset import or L4 work. Root CPU/FPU are retained only when the resolved built-in profile declares them as session choices. |
 | Reference Baseline | T482 S1 universe, T475 resolver boundary and current session-catalog parser. |
 | Candidate Proposal | [VM session profile YAML cutover](../proposals/m5-vm-session-profile-yaml-cutover.md). |
-| Files And ABI Surface | VM product parser/request interface, parser tests and T482 evidence/status; no Core ABI change. |
+| Files And ABI Surface | VM product parser/request interface, parser tests and T482 evidence/status. Generic product-session open options carry one synchronous opaque request; Core-machine ABI is unchanged. |
 | Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, source policy and the proposal's one-production-path constraint. |
 | Verification | Positive root-only parse plus nested/v1/duplicate/unknown-field rejection, copied-request, declared CPU/FPU choice, fixed-profile override rejection tests and documentation governance. |
 | Expected Markers | `M5:T482:S2:ROOT-PARSER:OK`; `M5:T482:S2:REJECTIONS:OK`; `M5:T482:S2:IMMUTABLE-REQUEST:OK`. |
@@ -29,7 +29,7 @@
 
 - **Current developer artifact:** target `vm-0-5-0480`; the stripped Release
   `nxvm_0_5_0480.exe` has SHA-256
-  `B4726CE5364697311A31AAC2EF90C12381E66DA5CC86AE1BD074774D9C4B3F32`.
+  `40453C8AF45F402D77EE04729C00897BFFE7B2C9106DF50A24EEDFBCDED6473B`.
   Debug remains the current-gate route. T471 preserves Core-owned progression:
   a verified axis is Standard-paced only by host waiting against completed
   Core progress. T472 extends that comparison to an explicit L2 macro axis,
