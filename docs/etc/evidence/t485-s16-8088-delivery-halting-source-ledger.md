@@ -1,6 +1,6 @@
 # T485 S16 8088 Delivery And Halting Source Ledger
 
-`M5:T485:S16:8088-DELIVERY-HALTING-LEDGER:ACCEPTANCE-CANDIDATE`
+`M5:T485:S16:8088-DELIVERY-HALTING-LEDGER:ACCEPTED`
 
 Visual review of the 1981 Intel iAPX 86/88 User's Manual, Table 2-21,
 printed pages `2-55` and `2-56` (PDF pages `74` and `75`) establishes the

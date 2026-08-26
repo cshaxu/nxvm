@@ -2,28 +2,11 @@
 
 ## Current Work
 
-**Active: M5 T485 S16.**
+**Open: M5 T485.**
 
-## M5 T485 S16 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner-approved continuous execution; accepted T485 S15 `d2f8d915` completes the preceding finite branch receiver. |
-| Objective | Audit the finite 8088 Table-2-21 delivery/halting batch (`INT3`, `INT`, `INTO`, `IRET`, `HLT`) for source rows, published retirement facts and one lawful Core receiver. |
-| Non-goals | No implementation unless the audit proves complete source inputs; no decoder, delivery state, flag/vector re-execution, prefetch, external-cycle, board/host-time or product/API change. |
-| Reference Baseline | Accepted T485 S10/S11 control-stack ledger and source evaluator; rendered 1981 Intel manual pages. |
-| Candidate Proposal | [IBM PC/XT 5160-268 board and device phase-timing closure](../proposals/m5-8088-5150-xt-l3-baseline.md). |
-| Files And ABI Surface | Evidence, T485 history and supporting index only unless the audit admits a lawful private Core receiver; no public ABI. |
-| Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, `docs/design/ARCHITECTURE.md`, `docs/design/CODING.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md` and source policy. |
-| Verification | Visual source review; complete finite opcode/current-owner sweep; documentation governance. |
-| Expected Markers | One row-level source/owner/disposition ledger with no inferred vector, flag or halting state. |
-| Asset Needs | Existing external manual only; no source bytes, firmware, guest media or third-party code enter the repository. |
-| Reporting Requirements | Record rendered source pages, each exact table value, available published fact, retained owner and implementation/transfer disposition. |
-| Original Owner Request | Continue the ordered minimalist queue toward the pre-Windows L3 admission audit. |
-| Stop Conditions | Stop implementation if any row needs hidden delivery/vector/flag/halting state or a guessed physical effect. |
-| Exit Criteria | Every finite form is source-labelled and either has one source-complete existing receiver or an explicit earliest transfer; no unowned timing claim remains. |
-| Similar-Issue Sweep | Inspect direct and software delivery, return, INTO, HLT, current source-form attribution, selector ordering and compatibility fallback. |
+T485 S16 is accepted at `4622460e`: Intel Table 2-21 establishes complete
+software delivery/halting receiver inputs, while INTR/NMI remain explicit
+non-instruction exclusions.  The next bounded S has not yet been admitted.
 
 ## Current Technical Baseline
 
@@ -60,7 +43,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T485 S15 | Accepted: the retained control/stack evaluator classifies all 16 8088 Jcc plus JCXZ/LOOP-family outcomes before compatibility, with one generic source form and no new decoder or state owner. The 299/299 current gate passes. [Evidence](../etc/evidence/t485-s15-8088-branch-source-evaluator.md). |
+| T485 S16 | Accepted: rendered Intel rows establish complete 8088 HLT/software-delivery inputs for the retained control/stack receiver; INTR/NMI remain explicit non-instruction exclusions. [Evidence](../etc/evidence/t485-s16-8088-delivery-halting-source-ledger.md). |
 | T484 | Closed: IBM 5160-268 now has one immutable 8088/profile plan, XT PPI/FDC/CGA/Xebec functional owners and one typed external-ROM BYOB product route; all remaining board/device timing transfers to T485. [Closure audit](../etc/evidence/t484-s22-xt-functional-closure-audit.md). |
 | T482 | Closed: one strict root YAML request reaches the sole `SESSION OPEN` authority and resolver without CLI re-encoding; 296/296 current-gate tests and stripped Release 0480 pass. [Closure audit](../etc/evidence/t482-s4-closure-audit.md). |
 | T483 | Closed: the IBM 5160-268 BOM, complete current-owner capability matrix and Manual-L3/unresolved timing partition establish one functional and one timing receiver without implying an XT runtime path. [Closure evidence](../etc/evidence/t483-s3-xt-timing-source-partition.md). |
