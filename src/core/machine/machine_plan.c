@@ -187,6 +187,10 @@ type_status core_machine_plan_validate(const core_machine_plan *plan)
          plan->topology.hdc.protocol ==
              CORE_MACHINE_HDC_PROTOCOL_COMPAQ_WD_40MB) ||
         plan->memory_device_count > CORE_MACHINE_PLAN_MEMORY_DEVICE_COUNT ||
+        (plan->topology.dma_present && plan->topology.dma.controller_count !=
+            (plan->configuration.dma_controller_count == 0u ?
+                CORE_MACHINE_DMA_CONTROLLER_COUNT :
+                plan->configuration.dma_controller_count)) ||
         (plan->d4_memory_parity_mask != STD_NULL &&
          !plan->topology.d4_platform_present) ||
         ((plan->topology.fdc_present || plan->topology.hdc_present) &&

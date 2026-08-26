@@ -574,17 +574,28 @@ type_unsigned_8 core_machine_pic_get_interrupt(t_pic *master, t_pic *slave) {
 
 C_VOID core_machine_pic_initialize(t_pic *master, t_pic *slave, t_port *port)
 {
-    if (master == STD_NULL || slave == STD_NULL || port == STD_NULL) return;
+    core_machine_pic_initialize_with_topology(master, slave, port,
+        CORE_MACHINE_PIC_TOPOLOGY_CASCADED);
+}
+
+C_VOID core_machine_pic_initialize_with_topology(t_pic *master, t_pic *slave, t_port *port,
+    core_machine_pic_topology topology)
+{
+    if (master == STD_NULL || slave == STD_NULL || port == STD_NULL ||
+        (topology != CORE_MACHINE_PIC_TOPOLOGY_CASCADED &&
+        topology != CORE_MACHINE_PIC_TOPOLOGY_SINGLE)) return;
     STD_MEMSET((C_VOID *)master, TYPE_ZERO_8, sizeof(*master));
     STD_MEMSET((C_VOID *)slave, TYPE_ZERO_8, sizeof(*slave));
     core_machine_port_add_read(port, 0x0020, io_read_0020, master);
     core_machine_port_add_read(port, 0x0021, io_read_0021, master);
-    core_machine_port_add_read(port, 0x00a0, io_read_00A0, slave);
-    core_machine_port_add_read(port, 0x00a1, io_read_00A1, slave);
     core_machine_port_add_write(port, 0x0020, io_write_0020, master);
     core_machine_port_add_write(port, 0x0021, io_write_0021, master);
-    core_machine_port_add_write(port, 0x00a0, io_write_00A0, slave);
-    core_machine_port_add_write(port, 0x00a1, io_write_00A1, slave);
+    if (topology == CORE_MACHINE_PIC_TOPOLOGY_CASCADED) {
+        core_machine_port_add_read(port, 0x00a0, io_read_00A0, slave);
+        core_machine_port_add_read(port, 0x00a1, io_read_00A1, slave);
+        core_machine_port_add_write(port, 0x00a0, io_write_00A0, slave);
+        core_machine_port_add_write(port, 0x00a1, io_write_00A1, slave);
+    }
 }
 C_VOID core_machine_pic_reset(t_pic *master, t_pic *slave) {
     if (master == STD_NULL || slave == STD_NULL) return;

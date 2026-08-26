@@ -25,7 +25,7 @@ permits borrowing a PC/AT descriptor or holding guest state in VM.
 | Relation | Selected source-backed fact | Current sole owner and audited disposition | Earliest receiver; prohibited shortcut |
 | --- | --- | --- | --- |
 | CPU/board | 8088 maximum-mode attachment; 4.77 MHz derives from 14.31818 MHz / 3. | S3 supplies the distinct Core 8088 profile and four-byte queue.  Its current `ticks_per_instruction = 1` is a deterministic construction value, not a board clock. | B2 consumes the CPU profile only.  XT timing later consumes cycle formulas; no host tick injection or 8086 alias. |
-| RAM/reset ROM | 256 KiB installed RAM; two external 32 KiB ROM devices; owner supplies ROM material. | Core owns memory, immutable maps and reset entry, but the public minimum-memory contract is 2 MiB and no 5160 ROM-pair/low-memory declaration is materialized. | B2 adds one bounded low-memory/ROM construction capability and BYOB validation.  Do not allocate 2 MiB and call it 256 KiB, embed a ROM, or add a reset path. |
+| RAM/reset ROM | 256 KiB installed RAM; two external 32 KiB ROM devices; owner supplies ROM material. | Core already creates any nonzero RAM size, including 256 KiB, and owns immutable maps/reset entry.  The 2 MiB constant constrains only stopped-state reconfiguration.  The actual gap is that no 5160 declaration materializes the existing low-memory and external-ROM capabilities. | B2 publishes the sourced 256 KiB construction value and one BYOB ROM-pair validation/mapping route.  Do not allocate 2 MiB and call it 256 KiB, embed a ROM, or add a reset path. |
 | PIC | One 8259A; IRQ0 timer and IRQ1 keyboard; no slave PIC. | Core owns PIC state, but `core_machine_create_internal` always initializes and ports both master and slave (`20h/21h`, `A0h/A1h`). | B2 adds immutable single-versus-cascaded PIC topology at the Core plan boundary.  Do not merely leave the slave uninitialized or hide its ports in VM. |
 | PIT | 8254 input 1.193182 MHz; channel 0 -> IRQ0; channel 1 -> refresh/DMA request. | Core owns the primary PIT; `core_machine_configure_dma` already binds channel 1 to the Core refresh request. | Direct reusable state path once B2 selects XT board topology.  The source clock/phase formula transfers to XT timing; do not use an AT auxiliary PIT. |
 | DMA/refresh | One 8237A: three external channels plus channel 1 refresh; 8-bit channel; AEN is board ownership. | Core owns DMA and refresh binding, but `core_machine_dma_wiring_is_valid` requires two controllers and cascade channel 4. | B2 adds an immutable one-controller DMA topology and leaves all DMA register/state ownership in Core.  Do not configure the PC/AT cascade and call it XT. |
@@ -40,7 +40,7 @@ permits borrowing a PC/AT descriptor or holding guest state in VM.
 ## Minimal Construction Repair Order
 
 1. **B2 board-plan seam:** make the already copied Core plan express only the
-   selected one-versus-two PIC/DMA, absent RTC, low-memory/ROM, and board
+   selected one-versus-two PIC/DMA, absent RTC, existing low-memory/ROM, and board
    reset/NMI choices.  Move the PC/AT-only leaf collection out of the generic
    session construction route.  This is one removal of an accidental PC/AT
    dependency, not a second XT composition path.

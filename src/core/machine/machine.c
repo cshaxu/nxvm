@@ -268,6 +268,7 @@ static type_status core_machine_create_internal(
     core_machine *machine;
     core_machine_port_provider_entry *port_checkpoint;
     STD_SIZE_T memory_bytes;
+    type_unsigned_8 dma_controller_count;
     if (config == STD_NULL || out_machine == STD_NULL ||
         !core_machine_valid_cpu_profile(
             core_machine_resolve_cpu_profile(config->cpu_profile)) ||
@@ -281,6 +282,9 @@ static type_status core_machine_create_internal(
             &config->transaction_contract) ||
         (config->auxiliary_pit_present != TYPE_FALSE &&
         config->auxiliary_pit_present != TYPE_TRUE) ||
+        (config->pic_topology != CORE_MACHINE_PIC_TOPOLOGY_CASCADED &&
+        config->pic_topology != CORE_MACHINE_PIC_TOPOLOGY_SINGLE) ||
+        (config->dma_controller_count > CORE_MACHINE_DMA_CONTROLLER_COUNT) ||
         (config->auxiliary_pit_present && config->auxiliary_pit_base_port > 0xfffcu)) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
@@ -299,6 +303,8 @@ static type_status core_machine_create_internal(
     *out_machine = STD_NULL;
     memory_bytes = config->memory_bytes == 0u ?
         CORE_MACHINE_DEFAULT_MEMORY_BYTES : config->memory_bytes;
+    dma_controller_count = config->dma_controller_count == 0u ?
+        CORE_MACHINE_DMA_CONTROLLER_COUNT : config->dma_controller_count;
 
     machine = (core_machine *)STD_CALLOC(1u, sizeof(*machine));
     if (machine == STD_NULL) {
@@ -420,11 +426,11 @@ static type_status core_machine_create_internal(
         &machine->executor_port);
     core_machine_vadp_initialize(&machine->shared_vadp, &machine->executor_port);
     core_machine_kbc_initialize(&machine->shared_kbc, &machine->executor_port);
-    core_machine_dma_initialize(&machine->shared_dma_latch,
+    core_machine_dma_initialize_with_topology(&machine->shared_dma_latch,
         &machine->shared_dma_primary, &machine->shared_dma_secondary,
-        &machine->executor_port);
-    core_machine_pic_initialize(&machine->shared_pic_master,
-        &machine->shared_pic_slave, &machine->executor_port);
+        &machine->executor_port, dma_controller_count);
+    core_machine_pic_initialize_with_topology(&machine->shared_pic_master,
+        &machine->shared_pic_slave, &machine->executor_port, config->pic_topology);
     core_machine_cpu_execution_context_bind_pic(&machine->executor_cpu_execution,
         &machine->shared_pic_master, &machine->shared_pic_slave);
     core_machine_pic_irq_source_bind(&machine->shared_pit_irq0_source,

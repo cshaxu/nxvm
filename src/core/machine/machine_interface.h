@@ -11,6 +11,7 @@
 #include "core/machine/lifecycle_interface.h"
 #include "core/machine/memory_interface.h"
 #include "core/machine/port_interface.h"
+#include "core/machine/pic.h"
 #include "type.h"
 #include "core/machine/trace_interface.h"
 #include "core/machine/retirement_observation_interface.h"
@@ -138,6 +139,9 @@ typedef struct core_machine_config {
     core_machine_instruction_timing instruction_timing;
     core_machine_transaction_contract transaction_contract;
     core_machine_clock_plan clock_plan;
+    core_machine_pic_topology pic_topology;
+    /* Zero retains the existing two-controller PC/AT decode. */
+    type_unsigned_8 dma_controller_count;
     core_machine_time_axis time_axis;
     /* Physical mode refuses an unallocated successful retirement before it can
      * be published into a clock-domain plan. */

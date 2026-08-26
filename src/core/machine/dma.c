@@ -691,6 +691,12 @@ C_VOID core_machine_dma_request_terminate(t_dma *primary, t_dma *secondary,
 C_VOID core_machine_dma_initialize(t_latch *latch, t_dma *primary,
     t_dma *secondary, t_port *port)
 {
+    core_machine_dma_initialize_with_topology(latch, primary, secondary, port, 2u);
+}
+
+C_VOID core_machine_dma_initialize_with_topology(t_latch *latch, t_dma *primary,
+    t_dma *secondary, t_port *port, type_unsigned_8 controller_count)
+{
     static const type_unsigned_16 primary_reads[] = {
         0x0000, 0x0001, 0x0002, 0x0003, 0x0004, 0x0005, 0x0006, 0x0007,
         0x0008, 0x000d
@@ -705,7 +711,7 @@ C_VOID core_machine_dma_initialize(t_latch *latch, t_dma *primary,
     type_native_unsigned index;
 
     if (latch == STD_NULL || primary == STD_NULL || secondary == STD_NULL ||
-        port == STD_NULL) return;
+        port == STD_NULL || (controller_count != 1u && controller_count != 2u)) return;
     STD_MEMSET((C_VOID *)latch, TYPE_ZERO_8, sizeof(*latch));
     STD_MEMSET((C_VOID *)primary, TYPE_ZERO_8, sizeof(*primary));
     STD_MEMSET((C_VOID *)secondary, TYPE_ZERO_8, sizeof(*secondary));
@@ -729,14 +735,16 @@ C_VOID core_machine_dma_initialize(t_latch *latch, t_dma *primary,
         core_machine_port_add_write(port, page_ports[index], dma_port_write,
             primary);
     }
-    for (index = 0; index < sizeof(secondary_reads) /
-         sizeof(secondary_reads[0]); ++index) {
-        core_machine_port_add_read(port, secondary_reads[index], dma_port_read,
-            primary);
-    }
-    for (index = 0; index <= 0x1eu; index += 2u) {
-        core_machine_port_add_write(port, (type_unsigned_16)(0x00c0u + index),
-            dma_port_write, primary);
+    if (controller_count == 2u) {
+        for (index = 0; index < sizeof(secondary_reads) /
+             sizeof(secondary_reads[0]); ++index) {
+            core_machine_port_add_read(port, secondary_reads[index], dma_port_read,
+                primary);
+        }
+        for (index = 0; index <= 0x1eu; index += 2u) {
+            core_machine_port_add_write(port, (type_unsigned_16)(0x00c0u + index),
+                dma_port_write, primary);
+        }
     }
 }
 

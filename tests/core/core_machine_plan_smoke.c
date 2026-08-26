@@ -266,13 +266,43 @@ static C_INT plan_rejects_invalid_controller_timing_rules(C_VOID)
     return failed;
 }
 
+static C_INT plan_selects_single_controller_xt_board(C_VOID)
+{
+    core_machine_config configuration = {
+        .memory_bytes = 256u * 1024u,
+        .cpu_profile = CORE_MACHINE_CPU_PROFILE_8088,
+        .pic_topology = CORE_MACHINE_PIC_TOPOLOGY_SINGLE,
+        .dma_controller_count = 1u
+    };
+    core_machine_plan_topology topology = {0};
+    core_machine_plan *plan = STD_NULL;
+    core_machine *machine = STD_NULL;
+    C_INT failed = 0;
+
+    topology.dma_present = TYPE_TRUE;
+    topology.dma = (core_machine_dma_wiring) {2u, 1u, 0u};
+    failed |= core_machine_plan_create(&configuration, &plan) != TYPE_STATUS_OK;
+    failed |= !failed && core_machine_plan_set_topology(plan, &topology) !=
+        TYPE_STATUS_OK;
+    failed |= !failed && core_machine_create_from_plan(plan, &machine) !=
+        TYPE_STATUS_OK;
+    failed |= !failed && (!core_machine_port_has_read(&machine->executor_port, 0x0020u) ||
+        !core_machine_port_has_write(&machine->executor_port, 0x0000u) ||
+        core_machine_port_has_read(&machine->executor_port, 0x00a0u) ||
+        core_machine_port_has_write(&machine->executor_port, 0x00d0u));
+    core_machine_destroy(machine);
+    core_machine_plan_destroy(plan);
+    return failed;
+}
+
 C_INT main(C_VOID)
 {
     if (plan_default_and_copy() || plan_rejects_incomplete_or_unavailable() ||
         plan_rejects_topology_before_publication() ||
         plan_rejects_invalid_transaction_contract_before_publication() ||
         plan_controller_timing_rules_are_copied_and_validated() ||
-        plan_rejects_invalid_controller_timing_rules()) {
+        plan_rejects_invalid_controller_timing_rules() ||
+        plan_selects_single_controller_xt_board()) {
         return 1;
     }
     puts("M5:T434:S1:PLAN-DECLARATIONS:OK");
@@ -285,5 +315,7 @@ C_INT main(C_VOID)
     puts("M5:T462:S2:CONTROLLER-RULE-REJECTION:OK");
     puts("M5:T462:S4:PIC-L2-BOUNDARY:OK");
     puts("M5:T462:S4:CONTROLLER-LEDGER-CLOSURE:OK");
+    puts("M5:T484:S5:XT-B2-PLAN:OK");
+    puts("M5:T484:S5:XT-NO-AT-TOPOLOGY:OK");
     return 0;
 }

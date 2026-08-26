@@ -378,9 +378,12 @@ static type_bool core_machine_dma_wiring_is_valid(
     const core_machine_dma_wiring *wiring)
 {
     return wiring != STD_NULL &&
-        wiring->controller_count == CORE_MACHINE_DMA_CONTROLLER_COUNT &&
-        wiring->cascade_channel == CORE_MACHINE_DMA_CASCADE_CHANNEL &&
-        wiring->fdc_channel < VDMA_CHANNEL_COUNT && wiring->fdc_channel != 1u;
+        ((wiring->controller_count == 1u && wiring->cascade_channel == 0u &&
+            wiring->fdc_channel < 4u) ||
+         (wiring->controller_count == CORE_MACHINE_DMA_CONTROLLER_COUNT &&
+            wiring->cascade_channel == CORE_MACHINE_DMA_CASCADE_CHANNEL &&
+            wiring->fdc_channel < VDMA_CHANNEL_COUNT)) &&
+        wiring->fdc_channel != 1u;
 }
 
 type_status core_machine_configure_dma(core_machine *machine,
