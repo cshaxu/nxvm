@@ -2,26 +2,7 @@
 
 ## Current Work
 
-## M5 T479 S4 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner's persistent queue-execution approval and 2026-08-25 expanded T479 result; S3 accepted at `d5640f02`. S4 source review corrects the prior Model-339 no-disk premise under that approved 5170 support scope. |
-| Objective | Establish a finite, primary-backed IBM 5170 fixed-disk/diskette adapter command and profile ledger, then correct the selected Model 339 fixed-disk declaration only to the source-defined configuration. |
-| Non-goals | No implementation yet; no ATA alias, RLL variant, generic profile mutation, firmware/media import, raw-flux/ECC/mechanics model, guessed service time, or any Model-339 change beyond the source-proven fixed-disk configuration. |
-| Reference Baseline | T479 S1/S2; IBM *PC AT Fixed Disk and Diskette Drive Adapter* manual; T476 Model-339 profile lock; S3 explicit HDC personality contract; T468 ATA and T386 Compaq regressions. |
-| Candidate Proposal | [PC fixed-disk controller standardization](../proposals/m5-at-fixed-disk-controller-standardization.md). |
-| Files And ABI Surface | New S4 evidence/history/status and proposal only; inspect IBM controller manual, existing HDC command state, profile resolver/firmware/CMOS/media route and bounded external emulator sources. |
-| Applicable Rules | IBM primary material is normative; external emulators corroborate but never replace it; Core remains sole controller owner; profile selection is immutable at construction; a disproved historical profile fact is corrected with explicit source evidence rather than silently retained. |
-| Verification | Per-row primary text/page/OCR-quality record and 86Box/PCjs/MAME/Bochs/QEMU availability cross-check; exact current code/firmware/profile gap sweep; documentation governance. |
-| Expected Markers | `M5:T479:S4:IBM5170-SOURCE-LEDGER:OK` and `M5:T479:S4:IBM5170-GAP-LEDGER:OK`. |
-| Asset Needs | Read-only local/manual research and source URLs only; no external code, firmware or media import. |
-| Reporting Requirements | For every command/register/reset/IRQ/profile/CMOS/media row, record source level, source quality, current owner/path/test/disposition, exact later S receiver, and whether a manual number/formula supports L3 or the row remains L1/L2; explicitly record the Model-339 correction and every historical record it supersedes. |
-| Stop Conditions | Stop if the IBM manual cannot identify a behavior essential to a runnable selected configuration, or the selected hardware/profile identity is underdetermined; report the exact row instead of selecting ATA or a clone default. |
-| Exit Criteria | A row-complete source and current-gap ledger identifies the IBM 5170-339 fixed-disk configuration, corrects the disproved no-disk premise, bounds S5 code changes, and passes documentation governance. |
-| Original Owner Request | Support IBM 5160, IBM 5170, the selected DeskPro 386 configuration and default-at fixed disks through a minimal correct Core HDC boundary. |
-| Similar-Issue Sweep | IBM adapter task-file registers and commands; `hdc.[ch]`; HDC plan/board validation; profile resolver/default-PC-AT firmware/CMOS; INT 13h; media geometry; all ATA/Compaq and 5170 profile tests. |
+**No active subtask.** T479 S4 is accepted: its [source ledger](../etc/evidence/t479-s4-ibm5170-fixed-disk-source-ledger.md) corrects 5170-339 to one IBM 30 MB fixed disk/adapter and fixes the finite IBM command/time universe. S5 is the bounded implementation receiver; current source still has the obsolete no-HDC descriptor until that S is admitted.
 
 ## Current Technical Baseline
 
@@ -41,9 +22,9 @@
 - **Model-339 readiness:** T383 S1 accepts the current runnable source graph
   under the frozen deterministic event-and-bus L3 contract. T479 S4 has found
   that its retained no-fixed-disk premise is false: IBM identifies 5170-339 as
-  including one 30 MB fixed disk and adapter. The fixed-disk configuration is
-  being corrected under the active packet; no historical record is silently
-  reused as a current hardware fact.
+  including one 30 MB fixed disk and adapter. T479 S4 has accepted that source
+  correction; the runnable descriptor remains no-HDC only until its admitted
+  S5 implementation replaces it.
 - **T285 display implementation:** `INT 10h` modes `0Dh`, `0Eh` and `10h`
   reach the VADP-owned planar frame path through real controller ports; the
   copied-frame consumer boundary has no BIOS mode-state dependency.
@@ -58,7 +39,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T479 S3 | Accepted: one copied, explicit Core personality replaces the duplicate ATA profile payload; zero initialization is rejected, and [focused plus 78-gate proof](../etc/evidence/t479-s3-immutable-hdc-personality-contract.md) preserves Default-AT and Model-40 behavior. |
+| T479 S4 | Accepted: IBM primary material corrects Model 339 to one 30 MB Type-3 fixed disk/adapter; its finite task-file, command, IRQ14, `3F6h`, geometry and step-rate ledger transfers one bounded Core/profile implementation to S5, while physical-media residuals remain explicit. |
 | T478 | Closed: Default-AT is an immutable `pc-at-5170` child and all three AT profiles have one resolver-to-copied-Core-input route. [Closure audit](../etc/evidence/t478-s4-closure-audit.md) records frozen parity, the 294-target gate, and stripped Release 0478. |
 | T477 | Closed: DeskPro is an immutable `pc-at-5170` child with one copied Core-plan materialization path; the Model-40 session retains only dynamic resources. [Closure audit](../etc/evidence/t477-s4-closure-audit.md) records frozen parity, the 294-target gate and stripped Release 0477. |
 | T476 | Closed: IBM 5170 sessions consume one copied `pc-at-5170` root and one Core-plan materialization path; the former duplicate exception aggregate is retired while its independent owners remain. [Closure audit](../etc/evidence/t476-s4-closure-audit.md) records the 294-target gate and stripped Release 0476. |
