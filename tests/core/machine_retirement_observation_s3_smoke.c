@@ -253,6 +253,68 @@ static C_INT retirement_8088_primary_case(const type_unsigned_8 *program,
     return failed;
 }
 
+static C_INT retirement_8088_branch_case(const type_unsigned_8 *program,
+    STD_SIZE_T bytes, type_unsigned_16 count, type_unsigned_32 flags,
+    type_unsigned_64 expected_ticks)
+{
+    const core_machine_config config = {
+        .cpu_profile = CORE_MACHINE_CPU_PROFILE_8088
+    };
+    const core_machine_run_budget budget = { 1u, 0u };
+    core_machine_retirement_observation_provider provider;
+    core_machine_run_result result;
+    retirement_probe probe = { STD_NULL, { { 0 } }, 0u, TYPE_STATUS_OK };
+    core_machine *machine = STD_NULL;
+    C_INT failed = !retirement_prepare(&machine, &config, program, bytes);
+
+    provider.callback = retirement_capture;
+    provider.context = &probe;
+    probe.machine = machine;
+    if (!failed) {
+        machine->executor_cpu.data.cx = count;
+        machine->executor_cpu.data.eflags = flags;
+        failed |= core_machine_set_retirement_observation_provider(machine,
+                &provider) != TYPE_STATUS_OK ||
+            core_machine_run(machine, budget, &result) != TYPE_STATUS_OK ||
+            result.executed != 1u || probe.count != 1u ||
+            probe.records[0].source_ticks != expected_ticks ||
+            probe.records[0].timing_disposition !=
+                CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED ||
+            probe.records[0].timing_origin !=
+                CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK ||
+            probe.records[0].source_timing_form_id ==
+                CORE_MACHINE_RETIREMENT_SOURCE_FORM_UNATTRIBUTED;
+    }
+    core_machine_destroy(machine);
+    return failed;
+}
+
+static C_INT retirement_8088_jcc_forms_case(C_VOID)
+{
+    static const type_unsigned_32 flags[16][2] = {
+        { VCPU_EFLAGS_OF, 0u }, { 0u, VCPU_EFLAGS_OF },
+        { VCPU_EFLAGS_CF, 0u }, { 0u, VCPU_EFLAGS_CF },
+        { VCPU_EFLAGS_ZF, 0u }, { 0u, VCPU_EFLAGS_ZF },
+        { VCPU_EFLAGS_CF, 0u }, { 0u, VCPU_EFLAGS_CF },
+        { VCPU_EFLAGS_SF, 0u }, { 0u, VCPU_EFLAGS_SF },
+        { VCPU_EFLAGS_PF, 0u }, { 0u, VCPU_EFLAGS_PF },
+        { VCPU_EFLAGS_SF, 0u }, { 0u, VCPU_EFLAGS_SF },
+        { VCPU_EFLAGS_ZF, 0u }, { 0u, VCPU_EFLAGS_ZF }
+    };
+    type_unsigned_8 opcode;
+    C_INT failed = 0;
+
+    for (opcode = 0x70u; opcode <= 0x7fu; ++opcode) {
+        const type_unsigned_8 program[] = { opcode, 0x01u };
+        type_unsigned_8 index = opcode - 0x70u;
+
+        failed |= retirement_8088_branch_case(program, sizeof(program), 0u,
+            flags[index][0], 16u) || retirement_8088_branch_case(program,
+            sizeof(program), 0u, flags[index][1], 4u);
+    }
+    return failed;
+}
+
 static C_INT retirement_8088_string_case(const type_unsigned_8 *program,
     STD_SIZE_T bytes, type_unsigned_16 count, type_unsigned_32 executions,
     type_unsigned_64 first_ticks, type_unsigned_64 next_ticks)
@@ -328,6 +390,10 @@ C_INT main(C_VOID)
     const type_unsigned_8 out_immediate_word[] = { 0xe7u, 0x00u };
     const type_unsigned_8 out_dx_byte[] = { 0xeeu };
     const type_unsigned_8 out_dx_word[] = { 0xefu };
+    const type_unsigned_8 jcxz[] = { 0xe3u, 0x01u };
+    const type_unsigned_8 loop[] = { 0xe2u, 0x01u };
+    const type_unsigned_8 loope[] = { 0xe1u, 0x01u };
+    const type_unsigned_8 loopne[] = { 0xe0u, 0x01u };
     const type_unsigned_8 int3[] = { 0xccu };
     const type_unsigned_8 hlt[] = { 0xf4u };
     const type_unsigned_8 movsb[] = { 0xa4u };
@@ -452,6 +518,17 @@ C_INT main(C_VOID)
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO) ||
         retirement_8088_primary_case(out_dx_word, sizeof(out_dx_word), 12u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO) ||
+        retirement_8088_jcc_forms_case() ||
+        retirement_8088_branch_case(jcxz, sizeof(jcxz), 0u, 0u, 18u) ||
+        retirement_8088_branch_case(jcxz, sizeof(jcxz), 1u, 0u, 6u) ||
+        retirement_8088_branch_case(loop, sizeof(loop), 2u, 0u, 17u) ||
+        retirement_8088_branch_case(loop, sizeof(loop), 1u, 0u, 5u) ||
+        retirement_8088_branch_case(loope, sizeof(loope), 2u,
+            VCPU_EFLAGS_ZF, 18u) ||
+        retirement_8088_branch_case(loope, sizeof(loope), 1u,
+            VCPU_EFLAGS_ZF, 6u) ||
+        retirement_8088_branch_case(loopne, sizeof(loopne), 2u, 0u, 19u) ||
+        retirement_8088_branch_case(loopne, sizeof(loopne), 1u, 0u, 5u) ||
         retirement_8088_string_case(movsb, sizeof(movsb), 0u, 1u, 18u, 0u) ||
         retirement_8088_string_case(movsw, sizeof(movsw), 0u, 1u, 26u, 0u) ||
         retirement_8088_string_case(cmpsb, sizeof(cmpsb), 0u, 1u, 22u, 0u) ||

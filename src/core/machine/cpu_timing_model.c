@@ -2715,6 +2715,16 @@ static C_INT core_machine_control_stack_selector_is_task_gate(core_machine *mach
     return (access & 0x0fu) == VCPU_DESC_SYS_TYPE_TASKGATE;
 }
 
+static C_INT core_machine_control_stack_short_branch_taken(
+    const t_cpuins_data *data, const core_machine *machine,
+    type_unsigned_32 prefixes, C_INT *out_taken)
+{
+    if (data == STD_NULL || machine == STD_NULL || out_taken == STD_NULL) return 0;
+    *out_taken = machine->executor_cpu.data.eip !=
+        TYPE_MASK_UNSIGNED_16(data->oldcpu.data.eip + prefixes + 2u);
+    return 1;
+}
+
 C_INT core_machine_control_stack_source_instruction_cost(
     core_machine *machine, type_unsigned_64 *out_ticks)
 {
@@ -2761,6 +2771,17 @@ C_INT core_machine_control_stack_source_instruction_cost(
     memory = core_machine_source_timing_modrm_is_memory(data, prefixes);
     extension = prefixes + 1u < data->oplen ?
         (data->opcodes[prefixes + 1u] >> 3u) & 7u : 8u;
+
+    if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_8088 &&
+        opcode >= 0x70u && opcode <= 0x7fu) {
+        C_INT taken;
+
+        if (!core_machine_control_stack_short_branch_taken(data, machine,
+                prefixes, &taken)) return 0;
+        machine->source_timing_form_id = CORE_MACHINE_SOURCE_TIMING_JCC;
+        *out_ticks = taken ? 16u : 4u;
+        return 1;
+    }
 
     switch (opcode) {
     case 0x06u: case 0x0eu: case 0x16u: case 0x1eu:
@@ -3001,7 +3022,9 @@ C_INT core_machine_control_stack_source_instruction_cost(
         *out_ticks = core_machine_control_stack_source_lookup(machine,
             CORE_MACHINE_SOURCE_TIMING_LEAVE);
         return machine->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80186;
-    case 0xe0u: case 0xe1u: case 0xe2u: case 0xe3u:
+    case 0xe0u: case 0xe1u: case 0xe2u: case 0xe3u: {
+        C_INT taken;
+
         if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_8086) {
             machine->source_timing_form_id = CORE_MACHINE_SOURCE_TIMING_8086_LOOP;
         }
@@ -3013,17 +3036,19 @@ C_INT core_machine_control_stack_source_instruction_cost(
             return core_machine_control_stack_add_next_term(machine, ticks,
                 out_ticks);
         }
+        if (!core_machine_control_stack_short_branch_taken(data, machine,
+                prefixes, &taken)) return 0;
+        if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_8088) {
+            machine->source_timing_form_id = CORE_MACHINE_SOURCE_TIMING_JCC;
+        }
         if (opcode == 0xe3u) {
-            *out_ticks = machine->executor_cpu.data.eip ==
-                TYPE_MASK_UNSIGNED_16(data->oldcpu.data.eip + prefixes + 2u) ?
+            *out_ticks = !taken ?
                 (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 ? 4u :
                     machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80186 ? 5u :
                     6u) : (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 ?
                     8u : machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80186 ?
                     15u : 18u);
         } else {
-            C_INT taken = machine->executor_cpu.data.eip !=
-                TYPE_MASK_UNSIGNED_16(data->oldcpu.data.eip + prefixes + 2u);
             if (opcode == 0xe2u) {
                 *out_ticks = taken ? (machine->cpu_profile ==
                     CORE_MACHINE_CPU_PROFILE_80286 ? 8u :
@@ -3047,6 +3072,7 @@ C_INT core_machine_control_stack_source_instruction_cost(
             }
         }
         return 1;
+    }
     case 0xf4u:
         if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_8088) {
             core_machine_source_timing_mark_unallocated(machine, out_ticks);
