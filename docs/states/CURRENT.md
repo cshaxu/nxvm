@@ -2,28 +2,28 @@
 
 ## Current Work
 
-**Active: M5 T482 S3.**
+**Active: M5 T482 S4.**
 
-## M5 T482 S3 Packet
+## M5 T482 S4 Packet
 
 | Field | Required record |
 | --- | --- |
 | Identifier Mode | Continuation |
-| Admission And Approval | The owner-approved T482 scope and explicit default-PC/AT CPU/FPU session-choice clarification admit this continuation. One-session review accepts S2 P1 `2722e5d6` and corrective P2 `ad51f0c2`. |
-| Objective | Route the copied immutable request through the existing resolver/session factory and retain one Console selection path with no CLI re-encoding. |
-| Non-goals | No compatibility grammar, user hardware authoring, profile topology/ROM/timing field, XT admission, asset import or L4 work. Fixed profiles gain no CPU/FPU/memory override. |
-| Reference Baseline | Accepted T482 S2 parser/request, T475 resolver boundary and retained Console startup chooser. |
+| Admission And Approval | The owner-approved T482 scope admits final reconciliation. One-session review accepts S3 P1 `f61f04d8` after inspecting its direct Console request route and negative legacy-bridge sweep. |
+| Objective | Reconcile the complete YAML/profile selection surface, run task-level gates, publish the T482 closure audit and current optimized product artifact. |
+| Non-goals | No compatibility grammar, user hardware authoring, new profiles, XT admission, asset import or L4 work. |
+| Reference Baseline | Accepted T482 S2 strict parser and S3 direct Console-to-resolver request route. |
 | Candidate Proposal | [VM session profile YAML cutover](../proposals/m5-vm-session-profile-yaml-cutover.md). |
-| Files And ABI Surface | VM Console, session factory, generic product-session open options, route regressions and T482 evidence/status. Core-machine ABI remains unchanged. |
-| Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, architecture/coding rules and the proposal's one-production-path constraint. |
-| Verification | Console-to-request CPU/FPU propagation for default-PC/AT; fixed-profile override rejection; legacy CLI selection rejection; Model-40 and IBM-5170 Console routes; documentation governance. |
-| Expected Markers | `M5:T482:S3:SESSION-REQUEST:OK`; `M5:T482:S3:CONSOLE-REQUEST:OK`. |
+| Files And ABI Surface | T482 parser, catalog request, Console/session factory route, all profile regressions, closure evidence/history/status and the current 0480 artifact. Core-machine ABI remains unchanged. |
+| Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, architecture/coding rules, source policy and the proposal's one-production-path constraint. |
+| Verification | Full current gate; all T482 focused parser/request/Console/profile tests; production/test stale-bridge sweep; optimized Release rebuild/hash; documentation governance. |
+| Expected Markers | `M5:T482:S4:PROFILE-RECONCILIATION:OK`; `M5:T482:S4:CLOSURE-AUDIT:OK`. |
 | Asset Needs | No acquisition or import. |
-| Reporting Requirements | Record the direct Console request route, request lifetime/owner, declared-choice enforcement and removed CLI bridge. |
+| Reporting Requirements | Record each profile's allowed selection surface, all rejected forms, sole route/owner, full-gate result, artifact hash and any explicit transfer. |
 | Original Owner Request | Continue the ordered minimalist queue toward the pre-Windows L3 admission audit. |
-| Stop Conditions | Stop if the route requires a second request representation, Console profile branch, or VM-to-Core machine-policy dependency. |
-| Exit Criteria | Console opens only the copied request returned by the catalog; default-PC/AT declared CPU/FPU choices reach its resolver; fixed profiles reject such overrides; no profile CLI bridge remains. |
-| Similar-Issue Sweep | Console/session-manager callers, session-provider options, YAML fixtures and profile-selection tests. |
+| Stop Conditions | Stop if reconciliation finds a second profile-selection route, an undocumented parser form, or a profile policy outside the existing resolver/session boundary. |
+| Exit Criteria | All three current profiles use the one root YAML request route; every profile-declared choice is covered; legacy grammar/CLI bridge is absent; required gates and optimized artifact pass; closure identifies no unowned residual. |
+| Similar-Issue Sweep | All tracked parser/catalog/Console/session-provider callers, YAML fixtures, CMake target coverage, task documents and product artifacts. |
 
 ## Current Technical Baseline
 
@@ -62,6 +62,7 @@
 | --- | --- |
 | T482 S1 | Accepted: the v1 catalog and `--profile` parallel selector are frozen for one root-only immutable request replacement. [Evidence](../etc/evidence/t482-s1-yaml-selection-universe.md). |
 | T482 S2 | Accepted: one strict root-only parser owns YAML syntax and returns copied immutable requests; duplicate and unknown forms are rejected, while declared CPU/FPU choices are left for the resolver. [Evidence](../etc/evidence/t482-s2-root-parser.md). |
+| T482 S3 | Accepted: Console passes only the copied catalog request to the resolver; default-PC/AT declared CPU/FPU choices survive this route, while fixed-profile overrides and legacy CLI selection are rejected. [Evidence](../etc/evidence/t482-s3-console-request-route.md). |
 | T481 | Closed: one global CPU/controller/Core-time/profile/VM audit leaves no unrecorded duplicate owner, host-to-Core tick injection or false capability claim; residuals have one ordered receiver. [Closure audit](../etc/evidence/t481-s5-global-reconciliation.md). |
 | T480 | Closed: VADP remains the sole guest-video owner; IBM VGA DAC, chain-4 and Mode-13 frame capability is source-backed but unselected by every current profile/card. The 296-target gate and stripped Release 0480 pass. [Closure audit](../etc/evidence/t480-s5-profile-closure-audit.md). |
 | T479 | Closed: one Core HDC/media boundary retains explicit ATA, Compaq and IBM WD1003 personalities; seven focused regressions, the 294-target gate and stripped Release 0479 hash pass. IBM 5160/Xebec and WD1007A-WAH ESDI contracts transfer only to their missing immutable profile receivers. [Closure audit](../etc/evidence/t479-s8-closure-audit.md). |

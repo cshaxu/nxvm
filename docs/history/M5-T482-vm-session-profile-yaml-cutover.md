@@ -8,5 +8,5 @@ that profile's declared session choices; it may not author hardware.
 | --- | --- |
 | S1 | Accepted: the v1 catalog plus `--profile` parallel selector is frozen for replacement by one root-only immutable request. |
 | S2 | Accepted: one strict root-only YAML parser owns syntax, rejects duplicate/unknown forms, and returns a copied immutable request without profile policy. |
-| S3 | Active: prove the immutable request is the only Console-to-resolver selection route and remove any remaining CLI re-encoding. |
-| S4 | Planned: reconcile all current profiles, parser negatives and gates; publish closure. |
+| S3 | Accepted: Console passes only the copied catalog request to the resolver; no production CLI re-encoding remains. |
+| S4 | Active: reconcile all current profiles, parser negatives and gates; publish closure. |
