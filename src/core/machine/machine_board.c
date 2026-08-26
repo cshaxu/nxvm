@@ -374,12 +374,6 @@ static const core_machine_dma_channel_provider core_machine_dma_refresh_provider
     STD_NULL, STD_NULL, STD_NULL
 };
 
-/* Xebec owns the later DRQ data callbacks.  S13 reserves the Core-issued
- * channel now, without inventing command or transfer behavior before S14. */
-static const core_machine_dma_channel_provider core_machine_hdc_dma_provider = {
-    STD_NULL, STD_NULL, STD_NULL
-};
-
 static type_bool core_machine_dma_wiring_is_valid(
     const core_machine_dma_wiring *wiring)
 {
@@ -996,7 +990,7 @@ type_status core_machine_configure_hdc(core_machine *machine,
         status = core_machine_dma_bind_channel(&machine->shared_dma_latch,
             &machine->shared_dma_primary, &machine->shared_dma_secondary,
             machine->hdc_topology.config.bus.xebec.dma_channel,
-            &core_machine_hdc_dma_provider, &machine->hdc, &machine->hdc_dma_request);
+            core_machine_hdc_dma_provider(), &machine->hdc, &machine->hdc_dma_request);
         if (status != TYPE_STATUS_OK) {
             core_machine_port_rollback_registration(&machine->executor_port,
                 port_checkpoint);

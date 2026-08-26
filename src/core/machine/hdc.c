@@ -1,6 +1,7 @@
 #include "type.h"
 
 #include "core/machine/media_interface.h"
+#include "core/machine/dma.h"
 #include "core/machine/pic.h"
 #include "core/machine/hdc.h"
 
@@ -527,6 +528,120 @@ static C_VOID core_machine_hdc_execute_command(core_machine_hdc *hdc, type_unsig
         core_machine_hdc_fail(hdc, CORE_MACHINE_HDC_ERROR_ABORT);
     }
 }
+
+static C_VOID core_machine_xebec_reset(core_machine_hdc *hdc)
+{
+    if (hdc == STD_NULL) return;
+    STD_MEMSET(&hdc->xebec, 0, sizeof(hdc->xebec));
+    hdc->xebec.phase = CORE_MACHINE_XEBEC_PHASE_IDLE;
+    core_machine_hdc_clear_irq(hdc);
+}
+
+static C_VOID core_machine_xebec_response(core_machine_hdc *hdc,
+    type_unsigned_8 status, const type_unsigned_8 *sense)
+{
+    type_unsigned_8 drive;
+
+    if (hdc == STD_NULL) return;
+    drive = (hdc->xebec.dcb[1] >> 5u) & 1u;
+    hdc->xebec.response[0] = (type_unsigned_8)((drive << 5u) | status);
+    hdc->xebec.response_count = 1u;
+    hdc->xebec.response_index = 0u;
+    if ((status & 0x02u) != 0u && sense != STD_NULL) {
+        STD_MEMCPY(hdc->xebec.last_sense, sense, sizeof(hdc->xebec.last_sense));
+    }
+    hdc->xebec.phase = CORE_MACHINE_XEBEC_PHASE_RESPONSE;
+}
+
+static C_INT core_machine_xebec_command_is_defined(type_unsigned_8 command)
+{
+    return (command <= 0x01u || (command >= 0x03u && command <= 0x08u) ||
+        (command >= 0x0au && command <= 0x0fu) || command == 0xe0u ||
+        (command >= 0xe3u && command <= 0xe6u));
+}
+
+static C_VOID core_machine_xebec_complete_dcb(core_machine_hdc *hdc)
+{
+    type_unsigned_8 sense[4] = {0u, 0u, 0u, 0u};
+
+    if (hdc == STD_NULL) return;
+    if (hdc->xebec.dcb[0] == 0x03u) {
+        STD_MEMCPY(hdc->xebec.response, hdc->xebec.last_sense,
+            sizeof(hdc->xebec.last_sense));
+        hdc->xebec.response_count = sizeof(hdc->xebec.last_sense);
+        hdc->xebec.response_index = 0u;
+        hdc->xebec.phase = CORE_MACHINE_XEBEC_PHASE_RESPONSE;
+        return;
+    }
+    if (!core_machine_xebec_command_is_defined(hdc->xebec.dcb[0])) {
+        sense[0] = 0x20u;
+        core_machine_xebec_response(hdc, 0x02u, sense);
+        return;
+    }
+    /* A selected image/printed geometry is the next receiver. Until then,
+     * every DCB is an explicitly sourced "drive not ready" completion, not
+     * an ATA fallback or a made-up media result. */
+    sense[0] = 0x04u;
+    sense[1] = (type_unsigned_8)((hdc->xebec.dcb[1] >> 5u) & 1u) << 5u;
+    sense[2] = hdc->xebec.dcb[2];
+    sense[3] = hdc->xebec.dcb[3];
+    core_machine_xebec_response(hdc, 0x02u, sense);
+}
+
+static type_status core_machine_xebec_port_read(core_machine_hdc *hdc,
+    type_unsigned_16 port, type_unsigned_32 *out_value)
+{
+    if (hdc == STD_NULL || out_value == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (port == hdc->connect.config.bus.xebec.data_port) {
+        if (hdc->xebec.phase != CORE_MACHINE_XEBEC_PHASE_RESPONSE ||
+            hdc->xebec.response_index >= hdc->xebec.response_count) return TYPE_STATUS_OK;
+        *out_value = hdc->xebec.response[hdc->xebec.response_index++];
+        if (hdc->xebec.response_index == hdc->xebec.response_count) {
+            if (hdc->xebec.dcb[0] == 0x03u)
+                STD_MEMSET(hdc->xebec.last_sense, 0, sizeof(hdc->xebec.last_sense));
+            hdc->xebec.phase = CORE_MACHINE_XEBEC_PHASE_IDLE;
+            hdc->xebec.dcb_count = 0u;
+        }
+        return TYPE_STATUS_OK;
+    }
+    return TYPE_STATUS_UNSUPPORTED;
+}
+
+static type_status core_machine_xebec_port_write(core_machine_hdc *hdc,
+    type_unsigned_16 port, type_unsigned_32 value)
+{
+    if (hdc == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (port == hdc->connect.config.bus.xebec.hardware_status_reset_port) {
+        core_machine_xebec_reset(hdc);
+        return TYPE_STATUS_OK;
+    }
+    if (port == hdc->connect.config.bus.xebec.dma_irq_mask_port) {
+        hdc->xebec.mask_pattern = (type_unsigned_8)value;
+        return TYPE_STATUS_OK;
+    }
+    if (port == hdc->connect.config.bus.xebec.jumpers_select_port) {
+        hdc->xebec.dcb_count = 0u;
+        hdc->xebec.initialize_count = 0u;
+        hdc->xebec.phase = CORE_MACHINE_XEBEC_PHASE_DCB;
+        return TYPE_STATUS_OK;
+    }
+    if (port != hdc->connect.config.bus.xebec.data_port ||
+        hdc->xebec.phase == CORE_MACHINE_XEBEC_PHASE_IDLE ||
+        hdc->xebec.phase == CORE_MACHINE_XEBEC_PHASE_RESPONSE) return TYPE_STATUS_OK;
+    if (hdc->xebec.phase == CORE_MACHINE_XEBEC_PHASE_DCB) {
+        hdc->xebec.dcb[hdc->xebec.dcb_count++] = (type_unsigned_8)value;
+        if (hdc->xebec.dcb_count == sizeof(hdc->xebec.dcb)) {
+            if (hdc->xebec.dcb[0] == 0x0cu) hdc->xebec.phase = CORE_MACHINE_XEBEC_PHASE_INITIALIZE;
+            else core_machine_xebec_complete_dcb(hdc);
+        }
+    } else if (hdc->xebec.phase == CORE_MACHINE_XEBEC_PHASE_INITIALIZE) {
+        hdc->xebec.initialize[hdc->xebec.initialize_count++] = (type_unsigned_8)value;
+        if (hdc->xebec.initialize_count == sizeof(hdc->xebec.initialize))
+            core_machine_xebec_complete_dcb(hdc);
+    }
+    return TYPE_STATUS_OK;
+}
+
 static type_status core_machine_hdc_port_read(C_VOID *opaque, type_unsigned_16 port,
     type_unsigned_32 *out_value)
 {
@@ -535,7 +650,7 @@ static type_status core_machine_hdc_port_read(C_VOID *opaque, type_unsigned_16 p
 
     if (hdc == STD_NULL || out_value == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
     *out_value = 0u;
-    if (core_machine_hdc_is_xebec_xt(hdc)) return TYPE_STATUS_UNSUPPORTED;
+    if (core_machine_hdc_is_xebec_xt(hdc)) return core_machine_xebec_port_read(hdc, port, out_value);
     if (port == hdc->connect.config.bus.task_file.data_port) {
         if (hdc->data.phase != CORE_MACHINE_HDC_PHASE_DATA_READ ||
             hdc->data.data_index >= sizeof(hdc->data.data)) {
@@ -583,7 +698,7 @@ static type_status core_machine_hdc_port_write(C_VOID *opaque, type_unsigned_16 
     core_machine_hdc *hdc = (core_machine_hdc *)opaque;
 
     if (hdc == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
-    if (core_machine_hdc_is_xebec_xt(hdc)) return TYPE_STATUS_UNSUPPORTED;
+    if (core_machine_hdc_is_xebec_xt(hdc)) return core_machine_xebec_port_write(hdc, port, value);
     if (port == hdc->connect.config.bus.task_file.data_port) {
         type_unsigned_16 word = (type_unsigned_16)value;
         if (hdc->data.phase != CORE_MACHINE_HDC_PHASE_DATA_WRITE ||
@@ -652,6 +767,10 @@ static const core_machine_port_provider core_machine_hdc_ports = {
     core_machine_hdc_port_write
 };
 
+static const core_machine_dma_channel_provider core_machine_hdc_dma_channel = {
+    STD_NULL, STD_NULL, STD_NULL
+};
+
 C_VOID core_machine_hdc_connect(core_machine_hdc *hdc,
     const core_machine_media_registry *media_registry,
     core_machine_media_id media_id, core_machine_media_id slave_media_id,
@@ -670,6 +789,8 @@ C_VOID core_machine_hdc_initialize(core_machine_hdc *hdc)
 {
     if (hdc == STD_NULL) return;
     STD_MEMSET(&hdc->data, 0, sizeof(hdc->data));
+    STD_MEMSET(&hdc->xebec, 0, sizeof(hdc->xebec));
+    hdc->xebec.phase = CORE_MACHINE_XEBEC_PHASE_IDLE;
     core_machine_pic_irq_source_deassert(&hdc->connect.irq_source);
     core_machine_hdc_reset(hdc);
 }
@@ -678,6 +799,7 @@ C_VOID core_machine_hdc_reset(core_machine_hdc *hdc)
 {
     if (hdc == STD_NULL) return;
     STD_MEMSET(&hdc->data, 0, sizeof(hdc->data));
+    if (core_machine_hdc_is_xebec_xt(hdc)) core_machine_xebec_reset(hdc);
     core_machine_hdc_clear_irq(hdc);
     if (!core_machine_hdc_is_compaq_wd_40mb(hdc)) {
         hdc->data.error = CORE_MACHINE_HDC_ERROR_DIAGNOSTIC_OK;
@@ -715,12 +837,18 @@ C_VOID core_machine_hdc_finalize(core_machine_hdc *hdc)
     if (hdc == STD_NULL) return;
     core_machine_pic_irq_source_deassert(&hdc->connect.irq_source);
     STD_MEMSET(&hdc->data, 0, sizeof(hdc->data));
+    STD_MEMSET(&hdc->xebec, 0, sizeof(hdc->xebec));
     STD_MEMSET(&hdc->connect, 0, sizeof(hdc->connect));
 }
 
 const core_machine_port_provider *core_machine_hdc_port_provider(C_VOID)
 {
     return &core_machine_hdc_ports;
+}
+
+const core_machine_dma_channel_provider *core_machine_hdc_dma_provider(C_VOID)
+{
+    return &core_machine_hdc_dma_channel;
 }
 
 type_bool core_machine_hdc_irq_pending(const core_machine_hdc *hdc)

@@ -2,27 +2,27 @@
 
 ## Current Work
 
-**Active: M5 T484 S14.**
+**Active: M5 T484 S15.**
 
-## M5 T484 S14 Packet
+## M5 T484 S15 Packet
 
 | Field | Required record |
 | --- | --- |
 | Identifier Mode | Continuation |
-| Admission And Approval | Owner-approved continuous execution; S13 implementation `613e5915` is accepted after full Debug build, current-gate, Release 0484 and documentation-governance proof. |
-| Objective | Turn the accepted Xebec Manual-L3 logical DCB, command, result, reset and DRQ/IRQ contract into one bounded Core implementation brief, identifying every exact behavior that can be implemented now and every fact that remains a later receiver. |
-| Non-goals | No implementation in this S; no selected image/geometry, option-ROM bytes/mapping, session/runnable XT route, ATA shim, raw MFM, physical service time, guessed hardware-status bits, second HDC/CHS/media cache or generic XT framework. |
-| Reference Baseline | Accepted T484 S12 X1--X17 source contract and S13 tagged Core HDC/DMA3/IRQ5 wiring; IBM 6139790 is normative and 86Box/PCjs remain non-normative cross-checks. |
+| Admission And Approval | Owner-approved continuous execution; S14 evidence `52aee9df` is accepted by `39c5cc6b` after complete X1--X17/source/owner reconciliation and documentation-governance proof. |
+| Objective | Implement the source-proven, geometry-independent Xebec byte-stack, finite DCB/command/result/reset state and DMA3/IRQ5 causal contract inside the sole Core HDC owner. |
+| Non-goals | No selected image/geometry or profile, logical-media read/write completion, option-ROM bytes/mapping, session/runnable XT route, ATA shim, raw MFM, physical service time, guessed hardware-status bits, second HDC/CHS/media cache or generic XT framework. |
+| Reference Baseline | Accepted T484 S12 X1--X17 source contract, S13 tagged Core wiring and S14 bounded implementation brief; IBM 6139790 is normative and 86Box/PCjs remain non-normative cross-checks. |
 | Candidate Proposal | [IBM PC/XT 5160-268 selected-device functional closure](../proposals/m5-xt-5160-268-device-functional-closure.md). |
-| Files And ABI Surface | Evidence, history and Current packet only. A later implementation S may touch the existing Core HDC state/port/DMA callbacks and focused tests only after this brief is accepted; no VM session or public product request surface. |
+| Files And ABI Surface | Existing `controller_interface.h`, `machine.h`, `machine_board.c`, `hdc.[ch]`, focused Xebec smoke and evidence only. No VM session or public product request surface. |
 | Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, `docs/design/ARCHITECTURE.md`, `docs/design/CODING.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`, source policy and the one HDC/media-owner boundary. |
-| Verification | Row-complete X1--X17 reconciliation: rendered IBM page/section, existing sole Core owner, exact state/port/DMA/IRQ receiver, independent Other-L3 corroboration, explicit L1/unsupported transfer; documentation governance and actual evidence review. |
-| Expected Markers | `M5:T484:S14:XEBEC-LOGICAL-CONTRACT:OK`; `M5:T484:S14:XEBEC-NO-GUESSED-STATUS:OK`; `M5:T484:S14:XEBEC-IMPLEMENTATION-BRIEF:OK`. |
-| Asset Needs | Accepted project evidence and project-owned test state only; no third-party code, firmware, guest media, local path or code import enters the repository. |
-| Reporting Requirements | Record each source-proven logical behavior, retain one Core HDC/media/DMA/PIC owner, state the smallest coherent implementation receiver and all deferred command, geometry, status, ROM and timing work. |
+| Verification | Focused Xebec proof: exact port directions, six-byte DCB collection, finite response/error-sense bounds, reset/mask behavior, DMA3-only data movement, DREQ/IRQ5 ordering and no ATA alias; retained HDC regressions, Debug all-target build, current-gate, Release 0484 and documentation governance. |
+| Expected Markers | `M5:T484:S15:XEBEC-STACK:OK`; `M5:T484:S15:XEBEC-DMA-IRQ:OK`; `M5:T484:S15:XEBEC-NO-ATA-ALIAS:OK`. |
+| Asset Needs | Accepted project evidence and project-owned unit state only; no third-party code, firmware, guest media, local path or code import enters the repository. |
+| Reporting Requirements | Retain one Core HDC/media/DMA/PIC owner; record every implemented source behavior and transfer selected geometry/media read-write, status ambiguity, ROM and physical timing. |
 | Original Owner Request | Continue the ordered minimalist queue toward the pre-Windows L3 admission audit. |
-| Stop Conditions | Stop and request a revised packet if a required logical behavior lacks IBM source support, needs a selected drive/media image, depends on guessed status/electrical timing, requires a second state owner, or changes a public session/product boundary. |
-| Exit Criteria | A finite implementation brief separates source-proven DCB/command/result/reset/DRQ/IRQ mechanics from unsupported physical/ambiguous behavior, names one owner-local implementation path and tests, and records no false L3 claim. |
+| Stop Conditions | Stop and request a revised packet if a required logical behavior needs a selected drive/media image, lacks IBM source support, depends on guessed status/electrical timing, requires a second state owner, or changes a public session/product boundary. |
+| Exit Criteria | The sole Core HDC has one bounded Xebec byte-stack/command/result/reset/DMA/IRQ path with focused proof and no ATA reuse; every selected-geometry/media, ROM, physical and ambiguous-status residual has one named later receiver. |
 | Similar-Issue Sweep | Xebec X1--X17 against current tag/ports/DMA/PIC/media owner; ATA, Compaq WD and IBM WD1003 retained only as regression/boundary comparators. |
 
 ## Current Technical Baseline

@@ -9,6 +9,7 @@
 #include "core/machine/port_interface.h"
 
 typedef struct t_pic t_pic;
+typedef struct core_machine_dma_channel_provider core_machine_dma_channel_provider;
 
 #define CORE_MACHINE_HDC_STATUS_ERR 0x01u
 #define CORE_MACHINE_HDC_STATUS_DRQ 0x08u
@@ -31,6 +32,26 @@ typedef enum core_machine_hdc_phase {
     CORE_MACHINE_HDC_PHASE_PENDING_READ_SECTOR,
     CORE_MACHINE_HDC_PHASE_PENDING_WRITE_SECTOR
 } core_machine_hdc_phase;
+
+typedef enum core_machine_xebec_phase {
+    CORE_MACHINE_XEBEC_PHASE_IDLE,
+    CORE_MACHINE_XEBEC_PHASE_DCB,
+    CORE_MACHINE_XEBEC_PHASE_INITIALIZE,
+    CORE_MACHINE_XEBEC_PHASE_RESPONSE
+} core_machine_xebec_phase;
+
+typedef struct core_machine_xebec_data {
+    type_unsigned_8 dcb[6];
+    type_unsigned_8 dcb_count;
+    type_unsigned_8 initialize[8];
+    type_unsigned_8 initialize_count;
+    type_unsigned_8 response[5];
+    type_unsigned_8 response_count;
+    type_unsigned_8 response_index;
+    type_unsigned_8 last_sense[4];
+    type_unsigned_8 mask_pattern;
+    core_machine_xebec_phase phase;
+} core_machine_xebec_data;
 
 typedef struct core_machine_hdc_data {
     type_unsigned_8 features;
@@ -75,6 +96,7 @@ typedef struct core_machine_hdc_connection {
 
 typedef struct core_machine_hdc {
     core_machine_hdc_data data;
+    core_machine_xebec_data xebec;
     core_machine_hdc_connection connect;
 } core_machine_hdc;
 
@@ -88,6 +110,7 @@ C_VOID core_machine_hdc_advance(core_machine_hdc *hdc);
 C_VOID core_machine_hdc_refresh(core_machine_hdc *hdc);
 C_VOID core_machine_hdc_finalize(core_machine_hdc *hdc);
 const core_machine_port_provider *core_machine_hdc_port_provider(C_VOID);
+const core_machine_dma_channel_provider *core_machine_hdc_dma_provider(C_VOID);
 type_bool core_machine_hdc_irq_pending(const core_machine_hdc *hdc);
 
 #endif
