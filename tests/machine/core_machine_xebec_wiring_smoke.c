@@ -53,6 +53,19 @@ static const core_machine_media_provider xebec_media_provider = {
     STD_NULL, STD_NULL, STD_NULL, STD_NULL
 };
 
+static C_VOID xebec_configure_dma3(t_port *port, type_unsigned_16 address,
+    type_unsigned_8 mode)
+{
+    core_machine_port_write(port, 0x000cu, 0u);
+    core_machine_port_write(port, 0x0006u, address & 0xffu);
+    core_machine_port_write(port, 0x0006u, address >> 8u);
+    core_machine_port_write(port, 0x0007u, 0xffu);
+    core_machine_port_write(port, 0x0007u, 0x01u);
+    core_machine_port_write(port, 0x0082u, 0u);
+    core_machine_port_write(port, 0x000bu, mode);
+    core_machine_port_write(port, 0x000au, 0x03u);
+}
+
 C_INT main(C_VOID)
 {
     const core_machine_config config = {
@@ -103,6 +116,7 @@ C_INT main(C_VOID)
     const type_unsigned_8 read_dcb[] = {0x08u, 0u, 0u, 0u, 0u, 0u};
     const type_unsigned_8 write_dcb[] = {0x0au, 0u, 0u, 0u, 1u, 0u};
     const core_machine_dma_channel_provider *dma_provider;
+    type_unsigned_8 dma_bytes[CORE_MACHINE_XEBEC_TYPE_2_BYTES_PER_SECTOR];
     STD_SIZE_T index;
     C_INT failed = 0;
 
@@ -151,6 +165,7 @@ C_INT main(C_VOID)
             }
             if (!failed) {
                 dma_provider = core_machine_hdc_dma_provider();
+                xebec_configure_dma3(&machine->executor_port, 0x2200u, 0x87u);
                 core_machine_port_write(&machine->executor_port, 0x0322u, 0u);
                 for (index = 0u; index < sizeof(read_dcb); ++index)
                     core_machine_port_write(&machine->executor_port, 0x0320u, read_dcb[index]);
@@ -158,11 +173,13 @@ C_INT main(C_VOID)
                     machine->hdc.xebec.phase != CORE_MACHINE_XEBEC_PHASE_DMA_READ ||
                     (machine->shared_dma_primary.data.status & VDMA_STATUS_DRQ(3u)) == 0u)
                     failed |= 0x100;
-                for (index = 0u; !failed && index < sizeof(media.bytes); ++index) {
-                    dma_provider->read_device(&machine->hdc, &machine->shared_dma_latch);
-                    if (machine->shared_dma_latch.data.byte != (type_unsigned_8)index)
-                        failed |= 0x200;
-                }
+                core_machine_dma_advance(&machine->shared_dma_latch,
+                    &machine->shared_dma_primary, &machine->shared_dma_secondary,
+                    &machine->executor_memory, sizeof(dma_bytes));
+                if (!failed && (core_machine_memory_read_physical(&machine->executor_memory,
+                    0x2200u, (type_virtual_address)dma_bytes, sizeof(dma_bytes)) !=
+                    TYPE_STATUS_OK || dma_bytes[0] != 0u || dma_bytes[511] != 0xffu))
+                    failed |= 0x200;
                 if (!failed && (machine->hdc.xebec.phase != CORE_MACHINE_XEBEC_PHASE_RESPONSE ||
                     (machine->shared_dma_primary.data.status & VDMA_STATUS_DRQ(3u)) != 0u ||
                     core_machine_port_read(&machine->executor_port, 0x0320u) != 0u)) failed |= 0x400;
@@ -178,21 +195,26 @@ C_INT main(C_VOID)
             }
             if (!failed) {
                 dma_provider = core_machine_hdc_dma_provider();
+                for (index = 0u; index < sizeof(dma_bytes); ++index)
+                    dma_bytes[index] = (type_unsigned_8)(0xffu - index);
+                if (core_machine_memory_write_physical(&machine->executor_memory,
+                        0x2400u, (type_virtual_address)dma_bytes,
+                        sizeof(dma_bytes)) != TYPE_STATUS_OK) failed |= 0x1000;
+                xebec_configure_dma3(&machine->executor_port, 0x2400u, 0x8bu);
                 core_machine_port_write(&machine->executor_port, 0x0322u, 0u);
                 for (index = 0u; index < sizeof(write_dcb); ++index)
                     core_machine_port_write(&machine->executor_port, 0x0320u, write_dcb[index]);
                 if (dma_provider == STD_NULL || dma_provider->write_device == STD_NULL ||
                     machine->hdc.xebec.phase != CORE_MACHINE_XEBEC_PHASE_DMA_WRITE ||
                     (machine->shared_dma_primary.data.status & VDMA_STATUS_DRQ(3u)) == 0u)
-                    failed |= 0x1000;
-                for (index = 0u; !failed && index < sizeof(media.bytes); ++index) {
-                    machine->shared_dma_latch.data.byte = (type_unsigned_8)(0xffu - index);
-                    dma_provider->write_device(&machine->hdc, &machine->shared_dma_latch);
-                }
+                    failed |= 0x2000;
+                core_machine_dma_advance(&machine->shared_dma_latch,
+                    &machine->shared_dma_primary, &machine->shared_dma_secondary,
+                    &machine->executor_memory, sizeof(dma_bytes));
                 if (!failed && (machine->hdc.xebec.phase != CORE_MACHINE_XEBEC_PHASE_RESPONSE ||
                     core_machine_port_read(&machine->executor_port, 0x0320u) != 0u ||
                     (machine->shared_dma_primary.data.status & VDMA_STATUS_DRQ(3u)) != 0u ||
-                    media.bytes[0] != 0xffu || media.bytes[511] != 0u)) failed |= 0x2000;
+                    media.bytes[0] != 0xffu || media.bytes[511] != 0u)) failed |= 0x4000;
             }
             if (!failed) {
                 core_machine_port_write(&machine->executor_port, 0x0322u, 0u);
@@ -200,7 +222,7 @@ C_INT main(C_VOID)
                     core_machine_port_write(&machine->executor_port, 0x0320u, sense_dcb[index]);
                 for (index = 0u; index < sizeof(sense); ++index) {
                     if (core_machine_port_read(&machine->executor_port, 0x0320u) != sense[index]) {
-                        failed |= 0x4000;
+                        failed |= 0x8000;
                         break;
                     }
                 }
@@ -210,26 +232,26 @@ C_INT main(C_VOID)
                 for (index = 0u; index < sizeof(invalid_dcb); ++index)
                     core_machine_port_write(&machine->executor_port, 0x0320u, invalid_dcb[index]);
                 if (core_machine_port_read(&machine->executor_port, 0x0320u) != 0x02u)
-                    failed |= 0x8000;
+                    failed |= 0x10000;
             }
             if (!failed) {
                 core_machine_port_write(&machine->executor_port, 0x0323u, 0x5au);
-                if (machine->hdc.xebec.mask_pattern != 0x5au) failed |= 0x10000;
+                if (machine->hdc.xebec.mask_pattern != 0x5au) failed |= 0x20000;
             }
             if (!failed) {
                 core_machine_port_write(&machine->executor_port, 0x0322u, 0u);
                 for (index = 0u; index < sizeof(initialize_dcb); ++index)
                     core_machine_port_write(&machine->executor_port, 0x0320u, initialize_dcb[index]);
-                if (machine->hdc.xebec.phase != CORE_MACHINE_XEBEC_PHASE_INITIALIZE) failed |= 0x20000;
+                if (machine->hdc.xebec.phase != CORE_MACHINE_XEBEC_PHASE_INITIALIZE) failed |= 0x40000;
                 for (index = 0u; index < sizeof(machine->hdc.xebec.initialize); ++index)
                     core_machine_port_write(&machine->executor_port, 0x0320u, 0u);
-                if (machine->hdc.xebec.phase != CORE_MACHINE_XEBEC_PHASE_RESPONSE) failed |= 0x40000;
+                if (machine->hdc.xebec.phase != CORE_MACHINE_XEBEC_PHASE_RESPONSE) failed |= 0x80000;
             }
             if (!failed) {
                 core_machine_port_write(&machine->executor_port, 0x0321u, 0u);
                 if (machine->hdc.xebec.dcb_count != 0u ||
                     machine->hdc.xebec.mask_pattern != 0u ||
-                    machine->hdc.xebec.phase != CORE_MACHINE_XEBEC_PHASE_IDLE) failed |= 0x80000;
+                    machine->hdc.xebec.phase != CORE_MACHINE_XEBEC_PHASE_IDLE) failed |= 0x100000;
             }
         }
     }
@@ -242,5 +264,6 @@ C_INT main(C_VOID)
     puts("M5:T484:S15:XEBEC-STACK:OK");
     puts("M5:T484:S15:XEBEC-NO-ATA-ALIAS:OK");
     puts("M5:T484:S17:XEBEC-DMA-MEDIA:OK");
+    puts("M5:T484:S18:XEBEC-DMA-RAM:OK");
     return 0;
 }

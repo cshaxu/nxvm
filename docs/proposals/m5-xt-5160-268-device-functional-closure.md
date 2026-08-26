@@ -26,6 +26,11 @@ unproven zero convention rejected rather than inferred. Add a focused
 inserted-image and boot-consumer regression. Do not create an ATA shim, a
 second CHS or media cache, raw-MFM media, or a generic XT profile.
 
+The required DMA proof is the configured Core 8237A service path itself: a
+device-to-memory Read must enter Core RAM and a memory-to-device Write must
+reach the existing media provider.  Calling a channel provider directly is
+only a component test and cannot replace this route proof.
+
 ## Non-goals and stop conditions
 
 No PC/AT assumption, generic PC/XT expansion, 8086 replacement, unselected
