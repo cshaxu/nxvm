@@ -8,7 +8,7 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | New queued candidate |
+| Identifier Mode | New |
 | Admission And Approval | Owner-approved continuous execution; T484 S22 implementation `e5476feb` is accepted by this P2 review and T484 is closed. |
 | Objective | Establish the finite IBM 5160-268 board/device phase-timing source and owner ledger required before any timing implementation. |
 | Non-goals | No guessed timing, firmware/media import, new device function, PC/AT alias, host-time coupling or L3-ready claim. |
