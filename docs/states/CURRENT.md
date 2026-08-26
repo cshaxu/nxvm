@@ -2,28 +2,28 @@
 
 ## Current Work
 
-**Active: M5 T481 S1.**
+**Active: M5 T481 S2.**
 
-## M5 T481 S1 Packet
+## M5 T481 S2 Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | New |
-| Admission And Approval | Owner-approved ordered M5 queue; T480 closure at `156bdbe6` is the required predecessor. |
-| Objective | Freeze one complete, de-duplicated audit universe for selected CPU, controller, Core-time, profile and VM pacing facts. |
+| Identifier Mode | Continuation |
+| Admission And Approval | T481 S1 implementation is `997a4e84`; this one-session coordinator transition accepts its bounded universe before S2 begins. The owner-approved ordered M5 queue remains the task authority. |
+| Objective | Reconcile every selected CPU function/timing family with its source ledger, Core retirement/transaction owner, delivery path and focused evidence. |
 | Non-goals | No runtime code, public ABI, source import, controller reimplementation, profile claim, or L4 reconstruction. |
-| Reference Baseline | T480 closure, prior CPU/controller ledgers and the Global Function And L3 Interface Completeness Audit proposal. |
+| Reference Baseline | T481 S1 audit universe, T343 CPU closure, T357--T363 source/timing ledgers, T449 transaction classification and T474 Core-time ledger. |
 | Candidate Proposal | [Global function and L3 interface completeness audit](../proposals/m5-global-function-and-l3-interface-completeness-audit.md). |
-| Files And ABI Surface | T481 history, evidence/index, Current and supporting-document index only. |
+| Files And ABI Surface | CPU/Core source inspection plus T481 history/evidence/index and Current only; no ABI change. |
 | Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, source policy, and the proposal's L0--L3 meanings. |
-| Verification | Exhaustive ledger-source sweep, de-duplication/reconciliation checks, documentation governance. |
-| Expected Markers | `M5:T481:S1:UNIVERSE:OK`; `M5:T481:S1:PROVENANCE:OK`; `M5:T481:S1:DEDUP:OK`. |
+| Verification | CPU/decode/retirement/delivery/transaction caller sweep, source-to-owner reconciliation and documentation governance. |
+| Expected Markers | `M5:T481:S2:CPU-OWNER:OK`; `M5:T481:S2:TRANSACTIONS:OK`; `M5:T481:S2:CPU-AUDIT:OK`. |
 | Asset Needs | No acquisition or import; accepted sources and repositories remain evidence only. |
-| Reporting Requirements | Record every family ledger, its sole owner/path, exclusion or successor, exact provenance source and de-duplication rule. |
+| Reporting Requirements | Record each CPU family source ledger, retirement/delivery/transaction owner, test proof, L0--L3 disposition and concrete transfer. |
 | Original Owner Request | Reach the pre-Windows L3 admission audit through a global, minimalist, one-owner completeness review. |
-| Stop Conditions | Stop and record a source-blocked row if its previous ledger cannot be reconciled without new authority. |
-| Exit Criteria | Every in-scope CPU/controller/time/profile/consumer family has an exact source ledger, owner, path and exclusion/disposition. |
-| Similar-Issue Sweep | All retained M5 CPU/controller/timing evidence, profiles, Core time interfaces and VM pacing consumers. |
+| Stop Conditions | Stop and record a source-blocked row if its CPU ledger cannot be reconciled without new authority. |
+| Exit Criteria | Each four-profile CPU function/timing/delivery/transaction family has one source, owner, test proof and L0--L3 disposition. |
+| Similar-Issue Sweep | All Core decode, retirement, delivery, transaction, timing and current CPU tests. |
 
 ## Current Technical Baseline
 
@@ -60,6 +60,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T481 S1 | Accepted: one de-duplicated CPU/controller/time/profile/VM universe indexes final ledgers without a parallel row set. [Evidence](../etc/evidence/t481-s1-audit-universe.md). |
 | T480 | Closed: VADP remains the sole guest-video owner; IBM VGA DAC, chain-4 and Mode-13 frame capability is source-backed but unselected by every current profile/card. The 296-target gate and stripped Release 0480 pass. [Closure audit](../etc/evidence/t480-s5-profile-closure-audit.md). |
 | T479 | Closed: one Core HDC/media boundary retains explicit ATA, Compaq and IBM WD1003 personalities; seven focused regressions, the 294-target gate and stripped Release 0479 hash pass. IBM 5160/Xebec and WD1007A-WAH ESDI contracts transfer only to their missing immutable profile receivers. [Closure audit](../etc/evidence/t479-s8-closure-audit.md). |
 | T478 | Closed: Default-AT is an immutable `pc-at-5170` child and all three AT profiles have one resolver-to-copied-Core-input route. [Closure audit](../etc/evidence/t478-s4-closure-audit.md) records frozen parity, the 294-target gate, and stripped Release 0478. |

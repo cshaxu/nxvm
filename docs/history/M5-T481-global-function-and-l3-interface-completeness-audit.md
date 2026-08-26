@@ -6,4 +6,5 @@ runtime behavior or interface.
 
 | Subtask | Accepted result |
 | --- | --- |
-| S1 | Active: freeze the complete de-duplicated audit universe and its source/owner evidence index. |
+| S1 | Accepted: one de-duplicated CPU/controller/time/profile/VM universe indexes final ledgers without a parallel row set. |
+| S2 | Active: audit CPU function, retirement, exception/delivery and transaction-timing paths. |
