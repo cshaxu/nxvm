@@ -2,28 +2,7 @@
 
 ## Current Work
 
-**Active: M5 T480 S1.**
-
-## M5 T480 S1 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | New |
-| Admission And Approval | Owner's standing queue-execution approval and explicit VADP architecture instruction; next queue candidate after closed T479 and Td S151. |
-| Objective | Produce a finite, source-qualified IBM VGA controller ledger and a bounded external-model cross-check before changing VADP code or profile selection. |
-| Non-goals | No VADP implementation, profile/card binding, firmware/ROM/media import, emulator-code import, VBE/SVGA, physical monitor timing, or artifact revision. |
-| Reference Baseline | `52502183` / Release 0479; T285/T352 VADP planar and copied-snapshot boundary, T467 CGA closure, T479 closed. |
-| Candidate Proposal | [VADP IBM VGA L3 capability](../proposals/m5-vadp-ibm-vga-l3-capability.md). |
-| Files And ABI Surface | New T480 history record and source/cross-model evidence only; no code, public ABI, profile declaration or product artifact. |
-| Applicable Rules | `docs/rules/EXECUTION.md` New-T and coverage ledger lifecycle; `docs/rules/DOCUMENT.md`; `docs/rules/ARCHITECTURE.md` sole owner and source admission; `docs/rules/CODING.md` simplicity; source policy; proposal's VADP ownership constraint. |
-| Verification | Verify the ledger's source links/page or code locations, source-quality disposition, full VGA row count, T285/T352 compatibility boundary and no-profile-claim conclusion; run documentation governance. |
-| Expected Markers | `M5:T480:S1:VGA-SOURCES:OK`; `M5:T480:S1:VGA-CROSSCHECK:OK`; `M5:T480:S1:PROFILE-BOUNDARY:OK`. |
-| Asset Needs | Seek documentary sources only. External emulator trees and any documents are read-only references; no vendor ROM, option ROM, firmware, media or third-party source enters this repository. |
-| Reporting Requirements | Report sources and their limitations, every classified controller row, corroboration/disagreement, identified VADP consumers and whether any current profile may bind VGA. |
-| Stop Conditions | Stop and mark a row L2/unsupported if IBM documentation is unavailable or ambiguous and external references cannot establish a bounded controller fact; stop profile work if no immutable selected-board/card route exists. |
-| Exit Criteria | A row-complete source/cross-model ledger gives every selected VGA behavior a Manual-L3, bounded Other-L3, L2 or unsupported disposition; it names the S2 gap-audit receiver and preserves one VADP owner. |
-| Original Owner Request | Continue the queue under the established VADP architecture: one VADP video-state owner, EGA/VGA common mechanisms within that owner, copied snapshot to VM presentation, and no parallel video path. |
-| Similar-Issue Sweep | Inspect existing VADP CGA/EGA/CRTC, VM presentation and all available IBM VGA/controller references; distinguish controller facts from unselected board/card routing. |
+**T480 retains accepted progress between subtasks.**
 
 ## Current Technical Baseline
 
@@ -60,6 +39,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T480 S1 | Accepted: IBM VGA controller source/cross-model ledger is row-complete, preserves one VADP owner and leaves every current profile unselected. [Evidence](../etc/evidence/t480-s1-ibm-vga-source-ledger.md). |
 | T479 | Closed: one Core HDC/media boundary retains explicit ATA, Compaq and IBM WD1003 personalities; seven focused regressions, the 294-target gate and stripped Release 0479 hash pass. IBM 5160/Xebec and WD1007A-WAH ESDI contracts transfer only to their missing immutable profile receivers. [Closure audit](../etc/evidence/t479-s8-closure-audit.md). |
 | T478 | Closed: Default-AT is an immutable `pc-at-5170` child and all three AT profiles have one resolver-to-copied-Core-input route. [Closure audit](../etc/evidence/t478-s4-closure-audit.md) records frozen parity, the 294-target gate, and stripped Release 0478. |
 | T477 | Closed: DeskPro is an immutable `pc-at-5170` child with one copied Core-plan materialization path; the Model-40 session retains only dynamic resources. [Closure audit](../etc/evidence/t477-s4-closure-audit.md) records frozen parity, the 294-target gate and stripped Release 0477. |
@@ -67,7 +47,6 @@
 | T475 | Closed: one VM-only immutable resolver copies parent-patched values and per-field provenance to the existing Core-plan API, rejects invalid ownership/bindings/windows/routes/contracts/policy, and leaves current routes for ordered profile migrations. [Closure audit](../etc/evidence/t475-s3-integration-closure-audit.md) records the 294-target gate and stripped Release 0475. |
 | T474 | Closed: one Core-owned guest-time axis, immutable plan and copied observation now join profile timing values, source-qualified PIT/RTC deadlines, explicit controller blockers and Standard/Turbo consumer policy. [Closure audit](../etc/evidence/t474-s6-integration-closure-audit.md) records the 293-target gate and stripped Release 0474. |
 | T473 | Withdrawn before implementation: the profile-first time-axis admission was split by Td S149 so machine-neutral Core time integration precedes all profile connections. Its identifier and proposal are retained in history; no runtime or artifact changed. |
-| T472 | Closed: Model-339 has a retained L2 macro rate; Standard uses it without host-generated guest time, Turbo skips only its wait, and unqualified profiles no longer take a fixed HLT sleep. [Closure audit](../etc/evidence/t472-s3-integration-closure-audit.md) records Release 0472. |
 
 ## Recent Governance
 

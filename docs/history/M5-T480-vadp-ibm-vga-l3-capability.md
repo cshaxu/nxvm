@@ -6,4 +6,4 @@ only owner of guest video state, ports, mapped memory and copied snapshots.
 
 | Subtask | Accepted result |
 | --- | --- |
-| S1 | In progress: establish the finite IBM VGA source/cross-model ledger, including source quality, ambiguity and profile-route disposition. |
+| S1 | Accepted: the finite IBM primary/cross-model ledger classifies controller state, attribute access, chain-4, aperture, latches, DAC, Mode 13h, CRTC mapping, timing and profile binding. It records PCjs/QEMU chain-4 limits and leaves every current profile unselected. |
