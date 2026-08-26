@@ -2,11 +2,28 @@
 
 ## Current Work
 
-**Open: M5 T486.**
+**Open: M5 T486 S2.**
 
-T486 S1 is accepted at `60bb3c26`: the original Intel source corpus is
-visually verified, and its scan/OCR boundary is explicit. List 1 is the next
-required stage; no implementation is authorized yet.
+## M5 T486 S2 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner-approved Td S152 per-unit program and continuous execution on 2026-08-26; accepted T486 S1 at `0dc37321` supplies the required original-source corpus. |
+| Objective | Create the complete List-1 function and timing ledger for every Intel Table 2-21 8088 instruction, prefix and explicit non-instruction entry. |
+| Non-goals | No code, decoder, timing-selector, test, board/bus, controller, profile, VM, artifact or List-2 code-gap change. |
+| Reference Baseline | T486 S1 original-source ledger and retained T485 S19 coverage inventory. |
+| Candidate Proposal | [8088 instruction function and timing completeness](../proposals/m5-8088-instruction-timing-completeness.md). |
+| Files And ABI Surface | T486 List-1 evidence, evidence index, history and Current only; no C ABI or runtime surface. |
+| Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md` and the source policy. The later implementation remains at the existing private Core timing-selector owner. |
+| Verification | Reconcile every rendered Table 2-21 row against the finite ledger; visually verify page citations and run documentation governance. |
+| Expected Markers | One row-complete ledger records semantics, operand/form, clocks/transfers/formula or range, source page, L3/L2/boundary disposition and explicit exclusions. |
+| Asset Needs | Read-only owner-managed Intel manual archive only; no third-party source import. |
+| Reporting Requirements | Report the finite row count, all uncertain/range/non-instruction boundaries and no-code result. |
+| Stop Conditions | Stop if a source row cannot be read or assigned a truthful source disposition; do not infer a row from code or emulator behavior. |
+| Exit Criteria | Every selected Table 2-21 row has exactly one source-backed List-1 entry; List 2 and implementation remain prohibited. |
+| Original Owner Request | Establish the complete instruction function/timing list before auditing or implementing, rather than repairing isolated opcode findings. |
+| Similar-Issue Sweep | Sweep all Table 2-21 instruction, prefix, range, formula and non-instruction rows and reconcile each retained T485 family grouping to the new exact ledger. |
 
 ## Current Technical Baseline
 
