@@ -36,7 +36,7 @@ static C_INT vm_ibm_5170_root_port_leaves_match(
 }
 
 static C_INT vm_ibm_5170_root_snapshot_matches(
-    const vm_profile_default_pc_at_resolved_root *root)
+    const vm_profile_default_pc_at_resolved_profile *root)
 {
     const vm_profile_default_pc_at_descriptor *source =
         vm_profile_ibm_5170_model_339_descriptor_get();
@@ -74,7 +74,7 @@ static C_INT vm_ibm_5170_root_snapshot_matches(
 static C_INT vm_ibm_5170_root_is_copied_and_complete(C_VOID)
 {
     vm_profile_resolver_declaration declaration;
-    vm_profile_default_pc_at_resolved_root root;
+    vm_profile_default_pc_at_resolved_profile root;
     vm_resolved_profile *resolved = &root.resolved;
     core_machine_plan *plan = STD_NULL;
 
@@ -185,16 +185,78 @@ static C_INT vm_model40_child_rejects_invalid_parent(C_VOID)
         TYPE_STATUS_OK;
 }
 
+static C_INT vm_default_at_child_resolves_copy(C_VOID)
+{
+    const vm_profile_default_at_request request = {
+        VM_PROFILE_DEFAULT_AT_SESSION_OPTION_CPU_FPU |
+            VM_PROFILE_DEFAULT_AT_SESSION_OPTION_MEMORY,
+        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_FPU_PROFILE_8087,
+        32u * 1024u * 1024u};
+    vm_profile_resolver_declaration root;
+    vm_profile_resolver_declaration child;
+    vm_profile_default_pc_at_resolved_profile resolved;
+
+    if (vm_profile_ibm_5170_root_declaration_create(&root) != TYPE_STATUS_OK ||
+        vm_profile_default_at_child_declaration_create(&root, &request, &child) !=
+            TYPE_STATUS_OK || vm_profile_default_at_child_resolve(&request, &resolved) !=
+            TYPE_STATUS_OK || STD_STRCMP(resolved.resolved.identity, "default-at") != 0 ||
+        STD_STRCMP(resolved.resolved.parent_identity, "pc-at-5170") != 0 ||
+        STD_STRCMP(resolved.resolved.field_owner[0], "default-at") != 0 ||
+        STD_STRCMP(resolved.resolved.field_owner[1], "default-at") != 0 ||
+        STD_STRCMP(resolved.resolved.field_owner[2], "default-at") != 0 ||
+        STD_STRCMP(resolved.resolved.field_owner[3], "default-at") != 0 ||
+        STD_STRCMP(resolved.resolved.field_owner[4], "pc-at-5170") != 0 ||
+        STD_STRCMP(resolved.resolved.field_owner[5], "pc-at-5170") != 0 ||
+        STD_STRCMP(resolved.resolved.field_owner[6], "default-at") != 0 ||
+        resolved.resolved.values.core.configuration.cpu_profile !=
+            CORE_MACHINE_CPU_PROFILE_80286 ||
+        resolved.resolved.values.core.configuration.fpu_profile !=
+            CORE_MACHINE_FPU_PROFILE_8087 ||
+        resolved.resolved.values.core.configuration.memory_bytes != 32u * 1024u * 1024u ||
+        resolved.resolved.values.allowed_session_options !=
+            (VM_PROFILE_DEFAULT_AT_SESSION_OPTION_CPU_FPU |
+                VM_PROFILE_DEFAULT_AT_SESSION_OPTION_MEMORY) ||
+        STD_STRCMP(resolved.descriptor.identity, "default-at") != 0 ||
+        resolved.descriptor.cpu_profile != CORE_MACHINE_CPU_PROFILE_80286 ||
+        resolved.descriptor.fpu_profile != CORE_MACHINE_FPU_PROFILE_8087 ||
+        resolved.descriptor.default_memory_bytes != 32u * 1024u * 1024u ||
+        !resolved.descriptor.hdc_present || !resolved.descriptor.cga_vram_present) {
+        return 1;
+    }
+    child.values.core.configuration.memory_bytes = 512u * 1024u;
+    return resolved.resolved.values.core.configuration.memory_bytes != 32u * 1024u * 1024u;
+}
+
+static C_INT vm_default_at_child_rejects_invalid_request(C_VOID)
+{
+    vm_profile_resolver_declaration invalid_parent = {0};
+    vm_profile_resolver_declaration child;
+    vm_profile_default_pc_at_resolved_profile resolved;
+    const vm_profile_default_at_request bad_option = {0x80u, 0u, 0u, 0u};
+    const vm_profile_default_at_request bad_memory = {
+        VM_PROFILE_DEFAULT_AT_SESSION_OPTION_MEMORY, 0u, 0u, 0u};
+
+    invalid_parent.identity = "not-5170";
+    return vm_profile_default_at_child_declaration_create(&invalid_parent,
+        &bad_option, &child) == TYPE_STATUS_OK ||
+        vm_profile_default_at_child_resolve(&bad_option, &resolved) == TYPE_STATUS_OK ||
+        vm_profile_default_at_child_resolve(&bad_memory, &resolved) == TYPE_STATUS_OK;
+}
+
 int main(void)
 {
     if (vm_ibm_5170_root_is_copied_and_complete() ||
         vm_ibm_5170_root_rejects_invalid_declaration() ||
-        vm_model40_child_resolves_copy() || vm_model40_child_rejects_invalid_parent()) {
+        vm_model40_child_resolves_copy() || vm_model40_child_rejects_invalid_parent() ||
+        vm_default_at_child_resolves_copy() ||
+        vm_default_at_child_rejects_invalid_request()) {
         return 1;
     }
     STD_PRINTF("M5:T476:S2:IBM5170-ROOT-RESOLVER:OK\n");
     STD_PRINTF("M5:T476:S2:IBM5170-ROOT-NEGATIVE:OK\n");
     STD_PRINTF("M5:T477:S2:DESKPRO-CHILD-RESOLVER:OK\n");
     STD_PRINTF("M5:T477:S2:DESKPRO-CHILD-NEGATIVE:OK\n");
+    STD_PRINTF("M5:T478:S2:DEFAULT-AT-CHILD-RESOLVER:OK\n");
+    STD_PRINTF("M5:T478:S2:DEFAULT-AT-CHILD-NEGATIVE:OK\n");
     return 0;
 }

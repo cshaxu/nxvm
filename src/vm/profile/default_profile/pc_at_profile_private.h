@@ -164,21 +164,31 @@ typedef struct vm_profile_default_pc_at_descriptor {
     STD_SIZE_T firmware_service_count;
 } vm_profile_default_pc_at_descriptor;
 
-#define VM_PROFILE_DEFAULT_PC_AT_ROOT_PORT_LEAF_CAPACITY 96u
-#define VM_PROFILE_DEFAULT_PC_AT_ROOT_ROUTE_CAPACITY 8u
-#define VM_PROFILE_DEFAULT_PC_AT_ROOT_FIRMWARE_SERVICE_CAPACITY 16u
+#define VM_PROFILE_DEFAULT_PC_AT_RESOLVED_PORT_LEAF_CAPACITY 96u
+#define VM_PROFILE_DEFAULT_PC_AT_RESOLVED_ROUTE_CAPACITY 8u
+#define VM_PROFILE_DEFAULT_PC_AT_RESOLVED_FIRMWARE_SERVICE_CAPACITY 16u
 
 /* In-place immutable result: its descriptor points only at its own copied
  * arrays, so it can become the later session input without static aliases. */
-typedef struct vm_profile_default_pc_at_resolved_root {
+typedef struct vm_profile_default_pc_at_resolved_profile {
     vm_resolved_profile resolved;
     vm_profile_default_pc_at_descriptor descriptor;
     vm_profile_default_pc_at_port_leaf
-        port_leaves[VM_PROFILE_DEFAULT_PC_AT_ROOT_PORT_LEAF_CAPACITY];
-    vm_profile_default_pc_at_route routes[VM_PROFILE_DEFAULT_PC_AT_ROOT_ROUTE_CAPACITY];
+        port_leaves[VM_PROFILE_DEFAULT_PC_AT_RESOLVED_PORT_LEAF_CAPACITY];
+    vm_profile_default_pc_at_route routes[VM_PROFILE_DEFAULT_PC_AT_RESOLVED_ROUTE_CAPACITY];
     vm_profile_default_pc_at_firmware_service
-        firmware_services[VM_PROFILE_DEFAULT_PC_AT_ROOT_FIRMWARE_SERVICE_CAPACITY];
-} vm_profile_default_pc_at_resolved_root;
+        firmware_services[VM_PROFILE_DEFAULT_PC_AT_RESOLVED_FIRMWARE_SERVICE_CAPACITY];
+} vm_profile_default_pc_at_resolved_profile;
+
+#define VM_PROFILE_DEFAULT_AT_SESSION_OPTION_CPU_FPU 0x01u
+#define VM_PROFILE_DEFAULT_AT_SESSION_OPTION_MEMORY 0x02u
+
+typedef struct vm_profile_default_at_request {
+    type_unsigned_32 requested_options;
+    core_machine_cpu_profile cpu_profile;
+    core_machine_fpu_profile fpu_profile;
+    STD_SIZE_T memory_bytes;
+} vm_profile_default_at_request;
 
 const vm_profile_default_pc_at_descriptor *
 vm_profile_default_pc_at_descriptor_get(C_VOID);
@@ -197,7 +207,14 @@ C_INT vm_profile_default_pc_at_core_config_materialize(
 type_status vm_profile_ibm_5170_root_declaration_create(
     vm_profile_resolver_declaration *out_declaration);
 type_status vm_profile_ibm_5170_root_resolve(
-    vm_profile_default_pc_at_resolved_root *out_root);
+    vm_profile_default_pc_at_resolved_profile *out_profile);
+type_status vm_profile_default_at_child_declaration_create(
+    const vm_profile_resolver_declaration *parent,
+    const vm_profile_default_at_request *request,
+    vm_profile_resolver_declaration *out_declaration);
+type_status vm_profile_default_at_child_resolve(
+    const vm_profile_default_at_request *request,
+    vm_profile_default_pc_at_resolved_profile *out_profile);
 const vm_profile_default_pc_at_port_leaf *
 vm_profile_default_pc_at_port_leaf_find(
     const vm_profile_default_pc_at_descriptor *descriptor,

@@ -43,7 +43,7 @@ struct vm_session {
     core_machine_controller_timing_rules controller_timing_rules;
     core_machine_plan *core_machine_plan;
     const vm_profile_default_pc_at_descriptor *profile;
-    vm_profile_default_pc_at_resolved_root ibm_5170_root;
+    vm_profile_default_pc_at_resolved_profile ibm_5170_root;
     vm_resolved_profile model40_resolved;
     core_machine *core_machine;
     core_machine_dma_request_binding fdc_dma_request;

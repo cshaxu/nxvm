@@ -2,7 +2,26 @@
 
 ## Current Work
 
-**No active subtask.**
+## M5 T478 S2 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner approved T478's ordered Default-AT migration on 2026-08-25; accepted S1 freezes the child delta and permits this one resolver-only increment. |
+| Objective | Add one typed Default-AT child declaration/result that resolves against `pc-at-5170`, validates the existing finite CPU/FPU/memory request policy before freeze, and proves copied provenance/negative cases. |
+| Non-goals | No session cutover yet, resolver-kernel change, YAML, asset, timing change, topology change, new public ABI, or profile-specific Core branch. |
+| Reference Baseline | T478 S1 [ledger](../etc/evidence/t478-s1-default-at-delta-ledger.md); T475 resolver, T476 root and T477 child patterns; profile resolver/private profile sources and current owner smokes. |
+| Candidate Proposal | [Default-AT 5170-derived profile](../proposals/m5-default-at-5170-derived-profile.md). |
+| Files And ABI Surface | Private Default-AT profile declarations/result storage, resolver smoke and CMake registration only; no public Core/VM ABI. |
+| Applicable Rules | Architecture: VM owns immutable profile resolution; Core remains machine-neutral and sole mutable machine owner. Coding: one result/owner path, no forwarding wrapper or duplicate descriptor state. Execution: record tracked code/test delta and similar-route sweep. |
+| Verification | New focused resolver positive/provenance/independence/invalid-parent/request-rejection smoke; existing root and generic resolver smokes; build target and documentation governance. |
+| Expected Markers | `M5:T478:S2:DEFAULT-AT-CHILD-RESOLVER:OK` and `M5:T478:S2:DEFAULT-AT-CHILD-NEGATIVE:OK`. |
+| Asset Needs | None; existing source and test inputs only. |
+| Reporting Requirements | Record exact child-owned versus inherited resolver fields, pre-freeze request validation, source/test line delta, removed duplication if any, and remaining S3 direct-session deletion boundary. |
+| Stop Conditions | Stop if existing policy representation cannot state the finite request set, a request requires mutable post-freeze Core state, a root conflict appears, or a needed fact would change frozen behavior. |
+| Exit Criteria | One child declaration/result uses existing resolver fields; all selected values and field owners are copied/validated; focused positive/negative tests pass; no runtime session path changes; review/evidence records the next deletion boundary. |
+| Original Owner Request | Build correct Core/VM integration with single ownership, L3-ready typed inputs, Standard/Turbo support, minimal code and no additive parallel paths. |
+| Similar-Issue Sweep | Sweep every root/child declaration and resolver call plus all Default-AT request materialization sites; retain one generic resolver and one child result structure, defer session direct-path deletion only to S3. |
 
 ## Current Technical Baseline
 
