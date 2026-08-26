@@ -55,7 +55,7 @@ C_INT core_product_session_command_execute(core_product_session_manager *manager
     }
     if (!STD_STRCMP(arguments[1], "open")) {
         const core_product_session_open_options options = {
-            argument_count - 2, arguments + 2
+            argument_count - 2, arguments + 2, STD_NULL, 0u
         };
         type_status status = core_product_session_manager_open_with_options(
             manager, &options, &id);

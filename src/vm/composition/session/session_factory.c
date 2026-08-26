@@ -9,12 +9,12 @@
 #include "vm/composition/session/lifecycle.h"
 #include "vm/composition/session/machine_info.h"
 #include "core/product/debug/debug.h"
-#include "core/product/utils.h"
 #include "vm/machine/debug.h"
 #include "vm/machine/fdd.h"
 #include "vm/machine/hdd.h"
 #include "vm/platform/platform.h"
 #include "vm/profile/default_profile/firmware/bios.h"
+#include "vm/product/session_catalog.h"
 
 static C_INT vm_session_provider_parse_cpu(const C_CHAR *value,
     core_machine_cpu_profile *out_profile)
@@ -42,10 +42,9 @@ static C_INT vm_session_provider_parse_profile(const C_CHAR *value,
     vm_session_profile_kind *out_profile)
 {
     if (value == STD_NULL || out_profile == STD_NULL) return 0;
-    if (!STD_STRCMP(value, "1") || !STD_STRCMP(value, "default-pc-at")) {
+    if (!STD_STRCMP(value, "default-pc-at")) {
         *out_profile = VM_SESSION_PROFILE_DEFAULT_PC_AT;
-    } else if (!STD_STRCMP(value, "2") ||
-        !STD_STRCMP(value, "ibm-5170-model-339")) {
+    } else if (!STD_STRCMP(value, "ibm-5170-model-339")) {
         *out_profile = VM_SESSION_PROFILE_IBM_5170_MODEL_339;
     } else if (!STD_STRCMP(value, "compaq-deskpro-386-model-40")) {
         *out_profile = VM_SESSION_PROFILE_COMPAQ_DESKPRO_386_MODEL_40;
@@ -55,71 +54,52 @@ static C_INT vm_session_provider_parse_profile(const C_CHAR *value,
     return 1;
 }
 
-static type_status vm_session_provider_parse_options(
-    const core_product_session_open_options *options, vm_session_config *config)
+static type_status vm_session_provider_request_configure(
+    const vm_product_session_request *request, vm_session_config *config)
 {
-    C_INT index;
-    C_INT has_generic_override = 0;
-
-    if (config == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (request == STD_NULL || config == STD_NULL) {
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
+    if ((STD_STRCMP(request->display, "console") &&
+         STD_STRCMP(request->display, "window") &&
+         STD_STRCMP(request->display, "auto")) ||
+        (STD_STRCMP(request->boot, "floppy") &&
+         STD_STRCMP(request->boot, "hard_disk") &&
+         STD_STRCMP(request->boot, "rom"))) return TYPE_STATUS_INVALID_ARGUMENT;
     STD_MEMSET(config, 0, sizeof(*config));
+    if (!vm_session_provider_parse_profile(request->profile, &config->profile_kind)) {
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
     config->cpu_profile = CORE_MACHINE_CPU_PROFILE_80386;
     config->fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE;
-    if (options == STD_NULL) return TYPE_STATUS_OK;
-    for (index = 0; index < options->argument_count; index += 2) {
-        if (index + 1 >= options->argument_count || options->arguments == STD_NULL) {
-            return TYPE_STATUS_INVALID_ARGUMENT;
-        }
-        if (!STD_STRCMP(options->arguments[index], "--profile")) {
-            if (!vm_session_provider_parse_profile(options->arguments[index + 1],
-                    &config->profile_kind)) return TYPE_STATUS_INVALID_ARGUMENT;
-        } else if (!STD_STRCMP(options->arguments[index], "--cpu")) {
-            if (!vm_session_provider_parse_cpu(options->arguments[index + 1],
-                    &config->cpu_profile)) return TYPE_STATUS_INVALID_ARGUMENT;
-            has_generic_override = 1;
-        } else if (!STD_STRCMP(options->arguments[index], "--fpu")) {
-            if (!vm_session_provider_parse_fpu(options->arguments[index + 1],
-                    &config->fpu_profile)) return TYPE_STATUS_INVALID_ARGUMENT;
-            has_generic_override = 1;
-        } else if (!STD_STRCMP(options->arguments[index], "--fdd")) {
-            config->fdd_image = !STD_STRCMP(options->arguments[index + 1], "null") ?
-                STD_NULL : options->arguments[index + 1];
-        } else if (!STD_STRCMP(options->arguments[index], "--hdd")) {
-            config->hdd_image = !STD_STRCMP(options->arguments[index + 1], "null") ?
-                STD_NULL : options->arguments[index + 1];
-        } else if (!STD_STRCMP(options->arguments[index], "--boot")) {
-            if (!STD_STRCMP(options->arguments[index + 1], "hard_disk")) {
-                config->boot_hdd = 1;
-            } else if (STD_STRCMP(options->arguments[index + 1], "floppy") &&
-                STD_STRCMP(options->arguments[index + 1], "rom")) {
-                return TYPE_STATUS_INVALID_ARGUMENT;
-            }
-        } else if (!STD_STRCMP(options->arguments[index], "--display")) {
-            if (STD_STRCMP(options->arguments[index + 1], "console") &&
-                STD_STRCMP(options->arguments[index + 1], "window") &&
-                STD_STRCMP(options->arguments[index + 1], "auto")) {
-                return TYPE_STATUS_INVALID_ARGUMENT;
-            }
-        } else if (!STD_STRCMP(options->arguments[index], "--memory-kib")) {
-            if (core_product_utils_parse_memory_kib(options->arguments[index + 1],
-                    &config->memory_bytes) != TYPE_STATUS_OK) return TYPE_STATUS_INVALID_ARGUMENT;
-            has_generic_override = 1;
-        } else if (!STD_STRCMP(options->arguments[index], "--model40-rom-even-path")) {
-            config->model40_firmware.even_path = options->arguments[index + 1];
-        } else if (!STD_STRCMP(options->arguments[index], "--model40-rom-even-sha256")) {
-            config->model40_firmware.even_sha256 = options->arguments[index + 1];
-        } else if (!STD_STRCMP(options->arguments[index], "--model40-rom-odd-path")) {
-            config->model40_firmware.odd_path = options->arguments[index + 1];
-        } else if (!STD_STRCMP(options->arguments[index], "--model40-rom-odd-sha256")) {
-            config->model40_firmware.odd_sha256 = options->arguments[index + 1];
-        } else if (!STD_STRCMP(options->arguments[index], "--model40-provenance")) {
-            config->model40_firmware.provenance = options->arguments[index + 1];
-        } else {
-            return TYPE_STATUS_INVALID_ARGUMENT;
-        }
+    if ((request->cpu[0] != '\0' && !vm_session_provider_parse_cpu(request->cpu,
+            &config->cpu_profile)) ||
+        (request->fpu[0] != '\0' && !vm_session_provider_parse_fpu(request->fpu,
+            &config->fpu_profile))) return TYPE_STATUS_INVALID_ARGUMENT;
+    config->memory_bytes = request->memory_bytes;
+    config->fdd_image = request->floppy[0] == '\0' ? STD_NULL : request->floppy;
+    config->hdd_image = request->hard_disk[0] == '\0' ? STD_NULL : request->hard_disk;
+    config->boot_hdd = !STD_STRCMP(request->boot, "hard_disk");
+    if (config->profile_kind == VM_SESSION_PROFILE_COMPAQ_DESKPRO_386_MODEL_40) {
+        config->model40_firmware.even_path = request->model40_even_path;
+        config->model40_firmware.even_sha256 = request->model40_even_sha256;
+        config->model40_firmware.odd_path = request->model40_odd_path;
+        config->model40_firmware.odd_sha256 = request->model40_odd_sha256;
+        config->model40_firmware.provenance = request->model40_provenance;
     }
+    if (config->profile_kind != VM_SESSION_PROFILE_COMPAQ_DESKPRO_386_MODEL_40 &&
+        (request->model40_even_path[0] != '\0' || request->model40_even_sha256[0] != '\0' ||
+         request->model40_odd_path[0] != '\0' || request->model40_odd_sha256[0] != '\0' ||
+         request->model40_provenance[0] != '\0')) return TYPE_STATUS_INVALID_STATE;
     if (config->profile_kind != VM_SESSION_PROFILE_DEFAULT_PC_AT &&
-        has_generic_override) return TYPE_STATUS_INVALID_STATE;
+        (config->memory_bytes != 0u || request->cpu[0] != '\0' ||
+         request->fpu[0] != '\0')) return TYPE_STATUS_INVALID_STATE;
+    if (config->profile_kind == VM_SESSION_PROFILE_COMPAQ_DESKPRO_386_MODEL_40 &&
+        STD_STRCMP(request->boot, "rom")) return TYPE_STATUS_INVALID_STATE;
+    if ((!STD_STRCMP(request->boot, "floppy") && config->fdd_image == STD_NULL) ||
+        (!STD_STRCMP(request->boot, "hard_disk") && config->hdd_image == STD_NULL) ||
+        (config->profile_kind == VM_SESSION_PROFILE_IBM_5170_MODEL_339 &&
+         config->hdd_image != STD_NULL)) return TYPE_STATUS_INVALID_STATE;
     if (config->profile_kind == VM_SESSION_PROFILE_COMPAQ_DESKPRO_386_MODEL_40 &&
         !vm_profile_model40_byob_manifest_is_valid(&config->model40_firmware)) {
         return TYPE_STATUS_INVALID_ARGUMENT;
@@ -130,8 +110,27 @@ static type_status vm_session_provider_parse_options(
          config->model40_firmware.odd_path != STD_NULL ||
          config->model40_firmware.odd_sha256 != STD_NULL ||
          config->model40_firmware.provenance != STD_NULL)) return TYPE_STATUS_INVALID_STATE;
-    return config->fpu_profile == CORE_MACHINE_FPU_PROFILE_NONE ?
-        TYPE_STATUS_OK : TYPE_STATUS_INVALID_STATE;
+    return TYPE_STATUS_OK;
+}
+
+static type_status vm_session_provider_parse_options(
+    const core_product_session_open_options *options, vm_session_config *config)
+{
+    if (config == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    STD_MEMSET(config, 0, sizeof(*config));
+    config->cpu_profile = CORE_MACHINE_CPU_PROFILE_80386;
+    config->fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE;
+    if (options == STD_NULL || (options->argument_count == 0 &&
+            options->request == STD_NULL && options->request_bytes == 0u)) {
+        return TYPE_STATUS_OK;
+    }
+    if (options->argument_count != 0 || options->arguments != STD_NULL ||
+        options->request == STD_NULL ||
+        options->request_bytes != sizeof(vm_product_session_request)) {
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
+    return vm_session_provider_request_configure(
+        (const vm_product_session_request *)options->request, config);
 }
 
 static type_status vm_session_provider_open(C_VOID *context,

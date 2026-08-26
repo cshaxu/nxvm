@@ -17,6 +17,7 @@
 #include "core/product/session/session_interface.h"
 #include "core/product/session/session_provider.h"
 #include "vm/product/console.h"
+#include "vm/product/session_catalog.h"
 
 typedef struct console_memory_probe {
     C_INT exact_memory_seen;
@@ -27,7 +28,6 @@ static type_status console_memory_open(C_VOID *context,
     C_VOID **out_session)
 {
     console_memory_probe *probe = (console_memory_probe *)context;
-    C_INT index;
     C_CHAR *session = (C_CHAR *)STD_MALLOC(1u);
 
     (C_VOID)id;
@@ -35,11 +35,12 @@ static type_status console_memory_open(C_VOID *context,
         STD_FREE(session);
         return TYPE_STATUS_NO_MEMORY;
     }
-    for (index = 0; index + 1 < options->argument_count; index += 2) {
-        if (!STD_STRCMP(options->arguments[index], "--memory-kib") &&
-            !STD_STRCMP(options->arguments[index + 1], "4294967296")) {
-            probe->exact_memory_seen = 1;
-        }
+    if (options->argument_count == 0 && options->arguments == STD_NULL &&
+        options->request_bytes == sizeof(vm_product_session_request) &&
+        options->request != STD_NULL &&
+        ((const vm_product_session_request *)options->request)->memory_bytes ==
+            (STD_SIZE_T)4294967296u * 1024u) {
+        probe->exact_memory_seen = 1;
     }
     *out_session = session;
     return TYPE_STATUS_OK;
@@ -89,7 +90,7 @@ C_INT main(C_VOID)
     configured_provider.context = &probe;
     machine_provider.set_display_mode = console_memory_set_display;
     if (profile == STD_NULL || input == STD_NULL ||
-        STD_FPUTS("schema: nxvm-session/v1\nmachine:\n  profile: default-pc-at\n  memory_kib: 4294967296\n  display: console\n  boot: rom\nmedia:\n  floppy: null\n  hard_disk: null\n", profile) < 0 ||
+        STD_FPUTS("schema: nxvm-session\nprofile: default-pc-at\nmemory_kib: 4294967296\ndisplay: console\nboot: rom\nmedia:\n  floppy: null\n  hard_disk: null\n", profile) < 0 ||
         STD_FCLOSE(profile) != 0 || STD_FPUTS("1\nexit\n", input) < 0 ||
         fflush(input) != 0 || STD_FSEEK(input, 0L, STD_SEEK_SET) != 0 ||
         core_product_session_manager_create(&configured_provider, &manager) !=

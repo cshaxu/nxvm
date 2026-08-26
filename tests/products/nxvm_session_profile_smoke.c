@@ -3,31 +3,15 @@
 #include "core/product/session/session_interface.h"
 #include "core/product/session/session_provider.h"
 #include "vm/composition/session/provider.h"
-#include "vm/composition/session/session_interface.h"
+#include "vm/product/session_catalog.h"
 
-static C_INT verify_profile(const core_product_session_snapshot *snapshot,
-    core_machine_cpu_profile cpu_profile, core_machine_fpu_profile fpu_profile)
-{
-    return snapshot == STD_NULL ||
-        STD_STRCMP(snapshot->details, cpu_profile == CORE_MACHINE_CPU_PROFILE_8086 ?
-            "profile=default-pc-at cpu=8086 fpu=none" :
-            cpu_profile == CORE_MACHINE_CPU_PROFILE_80186 ?
-            "profile=default-pc-at cpu=80186 fpu=none" :
-            cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 ?
-            "profile=default-pc-at cpu=80286 fpu=none" :
-            "profile=default-pc-at cpu=80386 fpu=none") ||
-        fpu_profile != CORE_MACHINE_FPU_PROFILE_NONE;
-}
-
-static C_INT verify_open_profile(core_product_session_manager *manager,
-    C_CHAR *cpu_name, core_machine_cpu_profile cpu_profile,
+static C_INT verify_request(core_product_session_manager *manager,
+    const vm_product_session_request *request, const C_CHAR *details,
     core_product_session_id expected_id)
 {
-    C_CHAR fpu_none[] = "none";
-    C_CHAR option_cpu[] = "--cpu";
-    C_CHAR option_fpu[] = "--fpu";
-    const C_CHAR *arguments[] = { option_cpu, cpu_name, option_fpu, fpu_none };
-    const core_product_session_open_options options = { 4, arguments };
+    const core_product_session_open_options options = {
+        0, STD_NULL, request, sizeof(*request)
+    };
     core_product_session_snapshot snapshot;
     core_product_session_id id;
 
@@ -35,74 +19,104 @@ static C_INT verify_open_profile(core_product_session_manager *manager,
             &id) != TYPE_STATUS_OK || id != expected_id ||
         core_product_session_manager_select(manager, id) != TYPE_STATUS_OK ||
         core_product_session_manager_get_selected_snapshot(manager, &snapshot) !=
-            TYPE_STATUS_OK || verify_profile(&snapshot,
-            cpu_profile, CORE_MACHINE_FPU_PROFILE_NONE);
+            TYPE_STATUS_OK || STD_STRCMP(snapshot.details, details);
 }
 
-static C_INT verify_model_339_profile(core_product_session_manager *manager,
-    C_CHAR *profile_name, core_product_session_id expected_id)
+static C_INT verify_rejected(core_product_session_manager *manager,
+    const vm_product_session_request *request)
 {
-    C_CHAR option_profile[] = "--profile";
-    C_CHAR option_cpu[] = "--cpu";
-    C_CHAR cpu_80286[] = "80286";
-    const C_CHAR *arguments[] = { option_profile, profile_name };
-    const C_CHAR *override_arguments[] = { option_profile, profile_name,
-        option_cpu, cpu_80286 };
-    const core_product_session_open_options options = { 2, arguments };
-    const core_product_session_open_options overrides = { 4, override_arguments };
-    core_product_session_snapshot snapshot;
+    const core_product_session_open_options options = {
+        0, STD_NULL, request, sizeof(*request)
+    };
     core_product_session_id id;
 
     return core_product_session_manager_open_with_options(manager, &options,
-            &id) != TYPE_STATUS_OK || id != expected_id ||
-        core_product_session_manager_select(manager, id) != TYPE_STATUS_OK ||
-        core_product_session_manager_get_selected_snapshot(manager, &snapshot) !=
-            TYPE_STATUS_OK || STD_STRCMP(snapshot.details,
-            "profile=ibm-5170-model-339 cpu=80286 fpu=none") ||
-        core_product_session_manager_open_with_options(manager, &overrides,
-            &id) != TYPE_STATUS_INVALID_STATE;
+        &id) == TYPE_STATUS_OK;
 }
 
 C_INT main(C_VOID)
 {
-    C_CHAR cpu_8086[] = "8086";
-    C_CHAR cpu_80186[] = "80186";
-    C_CHAR cpu_80286[] = "80286";
-    C_CHAR cpu_80386[] = "80386";
-    C_CHAR fpu_8087[] = "8087";
-    C_CHAR option_fpu[] = "--fpu";
-    const C_CHAR *fpu_options[] = { option_fpu, fpu_8087 };
-    const core_product_session_open_options select_fpu = {
-        2, fpu_options
+    const vm_product_session_request default_at = {
+        .profile = "default-pc-at", .display = "console", .boot = "rom"
+    };
+    const vm_product_session_request model_339 = {
+        .profile = "ibm-5170-model-339", .display = "console", .boot = "rom"
+    };
+    const vm_product_session_request default_at_8086 = {
+        .profile = "default-pc-at", .cpu = "8086", .fpu = "none",
+        .display = "console", .boot = "rom"
+    };
+    const vm_product_session_request default_at_8086_8087 = {
+        .profile = "default-pc-at", .cpu = "8086", .fpu = "8087",
+        .display = "console", .boot = "rom"
+    };
+    vm_product_session_request model_339_memory = model_339;
+    vm_product_session_request model_339_disk = model_339;
+    vm_product_session_request model_339_cpu = model_339;
+    vm_product_session_request default_at_firmware = default_at;
+    const vm_product_session_request invalid_display = {
+        .profile = "default-pc-at", .display = "telepathy", .boot = "rom"
+    };
+    const vm_product_session_request invalid_boot = {
+        .profile = "default-pc-at", .display = "console", .boot = "tape"
+    };
+    const vm_product_session_request missing_boot_media = {
+        .profile = "default-pc-at", .display = "console", .boot = "hard_disk"
+    };
+    const vm_product_session_request missing_model40_firmware = {
+        .profile = "compaq-deskpro-386-model-40", .display = "console", .boot = "rom"
+    };
+    const vm_product_session_request model40_non_rom_boot = {
+        .profile = "compaq-deskpro-386-model-40", .display = "console", .boot = "floppy"
+    };
+    const vm_product_session_request unknown_profile = {
+        .profile = "unknown", .display = "console", .boot = "rom"
+    };
+    const vm_product_session_request numeric_profile = {
+        .profile = "1", .display = "console", .boot = "rom"
+    };
+    const C_CHAR *legacy_arguments[] = { "--profile", "default-pc-at" };
+    const core_product_session_open_options legacy = {
+        2, legacy_arguments, STD_NULL, 0u
+    };
+    const core_product_session_open_options invalid_size = {
+        0, STD_NULL, &default_at, sizeof(default_at) - 1u
     };
     core_product_session_provider provider;
     core_product_session_manager *manager = STD_NULL;
-    C_CHAR profile_model_339[] = "ibm-5170-model-339";
-    C_CHAR profile_model_339_number[] = "2";
-    core_product_session_snapshot snapshots[7];
     core_product_session_id id;
-    STD_SIZE_T count;
 
+    model_339_memory.memory_bytes = 1024u;
+    STD_STRCPY(model_339_disk.hard_disk, "disk.img");
+    STD_STRCPY(model_339_cpu.cpu, "80386");
+    STD_STRCPY(default_at_firmware.model40_provenance, "not allowed");
     vm_session_provider_initialize(&provider);
     if (core_product_session_manager_create(&provider, &manager) != TYPE_STATUS_OK ||
-        verify_open_profile(manager, cpu_8086, CORE_MACHINE_CPU_PROFILE_8086, 0u) ||
-        verify_open_profile(manager, cpu_80186, CORE_MACHINE_CPU_PROFILE_80186, 1u) ||
-        verify_open_profile(manager, cpu_80286, CORE_MACHINE_CPU_PROFILE_80286, 2u) ||
-        verify_open_profile(manager, cpu_80386, CORE_MACHINE_CPU_PROFILE_80386, 3u) ||
-        verify_model_339_profile(manager, profile_model_339, 4u) ||
-        verify_model_339_profile(manager, profile_model_339_number, 5u) ||
-        core_product_session_manager_select(manager, 0u) != TYPE_STATUS_OK ||
-        core_product_session_manager_open_with_options(manager, &select_fpu,
-            &id) != TYPE_STATUS_INVALID_STATE ||
-        core_product_session_manager_get_count(manager, &count) != TYPE_STATUS_OK ||
-        count != 6u || core_product_session_manager_list(manager, snapshots,
-            6u, &count) != TYPE_STATUS_OK ||
-        STD_STRCMP(snapshots[0].details,
-            "profile=default-pc-at cpu=8086 fpu=none") ||
-        STD_STRCMP(snapshots[4].details,
-            "profile=ibm-5170-model-339 cpu=80286 fpu=none")) goto fail;
+        verify_request(manager, &default_at,
+            "profile=default-pc-at cpu=80386 fpu=none", 0u) ||
+        verify_request(manager, &model_339,
+            "profile=ibm-5170-model-339 cpu=80286 fpu=none", 1u) ||
+        verify_request(manager, &default_at_8086,
+            "profile=default-pc-at cpu=8086 fpu=none", 2u) ||
+        verify_request(manager, &default_at_8086_8087,
+            "profile=default-pc-at cpu=8086 fpu=8087", 3u) ||
+        core_product_session_manager_open_with_options(manager, &legacy, &id) !=
+            TYPE_STATUS_INVALID_ARGUMENT ||
+        core_product_session_manager_open_with_options(manager, &invalid_size, &id) !=
+            TYPE_STATUS_INVALID_ARGUMENT ||
+        verify_rejected(manager, &model_339_memory) ||
+        verify_rejected(manager, &model_339_disk) ||
+        verify_rejected(manager, &model_339_cpu) ||
+        verify_rejected(manager, &default_at_firmware) ||
+        verify_rejected(manager, &invalid_display) ||
+        verify_rejected(manager, &invalid_boot) ||
+        verify_rejected(manager, &missing_boot_media) ||
+        verify_rejected(manager, &missing_model40_firmware) ||
+        verify_rejected(manager, &model40_non_rom_boot) ||
+        verify_rejected(manager, &unknown_profile) ||
+        verify_rejected(manager, &numeric_profile)) goto fail;
     core_product_session_manager_destroy(manager);
-    STD_PRINTF("M5:T157:S1:SESSION-PROFILES:OK\n");
+    STD_PRINTF("M5:T482:S3:SESSION-REQUEST:OK\n");
     return 0;
 
 fail:

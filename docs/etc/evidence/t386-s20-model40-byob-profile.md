@@ -24,11 +24,10 @@ accepts no CPU, FPU, memory or free-form hardware override.
 ## Frozen YAML Contract
 
 ```yaml
-schema: nxvm-session/v1
-machine:
-  profile: compaq-deskpro-386-model-40
-  display: console
-  boot: rom
+schema: nxvm-session
+profile: compaq-deskpro-386-model-40
+display: console
+boot: rom
 media:
   floppy: null
   hard_disk: null

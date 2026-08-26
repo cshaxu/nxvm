@@ -370,7 +370,7 @@ static C_VOID doFloppy(vm_product_console_context *context)
 }
 
 static C_INT vm_product_console_choose_profile(const vm_product_console_context *context,
-    vm_product_session_catalog_entry *out_entry)
+    vm_product_session_request *out_entry)
 {
     C_CHAR selection[32];
     STD_SIZE_T index;
@@ -384,9 +384,9 @@ static C_INT vm_product_console_choose_profile(const vm_product_console_context 
     }
     STD_PRINTF("Available session profiles:\n");
     for (index = 0u; index < count; ++index) {
-        vm_product_session_catalog_entry entry;
+        vm_product_session_request entry;
 
-        if (vm_product_session_catalog_get(context->catalog, index, &entry) !=
+        if (vm_product_session_catalog_get_request(context->catalog, index, &entry) !=
             TYPE_STATUS_OK) return 0;
         STD_PRINTF("  %u  %s\n", (unsigned int)(index + 1u), entry.file_name);
     }
@@ -396,7 +396,7 @@ static C_INT vm_product_console_choose_profile(const vm_product_console_context 
     if (selection[0] == '\n' || selection[0] == '\r' || selection[0] == '\0') return 0;
     choice = STD_ATOI(selection);
     if (choice > 0 && (STD_SIZE_T)choice <= count) {
-        return vm_product_session_catalog_get(context->catalog,
+        return vm_product_session_catalog_get_request(context->catalog,
             (STD_SIZE_T)(choice - 1), out_entry) == TYPE_STATUS_OK;
     }
     STD_PRINTF("Unknown profile selection.\n");
@@ -411,69 +411,24 @@ static C_VOID vm_product_console_write_line(C_VOID *context, const C_CHAR *line)
 
 static C_VOID vm_product_console_open_profile(vm_product_console_context *context)
 {
-    vm_product_session_catalog_entry selected_entry;
-    const vm_product_session_catalog_entry *entry = &selected_entry;
-    C_CHAR option[] = "--profile";
-    C_CHAR option_fdd[] = "--fdd";
-    C_CHAR option_hdd[] = "--hdd";
-    C_CHAR option_boot[] = "--boot";
-    C_CHAR option_display[] = "--display";
-    C_CHAR option_cpu[] = "--cpu";
-    C_CHAR option_fpu[] = "--fpu";
-    C_CHAR option_memory[] = "--memory-kib";
-    C_CHAR option_even_path[] = "--model40-rom-even-path";
-    C_CHAR option_even_sha256[] = "--model40-rom-even-sha256";
-    C_CHAR option_odd_path[] = "--model40-rom-odd-path";
-    C_CHAR option_odd_sha256[] = "--model40-rom-odd-sha256";
-    C_CHAR option_provenance[] = "--model40-provenance";
-    C_CHAR memory[32];
-    const C_CHAR *arguments[] = { option, STD_NULL,
-        option_fdd, STD_NULL, option_hdd, STD_NULL, option_boot, STD_NULL,
-        option_display, STD_NULL, STD_NULL, STD_NULL, STD_NULL, STD_NULL,
-        STD_NULL, STD_NULL, option_even_path, STD_NULL, option_even_sha256, STD_NULL,
-        option_odd_path, STD_NULL, option_odd_sha256, STD_NULL, option_provenance, STD_NULL };
-    const C_CHAR *command_arguments[28] = { "session", "open" };
-    core_product_session_output_provider output;
-    C_INT argument_count = 10;
+    vm_product_session_request selected_entry;
+    const vm_product_session_request *entry = &selected_entry;
+    const core_product_session_open_options options = {
+        0, STD_NULL, entry, sizeof(*entry)
+    };
+    core_product_session_id id;
+    type_status status;
 
     if (context == STD_NULL || !vm_product_console_choose_profile(context,
             &selected_entry)) return;
-    arguments[1] = entry->profile;
-    arguments[3] = entry->floppy[0] ? entry->floppy : "null";
-    arguments[5] = entry->hard_disk[0] ? entry->hard_disk : "null";
-    arguments[7] = entry->boot;
-    arguments[9] = entry->display;
-    if (!STD_STRCMP(entry->profile, "default-pc-at")) {
-        arguments[argument_count++] = option_cpu;
-        arguments[argument_count++] = entry->cpu[0] ? entry->cpu : "80386";
-        arguments[argument_count++] = option_fpu;
-        arguments[argument_count++] = entry->fpu[0] ? entry->fpu : "none";
-        if (entry->memory_bytes != 0u) {
-            if (STD_SNPRINTF(memory, sizeof(memory), "%zu",
-                    entry->memory_bytes >> 10) < 0) return;
-            arguments[argument_count++] = option_memory;
-            arguments[argument_count++] = memory;
-        }
+    status = core_product_session_manager_open_with_options(context->session_manager,
+        &options, &id);
+    if (status != TYPE_STATUS_OK || core_product_session_manager_select(
+            context->session_manager, id) != TYPE_STATUS_OK) {
+        STD_PRINTF("Unable to open the selected session.\n");
+        return;
     }
-    if (!STD_STRCMP(entry->profile, "compaq-deskpro-386-model-40")) {
-        arguments[argument_count++] = option_even_path;
-        arguments[argument_count++] = entry->model40_even_path;
-        arguments[argument_count++] = option_even_sha256;
-        arguments[argument_count++] = entry->model40_even_sha256;
-        arguments[argument_count++] = option_odd_path;
-        arguments[argument_count++] = entry->model40_odd_path;
-        arguments[argument_count++] = option_odd_sha256;
-        arguments[argument_count++] = entry->model40_odd_sha256;
-        arguments[argument_count++] = option_provenance;
-        arguments[argument_count++] = entry->model40_provenance;
-    }
-    for (C_INT index = 0; index < argument_count; ++index) {
-        command_arguments[index + 2] = arguments[index];
-    }
-    output.write_line = vm_product_console_write_line;
-    output.context = STD_NULL;
-    if (!core_product_session_command_execute(context->session_manager,
-            argument_count + 2, command_arguments, &output)) return;
+    STD_PRINTF("Opened and selected session %u.\n", (unsigned int)id);
     machineProvider->set_display_mode(machineProvider->context,
         !STD_STRCMP(entry->display, "window") ? VM_SESSION_DISPLAY_WINDOW :
         !STD_STRCMP(entry->display, "auto") ? VM_SESSION_DISPLAY_AUTO :

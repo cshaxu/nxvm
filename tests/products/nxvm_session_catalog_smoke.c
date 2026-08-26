@@ -23,30 +23,36 @@ static C_INT write_file(const C_CHAR *path, const C_CHAR *text)
 C_INT main(C_VOID)
 {
     const C_CHAR *directory = "t381-session-catalog";
-    const C_CHAR *valid = "schema: nxvm-session/v1\nmachine:\n  profile: default-pc-at\n  memory_kib: 1\n  display: console\n  boot: rom\nmedia:\n  floppy: null\n  hard_disk: null\n";
+    const C_CHAR *valid = "schema: nxvm-session\nprofile: default-pc-at\nmemory_kib: 1\ndisplay: console\nboot: rom\nmedia:\n  floppy: null\n  hard_disk: null\n";
     vm_product_session_catalog *catalog = STD_NULL;
-    vm_product_session_catalog_entry first;
-    vm_product_session_catalog_entry second;
-    vm_product_session_catalog_entry third;
+    vm_product_session_request first;
+    vm_product_session_request second;
+    vm_product_session_request third;
+    vm_product_session_request fourth;
+    vm_product_session_request fifth;
     C_INT result = 1;
 
     (C_VOID)TEST_RMDIR(directory);
     if (TEST_MKDIR(directory) != 0 || !write_file("t381-session-catalog/a.yaml", valid) ||
-        !write_file("t381-session-catalog/b.yaml", "schema: nxvm-session/v1\nmachine:\n  profile: default-pc-at\n  memory_kib: -1\n  display: console\n  boot: rom\nmedia:\n  floppy: null\n  hard_disk: null\n") ||
-        !write_file("t381-session-catalog/c.yaml", "schema: nxvm-session/v1\nmachine:\n  profile: default-pc-at\n  memory_kib: 1x\n  display: console\n  boot: rom\nmedia:\n  floppy: null\n  hard_disk: null\n") ||
-        !write_file("t381-session-catalog/d.yaml", "schema: nxvm-session/v1\nmachine:\n  profile: default-pc-at\n  memory_kib: 18446744073709551615\n  display: console\n  boot: rom\nmedia:\n  floppy: null\n  hard_disk: null\n") ||
-        !write_file("t381-session-catalog/e.yaml", "schema: nxvm-session/v1\nmachine:\n  profile: default-pc-at\n  memory_kib: \n  display: console\n  boot: rom\nmedia:\n  floppy: null\n  hard_disk: null\n") ||
-        !write_file("t381-session-catalog/f.yaml", "schema: nxvm-session/v1\nmachine:\n  profile: default-pc-at\n  memory_kib: 0\n  display: console\n  boot: rom\nmedia:\n  floppy: null\n  hard_disk: null\n") ||
-        !write_file("t381-session-catalog/g.yaml", "schema: nxvm-session/v1\nmachine:\n  profile: default-pc-at\n  memory_kib: 18014398509481983\n  display: console\n  boot: rom\nmedia:\n  floppy: null\n  hard_disk: null\n")) goto done;
-    if (!write_file("t381-session-catalog/j.yaml", "schema: nxvm-session/v1\nmachine:\n  profile: default-pc-at\n  cpu: 80486\n  display: console\n  boot: rom\nmedia:\n  floppy: null\n  hard_disk: null\n") ||
-        !write_file("t381-session-catalog/k.yaml", "schema: nxvm-session/v1\nmachine:\n  profile: default-pc-at\n  fpu: 8087\n  display: console\n  boot: rom\nmedia:\n  floppy: null\n  hard_disk: null\n")) goto done;
-    if (!write_file("t381-session-catalog/h.yaml", "schema: nxvm-session/v1\nmachine:\n  profile: compaq-deskpro-386-model-40\n  display: console\n  boot: rom\nmedia:\n  floppy: null\n  hard_disk: null\nfirmware:\n  provenance: project-owned synthetic test input\n  rom_even:\n    slot: system-rom-even\n    path: even.bin\n    bytes: 16384\n    sha256: 4fe7b59af6de3b665b67788cc2f99892ab827efae3a467342b3bb4e3bc8e5bfe\n    map: read-only\n  rom_odd:\n    slot: system-rom-odd\n    path: odd.bin\n    bytes: 16384\n    sha256: 111ce3c2a38d83a2e4706bde4abddd509d7f8248116c6832b06745bdc349e09f\n    map: read-only\n")) goto done;
-    if (!write_file("t381-session-catalog/i.yaml", "schema: nxvm-session/v1\nmachine:\n  profile: compaq-deskpro-386-model-40\n  display: console\n  boot: rom\nmedia:\n  floppy: null\n  hard_disk: null\nfirmware:\n  provenance: project-owned synthetic test input\n  rom_even:\n    slot: system-rom-even\n    path: even.bin\n    bytes: 16384\n    sha256: invalid\n    map: read-only\n  rom_odd:\n    slot: system-rom-odd\n    path: odd.bin\n    bytes: 16384\n    sha256: 111ce3c2a38d83a2e4706bde4abddd509d7f8248116c6832b06745bdc349e09f\n    map: read-only\n")) goto done;
+        !write_file("t381-session-catalog/b.yaml", "schema: nxvm-session\nprofile: default-pc-at\nmemory_kib: -1\ndisplay: console\nboot: rom\nmedia:\n  floppy: null\n  hard_disk: null\n") ||
+        !write_file("t381-session-catalog/c.yaml", "schema: nxvm-session\nprofile: default-pc-at\nmemory_kib: 1x\ndisplay: console\nboot: rom\nmedia:\n  floppy: null\n  hard_disk: null\n") ||
+        !write_file("t381-session-catalog/d.yaml", "schema: nxvm-session\nprofile: default-pc-at\nmemory_kib: 18446744073709551615\ndisplay: console\nboot: rom\nmedia:\n  floppy: null\n  hard_disk: null\n") ||
+        !write_file("t381-session-catalog/e.yaml", "schema: nxvm-session\nprofile: default-pc-at\nmemory_kib: \ndisplay: console\nboot: rom\nmedia:\n  floppy: null\n  hard_disk: null\n") ||
+        !write_file("t381-session-catalog/f.yaml", "schema: nxvm-session\nprofile: default-pc-at\nmemory_kib: 0\ndisplay: console\nboot: rom\nmedia:\n  floppy: null\n  hard_disk: null\n") ||
+        !write_file("t381-session-catalog/g.yaml", "schema: nxvm-session\nprofile: default-pc-at\nmemory_kib: 18014398509481983\ndisplay: console\nboot: rom\nmedia:\n  floppy: null\n  hard_disk: null\n")) goto done;
+    if (!write_file("t381-session-catalog/j.yaml", "schema: nxvm-session\nprofile: default-pc-at\ncpu: 80486\ndisplay: console\nboot: rom\nmedia:\n  floppy: null\n  hard_disk: null\n") ||
+        !write_file("t381-session-catalog/k.yaml", "schema: nxvm-session\nprofile: default-pc-at\nfpu: 8087\ndisplay: console\nboot: rom\nmedia:\n  floppy: null\n  hard_disk: null\n") ||
+        !write_file("t381-session-catalog/l.yaml", "schema: nxvm-session/v1\nprofile: default-pc-at\ndisplay: console\nboot: rom\nmedia:\n  floppy: null\n  hard_disk: null\n") ||
+        !write_file("t381-session-catalog/m.yaml", "schema: nxvm-session\nmachine:\n  profile: default-pc-at\ndisplay: console\nboot: rom\nmedia:\n  floppy: null\n  hard_disk: null\n")) goto done;
+    if (!write_file("t381-session-catalog/h.yaml", "schema: nxvm-session\nprofile: compaq-deskpro-386-model-40\ndisplay: console\nboot: rom\nmedia:\n  floppy: null\n  hard_disk: null\nfirmware:\n  provenance: project-owned synthetic test input\n  rom_even:\n    slot: system-rom-even\n    path: even.bin\n    bytes: 16384\n    sha256: 4fe7b59af6de3b665b67788cc2f99892ab827efae3a467342b3bb4e3bc8e5bfe\n    map: read-only\n  rom_odd:\n    slot: system-rom-odd\n    path: odd.bin\n    bytes: 16384\n    sha256: 111ce3c2a38d83a2e4706bde4abddd509d7f8248116c6832b06745bdc349e09f\n    map: read-only\n")) goto done;
+    if (!write_file("t381-session-catalog/i.yaml", "schema: nxvm-session\nprofile: compaq-deskpro-386-model-40\ndisplay: console\nboot: rom\nmedia:\n  floppy: null\n  hard_disk: null\nfirmware:\n  provenance: project-owned synthetic test input\n  rom_even:\n    slot: system-rom-even\n    path: even.bin\n    bytes: 16384\n    sha256: invalid\n    map: read-only\n  rom_odd:\n    slot: system-rom-odd\n    path: odd.bin\n    bytes: 16384\n    sha256: 111ce3c2a38d83a2e4706bde4abddd509d7f8248116c6832b06745bdc349e09f\n    map: read-only\n")) goto done;
     if (vm_product_session_catalog_create(directory, &catalog) != TYPE_STATUS_OK) goto done;
-    if (vm_product_session_catalog_get(catalog, 0u, &first) != TYPE_STATUS_OK ||
-        vm_product_session_catalog_get(catalog, 1u, &second) != TYPE_STATUS_OK ||
-        vm_product_session_catalog_get(catalog, 2u, &third) != TYPE_STATUS_OK) goto done;
-    if (vm_product_session_catalog_count(catalog) == 3u &&
+    if (vm_product_session_catalog_get_request(catalog, 0u, &first) != TYPE_STATUS_OK ||
+        vm_product_session_catalog_get_request(catalog, 1u, &second) != TYPE_STATUS_OK ||
+        vm_product_session_catalog_get_request(catalog, 2u, &third) != TYPE_STATUS_OK ||
+        vm_product_session_catalog_get_request(catalog, 3u, &fourth) != TYPE_STATUS_OK ||
+        vm_product_session_catalog_get_request(catalog, 4u, &fifth) != TYPE_STATUS_OK) goto done;
+    if (vm_product_session_catalog_count(catalog) == 5u &&
         vm_product_session_catalog_rejected(catalog) == 8u &&
         !STD_STRCMP(first.file_name, "a.yaml") &&
         !STD_STRCMP(first.profile, "default-pc-at") &&
@@ -55,7 +61,11 @@ C_INT main(C_VOID)
         second.memory_bytes ==
             (~(STD_SIZE_T)0u & ~((STD_SIZE_T)1023u)) &&
         !STD_STRCMP(third.profile, "compaq-deskpro-386-model-40") &&
-        !STD_STRCMP(third.model40_provenance, "project-owned synthetic test input")) result = 0;
+        !STD_STRCMP(third.model40_provenance, "project-owned synthetic test input") &&
+        !STD_STRCMP(fourth.file_name, "j.yaml") &&
+        !STD_STRCMP(fourth.cpu, "80486") &&
+        !STD_STRCMP(fifth.file_name, "k.yaml") &&
+        !STD_STRCMP(fifth.fpu, "8087")) result = 0;
 done:
     vm_product_session_catalog_destroy(catalog);
     (C_VOID)STD_REMOVE("t381-session-catalog/a.yaml");
@@ -69,7 +79,14 @@ done:
     (C_VOID)STD_REMOVE("t381-session-catalog/i.yaml");
     (C_VOID)STD_REMOVE("t381-session-catalog/j.yaml");
     (C_VOID)STD_REMOVE("t381-session-catalog/k.yaml");
+    (C_VOID)STD_REMOVE("t381-session-catalog/l.yaml");
+    (C_VOID)STD_REMOVE("t381-session-catalog/m.yaml");
     (C_VOID)TEST_RMDIR(directory);
-    if (result == 0) STD_PRINTF("M5:T381:S1:SESSION-CATALOG:OK\n");
+    if (result == 0) {
+        STD_PRINTF("M5:T381:S1:SESSION-CATALOG:OK\n");
+        STD_PRINTF("M5:T482:S2:ROOT-PARSER:OK\n");
+        STD_PRINTF("M5:T482:S2:REJECTIONS:OK\n");
+        STD_PRINTF("M5:T482:S2:IMMUTABLE-REQUEST:OK\n");
+    }
     return result;
 }

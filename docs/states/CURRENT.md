@@ -11,25 +11,25 @@
 | Identifier Mode | Continuation |
 | Admission And Approval | T482 S1 implementation is `1f32d13a`; this one-session coordinator transition accepts its bounded selection audit before S2 begins. |
 | Objective | Implement one strict root-only `nxvm-session` parser which yields one immutable request without profile-specific hardware policy. |
-| Non-goals | No compatibility grammar, user hardware authoring, profile topology/CPU/ROM/timing field, XT admission, asset import or L4 work. |
+| Non-goals | No compatibility grammar, user hardware authoring, profile topology/ROM/timing field, XT admission, asset import or L4 work. Root CPU/FPU are retained only when the resolved built-in profile declares them as session choices. |
 | Reference Baseline | T482 S1 universe, T475 resolver boundary and current session-catalog parser. |
 | Candidate Proposal | [VM session profile YAML cutover](../proposals/m5-vm-session-profile-yaml-cutover.md). |
 | Files And ABI Surface | VM product parser/request interface, parser tests and T482 evidence/status; no Core ABI change. |
 | Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, source policy and the proposal's one-production-path constraint. |
-| Verification | Positive root-only parse plus nested/v1/duplicate/unknown/hardware-field rejection tests and documentation governance. |
+| Verification | Positive root-only parse plus nested/v1/duplicate/unknown-field rejection, copied-request, declared CPU/FPU choice, fixed-profile override rejection tests and documentation governance. |
 | Expected Markers | `M5:T482:S2:ROOT-PARSER:OK`; `M5:T482:S2:REJECTIONS:OK`; `M5:T482:S2:IMMUTABLE-REQUEST:OK`. |
 | Asset Needs | No acquisition or import. |
 | Reporting Requirements | Record parser owner, immutable request fields, exact accepted grammar, rejection matrix and no-hardware-authoring proof. |
 | Original Owner Request | Continue the ordered minimalist queue toward the pre-Windows L3 admission audit. |
 | Stop Conditions | Stop if parsing a required choice would require profile-specific hardware validation or a second request representation. |
-| Exit Criteria | A single parser accepts only the root grammar and produces one immutable request with no CPU/FPU/topology/ROM/timing field. |
+| Exit Criteria | A single parser accepts only the root grammar and produces one immutable request with no user-authored topology/ROM/timing field. CPU/FPU may be carried only as opaque declared-session-choice input for the resolved built-in profile. |
 | Similar-Issue Sweep | Session-catalog parser, parser consumers, YAML fixtures and all profile selection tests. |
 
 ## Current Technical Baseline
 
 - **Current developer artifact:** target `vm-0-5-0480`; the stripped Release
   `nxvm_0_5_0480.exe` has SHA-256
-  `7C18DF509A2359554390B3DF981057CB2F476F88F2E612038F2B02FD08A21535`.
+  `B4726CE5364697311A31AAC2EF90C12381E66DA5CC86AE1BD074774D9C4B3F32`.
   Debug remains the current-gate route. T471 preserves Core-owned progression:
   a verified axis is Standard-paced only by host waiting against completed
   Core progress. T472 extends that comparison to an explicit L2 macro axis,

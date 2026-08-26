@@ -5,7 +5,7 @@
 #include "vm/product/session_catalog.h"
 
 struct vm_product_session_catalog {
-    vm_product_session_catalog_entry entries[VM_PRODUCT_SESSION_CATALOG_MAX];
+    vm_product_session_request entries[VM_PRODUCT_SESSION_CATALOG_MAX];
     STD_SIZE_T count;
     STD_SIZE_T rejected;
 };
@@ -35,17 +35,6 @@ static C_INT vm_product_session_catalog_copy(C_CHAR *destination,
     return 1;
 }
 
-static C_INT vm_product_session_catalog_default_cpu_is_valid(const C_CHAR *value)
-{
-    return value == STD_NULL || value[0] == 0 || !STD_STRCMP(value, "8086") ||
-        !STD_STRCMP(value, "80186") || !STD_STRCMP(value, "80286") ||
-        !STD_STRCMP(value, "80386");
-}
-
-static C_INT vm_product_session_catalog_default_fpu_is_valid(const C_CHAR *value)
-{
-    return value == STD_NULL || value[0] == 0 || !STD_STRCMP(value, "none");
-}
 static C_INT vm_product_session_catalog_sha256_is_valid(const C_CHAR *value)
 {
     STD_SIZE_T index;
@@ -88,7 +77,7 @@ static C_INT vm_product_session_catalog_parse_value(C_CHAR *line,
 }
 
 static C_INT vm_product_session_catalog_parse(const C_CHAR *directory,
-    const C_CHAR *name, vm_product_session_catalog_entry *entry)
+    const C_CHAR *name, vm_product_session_request *entry)
 {
     C_CHAR path[VM_PRODUCT_SESSION_CATALOG_PATH_MAX];
     C_CHAR line[512];
@@ -104,8 +93,11 @@ static C_INT vm_product_session_catalog_parse(const C_CHAR *directory,
     C_INT firmware_odd_bytes = 0;
     C_INT firmware_odd_map = 0;
     C_INT firmware_provenance = 0;
+    C_INT firmware = 0;
     C_INT schema = 0;
     C_INT profile = 0;
+    C_INT cpu = 0;
+    C_INT fpu = 0;
     C_INT display = 0;
     C_INT boot = 0;
 
@@ -115,37 +107,38 @@ static C_INT vm_product_session_catalog_parse(const C_CHAR *directory,
     while (core_platform_file_reader_next(file, line, sizeof(line))) {
         C_CHAR *text = vm_product_session_catalog_trim(line);
         if (*text == '\0' || *text == '#') continue;
-        if (!STD_STRCMP(text, "machine:")) { section = 1; media = 0; firmware_slot = 0; continue; }
         if (!STD_STRCMP(text, "media:")) { section = 2; media = 0; firmware_slot = 0; continue; }
-        if (!STD_STRCMP(text, "firmware:")) { section = 3; media = 0; firmware_slot = 0; continue; }
+        if (!STD_STRCMP(text, "firmware:")) {
+            section = 3; media = 0; firmware_slot = 0; firmware = 1; continue;
+        }
         if (section == 3 && !STD_STRCMP(text, "rom_even:")) { firmware_slot = 1; continue; }
         if (section == 3 && !STD_STRCMP(text, "rom_odd:")) { firmware_slot = 2; continue; }
         if (section == 0 && vm_product_session_catalog_parse_value(text, "schema", &value)) {
-            if (schema || STD_STRCMP(value, "nxvm-session/v1")) break;
+            if (schema || STD_STRCMP(value, "nxvm-session")) break;
             schema = 1; continue;
         }
-        if (section == 1 && vm_product_session_catalog_parse_value(text, "profile", &value)) {
+        if (section == 0 && vm_product_session_catalog_parse_value(text, "profile", &value)) {
             if (profile || !vm_product_session_catalog_copy(entry->profile, sizeof(entry->profile), value)) break;
             profile = 1; continue;
         }
-        if (section == 1 && vm_product_session_catalog_parse_value(text, "cpu", &value)) {
-            if (!vm_product_session_catalog_copy(entry->cpu, sizeof(entry->cpu), value)) break;
-            continue;
+        if (section == 0 && vm_product_session_catalog_parse_value(text, "cpu", &value)) {
+            if (cpu || !vm_product_session_catalog_copy(entry->cpu, sizeof(entry->cpu), value)) break;
+            cpu = 1; continue;
         }
-        if (section == 1 && vm_product_session_catalog_parse_value(text, "fpu", &value)) {
-            if (!vm_product_session_catalog_copy(entry->fpu, sizeof(entry->fpu), value)) break;
-            continue;
+        if (section == 0 && vm_product_session_catalog_parse_value(text, "fpu", &value)) {
+            if (fpu || !vm_product_session_catalog_copy(entry->fpu, sizeof(entry->fpu), value)) break;
+            fpu = 1; continue;
         }
-        if (section == 1 && vm_product_session_catalog_parse_value(text, "memory_kib", &value)) {
+        if (section == 0 && vm_product_session_catalog_parse_value(text, "memory_kib", &value)) {
             if (core_product_utils_parse_memory_kib(value,
                     &entry->memory_bytes) != TYPE_STATUS_OK) break;
             continue;
         }
-        if (section == 1 && vm_product_session_catalog_parse_value(text, "display", &value)) {
+        if (section == 0 && vm_product_session_catalog_parse_value(text, "display", &value)) {
             if (display || !vm_product_session_catalog_copy(entry->display, sizeof(entry->display), value)) break;
             display = 1; continue;
         }
-        if (section == 1 && vm_product_session_catalog_parse_value(text, "boot", &value)) {
+        if (section == 0 && vm_product_session_catalog_parse_value(text, "boot", &value)) {
             if (boot || !vm_product_session_catalog_copy(entry->boot, sizeof(entry->boot), value)) break;
             boot = 1; continue;
         }
@@ -203,40 +196,22 @@ static C_INT vm_product_session_catalog_parse(const C_CHAR *directory,
     }
     core_platform_file_reader_close(file);
     if (!schema || !profile || !display || !boot || media != 0) return 0;
-    if (STD_STRCMP(entry->profile, "default-pc-at") &&
-        STD_STRCMP(entry->profile, "ibm-5170-model-339") &&
-        STD_STRCMP(entry->profile, "compaq-deskpro-386-model-40")) return 0;
-    if (!STD_STRCMP(entry->profile, "default-pc-at") &&
-        (!vm_product_session_catalog_default_cpu_is_valid(entry->cpu) ||
-         !vm_product_session_catalog_default_fpu_is_valid(entry->fpu))) return 0;
-    if (!STD_STRCMP(entry->profile, "ibm-5170-model-339") &&
-        (entry->cpu[0] != '\0' || entry->fpu[0] != '\0' ||
-         entry->memory_bytes != 0u || entry->hard_disk[0] != '\0')) return 0;
-    if (!STD_STRCMP(entry->profile, "compaq-deskpro-386-model-40") &&
-        (entry->cpu[0] != '\0' || entry->fpu[0] != '\0' || entry->memory_bytes != 0u ||
-         !firmware_even_slot || !firmware_even_bytes || !firmware_even_map ||
-         !firmware_odd_slot || !firmware_odd_bytes || !firmware_odd_map || !firmware_provenance ||
-         entry->model40_even_path[0] == '\0' || entry->model40_even_sha256[0] == '\0' ||
-         entry->model40_odd_path[0] == '\0' || entry->model40_odd_sha256[0] == '\0')) return 0;
-    if (!STD_STRCMP(entry->profile, "compaq-deskpro-386-model-40") &&
-        (!vm_product_session_catalog_sha256_is_valid(entry->model40_even_sha256) ||
+    if (firmware &&
+        (!firmware_even_slot || !firmware_even_bytes || !firmware_even_map ||
+         !firmware_odd_slot || !firmware_odd_bytes || !firmware_odd_map ||
+         !firmware_provenance || entry->model40_even_path[0] == '\0' ||
+         entry->model40_even_sha256[0] == '\0' || entry->model40_odd_path[0] == '\0' ||
+         entry->model40_odd_sha256[0] == '\0' ||
+         !vm_product_session_catalog_sha256_is_valid(entry->model40_even_sha256) ||
          !vm_product_session_catalog_sha256_is_valid(entry->model40_odd_sha256))) return 0;
-    if (!STD_STRCMP(entry->profile, "compaq-deskpro-386-model-40") &&
-        STD_STRCMP(entry->boot, "rom")) return 0;
-    if (STD_STRCMP(entry->display, "console") && STD_STRCMP(entry->display, "window") &&
-        STD_STRCMP(entry->display, "auto")) return 0;
-    if (STD_STRCMP(entry->boot, "floppy") && STD_STRCMP(entry->boot, "hard_disk") &&
-        STD_STRCMP(entry->boot, "rom")) return 0;
-    if ((!STD_STRCMP(entry->boot, "floppy") && entry->floppy[0] == '\0') ||
-        (!STD_STRCMP(entry->boot, "hard_disk") && entry->hard_disk[0] == '\0')) return 0;
     if (!vm_product_session_catalog_copy(entry->file_name, sizeof(entry->file_name), name)) return 0;
     return 1;
 }
 
 static C_INT vm_product_session_catalog_compare(const C_VOID *left, const C_VOID *right)
 {
-    const vm_product_session_catalog_entry *a = left;
-    const vm_product_session_catalog_entry *b = right;
+    const vm_product_session_request *a = left;
+    const vm_product_session_request *b = right;
     return STD_STRCMP(a->file_name, b->file_name);
 }
 
@@ -258,7 +233,7 @@ type_status vm_product_session_catalog_create(const C_CHAR *directory,
     while ((item = readdir(dir)) != STD_NULL) {
         STD_SIZE_T length = STD_STRLEN(item->d_name);
         const C_CHAR *extension;
-        vm_product_session_catalog_entry entry;
+        vm_product_session_request entry;
 
         if (length < 5u || catalog->count == VM_PRODUCT_SESSION_CATALOG_MAX) continue;
         extension = item->d_name + length - 5u;
@@ -292,12 +267,12 @@ STD_SIZE_T vm_product_session_catalog_rejected(const vm_product_session_catalog 
     return catalog == STD_NULL ? 0u : catalog->rejected;
 }
 
-type_status vm_product_session_catalog_get(const vm_product_session_catalog *catalog,
-    STD_SIZE_T index, vm_product_session_catalog_entry *out_entry)
+type_status vm_product_session_catalog_get_request(const vm_product_session_catalog *catalog,
+    STD_SIZE_T index, vm_product_session_request *out_request)
 {
-    if (catalog == STD_NULL || out_entry == STD_NULL || index >= catalog->count) {
+    if (catalog == STD_NULL || out_request == STD_NULL || index >= catalog->count) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
-    *out_entry = catalog->entries[index];
+    *out_request = catalog->entries[index];
     return TYPE_STATUS_OK;
 }

@@ -23,6 +23,11 @@ typedef enum core_product_session_display {
 typedef struct core_product_session_open_options {
     C_INT argument_count;
     const C_CHAR *const *arguments;
+    /* Provider-owned typed input, borrowed only for provider->open.  The
+     * manager neither interprets nor retains it; a provider that needs it
+     * after open must make its own copy. */
+    const C_VOID *request;
+    STD_SIZE_T request_bytes;
 } core_product_session_open_options;
 
 typedef type_status (*core_product_session_selected_operation)(
