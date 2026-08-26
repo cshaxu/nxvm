@@ -38,7 +38,6 @@
 | Task | Compact result |
 | --- | --- |
 | T478 S2 | Accepted: Default-AT now resolves as a typed 5170 child with its finite CPU/FPU/memory selection validated before freeze; [evidence](../etc/evidence/t478-s2-default-at-child-resolver.md) records provenance and rejection cases. |
-| T478 S1 | Accepted: the [Default-AT delta ledger](../etc/evidence/t478-s1-default-at-delta-ledger.md) classifies every descriptor/session field, dynamic owner and finite parity corpus; S2 is limited to one child resolver path using existing policy representation. |
 | T477 | Closed: DeskPro is an immutable `pc-at-5170` child with one copied Core-plan materialization path; the Model-40 session retains only dynamic resources. [Closure audit](../etc/evidence/t477-s4-closure-audit.md) records frozen parity, the 294-target gate and stripped Release 0477. |
 | T476 | Closed: IBM 5170 sessions consume one copied `pc-at-5170` root and one Core-plan materialization path; the former duplicate exception aggregate is retired while its independent owners remain. [Closure audit](../etc/evidence/t476-s4-closure-audit.md) records the 294-target gate and stripped Release 0476. |
 | T475 | Closed: one VM-only immutable resolver copies parent-patched values and per-field provenance to the existing Core-plan API, rejects invalid ownership/bindings/windows/routes/contracts/policy, and leaves current routes for ordered profile migrations. [Closure audit](../etc/evidence/t475-s3-integration-closure-audit.md) records the 294-target gate and stripped Release 0475. |
