@@ -33,6 +33,8 @@ C_INT main(C_VOID)
     t_port port;
     t_ram memory;
     t_vadp vadp;
+    core_machine_display_snapshot snapshot;
+    const type_unsigned_8 chain4_bytes[] = { 0x10u, 0x11u, 0x12u, 0x13u };
     C_INT failed = 0;
 
     STD_MEMSET(&memory, 0, sizeof(memory));
@@ -90,6 +92,25 @@ C_INT main(C_VOID)
     failed |= core_machine_port_read(&port, CORE_MACHINE_VADP_PORT_VGA_DAC_MASK) !=
         0xa5u;
 
+    core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_SEQUENCER_INDEX, 4u);
+    core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_SEQUENCER_DATA, 0x0eu);
+    core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_GRAPHICS_INDEX, 5u);
+    core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_GRAPHICS_DATA, 0x40u);
+    core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_GRAPHICS_INDEX, 6u);
+    core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_GRAPHICS_DATA, 0x05u);
+    (C_VOID)core_machine_port_read(&port, CORE_MACHINE_VADP_PORT_STATUS);
+    core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_ATTRIBUTE, 0x30u);
+    core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_ATTRIBUTE, 0x01u);
+    failed |= core_machine_memory_write_physical(&memory,
+        CORE_MACHINE_VADP_EGA_APERTURE_BASE, (type_virtual_address)chain4_bytes,
+        sizeof(chain4_bytes)) != TYPE_STATUS_OK;
+    STD_MEMSET(&snapshot, 0, sizeof(snapshot));
+    failed |= !core_machine_vadp_capture_snapshot(&vadp, &memory, &snapshot) ||
+        snapshot.kind != CORE_MACHINE_DISPLAY_KIND_VGA_320X200X256 ||
+        snapshot.pixel_width != 320u || snapshot.pixel_height != 200u ||
+        snapshot.pixels[0] != 0x10u || snapshot.pixels[1] != 0x11u ||
+        snapshot.pixels[2] != 0x12u || snapshot.pixels[3] != 0x13u;
+
     core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_ATTRIBUTE, 0x00u);
     failed |= !vadp.data.attribute_data_phase;
     (C_VOID)core_machine_port_read(&port, CORE_MACHINE_VADP_PORT_STATUS);
@@ -109,5 +130,6 @@ C_INT main(C_VOID)
         return 1;
     }
     STD_PRINTF("M5:T466:S2:EGA-EXTERNAL-PORT:OK\n");
+    STD_PRINTF("M5:T480:S4:CHAIN4:OK\n");
     return 0;
 }

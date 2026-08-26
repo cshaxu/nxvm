@@ -215,6 +215,18 @@ static C_INT core_machine_vadp_ega_planar_active(const t_vadp *adapter)
         (adapter->data.attribute[16] & 0x01u) != 0u;
 }
 
+static C_INT core_machine_vadp_vga_chain4_active(const t_vadp *adapter)
+{
+    return core_machine_vadp_ega_planar_active(adapter) &&
+        adapter->data.vga_configured && (adapter->data.sequencer[4] & 0x08u) != 0u;
+}
+
+static C_INT core_machine_vadp_vga_mode13_active(const t_vadp *adapter)
+{
+    return core_machine_vadp_vga_chain4_active(adapter) &&
+        (adapter->data.graphics[5] & 0x40u) != 0u;
+}
+
 static C_INT core_machine_vadp_ega_planar_display_active(const t_vadp *adapter)
 {
     core_machine_display_kind kind;
@@ -308,8 +320,10 @@ static type_status core_machine_vadp_ega_planar_read(C_VOID *owner,
         return TYPE_STATUS_UNSUPPORTED;
     }
     for (index = 0u; index < bytes; ++index) {
-        type_unsigned_32 offset = core_machine_vadp_ega_planar_offset(adapter,
-            physical + (type_unsigned_32)index);
+        type_unsigned_32 address = physical + (type_unsigned_32)index;
+        type_unsigned_32 offset = core_machine_vadp_vga_chain4_active(adapter) ?
+            (address - CORE_MACHINE_VADP_EGA_APERTURE_BASE) >> 2u :
+            core_machine_vadp_ega_planar_offset(adapter, address);
         type_unsigned_8 plane;
 
         for (plane = 0u; plane < CORE_MACHINE_VADP_EGA_PLANES; ++plane) {
@@ -319,7 +333,8 @@ static type_status core_machine_vadp_ega_planar_read(C_VOID *owner,
         if ((adapter->data.graphics[5] & 0x08u) != 0u) {
             out[index] = core_machine_vadp_ega_color_compare(adapter);
         } else {
-            type_unsigned_8 map = adapter->data.graphics[4];
+            type_unsigned_8 map = core_machine_vadp_vga_chain4_active(adapter) ?
+                (type_unsigned_8)(address & 3u) : adapter->data.graphics[4];
 
             out[index] = map < CORE_MACHINE_VADP_EGA_PLANES ?
                 adapter->data.ega_latches[map] : 0u;
@@ -349,8 +364,10 @@ static type_status core_machine_vadp_ega_planar_write(C_VOID *owner,
         return TYPE_STATUS_UNSUPPORTED;
     }
     for (index = 0u; index < bytes; ++index) {
-        type_unsigned_32 offset = core_machine_vadp_ega_planar_offset(adapter,
-            physical + (type_unsigned_32)index);
+        type_unsigned_32 address = physical + (type_unsigned_32)index;
+        type_unsigned_32 offset = core_machine_vadp_vga_chain4_active(adapter) ?
+            (address - CORE_MACHINE_VADP_EGA_APERTURE_BASE) >> 2u :
+            core_machine_vadp_ega_planar_offset(adapter, address);
         type_unsigned_8 plane;
 
         for (plane = 0u; plane < CORE_MACHINE_VADP_EGA_PLANES; ++plane) {
@@ -362,7 +379,9 @@ static type_status core_machine_vadp_ega_planar_write(C_VOID *owner,
                 adapter->data.graphics[3] >> 3, source_byte,
                 adapter->data.ega_latches[plane]);
 
-            if ((adapter->data.sequencer[2] & (1u << plane)) != 0u) {
+            if ((!core_machine_vadp_vga_chain4_active(adapter) ||
+                plane == (address & 3u)) &&
+                (adapter->data.sequencer[2] & (1u << plane)) != 0u) {
                 *target = (adapter->data.graphics[5] & 0x03u) == 1u ?
                     adapter->data.ega_latches[plane] :
                     (type_unsigned_8)((merged & adapter->data.graphics[8]) |
@@ -585,7 +604,7 @@ static C_INT core_machine_vadp_graphics_index_supported(type_unsigned_8 index)
 static type_unsigned_8 core_machine_vadp_graphics_mask(type_unsigned_8 index)
 {
     static const type_unsigned_8 masks[CORE_MACHINE_VADP_GRAPHICS_REGISTER_COUNT] = {
-        0x0fu, 0x0fu, 0x0fu, 0x1fu, 0x07u, 0x3fu, 0x0fu, 0x0fu, 0xffu
+        0x0fu, 0x0fu, 0x0fu, 0x1fu, 0x07u, 0x7fu, 0x0fu, 0x0fu, 0xffu
     };
 
     return core_machine_vadp_graphics_index_supported(index) ? masks[index] : 0u;
@@ -2026,12 +2045,51 @@ static C_INT core_machine_vadp_capture_ega_planar_snapshot(t_vadp *adapter,
     return TYPE_TRUE;
 }
 
+static C_INT core_machine_vadp_capture_vga_mode13_snapshot(t_vadp *adapter,
+    core_machine_display_snapshot *out_snapshot)
+{
+    type_unsigned_32 pixel;
+    type_unsigned_16 index;
+
+    if (adapter == STD_NULL || out_snapshot == STD_NULL ||
+        !core_machine_vadp_vga_mode13_active(adapter)) return TYPE_FALSE;
+    STD_MEMSET(out_snapshot, 0, sizeof(*out_snapshot));
+    out_snapshot->kind = CORE_MACHINE_DISPLAY_KIND_VGA_320X200X256;
+    out_snapshot->pixel_width = CORE_MACHINE_DISPLAY_GRAPHICS_WIDTH;
+    out_snapshot->pixel_height = CORE_MACHINE_DISPLAY_GRAPHICS_HEIGHT;
+    for (index = 0u; index < CORE_MACHINE_DISPLAY_PALETTE_ENTRIES; ++index) {
+        const type_unsigned_8 *entry = adapter->data.vga_dac[index &
+            adapter->data.vga_dac_mask];
+        out_snapshot->palette_rgb[index] =
+            ((type_unsigned_32)((entry[0] << 2u) | (entry[0] >> 4u)) << 16u) |
+            ((type_unsigned_32)((entry[1] << 2u) | (entry[1] >> 4u)) << 8u) |
+            (type_unsigned_32)((entry[2] << 2u) | (entry[2] >> 4u));
+    }
+    for (pixel = 0u; pixel < CORE_MACHINE_DISPLAY_GRAPHICS_WIDTH *
+        CORE_MACHINE_DISPLAY_GRAPHICS_HEIGHT; ++pixel) {
+        const type_unsigned_8 *plane = (const type_unsigned_8 *)adapter->data.ega_planar_vram +
+            (STD_SIZE_T)(pixel & 3u) * CORE_MACHINE_VADP_EGA_PLANE_BYTES;
+        out_snapshot->pixels[pixel] = plane[pixel >> 2u];
+    }
+    out_snapshot->buffer_changed = !adapter->data.captured ||
+        adapter->data.captured_kind != CORE_MACHINE_DISPLAY_KIND_VGA_320X200X256 ||
+        adapter->data.captured_ega_dirty_generation != adapter->data.dirty_generation;
+    out_snapshot->cursor_changed = TYPE_FALSE;
+    adapter->data.captured = TYPE_TRUE;
+    adapter->data.captured_kind = CORE_MACHINE_DISPLAY_KIND_VGA_320X200X256;
+    adapter->data.captured_ega_dirty_generation = adapter->data.dirty_generation;
+    return TYPE_TRUE;
+}
+
 C_INT core_machine_vadp_capture_snapshot(t_vadp *adapter, t_ram *memory,
     core_machine_display_snapshot *out_snapshot)
 {
     if (adapter != STD_NULL && adapter->data.ega_planar_enabled &&
         !core_machine_vadp_ega_output_active(adapter)) {
         return TYPE_FALSE;
+    }
+    if (core_machine_vadp_vga_mode13_active(adapter)) {
+        return core_machine_vadp_capture_vga_mode13_snapshot(adapter, out_snapshot);
     }
     if (core_machine_vadp_ega_planar_display_active(adapter)) {
         return core_machine_vadp_capture_ega_planar_snapshot(adapter, out_snapshot);
