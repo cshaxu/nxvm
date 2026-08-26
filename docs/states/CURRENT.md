@@ -2,26 +2,7 @@
 
 ## Current Work
 
-## M5 T474 S5 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner approved on 2026-08-25: admit the queue-first Core unified guest-time-axis and Core-to-VM boundary task before IBM 5170, DeskPro and default-at profile connections. |
-| Objective | Prove Standard and Turbo consume the same completed Core time/deadline observation across execution, HLT, pause, reset and debugger boundaries; Turbo removes only host waiting. |
-| Non-goals | No host-generated tick, new rate, profile-specific Core branch, second pacing baseline, device pointer exposure, controller behavior, firmware/media, L4 claim or Release artifact. |
-| Reference Baseline | T471 S1--S3 pacing proofs, T472 S1--S3 macro L2 policy, T474 S1 A8--A12 and S2--S4 retained boundaries; target `vm-0-5-0472`. |
-| Candidate Proposal | [Core unified guest-time axis and VM boundary](../proposals/m5-core-unified-guest-time-axis-and-vm-boundary.md). |
-| Files And ABI Surface | VM session waiting/pacing lifecycle, copied Core time observation, Core deadline advance, control/debugger boundaries and focused tests; existing public speed interface only. |
-| Applicable Rules | `docs/design/ARCHITECTURE.md`, `docs/design/CODING.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`, `docs/rules/DOCUMENT.md`, `docs/rules/EXECUTION.md`, `docs/etc/architecture/specification-driven-l3-timing.md`: Core alone advances guest time and VM may only wait against completed progress. |
-| Verification | Static VM-to-Core advance caller sweep; speed-policy, Model-339 clock-contract, Core-time, session initialization/atomicity and debugger lifecycle regressions; documentation governance and actual-diff review. |
-| Expected Markers | `M5:T474:S5:STANDARD-TURBO-LIFECYCLE:OK`. |
-| Asset Needs | Existing project-owned pacing and lifecycle evidence only; no external source, firmware, guest media or machine-local path enters the repository. |
-| Reporting Requirements | Record both mode semantics, pacing-origin reset points, HLT decision flow, caller sweep, retained Core mutation route, focused proof and code-size delta. |
-| Stop Conditions | Stop for owner direction if correct behavior needs host-to-Core advancement, a duplicate wait path, profile identity inside Core or unverified physical pacing. |
-| Exit Criteria | Standard waits only when completed Core progress exceeds its available host budget; Turbo omits that wait; both use identical Core deadline progression and reset/control/debugger boundaries; focused proof and documentation governance pass. |
-| Original Owner Request | Establish correct whole-machine L3 structure and interfaces first, then connect IBM 5170, DeskPro 386 and default-at in that order. |
-| Similar-Issue Sweep | Sweep VM/console/session/control/debugger callers and Core public advance APIs for direct host-driven advancement, a second pacing origin, fixed HLT delay, stale origin after lifecycle change or mode-specific Core behavior. |
+**Idle.**
 
 ## Current Technical Baseline
 
@@ -56,6 +37,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T474 S5 | Accepted: Standard waits only against completed Core progress while Turbo omits that wait; both retain one Core deadline route across HLT, reset, Console and debugger boundaries. [Evidence](../etc/evidence/t474-s5-standard-turbo-lifecycle.md) records the caller sweep and 5/5 focused proof. |
 | T474 S4 | Accepted: one copied Core deadline route admits source-qualified PIT/RTC boundaries and explicitly blocks DMA, KBC, FDC, HDC and unqualified plans. [Evidence](../etc/evidence/t474-s4-controller-deadline-composition.md) records the eight-controller sweep and focused proof. |
 | T474 S3 | Accepted: profile-selected transaction contracts now flow once into the existing Core plan; Model-40 Core configuration is profile-owned. [Evidence](../etc/evidence/t474-s3-profile-contract-to-plan.md) records the two-producer sweep and 4/4 focused proof. |
 | T474 S2 | Accepted: one immutable Core timing plan and one copied observation remain; [evidence](../etc/evidence/t474-s2-one-plan-one-observation.md) records the boundary proof. |
