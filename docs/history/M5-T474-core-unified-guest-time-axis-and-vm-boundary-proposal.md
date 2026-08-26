@@ -27,7 +27,7 @@ integer conversion does not upgrade an L2 premise to L3.
 
 This task is the prerequisite for every machine timing claim. It does not
 select IBM 5170, PC/AT, DeskPro, XT, ROM, firmware, media, profile inheritance
-or YAML policy. The queued [PC/AT 5170 root profile normalization](m5-pc-at-5170-root-profile-normalization.md)
+or YAML policy. The queued [PC/AT 5170 root profile normalization](../proposals/m5-pc-at-5170-root-profile-normalization.md)
 is its first intended consumer: it supplies selected IBM Model-339 source facts
 and retained L2 inputs through the validated plan, without creating any Core
 timing mechanism.

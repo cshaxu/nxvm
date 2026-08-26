@@ -2,13 +2,32 @@
 
 ## Current Work
 
-**Idle.**
+## M5 T474 S6 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner approved on 2026-08-25: admit the queue-first Core unified guest-time-axis and Core-to-VM boundary task before IBM 5170, DeskPro and default-at profile connections. |
+| Objective | Close T474 by auditing S1--S5 against the frozen ledger, running the full current gate, and publishing the required stripped Release T474 developer artifact. |
+| Non-goals | No additional timing mechanism, profile implementation, source import, firmware/media, host-generated tick, L4 claim or unrelated cleanup. |
+| Reference Baseline | T474 S1--S5 evidence; T469--T472 retained timing contracts; prior T472 artifact SHA-256 `C2B9B95B8A124B96106369E4D88D592A6A7A090D16401C176E93B91349E28BDE`. |
+| Candidate Proposal | [Core unified guest-time axis and VM boundary](../history/M5-T474-core-unified-guest-time-axis-and-vm-boundary-proposal.md). |
+| Files And ABI Surface | current artifact CMake target/presets, Current baseline, closure evidence and retained proposal; no runtime interface change beyond the artifact identity. |
+| Applicable Rules | `docs/design/ARCHITECTURE.md`, `docs/design/CODING.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`, `docs/rules/DOCUMENT.md`, `docs/rules/EXECUTION.md`: complete task audit, stripped Release artifact, full runtime gate and actual-diff review. |
+| Verification | `current-gates-gcc`, Release target `vm-0-5-0474`, artifact verifier, SHA-256/identity inspection, documentation governance, ledger/Queue/TODO/diff audit. |
+| Expected Markers | `M5:T474:S6:INTEGRATION-CLOSURE:OK` and `M5:T197:S1:CURRENT-ARTIFACT-TARGET:vm-0-5-0474:OK`. |
+| Asset Needs | Existing source/build outputs only; no firmware, guest media, third-party source or machine-local path enters the repository. |
+| Reporting Requirements | Map each ledger batch to evidence, report gate count, artifact path/version/hash/size, source/test delta, retained path, transferred limits and actual-diff result. |
+| Stop Conditions | Stop for owner direction on an unresolved full-gate failure, required source import, artifact identity conflict or evidence contradicting one-Core-time-axis ownership. |
+| Exit Criteria | Every T474 ledger row is accepted or explicitly transferred; full current gate and documentation governance pass; stripped `nxvm_0_5_0474.exe` is built and verified; status, history and proposal retention are consistent. |
+| Original Owner Request | Establish correct whole-machine L3 structure and interfaces first, then connect IBM 5170, DeskPro 386 and default-at in that order. |
+| Similar-Issue Sweep | Review current target/preset identity, artifact output, active proposal/Queue state, ledger rows, task progress, TODO receivers, source ownership and all T474 changed paths for stale version, duplicate route or unclosed transfer. |
 
 ## Current Technical Baseline
 
-- **Current developer artifact:** target `vm-0-5-0472`; the stripped Release
-  `nxvm_0_5_0472.exe` has SHA-256
-  `C2B9B95B8A124B96106369E4D88D592A6A7A090D16401C176E93B91349E28BDE`.
+- **Current developer artifact:** target `vm-0-5-0474`; the stripped Release
+  `nxvm_0_5_0474.exe` has SHA-256
+  `9D567C7C20E44A53076ED7EC97FB017AD3268CE4FDA5B653A621E35629299A48`.
   Debug remains the current-gate route. T471 preserves Core-owned progression:
   a verified axis is Standard-paced only by host waiting against completed
   Core progress. T472 extends that comparison to an explicit L2 macro axis,
