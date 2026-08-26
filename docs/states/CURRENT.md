@@ -2,26 +2,9 @@
 
 ## Current Work
 
-## M5 T477 S1 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | New |
-| Admission And Approval | Owner approved the ordered profile program and continuous single-session execution on 2026-08-25; T476's accepted 5170 root is the required predecessor. |
-| Objective | Freeze the complete inherited-versus-DeskPro delta ledger and finite parity universe for making the existing Model-40 session a single explicit `pc-at-5170` child. |
-| Non-goals | No runtime migration, Core/device/timing change, physical/L3 claim, new firmware/media, YAML cutover, default-at work, or external research/import. |
-| Reference Baseline | T476 closure audit; accepted Model-40 evidence and current Model-40 source/composition tests; DeskPro derived-profile proposal. |
-| Candidate Proposal | [DeskPro 386 5170-derived runnable profile](../proposals/m5-deskpro-386-5170-derived-runnable-profile.md). |
-| Files And ABI Surface | Evidence ledger only unless a stale existing Model-40 parity test must be corrected; no production ABI change. |
-| Applicable Rules | VM owns inheritance/profile identity; Core remains machine-neutral and sole mutable machine owner; one future DeskPro construction route; minimal, source-backed declarations. |
-| Verification | Source-to-ledger sweep of Model-40 config/session/composition paths; classify every field as inherited, explicit delta, L2 fallback or transferred receiver; enumerate finite retained parity smokes; documentation governance. |
-| Expected Markers | `M5:T477:S1:DESKPRO-DELTA-LEDGER:OK` and `M5:T477:S1:DESKPRO-PARITY-UNIVERSE:OK`. |
-| Asset Needs | Existing committed source and evidence only; no external source, firmware or guest media is read or imported. |
-| Reporting Requirements | Record each field's current owner, legacy construction path, future child/root owner, evidence and retained regression; identify every non-migratable dynamic Model-40 state. |
-| Stop Conditions | Stop for owner direction if the present Model-40 behavior cannot be represented as a root delta without changing behavior, a required field lacks a resolver/Core contract, or parity is not finite. |
-| Exit Criteria | Ledger has no unclassified Model-40 construction field; inherited/delta boundaries and all retained parity owners are explicit; later migration scope is bounded without a parallel construction path. |
-| Original Owner Request | Establish correct whole-machine L3 structure and interfaces first, then connect IBM 5170, DeskPro 386 and default-at in that order, without layered or duplicate paths. |
-| Similar-Issue Sweep | Inspect all Model-40 config initialization, session selection, firmware, memory, controller and display composition paths plus their focused smokes for duplicate root facts and non-profile dynamic state. |
+**T477 S1 accepted.** The [DeskPro delta ledger](../etc/evidence/t477-s1-deskpro-delta-ledger.md)
+freezes every inherited, explicit-delta and session-owned dynamic field before
+the resolver child is introduced.
 
 ## Current Technical Baseline
 
@@ -56,6 +39,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T477 S1 | Accepted: the complete DeskPro inherited-versus-delta ledger and finite Model-40 parity universe are frozen in [evidence](../etc/evidence/t477-s1-deskpro-delta-ledger.md). |
 | T476 | Closed: IBM 5170 sessions consume one copied `pc-at-5170` root and one Core-plan materialization path; the former duplicate exception aggregate is retired while its independent owners remain. [Closure audit](../etc/evidence/t476-s4-closure-audit.md) records the 294-target gate and stripped Release 0476. |
 | T475 | Closed: one VM-only immutable resolver copies parent-patched values and per-field provenance to the existing Core-plan API, rejects invalid ownership/bindings/windows/routes/contracts/policy, and leaves current routes for ordered profile migrations. [Closure audit](../etc/evidence/t475-s3-integration-closure-audit.md) records the 294-target gate and stripped Release 0475. |
 | T474 | Closed: one Core-owned guest-time axis, immutable plan and copied observation now join profile timing values, source-qualified PIT/RTC deadlines, explicit controller blockers and Standard/Turbo consumer policy. [Closure audit](../etc/evidence/t474-s6-integration-closure-audit.md) records the 293-target gate and stripped Release 0474. |
