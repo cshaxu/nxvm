@@ -252,6 +252,46 @@ static C_INT retirement_8088_primary_case(const type_unsigned_8 *program,
     return failed;
 }
 
+static C_INT retirement_8088_string_case(const type_unsigned_8 *program,
+    STD_SIZE_T bytes, type_unsigned_16 count, type_unsigned_32 executions,
+    type_unsigned_64 first_ticks, type_unsigned_64 next_ticks)
+{
+    const core_machine_config config = {
+        .cpu_profile = CORE_MACHINE_CPU_PROFILE_8088
+    };
+    const core_machine_run_budget budget = { executions, 0u };
+    core_machine_retirement_observation_provider provider;
+    core_machine_run_result result;
+    retirement_probe probe = { STD_NULL, { { 0 } }, 0u, TYPE_STATUS_OK };
+    core_machine *machine = STD_NULL;
+    C_INT failed = !retirement_prepare(&machine, &config, program, bytes);
+
+    provider.callback = retirement_capture;
+    provider.context = &probe;
+    probe.machine = machine;
+    if (!failed) {
+        machine->executor_cpu.data.cx = count;
+        failed |= core_machine_set_retirement_observation_provider(machine,
+                &provider) != TYPE_STATUS_OK ||
+            core_machine_run(machine, budget, &result) != TYPE_STATUS_OK ||
+            result.executed != executions || probe.count != executions ||
+            probe.records[0].source_ticks != first_ticks ||
+            probe.records[0].timing_disposition !=
+                CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED ||
+            probe.records[0].timing_origin !=
+                CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO;
+        if (executions > 1u) {
+            failed |= probe.records[1].source_ticks != next_ticks ||
+                probe.records[0].repeat_phase !=
+                    CORE_MACHINE_RETIREMENT_REPEAT_FIRST ||
+                probe.records[1].repeat_phase !=
+                    CORE_MACHINE_RETIREMENT_REPEAT_CONTINUATION;
+        }
+    }
+    core_machine_destroy(machine);
+    return failed;
+}
+
 C_INT main(C_VOID)
 {
     core_machine *machine = STD_NULL;
@@ -271,6 +311,18 @@ C_INT main(C_VOID)
     const type_unsigned_8 add_register[] = { 0x01u, 0xc8u };
     const type_unsigned_8 add_register_memory[] = { 0x03u, 0x06u, 0x00u, 0x10u };
     const type_unsigned_8 add_memory_register[] = { 0x01u, 0x06u, 0x00u, 0x10u };
+    const type_unsigned_8 movsb[] = { 0xa4u };
+    const type_unsigned_8 movsw[] = { 0xa5u };
+    const type_unsigned_8 cmpsb[] = { 0xa6u };
+    const type_unsigned_8 cmpsw[] = { 0xa7u };
+    const type_unsigned_8 stosb[] = { 0xaau };
+    const type_unsigned_8 stosw[] = { 0xabu };
+    const type_unsigned_8 lodsb[] = { 0xacu };
+    const type_unsigned_8 lodsw[] = { 0xadu };
+    const type_unsigned_8 scasb[] = { 0xaeu };
+    const type_unsigned_8 scasw[] = { 0xafu };
+    const type_unsigned_8 segment_movsw[] = { 0x26u, 0xa5u };
+    const type_unsigned_8 rep_movsw[] = { 0xf3u, 0xa5u };
     C_INT failed = 0;
 
     provider.callback = retirement_capture;
@@ -330,7 +382,23 @@ C_INT main(C_VOID)
         retirement_8088_primary_case(add_register_memory,
             sizeof(add_register_memory), 19u) ||
         retirement_8088_primary_case(add_memory_register,
-            sizeof(add_memory_register), 30u);
+            sizeof(add_memory_register), 30u) ||
+        retirement_8088_string_case(movsb, sizeof(movsb), 0u, 1u, 18u, 0u) ||
+        retirement_8088_string_case(movsw, sizeof(movsw), 0u, 1u, 26u, 0u) ||
+        retirement_8088_string_case(cmpsb, sizeof(cmpsb), 0u, 1u, 22u, 0u) ||
+        retirement_8088_string_case(cmpsw, sizeof(cmpsw), 0u, 1u, 30u, 0u) ||
+        retirement_8088_string_case(stosb, sizeof(stosb), 0u, 1u, 11u, 0u) ||
+        retirement_8088_string_case(stosw, sizeof(stosw), 0u, 1u, 15u, 0u) ||
+        retirement_8088_string_case(lodsb, sizeof(lodsb), 0u, 1u, 12u, 0u) ||
+        retirement_8088_string_case(lodsw, sizeof(lodsw), 0u, 1u, 16u, 0u) ||
+        retirement_8088_string_case(scasb, sizeof(scasb), 0u, 1u, 15u, 0u) ||
+        retirement_8088_string_case(scasw, sizeof(scasw), 0u, 1u, 19u, 0u) ||
+        retirement_8088_string_case(segment_movsw, sizeof(segment_movsw), 0u,
+            1u, 28u, 0u) ||
+        retirement_8088_string_case(rep_movsw, sizeof(rep_movsw), 2u, 2u,
+            34u, 25u) ||
+        retirement_8088_string_case(rep_movsw, sizeof(rep_movsw), 0u, 1u,
+            9u, 0u);
     failed |= core_machine_set_retirement_observation_provider(machine, STD_NULL) !=
         TYPE_STATUS_OK;
     failed |= core_machine_reset(machine) != TYPE_STATUS_OK;

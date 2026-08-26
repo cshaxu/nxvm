@@ -236,6 +236,9 @@ C_INT core_machine_cpu_timing_select(core_machine *machine,
 
     if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_8088) {
         if (!core_machine_cpu_timing_try(machine, &result,
+                CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO,
+                core_machine_string_io_source_instruction_cost) &&
+            !core_machine_cpu_timing_try(machine, &result,
                 CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY,
                 core_machine_primary_source_instruction_cost) &&
             !core_machine_cpu_timing_try(machine, &result,

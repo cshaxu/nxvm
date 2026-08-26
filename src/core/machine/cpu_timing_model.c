@@ -217,6 +217,13 @@ typedef struct core_machine_source_repeat_timing_contract {
     STD_SIZE_T entry_count;
 } core_machine_source_repeat_timing_contract;
 
+/* A source evaluator consumes this immediately; it is never machine state. */
+typedef struct core_machine_source_transfer_plan {
+    core_machine_source_timing_form form;
+    type_unsigned_8 word_transfers;
+    type_bool complete;
+} core_machine_source_transfer_plan;
+
 /* Intel 8086 Family User's Manual, Tables 2-20 and 2-21.  The selected
  * memory rows receive the table's EA, segment-override, and odd-word
  * additions below; prefetch and bus availability remain outside this owner. */
@@ -592,9 +599,13 @@ static C_INT core_machine_source_timing_string_form(type_unsigned_8 opcode,
     core_machine_source_timing_form *out_form);
 static C_INT core_machine_source_timing_string_repeat_is_defined(
     core_machine_source_timing_form form, t_cpuins_data_prefix_rep prefix);
+static core_machine_source_transfer_plan
+    core_machine_source_timing_string_transfer_plan(
+        const t_cpuins_data *data, core_machine_source_timing_form form);
 static type_unsigned_64 core_machine_source_timing_repeat_string(
     core_machine *machine, const t_cpuins_data *data,
-    const core_machine_source_repeat_timing_entry *entry);
+    const core_machine_source_repeat_timing_entry *entry,
+    const core_machine_source_transfer_plan *transfer_plan);
 
 static C_INT core_machine_80386_timing_uses_permission_map(
     const t_cpuins_data *data)
@@ -626,6 +637,7 @@ static const core_machine_source_repeat_timing_contract
 {
     switch (profile) {
     case CORE_MACHINE_CPU_PROFILE_8086:
+    case CORE_MACHINE_CPU_PROFILE_8088:
         return &core_machine_8086_source_repeat_timing_contract;
     case CORE_MACHINE_CPU_PROFILE_80186:
         return &core_machine_80186_source_repeat_timing_contract;
@@ -675,6 +687,7 @@ C_INT core_machine_string_io_source_instruction_cost(
     const core_machine_source_repeat_timing_contract *contract;
     const core_machine_source_repeat_timing_entry *entry;
     core_machine_source_repeat_timing_entry port_entry;
+    core_machine_source_transfer_plan transfer_plan = {0};
     core_machine_source_timing_form form;
     type_unsigned_32 prefixes;
     type_unsigned_8 opcode = 0u;
@@ -695,7 +708,7 @@ C_INT core_machine_string_io_source_instruction_cost(
             core_machine_80386_source_string_port_entry(data, form,
                 &port_entry)) {
             *out_ticks = core_machine_source_timing_repeat_string(machine, data,
-                &port_entry);
+                &port_entry, STD_NULL);
             return 1;
         }
         contract = core_machine_source_repeat_timing_contract_for_profile(
@@ -706,8 +719,16 @@ C_INT core_machine_string_io_source_instruction_cost(
             machine->source_repeat_active = TYPE_FALSE;
             return 0;
         }
+        if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_8088) {
+            transfer_plan = core_machine_source_timing_string_transfer_plan(data,
+                form);
+            if (!transfer_plan.complete) {
+                machine->source_repeat_active = TYPE_FALSE;
+                return 0;
+            }
+        }
         *out_ticks = core_machine_source_timing_repeat_string(machine, data,
-            entry);
+            entry, &transfer_plan);
         return 1;
     }
     if (data->prefix_rep != PREFIX_REP_NONE) {
@@ -842,9 +863,41 @@ static C_INT core_machine_source_timing_string_repeat_is_defined(
     return prefix == PREFIX_REP_REPZ;
 }
 
-static type_unsigned_64 core_machine_8086_timing_string_modifiers(
+static core_machine_source_transfer_plan
+    core_machine_source_timing_string_transfer_plan(
+        const t_cpuins_data *data, core_machine_source_timing_form form)
+{
+    core_machine_source_transfer_plan plan = { form, 0u, TYPE_FALSE };
+    type_unsigned_32 prefixes;
+
+    if (data == STD_NULL) return plan;
+    prefixes = core_machine_instruction_prefix_count(data);
+    if (prefixes >= data->oplen) return plan;
+    if ((data->opcodes[prefixes] & 1u) == 0u) {
+        plan.complete = TYPE_TRUE;
+        return plan;
+    }
+    switch (form) {
+    case CORE_MACHINE_SOURCE_TIMING_STRING_MOVS:
+    case CORE_MACHINE_SOURCE_TIMING_STRING_CMPS:
+        plan.word_transfers = 2u;
+        break;
+    case CORE_MACHINE_SOURCE_TIMING_STRING_STOS:
+    case CORE_MACHINE_SOURCE_TIMING_STRING_LODS:
+    case CORE_MACHINE_SOURCE_TIMING_STRING_SCAS:
+        plan.word_transfers = 1u;
+        break;
+    default:
+        return plan;
+    }
+    plan.complete = TYPE_TRUE;
+    return plan;
+}
+
+static type_unsigned_64 core_machine_source_timing_string_modifiers(
     const core_machine *machine, const t_cpuins_data *data,
-    core_machine_source_timing_form form)
+    core_machine_source_timing_form form,
+    const core_machine_source_transfer_plan *transfer_plan)
 {
     type_unsigned_32 index;
     type_unsigned_8 opcode = 0u;
@@ -857,6 +910,7 @@ static type_unsigned_64 core_machine_8086_timing_string_modifiers(
 
     if (machine == STD_NULL || data == STD_NULL ||
         (machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_8086 &&
+         machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_8088 &&
          machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_80186 &&
          machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_80286)) return 0u;
     for (index = 0u; index < data->oplen; ++index) {
@@ -876,6 +930,13 @@ static type_unsigned_64 core_machine_8086_timing_string_modifiers(
         form == CORE_MACHINE_SOURCE_TIMING_STRING_CMPS ||
         form == CORE_MACHINE_SOURCE_TIMING_STRING_LODS)) {
         modifiers += CORE_MACHINE_8086_SEGMENT_OVERRIDE_TICKS;
+    }
+    if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_8088) {
+        if (transfer_plan == STD_NULL || !transfer_plan->complete ||
+            machine->source_timing_repeat_phase ==
+            CORE_MACHINE_RETIREMENT_REPEAT_ZERO_COUNT) return modifiers;
+        return modifiers + (type_unsigned_64)transfer_plan->word_transfers *
+            CORE_MACHINE_8086_ODD_WORD_TICKS;
     }
     word = (opcode & 1u) != 0u;
     if (!word || machine->source_timing_repeat_phase ==
@@ -902,7 +963,8 @@ static type_unsigned_64 core_machine_8086_timing_string_modifiers(
 
 static type_unsigned_64 core_machine_source_timing_repeat_string(
     core_machine *machine, const t_cpuins_data *data,
-    const core_machine_source_repeat_timing_entry *entry)
+    const core_machine_source_repeat_timing_entry *entry,
+    const core_machine_source_transfer_plan *transfer_plan)
 {
     type_bool operand_size;
     type_bool address_size;
@@ -919,8 +981,8 @@ static type_unsigned_64 core_machine_source_timing_repeat_string(
         machine->source_timing_repeat_phase =
             CORE_MACHINE_RETIREMENT_REPEAT_PRIMITIVE;
         machine->source_repeat_active = TYPE_FALSE;
-        return entry->primitive_ticks + core_machine_8086_timing_string_modifiers(
-            machine, data, entry->form);
+        return entry->primitive_ticks + core_machine_source_timing_string_modifiers(
+            machine, data, entry->form, transfer_plan);
     }
     count = address_size ? data->oldcpu.data.ecx : data->oldcpu.data.cx;
     continuing = machine->source_repeat_active &&
@@ -949,8 +1011,8 @@ static type_unsigned_64 core_machine_source_timing_repeat_string(
         machine->source_repeat_operand_size = operand_size;
         machine->source_repeat_address_size = address_size;
     }
-    return ticks + core_machine_8086_timing_string_modifiers(machine, data,
-        entry->form);
+    return ticks + core_machine_source_timing_string_modifiers(machine, data,
+        entry->form, transfer_plan);
 }
 
 static C_INT core_machine_8086_timing_has_segment_override(
@@ -1017,13 +1079,6 @@ typedef struct core_machine_primary_timing_shape {
     C_INT word;
 } core_machine_primary_timing_shape;
 
-/* This plan is local to the source evaluator: the existing primary classifier
- * already owns the form, width and read/modify/write distinction. */
-typedef struct core_machine_source_transfer_plan {
-    type_unsigned_8 word_transfers;
-    type_bool complete;
-} core_machine_source_transfer_plan;
-
 static type_unsigned_8 core_machine_source_timing_primary_word_transfers(
     const core_machine_primary_timing_shape *shape)
 {
@@ -1067,6 +1122,7 @@ static core_machine_source_transfer_plan
     core_machine_source_transfer_plan plan = {0};
 
     if (shape == STD_NULL) return plan;
+    plan.form = shape->form;
     plan.word_transfers = core_machine_source_timing_primary_word_transfers(shape);
     plan.complete = TYPE_TRUE;
     return plan;
@@ -1966,6 +2022,7 @@ C_INT core_machine_primary_source_instruction_cost(
         return 0;
     }
     transfer_plan = core_machine_source_timing_primary_transfer_plan(&shape);
+    if (!transfer_plan.complete) return 0;
     transfers = transfer_plan.word_transfers;
 
     switch (machine->cpu_profile) {
@@ -2367,7 +2424,7 @@ C_INT core_machine_primary_source_instruction_cost(
     default:
         return 0;
     }
-    machine->source_timing_form_id = (type_unsigned_32)shape.form;
+    machine->source_timing_form_id = (type_unsigned_32)transfer_plan.form;
     *out_ticks = ticks;
     return 1;
 }
