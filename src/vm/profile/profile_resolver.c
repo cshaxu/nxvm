@@ -45,6 +45,26 @@ static C_INT vm_profile_resolver_windows_are_valid(
     return 1;
 }
 
+static C_INT vm_profile_resolver_port_leaves_are_valid(
+    const vm_profile_resolver_port_leaf *leaves, STD_SIZE_T count,
+    type_unsigned_32 enabled_devices)
+{
+    STD_SIZE_T first;
+    STD_SIZE_T second;
+
+    if ((count != 0u && leaves == STD_NULL) ||
+        count > VM_PROFILE_RESOLVER_PORT_LEAF_CAPACITY) return 0;
+    for (first = 0u; first < count; ++first) {
+        if (leaves[first].device == 0u ||
+            (leaves[first].device & enabled_devices) != leaves[first].device ||
+            (!leaves[first].read && !leaves[first].write)) return 0;
+        for (second = first + 1u; second < count; ++second) {
+            if (leaves[first].port == leaves[second].port) return 0;
+        }
+    }
+    return 1;
+}
+
 static C_INT vm_profile_resolver_routes_are_valid(
     const vm_profile_resolver_route *routes, STD_SIZE_T count, STD_SIZE_T capacity,
     type_unsigned_32 enabled_devices)
@@ -75,9 +95,8 @@ static C_INT vm_profile_resolver_values_are_valid(
         (values->media_policy != VM_PROFILE_RESOLVER_MEDIA_POLICY_NONE &&
          values->media_policy != VM_PROFILE_RESOLVER_MEDIA_POLICY_SESSION) ||
         !vm_profile_resolver_catalog_contains(catalog, values->core.contract_id) ||
-        !vm_profile_resolver_windows_are_valid(values->port_windows,
-            values->port_window_count, VM_PROFILE_RESOLVER_PORT_WINDOW_CAPACITY,
-            values->enabled_devices, TYPE_MAX_UNSIGNED_16) ||
+        !vm_profile_resolver_port_leaves_are_valid(values->port_leaves,
+            values->port_leaf_count, values->enabled_devices) ||
         !vm_profile_resolver_windows_are_valid(values->memory_windows,
             values->memory_window_count, VM_PROFILE_RESOLVER_MEMORY_WINDOW_CAPACITY,
             values->enabled_devices, TYPE_MAX_UNSIGNED_32) ||
@@ -136,9 +155,9 @@ static C_INT vm_profile_resolver_apply(
         result->values.enabled_devices = declaration->values.enabled_devices;
     }
     if ((declaration->provided_fields & VM_PROFILE_RESOLVER_FIELD_PORTS) != 0u) {
-        STD_MEMCPY(result->values.port_windows, declaration->values.port_windows,
-            sizeof(result->values.port_windows));
-        result->values.port_window_count = declaration->values.port_window_count;
+        STD_MEMCPY(result->values.port_leaves, declaration->values.port_leaves,
+            sizeof(result->values.port_leaves));
+        result->values.port_leaf_count = declaration->values.port_leaf_count;
     }
     if ((declaration->provided_fields & VM_PROFILE_RESOLVER_FIELD_MEMORY) != 0u) {
         STD_MEMCPY(result->values.memory_windows, declaration->values.memory_windows,

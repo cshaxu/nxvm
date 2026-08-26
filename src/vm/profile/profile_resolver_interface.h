@@ -5,7 +5,7 @@
 #include "type.h"
 
 #define VM_PROFILE_RESOLVER_IDENTITY_CAPACITY 48u
-#define VM_PROFILE_RESOLVER_PORT_WINDOW_CAPACITY 8u
+#define VM_PROFILE_RESOLVER_PORT_LEAF_CAPACITY 96u
 #define VM_PROFILE_RESOLVER_MEMORY_WINDOW_CAPACITY 8u
 #define VM_PROFILE_RESOLVER_ROUTE_CAPACITY 8u
 #define VM_PROFILE_RESOLVER_PARENT_DEPTH_CAPACITY 8u
@@ -38,6 +38,15 @@ typedef struct vm_profile_resolver_window {
     type_unsigned_32 device;
 } vm_profile_resolver_window;
 
+/* A port is a leaf, not an inferred interval: read/write direction is part of
+ * the board contract and gaps must stay absent. */
+typedef struct vm_profile_resolver_port_leaf {
+    type_unsigned_32 device;
+    type_unsigned_16 port;
+    type_bool read;
+    type_bool write;
+} vm_profile_resolver_port_leaf;
+
 typedef struct vm_profile_resolver_route {
     type_unsigned_32 device;
     type_unsigned_8 line;
@@ -52,8 +61,8 @@ typedef struct vm_profile_resolver_core_plan_input {
 typedef struct vm_profile_resolver_values {
     vm_profile_resolver_core_plan_input core;
     type_unsigned_32 enabled_devices;
-    vm_profile_resolver_window port_windows[VM_PROFILE_RESOLVER_PORT_WINDOW_CAPACITY];
-    STD_SIZE_T port_window_count;
+    vm_profile_resolver_port_leaf port_leaves[VM_PROFILE_RESOLVER_PORT_LEAF_CAPACITY];
+    STD_SIZE_T port_leaf_count;
     vm_profile_resolver_window memory_windows[VM_PROFILE_RESOLVER_MEMORY_WINDOW_CAPACITY];
     STD_SIZE_T memory_window_count;
     vm_profile_resolver_route irq_routes[VM_PROFILE_RESOLVER_ROUTE_CAPACITY];

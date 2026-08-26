@@ -16,8 +16,9 @@ static vm_profile_resolver_declaration vm_profile_resolver_root(void)
     declaration.values.core.configuration.memory_bytes = 1024u * 1024u;
     declaration.values.core.configuration.cpu_profile = CORE_MACHINE_CPU_PROFILE_80286;
     declaration.values.enabled_devices = 1u;
-    declaration.values.port_windows[0] = (vm_profile_resolver_window) {0x20u, 0x21u, 1u};
-    declaration.values.port_window_count = 1u;
+    declaration.values.port_leaves[0] =
+        (vm_profile_resolver_port_leaf) {1u, 0x20u, TYPE_TRUE, TYPE_TRUE};
+    declaration.values.port_leaf_count = 1u;
     declaration.values.memory_windows[0] = (vm_profile_resolver_window) {
         0x000a0000u, 0x000affffu, 1u};
     declaration.values.memory_window_count = 1u;
@@ -95,16 +96,18 @@ static C_INT vm_profile_resolver_rejects_invalid(void)
     child.owned_fields = VM_PROFILE_RESOLVER_FIELD_CORE;
     if (vm_profile_resolver_resolve(&child, &catalog, &request, &result) ==
         TYPE_STATUS_OK) return 1;
-    root.values.port_windows[0].device = 2u;
+    root.values.port_leaves[0].device = 2u;
     if (vm_profile_resolver_resolve(&root, &catalog, &request, &result) ==
         TYPE_STATUS_OK) return 1;
     root = vm_profile_resolver_root();
-    root.values.port_windows[1] = (vm_profile_resolver_window) {0x21u, 0x22u, 1u};
-    root.values.port_window_count = 2u;
+    root.values.port_leaves[1] =
+        (vm_profile_resolver_port_leaf) {1u, 0x20u, TYPE_TRUE, TYPE_TRUE};
+    root.values.port_leaf_count = 2u;
     if (vm_profile_resolver_resolve(&root, &catalog, &request, &result) ==
         TYPE_STATUS_OK) return 1;
     root = vm_profile_resolver_root();
-    root.values.port_windows[0].last = 0x00010000u;
+    root.values.port_leaves[0].read = TYPE_FALSE;
+    root.values.port_leaves[0].write = TYPE_FALSE;
     if (vm_profile_resolver_resolve(&root, &catalog, &request, &result) ==
         TYPE_STATUS_OK) return 1;
     root = vm_profile_resolver_root();

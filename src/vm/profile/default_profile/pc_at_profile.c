@@ -237,6 +237,30 @@ static const vm_profile_default_pc_at_descriptor ibm_5170_model_339_descriptor =
         sizeof(ibm_5170_model_339_firmware_services[0])
 };
 
+static const type_unsigned_32 ibm_5170_root_contract_ids[] = {1u};
+
+static type_unsigned_32 vm_profile_ibm_5170_device_bit(
+    vm_profile_default_pc_at_device_role role)
+{
+    return 1u << (type_unsigned_32)role;
+}
+
+static vm_profile_default_pc_at_device_role
+vm_profile_ibm_5170_route_device(vm_profile_default_pc_at_route_source source)
+{
+    if (source == VM_PROFILE_DEFAULT_PC_AT_ROUTE_PIT_IRQ0) {
+        return VM_PROFILE_DEFAULT_PC_AT_DEVICE_PIT;
+    }
+    if (source == VM_PROFILE_DEFAULT_PC_AT_ROUTE_KBC_KEYBOARD_IRQ1 ||
+        source == VM_PROFILE_DEFAULT_PC_AT_ROUTE_KBC_AUX_IRQ12) {
+        return VM_PROFILE_DEFAULT_PC_AT_DEVICE_KBC;
+    }
+    if (source == VM_PROFILE_DEFAULT_PC_AT_ROUTE_CMOS_IRQ8) {
+        return VM_PROFILE_DEFAULT_PC_AT_DEVICE_CMOS;
+    }
+    return VM_PROFILE_DEFAULT_PC_AT_DEVICE_FDC;
+}
+
 const vm_profile_default_pc_at_descriptor *
 vm_profile_default_pc_at_descriptor_get(C_VOID)
 {
@@ -306,6 +330,144 @@ C_INT vm_profile_default_pc_at_cpu_contract_select(
     return 1;
 }
 
+C_INT vm_profile_default_pc_at_core_config_materialize(
+    const vm_profile_default_pc_at_descriptor *descriptor,
+    const vm_profile_default_pc_at_cpu_contract *contract,
+    core_machine_config *out_config,
+    core_machine_controller_timing_rules *out_timing_rules)
+{
+    if (descriptor == STD_NULL || contract == STD_NULL || out_config == STD_NULL ||
+        out_timing_rules == STD_NULL ||
+        !vm_profile_default_pc_at_descriptor_is_valid(descriptor)) return 0;
+    *out_config = (core_machine_config) {
+        .memory_bytes = descriptor->default_memory_bytes,
+        .cpu_profile = contract->cpu_profile,
+        .fpu_profile = contract->fpu_profile,
+        .ticks_per_instruction = contract->ticks_per_instruction,
+        .instruction_timing = contract->instruction_timing,
+        .transaction_contract = contract->transaction_contract,
+        .clock_plan = contract->clock_plan,
+        .time_axis = contract->time_axis,
+        .kbc_typematic_initial_ticks = contract->kbc_typematic_initial_ticks,
+        .kbc_typematic_repeat_ticks = contract->kbc_typematic_repeat_ticks,
+        .kbc_command_response_ticks = contract->kbc_command_response_ticks
+    };
+    *out_timing_rules = contract->controller_timing_rules;
+    return 1;
+}
+
+type_status vm_profile_ibm_5170_root_declaration_create(
+    vm_profile_resolver_declaration *out_declaration)
+{
+    const vm_profile_default_pc_at_descriptor *descriptor =
+        vm_profile_ibm_5170_model_339_descriptor_get();
+    vm_profile_default_pc_at_cpu_contract contract;
+    vm_profile_resolver_declaration declaration = {0};
+    STD_SIZE_T role;
+    STD_SIZE_T route_index;
+
+    if (out_declaration == STD_NULL ||
+        !vm_profile_default_pc_at_cpu_contract_select(descriptor,
+            descriptor->cpu_profile, descriptor->fpu_profile, &contract) ||
+        !vm_profile_default_pc_at_core_config_materialize(descriptor, &contract,
+            &declaration.values.core.configuration,
+            &declaration.values.core.controller_timing_rules)) {
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
+    declaration.identity = "pc-at-5170";
+    declaration.provided_fields = VM_PROFILE_RESOLVER_FIELD_ALL;
+    declaration.owned_fields = VM_PROFILE_RESOLVER_FIELD_ALL;
+    declaration.values.core.contract_id = ibm_5170_root_contract_ids[0];
+    for (role = 0u; role <= VM_PROFILE_DEFAULT_PC_AT_DEVICE_MEMORY_CONTROL; ++role) {
+        STD_SIZE_T ordinal;
+
+        for (ordinal = 0u;; ++ordinal) {
+            const vm_profile_default_pc_at_port_leaf *leaf =
+                vm_profile_default_pc_at_port_leaf_at(descriptor,
+                    (vm_profile_default_pc_at_device_role)role, ordinal);
+            if (leaf == STD_NULL) break;
+            if (declaration.values.port_leaf_count ==
+                VM_PROFILE_RESOLVER_PORT_LEAF_CAPACITY) {
+                return TYPE_STATUS_NO_MEMORY;
+            }
+            declaration.values.enabled_devices |= vm_profile_ibm_5170_device_bit(
+                (vm_profile_default_pc_at_device_role)role);
+            declaration.values.port_leaves[declaration.values.port_leaf_count++] =
+                (vm_profile_resolver_port_leaf) {
+                    vm_profile_ibm_5170_device_bit(
+                        (vm_profile_default_pc_at_device_role)role),
+                    leaf->port, leaf->read, leaf->write};
+        }
+    }
+    if (descriptor->cga_vram_present) {
+        declaration.values.memory_windows[0] = (vm_profile_resolver_window) {
+            0x000b8000u, 0x000bffffu,
+            vm_profile_ibm_5170_device_bit(VM_PROFILE_DEFAULT_PC_AT_DEVICE_VADP)};
+        declaration.values.memory_window_count = 1u;
+    }
+    for (route_index = 0u; route_index < descriptor->route_count; ++route_index) {
+        const vm_profile_default_pc_at_route *route = &descriptor->routes[route_index];
+        const type_unsigned_32 device = vm_profile_ibm_5170_device_bit(
+            vm_profile_ibm_5170_route_device(route->source));
+
+        if (declaration.values.irq_route_count == VM_PROFILE_RESOLVER_ROUTE_CAPACITY) {
+            return TYPE_STATUS_NO_MEMORY;
+        }
+        declaration.values.irq_routes[declaration.values.irq_route_count++] =
+            (vm_profile_resolver_route) {device, route->irq};
+        if (route->dma_channel != VM_PROFILE_DEFAULT_PC_AT_NO_DMA_CHANNEL) {
+            if (declaration.values.drq_route_count ==
+                VM_PROFILE_RESOLVER_ROUTE_CAPACITY) {
+                return TYPE_STATUS_NO_MEMORY;
+            }
+            declaration.values.drq_routes[declaration.values.drq_route_count++] =
+                (vm_profile_resolver_route) {device, route->dma_channel};
+        }
+    }
+    declaration.values.firmware_policy = VM_PROFILE_RESOLVER_FIRMWARE_POLICY_BUILTIN;
+    declaration.values.media_policy = VM_PROFILE_RESOLVER_MEDIA_POLICY_SESSION;
+    declaration.values.allowed_session_options = 0u;
+    *out_declaration = declaration;
+    return TYPE_STATUS_OK;
+}
+
+type_status vm_profile_ibm_5170_root_resolve(
+    vm_profile_default_pc_at_resolved_root *out_root)
+{
+    const vm_profile_default_pc_at_descriptor *descriptor =
+        vm_profile_ibm_5170_model_339_descriptor_get();
+    vm_profile_resolver_declaration declaration;
+    const vm_profile_resolver_contract_catalog catalog = {
+        ibm_5170_root_contract_ids,
+        sizeof(ibm_5170_root_contract_ids) / sizeof(ibm_5170_root_contract_ids[0])};
+
+    if (out_root == STD_NULL || descriptor->port_leaf_count >
+        VM_PROFILE_DEFAULT_PC_AT_ROOT_PORT_LEAF_CAPACITY || descriptor->route_count >
+        VM_PROFILE_DEFAULT_PC_AT_ROOT_ROUTE_CAPACITY || descriptor->firmware_service_count >
+        VM_PROFILE_DEFAULT_PC_AT_ROOT_FIRMWARE_SERVICE_CAPACITY) {
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
+    STD_MEMSET(out_root, 0, sizeof(*out_root));
+    if (vm_profile_ibm_5170_root_declaration_create(&declaration) != TYPE_STATUS_OK ||
+        vm_profile_resolver_resolve(&declaration, &catalog,
+            &(vm_profile_resolver_session_request) {0u}, &out_root->resolved) !=
+            TYPE_STATUS_OK) {
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
+    out_root->descriptor = *descriptor;
+    STD_MEMCPY(out_root->port_leaves, descriptor->port_leaves,
+        descriptor->port_leaf_count * sizeof(out_root->port_leaves[0]));
+    STD_MEMCPY(out_root->routes, descriptor->routes,
+        descriptor->route_count * sizeof(out_root->routes[0]));
+    STD_MEMCPY(out_root->firmware_services, descriptor->firmware_services,
+        descriptor->firmware_service_count * sizeof(out_root->firmware_services[0]));
+    out_root->descriptor.identity = "pc-at-5170";
+    out_root->descriptor.port_leaves = out_root->port_leaves;
+    out_root->descriptor.routes = out_root->routes;
+    out_root->descriptor.firmware_services = out_root->firmware_services;
+    return TYPE_STATUS_OK;
+}
+
 const vm_profile_default_pc_at_port_leaf *
 vm_profile_default_pc_at_port_leaf_find(
     const vm_profile_default_pc_at_descriptor *descriptor,
@@ -370,27 +532,6 @@ C_INT vm_profile_default_pc_at_descriptor_is_valid(
 {
     STD_SIZE_T index;
 
-    if (descriptor == &ibm_5170_model_339_descriptor) {
-        return descriptor->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 &&
-            descriptor->time_axis.kind == CORE_MACHINE_TIME_AXIS_MACRO_PROPORTIONAL &&
-            descriptor->time_axis.ticks_per_second == 8000000u &&
-            descriptor->default_memory_bytes == 512u * 1024u &&
-            descriptor->unpopulated_extended_memory &&
-            descriptor->fdc_bounce_segment == 0x7000u &&
-            !descriptor->hdc_present && descriptor->planar_parity_present &&
-            !descriptor->ega_present &&
-            descriptor->cga_vram_present &&
-            descriptor->firmware_slot ==
-                VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_SLOT_IBM_5170_REV3_ABSTRACT &&
-            descriptor->diskette_drive_a_field_upgrade &&
-            descriptor->cmos.base_memory_kib == 0x0200u &&
-            descriptor->cmos.floppy_type == 0x40u &&
-            descriptor->cmos.fixed_disk_type == 0u &&
-            descriptor->cmos.fixed_disk_type_extended_0 == 0u &&
-            descriptor->firmware_service_count ==
-            sizeof(ibm_5170_model_339_firmware_services) /
-                sizeof(ibm_5170_model_339_firmware_services[0]);
-    }
     if (descriptor == STD_NULL || !vm_profile_default_pc_at_fdc_bounce_is_valid(descriptor) ||
         descriptor->port_leaves == STD_NULL ||
         descriptor->routes == STD_NULL || descriptor->port_leaf_count !=
@@ -405,6 +546,29 @@ C_INT vm_profile_default_pc_at_descriptor_is_valid(
     for (index = 0u; index < descriptor->route_count; ++index) {
         if (STD_MEMCMP(&descriptor->routes[index], &default_pc_at_routes[index],
                 sizeof(default_pc_at_routes[index])) != 0) return 0;
+    }
+    if (descriptor->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286) {
+        return descriptor->time_axis.kind == CORE_MACHINE_TIME_AXIS_MACRO_PROPORTIONAL &&
+            descriptor->time_axis.ticks_per_second == 8000000u &&
+            descriptor->default_memory_bytes == 512u * 1024u &&
+            descriptor->unpopulated_extended_memory &&
+            descriptor->fdc_bounce_segment == 0x7000u &&
+            !descriptor->hdc_present && descriptor->planar_parity_present &&
+            !descriptor->ega_present && descriptor->cga_vram_present &&
+            descriptor->firmware_slot ==
+                VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_SLOT_IBM_5170_REV3_ABSTRACT &&
+            descriptor->diskette_drive_a_field_upgrade &&
+            descriptor->cmos.base_memory_kib == 0x0200u &&
+            descriptor->cmos.floppy_type == 0x40u &&
+            descriptor->cmos.fixed_disk_type == 0u &&
+            descriptor->cmos.fixed_disk_type_extended_0 == 0u &&
+            descriptor->firmware_services != STD_NULL &&
+            descriptor->firmware_service_count ==
+                sizeof(ibm_5170_model_339_firmware_services) /
+                    sizeof(ibm_5170_model_339_firmware_services[0]) &&
+            STD_MEMCMP(descriptor->firmware_services,
+                ibm_5170_model_339_firmware_services,
+                sizeof(ibm_5170_model_339_firmware_services)) == 0;
     }
     return descriptor->hdc_present && !descriptor->planar_parity_present &&
         descriptor->time_axis.kind == CORE_MACHINE_TIME_AXIS_UNQUALIFIED &&

@@ -7,6 +7,7 @@
 #include "core/machine/fpu_interface.h"
 #include "core/machine/machine_interface.h"
 #include "core/machine/vadp.h"
+#include "vm/profile/profile_resolver_interface.h"
 
 typedef enum vm_profile_default_pc_at_device_role {
     VM_PROFILE_DEFAULT_PC_AT_DEVICE_PIC,
@@ -163,6 +164,22 @@ typedef struct vm_profile_default_pc_at_descriptor {
     STD_SIZE_T firmware_service_count;
 } vm_profile_default_pc_at_descriptor;
 
+#define VM_PROFILE_DEFAULT_PC_AT_ROOT_PORT_LEAF_CAPACITY 96u
+#define VM_PROFILE_DEFAULT_PC_AT_ROOT_ROUTE_CAPACITY 8u
+#define VM_PROFILE_DEFAULT_PC_AT_ROOT_FIRMWARE_SERVICE_CAPACITY 16u
+
+/* In-place immutable result: its descriptor points only at its own copied
+ * arrays, so it can become the later session input without static aliases. */
+typedef struct vm_profile_default_pc_at_resolved_root {
+    vm_resolved_profile resolved;
+    vm_profile_default_pc_at_descriptor descriptor;
+    vm_profile_default_pc_at_port_leaf
+        port_leaves[VM_PROFILE_DEFAULT_PC_AT_ROOT_PORT_LEAF_CAPACITY];
+    vm_profile_default_pc_at_route routes[VM_PROFILE_DEFAULT_PC_AT_ROOT_ROUTE_CAPACITY];
+    vm_profile_default_pc_at_firmware_service
+        firmware_services[VM_PROFILE_DEFAULT_PC_AT_ROOT_FIRMWARE_SERVICE_CAPACITY];
+} vm_profile_default_pc_at_resolved_root;
+
 const vm_profile_default_pc_at_descriptor *
 vm_profile_default_pc_at_descriptor_get(C_VOID);
 const vm_profile_default_pc_at_descriptor *
@@ -172,6 +189,15 @@ C_INT vm_profile_default_pc_at_cpu_contract_select(
     core_machine_cpu_profile requested_cpu,
     core_machine_fpu_profile requested_fpu,
     vm_profile_default_pc_at_cpu_contract *out_contract);
+C_INT vm_profile_default_pc_at_core_config_materialize(
+    const vm_profile_default_pc_at_descriptor *descriptor,
+    const vm_profile_default_pc_at_cpu_contract *contract,
+    core_machine_config *out_config,
+    core_machine_controller_timing_rules *out_timing_rules);
+type_status vm_profile_ibm_5170_root_declaration_create(
+    vm_profile_resolver_declaration *out_declaration);
+type_status vm_profile_ibm_5170_root_resolve(
+    vm_profile_default_pc_at_resolved_root *out_root);
 const vm_profile_default_pc_at_port_leaf *
 vm_profile_default_pc_at_port_leaf_find(
     const vm_profile_default_pc_at_descriptor *descriptor,

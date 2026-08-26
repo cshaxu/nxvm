@@ -120,26 +120,10 @@ type_status vm_session_set_speed(vm_session *session, vm_session_speed speed)
 static C_INT vm_session_materialize_profile_core_config(vm_session *session,
     const vm_profile_default_pc_at_cpu_contract *contract)
 {
-    const vm_profile_default_pc_at_descriptor *profile;
-
     if (session == STD_NULL || session->profile == STD_NULL ||
         contract == STD_NULL) return 0;
-    profile = session->profile;
-    session->core_machine_config = (core_machine_config) {
-        .memory_bytes = profile->default_memory_bytes,
-        .cpu_profile = contract->cpu_profile,
-        .fpu_profile = contract->fpu_profile,
-        .ticks_per_instruction = contract->ticks_per_instruction,
-        .instruction_timing = contract->instruction_timing,
-        .transaction_contract = contract->transaction_contract,
-        .clock_plan = contract->clock_plan,
-        .time_axis = contract->time_axis,
-        .kbc_typematic_initial_ticks = contract->kbc_typematic_initial_ticks,
-        .kbc_typematic_repeat_ticks = contract->kbc_typematic_repeat_ticks,
-        .kbc_command_response_ticks = contract->kbc_command_response_ticks
-    };
-    session->controller_timing_rules = contract->controller_timing_rules;
-    return 1;
+    return vm_profile_default_pc_at_core_config_materialize(session->profile,
+        contract, &session->core_machine_config, &session->controller_timing_rules);
 }
 
 static const vm_profile_default_pc_at_port_leaf *
