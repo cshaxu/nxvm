@@ -44,7 +44,6 @@ The next required stage is List 2; implementation remains prohibited.
 | Task | Compact result |
 | --- | --- |
 | T486 S2 | Accepted: complete Table-2-21 List 1 defines every mnemonic, prefix and explicit non-instruction boundary; no code or timing claim changed. [Evidence](../etc/evidence/t486-s2-8088-function-timing-list-1.md). |
-| T486 S1 | Accepted: the original Intel 1981 source corpus and Table-2-21 visual review are fixed before List 1; no code or timing claim changed. [Evidence](../etc/evidence/t486-s1-8088-original-source-ledger.md). |
 | T485 | Withdrawn, not completed: accepted S1--S20 evidence remains retained, but Td S152 transfers the uncompleted aggregate XT scope to independent CPU/board/controller candidates. [Record](../etc/evidence/td-s152-unit-task-admission-governance.md). |
 | T484 | Closed: IBM 5160-268 now has one immutable 8088/profile plan, XT PPI/FDC/CGA/Xebec functional owners and one typed external-ROM BYOB product route; all remaining board/device timing transfers to T485. [Closure audit](../etc/evidence/t484-s22-xt-functional-closure-audit.md). |
 | T482 | Closed: one strict root YAML request reaches the sole `SESSION OPEN` authority and resolver without CLI re-encoding; 296/296 current-gate tests and stripped Release 0480 pass. [Closure audit](../etc/evidence/t482-s4-closure-audit.md). |
