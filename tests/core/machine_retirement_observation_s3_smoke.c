@@ -217,6 +217,41 @@ static C_INT retirement_8086_context_formula_case(C_VOID)
     core_machine_destroy(machine);
     return failed;
 }
+
+static C_INT retirement_8088_primary_case(const type_unsigned_8 *program,
+    STD_SIZE_T bytes, type_unsigned_64 expected_ticks)
+{
+    const core_machine_config config = {
+        .cpu_profile = CORE_MACHINE_CPU_PROFILE_8088
+    };
+    const core_machine_run_budget budget = { 1u, 0u };
+    const type_unsigned_16 value = 1u;
+    core_machine_retirement_observation_provider provider;
+    core_machine_run_result result;
+    retirement_probe probe = { STD_NULL, { { 0 } }, 0u, TYPE_STATUS_OK };
+    core_machine *machine = STD_NULL;
+    C_INT failed = !retirement_prepare(&machine, &config, program, bytes);
+
+    provider.callback = retirement_capture;
+    provider.context = &probe;
+    probe.machine = machine;
+    if (!failed) {
+        failed |= core_machine_memory_write(machine, 0x1000u, &value,
+                sizeof(value)) != TYPE_STATUS_OK ||
+            core_machine_set_retirement_observation_provider(machine,
+                &provider) != TYPE_STATUS_OK ||
+            core_machine_run(machine, budget, &result) != TYPE_STATUS_OK ||
+            result.executed != 1u || probe.count != 1u ||
+            probe.records[0].source_ticks != expected_ticks ||
+            probe.records[0].timing_disposition !=
+                CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED ||
+            probe.records[0].timing_origin !=
+                CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY;
+    }
+    core_machine_destroy(machine);
+    return failed;
+}
+
 C_INT main(C_VOID)
 {
     core_machine *machine = STD_NULL;
@@ -233,6 +268,9 @@ C_INT main(C_VOID)
     retirement_probe probe = { STD_NULL, { { 0 } }, 0u, TYPE_STATUS_OK };
     type_unsigned_8 nop = 0x90u;
     type_unsigned_8 rep_nop[] = { 0xf3u, 0x90u };
+    const type_unsigned_8 add_register[] = { 0x01u, 0xc8u };
+    const type_unsigned_8 add_register_memory[] = { 0x03u, 0x06u, 0x00u, 0x10u };
+    const type_unsigned_8 add_memory_register[] = { 0x01u, 0x06u, 0x00u, 0x10u };
     C_INT failed = 0;
 
     provider.callback = retirement_capture;
@@ -287,7 +325,12 @@ C_INT main(C_VOID)
         retirement_control_context_case(0x74u,
             CORE_MACHINE_RETIREMENT_CONTROL_FALLTHROUGH,
             CORE_MACHINE_RETIREMENT_CONTEXT_UNAVAILABLE) ||
-        retirement_pre_mode_snapshot_case() || retirement_8086_context_formula_case();
+        retirement_pre_mode_snapshot_case() || retirement_8086_context_formula_case() ||
+        retirement_8088_primary_case(add_register, sizeof(add_register), 3u) ||
+        retirement_8088_primary_case(add_register_memory,
+            sizeof(add_register_memory), 19u) ||
+        retirement_8088_primary_case(add_memory_register,
+            sizeof(add_memory_register), 30u);
     failed |= core_machine_set_retirement_observation_provider(machine, STD_NULL) !=
         TYPE_STATUS_OK;
     failed |= core_machine_reset(machine) != TYPE_STATUS_OK;

@@ -1017,6 +1017,13 @@ typedef struct core_machine_primary_timing_shape {
     C_INT word;
 } core_machine_primary_timing_shape;
 
+/* This plan is local to the source evaluator: the existing primary classifier
+ * already owns the form, width and read/modify/write distinction. */
+typedef struct core_machine_source_transfer_plan {
+    type_unsigned_8 word_transfers;
+    type_bool complete;
+} core_machine_source_transfer_plan;
+
 static type_unsigned_8 core_machine_source_timing_primary_word_transfers(
     const core_machine_primary_timing_shape *shape)
 {
@@ -1051,6 +1058,18 @@ static type_unsigned_8 core_machine_source_timing_primary_word_transfers(
     default:
         return 0u;
     }
+}
+
+static core_machine_source_transfer_plan
+    core_machine_source_timing_primary_transfer_plan(
+        const core_machine_primary_timing_shape *shape)
+{
+    core_machine_source_transfer_plan plan = {0};
+
+    if (shape == STD_NULL) return plan;
+    plan.word_transfers = core_machine_source_timing_primary_word_transfers(shape);
+    plan.complete = TYPE_TRUE;
+    return plan;
 }
 
 /* This is intentionally an encoding classifier, not an instruction-handler
@@ -1809,6 +1828,7 @@ C_INT core_machine_primary_source_instruction_cost(
     type_unsigned_8 opcode;
     type_unsigned_64 ticks;
     type_unsigned_8 transfers;
+    core_machine_source_transfer_plan transfer_plan;
     C_INT segment_override;
     C_INT lock_prefix;
     C_INT memory;
@@ -1945,10 +1965,12 @@ C_INT core_machine_primary_source_instruction_cost(
     if (!core_machine_source_timing_primary_shape(data, prefixes, &shape)) {
         return 0;
     }
-    transfers = core_machine_source_timing_primary_word_transfers(&shape);
+    transfer_plan = core_machine_source_timing_primary_transfer_plan(&shape);
+    transfers = transfer_plan.word_transfers;
 
     switch (machine->cpu_profile) {
     case CORE_MACHINE_CPU_PROFILE_8086:
+    case CORE_MACHINE_CPU_PROFILE_8088:
         switch (shape.form) {
         case CORE_MACHINE_SOURCE_TIMING_ALU_ADD_RM_REGISTER:
         case CORE_MACHINE_SOURCE_TIMING_ALU_SUB_RM_REGISTER:
@@ -2032,8 +2054,10 @@ C_INT core_machine_primary_source_instruction_cost(
         }
         if (shape.memory) {
             ticks += core_machine_8086_timing_effective_address(data, prefixes);
-            ticks += (type_unsigned_64)transfers *
-                core_machine_8086_timing_odd_word(data);
+            ticks += (type_unsigned_64)transfer_plan.word_transfers *
+                (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_8088 ?
+                CORE_MACHINE_8086_ODD_WORD_TICKS :
+                core_machine_8086_timing_odd_word(data));
             if (segment_override) ticks += CORE_MACHINE_8086_SEGMENT_OVERRIDE_TICKS;
         }
         break;
