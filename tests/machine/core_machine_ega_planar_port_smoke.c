@@ -91,12 +91,12 @@ C_INT main(C_VOID)
     core_machine_port_write(&port, 0x03cfu, 0x00u);
     failed |= core_machine_port_read(&port, 0x03cfu) != 0x00u;
     core_machine_port_write(&port, 0x03ceu, 6u);
-    failed |= core_machine_port_read(&port, 0x03cfu) != 0x00u;
+    failed |= core_machine_port_read(&port, 0x03cfu) != 0x05u;
     core_machine_port_write(&port, 0x03cfu, 0x05u);
     (C_VOID)core_machine_port_read(&port, 0x03dau);
     core_machine_port_write(&port, 0x03c0u, 0x30u);
     core_machine_port_write(&port, 0x03c0u, 0x01u);
-    failed |= core_machine_port_read(&port, 0x03c1u) != 0u ||
+    failed |= core_machine_port_read(&port, 0x03c1u) != 0x01u ||
         vadp.data.attribute[16] != 0x01u;
 
     failed |= !core_machine_ega_planar_write(&memory, 0x000a0000u, 0xa5u);

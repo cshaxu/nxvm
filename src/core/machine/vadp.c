@@ -562,7 +562,7 @@ static C_VOID core_machine_vadp_mark_dirty(t_vadp *adapter)
 
 static C_INT core_machine_vadp_sequencer_index_supported(type_unsigned_8 index)
 {
-    return index == 0u || index == 1u || index == 2u || index == 4u;
+    return index == 0u || index == 1u || index == 2u || index == 3u || index == 4u;
 }
 
 static type_unsigned_8 core_machine_vadp_sequencer_mask(type_unsigned_8 index)
@@ -571,6 +571,7 @@ static type_unsigned_8 core_machine_vadp_sequencer_mask(type_unsigned_8 index)
     case 0u: return 0x03u;
     case 1u: return 0x3du;
     case 2u: return 0x0fu;
+    case 3u: return 0x3fu;
     case 4u: return 0x0eu;
     default: return 0u;
     }
@@ -1114,9 +1115,14 @@ static C_VOID core_machine_vadp_write_graphics_index(t_port *port,
 static C_VOID core_machine_vadp_read_graphics_data(t_port *port,
     type_unsigned_16 port_id, C_VOID *owner)
 {
+    const t_vadp *adapter = (const t_vadp *)owner;
+
     (C_VOID)port_id;
-    (C_VOID)owner;
-    if (port != STD_NULL) port->data.ioByte = 0u;
+    if (port != STD_NULL) {
+        port->data.ioByte = adapter != STD_NULL && adapter->data.ega_controller_configured &&
+            core_machine_vadp_graphics_index_supported(adapter->data.graphics_index) ?
+            adapter->data.graphics[adapter->data.graphics_index] : 0u;
+    }
 }
 
 static C_VOID core_machine_vadp_write_graphics_data(t_port *port,
@@ -1141,9 +1147,14 @@ static C_VOID core_machine_vadp_write_graphics_data(t_port *port,
 static C_VOID core_machine_vadp_read_attribute_data(t_port *port,
     type_unsigned_16 port_id, C_VOID *owner)
 {
+    const t_vadp *adapter = (const t_vadp *)owner;
+
     (C_VOID)port_id;
-    (C_VOID)owner;
-    if (port != STD_NULL) port->data.ioByte = 0u;
+    if (port != STD_NULL) {
+        port->data.ioByte = adapter != STD_NULL && adapter->data.ega_controller_configured &&
+            core_machine_vadp_attribute_index_supported(adapter->data.attribute_index) ?
+            adapter->data.attribute[adapter->data.attribute_index] : 0u;
+    }
 }
 
 static C_VOID core_machine_vadp_write_attribute(t_port *port,

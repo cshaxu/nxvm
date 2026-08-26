@@ -49,7 +49,7 @@ C_INT main(C_VOID)
     failed |= core_machine_port_read(&port, 0x03c5u) != 0x05u;
     core_machine_port_write(&port, 0x03c4u, 3u);
     core_machine_port_write(&port, 0x03c5u, 0xffu);
-    failed |= core_machine_port_read(&port, 0x03c5u) != 0xffu;
+    failed |= core_machine_port_read(&port, 0x03c5u) != 0x3fu;
     core_machine_port_write(&port, 0x03c4u, 2u);
     failed |= core_machine_port_read(&port, 0x03c5u) != 0x05u;
 
@@ -77,5 +77,6 @@ C_INT main(C_VOID)
     core_machine_port_finalize(&port);
     if (failed) return 1;
     STD_PRINTF("M5:T235:S1:EGA-SEQUENCER:PORT:OK\n");
+    STD_PRINTF("M5:T480:S3:EGA-VGA-COMMON:OK\n");
     return 0;
 }

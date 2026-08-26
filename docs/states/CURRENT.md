@@ -2,7 +2,28 @@
 
 ## Current Work
 
-**T480 retains accepted progress between subtasks.**
+**Active: M5 T480 S3.**
+
+## M5 T480 S3 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | T480 S2 accepted at `222427d0`; owner standing queue-execution approval and VADP sole-owner architecture constraint remain in force. |
+| Objective | Close selected IBM VGA-common EGA controller semantics in the existing VADP owner: CRTC, attribute, sequencer, graphics, latch and aperture mechanisms remain one production path ready for VGA-only state. |
+| Non-goals | No DAC, chain-4, Mode 13h renderer, profile/card binding, VBE/SVGA, firmware/ROM/media import, VM video state, or second VADP/VRAM object. |
+| Reference Baseline | Accepted T480 S1 source ledger and S2 code-gap ledger; current `src/core/machine/vadp.[ch]` EGA planar state and copied display-snapshot boundary. |
+| Candidate Proposal | [VADP IBM VGA L3 capability](../proposals/m5-vadp-ibm-vga-l3-capability.md). |
+| Files And ABI Surface | `src/core/machine/vadp.[ch]`, affected Core VADP tests/CMake registration and T480 evidence/history/status; no VM presentation or profile ABI expansion. |
+| Applicable Rules | `docs/rules/EXECUTION.md` continuation/P lifecycle/similar sweep; architecture/coding/source authorities; T480 proposal. |
+| Verification | Focused EGA port, mapped-memory, latch/write-mode, snapshot and reset tests; source caller sweep; documentation governance and applicable build registration. |
+| Expected Markers | `M5:T480:S3:COMMON-OWNER:OK`; `M5:T480:S3:EGA-VGA-COMMON:OK`; `M5:T480:S3:REGRESSIONS:OK`. |
+| Asset Needs | No acquisition/import. Accepted IBM VGA source ledger and read-only external comparisons remain reference only. |
+| Reporting Requirements | Record retained/replaced path, code-size change, common-register behavior, test result, no-second-truth proof and S4 residuals. |
+| Stop Conditions | Stop if a claimed common behavior is source-ambiguous, needs a profile board decision, needs VGA-only DAC/chain-4 state, or cannot be made correct without a second owner. |
+| Exit Criteria | One VADP state and one port/memory/snapshot path correctly handle the bounded common controller surface; focused proof passes and only VGA/profile-gated work transfers to S4/S5. |
+| Original Owner Request | Maintain one VADP state owner and guest/firmware ports and memory through copied display snapshots to VM presentation; share genuine EGA/VGA logic without layers or parallel paths. |
+| Similar-Issue Sweep | All VADP register/memory/snapshot code, display configuration and port-routing calls, affected Core VADP tests and CMake registration. |
 
 ## Current Technical Baseline
 
@@ -39,7 +60,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T480 S2 | Accepted: one VADP owns current video state and one copied snapshot reaches VM presentation; common and VGA-only receivers are explicitly partitioned. [Evidence](../etc/evidence/t480-s2-vadp-code-gap-ledger.md). |
+| T480 S3 | Accepted: one VADP state now exposes common EGA/VGA indexed register readback without a second port, memory or snapshot path; focused Core/VM EGA regressions pass. [Evidence](../etc/evidence/t480-s3-ega-vga-common-closure.md). |
 | T479 | Closed: one Core HDC/media boundary retains explicit ATA, Compaq and IBM WD1003 personalities; seven focused regressions, the 294-target gate and stripped Release 0479 hash pass. IBM 5160/Xebec and WD1007A-WAH ESDI contracts transfer only to their missing immutable profile receivers. [Closure audit](../etc/evidence/t479-s8-closure-audit.md). |
 | T478 | Closed: Default-AT is an immutable `pc-at-5170` child and all three AT profiles have one resolver-to-copied-Core-input route. [Closure audit](../etc/evidence/t478-s4-closure-audit.md) records frozen parity, the 294-target gate, and stripped Release 0478. |
 | T477 | Closed: DeskPro is an immutable `pc-at-5170` child with one copied Core-plan materialization path; the Model-40 session retains only dynamic resources. [Closure audit](../etc/evidence/t477-s4-closure-audit.md) records frozen parity, the 294-target gate and stripped Release 0477. |

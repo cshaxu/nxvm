@@ -50,18 +50,18 @@ C_INT main(C_VOID)
     failed |= core_machine_port_read(&port, 0x03ceu) != 0u;
     failed |= core_machine_port_read(&port, 0x03cfu) != 0u;
     core_machine_port_write(&port, 0x03ceu, 6u);
-    failed |= core_machine_port_read(&port, 0x03cfu) != 0u;
+    failed |= core_machine_port_read(&port, 0x03cfu) != 0x05u;
     core_machine_port_write(&port, 0x03ceu, 0u);
     failed |= core_machine_port_read(&port, 0x03cfu) != 0u;
     core_machine_port_write(&port, 0x03ceu, 6u);
     core_machine_port_write(&port, 0x03cfu, 0xffu);
-    failed |= core_machine_port_read(&port, 0x03cfu) != 0u ||
+    failed |= core_machine_port_read(&port, 0x03cfu) != 0x0fu ||
         vadp.data.graphics[6] != 0x0fu;
     core_machine_port_write(&port, 0x03ceu, 31u);
     core_machine_port_write(&port, 0x03cfu, 0xa5u);
     failed |= core_machine_port_read(&port, 0x03cfu) != 0u;
     core_machine_port_write(&port, 0x03ceu, 6u);
-    failed |= core_machine_port_read(&port, 0x03cfu) != 0u ||
+    failed |= core_machine_port_read(&port, 0x03cfu) != 0x0fu ||
         vadp.data.graphics[6] != 0x0fu;
 
     core_machine_port_write(&port, 0x03ceu, 6u);
@@ -90,17 +90,17 @@ C_INT main(C_VOID)
 
     core_machine_port_write(&port, 0x03c0u, 0x31u);
     core_machine_port_write(&port, 0x03c0u, 0xffu);
-    failed |= core_machine_port_read(&port, 0x03c1u) != 0u ||
+    failed |= core_machine_port_read(&port, 0x03c1u) != 0x3fu ||
         vadp.data.attribute[17] != 0x3fu ||
         !vadp.data.attribute_display_enabled;
     (C_VOID)core_machine_port_read(&port, 0x03dau);
     core_machine_port_write(&port, 0x03c0u, 0x00u);
-    failed |= core_machine_port_read(&port, 0x03c1u) != 0u ||
+    failed |= core_machine_port_read(&port, 0x03c1u) != 0x3fu ||
         vadp.data.attribute[0] != 0x3fu;
     (C_VOID)core_machine_port_read(&port, 0x03dau);
     core_machine_port_write(&port, 0x03c0u, 0x12u);
     core_machine_port_write(&port, 0x03c0u, 0xf5u);
-    failed |= core_machine_port_read(&port, 0x03c1u) != 0u ||
+    failed |= core_machine_port_read(&port, 0x03c1u) != 0x05u ||
         vadp.data.attribute[18] != 0x05u;
     (C_VOID)core_machine_port_read(&port, 0x03dau);
     core_machine_port_write(&port, 0x03c0u, 0x1fu);
@@ -108,7 +108,7 @@ C_INT main(C_VOID)
     failed |= core_machine_port_read(&port, 0x03c1u) != 0u;
     (C_VOID)core_machine_port_read(&port, 0x03dau);
     core_machine_port_write(&port, 0x03c0u, 0x12u);
-    failed |= core_machine_port_read(&port, 0x03c1u) != 0u ||
+    failed |= core_machine_port_read(&port, 0x03c1u) != 0x05u ||
         vadp.data.attribute[18] != 0x05u;
 
     (C_VOID)core_machine_port_read(&port, 0x03dau);
@@ -152,5 +152,6 @@ C_INT main(C_VOID)
     core_machine_memory_finalize(&memory);
     core_machine_port_finalize(&port);
     STD_PRINTF("M5:T236:S1:EGA-CONTROLLER:PORT:OK\n");
+    STD_PRINTF("M5:T480:S3:COMMON-OWNER:OK\n");
     return 0;
 }
