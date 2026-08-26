@@ -2,7 +2,26 @@
 
 ## Current Work
 
-**Idle.**
+## M5 T479 S1 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New |
+| Admission And Approval | Owner's persistent queue-execution goal authorizes the next candidate, AT fixed-disk controller standardization, in single-session coordinator/executor mode. |
+| Objective | Freeze the finite IBM 5170, DeskPro Model 40, ATA PIO and unselected ESDI controller source/interface ledger that determines T479's one-owner implementation boundary. |
+| Non-goals | No controller behavior, profile, firmware, media, timing, ABI, external-source import, or artifact change; do not infer a controller fact from a generic drive or a reference emulator. |
+| Reference Baseline | T468 ATA closure; T474 Core guest-time boundary; T476--T478 resolved-profile routes; IBM 5170 and ATA-3 primary manuals; owner-approved T479 proposal. |
+| Candidate Proposal | [AT fixed-disk controller standardization](../proposals/m5-at-fixed-disk-controller-standardization.md). |
+| Files And ABI Surface | T479 history, source/cross-model ledger and code-gap ledger under `docs/etc/evidence/`; no runtime file or ABI surface. |
+| Applicable Rules | Source policy; one mutable controller owner; Core-only guest bus/time ownership; documentation and execution closure rules. |
+| Verification | Manual file/page/text-quality inventory; read-only 86Box/MAME/PCjs/Bochs/QEMU cross-check; row-complete ledger review; documentation governance gate. |
+| Expected Markers | `M5:T479:S1:HDC-SOURCE-LEDGER:OK` and `M5:T479:S1:HDC-GAP-LEDGER:OK`. |
+| Asset Needs | Existing local manuals and read-only external emulator checkouts only; no firmware, media, or third-party source import. |
+| Reporting Requirements | Record source quality, every finite row's normative/corroborating evidence and L3/L2/unsupported disposition, current owner/path, explicit unknowns and S2 receiver. |
+| Stop Conditions | Stop if an identity or timing fact lacks a primary source and cannot be bounded as Other-L3 corroboration; transfer rather than invent a controller family. |
+| Exit Criteria | Two row-complete ledgers distinguish shared host-visible behavior from selected controller-specific facts, identify existing owner/gaps and S2's finite sweep, and pass governance review. |
+| Original Owner Request | Execute the queue with a global, minimalist design: one owner, no duplicate paths, and no false L3 claim. |
+| Similar-Issue Sweep | All HDC/ATA names, firmware INT 13 route, Core port/DMA/PIC/time calls, resolver declarations, media ownership, prior ATA evidence and all selected profile configurations. |
 
 ## Current Technical Baseline
 
