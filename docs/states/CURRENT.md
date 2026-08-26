@@ -2,28 +2,28 @@
 
 ## Current Work
 
-**Open: M5 T489 S5.**
+**Open: M5 T490 S1.**
 
-## M5 T489 S5 Packet
+## M5 T490 S1 Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | T489 S1--S4 accepted source, complete ledgers and the sole port-topology repair; S5 performs task closure. |
-| Objective | Audit all sixteen DMA/XT rows, code quality, retained L2/L4 boundaries and focused proof before closing T489. |
-| Non-goals | No additional DMA repair, timing-axis claim, AT change, FDC/Xebec work or release artifact. |
-| Reference Baseline | T489 S1--S4 evidence and the queued independent controller program. |
-| Candidate Proposal | [IBM 5160 8237A DMA phase contract](../proposals/m5-xt-8237a-board-phase.md). |
-| Files And ABI Surface | Closure evidence, evidence index, history, Queue and Current only; no code or ABI change. |
+| Identifier Mode | New |
+| Admission And Approval | T489 is closed.  The first queued independent controller unit, IBM 5160 8254 PIT, is admitted at S1 under the mandatory original-source/List-1/List-2/one-owner-batch order. |
+| Objective | Establish a visually verified, primary-source-only ledger for the selected IBM 5160 8254 PIT before any PIT implementation judgement. |
+| Non-goals | No PIT code change, timing conversion, host pacing, RTC, speaker rendering, profile state mutation or release artifact. |
+| Reference Baseline | T489 closure and the shared specification-driven complete-simulation admission program. |
+| Candidate Proposal | [IBM 5160 8254 PIT phase contract](../proposals/m5-xt-8254-board-phase.md). |
+| Files And ABI Surface | Source-ledger evidence, evidence index, history and Current only; no code or ABI change. |
 | Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, `docs/etc/operations/policy/source-policy.md`. |
-| Verification | Review actual T489 diff and all evidence, rerun documentation governance and retain focused proof results. |
-| Expected Markers | One complete closure matrix with no hidden DMA/XT gap. |
-| Asset Needs | No new assets; retained evidence only. |
-| Reporting Requirements | Name retained owner, code-size result, test coverage and the physical-axis receiver. |
-| Stop Conditions | A newly found DMA row returns to List 2; no audit-stage repair is allowed. |
-| Exit Criteria | All sixteen rows are accepted or explicitly transferred, and no unresolved implementation batch remains. |
-| Original Owner Request | One independent controller T: original source, complete List 1, complete List 2, then one owner-local batch; no symptom repair. |
-| Similar-Issue Sweep | Recheck every DMA topology construction and all retained controller-time declarations. |
+| Verification | Visually inspect source pages and record archive identity, page ranges, scan/OCR condition and admissible facts; run documentation governance. |
+| Expected Markers | Finite original-source ledger that bounds the later complete PIT List 1. |
+| Asset Needs | Owner-managed Intel 8254 and IBM 5160 source material; no imported source or asset. |
+| Reporting Requirements | Name every source, its visual-check status, admissible facts, gaps and later-source boundary. |
+| Stop Conditions | The selected original source cannot be visually verified, or a required selected-board fact has no authoritative source. |
+| Exit Criteria | S1 evidence establishes a finite primary-source basis; only then may S2 freeze complete List 1. |
+| Original Owner Request | Each chip/controller is one complete T: source ledger, complete List 1, complete List 2, then one coherent owner-local implementation batch; no symptom repairs. |
+| Similar-Issue Sweep | Inventory all selected XT PIT ports, outputs and consumers for later List-1 inclusion; do not modify them in S1. |
 
 ## Current Technical Baseline
 
@@ -60,10 +60,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T489 S4 | Accepted: XT single-DMA now exposes only selected page ports; Core plan, DMA channel and XT profile smokes pass. [Evidence](../etc/evidence/t489-s4-xt-dma-page-port-closure.md). |
-| T489 S3 | Accepted: complete List 2 maps 16 DMA/XT rows; one XT page-port topology correction is the entire implementation batch and physical-axis mapping remains L2. [Evidence](../etc/evidence/t489-s3-8237a-current-code-gap-list-2.md). |
-| T489 S2 | Accepted: complete 16-row Intel/IBM 8237A/XT function and timing List 1 is frozen before code audit. [Evidence](../etc/evidence/t489-s2-8237a-function-timing-list-1.md). |
-| T489 S1 | Accepted: visually checked Intel 8237A and IBM 5160 primary-source ledger establishes the finite DMA List-1 basis. [Evidence](../etc/evidence/t489-s1-8237a-original-source-ledger.md). |
+| T489 | Closed: complete IBM 5160 8237A source/List-1/List-2/one-owner batch closes the single page-port gap without new state or parallel path; physical-axis conversion remains transferred. [Closure audit](../etc/evidence/t489-s5-8237a-closure-audit.md). |
 | T488 | Closed: complete IBM 5160 8259A source/List-1/List-2/one-owner audit retains one Core PIC path and an empty implementation batch. [Closure audit](../etc/evidence/t488-s5-8259a-closure-audit.md). |
 | T487 | Closed: complete IBM board source/List-1/List-2 reconciliation retains the single Intel clock-total owner and explicit L2 physical-phase boundaries. [Closure audit](../etc/evidence/t487-s5-5160-board-closure-audit.md). |
 | T486 | Closed: the complete 8088 manual source/List-1/List-2/one-owner implementation chain closes without a parallel timing path; Group-3, WAIT and non-string-prefix source boundaries remain explicit. [Closure audit](../etc/evidence/t486-s5-8088-closure-audit.md). |
@@ -71,7 +68,6 @@
 | T484 | Closed: IBM 5160-268 now has one immutable 8088/profile plan, XT PPI/FDC/CGA/Xebec functional owners and one typed external-ROM BYOB product route; all remaining board/device timing transfers to T485. [Closure audit](../etc/evidence/t484-s22-xt-functional-closure-audit.md). |
 | T482 | Closed: one strict root YAML request reaches the sole `SESSION OPEN` authority and resolver without CLI re-encoding; 296/296 current-gate tests and stripped Release 0480 pass. [Closure audit](../etc/evidence/t482-s4-closure-audit.md). |
 | T483 | Closed: the IBM 5160-268 BOM, complete current-owner capability matrix and Manual-L3/unresolved timing partition establish one functional and one timing receiver without implying an XT runtime path. [Closure evidence](../etc/evidence/t483-s3-xt-timing-source-partition.md). |
-| T481 | Closed: one global CPU/controller/Core-time/profile/VM audit leaves no unrecorded duplicate owner, host-to-Core tick injection or false capability claim; residuals have one ordered receiver. [Closure audit](../etc/evidence/t481-s5-global-reconciliation.md). |
 
 ## Recent Governance
 

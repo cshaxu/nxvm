@@ -47,7 +47,6 @@ ledger, complete List 1, complete List 2, then one-owner full-batch
 implementation. The final model and pre-Windows entries are audits only; they
 may transfer a gap to its earliest unit T but may not repair it.
 
-1. [IBM 5160 8237A DMA phase contract](../proposals/m5-xt-8237a-board-phase.md).
 1. [IBM 5160 8254 PIT phase contract](../proposals/m5-xt-8254-board-phase.md).
 1. [IBM 5160 8255 PPI, keyboard and NMI phase contract](../proposals/m5-xt-8255-keyboard-nmi-phase.md).
 1. [IBM 5160 8272A FDC and floppy-media phase contract](../proposals/m5-xt-8272a-fdc-media-phase.md).
