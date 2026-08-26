@@ -2,28 +2,28 @@
 
 ## Current Work
 
-**Active: M5 T482 S4.**
+**Active: M5 T483 S1.**
 
-## M5 T482 S4 Packet
+## M5 T483 S1 Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | The owner-approved T482 scope admits final reconciliation. One-session review accepts S3 P1 `f61f04d8` after inspecting its direct Console request route and negative legacy-bridge sweep. |
-| Objective | Reconcile the complete YAML/profile selection surface, run task-level gates, publish the T482 closure audit and current optimized product artifact. |
-| Non-goals | No compatibility grammar, user hardware authoring, new profiles, XT admission, asset import or L4 work. |
-| Reference Baseline | Accepted T482 S2 strict parser and S3 direct Console-to-resolver request route. |
-| Candidate Proposal | [VM session profile YAML cutover](../proposals/m5-vm-session-profile-yaml-cutover.md). |
-| Files And ABI Surface | T482 parser, catalog request, Console/session factory route, all profile regressions, closure evidence/history/status and the current 0480 artifact. Core-machine ABI remains unchanged. |
-| Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, architecture/coding rules, source policy and the proposal's one-production-path constraint. |
-| Verification | Full current gate; all T482 focused parser/request/Console/profile tests; production/test stale-bridge sweep; optimized Release rebuild/hash; documentation governance. |
-| Expected Markers | `M5:T482:S4:PROFILE-RECONCILIATION:OK`; `M5:T482:S4:CLOSURE-AUDIT:OK`. |
-| Asset Needs | No acquisition or import. |
-| Reporting Requirements | Record each profile's allowed selection surface, all rejected forms, sole route/owner, full-gate result, artifact hash and any explicit transfer. |
+| Identifier Mode | New |
+| Admission And Approval | The owner-approved ordered Queue and the standing instruction to continue toward the pre-Windows L3 admission audit admit the first post-T482 candidate. |
+| Objective | Freeze IBM PC/XT 5160-268 primary-source provenance, selected bill of materials and 8088/Xebec admission boundaries before any XT implementation. |
+| Non-goals | No 5160 runtime profile, device repair, firmware/media import, PC/AT borrowing, timing implementation, Windows claim or L3 decision. |
+| Reference Baseline | [XT 5160-268 profile and capability-gap audit](../proposals/m5-xt-5160-268-profile-capability-audit.md), T479 S6 IBM/Xebec ledgers, retained 8086 semantic ledger and current profile resolver boundary. |
+| Candidate Proposal | [IBM PC/XT 5160-268 profile and capability-gap audit](../proposals/m5-xt-5160-268-profile-capability-audit.md). |
+| Files And ABI Surface | T483 history/status, indexed primary-source provenance and bounded audit evidence only; no source, build, runtime, asset or ABI change. |
+| Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, architecture/source policy and the proposal's no-implementation stop boundary. |
+| Verification | Manual source/provenance review, cross-check against T479 S6 ledger and documentation governance. |
+| Expected Markers | `M5:T483:S1:XT-PRIMARY-SOURCE-BASELINE:OK`; `M5:T483:S1:XT-BOM:OK`. |
+| Asset Needs | Primary documentation may be read from the approved external research archive; no firmware, guest media, local path or vendor bytes may enter the repository. |
+| Reporting Requirements | Record selected board/revision, source quality/OCR status, component facts, unresolved facts and exact later receiver boundary. |
 | Original Owner Request | Continue the ordered minimalist queue toward the pre-Windows L3 admission audit. |
-| Stop Conditions | Stop if reconciliation finds a second profile-selection route, an undocumented parser form, or a profile policy outside the existing resolver/session boundary. |
-| Exit Criteria | All three current profiles use the one root YAML request route; every profile-declared choice is covered; legacy grammar/CLI bridge is absent; required gates and optimized artifact pass; closure identifies no unowned residual. |
-| Similar-Issue Sweep | All tracked parser/catalog/Console/session-provider callers, YAML fixtures, CMake target coverage, task documents and product artifacts. |
+| Stop Conditions | Stop at an unidentified board fact, ambiguous primary source or source-license boundary; retain a bounded source/probe receiver rather than infer from PC/AT behavior. |
+| Exit Criteria | A source-labelled 5160-268 baseline and bill of materials identify every selected component and preserve the Xebec external-ROM/non-import boundary. |
+| Similar-Issue Sweep | Existing 5160/XT/T479 source ledgers, profile proposals, research indexes and selected-device documents. |
 
 ## Current Technical Baseline
 
@@ -60,9 +60,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T482 S1 | Accepted: the v1 catalog and `--profile` parallel selector are frozen for one root-only immutable request replacement. [Evidence](../etc/evidence/t482-s1-yaml-selection-universe.md). |
-| T482 S2 | Accepted: one strict root-only parser owns YAML syntax and returns copied immutable requests; duplicate and unknown forms are rejected, while declared CPU/FPU choices are left for the resolver. [Evidence](../etc/evidence/t482-s2-root-parser.md). |
-| T482 S3 | Accepted: Console passes only the copied catalog request to the resolver; default-PC/AT declared CPU/FPU choices survive this route, while fixed-profile overrides and legacy CLI selection are rejected. [Evidence](../etc/evidence/t482-s3-console-request-route.md). |
+| T482 | Closed: one strict root YAML request reaches the sole `SESSION OPEN` authority and resolver without CLI re-encoding; 296/296 current-gate tests and stripped Release 0480 pass. [Closure audit](../etc/evidence/t482-s4-closure-audit.md). |
 | T481 | Closed: one global CPU/controller/Core-time/profile/VM audit leaves no unrecorded duplicate owner, host-to-Core tick injection or false capability claim; residuals have one ordered receiver. [Closure audit](../etc/evidence/t481-s5-global-reconciliation.md). |
 | T480 | Closed: VADP remains the sole guest-video owner; IBM VGA DAC, chain-4 and Mode-13 frame capability is source-backed but unselected by every current profile/card. The 296-target gate and stripped Release 0480 pass. [Closure audit](../etc/evidence/t480-s5-profile-closure-audit.md). |
 | T479 | Closed: one Core HDC/media boundary retains explicit ATA, Compaq and IBM WD1003 personalities; seven focused regressions, the 294-target gate and stripped Release 0479 hash pass. IBM 5160/Xebec and WD1007A-WAH ESDI contracts transfer only to their missing immutable profile receivers. [Closure audit](../etc/evidence/t479-s8-closure-audit.md). |
@@ -70,7 +68,6 @@
 | T477 | Closed: DeskPro is an immutable `pc-at-5170` child with one copied Core-plan materialization path; the Model-40 session retains only dynamic resources. [Closure audit](../etc/evidence/t477-s4-closure-audit.md) records frozen parity, the 294-target gate and stripped Release 0477. |
 | T476 | Closed: IBM 5170 sessions consume one copied `pc-at-5170` root and one Core-plan materialization path; the former duplicate exception aggregate is retired while its independent owners remain. [Closure audit](../etc/evidence/t476-s4-closure-audit.md) records the 294-target gate and stripped Release 0476. |
 | T475 | Closed: one VM-only immutable resolver copies parent-patched values and per-field provenance to the existing Core-plan API, rejects invalid ownership/bindings/windows/routes/contracts/policy, and leaves current routes for ordered profile migrations. [Closure audit](../etc/evidence/t475-s3-integration-closure-audit.md) records the 294-target gate and stripped Release 0475. |
-| T474 | Closed: one Core-owned guest-time axis, immutable plan and copied observation now join profile timing values, source-qualified PIT/RTC deadlines, explicit controller blockers and Standard/Turbo consumer policy. [Closure audit](../etc/evidence/t474-s6-integration-closure-audit.md) records the 293-target gate and stripped Release 0474. |
 
 ## Recent Governance
 
