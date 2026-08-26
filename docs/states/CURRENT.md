@@ -2,7 +2,26 @@
 
 ## Current Work
 
-**Idle.**
+## M5 T478 S1 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New |
+| Admission And Approval | Owner approved the next ordered profile task on 2026-08-25, after T477 closure: migrate `default-at` through the established 5170 resolver route. |
+| Objective | Freeze every current Default-AT construction field, its difference from `pc-at-5170`, real dynamic owner, and finite parity proof before any resolver or session change. |
+| Non-goals | No resolver-kernel change, runtime behavior change, YAML, asset, timing-algorithm, XT, generic-386, or L4 work. |
+| Reference Baseline | T475 resolver closure, T476 5170 root closure, T477 DeskPro closure, [profile design](../etc/architecture/vm-profile-resolution-design.md), current Default-AT source and existing smokes. |
+| Candidate Proposal | [Default-AT 5170-derived profile](../proposals/m5-default-at-5170-derived-profile.md). |
+| Files And ABI Surface | T478 history, S1 evidence and status only; inspect `src/vm/profile/default_profile/`, `src/vm/composition/session/` and relevant tests without changing runtime ABI. |
+| Applicable Rules | Documentation/Execution rules: one current packet, finite evidence-led scope and truthful status. Architecture/coding changes are not applicable because S1 adds no product code; its ledger must nevertheless preserve the Core/VM single-owner boundary. |
+| Verification | Source-to-ledger sweep for all Default-AT descriptor/materialization and session call sites; compare every declarative field to the copied 5170 root; enumerate existing focused smokes; run documentation governance. |
+| Expected Markers | `M5:T478:S1:DEFAULT-AT-DELTA-LEDGER:OK` and `M5:T478:S1:DEFAULT-AT-PARITY-UNIVERSE:OK`. |
+| Asset Needs | None; no firmware, guest media, external source, or third-party import. |
+| Reporting Requirements | Record field dispositions, distinct dynamic owners, exact source/test sweep, next resolver boundary, and that no code path or artifact changed. |
+| Stop Conditions | Stop and return for approval if a Default-AT fact lacks a neutral Core contract, changes frozen behavior, requires profile-kernel expansion, or cannot be classified as immutable declaration versus dynamic session state. |
+| Exit Criteria | Complete finite ledger has no unclassified field; parity universe and S2 one-route/deletion boundary are named; documentation governance passes; review confirms documentation-only change. |
+| Original Owner Request | Connect profiles in order through correct Core/VM boundaries, then support Standard and Turbo without parallel state or invented timing. |
+| Similar-Issue Sweep | Compare every `vm_profile_default_pc_at_*` descriptor/materialization use plus session profile branching; classify each production hit as root, Default-AT child, shared helper, or dynamic session owner. |
 
 ## Current Technical Baseline
 
