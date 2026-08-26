@@ -2,28 +2,11 @@
 
 ## Current Work
 
-**Active: M5 T485 S20.**
+**Open: M5 T485.**
 
-## M5 T485 S20 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner-approved continuous execution under the admitted T485 queue task; accepted S19 `0c1129f1` fixes the finite next implementation batch. |
-| Objective | Add one 8088 source-attributed fixed-scalar receiver for unprefixed NOP, CLC/CLD/CLI/CMC/STC/STD/STI, LAHF and SAHF, using their exact Intel Table 2-21 clock rows. |
-| Non-goals | No prefix behavior, XLAT, MOV/segment/pointer, Group-2, ESC/WAIT/FPU, dynamic range, hardware interrupt, decoder, public API, board-cycle, physical-axis or VM change. |
-| Reference Baseline | T485 S19 inventory; rendered Intel Table 2-21 printed pages 2-51, 2-53, 2-59, 2-62, 2-64 and 2-66; existing primary source evaluator and retirement-observation smoke. |
-| Candidate Proposal | [IBM PC/XT 5160-268 board and device phase-timing closure](../proposals/m5-8088-5150-xt-l3-baseline.md). |
-| Files And ABI Surface | Private Core timing evaluator, its focused smoke, T485 evidence/history/index and Current; no public ABI, decoder, machine state, profile or artifact change. |
-| Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, `docs/design/ARCHITECTURE.md`, `docs/design/CODING.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md` and source policy. The sole owner remains the private primary timing evaluator; no mutable state or parallel timing route is permitted. |
-| Verification | Focused retirement-observation smoke proves all ten opcodes are primary-origin, source-attributed and exactly 3, 2 or 4 clocks; relevant build/test and complete current gate; documentation governance. |
-| Expected Markers | One private 8088/unprefixed scalar branch in the existing evaluator; no new helper, ledger, decoder, timing-plan type or selector stage. |
-| Asset Needs | Existing Intel manual and project-owned tests only; no imported source, firmware or guest media. |
-| Reporting Requirements | Record the exact source values, opcode universe, retained owner, test result, code-size accounting, and every excluded prefix/memory/FPU boundary. |
-| Stop Conditions | Stop if any opcode needs prefix legality, memory/segment input, FPU collaboration or an undocumented timing rule; transfer it to its S19-designated batch. |
-| Exit Criteria | Every listed unprefixed opcode selects the existing primary owner with the exact source value; all other S19 residual categories remain outside the code path and no compatibility/second owner is added. |
-| Original Owner Request | Continue the ordered minimalist queue toward the pre-Windows L3 admission audit without additive or parallel timing paths. |
-| Similar-Issue Sweep | Sweep all listed fixed scalar opcodes, existing 8086/80186/80286 scalar handling, all prefix cases, source-form attribution, selector ordering and current fallback assertions. |
+T485 S20 is accepted at `58d4d896`: all ten unprefixed fixed-scalar rows now
+use the sole primary receiver.  XLAT, move/segment, Group-2, prefix and
+FPU-specific rows retain their separate S19 receiver boundaries.
 
 ## Current Technical Baseline
 
@@ -60,7 +43,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T485 S19 | Accepted: every 8088 Table 2-21 instruction/prefix row now has an accepted receiver, an explicit source boundary, a finite next batch or a non-instruction exclusion. [Evidence](../etc/evidence/t485-s19-8088-table-2-21-coverage-inventory.md). |
+| T485 S20 | Accepted: the sole primary evaluator now classifies all ten exact, unprefixed 8088 fixed-scalar rows; prefix, memory/segment and FPU work remains separate. [Evidence](../etc/evidence/t485-s20-8088-fixed-scalar-source-evaluator.md). |
 | T484 | Closed: IBM 5160-268 now has one immutable 8088/profile plan, XT PPI/FDC/CGA/Xebec functional owners and one typed external-ROM BYOB product route; all remaining board/device timing transfers to T485. [Closure audit](../etc/evidence/t484-s22-xt-functional-closure-audit.md). |
 | T482 | Closed: one strict root YAML request reaches the sole `SESSION OPEN` authority and resolver without CLI re-encoding; 296/296 current-gate tests and stripped Release 0480 pass. [Closure audit](../etc/evidence/t482-s4-closure-audit.md). |
 | T483 | Closed: the IBM 5160-268 BOM, complete current-owner capability matrix and Manual-L3/unresolved timing partition establish one functional and one timing receiver without implying an XT runtime path. [Closure evidence](../etc/evidence/t483-s3-xt-timing-source-partition.md). |

@@ -1,6 +1,6 @@
 # T485 S20 8088 Fixed Scalar Source Evaluator
 
-`M5:T485:S20:8088-FIXED-SCALAR-SOURCE-EVALUATOR:ACCEPTANCE-CANDIDATE`
+`M5:T485:S20:8088-FIXED-SCALAR-SOURCE-EVALUATOR:ACCEPTED`
 
 The retained private primary evaluator is the single 8088 receiver for this
 fixed, unprefixed batch.  It assigns the existing private source form and
