@@ -1,4 +1,4 @@
-# T484 S5 P3 5160 B2 Core Topology
+# T484 S5 P5 5160 B2 Core Topology
 
 `M5:T484:S5:XT-B2-PLAN:OK`
 
@@ -43,6 +43,32 @@ board facts without inventing an AT FDC route, RTC/CMOS device or second DMA
 controller.  B3 remains the sole receiver for an evidence-qualified XT FDC
 binding.
 
+## P5: One Resolved Board-Plan Path
+
+The remaining session-local PC/AT board materialization is removed.  A resolved
+PC/AT profile now copies its `core_machine_plan_topology` alongside the copied
+Core configuration and timing rules.  Its profile-local materializer is the
+sole reader of PC/AT port leaves, routes, CMOS defaults, display selection,
+DMA/FDC binding, planar-parity selection, and RTC timing provenance.  Session
+composition retains dynamic media/display-provider binding and passes only the
+immutable copied topology to the Core plan.
+
+This puts current `default-at` and IBM 5170 on the same
+`resolved profile -> copied topology -> Core plan` direction as the existing
+5160 B2 snapshot.  It introduces neither an XT session route nor an AT alias:
+the fixed 5160 declaration remains unavailable until its later B3--B6
+receivers select their own sourced additions.
+
+Historical white-box fixtures that deliberately supply a raw descriptor (also
+including malformed-descriptor failure cases) use that same profile
+materializer; they do not restore session-local leaf or route interpretation.
+
+The profile validator now identifies IBM 5170 by its immutable firmware
+personality rather than by the selected CPU enum.  Consequently a generic
+`default-at` request may select 80286/80287 without becoming a false 5170
+profile; the focused session regression creates that selected pair through the
+same copied topology.
+
 ## Limits And Next Receiver
 
 This B2 work does not make the 5160 session runnable.  It does not bind a ROM,
@@ -67,3 +93,12 @@ validation, not a fabricated Core memory limit.
   materialization.
 - The XT profile smoke constructs the copied B2 topology and proves that no
   FDC request binding exists before B3 selects one.
+- `vm-ibm-5170-root-resolver-smoke.exe` proves copied 5170 and default-AT
+  topology values can be given directly to `core_machine_plan_set_topology`,
+  including the generic 80286/80287 selection.
+- `vm-product-session-smoke.exe` creates a default-AT 80286/80287 session
+  through that resolved topology.
+- A Debug full build and the 297-target `current-gate` pass.  Release target
+  `vm-0-5-0484` rebuilds the stripped
+  `build/output/nxvm_0_5_0484.exe` (1,216,262 bytes, SHA-256
+  `F577B321CAFB0B9B5C566C5507C05F663978531F388B3F18D2A45294730F5E66`).

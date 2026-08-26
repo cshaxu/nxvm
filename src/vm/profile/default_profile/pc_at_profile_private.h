@@ -154,6 +154,7 @@ typedef struct vm_profile_default_pc_at_descriptor {
 typedef struct vm_profile_default_pc_at_resolved_profile {
     vm_resolved_profile resolved;
     vm_profile_default_pc_at_descriptor descriptor;
+    core_machine_plan_topology topology;
     vm_profile_default_pc_at_port_leaf
         port_leaves[VM_PROFILE_DEFAULT_PC_AT_RESOLVED_PORT_LEAF_CAPACITY];
     vm_profile_default_pc_at_route routes[VM_PROFILE_DEFAULT_PC_AT_RESOLVED_ROUTE_CAPACITY];
@@ -185,6 +186,10 @@ C_INT vm_profile_default_pc_at_core_config_materialize(
     const vm_profile_default_pc_at_cpu_contract *contract,
     core_machine_config *out_config,
     core_machine_controller_timing_rules *out_timing_rules);
+type_status vm_profile_default_pc_at_topology_materialize(
+    const vm_profile_default_pc_at_descriptor *descriptor,
+    const core_machine_controller_timing_rules *timing_rules,
+    core_machine_plan_topology *out_topology);
 type_status vm_profile_ibm_5170_root_declaration_create(
     vm_profile_resolver_declaration *out_declaration);
 type_status vm_profile_ibm_5170_root_resolve(

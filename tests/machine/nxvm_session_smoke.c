@@ -49,6 +49,25 @@ static C_INT verify_created(C_VOID)
     return 0;
 }
 
+static C_INT verify_selected_cpu_uses_the_resolved_topology(C_VOID)
+{
+    const vm_session_config config = {
+        .cpu_profile = CORE_MACHINE_CPU_PROFILE_80286,
+        .fpu_profile = CORE_MACHINE_FPU_PROFILE_80287
+    };
+    core_machine_cpu_profile profile;
+    vm_session *session = STD_NULL;
+
+    if (vm_session_create(&config, &session) != TYPE_STATUS_OK ||
+        core_machine_get_cpu_profile(session->core_machine, &profile) != TYPE_STATUS_OK ||
+        profile != CORE_MACHINE_CPU_PROFILE_80286) {
+        vm_session_destroy(session);
+        return 1;
+    }
+    vm_session_destroy(session);
+    return 0;
+}
+
 static C_INT verify_initialize_once(C_VOID)
 {
     vm_session *session = STD_NULL;
@@ -76,6 +95,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
 {
     if (argc != 3 || verify(argv[1], argv[2], 0) != 0 ||
         verify(argv[1], argv[2], 1) != 0 || verify_created() != 0 ||
+        verify_selected_cpu_uses_the_resolved_topology() != 0 ||
         verify_initialize_once() != 0) return 1;
     puts("M5:T7:S1:NXVM-SESSION:OK");
     return 0;

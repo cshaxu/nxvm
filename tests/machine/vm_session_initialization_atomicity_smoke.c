@@ -62,23 +62,14 @@ static C_INT verify_running_reset_outcome(C_VOID)
 static C_VOID initialize_config(vm_session *session,
     const vm_profile_default_pc_at_descriptor *profile)
 {
+    vm_profile_default_pc_at_cpu_contract contract;
+
     session->profile = profile;
-    session->core_machine_config.memory_bytes = profile->default_memory_bytes;
-    session->core_machine_config.cpu_profile = profile->cpu_profile;
-    session->core_machine_config.fpu_profile = profile->fpu_profile;
-    session->core_machine_config.ticks_per_instruction =
-        profile->ticks_per_instruction;
-    session->core_machine_config.instruction_timing = profile->instruction_timing;
-    session->core_machine_config.transaction_contract = profile->transaction_contract;
-    session->core_machine_config.clock_plan = profile->clock_plan;
-    session->core_machine_config.time_axis = profile->time_axis;
-    session->core_machine_config.kbc_typematic_initial_ticks =
-        profile->kbc_typematic_initial_ticks;
-    session->core_machine_config.kbc_typematic_repeat_ticks =
-        profile->kbc_typematic_repeat_ticks;
-    session->core_machine_config.kbc_command_response_ticks =
-        profile->kbc_command_response_ticks;
-    session->controller_timing_rules = profile->controller_timing_rules;
+    if (vm_profile_default_pc_at_cpu_contract_select(profile,
+            CORE_MACHINE_CPU_PROFILE_DEFAULT, profile->fpu_profile, &contract)) {
+        (C_VOID)vm_profile_default_pc_at_core_config_materialize(profile, &contract,
+            &session->core_machine_config, &session->controller_timing_rules);
+    }
 }
 
 static C_INT profile_timing_is_materialized(const core_machine_config *config,
@@ -308,7 +299,6 @@ C_INT main(C_VOID)
 {
     const vm_profile_default_pc_at_descriptor *profile =
         vm_profile_default_pc_at_descriptor_get();
-
     if (profile == STD_NULL || verify_create_materialization(profile) != 0 ||
         verify_core_failure(profile) != 0 ||
         verify_fdd_initialization_failure(profile) != 0 ||

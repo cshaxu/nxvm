@@ -126,6 +126,24 @@ static C_VOID vm_session_default_at_request_create(const vm_session_config *conf
     }
 }
 
+static type_status vm_session_default_at_resolve(vm_session *session,
+    const vm_session_config *config)
+{
+    vm_profile_default_at_request request;
+
+    if (session == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    vm_session_default_at_request_create(config, &request);
+    if (vm_profile_default_at_child_resolve(&request, &session->default_at_resolved) !=
+        TYPE_STATUS_OK) return TYPE_STATUS_INVALID_ARGUMENT;
+    session->profile = &session->default_at_resolved.descriptor;
+    session->profile_topology = &session->default_at_resolved.topology;
+    session->core_machine_config =
+        session->default_at_resolved.resolved.values.core.configuration;
+    session->controller_timing_rules =
+        session->default_at_resolved.resolved.values.core.controller_timing_rules;
+    return TYPE_STATUS_OK;
+}
+
 static C_VOID vm_session_storage_rollback(vm_session *machine)
 {
     if (machine == STD_NULL) return;
@@ -217,21 +235,6 @@ C_VOID vm_session_set_boot_hdd(vm_session *session, C_INT enabled)
 
 type_status vm_session_storage_initialize(vm_session *machine)
 {
-    const vm_profile_default_pc_at_port_leaf *attribute_first;
-    const vm_profile_default_pc_at_port_leaf *attribute_last;
-    const vm_profile_default_pc_at_port_leaf *sequencer_first;
-    const vm_profile_default_pc_at_port_leaf *sequencer_last;
-    const vm_profile_default_pc_at_port_leaf *graphics_first;
-    const vm_profile_default_pc_at_port_leaf *graphics_last;
-    const vm_profile_default_pc_at_port_leaf *crtc_first;
-    const vm_profile_default_pc_at_port_leaf *crtc_last;
-    const vm_profile_default_pc_at_port_leaf *cmos_first;
-    const vm_profile_default_pc_at_port_leaf *cmos_last;
-    const vm_profile_default_pc_at_route *cmos_route;
-    const vm_profile_default_pc_at_route *fdc_route;
-    core_machine_display_config display_config = {0};
-    core_machine_dma_wiring dma_wiring = {0};
-    core_machine_rtc_cmos_config rtc_cmos_config = {0};
     core_machine_plan_topology topology = {0};
     type_status status;
 
@@ -241,8 +244,9 @@ type_status vm_session_storage_initialize(vm_session *machine)
     if (machine->model40_private) {
         return vm_session_model40_storage_initialize(machine);
     }
-    if (machine->profile == STD_NULL) {
-        machine->profile = vm_profile_default_pc_at_descriptor_get();
+    if (machine->profile == STD_NULL &&
+        vm_session_default_at_resolve(machine, STD_NULL) != TYPE_STATUS_OK) {
+        return TYPE_STATUS_INVALID_ARGUMENT;
     }
     if (!vm_profile_default_pc_at_descriptor_is_valid(machine->profile)) {
         return TYPE_STATUS_INVALID_ARGUMENT;
@@ -264,101 +268,18 @@ type_status vm_session_storage_initialize(vm_session *machine)
         return status;
     }
     vm_session_bind_display(machine);
-    if (machine->profile->unpopulated_extended_memory) {
-        topology.absent_memory_present = TYPE_TRUE;
-        topology.absent_memory =
-            (core_machine_absent_memory_config) { 0x00100000u, 0x00f00000u, 0xffu };
-    }
-    if (machine->profile->planar_parity_present) {
-        topology.planar_parity_present = TYPE_TRUE;
-        topology.planar_parity =
-            (core_machine_planar_parity_config) { CORE_MACHINE_PC_AT_PORT_B,
-                machine->profile->default_memory_bytes };
-    }
-    attribute_first = vm_profile_default_pc_at_port_leaf_at(machine->profile,
-        VM_PROFILE_DEFAULT_PC_AT_DEVICE_VADP_ATTRIBUTE, 0u);
-    attribute_last = vm_profile_default_pc_at_port_leaf_at(machine->profile,
-        VM_PROFILE_DEFAULT_PC_AT_DEVICE_VADP_ATTRIBUTE, 1u);
-    sequencer_first = vm_profile_default_pc_at_port_leaf_at(machine->profile,
-        VM_PROFILE_DEFAULT_PC_AT_DEVICE_VADP_SEQUENCER, 0u);
-    sequencer_last = vm_profile_default_pc_at_port_leaf_at(machine->profile,
-        VM_PROFILE_DEFAULT_PC_AT_DEVICE_VADP_SEQUENCER, 1u);
-    graphics_first = vm_profile_default_pc_at_port_leaf_at(machine->profile,
-        VM_PROFILE_DEFAULT_PC_AT_DEVICE_VADP_GRAPHICS, 0u);
-    graphics_last = vm_profile_default_pc_at_port_leaf_at(machine->profile,
-        VM_PROFILE_DEFAULT_PC_AT_DEVICE_VADP_GRAPHICS, 1u);
-    crtc_first = vm_profile_default_pc_at_port_leaf_at(machine->profile,
-        VM_PROFILE_DEFAULT_PC_AT_DEVICE_VADP, 0u);
-    crtc_last = vm_profile_default_pc_at_port_leaf_at(machine->profile,
-        VM_PROFILE_DEFAULT_PC_AT_DEVICE_VADP, 4u);
-    cmos_first = vm_profile_default_pc_at_port_leaf_at(machine->profile,
-        VM_PROFILE_DEFAULT_PC_AT_DEVICE_CMOS, 0u);
-    cmos_last = vm_profile_default_pc_at_port_leaf_at(machine->profile,
-        VM_PROFILE_DEFAULT_PC_AT_DEVICE_CMOS, 1u);
-    cmos_route = vm_profile_default_pc_at_route_find(machine->profile,
-        VM_PROFILE_DEFAULT_PC_AT_ROUTE_CMOS_IRQ8);
-    fdc_route = vm_profile_default_pc_at_route_find(machine->profile,
-        VM_PROFILE_DEFAULT_PC_AT_ROUTE_FDC_IRQ6_DMA2);
-    if ((machine->profile->ega_present && (attribute_first == STD_NULL ||
-        attribute_last == STD_NULL || sequencer_first == STD_NULL ||
-        sequencer_last == STD_NULL || graphics_first == STD_NULL ||
-        graphics_last == STD_NULL)) || crtc_first == STD_NULL ||
-        crtc_last == STD_NULL || cmos_first == STD_NULL ||
-        cmos_last == STD_NULL || cmos_route == STD_NULL || fdc_route == STD_NULL) {
-        vm_session_storage_rollback(machine);
-        return TYPE_STATUS_INVALID_ARGUMENT;
-    }
-    display_config.text_timing = machine->profile->cga_text_timing;
-    display_config.cga_vram_present = machine->profile->cga_vram_present;
-    display_config.ega_present = machine->profile->ega_present;
-    display_config.ega_sequencer = machine->profile->ega_sequencer;
-    display_config.ega_controllers = machine->profile->ega_controllers;
-    if (machine->profile->ega_present) {
-        display_config.ports.attribute_first = attribute_first->port;
-        display_config.ports.attribute_last = attribute_last->port;
-        display_config.ports.sequencer_first = sequencer_first->port;
-        display_config.ports.sequencer_last = sequencer_last->port;
-        display_config.ports.graphics_first = graphics_first->port;
-        display_config.ports.graphics_last = graphics_last->port;
-    }
-    display_config.ports.crtc_first = crtc_first->port;
-    display_config.ports.crtc_last = crtc_last->port;
-    dma_wiring.fdc_channel = fdc_route->dma_channel;
-    dma_wiring.controller_count = CORE_MACHINE_DMA_CONTROLLER_COUNT;
-    dma_wiring.cascade_channel = CORE_MACHINE_DMA_CASCADE_CHANNEL;
-    rtc_cmos_config.index_port = cmos_first->port;
-    rtc_cmos_config.data_port = cmos_last->port;
-    rtc_cmos_config.irq = cmos_route->irq;
-    rtc_cmos_config.nmi_mask_bit = 0x80u;
-    rtc_cmos_config.ticks_per_second = machine->profile->rtc_ticks_per_second;
-    if (machine->controller_timing_rules.rtc_clock ==
-        CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_RATIONAL_CLOCK) {
-        rtc_cmos_config.timing = (core_machine_rtc_timing_plan) {8u, 65u,
-            CORE_MACHINE_RTC_TIMING_L3_SOURCE};
+    if (machine->profile_topology != STD_NULL) {
+        topology = *machine->profile_topology;
     } else {
-        rtc_cmos_config.timing.provenance = CORE_MACHINE_RTC_TIMING_L2_RATIO;
+        /* Direct white-box fixtures retain their descriptor failure coverage
+         * through the same profile owner; product sessions always copy first. */
+        status = vm_profile_default_pc_at_topology_materialize(machine->profile,
+            &machine->controller_timing_rules, &topology);
+        if (status != TYPE_STATUS_OK) {
+            vm_session_storage_rollback(machine);
+            return status;
+        }
     }
-    rtc_cmos_config.defaults[0].index = CORE_MACHINE_RTC_TYPE_DISK_FLOPPY;
-    rtc_cmos_config.defaults[0].value = machine->profile->cmos.floppy_type;
-    rtc_cmos_config.defaults[1].index = CORE_MACHINE_RTC_TYPE_DISK_FIXED;
-    rtc_cmos_config.defaults[1].value = machine->profile->cmos.fixed_disk_type;
-    rtc_cmos_config.defaults[2].index = CORE_MACHINE_RTC_TYPE_DISK_FIXED_EXTENDED_0;
-    rtc_cmos_config.defaults[2].value = machine->profile->cmos.fixed_disk_type_extended_0;
-    rtc_cmos_config.defaults[3].index = CORE_MACHINE_RTC_EQUIPMENT;
-    rtc_cmos_config.defaults[3].value = machine->profile->cmos.equipment;
-    rtc_cmos_config.defaults[4].index = CORE_MACHINE_RTC_BASEMEM_LSB;
-    rtc_cmos_config.defaults[4].value = TYPE_MASK_UNSIGNED_8(
-        machine->profile->cmos.base_memory_kib);
-    rtc_cmos_config.defaults[5].index = CORE_MACHINE_RTC_BASEMEM_MSB;
-    rtc_cmos_config.defaults[5].value = TYPE_MASK_UNSIGNED_8(
-        machine->profile->cmos.base_memory_kib >> 8);
-    rtc_cmos_config.default_count = CORE_MACHINE_RTC_DEFAULT_COUNT;
-    topology.display_present = TYPE_TRUE;
-    topology.display = display_config;
-    topology.dma_present = TYPE_TRUE;
-    topology.dma = dma_wiring;
-    topology.rtc_cmos_present = TYPE_TRUE;
-    topology.rtc_cmos = rtc_cmos_config;
     status = core_machine_plan_set_topology(machine->core_machine_plan, &topology);
     if (status == TYPE_STATUS_OK) {
         status = core_machine_plan_bind_media_registry(machine->core_machine_plan,
@@ -501,19 +422,10 @@ C_INT vm_session_create(const vm_session_config *config, vm_session **out_sessio
     session = (vm_session *)STD_CALLOC(1u, sizeof(*session));
     if (session == STD_NULL) return TYPE_STATUS_NO_MEMORY;
     if (profile_kind == VM_SESSION_PROFILE_DEFAULT_PC_AT) {
-        vm_profile_default_at_request request;
-
-        vm_session_default_at_request_create(config, &request);
-        if (vm_profile_default_at_child_resolve(&request, &session->default_at_resolved) !=
-            TYPE_STATUS_OK) {
+        if (vm_session_default_at_resolve(session, config) != TYPE_STATUS_OK) {
             STD_FREE(session);
             return TYPE_STATUS_INVALID_ARGUMENT;
         }
-        session->profile = &session->default_at_resolved.descriptor;
-        session->core_machine_config =
-            session->default_at_resolved.resolved.values.core.configuration;
-        session->controller_timing_rules =
-            session->default_at_resolved.resolved.values.core.controller_timing_rules;
     } else if (profile_kind == VM_SESSION_PROFILE_IBM_5170_MODEL_339) {
         if (vm_profile_ibm_5170_root_resolve(&session->ibm_5170_root) !=
             TYPE_STATUS_OK) {
@@ -521,6 +433,7 @@ C_INT vm_session_create(const vm_session_config *config, vm_session **out_sessio
             return TYPE_STATUS_FAULT;
         }
         session->profile = &session->ibm_5170_root.descriptor;
+        session->profile_topology = &session->ibm_5170_root.topology;
         session->core_machine_config =
             session->ibm_5170_root.resolved.values.core.configuration;
         session->controller_timing_rules =

@@ -367,6 +367,122 @@ C_INT vm_profile_default_pc_at_core_config_materialize(
     return 1;
 }
 
+type_status vm_profile_default_pc_at_topology_materialize(
+    const vm_profile_default_pc_at_descriptor *descriptor,
+    const core_machine_controller_timing_rules *timing_rules,
+    core_machine_plan_topology *out_topology)
+{
+    const vm_profile_default_pc_at_port_leaf *attribute_first;
+    const vm_profile_default_pc_at_port_leaf *attribute_last;
+    const vm_profile_default_pc_at_port_leaf *sequencer_first;
+    const vm_profile_default_pc_at_port_leaf *sequencer_last;
+    const vm_profile_default_pc_at_port_leaf *graphics_first;
+    const vm_profile_default_pc_at_port_leaf *graphics_last;
+    const vm_profile_default_pc_at_port_leaf *crtc_first;
+    const vm_profile_default_pc_at_port_leaf *crtc_last;
+    const vm_profile_default_pc_at_port_leaf *cmos_first;
+    const vm_profile_default_pc_at_port_leaf *cmos_last;
+    const vm_profile_default_pc_at_route *cmos_route;
+    const vm_profile_default_pc_at_route *fdc_route;
+    core_machine_plan_topology topology = {0};
+
+    if (descriptor == STD_NULL || timing_rules == STD_NULL || out_topology == STD_NULL ||
+        !vm_profile_default_pc_at_descriptor_is_valid(descriptor)) {
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
+    attribute_first = vm_profile_default_pc_at_port_leaf_at(descriptor,
+        VM_PROFILE_DEFAULT_PC_AT_DEVICE_VADP_ATTRIBUTE, 0u);
+    attribute_last = vm_profile_default_pc_at_port_leaf_at(descriptor,
+        VM_PROFILE_DEFAULT_PC_AT_DEVICE_VADP_ATTRIBUTE, 1u);
+    sequencer_first = vm_profile_default_pc_at_port_leaf_at(descriptor,
+        VM_PROFILE_DEFAULT_PC_AT_DEVICE_VADP_SEQUENCER, 0u);
+    sequencer_last = vm_profile_default_pc_at_port_leaf_at(descriptor,
+        VM_PROFILE_DEFAULT_PC_AT_DEVICE_VADP_SEQUENCER, 1u);
+    graphics_first = vm_profile_default_pc_at_port_leaf_at(descriptor,
+        VM_PROFILE_DEFAULT_PC_AT_DEVICE_VADP_GRAPHICS, 0u);
+    graphics_last = vm_profile_default_pc_at_port_leaf_at(descriptor,
+        VM_PROFILE_DEFAULT_PC_AT_DEVICE_VADP_GRAPHICS, 1u);
+    crtc_first = vm_profile_default_pc_at_port_leaf_at(descriptor,
+        VM_PROFILE_DEFAULT_PC_AT_DEVICE_VADP, 0u);
+    crtc_last = vm_profile_default_pc_at_port_leaf_at(descriptor,
+        VM_PROFILE_DEFAULT_PC_AT_DEVICE_VADP, 4u);
+    cmos_first = vm_profile_default_pc_at_port_leaf_at(descriptor,
+        VM_PROFILE_DEFAULT_PC_AT_DEVICE_CMOS, 0u);
+    cmos_last = vm_profile_default_pc_at_port_leaf_at(descriptor,
+        VM_PROFILE_DEFAULT_PC_AT_DEVICE_CMOS, 1u);
+    cmos_route = vm_profile_default_pc_at_route_find(descriptor,
+        VM_PROFILE_DEFAULT_PC_AT_ROUTE_CMOS_IRQ8);
+    fdc_route = vm_profile_default_pc_at_route_find(descriptor,
+        VM_PROFILE_DEFAULT_PC_AT_ROUTE_FDC_IRQ6_DMA2);
+    if ((descriptor->ega_present && (attribute_first == STD_NULL ||
+        attribute_last == STD_NULL || sequencer_first == STD_NULL ||
+        sequencer_last == STD_NULL || graphics_first == STD_NULL ||
+        graphics_last == STD_NULL)) || crtc_first == STD_NULL ||
+        crtc_last == STD_NULL || cmos_first == STD_NULL ||
+        cmos_last == STD_NULL || cmos_route == STD_NULL || fdc_route == STD_NULL) {
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
+    if (descriptor->unpopulated_extended_memory) {
+        topology.absent_memory_present = TYPE_TRUE;
+        topology.absent_memory =
+            (core_machine_absent_memory_config) { 0x00100000u, 0x00f00000u, 0xffu };
+    }
+    if (descriptor->planar_parity_present) {
+        topology.planar_parity_present = TYPE_TRUE;
+        topology.planar_parity =
+            (core_machine_planar_parity_config) { CORE_MACHINE_PC_AT_PORT_B,
+                descriptor->default_memory_bytes };
+    }
+    topology.display_present = TYPE_TRUE;
+    topology.display = (core_machine_display_config) {
+        .text_timing = descriptor->cga_text_timing,
+        .cga_vram_present = descriptor->cga_vram_present,
+        .ega_present = descriptor->ega_present,
+        .ega_sequencer = descriptor->ega_sequencer,
+        .ega_controllers = descriptor->ega_controllers,
+        .ports = {
+            .attribute_first = attribute_first == STD_NULL ? 0u : attribute_first->port,
+            .attribute_last = attribute_last == STD_NULL ? 0u : attribute_last->port,
+            .sequencer_first = sequencer_first == STD_NULL ? 0u : sequencer_first->port,
+            .sequencer_last = sequencer_last == STD_NULL ? 0u : sequencer_last->port,
+            .graphics_first = graphics_first == STD_NULL ? 0u : graphics_first->port,
+            .graphics_last = graphics_last == STD_NULL ? 0u : graphics_last->port,
+            .crtc_first = crtc_first->port,
+            .crtc_last = crtc_last->port
+        }
+    };
+    topology.dma_present = TYPE_TRUE;
+    topology.dma = (core_machine_dma_wiring) {
+        fdc_route->dma_channel, CORE_MACHINE_DMA_CONTROLLER_COUNT,
+        CORE_MACHINE_DMA_CASCADE_CHANNEL };
+    topology.rtc_cmos_present = TYPE_TRUE;
+    topology.rtc_cmos = (core_machine_rtc_cmos_config) {
+        .index_port = cmos_first->port,
+        .data_port = cmos_last->port,
+        .irq = cmos_route->irq,
+        .nmi_mask_bit = 0x80u,
+        .ticks_per_second = descriptor->rtc_ticks_per_second,
+        .timing = timing_rules->rtc_clock ==
+            CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_RATIONAL_CLOCK ?
+            (core_machine_rtc_timing_plan) {8u, 65u, CORE_MACHINE_RTC_TIMING_L3_SOURCE} :
+            (core_machine_rtc_timing_plan) {0u, 0u, CORE_MACHINE_RTC_TIMING_L2_RATIO},
+        .defaults = {
+            { CORE_MACHINE_RTC_TYPE_DISK_FLOPPY, descriptor->cmos.floppy_type },
+            { CORE_MACHINE_RTC_TYPE_DISK_FIXED, descriptor->cmos.fixed_disk_type },
+            { CORE_MACHINE_RTC_TYPE_DISK_FIXED_EXTENDED_0,
+                descriptor->cmos.fixed_disk_type_extended_0 },
+            { CORE_MACHINE_RTC_EQUIPMENT, descriptor->cmos.equipment },
+            { CORE_MACHINE_RTC_BASEMEM_LSB,
+                TYPE_MASK_UNSIGNED_8(descriptor->cmos.base_memory_kib) },
+            { CORE_MACHINE_RTC_BASEMEM_MSB,
+                TYPE_MASK_UNSIGNED_8(descriptor->cmos.base_memory_kib >> 8) }
+        },
+        .default_count = CORE_MACHINE_RTC_DEFAULT_COUNT
+    };
+    *out_topology = topology;
+    return TYPE_STATUS_OK;
+}
+
 static type_status vm_profile_default_pc_at_values_create(
     const vm_profile_default_pc_at_descriptor *descriptor,
     core_machine_cpu_profile cpu_profile, core_machine_fpu_profile fpu_profile,
@@ -462,7 +578,9 @@ static type_status vm_profile_default_pc_at_snapshot_copy(
         out_profile->resolved.values.core.configuration.fpu_profile;
     out_profile->descriptor.default_memory_bytes =
         out_profile->resolved.values.core.configuration.memory_bytes;
-    return TYPE_STATUS_OK;
+    return vm_profile_default_pc_at_topology_materialize(&out_profile->descriptor,
+        &out_profile->resolved.values.core.controller_timing_rules,
+        &out_profile->topology);
 }
 
 type_status vm_profile_ibm_5170_root_declaration_create(
@@ -677,7 +795,9 @@ C_INT vm_profile_default_pc_at_descriptor_is_valid(
         if (STD_MEMCMP(&descriptor->routes[index], &default_pc_at_routes[index],
                 sizeof(default_pc_at_routes[index])) != 0) return 0;
     }
-    if (descriptor->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286) {
+    if (descriptor->firmware_slot ==
+        VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_SLOT_IBM_5170_REV3_ABSTRACT) {
+        if (descriptor->cpu_profile != CORE_MACHINE_CPU_PROFILE_80286) return 0;
         return descriptor->time_axis.kind == CORE_MACHINE_TIME_AXIS_MACRO_PROPORTIONAL &&
             descriptor->time_axis.ticks_per_second == 8000000u &&
             descriptor->default_memory_bytes == 512u * 1024u &&
@@ -712,7 +832,10 @@ C_INT vm_profile_default_pc_at_descriptor_is_valid(
                 ibm_5170_model_339_firmware_services,
                 sizeof(ibm_5170_model_339_firmware_services)) == 0;
     }
-    return descriptor->hdc_present && !descriptor->planar_parity_present &&
+    return descriptor->firmware_slot == VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_SLOT_GENERIC &&
+        vm_profile_default_pc_at_cpu_profile_is_valid(descriptor->cpu_profile) &&
+        vm_profile_default_pc_at_fpu_profile_is_valid(descriptor->fpu_profile) &&
+        descriptor->hdc_present && !descriptor->planar_parity_present &&
         descriptor->time_axis.kind == CORE_MACHINE_TIME_AXIS_UNQUALIFIED &&
         descriptor->time_axis.ticks_per_second == 0u &&
         descriptor->ega_present && !descriptor->cga_vram_present &&

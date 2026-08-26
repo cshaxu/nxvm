@@ -44,6 +44,7 @@ struct vm_session {
     core_machine_controller_timing_rules controller_timing_rules;
     core_machine_plan *core_machine_plan;
     const vm_profile_default_pc_at_descriptor *profile;
+    const core_machine_plan_topology *profile_topology;
     vm_profile_default_pc_at_resolved_profile ibm_5170_root;
     vm_profile_default_pc_at_resolved_profile default_at_resolved;
     vm_resolved_profile model40_resolved;

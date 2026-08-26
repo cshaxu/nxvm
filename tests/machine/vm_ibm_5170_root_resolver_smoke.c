@@ -101,6 +101,21 @@ static C_INT vm_ibm_5170_root_is_copied_and_complete(C_VOID)
             CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_RATIONAL_CLOCK ||
         resolved->values.core.controller_timing_rules.dma_service !=
             CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_DMA_SERVICE_PHASES ||
+        !root.topology.absent_memory_present ||
+        !root.topology.planar_parity_present ||
+        !root.topology.display_present || root.topology.display.ega_present ||
+        !root.topology.display.cga_vram_present ||
+        root.topology.display.ports.crtc_first != 0x03d4u ||
+        root.topology.display.ports.crtc_last != 0x03dau ||
+        !root.topology.dma_present ||
+        root.topology.dma.fdc_channel != 2u ||
+        root.topology.dma.controller_count != CORE_MACHINE_DMA_CONTROLLER_COUNT ||
+        root.topology.dma.cascade_channel != CORE_MACHINE_DMA_CASCADE_CHANNEL ||
+        !root.topology.rtc_cmos_present ||
+        root.topology.rtc_cmos.index_port != 0x0070u ||
+        root.topology.rtc_cmos.data_port != 0x0071u ||
+        root.topology.rtc_cmos.irq != 8u ||
+        root.topology.rtc_cmos.timing.provenance != CORE_MACHINE_RTC_TIMING_L3_SOURCE ||
         !vm_ibm_5170_root_port_leaves_match(resolved) ||
         resolved->values.memory_window_count != 1u ||
         resolved->values.memory_windows[0].first != 0x000b8000u ||
@@ -116,8 +131,11 @@ static C_INT vm_ibm_5170_root_is_copied_and_complete(C_VOID)
     const type_status timing_status = create_status == TYPE_STATUS_OK ?
         core_machine_plan_set_controller_timing_rules(plan,
             &resolved->values.core.controller_timing_rules) : TYPE_STATUS_INVALID_STATE;
+    const type_status topology_status = timing_status == TYPE_STATUS_OK ?
+        core_machine_plan_set_topology(plan, &root.topology) : TYPE_STATUS_INVALID_STATE;
     if (resolved->values.core.configuration.memory_bytes != 512u * 1024u ||
-        create_status != TYPE_STATUS_OK || timing_status != TYPE_STATUS_OK) {
+        create_status != TYPE_STATUS_OK || timing_status != TYPE_STATUS_OK ||
+        topology_status != TYPE_STATUS_OK) {
         core_machine_plan_destroy(plan);
         return 1;
     }
@@ -232,7 +250,15 @@ static C_INT vm_default_at_child_resolves_copy(C_VOID)
         resolved.descriptor.cpu_profile != CORE_MACHINE_CPU_PROFILE_80386 ||
         resolved.descriptor.fpu_profile != CORE_MACHINE_FPU_PROFILE_80387 ||
         resolved.descriptor.default_memory_bytes != 32u * 1024u * 1024u ||
-        !resolved.descriptor.hdc_present || !resolved.descriptor.ega_present) {
+        !resolved.descriptor.hdc_present || !resolved.descriptor.ega_present ||
+        !resolved.topology.absent_memory_present ||
+        resolved.topology.planar_parity_present ||
+        !resolved.topology.display_present || !resolved.topology.display.ega_present ||
+        resolved.topology.display.cga_vram_present ||
+        !resolved.topology.dma_present ||
+        resolved.topology.dma.fdc_channel != 2u ||
+        !resolved.topology.rtc_cmos_present ||
+        resolved.topology.rtc_cmos.timing.provenance != CORE_MACHINE_RTC_TIMING_L2_RATIO) {
         return 1;
     }
     child.values.core.configuration.memory_bytes = 512u * 1024u;
@@ -255,13 +281,30 @@ static C_INT vm_default_at_child_rejects_invalid_request(C_VOID)
         vm_profile_default_at_child_resolve(&bad_memory, &resolved) == TYPE_STATUS_OK;
 }
 
+static C_INT vm_default_at_80286_selection_keeps_generic_topology(C_VOID)
+{
+    const vm_profile_default_at_request request = {
+        VM_PROFILE_DEFAULT_AT_SESSION_OPTION_CPU_FPU,
+        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_FPU_PROFILE_80287, 0u};
+    vm_profile_default_pc_at_resolved_profile resolved;
+
+    if (vm_profile_default_at_child_resolve(&request, &resolved) != TYPE_STATUS_OK ||
+        resolved.descriptor.cpu_profile != CORE_MACHINE_CPU_PROFILE_80286 ||
+        resolved.descriptor.fpu_profile != CORE_MACHINE_FPU_PROFILE_80287 ||
+        resolved.descriptor.firmware_slot != VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_SLOT_GENERIC ||
+        !resolved.topology.display_present || !resolved.topology.display.ega_present ||
+        !resolved.topology.rtc_cmos_present) return 1;
+    return !vm_profile_default_pc_at_descriptor_is_valid(&resolved.descriptor);
+}
+
 int main(void)
 {
     if (vm_ibm_5170_root_is_copied_and_complete() ||
         vm_ibm_5170_root_rejects_invalid_declaration() ||
         vm_model40_child_resolves_copy() || vm_model40_child_rejects_invalid_parent() ||
         vm_default_at_child_resolves_copy() ||
-        vm_default_at_child_rejects_invalid_request()) {
+        vm_default_at_child_rejects_invalid_request() ||
+        vm_default_at_80286_selection_keeps_generic_topology()) {
         return 1;
     }
     STD_PRINTF("M5:T476:S2:IBM5170-ROOT-RESOLVER:OK\n");
