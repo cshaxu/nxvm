@@ -234,6 +234,13 @@ admissions, not the default definition of NXVM completion.
   accumulator or a second scheduler to bridge the gap.
 
 ## Architecture And Portability Debt
+- [ ] **Console speed-help accuracy (`TODO(Low)`).** `SPEED` currently says
+  Standard retains a fixed L2 HLT host-load backoff and Turbo is merely
+  reserved, although the admitted T474 policy is copied-observation Standard
+  pacing when a macro axis is available and Turbo no-wait. Admit this only as
+  a bounded Console-text/test correction that preserves the existing two-mode
+  parser and session speed authority; do not add a pacing path, tick source or
+  third speed mode.
 - [ ] **Residual direct-production strict compilation (`TODO(Medium)`).**
   T345 closes the whole configured direct-command ledger but retains 52
   production-source entries that cannot truthfully receive target-local
