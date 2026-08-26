@@ -2,32 +2,13 @@
 
 ## Current Work
 
-## M5 T476 S4 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner approved the ordered profile program on 2026-08-25; accepted T476 S1-S3 provide the frozen root, resolver representation and session cutover now being closed. Owner additionally approved removal of the duplicate failing Core exception aggregate on 2026-08-25. |
-| Objective | Audit T476 against its full proposal, publish its stripped Release 0476 artifact, restore its required task history record, and close only if one 5170 root/session path and the frozen parity universe are proven; remove the duplicate exception aggregate while retaining its four independently registered smoke owners. |
-| Non-goals | No new runtime behavior, profile/YAML rename, DeskPro/default-at migration, Core/device/timing modification, firmware/media import or unrelated remediation. |
-| Reference Baseline | T476 S1 ledger; accepted S2 and S3 evidence; T475 closure. |
-| Candidate Proposal | [PC/AT 5170 root profile normalization](../proposals/m5-pc-at-5170-root-profile-normalization.md). |
-| Files And ABI Surface | Current artifact target/preset, obsolete exception aggregate registration/source, task history/closure evidence and status only; no runtime ABI change. |
-| Applicable Rules | Numeric task history and stripped Release requirements; actual-diff review; one root/session path, Core sole mutable owner, no false physical-time claim. |
-| Verification | The four retained exception owner smokes, absence of the obsolete aggregate, full current-gates, artifact banner/SHA, focused S1 parity and root smokes, documentation governance, source-path sweep and closure audit. |
-| Expected Markers | Existing S1-S3 markers; Release `nxvm_0_5_0476.exe` with banner `0.5.0476`. |
-| Asset Needs | Existing build output only; no protected asset or external source enters the repository. |
-| Reporting Requirements | Record artifact SHA/source commit, all proposal exit mapping, exact code/test delta, retained source-only descriptor boundary and any current-gate failure. |
-| Stop Conditions | Stop for owner direction if full gate fails due T476 behavior, artifact cannot be stripped Release, closure would hide an unresolved root/session path, or task history cannot truthfully describe the result. |
-| Exit Criteria | Full proposal mapping is evidenced; root/session route is singular; full gates and artifact proof pass; task history/status are accurate; T476 closes and its proposal moves to history. |
-| Original Owner Request | Establish correct whole-machine L3 structure and interfaces first, then connect IBM 5170, DeskPro 386 and default-at in that order, without layered or duplicate paths. |
-| Similar-Issue Sweep | Sweep current artifact/presets, T476 history/proposal/status, VM session/root source selections and all 5170 parity registration for stale artifact identity, missing task records or parallel route claims. |
+**Idle.**
 
 ## Current Technical Baseline
 
 - **Current developer artifact:** target `vm-0-5-0476`; the stripped Release
   `nxvm_0_5_0476.exe` has SHA-256
-  `F32C08B7E98C078616DAC55A29DB2C8874006F1068054CA8D2A0445790FC9C57`.
+  `F3A5004E6C8932AAB2462B6000B2B8F0BA1F94ABE3CB30E2A3EE68A6487F052A`.
   Debug remains the current-gate route. T471 preserves Core-owned progression:
   a verified axis is Standard-paced only by host waiting against completed
   Core progress. T472 extends that comparison to an explicit L2 macro axis,
@@ -56,7 +37,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T476 S1 | Accepted: the selected IBM 5170 root's fields, L3/L2 dispositions, direct construction route and finite parity suite are frozen in [evidence](../etc/evidence/t476-s1-ibm5170-root-ledger.md). |
+| T476 | Closed: IBM 5170 sessions consume one copied `pc-at-5170` root and one Core-plan materialization path; the former duplicate exception aggregate is retired while its independent owners remain. [Closure audit](../etc/evidence/t476-s4-closure-audit.md) records the 294-target gate and stripped Release 0476. |
 | T475 | Closed: one VM-only immutable resolver copies parent-patched values and per-field provenance to the existing Core-plan API, rejects invalid ownership/bindings/windows/routes/contracts/policy, and leaves current routes for ordered profile migrations. [Closure audit](../etc/evidence/t475-s3-integration-closure-audit.md) records the 294-target gate and stripped Release 0475. |
 | T474 | Closed: one Core-owned guest-time axis, immutable plan and copied observation now join profile timing values, source-qualified PIT/RTC deadlines, explicit controller blockers and Standard/Turbo consumer policy. [Closure audit](../etc/evidence/t474-s6-integration-closure-audit.md) records the 293-target gate and stripped Release 0474. |
 | T473 | Withdrawn before implementation: the profile-first time-axis admission was split by Td S149 so machine-neutral Core time integration precedes all profile connections. Its identifier and proposal are retained in history; no runtime or artifact changed. |
@@ -64,7 +45,6 @@
 | T471 | Closed: Standard compares copied completed Core time with a monotonic host budget and waits only for a positive lead; Turbo omits that wait and HLT deadline advancement is budget-gated. The [closure audit](../etc/evidence/t471-s3-integration-closure-audit.md) records Release 0471. |
 | T470 | Closed: S1--S6 establish one copied Core physical-axis contract, retain every current profile at unqualified/zero, separate Standard's L2 HLT backoff from Turbo's no-wait behavior, and record stripped Release 0470 in the [closure audit](../etc/evidence/t470-s6-integration-closure-audit.md). |
 | T469 | Closed: S1--S6 reconcile the 145-row controller deadline ledger to one Core-owned deadline/timebase/waiting path; VM host-tick injection is deleted, current profiles retain explicit L2 fallback, and stripped Release 0469 is recorded in [closure audit](../etc/evidence/t469-s6-integration-closure-audit.md). |
-| T468 | Closed: the ATA-3 15-row task-file/media contract has one HDC owner, one media owner and one PIC route; the serial current gate passes 295/295 and stripped Release 0468 is recorded in [history](../history/M5-T468-core-hdc-ata-phase-contract.md). |
 
 ## Recent Governance
 
