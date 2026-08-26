@@ -2,13 +2,28 @@
 
 ## Current Work
 
-**Open: M5 T485.**
+**Active: M5 T485 S16.**
 
-T485 S15 is accepted at `3ccae601`: the retained control/stack evaluator now
-source-classifies all 16 8088 Jcc plus JCXZ/LOOP-family taken and fallthrough
-outcomes before compatibility.  The 299-test current gate, specialized gates
-and documentation governance pass.  The next bounded S has not yet been
-admitted.
+## M5 T485 S16 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner-approved continuous execution; accepted T485 S15 `d2f8d915` completes the preceding finite branch receiver. |
+| Objective | Audit the finite 8088 Table-2-21 delivery/halting batch (`INT3`, `INT`, `INTO`, `IRET`, `HLT`) for source rows, published retirement facts and one lawful Core receiver. |
+| Non-goals | No implementation unless the audit proves complete source inputs; no decoder, delivery state, flag/vector re-execution, prefetch, external-cycle, board/host-time or product/API change. |
+| Reference Baseline | Accepted T485 S10/S11 control-stack ledger and source evaluator; rendered 1981 Intel manual pages. |
+| Candidate Proposal | [IBM PC/XT 5160-268 board and device phase-timing closure](../proposals/m5-8088-5150-xt-l3-baseline.md). |
+| Files And ABI Surface | Evidence, T485 history and supporting index only unless the audit admits a lawful private Core receiver; no public ABI. |
+| Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, `docs/design/ARCHITECTURE.md`, `docs/design/CODING.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md` and source policy. |
+| Verification | Visual source review; complete finite opcode/current-owner sweep; documentation governance. |
+| Expected Markers | One row-level source/owner/disposition ledger with no inferred vector, flag or halting state. |
+| Asset Needs | Existing external manual only; no source bytes, firmware, guest media or third-party code enter the repository. |
+| Reporting Requirements | Record rendered source pages, each exact table value, available published fact, retained owner and implementation/transfer disposition. |
+| Original Owner Request | Continue the ordered minimalist queue toward the pre-Windows L3 admission audit. |
+| Stop Conditions | Stop implementation if any row needs hidden delivery/vector/flag/halting state or a guessed physical effect. |
+| Exit Criteria | Every finite form is source-labelled and either has one source-complete existing receiver or an explicit earliest transfer; no unowned timing claim remains. |
+| Similar-Issue Sweep | Inspect direct and software delivery, return, INTO, HLT, current source-form attribution, selector ordering and compatibility fallback. |
 
 ## Current Technical Baseline
 
