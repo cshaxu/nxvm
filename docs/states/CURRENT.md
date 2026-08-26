@@ -2,28 +2,28 @@
 
 ## Current Work
 
-**Open: M5 T487 S3.**
+**Open: M5 T487 S4.**
 
-## M5 T487 S3 Packet
+## M5 T487 S4 Packet
 
 | Field | Required record |
 | --- | --- |
 | Identifier Mode | Continuation |
-| Admission And Approval | T487 S2 accepted the complete frozen board List 1. S3 maps every row to current code before any repair may begin. |
-| Objective | Establish the complete T487 List 2: one current owner, production entry, state ownership, consumer path, test/probe and disposition for every frozen board row. |
-| Non-goals | No production repair, new timing/profile value, CPU/controller implementation, ROM/firmware import, guest media or host pacing claim. |
-| Reference Baseline | Accepted T487 S1 source ledger and S2 board List 1, closed T486 and existing retained XT evidence. |
+| Admission And Approval | T487 S3 accepted the complete List 2; S4 implements its one Core/XT-board batch. |
+| Objective | Implement one rational Core time-axis publication and one source-qualified XT board-cycle contract at the existing Core CPU/transaction owner, then select it immutably from the XT profile. |
+| Non-goals | No second scheduler, host-to-Core tick injection, PIC/DMA/PIT/PPI/FDC/CGA/Xebec state rewrite, ROM/media import, invented reset duration, or verified whole-machine pacing claim. |
+| Reference Baseline | Accepted T487 S1--S3 evidence, closed T486 and the current Core/VM waiting contract. |
 | Candidate Proposal | [IBM 5160 8088 board, memory, ROM and ISA phase contract](../proposals/m5-xt-8088-board-bus-phase.md). |
-| Files And ABI Surface | List-2 evidence, evidence index, history and Current only unless the complete mapping proves a later implementation S is needed; no ABI change in S3. |
-| Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, `docs/design/ARCHITECTURE.md`, `docs/design/CODING.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`. One Core owner and one-way profile-to-Core construction remain mandatory. |
-| Verification | Inspect every List-1 row across Core, VM/profile, tests and build declarations; record every production-path hit and reject duplicate or reverse paths. |
-| Expected Markers | A complete List 2 with no unmapped List-1 key, one owner/entry/consumer route per row and one finite whole-batch implementation disposition. |
-| Asset Needs | No new source material; S1 corpus and retained indexed evidence are read-only references. |
-| Reporting Requirements | Record exact searches, each code/test hit, owner/path disposition, duplicate-path finding and any source-backed boundary that prevents implementation. |
-| Stop Conditions | Stop and return to List 1 only if a required board rule falls outside the frozen surface; do not patch it opportunistically. |
-| Exit Criteria | Every List-1 row maps to existing code or an explicit gap at one owner; the next S can implement the whole batch without discovering new board rules. |
+| Files And ABI Surface | `core_machine_time_axis`/time observation, the existing VM pacing consumer, Core CPU/transaction code, XT profile, focused tests/evidence and the T487 artifact. |
+| Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, `docs/design/ARCHITECTURE.md`, `docs/design/CODING.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`. Core owns time and transactions; VM only compares completed progress to host time. |
+| Verification | Focused rational-axis, XT cycle-classification, reset/NMI/map and session-pacing tests; full current gate and stripped `nxvm_0_5_0487.exe`. |
+| Expected Markers | One copied rational-rate observation, one Core 5160 cycle classifier, one immutable XT selection and no duplicate/legacy timing path. |
+| Asset Needs | No new source material, firmware or guest media. |
+| Reporting Requirements | Record exact retained owner, removed/avoided duplicate paths, source-unclassified boundary, code-size result, focused/full gates and Release artifact hash. |
+| Stop Conditions | Stop if source semantics require changing the frozen unit or a Core cycle replacement cannot be separated from additive waits without a second timing owner. |
+| Exit Criteria | All T487 List-2 batch rows have their specified owner-local disposition and proof; whole-machine physical pacing remains explicitly unclaimed. |
 | Original Owner Request | Each newly admitted CPU/chip/controller/board category needs original material, complete List 1, complete List 2 and one whole-unit implementation batch; no symptom-led repair path. |
-| Similar-Issue Sweep | Search all tracked Core, VM/profile, product, test and build surfaces for each List-1 signal/map/cycle name; implementation S will complete the post-fix sweep. |
+| Similar-Issue Sweep | Sweep all time-axis consumers, external-cycle writers, profile configurations and session pacing uses for integer-only/parallel XT timing paths. |
 
 ## Current Technical Baseline
 
@@ -60,6 +60,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T487 S3 | Accepted: List 2 finds one existing profile-to-Core production path and one required Core rational-axis/cycle-classification batch; additive waits cannot represent IBM total cycles. [Evidence](../etc/evidence/t487-s3-5160-board-current-code-gap-list-2.md). |
 | T487 S2 | Accepted: complete IBM board-only List 1 freezes 14 Manual-L3 clock/cycle/reset/map/ISA/NMI facts and explicit CPU/controller/host boundaries before code inspection. [Evidence](../etc/evidence/t487-s2-5160-board-function-timing-list-1.md). |
 | T487 S1 | Accepted: visually verified IBM 5160 board-source ledger establishes the finite clock, cycle, reset, map, ISA and NMI basis before List 1. [Evidence](../etc/evidence/t487-s1-5160-original-source-ledger.md). |
 | T486 | Closed: the complete 8088 manual source/List-1/List-2/one-owner implementation chain closes without a parallel timing path; Group-3, WAIT and non-string-prefix source boundaries remain explicit. [Closure audit](../etc/evidence/t486-s5-8088-closure-audit.md). |
