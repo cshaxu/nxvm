@@ -2,11 +2,28 @@
 
 ## Current Work
 
-**Open: M5 T485.**
+**Active: M5 T485 S17.**
 
-T485 S16 is accepted at `4622460e`: Intel Table 2-21 establishes complete
-software delivery/halting receiver inputs, while INTR/NMI remain explicit
-non-instruction exclusions.  The next bounded S has not yet been admitted.
+## M5 T485 S17 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner-approved continuous execution; accepted T485 S16 `044f5b6d` establishes complete source and input facts. |
+| Objective | Source-classify 8088 `HLT`, software `INT3`/`INT`/`INTO` and `IRET` at the retained control/stack evaluator using the exact S16 Table-2-21 results. |
+| Non-goals | No INTR/NMI, delivery/vector state, new decoder/table/state owner, flag re-execution, prefetch, external cycle, physical-time, board, host or product/API change. |
+| Reference Baseline | Accepted T485 S16 delivery/halting ledger and current private 8088 control/stack transfer plan. |
+| Candidate Proposal | [IBM PC/XT 5160-268 board and device phase-timing closure](../proposals/m5-8088-5150-xt-l3-baseline.md). |
+| Files And ABI Surface | Existing private Core timing model and focused retirement smoke only; no public ABI, profile grammar or transaction contract. |
+| Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, `docs/design/ARCHITECTURE.md`, `docs/design/CODING.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md` and source policy. |
+| Verification | Focused exact-result/origin/form proof for every S16 row; configured complete current gate and documentation governance. |
+| Expected Markers | One retained evaluator and immediate private transfer plan; exact `2`, `72`, `71`, `73/4` and `36` results; no external interrupt claim. |
+| Asset Needs | Existing visual Intel evidence only; no source bytes, firmware, media or third-party code enter the repository. |
+| Reporting Requirements | Record source equation, every focused outcome, retained owner, excluded INTR/NMI and code-size accounting. |
+| Original Owner Request | Continue the ordered minimalist queue toward the pre-Windows L3 admission audit. |
+| Stop Conditions | Stop if an exact row requires unreported vector/delivery/flag state, a new decoder or inferred physical behavior. |
+| Exit Criteria | Every S16 form is exact, control/stack-origin and source-attributed before compatibility; INTR/NMI remain excluded and all gates pass. |
+| Similar-Issue Sweep | Inspect HLT, software INT/INTO/IRET guards, 8088 transfer-plan completeness, selector ordering, source form and compatibility fallback. |
 
 ## Current Technical Baseline
 

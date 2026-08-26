@@ -264,6 +264,7 @@ static const core_machine_source_timing_entry
     { CORE_MACHINE_SOURCE_TIMING_HLT, 2u },
     { CORE_MACHINE_SOURCE_TIMING_INT3, 52u },
     { CORE_MACHINE_SOURCE_TIMING_INT_IMMEDIATE, 51u },
+    { CORE_MACHINE_SOURCE_TIMING_INTO, 53u },
     { CORE_MACHINE_SOURCE_TIMING_IRET, 24u }
 };
 
@@ -2583,6 +2584,13 @@ static core_machine_source_transfer_plan
     case CORE_MACHINE_SOURCE_TIMING_POPF:
         plan.word_transfers = 1u;
         break;
+    case CORE_MACHINE_SOURCE_TIMING_HLT:
+        break;
+    case CORE_MACHINE_SOURCE_TIMING_INT3:
+    case CORE_MACHINE_SOURCE_TIMING_INT_IMMEDIATE:
+    case CORE_MACHINE_SOURCE_TIMING_INTO:
+        plan.word_transfers = 5u;
+        break;
     case CORE_MACHINE_SOURCE_TIMING_CALL_NEAR_MEMORY:
     case CORE_MACHINE_SOURCE_TIMING_CALL_FAR_DIRECT:
     case CORE_MACHINE_SOURCE_TIMING_JMP_FAR_MEMORY:
@@ -2591,6 +2599,9 @@ static core_machine_source_transfer_plan
     case CORE_MACHINE_SOURCE_TIMING_PUSH_MEMORY:
     case CORE_MACHINE_SOURCE_TIMING_POP_MEMORY:
         plan.word_transfers = 2u;
+        break;
+    case CORE_MACHINE_SOURCE_TIMING_IRET:
+        plan.word_transfers = 3u;
         break;
     case CORE_MACHINE_SOURCE_TIMING_CALL_FAR_MEMORY:
         plan.word_transfers = 4u;
@@ -3075,16 +3086,19 @@ C_INT core_machine_control_stack_source_instruction_cost(
     }
     case 0xf4u:
         if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_8088) {
-            core_machine_source_timing_mark_unallocated(machine, out_ticks);
-            return 1;
+            return core_machine_control_stack_source_result(machine,
+                CORE_MACHINE_SOURCE_TIMING_HLT, 0u, 0, out_ticks);
         }
         *out_ticks = core_machine_control_stack_source_lookup(machine,
             CORE_MACHINE_SOURCE_TIMING_HLT);
         return 1;
     case 0xccu: case 0xcdu:
         if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_8088) {
-            core_machine_source_timing_mark_unallocated(machine, out_ticks);
-            return 1;
+            return core_machine_control_stack_source_result(machine,
+                opcode == 0xccu || (prefixes + 1u < data->oplen &&
+                data->opcodes[prefixes + 1u] == 3u) ?
+                CORE_MACHINE_SOURCE_TIMING_INT3 :
+                CORE_MACHINE_SOURCE_TIMING_INT_IMMEDIATE, 0u, 0, out_ticks);
         }
         if (task_switch) {
             if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80386) {
@@ -3124,8 +3138,13 @@ C_INT core_machine_control_stack_source_instruction_cost(
                 out_ticks) : 1;
     case 0xceu:
         if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_8088) {
-            core_machine_source_timing_mark_unallocated(machine, out_ticks);
-            return 1;
+            machine->source_timing_form_id = CORE_MACHINE_SOURCE_TIMING_INTO;
+            if ((data->oldcpu.data.eflags & VCPU_EFLAGS_OF) == 0u) {
+                *out_ticks = 4u;
+                return 1;
+            }
+            return core_machine_control_stack_source_result(machine,
+                CORE_MACHINE_SOURCE_TIMING_INTO, 0u, 0, out_ticks);
         }
         if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80386) {
             machine->source_timing_form_id = CORE_MACHINE_SOURCE_TIMING_INTO;
@@ -3165,8 +3184,8 @@ C_INT core_machine_control_stack_source_instruction_cost(
                 out_ticks) : 1;
     case 0xcfu:
         if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_8088) {
-            core_machine_source_timing_mark_unallocated(machine, out_ticks);
-            return 1;
+            return core_machine_control_stack_source_result(machine,
+                CORE_MACHINE_SOURCE_TIMING_IRET, 0u, 0, out_ticks);
         }
         if (task_switch) {
             if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80386) {
