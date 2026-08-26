@@ -2,26 +2,10 @@
 
 ## Current Work
 
-## M5 T475 S1 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | New |
-| Admission And Approval | Owner approved the dependency-ordered implementation sequence on 2026-08-25: after the machine-neutral Core time boundary, establish the VM resolver before connecting IBM 5170, DeskPro 386, then default-at. |
-| Objective | Freeze the complete neutral VM profile-resolution/construction universe, map every current profile/session-to-Core configuration route, and establish the exact resolver-kernel boundary and finite S2 migration batch without changing runnable behavior. |
-| Non-goals | No production profile migration, machine registration, YAML selection, Core timing/device behavior, firmware/media work, source import, L4 claim, or compatibility path. |
-| Reference Baseline | Closed T474 Core time boundary; [VM profile resolver kernel](../proposals/m5-vm-profile-resolver-kernel.md); [profile-resolution design](../etc/architecture/vm-profile-resolution-design.md); current default-at, IBM 5170 Model 339, and Model-40 composition sources. |
-| Candidate Proposal | [VM profile resolver kernel](../proposals/m5-vm-profile-resolver-kernel.md). |
-| Files And ABI Surface | Resolver ledger/evidence, Current/Queue/status records, and bounded source/test inventory only. This S adds no production C interface or runtime behavior. |
-| Applicable Rules | `docs/design/ARCHITECTURE.md`, `docs/design/CODING.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`, `docs/rules/DOCUMENT.md`, `docs/rules/EXECUTION.md`: VM-only identity/provenance ownership, one copied Core-plan route, finite convergence ledger, no machine-specific resolver branch, and actual-change review. |
-| Verification | Manual source sweep of every profile/session construction route and relevant CMake ownership; ledger completeness against the three current profiles and their Core-plan inputs; documentation governance; `git diff --check`. |
-| Expected Markers | `M5:T475:S1:PROFILE-RESOLVER-LEDGER:OK` and `M5:T475:S1:PROFILE-RESOLVER-ROUTE-SWEEP:OK`. |
-| Asset Needs | Existing repository sources and retained evidence only; no guest media, firmware, third-party source, external emulator code, or machine-local path enters the repository. |
-| Reporting Requirements | Record the complete frozen field/route universe, unique owner and direct-path disposition for each row, current source references, proposed neutral resolver input/output, no-go branch evidence, and exact S2 receiver. |
-| Stop Conditions | Stop for owner direction if a required current profile fact cannot be represented as immutable neutral VM data, if one copied Core-plan handoff cannot preserve ownership, or if resolution requires a machine-specific production branch. |
-| Exit Criteria | All three current profiles and every current session-to-Core construction route receive a complete ledger disposition; the resolver's neutral input/output and validation boundary are defined; no hidden direct route is left unassigned; evidence and governance checks pass. |
-| Original Owner Request | Implement correct whole-machine L3 structure and interfaces first, then connect IBM 5170, DeskPro 386 and default-at in that order, without layered or duplicate paths. |
-| Similar-Issue Sweep | Sweep VM profile descriptors, Model-40 private composition, session factory/materialization, Core-plan/configuration construction, firmware/media policy setup, profile tests and CMake ownership for duplicate mutable state, direct Core construction, profile-name-in-Core, post-freeze mutation or parallel resolver paths. |
+**T475 S1 accepted.** The [resolver ledger](../etc/evidence/t475-s1-profile-resolver-ledger.md)
+freezes the three current profile routes, excludes all mutable Core/session
+state, and assigns each direct route to its one later migration consumer. S2
+may implement only the neutral immutable resolver and its bounded fixtures.
 
 ## Current Technical Baseline
 
@@ -56,6 +40,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T475 S1 | Accepted: the complete three-profile construction/route universe is frozen; mutable Core/session state is excluded, and every direct composition route has one future resolver consumer. [Evidence](../etc/evidence/t475-s1-profile-resolver-ledger.md) defines the neutral S2 boundary. |
 | T474 | Closed: one Core-owned guest-time axis, immutable plan and copied observation now join profile timing values, source-qualified PIT/RTC deadlines, explicit controller blockers and Standard/Turbo consumer policy. [Closure audit](../etc/evidence/t474-s6-integration-closure-audit.md) records the 293-target gate and stripped Release 0474. |
 | T473 | Withdrawn before implementation: the profile-first time-axis admission was split by Td S149 so machine-neutral Core time integration precedes all profile connections. Its identifier and proposal are retained in history; no runtime or artifact changed. |
 | T472 | Closed: Model-339 has a retained L2 macro rate; Standard uses it without host-generated guest time, Turbo skips only its wait, and unqualified profiles no longer take a fixed HLT sleep. [Closure audit](../etc/evidence/t472-s3-integration-closure-audit.md) records Release 0472. |
