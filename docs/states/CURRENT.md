@@ -2,28 +2,28 @@
 
 ## Current Work
 
-**Active: M5 T484 S5.**
+**Active: M5 T484 S6.**
 
-## M5 T484 S5 Packet
+## M5 T484 S6 Packet
 
 | Field | Required record |
 | --- | --- |
 | Identifier Mode | Continuation |
-| Admission And Approval | S4 P1 `255fa289` is coordinator-reviewed and accepted: it proves the complete selected B2 topology and finite owner-local gaps without an AT alias. The owner-approved T484 functional-closure scope continues. |
-| Objective | Replace the current PC/AT-only session board materialization with one immutable copied 5160-268 B2 board-plan input that selects low RAM/ROM, single PIC, one DMA/refresh route, absent RTC and XT reset/NMI semantics at their Core owners. |
-| Non-goals | No keyboard/PPI implementation, FDC drive/media selection, Xebec personality, firmware/media import, generic XT, ATA shim, physical timing or host-pacing claim, protected-mode or Windows claim. |
-| Reference Baseline | Accepted T483 BOM/capability/timing evidence; accepted T484 S1--S4 evidence; current resolver, Core plan, PIC/DMA/board and VM composition source. |
+| Admission And Approval | Owner-approved continuous execution toward the pre-Windows L3 admission audit; accepted T484 S5 P6 `269cd4ef` proves B2 construction and its finite source-gated B3/B6 transfers. |
+| Objective | Produce the source-qualified B3 keyboard/PPI and selected diskette-board attachment matrix: identify each exact 5160 relation, present Core owner, missing construction input, testable minimal implementation and any source-gated transfer, without treating AT 8042/FDC configuration as an XT alias. |
+| Non-goals | No keyboard/PPI or FDC implementation yet, no drive/media selection, ROM manifest/mapping, Xebec personality, generic XT, ATA shim, physical timing or host-pacing claim, protected-mode or Windows claim. |
+| Reference Baseline | Accepted T483 S1--S3 and T484 S1--S5 evidence; IBM 5155/5160 Technical Reference; existing Core KBC/FDC/PIT/PIC/DMA owners and current PC/AT/Model-40 profiles. |
 | Candidate Proposal | [IBM PC/XT 5160-268 selected-device functional closure](../proposals/m5-xt-5160-268-device-functional-closure.md). |
-| Files And ABI Surface | Core machine plan/board/PIC/DMA/memory construction and VM XT profile/session composition, focused Core/VM topology tests, evidence/history/status and Release 0484 artifact; any public contract is minimal, copied and construction-only. |
+| Files And ABI Surface | B3 evidence/history/status plus the source and current-owner paths needed for the audit; no runtime, ABI, profile/session construction or artifact change is authorized. |
 | Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, architecture/coding rules, source policy and the proposal's no-parallel-path boundary. |
-| Verification | A focused 5160 B2 plan smoke proves the selected topology, explicit absent AT devices, copied-plan lifetime and reset/route behavior; existing PC/AT/Model-40 topology regressions and current gates remain green; rebuild stripped Release 0484. |
-| Expected Markers | `M5:T484:S5:XT-B2-PLAN:OK`; `M5:T484:S5:XT-NO-AT-TOPOLOGY:OK`. |
-| Asset Needs | Existing accepted IBM facts only; no third-party source, firmware, guest media or local path enters the repository. |
-| Reporting Requirements | Record deleted PC/AT-only construction dependence, every B2 construction value and its Core owner, exact API/lifetime rule, focused/full verification, artifact hash and any source-gated transfer. |
+| Verification | Rendered/manual-versus-OCR cross-check for every cited relation, source-policy compliance, complete current-owner/source-gap matrix, documentation governance gate and actual-change review. |
+| Expected Markers | `M5:T484:S6:XT-B3-SOURCE-MATRIX:OK`; `M5:T484:S6:XT-NO-AT-ALIAS:OK`. |
+| Asset Needs | Existing accepted IBM manual baseline and read-only corroboration only; no third-party source, firmware, guest media, local path or code import enters the repository. |
+| Reporting Requirements | Record each keyboard/PPI and FDC relation with source class, current owner, exact port/IRQ/DRQ/reset semantics, admissible copied-plan input, test receiver and explicit unresolved transfer. |
 | Original Owner Request | Continue the ordered minimalist queue toward the pre-Windows L3 admission audit. |
-| Stop Conditions | Stop and transfer a relation if it requires an unsourced XT keyboard/PPI, FDC-drive, Xebec, ROM byte/manifest or timing value; do not infer it from an AT implementation. |
-| Exit Criteria | One copied B2 plan can construct only the selected sourced board facts; no unselected AT device or PC/AT descriptor is required on the XT route; Core remains the unique owner of guest state and VM has no second composition path. |
-| Similar-Issue Sweep | All machine plan topology/configuration, PIC/DMA topology assumptions, low-memory/reset mappings, resolver profile copies and VM session board materialization routes. |
+| Stop Conditions | Stop and transfer a relation if primary material does not establish an XT keyboard/PPI or selected drive/controller relationship; do not infer it from the PC/AT 8042/1.44 MB configuration or emulator code. |
+| Exit Criteria | Every B3 relation has a source-qualified minimal receiver or explicit transfer; the evidence proves there is one future Core-owner path, no PC/AT alias and no profile-owned controller state. |
+| Similar-Issue Sweep | XT/PC/AT keyboard-controller, 8255/PPI, port `60h`--`63h`, PIC IRQ1, FDC, DMA/DRQ, reset, input and profile-construction source/owner paths. |
 
 ## Current Technical Baseline
 
