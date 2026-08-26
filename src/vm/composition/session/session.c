@@ -458,7 +458,6 @@ static C_VOID vm_session_initialize_model40_configuration(vm_session *session)
     if (session == STD_NULL) return;
     session->model40_private = 1;
     session->floppy_kind = VM_PROFILE_FLOPPY_525_1200K;
-    vm_profile_model40_core_config_initialize(&session->core_machine_config);
 }
 
 static type_status vm_session_create_model40_byob(const vm_session_config *config,
@@ -476,6 +475,15 @@ static type_status vm_session_create_model40_byob(const vm_session_config *confi
     session = (vm_session *)STD_CALLOC(1u, sizeof(*session));
     if (session == STD_NULL) return TYPE_STATUS_NO_MEMORY;
     vm_session_initialize_model40_configuration(session);
+    if (vm_profile_model40_child_resolve(&session->model40_resolved) !=
+        TYPE_STATUS_OK) {
+        STD_FREE(session);
+        return TYPE_STATUS_FAULT;
+    }
+    session->core_machine_config =
+        session->model40_resolved.values.core.configuration;
+    session->controller_timing_rules =
+        session->model40_resolved.values.core.controller_timing_rules;
     status = vm_profile_model40_byob_manifest_load(&config->model40_firmware,
         session->model40_even_rom, session->model40_odd_rom, &session->model40_rom);
     if (status != TYPE_STATUS_OK) { STD_FREE(session); return status; }

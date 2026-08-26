@@ -82,6 +82,13 @@ C_INT main(C_VOID)
         !speaker.configured || speaker.timer_gate || !speaker.data_enabled ||
         !speaker.output || core_machine_bus_write(session->core_machine, 0x0061u,
             0x0fu) != TYPE_STATUS_OK ||
+        STD_STRCMP(session->model40_resolved.identity,
+            "compaq-deskpro-386-model-40") != 0 ||
+        STD_STRCMP(session->model40_resolved.parent_identity, "pc-at-5170") != 0 ||
+        session->model40_resolved.values.core.configuration.memory_bytes !=
+            session->core_machine_config.memory_bytes ||
+        session->model40_resolved.values.core.configuration.cpu_profile !=
+            session->core_machine_config.cpu_profile ||
         session->core_machine->shared_kbc.data.aux_enabled ||
         (session->core_machine->shared_kbc.data.command_byte &
             CORE_MACHINE_KBC_COMMAND_DISABLE_AUX) == 0u;
@@ -124,6 +131,7 @@ C_INT main(C_VOID)
     if (!failed) STD_PRINTF("M5:T421:S1:MODEL40-SPEAKER-SELECTION:OK\n");
     if (!failed) STD_PRINTF("M5:T386:S7:EXTERNAL-ROM-GUARD:OK\n");
     if (!failed) STD_PRINTF("M5:T390:S34:MODEL40-DETERMINISTIC-CONTRACT:OK\n");
+    if (!failed) STD_PRINTF("M5:T477:S3:DESKPRO-SESSION-CUTOVER:OK\n");
     vm_session_destroy(session);
     vm_model40_fixture_remove("t386-s7-even.bin", "t386-s7-odd.bin");
     return failed ? 1 : 0;

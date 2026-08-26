@@ -2,9 +2,26 @@
 
 ## Current Work
 
-**T477 S2 accepted.** The [DeskPro child resolver evidence](../etc/evidence/t477-s2-deskpro-child-resolver.md)
-proves copied Core/policy ownership over the 5170 root while preserving the
-separate session lifetime of ROM, media and D4 resources.
+## M5 T477 S3 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner approved the ordered DeskPro migration; accepted T477 S1-S2 freeze and validate the child declaration. |
+| Objective | Cut Model-40 session creation over to the copied DeskPro child Core input and remove its duplicate Core-config constructor, preserving dynamic BYOB ROM, D4 and media ownership. |
+| Non-goals | No new device semantics, topology redesign, Core change, physical-time claim, firmware/media import, YAML/default-at work or profile rename. |
+| Reference Baseline | T477 S1 delta ledger; T477 S2 child resolver; existing Model-40 integration/parity corpus. |
+| Candidate Proposal | [DeskPro 386 5170-derived runnable profile](../proposals/m5-deskpro-386-5170-derived-runnable-profile.md). |
+| Files And ABI Surface | Model-40 profile/session construction and focused Model-40 smokes; no public Core ABI. |
+| Applicable Rules | One profile/session Core-input path; resolver owns immutable data, session owns dynamic resources, Core owns mutable machine state; delete obsolete duplicate construction rather than add a compatibility layer. |
+| Verification | Existing Model-40 private/integration and full finite parity corpus, source sweep for obsolete initializer, full current gate and no behavior/identity regression. |
+| Expected Markers | Existing Model-40 markers plus `M5:T477:S3:DESKPRO-SESSION-CUTOVER:OK`. |
+| Asset Needs | Existing test-only synthetic BYOB inputs only; no new asset. |
+| Reporting Requirements | Record deleted production path, retained dynamic owner path, parity result and source/test line delta. |
+| Stop Conditions | Stop if cutover changes a frozen behavior, forces mutable state into resolver, or cannot remove the old Core-config path. |
+| Exit Criteria | DeskPro session uses copied resolved Core data, no duplicate Model-40 Core initializer remains, dynamic resource ownership is unchanged, and full parity passes. |
+| Original Owner Request | Connect IBM 5170, DeskPro 386 and default-at in order through minimal single-owner interfaces. |
+| Similar-Issue Sweep | Sweep all Model-40 construction, reset, media, firmware and plan setup for any second Core config or mutable profile mirror. |
 
 ## Current Technical Baseline
 
