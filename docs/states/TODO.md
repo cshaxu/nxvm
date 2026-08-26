@@ -57,15 +57,14 @@ adopts them.
   Range cache miss must not block or mutate guest state from a host callback;
   it requires a separately admitted pending-I/O/controller-ready/IRQ timing
   model. Do not add an unconsumed generic filesystem API.
-- [ ] **IBM 5170 MFM/ST-506 fixed-disk route (`TODO(Medium)`).** The selected
-  Model 339 Type 3 L3 baseline deliberately has no fixed disk. Its historical
-  30 MB storage uses IBM's Fixed Disk/Diskette Adapter and an MFM/ST-506 path,
-  not the current ATA/HDC controller. Admit it only as a separately selected
-  controller/drive profile with the adapter's port/IRQ14/reset/error and
-  command/service contract, MFM data and timing ownership, one project-owned
-  probe corpus, and a decision whether its adapter-parity state produces
-  I/O-channel-check NMI. Do not alias ATA registers, ATA media or ATA timing to
-  IBM MFM, import firmware/media, or use a generic hard-disk backend as proof.
+- [ ] **IBM 5170 MFM/ST-506 physical-media residual (`TODO(Medium)`).** T479
+  corrects the earlier false claim that the selected 5170-339 has no fixed
+  disk: IBM's product reference identifies its one 30 MB fixed disk and
+  adapter. T479 owns the logical IBM adapter/controller and frozen profile
+  route. Retain only raw MFM encoding, ECC recovery, drive mechanics, adapter
+  parity/NMI evidence and source-qualified service-time phases here. Do not
+  alias ATA media or timing to IBM MFM, import firmware/media, or use a generic
+  hard-disk backend as proof.
 - [ ] **Compaq 40 MB physical fixed-disk media semantics (`TODO(Medium)`).** T386 S5 establishes only the primary-backed normal CHS PIO controller path over the existing pure logical RAW-IMG medium. Read/Write Long, format-track parameter/data semantics, ECC/error-recovery classes, physical sector identity, drive-side controller service and their IRQ/DRQ timing require a separately selected physical-media representation and board receiver. Admit this only after the selected DeskPro storage/profile path is published and a primary source plus bounded corpus defines the required observables; preserve the current normal-route proof, do not reinterpret ATA/MFM media, and do not claim raw IMG represents ECC or physical sectors.
 - [ ] **Broaden digital CGA beyond the frozen supported surface (`TODO(Medium)`).**
   The baseline-machine capability ledger, 5170 selected-device closure, and

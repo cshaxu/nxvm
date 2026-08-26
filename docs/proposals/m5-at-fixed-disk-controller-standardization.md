@@ -28,7 +28,7 @@ The initial selected personalities are:
 | Personality | Required disposition |
 | --- | --- |
 | IBM PC/XT 5160-268 Fixed Disk Adapter | Reconcile the prior no-disk baseline claim against IBM material that lists XT-268 for the 20 MB adapter. Select only the documented controller/drive configuration and implement its distinct 8-bit host/controller semantics through the one HDC owner. |
-| IBM PC/AT 5170 fixed-disk configuration | Keep the accepted no-disk Model 339 unchanged. Select a separately named, source-defined fixed-disk configuration using the IBM fixed-disk/diskette adapter and its MFM/ST-506 behavior; RLL is a distinct documented variant, not a new HDC family. |
+| IBM PC/AT 5170-339 | Correct the prior no-disk assumption: IBM's product reference identifies Model 339 as an 8 MHz, 512 KB system with one 30 MB fixed disk and adapter. Implement its IBM fixed-disk/diskette adapter MFM/ST-506 behavior; RLL is a distinct documented variant, not a new HDC family. |
 | DeskPro 386 Model 40 Compaq/WD integrated controller | Implement only the documented pre-standard integrated-controller behavior required by this profile; do not call it ATA merely because it has a 40-wire cable. |
 | ATA PIO | Preserve T468's accepted ATA-3 behavior as an explicit later personality; it is not a 5170 substitute. |
 | ESDI | Select one concrete controller with an available primary manual, establish its matching frozen profile/personality data, and implement it through the same front end. |
@@ -62,22 +62,24 @@ without a false L3 claim.
 2. **S2 -- current-owner and selected-profile audit.** Trace every ledger row
    through the existing HDC, logical media, DMA/PIC routes, guest-time/deadline
    path and the 5160, 5170, DeskPro and Default-AT declarations. Reconcile the
-   5160-268 and Model-339 baseline facts; select only separately named fixed
-   configurations where required. Record the one current owner, universal-ATA
+   5160-268 and Model-339 baseline facts; record each source correction before
+   changing its frozen configuration. Record the one current owner, universal-ATA
    assumptions, observable parity corpus and each source-blocked ESDI fact.
 3. **S3 -- immutable HDC personality contract.** Replace the universal-ATA
    identity with one validated construction-time discriminated personality and
    one HDC state machine. The Core public boundary remains opaque; no profile,
    VM or media code gains mutable controller access. Delete superseded
    construction paths in the same change.
-4. **S4 -- retained Default-AT and DeskPro closure.** Route ATA PIO and the
-   Model-40 Compaq/WD integrated controller through the one owner and frozen
-   personality data. Preserve T468/T386 observable behavior, including the
-   Model-40 shared `3F7h` read semantics; do not reimplement either controller.
+4. **S4 -- IBM 5170 command and profile ledger.** Extract the IBM fixed-disk/
+   diskette adapter's finite task-file, command, reset, interrupt and media
+   requirements from the primary manual, cross-check every row against bounded
+   emulator models, and correct the selected 5170-339 profile's formerly false
+   no-disk declaration.
+   The already-completed S3 retained Default-AT/DeskPro migration is its
+   regression baseline, not a duplicate implementation S.
 5. **S5 -- IBM 5170 fixed-disk closure.** Implement the selected source-qualified
-   IBM fixed-disk/diskette adapter MFM/ST-506 personality and its separately
-   named fixed-disk profile configuration. Keep Model 339's accepted no-disk
-   descriptor intact. Retain explicit L2 or unsupported boundaries where a
+   IBM fixed-disk/diskette adapter MFM/ST-506 personality and the corrected
+   Model 339 fixed-disk profile configuration. Retain explicit L2 or unsupported boundaries where a
    controller or board fact is absent.
 6. **S6 -- IBM 5160-268 fixed-disk closure.** Implement the selected IBM/Xebec
    adapter through the same HDC owner and bind it only to the confirmed frozen
