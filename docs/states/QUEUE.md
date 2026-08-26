@@ -47,7 +47,6 @@ ledger, complete List 1, complete List 2, then one-owner full-batch
 implementation. The final model and pre-Windows entries are audits only; they
 may transfer a gap to its earliest unit T but may not repair it.
 
-1. [IBM 5160 8088 board, memory, ROM and ISA phase contract](../proposals/m5-xt-8088-board-bus-phase.md).
 1. [IBM 5160 8259A interrupt-controller phase contract](../proposals/m5-xt-8259a-board-phase.md).
 1. [IBM 5160 8237A DMA phase contract](../proposals/m5-xt-8237a-board-phase.md).
 1. [IBM 5160 8254 PIT phase contract](../proposals/m5-xt-8254-board-phase.md).

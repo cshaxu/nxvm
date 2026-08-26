@@ -2,28 +2,19 @@
 
 ## Current Work
 
-**Open: M5 T487 S4.**
+**Open: M5 T488 S1.**
 
-## M5 T487 S4 Packet
+## M5 T488 S1 Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | T487 S3 accepted the complete List 2; S4 implements its one Core/XT-board batch. |
-| Objective | Reconcile IBM board cycles against the existing Intel 8088 clock-total owner and reference-emulator evidence, preserving the existing singular path and recording every unresolved physical bus phase as L2. |
-| Non-goals | No second scheduler, host-to-Core tick injection, additive cycle surcharge, PIC/DMA/PIT/PPI/FDC/CGA/Xebec state rewrite, ROM/media import, invented reset duration, or verified whole-machine pacing claim. |
-| Reference Baseline | Accepted T487 S1--S3 evidence, closed T486 and the current Core/VM waiting contract. |
-| Candidate Proposal | [IBM 5160 8088 board, memory, ROM and ISA phase contract](../proposals/m5-xt-8088-board-bus-phase.md). |
-| Files And ABI Surface | Evidence, history and Current only; all current code/ABI/profile paths are retained unchanged. |
-| Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, `docs/design/ARCHITECTURE.md`, `docs/design/CODING.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`. Core owns time and transactions; VM only compares completed progress to host time. |
-| Verification | Original Intel wording, IBM source, bounded PCjs/86Box cross-check, existing focused XT/profile tests and documentation governance. |
-| Expected Markers | One retained CPU clock-total owner, unselected additive waits, one immutable XT construction path and one explicit L2 bus-phase boundary. |
-| Asset Needs | No new source material, firmware or guest media. |
-| Reporting Requirements | Record exact retained owner, rejected additive path, reference limit and no-code result. |
-| Stop Conditions | Stop if source semantics require changing the frozen unit or a Core cycle replacement cannot be separated from additive waits without a second timing owner. |
-| Exit Criteria | All T487 List-2 rows have their specified retained-owner or explicit L2 disposition; no false implementation or whole-machine pacing claim remains. |
-| Original Owner Request | Each newly admitted CPU/chip/controller/board category needs original material, complete List 1, complete List 2 and one whole-unit implementation batch; no symptom-led repair path. |
-| Similar-Issue Sweep | Sweep Core external-cycle writers and XT profile configurations for any additive IBM-cycle surrogate; verify host pacing remains a non-claim. |
+| Identifier Mode | New |
+| Admission And Approval | T487 closed; the next independent Queue unit is IBM 5160 8259A. |
+| Objective | Establish the original 8259A and IBM XT wiring source ledger before a complete PIC List 1. |
+| Non-goals | No PIC code repair, AT cascade work, firmware/media import or inferred timing. |
+| Reference Baseline | Closed T487, queued 8259A proposal, source policy and existing external manual archive. |
+| Candidate Proposal | [IBM 5160 8259A interrupt-controller phase contract](../proposals/m5-xt-8259a-board-phase.md). |
+| Exit Criteria | Original source pages/formulae or explicit absence for every intended PIC topic. |
 
 ## Current Technical Baseline
 
@@ -60,9 +51,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T487 S3 | Accepted: List 2 finds one existing profile-to-Core production path and one required Core rational-axis/cycle-classification batch; additive waits cannot represent IBM total cycles. [Evidence](../etc/evidence/t487-s3-5160-board-current-code-gap-list-2.md). |
-| T487 S2 | Accepted: complete IBM board-only List 1 freezes 14 Manual-L3 clock/cycle/reset/map/ISA/NMI facts and explicit CPU/controller/host boundaries before code inspection. [Evidence](../etc/evidence/t487-s2-5160-board-function-timing-list-1.md). |
-| T487 S1 | Accepted: visually verified IBM 5160 board-source ledger establishes the finite clock, cycle, reset, map, ISA and NMI basis before List 1. [Evidence](../etc/evidence/t487-s1-5160-original-source-ledger.md). |
+| T487 | Closed: complete IBM board source/List-1/List-2 reconciliation retains the single Intel clock-total owner and explicit L2 physical-phase boundaries. [Closure audit](../etc/evidence/t487-s5-5160-board-closure-audit.md). |
 | T486 | Closed: the complete 8088 manual source/List-1/List-2/one-owner implementation chain closes without a parallel timing path; Group-3, WAIT and non-string-prefix source boundaries remain explicit. [Closure audit](../etc/evidence/t486-s5-8088-closure-audit.md). |
 | T485 | Withdrawn, not completed: accepted S1--S20 evidence remains retained, but Td S152 transfers the uncompleted aggregate XT scope to independent CPU/board/controller candidates. [Record](../etc/evidence/td-s152-unit-task-admission-governance.md). |
 | T484 | Closed: IBM 5160-268 now has one immutable 8088/profile plan, XT PPI/FDC/CGA/Xebec functional owners and one typed external-ROM BYOB product route; all remaining board/device timing transfers to T485. [Closure audit](../etc/evidence/t484-s22-xt-functional-closure-audit.md). |
