@@ -2,15 +2,32 @@
 
 ## Current Work
 
-**T475 S2 accepted.** The immutable VM resolver has one typed parent route,
-copied result/provenance and one existing Core-plan handoff. The focused smoke
-proves all accepted and rejected cases; no runnable profile has migrated.
+## M5 T475 S3 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner approved the dependency-ordered implementation sequence on 2026-08-25; accepted T475 S1/S2 establish the complete ledger and resolver, authorizing task-level integration closure before profile connections. |
+| Objective | Audit the complete T475 ledger and resolver implementation, publish stripped Release 0475, run full current gates, and close the resolver-kernel task with all real profile migrations explicitly transferred. |
+| Non-goals | No default/5170/DeskPro migration, profile registration, YAML/CLI change, Core behavior/API change, firmware/media work, source import, host callback, second configuration route, L4 claim or unrelated cleanup. |
+| Reference Baseline | Accepted [T475 S1 ledger](../etc/evidence/t475-s1-profile-resolver-ledger.md) and [S2 resolver proof](../etc/evidence/t475-s2-profile-resolver.md); closed T474 time boundary; resolver candidate and downstream Queue proposals. |
+| Candidate Proposal | [VM profile resolver kernel](../proposals/m5-vm-profile-resolver-kernel.md). |
+| Files And ABI Surface | Current CMake artifact target/preset, ignored `build/output/nxvm_0_5_0475.exe`, Current baseline/history/closure evidence/proposal retention and Queue; no new runtime API or behavior beyond the already-accepted resolver module. |
+| Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`, architecture/source-layout authorities: complete ledger audit, stripped Release artifact, one resolver/one Core-plan handoff, no mutable pointer exposure and actual-diff review. |
+| Verification | `cmake --build --preset current-gates-gcc`; Release configure/build of `vm-0-5-0475`; focused resolver smoke; artifact banner/size/SHA-256 inspection; documentation governance; source sweep for resolver consumers and duplicate Core-plan API; complete ledger/Queue/TODO/diff audit. |
+| Expected Markers | `M5:T475:S2:PROFILE-RESOLVER:OK`, `M5:T475:S2:PROFILE-RESOLVER-NEGATIVE:OK`, `M5:T475:S3:INTEGRATION-CLOSURE:OK`, and `M5:T197:S1:CURRENT-ARTIFACT-TARGET:vm-0-5-0475:OK`. |
+| Asset Needs | Existing source/build outputs only; no guest media, firmware, third-party source or machine-local path enters the repository. |
+| Reporting Requirements | Map S1/S2 to evidence, report complete-gate result, artifact path/banner/size/hash, actual source/test line delta, retained production route/owner, transfer recipients and actual-diff review. |
+| Stop Conditions | Stop for owner direction on an unresolved full-gate failure, artifact identity conflict, need for a Core/API change, selected profile migration, source import, or evidence of a second resolver/Core-plan path. |
+| Exit Criteria | S1/S2 ledger is fully accepted; every resolver conflict/provenance/handoff condition is proved; full gate and governance pass; stripped Release 0475 is built and verified; status/history/proposal/Queue state is consistent; IBM 5170, DeskPro and default-at remain explicit downstream consumers. |
+| Original Owner Request | Establish correct whole-machine L3 structure and interfaces first, then connect IBM 5170, DeskPro 386 and default-at in that order, without layered or duplicate paths. |
+| Similar-Issue Sweep | Sweep resolver header/implementation/test, CMake source and exact target counts, profile/session direct constructors, Core-plan create/configure calls, artifact/preset identity, Queue/proposal/history/current links and all T475 changed files for duplicate path, mutable leak or stale 0474 identity. |
 
 ## Current Technical Baseline
 
-- **Current developer artifact:** target `vm-0-5-0474`; the stripped Release
-  `nxvm_0_5_0474.exe` has SHA-256
-  `9D567C7C20E44A53076ED7EC97FB017AD3268CE4FDA5B653A621E35629299A48`.
+- **Current developer artifact:** target `vm-0-5-0475`; the stripped Release
+  `nxvm_0_5_0475.exe` has SHA-256
+  `26E00D29D41EF4A69E234D31A6FD54D886D879B8DD2402F45C59FA2E55EE1281`.
   Debug remains the current-gate route. T471 preserves Core-owned progression:
   a verified axis is Standard-paced only by host waiting against completed
   Core progress. T472 extends that comparison to an explicit L2 macro axis,

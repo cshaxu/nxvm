@@ -42,7 +42,9 @@ public Core value types already used by the existing plan boundary.
 `vm-profile-resolver-smoke` compiles under the VM-profile target's strict C
 flags and prints both markers above. The exact owner-test inventory changes
 from 177 to 178 pure targets because this is a new focused test executable;
-the pre-existing mixed count remains three.
+the pre-existing mixed count remains three. The corresponding deferred-owner
+verifier count changes from 180 to 181 source rows and its S2 target inventory
+from 177 to 178; both values are derived from the same registered target.
 
 The same smoke passes the resolved copied `core_machine_config` and copied
 controller timing rules directly to the existing `core_machine_plan_create` /
