@@ -2,28 +2,28 @@
 
 ## Current Work
 
-**Active: M5 T484 S9.**
+**Active: M5 T484 S10.**
 
-## M5 T484 S9 Packet
+## M5 T484 S10 Packet
 
 | Field | Required record |
 | --- | --- |
 | Identifier Mode | Continuation |
-| Admission And Approval | Owner-approved continuous execution toward the pre-Windows L3 admission audit; accepted T484 S8 P1 `fdbe0c86` closes the independent keyboard half of B3 and leaves the source-gated FDC input as the next finite receiver. |
-| Objective | Qualify the exact selected IBM 5160-268 half-height diskette mechanism, capacity/geometry and immutable media declaration needed to bind the existing Core 8272A/FDC owner through the sourced XT `3F2h`, IRQ6 and DMA2 route. |
-| Non-goals | No FDC/drive-media implementation, ROM manifest/mapping, Xebec personality, generic XT, ATA shim, PC/AT `3F7h` route, 1.44 MB substitution, physical service-time estimate, protected-mode or Windows claim. |
-| Reference Baseline | Accepted T483 S1--S3 and T484 S1--S8 evidence; IBM 5155/5160 Technical Reference, Product Reference and selected-drive source material; existing Core FDC/media/DMA/PIC/plan owners. |
+| Admission And Approval | Owner-approved continuous execution toward the pre-Windows L3 admission audit; accepted T484 S9 P1 `b72b2e9e` establishes the selected 360KiB XT FDC/media contract and admits its one bounded Core-plan receiver. |
+| Objective | Bind the existing Core 8272A/media owner to the selected IBM 5160-268 plan through one immutable drive-A `40 x 2 x 9 x 512` declaration and `3F2h`/`3F4h`/`3F5h`, IRQ6/DMA2 route. |
+| Non-goals | No FDC state-machine rewrite, firmware/ROM manifest or mapping, default guest media, Xebec personality, generic XT, ATA shim, PC/AT `3F7h` route, 1.2/1.44MB substitution, physical service-time estimate, protected-mode or Windows claim. |
+| Reference Baseline | Accepted T483 S1--S3 and T484 S1--S9 evidence, especially the IBM-led [S9 FDC source contract](../etc/evidence/t484-s9-xt-fdc-source-contract.md); existing Core FDC/media/DMA/PIC/plan owners and the selected XT resolver. |
 | Candidate Proposal | [IBM PC/XT 5160-268 selected-device functional closure](../proposals/m5-xt-5160-268-device-functional-closure.md). |
-| Files And ABI Surface | Source evidence/history/status plus read-only current FDC/media/plan/profile paths; no runtime, ABI, profile/session construction or artifact change is authorized. |
-| Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, architecture/coding rules, source policy and the proposal's no-parallel-path boundary. |
-| Verification | Rendered/manual-versus-OCR cross-check for each drive/controller assertion; separate primary source from external-emulator corroboration; verify selected capacity/geometry/media input and exact existing owner boundary; documentation governance and actual-change review. |
-| Expected Markers | `M5:T484:S9:XT-FDC-SOURCE:OK`; `M5:T484:S9:XT-NO-AT-FDC-ALIAS:OK`. |
-| Asset Needs | Existing accepted IBM material and read-only corroboration only; no third-party source, firmware, guest media, local path or code import enters the repository. |
-| Reporting Requirements | Record source quality, selected drive/mechanism/capacity/geometry result, every `3F2h`/IRQ6/DMA2/reset fact, missing fact and one minimal implementation or transfer; do not attach an image, firmware or external source code. |
+| Files And ABI Surface | `src/vm/profile/xt/xt_5160_268.c`, Core plan/media public contracts only if an existing configuration field proves insufficient, focused XT/profile plan tests, T484 evidence/history/current status, CMake registration and `build/output/nxvm_0_5_0484.exe`; no new public runtime architecture. |
+| Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, `docs/design/ARCHITECTURE.md`, `docs/design/CODING.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`, source policy and the proposal's single-owner/no-parallel-path boundary. |
+| Verification | Focused selected-XT profile/Core-plan smoke proving drive-A geometry, `3F2h`/`3F4h`/`3F5h`, IRQ6/DMA2, reset and absent `3F7h`; existing AT FDC regression proves no route change; build the stripped Release `vm-0-5-0484`, run the current gate, documentation governance and actual-change review. |
+| Expected Markers | `M5:T484:S10:XT-FDC-PLAN:OK`; `M5:T484:S10:XT-NO-AT-FDC-ALIAS:OK`. |
+| Asset Needs | Existing accepted IBM source contract and project-owned empty/inserted media test provider only; no third-party source, firmware, guest media, local path or code import enters the repository. |
+| Reporting Requirements | Record the one retained production route and media/FDC state owners, all changed code/test lines, focused/full verification, Release hash, physical-timing transfer and every intentionally absent route. |
 | Original Owner Request | Continue the ordered minimalist queue toward the pre-Windows L3 admission audit. |
-| Stop Conditions | Stop and transfer if primary material cannot establish the selected drive mechanism/capacity/geometry or if a claimed route requires `3F7h`, a PC/AT drive descriptor, 1.44 MB media, guessed service duration or profile-owned FDC/media state. |
-| Exit Criteria | One source-qualified immutable XT FDC/media declaration is ready for the next implementation S, or every missing selection fact has an explicit earliest receiver; the matrix proves no PC/AT alias and no second FDC/media owner. |
-| Similar-Issue Sweep | IBM XT/AT diskette source, `3F2h`--`3F7h`, IRQ6, DMA2, reset, Core FDC/media configuration, profile resolver/topology and current PC/AT drive materialization paths. |
+| Stop Conditions | Stop and transfer if binding requires an FDC state duplicate, profile/VM-owned guest media state, a PC/AT `3F7h` route, default media/firmware, a generic XT abstraction, or an unsourced mechanical deadline. |
+| Exit Criteria | The selected XT plan materializes exactly one Core FDC/media route with the qualified geometry and no AT alias; focused and current-gate proof pass, the stripped 0484 artifact is recorded, and all physical timing remains explicitly transferred. |
+| Similar-Issue Sweep | Selected XT resolver/topology, all FDC plan builders, media-registry construction, `3F2h`--`3F7h` routes, IRQ6/DMA2 bindings, Core FDC reset/owner lifecycle, and AT/DeskPro FDC paths. |
 
 ## Current Technical Baseline
 
