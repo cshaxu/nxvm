@@ -20,6 +20,12 @@ The required firmware slot is an external
 owner-managed research asset; do not record bytes, local paths, or a vendor
 catalogue in the repository.
 
+The audit must consume T479 S6's IBM/Xebec source ledger and establish the
+selected fixed-disk adapter as required: its 8-bit `320h`--`323h` grammar,
+DMA channel 3, IRQ5, immutable controller/media geometry binding, and
+external-ROM admission boundary. It must state the earliest functional and
+timing receivers; no ATA task-file substitution is permitted.
+
 ## Non-goals and stop conditions
 
 No 5150/XT hybrid, 8086 substitution, generic PC claim, device repair, board

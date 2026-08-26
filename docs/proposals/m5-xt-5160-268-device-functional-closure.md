@@ -17,6 +17,13 @@ publication semantics are compatible with 5160-268. Preserve the separate
 8088 CPU boundary; board waits, service duration, arbitration, and event phase
 belong to the following candidate.
 
+For storage, close the accepted Xebec logical fixed-disk route: one Core HDC
+personality with the selected byte-stream ports, DMA3/IRQ5 binding,
+source-proven command/result/reset behavior, and the existing sole
+logical-image/geometry/persistence owner. Add a focused inserted-image and
+boot-consumer regression. Do not create an ATA shim, a second CHS or media
+cache, raw-MFM media, or a generic XT profile.
+
 ## Non-goals and stop conditions
 
 No PC/AT assumption, generic PC/XT expansion, 8086 replacement, unselected

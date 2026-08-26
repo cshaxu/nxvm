@@ -18,6 +18,12 @@ IBM/Intel primary documentation and project-owned probes; where it gives a
 range or no exact value, named 86Box/MAME/PCjs comparisons may be non-imported,
 profile-local cross-checks under the source policy.
 
+The accepted Xebec fixed-disk route is included: its DMA3/IRQ5 availability,
+request/response publication, reset/cancellation ordering and any
+source-proven service phase belong to this machine-local contract. Missing
+mechanical, rotational or transfer-time evidence remains explicitly bounded;
+no guessed deadline may make the logical route appear physical.
+
 ## Non-goals and stop conditions
 
 No 8086 substitution, unclosed prerequisite, XT/PC hybrid, device functional

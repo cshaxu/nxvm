@@ -50,6 +50,13 @@
 
 ## Recent Governance
 
+- **M5 Td S151 P1:** made the four-machine fixed-disk result a hard receiver
+  sequence: retain `default-at` ATA, IBM 5170 WD1003 and DeskPro Compaq/WD;
+  the queued XT audit through final audit must close IBM 5160/Xebec's selected
+  `320h`--`323h`, DMA3/IRQ5 route without an ATA shim or duplicate media state.
+  The [evidence](../etc/evidence/td-s151-four-machine-fixed-disk-receiver.md)
+  records the partition. No runtime, ABI, build or artifact changed.
+
 - **M5 Td S150 P1:** separated the machine-neutral VM resolver kernel from
   profile migration and ordered the queue as Core time boundary, resolver,
   IBM 5170, DeskPro, `default-at`, then YAML. The [evidence](../etc/evidence/td-s150-profile-connection-order.md)
