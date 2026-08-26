@@ -13,4 +13,4 @@ writer.
 | S4 | Accepted: the exhaustive current selector ledger proves no 8088 Table-2-21 form is selected today and identifies its one private Core transfer-count receiver. [Evidence](../etc/evidence/t485-s4-8088-table-2-21-selector-ledger.md). |
 | S5 | Accepted: current decoded state has no complete word-transfer plan, so an evaluator cannot lawfully reuse local helpers or external byte traces. [Evidence](../etc/evidence/t485-s5-8088-transfer-plan-receiver.md). |
 | S6 | Accepted: the plan is a one-use private timing result, never machine state; complete/incomplete source inputs are frozen for immediate consumption. [Evidence](../etc/evidence/t485-s6-private-source-transfer-plan.md). |
-| S7 | In implementation: consume the one-use plan in the sole 8088 source evaluator and retain incomplete forms as unallocated. |
+| S7 | Accepted: one private 8088 primary-form transfer plan feeds the sole source evaluator before compatibility; three rendered Table-2-21 forms have exact 3/19/30-clock proof, while incomplete forms remain unallocated. The complete 299-test current gate passes. [Evidence](../etc/evidence/t485-s7-8088-primary-source-evaluator.md). |

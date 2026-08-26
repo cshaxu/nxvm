@@ -26,6 +26,12 @@ The retirement-observation smoke verifies these rendered Table 2-21 cases:
 The existing repeated-NOP physical-profile case remains source-unallocated:
 the evaluator does not broaden to unsupported prefix/string/control forms.
 
+The focused retirement-observation smoke and the complete current gate pass:
+all 299 configured current-gate tests passed on 2026-08-26.  The gate's
+`LastTestsFailed.log` is a stale runner byproduct for this invocation; the
+authoritative current `LastTest.log` records `Test Passed.` for test 290 and
+every test through 299.
+
 ## Explicit residual
 
 String, control/stack, port/I/O, dynamic range, ESC/x87, fault/interrupt and
