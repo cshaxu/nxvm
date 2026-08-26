@@ -84,6 +84,32 @@ Core creation; the 2 MiB constant governs stopped-state reconfiguration.  The
 remaining low-memory/ROM work is profile materialization and external-BYOB
 validation, not a fabricated Core memory limit.
 
+## P6: Source-Gated B2 Boundary
+
+The selected `256 KiB` is already the copied Core construction value and the
+focused plan creates it.  The IBM baseline proves only an abstract external
+pair of 32 KiB ROM devices; it deliberately selects no ROM revision, bytes,
+digest, local path, or requested physical mapping.  The source policy requires
+all of those owner-supplied fields at a later VM-composition construction
+boundary.  Thus B2 retains the immutable `BYOB` policy but cannot create a
+default ROM mapping or a second reset route.  That finite mapping/manifest work
+transfers to B6, where it must reach Core's existing immutable-ROM owner before
+machine creation.
+
+The IBM reference also describes `RESET DRV` as a system-board output to reset
+or initialize expansion logic.  Core's ordinary cold reset already owns the
+selected machine-state reset; this B2 baseline selects no expansion controller
+whose reset state needs another owner.  The remaining program-visible parity/
+NMI controls are inseparable from the XT 8255/PPI board attachment at `60h`--
+`63h` and its source-qualified port semantics.  They transfer to B3 with that
+one attachment.  In particular, B2 does not reinterpret the PC/AT-only
+planar-parity controller at `61h` as an XT controller.
+
+The focused Core-plan regression now proves the negative construction facts
+directly: a single-PIC/one-DMA XT plan exposes master/primary ports, omits
+slave/secondary and RTC/CMOS ports, has no FDC DMA binding, and retains those
+choices across the Core-owned cold reset.
+
 ## Verification
 
 - `cmake --build build/mingw-gcc-x64 --target core-machine -j 4` passed.
@@ -93,6 +119,8 @@ validation, not a fabricated Core memory limit.
   materialization.
 - The XT profile smoke constructs the copied B2 topology and proves that no
   FDC request binding exists before B3 selects one.
+- The Core-plan smoke proves `70h`/`71h` RTC/CMOS and the unselected
+  slave/secondary controller ports remain absent before and after cold reset.
 - `vm-ibm-5170-root-resolver-smoke.exe` proves copied 5170 and default-AT
   topology values can be given directly to `core_machine_plan_set_topology`,
   including the generic 80286/80287 selection.

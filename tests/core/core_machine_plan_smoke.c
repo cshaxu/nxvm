@@ -290,9 +290,15 @@ static C_INT plan_selects_single_controller_xt_board(C_VOID)
     failed |= !failed && (!core_machine_port_has_read(&machine->executor_port, 0x0020u) ||
         !core_machine_port_has_write(&machine->executor_port, 0x0000u) ||
         core_machine_port_has_read(&machine->executor_port, 0x00a0u) ||
-        core_machine_port_has_write(&machine->executor_port, 0x00d0u));
+        core_machine_port_has_write(&machine->executor_port, 0x00d0u) ||
+        core_machine_port_has_read(&machine->executor_port, 0x0070u) ||
+        core_machine_port_has_write(&machine->executor_port, 0x0071u));
     failed |= !failed && core_machine_get_fdc_dma_request_binding(machine,
         &(core_machine_dma_request_binding) {0}) != TYPE_STATUS_INVALID_STATE;
+    failed |= !failed && core_machine_reset(machine) != TYPE_STATUS_OK;
+    failed |= !failed && (!core_machine_port_has_read(&machine->executor_port, 0x0020u) ||
+        core_machine_port_has_read(&machine->executor_port, 0x00a0u) ||
+        core_machine_port_has_read(&machine->executor_port, 0x0070u));
     core_machine_destroy(machine);
     core_machine_plan_destroy(plan);
     return failed;
