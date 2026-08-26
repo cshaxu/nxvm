@@ -2,16 +2,32 @@
 
 ## Current Work
 
-**T476 S3 accepted.** IBM sessions now own and consume one copied
-`pc-at-5170` root; the session has no direct static Model-339 selection or
-second Core configuration materialization path. The [cutover evidence](../etc/evidence/t476-s3-ibm5170-root-cutover.md)
-records frozen parity and remaining source normalization work.
+## M5 T476 S4 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner approved the ordered profile program on 2026-08-25; accepted T476 S1-S3 provide the frozen root, resolver representation and session cutover now being closed. Owner additionally approved removal of the duplicate failing Core exception aggregate on 2026-08-25. |
+| Objective | Audit T476 against its full proposal, publish its stripped Release 0476 artifact, restore its required task history record, and close only if one 5170 root/session path and the frozen parity universe are proven; remove the duplicate exception aggregate while retaining its four independently registered smoke owners. |
+| Non-goals | No new runtime behavior, profile/YAML rename, DeskPro/default-at migration, Core/device/timing modification, firmware/media import or unrelated remediation. |
+| Reference Baseline | T476 S1 ledger; accepted S2 and S3 evidence; T475 closure. |
+| Candidate Proposal | [PC/AT 5170 root profile normalization](../proposals/m5-pc-at-5170-root-profile-normalization.md). |
+| Files And ABI Surface | Current artifact target/preset, obsolete exception aggregate registration/source, task history/closure evidence and status only; no runtime ABI change. |
+| Applicable Rules | Numeric task history and stripped Release requirements; actual-diff review; one root/session path, Core sole mutable owner, no false physical-time claim. |
+| Verification | The four retained exception owner smokes, absence of the obsolete aggregate, full current-gates, artifact banner/SHA, focused S1 parity and root smokes, documentation governance, source-path sweep and closure audit. |
+| Expected Markers | Existing S1-S3 markers; Release `nxvm_0_5_0476.exe` with banner `0.5.0476`. |
+| Asset Needs | Existing build output only; no protected asset or external source enters the repository. |
+| Reporting Requirements | Record artifact SHA/source commit, all proposal exit mapping, exact code/test delta, retained source-only descriptor boundary and any current-gate failure. |
+| Stop Conditions | Stop for owner direction if full gate fails due T476 behavior, artifact cannot be stripped Release, closure would hide an unresolved root/session path, or task history cannot truthfully describe the result. |
+| Exit Criteria | Full proposal mapping is evidenced; root/session route is singular; full gates and artifact proof pass; task history/status are accurate; T476 closes and its proposal moves to history. |
+| Original Owner Request | Establish correct whole-machine L3 structure and interfaces first, then connect IBM 5170, DeskPro 386 and default-at in that order, without layered or duplicate paths. |
+| Similar-Issue Sweep | Sweep current artifact/presets, T476 history/proposal/status, VM session/root source selections and all 5170 parity registration for stale artifact identity, missing task records or parallel route claims. |
 
 ## Current Technical Baseline
 
-- **Current developer artifact:** target `vm-0-5-0475`; the stripped Release
-  `nxvm_0_5_0475.exe` has SHA-256
-  `26E00D29D41EF4A69E234D31A6FD54D886D879B8DD2402F45C59FA2E55EE1281`.
+- **Current developer artifact:** target `vm-0-5-0476`; the stripped Release
+  `nxvm_0_5_0476.exe` has SHA-256
+  `F32C08B7E98C078616DAC55A29DB2C8874006F1068054CA8D2A0445790FC9C57`.
   Debug remains the current-gate route. T471 preserves Core-owned progression:
   a verified axis is Standard-paced only by host waiting against completed
   Core progress. T472 extends that comparison to an explicit L2 macro axis,

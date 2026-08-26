@@ -245,8 +245,8 @@ static type_unsigned_32 vm_profile_ibm_5170_device_bit(
     return 1u << (type_unsigned_32)role;
 }
 
-static vm_profile_default_pc_at_device_role
-vm_profile_ibm_5170_route_device(vm_profile_default_pc_at_route_source source)
+static vm_profile_default_pc_at_device_role vm_profile_ibm_5170_route_device(
+    vm_profile_default_pc_at_route_source source)
 {
     if (source == VM_PROFILE_DEFAULT_PC_AT_ROUTE_PIT_IRQ0) {
         return VM_PROFILE_DEFAULT_PC_AT_DEVICE_PIT;
