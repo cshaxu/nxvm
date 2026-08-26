@@ -2,10 +2,26 @@
 
 ## Current Work
 
-**T475 S1 accepted.** The [resolver ledger](../etc/evidence/t475-s1-profile-resolver-ledger.md)
-freezes the three current profile routes, excludes all mutable Core/session
-state, and assigns each direct route to its one later migration consumer. S2
-may implement only the neutral immutable resolver and its bounded fixtures.
+## M5 T475 S2 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner approved the dependency-ordered implementation sequence on 2026-08-25; accepted T475 S1 freezes the neutral resolver boundary and authorizes this bounded implementation before any profile connection. |
+| Objective | Implement one VM-private immutable declaration/one-parent typed-patch resolver that produces a copied `vm_resolved_profile` and copied neutral Core-plan input, with bounded validation fixtures and no current machine migration. |
+| Non-goals | No default/5170/DeskPro production cutover, profile registration, YAML/CLI change, Core plan creation API, Core timing/device behavior, firmware/media import, host callback, second scheduler, L4 work or compatibility path. |
+| Reference Baseline | Accepted [T475 S1 resolver ledger](../etc/evidence/t475-s1-profile-resolver-ledger.md); [resolver candidate](../proposals/m5-vm-profile-resolver-kernel.md); [profile-resolution design](../etc/architecture/vm-profile-resolution-design.md); closed T474 copied Core timing boundary. |
+| Candidate Proposal | [VM profile resolver kernel](../proposals/m5-vm-profile-resolver-kernel.md). |
+| Files And ABI Surface | New VM-profile-private resolver header/implementation and one focused VM resolver smoke; `CMakeLists.txt`; T475 evidence/index/current records. Resolver may expose copied value types to VM composition only; it exposes no mutable Core/session/device pointer or Core public ABI. |
+| Applicable Rules | `docs/design/ARCHITECTURE.md`, `docs/design/CODING.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`, `docs/rules/EXECUTION.md`: VM owns identity/inheritance/provenance; Core owns all mutable guest state; one parent only; copied values and one forward route; no forwarding wrapper, machine branch or mirrored configuration. |
+| Verification | Focused resolver smoke proves valid root/child resolution, copied-result immutability, single-parent rejection, duplicate ownership rejection, disabled-device binding rejection, window/IRQ/DRQ conflict rejection, unavailable contract rejection and invalid session-policy rejection; targeted VM-profile build; full current gates at later closure; documentation governance and diff review. |
+| Expected Markers | `M5:T475:S2:PROFILE-RESOLVER:OK` and `M5:T475:S2:PROFILE-RESOLVER-NEGATIVE:OK`. |
+| Asset Needs | Existing source and neutral synthetic fixtures only; no firmware, guest media, external source, emulator code or machine-local path enters the repository. |
+| Reporting Requirements | Record each resolver value group, copied ownership/lifetime, exact accepted/rejected fixture matrix, source/test line delta, retained future migration route and reason no current production path is yet deleted. |
+| Stop Conditions | Stop for owner direction if supporting all S1 groups requires a Core pointer/callback, a profile-name branch, multiple inheritance, a live setter, or a second Core plan construction mechanism. |
+| Exit Criteria | One-parent immutable declarations resolve only through one implementation; result is wholly copied; every named conflict is rejected; neutral fixtures pass; no machine becomes selectable through the resolver; current production construction is unchanged and explicitly retained for its designated later migration. |
+| Original Owner Request | Establish correct whole-machine L3 structure and interfaces first, then connect IBM 5170, DeskPro 386 and default-at in that order, without layered or duplicate paths. |
+| Similar-Issue Sweep | Sweep resolver declaration/result, all VM profile headers, session configuration, Core-plan construction calls, test fixture interfaces and CMake target ownership for mutable pointer exposure, parser duplication, profile-specific resolver logic, raw Core configuration branches, multiple parents or post-resolution mutation. |
 
 ## Current Technical Baseline
 
