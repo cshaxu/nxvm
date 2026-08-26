@@ -12,8 +12,10 @@ owners.
 S1 validates the original Intel manual and source provenance. S2 creates List
 1 for every Table 2-21 instruction and prefix row, including formula/range and
 non-instruction boundaries. S3 maps every row to List 2 current owner/gap/test.
-Only then may implementation consume the complete selected List-2 batch,
-remove duplicate paths and close with the source-to-test matrix.
+Only then may one implementation S consume the complete selected List-2 batch,
+remove duplicate paths and close with the source-to-test matrix. A newly
+observed opcode symptom updates the frozen List-2 disposition; it never
+authorizes an isolated decoder/timing repair or a second selector.
 
 ## Boundaries
 

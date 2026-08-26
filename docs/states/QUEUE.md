@@ -41,7 +41,11 @@ These candidates establish Core capabilities before a machine profile may claim
 them; they consume retained evidence rather than reopening closed audits. Each
 linked proposal identifies its finite implementation-admission baseline and
 exclusive earliest capability batch; a later candidate may consume a registered
-contract but does not redefine its L3 or Core/VM boundary.
+contract but does not redefine its L3 or Core/VM boundary. Every CPU/chip/
+controller/display candidate below is one complete unit T: original source
+ledger, complete List 1, complete List 2, then one-owner full-batch
+implementation. The final model and pre-Windows entries are audits only; they
+may transfer a gap to its earliest unit T but may not repair it.
 
 1. [8088 instruction function and timing completeness](../proposals/m5-8088-instruction-timing-completeness.md).
 1. [IBM 5160 8088 board, memory, ROM and ISA phase contract](../proposals/m5-xt-8088-board-bus-phase.md).

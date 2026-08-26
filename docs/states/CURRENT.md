@@ -4,7 +4,11 @@
 
 **Open: M5 T486.**
 
-T486 S2 is accepted at `ed0cb97b`: every Table 2-21 mnemonic, prefix and
+Td S153 accepted: every new CPU/chip/controller/display implementation is one
+source-led, List-1-led, List-2-led, one-owner batch T. The two aggregate
+entries are transfer-only audits. [Evidence](../etc/evidence/td-s153-unit-task-queue-hardening.md).
+
+T486 S2 is accepted at `ddc4ac3c`: every Table 2-21 mnemonic, prefix and
 explicit non-instruction entry has a source-backed function/timing disposition.
 The next required stage is List 2; implementation remains prohibited.
 
@@ -54,6 +58,13 @@ The next required stage is List 2; implementation remains prohibited.
 | T478 | Closed: Default-AT is an immutable `pc-at-5170` child and all three AT profiles have one resolver-to-copied-Core-input route. [Closure audit](../etc/evidence/t478-s4-closure-audit.md) records frozen parity, the 294-target gate, and stripped Release 0478. |
 
 ## Recent Governance
+
+- **M5 Td S153 P1:** hardened the independent hardware-unit T rule across the
+  active 8088 work and XT Queue: original source, complete List 1, complete
+  List 2, then a single owner-local implementation batch. Final audits can
+  transfer but never repair. The [evidence](../etc/evidence/td-s153-unit-task-queue-hardening.md)
+  records all eleven candidates. No runtime, ABI, build, artifact or source
+  material changed.
 
 - **M5 Td S152 P1:** withdrew T485's uncompleted aggregate scope without a
   false closure and replaced it with per-unit 8088/XT candidates. Every new

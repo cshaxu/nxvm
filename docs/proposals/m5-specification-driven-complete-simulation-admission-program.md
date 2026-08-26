@@ -30,10 +30,13 @@ re-run its applicable regressions.
 ## Mandatory Per-Unit Admission Sequence
 
 Every newly admitted CPU, chip, controller, media controller, or display
-category is one independent candidate T.  An aggregate machine or board task
+category is one independent candidate T. An aggregate machine or board task
 may compose accepted unit contracts, but may not discover and implement a new
-unit by adding successive unrelated subtasks.  Before its implementation S,
-that T must complete these ordered, finite stages:
+unit by adding successive unrelated subtasks. This is a hard admission rule:
+no S may repair a newly noticed command, register, timing form or state path
+until the unit's full frozen universe has completed the first three stages.
+Before its single coherent implementation S, that T must complete these
+ordered, finite stages:
 
 1. **Original-source ledger:** acquire and visually check the applicable
    original manual, board reference and selected personality material; record
@@ -49,8 +52,10 @@ that T must complete these ordered, finite stages:
    missing row cannot be discovered opportunistically during implementation.
 4. **One-owner implementation and closure:** implement the entire admitted
    List-2 batch at its existing owner, remove obsolete duplicate paths and run
-   the unit's complete source-to-test sweep.  A later board task consumes the
-   frozen contract; it does not recreate the controller.
+   the unit's complete source-to-test sweep. A later board task consumes the
+   frozen contract; it does not recreate the controller. A partial symptom fix
+   is diagnostic only: it remains in List 2 and cannot create its own repair
+   path, parallel owner, compatibility branch, or extra task inside the unit.
 
 No task may substitute one repaired symptom, guest boot, or benchmark for
 either complete ledger.  Similar-looking units may share a neutral Core
