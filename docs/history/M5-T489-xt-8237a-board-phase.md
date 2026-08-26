@@ -7,4 +7,5 @@ batch rather than individual symptoms.
 
 | Subtask | Result |
 | --- | --- |
-| S1 | Active: establish original Intel 8237A and IBM XT board-source ledger. |
+| S1 | Accepted: visually checked Intel 8237A and IBM XT source ledger is retained. |
+| S2 | Active: freeze complete selected 8237A/XT function and timing List 1. |
