@@ -2,28 +2,28 @@
 
 ## Current Work
 
-**Active: M5 T484 S7.**
+**Active: M5 T484 S8.**
 
-## M5 T484 S7 Packet
+## M5 T484 S8 Packet
 
 | Field | Required record |
 | --- | --- |
 | Identifier Mode | Continuation |
-| Admission And Approval | Owner-approved continuous execution toward the pre-Windows L3 admission audit; accepted T484 S6 P1 `81868c81` proves the B3 owner matrix and source-gated input boundary. |
-| Objective | Qualify the selected XT enhanced-keyboard serial/protocol source needed to implement the one Core PPI input bridge, or record the exact source insufficiency and bounded receiver without substituting AT 8042 semantics. |
-| Non-goals | No PPI/FDC implementation, drive/media selection, ROM manifest/mapping, Xebec personality, generic XT, ATA shim, physical timing or host-pacing claim, protected-mode or Windows claim. |
-| Reference Baseline | Accepted T483 S1--S3 and T484 S1--S6 evidence; IBM 5155/5160 Technical Reference and selected IBM keyboard documentation; current Core KBC/input/PIC owners. |
+| Admission And Approval | Owner-approved continuous execution toward the pre-Windows L3 admission audit; accepted T484 S7 P1 `6f726c42` supplies the selected IBM keyboard protocol and sole-owner boundary. |
+| Objective | Implement one Core-owned XT 8255/PPI keyboard attachment that owns ports `60h`--`63h`, its byte-ready/reset/line state and PIC IRQ1 publication for the selected 101/102-key protocol, with immutable XT plan selection and no AT alias. |
+| Non-goals | No FDC/drive-media binding, ROM manifest/mapping, Xebec personality, generic XT, ATA shim, AUX/PS2 behavior, 8042 alteration, host-pacing claim, unqualified physical-delay estimate, protected-mode or Windows claim. |
+| Reference Baseline | Accepted T483 S1--S3 and T484 S1--S7 evidence; IBM 5155/5160 Technical Reference; current Core KBC, PIC, ports, machine-plan, resolver and typed-input owners. |
 | Candidate Proposal | [IBM PC/XT 5160-268 selected-device functional closure](../proposals/m5-xt-5160-268-device-functional-closure.md). |
-| Files And ABI Surface | Keyboard-source evidence/history/status plus read-only current input-owner paths; no runtime, ABI, profile/session construction or artifact change is authorized. |
-| Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, architecture/coding rules, source policy and the proposal's no-parallel-path boundary. |
-| Verification | Rendered/manual-versus-OCR cross-check for every protocol relation, source-policy compliance, explicit input-byte/reset/clock/IRQ implementation boundary, documentation governance gate and actual-change review. |
-| Expected Markers | `M5:T484:S7:XT-KEYBOARD-SOURCE:OK`; `M5:T484:S7:XT-NO-8042-ALIAS:OK`. |
+| Files And ABI Surface | Core XT PPI/keyboard implementation and plan configuration, XT resolver construction, focused Core/profile regressions and evidence/history/status; no public VM command grammar or external asset surface change. |
+| Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`, project architecture/coding design, source policy and the proposal's no-parallel-path boundary. |
+| Verification | Focused make/break, port/latch, clock-inhibit, reset/result and IRQ1 tests; profile-plan/AT-isolation sweep; actual-change and duplicate-owner review; documentation governance and applicable current-gate verification. |
+| Expected Markers | `M5:T484:S8:XT-PPI-KEYBOARD:OK`; `M5:T484:S8:XT-IRQ1-RESET:OK`; `M5:T484:S8:NO-8042-ALIAS:OK`. |
 | Asset Needs | Existing accepted IBM manual baseline and read-only corroboration only; no third-party source, firmware, guest media, local path or code import enters the repository. |
-| Reporting Requirements | Record the exact selected keyboard byte, reset, clock, response and IRQ relations; distinguish IBM manual facts from read-only corroboration and name the minimal Core receiver or transfer. |
+| Reporting Requirements | Record the retained Core owner, all added/removed tracked source/test lines, immutable plan input, every port/IRQ/reset result, timing transfer, focused proof and AT-isolation sweep. |
 | Original Owner Request | Continue the ordered minimalist queue toward the pre-Windows L3 admission audit. |
-| Stop Conditions | Stop and transfer if the selected enhanced keyboard's protocol cannot be tied to IBM primary documentation; do not infer bytes, acknowledgements or timing from the PC/AT 8042 or emulator code. |
-| Exit Criteria | The next implementation S has one source-qualified input-byte/reset/clock/IRQ contract or one explicit source-gated transfer, with no AT alias or duplicate guest input state. |
-| Similar-Issue Sweep | XT/PC/AT keyboard controller, PPI, port `60h`--`63h`, host-key mapping, native scan-set input, PIC IRQ1 and profile-construction paths. |
+| Stop Conditions | Stop and transfer any relation that would require 8042 state, a guessed delay conversion, or an unselected keyboard capability; do not add a second host-to-guest queue, a VM guest-state mirror or an XT generic route. |
+| Exit Criteria | One selected XT plan constructs one Core PPI/keyboard owner; focused tests prove guest ports, byte consumption, line controls, reset/result and IRQ1; PC/AT 8042 behavior remains unchanged and no duplicate input state/path exists. |
+| Similar-Issue Sweep | XT/PC/AT keyboard controllers, PPI, port `60h`--`64h`, host-key mapping, native scan-set input, PIC IRQ1, reset, plan validation and profile/session construction paths. |
 
 ## Current Technical Baseline
 
