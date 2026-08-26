@@ -103,6 +103,8 @@ C_VOID core_machine_pit_set_output(t_pit *pit, type_unsigned_8 id,
 C_VOID core_machine_pit_set_gate(t_pit *pit, type_unsigned_8 id,
     type_bool asserted);
 type_bool core_machine_pit_get_output(const t_pit *pit, type_unsigned_8 id);
+type_status core_machine_pit_ticks_until_output(const t_pit *pit,
+    type_unsigned_8 id, type_unsigned_64 *out_ticks);
 
 #ifdef __cplusplus
 }/*_EOCD_*/

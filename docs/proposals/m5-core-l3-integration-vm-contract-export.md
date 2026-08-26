@@ -80,18 +80,26 @@ create a second scheduler, device clock or VM-to-Core mutation path.
    deadline and its reset/cancellation validity.  Core, not VM, selects order
    and advances all intervening controller state.  An ineligible controller or
    profile remains explicitly L2/L1/unsupported.
-3. **S3 - immutable plan qualification and contract export.** Validate that a
+3. **S3 - source-qualified Core deadline realization.** Consume the S1
+   deadline ledger's first finite source batch: PIT output and L3-source RTC
+   periodic/update IRQ transitions.  Core computes their earliest next state
+   change from its existing owner state and clock ratio, advances only through
+   one Core-owned bounded operation, and publishes the copied observation.
+   An active KBC, FDC, HDC, DMA or any L2/L1 contributor makes the observation
+   unavailable; it is never estimated or skipped.  This replaces neither a
+   controller state machine nor the one timeline.
+4. **S4 - immutable plan qualification and contract export.** Validate that a
    selected profile has every required deadline contributor and physical
-   guest-timebase before exposing the bounded contract metadata.  Reject an
+   guest-timebase before exposing the bounded contract metadata. Reject an
    incomplete selection; do not expose controller pointers, timeline internals
    or profile names.
-4. **S4 - two-mode VM pacing.** Retain the existing `SPEED STANDARD|TURBO`
+5. **S5 - two-mode VM pacing.** Retain the existing `SPEED STANDARD|TURBO`
    command and sole session speed state.  Standard waits only when an eligible
    already-advanced guest observation is ahead of its wall-clock budget;
    Turbo omits that wait while using the same Core-owned progression.  Remove
    the fixed `Sleep(1)` fallback only where the composed contract makes that
    safe; do not generate, compensate or batch guest ticks in VM.
-5. **S5 - integration closure.** Reconcile the frozen capability ledger with
+6. **S6 - integration closure.** Reconcile the frozen capability ledger with
    code and regressions; prove reset/cancellation, input, debugger, selected
    profile isolation, Standard/Turbo behavior and ineligible fallback.  Build
    the stripped Release `nxvm_0_5_0469.exe`, run all applicable gates and

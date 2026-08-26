@@ -37,6 +37,62 @@ static C_INT core_machine_pit_waveform_expect(type_bool actual,
     return actual == expected ? 0 : 1;
 }
 
+static C_INT core_machine_pit_waveform_expect_deadline(const t_pit *pit,
+    type_unsigned_64 expected)
+{
+    type_unsigned_64 actual = 0u;
+
+    return core_machine_pit_ticks_until_output(pit, 0u, &actual) !=
+        TYPE_STATUS_OK || actual != expected;
+}
+
+static C_INT core_machine_pit_waveform_deadline_cases(t_pit *pit, t_port *port)
+{
+    C_INT failed = 0;
+
+    core_machine_pit_reset(pit);
+    core_machine_pit_waveform_write(pit, port, 0x30u, 3u);
+    failed |= core_machine_pit_waveform_expect_deadline(pit, 3u);
+    core_machine_pit_advance(pit, 1u);
+    failed |= core_machine_pit_waveform_expect_deadline(pit, 2u);
+    core_machine_pit_set_gate(pit, 0u, TYPE_FALSE);
+    failed |= core_machine_pit_ticks_until_output(pit, 0u, &(type_unsigned_64) {0u}) !=
+        TYPE_STATUS_INVALID_STATE;
+
+    core_machine_pit_reset(pit);
+    core_machine_pit_set_gate(pit, 0u, TYPE_FALSE);
+    core_machine_pit_waveform_write(pit, port, 0x32u, 3u);
+    core_machine_pit_set_gate(pit, 0u, TYPE_TRUE);
+    failed |= core_machine_pit_waveform_expect_deadline(pit, 1u);
+    core_machine_pit_advance(pit, 1u);
+    failed |= core_machine_pit_waveform_expect_deadline(pit, 3u);
+
+    core_machine_pit_reset(pit);
+    core_machine_pit_waveform_write(pit, port, 0x34u, 3u);
+    failed |= core_machine_pit_waveform_expect_deadline(pit, 2u);
+    core_machine_pit_advance(pit, 1u);
+    failed |= core_machine_pit_waveform_expect_deadline(pit, 1u);
+
+    core_machine_pit_reset(pit);
+    core_machine_pit_waveform_write(pit, port, 0x36u, 4u);
+    failed |= core_machine_pit_waveform_expect_deadline(pit, 2u);
+    core_machine_pit_advance(pit, 1u);
+    failed |= core_machine_pit_waveform_expect_deadline(pit, 1u);
+
+    core_machine_pit_reset(pit);
+    core_machine_pit_waveform_write(pit, port, 0x38u, 3u);
+    failed |= core_machine_pit_waveform_expect_deadline(pit, 3u);
+
+    core_machine_pit_reset(pit);
+    core_machine_pit_set_gate(pit, 0u, TYPE_FALSE);
+    core_machine_pit_waveform_write(pit, port, 0x3au, 3u);
+    core_machine_pit_set_gate(pit, 0u, TYPE_TRUE);
+    failed |= core_machine_pit_waveform_expect_deadline(pit, 1u);
+    core_machine_pit_advance(pit, 1u);
+    failed |= core_machine_pit_waveform_expect_deadline(pit, 3u);
+    return failed;
+}
+
 C_INT main(C_VOID)
 {
     t_pit pit;
@@ -249,6 +305,7 @@ C_INT main(C_VOID)
 
     /* Mode 2 contributes an OUT low/high pair to the IRQ0 provider. */
     failed |= probe.count < 2u;
+    failed |= core_machine_pit_waveform_deadline_cases(&pit, &port);
     core_machine_pit_finalize(&pit);
     core_machine_pic_finalize(&master, &slave);
     core_machine_port_finalize(&port);

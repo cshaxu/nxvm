@@ -274,6 +274,36 @@ C_VOID core_machine_rtc_finalize(core_machine_rtc *rtc)
     if (rtc != STD_NULL) core_machine_pic_irq_source_deassert(&rtc->irq_source);
 }
 
+type_status core_machine_rtc_ticks_until_irq(const core_machine_rtc *rtc,
+    type_unsigned_64 *out_ticks)
+{
+    type_unsigned_32 periodic_hz;
+    type_unsigned_64 ticks = UINT64_MAX;
+    type_unsigned_8 enable;
+
+    if (rtc == STD_NULL || out_ticks == STD_NULL || !rtc_divider_running(rtc)) {
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
+    enable = rtc->registers[CORE_MACHINE_RTC_REG_B];
+    periodic_hz = rtc_periodic_hz(rtc);
+    if ((enable & CORE_MACHINE_RTC_REG_B_PIE) != 0u && periodic_hz != 0u) {
+        type_unsigned_64 remaining = rtc->ticks_per_second -
+            rtc->calendar.periodic_ticks;
+
+        ticks = remaining / periodic_hz;
+        if (remaining % periodic_hz != 0u) ++ticks;
+    }
+    if ((enable & CORE_MACHINE_RTC_REG_B_UIE) != 0u &&
+        (enable & CORE_MACHINE_RTC_REG_B_SET) == 0u) {
+        type_unsigned_64 update = rtc->ticks_per_second - rtc->calendar.second_ticks;
+
+        if (update < ticks) ticks = update;
+    }
+    if (ticks == UINT64_MAX || ticks == 0u) return TYPE_STATUS_INVALID_STATE;
+    *out_ticks = ticks;
+    return TYPE_STATUS_OK;
+}
+
 C_VOID core_machine_rtc_select_register(core_machine_rtc *rtc, type_unsigned_8 index)
 {
     if (rtc != STD_NULL) rtc->selected_register = index & 0x3fu;

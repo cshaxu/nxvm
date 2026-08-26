@@ -469,6 +469,45 @@ type_bool core_machine_pit_get_output(const t_pit *pit, type_unsigned_8 id)
     return pit != STD_NULL && id < 3u ? pit->data.flagOutput[id] : TYPE_FALSE;
 }
 
+type_status core_machine_pit_ticks_until_output(const t_pit *pit,
+    type_unsigned_8 id, type_unsigned_64 *out_ticks)
+{
+    type_unsigned_8 mode;
+
+    if (pit == STD_NULL || out_ticks == STD_NULL || id >= 3u) {
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
+    if (pit->data.flagLoadPending[id] || pit->data.flagRestart[id] ||
+        pit->data.flagTrigger[id]) {
+        *out_ticks = 1u;
+        return TYPE_STATUS_OK;
+    }
+    if (!pit->data.flagActive[id] || !pit->connect.flagGate[id]) {
+        return TYPE_STATUS_INVALID_STATE;
+    }
+    mode = core_machine_pit_mode(pit, id);
+    switch (mode) {
+    case 0u:
+    case 1u:
+        *out_ticks = pit->data.remaining[id];
+        break;
+    case 2u:
+        *out_ticks = pit->data.flagPulseLow[id] ||
+            pit->data.remaining[id] <= 1u ? 1u : pit->data.remaining[id] - 1u;
+        break;
+    case 3u:
+        *out_ticks = pit->data.phase[id];
+        break;
+    case 4u:
+    case 5u:
+        *out_ticks = pit->data.flagPulseLow[id] ? 1u : pit->data.remaining[id];
+        break;
+    default:
+        return TYPE_STATUS_INVALID_STATE;
+    }
+    return *out_ticks == 0u ? TYPE_STATUS_INVALID_STATE : TYPE_STATUS_OK;
+}
+
 C_VOID core_machine_pit_initialize_at(t_pit *pit, t_port *port,
     type_unsigned_16 base_port)
 {

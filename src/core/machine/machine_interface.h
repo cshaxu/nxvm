@@ -469,6 +469,10 @@ type_status core_machine_get_elapsed_ticks(
     const core_machine *machine, type_unsigned_64 *out_elapsed_ticks);
 type_status core_machine_capture_time_observation(const core_machine *machine,
     core_machine_time_observation *out_observation);
+/* Core selects and advances to its next valid guest-observable deadline.
+ * A false result means an unqualified owner blocks safe fast advance. */
+type_status core_machine_advance_to_next_deadline(core_machine *machine,
+    type_bool *out_advanced);
 type_status core_machine_get_timeline_observation(const core_machine *machine,
     core_machine_timeline_observation *out_observation);
 

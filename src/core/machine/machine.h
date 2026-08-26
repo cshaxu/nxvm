@@ -334,6 +334,8 @@ C_VOID core_machine_board_after_pit_reset(core_machine *machine);
 C_VOID core_machine_board_refresh_nmi(core_machine *machine);
 type_status core_machine_publish_elapsed_ticks(core_machine *machine,
     type_unsigned_64 elapsed_ticks, type_bool cpu_retired);
+C_VOID core_machine_capture_time_observation_private(const core_machine *machine,
+    core_machine_time_observation *out_observation);
 C_VOID core_machine_arbitration_tick(C_VOID *opaque, type_unsigned_64 due_tick);
 C_VOID core_machine_readiness_tick(C_VOID *opaque, type_unsigned_64 due_tick);
 C_VOID core_machine_peripheral_tick(C_VOID *opaque, type_unsigned_64 due_tick);

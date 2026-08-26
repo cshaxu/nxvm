@@ -79,5 +79,7 @@ C_VOID core_machine_rtc_write_selected(core_machine_rtc *rtc, type_unsigned_8 va
 C_VOID core_machine_rtc_write_nvram(core_machine_rtc *rtc, type_unsigned_8 index,
     type_unsigned_8 value);
 type_bool core_machine_rtc_get_square_wave(const core_machine_rtc *rtc);
+type_status core_machine_rtc_ticks_until_irq(const core_machine_rtc *rtc,
+    type_unsigned_64 *out_ticks);
 
 #endif

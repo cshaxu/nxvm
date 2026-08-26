@@ -54,3 +54,26 @@ type_unsigned_64 core_machine_clock_domain_advance(core_machine_clock_domain *do
     domain->delivered_ticks += converted;
     return converted;
 }
+
+type_status core_machine_clock_domain_source_ticks_until(
+    const core_machine_clock_domain *domain, type_unsigned_64 delivered_ticks,
+    type_unsigned_64 *out_source_ticks)
+{
+    type_unsigned_64 required;
+
+    if (domain == STD_NULL || out_source_ticks == STD_NULL ||
+        delivered_ticks == 0u || domain->numerator == 0u ||
+        domain->denominator == 0u ||
+        delivered_ticks > UINT64_MAX / domain->denominator) {
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
+    required = delivered_ticks * domain->denominator;
+    if (required <= domain->phase) {
+        *out_source_ticks = 1u;
+        return TYPE_STATUS_OK;
+    }
+    required -= domain->phase;
+    *out_source_ticks = required / domain->numerator;
+    if (required % domain->numerator != 0u) ++*out_source_ticks;
+    return *out_source_ticks == 0u ? TYPE_STATUS_INVALID_STATE : TYPE_STATUS_OK;
+}

@@ -211,9 +211,7 @@ type_status core_machine_capture_time_observation(const core_machine *machine,
         machine->lifecycle == CORE_MACHINE_RUNNING) {
         return TYPE_STATUS_INVALID_STATE;
     }
-    out_observation->elapsed_ticks = machine->elapsed_ticks;
-    out_observation->next_deadline_tick = 0u;
-    out_observation->next_deadline_valid = TYPE_FALSE;
+    core_machine_capture_time_observation_private(machine, out_observation);
     return TYPE_STATUS_OK;
 }
 
@@ -1026,6 +1024,31 @@ type_status core_machine_advance_time(core_machine *machine,
         return TYPE_STATUS_INVALID_STATE;
     }
     return core_machine_publish_elapsed_ticks(machine, source_ticks, TYPE_FALSE);
+}
+
+type_status core_machine_advance_to_next_deadline(core_machine *machine,
+    type_bool *out_advanced)
+{
+    core_machine_time_observation observation;
+    type_status status;
+
+    if (machine == STD_NULL || out_advanced == STD_NULL ||
+        !core_machine_mutable_operation_is_allowed(machine) ||
+        (machine->lifecycle != CORE_MACHINE_STOPPED &&
+        machine->lifecycle != CORE_MACHINE_PAUSED)) {
+        return TYPE_STATUS_INVALID_STATE;
+    }
+    *out_advanced = TYPE_FALSE;
+    core_machine_capture_time_observation_private(machine, &observation);
+    if (!observation.next_deadline_valid ||
+        observation.next_deadline_tick <= observation.elapsed_ticks) {
+        return TYPE_STATUS_OK;
+    }
+    status = core_machine_publish_elapsed_ticks(machine,
+        observation.next_deadline_tick - observation.elapsed_ticks, TYPE_FALSE);
+    if (status != TYPE_STATUS_OK) return status;
+    *out_advanced = TYPE_TRUE;
+    return TYPE_STATUS_OK;
 }
 
 type_status core_machine_request_stop(core_machine *machine)

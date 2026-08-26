@@ -2,6 +2,95 @@
 
 #include "core/machine/machine.h"
 
+static C_INT core_machine_deadline_is_blocked(const core_machine *machine)
+{
+    type_native_unsigned drive;
+
+    if (machine == STD_NULL ||
+        core_machine_dma_has_pending_request(&machine->shared_dma_primary,
+            &machine->shared_dma_secondary) ||
+        machine->shared_kbc.data.typematic_remaining_ticks != 0u ||
+        machine->shared_kbc.data.response_remaining_ticks != 0u ||
+        machine->shared_kbc.data.serial_delivery_remaining_ticks != 0u ||
+        machine->hdc.data.phase != CORE_MACHINE_HDC_PHASE_IDLE) {
+        return 1;
+    }
+    for (drive = 0u; drive < CORE_MACHINE_FDC_DRIVE_COUNT; ++drive) {
+        if (machine->fdc.data.seek_pending[drive]) return 1;
+    }
+    return machine->fdc.data.dma_byte_gate_pending ||
+        machine->fdc.data.ndma_byte_gate_pending ||
+        machine->fdc.data.phase != core_machine_fdc_PHASE_COMMAND;
+}
+
+static C_VOID core_machine_deadline_consider_clock(const core_machine_clock_domain *clock,
+    type_unsigned_64 device_ticks, type_unsigned_64 *io_source_ticks)
+{
+    type_unsigned_64 source_ticks;
+
+    if (io_source_ticks == STD_NULL ||
+        core_machine_clock_domain_source_ticks_until(clock, device_ticks,
+            &source_ticks) != TYPE_STATUS_OK) {
+        return;
+    }
+    if (*io_source_ticks == 0u || source_ticks < *io_source_ticks) {
+        *io_source_ticks = source_ticks;
+    }
+}
+
+static C_VOID core_machine_deadline_consider_pit(const t_pit *pit,
+    const core_machine_clock_domain *clock, type_unsigned_64 *io_source_ticks)
+{
+    type_unsigned_8 counter;
+
+    for (counter = 0u; counter < 3u; ++counter) {
+        type_unsigned_64 device_ticks;
+
+        if (core_machine_pit_ticks_until_output(pit, counter, &device_ticks) ==
+            TYPE_STATUS_OK) {
+            core_machine_deadline_consider_clock(clock, device_ticks,
+                io_source_ticks);
+        }
+    }
+}
+
+C_VOID core_machine_capture_time_observation_private(const core_machine *machine,
+    core_machine_time_observation *out_observation)
+{
+    type_unsigned_64 source_ticks = 0u;
+    type_unsigned_64 device_ticks;
+
+    if (machine == STD_NULL || out_observation == STD_NULL) return;
+    out_observation->elapsed_ticks = machine->elapsed_ticks;
+    out_observation->next_deadline_tick = 0u;
+    out_observation->next_deadline_valid = TYPE_FALSE;
+    if (!machine->timing_plan_copied || core_machine_deadline_is_blocked(machine)) {
+        return;
+    }
+    if (machine->timing_plan.controller_timing.pit_clock ==
+        CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_RATIONAL_CLOCK) {
+        core_machine_deadline_consider_pit(&machine->shared_pit,
+            &machine->pit_clock, &source_ticks);
+        if (machine->auxiliary_pit_configured) {
+            core_machine_deadline_consider_pit(&machine->auxiliary_pit,
+                &machine->pit_clock, &source_ticks);
+        }
+    }
+    if (machine->rtc_cmos_configured &&
+        machine->rtc_cmos_config.timing.provenance == CORE_MACHINE_RTC_TIMING_L3_SOURCE &&
+        machine->timing_plan.controller_timing.rtc_clock ==
+        CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_RATIONAL_CLOCK &&
+        core_machine_rtc_ticks_until_irq(&machine->shared_rtc, &device_ticks) ==
+            TYPE_STATUS_OK) {
+        core_machine_deadline_consider_clock(&machine->rtc_clock, device_ticks,
+            &source_ticks);
+    }
+    if (source_ticks != 0u && source_ticks <= UINT64_MAX - machine->elapsed_ticks) {
+        out_observation->next_deadline_tick = machine->elapsed_ticks + source_ticks;
+        out_observation->next_deadline_valid = TYPE_TRUE;
+    }
+}
+
 static C_VOID core_machine_dma_grant_advance(core_machine *machine)
 {
     if (machine == STD_NULL) return;

@@ -17,5 +17,8 @@ type_status core_machine_clock_domain_initialize(core_machine_clock_domain *doma
 C_VOID core_machine_clock_domain_reset(core_machine_clock_domain *domain);
 type_unsigned_64 core_machine_clock_domain_advance(core_machine_clock_domain *domain,
     type_unsigned_64 elapsed_ticks);
+type_status core_machine_clock_domain_source_ticks_until(
+    const core_machine_clock_domain *domain, type_unsigned_64 delivered_ticks,
+    type_unsigned_64 *out_source_ticks);
 
 #endif
