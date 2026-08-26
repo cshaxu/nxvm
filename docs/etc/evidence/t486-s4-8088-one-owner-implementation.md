@@ -1,6 +1,6 @@
 # T486 S4 8088 One-Owner Implementation
 
-`M5:T486:S4:8088-ONE-OWNER-IMPLEMENTATION:ACCEPTANCE-CANDIDATE`
+`M5:T486:S4:8088-ONE-OWNER-IMPLEMENTATION:ACCEPTED`
 
 The successful 8088 selector remains `string/I-O -> primary -> control/stack
 -> compatibility`. This S adds no selector, public contract, machine state or
