@@ -14,6 +14,7 @@ principal documents named in [docs/README.md](../README.md).
 | `architecture/vm-profile-resolution-design.md` | Architecture owner | Supporting target design for two-root built-in VM profiles, profile resolution, the copied Core machine plan, and the custom `nxvm-session` YAML grammar. It does not change current runtime architecture, Queue, or ABI. |
 | `requirements/` | Product and profile owners | Future DOS, NXVDM, and profile admissions. |
 | `evidence/` | Verification owner | Capability, verification, baseline, and fixture evidence. |
+| `evidence/t486-s1-8088-original-source-ledger.md` | Core CPU timing owner | T486 S1's visually verified Intel 1981 source corpus, scan/OCR boundary and finite Table-2-21 basis for the following complete List-1 ledger. |
 | `evidence/td-s125-manual-architecture-coding-audit.md` | Governance owner | Td S125's manual source, test, build, and authority disposition matrix; it records review evidence and deferred repairs without changing an architecture or coding authority. |
 | `evidence/td-s126-second-pass-audit.md` | Governance owner | Active Td S126 second-pass evidence for Core collaborator contracts and remaining VM/VDM owner paths; it records review facts and deferred repairs without changing an architecture or coding authority. |
 | `evidence/td-s127-third-pass-audit.md` | Governance owner | Closed Td S127 third-pass evidence for CMake ownership/portability, product-command authority, and Core/VM test boundaries; it records review facts and deferred repairs without changing an architecture or coding authority. |
