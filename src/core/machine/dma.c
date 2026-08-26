@@ -695,8 +695,11 @@ C_VOID core_machine_dma_initialize(t_latch *latch, t_dma *primary,
         0x0000, 0x0001, 0x0002, 0x0003, 0x0004, 0x0005, 0x0006, 0x0007,
         0x0008, 0x000d
     };
-    static const type_unsigned_16 page_ports[] = {
-        0x0081, 0x0082, 0x0083, 0x0087, 0x0089, 0x008a, 0x008b, 0x008f
+    static const type_unsigned_16 primary_page_ports[] = {
+        0x0081, 0x0082, 0x0083
+    };
+    static const type_unsigned_16 secondary_page_ports[] = {
+        0x0087, 0x0089, 0x008a, 0x008b, 0x008f
     };
     static const type_unsigned_16 secondary_reads[] = {
         0x00c0, 0x00c2, 0x00c4, 0x00c6, 0x00c8, 0x00ca, 0x00cc, 0x00ce,
@@ -722,14 +725,22 @@ C_VOID core_machine_dma_initialize(t_latch *latch, t_dma *primary,
         core_machine_port_add_write(port, (type_unsigned_16)index, dma_port_write,
             primary);
     }
-    for (index = 0; index < sizeof(page_ports) / sizeof(page_ports[0]);
+    for (index = 0; index < sizeof(primary_page_ports) /
+            sizeof(primary_page_ports[0]);
          ++index) {
-        core_machine_port_add_read(port, page_ports[index], dma_port_read,
+        core_machine_port_add_read(port, primary_page_ports[index], dma_port_read,
             primary);
-        core_machine_port_add_write(port, page_ports[index], dma_port_write,
+        core_machine_port_add_write(port, primary_page_ports[index], dma_port_write,
             primary);
     }
     if (controller_count == 2u) {
+        for (index = 0; index < sizeof(secondary_page_ports) /
+                sizeof(secondary_page_ports[0]); ++index) {
+            core_machine_port_add_read(port, secondary_page_ports[index], dma_port_read,
+                primary);
+            core_machine_port_add_write(port, secondary_page_ports[index], dma_port_write,
+                primary);
+        }
         for (index = 0; index < sizeof(secondary_reads) /
              sizeof(secondary_reads[0]); ++index) {
             core_machine_port_add_read(port, secondary_reads[index], dma_port_read,
