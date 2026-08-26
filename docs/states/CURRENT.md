@@ -2,28 +2,28 @@
 
 ## Current Work
 
-**Active: M5 T485 S9.**
+**Active: M5 T485 S10.**
 
-## M5 T485 S9 Packet
+## M5 T485 S10 Packet
 
 | Field | Required record |
 | --- | --- |
 | Identifier Mode | Continuation |
-| Admission And Approval | Owner-approved continuous execution; T485 S8 string ledger `a90859c1` is accepted. It proves this finite batch has a complete one-evaluator receiver. |
-| Objective | Implement the exact Table-2-21 8088 string-form receiver: the retained string evaluator consumes one local width/form transfer plan before compatibility, adds four clocks per executed word transfer, and keeps every non-string form unallocated. |
-| Non-goals | No copied string table/classifier/repeat state, guessed transfer count, prefetch/wait estimate, profile clock, host pacing claim, scheduler, controller ratio, external-cycle counting, port-I/O admission or product/API change. |
-| Reference Baseline | Accepted T485 S8 rendered string ledger, accepted T485 S6 private-plan boundary, existing private string/repeat evaluator and S7 primary-form selector ordering. |
+| Admission And Approval | Owner-approved continuous execution; accepted T485 S9 `0afbe296` exhausts the string batch and explicitly transfers control/stack forms. |
+| Objective | Audit every existing 8088 control/stack Table-2-21 selection form for a rendered source row, complete word-transfer facts and one possible private evaluator receiver before any implementation. |
+| Non-goals | No control/stack implementation, copied decoder, guessed transfer count, prefetch/wait estimate, profile clock, host pacing claim, scheduler, controller ratio, external-cycle counting or product/API change. |
+| Reference Baseline | Accepted T485 S4 selector ledger, S6 private-plan rule, S7 primary and S9 string receivers, rendered Intel 1981 Table 2-21 and existing private control/stack evaluator. |
 | Candidate Proposal | [IBM PC/XT 5160-268 board and device phase-timing closure](../proposals/m5-8088-5150-xt-l3-baseline.md). |
-| Files And ABI Surface | Existing private Core CPU timing model/selection and focused Core retirement smoke only. No public ABI, profile grammar, transaction contract or product grammar. |
+| Files And ABI Surface | Existing private Core CPU timing model/selection and evidence only. No public ABI, profile grammar, transaction contract or product grammar. |
 | Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, `docs/design/ARCHITECTURE.md`, `docs/design/CODING.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md` and source policy. |
-| Verification | Focused 8088 byte/word primitive, repeat first/continuation/zero-count and segment-override regressions; non-string unallocated regression; physical-eligibility rejection; configured build/current gate; documentation governance. |
-| Expected Markers | One retained evaluator and string table; local plan only; exact `4 * word_transfers` for executed word primitives; byte and zero-count forms add none. |
+| Verification | Rendered Table-2-21 control/stack rows, exhaustive 8088 selector and decoded-fact sweep, transfer-plan completeness check, physical-eligibility rejection and documentation governance. |
+| Expected Markers | One finite control/stack ledger with a receiver or explicit incomplete disposition for each form; no code or capability claim. |
 | Asset Needs | Existing rendered IBM/Intel evidence only; no bytes, paths or third-party code enter the repository. |
-| Reporting Requirements | Record every admitted width/repeat result, direct source equation, exact test proof, retained single evaluator/state owner, unchanged residual and physical-time boundary. |
+| Reporting Requirements | Record every control/stack form's manual row, transfer relation, Core fact, one receiver or exact blocker, and retained physical-time boundary. |
 | Original Owner Request | Continue the ordered minimalist queue toward the pre-Windows L3 admission audit. |
-| Stop Conditions | Stop if the plan cannot be consumed by the retained evaluator without a second table/classifier/state owner, or if a test requires re-execution, external-cycle callbacks or board inference. |
-| Exit Criteria | Every S8 string ledger member selects one evaluator path with its exact primitive/repeat result; unsupported forms remain unallocated and no second decoder, writer or state owner exists. |
-| Similar-Issue Sweep | Inspect all 8088 selector paths, string width/repeat/segment modifiers, timing origins, compatibility fallback, source-unallocated marking and physical-time publications. |
+| Stop Conditions | Stop and retain an incomplete disposition if any form lacks a rendered source row or complete existing semantic facts without re-execution, external-cycle callbacks or board inference. |
+| Exit Criteria | Every named control/stack form has an evidence-backed disposition and any implementation receiver is finite, private and disjoint from S7/S9. |
+| Similar-Issue Sweep | Inspect all 8088 control/stack selector paths, stack/memory roles, transfer-plan branches, compatibility fallback and physical-time publications. |
 
 ## Current Technical Baseline
 
