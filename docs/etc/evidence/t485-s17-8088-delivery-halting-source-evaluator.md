@@ -1,6 +1,6 @@
 # T485 S17 8088 Delivery And Halting Source Evaluator
 
-`M5:T485:S17:8088-DELIVERY-HALTING-SOURCE-EVALUATOR:ACCEPTANCE-CANDIDATE`
+`M5:T485:S17:8088-DELIVERY-HALTING-SOURCE-EVALUATOR:ACCEPTED`
 
 The retained `core_machine_control_stack_source_instruction_cost()` consumes
 the complete S16 Table-2-21 batch through its existing immediate private
@@ -20,6 +20,8 @@ All listed outcomes are classified at the control/stack origin with a source
 form.  INTR and NMI remain excluded because they are not instruction rows.
 
 The focused retirement smoke passes after rebuilding the actual executable.
-The complete current gate and documentation governance are recorded before
-acceptance.  Counted code paths are the private timing model and focused smoke;
-code-size accounting is recorded at acceptance.
+The complete 299/299 current gate, specialized gates and documentation
+governance pass at `164aa847`. Counted code paths are the private timing model
+and focused smoke: `+94/-19` lines (`+35/-13` production and `+59/-6` test).
+The added proof replaces two obsolete source-unallocated assertions; it creates
+no second production path.
