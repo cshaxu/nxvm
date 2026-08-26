@@ -82,6 +82,7 @@ principal documents named in [docs/README.md](../README.md).
 | `evidence/t482-s3-console-request-route.md` | YAML cutover owner | T482 S3's single Console-to-copied-request-to-resolver route and declared CPU/FPU choice proof. |
 | `evidence/t482-s4-closure-audit.md` | YAML cutover owner | T482 S4's all-profile YAML-route reconciliation, full-gate result and 0480 artifact record. |
 | `evidence/t483-s1-xt-primary-source-baseline.md` | XT profile audit owner | T483 S1's OCR-qualified IBM 5160-268 source baseline, selected bill of materials and Xebec boundary. |
+| `evidence/t483-s2-xt-capability-matrix.md` | XT profile audit owner | T483 S2's complete selected-BOM capability, current-owner/absence and one-functional-receiver matrix; it creates no XT runtime path or timing claim. |
 | `evidence/t474-s1-core-time-convergence-ledger.md` | Core timing owner | T474 S1 freezes the complete production time writer/reader/deadline/pacing universe, its sole Core owners, and the S2--S5 receiver partition before generic time-axis implementation. |
 | `evidence/t474-s2-one-plan-one-observation.md` | Core timing owner | T474 S2 proves the retained single copied Core timing plan and observation boundary, classifies dynamic resources as non-time bindings, and transfers CPU/deadline work without adding a wrapper. |
 | `evidence/t474-s3-profile-contract-to-plan.md` | Core timing owner | T474 S3 completes the profile-selected transaction-contract path into the existing Core plan and removes Model-40 session ownership of its Core configuration. |
