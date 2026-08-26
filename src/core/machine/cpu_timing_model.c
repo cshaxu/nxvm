@@ -2911,7 +2911,7 @@ C_INT core_machine_control_stack_source_instruction_cost(
         *out_ticks = core_machine_control_stack_source_lookup(machine,
             CORE_MACHINE_SOURCE_TIMING_PUSH_REGISTER);
         return 1;
-    case 0x07u: case 0x17u: case 0x1fu:
+    case 0x07u: case 0x0fu: case 0x17u: case 0x1fu:
         if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_8088) {
             return core_machine_control_stack_source_result(machine,
                 CORE_MACHINE_SOURCE_TIMING_POP_REGISTER, 0u, 0, out_ticks);

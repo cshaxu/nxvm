@@ -430,6 +430,7 @@ C_INT main(C_VOID)
     const type_unsigned_8 shift_memory[] = { 0xd1u, 0x26u, 0x00u, 0x10u };
     const type_unsigned_8 push_ds[] = { 0x1eu };
     const type_unsigned_8 pop_ds[] = { 0x1fu };
+    const type_unsigned_8 pop_cs[] = { 0x0fu };
     const type_unsigned_8 lock_add_memory[] = { 0xf0u, 0x01u, 0x06u, 0x00u, 0x10u };
     const type_unsigned_8 mul_al[] = { 0xf6u, 0xe0u };
     const type_unsigned_8 wait[] = { 0x9bu };
@@ -561,6 +562,8 @@ C_INT main(C_VOID)
         retirement_8088_primary_case(push_ds, sizeof(push_ds), 14u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK) ||
         retirement_8088_primary_case(pop_ds, sizeof(pop_ds), 12u,
+            CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK) ||
+        retirement_8088_primary_case(pop_cs, sizeof(pop_cs), 12u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK) ||
         retirement_8088_primary_case(lock_add_memory, sizeof(lock_add_memory), 32u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY) ||
