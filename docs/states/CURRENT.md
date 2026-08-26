@@ -2,13 +2,7 @@
 
 ## Current Work
 
-## M5 T474 Progress
-
-| Subtask | Compact result |
-| --- | --- |
-| S3 | Accepted: profile-selected transaction contracts now flow once into the existing Core plan; Model-40 Core configuration is profile-owned. [Evidence](../etc/evidence/t474-s3-profile-contract-to-plan.md) records the two-producer sweep and 4/4 focused proof. |
-| S2 | Accepted: one immutable Core timing plan and one copied observation remain; [evidence](../etc/evidence/t474-s2-one-plan-one-observation.md) records the boundary proof. |
-| S1 | Accepted: [convergence ledger](../etc/evidence/t474-s1-core-time-convergence-ledger.md) freezes the sole production time writer/reader/deadline/pacing universe. |
+**Idle.**
 
 ## Current Technical Baseline
 
@@ -43,7 +37,9 @@
 
 | Task | Compact result |
 | --- | --- |
-| T474 S1 | Completed: the production Core time writer/reader/deadline/pacing universe is frozen in its [convergence ledger](../etc/evidence/t474-s1-core-time-convergence-ledger.md); no VM/profile tick writer or second scheduler exists. |
+| T474 S3 | Accepted: profile-selected transaction contracts now flow once into the existing Core plan; Model-40 Core configuration is profile-owned. [Evidence](../etc/evidence/t474-s3-profile-contract-to-plan.md) records the two-producer sweep and 4/4 focused proof. |
+| T474 S2 | Accepted: one immutable Core timing plan and one copied observation remain; [evidence](../etc/evidence/t474-s2-one-plan-one-observation.md) records the boundary proof. |
+| T474 S1 | Accepted: the production Core time writer/reader/deadline/pacing universe is frozen in its [convergence ledger](../etc/evidence/t474-s1-core-time-convergence-ledger.md); no VM/profile tick writer or second scheduler exists. |
 | T473 | Withdrawn before implementation: the profile-first time-axis admission was split by Td S149 so machine-neutral Core time integration precedes all profile connections. Its identifier and proposal are retained in history; no runtime or artifact changed. |
 | T472 | Closed: Model-339 has a retained L2 macro rate; Standard uses it without host-generated guest time, Turbo skips only its wait, and unqualified profiles no longer take a fixed HLT sleep. [Closure audit](../etc/evidence/t472-s3-integration-closure-audit.md) records Release 0472. |
 | T471 | Closed: Standard compares copied completed Core time with a monotonic host budget and waits only for a positive lead; Turbo omits that wait and HLT deadline advancement is budget-gated. The [closure audit](../etc/evidence/t471-s3-integration-closure-audit.md) records Release 0471. |
