@@ -2,26 +2,7 @@
 
 ## Current Work
 
-## M5 T470 S1 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | New |
-| Admission And Approval | Owner approved T470 in this turn: create and execute the Core physical-time-axis and Standard-pacing qualification task. |
-| Objective | Freeze the complete evidence-backed ledger for every current guest-time writer/reader, CPU result path, qualified controller deadline and selected-profile physical-clock assertion, establishing the exact S2 contract boundary without changing runtime behavior. |
-| Non-goals | No physical-rate constant, VM host-to-guest tick path, pacing behavior, controller/CPU timing repair, profile qualification, source import, firmware/media acquisition or release artifact in S1. |
-| Reference Baseline | T469 S1--S6 closure evidence; T388 physical-timebase inventory; T433/T434 CPU and timing-plan ledgers; T460--T468 controller histories; current Core execution, timeline, deadline observation and VM waiting owners. |
-| Candidate Proposal | [M5 Core physical time axis and Standard pacing qualification](../proposals/m5-core-physical-time-axis-standard-pacing.md), T470 S1. |
-| Files And ABI Surface | `docs/states/CURRENT.md`, `docs/states/QUEUE.md`, the T470 proposal and one indexed S1 evidence ledger only; no source, ABI or artifact change. |
-| Applicable Rules | Core is the sole guest-time owner; VM may only pace copied completed Core progress; one time meaning has one owner; manual constants/formulas and real sole-owner external inputs are L3, internal estimates L2, causal-only relations L1 and absent order L0; sourced physical timing is outside the Project-A L3 claim and must not be implemented as L4. |
-| Verification | Enumerate all `elapsed_ticks`/virtual-time/deadline writers and readers, CPU normal/fault/interrupt/halt/transaction outcome routes and current profile clock claims; reconcile each row with retained primary-source evidence; inspect the actual paths; run documentation governance and review the documentation diff. |
-| Expected Markers | One finite ledger assigns each path an owner, unit, lifecycle, source/provenance, physical eligibility and receiver; no nominal MHz, PIT frequency, instruction count or maintenance callback is silently treated as physical time; no current profile is promoted without a closed chain. |
-| Asset Needs | Existing project-owned source and already admitted manual/evidence records only.  New source research, imports and external code are outside S1. |
-| Reporting Requirements | Record row counts, all physical blockers, each profile's exact qualification disposition, every source/owner ambiguity and the minimum S2 API/representation boundary; report no runtime change. |
-| Stop Conditions | Stop if the evidence inventory needs new external material, a protected source, an unadmitted board/chipset mechanism or an API choice that would create a second clock; transfer that issue before design. |
-| Exit Criteria | The physical eligibility universe is finite and row-complete; all three current profiles retain either a source-closed path or an explicit blocking path; S2 has one bounded Core-owner target; documentation governance passes. |
-| Original Owner Request | Create T470 to close the evidence chain required before declaring guest physical seconds equal host seconds: CPU outcome time, controller deadlines and profile physical timebase, with VM only ahead-only pacing. |
-| Similar-Issue Sweep | Sweep Core, VM, tests, plans and profile composition for host-derived guest tick injection, duplicate clocks, nominal-frequency-as-timebase assumptions, recurring callbacks presented as deadlines and profile-local timing algorithms. |
+**Between accepted subtasks.**
 
 ## Current Technical Baseline
 
@@ -52,6 +33,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T470 S1 | Implemented; coordinator review pending.  The [20-row physical-axis ledger](../etc/evidence/t470-s1-physical-axis-eligibility-ledger.md) identifies the sole publisher, every current non-retirement advance, scheduler consumers, PIT/RTC candidates, active-controller blockers, host-only VM paths and all three unavailable profiles.  It transfers one Core-owned physical representation to S2; no runtime behavior changed. |
 | T469 | Closed: S1--S6 reconcile the 145-row controller deadline ledger to one Core-owned deadline/timebase/waiting path; VM host-tick injection is deleted, current profiles retain explicit L2 fallback, and stripped Release 0469 is recorded in [closure audit](../etc/evidence/t469-s6-integration-closure-audit.md). |
 | T468 | Closed: the ATA-3 15-row task-file/media contract has one HDC owner, one media owner and one PIC route; the serial current gate passes 295/295 and stripped Release 0468 is recorded in [history](../history/M5-T468-core-hdc-ata-phase-contract.md). |
 | T467 | Closed: all 17 selected IBM-CGA rows reconcile to one VADP/Core/profile/snapshot path. Source and model facts remain retained; their current L3/L2/L1/L0 interpretation is [Td S148](../etc/evidence/td-s148-eight-controller-l-level-reclassification-audit.md). Serial current-gate passes 295/295; stripped Release 0467 is recorded in [history](../history/M5-T467-core-ibm-cga-completeness.md). |
