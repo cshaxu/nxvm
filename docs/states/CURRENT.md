@@ -10,7 +10,7 @@
 | --- | --- |
 | Identifier Mode | Continuation |
 | Admission And Approval | T480 S3 accepted at `c8d95afb`; standing owner approval covers the queued VADP capability and requires VADP as the only video state/port/memory/snapshot owner. |
-| Objective | Close the finite IBM VGA-only capability batch—DAC/palette mask, VGA aperture/chain-4, 256-colour frame selection and source-qualified timing disposition—inside the existing VADP state. |
+| Objective | Close the finite IBM VGA-only capability batch: DAC/palette mask, VGA aperture/chain-4, 256-colour frame selection and source-qualified timing disposition inside the existing VADP state. |
 | Non-goals | No profile/card binding, VBE/SVGA, option ROM, parallel renderer/VRAM/mode state, guessed board timing, or change to IBM 5170, DeskPro or default-at video claims. |
 | Reference Baseline | T480 S1 IBM VGA source ledger, S2 VADP gap ledger, accepted S3 common-register closure and the sole VADP copied-snapshot production path. |
 | Candidate Proposal | [VADP IBM VGA L3 capability](../proposals/m5-vadp-ibm-vga-l3-capability.md). |
