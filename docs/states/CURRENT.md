@@ -1,39 +1,36 @@
 # Project Status
 
-## Current Work
-
-**Active: M5 T472 S2.**
-
-## M5 T472 S2 Packet
+## M5 T473 S1 Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner approved on 2026-08-25: replace fixed 1 ms Standard HLT waiting; research IBM 5170 documentation and external emulator implementations as corroboration; retain Core-owned guest time. |
-| Objective | Route macro and verified qualifications through the one host-origin/Core-origin pacing path and remove the runner's fixed HLT fallback. |
-| Non-goals | No host-to-Core tick injection, physical-time claim, CPU/controller timing rewrite, external-source import, generic/default-PC-AT rate, Model-40 rate, or debugger/pause waiting change. |
-| Reference Baseline | `master` at T471 closure; target `vm-0-5-0471`, SHA-256 `38D78E1C1AE6B4E877B116B3E3EBF92B6F8E83F378CA9D5075C4871955E8D2FD`. |
-| Candidate Proposal | [M5 L2 profile-proportional pacing](../proposals/m5-l2-profile-proportional-pacing.md). |
-| Files And ABI Surface | `src/core/machine/machine_interface.h`, Core time observation/validation, profile configuration, session pacing, focused tests, evidence and task records. Public observation is copied-only; no raw owner pointer is exposed. |
-| Applicable Rules | `docs/design/ARCHITECTURE.md`, `docs/design/CODING.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`, `docs/rules/DOCUMENT.md`, `docs/rules/EXECUTION.md`, and `docs/etc/operations/policy/source-policy.md`: one Core time owner; immutable profile values; no external-source import; replacement removes obsolete runner path. |
-| Verification | Focused session speed/runner and Model-339 pacing tests; static sleep-path sweep; documentation governance. S3 additionally runs `run-current-smokes`, builds stripped Release 0472 and records SHA-256. |
-| Expected Markers | `M5:T472:S2:ONE-PACING-PATH:OK`; existing time/session speed smoke markers remain green. |
-| Asset Needs | Read-only indexed IBM 5170 Technical Reference (1502243, March 1984); read-only 86Box, MAME, PCjs, Bochs and QEMU sources or explicit non-applicability. No asset enters the repository. |
-| Reporting Requirements | Evidence distinguishes manual facts, emulator corroboration, Rev-3 versus 1984 5170 scope, L2 macro claim and retained physical debt. Report code-size delta, retained owner path and artifact at closure. |
-| Stop Conditions | Stop before assigning any profile rate that lacks retained scope evidence, before treating a nominal frequency as verified physical time, or if pacing requires host-created/guessed guest ticks. |
-| Exit Criteria | S1 contract committed/pushed; S2 has one pacing path and no runner HLT sleep; S3 proves no-rate no-wait plus Model-339 Standard/Turbo behavior, passes gates and publishes Release 0472. |
-| Original Owner Request | The owner requires all three current profiles to avoid a fixed one-millisecond wait; IBM 5170 board/system documentation and external emulator implementations may corroborate a correct replacement. |
-| Similar-Issue Sweep | Sweep every production `core_platform_sleep_milliseconds(1u)` and host-time/Core-time crossing. Classify pause/control waits as non-pacing, remove the runner HLT wait, and test every current profile qualification. |
+| Identifier Mode | New |
+| Admission And Approval | Owner approved on 2026-08-25: implement one complete selected-machine L3 guest-time closure, a Core-level immutable profile-input interface, Standard pacing and Turbo no-wait behavior. |
+| Objective | Freeze the full selected IBM 5170 Model-339 CPU, bus, board, controller, media and display time universe and establish the one Core-owned L3/L2 disposition ledger that every later T473 S consumes. |
+| Non-goals | No L4 electrical reproduction, host-to-Core tick injection, second clock/event queue, third-party source import, protected firmware/media import, generic compatibility claim or unrelated profile behavior change. |
+| Reference Baseline | T472 closure: target `vm-0-5-0472`, SHA-256 `C2B9B95B8A124B96106369E4D88D592A6A7A090D16401C176E93B91349E28BDE`. |
+| Candidate Proposal | [M5 IBM 5170 unified L3 guest-time axis](../proposals/m5-5170-unified-l3-guest-time-axis.md). |
+| Files And ABI Surface | Current ledgers/evidence; later S units may change Core time observation/plan, Core scheduler/executor/controller owners, VM resolved profile composition and focused tests. Cross-module observations remain copied and opaque. |
+| Applicable Rules | `docs/design/ARCHITECTURE.md`, `docs/design/CODING.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`, `docs/rules/DOCUMENT.md`, `docs/rules/EXECUTION.md`, `docs/etc/architecture/specification-driven-l3-timing.md`, and `docs/etc/operations/policy/source-policy.md`: one mutable Core time owner, immutable profile plan, no reverse dependency, L2 provenance retention and no external-source import. |
+| Verification | S1 row-complete source/code crosswalk and documentation governance; subsequent S units add focused owner tests. Closure requires full current gate, integration workload, source-to-runtime audit and stripped Release 0473. |
+| Expected Markers | `M5:T473:S1:UNIFIED-GUEST-TIME-LEDGER:OK`; later S markers are frozen by S1's finite partition. |
+| Asset Needs | Read-only selected IBM/Intel controller, system-board and CPU documentation plus read-only external-emulator implementations for corroboration only. No source, firmware, guest media or local machine path enters the repository. |
+| Reporting Requirements | Each row records source tier, formula/selection or L2 input, Core owner, profile value, lifecycle/deadline relation, regression and remaining exception. Report removed duplicate paths and code-size delta per implementation S. |
+| Stop Conditions | Stop and request owner direction for any selected row with neither source-backed rule nor defensible L2 input, any required protected asset/source import, or any requested implementation that would create another time owner. |
+| Exit Criteria | Every selected Model-339 capability is Manual/Other L3 or explicit L2 fallback; Core has one composed axis/deadline interface; VM profiles use one copied construction path; Standard/Turbo share semantics; full verification and Release 0473 close the task. |
+| Original Owner Request | Implement a complete whole-machine L3 closure across controllers, chips, devices, buses and motherboard on one guest axis; expose one Core-level profile input contract; use Standard pacing or Turbo no-wait. |
+| Similar-Issue Sweep | Sweep every elapsed-tick writer, host-clock conversion, device-local time counter, deadline producer and profile timing field across Core, VM, tests and build records. Each hit is consolidated, classified or transferred as a named selected-topology exception. |
 
 ## Current Technical Baseline
 
-- **Current developer artifact:** target `vm-0-5-0471`; the stripped Release
-  `nxvm_0_5_0471.exe` has SHA-256
-  `38D78E1C1AE6B4E877B116B3E3EBF92B6F8E83F378CA9D5075C4871955E8D2FD`.
+- **Current developer artifact:** target `vm-0-5-0472`; the stripped Release
+  `nxvm_0_5_0472.exe` has SHA-256
+  `C2B9B95B8A124B96106369E4D88D592A6A7A090D16401C176E93B91349E28BDE`.
   Debug remains the current-gate route. T471 preserves Core-owned progression:
   a verified axis is Standard-paced only by host waiting against completed
-  Core progress. T472 S2 applies the L2 macro qualification and removes the
-  identified runner HLT backoff. T434 has one copied Core timing-plan
+  Core progress. T472 extends that comparison to an explicit L2 macro axis,
+  removes the fixed HLT backoff, and retains unqualified profiles as no-wait.
+  T434 has one copied Core timing-plan
   publication route for default PC/AT, IBM 5170 Model 339 and Model-40 BYOB
   session composition.
   T386 closes selected-device functional completeness at S29; its retained
@@ -57,7 +54,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T472 S1 | Completed: copied L2 macro pacing qualification and Model-339's retained 8 MHz rate are source-crosschecked; physical time remains unavailable. [Evidence](../etc/evidence/t472-s1-macro-pacing-contract.md). |
+| T472 | Closed: Model-339 has a retained L2 macro rate; Standard uses it without host-generated guest time, Turbo skips only its wait, and unqualified profiles no longer take a fixed HLT sleep. [Closure audit](../etc/evidence/t472-s3-integration-closure-audit.md) records Release 0472. |
 | T471 | Closed: Standard compares copied completed Core time with a monotonic host budget and waits only for a positive lead; Turbo omits that wait and HLT deadline advancement is budget-gated. The [closure audit](../etc/evidence/t471-s3-integration-closure-audit.md) records Release 0471. |
 | T470 | Closed: S1--S6 establish one copied Core physical-axis contract, retain every current profile at unqualified/zero, separate Standard's L2 HLT backoff from Turbo's no-wait behavior, and record stripped Release 0470 in the [closure audit](../etc/evidence/t470-s6-integration-closure-audit.md). |
 | T469 | Closed: S1--S6 reconcile the 145-row controller deadline ledger to one Core-owned deadline/timebase/waiting path; VM host-tick injection is deleted, current profiles retain explicit L2 fallback, and stripped Release 0469 is recorded in [closure audit](../etc/evidence/t469-s6-integration-closure-audit.md). |
@@ -65,7 +62,6 @@
 | T467 | Closed: all 17 selected IBM-CGA rows reconcile to one VADP/Core/profile/snapshot path. Source and model facts remain retained; their current L3/L2/L1/L0 interpretation is [Td S148](../etc/evidence/td-s148-eight-controller-l-level-reclassification-audit.md). Serial current-gate passes 295/295; stripped Release 0467 is recorded in [history](../history/M5-T467-core-ibm-cga-completeness.md). |
 | T466 | Closed: Manual-L3 D/E/10 geometry reaches the single VADP state owner through real firmware and guest port writes. The profile declaration, cold-start/text routing and all fixtures now agree; unknown planar geometry falls through existing legacy selection rather than inventing a frame. The stripped Release 0466 artifact and its hash are recorded in [history](../history/M5-T466-core-vadp-phase-contract.md). |
 | T465 | Closed: selected Intel 8272A source reconciliation, command/reset repair and per-drive parallel Seek close the logical controller contract. The retained physical/media/time boundaries use the current [Td S148](../etc/evidence/td-s148-eight-controller-l-level-reclassification-audit.md) classification. Release 0465 is stripped and the 294/294 serial gate is recorded in [history](../history/M5-T465-core-intel-8272a-logical-media-phase-contract.md). |
-| T464 | Closed: all sixteen KBC rows retain their selected command/input/test owner. Their current source/input/estimate/order classification is [Td S148](../etc/evidence/td-s148-eight-controller-l-level-reclassification-audit.md); 294/294 serial current-gate tests pass and stripped Release 0464 is recorded in history. |
 
 ## Recent Governance
 
