@@ -48,14 +48,18 @@ ordered, finite stages:
    surface.  Each row records its source level and exact L3, L2 or maintained
    boundary disposition.
 3. **List 2 - current-code gap ledger:** map every List-1 row to current code,
-   one owner, test/probe, missing input and implementation disposition.  A
-   missing row cannot be discovered opportunistically during implementation.
+   its sole production entry, state owner, output/consumer path, test/probe,
+   missing input and implementation disposition.  A missing row cannot be
+   discovered opportunistically during implementation.  The ledger rejects a
+   second parser, dispatch path, state mirror, media cache or presentation
+   path unless the List-1 semantics prove that it is a distinct unit.
 4. **One-owner implementation and closure:** implement the entire admitted
    List-2 batch at its existing owner, remove obsolete duplicate paths and run
    the unit's complete source-to-test sweep. A later board task consumes the
-   frozen contract; it does not recreate the controller. A partial symptom fix
-   is diagnostic only: it remains in List 2 and cannot create its own repair
-   path, parallel owner, compatibility branch, or extra task inside the unit.
+   frozen contract through that entry; it does not recreate the controller.
+   A partial symptom fix is diagnostic only: it remains in List 2 and cannot
+   create its own repair path, parallel owner, compatibility branch, or extra
+   task inside the unit.
 
 No task may substitute one repaired symptom, guest boot, or benchmark for
 either complete ledger.  Similar-looking units may share a neutral Core

@@ -8,10 +8,11 @@ controller substitute.
 
 ## Required sequence
 
-S1 validates the IBM original board references. S2 freezes List 1 of selected
-clock, normal/five-clock cycle, ROM/RAM, reset, ISA and NMI-facing rules. S3
-maps List 2 to the sole Core transaction/time owner and present gaps. The
-implementation S consumes the complete chosen batch with trace/reset proof.
+S1 validates the IBM original board references. S2 freezes List 1 of the full
+admitted board surface: clock, normal/five-clock cycle, ROM/RAM, reset, ISA
+and NMI-facing rules. S3 maps List 2 to the sole Core transaction/time owner,
+its production entry and its consumer paths. The implementation S consumes the
+complete batch with trace/reset proof; it does not add a parallel board path.
 
 ## Boundaries
 

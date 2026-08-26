@@ -2,11 +2,28 @@
 
 ## Current Work
 
-**No active task.**
+**Open: M5 T487 S1.**
 
-T486 is closed: the 8088 source/List-1/List-2/one-owner implementation and
-closure audit are accepted. Exact CPU-side rows use the one Core timing chain;
-range/external boundaries remain explicit. [Closure audit](../etc/evidence/t486-s5-8088-closure-audit.md).
+## M5 T487 S1 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New |
+| Admission And Approval | Owner-approved queue execution on 2026-08-26 and Td S153 complete-unit rule: the next independent unit is the IBM 5160 board/bus contract. |
+| Objective | Establish the original IBM 5160 board/bus source ledger, including visually verified page authority, OCR condition, formulas and any lawful reference-emulator cross-check boundary. |
+| Non-goals | No production code, timing selection, CPU instruction work, controller implementation, ROM/firmware import, guest media, profile/runtime change or inferred timing value. |
+| Reference Baseline | Closed T486, queued IBM 5160 board/bus proposal, source policy and existing external assets. |
+| Candidate Proposal | [IBM 5160 8088 board, memory, ROM and ISA phase contract](../proposals/m5-xt-8088-board-bus-phase.md). |
+| Files And ABI Surface | Source-ledger evidence, evidence index, history and Current only; inspected assets remain external and no ABI changes. |
+| Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, `docs/etc/operations/policy/source-policy.md`, `docs/design/ARCHITECTURE.md`, `docs/rules/ARCHITECTURE.md`. Core owns timing/transactions; research never imports source or firmware. |
+| Verification | Locate and visually inspect original IBM source pages covering oscillator, bus cycle, RAM/ROM, reset, ISA and NMI-facing facts; distinguish source fact, OCR uncertainty, unavailable fact and external-emulator corroboration. |
+| Expected Markers | One finite page/formula source ledger suitable for List 1, with every unavailable or ambiguous item explicitly marked before implementation planning. |
+| Asset Needs | Lawful external owner-managed documentation only; no firmware image, Microsoft binary, guest media or third-party source import. |
+| Reporting Requirements | Record asset identity, original/source quality, visual page checks, topic coverage, source confidence and reference cross-check limits. |
+| Stop Conditions | Stop if the original board source cannot be lawfully located, page authority is ambiguous, or a required fact exists only in a forbidden asset; record the gap rather than use an emulator as primary authority. |
+| Exit Criteria | Every intended board List-1 topic has an original-source page/formula or an explicit absence/ambiguity finding, and any external implementation is bounded to corroboration. |
+| Original Owner Request | For every newly admitted chip/controller/board unit, start with original material and a complete source/function/timing gap process; do not begin opportunistic repairs. |
+| Similar-Issue Sweep | Search IBM 5160/PC-XT system-board, oscillator, ISA, RAM/ROM, reset, NMI and timing references across the external manual archive and existing repository provenance. |
 
 ## Current Technical Baseline
 
@@ -43,7 +60,7 @@ range/external boundaries remain explicit. [Closure audit](../etc/evidence/t486-
 
 | Task | Compact result |
 | --- | --- |
-| T486 S2 | Accepted: complete Table-2-21 List 1 defines every mnemonic, prefix and explicit non-instruction boundary; no code or timing claim changed. [Evidence](../etc/evidence/t486-s2-8088-function-timing-list-1.md). |
+| T486 | Closed: the complete 8088 manual source/List-1/List-2/one-owner implementation chain closes without a parallel timing path; Group-3, WAIT and non-string-prefix source boundaries remain explicit. [Closure audit](../etc/evidence/t486-s5-8088-closure-audit.md). |
 | T485 | Withdrawn, not completed: accepted S1--S20 evidence remains retained, but Td S152 transfers the uncompleted aggregate XT scope to independent CPU/board/controller candidates. [Record](../etc/evidence/td-s152-unit-task-admission-governance.md). |
 | T484 | Closed: IBM 5160-268 now has one immutable 8088/profile plan, XT PPI/FDC/CGA/Xebec functional owners and one typed external-ROM BYOB product route; all remaining board/device timing transfers to T485. [Closure audit](../etc/evidence/t484-s22-xt-functional-closure-audit.md). |
 | T482 | Closed: one strict root YAML request reaches the sole `SESSION OPEN` authority and resolver without CLI re-encoding; 296/296 current-gate tests and stripped Release 0480 pass. [Closure audit](../etc/evidence/t482-s4-closure-audit.md). |
@@ -51,7 +68,6 @@ range/external boundaries remain explicit. [Closure audit](../etc/evidence/t486-
 | T481 | Closed: one global CPU/controller/Core-time/profile/VM audit leaves no unrecorded duplicate owner, host-to-Core tick injection or false capability claim; residuals have one ordered receiver. [Closure audit](../etc/evidence/t481-s5-global-reconciliation.md). |
 | T480 | Closed: VADP remains the sole guest-video owner; IBM VGA DAC, chain-4 and Mode-13 frame capability is source-backed but unselected by every current profile/card. The 296-target gate and stripped Release 0480 pass. [Closure audit](../etc/evidence/t480-s5-profile-closure-audit.md). |
 | T479 | Closed: one Core HDC/media boundary retains explicit ATA, Compaq and IBM WD1003 personalities; seven focused regressions, the 294-target gate and stripped Release 0479 hash pass. IBM 5160/Xebec and WD1007A-WAH ESDI contracts transfer only to their missing immutable profile receivers. [Closure audit](../etc/evidence/t479-s8-closure-audit.md). |
-| T478 | Closed: Default-AT is an immutable `pc-at-5170` child and all three AT profiles have one resolver-to-copied-Core-input route. [Closure audit](../etc/evidence/t478-s4-closure-audit.md) records frozen parity, the 294-target gate, and stripped Release 0478. |
 
 ## Recent Governance
 
