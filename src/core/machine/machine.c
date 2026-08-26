@@ -807,7 +807,9 @@ type_status core_machine_run(
                         return TYPE_STATUS_FAULT;
                     }
                     ++result->ticks;
-                    if (core_machine_publish_elapsed_ticks(machine, 1u, TYPE_FALSE) != TYPE_STATUS_OK) return TYPE_STATUS_FAULT;
+                    if (core_machine_publish_elapsed_ticks(machine, 1u,
+                            CORE_MACHINE_TIME_PUBLICATION_EXTERNAL_WAIT) !=
+                        TYPE_STATUS_OK) return TYPE_STATUS_FAULT;
                     result->elapsed_ticks = machine->elapsed_ticks;
                     continue;
                 }
@@ -823,7 +825,9 @@ type_status core_machine_run(
                     }
                     ++result->ticks;
                     --machine->cpu_retirement_wait_ticks;
-                    if (core_machine_publish_elapsed_ticks(machine, 1u, TYPE_FALSE) != TYPE_STATUS_OK) return TYPE_STATUS_FAULT;
+                    if (core_machine_publish_elapsed_ticks(machine, 1u,
+                            CORE_MACHINE_TIME_PUBLICATION_EXTERNAL_WAIT) !=
+                        TYPE_STATUS_OK) return TYPE_STATUS_FAULT;
                     result->elapsed_ticks = machine->elapsed_ticks;
                 if (machine->executor_cpu.data.flagHalt) {
                     machine->lifecycle = CORE_MACHINE_PAUSED;
@@ -861,7 +865,10 @@ type_status core_machine_run(
                 }
                 ++result->executed;
                 result->ticks += machine->cpu_retirement_completion_ticks;
-                if (core_machine_publish_elapsed_ticks(machine, machine->cpu_retirement_completion_ticks, TYPE_TRUE) != TYPE_STATUS_OK) return TYPE_STATUS_FAULT;
+                if (core_machine_publish_elapsed_ticks(machine,
+                        machine->cpu_retirement_completion_ticks,
+                        CORE_MACHINE_TIME_PUBLICATION_CPU_RETIREMENT) !=
+                    TYPE_STATUS_OK) return TYPE_STATUS_FAULT;
                 machine->cpu_retirement_wait_pending = TYPE_FALSE;
                 machine->cpu_retirement_completion_ticks = 0u;
                 machine->cpu_retirement_source_ticks = 0u;
@@ -880,7 +887,9 @@ type_status core_machine_run(
                 !core_machine_pit_get_output(&machine->auxiliary_pit,
                     machine->d4_platform_config.slowdown_pit_counter)) {
                 ++result->ticks;
-                if (core_machine_publish_elapsed_ticks(machine, 1u, TYPE_FALSE) != TYPE_STATUS_OK) return TYPE_STATUS_FAULT;
+                if (core_machine_publish_elapsed_ticks(machine, 1u,
+                        CORE_MACHINE_TIME_PUBLICATION_D4_SLOWDOWN) !=
+                    TYPE_STATUS_OK) return TYPE_STATUS_FAULT;
                 result->elapsed_ticks = machine->elapsed_ticks;
                 continue;
             }
@@ -985,7 +994,9 @@ type_status core_machine_run(
                 ++result->executed;
                 result->ticks += instruction_ticks;
                 if (core_machine_publish_elapsed_ticks(machine,
-                        instruction_ticks, TYPE_TRUE) != TYPE_STATUS_OK) {
+                        instruction_ticks,
+                        CORE_MACHINE_TIME_PUBLICATION_CPU_RETIREMENT) !=
+                    TYPE_STATUS_OK) {
                     (C_VOID)core_machine_report_fault(machine, 0x54494d45u);
                     result->reason = CORE_MACHINE_STOP_FAULT;
                     result->linear_pc = core_machine_linear_pc(machine);
@@ -1035,7 +1046,8 @@ type_status core_machine_advance_time(core_machine *machine,
         machine->lifecycle != CORE_MACHINE_PAUSED)) {
         return TYPE_STATUS_INVALID_STATE;
     }
-    return core_machine_publish_elapsed_ticks(machine, source_ticks, TYPE_FALSE);
+    return core_machine_publish_elapsed_ticks(machine, source_ticks,
+        CORE_MACHINE_TIME_PUBLICATION_DETERMINISTIC_ADVANCE);
 }
 
 type_status core_machine_advance_to_next_deadline(core_machine *machine,
@@ -1057,7 +1069,8 @@ type_status core_machine_advance_to_next_deadline(core_machine *machine,
         return TYPE_STATUS_OK;
     }
     status = core_machine_publish_elapsed_ticks(machine,
-        observation.next_deadline_tick - observation.elapsed_ticks, TYPE_FALSE);
+        observation.next_deadline_tick - observation.elapsed_ticks,
+        CORE_MACHINE_TIME_PUBLICATION_DEADLINE);
     if (status != TYPE_STATUS_OK) return status;
     *out_advanced = TYPE_TRUE;
     return TYPE_STATUS_OK;

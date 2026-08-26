@@ -315,21 +315,22 @@ static C_VOID core_machine_advance_scheduler(core_machine *machine,
 }
 
 type_status core_machine_publish_elapsed_ticks(core_machine *machine,
-    type_unsigned_64 elapsed_ticks, type_bool cpu_retired)
+    type_unsigned_64 elapsed_ticks, core_machine_time_publication_origin origin)
 {
     if (machine == STD_NULL || elapsed_ticks == 0u ||
         UINT64_MAX - machine->elapsed_ticks < elapsed_ticks) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
-    /* Until S4 supplies a source-qualified transaction/deadline disposition,
-     * only a fully qualified CPU retirement may advance a physical axis.
-     * Deterministic execution retains its existing scheduler behavior. */
+    /* Physical publication is closed to the two owners whose current source
+     * rules establish a Core-axis duration. Remaining origins stay blocked
+     * until their owner supplies an exact S4 disposition. */
     if (machine->retirement_time_contract == CORE_MACHINE_RETIREMENT_TIME_PHYSICAL &&
-        !cpu_retired) {
+        origin != CORE_MACHINE_TIME_PUBLICATION_CPU_RETIREMENT &&
+        origin != CORE_MACHINE_TIME_PUBLICATION_DEADLINE) {
         return TYPE_STATUS_INVALID_STATE;
     }
     machine->elapsed_ticks += elapsed_ticks;
-    if (cpu_retired) {
+    if (origin == CORE_MACHINE_TIME_PUBLICATION_CPU_RETIREMENT) {
         core_machine_trace_record(machine, CORE_MACHINE_TRACE_CPU_RETIRE,
             core_machine_linear_pc(machine), (type_unsigned_32)elapsed_ticks, 0u);
     } else {
