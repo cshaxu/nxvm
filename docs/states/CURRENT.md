@@ -2,28 +2,28 @@
 
 ## Current Work
 
-**Open: M5 T489 S2.**
+**Open: M5 T489 S3.**
 
-## M5 T489 S2 Packet
+## M5 T489 S3 Packet
 
 | Field | Required record |
 | --- | --- |
 | Identifier Mode | Continuation |
-| Admission And Approval | T489 S1 accepted the visual Intel/IBM source ledger; this S freezes the complete selected 8237A/XT function and timing universe before code audit. |
-| Objective | Produce the finite List 1 for all selected 8237A register, request, transfer, reset, XT wiring and timing rows. |
-| Non-goals | No DMA repair, FDC/Xebec implementation, imported source/media or invented device-service timing. |
-| Reference Baseline | T489 S1 source ledger, closed T488 and the queued 8237A proposal. |
+| Admission And Approval | T489 S1 and S2 accepted the source ledger and complete 16-row List 1; this S maps every row to current owner paths before any repair. |
+| Objective | Produce List 2: one row-complete 8237A/XT source-to-code, state-owner, consumer and regression disposition. |
+| Non-goals | No DMA repair, FDC/Xebec implementation, imported source/media or inferred timing. |
+| Reference Baseline | T489 S1 source ledger, T489 S2 List 1, closed T488 and the queued 8237A proposal. |
 | Candidate Proposal | [IBM 5160 8237A DMA phase contract](../proposals/m5-xt-8237a-board-phase.md). |
-| Files And ABI Surface | List-1 evidence, evidence index, T489 history and Current only; no code or ABI change. |
+| Files And ABI Surface | List-2 evidence, evidence index, T489 history and Current only; no code or ABI change. |
 | Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, `docs/etc/operations/policy/source-policy.md`. |
-| Verification | Reconcile every selected 8237A and IBM XT function/timing topic against the visual source ledger; enumerate source, reset/cancellation and L3/L2/L4 disposition per row. |
-| Expected Markers | One complete finite DMA List 1, not a symptom list or code inventory. |
-| Asset Needs | Retained owner-managed source ledger only; no source, firmware or media import. |
-| Reporting Requirements | Record row coverage, source pages, reset behavior, timing classification and external-emulator non-authority. |
-| Stop Conditions | An unreadable source or missing selected board fact is a bounded List-1 gap, not a guessed rule. |
-| Exit Criteria | Every selected command/register, request/grant, mode, transfer, reset, page/wiring and timing relation has one explicit disposition. |
+| Verification | Inspect `dma.c`, Core construction/arbitration, XT profile and focused tests for all 16 List-1 rows; identify every gap before implementation. |
+| Expected Markers | One complete List 2 and one coherent owner-local implementation batch, including an empty batch when proven. |
+| Asset Needs | No new assets; retained source and List-1 evidence only. |
+| Reporting Requirements | Name each sole state owner, port/consumer route, reset/finalize path, test/probe and L2/L4 boundary. |
+| Stop Conditions | A missing row or duplicate path reopens List 2; no local symptom patch is allowed. |
+| Exit Criteria | Every List-1 row has a present, gap or explicit boundary disposition and no unmapped route remains. |
 | Original Owner Request | One independent controller T: original source, complete List 1, complete List 2, then one owner-local batch; no symptom repair. |
-| Similar-Issue Sweep | Reconcile retained DMA research without inheriting its AT-only topology or unverified external claims. |
+| Similar-Issue Sweep | Sweep all production DMA callers and XT port/profile construction, excluding AT-only topology from the selected unit. |
 
 ## Current Technical Baseline
 
@@ -60,6 +60,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T489 S2 | Accepted: complete 16-row Intel/IBM 8237A/XT function and timing List 1 is frozen before code audit. [Evidence](../etc/evidence/t489-s2-8237a-function-timing-list-1.md). |
 | T489 S1 | Accepted: visually checked Intel 8237A and IBM 5160 primary-source ledger establishes the finite DMA List-1 basis. [Evidence](../etc/evidence/t489-s1-8237a-original-source-ledger.md). |
 | T488 | Closed: complete IBM 5160 8259A source/List-1/List-2/one-owner audit retains one Core PIC path and an empty implementation batch. [Closure audit](../etc/evidence/t488-s5-8259a-closure-audit.md). |
 | T487 | Closed: complete IBM board source/List-1/List-2 reconciliation retains the single Intel clock-total owner and explicit L2 physical-phase boundaries. [Closure audit](../etc/evidence/t487-s5-5160-board-closure-audit.md). |

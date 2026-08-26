@@ -8,4 +8,5 @@ batch rather than individual symptoms.
 | Subtask | Result |
 | --- | --- |
 | S1 | Accepted: visually checked Intel 8237A and IBM XT source ledger is retained. |
-| S2 | Active: freeze complete selected 8237A/XT function and timing List 1. |
+| S2 | Accepted: complete 16-row selected 8237A/XT function and timing List 1 is frozen. |
+| S3 | Active: map every List-1 row to current owner, route and regression evidence. |
