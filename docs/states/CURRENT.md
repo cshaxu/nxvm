@@ -2,26 +2,8 @@
 
 ## Current Work
 
-## M5 T479 S2 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner's persistent queue-execution goal, expanded explicitly on 2026-08-25: T479 must source-audit and implement IBM 5160, IBM 5170, DeskPro 386 and default-at fixed-disk personalities, including selected ESDI; T479 S1 remains historical evidence. |
-| Objective | Trace all HDC paths and acquire/select primary sources for the IBM 5160 adapter, IBM 5170 WD1003/ST-506 and ESDI; revise the finite ledger and determine one Core-owned multi-personality boundary plus each named profile's frozen integration. |
-| Non-goals | No controller fact inferred solely from an emulator, raw-flux/ECC/mechanics approximation, guessed service timing/deadline, external-source import, mutable runtime configuration or any unselected profile capability. |
-| Reference Baseline | T479 S1 historical ledgers; T386 Compaq storage contract; T468 ATA closure; T474 Core time boundary; accepted T476--T478 profile routes; owner-expanded T479 result. |
-| Candidate Proposal | [PC fixed-disk controller standardization](../proposals/m5-at-fixed-disk-controller-standardization.md). |
-| Files And ABI Surface | Audit evidence/history/status; inspect `controller_interface`, HDC/Core plan, VM profile/session/model40 composition, HDD/firmware and tests. Runtime edits only if the complete audit proves an owner-local simplification. |
-| Applicable Rules | One mutable controller/media owner; immutable construction input; Core-owned port/IRQ/time; no duplicate product path; source-policy and documentation rules. |
-| Verification | Exact caller/definition inventory; primary IBM 5160/5170/ESDI manual quality and cross-model record; construction-to-freeze trace for ATA, Compaq, 5160, 5170 and ESDI routes; focused HDC/profile smokes and documentation governance. |
-| Expected Markers | `M5:T479:S2:HDC-OWNER-AUDIT:OK` and `M5:T479:S2:HDC-PROFILE-AUDIT:OK`. |
-| Asset Needs | Existing source, tests and S1 references only. |
-| Reporting Requirements | Reconcile historical S1 rows with the newly admitted 5160/IBM/ESDI universe; for every active row name owner/path/test/disposition; identify each real duplicate, its retained semantic reason or one replacement boundary; report code delta if any. |
-| Stop Conditions | Stop only if no legal primary manual can identify the 5160/5170/ESDI controller, a required profile architecture cannot be bounded, or a change would add a parallel controller/media/time owner; then report the exact missing authority. |
-| Exit Criteria | Revised row-complete owner/profile ledger identifies primary-backed 5160, 5170 and ESDI controllers, proves one HDC/media construction path per named personality, establishes replacement scope, and passes focused/governance verification. |
-| Original Owner Request | Continue queue work with global minimalist ownership and no additive workaround. |
-| Similar-Issue Sweep | All `core_machine_hdc_config`, protocol, ports, `lba28_supported`, media IDs, HDC plan calls, HDC lifecycle calls, firmware `1F0h` accesses and HDC smoke definitions. |
+**No active subtask.** T479 S2 has completed the expanded source/profile audit;
+the next bounded receiver is its immutable HDC personality contract.
 
 ## Current Technical Baseline
 
@@ -56,7 +38,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T479 S1 | Accepted: the [27-row source ledger](../etc/evidence/t479-s1-at-fixed-disk-source-ledger.md) and [gap ledger](../etc/evidence/t479-s1-at-fixed-disk-gap-ledger.md) preserve one HDC owner and bound S2's caller/profile sweep. |
+| T479 S2 | Accepted: the [selected-personality reconciliation](../etc/evidence/t479-s2-selected-personality-source-reconciliation.md) and [owner/profile audit](../etc/evidence/t479-s2-current-owner-and-profile-gap-audit.md) establish one Core HDC owner and a discriminated immutable replacement seam for 5160, 5170, DeskPro and Default-AT. |
 | T478 | Closed: Default-AT is an immutable `pc-at-5170` child and all three AT profiles have one resolver-to-copied-Core-input route. [Closure audit](../etc/evidence/t478-s4-closure-audit.md) records frozen parity, the 294-target gate, and stripped Release 0478. |
 | T477 | Closed: DeskPro is an immutable `pc-at-5170` child with one copied Core-plan materialization path; the Model-40 session retains only dynamic resources. [Closure audit](../etc/evidence/t477-s4-closure-audit.md) records frozen parity, the 294-target gate and stripped Release 0477. |
 | T476 | Closed: IBM 5170 sessions consume one copied `pc-at-5170` root and one Core-plan materialization path; the former duplicate exception aggregate is retired while its independent owners remain. [Closure audit](../etc/evidence/t476-s4-closure-audit.md) records the 294-target gate and stripped Release 0476. |
