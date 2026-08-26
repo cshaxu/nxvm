@@ -20,6 +20,7 @@
 | Expected Markers | `M5:T481:S1:UNIVERSE:OK`; `M5:T481:S1:PROVENANCE:OK`; `M5:T481:S1:DEDUP:OK`. |
 | Asset Needs | No acquisition or import; accepted sources and repositories remain evidence only. |
 | Reporting Requirements | Record every family ledger, its sole owner/path, exclusion or successor, exact provenance source and de-duplication rule. |
+| Original Owner Request | Reach the pre-Windows L3 admission audit through a global, minimalist, one-owner completeness review. |
 | Stop Conditions | Stop and record a source-blocked row if its previous ledger cannot be reconciled without new authority. |
 | Exit Criteria | Every in-scope CPU/controller/time/profile/consumer family has an exact source ledger, owner, path and exclusion/disposition. |
 | Similar-Issue Sweep | All retained M5 CPU/controller/timing evidence, profiles, Core time interfaces and VM pacing consumers. |
