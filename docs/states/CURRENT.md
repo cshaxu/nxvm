@@ -2,7 +2,26 @@
 
 ## Current Work
 
-**Between accepted subtasks.**
+## M5 T470 S4 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner approved continuous T470 execution in this turn; T470 S3 is accepted at `66badb47`, and this packet consumes its closed CPU-only physical-publication boundary. |
+| Objective | Reconcile every current non-retirement elapsed-time publisher - deferred CPU/bus wait, D4 slowdown, Core-selected deadline and explicit advance - to source-backed physical eligibility or one named blocker; admit no fabricated physical conversion. |
+| Non-goals | No profile rate, VM pacing change, host tick injection, new controller state machine, imported source, firmware/media acquisition, release artifact or L4 electrical timing. |
+| Reference Baseline | T470 S1 writer ledger, S2 one-axis contract, S3 CPU outcome matrix, T469 deadline composition, Td S148 controller classifications, T462 board contract and existing transaction/clock plan tests. |
+| Candidate Proposal | [M5 Core physical time axis and Standard pacing qualification](../proposals/m5-core-physical-time-axis-standard-pacing.md), T470 S4. |
+| Files And ABI Surface | Expected: the existing Core publisher and its owner-local time-origin contract if needed, focused Core transaction/deadline tests, one indexed S4 evidence ledger and status/index updates; no VM/profile API or mutable controller exposure. |
+| Applicable Rules | Core retains one mutable axis and one publisher; each controller owns its own state/deadline; a source-backed physical duration may enter through the owner only, while L2/L1/blocked rows remain unavailable; no second scheduler, mirrored counter, generic fallback tick or host-to-Core progression path. |
+| Verification | Sweep every `core_machine_publish_elapsed_ticks` caller, `core_machine_advance_time` caller and deadline producer; crosswalk transaction/D4/deadline rows to retained source evidence; add focused tests only for admitted physical origin behavior and blocked rows; run relevant Core time, transaction, controller deadline and documentation governance checks. |
+| Expected Markers | One finite non-retirement matrix records owner, lifecycle, source tier, unit, conversion, physical disposition and receiver for every publisher; a physical axis accepts only explicitly qualified origin kinds; no current profile becomes physical without S5 proof. |
+| Asset Needs | Existing admitted Intel/IBM/controller evidence only. New primary-source acquisition, emulator research, firmware or media stops and requires a separately recorded source admission. |
+| Reporting Requirements | Record every publisher/producers sweep result, each admitted or blocked origin and reason, code/test line delta, retained sole path, current profile disposition and focused verification. |
+| Stop Conditions | Stop an origin when its duration belongs to board electrical behavior, has only L2/L1 evidence, lacks a conversion to the selected Core axis, or requires a controller implementation change outside its existing owner; retain it as a blocker for S5 or a separately approved controller task. |
+| Exit Criteria | Every current non-retirement publisher has a complete source-backed disposition; any admitted path uses the sole publisher with an explicit origin, all blocked paths remain blocked in physical mode, no profile rate is selected, and required focused checks plus documentation governance pass. |
+| Original Owner Request | Make the Core self-driven and let the host provide waiting only after a complete, evidence-backed guest-time axis; do not turn nominal MHz or host elapsed time into guest progression. |
+| Similar-Issue Sweep | Search all Core scheduler, machine run, transaction, clock-domain, controller deadline and VM waiting sources/tests for direct elapsed writes, boolean publication ambiguity, fallback tick values, or host-to-Core advance routes; classify every production hit or defer it explicitly. |
 
 ## Current Technical Baseline
 
