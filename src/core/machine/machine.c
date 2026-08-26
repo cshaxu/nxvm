@@ -285,6 +285,10 @@ static type_status core_machine_create_internal(
         (config->pic_topology != CORE_MACHINE_PIC_TOPOLOGY_CASCADED &&
         config->pic_topology != CORE_MACHINE_PIC_TOPOLOGY_SINGLE) ||
         (config->dma_controller_count > CORE_MACHINE_DMA_CONTROLLER_COUNT) ||
+        (config->keyboard_topology != CORE_MACHINE_KEYBOARD_TOPOLOGY_8042 &&
+        config->keyboard_topology != CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI) ||
+        (config->keyboard_topology == CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI &&
+        !core_machine_xt_ppi_keyboard_config_is_valid(&config->xt_ppi_keyboard)) ||
         (config->auxiliary_pit_present && config->auxiliary_pit_base_port > 0xfffcu)) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
@@ -313,6 +317,7 @@ static type_status core_machine_create_internal(
 
     machine->lifecycle = CORE_MACHINE_INITIALIZED;
     machine->cpu_profile = core_machine_resolve_cpu_profile(config->cpu_profile);
+    machine->keyboard_topology = config->keyboard_topology;
     machine->retirement_time_contract = config->retirement_time_contract;
     machine->transaction_contract = config->transaction_contract;
     machine->time_axis = config->time_axis;
@@ -425,7 +430,15 @@ static type_status core_machine_create_internal(
     core_machine_memory_register_ports(&machine->executor_memory,
         &machine->executor_port);
     core_machine_vadp_initialize(&machine->shared_vadp, &machine->executor_port);
-    core_machine_kbc_initialize(&machine->shared_kbc, &machine->executor_port);
+    if (config->keyboard_topology == CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI) {
+        if (core_machine_xt_ppi_keyboard_initialize(&machine->xt_ppi_keyboard,
+                &config->xt_ppi_keyboard, &machine->executor_port) != TYPE_STATUS_OK) {
+            core_machine_destroy(machine);
+            return TYPE_STATUS_INVALID_ARGUMENT;
+        }
+    } else {
+        core_machine_kbc_initialize(&machine->shared_kbc, &machine->executor_port);
+    }
     core_machine_dma_initialize(&machine->shared_dma_latch,
         &machine->shared_dma_primary, &machine->shared_dma_secondary,
         &machine->executor_port, dma_controller_count);
@@ -443,17 +456,22 @@ static type_status core_machine_create_internal(
     }
     core_machine_pit_set_output(&machine->shared_pit, 0,
         core_machine_pic_timer_output, &machine->shared_pit_irq0_source);
-    core_machine_kbc_bind_core_services(&machine->shared_kbc,
-        &machine->shared_pic_master, &machine->shared_pic_slave,
-        &machine->executor_memory, &machine->executor_cpu_execution,
-        !config->kbc_aux_absent);
-    core_machine_kbc_set_typematic_timing(&machine->shared_kbc,
-        machine->kbc_typematic_initial_ticks,
-        machine->kbc_typematic_repeat_ticks);
-    core_machine_kbc_set_command_response_timing(&machine->shared_kbc,
-        machine->kbc_command_response_ticks);
-    core_machine_kbc_set_serial_delivery_timing(&machine->shared_kbc,
-        machine->kbc_serial_delivery_ticks);
+    if (config->keyboard_topology == CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI) {
+        core_machine_xt_ppi_keyboard_bind_pic(&machine->xt_ppi_keyboard,
+            &machine->shared_pic_master, &machine->shared_pic_slave);
+    } else {
+        core_machine_kbc_bind_core_services(&machine->shared_kbc,
+            &machine->shared_pic_master, &machine->shared_pic_slave,
+            &machine->executor_memory, &machine->executor_cpu_execution,
+            !config->kbc_aux_absent);
+        core_machine_kbc_set_typematic_timing(&machine->shared_kbc,
+            machine->kbc_typematic_initial_ticks,
+            machine->kbc_typematic_repeat_ticks);
+        core_machine_kbc_set_command_response_timing(&machine->shared_kbc,
+            machine->kbc_command_response_ticks);
+        core_machine_kbc_set_serial_delivery_timing(&machine->shared_kbc,
+            machine->kbc_serial_delivery_ticks);
+    }
     core_machine_pit_set_output(&machine->shared_pit, 1, STD_NULL, STD_NULL);
     {
         type_status status = core_machine_port_registration_status(
@@ -565,7 +583,10 @@ static type_status core_machine_cold_reset(core_machine *machine)
     core_machine_fpu_reset(&machine->fpu);
     core_machine_port_reset(&machine->executor_port);
     core_machine_memory_reset(&machine->executor_memory);
-    core_machine_kbc_reset(&machine->shared_kbc);
+    if (machine->keyboard_topology ==
+            CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI) {
+        core_machine_xt_ppi_keyboard_reset(&machine->xt_ppi_keyboard);
+    } else core_machine_kbc_reset(&machine->shared_kbc);
     core_machine_dma_reset(&machine->shared_dma_latch,
         &machine->shared_dma_primary, &machine->shared_dma_secondary);
     if (machine->rtc_cmos_configured) core_machine_rtc_reset(&machine->shared_rtc);
@@ -905,7 +926,10 @@ type_status core_machine_run(
                 machine->execution_provider->refresh(
                     machine->execution_provider_context);
             }
-            core_machine_kbc_refresh(&machine->shared_kbc);
+            if (machine->keyboard_topology !=
+                    CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI) {
+                core_machine_kbc_refresh(&machine->shared_kbc);
+            }
             {
                 type_bool was_halted = machine->executor_cpu.data.flagHalt;
 
@@ -1124,6 +1148,11 @@ type_status core_machine_keyboard_receive_native_byte(core_machine *machine,
         machine->lifecycle == CORE_MACHINE_FAULTED) {
         return TYPE_STATUS_INVALID_STATE;
     }
+    if (machine->keyboard_topology ==
+            CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI) {
+        return core_machine_xt_ppi_keyboard_submit_native_byte(&machine->xt_ppi_keyboard,
+            native_byte);
+    }
     return core_machine_kbc_submit_native_byte(&machine->shared_kbc, native_byte);
 }
 
@@ -1134,7 +1163,9 @@ type_status core_machine_keyboard_get_native_scan_set(const core_machine *machin
         machine->lifecycle == CORE_MACHINE_INITIALIZED) {
         return TYPE_STATUS_INVALID_STATE;
     }
-    *out_scan_set = machine->shared_kbc.data.scan_set;
+    *out_scan_set = machine->keyboard_topology ==
+        CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI ? CORE_MACHINE_KEYBOARD_SCAN_SET_1 :
+        machine->shared_kbc.data.scan_set;
     return TYPE_STATUS_OK;
 }
 
@@ -1146,8 +1177,12 @@ type_status core_machine_keyboard_receive_native_bytes(core_machine *machine,
         machine->lifecycle == CORE_MACHINE_FAULTED) {
         return TYPE_STATUS_INVALID_STATE;
     }
-    return core_machine_kbc_submit_native_bytes(&machine->shared_kbc, native_bytes,
-        count);
+    if (machine->keyboard_topology ==
+            CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI) {
+        return core_machine_xt_ppi_keyboard_submit_native_bytes(&machine->xt_ppi_keyboard,
+            native_bytes, count);
+    }
+    return core_machine_kbc_submit_native_bytes(&machine->shared_kbc, native_bytes, count);
 }
 
 type_status core_machine_mouse_receive_relative(core_machine *machine,
@@ -1159,8 +1194,9 @@ type_status core_machine_mouse_receive_relative(core_machine *machine,
         machine->lifecycle != CORE_MACHINE_STOPPED)) {
         return TYPE_STATUS_INVALID_STATE;
     }
-    return core_machine_kbc_submit_aux_report(&machine->shared_kbc, delta_x,
-        delta_y, buttons);
+    if (machine->keyboard_topology ==
+            CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI) return TYPE_STATUS_UNSUPPORTED;
+    return core_machine_kbc_submit_aux_report(&machine->shared_kbc, delta_x, delta_y, buttons);
 }
 
 type_status core_machine_report_fault(
@@ -1195,7 +1231,10 @@ C_VOID core_machine_destroy(core_machine *machine)
         core_machine_dma_finalize(&machine->shared_dma_latch,
             &machine->shared_dma_primary, &machine->shared_dma_secondary);
         core_machine_rtc_finalize(&machine->shared_rtc);
-        core_machine_kbc_finalize(&machine->shared_kbc);
+        if (machine->keyboard_topology ==
+                CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI) {
+            core_machine_xt_ppi_keyboard_finalize(&machine->xt_ppi_keyboard);
+        } else core_machine_kbc_finalize(&machine->shared_kbc);
         core_machine_pic_finalize(&machine->shared_pic_master,
             &machine->shared_pic_slave);
         core_machine_pit_finalize(&machine->shared_pit);

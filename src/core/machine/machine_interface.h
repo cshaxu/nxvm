@@ -126,6 +126,22 @@ typedef struct core_machine_transaction_contract {
     type_bool cpu_prefetch_reservation_enabled;
 } core_machine_transaction_contract;
 
+/* The product selects its keyboard controller once when it freezes the Core
+ * configuration.  XT PPI is the IBM 5160 system-board attachment, not a
+ * keyboard-only variant of the PC/AT 8042. */
+typedef enum core_machine_keyboard_topology {
+    CORE_MACHINE_KEYBOARD_TOPOLOGY_8042 = 0,
+    CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI = 1
+} core_machine_keyboard_topology;
+
+typedef struct core_machine_xt_ppi_keyboard_config {
+    type_unsigned_16 port_a;
+    type_unsigned_16 port_b;
+    type_unsigned_16 port_c;
+    type_unsigned_16 control_port;
+    type_unsigned_8 irq;
+} core_machine_xt_ppi_keyboard_config;
+
 typedef struct core_machine_config {
     STD_SIZE_T memory_bytes;
     core_machine_cpu_profile cpu_profile;
@@ -159,6 +175,8 @@ typedef struct core_machine_config {
     type_unsigned_16 auxiliary_pit_base_port;
     /* False preserves PC/AT AUX; true selects a keyboard-only 8042 topology. */
     type_bool kbc_aux_absent;
+    core_machine_keyboard_topology keyboard_topology;
+    core_machine_xt_ppi_keyboard_config xt_ppi_keyboard;
 } core_machine_config;
 
 #define CORE_MACHINE_TIMING_CAPABILITY_COUNT 30u

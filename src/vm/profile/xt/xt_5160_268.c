@@ -27,6 +27,11 @@ type_status vm_profile_xt_5160_268_declaration_create(
     declaration.values.core.configuration.pic_topology =
         CORE_MACHINE_PIC_TOPOLOGY_SINGLE;
     declaration.values.core.configuration.dma_controller_count = 1u;
+    declaration.values.core.configuration.keyboard_topology =
+        CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI;
+    declaration.values.core.configuration.xt_ppi_keyboard =
+        (core_machine_xt_ppi_keyboard_config) {0x0060u, 0x0061u, 0x0062u,
+            0x0063u, 1u};
     declaration.values.core.configuration.ticks_per_instruction = 1u;
     declaration.values.enabled_devices = VM_PROFILE_XT_5160_268_CORE_DEVICE;
     declaration.values.firmware_policy = VM_PROFILE_RESOLVER_FIRMWARE_POLICY_BYOB;

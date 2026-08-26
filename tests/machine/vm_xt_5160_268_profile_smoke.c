@@ -24,6 +24,11 @@ static C_INT vm_xt_5160_268_declaration_is_fixed(C_VOID)
         profile.resolved.values.core.configuration.pic_topology !=
             CORE_MACHINE_PIC_TOPOLOGY_SINGLE ||
         profile.resolved.values.core.configuration.dma_controller_count != 1u ||
+        profile.resolved.values.core.configuration.keyboard_topology !=
+            CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI ||
+        profile.resolved.values.core.configuration.xt_ppi_keyboard.port_a != 0x0060u ||
+        profile.resolved.values.core.configuration.xt_ppi_keyboard.control_port != 0x0063u ||
+        profile.resolved.values.core.configuration.xt_ppi_keyboard.irq != 1u ||
         profile.resolved.values.allowed_session_options != 0u ||
         profile.resolved.values.port_leaf_count != 0u ||
         profile.resolved.values.memory_window_count != 0u ||

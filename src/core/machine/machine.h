@@ -40,6 +40,8 @@
 
 #include "core/machine/kbc.h"
 
+#include "core/machine/xt_ppi_keyboard.h"
+
 #include "core/machine/vadp.h"
 
 #define CORE_MACHINE_TRACE_CAPACITY 32u
@@ -187,6 +189,7 @@ struct core_machine {
     type_unsigned_32 kbc_typematic_repeat_ticks;
     type_unsigned_32 kbc_command_response_ticks;
     type_unsigned_32 kbc_serial_delivery_ticks;
+    core_machine_keyboard_topology keyboard_topology;
     core_machine_display_port_topology display_ports;
     type_bool display_configured;
     core_machine_dma_wiring dma_wiring;
@@ -240,6 +243,7 @@ struct core_machine {
     core_machine_fdc fdc;
     core_machine_hdc hdc;
     t_kbc shared_kbc;
+    core_machine_xt_ppi_keyboard xt_ppi_keyboard;
     t_vadp shared_vadp;
     const core_machine_firmware_provider *firmware_provider;
     C_VOID *firmware_provider_context;

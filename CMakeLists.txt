@@ -85,6 +85,7 @@ add_library(core-machine STATIC
     src/core/machine/trace_interface.c
     src/core/machine/retirement_observation_interface.c
     src/core/machine/timeline.c
+    src/core/machine/xt_ppi_keyboard.c
 )
 add_dependencies(core-machine cpu-timing-manifest-catalog)
 # This is the complete public core-machine runtime. It extends the primitive
@@ -1142,6 +1143,7 @@ set(CORE_MACHINE_SOURCES
     src/core/machine/pit.c
     src/core/machine/dma.c
     src/core/machine/kbc.c
+    src/core/machine/xt_ppi_keyboard.c
     src/core/machine/rtc.c
     src/core/machine/transaction.c
 )
@@ -1592,6 +1594,9 @@ add_executable(core-machine-kbc-controller-smoke
     tests/machine/core_machine_kbc_controller_smoke.c
 )
 target_link_libraries(core-machine-kbc-controller-smoke PRIVATE core-machine)
+add_executable(core-machine-xt-ppi-keyboard-smoke
+    tests/machine/core_machine_xt_ppi_keyboard_smoke.c)
+target_link_libraries(core-machine-xt-ppi-keyboard-smoke PRIVATE core-machine)
 add_executable(core-machine-kbc-serial-cadence-smoke
     tests/machine/core_machine_kbc_serial_cadence_smoke.c)
 target_link_libraries(core-machine-kbc-serial-cadence-smoke PRIVATE core-machine)
@@ -2238,6 +2243,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     core-machine-pic-lifecycle-s4-smoke
     core-machine-pic-phase-s2-smoke
     core-machine-kbc-controller-smoke
+    core-machine-xt-ppi-keyboard-smoke
     core-machine-kbc-serial-cadence-smoke
     core-machine-kbc-aux-port-smoke
     core-machine-dma-channel-smoke
@@ -3581,10 +3587,10 @@ foreach(project_t345_target IN LISTS PROJECT_T344_CURRENT_GATE_TARGETS)
 endforeach()
 list(LENGTH PROJECT_T345_S2_OWNER_TEST_STRICT_TARGETS project_t345_s2_pure_count)
 list(LENGTH PROJECT_T345_S2_MIXED_OWNER_TEST_TARGETS project_t345_s2_mixed_count)
-if(NOT project_t345_s2_pure_count EQUAL 180 OR
+if(NOT project_t345_s2_pure_count EQUAL 181 OR
         NOT project_t345_s2_mixed_count EQUAL 3)
     message(FATAL_ERROR
-        "T345 S2 expected 180 pure and 3 mixed owner-test targets; found ${project_t345_s2_pure_count} pure and ${project_t345_s2_mixed_count} mixed.")
+        "T345 S2 expected 181 pure and 3 mixed owner-test targets; found ${project_t345_s2_pure_count} pure and ${project_t345_s2_mixed_count} mixed.")
 endif()
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     foreach(project_t345_target IN LISTS PROJECT_T345_S2_OWNER_TEST_STRICT_TARGETS)
