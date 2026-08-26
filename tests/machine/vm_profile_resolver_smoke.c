@@ -58,6 +58,28 @@ static C_INT vm_profile_resolver_resolves_copy(void)
     return result.values.core.configuration.memory_bytes != 2u * 1024u * 1024u;
 }
 
+static C_INT vm_profile_resolver_hands_off_copied_core_input(void)
+{
+    vm_profile_resolver_declaration root = vm_profile_resolver_root();
+    const vm_profile_resolver_contract_catalog catalog = {
+        vm_profile_resolver_contracts, sizeof(vm_profile_resolver_contracts) /
+            sizeof(vm_profile_resolver_contracts[0])};
+    const vm_profile_resolver_session_request request = {1u};
+    vm_resolved_profile result;
+    core_machine_plan *plan = STD_NULL;
+    type_status status;
+
+    if (vm_profile_resolver_resolve(&root, &catalog, &request, &result) !=
+        TYPE_STATUS_OK) return 1;
+    status = core_machine_plan_create(&result.values.core.configuration, &plan);
+    if (status == TYPE_STATUS_OK) {
+        status = core_machine_plan_set_controller_timing_rules(plan,
+            &result.values.core.controller_timing_rules);
+    }
+    core_machine_plan_destroy(plan);
+    return status != TYPE_STATUS_OK;
+}
+
 static C_INT vm_profile_resolver_rejects_invalid(void)
 {
     vm_profile_resolver_declaration root = vm_profile_resolver_root();
@@ -119,7 +141,9 @@ static C_INT vm_profile_resolver_rejects_invalid(void)
 
 int main(void)
 {
-    if (vm_profile_resolver_resolves_copy() || vm_profile_resolver_rejects_invalid()) {
+    if (vm_profile_resolver_resolves_copy() ||
+        vm_profile_resolver_hands_off_copied_core_input() ||
+        vm_profile_resolver_rejects_invalid()) {
         return 1;
     }
     puts("M5:T475:S2:PROFILE-RESOLVER:OK");

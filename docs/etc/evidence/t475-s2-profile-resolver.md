@@ -44,6 +44,12 @@ flags and prints both markers above. The exact owner-test inventory changes
 from 177 to 178 pure targets because this is a new focused test executable;
 the pre-existing mixed count remains three.
 
+The same smoke passes the resolved copied `core_machine_config` and copied
+controller timing rules directly to the existing `core_machine_plan_create` /
+`core_machine_plan_set_controller_timing_rules` APIs, then destroys the plan.
+This proves the resolver output is the existing plan input, rather than a
+parallel construction API or a mutable Core handle.
+
 ## Boundary And Transfer
 
 S2 deliberately does not select or register a real machine. The current AT
