@@ -2,28 +2,28 @@
 
 ## Current Work
 
-**Active: M5 T485 S11.**
+**Active: M5 T485 S12.**
 
-## M5 T485 S11 Packet
+## M5 T485 S12 Packet
 
 | Field | Required record |
 | --- | --- |
 | Identifier Mode | Continuation |
-| Admission And Approval | Owner-approved continuous execution; accepted T485 S10 `10efcd85` establishes the complete finite receiver. |
-| Objective | Implement the source-complete 8088 control/stack receiver in the retained evaluator: locally plan Table-2-21 word transfers, add four clocks per transfer, and repair the erroneous FAR-RET profile gate. |
-| Non-goals | No new decoder/table/state owner, delivery/NMI/HLT admission, guessed prefetch/wait estimate, profile clock, host pacing claim, scheduler, controller ratio, external-cycle counting or product/API change. |
-| Reference Baseline | Accepted T485 S10 control/stack ledger, S6 private-plan rule, existing private control/stack evaluator and S7/S9 selector ordering. |
+| Admission And Approval | Owner-approved continuous execution; accepted T485 S11 `30d6aaf9` establishes the complete non-delivery control/stack receiver. |
+| Objective | Audit every remaining 8088 IN/OUT Table-2-21 source form for its exact word-transfer fact and the one existing private evaluator receiver before implementation. |
+| Non-goals | No port-I/O implementation, decoder/table/state owner, guessed transfer count, prefetch/wait estimate, profile clock, host pacing claim, scheduler, controller ratio, external-cycle counting or product/API change. |
+| Reference Baseline | Accepted T485 S6 private-plan rule, S7 primary receiver, S9 string receiver, S11 control/stack receiver, rendered Intel 1981 Table 2-21 and current private primary evaluator. |
 | Candidate Proposal | [IBM PC/XT 5160-268 board and device phase-timing closure](../proposals/m5-8088-5150-xt-l3-baseline.md). |
-| Files And ABI Surface | Existing private Core CPU timing model/selection and focused Core retirement smoke only. No public ABI, profile grammar, transaction contract or product grammar. |
+| Files And ABI Surface | Existing private Core CPU timing model/selection and evidence only. No public ABI, profile grammar, transaction contract or product grammar. |
 | Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, `docs/design/ARCHITECTURE.md`, `docs/design/CODING.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md` and source policy. |
-| Verification | Focused 8088 PUSH/POP/CALL/RET/FAR-RET results and unallocated-delivery proof; configured build/current gate; documentation governance. |
-| Expected Markers | One retained evaluator and table, local plan only, exact `4 * transfers`, and no broadening into delivery/halting forms. |
+| Verification | Rendered Table-2-21 IN/OUT rows, complete 8088 selector and decoded-fact sweep, transfer-plan completeness check, physical-eligibility rejection and documentation governance. |
+| Expected Markers | One finite port-I/O ledger with a receiver or explicit incomplete disposition for each form; no code or capability claim. |
 | Asset Needs | Existing rendered IBM/Intel evidence only; no bytes, paths or third-party code enter the repository. |
-| Reporting Requirements | Record exact source equations, focused result proof, retained owner path, FAR-RET repair, residual delivery boundary and code-size accounting. |
+| Reporting Requirements | Record every IN/OUT form's manual row, transfer relation, Core fact, one receiver or exact blocker, and retained physical-time boundary. |
 | Original Owner Request | Continue the ordered minimalist queue toward the pre-Windows L3 admission audit. |
-| Stop Conditions | Stop if exact plans cannot remain inside the existing evaluator or require execution rerun, external-cycle callbacks or board inference. |
-| Exit Criteria | Every S10 ready form selects the retained evaluator with exact source result, FAR RET no longer excludes 8088, and delivery/halting forms remain unallocated. |
-| Similar-Issue Sweep | Inspect all 8088 control/stack selector paths, stack/memory roles, transfer-plan branches, compatibility fallback and physical-time publications. |
+| Stop Conditions | Stop and retain an incomplete disposition if any form lacks a rendered source row or complete existing semantic facts without re-execution, external-cycle callbacks or board inference. |
+| Exit Criteria | Every named IN/OUT form has an evidence-backed disposition and any implementation receiver is finite, private and disjoint from S7/S9/S11. |
+| Similar-Issue Sweep | Inspect all 8088 port-I/O selector paths, operand widths, transfer-plan branches, compatibility fallback and physical-time publications. |
 
 ## Current Technical Baseline
 
