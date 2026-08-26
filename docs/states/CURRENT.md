@@ -2,28 +2,28 @@
 
 ## Current Work
 
-**Active: M5 T485 S3.**
+**Active: M5 T485 S4.**
 
-## M5 T485 S3 Packet
+## M5 T485 S4 Packet
 
 | Field | Required record |
 | --- | --- |
 | Identifier Mode | Continuation |
-| Admission And Approval | Owner-approved continuous execution; T485 S2 boundary review `95d24185` is accepted by this P2 review. |
-| Objective | Establish the finite, source-backed 8088 CPU/XT-bus common-axis ledger and name the one existing Core owner or earliest missing receiver that can lawfully consume it. |
-| Non-goals | No CPU/bus/DMA/PIC/PPI/FDC/CGA/Xebec timing estimate, host pacing claim, new scheduler, profile-side setter or new hardware behavior; never equate instruction count with board clocks or select a controller ratio. |
-| Reference Baseline | Accepted T485 S1 source ledger and S2 blocked PIT boundary; existing Core retirement, external-cycle and rational-clock plan boundaries. |
+| Admission And Approval | Owner-approved continuous execution; T485 S3 implementation `901a0979` is accepted by this governance review. |
+| Objective | Materialize the finite Intel Table 2-21 8088 retirement-cost ledger at the existing Core CPU-timing owner, then state exactly which source-controlled outcomes still block a physical XT axis. |
+| Non-goals | No guessed instruction cycle, prefetch/bus wait estimate, profile clock, host pacing claim, scheduler, controller ratio or execution behavior change.  A source table is not permission to declare an instruction-count axis physical. |
+| Reference Baseline | Accepted T485 S3 8088/XT common-axis ledger; existing Core timing selector, retirement publisher and physical-eligibility rejection. |
 | Candidate Proposal | [IBM PC/XT 5160-268 board and device phase-timing closure](../proposals/m5-8088-5150-xt-l3-baseline.md). |
-| Files And ABI Surface | Existing Core CPU timing/transaction-plan boundaries and evidence only. No public ABI or product grammar. |
+| Files And ABI Surface | Existing private Core CPU timing selection/qualification and evidence only. No public ABI, profile grammar, transaction contract or product grammar. |
 | Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, `docs/design/ARCHITECTURE.md`, `docs/design/CODING.md`, `docs/design/UI.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md` and source policy. |
-| Verification | Rendered primary-source check; static owner-path sweep; retained XT profile regression only if source changes are warranted; documentation governance. |
-| Expected Markers | A T485 S3 8088 common-axis source/owner ledger with no false physical-clock publication. |
+| Verification | Rendered primary-source Table 2-21 check; exact timing-key/selector sweep; physical-eligibility regression if a source ledger is materialized; documentation governance. |
+| Expected Markers | A bounded Table-2-21 source ledger, every current timing selection mapped or blocked, and no false physical-clock publication. |
 | Asset Needs | Existing rendered IBM/Intel evidence only; no bytes, paths or third-party code enter the repository. |
-| Reporting Requirements | Record each source rule, current owner/receiver, rejected false mapping, and the exact transfer for any missing CPU or bus condition. |
+| Reporting Requirements | Record every Table 2-21 form/outcome, the corresponding current selection key or explicit absence, its source-controlled operands, and the earliest receiver for each unresolved condition. |
 | Original Owner Request | Continue the ordered minimalist queue toward the pre-Windows L3 admission audit. |
-| Stop Conditions | Stop if the original manuals or existing Core owner cannot establish a complete CPU/board-axis conversion without inventing prefetch, wait-state, or external-cycle rules. |
-| Exit Criteria | A source-to-owner ledger distinguishes sourced 8088 retirement/bus rules from missing conditions and selects no physical timing path until that ledger is complete. |
-| Similar-Issue Sweep | Inspect all Core physical-time producers and existing profile CPU/bus attachments to ensure no instruction-count alias or profile-owned clock route is introduced. |
+| Stop Conditions | Stop if Table 2-21 or its applicable context cannot identify a form's operand/transfer conditions, or if the current Core selector has no single lawful owner for its source representation. |
+| Exit Criteria | The finite Table-2-21 batch has no unclassified current selection: each item is either source-mapped at the Core owner or explicitly blocked with its earliest receiver. |
+| Similar-Issue Sweep | Inspect all 8088 selection paths, qualification flags and physical-time publications; reject any alias from generic compatibility cost or profile-owned clock input. |
 
 ## Current Technical Baseline
 
@@ -60,6 +60,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T485 S3 | Accepted: Intel/IBM facts identify one Core publisher, generic compatibility timing is explicitly nonphysical, and Table-2-21/external-cycle qualification transfers to S4/S5. [Evidence](../etc/evidence/t485-s3-8088-common-axis-ledger.md). |
 | T485 S2 | Accepted: IBM's PIT `1/4` relation is valid only on the 4.77 MHz XT board-clock axis; current deterministic instruction ticks are not that axis, so no false ratio or controller upgrade was published. [Evidence](../etc/evidence/t485-s2-xt-pit-common-axis-boundary.md). |
 | T485 S1 | Accepted: source/owner ledger classifies every selected XT board/device phase; only the Manual-L3 PIT rational clock has an immediate Core receiver, while all other paths retain explicit L2/blocking boundaries. [Evidence](../etc/evidence/t485-s1-xt-board-phase-source-ledger.md). |
 | T484 | Closed: IBM 5160-268 now has one immutable 8088/profile plan, XT PPI/FDC/CGA/Xebec functional owners and one typed external-ROM BYOB product route; all remaining board/device timing transfers to T485. [Closure audit](../etc/evidence/t484-s22-xt-functional-closure-audit.md). |
