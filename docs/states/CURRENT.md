@@ -2,7 +2,27 @@
 
 ## Current Work
 
-**Idle.**
+**Active: M5 T481 S1.**
+
+## M5 T481 S1 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New |
+| Admission And Approval | Owner-approved ordered M5 queue; T480 closure at `156bdbe6` is the required predecessor. |
+| Objective | Freeze one complete, de-duplicated audit universe for selected CPU, controller, Core-time, profile and VM pacing facts. |
+| Non-goals | No runtime code, public ABI, source import, controller reimplementation, profile claim, or L4 reconstruction. |
+| Reference Baseline | T480 closure, prior CPU/controller ledgers and the Global Function And L3 Interface Completeness Audit proposal. |
+| Candidate Proposal | [Global function and L3 interface completeness audit](../proposals/m5-global-function-and-l3-interface-completeness-audit.md). |
+| Files And ABI Surface | T481 history, evidence/index, Current and supporting-document index only. |
+| Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, source policy, and the proposal's L0--L3 meanings. |
+| Verification | Exhaustive ledger-source sweep, de-duplication/reconciliation checks, documentation governance. |
+| Expected Markers | `M5:T481:S1:UNIVERSE:OK`; `M5:T481:S1:PROVENANCE:OK`; `M5:T481:S1:DEDUP:OK`. |
+| Asset Needs | No acquisition or import; accepted sources and repositories remain evidence only. |
+| Reporting Requirements | Record every family ledger, its sole owner/path, exclusion or successor, exact provenance source and de-duplication rule. |
+| Stop Conditions | Stop and record a source-blocked row if its previous ledger cannot be reconciled without new authority. |
+| Exit Criteria | Every in-scope CPU/controller/time/profile/consumer family has an exact source ledger, owner, path and exclusion/disposition. |
+| Similar-Issue Sweep | All retained M5 CPU/controller/timing evidence, profiles, Core time interfaces and VM pacing consumers. |
 
 ## Current Technical Baseline
 
