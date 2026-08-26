@@ -18,6 +18,7 @@ principal documents named in [docs/README.md](../README.md).
 | `evidence/t486-s2-8088-function-timing-list-1.md` | Core CPU timing owner | T486 S2's finite 8088 Table-2-21 function/timing List 1, including all mnemonic groups, prefix entries, explicit non-instruction entries and manual timing boundaries. |
 | `evidence/t486-s3-8088-current-code-gap-list-2.md` | Core CPU timing owner | T486 S3's complete List-1-to-code-owner ledger, current 8088 timing dispositions and one-owner implementation boundary. |
 | `evidence/t486-s4-8088-one-owner-implementation.md` | Core CPU timing owner | T486 S4's complete one-owner implementation, retained source-unallocated boundaries and focused/full-gate proof. |
+| `evidence/t486-s5-8088-closure-audit.md` | Core CPU timing owner | T486 S5's per-row closure matrix, single-owner sweep and explicit residual receivers. |
 | `evidence/td-s153-unit-task-queue-hardening.md` | Governance owner | Td S153's active/queued hardware-unit review, four-stage admission matrix and aggregate-audit boundary. |
 | `evidence/td-s125-manual-architecture-coding-audit.md` | Governance owner | Td S125's manual source, test, build, and authority disposition matrix; it records review evidence and deferred repairs without changing an architecture or coding authority. |
 | `evidence/td-s126-second-pass-audit.md` | Governance owner | Active Td S126 second-pass evidence for Core collaborator contracts and remaining VM/VDM owner paths; it records review facts and deferred repairs without changing an architecture or coding authority. |

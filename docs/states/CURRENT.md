@@ -2,11 +2,28 @@
 
 ## Current Work
 
-**Open: M5 T486.**
+**Open: M5 T486 S5.**
 
-T486 S4 is accepted at `67510af6`: all exact manual CPU-side 8088 rows use
-the one private Core timing chain; Group-3 ranges, WAIT and non-string prefixes
-remain source-unallocated. The next required stage is a T-level closure audit.
+## M5 T486 S5 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner-approved Td S152 complete-unit program and continuous execution on 2026-08-26; accepted T486 S4 at `949dee5e` completes the sole implementation batch. |
+| Objective | Perform the independent T486 closure audit and make the 8088 task ready/not-ready decision from the complete S1--S4 evidence and current source. |
+| Non-goals | No source, test, timing, decoder, profile, board, controller, VM, artifact or rule change. No guest boot substitute for the source-to-test ledger. |
+| Reference Baseline | T486 S1 original-source ledger, S2 List 1, S3 List 2, S4 implementation evidence, current selector/model/test source and Queue unit-task rule. |
+| Candidate Proposal | [8088 instruction function and timing completeness](../proposals/m5-8088-instruction-timing-completeness.md). |
+| Files And ABI Surface | Closure evidence, evidence index, T486 history and Current only; source inspection is read-only and ABI is unchanged. |
+| Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, `docs/design/ARCHITECTURE.md`, `docs/design/CODING.md`, `docs/rules/ARCHITECTURE.md` and `docs/rules/CODING.md`. Verify the single Core owner and source-bound L2 boundaries, not only a passing test. |
+| Verification | Reconcile every S2 key with S3 disposition and S4 current source/test; inspect selector topology and exact diff; rerun focused retirement smoke and documentation governance. |
+| Expected Markers | One finite closure matrix, one ready/not-ready decision, all exact manual CPU-side rows proven, all non-exact/external rows explicitly bounded, no hidden compatibility or second owner. |
+| Asset Needs | Committed evidence, source and tests only; no external source, firmware or guest-media access. |
+| Reporting Requirements | Record per-row completion/transfer, test/gate evidence, current code ownership, residual reason and next Queue receiver. |
+| Stop Conditions | Stop and leave T486 open if any exact List-1 row lacks a source owner/proof, an unresolved gap has no receiver, a second owner appears, or closure requires an unapproved code/rule change. |
+| Exit Criteria | Every T486 List-1 key is implemented/proven at its classified level or explicitly transferred to its earliest owner; the task can close without a false exact Group-3/x87/board claim. |
+| Original Owner Request | Close every unit task only after its full manual, List-1, List-2 and one-owner implementation result is proven; reject fragmented repair completion. |
+| Similar-Issue Sweep | Reconcile every S2 mnemonic/prefix/non-instruction set against S3/S4 and current selector, compatibility, x87, Group-3, prefix and retirement-test paths. |
 
 ## Current Technical Baseline
 
