@@ -67,6 +67,7 @@ C_INT main(C_VOID)
         .irq = 6u, .dma_channel = 2u
     };
     const core_machine_hdc_config hdc_config = {
+        .protocol = CORE_MACHINE_HDC_PROTOCOL_ATA_PIO,
         .data_port = 0x01f0u, .error_features_port = 0x01f1u,
         .sector_count_port = 0x01f2u, .sector_number_port = 0x01f3u,
         .cylinder_low_port = 0x01f4u, .cylinder_high_port = 0x01f5u,

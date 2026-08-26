@@ -88,11 +88,12 @@ static C_INT vm_hdc_profile_contract_is_valid(C_VOID)
 {
     const vm_profile_default_pc_at_descriptor *profile =
         vm_profile_default_pc_at_descriptor_get();
-    const vm_profile_default_pc_at_hdc_pio *hdc;
+    const core_machine_hdc_config *hdc;
 
     if (profile == STD_NULL) return 0;
-    hdc = &profile->hdc_pio;
-    return hdc->data_port == HDC_DATA_PORT &&
+    hdc = &profile->hdc;
+    return hdc->protocol == CORE_MACHINE_HDC_PROTOCOL_ATA_PIO &&
+        hdc->data_port == HDC_DATA_PORT &&
         hdc->error_features_port == HDC_ERROR_PORT &&
         hdc->sector_count_port == HDC_SECTOR_COUNT_PORT &&
         hdc->sector_number_port == HDC_SECTOR_NUMBER_PORT &&
@@ -101,11 +102,7 @@ static C_INT vm_hdc_profile_contract_is_valid(C_VOID)
         hdc->drive_head_port == HDC_DRIVE_HEAD_PORT &&
         hdc->status_command_port == HDC_STATUS_COMMAND_PORT &&
         hdc->alternate_status_device_control_port == HDC_ALT_STATUS_CONTROL_PORT &&
-        hdc->irq == 14u &&
-        hdc->dma_channel == VM_PROFILE_DEFAULT_PC_AT_NO_DMA_CHANNEL &&
-        hdc->data_width_bits == 16u && hdc->register_width_bits == 8u &&
-        hdc->lba28_supported && !hdc->slave_present &&
-        !hdc->secondary_channel_present;
+        hdc->irq == 14u && hdc->lba28_supported;
 }
 
 static C_INT vm_hdc_progress_probe(vm_session *session)

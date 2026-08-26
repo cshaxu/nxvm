@@ -64,8 +64,8 @@ static C_INT vm_ibm_5170_root_snapshot_matches(
         snapshot->route_count == source->route_count &&
         STD_MEMCMP(snapshot->routes, source->routes,
             source->route_count * sizeof(*source->routes)) == 0 &&
-        STD_MEMCMP(&snapshot->hdc_pio, &source->hdc_pio,
-            sizeof(snapshot->hdc_pio)) == 0 &&
+        STD_MEMCMP(&snapshot->hdc, &source->hdc,
+            sizeof(snapshot->hdc)) == 0 &&
         snapshot->firmware_service_count == source->firmware_service_count &&
         STD_MEMCMP(snapshot->firmware_services, source->firmware_services,
             source->firmware_service_count * sizeof(*source->firmware_services)) == 0;

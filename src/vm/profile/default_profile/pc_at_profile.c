@@ -171,9 +171,13 @@ static const vm_profile_default_pc_at_descriptor default_pc_at_descriptor = {
     sizeof(default_pc_at_port_leaves) / sizeof(default_pc_at_port_leaves[0]),
     default_pc_at_routes,
     sizeof(default_pc_at_routes) / sizeof(default_pc_at_routes[0]),
-    { 0x01f0u, 0x01f1u, 0x01f2u, 0x01f3u, 0x01f4u, 0x01f5u, 0x01f6u,
-        0x01f7u, 0x03f6u, 14u, VM_PROFILE_DEFAULT_PC_AT_NO_DMA_CHANNEL,
-        16u, 8u, TYPE_TRUE, TYPE_FALSE, TYPE_FALSE },
+    { .protocol = CORE_MACHINE_HDC_PROTOCOL_ATA_PIO,
+        .data_port = 0x01f0u, .error_features_port = 0x01f1u,
+        .sector_count_port = 0x01f2u, .sector_number_port = 0x01f3u,
+        .cylinder_low_port = 0x01f4u, .cylinder_high_port = 0x01f5u,
+        .drive_head_port = 0x01f6u, .status_command_port = 0x01f7u,
+        .alternate_status_device_control_port = 0x03f6u, .irq = 14u,
+        .lba28_supported = TYPE_TRUE },
     default_pc_at_firmware_services,
     sizeof(default_pc_at_firmware_services) /
         sizeof(default_pc_at_firmware_services[0])
@@ -229,9 +233,8 @@ static const vm_profile_default_pc_at_descriptor ibm_5170_model_339_descriptor =
     sizeof(default_pc_at_port_leaves) / sizeof(default_pc_at_port_leaves[0]),
     default_pc_at_routes,
     sizeof(default_pc_at_routes) / sizeof(default_pc_at_routes[0]),
-    { 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u,
-        VM_PROFILE_DEFAULT_PC_AT_NO_DMA_CHANNEL,
-        0u, 0u, TYPE_FALSE, TYPE_FALSE, TYPE_FALSE },
+    { CORE_MACHINE_HDC_PROTOCOL_INVALID,
+        0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, TYPE_FALSE },
     ibm_5170_model_339_firmware_services,
     sizeof(ibm_5170_model_339_firmware_services) /
         sizeof(ibm_5170_model_339_firmware_services[0])
@@ -695,20 +698,15 @@ C_INT vm_profile_default_pc_at_descriptor_is_valid(
         descriptor->ega_present && !descriptor->cga_vram_present &&
         descriptor->firmware_slot == VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_SLOT_GENERIC &&
         !descriptor->diskette_drive_a_field_upgrade &&
-        descriptor->hdc_pio.data_port == 0x01f0u &&
-        descriptor->hdc_pio.error_features_port == 0x01f1u &&
-        descriptor->hdc_pio.sector_count_port == 0x01f2u &&
-        descriptor->hdc_pio.sector_number_port == 0x01f3u &&
-        descriptor->hdc_pio.cylinder_low_port == 0x01f4u &&
-        descriptor->hdc_pio.cylinder_high_port == 0x01f5u &&
-        descriptor->hdc_pio.drive_head_port == 0x01f6u &&
-        descriptor->hdc_pio.status_command_port == 0x01f7u &&
-        descriptor->hdc_pio.alternate_status_device_control_port == 0x03f6u &&
-        descriptor->hdc_pio.irq == 14u &&
-        descriptor->hdc_pio.dma_channel ==
-            VM_PROFILE_DEFAULT_PC_AT_NO_DMA_CHANNEL &&
-        descriptor->hdc_pio.data_width_bits == 16u &&
-        descriptor->hdc_pio.register_width_bits == 8u &&
-        descriptor->hdc_pio.lba28_supported && !descriptor->hdc_pio.slave_present &&
-        !descriptor->hdc_pio.secondary_channel_present;
+        descriptor->hdc.protocol == CORE_MACHINE_HDC_PROTOCOL_ATA_PIO &&
+        descriptor->hdc.data_port == 0x01f0u &&
+        descriptor->hdc.error_features_port == 0x01f1u &&
+        descriptor->hdc.sector_count_port == 0x01f2u &&
+        descriptor->hdc.sector_number_port == 0x01f3u &&
+        descriptor->hdc.cylinder_low_port == 0x01f4u &&
+        descriptor->hdc.cylinder_high_port == 0x01f5u &&
+        descriptor->hdc.drive_head_port == 0x01f6u &&
+        descriptor->hdc.status_command_port == 0x01f7u &&
+        descriptor->hdc.alternate_status_device_control_port == 0x03f6u &&
+        descriptor->hdc.irq == 14u && descriptor->hdc.lba28_supported;
 }

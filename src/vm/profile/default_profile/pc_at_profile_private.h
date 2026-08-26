@@ -47,25 +47,6 @@ typedef struct vm_profile_default_pc_at_route {
     type_unsigned_8 dma_channel;
 } vm_profile_default_pc_at_route;
 
-typedef struct vm_profile_default_pc_at_hdc_pio {
-    type_unsigned_16 data_port;
-    type_unsigned_16 error_features_port;
-    type_unsigned_16 sector_count_port;
-    type_unsigned_16 sector_number_port;
-    type_unsigned_16 cylinder_low_port;
-    type_unsigned_16 cylinder_high_port;
-    type_unsigned_16 drive_head_port;
-    type_unsigned_16 status_command_port;
-    type_unsigned_16 alternate_status_device_control_port;
-    type_unsigned_8 irq;
-    type_unsigned_8 dma_channel;
-    type_unsigned_8 data_width_bits;
-    type_unsigned_8 register_width_bits;
-    type_bool lba28_supported;
-    type_bool slave_present;
-    type_bool secondary_channel_present;
-} vm_profile_default_pc_at_hdc_pio;
-
 typedef struct vm_profile_default_pc_at_rom_mapping {
     type_unsigned_32 linear_start;
     type_unsigned_32 physical_start;
@@ -159,7 +140,7 @@ typedef struct vm_profile_default_pc_at_descriptor {
     STD_SIZE_T port_leaf_count;
     const vm_profile_default_pc_at_route *routes;
     STD_SIZE_T route_count;
-    vm_profile_default_pc_at_hdc_pio hdc_pio;
+    core_machine_hdc_config hdc;
     const vm_profile_default_pc_at_firmware_service *firmware_services;
     STD_SIZE_T firmware_service_count;
 } vm_profile_default_pc_at_descriptor;

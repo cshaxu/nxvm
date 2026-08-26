@@ -58,22 +58,21 @@ foreach(forbidden IN ITEMS "core_machine_hdc_load_lba_sector"
     endif()
 endforeach()
 
-foreach(required IN ITEMS "lba28_supported" "slave_present"
-    "secondary_channel_present")
-    string(FIND "${profile_header}" "${required}" profile_position)
+foreach(required IN ITEMS "core_machine_hdc_config hdc"
+    "CORE_MACHINE_HDC_PROTOCOL_ATA_PIO" "lba28_supported")
+    string(FIND "${profile_header}${profile_source}" "${required}" profile_position)
     if(profile_position EQUAL -1)
-        message(FATAL_ERROR "ATA PIO profile feature declaration is incomplete: ${required}")
+        message(FATAL_ERROR "ATA PIO personality declaration is incomplete: ${required}")
     endif()
 endforeach()
 
-string(FIND "${devices_source}" "lba28_supported" lba_mapping_position)
+string(FIND "${devices_source}" "&session->profile->hdc" lba_mapping_position)
 if(lba_mapping_position EQUAL -1)
-    message(FATAL_ERROR "ATA PIO composition omits the supported LBA28 feature")
+    message(FATAL_ERROR "ATA PIO composition omits the copied Core personality")
 endif()
 
-foreach(required IN ITEMS "descriptor->hdc_pio.lba28_supported"
-    "!descriptor->hdc_pio.slave_present"
-    "!descriptor->hdc_pio.secondary_channel_present")
+foreach(required IN ITEMS "descriptor->hdc.protocol == CORE_MACHINE_HDC_PROTOCOL_ATA_PIO"
+    "descriptor->hdc.lba28_supported")
     string(FIND "${profile_source}" "${required}" profile_policy_position)
     if(profile_policy_position EQUAL -1)
         message(FATAL_ERROR "ATA PIO profile policy is incomplete: ${required}")

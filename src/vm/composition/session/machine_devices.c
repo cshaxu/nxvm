@@ -65,31 +65,15 @@ static type_status vm_session_machine_devices_materialize_fdc(vm_session *sessio
 static type_status vm_session_machine_devices_materialize_hdc(vm_session *session,
     core_machine_plan *plan)
 {
-    const vm_profile_default_pc_at_hdc_pio *ports;
-    core_machine_hdc_config config = {0};
-
     if (session == STD_NULL || session->profile == STD_NULL || plan == STD_NULL) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
     if (!session->profile->hdc_present) return TYPE_STATUS_OK;
-    ports = &session->profile->hdc_pio;
     if (!vm_profile_default_pc_at_descriptor_is_valid(session->profile)) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
-    config.data_port = ports->data_port;
-    config.error_features_port = ports->error_features_port;
-    config.sector_count_port = ports->sector_count_port;
-    config.sector_number_port = ports->sector_number_port;
-    config.cylinder_low_port = ports->cylinder_low_port;
-    config.cylinder_high_port = ports->cylinder_high_port;
-    config.drive_head_port = ports->drive_head_port;
-    config.status_command_port = ports->status_command_port;
-    config.alternate_status_device_control_port =
-        ports->alternate_status_device_control_port;
-    config.irq = ports->irq;
-    config.lba28_supported = ports->lba28_supported;
     return core_machine_plan_configure_hdc(plan, VM_SESSION_MEDIA_HDD_ID,
-        CORE_MACHINE_MEDIA_ID_INVALID, &config);
+        CORE_MACHINE_MEDIA_ID_INVALID, &session->profile->hdc);
 }
 
 type_status vm_session_machine_devices_materialize_plan(vm_session *session,

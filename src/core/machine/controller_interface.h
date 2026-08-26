@@ -36,11 +36,17 @@ typedef struct core_machine_fdc_drive_bindings {
 } core_machine_fdc_drive_bindings;
 
 typedef enum core_machine_hdc_protocol {
+    CORE_MACHINE_HDC_PROTOCOL_INVALID = 0,
     CORE_MACHINE_HDC_PROTOCOL_ATA_PIO,
     CORE_MACHINE_HDC_PROTOCOL_COMPAQ_WD_40MB
 } core_machine_hdc_protocol;
 
+/* The protocol is explicit, so zero-initialization cannot silently select ATA.
+ * Current admitted personalities share this task-file shape. A later
+ * non-task-file personality must replace this public shape in its own bounded
+ * task rather than inherit invalid ATA semantics. */
 typedef struct core_machine_hdc_config {
+    core_machine_hdc_protocol protocol;
     type_unsigned_16 data_port;
     type_unsigned_16 error_features_port;
     type_unsigned_16 sector_count_port;
@@ -53,7 +59,6 @@ typedef struct core_machine_hdc_config {
     type_unsigned_16 drive_address_port;
     type_unsigned_8 irq;
     type_bool lba28_supported;
-    core_machine_hdc_protocol protocol;
 } core_machine_hdc_config;
 
 #endif

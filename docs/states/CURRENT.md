@@ -2,8 +2,26 @@
 
 ## Current Work
 
-**No active subtask.** T479 S2 has completed the expanded source/profile audit;
-the next bounded receiver is its immutable HDC personality contract.
+## M5 T479 S3 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner's persistent queue-execution approval and 2026-08-25 expanded T479 result; S2 accepted at `02b52a8a`. |
+| Objective | Replace the ATA-shaped HDC configuration identity with one copied, validated, immutable discriminated Core personality and migrate the retained Default-AT and Model-40 construction routes to it without changing their controller behavior. |
+| Non-goals | No IBM 5160/5170/ESDI command implementation, new profile, firmware behavior, physical-media/service-time estimate, dynamic setter, plug-in framework, or second HDC/media state. |
+| Reference Baseline | T479 S1/S2 ledgers; T468 ATA contract; T386 S5/S26 Compaq HDC contract; T474 time boundary; T476--T478 resolver routes. |
+| Candidate Proposal | [PC fixed-disk controller standardization](../proposals/m5-at-fixed-disk-controller-standardization.md). |
+| Files And ABI Surface | `controller_interface.h`, HDC/Core plan/board validation, default-PC/AT descriptor and materialization, Model-40 composition, affected HDC/profile tests, evidence/history/status. |
+| Applicable Rules | Core owns mutable controller, port, IRQ and time state; VM/profile contributes copied immutable construction data; no reverse dependency, duplicate production path, mirrored media/CHS state or wrapper-only abstraction. |
+| Verification | Compile and run the focused ATA, Compaq HDC, PC/AT composition and Model-40 HDC smokes; run documentation governance; audit every `core_machine_hdc_config` and `hdc_pio` caller/definition; record source/test line delta. |
+| Expected Markers | `M5:T479:S3:HDC-PERSONALITY-CONTRACT:OK` and `M5:T479:S3:HDC-RETAINED-ROUTES:OK`. |
+| Asset Needs | Existing project source and test fixtures only; no external source, firmware or media import. |
+| Reporting Requirements | Record the exact removed duplicate fields/path, each retained protocol-specific branch and its semantic reason, ABI/config validation result, focused proof, source/test added/removed/net lines, and any exact later personality receiver. |
+| Stop Conditions | Stop if a selected retained route cannot preserve its source-qualified behavior through one copied config, or if the only route needs a VM-to-Core mutable pointer/second controller owner; report the concrete incompatible field or caller. |
+| Exit Criteria | All retained paths use one immutable personality input, ATA selection is explicit rather than zero-init incidental, Compaq shared-`3F7h` validation remains Core-local, the obsolete ATA-named profile payload is removed, and focused/governance verification passes. |
+| Original Owner Request | Support IBM 5160, IBM 5170, the selected DeskPro 386 configuration and default-at fixed disks with one minimal correct Core HDC ownership boundary. |
+| Similar-Issue Sweep | Every `core_machine_hdc_config`, `core_machine_hdc_protocol`, `hdc_pio`, `configure_hdc`, HDC plan/board validation, HDC port-provider registration, and ATA/Compaq smoke assertion. |
 
 ## Current Technical Baseline
 

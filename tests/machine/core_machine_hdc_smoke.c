@@ -151,6 +151,7 @@ C_INT main(C_VOID)
         .ticks_per_instruction = 1u
     };
     const core_machine_hdc_config hdc_config = {
+        .protocol = CORE_MACHINE_HDC_PROTOCOL_ATA_PIO,
         .data_port = 0x01f0u, .error_features_port = 0x01f1u,
         .sector_count_port = 0x01f2u, .sector_number_port = 0x01f3u,
         .cylinder_low_port = 0x01f4u, .cylinder_high_port = 0x01f5u,
@@ -190,10 +191,15 @@ C_INT main(C_VOID)
         } else {
             topology.media_registry = registry;
             topology.media_id = 1u;
+            topology.config = (core_machine_hdc_config) {0};
+            if (core_machine_configure_hdc(machine, &topology) !=
+                TYPE_STATUS_INVALID_ARGUMENT) {
+                failed |= 0x04;
+            }
             topology.config = hdc_config;
-            if (core_machine_configure_hdc(machine, &topology) != TYPE_STATUS_OK ||
+            if (!failed && (core_machine_configure_hdc(machine, &topology) != TYPE_STATUS_OK ||
                 core_machine_freeze_execution_providers(machine) != TYPE_STATUS_OK ||
-                core_machine_reset(machine) != TYPE_STATUS_OK) {
+                core_machine_reset(machine) != TYPE_STATUS_OK)) {
                 failed |= 0x04;
             } else {
                 if (hdc->data.error != 0x01u || hdc->data.sector_count != 1u ||

@@ -45,9 +45,15 @@ static type_status vm_session_model40_materialize_controllers(vm_session *sessio
     }
     fdc = (core_machine_fdc_config) { 0x03f2u, 0x03f4u, 0x03f5u,
         0x03f7u, 0x03f7u, 6u, 2u, CORE_MACHINE_FDC_UNREADY_READ_DESKPRO_REFERENCE };
-    hdc = (core_machine_hdc_config) { 0x01f0u, 0x01f1u, 0x01f2u,
-        0x01f3u, 0x01f4u, 0x01f5u, 0x01f6u, 0x01f7u, 0x03f6u, 0x03f7u,
-        14u, TYPE_FALSE, CORE_MACHINE_HDC_PROTOCOL_COMPAQ_WD_40MB };
+    hdc = (core_machine_hdc_config) {
+        .protocol = CORE_MACHINE_HDC_PROTOCOL_COMPAQ_WD_40MB,
+        .data_port = 0x01f0u, .error_features_port = 0x01f1u,
+        .sector_count_port = 0x01f2u, .sector_number_port = 0x01f3u,
+        .cylinder_low_port = 0x01f4u, .cylinder_high_port = 0x01f5u,
+        .drive_head_port = 0x01f6u, .status_command_port = 0x01f7u,
+        .alternate_status_device_control_port = 0x03f6u,
+        .drive_address_port = 0x03f7u, .irq = 14u,
+        .lba28_supported = TYPE_FALSE};
     if (core_machine_plan_configure_fdc(plan, &drives, &fdc) != TYPE_STATUS_OK ||
         core_machine_plan_bind_fdc_terminal_observation(plan,
             (core_machine_fdc_terminal_observation_provider) {
