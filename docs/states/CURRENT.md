@@ -2,7 +2,26 @@
 
 ## Current Work
 
-**Between accepted subtasks.**
+## M5 T470 S3 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner approved continuous T470 execution in this turn; T470 S2 is accepted at `40cacb26`, and this packet consumes its one-axis contract. |
+| Objective | Reconcile CPU normal retirement, deferred external wait, synchronous fault/interrupt, halt and transaction outcomes against the one Core time axis; route only already source-qualified outcome costs through its sole publisher and retain every incomplete outcome as a physical-pacing blocker. |
+| Non-goals | No profile rate, VM pacing change, host tick injection, physical estimate, controller deadline change, second counter, source import, firmware/media acquisition or release artifact. |
+| Reference Baseline | T470 S1/S2 evidence; T388 S1/S3/S9 physical eligibility; T435 CPU manifests and residual ledger; existing CPU timing selector, machine run lifecycle and transaction contract tests. |
+| Candidate Proposal | [M5 Core physical time axis and Standard pacing qualification](../proposals/m5-core-physical-time-axis-standard-pacing.md), T470 S3. |
+| Files And ABI Surface | Expected: CPU timing/result and Core machine execution owners, focused CPU/time tests, one indexed S3 evidence record and status/index updates; no VM or profile ABI unless a copied Core result needs clarification. |
+| Applicable Rules | Core owns one progression axis and one publication path; CPU form selection does not become a scheduler; no unallocated success, omitted fault/interrupt/halt duration or inferred bus wait may publish a physical profile rate; existing deterministic behavior remains until a source-backed replacement is admitted. |
+| Verification | Enumerate every `core_machine_publish_elapsed_ticks` CPU caller and all nonpublication exits; crosswalk each to the retained CPU ledger/source evidence and T388 qualification marker; add focused outcome tests only for actually admitted owner behavior; sweep all profiles for physical selection; run relevant time/CPU regressions and documentation governance. |
+| Expected Markers | One outcome matrix assigns normal retirement, deferred wait, bus-ready stall, D4 slowdown, fault/interrupt delivery and HLT a source-qualified physical rule or a named blocker; no path silently acquires a rate; no profile becomes physical in this S unless every CPU outcome row for that profile is closed. |
+| Asset Needs | Existing admitted Intel/manual corpus and project evidence only. New primary-source acquisition or third-party implementation research stops and requires a separately recorded source admission. |
+| Reporting Requirements | Record outcome-row count and disposition, exact publisher/nonpublisher sweep, every retained blocker and receiver, code/test delta, profile result and focused verification. |
+| Stop Conditions | Stop if a required outcome rule is absent from the admitted corpus, belongs to board/bus ownership, needs an electrical model, or would require a generic estimate; retain it as a blocker and transfer it to the earliest S4/S5 or distinct candidate. |
+| Exit Criteria | The CPU outcome universe is finite and source-crosswalked; every admitted change uses the one publisher; all residual physical blockers are explicit; no host/profile reverse path appears; required focused checks and documentation governance pass. |
+| Original Owner Request | Make the Core self-driven and let the host provide waiting only after a complete, evidence-backed guest-time axis; do not turn nominal MHz or host elapsed time into guest progression. |
+| Similar-Issue Sweep | Sweep all CPU profiles, executor refresh/delivery paths, transaction wait branches, D4 slowdown, physical-mode rejections and test helpers for hidden time publication, direct counter writes or fallback values that could be mistaken for physical cycles. |
 
 ## Current Technical Baseline
 
