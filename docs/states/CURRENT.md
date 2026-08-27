@@ -2,13 +2,13 @@
 
 ## Current Work
 
-**Open: M5 T492.**
+**Idle.**
 
 ## Current Technical Baseline
 
-- **Current developer artifact:** target `vm-0-5-0491`; the stripped Release
-  `nxvm_0_5_0491.exe` has SHA-256
-  `1C219347EEF080574486E5D62D18462E8764F77900D34755897A9A87BA032E7E`.
+- **Current developer artifact:** target `vm-0-5-0492`; the stripped Release
+  `nxvm_0_5_0492.exe` has SHA-256
+  `1BF1F70B42DE74674F52A07FCB094C0CEE25D0BE257390EB7C09CA26EE9F7531`.
   Debug remains the current-gate route. T471 preserves Core-owned progression:
   a verified axis is Standard-paced only by host waiting against completed
   Core progress. T472 extends that comparison to an explicit L2 macro axis,
@@ -39,7 +39,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T492 S4 | Accepted: one FDC owner now conditions reset results on sampled ready inputs and accepts a copied timing conversion for reset/SRT/CCR=0 formulas; selected XT explicitly retains zero-value L2 fallback. [Evidence](../etc/evidence/t492-s4-8272a-reset-timing-implementation.md). |
+| T492 | Closed: complete IBM 5160 8272A/logical-media source/List-1/List-2/sole-owner chain removes fabricated reset state and global timing literals; serial gate passes 300/300 and stripped Release 0492 is recorded. [Closure audit](../etc/evidence/t492-s5-8272a-closure-audit.md). |
 | T491 | Closed: the independent IBM 5160 8255 PPI/key/NMI unit maps all 19 rows to one Core owner path, closes PB0/PB1 through the existing PIT2/speaker consumer, and records stripped Release 0491. [Closure audit](../etc/evidence/t491-s5-8255-closure-audit.md). |
 | T490 | Closed: the independent IBM 5160 8253 unit has verified source/List-1/List-2/sole-owner implementation, a corrected full gate and stripped Release 0490 artifact. [Closure audit](../etc/evidence/t490-s6-8253-closure-audit.md). |
 | T489 | Closed: complete IBM 5160 8237A source/List-1/List-2/one-owner batch closes the single page-port gap without new state or parallel path; physical-axis conversion remains transferred. [Closure audit](../etc/evidence/t489-s5-8237a-closure-audit.md). |
@@ -47,7 +47,6 @@
 | T487 | Closed: complete IBM board source/List-1/List-2 reconciliation retains the single Intel clock-total owner and explicit L2 physical-phase boundaries. [Closure audit](../etc/evidence/t487-s5-5160-board-closure-audit.md). |
 | T486 | Closed: the complete 8088 manual source/List-1/List-2/one-owner implementation chain closes without a parallel timing path; Group-3, WAIT and non-string-prefix source boundaries remain explicit. [Closure audit](../etc/evidence/t486-s5-8088-closure-audit.md). |
 | T485 | Withdrawn, not completed: accepted S1--S20 evidence remains retained, but Td S152 transfers the uncompleted aggregate XT scope to independent CPU/board/controller candidates. [Record](../etc/evidence/td-s152-unit-task-admission-governance.md). |
-| T484 | Closed: IBM 5160-268 now has one immutable 8088/profile plan, XT PPI/FDC/CGA/Xebec functional owners and one typed external-ROM BYOB product route; all remaining board/device timing transfers to T485. [Closure audit](../etc/evidence/t484-s22-xt-functional-closure-audit.md). |
 
 ## Recent Governance
 

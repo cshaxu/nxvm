@@ -51,7 +51,6 @@ state mirror, second scheduler or compatibility-forwarding path. The final
 model and pre-Windows entries are audits only; they may transfer a gap to its
 earliest unit T but may not repair it.
 
-1. [IBM 5160 8272A FDC and floppy-media phase contract](../proposals/m5-xt-8272a-fdc-media-phase.md).
 1. [IBM 5160 CGA VADP phase contract](../proposals/m5-xt-cga-vadp-phase.md).
 1. [IBM 5160 Xebec fixed-disk-controller phase contract](../proposals/m5-xt-xebec-fixed-disk-phase.md).
 1. [IBM PC/XT 5160-268 final model-L3 audit](../proposals/m5-xt-5160-268-l3-audit.md).

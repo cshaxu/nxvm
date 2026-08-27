@@ -10,22 +10,6 @@
 #include "core/machine/port.h"
 #include "../support/vm_model40_byob_fixture.h"
 
-static C_INT vm_model40_fdc_sense_reset(core_machine *machine,
-    type_unsigned_8 expected_status)
-{
-    type_unsigned_8 status;
-    type_unsigned_8 cylinder;
-
-    core_machine_port_write(&machine->executor_port, 0x03f5u, 0x08u);
-    core_machine_fdc_advance(&machine->fdc);
-    status = (type_unsigned_8)core_machine_port_read(&machine->executor_port,
-        0x03f5u);
-    cylinder = (type_unsigned_8)core_machine_port_read(&machine->executor_port,
-        0x03f5u);
-    return status == expected_status && cylinder == 0u &&
-        !machine->fdc.connect.irq_source.asserted;
-}
-
 C_INT main(C_VOID)
 {
     static type_unsigned_8 even[VM_PROFILE_MODEL40_ROM_CHIP_BYTES];
@@ -42,7 +26,6 @@ C_INT main(C_VOID)
     type_unsigned_8 sense_status;
     C_INT failed = 0;
     type_unsigned_8 fifo_count;
-    type_unsigned_8 index;
 
     even[0x3ff8u] = 0xa5u;
 
@@ -124,11 +107,9 @@ C_INT main(C_VOID)
             0x03f2u, 0u);
         core_machine_port_write(&session->core_machine->executor_port,
             0x03f2u, 0x1cu);
-        failed |= !session->core_machine->fdc.connect.irq_source.asserted;
-        for (index = 0u; index < CORE_MACHINE_FDC_DRIVE_COUNT; ++index) {
-            failed |= !vm_model40_fdc_sense_reset(session->core_machine,
-                (type_unsigned_8)(core_machine_fdc_ST0_READY_CHANGE | index));
-        }
+        core_machine_fdc_advance_at(&session->core_machine->fdc,
+            session->core_machine->fdc.data.reset_due_tick);
+        failed |= session->core_machine->fdc.connect.irq_source.asserted;
         core_machine_port_write(&session->core_machine->executor_port,
             0x03f5u, 0x08u);
         core_machine_fdc_advance(&session->core_machine->fdc);

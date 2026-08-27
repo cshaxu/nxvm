@@ -97,8 +97,10 @@ C_INT main(C_INT argc, C_CHAR **argv)
         failed |= fdc->connect.config.irq != 6u || fdc->connect.config.dma_channel != 2u ||
             fdc->connect.config.unready_read_policy !=
                 CORE_MACHINE_FDC_UNREADY_READ_DESKPRO_REFERENCE ||
+            fdc->connect.config.ticks_per_microsecond != 8u ||
             session->floppy_kind != VM_PROFILE_FLOPPY_525_1200K;
         core_machine_port_write(port, 0x03f2u, 0x1cu);
+        core_machine_fdc_advance_at(fdc, fdc->data.reset_due_tick);
         failed |= !fdc->connect.irq_source.asserted;
         model40_fdc_command(fdc, port, (const type_unsigned_8[]){0x08u}, 1u);
         failed |= !model40_fdc_result(fdc, port, result, 2u) ||
@@ -156,11 +158,10 @@ C_INT main(C_INT argc, C_CHAR **argv)
         failed |= fdc->data.phase != core_machine_fdc_PHASE_COMMAND ||
             fdc->connect.irq_source.asserted;
         core_machine_port_write(port, 0x03f2u, 0x1cu);
-        for (index = 0u; index < CORE_MACHINE_FDC_DRIVE_COUNT; ++index) {
-            model40_fdc_command(fdc, port, (const type_unsigned_8[]){0x08u}, 1u);
-            failed |= !model40_fdc_result(fdc, port, result, 2u) ||
-                result[0] != (core_machine_fdc_ST0_READY_CHANGE | index);
-        }
+        core_machine_fdc_advance_at(fdc, fdc->data.reset_due_tick);
+        failed |= fdc->connect.irq_source.asserted;
+        model40_fdc_command(fdc, port, (const type_unsigned_8[]){0x08u}, 1u);
+        failed |= !model40_fdc_result(fdc, port, result, 2u) || result[0] != 0x80u;
         model40_fdc_command(fdc, port, read_last, sizeof(read_last));
         core_machine_fdc_advance(fdc);
         failed |= fdc->data.phase != core_machine_fdc_PHASE_RESULT ||

@@ -44,6 +44,7 @@ principal documents named in [docs/README.md](../README.md).
 | `evidence/t492-s2-8272a-function-timing-list-1.md` | Core FDC/media owner | T492 S2's selected uPD765-compatible/IBM 5160 FDC-media function/timing List 1, refined to 30 rows by T492 S3 source review. |
 | `evidence/t492-s3-8272a-current-code-gap-list-2.md` | Core FDC/media owner | T492 S3's 30-row owner/path audit, source-backed SRT refinement and coherent FDC/media implementation batch. |
 | `evidence/t492-s4-8272a-reset-timing-implementation.md` | Core FDC/media owner | T492 S4's ready-conditioned reset and copied timing conversion implementation, explicit L2 fallback and focused proof. |
+| `evidence/t492-s5-8272a-closure-audit.md` | Closure audit | T492's complete IBM 5160 8272A/logical-media source/List-1/List-2/owner closure, retained L2/L3 boundaries, 300/300 serial gate and stripped 0492 artifact. |
 | `evidence/t486-s1-8088-original-source-ledger.md` | Core CPU timing owner | T486 S1's visually verified Intel 1981 source corpus, scan/OCR boundary and finite Table-2-21 basis for the following complete List-1 ledger. |
 | `evidence/t486-s2-8088-function-timing-list-1.md` | Core CPU timing owner | T486 S2's finite 8088 Table-2-21 function/timing List 1, including all mnemonic groups, prefix entries, explicit non-instruction entries and manual timing boundaries. |
 | `evidence/t486-s3-8088-current-code-gap-list-2.md` | Core CPU timing owner | T486 S3's complete List-1-to-code-owner ledger, current 8088 timing dispositions and one-owner implementation boundary. |
