@@ -2,26 +2,11 @@
 
 ## Current Work
 
-## M5 T497 S1 Packet
+## M5 T497 Progress
 
-| Field | Required record |
+| Subtask | Accepted result |
 | --- | --- |
-| Identifier Mode | New |
-| Admission And Approval | The owner explicitly corrected the original IBM 5170 diskette contract on 2026-08-27: native 1.2 MB high-capacity 5.25-inch Drive A, 360 KB compatibility media, and no original 720 KB/1.44 MB default. |
-| Objective | Freeze the original-source and bounded external-model evidence for the complete Model 339 floppy-drive contract before implementation. |
-| Non-goals | No runtime behavior change, image-size inference, FDC/BIOS/VM second state, firmware/media import, mechanical timing claim, or acceptance of post-1984 3.5-inch hardware. |
-| Reference Baseline | `5dbbecf4` (`M5 T496 S8 P2`); [IBM 5170 native floppy proposal](../proposals/m5-ibm-5170-native-floppy-contract.md). |
-| Candidate Proposal | [IBM 5170 native floppy contract](../proposals/m5-ibm-5170-native-floppy-contract.md). |
-| Files And ABI Surface | Evidence, task state and proposal only. No production source, ABI or artifact changes. |
-| Applicable Rules | IBM primary material is normative; OCR requires visual verification; external emulator sources are Other L3 corroboration only; Core owns FDC state, profile owns immutable drive selection, session owns explicit media request, FDD owns mounted geometry. |
-| Verification | Record printed IBM page/table facts, inspect locally available 86Box/PCjs/Bochs sources without import, state unavailable MAME/QEMU evidence honestly, and prove the current wrong `0x40`/zero-enum path from current code. |
-| Expected Markers | `M5:T497:S1:IBM5170-FLOPPY-SOURCE:OK`. |
-| Asset Needs | The IBM manual and third-party source trees are read-only research inputs. No firmware or guest-media bytes, paths or hashes enter committed evidence. |
-| Reporting Requirements | State each source's authority level, exact conclusion, disagreement/non-claim and next List-1 receiver; do not elevate emulator behavior over IBM. |
-| Stop Conditions | Stop before List 1 or code change if visual primary evidence cannot establish the CMOS type or media-compatibility statement. |
-| Exit Criteria | One evidence record proves the source hierarchy, native/compatible/rejected media boundary, external corroboration boundary and current erroneous owner path. |
-| Original Owner Request | Correct Model 339 from a false 1.44 MB default to original 1.2 MB plus 360 KB compatibility, while preserving a truthful support matrix. |
-| Similar-Issue Sweep | Inspect all Model 339 descriptor, session selection, provider validation, FDD geometry and existing test assertions; classify Default-AT, XT and Model-40 as retained distinct contracts. |
+| S1 | IBM's visually checked CMOS/compatibility facts establish Model 339 native 1.2 MB and compatible 360 KB media; 86Box/PCjs are bounded corroboration only, while Bochs/MAME/QEMU supply no selected-model fact. [Ledger](../etc/evidence/t497-s1-ibm5170-floppy-source-ledger.md). |
 
 ## Current Technical Baseline
 
