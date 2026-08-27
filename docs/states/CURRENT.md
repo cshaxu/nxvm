@@ -2,7 +2,28 @@
 
 ## Current Work
 
-**Idle.**
+**Open: M5 T494.**
+
+## M5 T494 S1 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New |
+| Admission And Approval | T493 is closed; the owner-approved queue admits its next independent hardware unit, IBM 5160 Xebec fixed-disk controller, under the required complete source/List-1/List-2/one-owner workflow. |
+| Objective | Validate the original IBM/Xebec source corpus and its scan/OCR quality for the selected XT `320h`--`323h`, DMA3/IRQ5, logical CHS/media controller universe. |
+| Non-goals | No code or firmware import, implementation, ATA/WD1003 reuse, VM-side controller, physical MFM/ECC/mechanical model or external emulator claim. |
+| Reference Baseline | [Xebec phase proposal](../proposals/m5-xt-xebec-fixed-disk-phase.md), retained T484 Xebec source/implementation evidence as inventory only, source policy and current HDC owner paths. |
+| Candidate Proposal | [IBM 5160 Xebec fixed-disk-controller phase contract](../proposals/m5-xt-xebec-fixed-disk-phase.md). |
+| Files And ABI Surface | Source-ledger evidence/index, history/current records only; read-only local manual and existing-source inventory. |
+| Applicable Rules | Execution, documentation, architecture/coding rules and source policy; third-party code remains reference-only and cannot create a contract without primary or reproducible proof. |
+| Verification | Every proposed source has asset identity/hash, visually checked relevant pages and a precise authority boundary; the ledger states whether it can support List 1 and what it cannot establish. |
+| Expected Markers | One primary-source ledger with no OCR-only claim, no local path or firmware content committed, and no unqualified ATA/WD1003 substitution. |
+| Asset Needs | Owner-managed IBM/Xebec manuals already under the approved local assets root; no media or firmware import. |
+| Reporting Requirements | Record source provenance, printed/page basis, OCR/readability outcome, selected capability scope and explicit physical/undocumented boundary. |
+| Stop Conditions | No usable primary controller source exists, relevant pages are unreadable, or material would require importing protected firmware or third-party code. |
+| Exit Criteria | An accepted source ledger establishes the finite authoritative basis for T494 List 1; no code change begins in S1. |
+| Original Owner Request | Each controller must first collect original manuals, establish complete function/timing List 1 and gap List 2, then repair one owner-local batch without incremental patching. |
+| Similar-Issue Sweep | Identify every candidate IBM/Xebec controller source, distinguish board wiring from controller protocol, and reject ATA/5170/Compaq material as a substitute for XT Xebec authority. |
 
 ## Current Technical Baseline
 
