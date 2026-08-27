@@ -378,3 +378,5 @@ C_INT core_machine_clock_plan_is_valid(const core_machine_clock_plan *plan);
 const core_machine_timing_declaration *core_machine_plan_declaration_find(
     const core_machine_plan *plan, core_machine_timing_capability capability);
 #endif
+#include "core/machine/xt_keyboard.h"
+    core_machine_xt_keyboard xt_keyboard;

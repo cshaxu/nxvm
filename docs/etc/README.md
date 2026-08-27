@@ -61,6 +61,7 @@ principal documents named in [docs/README.md](../README.md).
 | `evidence/t496-s1-xt-keyboard-original-source-ledger.md` | XT keyboard source owner | T496 S1's rendered IBM 5160 keyboard source ledger and bounded external corroboration. |
 | `evidence/t496-s1-xt-keyboard-function-timing-list-1.md` | XT keyboard source owner | T496 S1's complete source-qualified XT keyboard function/timing List 1. |
 | `evidence/t496-s1-xt-keyboard-current-code-gap-list-2.md` | XT keyboard source owner | T496 S1's complete XT keyboard List 2, mapping every List-1 row to its current owner or implementation gap. |
+| `evidence/t496-s2-xt-keyboard-owner-implementation.md` | XT keyboard owner | T496 S2's one-owner keyboard/FIFO/serial/BAT implementation and focused proof. |
 | `evidence/t486-s1-8088-original-source-ledger.md` | Core CPU timing owner | T486 S1's visually verified Intel 1981 source corpus, scan/OCR boundary and finite Table-2-21 basis for the following complete List-1 ledger. |
 | `evidence/t486-s2-8088-function-timing-list-1.md` | Core CPU timing owner | T486 S2's finite 8088 Table-2-21 function/timing List 1, including all mnemonic groups, prefix entries, explicit non-instruction entries and manual timing boundaries. |
 | `evidence/t486-s3-8088-current-code-gap-list-2.md` | Core CPU timing owner | T486 S3's complete List-1-to-code-owner ledger, current 8088 timing dispositions and one-owner implementation boundary. |

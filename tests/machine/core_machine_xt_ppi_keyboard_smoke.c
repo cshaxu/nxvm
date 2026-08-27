@@ -6,6 +6,7 @@ static C_INT core_machine_xt_ppi_keyboard_path(C_VOID)
 {
     const core_machine_config configuration = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .time_axis = {CORE_MACHINE_TIME_AXIS_MACRO_PROPORTIONAL, 1000000u},
         .keyboard_topology = CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI,
         .xt_ppi_keyboard = {0x0060u, 0x0061u, 0x0062u, 0x0063u, 1u}
     };
@@ -53,7 +54,8 @@ static C_INT core_machine_xt_ppi_keyboard_path(C_VOID)
         TYPE_STATUS_OK;
     failed |= !failed && core_machine_bus_write(machine, 0x0061u, 0x40u) !=
         TYPE_STATUS_OK;
-    failed |= !failed && core_machine_keyboard_receive_native_byte(machine, 0x1eu) !=
+    failed |= !failed && core_machine_xt_ppi_keyboard_receive_device_byte(
+        &machine->xt_ppi_keyboard, 0x1eu) !=
         TYPE_STATUS_OK;
     failed |= !failed && !machine->xt_ppi_keyboard.byte_ready;
     failed |= !failed && !machine->xt_ppi_keyboard.irq1_asserted;
@@ -69,26 +71,17 @@ static C_INT core_machine_xt_ppi_keyboard_path(C_VOID)
         TYPE_STATUS_OK;
     failed |= !failed && machine->xt_ppi_keyboard.byte_ready;
     failed |= !failed && machine->xt_ppi_keyboard.irq1_asserted;
-    failed |= !failed && core_machine_keyboard_receive_native_byte(machine, 0x9eu) !=
-        TYPE_STATUS_OK;
-    failed |= !failed && machine->xt_ppi_keyboard.byte_ready;
     failed |= !failed && core_machine_bus_write(machine, 0x0061u, 0x40u) !=
         TYPE_STATUS_OK;
+    failed |= !failed && core_machine_xt_ppi_keyboard_receive_device_byte(
+        &machine->xt_ppi_keyboard, 0x9eu) !=
+        TYPE_STATUS_OK;
+    failed |= !failed && !machine->xt_ppi_keyboard.byte_ready;
     failed |= !failed && core_machine_bus_read(machine, 0x0060u, &value) !=
         TYPE_STATUS_OK;
     failed |= !failed && value != 0x9eu;
     failed |= !failed && core_machine_bus_write(machine, 0x0061u, 0xc0u) !=
         TYPE_STATUS_OK;
-    failed |= !failed && core_machine_bus_write(machine, 0x0061u, 0x00u) !=
-        TYPE_STATUS_OK;
-    failed |= !failed && core_machine_keyboard_receive_native_byte(machine, 0xaau) !=
-        TYPE_STATUS_OK;
-    failed |= !failed && machine->xt_ppi_keyboard.byte_ready;
-    failed |= !failed && core_machine_bus_write(machine, 0x0061u, 0x40u) !=
-        TYPE_STATUS_OK;
-    failed |= !failed && core_machine_bus_read(machine, 0x0060u, &value) !=
-        TYPE_STATUS_OK;
-    failed |= !failed && value != 0xaau;
     core_machine_destroy(machine);
     return failed;
 }
@@ -173,14 +166,86 @@ static C_INT core_machine_xt_ppi_parity_nmi_path(C_VOID)
     return failed;
 }
 
+static C_INT core_machine_xt_keyboard_reset_bat_path(C_VOID)
+{
+    const core_machine_config configuration = {
+        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .time_axis = {CORE_MACHINE_TIME_AXIS_MACRO_PROPORTIONAL, 1000000u},
+        .keyboard_topology = CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI,
+        .xt_ppi_keyboard = {0x0060u, 0x0061u, 0x0062u, 0x0063u, 1u}
+    };
+    core_machine *machine = STD_NULL;
+    core_machine_time_observation time_observation;
+    type_unsigned_32 value = 0u;
+    const type_unsigned_8 full_fifo[16] = {
+        0x10u, 0x11u, 0x12u, 0x13u, 0x14u, 0x15u, 0x16u, 0x17u,
+        0x18u, 0x19u, 0x1au, 0x1bu, 0x1cu, 0x1du, 0x1eu, 0x1fu
+    };
+    C_INT failed = 0;
+
+    failed |= core_machine_create(&configuration, &machine) != TYPE_STATUS_OK;
+    failed |= !failed && core_machine_freeze_execution_providers(machine) !=
+        TYPE_STATUS_OK;
+    failed |= !failed && core_machine_reset(machine) != TYPE_STATUS_OK;
+    failed |= !failed && core_machine_bus_write(machine, 0x0063u, 0x99u) !=
+        TYPE_STATUS_OK;
+    failed |= !failed && core_machine_advance_time(machine, 12499u) != TYPE_STATUS_OK;
+    failed |= !failed && core_machine_bus_write(machine, 0x0061u, 0x40u) !=
+        TYPE_STATUS_OK;
+    failed |= !failed && core_machine_advance_time(machine, 300300u) != TYPE_STATUS_OK;
+    failed |= !failed && machine->xt_ppi_keyboard.byte_ready;
+    failed |= !failed && core_machine_reset(machine) != TYPE_STATUS_OK;
+    failed |= !failed && core_machine_bus_write(machine, 0x0063u, 0x99u) !=
+        TYPE_STATUS_OK;
+    failed |= !failed && core_machine_advance_time(machine, 12500u) != TYPE_STATUS_OK;
+    failed |= !failed && core_machine_bus_write(machine, 0x0061u, 0x40u) !=
+        TYPE_STATUS_OK;
+    failed |= !failed && core_machine_capture_time_observation(machine,
+        &time_observation) != TYPE_STATUS_OK;
+    failed |= !failed && !time_observation.next_deadline_valid;
+    failed |= !failed && core_machine_advance_time(machine, 300300u) != TYPE_STATUS_OK;
+    failed |= !failed && !machine->xt_ppi_keyboard.byte_ready;
+    failed |= !failed && !machine->xt_ppi_keyboard.irq1_asserted;
+    failed |= !failed && core_machine_bus_read(machine, 0x0060u, &value) !=
+        TYPE_STATUS_OK;
+    failed |= !failed && value != 0xaau;
+    failed |= !failed && core_machine_bus_write(machine, 0x0061u, 0xc0u) !=
+        TYPE_STATUS_OK;
+    failed |= !failed && core_machine_bus_write(machine, 0x0061u, 0x40u) !=
+        TYPE_STATUS_OK;
+    failed |= !failed && core_machine_keyboard_receive_native_byte(machine, 0x1eu) !=
+        TYPE_STATUS_OK;
+    failed |= !failed && machine->xt_keyboard.fifo_count != 1u;
+    failed |= !failed && core_machine_advance_time(machine, 300u) != TYPE_STATUS_OK;
+    failed |= !failed && machine->xt_keyboard.fifo_count != 0u;
+    failed |= !failed && core_machine_bus_read(machine, 0x0060u, &value) !=
+        TYPE_STATUS_OK;
+    failed |= !failed && value != 0x1eu;
+    failed |= !failed && core_machine_bus_write(machine, 0x0061u, 0x00u) !=
+        TYPE_STATUS_OK;
+    failed |= !failed && core_machine_keyboard_receive_native_bytes(machine, full_fifo,
+        sizeof(full_fifo)) != TYPE_STATUS_OK;
+    failed |= !failed && machine->xt_keyboard.fifo_count != 16u;
+    failed |= !failed && core_machine_keyboard_receive_native_byte(machine, 0x20u) !=
+        TYPE_STATUS_OK;
+    failed |= !failed && machine->xt_keyboard.fifo_count != 16u;
+    failed |= !failed && machine->xt_keyboard.fifo[(machine->xt_keyboard.fifo_head +
+        CORE_MACHINE_XT_KEYBOARD_FIFO_CAPACITY - 1u) % CORE_MACHINE_XT_KEYBOARD_FIFO_CAPACITY]
+        != 0xffu;
+    core_machine_destroy(machine);
+    return failed;
+}
+
 int main(void)
 {
     if (core_machine_xt_ppi_keyboard_path() ||
         core_machine_xt_ppi_does_not_change_at_8042() ||
-        core_machine_xt_ppi_parity_nmi_path()) return 1;
+        core_machine_xt_ppi_parity_nmi_path() ||
+        core_machine_xt_keyboard_reset_bat_path()) return 1;
     STD_PRINTF("M5:T484:S8:XT-PPI-KEYBOARD:OK\n");
     STD_PRINTF("M5:T484:S8:XT-IRQ1-RESET:OK\n");
     STD_PRINTF("M5:T484:S8:NO-8042-ALIAS:OK\n");
     STD_PRINTF("M5:T484:S19:XT-PPI-PARITY:OK\n");
+    STD_PRINTF("M5:T496:S2:XT-KEYBOARD-BAT:OK\n");
     return 0;
 }

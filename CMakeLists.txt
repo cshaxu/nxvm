@@ -3952,3 +3952,5 @@ endif()
 add_dependencies(verify-current-specialized-gates
     verify-t345-deferred-direct-ownership
     verify-t345-deferred-direct-ownership-selftest)
+    src/core/machine/xt_keyboard.c
+    src/core/machine/xt_keyboard.c

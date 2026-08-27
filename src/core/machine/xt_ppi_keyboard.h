@@ -12,6 +12,9 @@
 typedef type_bool (*core_machine_xt_ppi_nmi_request)(C_VOID *owner);
 typedef C_VOID (*core_machine_xt_ppi_speaker_update)(C_VOID *owner,
     type_bool timer_gate, type_bool data_enabled);
+typedef C_VOID (*core_machine_xt_ppi_line_observer)(C_VOID *owner,
+    type_bool clock_held, type_bool clear_asserted);
+typedef C_VOID (*core_machine_xt_ppi_byte_released)(C_VOID *owner);
 
 /* This owner models the selected IBM XT 8255A Mode-0 board attachment.  It is
  * intentionally not a generic 8255 abstraction: unselected Mode-1/2 board
@@ -24,9 +27,6 @@ typedef struct core_machine_xt_ppi_keyboard {
     type_unsigned_8 port_a_latch;
     type_unsigned_8 port_b_latch;
     type_unsigned_8 port_c_latch;
-    type_unsigned_8 queue[CORE_MACHINE_XT_PPI_KEYBOARD_QUEUE_CAPACITY];
-    type_unsigned_8 queue_head;
-    type_unsigned_8 queue_count;
     type_unsigned_8 current_byte;
     type_bool byte_ready;
     type_bool irq1_asserted;
@@ -37,6 +37,10 @@ typedef struct core_machine_xt_ppi_keyboard {
     C_VOID *nmi_owner;
     core_machine_xt_ppi_speaker_update speaker_update;
     C_VOID *speaker_owner;
+    core_machine_xt_ppi_line_observer line_observer;
+    C_VOID *line_observer_owner;
+    core_machine_xt_ppi_byte_released byte_released;
+    C_VOID *byte_released_owner;
 } core_machine_xt_ppi_keyboard;
 
 C_INT core_machine_xt_ppi_keyboard_config_is_valid(
@@ -50,16 +54,16 @@ C_VOID core_machine_xt_ppi_keyboard_bind_nmi(core_machine_xt_ppi_keyboard *keybo
     core_machine_xt_ppi_nmi_request request, C_VOID *owner);
 C_VOID core_machine_xt_ppi_keyboard_bind_speaker(core_machine_xt_ppi_keyboard *keyboard,
     core_machine_xt_ppi_speaker_update update, C_VOID *owner);
+C_VOID core_machine_xt_ppi_keyboard_bind_keyboard_observer(
+    core_machine_xt_ppi_keyboard *keyboard, core_machine_xt_ppi_line_observer observer,
+    C_VOID *owner, core_machine_xt_ppi_byte_released released);
 C_VOID core_machine_xt_ppi_keyboard_reset(core_machine_xt_ppi_keyboard *keyboard);
 C_VOID core_machine_xt_ppi_keyboard_finalize(core_machine_xt_ppi_keyboard *keyboard);
 type_status core_machine_xt_ppi_keyboard_set_fault_input(
     core_machine_xt_ppi_keyboard *keyboard, core_machine_xt_ppi_fault_input input,
     C_INT asserted);
 C_VOID core_machine_xt_ppi_keyboard_refresh_nmi(core_machine_xt_ppi_keyboard *keyboard);
-type_status core_machine_xt_ppi_keyboard_submit_native_byte(
+type_status core_machine_xt_ppi_keyboard_receive_device_byte(
     core_machine_xt_ppi_keyboard *keyboard, type_unsigned_8 native_byte);
-type_status core_machine_xt_ppi_keyboard_submit_native_bytes(
-    core_machine_xt_ppi_keyboard *keyboard, const type_unsigned_8 *native_bytes,
-    STD_SIZE_T count);
 
 #endif

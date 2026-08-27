@@ -31,6 +31,10 @@ its evidence-tier discipline remains a shared constraint, not a candidate.
 Detailed scope, acceptance conditions, and common constraints remain in these
 shared proposals and in each candidate's linked proposal.
 
+The [IBM 5160 XT keyboard-device proposal](../proposals/ibm-5160-xt-keyboard-device.md)
+is indexed here for proposal traceability; task admission remains solely in
+`CURRENT.md`.
+
 The [Core specification-driven timing design](../etc/architecture/specification-driven-l3-timing.md)
 is the shared architecture context for the following ordered Project A sequence.
 The [specification-driven complete simulation admission program](../proposals/m5-specification-driven-complete-simulation-admission-program.md)

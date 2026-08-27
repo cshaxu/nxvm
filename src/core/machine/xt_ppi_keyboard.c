@@ -94,26 +94,15 @@ static C_VOID core_machine_xt_ppi_keyboard_deassert_irq(
     keyboard->irq1_asserted = TYPE_FALSE;
 }
 
-static C_VOID core_machine_xt_ppi_keyboard_publish(
-    core_machine_xt_ppi_keyboard *keyboard)
-{
-    if (keyboard == STD_NULL || keyboard->byte_ready || keyboard->queue_count == 0u ||
-        !core_machine_xt_ppi_keyboard_delivery_enabled(keyboard)) return;
-    keyboard->current_byte = keyboard->queue[keyboard->queue_head];
-    keyboard->queue_head = (type_unsigned_8)((keyboard->queue_head + 1u) %
-        CORE_MACHINE_XT_PPI_KEYBOARD_QUEUE_CAPACITY);
-    --keyboard->queue_count;
-    keyboard->byte_ready = TYPE_TRUE;
-    core_machine_pic_irq_source_assert(&keyboard->irq1_source);
-    keyboard->irq1_asserted = TYPE_TRUE;
-}
-
 static C_VOID core_machine_xt_ppi_keyboard_clear_byte(
     core_machine_xt_ppi_keyboard *keyboard)
 {
     if (keyboard == STD_NULL) return;
     keyboard->byte_ready = TYPE_FALSE;
     core_machine_xt_ppi_keyboard_deassert_irq(keyboard);
+    if (keyboard->byte_released != STD_NULL) {
+        keyboard->byte_released(keyboard->byte_released_owner);
+    }
 }
 
 static type_status core_machine_xt_ppi_keyboard_read(C_VOID *owner,
@@ -154,7 +143,11 @@ static type_status core_machine_xt_ppi_keyboard_write(C_VOID *owner,
         if ((byte & CORE_MACHINE_XT_PPI_PORT_B_CLEAR_KEYBOARD) != 0u) {
             core_machine_xt_ppi_keyboard_clear_byte(keyboard);
         }
-        core_machine_xt_ppi_keyboard_publish(keyboard);
+        if (keyboard->line_observer != STD_NULL) {
+            keyboard->line_observer(keyboard->line_observer_owner,
+                (byte & CORE_MACHINE_XT_PPI_PORT_B_CLOCK_NOT_HELD) == 0u,
+                (byte & CORE_MACHINE_XT_PPI_PORT_B_CLEAR_KEYBOARD) != 0u);
+        }
         core_machine_xt_ppi_keyboard_refresh_nmi(keyboard);
     } else if (port == keyboard->config.port_c) {
         keyboard->port_c_latch = byte;
@@ -168,7 +161,6 @@ static type_status core_machine_xt_ppi_keyboard_write(C_VOID *owner,
             if ((byte & 0x01u) != 0u) keyboard->port_c_latch |= mask;
             else keyboard->port_c_latch &= (type_unsigned_8)~mask;
         }
-        core_machine_xt_ppi_keyboard_publish(keyboard);
         core_machine_xt_ppi_keyboard_refresh_nmi(keyboard);
     } else {
         return TYPE_STATUS_INVALID_ARGUMENT;
@@ -243,6 +235,22 @@ C_VOID core_machine_xt_ppi_keyboard_bind_speaker(core_machine_xt_ppi_keyboard *k
     core_machine_xt_ppi_keyboard_publish_speaker(keyboard);
 }
 
+C_VOID core_machine_xt_ppi_keyboard_bind_keyboard_observer(
+    core_machine_xt_ppi_keyboard *keyboard, core_machine_xt_ppi_line_observer observer,
+    C_VOID *owner, core_machine_xt_ppi_byte_released released)
+{
+    if (keyboard == STD_NULL) return;
+    keyboard->line_observer = observer;
+    keyboard->line_observer_owner = owner;
+    keyboard->byte_released = released;
+    keyboard->byte_released_owner = owner;
+    if (observer != STD_NULL) {
+        observer(owner, (keyboard->port_b_latch &
+            CORE_MACHINE_XT_PPI_PORT_B_CLOCK_NOT_HELD) == 0u,
+            (keyboard->port_b_latch & CORE_MACHINE_XT_PPI_PORT_B_CLEAR_KEYBOARD) != 0u);
+    }
+}
+
 C_VOID core_machine_xt_ppi_keyboard_reset(core_machine_xt_ppi_keyboard *keyboard)
 {
     if (keyboard == STD_NULL) return;
@@ -251,8 +259,6 @@ C_VOID core_machine_xt_ppi_keyboard_reset(core_machine_xt_ppi_keyboard *keyboard
     keyboard->port_a_latch = 0u;
     keyboard->port_b_latch = 0u;
     keyboard->port_c_latch = 0u;
-    keyboard->queue_head = 0u;
-    keyboard->queue_count = 0u;
     keyboard->current_byte = 0u;
     keyboard->byte_ready = TYPE_FALSE;
     keyboard->io_check_asserted = TYPE_FALSE;
@@ -270,6 +276,10 @@ C_VOID core_machine_xt_ppi_keyboard_finalize(core_machine_xt_ppi_keyboard *keybo
     keyboard->nmi_owner = STD_NULL;
     keyboard->speaker_update = STD_NULL;
     keyboard->speaker_owner = STD_NULL;
+    keyboard->line_observer = STD_NULL;
+    keyboard->line_observer_owner = STD_NULL;
+    keyboard->byte_released = STD_NULL;
+    keyboard->byte_released_owner = STD_NULL;
 }
 
 type_status core_machine_xt_ppi_keyboard_set_fault_input(
@@ -286,36 +296,16 @@ type_status core_machine_xt_ppi_keyboard_set_fault_input(
     return TYPE_STATUS_OK;
 }
 
-type_status core_machine_xt_ppi_keyboard_submit_native_byte(
+type_status core_machine_xt_ppi_keyboard_receive_device_byte(
     core_machine_xt_ppi_keyboard *keyboard, type_unsigned_8 native_byte)
 {
-    type_unsigned_8 tail;
-
-    if (keyboard == STD_NULL || keyboard->queue_count >=
-        CORE_MACHINE_XT_PPI_KEYBOARD_QUEUE_CAPACITY) return TYPE_STATUS_INVALID_STATE;
-    tail = (type_unsigned_8)((keyboard->queue_head + keyboard->queue_count) %
-        CORE_MACHINE_XT_PPI_KEYBOARD_QUEUE_CAPACITY);
-    keyboard->queue[tail] = native_byte;
-    ++keyboard->queue_count;
-    core_machine_xt_ppi_keyboard_publish(keyboard);
-    return TYPE_STATUS_OK;
-}
-
-type_status core_machine_xt_ppi_keyboard_submit_native_bytes(
-    core_machine_xt_ppi_keyboard *keyboard, const type_unsigned_8 *native_bytes,
-    STD_SIZE_T count)
-{
-    STD_SIZE_T index;
-
-    if (keyboard == STD_NULL || (native_bytes == STD_NULL && count != 0u)) {
-        return TYPE_STATUS_INVALID_ARGUMENT;
-    }
-    if (count > CORE_MACHINE_XT_PPI_KEYBOARD_QUEUE_CAPACITY - keyboard->queue_count) {
+    if (keyboard == STD_NULL || keyboard->byte_ready ||
+        !core_machine_xt_ppi_keyboard_delivery_enabled(keyboard)) {
         return TYPE_STATUS_INVALID_STATE;
     }
-    for (index = 0u; index < count; ++index) {
-        if (core_machine_xt_ppi_keyboard_submit_native_byte(keyboard,
-                native_bytes[index]) != TYPE_STATUS_OK) return TYPE_STATUS_INVALID_STATE;
-    }
+    keyboard->current_byte = native_byte;
+    keyboard->byte_ready = TYPE_TRUE;
+    core_machine_pic_irq_source_assert(&keyboard->irq1_source);
+    keyboard->irq1_asserted = TYPE_TRUE;
     return TYPE_STATUS_OK;
 }

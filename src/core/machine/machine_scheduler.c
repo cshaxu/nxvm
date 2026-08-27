@@ -98,6 +98,12 @@ C_VOID core_machine_capture_time_observation_private(const core_machine *machine
         core_machine_deadline_consider_clock(&machine->rtc_clock, device_ticks,
             &source_ticks);
     }
+    if (machine->keyboard_topology == CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI &&
+        core_machine_xt_keyboard_ticks_until_event(&machine->xt_keyboard,
+            &device_ticks) == TYPE_STATUS_OK &&
+        (source_ticks == 0u || device_ticks < source_ticks)) {
+        source_ticks = device_ticks;
+    }
     if (source_ticks != 0u && source_ticks <= UINT64_MAX - machine->elapsed_ticks) {
         out_observation->next_deadline_tick = machine->elapsed_ticks + source_ticks;
         out_observation->next_deadline_valid = TYPE_TRUE;
@@ -291,7 +297,11 @@ C_VOID core_machine_peripheral_tick(C_VOID *opaque,
         return;
     }
     kbc_ticks = core_machine_clock_domain_advance(&machine->kbc_clock, 1u);
-    core_machine_kbc_advance(&machine->shared_kbc, kbc_ticks);
+    if (machine->keyboard_topology == CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI) {
+        core_machine_xt_keyboard_advance(&machine->xt_keyboard, 1u);
+    } else {
+        core_machine_kbc_advance(&machine->shared_kbc, kbc_ticks);
+    }
     core_machine_trace_record(machine, CORE_MACHINE_TRACE_KBC_ADVANCE,
         0u, (type_unsigned_32)kbc_ticks, 0u);
     vadp_ticks = core_machine_clock_domain_advance(&machine->vadp_clock, 1u);
