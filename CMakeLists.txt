@@ -1549,6 +1549,10 @@ add_executable(core-machine-pit-readback-smoke
     tests/machine/core_machine_pit_readback_smoke.c
 )
 target_link_libraries(core-machine-pit-readback-smoke PRIVATE core-machine)
+add_executable(core-machine-pit-8253-smoke
+    tests/machine/core_machine_pit_8253_smoke.c
+)
+target_link_libraries(core-machine-pit-8253-smoke PRIVATE core-machine)
 add_executable(core-machine-pit-waveform-smoke
     tests/machine/core_machine_pit_waveform_smoke.c
 )
@@ -2235,6 +2239,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     core-machine-memory-device-registration-s16-smoke
     core-machine-ram-port-context-smoke
     core-machine-pit-readback-smoke
+    core-machine-pit-8253-smoke
     core-machine-pit-waveform-smoke
     core-machine-pit-divider-smoke
     core-machine-pit-irq0-s2-smoke
@@ -3592,10 +3597,10 @@ foreach(project_t345_target IN LISTS PROJECT_T344_CURRENT_GATE_TARGETS)
 endforeach()
 list(LENGTH PROJECT_T345_S2_OWNER_TEST_STRICT_TARGETS project_t345_s2_pure_count)
 list(LENGTH PROJECT_T345_S2_MIXED_OWNER_TEST_TARGETS project_t345_s2_mixed_count)
-if(NOT project_t345_s2_pure_count EQUAL 182 OR
+if(NOT project_t345_s2_pure_count EQUAL 183 OR
         NOT project_t345_s2_mixed_count EQUAL 3)
     message(FATAL_ERROR
-        "T345 S2 expected 182 pure and 3 mixed owner-test targets; found ${project_t345_s2_pure_count} pure and ${project_t345_s2_mixed_count} mixed.")
+        "T345 S2 expected 183 pure and 3 mixed owner-test targets; found ${project_t345_s2_pure_count} pure and ${project_t345_s2_mixed_count} mixed.")
 endif()
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     foreach(project_t345_target IN LISTS PROJECT_T345_S2_OWNER_TEST_STRICT_TARGETS)

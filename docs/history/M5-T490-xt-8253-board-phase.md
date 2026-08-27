@@ -13,4 +13,4 @@ machine, scheduler or compatibility path.
 | S1 | Accepted: visually checked Intel 8253-5 and IBM 5160 sources correct the original 8254 misidentification and establish the finite List-1 basis. |
 | S2 | Accepted: complete 22-row selected 8253/XT function and timing List 1 is frozen before code audit. |
 | S3 | Accepted: all 22 rows map to the existing PIT/board/scheduler route; one finite 8253 personality batch excludes 8254 Read-Back from XT. |
-| S4 | Active: consume the complete immutable 8253 personality batch at the sole Core PIT owner. |
+| S4 | Implementation pending acceptance: the complete immutable 8253 personality batch is in the sole Core PIT owner; an independently reproduced unrelated current-gate failure blocks closure. |

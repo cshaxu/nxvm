@@ -32,6 +32,7 @@ principal documents named in [docs/README.md](../README.md).
 | `evidence/t490-s1-8253-original-source-ledger.md` | Core PIT owner | T490 S1's visually checked Intel 8253-5 and IBM 5160 source corpus, including the 8254-superset exclusion and finite List-1 basis. |
 | `evidence/t490-s2-8253-function-timing-list-1.md` | Core PIT owner | T490 S2's complete Intel 8253/IBM XT function and timing List 1, including explicit L1/L2/L4 boundaries. |
 | `evidence/t490-s3-8253-current-code-gap-list-2.md` | Core PIT owner | T490 S3's complete List-2 audit: one Core PIT owner/port route, the finite 8253-versus-8254 personality batch, and retained XT board-axis receivers. |
+| `evidence/t490-s4-8253-personality-implementation.md` | Core PIT owner | T490 S4's sole-owner 8253 personality implementation, focused proof, code-size result and independently reproduced current-gate blocker. |
 | `evidence/t486-s1-8088-original-source-ledger.md` | Core CPU timing owner | T486 S1's visually verified Intel 1981 source corpus, scan/OCR boundary and finite Table-2-21 basis for the following complete List-1 ledger. |
 | `evidence/t486-s2-8088-function-timing-list-1.md` | Core CPU timing owner | T486 S2's finite 8088 Table-2-21 function/timing List 1, including all mnemonic groups, prefix entries, explicit non-instruction entries and manual timing boundaries. |
 | `evidence/t486-s3-8088-current-code-gap-list-2.md` | Core CPU timing owner | T486 S3's complete List-1-to-code-owner ledger, current 8088 timing dispositions and one-owner implementation boundary. |

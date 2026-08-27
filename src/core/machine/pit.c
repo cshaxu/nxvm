@@ -394,6 +394,7 @@ static C_VOID io_write_0043(t_port *port, type_unsigned_16 port_id, C_VOID *owne
     type_unsigned_8 selected;
     (C_VOID)port_id;
     if (id == 3u) {
+        if (pit->personality != CORE_MACHINE_PIT_PERSONALITY_8254) return;
         for (selected = 0u; selected < 3u; ++selected) {
             if ((port->data.ioByte & VPIT_RB_CNT(selected)) != 0u) continue;
             if ((port->data.ioByte & VPIT_RB_COUNT) == 0u) {
@@ -527,9 +528,18 @@ C_VOID core_machine_pit_initialize_at(t_pit *pit, t_port *port,
         io_write_0043, pit);
 }
 
+C_VOID core_machine_pit_initialize_as(t_pit *pit, t_port *port,
+    core_machine_pit_personality personality)
+{
+    if (personality != CORE_MACHINE_PIT_PERSONALITY_8254 &&
+        personality != CORE_MACHINE_PIT_PERSONALITY_8253) return;
+    core_machine_pit_initialize_at(pit, port, 0x0040u);
+    if (pit != STD_NULL && port != STD_NULL) pit->personality = personality;
+}
+
 C_VOID core_machine_pit_initialize(t_pit *pit, t_port *port)
 {
-    core_machine_pit_initialize_at(pit, port, 0x0040u);
+    core_machine_pit_initialize_as(pit, port, CORE_MACHINE_PIT_PERSONALITY_8254);
 }
 
 C_VOID core_machine_pit_reset(t_pit *pit)

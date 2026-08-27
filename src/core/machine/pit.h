@@ -10,7 +10,10 @@ extern "C" {
 #include "type.h"
 #include "core/machine/port.h"
 
-#define CORE_MACHINE_DEVICE_PIT "Intel 8254"
+typedef enum core_machine_pit_personality {
+    CORE_MACHINE_PIT_PERSONALITY_8254 = 0,
+    CORE_MACHINE_PIT_PERSONALITY_8253
+} core_machine_pit_personality;
 
 typedef enum {
     VPIT_STATUS_RW_READY,
@@ -55,6 +58,7 @@ typedef struct {
 } t_pit_connect;
 
 typedef struct {
+    core_machine_pit_personality personality;
     t_pit_data data;
     t_pit_connect connect;
 } t_pit;
@@ -92,6 +96,8 @@ typedef struct {
 #define VPIT_SB_OUT 0x80 /* state of out pin high(1) or low(0) */
 
 C_VOID core_machine_pit_initialize(t_pit *pit, t_port *port);
+C_VOID core_machine_pit_initialize_as(t_pit *pit, t_port *port,
+    core_machine_pit_personality personality);
 /* One PIT mechanism may be composed at a documented four-port topology. */
 C_VOID core_machine_pit_initialize_at(t_pit *pit, t_port *port,
     type_unsigned_16 base_port);

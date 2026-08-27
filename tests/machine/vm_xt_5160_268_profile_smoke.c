@@ -42,6 +42,8 @@ static C_INT vm_xt_5160_268_declaration_is_fixed(C_VOID)
             CORE_MACHINE_CPU_PROFILE_8088 ||
         profile.resolved.values.core.configuration.fpu_profile !=
             CORE_MACHINE_FPU_PROFILE_NONE ||
+        profile.resolved.values.core.configuration.shared_pit_personality !=
+            CORE_MACHINE_PIT_PERSONALITY_8253 ||
         profile.resolved.values.core.configuration.pic_topology !=
             CORE_MACHINE_PIC_TOPOLOGY_SINGLE ||
         profile.resolved.values.core.configuration.dma_controller_count != 1u ||

@@ -289,6 +289,8 @@ static type_status core_machine_create_internal(
             config->retirement_time_contract) ||
         !core_machine_transaction_contract_is_valid(
             &config->transaction_contract) ||
+        (config->shared_pit_personality != CORE_MACHINE_PIT_PERSONALITY_8254 &&
+        config->shared_pit_personality != CORE_MACHINE_PIT_PERSONALITY_8253) ||
         (config->auxiliary_pit_present != TYPE_FALSE &&
         config->auxiliary_pit_present != TYPE_TRUE) ||
         (config->pic_topology != CORE_MACHINE_PIC_TOPOLOGY_CASCADED &&
@@ -457,7 +459,8 @@ static type_status core_machine_create_internal(
         &machine->shared_pic_master, &machine->shared_pic_slave);
     core_machine_pic_irq_source_bind(&machine->shared_pit_irq0_source,
         &machine->shared_pic_master, &machine->shared_pic_slave, 0u);
-    core_machine_pit_initialize(&machine->shared_pit, &machine->executor_port);
+    core_machine_pit_initialize_as(&machine->shared_pit, &machine->executor_port,
+        config->shared_pit_personality);
     if (config->auxiliary_pit_present) {
         core_machine_pit_initialize_at(&machine->auxiliary_pit,
             &machine->executor_port, config->auxiliary_pit_base_port);

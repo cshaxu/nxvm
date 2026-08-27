@@ -12,6 +12,7 @@
 #include "core/machine/memory_interface.h"
 #include "core/machine/port_interface.h"
 #include "core/machine/pic_interface.h"
+#include "core/machine/pit.h"
 #include "type.h"
 #include "core/machine/trace_interface.h"
 #include "core/machine/retirement_observation_interface.h"
@@ -162,6 +163,8 @@ typedef struct core_machine_config {
     core_machine_instruction_timing instruction_timing;
     core_machine_transaction_contract transaction_contract;
     core_machine_clock_plan clock_plan;
+    /* Frozen shared system-PIT chip selection; zero preserves 8254 users. */
+    core_machine_pit_personality shared_pit_personality;
     core_machine_pic_topology pic_topology;
     /* Product profiles select one or two controllers explicitly.  Zero is
      * retained only for direct Core fixture compatibility and resolves to two. */

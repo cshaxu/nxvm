@@ -25,6 +25,8 @@ type_status vm_profile_xt_5160_268_declaration_create(
     declaration.values.core.configuration.memory_bytes = 256u * 1024u;
     declaration.values.core.configuration.cpu_profile = CORE_MACHINE_CPU_PROFILE_8088;
     declaration.values.core.configuration.fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE;
+    declaration.values.core.configuration.shared_pit_personality =
+        CORE_MACHINE_PIT_PERSONALITY_8253;
     declaration.values.core.configuration.pic_topology =
         CORE_MACHINE_PIC_TOPOLOGY_SINGLE;
     declaration.values.core.configuration.dma_controller_count = 1u;
