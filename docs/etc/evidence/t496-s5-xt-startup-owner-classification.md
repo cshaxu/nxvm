@@ -17,4 +17,3 @@ compatibility claim.
 
 The runtime-only firmware and media inputs, their locations, identifiers,
 contents, and raw trace/output are deliberately not retained here.
-
