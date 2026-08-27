@@ -31,9 +31,9 @@ clock, media mirror or second controller state was added.
 ## Verification
 
 - `cmake --build build/mingw-gcc-x64 --target core-machine-fdc-smoke core-machine-fdc-topology-port-smoke core-machine-fdc-media-change-port-smoke vm-xt-5160-268-profile-smoke`
-- `ctest --test-dir build/mingw-gcc-x64 --output-on-failure -R "core-machine-fdc-(smoke|topology-port-smoke|media-change-port-smoke)|vm-xt-5160-268-profile-smoke"` — 4/4 passed.
-- `cmake --build build/mingw-gcc-x64 --target verify-fdc-state-machine-boundary verify-dma-fdc-boundary` — both passed.
-- `powershell -NoProfile -ExecutionPolicy Bypass -File tools/Verify-DocumentationGovernance.ps1 -RepositoryRoot .` — passed.
+- `ctest --test-dir build/mingw-gcc-x64 --output-on-failure -R "core-machine-fdc-(smoke|topology-port-smoke|media-change-port-smoke)|vm-xt-5160-268-profile-smoke"` - 4/4 passed.
+- `cmake --build build/mingw-gcc-x64 --target verify-fdc-state-machine-boundary verify-dma-fdc-boundary` - both passed.
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools/Verify-DocumentationGovernance.ps1 -RepositoryRoot .` - passed.
 
 ## Simplicity result
 
