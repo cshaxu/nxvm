@@ -6,9 +6,9 @@
 
 ## Current Technical Baseline
 
-- **Current developer artifact:** target `vm-0-5-0492`; the stripped Release
-  `nxvm_0_5_0492.exe` has SHA-256
-  `1BF1F70B42DE74674F52A07FCB094C0CEE25D0BE257390EB7C09CA26EE9F7531`.
+- **Current developer artifact:** target `vm-0-5-0493`; the stripped Release
+  `nxvm_0_5_0493.exe` has SHA-256
+  `8E5C3E5261E4D5809B28C0863DF4D090F15F210DC75DA581C8F10CB8D8E5E9A4`.
   Debug remains the current-gate route. T471 preserves Core-owned progression:
   a verified axis is Standard-paced only by host waiting against completed
   Core progress. T472 extends that comparison to an explicit L2 macro axis,
@@ -39,7 +39,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T493 S4 | Accepted: immediate VADP-only repair gives CGA `3DBh`/`3DCh` status-latch behavior and 640x200 black/white output, with no Compaq alias or second video path. [Evidence](../etc/evidence/t493-s4-cga-immediate-repair.md). |
+| T493 S5 | Closure candidate: complete IBM CGA source/List-1/List-2/one-owner repair reconciles all 33 rows; the generic latch and binary high-resolution palette repair leave no in-scope tail. [Closure audit](../etc/evidence/t493-s5-cga-closure-audit.md). |
 | T492 | Closed: complete IBM 5160 8272A/logical-media source/List-1/List-2/sole-owner chain removes fabricated reset state and global timing literals; serial gate passes 300/300 and stripped Release 0492 is recorded. [Closure audit](../etc/evidence/t492-s5-8272a-closure-audit.md). |
 | T491 | Closed: the independent IBM 5160 8255 PPI/key/NMI unit maps all 19 rows to one Core owner path, closes PB0/PB1 through the existing PIT2/speaker consumer, and records stripped Release 0491. [Closure audit](../etc/evidence/t491-s5-8255-closure-audit.md). |
 | T490 | Closed: the independent IBM 5160 8253 unit has verified source/List-1/List-2/sole-owner implementation, a corrected full gate and stripped Release 0490 artifact. [Closure audit](../etc/evidence/t490-s6-8253-closure-audit.md). |
