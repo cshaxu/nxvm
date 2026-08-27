@@ -4,6 +4,27 @@
 
 **Open: M5 T494.**
 
+## M5 T494 S3 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | The owner-approved T494 Xebec unit continues after accepted S1/S2; this is its mandatory complete List-2 owner/code audit before one repair batch. |
+| Objective | Map every X1--X18 List-1 source family to the actual Core HDC, media, DMA, PIC, board wiring, profile and regression path; freeze every missing, unsupported or already-correct disposition. |
+| Non-goals | No isolated code patch, external-source import, new controller object, ATA/WD1003/ESDI compatibility route, profile-side HDC state, media cache or guessed physical timing. |
+| Reference Baseline | Accepted [source ledger](../etc/evidence/t494-s1-xebec-original-source-ledger.md) and [List 1](../etc/evidence/t494-s2-xebec-function-timing-list-1.md), current Core/VM paths and retained T484 inventory only. |
+| Candidate Proposal | [IBM 5160 Xebec fixed-disk-controller phase contract](../proposals/m5-xt-xebec-fixed-disk-phase.md). |
+| Files And ABI Surface | One indexed List-2 evidence ledger and history/current records only; source is read-only during this audit. |
+| Applicable Rules | Execution, documentation, architecture/coding rules and source policy; one Core HDC/media owner, Core-only guest state and one immutable profile-to-copied-plan ingress remain mandatory. |
+| Verification | Exact tracked-source/test searches and manual owner-path review cover all X1--X18; every code path and regression is named, every gap has one batch disposition and no implementation changes occur in S3. |
+| Expected Markers | A row-complete current-state ledger, one finite repair batch if needed, retained explicit physical/undocumented exclusions, and no duplicate controller/media/CHS state. |
+| Asset Needs | No new asset; the accepted IBM source and List 1 are sufficient. |
+| Reporting Requirements | Record source files, sole state owner, ingress/publication routes, reset/failure behavior, test coverage and implementation disposition for each List-1 family. |
+| Stop Conditions | A List-1 row lacks a discoverable owner, the current path conflicts with source authority, a duplicate state/path is found outside a safely auditable boundary, or one coherent repair batch cannot be defined. |
+| Exit Criteria | An accepted List 2 defines the complete one-owner repair batch or proves it empty; no code repair begins before acceptance. |
+| Original Owner Request | Establish original source, complete List 1, complete List 2, then repair one owner-local batch rather than finding and patching one defect at a time. |
+| Similar-Issue Sweep | Search all tracked Core/VM/profile/test/build paths for Xebec protocol tags, four ports, DMA3/IRQ5, fixed geometry, HDC media operations and task-file aliases; each hit receives a disposition. |
+
 ## Current Technical Baseline
 
 - **Current developer artifact:** target `vm-0-5-0493`; the stripped Release
