@@ -4,27 +4,6 @@
 
 **Open: M5 T494.**
 
-## M5 T494 S4 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Accepted T494 S3 List 2 admits its sole complete R1 repair batch: source-defined Xebec Read Data block-count progression. |
-| Objective | Make `08h` Read Data consume its positive DCB block count through the existing HDC sector buffer and DMA3 route, with correct terminal/error cleanup. |
-| Non-goals | No new controller, DMA path, CHS/media state, ATA shim, profile mutation, service delay, undocumented status/mask behavior or physical-media model. |
-| Reference Baseline | Accepted [List 1](../etc/evidence/t494-s2-xebec-function-timing-list-1.md) and [List 2](../etc/evidence/t494-s3-xebec-current-code-gap-list-2.md). |
-| Candidate Proposal | [IBM 5160 Xebec fixed-disk-controller phase contract](../proposals/m5-xt-xebec-fixed-disk-phase.md). |
-| Files And ABI Surface | `hdc.c` and focused Xebec smoke plus evidence/history/current; no public ABI change. |
-| Applicable Rules | Execution, architecture and coding rules: retain one Core HDC/media/DMA owner and delete no live distinct behavior. |
-| Verification | Focused two-sector Read, single-sector Read, terminal/error and ATA-isolation proof; build and applicable gates. |
-| Expected Markers | No new state owner/path; Read and Write use equivalent existing multi-sector progression semantics. |
-| Asset Needs | None. |
-| Reporting Requirements | Record code-size result, owner-path sweep, all focused/full verification and retained explicit boundaries. |
-| Stop Conditions | Required semantics cannot be expressed within the existing owner, source conflicts, or a new unplanned state/path becomes necessary. |
-| Exit Criteria | R1 is fully repaired and verified; every T494 List-2 row is then closed or explicitly retained as its documented boundary. |
-| Original Owner Request | Correct complete source/list-derived batches immediately, without incremental patch accumulation or redundant abstraction. |
-| Similar-Issue Sweep | Compare Read and Write DMA sector progression, all terminal/error exits, geometry boundary and task-file isolation in every Xebec path. |
-
 ## Current Technical Baseline
 
 - **Current developer artifact:** target `vm-0-5-0493`; the stripped Release
@@ -60,7 +39,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T494 S3 | Accepted: S1--S3 reconcile all 18 IBM Xebec rows to one Core HDC/media/DMA path; Read block count is the sole immediate owner-local repair. [Source ledger](../etc/evidence/t494-s1-xebec-original-source-ledger.md), [List 1](../etc/evidence/t494-s2-xebec-function-timing-list-1.md), [List 2](../etc/evidence/t494-s3-xebec-current-code-gap-list-2.md). |
+| T494 S4 | Accepted: Read Data now consumes its positive DCB block count through the existing Core HDC/media/DMA path; focused two-sector, error/terminal and ATA-isolation proof passes. [Evidence](../etc/evidence/t494-s4-xebec-read-block-count-repair.md). |
 | T493 | Closed: complete IBM CGA source/List-1/List-2/one-owner repair reconciles all 33 rows; the generic latch and binary high-resolution palette repair leave no in-scope tail. [Closure audit](../etc/evidence/t493-s5-cga-closure-audit.md). |
 | T492 | Closed: complete IBM 5160 8272A/logical-media source/List-1/List-2/sole-owner chain removes fabricated reset state and global timing literals; serial gate passes 300/300 and stripped Release 0492 is recorded. [Closure audit](../etc/evidence/t492-s5-8272a-closure-audit.md). |
 | T491 | Closed: the independent IBM 5160 8255 PPI/key/NMI unit maps all 19 rows to one Core owner path, closes PB0/PB1 through the existing PIT2/speaker consumer, and records stripped Release 0491. [Closure audit](../etc/evidence/t491-s5-8255-closure-audit.md). |
