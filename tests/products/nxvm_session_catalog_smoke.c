@@ -23,7 +23,7 @@ static C_INT write_file(const C_CHAR *path, const C_CHAR *text)
 C_INT main(C_VOID)
 {
     const C_CHAR *directory = "t381-session-catalog";
-    const C_CHAR *valid = "schema: nxvm-session\nprofile: default-pc-at\nmemory_kib: 1\ndisplay: console\nboot: rom\nmedia:\n  floppy: null\n  hard_disk: null\n";
+    const C_CHAR *valid = "schema: nxvm-session\nprofile: default-pc-at\nmemory_kib: 1\nfloppy_format: 720k\ndisplay: console\nboot: rom\nmedia:\n  floppy: null\n  hard_disk: null\n";
     vm_product_session_catalog *catalog = STD_NULL;
     vm_product_session_request first;
     vm_product_session_request second;
@@ -63,6 +63,7 @@ C_INT main(C_VOID)
         !STD_STRCMP(first.file_name, "a.yaml") &&
         !STD_STRCMP(first.profile, "default-pc-at") &&
         first.memory_bytes == 1024u &&
+        !STD_STRCMP(first.floppy_format, "720k") &&
         !STD_STRCMP(second.file_name, "g.yaml") &&
         second.memory_bytes ==
             (~(STD_SIZE_T)0u & ~((STD_SIZE_T)1023u)) &&

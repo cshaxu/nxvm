@@ -21,12 +21,24 @@ typedef enum vm_session_speed {
     VM_SESSION_SPEED_TURBO
 } vm_session_speed;
 
+/* A session selects the physical drive/media format at construction.  This is
+ * not inferred from the image; the selected FDD remains the sole geometry
+ * owner and rejects a differently sized image. */
+typedef enum vm_session_floppy_format {
+    VM_SESSION_FLOPPY_FORMAT_PROFILE_DEFAULT,
+    VM_SESSION_FLOPPY_FORMAT_360K,
+    VM_SESSION_FLOPPY_FORMAT_720K,
+    VM_SESSION_FLOPPY_FORMAT_1200K,
+    VM_SESSION_FLOPPY_FORMAT_1440K
+} vm_session_floppy_format;
+
 const C_CHAR *vm_session_profile_name(vm_session_profile_kind kind);
 
 typedef struct vm_session_config {
     vm_session_profile_kind profile_kind;
     STD_SIZE_T memory_bytes;
     const C_CHAR *fdd_image;
+    vm_session_floppy_format floppy_format;
     const C_CHAR *hdd_image;
     const C_CHAR *hdd_slave_image;
     C_INT create_fdd;

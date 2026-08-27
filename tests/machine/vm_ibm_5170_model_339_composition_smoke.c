@@ -43,8 +43,8 @@ static C_INT vm_model_339_selected_contract(C_VOID)
         !profile->hdc_present || !profile->planar_parity_present ||
         profile->firmware_slot !=
             VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_SLOT_IBM_5170_REV3_ABSTRACT ||
-        !profile->diskette_drive_a_field_upgrade ||
-        profile->cmos.floppy_type != 0x40u || profile->cmos.fixed_disk_type != 0x30u ||
+        profile->diskette_drive_a_field_upgrade ||
+        profile->cmos.floppy_type != 0x20u || profile->cmos.fixed_disk_type != 0x30u ||
         !vm_profile_has_hdc_firmware(profile) ||
         vm_profile_default_pc_at_port_leaf_find(profile,
             VM_PROFILE_DEFAULT_PC_AT_DEVICE_HDC, 0x01f0u) == STD_NULL ||
@@ -95,6 +95,45 @@ static C_INT vm_model_339_selected_contract(C_VOID)
     return failed;
 }
 
+static C_INT vm_model_339_floppy_contract(C_VOID)
+{
+    const vm_session_config native = {
+        .profile_kind = VM_SESSION_PROFILE_IBM_5170_MODEL_339
+    };
+    const vm_session_config compatible = {
+        .profile_kind = VM_SESSION_PROFILE_IBM_5170_MODEL_339,
+        .floppy_format = VM_SESSION_FLOPPY_FORMAT_360K
+    };
+    const vm_session_config rejected_720 = {
+        .profile_kind = VM_SESSION_PROFILE_IBM_5170_MODEL_339,
+        .floppy_format = VM_SESSION_FLOPPY_FORMAT_720K
+    };
+    const vm_session_config rejected_1440 = {
+        .profile_kind = VM_SESSION_PROFILE_IBM_5170_MODEL_339,
+        .floppy_format = VM_SESSION_FLOPPY_FORMAT_1440K
+    };
+    vm_session *session = STD_NULL;
+    C_INT failed = vm_session_create(&native, &session) != TYPE_STATUS_OK ||
+        session == STD_NULL || session->floppy_kind != VM_PROFILE_FLOPPY_525_1200K ||
+        session->fdd.data.ncyl != 80u || session->fdd.data.nhead != 2u ||
+        session->fdd.data.nsector != 15u;
+
+    vm_session_destroy(session);
+    session = STD_NULL;
+    failed |= vm_session_create(&compatible, &session) != TYPE_STATUS_OK ||
+        session == STD_NULL || session->floppy_kind != VM_PROFILE_FLOPPY_525_360K ||
+        session->fdd.data.ncyl != 40u || session->fdd.data.nhead != 2u ||
+        session->fdd.data.nsector != 9u || session->profile->cmos.floppy_type != 0x20u;
+    vm_session_destroy(session);
+    session = STD_NULL;
+    failed |= vm_session_create(&rejected_720, &session) == TYPE_STATUS_OK || session != STD_NULL;
+    vm_session_destroy(session);
+    session = STD_NULL;
+    failed |= vm_session_create(&rejected_1440, &session) == TYPE_STATUS_OK || session != STD_NULL;
+    vm_session_destroy(session);
+    return failed;
+}
+
 static C_INT vm_model_339_accepts_hdd_boot(C_VOID)
 {
     const vm_session_config boot_config = {
@@ -125,7 +164,7 @@ static C_INT vm_default_profile_remains_ata(C_VOID)
 
 C_INT main(C_VOID)
 {
-    if (vm_model_339_selected_contract() ||
+    if (vm_model_339_selected_contract() || vm_model_339_floppy_contract() ||
         vm_model_339_accepts_hdd_boot() ||
         vm_default_profile_remains_ata()) return 1;
     STD_PRINTF("M5:T366:S5:MODEL339-COMPOSITION:OK\n");
@@ -134,5 +173,6 @@ C_INT main(C_VOID)
     STD_PRINTF("M5:T476:S3:IBM5170-ROOT-CUTOVER:OK\n");
     STD_PRINTF("M5:T478:S3:DEFAULT-AT-SESSION-CUTOVER:OK\n");
     STD_PRINTF("M5:T479:S5:IBM5170-PROFILE:OK\n");
+    STD_PRINTF("M5:T497:S4:IBM5170-FLOPPY:OK\n");
     return 0;
 }

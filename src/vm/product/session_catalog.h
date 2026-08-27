@@ -13,6 +13,7 @@ typedef struct vm_product_session_request {
     C_CHAR fpu[32];
     C_CHAR display[16];
     C_CHAR boot[16];
+    C_CHAR floppy_format[16];
     C_CHAR floppy[VM_PRODUCT_SESSION_CATALOG_PATH_MAX];
     C_CHAR hard_disk[VM_PRODUCT_SESSION_CATALOG_PATH_MAX];
     C_CHAR model40_even_path[VM_PRODUCT_SESSION_CATALOG_PATH_MAX];

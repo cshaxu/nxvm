@@ -108,8 +108,35 @@ type_status vm_session_set_speed(vm_session *session, vm_session_speed speed)
     return TYPE_STATUS_OK;
 }
 
+static type_status vm_session_default_at_floppy_select(const vm_session_config *config,
+    vm_profile_floppy_kind *out_kind)
+{
+    vm_session_floppy_format format;
+
+    if (out_kind == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    format = config == STD_NULL ? VM_SESSION_FLOPPY_FORMAT_PROFILE_DEFAULT :
+        config->floppy_format;
+    switch (format) {
+    case VM_SESSION_FLOPPY_FORMAT_PROFILE_DEFAULT:
+    case VM_SESSION_FLOPPY_FORMAT_1440K:
+        *out_kind = VM_PROFILE_FLOPPY_35_1440K;
+        return TYPE_STATUS_OK;
+    case VM_SESSION_FLOPPY_FORMAT_1200K:
+        *out_kind = VM_PROFILE_FLOPPY_525_1200K;
+        return TYPE_STATUS_OK;
+    case VM_SESSION_FLOPPY_FORMAT_720K:
+        *out_kind = VM_PROFILE_FLOPPY_35_720K;
+        return TYPE_STATUS_OK;
+    case VM_SESSION_FLOPPY_FORMAT_360K:
+        *out_kind = VM_PROFILE_FLOPPY_525_360K;
+        return TYPE_STATUS_OK;
+    default:
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
+}
+
 static C_VOID vm_session_default_at_request_create(const vm_session_config *config,
-    vm_profile_default_at_request *out_request)
+    vm_profile_floppy_kind floppy_kind, vm_profile_default_at_request *out_request)
 {
     if (out_request == STD_NULL) return;
     *out_request = (vm_profile_default_at_request) {0};
@@ -124,6 +151,10 @@ static C_VOID vm_session_default_at_request_create(const vm_session_config *conf
         out_request->requested_options |= VM_PROFILE_DEFAULT_AT_SESSION_OPTION_MEMORY;
         out_request->memory_bytes = config->memory_bytes;
     }
+    if (floppy_kind != VM_PROFILE_FLOPPY_35_1440K) {
+        out_request->requested_options |= VM_PROFILE_DEFAULT_AT_SESSION_OPTION_FLOPPY;
+        out_request->floppy_cmos_type = vm_profile_floppy_cmos_type_get(floppy_kind);
+    }
 }
 
 static type_status vm_session_default_at_resolve(vm_session *session,
@@ -132,7 +163,10 @@ static type_status vm_session_default_at_resolve(vm_session *session,
     vm_profile_default_at_request request;
 
     if (session == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
-    vm_session_default_at_request_create(config, &request);
+    if (vm_session_default_at_floppy_select(config, &session->floppy_kind) != TYPE_STATUS_OK) {
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
+    vm_session_default_at_request_create(config, session->floppy_kind, &request);
     if (vm_profile_default_at_child_resolve(&request, &session->default_at_resolved) !=
         TYPE_STATUS_OK) return TYPE_STATUS_INVALID_ARGUMENT;
     session->profile = &session->default_at_resolved.descriptor;
@@ -142,6 +176,25 @@ static type_status vm_session_default_at_resolve(vm_session *session,
     session->controller_timing_rules =
         session->default_at_resolved.resolved.values.core.controller_timing_rules;
     return TYPE_STATUS_OK;
+}
+
+static type_status vm_session_ibm_5170_floppy_select(const vm_session_config *config,
+    vm_profile_floppy_kind *out_kind)
+{
+    const vm_session_floppy_format format = config == STD_NULL ?
+        VM_SESSION_FLOPPY_FORMAT_PROFILE_DEFAULT : config->floppy_format;
+
+    if (out_kind == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (format == VM_SESSION_FLOPPY_FORMAT_PROFILE_DEFAULT ||
+        format == VM_SESSION_FLOPPY_FORMAT_1200K) {
+        *out_kind = VM_PROFILE_FLOPPY_525_1200K;
+        return TYPE_STATUS_OK;
+    }
+    if (format == VM_SESSION_FLOPPY_FORMAT_360K) {
+        *out_kind = VM_PROFILE_FLOPPY_525_360K;
+        return TYPE_STATUS_OK;
+    }
+    return TYPE_STATUS_INVALID_ARGUMENT;
 }
 
 static C_VOID vm_session_storage_rollback(vm_session *machine)
@@ -489,7 +542,8 @@ C_INT vm_session_create(const vm_session_config *config, vm_session **out_sessio
             return TYPE_STATUS_INVALID_ARGUMENT;
         }
     } else if (profile_kind == VM_SESSION_PROFILE_IBM_5170_MODEL_339) {
-        if (vm_profile_ibm_5170_root_resolve(&session->ibm_5170_root) !=
+        if (vm_session_ibm_5170_floppy_select(config, &session->floppy_kind) !=
+            TYPE_STATUS_OK || vm_profile_ibm_5170_root_resolve(&session->ibm_5170_root) !=
             TYPE_STATUS_OK) {
             STD_FREE(session);
             return TYPE_STATUS_FAULT;

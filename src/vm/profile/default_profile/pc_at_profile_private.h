@@ -164,12 +164,14 @@ typedef struct vm_profile_default_pc_at_resolved_profile {
 
 #define VM_PROFILE_DEFAULT_AT_SESSION_OPTION_CPU_FPU 0x01u
 #define VM_PROFILE_DEFAULT_AT_SESSION_OPTION_MEMORY 0x02u
+#define VM_PROFILE_DEFAULT_AT_SESSION_OPTION_FLOPPY 0x04u
 
 typedef struct vm_profile_default_at_request {
     type_unsigned_32 requested_options;
     core_machine_cpu_profile cpu_profile;
     core_machine_fpu_profile fpu_profile;
     STD_SIZE_T memory_bytes;
+    type_unsigned_8 floppy_cmos_type;
 } vm_profile_default_at_request;
 
 const vm_profile_default_pc_at_descriptor *

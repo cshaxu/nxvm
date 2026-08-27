@@ -18,7 +18,7 @@ int main(C_VOID)
     C_INT failed = profile == STD_NULL ||
         profile->firmware_slot !=
             VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_SLOT_IBM_5170_REV3_ABSTRACT ||
-        !profile->diskette_drive_a_field_upgrade || profile->cmos.floppy_type != 0x40u ||
+        profile->diskette_drive_a_field_upgrade || profile->cmos.floppy_type != 0x20u ||
         vm_session_create(&config, &session) != TYPE_STATUS_OK || session == STD_NULL;
 
     route = vm_profile_default_pc_at_route_find(profile,

@@ -38,6 +38,17 @@ static C_INT vm_session_provider_parse_fpu(const C_CHAR *value,
     return 1;
 }
 
+static C_INT vm_session_provider_parse_floppy_format(const C_CHAR *value,
+    vm_session_floppy_format *out_format)
+{
+    if (!STD_STRCMP(value, "360k")) *out_format = VM_SESSION_FLOPPY_FORMAT_360K;
+    else if (!STD_STRCMP(value, "720k")) *out_format = VM_SESSION_FLOPPY_FORMAT_720K;
+    else if (!STD_STRCMP(value, "1200k")) *out_format = VM_SESSION_FLOPPY_FORMAT_1200K;
+    else if (!STD_STRCMP(value, "1440k")) *out_format = VM_SESSION_FLOPPY_FORMAT_1440K;
+    else return 0;
+    return 1;
+}
+
 static C_INT vm_session_provider_parse_profile(const C_CHAR *value,
     vm_session_profile_kind *out_profile)
 {
@@ -78,6 +89,9 @@ static type_status vm_session_provider_request_configure(
             &config->cpu_profile)) ||
         (request->fpu[0] != '\0' && !vm_session_provider_parse_fpu(request->fpu,
             &config->fpu_profile))) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (request->floppy_format[0] != '\0' &&
+        !vm_session_provider_parse_floppy_format(request->floppy_format,
+            &config->floppy_format)) return TYPE_STATUS_INVALID_ARGUMENT;
     config->memory_bytes = request->memory_bytes;
     config->fdd_image = request->floppy[0] == '\0' ? STD_NULL : request->floppy;
     config->hdd_image = request->hard_disk[0] == '\0' ? STD_NULL : request->hard_disk;
@@ -106,8 +120,11 @@ static type_status vm_session_provider_request_configure(
          request->xt_xebec_path[0] != '\0' || request->xt_xebec_sha256[0] != '\0' ||
          request->xt_provenance[0] != '\0')) return TYPE_STATUS_INVALID_STATE;
     if (config->profile_kind != VM_SESSION_PROFILE_DEFAULT_PC_AT &&
+        config->profile_kind != VM_SESSION_PROFILE_IBM_5170_MODEL_339 &&
         (config->memory_bytes != 0u || request->cpu[0] != '\0' ||
-         request->fpu[0] != '\0')) return TYPE_STATUS_INVALID_STATE;
+         request->fpu[0] != '\0' || request->floppy_format[0] != '\0')) {
+        return TYPE_STATUS_INVALID_STATE;
+    }
     if (config->profile_kind == VM_SESSION_PROFILE_COMPAQ_DESKPRO_386_MODEL_40 &&
         STD_STRCMP(request->boot, "rom")) return TYPE_STATUS_INVALID_STATE;
     if (config->profile_kind == VM_SESSION_PROFILE_IBM_5160_MODEL_268 &&

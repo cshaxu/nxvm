@@ -228,9 +228,9 @@ static const vm_profile_default_pc_at_descriptor ibm_5170_model_339_descriptor =
     TYPE_FALSE,
     TYPE_TRUE,
     VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_SLOT_IBM_5170_REV3_ABSTRACT,
-    TYPE_TRUE,
+    TYPE_FALSE,
     { 0xfffffff0u, 0x000ffff0u, 16u, 0xf000u, 0xfff0u },
-    { 0x21u, 0x0200u, 0x40u, 0x30u, 0x00u, 0u, 0x80u },
+    { 0x21u, 0x0200u, 0x20u, 0x30u, 0x00u, 0u, 0x80u },
     default_pc_at_port_leaves,
     sizeof(default_pc_at_port_leaves) / sizeof(default_pc_at_port_leaves[0]),
     default_pc_at_routes,
@@ -554,7 +554,8 @@ static type_status vm_profile_default_pc_at_values_create(
 
 static type_status vm_profile_default_pc_at_snapshot_copy(
     vm_profile_default_pc_at_resolved_profile *out_profile,
-    const vm_profile_default_pc_at_descriptor *descriptor, const C_CHAR *identity)
+    const vm_profile_default_pc_at_descriptor *descriptor, const C_CHAR *identity,
+    type_unsigned_8 floppy_cmos_type)
 {
     if (out_profile == STD_NULL || descriptor == STD_NULL || identity == STD_NULL ||
         descriptor->port_leaf_count > VM_PROFILE_DEFAULT_PC_AT_RESOLVED_PORT_LEAF_CAPACITY ||
@@ -580,6 +581,7 @@ static type_status vm_profile_default_pc_at_snapshot_copy(
         out_profile->resolved.values.core.configuration.fpu_profile;
     out_profile->descriptor.default_memory_bytes =
         out_profile->resolved.values.core.configuration.memory_bytes;
+    out_profile->descriptor.cmos.floppy_type = floppy_cmos_type;
     return vm_profile_default_pc_at_topology_materialize(&out_profile->descriptor,
         &out_profile->resolved.values.core.controller_timing_rules,
         &out_profile->topology);
@@ -627,7 +629,8 @@ type_status vm_profile_ibm_5170_root_resolve(
             TYPE_STATUS_OK) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
-    return vm_profile_default_pc_at_snapshot_copy(out_profile, descriptor, "pc-at-5170");
+    return vm_profile_default_pc_at_snapshot_copy(out_profile, descriptor, "pc-at-5170",
+        descriptor->cmos.floppy_type);
 }
 
 static type_status vm_profile_default_at_request_select(
@@ -641,7 +644,8 @@ static type_status vm_profile_default_at_request_select(
     if (request == STD_NULL || out_cpu == STD_NULL || out_fpu == STD_NULL ||
         out_memory == STD_NULL ||
         (request->requested_options & ~(VM_PROFILE_DEFAULT_AT_SESSION_OPTION_CPU_FPU |
-            VM_PROFILE_DEFAULT_AT_SESSION_OPTION_MEMORY)) != 0u) {
+            VM_PROFILE_DEFAULT_AT_SESSION_OPTION_MEMORY |
+            VM_PROFILE_DEFAULT_AT_SESSION_OPTION_FLOPPY)) != 0u) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
     *out_cpu = descriptor->cpu_profile;
@@ -654,6 +658,11 @@ static type_status vm_profile_default_at_request_select(
     if ((request->requested_options & VM_PROFILE_DEFAULT_AT_SESSION_OPTION_MEMORY) != 0u) {
         if (request->memory_bytes == 0u) return TYPE_STATUS_INVALID_ARGUMENT;
         *out_memory = request->memory_bytes;
+    }
+    if ((request->requested_options & VM_PROFILE_DEFAULT_AT_SESSION_OPTION_FLOPPY) != 0u &&
+        request->floppy_cmos_type != 0x10u && request->floppy_cmos_type != 0x20u &&
+        request->floppy_cmos_type != 0x30u && request->floppy_cmos_type != 0x40u) {
+        return TYPE_STATUS_INVALID_ARGUMENT;
     }
     return TYPE_STATUS_OK;
 }
@@ -687,7 +696,8 @@ type_status vm_profile_default_at_child_declaration_create(
     declaration.values.media_policy = VM_PROFILE_RESOLVER_MEDIA_POLICY_SESSION;
     declaration.values.allowed_session_options =
         VM_PROFILE_DEFAULT_AT_SESSION_OPTION_CPU_FPU |
-        VM_PROFILE_DEFAULT_AT_SESSION_OPTION_MEMORY;
+        VM_PROFILE_DEFAULT_AT_SESSION_OPTION_MEMORY |
+        VM_PROFILE_DEFAULT_AT_SESSION_OPTION_FLOPPY;
     *out_declaration = declaration;
     return TYPE_STATUS_OK;
 }
@@ -715,7 +725,10 @@ type_status vm_profile_default_at_child_resolve(
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
     return vm_profile_default_pc_at_snapshot_copy(out_profile,
-        vm_profile_default_pc_at_descriptor_get(), "default-at");
+        vm_profile_default_pc_at_descriptor_get(), "default-at",
+        (request->requested_options & VM_PROFILE_DEFAULT_AT_SESSION_OPTION_FLOPPY) != 0u ?
+            request->floppy_cmos_type :
+            vm_profile_default_pc_at_descriptor_get()->cmos.floppy_type);
 }
 
 const vm_profile_default_pc_at_port_leaf *
@@ -809,9 +822,9 @@ C_INT vm_profile_default_pc_at_descriptor_is_valid(
             !descriptor->ega_present && descriptor->cga_vram_present &&
             descriptor->firmware_slot ==
                 VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_SLOT_IBM_5170_REV3_ABSTRACT &&
-            descriptor->diskette_drive_a_field_upgrade &&
+            !descriptor->diskette_drive_a_field_upgrade &&
             descriptor->cmos.base_memory_kib == 0x0200u &&
-            descriptor->cmos.floppy_type == 0x40u &&
+            descriptor->cmos.floppy_type == 0x20u &&
             descriptor->cmos.fixed_disk_type == 0x30u &&
             descriptor->cmos.fixed_disk_type_extended_0 == 0u &&
             descriptor->hdc.protocol == CORE_MACHINE_HDC_PROTOCOL_IBM_WD1003_ST506 &&

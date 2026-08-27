@@ -120,6 +120,7 @@ static C_INT vm_product_session_catalog_parse(const C_CHAR *directory,
     C_INT memory = 0;
     C_INT display = 0;
     C_INT boot = 0;
+    C_INT floppy_format = 0;
     C_INT floppy = 0;
     C_INT hard_disk = 0;
     C_CHAR firmware_provenance_text[sizeof(entry->model40_provenance)] = {0};
@@ -183,6 +184,11 @@ static C_INT vm_product_session_catalog_parse(const C_CHAR *directory,
         if (section == 0 && vm_product_session_catalog_parse_value(text, "boot", &value)) {
             if (boot || !vm_product_session_catalog_copy(entry->boot, sizeof(entry->boot), value)) break;
             boot = 1; continue;
+        }
+        if (section == 0 && vm_product_session_catalog_parse_value(text, "floppy_format", &value)) {
+            if (floppy_format || !vm_product_session_catalog_copy(entry->floppy_format,
+                    sizeof(entry->floppy_format), value)) break;
+            floppy_format = 1; continue;
         }
         if (section == 2 && vm_product_session_catalog_parse_value(text, "floppy", &value)) {
             if (floppy) break;
