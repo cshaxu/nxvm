@@ -38,6 +38,7 @@ principal documents named in [docs/README.md](../README.md).
 | `evidence/t491-s1-8255-original-source-ledger.md` | Core PPI/NMI owner | T491 S1's visual Intel 8255A-5 and IBM 5160 primary-source ledger, including the no-8042 boundary. |
 | `evidence/t491-s2-8255-function-timing-list-1.md` | Core PPI/NMI owner | T491 S2's complete selected 8255A/IBM XT function and timing List 1 with explicit chip/board and L-level boundaries. |
 | `evidence/t491-s3-8255-current-code-gap-list-2.md` | Core PPI/NMI owner | T491 S3's complete List-2 mapping and sole finite XT PPI-to-existing-speaker-owner gap batch. |
+| `evidence/t491-s4-8255-speaker-implementation.md` | Core PPI/board owners | T491 S4's single PB0/PB1 publication into the existing PIT2/speaker consumer and focused proof. |
 | `evidence/t486-s1-8088-original-source-ledger.md` | Core CPU timing owner | T486 S1's visually verified Intel 1981 source corpus, scan/OCR boundary and finite Table-2-21 basis for the following complete List-1 ledger. |
 | `evidence/t486-s2-8088-function-timing-list-1.md` | Core CPU timing owner | T486 S2's finite 8088 Table-2-21 function/timing List 1, including all mnemonic groups, prefix entries, explicit non-instruction entries and manual timing boundaries. |
 | `evidence/t486-s3-8088-current-code-gap-list-2.md` | Core CPU timing owner | T486 S3's complete List-1-to-code-owner ledger, current 8088 timing dispositions and one-owner implementation boundary. |

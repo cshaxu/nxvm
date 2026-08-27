@@ -24,6 +24,13 @@ static type_bool core_machine_xt_ppi_request_nmi(C_VOID *owner)
     return TYPE_TRUE;
 }
 
+static C_VOID core_machine_xt_ppi_update_speaker(C_VOID *owner,
+    type_bool timer_gate, type_bool data_enabled)
+{
+    core_machine_board_set_xt_ppi_speaker((core_machine *)owner, timer_gate,
+        data_enabled);
+}
+
 /* Both immediate and externally delayed successful retirements meet here.
  * CPU timing selection is complete before this seam; board-cycle time has
  * already been added by the caller and never enters cpu_timing.c. */
@@ -469,10 +476,13 @@ static type_status core_machine_create_internal(
     core_machine_pit_set_output(&machine->shared_pit, 0,
         core_machine_pic_timer_output, &machine->shared_pit_irq0_source);
     if (config->keyboard_topology == CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI) {
+        core_machine_board_configure_xt_ppi_speaker(machine);
         core_machine_xt_ppi_keyboard_bind_pic(&machine->xt_ppi_keyboard,
             &machine->shared_pic_master, &machine->shared_pic_slave);
         core_machine_xt_ppi_keyboard_bind_nmi(&machine->xt_ppi_keyboard,
             core_machine_xt_ppi_request_nmi, machine);
+        core_machine_xt_ppi_keyboard_bind_speaker(&machine->xt_ppi_keyboard,
+            core_machine_xt_ppi_update_speaker, machine);
     } else {
         core_machine_kbc_bind_core_services(&machine->shared_kbc,
             &machine->shared_pic_master, &machine->shared_pic_slave,

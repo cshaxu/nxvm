@@ -77,6 +77,15 @@ static type_bool core_machine_xt_ppi_keyboard_delivery_enabled(
             CORE_MACHINE_XT_PPI_PORT_B_CLOCK_NOT_HELD;
 }
 
+static C_VOID core_machine_xt_ppi_keyboard_publish_speaker(
+    core_machine_xt_ppi_keyboard *keyboard)
+{
+    if (keyboard == STD_NULL || keyboard->speaker_update == STD_NULL) return;
+    keyboard->speaker_update(keyboard->speaker_owner,
+        (keyboard->port_b_latch & 0x01u) != 0u,
+        (keyboard->port_b_latch & 0x02u) != 0u);
+}
+
 static C_VOID core_machine_xt_ppi_keyboard_deassert_irq(
     core_machine_xt_ppi_keyboard *keyboard)
 {
@@ -141,6 +150,7 @@ static type_status core_machine_xt_ppi_keyboard_write(C_VOID *owner,
         keyboard->port_a_latch = byte;
     } else if (port == keyboard->config.port_b) {
         keyboard->port_b_latch = byte;
+        core_machine_xt_ppi_keyboard_publish_speaker(keyboard);
         if ((byte & CORE_MACHINE_XT_PPI_PORT_B_CLEAR_KEYBOARD) != 0u) {
             core_machine_xt_ppi_keyboard_clear_byte(keyboard);
         }
@@ -224,6 +234,15 @@ C_VOID core_machine_xt_ppi_keyboard_bind_nmi(core_machine_xt_ppi_keyboard *keybo
     core_machine_xt_ppi_keyboard_refresh_nmi(keyboard);
 }
 
+C_VOID core_machine_xt_ppi_keyboard_bind_speaker(core_machine_xt_ppi_keyboard *keyboard,
+    core_machine_xt_ppi_speaker_update update, C_VOID *owner)
+{
+    if (keyboard == STD_NULL) return;
+    keyboard->speaker_update = update;
+    keyboard->speaker_owner = owner;
+    core_machine_xt_ppi_keyboard_publish_speaker(keyboard);
+}
+
 C_VOID core_machine_xt_ppi_keyboard_reset(core_machine_xt_ppi_keyboard *keyboard)
 {
     if (keyboard == STD_NULL) return;
@@ -239,6 +258,7 @@ C_VOID core_machine_xt_ppi_keyboard_reset(core_machine_xt_ppi_keyboard *keyboard
     keyboard->io_check_asserted = TYPE_FALSE;
     keyboard->ram_parity_asserted = TYPE_FALSE;
     keyboard->nmi_signaled = TYPE_FALSE;
+    core_machine_xt_ppi_keyboard_publish_speaker(keyboard);
 }
 
 C_VOID core_machine_xt_ppi_keyboard_finalize(core_machine_xt_ppi_keyboard *keyboard)
@@ -248,6 +268,8 @@ C_VOID core_machine_xt_ppi_keyboard_finalize(core_machine_xt_ppi_keyboard *keybo
     keyboard->port = STD_NULL;
     keyboard->nmi_request = STD_NULL;
     keyboard->nmi_owner = STD_NULL;
+    keyboard->speaker_update = STD_NULL;
+    keyboard->speaker_owner = STD_NULL;
 }
 
 type_status core_machine_xt_ppi_keyboard_set_fault_input(

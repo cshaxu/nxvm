@@ -204,6 +204,9 @@ struct core_machine {
     type_bool planar_parity_configured;
     type_bool planar_parity_latched;
     type_bool planar_parity_nmi_signaled;
+    type_bool xt_ppi_speaker_configured;
+    type_bool xt_ppi_speaker_gate;
+    type_bool xt_ppi_speaker_data_enabled;
     type_bool speaker_output;
     core_machine_d4_platform_config d4_platform_config;
     type_unsigned_8 d4_platform_port_b;
@@ -338,6 +341,9 @@ extern const core_machine_cpu_execution_diagnostic_provider
 C_VOID core_machine_board_cold_reset(core_machine *machine);
 C_VOID core_machine_board_after_pit_reset(core_machine *machine);
 C_VOID core_machine_board_refresh_nmi(core_machine *machine);
+C_VOID core_machine_board_configure_xt_ppi_speaker(core_machine *machine);
+C_VOID core_machine_board_set_xt_ppi_speaker(core_machine *machine,
+    type_bool timer_gate, type_bool data_enabled);
 typedef enum core_machine_time_publication_origin {
     CORE_MACHINE_TIME_PUBLICATION_CPU_RETIREMENT,
     CORE_MACHINE_TIME_PUBLICATION_EXTERNAL_WAIT,

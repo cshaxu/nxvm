@@ -136,6 +136,9 @@ static type_unsigned_8 core_machine_pc_at_port_b_speaker_value(
     const core_machine *machine)
 {
     if (machine == STD_NULL) return 0u;
+    if (machine->xt_ppi_speaker_configured) return
+        (machine->xt_ppi_speaker_gate ? 0x01u : 0u) |
+        (machine->xt_ppi_speaker_data_enabled ? 0x02u : 0u);
     if (machine->d4_platform_configured) return machine->d4_platform_port_b;
     if (machine->planar_parity_configured) return machine->planar_parity_port_b;
     return 0u;
@@ -234,10 +237,31 @@ C_VOID core_machine_board_cold_reset(core_machine *machine)
     machine->planar_parity_latched = TYPE_FALSE;
     machine->planar_parity_nmi_signaled = TYPE_FALSE;
     machine->speaker_output = TYPE_FALSE;
+    machine->xt_ppi_speaker_gate = TYPE_FALSE;
+    machine->xt_ppi_speaker_data_enabled = TYPE_FALSE;
     machine->d4_platform_port_b = machine->d4_platform_configured ? 0x0fu : 0u;
     machine->d4_platform_iochk_latched = TYPE_FALSE;
     machine->d4_platform_failsafe_latched = TYPE_FALSE;
     machine->d4_platform_nmi_signaled = TYPE_FALSE;
+}
+
+C_VOID core_machine_board_configure_xt_ppi_speaker(core_machine *machine)
+{
+    if (machine == STD_NULL) return;
+    machine->xt_ppi_speaker_configured = TYPE_TRUE;
+    core_machine_pit_set_output(&machine->shared_pit, 2u,
+        core_machine_pc_at_speaker_timer_output, machine);
+    core_machine_board_set_xt_ppi_speaker(machine, TYPE_FALSE, TYPE_FALSE);
+}
+
+C_VOID core_machine_board_set_xt_ppi_speaker(core_machine *machine,
+    type_bool timer_gate, type_bool data_enabled)
+{
+    if (machine == STD_NULL || !machine->xt_ppi_speaker_configured) return;
+    machine->xt_ppi_speaker_gate = timer_gate;
+    machine->xt_ppi_speaker_data_enabled = data_enabled;
+    core_machine_pc_at_port_b_set_speaker_gate(machine,
+        (timer_gate ? 0x01u : 0u) | (data_enabled ? 0x02u : 0u));
 }
 
 C_VOID core_machine_board_after_pit_reset(core_machine *machine)
@@ -708,8 +732,8 @@ type_status core_machine_get_speaker_observation(const core_machine *machine,
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
     value = core_machine_pc_at_port_b_speaker_value(machine);
-    out_observation->configured = machine->d4_platform_configured ||
-        machine->planar_parity_configured;
+    out_observation->configured = machine->xt_ppi_speaker_configured ||
+        machine->d4_platform_configured || machine->planar_parity_configured;
     out_observation->timer_gate = (value & 0x01u) != 0u;
     out_observation->data_enabled = (value & 0x02u) != 0u;
     out_observation->timer_output = core_machine_pit_get_output(

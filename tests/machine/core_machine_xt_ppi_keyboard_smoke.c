@@ -12,6 +12,7 @@ static C_INT core_machine_xt_ppi_keyboard_path(C_VOID)
     core_machine *machine = STD_NULL;
     type_unsigned_32 value = 0u;
     type_unsigned_8 scan_set = 0u;
+    core_machine_speaker_observation speaker;
     C_INT failed = 0;
 
     failed |= core_machine_create(&configuration, &machine) != TYPE_STATUS_OK;
@@ -25,6 +26,20 @@ static C_INT core_machine_xt_ppi_keyboard_path(C_VOID)
     failed |= !failed && scan_set != CORE_MACHINE_KEYBOARD_SCAN_SET_1;
     failed |= !failed && core_machine_bus_write(machine, 0x0063u, 0x99u) !=
         TYPE_STATUS_OK;
+    failed |= !failed && (core_machine_get_speaker_observation(machine, &speaker) !=
+        TYPE_STATUS_OK || !speaker.configured || speaker.timer_gate ||
+        speaker.data_enabled || speaker.output);
+    failed |= !failed && (core_machine_bus_write(machine, 0x0061u, 0x02u) !=
+        TYPE_STATUS_OK || core_machine_get_speaker_observation(machine, &speaker) !=
+        TYPE_STATUS_OK || speaker.timer_gate || !speaker.data_enabled ||
+        !speaker.output);
+    failed |= !failed && (core_machine_bus_write(machine, 0x0061u, 0x03u) !=
+        TYPE_STATUS_OK || core_machine_get_speaker_observation(machine, &speaker) !=
+        TYPE_STATUS_OK || !speaker.timer_gate || !speaker.data_enabled);
+    failed |= !failed && (core_machine_reset(machine) != TYPE_STATUS_OK ||
+        core_machine_get_speaker_observation(machine, &speaker) != TYPE_STATUS_OK ||
+        !speaker.configured || speaker.timer_gate || speaker.data_enabled ||
+        speaker.output);
     failed |= !failed && core_machine_bus_read(machine, 0x0063u, &value) !=
         TYPE_STATUS_UNSUPPORTED;
     failed |= !failed && core_machine_bus_write(machine, 0x0063u, 0x98u) !=
