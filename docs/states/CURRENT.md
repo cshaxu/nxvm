@@ -40,7 +40,6 @@
 | Task | Compact result |
 | --- | --- |
 | T492 S4 | Accepted: one FDC owner now conditions reset results on sampled ready inputs and accepts a copied timing conversion for reset/SRT/CCR=0 formulas; selected XT explicitly retains zero-value L2 fallback. [Evidence](../etc/evidence/t492-s4-8272a-reset-timing-implementation.md). |
-| T492 S3 | Accepted: refined 30-row audit retains one Core FDC/media/DMA/PIC route and freezes Read Diagnostic, ready-conditioned reset and source-timing work as one owner-local batch. [Evidence](../etc/evidence/t492-s3-8272a-current-code-gap-list-2.md). |
 | T491 | Closed: the independent IBM 5160 8255 PPI/key/NMI unit maps all 19 rows to one Core owner path, closes PB0/PB1 through the existing PIT2/speaker consumer, and records stripped Release 0491. [Closure audit](../etc/evidence/t491-s5-8255-closure-audit.md). |
 | T490 | Closed: the independent IBM 5160 8253 unit has verified source/List-1/List-2/sole-owner implementation, a corrected full gate and stripped Release 0490 artifact. [Closure audit](../etc/evidence/t490-s6-8253-closure-audit.md). |
 | T489 | Closed: complete IBM 5160 8237A source/List-1/List-2/one-owner batch closes the single page-port gap without new state or parallel path; physical-axis conversion remains transferred. [Closure audit](../etc/evidence/t489-s5-8237a-closure-audit.md). |
