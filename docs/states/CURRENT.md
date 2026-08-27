@@ -4,11 +4,32 @@
 
 **Open: M5 T491.**
 
+## M5 T491 S5 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner approved continuous single-session execution and immediate in-scope repair; S1--S4 accepted the source ledger, 19-row List 1, one-gap List 2 and sole PB0/PB1 implementation. |
+| Objective | Perform the T491 closure audit, publish stripped Release `nxvm_0_5_0491.exe`, and close only if the complete 8255/PPI/key/NMI ledger has no untracked gap. |
+| Non-goals | No 8272A, CGA, Xebec, generic 8255, physical electrical timing, new runtime path or profile behavior. |
+| Reference Baseline | T491 S1--S4 evidence, task history, `xt_ppi_keyboard.[ch]`, `machine.[ch]`, `machine_board.c`, focused PPI/PIT test and current-gate log. |
+| Candidate Proposal | [IBM 5160 8255 PPI, keyboard and NMI phase contract](../proposals/m5-xt-8255-keyboard-nmi-phase.md). |
+| Files And ABI Surface | Release target/preset/current artifact record, T491 closure evidence/history/current state and proposal relocation only. No runtime ABI change unless the audit finds an in-scope defect. |
+| Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`; retain one PPI latch owner and one Core speaker/PIT2 owner. |
+| Verification | Inspect all T491 changed source/test/doc paths and List-1/List-2 dispositions; run documentation governance, focused PPI/PIT tests, fresh 300-test Debug current gate, configure/build stripped Release 0491, record SHA-256 and inspect identity. |
+| Expected Markers | 19/19 List-1 rows have accepted or explicit retained dispositions; one PPI-to-board publication route; `nxvm_0_5_0491.exe` is the sole current stripped Release target. |
+| Asset Needs | Retained S1 source records only; no source, firmware or guest-media import. |
+| Reporting Requirements | Record exact retained owner/path, code-size for S4 mechanism, every verification result, artifact hash and explicit L1/L4 boundaries. |
+| Stop Conditions | Any untracked List-2 gap, duplicate Port-B/speaker/PIT owner, failed gate, Release build failure or artifact identity mismatch blocks closure. |
+| Exit Criteria | All 19 rows are closed or explicitly transferred, actual-diff review finds no redundant path, required gates pass, Release 0491 is recorded, proposal is retained in history and Current has one T491 closure row. |
+| Original Owner Request | Each chip/controller is one complete T: source ledger, complete List 1, complete List 2, then one coherent owner-local implementation batch; no symptom repairs. |
+| Similar-Issue Sweep | Reinspect all tracked PPI Port-B write/reset, all Core PIT2 gate and speaker-output ingresses, CMake/preset artifact identities and every List-1 disposition; defer only an out-of-scope issue through the next queued unit. |
+
 ## Current Technical Baseline
 
-- **Current developer artifact:** target `vm-0-5-0490`; the stripped Release
-  `nxvm_0_5_0490.exe` has SHA-256
-  `DB51B6B7564F683DCD30240FE1739518459DA82868F475829B3AAF6E7DFC24DA`.
+- **Current developer artifact:** target `vm-0-5-0491`; the stripped Release
+  `nxvm_0_5_0491.exe` has SHA-256
+  `1C219347EEF080574486E5D62D18462E8764F77900D34755897A9A87BA032E7E`.
   Debug remains the current-gate route. T471 preserves Core-owned progression:
   a verified axis is Standard-paced only by host waiting against completed
   Core progress. T472 extends that comparison to an explicit L2 macro axis,

@@ -2935,8 +2935,8 @@ function(add_current_vm_artifact target version)
     endif()
 endfunction()
 
-set(PROJECT_CURRENT_VM_ARTIFACT_TARGET vm-0-5-0490)
-add_current_vm_artifact(vm-0-5-0490 "0.5.0490")
+set(PROJECT_CURRENT_VM_ARTIFACT_TARGET vm-0-5-0491)
+add_current_vm_artifact(vm-0-5-0491 "0.5.0491")
 option(PROJECT_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
 
