@@ -2,28 +2,28 @@
 
 ## Current Work
 
-**Open: M5 T490 S3.**
+**Open: M5 T490 S4.**
 
-## M5 T490 S3 Packet
+## M5 T490 S4 Packet
 
 | Field | Required record |
 | --- | --- |
 | Identifier Mode | Continuation |
-| Admission And Approval | T490 S1--S2 accepted original sources and the complete frozen 22-row 8253/XT List 1; S3 maps all rows before selecting one implementation batch. |
-| Objective | Map every List-1 row to current Core PIT/board/scheduler/XT-profile code and focused proof, identifying the complete owner-local gap batch without repairing it. |
-| Non-goals | No PIT implementation change, timing conversion, host pacing, RTC, speaker rendering, profile state mutation, 8254 Read-Back behavior or release artifact. |
-| Reference Baseline | T490 S1 source ledger, T490 S2 List 1, current Core machine source and focused PIT/XT tests. |
+| Admission And Approval | T490 S1--S3 accepted the original sources, frozen 22-row List 1 and complete List 2. S4 consumes exactly the finite 8253 personality batch recorded by S3. |
+| Objective | Select the IBM 5160's 8253 at immutable Core construction, retain the one PIT port/state/output route, and prevent its exposure of 8254-only Read-Back/status behavior. |
+| Non-goals | No timing conversion, host pacing, RTC behavior, speaker rendering, profile state mutation after construction, auxiliary-PIT redesign or release artifact. |
+| Reference Baseline | T490 S1 source ledger, T490 S2 List 1, T490 S3 List 2, current Core PIT source and focused PIT/XT tests. |
 | Candidate Proposal | [IBM 5160 8253 PIT phase contract](../proposals/m5-xt-8253-board-phase.md). |
-| Files And ABI Surface | List-2 evidence, evidence index, history and Current only; no code or ABI change. The active proposal and Queue may record the owner-approved unit-entry governance constraint only. |
+| Files And ABI Surface | `pit.[ch]`, Core immutable configuration validation/construction, XT profile declaration, focused PIT/XT tests, S4 evidence/index/history/Current. The existing public configuration struct gains one frozen selected-chip field; no device pointer or runtime setter. |
 | Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`. |
-| Verification | Inspect all PIT control/read/write/mode paths, Core output consumers, scheduler advance/deadline paths, immutable XT construction and focused tests; run documentation governance. |
-| Expected Markers | One row-complete List 2 and one coherent implementation batch, or an explicit empty batch. |
-| Asset Needs | Retained S1 primary sources; one read-only local 86Box corroboration is permitted only for the undocumented illegal `SC=11` fallback, with Intel remaining normative and no source import. |
-| Reporting Requirements | Name sole state owner, code-size baseline, every exact gap, retained L1/L2/L4 boundary and planned focused proof. |
-| Stop Conditions | A source row has no current owner path, or a necessary repair would require a second state/time/board route. In either case, transfer one bounded architecture receiver; do not create an XT-specific parallel path or symptom repair. |
-| Exit Criteria | Every row has present/gap/transfer disposition and the later implementation batch is finite and owner-local. |
+| Verification | Build and run the focused 8253, 8254 Read-Back, waveform, IRQ0 and XT profile tests; run documentation governance and the applicable current gate. |
+| Expected Markers | One selected 8253 route, 8254 Read-Back preserved only for 8254, no state change from XT `SC=11`, and one immutable-profile assertion. |
+| Asset Needs | Retained S1 primary sources and the S3 read-only 86Box corroboration; no source import. |
+| Reporting Requirements | Report retained sole owner/path, code-size delta, deleted/avoided duplicate paths, focused/full verification and retained L1/L2/L4 boundaries. |
+| Stop Conditions | A needed semantic requires a second PIT state owner, port route or scheduler. Transfer it rather than adding an XT-specific path. |
+| Exit Criteria | The entire S3 batch is implemented through the existing owner, all focused proofs pass, 8254 behavior remains covered, and no S3 row is left as an untracked production gap. |
 | Original Owner Request | Each chip/controller is one complete T: source ledger, complete List 1, complete List 2, then one coherent owner-local implementation batch; no symptom repairs. |
-| Similar-Issue Sweep | Inspect all PIT construction sites and all control-word/Read-Back logic; classify every 8254-only exposure and every selected XT output route. |
+| Similar-Issue Sweep | Inspect every PIT construction site, all control-word/Read-Back behavior and every profile configuration initializer; retain only the existing Core PIT route. |
 
 ## Current Technical Baseline
 
