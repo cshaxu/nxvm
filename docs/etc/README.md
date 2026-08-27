@@ -51,6 +51,7 @@ principal documents named in [docs/README.md](../README.md).
 | `evidence/t493-s4-cga-immediate-repair.md` | VADP/CGA owner | T493 S4's immediate sole-owner correction of the generic CGA light-pen latch/status and 640x200 binary palette, including focused and cross-personality proof. |
 | `evidence/t493-s5-cga-closure-audit.md` | Closure audit | T493's complete IBM 5160 CGA source/List-1/List-2/immediate-repair closure, 300/300 gate and stripped Release 0493 artifact. |
 | `evidence/t494-s1-xebec-original-source-ledger.md` | Core HDC/media owner | T494 S1's visually checked IBM 6139790 Xebec source ledger, scan/OCR boundary and finite List-1 source basis. |
+| `evidence/t494-s2-xebec-function-timing-list-1.md` | Core HDC/media owner | T494 S2's complete IBM Xebec function/timing List 1, bounded Other-L3 reconciliation and explicit physical/undocumented exclusions. |
 | `evidence/t486-s1-8088-original-source-ledger.md` | Core CPU timing owner | T486 S1's visually verified Intel 1981 source corpus, scan/OCR boundary and finite Table-2-21 basis for the following complete List-1 ledger. |
 | `evidence/t486-s2-8088-function-timing-list-1.md` | Core CPU timing owner | T486 S2's finite 8088 Table-2-21 function/timing List 1, including all mnemonic groups, prefix entries, explicit non-instruction entries and manual timing boundaries. |
 | `evidence/t486-s3-8088-current-code-gap-list-2.md` | Core CPU timing owner | T486 S3's complete List-1-to-code-owner ledger, current 8088 timing dispositions and one-owner implementation boundary. |
