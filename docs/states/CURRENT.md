@@ -2,28 +2,10 @@
 
 ## Current Work
 
-**Open: M5 T491 S1.**
+**Open: M5 T491.**
 
-## M5 T491 S1 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | New |
-| Admission And Approval | Owner-approved ordered queue continuation after T490. T491 is the independent IBM 5160 8255 PPI/keyboard/NMI unit. |
-| Objective | Visually verify and ledger the original Intel 8255A and IBM 5160 sources required to freeze this unit's complete List 1. |
-| Non-goals | No PPI/KBC/NMI code change, no 8042 behavior, no external-source import, firmware or guest media. |
-| Reference Baseline | Queue proposal, owner-managed IBM 5160 Technical Reference, retained Core PPI/NMI source and tests. |
-| Candidate Proposal | [IBM 5160 8255 PPI, keyboard and NMI phase contract](../proposals/m5-xt-8255-keyboard-nmi-phase.md). |
-| Files And ABI Surface | S1 source-ledger evidence, supporting index, history and Current only. |
-| Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, `docs/etc/operations/policy/source-policy.md`. |
-| Verification | Record exact paths, hashes, visual/OCR status, relevant pages and source boundaries; run documentation governance. |
-| Expected Markers | Intel 8255A semantics and IBM XT board wiring are distinct, sourced and finite; no 8042 substitution. |
-| Asset Needs | Public original Intel 8255A documentation and local IBM 5160 reference; no repository import. |
-| Reporting Requirements | Report provenance, manual confidence, board/chip scope separation and unresolved source gaps. |
-| Stop Conditions | A needed source has unclear provenance, conflicts with the selected NMOS 8255A, or requires protected material. |
-| Exit Criteria | The ledger has sufficient original source evidence to admit a finite List 1, with every uncertainty explicit. |
-| Original Owner Request | Each chip/controller is one complete T: source ledger, complete List 1, complete List 2, then one coherent owner-local implementation batch; no symptom repairs. |
-| Similar-Issue Sweep | Identify all existing 8255/PPI versus 8042/KBC/NMI terminology and source references before List 1. |
+S1 is accepted: the Intel 8255A-5 chip and IBM 5160 board source authorities
+are separate, visually verified and sufficient for a finite List 1.
 
 ## Current Technical Baseline
 
@@ -60,6 +42,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T491 S1 | Accepted: the visual Intel 8255A-5 and IBM 5160 ledger fixes the chip/board boundary and excludes an AT 8042 substitution. [Evidence](../etc/evidence/t491-s1-8255-original-source-ledger.md). |
 | T490 | Closed: the independent IBM 5160 8253 unit has verified source/List-1/List-2/sole-owner implementation, a corrected full gate and stripped Release 0490 artifact. [Closure audit](../etc/evidence/t490-s6-8253-closure-audit.md). |
 | T489 | Closed: complete IBM 5160 8237A source/List-1/List-2/one-owner batch closes the single page-port gap without new state or parallel path; physical-axis conversion remains transferred. [Closure audit](../etc/evidence/t489-s5-8237a-closure-audit.md). |
 | T488 | Closed: complete IBM 5160 8259A source/List-1/List-2/one-owner audit retains one Core PIC path and an empty implementation batch. [Closure audit](../etc/evidence/t488-s5-8259a-closure-audit.md). |

@@ -7,4 +7,4 @@ create a parallel keyboard/NMI delivery route.
 
 | Subtask | Result |
 | --- | --- |
-| S1 | Implementation pending acceptance: visual Intel 8255A-5 and IBM 5160 source ledger establishes the chip/board boundary and finite List-1 basis. |
+| S1 | Accepted: visual Intel 8255A-5 and IBM 5160 source ledger establishes the chip/board boundary and finite List-1 basis. |
