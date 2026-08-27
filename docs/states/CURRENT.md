@@ -4,27 +4,6 @@
 
 **Open: M5 T492.**
 
-## M5 T492 S3 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner approved complete independent-controller workflow; T492 S1--S2 accepted the primary sources and frozen 29-row List 1 before code audit. |
-| Objective | Map every List-1 row to actual Core FDC/media, DMA2/IRQ6, XT profile and regression ownership; freeze one complete implementation batch or prove it empty. |
-| Non-goals | No code change, post-hoc command selection, profile-side FDC, media mirror, host-file policy, new DMA route or physical waveform work. |
-| Reference Baseline | T492 S2 List 1, `fdc.[ch]`, controller interface/plan, XT profile, session materialization and all FDC/XT tests. |
-| Candidate Proposal | [IBM 5160 8272A FDC and floppy-media phase contract](../proposals/m5-xt-8272a-fdc-media-phase.md). |
-| Files And ABI Surface | List-2 evidence, index, history and status only. No runtime ABI or artifact change. |
-| Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`; Core owns controller/media state, profile selects immutable topology. |
-| Verification | Inspect all List-1 owners and focused test registrations; run source/static FDC boundary checks and documentation governance. |
-| Expected Markers | One Core FDC/media owner, one DMA2/IRQ6 binding, one immutable XT configuration route, and a finite row-complete gap disposition. |
-| Asset Needs | None beyond accepted S1/S2 evidence. |
-| Reporting Requirements | Record every owner/path/test, all production hits, exact gap batch and any retained L0/L1/L4 boundary. |
-| Stop Conditions | A second production FDC/media owner, an unclassifiable row, a required implementation outside the FDC/media owner, or a source contradiction. |
-| Exit Criteria | All 29 rows are mapped; the coherent implementation batch is exact, owner-local and complete, or formally empty. |
-| Original Owner Request | Every chip/controller must be a complete T: collect original manual sources, establish all instruction/function/timing rows, establish code gaps, then implement one unified path; reject symptom-by-symptom repair. |
-| Similar-Issue Sweep | Inspect all tracked FDC/765/8272, DMA2/IRQ6, `3F2`/`3F4`/`3F5`, drive/media, XT-profile and test registrations; classify every production hit. |
-
 ## Current Technical Baseline
 
 - **Current developer artifact:** target `vm-0-5-0491`; the stripped Release
@@ -60,7 +39,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T492 S2 | Accepted: 29-row IBM 5160 uPD765-compatible controller/board/media List 1 freezes all command, register, routing and timing dispositions before code audit. [Evidence](../etc/evidence/t492-s2-8272a-function-timing-list-1.md). |
+| T492 S3 | Accepted: refined 30-row audit retains one Core FDC/media/DMA/PIC route and freezes Read Diagnostic, ready-conditioned reset and source-timing work as one owner-local batch. [Evidence](../etc/evidence/t492-s3-8272a-current-code-gap-list-2.md). |
 | T491 | Closed: the independent IBM 5160 8255 PPI/key/NMI unit maps all 19 rows to one Core owner path, closes PB0/PB1 through the existing PIT2/speaker consumer, and records stripped Release 0491. [Closure audit](../etc/evidence/t491-s5-8255-closure-audit.md). |
 | T490 | Closed: the independent IBM 5160 8253 unit has verified source/List-1/List-2/sole-owner implementation, a corrected full gate and stripped Release 0490 artifact. [Closure audit](../etc/evidence/t490-s6-8253-closure-audit.md). |
 | T489 | Closed: complete IBM 5160 8237A source/List-1/List-2/one-owner batch closes the single page-port gap without new state or parallel path; physical-axis conversion remains transferred. [Closure audit](../etc/evidence/t489-s5-8237a-closure-audit.md). |
