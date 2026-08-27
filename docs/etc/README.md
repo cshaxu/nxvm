@@ -66,6 +66,7 @@ principal documents named in [docs/README.md](../README.md).
 | `evidence/t496-s5-xt-startup-owner-classification.md` | XT startup diagnostic | T496 S5's host-waited Turbo result; existing observations do not identify one finite repair owner batch. |
 | `evidence/t496-s6-xt-boot-convergence-ledger.md` | XT startup verification owner | T496 S6's eight-batch IBM 5160 DOS-startup universe, source hierarchy, repair order and B3+B8 first owner batch. |
 | `evidence/t496-s8-fdc-result-irq-release.md` | XT FDC completion owner | T496 S8's source-qualified normal-result IRQ release, focused proof and selected DOS terminal replay. |
+| `evidence/t497-s1-ibm5170-floppy-source-ledger.md` | IBM 5170 floppy source owner | T497 S1's primary-source drive/media facts, bounded external corroboration and current-owner gap. |
 | `evidence/t486-s1-8088-original-source-ledger.md` | Core CPU timing owner | T486 S1's visually verified Intel 1981 source corpus, scan/OCR boundary and finite Table-2-21 basis for the following complete List-1 ledger. |
 | `evidence/t486-s2-8088-function-timing-list-1.md` | Core CPU timing owner | T486 S2's finite 8088 Table-2-21 function/timing List 1, including all mnemonic groups, prefix entries, explicit non-instruction entries and manual timing boundaries. |
 | `evidence/t486-s3-8088-current-code-gap-list-2.md` | Core CPU timing owner | T486 S3's complete List-1-to-code-owner ledger, current 8088 timing dispositions and one-owner implementation boundary. |

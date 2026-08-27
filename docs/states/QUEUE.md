@@ -55,6 +55,8 @@ state mirror, second scheduler or compatibility-forwarding path. The final
 model and pre-Windows entries are audits only; they may transfer a gap to its
 earliest unit T but may not repair it.
 
+1. [IBM 5170 native floppy contract](../proposals/m5-ibm-5170-native-floppy-contract.md).
+
 1. [DOS protected-mode and 386 extender corpus](../proposals/m5-dos-protected-mode-extender-corpus.md).
 1. [M5 pre-Windows L3 admission audit](../proposals/m5-pre-windows-l3-admission-audit.md).
 1. [Windows 3.1 BYOB lifecycle harness](../proposals/m5-windows31-byob-lifecycle-harness.md).

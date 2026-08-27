@@ -2,6 +2,27 @@
 
 ## Current Work
 
+## M5 T497 S1 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New |
+| Admission And Approval | The owner explicitly corrected the original IBM 5170 diskette contract on 2026-08-27: native 1.2 MB high-capacity 5.25-inch Drive A, 360 KB compatibility media, and no original 720 KB/1.44 MB default. |
+| Objective | Freeze the original-source and bounded external-model evidence for the complete Model 339 floppy-drive contract before implementation. |
+| Non-goals | No runtime behavior change, image-size inference, FDC/BIOS/VM second state, firmware/media import, mechanical timing claim, or acceptance of post-1984 3.5-inch hardware. |
+| Reference Baseline | `5dbbecf4` (`M5 T496 S8 P2`); [IBM 5170 native floppy proposal](../proposals/m5-ibm-5170-native-floppy-contract.md). |
+| Candidate Proposal | [IBM 5170 native floppy contract](../proposals/m5-ibm-5170-native-floppy-contract.md). |
+| Files And ABI Surface | Evidence, task state and proposal only. No production source, ABI or artifact changes. |
+| Applicable Rules | IBM primary material is normative; OCR requires visual verification; external emulator sources are Other L3 corroboration only; Core owns FDC state, profile owns immutable drive selection, session owns explicit media request, FDD owns mounted geometry. |
+| Verification | Record printed IBM page/table facts, inspect locally available 86Box/PCjs/Bochs sources without import, state unavailable MAME/QEMU evidence honestly, and prove the current wrong `0x40`/zero-enum path from current code. |
+| Expected Markers | `M5:T497:S1:IBM5170-FLOPPY-SOURCE:OK`. |
+| Asset Needs | The IBM manual and third-party source trees are read-only research inputs. No firmware or guest-media bytes, paths or hashes enter committed evidence. |
+| Reporting Requirements | State each source's authority level, exact conclusion, disagreement/non-claim and next List-1 receiver; do not elevate emulator behavior over IBM. |
+| Stop Conditions | Stop before List 1 or code change if visual primary evidence cannot establish the CMOS type or media-compatibility statement. |
+| Exit Criteria | One evidence record proves the source hierarchy, native/compatible/rejected media boundary, external corroboration boundary and current erroneous owner path. |
+| Original Owner Request | Correct Model 339 from a false 1.44 MB default to original 1.2 MB plus 360 KB compatibility, while preserving a truthful support matrix. |
+| Similar-Issue Sweep | Inspect all Model 339 descriptor, session selection, provider validation, FDD geometry and existing test assertions; classify Default-AT, XT and Model-40 as retained distinct contracts. |
+
 ## Current Technical Baseline
 
 - **Current developer artifact:** target `vm-0-5-0494`; the stripped Release
@@ -38,7 +59,6 @@
 | Task | Compact result |
 | --- | --- |
 | T496 | Closed: one Core FDC result/IRQ lifecycle now releases IRQ6 at normal-result acknowledgement, and the selected IBM 5160 DOS terminal plus focused FDC regressions pass without a BIOS/VM/media workaround. [Closure](../history/M5-T496-xt-keyboard-device.md). |
-| T496 S6 | Complete: frozen B1--B8 DOS-startup convergence ledger and selected the source-backed B3+B8 PIT1/DMA0/scheduler mechanism batch; later checkpoints cannot hide another batch. [Ledger](../etc/evidence/t496-s6-xt-boot-convergence-ledger.md). |
 | T495 | Closed: the selected IBM 5160-268 is functionally ready with source-backed L3 relations and explicit L2 limits; 13/13 focused, 300/300 fresh current and specialized gates pass, without a physical/wall-clock overclaim. [Decision](../etc/evidence/t495-s2-xt-final-model-decision.md). |
 | T494 | Closed: the complete IBM 5160 Xebec source/List-1/List-2/sole-owner chain corrects Read block-count progression without a second controller/media path; full current gate passes 300/300 and stripped Release 0494 is recorded. [Closure audit](../etc/evidence/t494-s5-xebec-closure-audit.md). |
 | T493 | Closed: complete IBM CGA source/List-1/List-2/one-owner repair reconciles all 33 rows; the generic latch and binary high-resolution palette repair leave no in-scope tail. [Closure audit](../etc/evidence/t493-s5-cga-closure-audit.md). |
