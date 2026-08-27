@@ -1,18 +1,15 @@
 # T496 S3 XT BYOB Run-Budget Diagnostic
 
-`M5:T496:S3:XT-BYOB-PROBE=RUN-NONRETURN`
+`M5:T496:S3:XT-BYOB-PROBE=HOST-WRAPPER-INVALID`
 
 The owner-authorized external IBM XT firmware/media probe was started in Turbo
-mode after S2. It did not return from its first `core_machine_run` call, so its
-own 15-second no-progress classifier and its semantic DOS checkpoint checks
-could not run. The externally started probe process was explicitly terminated
-after observation; no media, firmware, path, hash, output text or screenshot
-was retained.
+mode after S2. The first host wrapper did not wait for the child process, so it
+could not establish a guest result. A bounded stage capture then proved that
+the Core call returns repeatedly; the process was explicitly terminated after
+that host-side observation. No media, firmware, path, hash, output text or
+screenshot was retained.
 
-The existing Core public run budget counts only completed retirements and
-optional guest ticks. The initial diagnostic therefore transfers no keyboard,
-PPI, firmware or DOS conclusion. It identifies the earliest owner to audit as
-the Core CPU-execution/run boundary: a finite host-control quantum must return
-even while the current guest instruction has not yet completed. The next S
-must freeze the complete long-running instruction/repeat/blocked-retirement
-batch and prove its existing behavior before selecting any repair.
+The initial host-wrapper observation therefore transfers no keyboard, PPI,
+firmware, DOS, CPU-execution or run-budget conclusion. The next S must use one
+host-waited process with an explicit wall deadline and report only the probe's
+semantic result.

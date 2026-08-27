@@ -7,19 +7,19 @@
 | Field | Required record |
 | --- | --- |
 | Identifier Mode | Continuation |
-| Admission And Approval | The owner approved T496's complete XT startup repair. S3's bounded external probe identifies a Core run-return boundary; this continuation audits its whole affected execution batch before any repair. |
-| Objective | Freeze the complete Core long-running instruction, repeat and blocked-retirement run-return batch that can prevent a finite host quantum from returning. |
-| Non-goals | No BIOS, option-ROM, DOS-image, path, hash, byte, raw trace, firmware catalogue or product dependency enters the repository. No repair is selected from only the external terminal; no CPU timing value or physical-time claim changes in this audit. |
-| Reference Baseline | `138f5a77` plus [S3 diagnostic](../etc/evidence/t496-s3-xt-byob-run-budget-diagnostic.md). |
+| Admission And Approval | The owner approved T496's complete XT startup repair. The initial S3 delivery was found inaccurate because its host wrapper did not wait for the child process; this continuation records that evidence correction only. |
+| Objective | Correct the invalid Core-run inference in S3 evidence and restore the next startup probe to an unclaimed continuation. |
+| Non-goals | No BIOS, option-ROM, DOS-image, path, hash, byte, raw trace, firmware catalogue, product dependency, production code or runtime behavior changes. |
+| Reference Baseline | `10fa1242` (`M5 T496 S3 P1: record XT boot run boundary`) and the corrected [S3 diagnostic](../etc/evidence/t496-s3-xt-byob-run-budget-diagnostic.md). |
 | Candidate Proposal | [XT keyboard-device proposal](../proposals/ibm-5160-xt-keyboard-device.md). |
-| Files And ABI Surface | Core CPU-execution and run-loop internals plus focused Core tests/evidence only. No VM, profile, YAML, firmware/media or guest-input interface change is admitted. |
-| Applicable Rules | Execution packet/P lifecycle, coverage-led diagnosis and actual-change review; Core owns execution progression and VM remains a caller; source policy external-only firmware/media. |
-| Verification | Enumerate every in-scope loop/state that can hold a public run call without a completed retirement; prove each present run-budget disposition with focused tests or transfer it to its earliest source-backed CPU unit. |
-| Expected Markers | `RUN-RETURN-LEDGER`, `RUN-RETURN-REPEAT`, `RUN-RETURN-WAIT`. |
+| Files And ABI Surface | S3 evidence, proposal and current status only. |
+| Applicable Rules | Execution P correction/continuation and actual-change review; source policy reporting boundary. |
+| Verification | Recheck that the diagnostic probe emitted repeated Core run-return markers, that the prior wrapper did not wait, and that no Core or guest conclusion remains. Run documentation governance. |
+| Expected Markers | `XT-BYOB-PROBE=HOST-WRAPPER-INVALID`. |
 | Asset Needs | None. |
-| Reporting Requirements | Report the finite batch, retained owner, test disposition and transfer; do not disclose external-media details. |
-| Stop Conditions | Stop if a required behavior cannot be tied to the current Core execution owner or needs a new public/session contract. Transfer it rather than guessing. |
-| Exit Criteria | A complete run-return ledger exists for all implicated Core execution states; every member is proved, repaired only in a later admitted owner batch, or explicitly transferred. No boot-success claim belongs to S4. |
+| Reporting Requirements | Report the corrected boundary and next P only; do not disclose protected paths, hashes, bytes, screenshots or raw text. |
+| Stop Conditions | Stop if correction requires a runtime change or external media access. |
+| Exit Criteria | The prior invalid conclusion is removed from all S3 records, the correct host-wrapper disposition is indexed, documentation review passes, and this S4 P1 is pushed. |
 | Original Owner Request | Inspect suitable MS-DOS images and make the profiles boot to DOS. After the XT probe stalled at keyboard reset, the owner authorized a complete independent keyboard-device audit before any further repair. |
 | Similar-Issue Sweep | Inspect all XT PPI byte publication, native-input, IRQ and profile-construction consumers; prove PC/AT 8042 remains separate. Do not generalize this IBM keyboard behavior to 5170, DeskPro or default-PC/AT. |
 
@@ -59,7 +59,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T496 S3 | Complete diagnostic: the external XT probe never returned from its first Core run call, so its semantic checkpoint could not execute; the next owner is the Core run-return batch. [Evidence](../etc/evidence/t496-s3-xt-byob-run-budget-diagnostic.md). |
+| T496 S3 | Complete with correction pending: the first wrapper did not wait for the external probe, so it established no guest outcome. Its S4 correction removes the invalid Core-run inference. |
 | T496 S2 | Complete: one Core XT keyboard device now owns FIFO, reset/BAT, serial progress and a composed deadline; PPI retains ports/latch/IRQ1. Focused keyboard/PPI and fixed-profile regressions pass. [Evidence](../etc/evidence/t496-s2-xt-keyboard-owner-implementation.md). |
 | T496 S1 | Complete: rendered IBM March 1986 101/102-keyboard source, List 1 and List 2 establish the independent keyboard-device owner and reject PPI-owned BAT/FIFO state. [Ledger](../etc/evidence/t496-s1-xt-keyboard-original-source-ledger.md). |
 | T495 | Closed: the selected IBM 5160-268 is functionally ready with source-backed L3 relations and explicit L2 limits; 13/13 focused, 300/300 fresh current and specialized gates pass, without a physical/wall-clock overclaim. [Decision](../etc/evidence/t495-s2-xt-final-model-decision.md). |

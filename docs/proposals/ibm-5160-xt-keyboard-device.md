@@ -20,8 +20,8 @@ the AT 8042 only and is never imported or normative.
 2. Implementation moves the one keyboard FIFO/input/serial/reset/BAT owner
    into Core and deletes the PPI queue/direct input route.
 3. A bounded IBM XT BYOB boot probe identifies its first actual startup owner.
-4. A run-return audit freezes the implicated Core execution batch before any
-   successor repair; closure repeats the probe only after that batch resolves.
+4. A host-waited repeat of the probe provides a valid semantic terminal before
+   any successor repair is selected.
 
 ## Constraints
 
