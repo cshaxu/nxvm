@@ -4,27 +4,6 @@
 
 **Open: M5 T493.**
 
-## M5 T493 S2 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | T493 S1 primary-source ledger is accepted; owner-approved complete-controller workflow continues with the required finite List 1 before code-gap analysis. The owner additionally approves a T493 S4 immediate, complete owner-local repair of every in-scope List 2 gap; no known CGA VADP defect may be left as tail work. |
-| Objective | Freeze a complete selected IBM 5160 CGA function/timing List 1 with one disposition and source basis for every VADP-visible capability. |
-| Non-goals | No code change, renderer state, EGA/VGA/composite breadth, undocumented 6845 inference or physical-waveform work. |
-| Reference Baseline | T493 S1 ledger, rendered IBM CGA pages, VADP sole-owner design and existing VADP source/tests as inventory only. |
-| Candidate Proposal | [IBM 5160 CGA VADP phase contract](../proposals/m5-xt-cga-vadp-phase.md). |
-| Files And ABI Surface | List 1 evidence, evidence index, history/current records and the T493 proposal's explicit S4 repair boundary only. |
-| Applicable Rules | `docs/rules/EXECUTION.md`, source policy, specification-driven L3 timing design, architecture/coding/documentation rules. |
-| Verification | Every selected port/memory/mode/CRTC/reset/status/snapshot/timing category has a finite row, visual primary citation and L0--L3 disposition; documentation governance passes. |
-| Expected Markers | One complete ledger with no implicit mode or timing claim and no source-free row. |
-| Asset Needs | Accepted T493 S1 IBM primary PDFs only. |
-| Reporting Requirements | Record source page, semantic scope, timing formula/value where present, owner boundary and exact external/L2/L1 disposition. Record the approved S4 immediate-repair boundary so S3 can form one finite, non-deferred implementation batch. |
-| Stop Conditions | A needed selected feature lacks primary authority or its source wording cannot resolve the capability boundary. |
-| Exit Criteria | List 1 is complete for the selected CGA universe and is ready for source-to-code gap analysis; no implementation begins. |
-| Original Owner Request | Each chip/controller must have a complete original function/timing list and gap list before one sole-owner implementation batch. |
-| Similar-Issue Sweep | Cover every CGA VADP port callback, B8000 path, CRTC mode/geometry field, snapshot publication and XT display topology in the upcoming List 2; no path is omitted by a mode-only inventory. |
-
 ## Current Technical Baseline
 
 - **Current developer artifact:** target `vm-0-5-0492`; the stripped Release
@@ -60,7 +39,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T493 S1 | Accepted: visually checked IBM 5160 and Color/Graphics Monitor Adapter primary ledger fixes the selected CGA source boundary, Paper Capture OCR limitation and excluded physical/composite scope. [Evidence](../etc/evidence/t493-s1-cga-original-source-ledger.md). |
+| T493 S2 | Accepted: the 33-row IBM CGA List 1 covers all selected ports, 6845 registers, aperture, formats, status, reset and timing dispositions; its S4 immediate-repair rule prohibits an in-scope tail. [Evidence](../etc/evidence/t493-s2-cga-function-timing-list-1.md). |
 | T492 | Closed: complete IBM 5160 8272A/logical-media source/List-1/List-2/sole-owner chain removes fabricated reset state and global timing literals; serial gate passes 300/300 and stripped Release 0492 is recorded. [Closure audit](../etc/evidence/t492-s5-8272a-closure-audit.md). |
 | T491 | Closed: the independent IBM 5160 8255 PPI/key/NMI unit maps all 19 rows to one Core owner path, closes PB0/PB1 through the existing PIT2/speaker consumer, and records stripped Release 0491. [Closure audit](../etc/evidence/t491-s5-8255-closure-audit.md). |
 | T490 | Closed: the independent IBM 5160 8253 unit has verified source/List-1/List-2/sole-owner implementation, a corrected full gate and stripped Release 0490 artifact. [Closure audit](../etc/evidence/t490-s6-8253-closure-audit.md). |

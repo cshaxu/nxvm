@@ -9,3 +9,4 @@ remain consumers only.
 | Subtask | Result |
 | --- | --- |
 | S1 | Accepted: IBM 5160 and Color/Graphics Monitor Adapter primary-source ledger records visual/OCR quality and selected-CGA authority boundary. |
+| S2 | Accepted at `3b497bee`: the complete 33-row List 1 records every selected port, 6845 register, aperture, text/graphics format, status, reset and timing disposition. The owner-approved S4 rule requires immediate complete repair of any in-scope List 2 gap. |
