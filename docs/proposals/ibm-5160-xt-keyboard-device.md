@@ -19,8 +19,9 @@ the AT 8042 only and is never imported or normative.
 1. Source work freezes the visual-source ledger, List 1 and List 2.
 2. Implementation moves the one keyboard FIFO/input/serial/reset/BAT owner
    into Core and deletes the PPI queue/direct input route.
-3. Closure runs owner tests and a bounded IBM XT BYOB boot probe, then
-   transfers the next actual startup owner if needed.
+3. A bounded IBM XT BYOB boot probe identifies its first actual startup owner.
+4. A run-return audit freezes the implicated Core execution batch before any
+   successor repair; closure repeats the probe only after that batch resolves.
 
 ## Constraints
 
