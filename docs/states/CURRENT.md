@@ -2,27 +2,6 @@
 
 ## Current Work
 
-## M5 T497 S5 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | The owner-approved T497 proposal's S5 requires Release BYOB replays after accepted S4 (`813f0c29`); the persistent four-profile DOS-validation objective authorizes use of owner-provided images. |
-| Objective | Run the corrected Model-339 native-1.2MB and compatible-360KB media through the existing Release BYOB probe and classify every semantic terminal. |
-| Non-goals | No image import, ROM substitution, BIOS special case, geometry inference, terminal-by-timeout success, or repair outside the first proven owner batch. |
-| Reference Baseline | `813f0c29`; [S4 implementation](../etc/evidence/t497-s4-ibm5170-floppy-implementation.md). |
-| Candidate Proposal | [IBM 5170 native floppy contract](../proposals/m5-ibm-5170-native-floppy-contract.md). |
-| Files And ABI Surface | Existing BYOB probe and focused evidence only unless a complete first-owner batch is established. No Core ABI change. |
-| Applicable Rules | External MS-DOS images remain untracked test inputs; terminal checkpoints are semantic, and profile/session/FDD/Core remain one-way owners. |
-| Verification | Build/run the Release BYOB probe with the selected 1.2MB and 360KB assets; record DOS prompt/date/setup terminal or first owner-qualified failure, plus focused S4 regressions. |
-| Expected Markers | `M5:T497:S5:IBM5170-BYOB:OK` only for a semantic terminal; failure markers retain first diagnostic facts. |
-| Asset Needs | Owner-supplied read-only 1.2MB MS-DOS 6.22 and 360KB MS-DOS 5.0 boot media; neither input nor local path is committed. |
-| Reporting Requirements | Record exact profile/media pair, observed terminal, FDC/IRQ/CPU facts, source ownership conclusion and no-success-by-timeout result. |
-| Stop Conditions | Stop implementation on an ambiguous or cross-owner failure; first freeze the complete affected startup batch rather than patching a symptom. |
-| Exit Criteria | Both admitted geometries have a semantic replay disposition and any nonterminal result has an evidence-backed first owning receiver; no protected asset enters Git. |
-| Original Owner Request | Verify supported MS-DOS boot media across supported profile combinations and repair the actual first owner rather than claiming a constructor smoke is usable. |
-| Similar-Issue Sweep | Compare the same asset under Default-AT only as a diagnostic control if Model 339 fails; retain unsupported format/profile pairs as rejected rather than aliases. |
-
 ## Current Technical Baseline
 
 - **Current developer artifact:** target `vm-0-5-0494`; the stripped Release
@@ -58,7 +37,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T497 S4 | Accepted: one typed session-media request path keeps Default-AT's four-format selection distinct while Model 339 fixes its physical drive at 1.2 MB, admits compatible 360 KB and rejects later 3.5-inch media; no FDC/BIOS/Core path changed. [Implementation](../etc/evidence/t497-s4-ibm5170-floppy-implementation.md). |
+| T497 S5 | Accepted: Model-339/80286 reaches the 360-KB DOS 5 installer after its sole absent-monochrome-aperture mapping repair; the only local 1.2-MB DOS asset requires 80386 and is proven on the Default-AT control, while a 286-compatible 1.2-MB replay remains an external-media receiver. [BYOB evidence](../etc/evidence/t497-s5-ibm5170-byob-media.md). |
 | T496 | Closed: one Core FDC result/IRQ lifecycle now releases IRQ6 at normal-result acknowledgement, and the selected IBM 5160 DOS terminal plus focused FDC regressions pass without a BIOS/VM/media workaround. [Closure](../history/M5-T496-xt-keyboard-device.md). |
 | T495 | Closed: the selected IBM 5160-268 is functionally ready with source-backed L3 relations and explicit L2 limits; 13/13 focused, 300/300 fresh current and specialized gates pass, without a physical/wall-clock overclaim. [Decision](../etc/evidence/t495-s2-xt-final-model-decision.md). |
 | T494 | Closed: the complete IBM 5160 Xebec source/List-1/List-2/sole-owner chain corrects Read block-count progression without a second controller/media path; full current gate passes 300/300 and stripped Release 0494 is recorded. [Closure audit](../etc/evidence/t494-s5-xebec-closure-audit.md). |
