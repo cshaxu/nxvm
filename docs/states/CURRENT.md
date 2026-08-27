@@ -43,7 +43,6 @@ List 1 establish the finite 8255A/IBM XT audit surface.
 | Task | Compact result |
 | --- | --- |
 | T491 S2 | Accepted: 19 source-cited 8255A/IBM XT rows freeze the selected PPI, keyboard, fault/NMI and timing scope before code audit. [Evidence](../etc/evidence/t491-s2-8255-function-timing-list-1.md). |
-| T491 S1 | Accepted: the visual Intel 8255A-5 and IBM 5160 ledger fixes the chip/board boundary and excludes an AT 8042 substitution. [Evidence](../etc/evidence/t491-s1-8255-original-source-ledger.md). |
 | T490 | Closed: the independent IBM 5160 8253 unit has verified source/List-1/List-2/sole-owner implementation, a corrected full gate and stripped Release 0490 artifact. [Closure audit](../etc/evidence/t490-s6-8253-closure-audit.md). |
 | T489 | Closed: complete IBM 5160 8237A source/List-1/List-2/one-owner batch closes the single page-port gap without new state or parallel path; physical-axis conversion remains transferred. [Closure audit](../etc/evidence/t489-s5-8237a-closure-audit.md). |
 | T488 | Closed: complete IBM 5160 8259A source/List-1/List-2/one-owner audit retains one Core PIC path and an empty implementation batch. [Closure audit](../etc/evidence/t488-s5-8259a-closure-audit.md). |
