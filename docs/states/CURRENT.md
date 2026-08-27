@@ -4,11 +4,32 @@
 
 **Open: M5 T494.**
 
+## M5 T494 S5 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Accepted T494 S1--S4 admit the required task-level closure audit. |
+| Objective | Independently reconcile all 18 Xebec source/List-2 rows, the sole Core owner path and release/gate evidence; publish stripped Release `nxvm_0_5_0494.exe` before closing T494. Correct the one gate-exposed CGA smoke expectation already superseded by T493's accepted binary high-resolution palette rule. |
+| Non-goals | No new Xebec or CGA feature, controller/state owner, ATA/WD1003 compatibility path, guessed undocumented register values, physical-media model, or queue reorder. |
+| Reference Baseline | Accepted T494 S1--S4 ledgers and evidence, T494 proposal, T493's accepted CGA closure evidence, current Core HDC/media/DMA code, and current-gate/release rules. |
+| Candidate Proposal | [IBM 5160 Xebec fixed-disk-controller phase contract](../proposals/m5-xt-xebec-fixed-disk-phase.md). |
+| Files And ABI Surface | Closure evidence, history/current, current artifact identity, one stale CGA smoke expectation and one public controller-type relocation; no behavior or ABI change. |
+| Applicable Rules | Execution, documentation, architecture and coding rules; one Core HDC/media/DMA owner and one stripped Release publication route remain mandatory. |
+| Verification | Reconcile all X1--X18, inspect the actual S4 diff, run documentation governance and the complete current gate, build and hash the Release 0494 artifact, then verify its identity and stripped-debug condition. |
+| Expected Markers | One closure audit, all source/list rows closed or retained at an explicit boundary, a 0494 artifact, the T493-consistent CGA smoke and no duplicate state/path. |
+| Asset Needs | None. |
+| Reporting Requirements | Record code-size delta, owner-path sweep, gate counts, artifact hash/identity/stripping proof and any transferred boundaries. |
+| Stop Conditions | Full gate or Release artifact cannot be produced, audit reveals another unrelated corrective batch, or required evidence conflicts with source/architecture. |
+| Exit Criteria | All T494 scope is reconciled, current gate and artifact proof pass, no unclassified in-scope defect remains, and the T-level closure audit is accepted. |
+| Original Owner Request | Complete every source/list-derived batch without tail work or additive paths; release only an actually verified, minimal result. |
+| Similar-Issue Sweep | Re-run the T494 Xebec owner/tag/port/DMA/geometry search across production, tests, build and task records; classify every hit and compare Read/Write progression and all failure exits. |
+
 ## Current Technical Baseline
 
-- **Current developer artifact:** target `vm-0-5-0493`; the stripped Release
-  `nxvm_0_5_0493.exe` has SHA-256
-  `8E5C3E5261E4D5809B28C0863DF4D090F15F210DC75DA581C8F10CB8D8E5E9A4`.
+- **Current developer artifact:** target `vm-0-5-0494`; the stripped Release
+  `nxvm_0_5_0494.exe` has SHA-256
+  `C7BDFD1CE67917373DCD762E093D8A5FF86798DC4E59DEF162B5682EB6B0686A`.
   Debug remains the current-gate route. T471 preserves Core-owned progression:
   a verified axis is Standard-paced only by host waiting against completed
   Core progress. T472 extends that comparison to an explicit L2 macro axis,

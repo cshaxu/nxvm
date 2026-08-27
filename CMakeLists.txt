@@ -2837,9 +2837,9 @@ if(POWERSHELL_EXECUTABLE)
             -TestDirectory "${CMAKE_BINARY_DIR}"
             -ParallelJobs "${PROJECT_CURRENT_SMOKE_JOBS}"
             -DeadlineSeconds "${PROJECT_CURRENT_SMOKE_DEADLINE_SECONDS}"
-        DEPENDS ${PROJECT_CURRENT_ALL_SMOKE_TARGETS}
         COMMENT "Building and executing current runnable smoke coverage"
         VERBATIM)
+    add_dependencies(run-current-smokes ${PROJECT_CURRENT_ALL_SMOKE_TARGETS})
 
     add_custom_target(run-current-fast-smokes
         COMMAND "${POWERSHELL_EXECUTABLE}" -NoProfile -ExecutionPolicy Bypass
@@ -2849,9 +2849,10 @@ if(POWERSHELL_EXECUTABLE)
             -ParallelJobs "${PROJECT_CURRENT_SMOKE_JOBS}"
             -DeadlineSeconds "${PROJECT_CURRENT_SMOKE_DEADLINE_SECONDS}"
             -ExcludeMedia
-        DEPENDS ${PROJECT_CURRENT_NONMEDIA_SMOKE_TARGETS}
         COMMENT "Building and executing current non-media smoke coverage"
         VERBATIM)
+    add_dependencies(run-current-fast-smokes
+        ${PROJECT_CURRENT_NONMEDIA_SMOKE_TARGETS})
 
     add_custom_target(verify-t382-current-gate-aggregate
         COMMAND "${POWERSHELL_EXECUTABLE}" -NoProfile -ExecutionPolicy Bypass
@@ -2935,8 +2936,8 @@ function(add_current_vm_artifact target version)
     endif()
 endfunction()
 
-set(PROJECT_CURRENT_VM_ARTIFACT_TARGET vm-0-5-0493)
-add_current_vm_artifact(vm-0-5-0493 "0.5.0493")
+set(PROJECT_CURRENT_VM_ARTIFACT_TARGET vm-0-5-0494)
+add_current_vm_artifact(vm-0-5-0494 "0.5.0494")
 option(PROJECT_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
 
@@ -3507,8 +3508,8 @@ file(GENERATE
 add_custom_target(verify-current-gate-separation
     COMMAND "${CMAKE_COMMAND}"
         -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
-        -DPROJECT_NINJA:FILEPATH=${CMAKE_MAKE_PROGRAM}
         -DPROJECT_SPECIALIZED_TARGETS_FILE:FILEPATH=${CMAKE_BINARY_DIR}/current-specialized-verifier-targets.txt
+        -DPROJECT_GATE_DEPENDENCIES_FILE:FILEPATH=${CMAKE_BINARY_DIR}/current-gate-dependencies.txt
         -DPROJECT_CTEST_TEST_FILE:FILEPATH=${CMAKE_BINARY_DIR}/CTestTestfile.cmake
         -P "${CMAKE_SOURCE_DIR}/cmake/verify_current_gate_separation.cmake"
     COMMENT "Verifying current smoke and specialized gate separation"
@@ -3516,9 +3517,26 @@ add_custom_target(verify-current-gate-separation
 list(APPEND PROJECT_CURRENT_SPECIALIZED_VERIFIER_TARGETS
     verify-current-gate-separation)
 add_custom_target(verify-current-specialized-gates
-    DEPENDS ${PROJECT_CURRENT_SPECIALIZED_VERIFIER_TARGETS}
     COMMENT "Running current specialized verification gates"
     VERBATIM)
+add_dependencies(verify-current-specialized-gates
+    ${PROJECT_CURRENT_SPECIALIZED_VERIFIER_TARGETS})
+get_property(project_current_smoke_dependencies TARGET run-current-smokes
+    PROPERTY MANUALLY_ADDED_DEPENDENCIES)
+get_property(project_current_fast_smoke_dependencies TARGET run-current-fast-smokes
+    PROPERTY MANUALLY_ADDED_DEPENDENCIES)
+get_property(project_current_specialized_dependencies
+    TARGET verify-current-specialized-gates
+    PROPERTY MANUALLY_ADDED_DEPENDENCIES)
+string(REPLACE ";" "\n" project_current_smoke_dependencies
+    "${project_current_smoke_dependencies}")
+string(REPLACE ";" "\n" project_current_fast_smoke_dependencies
+    "${project_current_fast_smoke_dependencies}")
+string(REPLACE ";" "\n" project_current_specialized_dependencies
+    "${project_current_specialized_dependencies}")
+file(GENERATE
+    OUTPUT "${CMAKE_BINARY_DIR}/current-gate-dependencies.txt"
+    CONTENT "[smoke]\n${project_current_smoke_dependencies}\n[fast]\n${project_current_fast_smoke_dependencies}\n[specialized]\n${project_current_specialized_dependencies}\n")
 
 if(PROJECT_ENABLE_BOCHX_RESEARCH)
     add_executable(research-bochx-manifest-check

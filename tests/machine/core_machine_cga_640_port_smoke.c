@@ -34,7 +34,7 @@ C_INT main(C_VOID)
         snapshot.pixels[0] != 1u || snapshot.pixels[1] != 0u ||
         snapshot.pixels[2] != 1u || snapshot.pixels[3] != 0u ||
         snapshot.pixels[640u] != 0u || snapshot.pixels[641u] != 1u ||
-        snapshot.palette_rgb[0] != 0u || snapshot.palette_rgb[1] != 0xff5555u;
+        snapshot.palette_rgb[0] != 0u || snapshot.palette_rgb[1] != 0xffffffu;
     status = core_machine_port_read(&port, 0x03dau);
     failed |= core_machine_port_read(&port, 0x03dau) != status;
     core_machine_port_write(&port, 0x03d8u, 0x12u);

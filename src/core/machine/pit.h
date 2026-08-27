@@ -8,12 +8,8 @@ extern "C" {
 #endif
 
 #include "type.h"
+#include "core/machine/controller_interface.h"
 #include "core/machine/port.h"
-
-typedef enum core_machine_pit_personality {
-    CORE_MACHINE_PIT_PERSONALITY_8254 = 0,
-    CORE_MACHINE_PIT_PERSONALITY_8253
-} core_machine_pit_personality;
 
 typedef enum {
     VPIT_STATUS_RW_READY,

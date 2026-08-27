@@ -12,6 +12,11 @@
 #define CORE_MACHINE_XEBEC_TYPE_2_HEADS 4u
 #define CORE_MACHINE_XEBEC_TYPE_2_SECTORS_PER_TRACK 17u
 
+typedef enum core_machine_pit_personality {
+    CORE_MACHINE_PIT_PERSONALITY_8254 = 0,
+    CORE_MACHINE_PIT_PERSONALITY_8253
+} core_machine_pit_personality;
+
 /* A controller may retain this frozen core-issued nonce, but never DMA
  * registers, guest memory, a controller implementation pointer, or an address.
  * Core validates it against the receiving machine's private DMA state. */
