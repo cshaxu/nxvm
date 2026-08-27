@@ -2,11 +2,26 @@
 
 ## Current Work
 
-## M5 T497 Progress
+## M5 T497 S2 Packet
 
-| Subtask | Accepted result |
+| Field | Required record |
 | --- | --- |
-| S1 | IBM's visually checked CMOS/compatibility facts establish Model 339 native 1.2 MB and compatible 360 KB media; 86Box/PCjs are bounded corroboration only, while Bochs/MAME/QEMU supply no selected-model fact. [Ledger](../etc/evidence/t497-s1-ibm5170-floppy-source-ledger.md). |
+| Identifier Mode | Continuation |
+| Admission And Approval | S1 was accepted at `4456dae3`; the owner's original approved correction supplies the fixed Model-339 media boundary. |
+| Objective | Freeze the complete F1--F8 functional/timing List 1 for the Model 339 floppy-drive contract. |
+| Non-goals | No code, FDC behavior, BIOS/CMOS mutation by mounted media, physical-drive timing, firmware/media import, or expansion to later drive hardware. |
+| Reference Baseline | `4456dae3`; [S1 source ledger](../etc/evidence/t497-s1-ibm5170-floppy-source-ledger.md). |
+| Candidate Proposal | [IBM 5170 native floppy contract](../proposals/m5-ibm-5170-native-floppy-contract.md). |
+| Files And ABI Surface | Evidence and task state only. |
+| Applicable Rules | Immutable profile construction, session request isolation, FDD sole geometry owner, primary-source L3 classification and explicit physical non-claims. |
+| Verification | Check F1--F8 against S1, existing floppy geometry constants and Model-339/FDC topology; prove no row is unclassified. |
+| Expected Markers | `M5:T497:S2:IBM5170-FLOPPY-LIST-1:OK`. |
+| Asset Needs | No new assets; existing read-only source ledger only. |
+| Reporting Requirements | Link each requirement to its source/classification/receiver and distinguish physical drive from mounted logical media. |
+| Stop Conditions | Stop before List 2 if any F1--F8 fact lacks primary support or the proposed owner boundary requires a second mutable state. |
+| Exit Criteria | Complete F1--F8 List 1 has one source level and receiver per row. |
+| Original Owner Request | Native 1.2 MB, compatible 360 KB, not a false 1.44 MB 5170 default. |
+| Similar-Issue Sweep | Include descriptor CMOS, session format choice, provider request validation, FDD geometry constructor and all profile isolation tests in S3. |
 
 ## Current Technical Baseline
 
