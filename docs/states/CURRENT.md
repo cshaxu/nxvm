@@ -4,27 +4,6 @@
 
 **Open: M5 T494.**
 
-## M5 T494 S2 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | The owner-approved T494 Xebec unit continues after accepted S1; S2 is the required complete List-1 stage before any code-gap or repair work. |
-| Objective | Freeze one finite, row-complete IBM 6139790 function/timing List 1 for the selected Xebec adapter: command/result state, ports, DMA3/IRQ5/AEN, media geometry, reset/cancel and every supported or explicitly bounded timing fact. |
-| Non-goals | No implementation, profile selection, ROM/media import, ATA/WD1003/ESDI reuse, fabricated mechanical timing, or claim that an external emulator overrides IBM. |
-| Reference Baseline | Accepted [S1 source ledger](../etc/evidence/t494-s1-xebec-original-source-ledger.md), Xebec proposal, retained T479/T484 records as inventory, and read-only external-source checkouts. |
-| Candidate Proposal | [IBM 5160 Xebec fixed-disk-controller phase contract](../proposals/m5-xt-xebec-fixed-disk-phase.md). |
-| Files And ABI Surface | One indexed List-1 evidence ledger plus history/current records only; no source, ABI, build, media or firmware changes. |
-| Applicable Rules | Execution, documentation, architecture and coding rules, source policy; Core remains the sole future controller/media owner and external source remains reference-only. |
-| Verification | Every finite row cites direct IBM printed pages, distinguishes Manual L3 from bounded Other-L3 corroboration and L1/L2/unsupported boundaries, and reconciles all local 86Box/PCjs observations without copying code. |
-| Expected Markers | Complete row universe with command coverage, unsupported physical dispositions and no undocumented-bit/timer promotion; MAME/Bochs/QEMU availability is explicitly recorded rather than implied. |
-| Asset Needs | Accepted IBM source plus read-only 86Box and PCjs checkouts; unavailable local reference projects remain an explicit non-finding. |
-| Reporting Requirements | Record row count, source citations, corroboration/conflict results, L-level disposition and exact non-claim for every incomplete physical or undocumented matter. |
-| Stop Conditions | The source fails to define a finite row, a material manual/reference conflict cannot be resolved, or List 1 would require a guessed controller or physical-timing behavior. |
-| Exit Criteria | Accepted complete List 1 establishes every later List-2 row's source disposition and no code begins before S3 completes the owner/path audit. |
-| Original Owner Request | Per controller: collect original manuals, establish complete instruction/function/timing List 1 and gap List 2, cross-check other emulators without treating them as authority, then repair one owner-local batch rather than incremental patches. |
-| Similar-Issue Sweep | Sweep all Xebec command and port groups, both read/write DMA directions, reset/select/mask states, all printed drive types, and every locally available external implementation route; no selected family may be omitted because it is inconvenient to emulate. |
-
 ## Current Technical Baseline
 
 - **Current developer artifact:** target `vm-0-5-0493`; the stripped Release
@@ -60,7 +39,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T494 S1 | Accepted: visually verified IBM 6139790 source basis qualifies the complete finite Xebec List 1; OCR is discovery-only and no ATA/WD1003/ESDI substitution, code change or protected material enters the task. [Source ledger](../etc/evidence/t494-s1-xebec-original-source-ledger.md). |
+| T494 S2 | Accepted: S1's visual IBM 6139790 source validation and S2's complete 18-family List 1 cover all printed command/port/state/timing facts, bounded Other-L3 corroboration and every physical or undocumented exclusion. [Source ledger](../etc/evidence/t494-s1-xebec-original-source-ledger.md), [List 1](../etc/evidence/t494-s2-xebec-function-timing-list-1.md). |
 | T493 | Closed: complete IBM CGA source/List-1/List-2/one-owner repair reconciles all 33 rows; the generic latch and binary high-resolution palette repair leave no in-scope tail. [Closure audit](../etc/evidence/t493-s5-cga-closure-audit.md). |
 | T492 | Closed: complete IBM 5160 8272A/logical-media source/List-1/List-2/sole-owner chain removes fabricated reset state and global timing literals; serial gate passes 300/300 and stripped Release 0492 is recorded. [Closure audit](../etc/evidence/t492-s5-8272a-closure-audit.md). |
 | T491 | Closed: the independent IBM 5160 8255 PPI/key/NMI unit maps all 19 rows to one Core owner path, closes PB0/PB1 through the existing PIT2/speaker consumer, and records stripped Release 0491. [Closure audit](../etc/evidence/t491-s5-8255-closure-audit.md). |

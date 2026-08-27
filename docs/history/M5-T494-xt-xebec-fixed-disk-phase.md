@@ -9,4 +9,4 @@ ATA alias, a duplicate CHS/cache path or VM-owned controller state.
 | Subtask | Result |
 | --- | --- |
 | S1 | Accepted: visual verification of IBM 6139790 establishes the finite original-source basis for List 1, retains OCR as discovery-only and excludes ATA/WD1003/ESDI substitution, code and protected material. [Evidence](../etc/evidence/t494-s1-xebec-original-source-ledger.md). |
-| S2 | In progress: freeze the complete IBM Xebec function/timing universe and bounded external-reference reconciliation before the current-code audit. |
+| S2 | Accepted: all 18 IBM Xebec command/port/state/timing source families have one Manual-L3, bounded Other-L3, L1 or unsupported disposition; no external timer or guessed status is promoted. [List 1](../etc/evidence/t494-s2-xebec-function-timing-list-1.md). |
