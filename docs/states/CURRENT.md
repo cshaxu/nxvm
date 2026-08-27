@@ -4,26 +4,9 @@
 
 **Open: M5 T495.**
 
-## M5 T495 S1 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | New |
-| Admission And Approval | Owner's standing instruction to execute the queue in single-session coordinator/executor mode through the pre-Windows admission audit, reconfirmed by the active thread goal; admit the first queued IBM PC/XT final audit. |
-| Objective | Freeze a finite T495 model-closure matrix that reconciles the selected IBM 5160-268 CPU, board, device, firmware/session, reset/cancellation and timing evidence before any ready/not-ready conclusion. |
-| Non-goals | No code repair, new profile capability, ATA/WD1003 substitution, generic 8088-PC conclusion, physical waveform/pacing claim, firmware/media import, or Windows claim. |
-| Reference Baseline | T483 capability audit; T484 functional closure; T486--T494 independent CPU/board/controller closures; the current XT final-audit proposal and Core/VM architecture authorities. |
-| Candidate Proposal | [IBM PC/XT 5160-268 final model-L3 audit](../proposals/m5-xt-5160-268-l3-audit.md). |
-| Files And ABI Surface | New T495 history and convergence evidence plus Current status only; no source, public interface, runtime, build or artifact surface. |
-| Applicable Rules | Execution and documentation rules govern the coverage ledger and closure; architecture/coding rules constrain the owner/path review. Source policy applies to the existing evidence boundary; no protected or third-party material may be imported. |
-| Verification | Reconcile each frozen component against its accepted evidence and owner path, inspect the active XT construction/session route, prove every retained boundary has its earliest receiver, then run documentation governance and diff checks. |
-| Expected Markers | One finite component matrix, one model-level completion predicate, no inferred AT alias, and explicit source-backed versus transferred timing status for every row. |
-| Asset Needs | Existing committed evidence and source tree only; no new firmware, media, binaries or external source. |
-| Reporting Requirements | Record matrix rows, source/owner/proof/receiver dispositions, reset/cancellation coverage, retained cross-profile fixed-disk regressions, and the precise admission predicate for the final decision S. |
-| Stop Conditions | A selected component lacks a functional owner/proof, a timing residual has no earliest receiver, a required fact needs new source/import, or an implementation defect is discovered; report it and transfer rather than repair in this audit. |
-| Exit Criteria | The entire selected XT component universe is durable and every row is accepted, explicitly excluded, or transferred with a named receiver; the next S can make the final model decision without reopening scope. |
-| Original Owner Request | Execute queued work continuously with a global view, minimalism and no additive patching until the pre-Windows L3 admission-audit position. |
-| Similar-Issue Sweep | Compare every selected XT component against the same construction chain: profile request, immutable resolved plan, Core sole owner, reset/cancellation, copied observation and product/session consumer; classify any duplicate, AT fallback or unowned timing claim. |
+**Progress: T495 S1 accepted.** The M1--M12 model ledger is frozen; the next
+S must perform cross-device/reset/cancellation proof and make the bounded
+ready/not-ready decision without implementation work.
 
 ## Current Technical Baseline
 

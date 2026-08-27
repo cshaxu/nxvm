@@ -8,4 +8,4 @@ each timing limitation is explicitly source-bounded or transferred.
 
 | Subtask | Result |
 | --- | --- |
-| S1 | Completed: the M1--M12 model matrix freezes every selected route, evidence source, timing boundary and final-decision predicate before cross-device proof. [Ledger](../etc/evidence/t495-s1-xt-model-closure-ledger.md). |
+| S1 | Accepted: the M1--M12 model matrix freezes every selected route, evidence source, timing boundary and final-decision predicate before cross-device proof. [Ledger](../etc/evidence/t495-s1-xt-model-closure-ledger.md). |
