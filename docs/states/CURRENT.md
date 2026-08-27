@@ -2,10 +2,28 @@
 
 ## Current Work
 
-**Open: M5 T491.**
+**Open: M5 T491 S2.**
 
-S1 is accepted: the Intel 8255A-5 chip and IBM 5160 board source authorities
-are separate, visually verified and sufficient for a finite List 1.
+## M5 T491 S2 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | S1 accepted the visual original-source ledger. S2 freezes the complete function/timing List 1 before code audit. |
+| Objective | Produce one finite, source-cited 8255A/IBM 5160 PPI, keyboard, parity/I-O-check and NMI List 1 with explicit L-level boundaries. |
+| Non-goals | No code change, no 8042 command model, no inferred electrical timing and no profile-side state. |
+| Reference Baseline | T491 S1 ledger, Intel 8255A-5 visual pages and IBM 5160 Technical Reference visual board pages. |
+| Candidate Proposal | [IBM 5160 8255 PPI, keyboard and NMI phase contract](../proposals/m5-xt-8255-keyboard-nmi-phase.md). |
+| Files And ABI Surface | S2 evidence/index/history/Current only. |
+| Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, `docs/etc/operations/policy/source-policy.md`. |
+| Verification | Count and source-cite every row; cross-check all existing PPI/KBC/NMI owner terms without auditing code gaps. |
+| Expected Markers | One chip/board partition, each row Manual L3, external-input L3, L2, L1 or L0 by stated evidence; no silent 8042 equivalence. |
+| Asset Needs | Retained S1 sources only. |
+| Reporting Requirements | Report row count, source-page references, timing classification and every source ambiguity. |
+| Stop Conditions | A required IBM board behavior is absent or contradicts the chip source; record it explicitly rather than guess. |
+| Exit Criteria | Complete finite List 1 is indexed and every item has a source, scope and L-level disposition. |
+| Original Owner Request | Each chip/controller is one complete T: source ledger, complete List 1, complete List 2, then one coherent owner-local implementation batch; no symptom repairs. |
+| Similar-Issue Sweep | Search production/test/document references for 8255/PPI, keyboard, parity, I/O-check and NMI; classify each as chip, board or out of scope. |
 
 ## Current Technical Baseline
 
