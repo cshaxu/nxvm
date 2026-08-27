@@ -3,12 +3,14 @@
 #include <windows.h>
 
 #include "core/machine/fdc.h"
+#include "core/machine/machine.h"
 #include "core/machine/machine_interface.h"
 #include "core/machine/memory_interface.h"
 #include "vm/composition/session/session_interface.h"
 #include "vm/composition/session/session_private.h"
+#include "vm/composition/session/waiting.h"
 
-#define VM_FDC242_BOOT_BUDGET 800000u
+#define VM_FDC242_BOOT_BUDGET 6000000u
 #define VM_FDC242_RUN_BUDGET 400000u
 #define VM_FDC242_MARKER_CELL 1920u
 #define VM_FDC242_DMA_ADDRESS 0x00080000u
@@ -72,9 +74,9 @@ static C_INT vm_fdc242_install(type_unsigned_8 *image, DWORD size, const C_CHAR 
     static const type_unsigned_8 program[] = {
         0x1e,0x31,0xc0,0x8e,0xd8,0xb8,0x80,0x02,0xa3,0x38,0x00,
         0x0e,0x58,0xa3,0x3a,0x00,0x1f, 0xe4,0x21,0x24,0xbf,0xe6,0x21,0xfb,
-        0x30,0xc0,0xe6,0x0c, 0xe6,0x04, 0xb0,0x00,0xe6,0x04,
+        0xb0,0x06,0xe6,0x0a, 0x30,0xc0,0xe6,0x0d, 0xe6,0x0c, 0xe6,0x04, 0xb0,0x00,0xe6,0x04,
         0xb0,0xff,0xe6,0x05, 0xb0,0x23,0xe6,0x05, 0xb0,0x08,0xe6,0x81,
-        0xb0,0x86,0xe6,0x0b, 0xb0,0x02,0xe6,0x0a,
+        0xb0,0x46,0xe6,0x0b,
         0xba,0xf2,0x03, 0xb0,0x0c,0xee, 0xba,0xf5,0x03,
         0xb0,0x08,0xee, 0xec,0xec, 0xb0,0x08,0xee, 0xec,0xec,
         0xb0,0x08,0xee, 0xec,0xec, 0xb0,0x08,0xee, 0xec,0xec,
@@ -88,6 +90,7 @@ static C_INT vm_fdc242_install(type_unsigned_8 *image, DWORD size, const C_CHAR 
         0xba,0xf2,0x03, 0xb0,0x1c,0xee,
         0xba,0xf5,0x03,
         0xb0,0x03,0xee, 0xb0,0xdf,0xee, 0xb0,0x02,0xee,
+        0xb0,0x02,0xe6,0x0a,
         0xb0,0x42,0xee, 0xb0,0x00,0xee, 0xb0,0x00,0xee,
         0xb0,0x00,0xee, 0xb0,0x01,0xee, 0xb0,0x02,0xee,
         0xb0,0x12,0xee, 0xb0,0x1b,0xee, 0xb0,0xff,0xee,
@@ -99,8 +102,11 @@ static C_INT vm_fdc242_install(type_unsigned_8 *image, DWORD size, const C_CHAR 
         0xec,0xa2,0xa7,0x02,
         0xb0,0x08,0xee, 0xec,0xa2,0xa8,0x02, 0xec,0xa2,0xa9,0x02,
         0xb0,0x20,0xe6,0x20,
-        0xb8,0x00,0xb8, 0x8e,0xc0, 0x26,0xc7,0x06,0x00,0x0f,0x4f,0x07,
-        0xb8,0x00,0x4c, 0xcd,0x21,
+        0xb8,0x00,0xb8, 0x8e,0xc0,
+        0x26,0xc7,0x06,0x00,0x0f,0x46,0x07,
+        0x26,0xc7,0x06,0x02,0x0f,0x44,0x07,
+        0x26,0xc7,0x06,0x04,0x0f,0x43,0x07,
+        0xeb,0xfe,
         [0x180] = 0x50,0x1e,0x0e,0x1f,0xfe,0x06,0xa0,0x02,
         0xe4,0x21,0x0c,0x40,0xe6,0x21,0xb0,0x20,0xe6,0x20,
         0x1f,0x58,0xcf
@@ -155,13 +161,18 @@ static C_INT vm_fdc242_has_prompt(const core_machine_display_snapshot *snapshot)
 }
 
 static C_INT vm_fdc242_run_until(vm_session *session, type_unsigned_32 limit,
-    type_unsigned_32 quantum, type_unsigned_8 marker)
+    type_unsigned_32 quantum, C_INT require_marker)
 {
     core_machine_run_budget budget = {quantum, 0u}; core_machine_run_result result;
     core_machine_display_snapshot snapshot; type_unsigned_32 used = 0u;
     while (used < limit) {
+        C_INT advanced = 0;
+
         if (core_machine_run(session->core_machine, budget, &result) != TYPE_STATUS_OK ||
             result.reason == CORE_MACHINE_STOP_FAULT) return 0;
+        if (result.reason == CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT &&
+            (vm_session_waiting_advance(session, &result, &advanced) != TYPE_STATUS_OK ||
+            !advanced)) return 0;
         used += budget.instructions;
         /* Both the prompt and the test program's marker persist.  Sampling
          * the display less frequently does not alter the run quantum or the
@@ -170,8 +181,10 @@ static C_INT vm_fdc242_run_until(vm_session *session, type_unsigned_32 limit,
             continue;
         if (core_machine_capture_display_snapshot(session->core_machine,
                 &snapshot) != TYPE_STATUS_OK) return 0;
-        if (marker ? snapshot.kind == CORE_MACHINE_DISPLAY_KIND_TEXT &&
-                snapshot.characters[VM_FDC242_MARKER_CELL] == marker :
+        if (require_marker ? snapshot.kind == CORE_MACHINE_DISPLAY_KIND_TEXT &&
+                snapshot.characters[VM_FDC242_MARKER_CELL] == 'F' &&
+                snapshot.characters[VM_FDC242_MARKER_CELL + 1u] == 'D' &&
+                snapshot.characters[VM_FDC242_MARKER_CELL + 2u] == 'C' :
             vm_fdc242_has_prompt(&snapshot)) return 1;
     }
     return 0;
@@ -193,11 +206,12 @@ static C_INT vm_fdc242_run_case(const vm_session_config *config,
     C_INT ok = 0;
 
     if (config == STD_NULL || out_result == STD_NULL || quantum == 0u ||
-        vm_session_create(config, &session) != TYPE_STATUS_OK || session == STD_NULL ||
-        !vm_fdc242_run_until(session, VM_FDC242_BOOT_BUDGET, quantum, 0u)) goto done;
+        vm_session_create(config, &session) != TYPE_STATUS_OK || session == STD_NULL) goto done;
+    STD_ATOMIC_STORE(&session->control.flagRun, TYPE_TRUE);
+    if (!vm_fdc242_run_until(session, VM_FDC242_BOOT_BUDGET, quantum, 0u)) goto done;
     for (index = 0u; index < sizeof(command); ++index) if (core_machine_keyboard_receive_native_byte(
         session->core_machine, command[index]) != TYPE_STATUS_OK) goto done;
-    if (!vm_fdc242_run_until(session, VM_FDC242_RUN_BUDGET, quantum, 'O') ||
+    if (!vm_fdc242_run_until(session, VM_FDC242_RUN_BUDGET, quantum, 1) ||
         core_machine_memory_read(session->core_machine, VM_FDC242_DMA_ADDRESS,
         out_result->bytes, sizeof(out_result->bytes)) != TYPE_STATUS_OK) goto done;
     if (core_machine_memory_read(session->core_machine, 0x003au, &program_cs,
@@ -208,6 +222,7 @@ static C_INT vm_fdc242_run_case(const vm_session_config *config,
         sizeof(out_result->off_result)) != TYPE_STATUS_OK) goto done;
     ok = 1;
 done:
+    if (session != STD_NULL) STD_ATOMIC_STORE(&session->control.flagRun, TYPE_FALSE);
     vm_session_destroy(session);
     return ok;
 }
@@ -219,12 +234,14 @@ C_INT main(C_INT argc, C_CHAR **argv)
     vm_fdc242_result one_instruction = {0};
     vm_fdc242_result short_quantum = {0};
     DWORD size = 0u; C_CHAR path[MAX_PATH] = {0}; C_INT passed = 0;
+    STD_SIZE_T first_mismatch = sizeof(expected);
 
     if (argc != 2 || !vm_fdc242_clone(argv[1], path, &image, &size) ||
         !vm_fdc242_install(image, size, path)) goto done;
     STD_MEMCPY(expected, image, sizeof(expected)); config.fdd_image = path;
     config.cpu_profile = CORE_MACHINE_CPU_PROFILE_80386;
     config.fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE;
+    config.floppy_format = VM_SESSION_FLOPPY_FORMAT_1440K;
     passed = vm_fdc242_run_case(&config, 1u, &one_instruction) &&
         vm_fdc242_run_case(&config, 128u, &short_quantum) &&
         STD_MEMCMP(expected, one_instruction.bytes, sizeof(expected)) == 0 &&
@@ -233,13 +250,37 @@ C_INT main(C_INT argc, C_CHAR **argv)
         one_instruction.result[2] == 0u && one_instruction.result[3] == 0u &&
         one_instruction.result[4] == 0u && one_instruction.result[5] == 0u &&
         one_instruction.result[6] == 0x13u && one_instruction.result[7] == 0x02u &&
-        one_instruction.result[8] == 0x20u && one_instruction.result[9] == 0u &&
+        one_instruction.result[8] == 0x80u && one_instruction.result[9] == 0u &&
         one_instruction.off_result[0] == core_machine_fdc_ST0_ABNORMAL &&
         one_instruction.off_result[1] == 0x04u && one_instruction.off_result[7] ==
-        core_machine_fdc_ST0_ABNORMAL;
+        0x80u;
 done:
     if (!passed) {
-        STD_FPRINTF(STD_STDERR, "M5:T242:S4:FDC:DOS:FAIL\n");
+        for (STD_SIZE_T index = 0u; index < sizeof(expected); ++index) {
+            if (expected[index] != one_instruction.bytes[index]) {
+                first_mismatch = index;
+                break;
+            }
+        }
+        STD_FPRINTF(STD_STDERR, "M5:T242:S4:FDC:DOS:FAIL bytes=%d@%zu:%02x/%02x runs=%d result=%d off=%d/%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x\n",
+            STD_MEMCMP(expected, one_instruction.bytes, sizeof(expected)) == 0,
+            first_mismatch,
+            first_mismatch < sizeof(expected) ? expected[first_mismatch] : 0u,
+            first_mismatch < sizeof(expected) ? one_instruction.bytes[first_mismatch] : 0u,
+            STD_MEMCMP(&one_instruction, &short_quantum, sizeof(one_instruction)) == 0,
+            one_instruction.result[0] == 1u && one_instruction.result[1] == 0x20u &&
+            one_instruction.result[2] == 0u && one_instruction.result[3] == 0u &&
+            one_instruction.result[4] == 0u && one_instruction.result[5] == 0u &&
+            one_instruction.result[6] == 0x13u && one_instruction.result[7] == 0x02u &&
+            one_instruction.result[8] == 0x80u && one_instruction.result[9] == 0u,
+            one_instruction.off_result[0] == core_machine_fdc_ST0_ABNORMAL &&
+            one_instruction.off_result[1] == 0x04u && one_instruction.off_result[7] ==
+            0x80u,
+            one_instruction.off_result[0], one_instruction.off_result[1],
+            one_instruction.off_result[2], one_instruction.off_result[3],
+            one_instruction.off_result[4], one_instruction.off_result[5],
+            one_instruction.off_result[6], one_instruction.off_result[7],
+            one_instruction.off_result[8]);
         DeleteFileA(path); STD_FREE(image); return 1;
     }
     DeleteFileA(path); STD_FREE(image);

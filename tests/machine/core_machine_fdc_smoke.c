@@ -246,6 +246,7 @@ C_INT main(C_VOID)
     type_unsigned_8 result[7];
     type_unsigned_8 scan_dma[512];
     type_unsigned_64 ndma_gate_tick;
+    type_unsigned_32 fallback_read_count;
     C_INT failed = 0;
 
     fixture.bytes[0] = 0x4au;
@@ -384,7 +385,8 @@ C_INT main(C_VOID)
                 failed |= fdc->data.phase != core_machine_fdc_PHASE_RESULT ||
                     !fdc->connect.irq_source.asserted ||
                     !core_machine_fdc_read_result(fdc, port, result, sizeof(result)) ||
-                    result[0] != core_machine_fdc_ST0_NORMAL;
+                    result[0] != core_machine_fdc_ST0_NORMAL ||
+                    fdc->connect.irq_source.asserted;
                 fixture.read_count = 0u;
 
                 core_machine_fdc_command(fdc, port, read_sector, sizeof(read_sector));
@@ -392,8 +394,11 @@ C_INT main(C_VOID)
                 for (type_unsigned_32 index = 1u; index < 512u; ++index) {
                     (C_VOID)core_machine_port_read(port, fdc_config.data_port);
                 }
-                failed |= !core_machine_fdc_read_result(fdc, port, result, sizeof(result)) ||
-                    result[0] != core_machine_fdc_ST0_NORMAL || fixture.read_count != 512u;
+                core_machine_fdc_advance(fdc);
+                failed |= !fdc->connect.irq_source.asserted ||
+                    !core_machine_fdc_read_result(fdc, port, result, sizeof(result)) ||
+                    result[0] != core_machine_fdc_ST0_NORMAL || fixture.read_count != 512u ||
+                    fdc->connect.irq_source.asserted;
 
                 fixture.mark = CORE_MACHINE_MEDIA_ADDRESS_MARK_DELETED_DATA;
                 core_machine_fdc_command(fdc, port, read_sector, sizeof(read_sector));
@@ -532,6 +537,17 @@ C_INT main(C_VOID)
                     core_machine_fdc_PHASE_PENDING_COMPLETE || fdc->connect.irq_source.asserted;
                 core_machine_fdc_advance_at(fdc, 229u);
                 failed |= !fdc->connect.irq_source.asserted;
+                result[0] = (type_unsigned_8)core_machine_port_read(port,
+                    fdc_config.data_port);
+                failed |= fdc->connect.irq_source.asserted || fdc->data.flagINTR ||
+                    result[0] != core_machine_fdc_ST0_NORMAL;
+                for (type_unsigned_8 result_index = 1u; result_index < sizeof(result);
+                    ++result_index) {
+                    result[result_index] = (type_unsigned_8)core_machine_port_read(port,
+                        fdc_config.data_port);
+                }
+                failed |= (core_machine_port_read(port, fdc_config.status_port) &
+                    (VFDC_MSR_CB | VFDC_MSR_DIO)) != 0u;
                 core_machine_port_write(port, fdc_config.dor_port, 0u);
                 failed |= core_machine_dma_has_pending_request(&machine->shared_dma_primary,
                     &machine->shared_dma_secondary) || fdc->data.dma_byte_gate_pending;
@@ -645,6 +661,36 @@ C_INT main(C_VOID)
                 core_machine_port_write(port, fdc_config.dor_port, 0u);
                 failed |= fdc->data.phase != core_machine_fdc_PHASE_COMMAND ||
                     fdc->data.ndma_byte_gate_pending;
+
+                /* An unqualified service-time conversion is still a complete
+                   logical DRQ/DACK handshake: single-mode DMA may consume
+                   successive bytes without a fabricated delay. */
+                fdc->connect.config.ticks_per_microsecond = 0u;
+                core_machine_port_write(port, fdc_config.dor_port, 0x1cu);
+                core_machine_fdc_command(fdc, port,
+                    (const type_unsigned_8[]){0x03u, 0xdfu, 0x02u}, 3u);
+                core_machine_fdc_write_dma2(port, 0x0600u, 1u);
+                fallback_read_count = fixture.read_count;
+                core_machine_fdc_command(fdc, port, read_sector, sizeof(read_sector));
+                core_machine_dma_advance(&machine->shared_dma_latch,
+                    &machine->shared_dma_primary, &machine->shared_dma_secondary,
+                    &machine->executor_memory, 1u);
+                failed |= fixture.read_count != fallback_read_count + 1u ||
+                    !fdc->data.dma_byte_gate_pending ||
+                    core_machine_dma_has_pending_request(&machine->shared_dma_primary,
+                        &machine->shared_dma_secondary);
+                core_machine_fdc_advance_at(fdc, fdc->data.next_dma_byte_tick);
+                failed |= !core_machine_dma_has_pending_request(&machine->shared_dma_primary,
+                    &machine->shared_dma_secondary);
+                core_machine_dma_advance(&machine->shared_dma_latch,
+                    &machine->shared_dma_primary, &machine->shared_dma_secondary,
+                    &machine->executor_memory, 1u);
+                failed |= fixture.read_count != fallback_read_count + 2u || fdc->data.phase !=
+                    core_machine_fdc_PHASE_PENDING_COMPLETE;
+                core_machine_fdc_advance(fdc);
+                failed |= !core_machine_fdc_read_result(fdc, port, result, sizeof(result)) ||
+                    result[0] != core_machine_fdc_ST0_NORMAL || result[1] != 0u ||
+                    result[2] != 0u;
             }
         }
     }

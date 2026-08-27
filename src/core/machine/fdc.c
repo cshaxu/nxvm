@@ -215,12 +215,21 @@ static C_VOID core_machine_fdc_schedule_dma_byte(core_machine_fdc *fdc)
 {
     type_unsigned_64 ticks = core_machine_fdc_dma_byte_ticks(fdc);
 
-    if (fdc == STD_NULL || fdc->data.flagNDMA || ticks == 0u ||
+    if (fdc == STD_NULL || fdc->data.flagNDMA ||
         (fdc->data.phase != core_machine_fdc_PHASE_EXECUTION_READ &&
         fdc->data.phase != core_machine_fdc_PHASE_EXECUTION_WRITE &&
         fdc->data.phase != core_machine_fdc_PHASE_EXECUTION_SCAN &&
         fdc->data.phase != core_machine_fdc_PHASE_EXECUTION_FORMAT)) return;
     core_machine_fdc_deassert_dma(fdc);
+    /* No selected service-time conversion retains the existing logical
+     * handoff: each completed single-mode DMA service makes the next byte
+     * eligible on the next Core progression point.  Reasserting inside the
+     * DMA callback would be cleared by that same completed DMA service. */
+    if (ticks == 0u) {
+        fdc->data.next_dma_byte_tick = fdc->data.elapsed_ticks + 1u;
+        fdc->data.dma_byte_gate_pending = TYPE_TRUE;
+        return;
+    }
     fdc->data.next_dma_byte_tick = fdc->data.elapsed_ticks + ticks;
     fdc->data.dma_byte_gate_pending = TYPE_TRUE;
 }
@@ -646,8 +655,7 @@ static C_VOID core_machine_fdc_dma_terminal(C_VOID *owner, t_latch *latch)
         fdc->data.phase == core_machine_fdc_PHASE_EXECUTION_WRITE ||
         fdc->data.phase == core_machine_fdc_PHASE_EXECUTION_SCAN ||
         fdc->data.phase == core_machine_fdc_PHASE_EXECUTION_FORMAT)) {
-        core_machine_fdc_complete_transfer(fdc, fdc->data.transfer_remaining == 0u &&
-            fdc->data.format_headers_remaining == 0u ? 0u : core_machine_fdc_ST1_NO_DATA);
+        core_machine_fdc_complete_transfer(fdc, 0u);
     }
 }
 
@@ -949,6 +957,10 @@ static C_VOID core_machine_fdc_read_data(t_port *port, type_unsigned_16 id,
     core_machine_fdc *fdc = owner; t_latch latch;
     (C_VOID)port; (C_VOID)id;
     if (fdc->data.phase == core_machine_fdc_PHASE_RESULT) {
+        if (fdc->data.result_index == 0u && fdc->data.flagINTR) {
+            fdc->data.flagINTR = TYPE_FALSE;
+            core_machine_pic_irq_source_deassert(&fdc->connect.irq_source);
+        }
         fdc->connect.port->data.ioByte = fdc->data.ret[fdc->data.result_index++];
         if (fdc->data.result_index >= fdc->data.result_length) core_machine_fdc_command_phase(fdc);
     } else if (fdc->data.phase == core_machine_fdc_PHASE_EXECUTION_READ &&
