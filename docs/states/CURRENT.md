@@ -2,10 +2,7 @@
 
 ## Current Work
 
-**No active implementation task.**
-
-T490 is closed; the next queued candidate is the independent IBM 5160 8255
-PPI, keyboard and NMI unit.
+**Idle.**
 
 ## Current Technical Baseline
 
@@ -42,7 +39,6 @@ PPI, keyboard and NMI unit.
 
 | Task | Compact result |
 | --- | --- |
-| T490 S6 | Accepted: the closure audit verifies the complete source/List-1/List-2/sole-owner chain, full 300-test gate and stripped Release 0490 artifact. [Evidence](../etc/evidence/t490-s6-8253-closure-audit.md). |
 | T490 | Closed: the independent IBM 5160 8253 unit has verified source/List-1/List-2/sole-owner implementation, a corrected full gate and stripped Release 0490 artifact. [Closure audit](../etc/evidence/t490-s6-8253-closure-audit.md). |
 | T489 | Closed: complete IBM 5160 8237A source/List-1/List-2/one-owner batch closes the single page-port gap without new state or parallel path; physical-axis conversion remains transferred. [Closure audit](../etc/evidence/t489-s5-8237a-closure-audit.md). |
 | T488 | Closed: complete IBM 5160 8259A source/List-1/List-2/one-owner audit retains one Core PIC path and an empty implementation batch. [Closure audit](../etc/evidence/t488-s5-8259a-closure-audit.md). |
