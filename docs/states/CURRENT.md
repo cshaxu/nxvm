@@ -2,27 +2,6 @@
 
 ## Current Work
 
-## M5 T498 S1 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | New |
-| Admission And Approval | The owner-approved persistent four-profile DOS-validation objective and Td S154 admit the Queue-first matrix candidate. |
-| Objective | Freeze the complete supported profile/CPU/floppy row matrix, current semantic evidence and external-input gaps. |
-| Non-goals | No runtime repair, image import, firmware import, test success by timeout, support expansion or unsupported-row alias. |
-| Reference Baseline | `2b6f7d95`; [matrix proposal](../proposals/m5-four-profile-supported-media-matrix.md). |
-| Candidate Proposal | [Four-profile supported DOS media matrix](../proposals/m5-four-profile-supported-media-matrix.md). |
-| Files And ABI Surface | Evidence and documentation index only; no ABI. |
-| Applicable Rules | Profile owns admitted physical surface; external media stay untracked; every matrix row has semantic proof, a named owner batch, or an external-input disposition. |
-| Verification | Evidence lists all four profiles, five CPU families and four media kinds; documentation-governance gate passes. |
-| Expected Markers | `M5:T498:S1:MEDIA-MATRIX:OK`. |
-| Asset Needs | Existing owner-supplied read-only MS-DOS images are inspected by format/version only; paths and bytes are not committed. |
-| Reporting Requirements | Record every supported/rejected row, current terminal, CPU-era compatibility and missing input. |
-| Stop Conditions | Stop if a row would need inferred media geometry, a profile mutation at runtime or a protected asset import. |
-| Exit Criteria | The fixed matrix contains every admitted combination and identifies exact S2 replay batches. |
-| Original Owner Request | Test and repair all selected profiles, CPU families and supported floppy media. |
-| Similar-Issue Sweep | Include prior XT/5170 and Default-AT evidence; classify Model 40 separately rather than inheriting a PC/AT result. |
-
 ## Current Technical Baseline
 
 - **Current developer artifact:** target `vm-0-5-0494`; the stripped Release
@@ -58,6 +37,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T498 S1 | Accepted: finite supported profile/CPU/media matrix freezes current terminals and external-input gaps before replay; no runtime behavior changed. [Matrix](../etc/evidence/t498-s1-supported-media-matrix.md). |
 | T497 | Closed: original Model-339 factory 1.2-MB/compatible-360-KB media behavior now has one descriptor/session/FDD path, and the 360-KB DOS installer replay closes its one missing monochrome-aperture mapping; a 286-compatible 1.2-MB external replay transfers to T498. [Closure](../history/M5-T497-ibm-5170-native-floppy-contract.md). |
 | T496 | Closed: one Core FDC result/IRQ lifecycle now releases IRQ6 at normal-result acknowledgement, and the selected IBM 5160 DOS terminal plus focused FDC regressions pass without a BIOS/VM/media workaround. [Closure](../history/M5-T496-xt-keyboard-device.md). |
 | T495 | Closed: the selected IBM 5160-268 is functionally ready with source-backed L3 relations and explicit L2 limits; 13/13 focused, 300/300 fresh current and specialized gates pass, without a physical/wall-clock overclaim. [Decision](../etc/evidence/t495-s2-xt-final-model-decision.md). |
