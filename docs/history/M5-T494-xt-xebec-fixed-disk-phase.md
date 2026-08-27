@@ -13,3 +13,8 @@ ATA alias, a duplicate CHS/cache path or VM-owned controller state.
 | S3 | Accepted: all 18 rows map to one Core HDC/media/DMA route; R1 is the sole complete repair batch, fixing Read Data's ignored block count without new state or path. [List 2](../etc/evidence/t494-s3-xebec-current-code-gap-list-2.md). |
 | S4 | Accepted: Read Data consumes its positive DCB block count through the existing DMA3/CHS/media owner; focused two-sector, error/terminal and ATA-isolation proof passes. T-level closure audit remains pending. [Evidence](../etc/evidence/t494-s4-xebec-read-block-count-repair.md). |
 | S5 | Accepted: all X1--X18 and List-2 rows reconcile through one Core controller/media owner; closure repairs only stale gate/test contracts, and records a 300/300 current gate plus stripped 0494 artifact. [Closure audit](../etc/evidence/t494-s5-xebec-closure-audit.md). |
+
+T494 closed after the S5 coordinator review. The retained X7--X10 physical and
+undocumented boundaries are source-excluded facts, not implementation debt;
+the closed [proposal](M5-T494-xt-xebec-fixed-disk-phase-proposal.md) preserves
+the original scope and acceptance record.

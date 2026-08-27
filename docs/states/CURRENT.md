@@ -2,28 +2,7 @@
 
 ## Current Work
 
-**Open: M5 T494.**
-
-## M5 T494 S5 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Accepted T494 S1--S4 admit the required task-level closure audit. |
-| Objective | Independently reconcile all 18 Xebec source/List-2 rows, the sole Core owner path and release/gate evidence; publish stripped Release `nxvm_0_5_0494.exe` before closing T494. Correct the one gate-exposed CGA smoke expectation already superseded by T493's accepted binary high-resolution palette rule. |
-| Non-goals | No new Xebec or CGA feature, controller/state owner, ATA/WD1003 compatibility path, guessed undocumented register values, physical-media model, or queue reorder. |
-| Reference Baseline | Accepted T494 S1--S4 ledgers and evidence, T494 proposal, T493's accepted CGA closure evidence, current Core HDC/media/DMA code, and current-gate/release rules. |
-| Candidate Proposal | [IBM 5160 Xebec fixed-disk-controller phase contract](../proposals/m5-xt-xebec-fixed-disk-phase.md). |
-| Files And ABI Surface | Closure evidence, history/current, current artifact identity, one stale CGA smoke expectation and one public controller-type relocation; no behavior or ABI change. |
-| Applicable Rules | Execution, documentation, architecture and coding rules; one Core HDC/media/DMA owner and one stripped Release publication route remain mandatory. |
-| Verification | Reconcile all X1--X18, inspect the actual S4 diff, run documentation governance and the complete current gate, build and hash the Release 0494 artifact, then verify its identity and stripped-debug condition. |
-| Expected Markers | One closure audit, all source/list rows closed or retained at an explicit boundary, a 0494 artifact, the T493-consistent CGA smoke and no duplicate state/path. |
-| Asset Needs | None. |
-| Reporting Requirements | Record code-size delta, owner-path sweep, gate counts, artifact hash/identity/stripping proof and any transferred boundaries. |
-| Stop Conditions | Full gate or Release artifact cannot be produced, audit reveals another unrelated corrective batch, or required evidence conflicts with source/architecture. |
-| Exit Criteria | All T494 scope is reconciled, current gate and artifact proof pass, no unclassified in-scope defect remains, and the T-level closure audit is accepted. |
-| Original Owner Request | Complete every source/list-derived batch without tail work or additive paths; release only an actually verified, minimal result. |
-| Similar-Issue Sweep | Re-run the T494 Xebec owner/tag/port/DMA/geometry search across production, tests, build and task records; classify every hit and compare Read/Write progression and all failure exits. |
+**Idle.**
 
 ## Current Technical Baseline
 
@@ -60,7 +39,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T494 S4 | Accepted: Read Data now consumes its positive DCB block count through the existing Core HDC/media/DMA path; focused two-sector, error/terminal and ATA-isolation proof passes. [Evidence](../etc/evidence/t494-s4-xebec-read-block-count-repair.md). |
+| T494 | Closed: the complete IBM 5160 Xebec source/List-1/List-2/sole-owner chain corrects Read block-count progression without a second controller/media path; full current gate passes 300/300 and stripped Release 0494 is recorded. [Closure audit](../etc/evidence/t494-s5-xebec-closure-audit.md). |
 | T493 | Closed: complete IBM CGA source/List-1/List-2/one-owner repair reconciles all 33 rows; the generic latch and binary high-resolution palette repair leave no in-scope tail. [Closure audit](../etc/evidence/t493-s5-cga-closure-audit.md). |
 | T492 | Closed: complete IBM 5160 8272A/logical-media source/List-1/List-2/sole-owner chain removes fabricated reset state and global timing literals; serial gate passes 300/300 and stripped Release 0492 is recorded. [Closure audit](../etc/evidence/t492-s5-8272a-closure-audit.md). |
 | T491 | Closed: the independent IBM 5160 8255 PPI/key/NMI unit maps all 19 rows to one Core owner path, closes PB0/PB1 through the existing PIT2/speaker consumer, and records stripped Release 0491. [Closure audit](../etc/evidence/t491-s5-8255-closure-audit.md). |
@@ -68,7 +47,6 @@
 | T489 | Closed: complete IBM 5160 8237A source/List-1/List-2/one-owner batch closes the single page-port gap without new state or parallel path; physical-axis conversion remains transferred. [Closure audit](../etc/evidence/t489-s5-8237a-closure-audit.md). |
 | T488 | Closed: complete IBM 5160 8259A source/List-1/List-2/one-owner audit retains one Core PIC path and an empty implementation batch. [Closure audit](../etc/evidence/t488-s5-8259a-closure-audit.md). |
 | T487 | Closed: complete IBM board source/List-1/List-2 reconciliation retains the single Intel clock-total owner and explicit L2 physical-phase boundaries. [Closure audit](../etc/evidence/t487-s5-5160-board-closure-audit.md). |
-| T486 | Closed: the complete 8088 manual source/List-1/List-2/one-owner implementation chain closes without a parallel timing path; Group-3, WAIT and non-string-prefix source boundaries remain explicit. [Closure audit](../etc/evidence/t486-s5-8088-closure-audit.md). |
 
 ## Recent Governance
 
