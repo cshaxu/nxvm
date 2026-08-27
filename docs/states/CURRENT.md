@@ -2,27 +2,6 @@
 
 ## Current Work
 
-## M5 T497 S2 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | S1 was accepted at `4456dae3`; the owner's original approved correction supplies the fixed Model-339 media boundary. |
-| Objective | Freeze the complete F1--F8 functional/timing List 1 for the Model 339 floppy-drive contract. |
-| Non-goals | No code, FDC behavior, BIOS/CMOS mutation by mounted media, physical-drive timing, firmware/media import, or expansion to later drive hardware. |
-| Reference Baseline | `4456dae3`; [S1 source ledger](../etc/evidence/t497-s1-ibm5170-floppy-source-ledger.md). |
-| Candidate Proposal | [IBM 5170 native floppy contract](../proposals/m5-ibm-5170-native-floppy-contract.md). |
-| Files And ABI Surface | Evidence and task state only. |
-| Applicable Rules | Immutable profile construction, session request isolation, FDD sole geometry owner, primary-source L3 classification and explicit physical non-claims. |
-| Verification | Check F1--F8 against S1, existing floppy geometry constants and Model-339/FDC topology; prove no row is unclassified. |
-| Expected Markers | `M5:T497:S2:IBM5170-FLOPPY-LIST-1:OK`. |
-| Asset Needs | No new assets; existing read-only source ledger only. |
-| Reporting Requirements | Link each requirement to its source/classification/receiver and distinguish physical drive from mounted logical media. |
-| Stop Conditions | Stop before List 2 if any F1--F8 fact lacks primary support or the proposed owner boundary requires a second mutable state. |
-| Exit Criteria | Complete F1--F8 List 1 has one source level and receiver per row. |
-| Original Owner Request | Native 1.2 MB, compatible 360 KB, not a false 1.44 MB 5170 default. |
-| Similar-Issue Sweep | Include descriptor CMOS, session format choice, provider request validation, FDD geometry constructor and all profile isolation tests in S3. |
-
 ## Current Technical Baseline
 
 - **Current developer artifact:** target `vm-0-5-0494`; the stripped Release
@@ -58,7 +37,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T497 S1 | Accepted: IBM's visually checked CMOS/compatibility facts establish native 1.2 MB and compatible 360 KB media; 86Box/PCjs are bounded corroboration only. [Ledger](../etc/evidence/t497-s1-ibm5170-floppy-source-ledger.md). |
+| T497 S2 | Accepted: complete F1--F8 List 1 distinguishes immutable Drive A, mounted media, retained FDC wiring and explicit physical non-claims. [List 1](../etc/evidence/t497-s2-ibm5170-floppy-list-1.md). |
 | T496 | Closed: one Core FDC result/IRQ lifecycle now releases IRQ6 at normal-result acknowledgement, and the selected IBM 5160 DOS terminal plus focused FDC regressions pass without a BIOS/VM/media workaround. [Closure](../history/M5-T496-xt-keyboard-device.md). |
 | T495 | Closed: the selected IBM 5160-268 is functionally ready with source-backed L3 relations and explicit L2 limits; 13/13 focused, 300/300 fresh current and specialized gates pass, without a physical/wall-clock overclaim. [Decision](../etc/evidence/t495-s2-xt-final-model-decision.md). |
 | T494 | Closed: the complete IBM 5160 Xebec source/List-1/List-2/sole-owner chain corrects Read block-count progression without a second controller/media path; full current gate passes 300/300 and stripped Release 0494 is recorded. [Closure audit](../etc/evidence/t494-s5-xebec-closure-audit.md). |
