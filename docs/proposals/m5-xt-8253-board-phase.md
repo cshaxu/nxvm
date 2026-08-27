@@ -12,7 +12,11 @@ selected channel/mode, divisor, gate/output, IRQ0, refresh/speaker consumer,
 reset and deadline relation. S3 maps List 2 to the current PIT/time owner,
 including the sole port ingress, PIT state and output-consumer route. S4
 consumes the complete gap batch through that route and proves deadline/order;
-it may not add an XT-specific PIT state machine or scheduler path.
+it may not add an XT-specific PIT state machine or scheduler path. S5 is the
+owner-authorized, bounded current-gate correction discovered before S4
+acceptance: it corrects only the retirement-observation test oracle for
+unprefixed instructions, retaining the existing Core capture path and making
+no PIT or CPU semantic change.
 
 ## Boundaries
 

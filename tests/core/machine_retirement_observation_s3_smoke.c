@@ -129,8 +129,8 @@ static C_INT retirement_unallocated_profile_case(core_machine_cpu_profile profil
                 CORE_MACHINE_RETIREMENT_SOURCE_FORM_UNATTRIBUTED ||
             probe.records[0].timing_key_id !=
                 CORE_MACHINE_RETIREMENT_SOURCE_FORM_UNATTRIBUTED ||
-            (expected_repeat && (probe.records[0].formula_inputs &
-                CORE_MACHINE_CPU_TIMING_INPUT_REPEAT) == 0u) ||
+            ((expected_repeat != 0) != ((probe.records[0].formula_inputs &
+                CORE_MACHINE_CPU_TIMING_INPUT_REPEAT) != 0u)) ||
             probe.records[0].timing_origin != expected_origin ||
             probe.records[0].elapsed_ticks != 0u || probe.records[0].timeline_ticks != 0u ||
             core_machine_get_timeline_observation(machine, &timeline) != TYPE_STATUS_OK ||
@@ -569,10 +569,10 @@ C_INT main(C_VOID)
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY) ||
         retirement_unallocated_profile_case(CORE_MACHINE_CPU_PROFILE_8088,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_COMPATIBILITY, mul_al,
-            sizeof(mul_al), 1) ||
+            sizeof(mul_al), 0) ||
         retirement_unallocated_profile_case(CORE_MACHINE_CPU_PROFILE_8088,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_COMPATIBILITY, wait,
-            sizeof(wait), 1) ||
+            sizeof(wait), 0) ||
         retirement_8088_primary_case(push_register, sizeof(push_register), 15u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_CONTROL_STACK) ||
         retirement_8088_primary_case(pop_register, sizeof(pop_register), 12u,

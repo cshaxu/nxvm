@@ -27,13 +27,12 @@ The focused CTest selection passes 5/5:
 - `core-machine-pit-irq0-s2-smoke` retains channel-0 IRQ0 delivery; and
 - `vm-xt-5160-268-profile-smoke` proves the immutable profile selection.
 
-The full configured CTest gate currently stops at
+The full configured CTest gate originally stopped at
 `core-machine-retirement-observation-s3-smoke`. It was reproduced on both the
 S4 tree and a clean temporary worktree at pre-S4 commit `04ff4da5`; it therefore
-predates this PIT change. The temporary worktree and build tree were removed.
-This unrelated current-gate failure blocks S4 acceptance; it is not repaired
-inside this PIT unit. Its earliest receiver must be a separately admitted
-retirement-observation/current-gate repair after the owner decides its scope.
+predated this PIT change. Owner-authorized S5 corrects that test oracle inside
+the still-open T490 without changing PIT or CPU behavior; its result is retained
+in the indexed S5 evidence.
 
 The retained T490 boundaries are unchanged: XT PPI port-61 board bits belong
 to the queued 8255 unit; physical-axis conversion remains L2; chip startup
