@@ -44,7 +44,11 @@ C_INT main(C_VOID)
     core_machine_port_write(&port, CORE_MACHINE_VADP_PORT_CRTC_DATA, 0xffu);
     failed |= core_machine_port_read(&port, CORE_MACHINE_VADP_PORT_CRTC_DATA) != 0u;
     core_machine_port_write(&port, 0x03dbu, 0u);
+    failed |= (core_machine_port_read(&port, CORE_MACHINE_VADP_PORT_STATUS) & 0x02u) != 0u;
     core_machine_port_write(&port, 0x03dcu, 0u);
+    failed |= (core_machine_port_read(&port, CORE_MACHINE_VADP_PORT_STATUS) & 0x02u) == 0u;
+    core_machine_port_write(&port, 0x03dbu, 0u);
+    failed |= (core_machine_port_read(&port, CORE_MACHINE_VADP_PORT_STATUS) & 0x02u) != 0u;
 
     core_machine_port_write(&port, 0x03d8u, 0x0au);
     core_machine_port_write(&port, 0x03d9u, 0x00u);
@@ -76,9 +80,18 @@ C_INT main(C_VOID)
         snapshot.palette_rgb[3] != 0xffff55u || !snapshot.buffer_changed;
 
     core_machine_port_write(&port, 0x03d8u, 0x1au);
-    core_machine_port_write(&port, 0x03d8u, 0x1bu);
     failed |= !core_machine_vadp_capture_snapshot(&vadp, &memory, &snapshot) ||
-        snapshot.kind != CORE_MACHINE_DISPLAY_KIND_CGA_640X200X2;
+        snapshot.kind != CORE_MACHINE_DISPLAY_KIND_CGA_640X200X2 ||
+        snapshot.palette_rgb[0] != 0x000000u ||
+        snapshot.palette_rgb[1] != 0xffffffu;
+    core_machine_port_write(&port, 0x03d9u, 0x1fu);
+    failed |= !core_machine_vadp_capture_snapshot(&vadp, &memory, &snapshot) ||
+        snapshot.palette_rgb[0] != 0x000000u ||
+        snapshot.palette_rgb[1] != 0xffffffu || snapshot.buffer_changed;
+    core_machine_port_write(&port, 0x03dcu, 0u);
+    failed |= (core_machine_port_read(&port, CORE_MACHINE_VADP_PORT_STATUS) & 0x02u) == 0u;
+    core_machine_vadp_reset(&vadp);
+    failed |= (core_machine_port_read(&port, CORE_MACHINE_VADP_PORT_STATUS) & 0x02u) != 0u;
     core_machine_port_write(&port, 0x03d8u, 0x0du);
     failed |= !core_machine_vadp_capture_snapshot(&vadp, &memory, &snapshot);
     failed |= snapshot.kind != CORE_MACHINE_DISPLAY_KIND_TEXT;

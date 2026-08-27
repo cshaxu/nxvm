@@ -191,10 +191,8 @@ static C_VOID core_machine_vadp_high_res_palette(const t_vadp *adapter,
 {
     if (adapter == STD_NULL || palette == STD_NULL) return;
     palette[0] = 0u;
-    palette[1] = core_machine_vadp_rgbi_color(adapter->data.color_select);
-    if ((adapter->data.mode_control & CORE_MACHINE_VADP_MODE_VIDEO_ENABLE) == 0u) {
-        palette[1] = 0u;
-    }
+    palette[1] = (adapter->data.mode_control & CORE_MACHINE_VADP_MODE_VIDEO_ENABLE) != 0u ?
+        0xffffffu : 0u;
 }
 
 static C_INT core_machine_vadp_ega_output_active(const t_vadp *adapter)
@@ -923,16 +921,21 @@ static C_VOID core_machine_vadp_write_cga_lightpen(t_port *port,
     t_vadp *adapter = (t_vadp *)owner;
 
     (C_VOID)port;
-    if (adapter == STD_NULL || adapter->data.ega_personality !=
-        CORE_MACHINE_VADP_EGA_PERSONALITY_COMPAQ_ENHANCED_COLOR) return;
-    if (port_id == (adapter->data.compaq_color_io_base ?
-        CORE_MACHINE_VADP_PORT_COMPAQ_LIGHTPEN_LATCH_RESET :
-        CORE_MACHINE_VADP_PORT_MONO_LIGHTPEN_LATCH_RESET)) {
-        adapter->data.compaq_lightpen_latched = TYPE_FALSE;
-    } else if (port_id == (adapter->data.compaq_color_io_base ?
-        CORE_MACHINE_VADP_PORT_COMPAQ_LIGHTPEN_LATCH_SET :
-        CORE_MACHINE_VADP_PORT_MONO_LIGHTPEN_LATCH_SET)) {
-        adapter->data.compaq_lightpen_latched = TYPE_TRUE;
+    if (adapter == STD_NULL) return;
+    if (adapter->data.ega_personality ==
+        CORE_MACHINE_VADP_EGA_PERSONALITY_COMPAQ_ENHANCED_COLOR) {
+        if (port_id == (adapter->data.compaq_color_io_base ?
+            CORE_MACHINE_VADP_PORT_COMPAQ_LIGHTPEN_LATCH_RESET :
+            CORE_MACHINE_VADP_PORT_MONO_LIGHTPEN_LATCH_RESET)) {
+            adapter->data.compaq_lightpen_latched = TYPE_FALSE;
+        } else if (port_id == (adapter->data.compaq_color_io_base ?
+            CORE_MACHINE_VADP_PORT_COMPAQ_LIGHTPEN_LATCH_SET :
+            CORE_MACHINE_VADP_PORT_MONO_LIGHTPEN_LATCH_SET)) {
+            adapter->data.compaq_lightpen_latched = TYPE_TRUE;
+        }
+    } else if (!adapter->data.ega_controller_configured) {
+        adapter->data.cga_lightpen_latched =
+            port_id == CORE_MACHINE_VADP_PORT_CGA_LIGHTPEN_PRESET;
     }
 }
 
@@ -948,6 +951,10 @@ static C_VOID core_machine_vadp_read_status(t_port *port,
         return;
     }
     port->data.ioByte = core_machine_vadp_status(adapter);
+    if (!adapter->data.ega_controller_configured &&
+        adapter->data.cga_lightpen_latched) {
+        port->data.ioByte |= CORE_MACHINE_VADP_STATUS_LIGHTPEN_TRIGGER;
+    }
     if (adapter->data.ega_controller_configured) {
         if (!adapter->data.ega_status_diagnostic_high) {
             port->data.ioByte |= 0x30u;
@@ -1948,7 +1955,6 @@ static C_INT core_machine_vadp_capture_high_res_graphics_snapshot(t_vadp *adapte
     buffer_changed = !adapter->data.captured || adapter->data.captured_kind !=
         CORE_MACHINE_DISPLAY_KIND_CGA_640X200X2 ||
         adapter->data.captured_mode_control != adapter->data.mode_control ||
-        adapter->data.captured_color_select != adapter->data.color_select ||
         STD_MEMCMP(adapter->data.graphics_bytes, bytes, sizeof(bytes)) != 0;
     if (buffer_changed) STD_MEMCPY(adapter->data.graphics_bytes, bytes, sizeof(bytes));
     STD_MEMSET(out_snapshot, 0, sizeof(*out_snapshot));
@@ -1971,7 +1977,6 @@ static C_INT core_machine_vadp_capture_high_res_graphics_snapshot(t_vadp *adapte
     adapter->data.captured = TYPE_TRUE;
     adapter->data.captured_kind = CORE_MACHINE_DISPLAY_KIND_CGA_640X200X2;
     adapter->data.captured_mode_control = adapter->data.mode_control;
-    adapter->data.captured_color_select = adapter->data.color_select;
     out_snapshot->buffer_changed = buffer_changed;
     out_snapshot->cursor_changed = TYPE_FALSE;
     return TYPE_TRUE;

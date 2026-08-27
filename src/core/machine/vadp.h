@@ -114,6 +114,7 @@ typedef struct t_vadp_data {
     type_unsigned_8 compaq_clock_switch_select;
     type_bool compaq_odd_even_high_page;
     type_bool compaq_lightpen_latched;
+    type_bool cga_lightpen_latched;
     type_unsigned_64 dirty_generation;
     C_INT captured;
     core_machine_display_kind captured_kind;
