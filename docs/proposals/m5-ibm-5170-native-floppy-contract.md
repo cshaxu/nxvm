@@ -27,7 +27,9 @@ The immutable Model 339 descriptor remains the owner of the physical drive
 CMOS type (`02h`). A session may make one explicit media request: absent or
 `1200k` selects 1.2 MB; `360k` selects compatible 360 KB media; `720k` and
 `1440k` are invalid for this profile. The existing session `floppy_kind` then
-flows once into the existing FDD geometry constructor. The FDD remains the
+flows once into the existing FDD geometry constructor. The same typed request
+grammar keeps `default-at` as its distinct four-format policy; it does not
+make any later 3.5-inch format valid for Model 339. The FDD remains the
 sole mutable media-geometry owner and Core remains the sole FDC owner. There
 is no image-size probe, profile-side FDC state, alternate controller, or CMOS
 rewrite based on mounted media.

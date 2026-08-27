@@ -2,27 +2,6 @@
 
 ## Current Work
 
-## M5 T497 S4 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | S3 was accepted at `4d038fdf`; S4 consumes its complete F1--F8 descriptor/session/FDD batch. |
-| Objective | Implement the original Model-339 native-1.2MB and compatible-360KB contract through one immutable descriptor and one session media-selection path. |
-| Non-goals | No FDC, BIOS, Core timing, image-size inference, new media/controller state, 720KB/1.44MB acceptance, or Default-AT policy change. |
-| Reference Baseline | `4d038fdf`; [S3 List 2](../etc/evidence/t497-s3-ibm5170-floppy-list-2.md). |
-| Candidate Proposal | [IBM 5170 native floppy contract](../proposals/m5-ibm-5170-native-floppy-contract.md). |
-| Files And ABI Surface | Model-339 profile descriptor/validator; session/factory format selection; existing Model-339 focused tests. No public Core ABI. |
-| Applicable Rules | Profile owns immutable physical drive; session owns explicit request; FDD owns mounted geometry; Core owns FDC; one production selection path and no duplicate state. |
-| Verification | Release composition/topology smokes prove default/1200KB/360KB/rejected-720KB/rejected-1440KB, unchanged CMOS for compatible 360KB, unchanged Default-AT formats and unchanged FDC topology. |
-| Expected Markers | `M5:T497:S4:IBM5170-FLOPPY:OK`. |
-| Asset Needs | No guest media or firmware is needed for focused construction tests. |
-| Reporting Requirements | Record code-size accounting, retained owner path, removed false default, every focused result and any transfer. |
-| Stop Conditions | Stop if a required result needs BIOS/VM special casing, a second FDD/CMOS/FDC state, or cannot be expressed through the existing session-to-FDD path. |
-| Exit Criteria | F1--F8 are implemented or explicitly retained as non-claims; every admitted supported/rejected selection passes focused proof without a controller change. |
-| Original Owner Request | Make original IBM 5170 media behavior correct: native 1.2MB, 360KB compatible, later 3.5-inch formats not silently accepted. |
-| Similar-Issue Sweep | Inspect all matching default-profile/Model-339 validation, factory rejection and test assertions; retain XT, Model-40 and Default-AT as distinct selected contracts. |
-
 ## Current Technical Baseline
 
 - **Current developer artifact:** target `vm-0-5-0494`; the stripped Release
@@ -58,7 +37,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T497 S3 | Accepted: complete List 2 maps F1--F8 to one descriptor/session/FDD repair batch and explicitly excludes FDC behavior changes. [List 2](../etc/evidence/t497-s3-ibm5170-floppy-list-2.md). |
+| T497 S4 | Accepted: one typed session-media request path keeps Default-AT's four-format selection distinct while Model 339 fixes its physical drive at 1.2 MB, admits compatible 360 KB and rejects later 3.5-inch media; no FDC/BIOS/Core path changed. [Implementation](../etc/evidence/t497-s4-ibm5170-floppy-implementation.md). |
 | T496 | Closed: one Core FDC result/IRQ lifecycle now releases IRQ6 at normal-result acknowledgement, and the selected IBM 5160 DOS terminal plus focused FDC regressions pass without a BIOS/VM/media workaround. [Closure](../history/M5-T496-xt-keyboard-device.md). |
 | T495 | Closed: the selected IBM 5160-268 is functionally ready with source-backed L3 relations and explicit L2 limits; 13/13 focused, 300/300 fresh current and specialized gates pass, without a physical/wall-clock overclaim. [Decision](../etc/evidence/t495-s2-xt-final-model-decision.md). |
 | T494 | Closed: the complete IBM 5160 Xebec source/List-1/List-2/sole-owner chain corrects Read block-count progression without a second controller/media path; full current gate passes 300/300 and stripped Release 0494 is recorded. [Closure audit](../etc/evidence/t494-s5-xebec-closure-audit.md). |
