@@ -60,7 +60,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T494 S2 | Accepted: S1's visual IBM 6139790 source validation and S2's complete 18-family List 1 cover all printed command/port/state/timing facts, bounded Other-L3 corroboration and every physical or undocumented exclusion. [Source ledger](../etc/evidence/t494-s1-xebec-original-source-ledger.md), [List 1](../etc/evidence/t494-s2-xebec-function-timing-list-1.md). |
+| T494 S3 | Accepted: S1--S3 reconcile all 18 IBM Xebec rows to one Core HDC/media/DMA path; Read block count is the sole immediate owner-local repair. [Source ledger](../etc/evidence/t494-s1-xebec-original-source-ledger.md), [List 1](../etc/evidence/t494-s2-xebec-function-timing-list-1.md), [List 2](../etc/evidence/t494-s3-xebec-current-code-gap-list-2.md). |
 | T493 | Closed: complete IBM CGA source/List-1/List-2/one-owner repair reconciles all 33 rows; the generic latch and binary high-resolution palette repair leave no in-scope tail. [Closure audit](../etc/evidence/t493-s5-cga-closure-audit.md). |
 | T492 | Closed: complete IBM 5160 8272A/logical-media source/List-1/List-2/sole-owner chain removes fabricated reset state and global timing literals; serial gate passes 300/300 and stripped Release 0492 is recorded. [Closure audit](../etc/evidence/t492-s5-8272a-closure-audit.md). |
 | T491 | Closed: the independent IBM 5160 8255 PPI/key/NMI unit maps all 19 rows to one Core owner path, closes PB0/PB1 through the existing PIT2/speaker consumer, and records stripped Release 0491. [Closure audit](../etc/evidence/t491-s5-8255-closure-audit.md). |
