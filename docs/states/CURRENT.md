@@ -2,27 +2,6 @@
 
 ## Current Work
 
-## M5 Td S154 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Governance |
-| Admission And Approval | The owner-approved persistent four-profile DOS-validation objective authorizes the matrix candidate and its queue admission. |
-| Objective | Admit one bounded matrix-driven candidate ahead of extender/Windows work without changing runtime behavior. |
-| Non-goals | No machine, CPU, controller, media, firmware, build, artifact, test-execution or source-code change. |
-| Reference Baseline | `aa13cb58`; accepted T497 media evidence. |
-| Candidate Proposal | [Four-profile supported DOS media matrix](../proposals/m5-four-profile-supported-media-matrix.md). |
-| Files And ABI Surface | Candidate proposal and Queue only; no ABI. |
-| Applicable Rules | Queue is ordering only; proposal freezes finite coverage before implementation; external images remain untracked. |
-| Verification | Documentation-governance gate and exact diff review confirm one proposal and one Queue replacement only. |
-| Expected Markers | Documentation governance passes. |
-| Asset Needs | None. |
-| Reporting Requirements | Record candidate purpose, frozen surface and unchanged runtime/build/artifact status. |
-| Stop Conditions | Stop if admission would imply support for an unselected profile/media pair or needs a source/firmware import. |
-| Exit Criteria | The candidate is first in Queue and fully states every profile, CPU, media, terminal and external-input boundary. |
-| Original Owner Request | Conduct complete testing and repair across the four selected profiles, CPU families and admitted floppy media. |
-| Similar-Issue Sweep | Retain the closed T497 proposal outside active ordering and do not duplicate extender/Windows candidates. |
-
 ## Current Technical Baseline
 
 - **Current developer artifact:** target `vm-0-5-0494`; the stripped Release
@@ -69,6 +48,12 @@
 | T489 | Closed: complete IBM 5160 8237A source/List-1/List-2/one-owner batch closes the single page-port gap without new state or parallel path; physical-axis conversion remains transferred. [Closure audit](../etc/evidence/t489-s5-8237a-closure-audit.md). |
 
 ## Recent Governance
+
+- **M5 Td S154 P1:** admitted the finite four-profile supported DOS-media
+  matrix ahead of extender/Windows work, retaining T497 as a closed proposal
+  link. It freezes allowed profile/CPU/media rows, semantic terminals and
+  external-input boundaries; runtime, source, build and artifact behavior are
+  unchanged.
 
 - **M5 Td S153 P1:** hardened the independent hardware-unit T rule across the
   active 8088 work and XT Queue: original source, complete List 1, complete
