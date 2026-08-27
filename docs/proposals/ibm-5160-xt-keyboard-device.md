@@ -22,6 +22,9 @@ the AT 8042 only and is never imported or normative.
 3. A bounded IBM XT BYOB boot probe identifies its first actual startup owner.
 4. A host-waited repeat of the probe provides a valid semantic terminal before
    any successor repair is selected.
+5. A 60-second non-checkpoint is an owner-level startup defect, not a
+   performance allowance; existing Core observation classifies its finite
+   owner batch before repair.
 
 ## Constraints
 

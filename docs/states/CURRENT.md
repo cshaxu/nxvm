@@ -2,28 +2,6 @@
 
 ## Current Work
 
-## M5 T496 S4 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | The owner approved T496's complete XT startup repair. The initial S3 delivery was found inaccurate because its host wrapper did not wait for the child process; this continuation records that evidence correction only. |
-| Objective | Correct the invalid Core-run inference in S3 evidence and restore the next startup probe to an unclaimed continuation. |
-| Non-goals | No BIOS, option-ROM, DOS-image, path, hash, byte, raw trace, firmware catalogue, product dependency, production code or runtime behavior changes. |
-| Reference Baseline | `10fa1242` (`M5 T496 S3 P1: record XT boot run boundary`) and the corrected [S3 diagnostic](../etc/evidence/t496-s3-xt-byob-run-budget-diagnostic.md). |
-| Candidate Proposal | [XT keyboard-device proposal](../proposals/ibm-5160-xt-keyboard-device.md). |
-| Files And ABI Surface | S3 evidence, proposal and current status only. |
-| Applicable Rules | Execution P correction/continuation and actual-change review; source policy reporting boundary. |
-| Verification | Recheck that the diagnostic probe emitted repeated Core run-return markers, that the prior wrapper did not wait, and that no Core or guest conclusion remains. Run documentation governance. |
-| Expected Markers | `XT-BYOB-PROBE=HOST-WRAPPER-INVALID`. |
-| Asset Needs | None. |
-| Reporting Requirements | Report the corrected boundary and next P only; do not disclose protected paths, hashes, bytes, screenshots or raw text. |
-| Stop Conditions | Stop if correction requires a runtime change or external media access. |
-| Exit Criteria | The prior invalid conclusion is removed from all S3 records, the correct host-wrapper disposition is indexed, documentation review passes, and this S4 P1 is pushed. |
-| Original Owner Request | Inspect suitable MS-DOS images and make the profiles boot to DOS. After the XT probe stalled at keyboard reset, the owner authorized a complete independent keyboard-device audit before any further repair. |
-| Similar-Issue Sweep | Inspect all XT PPI byte publication, native-input, IRQ and profile-construction consumers; prove PC/AT 8042 remains separate. Do not generalize this IBM keyboard behavior to 5170, DeskPro or default-PC/AT. |
-
-
 ## Current Technical Baseline
 
 - **Current developer artifact:** target `vm-0-5-0494`; the stripped Release
@@ -59,9 +37,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T496 S3 | Complete with correction pending: the first wrapper did not wait for the external probe, so it established no guest outcome. Its S4 correction removes the invalid Core-run inference. |
-| T496 S2 | Complete: one Core XT keyboard device now owns FIFO, reset/BAT, serial progress and a composed deadline; PPI retains ports/latch/IRQ1. Focused keyboard/PPI and fixed-profile regressions pass. [Evidence](../etc/evidence/t496-s2-xt-keyboard-owner-implementation.md). |
-| T496 S1 | Complete: rendered IBM March 1986 101/102-keyboard source, List 1 and List 2 establish the independent keyboard-device owner and reject PPI-owned BAT/FIFO state. [Ledger](../etc/evidence/t496-s1-xt-keyboard-original-source-ledger.md). |
+| T496 S5 | Complete: the valid 60-second Turbo terminal is an XT startup defect, not a performance allowance; existing observation did not uniquely select one owner. The owner authorized a coverage-led full repair in the next T496 S. [Evidence](../etc/evidence/t496-s5-xt-startup-owner-classification.md). |
 | T495 | Closed: the selected IBM 5160-268 is functionally ready with source-backed L3 relations and explicit L2 limits; 13/13 focused, 300/300 fresh current and specialized gates pass, without a physical/wall-clock overclaim. [Decision](../etc/evidence/t495-s2-xt-final-model-decision.md). |
 | T494 | Closed: the complete IBM 5160 Xebec source/List-1/List-2/sole-owner chain corrects Read block-count progression without a second controller/media path; full current gate passes 300/300 and stripped Release 0494 is recorded. [Closure audit](../etc/evidence/t494-s5-xebec-closure-audit.md). |
 | T493 | Closed: complete IBM CGA source/List-1/List-2/one-owner repair reconciles all 33 rows; the generic latch and binary high-resolution palette repair leave no in-scope tail. [Closure audit](../etc/evidence/t493-s5-cga-closure-audit.md). |
