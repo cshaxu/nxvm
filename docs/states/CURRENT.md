@@ -2,28 +2,6 @@
 
 ## Current Work
 
-## M5 T496 S8 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | The owner approved full XT repair in current T496 on 2026-08-27. S8 is the next complete first-failure batch after S7's selected replay reached a normal 8272A completion then the next BIOS Read Data returned Carry before a third completion. The owner additionally approved immediate Default PC/AT floppy-format repair and real BYOB media verification on 2026-08-27. |
-| Objective | Make ordinary 8272A command completion release its Core-owned IRQ source when the guest consumes the first result byte, so each later command can create a new IRQ edge; prove the selected XT 360K replay reaches a DOS terminal without a BIOS, VM, or media special case. |
-| Non-goals | No firmware/guest-media import, BIOS compatibility outcome shortcut, VM-owned FDC state, CPU clock fabrication, physical-time claim, profile-side controller, parallel scheduler, image-size geometry guessing, new FDC port, or unrelated FDC/HDC behavior. |
-| Reference Baseline | `339e80db` (`M5 T496 S6 P2`) and [XT boot convergence ledger](../etc/evidence/t496-s6-xt-boot-convergence-ledger.md), B3+B8. |
-| Candidate Proposal | [XT keyboard-device proposal](../proposals/ibm-5160-xt-keyboard-device.md), Bootability Completion Boundary. |
-| Files And ABI Surface | Existing Core 8272A state and its PIC source, plus owner-local FDC/XT tests and evidence only. No public Core/VM ABI extension. |
-| Applicable Rules | NEC uPD765/IBM 5160 source hierarchy; Core sole mutable FDC/PIC-source owner; VM-to-Core construction-only flow; one command/result/IRQ lifecycle; result simplicity and source policy. |
-| Verification | Focused FDC coverage proves completion asserts IRQ, first normal result-byte consumption deasserts only the FDC source while preserving all result bytes, and the next completion asserts again. Release replay proves the selected XT reaches a DOS terminal; Default PC/AT terminal matrix remains valid. BYOB records only terminal semantics. |
-| Progress Evidence | S7's claimed selected XT installer terminal was not reproducible in the current Release replay and is superseded. The replay showed two successful FDC transfers, a correct IO.SYS/MSDOS.SYS comparison, then Carry from the next INT 13h Read Data before its expected completion. S8 releases the Core-owned FDC IRQ6 source on first ordinary result-byte consumption; the selected XT replay now reaches the installer terminal after 161 successful FDC completions. NEC establishes the completion INT/result contract; local PCjs is corroborating Other L3 for first-result-byte release. See [S8 evidence](../etc/evidence/t496-s8-fdc-result-irq-release.md). |
-| Expected Markers | `FDC-RESULT-IRQ-RELEASE:OK`, `XT-DOS-360K:PASS`, plus the existing Default PC/AT media terminals. |
-| Asset Needs | Owner-authorized firmware and DOS media are external runtime inputs only; records contain only semantic results. |
-| Reporting Requirements | Record source relation, one owner/path, focused proof, code-size accounting, replay semantic result and every remaining batch transfer; do not record protected material details. |
-| Stop Conditions | Stop before code change if the FDC source lifecycle is not reproducible or if repair requires BIOS/VM/media special behavior. If the repaired replay stops at a later terminal, transfer that next complete failure batch without conflating it with this one. |
-| Exit Criteria | One Core FDC result path releases its sole PIC source at the defined normal-result acknowledgment boundary, focused regressions prove repeated completions, and selected XT replay reaches a reviewed DOS terminal. No BIOS/VM release path exists. |
-| Original Owner Request | Fully repair XT so it actually starts DOS; do not accept a 60-second timeout as normal performance. |
-| Similar-Issue Sweep | Search every FDC normal-result producer and result-byte consumer plus reset/seek Sense Interrupt release paths. Classify each production hit as fixed, distinct, or deferred; no normal completion retains an undocumented IRQ source assertion. |
-
 ## Current Technical Baseline
 
 - **Current developer artifact:** target `vm-0-5-0494`; the stripped Release
@@ -59,6 +37,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T496 | Closed: one Core FDC result/IRQ lifecycle now releases IRQ6 at normal-result acknowledgement, and the selected IBM 5160 DOS terminal plus focused FDC regressions pass without a BIOS/VM/media workaround. [Closure](../history/M5-T496-xt-keyboard-device.md). |
 | T496 S6 | Complete: frozen B1--B8 DOS-startup convergence ledger and selected the source-backed B3+B8 PIT1/DMA0/scheduler mechanism batch; later checkpoints cannot hide another batch. [Ledger](../etc/evidence/t496-s6-xt-boot-convergence-ledger.md). |
 | T495 | Closed: the selected IBM 5160-268 is functionally ready with source-backed L3 relations and explicit L2 limits; 13/13 focused, 300/300 fresh current and specialized gates pass, without a physical/wall-clock overclaim. [Decision](../etc/evidence/t495-s2-xt-final-model-decision.md). |
 | T494 | Closed: the complete IBM 5160 Xebec source/List-1/List-2/sole-owner chain corrects Read block-count progression without a second controller/media path; full current gate passes 300/300 and stripped Release 0494 is recorded. [Closure audit](../etc/evidence/t494-s5-xebec-closure-audit.md). |
@@ -67,7 +46,6 @@
 | T491 | Closed: the independent IBM 5160 8255 PPI/key/NMI unit maps all 19 rows to one Core owner path, closes PB0/PB1 through the existing PIT2/speaker consumer, and records stripped Release 0491. [Closure audit](../etc/evidence/t491-s5-8255-closure-audit.md). |
 | T490 | Closed: the independent IBM 5160 8253 unit has verified source/List-1/List-2/sole-owner implementation, a corrected full gate and stripped Release 0490 artifact. [Closure audit](../etc/evidence/t490-s6-8253-closure-audit.md). |
 | T489 | Closed: complete IBM 5160 8237A source/List-1/List-2/one-owner batch closes the single page-port gap without new state or parallel path; physical-axis conversion remains transferred. [Closure audit](../etc/evidence/t489-s5-8237a-closure-audit.md). |
-| T488 | Closed: complete IBM 5160 8259A source/List-1/List-2/one-owner audit retains one Core PIC path and an empty implementation batch. [Closure audit](../etc/evidence/t488-s5-8259a-closure-audit.md). |
 
 ## Recent Governance
 
