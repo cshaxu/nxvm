@@ -2,6 +2,27 @@
 
 ## Current Work
 
+## M5 T496 S6 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | The owner explicitly authorized full XT repair within current T496 on 2026-08-27, with complete S decomposition, source-led implementation and real DOS boot evidence. |
+| Objective | Freeze the complete IBM 5160 DOS-startup convergence ledger, reconcile every boot-chain batch to its existing sole owner and select the first complete mechanism repair batch. |
+| Non-goals | No firmware, guest-media, paths, hashes, bytes, screenshots, raw traces or third-party source enters the repository. No BIOS test bypass, compatibility spoof, profile-side device emulator, new parallel scheduler or speculative production repair. |
+| Reference Baseline | `d3cb7157` (`M5 T496 S5 P3`) and the completed independent XT unit ledgers T487--T496. |
+| Candidate Proposal | [XT keyboard-device proposal](../proposals/ibm-5160-xt-keyboard-device.md), Bootability Completion Boundary. |
+| Files And ABI Surface | `docs/etc/evidence/`, its index, proposal and Current only. Existing Core/VM tests and external BYOB probe are read-only evidence inputs in this S. |
+| Applicable Rules | Execution coverage convergence and P lifecycle; one-owner Core/VM architecture; coding simplicity; source policy external-only firmware/media and research-only external emulators. |
+| Verification | Reconcile every ledger row against named source/evidence, current code owner and semantic checkpoint. Confirm no batch is hidden by the later POST terminal; run documentation governance. |
+| Expected Markers | `XT-BOOT-LEDGER:COMPLETE`, `XT-BOOT-BATCH:SELECTED`, `XT-BOOT-REPAIR:NO-SPECULATION`. |
+| Asset Needs | Owner-authorized IBM firmware and compatible DOS media remain runtime-only; this S records no identifying asset detail. |
+| Reporting Requirements | Report the finite S sequence, selected owner batch and evidence disposition only; never disclose protected firmware/media content or local locations. |
+| Stop Conditions | Stop if a selected repair cannot be tied to an existing owner, source-backed contract or deterministic focused regression; record the complete affected batch rather than making a one-off change. |
+| Exit Criteria | A durable, indexed convergence ledger covers all eight boot-chain batches, identifies the first repair S and its complete owner surface, and has no unresolved unassigned row. |
+| Original Owner Request | Fully repair XT and prove actual DOS startup, after prior partial controller closures and a valid 60-second Turbo non-checkpoint. |
+| Similar-Issue Sweep | Search all selected XT profile construction, board wiring, scheduler, PIC/DMA/PIT, PPI/keyboard, FDC/media, CGA and test/probe routes. Each hit is assigned to the ledger batch or explicitly excluded as non-XT. |
+
 ## Current Technical Baseline
 
 - **Current developer artifact:** target `vm-0-5-0494`; the stripped Release

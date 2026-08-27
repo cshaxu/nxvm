@@ -32,3 +32,21 @@ No 8042 alias, profile-side keyboard emulator, VM/host BAT injection, second
 queue, second scheduler, firmware/media import or physical wall-clock claim is
 permitted. The device's only downstream operation is completed-byte delivery
 to the existing PPI receiver.
+
+## Bootability Completion Boundary
+
+The owner expanded T496 to make the selected IBM 5160 route genuinely bootable
+to a DOS semantic checkpoint. This is an integration completion boundary, not
+a replacement for the completed independent controller tasks. It consumes the
+finite boot chain: reset/ROM/8088 and mapped RAM; PIT0-to-PIC IRQ0; PIT1-to-DMA0
+refresh; PPI/XT keyboard; 8272A-to-DMA2-to-IRQ6 floppy transfer; CGA snapshot
+publication; and the scheduler/interrupt hand-off joining those owners.
+
+The IBM 5160 Technical Reference and the selected Intel chip manuals remain
+normative. Existing unit ledgers supply their source-backed rows. 86Box, MAME,
+Bochs, PCjs and QEMU may expose an omitted integration hypothesis, but neither
+their code nor a firmware workaround is imported or treated as specification.
+Every repair S first consumes its complete implicated batch, changes its
+existing sole owner, deletes an obsolete route where one exists, and proves the
+same semantic checkpoint with the admitted external media corpus. A 60-second
+Turbo non-checkpoint is a defect, never a performance allowance.
