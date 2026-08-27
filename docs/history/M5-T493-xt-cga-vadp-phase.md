@@ -11,3 +11,4 @@ remain consumers only.
 | S1 | Accepted: IBM 5160 and Color/Graphics Monitor Adapter primary-source ledger records visual/OCR quality and selected-CGA authority boundary. |
 | S2 | Accepted at `3b497bee`: the complete 33-row List 1 records every selected port, 6845 register, aperture, text/graphics format, status, reset and timing disposition. The owner-approved S4 rule requires immediate complete repair of any in-scope List 2 gap. |
 | S3 | Accepted at `3351d2ea`: all 33 rows map once to VADP/Core/VM. The sole S4 batch is generic CGA light-pen latch/status plus binary 640x200 palette; physical timing remains a source-defined boundary, not guessed work. |
+| S4 | Accepted at `825dda37`: VADP now owns standard-CGA `3DBh`/`3DCh` latch to `3DAh` bit 1 and the selected high-resolution black/white palette. The focused path proves reset and removes the obsolete high-resolution `3D9h` frame dependency. |

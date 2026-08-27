@@ -4,27 +4,6 @@
 
 **Open: M5 T493.**
 
-## M5 T493 S4 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | T493 S3 is accepted. The owner expressly requires immediate repair of every in-scope List 2 gap; S4 consumes its complete two-item batch. |
-| Objective | Correct standard-CGA `3DBh`/`3DCh` light-pen latch to `3DAh` bit 1 behavior and make selected 640x200 CGA output binary black/white at the VADP sole owner. |
-| Non-goals | No light-pen switch producer or position model, CRTC model expansion, physical raster/contended-memory estimate, renderer state, EGA/VGA/Compaq behavior change, profile wiring or new public setter. |
-| Reference Baseline | Accepted [T493 S2 List 1](../etc/evidence/t493-s2-cga-function-timing-list-1.md), accepted [T493 S3 List 2](../etc/evidence/t493-s3-cga-current-code-gap-list-2.md), IBM rendered CGA pages 11, 15 and 21, current VADP and focused smoke paths. |
-| Candidate Proposal | [IBM 5160 CGA VADP phase contract](../proposals/m5-xt-cga-vadp-phase.md). |
-| Files And ABI Surface | `src/core/machine/vadp.[ch]`, focused CGA machine smoke(s), CMake registration only if a new focused smoke is necessary, implementation evidence/index/history/current records. No public cross-module ABI. |
-| Applicable Rules | Architecture/coding/execution/documentation rules; VADP is the sole guest port/memory/state/snapshot owner and VM presentation remains copied consumer-only. |
-| Verification | Focused CGA proof covers preset/clear/reset/status bit 1 and 640x200 palette independent of `3D9h`; existing text/status, CGA graphics/high-resolution, XT profile and display-composition smokes pass; documentation governance and relevant build pass. |
-| Expected Markers | One VADP-owned generic latch, no Compaq-state alias, binary high-resolution palette and no changed EGA/VGA/renderer path. |
-| Asset Needs | Accepted IBM material only; no external source, firmware or guest media import. |
-| Reporting Requirements | Record exact changed owner path, tests, code-size added/removed/net and proof that all C1--C33 List 2 rows are either retained, corrected or explicitly bounded. |
-| Stop Conditions | The correction requires a source-free physical timing, external light-pen input contract, profile-specific state or a second guest-video owner. |
-| Exit Criteria | Both S3 defects are corrected and proved through the existing VADP route; no in-scope List 2 defect or obsolete path remains. |
-| Original Owner Request | Do not leave an in-scope controller defect as tail work; make one immediate, minimal-but-correct owner-local repair batch. |
-| Similar-Issue Sweep | Recheck all generic versus Compaq light-pen state/read paths, all CGA palette capture paths, reset/finalize state and CGA/EGA/VGA mode selection so the repair creates neither an alias nor a cross-personality regression. |
-
 ## Current Technical Baseline
 
 - **Current developer artifact:** target `vm-0-5-0492`; the stripped Release
@@ -60,7 +39,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T493 S3 | Accepted: C1--C33 map once to VADP/Core/VM; only CGA light-pen latch/status and 640x200 binary palette need the mandatory immediate S4 repair. [Evidence](../etc/evidence/t493-s3-cga-current-code-gap-list-2.md). |
+| T493 S4 | Accepted: immediate VADP-only repair gives CGA `3DBh`/`3DCh` status-latch behavior and 640x200 black/white output, with no Compaq alias or second video path. [Evidence](../etc/evidence/t493-s4-cga-immediate-repair.md). |
 | T492 | Closed: complete IBM 5160 8272A/logical-media source/List-1/List-2/sole-owner chain removes fabricated reset state and global timing literals; serial gate passes 300/300 and stripped Release 0492 is recorded. [Closure audit](../etc/evidence/t492-s5-8272a-closure-audit.md). |
 | T491 | Closed: the independent IBM 5160 8255 PPI/key/NMI unit maps all 19 rows to one Core owner path, closes PB0/PB1 through the existing PIT2/speaker consumer, and records stripped Release 0491. [Closure audit](../etc/evidence/t491-s5-8255-closure-audit.md). |
 | T490 | Closed: the independent IBM 5160 8253 unit has verified source/List-1/List-2/sole-owner implementation, a corrected full gate and stripped Release 0490 artifact. [Closure audit](../etc/evidence/t490-s6-8253-closure-audit.md). |
