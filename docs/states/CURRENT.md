@@ -2,7 +2,28 @@
 
 ## Current Work
 
-**Idle.**
+**Open: M5 T491 S1.**
+
+## M5 T491 S1 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New |
+| Admission And Approval | Owner-approved ordered queue continuation after T490. T491 is the independent IBM 5160 8255 PPI/keyboard/NMI unit. |
+| Objective | Visually verify and ledger the original Intel 8255A and IBM 5160 sources required to freeze this unit's complete List 1. |
+| Non-goals | No PPI/KBC/NMI code change, no 8042 behavior, no external-source import, firmware or guest media. |
+| Reference Baseline | Queue proposal, owner-managed IBM 5160 Technical Reference, retained Core PPI/NMI source and tests. |
+| Candidate Proposal | [IBM 5160 8255 PPI, keyboard and NMI phase contract](../proposals/m5-xt-8255-keyboard-nmi-phase.md). |
+| Files And ABI Surface | S1 source-ledger evidence, supporting index, history and Current only. |
+| Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, `docs/etc/operations/policy/source-policy.md`. |
+| Verification | Record exact paths, hashes, visual/OCR status, relevant pages and source boundaries; run documentation governance. |
+| Expected Markers | Intel 8255A semantics and IBM XT board wiring are distinct, sourced and finite; no 8042 substitution. |
+| Asset Needs | Public original Intel 8255A documentation and local IBM 5160 reference; no repository import. |
+| Reporting Requirements | Report provenance, manual confidence, board/chip scope separation and unresolved source gaps. |
+| Stop Conditions | A needed source has unclear provenance, conflicts with the selected NMOS 8255A, or requires protected material. |
+| Exit Criteria | The ledger has sufficient original source evidence to admit a finite List 1, with every uncertainty explicit. |
+| Original Owner Request | Each chip/controller is one complete T: source ledger, complete List 1, complete List 2, then one coherent owner-local implementation batch; no symptom repairs. |
+| Similar-Issue Sweep | Identify all existing 8255/PPI versus 8042/KBC/NMI terminology and source references before List 1. |
 
 ## Current Technical Baseline
 
