@@ -2,6 +2,27 @@
 
 ## Current Work
 
+## M5 T498 S1 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New |
+| Admission And Approval | The owner-approved persistent four-profile DOS-validation objective and Td S154 admit the Queue-first matrix candidate. |
+| Objective | Freeze the complete supported profile/CPU/floppy row matrix, current semantic evidence and external-input gaps. |
+| Non-goals | No runtime repair, image import, firmware import, test success by timeout, support expansion or unsupported-row alias. |
+| Reference Baseline | `2b6f7d95`; [matrix proposal](../proposals/m5-four-profile-supported-media-matrix.md). |
+| Candidate Proposal | [Four-profile supported DOS media matrix](../proposals/m5-four-profile-supported-media-matrix.md). |
+| Files And ABI Surface | Evidence and documentation index only; no ABI. |
+| Applicable Rules | Profile owns admitted physical surface; external media stay untracked; every matrix row has semantic proof, a named owner batch, or an external-input disposition. |
+| Verification | Evidence lists all four profiles, five CPU families and four media kinds; documentation-governance gate passes. |
+| Expected Markers | `M5:T498:S1:MEDIA-MATRIX:OK`. |
+| Asset Needs | Existing owner-supplied read-only MS-DOS images are inspected by format/version only; paths and bytes are not committed. |
+| Reporting Requirements | Record every supported/rejected row, current terminal, CPU-era compatibility and missing input. |
+| Stop Conditions | Stop if a row would need inferred media geometry, a profile mutation at runtime or a protected asset import. |
+| Exit Criteria | The fixed matrix contains every admitted combination and identifies exact S2 replay batches. |
+| Original Owner Request | Test and repair all selected profiles, CPU families and supported floppy media. |
+| Similar-Issue Sweep | Include prior XT/5170 and Default-AT evidence; classify Model 40 separately rather than inheriting a PC/AT result. |
+
 ## Current Technical Baseline
 
 - **Current developer artifact:** target `vm-0-5-0494`; the stripped Release
@@ -37,7 +58,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T497 S5 | Accepted: Model-339/80286 reaches the 360-KB DOS 5 installer after its sole absent-monochrome-aperture mapping repair; the only local 1.2-MB DOS asset requires 80386 and is proven on the Default-AT control, while a 286-compatible 1.2-MB replay remains an external-media receiver. [BYOB evidence](../etc/evidence/t497-s5-ibm5170-byob-media.md). |
+| T497 | Closed: original Model-339 factory 1.2-MB/compatible-360-KB media behavior now has one descriptor/session/FDD path, and the 360-KB DOS installer replay closes its one missing monochrome-aperture mapping; a 286-compatible 1.2-MB external replay transfers to T498. [Closure](../history/M5-T497-ibm-5170-native-floppy-contract.md). |
 | T496 | Closed: one Core FDC result/IRQ lifecycle now releases IRQ6 at normal-result acknowledgement, and the selected IBM 5160 DOS terminal plus focused FDC regressions pass without a BIOS/VM/media workaround. [Closure](../history/M5-T496-xt-keyboard-device.md). |
 | T495 | Closed: the selected IBM 5160-268 is functionally ready with source-backed L3 relations and explicit L2 limits; 13/13 focused, 300/300 fresh current and specialized gates pass, without a physical/wall-clock overclaim. [Decision](../etc/evidence/t495-s2-xt-final-model-decision.md). |
 | T494 | Closed: the complete IBM 5160 Xebec source/List-1/List-2/sole-owner chain corrects Read block-count progression without a second controller/media path; full current gate passes 300/300 and stripped Release 0494 is recorded. [Closure audit](../etc/evidence/t494-s5-xebec-closure-audit.md). |
@@ -45,7 +66,6 @@
 | T492 | Closed: complete IBM 5160 8272A/logical-media source/List-1/List-2/sole-owner chain removes fabricated reset state and global timing literals; serial gate passes 300/300 and stripped Release 0492 is recorded. [Closure audit](../etc/evidence/t492-s5-8272a-closure-audit.md). |
 | T491 | Closed: the independent IBM 5160 8255 PPI/key/NMI unit maps all 19 rows to one Core owner path, closes PB0/PB1 through the existing PIT2/speaker consumer, and records stripped Release 0491. [Closure audit](../etc/evidence/t491-s5-8255-closure-audit.md). |
 | T490 | Closed: the independent IBM 5160 8253 unit has verified source/List-1/List-2/sole-owner implementation, a corrected full gate and stripped Release 0490 artifact. [Closure audit](../etc/evidence/t490-s6-8253-closure-audit.md). |
-| T489 | Closed: complete IBM 5160 8237A source/List-1/List-2/one-owner batch closes the single page-port gap without new state or parallel path; physical-axis conversion remains transferred. [Closure audit](../etc/evidence/t489-s5-8237a-closure-audit.md). |
 
 ## Recent Governance
 
