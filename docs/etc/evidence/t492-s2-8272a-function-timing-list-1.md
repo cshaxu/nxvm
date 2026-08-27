@@ -34,12 +34,13 @@ not silently included.
 | F23 | DOR reset enters idle; ready state during reset produces the documented completion state consumed through Sense Interrupt. | NEC 5-4, Table 4; IBM 1-167 | Manual L3 logic order |
 | T1 | Controller maximum clock is 8 MHz; its electrical clock relation is not a Core physical axis. | NEC 5-3--5-4 | L4/out of scope |
 | T2 | Ready held during reset produces an interrupt within 1.024 ms. | NEC 5-4 | Manual L3 timing fact |
-| T3 | Head load is 4--512 ms in 4-ms increments; head unload is 0--480 ms in 32-ms increments. | NEC/IBM programming summary | Manual L3 timing fact |
-| T4 | WCLK encodes the stated FM/MFM transfer-rate alternatives at 4 MHz and 8 MHz controller clocks. | NEC 5-4 | Manual L3 timing fact |
-| T5 | Data-register handshakes, TC termination, command-phase transitions and interrupt ordering are source-defined causal order; the manual supplies no complete board-to-Core absolute schedule. | NEC 5-11, Table 4; IBM 1-155 | Manual L3 logic order |
-| T6 | Spindle rotation, head settle beyond programmed values, analog PLL, write precompensation waveform and electrical setup/hold are not Core logical-media behavior. | NEC 5-4--5-10; IBM drive section | L4/out of scope |
-| T7 | Host file latency, host cancellation and filesystem persistence are outside the controller/board source corpus. | Ownership boundary | External host boundary |
+| T3 | Step rate is 1--16 ms in 1-ms increments, selected by SRT. | NEC 5-14 | Manual L3 timing fact |
+| T4 | Head load is 4--512 ms in 4-ms increments; head unload is 0--480 ms in 32-ms increments. | NEC/IBM programming summary | Manual L3 timing fact |
+| T5 | WCLK encodes the stated FM/MFM transfer-rate alternatives at 4 MHz and 8 MHz controller clocks. | NEC 5-4 | Manual L3 timing fact |
+| T6 | Data-register handshakes, TC termination, command-phase transitions and interrupt ordering are source-defined causal order; the manual supplies no complete board-to-Core absolute schedule. | NEC 5-11, Table 4; IBM 1-155 | Manual L3 logic order |
+| T7 | Spindle rotation, head settle beyond programmed values, analog PLL, write precompensation waveform and electrical setup/hold are not Core logical-media behavior. | NEC 5-4--5-10; IBM drive section | L4/out of scope |
+| T8 | Host file latency, host cancellation and filesystem persistence are outside the controller/board source corpus. | Ownership boundary | External host boundary |
 
-The 29 rows above are the complete selected FDC/media universe for T492.  S3
+The 30 rows above are the complete selected FDC/media universe for T492. S3
 must map every row to the current Core FDC/media owner or one coherent batch;
 it may not create a profile-side controller or media mirror.

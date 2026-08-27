@@ -10,3 +10,4 @@ media cache or host-file route.
 | --- | --- |
 | S1 | Accepted: original NEC uPD765A/B and IBM 5160 source ledger records visual/OCR quality and the Version-command revision ambiguity. |
 | S2 | Accepted: complete 29-row selected controller/board/media List 1 freezes the shared command corpus, revision boundary and timing levels. |
+| S3 | Implementation pending acceptance: 30-row code-gap audit records Read Diagnostic, reset-ready and manual-timing batches at the sole Core FDC/media owner. |

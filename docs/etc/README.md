@@ -41,7 +41,8 @@ principal documents named in [docs/README.md](../README.md).
 | `evidence/t491-s4-8255-speaker-implementation.md` | Core PPI/board owners | T491 S4's single PB0/PB1 publication into the existing PIT2/speaker consumer and focused proof. |
 | `evidence/t491-s5-8255-closure-audit.md` | Closure audit | T491's complete IBM 5160 8255/PPI/key/NMI source/List-1/List-2/sole-owner closure, retained L0/L1/L4 boundaries and stripped 0491 artifact. |
 | `evidence/t492-s1-8272a-original-source-ledger.md` | Core FDC/media owner | T492 S1's visually checked NEC uPD765A/B and IBM 5160 source ledger, including OCR and command-revision boundaries. |
-| `evidence/t492-s2-8272a-function-timing-list-1.md` | Core FDC/media owner | T492 S2's complete 29-row selected uPD765-compatible/IBM 5160 FDC-media function and timing List 1. |
+| `evidence/t492-s2-8272a-function-timing-list-1.md` | Core FDC/media owner | T492 S2's selected uPD765-compatible/IBM 5160 FDC-media function/timing List 1, refined to 30 rows by T492 S3 source review. |
+| `evidence/t492-s3-8272a-current-code-gap-list-2.md` | Core FDC/media owner | T492 S3's 30-row owner/path audit, source-backed SRT refinement and coherent FDC/media implementation batch. |
 | `evidence/t486-s1-8088-original-source-ledger.md` | Core CPU timing owner | T486 S1's visually verified Intel 1981 source corpus, scan/OCR boundary and finite Table-2-21 basis for the following complete List-1 ledger. |
 | `evidence/t486-s2-8088-function-timing-list-1.md` | Core CPU timing owner | T486 S2's finite 8088 Table-2-21 function/timing List 1, including all mnemonic groups, prefix entries, explicit non-instruction entries and manual timing boundaries. |
 | `evidence/t486-s3-8088-current-code-gap-list-2.md` | Core CPU timing owner | T486 S3's complete List-1-to-code-owner ledger, current 8088 timing dispositions and one-owner implementation boundary. |
