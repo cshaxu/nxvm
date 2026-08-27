@@ -40,7 +40,6 @@
 | Task | Compact result |
 | --- | --- |
 | T492 S2 | Accepted: 29-row IBM 5160 uPD765-compatible controller/board/media List 1 freezes all command, register, routing and timing dispositions before code audit. [Evidence](../etc/evidence/t492-s2-8272a-function-timing-list-1.md). |
-| T492 S1 | Accepted: NEC uPD765A/B and IBM 5160 original-source ledger establishes the FDC/board basis and explicitly retains the 15-versus-16-command revision ambiguity for List 1. [Evidence](../etc/evidence/t492-s1-8272a-original-source-ledger.md). |
 | T491 | Closed: the independent IBM 5160 8255 PPI/key/NMI unit maps all 19 rows to one Core owner path, closes PB0/PB1 through the existing PIT2/speaker consumer, and records stripped Release 0491. [Closure audit](../etc/evidence/t491-s5-8255-closure-audit.md). |
 | T490 | Closed: the independent IBM 5160 8253 unit has verified source/List-1/List-2/sole-owner implementation, a corrected full gate and stripped Release 0490 artifact. [Closure audit](../etc/evidence/t490-s6-8253-closure-audit.md). |
 | T489 | Closed: complete IBM 5160 8237A source/List-1/List-2/one-owner batch closes the single page-port gap without new state or parallel path; physical-axis conversion remains transferred. [Closure audit](../etc/evidence/t489-s5-8237a-closure-audit.md). |
