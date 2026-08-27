@@ -2,10 +2,28 @@
 
 ## Current Work
 
-**Open: M5 T491.**
+**Open: M5 T491 S3.**
 
-S1--S2 are accepted: the visual original-source ledger and complete 19-row
-List 1 establish the finite 8255A/IBM XT audit surface.
+## M5 T491 S3 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | S1--S2 are accepted. S3 maps every frozen List-1 row to the existing PPI/NMI/PIT/keyboard owner path before any implementation. |
+| Objective | Produce complete List 2 identifying each current implementation, test and exact finite gap for the selected IBM XT PPI unit. |
+| Non-goals | No code change, no generic 8255 framework, no 8042 reuse and no profile-side state. |
+| Reference Baseline | T491 S2 List 1, `xt_ppi_keyboard.[ch]`, Core construction/binding, XT profile and focused PPI/NMI tests. |
+| Candidate Proposal | [IBM 5160 8255 PPI, keyboard and NMI phase contract](../proposals/m5-xt-8255-keyboard-nmi-phase.md). |
+| Files And ABI Surface | S3 evidence/index/history/Current only. |
+| Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`. |
+| Verification | Map all 19 rows, inspect every construction/port/IRQ/NMI route and focused test; run documentation governance. |
+| Expected Markers | One Core PPI state owner and port provider; every gap grouped into one implementation batch or an explicit boundary. |
+| Asset Needs | Retained S1 sources only. |
+| Reporting Requirements | Report each row's owner/path/test disposition, code-size and any gap-batch rationale. |
+| Stop Conditions | A row needs a second PPI/NMI owner or nonlocal architecture change; transfer it rather than add a path. |
+| Exit Criteria | All List-1 rows have a current-code disposition and one finite implementation batch is stated. |
+| Original Owner Request | Each chip/controller is one complete T: source ledger, complete List 1, complete List 2, then one coherent owner-local implementation batch; no symptom repairs. |
+| Similar-Issue Sweep | Inspect every 60h--63h provider, XT-PPI construction/reset/binding site, keyboard topology branch and NMI fault producer. |
 
 ## Current Technical Baseline
 
