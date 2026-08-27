@@ -8,4 +8,4 @@ ATA alias, a duplicate CHS/cache path or VM-owned controller state.
 
 | Subtask | Result |
 | --- | --- |
-| S1 | In progress: validate the IBM/Xebec original-source corpus and scan/OCR boundary before any List-1 or implementation claim. |
+| S1 | Accepted: visual verification of IBM 6139790 establishes the finite original-source basis for List 1, retains OCR as discovery-only and excludes ATA/WD1003/ESDI substitution, code and protected material. [Evidence](../etc/evidence/t494-s1-xebec-original-source-ledger.md). |
