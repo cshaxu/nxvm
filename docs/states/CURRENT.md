@@ -4,6 +4,27 @@
 
 **Open: M5 T492.**
 
+## M5 T492 S2 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner approved continuous queue execution and the complete manual-to-List-1-to-List-2 controller workflow; S1 accepted the NEC/IBM primary corpus and its A/B revision boundary. |
+| Objective | Freeze the complete selected IBM 5160 uPD765-compatible FDC/logical-media function and timing List 1 before inspecting code. |
+| Non-goals | No source implementation, generic drive/controller breadth, host-file policy, guessed rotation, L4 waveform simulation or external emulator authority. |
+| Reference Baseline | T492 S1 source ledger, NEC uPD765A/B source, IBM 5160 Diskette Adapter/Drive sections and FDC/media proposal. |
+| Candidate Proposal | [IBM 5160 8272A FDC and floppy-media phase contract](../proposals/m5-xt-8272a-fdc-media-phase.md). |
+| Files And ABI Surface | List-1 evidence, index, history and status only. No code, ABI or artifact change. |
+| Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, source policy and the retained L0--L4 hierarchy; manual facts are L3 only at their stated boundary. |
+| Verification | Visual-check every manual value/formula cited in the finite rows, reconcile NEC/IBM command sets and run documentation governance. |
+| Expected Markers | Every selected command, phase, register, board route, media/reset behavior and timing fact has exactly one disposition and authority level. |
+| Asset Needs | Retained NEC and IBM source PDFs only. |
+| Reporting Requirements | State the row count, separate chip from board/media responsibility, identify every L0/L1/L4 boundary and state whether an external source is needed. |
+| Stop Conditions | A source gap prevents finite coverage, a numeric value cannot be visually confirmed, or a revision difference changes selected 5160 behavior. |
+| Exit Criteria | Indexed List 1 exhausts the selected FDC/media surface, preserves the Version ambiguity explicitly, and has no unclassified timing claim. |
+| Original Owner Request | Every chip/controller must be a complete T: collect original manual sources, establish all instruction/function/timing rows, establish code gaps, then implement one unified path; reject symptom-by-symptom repair. |
+| Similar-Issue Sweep | Reconcile every uPD765/8272A command, phase, status bit, DOR/port, DMA/IRQ, drive/media/reset/timing reference across both manuals; exclude only with a recorded selected-5160 reason. |
+
 ## Current Technical Baseline
 
 - **Current developer artifact:** target `vm-0-5-0491`; the stripped Release

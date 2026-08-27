@@ -9,3 +9,4 @@ media cache or host-file route.
 | Subtask | Result |
 | --- | --- |
 | S1 | Accepted: original NEC uPD765A/B and IBM 5160 source ledger records visual/OCR quality and the Version-command revision ambiguity. |
+| S2 | Implementation pending acceptance: complete 29-row selected controller/board/media List 1 freezes the shared command corpus, revision boundary and timing levels. |
