@@ -2,28 +2,10 @@
 
 ## Current Work
 
-**Open: M5 T491 S3.**
+**Open: M5 T491.**
 
-## M5 T491 S3 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | S1--S2 are accepted. S3 maps every frozen List-1 row to the existing PPI/NMI/PIT/keyboard owner path before any implementation. |
-| Objective | Produce complete List 2 identifying each current implementation, test and exact finite gap for the selected IBM XT PPI unit. |
-| Non-goals | No code change, no generic 8255 framework, no 8042 reuse and no profile-side state. |
-| Reference Baseline | T491 S2 List 1, `xt_ppi_keyboard.[ch]`, Core construction/binding, XT profile and focused PPI/NMI tests. |
-| Candidate Proposal | [IBM 5160 8255 PPI, keyboard and NMI phase contract](../proposals/m5-xt-8255-keyboard-nmi-phase.md). |
-| Files And ABI Surface | S3 evidence/index/history/Current only. |
-| Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`. |
-| Verification | Map all 19 rows, inspect every construction/port/IRQ/NMI route and focused test; run documentation governance. |
-| Expected Markers | One Core PPI state owner and port provider; every gap grouped into one implementation batch or an explicit boundary. |
-| Asset Needs | Retained S1 sources only. |
-| Reporting Requirements | Report each row's owner/path/test disposition, code-size and any gap-batch rationale. |
-| Stop Conditions | A row needs a second PPI/NMI owner or nonlocal architecture change; transfer it rather than add a path. |
-| Exit Criteria | All List-1 rows have a current-code disposition and one finite implementation batch is stated. |
-| Original Owner Request | Each chip/controller is one complete T: source ledger, complete List 1, complete List 2, then one coherent owner-local implementation batch; no symptom repairs. |
-| Similar-Issue Sweep | Inspect every 60h--63h provider, XT-PPI construction/reset/binding site, keyboard topology branch and NMI fault producer. |
+S1--S3 are accepted: one complete List 2 maps all 19 rows and admits only the
+PB0/PB1 connection to the existing Core board speaker/PIT2 owner.
 
 ## Current Technical Baseline
 
@@ -60,7 +42,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T491 S2 | Accepted: 19 source-cited 8255A/IBM XT rows freeze the selected PPI, keyboard, fault/NMI and timing scope before code audit. [Evidence](../etc/evidence/t491-s2-8255-function-timing-list-1.md). |
+| T491 S3 | Accepted: all 19 rows map to one Core PPI/NMI route; only PB0/PB1 lack their existing board speaker/PIT2 consumer connection. [Evidence](../etc/evidence/t491-s3-8255-current-code-gap-list-2.md). |
 | T490 | Closed: the independent IBM 5160 8253 unit has verified source/List-1/List-2/sole-owner implementation, a corrected full gate and stripped Release 0490 artifact. [Closure audit](../etc/evidence/t490-s6-8253-closure-audit.md). |
 | T489 | Closed: complete IBM 5160 8237A source/List-1/List-2/one-owner batch closes the single page-port gap without new state or parallel path; physical-axis conversion remains transferred. [Closure audit](../etc/evidence/t489-s5-8237a-closure-audit.md). |
 | T488 | Closed: complete IBM 5160 8259A source/List-1/List-2/one-owner audit retains one Core PIC path and an empty implementation batch. [Closure audit](../etc/evidence/t488-s5-8259a-closure-audit.md). |
