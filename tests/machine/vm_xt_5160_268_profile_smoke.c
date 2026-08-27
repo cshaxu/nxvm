@@ -97,7 +97,8 @@ static C_INT vm_xt_5160_268_declaration_is_fixed(C_VOID)
         profile.topology.fdc.data_port != 0x03f5u ||
         profile.topology.fdc.direction_port != 0u ||
         profile.topology.fdc.control_port != 0u || profile.topology.fdc.irq != 6u ||
-        profile.topology.fdc.dma_channel != 2u) return 1;
+        profile.topology.fdc.dma_channel != 2u ||
+        profile.topology.fdc.ticks_per_microsecond != 0u) return 1;
     declaration.values.core.configuration.memory_bytes = 512u * 1024u;
     return profile.resolved.values.core.configuration.memory_bytes != 256u * 1024u;
 }
@@ -131,6 +132,7 @@ static C_INT vm_xt_5160_268_topology_constructs_one_xt_route(C_VOID)
     failed |= !failed && (binding.core_token == 0u || binding.channel != 2u ||
         machine->fdc.connect.config.irq != 6u ||
         machine->fdc.connect.config.dma_channel != 2u ||
+        machine->fdc.connect.config.ticks_per_microsecond != 0u ||
         !core_machine_port_has_read(&machine->executor_port, 0x03f4u) ||
         !core_machine_port_has_read(&machine->executor_port, 0x03f5u) ||
         !core_machine_port_has_write(&machine->executor_port, 0x03f2u) ||

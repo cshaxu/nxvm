@@ -18,8 +18,6 @@ typedef struct t_pic t_pic;
 typedef struct t_port t_port;
 
 #define CORE_MACHINE_DEVICE_FDC "Intel 8272A"
-#define CORE_MACHINE_FDC_500K_BYTE_TICKS 128u
-#define CORE_MACHINE_FDC_SEEK_TRACK_TICKS 24000u
 
 typedef enum core_machine_fdc_phase {
     core_machine_fdc_PHASE_COMMAND = 0,
@@ -77,8 +75,10 @@ typedef struct {
     type_unsigned_8 format_id[4];
     type_unsigned_8 format_id_index;
     type_unsigned_8 selected_drive;
-    /* A DOR reset release reports one ready-change status for each FDC slot. */
-    type_unsigned_8 reset_sense_count;
+    /* A reset release reports only the ready inputs sampled at that edge. */
+    type_unsigned_8 reset_sense_mask;
+    type_unsigned_64 reset_due_tick;
+    type_bool reset_pending;
     type_unsigned_64 observed_media_generation[CORE_MACHINE_FDC_DRIVE_COUNT];
     type_bool media_changed[CORE_MACHINE_FDC_DRIVE_COUNT];
     type_bool observed_ready[CORE_MACHINE_FDC_DRIVE_COUNT];

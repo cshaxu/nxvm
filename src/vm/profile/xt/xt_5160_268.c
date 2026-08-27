@@ -78,7 +78,7 @@ type_status vm_profile_xt_5160_268_resolve(
         VM_PROFILE_XT_5160_268_FDD_MEDIA_ID, CORE_MACHINE_MEDIA_ID_INVALID,
         CORE_MACHINE_MEDIA_ID_INVALID, CORE_MACHINE_MEDIA_ID_INVALID}};
     out_profile->topology.fdc = (core_machine_fdc_config) {0x03f2u, 0x03f4u,
-        0x03f5u, 0u, 0u, 6u, 2u, CORE_MACHINE_FDC_UNREADY_READ_GENERIC};
+        0x03f5u, 0u, 0u, 6u, 2u, CORE_MACHINE_FDC_UNREADY_READ_GENERIC, 0u};
     out_profile->topology.hdc_present = TYPE_TRUE;
     out_profile->topology.hdc_media_id = VM_PROFILE_XT_5160_268_HDD_MEDIA_ID;
     out_profile->topology.hdc_slave_media_id = CORE_MACHINE_MEDIA_ID_INVALID;

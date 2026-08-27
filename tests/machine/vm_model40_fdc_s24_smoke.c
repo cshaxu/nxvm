@@ -110,7 +110,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
             core_machine_port_read(port, 0x03f5u) != 0xa5u;
         for (index = 1u; index < 512u; ++index) {
             core_machine_fdc_advance_at(fdc, fdc->data.elapsed_ticks +
-                CORE_MACHINE_FDC_500K_BYTE_TICKS);
+                128u);
             (C_VOID)core_machine_port_read(port, 0x03f5u);
         }
         failed |= !model40_fdc_result(fdc, port, result, sizeof(result)) ||
@@ -129,7 +129,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
                 &session->core_machine->shared_dma_secondary,
                 &session->core_machine->executor_memory, 1u);
             if (index + 1u < 512u) core_machine_fdc_advance_at(fdc,
-                fdc->data.elapsed_ticks + CORE_MACHINE_FDC_500K_BYTE_TICKS);
+                fdc->data.elapsed_ticks + 128u);
         }
         failed |= fdc->data.phase != core_machine_fdc_PHASE_PENDING_COMPLETE ||
             core_machine_memory_read(session->core_machine, 0x0600u, &result[0],

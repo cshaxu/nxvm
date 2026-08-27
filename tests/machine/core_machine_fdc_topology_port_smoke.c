@@ -84,8 +84,7 @@ static C_INT core_machine_fdc_topology_read_sector(core_machine_fdc *fdc, t_port
     core_machine_fdc_topology_command(fdc, port, command, sizeof(command));
     if (core_machine_port_read(port, 0x03f5u) != expected) return 0;
     for (index = 1u; index < 512u; ++index) {
-        core_machine_fdc_advance_at(fdc, fdc->data.elapsed_ticks +
-            CORE_MACHINE_FDC_500K_BYTE_TICKS);
+        core_machine_fdc_advance_at(fdc, fdc->data.elapsed_ticks + 128u);
         (C_VOID)core_machine_port_read(port, 0x03f5u);
     }
     return core_machine_fdc_topology_result(fdc, port, result, 7u) &&
@@ -106,7 +105,7 @@ int main(C_VOID)
     const core_machine_fdc_config fdc_config = {
         .dor_port = 0x03f2u, .status_port = 0x03f4u, .data_port = 0x03f5u,
         .direction_port = 0x03f7u, .control_port = 0x03f7u,
-        .irq = 6u, .dma_channel = 2u
+        .irq = 6u, .dma_channel = 2u, .ticks_per_microsecond = 8u
     };
     const core_machine_fdc_drive_bindings drives = {
         {11u, 12u, CORE_MACHINE_MEDIA_ID_INVALID, CORE_MACHINE_MEDIA_ID_INVALID}
@@ -154,8 +153,10 @@ int main(C_VOID)
                 failed |= 0x04;
             } else {
                 core_machine_port_write(port, 0x03f2u, 0x1cu);
+                failed |= fdc->connect.irq_source.asserted ? 0x08 : 0;
+                core_machine_fdc_advance_at(fdc, fdc->data.reset_due_tick);
                 failed |= !fdc->connect.irq_source.asserted ? 0x08 : 0;
-                for (reset_drive = 0u; reset_drive < CORE_MACHINE_FDC_DRIVE_COUNT;
+                for (reset_drive = 0u; reset_drive < 2u;
                     ++reset_drive) {
                     core_machine_fdc_topology_command(fdc, port,
                         (const type_unsigned_8[]){0x08u}, 1u);

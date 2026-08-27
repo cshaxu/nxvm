@@ -4,6 +4,27 @@
 
 **Open: M5 T492.**
 
+## M5 T492 S4 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner approved the complete controller workflow and immediate repair of all audited in-scope gaps; T492 S3 freezes Batch A--C at the sole Core FDC/media owner. |
+| Objective | Correct the verified FDC/media batch: retain the existing source-correct Read Diagnostic route, add ready-conditioned reset completion, and introduce immutable source-timing input with explicit L2 fallback. |
+| Non-goals | No profile-side controller, second media state, host-file policy, raw physical disk emulator, L4 waveform work, generic 765B Version support or guessed physical Core timebase. |
+| Reference Baseline | T492 S2 List 1, S3 List 2, `fdc.[ch]`, media interface, machine plan/topology, XT profile and focused FDC tests. |
+| Candidate Proposal | [IBM 5160 8272A FDC and floppy-media phase contract](../proposals/m5-xt-8272a-fdc-media-phase.md). |
+| Files And ABI Surface | Core FDC/media timing/configuration and focused FDC/XT tests; immutable copied plan values only. No mutable public layout or VM timing callback. |
+| Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`, source policy and L0--L4 timing hierarchy; Core owns phase/deadline/state, profile selects frozen values. |
+| Verification | Add focused Read Diagnostic, ready-conditioned reset and qualified/unqualified timing proofs; run FDC static boundaries, focused FDC/XT tests, current gate and documentation governance. |
+| Expected Markers | One FDC command/phase path, reset queue only for sampled-ready drives, and one optional copied timing conversion input; zero means explicit L2 no-delay fallback. |
+| Asset Needs | Accepted NEC/IBM PDFs only; no external code/media import. |
+| Reporting Requirements | Record retained owner/path, code-size, deleted fixed timing constants, exact Manual-L3/L2 disposition and all test results. |
+| Stop Conditions | Required behavior needs a media mirror, VM callback, physical time assertion, unbounded raw-track model or any second controller/DMA/PIC owner. |
+| Exit Criteria | The reset/timing batch is implemented, the Read Diagnostic route is source-confirmed, all targeted tests/gates pass, and no FDC gap remains untracked. |
+| Original Owner Request | Every chip/controller must be a complete T: collect original manual sources, establish all instruction/function/timing rows, establish code gaps, then implement one unified path; reject symptom-by-symptom repair. |
+| Similar-Issue Sweep | Reinspect every FDC command dispatch, DOR reset edge, timing literal, media-result conversion, FDC topology initializer and focused test fixture; remove or classify every equivalent hit. |
+
 ## Current Technical Baseline
 
 - **Current developer artifact:** target `vm-0-5-0491`; the stripped Release

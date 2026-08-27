@@ -192,10 +192,23 @@ static C_VOID core_machine_fdc_request_assert(core_machine_fdc *fdc)
     }
 }
 
+static type_unsigned_64 core_machine_fdc_timing_ticks(const core_machine_fdc *fdc,
+    type_unsigned_64 microseconds)
+{
+    type_unsigned_64 ticks_per_microsecond;
+
+    if (fdc == STD_NULL) return 0u;
+    ticks_per_microsecond = fdc->connect.config.ticks_per_microsecond;
+    if (ticks_per_microsecond == 0u || microseconds > UINT64_MAX /
+        ticks_per_microsecond) return 0u;
+    return microseconds * ticks_per_microsecond;
+}
+
 static type_unsigned_64 core_machine_fdc_dma_byte_ticks(const core_machine_fdc *fdc)
 {
-    return fdc != STD_NULL && fdc->data.ccr == 0u ?
-        CORE_MACHINE_FDC_500K_BYTE_TICKS : 0u;
+    if (fdc == STD_NULL) return 0u;
+    if (fdc->data.ccr == 0u) return core_machine_fdc_timing_ticks(fdc, 16u);
+    return 0u;
 }
 
 static C_VOID core_machine_fdc_schedule_dma_byte(core_machine_fdc *fdc)
@@ -360,7 +373,8 @@ static C_VOID core_machine_fdc_begin_seek(core_machine_fdc *fdc, type_unsigned_1
 
     fdc->data.seek_target[drive] = target;
     fdc->data.seek_due_tick[drive] = fdc->data.elapsed_ticks +
-        (type_unsigned_64)distance * CORE_MACHINE_FDC_SEEK_TRACK_TICKS;
+        (type_unsigned_64)distance * core_machine_fdc_timing_ticks(fdc,
+            (type_unsigned_64)(16u - fdc->data.srt) * 1000u);
     fdc->data.seek_pending[drive] = TYPE_TRUE;
     core_machine_fdc_command_phase(fdc);
 }
@@ -767,13 +781,14 @@ static C_VOID core_machine_fdc_execute(core_machine_fdc *fdc)
         core_machine_fdc_begin_seek(fdc, 0u);
         break;
     case core_machine_fdc_CMD_SENSE_INTERRUPT:
-        if (fdc->data.reset_sense_count != 0u) {
-            type_unsigned_8 drive = (type_unsigned_8)(CORE_MACHINE_FDC_DRIVE_COUNT -
-                fdc->data.reset_sense_count);
+        if (fdc->data.reset_sense_mask != 0u) {
+            type_unsigned_8 drive = 0u;
+
+            while ((fdc->data.reset_sense_mask & (1u << drive)) == 0u) ++drive;
 
             fdc->data.ret[0] = core_machine_fdc_ST0_READY_CHANGE | drive;
             fdc->data.ret[1] = (type_unsigned_8)fdc->data.drive_cylinder[drive];
-            fdc->data.reset_sense_count--;
+            fdc->data.reset_sense_mask &= (type_unsigned_8)~(1u << drive);
             fdc->data.flagINTR = TYPE_FALSE;
             core_machine_pic_irq_source_deassert(&fdc->connect.irq_source);
         } else if (fdc->data.seek_result_count != 0u) {
@@ -882,6 +897,7 @@ static C_VOID core_machine_fdc_reset_controller(core_machine_fdc *fdc)
     type_unsigned_4 hut = fdc->data.hut;
     type_unsigned_4 hlt = fdc->data.hlt;
     type_unsigned_8 srt = fdc->data.srt;
+    type_unsigned_64 elapsed_ticks = fdc->data.elapsed_ticks;
     type_unsigned_64 observed_media_generation[CORE_MACHINE_FDC_DRIVE_COUNT];
     STD_MEMCPY(observed_media_generation, fdc->data.observed_media_generation,
         sizeof(observed_media_generation));
@@ -891,10 +907,33 @@ static C_VOID core_machine_fdc_reset_controller(core_machine_fdc *fdc)
     fdc->data.hut = hut;
     fdc->data.hlt = hlt;
     fdc->data.srt = srt;
+    fdc->data.elapsed_ticks = elapsed_ticks;
     STD_MEMCPY(fdc->data.observed_media_generation, observed_media_generation,
         sizeof(observed_media_generation));
     core_machine_fdc_sample_ready(fdc);
     core_machine_fdc_command_phase(fdc);
+}
+
+static C_VOID core_machine_fdc_publish_due_reset(core_machine_fdc *fdc)
+{
+    if (fdc == STD_NULL || !fdc->data.reset_pending ||
+        fdc->data.elapsed_ticks < fdc->data.reset_due_tick) return;
+    fdc->data.reset_pending = TYPE_FALSE;
+    if (fdc->data.reset_sense_mask != 0u) core_machine_fdc_raise_irq(fdc);
+}
+
+static C_VOID core_machine_fdc_schedule_reset_completion(core_machine_fdc *fdc)
+{
+    type_unsigned_8 drive;
+
+    for (drive = 0u; drive < CORE_MACHINE_FDC_DRIVE_COUNT; ++drive) {
+        if (fdc->data.observed_ready[drive])
+            fdc->data.reset_sense_mask |= (type_unsigned_8)(1u << drive);
+    }
+    fdc->data.reset_due_tick = fdc->data.elapsed_ticks +
+        core_machine_fdc_timing_ticks(fdc, 1024u);
+    fdc->data.reset_pending = TYPE_TRUE;
+    core_machine_fdc_publish_due_reset(fdc);
 }
 
 static C_VOID core_machine_fdc_read_status(t_port *port, type_unsigned_16 id,
@@ -944,8 +983,7 @@ static C_VOID core_machine_fdc_write_dor(t_port *port, type_unsigned_16 id,
     if ((dor & VFDC_DOR_NRS) != 0u && (old_dor & VFDC_DOR_NRS) == 0u) {
         core_machine_fdc_reset_controller(fdc);
         fdc->data.dor = dor;
-        fdc->data.reset_sense_count = CORE_MACHINE_FDC_DRIVE_COUNT;
-        core_machine_fdc_raise_irq(fdc);
+        core_machine_fdc_schedule_reset_completion(fdc);
     }
     core_machine_fdc_update_dir(fdc);
     if ((dor & VFDC_DOR_NRS) != 0u && core_machine_fdc_execution_active(fdc) &&
@@ -1083,6 +1121,7 @@ C_VOID core_machine_fdc_advance_at(core_machine_fdc *fdc,
         core_machine_fdc_publish_terminal_result(fdc);
         core_machine_fdc_raise_irq(fdc);
     }
+    core_machine_fdc_publish_due_reset(fdc);
     for (type_unsigned_8 drive = 0u; drive < CORE_MACHINE_FDC_DRIVE_COUNT; ++drive) {
         if (fdc->data.seek_pending[drive] && elapsed_ticks >= fdc->data.seek_due_tick[drive]) {
             fdc->data.seek_pending[drive] = TYPE_FALSE;

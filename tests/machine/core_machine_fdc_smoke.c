@@ -222,7 +222,7 @@ C_INT main(C_VOID)
     const core_machine_fdc_config fdc_config = {
         .dor_port = 0x03f2u, .status_port = 0x03f4u, .data_port = 0x03f5u,
         .direction_port = 0x03f7u, .control_port = 0x03f7u,
-        .irq = 6u, .dma_channel = 2u
+        .irq = 6u, .dma_channel = 2u, .ticks_per_microsecond = 8u
     };
     const core_machine_fdc_drive_bindings drives = {
         {1u, CORE_MACHINE_MEDIA_ID_INVALID, CORE_MACHINE_MEDIA_ID_INVALID,
@@ -274,8 +274,14 @@ C_INT main(C_VOID)
                 failed |= 0x04;
             } else {
                 core_machine_port_write(port, fdc_config.dor_port, 0x1cu);
+                failed |= fdc->connect.irq_source.asserted ||
+                    !fdc->data.reset_pending || fdc->data.reset_due_tick != 8192u;
+                core_machine_fdc_advance_at(fdc, 8191u);
+                failed |= fdc->connect.irq_source.asserted;
+                core_machine_fdc_advance_at(fdc, 8192u);
+                failed |= !fdc->connect.irq_source.asserted;
                 for (type_unsigned_8 reset_drive = 0u;
-                    reset_drive < CORE_MACHINE_FDC_DRIVE_COUNT; ++reset_drive) {
+                    reset_drive < 1u; ++reset_drive) {
                     core_machine_fdc_command(fdc, port,
                         (const type_unsigned_8[]){0x08u}, 1u);
                     failed |= !core_machine_fdc_read_result(fdc, port, result, 2u) ||
@@ -299,10 +305,11 @@ C_INT main(C_VOID)
                 failed |= fdc->data.srt != 0x0du || fdc->data.hut != 0x0fu ||
                     fdc->data.hlt != 0x01u;
                 core_machine_port_write(port, fdc_config.dor_port, 0x1cu);
+                core_machine_fdc_advance_at(fdc, fdc->data.reset_due_tick);
                 failed |= fdc->data.srt != 0x0du || fdc->data.hut != 0x0fu ||
                     fdc->data.hlt != 0x01u;
                 for (type_unsigned_8 reset_drive = 0u;
-                    reset_drive < CORE_MACHINE_FDC_DRIVE_COUNT; ++reset_drive) {
+                    reset_drive < 1u; ++reset_drive) {
                     core_machine_fdc_command(fdc, port,
                         (const type_unsigned_8[]){0x08u}, 1u);
                     failed |= !core_machine_fdc_read_result(fdc, port, result, 2u) ||
@@ -548,7 +555,7 @@ C_INT main(C_VOID)
                         &machine->executor_memory, 1u);
                     if (index + 1u < sizeof(scan_dma)) {
                         core_machine_fdc_advance_at(fdc,
-                            fdc->data.elapsed_ticks + CORE_MACHINE_FDC_500K_BYTE_TICKS);
+                        fdc->data.elapsed_ticks + fdc_config.ticks_per_microsecond * 16u);
                     }
                 }
                 failed |= fdc->data.phase != core_machine_fdc_PHASE_PENDING_COMPLETE ||
@@ -560,8 +567,9 @@ C_INT main(C_VOID)
                         VFDC_ST2_SCAN_MATCH;
                 core_machine_port_write(port, fdc_config.dor_port, 0u);
                 core_machine_port_write(port, fdc_config.dor_port, 0x1cu);
+                core_machine_fdc_advance_at(fdc, fdc->data.reset_due_tick);
                 for (type_unsigned_8 reset_drive = 0u;
-                    reset_drive < CORE_MACHINE_FDC_DRIVE_COUNT; ++reset_drive) {
+                    reset_drive < 1u; ++reset_drive) {
                     core_machine_fdc_command(fdc, port,
                         (const type_unsigned_8[]){0x08u}, 1u);
                     failed |= !core_machine_fdc_read_result(fdc, port, result, 2u) ||
@@ -616,8 +624,9 @@ C_INT main(C_VOID)
                 /* Scan is host-to-controller execution too: its first byte
                    establishes the same byte gate, and DOR reset cancels it. */
                 core_machine_port_write(port, fdc_config.dor_port, 0x1cu);
+                core_machine_fdc_advance_at(fdc, fdc->data.reset_due_tick);
                 for (type_unsigned_8 reset_drive = 0u;
-                    reset_drive < CORE_MACHINE_FDC_DRIVE_COUNT; ++reset_drive) {
+                    reset_drive < 1u; ++reset_drive) {
                     core_machine_fdc_command(fdc, port,
                         (const type_unsigned_8[]){0x08u}, 1u);
                     failed |= !core_machine_fdc_read_result(fdc, port, result, 2u) ||
@@ -631,7 +640,8 @@ C_INT main(C_VOID)
                 core_machine_port_write(port, fdc_config.data_port, 0x5au);
                 ndma_gate_tick = fdc->data.next_ndma_byte_tick;
                 failed |= !fdc->data.ndma_byte_gate_pending ||
-                    ndma_gate_tick != fdc->data.elapsed_ticks + 128u;
+                    ndma_gate_tick != fdc->data.elapsed_ticks +
+                    fdc_config.ticks_per_microsecond * 16u;
                 core_machine_port_write(port, fdc_config.dor_port, 0u);
                 failed |= fdc->data.phase != core_machine_fdc_PHASE_COMMAND ||
                     fdc->data.ndma_byte_gate_pending;
