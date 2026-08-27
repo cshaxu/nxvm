@@ -2,28 +2,7 @@
 
 ## Current Work
 
-**Open: M5 T492 S1.**
-
-## M5 T492 S1 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | New |
-| Admission And Approval | Owner approved continuous queue execution and requires each added controller category to complete original manual, full List 1, full List 2 and one coherent owner-local batch before implementation. |
-| Objective | Validate the original uPD765A/B and IBM 5160 selected-drive source corpus, its OCR/ambiguity boundaries and the finite List-1 basis for the independent FDC/media unit. |
-| Non-goals | No FDC/media code change, 8272A command implementation, host-file policy, guessed rotational delay, DMA replacement, CGA/Xebec work or third-party-code import. |
-| Reference Baseline | [8272A FDC/media proposal](../proposals/m5-xt-8272a-fdc-media-phase.md), selected XT profile/FDC owner, T491 closure and source policy. |
-| Candidate Proposal | [IBM 5160 8272A FDC and floppy-media phase contract](../proposals/m5-xt-8272a-fdc-media-phase.md). |
-| Files And ABI Surface | T492 history, source-ledger evidence and supporting index only. No runtime ABI or artifact change. |
-| Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`, and `docs/etc/operations/policy/source-policy.md`. |
-| Verification | Visually inspect readable manual identity/pages, record SHA-256 and OCR quality; inspect source ownership only; run documentation governance. |
-| Expected Markers | One normative controller source, one IBM board/selected-drive source, explicit source quality and unresolved-ambiguity disposition, and no imported material. |
-| Asset Needs | Owner-managed local manuals only: uPD765A/B and IBM 5160 Technical Reference. |
-| Reporting Requirements | Record source identity/hash, visual/OCR status, authority role, usable sections and any missing or ambiguous fact without inventing a timing claim. |
-| Stop Conditions | Missing/illegible primary material, licensing/import uncertainty, or a source contradiction that changes the proposed 8272A/board boundary. |
-| Exit Criteria | Source ledger is indexed, finite enough for a complete S2 List 1, and records every source limitation or an explicit research receiver. |
-| Original Owner Request | Every chip/controller must be a complete T: collect original manual sources, establish all instruction/function/timing rows, establish code gaps, then implement one unified path; reject symptom-by-symptom repair. |
-| Similar-Issue Sweep | Search the asset archive and tracked FDC/profile owner records for all 8272/765/IBM-drive primary-source references; classify every hit as normative, corroborating or excluded. |
+**Open: M5 T492.**
 
 ## Current Technical Baseline
 
@@ -60,6 +39,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T492 S1 | Accepted: NEC uPD765A/B and IBM 5160 original-source ledger establishes the FDC/board basis and explicitly retains the 15-versus-16-command revision ambiguity for List 1. [Evidence](../etc/evidence/t492-s1-8272a-original-source-ledger.md). |
 | T491 | Closed: the independent IBM 5160 8255 PPI/key/NMI unit maps all 19 rows to one Core owner path, closes PB0/PB1 through the existing PIT2/speaker consumer, and records stripped Release 0491. [Closure audit](../etc/evidence/t491-s5-8255-closure-audit.md). |
 | T490 | Closed: the independent IBM 5160 8253 unit has verified source/List-1/List-2/sole-owner implementation, a corrected full gate and stripped Release 0490 artifact. [Closure audit](../etc/evidence/t490-s6-8253-closure-audit.md). |
 | T489 | Closed: complete IBM 5160 8237A source/List-1/List-2/one-owner batch closes the single page-port gap without new state or parallel path; physical-axis conversion remains transferred. [Closure audit](../etc/evidence/t489-s5-8237a-closure-audit.md). |

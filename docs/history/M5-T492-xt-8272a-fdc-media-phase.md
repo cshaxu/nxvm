@@ -8,4 +8,4 @@ media cache or host-file route.
 
 | Subtask | Result |
 | --- | --- |
-| S1 | Implementation pending acceptance: original NEC uPD765A/B and IBM 5160 source ledger records visual/OCR quality and the Version-command revision ambiguity. |
+| S1 | Accepted: original NEC uPD765A/B and IBM 5160 source ledger records visual/OCR quality and the Version-command revision ambiguity. |
