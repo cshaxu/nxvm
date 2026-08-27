@@ -4,9 +4,6 @@
 
 **Open: M5 T495.**
 
-**Progress: T495 S1 accepted.** The M1--M12 model ledger is frozen; the next
-S must perform cross-device/reset/cancellation proof and make the bounded
-ready/not-ready decision without implementation work.
 
 ## Current Technical Baseline
 
@@ -43,6 +40,7 @@ ready/not-ready decision without implementation work.
 
 | Task | Compact result |
 | --- | --- |
+| T495 S1 | Accepted: M1--M12 freeze every selected XT model route, source/owner proof, timing boundary and decision predicate; the next S is cross-device/reset/cancellation proof only. [Ledger](../etc/evidence/t495-s1-xt-model-closure-ledger.md). |
 | T494 | Closed: the complete IBM 5160 Xebec source/List-1/List-2/sole-owner chain corrects Read block-count progression without a second controller/media path; full current gate passes 300/300 and stripped Release 0494 is recorded. [Closure audit](../etc/evidence/t494-s5-xebec-closure-audit.md). |
 | T493 | Closed: complete IBM CGA source/List-1/List-2/one-owner repair reconciles all 33 rows; the generic latch and binary high-resolution palette repair leave no in-scope tail. [Closure audit](../etc/evidence/t493-s5-cga-closure-audit.md). |
 | T492 | Closed: complete IBM 5160 8272A/logical-media source/List-1/List-2/sole-owner chain removes fabricated reset state and global timing literals; serial gate passes 300/300 and stripped Release 0492 is recorded. [Closure audit](../etc/evidence/t492-s5-8272a-closure-audit.md). |
