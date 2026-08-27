@@ -2,7 +2,7 @@
 
 ## Current Work
 
-**Idle.**
+**Open: M5 T493.**
 
 ## Current Technical Baseline
 
@@ -39,6 +39,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T493 S1 | Accepted: visually checked IBM 5160 and Color/Graphics Monitor Adapter primary ledger fixes the selected CGA source boundary, Paper Capture OCR limitation and excluded physical/composite scope. [Evidence](../etc/evidence/t493-s1-cga-original-source-ledger.md). |
 | T492 | Closed: complete IBM 5160 8272A/logical-media source/List-1/List-2/sole-owner chain removes fabricated reset state and global timing literals; serial gate passes 300/300 and stripped Release 0492 is recorded. [Closure audit](../etc/evidence/t492-s5-8272a-closure-audit.md). |
 | T491 | Closed: the independent IBM 5160 8255 PPI/key/NMI unit maps all 19 rows to one Core owner path, closes PB0/PB1 through the existing PIT2/speaker consumer, and records stripped Release 0491. [Closure audit](../etc/evidence/t491-s5-8255-closure-audit.md). |
 | T490 | Closed: the independent IBM 5160 8253 unit has verified source/List-1/List-2/sole-owner implementation, a corrected full gate and stripped Release 0490 artifact. [Closure audit](../etc/evidence/t490-s6-8253-closure-audit.md). |
