@@ -2,28 +2,12 @@
 
 ## Current Work
 
-**Open: M5 T490 S5.**
+**Open: M5 T490.**
 
-## M5 T490 S5 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner explicitly authorizes an immediate in-T corrective S after the current gate exposed an incorrect retirement-observation test oracle. S4 remains implemented pending acceptance; S5 is limited to the existing Core retirement-observation assertion and its full-gate proof. |
-| Objective | Make the retirement-observation current gate distinguish real `F2`/`F3` prefix presence from unrelated unallocated scalar instructions, while preserving the one captured Core instruction/retirement data path. |
-| Non-goals | No PIT behavior, CPU instruction semantics, timing allocation, profile, device, public ABI, host pacing or release-artifact change. |
-| Reference Baseline | T490 S4 implementation evidence, `core-machine-retirement-observation-s3-smoke`, and the existing Core CPU-timing/retirement-observation owner path. |
-| Candidate Proposal | [IBM 5160 8253 PIT phase contract](../proposals/m5-xt-8253-board-phase.md). |
-| Files And ABI Surface | Retirement-observation smoke oracle plus S5 evidence/history/Current/proposal reconciliation. No production ABI or owner surface changes. |
-| Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`. |
-| Verification | Run the focused retirement-observation smoke, the retained focused 8253/XT selection, documentation governance, and the applicable full current gate. |
-| Expected Markers | A true `REP` byte reports `REPEAT`; unprefixed `MUL AL` and `WAIT` do not; all retirement records continue to use the existing captured instruction/retirement path. |
-| Asset Needs | No source import or external asset. |
-| Reporting Requirements | Report the exact faulty oracle, retained sole owner/path, all prefix/repeat production-path hits, code-size delta, and focused/full verification. |
-| Stop Conditions | A correction requires changing instruction execution, adding a second capture path, or revising manual timing semantics; stop and transfer rather than widen S5. |
-| Exit Criteria | The erroneous no-prefix assertion is corrected, real REP coverage remains, the relevant gate and full current gate pass, and the similar-issue sweep has no unclassified production hit. |
-| Original Owner Request | Each chip/controller is one complete T: source ledger, complete List 1, complete List 2, then one coherent owner-local implementation batch; no symptom repairs. Owner explicitly approves this bounded current-gate correction inside the still-open T490. |
-| Similar-Issue Sweep | Inspect all formula-input construction and retirement-observation prefix/repeat capture/publish sites, plus every unallocated-retirement smoke invocation. Retain one existing Core capture path. |
+T490 S1--S5 are accepted. S4's immutable 8253 personality batch has its full
+gate proof after S5 corrects the pre-existing no-prefix retirement-observation
+oracle. A T-level closure audit is the remaining required operation before a
+new implementation task may be admitted.
 
 ## Current Technical Baseline
 
@@ -60,8 +44,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T490 S2 | Accepted: complete 22-row Intel 8253/IBM XT function and timing List 1 is frozen before code audit; Read-Back/status is excluded. [Evidence](../etc/evidence/t490-s2-8253-function-timing-list-1.md). |
-| T490 S1 | Accepted: original Intel 8253-5 and IBM 5160 sources are visually checked; the incorrect 8254 label and Read-Back superset are excluded before List 1. [Evidence](../etc/evidence/t490-s1-8253-original-source-ledger.md). |
+| T490 S5 | Accepted: the only failing current-gate oracle required REP for unprefixed `MUL AL`/`WAIT`; S5 makes that assertion symmetric, retains real REP coverage and passes the full 300-test gate. [Evidence](../etc/evidence/t490-s5-retirement-observation-gate-correction.md). |
 | T489 | Closed: complete IBM 5160 8237A source/List-1/List-2/one-owner batch closes the single page-port gap without new state or parallel path; physical-axis conversion remains transferred. [Closure audit](../etc/evidence/t489-s5-8237a-closure-audit.md). |
 | T488 | Closed: complete IBM 5160 8259A source/List-1/List-2/one-owner audit retains one Core PIC path and an empty implementation batch. [Closure audit](../etc/evidence/t488-s5-8259a-closure-audit.md). |
 | T487 | Closed: complete IBM board source/List-1/List-2 reconciliation retains the single Intel clock-total owner and explicit L2 physical-phase boundaries. [Closure audit](../etc/evidence/t487-s5-5160-board-closure-audit.md). |
