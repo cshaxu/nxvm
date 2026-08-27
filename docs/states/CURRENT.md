@@ -2,6 +2,27 @@
 
 ## Current Work
 
+## M5 T497 S3 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | S2 was accepted at `6b162b15`; the owner-approved correction remains bounded by F1--F8. |
+| Objective | Map every F1--F8 row to current code and freeze one cohesive owner-local S4 implementation batch. |
+| Non-goals | No code change yet; no second profile/controller/media state, image-size detection, firmware import, physical timing or Default-AT policy change. |
+| Reference Baseline | `6b162b15`; [List 1](../etc/evidence/t497-s2-ibm5170-floppy-list-1.md). |
+| Candidate Proposal | [IBM 5170 native floppy contract](../proposals/m5-ibm-5170-native-floppy-contract.md). |
+| Files And ABI Surface | Evidence and task state only. |
+| Applicable Rules | One immutable profile declaration, one session selection, one FDD geometry owner, Core FDC isolation and result simplicity. |
+| Verification | Inspect every Model-339 descriptor/validator/session/factory/FDD path and all relevant tests; classify all F1--F8 rows fixed, gap or explicit absence. |
+| Expected Markers | `M5:T497:S3:IBM5170-FLOPPY-LIST-2:OK`. |
+| Asset Needs | No assets. |
+| Reporting Requirements | Name retained owner, deleted false path and regression receiver for each implementation row. |
+| Stop Conditions | Stop before code change if resolving an F1--F6 row requires a second FDD/CMOS/FDC truth or alters Default-AT media policy. |
+| Exit Criteria | List 2 exhaustively maps F1--F8 and identifies one S4 batch with no unclassified production path. |
+| Original Owner Request | Correct original 5170 native/compatible media behavior rather than treating all floppy formats as generic AT hardware. |
+| Similar-Issue Sweep | Search all `floppy_kind`, `floppy_format`, `floppy_type`, Model-339 field-upgrade and media geometry consumers. |
+
 ## Current Technical Baseline
 
 - **Current developer artifact:** target `vm-0-5-0494`; the stripped Release
