@@ -132,6 +132,7 @@ typedef struct vm_profile_default_pc_at_descriptor {
     type_bool planar_parity_present;
     type_bool ega_present;
     type_bool cga_vram_present;
+    type_bool monochrome_aperture_absent;
     vm_profile_default_pc_at_firmware_slot firmware_slot;
     type_bool diskette_drive_a_field_upgrade;
     vm_profile_default_pc_at_rom_mapping rom;

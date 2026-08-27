@@ -2,6 +2,27 @@
 
 ## Current Work
 
+## M5 T497 S5 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | The owner-approved T497 proposal's S5 requires Release BYOB replays after accepted S4 (`813f0c29`); the persistent four-profile DOS-validation objective authorizes use of owner-provided images. |
+| Objective | Run the corrected Model-339 native-1.2MB and compatible-360KB media through the existing Release BYOB probe and classify every semantic terminal. |
+| Non-goals | No image import, ROM substitution, BIOS special case, geometry inference, terminal-by-timeout success, or repair outside the first proven owner batch. |
+| Reference Baseline | `813f0c29`; [S4 implementation](../etc/evidence/t497-s4-ibm5170-floppy-implementation.md). |
+| Candidate Proposal | [IBM 5170 native floppy contract](../proposals/m5-ibm-5170-native-floppy-contract.md). |
+| Files And ABI Surface | Existing BYOB probe and focused evidence only unless a complete first-owner batch is established. No Core ABI change. |
+| Applicable Rules | External MS-DOS images remain untracked test inputs; terminal checkpoints are semantic, and profile/session/FDD/Core remain one-way owners. |
+| Verification | Build/run the Release BYOB probe with the selected 1.2MB and 360KB assets; record DOS prompt/date/setup terminal or first owner-qualified failure, plus focused S4 regressions. |
+| Expected Markers | `M5:T497:S5:IBM5170-BYOB:OK` only for a semantic terminal; failure markers retain first diagnostic facts. |
+| Asset Needs | Owner-supplied read-only 1.2MB MS-DOS 6.22 and 360KB MS-DOS 5.0 boot media; neither input nor local path is committed. |
+| Reporting Requirements | Record exact profile/media pair, observed terminal, FDC/IRQ/CPU facts, source ownership conclusion and no-success-by-timeout result. |
+| Stop Conditions | Stop implementation on an ambiguous or cross-owner failure; first freeze the complete affected startup batch rather than patching a symptom. |
+| Exit Criteria | Both admitted geometries have a semantic replay disposition and any nonterminal result has an evidence-backed first owning receiver; no protected asset enters Git. |
+| Original Owner Request | Verify supported MS-DOS boot media across supported profile combinations and repair the actual first owner rather than claiming a constructor smoke is usable. |
+| Similar-Issue Sweep | Compare the same asset under Default-AT only as a diagnostic control if Model 339 fails; retain unsupported format/profile pairs as rejected rather than aliases. |
+
 ## Current Technical Baseline
 
 - **Current developer artifact:** target `vm-0-5-0494`; the stripped Release

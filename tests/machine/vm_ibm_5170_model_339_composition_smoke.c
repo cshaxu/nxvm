@@ -41,6 +41,7 @@ static C_INT vm_model_339_selected_contract(C_VOID)
     if (profile == STD_NULL ||
         !vm_profile_default_pc_at_descriptor_is_valid(profile) ||
         !profile->hdc_present || !profile->planar_parity_present ||
+        !profile->monochrome_aperture_absent ||
         profile->firmware_slot !=
             VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_SLOT_IBM_5170_REV3_ABSTRACT ||
         profile->diskette_drive_a_field_upgrade ||
@@ -88,6 +89,15 @@ static C_INT vm_model_339_selected_contract(C_VOID)
         &(type_unsigned_8){0x5au}, sizeof(type_unsigned_8)) != TYPE_STATUS_OK;
     failed |= core_machine_memory_read(session->core_machine, 0x00100003u, &after,
         sizeof(after)) != TYPE_STATUS_OK || after != 0xffu;
+    failed |= core_machine_memory_query(session->core_machine, 0x000b0000u, 1u,
+        CORE_MACHINE_MEMORY_ACCESS_READ, &memory_route) != TYPE_STATUS_OK ||
+        memory_route != CORE_MACHINE_MEMORY_ROUTE_PROVIDER ||
+        core_machine_memory_read(session->core_machine, 0x000b0000u, &before,
+            sizeof(before)) != TYPE_STATUS_OK || before != 0xffu ||
+        core_machine_memory_write(session->core_machine, 0x000b0000u,
+            &(type_unsigned_8){0x5au}, sizeof(type_unsigned_8)) != TYPE_STATUS_OK ||
+        core_machine_memory_read(session->core_machine, 0x000b0000u, &after,
+            sizeof(after)) != TYPE_STATUS_OK || after != 0xffu;
     failed |= !core_machine_port_has_read(&session->core_machine->executor_port, 0x01f0u) ||
         !core_machine_port_has_write(&session->core_machine->executor_port, 0x01f0u) ||
         vm_session_insert_hdd(session, "unavailable.img") == 0;

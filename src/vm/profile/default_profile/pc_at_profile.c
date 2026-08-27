@@ -164,6 +164,7 @@ static const vm_profile_default_pc_at_descriptor default_pc_at_descriptor = {
     TYPE_FALSE,
     TYPE_TRUE,
     TYPE_FALSE,
+    TYPE_FALSE,
     VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_SLOT_GENERIC,
     TYPE_FALSE,
     { 0xfffffff0u, 0x000ffff0u, 16u, 0xf000u, 0xfff0u },
@@ -226,6 +227,7 @@ static const vm_profile_default_pc_at_descriptor ibm_5170_model_339_descriptor =
     TYPE_TRUE,
     TYPE_TRUE,
     TYPE_FALSE,
+    TYPE_TRUE,
     TYPE_TRUE,
     VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_SLOT_IBM_5170_REV3_ABSTRACT,
     TYPE_FALSE,
@@ -453,6 +455,10 @@ type_status vm_profile_default_pc_at_topology_materialize(
             .crtc_last = crtc_last->port
         }
     };
+    if (descriptor->monochrome_aperture_absent) {
+        topology.absent_memory[topology.absent_memory_count++] =
+            (core_machine_absent_memory_config) { 0x000b0000u, 0x00008000u, 0xffu };
+    }
     topology.dma_present = TYPE_TRUE;
     topology.dma = (core_machine_dma_wiring) {
         fdc_route->dma_channel, CORE_MACHINE_DMA_CONTROLLER_COUNT,
@@ -820,6 +826,7 @@ C_INT vm_profile_default_pc_at_descriptor_is_valid(
             descriptor->fdc_bounce_segment == 0x7000u &&
             descriptor->hdc_present && descriptor->planar_parity_present &&
             !descriptor->ega_present && descriptor->cga_vram_present &&
+            descriptor->monochrome_aperture_absent &&
             descriptor->firmware_slot ==
                 VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_SLOT_IBM_5170_REV3_ABSTRACT &&
             !descriptor->diskette_drive_a_field_upgrade &&
