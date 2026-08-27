@@ -18,6 +18,11 @@ acceptance: it corrects only the retirement-observation test oracle for
 unprefixed instructions, retaining the existing Core capture path and making
 no PIT or CPU semantic change.
 
+S6 independently closes T490: it reviews the completed source/List-1/List-2
+and sole-owner implementation chain, verifies the corrected current gate, and
+cuts the current stripped Release artifact to revision 0490. It cannot add
+hardware behavior or a second PIT path.
+
 ## Boundaries
 
 No wall-clock pacing, RTC behavior, host audio or profile-written PIT state.

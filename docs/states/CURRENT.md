@@ -2,18 +2,34 @@
 
 ## Current Work
 
-**Open: M5 T490.**
+**Open: M5 T490 S6.**
 
-T490 S1--S5 are accepted. S4's immutable 8253 personality batch has its full
-gate proof after S5 corrects the pre-existing no-prefix retirement-observation
-oracle. A T-level closure audit is the remaining required operation before a
-new implementation task may be admitted.
+## M5 T490 S6 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | S1--S5 are accepted. S6 is the required T-level closure audit and current developer-artifact cutover; it adds no hardware functionality. |
+| Objective | Independently verify the complete 8253 source/List-1/List-2/sole-owner batch, confirm S5 cleared the only current-gate failure, and publish the stripped Release T490 artifact. |
+| Non-goals | No PIT, CPU, VM, profile, timing, ABI or source-material change beyond the current-artifact identity required for closure. |
+| Reference Baseline | T490 S1--S5 evidence, the committed S4/S5 diffs, full 300-test current-gate result and current artifact configuration. |
+| Candidate Proposal | [IBM 5160 8253 PIT phase contract](../proposals/m5-xt-8253-board-phase.md). |
+| Files And ABI Surface | Current artifact target/version, T490 closure evidence/index/history/Current. No public runtime surface. |
+| Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`. |
+| Verification | Review the final source/evidence graph and committed implementation; build the stripped Release `nxvm_0_5_0490.exe`, record its SHA-256 and rerun documentation governance. |
+| Expected Markers | One immutable 8253 personality selection, 8254 Read-Back only for 8254, one current-gate result, and one optimized artifact without compiler debug information. |
+| Asset Needs | No source import or guest media. |
+| Reporting Requirements | Report implementation/test/code-size result, sole-owner finding, retained timing boundaries, release identity/hash and any transferred work. |
+| Stop Conditions | A closure review finds an unrecorded production gap, duplicate owner or failed release verification; return it as a bounded corrective S rather than closing T490. |
+| Exit Criteria | All S1--S5 evidence and implementation are consistent, the artifact is produced and verified, all retained boundaries are transferred, and the T-level closure audit completes. |
+| Original Owner Request | Each chip/controller is one complete T: source ledger, complete List 1, complete List 2, then one coherent owner-local implementation batch; no symptom repairs. |
+| Similar-Issue Sweep | Reinspect all PIT construction/control-word routes and the corrected retirement-observation oracle; verify the artifact target is the only active VM artifact target. |
 
 ## Current Technical Baseline
 
-- **Current developer artifact:** target `vm-0-5-0484`; the stripped Release
-  `nxvm_0_5_0484.exe` has SHA-256
-  `57FC91744B3C0F0F123D51D35E34423D271A965DA1D4A3BDC62AFDF66914B280`.
+- **Current developer artifact:** target `vm-0-5-0490`; the stripped Release
+  `nxvm_0_5_0490.exe` has SHA-256
+  `DB51B6B7564F683DCD30240FE1739518459DA82868F475829B3AAF6E7DFC24DA`.
   Debug remains the current-gate route. T471 preserves Core-owned progression:
   a verified axis is Standard-paced only by host waiting against completed
   Core progress. T472 extends that comparison to an explicit L2 macro axis,
