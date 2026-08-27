@@ -51,7 +51,6 @@ state mirror, second scheduler or compatibility-forwarding path. The final
 model and pre-Windows entries are audits only; they may transfer a gap to its
 earliest unit T but may not repair it.
 
-1. [IBM PC/XT 5160-268 final model-L3 audit](../proposals/m5-xt-5160-268-l3-audit.md).
 1. [DOS protected-mode and 386 extender corpus](../proposals/m5-dos-protected-mode-extender-corpus.md).
 1. [M5 pre-Windows L3 admission audit](../proposals/m5-pre-windows-l3-admission-audit.md).
 1. [Windows 3.1 BYOB lifecycle harness](../proposals/m5-windows31-byob-lifecycle-harness.md).

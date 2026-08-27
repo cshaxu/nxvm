@@ -9,4 +9,8 @@ each timing limitation is explicitly source-bounded or transferred.
 | Subtask | Result |
 | --- | --- |
 | S1 | Accepted: the M1--M12 model matrix freezes every selected route, evidence source, timing boundary and final-decision predicate before cross-device proof. [Ledger](../etc/evidence/t495-s1-xt-model-closure-ledger.md). |
-| S2 | Completed: fresh focused, full-current and specialized proof accepts the selected XT logical model and rejects a physical/wall-clock overclaim. [Decision](../etc/evidence/t495-s2-xt-final-model-decision.md). |
+| S2 | Accepted: fresh focused, full-current and specialized proof accepts the selected XT logical model and rejects a physical/wall-clock overclaim. [Decision](../etc/evidence/t495-s2-xt-final-model-decision.md). |
+
+T495 closed after S2 coordinator review. The retained
+[proposal](M5-T495-xt-5160-268-final-l3-audit-proposal.md) preserves its
+audit-only scope and bounded decision.
