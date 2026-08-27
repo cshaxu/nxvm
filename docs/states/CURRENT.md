@@ -4,6 +4,27 @@
 
 **Open: M5 T495.**
 
+## M5 T495 S2 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner's standing queue-execution instruction; accepted T495 S1 ledger admits the final cross-device/model decision evidence. |
+| Objective | Prove or reject the M1--M12 XT model ledger through the actual immutable profile-to-Core construction route, cold reset/cancellation behavior and selected device regressions; produce the ready/not-ready decision without implementing anything. |
+| Non-goals | No source, test, build, profile, ROM/media, timing-model or artifact modification; no physical/cycle-exact/host-wall-clock assertion; no repair disguised as audit. |
+| Reference Baseline | Accepted T495 S1 ledger, T483/T484 XT closures, T486--T494 unit closure evidence, current XT profile/session/owner paths, and the final-audit proposal. |
+| Candidate Proposal | [IBM PC/XT 5160-268 final model-L3 audit](../proposals/m5-xt-5160-268-l3-audit.md). |
+| Files And ABI Surface | Evidence/history/current and optional release identity only; no production/test/build/interface change is permitted. |
+| Applicable Rules | Execution coverage/closure and documentation rules; architecture/coding rules as audit criteria; source policy forbids importing firmware, guest media or third-party implementation. |
+| Verification | Configure a fresh Debug Makefiles tree; run focused XT profile, Xebec, PPI, DMA/PIT, PIC, FDC/media and display smoke coverage; run the serial current gate and applicable specialized gates; inspect reset/cancellation and fixed-disk isolation ownership paths. |
+| Expected Markers | Every M1--M12 row has concrete proof or an explicit receiver; no AT alias, duplicate owner, mutable selection, host tick injection or unqualified pacing claim; a bounded model-ready/not-ready result. |
+| Asset Needs | Project-owned synthetic smoke inputs only; no new ROM, firmware, guest media, external code or research acquisition. |
+| Reporting Requirements | Record exact test/gate outcomes, per-row decision, reset/cancellation and cross-profile storage isolation checks, result simplicity review, code delta (expected zero), artifact disposition and all residual receivers. |
+| Stop Conditions | Any focused or full proof fails, current source disagrees with accepted evidence, an implementation defect appears, or a claimed timing relation lacks an earlier receiver; stop the conclusion and report/transfer it. |
+| Exit Criteria | M1--M12 are all evidenced or transferred, the proposal's matrix and cross-device requirements are satisfied, and an owner-visible bounded final decision is ready for T-level closure. |
+| Original Owner Request | Continue the queue in single-session dual-role mode through the pre-Windows audit with global ownership, minimalism and no additive patching. |
+| Similar-Issue Sweep | For every selected XT device compare declaration, copied topology, port/memory/IRQ/DRQ binding, reset/cancel behavior and output with default-at, Model 339 and Model-40; require a real semantic distinction for every separate route. |
+
 
 ## Current Technical Baseline
 

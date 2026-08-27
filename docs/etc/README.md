@@ -56,6 +56,7 @@ principal documents named in [docs/README.md](../README.md).
 | `evidence/t494-s4-xebec-read-block-count-repair.md` | Core HDC/media owner | T494 S4's existing-owner Xebec Read block-count correction, focused two-sector proof and retained boundaries. |
 | `evidence/t494-s5-xebec-closure-audit.md` | Closure audit | T494's complete IBM 5160 Xebec source/List-1/List-2 and owner-path reconciliation, gate repairs, full-gate proof and stripped 0494 artifact. |
 | `evidence/t495-s1-xt-model-closure-ledger.md` | XT model audit owner | T495's finite 5160-268 model-level M1--M12 convergence ledger, including each sole route, timing boundary and decision predicate. |
+| `evidence/t495-s2-xt-final-model-decision.md` | XT model audit owner | T495's cross-device proof and bounded 5160-268 model-ready decision: selected logical L3/L2 relations are ready while physical-axis claims remain explicitly excluded. |
 | `evidence/t486-s1-8088-original-source-ledger.md` | Core CPU timing owner | T486 S1's visually verified Intel 1981 source corpus, scan/OCR boundary and finite Table-2-21 basis for the following complete List-1 ledger. |
 | `evidence/t486-s2-8088-function-timing-list-1.md` | Core CPU timing owner | T486 S2's finite 8088 Table-2-21 function/timing List 1, including all mnemonic groups, prefix entries, explicit non-instruction entries and manual timing boundaries. |
 | `evidence/t486-s3-8088-current-code-gap-list-2.md` | Core CPU timing owner | T486 S3's complete List-1-to-code-owner ledger, current 8088 timing dispositions and one-owner implementation boundary. |
