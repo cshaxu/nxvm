@@ -8,4 +8,4 @@ create a parallel keyboard/NMI delivery route.
 | Subtask | Result |
 | --- | --- |
 | S1 | Accepted: visual Intel 8255A-5 and IBM 5160 source ledger establishes the chip/board boundary and finite List-1 basis. |
-| S2 | Implementation pending acceptance: complete 19-row selected 8255A/IBM XT function and timing List 1 is frozen before code audit. |
+| S2 | Accepted: complete 19-row selected 8255A/IBM XT function and timing List 1 is frozen before code audit. |

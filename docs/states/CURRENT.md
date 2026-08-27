@@ -2,28 +2,10 @@
 
 ## Current Work
 
-**Open: M5 T491 S2.**
+**Open: M5 T491.**
 
-## M5 T491 S2 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | S1 accepted the visual original-source ledger. S2 freezes the complete function/timing List 1 before code audit. |
-| Objective | Produce one finite, source-cited 8255A/IBM 5160 PPI, keyboard, parity/I-O-check and NMI List 1 with explicit L-level boundaries. |
-| Non-goals | No code change, no 8042 command model, no inferred electrical timing and no profile-side state. |
-| Reference Baseline | T491 S1 ledger, Intel 8255A-5 visual pages and IBM 5160 Technical Reference visual board pages. |
-| Candidate Proposal | [IBM 5160 8255 PPI, keyboard and NMI phase contract](../proposals/m5-xt-8255-keyboard-nmi-phase.md). |
-| Files And ABI Surface | S2 evidence/index/history/Current only. |
-| Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, `docs/etc/operations/policy/source-policy.md`. |
-| Verification | Count and source-cite every row; cross-check all existing PPI/KBC/NMI owner terms without auditing code gaps. |
-| Expected Markers | One chip/board partition, each row Manual L3, external-input L3, L2, L1 or L0 by stated evidence; no silent 8042 equivalence. |
-| Asset Needs | Retained S1 sources only. |
-| Reporting Requirements | Report row count, source-page references, timing classification and every source ambiguity. |
-| Stop Conditions | A required IBM board behavior is absent or contradicts the chip source; record it explicitly rather than guess. |
-| Exit Criteria | Complete finite List 1 is indexed and every item has a source, scope and L-level disposition. |
-| Original Owner Request | Each chip/controller is one complete T: source ledger, complete List 1, complete List 2, then one coherent owner-local implementation batch; no symptom repairs. |
-| Similar-Issue Sweep | Search production/test/document references for 8255/PPI, keyboard, parity, I/O-check and NMI; classify each as chip, board or out of scope. |
+S1--S2 are accepted: the visual original-source ledger and complete 19-row
+List 1 establish the finite 8255A/IBM XT audit surface.
 
 ## Current Technical Baseline
 
@@ -60,6 +42,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T491 S2 | Accepted: 19 source-cited 8255A/IBM XT rows freeze the selected PPI, keyboard, fault/NMI and timing scope before code audit. [Evidence](../etc/evidence/t491-s2-8255-function-timing-list-1.md). |
 | T491 S1 | Accepted: the visual Intel 8255A-5 and IBM 5160 ledger fixes the chip/board boundary and excludes an AT 8042 substitution. [Evidence](../etc/evidence/t491-s1-8255-original-source-ledger.md). |
 | T490 | Closed: the independent IBM 5160 8253 unit has verified source/List-1/List-2/sole-owner implementation, a corrected full gate and stripped Release 0490 artifact. [Closure audit](../etc/evidence/t490-s6-8253-closure-audit.md). |
 | T489 | Closed: complete IBM 5160 8237A source/List-1/List-2/one-owner batch closes the single page-port gap without new state or parallel path; physical-axis conversion remains transferred. [Closure audit](../etc/evidence/t489-s5-8237a-closure-audit.md). |
