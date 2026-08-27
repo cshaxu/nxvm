@@ -2,7 +2,24 @@
 
 ## Current Work
 
-**Idle.**
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | `M5 T496 S1`, `New`: independent IBM 5160 XT keyboard-device source and owner audit. |
+| Admission And Approval | The owner explicitly approved the independent XT keyboard-device unit on 2026-08-27 after the diagnostic proved that BAT cannot belong to the completed PPI owner. External firmware/media authorization remains limited to bounded BYOB verification; no import or product dependency is approved. |
+| Objective | Freeze the complete IBM XT 101/102-keyboard reset/BAT/serial contract and map it to the one new keyboard-device owner that publishes only through the existing PPI byte/IRQ ingress. |
+| Non-goals | No BIOS, option-ROM, DOS-image, path, hash, byte, raw trace, firmware catalogue, default dependency or protected output enters the repository. Manual timing intervals remain L3 source facts, but choosing one deterministic event point inside a range remains macro/L2 integration until the 8088 physical retirement axis qualifies it. No 8042 alias, profile-side keyboard emulator, VM/host BAT injection, second queue, second scheduler or runtime timing setter is permitted. |
+| Reference Baseline | `8d2c34f4` (`M5 T495 S2 P2: accept XT model audit`) plus S3 working-tree reset/scheduler evidence; IBM XT keyboard source contract and the T484 PPI implementation record. |
+| Candidate Proposal | [T496 XT keyboard-device proposal](../history/M5-T496-xt-keyboard-device-proposal.md). |
+| Files And ABI Surface | S1 is documentation/evidence only: the IBM source contract, List 1 and List 2 records, Current and the retained proposal. No production, public ABI, YAML, firmware/media or host interface changes occur before S3 admission. |
+| Applicable Rules | Execution packet/P lifecycle, coverage batch and actual-change review; architecture one mutable keyboard/PPI state owner and one Core-to-VM construction direction; coding simplicity/no parallel BAT/reset route; source policy external-only firmware/media; IBM source is normative and external emulators only corroborate. |
+| Verification | Visually recheck the IBM 1986 source, record OCR boundaries and every reset/BAT/serial/ingress relation, then inspect 86Box/PCjs only as corroboration. Produce complete List 1 and current-owner List 2 with one disposition per row; no BYOB boot claim is made in S1. |
+| Expected Markers | `XT-KEYBOARD-SOURCE`, `XT-KEYBOARD-LIST-1`, `XT-KEYBOARD-LIST-2`. |
+| Asset Needs | No runtime asset is needed in S1. The already authorized external IBM 5160 firmware and compatible MS-DOS media remain reserved for the later bounded S4 BYOB row; use remains external and fresh run directories are deleted after exit. |
+| Reporting Requirements | Report the verified IBM pages, manual gaps, external-corroboration limits, current one-owner map and transferred implementation boundary. Do not disclose protected paths, hashes, bytes, screenshots, raw console text or media contents. |
+| Stop Conditions | Stop if an external implementation is being promoted to a manual fact, if a timing-range selection is presented as physical, or if the audit discovers a broader PPI/8042/profile boundary. Record the gap and transfer it rather than inventing a mechanism. |
+| Exit Criteria | The rendered IBM 1986 source, List 1 and List 2 are complete and indexed; each row has a manual, corroborative, L1/L2 disposition; the obsolete PPI-owned BAT proposal is explicitly withdrawn; documentation and actual-diff review pass. No runtime, BYOB, Release or matrix claim is made in S1. |
+| Original Owner Request | Inspect suitable MS-DOS images and make the profiles boot to DOS. After the XT probe stalled at keyboard reset, the owner authorized a complete independent keyboard-device audit before any further repair. |
+| Similar-Issue Sweep | Inspect all XT PPI byte publication, native-input, IRQ and profile-construction consumers; prove PC/AT 8042 remains separate. Do not generalize this IBM keyboard behavior to 5170, DeskPro or default-PC/AT. |
 
 
 ## Current Technical Baseline
