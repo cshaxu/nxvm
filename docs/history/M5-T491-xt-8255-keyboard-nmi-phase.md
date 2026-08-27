@@ -11,4 +11,4 @@ create a parallel keyboard/NMI delivery route.
 | S2 | Accepted: complete 19-row selected 8255A/IBM XT function and timing List 1 is frozen before code audit. |
 | S3 | Accepted: all List-1 rows map to the existing Core route; one finite PB0/PB1-to-existing-speaker-owner batch remains. |
 | S4 | Accepted: PB0/PB1 reach the existing Core PIT2/speaker owner without a Port-B mirror or second route; focused PPI/PIT and fresh 300/300 current gates pass. |
-| S5 | Implementation pending acceptance: complete 19-row closure audit and stripped Release 0491 artifact are recorded. |
+| S5 | Accepted: complete 19-row closure audit, focused/full gates and stripped Release 0491 artifact are recorded. |

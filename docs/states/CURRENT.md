@@ -2,28 +2,7 @@
 
 ## Current Work
 
-**Open: M5 T491.**
-
-## M5 T491 S5 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner approved continuous single-session execution and immediate in-scope repair; S1--S4 accepted the source ledger, 19-row List 1, one-gap List 2 and sole PB0/PB1 implementation. |
-| Objective | Perform the T491 closure audit, publish stripped Release `nxvm_0_5_0491.exe`, and close only if the complete 8255/PPI/key/NMI ledger has no untracked gap. |
-| Non-goals | No 8272A, CGA, Xebec, generic 8255, physical electrical timing, new runtime path or profile behavior. |
-| Reference Baseline | T491 S1--S4 evidence, task history, `xt_ppi_keyboard.[ch]`, `machine.[ch]`, `machine_board.c`, focused PPI/PIT test and current-gate log. |
-| Candidate Proposal | [IBM 5160 8255 PPI, keyboard and NMI phase contract](../proposals/m5-xt-8255-keyboard-nmi-phase.md). |
-| Files And ABI Surface | Release target/preset/current artifact record, T491 closure evidence/history/current state and proposal relocation only. No runtime ABI change unless the audit finds an in-scope defect. |
-| Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`; retain one PPI latch owner and one Core speaker/PIT2 owner. |
-| Verification | Inspect all T491 changed source/test/doc paths and List-1/List-2 dispositions; run documentation governance, focused PPI/PIT tests, fresh 300-test Debug current gate, configure/build stripped Release 0491, record SHA-256 and inspect identity. |
-| Expected Markers | 19/19 List-1 rows have accepted or explicit retained dispositions; one PPI-to-board publication route; `nxvm_0_5_0491.exe` is the sole current stripped Release target. |
-| Asset Needs | Retained S1 source records only; no source, firmware or guest-media import. |
-| Reporting Requirements | Record exact retained owner/path, code-size for S4 mechanism, every verification result, artifact hash and explicit L1/L4 boundaries. |
-| Stop Conditions | Any untracked List-2 gap, duplicate Port-B/speaker/PIT owner, failed gate, Release build failure or artifact identity mismatch blocks closure. |
-| Exit Criteria | All 19 rows are closed or explicitly transferred, actual-diff review finds no redundant path, required gates pass, Release 0491 is recorded, proposal is retained in history and Current has one T491 closure row. |
-| Original Owner Request | Each chip/controller is one complete T: source ledger, complete List 1, complete List 2, then one coherent owner-local implementation batch; no symptom repairs. |
-| Similar-Issue Sweep | Reinspect all tracked PPI Port-B write/reset, all Core PIT2 gate and speaker-output ingresses, CMake/preset artifact identities and every List-1 disposition; defer only an out-of-scope issue through the next queued unit. |
+**Idle.**
 
 ## Current Technical Baseline
 
@@ -60,7 +39,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T491 S4 | Accepted: PB0/PB1 now reach the sole existing Core PIT2/speaker consumer with no Port-B mirror or second route; fresh current gate passes 300/300. [Evidence](../etc/evidence/t491-s4-8255-speaker-implementation.md). |
+| T491 | Closed: the independent IBM 5160 8255 PPI/key/NMI unit maps all 19 rows to one Core owner path, closes PB0/PB1 through the existing PIT2/speaker consumer, and records stripped Release 0491. [Closure audit](../etc/evidence/t491-s5-8255-closure-audit.md). |
 | T490 | Closed: the independent IBM 5160 8253 unit has verified source/List-1/List-2/sole-owner implementation, a corrected full gate and stripped Release 0490 artifact. [Closure audit](../etc/evidence/t490-s6-8253-closure-audit.md). |
 | T489 | Closed: complete IBM 5160 8237A source/List-1/List-2/one-owner batch closes the single page-port gap without new state or parallel path; physical-axis conversion remains transferred. [Closure audit](../etc/evidence/t489-s5-8237a-closure-audit.md). |
 | T488 | Closed: complete IBM 5160 8259A source/List-1/List-2/one-owner audit retains one Core PIC path and an empty implementation batch. [Closure audit](../etc/evidence/t488-s5-8259a-closure-audit.md). |
@@ -68,7 +47,6 @@
 | T486 | Closed: the complete 8088 manual source/List-1/List-2/one-owner implementation chain closes without a parallel timing path; Group-3, WAIT and non-string-prefix source boundaries remain explicit. [Closure audit](../etc/evidence/t486-s5-8088-closure-audit.md). |
 | T485 | Withdrawn, not completed: accepted S1--S20 evidence remains retained, but Td S152 transfers the uncompleted aggregate XT scope to independent CPU/board/controller candidates. [Record](../etc/evidence/td-s152-unit-task-admission-governance.md). |
 | T484 | Closed: IBM 5160-268 now has one immutable 8088/profile plan, XT PPI/FDC/CGA/Xebec functional owners and one typed external-ROM BYOB product route; all remaining board/device timing transfers to T485. [Closure audit](../etc/evidence/t484-s22-xt-functional-closure-audit.md). |
-| T482 | Closed: one strict root YAML request reaches the sole `SESSION OPEN` authority and resolver without CLI re-encoding; 296/296 current-gate tests and stripped Release 0480 pass. [Closure audit](../etc/evidence/t482-s4-closure-audit.md). |
 
 ## Recent Governance
 
