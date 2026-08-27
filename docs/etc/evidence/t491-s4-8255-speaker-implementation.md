@@ -9,7 +9,12 @@ existing shared PIT channel-2 gate, and computes the existing copied speaker
 observation. No full Port-B copy, new port provider, PPI/PIT state, scheduler
 or keyboard/NMI path was introduced.
 
+The shared helpers are named for the speaker responsibility, not PC/AT Port B:
+XT, planar-parity, and DeskPro sources select the same existing consumer path.
+This is a rename only; it removes the now-misleading platform-specific name
+without adding an abstraction layer.
+
 `core-machine-xt-ppi-keyboard-smoke` now proves disabled reset lines, PB1 data
 enable, PB0 gate enable and reset restoration; focused PPI/PIT CTest passes
-3/3. The retained L1 keyboard-clock interval and L4 electrical timing are
-unchanged.
+3/3. A fresh, separately logged full current gate passes 300/300. The retained
+L1 keyboard-clock interval and L4 electrical timing are unchanged.
