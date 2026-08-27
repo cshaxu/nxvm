@@ -691,10 +691,11 @@ static C_VOID core_machine_xebec_start_transfer(core_machine_hdc *hdc)
     sense[3] = hdc->xebec.dcb[3];
     hdc->xebec.byte_index = 0u;
     if (hdc->xebec.dcb[0] == 0x08u) {
-        if (!core_machine_xebec_transfer_sector(hdc, TYPE_FALSE)) {
+        if (hdc->xebec.dcb[4] == 0u || !core_machine_xebec_transfer_sector(hdc, TYPE_FALSE)) {
             core_machine_xebec_response(hdc, 0x02u, sense);
             return;
         }
+        hdc->xebec.sectors_remaining = hdc->xebec.dcb[4];
         hdc->xebec.phase = CORE_MACHINE_XEBEC_PHASE_DMA_READ;
     } else {
         if (hdc->xebec.dcb[4] == 0u || !core_machine_xebec_can_transfer(hdc, TYPE_TRUE)) {
@@ -930,14 +931,24 @@ static const core_machine_port_provider core_machine_hdc_ports = {
 static C_VOID core_machine_xebec_dma_read(C_VOID *owner, t_latch *latch)
 {
     core_machine_hdc *hdc = owner;
+    type_unsigned_8 sense[4] = {0x04u, 0u, 0u, 0u};
 
     if (hdc == STD_NULL || latch == STD_NULL ||
         hdc->xebec.phase != CORE_MACHINE_XEBEC_PHASE_DMA_READ ||
         hdc->xebec.byte_index >= sizeof(hdc->data.data)) return;
     latch->data.byte = hdc->data.data[hdc->xebec.byte_index++];
     if (hdc->xebec.byte_index == sizeof(hdc->data.data)) {
-        core_machine_xebec_release_dma(hdc);
-        core_machine_xebec_response(hdc, 0u, STD_NULL);
+        if (--hdc->xebec.sectors_remaining == 0u) {
+            core_machine_xebec_release_dma(hdc);
+            core_machine_xebec_response(hdc, 0u, STD_NULL);
+        } else if (!core_machine_xebec_next_sector(hdc) ||
+            !core_machine_xebec_transfer_sector(hdc, TYPE_FALSE)) {
+            sense[1] = hdc->xebec.dcb[1] & 0x20u;
+            sense[2] = hdc->xebec.dcb[2];
+            sense[3] = hdc->xebec.dcb[3];
+            core_machine_xebec_release_dma(hdc);
+            core_machine_xebec_response(hdc, 0x02u, sense);
+        } else hdc->xebec.byte_index = 0u;
     }
 }
 
