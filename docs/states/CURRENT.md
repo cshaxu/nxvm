@@ -2,28 +2,7 @@
 
 ## Current Work
 
-**Open: M5 T491 S4.**
-
-## M5 T491 S4 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | S1--S3 accepted the original sources, 19-row List 1 and one finite gap batch. S4 consumes only the PB0/PB1 board-consumer connection. |
-| Objective | Route selected XT PPI PB0/PB1 to the existing Core PIT2/speaker board owner, retaining the PPI as sole Port-B latch owner. |
-| Non-goals | No generic 8255, second speaker/PIT state, port provider, scheduler, keyboard/NMI path, 8042 behavior or physical timing. |
-| Reference Baseline | T491 S3 List 2, `xt_ppi_keyboard.[ch]`, `machine_board.c`, XT profile and focused PPI/speaker tests. |
-| Candidate Proposal | [IBM 5160 8255 PPI, keyboard and NMI phase contract](../proposals/m5-xt-8255-keyboard-nmi-phase.md). |
-| Files And ABI Surface | Private PPI-to-Core board binding/callback, Core board consumer, focused PPI/speaker test and S4 evidence. No public mutable state. |
-| Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`. |
-| Verification | Add PB0/PB1 gate/data/reset proof; run focused PPI/PIT/speaker tests, current gate and documentation governance. |
-| Expected Markers | PPI owns Port-B; board owns PIT2/speaker; one typed low-two-bit publication updates both lines without state mirroring. |
-| Asset Needs | Retained S1 sources only. |
-| Reporting Requirements | Report retained owners/path, code-size, deleted/avoided duplication, verification and retained L1/L4 boundaries. |
-| Stop Conditions | Implementation needs a full PPI latch copy, a second PIT/speaker route or profile runtime setter. |
-| Exit Criteria | F10 is implemented via the existing board owner, all focused/current gates pass and no List-2 gap remains untracked. |
-| Original Owner Request | Each chip/controller is one complete T: source ledger, complete List 1, complete List 2, then one coherent owner-local implementation batch; no symptom repairs. |
-| Similar-Issue Sweep | Inspect every Port-B write/reset and each Core speaker/PIT2 gate ingress; retain exactly one selected source at a time. |
+**Open: M5 T491.**
 
 ## Current Technical Baseline
 
@@ -60,7 +39,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T491 S3 | Accepted: all 19 rows map to one Core PPI/NMI route; only PB0/PB1 lack their existing board speaker/PIT2 consumer connection. [Evidence](../etc/evidence/t491-s3-8255-current-code-gap-list-2.md). |
+| T491 S4 | Accepted: PB0/PB1 now reach the sole existing Core PIT2/speaker consumer with no Port-B mirror or second route; fresh current gate passes 300/300. [Evidence](../etc/evidence/t491-s4-8255-speaker-implementation.md). |
 | T490 | Closed: the independent IBM 5160 8253 unit has verified source/List-1/List-2/sole-owner implementation, a corrected full gate and stripped Release 0490 artifact. [Closure audit](../etc/evidence/t490-s6-8253-closure-audit.md). |
 | T489 | Closed: complete IBM 5160 8237A source/List-1/List-2/one-owner batch closes the single page-port gap without new state or parallel path; physical-axis conversion remains transferred. [Closure audit](../etc/evidence/t489-s5-8237a-closure-audit.md). |
 | T488 | Closed: complete IBM 5160 8259A source/List-1/List-2/one-owner audit retains one Core PIC path and an empty implementation batch. [Closure audit](../etc/evidence/t488-s5-8259a-closure-audit.md). |
