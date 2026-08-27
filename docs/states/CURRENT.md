@@ -18,7 +18,7 @@
 | Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`. |
 | Verification | Inspect all PIT control/read/write/mode paths, Core output consumers, scheduler advance/deadline paths, immutable XT construction and focused tests; run documentation governance. |
 | Expected Markers | One row-complete List 2 and one coherent implementation batch, or an explicit empty batch. |
-| Asset Needs | Retained S1 primary sources only; no import or external emulator source. |
+| Asset Needs | Retained S1 primary sources; one read-only local 86Box corroboration is permitted only for the undocumented illegal `SC=11` fallback, with Intel remaining normative and no source import. |
 | Reporting Requirements | Name sole state owner, code-size baseline, every exact gap, retained L1/L2/L4 boundary and planned focused proof. |
 | Stop Conditions | A source row has no current owner path, or a necessary repair would require a second state/time/board route. In either case, transfer one bounded architecture receiver; do not create an XT-specific parallel path or symptom repair. |
 | Exit Criteria | Every row has present/gap/transfer disposition and the later implementation batch is finite and owner-local. |
