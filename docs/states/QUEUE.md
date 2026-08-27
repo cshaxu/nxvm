@@ -51,7 +51,6 @@ state mirror, second scheduler or compatibility-forwarding path. The final
 model and pre-Windows entries are audits only; they may transfer a gap to its
 earliest unit T but may not repair it.
 
-1. [IBM 5160 8253 PIT phase contract](../proposals/m5-xt-8253-board-phase.md).
 1. [IBM 5160 8255 PPI, keyboard and NMI phase contract](../proposals/m5-xt-8255-keyboard-nmi-phase.md).
 1. [IBM 5160 8272A FDC and floppy-media phase contract](../proposals/m5-xt-8272a-fdc-media-phase.md).
 1. [IBM 5160 CGA VADP phase contract](../proposals/m5-xt-cga-vadp-phase.md).

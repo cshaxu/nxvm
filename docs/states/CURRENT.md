@@ -2,28 +2,10 @@
 
 ## Current Work
 
-**Open: M5 T490 S6.**
+**No active implementation task.**
 
-## M5 T490 S6 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | S1--S5 are accepted. S6 is the required T-level closure audit and current developer-artifact cutover; it adds no hardware functionality. |
-| Objective | Independently verify the complete 8253 source/List-1/List-2/sole-owner batch, confirm S5 cleared the only current-gate failure, and publish the stripped Release T490 artifact. |
-| Non-goals | No PIT, CPU, VM, profile, timing, ABI or source-material change beyond the current-artifact identity required for closure. |
-| Reference Baseline | T490 S1--S5 evidence, the committed S4/S5 diffs, full 300-test current-gate result and current artifact configuration. |
-| Candidate Proposal | [IBM 5160 8253 PIT phase contract](../proposals/m5-xt-8253-board-phase.md). |
-| Files And ABI Surface | Current artifact target/version, T490 closure evidence/index/history/Current. No public runtime surface. |
-| Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`. |
-| Verification | Review the final source/evidence graph and committed implementation; build the stripped Release `nxvm_0_5_0490.exe`, record its SHA-256 and rerun documentation governance. |
-| Expected Markers | One immutable 8253 personality selection, 8254 Read-Back only for 8254, one current-gate result, and one optimized artifact without compiler debug information. |
-| Asset Needs | No source import or guest media. |
-| Reporting Requirements | Report implementation/test/code-size result, sole-owner finding, retained timing boundaries, release identity/hash and any transferred work. |
-| Stop Conditions | A closure review finds an unrecorded production gap, duplicate owner or failed release verification; return it as a bounded corrective S rather than closing T490. |
-| Exit Criteria | All S1--S5 evidence and implementation are consistent, the artifact is produced and verified, all retained boundaries are transferred, and the T-level closure audit completes. |
-| Original Owner Request | Each chip/controller is one complete T: source ledger, complete List 1, complete List 2, then one coherent owner-local implementation batch; no symptom repairs. |
-| Similar-Issue Sweep | Reinspect all PIT construction/control-word routes and the corrected retirement-observation oracle; verify the artifact target is the only active VM artifact target. |
+T490 is closed; the next queued candidate is the independent IBM 5160 8255
+PPI, keyboard and NMI unit.
 
 ## Current Technical Baseline
 
@@ -60,7 +42,8 @@
 
 | Task | Compact result |
 | --- | --- |
-| T490 S5 | Accepted: the only failing current-gate oracle required REP for unprefixed `MUL AL`/`WAIT`; S5 makes that assertion symmetric, retains real REP coverage and passes the full 300-test gate. [Evidence](../etc/evidence/t490-s5-retirement-observation-gate-correction.md). |
+| T490 S6 | Accepted: the closure audit verifies the complete source/List-1/List-2/sole-owner chain, full 300-test gate and stripped Release 0490 artifact. [Evidence](../etc/evidence/t490-s6-8253-closure-audit.md). |
+| T490 | Closed: the independent IBM 5160 8253 unit has verified source/List-1/List-2/sole-owner implementation, a corrected full gate and stripped Release 0490 artifact. [Closure audit](../etc/evidence/t490-s6-8253-closure-audit.md). |
 | T489 | Closed: complete IBM 5160 8237A source/List-1/List-2/one-owner batch closes the single page-port gap without new state or parallel path; physical-axis conversion remains transferred. [Closure audit](../etc/evidence/t489-s5-8237a-closure-audit.md). |
 | T488 | Closed: complete IBM 5160 8259A source/List-1/List-2/one-owner audit retains one Core PIC path and an empty implementation batch. [Closure audit](../etc/evidence/t488-s5-8259a-closure-audit.md). |
 | T487 | Closed: complete IBM board source/List-1/List-2 reconciliation retains the single Intel clock-total owner and explicit L2 physical-phase boundaries. [Closure audit](../etc/evidence/t487-s5-5160-board-closure-audit.md). |
