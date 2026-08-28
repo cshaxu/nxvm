@@ -13,6 +13,23 @@
 #define cpu_state (*context->cpu)
 #define instruction_state (*context->instructions)
 
+static type_unsigned_32 core_machine_cpu_reset_code_base(
+    core_machine_cpu_profile profile)
+{
+    switch (profile) {
+    case CORE_MACHINE_CPU_PROFILE_8086:
+    case CORE_MACHINE_CPU_PROFILE_8088:
+    case CORE_MACHINE_CPU_PROFILE_80186:
+        return 0x000f0000u;
+    case CORE_MACHINE_CPU_PROFILE_80286:
+        return 0x00ff0000u;
+    case CORE_MACHINE_CPU_PROFILE_DEFAULT:
+    case CORE_MACHINE_CPU_PROFILE_80386:
+        return 0xffff0000u;
+    }
+    return 0xffff0000u;
+}
+
 C_VOID core_machine_cpu_execution_context_initialize(
     core_machine_cpu_execution_context *context, t_cpu *cpu,
     t_cpuins *instructions, t_ram *memory, t_port *port)
@@ -168,7 +185,7 @@ C_VOID core_machine_cpu_state_reset(core_machine_cpu_execution_context *context)
     cpu_state.data.eip = 0x0000fff0;
     cpu_state.data.eflags = 0x00000002;
 
-    cpu_state.data.cs.base = 0xffff0000;
+    cpu_state.data.cs.base = core_machine_cpu_reset_code_base(context->cpu_profile);
     cpu_state.data.cs.dpl = TYPE_ZERO_4;
     cpu_state.data.cs.limit = TYPE_MAX_UNSIGNED_32;
     cpu_state.data.cs.seg.accessed = TYPE_TRUE;

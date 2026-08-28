@@ -106,9 +106,34 @@ static C_VOID _p_publish_external_cycle(
             CORE_MACHINE_CPU_MEMORY_ACCESS_DATA);
     }
 }
+
+static C_INT _kma_is_reset_vector_fetch(
+    const core_machine_cpu_execution_context *context,
+    type_unsigned_32 physical, type_unsigned_8 bytes,
+    core_machine_cpu_memory_access_provenance provenance)
+{
+    type_unsigned_32 reset_vector;
+
+    if (context == STD_NULL || bytes == 0u ||
+        (provenance != CORE_MACHINE_CPU_MEMORY_ACCESS_INSTRUCTION_FETCH &&
+         provenance != CORE_MACHINE_CPU_MEMORY_ACCESS_INSTRUCTION_PREFETCH)) {
+        return 0;
+    }
+    if (context->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286) {
+        reset_vector = 0x00fffff0u;
+    } else if (context->cpu_profile == CORE_MACHINE_CPU_PROFILE_80386) {
+        reset_vector = 0xfffffff0u;
+    } else {
+        return 0;
+    }
+    return physical >= reset_vector &&
+        physical <= UINT32_MAX - (type_unsigned_32)(bytes - 1u);
+}
+
 /* read content from physical */
 static C_VOID _kma_read_physical(core_machine_cpu_execution_context *context, type_unsigned_32 physical, type_virtual_address rdata, type_unsigned_8 byte, core_machine_cpu_memory_access_provenance provenance)
 {
+    type_status memory_status;
     TYPE_TRACE_CALL_BEGIN("_kma_read_physical");
     _kma_publish_external_cycle(context, CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_BEGIN,
         physical, byte, TYPE_FALSE, provenance);
@@ -120,8 +145,15 @@ static C_VOID _kma_read_physical(core_machine_cpu_execution_context *context, ty
             physical, byte, TYPE_FALSE, provenance);
         TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(physical));
     }
-    if (core_machine_memory_read_physical(context->memory, physical, rdata,
-            byte) != TYPE_STATUS_OK) {
+    memory_status = _kma_is_reset_vector_fetch(context, physical, byte, provenance) ?
+        core_machine_memory_read_reset_physical(context->memory, physical, rdata,
+            byte) : core_machine_memory_read_physical(context->memory, physical,
+            rdata, byte);
+    if (memory_status == TYPE_STATUS_UNSUPPORTED) {
+        memory_status = core_machine_memory_read_physical(context->memory, physical,
+            rdata, byte);
+    }
+    if (memory_status != TYPE_STATUS_OK) {
         if (!context->preview_mode) core_machine_transaction_cancel(context->transaction);
         _kma_publish_external_cycle(context, CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_CANCEL,
             physical, byte, TYPE_FALSE, provenance);

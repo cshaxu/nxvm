@@ -84,6 +84,13 @@ struct core_machine_memory_test_allocation {
 
 type_status core_machine_memory_read_physical(t_ram *ram, type_unsigned_32 physical,
     type_virtual_address destination, type_native_unsigned size);
+/* CPU reset-cache fetches are the one architectural access which precedes
+ * board-controlled A20 routing.  This route accepts only an already-registered
+ * immutable/device provider at the raw physical address; it never falls back
+ * to RAM or changes ordinary memory-access semantics. */
+type_status core_machine_memory_read_reset_physical(t_ram *ram,
+    type_unsigned_32 physical, type_virtual_address destination,
+    type_native_unsigned size);
 type_status core_machine_memory_write_physical(t_ram *ram, type_unsigned_32 physical,
     type_virtual_address source, type_native_unsigned size);
 type_status core_machine_memory_query_physical(const t_ram *ram,

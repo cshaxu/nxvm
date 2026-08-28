@@ -41,6 +41,7 @@
 #include "core/machine/kbc.h"
 
 #include "core/machine/xt_ppi_keyboard.h"
+#include "core/machine/xt_keyboard.h"
 
 #include "core/machine/vadp.h"
 
@@ -248,6 +249,7 @@ struct core_machine {
     core_machine_hdc hdc;
     t_kbc shared_kbc;
     core_machine_xt_ppi_keyboard xt_ppi_keyboard;
+    core_machine_xt_keyboard xt_keyboard;
     t_vadp shared_vadp;
     const core_machine_firmware_provider *firmware_provider;
     C_VOID *firmware_provider_context;
@@ -301,6 +303,7 @@ C_VOID core_machine_retirement_observation_capture_eligibility_key(
 C_VOID core_machine_retirement_observation_publish(core_machine *machine,
     type_unsigned_64 source_ticks);
 C_INT core_machine_configuration_is_open(const core_machine *machine);
+type_status core_machine_register_reset_rom_alias(core_machine *machine);
 C_INT core_machine_mutable_operation_is_allowed(const core_machine *machine);
 type_status core_machine_register_immutable_rom_mapping_from_firmware(
     core_machine *machine, type_unsigned_32 physical_start, const type_unsigned_8 *image,
@@ -378,5 +381,3 @@ C_INT core_machine_clock_plan_is_valid(const core_machine_clock_plan *plan);
 const core_machine_timing_declaration *core_machine_plan_declaration_find(
     const core_machine_plan *plan, core_machine_timing_capability capability);
 #endif
-#include "core/machine/xt_keyboard.h"
-    core_machine_xt_keyboard xt_keyboard;

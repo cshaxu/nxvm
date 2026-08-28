@@ -2,6 +2,27 @@
 
 ## Current Work
 
+## M5 T498 S4 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | The persistent four-profile validation objective, accepted T498 S3 ledger, and owner direction to preserve and correctly close the uncommitted Core/reset batch admit this prerequisite correction. |
+| Objective | Restore one fresh-configurable source baseline by closing only the CMake registration and Core 80286/80386 reset-ROM-fetch mechanism required to prove reset before the Model-40 firmware-to-board receiver. |
+| Non-goals | No Model-40 boot shortcut, FDC/DMA/PIC repair, XT topology, time-axis, session, generated-ledger, or broad fixture change; no firmware/media import; no acceptance of unrelated worktree edits. |
+| Reference Baseline | `4acd3e12`; [S3 ledger](../etc/evidence/t498-s3-model40-startup-chain-ledger.md) and retained T496 S7 candidate record. |
+| Candidate Proposal | [Four-profile supported DOS media matrix](../proposals/m5-four-profile-supported-media-matrix.md). |
+| Files And ABI Surface | `CMakeLists.txt` and `CMakePresets.json`; Core-private reset fetch/mapping implementation and declaration; one Core smoke; developer artifact. No VM/profile public ABI. |
+| Applicable Rules | Core owns CPU reset and immutable-ROM mapping; CMake owns one registered source graph; VM/profile cannot route reset bytes or choose a reset exception; all non-reset worktree edits remain unowned by this S. |
+| Verification | Fresh configure from a clean detached baseline with the selected closure; optimized Release reset-ROM and existing firmware-capability smokes; focused CTest registration; documentation governance; review exact staged paths. |
+| Expected Markers | `M5:T496:S7:RESET-ROM-ALIAS:OK`, retained firmware/ROM-alias markers, and a successful fresh CMake configure. |
+| Asset Needs | None. |
+| Reporting Requirements | State the exact staged reset/build closure, explicit preserved non-members, source/artifact effect, and before/after fresh-configure result. |
+| Stop Conditions | Stop if the reset mechanism requires a profile-side memory route, a second ROM owner, a public mutable layout, or any non-reset worktree change to compile. |
+| Exit Criteria | The selected minimum closure fresh-configures and passes focused proof from a clean source tree; every non-member worktree edit remains unstaged and is named for a later receiver; no Model-40 behavior claim is made. |
+| Original Owner Request | Preserve the discovered Core/CPU/reset/memory/session changes correctly while completing all selected profile/media validation. |
+| Similar-Issue Sweep | Check 80286 and 80386 reset vectors, ordinary low-ROM transfer, firmware-less fixture fallback, and existing firmware-alias capability; do not infer FDD startup from reset success. |
+
 ## Current Technical Baseline
 
 - **Current developer artifact:** target `vm-0-5-0494`; the stripped Release

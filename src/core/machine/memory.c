@@ -92,6 +92,38 @@ static type_status core_machine_memory_route_resolve(const t_ram *ram,
     *out_provider = STD_NULL;
     return TYPE_STATUS_OK;
 }
+
+/* Reset-cache fetches use the CPU's architected high reset address before the
+ * board has an opportunity to apply A20 routing.  A present provider is the
+ * sole ROM owner; no provider disposition leaves the caller free to use its
+ * ordinary explicit backing-memory reset route. */
+static type_status core_machine_memory_reset_provider_resolve(const t_ram *ram,
+    type_unsigned_32 physical, type_native_unsigned bytes,
+    const core_machine_memory_device_provider **out_provider)
+{
+    type_native_unsigned index;
+    type_status status;
+
+    if (ram == STD_NULL || out_provider == STD_NULL || bytes == 0u) {
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
+    for (index = 0u; index < ram->connect.device_provider_count; ++index) {
+        const core_machine_memory_device_provider *provider =
+            &ram->connect.device_providers[index];
+
+        if (physical < provider->physical_start ||
+            (type_unsigned_64)physical - provider->physical_start + bytes >
+                provider->bytes) continue;
+        status = provider->query(provider->owner, physical, bytes,
+            CORE_MACHINE_MEMORY_ACCESS_READ);
+        if (status == TYPE_STATUS_OK) {
+            *out_provider = provider;
+            return TYPE_STATUS_OK;
+        }
+        if (status != TYPE_STATUS_UNSUPPORTED) return status;
+    }
+    return TYPE_STATUS_UNSUPPORTED;
+}
 /* Allocates one core-owned RAM backing. Callers retain the t_ram, never backing. */
 static type_status core_machine_memory_allocate_for_with_test(t_ram *ram,
     STD_SIZE_T bytes, core_machine_memory_test_allocation *test_allocation)
@@ -416,6 +448,22 @@ type_status core_machine_memory_read_physical(t_ram *ram, type_unsigned_32 physi
         }
     }
     return TYPE_STATUS_OK;
+}
+
+type_status core_machine_memory_read_reset_physical(t_ram *ram,
+    type_unsigned_32 physical, type_virtual_address destination,
+    type_native_unsigned bytes)
+{
+    const core_machine_memory_device_provider *provider;
+    type_status status;
+
+    if (ram == STD_NULL || destination == 0u || bytes == 0u) {
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
+    status = core_machine_memory_reset_provider_resolve(ram, physical, bytes,
+        &provider);
+    if (status != TYPE_STATUS_OK) return status;
+    return provider->read(provider->owner, physical, destination, bytes);
 }
 type_status core_machine_memory_write_physical(t_ram *ram, type_unsigned_32 physical,
     type_virtual_address source, type_native_unsigned byte)

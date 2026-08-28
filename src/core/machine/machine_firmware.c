@@ -73,6 +73,17 @@ type_status core_machine_bind_firmware_provider(core_machine *machine,
         STD_MEMSET(&machine->firmware_context, 0, sizeof(machine->firmware_context));
         return status;
     }
+    /* The firmware supplies only its ordinary F0000h image.  Core derives the
+     * CPU-selected reset-vector alias after that source exists, before the
+     * configuration boundary freezes. */
+    status = core_machine_register_reset_rom_alias(machine);
+    if (status != TYPE_STATUS_OK) {
+        core_machine_rollback_immutable_rom_mappings(machine, rom_mapping_boundary);
+        machine->firmware_provider = STD_NULL;
+        machine->firmware_provider_context = STD_NULL;
+        STD_MEMSET(&machine->firmware_context, 0, sizeof(machine->firmware_context));
+        return status;
+    }
     return TYPE_STATUS_OK;
 }
 

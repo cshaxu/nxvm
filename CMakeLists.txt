@@ -86,6 +86,7 @@ add_library(core-machine STATIC
     src/core/machine/retirement_observation_interface.c
     src/core/machine/timeline.c
     src/core/machine/xt_ppi_keyboard.c
+    src/core/machine/xt_keyboard.c
 )
 add_dependencies(core-machine cpu-timing-manifest-catalog)
 # This is the complete public core-machine runtime. It extends the primitive
@@ -274,6 +275,9 @@ target_link_libraries(core-machine-lifecycle-smoke PRIVATE core-machine)
 add_executable(core-machine-firmware-capability-smoke
     tests/core/machine_firmware_capability_smoke.c)
 target_link_libraries(core-machine-firmware-capability-smoke PRIVATE core-machine)
+add_executable(core-machine-reset-rom-alias-smoke
+    tests/core/machine_reset_rom_alias_smoke.c)
+target_link_libraries(core-machine-reset-rom-alias-smoke PRIVATE core-machine)
 add_executable(core-machine-memory-device-registration-s16-smoke
     tests/core/machine_memory_device_registration_s16_smoke.c)
 target_link_libraries(core-machine-memory-device-registration-s16-smoke PRIVATE core-machine)
@@ -1041,6 +1045,7 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(core-machine-port-ownership-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-machine-lifecycle-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-machine-firmware-capability-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(core-machine-reset-rom-alias-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-machine-stopped-lifecycle-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-machine-memory-reconfigure-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-machine-checked-memory-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
@@ -1145,6 +1150,7 @@ set(CORE_MACHINE_SOURCES
     src/core/machine/dma.c
     src/core/machine/kbc.c
     src/core/machine/xt_ppi_keyboard.c
+    src/core/machine/xt_keyboard.c
     src/core/machine/rtc.c
     src/core/machine/transaction.c
 )
@@ -1667,6 +1673,10 @@ add_executable(vm-ata-pio-dos-smoke
     tests/machine/vm_ata_pio_dos_smoke.c
 )
 target_link_libraries(vm-ata-pio-dos-smoke PRIVATE vm-composition)
+add_executable(vm-byob-dos-boot-probe
+    tests/machine/vm_byob_dos_boot_probe.c
+)
+target_link_libraries(vm-byob-dos-boot-probe PRIVATE vm-composition)
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(vm-ata-pio-dos-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-fdc-dma-boundary-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
@@ -2236,6 +2246,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     core-machine-configuration-smoke
     core-machine-port-ownership-smoke
     core-machine-firmware-capability-smoke
+    core-machine-reset-rom-alias-smoke
     core-machine-memory-device-registration-s16-smoke
     core-machine-ram-port-context-smoke
     core-machine-pit-readback-smoke
@@ -2936,8 +2947,8 @@ function(add_current_vm_artifact target version)
     endif()
 endfunction()
 
-set(PROJECT_CURRENT_VM_ARTIFACT_TARGET vm-0-5-0494)
-add_current_vm_artifact(vm-0-5-0494 "0.5.0494")
+set(PROJECT_CURRENT_VM_ARTIFACT_TARGET vm-0-5-0495)
+add_current_vm_artifact(vm-0-5-0495 "0.5.0495")
 option(PROJECT_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
 
@@ -3952,5 +3963,3 @@ endif()
 add_dependencies(verify-current-specialized-gates
     verify-t345-deferred-direct-ownership
     verify-t345-deferred-direct-ownership-selftest)
-    src/core/machine/xt_keyboard.c
-    src/core/machine/xt_keyboard.c
