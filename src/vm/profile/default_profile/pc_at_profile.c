@@ -51,6 +51,7 @@ static const vm_profile_default_pc_at_port_leaf default_pc_at_port_leaves[] = {
     { VM_PROFILE_DEFAULT_PC_AT_DEVICE_DMA, 0x00deu, TYPE_FALSE, TYPE_TRUE },
     { VM_PROFILE_DEFAULT_PC_AT_DEVICE_KBC, 0x0060u, TYPE_TRUE, TYPE_TRUE },
     { VM_PROFILE_DEFAULT_PC_AT_DEVICE_KBC, 0x0064u, TYPE_TRUE, TYPE_TRUE },
+    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_BOARD, 0x0061u, TYPE_TRUE, TYPE_TRUE },
     { VM_PROFILE_DEFAULT_PC_AT_DEVICE_MEMORY_CONTROL, 0x0092u, TYPE_TRUE, TYPE_TRUE },
     { VM_PROFILE_DEFAULT_PC_AT_DEVICE_VADP_ATTRIBUTE, 0x03c0u, TYPE_FALSE, TYPE_TRUE },
     { VM_PROFILE_DEFAULT_PC_AT_DEVICE_VADP_ATTRIBUTE, 0x03c1u, TYPE_TRUE, TYPE_FALSE },
@@ -427,16 +428,17 @@ type_status vm_profile_default_pc_at_topology_materialize(
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
     if (descriptor->unpopulated_extended_memory) {
-        topology.absent_memory_present = TYPE_TRUE;
-        topology.absent_memory =
+        topology.absent_memory_count = 1u;
+        topology.absent_memory[0] =
             (core_machine_absent_memory_config) { 0x00100000u, 0x00f00000u, 0xffu };
     }
-    if (descriptor->planar_parity_present) {
-        topology.planar_parity_present = TYPE_TRUE;
-        topology.planar_parity =
-            (core_machine_planar_parity_config) { CORE_MACHINE_PC_AT_PORT_B,
-                descriptor->default_memory_bytes };
-    }
+    /* Every PC/AT descriptor owns system-board Port B. Parity is an optional
+     * producer on that one port; generic Default PC/AT retains the port's
+     * PIT1/PIT2 visibility without inventing parity memory. */
+    topology.planar_parity_present = TYPE_TRUE;
+    topology.planar_parity = (core_machine_planar_parity_config) {
+        CORE_MACHINE_PC_AT_PORT_B,
+        descriptor->planar_parity_present ? descriptor->default_memory_bytes : 0u };
     topology.display_present = TYPE_TRUE;
     topology.display = (core_machine_display_config) {
         .text_timing = descriptor->cga_text_timing,
@@ -509,7 +511,7 @@ static type_status vm_profile_default_pc_at_values_create(
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
     out_values->core.contract_id = ibm_5170_root_contract_ids[0];
-    for (role = 0u; role <= VM_PROFILE_DEFAULT_PC_AT_DEVICE_MEMORY_CONTROL; ++role) {
+    for (role = 0u; role <= VM_PROFILE_DEFAULT_PC_AT_DEVICE_BOARD; ++role) {
         STD_SIZE_T ordinal;
 
         for (ordinal = 0u;; ++ordinal) {

@@ -15,7 +15,7 @@ static C_INT vm_ibm_5170_root_port_leaves_match(
     STD_SIZE_T result_index = 0u;
 
     if (resolved == STD_NULL) return 0;
-    for (role = 0u; role <= VM_PROFILE_DEFAULT_PC_AT_DEVICE_MEMORY_CONTROL; ++role) {
+    for (role = 0u; role <= VM_PROFILE_DEFAULT_PC_AT_DEVICE_BOARD; ++role) {
         STD_SIZE_T ordinal;
 
         for (ordinal = 0u;; ++ordinal) {
@@ -101,7 +101,7 @@ static C_INT vm_ibm_5170_root_is_copied_and_complete(C_VOID)
             CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_RATIONAL_CLOCK ||
         resolved->values.core.controller_timing_rules.dma_service !=
             CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_DMA_SERVICE_PHASES ||
-        !root.topology.absent_memory_present ||
+        root.topology.absent_memory_count != 1u ||
         !root.topology.planar_parity_present ||
         !root.topology.display_present || root.topology.display.ega_present ||
         !root.topology.display.cga_vram_present ||
@@ -214,10 +214,11 @@ static C_INT vm_model40_child_rejects_invalid_parent(C_VOID)
 static C_INT vm_default_at_child_resolves_copy(C_VOID)
 {
     const vm_profile_default_at_request request = {
-        VM_PROFILE_DEFAULT_AT_SESSION_OPTION_CPU_FPU |
+        .requested_options = VM_PROFILE_DEFAULT_AT_SESSION_OPTION_CPU_FPU |
             VM_PROFILE_DEFAULT_AT_SESSION_OPTION_MEMORY,
-        CORE_MACHINE_CPU_PROFILE_80386, CORE_MACHINE_FPU_PROFILE_80387,
-        32u * 1024u * 1024u};
+        .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
+        .fpu_profile = CORE_MACHINE_FPU_PROFILE_80387,
+        .memory_bytes = 32u * 1024u * 1024u};
     vm_profile_resolver_declaration root;
     vm_profile_resolver_declaration child;
     vm_profile_default_pc_at_resolved_profile resolved;
@@ -245,14 +246,16 @@ static C_INT vm_default_at_child_resolves_copy(C_VOID)
             CORE_MACHINE_DMA_CONTROLLER_COUNT ||
         resolved.resolved.values.allowed_session_options !=
             (VM_PROFILE_DEFAULT_AT_SESSION_OPTION_CPU_FPU |
-                VM_PROFILE_DEFAULT_AT_SESSION_OPTION_MEMORY) ||
+                VM_PROFILE_DEFAULT_AT_SESSION_OPTION_MEMORY |
+                VM_PROFILE_DEFAULT_AT_SESSION_OPTION_FLOPPY) ||
         STD_STRCMP(resolved.descriptor.identity, "default-at") != 0 ||
         resolved.descriptor.cpu_profile != CORE_MACHINE_CPU_PROFILE_80386 ||
         resolved.descriptor.fpu_profile != CORE_MACHINE_FPU_PROFILE_80387 ||
         resolved.descriptor.default_memory_bytes != 32u * 1024u * 1024u ||
         !resolved.descriptor.hdc_present || !resolved.descriptor.ega_present ||
-        !resolved.topology.absent_memory_present ||
-        resolved.topology.planar_parity_present ||
+        resolved.topology.absent_memory_count != 1u ||
+        !resolved.topology.planar_parity_present ||
+        resolved.topology.planar_parity.memory_bytes != 0u ||
         !resolved.topology.display_present || !resolved.topology.display.ega_present ||
         resolved.topology.display.cga_vram_present ||
         !resolved.topology.dma_present ||
@@ -270,9 +273,9 @@ static C_INT vm_default_at_child_rejects_invalid_request(C_VOID)
     vm_profile_resolver_declaration invalid_parent = {0};
     vm_profile_resolver_declaration child;
     vm_profile_default_pc_at_resolved_profile resolved;
-    const vm_profile_default_at_request bad_option = {0x80u, 0u, 0u, 0u};
+    const vm_profile_default_at_request bad_option = { .requested_options = 0x80u };
     const vm_profile_default_at_request bad_memory = {
-        VM_PROFILE_DEFAULT_AT_SESSION_OPTION_MEMORY, 0u, 0u, 0u};
+        .requested_options = VM_PROFILE_DEFAULT_AT_SESSION_OPTION_MEMORY };
 
     invalid_parent.identity = "not-5170";
     return vm_profile_default_at_child_declaration_create(&invalid_parent,
@@ -284,8 +287,9 @@ static C_INT vm_default_at_child_rejects_invalid_request(C_VOID)
 static C_INT vm_default_at_80286_selection_keeps_generic_topology(C_VOID)
 {
     const vm_profile_default_at_request request = {
-        VM_PROFILE_DEFAULT_AT_SESSION_OPTION_CPU_FPU,
-        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_FPU_PROFILE_80287, 0u};
+        .requested_options = VM_PROFILE_DEFAULT_AT_SESSION_OPTION_CPU_FPU,
+        .cpu_profile = CORE_MACHINE_CPU_PROFILE_80286,
+        .fpu_profile = CORE_MACHINE_FPU_PROFILE_80287 };
     vm_profile_default_pc_at_resolved_profile resolved;
 
     if (vm_profile_default_at_child_resolve(&request, &resolved) != TYPE_STATUS_OK ||

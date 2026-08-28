@@ -23,10 +23,23 @@
 | Original Owner Request | Preserve the discovered Core/CPU/reset/memory/session changes correctly while completing all selected profile/media validation. |
 | Similar-Issue Sweep | Check 80286 and 80386 reset vectors, ordinary low-ROM transfer, firmware-less fixture fallback, and existing firmware-alias capability; do not infer FDD startup from reset success. |
 
+### S4 Corrective Brief: topology construction closure
+
+Clean S4 product compilation proves that the committed default PC/AT profile
+already consumes the multi-window topology contract while its Core owner was
+left in the preserved worktree.  The corrective closure is limited to the
+existing Core absent-memory and zero-parity Port-B owner, immutable PC/AT
+topology materialization, and their focused plan/profile tests.  It excludes
+DMA transfer semantics, scheduler/deadline behavior, timeline optimization,
+CPU diagnostic cleanup, XT timing, firmware assembly, and all generated
+timing-result edits.  The result must fresh-configure and build the complete
+Release product from a clean worktree before the reset batch can be accepted.
+
 ## Current Technical Baseline
 
-- **Current developer artifact:** target `vm-0-5-0494`; the stripped Release
-  `nxvm_0_5_0494.exe` has SHA-256
+- **Current developer artifact:** target `vm-0-5-0495` is pending clean
+  Release verification. The last verified stripped artifact remains
+  `nxvm_0_5_0494.exe` with SHA-256
   `C7BDFD1CE67917373DCD762E093D8A5FF86798DC4E59DEF162B5682EB6B0686A`.
   Debug remains the current-gate route. T471 preserves Core-owned progression:
   a verified axis is Standard-paced only by host waiting against completed

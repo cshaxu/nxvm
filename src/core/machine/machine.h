@@ -215,7 +215,7 @@ struct core_machine {
     type_bool d4_platform_iochk_latched;
     type_bool d4_platform_failsafe_latched;
     type_bool d4_platform_nmi_signaled;
-    core_machine_absent_memory absent_memory;
+    core_machine_absent_memory absent_memory[CORE_MACHINE_ABSENT_MEMORY_WINDOW_COUNT];
     core_machine_fdc_topology fdc_topology;
     type_bool fdc_configured;
     core_machine_hdc_topology hdc_topology;

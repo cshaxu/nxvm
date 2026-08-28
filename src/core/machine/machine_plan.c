@@ -171,8 +171,7 @@ type_status core_machine_plan_validate(const core_machine_plan *plan)
         !core_machine_controller_timing_rules_are_valid(plan)) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
-    if ((plan->topology.absent_memory_present != TYPE_FALSE &&
-         plan->topology.absent_memory_present != TYPE_TRUE) ||
+    if (plan->topology.absent_memory_count > CORE_MACHINE_ABSENT_MEMORY_WINDOW_COUNT ||
         (plan->topology.planar_parity_present != TYPE_FALSE &&
          plan->topology.planar_parity_present != TYPE_TRUE) ||
         (plan->topology.d4_platform_present != TYPE_FALSE &&
@@ -262,8 +261,11 @@ type_status core_machine_plan_apply_topology(core_machine *machine,
 
     if (machine == STD_NULL || plan == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
     topology = &plan->topology;
-    if (topology->absent_memory_present && (status = core_machine_configure_absent_memory(
-            machine, &topology->absent_memory)) != TYPE_STATUS_OK) return status;
+    for (index = 0u; index < topology->absent_memory_count; ++index) {
+        status = core_machine_configure_absent_memory(machine,
+            &topology->absent_memory[index]);
+        if (status != TYPE_STATUS_OK) return status;
+    }
     for (index = 0u; index < plan->memory_device_count; ++index) {
         const core_machine_plan_memory_device *device = &plan->memory_devices[index];
 

@@ -56,9 +56,9 @@ static C_INT pcat_topology_registry_matches_profile(
             fdc_route->dma_channel ||
         session->core_machine->hdc_topology.config.irq !=
             profile->hdc.irq;
-    failed |= core_machine_port_has_read(&session->core_machine->executor_port,
+    failed |= !core_machine_port_has_read(&session->core_machine->executor_port,
             0x0061u) ||
-        core_machine_port_has_write(&session->core_machine->executor_port,
+        !core_machine_port_has_write(&session->core_machine->executor_port,
             0x0061u) ||
         core_machine_port_has_read(&session->core_machine->executor_port,
             0x0062u) ||

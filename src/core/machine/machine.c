@@ -828,7 +828,8 @@ type_status core_machine_reconfigure_memory(core_machine *machine,
     if (machine == STD_NULL || !core_machine_mutable_operation_is_allowed(machine) ||
         !machine->execution_provider_frozen ||
         machine->lifecycle != CORE_MACHINE_STOPPED ||
-        machine->planar_parity_configured ||
+        (machine->planar_parity_configured &&
+         machine->planar_parity_config.memory_bytes != 0u) ||
         memory_bytes < CORE_MACHINE_MINIMUM_MEMORY_BYTES ||
         memory_bytes > CORE_MACHINE_MAXIMUM_MEMORY_BYTES) {
         return TYPE_STATUS_INVALID_STATE;

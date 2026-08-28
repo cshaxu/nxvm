@@ -68,6 +68,7 @@ static type_status core_machine_rtc_cmos_port_write(C_VOID *owner,
 static C_VOID core_machine_planar_parity_refresh_nmi(core_machine *machine)
 {
     if (machine != STD_NULL && machine->planar_parity_configured &&
+        machine->planar_parity_config.memory_bytes != 0u &&
         machine->planar_parity_latched &&
         (machine->planar_parity_port_b & 0x04u) != 0u &&
         !machine->executor_cpu.data.flagMaskNMI &&
@@ -569,8 +570,8 @@ type_status core_machine_configure_planar_parity(core_machine *machine,
     if (!core_machine_configuration_is_open(machine) || machine->planar_parity_configured)
         return TYPE_STATUS_INVALID_STATE;
     if (config == STD_NULL || config->port != CORE_MACHINE_PC_AT_PORT_B ||
-        config->memory_bytes == 0u || config->memory_bytes >
-            machine->executor_memory.connect.installed_bytes ||
+        (config->memory_bytes != 0u && config->memory_bytes >
+            machine->executor_memory.connect.installed_bytes) ||
         core_machine_port_has_read(&machine->executor_port,
             config->port) || core_machine_port_has_write(&machine->executor_port,
             config->port)) return TYPE_STATUS_INVALID_ARGUMENT;
@@ -588,12 +589,14 @@ type_status core_machine_configure_planar_parity(core_machine *machine,
         core_machine_speaker_timer_output, machine);
     core_machine_pc_at_refresh_timer_program(machine);
     core_machine_speaker_set_gate(machine, machine->planar_parity_port_b);
-    status = core_machine_memory_enable_parity(&machine->executor_memory,
-        config->memory_bytes, core_machine_planar_parity_memory_fault, machine);
-    if (status != TYPE_STATUS_OK) {
-        machine->planar_parity_configured = TYPE_FALSE;
-        core_machine_port_rollback_registration(&machine->executor_port, checkpoint);
-        return status;
+    if (config->memory_bytes != 0u) {
+        status = core_machine_memory_enable_parity(&machine->executor_memory,
+            config->memory_bytes, core_machine_planar_parity_memory_fault, machine);
+        if (status != TYPE_STATUS_OK) {
+            machine->planar_parity_configured = TYPE_FALSE;
+            core_machine_port_rollback_registration(&machine->executor_port, checkpoint);
+            return status;
+        }
     }
     return TYPE_STATUS_OK;
 }
@@ -642,7 +645,8 @@ type_status core_machine_configure_d4_platform(core_machine *machine,
 type_status core_machine_report_planar_parity_fault(core_machine *machine)
 {
     if (machine == STD_NULL || !core_machine_mutable_operation_is_allowed(machine) ||
-        !machine->planar_parity_configured) return TYPE_STATUS_INVALID_STATE;
+        !machine->planar_parity_configured ||
+        machine->planar_parity_config.memory_bytes == 0u) return TYPE_STATUS_INVALID_STATE;
     machine->planar_parity_latched = TYPE_TRUE;
     core_machine_planar_parity_refresh_nmi(machine);
     return TYPE_STATUS_OK;
@@ -744,23 +748,32 @@ type_status core_machine_get_speaker_observation(const core_machine *machine,
 type_status core_machine_configure_absent_memory(core_machine *machine,
     const core_machine_absent_memory_config *config)
 {
+    core_machine_absent_memory *absent;
     type_status status;
+    type_native_unsigned index;
 
-    if (!core_machine_configuration_is_open(machine) ||
-        machine->absent_memory.configured) return TYPE_STATUS_INVALID_STATE;
+    if (!core_machine_configuration_is_open(machine)) return TYPE_STATUS_INVALID_STATE;
     if (config == STD_NULL || config->bytes == 0u ||
         (type_unsigned_64)config->physical_start + config->bytes >
             (type_unsigned_64)TYPE_MAX_UNSIGNED_32 + 1u) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
-    machine->absent_memory.config = *config;
-    machine->absent_memory.configured = TYPE_TRUE;
+    absent = STD_NULL;
+    for (index = 0u; index < CORE_MACHINE_ABSENT_MEMORY_WINDOW_COUNT; ++index) {
+        if (!machine->absent_memory[index].configured) {
+            absent = &machine->absent_memory[index];
+            break;
+        }
+    }
+    if (absent == STD_NULL) return TYPE_STATUS_INVALID_STATE;
+    absent->config = *config;
+    absent->configured = TYPE_TRUE;
     status = core_machine_memory_register_device_provider(&machine->executor_memory,
         config->physical_start, config->bytes, core_machine_absent_memory_read,
         core_machine_absent_memory_write, core_machine_absent_memory_query,
-        &machine->absent_memory);
+        absent);
     if (status != TYPE_STATUS_OK) {
-        STD_MEMSET(&machine->absent_memory, 0, sizeof(machine->absent_memory));
+        STD_MEMSET(absent, 0, sizeof(*absent));
         return status;
     }
     return TYPE_STATUS_OK;
@@ -770,8 +783,10 @@ type_status core_machine_get_planar_parity_observation(const core_machine *machi
     core_machine_planar_parity_observation *out_observation)
 {
     if (machine == STD_NULL || out_observation == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
-    out_observation->configured = machine->planar_parity_configured;
-    out_observation->enabled = (machine->planar_parity_port_b & 0x04u) != 0u;
+    out_observation->configured = machine->planar_parity_configured &&
+        machine->planar_parity_config.memory_bytes != 0u;
+    out_observation->enabled = out_observation->configured &&
+        (machine->planar_parity_port_b & 0x04u) != 0u;
     out_observation->latched = machine->planar_parity_latched;
     out_observation->nmi_signaled = machine->planar_parity_nmi_signaled;
     return TYPE_STATUS_OK;

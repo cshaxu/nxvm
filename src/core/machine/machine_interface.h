@@ -320,7 +320,8 @@ typedef struct core_machine_rtc_cmos_config {
 } core_machine_rtc_cmos_config;
 
 typedef struct core_machine_planar_parity_config {
-    /* IBM PC/AT system-board port B; other mappings are not this controller. */
+    /* IBM PC/AT system-board port B; zero memory_bytes selects its timer and
+     * speaker wiring without claiming a parity-memory producer. */
     type_unsigned_16 port;
     STD_SIZE_T memory_bytes;
 } core_machine_planar_parity_config;
@@ -367,6 +368,8 @@ typedef struct core_machine_absent_memory_config {
     type_unsigned_8 read_value;
 } core_machine_absent_memory_config;
 
+#define CORE_MACHINE_ABSENT_MEMORY_WINDOW_COUNT 4u
+
 #define CORE_MACHINE_DMA_CONTROLLER_COUNT 2u
 #define CORE_MACHINE_DMA_CASCADE_CHANNEL 4u
 #define CORE_MACHINE_DMA_FDC_CHANNEL_UNBOUND 0xffu
@@ -384,8 +387,8 @@ typedef struct core_machine_dma_wiring {
  * creation. Runtime endpoints are registered separately and never enter this
  * public declaration. */
 typedef struct core_machine_plan_topology {
-    type_bool absent_memory_present;
-    core_machine_absent_memory_config absent_memory;
+    type_unsigned_8 absent_memory_count;
+    core_machine_absent_memory_config absent_memory[CORE_MACHINE_ABSENT_MEMORY_WINDOW_COUNT];
     type_bool planar_parity_present;
     core_machine_planar_parity_config planar_parity;
     type_bool d4_platform_present;

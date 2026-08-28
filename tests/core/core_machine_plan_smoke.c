@@ -160,8 +160,8 @@ static C_INT plan_rejects_topology_before_publication(C_VOID)
         TYPE_STATUS_INVALID_ARGUMENT || machine != STD_NULL;
     core_machine_plan_destroy(plan);
     failed |= core_machine_plan_create(&configuration, &plan) != TYPE_STATUS_OK;
-    plan->topology.absent_memory_present = TYPE_TRUE;
-    plan->topology.absent_memory.physical_start = 0x00100000u;
+    plan->topology.absent_memory_count = 1u;
+    plan->topology.absent_memory[0].physical_start = 0x00100000u;
     failed |= core_machine_create_from_plan(plan, &machine) !=
         TYPE_STATUS_INVALID_ARGUMENT || machine != STD_NULL;
     core_machine_plan_destroy(plan);
