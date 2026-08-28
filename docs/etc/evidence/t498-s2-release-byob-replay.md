@@ -13,7 +13,7 @@ media.  A terminal is semantic only: `dos-prompt`, `date-input`, or
 | --- | --- | --- | --- | --- |
 | IBM 5160 Model 268 | 8088 | 360 KB | `installer-ready` | Accepted. |
 | IBM 5170 Model 339 | 80286 | 360 KB | `installer-ready` | Accepted. |
-| IBM 5170 Model 339 | 80286 | 1.2 MB | No supplied 80286-compatible 1.2-MB DOS boot image. | External-input gap; the local DOS 6.22 1.2-MB image is a 386-era control only. |
+| IBM 5170 Model 339 | 80286 | 1.2 MB | No supplied 80286-compatible 1.2-MB DOS boot image. | External-input gap; the supplied DOS 6.22 image actively loads `CD1.SYS`, whose observed PCI probe reaches an operand-size prefix on every pre-80386 row. It remains an 80386 control, not evidence that DOS itself requires an 80386. |
 | DeskPro 386 Model 40 | 80386 | 1.2 MB | No semantic terminal. | Full first-failure batch transfers to S3. |
 | `default-at` | 8086 | 360 KB | `installer-ready` | Accepted. |
 | `default-at` | 80186 | 720 KB | `date-input` | Accepted. |

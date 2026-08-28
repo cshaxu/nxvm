@@ -12,6 +12,12 @@ is not inferred from instruction count or a timeout.
 The audit distinguishes the production startup chain from the test observer.
 It changes no Core, VM, profile, controller, firmware, or media behavior.
 
+A four-minute Release Turbo replay with retirement observation disabled remains
+inside the ROM memory diagnostic, with no CPU exception and no FDC command.
+The longer duration rules out the observer as the reason that the bounded
+capture has not reached the storage consumer; elapsed execution remains
+diagnostic evidence, never a successful boot terminal.
+
 ## Chain disposition
 
 | Segment | Sole owner | Direct current proof | Disposition |
@@ -20,19 +26,19 @@ It changes no Core, VM, profile, controller, firmware, or media behavior.
 | 80386 reset address, ROM aliases, and A20 policy | Core checked memory; Model-40 selects immutable construction data | The retained S31 regression covers the selected A20 policy and external capture passes reset initialization into protected-mode work. | Proved for the reached route; ordinary reset-ROM routing correction remains separately governed below. |
 | CPU transition and instruction execution before the storage consumer | Core CPU/memory/port transaction path | The external capture reaches the recorded protected-mode return checkpoint rather than an initial unallocated fetch. | Proved only through that checkpoint; later firmware control flow remains a receiver. |
 | Copied display observation | Core VADP snapshot; VM presentation | S2 corrected the generic observer to treat an unavailable copied EGA snapshot as observation-unavailable, not a guest failure. | Ruled out as the startup cause; this does not claim visible EGA output. |
-| Boot-policy/FDD command initiation | Firmware through Core ports | The longer S2 diagnostic sees no FDC command or terminal observation. | First unresolved consumer boundary.  Do not repair FDC, DMA, or PIC until firmware-to-port progression and its predecessor batch are distinguished. |
+| Boot-policy/FDD command initiation | Firmware through Core ports | Both the bounded retirement capture and a Release replay without retirement observation remain in the ROM's multi-pass memory diagnostic before any FDC command or terminal observation; neither reports a CPU exception. | Not yet reached.  The first unresolved boundary is completion of the firmware's pre-FDD diagnostic path, not FDC/DMA/PIC behavior. |
 | 8272A, DMA2, and IRQ6 transfer/service | Core controllers | T386 S24 proves the selected logical FDC/DMA2/IRQ6 route with a production DMA transfer, but the external ROM has not invoked it in this replay. | Not implicated by current external evidence; retain as an available downstream route, not a cause. |
 | FDD image bytes and persistence | VM media adapter | The same 1.2-MB media reaches a DOS terminal on the accepted default-at/80386 row. | Shared media format is ruled out; this does not prove Model-40 firmware has selected it. |
 
 ## First repair receiver
 
 The selected next implementation batch is **Model-40 firmware-to-board
-startup progression**, bounded from the first post-capture checkpoint through
-the first boot-policy/FDD port request.  It must first obtain an observation
-that distinguishes CPU/memory/port predecessor ownership from a firmware
-compatibility/input boundary.  It may then repair one complete existing owner
-batch only.  It may not add a Model-40 boot path, inject an FDC command, make a
-display terminal mandatory, or treat an elapsed run as success.
+startup progression**, bounded from the established ROM memory-diagnostic
+loop through the first boot-policy/FDD port request.  It must first obtain an
+observation that distinguishes a completed diagnostic path from a CPU/memory
+or firmware compatibility boundary.  It may then repair one complete existing
+owner batch only.  It may not add a Model-40 boot path, inject an FDC command,
+make a display terminal mandatory, or treat elapsed execution as success.
 
 ## Construction baseline correction
 
