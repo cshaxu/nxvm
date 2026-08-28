@@ -2,27 +2,6 @@
 
 ## Current Work
 
-## M5 T498 S3 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | The owner-approved persistent four-profile DOS-validation objective and accepted T498 S2 Model-40 first-failure receiver admit the complete DeskPro startup-chain audit. |
-| Objective | Freeze and audit the complete Model-40 external-ROM-to-FDD-startup chain, selecting only a complete shared owner batch for a later repair. |
-| Non-goals | No BIOS/media import, no profile-specific boot shortcut, no timeout success, no device rewrite, and no code repair before all startup-chain batches have a disposition. |
-| Reference Baseline | `f10fa109`; [matrix proposal](../proposals/m5-four-profile-supported-media-matrix.md) and [S2 replay](../etc/evidence/t498-s2-release-byob-replay.md). |
-| Candidate Proposal | [Four-profile supported DOS media matrix](../proposals/m5-four-profile-supported-media-matrix.md). |
-| Files And ABI Surface | T498 S3 finite startup-chain ledger and evidence only; no ABI and no production source change. |
-| Applicable Rules | Core owns CPU, memory, devices and copied display state; Model-40 profile supplies immutable construction data; VM owns external-ROM validation/session composition; BYOB material remains external. |
-| Verification | Reproduce the Model-40 first failure with existing capture/probe routes; map every ROM/reset, CPU transition, memory/port, board-device, FDD/DMA/PIC and display-observation segment to one owner and direct proof or receiver; documentation governance passes. |
-| Expected Markers | `M5:T498:S3:MODEL40-CHAIN:SELECTED` or `M5:T498:S3:MODEL40-CHAIN:INPUT-GAP`. |
-| Asset Needs | Existing owner-supplied Model-40 ROM pair and 1.2-MB DOS image are read only; no path, hash or bytes enter repository evidence. |
-| Reporting Requirements | Record all finite chain batches, controls, exclusions, first divergence, selected repair owner, and explicit residual external-input disposition. |
-| Stop Conditions | Stop before repair if source/trace evidence cannot distinguish candidate owners, if a missing lawful input is required, or if a repair would require profile-side state or an implicit media/firmware behavior. |
-| Exit Criteria | The chain ledger exhausts every segment as proved, ruled out, selected for one owner-local repair, or transferred through a named later S; no generic "Model 40 failed" disposition remains. |
-| Original Owner Request | Test and repair every selected profile, CPU family, and supported floppy media using MS-DOS images. |
-| Similar-Issue Sweep | Compare the same 1.2-MB media on default-at/80386 and Model-40, plus the Model-40 synthetic and external-ROM session routes; distinguish shared Core behavior from Model-40 construction facts. |
-
 ## Current Technical Baseline
 
 - **Current developer artifact:** target `vm-0-5-0494`; the stripped Release
@@ -58,6 +37,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T498 S3 | Accepted: the external-ROM Model-40 run proves reset through the recorded protected-mode checkpoint, rules out media format and unavailable copied display as the first cause, and selects firmware-to-board progression before any FDC/DMA/PIC repair. The uncommitted reset-ROM construction batch is preserved for separate correction. [Ledger](../etc/evidence/t498-s3-model40-startup-chain-ledger.md). |
 | T498 S2 | Accepted: seven frozen rows have Release semantic terminals; the generic BYOB observer no longer misclassifies unavailable EGA output, while Model-339 native-media input and the real Model-40 startup chain transfer explicitly. [Replay](../etc/evidence/t498-s2-release-byob-replay.md). |
 | T497 | Closed: original Model-339 factory 1.2-MB/compatible-360-KB media behavior now has one descriptor/session/FDD path, and the 360-KB DOS installer replay closes its one missing monochrome-aperture mapping; a 286-compatible 1.2-MB external replay transfers to T498. [Closure](../history/M5-T497-ibm-5170-native-floppy-contract.md). |
 | T496 | Closed: one Core FDC result/IRQ lifecycle now releases IRQ6 at normal-result acknowledgement, and the selected IBM 5160 DOS terminal plus focused FDC regressions pass without a BIOS/VM/media workaround. [Closure](../history/M5-T496-xt-keyboard-device.md). |
