@@ -2,27 +2,6 @@
 
 ## Current Work
 
-## M5 T498 S2 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | The owner-approved persistent four-profile DOS-validation objective, matrix proposal, and accepted T498 S1 admit the Release replay of the frozen rows. |
-| Objective | Reproduce every row with currently lawful local inputs in Release mode and record a semantic terminal or the complete first-failure facts. |
-| Non-goals | No firmware/media import, no image modification, no inferred geometry, no timeout-as-success, and no runtime repair until a complete owner batch is selected. |
-| Reference Baseline | `35a5cb03`; [matrix proposal](../proposals/m5-four-profile-supported-media-matrix.md) and [S1 matrix](../etc/evidence/t498-s1-supported-media-matrix.md). |
-| Candidate Proposal | [Four-profile supported DOS media matrix](../proposals/m5-four-profile-supported-media-matrix.md). |
-| Files And ABI Surface | T498 S2 evidence and documentation index only unless a replay establishes one complete owner-qualified repair batch; no ABI is planned. |
-| Applicable Rules | Profile fixes physical surface; session makes one explicit format request; FDD owns mounted geometry; Core owns execution and devices; protected BYOB assets remain external. |
-| Verification | Build the Release BYOB probe; replay every locally supplied valid matrix row; record `dos-prompt`, `date-input`, `installer-ready`, or complete first terminal facts; run applicable focused gate and documentation governance before P1. |
-| Expected Markers | `M5:T498:S2:REPLAY:OK` or `M5:T498:S2:REPLAY:OWNER-BATCH`. |
-| Asset Needs | Owner-supplied external MS-DOS images and lawful external firmware only; neither paths, hashes, nor bytes enter the repository. |
-| Reporting Requirements | Report each frozen row's actual terminal, the exact external-input disposition, and any full mechanism batch selected for a later S. |
-| Stop Conditions | Stop before code repair if a replay needs a missing input, a profile mutation, protected-material import, or a failure cannot yet be assigned to a complete shared owner batch. |
-| Exit Criteria | Every locally executable frozen row has a Release semantic result or complete first-failure record; input-only gaps and repair receivers are explicit. |
-| Original Owner Request | Test and repair all selected profiles, CPU families, and supported floppy media using MS-DOS images. |
-| Similar-Issue Sweep | Compare every same-format and same-CPU control row before selecting any repair; do not let one profile inherit another profile's terminal. |
-
 ## Current Technical Baseline
 
 - **Current developer artifact:** target `vm-0-5-0494`; the stripped Release
@@ -58,7 +37,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T498 S1 | Accepted: finite supported profile/CPU/media matrix freezes current terminals and external-input gaps before replay; no runtime behavior changed. [Matrix](../etc/evidence/t498-s1-supported-media-matrix.md). |
+| T498 S2 | Accepted: seven frozen rows have Release semantic terminals; the generic BYOB observer no longer misclassifies unavailable EGA output, while Model-339 native-media input and the real Model-40 startup chain transfer explicitly. [Replay](../etc/evidence/t498-s2-release-byob-replay.md). |
 | T497 | Closed: original Model-339 factory 1.2-MB/compatible-360-KB media behavior now has one descriptor/session/FDD path, and the 360-KB DOS installer replay closes its one missing monochrome-aperture mapping; a 286-compatible 1.2-MB external replay transfers to T498. [Closure](../history/M5-T497-ibm-5170-native-floppy-contract.md). |
 | T496 | Closed: one Core FDC result/IRQ lifecycle now releases IRQ6 at normal-result acknowledgement, and the selected IBM 5160 DOS terminal plus focused FDC regressions pass without a BIOS/VM/media workaround. [Closure](../history/M5-T496-xt-keyboard-device.md). |
 | T495 | Closed: the selected IBM 5160-268 is functionally ready with source-backed L3 relations and explicit L2 limits; 13/13 focused, 300/300 fresh current and specialized gates pass, without a physical/wall-clock overclaim. [Decision](../etc/evidence/t495-s2-xt-final-model-decision.md). |
