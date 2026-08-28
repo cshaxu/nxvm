@@ -2,6 +2,27 @@
 
 ## Current Work
 
+## M5 T498 S3 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | The owner-approved persistent four-profile DOS-validation objective and accepted T498 S2 Model-40 first-failure receiver admit the complete DeskPro startup-chain audit. |
+| Objective | Freeze and audit the complete Model-40 external-ROM-to-FDD-startup chain, selecting only a complete shared owner batch for a later repair. |
+| Non-goals | No BIOS/media import, no profile-specific boot shortcut, no timeout success, no device rewrite, and no code repair before all startup-chain batches have a disposition. |
+| Reference Baseline | `f10fa109`; [matrix proposal](../proposals/m5-four-profile-supported-media-matrix.md) and [S2 replay](../etc/evidence/t498-s2-release-byob-replay.md). |
+| Candidate Proposal | [Four-profile supported DOS media matrix](../proposals/m5-four-profile-supported-media-matrix.md). |
+| Files And ABI Surface | T498 S3 finite startup-chain ledger and evidence only; no ABI and no production source change. |
+| Applicable Rules | Core owns CPU, memory, devices and copied display state; Model-40 profile supplies immutable construction data; VM owns external-ROM validation/session composition; BYOB material remains external. |
+| Verification | Reproduce the Model-40 first failure with existing capture/probe routes; map every ROM/reset, CPU transition, memory/port, board-device, FDD/DMA/PIC and display-observation segment to one owner and direct proof or receiver; documentation governance passes. |
+| Expected Markers | `M5:T498:S3:MODEL40-CHAIN:SELECTED` or `M5:T498:S3:MODEL40-CHAIN:INPUT-GAP`. |
+| Asset Needs | Existing owner-supplied Model-40 ROM pair and 1.2-MB DOS image are read only; no path, hash or bytes enter repository evidence. |
+| Reporting Requirements | Record all finite chain batches, controls, exclusions, first divergence, selected repair owner, and explicit residual external-input disposition. |
+| Stop Conditions | Stop before repair if source/trace evidence cannot distinguish candidate owners, if a missing lawful input is required, or if a repair would require profile-side state or an implicit media/firmware behavior. |
+| Exit Criteria | The chain ledger exhausts every segment as proved, ruled out, selected for one owner-local repair, or transferred through a named later S; no generic "Model 40 failed" disposition remains. |
+| Original Owner Request | Test and repair every selected profile, CPU family, and supported floppy media using MS-DOS images. |
+| Similar-Issue Sweep | Compare the same 1.2-MB media on default-at/80386 and Model-40, plus the Model-40 synthetic and external-ROM session routes; distinguish shared Core behavior from Model-40 construction facts. |
+
 ## Current Technical Baseline
 
 - **Current developer artifact:** target `vm-0-5-0494`; the stripped Release
