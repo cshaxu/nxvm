@@ -2,39 +2,6 @@
 
 ## Current Work
 
-## M5 T498 S4 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | The persistent four-profile validation objective, accepted T498 S3 ledger, and owner direction to preserve and correctly close the uncommitted Core/reset batch admit this prerequisite correction. |
-| Objective | Restore one fresh-configurable source baseline by closing only the CMake registration and Core 80286/80386 reset-ROM-fetch mechanism required to prove reset before the Model-40 firmware-to-board receiver. |
-| Non-goals | No Model-40 boot shortcut, FDC/DMA/PIC repair, XT topology, time-axis, session, generated-ledger, or broad fixture change; no firmware/media import; no acceptance of unrelated worktree edits. |
-| Reference Baseline | `4acd3e12`; [S3 ledger](../etc/evidence/t498-s3-model40-startup-chain-ledger.md) and retained T496 S7 candidate record. |
-| Candidate Proposal | [Four-profile supported DOS media matrix](../proposals/m5-four-profile-supported-media-matrix.md). |
-| Files And ABI Surface | `CMakeLists.txt` and `CMakePresets.json`; Core-private reset fetch/mapping implementation and declaration; one Core smoke; developer artifact. No VM/profile public ABI. |
-| Applicable Rules | Core owns CPU reset and immutable-ROM mapping; CMake owns one registered source graph; VM/profile cannot route reset bytes or choose a reset exception; all non-reset worktree edits remain unowned by this S. |
-| Verification | Fresh configure from a clean detached baseline with the selected closure; optimized Release reset-ROM and existing firmware-capability smokes; focused CTest registration; documentation governance; review exact staged paths. |
-| Expected Markers | `M5:T496:S7:RESET-ROM-ALIAS:OK`, retained firmware/ROM-alias markers, and a successful fresh CMake configure. |
-| Asset Needs | None. |
-| Reporting Requirements | State the exact staged reset/build closure, explicit preserved non-members, source/artifact effect, and before/after fresh-configure result. |
-| Stop Conditions | Stop if the reset mechanism requires a profile-side memory route, a second ROM owner, a public mutable layout, or any non-reset worktree change to compile. |
-| Exit Criteria | The selected minimum closure fresh-configures and passes focused proof from a clean source tree; every non-member worktree edit remains unstaged and is named for a later receiver; no Model-40 behavior claim is made. |
-| Original Owner Request | Preserve the discovered Core/CPU/reset/memory/session changes correctly while completing all selected profile/media validation. |
-| Similar-Issue Sweep | Check 80286 and 80386 reset vectors, ordinary low-ROM transfer, firmware-less fixture fallback, and existing firmware-alias capability; do not infer FDD startup from reset success. |
-
-### S4 Corrective Brief: topology construction closure
-
-Clean S4 product compilation proves that the committed default PC/AT profile
-already consumes the multi-window topology contract while its Core owner was
-left in the preserved worktree.  The corrective closure is limited to the
-existing Core absent-memory and zero-parity Port-B owner, immutable PC/AT
-topology materialization, and their focused plan/profile tests.  It excludes
-DMA transfer semantics, scheduler/deadline behavior, timeline optimization,
-CPU diagnostic cleanup, XT timing, firmware assembly, and all generated
-timing-result edits.  The result must fresh-configure and build the complete
-Release product from a clean worktree before the reset batch can be accepted.
-
 ## Current Technical Baseline
 
 - **Current developer artifact:** CMake target `vm-0-5-0495` emitted
@@ -72,7 +39,7 @@ Release product from a clean worktree before the reset batch can be accepted.
 
 | Task | Compact result |
 | --- | --- |
-| T498 S3 | Accepted: the external-ROM Model-40 run proves reset through the recorded protected-mode checkpoint, rules out media format and unavailable copied display as the first cause, and selects firmware-to-board progression before any FDC/DMA/PIC repair. The uncommitted reset-ROM construction batch is preserved for separate correction. [Ledger](../etc/evidence/t498-s3-model40-startup-chain-ledger.md). |
+| T498 S4 | Accepted: clean Release proof separates the Core reset-ROM and immutable PC/AT topology prerequisite from the mixed candidate worktree; reset, firmware, plan, resolver and topology smokes pass. The remaining candidates stay preserved and unaccepted, while Model-40 firmware-to-board progression remains the selected receiver. [Closure](../etc/evidence/t498-s4-reset-rom-build-closure.md). |
 | T497 | Closed: original Model-339 factory 1.2-MB/compatible-360-KB media behavior now has one descriptor/session/FDD path, and the 360-KB DOS installer replay closes its one missing monochrome-aperture mapping; a 286-compatible 1.2-MB external replay transfers to T498. [Closure](../history/M5-T497-ibm-5170-native-floppy-contract.md). |
 | T496 | Closed: one Core FDC result/IRQ lifecycle now releases IRQ6 at normal-result acknowledgement, and the selected IBM 5160 DOS terminal plus focused FDC regressions pass without a BIOS/VM/media workaround. [Closure](../history/M5-T496-xt-keyboard-device.md). |
 | T495 | Closed: the selected IBM 5160-268 is functionally ready with source-backed L3 relations and explicit L2 limits; 13/13 focused, 300/300 fresh current and specialized gates pass, without a physical/wall-clock overclaim. [Decision](../etc/evidence/t495-s2-xt-final-model-decision.md). |
