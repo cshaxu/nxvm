@@ -500,37 +500,42 @@ int main(C_INT argc, C_CHAR **argv)
         else waiting_for_interrupt = 0;
         now = GetTickCount64();
         if (now >= next_display_capture) {
-            if (core_machine_capture_display_snapshot(session->core_machine,
-                    &snapshot) != TYPE_STATUS_OK) {
-                STD_PRINTF("BOOT-PROBE=display-failed\n");
-                goto done;
-            }
-            if (vm_byob_snapshot_has_prompt(&snapshot)) {
-                STD_PRINTF("BOOT-PROBE=dos-prompt\n");
-                exit_code = 0;
-                goto done;
-            }
-            if (vm_byob_snapshot_has(&snapshot, "Current date")) {
-                STD_PRINTF("BOOT-PROBE=date-input\n");
-                exit_code = 0;
-                goto done;
-            }
-            if (vm_byob_snapshot_has(&snapshot, "ENTER=Continue")) {
-                STD_PRINTF("BOOT-PROBE=installer-ready\n");
-                exit_code = 0;
-                goto done;
-            }
-            current = vm_byob_snapshot_checksum(&snapshot);
-            post_memory_failure |= vm_byob_snapshot_has(&snapshot, "201");
-            post_keyboard_failure |= vm_byob_snapshot_has(&snapshot, "301");
-            post_floppy_failure |= vm_byob_snapshot_has(&snapshot, "601");
-            post_resume_required |= vm_byob_snapshot_has(&snapshot, "RESUME");
-            if (!have_checksum || current != checksum) {
-                checksum = current;
-                have_checksum = 1;
-                progress = now;
-            }
+            type_status display_status = core_machine_capture_display_snapshot(
+                session->core_machine, &snapshot);
+
             next_display_capture = now + VM_BYOB_BOOT_DISPLAY_CADENCE_MILLISECONDS;
+            if (display_status != TYPE_STATUS_OK && display_status != TYPE_STATUS_UNSUPPORTED) {
+                STD_PRINTF("BOOT-PROBE=display-failed-status=%u\n",
+                    (unsigned int)display_status);
+                goto done;
+            }
+            if (display_status == TYPE_STATUS_OK) {
+                if (vm_byob_snapshot_has_prompt(&snapshot)) {
+                    STD_PRINTF("BOOT-PROBE=dos-prompt\n");
+                    exit_code = 0;
+                    goto done;
+                }
+                if (vm_byob_snapshot_has(&snapshot, "Current date")) {
+                    STD_PRINTF("BOOT-PROBE=date-input\n");
+                    exit_code = 0;
+                    goto done;
+                }
+                if (vm_byob_snapshot_has(&snapshot, "ENTER=Continue")) {
+                    STD_PRINTF("BOOT-PROBE=installer-ready\n");
+                    exit_code = 0;
+                    goto done;
+                }
+                current = vm_byob_snapshot_checksum(&snapshot);
+                post_memory_failure |= vm_byob_snapshot_has(&snapshot, "201");
+                post_keyboard_failure |= vm_byob_snapshot_has(&snapshot, "301");
+                post_floppy_failure |= vm_byob_snapshot_has(&snapshot, "601");
+                post_resume_required |= vm_byob_snapshot_has(&snapshot, "RESUME");
+                if (!have_checksum || current != checksum) {
+                    checksum = current;
+                    have_checksum = 1;
+                    progress = now;
+                }
+            }
         }
         if (!have_linear_pc || result.linear_pc != linear_pc) {
             linear_pc = result.linear_pc;

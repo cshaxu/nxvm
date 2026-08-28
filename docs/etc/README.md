@@ -72,6 +72,7 @@ principal documents named in [docs/README.md](../README.md).
 | `evidence/t497-s4-ibm5170-floppy-implementation.md` | IBM 5170 floppy owner | T497 S4 corrects the Model-339 factory 1.2-MB drive contract and proves native/compatible/rejected session selection. |
 | `evidence/t497-s5-ibm5170-byob-media.md` | IBM 5170 BYOB owner | T497 S5 records Model-339 and Default-AT semantic media replays and the sole absent-monochrome-aperture repair. |
 | `evidence/t498-s1-supported-media-matrix.md` | Four-profile media owner | T498 S1 freezes each admitted profile/CPU/floppy row, present semantic terminal and external-input gap. |
+| `evidence/t498-s2-release-byob-replay.md` | Four-profile media owner | T498 S2 records seven semantic Release terminals, one named external-input gap, the shared unavailable-display observation repair, and the complete Model-40 startup receiver. |
 | `evidence/t486-s1-8088-original-source-ledger.md` | Core CPU timing owner | T486 S1's visually verified Intel 1981 source corpus, scan/OCR boundary and finite Table-2-21 basis for the following complete List-1 ledger. |
 | `evidence/t486-s2-8088-function-timing-list-1.md` | Core CPU timing owner | T486 S2's finite 8088 Table-2-21 function/timing List 1, including all mnemonic groups, prefix entries, explicit non-instruction entries and manual timing boundaries. |
 | `evidence/t486-s3-8088-current-code-gap-list-2.md` | Core CPU timing owner | T486 S3's complete List-1-to-code-owner ledger, current 8088 timing dispositions and one-owner implementation boundary. |

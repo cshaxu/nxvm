@@ -2,6 +2,27 @@
 
 ## Current Work
 
+## M5 T498 S2 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | The owner-approved persistent four-profile DOS-validation objective, matrix proposal, and accepted T498 S1 admit the Release replay of the frozen rows. |
+| Objective | Reproduce every row with currently lawful local inputs in Release mode and record a semantic terminal or the complete first-failure facts. |
+| Non-goals | No firmware/media import, no image modification, no inferred geometry, no timeout-as-success, and no runtime repair until a complete owner batch is selected. |
+| Reference Baseline | `35a5cb03`; [matrix proposal](../proposals/m5-four-profile-supported-media-matrix.md) and [S1 matrix](../etc/evidence/t498-s1-supported-media-matrix.md). |
+| Candidate Proposal | [Four-profile supported DOS media matrix](../proposals/m5-four-profile-supported-media-matrix.md). |
+| Files And ABI Surface | T498 S2 evidence and documentation index only unless a replay establishes one complete owner-qualified repair batch; no ABI is planned. |
+| Applicable Rules | Profile fixes physical surface; session makes one explicit format request; FDD owns mounted geometry; Core owns execution and devices; protected BYOB assets remain external. |
+| Verification | Build the Release BYOB probe; replay every locally supplied valid matrix row; record `dos-prompt`, `date-input`, `installer-ready`, or complete first terminal facts; run applicable focused gate and documentation governance before P1. |
+| Expected Markers | `M5:T498:S2:REPLAY:OK` or `M5:T498:S2:REPLAY:OWNER-BATCH`. |
+| Asset Needs | Owner-supplied external MS-DOS images and lawful external firmware only; neither paths, hashes, nor bytes enter the repository. |
+| Reporting Requirements | Report each frozen row's actual terminal, the exact external-input disposition, and any full mechanism batch selected for a later S. |
+| Stop Conditions | Stop before code repair if a replay needs a missing input, a profile mutation, protected-material import, or a failure cannot yet be assigned to a complete shared owner batch. |
+| Exit Criteria | Every locally executable frozen row has a Release semantic result or complete first-failure record; input-only gaps and repair receivers are explicit. |
+| Original Owner Request | Test and repair all selected profiles, CPU families, and supported floppy media using MS-DOS images. |
+| Similar-Issue Sweep | Compare every same-format and same-CPU control row before selecting any repair; do not let one profile inherit another profile's terminal. |
+
 ## Current Technical Baseline
 
 - **Current developer artifact:** target `vm-0-5-0494`; the stripped Release
