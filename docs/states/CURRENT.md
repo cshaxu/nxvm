@@ -37,10 +37,11 @@ Release product from a clean worktree before the reset batch can be accepted.
 
 ## Current Technical Baseline
 
-- **Current developer artifact:** target `vm-0-5-0495` is pending clean
-  Release verification. The last verified stripped artifact remains
-  `nxvm_0_5_0494.exe` with SHA-256
-  `C7BDFD1CE67917373DCD762E093D8A5FF86798DC4E59DEF162B5682EB6B0686A`.
+- **Current developer artifact:** CMake target `vm-0-5-0495` emitted
+  `nxvm_0_5_0495.exe` in a clean-worktree stripped Release build from
+  `5a9fe9ed`, SHA-256
+  `437994843CDBE7581ABF7948AF469256B6C54C91897F7EC0DF118F61ED830267`.
+  It retains the runtime debugger and contains no compiler debug information.
   Debug remains the current-gate route. T471 preserves Core-owned progression:
   a verified axis is Standard-paced only by host waiting against completed
   Core progress. T472 extends that comparison to an explicit L2 macro axis,
