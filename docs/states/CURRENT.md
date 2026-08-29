@@ -2,26 +2,9 @@
 
 ## Current Work
 
-## M5 T500 S5 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | The owner approved T500's single-person dual-role implementation, requiring every S to pass the complete repository-only unit suite, all test code to move under `test/`, and external integration to be only `test/integration/`. |
-| Objective | Close the new test routes with the narrow resource isolation already proved necessary, and demonstrate the owner-managed integration route without retaining any asset. |
-| Non-goals | No production/Core/VM behavior change; no external media import; no reduction of coverage based on speed; no fixed focused list, second test manifest/runner, forwarding CMake tree or tracked generated test output. |
-| Reference Baseline | `8c10dbb6`; [T500 record](../history/M5-T500-unit-and-integration-test-convergence.md); [S2 inventory](../etc/evidence/t500-s2-test-inventory.json); and [S3 architecture](../etc/evidence/t500-s3-component-test-architecture.md). |
-| Candidate Proposal | [M5 unit and integration test convergence](../proposals/m5-current-gate-execution-tiering.md). |
-| Files And ABI Surface | `test/` sources, CMake test registration and test-only runners. Product source, public ABI, profile behavior and external assets remain unchanged. |
-| Applicable Rules | One `test/` root; repository-only source follows its `src` owner; external scenarios only `test/integration/`; one CMake membership authority and CTest executor; no tracked output mutation or broad serialization. |
-| Verification | Run the complete repository-only unit route, then the owner-managed integration route with available owner media. Confirm only the seven host-thread tests retain `RUN_SERIAL`; all other tests retain four-way CTest parallelism. |
-| Expected Markers | `TEST-ROUTE-PARALLEL`, `TEST-INTEGRATION-BYOB`, and `TEST-NO-ASSET-RETENTION`. |
-| Asset Needs | Owner-managed `fdd.img`, `fdd-msdos500.img`, and `hdd.img`; paths are configuration inputs only and must not be recorded in evidence. |
-| Reporting Requirements | Report route counts, parallel wall time, retained narrow isolation, test result and absence of tracked output/media. |
-| Stop Conditions | Stop if an integration result requires a product correction, an asset would need committing, or a wider serial setting is proposed without a proven shared resource. |
-| Exit Criteria | Unit and integration routes pass; no asset or generated result is tracked; resource isolation remains narrow; documentation governance and actual-change review pass. |
-| Original Owner Request | Reorganize all tests beneath `test/` by `src` component, place external integration beneath `test/integration/`, retain comprehensive coverage and remove needless test complexity. |
-| Similar-Issue Sweep | Cover integration arguments, route labels, preset execution, owned workspaces, serial host-thread exceptions, generated result paths and worktree cleanliness. |
+No active packet. T500 closed at `3ac74249`: unit 287/287 and integration
+15/15 pass with the single `test/` tree and exclusive routes. See the
+[T500 history](../history/M5-T500-unit-and-integration-test-convergence.md).
 
 ## Current Technical Baseline
 
@@ -29,7 +12,7 @@
   `nxvm_0_5_0499.exe` in a stripped Release build, SHA-256
   `CFC66FE9D74176CC0B9F98D4657BC779B155A71DCA6E893AFB97920F8B6957D5`.
   It retains the runtime debugger and contains no compiler debug information.
-  Debug remains the current-gate route. T471 preserves Core-owned progression:
+  Debug uses the repository-only unit route. T471 preserves Core-owned progression:
   a verified axis is Standard-paced only by host waiting against completed
   Core progress. T472 extends that comparison to an explicit L2 macro axis,
   removes the fixed HLT backoff, and retains unqualified profiles as no-wait.

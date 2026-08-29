@@ -13,7 +13,6 @@ architecture and deliberately prefer direct owner-local corrections over new
 layers; each implementation admission must still establish its own finite
 sweep and regression evidence.
 
-1. [M5 unit and integration test convergence](../proposals/m5-current-gate-execution-tiering.md) - follows active scheduler-convergence work; gives every S one repository-only unit gate and every T one explicit external-ROM/disk integration gate, while restoring proven parallel execution without fixture races.
 1. [M5 four-profile post-scheduler media closure](../proposals/m5-four-profile-post-scheduler-media-closure.md) - replays the complete supported Release matrix after scheduler convergence, then resolves or source-gates the Model-40 ROM/FDD diagnostic at its earliest owner without a compatibility shortcut.
 1. [M5 Turbo L1 compatibility escape](../proposals/m5-turbo-l1-compatibility-escape.md) - follows active scheduler-convergence work; gives Turbo a Core-owned, bounded compatibility progression for active L1 waits with no source-qualified deadline, without creating a second time path or overstating timing fidelity.
 1. [M5 five-CPU complete instruction re-audit and repair](../proposals/m5-five-cpu-complete-instruction-reaudit.md) - follows the active scheduler-convergence work; freezes the complete 8086, 8088, 80186, 80286 and 80386DX instruction/state/timing universe before any repair.
