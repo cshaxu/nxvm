@@ -40,19 +40,20 @@ static C_INT vm_t287_has_text(const vm_session *session, const C_CHAR *text)
     return 0;
 }
 
-static C_INT vm_t287_wait_for_text(const vm_session *session, const C_CHAR *text,
-    DWORD timeout)
+static const C_CHAR *vm_t287_wait_for_text(const vm_session *session,
+    const C_CHAR *first, const C_CHAR *second, DWORD timeout)
 {
     DWORD elapsed;
 
     for (elapsed = 0u; elapsed < timeout; elapsed += 10u) {
-        if (vm_t287_has_text(session, text)) return 1;
+        if (vm_t287_has_text(session, first)) return first;
+        if (second != STD_NULL && vm_t287_has_text(session, second)) return second;
         if (elapsed >= 500u && !vm_session_control_is_running(&session->control)) {
-            return 0;
+            return STD_NULL;
         }
         Sleep(10u);
     }
-    return 0;
+    return STD_NULL;
 }
 
 static C_INT vm_t287_submit(const vm_session *session, const type_unsigned_8 *codes,
@@ -64,6 +65,7 @@ static C_INT vm_t287_submit(const vm_session *session, const type_unsigned_8 *co
     for (index = 0u; index < count; ++index) {
         if (core_machine_keyboard_receive_native_byte(session->core_machine,
                 codes[index]) != TYPE_STATUS_OK) return 0;
+        Sleep(25u);
     }
     return 1;
 }
@@ -137,7 +139,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
         .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
     };
     const type_unsigned_8 enter[] = {0x5au};
-    const type_unsigned_8 select_c[] = {0x21u, 0x12u, 0x2au, 0xf0u, 0x12u, 0x5au};
+    const type_unsigned_8 select_c[] = {0x21u, 0x12u, 0x4cu, 0xf0u, 0x12u, 0x5au};
     HANDLE thread = STD_NULL;
     vm_session *session = STD_NULL;
     type_unsigned_8 hdd_count = 0u;
@@ -146,6 +148,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
     type_unsigned_8 last_command = 0u;
     C_INT c_present;
     C_INT c_absent;
+    const C_CHAR *boot_text;
     const C_CHAR *stage = "create";
 
     if (argc != 3 || vm_session_create(&config, &session) != TYPE_STATUS_OK ||
@@ -153,13 +156,22 @@ C_INT main(C_INT argc, C_CHAR **argv)
     thread = CreateThread(STD_NULL, 0u, vm_t287_run_machine, session, 0u, STD_NULL);
     if (thread == STD_NULL) goto fail;
     stage = "date";
-    if (!vm_t287_wait_for_text(session, "Enter new date", VM_T287_BOOT_TIMEOUT_MILLISECONDS) ||
+    boot_text = vm_t287_wait_for_text(session, "Enter new date", "A:\\>",
+        VM_T287_BOOT_TIMEOUT_MILLISECONDS);
+    if (boot_text == STD_NULL) goto fail;
+    if (STD_STRCMP(boot_text, "A:\\>") != 0 &&
         !vm_t287_submit(session, enter, sizeof(enter))) goto fail;
     stage = "time";
-    if (!vm_t287_wait_for_text(session, "Enter new time", VM_T287_BOOT_TIMEOUT_MILLISECONDS) ||
-        !vm_t287_submit(session, enter, sizeof(enter))) goto fail;
+    if (STD_STRCMP(boot_text, "A:\\>") != 0) {
+        boot_text = vm_t287_wait_for_text(session, "Enter new time", "A:\\>",
+            VM_T287_BOOT_TIMEOUT_MILLISECONDS);
+        if (boot_text == STD_NULL) goto fail;
+        if (STD_STRCMP(boot_text, "A:\\>") != 0 &&
+            !vm_t287_submit(session, enter, sizeof(enter))) goto fail;
+    }
     stage = "prompt";
-    if (!vm_t287_wait_for_text(session, "A:\\>", VM_T287_BOOT_TIMEOUT_MILLISECONDS)) {
+    if (vm_t287_wait_for_text(session, "A:\\>", STD_NULL,
+            VM_T287_BOOT_TIMEOUT_MILLISECONDS) == STD_NULL) {
         goto fail;
     }
     stage = "bda-hdd-count";
@@ -172,9 +184,10 @@ C_INT main(C_INT argc, C_CHAR **argv)
     stage = "c-command";
     if (!vm_t287_submit(session, select_c, sizeof(select_c))) goto fail;
     stage = "c-drive";
-    c_present = vm_t287_wait_for_text(session, "C:\\>", VM_T287_COMMAND_TIMEOUT_MILLISECONDS);
-    c_absent = vm_t287_wait_for_text(session, "Invalid drive specification",
-        VM_T287_COMMAND_TIMEOUT_MILLISECONDS);
+    c_present = vm_t287_wait_for_text(session, "C:\\>", STD_NULL,
+        VM_T287_COMMAND_TIMEOUT_MILLISECONDS) != STD_NULL;
+    c_absent = vm_t287_wait_for_text(session, "Invalid drive specification", STD_NULL,
+        VM_T287_COMMAND_TIMEOUT_MILLISECONDS) != STD_NULL;
     vm_t287_report_frame(session);
     ata_commands = session->core_machine->hdc.data.command_count;
     last_command = session->core_machine->hdc.data.last_command;

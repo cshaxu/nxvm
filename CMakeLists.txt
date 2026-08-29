@@ -212,7 +212,7 @@ target_link_libraries(vm-default-pc-at-rom-materialization-smoke PRIVATE vm-comp
 add_executable(vm-timer-firmware-smoke
     test/integration/dos/vm_timer_firmware_smoke.c)
 target_link_libraries(vm-timer-firmware-smoke PRIVATE vm-composition)
-add_executable(vm-product-default-profile-smoke test/vm/machine/nxvm_default_profile_smoke.c)
+add_executable(vm-product-default-profile-smoke test/integration/dos/nxvm_default_profile_smoke.c)
 target_link_libraries(vm-product-default-profile-smoke PRIVATE vm-composition)
 add_executable(vm-product-console-smoke
     test/vm/product/nxvm_console_smoke.c
@@ -1518,7 +1518,7 @@ target_link_libraries(vm-product PUBLIC
     core-platform)
 
 add_executable(vm-execution-context-smoke
-    test/vm/machine/vm_execution_context_smoke.c
+    test/integration/dos/vm_execution_context_smoke.c
 )
 target_link_libraries(vm-execution-context-smoke PRIVATE
     vm-composition
@@ -1674,7 +1674,7 @@ add_executable(vm-ata-pio-dos-smoke
 )
 target_link_libraries(vm-ata-pio-dos-smoke PRIVATE vm-composition)
 add_executable(vm-byob-dos-boot-probe
-    test/vm/machine/vm_byob_dos_boot_probe.c
+    test/integration/dos/vm_byob_dos_boot_probe.c
 )
 target_link_libraries(vm-byob-dos-boot-probe PRIVATE vm-composition)
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
@@ -1682,21 +1682,21 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(vm-fdc-dma-boundary-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
 endif()
 add_executable(vm-windows31-checkpoint
-    test/vm/machine/vm_windows31_checkpoint.c
+    test/integration/windows/vm_windows31_checkpoint.c
 )
 target_link_libraries(vm-windows31-checkpoint PRIVATE vm-composition)
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(vm-windows31-checkpoint PRIVATE -Wall -Wextra -Wpedantic -Werror)
 endif()
 add_executable(vm-windows31-setup-probe
-    test/vm/machine/vm_windows31_setup_probe.c
+    test/integration/windows/vm_windows31_setup_probe.c
 )
 target_link_libraries(vm-windows31-setup-probe PRIVATE vm-composition)
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(vm-windows31-setup-probe PRIVATE -Wall -Wextra -Wpedantic -Werror)
 endif()
 add_executable(vm-windows31-int13-trace-probe
-    test/vm/machine/vm_windows31_int13_trace_probe.c
+    test/integration/windows/vm_windows31_int13_trace_probe.c
 )
 target_link_libraries(vm-windows31-int13-trace-probe PRIVATE vm-composition)
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
@@ -1710,7 +1710,7 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(vm-dos-fdisk-probe PRIVATE -Wall -Wextra -Wpedantic -Werror)
 endif()
 add_executable(vm-windows31-hdd-admission-probe
-    test/vm/machine/vm_windows31_hdd_admission_probe.c
+    test/integration/windows/vm_windows31_hdd_admission_probe.c
 )
 target_link_libraries(vm-windows31-hdd-admission-probe PRIVATE vm-composition)
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
@@ -2017,7 +2017,7 @@ add_executable(vm-debugger-recording-lifecycle-smoke
 target_link_libraries(vm-debugger-recording-lifecycle-smoke PRIVATE vm-machine)
 
 add_executable(vm-full-pc-session-smoke
-    test/vm/product/nxvm_full_pc_session_smoke.c
+    test/integration/dos/nxvm_full_pc_session_smoke.c
 )
 target_link_libraries(vm-full-pc-session-smoke PRIVATE vm-composition)
 
@@ -2610,8 +2610,14 @@ set(PROJECT_LEGACY_M1_FDD_SMOKE_TARGETS
 set(PROJECT_INTEGRATION_FDD_TARGETS
     vm-timer-firmware-smoke
     vm-debug-pause-boundary-smoke
-    vm-unified-debug-backend-smoke)
-set(PROJECT_INTEGRATION_FDD_HDD_TARGETS vm-product-session-smoke)
+    vm-unified-debug-backend-smoke
+    vm-execution-context-smoke)
+set(PROJECT_INTEGRATION_FDD_HDD_TARGETS
+    vm-product-session-smoke
+    vm-product-default-profile-smoke
+    vm-full-pc-session-smoke
+    vm-windows31-checkpoint
+    vm-windows31-int13-trace-probe)
 set(PROJECT_INTEGRATION_DOS_FDD_HDD_TARGETS vm-ata-pio-dos-smoke)
 set(PROJECT_INTEGRATION_HDD_TARGETS vm-hdc-hdd-boot-smoke)
 set(PROJECT_INTEGRATION_TEST_TARGETS
@@ -2816,6 +2822,9 @@ foreach(target IN LISTS PROJECT_INTEGRATION_HOST_THREAD_TARGETS)
     endif()
     set_tests_properties("integration.${target}" PROPERTIES RUN_SERIAL TRUE)
 endforeach()
+set_tests_properties("integration.vm-windows31-checkpoint" PROPERTIES
+    RUN_SERIAL TRUE
+    TIMEOUT 130)
 set_tests_properties("unit.vm-runner-display-cadence-smoke" PROPERTIES
     RUN_SERIAL TRUE)
 

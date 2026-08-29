@@ -2,24 +2,24 @@
 
 ## Current Work
 
-## M5 T500 S8 Packet
+## M5 T500 S9 Packet
 
 | Field | Required record |
 | --- | --- |
 | Identifier Mode | Continuation |
-| Admission And Approval | Continuation of the owner's approved single-person dual-role test-refactor objective; S7 establishes the finite, evidence-backed unit-corpus disposition. |
-| Objective | Complete the repository-only portion: register distinct passing unit targets, remove four empty assertions, and repair each retained failing unit contract before registration. |
-| Non-goals | No product behavior change, external asset import, integration relocation, EGA split, bulk registration, coverage reduction or new test framework. |
+| Admission And Approval | Continuation of the owner's approved single-person dual-role test-refactor objective; S8 closes the repository-only corpus. The owner additionally approved T500 S6 unit-coverage qualification as a T-level closure requirement on 2026-08-28. |
+| Objective | Place each external-media scenario under `test/integration/`, retain one explicit BYOB authority for diagnostics, and keep unit tests asset-free. |
+| Non-goals | No guest-media import, product behavior change, promotion of diagnostics to the default integration route, EGA split, or new test framework. |
 | Reference Baseline | `da1b01d0`; [T500 S2 inventory](../etc/evidence/t500-s2-test-inventory.json) and [T500 architecture](../etc/evidence/t500-s3-component-test-architecture.md). |
 | Candidate Proposal | [M5 unit and integration test convergence](../proposals/m5-current-gate-execution-tiering.md). |
-| Files And ABI Surface | Test-only sources, CMake test membership and test evidence; no product ABI. |
-| Applicable Rules | One owner-local test tree; one route per retained target; unit no external input; integration BYOB only; no duplicate scenario source. A repeated owner-local semantic matrix uses the existing owner fixture plus legal case data, not CMake case expansion or a generic cross-owner framework. The completed S8 test/CMake code delta must be non-positive: new matrix coverage deletes equivalent repeated setup or paths. |
-| Verification | Run each repaired retained candidate directly, prove every registered unit target has exactly one unit CTest route, then run the complete unit route. |
-| Expected Markers | `TEST-CORPUS-UNIT-ROUTE`, `TEST-CORPUS-EMPTY-ASSERTION-REMOVED`, and `TEST-NO-BULK-REGISTRATION`. |
+| Files And ABI Surface | Integration test sources, CMake test membership and evidence; no product ABI. |
+| Applicable Rules | One owner-local test tree; one route per retained target; unit no external input; integration BYOB only; no duplicate scenario source. |
+| Verification | Run complete unit, then integration targets with their declared FDD/HDD inputs; confirm diagnostics retain their existing opt-in authority. |
+| Expected Markers | `TEST-INTEGRATION-BYOB-ROUTE` and `TEST-NO-DIAGNOSTIC-PROMOTION`. |
 | Asset Needs | None. |
-| Reporting Requirements | Report each registration, test repair and deletion with its asserted surface or replacement coverage. |
-| Stop Conditions | Stop if repairing an assertion needs a product behavior change or reveals a source-ownership ambiguity. |
-| Exit Criteria | The 31 repository-only candidates have their S7 disposition implemented, all retained tests have exactly one unit route, the complete test/CMake code delta is non-positive while branch/case coverage increases, and the full unit route passes. |
+| Reporting Requirements | Report each moved scenario, its external input contract and diagnostic authority. |
+| Stop Conditions | Stop if a scenario needs undisclosed media, a second command authority, or a product behavior change. |
+| Exit Criteria | Every S7 external scenario source is under `test/integration/`; unit remains asset-free; fixed-input integrations pass; diagnostics retain exactly one opt-in route. T500 remains open until S6 supplies the proposal's component-owned coverage ledger and reconciled reproducible coverage report. |
 | Original Owner Request | Implement the testing refactor completely, organize tests by source ownership, and do not leave unexamined or redundant test paths. |
 | Similar-Issue Sweep | Compare target source, CTest registration, input contract, platform guard and assertion overlap for every inventory row. |
 
