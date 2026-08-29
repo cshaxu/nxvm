@@ -2,10 +2,26 @@
 
 ## Current Work
 
-- **M5 T501 progress:** S1 accepted the fresh nine-row Release matrix; S2
-  classified the complete Model-40 diagnostic path; S3 transferred only its
-  source-underdetermined D11--D12 board/FDD/ROM relation.  No runtime owner or
-  product behavior changed. [Transfer](../etc/evidence/t501-s2-model40-diagnostic-list-1.md).
+## M5 T501 S4 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner approved T501's four-profile closure; S3 P2 accepted its only Model-40 source-gated transfer. |
+| Objective | Advance the current target through its normal T501 identity update, rebuild the resulting stripped Release artifact, replay the complete frozen nine-row matrix, and close T501 with every row at a semantic terminal or one explicit source-gated boundary. |
+| Non-goals | No behavior repair, scheduler reopening, profile-specific time path, firmware/media import, local-path/hash/trace retention, or reclassification of the transferred Model-40 relation. |
+| Reference Baseline | `4e909284`; [proposal](../proposals/m5-four-profile-post-scheduler-media-closure.md), [S1 matrix](../etc/evidence/t501-s1-release-matrix-baseline.md), and [S3 transfer](../etc/evidence/t501-s2-model40-diagnostic-list-2.md). |
+| Candidate Proposal | [M5 four-profile post-scheduler media closure](../proposals/m5-four-profile-post-scheduler-media-closure.md). |
+| Files And ABI Surface | Release artifact, transient owner-provided BYOB observations, T501 evidence/history/status only; no product source or ABI change. |
+| Applicable Rules | Core remains sole time/controller/state owner; VM selects frozen inputs and copied presentation only.  External assets remain untracked and non-retained. |
+| Verification | Build the normal T501 current target; replay all nine rows through the existing BYOB route; run complete Debug unit and integration gates; record artifact hash without protected inputs. |
+| Expected Markers | `T501-S4-RELEASE-MATRIX-CLOSURE` and `T501-S4-ARTIFACT`. |
+| Asset Needs | Existing owner-authorized BYOB firmware/media only; no asset import or project cataloguing. |
+| Reporting Requirements | Record each frozen row's semantic terminal or explicit named boundary, exact T501 transfer reference, artifact identity/hash and complete gate results. |
+| Stop Conditions | Stop before any repair on a new diagnostic; classify it to its earliest owner rather than weakening a terminal or boundary. |
+| Exit Criteria | All nine rows are freshly classified; only the named 80286 input and Model-40 source-gated boundaries remain nonterminal; gates pass, 0501 is stripped Release, and no task-owned worktree residue remains. |
+| Original Owner Request | Single-person dual-role execution of the four-profile post-scheduler media closure, including correct Model-40 diagnosis or source-gated transfer. |
+| Similar-Issue Sweep | Recheck every profile/CPU/media row, all semantic terminal predicates, all external boundary wording, artifact debug-information exclusion and retained runtime debugger. |
 
 ## Current Technical Baseline
 
