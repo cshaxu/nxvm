@@ -14,6 +14,7 @@ principal documents named in [docs/README.md](../README.md).
 | `architecture/vm-profile-resolution-design.md` | Architecture owner | Supporting target design for two-root built-in VM profiles, profile resolution, the copied Core machine plan, and the custom `nxvm-session` YAML grammar. It does not change current runtime architecture, Queue, or ABI. |
 | `requirements/` | Product and profile owners | Future DOS, NXVDM, and profile admissions. |
 | `evidence/` | Verification owner | Capability, verification, baseline, and fixture evidence. |
+| `evidence/t500-s2-test-audit.md` | Verification owner | T500 S2's complete configured-test and test-target classification, resource findings and explicit non-registration dispositions; its generated inventory retains no owner-managed asset path. |
 | `evidence/t487-s1-5160-original-source-ledger.md` | Core board/timing owner | T487 S1's visually verified IBM 5160 publication ledger, OCR boundary and finite board-source basis for the complete List 1. |
 | `evidence/t487-s2-5160-board-function-timing-list-1.md` | Core board/timing owner | T487 S2's complete IBM 5160 board-only function/timing List 1, with each manual fact separated from chip-local and host-time boundaries. |
 | `evidence/t487-s3-5160-board-current-code-gap-list-2.md` | Core board/timing owner | T487 S3's complete board List-2 owner/path audit and one coherent Core/XT-board implementation boundary. |

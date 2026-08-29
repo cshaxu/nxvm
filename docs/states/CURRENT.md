@@ -2,7 +2,7 @@
 
 ## Current Work
 
-No active packet. T500 S1 is accepted; T500 remains open for the complete test audit.
+No active packet. T500 S2 is accepted; T500 remains open for the component-owned test architecture.
 
 ## Current Technical Baseline
 
@@ -40,7 +40,7 @@ No active packet. T500 S1 is accepted; T500 remains open for the complete test a
 
 | Task | Compact result |
 | --- | --- |
-| T500 S1 | Accepted: one future test-code root is `test/`; repository-only modules follow `src/` ownership and owner-managed scenarios are only `test/integration/`. The transient-focused and unit/integration rules are consistent; the existing non-media baseline passes 287/287. |
+| T500 S2 | Accepted: all 302 configured CTests and 43 unregistered test targets reconcile to the inventory; 15 external scenarios, three platform-conditional targets, a shared-source EGA decision and two tracked-output test side effects transfer to the test architecture/migration work. The current repository-only baseline passes 287/287. |
 | T499 | Closed: one Core deadline seam owns the current scheduler clients and the selected Model-40 D4 controller; the configured suite passes 302/302 and stripped Release 0499 is recorded. [Closure](../history/M5-T499-core-event-deadline-scheduler-convergence.md). |
 | T498 | Closed: the supported-media matrix has semantic terminals or an explicit external-input boundary for every non-Model-40 row, and its Model-40 predecessor transfers to the sole Core scheduler receiver without accepting a shortcut. [Closure](../history/M5-T498-four-profile-supported-media-matrix.md). |
 | T497 | Closed: original Model-339 factory 1.2-MB/compatible-360-KB media behavior now has one descriptor/session/FDD path, and the 360-KB DOS installer replay closes its one missing monochrome-aperture mapping; a 286-compatible 1.2-MB external replay transfers to T498. [Closure](../history/M5-T497-ibm-5170-native-floppy-contract.md). |
