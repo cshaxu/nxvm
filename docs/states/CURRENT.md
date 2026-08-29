@@ -4,22 +4,22 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Corrective continuation `T503 S3`; owner directed a controller-by-controller direct source/code/external audit on 2026-08-29 because S1/S2 are preliminary route inventory, not sufficient controller closure. |
-| Admission And Approval | Owner approved proposal update and execution on 2026-08-29. S3 consumes only 8259A PIC -> CPU: request, mask, cascade, INTA/vector, EOI and reset; normal commits and non-force remote pushes are permanently approved. |
-| Objective | Directly read Intel 8259A and applicable IBM board material, trace the PIC-to-CPU code route, cross-check selected external emulator logic, then identify and repair the complete PIC-to-CPU connection gap batch. |
-| Non-goals | No PIT, DMA, FDC, HDC, RTC, keyboard, VADP or generic scheduler repair; no firmware/VM workaround, polling loop, synthetic interrupt, second PIC state or physical INTA waveform claim. |
-| Reference Baseline | `1a4ed09a` (`M5 T503 S2 P3 admit DMA service routes`); prior S1/S2 evidence is preliminary only. |
-| Candidate Proposal | [M5 controller signal-chain convergence](../proposals/m5-controller-signal-chain-convergence.md), controller-specific S1; retained route inventory is not an acceptance substitute. |
-| Files And ABI Surface | Expected `src/core/machine/pic.[ch]`, CPU delivery owner and owner-local `test/core/` paths, plus evidence/state/history. Public interface changes require an opaque copied operation; no controller pointer or mutable layout crosses owners. |
+| Identifier Mode | Continuation `T503 S4`; S3 is accepted after direct 8259A-to-CPU reconciliation and a 312/312 complete unit replay. |
+| Admission And Approval | Owner approved controller-by-controller audit/repair and explicitly requires every S to repair its demonstrable downstream effects without a tail. S4 consumes 8253/8254 PIT -> PIC/DMA/speaker consumers; normal commits and non-force pushes are permanently approved. |
+| Objective | Directly read the selected Intel 8253/8254 and applicable board sources, trace all selected PIT channel/gate/output routes, cross-check external emulator logic, then repair the complete PIT-to-consumer gap batch. |
+| Non-goals | No guessed physical oscillator or wall-clock pacing, profile/firmware/VM workaround, polling loop, second PIT state or parallel time path. A genuinely independent controller fault transfers only after its causal boundary is proved. |
+| Reference Baseline | `4dc68983` (`M5 T503 S3 P2 reconcile PIC CPU route`); S1/S2 remain preliminary route inventory only. |
+| Candidate Proposal | [M5 controller signal-chain convergence](../proposals/m5-controller-signal-chain-convergence.md), controller-specific S4. |
+| Files And ABI Surface | Expected `src/core/machine/pit.[ch]`, PIC/DMA/speaker consumers and owner-local `test/core/` paths, plus evidence/state/history. Public interface changes require an opaque copied operation; no controller pointer or mutable layout crosses owners. |
 | Applicable Rules | `docs/README.md` Task Reading Set; `rules/EXECUTION.md` coverage-bearing, packet, P, review and test rules; `rules/DOCUMENT.md`; source policy; `rules/ARCHITECTURE.md` sole-owner/bounded-interface invariants; `rules/CODING.md` simplicity/test-boundary rules. |
-| Verification | Visually inspect and cite Intel 8259A/IBM pages; contrast real 86Box/MAME/PCjs/Bochs/QEMU PIC logic where available; trace normal/masked/cascade/EOI/reset delivery; run focused owner-local and complete repository-only unit tests. |
-| Expected Markers | `T503-S3-PIC-CPU-ROUTE`; every selected PIC request has one Core producer, PIC state path and CPU acknowledgement consumer. |
-| Asset Needs | Existing primary-source ledgers and read-only external emulator source only if an IBM board edge remains ambiguous; no external bytes enter the repository. |
-| Reporting Requirements | Record every PIC-to-CPU row's manual fact, NXVM route, external comparison, disposition, retained owner and code-size result; report focused/full-unit proof and any earliest-unit transfer. |
-| Stop Conditions | Stop for owner direction, an authority contradiction, unavailable source needed to classify a PIC connection, or a gap outside PIC-to-CPU; record/transfer rather than improvise a workaround. |
-| Exit Criteria | Every normal, masked, cascade, EOI, reset and CPU-acknowledgement PIC form has primary-source evidence, NXVM trace, external comparison or stated lack thereof, and focused/full-unit proof; any non-PIC gap transfers to its earliest unit T. |
-| Original Owner Request | Owner approved updating the proposal and beginning execution; prior direction requires complete audit and repair through one Core-owned path, not patch-by-patch compatibility behavior. |
-| Similar-Issue Sweep | Single/cascade PIC topology, all selected IRQ producers, masking/priority, two-stage vector acknowledgement, EOI/rotate/poll and reset across 5160, 5170, Model-40 and default-at. |
+| Verification | Visually inspect and cite applicable Intel/board pages; contrast actual 86Box/MAME/PCjs/Bochs/QEMU PIT logic where available; trace channel 0 IRQ0, channel 1 refresh and every selected channel-2 consumer with reset/gate/output/HLT behavior; run focused owner-local and complete repository-only unit tests. |
+| Expected Markers | `T503-S4-PIT-CONSUMER-ROUTE`; every selected PIT output has one Core producer, one stated consumer route and a source-qualified timing disposition. |
+| Asset Needs | Existing primary-source ledgers and read-only external emulator source only if a board edge remains ambiguous; no external bytes enter the repository. |
+| Reporting Requirements | Record every selected PIT row's manual fact, NXVM route, external comparison, disposition, retained owner and code-size result; report focused/full-unit proof and any earliest-unit transfer. |
+| Stop Conditions | Stop for owner direction, authority contradiction, unavailable source needed to classify a PIT connection, or a gap independent of the PIT route; do not improvise a workaround. |
+| Exit Criteria | Every selected channel/gate/output/reset form has primary-source evidence, NXVM trace, external comparison or stated lack thereof, and focused/full-unit proof; every demonstrable downstream effect is repaired in S4 or explicitly shown independent and transferred. |
+| Original Owner Request | Each S owns one controller audit and repair, but must also repair affected controllers/devices in the same S; no known causal tail remains. |
+| Similar-Issue Sweep | 8253/8254 personalities; channels 0--2; counter modes, read/write/latch/read-back where selected, reset/gates/outputs, IRQ0, refresh, speaker/NMI consumers and HLT wake-up across 5160, 5170, Model-40 and default-at. |
 
 ## Current Technical Baseline
 
@@ -67,6 +67,12 @@
 | T495 | Closed: the selected IBM 5160-268 is functionally ready with source-backed L3 relations and explicit L2 limits; 13/13 focused, 300/300 fresh current and specialized gates pass, without a physical/wall-clock overclaim. [Decision](../etc/evidence/t495-s2-xt-final-model-decision.md). |
 
 ## Recent Governance
+
+- **M5 T503 S3 P3:** coordinator review accepts `4dc68983`: the direct Intel
+  8259A/IBM/code/external reconciliation retains one PIC-to-CPU path; the
+  downstream test-contract repair preserves real DMA ownership of `80h`; the
+  isolated repository-only unit gate passes 312/312. S4 is admitted for the
+  complete PIT-to-consumer route under the same no-tail rule.
 
 - **M5 Td S155 P1:** closed T498 on its finite matrix/receiver evidence and
   admitted T499's complete Core scheduler-client migration. The Queue retains

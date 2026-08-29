@@ -75,8 +75,9 @@ causal effect; only an independent fault is transferred.
 
 1. **8259A PIC -> CPU.** Reconcile interrupt request, masking, cascade,
    INTA/vector, EOI and reset with the CPU consumer.
-2. **8253/8254 PIT -> PIC/DMA.** Reconcile channel 0 IRQ0 and each selected
-   channel-1 refresh consumer, including reset/gate/output and HLT wake-up.
+2. **8253/8254 PIT -> PIC/DMA/speaker.** Reconcile channel 0 IRQ0, each
+   selected channel-1 refresh consumer and every selected channel-2 consumer,
+   including reset/gate/output and HLT wake-up.
 3. **8237A DMA -> bound providers/memory.** Reconcile DREQ/DACK, request
    polarity, mode, verify, terminal count/EOP, cascade and reset for each
    selected FDC/HDC/refresh provider.
