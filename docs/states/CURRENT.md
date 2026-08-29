@@ -4,22 +4,22 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation `T503 S2`; S1 is accepted at `29a1dfe2` after 312/312 unit and documentation-governance pass. |
-| Admission And Approval | Owner approved proposal update and execution on 2026-08-29. S2 consumes R1 and R8 of the accepted T503 ledger: PIT0 -> PIC -> CPU, selected PIT1 -> DMA refresh, and their Core HLT/progression observation; normal commits and non-force remote pushes are permanently approved. |
-| Objective | Prove the complete clock/interrupt/refresh routes across the selected profiles and repair every connection defect at the existing Core owner. |
-| Non-goals | No profile-side emulation, firmware/VM workaround, polling loop, synthetic status, second scheduler, host-generated tick, physical-timing claim, or DMA/FDC/HDC/KBC/RTC/VADP internal implementation outside the selected route class. |
-| Reference Baseline | `29a1dfe2` (`M5 T503 S1 P1 freeze controller signal routes`), with 312/312 unit passing. |
-| Candidate Proposal | [M5 controller signal-chain convergence](../proposals/m5-controller-signal-chain-convergence.md); [S1 ledger](../etc/evidence/t503-s1-controller-signal-chain-ledger.md), R1/R8. |
-| Files And ABI Surface | Expected Core scheduler, PIT/PIC/DMA binding and owner-local tests under `src/core/machine/` and `test/core/`, plus active-state/evidence/history records. Public Core interfaces change only if an existing opaque observation cannot express the proven route; no controller pointer or mutable layout may cross it. |
+| Identifier Mode | Continuation `T503 S3`; S2 is accepted at `e3a8a5b6` after 9/9 focused and 312/312 complete unit proof. |
+| Admission And Approval | Owner approved proposal update and execution on 2026-08-29. S3 consumes R2--R4 of the accepted ledger: DMA service, FDC DMA2/IRQ6 and every selected HDC personality's DRQ/DMA/IRQ completion route; normal commits and non-force remote pushes are permanently approved. |
+| Objective | Prove and repair, in one owner-local batch if needed, all DMA/controller service, terminal/error and IRQ acknowledgement paths. |
+| Non-goals | No ATA-only inference for non-ATA HDC personalities, firmware/VM workaround, polling loop, synthetic status, second DMA/media state, second scheduler, host-generated tick or mechanical-service-time claim. |
+| Reference Baseline | `e3a8a5b6` (`M5 T503 S2 P2 reconcile clock signal routes`), with 312/312 unit passing. |
+| Candidate Proposal | [M5 controller signal-chain convergence](../proposals/m5-controller-signal-chain-convergence.md); [S1 ledger](../etc/evidence/t503-s1-controller-signal-chain-ledger.md), R2--R4. |
+| Files And ABI Surface | Expected `src/core/machine/dma.[ch]`, `fdc.[ch]`, `hdc.[ch]`, `machine_board.c` and owner-local `test/core/`/`test/vm/` paths, plus evidence/state/history. Public interface changes require an opaque copied operation; no raw controller/media pointer or mutable layout crosses owners. |
 | Applicable Rules | `docs/README.md` Task Reading Set; `rules/EXECUTION.md` coverage-bearing, packet, P, review and test rules; `rules/DOCUMENT.md`; source policy; `rules/ARCHITECTURE.md` sole-owner/bounded-interface invariants; `rules/CODING.md` simplicity/test-boundary rules. |
-| Verification | Trace normal/masked/reset PIT0 IRQ0, selected PIT1 refresh and HLT observation through Core; run focused owner-local tests and complete repository-only unit suite. S2 code closure requires full unit + integration under the active T rule. |
-| Expected Markers | `T503-S2-CLOCK-ROUTE`; no selected CPU HLT/wait is terminal while a connected qualified PIT/RTC deadline is pending. |
+| Verification | Trace normal/masked/reset/no-media/terminal paths for every selected DMA/FDC/HDC connection; run focused owner-local tests and complete repository-only unit suite. |
+| Expected Markers | `T503-S3-DMA-SERVICE-ROUTE`; DMA verify, terminal/error and IRQ acknowledgement cannot bypass the owning controller. |
 | Asset Needs | Existing primary-source ledgers and read-only external emulator source only if an IBM board edge remains ambiguous; no external bytes enter the repository. |
-| Reporting Requirements | Record before/after disposition of all R1/R8 state forms, retained owner and code-size result, focused/full gate results, actual-change review and any earliest-unit transfer. |
-| Stop Conditions | Stop for owner direction, an authority contradiction, unavailable source needed to classify a connection, or a gap outside R1/R8; record/transfer rather than improvise a workaround. |
-| Exit Criteria | All R1/R8 normal, masked, reset and HLT/wait forms have one evidenced Core route, focused proof and complete unit/integration success; any uncovered controller-internal gap is transferred to its earliest unit T. |
+| Reporting Requirements | Record before/after disposition of all R2--R4 forms, retained owner and code-size result, focused/full gate results, actual-change review and any earliest-unit transfer. |
+| Stop Conditions | Stop for owner direction, an authority contradiction, unavailable source needed to classify a connection, or a gap outside R2--R4; record/transfer rather than improvise a workaround. |
+| Exit Criteria | All R2--R4 normal, masked, reset, no-media, terminal/error and acknowledgement forms have one evidenced owner path and focused/full-unit proof; any uncovered controller-internal gap transfers to its earliest unit T. |
 | Original Owner Request | Owner approved updating the proposal and beginning execution; prior direction requires complete audit and repair through one Core-owned path, not patch-by-patch compatibility behavior. |
-| Similar-Issue Sweep | PIT personalities and counters, PIC topology/masks/acknowledgement, XT versus AT refresh selection, reset/cancellation and Core deadline observation across 5160, 5170, Model-40 and default-at. |
+| Similar-Issue Sweep | DMA verify/demand/single/block/cascade/terminal/EOP, FDC result and IRQ6 release, and ATA/Compaq/WD1003/Xebec normal/error/no-media completion across 5160, 5170, Model-40 and default-at. |
 
 ## Current Technical Baseline
 
