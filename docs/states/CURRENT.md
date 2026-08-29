@@ -2,9 +2,26 @@
 
 ## Current Work
 
-No active packet. T500 closed at `3ac74249`: unit 287/287 and integration
-15/15 pass with the single `test/` tree and exclusive routes. See the
-[T500 history](../history/M5-T500-unit-and-integration-test-convergence.md).
+## M5 T500 S6 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | The owner approved T500's single-person dual-role implementation; the failed T500 closure governance check requires this narrow corrective record. |
+| Objective | Restore the mandatory proposal index without re-queuing the completed T500 work. |
+| Non-goals | No source, test, media, artifact, route or queue-priority change. |
+| Reference Baseline | `1ea245fd`; [T500 history](../history/M5-T500-unit-and-integration-test-convergence.md). |
+| Candidate Proposal | [M5 unit and integration test convergence](../proposals/m5-current-gate-execution-tiering.md). |
+| Files And ABI Surface | `docs/states/QUEUE.md` only; no ABI surface. |
+| Applicable Rules | Every proposal remains indexed; closed work is not a candidate. |
+| Verification | Run documentation governance and review the queue classification. |
+| Expected Markers | `T500-PROPOSAL-INDEX`. |
+| Asset Needs | None. |
+| Reporting Requirements | Record the failed closure gate and corrective result. |
+| Stop Conditions | Stop if restoring the index would reintroduce T500 as an active candidate. |
+| Exit Criteria | Governance passes and T500 remains in a completed-proposal index only. |
+| Original Owner Request | Keep test governance clean, simple and without loose ends. |
+| Similar-Issue Sweep | Verify the closed proposal index continues to distinguish completed work from candidates. |
 
 ## Current Technical Baseline
 
