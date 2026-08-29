@@ -69,6 +69,9 @@ original manual and board pages, NXVM owner-to-consumer code trace, independent
 86Box/MAME/PCjs/Bochs/QEMU comparison where available, a finite gap table, then
 one owner-local repair batch and its tests. A passing adjacent controller or
 boot checkpoint cannot close another controller's S.
+When that route demonstrably affects a downstream controller, device, CPU,
+firmware path, or test contract, the same S repairs and regresses the whole
+causal effect; only an independent fault is transferred.
 
 1. **8259A PIC -> CPU.** Reconcile interrupt request, masking, cascade,
    INTA/vector, EOI and reset with the CPU consumer.

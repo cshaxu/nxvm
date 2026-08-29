@@ -19,7 +19,7 @@ static type_status timing_ledger_port_read(C_VOID *owner,
 {
     timing_ledger_state *state = (timing_ledger_state *)owner;
 
-    if (state == STD_NULL || out_value == STD_NULL || port != 0x0080u) {
+    if (state == STD_NULL || out_value == STD_NULL || port != 0x00e0u) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
     ++state->reads;
@@ -32,7 +32,7 @@ static type_status timing_ledger_port_write(C_VOID *owner,
 {
     timing_ledger_state *state = (timing_ledger_state *)owner;
 
-    if (state == STD_NULL || port != 0x0080u || value > 0xffu) {
+    if (state == STD_NULL || port != 0x00e0u || value > 0xffu) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
     ++state->writes;
@@ -93,7 +93,7 @@ static C_INT timing_ledger_prepare(core_machine **out_machine,
         test_core_machine_fixture_register_reset_mapping(machine,
             TIMING_LEDGER_RESET_LINEAR, TIMING_LEDGER_RESET_PHYSICAL,
             TIMING_LEDGER_WINDOW_BYTES) != TYPE_STATUS_OK ||
-        core_machine_install_port_provider(machine, 0x0080u, 0x0080u,
+        core_machine_install_port_provider(machine, 0x00e0u, 0x00e0u,
             &timing_ledger_port_provider, state) != TYPE_STATUS_OK ||
         !test_core_machine_fixture_bind_freeze_reset(machine,
             &timing_ledger_execution_provider, state)) {
@@ -508,8 +508,8 @@ static C_INT timing_ledger_test_memory(C_VOID)
 
 static C_INT timing_ledger_test_ports(C_VOID)
 {
-    static const type_unsigned_8 in_immediate[] = { 0xe4u, 0x80u };
-    static const type_unsigned_8 out_immediate[] = { 0xe6u, 0x80u };
+    static const type_unsigned_8 in_immediate[] = { 0xe4u, 0xe0u };
+    static const type_unsigned_8 out_immediate[] = { 0xe6u, 0xe0u };
     static const type_unsigned_8 in_dx[] = { 0xecu };
     static const type_unsigned_8 out_dx[] = { 0xeeu };
     timing_ledger_state state = { 0u, 0u, 0u };
@@ -527,12 +527,12 @@ static C_INT timing_ledger_test_ports(C_VOID)
     }
     if (!failed) {
         failed |= !timing_ledger_load(machine, in_dx, sizeof(in_dx)) ||
-            ((machine->executor_cpu.data.dx = 0x0080u), 0) ||
+            ((machine->executor_cpu.data.dx = 0x00e0u), 0) ||
             !timing_ledger_execute(machine, 1u, 13u, &state) || state.reads != 2u;
     }
     if (!failed) {
         failed |= !timing_ledger_load(machine, out_dx, sizeof(out_dx)) ||
-            ((machine->executor_cpu.data.dx = 0x0080u), 0) ||
+            ((machine->executor_cpu.data.dx = 0x00e0u), 0) ||
             !timing_ledger_execute(machine, 1u, 11u, &state) || state.writes != 2u;
     }
     core_machine_destroy(machine);

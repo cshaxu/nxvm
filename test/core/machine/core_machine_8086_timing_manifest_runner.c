@@ -51,7 +51,7 @@ static type_status timing_manifest_port_read(C_VOID *owner, type_unsigned_16 por
     type_unsigned_32 *out_value)
 {
     (C_VOID)owner;
-    if (out_value == STD_NULL || port != 0x0080u) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (out_value == STD_NULL || port != 0x00e0u) return TYPE_STATUS_INVALID_ARGUMENT;
     *out_value = 0x5au;
     return TYPE_STATUS_OK;
 }
@@ -60,7 +60,7 @@ static type_status timing_manifest_port_write(C_VOID *owner, type_unsigned_16 po
     type_unsigned_32 value)
 {
     (C_VOID)owner;
-    return port == 0x0080u && value <= 0xffffu ? TYPE_STATUS_OK :
+    return port == 0x00e0u && value <= 0xffffu ? TYPE_STATUS_OK :
         TYPE_STATUS_INVALID_ARGUMENT;
 }
 
@@ -149,7 +149,7 @@ static C_INT timing_manifest_prepare(core_machine **out_machine,
             TIMING_MANIFEST_WINDOW_BYTES);
     }
     if (status == TYPE_STATUS_OK) {
-        status = core_machine_install_port_provider(machine, 0x0080u, 0x0080u,
+        status = core_machine_install_port_provider(machine, 0x00e0u, 0x00e0u,
             &timing_manifest_port_provider, STD_NULL);
     }
     if (status == TYPE_STATUS_OK) {
@@ -1752,9 +1752,9 @@ static C_INT timing_manifest_probe_group2_register_cl(C_VOID)
 static C_INT timing_manifest_probe_immediate_port_io(C_VOID)
 {
     static const timing_manifest_recipe recipes[] = {
-        { "I86-IN-IMM", { 0xe4u, 0x80u }, 2u, 10u,
+        { "I86-IN-IMM", { 0xe4u, 0xe0u }, 2u, 10u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO },
-        { "I86-OUT-IMM", { 0xe6u, 0x80u }, 2u, 10u,
+        { "I86-OUT-IMM", { 0xe6u, 0xe0u }, 2u, 10u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO }
     };
     STD_SIZE_T index;
@@ -1777,7 +1777,7 @@ static C_INT timing_manifest_probe_dx_port_io(C_VOID)
 
     for (index = 0u; index < sizeof(recipes) / sizeof(recipes[0]); ++index) {
         if (timing_manifest_run_exact_recipe_with_inputs(&recipes[index], 0u,
-                0u, 0x0080u, CORE_MACHINE_RETIREMENT_CONTROL_NONE)) return 1;
+                0u, 0x00e0u, CORE_MACHINE_RETIREMENT_CONTROL_NONE)) return 1;
     }
     return 0;
 }

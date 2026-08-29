@@ -17,7 +17,7 @@ static type_status timing_80286_read(C_VOID *owner, type_unsigned_16 port,
 {
     timing_80286_state *state = (timing_80286_state *)owner;
 
-    if (state == STD_NULL || out_value == STD_NULL || port != 0x0080u)
+    if (state == STD_NULL || out_value == STD_NULL || port != 0x00e0u)
         return TYPE_STATUS_INVALID_ARGUMENT;
     ++state->reads;
     *out_value = 0x5au;
@@ -29,7 +29,7 @@ static type_status timing_80286_write(C_VOID *owner, type_unsigned_16 port,
 {
     timing_80286_state *state = (timing_80286_state *)owner;
 
-    if (state == STD_NULL || port != 0x0080u || value > 0xffffu)
+    if (state == STD_NULL || port != 0x00e0u || value > 0xffffu)
         return TYPE_STATUS_INVALID_ARGUMENT;
     ++state->writes;
     return TYPE_STATUS_OK;
@@ -70,7 +70,7 @@ static C_INT timing_80286_prepare(core_machine **out_machine,
         test_core_machine_fixture_register_reset_mapping(machine,
             TIMING_80286_RESET_LINEAR, TIMING_80286_RESET_PHYSICAL, 16u) !=
             TYPE_STATUS_OK || core_machine_install_port_provider(machine,
-            0x0080u, 0x0080u, &timing_80286_ports, state) != TYPE_STATUS_OK ||
+            0x00e0u, 0x00e0u, &timing_80286_ports, state) != TYPE_STATUS_OK ||
         !test_core_machine_fixture_bind_freeze_reset(machine,
             &timing_80286_execution, state)) {
         core_machine_destroy(machine);
@@ -1009,9 +1009,9 @@ static C_INT timing_80286_control_ports(C_VOID)
     static const type_unsigned_8 movsb[] = { 0xa4u };
     static const type_unsigned_8 rep[] = { 0xf3u, 0xa4u };
     static const type_unsigned_8 source[] = { 1u, 2u, 3u };
-    static const type_unsigned_8 out_imm[] = { 0xe6u, 0x80u };
+    static const type_unsigned_8 out_imm[] = { 0xe6u, 0xe0u };
     static const type_unsigned_8 out_dx[] = { 0xeeu };
-    static const type_unsigned_8 in_imm[] = { 0xe4u, 0x80u };
+    static const type_unsigned_8 in_imm[] = { 0xe4u, 0xe0u };
     static const type_unsigned_8 in_dx[] = { 0xecu };
     timing_80286_state state = { 0u, 0u, 0u };
     core_machine *machine = STD_NULL;
@@ -1037,12 +1037,12 @@ static C_INT timing_80286_control_ports(C_VOID)
     if (!failed) failed |= !timing_80286_load(machine, out_imm, sizeof(out_imm)) ||
         !timing_80286_run(machine, &state, 1u, 3u) || state.writes != 1u;
     if (!failed) failed |= !timing_80286_load(machine, out_dx, sizeof(out_dx)) ||
-        ((machine->executor_cpu.data.dx = 0x0080u), 0) ||
+        ((machine->executor_cpu.data.dx = 0x00e0u), 0) ||
         !timing_80286_run(machine, &state, 1u, 3u) || state.writes != 2u;
     if (!failed) failed |= !timing_80286_load(machine, in_imm, sizeof(in_imm)) ||
         !timing_80286_run(machine, &state, 1u, 5u) || state.reads != 1u;
     if (!failed) failed |= !timing_80286_load(machine, in_dx, sizeof(in_dx)) ||
-        ((machine->executor_cpu.data.dx = 0x0080u), 0) ||
+        ((machine->executor_cpu.data.dx = 0x00e0u), 0) ||
         !timing_80286_run(machine, &state, 1u, 5u) || state.reads != 2u;
     core_machine_destroy(machine);
     return failed;

@@ -5,7 +5,7 @@
 
 #define T359_S4_RESET_LINEAR 0xfffffff0u
 #define T359_S4_RESET_PHYSICAL 0x000ffff0u
-#define T359_S4_PORT 0x0080u
+#define T359_S4_PORT 0x00e0u
 #define T359_S4_TSS_BASE 0x00000600u
 #define T359_S4_IOMAP_BASE 0x0080u
 
@@ -150,7 +150,7 @@ static C_INT t359_s4_allow_permission(core_machine *machine, C_INT vm86)
     return core_machine_memory_write(machine, T359_S4_TSS_BASE + 0x66u,
         &iomap_base, sizeof(iomap_base)) == TYPE_STATUS_OK &&
         core_machine_memory_write(machine, T359_S4_TSS_BASE + iomap_base +
-            0x10u, &bitmap, sizeof(bitmap)) == TYPE_STATUS_OK;
+            0x1cu, &bitmap, sizeof(bitmap)) == TYPE_STATUS_OK;
 }
 
 static C_INT t359_s4_run(core_machine *machine, t359_s4_state *state,

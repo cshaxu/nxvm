@@ -18,7 +18,7 @@ static type_status timing_8086_port_read(C_VOID *owner, type_unsigned_16 port,
 {
     timing_8086_state *state = (timing_8086_state *)owner;
 
-    if (state == STD_NULL || out_value == STD_NULL || port != 0x0080u) {
+    if (state == STD_NULL || out_value == STD_NULL || port != 0x00e0u) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
     ++state->reads;
@@ -31,7 +31,7 @@ static type_status timing_8086_port_write(C_VOID *owner, type_unsigned_16 port,
 {
     timing_8086_state *state = (timing_8086_state *)owner;
 
-    if (state == STD_NULL || port != 0x0080u || value > 0xffffu) {
+    if (state == STD_NULL || port != 0x00e0u || value > 0xffffu) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
     ++state->writes;
@@ -78,7 +78,7 @@ static C_INT timing_8086_prepare(core_machine **out_machine,
         test_core_machine_fixture_register_reset_mapping(machine,
             TIMING_8086_RESET_LINEAR, TIMING_8086_RESET_PHYSICAL,
             TIMING_8086_WINDOW_BYTES) != TYPE_STATUS_OK ||
-        core_machine_install_port_provider(machine, 0x0080u, 0x0080u,
+        core_machine_install_port_provider(machine, 0x00e0u, 0x00e0u,
             &timing_8086_port_provider, state) != TYPE_STATUS_OK ||
         !test_core_machine_fixture_bind_freeze_reset(machine,
             &timing_8086_execution_provider, state)) {
@@ -572,9 +572,9 @@ static C_INT timing_8086_test_control_repeat_and_ports(C_VOID)
     static const type_unsigned_8 rep_movsb[] = { 0xf3u, 0xa4u };
     static const type_unsigned_8 segment_rep_movsb[] = { 0x26u, 0xf3u, 0xa4u };
     static const type_unsigned_8 source[] = { 0x11u, 0x22u, 0x33u };
-    static const type_unsigned_8 in_immediate[] = { 0xe4u, 0x80u };
+    static const type_unsigned_8 in_immediate[] = { 0xe4u, 0xe0u };
     static const type_unsigned_8 in_dx[] = { 0xecu };
-    static const type_unsigned_8 out_immediate[] = { 0xe6u, 0x80u };
+    static const type_unsigned_8 out_immediate[] = { 0xe6u, 0xe0u };
     static const type_unsigned_8 out_dx[] = { 0xeeu };
     timing_8086_state state = { 0u, 0u, 0u };
     core_machine *machine = STD_NULL;
@@ -628,7 +628,7 @@ static C_INT timing_8086_test_control_repeat_and_ports(C_VOID)
     }
     if (!failed) {
         failed |= !timing_8086_load(machine, in_dx, sizeof(in_dx)) ||
-            ((machine->executor_cpu.data.dx = 0x0080u), 0) ||
+            ((machine->executor_cpu.data.dx = 0x00e0u), 0) ||
             !timing_8086_execute(machine, 1u, 8u, &state) || state.reads != 2u;
     }
     if (!failed) {
@@ -638,7 +638,7 @@ static C_INT timing_8086_test_control_repeat_and_ports(C_VOID)
     }
     if (!failed) {
         failed |= !timing_8086_load(machine, out_dx, sizeof(out_dx)) ||
-            ((machine->executor_cpu.data.dx = 0x0080u), 0) ||
+            ((machine->executor_cpu.data.dx = 0x00e0u), 0) ||
             !timing_8086_execute(machine, 1u, 8u, &state) || state.writes != 2u;
     }
     core_machine_destroy(machine);

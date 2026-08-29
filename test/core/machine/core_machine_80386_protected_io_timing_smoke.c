@@ -26,7 +26,7 @@ static type_status timing_s7_port_read(C_VOID *owner, type_unsigned_16 port,
 {
     timing_s7_state *state = (timing_s7_state *)owner;
 
-    if (state == STD_NULL || out_value == STD_NULL || port != 0x0080u)
+    if (state == STD_NULL || out_value == STD_NULL || port != 0x00e0u)
         return TYPE_STATUS_INVALID_ARGUMENT;
     ++state->reads;
     *out_value = 0x5au;
@@ -38,7 +38,7 @@ static type_status timing_s7_port_write(C_VOID *owner, type_unsigned_16 port,
 {
     timing_s7_state *state = (timing_s7_state *)owner;
 
-    if (state == STD_NULL || port != 0x0080u || value > 0xffffu)
+    if (state == STD_NULL || port != 0x00e0u || value > 0xffffu)
         return TYPE_STATUS_INVALID_ARGUMENT;
     ++state->writes;
     return TYPE_STATUS_OK;
@@ -78,7 +78,7 @@ static C_INT timing_s7_prepare(core_machine **out_machine, timing_s7_state *stat
         test_core_machine_fixture_register_reset_mapping(machine,
             TIMING_S7_RESET_LINEAR, TIMING_S7_RESET_PHYSICAL, 16u) !=
             TYPE_STATUS_OK || core_machine_install_port_provider(machine,
-            0x0080u, 0x0080u, &timing_s7_ports, state) != TYPE_STATUS_OK ||
+            0x00e0u, 0x00e0u, &timing_s7_ports, state) != TYPE_STATUS_OK ||
         !test_core_machine_fixture_bind_freeze_reset(machine,
             &timing_s7_execution, state)) {
         core_machine_destroy(machine);
@@ -90,7 +90,7 @@ static C_INT timing_s7_prepare(core_machine **out_machine, timing_s7_state *stat
 
 static C_INT timing_s7_load(core_machine *machine, type_unsigned_8 opcode)
 {
-    type_unsigned_8 code[] = { opcode, 0x80u };
+    type_unsigned_8 code[] = { opcode, 0xe0u };
     STD_SIZE_T bytes = opcode >= 0xecu ? 1u : sizeof(code);
 
     return core_machine_reset(machine) == TYPE_STATUS_OK &&
@@ -122,7 +122,7 @@ static C_INT timing_s7_allow_permission(core_machine *machine, C_INT vm86,
     return core_machine_memory_write(machine, TIMING_S7_TSS_BASE + 0x66u,
         &iomap_base, sizeof(iomap_base)) == TYPE_STATUS_OK &&
         core_machine_memory_write(machine, TIMING_S7_TSS_BASE + iomap_base +
-            0x10u, &bitmap, sizeof(bitmap)) == TYPE_STATUS_OK;
+            0x1cu, &bitmap, sizeof(bitmap)) == TYPE_STATUS_OK;
 }
 
 static C_INT timing_s7_run_form(const timing_s7_form *form, C_INT mode)
@@ -146,7 +146,7 @@ static C_INT timing_s7_run_form(const timing_s7_form *form, C_INT mode)
         mode == 2, 0u);
     if (!failed) {
         machine->executor_cpu.data.eax = 0x11223344u;
-        machine->executor_cpu.data.edx = 0x00000080u;
+        machine->executor_cpu.data.edx = 0x000000e0u;
         failed |= core_machine_run(machine, budget, &result) != TYPE_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 1u ||
             result.ticks != ticks || result.elapsed_ticks != ticks ||
@@ -220,7 +220,7 @@ static C_INT timing_s7_test_permission_strings(C_VOID)
                     !timing_s7_allow_permission(machine, vm86, bitmap);
 
                 if (!failed) {
-                    machine->executor_cpu.data.edx = 0x00000080u;
+                    machine->executor_cpu.data.edx = 0x000000e0u;
                     machine->executor_cpu.data.esi = 0x00000200u;
                     machine->executor_cpu.data.edi = 0x00000100u;
                     failed |= core_machine_memory_write(machine, 0x0200u, &source,
@@ -264,7 +264,7 @@ static C_INT timing_s7_test_permission_budget(C_VOID)
         !timing_s7_load(machine, 0xecu) ||
         !timing_s7_allow_permission(machine, 0, 0u);
 
-    if (!failed) machine->executor_cpu.data.edx = 0x00000080u;
+    if (!failed) machine->executor_cpu.data.edx = 0x000000e0u;
     if (!failed) {
         failed |= core_machine_run(machine, insufficient, &result) != TYPE_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 0u ||

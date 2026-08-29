@@ -17,7 +17,7 @@ static type_status timing_port_read(C_VOID *owner, type_unsigned_16 port,
 {
     timing_port_state *state = (timing_port_state *)owner;
 
-    if (state == STD_NULL || out_value == STD_NULL || port != 0x0080u) {
+    if (state == STD_NULL || out_value == STD_NULL || port != 0x00e0u) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
     ++state->reads;
@@ -30,7 +30,7 @@ static type_status timing_port_write(C_VOID *owner, type_unsigned_16 port,
 {
     timing_port_state *state = (timing_port_state *)owner;
 
-    if (state == STD_NULL || port != 0x0080u || value > 0xffu) {
+    if (state == STD_NULL || port != 0x00e0u || value > 0xffu) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
     ++state->writes;
@@ -57,7 +57,7 @@ static C_INT timing_prepare(core_machine **out_machine,
         test_core_machine_fixture_register_reset_mapping(machine,
             TIMING_RESET_LINEAR, TIMING_RESET_PHYSICAL, TIMING_WINDOW_BYTES) !=
             TYPE_STATUS_OK ||
-        core_machine_install_port_provider(machine, 0x0080u, 0x0080u,
+        core_machine_install_port_provider(machine, 0x00e0u, 0x00e0u,
             &timing_port_provider, port_state) != TYPE_STATUS_OK ||
         core_machine_freeze_execution_providers(machine) != TYPE_STATUS_OK ||
         core_machine_reset(machine) != TYPE_STATUS_OK) {
@@ -281,7 +281,7 @@ static C_INT timing_test_physical_contract(C_VOID)
         test_core_machine_fixture_register_reset_mapping(machine,
             TIMING_RESET_LINEAR, TIMING_RESET_PHYSICAL, TIMING_WINDOW_BYTES) !=
             TYPE_STATUS_OK ||
-        core_machine_install_port_provider(machine, 0x0080u, 0x0080u,
+        core_machine_install_port_provider(machine, 0x00e0u, 0x00e0u,
             &timing_port_provider, &port_state) != TYPE_STATUS_OK ||
         core_machine_freeze_execution_providers(machine) != TYPE_STATUS_OK ||
         core_machine_reset(machine) != TYPE_STATUS_OK;
@@ -327,8 +327,8 @@ C_INT main(C_VOID)
     static const type_unsigned_8 register_mov[] = { 0xb8u, 0x34u, 0x12u };
     static const type_unsigned_8 prefixed_nop[] = { 0x26u, 0x90u };
     static const type_unsigned_8 memory_mov[] = { 0xa0u, 0x00u, 0x00u };
-    static const type_unsigned_8 out_port[] = { 0xe6u, 0x80u };
-    static const type_unsigned_8 in_port[] = { 0xe4u, 0x80u };
+    static const type_unsigned_8 out_port[] = { 0xe6u, 0xe0u };
+    static const type_unsigned_8 in_port[] = { 0xe4u, 0xe0u };
     static const type_unsigned_8 taken_branch[] = { 0x31u, 0xc0u, 0x74u, 0x01u, 0x90u };
     static const type_unsigned_8 not_taken_branch[] = { 0x31u, 0xc0u, 0x75u, 0x00u };
     static const type_unsigned_8 rep_movsb[] = { 0xb9u, 0x03u, 0x00u, 0xf3u, 0xa4u };

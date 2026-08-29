@@ -69,7 +69,7 @@ static type_status timing_80386_manifest_port_read(C_VOID *opaque,
     timing_80386_manifest_port_state *state =
         (timing_80386_manifest_port_state *)opaque;
 
-    if (state == STD_NULL || out_value == STD_NULL || port != 0x0080u) {
+    if (state == STD_NULL || out_value == STD_NULL || port != 0x00e0u) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
     ++state->reads;
@@ -83,7 +83,7 @@ static type_status timing_80386_manifest_port_write(C_VOID *opaque,
     timing_80386_manifest_port_state *state =
         (timing_80386_manifest_port_state *)opaque;
 
-    if (state == STD_NULL || port != 0x0080u) {
+    if (state == STD_NULL || port != 0x00e0u) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
     (C_VOID)value;
@@ -591,7 +591,7 @@ static type_status timing_80386_manifest_prepare_recipe_machine(
             "I386-STRING-OUTS") || timing_80386_manifest_key_has_prefix(key_id,
             "I386-REP-INS") || timing_80386_manifest_key_has_prefix(key_id,
             "I386-REP-OUTS"))) {
-        machine->executor_cpu.data.edx = 0x0080u;
+        machine->executor_cpu.data.edx = 0x00e0u;
     }
     if (status == TYPE_STATUS_OK && (timing_80386_manifest_key_has_prefix(key_id,
             "I386-STRING-") || timing_80386_manifest_key_has_prefix(key_id,
@@ -756,7 +756,7 @@ static C_INT timing_80386_manifest_run_recipe(const C_CHAR *key_id,
     if (status == TYPE_STATUS_OK) status = core_machine_bind_execution_provider(
         machine, &timing_80386_manifest_execution, STD_NULL);
     if (status == TYPE_STATUS_OK) status = core_machine_install_port_provider(
-        machine, 0x0080u, 0x0080u, &timing_80386_manifest_ports, &port_state);
+        machine, 0x00e0u, 0x00e0u, &timing_80386_manifest_ports, &port_state);
     if (status == TYPE_STATUS_OK) status = core_machine_freeze_execution_providers(machine);
     if (status == TYPE_STATUS_OK) status = core_machine_reset(machine);
     if (status == TYPE_STATUS_OK) status = core_machine_memory_write(machine,
@@ -817,7 +817,7 @@ static C_INT timing_80386_manifest_run_recipe(const C_CHAR *key_id,
             "I386-STRING-OUTS") || timing_80386_manifest_key_has_prefix(key_id,
             "I386-REP-INS") || timing_80386_manifest_key_has_prefix(key_id,
             "I386-REP-OUTS"))) {
-        machine->executor_cpu.data.edx = 0x0080u;
+        machine->executor_cpu.data.edx = 0x00e0u;
     }
     if (status == TYPE_STATUS_OK && (timing_80386_manifest_key_has_prefix(key_id,
             "I386-STRING-") || timing_80386_manifest_key_has_prefix(key_id,
@@ -1432,7 +1432,7 @@ static C_INT timing_80386_manifest_run_s4_base_recipes(C_VOID)
 
         if (width == 2u) program[bytes++] = 0x66u;
         program[bytes++] = opcode;
-        if (port == 0u) program[bytes++] = 0x80u;
+        if (port == 0u) program[bytes++] = 0xe0u;
         if (STD_SNPRINTF(key_id, sizeof(key_id), "I386-%s-%s-%s", io_names[io],
                 ports[port], widths[width]) < 0 ||
             timing_80386_manifest_run_recipe(key_id, program, bytes)) return 1;
@@ -1494,7 +1494,7 @@ static C_INT timing_80386_manifest_run_s4_repeat_continuation(
     if (status == TYPE_STATUS_OK) status = core_machine_bind_execution_provider(
         machine, &timing_80386_manifest_execution, STD_NULL);
     if (status == TYPE_STATUS_OK) status = core_machine_install_port_provider(machine,
-        0x0080u, 0x0080u, &timing_80386_manifest_ports, &port_state);
+        0x00e0u, 0x00e0u, &timing_80386_manifest_ports, &port_state);
     if (status == TYPE_STATUS_OK) status = core_machine_freeze_execution_providers(machine);
     if (status == TYPE_STATUS_OK) status = core_machine_reset(machine);
     if (status == TYPE_STATUS_OK) status = timing_80386_manifest_prepare_recipe_machine(

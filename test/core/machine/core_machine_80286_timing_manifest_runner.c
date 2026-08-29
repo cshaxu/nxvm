@@ -86,7 +86,7 @@ static type_status timing_80286_manifest_port_read(C_VOID *owner,
     type_unsigned_16 port, type_unsigned_32 *out_value)
 {
     (C_VOID)owner;
-    if (port != 0x0080u || out_value == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (port != 0x00e0u || out_value == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
     *out_value = 0x5au;
     return TYPE_STATUS_OK;
 }
@@ -95,7 +95,7 @@ static type_status timing_80286_manifest_port_write(C_VOID *owner,
     type_unsigned_16 port, type_unsigned_32 value)
 {
     (C_VOID)owner;
-    return port == 0x0080u && value <= 0xffffu ? TYPE_STATUS_OK :
+    return port == 0x00e0u && value <= 0xffffu ? TYPE_STATUS_OK :
         TYPE_STATUS_INVALID_ARGUMENT;
 }
 
@@ -870,7 +870,7 @@ static C_INT timing_80286_manifest_prepare(core_machine **out_machine,
             TIMING_80286_MANIFEST_RESET_PHYSICAL,
             TIMING_80286_MANIFEST_WINDOW_BYTES);
     if (status == TYPE_STATUS_OK) status = core_machine_install_port_provider(
-        machine, 0x0080u, 0x0080u, &timing_80286_manifest_ports, STD_NULL);
+        machine, 0x00e0u, 0x00e0u, &timing_80286_manifest_ports, STD_NULL);
     if (status == TYPE_STATUS_OK) status = core_machine_bind_execution_provider(
         machine, &timing_80286_manifest_execution, STD_NULL);
     if (status == TYPE_STATUS_OK) status = core_machine_freeze_execution_providers(machine);
@@ -901,7 +901,7 @@ static C_INT timing_80286_manifest_prepare(core_machine **out_machine,
         machine->executor_cpu.data.ebp = 0x0800u;
         machine->executor_cpu.data.esi = 0x0800u;
         if (timing_80286_manifest_is_dx_port(key_id)) {
-            machine->executor_cpu.data.edx = 0x0080u;
+            machine->executor_cpu.data.edx = 0x00e0u;
         }
         status = core_machine_memory_write(machine, 0x1000u, &operand,
             sizeof(operand));
@@ -1008,7 +1008,7 @@ static C_INT timing_80286_manifest_prepare_protected_system(
         program == STD_NULL || bytes == 0u) return 0;
     status = core_machine_create(&config, &machine);
     if (status == TYPE_STATUS_OK) status = core_machine_install_port_provider(
-        machine, 0x0080u, 0x0080u, &timing_80286_manifest_ports, STD_NULL);
+        machine, 0x00e0u, 0x00e0u, &timing_80286_manifest_ports, STD_NULL);
     if (status == TYPE_STATUS_OK) status = core_machine_bind_execution_provider(
         machine, &timing_80286_manifest_execution, STD_NULL);
     if (status == TYPE_STATUS_OK) status = core_machine_freeze_execution_providers(machine);
@@ -1276,7 +1276,7 @@ static C_INT timing_80286_manifest_run_repeat_recipe(
         machine->executor_cpu.data.di = source_odd ? 0x1100u :
             odd_word ? 0x1101u : 0x1100u;
         machine->executor_cpu.data.ax = 1u;
-        machine->executor_cpu.data.edx = 0x0080u;
+        machine->executor_cpu.data.edx = 0x00e0u;
         machine->executor_cpu.data.cx = 2u;
         destination = recipe->prefix == 0xf3u ? source : 0u;
         failed = core_machine_memory_write(machine, source_odd ? 0x1001u : 0x1000u,
@@ -1310,7 +1310,7 @@ static C_INT timing_80286_manifest_run_repeat_recipe(
     if (!failed) failed = !timing_80286_manifest_prepare(&machine, &capture,
         zero_key, program, sizeof(program));
     if (!failed) {
-        machine->executor_cpu.data.edx = 0x0080u;
+        machine->executor_cpu.data.edx = 0x00e0u;
         machine->executor_cpu.data.cx = 0u;
         failed = timing_80286_manifest_run_repeat_step(machine, &capture, zero_key,
             CORE_MACHINE_RETIREMENT_REPEAT_ZERO_COUNT, recipe->zero_ticks,
@@ -1350,7 +1350,7 @@ static C_INT timing_80286_manifest_run_string_recipe(
         machine->executor_cpu.data.di = source_odd ? 0x1100u :
             odd_word ? 0x1101u : 0x1100u;
         machine->executor_cpu.data.ax = value;
-        machine->executor_cpu.data.edx = 0x0080u;
+        machine->executor_cpu.data.edx = 0x00e0u;
         failed = core_machine_memory_write(machine, source_odd ? 0x1001u : 0x1000u,
             &value, sizeof(value)) != TYPE_STATUS_OK || core_machine_memory_write(
             machine, source_odd ? 0x1100u : odd_word ? 0x1101u : 0x1100u,
@@ -1453,7 +1453,7 @@ static C_INT timing_80286_manifest_run_repeat_base_recipe(
         machine->executor_cpu.data.di = source_odd ? 0x1100u :
             odd_word ? 0x1101u : 0x1100u;
         machine->executor_cpu.data.ax = value;
-        machine->executor_cpu.data.edx = 0x0080u;
+        machine->executor_cpu.data.edx = 0x00e0u;
         machine->executor_cpu.data.cx = 1u;
         failed = core_machine_memory_write(machine, source_odd ? 0x1001u : 0x1000u,
             &value, sizeof(value)) != TYPE_STATUS_OK ||
@@ -3075,12 +3075,12 @@ C_INT main(C_VOID)
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
         { "I286-SYSTEM-CLTS", { 0x0fu, 0x06u }, 2u, 2u,
             CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY },
-        { "I286-IN-IMM-B", { 0xe4u, 0x80u }, 2u, 5u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO },
-        { "I286-IN-IMM-W", { 0xe5u, 0x80u }, 2u, 5u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO },
+        { "I286-IN-IMM-B", { 0xe4u, 0xe0u }, 2u, 5u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO },
+        { "I286-IN-IMM-W", { 0xe5u, 0xe0u }, 2u, 5u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO },
         { "I286-IN-DX-B", { 0xecu }, 1u, 5u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO },
         { "I286-IN-DX-W", { 0xedu }, 1u, 5u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO },
-        { "I286-OUT-IMM-B", { 0xe6u, 0x80u }, 2u, 3u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO },
-        { "I286-OUT-IMM-W", { 0xe7u, 0x80u }, 2u, 3u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO },
+        { "I286-OUT-IMM-B", { 0xe6u, 0xe0u }, 2u, 3u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO },
+        { "I286-OUT-IMM-W", { 0xe7u, 0xe0u }, 2u, 3u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO },
         { "I286-OUT-DX-B", { 0xeeu }, 1u, 3u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO },
         { "I286-OUT-DX-W", { 0xefu }, 1u, 3u, CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_STRING_IO },
         { "I286-INT3-REAL-NEXT-BYTE-2", { 0xccu }, 1u, 25u,
