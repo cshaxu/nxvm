@@ -28,4 +28,6 @@ was the exclusive implementation plan for the completed migration.
 The prior closure record was incomplete: route migration retained, but did not
 dispose of, its frozen 43 unregistered targets and two shared EGA scenarios.
 T500 now continues at S10: its remaining completion condition is the
-owner-approved component coverage ledger and reproducible coverage report.
+owner-approved parallel-isolation and closure sweep of the existing test
+inventory. Systematic test expansion and coverage qualification remain a
+separate later task after the pre-Windows admission audit.

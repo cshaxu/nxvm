@@ -105,17 +105,6 @@ value.
    clean and dirty incremental builds, applying the narrowest isolation only to
    demonstrated shared resources. Run the complete unit suite, then the
    owner-managed external-ROM/disk integration suite, before T closure.
-6. **Unit-coverage qualification and gap closure.** Freeze a component-owned
-   coverage ledger for every executable `src/` module: public behavior,
-   state/failure branch, owner-local unit test and measured line/branch result.
-   Use one reproducible coverage report to reconcile every unexecuted branch.
-   A branch is accepted only when it has direct repository-only unit evidence,
-   or an explicit named disposition as integration-only, platform-only,
-   generated, unreachable or transferred to its earliest owner. Consolidate
-   repeated cases into owner-local matrices before adding a test; coverage may
-   not be raised by duplicated fixtures or a second test framework. Run the
-   complete unit gate for each S, and the complete applicable integration gate
-   before accepting the final coverage ledger.
 
 ## Exit Criteria
 
@@ -133,13 +122,6 @@ value.
   mechanism.
 - Every S has passed the complete repository-only unit gate; focused checks
   supplement but never replace it.
-- The T has a frozen, component-owned unit-coverage ledger for all executable
-  `src/` modules. Every eligible branch has direct unit evidence; every other
-  measured branch has one explicit, reviewed disposition. No unexplained
-  uncovered line or branch remains.
-- The final coverage report is reproducible from the supported build, maps to
-  the ledger, and demonstrates that any new coverage test uses the smallest
-  owner-local matrix/fixture rather than duplicating setup or scenario paths.
 - Clean and incremental timing evidence, complete unit tests, specialized
   checks and the owner-managed external-ROM/disk integration gate pass. The
   integration corpus covers BIOS/option ROMs, selected firmware/data, DOS boot

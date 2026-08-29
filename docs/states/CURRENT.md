@@ -2,6 +2,27 @@
 
 ## Current Work
 
+## M5 T500 S10 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Continuation of the owner's approved single-person dual-role T500 test-refactor objective; S10 is the next unused T500 identifier. |
+| Objective | Close demonstrated fixed-workspace and native-input-lifecycle defects in existing smokes through their existing owner-local CTest and keyboard-input mechanisms, preserving the already admitted test-only refactor boundary. |
+| Non-goals | No new test, coverage ledger or coverage-target work, product behavior change, external asset input, second test framework, synthetic fixture, or global serial execution. |
+| Reference Baseline | `30b10d67`; [T500 test-convergence history](../history/M5-T500-unit-and-integration-test-convergence.md), [T500 proposal](../proposals/m5-current-gate-execution-tiering.md), and the current CTest registry. |
+| Candidate Proposal | [M5 unit and integration test convergence](../proposals/m5-current-gate-execution-tiering.md). |
+| Files And ABI Surface | CTest workspace ownership, existing Windows checkpoint keyboard fixture and T500 closure evidence only; no product ABI. |
+| Applicable Rules | One owner-local test tree and route; no external input in unit; narrow resource isolation rather than global serial execution; no duplicate fixture, wrapper or test framework. |
+| Verification | Run the complete existing 312-test unit route with four jobs, then the owner-managed 20-test integration route, and run documentation governance. |
+| Expected Markers | `T500-S10-PARALLEL-ISOLATION` and `T500-S10-EXISTING-TEST-CLOSURE`. |
+| Asset Needs | None. |
+| Reporting Requirements | Record the colliding fixed resources, the one retained workspace mechanism, the corrected existing native input lifecycle, and complete existing unit/integration results. |
+| Stop Conditions | Stop if collision repair requires a new test framework, global serialization, product behavior change, or a duplicate fixture path. |
+| Exit Criteria | The existing parallel unit route passes without a global serial fallback, integration remains accepted, and no coverage or test-expansion scope is retained in T500. |
+| Original Owner Request | Implement the test-refactor plan in single-person dual-role mode; establish reusable test matrices, reduce duplicate test code, and obtain higher branch coverage with the same or less code. |
+| Similar-Issue Sweep | Inspect every existing unit smoke that writes a fixed file, ROM, media or recording fixture, and every existing integration keyboard byte stream with modifiers, not only the observed failures. |
+
 ## Current Technical Baseline
 
 - **Current developer artifact:** CMake target `vm-0-5-0499` emitted

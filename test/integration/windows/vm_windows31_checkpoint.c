@@ -10,6 +10,7 @@
 #include "vm/composition/session/lifecycle.h"
 #include "vm/composition/session/session_interface.h"
 #include "vm/composition/session/session_private.h"
+#include "vm/platform/win32/win32.h"
 
 #define VM_T287_TEXT_CELLS (80u * 25u)
 #define VM_T287_BOOT_TIMEOUT_MILLISECONDS 60000u
@@ -56,18 +57,28 @@ static const C_CHAR *vm_t287_wait_for_text(const vm_session *session,
     return STD_NULL;
 }
 
-static C_INT vm_t287_submit(const vm_session *session, const type_unsigned_8 *codes,
-    STD_SIZE_T count)
+static C_VOID vm_t287_submit_key(const vm_session *session, type_unsigned_16 scan_code,
+    type_unsigned_16 virtual_key)
 {
-    STD_SIZE_T index;
+    if (session == STD_NULL) return;
+    vm_platform_win32_keyboard_make_key_for(session->platform_run_context,
+        session->platform_run_handle, scan_code, virtual_key, 1);
+    Sleep(25u);
+    vm_platform_win32_keyboard_make_key_for(session->platform_run_context,
+        session->platform_run_handle, scan_code, virtual_key, 0);
+    Sleep(25u);
+}
 
-    if (session == STD_NULL || codes == STD_NULL) return 0;
-    for (index = 0u; index < count; ++index) {
-        if (core_machine_keyboard_receive_native_byte(session->core_machine,
-                codes[index]) != TYPE_STATUS_OK) return 0;
-        Sleep(25u);
-    }
-    return 1;
+static C_VOID vm_t287_submit_colon(const vm_session *session)
+{
+    if (session == STD_NULL) return;
+    vm_platform_win32_keyboard_make_key_for(session->platform_run_context,
+        session->platform_run_handle, 0x2au, VK_SHIFT, 1);
+    Sleep(25u);
+    vm_t287_submit_key(session, 0x27u, VK_OEM_1);
+    vm_platform_win32_keyboard_make_key_for(session->platform_run_context,
+        session->platform_run_handle, 0x2au, VK_SHIFT, 0);
+    Sleep(25u);
 }
 
 static C_VOID vm_t287_report(const vm_session *session, const C_CHAR *stage)
@@ -138,8 +149,6 @@ C_INT main(C_INT argc, C_CHAR **argv)
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
         .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
     };
-    const type_unsigned_8 enter[] = {0x5au};
-    const type_unsigned_8 select_c[] = {0x21u, 0x12u, 0x4cu, 0xf0u, 0x12u, 0x5au};
     HANDLE thread = STD_NULL;
     vm_session *session = STD_NULL;
     type_unsigned_8 hdd_count = 0u;
@@ -159,15 +168,17 @@ C_INT main(C_INT argc, C_CHAR **argv)
     boot_text = vm_t287_wait_for_text(session, "Enter new date", "A:\\>",
         VM_T287_BOOT_TIMEOUT_MILLISECONDS);
     if (boot_text == STD_NULL) goto fail;
-    if (STD_STRCMP(boot_text, "A:\\>") != 0 &&
-        !vm_t287_submit(session, enter, sizeof(enter))) goto fail;
+    if (STD_STRCMP(boot_text, "A:\\>") != 0) {
+        vm_t287_submit_key(session, 0x1cu, VK_RETURN);
+    }
     stage = "time";
     if (STD_STRCMP(boot_text, "A:\\>") != 0) {
         boot_text = vm_t287_wait_for_text(session, "Enter new time", "A:\\>",
             VM_T287_BOOT_TIMEOUT_MILLISECONDS);
         if (boot_text == STD_NULL) goto fail;
-        if (STD_STRCMP(boot_text, "A:\\>") != 0 &&
-            !vm_t287_submit(session, enter, sizeof(enter))) goto fail;
+        if (STD_STRCMP(boot_text, "A:\\>") != 0) {
+            vm_t287_submit_key(session, 0x1cu, VK_RETURN);
+        }
     }
     stage = "prompt";
     if (vm_t287_wait_for_text(session, "A:\\>", STD_NULL,
@@ -182,7 +193,9 @@ C_INT main(C_INT argc, C_CHAR **argv)
     hdd_count = hdd_bda[1];
     vm_session_control_continue(&session->control);
     stage = "c-command";
-    if (!vm_t287_submit(session, select_c, sizeof(select_c))) goto fail;
+    vm_t287_submit_key(session, 0x2eu, 'C');
+    vm_t287_submit_colon(session);
+    vm_t287_submit_key(session, 0x1cu, VK_RETURN);
     stage = "c-drive";
     c_present = vm_t287_wait_for_text(session, "C:\\>", STD_NULL,
         VM_T287_COMMAND_TIMEOUT_MILLISECONDS) != STD_NULL;
