@@ -13,7 +13,6 @@ architecture and deliberately prefer direct owner-local corrections over new
 layers; each implementation admission must still establish its own finite
 sweep and regression evidence.
 
-1. [M5 four-profile post-scheduler media closure](../proposals/m5-four-profile-post-scheduler-media-closure.md) - replays the complete supported Release matrix after scheduler convergence, then resolves or source-gates the Model-40 ROM/FDD diagnostic at its earliest owner without a compatibility shortcut.
 1. [M5 Turbo L1 compatibility escape](../proposals/m5-turbo-l1-compatibility-escape.md) - follows active scheduler-convergence work; gives Turbo a Core-owned, bounded compatibility progression for active L1 waits with no source-qualified deadline, without creating a second time path or overstating timing fidelity.
 1. [M5 five-CPU complete instruction re-audit and repair](../proposals/m5-five-cpu-complete-instruction-reaudit.md) - follows the active scheduler-convergence work; freezes the complete 8086, 8088, 80186, 80286 and 80386DX instruction/state/timing universe before any repair.
 
@@ -73,6 +72,8 @@ Retained historical context: [Core L3 integration closure and VM contract export
 Closed retained proposal: [IBM 5170 native floppy contract](../proposals/m5-ibm-5170-native-floppy-contract.md), [Core HDC ATA phase contract](../proposals/m5-core-hdc-ata-phase-contract.md), [Four-profile supported DOS media matrix](../proposals/m5-four-profile-supported-media-matrix.md), and [Unit and integration test convergence](../proposals/m5-current-gate-execution-tiering.md).
 
 The post-scheduler matrix candidate owns the residual Release replay and Model-40 diagnostic receiver.
+
+Proposal index: [M5 four-profile post-scheduler media closure](../proposals/m5-four-profile-post-scheduler-media-closure.md).
 
 
 ## M6 Candidates

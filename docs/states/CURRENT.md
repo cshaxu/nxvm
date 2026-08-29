@@ -2,6 +2,27 @@
 
 ## Current Work
 
+## M5 T501 S1 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New |
+| Admission And Approval | Owner approved the next ordered M5 candidate after T500 closure. |
+| Objective | Establish a fresh stripped-Release semantic baseline for all nine supported four-profile DOS-media rows after Core scheduler convergence. |
+| Non-goals | No scheduler, CPU, controller, firmware, profile, media-format, or compatibility repair in S1; no retained ROM/media paths, bytes, hashes, or traces. |
+| Reference Baseline | `c5bd5c81`; [proposal](../proposals/m5-four-profile-post-scheduler-media-closure.md), retained [four-profile matrix](../proposals/m5-four-profile-supported-media-matrix.md), and T499 scheduler closure. |
+| Candidate Proposal | [M5 four-profile post-scheduler media closure](../proposals/m5-four-profile-post-scheduler-media-closure.md). |
+| Files And ABI Surface | Release build/artifact, transient local BYOB probe output, T501 evidence/history/status only; no product ABI or source behavior change. |
+| Applicable Rules | Core remains the sole guest-time and controller owner; VM selects frozen session media/firmware only. External inputs stay owner-provided, local-only, and untracked. |
+| Verification | Build the optimized stripped Release artifact; replay every available frozen row to its first semantic terminal or earliest non-terminal boundary; record only classifications and owner boundaries; run the complete unit gate. |
+| Expected Markers | `T501-S1-RELEASE-MATRIX-BASELINE` and `T501-S1-EARLIEST-BOUNDARY`. |
+| Asset Needs | Existing owner-provided BIOS/ROM and DOS-media inputs under the source-policy boundary; no import or redistribution. |
+| Reporting Requirements | For every row record profile, CPU, media class, semantic terminal or first boundary, observing owner, and any unavailable external input without local paths or asset fingerprints. |
+| Stop Conditions | Stop before behavior change if a row reaches a diagnostic boundary; transfer diagnosis to S2 rather than patching a row. |
+| Exit Criteria | All nine frozen rows are replayed or explicitly bounded by unavailable input, with a fresh Release artifact and no product-code change. |
+| Original Owner Request | Admit the next task. |
+| Similar-Issue Sweep | Apply the same semantic-terminal rule to every available row; do not use a retirement count or elapsed wall time as a success terminal. |
+
 ## Current Technical Baseline
 
 - **Current developer artifact:** CMake target `vm-0-5-0499` emitted
