@@ -23,6 +23,17 @@ static DWORD WINAPI run_full_pc(C_VOID *opaque)
     return 0u;
 }
 
+static C_INT wait_for_running(const core_product_debug_target *target)
+{
+    C_UINT waited;
+
+    for (waited = 0u; waited < 2000u; ++waited) {
+        if (core_product_debug_is_running(target)) return 1;
+        Sleep(1u);
+    }
+    return core_product_debug_is_running(target);
+}
+
 C_INT main(C_INT argc, C_CHAR **argv)
 {
     HANDLE thread;
@@ -40,8 +51,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
     vm_session_control_reset(&session->control);
     thread = CreateThread(STD_NULL, 0u, run_full_pc, &session->control, 0u, STD_NULL);
     if (thread == STD_NULL) goto fail;
-    Sleep(10u);
-    if (!core_product_debug_is_running(target) ||
+    if (!wait_for_running(target) ||
         !core_product_debug_request_pause(target, CORE_PRODUCT_DEBUG_PAUSE_EXPLICIT) ||
         !vm_session_control_wait_for_pause(&session->control, 2000u) ||
         !core_product_debug_is_paused(target) ||
@@ -50,8 +60,13 @@ C_INT main(C_INT argc, C_CHAR **argv)
         !vm_session_control_wait_for_pause(&session->control, 2000u) ||
         core_product_debug_get_pause_reason(target) != CORE_PRODUCT_DEBUG_PAUSE_STEP) goto fail_thread;
     core_product_debug_continue(target);
-    Sleep(10u);
-    if (!core_product_debug_is_running(target)) goto fail_thread;
+    if (!wait_for_running(target) ||
+        !core_product_debug_request_pause(target, CORE_PRODUCT_DEBUG_PAUSE_EXPLICIT) ||
+        !vm_session_control_wait_for_pause(&session->control, 2000u) ||
+        !core_product_debug_is_paused(target) ||
+        core_product_debug_get_pause_reason(target) != CORE_PRODUCT_DEBUG_PAUSE_EXPLICIT) {
+        goto fail_thread;
+    }
     vm_session_control_stop(&session->control);
     result = WaitForSingleObject(thread, 2000u);
     CloseHandle(thread);

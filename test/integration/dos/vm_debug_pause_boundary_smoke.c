@@ -17,6 +17,17 @@ static DWORD WINAPI run_full_pc(C_VOID *opaque)
     return 0u;
 }
 
+static C_INT wait_for_running(const vm_session_control_state *control)
+{
+    C_UINT waited;
+
+    for (waited = 0u; waited < 2000u; ++waited) {
+        if (vm_session_control_is_running(control)) return 1;
+        Sleep(1u);
+    }
+    return vm_session_control_is_running(control);
+}
+
 C_INT main(C_INT argc, C_CHAR **argv)
 {
     HANDLE thread;
@@ -42,9 +53,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
         STD_FREE(session);
         return 1;
     }
-    Sleep(10u);
-    if (!vm_session_control_is_running(&session->control)) goto fail;
-
+    if (!wait_for_running(&session->control)) goto fail;
     vm_session_control_request_pause(&session->control, VM_SESSION_PAUSE_EXPLICIT);
     if (!vm_session_control_wait_for_pause(&session->control, 2000u) ||
         vm_session_control_get_pause_reason(&session->control) !=
@@ -57,8 +66,11 @@ C_INT main(C_INT argc, C_CHAR **argv)
         goto fail;
 
     vm_session_control_continue(&session->control);
-    Sleep(10u);
-    if (!vm_session_control_is_running(&session->control)) goto fail;
+    if (!wait_for_running(&session->control)) goto fail;
+    vm_session_control_request_pause(&session->control, VM_SESSION_PAUSE_EXPLICIT);
+    if (!vm_session_control_wait_for_pause(&session->control, 2000u) ||
+        vm_session_control_get_pause_reason(&session->control) !=
+            VM_SESSION_PAUSE_EXPLICIT) goto fail;
     vm_session_control_stop(&session->control);
     result = WaitForSingleObject(thread, 2000u);
     CloseHandle(thread);

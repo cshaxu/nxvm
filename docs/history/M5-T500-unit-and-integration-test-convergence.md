@@ -12,6 +12,7 @@
 | S8 | Accepted: removed four empty assertions and two invalid test-only paths, registered retained repository-only contracts through owner-local matrices, and passed unit 312/312. P1 `1ed770a2`. |
 | S9 | Accepted: moved every external-media scenario to `test/integration/`, retained one BYOB authority for diagnostics, repaired the Windows checkpoint's valid boot and native-input alternatives, and passed unit 312/312 plus integration 20/20. P1 `dfad412b`. |
 | S10 | Accepted: isolated debugger-recording and XT fixed-write fixtures with the existing CTest workspace owner, removed the Windows checkpoint's direct Core-input bypass, and passed unit 312/312 plus integration 20/20. P1 `8f5e372d`. |
+| S11 | Accepted: re-opened narrowly after measured speed audit; removed seven unjustified integration-wide serial marks, repaired two test-local startup waits, retained the deliberate wall-clock cadence exception, and passed unit 312/312 plus integration 20/20. |
 
 The active [proposal](../proposals/m5-current-gate-execution-tiering.md)
 defines the complete test inventory, component-owned test design, migration and
@@ -27,9 +28,9 @@ The [S3 architecture](../etc/evidence/t500-s3-component-test-architecture.md)
 was the exclusive implementation plan for the completed migration.
 
 T500 is closed. Its existing inventory has one `test/` tree, exactly one unit
-or integration route per retained check, targeted CTest ownership for shared
-fixtures, and no second input, runner or fixture path. The accepted
-[S10 evidence](../etc/evidence/t500-s10-existing-test-isolation.md) records
-the final parallel-isolation and native-input sweep. Systematic test expansion
-and coverage qualification remain a separate later task after the pre-Windows
+or integration route per retained check, targeted CTest ownership for real
+exceptions, and no second input, runner or fixture path. The accepted
+[S11 evidence](../etc/evidence/t500-s11-parallel-recovery.md) records the
+final resource sweep and safe parallel recovery. Systematic test expansion and
+coverage qualification remain a separate later task after the pre-Windows
 admission audit.

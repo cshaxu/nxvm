@@ -2804,27 +2804,7 @@ foreach(target IN LISTS PROJECT_INTEGRATION_DOS_FDD_HDD_TARGETS)
         "${PROJECT_HDD_SMOKE_IMAGE}")
 endforeach()
 
-# These session-owner smokes run a host thread and observe a bounded lifecycle.
-# Serialize them in the default parallel gate so host scheduler contention cannot
-# turn a guest-independent pause watchdog into a flaky unit result.
-set(PROJECT_INTEGRATION_HOST_THREAD_TARGETS
-    vm-timer-firmware-smoke
-    vm-debug-pause-boundary-smoke
-    vm-unified-debug-backend-smoke
-    vm-dos-prompt-smoke
-    vm-dos-keyboard-smoke
-    vm-dos-mem-fault-smoke)
-foreach(target IN LISTS PROJECT_INTEGRATION_HOST_THREAD_TARGETS)
-    list(FIND PROJECT_ALL_TEST_TARGETS "${target}"
-        current_host_thread_smoke_index)
-    if(current_host_thread_smoke_index LESS 0)
-        message(FATAL_ERROR
-            "Current host-thread smoke is not in the canonical gate: ${target}")
-    endif()
-    set_tests_properties("integration.${target}" PROPERTIES RUN_SERIAL TRUE)
-endforeach()
 set_tests_properties("integration.vm-windows31-checkpoint" PROPERTIES
-    RUN_SERIAL TRUE
     TIMEOUT 130)
 set_tests_properties("unit.vm-runner-display-cadence-smoke" PROPERTIES
     RUN_SERIAL TRUE)
