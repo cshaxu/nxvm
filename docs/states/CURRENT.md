@@ -2,6 +2,27 @@
 
 ## Current Work
 
+## M5 T502 S1 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New |
+| Admission And Approval | Owner requested admission of the next ordered candidate after T501 closure. |
+| Objective | Inventory and classify every reachable internal Core L1 no-deadline wait before any Turbo compatibility implementation. |
+| Non-goals | No timing promotion, deadline guess, device-specific shim, host-to-guest time path, source import, behavior repair, or production artifact change. |
+| Reference Baseline | `5145b366`; [proposal](../proposals/m5-turbo-l1-compatibility-escape.md). |
+| Candidate Proposal | [M5 Turbo L1 compatibility escape](../proposals/m5-turbo-l1-compatibility-escape.md). |
+| Files And ABI Surface | Ledger/evidence/history/status only; no product source or ABI change in S1. |
+| Applicable Rules | Core remains sole guest-time, wait, controller and ordering owner; VM only selects mode and observes copied status. |
+| Verification | Complete current source/ledger sweep, classify reset/cancel/input/interrupt rules, and run complete Debug unit route. |
+| Expected Markers | `T502-S1-L1-NO-DEADLINE-UNIVERSE` and `T502-S1-L1-DISPOSITION`. |
+| Asset Needs | None. |
+| Reporting Requirements | Record every reachable candidate state, owner, wake condition, known-deadline ordering, lifecycle interaction, evidence class and disposition without claiming L2/L3. |
+| Stop Conditions | Stop before changing a state that has no complete source/owner disposition; transfer it rather than guessing timing. |
+| Exit Criteria | The finite reachable L1 no-deadline universe and every row's safe/blocker disposition are recorded; unit passes and no implementation path is added. |
+| Original Owner Request | Admit and execute the next queued task after the four-profile Release matrix closure. |
+| Similar-Issue Sweep | Include CPU wait, controller wait, reset/cancel, input/interrupt, debugger and known-deadline states; reject duplicate guest-clock or VM-side progression paths. |
+
 ## Current Technical Baseline
 
 - **Current developer artifact:** CMake target `vm-0-5-0501` emitted
