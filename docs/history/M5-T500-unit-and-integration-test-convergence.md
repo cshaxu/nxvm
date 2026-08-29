@@ -11,6 +11,7 @@
 | S7 | Accepted: corrected the false closure, dispositioned all 43 unregistered targets plus the two shared EGA scenarios, and proved the existing repository-only route 287/287 without tracked execution output. |
 | S8 | Accepted: removed four empty assertions and two invalid test-only paths, registered retained repository-only contracts through owner-local matrices, and passed unit 312/312. P1 `1ed770a2`. |
 | S9 | Accepted: moved every external-media scenario to `test/integration/`, retained one BYOB authority for diagnostics, repaired the Windows checkpoint's valid boot and native-input alternatives, and passed unit 312/312 plus integration 20/20. P1 `dfad412b`. |
+| S10 | Accepted: isolated debugger-recording and XT fixed-write fixtures with the existing CTest workspace owner, removed the Windows checkpoint's direct Core-input bypass, and passed unit 312/312 plus integration 20/20. P1 `8f5e372d`. |
 
 The active [proposal](../proposals/m5-current-gate-execution-tiering.md)
 defines the complete test inventory, component-owned test design, migration and
@@ -25,9 +26,10 @@ work.
 The [S3 architecture](../etc/evidence/t500-s3-component-test-architecture.md)
 was the exclusive implementation plan for the completed migration.
 
-The prior closure record was incomplete: route migration retained, but did not
-dispose of, its frozen 43 unregistered targets and two shared EGA scenarios.
-T500 now continues at S10: its remaining completion condition is the
-owner-approved parallel-isolation and closure sweep of the existing test
-inventory. Systematic test expansion and coverage qualification remain a
-separate later task after the pre-Windows admission audit.
+T500 is closed. Its existing inventory has one `test/` tree, exactly one unit
+or integration route per retained check, targeted CTest ownership for shared
+fixtures, and no second input, runner or fixture path. The accepted
+[S10 evidence](../etc/evidence/t500-s10-existing-test-isolation.md) records
+the final parallel-isolation and native-input sweep. Systematic test expansion
+and coverage qualification remain a separate later task after the pre-Windows
+admission audit.

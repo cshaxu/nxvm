@@ -2,27 +2,6 @@
 
 ## Current Work
 
-## M5 T500 S10 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Continuation of the owner's approved single-person dual-role T500 test-refactor objective; S10 is the next unused T500 identifier. |
-| Objective | Close demonstrated fixed-workspace and native-input-lifecycle defects in existing smokes through their existing owner-local CTest and keyboard-input mechanisms, preserving the already admitted test-only refactor boundary. |
-| Non-goals | No new test, coverage ledger or coverage-target work, product behavior change, external asset input, second test framework, synthetic fixture, or global serial execution. |
-| Reference Baseline | `30b10d67`; [T500 test-convergence history](../history/M5-T500-unit-and-integration-test-convergence.md), [T500 proposal](../proposals/m5-current-gate-execution-tiering.md), and the current CTest registry. |
-| Candidate Proposal | [M5 unit and integration test convergence](../proposals/m5-current-gate-execution-tiering.md). |
-| Files And ABI Surface | CTest workspace ownership, existing Windows checkpoint keyboard fixture and T500 closure evidence only; no product ABI. |
-| Applicable Rules | One owner-local test tree and route; no external input in unit; narrow resource isolation rather than global serial execution; no duplicate fixture, wrapper or test framework. |
-| Verification | Run the complete existing 312-test unit route with four jobs, then the owner-managed 20-test integration route, and run documentation governance. |
-| Expected Markers | `T500-S10-PARALLEL-ISOLATION` and `T500-S10-EXISTING-TEST-CLOSURE`. |
-| Asset Needs | None. |
-| Reporting Requirements | Record the colliding fixed resources, the one retained workspace mechanism, the corrected existing native input lifecycle, and complete existing unit/integration results. |
-| Stop Conditions | Stop if collision repair requires a new test framework, global serialization, product behavior change, or a duplicate fixture path. |
-| Exit Criteria | The existing parallel unit route passes without a global serial fallback, integration remains accepted, and no coverage or test-expansion scope is retained in T500. |
-| Original Owner Request | Implement the test-refactor plan in single-person dual-role mode; establish reusable test matrices, reduce duplicate test code, and obtain higher branch coverage with the same or less code. |
-| Similar-Issue Sweep | Inspect every existing unit smoke that writes a fixed file, ROM, media or recording fixture, and every existing integration keyboard byte stream with modifiers, not only the observed failures. |
-
 ## Current Technical Baseline
 
 - **Current developer artifact:** CMake target `vm-0-5-0499` emitted
@@ -59,7 +38,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T500 S3 | Accepted: one component-owned `test/` architecture assigns every S2 class to a unit/integration route, resolves shared-source and generated-output policy, and fixes S4/S5 migration/isolation order. The repository-only baseline passes 287/287. |
+| T500 | Closed: existing tests now have one `test/` tree, one unit/integration route, narrow fixture ownership, and one product input path; unit 312/312 and integration 20/20 pass. [Closure](../history/M5-T500-unit-and-integration-test-convergence.md). |
 | T499 | Closed: one Core deadline seam owns the current scheduler clients and the selected Model-40 D4 controller; the configured suite passes 302/302 and stripped Release 0499 is recorded. [Closure](../history/M5-T499-core-event-deadline-scheduler-convergence.md). |
 | T498 | Closed: the supported-media matrix has semantic terminals or an explicit external-input boundary for every non-Model-40 row, and its Model-40 predecessor transfers to the sole Core scheduler receiver without accepting a shortcut. [Closure](../history/M5-T498-four-profile-supported-media-matrix.md). |
 | T497 | Closed: original Model-339 factory 1.2-MB/compatible-360-KB media behavior now has one descriptor/session/FDD path, and the 360-KB DOS installer replay closes its one missing monochrome-aperture mapping; a 286-compatible 1.2-MB external replay transfers to T498. [Closure](../history/M5-T497-ibm-5170-native-floppy-contract.md). |
@@ -67,7 +46,6 @@
 | T495 | Closed: the selected IBM 5160-268 is functionally ready with source-backed L3 relations and explicit L2 limits; 13/13 focused, 300/300 fresh current and specialized gates pass, without a physical/wall-clock overclaim. [Decision](../etc/evidence/t495-s2-xt-final-model-decision.md). |
 | T494 | Closed: the complete IBM 5160 Xebec source/List-1/List-2/sole-owner chain corrects Read block-count progression without a second controller/media path; full current gate passes 300/300 and stripped Release 0494 is recorded. [Closure audit](../etc/evidence/t494-s5-xebec-closure-audit.md). |
 | T493 | Closed: complete IBM CGA source/List-1/List-2/one-owner repair reconciles all 33 rows; the generic latch and binary high-resolution palette repair leave no in-scope tail. [Closure audit](../etc/evidence/t493-s5-cga-closure-audit.md). |
-| T491 | Closed: the independent IBM 5160 8255 PPI/key/NMI unit maps all 19 rows to one Core owner path, closes PB0/PB1 through the existing PIT2/speaker consumer, and records stripped Release 0491. [Closure audit](../etc/evidence/t491-s5-8255-closure-audit.md). |
 
 ## Recent Governance
 
