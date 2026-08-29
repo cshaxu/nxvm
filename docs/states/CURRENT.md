@@ -2,26 +2,12 @@
 
 ## Current Work
 
-## M5 T501 S2 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | T501 S1 P1 is independently accepted: the fresh nine-row Release baseline reaches seven semantic terminals, one explicit external-input boundary, and one Model-40 diagnostic receiver. |
-| Objective | Reconcile the complete selected Model-40 firmware-visible POST/FDD/keyboard/configuration diagnostic boundary against original documentation and read-only 86Box, MAME, PCjs, Bochs, and QEMU implementations, producing finite List 1 and List 2 before any repair. |
-| Non-goals | No behavior repair, scheduler reopening, FDD readiness invention, second drive, F1 shortcut, firmware workaround, local-path retention, third-party import, or emulator-derived requirement without source-qualified corroboration. |
-| Reference Baseline | `14b0bc70`; [S1 matrix baseline](../etc/evidence/t501-s1-release-matrix-baseline.md), [proposal](../proposals/m5-four-profile-post-scheduler-media-closure.md), and T499 scheduler closure. |
-| Candidate Proposal | [M5 four-profile post-scheduler media closure](../proposals/m5-four-profile-post-scheduler-media-closure.md). |
-| Files And ABI Surface | Original documentation and read-only external-reference worktrees, Model-40 Core/VM sources, List 1/List 2 evidence and status only; no ABI or product behavior in S2. |
-| Applicable Rules | Original documentation is normative; external emulator logic only cross-checks an identified source fact. Core remains the sole controller/time owner and VM retains one frozen Model-40 composition route. |
-| Verification | Establish every diagnostic input, signal, port/state owner, expected observation, source basis and current-code disposition; independently inspect every cited external implementation; run the complete unit gate. |
-| Expected Markers | `T501-S2-MODEL40-DIAGNOSTIC-LIST-1` and `T501-S2-MODEL40-DIAGNOSTIC-LIST-2`. |
-| Asset Needs | Existing owner-authorized manuals, local firmware only for non-retained observation, and read-only emulator source trees under the source policy; no import or redistribution. |
-| Reporting Requirements | List every row's normative source or explicit source gap, external corroboration/contradiction, sole state owner, current behavior, L3/L2 status, and S3 repair/transfer receiver. |
-| Stop Conditions | Stop before code change if primary documentation does not define a relation or if external implementations disagree without source resolution; explicitly transfer that whole relation. |
-| Exit Criteria | Complete source-qualified List 1 and current-code List 2 cover the selected diagnostic path, identify one earliest owner batch or source-gated transfer, and leave no unclassified Model-40 replay symptom. |
-| Original Owner Request | Single-person dual-role execution of the four-profile post-scheduler media closure, including correct Model-40 diagnosis or source-gated transfer. |
-| Similar-Issue Sweep | Include POST configuration, keyboard/F1 continuation, drive selection/ready/change, FDC command/result/IRQ/DMA, firmware-visible status, and display publication; do not infer a relation from a symptom alone. |
+- **M5 T501 progress:** S1 accepted the fresh nine-row Release matrix: seven semantic terminals, one
+  named external-input boundary and one Model-40 diagnostic receiver.
+- S2 accepted the complete Model-40 diagnostic List 1/List 2: the original
+  material defines `601`/F1 but not the ROM's unit-1 board relation.  The sole
+  remaining class is explicitly source-gated; no Core, VM, FDC, keyboard,
+  display or scheduler repair was fabricated.  [Evidence](../etc/evidence/t501-s2-model40-diagnostic-list-1.md).
 
 ## Current Technical Baseline
 
@@ -59,7 +45,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T501 S1 | Accepted: fresh stripped-Release replay records seven semantic terminals, one named 80286-compatible 1.2-MB external-input boundary, and the Model-40 `601`/`RESUME` board/FDD diagnostic receiver. [Evidence](../etc/evidence/t501-s1-release-matrix-baseline.md). |
+| T501 S1--S2 | Accepted: fresh stripped-Release replay records seven semantic terminals and one named external-input boundary; complete Model-40 List 1/List 2 transfers only its source-underdetermined FDD/ROM board relation. [Evidence](../etc/evidence/t501-s2-model40-diagnostic-list-1.md). |
 | T500 | Closed: existing tests now have one `test/` tree, one unit/integration route, narrow fixture ownership, one product input path, and recovered safe integration parallelism; unit 312/312 and integration 20/20 pass. [Closure](../history/M5-T500-unit-and-integration-test-convergence.md). |
 | T499 | Closed: one Core deadline seam owns the current scheduler clients and the selected Model-40 D4 controller; the configured suite passes 302/302 and stripped Release 0499 is recorded. [Closure](../history/M5-T499-core-event-deadline-scheduler-convergence.md). |
 | T498 | Closed: the supported-media matrix has semantic terminals or an explicit external-input boundary for every non-Model-40 row, and its Model-40 predecessor transfers to the sole Core scheduler receiver without accepting a shortcut. [Closure](../history/M5-T498-four-profile-supported-media-matrix.md). |
