@@ -17,8 +17,9 @@ test/build workflow repair, not a reduction of functional coverage.
 ## Dependency And Scope
 
 This task follows the active Core event-deadline scheduler convergence task.
-It changes only test registration, gate runners, build presets and the
-developer-toolchain documentation required to make those routes usable.  It
+It changes only test registration, gate runners, build presets, the `test/`
+source tree and the developer-toolchain documentation required to make those
+routes usable. It
 does not alter Core, VM, device, firmware, profile or product behaviour, and
 it does not consume or replace the active task's test-repair scope.
 
@@ -41,6 +42,13 @@ target-dependency owner. The bounded PowerShell aggregate remains responsible
 only for an aggregate deadline and child cleanup. Do not add a second manifest,
 parallel custom launcher, duplicated target list, per-developer script or
 generic test framework.
+
+The completed layout has one test-code root: repository-only modules are under
+`test/` and follow the relevant `src/` ownership shape (`test/core/...`,
+`test/vm/...` and the narrow shared `test/support/...` helper area).
+External-asset scenarios are only under `test/integration/`. The task migrates
+obsolete `tests/` locations instead of retaining both trees or adding a
+forwarding CMake layer.
 
 - **Focused regression** is selected anew for each S from the code, ownership
   boundary and failure mechanism changed by that S.  It is a command shape,
@@ -72,8 +80,9 @@ value.
 ## S Decomposition
 
 1. **Documentation governance.** Adopt the transient-focused, per-S unit and
-   per-T integration closure rule without a new fixed focused list or test
-   framework. Run the complete unit suite before closing S1.
+   per-T integration closure rule and the sole `test/` source-root contract,
+   without a new fixed focused list or test framework. Establish the existing
+   repository-only baseline command and run it before closing S1.
 2. **Complete test audit and classification.** Audit every registered test and
    test-only target. Record whether it is retained, deleted as duplicate or
    obsolete, or requires systematic refactoring; classify its inputs as
@@ -89,7 +98,7 @@ value.
    No test implementation batch starts before this plan is accepted. Run the
    complete unit suite before closing S3.
 4. **Canonical route and test-module migration.** Implement the accepted audit
-   dispositions and component test modules through one CMake registration
+   dispositions and `test/` component modules through one CMake registration
    source; remove only proven duplicates/obsolete tests and obsolete aggregate
    runner/list logic. Run the complete unit suite before closing every S.
 5. **Parallel isolation and closure.** Prove a bounded parallel job count on
@@ -101,6 +110,8 @@ value.
 
 - Every baseline check remains registered in exactly one of the unit or
   integration routes, except for a proven registration error.
+- All retained test code is under `test/`; repository-only test modules mirror
+  their `src` owner and external-asset scenarios are under `test/integration/`.
 - A developer can run one affected smoke without building the other 299
   smoke executables.
 - The fast route excludes only the explicitly catalogued scenario class and

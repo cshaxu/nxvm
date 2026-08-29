@@ -47,8 +47,9 @@ root.
 
 ## Source Organization
 
-Tests follow their source or behavior owner. `tests/core`, `tests/machine`,
-`tests/platform`, and `tests/firmware` hold named technical-boundary coverage;
-`tests/product` holds shared product tooling tests; `tests/products` holds
-runnable product/session coverage. `tests/adapters` covers explicit bridge code
-and `tests/support` contains setup-only helpers.
+The retained test layout uses one repository-root `test/` directory.
+Repository-only test modules mirror their source owner: `test/core/` follows
+`src/core/` and `test/vm/` follows `src/vm/`; a directory is introduced only
+for a real source subsystem or cross-owner composition boundary. `test/support/`
+contains setup-only helpers, never a second product path. External-asset
+product scenarios live only in `test/integration/`; they are not unit tests.
