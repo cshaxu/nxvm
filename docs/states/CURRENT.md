@@ -2,7 +2,7 @@
 
 ## Current Work
 
-No active packet. T500 S2 is accepted; T500 remains open for the component-owned test architecture.
+No active packet. T500 S3 is accepted; T500 remains open for the test-tree and route migration.
 
 ## Current Technical Baseline
 
@@ -40,6 +40,7 @@ No active packet. T500 S2 is accepted; T500 remains open for the component-owned
 
 | Task | Compact result |
 | --- | --- |
+| T500 S3 | Accepted: one component-owned `test/` architecture assigns every S2 class to a unit/integration route, resolves shared-source and generated-output policy, and fixes S4/S5 migration/isolation order. The repository-only baseline passes 287/287. |
 | T500 S2 | Accepted: all 302 configured CTests and 43 unregistered test targets reconcile to the inventory; 15 external scenarios, three platform-conditional targets, a shared-source EGA decision and two tracked-output test side effects transfer to the test architecture/migration work. The current repository-only baseline passes 287/287. |
 | T499 | Closed: one Core deadline seam owns the current scheduler clients and the selected Model-40 D4 controller; the configured suite passes 302/302 and stripped Release 0499 is recorded. [Closure](../history/M5-T499-core-event-deadline-scheduler-convergence.md). |
 | T498 | Closed: the supported-media matrix has semantic terminals or an explicit external-input boundary for every non-Model-40 row, and its Model-40 predecessor transfers to the sole Core scheduler receiver without accepting a shortcut. [Closure](../history/M5-T498-four-profile-supported-media-matrix.md). |

@@ -4,6 +4,7 @@
 | --- | --- |
 | S1 | Accepted: established the sole `test/` source-root, transient-focused policy and repository-only versus external-integration closure contract; the existing non-media baseline passes 287/287. |
 | S2 | Accepted: reconciled all 302 configured CTests plus 43 unregistered test targets, including external inputs, serial/workspace properties, shared-source and generated-output decisions; the repository-only baseline passes 287/287. |
+| S3 | Accepted: defined the one-tree component-owned module, route, generated-output, platform-conditional and migration policy consuming every S2 class; the repository-only baseline passes 287/287. |
 
 The active [proposal](../proposals/m5-current-gate-execution-tiering.md)
 defines the complete test inventory, component-owned test design, migration and
@@ -14,3 +15,6 @@ The retained [S2 audit](../etc/evidence/t500-s2-test-audit.md) and complete
 [machine-readable inventory](../etc/evidence/t500-s2-test-inventory.json)
 are the convergence ledger for the remaining test-architecture and migration
 work.
+
+The [S3 architecture](../etc/evidence/t500-s3-component-test-architecture.md)
+is the exclusive implementation plan for the remaining migration.
