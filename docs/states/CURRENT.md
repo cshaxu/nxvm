@@ -13,13 +13,13 @@
 | Reference Baseline | `da1b01d0`; [T500 S2 inventory](../etc/evidence/t500-s2-test-inventory.json) and [T500 architecture](../etc/evidence/t500-s3-component-test-architecture.md). |
 | Candidate Proposal | [M5 unit and integration test convergence](../proposals/m5-current-gate-execution-tiering.md). |
 | Files And ABI Surface | Test-only sources, CMake test membership and test evidence; no product ABI. |
-| Applicable Rules | One owner-local test tree; one route per retained target; unit no external input; integration BYOB only; no duplicate scenario source. |
+| Applicable Rules | One owner-local test tree; one route per retained target; unit no external input; integration BYOB only; no duplicate scenario source. A repeated owner-local semantic matrix uses the existing owner fixture plus legal case data, not CMake case expansion or a generic cross-owner framework. The completed S8 test/CMake code delta must be non-positive: new matrix coverage deletes equivalent repeated setup or paths. |
 | Verification | Run each repaired retained candidate directly, prove every registered unit target has exactly one unit CTest route, then run the complete unit route. |
 | Expected Markers | `TEST-CORPUS-UNIT-ROUTE`, `TEST-CORPUS-EMPTY-ASSERTION-REMOVED`, and `TEST-NO-BULK-REGISTRATION`. |
 | Asset Needs | None. |
 | Reporting Requirements | Report each registration, test repair and deletion with its asserted surface or replacement coverage. |
 | Stop Conditions | Stop if repairing an assertion needs a product behavior change or reveals a source-ownership ambiguity. |
-| Exit Criteria | The 31 repository-only candidates have their S7 disposition implemented, all retained tests have exactly one unit route, and the full unit route passes. |
+| Exit Criteria | The 31 repository-only candidates have their S7 disposition implemented, all retained tests have exactly one unit route, the complete test/CMake code delta is non-positive while branch/case coverage increases, and the full unit route passes. |
 | Original Owner Request | Implement the testing refactor completely, organize tests by source ownership, and do not leave unexamined or redundant test paths. |
 | Similar-Issue Sweep | Compare target source, CTest registration, input contract, platform guard and assertion overlap for every inventory row. |
 

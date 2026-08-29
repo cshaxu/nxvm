@@ -3946,8 +3946,7 @@ static C_INT timing_manifest_probe_xchg_memory_contexts(C_VOID)
 
 static C_INT timing_manifest_write_results(C_VOID)
 {
-    const C_CHAR *const path =
-        "docs/etc/cpu-timing/t435-s5-8086-timing-results.json";
+    const C_CHAR *const path = PROJECT_TEST_8086_RESULTS_PATH;
     STD_FILE *file = STD_FOPEN(path, "wb");
     STD_SIZE_T index;
     STD_SIZE_T written = 0u;

@@ -6,8 +6,7 @@
  * 80286 manual ledger.  It is an audit producer, not a timing test. */
 C_INT main(C_VOID)
 {
-    const C_CHAR *const path =
-        "docs/etc/cpu-timing/t435-s7-80286-decoder-inventory.json";
+    const C_CHAR *const path = PROJECT_TEST_80286_DECODER_PATH;
     type_bool opcode_seen[0x100] = { TYPE_FALSE };
     type_bool modrm_seen[0x100][0x100] = { { TYPE_FALSE } };
     type_bool escaped_modrm_seen[5][0x100] = { { TYPE_FALSE } };

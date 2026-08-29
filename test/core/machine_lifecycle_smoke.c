@@ -60,7 +60,7 @@ C_INT main(C_VOID)
     budget.instructions = 1u;
     result |= expect_status(core_machine_run(machine, budget, &run_result),
                             TYPE_STATUS_OK);
-    result |= run_result.reason != CORE_MACHINE_STOP_BUDGET;
+    result |= run_result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
     result |= expect_lifecycle(machine, CORE_MACHINE_PAUSED);
 
     result |= expect_status(core_machine_request_stop(machine),

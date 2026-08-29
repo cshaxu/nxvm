@@ -6,8 +6,7 @@
  * not a timing or semantic conformance test. */
 C_INT main(C_VOID)
 {
-    const C_CHAR *const path =
-        "docs/etc/cpu-timing/t435-s8-80386-decoder-inventory.json";
+    const C_CHAR *const path = PROJECT_TEST_80386_DECODER_PATH;
     type_bool primary_seen[0x100] = { TYPE_FALSE };
     type_bool primary_masks[0x100][0x100] = { { TYPE_FALSE } };
     type_bool escaped_masks[0x100][0x100] = { { TYPE_FALSE } };

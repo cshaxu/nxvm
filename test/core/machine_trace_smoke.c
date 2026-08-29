@@ -63,14 +63,14 @@ C_INT main(C_VOID)
     failed |= expect_status(core_machine_set_trace_provider(machine, &sink),
                             TYPE_STATUS_OK);
     failed |= expect_status(core_machine_install_port_provider(
-                                machine, 0x60u, 0x60u, &port_ops, &fixture),
+                                machine, 0x3ffu, 0x3ffu, &port_ops, &fixture),
                             TYPE_STATUS_OK);
     failed |= expect_status(core_machine_freeze_execution_providers(machine),
                             TYPE_STATUS_OK);
     failed |= expect_status(core_machine_reset(machine), TYPE_STATUS_OK);
-    failed |= expect_status(core_machine_bus_write(machine, 0x60u, 0x55u),
+    failed |= expect_status(core_machine_bus_write(machine, 0x3ffu, 0x55u),
                             TYPE_STATUS_OK);
-    failed |= expect_status(core_machine_bus_read(machine, 0x60u, &value),
+    failed |= expect_status(core_machine_bus_read(machine, 0x3ffu, &value),
                             TYPE_STATUS_OK);
     failed |= value != 0x55u;
     failed |= expect_status(core_machine_request_stop(machine),
@@ -81,7 +81,7 @@ C_INT main(C_VOID)
     failed |= fixture.count != 5u ||
               fixture.events[0].type != CORE_MACHINE_TRACE_RESET ||
               fixture.events[1].type != CORE_MACHINE_TRACE_PORT_WRITE ||
-              fixture.events[1].address != 0x60u ||
+              fixture.events[1].address != 0x3ffu ||
               fixture.events[1].value != 0x55u ||
               fixture.events[2].type != CORE_MACHINE_TRACE_PORT_READ ||
               fixture.events[3].type != CORE_MACHINE_TRACE_RESET ||
@@ -99,21 +99,21 @@ C_INT main(C_VOID)
     fixture.count = 0u;
     fixture.read_status = TYPE_STATUS_FAULT;
     value = 0xdeadbeefu;
-    failed |= expect_status(core_machine_bus_read(machine, 0x60u, &value),
+    failed |= expect_status(core_machine_bus_read(machine, 0x3ffu, &value),
                             TYPE_STATUS_FAULT);
     failed |= value != 0xdeadbeefu || fixture.count != 1u ||
               fixture.events[0].type != CORE_MACHINE_TRACE_PORT_READ ||
-              fixture.events[0].address != 0x60u ||
+              fixture.events[0].address != 0x3ffu ||
               fixture.events[0].value != 0u ||
               fixture.events[0].detail != TYPE_STATUS_FAULT;
     fixture.read_status = TYPE_STATUS_OK;
-    failed |= expect_status(core_machine_bus_read(machine, 0x60u, &value),
+    failed |= expect_status(core_machine_bus_read(machine, 0x3ffu, &value),
                             TYPE_STATUS_OK) || fixture.count != 2u ||
               fixture.events[1].detail != TYPE_STATUS_OK;
     failed |= expect_status(core_machine_set_trace_provider(machine, STD_NULL),
                             TYPE_STATUS_OK);
     failed |= expect_status(core_machine_reset(machine), TYPE_STATUS_OK);
-    failed |= fixture.count != 3u;
+    failed |= fixture.count != 2u;
 
     core_machine_destroy(machine);
     if (failed != 0) return 1;

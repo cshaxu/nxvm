@@ -241,8 +241,8 @@ static C_INT plan_rejects_invalid_controller_timing_rules(C_VOID)
     failed |= core_machine_plan_create(&configuration, &plan) != TYPE_STATUS_OK;
     failed |= !failed && core_machine_plan_set_controller_timing_rules(plan,
         &rules) != TYPE_STATUS_OK;
-    failed |= !failed && core_machine_create_from_plan(plan, &machine) !=
-        TYPE_STATUS_INVALID_ARGUMENT || machine != STD_NULL;
+    failed |= !failed && (core_machine_create_from_plan(plan, &machine) !=
+        TYPE_STATUS_INVALID_ARGUMENT || machine != STD_NULL);
     core_machine_plan_destroy(plan);
     configuration.clock_plan.dma = (core_machine_clock_ratio) {3u, 8u, 0u};
     configuration.clock_plan.pit = (core_machine_clock_ratio) {1u, 4u, 0u};
@@ -251,8 +251,8 @@ static C_INT plan_rejects_invalid_controller_timing_rules(C_VOID)
     failed |= !failed && core_machine_plan_set_controller_timing_rules(plan,
         &rules) != TYPE_STATUS_OK;
     machine = (core_machine *)(type_virtual_address)1u;
-    failed |= !failed && core_machine_create_from_plan(plan, &machine) !=
-        TYPE_STATUS_INVALID_ARGUMENT || machine != STD_NULL;
+    failed |= !failed && (core_machine_create_from_plan(plan, &machine) !=
+        TYPE_STATUS_INVALID_ARGUMENT || machine != STD_NULL);
     core_machine_plan_destroy(plan);
     rules.pic_visibility = CORE_MACHINE_CONTROLLER_TIMING_RULE_L2_FALLBACK;
     rules.dma_clock = CORE_MACHINE_CONTROLLER_TIMING_RULE_L2_FALLBACK;
@@ -260,8 +260,8 @@ static C_INT plan_rejects_invalid_controller_timing_rules(C_VOID)
     failed |= !failed && core_machine_plan_set_controller_timing_rules(plan,
         &rules) != TYPE_STATUS_OK;
     machine = (core_machine *)(type_virtual_address)1u;
-    failed |= !failed && core_machine_create_from_plan(plan, &machine) !=
-        TYPE_STATUS_INVALID_ARGUMENT || machine != STD_NULL;
+    failed |= !failed && (core_machine_create_from_plan(plan, &machine) !=
+        TYPE_STATUS_INVALID_ARGUMENT || machine != STD_NULL);
     core_machine_plan_destroy(plan);
     return failed;
 }

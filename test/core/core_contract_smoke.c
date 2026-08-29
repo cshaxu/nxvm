@@ -25,7 +25,8 @@ C_INT main(C_VOID)
     if (core_machine_memory_write(machine, 0xffff0u, &halt, 1u) !=
             TYPE_STATUS_OK ||
         core_machine_run(machine, budget, &result) != TYPE_STATUS_OK ||
-        result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 1u) {
+        result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
+        result.executed != 1u) {
         core_machine_destroy(machine);
         return 3;
     }

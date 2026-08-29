@@ -3735,7 +3735,7 @@ C_INT main(C_VOID)
         timing_80386_manifest_s3_count(0) != 809u ||
         timing_80386_manifest_observed_count() == 0u ||
         timing_80386_manifest_write_results(
-            "docs/etc/cpu-timing/t437-s8-80386-timing-results.json", 1) != 0) {
+            PROJECT_TEST_80386_RESULTS_PATH, 1) != 0) {
         STD_PRINTF("M5:T437:S3:I386-POSTCHECK-FAIL:canonical=%u:observed=%u:total=%u\n",
             timing_80386_manifest_s3_count(0), timing_80386_manifest_s3_count(1),
             timing_80386_manifest_observed_count());
