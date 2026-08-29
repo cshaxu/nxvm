@@ -35,8 +35,8 @@ foreach(file IN LISTS source_files)
 endforeach()
 
 file(GLOB_RECURSE cross_owner_tests
-    "${PROJECT_SOURCE_DIR}/tests/products/*.c"
-    "${PROJECT_SOURCE_DIR}/tests/platform/*.c")
+    "${PROJECT_SOURCE_DIR}/test/vm/product/*.c"
+    "${PROJECT_SOURCE_DIR}/test/vm/platform/*.c")
 foreach(file IN LISTS cross_owner_tests)
     file(READ "${file}" source)
     if(source MATCHES "#include[ 	]+\"vm/(composition/session/session_private|profile/default_profile/pc_at_profile_private|profile/model40/model40_private|machine/fdd_private|machine/hdd_private)\\.h\"")

@@ -4,7 +4,7 @@ endif()
 
 file(READ "${PROJECT_SOURCE_DIR}/CMakeLists.txt" cmake_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/vm/platform/linux/linuxcon.c" linuxcon_source)
-file(READ "${PROJECT_SOURCE_DIR}/tests/machine/vm_platform_linux_run_handle_smoke.c"
+file(READ "${PROJECT_SOURCE_DIR}/test/vm/machine/vm_platform_linux_run_handle_smoke.c"
     linux_smoke_source)
 
 foreach(required
@@ -21,7 +21,7 @@ endforeach()
 
 foreach(required
     "vm-platform-linux-run-handle-smoke"
-    "tests/machine/vm_platform_linux_run_handle_smoke.c")
+    "test/vm/machine/vm_platform_linux_run_handle_smoke.c")
     string(FIND "${cmake_source}" "${required}" position)
     if(position EQUAL -1)
         message(FATAL_ERROR "Linux runtime probe is missing: ${required}")

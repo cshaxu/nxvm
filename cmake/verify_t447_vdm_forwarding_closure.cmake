@@ -13,8 +13,8 @@ endforeach()
 file(GLOB_RECURSE vdm_sources
     "${PROJECT_SOURCE_DIR}/src/vdm/*.c"
     "${PROJECT_SOURCE_DIR}/src/vdm/*.h"
-    "${PROJECT_SOURCE_DIR}/tests/*vdm*.c"
-    "${PROJECT_SOURCE_DIR}/tests/*dos_minimal*.c")
+    "${PROJECT_SOURCE_DIR}/test/*vdm*.c"
+    "${PROJECT_SOURCE_DIR}/test/*dos_minimal*.c")
 foreach(file IN LISTS vdm_sources)
     file(READ "${file}" source)
     if(source MATCHES "vdm_session")

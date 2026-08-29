@@ -73,7 +73,7 @@ endforeach()
 find_program(project_t317_git_executable git REQUIRED)
 execute_process(
     COMMAND "${project_t317_git_executable}" -C "${PROJECT_T317_TYPE_SOURCE_DIR}"
-        ls-files --cached --others --exclude-standard -- src tests cmake tools CMakeLists.txt
+        ls-files --cached --others --exclude-standard -- src test cmake tools CMakeLists.txt
     RESULT_VARIABLE project_t317_git_result
     OUTPUT_VARIABLE project_t317_tracked_paths
     ERROR_VARIABLE project_t317_git_error)

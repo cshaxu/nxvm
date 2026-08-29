@@ -9,7 +9,7 @@ file(READ "${PROJECT_SOURCE_DIR}/src/vm/profile/default_profile/pc_at_profile.c"
     profile_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/vm/composition/session/machine_devices.c"
     devices_source)
-file(READ "${PROJECT_SOURCE_DIR}/tests/machine/core_machine_hdc_smoke.c"
+file(READ "${PROJECT_SOURCE_DIR}/test/core/machine/core_machine_hdc_smoke.c"
     core_fixture)
 
 if(hdc_source MATCHES "#include[ \t]+\"vm/")

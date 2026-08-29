@@ -17,8 +17,8 @@ foreach ($file in $sourceFiles) {
     if ($text -match '\bprofile(?:_[A-Za-z0-9]+)*_(?:borrow|binding)\b') {
         $failures += "$relative exports or uses a profile raw binding"
     }
-    if ($text -match '#\s*include\s*[<\"](?:\.\./)*tests/support/') {
-        $failures += "$relative includes tests/support"
+    if ($text -match '#\s*include\s*[<\"](?:\.\./)*test/support/') {
+        $failures += "$relative includes test/support"
     }
 }
 

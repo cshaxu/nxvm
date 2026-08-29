@@ -11,7 +11,7 @@ $allowed = (Join-Path $root 'src/type.h').Replace('\', '/')
 $headerPattern = '^\s*#\s*include\s*[<"](?:stdio|stdlib|stdarg|stdbool|stddef|stdatomic|string|memory|time|ctype|stdint)\.h[>"]'
 $failures = @()
 
-foreach ($directory in @('src', 'tests')) {
+foreach ($directory in @('src', 'test')) {
     $path = Join-Path $root $directory
     Get-ChildItem -LiteralPath $path -Recurse -File -Include '*.c', '*.h' |
         Where-Object { $_.FullName -notmatch '[\\/]nxvm-baseline[\\/]' } |

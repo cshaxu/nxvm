@@ -14,18 +14,18 @@ if(NOT project_t332_count EQUAL 47)
 endif()
 
 set(project_t332_wrapper_sources
-    "tests/machine/core_machine_arpl_s53_smoke.c"
-    "tests/machine/core_machine_cli_sti_s48_smoke.c"
-    "tests/machine/core_machine_hlt_s49_smoke.c"
-    "tests/machine/core_machine_iret_outer_s52_smoke.c"
-    "tests/machine/core_machine_iret_s51_smoke.c"
-    "tests/machine/core_machine_software_int_s50_smoke.c")
+    "test/core/machine/core_machine_arpl_s53_smoke.c"
+    "test/core/machine/core_machine_cli_sti_s48_smoke.c"
+    "test/core/machine/core_machine_hlt_s49_smoke.c"
+    "test/core/machine/core_machine_iret_outer_s52_smoke.c"
+    "test/core/machine/core_machine_iret_s51_smoke.c"
+    "test/core/machine/core_machine_software_int_s50_smoke.c")
 set(project_t332_inherited_sources
-    "tests/machine/core_machine_arpl_smoke.c"
-    "tests/machine/core_machine_cli_sti_smoke.c"
-    "tests/machine/core_machine_protected_return_atomicity_smoke.c"
-    "tests/machine/core_machine_protected_iret_smoke.c"
-    "tests/machine/core_machine_interrupt_entry_smoke.c")
+    "test/core/machine/core_machine_arpl_smoke.c"
+    "test/core/machine/core_machine_cli_sti_smoke.c"
+    "test/core/machine/core_machine_protected_return_atomicity_smoke.c"
+    "test/core/machine/core_machine_protected_iret_smoke.c"
+    "test/core/machine/core_machine_interrupt_entry_smoke.c")
 
 function(project_t332_require_shared_lifecycle source)
     set(path "${PROJECT_T332_SOURCE_DIR}/${source}")

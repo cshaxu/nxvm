@@ -2,7 +2,26 @@
 
 ## Current Work
 
-No active packet. T500 S3 is accepted; T500 remains open for the test-tree and route migration.
+## M5 T500 S4 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | The owner approved T500's single-person dual-role implementation, requiring every S to pass the complete repository-only unit suite, all test code to move under `test/`, and external integration to be only `test/integration/`. |
+| Objective | Implement the S3 architecture: eliminate the legacy `tests/` tree, move test code into component-owned `test/` modules, create the exclusive unit/integration CTest route registration, and remove obsolete runner/list logic in the same owner-local batches. |
+| Non-goals | No production/Core/VM behavior change; no external media import; no reduction of coverage based on speed; no fixed focused list, second test manifest/runner, forwarding CMake tree or tracked generated test output. |
+| Reference Baseline | `8c10dbb6`; [T500 record](../history/M5-T500-unit-and-integration-test-convergence.md); [S2 inventory](../etc/evidence/t500-s2-test-inventory.json); and [S3 architecture](../etc/evidence/t500-s3-component-test-architecture.md). |
+| Candidate Proposal | [M5 unit and integration test convergence](../proposals/m5-current-gate-execution-tiering.md). |
+| Files And ABI Surface | `test/` sources, CMake test registration and test-only runners. Product source, public ABI, profile behavior and external assets remain unchanged. |
+| Applicable Rules | One `test/` root; repository-only source follows its `src` owner; external scenarios only `test/integration/`; one CMake membership authority and CTest executor; no tracked output mutation or broad serialization. |
+| Verification | Each accepted P runs its owner-relevant temporary focused check plus the full current repository-only baseline; S4 closes only after every retained test source is under `test/`, route partition/static registration checks pass, generated output is clean, and the full repository-only suite passes. |
+| Expected Markers | `TEST-TREE-ONE`, `TEST-ROUTE-PARTITION`, `TEST-NO-TRACKED-OUTPUT`, `TEST-NO-DUAL-REGISTRATION`, and `TEST-OWNER-MODULES`. |
+| Asset Needs | None for unit migration. External integration code may preserve argument contracts but S4 neither reads nor retains owner-managed inputs. |
+| Reporting Requirements | Report moved/deleted source counts, each registered/deleted/conditional target disposition, code-size and runner/list deletions, exact unit route count and any retained resource isolation. |
+| Stop Conditions | Stop if a target has no proven owner/input contract, a test needs external media to run as unit, a proposed deletion lacks replacement coverage, or a production change becomes necessary. |
+| Exit Criteria | No `tests/` source root or CMake reference remains; every retained test source is under its component-owned `test/` module; every registered CTest belongs exactly once to unit or integration; generated checks do not modify tracked files; unit route and governance pass. |
+| Original Owner Request | Reorganize all tests beneath `test/` by `src` component, place external integration beneath `test/integration/`, retain comprehensive coverage and remove needless test complexity. |
+| Similar-Issue Sweep | Cover all `tests/` references, target/source mapping, CTest labels/arguments, custom runner target lists, generated result writers, unregistered targets, shared EGA source, platform conditionals, working directories and resource locks. |
 
 ## Current Technical Baseline
 

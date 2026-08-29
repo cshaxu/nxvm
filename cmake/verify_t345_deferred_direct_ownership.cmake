@@ -70,7 +70,7 @@ foreach(project_t345_row IN LISTS project_t345_t344_rows)
     if(project_t345_status STREQUAL "deferred" OR
             (project_t345_status STREQUAL "retained-strict" AND
             NOT project_t345_s2_target_index EQUAL -1 AND
-            project_t345_source MATCHES "^tests/") OR
+            project_t345_source MATCHES "^test/") OR
             (project_t345_status STREQUAL "retained-strict" AND
             NOT project_t345_s3_target_index EQUAL -1))
         list(APPEND project_t345_expected_keys "${project_t345_target}|${project_t345_source}")

@@ -401,7 +401,7 @@ function New-SelfTestRepository([string]$root) {
     Set-SelfTestFile $root "AGENTS.md" "# Agent Instructions`n`n## Authority`n`n## Execution"
     Set-SelfTestFile $root "CONTRIBUTING.md" "# Contributing`n`n## Change Submission`n`n## Review Record`n`n## Commits And Tracking"
     Set-SelfTestFile $root "THIRD_PARTY_NOTICES.md" "# Third-Party Notices"
-    Set-SelfTestFile $root "tests/README.md" "# Test Directory"
+    Set-SelfTestFile $root "test/README.md" "# Test Directory"
     Set-SelfTestFile $root "docs/README.md" "# Documentation Guide`n`n## Task Reading Set`n`n[Current](states/CURRENT.md)`n[Execution](rules/EXECUTION.md)`n[Contributing](../CONTRIBUTING.md)`n`n## Daily Operation`n`n## Supporting Detail"
     Set-SelfTestFile $root "docs/states/QUEUE.md" "# Queue`n`n1. [Candidate work](../proposals/candidate.md)"
     Set-SelfTestFile $root "docs/states/TODO.md" "# Long-Term Review Ledger`n`n## Compatibility Debt`n`n- [ ] **Fixture debt (`TODO(High)`).** Admit only with evidence."
@@ -471,10 +471,10 @@ if ($SelfTest) {
         New-SelfTestRepository $fixtureRoot
         Require (Invoke-SelfTestCheck $fixtureRoot) `
             "Documentation schema rejected the controlled passing fixture."
-        Set-SelfTestFile $fixtureRoot "tests/README.md" "# Test Directory`n`nC:\Users\alice\private"
+        Set-SelfTestFile $fixtureRoot "test/README.md" "# Test Directory`n`nC:\Users\alice\private"
         Require (-not (Invoke-SelfTestCheck $fixtureRoot -Quiet)) `
             "Documentation schema accepted a machine-local path in a test README."
-        Set-SelfTestFile $fixtureRoot "tests/README.md" "# Test Directory"
+        Set-SelfTestFile $fixtureRoot "test/README.md" "# Test Directory"
         $validStatus = Get-Content -Raw -LiteralPath (Join-Path $fixtureRoot "docs/states/CURRENT.md")
         Set-SelfTestFile $fixtureRoot "docs/design/ARCHITECTURE.md" "# System Architecture"
         Require (-not (Invoke-SelfTestCheck $fixtureRoot -Quiet)) `
@@ -1018,7 +1018,7 @@ $markdownFiles = @(
     Get-Item -LiteralPath $contributingPath
     Get-Item -LiteralPath (Join-Path $RepositoryRoot "THIRD_PARTY_NOTICES.md") -ErrorAction SilentlyContinue
     Get-ChildItem -LiteralPath $docsRoot -Recurse -File -Filter "*.md"
-    Get-ChildItem -LiteralPath (Join-Path $RepositoryRoot "tests") -Recurse -File -Filter "*.md" -ErrorAction SilentlyContinue
+    Get-ChildItem -LiteralPath (Join-Path $RepositoryRoot "test") -Recurse -File -Filter "*.md" -ErrorAction SilentlyContinue
     Get-ChildItem -LiteralPath (Join-Path $RepositoryRoot "tools") -Recurse -File -Filter "*.md"
 ) | Sort-Object -Property FullName -Unique
 $mojibake = $markdownFiles |
