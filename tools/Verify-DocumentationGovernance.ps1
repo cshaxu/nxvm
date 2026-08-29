@@ -942,9 +942,12 @@ else {
         Require-ActiveIdentifier $activePacket $RepositoryRoot $status
     }
     else {
-        $betweenSubtasks = @(Get-StatusClosureRows $status | Where-Object HasSubtask)
-        Require ($betweenSubtasks.Count -eq 1) `
-            "Active CURRENT.md without a task packet must retain exactly one latest-task subtask progress row."
+        $closureRows = @(Get-StatusClosureRows $status)
+        $betweenSubtasks = @($closureRows | Where-Object HasSubtask)
+        $taskClosures = @($closureRows | Where-Object { -not $_.HasSubtask })
+        Require (($betweenSubtasks.Count -eq 1) -or
+            ($betweenSubtasks.Count -eq 0 -and $taskClosures.Count -gt 0)) `
+            "CURRENT.md without a task packet must retain either one open-task progress row or a task-level closure."
     }
 }
 

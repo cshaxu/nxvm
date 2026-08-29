@@ -71,9 +71,9 @@ Retained non-candidate proposal index: [Core controller and device phase program
 
 Retained historical context: [Core L3 integration closure and VM contract export](../proposals/m5-core-l3-integration-vm-contract-export.md), the closed IBM PC/XT profile/capability audit, and the withdrawn profile-first admission remain outside candidate ordering. The closed 5170 root normalization is the first Core-axis profile consumer.
 
-Closed retained proposal: [IBM 5170 native floppy contract](../proposals/m5-ibm-5170-native-floppy-contract.md), [Core HDC ATA phase contract](../proposals/m5-core-hdc-ata-phase-contract.md).
+Closed retained proposal: [IBM 5170 native floppy contract](../proposals/m5-ibm-5170-native-floppy-contract.md), [Core HDC ATA phase contract](../proposals/m5-core-hdc-ata-phase-contract.md), and [Four-profile supported DOS media matrix](../proposals/m5-four-profile-supported-media-matrix.md).
 
-Active/closed proposal traceability: [Core event-deadline scheduler convergence](../proposals/m5-core-event-deadline-scheduler-convergence.md) is active; [Four-profile supported DOS media matrix](../proposals/m5-four-profile-supported-media-matrix.md) is closed. The post-scheduler matrix candidate owns the residual Release replay and Model-40 diagnostic receiver.
+The post-scheduler matrix candidate owns the residual Release replay and Model-40 diagnostic receiver.
 
 
 ## M6 Candidates

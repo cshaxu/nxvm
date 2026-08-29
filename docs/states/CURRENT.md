@@ -2,26 +2,7 @@
 
 ## Current Work
 
-## M5 T499 S2 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | The owner approved implementation of Core event-deadline scheduler convergence on 2026-08-28 after accepting T498's finite Model-40 predecessor/receiver result, approved the selected Model-40 D4 controller migration as a T499 S task, confirmed that every remaining scheduler-controller migration is part of T499, and required a new T499 S to diagnose and repair every production/test failure until the full suite is green before further closure work. The owner further approved transfer of the residual Release four-profile media matrix and Model-40 ROM/FDD diagnostic to the queued post-scheduler media-closure task on 2026-08-28. |
-| Objective | Diagnose and restore the complete configured test suite to green at each actual production owner, then complete the Core-only migration of every current recurring scheduler client to one ordered earliest-event/delta-settlement route and migrate the selected Model-40 D4 controller to its one Core owner. The residual Release media matrix is transferred to the queued post-scheduler media-closure candidate without a Model-40 or profile-specific shortcut. |
-| Non-goals | No firmware/media import or retention; no controller-function rewrite beyond its scheduling ingress except the explicitly admitted selected D4 owner migration; no physical wall-clock claim; no VM/profile guest-time writer, profile fast path, live timing setter, second scheduler, controller-private time owner, guessed active duration, generic chipset framework or profile D4 forwarding wrapper. |
-| Reference Baseline | `63c9a74d`; [T498 closure](../history/M5-T498-four-profile-supported-media-matrix.md); [Model-40 predecessor](../etc/evidence/t498-s3-model40-startup-chain-ledger.md); and the admitted [scheduler proposal](../proposals/m5-core-event-deadline-scheduler-convergence.md). |
-| Candidate Proposal | [Core event-deadline scheduler convergence](../proposals/m5-core-event-deadline-scheduler-convergence.md). |
-| Files And ABI Surface | Core-private scheduler, timeline, selected controller owners and the selected Core D4 memory component. The Model-40 profile loses superseded private D4 state/callbacks. Public VM/profile interfaces remain unchanged unless a copied existing Core observation needs a source-provenance correction; no controller pointer, mutable layout, or setter crosses Core. |
-| Applicable Rules | Core is the sole owner of guest time, controller state, port/memory transactions and due-time order. Controller state stays at its current owner; VM/profile pass only frozen construction values and consume copied observations. D4 is Core-owned after its admitted migration. Manual-defined relations cross-validated by external emulators remain Manual-L3; external-only reproducible relations are External-L2; unsupported active relations block rather than receive guessed time. |
-| Verification | This S restores the complete configured suite to green by common owner/cause, without excluding failures, and proves the one Core advancement seam. S1 inventories every production recurring scheduler client, original source basis, external cross-check and current code gap. Later accepted S units prove ordered equal-due settlement, reset/cancel/pause/HLT/debugger behavior, no production `due_tick + 1` maintenance route, D4 List 1/List 2 and sole Core owner, and the selected External-L2 D4 setup-decode receiver. The queued post-scheduler candidate owns fresh Release semantic replays for every supported matrix row. |
-| Expected Markers | `CORE-SCHEDULER-LIST-1`, `CORE-SCHEDULER-LIST-2`, `CORE-SCHEDULER-ONE-SEAM`, `CORE-SCHEDULER-NO-PERIODIC-ROUTE`, `D4-LIST-1`, `D4-LIST-2` and `D4-SETUP-DECODE`. |
-| Asset Needs | S1 uses only manuals and read-only external implementations. The transferred media-closure candidate owns any local-only ROM or DOS input under the source policy. |
-| Reporting Requirements | Record every migrated, idle and active-blocker disposition; distinguish Manual-L3, External-L2 and L1; report deleted recurring paths and code-size delta; never report elapsed execution as a boot terminal. |
-| Stop Conditions | Stop and transfer any requested controller function other than the selected D4 owner migration, physical service duration, board input, firmware behavior or VM/profile interface not required for scheduler/D4 migration. Do not use an external model as L3 without the matching original source and project probe. |
-| Exit Criteria | The complete configured suite is green without exclusion; every current recurring scheduler client has a migrated next-change route, explicit idle state or explicit active blocker; no unconditional production every-tick maintenance callback remains; the selected D4 unit has one Core owner with no superseded profile-private state/callback route; and lifecycle/order proof passes. The queued post-scheduler media-closure candidate owns all supported DOS-media Release replay requirements. |
-| Original Owner Request | Implement Core event-deadline scheduler convergence from original manuals and external-emulator cross-validation, completing all controller migrations without a polling tail; migrate the selected Model-40 D4 controller as a current T499 S task. |
-| Similar-Issue Sweep | Cover DMA/PIT/PIC/transaction/refresh, FDC/HDC/RTC, KBC/XT keyboard/VADP/execution provider, timeline/reset/cancel/pause/HLT and debugger routes. The transferred media-closure candidate owns all supported profile/CPU/media rows. |
+No active packet. T499 is closed; the next owner-approved Queue candidate may be admitted.
 
 ## Current Technical Baseline
 
@@ -59,14 +40,13 @@
 
 | Task | Compact result |
 | --- | --- |
-| T499 S1 | Accepted P1 inventories every recurring scheduler client, its source provenance and its current-code receiver. T499 remains open for the admitted scheduler implementation and D4 owner migration. |
+| T499 | Closed: one Core deadline seam owns the current scheduler clients and the selected Model-40 D4 controller; the configured suite passes 302/302 and stripped Release 0499 is recorded. [Closure](../history/M5-T499-core-event-deadline-scheduler-convergence.md). |
 | T498 | Closed: the supported-media matrix has semantic terminals or an explicit external-input boundary for every non-Model-40 row, and its Model-40 predecessor transfers to the sole Core scheduler receiver without accepting a shortcut. [Closure](../history/M5-T498-four-profile-supported-media-matrix.md). |
 | T497 | Closed: original Model-339 factory 1.2-MB/compatible-360-KB media behavior now has one descriptor/session/FDD path, and the 360-KB DOS installer replay closes its one missing monochrome-aperture mapping; a 286-compatible 1.2-MB external replay transfers to T498. [Closure](../history/M5-T497-ibm-5170-native-floppy-contract.md). |
 | T496 | Closed: one Core FDC result/IRQ lifecycle now releases IRQ6 at normal-result acknowledgement, and the selected IBM 5160 DOS terminal plus focused FDC regressions pass without a BIOS/VM/media workaround. [Closure](../history/M5-T496-xt-keyboard-device.md). |
 | T495 | Closed: the selected IBM 5160-268 is functionally ready with source-backed L3 relations and explicit L2 limits; 13/13 focused, 300/300 fresh current and specialized gates pass, without a physical/wall-clock overclaim. [Decision](../etc/evidence/t495-s2-xt-final-model-decision.md). |
 | T494 | Closed: the complete IBM 5160 Xebec source/List-1/List-2/sole-owner chain corrects Read block-count progression without a second controller/media path; full current gate passes 300/300 and stripped Release 0494 is recorded. [Closure audit](../etc/evidence/t494-s5-xebec-closure-audit.md). |
 | T493 | Closed: complete IBM CGA source/List-1/List-2/one-owner repair reconciles all 33 rows; the generic latch and binary high-resolution palette repair leave no in-scope tail. [Closure audit](../etc/evidence/t493-s5-cga-closure-audit.md). |
-| T492 | Closed: complete IBM 5160 8272A/logical-media source/List-1/List-2/sole-owner chain removes fabricated reset state and global timing literals; serial gate passes 300/300 and stripped Release 0492 is recorded. [Closure audit](../etc/evidence/t492-s5-8272a-closure-audit.md). |
 | T491 | Closed: the independent IBM 5160 8255 PPI/key/NMI unit maps all 19 rows to one Core owner path, closes PB0/PB1 through the existing PIT2/speaker consumer, and records stripped Release 0491. [Closure audit](../etc/evidence/t491-s5-8255-closure-audit.md). |
 
 ## Recent Governance
