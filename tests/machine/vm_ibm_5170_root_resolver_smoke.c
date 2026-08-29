@@ -101,7 +101,13 @@ static C_INT vm_ibm_5170_root_is_copied_and_complete(C_VOID)
             CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_RATIONAL_CLOCK ||
         resolved->values.core.controller_timing_rules.dma_service !=
             CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_DMA_SERVICE_PHASES ||
-        root.topology.absent_memory_count != 1u ||
+        root.topology.absent_memory_count != 3u ||
+        root.topology.absent_memory[1].physical_start != 0x00080000u ||
+        root.topology.absent_memory[1].bytes != 0x00020000u ||
+        root.topology.absent_memory[1].read_value != 0xffu ||
+        root.topology.absent_memory[2].physical_start != 0x000b0000u ||
+        root.topology.absent_memory[2].bytes != 0x00008000u ||
+        root.topology.absent_memory[2].read_value != 0xffu ||
         !root.topology.planar_parity_present ||
         !root.topology.display_present || root.topology.display.ega_present ||
         !root.topology.display.cga_vram_present ||
@@ -172,6 +178,32 @@ static C_INT vm_ibm_5170_root_rejects_invalid_declaration(C_VOID)
         TYPE_STATUS_OK;
 }
 
+static C_INT vm_ibm_5170_expansion_is_frozen_and_bounded(C_VOID)
+{
+    vm_profile_default_pc_at_resolved_profile expanded;
+    vm_profile_default_pc_at_resolved_profile rejected;
+    type_status status;
+
+    status = vm_profile_ibm_5170_root_resolve_memory(1536u * 1024u, &expanded);
+    if (status != TYPE_STATUS_OK ||
+        expanded.resolved.values.core.configuration.memory_bytes !=
+            1536u * 1024u ||
+        expanded.descriptor.default_memory_bytes != 1536u * 1024u ||
+        expanded.descriptor.cmos.base_memory_kib != 0x0280u ||
+        expanded.descriptor.unpopulated_extended_memory ||
+        expanded.topology.absent_memory_count != 1u ||
+        expanded.topology.absent_memory[0].physical_start != 0x000b0000u ||
+        expanded.topology.absent_memory[0].bytes != 0x00008000u ||
+        expanded.resolved.values.allowed_session_options !=
+            VM_PROFILE_DEFAULT_AT_SESSION_OPTION_MEMORY) {
+        return 1;
+    }
+    return vm_profile_ibm_5170_root_resolve_memory(1024u * 1024u, &rejected) ==
+        TYPE_STATUS_OK ||
+        vm_profile_ibm_5170_root_resolve_memory(4u * 1024u * 1024u, &rejected) ==
+            TYPE_STATUS_OK;
+}
+
 static C_INT vm_model40_child_resolves_copy(C_VOID)
 {
     vm_profile_resolver_declaration root;
@@ -188,7 +220,7 @@ static C_INT vm_model40_child_resolves_copy(C_VOID)
         STD_STRCMP(resolved.field_owner[6], "compaq-deskpro-386-model-40") != 0 ||
         resolved.values.core.configuration.cpu_profile !=
             CORE_MACHINE_CPU_PROFILE_80386 ||
-        resolved.values.core.configuration.memory_bytes != 1024u * 1024u ||
+        resolved.values.core.configuration.memory_bytes != 2u * 1024u * 1024u ||
         resolved.values.core.configuration.pic_topology !=
             CORE_MACHINE_PIC_TOPOLOGY_CASCADED ||
         resolved.values.core.configuration.dma_controller_count !=
@@ -198,7 +230,7 @@ static C_INT vm_model40_child_resolves_copy(C_VOID)
         return 1;
     }
     child.values.core.configuration.memory_bytes = 512u * 1024u;
-    return resolved.values.core.configuration.memory_bytes != 1024u * 1024u;
+    return resolved.values.core.configuration.memory_bytes != 2u * 1024u * 1024u;
 }
 
 static C_INT vm_model40_child_rejects_invalid_parent(C_VOID)
@@ -305,6 +337,7 @@ int main(void)
 {
     if (vm_ibm_5170_root_is_copied_and_complete() ||
         vm_ibm_5170_root_rejects_invalid_declaration() ||
+        vm_ibm_5170_expansion_is_frozen_and_bounded() ||
         vm_model40_child_resolves_copy() || vm_model40_child_rejects_invalid_parent() ||
         vm_default_at_child_resolves_copy() ||
         vm_default_at_child_rejects_invalid_request() ||
@@ -313,6 +346,7 @@ int main(void)
     }
     STD_PRINTF("M5:T476:S2:IBM5170-ROOT-RESOLVER:OK\n");
     STD_PRINTF("M5:T476:S2:IBM5170-ROOT-NEGATIVE:OK\n");
+    STD_PRINTF("M5:T498:S5:IBM5170-EXPANSION-RESOLVER:OK\n");
     STD_PRINTF("M5:T477:S2:DESKPRO-CHILD-RESOLVER:OK\n");
     STD_PRINTF("M5:T477:S2:DESKPRO-CHILD-NEGATIVE:OK\n");
     STD_PRINTF("M5:T478:S2:DEFAULT-AT-CHILD-RESOLVER:OK\n");

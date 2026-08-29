@@ -13,7 +13,7 @@ static type_status imul_write(C_VOID *o,type_unsigned_32 p,type_virtual_address 
 static type_status imul_query(C_VOID *o,type_unsigned_32 p,type_native_unsigned b,core_machine_memory_access a)
 {(C_VOID)o;return p==IMUL_PROVIDER_ADDRESS&&(b==2u||b==4u)&&a==CORE_MACHINE_MEMORY_ACCESS_READ?TYPE_STATUS_OK:TYPE_STATUS_UNSUPPORTED;}
 static C_VOID imul_reset(C_VOID *o){imul_machine *s=(imul_machine *)o;if(s!=STD_NULL)(C_VOID)test_core_machine_fixture_reset_real_mode(s->machine);}
-static const core_machine_execution_provider imul_execution={imul_reset,STD_NULL,STD_NULL};
+static const core_machine_execution_provider imul_execution={imul_reset,STD_NULL};
 static C_INT imul_prepare(core_machine_cpu_profile p,imul_provider *provider,imul_machine *s)
 {
  const core_machine_config c={.memory_bytes=CORE_MACHINE_MINIMUM_MEMORY_BYTES,.cpu_profile=p,.fpu_profile=CORE_MACHINE_FPU_PROFILE_NONE};if(s==STD_NULL)return 0;STD_MEMSET(s,0,sizeof(*s));
@@ -27,7 +27,7 @@ static C_INT imul_forms(C_VOID)
  static const type_signed_32 left[]={-2,0x7fff,-2,0x7fffffff};static const type_signed_32 right[]={3,2,0x40000000,2};
  type_unsigned_8 width,memory,overflow;
  for(width=0u;width<2u;++width)for(memory=0u;memory<2u;++memory)for(overflow=0u;overflow<2u;++overflow){
-  type_unsigned_8 code[6]={0};STD_SIZE_T n=0u;const type_signed_32 l=left[width*2u+overflow],r=right[width*2u+overflow];const type_signed_64 product=(type_signed_64)l*(type_signed_64)r;const type_unsigned_32 expected=(type_unsigned_32)product;const C_INT ov=width?(product>INT32_MAX||product<INT32_MIN):(product>INT16_MAX||product<INT16_MIN);imul_machine s;t_cpu after;core_machine_cpu_diagnostic d;C_INT failed=!imul_prepare(CORE_MACHINE_CPU_PROFILE_80386,STD_NULL,&s);
+  type_unsigned_8 code[6]={0};STD_SIZE_T n=0u;const type_signed_32 l=left[width*2u+overflow],r=right[width*2u+overflow];const type_signed_64 product=(type_signed_64)l*(type_signed_64)r;const type_unsigned_32 expected=(type_unsigned_32)product;const C_INT ov=width?(product>INT32_MAX||product<INT32_MIN):(product>INT16_MAX||product<INT16_MIN);imul_machine s;t_cpu after={0};core_machine_cpu_diagnostic d;C_INT failed=!imul_prepare(CORE_MACHINE_CPU_PROFILE_80386,STD_NULL,&s);
   if(memory&&width)code[n++]=0x67u;
   if(width)code[n++]=0x66u;
   code[n++]=0x0fu;code[n++]=0xafu;if(memory){code[n++]=0x0eu;if(!width){code[n++]=0x00u;code[n++]=0x40u;}}else code[n++]=0xc8u;

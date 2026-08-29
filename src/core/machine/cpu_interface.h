@@ -69,6 +69,7 @@ typedef struct core_machine_cpu_fault_snapshot {
 
 typedef struct core_machine_cpu_diagnostic {
     core_machine_cpu_fault_snapshot first_fault;
+    core_machine_cpu_fault_snapshot first_delivered_exception;
     core_machine_cpu_fault_snapshot last_delivered_exception;
     type_unsigned_32 delivered_exception_count;
     core_machine_cpu_execution_point recent[CORE_MACHINE_CPU_DIAGNOSTIC_WINDOW_CAPACITY];

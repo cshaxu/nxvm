@@ -25,7 +25,7 @@ static C_VOID ud_s1_reset(C_VOID *opaque)
 }
 
 static const core_machine_execution_provider ud_s1_provider = {
-    ud_s1_reset, STD_NULL, STD_NULL
+    ud_s1_reset, STD_NULL
 };
 
 static C_INT ud_s1_prepare(ud_s1_machine *state)

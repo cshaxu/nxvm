@@ -30,7 +30,6 @@ static C_VOID rational_clock_probe_advance(C_VOID *opaque,
 
 static const core_machine_execution_provider rational_clock_provider = {
     rational_clock_probe_reset,
-    STD_NULL,
     rational_clock_probe_advance
 };
 

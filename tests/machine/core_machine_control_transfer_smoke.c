@@ -26,7 +26,7 @@ static C_VOID ct_reset(C_VOID *opaque)
 }
 
 static const core_machine_execution_provider ct_provider = {
-    ct_reset, STD_NULL, STD_NULL
+    ct_reset, STD_NULL
 };
 
 static C_INT ct_write(ct_machine *state, type_unsigned_32 address, const C_VOID *bytes,
@@ -209,7 +209,7 @@ static C_INT ct_test_jcc_short(C_VOID)
     for (index = 0u; index < sizeof(cases) / sizeof(cases[0]); ++index) {
         ct_machine state;
         t_cpu before;
-        t_cpu after;
+        t_cpu after = {0};
         C_INT failed = !ct_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 1);
 
         if (!failed) {
@@ -245,7 +245,7 @@ static C_INT ct_test_near_and_short_jumps(C_VOID)
 
     for (index = 0u; index < sizeof(programs) / sizeof(programs[0]); ++index) {
         ct_machine state;
-        t_cpu after;
+        t_cpu after = {0};
         C_INT failed = !ct_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 1);
 
         if (!failed) {
@@ -275,7 +275,7 @@ static C_INT ct_test_jcc_near_conditions(C_VOID)
     for (index = 0u; index < sizeof(cases) / sizeof(cases[0]); ++index) {
         ct_machine state;
         t_cpu before;
-        t_cpu after;
+        t_cpu after = {0};
         C_INT failed = !ct_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 1);
 
         if (!failed) {
@@ -609,7 +609,7 @@ static C_INT ct_test_near_call_and_ret_forms(C_VOID)
     for (index = 0u; index < sizeof(programs) / sizeof(programs[0]); ++index) {
         ct_machine state;
         t_cpu before;
-        t_cpu after;
+        t_cpu after = {0};
         C_INT failed = !ct_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386,
             index < 2u);
 
@@ -809,7 +809,7 @@ static C_INT ct_test_far_immediate_forms(C_VOID)
     for (index = 0u; index < sizeof(programs) / sizeof(programs[0]); ++index) {
         ct_machine state;
         t_cpu before;
-        t_cpu after;
+        t_cpu after = {0};
         C_INT failed = !ct_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 1);
 
         if (!failed) {

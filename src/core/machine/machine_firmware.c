@@ -30,6 +30,48 @@ type_status core_machine_firmware_invoke(core_machine *machine,
     return status;
 }
 
+type_status core_machine_firmware_handle_software_interrupt(C_VOID *opaque,
+    type_unsigned_8 vector, const core_machine_firmware_interrupt_frame *frame,
+    core_machine_firmware_interrupt_result *result, type_bool *out_handled)
+{
+    core_machine *machine = (core_machine *)opaque;
+    type_unsigned_8 ivt[4];
+    type_unsigned_16 target_offset;
+    type_unsigned_16 target_segment;
+    type_status status;
+
+    if (out_handled == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    *out_handled = TYPE_FALSE;
+    if (machine == STD_NULL || frame == STD_NULL || result == STD_NULL ||
+        machine->firmware_provider == STD_NULL ||
+        machine->firmware_provider->software_interrupt == STD_NULL ||
+        machine->firmware_operation_active) return TYPE_STATUS_OK;
+    status = core_machine_memory_read_physical(&machine->executor_memory,
+        (type_unsigned_32)vector * 4u, (type_virtual_address)ivt, sizeof(ivt));
+    if (status != TYPE_STATUS_OK) return status;
+    target_offset = (type_unsigned_16)(ivt[0] | ((type_unsigned_16)ivt[1] << 8u));
+    target_segment = (type_unsigned_16)(ivt[2] | ((type_unsigned_16)ivt[3] << 8u));
+    machine->firmware_operation_active = 1;
+    machine->firmware_context.machine = machine;
+    machine->firmware_context.operation_status = TYPE_STATUS_OK;
+    machine->firmware_context.track_operation_failures = 1;
+    machine->firmware_context.configuring = 0;
+    machine->firmware_context.active = 1;
+    status = machine->firmware_provider->software_interrupt(
+        machine->firmware_provider_context, &machine->firmware_context, vector,
+        target_segment, target_offset, frame, result, out_handled);
+    if (status == TYPE_STATUS_OK &&
+        machine->firmware_context.operation_status != TYPE_STATUS_OK) {
+        status = machine->firmware_context.operation_status;
+    }
+    machine->firmware_context.active = 0;
+    machine->firmware_context.track_operation_failures = 0;
+    machine->firmware_context.configuring = 0;
+    machine->firmware_operation_active = 0;
+    if (status != TYPE_STATUS_OK) *out_handled = TYPE_FALSE;
+    return status;
+}
+
 static type_status core_machine_firmware_operation_result(
     core_machine_firmware_context *firmware, type_status status)
 {
@@ -139,6 +181,17 @@ type_status core_machine_firmware_memory_write(
     return core_machine_firmware_operation_result(firmware,
         core_machine_memory_write_physical(&firmware->machine->executor_memory,
             physical, (type_virtual_address)data, size));
+}
+
+type_status core_machine_firmware_set_a20(
+    core_machine_firmware_context *firmware, type_bool enabled)
+{
+    if (!core_machine_firmware_context_is_active(firmware, 0)) {
+        return core_machine_firmware_operation_result(firmware,
+            TYPE_STATUS_INVALID_STATE);
+    }
+    firmware->machine->executor_memory.data.flagA20 = enabled ? TYPE_TRUE : TYPE_FALSE;
+    return TYPE_STATUS_OK;
 }
 
 type_status core_machine_firmware_port_read(

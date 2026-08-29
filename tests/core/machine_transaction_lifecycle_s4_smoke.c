@@ -63,12 +63,12 @@ C_INT main(C_VOID)
     core_machine_run_budget budget = {1u, 0u};
     core_machine_run_result result;
     lifecycle_probe probe = {{{0}}, 0u};
-    type_unsigned_32 begin;
-    type_unsigned_32 cancel;
-    type_unsigned_32 reset;
-    type_unsigned_32 cpu_begin;
-    type_unsigned_32 cpu_commit;
-    type_unsigned_32 cpu_retire;
+    type_unsigned_32 begin = 0u;
+    type_unsigned_32 cancel = 0u;
+    type_unsigned_32 reset = 0u;
+    type_unsigned_32 cpu_begin = 0u;
+    type_unsigned_32 cpu_commit = 0u;
+    type_unsigned_32 cpu_retire = 0u;
     C_INT failed = 0;
 
     config.cpu_profile = CORE_MACHINE_CPU_PROFILE_80286;

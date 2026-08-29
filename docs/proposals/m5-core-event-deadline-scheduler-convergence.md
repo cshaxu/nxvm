@@ -10,8 +10,9 @@ guest-state change through the shared Core mechanism, is idle and unscheduled,
 or explicitly blocks safe fast advance; there is no retained implicit
 `due_tick + 1` polling path.
 
-This is a scheduler-integration task, not a claim that every controller's full
-hardware behavior or physical timing is now Manual-L3. Manual formulas,
+This is a scheduler-integration task plus the owner-approved migration of the
+selected Model-40 D4 memory controller. It is not a claim that every
+controller's full hardware behavior or physical timing is now Manual-L3. Manual formulas,
 documented state relations, and verified external board inputs retain their
 existing L3 provenance. When an external emulator implements the same
 manual-defined relation and project probes agree, that row remains
@@ -21,6 +22,11 @@ reproducible, read-only external-emulator model may instead provide a labelled
 External-L2 reference-derived relation after project-owned probes confirm the
 selected observable. A source gap with neither basis remains an L1 causal
 blocker, never an invented deadline.
+
+Every controller group in the complete client inventory is a required T499
+receiver. None may remain on the retired periodic route or be transferred as
+a later scheduler migration; only a source-unqualified active duration may
+remain as its explicit L1 blocker at its existing Core owner.
 
 ## Evidence And Problem
 
@@ -101,6 +107,15 @@ controller needs one.  It does not add live timing setters, controller
 pointers, a general event framework, a second time axis, host-clock injection,
 media/firmware shortcuts, or profile-specific fast paths.
 
+The admitted D4 exception follows the same one-owner rule: Core owns its
+mutable register state, compatibility backing and resulting physical decode;
+the Model-40 profile supplies only frozen board topology during construction.
+The existing profile-private D4 memory callbacks and state are removed rather
+than wrapped. D3PE remains primary for D4 topology. The setup register's exact
+dynamic effect is not assumed: each write's effect must first be classified
+from the original source and, only where necessary, labelled External-L2 after
+read-only 86Box/PCjs/MAME/Bochs/QEMU cross-check and a project probe.
+
 ## Required Complete Client Inventory
 
 Every current client of the recurring scheduler route is in scope:
@@ -147,20 +162,52 @@ than a hidden polling consumer.
    all production `due_tick + 1` maintenance rescheduling, prove reset,
    cancellation, pause, HLT, debugger and equal-due ordering, and use bounded
    order/trace fixtures without retaining protected firmware or guest traces.
-7. **S7 - whole-matrix closure.** Build the required stripped Release artifact
-   and replay every supported IBM 5160, IBM 5170 Model 339, DeskPro 386 Model
-   40 and `default-at` DOS-media row to its semantic terminal or its documented
-   external-input boundary.  Model 40 must pass its prior ROM-diagnostic
-   predecessor and enter the FDD route; a timeout or instruction count is not
-   success.
+7. **S7 - transferred: whole-matrix closure.** The Release replay and Model-40
+   ROM/FDD diagnostic are compatibility-consumer work, transferred by the
+   owner-approved post-scheduler media-closure candidate.  T499 retains the
+   established pre-transfer evidence only; it makes no matrix terminal claim.
+8. **S8 - D4 original-source List 1.** Reconcile the complete selected D4
+   register/window/reset/mapping/alias/protection/parity universe against D3PE
+   first, then against applicable read-only external models. Record each
+   relation as Manual-L3, External-L2, L1 or unsupported; setup-byte readback
+   is not evidence that a mapping transition exists.
+9. **S9 - D4 current-code List 2 and ownership design.** Map every
+   profile-private D4 object, memory callback, backing image, alias and
+   consumer. Freeze the smallest Core construction data and the one Core owner
+   before code changes; no profile forwarding wrapper is permitted.
+10. **S10 - D4 Core migration.** Move the complete admitted D4 state and
+   physical-decode batch into Core, delete the superseded Model-40 state and
+   callbacks, and preserve only frozen construction values at the profile
+   boundary. Implement no row absent its S8 disposition.
+11. **S11 - D4 integration and matrix replay.** Prove reset, control/setup
+   writes, aliases, A20, protection and parity at the one Core owner; repeat
+   scheduler/lifecycle regressions and the Model-40 semantic replay. An
+   unresolved pre-FDD result is transferred to its earliest demonstrated owner,
+   never concealed by a boot workaround.
+12. **S12 - full-gate diagnosis and restoration.** Before any further T499
+   closure, run the complete configured test suite, inventory every failure by
+   actual production owner and common causal change, then restore all checks to
+   green. Repair production behavior at its sole owner; revise a test only
+   when its expectation contradicts the retained source-backed contract, and
+   replace it with a check for that contract. No failure is transferred or
+   excluded merely because it is not a scheduler controller.
+13. **S13 - D4 setup-decode receiver.** The selected Model-40 firmware's
+    setup-low write has an externally reproducible D4 physical-decode effect.
+    Reconcile the selected 2-MiB reset/readback and every resulting mapped,
+    relocated and absent window against the existing D3PE facts and a
+    read-only 86Box cross-check. Implement only the resulting External-L2
+    decode at the one Core D4 owner, with a focused map/write/reset probe;
+    do not promote it to Manual-L3, add a profile callback, or retain a
+    register-only no-op path.
 
 ## Acceptance And Stop Conditions
 
 Closure requires a complete inventory showing no remaining unconditional
 per-tick production scheduler client; focused ordering and lifecycle
 regressions; documented manual, board, or External-L2 provenance for every
-eligible deadline; explicit active blockers for every ineligible relation; and fresh Release
-matrix evidence.  The developer artifact is the task-numbered stripped Release
+eligible deadline; explicit active blockers for every ineligible relation; and
+the full configured test suite to pass with
+no exclusion of a failing production check. The developer artifact is the task-numbered stripped Release
 `nxvm_0_5_NNNN.exe` with the runtime debugger retained.
 
 Stop and transfer, rather than estimate, if a controller requires an unknown

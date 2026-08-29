@@ -14,7 +14,7 @@ static C_VOID sreg_mov_reset(C_VOID *opaque)
 }
 
 static const core_machine_execution_provider sreg_mov_provider = {
-    sreg_mov_reset, STD_NULL, STD_NULL
+    sreg_mov_reset, STD_NULL
 };
 
 static C_INT sreg_mov_prepare(sreg_mov_machine *state,

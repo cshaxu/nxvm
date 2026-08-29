@@ -22,8 +22,30 @@ static C_VOID pushf_popf_s47_reset(C_VOID *opaque)
 }
 
 static const core_machine_execution_provider pushf_popf_s47_provider = {
-    pushf_popf_s47_reset, STD_NULL, STD_NULL
+    pushf_popf_s47_reset, STD_NULL
 };
+
+static type_unsigned_16 pushf_popf_s47_real_flags_image(
+    core_machine_cpu_profile profile, type_unsigned_16 flags)
+{
+    if (profile < CORE_MACHINE_CPU_PROFILE_80286) flags &= 0x0fffu;
+    return (type_unsigned_16)((flags & ~VCPU_EFLAGS_RESERVED) | 0x02u);
+}
+
+static type_unsigned_16 pushf_popf_s47_real_flags_load(
+    core_machine_cpu_profile profile, type_unsigned_16 flags)
+{
+    if (profile < CORE_MACHINE_CPU_PROFILE_80286) flags &= 0x0fffu;
+    return (type_unsigned_16)((flags & ~VCPU_EFLAGS_RESERVED) | 0x02u);
+}
+
+static type_unsigned_16 pushf_popf_s47_real_flags_known_mask(
+    core_machine_cpu_profile profile)
+{
+    if (profile < CORE_MACHINE_CPU_PROFILE_80286) return 0x0fd5u;
+    if (profile == CORE_MACHINE_CPU_PROFILE_80286) return 0x7fd5u;
+    return 0xffffu;
+}
 
 static C_INT pushf_popf_s47_prepare(core_machine_cpu_profile profile,
     pushf_popf_s47_machine *state)
@@ -78,7 +100,8 @@ static C_INT pushf_popf_s47_step(pushf_popf_s47_machine *state,
 static C_INT pushf_popf_s47_test_defaults(C_VOID)
 {
     static const core_machine_cpu_profile profiles[] = {
-        CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
+        CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_8088,
+        CORE_MACHINE_CPU_PROFILE_80186,
         CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
     };
     static const type_unsigned_8 opcodes[] = {0x9cu, 0x9du};
@@ -99,7 +122,7 @@ static C_INT pushf_popf_s47_test_defaults(C_VOID)
             t_cpu before;
             t_cpu after;
             type_unsigned_32 image = form == 0u ? 0u : VCPU_EFLAGS_CF | VCPU_EFLAGS_ZF |
-                VCPU_EFLAGS_IF;
+                VCPU_EFLAGS_IF | VCPU_EFLAGS_IOPL | VCPU_EFLAGS_NT | 0x8000u;
             type_unsigned_32 observed = 0u;
             C_INT failed = !pushf_popf_s47_prepare(profiles[profile], &state);
 
@@ -120,10 +143,16 @@ static C_INT pushf_popf_s47_test_defaults(C_VOID)
                 if (form == 0u)
                     failed |= core_machine_memory_read_physical(&state.machine->executor_memory,
                         0x7ffeu, TYPE_REFERENCE_OF(observed), 2u) != TYPE_STATUS_OK ||
-                        (observed & 0xffffu) != ((flags & ~VCPU_EFLAGS_RESERVED) | 0x02u);
+                        (observed & pushf_popf_s47_real_flags_known_mask(profiles[profile])) !=
+                        (pushf_popf_s47_real_flags_image(profiles[profile],
+                            (type_unsigned_16)flags) &
+                            pushf_popf_s47_real_flags_known_mask(profiles[profile]));
                 else
-                    failed |= (after.data.eflags & 0xffffu) !=
-                        ((image & ~VCPU_EFLAGS_RESERVED) | 0x02u) ||
+                    failed |= (after.data.eflags &
+                        pushf_popf_s47_real_flags_known_mask(profiles[profile])) !=
+                        (pushf_popf_s47_real_flags_load(profiles[profile],
+                            (type_unsigned_16)image) &
+                            pushf_popf_s47_real_flags_known_mask(profiles[profile])) ||
                         (after.data.eflags & 0xffff0000u) !=
                         (flags & 0xffff0000u);
             }
@@ -196,10 +225,10 @@ static C_INT pushf_popf_s47_test_attributes_and_rejects(C_VOID)
                     failed |= after.data.eflags != (width == 4u ?
                         ((image & ~(VCPU_EFLAGS_RESERVED | VCPU_EFLAGS_RF |
                         VCPU_EFLAGS_VM)) | (before.data.eflags &
-                        (VCPU_EFLAGS_RESERVED | VCPU_EFLAGS_VM))) :
+                        (VCPU_EFLAGS_RESERVED | VCPU_EFLAGS_VM)) | 0x02u) :
                         ((image & ~(VCPU_EFLAGS_RESERVED | 0xffff0000u)) |
                         (before.data.eflags & (VCPU_EFLAGS_RESERVED |
-                        (0xffff0000u & ~VCPU_EFLAGS_RF)))));
+                        (0xffff0000u & ~VCPU_EFLAGS_RF))) | 0x02u));
             }
             core_machine_destroy(state.machine);
             if (failed)

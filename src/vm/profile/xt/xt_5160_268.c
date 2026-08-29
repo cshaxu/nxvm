@@ -34,7 +34,23 @@ type_status vm_profile_xt_5160_268_declaration_create(
         CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI;
     declaration.values.core.configuration.xt_ppi_keyboard =
         (core_machine_xt_ppi_keyboard_config) {0x0060u, 0x0061u, 0x0062u,
-            0x0063u, 1u};
+            0x0063u, 1u, 0x0du, 0x02u};
+    /* Manual values feed this explicit macro axis; 8088 retirement has not
+     * qualified it as physical machine time. */
+    declaration.values.core.configuration.time_axis =
+        (core_machine_time_axis) {CORE_MACHINE_TIME_AXIS_MACRO_PROPORTIONAL, 4772727u};
+    /* IBM derives the 8253 input (1.193182 MHz) as one quarter of the
+     * 4.772727 MHz CPU board clock. This is frozen board data, not a
+     * profile scheduler or another guest clock. */
+    declaration.values.core.configuration.clock_plan.pit =
+        (core_machine_clock_ratio) {1u, 4u, 0u};
+    declaration.values.core.controller_timing_rules =
+        (core_machine_controller_timing_rules) {
+            CORE_MACHINE_CONTROLLER_TIMING_RULE_L2_FALLBACK,
+            CORE_MACHINE_CONTROLLER_TIMING_RULE_L2_FALLBACK,
+            CORE_MACHINE_CONTROLLER_TIMING_RULE_L2_FALLBACK,
+            CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_RATIONAL_CLOCK,
+            CORE_MACHINE_CONTROLLER_TIMING_RULE_L2_FALLBACK};
     declaration.values.core.configuration.ticks_per_instruction = 1u;
     declaration.values.enabled_devices = VM_PROFILE_XT_5160_268_CORE_DEVICE;
     declaration.values.firmware_policy = VM_PROFILE_RESOLVER_FIRMWARE_POLICY_BYOB;
@@ -45,7 +61,8 @@ type_status vm_profile_xt_5160_268_declaration_create(
 }
 
 type_status vm_profile_xt_5160_268_resolve(
-    vm_profile_xt_5160_268_resolved_profile *out_profile)
+    vm_profile_xt_5160_268_resolved_profile *out_profile,
+    type_bool xebec_rom_present)
 {
     vm_profile_resolver_declaration declaration;
     type_status status;
@@ -62,6 +79,21 @@ type_status vm_profile_xt_5160_268_resolve(
         &(vm_profile_resolver_session_request) {0u}, &out_profile->resolved);
     if (status != TYPE_STATUS_OK) return status;
     out_profile->topology = (core_machine_plan_topology) {0};
+    /* The fixed 256 KiB board leaves these windows unpopulated and POST probes
+     * them as open bus.  A selected Xebec ROM is a frozen construction input:
+     * only that configuration gives C8000h--C9FFFh to immutable firmware. */
+    out_profile->topology.absent_memory_count = xebec_rom_present ? 4u : 3u;
+    out_profile->topology.absent_memory[0] =
+        (core_machine_absent_memory_config) {0x00040000u, 0x00060000u, 0xffu};
+    out_profile->topology.absent_memory[1] =
+        (core_machine_absent_memory_config) {0x000a0000u, 0x00018000u, 0xffu};
+    out_profile->topology.absent_memory[2] =
+        (core_machine_absent_memory_config) {0x000c0000u,
+            xebec_rom_present ? 0x00008000u : 0x00030000u, 0xffu};
+    if (xebec_rom_present) {
+        out_profile->topology.absent_memory[3] =
+            (core_machine_absent_memory_config) {0x000d0000u, 0x00020000u, 0xffu};
+    }
     /* The selected IBM CGA is one VADP-owned aperture and port grammar.
      * These scheduling quanta are the existing non-physical VADP contract;
      * selected-adapter physical timing remains a later receiver. */
@@ -162,6 +194,7 @@ static type_status vm_profile_xt_5160_268_firmware_reset(C_VOID *opaque,
 static const core_machine_firmware_provider vm_profile_xt_5160_268_provider = {
     vm_profile_xt_5160_268_firmware_configure,
     vm_profile_xt_5160_268_firmware_reset,
+    STD_NULL,
     STD_NULL
 };
 

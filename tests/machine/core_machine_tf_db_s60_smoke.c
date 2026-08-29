@@ -26,7 +26,7 @@ static C_VOID tf_db_s60_reset(C_VOID *opaque)
 }
 
 static const core_machine_execution_provider tf_db_s60_execution_provider = {
-    tf_db_s60_reset, STD_NULL, STD_NULL
+    tf_db_s60_reset, STD_NULL
 };
 
 static C_INT tf_db_s60_prepare(tf_db_s60_machine *state,
@@ -163,14 +163,21 @@ static C_INT tf_db_s60_install_protected_vector(tf_db_s60_machine *state)
 }
 
 static C_INT tf_db_s60_frame_real(tf_db_s60_machine *state, const t_cpu *after,
-    type_unsigned_16 expected_ip, type_unsigned_16 expected_flags)
+    type_unsigned_16 expected_ip, type_unsigned_16 expected_flags,
+    core_machine_cpu_profile profile)
 {
     type_unsigned_16 frame[3u] = { 0u, 0u, 0u };
+    const type_unsigned_16 known_mask = profile < CORE_MACHINE_CPU_PROFILE_80286 ?
+        0x0fd5u : (profile == CORE_MACHINE_CPU_PROFILE_80286 ? 0x7fd5u :
+            0xffd5u);
+    const type_unsigned_16 expected_image = TYPE_MASK_UNSIGNED_16(
+        (expected_flags & ~VCPU_EFLAGS_RESERVED) | 0x02u);
 
     return core_machine_memory_read_physical(&state->machine->executor_memory,
         after->data.ss.base + (type_unsigned_16)after->data.esp,
         (type_virtual_address)frame, sizeof(frame)) == TYPE_STATUS_OK &&
-        frame[0] == expected_ip && frame[1] == 0u && frame[2] == expected_flags;
+        frame[0] == expected_ip && frame[1] == 0u &&
+        (frame[2] & known_mask) == (expected_image & known_mask);
 }
 
 static C_INT tf_db_s60_test_real(C_VOID)
@@ -199,7 +206,8 @@ static C_INT tf_db_s60_test_real(C_VOID)
             after.data.edx != before.data.edx || after.data.ebx != before.data.ebx ||
             after.data.ebp != before.data.ebp || after.data.esi != before.data.esi ||
             after.data.edi != before.data.edi || !tf_db_s60_sregs_same(&before, &after) ||
-            !tf_db_s60_frame_real(&state, &after, 1u, (type_unsigned_16)before.data.eflags);
+            !tf_db_s60_frame_real(&state, &after, 1u,
+                (type_unsigned_16)before.data.eflags, CORE_MACHINE_CPU_PROFILE_80386);
     }
     if (state.machine != STD_NULL) core_machine_destroy(state.machine);
     return failed;
@@ -290,7 +298,7 @@ static C_INT tf_db_s60_expect_ud_no_trap(core_machine_cpu_profile profile,
             after.data.ebp != before.data.ebp || after.data.esi != before.data.esi ||
             after.data.edi != before.data.edi || !tf_db_s60_sregs_same(&before,
                 &after) || !tf_db_s60_frame_real(&state, &after, 0u,
-                (type_unsigned_16)before.data.eflags);
+                (type_unsigned_16)before.data.eflags, profile);
     }
     if (state.machine != STD_NULL) core_machine_destroy(state.machine);
     return failed;
@@ -364,7 +372,7 @@ static C_INT tf_db_s60_test_hardware_real(C_VOID)
             after.data.ebp != before.data.ebp || after.data.esi != before.data.esi ||
             after.data.edi != before.data.edi || !tf_db_s60_sregs_same(&before,
                 &after) || !tf_db_s60_frame_real(&state, &after, 0u,
-                (type_unsigned_16)before.data.eflags);
+                (type_unsigned_16)before.data.eflags, CORE_MACHINE_CPU_PROFILE_80386);
     }
     if (state.machine != STD_NULL) core_machine_destroy(state.machine);
     if (failed) return 1;
@@ -392,7 +400,7 @@ static C_INT tf_db_s60_test_hardware_real(C_VOID)
             after.data.eip != 0x0101u || (after.data.dr6 & 3u) != 2u ||
             (after.data.eax & 0xffffu) != 0x345au ||
             !tf_db_s60_frame_real(&state, &after, 0x0200u + sizeof(read),
-                (type_unsigned_16)before.data.eflags);
+                (type_unsigned_16)before.data.eflags, CORE_MACHINE_CPU_PROFILE_80386);
     }
     if (state.machine != STD_NULL) core_machine_destroy(state.machine);
     if (failed) return 1;
@@ -417,7 +425,7 @@ static C_INT tf_db_s60_test_hardware_real(C_VOID)
             core_machine_memory_read(state.machine, 0x1000u, &value,
                 sizeof(value)) != TYPE_STATUS_OK || value != 0x5au ||
             !tf_db_s60_frame_real(&state, &after, 0x0200u + sizeof(write),
-                (type_unsigned_16)before.data.eflags);
+                (type_unsigned_16)before.data.eflags, CORE_MACHINE_CPU_PROFILE_80386);
     }
     if (state.machine != STD_NULL) core_machine_destroy(state.machine);
     if (failed) return 1;

@@ -7,7 +7,7 @@
 #include "core/machine/retirement_observation_interface.h"
 #include "../support/core_machine_cpu_fixture.h"
 
-#define TIMING_MANIFEST_RESET_LINEAR 0xfffffff0u
+#define TIMING_MANIFEST_RESET_LINEAR 0x000ffff0u
 #define TIMING_MANIFEST_RESET_PHYSICAL 0x000ffff0u
 #define TIMING_MANIFEST_WINDOW_BYTES 16u
 
@@ -44,7 +44,7 @@ static C_VOID timing_manifest_execution_reset(C_VOID *opaque)
 }
 
 static const core_machine_execution_provider timing_manifest_execution_provider = {
-    timing_manifest_execution_reset, STD_NULL, STD_NULL
+    timing_manifest_execution_reset, STD_NULL
 };
 
 static type_status timing_manifest_port_read(C_VOID *owner, type_unsigned_16 port,

@@ -32,6 +32,8 @@
 
 #include "core/machine/dma.h"
 
+#include "core/machine/d4_memory.h"
+
 #include "core/machine/rtc.h"
 
 #include "core/machine/fdc.h"
@@ -46,7 +48,7 @@
 #include "core/machine/vadp.h"
 
 #define CORE_MACHINE_TRACE_CAPACITY 32u
-#define CORE_MACHINE_IMMUTABLE_ROM_MAPPING_CAPACITY 4u
+#define CORE_MACHINE_IMMUTABLE_ROM_MAPPING_CAPACITY 8u
 #define CORE_MACHINE_RETIREMENT_QUALIFICATION_CAPACITY 128u
 #define CORE_MACHINE_PLAN_MEMORY_DEVICE_COUNT 4u
 
@@ -86,7 +88,7 @@ struct core_machine_plan {
     core_machine_plan_memory_device memory_devices[
         CORE_MACHINE_PLAN_MEMORY_DEVICE_COUNT];
     STD_SIZE_T memory_device_count;
-    type_unsigned_8 *d4_memory_parity_mask;
+    core_machine_d4_memory_config d4_memory;
     const core_machine_media_registry *media_registry;
     core_machine_display_provider_slot *display_provider;
     core_machine_fdc_terminal_observation_provider fdc_observation_provider;
@@ -139,7 +141,7 @@ struct core_machine {
     core_machine_timeline timeline;
     core_machine_plan timing_plan;
     type_bool timing_plan_copied;
-    type_unsigned_8 *d4_plan_parity_mask;
+    core_machine_d4_memory d4_memory;
     core_machine_transaction_state transaction;
     core_machine_instruction_timing instruction_timing;
     core_machine_transaction_contract transaction_contract;
@@ -266,7 +268,6 @@ struct core_machine {
     type_bool d4_refresh_hold_pending;
     type_bool d4_refresh_pulse_active;
     type_unsigned_8 d4_refresh_address;
-    type_bool d4_slowdown_enabled;
 };
 
 type_status core_machine_bus_initialize(core_machine *machine);
@@ -350,20 +351,23 @@ C_VOID core_machine_board_set_xt_ppi_speaker(core_machine *machine,
 typedef enum core_machine_time_publication_origin {
     CORE_MACHINE_TIME_PUBLICATION_CPU_RETIREMENT,
     CORE_MACHINE_TIME_PUBLICATION_EXTERNAL_WAIT,
-    CORE_MACHINE_TIME_PUBLICATION_D4_SLOWDOWN,
     CORE_MACHINE_TIME_PUBLICATION_DEADLINE,
     CORE_MACHINE_TIME_PUBLICATION_DETERMINISTIC_ADVANCE
 } core_machine_time_publication_origin;
 type_status core_machine_publish_elapsed_ticks(core_machine *machine,
     type_unsigned_64 elapsed_ticks, core_machine_time_publication_origin origin);
+/* Deterministic Core-test helper. Product composition advances only through
+ * CPU retirement or core_machine_advance_to_next_deadline(). */
+type_status core_machine_advance_time(core_machine *machine,
+    type_unsigned_64 source_ticks);
 C_VOID core_machine_capture_time_observation_private(const core_machine *machine,
     core_machine_time_observation *out_observation);
-C_VOID core_machine_arbitration_tick(C_VOID *opaque, type_unsigned_64 due_tick);
-C_VOID core_machine_readiness_tick(C_VOID *opaque, type_unsigned_64 due_tick);
-C_VOID core_machine_peripheral_tick(C_VOID *opaque, type_unsigned_64 due_tick);
 type_status core_machine_firmware_invoke(core_machine *machine,
     C_INT configuring, C_INT track_operation_failures,
     type_status (*callback)(C_VOID *, core_machine_firmware_context *));
+type_status core_machine_firmware_handle_software_interrupt(C_VOID *opaque,
+    type_unsigned_8 vector, const core_machine_firmware_interrupt_frame *frame,
+    core_machine_firmware_interrupt_result *result, type_bool *out_handled);
 type_status core_machine_plan_validate(const core_machine_plan *plan);
 type_status core_machine_plan_apply_topology(core_machine *machine,
     const core_machine_plan *plan);

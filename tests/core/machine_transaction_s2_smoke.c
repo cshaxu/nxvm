@@ -194,8 +194,8 @@ C_INT main(C_VOID)
     core_machine_transaction_state transaction;
     transaction_state_probe state_probe = {0};
     dma_source source = {0xa5u};
-    type_unsigned_32 external_begin;
-    type_unsigned_32 external_commit;
+    type_unsigned_32 external_begin = 0u;
+    type_unsigned_32 external_commit = 0u;
     C_INT failed = 0;
 
     trace.callback = transaction_trace;

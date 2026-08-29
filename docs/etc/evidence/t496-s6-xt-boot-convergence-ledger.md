@@ -4,12 +4,14 @@
 
 ## Scope And Completion Predicate
 
-The selected IBM 5160-268 BYOB route must reach a DOS prompt or the DOS date
-input checkpoint in Turbo without treating a fixed wall-clock timeout as a
-success. Firmware and guest media remain external runtime inputs. This ledger
-is exhausted only when every row is either proved by that semantic checkpoint
-and its focused regression, or transferred through a named subsequent S. No
-later checkpoint disposes of an earlier row implicitly.
+The selected IBM 5160-268 BYOB route must reach a DOS prompt, the DOS date
+input checkpoint, or an installer guest-input page in Turbo without treating a
+fixed wall-clock timeout as a success. For installation media, that interactive
+installer page is the accepted startup terminal. Firmware and guest media
+remain external runtime inputs. This ledger is exhausted only when every row is
+either proved by that semantic checkpoint and its focused regression, or
+transferred through a named subsequent S. No later checkpoint disposes of an
+earlier row implicitly.
 
 ## Evidence Hierarchy
 

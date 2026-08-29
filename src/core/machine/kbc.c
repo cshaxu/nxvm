@@ -855,8 +855,6 @@ C_VOID core_machine_kbc_reset(t_kbc *controller)
     controller->data.input_port = 0x80u;
     core_machine_kbc_apply_output_port(controller, controller->data.output_port);
 }
-C_VOID core_machine_kbc_refresh(t_kbc *controller) { (C_VOID)controller; }
-
 C_VOID core_machine_kbc_advance(t_kbc *controller, type_unsigned_64 elapsed_ticks)
 {
     if (controller == STD_NULL) return;
@@ -906,6 +904,30 @@ C_VOID core_machine_kbc_advance(t_kbc *controller, type_unsigned_64 elapsed_tick
     if (controller->data.typematic_repeat_ticks != 0u) {
         controller->data.typematic_remaining_ticks -= elapsed_ticks;
     }
+}
+
+type_status core_machine_kbc_ticks_until_event(const t_kbc *controller,
+    type_unsigned_64 *out_ticks)
+{
+    type_unsigned_64 ticks = UINT64_MAX;
+
+    if (controller == STD_NULL || out_ticks == STD_NULL) {
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
+    if (controller->data.serial_delivery_remaining_ticks != 0u) {
+        ticks = controller->data.serial_delivery_remaining_ticks;
+    }
+    if (controller->data.delayed_response_count != 0u &&
+        controller->data.response_remaining_ticks < ticks) {
+        ticks = controller->data.response_remaining_ticks;
+    }
+    if (controller->data.typematic_active &&
+        controller->data.typematic_remaining_ticks < ticks) {
+        ticks = controller->data.typematic_remaining_ticks;
+    }
+    if (ticks == UINT64_MAX) return TYPE_STATUS_INVALID_STATE;
+    *out_ticks = ticks;
+    return TYPE_STATUS_OK;
 }
 
 C_VOID core_machine_kbc_set_typematic_timing(t_kbc *controller,

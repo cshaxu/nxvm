@@ -22,7 +22,7 @@ static C_VOID vm86_delivery_reset(C_VOID *opaque)
     if (state != STD_NULL) (C_VOID)test_core_machine_fixture_reset_real_mode(state->machine);
 }
 static const core_machine_execution_provider vm86_delivery_provider = {
-    vm86_delivery_reset, STD_NULL, STD_NULL
+    vm86_delivery_reset, STD_NULL
 };
 
 static C_INT vm86_delivery_write_u32(core_machine *machine,

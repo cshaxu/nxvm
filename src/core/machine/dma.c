@@ -363,7 +363,7 @@ static type_bool Transmission(t_dma *rdma, t_latch *latch, t_ram *ram,
 }
 
 static C_VOID dma_complete_transfer(t_dma *dma, t_latch *latch,
-    type_unsigned_8 channel, type_bool memory_to_memory)
+    type_unsigned_8 channel, type_bool memory_to_memory, type_bool terminal_count)
 {
     type_unsigned_8 first = memory_to_memory ? 0u : channel;
     type_unsigned_8 last = memory_to_memory ? 1u : channel;
@@ -384,8 +384,7 @@ static C_VOID dma_complete_transfer(t_dma *dma, t_latch *latch,
             TYPE_SET_BIT(dma->data.mask, VDMA_MASK_DRQ(index));
         }
     }
-    if (!TYPE_GET_BIT(dma->data.mode[memory_to_memory ? 1u : channel],
-            VDMA_MODE_AI)) {
+    if (terminal_count) {
         TYPE_SET_BIT(dma->data.status,
             VDMA_STATUS_TC(memory_to_memory ? 1u : channel));
     }
@@ -503,7 +502,9 @@ static C_VOID Execute(t_dma *rdma, t_latch *latch, t_ram *ram,
         }
     }
     if (rdma->data.flagEOP) {
-        dma_complete_transfer(rdma, latch, id, flagM2M);
+        dma_complete_transfer(rdma, latch, id, flagM2M,
+            rdma->data.currCount[flagM2M ? 1u : id] == TYPE_MAX_UNSIGNED_16 ||
+            !TYPE_GET_BIT(rdma->data.mode[flagM2M ? 1u : id], VDMA_MODE_AI));
     }
     rdma->data.flagEOP = TYPE_FALSE;
 }

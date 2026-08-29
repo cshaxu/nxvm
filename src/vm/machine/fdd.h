@@ -31,7 +31,6 @@ C_VOID vm_machine_fdd_initialize(t_fdd *fdd);
 C_INT vm_machine_fdd_initialize_with_geometry(t_fdd *fdd,
     const core_machine_media_geometry *geometry);
 C_VOID vm_machine_fdd_reset(t_fdd *fdd);
-C_VOID vm_machine_fdd_refresh(t_fdd *fdd);
 C_VOID vm_machine_fdd_finalize(t_fdd *fdd);
 C_VOID vm_machine_fdd_create_for(t_fdd *fdd);
 C_INT vm_machine_fdd_replace_bytes(t_fdd *fdd, const C_VOID *bytes,

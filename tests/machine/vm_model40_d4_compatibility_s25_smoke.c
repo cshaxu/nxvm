@@ -68,7 +68,8 @@ C_INT main(C_VOID)
     if (!failed) failed |= core_machine_run(session->core_machine,
         (core_machine_run_budget) {1u, 0u}, &result) != TYPE_STATUS_OK ||
         result.executed != 1u ||
-        result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;    if (!failed) STD_PRINTF("M5:T386:S25:D4-COMPATIBILITY-MAP:OK\n");
+        result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
+    if (!failed) STD_PRINTF("M5:T386:S25:D4-COMPATIBILITY-MAP:OK\n");
     if (!failed) STD_PRINTF("M5:T386:S25:D4-COMPATIBILITY-RESET:OK\n");
     if (!failed) STD_PRINTF("M5:T386:S25:AT-REFRESH-CLOCK:OK\n");
     vm_session_destroy(session);

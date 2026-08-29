@@ -17,7 +17,7 @@ static C_VOID sign_extend_reset(C_VOID *opaque)
 }
 
 static const core_machine_execution_provider sign_extend_provider = {
-    sign_extend_reset, STD_NULL, STD_NULL
+    sign_extend_reset, STD_NULL
 };
 
 static C_INT sign_extend_prepare(core_machine_cpu_profile profile,

@@ -53,7 +53,7 @@ static C_VOID task_switch_reset(C_VOID *opaque)
 }
 
 static const core_machine_execution_provider task_switch_provider = {
-    task_switch_reset, STD_NULL, STD_NULL
+    task_switch_reset, STD_NULL
 };
 
 static C_INT write_bytes(core_machine *machine, type_unsigned_32 address,

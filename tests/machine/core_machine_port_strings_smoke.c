@@ -56,7 +56,7 @@ static C_VOID port_strings_reset(C_VOID *opaque)
 }
 
 static const core_machine_execution_provider port_strings_execution_provider = {
-    port_strings_reset, STD_NULL, STD_NULL
+    port_strings_reset, STD_NULL
 };
 
 static C_INT port_strings_prepare(core_machine_cpu_profile profile,

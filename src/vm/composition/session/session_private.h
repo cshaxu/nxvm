@@ -92,7 +92,6 @@ struct vm_session {
     vm_profile_model40_external_rom model40_rom;
     type_unsigned_8 model40_even_rom[VM_PROFILE_MODEL40_ROM_CHIP_BYTES];
     type_unsigned_8 model40_odd_rom[VM_PROFILE_MODEL40_ROM_CHIP_BYTES];
-    vm_profile_model40_d4_memory model40_d4_memory;
     vm_profile_xt_5160_268_resolved_profile xt_resolved;
     vm_profile_xt_5160_268_external_rom xt_rom;
     type_unsigned_8 *xt_system_rom;

@@ -18,7 +18,7 @@ static C_VOID enter_leave_reset(C_VOID *opaque)
 }
 
 static const core_machine_execution_provider enter_leave_provider = {
-    enter_leave_reset, STD_NULL, STD_NULL
+    enter_leave_reset, STD_NULL
 };
 
 static C_INT enter_leave_prepare(core_machine_cpu_profile profile,

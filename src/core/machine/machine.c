@@ -203,7 +203,7 @@ type_status core_machine_register_reset_rom_alias(core_machine *machine)
         source_start = mapping->physical_start < 0x000f0000u ?
             0x000f0000u : mapping->physical_start;
         copy_end = source_end < 0x00100000u ? source_end : 0x00100000u;
-        status = core_machine_register_immutable_rom_mapping_alias(machine,
+        status = core_machine_register_immutable_rom_mapping_reset_alias(machine,
             source_start, reset_alias + (source_start - 0x000f0000u),
             (STD_SIZE_T)(copy_end - source_start));
         if (status != TYPE_STATUS_OK) return status;
@@ -224,7 +224,7 @@ type_status core_machine_bind_execution_provider(core_machine *machine,
         return TYPE_STATUS_INVALID_STATE;
     }
     if (provider != STD_NULL && provider->reset == STD_NULL &&
-        provider->refresh == STD_NULL && provider->advance_time == STD_NULL) {
+        provider->advance_time == STD_NULL) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
     machine->execution_provider = provider;
@@ -503,7 +503,11 @@ static type_status core_machine_create_internal(
         &machine->executor_cpu_execution, &machine->fpu);
     core_machine_cpu_execution_context_bind_external_cycle_provider(
         &machine->executor_cpu_execution, core_machine_cpu_external_cycle_trace,
-        machine);    core_machine_cpu_execution_context_bind_transaction(
+        machine);
+    core_machine_cpu_execution_context_bind_firmware_interrupt_provider(
+        &machine->executor_cpu_execution,
+        core_machine_firmware_handle_software_interrupt, machine);
+    core_machine_cpu_execution_context_bind_transaction(
         &machine->executor_cpu_execution, &machine->transaction);
     core_machine_cpu_execution_context_bind_diagnostic_provider(
         &machine->executor_cpu_execution, &core_machine_cpu_diagnostic_provider,
@@ -711,6 +715,7 @@ static type_status core_machine_cold_reset(core_machine *machine)
     core_machine_fpu_reset(&machine->fpu);
     core_machine_port_reset(&machine->executor_port);
     core_machine_memory_reset(&machine->executor_memory);
+    core_machine_d4_memory_reset(machine);
     if (machine->keyboard_topology ==
             CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI) {
         core_machine_xt_ppi_keyboard_reset(&machine->xt_ppi_keyboard);
@@ -725,14 +730,13 @@ static type_status core_machine_cold_reset(core_machine *machine)
     core_machine_pic_reset(&machine->shared_pic_master,
         &machine->shared_pic_slave);
     core_machine_pit_reset(&machine->shared_pit);
-    core_machine_board_after_pit_reset(machine);
     if (machine->auxiliary_pit_configured) {
         core_machine_pit_reset(&machine->auxiliary_pit);
     }
+    core_machine_board_after_pit_reset(machine);
     machine->d4_refresh_hold_pending = TYPE_FALSE;
     machine->d4_refresh_pulse_active = TYPE_FALSE;
     machine->d4_refresh_address = 0u;
-    machine->d4_slowdown_enabled = TYPE_FALSE;
     core_machine_vadp_reset(&machine->shared_vadp);
 
     STD_ATOMIC_STORE(&machine->stop_requested, 0);
@@ -774,32 +778,6 @@ static type_status core_machine_cold_reset(core_machine *machine)
     core_machine_clock_domain_reset(&machine->vadp_clock);
     core_machine_clock_domain_reset(&machine->kbc_clock);
     core_machine_clock_domain_reset(&machine->provider_clock);
-    {
-        core_machine_timeline_token first_arbitration;
-        core_machine_timeline_token first_readiness;
-        core_machine_timeline_token first_peripheral;
-
-        status = core_machine_timeline_schedule(&machine->timeline, 1u,
-                core_machine_arbitration_tick, machine,
-                &first_arbitration);
-        if (status != TYPE_STATUS_OK) {
-            machine->lifecycle = CORE_MACHINE_INITIALIZED;
-            return status;
-        }
-        status = core_machine_timeline_schedule(&machine->timeline, 1u,
-                core_machine_readiness_tick, machine,
-                &first_readiness);
-        if (status != TYPE_STATUS_OK) {
-            machine->lifecycle = CORE_MACHINE_INITIALIZED;
-            return status;
-        }
-        status = core_machine_timeline_schedule(&machine->timeline, 1u,
-                core_machine_peripheral_tick, machine, &first_peripheral);
-        if (status != TYPE_STATUS_OK) {
-            machine->lifecycle = CORE_MACHINE_INITIALIZED;
-            return status;
-        }
-    }
     machine->entry_plan_applied = TYPE_FALSE;
     core_machine_cpu_diagnostic_reset(machine);
     core_machine_retirement_observation_reset(machine);
@@ -818,6 +796,25 @@ static type_status core_machine_cold_reset(core_machine *machine)
     machine->lifecycle = CORE_MACHINE_STOPPED;
     core_machine_trace_record(machine, CORE_MACHINE_TRACE_RESET, 0u, 0u, 0u);
     return TYPE_STATUS_OK;
+}
+
+/* An 8042 reset pulse resets the processor only.  Preserve RAM, board state
+ * and scheduled device work; discard only incomplete CPU execution state. */
+static C_VOID core_machine_processor_reset(core_machine *machine)
+{
+    if (machine == STD_NULL) return;
+    core_machine_cpu_state_reset(&machine->executor_cpu_execution);
+    machine->cpu_retirement_wait_pending = TYPE_FALSE;
+    machine->cpu_retirement_wait_ticks = 0u;
+    machine->cpu_retirement_completion_ticks = 0u;
+    machine->cpu_retirement_source_ticks = 0u;
+    machine->external_cycle_page_valid = TYPE_FALSE;
+    machine->external_cycle_pending_valid = TYPE_FALSE;
+    machine->external_cycle_round_ticks = 0u;
+    machine->external_cycle_round_overflow = TYPE_FALSE;
+    machine->external_cycle_overlap_valid = TYPE_FALSE;
+    machine->retirement_eligibility_key_valid = TYPE_FALSE;
+    machine->source_repeat_active = TYPE_FALSE;
 }
 
 type_status core_machine_reconfigure_memory(core_machine *machine,
@@ -874,6 +871,27 @@ type_status core_machine_get_lifecycle(
     }
 
     *out_lifecycle = machine->lifecycle;
+    return TYPE_STATUS_OK;
+}
+
+static type_status core_machine_complete_run_boundary(core_machine *machine,
+    core_machine_run_result *result)
+{
+    if (machine->firmware_provider != STD_NULL &&
+        machine->firmware_provider->after_run != STD_NULL &&
+        core_machine_firmware_invoke(machine, 0, 0,
+            machine->firmware_provider->after_run) != TYPE_STATUS_OK) {
+        (C_VOID)core_machine_report_fault(machine, 0x46575245u);
+        result->reason = CORE_MACHINE_STOP_FAULT;
+        result->detail = machine->fault_detail;
+        return TYPE_STATUS_FAULT;
+    }
+    if (STD_ATOMIC_LOAD(&machine->stop_requested)) {
+        result->reason = CORE_MACHINE_STOP_REQUESTED;
+    }
+    core_machine_trace_record(machine, CORE_MACHINE_TRACE_RUN_BOUNDARY,
+        result->linear_pc, (type_unsigned_32)result->executed,
+        (type_unsigned_32)result->reason);
     return TYPE_STATUS_OK;
 }
 
@@ -947,9 +965,8 @@ type_status core_machine_run(
             if (core_machine_cpu_execution_consume_reset_request(
                     &machine->executor_cpu_execution)) {
                 machine->lifecycle = CORE_MACHINE_PAUSED;
-                if (core_machine_cold_reset(machine) != TYPE_STATUS_OK) {
-                    return TYPE_STATUS_FAULT;
-                }
+                core_machine_processor_reset(machine);
+                machine->lifecycle = CORE_MACHINE_STOPPED;
                 result->reason = CORE_MACHINE_STOP_RESET_REQUESTED;
                 result->linear_pc = core_machine_linear_pc(machine);
                 return TYPE_STATUS_OK;
@@ -991,7 +1008,7 @@ type_status core_machine_run(
                     machine->lifecycle = CORE_MACHINE_PAUSED;
                     result->reason = CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
                     result->linear_pc = core_machine_linear_pc(machine);
-                    return TYPE_STATUS_OK;
+                    return core_machine_complete_run_boundary(machine, result);
                 }
                     continue;
                 }
@@ -1039,26 +1056,7 @@ type_status core_machine_run(
                 result->reason = CORE_MACHINE_STOP_BUDGET;
                 result->linear_pc = core_machine_linear_pc(machine);
                 result->elapsed_ticks = machine->elapsed_ticks;
-                return TYPE_STATUS_OK;
-            }
-            if (machine->d4_platform_configured && machine->d4_slowdown_enabled &&
-                !core_machine_pit_get_output(&machine->auxiliary_pit,
-                    machine->d4_platform_config.slowdown_pit_counter)) {
-                ++result->ticks;
-                if (core_machine_publish_elapsed_ticks(machine, 1u,
-                        CORE_MACHINE_TIME_PUBLICATION_D4_SLOWDOWN) !=
-                    TYPE_STATUS_OK) return TYPE_STATUS_FAULT;
-                result->elapsed_ticks = machine->elapsed_ticks;
-                continue;
-            }
-            if (machine->execution_provider != STD_NULL &&
-                machine->execution_provider->refresh != STD_NULL) {
-                machine->execution_provider->refresh(
-                    machine->execution_provider_context);
-            }
-            if (machine->keyboard_topology !=
-                    CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI) {
-                core_machine_kbc_refresh(&machine->shared_kbc);
+                return core_machine_complete_run_boundary(machine, result);
             }
             {
                 type_bool was_halted = machine->executor_cpu.data.flagHalt;
@@ -1103,7 +1101,7 @@ type_status core_machine_run(
                     result->reason = CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
                     result->linear_pc = core_machine_linear_pc(machine);
                     result->elapsed_ticks = machine->elapsed_ticks;
-                    return TYPE_STATUS_OK;
+                    return core_machine_complete_run_boundary(machine, result);
                 }
                 if (machine->transaction_contract.cpu_prefetch_reservation_enabled) {
                     core_machine_cpu_execution_reserve_prefetch(
@@ -1172,28 +1170,13 @@ type_status core_machine_run(
                 machine->lifecycle = CORE_MACHINE_PAUSED;
                 result->reason = CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
                 result->linear_pc = core_machine_linear_pc(machine);
-                return TYPE_STATUS_OK;
+                return core_machine_complete_run_boundary(machine, result);
             }
         }
         machine->lifecycle = CORE_MACHINE_PAUSED;
         result->reason = CORE_MACHINE_STOP_BUDGET;
         result->linear_pc = core_machine_linear_pc(machine);
-        if (machine->firmware_provider != STD_NULL &&
-            machine->firmware_provider->after_run != STD_NULL &&
-            core_machine_firmware_invoke(machine, 0, 0,
-                machine->firmware_provider->after_run) != TYPE_STATUS_OK) {
-            (C_VOID)core_machine_report_fault(machine, 0x46575245u);
-            result->reason = CORE_MACHINE_STOP_FAULT;
-            result->detail = machine->fault_detail;
-            return TYPE_STATUS_FAULT;
-        }
-        if (STD_ATOMIC_LOAD(&machine->stop_requested)) {
-            result->reason = CORE_MACHINE_STOP_REQUESTED;
-        }
-        core_machine_trace_record(machine, CORE_MACHINE_TRACE_RUN_BOUNDARY,
-            result->linear_pc, (type_unsigned_32)result->executed,
-            (type_unsigned_32)result->reason);
-        return TYPE_STATUS_OK;
+        return core_machine_complete_run_boundary(machine, result);
     }
 }
 

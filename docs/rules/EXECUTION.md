@@ -392,6 +392,14 @@ or have an owner-approved exception recorded, and its commit records compact
 tracking, verification, and provenance facts where needed. A later governed
 history-consolidation task may replace completed per-task documents with a
 milestone summary; Git history remains the detailed evidence source.
+
+**Test closure.** A focused selection is transient: it is named only by the
+active S packet, changes with that S, and is never a fixed manifest, source
+list or retained task evidence. Every numbered S closes only after the complete
+repository-only unit suite passes. Every numbered T closes only after that unit
+suite and its owner-managed external-ROM/disk integration suite pass; an S may
+include either relevant suite in its transient focused selection. Standalone
+documentation work runs only its applicable governance checks.
 Documentation/design tasks apply only the rules relevant to their artifact and
 do not manufacture runtime verification requirements. Standalone `Td` work
 does not create a task artifact or change the current artifact version.

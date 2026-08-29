@@ -136,22 +136,20 @@ C_INT main(C_VOID)
         refresh_dma_read, STD_NULL, STD_NULL
     };
     core_machine_config config = {0};
-    core_machine_d4_platform_config d4 = {CORE_MACHINE_PC_AT_PORT_B, 0u, 2u};
+    core_machine_d4_platform_config d4 = {CORE_MACHINE_PC_AT_PORT_B, 0u};
     core_machine_trace_provider trace;
     core_machine_dma_request_binding binding = {0};
     refresh_probe probe = {{{0}}, 0u};
     refresh_dma_source source = {0xa5u};
     core_machine *machine = STD_NULL;
-    core_machine_run_budget slowdown_budget = {0u, 3u};
-    core_machine_run_result slowdown_result;
     type_unsigned_8 byte = 0u;
     type_unsigned_32 start;
-    type_unsigned_32 refresh_request;
-    type_unsigned_32 refresh_acknowledge;
-    type_unsigned_32 refresh_begin;
-    type_unsigned_32 refresh_commit;
-    type_unsigned_32 refresh_release;
-    type_unsigned_32 dma_begin;
+    type_unsigned_32 refresh_request = 0u;
+    type_unsigned_32 refresh_acknowledge = 0u;
+    type_unsigned_32 refresh_begin = 0u;
+    type_unsigned_32 refresh_commit = 0u;
+    type_unsigned_32 refresh_release = 0u;
+    type_unsigned_32 dma_begin = 0u;
     C_INT failed = 0;
 
     config.cpu_profile = CORE_MACHINE_CPU_PROFILE_80386;
@@ -175,22 +173,9 @@ C_INT main(C_VOID)
     core_machine_dma_request_assert(&machine->shared_dma_primary,
         &machine->shared_dma_secondary, &binding);
     failed |= core_machine_set_dma_bus_ready(machine, 0) != TYPE_STATUS_OK;
-    core_machine_port_write(&machine->executor_port, 0x004bu, 0xb2u);
-    core_machine_port_write(&machine->executor_port, 0x004au, 3u);
-    core_machine_port_write(&machine->executor_port, 0x004au, 0u);
     core_machine_port_write(&machine->executor_port, 0x0064u, 0xd1u);
     core_machine_port_write(&machine->executor_port, 0x0060u, 0x01u);
-    failed |= !machine->d4_slowdown_enabled;
-    failed |= core_machine_advance_time(machine, 19u) != TYPE_STATUS_OK ||
-        core_machine_pit_get_output(&machine->auxiliary_pit, 2u);
-    slowdown_budget.ticks = machine->maximum_instruction_ticks + 2u;
-    failed |= core_machine_run(machine, slowdown_budget, &slowdown_result) != TYPE_STATUS_OK ||
-        slowdown_result.reason != CORE_MACHINE_STOP_BUDGET ||
-        slowdown_result.executed != 0u || slowdown_result.ticks != 3u ||
-        !core_machine_pit_get_output(&machine->auxiliary_pit, 2u);
-    core_machine_port_write(&machine->executor_port, 0x0064u, 0xd1u);
-    core_machine_port_write(&machine->executor_port, 0x0060u, 0x09u);
-    failed |= machine->d4_slowdown_enabled;
+    failed |= machine->executor_memory.data.flagA20;
     failed |= core_machine_reset(machine) != TYPE_STATUS_OK;
     refresh_program_dma_channel2(&machine->executor_port);
     core_machine_dma_request_assert(&machine->shared_dma_primary,

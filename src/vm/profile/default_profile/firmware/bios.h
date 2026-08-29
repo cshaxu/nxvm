@@ -132,6 +132,8 @@ typedef struct t_bios {
 #define VBIOS_ADDR_VGA_DISPLAY_DATA   0x0489
 #define VBIOS_ADDR_VGA_DCC_INDEX      0x048a
 #define VBIOS_ADDR_FDC_LAST_DATA_RATE 0x048b
+#define VBIOS_ADDR_FDD_SECTORS_PER_TRACK 0x04acu
+#define VBIOS_ADDR_FDD_MAX_CYLINDER   0x04adu
 #define VBIOS_ADDR_HDD_STATUS         0x048c
 #define VBIOS_ADDR_HDD_ERROR          0x048d
 #define VBIOS_ADDR_HDD_INT_FLAG       0x048e
@@ -152,7 +154,6 @@ typedef struct t_bios {
 #define VBIOS_ADDR_LANA_STATUS_C1     0x04a3
 #define VBIOS_ADDR_LANA_HDD_INT_VEC   0x04a4
 #define VBIOS_ADDR_VGA_VIDEO_TAB_PTR  0x04a8
-#define VBIOS_ADDR_RESERVED_04AC      0x04ac
 #define VBIOS_ADDR_KEYB_NMI_FLAG      0x04b4
 #define VBIOS_ADDR_KEYB_BREAK_FLAG    0x04b5
 #define VBIOS_ADDR_KEYB_P60_SG_BT_QUE 0x04b9
@@ -184,7 +185,13 @@ C_INT vm_profile_default_bios_materialize(t_bios *bios,
 C_VOID vm_profile_default_bios_reset(t_bios *bios,
     core_machine_firmware_context *firmware,
     const core_machine_media_registry *media_registry,
+    core_machine_media_id fdd_media_id,
     core_machine_media_id hdd_media_id);
+C_INT vm_profile_default_bios_handle_int15_block_move(t_bios *bios,
+    core_machine_firmware_context *firmware, type_unsigned_16 target_segment,
+    type_unsigned_16 target_offset,
+    const core_machine_firmware_interrupt_frame *input,
+    core_machine_firmware_interrupt_result *output);
 C_VOID vm_profile_default_bios_refresh(t_bios *bios);
 C_VOID vm_profile_default_bios_finalize(t_bios *bios);
 C_VOID vm_profile_default_bios_print(const t_bios *bios);
@@ -328,7 +335,7 @@ mov ax, ds:[0013]       \n\
 pop ds                  \n\
 iret                    \n"
 
-#define VBIOS_INT_SOFT_MISC_15 "    \
+#define VBIOS_INT_SOFT_MISC_15_PREFIX "    \
 cmp ah, 24                        \n\
 jnz $(label_int_15_cmp_88)        \n\
 jmp near $(label_int_15_24)       \n\
@@ -345,7 +352,9 @@ cmp ah, d8                        \n\
 jnz $(label_int_15_default)       \n\
 jmp near $(label_int_15_d8)       \n\
 $(label_int_15_default):          \n\
-jmp near $(label_int_15_ret)      \n\
+mov ah, 86                         \n\
+stc                               \n\
+jmp near $(label_int_15_set_flag) \n\
 \
 $(label_int_15_24):               \n\
 cmp al, 03                        \n\
@@ -358,9 +367,9 @@ $(label_int_15_24_ret):           \n\
 jmp near $(label_int_15_ret)      \n\
 \
 $(label_int_15_88):               \n\
-mov ax, 0800 ; 2048 KB            \n\
-; if memory size > 16 M, ret 3c00 \n\
-sub ax, 0400                      \n\
+mov ax, "
+
+#define VBIOS_INT_SOFT_MISC_15_SUFFIX "\n\
 clc                               \n\
 jmp near $(label_int_15_set_flag) \n\
 \

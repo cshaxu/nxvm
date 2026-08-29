@@ -30,7 +30,7 @@ static C_VOID real_ud_reset(C_VOID *opaque)
 }
 
 static const core_machine_execution_provider real_ud_provider = {
-    real_ud_reset, STD_NULL, STD_NULL
+    real_ud_reset, STD_NULL
 };
 
 static C_INT real_ud_prepare(real_ud_machine *state,
@@ -117,7 +117,8 @@ static C_INT real_ud_test_delivery_case(const real_ud_case *test_case)
                 after.data.ss.base + (type_unsigned_16)after.data.esp,
                 TYPE_REFERENCE_OF(frame), sizeof(frame)) || frame[0] !=
             REAL_UD_CODE_OFFSET || frame[1] != before.data.cs.selector ||
-            frame[2] != (type_unsigned_16)before.data.eflags;
+            frame[2] != (type_unsigned_16)((before.data.eflags &
+                ~VCPU_EFLAGS_RESERVED) | 0x02u);
         failed |= !real_ud_run(&state, 2u, &status, &result, &after,
             &diagnostic) || status != TYPE_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||

@@ -366,7 +366,8 @@ type_status vm_session_storage_initialize(vm_session *machine)
     }
     if (machine->firmware_kind == VM_SESSION_FIRMWARE_DEFAULT_PC_AT) {
         vm_profile_default_context_initialize(&machine->default_profile_context,
-            &machine->default_bios, machine->media_registry, VM_SESSION_MEDIA_HDD_ID,
+            &machine->default_bios, machine->media_registry, VM_SESSION_MEDIA_FDD_ID,
+            VM_SESSION_MEDIA_HDD_ID,
             machine->profile->firmware_slot);
     }
     if (core_platform_presentation_mailbox_create(&machine->presentation_mailbox) !=
@@ -428,7 +429,8 @@ static type_status vm_session_create_xt_byob(const vm_session_config *config,
     session->xt_private = 1;
     session->firmware_kind = VM_SESSION_FIRMWARE_XT_BYOB;
     session->floppy_kind = VM_PROFILE_FLOPPY_525_360K;
-    if (vm_profile_xt_5160_268_resolve(&session->xt_resolved) != TYPE_STATUS_OK) {
+    if (vm_profile_xt_5160_268_resolve(&session->xt_resolved,
+            config->xt_firmware.xebec_path != STD_NULL) != TYPE_STATUS_OK) {
         STD_FREE(session);
         return TYPE_STATUS_FAULT;
     }
@@ -543,7 +545,8 @@ C_INT vm_session_create(const vm_session_config *config, vm_session **out_sessio
         }
     } else if (profile_kind == VM_SESSION_PROFILE_IBM_5170_MODEL_339) {
         if (vm_session_ibm_5170_floppy_select(config, &session->floppy_kind) !=
-            TYPE_STATUS_OK || vm_profile_ibm_5170_root_resolve(&session->ibm_5170_root) !=
+            TYPE_STATUS_OK || vm_profile_ibm_5170_root_resolve_memory(
+                config == STD_NULL ? 0u : config->memory_bytes, &session->ibm_5170_root) !=
             TYPE_STATUS_OK) {
             STD_FREE(session);
             return TYPE_STATUS_FAULT;

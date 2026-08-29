@@ -157,6 +157,45 @@ static C_VOID core_machine_retirement_observation_capture_context(
         observation->next_lexeme_components = next_lexeme.component_count;
     }
 }
+
+static C_VOID core_machine_retirement_observation_capture_io(
+    core_machine_retirement_observation *observation, const t_cpu *cpu,
+    const t_cpuins_data *data)
+{
+    type_unsigned_8 opcode_index;
+    type_unsigned_8 opcode;
+
+    if (observation == STD_NULL || cpu == STD_NULL || data == STD_NULL) return;
+    observation->io_direction = CORE_MACHINE_RETIREMENT_IO_NONE;
+    observation->io_port = 0u;
+    observation->io_bytes = 0u;
+    observation->io_value = 0u;
+    opcode_index = core_machine_retirement_observation_prefix_count(data);
+    if (opcode_index >= data->oplen) return;
+    opcode = data->opcodes[opcode_index];
+    switch (opcode) {
+    case 0xe4u: case 0xe5u: case 0xe6u: case 0xe7u:
+        if (opcode_index + 1u >= data->oplen) return;
+        observation->io_port = data->opcodes[opcode_index + 1u];
+        break;
+    case 0xecu: case 0xedu: case 0xeeu: case 0xefu:
+        observation->io_port = cpu->data.dx;
+        break;
+    default:
+        return;
+    }
+    observation->io_direction = (opcode == 0xe4u || opcode == 0xe5u ||
+        opcode == 0xecu || opcode == 0xedu) ? CORE_MACHINE_RETIREMENT_IO_READ :
+        CORE_MACHINE_RETIREMENT_IO_WRITE;
+    observation->io_bytes = (opcode == 0xe4u || opcode == 0xe6u ||
+        opcode == 0xecu || opcode == 0xeeu) ? 1u :
+        observation->operand_size_32 ? 4u : 2u;
+    if (observation->io_direction == CORE_MACHINE_RETIREMENT_IO_WRITE) {
+        observation->io_value = observation->io_bytes == 1u ? cpu->data.al :
+            observation->io_bytes == 2u ? cpu->data.ax : cpu->data.eax;
+    }
+}
+
 C_VOID core_machine_retirement_observation_capture_instruction(core_machine *machine,
     const t_cpu *cpu, const t_cpuins *instructions)
 {
@@ -177,6 +216,10 @@ C_VOID core_machine_retirement_observation_capture_instruction(core_machine *mac
         instructions->data.prefix_addrsize;
     observation->lock_prefix = instructions->data.flagLock;
     observation->repeat_prefix = (type_unsigned_8)instructions->data.prefix_rep;
+    core_machine_retirement_observation_capture_context(machine, cpu,
+        instructions, observation);
+    core_machine_retirement_observation_capture_io(observation, cpu,
+        &instructions->data);
     machine->retirement_observation.pending =
         machine->retirement_observation.provider.callback != STD_NULL;
 }
@@ -191,6 +234,11 @@ C_VOID core_machine_retirement_observation_capture_eligibility_key(
 
     if (machine == STD_NULL) return;
     observation = &machine->retirement_observation.pending_observation;
+    if (observation->io_direction == CORE_MACHINE_RETIREMENT_IO_READ) {
+        observation->io_value = observation->io_bytes == 1u ?
+            machine->executor_cpu.data.al : observation->io_bytes == 2u ?
+            machine->executor_cpu.data.ax : machine->executor_cpu.data.eax;
+    }
     core_machine_retirement_observation_capture_context(machine,
         &machine->executor_cpu, &machine->executor_cpu_instructions, observation);
     observation->repeat_phase = machine->source_timing_repeat_phase;

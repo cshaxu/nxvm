@@ -104,7 +104,7 @@ C_INT main(C_VOID)
     vm_session_reset(session);
     failed |= core_machine_get_timeline_observation(session->core_machine,
         &timeline) != TYPE_STATUS_OK || timeline.now != 0u ||
-        timeline.pending_events != 3u ||
+        timeline.pending_events != 0u ||
         core_platform_presentation_mailbox_capture(session->presentation_mailbox,
             &frame) != TYPE_STATUS_OK ||
         frame.kind != CORE_PLATFORM_DISPLAY_KIND_TEXT || frame.columns != 80u ||

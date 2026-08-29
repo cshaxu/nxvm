@@ -41,7 +41,7 @@ int main(C_VOID)
     core_machine_dma_wiring invalid_wiring = dma_wiring;
     core_machine_rtc_cmos_config rtc_config = {0};
     core_machine_dma_request_binding fdc_request = {0};
-    core_machine_run_budget budget = {2u, 0u};
+    core_machine_run_budget budget = {3u, 0u};
     core_machine_run_result result;
     core_machine *machine = STD_NULL;
     const type_unsigned_8 program[] = { 0x90u, 0xf4u };
@@ -66,7 +66,7 @@ int main(C_VOID)
     if (core_machine_create(&machine_config, &machine) != TYPE_STATUS_OK ||
         core_machine_configure_dma(machine, &invalid_wiring, &fdc_request) !=
             TYPE_STATUS_INVALID_ARGUMENT ||
-        (invalid_wiring = dma_wiring, invalid_wiring.fdc_channel = 1u,
+        (invalid_wiring = dma_wiring, invalid_wiring.fdc_channel = 0u,
             core_machine_configure_dma(machine, &invalid_wiring, &fdc_request)) !=
             TYPE_STATUS_INVALID_ARGUMENT ||
         core_machine_configure_dma(machine, &dma_wiring, &fdc_request) !=
@@ -75,14 +75,14 @@ int main(C_VOID)
         fdc_request.core_token == 0u || fdc_request.channel != 2u ||
         core_machine_configure_dma(machine, &dma_wiring, &fdc_request) !=
             TYPE_STATUS_INVALID_STATE ||
-        test_core_machine_fixture_register_reset_mapping(machine, 0xfffffff0u,
+        test_core_machine_fixture_register_reset_mapping(machine, 0x00fffff0u,
             0x000ffff0u, 16u) != TYPE_STATUS_OK ||
         core_machine_freeze_execution_providers(machine) != TYPE_STATUS_OK ||
         core_machine_reset(machine) != TYPE_STATUS_OK ||
         machine->shared_dma_primary.connect.device_owner[2u] != &machine->fdc ||
-        machine->shared_dma_primary.connect.device_owner[1u] != machine ||
+        machine->shared_dma_primary.connect.device_owner[0u] != machine ||
         machine->refresh_dma_request.core_token == 0u ||
-        machine->refresh_dma_request.channel != 1u ||
+        machine->refresh_dma_request.channel != 0u ||
         machine->shared_dma_primary.data.mask != VDMA_MASK_VALID ||
         core_machine_dma_rtc_cmos_read(machine, CORE_MACHINE_RTC_EQUIPMENT) !=
             0x5au) {
@@ -108,10 +108,10 @@ int main(C_VOID)
     core_machine_dma_rtc_initialize_pic(machine);
     core_machine_dma_rtc_cmos_write(machine, CORE_MACHINE_RTC_REG_B,
         CORE_MACHINE_RTC_REG_B_24H | CORE_MACHINE_RTC_REG_B_UIE);
-    if (core_machine_memory_write(machine, 0xfffffff0u, program, sizeof(program)) !=
+    if (core_machine_memory_write(machine, 0x00fffff0u, program, sizeof(program)) !=
             TYPE_STATUS_OK || core_machine_run(machine, budget, &result) !=
             TYPE_STATUS_OK || result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
-        result.ticks != 5u) {
+        result.executed != 2u) {
         failed = 1;
         stage = 3;
     } else if (core_machine_dma_rtc_cmos_read(machine,

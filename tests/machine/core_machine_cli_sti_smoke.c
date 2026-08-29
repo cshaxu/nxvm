@@ -19,7 +19,7 @@ static C_VOID cli_sti_reset(C_VOID *opaque)
 }
 
 static const core_machine_execution_provider cli_sti_provider = {
-    cli_sti_reset, STD_NULL, STD_NULL
+    cli_sti_reset, STD_NULL
 };
 
 static C_INT cli_sti_prepare(core_machine_cpu_profile profile,
@@ -28,7 +28,9 @@ static C_INT cli_sti_prepare(core_machine_cpu_profile profile,
     const core_machine_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
         .cpu_profile = profile,
-        .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
+        .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE,
+        .shared_pit_personality = CORE_MACHINE_PIT_PERSONALITY_8253,
+        .clock_plan = { .pit = {1u, 4u, 0u} }
     };
 
     STD_MEMSET(state, 0, sizeof(*state));
@@ -54,7 +56,7 @@ static C_INT cli_sti_run(cli_sti_machine *state, const type_unsigned_8 *code,
 static C_INT cli_sti_test_real_forms(C_VOID)
 {
     static const core_machine_cpu_profile profiles[] = {
-        CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
+        CORE_MACHINE_CPU_PROFILE_8088, CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
         CORE_MACHINE_CPU_PROFILE_80386
     };
     static const type_unsigned_8 opcodes[] = { 0xfau, 0xfbu };
@@ -67,7 +69,7 @@ static C_INT cli_sti_test_real_forms(C_VOID)
     for (profile = 0u; profile != sizeof(profiles) / sizeof(profiles[0]); ++profile) {
         for (opcode = 0u; opcode != sizeof(opcodes); ++opcode) {
             cli_sti_machine state;
-            t_cpu after;
+            t_cpu after = {0};
             type_unsigned_32 initial = preserved | (opcodes[opcode] == 0xfau ?
                 VCPU_EFLAGS_IF : 0u);
             type_unsigned_32 expected = opcodes[opcode] == 0xfau ? preserved :
@@ -90,7 +92,7 @@ static C_INT cli_sti_test_real_forms(C_VOID)
 static C_INT cli_sti_test_irq_shadow(C_VOID)
 {
     static const core_machine_cpu_profile profiles[] = {
-        CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
+        CORE_MACHINE_CPU_PROFILE_8088, CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
         CORE_MACHINE_CPU_PROFILE_80386
     };
     static const type_unsigned_8 sti_nop[] = { 0xfbu, 0x90u };
@@ -178,7 +180,157 @@ static C_INT cli_sti_test_irq_shadow(C_VOID)
             return 0;
         }
     }
+    for (profile = 0u; profile != sizeof(profiles) / sizeof(profiles[0]); ++profile) {
+        cli_sti_machine state;
+        core_machine_pic_irq_source source;
+        core_machine_run_result result;
+        t_cpu after;
+        C_INT failed = !cli_sti_prepare(profiles[profile], &state);
+
+        if (!failed) {
+            failed |= !test_core_machine_fixture_prepare_real_mode_execution(
+                    state.machine, 0u) ||
+                core_machine_memory_write(state.machine, 0u, sti_nop,
+                    sizeof(sti_nop)) != TYPE_STATUS_OK;
+        }
+        if (!failed) {
+            STD_MEMSET(&source, 0, sizeof(source));
+            state.machine->shared_pic_master.data.imr = 0xffu;
+            core_machine_pic_irq_source_bind(&source,
+                &state.machine->shared_pic_master, &state.machine->shared_pic_slave, 1u);
+            core_machine_pic_irq_source_assert(&source);
+            core_machine_pic_irq_source_deassert(&source);
+            failed |= core_machine_run(state.machine,
+                (core_machine_run_budget){2u, 0u}, &result) != TYPE_STATUS_OK ||
+                result.reason != CORE_MACHINE_STOP_BUDGET;
+            after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+            failed |= after.data.eip != 2u ||
+                !TYPE_GET_BIT(state.machine->shared_pic_master.data.irr, VPIC_IRR_IRQ(1u)) ||
+                TYPE_GET_BIT(state.machine->shared_pic_master.data.isr, VPIC_ISR_IRQ(1u));
+        }
+        core_machine_destroy(state.machine);
+        if (failed) return 0;
+    }
     return 1;
+}
+
+static C_INT cli_sti_test_8088_pic_mask_round_trip(C_VOID)
+{
+    static const type_unsigned_8 code[] = {
+        0xb0u, 0x11u, 0xe6u, 0x20u, 0xb0u, 0x08u, 0xe6u, 0x21u,
+        0xb0u, 0x04u, 0xe6u, 0x21u, 0xb0u, 0x01u, 0xe6u, 0x21u,
+        0xb0u, 0xffu, 0xe6u, 0x21u, 0xe4u, 0x21u, 0xfeu, 0xc0u, 0x75u,
+        0x07u, 0xc6u, 0x06u, 0x00u, 0x01u, 0x00u, 0xebu, 0x05u,
+        0xc6u, 0x06u, 0x00u, 0x01u, 0x01u, 0xf4u
+    };
+    cli_sti_machine state;
+    core_machine_run_result result;
+    type_unsigned_8 marker = 0xffu;
+    C_INT failed = !cli_sti_prepare(CORE_MACHINE_CPU_PROFILE_8088, &state);
+
+    if (!failed) {
+        failed |= !test_core_machine_fixture_prepare_real_mode_execution(
+            state.machine, 0u);
+        failed |= !failed && core_machine_memory_write(state.machine, 0u, code,
+            sizeof(code)) != TYPE_STATUS_OK;
+        failed |= !failed && core_machine_run(state.machine,
+            (core_machine_run_budget){32u, 0u}, &result) != TYPE_STATUS_OK;
+        failed |= !failed && core_machine_memory_read(state.machine, 0x0100u,
+            &marker, sizeof(marker)) != TYPE_STATUS_OK;
+        failed |= !failed && marker != 0u;
+    }
+    core_machine_destroy(state.machine);
+    return !failed;
+}
+
+static C_INT cli_sti_test_8088_keyboard_compare(C_VOID)
+{
+    static const type_unsigned_8 code[] = {
+        0xb0u, 0xaau, 0x8au, 0xd8u, 0x80u, 0xfbu, 0xaau, 0x75u, 0x07u,
+        0xc6u, 0x06u, 0x00u, 0x01u, 0x00u, 0xebu, 0x05u,
+        0xc6u, 0x06u, 0x00u, 0x01u, 0x01u, 0xf4u
+    };
+    cli_sti_machine state;
+    core_machine_run_result result;
+    type_unsigned_8 marker = 0xffu;
+    C_INT failed = !cli_sti_prepare(CORE_MACHINE_CPU_PROFILE_8088, &state);
+
+    if (!failed) {
+        failed |= !test_core_machine_fixture_prepare_real_mode_execution(
+            state.machine, 0u);
+        failed |= !failed && core_machine_memory_write(state.machine, 0u, code,
+            sizeof(code)) != TYPE_STATUS_OK;
+        failed |= !failed && core_machine_run(state.machine,
+            (core_machine_run_budget){16u, 0u}, &result) != TYPE_STATUS_OK;
+        failed |= !failed && core_machine_memory_read(state.machine, 0x0100u,
+            &marker, sizeof(marker)) != TYPE_STATUS_OK;
+        failed |= !failed && marker != 0u;
+    }
+    core_machine_destroy(state.machine);
+    return !failed;
+}
+
+static C_INT cli_sti_test_8088_pit_irq_round_trip(C_VOID)
+{
+    static const type_unsigned_8 code[] = {
+        0xfau, 0xb0u, 0x11u, 0xe6u, 0x20u, 0xb0u, 0x10u, 0xe6u, 0x21u,
+        0xb0u, 0x04u, 0xe6u, 0x21u, 0xb0u, 0x01u, 0xe6u, 0x21u,
+        0xb0u, 0xfeu, 0xe6u, 0x21u, 0xb0u, 0x10u, 0xe6u, 0x43u,
+        0xb9u, 0x16u, 0x00u, 0x8au, 0xc1u, 0xe6u, 0x40u,
+        0xfbu, 0x2bu, 0xc9u, 0x80u, 0x3eu, 0x00u, 0x02u, 0x00u,
+        0x75u, 0x02u, 0xe2u, 0xf7u, 0xf4u
+    };
+    static const type_unsigned_8 handler[] = {
+        0xc6u, 0x06u, 0x00u, 0x02u, 0x01u, 0xb0u, 0x20u, 0xe6u, 0x20u, 0xcfu
+    };
+    static const type_unsigned_8 vector[] = { 0x00u, 0x01u, 0x00u, 0x00u };
+    cli_sti_machine state;
+    core_machine_run_result result;
+    type_unsigned_8 marker = 0u;
+    C_INT failed = !cli_sti_prepare(CORE_MACHINE_CPU_PROFILE_8088, &state);
+
+    if (!failed) {
+        failed |= core_machine_memory_write(state.machine, 0x40u, vector, sizeof(vector)) !=
+            TYPE_STATUS_OK;
+        failed |= !failed && core_machine_memory_write(state.machine, 0x0100u, handler,
+            sizeof(handler)) != TYPE_STATUS_OK;
+        failed |= !failed && core_machine_memory_write(state.machine, 0u, code,
+            sizeof(code)) != TYPE_STATUS_OK;
+        failed |= !failed && core_machine_run(state.machine,
+            (core_machine_run_budget){256u, 0u}, &result) != TYPE_STATUS_OK;
+        failed |= !failed && core_machine_memory_read(state.machine, 0x0200u,
+            &marker, sizeof(marker)) != TYPE_STATUS_OK;
+        failed |= marker != 1u;
+    }
+    core_machine_destroy(state.machine);
+    return !failed;
+}
+
+static C_INT cli_sti_test_8088_ram_post_store(C_VOID)
+{
+    static const type_unsigned_8 code[] = {
+        0xb8u, 0x00u, 0x04u, 0x8eu, 0xd8u, 0x8eu, 0xc0u,
+        0xfcu, 0x2bu, 0xffu, 0xb8u, 0xaau, 0xaau, 0xb9u, 0x10u, 0x00u,
+        0xf3u, 0xabu, 0xf4u
+    };
+    cli_sti_machine state;
+    core_machine_run_result result;
+    type_unsigned_8 contents[32] = {0};
+    STD_SIZE_T index;
+    C_INT failed = !cli_sti_prepare(CORE_MACHINE_CPU_PROFILE_8088, &state);
+
+    if (!failed) {
+        failed |= core_machine_memory_write(state.machine, 0u, code, sizeof(code)) !=
+            TYPE_STATUS_OK;
+        failed |= !failed && core_machine_run(state.machine,
+            (core_machine_run_budget){64u, 0u}, &result) != TYPE_STATUS_OK;
+        failed |= !failed && core_machine_memory_read(state.machine, 0x4000u, contents,
+            sizeof(contents)) != TYPE_STATUS_OK;
+        for (index = 0u; !failed && index < sizeof(contents); ++index)
+            failed |= contents[index] != 0xaau;
+    }
+    core_machine_destroy(state.machine);
+    return !failed;
 }
 
 static C_INT cli_sti_prepare_protected(cli_sti_machine *state)
@@ -408,7 +560,7 @@ static C_INT cli_sti_test_vm86(C_VOID)
         for (pass = 0u; pass != 2u; ++pass) {
             cli_sti_machine state;
             core_machine_cpu_diagnostic diagnostic;
-            t_cpu after;
+            t_cpu after = {0};
             const type_unsigned_32 flags = VCPU_EFLAGS_VM | VCPU_EFLAGS_CF |
                 (pass ? 0u : VCPU_EFLAGS_IOPL);
             const type_unsigned_32 expected = pass ? flags :
@@ -450,6 +602,22 @@ C_INT main(C_VOID)
     }
     if (!cli_sti_test_irq_shadow()) {
         STD_PRINTF("CLI-STI stage=pic failed\n");
+        return 1;
+    }
+    if (!cli_sti_test_8088_pic_mask_round_trip()) {
+        STD_PRINTF("CLI-STI stage=8088-pic-mask failed\n");
+        return 1;
+    }
+    if (!cli_sti_test_8088_keyboard_compare()) {
+        STD_PRINTF("CLI-STI stage=8088-keyboard-compare failed\n");
+        return 1;
+    }
+    if (!cli_sti_test_8088_pit_irq_round_trip()) {
+        STD_PRINTF("CLI-STI stage=8088-pit-irq failed\n");
+        return 1;
+    }
+    if (!cli_sti_test_8088_ram_post_store()) {
+        STD_PRINTF("CLI-STI stage=8088-ram-post-store failed\n");
         return 1;
     }
     if (!cli_sti_test_protected_success())

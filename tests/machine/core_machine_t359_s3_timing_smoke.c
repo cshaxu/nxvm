@@ -35,7 +35,6 @@ static C_VOID t359_s3_timing_advance(C_VOID *opaque,
 
 static const core_machine_execution_provider t359_s3_timing_provider = {
     t359_s3_timing_reset,
-    STD_NULL,
     t359_s3_timing_advance
 };
 

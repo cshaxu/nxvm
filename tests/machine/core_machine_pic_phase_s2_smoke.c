@@ -21,7 +21,7 @@ static C_VOID pic_phase_s2_reset(C_VOID *opaque)
 }
 
 static const core_machine_execution_provider pic_phase_s2_provider = {
-    pic_phase_s2_reset, STD_NULL, STD_NULL
+    pic_phase_s2_reset, STD_NULL
 };
 
 static C_VOID pic_phase_s2_trace(C_VOID *opaque,

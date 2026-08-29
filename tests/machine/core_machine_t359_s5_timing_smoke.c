@@ -37,7 +37,7 @@ static C_VOID t359_s5_advance(C_VOID *opaque, type_unsigned_64 ticks)
 }
 
 static const core_machine_execution_provider t359_s5_execution = {
-    t359_s5_reset, STD_NULL, t359_s5_advance
+    t359_s5_reset, t359_s5_advance
 };
 
 static C_INT t359_s5_prepare(core_machine **out_machine, t359_s5_state *state)

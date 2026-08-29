@@ -12,8 +12,10 @@
 #include "vm/composition/session/waiting.h"
 #include "vm/machine/debug.h"
 
-/* A normal quantum bounds host control latency without copying the text frame
- * after every guest instruction. Single-step remains exactly one instruction. */
+/* A normal quantum bounds Core work between host control turns without copying the text frame
+ * after every guest instruction.  Its tick ceiling is a host-control budget,
+ * not a second guest clock or a timing conversion.  Single-step remains
+ * exactly one instruction and is therefore not cut short by that ceiling. */
 #define VM_SESSION_RUNNER_QUANTUM_INSTRUCTIONS 256u
 
 C_VOID vm_session_runner_run(vm_session *session)
@@ -37,6 +39,10 @@ C_VOID vm_session_runner_run(vm_session *session)
             if (reset_status != TYPE_STATUS_OK) continue;
         }
         if (STD_ATOMIC_LOAD(&control->pauseRequested)) {
+            /* The runner exclusively owns Core mutation.  Publish the final
+             * VADP snapshot before acknowledging pause, so a paused debugger
+             * or presenter never observes a stale mailbox frame. */
+            (C_VOID)vm_session_publish_display(session, TYPE_TRUE);
             STD_ATOMIC_STORE(&control->paused, TYPE_TRUE);
         }
         while (STD_ATOMIC_LOAD(&control->flagRun) && STD_ATOMIC_LOAD(&control->paused)) {
@@ -49,7 +55,8 @@ C_VOID vm_session_runner_run(vm_session *session)
         if (STD_ATOMIC_LOAD(&control->pauseRequested)) continue;
         budget.instructions = STD_ATOMIC_LOAD(&control->stepRequested) ? 1u :
             VM_SESSION_RUNNER_QUANTUM_INSTRUCTIONS;
-        budget.ticks = 0u;
+        budget.ticks = STD_ATOMIC_LOAD(&control->stepRequested) ? 0u :
+            VM_SESSION_RUNNER_QUANTUM_INSTRUCTIONS;
         {
             type_status run_status = core_machine_run(session->core_machine,
                 budget, &result);
@@ -86,7 +93,7 @@ C_VOID vm_session_runner_run(vm_session *session)
             continue;
         }
         if (result.reason == CORE_MACHINE_STOP_RESET_REQUESTED) {
-            /* core_machine_run completed the one cold reset before returning. */
+            /* Core reset the requested processor state before returning. */
             vm_machine_debug_reset(&session->debug);
         }
         if (result.reason == CORE_MACHINE_STOP_REQUESTED) {
@@ -99,6 +106,12 @@ C_VOID vm_session_runner_run(vm_session *session)
                 session, &result, &advanced);
 
             if (time_status != TYPE_STATUS_OK) vm_session_control_stop(control);
+            else if (!advanced) {
+                /* Core has no source-qualified deadline to advance.  Yielding
+                 * gives host input/control a turn without manufacturing guest
+                 * time or restoring the old fixed-delay polling loop. */
+                core_platform_yield();
+            }
         }
         if (STD_ATOMIC_EXCHANGE(&control->stepRequested, TYPE_FALSE)) {
             vm_session_control_request_pause(control, VM_SESSION_PAUSE_STEP);

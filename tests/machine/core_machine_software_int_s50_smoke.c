@@ -58,6 +58,21 @@ static C_VOID software_int_s50_seed(cli_sti_machine *state, type_unsigned_32 fla
     cpu->data.eflags = flags;
 }
 
+static type_unsigned_16 software_int_s50_real_flags_image(
+    core_machine_cpu_profile profile, type_unsigned_16 flags)
+{
+    if (profile < CORE_MACHINE_CPU_PROFILE_80286) flags &= 0x0fffu;
+    return (type_unsigned_16)((flags & ~VCPU_EFLAGS_RESERVED) | 0x02u);
+}
+
+static type_unsigned_16 software_int_s50_real_flags_known_mask(
+    core_machine_cpu_profile profile)
+{
+    if (profile < CORE_MACHINE_CPU_PROFILE_80286) return 0x0fd5u;
+    if (profile == CORE_MACHINE_CPU_PROFILE_80286) return 0x7fd5u;
+    return 0xffffu;
+}
+
 static C_INT software_int_s50_prepare_real(cli_sti_machine *state,
     core_machine_cpu_profile profile, const software_int_form *form,
     const type_unsigned_8 *prefix, type_unsigned_8 prefix_bytes)
@@ -82,7 +97,7 @@ static C_INT software_int_s50_prepare_real(cli_sti_machine *state,
 
 static C_INT software_int_s50_check_real_frame(cli_sti_machine *state,
     const t_cpu *before, const t_cpu *after, type_unsigned_32 return_ip,
-    type_unsigned_8 width)
+    type_unsigned_8 width, core_machine_cpu_profile profile)
 {
     if (width == 2u) {
         type_unsigned_16 frame[3] = { 0u, 0u, 0u };
@@ -91,7 +106,10 @@ static C_INT software_int_s50_check_real_frame(cli_sti_machine *state,
                 after->data.ss.base + (type_unsigned_16)after->data.esp,
                 (type_virtual_address)frame, sizeof(frame)) == TYPE_STATUS_OK &&
             frame[0] == return_ip && frame[1] == before->data.cs.selector &&
-            frame[2] == (type_unsigned_16)before->data.eflags;
+            (frame[2] & software_int_s50_real_flags_known_mask(profile)) ==
+            (software_int_s50_real_flags_image(profile,
+                (type_unsigned_16)before->data.eflags) &
+                software_int_s50_real_flags_known_mask(profile));
     }
     {
         type_unsigned_32 frame[3] = { 0u, 0u, 0u };
@@ -100,7 +118,10 @@ static C_INT software_int_s50_check_real_frame(cli_sti_machine *state,
                 after->data.ss.base + after->data.esp,
                 (type_virtual_address)frame, sizeof(frame)) == TYPE_STATUS_OK &&
             frame[0] == return_ip && frame[1] == before->data.cs.selector &&
-            frame[2] == before->data.eflags;
+            (frame[2] & software_int_s50_real_flags_known_mask(profile)) ==
+            (software_int_s50_real_flags_image(profile,
+                (type_unsigned_16)before->data.eflags) &
+                software_int_s50_real_flags_known_mask(profile));
     }
 }
 
@@ -145,7 +166,7 @@ static C_INT software_int_s50_real_transfer(core_machine_cpu_profile profile,
         failed |= after.data.edi != before.data.edi;
         failed |= !software_int_s50_sregs_same(&before, &after);
         failed |= !software_int_s50_check_real_frame(&state, &before, &after,
-            return_ip, width);
+            return_ip, width, profile);
     }
     core_machine_destroy(state.machine);
     return !failed;
@@ -201,6 +222,7 @@ static C_INT software_int_s50_test_real_forms(C_VOID)
 {
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086,
+        CORE_MACHINE_CPU_PROFILE_8088,
         CORE_MACHINE_CPU_PROFILE_80186,
         CORE_MACHINE_CPU_PROFILE_80286,
         CORE_MACHINE_CPU_PROFILE_80386
@@ -261,6 +283,7 @@ static C_INT software_int_s50_test_rejections(C_VOID)
     };
     static const core_machine_cpu_profile legacy[] = {
         CORE_MACHINE_CPU_PROFILE_8086,
+        CORE_MACHINE_CPU_PROFILE_8088,
         CORE_MACHINE_CPU_PROFILE_80186,
         CORE_MACHINE_CPU_PROFILE_80286
     };

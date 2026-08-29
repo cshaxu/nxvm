@@ -122,7 +122,6 @@ C_VOID core_machine_hdc_bind_dma_request(core_machine_hdc *hdc,
 C_VOID core_machine_hdc_initialize(core_machine_hdc *hdc);
 C_VOID core_machine_hdc_reset(core_machine_hdc *hdc);
 C_VOID core_machine_hdc_advance(core_machine_hdc *hdc);
-C_VOID core_machine_hdc_refresh(core_machine_hdc *hdc);
 C_VOID core_machine_hdc_finalize(core_machine_hdc *hdc);
 const core_machine_port_provider *core_machine_hdc_port_provider(C_VOID);
 const core_machine_dma_channel_provider *core_machine_hdc_dma_provider(C_VOID);

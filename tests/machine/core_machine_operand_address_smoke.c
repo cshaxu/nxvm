@@ -59,7 +59,7 @@ static C_VOID oas_reset(C_VOID *opaque)
 }
 
 static const core_machine_execution_provider oas_provider = {
-    oas_reset, STD_NULL, STD_NULL
+    oas_reset, STD_NULL
 };
 
 static C_INT oas_write(oas_machine *state, type_unsigned_32 address,

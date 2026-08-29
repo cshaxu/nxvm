@@ -172,7 +172,7 @@ int main(C_VOID)
                 core_machine_fdc_change_command(fdc, port, specify_dma,
                     sizeof(specify_dma));
                 drive1.present = TYPE_FALSE;
-                core_machine_fdc_refresh(fdc);
+                (C_VOID)core_machine_port_read(port, 0x03f7u);
                 core_machine_fdc_change_require(&failed, &first_failure, 1,
                     !fdc->data.flagINTR || !fdc->connect.irq_source.asserted);
                 core_machine_fdc_change_command(fdc, port, (const type_unsigned_8[]){0x08u}, 1u);
@@ -183,35 +183,35 @@ int main(C_VOID)
                     core_machine_port_read(port, 0x03f5u) != 0u || fdc->data.flagINTR ||
                     fdc->connect.irq_source.asserted);
                 drive1.present = TYPE_TRUE;
-                core_machine_fdc_refresh(fdc);
+                (C_VOID)core_machine_port_read(port, 0x03f7u);
                 core_machine_fdc_change_require(&failed, &first_failure, 3,
                     !fdc->data.flagINTR || !fdc->connect.irq_source.asserted);
                 core_machine_fdc_change_ack_irq(fdc, port);
 
                 ++drive0.generation;
-                core_machine_fdc_refresh(fdc);
+                (C_VOID)core_machine_port_read(port, 0x03f7u);
                 core_machine_fdc_change_require(&failed, &first_failure, 4,
                     fdc->data.flagINTR || fdc->connect.irq_source.asserted);
                 core_machine_port_write(port, 0x03f2u, 0x1cu);
-                core_machine_fdc_refresh(fdc);
+                (C_VOID)core_machine_port_read(port, 0x03f7u);
                 core_machine_fdc_change_require(&failed, &first_failure, 5,
                     (core_machine_port_read(port, 0x03f7u) & VFDC_DIR_DC) == 0u);
                 core_machine_fdc_change_command(fdc, port, recalibrate_0,
                     sizeof(recalibrate_0));
                 core_machine_fdc_change_ack_irq(fdc, port);
-                core_machine_fdc_refresh(fdc);
+                (C_VOID)core_machine_port_read(port, 0x03f7u);
                 core_machine_fdc_change_require(&failed, &first_failure, 6,
                     (core_machine_port_read(port, 0x03f7u) & VFDC_DIR_DC) != 0u);
 
                 ++drive1.generation;
-                core_machine_fdc_refresh(fdc);
+                (C_VOID)core_machine_port_read(port, 0x03f7u);
                 core_machine_port_write(port, 0x03f2u, 0x2du);
-                core_machine_fdc_refresh(fdc);
+                (C_VOID)core_machine_port_read(port, 0x03f7u);
                 core_machine_fdc_change_require(&failed, &first_failure, 7,
                     (core_machine_port_read(port, 0x03f7u) & VFDC_DIR_DC) == 0u);
                 drive1.present = TYPE_FALSE;
                 ++drive1.generation;
-                core_machine_fdc_refresh(fdc);
+                (C_VOID)core_machine_port_read(port, 0x03f7u);
                 core_machine_fdc_change_require(&failed, &first_failure, 8,
                     !fdc->data.flagINTR || !fdc->connect.irq_source.asserted);
                 core_machine_fdc_change_ack_irq(fdc, port);
@@ -223,7 +223,7 @@ int main(C_VOID)
                     status != 0x11u);
 
                 drive1.present = TYPE_TRUE;
-                core_machine_fdc_refresh(fdc);
+                (C_VOID)core_machine_port_read(port, 0x03f7u);
                 core_machine_fdc_change_require(&failed, &first_failure, 10,
                     !fdc->data.flagINTR || !fdc->connect.irq_source.asserted);
                 core_machine_port_write(port, 0x03f2u, 0x00u);

@@ -18,7 +18,7 @@ static C_VOID fpu_escape_reset(C_VOID *opaque)
 }
 
 static const core_machine_execution_provider fpu_escape_provider = {
-    fpu_escape_reset, STD_NULL, STD_NULL
+    fpu_escape_reset, STD_NULL
 };
 
 static C_INT prepare_machine(core_machine_fpu_profile fpu_profile,

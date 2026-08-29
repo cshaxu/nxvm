@@ -34,7 +34,7 @@ static C_VOID t359_s6_advance(C_VOID *opaque, type_unsigned_64 ticks)
 }
 
 static const core_machine_execution_provider t359_s6_execution = {
-    t359_s6_reset, STD_NULL, t359_s6_advance
+    t359_s6_reset, t359_s6_advance
 };
 
 static C_VOID t359_s6_enter_protected(core_machine *machine)

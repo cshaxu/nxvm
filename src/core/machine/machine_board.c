@@ -95,13 +95,6 @@ static type_unsigned_8 core_machine_pc_at_port_b_timer_status(
  * expose its output at port 61h bit 4. The board programs mode 2 with the
  * fixed refresh divider on every cold reset; channel 0 and channel 2 remain
  * firmware-owned timer and speaker resources. */
-static C_VOID core_machine_d4_kbc_output(C_VOID *opaque, type_unsigned_8 value)
-{
-    core_machine *machine = (core_machine *)opaque;
-    if (machine != STD_NULL) machine->d4_slowdown_enabled =
-        (value & 0x08u) == 0u ? TYPE_TRUE : TYPE_FALSE;
-}
-
 static C_VOID core_machine_d4_refresh_output(C_VOID *opaque, type_bool asserted)
 {
     core_machine *machine = (core_machine *)opaque;
@@ -114,12 +107,6 @@ static C_VOID core_machine_d4_refresh_output(C_VOID *opaque, type_bool asserted)
         } else if (!machine->d4_refresh_pulse_active) {
             machine->d4_refresh_pulse_active = TYPE_TRUE;
             core_machine_external_cycle_invalidate(machine);
-            if (machine->d4_slowdown_enabled) {
-                core_machine_pit_set_gate(&machine->auxiliary_pit,
-                    machine->d4_platform_config.slowdown_pit_counter, TYPE_FALSE);
-                core_machine_pit_set_gate(&machine->auxiliary_pit,
-                    machine->d4_platform_config.slowdown_pit_counter, TYPE_TRUE);
-            }
             machine->d4_refresh_hold_pending = TYPE_TRUE;
         }
     }
@@ -127,10 +114,13 @@ static C_VOID core_machine_d4_refresh_output(C_VOID *opaque, type_bool asserted)
 
 static C_VOID core_machine_pc_at_refresh_timer_program(core_machine *machine)
 {
+    type_unsigned_16 count;
+
     if (machine == STD_NULL) return;
+    count = 18u;
     core_machine_port_write(&machine->executor_port, 0x0043u, 0x74u);
-    core_machine_port_write(&machine->executor_port, 0x0041u, 18u);
-    core_machine_port_write(&machine->executor_port, 0x0041u, 0u);
+    core_machine_port_write(&machine->executor_port, 0x0041u, count & 0xffu);
+    core_machine_port_write(&machine->executor_port, 0x0041u, count >> 8u);
 }
 
 static type_unsigned_8 core_machine_speaker_source_value(
@@ -437,7 +427,7 @@ static type_bool core_machine_dma_wiring_is_valid(
            (wiring->controller_count == CORE_MACHINE_DMA_CONTROLLER_COUNT &&
             wiring->cascade_channel == CORE_MACHINE_DMA_CASCADE_CHANNEL &&
             wiring->fdc_channel < VDMA_CHANNEL_COUNT)) &&
-          wiring->fdc_channel != 1u));
+          wiring->fdc_channel != 0u));
 }
 
 type_status core_machine_configure_dma(core_machine *machine,
@@ -461,7 +451,7 @@ type_status core_machine_configure_dma(core_machine *machine,
         if (status != TYPE_STATUS_OK) return status;
     }
     status = core_machine_dma_bind_channel(&machine->shared_dma_latch,
-        &machine->shared_dma_primary, &machine->shared_dma_secondary, 1u,
+        &machine->shared_dma_primary, &machine->shared_dma_secondary, 0u,
         &core_machine_dma_refresh_provider, machine, &machine->refresh_dma_request);
     if (status != TYPE_STATUS_OK) return status;
     core_machine_pit_set_output(&machine->shared_pit, 1u,
@@ -610,11 +600,8 @@ type_status core_machine_configure_d4_platform(core_machine *machine,
     if (!core_machine_configuration_is_open(machine) ||
         machine->d4_platform_configured) return TYPE_STATUS_INVALID_STATE;
     if (config == STD_NULL || config->port != CORE_MACHINE_PC_AT_PORT_B ||
-        config->failsafe_pit_counter >= 3u || config->slowdown_pit_counter >= 3u ||
-        config->failsafe_pit_counter == config->slowdown_pit_counter || !machine->auxiliary_pit_configured ||
+        config->failsafe_pit_counter >= 3u || !machine->auxiliary_pit_configured ||
         machine->auxiliary_pit.connect.output[config->failsafe_pit_counter] != STD_NULL ||
-        machine->auxiliary_pit.connect.output[config->slowdown_pit_counter] != STD_NULL ||
-        machine->shared_kbc.connect.output_port != STD_NULL ||
         core_machine_port_has_read(&machine->executor_port, config->port) ||
         core_machine_port_has_write(&machine->executor_port, config->port)) {
         return TYPE_STATUS_INVALID_ARGUMENT;
@@ -638,8 +625,6 @@ type_status core_machine_configure_d4_platform(core_machine *machine,
     core_machine_pit_set_output(&machine->auxiliary_pit,
         config->failsafe_pit_counter, core_machine_d4_platform_failsafe_output,
         machine);
-    if (!core_machine_kbc_bind_output_port(&machine->shared_kbc,
-            core_machine_d4_kbc_output, machine)) return TYPE_STATUS_INVALID_ARGUMENT;
     return TYPE_STATUS_OK;
 }
 type_status core_machine_report_planar_parity_fault(core_machine *machine)

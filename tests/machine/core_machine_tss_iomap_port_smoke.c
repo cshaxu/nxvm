@@ -67,7 +67,7 @@ static type_status iomap_port_write(C_VOID *opaque, type_unsigned_16 port,
 }
 
 static const core_machine_execution_provider iomap_execution_provider = {
-    iomap_reset, STD_NULL, STD_NULL
+    iomap_reset, STD_NULL
 };
 
 static const core_machine_port_provider iomap_port_provider = {

@@ -78,7 +78,6 @@ static C_VOID paging_reset(C_VOID *opaque)
 
 static const core_machine_execution_provider paging_provider = {
     paging_reset,
-    STD_NULL,
     STD_NULL
 };
 

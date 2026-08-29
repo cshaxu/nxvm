@@ -14,7 +14,6 @@ static C_VOID imul_s56_reset(C_VOID *owner)
 
 static const core_machine_execution_provider imul_s56_execution_provider = {
     imul_s56_reset,
-    STD_NULL,
     STD_NULL
 };
 
@@ -692,9 +691,10 @@ static C_INT imul_s56_test_irq_no_shadow(C_VOID)
             failed |= frame_ip != instruction_bytes;
             failed |= (frame_flags & ~(VCPU_EFLAGS_CF | VCPU_EFLAGS_OF |
                 VCPU_EFLAGS_SF | VCPU_EFLAGS_ZF | VCPU_EFLAGS_AF |
-                VCPU_EFLAGS_PF)) != (before.data.eflags &
+                VCPU_EFLAGS_PF)) != ((before.data.eflags &
                 ~(VCPU_EFLAGS_CF | VCPU_EFLAGS_OF | VCPU_EFLAGS_SF |
-                VCPU_EFLAGS_ZF | VCPU_EFLAGS_AF | VCPU_EFLAGS_PF));
+                VCPU_EFLAGS_ZF | VCPU_EFLAGS_AF | VCPU_EFLAGS_PF |
+                VCPU_EFLAGS_RESERVED)) | 0x02u);
             failed |= TYPE_GET_BIT(frame_flags, VCPU_EFLAGS_CF);
             failed |= TYPE_GET_BIT(frame_flags, VCPU_EFLAGS_OF);
             failed |= !TYPE_GET_BIT(machine->shared_pic_master.data.isr,

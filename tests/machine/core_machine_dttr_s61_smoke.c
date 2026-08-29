@@ -17,7 +17,7 @@ static C_VOID dttr_s61_reset(C_VOID *opaque)
 }
 
 static const core_machine_execution_provider dttr_s61_provider = {
-    dttr_s61_reset, STD_NULL, STD_NULL
+    dttr_s61_reset, STD_NULL
 };
 
 static C_INT dttr_s61_prepare(dttr_s61_machine *state, core_machine_cpu_profile profile)

@@ -172,6 +172,7 @@ type_status core_machine_plan_validate(const core_machine_plan *plan)
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
     if (plan->topology.absent_memory_count > CORE_MACHINE_ABSENT_MEMORY_WINDOW_COUNT ||
+        plan->topology.memory_alias_count > CORE_MACHINE_MEMORY_ALIAS_COUNT ||
         (plan->topology.planar_parity_present != TYPE_FALSE &&
          plan->topology.planar_parity_present != TYPE_TRUE) ||
         (plan->topology.d4_platform_present != TYPE_FALSE &&
@@ -196,8 +197,7 @@ type_status core_machine_plan_validate(const core_machine_plan *plan)
             (plan->configuration.dma_controller_count == 0u ?
                 CORE_MACHINE_DMA_CONTROLLER_COUNT :
                 plan->configuration.dma_controller_count)) ||
-        (plan->d4_memory_parity_mask != STD_NULL &&
-         !plan->topology.d4_platform_present) ||
+        (plan->d4_memory.present && !plan->topology.d4_platform_present) ||
         ((plan->topology.fdc_present || plan->topology.hdc_present) &&
          plan->media_registry == STD_NULL)) {
         return TYPE_STATUS_INVALID_ARGUMENT;
@@ -231,24 +231,6 @@ type_status core_machine_plan_validate(const core_machine_plan *plan)
     return TYPE_STATUS_OK;
 }
 
-static C_VOID core_machine_plan_d4_parity_fault(C_VOID *owner,
-    type_unsigned_32 physical)
-{
-    core_machine *machine = (core_machine *)owner;
-
-    if (machine == STD_NULL || machine->d4_plan_parity_mask == STD_NULL) return;
-    *machine->d4_plan_parity_mask |= (type_unsigned_8)(1u << (physical & 3u));
-    (C_VOID)core_machine_report_d4_iochk_fault(machine);
-}
-
-static C_VOID core_machine_plan_d4_memory_write(C_VOID *owner,
-    type_unsigned_32 physical, type_native_unsigned bytes)
-{
-    (C_VOID)physical;
-    (C_VOID)bytes;
-    (C_VOID)core_machine_clear_d4_iochk_fault((core_machine *)owner);
-}
-
 type_status core_machine_plan_apply_topology(core_machine *machine,
     const core_machine_plan *plan)
 {
@@ -261,6 +243,14 @@ type_status core_machine_plan_apply_topology(core_machine *machine,
 
     if (machine == STD_NULL || plan == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
     topology = &plan->topology;
+    for (index = 0u; index < topology->memory_alias_count; ++index) {
+        const core_machine_memory_alias_config *alias =
+            &topology->memory_alias[index];
+
+        status = core_machine_memory_register_mapping(&machine->executor_memory,
+            alias->physical_start, alias->backing_start, alias->bytes);
+        if (status != TYPE_STATUS_OK) return status;
+    }
     for (index = 0u; index < topology->absent_memory_count; ++index) {
         status = core_machine_configure_absent_memory(machine,
             &topology->absent_memory[index]);
@@ -277,15 +267,8 @@ type_status core_machine_plan_apply_topology(core_machine *machine,
             machine, &topology->planar_parity)) != TYPE_STATUS_OK) return status;
     if (topology->d4_platform_present && (status = core_machine_configure_d4_platform(
             machine, &topology->d4_platform)) != TYPE_STATUS_OK) return status;
-    if (plan->d4_memory_parity_mask != STD_NULL) {
-        machine->d4_plan_parity_mask = plan->d4_memory_parity_mask;
-        status = core_machine_enable_memory_parity(machine, 1024u * 1024u,
-            core_machine_plan_d4_parity_fault, machine);
-        if (status != TYPE_STATUS_OK) return status;
-        status = core_machine_register_memory_write_observer(machine,
-            core_machine_plan_d4_memory_write, machine);
-        if (status != TYPE_STATUS_OK) return status;
-    }
+    if (plan->d4_memory.present && (status = core_machine_d4_memory_configure(machine,
+            &plan->d4_memory)) != TYPE_STATUS_OK) return status;
     if (topology->display_present) {
         display = topology->display;
         if ((status = core_machine_configure_display(machine, &display)) !=
@@ -464,11 +447,12 @@ type_status core_machine_plan_register_memory_device(core_machine_plan *plan,
     return TYPE_STATUS_OK;
 }
 
-type_status core_machine_plan_enable_d4_memory_parity(core_machine_plan *plan,
-    type_unsigned_8 *mask)
+type_status core_machine_plan_configure_d4_memory(core_machine_plan *plan,
+    const core_machine_d4_memory_config *config)
 {
-    if (plan == STD_NULL || mask == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
-    plan->d4_memory_parity_mask = mask;
+    if (plan == STD_NULL || !core_machine_d4_memory_config_is_valid(config) ||
+        plan->d4_memory.present) return TYPE_STATUS_INVALID_ARGUMENT;
+    plan->d4_memory = *config;
     return TYPE_STATUS_OK;
 }
 C_INT core_machine_external_cycle_timing_is_valid(

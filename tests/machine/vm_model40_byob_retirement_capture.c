@@ -1,12 +1,24 @@
 #include "type.h"
 
 #include "core/machine/machine_interface.h"
+#include "core/machine/machine.h"
 #include "core/machine/retirement_observation_interface.h"
 #include "vm/composition/session/session_private.h"
 
 #define MODEL40_CAPTURE_FORM_LIMIT 128u
-#define MODEL40_CAPTURE_RETIREMENT_LIMIT 2000000u
+/* DeskPro firmware performs a complete multi-pass RAM verification before its
+ * first floppy request.  This remains finite, but the former ten-million
+ * retirement budget cut through a normal 2 MiB verification pass. */
+#define MODEL40_CAPTURE_RETIREMENT_LIMIT 100000000u
+#define MODEL40_CAPTURE_RUN_INSTRUCTIONS 1024u
+#define MODEL40_CAPTURE_RUN_LIMIT \
+    ((MODEL40_CAPTURE_RETIREMENT_LIMIT + MODEL40_CAPTURE_RUN_INSTRUCTIONS - 1u) / \
+        MODEL40_CAPTURE_RUN_INSTRUCTIONS)
 #define MODEL40_BOOT_SECTOR_LINEAR_PC 0x00007c00u
+#define MODEL40_CAPTURE_POST_C0_HISTORY 32u
+#define MODEL40_CAPTURE_D4_TIMER_HISTORY 32u
+#define MODEL40_CAPTURE_D4_MEMORY_HISTORY 8u
+#define MODEL40_CAPTURE_RESET_HISTORY 4u
 
 typedef struct model40_retirement_capture_form {
     const C_CHAR *form;
@@ -38,20 +50,43 @@ typedef struct model40_retirement_capture_key {
     type_unsigned_32 count;
 } model40_retirement_capture_key;
 
+typedef struct model40_capture_execution_point {
+    type_unsigned_32 linear_pc;
+    type_bool protected_mode;
+} model40_capture_execution_point;
+
+typedef struct model40_capture_port_event {
+    type_unsigned_64 sequence;
+    type_unsigned_32 linear_pc;
+    type_unsigned_16 port;
+    type_unsigned_8 value;
+    type_bool write;
+} model40_capture_port_event;
+
 typedef struct model40_retirement_capture {
+    core_machine *machine;
     model40_retirement_capture_form forms[MODEL40_CAPTURE_FORM_LIMIT];
     model40_retirement_capture_key keys[MODEL40_CAPTURE_FORM_LIMIT];
     type_unsigned_32 count;
     type_unsigned_32 classified;
+    type_unsigned_32 coprocessor_domain;
     type_unsigned_32 unallocated;
     type_unsigned_32 form_count;
     type_unsigned_32 key_count;
     type_bool c0a_diagnostic;
     type_bool c0a_collecting;
     type_bool c1_transfer_diagnostic;
+    type_bool d4_timer_history_enabled;
+    type_bool d4_failsafe_test_seen;
+    type_bool d4_memory_pass_seen;
+    type_unsigned_32 d4_memory_iteration_count;
+    type_unsigned_32 d4_memory_ebp[MODEL40_CAPTURE_D4_MEMORY_HISTORY];
+    type_unsigned_32 d4_memory_next_pc[MODEL40_CAPTURE_D4_MEMORY_HISTORY];
+    type_unsigned_8 d4_failsafe_port_value;
     type_bool c1_collecting;
     type_bool c1_transfer_reached;
     type_bool fdc_read_data_reached;
+    type_bool fdc_port_seen;
     type_bool fdc_read_data_baseline_valid;
     type_unsigned_64 fdc_terminal_sequence_at_c0a;
     type_unsigned_8 terminal_bytes[CORE_MACHINE_CPU_DIAGNOSTIC_BYTES];
@@ -62,13 +97,189 @@ typedef struct model40_retirement_capture {
     type_bool post_c0_io_read;
     type_bool post_c0_io_port_known;
     type_unsigned_16 post_c0_io_port;
+    model40_capture_port_event d4_timer_ports[MODEL40_CAPTURE_D4_TIMER_HISTORY];
+    type_unsigned_32 d4_timer_port_count;
     type_bool observation_seen;
     type_bool previous_protected_mode;
     type_bool protected_mode_seen;
-    type_bool form_limit_reached;
+    type_bool form_catalog_truncated;
     type_bool key_limit_reached;
     type_bool terminal_bytes_available;
+    type_bool iret_frame_seen;
+    type_unsigned_32 iret_frame_count;
+    type_bool iret_frame_read;
+    type_bool iret_frame_stopped_read;
+    type_unsigned_16 iret_ss;
+    type_unsigned_16 iret_sp;
+    type_unsigned_32 iret_ss_base;
+    type_unsigned_16 iret_frame[3];
+    type_unsigned_32 iret_frame_address;
+    type_unsigned_16 iret_frame_stopped[3];
+    type_bool iret_operand_size_32;
+    type_bool iret_stack_size_32;
+    type_bool nmi_entry_seen;
+    type_unsigned_32 nmi_entry_count;
+    type_bool nmi_entry_frame_read;
+    type_unsigned_16 nmi_entry_ss;
+    type_unsigned_16 nmi_entry_sp;
+    type_unsigned_32 nmi_entry_ss_base;
+    type_unsigned_16 nmi_entry_frame[3];
+    type_unsigned_16 nmi_entry_source_cs;
+    type_unsigned_16 nmi_entry_source_ip;
+    type_unsigned_16 nmi_entry_source_flags;
+    type_unsigned_32 nmi_entry_source_cr0;
+    type_bool nmi_entry_vector2_read;
+    type_unsigned_16 nmi_entry_vector2[2];
+    type_unsigned_32 iret_cr0;
+    type_bool reset_vector2_read;
+    type_unsigned_16 reset_vector2[2];
+    type_bool iret_route_seen;
+    type_unsigned_32 iret_route_trace[32];
+    type_unsigned_8 iret_route_opcode[32];
+    type_unsigned_8 iret_route_trace_count;
+    type_bool interrupt_handler_entry_seen;
+    type_unsigned_32 interrupt_handler_entry_count;
+    type_bool interrupt_handler_frame_read;
+    type_unsigned_16 interrupt_handler_ss;
+    type_unsigned_16 interrupt_handler_sp;
+    type_unsigned_16 interrupt_handler_frame[3];
+    type_unsigned_8 interrupt_handler_vector;
+    type_bool interrupt_handler_vector_found;
+    type_unsigned_16 interrupt_handler_source_cs;
+    type_unsigned_16 interrupt_handler_source_ip;
+    type_unsigned_16 interrupt_handler_source_sp;
+    type_unsigned_8 interrupt_handler_ivt_vectors[16];
+    type_unsigned_16 interrupt_handler_ivt_offsets[16];
+    type_unsigned_8 interrupt_handler_ivt_count;
+    type_unsigned_32 interrupt_handler_trace[32];
+    type_unsigned_8 interrupt_handler_trace_opcode[32];
+    type_unsigned_8 interrupt_handler_trace_count;
+    type_bool interrupt_scan_entry_seen;
+    type_unsigned_16 interrupt_scan_source_cs;
+    type_unsigned_16 interrupt_scan_source_ip;
+    type_unsigned_16 interrupt_scan_source_sp;
+    type_unsigned_16 interrupt_scan_ss;
+    type_unsigned_16 interrupt_scan_sp;
+    type_bool interrupt_service_entry_seen;
+    type_unsigned_32 interrupt_service_entry_count;
+    type_bool interrupt_service_frame_read;
+    type_unsigned_16 interrupt_service_ss;
+    type_unsigned_16 interrupt_service_sp;
+    type_unsigned_16 interrupt_service_source_cs;
+    type_unsigned_16 interrupt_service_source_ip;
+    type_unsigned_16 interrupt_service_source_sp;
+    type_unsigned_16 interrupt_service_frame[3];
+    type_unsigned_32 interrupt_service_trace[32];
+    type_unsigned_8 interrupt_service_trace_opcode[32];
+    type_unsigned_8 interrupt_service_trace_count;
+    type_bool low_stack_transition_seen;
+    type_unsigned_32 low_stack_transition_pc;
+    type_unsigned_16 low_stack_transition_before;
+    type_unsigned_16 low_stack_transition_after;
+    type_unsigned_32 low_stack_transition_trace[32];
+    type_unsigned_8 low_stack_transition_trace_opcode[32];
+    type_unsigned_8 low_stack_transition_trace_count;
+    type_bool stack_exhaustion_seen;
+    type_unsigned_32 stack_exhaustion_pc;
+    type_unsigned_16 stack_exhaustion_before;
+    type_unsigned_16 stack_exhaustion_after;
+    type_unsigned_32 stack_exhaustion_trace[32];
+    type_unsigned_8 stack_exhaustion_trace_opcode[32];
+    type_unsigned_8 stack_exhaustion_trace_count;
+    type_bool minimum_stack_seen;
+    type_unsigned_16 minimum_stack_value;
+    type_unsigned_32 minimum_stack_pc;
+    type_unsigned_32 minimum_stack_trace[32];
+    type_unsigned_8 minimum_stack_trace_opcode[32];
+    type_unsigned_8 minimum_stack_trace_count;
+    type_bool last_io_valid;
+    type_unsigned_32 last_io_pc;
+    type_unsigned_16 last_io_port;
+    type_unsigned_32 last_io_value;
+    type_unsigned_8 last_io_direction;
+    type_bool reset_vector_seen;
+    type_unsigned_32 reset_vector_count;
+    type_unsigned_8 reset_vector_shutdown_status[MODEL40_CAPTURE_RESET_HISTORY];
+    type_unsigned_8 reset_vector_kbc_output_port[MODEL40_CAPTURE_RESET_HISTORY];
+    type_bool reset_vector_io_valid;
+    type_unsigned_32 reset_vector_io_pc;
+    type_unsigned_16 reset_vector_io_port;
+    type_unsigned_32 reset_vector_io_value;
+    type_unsigned_8 reset_vector_io_direction;
+    type_bool reset_instruction_seen;
+    type_unsigned_8 reset_instruction_port;
+    type_unsigned_8 reset_instruction_value;
+    type_bool reset_instruction_state_seen;
+    type_unsigned_8 reset_instruction_shutdown_status;
+    type_unsigned_8 reset_instruction_kbc_output_port;
+    type_bool last_software_interrupt_valid;
+    type_unsigned_32 last_software_interrupt_pc;
+    type_unsigned_8 last_software_interrupt_vector;
+    type_unsigned_16 last_software_interrupt_ss;
+    type_unsigned_16 last_software_interrupt_sp;
+    type_unsigned_32 last_software_interrupt_target;
+    type_unsigned_8 last_software_interrupt_target_bytes[4];
+    type_bool last_software_interrupt_target_read;
+    type_bool last_software_interrupt_target_stopped_read;
+    type_unsigned_8 last_software_interrupt_target_stopped_bytes[4];
+    type_unsigned_32 software_interrupt_trace[32];
+    type_unsigned_8 software_interrupt_trace_count;
+    type_unsigned_32 recent_linear_pc[32];
+    type_unsigned_8 recent_opcode[32];
+    type_unsigned_8 recent_count;
+    type_unsigned_8 recent_next;
+    type_bool zero_code_seen;
+    type_unsigned_32 zero_code_trace[32];
+    type_unsigned_8 zero_code_opcode[32];
+    type_unsigned_8 zero_code_trace_count;
+    type_unsigned_32 iret_io_pc[8];
+    type_unsigned_16 iret_io_port[8];
+    type_unsigned_32 iret_io_value[8];
+    type_unsigned_8 iret_io_direction[8];
+    type_unsigned_8 iret_io_count;
+    model40_capture_execution_point post_c0_first[MODEL40_CAPTURE_POST_C0_HISTORY];
+    type_unsigned_8 post_c0_first_count;
+    model40_capture_execution_point post_c0_last[MODEL40_CAPTURE_POST_C0_HISTORY];
+    type_unsigned_32 post_c0_last_count;
+    model40_capture_port_event post_c0_ports[MODEL40_CAPTURE_POST_C0_HISTORY];
+    type_unsigned_8 post_c0_port_count;
+    type_bool post_c0_previous_valid;
+    model40_capture_execution_point post_c0_previous;
+    type_bool post_c0_non_rom_seen;
+    model40_capture_execution_point post_c0_non_rom_predecessor;
+    model40_capture_execution_point post_c0_non_rom;
 } model40_retirement_capture;
+
+static C_VOID model40_capture_record_post_c0_point(
+    model40_retirement_capture *capture,
+    const core_machine_retirement_observation *observation)
+{
+    type_unsigned_32 index;
+
+    if (capture == STD_NULL || observation == STD_NULL || !capture->checkpoint_reached) {
+        return;
+    }
+    if (!capture->post_c0_non_rom_seen && observation->point.linear_pc < 0x000f0000u) {
+        capture->post_c0_non_rom_seen = TYPE_TRUE;
+        capture->post_c0_non_rom = (model40_capture_execution_point) {
+            observation->point.linear_pc, observation->protected_mode };
+        if (capture->post_c0_previous_valid) {
+            capture->post_c0_non_rom_predecessor = capture->post_c0_previous;
+        }
+    }
+    if (capture->post_c0_first_count < MODEL40_CAPTURE_POST_C0_HISTORY) {
+        capture->post_c0_first[capture->post_c0_first_count++] =
+            (model40_capture_execution_point) { observation->point.linear_pc,
+                observation->protected_mode };
+    }
+    index = capture->post_c0_last_count % MODEL40_CAPTURE_POST_C0_HISTORY;
+    capture->post_c0_last[index] = (model40_capture_execution_point) {
+        observation->point.linear_pc, observation->protected_mode };
+    ++capture->post_c0_last_count;
+    capture->post_c0_previous = (model40_capture_execution_point) {
+        observation->point.linear_pc, observation->protected_mode };
+    capture->post_c0_previous_valid = TYPE_TRUE;
+}
 
 static C_INT model40_capture_key_matches(
     const core_machine_retirement_eligibility_key *left,
@@ -230,6 +441,19 @@ static type_unsigned_8 model40_capture_opcode_index(
     return index;
 }
 
+static type_bool model40_capture_is_coprocessor_escape(
+    const core_machine_retirement_observation *observation,
+    type_unsigned_8 opcode_index)
+{
+    type_unsigned_8 opcode;
+
+    if (observation == STD_NULL || opcode_index >= observation->point.byte_count) {
+        return TYPE_FALSE;
+    }
+    opcode = observation->point.bytes[opcode_index];
+    return opcode >= 0xd8u && opcode <= 0xdfu;
+}
+
 static type_unsigned_8 model40_capture_group_extension(
     const core_machine_retirement_observation *observation, type_unsigned_8 index,
     type_unsigned_8 opcode)
@@ -278,24 +502,48 @@ static C_VOID model40_capture_record_post_c0_io(
     model40_retirement_capture *capture,
     const core_machine_retirement_observation *observation)
 {
-    type_unsigned_8 opcode_index;
-    type_unsigned_8 opcode;
-
     if (capture == STD_NULL || observation == STD_NULL ||
-        !capture->checkpoint_reached || capture->post_c0_io_seen) return;
-    opcode_index = model40_capture_opcode_index(observation);
-    opcode = opcode_index < observation->point.byte_count ?
-        observation->point.bytes[opcode_index] : 0xffu;
-    if ((opcode == 0xe4u || opcode == 0xe5u || opcode == 0xe6u ||
-        opcode == 0xe7u) && opcode_index + 1u < observation->point.byte_count) {
+        !capture->checkpoint_reached ||
+        observation->io_direction == CORE_MACHINE_RETIREMENT_IO_NONE) return;
+    if (!capture->post_c0_io_seen) {
         capture->post_c0_io_seen = TYPE_TRUE;
         capture->post_c0_io_port_known = TYPE_TRUE;
-        capture->post_c0_io_port = observation->point.bytes[opcode_index + 1u];
-        capture->post_c0_io_read = opcode == 0xe4u || opcode == 0xe5u;
-    } else if (opcode == 0xecu || opcode == 0xedu || opcode == 0xeeu ||
-        opcode == 0xefu) {
-        capture->post_c0_io_seen = TYPE_TRUE;
-        capture->post_c0_io_read = opcode == 0xecu || opcode == 0xedu;
+        capture->post_c0_io_port = observation->io_port;
+        capture->post_c0_io_read =
+            observation->io_direction == CORE_MACHINE_RETIREMENT_IO_READ;
+    }
+    if ((observation->io_port >= 0x03f2u && observation->io_port <= 0x03f5u) ||
+        observation->io_port == 0x03f7u) capture->fdc_port_seen = TYPE_TRUE;
+    if (capture->post_c0_port_count < MODEL40_CAPTURE_POST_C0_HISTORY) {
+        capture->post_c0_ports[capture->post_c0_port_count++] =
+            (model40_capture_port_event) { observation->sequence,
+                observation->point.linear_pc, observation->io_port,
+                (type_unsigned_8)observation->io_value,
+                observation->io_direction == CORE_MACHINE_RETIREMENT_IO_WRITE };
+    }
+}
+
+/* The D4 ROM's fail-safe POST loop is meaningful only relative to writes that
+ * program the second 8254 and enable its latch.  Keep this as copied probe
+ * evidence; it does not alter the guest or manufacture an interrupt. */
+static C_VOID model40_capture_record_d4_timer_io(
+    model40_retirement_capture *capture,
+    const core_machine_retirement_observation *observation)
+{
+    type_bool selected;
+
+    if (capture == STD_NULL || observation == STD_NULL ||
+        !capture->d4_timer_history_enabled ||
+        observation->io_direction == CORE_MACHINE_RETIREMENT_IO_NONE) return;
+    selected = observation->io_port >= 0x0048u && observation->io_port <= 0x004bu;
+    if (!selected && !(observation->io_port == 0x0061u &&
+            observation->io_direction == CORE_MACHINE_RETIREMENT_IO_WRITE)) return;
+    if (capture->d4_timer_port_count < MODEL40_CAPTURE_D4_TIMER_HISTORY) {
+        capture->d4_timer_ports[capture->d4_timer_port_count++] =
+            (model40_capture_port_event) { observation->sequence,
+                observation->point.linear_pc, observation->io_port,
+                (type_unsigned_8)observation->io_value,
+                observation->io_direction == CORE_MACHINE_RETIREMENT_IO_WRITE };
     }
 }
 
@@ -335,8 +583,137 @@ static C_VOID model40_capture_observe(C_VOID *opaque,
     type_unsigned_8 escape_opcode = 0xffu;
     type_unsigned_8 group_extension;
     type_bool aggregate;
+    type_bool zero_code_entry;
 
     if (capture == STD_NULL || observation == STD_NULL) return;
+    model40_capture_record_d4_timer_io(capture, observation);
+    if (capture->machine != STD_NULL &&
+        observation->point.linear_pc == 0x000fd1d8u) {
+        type_unsigned_32 sample = capture->d4_memory_iteration_count++;
+
+        if (sample < MODEL40_CAPTURE_D4_MEMORY_HISTORY) {
+            capture->d4_memory_ebp[sample] = capture->machine->executor_cpu.data.ebp;
+            capture->d4_memory_next_pc[sample] = capture->machine->executor_cpu.data.cs.base +
+                capture->machine->executor_cpu.data.eip;
+        }
+    }
+    if (capture->d4_timer_history_enabled &&
+        observation->io_direction == CORE_MACHINE_RETIREMENT_IO_WRITE &&
+        observation->io_port == 0x0084u && observation->io_value == 0x46u) {
+        capture->d4_memory_pass_seen = TYPE_TRUE;
+    }
+    if (capture->d4_timer_history_enabled && !capture->d4_failsafe_test_seen &&
+        observation->point.linear_pc == 0x000fd1b1u &&
+        observation->io_direction == CORE_MACHINE_RETIREMENT_IO_READ &&
+        observation->io_port == 0x0061u) {
+        capture->d4_failsafe_test_seen = TYPE_TRUE;
+        capture->d4_failsafe_port_value = (type_unsigned_8)observation->io_value;
+    }
+    zero_code_entry = !capture->zero_code_seen &&
+        observation->point.linear_pc < 0x00001000u &&
+        observation->point.byte_count != 0u && observation->point.bytes[0u] == 0u &&
+        (capture->recent_count == 0u || observation->point.linear_pc !=
+            capture->recent_linear_pc[(capture->recent_next +
+                (sizeof(capture->recent_linear_pc) /
+                sizeof(capture->recent_linear_pc[0u])) - 1u) %
+                (sizeof(capture->recent_linear_pc) /
+                sizeof(capture->recent_linear_pc[0u]))] + 2u);
+    capture->recent_linear_pc[capture->recent_next] = observation->point.linear_pc;
+    capture->recent_opcode[capture->recent_next] =
+        observation->point.byte_count == 0u ? 0xffu : observation->point.bytes[0u];
+    capture->recent_next = (capture->recent_next + 1u) %
+        (sizeof(capture->recent_linear_pc) / sizeof(capture->recent_linear_pc[0u]));
+    if (capture->recent_count < sizeof(capture->recent_linear_pc) /
+            sizeof(capture->recent_linear_pc[0u])) ++capture->recent_count;
+    if (!capture->iret_route_seen && observation->point.linear_pc == 0x000f0081u) {
+        for (index = 0u; index < capture->recent_count; ++index) {
+            type_unsigned_8 recent_index = (capture->recent_next + index) %
+                (sizeof(capture->recent_linear_pc) /
+                sizeof(capture->recent_linear_pc[0u]));
+            capture->iret_route_trace[index] = capture->recent_linear_pc[recent_index];
+            capture->iret_route_opcode[index] = capture->recent_opcode[recent_index];
+        }
+        capture->iret_route_trace_count = capture->recent_count;
+        capture->iret_route_seen = TYPE_TRUE;
+    }
+    if (zero_code_entry) {
+        for (index = 0u; index < capture->recent_count; ++index) {
+            type_unsigned_8 recent_index = (capture->recent_next + index) %
+                (sizeof(capture->recent_linear_pc) /
+                sizeof(capture->recent_linear_pc[0u]));
+            capture->zero_code_trace[index] = capture->recent_linear_pc[recent_index];
+            capture->zero_code_opcode[index] = capture->recent_opcode[recent_index];
+        }
+        capture->zero_code_trace_count = capture->recent_count;
+        capture->zero_code_seen = TYPE_TRUE;
+    }
+    if (capture->machine != STD_NULL &&
+        observation->point.linear_pc == 0x000f57a6u) {
+        capture->iret_frame_seen = TYPE_TRUE;
+        ++capture->iret_frame_count;
+        capture->iret_ss = capture->machine->executor_cpu_instructions.
+            data.oldcpu.data.ss.selector;
+        capture->iret_sp = (type_unsigned_16)capture->machine->
+            executor_cpu_instructions.data.oldcpu.data.esp;
+        capture->iret_ss_base = capture->machine->executor_cpu_instructions.
+            data.oldcpu.data.ss.base;
+        capture->iret_operand_size_32 = observation->operand_size_32;
+        capture->iret_stack_size_32 = capture->machine->executor_cpu_instructions.
+            data.oldcpu.data.ss.seg.data.big;
+        capture->iret_cr0 = capture->machine->executor_cpu_instructions.
+            data.oldcpu.data.cr0;
+        capture->iret_frame_address = capture->machine->executor_cpu.data.ss.base +
+            capture->iret_sp;
+        if (core_machine_memory_read(capture->machine,
+                capture->iret_frame_address,
+                capture->iret_frame, sizeof(capture->iret_frame)) == TYPE_STATUS_OK) {
+            capture->iret_frame_read = TYPE_TRUE;
+        }
+    }
+    if (capture->machine != STD_NULL && !capture->interrupt_scan_entry_seen &&
+        observation->point.linear_pc == 0x000f004du &&
+        (capture->machine->executor_cpu_instructions.data.oldcpu.data.cs.base +
+            capture->machine->executor_cpu_instructions.data.oldcpu.data.eip <
+            0x000f004du ||
+        capture->machine->executor_cpu_instructions.data.oldcpu.data.cs.base +
+            capture->machine->executor_cpu_instructions.data.oldcpu.data.eip >
+            0x000f0054u)) {
+        capture->interrupt_scan_entry_seen = TYPE_TRUE;
+        capture->interrupt_scan_source_cs = capture->machine->executor_cpu_instructions.
+            data.oldcpu.data.cs.selector;
+        capture->interrupt_scan_source_ip = (type_unsigned_16)capture->machine->
+            executor_cpu_instructions.data.oldcpu.data.eip;
+        capture->interrupt_scan_source_sp = (type_unsigned_16)capture->machine->
+            executor_cpu_instructions.data.oldcpu.data.esp;
+        capture->interrupt_scan_ss = capture->machine->executor_cpu.data.ss.selector;
+        capture->interrupt_scan_sp = (type_unsigned_16)capture->machine->executor_cpu.data.esp;
+    }
+    if (capture->machine != STD_NULL &&
+        observation->point.linear_pc == 0x000f001fu) {
+        capture->interrupt_service_entry_seen = TYPE_TRUE;
+        ++capture->interrupt_service_entry_count;
+        capture->interrupt_service_ss = capture->machine->executor_cpu_instructions.
+            data.oldcpu.data.ss.selector;
+        capture->interrupt_service_sp = (type_unsigned_16)capture->machine->
+            executor_cpu_instructions.data.oldcpu.data.esp;
+        capture->interrupt_service_source_cs = capture->machine->
+            executor_cpu_instructions.data.oldcpu.data.cs.selector;
+        capture->interrupt_service_source_ip = (type_unsigned_16)capture->machine->
+            executor_cpu_instructions.data.oldcpu.data.eip;
+        capture->interrupt_service_source_sp = (type_unsigned_16)capture->machine->
+            executor_cpu_instructions.data.oldcpu.data.esp;
+        for (index = 0u; index < capture->recent_count; ++index) {
+            type_unsigned_8 recent_index = (capture->recent_next + index) %
+                (sizeof(capture->recent_linear_pc) /
+                sizeof(capture->recent_linear_pc[0u]));
+
+            capture->interrupt_service_trace[index] =
+                capture->recent_linear_pc[recent_index];
+            capture->interrupt_service_trace_opcode[index] =
+                capture->recent_opcode[recent_index];
+        }
+        capture->interrupt_service_trace_count = capture->recent_count;
+    }
     aggregate = capture->c1_transfer_diagnostic ? capture->c1_collecting :
         (!capture->c0a_diagnostic || capture->c0a_collecting);
     if (!aggregate) {
@@ -354,15 +731,15 @@ static C_VOID model40_capture_observe(C_VOID *opaque,
         return;
     }
     ++capture->count;
-    if ((capture->count & 1023u) == 0u) {
-        STD_PRINTF("M5:T390:S5:BYOB-BOOT-PROGRESS:count=%u\n",
-            (unsigned)capture->count);
-        (C_VOID)fflush(STD_STDOUT);
-    }
+    opcode_index = model40_capture_opcode_index(observation);
     if (observation->timing_disposition ==
         CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED) {
         ++capture->classified;
         model40_capture_record_key(capture, &observation->eligibility_key);
+    } else if (model40_capture_is_coprocessor_escape(observation, opcode_index)) {
+        /* ESC is a successful CPU-to-coprocessor boundary, not an unallocated
+         * scalar CPU-time form.  The FPU owner supplies its own timing range. */
+        ++capture->coprocessor_domain;
     } else {
         ++capture->unallocated;
         if (!capture->terminal_bytes_available) {
@@ -382,9 +759,146 @@ static C_VOID model40_capture_observe(C_VOID *opaque,
     }
     if (observation->protected_mode) capture->protected_mode_seen = TYPE_TRUE;
     capture->previous_protected_mode = observation->protected_mode;
-    opcode_index = model40_capture_opcode_index(observation);
+    model40_capture_record_post_c0_point(capture, observation);
+    if (observation->io_direction != CORE_MACHINE_RETIREMENT_IO_NONE) {
+        capture->last_io_valid = TYPE_TRUE;
+        capture->last_io_pc = observation->point.linear_pc;
+        capture->last_io_port = observation->io_port;
+        capture->last_io_value = observation->io_value;
+        capture->last_io_direction = (type_unsigned_8)observation->io_direction;
+    }
+    if (observation->point.linear_pc == 0xfffffff0u) {
+        type_unsigned_32 reset_sample = capture->reset_vector_count++;
+
+        if (!capture->reset_vector_seen) {
+            capture->reset_vector_seen = TYPE_TRUE;
+            capture->reset_vector_io_valid = capture->last_io_valid;
+            capture->reset_vector_io_pc = capture->last_io_pc;
+            capture->reset_vector_io_port = capture->last_io_port;
+            capture->reset_vector_io_value = capture->last_io_value;
+            capture->reset_vector_io_direction = capture->last_io_direction;
+        }
+        if (capture->machine != STD_NULL && reset_sample < MODEL40_CAPTURE_RESET_HISTORY) {
+            capture->reset_vector_shutdown_status[reset_sample] =
+                capture->machine->shared_rtc.registers[0x0fu];
+            capture->reset_vector_kbc_output_port[reset_sample] =
+                capture->machine->shared_kbc.data.output_port;
+        }
+    }
+    if (capture->machine != STD_NULL && !capture->reset_instruction_seen &&
+        observation->point.linear_pc == 0x000fc2f5u &&
+        observation->point.byte_count >= 2u && observation->point.bytes[0u] == 0xe6u) {
+        capture->reset_instruction_seen = TYPE_TRUE;
+        capture->reset_instruction_port = observation->point.bytes[1u];
+        capture->reset_instruction_value = (type_unsigned_8)capture->machine->
+            executor_cpu_instructions.data.oldcpu.data.eax;
+        capture->reset_instruction_state_seen = TYPE_TRUE;
+        capture->reset_instruction_shutdown_status = capture->machine->shared_rtc.registers[0x0fu];
+        capture->reset_instruction_kbc_output_port =
+            capture->machine->shared_kbc.data.output_port;
+    }
+    if (capture->machine != STD_NULL && capture->low_stack_transition_seen &&
+        (!capture->minimum_stack_seen ||
+        (type_unsigned_16)capture->machine->
+            executor_cpu.data.esp < capture->minimum_stack_value)) {
+        capture->minimum_stack_seen = TYPE_TRUE;
+        capture->minimum_stack_value = (type_unsigned_16)capture->machine->
+            executor_cpu.data.esp;
+        capture->minimum_stack_pc = observation->point.linear_pc;
+        for (index = 0u; index < capture->recent_count; ++index) {
+            type_unsigned_8 recent_index = (capture->recent_next + index) %
+                (sizeof(capture->recent_linear_pc) /
+                sizeof(capture->recent_linear_pc[0u]));
+
+            capture->minimum_stack_trace[index] = capture->recent_linear_pc[recent_index];
+            capture->minimum_stack_trace_opcode[index] = capture->recent_opcode[recent_index];
+        }
+        capture->minimum_stack_trace_count = capture->recent_count;
+    }
+    if (capture->machine != STD_NULL && !capture->low_stack_transition_seen &&
+        capture->machine->executor_cpu_instructions.
+            data.oldcpu.data.esp > 0x0100u &&
+        capture->machine->executor_cpu.data.esp <= 0x0100u) {
+        capture->low_stack_transition_seen = TYPE_TRUE;
+        capture->low_stack_transition_pc = observation->point.linear_pc;
+        capture->low_stack_transition_before = (type_unsigned_16)capture->machine->
+            executor_cpu_instructions.data.oldcpu.data.esp;
+        capture->low_stack_transition_after = (type_unsigned_16)capture->machine->
+            executor_cpu.data.esp;
+        for (index = 0u; index < capture->recent_count; ++index) {
+            type_unsigned_8 recent_index = (capture->recent_next + index) %
+                (sizeof(capture->recent_linear_pc) /
+                sizeof(capture->recent_linear_pc[0u]));
+
+            capture->low_stack_transition_trace[index] =
+                capture->recent_linear_pc[recent_index];
+            capture->low_stack_transition_trace_opcode[index] =
+                capture->recent_opcode[recent_index];
+        }
+        capture->low_stack_transition_trace_count = capture->recent_count;
+    }
+    if (capture->machine != STD_NULL && !capture->stack_exhaustion_seen &&
+        capture->machine->executor_cpu_instructions.
+            data.oldcpu.data.esp > 0x0020u &&
+        capture->machine->executor_cpu.data.esp <= 0x0020u) {
+        capture->stack_exhaustion_seen = TYPE_TRUE;
+        capture->stack_exhaustion_pc = observation->point.linear_pc;
+        capture->stack_exhaustion_before = (type_unsigned_16)capture->machine->
+            executor_cpu_instructions.data.oldcpu.data.esp;
+        capture->stack_exhaustion_after = (type_unsigned_16)capture->machine->
+            executor_cpu.data.esp;
+        for (index = 0u; index < capture->recent_count; ++index) {
+            type_unsigned_8 recent_index = (capture->recent_next + index) %
+                (sizeof(capture->recent_linear_pc) /
+                sizeof(capture->recent_linear_pc[0u]));
+
+            capture->stack_exhaustion_trace[index] =
+                capture->recent_linear_pc[recent_index];
+            capture->stack_exhaustion_trace_opcode[index] =
+                capture->recent_opcode[recent_index];
+        }
+        capture->stack_exhaustion_trace_count = capture->recent_count;
+    }
+    if (observation->point.linear_pc >= 0x000f5749u &&
+        observation->point.linear_pc <= 0x000f57a6u &&
+        observation->io_direction != CORE_MACHINE_RETIREMENT_IO_NONE &&
+        capture->iret_io_count < sizeof(capture->iret_io_pc) /
+            sizeof(capture->iret_io_pc[0u])) {
+        index = capture->iret_io_count++;
+        capture->iret_io_pc[index] = observation->point.linear_pc;
+        capture->iret_io_port[index] = observation->io_port;
+        capture->iret_io_value[index] = observation->io_value;
+        capture->iret_io_direction[index] = (type_unsigned_8)observation->io_direction;
+    }
     opcode = opcode_index < observation->point.byte_count ?
         observation->point.bytes[opcode_index] : 0xffu;
+    if (!capture->last_software_interrupt_valid && opcode == 0xcdu &&
+        opcode_index + 1u < observation->point.byte_count) {
+        capture->last_software_interrupt_valid = TYPE_TRUE;
+        capture->last_software_interrupt_pc = observation->point.linear_pc;
+        capture->last_software_interrupt_vector = observation->point.bytes[opcode_index + 1u];
+        if (capture->machine != STD_NULL) {
+            capture->last_software_interrupt_ss =
+                capture->machine->executor_cpu.data.ss.selector;
+            capture->last_software_interrupt_sp =
+                (type_unsigned_16)capture->machine->executor_cpu.data.esp;
+            capture->last_software_interrupt_target =
+                capture->machine->executor_cpu.data.cs.base +
+                capture->machine->executor_cpu.data.eip;
+            capture->last_software_interrupt_target_read =
+                core_machine_memory_read_physical(&capture->machine->executor_memory,
+                    capture->last_software_interrupt_target,
+                    (type_virtual_address)capture->last_software_interrupt_target_bytes,
+                    sizeof(capture->last_software_interrupt_target_bytes)) == TYPE_STATUS_OK;
+        }
+    }
+    if (capture->last_software_interrupt_valid &&
+        capture->software_interrupt_trace_count <
+            sizeof(capture->software_interrupt_trace) /
+            sizeof(capture->software_interrupt_trace[0u])) {
+        capture->software_interrupt_trace[capture->software_interrupt_trace_count++] =
+            observation->point.linear_pc;
+    }
     if (opcode == 0x0fu && opcode_index + 1u < observation->point.byte_count) {
         escape_opcode = observation->point.bytes[opcode_index + 1u];
     }
@@ -405,7 +919,7 @@ static C_VOID model40_capture_observe(C_VOID *opaque,
         }
     }
     if (capture->form_count == MODEL40_CAPTURE_FORM_LIMIT) {
-        capture->form_limit_reached = TYPE_TRUE;
+        capture->form_catalog_truncated = TYPE_TRUE;
         return;
     }
     capture->forms[capture->form_count++] = (model40_retirement_capture_form) {
@@ -459,6 +973,69 @@ static C_VOID model40_capture_emit(const model40_retirement_capture *capture)
     }
 }
 
+static C_VOID model40_capture_emit_post_c0_history(
+    const model40_retirement_capture *capture)
+{
+    type_unsigned_32 index;
+    type_unsigned_32 start;
+    type_unsigned_32 count;
+
+    if (capture == STD_NULL) return;
+    STD_PRINTF("M5:T498:S5:POST-C0-HISTORY:first=%u last=%u ports=%u\n",
+        (unsigned)capture->post_c0_first_count,
+        (unsigned)capture->post_c0_last_count,
+        (unsigned)capture->post_c0_port_count);
+    if (capture->post_c0_non_rom_seen) {
+        STD_PRINTF("M5:T498:S5:POST-C0-ROM-EXIT:from=%08X-pm=%u-to=%08X-pm=%u\n",
+            (unsigned)capture->post_c0_non_rom_predecessor.linear_pc,
+            (unsigned)capture->post_c0_non_rom_predecessor.protected_mode,
+            (unsigned)capture->post_c0_non_rom.linear_pc,
+            (unsigned)capture->post_c0_non_rom.protected_mode);
+    }
+    for (index = 0u; index < capture->post_c0_first_count; ++index) {
+        STD_PRINTF("M5:T498:S5:POST-C0-FIRST:pc=%08X-pm=%u\n",
+            (unsigned)capture->post_c0_first[index].linear_pc,
+            (unsigned)capture->post_c0_first[index].protected_mode);
+    }
+    count = capture->post_c0_last_count < MODEL40_CAPTURE_POST_C0_HISTORY ?
+        capture->post_c0_last_count : MODEL40_CAPTURE_POST_C0_HISTORY;
+    start = capture->post_c0_last_count > MODEL40_CAPTURE_POST_C0_HISTORY ?
+        capture->post_c0_last_count % MODEL40_CAPTURE_POST_C0_HISTORY : 0u;
+    for (index = 0u; index < count; ++index) {
+        const model40_capture_execution_point *point = &capture->post_c0_last[
+            (start + index) % MODEL40_CAPTURE_POST_C0_HISTORY];
+
+        STD_PRINTF("M5:T498:S5:POST-C0-LAST:pc=%08X-pm=%u\n",
+            (unsigned)point->linear_pc, (unsigned)point->protected_mode);
+    }
+    for (index = 0u; index < capture->post_c0_port_count; ++index) {
+        const model40_capture_port_event *event = &capture->post_c0_ports[index];
+
+        STD_PRINTF("M5:T498:S5:POST-C0-PORT:seq=%llu-pc=%08X-port=%04X-%s-value=%02X\n",
+            (unsigned long long)event->sequence, (unsigned)event->linear_pc,
+            (unsigned)event->port, event->write ? "write" : "read",
+            (unsigned)event->value);
+    }
+}
+
+static C_VOID model40_capture_emit_d4_timer_history(
+    const model40_retirement_capture *capture)
+{
+    type_unsigned_32 index;
+
+    if (capture == STD_NULL || !capture->d4_timer_history_enabled) return;
+    STD_PRINTF("M5:T498:S5:D4-TIMER-HISTORY:ports=%u\n",
+        (unsigned)capture->d4_timer_port_count);
+    for (index = 0u; index < capture->d4_timer_port_count; ++index) {
+        const model40_capture_port_event *event = &capture->d4_timer_ports[index];
+
+        STD_PRINTF("M5:T498:S5:D4-TIMER-PORT:seq=%llu-pc=%08X-port=%04X-%s-value=%02X\n",
+            (unsigned long long)event->sequence, (unsigned)event->linear_pc,
+            (unsigned)event->port, event->write ? "write" : "read",
+            (unsigned)event->value);
+    }
+}
+
 static C_INT model40_capture_create_session(C_INT argc, C_CHAR **argv,
     vm_session **out_session)
 {
@@ -470,7 +1047,10 @@ static C_INT model40_capture_create_session(C_INT argc, C_CHAR **argv,
         STD_STRCMP(argv[7], "--post-c0-io-diagnostic") &&
         STD_STRCMP(argv[7], "--c0a-diagnostic") &&
         STD_STRCMP(argv[7], "--c1-transfer-diagnostic") &&
-        STD_STRCMP(argv[7], "--fdc-read-data-diagnostic"))))) return 0;
+        STD_STRCMP(argv[7], "--fdc-read-data-diagnostic") &&
+        STD_STRCMP(argv[7], "--port-sequence-diagnostic") &&
+        STD_STRCMP(argv[7], "--d4-memory-diagnostic") &&
+        STD_STRCMP(argv[7], "--warm-reset-diagnostic"))))) return 0;
     config.profile_kind = VM_SESSION_PROFILE_COMPAQ_DESKPRO_386_MODEL_40;
     config.fdd_image = argv[6];
     config.model40_firmware = (vm_profile_model40_byob_manifest) {
@@ -516,6 +1096,8 @@ static C_INT model40_capture_synthetic_c0_smoke(C_VOID)
     observation.point.bytes[0] = 0xe6u;
     observation.point.bytes[1] = 0x84u;
     observation.point.byte_count = 2u;
+    observation.io_direction = CORE_MACHINE_RETIREMENT_IO_WRITE;
+    observation.io_port = 0x0084u;
     model40_capture_observe(&capture, &observation);
     observation.point.bytes[0] = 0x90u;
     model40_capture_observe(&capture, &observation);
@@ -595,10 +1177,14 @@ static C_INT model40_capture_synthetic_c0a_smoke(C_VOID)
     model40_capture_observe(&capture, &observation);
     observation.point.bytes[0] = 0xe4u;
     observation.point.bytes[1] = 0x61u;
+    observation.io_direction = CORE_MACHINE_RETIREMENT_IO_READ;
+    observation.io_port = 0x0061u;
+    observation.io_value = 0x35u;
     model40_capture_observe(&capture, &observation);
     if (!capture.checkpoint_reached || !capture.c0a_collecting ||
         !capture.post_c0_io_seen || !capture.post_c0_io_read ||
         !capture.post_c0_io_port_known || capture.post_c0_io_port != 0x0061u ||
+        capture.post_c0_port_count != 1u || capture.post_c0_ports[0].value != 0x35u ||
         capture.count != 3u || capture.classified != 3u || capture.unallocated != 0u ||
         capture.form_count != 3u) return 1;
     STD_PRINTF("M5:T391:S2:C0A-CAPTURE:OK\n");
@@ -652,6 +1238,8 @@ static C_INT model40_capture_synthetic_c1_transfer_smoke(C_VOID)
     model40_capture_observe(&capture, &observation);
     observation.point.bytes[0] = 0xe4u;
     observation.point.bytes[1] = 0x61u;
+    observation.io_direction = CORE_MACHINE_RETIREMENT_IO_READ;
+    observation.io_port = 0x0061u;
     model40_capture_observe(&capture, &observation);
     observation.point.bytes[0] = 0x90u;
     observation.point.byte_count = 1u;
@@ -680,9 +1268,10 @@ C_INT main(C_INT argc, C_CHAR **argv)
         !STD_STRCMP(argv[1], "--synthetic-c0a-smoke")) {
         return model40_capture_synthetic_c0a_smoke();
     }
-    const core_machine_run_budget budget = { 1u, 0u };
+    const core_machine_run_budget budget = { MODEL40_CAPTURE_RUN_INSTRUCTIONS, 0u };
     core_machine_retirement_observation_provider provider;
     core_machine_run_result result = { 0 };
+    core_machine_cpu_diagnostic diagnostic = { 0 };
     model40_retirement_capture capture = { 0 };
     vm_session *session = STD_NULL;
     type_status status = TYPE_STATUS_OK;
@@ -701,29 +1290,158 @@ C_INT main(C_INT argc, C_CHAR **argv)
         !STD_STRCMP(argv[7], "--c1-transfer-diagnostic");
     C_INT fdc_read_data_diagnostic = argc == 8 && argv != STD_NULL &&
         !STD_STRCMP(argv[7], "--fdc-read-data-diagnostic");
+    C_INT port_sequence_diagnostic = argc == 8 && argv != STD_NULL &&
+        !STD_STRCMP(argv[7], "--port-sequence-diagnostic");
+    C_INT d4_memory_diagnostic = argc == 8 && argv != STD_NULL &&
+        !STD_STRCMP(argv[7], "--d4-memory-diagnostic");
+    C_INT warm_reset_diagnostic = argc == 8 && argv != STD_NULL &&
+        !STD_STRCMP(argv[7], "--warm-reset-diagnostic");
 
     if (!model40_capture_create_session(argc, argv, &session)) {
         STD_FPRINTF(STD_STDERR, "usage: capture even-image even-digest "
-            "odd-image odd-digest provenance floppy-image [--terminal-bytes|--c1-diagnostic|--post-c0-io-diagnostic|--c0a-diagnostic|--c1-transfer-diagnostic]\n");
+            "odd-image odd-digest provenance floppy-image [--terminal-bytes|--c1-diagnostic|--post-c0-io-diagnostic|--c0a-diagnostic|--c1-transfer-diagnostic|--fdc-read-data-diagnostic|--port-sequence-diagnostic|--d4-memory-diagnostic|--warm-reset-diagnostic]\n");
         return 2;
     }
     capture.c0a_diagnostic = c0a_diagnostic != 0;
     capture.c1_transfer_diagnostic = c1_transfer_diagnostic != 0;
+    capture.d4_timer_history_enabled = port_sequence_diagnostic != 0;
+    capture.machine = session->core_machine;
     provider.callback = model40_capture_observe;
     provider.context = &capture;
     status = core_machine_set_retirement_observation_provider(
         session->core_machine, &provider);
     if (status == TYPE_STATUS_OK) status = core_machine_reset(session->core_machine);
-    for (index = 0u; status == TYPE_STATUS_OK && index <
-        MODEL40_CAPTURE_RETIREMENT_LIMIT &&
+    if (status == TYPE_STATUS_OK) {
+        capture.reset_vector2_read = core_machine_memory_read(session->core_machine,
+            8u, capture.reset_vector2, sizeof(capture.reset_vector2)) == TYPE_STATUS_OK;
+        session->core_machine->executor_cpu_instructions.data.flagWW = TYPE_TRUE;
+        session->core_machine->executor_cpu_instructions.data.wwLinear = 0x0000001au;
+    }
+    for (index = 0u; status == TYPE_STATUS_OK && index < MODEL40_CAPTURE_RUN_LIMIT &&
         (!capture.checkpoint_reached || (c1_diagnostic && !capture.c1_checkpoint_reached) ||
         (c1_transfer_diagnostic && !capture.c1_transfer_reached) ||
         (fdc_read_data_diagnostic && !capture.fdc_read_data_reached) ||
+        (port_sequence_diagnostic && !capture.d4_memory_pass_seen) ||
+        (d4_memory_diagnostic && capture.d4_memory_iteration_count < 3u) ||
+        (warm_reset_diagnostic && capture.reset_vector_count < 2u) ||
         ((post_c0_io_diagnostic || c0a_diagnostic) && !capture.post_c0_io_seen)) &&
-        capture.unallocated == 0u && !capture.form_limit_reached; ++index) {
+        !capture.zero_code_seen &&
+        capture.unallocated == 0u; ++index) {
         elapsed_before_terminal = result.elapsed_ticks;
         status = core_machine_run(session->core_machine, budget, &result);
         if (status != TYPE_STATUS_OK || result.reason == CORE_MACHINE_STOP_FAULT) break;
+        if (capture.last_software_interrupt_valid &&
+            !capture.last_software_interrupt_target_stopped_read) {
+            capture.last_software_interrupt_target_stopped_read =
+                core_machine_memory_read(session->core_machine,
+                    capture.last_software_interrupt_target,
+                    capture.last_software_interrupt_target_stopped_bytes,
+                    sizeof(capture.last_software_interrupt_target_stopped_bytes)) ==
+                    TYPE_STATUS_OK;
+        }
+        if (capture.iret_frame_seen && !capture.iret_frame_stopped_read) {
+            capture.iret_frame_stopped_read = core_machine_memory_read(
+                session->core_machine, capture.iret_frame_address,
+                capture.iret_frame_stopped, sizeof(capture.iret_frame_stopped)) ==
+                TYPE_STATUS_OK;
+        }
+        if (capture.interrupt_service_entry_seen &&
+            !capture.interrupt_service_frame_read) {
+            capture.interrupt_service_frame_read = core_machine_memory_read(
+                session->core_machine, session->core_machine->executor_cpu_instructions.
+                data.oldcpu.data.ss.base + capture.interrupt_service_sp,
+                capture.interrupt_service_frame,
+                sizeof(capture.interrupt_service_frame)) == TYPE_STATUS_OK;
+        }
+        {
+            core_machine_cpu_state cpu = {0};
+
+            if (core_machine_get_cpu_state(session->core_machine, &cpu) == TYPE_STATUS_OK &&
+                cpu.cs_base + cpu.eip == 0x000f1bd0u) {
+                capture.nmi_entry_seen = TYPE_TRUE;
+                ++capture.nmi_entry_count;
+                capture.nmi_entry_ss = session->core_machine->executor_cpu.data.ss.selector;
+                capture.nmi_entry_sp = (type_unsigned_16)
+                    session->core_machine->executor_cpu.data.esp;
+                capture.nmi_entry_ss_base = session->core_machine->
+                    executor_cpu.data.ss.base;
+                capture.nmi_entry_source_cs = session->core_machine->
+                    executor_cpu_instructions.data.oldcpu.data.cs.selector;
+                capture.nmi_entry_source_ip = (type_unsigned_16)session->core_machine->
+                    executor_cpu_instructions.data.oldcpu.data.eip;
+                capture.nmi_entry_source_flags = (type_unsigned_16)session->core_machine->
+                    executor_cpu_instructions.data.oldcpu.data.eflags;
+                capture.nmi_entry_source_cr0 = session->core_machine->
+                    executor_cpu_instructions.data.oldcpu.data.cr0;
+                capture.nmi_entry_vector2_read = core_machine_memory_read(
+                    session->core_machine, 8u, capture.nmi_entry_vector2,
+                    sizeof(capture.nmi_entry_vector2)) == TYPE_STATUS_OK;
+                capture.nmi_entry_frame_read = core_machine_memory_read(
+                    session->core_machine,
+                    session->core_machine->executor_cpu.data.ss.base +
+                        capture.nmi_entry_sp,
+                    capture.nmi_entry_frame, sizeof(capture.nmi_entry_frame)) ==
+                    TYPE_STATUS_OK;
+            }
+            if (!capture.interrupt_handler_entry_seen &&
+                core_machine_get_cpu_state(session->core_machine, &cpu) == TYPE_STATUS_OK &&
+                cpu.cs_base + cpu.eip == 0x000f0060u &&
+                (session->core_machine->executor_cpu_instructions.data.oldcpu.data.cs.base +
+                    session->core_machine->executor_cpu_instructions.data.oldcpu.data.eip <
+                    0x000f0060u ||
+                session->core_machine->executor_cpu_instructions.data.oldcpu.data.cs.base +
+                    session->core_machine->executor_cpu_instructions.data.oldcpu.data.eip >
+                    0x000f0067u)) {
+                type_unsigned_8 vector;
+
+                capture.interrupt_handler_entry_seen = TYPE_TRUE;
+                ++capture.interrupt_handler_entry_count;
+                for (vector = 0u; vector < capture.recent_count; ++vector) {
+                    type_unsigned_8 recent_index = (capture.recent_next + vector) %
+                        (sizeof(capture.recent_linear_pc) /
+                        sizeof(capture.recent_linear_pc[0u]));
+
+                    capture.interrupt_handler_trace[vector] =
+                        capture.recent_linear_pc[recent_index];
+                    capture.interrupt_handler_trace_opcode[vector] =
+                        capture.recent_opcode[recent_index];
+                }
+                capture.interrupt_handler_trace_count = capture.recent_count;
+                capture.interrupt_handler_ss = session->core_machine->
+                    executor_cpu.data.ss.selector;
+                capture.interrupt_handler_sp = (type_unsigned_16)session->core_machine->
+                    executor_cpu.data.esp;
+                capture.interrupt_handler_source_cs = session->core_machine->
+                    executor_cpu_instructions.data.oldcpu.data.cs.selector;
+                capture.interrupt_handler_source_ip = (type_unsigned_16)session->core_machine->
+                    executor_cpu_instructions.data.oldcpu.data.eip;
+                capture.interrupt_handler_source_sp = (type_unsigned_16)session->core_machine->
+                    executor_cpu_instructions.data.oldcpu.data.esp;
+                capture.interrupt_handler_frame_read = core_machine_memory_read(
+                    session->core_machine, session->core_machine->executor_cpu.data.ss.base +
+                    capture.interrupt_handler_sp, capture.interrupt_handler_frame,
+                    sizeof(capture.interrupt_handler_frame)) == TYPE_STATUS_OK;
+                for (vector = 0u; vector != 0xffu; ++vector) {
+                    type_unsigned_16 entry[2] = {0};
+
+                    if (core_machine_memory_read(session->core_machine,
+                            (type_unsigned_32)vector * 4u, entry, sizeof(entry)) ==
+                            TYPE_STATUS_OK && entry[1u] == 0xf000u && entry[0u] <= 0x0060u) {
+                        if (entry[0u] == 0x0060u) {
+                            capture.interrupt_handler_vector = vector;
+                            capture.interrupt_handler_vector_found = TYPE_TRUE;
+                        }
+                        if (capture.interrupt_handler_ivt_count <
+                            sizeof(capture.interrupt_handler_ivt_vectors)) {
+                            type_unsigned_8 slot = capture.interrupt_handler_ivt_count++;
+
+                            capture.interrupt_handler_ivt_vectors[slot] = vector;
+                            capture.interrupt_handler_ivt_offsets[slot] = entry[0u];
+                        }
+                    }
+                }
+            }
+        }
         if (fdc_read_data_diagnostic && !capture.fdc_read_data_baseline_valid &&
             model40_capture_c0a_reached(&capture)) {
             capture.fdc_read_data_baseline_valid = TYPE_TRUE;
@@ -737,12 +1455,20 @@ C_INT main(C_INT argc, C_CHAR **argv)
         }
     }
     if (fdc_read_data_diagnostic && capture.fdc_read_data_reached) terminal = "fdc-read-data";
+    else if (capture.zero_code_seen) terminal = "zero-code-entry";
+    else if (d4_memory_diagnostic && capture.d4_memory_iteration_count >= 3u) terminal =
+        "d4-memory-iterations";
+    else if (warm_reset_diagnostic && capture.reset_vector_count >= 2u) terminal =
+        "warm-reset";
+    else if (port_sequence_diagnostic && capture.d4_memory_pass_seen) terminal =
+        "d4-memory-pass";
+    else if (port_sequence_diagnostic && capture.post_c0_port_count ==
+        MODEL40_CAPTURE_POST_C0_HISTORY) terminal = "post-c0-port-sequence";
     else if (c1_transfer_diagnostic && capture.c1_transfer_reached) terminal = "c1-boot-transfer";
     else if ((post_c0_io_diagnostic || c0a_diagnostic) && capture.post_c0_io_seen) terminal = "post-c0-io";
     else if (c1_diagnostic && capture.c1_checkpoint_reached) terminal = "c1-protected-entry";
     else if (c1_diagnostic && capture.unallocated != 0u) terminal =
         "c1-source-timing-unallocated";
-    else if (capture.form_limit_reached) terminal = "form-capacity";
     else if (status != TYPE_STATUS_OK) terminal = "run-status";
     else if (result.reason == CORE_MACHINE_STOP_FAULT) terminal = "fault";
     else if (fdc_read_data_diagnostic) terminal = "fdc-read-data-retirement-budget-exhausted";
@@ -751,16 +1477,335 @@ C_INT main(C_INT argc, C_CHAR **argv)
     else if (capture.checkpoint_reached) terminal = "protected-return-c0";
     else if (capture.unallocated != 0u) terminal = "source-timing-unallocated";
     model40_capture_emit(&capture);
+    model40_capture_emit_post_c0_history(&capture);
+    model40_capture_emit_d4_timer_history(&capture);
+    if (d4_memory_diagnostic) {
+        type_unsigned_32 sample_count = capture.d4_memory_iteration_count;
+
+        if (sample_count > MODEL40_CAPTURE_D4_MEMORY_HISTORY) {
+            sample_count = MODEL40_CAPTURE_D4_MEMORY_HISTORY;
+        }
+        STD_PRINTF("M5:T498:S5:D4-MEMORY-ITERATIONS:count=%u", (unsigned)
+            capture.d4_memory_iteration_count);
+        for (index = 0u; index < sample_count; ++index) {
+            STD_PRINTF("-ebp=%08X-next=%08X", (unsigned)capture.d4_memory_ebp[index],
+                (unsigned)capture.d4_memory_next_pc[index]);
+        }
+        STD_PRINTF("\n");
+    }
+    if (capture.d4_failsafe_test_seen) {
+        STD_PRINTF("M5:T498:S5:D4-FAILSAFE-TEST:value=%02X\n",
+            (unsigned)capture.d4_failsafe_port_value);
+    }
     STD_PRINTF("M5:T394:S5:C0-KEY-MAPPING:forms=%u keys=%u key-limit=%u\n",
         (unsigned)capture.form_count, (unsigned)capture.key_count,
         (unsigned)capture.key_limit_reached);
-    if (emit_terminal_bytes) model40_capture_emit_terminal_bytes(&capture);
+    if (emit_terminal_bytes || capture.unallocated != 0u) {
+        model40_capture_emit_terminal_bytes(&capture);
+    }
     STD_PRINTF("M5:T390:S8:BYOB-BOOT-CAPTURE:terminal=%s count=%u classified=%u "
-        "unallocated=%u forms=%u protected=%u checkpoint=%u c1=%u status=%u\n", terminal,
+        "coprocessor-domain=%u unallocated=%u forms=%u protected=%u checkpoint=%u c1=%u status=%u reason=%u detail=%08X pc=%08X\n", terminal,
         (unsigned)capture.count, (unsigned)capture.classified,
+        (unsigned)capture.coprocessor_domain,
         (unsigned)capture.unallocated, (unsigned)capture.form_count,
         (unsigned)capture.protected_mode_seen, (unsigned)capture.checkpoint_reached,
-        (unsigned)capture.c1_checkpoint_reached, (unsigned)status);
+        (unsigned)capture.c1_checkpoint_reached, (unsigned)status,
+        (unsigned)result.reason, (unsigned)result.detail, (unsigned)result.linear_pc);
+    if (fdc_read_data_diagnostic) {
+        core_machine_cpu_state cpu = {0};
+        type_unsigned_8 bytes[CORE_MACHINE_CPU_DIAGNOSTIC_BYTES] = {0};
+        type_unsigned_32 linear_pc = 0u;
+
+        STD_PRINTF("M5:T498:S5:FDC-PREDECESSOR:c0a=%u baseline=%u port=%u read-data=%u "
+            "terminal-observation=%u post-c0-io=%u\n",
+            (unsigned)model40_capture_c0a_reached(&capture),
+            (unsigned)capture.fdc_read_data_baseline_valid,
+            (unsigned)capture.fdc_port_seen,
+            (unsigned)capture.fdc_read_data_reached,
+            (unsigned)session->model40_fdc_terminal_observation_valid,
+            (unsigned)capture.post_c0_io_seen);
+        if (core_machine_get_cpu_state(session->core_machine, &cpu) == TYPE_STATUS_OK) {
+            linear_pc = cpu.cs_base + cpu.eip;
+            if (core_machine_memory_read(session->core_machine, linear_pc, bytes,
+                    sizeof(bytes)) == TYPE_STATUS_OK) {
+                STD_PRINTF("M5:T498:S5:FDC-PREDECESSOR-PC=%08X-bytes=%02X,%02X,%02X,%02X\n",
+                    (unsigned)linear_pc, (unsigned)bytes[0u], (unsigned)bytes[1u],
+                    (unsigned)bytes[2u], (unsigned)bytes[3u]);
+            }
+        }
+    }
+    if (core_machine_get_cpu_diagnostic(session->core_machine, &diagnostic) ==
+        TYPE_STATUS_OK) {
+        STD_PRINTF("M5:T498:S5:CPU-EXCEPTION-DIAGNOSTIC:fault-valid=%u-fault-mask=%08X-fault-code=%08X-fault-pc=%08X-fault-bytes=%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X-count=%u-first-valid=%u-first-mask=%08X-first-code=%08X-first-pc=%08X-last-valid=%u-last-mask=%08X-last-code=%08X-last-pc=%08X\n",
+            (unsigned)diagnostic.first_fault.valid,
+            (unsigned)diagnostic.first_fault.exception_mask,
+            (unsigned)diagnostic.first_fault.exception_code,
+            (unsigned)diagnostic.first_fault.point.linear_pc,
+            (unsigned)diagnostic.first_fault.point.bytes[0u],
+            (unsigned)diagnostic.first_fault.point.bytes[1u],
+            (unsigned)diagnostic.first_fault.point.bytes[2u],
+            (unsigned)diagnostic.first_fault.point.bytes[3u],
+            (unsigned)diagnostic.first_fault.point.bytes[4u],
+            (unsigned)diagnostic.first_fault.point.bytes[5u],
+            (unsigned)diagnostic.first_fault.point.bytes[6u],
+            (unsigned)diagnostic.first_fault.point.bytes[7u],
+            (unsigned)diagnostic.delivered_exception_count,
+            (unsigned)diagnostic.first_delivered_exception.valid,
+            (unsigned)diagnostic.first_delivered_exception.exception_mask,
+            (unsigned)diagnostic.first_delivered_exception.exception_code,
+            (unsigned)diagnostic.first_delivered_exception.point.linear_pc,
+            (unsigned)diagnostic.last_delivered_exception.valid,
+            (unsigned)diagnostic.last_delivered_exception.exception_mask,
+            (unsigned)diagnostic.last_delivered_exception.exception_code,
+            (unsigned)diagnostic.last_delivered_exception.point.linear_pc);
+    }
+    {
+        type_unsigned_8 bytes[CORE_MACHINE_CPU_DIAGNOSTIC_BYTES] = {0};
+
+        if (core_machine_memory_read(session->core_machine, result.linear_pc,
+                bytes, sizeof(bytes)) == TYPE_STATUS_OK) {
+            STD_PRINTF("M5:T498:S5:FINAL-PC:pc=%08X-bytes=%02X,%02X,%02X,%02X,%02X,%02X\n",
+                (unsigned)result.linear_pc, (unsigned)bytes[0u],
+                (unsigned)bytes[1u], (unsigned)bytes[2u], (unsigned)bytes[3u],
+                (unsigned)bytes[4u], (unsigned)bytes[5u]);
+        }
+    }
+    {
+        core_machine_cpu_state cpu = {0};
+
+        if (core_machine_get_cpu_state(session->core_machine, &cpu) == TYPE_STATUS_OK) {
+            STD_PRINTF("M5:T498:S5:FINAL-CPU:cs=%04X-base=%08X-eip=%08X-flags=%08X-halted=%u\n",
+                (unsigned)cpu.cs, (unsigned)cpu.cs_base,
+                (unsigned)cpu.eip, (unsigned)cpu.eflags,
+                (unsigned)cpu.halted);
+        }
+    }
+    STD_PRINTF("M5:T498:S5:FINAL-INTERNAL-CPU:es=%04X-base=%08X-ds=%04X-base=%08X-ss=%04X-base=%08X-ebx=%08X-eax=%08X-cr0=%08X\n",
+        (unsigned)session->core_machine->executor_cpu.data.es.selector,
+        (unsigned)session->core_machine->executor_cpu.data.es.base,
+        (unsigned)session->core_machine->executor_cpu.data.ds.selector,
+        (unsigned)session->core_machine->executor_cpu.data.ds.base,
+        (unsigned)session->core_machine->executor_cpu.data.ss.selector,
+        (unsigned)session->core_machine->executor_cpu.data.ss.base,
+        (unsigned)session->core_machine->executor_cpu.data.ebx,
+        (unsigned)session->core_machine->executor_cpu.data.eax,
+        (unsigned)session->core_machine->executor_cpu.data.cr0);
+    if (capture.iret_frame_seen) {
+        STD_PRINTF("M5:T498:S5:IRET-FRAME:count=%u-read=%u-ss=%04X-base=%08X-sp=%04X-cr0=%08X-operand32=%u-stack32=%u-ip=%04X-cs=%04X-flags=%04X-stopped-read=%u-stopped-ip=%04X-stopped-cs=%04X-stopped-flags=%04X\n",
+            (unsigned)capture.iret_frame_count, (unsigned)capture.iret_frame_read,
+            (unsigned)capture.iret_ss, (unsigned)capture.iret_ss_base,
+            (unsigned)capture.iret_sp,
+            (unsigned)capture.iret_cr0,
+            (unsigned)capture.iret_operand_size_32,
+            (unsigned)capture.iret_stack_size_32,
+            (unsigned)capture.iret_frame[0u], (unsigned)capture.iret_frame[1u],
+            (unsigned)capture.iret_frame[2u],
+            (unsigned)capture.iret_frame_stopped_read,
+            (unsigned)capture.iret_frame_stopped[0u],
+            (unsigned)capture.iret_frame_stopped[1u],
+            (unsigned)capture.iret_frame_stopped[2u]);
+    }
+    if (capture.nmi_entry_seen) {
+        STD_PRINTF("M5:T498:S5:NMI-ENTRY-FRAME:count=%u-read=%u-ss=%04X-base=%08X-sp=%04X-vector2-read=%u-vector2-ip=%04X-vector2-cs=%04X-source-cr0=%08X-source-ip=%04X-source-cs=%04X-source-flags=%04X-ip=%04X-cs=%04X-flags=%04X\n",
+            (unsigned)capture.nmi_entry_count, (unsigned)capture.nmi_entry_frame_read,
+            (unsigned)capture.nmi_entry_ss, (unsigned)capture.nmi_entry_ss_base,
+            (unsigned)capture.nmi_entry_sp,
+            (unsigned)capture.nmi_entry_vector2_read,
+            (unsigned)capture.nmi_entry_vector2[0u],
+            (unsigned)capture.nmi_entry_vector2[1u],
+            (unsigned)capture.nmi_entry_source_cr0,
+            (unsigned)capture.nmi_entry_source_ip,
+            (unsigned)capture.nmi_entry_source_cs,
+            (unsigned)capture.nmi_entry_source_flags,
+            (unsigned)capture.nmi_entry_frame[0u],
+            (unsigned)capture.nmi_entry_frame[1u],
+            (unsigned)capture.nmi_entry_frame[2u]);
+    }
+    STD_PRINTF("M5:T498:S5:RESET-VECTOR2:read=%u-ip=%04X-cs=%04X\n",
+        (unsigned)capture.reset_vector2_read, (unsigned)capture.reset_vector2[0u],
+        (unsigned)capture.reset_vector2[1u]);
+    if (capture.last_software_interrupt_valid) {
+        STD_PRINTF("M5:T498:S5:LAST-SOFTWARE-INT:pc=%08X-vector=%02X-ss=%04X-sp=%04X-target=%08X-read=%u-bytes=%02X,%02X,%02X,%02X-stopped-read=%u-stopped-bytes=%02X,%02X,%02X,%02X\n",
+            (unsigned)capture.last_software_interrupt_pc,
+            (unsigned)capture.last_software_interrupt_vector,
+            (unsigned)capture.last_software_interrupt_ss,
+            (unsigned)capture.last_software_interrupt_sp,
+            (unsigned)capture.last_software_interrupt_target,
+            (unsigned)capture.last_software_interrupt_target_read,
+            (unsigned)capture.last_software_interrupt_target_bytes[0u],
+            (unsigned)capture.last_software_interrupt_target_bytes[1u],
+            (unsigned)capture.last_software_interrupt_target_bytes[2u],
+            (unsigned)capture.last_software_interrupt_target_bytes[3u],
+            (unsigned)capture.last_software_interrupt_target_stopped_read,
+            (unsigned)capture.last_software_interrupt_target_stopped_bytes[0u],
+            (unsigned)capture.last_software_interrupt_target_stopped_bytes[1u],
+            (unsigned)capture.last_software_interrupt_target_stopped_bytes[2u],
+            (unsigned)capture.last_software_interrupt_target_stopped_bytes[3u]);
+        STD_PRINTF("M5:T498:S5:SOFTWARE-INT-TRACE:count=%u",
+            (unsigned)capture.software_interrupt_trace_count);
+        for (index = 0u; index < capture.software_interrupt_trace_count; ++index) {
+            STD_PRINTF("-%08X", (unsigned)capture.software_interrupt_trace[index]);
+        }
+        STD_PRINTF("\n");
+    }
+    if (capture.zero_code_seen) {
+        STD_PRINTF("M5:T498:S5:ZERO-CODE-TRACE:count=%u",
+            (unsigned)capture.zero_code_trace_count);
+        for (index = 0u; index < capture.zero_code_trace_count; ++index) {
+            STD_PRINTF("-%08X:%02X", (unsigned)capture.zero_code_trace[index],
+                (unsigned)capture.zero_code_opcode[index]);
+        }
+        STD_PRINTF("\n");
+    }
+    if (capture.iret_route_seen) {
+        STD_PRINTF("M5:T498:S5:IRET-ROUTE-TRACE:count=%u",
+            (unsigned)capture.iret_route_trace_count);
+        for (index = 0u; index < capture.iret_route_trace_count; ++index) {
+            STD_PRINTF("-%08X:%02X", (unsigned)capture.iret_route_trace[index],
+                (unsigned)capture.iret_route_opcode[index]);
+        }
+        STD_PRINTF("\n");
+    }
+    if (capture.interrupt_handler_entry_seen) {
+        STD_PRINTF("M5:T498:S5:INTERRUPT-HANDLER-ENTRY:count=%u-frame-read=%u-ss=%04X-sp=%04X-source-ip=%04X-source-cs=%04X-source-sp=%04X-ip=%04X-cs=%04X-flags=%04X-vector-found=%u-vector=%02X\n",
+            (unsigned)capture.interrupt_handler_entry_count,
+            (unsigned)capture.interrupt_handler_frame_read,
+            (unsigned)capture.interrupt_handler_ss,
+            (unsigned)capture.interrupt_handler_sp,
+            (unsigned)capture.interrupt_handler_source_ip,
+            (unsigned)capture.interrupt_handler_source_cs,
+            (unsigned)capture.interrupt_handler_source_sp,
+            (unsigned)capture.interrupt_handler_frame[0u],
+            (unsigned)capture.interrupt_handler_frame[1u],
+            (unsigned)capture.interrupt_handler_frame[2u],
+            (unsigned)capture.interrupt_handler_vector_found,
+            (unsigned)capture.interrupt_handler_vector);
+        STD_PRINTF("M5:T498:S5:INTERRUPT-HANDLER-IVT:count=%u",
+            (unsigned)capture.interrupt_handler_ivt_count);
+        for (index = 0u; index < capture.interrupt_handler_ivt_count; ++index) {
+            STD_PRINTF("-%02X:%04X", (unsigned)capture.interrupt_handler_ivt_vectors[index],
+                (unsigned)capture.interrupt_handler_ivt_offsets[index]);
+        }
+        STD_PRINTF("\n");
+        STD_PRINTF("M5:T498:S5:INTERRUPT-HANDLER-TRACE:count=%u",
+            (unsigned)capture.interrupt_handler_trace_count);
+        for (index = 0u; index < capture.interrupt_handler_trace_count; ++index) {
+            STD_PRINTF("-%08X:%02X", (unsigned)capture.interrupt_handler_trace[index],
+                (unsigned)capture.interrupt_handler_trace_opcode[index]);
+        }
+        STD_PRINTF("\n");
+    }
+    if (capture.interrupt_scan_entry_seen) {
+        STD_PRINTF("M5:T498:S5:INTERRUPT-SCAN-ENTRY:source-ip=%04X-source-cs=%04X-source-sp=%04X-ss=%04X-sp=%04X\n",
+            (unsigned)capture.interrupt_scan_source_ip,
+            (unsigned)capture.interrupt_scan_source_cs,
+            (unsigned)capture.interrupt_scan_source_sp,
+            (unsigned)capture.interrupt_scan_ss,
+            (unsigned)capture.interrupt_scan_sp);
+    }
+    if (capture.interrupt_service_entry_seen) {
+        STD_PRINTF("M5:T498:S5:INTERRUPT-SERVICE-ENTRY:count=%u-frame-read=%u-ss=%04X-sp=%04X-source-ip=%04X-source-cs=%04X-source-sp=%04X-ip=%04X-cs=%04X-flags=%04X\n",
+            (unsigned)capture.interrupt_service_entry_count,
+            (unsigned)capture.interrupt_service_frame_read,
+            (unsigned)capture.interrupt_service_ss,
+            (unsigned)capture.interrupt_service_sp,
+            (unsigned)capture.interrupt_service_source_ip,
+            (unsigned)capture.interrupt_service_source_cs,
+            (unsigned)capture.interrupt_service_source_sp,
+            (unsigned)capture.interrupt_service_frame[0u],
+            (unsigned)capture.interrupt_service_frame[1u],
+            (unsigned)capture.interrupt_service_frame[2u]);
+        STD_PRINTF("M5:T498:S5:INTERRUPT-SERVICE-TRACE:count=%u",
+            (unsigned)capture.interrupt_service_trace_count);
+        for (index = 0u; index < capture.interrupt_service_trace_count; ++index) {
+            STD_PRINTF("-%08X:%02X", (unsigned)capture.interrupt_service_trace[index],
+                (unsigned)capture.interrupt_service_trace_opcode[index]);
+        }
+        STD_PRINTF("\n");
+    }
+    if (capture.low_stack_transition_seen) {
+        STD_PRINTF("M5:T498:S5:LOW-STACK-TRANSITION:pc=%08X-before=%04X-after=%04X-trace-count=%u",
+            (unsigned)capture.low_stack_transition_pc,
+            (unsigned)capture.low_stack_transition_before,
+            (unsigned)capture.low_stack_transition_after,
+            (unsigned)capture.low_stack_transition_trace_count);
+        for (index = 0u; index < capture.low_stack_transition_trace_count; ++index) {
+            STD_PRINTF("-%08X:%02X", (unsigned)capture.low_stack_transition_trace[index],
+                (unsigned)capture.low_stack_transition_trace_opcode[index]);
+        }
+        STD_PRINTF("\n");
+    }
+    if (capture.stack_exhaustion_seen) {
+        STD_PRINTF("M5:T498:S5:STACK-EXHAUSTION:pc=%08X-before=%04X-after=%04X-trace-count=%u",
+            (unsigned)capture.stack_exhaustion_pc,
+            (unsigned)capture.stack_exhaustion_before,
+            (unsigned)capture.stack_exhaustion_after,
+            (unsigned)capture.stack_exhaustion_trace_count);
+        for (index = 0u; index < capture.stack_exhaustion_trace_count; ++index) {
+            STD_PRINTF("-%08X:%02X", (unsigned)capture.stack_exhaustion_trace[index],
+                (unsigned)capture.stack_exhaustion_trace_opcode[index]);
+        }
+        STD_PRINTF("\n");
+    }
+    if (capture.minimum_stack_seen) {
+        STD_PRINTF("M5:T498:S5:MINIMUM-STACK:pc=%08X-sp=%04X-trace-count=%u",
+            (unsigned)capture.minimum_stack_pc,
+            (unsigned)capture.minimum_stack_value,
+            (unsigned)capture.minimum_stack_trace_count);
+        for (index = 0u; index < capture.minimum_stack_trace_count; ++index) {
+            STD_PRINTF("-%08X:%02X", (unsigned)capture.minimum_stack_trace[index],
+                (unsigned)capture.minimum_stack_trace_opcode[index]);
+        }
+        STD_PRINTF("\n");
+    }
+    if (capture.last_io_valid) {
+        STD_PRINTF("M5:T498:S5:LAST-IO:pc=%08X-direction=%u-port=%04X-value=%08X\n",
+            (unsigned)capture.last_io_pc, (unsigned)capture.last_io_direction,
+            (unsigned)capture.last_io_port, (unsigned)capture.last_io_value);
+    }
+    if (capture.reset_vector_seen) {
+        STD_PRINTF("M5:T498:S5:RESET-VECTOR-PREDECESSOR-IO:valid=%u-pc=%08X-direction=%u-port=%04X-value=%08X\n",
+            (unsigned)capture.reset_vector_io_valid,
+            (unsigned)capture.reset_vector_io_pc,
+            (unsigned)capture.reset_vector_io_direction,
+            (unsigned)capture.reset_vector_io_port,
+            (unsigned)capture.reset_vector_io_value);
+    }
+    if (warm_reset_diagnostic) {
+        type_unsigned_32 reset_sample_count = capture.reset_vector_count;
+
+        if (reset_sample_count > MODEL40_CAPTURE_RESET_HISTORY) {
+            reset_sample_count = MODEL40_CAPTURE_RESET_HISTORY;
+        }
+        STD_PRINTF("M5:T498:S5:WARM-RESET:count=%u", (unsigned)capture.reset_vector_count);
+        for (index = 0u; index < reset_sample_count; ++index) {
+            STD_PRINTF("-shutdown=%02X-kbc-output=%02X",
+                (unsigned)capture.reset_vector_shutdown_status[index],
+                (unsigned)capture.reset_vector_kbc_output_port[index]);
+        }
+        if (capture.reset_instruction_state_seen) {
+            STD_PRINTF("-before-pulse-shutdown=%02X-before-pulse-kbc-output=%02X",
+                (unsigned)capture.reset_instruction_shutdown_status,
+                (unsigned)capture.reset_instruction_kbc_output_port);
+        }
+        STD_PRINTF("\n");
+    }
+    if (capture.reset_instruction_seen) {
+        STD_PRINTF("M5:T498:S5:RESET-INSTRUCTION:port=%02X-value=%02X\n",
+            (unsigned)capture.reset_instruction_port,
+            (unsigned)capture.reset_instruction_value);
+    }
+    if (capture.iret_io_count != 0u) {
+        STD_PRINTF("M5:T498:S5:IRET-PREDECESSOR-IO:count=%u",
+            (unsigned)capture.iret_io_count);
+        for (index = 0u; index < capture.iret_io_count; ++index) {
+            STD_PRINTF("-%08X:%u:%04X:%08X", (unsigned)capture.iret_io_pc[index],
+                (unsigned)capture.iret_io_direction[index],
+                (unsigned)capture.iret_io_port[index],
+                (unsigned)capture.iret_io_value[index]);
+        }
+        STD_PRINTF("\n");
+    }
     if (post_c0_io_diagnostic) {
         STD_PRINTF("M5:T390:S33:POST-C0-IO:terminal=%s port-known=%u port=%04X read=%u "
             "unallocated=%u status=%u\n", terminal, (unsigned)capture.post_c0_io_port_known,
@@ -777,27 +1822,32 @@ C_INT main(C_INT argc, C_CHAR **argv)
             (unsigned long long)result.elapsed_ticks, (unsigned)status);
     }
     vm_session_destroy(session);
+    if (port_sequence_diagnostic) {
+        return capture.checkpoint_reached && capture.post_c0_port_count ==
+            MODEL40_CAPTURE_POST_C0_HISTORY && capture.unallocated == 0u &&
+            status == TYPE_STATUS_OK ? 0 : 1;
+    }
     if (post_c0_io_diagnostic) {
         return capture.checkpoint_reached && capture.post_c0_io_seen &&
-            capture.unallocated == 0u && !capture.form_limit_reached &&
+            capture.unallocated == 0u &&
             status == TYPE_STATUS_OK ? 0 : 1;
     }
     if (fdc_read_data_diagnostic) {
         return model40_capture_c0a_reached(&capture) &&
             capture.fdc_read_data_baseline_valid && capture.fdc_read_data_reached &&
-            capture.unallocated == 0u && !capture.form_limit_reached &&
+            capture.unallocated == 0u &&
             status == TYPE_STATUS_OK ? 0 : 1;
     }
     if (c1_transfer_diagnostic) {
         return capture.checkpoint_reached && capture.post_c0_io_seen &&
             capture.c1_transfer_reached && capture.unallocated == 0u &&
-            !capture.form_limit_reached && status == TYPE_STATUS_OK ? 0 : 1;
+            status == TYPE_STATUS_OK ? 0 : 1;
     }
     if (c1_diagnostic) {
         return capture.checkpoint_reached && capture.c1_checkpoint_reached &&
-            capture.unallocated == 0u && !capture.form_limit_reached &&
+        capture.unallocated == 0u &&
             status == TYPE_STATUS_OK ? 0 : 1;
     }
     return capture.checkpoint_reached && capture.unallocated == 0u &&
-        !capture.form_limit_reached && status == TYPE_STATUS_OK ? 0 : 1;
+        status == TYPE_STATUS_OK ? 0 : 1;
 }

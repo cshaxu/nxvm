@@ -79,9 +79,9 @@ static C_INT hlt_s49_test_defaults(C_VOID)
         cli_sti_machine state;
         core_machine_cpu_diagnostic diagnostic;
         core_machine_run_result result;
-        t_cpu before;
-        t_cpu after;
-        type_status status;
+        t_cpu before = {0};
+        t_cpu after = {0};
+        type_status status = TYPE_STATUS_INVALID_STATE;
         C_INT failed = !cli_sti_prepare(profiles[profile], &state);
 
         if (!failed) {
@@ -125,9 +125,9 @@ static C_INT hlt_s49_test_attributes_and_rejections(C_VOID)
         cli_sti_machine state;
         core_machine_cpu_diagnostic diagnostic;
         core_machine_run_result result;
-        t_cpu before;
-        t_cpu after;
-        type_status status;
+        t_cpu before = {0};
+        t_cpu after = {0};
+        type_status status = TYPE_STATUS_INVALID_STATE;
         type_unsigned_8 code[] = { prefixes[prefix][0], 0xf4u, 0u };
         type_unsigned_8 bytes = prefix == 2u ? 3u : 2u;
         C_INT failed = !cli_sti_prepare(CORE_MACHINE_CPU_PROFILE_80386,

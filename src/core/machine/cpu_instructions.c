@@ -35,26 +35,23 @@
 /* if opcode indicates a prefix */
 static C_VOID core_machine_cpu_execution_raise_exception(
     core_machine_cpu_execution_context *context, type_unsigned_32 exception,
-    type_unsigned_32 code, const C_CHAR *name, const C_CHAR *description)
+    type_unsigned_32 code)
 {
     TYPE_SET_BIT(instruction_state.data.except, exception);
     instruction_state.data.excode = code;
-    if (!context->preview_mode) {
-        STD_PRINTF("%s(%x) - %s\n", name, code, description);
-    }
 }
-#define _SetExcept_DE(n) core_machine_cpu_execution_raise_exception(context, VCPUINS_EXCEPT_DE, (n), "#DE", "divide error")
-#define _SetExcept_PF(n) core_machine_cpu_execution_raise_exception(context, VCPUINS_EXCEPT_PF, (n), "#PF", "page fault")
-#define _SetExcept_GP(n) core_machine_cpu_execution_raise_exception(context, VCPUINS_EXCEPT_GP, (n), "#GP", "general protect")
-#define _SetExcept_SS(n) core_machine_cpu_execution_raise_exception(context, VCPUINS_EXCEPT_SS, (n), "#SS", "stack segment")
-#define _SetExcept_UD(n) core_machine_cpu_execution_raise_exception(context, VCPUINS_EXCEPT_UD, (n), "#UD", "undefined")
-#define _SetExcept_NP(n) core_machine_cpu_execution_raise_exception(context, VCPUINS_EXCEPT_NP, (n), "#NP", "not present")
-#define _SetExcept_BR(n) core_machine_cpu_execution_raise_exception(context, VCPUINS_EXCEPT_BR, (n), "#BR", "boundary")
-#define _SetExcept_TS(n) core_machine_cpu_execution_raise_exception(context, VCPUINS_EXCEPT_TS, (n), "#TS", "task state")
-#define _SetExcept_NM(n) core_machine_cpu_execution_raise_exception(context, VCPUINS_EXCEPT_NM, (n), "#NM", "coprocessor not available")
-#define _SetExcept_MF(n) core_machine_cpu_execution_raise_exception(context, VCPUINS_EXCEPT_MF, (n), "#MF", "x87 floating point error")
-#define _SetExcept_FPU_UNSUPPORTED(n) core_machine_cpu_execution_raise_exception(context, VCPUINS_EXCEPT_FPU_UNSUPPORTED, (n), "FPU", "configured model is not implemented")
-#define _SetExcept_CE(n) core_machine_cpu_execution_raise_exception(context, VCPUINS_EXCEPT_CE, (n), "#CE", "internal error")
+#define _SetExcept_DE(n) core_machine_cpu_execution_raise_exception(context, VCPUINS_EXCEPT_DE, (n))
+#define _SetExcept_PF(n) core_machine_cpu_execution_raise_exception(context, VCPUINS_EXCEPT_PF, (n))
+#define _SetExcept_GP(n) core_machine_cpu_execution_raise_exception(context, VCPUINS_EXCEPT_GP, (n))
+#define _SetExcept_SS(n) core_machine_cpu_execution_raise_exception(context, VCPUINS_EXCEPT_SS, (n))
+#define _SetExcept_UD(n) core_machine_cpu_execution_raise_exception(context, VCPUINS_EXCEPT_UD, (n))
+#define _SetExcept_NP(n) core_machine_cpu_execution_raise_exception(context, VCPUINS_EXCEPT_NP, (n))
+#define _SetExcept_BR(n) core_machine_cpu_execution_raise_exception(context, VCPUINS_EXCEPT_BR, (n))
+#define _SetExcept_TS(n) core_machine_cpu_execution_raise_exception(context, VCPUINS_EXCEPT_TS, (n))
+#define _SetExcept_NM(n) core_machine_cpu_execution_raise_exception(context, VCPUINS_EXCEPT_NM, (n))
+#define _SetExcept_MF(n) core_machine_cpu_execution_raise_exception(context, VCPUINS_EXCEPT_MF, (n))
+#define _SetExcept_FPU_UNSUPPORTED(n) core_machine_cpu_execution_raise_exception(context, VCPUINS_EXCEPT_FPU_UNSUPPORTED, (n))
+#define _SetExcept_CE(n) core_machine_cpu_execution_raise_exception(context, VCPUINS_EXCEPT_CE, (n))
 
 #define VCPU_DR6_BS 0x00004000u
 #define VCPU_DR6_BT 0x00008000u
@@ -62,6 +59,80 @@ static C_VOID core_machine_cpu_execution_raise_exception(
 
 
 static C_VOID UndefinedOpcode(core_machine_cpu_execution_context *context);
+
+/* The FLAGS image and a FLAGS load are distinct architectural operations, but
+ * share one profile-owned set of defined 16-bit fields. An undefined bit is
+ * canonicalized to zero in Core; that is a deterministic implementation
+ * value, not a claim about a processor's externally observable bit image. */
+static type_unsigned_16 _e_real_flags_defined_mask(
+    const core_machine_cpu_execution_context *context)
+{
+    if (context == STD_NULL ||
+        context->cpu_profile < CORE_MACHINE_CPU_PROFILE_80286) {
+        return 0x0fd5u;
+    }
+    if (context->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286) {
+        return 0x7fd5u;
+    }
+    return 0xffd5u;
+}
+
+static type_unsigned_16 _e_real_flags_load_16(
+    const core_machine_cpu_execution_context *context, type_unsigned_16 flags)
+{
+    return TYPE_MASK_UNSIGNED_16((flags &
+        _e_real_flags_defined_mask(context)) | 0x02u);
+}
+
+static type_unsigned_16 _e_real_flags_image_16(
+    const core_machine_cpu_execution_context *context, type_unsigned_16 flags)
+{
+    return TYPE_MASK_UNSIGNED_16((flags &
+        _e_real_flags_defined_mask(context)) | 0x02u);
+}
+
+static type_unsigned_32 _e_eflags_load(
+    const core_machine_cpu_execution_context *context, type_unsigned_32 flags)
+{
+    if (context == STD_NULL ||
+        context->cpu_profile < CORE_MACHINE_CPU_PROFILE_80386) {
+        return _e_real_flags_load_16(context, TYPE_MASK_UNSIGNED_16(flags));
+    }
+    return flags | 0x02u;
+}
+
+static type_status _e_try_firmware_software_interrupt(
+    core_machine_cpu_execution_context *context, type_unsigned_8 intid,
+    type_bool *out_handled)
+{
+    core_machine_firmware_interrupt_frame frame;
+    core_machine_firmware_interrupt_result result;
+    type_status status;
+
+    if (out_handled == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    *out_handled = TYPE_FALSE;
+    if (context == STD_NULL || context->firmware_interrupt_provider == STD_NULL) {
+        return TYPE_STATUS_OK;
+    }
+    frame.ax = cpu_state.data.ax;
+    frame.bx = cpu_state.data.bx;
+    frame.cx = cpu_state.data.cx;
+    frame.dx = cpu_state.data.dx;
+    frame.si = cpu_state.data.si;
+    frame.di = cpu_state.data.di;
+    frame.bp = cpu_state.data.bp;
+    frame.ds = cpu_state.data.ds.selector;
+    frame.es = cpu_state.data.es.selector;
+    frame.flags = _e_real_flags_image_16(context, cpu_state.data.flags);
+    result.ax = frame.ax;
+    result.flags = frame.flags;
+    status = context->firmware_interrupt_provider(
+        context->firmware_interrupt_context, intid, &frame, &result, out_handled);
+    if (status != TYPE_STATUS_OK || !*out_handled) return status;
+    cpu_state.data.ax = result.ax;
+    cpu_state.data.flags = _e_real_flags_load_16(context, result.flags);
+    return TYPE_STATUS_OK;
+}
 
 /* memory management unit */
 /* kernel memory accessing */
@@ -135,6 +206,15 @@ static C_VOID _kma_read_physical(core_machine_cpu_execution_context *context, ty
 {
     type_status memory_status;
     TYPE_TRACE_CALL_BEGIN("_kma_read_physical");
+    /* The processor owns the width of its external physical-address bus.
+     * Board A20 routing remains in the memory owner and is applied afterwards.
+     * In particular, the 80286 reset fetch at FFFFF0h wraps at 16 MiB rather
+     * than falling into a synthetic 25th address bit. */
+    if (context->cpu_profile <= CORE_MACHINE_CPU_PROFILE_80186) {
+        physical &= 0x000fffffu;
+    } else if (context->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286) {
+        physical &= 0x00ffffffu;
+    }
     _kma_publish_external_cycle(context, CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_BEGIN,
         physical, byte, TYPE_FALSE, provenance);
     if (!context->preview_mode && context->transaction != STD_NULL && core_machine_transaction_begin(
@@ -167,6 +247,11 @@ static C_VOID _kma_read_physical(core_machine_cpu_execution_context *context, ty
 static C_VOID _kma_write_physical(core_machine_cpu_execution_context *context, type_unsigned_32 physical, type_virtual_address rdata, type_unsigned_8 byte, core_machine_cpu_memory_access_provenance provenance)
 {
     TYPE_TRACE_CALL_BEGIN("_kma_write_physical");
+    if (context->cpu_profile <= CORE_MACHINE_CPU_PROFILE_80186) {
+        physical &= 0x000fffffu;
+    } else if (context->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286) {
+        physical &= 0x00ffffffu;
+    }
     _kma_publish_external_cycle(context, CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_BEGIN,
         physical, byte, TYPE_TRUE, provenance);
     if (context->transaction != STD_NULL && core_machine_transaction_begin(
@@ -2804,7 +2889,10 @@ static C_VOID _d_modrm_table_memory(core_machine_cpu_execution_context *context,
     TYPE_TRACE_CHECK_RETURN(_d_modrm_ea(context, 0, 6));
     TYPE_TRACE_CALL_END;
 }
-/* Store one six-byte SGDT/SIDT pseudo-descriptor after a complete write check. */
+/* Store one six-byte SGDT/SIDT pseudo-descriptor after a complete write check.
+ * The 80286 manual calls byte six undefined, but physical 80286 software
+ * observes FF there to distinguish a 286 from a 386.  Keep that observable
+ * compatibility value at this sole table-register boundary. */
 static C_VOID _m_write_table_pseudo_descriptor(
     core_machine_cpu_execution_context *context, type_unsigned_16 limit,
     type_unsigned_32 base)
@@ -2816,7 +2904,8 @@ static C_VOID _m_write_table_pseudo_descriptor(
     image[2] = TYPE_MASK_UNSIGNED_8(base);
     image[3] = TYPE_MASK_UNSIGNED_8(base >> 8u);
     image[4] = TYPE_MASK_UNSIGNED_8(base >> 16u);
-    image[5] = TYPE_MASK_UNSIGNED_8(base >> 24u);
+    image[5] = context->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 ?
+        0xffu : TYPE_MASK_UNSIGNED_8(base >> 24u);
     TYPE_TRACE_CHECK_RETURN(_m_test_access(context,
         instruction_state.data.mrm.rsreg, instruction_state.data.mrm.offset,
         6, TYPE_TRUE));
@@ -3475,6 +3564,7 @@ static C_VOID _ser_call_far_tss(core_machine_cpu_execution_context *context,
 static C_VOID _ser_int_real(core_machine_cpu_execution_context *context, type_unsigned_8 intid, type_unsigned_8 byte)
 {
     type_unsigned_16 cip;
+    type_unsigned_16 oldflags;
     type_unsigned_32 vector;
     type_unsigned_32 oldcs = cpu_state.data.cs.selector;
     TYPE_TRACE_CALL_BEGIN("_ser_int_real");
@@ -3491,7 +3581,8 @@ static C_VOID _ser_int_real(core_machine_cpu_execution_context *context, type_un
     case 2:
         TYPE_TRACE_BLOCK_BEGIN("byte(2)");
         TYPE_TRACE_CHECK_RETURN(_s_test_ss_push(context, 6));
-        TYPE_TRACE_CHECK_RETURN(_kec_push(context, TYPE_REFERENCE_OF(cpu_state.data.flags), 2));
+        oldflags = _e_real_flags_image_16(context, cpu_state.data.flags);
+        TYPE_TRACE_CHECK_RETURN(_kec_push(context, TYPE_REFERENCE_OF(oldflags), 2));
         _ClrEFLAGS_IF;
         _ClrEFLAGS_TF;
         TYPE_TRACE_CHECK_RETURN(_kec_push(context, TYPE_REFERENCE_OF(oldcs), 2));
@@ -3501,7 +3592,12 @@ static C_VOID _ser_int_real(core_machine_cpu_execution_context *context, type_un
     case 4:
         TYPE_TRACE_BLOCK_BEGIN("byte(4)");
         TYPE_TRACE_CHECK_RETURN(_s_test_ss_push(context, 12));
-        TYPE_TRACE_CHECK_RETURN(_kec_push(context, TYPE_REFERENCE_OF(cpu_state.data.eflags), 4));
+        {
+            type_unsigned_32 frame_flags =
+                _e_real_flags_image_16(context, cpu_state.data.flags);
+            TYPE_TRACE_CHECK_RETURN(_kec_push(context,
+                TYPE_REFERENCE_OF(frame_flags), 4));
+        }
         _ClrEFLAGS_IF;
         _ClrEFLAGS_TF;
         TYPE_TRACE_CHECK_RETURN(_kec_push(context, TYPE_REFERENCE_OF(oldcs), 4));
@@ -4606,7 +4702,7 @@ static C_VOID _ser_task_transition_tss_plan(
     if (new_is_32) {
         cpu_state.data.cr3 = incoming32.cr3;
         cpu_state.data.eip = incoming32.eip;
-        cpu_state.data.eflags = incoming32.eflags;
+        cpu_state.data.eflags = _e_eflags_load(context, incoming32.eflags);
         if (nested) _SetEFLAGS_NT;
         cpu_state.data.eax = incoming32.eax;
         cpu_state.data.ecx = incoming32.ecx;
@@ -4632,7 +4728,7 @@ static C_VOID _ser_task_transition_tss_plan(
         cpu_state.data.esi = 0xffff0000u | incoming16.si;
         cpu_state.data.edi = 0xffff0000u | incoming16.di;
         cpu_state.data.eip = incoming16.ip;
-        cpu_state.data.eflags = incoming16.flags;
+        cpu_state.data.eflags = _e_eflags_load(context, incoming16.flags);
         if (nested) _SetEFLAGS_NT;
         cpu_state.data.es = newes_cache;
         cpu_state.data.cs = newcs_cache;
@@ -4821,7 +4917,7 @@ static C_VOID _ser_task_transition_tss(core_machine_cpu_execution_context *conte
     cpu_state.data.edi = context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386 ?
         0xffff0000u | state.di : state.di;
     cpu_state.data.eip = state.ip;
-    cpu_state.data.eflags = state.flags;
+    cpu_state.data.eflags = _e_eflags_load(context, state.flags);
     if (nested)
         _SetEFLAGS_NT;
     cpu_state.data.es = newes_cache;
@@ -4969,11 +5065,17 @@ _______todo _e_into(core_machine_cpu_execution_context *context, type_unsigned_8
 }
 _______todo _e_int_n(core_machine_cpu_execution_context *context, type_unsigned_8 intid, type_unsigned_8 byte)
 {
+    type_bool handled;
+
     TYPE_TRACE_CALL_BEGIN("_e_int_n");
     if (!_GetCR0_PE)
     {
         TYPE_TRACE_BLOCK_BEGIN("Real");
-        TYPE_TRACE_CHECK_RETURN(_ser_int_real(context, intid, byte));
+        TYPE_TRACE_CHECK_RETURN(_e_try_firmware_software_interrupt(context,
+            intid, &handled));
+        if (!handled) {
+            TYPE_TRACE_CHECK_RETURN(_ser_int_real(context, intid, byte));
+        }
         TYPE_TRACE_BLOCK_END;
     }
     else
@@ -5150,8 +5252,8 @@ static C_VOID _ser_iret_protected_outer(core_machine_cpu_execution_context *cont
     else
         cpu_state.data.sp = TYPE_MASK_UNSIGNED_16(newesp);
     cpu_state.data.eip = neweip;
-    cpu_state.data.eflags = (cpu_state.data.eflags & flags_mask) |
-        (newflags & ~flags_mask);
+    cpu_state.data.eflags = _e_eflags_load(context,
+        (cpu_state.data.eflags & flags_mask) | (newflags & ~flags_mask));
     TYPE_TRACE_CALL_END;
 }
 static C_VOID _ser_iret_protected_same(core_machine_cpu_execution_context *context,
@@ -5223,8 +5325,8 @@ static C_VOID _ser_iret_protected_same(core_machine_cpu_execution_context *conte
         TYPE_REFERENCE_OF(code_desc)));
     cpu_state.data.cs = newcs_cache;
     cpu_state.data.eip = neweip;
-    cpu_state.data.eflags = (neweflags & ~mask) |
-        (cpu_state.data.eflags & mask);
+    cpu_state.data.eflags = _e_eflags_load(context,
+        (neweflags & ~mask) | (cpu_state.data.eflags & mask));
     switch (_GetStackSize)
     {
     case 2:
@@ -5313,8 +5415,9 @@ static C_VOID _ser_iret_protected_to_vm86(
     _ser_iret_vm86_sreg(&newds_cache, newds, SREG_DATA);
     _ser_iret_vm86_sreg(&newfs_cache, newfs, SREG_DATA);
     _ser_iret_vm86_sreg(&newgs_cache, newgs, SREG_DATA);
-    cpu_state.data.eflags = (newflags & ~VCPU_EFLAGS_RESERVED) |
-        (cpu_state.data.eflags & VCPU_EFLAGS_RESERVED);
+    cpu_state.data.eflags = _e_eflags_load(context,
+        (newflags & ~VCPU_EFLAGS_RESERVED) |
+        (cpu_state.data.eflags & VCPU_EFLAGS_RESERVED));
     cpu_state.data.cs = newcs_cache;
     cpu_state.data.ss = newss_cache;
     cpu_state.data.es = newes_cache;
@@ -5370,7 +5473,8 @@ _______todo _e_iret(core_machine_cpu_execution_context *context, type_unsigned_8
         TYPE_TRACE_CHECK_RETURN(_kma_test_logical(context, &ccs, neweip, 0x01, 0, 0x00, 1));
         cpu_state.data.cs = ccs;
         cpu_state.data.eip = neweip;
-        cpu_state.data.eflags = (neweflags & ~mask) | (cpu_state.data.eflags & mask);
+        cpu_state.data.eflags = _e_eflags_load(context,
+            (neweflags & ~mask) | (cpu_state.data.eflags & mask));
         TYPE_TRACE_BLOCK_END;
     }
     else
@@ -5452,7 +5556,8 @@ _______todo _e_iret(core_machine_cpu_execution_context *context, type_unsigned_8
                 TYPE_TRACE_CHECK_RETURN(_kma_test_logical(context, &ccs, neweip, 0x01, 0, 0x00, 1));
                 cpu_state.data.cs = ccs;
                 cpu_state.data.eip = neweip;
-                cpu_state.data.eflags = (neweflags & ~mask) | (cpu_state.data.eflags & mask);
+                cpu_state.data.eflags = _e_eflags_load(context,
+                    (neweflags & ~mask) | (cpu_state.data.eflags & mask));
                 TYPE_TRACE_BLOCK_END;
             }
             else
@@ -8064,10 +8169,6 @@ static C_VOID UndefinedOpcode(core_machine_cpu_execution_context *context)
 {
     TYPE_TRACE_CALL_BEGIN("UndefinedOpcode");
     cpu_state = instruction_state.data.oldcpu;
-    if (!_GetCR0_PE)
-    {
-        STD_PRINTF("CPU has encountered an illegal instruction at L%08X.\n", cpu_state.data.cs.base + cpu_state.data.eip);
-    }
     TYPE_TRACE_CHECK_RETURN(_SetExcept_UD(0));
     TYPE_TRACE_CALL_END;
 }
@@ -10202,7 +10303,10 @@ static C_VOID PUSH_ESP(core_machine_cpu_execution_context *context)
     else
     {
         cpu_state.data.ip++;
-        if (core_machine_cpu_profile_has_8086_semantics(context->cpu_profile))
+        /* 8086/8088 and 80186/80188 expose the decremented SP when SP is
+         * the PUSH source.  The 80286 changes this one observable case to
+         * push the pre-instruction value. */
+        if (context->cpu_profile < CORE_MACHINE_CPU_PROFILE_80286)
         {
             type_unsigned_16 value = cpu_state.data.sp - 2;
 
@@ -12388,7 +12492,7 @@ static C_VOID PUSHF(core_machine_cpu_execution_context *context)
             {
             case 2:
                 TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
-                ceflags = (cpu_state.data.flags & ~VCPU_EFLAGS_RESERVED) | 0x02u;
+                ceflags = _e_real_flags_image_16(context, cpu_state.data.flags);
                 TYPE_TRACE_CHECK_RETURN(_e_push(context, TYPE_REFERENCE_OF(ceflags), 2));
                 TYPE_TRACE_BLOCK_END;
                 break;
@@ -12415,7 +12519,7 @@ static C_VOID PUSHF(core_machine_cpu_execution_context *context)
     else
     {
         cpu_state.data.ip++;
-        ceflags = (cpu_state.data.flags & ~VCPU_EFLAGS_RESERVED) | 0x02u;
+        ceflags = _e_real_flags_image_16(context, cpu_state.data.flags);
         _e_push(context, TYPE_REFERENCE_OF(ceflags), 2);
     }
     TYPE_TRACE_CALL_END;
@@ -12522,13 +12626,14 @@ static C_VOID POPF(core_machine_cpu_execution_context *context)
             }
             TYPE_TRACE_BLOCK_END;
         }
-        cpu_state.data.eflags = (ceflags & ~mask) | (cpu_state.data.eflags & mask);
+        cpu_state.data.eflags = _e_eflags_load(context,
+            (ceflags & ~mask) | (cpu_state.data.eflags & mask));
     }
     else
     {
         cpu_state.data.ip++;
         TYPE_TRACE_CHECK_RETURN(_e_pop(context, TYPE_REFERENCE_OF(ceflags), 2));
-        cpu_state.data.flags = (ceflags & ~VCPU_EFLAGS_RESERVED) | 0x02u;
+        cpu_state.data.eflags = _e_eflags_load(context, ceflags);
     }
     TYPE_TRACE_CALL_END;
 }

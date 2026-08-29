@@ -110,6 +110,33 @@ static C_VOID vm_session_profile_firmware_add_interrupt(vm_session *session,
         length, vector);
 }
 
+/* AH=88h reports KiB physically installed above the first MiB.  Compose the
+ * one generic BIOS service from the already-frozen Core memory value; neither
+ * a profile-specific handler nor a mutable runtime memory authority is added. */
+static C_VOID vm_session_profile_firmware_add_int15_interrupt(
+    vm_session *session, type_unsigned_8 vector)
+{
+    C_CHAR extended_kib[5];
+    const C_CHAR *chunks[] = {
+        VBIOS_INT_SOFT_MISC_15_PREFIX, extended_kib,
+        VBIOS_INT_SOFT_MISC_15_SUFFIX
+    };
+    STD_SIZE_T bytes;
+    type_unsigned_8 *code;
+    type_unsigned_16 length;
+
+    if (session == STD_NULL) return;
+    bytes = session->core_machine_config.memory_bytes;
+    if (bytes > 1024u * 1024u) bytes = (bytes - 1024u * 1024u) / 1024u;
+    else bytes = 0u;
+    if (bytes > 0xffffu || STD_SNPRINTF(extended_kib, sizeof(extended_kib),
+            "%04x", (unsigned int)bytes) != 4) return;
+    length = vm_session_profile_firmware_assemble_chunks(chunks,
+        sizeof(chunks) / sizeof(chunks[0]), &code);
+    vm_profile_default_bios_add_interrupt_code(&session->default_bios, code,
+        length, vector);
+}
+
 static C_VOID vm_session_profile_firmware_add_interrupt_chunks(vm_session *session,
     const C_CHAR *const *chunks, STD_SIZE_T count, type_unsigned_16 offset,
     type_unsigned_8 vector)
@@ -293,8 +320,7 @@ type_status vm_session_profile_firmware_initialize(vm_session *session)
         0x11u);
     vm_session_profile_firmware_add_interrupt(session, VBIOS_INT_SOFT_MISC_12,
         0x12u);
-    vm_session_profile_firmware_add_interrupt(session, VBIOS_INT_SOFT_MISC_15,
-        0x15u);
+    vm_session_profile_firmware_add_int15_interrupt(session, 0x15u);
     vm_session_profile_firmware_set_boot(session, VBIOS_POST_BOOT);
     vm_session_profile_firmware_apply_range(session,
         VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_VIDEO_INT10,
@@ -319,7 +345,7 @@ static type_status vm_session_profile_firmware_reset_callback(C_VOID *opaque,
 
     if (context == STD_NULL || context->bios == STD_NULL) return TYPE_STATUS_FAULT;
     vm_profile_default_bios_reset(context->bios, firmware, context->media_registry,
-        context->hdd_media_id);
+        context->fdd_media_id, context->hdd_media_id);
     vm_profile_default_cga_reset(context, firmware);
     return TYPE_STATUS_OK;
 }
@@ -334,10 +360,29 @@ static type_status vm_session_profile_firmware_after_run(C_VOID *opaque,
         core_machine_firmware_request_stop(firmware) : TYPE_STATUS_OK;
 }
 
+static type_status vm_session_profile_firmware_software_interrupt(C_VOID *opaque,
+    core_machine_firmware_context *firmware, type_unsigned_8 vector,
+    type_unsigned_16 target_segment, type_unsigned_16 target_offset,
+    const core_machine_firmware_interrupt_frame *input,
+    core_machine_firmware_interrupt_result *output, type_bool *out_handled)
+{
+    vm_profile_default_context *context = (vm_profile_default_context *)opaque;
+
+    if (out_handled == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    *out_handled = TYPE_FALSE;
+    if (context == STD_NULL || context->bios == STD_NULL || vector != 0x15u) {
+        return TYPE_STATUS_OK;
+    }
+    *out_handled = vm_profile_default_bios_handle_int15_block_move(context->bios,
+        firmware, target_segment, target_offset, input, output) ? TYPE_TRUE : TYPE_FALSE;
+    return TYPE_STATUS_OK;
+}
+
 static const core_machine_firmware_provider vm_session_default_firmware_provider = {
     vm_session_profile_firmware_configure,
     vm_session_profile_firmware_reset_callback,
-    vm_session_profile_firmware_after_run
+    vm_session_profile_firmware_after_run,
+    vm_session_profile_firmware_software_interrupt
 };
 
 const core_machine_firmware_provider *vm_session_profile_firmware_provider(C_VOID)

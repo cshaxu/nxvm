@@ -8,14 +8,20 @@ new timing authority: hardware relations come from the retained controller
 List 1/List 2 records below.  The current source was searched with:
 
 ```text
-rg -n "core_machine_(arbitration_tick|readiness_tick|peripheral_tick)|due_tick + 1" src/core tests
+rg -n "core_machine_(arbitration_tick|readiness_tick|peripheral_tick)|due_tick\\s*=.*\\+\\s*1" src/core tests
 rg -n "ticks_until|next_.*tick|due_tick|remaining_ticks|advance_at" src/core/machine
 ```
 
-The first query has exactly three production recurring clients, all scheduled
-at tick 1 by `machine.c`: arbitration, readiness and peripheral maintenance.
-Each re-arms itself at `due_tick + 1`.  No profile, VM, renderer, or host
-waiting path is a fourth scheduler client.
+The original route had exactly three production recurring clients, all
+scheduled at tick 1 by `machine.c`: arbitration, readiness and peripheral
+maintenance. Each re-armed itself at `due_tick + 1`. The post-migration query
+retains only the explicitly conditional one-tick progression for an active L1
+causal blocker; it is not a scheduled callback or an idle maintenance route.
+A separate source review also found
+the VM execution-provider `refresh` hook called before every CPU round; its
+sole product route called empty FDD/HDD refresh functions. It is a redundant
+maintenance path, not a fourth time owner, and is removed with its empty
+media functions.
 
 The cited external implementations were inspected only as read-only
 cross-checks under the source policy.  86Box, Bochs and MAME use one
@@ -40,8 +46,8 @@ source, structure, or timing value is imported from any reference.
 | HDC personalities | A pending command/read/write phase has no source-qualified service duration in the selected ATA, WD1003, Compaq/WD, or Xebec records. | `t494-s2-xebec-function-timing-list-1.md`, `t494-s3-xebec-current-code-gap-list-2.md`, `t479-s3-immutable-hdc-personality-contract.md`; external models are only behavior cross-checks. | L1 causal blocker while a phase is active. The owner may settle its immediate phase at the current boundary, but cannot fast-forward it or invent a disk delay. Idle HDC is unscheduled. |
 | KBC 8042 serial, response and typematic | Minimum nonzero serial, response or typematic remaining count in the KBC clock domain. | `t351-s1-kbc-aux-ledger.md`, `t464-s3-kbc-closure-audit.md`; copied construction inputs are L3 receivers; Bochs/86Box cross-check the queue-before-IRQ pattern. | Input-L3 where selected values are sourced, otherwise retained L2. Add a value-only minimum query; no VM setter or KBC scheduler. |
 | XT keyboard | BAT or serial-delivery remaining count. | `t496-s1-xt-keyboard-original-source-ledger.md` and its List 1/List 2; IBM keyboard relation plus 86Box/PCjs cross-check. | Existing `core_machine_xt_keyboard_ticks_until_event()` is the one owner-local query. Its conversion retains its existing input provenance. |
-| VADP CGA/EGA | Next raster-status boundary only when a sourced copied VADP clock/timing declaration makes that state guest-observable. | `t493-s2-cga-function-timing-list-1.md`, `t493-s3-cga-current-code-gap-list-2.md`, `t480-s2-vadp-code-gap-ledger.md`; IBM/Motorola relations plus 86Box/MAME/PCjs cross-check. | Input-L3 receiver with selected-value split. Add a local next-status-boundary query; output-disabled/no-timing state is idle, and copied presentation is never a clock owner. |
-| Execution provider | Optional `advance_time` callback has no product implementation; the VM provider explicitly supplies `STD_NULL`. | `execution_provider.h` and `vm/composition/session/lifecycle.c`; no hardware source applies. | Current product is idle. A future non-null provider must publish a bounded Core-private next change or become an explicit blocker; it cannot receive every-tick maintenance by default. |
+| VADP CGA/EGA | Next raster-status boundary only when a sourced copied VADP clock/timing declaration makes that state guest-observable. | `t493-s2-cga-function-timing-list-1.md`, `t493-s3-cga-current-code-gap-list-2.md`, `t480-s2-vadp-code-gap-ledger.md`; IBM/Motorola relations plus 86Box/MAME/PCjs cross-check. | Current profile construction supplies no source-qualified raster deadline, so VADP is an idle Core delta consumer and cannot wake HLT. Output-disabled/no-timing state is likewise idle; copied presentation is never a clock owner. |
+| Execution provider | Optional `advance_time` callback has no product implementation; the VM provider explicitly supplies `STD_NULL`. | `execution_provider.h` and `vm/composition/session/lifecycle.c`; no hardware source applies. | The product provider retains reset only. Its former per-CPU `refresh` route reached empty FDD/HDD functions and is deleted. A future non-null advance callback receives completed Core delta only; it cannot receive every-tick maintenance or write guest time. |
 
 ## List 2: Current Code Gap And Receiver
 
@@ -50,8 +56,9 @@ source, structure, or timing value is imported from any reference.
 | `machine.c` reset | Schedules arbitration, readiness and peripheral callbacks at tick 1. | Creates the three perpetual maintenance roots. | S2 removes them and leaves timeline tokens for real one-shot events only. |
 | `core_machine_arbitration_tick` | Advances DMA/PIT by one source tick, services D4/DMA, then refreshes PIC and re-arms. | Mixes a real PIT deadline with DMA, D4 and PIC polling. | S3 composes the earliest qualifying DMA/PIT event, settles D4 as blocker, then PIC once. |
 | `core_machine_readiness_tick` | Calls FDC advance/refresh and HDC advance/refresh every tick, then advances RTC one tick. | FDC absolute due facts are ignored; HDC has a hidden phase-per-tick behavior; media is polled. | S4 queries FDC due fields, exposes HDC active blocker, and removes media polling. |
-| `core_machine_peripheral_tick` | Advances KBC/XT keyboard and VADP every tick. | KBC and VADP have state that can advance by delta but no composed next-change query; product provider is also called after every publication. | S5 adds owner-local queries, settles delta once, and gives provider an explicit idle/blocker contract. |
-| `core_machine_capture_time_observation_private` | Considers PIT/RTC/XT keyboard but falls back to `elapsed + 1` for DMA/FDC/KBC/HDC/D4/slave-PIC work. | The fallback hides the active owner and retains the polling route. | S2 replaces it with one private composition result: exact, idle, or active blocker. |
+| `core_machine_peripheral_tick` | Advances KBC/XT keyboard and VADP every tick. | KBC has a composable owner-local deadline. Current VADP has no source-qualified raster deadline, so it must remain an idle delta consumer rather than acquire a guessed query. | S5 settles delta once; KBC supplies its local query and VADP remains unable to wake HLT. |
+| VM execution-provider refresh | Called before every CPU execution round and invokes empty FDD/HDD refresh functions. | It is a parallel no-op maintenance route outside Core's event seam. | S5 deletes the call chain; reset and completed-delta observation remain distinct interfaces. |
+| `core_machine_capture_time_observation_private` | Previously hid unqualified active work behind the recurring maintenance route. | It did not distinguish an idle machine from an active owner lacking an admissible duration. | S2 returns either an exact deadline, idle state, or explicit active blocker. The scheduler's one-tick branch is permitted only for that active blocker during normal Core progression. |
 | `core_machine_publish_elapsed_ticks` | Is the sole elapsed-time writer but advances the timeline after the whole published delta. | A large CPU retirement can skip the intended interleaving point unless settlement limits it to the earliest event. | S2 makes this writer settle every due group up to its requested target without a second elapsed axis. |
 | Dirty timeline heap candidate | Improves the selection cost of existing timeline tokens. | It preserves all three `due_tick + 1` clients and cannot meet the task exit criterion alone. | Review only after S2; retain only if its equal-due/cancel behavior passes the final single-seam tests. |
 
@@ -61,7 +68,9 @@ source, structure, or timing value is imported from any reference.
 next-change/idle/blocker disposition.
 
 `CORE-SCHEDULER-LIST-2`: every current polling route has one designated
-receiver.  No implementation is accepted in S1.  In particular, the dirty
-timeline heap and `elapsed_ticks + 1` fallback are not treated as a partial
-solution: the former is a data-structure candidate and the latter is the
-precise polling shape that S2--S6 must remove.
+receiver. No implementation is accepted in S1. In particular, the dirty
+timeline heap and the old unconditional `elapsed_ticks + 1` maintenance route
+are not treated as a partial solution: the former is a data-structure
+candidate and the latter must be replaced by exact, idle, or active-blocker
+classification. The latter classification may retain one-tick normal Core
+progress only while that active L1 owner exists.

@@ -22,7 +22,7 @@ static C_VOID direct_flags_reset(C_VOID *opaque)
 }
 
 static const core_machine_execution_provider direct_flags_provider = {
-    direct_flags_reset, STD_NULL, STD_NULL
+    direct_flags_reset, STD_NULL
 };
 
 static C_INT direct_flags_prepare(core_machine_cpu_profile profile,
@@ -305,7 +305,7 @@ static C_INT direct_flags_test_protected(C_VOID)
     for (opcode = 0u; opcode != sizeof(opcodes); ++opcode) {
         direct_flags_machine state;
         t_cpu before;
-        t_cpu after;
+        t_cpu after = { 0 };
         core_machine_cpu_diagnostic diagnostic;
         core_machine_run_result result;
         const type_unsigned_32 flags = VCPU_EFLAGS_IF | VCPU_EFLAGS_CF |
@@ -477,6 +477,61 @@ static C_INT direct_flags_test_irq(C_VOID)
     return 1;
 }
 
+static C_INT direct_flags_test_real_identity(C_VOID)
+{
+    static const type_unsigned_8 code[] = {
+        0xb8u,0x00u,0xf0u,0x50u,0x9du,0x9cu,0x58u,0xf4u
+    };
+    static const struct {
+        core_machine_cpu_profile profile;
+        type_unsigned_16 known_mask;
+        type_unsigned_16 expected_image;
+    } cases[] = {
+        { CORE_MACHINE_CPU_PROFILE_8086, 0x0fd7u, 0x0002u },
+        { CORE_MACHINE_CPU_PROFILE_8088, 0x0fd7u, 0x0002u },
+        { CORE_MACHINE_CPU_PROFILE_80186, 0x0fd7u, 0x0002u },
+        /* I286 defines IOPL and NT, but labels bit 15 undefined. */
+        { CORE_MACHINE_CPU_PROFILE_80286, 0x7fd7u, 0x7002u },
+        { CORE_MACHINE_CPU_PROFILE_80386, 0xffd7u, 0x7002u }
+    };
+    type_unsigned_8 index;
+
+    for (index = 0u; index != sizeof(cases) / sizeof(cases[0]); ++index) {
+        direct_flags_machine state;
+        core_machine_run_result result;
+        t_cpu after;
+        type_status status = TYPE_STATUS_OK;
+        C_INT eax_matches = 0;
+        C_INT flags_match = 0;
+        C_INT failed = !direct_flags_prepare(cases[index].profile, &state);
+
+        if (!failed) {
+            direct_flags_seed(&state);
+            failed |= core_machine_memory_write(state.machine, 0u, code,
+                sizeof(code)) != TYPE_STATUS_OK ||
+                ((status = core_machine_run(state.machine,
+                (core_machine_run_budget){16u,0u}, &result)) != TYPE_STATUS_OK);
+            after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+            eax_matches = (after.data.eax & cases[index].known_mask) ==
+                cases[index].expected_image;
+            flags_match = (after.data.eflags & cases[index].known_mask) ==
+                cases[index].expected_image;
+            failed |= !eax_matches || !flags_match;
+        }
+        core_machine_destroy(state.machine);
+        if (failed) {
+            STD_PRINTF("DIRECT-FLAGS real identity profile=%u eax=%08x flags=%08x eip=%08x esp=%08x status=%u reason=%u eax-match=%u flags-match=%u expected=%04x\n",
+                (unsigned int)cases[index].profile, (unsigned int)after.data.eax,
+                (unsigned int)after.data.eflags, (unsigned int)after.data.eip,
+                (unsigned int)after.data.esp, (unsigned int)status,
+                (unsigned int)result.reason, (unsigned int)eax_matches,
+                (unsigned int)flags_match, (unsigned int)cases[index].expected_image);
+            return 0;
+        }
+    }
+    return 1;
+}
+
 C_INT main(C_VOID)
 {
     if (!direct_flags_test_default()) {
@@ -501,6 +556,10 @@ C_INT main(C_VOID)
     }
     if (!direct_flags_test_irq()) {
         STD_PRINTF("DIRECT-FLAGS stage=irq\n");
+        return 1;
+    }
+    if (!direct_flags_test_real_identity()) {
+        STD_PRINTF("DIRECT-FLAGS stage=real-identity\n");
         return 1;
     }
     STD_PRINTF("M5:T316:S40:DIRECT-FLAGS:OK\n");

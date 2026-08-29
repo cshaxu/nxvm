@@ -34,6 +34,7 @@ static type_status firmware_probe_configure(C_VOID *opaque,
 {
     firmware_probe *probe = (firmware_probe *)opaque;
     const type_unsigned_8 code[] = { 0x90u, 0xf4u, 0x5au, 0xa5u };
+    const type_unsigned_8 reset_code[16u] = { 0x90u };
     type_status status;
 
     if (probe == STD_NULL || firmware == STD_NULL) return TYPE_STATUS_FAULT;
@@ -50,10 +51,10 @@ static type_status firmware_probe_configure(C_VOID *opaque,
     status = core_machine_firmware_register_immutable_rom_alias(firmware,
         0xe0001u, 0xf0000u, 2u);
     if (status != TYPE_STATUS_OK) return status;
-    /* This alias overlaps E0002h--E0003h. The existing source mapping has
-     * earlier route priority, so it remains observable in that range. */
-    return core_machine_firmware_register_immutable_rom_alias(firmware,
-        0xe0001u, 0xe0002u, 2u);
+    /* A complete ordinary reset window lets Core derive the CPU-owned high
+     * reset alias.  The test's E0000h source still owns its own bytes. */
+    return core_machine_firmware_register_immutable_rom(firmware, 0xffff0u,
+        reset_code, sizeof(reset_code));
 }
 
 static type_status firmware_failed_probe_configure(C_VOID *opaque,
@@ -131,12 +132,14 @@ static type_status firmware_probe_after_run(C_VOID *opaque,
 static const core_machine_firmware_provider firmware_probe_provider = {
     firmware_probe_configure,
     firmware_probe_reset,
-    firmware_probe_after_run
+    firmware_probe_after_run,
+    STD_NULL
 };
 
 static const core_machine_firmware_provider firmware_failed_probe_provider = {
     firmware_failed_probe_configure,
     firmware_failed_probe_reset,
+    STD_NULL,
     STD_NULL
 };
 
@@ -204,8 +207,7 @@ C_INT main(C_VOID)
     failed |= test_core_machine_fixture_query_configuration_memory_route(machine,
         0xf0002u, 1u, CORE_MACHINE_MEMORY_ACCESS_READ, &route) != TYPE_STATUS_OK ||
         route != CORE_MACHINE_MEMORY_ROUTE_ORDINARY_RAM;
-    /* The later alias targets E0002h--E0003h, but the prior exclusive source
-     * remains route owner there and exposes its original bytes. */
+    /* The original E0000h source remains the sole owner of its bytes. */
     failed |= core_machine_memory_read(machine, 0xe0002u, &value, sizeof(value)) !=
         TYPE_STATUS_OK || value != 0x5au;
     failed |= core_machine_memory_read(machine, 0xe0003u, &value, sizeof(value)) !=

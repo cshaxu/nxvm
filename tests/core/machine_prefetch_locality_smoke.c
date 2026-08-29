@@ -201,7 +201,7 @@ static C_INT d4_refresh_external_cycle_contract(C_VOID)
     static const core_machine_external_cycle_timing timing = {2048u, 2u, 1u,
         CORE_MACHINE_EXTERNAL_CYCLE_OVERLAP_DISABLED, 0u, 0u};
     core_machine_config config = {0};
-    core_machine_d4_platform_config d4 = {CORE_MACHINE_PC_AT_PORT_B, 0u, 2u};
+    core_machine_d4_platform_config d4 = {CORE_MACHINE_PC_AT_PORT_B, 0u};
     core_machine *machine = STD_NULL;
     core_machine_cpu_external_cycle_provider provider;
     C_VOID *context;
@@ -226,7 +226,9 @@ static C_INT d4_refresh_external_cycle_contract(C_VOID)
         failed |= !machine->external_cycle_page_valid ||
             machine->external_cycle_round_ticks != 2u;
         machine->external_cycle_round_ticks = 0u;
-        failed |= core_machine_advance_time(machine, 19u) != TYPE_STATUS_OK;
+        /* Mode 2 first commits the completed count at the next CLK; the
+         * 19-count interval therefore reaches its low output on tick 20. */
+        failed |= core_machine_advance_time(machine, 20u) != TYPE_STATUS_OK;
         failed |= machine->external_cycle_page_valid || machine->external_cycle_pending_valid;
         external_cycle_begin_and_commit(provider, context, 0x804u, 4u, TYPE_FALSE,
             CORE_MACHINE_CPU_MEMORY_ACCESS_PAGE_TABLE_READ);

@@ -504,7 +504,6 @@ C_VOID vm_machine_fdd_reset(t_fdd *fdd)
     vm_machine_fdd_apply_geometry(fdd);
 }
 
-C_VOID vm_machine_fdd_refresh(t_fdd *fdd) { (C_VOID)fdd; }
 
 C_VOID vm_machine_fdd_finalize(t_fdd *fdd)
 {

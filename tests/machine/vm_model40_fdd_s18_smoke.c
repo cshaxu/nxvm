@@ -51,7 +51,7 @@ C_INT main(C_VOID)
     if (vm_session_create(STD_NULL, &default_session) != TYPE_STATUS_OK ||
         vm_session_create(&model339_config, &model339) != TYPE_STATUS_OK ||
         default_session->fdd.data.nsector != 18u ||
-        model339->fdd.data.nsector != 18u) {
+        model339->fdd.data.nsector != 15u) {
         failed = 1;
     }
 

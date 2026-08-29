@@ -28,7 +28,6 @@ static C_VOID protected_mode_reset(C_VOID *opaque)
 
 static const core_machine_execution_provider protected_mode_provider = {
     protected_mode_reset,
-    STD_NULL,
     STD_NULL
 };
 

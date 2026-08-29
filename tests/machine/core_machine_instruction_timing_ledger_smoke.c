@@ -61,7 +61,6 @@ static C_VOID timing_ledger_execution_advance(C_VOID *opaque,
 
 static const core_machine_execution_provider timing_ledger_execution_provider = {
     timing_ledger_execution_reset,
-    STD_NULL,
     timing_ledger_execution_advance
 };
 
@@ -247,30 +246,65 @@ static C_INT timing_ledger_physical_case(const type_unsigned_8 *program,
 }
 static C_INT timing_ledger_physical_protected_mov_sreg_memory(C_VOID)
 {
+    static const type_unsigned_8 gdt_pointer[] = { 0x3fu, 0u, 0u, 0x03u, 0u, 0u };
+    static const type_unsigned_8 gdt[] = {
+        0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u,
+        0xffu, 0xffu, 0u, 0x20u, 0u, 0x9au, 0u, 0u,
+        0xffu, 0xffu, 0u, 0x30u, 0u, 0x92u, 0u, 0u,
+        0xffu, 0xffu, 0u, 0x30u, 0u, 0x12u, 0u, 0u,
+        0xffu, 0xffu, 0u, 0x30u, 0u, 0x98u, 0u, 0u,
+        0xffu, 0xffu, 0u, 0x50u, 0u, 0x92u, 0u, 0u,
+        0xffu, 0xffu, 0u, 0x50u, 0u, 0x92u, 0u, 0u,
+        0x0fu, 0u, 0u, 0x50u, 0u, 0x92u, 0u, 0u
+    };
+    static const type_unsigned_8 boot[] = {
+        0x0fu, 0x01u, 0x16u, 0x00u, 0x01u,
+        0xb8u, 0x01u, 0x00u, 0x0fu, 0x01u, 0xf0u,
+        0xb8u, 0x10u, 0x00u, 0x8eu, 0xd8u, 0x8eu, 0xc0u,
+        0xb8u, 0x10u, 0x00u, 0x8eu, 0xd0u,
+        0xbcu, 0x00u, 0x80u, 0xeau, 0x00u, 0x00u, 0x08u, 0x00u
+    };
     static const type_unsigned_8 program[] = { 0x8eu, 0x1eu, 0x00u, 0x10u };
+    static const type_unsigned_8 selector[] = { 0x30u, 0x00u };
+    static const type_unsigned_8 halt[] = { 0xf4u };
     const core_machine_config config = {
-        .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
-        .time_axis = { CORE_MACHINE_TIME_AXIS_VERIFIED_PHYSICAL, 8000000u },
-        .retirement_time_contract = CORE_MACHINE_RETIREMENT_TIME_PHYSICAL
+        .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386
     };
     const core_machine_run_budget budget = { 1u, 0u };
     core_machine_run_result result;
     timing_ledger_state state = { 0u, 0u, 0u };
     core_machine *machine = STD_NULL;
+    type_unsigned_64 elapsed_before = 0u;
     C_INT failed = core_machine_create(&config, &machine) != TYPE_STATUS_OK ||
-        test_core_machine_fixture_register_reset_mapping(machine,
-            TIMING_LEDGER_RESET_LINEAR, TIMING_LEDGER_RESET_PHYSICAL,
-            TIMING_LEDGER_WINDOW_BYTES) != TYPE_STATUS_OK ||
         !test_core_machine_fixture_bind_freeze_reset(machine,
             &timing_ledger_execution_provider, &state) ||
-        !timing_ledger_load(machine, program, sizeof(program));
+        !test_core_machine_fixture_prepare_real_mode_execution(machine, 0u) ||
+        core_machine_memory_write(machine, 0x0100u, gdt_pointer,
+            sizeof(gdt_pointer)) != TYPE_STATUS_OK ||
+        core_machine_memory_write(machine, 0x0300u, gdt, sizeof(gdt)) !=
+            TYPE_STATUS_OK ||
+        core_machine_memory_write(machine, 0u, boot, sizeof(boot)) !=
+            TYPE_STATUS_OK ||
+        core_machine_memory_write(machine, 0x2000u, halt, sizeof(halt)) !=
+            TYPE_STATUS_OK ||
+        core_machine_run(machine, (core_machine_run_budget){96u, 0u},
+            &result) != TYPE_STATUS_OK || result.reason !=
+            CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
 
     if (!failed) {
-        machine->executor_cpu.data.cr0 |= VCPU_CR0_PE;
-        failed |= core_machine_run(machine, budget, &result) != TYPE_STATUS_FAULT ||
-            result.reason != CORE_MACHINE_STOP_FAULT || result.executed != 0u ||
-            result.ticks != 0u || result.elapsed_ticks != 0u ||
-            state.advanced_ticks != 0u;
+        failed |= core_machine_memory_write(machine, 0x4000u, selector,
+            sizeof(selector)) != TYPE_STATUS_OK ||
+            core_machine_memory_write(machine, 0x2000u, program,
+                sizeof(program)) != TYPE_STATUS_OK;
+    }
+    if (!failed) {
+        test_core_machine_fixture_resume_after_halt_at(machine, 0u);
+        elapsed_before = machine->elapsed_ticks;
+        state.advanced_ticks = 0u;
+        failed |= core_machine_run(machine, budget, &result) != TYPE_STATUS_OK ||
+            result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 1u ||
+            result.ticks != 19u || result.elapsed_ticks != elapsed_before + 19u ||
+            state.advanced_ticks != 19u;
     }
     core_machine_destroy(machine);
     return failed;

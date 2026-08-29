@@ -11,7 +11,7 @@ static C_INT core_machine_port_b_exclusivity(C_VOID)
     core_machine_config config = {0};
     core_machine_planar_parity_config planar = {CORE_MACHINE_PC_AT_PORT_B,
         512u * 1024u};
-    core_machine_d4_platform_config d4 = {CORE_MACHINE_PC_AT_PORT_B, 0u, 2u};
+    core_machine_d4_platform_config d4 = {CORE_MACHINE_PC_AT_PORT_B, 0u};
     core_machine *machine = STD_NULL;
     type_unsigned_32 value = 0u;
     C_INT failed = 0;
@@ -43,7 +43,7 @@ static C_INT core_machine_port_b_exclusivity(C_VOID)
 C_INT main(C_VOID)
 {
     core_machine_config config = {0};
-    core_machine_d4_platform_config d4 = {CORE_MACHINE_PC_AT_PORT_B, 0u, 2u};
+    core_machine_d4_platform_config d4 = {CORE_MACHINE_PC_AT_PORT_B, 0u};
     core_machine_rtc_cmos_config cmos = {0};
     core_machine_d4_platform_observation observation;
     core_machine_speaker_observation speaker;
@@ -66,6 +66,8 @@ C_INT main(C_VOID)
             0x000ffff0u, 16u) != TYPE_STATUS_OK ||
         core_machine_freeze_execution_providers(machine) != TYPE_STATUS_OK ||
         core_machine_reset(machine) != TYPE_STATUS_OK ||
+        core_machine_advance_time(machine, 1u) != TYPE_STATUS_OK ||
+        machine->shared_pit.data.reload[1u] != 18u ||
         core_machine_bus_read(machine, 0x0061u, &value) != TYPE_STATUS_OK ||
         value != 0x1fu ||
         core_machine_get_d4_platform_observation(machine, &observation) !=

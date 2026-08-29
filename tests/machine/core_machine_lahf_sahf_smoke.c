@@ -21,7 +21,7 @@ static C_VOID lahf_sahf_reset(C_VOID *opaque)
 }
 
 static const core_machine_execution_provider lahf_sahf_provider = {
-    lahf_sahf_reset, STD_NULL, STD_NULL
+    lahf_sahf_reset, STD_NULL
 };
 
 static C_INT lahf_sahf_prepare(core_machine_cpu_profile profile,

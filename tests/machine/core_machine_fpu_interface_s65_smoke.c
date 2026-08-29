@@ -25,7 +25,7 @@ static C_VOID fpu_interface_s65_reset(C_VOID *opaque)
 }
 
 static const core_machine_execution_provider fpu_interface_s65_provider = {
-    fpu_interface_s65_reset, STD_NULL, STD_NULL
+    fpu_interface_s65_reset, STD_NULL
 };
 
 static C_INT fpu_interface_s65_prepare(core_machine_cpu_profile profile,

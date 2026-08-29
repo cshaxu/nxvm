@@ -101,7 +101,7 @@ static C_VOID timing_80386_manifest_execution_reset(C_VOID *opaque)
 }
 
 static const core_machine_execution_provider timing_80386_manifest_execution = {
-    timing_80386_manifest_execution_reset, STD_NULL, STD_NULL
+    timing_80386_manifest_execution_reset, STD_NULL
 };
 
 static C_INT timing_80386_manifest_is_i386(
@@ -2784,7 +2784,8 @@ C_INT main(C_VOID)
         { "I386-MOV-MI", { 0xc7u, 0x06u, 0u, 0x10u, 1u, 0u }, 6u },
         { "I386-MOV-MOFFS-R", { 0xa1u, 0u, 0x10u, 0u, 0u, 0u }, 3u },
         { "I386-MOV-MOFFS-W", { 0xa3u, 0u, 0x10u, 0u, 0u, 0u }, 3u },
-        { "I386-MOV-SREG", { 0x8eu, 0xc0u, 0u, 0u, 0u, 0u }, 2u },
+        { "I386-MOV-SREG-LOAD", { 0x8eu, 0xc0u, 0u, 0u, 0u, 0u }, 2u },
+        { "I386-MOV-SREG-STORE", { 0x8cu, 0x06u, 0u, 0x10u, 0u, 0u }, 4u },
         { "I386-MOV-MOVSX", { 0x0fu, 0xbeu, 0xc0u, 0u, 0u, 0u }, 3u },
         { "I386-MOV-MOVZX", { 0x0fu, 0xb6u, 0xc0u, 0u, 0u, 0u }, 3u },
         { "I386-MOV-LEA", { 0x8du, 0x06u, 0u, 0x10u, 0u, 0u }, 4u },
@@ -3031,7 +3032,7 @@ C_INT main(C_VOID)
     };
     STD_SIZE_T index;
 
-    if (timing_80386_manifest_expected_count() != 1410u) return 1;
+    if (timing_80386_manifest_expected_count() != 1413u) return 1;
     if (timing_80386_manifest_run_recipe("I386-FLAG-NOP", nop, sizeof(nop))) {
         STD_PRINTF("M5:T437:S3:I386-RECIPE-FAIL:I386-FLAG-NOP\n");
         return 1;
@@ -3093,7 +3094,7 @@ C_INT main(C_VOID)
                 mov_extended_recipes[index].key_id);
             return 1;
         }
-        if (index < 9u && timing_80386_manifest_run_size_contexts(
+        if (index < 10u && timing_80386_manifest_run_size_contexts(
                 mov_extended_recipes[index].key_id,
                 mov_extended_recipes[index].bytes,
                 mov_extended_recipes[index].byte_count)) {
@@ -3743,7 +3744,7 @@ C_INT main(C_VOID)
     STD_PRINTF("M5:T437:S2:I386-RESULT-PRODUCER:PASS:observed=%u:canonical=%u\n",
         timing_80386_manifest_observed_count(),
         timing_80386_manifest_expected_count());
-    STD_PRINTF("M5:T437:S8:I386-RESULT-CLOSURE:PASS:canonical=%u:cpu=1409:mcp=1\n",
+    STD_PRINTF("M5:T437:S8:I386-RESULT-CLOSURE:PASS:canonical=%u:cpu=1412:mcp=1\n",
         timing_80386_manifest_expected_count());
     STD_PRINTF("M5:T437:S3:I386-NONCONTROL-COVERAGE:observed=%u:canonical=%u\n",
         timing_80386_manifest_s3_count(1), timing_80386_manifest_s3_count(0));

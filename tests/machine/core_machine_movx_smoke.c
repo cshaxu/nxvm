@@ -65,7 +65,7 @@ static C_VOID movx_reset(C_VOID *opaque)
 }
 
 static const core_machine_execution_provider movx_execution_provider = {
-    movx_reset, STD_NULL, STD_NULL
+    movx_reset, STD_NULL
 };
 
 static C_INT movx_prepare(core_machine_cpu_profile profile,

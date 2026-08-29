@@ -171,8 +171,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
                 core_machine_fdc_ST0_NOT_READY) || result[1] != 0u || result[2] != 0u;
         model40_fdc_command(fdc, port, (const type_unsigned_8[]){0x08u}, 1u);
         failed |= !model40_fdc_result(fdc, port, result, 2u) ||
-            result[0] != (core_machine_fdc_ST0_ABNORMAL |
-                core_machine_fdc_ST0_NOT_READY) || fdc->connect.irq_source.asserted;
+            result[0] != 0x80u || fdc->connect.irq_source.asserted;
         if (argc == 6) {
             for (index = 0u; index < 400000u && bios_marker == 0u; index += 64u) {
                 failed |= core_machine_run(session->core_machine,

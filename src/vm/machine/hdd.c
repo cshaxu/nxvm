@@ -215,7 +215,6 @@ C_VOID vm_machine_hdd_reset(t_hdd *hdd) {
             (16u * 63u) - 1u) / (16u * 63u));
     }
 }
-C_VOID vm_machine_hdd_refresh(t_hdd *hdd) { (C_VOID)hdd; }
 C_VOID vm_machine_hdd_finalize(t_hdd *hdd) {
     if (hdd != STD_NULL && hdd->connect.pImgBase) {
         STD_FREE((C_VOID *)hdd->connect.pImgBase);

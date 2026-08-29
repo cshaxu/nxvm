@@ -97,16 +97,6 @@ type_status vm_session_machine_devices_materialize_plan(vm_session *session,
     return vm_session_machine_devices_materialize_hdc(session, plan);
 }
 
-C_VOID vm_session_machine_devices_refresh(vm_session *session)
-{
-    if (session == STD_NULL) return;
-    vm_machine_fdd_refresh(&session->fdd);
-    if (session->model40_private || session->xt_private ||
-        (session->profile != STD_NULL && session->profile->hdc_present)) {
-        vm_machine_hdd_refresh(&session->hdd);
-    }
-}
-
 C_VOID vm_session_machine_devices_reset(vm_session *session)
 {
     if (session == STD_NULL) return;

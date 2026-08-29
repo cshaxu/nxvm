@@ -59,6 +59,11 @@ type_status core_machine_register_memory_write_observer(core_machine *machine,
 type_status core_machine_register_memory_device(core_machine *machine,
     type_unsigned_32 physical_start, STD_SIZE_T bytes,
     const core_machine_memory_device_callbacks *callbacks, C_VOID *owner);
+/* A board-owned selected decode replaces any lower ROM/RAM provider while its
+ * query accepts the access; on decline the ordinary route remains intact. */
+type_status core_machine_register_memory_replacement_device(core_machine *machine,
+    type_unsigned_32 physical_start, STD_SIZE_T bytes,
+    const core_machine_memory_device_callbacks *callbacks, C_VOID *owner);
 type_status core_machine_memory_read(
     const core_machine *machine,
     type_unsigned_32 physical,

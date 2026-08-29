@@ -15,7 +15,7 @@ static C_VOID pushf_reset(C_VOID *opaque)
 }
 
 static const core_machine_execution_provider pushf_provider = {
-    pushf_reset, STD_NULL, STD_NULL
+    pushf_reset, STD_NULL
 };
 
 static C_INT pushf_prepare(pushf_machine *state)
@@ -84,7 +84,7 @@ static C_INT pushf_test_vm86(C_VOID)
     for (pass = 0u; pass != 2u; ++pass) {
         const type_unsigned_32 flags = VCPU_EFLAGS_VM | (pass ? 0u : VCPU_EFLAGS_IOPL) | VCPU_EFLAGS_CF;
         pushf_machine state;
-        t_cpu after;
+        t_cpu after = {0};
         core_machine_cpu_diagnostic diagnostic;
         type_status status;
         core_machine_stop_reason reason;
@@ -321,6 +321,7 @@ static C_INT pushf_test_stack_faults(C_VOID)
     return 1;
 }
 
+
 C_INT main(C_VOID)
 {
     static const type_unsigned_8 pushfw[] = { 0x9cu };
@@ -334,7 +335,7 @@ C_INT main(C_VOID)
     type_unsigned_8 form;
     for (form = 0u; form != 4u; ++form) {
         pushf_machine state;
-        t_cpu after;
+        t_cpu after = {0};
         type_unsigned_32 image = form < 2u ? 0u : VCPU_EFLAGS_CF | VCPU_EFLAGS_ZF | VCPU_EFLAGS_IF;
         const type_unsigned_32 pushfw_image = (flags & ~VCPU_EFLAGS_RESERVED) | 0x02u;
         const type_unsigned_32 pushfd_image = (flags & ~(VCPU_EFLAGS_RESERVED |
@@ -358,8 +359,10 @@ C_INT main(C_VOID)
                 (form == 2u && after.data.esp != 0x8002u) ||
                 (form == 2u && (after.data.eflags & 0xffff0000u) != (flags & 0xffff0000u)) ||
                 (form == 3u && after.data.esp != 0x8004u) ||
-                (form == 3u && (after.data.eflags & (VCPU_EFLAGS_VM | VCPU_EFLAGS_RF | VCPU_EFLAGS_RESERVED))) !=
-                    (flags & (VCPU_EFLAGS_VM | VCPU_EFLAGS_RF | VCPU_EFLAGS_RESERVED)) ||
+                (form == 3u && (after.data.eflags & (VCPU_EFLAGS_VM | VCPU_EFLAGS_RF |
+                (VCPU_EFLAGS_RESERVED & ~0x02u))) !=
+                    (flags & (VCPU_EFLAGS_VM | VCPU_EFLAGS_RF |
+                    (VCPU_EFLAGS_RESERVED & ~0x02u)))) ||
                 (form >= 2u && (after.data.eflags & (VCPU_EFLAGS_CF | VCPU_EFLAGS_ZF | VCPU_EFLAGS_IF)) != image);
         }
         core_machine_destroy(state.machine);

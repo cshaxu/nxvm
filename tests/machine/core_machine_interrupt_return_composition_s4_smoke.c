@@ -82,7 +82,8 @@ static C_INT interrupt_return_composition_s4_real_irq_after_iret(C_VOID)
             core_machine_memory_read_physical(&state.machine->executor_memory,
                 after.data.ss.base + (type_unsigned_16)after.data.esp,
                 (type_virtual_address)frame, sizeof(frame)) != TYPE_STATUS_OK ||
-            frame[0] != 2u || frame[1] != 0u || frame[2] != flags;
+            frame[0] != 2u || frame[1] != 0u || frame[2] !=
+                (flags | 0x02u);
     }
     core_machine_destroy(state.machine);
     return !failed;

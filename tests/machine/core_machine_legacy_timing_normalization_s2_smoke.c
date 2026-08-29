@@ -34,7 +34,7 @@ static C_VOID t362_s2_advance(C_VOID *opaque, type_unsigned_64 ticks)
 }
 
 static const core_machine_execution_provider t362_s2_provider = {
-    t362_s2_reset, STD_NULL, t362_s2_advance
+    t362_s2_reset, t362_s2_advance
 };
 
 static C_INT t362_s2_prepare(core_machine_cpu_profile profile,

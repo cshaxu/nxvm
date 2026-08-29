@@ -36,18 +36,10 @@ type_status vm_session_provider_lifecycle_initialize(vm_session *session)
     return TYPE_STATUS_OK;
 }
 
-C_VOID vm_session_provider_lifecycle_refresh(vm_session *session)
-{
-    if (session != STD_NULL) vm_session_machine_devices_refresh(session);
-}
-
 C_VOID vm_session_provider_lifecycle_reset(vm_session *session)
 {
     if (session == STD_NULL) return;
     vm_session_machine_devices_reset(session);
-    if (session->model40_private) {
-        vm_profile_model40_d4_memory_reset(&session->model40_d4_memory);
-    }
 }
 
 C_VOID vm_session_provider_lifecycle_finalize(vm_session *session)

@@ -1076,11 +1076,6 @@ C_VOID core_machine_hdc_advance(core_machine_hdc *hdc)
     }
 }
 
-C_VOID core_machine_hdc_refresh(core_machine_hdc *hdc)
-{
-    (C_VOID)hdc;
-}
-
 C_VOID core_machine_hdc_finalize(core_machine_hdc *hdc)
 {
     if (hdc == STD_NULL) return;

@@ -3,7 +3,7 @@
 #include "core/machine/machine_interface.h"
 #include "../support/core_machine_cpu_fixture.h"
 
-#define TIMING_80286_RESET_LINEAR 0xfffffff0u
+#define TIMING_80286_RESET_LINEAR 0x00fffff0u
 #define TIMING_80286_RESET_PHYSICAL 0x000ffff0u
 
 typedef struct timing_80286_state {
@@ -52,7 +52,7 @@ static C_VOID timing_80286_advance(C_VOID *opaque, type_unsigned_64 ticks)
 }
 
 static const core_machine_execution_provider timing_80286_execution = {
-    timing_80286_reset, STD_NULL, timing_80286_advance
+    timing_80286_reset, timing_80286_advance
 };
 
 static C_INT timing_80286_prepare(core_machine **out_machine,

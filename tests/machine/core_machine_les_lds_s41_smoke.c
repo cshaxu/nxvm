@@ -17,7 +17,7 @@ static C_VOID les_lds_s41_reset(C_VOID *opaque)
 }
 
 static const core_machine_execution_provider les_lds_s41_provider = {
-    les_lds_s41_reset, STD_NULL, STD_NULL
+    les_lds_s41_reset, STD_NULL
 };
 
 static C_INT les_lds_s41_prepare(core_machine_cpu_profile profile,

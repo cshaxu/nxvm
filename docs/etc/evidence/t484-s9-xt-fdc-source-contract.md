@@ -21,7 +21,7 @@ Only PCjs was available under `O:\repos.external` for this review; no absent
 | --- | --- | --- |
 | Selected model and drive count | Manual L3 | IBM *Personal Computer Product Reference*, fourth edition (April 1987), lists `5160-268` as XT-256KB with one half-height double-sided diskette drive. |
 | Selected drive class and capacity | Manual L3 composite | IBM *5160 Service Manual* describes the normal PC/XT as one 5.25-inch, 360KB diskette drive.  Read together with the model-specific one-half-height-double-sided selection, this selects one 5.25-inch 360KiB drive; neither document asserts a 1.2MB or 1.44MB drive for this selected configuration. |
-| Logical geometry | Manual L3 | IBM *5155/5160 Technical Reference*, Diskette Adapter BIOS listing dated 1986-01-10, defines a 320/360K drive as tracks `0-39`, heads `0-1`, sectors `1-6/9`, and its 360K path uses the nine-sector form.  The established 360KiB declaration is therefore `40 x 2 x 9 x 512 = 737,280` bytes. |
+| Logical geometry | Manual L3 | IBM *5155/5160 Technical Reference*, Diskette Adapter BIOS listing dated 1986-01-10, defines a 320/360K drive as tracks `0-39`, heads `0-1`, sectors `1-6/9`, and its 360K path uses the nine-sector form.  The established 360KiB declaration is therefore `40 x 2 x 9 x 512 = 368,640` bytes. |
 | Transfer rate | Manual L3 | The same IBM listing defines `RATE_250` as 250 Kb/s and its 360K path selects that rate. |
 | FDC control and reset | Manual L3 | The IBM listing names `03F2h` the adapter/FDC control port and its diskette-system reset holds then releases the NEC controller through that port. |
 | Interrupt and DMA route | Manual L3 | The IBM 5155/5160 Technical Reference I/O-channel material identifies IRQ6 and DRQ2 for the diskette controller path. |
@@ -75,4 +75,3 @@ next bounded implementation receiver.  Physical spindle, seek, head-load,
 index, and board service-duration data have not been selected from a source
 that applies to this specific mechanism.  They remain outside this functional
 binding and cannot become an estimated FDC deadline or host pacing input.
-

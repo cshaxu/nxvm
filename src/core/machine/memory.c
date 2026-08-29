@@ -62,27 +62,60 @@ static type_status core_machine_memory_route_resolve(const t_ram *ram,
     type_unsigned_32 physical, type_native_unsigned bytes,
     core_machine_memory_access access,
     const core_machine_memory_device_provider **out_provider,
+    type_unsigned_32 *out_provider_physical,
     STD_SIZE_T *out_offset)
 {
     type_native_unsigned index;
     type_unsigned_32 wrapped;
     type_status status;
 
-    if (ram == STD_NULL || out_provider == STD_NULL || out_offset == STD_NULL ||
+    if (ram == STD_NULL || out_provider == STD_NULL ||
+        out_provider_physical == STD_NULL || out_offset == STD_NULL ||
         bytes == 0u || !core_machine_memory_access_is_valid(access)) {
         return TYPE_STATUS_INVALID_ARGUMENT;
+    }
+    for (index = 0u; index < ram->connect.device_provider_count; ++index) {
+        const core_machine_memory_device_provider *provider =
+            &ram->connect.device_providers[index];
+
+        if (!provider->pre_a20 || physical < provider->physical_start ||
+            (type_unsigned_64)physical - provider->physical_start + bytes >
+                provider->bytes) continue;
+        status = provider->query(provider->owner, physical, bytes, access);
+        if (status == TYPE_STATUS_OK) {
+            *out_provider = provider;
+            *out_provider_physical = physical;
+            return TYPE_STATUS_OK;
+        }
+        if (status != TYPE_STATUS_UNSUPPORTED) return status;
     }
     wrapped = core_machine_memory_wrap_a20(ram, physical);
     for (index = 0u; index < ram->connect.device_provider_count; ++index) {
         const core_machine_memory_device_provider *provider =
             &ram->connect.device_providers[index];
 
-        if (wrapped < provider->physical_start ||
+        if (!provider->replacement || wrapped < provider->physical_start ||
             (type_unsigned_64)wrapped - provider->physical_start + bytes >
                 provider->bytes) continue;
         status = provider->query(provider->owner, wrapped, bytes, access);
         if (status == TYPE_STATUS_OK) {
             *out_provider = provider;
+            *out_provider_physical = wrapped;
+            return TYPE_STATUS_OK;
+        }
+        if (status != TYPE_STATUS_UNSUPPORTED) return status;
+    }
+    for (index = 0u; index < ram->connect.device_provider_count; ++index) {
+        const core_machine_memory_device_provider *provider =
+            &ram->connect.device_providers[index];
+
+        if (provider->replacement || wrapped < provider->physical_start ||
+            (type_unsigned_64)wrapped - provider->physical_start + bytes >
+                provider->bytes) continue;
+        status = provider->query(provider->owner, wrapped, bytes, access);
+        if (status == TYPE_STATUS_OK) {
+            *out_provider = provider;
+            *out_provider_physical = wrapped;
             return TYPE_STATUS_OK;
         }
         if (status != TYPE_STATUS_UNSUPPORTED) return status;
@@ -90,6 +123,7 @@ static type_status core_machine_memory_route_resolve(const t_ram *ram,
     status = core_machine_memory_offset(ram, physical, bytes, out_offset);
     if (status != TYPE_STATUS_OK) return status;
     *out_provider = STD_NULL;
+    *out_provider_physical = wrapped;
     return TYPE_STATUS_OK;
 }
 
@@ -107,11 +141,29 @@ static type_status core_machine_memory_reset_provider_resolve(const t_ram *ram,
     if (ram == STD_NULL || out_provider == STD_NULL || bytes == 0u) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
+    /* An alias is deliberately an ordinary-route overlay.  At reset it is the
+     * architected ROM source, so examine such providers first rather than
+     * letting an unpopulated-memory fallback hide the CPU reset vector. */
     for (index = 0u; index < ram->connect.device_provider_count; ++index) {
         const core_machine_memory_device_provider *provider =
             &ram->connect.device_providers[index];
 
-        if (physical < provider->physical_start ||
+        if (!provider->overlay || physical < provider->physical_start ||
+            (type_unsigned_64)physical - provider->physical_start + bytes >
+                provider->bytes) continue;
+        status = provider->query(provider->owner, physical, bytes,
+            CORE_MACHINE_MEMORY_ACCESS_READ);
+        if (status == TYPE_STATUS_OK) {
+            *out_provider = provider;
+            return TYPE_STATUS_OK;
+        }
+        if (status != TYPE_STATUS_UNSUPPORTED) return status;
+    }
+    for (index = 0u; index < ram->connect.device_provider_count; ++index) {
+        const core_machine_memory_device_provider *provider =
+            &ram->connect.device_providers[index];
+
+        if (provider->overlay || physical < provider->physical_start ||
             (type_unsigned_64)physical - provider->physical_start + bytes >
                 provider->bytes) continue;
         status = provider->query(provider->owner, physical, bytes,
@@ -293,7 +345,8 @@ static C_VOID core_machine_memory_append_write_observer(t_ram *ram,
 static C_VOID core_machine_memory_append_device_provider(t_ram *ram,
     type_unsigned_32 physical_start, STD_SIZE_T bytes,
     core_machine_memory_device_read read, core_machine_memory_device_write write,
-    core_machine_memory_device_query query, C_VOID *owner, type_bool overlay)
+    core_machine_memory_device_query query, C_VOID *owner, type_bool overlay,
+    type_bool pre_a20, type_bool replacement)
 {
     core_machine_memory_device_provider *provider =
         &ram->connect.device_providers[ram->connect.device_provider_count++];
@@ -305,6 +358,8 @@ static C_VOID core_machine_memory_append_device_provider(t_ram *ram,
     provider->query = query;
     provider->owner = owner;
     provider->overlay = overlay;
+    provider->pre_a20 = pre_a20;
+    provider->replacement = replacement;
 }
 
 type_status core_machine_memory_register_write_observer(t_ram *ram,
@@ -330,7 +385,7 @@ type_status core_machine_memory_register_device_provider(t_ram *ram,
     status = core_machine_memory_reserve_device_provider(ram);
     if (status != TYPE_STATUS_OK) return status;
     core_machine_memory_append_device_provider(ram, physical_start, bytes, read,
-        write, query, owner, TYPE_FALSE);
+        write, query, owner, TYPE_FALSE, TYPE_FALSE, TYPE_FALSE);
     return TYPE_STATUS_OK;
 }
 
@@ -346,7 +401,39 @@ type_status core_machine_memory_register_overlay_device_provider(t_ram *ram,
     status = core_machine_memory_reserve_device_provider(ram);
     if (status != TYPE_STATUS_OK) return status;
     core_machine_memory_append_device_provider(ram, physical_start, bytes, read,
-        write, query, owner, TYPE_TRUE);
+        write, query, owner, TYPE_TRUE, TYPE_FALSE, TYPE_FALSE);
+    return TYPE_STATUS_OK;
+}
+
+type_status core_machine_memory_register_pre_a20_overlay_device_provider(t_ram *ram,
+    type_unsigned_32 physical_start, STD_SIZE_T bytes,
+    core_machine_memory_device_read read, core_machine_memory_device_write write,
+    core_machine_memory_device_query query, C_VOID *owner)
+{
+    type_status status = core_machine_memory_validate_device_provider(ram,
+        physical_start, bytes, read, write, query, owner, TYPE_TRUE);
+
+    if (status != TYPE_STATUS_OK) return status;
+    status = core_machine_memory_reserve_device_provider(ram);
+    if (status != TYPE_STATUS_OK) return status;
+    core_machine_memory_append_device_provider(ram, physical_start, bytes, read,
+        write, query, owner, TYPE_TRUE, TYPE_TRUE, TYPE_FALSE);
+    return TYPE_STATUS_OK;
+}
+
+type_status core_machine_memory_register_replacement_device_provider(t_ram *ram,
+    type_unsigned_32 physical_start, STD_SIZE_T bytes,
+    core_machine_memory_device_read read, core_machine_memory_device_write write,
+    core_machine_memory_device_query query, C_VOID *owner)
+{
+    type_status status = core_machine_memory_validate_device_provider(ram,
+        physical_start, bytes, read, write, query, owner, TYPE_TRUE);
+
+    if (status != TYPE_STATUS_OK) return status;
+    status = core_machine_memory_reserve_device_provider(ram);
+    if (status != TYPE_STATUS_OK) return status;
+    core_machine_memory_append_device_provider(ram, physical_start, bytes, read,
+        write, query, owner, TYPE_TRUE, TYPE_FALSE, TYPE_TRUE);
     return TYPE_STATUS_OK;
 }
 
@@ -365,7 +452,7 @@ type_status core_machine_memory_register_device_provider_and_write_observer(
     status = core_machine_memory_reserve_device_provider(ram);
     if (status != TYPE_STATUS_OK) return status;
     core_machine_memory_append_device_provider(ram, physical_start, bytes, read,
-        write, query, owner, TYPE_FALSE);
+        write, query, owner, TYPE_FALSE, TYPE_FALSE, TYPE_FALSE);
     core_machine_memory_append_write_observer(ram, callback, owner);
     return TYPE_STATUS_OK;
 }
@@ -397,13 +484,14 @@ type_status core_machine_memory_read_physical(t_ram *ram, type_unsigned_32 physi
 {
     STD_SIZE_T offset;
     const core_machine_memory_device_provider *provider;
+    type_unsigned_32 provider_physical;
     type_status status;
 
     if (ram == STD_NULL || destination == 0u || byte == 0u) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
     status = core_machine_memory_route_resolve(ram, physical, byte,
-        CORE_MACHINE_MEMORY_ACCESS_READ, &provider, &offset);
+        CORE_MACHINE_MEMORY_ACCESS_READ, &provider, &provider_physical, &offset);
     if (status != TYPE_STATUS_OK) return status;
     if (provider == STD_NULL && byte > 1u) {
         type_native_unsigned index;
@@ -412,7 +500,8 @@ type_status core_machine_memory_read_physical(t_ram *ram, type_unsigned_32 physi
             STD_SIZE_T single_offset;
             status = core_machine_memory_route_resolve(ram,
                 physical + (type_unsigned_32)index, 1u,
-                CORE_MACHINE_MEMORY_ACCESS_READ, &single_provider, &single_offset);
+                CORE_MACHINE_MEMORY_ACCESS_READ, &single_provider,
+                &provider_physical, &single_offset);
             if (status != TYPE_STATUS_OK) return status;
             if (single_provider != STD_NULL) {
                 for (index = 0u; index < byte; ++index) {
@@ -425,8 +514,7 @@ type_status core_machine_memory_read_physical(t_ram *ram, type_unsigned_32 physi
         }
     }
     if (provider != STD_NULL) {
-        status = provider->read(provider->owner,
-            core_machine_memory_wrap_a20(ram, physical), destination, byte);
+        status = provider->read(provider->owner, provider_physical, destination, byte);
         if (status != TYPE_STATUS_UNSUPPORTED) return status;
         status = core_machine_memory_offset(ram, physical, byte, &offset);
         if (status != TYPE_STATUS_OK) return status;
@@ -471,13 +559,14 @@ type_status core_machine_memory_write_physical(t_ram *ram, type_unsigned_32 phys
     STD_SIZE_T offset;
     type_native_unsigned index;
     const core_machine_memory_device_provider *provider;
+    type_unsigned_32 provider_physical;
     type_status status;
 
     if (ram == STD_NULL || source == 0u || byte == 0u) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
     status = core_machine_memory_route_resolve(ram, physical, byte,
-        CORE_MACHINE_MEMORY_ACCESS_WRITE, &provider, &offset);
+        CORE_MACHINE_MEMORY_ACCESS_WRITE, &provider, &provider_physical, &offset);
     if (status != TYPE_STATUS_OK) return status;
     if (provider == STD_NULL && byte > 1u) {
         type_native_unsigned index;
@@ -486,7 +575,8 @@ type_status core_machine_memory_write_physical(t_ram *ram, type_unsigned_32 phys
             STD_SIZE_T single_offset;
             status = core_machine_memory_route_resolve(ram,
                 physical + (type_unsigned_32)index, 1u,
-                CORE_MACHINE_MEMORY_ACCESS_WRITE, &single_provider, &single_offset);
+                CORE_MACHINE_MEMORY_ACCESS_WRITE, &single_provider,
+                &provider_physical, &single_offset);
             if (status != TYPE_STATUS_OK) return status;
             if (single_provider != STD_NULL) {
                 for (index = 0u; index < byte; ++index) {
@@ -499,8 +589,7 @@ type_status core_machine_memory_write_physical(t_ram *ram, type_unsigned_32 phys
         }
     }
     if (provider != STD_NULL) {
-        status = provider->write(provider->owner,
-            core_machine_memory_wrap_a20(ram, physical), source, byte);
+        status = provider->write(provider->owner, provider_physical, source, byte);
         if (status != TYPE_STATUS_UNSUPPORTED) return status;
         status = core_machine_memory_offset(ram, physical, byte, &offset);
         if (status != TYPE_STATUS_OK) return status;
@@ -528,12 +617,13 @@ type_status core_machine_memory_query_physical(const t_ram *ram,
     core_machine_memory_access access, core_machine_memory_route *out_route)
 {
     const core_machine_memory_device_provider *provider;
+    type_unsigned_32 provider_physical;
     STD_SIZE_T offset;
     type_status status;
 
     if (out_route == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
     status = core_machine_memory_route_resolve(ram, physical, bytes, access,
-        &provider, &offset);
+        &provider, &provider_physical, &offset);
     if (status != TYPE_STATUS_OK) return status;
     *out_route = provider == STD_NULL ? CORE_MACHINE_MEMORY_ROUTE_ORDINARY_RAM :
         CORE_MACHINE_MEMORY_ROUTE_PROVIDER;

@@ -1,5 +1,7 @@
 #include "vm/profile/default_profile/pc_at_profile_private.h"
 
+static C_INT vm_profile_ibm_5170_memory_is_valid(STD_SIZE_T memory_bytes);
+
 static const vm_profile_default_pc_at_port_leaf default_pc_at_port_leaves[] = {
     { VM_PROFILE_DEFAULT_PC_AT_DEVICE_PIC, 0x0020u, TYPE_TRUE, TYPE_TRUE },
     { VM_PROFILE_DEFAULT_PC_AT_DEVICE_PIC, 0x0021u, TYPE_TRUE, TYPE_TRUE },
@@ -432,6 +434,11 @@ type_status vm_profile_default_pc_at_topology_materialize(
         topology.absent_memory[0] =
             (core_machine_absent_memory_config) { 0x00100000u, 0x00f00000u, 0xffu };
     }
+    if (descriptor->default_memory_bytes < 0x000a0000u) {
+        topology.absent_memory[topology.absent_memory_count++] =
+            (core_machine_absent_memory_config) { descriptor->default_memory_bytes,
+                0x000a0000u - descriptor->default_memory_bytes, 0xffu };
+    }
     /* Every PC/AT descriptor owns system-board Port B. Parity is an optional
      * producer on that one port; generic Default PC/AT retains the port's
      * PIT1/PIT2 visibility without inventing parity memory. */
@@ -617,28 +624,59 @@ type_status vm_profile_ibm_5170_root_declaration_create(
     return TYPE_STATUS_OK;
 }
 
-type_status vm_profile_ibm_5170_root_resolve(
+static C_INT vm_profile_ibm_5170_memory_is_valid(STD_SIZE_T memory_bytes)
+{
+    if (memory_bytes == 0u || memory_bytes == 512u * 1024u ||
+        memory_bytes == 640u * 1024u) return 1;
+    return memory_bytes >= 1536u * 1024u && memory_bytes <= 3u * 1024u * 1024u &&
+        (memory_bytes - 1024u * 1024u) % (512u * 1024u) == 0u;
+}
+
+type_status vm_profile_ibm_5170_root_resolve_memory(STD_SIZE_T memory_bytes,
     vm_profile_default_pc_at_resolved_profile *out_profile)
 {
-    const vm_profile_default_pc_at_descriptor *descriptor =
+    const vm_profile_default_pc_at_descriptor *source =
         vm_profile_ibm_5170_model_339_descriptor_get();
+    vm_profile_default_pc_at_descriptor descriptor;
     vm_profile_resolver_declaration declaration;
     const vm_profile_resolver_contract_catalog catalog = {
         ibm_5170_root_contract_ids,
         sizeof(ibm_5170_root_contract_ids) / sizeof(ibm_5170_root_contract_ids[0])};
 
-    if (out_profile == STD_NULL) {
+    if (out_profile == STD_NULL || !vm_profile_ibm_5170_memory_is_valid(memory_bytes)) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
+    descriptor = *source;
+    if (memory_bytes != 0u) descriptor.default_memory_bytes = memory_bytes;
+    if (memory_bytes == 640u * 1024u || memory_bytes >= 1536u * 1024u) {
+        descriptor.cmos.base_memory_kib = 0x0280u;
+    }
+    if (memory_bytes >= 1536u * 1024u) {
+        descriptor.unpopulated_extended_memory = TYPE_FALSE;
+    }
     STD_MEMSET(out_profile, 0, sizeof(*out_profile));
-    if (vm_profile_ibm_5170_root_declaration_create(&declaration) != TYPE_STATUS_OK ||
+    if (vm_profile_ibm_5170_root_declaration_create(&declaration) != TYPE_STATUS_OK) {
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
+    if (memory_bytes != 0u) {
+        declaration.values.core.configuration.memory_bytes = memory_bytes;
+        declaration.values.allowed_session_options = VM_PROFILE_DEFAULT_AT_SESSION_OPTION_MEMORY;
+    }
+    if (
         vm_profile_resolver_resolve(&declaration, &catalog,
-            &(vm_profile_resolver_session_request) {0u}, &out_profile->resolved) !=
+            &(vm_profile_resolver_session_request) {memory_bytes != 0u ?
+                VM_PROFILE_DEFAULT_AT_SESSION_OPTION_MEMORY : 0u}, &out_profile->resolved) !=
             TYPE_STATUS_OK) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
-    return vm_profile_default_pc_at_snapshot_copy(out_profile, descriptor, "pc-at-5170",
-        descriptor->cmos.floppy_type);
+    return vm_profile_default_pc_at_snapshot_copy(out_profile, &descriptor, "pc-at-5170",
+        descriptor.cmos.floppy_type);
+}
+
+type_status vm_profile_ibm_5170_root_resolve(
+    vm_profile_default_pc_at_resolved_profile *out_profile)
+{
+    return vm_profile_ibm_5170_root_resolve_memory(0u, out_profile);
 }
 
 static type_status vm_profile_default_at_request_select(
@@ -823,8 +861,13 @@ C_INT vm_profile_default_pc_at_descriptor_is_valid(
         if (descriptor->cpu_profile != CORE_MACHINE_CPU_PROFILE_80286) return 0;
         return descriptor->time_axis.kind == CORE_MACHINE_TIME_AXIS_MACRO_PROPORTIONAL &&
             descriptor->time_axis.ticks_per_second == 8000000u &&
-            descriptor->default_memory_bytes == 512u * 1024u &&
-            descriptor->unpopulated_extended_memory &&
+            vm_profile_ibm_5170_memory_is_valid(descriptor->default_memory_bytes) &&
+            ((descriptor->default_memory_bytes == 512u * 1024u &&
+                descriptor->unpopulated_extended_memory &&
+                descriptor->cmos.base_memory_kib == 0x0200u) ||
+                (descriptor->default_memory_bytes != 512u * 1024u &&
+                    !descriptor->unpopulated_extended_memory &&
+                    descriptor->cmos.base_memory_kib == 0x0280u)) &&
             descriptor->fdc_bounce_segment == 0x7000u &&
             descriptor->hdc_present && descriptor->planar_parity_present &&
             !descriptor->ega_present && descriptor->cga_vram_present &&
@@ -832,7 +875,6 @@ C_INT vm_profile_default_pc_at_descriptor_is_valid(
             descriptor->firmware_slot ==
                 VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_SLOT_IBM_5170_REV3_ABSTRACT &&
             !descriptor->diskette_drive_a_field_upgrade &&
-            descriptor->cmos.base_memory_kib == 0x0200u &&
             descriptor->cmos.floppy_type == 0x20u &&
             descriptor->cmos.fixed_disk_type == 0x30u &&
             descriptor->cmos.fixed_disk_type_extended_0 == 0u &&

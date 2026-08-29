@@ -22,6 +22,17 @@ type_status core_machine_register_memory_device(core_machine *machine,
         physical_start, bytes, callbacks->read, callbacks->write, callbacks->query,
         owner);
 }
+
+type_status core_machine_register_memory_replacement_device(core_machine *machine,
+    type_unsigned_32 physical_start, STD_SIZE_T bytes,
+    const core_machine_memory_device_callbacks *callbacks, C_VOID *owner)
+{
+    if (callbacks == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (!core_machine_configuration_is_open(machine)) return TYPE_STATUS_INVALID_STATE;
+    return core_machine_memory_register_replacement_device_provider(
+        &machine->executor_memory, physical_start, bytes, callbacks->read,
+        callbacks->write, callbacks->query, owner);
+}
 type_status core_machine_memory_read(
     const core_machine *machine,
     type_unsigned_32 physical,

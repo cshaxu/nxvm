@@ -17,7 +17,7 @@ static C_VOID clts_s62_reset(C_VOID *opaque)
 }
 
 static const core_machine_execution_provider clts_s62_provider = {
-    clts_s62_reset, STD_NULL, STD_NULL
+    clts_s62_reset, STD_NULL
 };
 
 static C_INT clts_s62_prepare(clts_s62_machine *state,
@@ -139,7 +139,7 @@ static C_INT clts_s62_test_real_and_attributes(C_VOID)
         t_cpu after;
         core_machine_run_result result;
         core_machine_cpu_diagnostic diagnostic;
-        type_status status;
+        type_status status = TYPE_STATUS_INVALID_STATE;
         C_INT failed = !clts_s62_prepare(&state, profiles[profile]);
 
         if (!failed) {
@@ -165,7 +165,7 @@ static C_INT clts_s62_test_real_and_attributes(C_VOID)
         t_cpu after;
         core_machine_run_result result;
         core_machine_cpu_diagnostic diagnostic;
-        type_status status;
+        type_status status = TYPE_STATUS_INVALID_STATE;
         const type_unsigned_8 bytes = attribute == 2u ? 4u : 3u;
         C_INT failed = !clts_s62_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
 
@@ -235,7 +235,7 @@ static C_INT clts_s62_test_privilege(C_VOID)
         t_cpu after;
         core_machine_run_result result;
         core_machine_cpu_diagnostic diagnostic;
-        type_status status;
+        type_status status = TYPE_STATUS_INVALID_STATE;
         C_INT failed = !clts_s62_prepare(&state, profiles[profile]);
 
         if (!failed) {
@@ -262,7 +262,7 @@ static C_INT clts_s62_test_privilege(C_VOID)
         t_cpu after;
         core_machine_run_result result;
         core_machine_cpu_diagnostic diagnostic;
-        type_status status;
+        type_status status = TYPE_STATUS_INVALID_STATE;
         C_INT failed = !clts_s62_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
 
         if (!failed) {

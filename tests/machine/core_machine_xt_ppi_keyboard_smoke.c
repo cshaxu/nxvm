@@ -8,7 +8,8 @@ static C_INT core_machine_xt_ppi_keyboard_path(C_VOID)
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
         .time_axis = {CORE_MACHINE_TIME_AXIS_MACRO_PROPORTIONAL, 1000000u},
         .keyboard_topology = CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI,
-        .xt_ppi_keyboard = {0x0060u, 0x0061u, 0x0062u, 0x0063u, 1u}
+        .xt_ppi_keyboard = {0x0060u, 0x0061u, 0x0062u, 0x0063u, 1u,
+            0x0du, 0x02u}
     };
     core_machine *machine = STD_NULL;
     type_unsigned_32 value = 0u;
@@ -27,6 +28,14 @@ static C_INT core_machine_xt_ppi_keyboard_path(C_VOID)
     failed |= !failed && scan_set != CORE_MACHINE_KEYBOARD_SCAN_SET_1;
     failed |= !failed && core_machine_bus_write(machine, 0x0063u, 0x99u) !=
         TYPE_STATUS_OK;
+    failed |= !failed && core_machine_bus_read(machine, 0x0062u, &value) !=
+        TYPE_STATUS_OK;
+    failed |= !failed && value != 0x0du;
+    failed |= !failed && core_machine_bus_write(machine, 0x0061u, 0x08u) !=
+        TYPE_STATUS_OK;
+    failed |= !failed && core_machine_bus_read(machine, 0x0062u, &value) !=
+        TYPE_STATUS_OK;
+    failed |= !failed && value != 0x02u;
     failed |= !failed && (core_machine_get_speaker_observation(machine, &speaker) !=
         TYPE_STATUS_OK || !speaker.configured || speaker.timer_gate ||
         speaker.data_enabled || speaker.output);

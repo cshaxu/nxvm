@@ -23,7 +23,7 @@ static C_VOID segment_reset(C_VOID *opaque)
 }
 
 static const core_machine_execution_provider segment_provider = {
-    segment_reset, STD_NULL, STD_NULL
+    segment_reset, STD_NULL
 };
 
 static C_INT segment_prepare(segment_machine *state,
@@ -376,7 +376,7 @@ static C_INT segment_test_80286_protected_legal_forms(C_VOID)
 
     for (index = 0u; index < sizeof(codes) / sizeof(codes[0]); ++index) {
         segment_machine state;
-        t_cpu cpu;
+        t_cpu cpu = {0};
 
         if (!segment_prepare(&state, CORE_MACHINE_CPU_PROFILE_80286) ||
             !segment_boot_protected_286(&state)) return 1;

@@ -55,7 +55,7 @@ static C_VOID bit_reset(C_VOID *opaque)
     if (state != STD_NULL) (C_VOID)test_core_machine_fixture_reset_real_mode(state->machine);
 }
 
-static const core_machine_execution_provider bit_provider = {bit_reset,STD_NULL,STD_NULL};
+static const core_machine_execution_provider bit_provider = {bit_reset,STD_NULL};
 
 static C_INT bit_prepare(core_machine_cpu_profile profile, bit_memory_provider *provider,
     bit_machine *state)

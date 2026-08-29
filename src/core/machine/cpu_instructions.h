@@ -12,6 +12,7 @@ extern "C" {
 #include "type.h"
 
 #include "core/machine/cpu.h"
+#include "core/machine/firmware_interface.h"
 #include "core/machine/fpu.h"
 #include "core/machine/fpu_interface.h"
 
@@ -107,6 +108,11 @@ typedef struct t_pic t_pic;
 typedef struct core_machine_transaction_state core_machine_transaction_state;
 typedef struct core_machine_cpu_execution_context
     core_machine_cpu_execution_context;
+
+typedef type_status (*core_machine_cpu_firmware_interrupt_provider)(
+    C_VOID *opaque, type_unsigned_8 vector,
+    const core_machine_firmware_interrupt_frame *frame,
+    core_machine_firmware_interrupt_result *result, type_bool *out_handled);
 typedef C_VOID (*core_machine_cpu_instruction_handler)(
     core_machine_cpu_execution_context *context);
 
@@ -192,6 +198,8 @@ struct core_machine_cpu_execution_context {
     C_VOID *diagnostic_context;
     core_machine_cpu_external_cycle_provider external_cycle_provider;
     C_VOID *external_cycle_context;
+    core_machine_cpu_firmware_interrupt_provider firmware_interrupt_provider;
+    C_VOID *firmware_interrupt_context;
     type_bool stop_requested;
     type_bool reset_requested;
     type_bool shutdown_requested;
@@ -240,6 +248,9 @@ C_VOID core_machine_cpu_execution_context_bind_fpu(
 C_VOID core_machine_cpu_execution_context_bind_external_cycle_provider(
     core_machine_cpu_execution_context *context,
     core_machine_cpu_external_cycle_provider provider, C_VOID *provider_context);
+C_VOID core_machine_cpu_execution_context_bind_firmware_interrupt_provider(
+    core_machine_cpu_execution_context *context,
+    core_machine_cpu_firmware_interrupt_provider provider, C_VOID *provider_context);
 C_VOID core_machine_cpu_execution_context_bind_transaction(
     core_machine_cpu_execution_context *context,
     core_machine_transaction_state *transaction);

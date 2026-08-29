@@ -13,7 +13,7 @@ static C_VOID fs_gs_reset(C_VOID *opaque)
 }
 
 static const core_machine_execution_provider fs_gs_provider = {
-    fs_gs_reset, STD_NULL, STD_NULL
+    fs_gs_reset, STD_NULL
 };
 
 static C_INT fs_gs_prepare(core_machine_cpu_profile profile, fs_gs_machine *state)

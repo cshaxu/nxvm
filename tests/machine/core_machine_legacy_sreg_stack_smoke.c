@@ -17,7 +17,7 @@ static C_VOID legacy_sreg_stack_reset(C_VOID *opaque)
 }
 
 static const core_machine_execution_provider legacy_sreg_stack_provider = {
-    legacy_sreg_stack_reset, STD_NULL, STD_NULL
+    legacy_sreg_stack_reset, STD_NULL
 };
 
 static C_INT legacy_sreg_stack_test_lock(C_VOID)

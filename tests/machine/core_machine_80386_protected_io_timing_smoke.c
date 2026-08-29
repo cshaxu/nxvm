@@ -61,7 +61,7 @@ static C_VOID timing_s7_advance(C_VOID *opaque, type_unsigned_64 ticks)
 }
 
 static const core_machine_execution_provider timing_s7_execution = {
-    timing_s7_reset, STD_NULL, timing_s7_advance
+    timing_s7_reset, timing_s7_advance
 };
 
 static C_INT timing_s7_prepare(core_machine **out_machine, timing_s7_state *state)

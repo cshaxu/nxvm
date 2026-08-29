@@ -67,6 +67,7 @@ add_library(core-machine STATIC
     src/core/machine/clock.c
     src/core/machine/cpu_timing.c
     src/core/machine/cpu_timing_model.c
+    src/core/machine/d4_memory.c
     src/core/machine/debug.c
     src/core/machine/entry_plan_interface.c
     src/core/machine/fdc.c
@@ -1894,6 +1895,9 @@ add_executable(vm-hdd-authority-smoke tests/machine/vm_hdd_authority_smoke.c)
 target_link_libraries(vm-hdd-authority-smoke PRIVATE vm-composition)
 add_executable(vm-bios-authority-smoke tests/machine/vm_bios_authority_smoke.c)
 target_link_libraries(vm-bios-authority-smoke PRIVATE vm-composition)
+add_executable(vm-rom-int15-memory-smoke
+    tests/machine/vm_rom_int15_memory_smoke.c)
+target_link_libraries(vm-rom-int15-memory-smoke PRIVATE vm-composition)
 add_executable(vm-boot-failure-lifecycle-smoke
     tests/machine/vm_boot_failure_lifecycle_smoke.c)
 target_link_libraries(vm-boot-failure-lifecycle-smoke PRIVATE vm-composition)
@@ -2310,6 +2314,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     vm-rom-ega-int10-system-smoke
     vm-rom-text-write-char-smoke
     vm-rom-int13-hdd-type-smoke
+    vm-rom-int15-memory-smoke
     vm-ega-mode10-boot-smoke
     core-machine-stopped-lifecycle-smoke
     core-machine-cpu-pic-lifecycle-smoke
@@ -2947,8 +2952,8 @@ function(add_current_vm_artifact target version)
     endif()
 endfunction()
 
-set(PROJECT_CURRENT_VM_ARTIFACT_TARGET vm-0-5-0495)
-add_current_vm_artifact(vm-0-5-0495 "0.5.0495")
+set(PROJECT_CURRENT_VM_ARTIFACT_TARGET vm-0-5-0499)
+add_current_vm_artifact(vm-0-5-0499 "0.5.0499")
 option(PROJECT_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
 
@@ -3288,6 +3293,12 @@ if(PROJECT_VERIFY_DEPENDENCY_DAG)
         COMMENT "Verifying core rational device-clock boundary"
         VERBATIM)
 
+    add_custom_target(verify-core-event-deadline-scheduler
+        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_core_event_deadline_scheduler.cmake"
+        COMMENT "Verifying Core event-deadline scheduler convergence"
+        VERBATIM)
+
     add_custom_target(verify-ata-pio-feature-boundary
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
             -P "${CMAKE_SOURCE_DIR}/cmake/verify_ata_pio_feature_boundary.cmake"
@@ -3494,6 +3505,7 @@ set(PROJECT_CURRENT_SPECIALIZED_VERIFIER_CANDIDATES
     verify-boot-failure-portal-closure
     verify-cmos-rtc-boundary
     verify-rational-clock-boundary
+    verify-core-event-deadline-scheduler
     verify-ata-pio-feature-boundary
     verify-hdd-legacy-api-closure
     verify-vm-media-atomic-save
@@ -3626,10 +3638,10 @@ foreach(project_t345_target IN LISTS PROJECT_T344_CURRENT_GATE_TARGETS)
 endforeach()
 list(LENGTH PROJECT_T345_S2_OWNER_TEST_STRICT_TARGETS project_t345_s2_pure_count)
 list(LENGTH PROJECT_T345_S2_MIXED_OWNER_TEST_TARGETS project_t345_s2_mixed_count)
-if(NOT project_t345_s2_pure_count EQUAL 183 OR
+if(NOT project_t345_s2_pure_count EQUAL 184 OR
         NOT project_t345_s2_mixed_count EQUAL 3)
     message(FATAL_ERROR
-        "T345 S2 expected 183 pure and 3 mixed owner-test targets; found ${project_t345_s2_pure_count} pure and ${project_t345_s2_mixed_count} mixed.")
+        "T345 S2 expected 184 pure and 3 mixed owner-test targets; found ${project_t345_s2_pure_count} pure and ${project_t345_s2_mixed_count} mixed.")
 endif()
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     foreach(project_t345_target IN LISTS PROJECT_T345_S2_OWNER_TEST_STRICT_TARGETS)
@@ -3698,6 +3710,7 @@ set(PROJECT_T345_S4_RESIDUAL_DIRECT_ENTRIES
     "core-machine-executor|src/core/machine/dma.c|machine-executor"
     "core-machine-executor|src/core/machine/kbc.c|machine-executor"
     "core-machine-executor|src/core/machine/xt_ppi_keyboard.c|machine-executor"
+    "core-machine-executor|src/core/machine/xt_keyboard.c|machine-executor"
     "core-machine-executor|src/core/machine/rtc.c|machine-executor"
     "core-product-debug|src/core/product/debug/debug_access.c|debug-xasm"
     "core-product-debug|src/core/product/debug/debug.c|debug-xasm"

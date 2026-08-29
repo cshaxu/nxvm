@@ -66,9 +66,26 @@ static inline type_status test_core_machine_fixture_register_reset_mapping(
     core_machine *machine, type_unsigned_32 linear, type_unsigned_32 physical,
     STD_SIZE_T bytes)
 {
-    return machine == STD_NULL ? TYPE_STATUS_INVALID_ARGUMENT :
-        core_machine_memory_register_mapping(&machine->executor_memory, linear,
-            physical, bytes);
+    type_status status;
+    STD_SIZE_T mapped_bytes;
+
+    if (machine == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    /* Instruction refresh can prefetch up to 15 bytes.  A reset fixture which
+     * supplies a shorter program must still map that complete window; otherwise
+     * the trailing fetch can escape a high-ROM alias before the first opcode. */
+    mapped_bytes = bytes < 15u ? 15u : bytes;
+    status = core_machine_memory_register_mapping(&machine->executor_memory, linear,
+        physical, mapped_bytes);
+    /* The corpus names every reset fixture through the 80386 alias.  Each
+     * earlier CPU fetches the same bytes through its narrower physical bus. */
+    if (status == TYPE_STATUS_OK &&
+        machine->cpu_profile <= CORE_MACHINE_CPU_PROFILE_80286 &&
+        linear == 0xfffffff0u) {
+        status = core_machine_memory_register_mapping(&machine->executor_memory,
+            machine->cpu_profile <= CORE_MACHINE_CPU_PROFILE_80186 ?
+                0x000ffff0u : 0x00fffff0u, physical, mapped_bytes);
+    }
+    return status;
 }
 
 static inline type_status test_core_machine_fixture_register_memory_device_provider(

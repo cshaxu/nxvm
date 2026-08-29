@@ -21,7 +21,7 @@ static C_VOID vm86_iret_reset(C_VOID *opaque)
 }
 
 static const core_machine_execution_provider vm86_iret_provider = {
-    vm86_iret_reset, STD_NULL, STD_NULL
+    vm86_iret_reset, STD_NULL
 };
 
 static C_INT vm86_iret_write_u32(core_machine *machine,
@@ -100,7 +100,7 @@ static C_INT vm86_iret_success(const type_unsigned_8 *instruction,
             core_machine_get_cpu_diagnostic(state.machine, &diagnostic) != TYPE_STATUS_OK ||
             diagnostic.first_fault.valid ||
             state.machine->executor_cpu.data.eflags !=
-                (VCPU_EFLAGS_VM | VCPU_EFLAGS_IF) ||
+                (VCPU_EFLAGS_VM | VCPU_EFLAGS_IF | 0x02u) ||
             state.machine->executor_cpu.data.eip != 0x0011u ||
             state.machine->executor_cpu.data.esp != 0x00001234u ||
             !vm86_iret_cache(&state.machine->executor_cpu.data.cs, 0x0200u, SREG_CODE) ||

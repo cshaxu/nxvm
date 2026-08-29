@@ -884,7 +884,8 @@ C_INT main(C_VOID)
         primary.data.currAddr[0] != 0x0210u || primary.data.currCount[0] != 0u ||
         primary.data.currAddr[1] != 0x0310u || primary.data.currCount[1] != 0u ||
         (primary.data.mask & (VDMA_MASK_DRQ(0u) | VDMA_MASK_DRQ(1u))) != 0u ||
-        (primary.data.status & (VDMA_STATUS_TC(0u) | VDMA_STATUS_TC(1u))) != 0u ||
+        (primary.data.status & VDMA_STATUS_TC(0u)) != 0u ||
+        (primary.data.status & VDMA_STATUS_TC(1u)) == 0u ||
         priority_fixture.terminal_count != 1u) {
         failed = 1;
     }

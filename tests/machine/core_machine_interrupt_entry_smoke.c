@@ -43,7 +43,7 @@ static C_VOID ie_reset(C_VOID *opaque)
 }
 
 static const core_machine_execution_provider ie_provider = {
-    ie_reset, STD_NULL, STD_NULL
+    ie_reset, STD_NULL
 };
 
 static C_INT ie_write(interrupt_entry_machine *state, type_unsigned_32 address,

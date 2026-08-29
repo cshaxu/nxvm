@@ -42,7 +42,7 @@ C_INT main(C_VOID)
         byte != 0x5au ||
         core_machine_debug_capture_instruction_observation(machine,
             &observation) != TYPE_STATUS_OK || observation.cs != 0xf000u ||
-        observation.cs_base != 0xf0000u || observation.eip != 0xfff0u ||
+        observation.cs_base != 0xffff0000u || observation.eip != 0xfff0u ||
         observation.instruction_byte_count >
             CORE_MACHINE_DEBUG_INSTRUCTION_BYTES ||
         observation.memory_access_count >

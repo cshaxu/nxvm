@@ -22,7 +22,7 @@ static C_VOID real_final_reset(C_VOID *opaque)
 }
 
 static const core_machine_execution_provider real_final_provider = {
-    real_final_reset, STD_NULL, STD_NULL
+    real_final_reset, STD_NULL
 };
 
 static C_INT real_final_prepare(real_final_machine *state,
@@ -108,7 +108,8 @@ static C_INT real_final_test_gp_delivery(C_VOID)
                 after.data.ss.base + (type_unsigned_16)after.data.esp,
                 TYPE_REFERENCE_OF(frame), sizeof(frame)) || frame[0] !=
             REAL_FINAL_CODE_OFFSET || frame[1] != before.data.cs.selector ||
-            frame[2] != (type_unsigned_16)before.data.eflags;
+            frame[2] != (type_unsigned_16)((before.data.eflags &
+                ~VCPU_EFLAGS_RESERVED) | 0x02u);
     }
     core_machine_destroy(state.machine);
     return !failed;

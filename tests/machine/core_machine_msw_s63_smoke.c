@@ -14,7 +14,7 @@ static C_VOID msw_s63_reset(C_VOID *opaque)
 }
 
 static const core_machine_execution_provider msw_s63_provider = {
-    msw_s63_reset, STD_NULL, STD_NULL
+    msw_s63_reset, STD_NULL
 };
 
 static C_INT msw_s63_prepare(msw_s63_machine *state, core_machine_cpu_profile profile)
@@ -113,7 +113,7 @@ static C_INT msw_s63_test_success(C_VOID)
     type_unsigned_8 profile;
     for (profile = 0u; profile != sizeof(profiles) / sizeof(profiles[0]); ++profile) {
         msw_s63_machine state; t_cpu before; t_cpu after; core_machine_run_result result;
-        core_machine_cpu_diagnostic diagnostic; type_status status;
+        core_machine_cpu_diagnostic diagnostic; type_status status = TYPE_STATUS_INVALID_STATE;
         C_INT failed = !msw_s63_prepare(&state, profiles[profile]);
         if (!failed) {
             msw_s63_seed(&state); state.machine->executor_cpu.data.cr0 = 0x00a5000du;
@@ -270,7 +270,7 @@ static C_INT msw_s63_test_privilege_and_faults(C_VOID)
     type_unsigned_8 mode;
     for (mode=0u; mode != 3u; ++mode) {
         msw_s63_machine state; t_cpu before; t_cpu after; core_machine_run_result result;
-        core_machine_cpu_diagnostic diagnostic; type_status status; const type_unsigned_8 *code = mode == 0u ? smsw : lmsw;
+        core_machine_cpu_diagnostic diagnostic; type_status status = TYPE_STATUS_INVALID_STATE; const type_unsigned_8 *code = mode == 0u ? smsw : lmsw;
         C_INT failed = !msw_s63_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
         if (!failed) {
             msw_s63_seed(&state); msw_s63_enter_protected(&state, mode == 0u ? 3u : 3u, mode == 2u);
@@ -285,7 +285,7 @@ static C_INT msw_s63_test_privilege_and_faults(C_VOID)
     }
     for (mode=0u; mode != 2u; ++mode) {
         msw_s63_machine state; t_cpu before; t_cpu after; core_machine_run_result result;
-        core_machine_cpu_diagnostic diagnostic; type_status status; const type_unsigned_8 *code = mode == 0u ? smsw_memory : lmsw_memory;
+        core_machine_cpu_diagnostic diagnostic; type_status status = TYPE_STATUS_INVALID_STATE; const type_unsigned_8 *code = mode == 0u ? smsw_memory : lmsw_memory;
         C_INT failed = !msw_s63_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
         if (!failed) {
             msw_s63_seed(&state); msw_s63_enter_protected(&state, 0u, 0); state.machine->executor_cpu.data.ds.limit = 0x0fu;

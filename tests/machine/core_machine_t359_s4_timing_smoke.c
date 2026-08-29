@@ -76,7 +76,7 @@ static C_VOID t359_s4_advance(C_VOID *opaque, type_unsigned_64 ticks)
 }
 
 static const core_machine_execution_provider t359_s4_execution = {
-    t359_s4_reset, STD_NULL, t359_s4_advance
+    t359_s4_reset, t359_s4_advance
 };
 
 static C_INT t359_s4_prepare(core_machine_cpu_profile profile,

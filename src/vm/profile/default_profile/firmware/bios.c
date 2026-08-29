@@ -6,6 +6,7 @@
 
 #include "core/machine/media_interface.h"
 #include "core/machine/firmware_interface.h"
+#include "core/machine/cpu.h"
 
 
 #include "bios.h"
@@ -44,22 +45,31 @@ static core_machine_media_info bios_media_info(
     core_machine_media_result result;
 
     if (core_machine_media_query(media_registry, hdd_media_id, &info, &result) !=
-            TYPE_STATUS_OK || result != CORE_MACHINE_MEDIA_RESULT_OK) {
+            TYPE_STATUS_OK || (result != CORE_MACHINE_MEDIA_RESULT_OK &&
+            result != CORE_MACHINE_MEDIA_RESULT_ABSENT)) {
         STD_MEMSET(&info, TYPE_ZERO_8, sizeof(info));
     }
     return info;
 }
 
 static C_VOID bios_load_data(t_bios *bios, core_machine_firmware_context *firmware,
-    const core_machine_media_registry *media_registry, core_machine_media_id hdd_media_id) {
-    core_machine_media_info media = bios_media_info(media_registry, hdd_media_id);
+    const core_machine_media_registry *media_registry, core_machine_media_id fdd_media_id,
+    core_machine_media_id hdd_media_id) {
+    core_machine_media_info fdd = bios_media_info(media_registry, fdd_media_id);
+    core_machine_media_info hdd = bios_media_info(media_registry, hdd_media_id);
     C_UCHAR zeroes[0x100] = { 0 };
     (C_VOID)core_machine_firmware_memory_write(firmware, 0x00400u, zeroes, sizeof(zeroes));
     bios_write_word(firmware, 0u, VBIOS_ADDR_SERI_PORT_COM1, 0x03f8); bios_write_word(firmware, 0u, VBIOS_ADDR_PARA_PORT_LPT1, 0x0378); bios_write_word(firmware, 0u, VBIOS_ADDR_PARA_PORT_LPT4, 0x9fc0); bios_write_word(firmware, 0u, VBIOS_ADDR_EQUIP_FLAG, 0x0021); bios_write_word(firmware, 0u, VBIOS_ADDR_RAM_SIZE, bios->data.base_memory_kib);
     bios_write_byte(firmware, 0u, VBIOS_ADDR_KEYB_FLAG0, 0x20); bios_write_word(firmware, 0u, VBIOS_ADDR_KEYB_BUF_HEAD, 0x041e); bios_write_word(firmware, 0u, VBIOS_ADDR_KEYB_BUF_TAIL, 0x041e); bios_write_byte(firmware, 0u, VBIOS_ADDR_SOFT_RESET_FLAG, bios->flagBoot ? 0x80u : 0u);
     bios_write_byte(firmware, 0u, VBIOS_ADDR_FDD_CALI_FLAG, 0x01); bios_write_byte(firmware, 0u, VBIOS_ADDR_FDD_MOTOR_TIMEOUT, 0x25); bios_write_byte(firmware, 0u, VBIOS_ADDR_FDD_STATUS, 0x09); bios_write_byte(firmware, 0u, VBIOS_ADDR_FDC_CYLINDER, 0x01); bios_write_byte(firmware, 0u, VBIOS_ADDR_FDC_SECTOR, 0x01); bios_write_byte(firmware, 0u, VBIOS_ADDR_FDC_BYTE_COUNT, 0x02);
+    bios_write_byte(firmware, 0u, VBIOS_ADDR_FDD_SECTORS_PER_TRACK,
+        fdd.geometry.sectors_per_track != 0u ?
+            TYPE_MASK_UNSIGNED_8(fdd.geometry.sectors_per_track) : 18u);
+    bios_write_byte(firmware, 0u, VBIOS_ADDR_FDD_MAX_CYLINDER,
+        fdd.geometry.cylinders != 0u ?
+            TYPE_MASK_UNSIGNED_8(fdd.geometry.cylinders - 1u) : 79u);
     bios_write_byte(firmware, 0u, VBIOS_ADDR_VGA_VIDEO_MODE, 0x03); bios_write_word(firmware, 0u, VBIOS_ADDR_VGA_COLUMN, 0x0050); bios_write_word(firmware, 0u, VBIOS_ADDR_VGA_PAGE_SIZE, 0x1000); bios_write_word(firmware, 0u, VBIOS_ADDR_VGA_CURSOR_P0, 0x0500); bios_write_byte(firmware, 0u, VBIOS_ADDR_VGA_CURSOR_BOTTOM, 0x0e); bios_write_byte(firmware, 0u, VBIOS_ADDR_VGA_CURSOR_TOP, 0x0d); bios_write_word(firmware, 0u, VBIOS_ADDR_VGA_ACT_ADPT_PORT, 0x03d4); bios_write_byte(firmware, 0u, VBIOS_ADDR_VGA_MODE_REGISTER, 0x29); bios_write_byte(firmware, 0u, VBIOS_ADDR_VGA_COLOR_PALETTE, 0x30);
-    bios_write_byte(firmware, 0u, VBIOS_ADDR_HDD_LST_OP_STATUS, 0u); bios_write_byte(firmware, 0u, VBIOS_ADDR_HDD_NUMBER, media.present ? 0x01 : 0u); bios_write_byte(firmware, 0u, VBIOS_ADDR_HDD_CONTROL, 0xc0); bios_write_byte(firmware, 0u, VBIOS_ADDR_PARA_TIMEOUT_LPT1, 0x14); bios_write_byte(firmware, 0u, VBIOS_ADDR_SERI_TIMEOUT_COM1, 0x0a); bios_write_word(firmware, 0u, VBIOS_ADDR_KEYB_BUFFER_START, 0x041e); bios_write_word(firmware, 0u, VBIOS_ADDR_KEYB_BUFFER_END, 0x043d);
+    bios_write_byte(firmware, 0u, VBIOS_ADDR_HDD_LST_OP_STATUS, 0u); bios_write_byte(firmware, 0u, VBIOS_ADDR_HDD_NUMBER, hdd.present ? 0x01 : 0u); bios_write_byte(firmware, 0u, VBIOS_ADDR_HDD_CONTROL, 0xc0); bios_write_byte(firmware, 0u, VBIOS_ADDR_PARA_TIMEOUT_LPT1, 0x14); bios_write_byte(firmware, 0u, VBIOS_ADDR_SERI_TIMEOUT_COM1, 0x0a); bios_write_word(firmware, 0u, VBIOS_ADDR_KEYB_BUFFER_START, 0x041e); bios_write_word(firmware, 0u, VBIOS_ADDR_KEYB_BUFFER_END, 0x043d);
     bios_write_byte(firmware, 0u, VBIOS_ADDR_VGA_ROW_NUMBER, 0x18); bios_write_word(firmware, 0u, VBIOS_ADDR_VGA_CHAR_HEIGHT, 0x0010); bios_write_byte(firmware, 0u, VBIOS_ADDR_VGA_MODE_OPTIONS1, 0x60); bios_write_byte(firmware, 0u, VBIOS_ADDR_VGA_MODE_OPTIONS2, 0x09); bios_write_byte(firmware, 0u, VBIOS_ADDR_VGA_DISPLAY_DATA, 0x11); bios_write_byte(firmware, 0u, VBIOS_ADDR_VGA_DCC_INDEX, 0x0b); bios_write_byte(firmware, 0u, VBIOS_ADDR_DRV_SAME_FLAG, 0x77); bios_write_byte(firmware, 0u, VBIOS_ADDR_DRV_MEDIA_STATE_D0, 0x17); bios_write_byte(firmware, 0u, VBIOS_ADDR_KEYB_MODE_TYPE, 0x10); bios_write_byte(firmware, 0u, VBIOS_ADDR_KEYB_LED_FLAG, 0x02); bios_write_dword(firmware, 0u, VBIOS_ADDR_VGA_VIDEO_TAB_PTR, 0xc0005d3a); bios_write_byte(firmware, 0u, VBIOS_ADDR_POST_WORK_AREA, VBIOS_POST_REPORT_NONE);
 }
 static C_VOID bios_load_additional(core_machine_firmware_context *firmware,
@@ -292,9 +302,7 @@ C_INT vm_profile_default_bios_materialize(t_bios *bios,
         core_machine_firmware_register_immutable_rom(firmware,
             physical_start + mutable_offset + mutable_bytes,
             image + mutable_offset + mutable_bytes,
-            bytes - mutable_offset - mutable_bytes) == TYPE_STATUS_OK &&
-        core_machine_firmware_register_immutable_rom(firmware, 0xffeffff0u,
-            image + VBIOS_ADDR_POST_OFF, 16u) == TYPE_STATUS_OK;
+            bytes - mutable_offset - mutable_bytes) == TYPE_STATUS_OK;
     STD_FREE(image);
     if (!result) return 0;
     bios->rom_materialized = TYPE_TRUE;
@@ -305,17 +313,119 @@ C_INT vm_profile_default_bios_materialize(t_bios *bios,
 C_VOID vm_profile_default_bios_reset(t_bios *bios,
     core_machine_firmware_context *firmware,
     const core_machine_media_registry *media_registry,
-    core_machine_media_id hdd_media_id) {
+    core_machine_media_id fdd_media_id, core_machine_media_id hdd_media_id) {
     STD_SIZE_T index;
 
     if (bios == STD_NULL || firmware == STD_NULL) return;
     if (!bios->rom_materialized) return;
-    bios_load_data(bios, firmware, media_registry, hdd_media_id);
+    bios_load_data(bios, firmware, media_registry, fdd_media_id, hdd_media_id);
     for (index = 0u; index < sizeof(bios->reset_ivt); ++index) {
         bios_write_byte(firmware, 0u, TYPE_MASK_UNSIGNED_16(index),
             bios->reset_ivt[index]);
     }
     bios_load_additional(firmware, media_registry, hdd_media_id);
+}
+
+static type_unsigned_16 bios_read_word(const type_unsigned_8 *bytes)
+{
+    return (type_unsigned_16)(bytes[0] | ((type_unsigned_16)bytes[1] << 8u));
+}
+
+static type_unsigned_32 bios_descriptor_base(const type_unsigned_8 *descriptor)
+{
+    return (type_unsigned_32)bios_read_word(descriptor + 2u) |
+        ((type_unsigned_32)descriptor[4u] << 16u);
+}
+
+static C_INT bios_int15_block_move_copy(core_machine_firmware_context *firmware,
+    type_unsigned_32 source, type_unsigned_32 target, STD_SIZE_T bytes)
+{
+    type_unsigned_8 word[2];
+    STD_SIZE_T copied = 0u;
+
+    while (copied < bytes) {
+        if (core_machine_firmware_memory_read(firmware, source + copied, word,
+                sizeof(word)) != TYPE_STATUS_OK ||
+            core_machine_firmware_memory_write(firmware, target + copied, word,
+                sizeof(word)) != TYPE_STATUS_OK) return 0;
+        copied += sizeof(word);
+    }
+    return 1;
+}
+
+C_INT vm_profile_default_bios_handle_int15_block_move(t_bios *bios,
+    core_machine_firmware_context *firmware, type_unsigned_16 target_segment,
+    type_unsigned_16 target_offset,
+    const core_machine_firmware_interrupt_frame *input,
+    core_machine_firmware_interrupt_result *output)
+{
+    type_unsigned_8 source_descriptor[8];
+    type_unsigned_8 target_descriptor[8];
+    type_unsigned_16 expected_offset;
+    type_unsigned_16 expected_segment;
+    type_unsigned_16 limit;
+    type_unsigned_32 table;
+    STD_SIZE_T bytes;
+    type_bool a20_enabled = TYPE_FALSE;
+    type_bool a20_failed = TYPE_FALSE;
+    C_INT success = 0;
+
+    if (bios == STD_NULL || firmware == STD_NULL || input == STD_NULL ||
+        output == STD_NULL || input->ax >> 8u != 0x87u) return 0;
+    expected_offset = bios_read_word(bios->reset_ivt + 0x15u * 4u);
+    expected_segment = bios_read_word(bios->reset_ivt + 0x15u * 4u + 2u);
+    if (target_segment != expected_segment || target_offset != expected_offset) {
+        return 0;
+    }
+    output->ax = input->ax;
+    output->flags = (type_unsigned_16)(input->flags & ~(VCPU_EFLAGS_CF |
+        VCPU_EFLAGS_ZF));
+    table = (type_unsigned_32)input->es * 16u + input->si;
+    bytes = (STD_SIZE_T)input->cx * 2u;
+    if (core_machine_firmware_set_a20(firmware, TYPE_TRUE) != TYPE_STATUS_OK) {
+        a20_failed = TYPE_TRUE;
+    } else {
+        a20_enabled = TYPE_TRUE;
+    }
+    if (!a20_failed && bytes != 0u && bytes <= 0x10000u &&
+        core_machine_firmware_memory_read(firmware, table + 0x10u,
+            source_descriptor, sizeof(source_descriptor)) == TYPE_STATUS_OK &&
+        core_machine_firmware_memory_read(firmware, table + 0x18u,
+            target_descriptor, sizeof(target_descriptor)) == TYPE_STATUS_OK) {
+        limit = (type_unsigned_16)(bytes - 1u);
+        if (bios_read_word(source_descriptor) >= limit &&
+            bios_read_word(target_descriptor) >= limit) {
+            source_descriptor[0] = TYPE_MASK_UNSIGNED_8(limit);
+            source_descriptor[1] = TYPE_MASK_UNSIGNED_8(limit >> 8u);
+            source_descriptor[5] = 0x93u;
+            target_descriptor[0] = source_descriptor[0];
+            target_descriptor[1] = source_descriptor[1];
+            target_descriptor[5] = 0x93u;
+            if (core_machine_firmware_memory_write(firmware, table + 0x10u,
+                    source_descriptor, sizeof(source_descriptor)) == TYPE_STATUS_OK &&
+                core_machine_firmware_memory_write(firmware, table + 0x18u,
+                    target_descriptor, sizeof(target_descriptor)) == TYPE_STATUS_OK &&
+                bios_int15_block_move_copy(firmware,
+                    bios_descriptor_base(source_descriptor),
+                    bios_descriptor_base(target_descriptor), bytes)) {
+                output->ax &= 0x00ffu;
+                output->flags |= VCPU_EFLAGS_ZF;
+                success = 1;
+            }
+        }
+    }
+    if (a20_enabled) {
+        if (core_machine_firmware_set_a20(firmware, TYPE_FALSE) != TYPE_STATUS_OK) {
+            a20_failed = TYPE_TRUE;
+            success = 0;
+        }
+    }
+    if (!success) {
+        output->ax = (type_unsigned_16)((input->ax & 0x00ffu) |
+            (a20_failed ? 0x0300u : 0x0200u));
+        output->flags |= VCPU_EFLAGS_CF;
+    }
+    return 1;
 }
 C_VOID vm_profile_default_bios_refresh(t_bios *bios) { (C_VOID)bios; }
 C_VOID vm_profile_default_bios_finalize(t_bios *bios)

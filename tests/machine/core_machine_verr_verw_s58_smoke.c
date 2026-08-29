@@ -26,7 +26,6 @@ static C_VOID verr_verw_s58_reset(C_VOID *opaque)
 
 static const core_machine_execution_provider verr_verw_s58_execution_provider = {
     verr_verw_s58_reset,
-    STD_NULL,
     STD_NULL
 };
 

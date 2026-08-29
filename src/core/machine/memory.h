@@ -44,6 +44,11 @@ typedef struct {
     core_machine_memory_device_query query;
     C_VOID *owner;
     type_bool overlay;
+    /* Immutable reset-ROM alias decoded at its raw physical address before
+     * ordinary board A20 routing. */
+    type_bool pre_a20;
+    /* A selected board decode that replaces an otherwise valid lower route. */
+    type_bool replacement;
 } core_machine_memory_device_provider;
 
 typedef struct {
@@ -121,7 +126,16 @@ type_status core_machine_memory_register_device_provider(t_ram *ram,
 type_status core_machine_memory_register_overlay_device_provider(t_ram *ram,
     type_unsigned_32 physical_start, STD_SIZE_T bytes,
     core_machine_memory_device_read read, core_machine_memory_device_write write,
-    core_machine_memory_device_query query, C_VOID *owner);type_status core_machine_memory_register_device_provider_and_write_observer(
+    core_machine_memory_device_query query, C_VOID *owner);
+type_status core_machine_memory_register_pre_a20_overlay_device_provider(t_ram *ram,
+    type_unsigned_32 physical_start, STD_SIZE_T bytes,
+    core_machine_memory_device_read read, core_machine_memory_device_write write,
+    core_machine_memory_device_query query, C_VOID *owner);
+type_status core_machine_memory_register_replacement_device_provider(t_ram *ram,
+    type_unsigned_32 physical_start, STD_SIZE_T bytes,
+    core_machine_memory_device_read read, core_machine_memory_device_write write,
+    core_machine_memory_device_query query, C_VOID *owner);
+type_status core_machine_memory_register_device_provider_and_write_observer(
     t_ram *ram, type_unsigned_32 physical_start, STD_SIZE_T bytes,
     core_machine_memory_device_read read, core_machine_memory_device_write write,
     core_machine_memory_device_query query, C_VOID *owner,

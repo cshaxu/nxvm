@@ -23,7 +23,6 @@ static C_VOID lar_lsl_s57_reset(C_VOID *opaque)
 
 static const core_machine_execution_provider lar_lsl_s57_execution_provider = {
     lar_lsl_s57_reset,
-    STD_NULL,
     STD_NULL
 };
 

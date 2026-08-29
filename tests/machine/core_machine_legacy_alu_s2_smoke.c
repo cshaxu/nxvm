@@ -47,7 +47,7 @@ static C_VOID legacy_alu_reset(C_VOID *opaque)
 }
 
 static const core_machine_execution_provider legacy_alu_provider = {
-    legacy_alu_reset, STD_NULL, STD_NULL
+    legacy_alu_reset, STD_NULL
 };
 
 static C_INT legacy_alu_prepare(core_machine_cpu_profile profile,
@@ -100,6 +100,21 @@ static C_INT legacy_alu_run(legacy_alu_machine *state,
 static type_unsigned_32 legacy_alu_mask(type_unsigned_8 width)
 {
     return width == 8u ? 0xffu : (width == 16u ? 0xffffu : 0xffffffffu);
+}
+
+static type_unsigned_16 legacy_alu_real_flags_image(type_unsigned_32 flags)
+{
+    type_unsigned_16 image = TYPE_MASK_UNSIGNED_16((flags &
+        ~VCPU_EFLAGS_RESERVED) | 0x02u);
+
+    return image;
+}
+
+static type_unsigned_16 legacy_alu_real_flags_known_mask(
+    core_machine_cpu_profile profile)
+{
+    return profile < CORE_MACHINE_CPU_PROFILE_80286 ? 0x0fd5u :
+        (profile == CORE_MACHINE_CPU_PROFILE_80286 ? 0x7fd5u : 0xffd5u);
 }
 
 static type_unsigned_32 legacy_alu_parity(type_unsigned_32 value)
@@ -1189,8 +1204,11 @@ static C_INT legacy_alu_test_divide_error_delivery(C_VOID)
                 !test_core_machine_fixture_read_linear(state.machine,
                 after.data.ss.base + (type_unsigned_16)after.data.esp,
                 TYPE_REFERENCE_OF(frame), sizeof(frame)) || frame[0] != code_offset ||
-                frame[1] != before.data.cs.selector || frame[2] !=
-                (type_unsigned_16)before.data.eflags;
+                frame[1] != before.data.cs.selector || (frame[2] &
+                legacy_alu_real_flags_known_mask(profiles[profile_index])) !=
+                (legacy_alu_real_flags_image(before.data.eflags) &
+                    legacy_alu_real_flags_known_mask(
+                    profiles[profile_index]));
         }
         core_machine_destroy(state.machine);
         if (failed)

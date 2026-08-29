@@ -144,7 +144,7 @@ C_INT main(C_VOID)
     const type_unsigned_8 nop = 0x90u;
     core_machine *machine = STD_NULL;
     core_machine_config config = {0};
-    core_machine_d4_platform_config d4 = {CORE_MACHINE_PC_AT_PORT_B, 0u, 2u};
+    core_machine_d4_platform_config d4 = {CORE_MACHINE_PC_AT_PORT_B, 0u};
     core_machine_d4_platform_observation d4_observation;
     core_machine_trace_provider trace;
     core_machine_dma_request_binding binding = {0};
@@ -153,25 +153,23 @@ C_INT main(C_VOID)
     competition_probe probe = {{{0}}, 0u};
     competition_dma_source source = {0xa5u};
     type_unsigned_8 byte = 0u;
-    type_unsigned_32 cpu_begin;
-    type_unsigned_32 cpu_commit;
-    type_unsigned_32 cpu_retire;
-    type_unsigned_32 dma_begin;
-    type_unsigned_32 dma_commit;
-    type_unsigned_32 dma_advance;
-    type_unsigned_32 pit_advance;
-    type_unsigned_32 pic_refresh;
-    type_unsigned_32 fdc_advance;
-    type_unsigned_32 fdc_refresh;
-    type_unsigned_32 hdc_advance;
-    type_unsigned_32 hdc_refresh;
-    type_unsigned_32 hold_request;
-    type_unsigned_32 hold_acknowledge;
-    type_unsigned_32 hold_release;
+    type_unsigned_32 cpu_begin = 0u;
+    type_unsigned_32 cpu_commit = 0u;
+    type_unsigned_32 cpu_retire = 0u;
+    type_unsigned_32 dma_begin = 0u;
+    type_unsigned_32 dma_commit = 0u;
+    type_unsigned_32 dma_advance = 0u;
+    type_unsigned_32 pit_advance = 0u;
+    type_unsigned_32 pic_refresh = 0u;
+    type_unsigned_32 fdc_advance = 0u;
+    type_unsigned_32 hdc_advance = 0u;
+    type_unsigned_32 hold_request = 0u;
+    type_unsigned_32 hold_acknowledge = 0u;
+    type_unsigned_32 hold_release = 0u;
     type_unsigned_32 reset_hold_start;
-    type_unsigned_32 reset_hold_request;
-    type_unsigned_32 reset_hold_acknowledge;
-    type_unsigned_32 reset_hold_release;
+    type_unsigned_32 reset_hold_request = 0u;
+    type_unsigned_32 reset_hold_acknowledge = 0u;
+    type_unsigned_32 reset_hold_release = 0u;
     C_INT failed = 0;
 
     config.cpu_profile = CORE_MACHINE_CPU_PROFILE_80386;
@@ -238,12 +236,8 @@ C_INT main(C_VOID)
         &pic_refresh);
     failed |= !competition_find_event(&probe, CORE_MACHINE_TRACE_FDC_ADVANCE,
         &fdc_advance);
-    failed |= !competition_find_event(&probe, CORE_MACHINE_TRACE_FDC_REFRESH,
-        &fdc_refresh);
     failed |= !competition_find_event(&probe, CORE_MACHINE_TRACE_HDC_ADVANCE,
         &hdc_advance);
-    failed |= !competition_find_event(&probe, CORE_MACHINE_TRACE_HDC_REFRESH,
-        &hdc_refresh);
     failed |= !competition_find_event(&probe,
         CORE_MACHINE_TRACE_TRANSACTION_HOLD_REQUEST, &hold_request);
     failed |= !competition_find_event(&probe,
@@ -253,8 +247,7 @@ C_INT main(C_VOID)
     failed |= cpu_begin >= cpu_commit || cpu_commit >= cpu_retire ||
         cpu_retire >= dma_begin || dma_begin >= dma_commit ||
         pit_advance >= pic_refresh || pic_refresh >= fdc_advance ||
-        fdc_advance >= fdc_refresh || fdc_refresh >= hdc_advance ||
-        hdc_advance >= hdc_refresh;
+        fdc_advance >= hdc_advance;
     reset_hold_start = probe.count;
     failed |= core_machine_transaction_hold_request(&machine->transaction,
         CORE_MACHINE_TRANSACTION_OWNER_DMA, 0u) != TYPE_STATUS_OK;

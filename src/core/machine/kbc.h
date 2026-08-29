@@ -141,8 +141,9 @@ C_INT core_machine_kbc_bind_output_port(t_kbc *controller,
 C_VOID core_machine_kbc_set_input_port(t_kbc *controller, type_unsigned_8 value);
 C_VOID core_machine_kbc_set_test_inputs(t_kbc *controller, type_unsigned_8 value);
 C_VOID core_machine_kbc_reset(t_kbc *controller);
-C_VOID core_machine_kbc_refresh(t_kbc *controller);
 C_VOID core_machine_kbc_advance(t_kbc *controller, type_unsigned_64 elapsed_ticks);
+type_status core_machine_kbc_ticks_until_event(const t_kbc *controller,
+    type_unsigned_64 *out_ticks);
 C_VOID core_machine_kbc_set_typematic_timing(t_kbc *controller,
     type_unsigned_32 initial_ticks, type_unsigned_32 repeat_ticks);
 C_VOID core_machine_kbc_set_command_response_timing(t_kbc *controller,

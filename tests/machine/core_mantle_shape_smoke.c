@@ -26,7 +26,6 @@ static C_VOID fixture_advance(C_VOID *context, type_unsigned_64 elapsed_ticks)
 
 static const core_machine_execution_provider fixture_execution_provider = {
     fixture_reset,
-    STD_NULL,
     fixture_advance
 };
 

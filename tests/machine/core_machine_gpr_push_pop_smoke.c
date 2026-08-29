@@ -17,7 +17,7 @@ static C_VOID gpr_push_pop_reset(C_VOID *opaque)
 }
 
 static const core_machine_execution_provider gpr_push_pop_provider = {
-    gpr_push_pop_reset, STD_NULL, STD_NULL
+    gpr_push_pop_reset, STD_NULL
 };
 
 static C_INT gpr_push_pop_prepare(core_machine_cpu_profile profile,
@@ -152,7 +152,7 @@ static C_INT gpr_push_pop_test_push_registers(C_VOID)
                     &diagnostic, &status) || status != TYPE_STATUS_OK ||
                     diagnostic.first_fault.valid;
                 expected = gpr_push_pop_register(&before, index) & 0xffffu;
-                if (index == 4u && profiles[profile] == CORE_MACHINE_CPU_PROFILE_8086)
+                if (index == 4u && profiles[profile] < CORE_MACHINE_CPU_PROFILE_80286)
                     expected = 0x7ffeu;
                 failed |= core_machine_memory_read_physical(
                     &state.machine->executor_memory, 0x7ffeu,

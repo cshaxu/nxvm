@@ -6,7 +6,7 @@
 #include "core/machine/retirement_observation_interface.h"
 #include "../support/core_machine_cpu_fixture.h"
 
-#define TIMING_80186_MANIFEST_RESET_LINEAR 0xfffffff0u
+#define TIMING_80186_MANIFEST_RESET_LINEAR 0x000ffff0u
 #define TIMING_80186_MANIFEST_RESET_PHYSICAL 0x000ffff0u
 #define TIMING_80186_MANIFEST_WINDOW_BYTES 16u
 #define TIMING_80186_MANIFEST_STACK_LINEAR 0x00001000u
@@ -77,7 +77,7 @@ static C_VOID timing_80186_manifest_execution_reset(C_VOID *opaque)
 }
 
 static const core_machine_execution_provider timing_80186_manifest_execution = {
-    timing_80186_manifest_execution_reset, STD_NULL, STD_NULL
+    timing_80186_manifest_execution_reset, STD_NULL
 };
 
 static C_INT timing_80186_manifest_is_i186(

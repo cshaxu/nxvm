@@ -14,7 +14,7 @@ static C_VOID rotate_reset(C_VOID *opaque)
 }
 
 static const core_machine_execution_provider rotate_provider = {
-    rotate_reset, STD_NULL, STD_NULL
+    rotate_reset, STD_NULL
 };
 
 static C_INT rotate_prepare(core_machine_cpu_profile profile, rotate_machine *state)

@@ -24,7 +24,7 @@ static C_VOID call_gate_reset(C_VOID *opaque)
 }
 
 static const core_machine_execution_provider call_gate_provider = {
-    call_gate_reset, STD_NULL, STD_NULL
+    call_gate_reset, STD_NULL
 };
 
 static C_INT call_gate_prepare(call_gate_machine *state)

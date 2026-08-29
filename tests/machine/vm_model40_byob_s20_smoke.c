@@ -1,6 +1,8 @@
 #include "type.h"
 
+#include "core/machine/machine.h"
 #include "core/machine/machine_interface.h"
+#include "core/machine/memory.h"
 #include "vm/composition/session/session_private.h"
 #include "vm/composition/session/session_interface.h"
 
@@ -26,6 +28,8 @@ C_INT main(C_VOID)
     core_machine_time_observation time_observation = {0};
     STD_SIZE_T memory_bytes = 0u;
     STD_SIZE_T retained_memory_bytes;
+    type_unsigned_8 memory_value = 0x5au;
+    type_unsigned_8 observed_memory = 0u;
     C_INT failed = 0;
 
     if (!write_chip("t386-s20-even.bin", 0u) || !write_chip("t386-s20-odd.bin", 1u)) failed = 1;
@@ -34,7 +38,7 @@ C_INT main(C_VOID)
         "t386-s20-even.bin", even_sha256, "t386-s20-odd.bin", odd_sha256,
         "project-owned synthetic test input" };
     failed |= vm_session_create(&config, &session) != TYPE_STATUS_OK || session == STD_NULL ||
-        !session->model40_private || session->core_machine_config.memory_bytes != 1024u * 1024u ||
+        !session->model40_private || session->core_machine_config.memory_bytes != 2u * 1024u * 1024u ||
         session->core_machine_config.retirement_time_contract !=
             CORE_MACHINE_RETIREMENT_TIME_DETERMINISTIC ||
         session->core_machine_config.cpu_profile != CORE_MACHINE_CPU_PROFILE_80386 ||
@@ -49,16 +53,30 @@ C_INT main(C_VOID)
     failed |= !failed && (vm_session_get_reset_vector(session, &reset_vector) != TYPE_STATUS_OK ||
         reset_vector.cs != 0xf000u || reset_vector.ip != 0xfff0u);
     retained_memory_bytes = session->retained_config.memory_bytes;
+    failed |= !failed && (core_machine_memory_write_physical(
+        &session->core_machine->executor_memory, 0x000d0000u,
+        (type_virtual_address)&memory_value, 1u) != TYPE_STATUS_OK ||
+        core_machine_memory_read_physical(&session->core_machine->executor_memory,
+            0x00fd0000u, (type_virtual_address)&observed_memory, 1u) != TYPE_STATUS_OK ||
+        observed_memory != memory_value ||
+        core_machine_memory_read_physical(&session->core_machine->executor_memory,
+            0x00200000u, (type_virtual_address)&observed_memory, 1u) != TYPE_STATUS_OK ||
+        observed_memory != 0xffu ||
+        core_machine_memory_read_physical(&session->core_machine->executor_memory,
+            0x00f30000u, (type_virtual_address)&observed_memory, 1u) != TYPE_STATUS_OK ||
+        observed_memory != 0xffu);
     failed |= !failed && vm_session_reconfigure_memory(session, 2u * 1024u * 1024u) !=
         TYPE_STATUS_INVALID_STATE;
     failed |= !failed && (core_machine_get_memory_bytes(session->core_machine,
-        &memory_bytes) != TYPE_STATUS_OK || memory_bytes != 1024u * 1024u ||
-        session->core_machine_config.memory_bytes != 1024u * 1024u ||
+        &memory_bytes) != TYPE_STATUS_OK || memory_bytes != 2u * 1024u * 1024u ||
+        session->core_machine_config.memory_bytes != 2u * 1024u * 1024u ||
         session->retained_config.memory_bytes != retained_memory_bytes);
     failed |= !failed && (core_machine_run(session->core_machine,
         (core_machine_run_budget) {1u, 0u}, &result) != TYPE_STATUS_OK ||
         result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 1u);
-    failed |= !failed && core_machine_reset(session->core_machine) != TYPE_STATUS_OK;
+    failed |= !failed && (core_machine_reset(session->core_machine) != TYPE_STATUS_OK ||
+        core_machine_advance_time(session->core_machine, 1u) != TYPE_STATUS_OK ||
+        session->core_machine->shared_pit.data.reload[1u] != 18u);
     failed |= !failed && (vm_session_get_reset_vector(session, &reset_vector) != TYPE_STATUS_OK ||
         reset_vector.cs != 0xf000u || reset_vector.ip != 0xfff0u);
     failed |= !failed && !write_chip("t386-s20-even.bin", 2u);

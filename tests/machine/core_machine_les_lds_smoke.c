@@ -17,7 +17,7 @@ static C_VOID lld_reset(C_VOID *opaque)
 }
 
 static const core_machine_execution_provider lld_provider = {
-    lld_reset, STD_NULL, STD_NULL
+    lld_reset, STD_NULL
 };
 
 static C_INT lld_prepare(core_machine_cpu_profile profile, lld_machine *state)

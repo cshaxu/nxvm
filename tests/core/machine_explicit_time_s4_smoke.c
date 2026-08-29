@@ -21,7 +21,7 @@ static C_INT machine_explicit_time_prepare(core_machine **out_machine)
 
     return core_machine_create(&config, out_machine) == TYPE_STATUS_OK &&
         core_machine_configure_rtc_cmos(*out_machine, &rtc) == TYPE_STATUS_OK &&
-        test_core_machine_fixture_register_reset_mapping(*out_machine, 0xfffffff0u,
+        test_core_machine_fixture_register_reset_mapping(*out_machine, 0x00fffff0u,
             0x000ffff0u, 16u) == TYPE_STATUS_OK &&
         core_machine_freeze_execution_providers(*out_machine) == TYPE_STATUS_OK &&
         core_machine_reset(*out_machine) == TYPE_STATUS_OK;
@@ -58,7 +58,7 @@ C_INT main(C_VOID)
 
     if (machine_explicit_time_rejects_unstarted_lifecycle() ||
         !machine_explicit_time_prepare(&machine) ||
-        core_machine_memory_write(machine, 0xfffffff0u, &halt, sizeof(halt)) !=
+        core_machine_memory_write(machine, 0x00fffff0u, &halt, sizeof(halt)) !=
             TYPE_STATUS_OK ||
         core_machine_run(machine, budget, &first) != TYPE_STATUS_OK ||
         first.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||

@@ -25,7 +25,7 @@ static C_VOID s3_gate_reset(C_VOID *opaque)
 }
 
 static const core_machine_execution_provider s3_gate_provider = {
-    s3_gate_reset, STD_NULL, STD_NULL
+    s3_gate_reset, STD_NULL
 };
 
 static C_INT s3_gate_write(s3_gate_machine *state, type_unsigned_32 address,

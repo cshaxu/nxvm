@@ -147,6 +147,10 @@ typedef struct core_machine_xt_ppi_keyboard_config {
     type_unsigned_16 port_c;
     type_unsigned_16 control_port;
     type_unsigned_8 irq;
+    /* IBM 5160 system-board DIP electrical values.  PB3 selects low
+     * (switches 1--4) or high (switches 5--8) nibble at PC0--PC3. */
+    type_unsigned_8 switches_low;
+    type_unsigned_8 switches_high;
 } core_machine_xt_ppi_keyboard_config;
 
 typedef struct core_machine_config {
@@ -338,7 +342,6 @@ typedef struct core_machine_planar_parity_observation {
 typedef struct core_machine_d4_platform_config {
     type_unsigned_16 port;
     type_unsigned_8 failsafe_pit_counter;
-    type_unsigned_8 slowdown_pit_counter;
 } core_machine_d4_platform_config;
 
 typedef struct core_machine_d4_platform_observation {
@@ -349,6 +352,18 @@ typedef struct core_machine_d4_platform_observation {
     C_INT failsafe_latched;
     C_INT nmi_signaled;
 } core_machine_d4_platform_observation;
+
+/* Construction-only input for the selected DeskPro D4 RAM controller. The
+ * Core copies both ROM lanes while creating the machine and retains no caller
+ * memory pointer. */
+typedef struct core_machine_d4_memory_config {
+    type_bool present;
+    const type_unsigned_8 *even_rom;
+    const type_unsigned_8 *odd_rom;
+    STD_SIZE_T rom_chip_bytes;
+    type_unsigned_8 diagnostic_high;
+    type_unsigned_16 ram_setup;
+} core_machine_d4_memory_config;
 /* Copied logical speaker-line state. The Core owns port-B and PIT sampling;
  * host audio is a separate, optional consumer. */
 typedef struct core_machine_speaker_observation {
@@ -370,6 +385,16 @@ typedef struct core_machine_absent_memory_config {
 
 #define CORE_MACHINE_ABSENT_MEMORY_WINDOW_COUNT 4u
 
+/* A profile-declared physical alias into installed Core RAM.  This preserves
+ * one RAM owner while allowing board address decoding to select it twice. */
+typedef struct core_machine_memory_alias_config {
+    type_unsigned_32 physical_start;
+    type_unsigned_32 backing_start;
+    STD_SIZE_T bytes;
+} core_machine_memory_alias_config;
+
+#define CORE_MACHINE_MEMORY_ALIAS_COUNT 4u
+
 #define CORE_MACHINE_DMA_CONTROLLER_COUNT 2u
 #define CORE_MACHINE_DMA_CASCADE_CHANNEL 4u
 #define CORE_MACHINE_DMA_FDC_CHANNEL_UNBOUND 0xffu
@@ -389,6 +414,8 @@ typedef struct core_machine_dma_wiring {
 typedef struct core_machine_plan_topology {
     type_unsigned_8 absent_memory_count;
     core_machine_absent_memory_config absent_memory[CORE_MACHINE_ABSENT_MEMORY_WINDOW_COUNT];
+    type_unsigned_8 memory_alias_count;
+    core_machine_memory_alias_config memory_alias[CORE_MACHINE_MEMORY_ALIAS_COUNT];
     type_bool planar_parity_present;
     core_machine_planar_parity_config planar_parity;
     type_bool d4_platform_present;
@@ -486,11 +513,11 @@ type_status core_machine_plan_configure_fdc(core_machine_plan *plan,
 type_status core_machine_plan_configure_hdc(core_machine_plan *plan,
     core_machine_media_id media_id, core_machine_media_id slave_media_id,
     const core_machine_hdc_config *config);
+type_status core_machine_plan_configure_d4_memory(core_machine_plan *plan,
+    const core_machine_d4_memory_config *config);
 type_status core_machine_plan_register_memory_device(core_machine_plan *plan,
     type_unsigned_32 physical_start, STD_SIZE_T bytes,
     const core_machine_memory_device_callbacks *callbacks, C_VOID *owner);
-type_status core_machine_plan_enable_d4_memory_parity(core_machine_plan *plan,
-    type_unsigned_8 *mask);
 type_status core_machine_create_from_plan(const core_machine_plan *plan,
     core_machine **out_machine);
 type_status core_machine_get_timing_disposition(const core_machine *machine,
@@ -540,11 +567,6 @@ type_status core_machine_run(
     core_machine *machine,
     core_machine_run_budget budget,
     core_machine_run_result *result);
-
-/* Composition publishes already-selected virtual source ticks here. This is
- * machine time, never an implicit host-duration conversion or CPU retirement. */
-type_status core_machine_advance_time(core_machine *machine,
-    type_unsigned_64 source_ticks);
 
 type_status core_machine_request_stop(core_machine *machine);
 

@@ -976,6 +976,10 @@ static C_VOID core_machine_fdc_read_direction(t_port *port, type_unsigned_16 id,
     C_VOID *owner)
 {
     core_machine_fdc *fdc = owner; (C_VOID)port; (C_VOID)id;
+
+    /* Media insertion/removal is an external input, not a controller clock.
+     * Sample it only when the guest observes the change-latch port. */
+    core_machine_fdc_refresh(fdc);
     fdc->connect.port->data.ioByte = fdc->data.dir;
 }
 
@@ -1151,6 +1155,39 @@ C_VOID core_machine_fdc_advance_at(core_machine_fdc *fdc,
     }
     core_machine_fdc_publish_due_dma_byte(fdc);
     core_machine_fdc_publish_due_ndma_byte(fdc);
+}
+
+type_status core_machine_fdc_next_due_tick(const core_machine_fdc *fdc,
+    type_unsigned_64 *out_due_tick)
+{
+    type_unsigned_64 due_tick = UINT64_MAX;
+    type_unsigned_8 drive;
+
+    if (fdc == STD_NULL || out_due_tick == STD_NULL) {
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
+    if (fdc->data.phase == core_machine_fdc_PHASE_PENDING_COMMAND ||
+        fdc->data.phase == core_machine_fdc_PHASE_PENDING_COMPLETE) {
+        *out_due_tick = fdc->data.elapsed_ticks;
+        return TYPE_STATUS_OK;
+    }
+    if (fdc->data.reset_pending && fdc->data.reset_due_tick < due_tick) {
+        due_tick = fdc->data.reset_due_tick;
+    }
+    for (drive = 0u; drive < CORE_MACHINE_FDC_DRIVE_COUNT; ++drive) {
+        if (fdc->data.seek_pending[drive] && fdc->data.seek_due_tick[drive] < due_tick) {
+            due_tick = fdc->data.seek_due_tick[drive];
+        }
+    }
+    if (fdc->data.dma_byte_gate_pending && fdc->data.next_dma_byte_tick < due_tick) {
+        due_tick = fdc->data.next_dma_byte_tick;
+    }
+    if (fdc->data.ndma_byte_gate_pending && fdc->data.next_ndma_byte_tick < due_tick) {
+        due_tick = fdc->data.next_ndma_byte_tick;
+    }
+    if (due_tick == UINT64_MAX) return TYPE_STATUS_INVALID_STATE;
+    *out_due_tick = due_tick;
+    return TYPE_STATUS_OK;
 }
 
 C_VOID core_machine_fdc_refresh(core_machine_fdc *fdc)

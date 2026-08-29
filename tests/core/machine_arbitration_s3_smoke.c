@@ -21,8 +21,9 @@ static C_VOID arbitration_trace(C_VOID *opaque,
 static C_INT arbitration_expect_chain(const arbitration_trace_probe *probe)
 {
     type_unsigned_32 index;
-    type_unsigned_32 due_tick = 1u;
+    type_unsigned_32 selected_tick = 3u;
     type_unsigned_32 phase = 0u;
+    type_unsigned_32 groups = 0u;
 
     for (index = 0u; index < probe->count; ++index) {
         const core_machine_trace_event *event = &probe->events[index];
@@ -34,17 +35,17 @@ static C_INT arbitration_expect_chain(const arbitration_trace_probe *probe)
                 CORE_MACHINE_TRACE_DMA_ADVANCE : phase == 1u ?
                 CORE_MACHINE_TRACE_PIT_ADVANCE : CORE_MACHINE_TRACE_PIC_REFRESH;
 
-            if (event->type != expected || event->timeline_ticks != due_tick) {
+            if (event->type != expected || event->timeline_ticks != selected_tick) {
                 return 1;
             }
             ++phase;
             if (phase == 3u) {
                 phase = 0u;
-                ++due_tick;
+                ++groups;
             }
         }
     }
-    return due_tick != 4u || phase != 0u;
+    return groups != 1u || phase != 0u;
 }
 
 static C_INT arbitration_has_cpu_retire(const arbitration_trace_probe *probe)
@@ -83,16 +84,16 @@ C_INT main(C_VOID)
         result.elapsed_ticks != 3u;
     failed |= core_machine_get_timeline_observation(machine, &observation) !=
         TYPE_STATUS_OK;
-    failed |= observation.now != 3u || observation.pending_events != 3u ||
-        observation.next_sequence != 12u;
+    failed |= observation.now != 3u || observation.pending_events != 0u ||
+        observation.next_sequence != 0u;
     failed |= probe.count < 5u || !arbitration_has_cpu_retire(&probe) ||
         arbitration_expect_chain(&probe) ||
         probe.events[probe.count - 1u].type != CORE_MACHINE_TRACE_RUN_BOUNDARY;
     failed |= core_machine_reset(machine) != TYPE_STATUS_OK;
     failed |= core_machine_get_timeline_observation(machine, &observation) !=
         TYPE_STATUS_OK;
-    failed |= observation.now != 0u || observation.pending_events != 3u ||
-        observation.next_sequence != 3u;
+    failed |= observation.now != 0u || observation.pending_events != 0u ||
+        observation.next_sequence != 0u;
 
     core_machine_destroy(machine);
     if (failed) return 1;

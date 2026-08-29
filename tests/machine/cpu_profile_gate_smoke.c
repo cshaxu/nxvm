@@ -19,7 +19,6 @@ static C_VOID cpu_profile_machine_reset(C_VOID *opaque)
 
 static const core_machine_execution_provider cpu_profile_execution_provider = {
     cpu_profile_machine_reset,
-    STD_NULL,
     STD_NULL
 };
 

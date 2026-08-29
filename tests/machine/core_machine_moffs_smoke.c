@@ -17,7 +17,7 @@ static C_VOID moffs_reset(C_VOID *opaque)
 }
 
 static const core_machine_execution_provider moffs_provider = {
-    moffs_reset, STD_NULL, STD_NULL
+    moffs_reset, STD_NULL
 };
 
 static C_INT moffs_prepare(core_machine_cpu_profile profile, moffs_machine *state)
@@ -153,9 +153,9 @@ static C_INT moffs_test_386_attributes(C_VOID)
     for (form = 0u; form != sizeof(codes) / sizeof(codes[0]); ++form)
     {
         moffs_machine state;
-        t_cpu after;
-        core_machine_cpu_diagnostic diagnostic;
-        type_status status;
+        t_cpu after = {0};
+        core_machine_cpu_diagnostic diagnostic = {0};
+        type_status status = TYPE_STATUS_INVALID_STATE;
         type_unsigned_32 image = 0x1122335au;
         C_INT failed = !moffs_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
 
@@ -268,10 +268,10 @@ static C_INT moffs_test_reject(C_VOID)
     for (opcode = 0u; opcode != sizeof(opcodes); ++opcode)
     {
         moffs_machine state;
-        t_cpu before;
-        t_cpu after;
-        core_machine_cpu_diagnostic diagnostic;
-        type_status status;
+        t_cpu before = {0};
+        t_cpu after = {0};
+        core_machine_cpu_diagnostic diagnostic = {0};
+        type_status status = TYPE_STATUS_INVALID_STATE;
         type_unsigned_8 code[] = { prefixes[prefix], opcodes[opcode], 0u, 0x10u };
         C_INT failed = !moffs_prepare(profiles[profile], &state);
 

@@ -23,7 +23,7 @@ static C_VOID pft_reset(C_VOID *opaque)
 }
 
 static const core_machine_execution_provider pft_provider = {
-    pft_reset, STD_NULL, STD_NULL
+    pft_reset, STD_NULL
 };
 
 static C_INT pft_write(pft_machine *state, type_unsigned_32 address,

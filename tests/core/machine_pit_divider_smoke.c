@@ -35,14 +35,14 @@ C_INT main(C_VOID)
     config.clock_plan.pit.denominator = 4u;
     failed |= core_machine_create(&config, &machine) != TYPE_STATUS_OK;
     if (!failed) {
-        failed |= test_core_machine_fixture_register_reset_mapping(machine, 0xfffffff0u,
+        failed |= test_core_machine_fixture_register_reset_mapping(machine, 0x00fffff0u,
             0x000ffff0u, sizeof(program)) != TYPE_STATUS_OK;
         failed |= core_machine_freeze_execution_providers(machine) !=
             TYPE_STATUS_OK;
         failed |= core_machine_reset(machine) != TYPE_STATUS_OK;
         test_core_machine_fixture_program_pit_divider(machine, 0x34u, 2u,
             pit_divider_output, &probe);
-        failed |= core_machine_memory_write(machine, 0xfffffff0u, program,
+        failed |= core_machine_memory_write(machine, 0x00fffff0u, program,
             sizeof(program)) != TYPE_STATUS_OK;
         failed |= core_machine_run(machine, four_instruction_budget, &result) !=
             TYPE_STATUS_OK;
@@ -59,7 +59,7 @@ C_INT main(C_VOID)
         probe.high_transitions = 0u;
         test_core_machine_fixture_program_pit_divider(machine, 0x30u, 1u,
             pit_divider_output, &probe);
-        failed |= core_machine_memory_write(machine, 0xfffffff0u, program,
+        failed |= core_machine_memory_write(machine, 0x00fffff0u, program,
             sizeof(program)) != TYPE_STATUS_OK;
         failed |= core_machine_run(machine, two_instruction_budget, &result) !=
             TYPE_STATUS_OK;
@@ -74,7 +74,7 @@ C_INT main(C_VOID)
         probe.high_transitions = 0u;
         test_core_machine_fixture_program_pit_divider(machine, 0x34u, 2u,
             pit_divider_output, &probe);
-        failed |= core_machine_memory_write(machine, 0xfffffff0u, program,
+        failed |= core_machine_memory_write(machine, 0x00fffff0u, program,
             sizeof(program)) != TYPE_STATUS_OK;
         failed |= core_machine_run(machine, four_instruction_budget, &result) !=
             TYPE_STATUS_OK;

@@ -84,11 +84,6 @@ static C_VOID vm_session_input_submit(C_VOID *context,
         machine->request_transport, &request);
 }
 
-static C_VOID vm_session_execution_provider_refresh(C_VOID *context)
-{
-    vm_session_provider_lifecycle_refresh((vm_session *)context);
-}
-
 static C_VOID vm_session_execution_provider_reset(C_VOID *context)
 {
     vm_session_provider_lifecycle_reset((vm_session *)context);
@@ -96,7 +91,6 @@ static C_VOID vm_session_execution_provider_reset(C_VOID *context)
 
 static const core_machine_execution_provider vm_session_execution_provider = {
     vm_session_execution_provider_reset,
-    vm_session_execution_provider_refresh,
     STD_NULL
 };
 

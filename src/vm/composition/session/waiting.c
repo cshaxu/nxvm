@@ -147,7 +147,7 @@ type_status vm_session_waiting_advance(vm_session *session,
     }
     status = core_machine_capture_time_observation(session->core_machine,
         &observation);
-    if (status != TYPE_STATUS_OK || !observation.pacing_time_available) return status;
+    if (status != TYPE_STATUS_OK) return status;
     if (!observation.next_deadline_valid) return TYPE_STATUS_OK;
     if (session->speed == VM_SESSION_SPEED_STANDARD &&
         !vm_session_pacing_target_due(session, &observation,

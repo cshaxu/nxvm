@@ -84,7 +84,7 @@ static C_INT s6_success(core_machine_cpu_profile profile, type_bool address_pref
             0x001bu, 3u) || !s6_stack_cache(&after.data.ss, 0x0023u, 3u) ||
             after.data.esp != 0x12344000u ||
             after.data.eflags != (VCPU_EFLAGS_CF | VCPU_EFLAGS_IF |
-                VCPU_EFLAGS_IOPL) || !s3_gate_gprs_same(&before, &after) ||
+                VCPU_EFLAGS_IOPL | 0x02u) || !s3_gate_gprs_same(&before, &after) ||
             STD_MEMCMP(&before.data.es, &after.data.es, sizeof(before.data.es)) != 0 ||
             STD_MEMCMP(&before.data.ds, &after.data.ds, sizeof(before.data.ds)) != 0 ||
             STD_MEMCMP(&before.data.fs, &after.data.fs, sizeof(before.data.fs)) != 0 ||
@@ -123,8 +123,8 @@ static C_INT s6_same_iret(C_VOID)
         after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= after.data.eip != 0x0010u || !s6_code_cache(&after.data.cs,
             0x0008u, 0u) || !s6_stack_cache(&after.data.ss, 0x0010u, 0u) ||
-            after.data.esp != 0x12348006u || after.data.eflags !=
-            (VCPU_EFLAGS_CF | VCPU_EFLAGS_IF | VCPU_EFLAGS_IOPL) ||
+        after.data.esp != 0x12348006u || after.data.eflags !=
+            (VCPU_EFLAGS_CF | VCPU_EFLAGS_IF | VCPU_EFLAGS_IOPL | 0x02u) ||
             !s3_gate_gprs_same(&before, &after) || STD_MEMCMP(&before.data.es,
             &after.data.es, sizeof(before.data.es)) != 0 || STD_MEMCMP(
             &before.data.ds, &after.data.ds, sizeof(before.data.ds)) != 0 ||
@@ -342,7 +342,7 @@ static C_INT s6_iret_irq(C_VOID)
             TYPE_GET_BIT(state.machine->shared_pic_master.data.irr, VPIC_IRR_IRQ(0u)) ||
             !s3_gate_read(&state, 0x00006ff6u, frame, sizeof(frame)) ||
             frame[0] != 0x0010u || frame[1] != 0x001bu ||
-            frame[2] != (VCPU_EFLAGS_CF | VCPU_EFLAGS_IF | VCPU_EFLAGS_IOPL) ||
+        frame[2] != (VCPU_EFLAGS_CF | VCPU_EFLAGS_IF | VCPU_EFLAGS_IOPL | 0x02u) ||
             frame[3] != S6_USER_SP || frame[4] != 0x0023u;
     }
     core_machine_destroy(state.machine);

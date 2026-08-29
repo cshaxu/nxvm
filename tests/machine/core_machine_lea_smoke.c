@@ -17,7 +17,7 @@ static C_VOID lea_reset(C_VOID *opaque)
 }
 
 static const core_machine_execution_provider lea_provider = {
-    lea_reset, STD_NULL, STD_NULL
+    lea_reset, STD_NULL
 };
 
 static C_INT lea_prepare(core_machine_cpu_profile profile, lea_machine *state)
@@ -84,10 +84,10 @@ static C_INT lea_test_real_forms(C_VOID)
             ++profile) {
         for (form = 0u; form != sizeof(codes) / sizeof(codes[0]); ++form) {
             lea_machine state;
-            t_cpu before;
-            t_cpu after;
-            core_machine_cpu_diagnostic diagnostic;
-            type_status status;
+            t_cpu before = {0};
+            t_cpu after = {0};
+            core_machine_cpu_diagnostic diagnostic = {0};
+            type_status status = TYPE_STATUS_INVALID_STATE;
             C_INT failed = !lea_prepare(profiles[profile], &state);
 
             if (!failed) {

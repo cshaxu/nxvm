@@ -5,7 +5,6 @@
 #include "type.h"
 typedef struct core_machine_execution_provider {
     C_VOID (*reset)(C_VOID *context);
-    C_VOID (*refresh)(C_VOID *context);
     C_VOID (*advance_time)(C_VOID *context, type_unsigned_64 elapsed_ticks);
 } core_machine_execution_provider;
 

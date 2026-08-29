@@ -17,7 +17,7 @@ static C_VOID movs_reset(C_VOID *opaque)
 }
 
 static const core_machine_execution_provider movs_provider = {
-    movs_reset, STD_NULL, STD_NULL
+    movs_reset, STD_NULL
 };
 
 static C_INT movs_prepare(core_machine_cpu_profile profile, movs_machine *state)

@@ -30,7 +30,9 @@ C_INT main(C_VOID)
 
     even[0u] = 0x11u;
     odd[0u] = 0x22u;
-#define CHECK(expression) do { ++step; if (!(expression)) { failed = step; } } while (0)
+#define CHECK(expression) do { ++step; if (!(expression)) { \
+    failed = step; STD_PRINTF("D4-MAP failed step=%d line=%d\n", step, __LINE__); \
+} } while (0)
     C_INT step = 0;
 
     CHECK(vm_model40_fixture_create_bytes("t386-s16-even.bin", even,
@@ -56,12 +58,18 @@ C_INT main(C_VOID)
             VM_PROFILE_MODEL40_ROM_HIGH_RESET_ALIAS_START, 0x11u));
         CHECK(read_byte(session->core_machine,
             VM_PROFILE_MODEL40_ROM_HIGH_RESET_ALIAS_START + 1u, 0x22u));
+        CHECK(read_byte(session->core_machine, 0x00f40000u, 0xffu));
+        CHECK(read_byte(session->core_machine, 0x00f80000u, 0xffu));
+        CHECK(write_byte(session->core_machine, 0x00fa0000u, 0x3cu,
+            TYPE_STATUS_OK));
+        CHECK(read_byte(session->core_machine, 0x00fa0000u, 0x3cu));
         CHECK(write_byte(session->core_machine, 0x00000020u, 0xa5u,
             TYPE_STATUS_OK));
         CHECK(read_byte(session->core_machine, 0x00100020u, 0xa5u));
         CHECK(core_machine_set_a20(session->core_machine, TYPE_TRUE) == TYPE_STATUS_OK);
-        CHECK(write_byte(session->core_machine, 0x00100020u, 0xa5u,
-            TYPE_STATUS_FAULT));
+        CHECK(write_byte(session->core_machine, 0x00100020u, 0x5au,
+            TYPE_STATUS_OK));
+        CHECK(read_byte(session->core_machine, 0x00100020u, 0x5au));
         CHECK(core_machine_set_a20(session->core_machine, TYPE_FALSE) == TYPE_STATUS_OK);
 
         CHECK(read_byte(session->core_machine, VM_PROFILE_MODEL40_D4_CONTROL_PHYSICAL,
@@ -69,7 +77,7 @@ C_INT main(C_VOID)
         CHECK(read_byte(session->core_machine, VM_PROFILE_MODEL40_D4_CONTROL_PHYSICAL + 1u,
             0xfdu));
         CHECK(read_byte(session->core_machine, VM_PROFILE_MODEL40_D4_CONTROL_PHYSICAL + 2u,
-            0x44u));
+            0x42u));
         CHECK(read_byte(session->core_machine, VM_PROFILE_MODEL40_D4_CONTROL_PHYSICAL + 3u,
             0xfcu));
         CHECK(read_byte(session->core_machine, VM_PROFILE_MODEL40_D4_CONTROL_PHYSICAL + 4u,
@@ -82,7 +90,17 @@ C_INT main(C_VOID)
             0x4au, TYPE_STATUS_OK));
         CHECK(read_byte(session->core_machine, VM_PROFILE_MODEL40_D4_CONTROL_PHYSICAL + 2u,
             0x4au));
-        CHECK(core_machine_set_a20(session->core_machine, 1) == TYPE_STATUS_OK);
+        CHECK(core_machine_set_a20(session->core_machine, TYPE_TRUE) == TYPE_STATUS_OK);
+        CHECK(write_byte(session->core_machine, 0x00100020u, 0x96u,
+            TYPE_STATUS_OK));
+        CHECK(write_byte(session->core_machine, VM_PROFILE_MODEL40_D4_CONTROL_PHYSICAL + 2u,
+            0x41u, TYPE_STATUS_OK));
+        CHECK(read_byte(session->core_machine, 0x00100020u, 0xffu));
+        CHECK(write_byte(session->core_machine, 0x00100020u, 0x69u,
+            TYPE_STATUS_OK));
+        CHECK(write_byte(session->core_machine, VM_PROFILE_MODEL40_D4_CONTROL_PHYSICAL + 2u,
+            0x42u, TYPE_STATUS_OK));
+        CHECK(read_byte(session->core_machine, 0x00100020u, 0x96u));
         CHECK(write_byte(session->core_machine, 0x000e0000u, 0xa5u,
             TYPE_STATUS_OK));
         CHECK(read_byte(session->core_machine, 0x000e0000u, 0xa5u));
@@ -109,7 +127,7 @@ C_INT main(C_VOID)
         CHECK(read_byte(session->core_machine, VM_PROFILE_MODEL40_D4_CONTROL_PHYSICAL + 1u,
             0xfdu));
         CHECK(read_byte(session->core_machine, VM_PROFILE_MODEL40_D4_CONTROL_PHYSICAL + 2u,
-            0x44u));
+            0x42u));
         CHECK(read_byte(session->core_machine, VM_PROFILE_MODEL40_D4_CONTROL_PHYSICAL + 3u,
             0xfcu));
         CHECK(read_byte(session->core_machine, VM_PROFILE_MODEL40_D4_CONTROL_PHYSICAL + 4u,

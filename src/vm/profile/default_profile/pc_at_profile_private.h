@@ -198,6 +198,10 @@ type_status vm_profile_ibm_5170_root_declaration_create(
     vm_profile_resolver_declaration *out_declaration);
 type_status vm_profile_ibm_5170_root_resolve(
     vm_profile_default_pc_at_resolved_profile *out_profile);
+/* IBM's 128 KiB conventional-memory option and 512 KiB extended-memory
+ * options are selected only while the frozen 5170 profile is constructed. */
+type_status vm_profile_ibm_5170_root_resolve_memory(STD_SIZE_T memory_bytes,
+    vm_profile_default_pc_at_resolved_profile *out_profile);
 type_status vm_profile_default_at_child_declaration_create(
     const vm_profile_resolver_declaration *parent,
     const vm_profile_default_at_request *request,

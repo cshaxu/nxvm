@@ -96,7 +96,9 @@ typedef enum core_machine_source_timing_form {
     CORE_MACHINE_SOURCE_TIMING_SAHF,
     CORE_MACHINE_SOURCE_TIMING_LAHF,
     CORE_MACHINE_SOURCE_TIMING_MOV_SREG_REGISTER,
-    CORE_MACHINE_SOURCE_TIMING_MOV_SREG_MEMORY,
+    CORE_MACHINE_SOURCE_TIMING_MOV_SREG_LOAD_MEMORY,
+    CORE_MACHINE_SOURCE_TIMING_MOV_SREG_REGISTER_PROTECTED,
+    CORE_MACHINE_SOURCE_TIMING_MOV_SREG_LOAD_MEMORY_PROTECTED,
     CORE_MACHINE_SOURCE_TIMING_MOV_IMMEDIATE,
     CORE_MACHINE_SOURCE_TIMING_MOV_REGISTER_REGISTER,
     CORE_MACHINE_SOURCE_TIMING_MOV_RM_REGISTER,
@@ -197,7 +199,8 @@ typedef enum core_machine_source_timing_form {
     CORE_MACHINE_SOURCE_TIMING_8086_JCC,
     CORE_MACHINE_SOURCE_TIMING_8086_LOOP,
     CORE_MACHINE_SOURCE_TIMING_8086_INTO,
-    CORE_MACHINE_SOURCE_TIMING_8086_XLAT
+    CORE_MACHINE_SOURCE_TIMING_8086_XLAT,
+    CORE_MACHINE_SOURCE_TIMING_MOV_SREG_STORE_MEMORY
 } core_machine_source_timing_form;
 
 typedef struct core_machine_source_timing_entry {
@@ -391,7 +394,10 @@ static const core_machine_source_timing_entry
     { CORE_MACHINE_SOURCE_TIMING_SAHF, 3u },
     { CORE_MACHINE_SOURCE_TIMING_LAHF, 2u },
     { CORE_MACHINE_SOURCE_TIMING_MOV_SREG_REGISTER, 2u },
-    { CORE_MACHINE_SOURCE_TIMING_MOV_SREG_MEMORY, 5u },
+    { CORE_MACHINE_SOURCE_TIMING_MOV_SREG_LOAD_MEMORY, 5u },
+    { CORE_MACHINE_SOURCE_TIMING_MOV_SREG_REGISTER_PROTECTED, 18u },
+    { CORE_MACHINE_SOURCE_TIMING_MOV_SREG_LOAD_MEMORY_PROTECTED, 19u },
+    { CORE_MACHINE_SOURCE_TIMING_MOV_SREG_STORE_MEMORY, 2u },
     { CORE_MACHINE_SOURCE_TIMING_MOV_IMMEDIATE, 2u },
     { CORE_MACHINE_SOURCE_TIMING_MOV_REGISTER_REGISTER, 2u },
     { CORE_MACHINE_SOURCE_TIMING_MOV_RM_REGISTER, 2u },
@@ -1641,7 +1647,7 @@ static C_INT core_machine_legacy_source_instruction_cost(core_machine *machine,
             ((data->opcodes[prefixes + 1u] >> 3u) & 7u) > 3u) break;
         if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80186) {
             machine->source_timing_form_id =
-                CORE_MACHINE_SOURCE_TIMING_MOV_SREG_MEMORY;
+                CORE_MACHINE_SOURCE_TIMING_MOV_SREG_STORE_MEMORY;
             *out_ticks = data->flagMem ? 9u +
                 core_machine_8086_timing_odd_word(data) +
                 (segment_override ? CORE_MACHINE_8086_SEGMENT_OVERRIDE_TICKS : 0u) :
@@ -1654,7 +1660,7 @@ static C_INT core_machine_legacy_source_instruction_cost(core_machine *machine,
             *out_ticks = 2u;
             return 1;
         }
-        machine->source_timing_form_id = CORE_MACHINE_SOURCE_TIMING_MOV_SREG_MEMORY;
+        machine->source_timing_form_id = CORE_MACHINE_SOURCE_TIMING_MOV_SREG_STORE_MEMORY;
         *out_ticks = 9u + core_machine_8086_timing_effective_address(data,
             prefixes) + core_machine_8086_timing_odd_word(data) +
             (segment_override ? CORE_MACHINE_8086_SEGMENT_OVERRIDE_TICKS : 0u);
@@ -1667,7 +1673,7 @@ static C_INT core_machine_legacy_source_instruction_cost(core_machine *machine,
             ((data->opcodes[prefixes + 1u] >> 3u) & 7u) > 3u) break;
         if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80186) {
             machine->source_timing_form_id =
-                CORE_MACHINE_SOURCE_TIMING_MOV_SREG_MEMORY;
+                CORE_MACHINE_SOURCE_TIMING_MOV_SREG_LOAD_MEMORY;
             *out_ticks = data->flagMem ? 11u +
                 core_machine_8086_timing_odd_word(data) +
                 (segment_override ? CORE_MACHINE_8086_SEGMENT_OVERRIDE_TICKS : 0u) :
@@ -1680,7 +1686,7 @@ static C_INT core_machine_legacy_source_instruction_cost(core_machine *machine,
             *out_ticks = 2u;
             return 1;
         }
-        machine->source_timing_form_id = CORE_MACHINE_SOURCE_TIMING_MOV_SREG_MEMORY;
+        machine->source_timing_form_id = CORE_MACHINE_SOURCE_TIMING_MOV_SREG_LOAD_MEMORY;
         *out_ticks = 8u + core_machine_8086_timing_effective_address(data,
             prefixes) + core_machine_8086_timing_odd_word(data) +
             (segment_override ? CORE_MACHINE_8086_SEGMENT_OVERRIDE_TICKS : 0u);
@@ -2086,7 +2092,9 @@ C_INT core_machine_primary_source_instruction_cost(
         if (opcode == 0x8cu || opcode == 0x8eu) {
             if (extension > 3u || (opcode == 0x8eu && extension == 1u)) return 0;
             machine->source_timing_form_id = data->flagMem ?
-                CORE_MACHINE_SOURCE_TIMING_MOV_SREG_MEMORY :
+                (opcode == 0x8cu ?
+                CORE_MACHINE_SOURCE_TIMING_MOV_SREG_STORE_MEMORY :
+                CORE_MACHINE_SOURCE_TIMING_MOV_SREG_LOAD_MEMORY) :
                 CORE_MACHINE_SOURCE_TIMING_MOV_SREG_REGISTER;
             if (!data->flagMem) {
                 if (segment_override) return 0;
@@ -4098,15 +4106,24 @@ C_INT core_machine_80386_source_instruction_cost(core_machine *machine,
         *out_ticks = core_machine_80386_source_timing_lookup(machine,
             CORE_MACHINE_SOURCE_TIMING_LAHF);
         return 1;
+    case 0x8cu:
+        *out_ticks = core_machine_80386_source_timing_lookup(machine,
+            core_machine_source_timing_modrm_is_memory(data, prefixes) ?
+            CORE_MACHINE_SOURCE_TIMING_MOV_SREG_STORE_MEMORY :
+            CORE_MACHINE_SOURCE_TIMING_MOV_SREG_REGISTER);
+        return 1;
     case 0x8eu:
-        if (!core_machine_source_timing_modrm_is_memory(data, prefixes)) {
+        if (core_machine_control_stack_is_protected(data)) {
+            *out_ticks = core_machine_80386_source_timing_lookup(machine,
+                core_machine_source_timing_modrm_is_memory(data, prefixes) ?
+                CORE_MACHINE_SOURCE_TIMING_MOV_SREG_LOAD_MEMORY_PROTECTED :
+                CORE_MACHINE_SOURCE_TIMING_MOV_SREG_REGISTER_PROTECTED);
+        } else if (!core_machine_source_timing_modrm_is_memory(data, prefixes)) {
             *out_ticks = core_machine_80386_source_timing_lookup(machine,
                 CORE_MACHINE_SOURCE_TIMING_MOV_SREG_REGISTER);
-        } else if (!core_machine_control_stack_is_protected(data)) {
-            *out_ticks = core_machine_80386_source_timing_lookup(machine,
-                CORE_MACHINE_SOURCE_TIMING_MOV_SREG_MEMORY);
         } else {
-            core_machine_source_timing_mark_unallocated(machine, out_ticks);
+            *out_ticks = core_machine_80386_source_timing_lookup(machine,
+                CORE_MACHINE_SOURCE_TIMING_MOV_SREG_LOAD_MEMORY);
         }
         return 1;
     case 0x88u: case 0x89u:

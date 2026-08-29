@@ -26,7 +26,7 @@ static C_VOID inc_dec_reset(C_VOID *opaque)
 }
 
 static const core_machine_execution_provider inc_dec_provider = {
-    inc_dec_reset, STD_NULL, STD_NULL
+    inc_dec_reset, STD_NULL
 };
 
 static C_INT inc_dec_prepare(core_machine_cpu_profile profile, inc_dec_machine *state)
@@ -117,12 +117,14 @@ static C_INT inc_dec_run_delivered_de(inc_dec_machine *state,
             out->data.ss.base + (type_unsigned_16)out->data.esp,
             TYPE_REFERENCE_OF(frame16), sizeof(frame16)) &&
             frame16[0] == code_offset && frame16[1] == before.data.cs.selector &&
-            frame16[2] == (type_unsigned_16)before.data.eflags;
+            frame16[2] == (type_unsigned_16)((before.data.eflags &
+                ~VCPU_EFLAGS_RESERVED) | 0x02u);
     }
     return test_core_machine_fixture_read_linear(state->machine,
         out->data.ss.base + out->data.esp, TYPE_REFERENCE_OF(frame32),
         sizeof(frame32)) && frame32[0] == code_offset &&
-        frame32[1] == before.data.cs.selector && frame32[2] == before.data.eflags;
+        frame32[1] == before.data.cs.selector && frame32[2] ==
+            ((before.data.eflags & ~VCPU_EFLAGS_RESERVED) | 0x02u);
     return 1;
 }
 
@@ -173,7 +175,7 @@ static C_INT inc_dec_test_register_forms(C_VOID)
             (VCPU_EFLAGS_OF | VCPU_EFLAGS_AF | VCPU_EFLAGS_PF) :
             (VCPU_EFLAGS_OF | VCPU_EFLAGS_SF | VCPU_EFLAGS_AF | VCPU_EFLAGS_PF);
         inc_dec_machine state;
-        t_cpu after;
+        t_cpu after = {0};
         core_machine_cpu_diagnostic diagnostic;
         type_unsigned_32 *reg;
         C_INT failed = !inc_dec_prepare(profiles[profile], &state);
@@ -225,7 +227,7 @@ static C_INT inc_dec_test_rm_forms(C_VOID)
             (VCPU_EFLAGS_OF | VCPU_EFLAGS_SF | VCPU_EFLAGS_AF |
                 (bytes == 1u ? 0u : VCPU_EFLAGS_PF));
         inc_dec_machine state;
-        t_cpu after;
+        t_cpu after = {0};
         core_machine_cpu_diagnostic diagnostic;
         type_unsigned_32 observed = 0u;
         C_INT failed = !inc_dec_prepare(profiles[profile], &state);
@@ -2289,7 +2291,7 @@ static C_INT inc_dec_test_and_forms(C_VOID)
         const type_unsigned_32 result = destination & mask;
         const type_unsigned_32 expected = (destination & ~mask) | result;
         inc_dec_machine state;
-        t_cpu after;
+        t_cpu after = {0};
         core_machine_cpu_diagnostic diagnostic;
         type_unsigned_32 observed = 0u;
         C_INT failed = !inc_dec_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
@@ -2358,7 +2360,7 @@ static C_INT inc_dec_test_and_immediate(C_VOID)
         const type_unsigned_32 result = destination & mask;
         const type_unsigned_32 expected = (destination & ~mask) | result;
         inc_dec_machine state;
-        t_cpu after;
+        t_cpu after = {0};
         core_machine_cpu_diagnostic diagnostic;
         type_unsigned_32 observed = 0u;
         C_INT failed = !inc_dec_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
@@ -2837,7 +2839,7 @@ static C_INT inc_dec_test_xor_immediates(C_VOID)
         const type_unsigned_32 value = bytes == 1u ? 0x112233ffu :
             (bytes == 2u ? 0x1122ffffu : 0xffffffffu);
         inc_dec_machine state;
-        t_cpu after;
+        t_cpu after = {0};
         core_machine_cpu_diagnostic diagnostic;
         type_unsigned_32 observed = 0u;
         C_INT failed = !inc_dec_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);

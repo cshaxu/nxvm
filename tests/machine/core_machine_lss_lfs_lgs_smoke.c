@@ -17,7 +17,7 @@ static C_VOID lfg_reset(C_VOID *opaque)
 }
 
 static const core_machine_execution_provider lfg_provider = {
-    lfg_reset, STD_NULL, STD_NULL
+    lfg_reset, STD_NULL
 };
 
 static C_INT lfg_prepare(core_machine_cpu_profile profile, lfg_machine *state)
@@ -57,9 +57,9 @@ static C_INT lfg_test_real(C_VOID)
     for (i = 0u; i < 3u; ++i) {
         for (z = 0u; z < 2u; ++z) {
             lfg_machine s;
-            t_cpu a;
-            core_machine_cpu_diagnostic d;
-            type_status st;
+            t_cpu a = {0};
+            core_machine_cpu_diagnostic d = {0};
+            type_status st = TYPE_STATUS_INVALID_STATE;
             type_unsigned_8 c[] = { 0x0fu, op[i], 0x06u, 0, 0x10u, 0 };
             type_unsigned_8 p16[] = { 0x44u, 0x33u, 0x34u, 0x12u };
             type_unsigned_8 p32[] = { 0x44u, 0x33u, 0x22u, 0x11u, 0x34u, 0x12u };
@@ -290,8 +290,8 @@ static C_INT lfg_test_source_fault_atomicity(C_VOID)
         lfg_machine state;
         core_machine_run_result result;
         core_machine_cpu_diagnostic diagnostic;
-        t_cpu before;
-        t_cpu after;
+        t_cpu before = {0};
+        t_cpu after = {0};
         type_unsigned_8 code[] = { 0x0fu, opcodes[opcode], 0x06u, 0x00u, 0x10u };
         C_INT failed = !lfg_prepare_protected(&state);
 
@@ -342,7 +342,7 @@ static C_INT lfg_test_irq_shadow(C_VOID)
         lfg_machine state;
         core_machine_pic_irq_source source;
         core_machine_run_result result;
-        t_cpu after;
+        t_cpu after = {0};
         type_unsigned_8 code[] = { 0x0fu, opcodes[opcode], 0x06u, 0x00u, 0x10u, 0x90u };
         type_unsigned_16 vector_offset = 0x0100u;
         type_unsigned_16 vector_segment = 0u;

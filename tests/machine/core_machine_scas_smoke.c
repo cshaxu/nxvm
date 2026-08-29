@@ -20,7 +20,7 @@ static C_VOID scas_reset(C_VOID *opaque)
 }
 
 static const core_machine_execution_provider scas_provider = {
-    scas_reset, STD_NULL, STD_NULL
+    scas_reset, STD_NULL
 };
 
 static C_INT scas_prepare(core_machine_cpu_profile profile, scas_machine *state)
@@ -63,6 +63,14 @@ static C_INT scas_nonparticipants_same(const t_cpu *before, const t_cpu *after)
         after->data.esp == before->data.esp &&
         after->data.ebp == before->data.ebp &&
         after->data.esi == before->data.esi;
+}
+
+static type_unsigned_32 scas_real_flags_known_mask(
+    core_machine_cpu_profile profile)
+{
+    if (profile < CORE_MACHINE_CPU_PROFILE_80286) return 0x0fd5u;
+    if (profile == CORE_MACHINE_CPU_PROFILE_80286) return 0x7fd5u;
+    return 0xffd5u;
 }
 
 static C_INT scas_run(scas_machine *state, const type_unsigned_8 *code, type_unsigned_8 bytes,
@@ -116,8 +124,9 @@ static C_INT scas_single_case(core_machine_cpu_profile profile,
             (before.data.edi & 0xffff0000u) | (type_unsigned_16)expected_index) ||
             (after.data.eflags & SCAS_CMP_FLAGS) !=
             (VCPU_EFLAGS_PF | VCPU_EFLAGS_AF) ||
-            (after.data.eflags & ~SCAS_CMP_FLAGS) !=
-            (before.data.eflags & ~SCAS_CMP_FLAGS) ||
+            (after.data.eflags & (scas_real_flags_known_mask(profile) &
+            ~SCAS_CMP_FLAGS)) != (before.data.eflags &
+            (scas_real_flags_known_mask(profile) & ~SCAS_CMP_FLAGS)) ||
             core_machine_memory_read_physical(&state.machine->executor_memory,
             physical, TYPE_REFERENCE_OF(observed), width) != TYPE_STATUS_OK ||
             (width == 1u ? (observed & 0xffu) != 1u : width == 2u ?
@@ -196,8 +205,10 @@ static C_INT scas_flag_case(type_unsigned_8 accumulator, type_unsigned_8 image,
             !scas_nonparticipants_same(&before, &after) ||
             after.data.ecx != before.data.ecx || after.data.edi != 0x21u ||
             (after.data.eflags & SCAS_CMP_FLAGS) != expected_flags ||
-            (after.data.eflags & ~SCAS_CMP_FLAGS) !=
-            (before.data.eflags & ~SCAS_CMP_FLAGS) ||
+            (after.data.eflags & (scas_real_flags_known_mask(
+            CORE_MACHINE_CPU_PROFILE_80386) & ~SCAS_CMP_FLAGS)) !=
+            (before.data.eflags & (scas_real_flags_known_mask(
+            CORE_MACHINE_CPU_PROFILE_80386) & ~SCAS_CMP_FLAGS)) ||
             core_machine_memory_read_physical(&state.machine->executor_memory,
             0x20020u, TYPE_REFERENCE_OF(observed), sizeof(observed)) !=
             TYPE_STATUS_OK || observed != image;
@@ -242,8 +253,10 @@ static C_INT scas_rep_case(core_machine_cpu_profile profile, const type_unsigned
             after.data.ecx != ((before.data.ecx & 0xffff0000u) | expected_count) ||
             after.data.edi != ((before.data.edi & 0xffff0000u) | expected_di) ||
             (after.data.eflags & SCAS_CMP_FLAGS) != expected_flags ||
-            (after.data.eflags & ~SCAS_CMP_FLAGS) !=
-            (before.data.eflags & ~SCAS_CMP_FLAGS) || core_machine_memory_read_physical(
+            (after.data.eflags & (scas_real_flags_known_mask(profile) &
+            ~SCAS_CMP_FLAGS)) != (before.data.eflags &
+            (scas_real_flags_known_mask(profile) & ~SCAS_CMP_FLAGS)) ||
+            core_machine_memory_read_physical(
             &state.machine->executor_memory, 0x20020u,
             (type_virtual_address)observed, sizeof(observed)) != TYPE_STATUS_OK ||
             STD_MEMCMP(observed, image, sizeof(observed)) != 0;

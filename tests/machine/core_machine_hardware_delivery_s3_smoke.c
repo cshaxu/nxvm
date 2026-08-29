@@ -28,7 +28,7 @@ static C_VOID hardware_delivery_s3_real_reset(C_VOID *opaque)
 }
 
 static const core_machine_execution_provider hardware_delivery_s3_real_provider = {
-    hardware_delivery_s3_real_reset, STD_NULL, STD_NULL
+    hardware_delivery_s3_real_reset, STD_NULL
 };
 
 static C_INT hardware_delivery_s3_real_priority(C_VOID)
@@ -89,7 +89,7 @@ static C_INT hardware_delivery_s3_real_priority(C_VOID)
                 0x00007ffau, (type_virtual_address)frame, sizeof(frame)) !=
                 TYPE_STATUS_OK ||
             frame[0] != 1u || frame[1] != 0u ||
-            frame[2] != (VCPU_EFLAGS_CF | VCPU_EFLAGS_IF);
+            frame[2] != (VCPU_EFLAGS_CF | VCPU_EFLAGS_IF | 0x02u);
     }
     core_machine_destroy(state.machine);
     return !failed;

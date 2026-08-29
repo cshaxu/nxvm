@@ -313,6 +313,41 @@ static C_INT plan_selects_single_controller_xt_board(C_VOID)
     return failed;
 }
 
+static C_INT plan_l2_pit_deadline_remains_schedulable(C_VOID)
+{
+    core_machine_config configuration = {
+        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .clock_plan.pit = {1u, 1u, 0u}
+    };
+    core_machine_plan *plan = STD_NULL;
+    core_machine *machine = STD_NULL;
+    core_machine_time_observation observation;
+    core_machine_timing_disposition disposition;
+    type_bool advanced = TYPE_FALSE;
+    C_INT failed = 0;
+
+    failed |= core_machine_plan_create(&configuration, &plan) != TYPE_STATUS_OK;
+    failed |= !failed && core_machine_create_from_plan(plan, &machine) != TYPE_STATUS_OK;
+    failed |= !failed && core_machine_freeze_execution_providers(machine) != TYPE_STATUS_OK;
+    failed |= !failed && core_machine_reset(machine) != TYPE_STATUS_OK;
+    failed |= !failed && core_machine_get_timing_disposition(machine,
+        CORE_MACHINE_TIMING_CAPABILITY_CTRL_PIT, &disposition) != TYPE_STATUS_OK;
+    failed |= !failed && disposition != CORE_MACHINE_TIMING_DISPOSITION_L2_FALLBACK;
+    core_machine_port_write(&machine->executor_port, 0x0043u, 0x34u);
+    core_machine_port_write(&machine->executor_port, 0x0040u, 4u);
+    core_machine_port_write(&machine->executor_port, 0x0040u, 0u);
+    failed |= !failed && core_machine_capture_time_observation(machine, &observation) !=
+        TYPE_STATUS_OK;
+    failed |= !failed && (!observation.next_deadline_valid ||
+        observation.next_deadline_tick != 1u);
+    failed |= !failed && core_machine_advance_to_next_deadline(machine, &advanced) !=
+        TYPE_STATUS_OK;
+    failed |= !failed && (!advanced || machine->elapsed_ticks != 1u);
+    core_machine_destroy(machine);
+    core_machine_plan_destroy(plan);
+    return failed;
+}
+
 C_INT main(C_VOID)
 {
     if (plan_default_and_copy() || plan_rejects_incomplete_or_unavailable() ||
@@ -320,7 +355,8 @@ C_INT main(C_VOID)
         plan_rejects_invalid_transaction_contract_before_publication() ||
         plan_controller_timing_rules_are_copied_and_validated() ||
         plan_rejects_invalid_controller_timing_rules() ||
-        plan_selects_single_controller_xt_board()) {
+        plan_selects_single_controller_xt_board() ||
+        plan_l2_pit_deadline_remains_schedulable()) {
         return 1;
     }
     puts("M5:T434:S1:PLAN-DECLARATIONS:OK");
@@ -335,5 +371,6 @@ C_INT main(C_VOID)
     puts("M5:T462:S4:CONTROLLER-LEDGER-CLOSURE:OK");
     puts("M5:T484:S5:XT-B2-PLAN:OK");
     puts("M5:T484:S5:XT-NO-AT-TOPOLOGY:OK");
+    puts("M5:T499:S3:L2-PIT-DEADLINE:OK");
     return 0;
 }

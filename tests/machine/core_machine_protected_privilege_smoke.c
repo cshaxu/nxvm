@@ -34,7 +34,7 @@ static C_VOID privilege_reset(C_VOID *opaque)
 }
 
 static const core_machine_execution_provider privilege_provider = {
-    privilege_reset, STD_NULL, STD_NULL
+    privilege_reset, STD_NULL
 };
 
 static C_INT privilege_prepare(privilege_machine *state,

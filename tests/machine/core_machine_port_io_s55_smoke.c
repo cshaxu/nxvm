@@ -60,7 +60,6 @@ static C_VOID port_io_s55_reset(C_VOID *opaque)
 
 static const core_machine_execution_provider port_io_s55_execution_provider = {
     port_io_s55_reset,
-    STD_NULL,
     STD_NULL
 };
 

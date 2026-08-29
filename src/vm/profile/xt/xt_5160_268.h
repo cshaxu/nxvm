@@ -36,7 +36,8 @@ typedef struct vm_profile_xt_5160_268_resolved_profile {
 type_status vm_profile_xt_5160_268_declaration_create(
     vm_profile_resolver_declaration *out_declaration);
 type_status vm_profile_xt_5160_268_resolve(
-    vm_profile_xt_5160_268_resolved_profile *out_profile);
+    vm_profile_xt_5160_268_resolved_profile *out_profile,
+    type_bool xebec_rom_present);
 C_INT vm_profile_xt_5160_268_byob_manifest_is_valid(
     const vm_profile_xt_5160_268_byob_manifest *manifest);
 type_status vm_profile_xt_5160_268_byob_manifest_load(

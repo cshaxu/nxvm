@@ -22,34 +22,31 @@ static C_VOID readiness_trace(C_VOID *opaque,
 static C_INT readiness_expect_chain(const readiness_trace_probe *probe)
 {
     type_unsigned_32 index;
-    type_unsigned_64 due_tick = 1u;
+    type_unsigned_64 selected_tick = 3u;
     type_unsigned_32 phase = 0u;
+    type_unsigned_32 groups = 0u;
 
     for (index = 0u; index < probe->count; ++index) {
         const core_machine_trace_event *event = &probe->events[index];
 
         if (event->type == CORE_MACHINE_TRACE_FDC_ADVANCE ||
-            event->type == CORE_MACHINE_TRACE_FDC_REFRESH ||
             event->type == CORE_MACHINE_TRACE_HDC_ADVANCE ||
-            event->type == CORE_MACHINE_TRACE_HDC_REFRESH ||
             event->type == CORE_MACHINE_TRACE_RTC_ADVANCE) {
             core_machine_trace_event_type expected = phase == 0u ?
                 CORE_MACHINE_TRACE_FDC_ADVANCE : phase == 1u ?
-                CORE_MACHINE_TRACE_FDC_REFRESH : phase == 2u ?
-                CORE_MACHINE_TRACE_HDC_ADVANCE : phase == 3u ?
-                CORE_MACHINE_TRACE_HDC_REFRESH : CORE_MACHINE_TRACE_RTC_ADVANCE;
+                CORE_MACHINE_TRACE_HDC_ADVANCE : CORE_MACHINE_TRACE_RTC_ADVANCE;
 
-            if (event->type != expected || event->timeline_ticks != due_tick) {
+            if (event->type != expected || event->timeline_ticks != selected_tick) {
                 return 1;
             }
             ++phase;
-            if (phase == 5u) {
+            if (phase == 3u) {
                 phase = 0u;
-                ++due_tick;
+                ++groups;
             }
         }
     }
-    return due_tick != 4u || phase != 0u;
+    return groups != 1u || phase != 0u;
 }
 
 static C_INT readiness_has_event(const readiness_trace_probe *probe,
@@ -90,11 +87,11 @@ C_INT main(C_VOID)
     failed |= !failed && core_machine_configure_rtc_cmos(machine, &rtc_config) !=
         TYPE_STATUS_OK;
     failed |= !failed && test_core_machine_fixture_register_reset_mapping(machine,
-        0xfffffff0u, 0x000ffff0u, 16u) != TYPE_STATUS_OK;
+        0x00fffff0u, 0x000ffff0u, 16u) != TYPE_STATUS_OK;
     failed |= !failed && core_machine_freeze_execution_providers(machine) !=
         TYPE_STATUS_OK;
     failed |= !failed && core_machine_reset(machine) != TYPE_STATUS_OK;
-    failed |= !failed && core_machine_memory_write(machine, 0xfffffff0u, &nop,
+    failed |= !failed && core_machine_memory_write(machine, 0x00fffff0u, &nop,
         sizeof(nop)) != TYPE_STATUS_OK;
     failed |= !failed && core_machine_bus_write(machine, 0x0070u,
         CORE_MACHINE_RTC_REG_B) != TYPE_STATUS_OK;
@@ -109,8 +106,8 @@ C_INT main(C_VOID)
         machine->shared_rtc.calendar.second != 3u);
     failed |= !failed && core_machine_get_timeline_observation(machine,
         &observation) != TYPE_STATUS_OK;
-    failed |= !failed && (observation.now != 3u || observation.pending_events != 3u ||
-        observation.next_sequence != 12u);
+    failed |= !failed && (observation.now != 3u || observation.pending_events != 0u ||
+        observation.next_sequence != 0u);
     failed |= !failed && (probe.count < 5u ||
         !readiness_has_event(&probe, CORE_MACHINE_TRACE_CPU_RETIRE) ||
         readiness_expect_chain(&probe) ||
@@ -118,8 +115,8 @@ C_INT main(C_VOID)
     failed |= !failed && core_machine_reset(machine) != TYPE_STATUS_OK;
     failed |= !failed && core_machine_get_timeline_observation(machine,
         &observation) != TYPE_STATUS_OK;
-    failed |= !failed && (observation.now != 0u || observation.pending_events != 3u ||
-        observation.next_sequence != 3u);
+    failed |= !failed && (observation.now != 0u || observation.pending_events != 0u ||
+        observation.next_sequence != 0u);
 
     core_machine_destroy(machine);
     if (failed) return 1;

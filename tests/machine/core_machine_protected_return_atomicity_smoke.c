@@ -39,7 +39,7 @@ static C_VOID atomic_reset(C_VOID *opaque)
 }
 
 static const core_machine_execution_provider atomic_provider = {
-    atomic_reset, STD_NULL, STD_NULL
+    atomic_reset, STD_NULL
 };
 
 static C_INT atomic_prepare(atomic_machine *state, core_machine_cpu_profile profile)

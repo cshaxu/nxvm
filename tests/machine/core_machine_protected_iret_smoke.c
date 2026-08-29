@@ -31,7 +31,7 @@ static C_VOID iret_reset(C_VOID *opaque)
 }
 
 static const core_machine_execution_provider iret_provider = {
-    iret_reset, STD_NULL, STD_NULL
+    iret_reset, STD_NULL
 };
 
 static C_INT iret_write(iret_machine *state, type_unsigned_32 address,

@@ -48,7 +48,7 @@ static C_VOID legacy_lock_s1_reset(C_VOID *opaque)
 }
 
 static const core_machine_execution_provider legacy_lock_s1_provider = {
-    legacy_lock_s1_reset, STD_NULL, STD_NULL
+    legacy_lock_s1_reset, STD_NULL
 };
 
 static C_INT legacy_lock_s1_prepare(core_machine_cpu_profile profile,

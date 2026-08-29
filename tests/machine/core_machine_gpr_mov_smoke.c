@@ -13,7 +13,7 @@ static C_VOID gpr_mov_reset(C_VOID *opaque)
 }
 
 static const core_machine_execution_provider gpr_mov_provider = {
-    gpr_mov_reset, STD_NULL, STD_NULL
+    gpr_mov_reset, STD_NULL
 };
 
 static C_INT gpr_mov_prepare(core_machine_cpu_profile profile, gpr_mov_machine *state)

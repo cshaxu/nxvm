@@ -12,7 +12,7 @@ static C_VOID shift_reset(C_VOID *opaque)
     if(state!=STD_NULL)(C_VOID)test_core_machine_fixture_reset_real_mode(state->machine);
 }
 
-static const core_machine_execution_provider shift_provider={shift_reset,STD_NULL,STD_NULL};
+static const core_machine_execution_provider shift_provider={shift_reset,STD_NULL};
 
 static C_INT shift_prepare(core_machine_cpu_profile profile,shift_machine *state)
 {
@@ -102,7 +102,7 @@ static C_INT shift_test_forms(C_VOID)
         const type_unsigned_32 expected_flags=shift_flags(expected,destination,count,width?32u:16u,direction);
         const type_unsigned_32 flag_mask=VCPU_EFLAGS_CF|VCPU_EFLAGS_PF|VCPU_EFLAGS_ZF|
             VCPU_EFLAGS_SF|(count==1u?VCPU_EFLAGS_OF:0u);
-        shift_machine state;t_cpu after;core_machine_cpu_diagnostic diagnostic;
+        shift_machine state;t_cpu after={0};core_machine_cpu_diagnostic diagnostic;
         type_unsigned_32 observed=0u;
         C_INT failed=!shift_prepare(CORE_MACHINE_CPU_PROFILE_80386,&state);
 

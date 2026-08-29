@@ -18,7 +18,7 @@ static C_VOID pusha_popa_reset(C_VOID *opaque)
 }
 
 static const core_machine_execution_provider pusha_popa_provider = {
-    pusha_popa_reset, STD_NULL, STD_NULL
+    pusha_popa_reset, STD_NULL
 };
 
 static C_INT pusha_popa_prepare(core_machine_cpu_profile profile,

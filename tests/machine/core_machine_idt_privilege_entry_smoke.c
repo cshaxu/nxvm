@@ -25,7 +25,7 @@ static C_VOID pe_reset(C_VOID *opaque)
 }
 
 static const core_machine_execution_provider pe_provider = {
-    pe_reset, STD_NULL, STD_NULL
+    pe_reset, STD_NULL
 };
 
 static C_INT pe_write(privilege_entry_machine *state, type_unsigned_32 address,

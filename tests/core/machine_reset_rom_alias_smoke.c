@@ -30,7 +30,7 @@ static type_status reset_rom_reset(C_VOID *opaque,
 }
 
 static const core_machine_firmware_provider reset_rom_provider = {
-    reset_rom_configure, reset_rom_reset, STD_NULL
+    reset_rom_configure, reset_rom_reset, STD_NULL, STD_NULL
 };
 
 static C_INT reset_rom_run(core_machine_cpu_profile profile)
@@ -44,10 +44,15 @@ static C_INT reset_rom_run(core_machine_cpu_profile profile)
     const core_machine_run_budget budget = {4u, 0u};
     core_machine *machine = STD_NULL;
     core_machine_run_result result;
+    const core_machine_absent_memory_config absent_memory = {
+        0x00100000u, 0x00f00000u, 0xffu
+    };
     type_unsigned_8 reset_byte = 0u;
     C_INT failed = 0;
 
     failed |= core_machine_create(&config, &machine) != TYPE_STATUS_OK;
+    failed |= !failed && core_machine_configure_absent_memory(machine,
+        &absent_memory) != TYPE_STATUS_OK;
     failed |= !failed && core_machine_bind_firmware_provider(machine,
         &reset_rom_provider, STD_NULL) != TYPE_STATUS_OK;
     failed |= !failed && core_machine_memory_read_reset_physical(

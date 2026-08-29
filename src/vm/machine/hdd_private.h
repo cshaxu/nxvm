@@ -45,7 +45,6 @@ struct t_hdd {
 STD_SIZE_T vm_machine_hdd_image_size(const t_hdd *hdd);
 C_VOID vm_machine_hdd_initialize(t_hdd *hdd);
 C_VOID vm_machine_hdd_reset(t_hdd *hdd);
-C_VOID vm_machine_hdd_refresh(t_hdd *hdd);
 C_VOID vm_machine_hdd_finalize(t_hdd *hdd);
 C_VOID vm_machine_hdd_create(t_hdd *hdd, type_unsigned_16 cylinders);
 C_INT vm_machine_hdd_replace_bytes(t_hdd *hdd, const C_VOID *bytes,

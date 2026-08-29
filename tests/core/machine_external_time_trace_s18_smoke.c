@@ -1,4 +1,5 @@
 #include "type.h"
+#include "core/machine/machine.h"
 #include "core/machine/machine_interface.h"
 #include "../support/core_machine_executor_fixture.h"
 typedef struct { core_machine_trace_event event; C_INT count; } fixture;

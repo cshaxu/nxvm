@@ -106,7 +106,8 @@ type_status core_machine_register_immutable_rom_mapping(
 
 static type_status core_machine_register_immutable_rom_mapping_alias_internal(
     core_machine *machine, type_unsigned_32 source_start,
-    type_unsigned_32 physical_start, STD_SIZE_T bytes, C_INT firmware_call)
+    type_unsigned_32 physical_start, STD_SIZE_T bytes, C_INT firmware_call,
+    type_bool pre_a20)
 {
     core_machine_immutable_rom_mapping *source = STD_NULL;
     core_machine_immutable_rom_mapping *mapping;
@@ -147,9 +148,10 @@ static type_status core_machine_register_immutable_rom_mapping_alias_internal(
     mapping->bytes = bytes;
     mapping->image = source->image + source_offset;
     mapping->owns_image = TYPE_FALSE;
-    status = core_machine_memory_register_overlay_device_provider(&machine->executor_memory,
-        physical_start, bytes, core_machine_rom_mapping_read,
-        core_machine_rom_mapping_write, core_machine_rom_mapping_query, mapping);
+    status = (pre_a20 ? core_machine_memory_register_pre_a20_overlay_device_provider :
+        core_machine_memory_register_overlay_device_provider)(&machine->executor_memory,
+            physical_start, bytes, core_machine_rom_mapping_read,
+            core_machine_rom_mapping_write, core_machine_rom_mapping_query, mapping);
     if (status != TYPE_STATUS_OK) {
         STD_MEMSET(mapping, 0, sizeof(*mapping));
         return status;
@@ -163,7 +165,15 @@ type_status core_machine_register_immutable_rom_mapping_alias(
     type_unsigned_32 physical_start, STD_SIZE_T bytes)
 {
     return core_machine_register_immutable_rom_mapping_alias_internal(machine,
-        source_start, physical_start, bytes, 0);
+        source_start, physical_start, bytes, 0, TYPE_FALSE);
+}
+
+type_status core_machine_register_immutable_rom_mapping_reset_alias(
+    core_machine *machine, type_unsigned_32 source_start,
+    type_unsigned_32 physical_start, STD_SIZE_T bytes)
+{
+    return core_machine_register_immutable_rom_mapping_alias_internal(machine,
+        source_start, physical_start, bytes, 0, TYPE_TRUE);
 }
 
 type_status core_machine_register_immutable_rom_mapping_from_firmware(
@@ -179,7 +189,7 @@ type_status core_machine_register_immutable_rom_mapping_alias_from_firmware(
     type_unsigned_32 physical_start, STD_SIZE_T bytes)
 {
     return core_machine_register_immutable_rom_mapping_alias_internal(machine,
-        source_start, physical_start, bytes, 1);
+        source_start, physical_start, bytes, 1, TYPE_FALSE);
 }
 
 C_VOID core_machine_rollback_immutable_rom_mappings(core_machine *machine,

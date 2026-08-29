@@ -97,8 +97,8 @@ static C_INT vm_pcat_s4_reset_state_matches(vm_session *session,
         vector.cs != 0xf000u || vector.ip != 0xfff0u ||
         core_machine_get_timeline_observation(session->core_machine,
             &timeline) != TYPE_STATUS_OK ||
-        timeline.now != 0u || timeline.pending_events != 3u ||
-        timeline.next_sequence != 3u ||
+        timeline.now != 0u || timeline.pending_events != 0u ||
+        timeline.next_sequence != 0u ||
         core_machine_get_nmi_mask(session->core_machine, &nmi_masked) !=
             TYPE_STATUS_OK || nmi_masked ||
         vm_pcat_s4_topology_matches(session, profile) != 0;

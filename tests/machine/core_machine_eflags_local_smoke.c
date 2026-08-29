@@ -13,7 +13,7 @@ static C_VOID eflags_reset(C_VOID *opaque)
 }
 
 static const core_machine_execution_provider eflags_provider = {
-    eflags_reset, STD_NULL, STD_NULL
+    eflags_reset, STD_NULL
 };
 
 static C_INT eflags_prepare_profile(core_machine_cpu_profile profile, eflags_machine *state)

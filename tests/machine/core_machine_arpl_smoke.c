@@ -24,7 +24,6 @@ static C_VOID arpl_reset(C_VOID *opaque)
 
 static const core_machine_execution_provider arpl_execution_provider = {
     arpl_reset,
-    STD_NULL,
     STD_NULL
 };
 

@@ -24,7 +24,7 @@ static C_VOID fpu_test_reset(C_VOID *opaque)
 }
 
 static const core_machine_execution_provider fpu_test_provider = {
-    fpu_test_reset, STD_NULL, STD_NULL
+    fpu_test_reset, STD_NULL
 };
 
 static C_INT fpu_test_prepare(fpu_test_machine *state,

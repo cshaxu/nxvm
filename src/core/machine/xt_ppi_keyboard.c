@@ -37,6 +37,10 @@ static type_unsigned_8 core_machine_xt_ppi_keyboard_port_c_value(
     if (!core_machine_xt_ppi_keyboard_mode0(keyboard)) return 0u;
     if ((keyboard->mode_control & 0x01u) == 0u) {
         value |= keyboard->port_c_latch & 0x0fu;
+    } else {
+        value |= (keyboard->port_b_latch & 0x08u) != 0u ?
+            keyboard->config.switches_high & 0x0fu :
+            keyboard->config.switches_low & 0x0fu;
     }
     if ((keyboard->mode_control & 0x08u) == 0u) {
         value |= keyboard->port_c_latch & 0xf0u;

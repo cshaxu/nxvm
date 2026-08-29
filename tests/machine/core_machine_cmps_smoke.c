@@ -20,7 +20,7 @@ static C_VOID cmps_reset(C_VOID *opaque)
 }
 
 static const core_machine_execution_provider cmps_provider = {
-    cmps_reset, STD_NULL, STD_NULL
+    cmps_reset, STD_NULL
 };
 
 static C_INT cmps_prepare(core_machine_cpu_profile profile, cmps_machine *state)

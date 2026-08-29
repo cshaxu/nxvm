@@ -37,12 +37,24 @@ static C_VOID iret_s51_seed(cli_sti_machine *state, type_unsigned_32 flags)
     cpu->data.eflags = flags;
 }
 
+static type_unsigned_32 iret_s51_real_flags_load(
+    core_machine_cpu_profile profile, type_unsigned_32 flags)
+{
+    const type_unsigned_16 known_mask = profile < CORE_MACHINE_CPU_PROFILE_80286 ?
+        0x0fd5u : (profile == CORE_MACHINE_CPU_PROFILE_80286 ? 0x7fd5u :
+            0xffd5u);
+
+    return (flags & known_mask) | 0x02u;
+}
+
 static C_INT iret_s51_real_case(core_machine_cpu_profile profile,
     const type_unsigned_8 *prefix, type_unsigned_8 prefix_bytes)
 {
     static const type_unsigned_8 hlt = 0xf4u;
     const type_unsigned_32 flags = VCPU_EFLAGS_CF | VCPU_EFLAGS_PF |
-        VCPU_EFLAGS_IF | VCPU_EFLAGS_DF;
+        VCPU_EFLAGS_IF | VCPU_EFLAGS_DF | VCPU_EFLAGS_IOPL | VCPU_EFLAGS_NT |
+        0x8002u;
+    const type_unsigned_32 expected_flags = iret_s51_real_flags_load(profile, flags);
     const C_INT wide = prefix_bytes != 0u && prefix[0] == 0x66u;
     cli_sti_machine state;
     core_machine_run_result result;
@@ -91,7 +103,7 @@ static C_INT iret_s51_real_case(core_machine_cpu_profile profile,
         failed |= after.data.cs.limit != before.data.cs.limit;
         failed |= after.data.cs.flagValid != before.data.cs.flagValid;
         failed |= after.data.cs.sregtype != before.data.cs.sregtype;
-        failed |= after.data.eflags != flags;
+        failed |= after.data.eflags != expected_flags;
         failed |= after.data.eax != before.data.eax;
         failed |= after.data.ecx != before.data.ecx;
         failed |= after.data.edx != before.data.edx;
@@ -115,6 +127,7 @@ static C_INT iret_s51_test_real(C_VOID)
 {
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086,
+        CORE_MACHINE_CPU_PROFILE_8088,
         CORE_MACHINE_CPU_PROFILE_80186,
         CORE_MACHINE_CPU_PROFILE_80286,
         CORE_MACHINE_CPU_PROFILE_80386
@@ -191,6 +204,7 @@ static C_INT iret_s51_test_rejections(C_VOID)
 {
     static const core_machine_cpu_profile legacy[] = {
         CORE_MACHINE_CPU_PROFILE_8086,
+        CORE_MACHINE_CPU_PROFILE_8088,
         CORE_MACHINE_CPU_PROFILE_80186,
         CORE_MACHINE_CPU_PROFILE_80286
     };

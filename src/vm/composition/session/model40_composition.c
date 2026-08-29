@@ -72,9 +72,10 @@ type_status vm_session_model40_storage_initialize(vm_session *session)
     core_machine_dma_wiring dma = { .fdc_channel = 2u,
         .controller_count = CORE_MACHINE_DMA_CONTROLLER_COUNT,
         .cascade_channel = CORE_MACHINE_DMA_CASCADE_CHANNEL };
-    core_machine_d4_platform_config d4 = { CORE_MACHINE_PC_AT_PORT_B, 0u, 2u };
+    core_machine_d4_platform_config d4 = { CORE_MACHINE_PC_AT_PORT_B, 0u };
     core_machine_rtc_cmos_config rtc = {0};
     core_machine_plan_topology topology = {0};
+    core_machine_d4_memory_config d4_memory = {0};
     type_status status;
 
     if (session == STD_NULL || session->core_machine != STD_NULL ||
@@ -82,10 +83,6 @@ type_status vm_session_model40_storage_initialize(vm_session *session)
         !vm_profile_model40_external_rom_is_valid(&session->model40_rom)) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
-    vm_profile_model40_d4_memory_initialize(&session->model40_d4_memory);
-    status = vm_profile_model40_d4_memory_load_compatibility(
-        &session->model40_d4_memory, &session->model40_rom);
-    if (status != TYPE_STATUS_OK) return status;
     status = core_machine_display_provider_slot_create(&session->display_provider);
     if (status != TYPE_STATUS_OK) return status;
     vm_session_bind_display(session);
@@ -100,8 +97,11 @@ type_status vm_session_model40_storage_initialize(vm_session *session)
         vm_session_model40_storage_rollback(session);
         return status;
     }
-    status = vm_profile_model40_d4_memory_materialize_plan(&session->model40_d4_memory,
-        session->core_machine_plan);
+    d4_memory = (core_machine_d4_memory_config) { TYPE_TRUE,
+        session->model40_rom.even_bytes, session->model40_rom.odd_bytes,
+        session->model40_rom.chip_byte_count, 0xfdu, 0xfc42u };
+    status = core_machine_plan_configure_d4_memory(session->core_machine_plan,
+        &d4_memory);
     if (status != TYPE_STATUS_OK) {
         vm_session_model40_storage_rollback(session);
         return status;
@@ -140,6 +140,19 @@ type_status vm_session_model40_storage_initialize(vm_session *session)
     rtc.default_count = CORE_MACHINE_RTC_DEFAULT_COUNT;
     topology.d4_platform_present = TYPE_TRUE;
     topology.d4_platform = d4;
+    /* The selected two-MiB D4 setup decodes only FA0000h--FDFFFFh as the
+     * relocated A0000h--DFFFFh backing.  The profile supplies this frozen
+     * reset topology; Core remains the RAM and address-decode owner. */
+    topology.memory_alias_count = 1u;
+    topology.memory_alias[0] = (core_machine_memory_alias_config) {
+        0x00fa0000u, 0x000a0000u, 0x00040000u };
+    /* D4 decodes the installed 1 MiB upgrade through 1FFFFFh; the option
+     * board range and the unselected F00000h--F9FFFFh bank decode open bus. */
+    topology.absent_memory_count = 2u;
+    topology.absent_memory[0] = (core_machine_absent_memory_config) {
+        0x00200000u, 0x00800000u, 0xffu };
+    topology.absent_memory[1] = (core_machine_absent_memory_config) {
+        0x00f00000u, 0x000a0000u, 0xffu };
     topology.display_present = TYPE_TRUE;
     topology.display = display;
     topology.dma_present = TYPE_TRUE;

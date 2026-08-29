@@ -25,7 +25,7 @@ static C_VOID pda_reset(C_VOID *opaque)
 }
 
 static const core_machine_execution_provider pda_provider = {
-    pda_reset, STD_NULL, STD_NULL
+    pda_reset, STD_NULL
 };
 
 static C_INT pda_write(pda_machine *state, type_unsigned_32 address,

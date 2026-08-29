@@ -47,7 +47,7 @@ static C_VOID cg_reset(C_VOID *opaque)
 }
 
 static const core_machine_execution_provider cg_provider = {
-    cg_reset, STD_NULL, STD_NULL
+    cg_reset, STD_NULL
 };
 
 static C_INT cg_write(call_gate_privilege_machine *state, type_unsigned_32 address,

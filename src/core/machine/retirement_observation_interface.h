@@ -50,6 +50,12 @@ typedef enum core_machine_retirement_repeat_phase {
     CORE_MACHINE_RETIREMENT_REPEAT_CONTINUATION
 } core_machine_retirement_repeat_phase;
 
+typedef enum core_machine_retirement_io_direction {
+    CORE_MACHINE_RETIREMENT_IO_NONE = 0,
+    CORE_MACHINE_RETIREMENT_IO_READ,
+    CORE_MACHINE_RETIREMENT_IO_WRITE
+} core_machine_retirement_io_direction;
+
 /* The timing form is an opaque Core-owned identifier. A classified path
  * without a ledger lookup intentionally reports this sentinel. */
 #define CORE_MACHINE_RETIREMENT_SOURCE_FORM_UNATTRIBUTED ((type_unsigned_32)-1)
@@ -100,6 +106,10 @@ typedef struct core_machine_retirement_observation {
     core_machine_retirement_control_outcome control_outcome;
     type_unsigned_8 next_lexeme_components;
     core_machine_retirement_repeat_phase repeat_phase;
+    core_machine_retirement_io_direction io_direction;
+    type_unsigned_16 io_port;
+    type_unsigned_8 io_bytes;
+    type_unsigned_32 io_value;
     type_unsigned_8 cpl;
     type_bool protected_mode;
     type_bool virtual_8086_mode;

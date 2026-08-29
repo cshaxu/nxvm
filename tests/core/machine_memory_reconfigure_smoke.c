@@ -15,7 +15,6 @@ static C_VOID reset_probe_reset(C_VOID *opaque)
 
 static const core_machine_execution_provider reset_probe_provider = {
     reset_probe_reset,
-    STD_NULL,
     STD_NULL
 };
 

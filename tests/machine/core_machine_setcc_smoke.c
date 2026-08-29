@@ -17,7 +17,7 @@ static C_VOID setcc_reset(C_VOID *opaque)
 }
 
 static const core_machine_execution_provider setcc_provider = {
-    setcc_reset, STD_NULL, STD_NULL
+    setcc_reset, STD_NULL
 };
 
 static C_INT setcc_prepare(core_machine_cpu_profile profile,

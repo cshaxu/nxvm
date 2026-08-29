@@ -18,7 +18,7 @@ static C_VOID push_immediate_reset(C_VOID *opaque)
 }
 
 static const core_machine_execution_provider push_immediate_provider = {
-    push_immediate_reset, STD_NULL, STD_NULL
+    push_immediate_reset, STD_NULL
 };
 
 static C_INT push_immediate_prepare(core_machine_cpu_profile profile,

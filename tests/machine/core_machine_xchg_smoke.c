@@ -17,7 +17,7 @@ static C_VOID xchg_reset(C_VOID *opaque)
 }
 
 static const core_machine_execution_provider xchg_provider = {
-    xchg_reset, STD_NULL, STD_NULL
+    xchg_reset, STD_NULL
 };
 
 static C_INT xchg_prepare(core_machine_cpu_profile profile, xchg_machine *state)

@@ -24,7 +24,7 @@ static C_VOID debug_mov_s59_reset(C_VOID *opaque)
 }
 
 static const core_machine_execution_provider debug_mov_s59_execution_provider = {
-    debug_mov_s59_reset, STD_NULL, STD_NULL
+    debug_mov_s59_reset, STD_NULL
 };
 
 static C_INT debug_mov_s59_prepare(debug_mov_s59_machine *state,
@@ -188,7 +188,7 @@ static C_INT debug_mov_s59_test_round_trips(C_VOID)
         t_cpu before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         t_cpu after;
         core_machine_cpu_diagnostic diagnostic;
-        type_status status;
+        type_status status = TYPE_STATUS_INVALID_STATE;
         type_unsigned_32 value = 0x10203040u + (type_unsigned_32)indices[i];
 
         state.machine->executor_cpu.data.ecx = value;
@@ -226,7 +226,7 @@ static C_INT debug_mov_s59_test_real_profiles(C_VOID)
         t_cpu before;
         t_cpu after;
         core_machine_cpu_diagnostic diagnostic;
-        type_status status;
+        type_status status = TYPE_STATUS_INVALID_STATE;
 
         if (!debug_mov_s59_prepare(&state, rejected[i]) ||
             !debug_mov_s59_install_real_ud_vector(&state)) return 1;
@@ -243,7 +243,7 @@ static C_INT debug_mov_s59_test_real_profiles(C_VOID)
         t_cpu before;
         t_cpu after;
         core_machine_cpu_diagnostic diagnostic;
-        type_status status;
+        type_status status = TYPE_STATUS_INVALID_STATE;
 
         if (!debug_mov_s59_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386)) return 1;
         state.machine->executor_cpu.data.ecx = 0x5a5aa5a5u;
@@ -273,7 +273,7 @@ static C_INT debug_mov_s59_test_rejections(C_VOID)
         t_cpu before;
         t_cpu after;
         core_machine_cpu_diagnostic diagnostic;
-        type_status status;
+        type_status status = TYPE_STATUS_INVALID_STATE;
 
         if (!debug_mov_s59_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386) ||
             !debug_mov_s59_boot_protected(&state)) return 1;
@@ -306,7 +306,7 @@ static C_INT debug_mov_s59_test_attributes(C_VOID)
         t_cpu before;
         t_cpu after;
         core_machine_cpu_diagnostic diagnostic;
-        type_status status;
+        type_status status = TYPE_STATUS_INVALID_STATE;
 
         if (!debug_mov_s59_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386) ||
             !debug_mov_s59_boot_protected(&state)) return 1;
@@ -349,7 +349,7 @@ static C_INT debug_mov_s59_test_privilege_and_lock(C_VOID)
         t_cpu before;
         t_cpu after;
         core_machine_cpu_diagnostic diagnostic;
-        type_status status;
+        type_status status = TYPE_STATUS_INVALID_STATE;
 
         if (!debug_mov_s59_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386) ||
             !debug_mov_s59_boot_protected(&state)) return 1;
@@ -371,7 +371,7 @@ static C_INT debug_mov_s59_test_privilege_and_lock(C_VOID)
         t_cpu before;
         t_cpu after;
         core_machine_cpu_diagnostic diagnostic;
-        type_status status;
+        type_status status = TYPE_STATUS_INVALID_STATE;
 
         if (!debug_mov_s59_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386) ||
             !debug_mov_s59_boot_protected(&state)) return 1;

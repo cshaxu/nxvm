@@ -3,7 +3,7 @@
 #include "core/machine/machine_interface.h"
 #include "../support/core_machine_cpu_fixture.h"
 
-#define TIMING_8086_RESET_LINEAR 0xfffffff0u
+#define TIMING_8086_RESET_LINEAR 0x000ffff0u
 #define TIMING_8086_RESET_PHYSICAL 0x000ffff0u
 #define TIMING_8086_WINDOW_BYTES 16u
 
@@ -60,7 +60,6 @@ static C_VOID timing_8086_execution_advance(C_VOID *opaque,
 
 static const core_machine_execution_provider timing_8086_execution_provider = {
     timing_8086_execution_reset,
-    STD_NULL,
     timing_8086_execution_advance
 };
 

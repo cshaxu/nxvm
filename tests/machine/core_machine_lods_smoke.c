@@ -13,7 +13,7 @@ static C_VOID lods_reset(C_VOID *opaque)
 }
 
 static const core_machine_execution_provider lods_provider = {
-    lods_reset, STD_NULL, STD_NULL
+    lods_reset, STD_NULL
 };
 
 static C_INT lods_prepare(core_machine_cpu_profile profile, lods_machine *state)

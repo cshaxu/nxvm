@@ -383,21 +383,59 @@ static C_VOID core_machine_cpu_diagnostic_copy_point(
     STD_MEMCPY(point->bytes, instructions->data.opcodes, sizeof(point->bytes));
 }
 
+static C_VOID core_machine_cpu_diagnostic_record_snapshot(
+    core_machine_cpu_fault_snapshot *snapshot, const t_cpu *cpu,
+    const t_cpuins *instructions)
+{
+    if (snapshot == STD_NULL || cpu == STD_NULL || instructions == STD_NULL) return;
+    STD_MEMSET(snapshot, 0, sizeof(*snapshot));
+    snapshot->valid = 1;
+    snapshot->exception_mask = instructions->data.except;
+    snapshot->exception_code = instructions->data.excode;
+    core_machine_cpu_diagnostic_copy_point(&snapshot->point, cpu, instructions,
+        TYPE_TRUE);
+    snapshot->eax = cpu->data.eax;
+    snapshot->ebx = cpu->data.ebx;
+    snapshot->ecx = cpu->data.ecx;
+    snapshot->edx = cpu->data.edx;
+    snapshot->cr2 = cpu->data.cr2;
+    snapshot->esp = cpu->data.esp;
+    snapshot->ebp = cpu->data.ebp;
+    snapshot->esi = cpu->data.esi;
+    snapshot->edi = cpu->data.edi;
+    snapshot->eflags = cpu->data.eflags;
+}
+
 static C_VOID core_machine_cpu_diagnostic_record_instruction(C_VOID *opaque,
     const C_VOID *opaque_cpu, const t_cpuins *instructions)
 {
     core_machine *machine = (core_machine *)opaque;
     const t_cpu *cpu = (const t_cpu *)opaque_cpu;
+#if CORE_MACHINE_RUNTIME_TRACE_ENABLED
     core_machine_cpu_diagnostic_state *state;
+#endif
 
     if (machine == STD_NULL) return;
+#if CORE_MACHINE_RUNTIME_TRACE_ENABLED
     state = &machine->cpu_diagnostic;
+    /* Recent instruction history is a development diagnostic.  The retained
+     * runtime debugger reads the current machine state through its explicit
+     * copied operations, while faults retain their own snapshots below. */
     core_machine_cpu_diagnostic_copy_point(
         &state->snapshot.recent[state->next_index], cpu, instructions, TYPE_FALSE);
-    core_machine_retirement_observation_capture_instruction(machine, cpu, instructions);
     state->next_index = (state->next_index + 1u) % CORE_MACHINE_CPU_DIAGNOSTIC_WINDOW_CAPACITY;
     if (state->snapshot.recent_count < CORE_MACHINE_CPU_DIAGNOSTIC_WINDOW_CAPACITY) {
         ++state->snapshot.recent_count;
+    }
+#endif
+    /* The copied observation is needed either by an explicit subscriber or
+     * by the verified-physical scheduler: the latter freezes the pre-retire
+     * identity used by its qualification key.  Ordinary non-physical runs
+     * keep the zero-overhead path. */
+    if (machine->retirement_observation.provider.callback != STD_NULL ||
+        machine->retirement_time_contract == CORE_MACHINE_RETIREMENT_TIME_PHYSICAL) {
+        core_machine_retirement_observation_capture_instruction(machine, cpu,
+            instructions);
     }
 }
 
@@ -411,21 +449,7 @@ static C_VOID core_machine_cpu_diagnostic_record_fault(C_VOID *opaque,
     if (machine == STD_NULL || cpu == STD_NULL || instructions == STD_NULL) return;
     fault = &machine->cpu_diagnostic.snapshot.first_fault;
     if (fault->valid) return;
-    STD_MEMSET(fault, 0, sizeof(*fault));
-    fault->valid = 1;
-    fault->exception_mask = instructions->data.except;
-    fault->exception_code = instructions->data.excode;
-    core_machine_cpu_diagnostic_copy_point(&fault->point, cpu, instructions, TYPE_TRUE);
-    fault->eax = cpu->data.eax;
-    fault->ebx = cpu->data.ebx;
-    fault->ecx = cpu->data.ecx;
-    fault->edx = cpu->data.edx;
-    fault->cr2 = cpu->data.cr2;
-    fault->esp = cpu->data.esp;
-    fault->ebp = cpu->data.ebp;
-    fault->esi = cpu->data.esi;
-    fault->edi = cpu->data.edi;
-    fault->eflags = cpu->data.eflags;
+    core_machine_cpu_diagnostic_record_snapshot(fault, cpu, instructions);
     (C_VOID)core_machine_report_fault(machine, fault->exception_mask);
 }
 
@@ -437,22 +461,12 @@ static C_VOID core_machine_cpu_diagnostic_record_delivered_exception(
     core_machine_cpu_fault_snapshot *exception;
 
     if (machine == STD_NULL || cpu == STD_NULL || instructions == STD_NULL) return;
+    exception = &machine->cpu_diagnostic.snapshot.first_delivered_exception;
+    if (!exception->valid) {
+        core_machine_cpu_diagnostic_record_snapshot(exception, cpu, instructions);
+    }
     exception = &machine->cpu_diagnostic.snapshot.last_delivered_exception;
-    STD_MEMSET(exception, 0, sizeof(*exception));
-    exception->valid = 1;
-    exception->exception_mask = instructions->data.except;
-    exception->exception_code = instructions->data.excode;
-    core_machine_cpu_diagnostic_copy_point(&exception->point, cpu, instructions, TYPE_TRUE);
-    exception->eax = cpu->data.eax;
-    exception->ebx = cpu->data.ebx;
-    exception->ecx = cpu->data.ecx;
-    exception->edx = cpu->data.edx;
-    exception->cr2 = cpu->data.cr2;
-    exception->esp = cpu->data.esp;
-    exception->ebp = cpu->data.ebp;
-    exception->esi = cpu->data.esi;
-    exception->edi = cpu->data.edi;
-    exception->eflags = cpu->data.eflags;
+    core_machine_cpu_diagnostic_record_snapshot(exception, cpu, instructions);
     machine->cpu_diagnostic.snapshot.delivered_exception_count++;
 }
 

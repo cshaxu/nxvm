@@ -76,7 +76,6 @@ static C_VOID bound_s54_reset(C_VOID *opaque)
 
 static const core_machine_execution_provider bound_s54_execution_provider = {
     bound_s54_reset,
-    STD_NULL,
     STD_NULL
 };
 
@@ -387,7 +386,8 @@ static C_INT bound_s54_test_real_br_delivery_profile(
             (type_virtual_address)frame, sizeof(frame)) != TYPE_STATUS_OK;
         failed |= frame[0u] != 0u;
         failed |= frame[1u] != before.data.cs.selector;
-        failed |= frame[2u] != (type_unsigned_16)before.data.eflags;
+        failed |= frame[2u] != (type_unsigned_16)((before.data.eflags &
+            ~VCPU_EFLAGS_RESERVED) | 0x02u);
         failed |= !bound_s54_run(&state, 1u, &result, &after, &diagnostic);
         failed |= result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
         failed |= after.data.eip != 0x0101u;

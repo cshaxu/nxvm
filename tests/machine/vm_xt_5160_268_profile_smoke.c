@@ -34,12 +34,22 @@ static C_INT vm_xt_5160_268_declaration_is_fixed(C_VOID)
     vm_profile_xt_5160_268_resolved_profile profile;
 
     if (vm_profile_xt_5160_268_declaration_create(&declaration) != TYPE_STATUS_OK ||
-        vm_profile_xt_5160_268_resolve(&profile) != TYPE_STATUS_OK ||
+        vm_profile_xt_5160_268_resolve(&profile, TYPE_FALSE) != TYPE_STATUS_OK ||
         STD_STRCMP(profile.resolved.identity, "ibm-5160-model-268") != 0 ||
         profile.resolved.owned_fields != VM_PROFILE_RESOLVER_FIELD_ALL ||
         profile.resolved.values.core.configuration.memory_bytes != 256u * 1024u ||
         profile.resolved.values.core.configuration.cpu_profile !=
             CORE_MACHINE_CPU_PROFILE_8088 ||
+        profile.topology.absent_memory_count != 3u ||
+        profile.topology.absent_memory[0].physical_start != 0x00040000u ||
+        profile.topology.absent_memory[0].bytes != 0x00060000u ||
+        profile.topology.absent_memory[0].read_value != 0xffu ||
+        profile.topology.absent_memory[1].physical_start != 0x000a0000u ||
+        profile.topology.absent_memory[1].bytes != 0x00018000u ||
+        profile.topology.absent_memory[1].read_value != 0xffu ||
+        profile.topology.absent_memory[2].physical_start != 0x000c0000u ||
+        profile.topology.absent_memory[2].bytes != 0x00030000u ||
+        profile.topology.absent_memory[2].read_value != 0xffu ||
         profile.resolved.values.core.configuration.fpu_profile !=
             CORE_MACHINE_FPU_PROFILE_NONE ||
         profile.resolved.values.core.configuration.shared_pit_personality !=
@@ -52,6 +62,9 @@ static C_INT vm_xt_5160_268_declaration_is_fixed(C_VOID)
         profile.resolved.values.core.configuration.xt_ppi_keyboard.port_a != 0x0060u ||
         profile.resolved.values.core.configuration.xt_ppi_keyboard.control_port != 0x0063u ||
         profile.resolved.values.core.configuration.xt_ppi_keyboard.irq != 1u ||
+        profile.resolved.values.core.configuration.clock_plan.pit.numerator != 1u ||
+        profile.resolved.values.core.configuration.clock_plan.pit.denominator != 4u ||
+        profile.resolved.values.core.configuration.clock_plan.pit.reset_phase != 0u ||
         profile.resolved.values.allowed_session_options != 0u ||
         profile.resolved.values.port_leaf_count != 0u ||
         profile.resolved.values.memory_window_count != 0u ||
@@ -112,9 +125,10 @@ static C_INT vm_xt_5160_268_topology_constructs_one_xt_route(C_VOID)
     core_machine_media_registry *media = STD_NULL;
     core_machine_display_snapshot snapshot = {0};
     const type_unsigned_8 cells[] = { 'X', 0x1fu };
+    type_unsigned_8 open_bus_byte = 0u;
     C_INT failed = 0;
 
-    failed |= vm_profile_xt_5160_268_resolve(&profile) != TYPE_STATUS_OK;
+    failed |= vm_profile_xt_5160_268_resolve(&profile, TYPE_FALSE) != TYPE_STATUS_OK;
     failed |= !failed && core_machine_plan_create(
         &profile.resolved.values.core.configuration, &plan) != TYPE_STATUS_OK;
     failed |= !failed && core_machine_media_registry_create(&media) != TYPE_STATUS_OK;
@@ -160,6 +174,9 @@ static C_INT vm_xt_5160_268_topology_constructs_one_xt_route(C_VOID)
     failed |= !failed && core_machine_freeze_execution_providers(machine) !=
         TYPE_STATUS_OK;
     failed |= !failed && core_machine_reset(machine) != TYPE_STATUS_OK;
+    failed |= !failed && (core_machine_memory_read(machine, 0x000c8000u,
+        &open_bus_byte, sizeof(open_bus_byte)) != TYPE_STATUS_OK ||
+        open_bus_byte != 0xffu);
     core_machine_port_write(&machine->executor_port, 0x03d8u, 0x0du);
     failed |= !failed && core_machine_memory_write(machine, 0x000b8000u,
         cells, sizeof(cells)) != TYPE_STATUS_OK;

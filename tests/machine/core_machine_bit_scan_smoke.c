@@ -25,7 +25,7 @@ static type_status scan_query(C_VOID *owner,type_unsigned_32 physical,
     access==CORE_MACHINE_MEMORY_ACCESS_READ?TYPE_STATUS_OK:TYPE_STATUS_UNSUPPORTED; }
 static C_VOID scan_reset(C_VOID *opaque)
 { scan_machine *state=(scan_machine *)opaque;if(state!=STD_NULL)(C_VOID)test_core_machine_fixture_reset_real_mode(state->machine); }
-static const core_machine_execution_provider scan_execution={scan_reset,STD_NULL,STD_NULL};
+static const core_machine_execution_provider scan_execution={scan_reset,STD_NULL};
 
 static C_INT scan_prepare(core_machine_cpu_profile profile,scan_provider *provider,
     scan_machine *state)
@@ -69,7 +69,7 @@ static C_INT scan_test_forms(C_VOID)
         type_unsigned_8 code[6]={0};STD_SIZE_T bytes=0u;
         const type_unsigned_32 source=zero?0u:(width?0x80000120u:0x00008120u);
         const type_unsigned_32 expected=opcode? (width?31u:15u):5u;
-        scan_machine state;t_cpu after;core_machine_cpu_diagnostic diagnostic;type_unsigned_32 read=0u;
+        scan_machine state;t_cpu after={0};core_machine_cpu_diagnostic diagnostic;type_unsigned_32 read=0u;
         C_INT failed=!scan_prepare(CORE_MACHINE_CPU_PROFILE_80386,STD_NULL,&state);
         if (memory && width) code[bytes++] = 0x67u;
         if (width) code[bytes++] = 0x66u;

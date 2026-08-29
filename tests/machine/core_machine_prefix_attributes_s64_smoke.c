@@ -24,7 +24,6 @@ static C_VOID prefix_attributes_s64_reset(C_VOID *opaque)
 
 static const core_machine_execution_provider prefix_attributes_s64_provider = {
     prefix_attributes_s64_reset,
-    STD_NULL,
     STD_NULL
 };
 

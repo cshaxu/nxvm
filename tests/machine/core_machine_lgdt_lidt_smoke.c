@@ -24,7 +24,7 @@ static C_VOID lgdt_lidt_reset(C_VOID *opaque)
 }
 
 static const core_machine_execution_provider lgdt_lidt_provider = {
-    lgdt_lidt_reset, STD_NULL, STD_NULL
+    lgdt_lidt_reset, STD_NULL
 };
 
 static C_INT lgdt_lidt_prepare(lgdt_lidt_machine *state,
@@ -138,7 +138,7 @@ static C_INT lgdt_lidt_test_success(C_VOID)
                     t_cpu before, after;
                     core_machine_run_result result;
                     core_machine_cpu_diagnostic diagnostic;
-                    type_status status;
+                    type_status status = TYPE_STATUS_INVALID_STATE;
                     type_unsigned_8 code[9] = {0u};
                     type_unsigned_8 image[6];
                     type_unsigned_32 expected_base = opcode == 2u ?
@@ -197,7 +197,7 @@ static C_INT lgdt_lidt_expect_ud(core_machine_cpu_profile profile,
     t_cpu before, after;
     core_machine_run_result result;
     core_machine_cpu_diagnostic diagnostic;
-    type_status status;
+    type_status status = TYPE_STATUS_INVALID_STATE;
     C_INT failed = !lgdt_lidt_prepare(&state, profile);
 
     if (!failed) {
@@ -263,7 +263,7 @@ static C_INT lgdt_lidt_test_segments(C_VOID)
         type_unsigned_8 image[6];
         core_machine_run_result result;
         core_machine_cpu_diagnostic diagnostic;
-        type_status status;
+        type_status status = TYPE_STATUS_INVALID_STATE;
         type_unsigned_32 address = form == 0u ? LGDT_LIDT_SS_BASE * 16u + 0x0030u :
             LGDT_LIDT_ES_BASE * 16u + 0x0300u;
         C_INT failed = !lgdt_lidt_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
@@ -304,7 +304,7 @@ static C_INT lgdt_lidt_test_source_limit(C_VOID)
         t_cpu before, after;
         type_unsigned_8 code[] = {0x0fu,0x01u,0x16u,0x00u,0x02u};
         type_unsigned_8 source[6];
-        type_status status;
+        type_status status = TYPE_STATUS_INVALID_STATE;
         C_INT failed = !lgdt_lidt_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
 
         if (!failed) {
@@ -350,7 +350,7 @@ static C_INT lgdt_lidt_test_gdtr_consumer(C_VOID)
     core_machine_cpu_diagnostic diagnostic;
     t_cpu before, after;
     type_unsigned_8 image[6];
-    type_status status;
+    type_status status = TYPE_STATUS_INVALID_STATE;
     C_INT failed = !lgdt_lidt_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
 
     if (!failed) {
@@ -401,7 +401,7 @@ static C_INT lgdt_lidt_test_pending_pic(C_VOID)
         type_unsigned_8 code[] = {0x0fu,0x01u,0x16u,0x00u,0x02u,0x90u};
         type_unsigned_8 image[6];
         type_unsigned_16 vector_offset = 0x0100u, vector_segment = 0u, frame = 0u;
-        type_status status;
+        type_status status = TYPE_STATUS_INVALID_STATE;
         C_INT failed = !lgdt_lidt_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
 
         if (!failed) {

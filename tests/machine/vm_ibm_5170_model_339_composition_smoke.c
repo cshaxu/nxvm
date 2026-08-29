@@ -89,6 +89,15 @@ static C_INT vm_model_339_selected_contract(C_VOID)
         &(type_unsigned_8){0x5au}, sizeof(type_unsigned_8)) != TYPE_STATUS_OK;
     failed |= core_machine_memory_read(session->core_machine, 0x00100003u, &after,
         sizeof(after)) != TYPE_STATUS_OK || after != 0xffu;
+    failed |= core_machine_memory_query(session->core_machine, 0x00080e00u, 1u,
+        CORE_MACHINE_MEMORY_ACCESS_READ, &memory_route) != TYPE_STATUS_OK ||
+        memory_route != CORE_MACHINE_MEMORY_ROUTE_PROVIDER ||
+        core_machine_memory_read(session->core_machine, 0x00080e00u, &before,
+            sizeof(before)) != TYPE_STATUS_OK || before != 0xffu ||
+        core_machine_memory_write(session->core_machine, 0x00080e00u,
+            &(type_unsigned_8){0x5au}, sizeof(type_unsigned_8)) != TYPE_STATUS_OK ||
+        core_machine_memory_read(session->core_machine, 0x00080e00u, &after,
+            sizeof(after)) != TYPE_STATUS_OK || after != 0xffu;
     failed |= core_machine_memory_query(session->core_machine, 0x000b0000u, 1u,
         CORE_MACHINE_MEMORY_ACCESS_READ, &memory_route) != TYPE_STATUS_OK ||
         memory_route != CORE_MACHINE_MEMORY_ROUTE_PROVIDER ||
