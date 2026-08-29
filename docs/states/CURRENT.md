@@ -2,32 +2,11 @@
 
 ## Current Work
 
-## M5 T501 S4 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner approved T501's four-profile closure; S3 P2 accepted its only Model-40 source-gated transfer. |
-| Objective | Advance the current target through its normal T501 identity update, rebuild the resulting stripped Release artifact, replay the complete frozen nine-row matrix, and close T501 with every row at a semantic terminal or one explicit source-gated boundary. |
-| Non-goals | No behavior repair, scheduler reopening, profile-specific time path, firmware/media import, local-path/hash/trace retention, or reclassification of the transferred Model-40 relation. |
-| Reference Baseline | `4e909284`; [proposal](../proposals/m5-four-profile-post-scheduler-media-closure.md), [S1 matrix](../etc/evidence/t501-s1-release-matrix-baseline.md), and [S3 transfer](../etc/evidence/t501-s2-model40-diagnostic-list-2.md). |
-| Candidate Proposal | [M5 four-profile post-scheduler media closure](../proposals/m5-four-profile-post-scheduler-media-closure.md). |
-| Files And ABI Surface | Release artifact, transient owner-provided BYOB observations, T501 evidence/history/status only; no product source or ABI change. |
-| Applicable Rules | Core remains sole time/controller/state owner; VM selects frozen inputs and copied presentation only.  External assets remain untracked and non-retained. |
-| Verification | Build the normal T501 current target; replay all nine rows through the existing BYOB route; run complete Debug unit and integration gates; record artifact hash without protected inputs. |
-| Expected Markers | `T501-S4-RELEASE-MATRIX-CLOSURE` and `T501-S4-ARTIFACT`. |
-| Asset Needs | Existing owner-authorized BYOB firmware/media only; no asset import or project cataloguing. |
-| Reporting Requirements | Record each frozen row's semantic terminal or explicit named boundary, exact T501 transfer reference, artifact identity/hash and complete gate results. |
-| Stop Conditions | Stop before any repair on a new diagnostic; classify it to its earliest owner rather than weakening a terminal or boundary. |
-| Exit Criteria | All nine rows are freshly classified; only the named 80286 input and Model-40 source-gated boundaries remain nonterminal; gates pass, 0501 is stripped Release, and no task-owned worktree residue remains. |
-| Original Owner Request | Single-person dual-role execution of the four-profile post-scheduler media closure, including correct Model-40 diagnosis or source-gated transfer. |
-| Similar-Issue Sweep | Recheck every profile/CPU/media row, all semantic terminal predicates, all external boundary wording, artifact debug-information exclusion and retained runtime debugger. |
-
 ## Current Technical Baseline
 
-- **Current developer artifact:** CMake target `vm-0-5-0499` emitted
-  `nxvm_0_5_0499.exe` in a stripped Release build, SHA-256
-  `CFC66FE9D74176CC0B9F98D4657BC779B155A71DCA6E893AFB97920F8B6957D5`.
+- **Current developer artifact:** CMake target `vm-0-5-0501` emitted
+  `nxvm_0_5_0501.exe` in a stripped Release build, SHA-256
+  `3651CD9245D11374F6089199E83A15F1F4C67B43E6A27F2751F74D3B57B89297`.
   It retains the runtime debugger and contains no compiler debug information.
   Debug uses the repository-only unit route. T471 preserves Core-owned progression:
   a verified axis is Standard-paced only by host waiting against completed
@@ -59,7 +38,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T501 S3 | Accepted: the Release matrix has seven terminals and one external-input boundary; the complete Model-40 List 1/List 2 transfers only its source-gated FDD/ROM board relation. [Evidence](../etc/evidence/t501-s2-model40-diagnostic-list-2.md). |
+| T501 | Closed: the 0501 stripped Release replays the entire nine-row matrix with seven semantic terminals and only the named 80286 input and Model-40 source-gated boundaries; unit 312/312 and integration 20/20 pass. [Closure](../history/M5-T501-four-profile-post-scheduler-media-closure.md). |
 | T500 | Closed: existing tests now have one `test/` tree, one unit/integration route, narrow fixture ownership, one product input path, and recovered safe integration parallelism; unit 312/312 and integration 20/20 pass. [Closure](../history/M5-T500-unit-and-integration-test-convergence.md). |
 | T499 | Closed: one Core deadline seam owns the current scheduler clients and the selected Model-40 D4 controller; the configured suite passes 302/302 and stripped Release 0499 is recorded. [Closure](../history/M5-T499-core-event-deadline-scheduler-convergence.md). |
 | T498 | Closed: the supported-media matrix has semantic terminals or an explicit external-input boundary for every non-Model-40 row, and its Model-40 predecessor transfers to the sole Core scheduler receiver without accepting a shortcut. [Closure](../history/M5-T498-four-profile-supported-media-matrix.md). |
@@ -67,7 +46,6 @@
 | T496 | Closed: one Core FDC result/IRQ lifecycle now releases IRQ6 at normal-result acknowledgement, and the selected IBM 5160 DOS terminal plus focused FDC regressions pass without a BIOS/VM/media workaround. [Closure](../history/M5-T496-xt-keyboard-device.md). |
 | T495 | Closed: the selected IBM 5160-268 is functionally ready with source-backed L3 relations and explicit L2 limits; 13/13 focused, 300/300 fresh current and specialized gates pass, without a physical/wall-clock overclaim. [Decision](../etc/evidence/t495-s2-xt-final-model-decision.md). |
 | T494 | Closed: the complete IBM 5160 Xebec source/List-1/List-2/sole-owner chain corrects Read block-count progression without a second controller/media path; full current gate passes 300/300 and stripped Release 0494 is recorded. [Closure audit](../etc/evidence/t494-s5-xebec-closure-audit.md). |
-| T493 | Closed: complete IBM CGA source/List-1/List-2/one-owner repair reconciles all 33 rows; the generic latch and binary high-resolution palette repair leave no in-scope tail. [Closure audit](../etc/evidence/t493-s5-cga-closure-audit.md). |
 
 ## Recent Governance
 

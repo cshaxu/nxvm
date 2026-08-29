@@ -11,7 +11,7 @@ a profile-specific progression path.
 ## Frozen Universe
 
 The universe is the nine rows frozen by the retained
-[four-profile matrix](m5-four-profile-supported-media-matrix.md):
+[four-profile matrix](../proposals/m5-four-profile-supported-media-matrix.md):
 
 - IBM 5160 Model 268 / 8088 / 360 KB;
 - IBM 5170 Model 339 / 80286 / 360 KB and 1.2 MB;

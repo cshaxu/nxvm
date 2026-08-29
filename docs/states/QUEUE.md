@@ -71,10 +71,6 @@ Retained historical context: [Core L3 integration closure and VM contract export
 
 Closed retained proposal: [IBM 5170 native floppy contract](../proposals/m5-ibm-5170-native-floppy-contract.md), [Core HDC ATA phase contract](../proposals/m5-core-hdc-ata-phase-contract.md), [Four-profile supported DOS media matrix](../proposals/m5-four-profile-supported-media-matrix.md), and [Unit and integration test convergence](../proposals/m5-current-gate-execution-tiering.md).
 
-The post-scheduler matrix candidate owns the residual Release replay and Model-40 diagnostic receiver.
-
-Proposal index: [M5 four-profile post-scheduler media closure](../proposals/m5-four-profile-post-scheduler-media-closure.md).
-
 
 ## M6 Candidates
 
