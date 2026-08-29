@@ -2,27 +2,6 @@
 
 ## Current Work
 
-## M5 T500 S9 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Continuation of the owner's approved single-person dual-role test-refactor objective; S8 closes the repository-only corpus. The owner additionally approved T500 S6 unit-coverage qualification as a T-level closure requirement on 2026-08-28. |
-| Objective | Place each external-media scenario under `test/integration/`, retain one explicit BYOB authority for diagnostics, and keep unit tests asset-free. |
-| Non-goals | No guest-media import, product behavior change, promotion of diagnostics to the default integration route, EGA split, or new test framework. |
-| Reference Baseline | `da1b01d0`; [T500 S2 inventory](../etc/evidence/t500-s2-test-inventory.json) and [T500 architecture](../etc/evidence/t500-s3-component-test-architecture.md). |
-| Candidate Proposal | [M5 unit and integration test convergence](../proposals/m5-current-gate-execution-tiering.md). |
-| Files And ABI Surface | Integration test sources, CMake test membership and evidence; no product ABI. |
-| Applicable Rules | One owner-local test tree; one route per retained target; unit no external input; integration BYOB only; no duplicate scenario source. |
-| Verification | Run complete unit, then integration targets with their declared FDD/HDD inputs; confirm diagnostics retain their existing opt-in authority. |
-| Expected Markers | `TEST-INTEGRATION-BYOB-ROUTE` and `TEST-NO-DIAGNOSTIC-PROMOTION`. |
-| Asset Needs | None. |
-| Reporting Requirements | Report each moved scenario, its external input contract and diagnostic authority. |
-| Stop Conditions | Stop if a scenario needs undisclosed media, a second command authority, or a product behavior change. |
-| Exit Criteria | Every S7 external scenario source is under `test/integration/`; unit remains asset-free; fixed-input integrations pass; diagnostics retain exactly one opt-in route. T500 remains open until S6 supplies the proposal's component-owned coverage ledger and reconciled reproducible coverage report. |
-| Original Owner Request | Implement the testing refactor completely, organize tests by source ownership, and do not leave unexamined or redundant test paths. |
-| Similar-Issue Sweep | Compare target source, CTest registration, input contract, platform guard and assertion overlap for every inventory row. |
-
 ## Current Technical Baseline
 
 - **Current developer artifact:** CMake target `vm-0-5-0499` emitted

@@ -9,6 +9,8 @@
 | S5 | Accepted: retained only seven narrow host-thread serial exceptions, proved four-way execution, and ran the owner-managed integration route 15/15 without tracking assets or generated output. |
 | S6 | Accepted: restored the completed-proposal index after the first closure record exposed the mandatory documentation-link rule; governance then passed without re-queuing T500. |
 | S7 | Accepted: corrected the false closure, dispositioned all 43 unregistered targets plus the two shared EGA scenarios, and proved the existing repository-only route 287/287 without tracked execution output. |
+| S8 | Accepted: removed four empty assertions and two invalid test-only paths, registered retained repository-only contracts through owner-local matrices, and passed unit 312/312. P1 `1ed770a2`. |
+| S9 | Accepted: moved every external-media scenario to `test/integration/`, retained one BYOB authority for diagnostics, repaired the Windows checkpoint's valid boot and native-input alternatives, and passed unit 312/312 plus integration 20/20. P1 `dfad412b`. |
 
 The active [proposal](../proposals/m5-current-gate-execution-tiering.md)
 defines the complete test inventory, component-owned test design, migration and
@@ -25,5 +27,5 @@ was the exclusive implementation plan for the completed migration.
 
 The prior closure record was incomplete: route migration retained, but did not
 dispose of, its frozen 43 unregistered targets and two shared EGA scenarios.
-T500 therefore continues at S8; it cannot close until that finite ledger is
-implemented without weakening coverage or restoring a second test tree.
+T500 now continues at S10: its remaining completion condition is the
+owner-approved component coverage ledger and reproducible coverage report.
