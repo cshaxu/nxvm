@@ -61,23 +61,37 @@ or parallel scheduler.
 
 ## S decomposition
 
-1. **Ledger and source reconciliation.** Freeze the route/state matrix;
-   record state owner, board edge, trigger, earliest observable deadline,
-   consumer, acknowledgement/removal point, reset/error behavior and source
-   basis. Classify every row as direct proof, explicit unsupported/deferred
-   receiver, or connection defect.
-2. **Clock, interrupt and refresh routes.** Repair any PIT/PIC/CPU and
-   PIT/DMA refresh connection defects through the existing Core owners.
-3. **DMA/controller service routes.** Repair FDC/HDC DMA, DRQ, terminal/error
-   and IRQ lifecycle defects as one owner-local batch; include verify and
-   no-media paths.
-4. **Board/firmware observation routes.** Repair KBC, RTC/CMOS/NMI and VADP
-   owner-to-consumer defects, retaining one state owner and copied display
-   output.
-5. **Cross-profile closure.** Run the frozen controller-route matrix against
-   the selected 5160, 5170, Model-40 and default-AT profiles; execute the
-   complete unit and integration gates and transfer any newly proven
-   controller-internal gap to its earliest unit T.
+S1/S2 are retained only as preliminary route inventory. They do not satisfy a
+controller audit because they did not independently re-read each original
+source and external implementation. Every following controller S executes the
+same complete sequence for **one state owner and its downstream consumers**:
+original manual and board pages, NXVM owner-to-consumer code trace, independent
+86Box/MAME/PCjs/Bochs/QEMU comparison where available, a finite gap table, then
+one owner-local repair batch and its tests. A passing adjacent controller or
+boot checkpoint cannot close another controller's S.
+
+1. **8259A PIC -> CPU.** Reconcile interrupt request, masking, cascade,
+   INTA/vector, EOI and reset with the CPU consumer.
+2. **8253/8254 PIT -> PIC/DMA.** Reconcile channel 0 IRQ0 and each selected
+   channel-1 refresh consumer, including reset/gate/output and HLT wake-up.
+3. **8237A DMA -> bound providers/memory.** Reconcile DREQ/DACK, request
+   polarity, mode, verify, terminal count/EOP, cascade and reset for each
+   selected FDC/HDC/refresh provider.
+4. **8272A FDC -> DMA2/PIC/firmware.** Reconcile command, DRQ, TC, result,
+   IRQ6 acknowledgement, reset, drive selection and no-media/error paths.
+5. **HDC -> DMA/PIC/firmware.** Reconcile ATA, Compaq, WD1003 and Xebec
+   personalities independently through their selected DRQ/DMA/IRQ/status and
+   reset/error consumers; no ATA result stands in for another personality.
+6. **MC146818A RTC/CMOS -> PIC/NMI/firmware.** Reconcile periodic/alarm/update
+   state, IRQ8 acknowledge, port-70 NMI masking, reset and CMOS observation.
+7. **8042/XT keyboard -> PIC/A20/reset.** Reconcile the selected KBC or XT PPI
+   keyboard owner, FIFO/serial completion, IRQ1, A20, reset and NMI boundary.
+8. **VADP -> copied display consumer.** Reconcile guest port/memory ingress,
+   CGA/EGA state, output disable/text fallback and copied snapshot publication.
+9. **Cross-profile closure.** Run the completed controller ledger against
+   5160, 5170, Model-40 and default-AT, execute complete unit and integration
+   gates, and transfer any newly proven controller-internal gap to its earliest
+   unit T.
 
 ## Exit criteria
 
