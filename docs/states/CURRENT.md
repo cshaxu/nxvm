@@ -4,22 +4,22 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | New `T503 S1`; next numeric implementation task after closed T501 and withdrawn T502. |
-| Admission And Approval | Owner approved proposal update and execution on 2026-08-29. Scope is the complete selected controller-to-consumer signal-route ledger and owner-local repairs; normal commits and non-force remote pushes are permanently approved. |
-| Objective | Freeze the finite controller signal-chain matrix and reconcile each route against its primary source, existing List 1/List 2 evidence and one independently inspected emulator where board wiring is ambiguous. |
-| Non-goals | No profile-side emulation, firmware/VM workaround, polling loop, synthetic device status, second scheduler, new physical-timing claim, or controller-internal implementation batch before S1 establishes the affected complete route class. |
-| Reference Baseline | `33c07939` (`M5 T501 S5 P1 close Model 40 DOS boot`), with 312/312 unit and 20/20 integration passing; T501 repairs are evidence, not a pre-accepted disposition. |
-| Candidate Proposal | [M5 controller signal-chain convergence](../proposals/m5-controller-signal-chain-convergence.md). S1 consumes its complete frozen route/state universe. |
-| Files And ABI Surface | Documentation/evidence only: proposal, `states/CURRENT.md`, indexed `docs/etc/evidence/`, and task history if created. No production ABI or source change is authorized in S1. |
+| Identifier Mode | Continuation `T503 S2`; S1 is accepted at `29a1dfe2` after 312/312 unit and documentation-governance pass. |
+| Admission And Approval | Owner approved proposal update and execution on 2026-08-29. S2 consumes R1 and R8 of the accepted T503 ledger: PIT0 -> PIC -> CPU, selected PIT1 -> DMA refresh, and their Core HLT/progression observation; normal commits and non-force remote pushes are permanently approved. |
+| Objective | Prove the complete clock/interrupt/refresh routes across the selected profiles and repair every connection defect at the existing Core owner. |
+| Non-goals | No profile-side emulation, firmware/VM workaround, polling loop, synthetic status, second scheduler, host-generated tick, physical-timing claim, or DMA/FDC/HDC/KBC/RTC/VADP internal implementation outside the selected route class. |
+| Reference Baseline | `29a1dfe2` (`M5 T503 S1 P1 freeze controller signal routes`), with 312/312 unit passing. |
+| Candidate Proposal | [M5 controller signal-chain convergence](../proposals/m5-controller-signal-chain-convergence.md); [S1 ledger](../etc/evidence/t503-s1-controller-signal-chain-ledger.md), R1/R8. |
+| Files And ABI Surface | Expected Core scheduler, PIT/PIC/DMA binding and owner-local tests under `src/core/machine/` and `test/core/`, plus active-state/evidence/history records. Public Core interfaces change only if an existing opaque observation cannot express the proven route; no controller pointer or mutable layout may cross it. |
 | Applicable Rules | `docs/README.md` Task Reading Set; `rules/EXECUTION.md` coverage-bearing, packet, P, review and test rules; `rules/DOCUMENT.md`; source policy; `rules/ARCHITECTURE.md` sole-owner/bounded-interface invariants; `rules/CODING.md` simplicity/test-boundary rules. |
-| Verification | Review every frozen route/state form; trace current owner/consumer route in source; cross-check primary material and external emulator behavior only where primary sources leave board wiring ambiguous; run complete repository-only unit suite before S1 closure. |
-| Expected Markers | `T503-S1-SIGNAL-CHAIN-LEDGER`; one disposition per route/state form; each unresolved item names its earliest hardware-T receiver. |
-| Asset Needs | Read-only owner-managed manuals and external emulator source only; no firmware, media, source text or third-party artifact enters the repository. |
-| Reporting Requirements | Report the frozen universe, every discovered owner/connection defect or transferred receiver, evidence path, complete unit result, and actual-change review. Do not claim a route repaired until its owner-local repair S passes proof. |
-| Stop Conditions | Stop for owner direction, authority contradiction, unavailable source necessary to classify a route, or a defect outside the frozen universe; record/transfer rather than improvise a workaround. |
-| Exit Criteria | Every S1 row is directly evidenced, explicitly unsupported/deferred with named earliest receiver, or a bounded connection-defect batch for S2--S4; no implementation is hidden in the audit; complete unit gate passes. |
+| Verification | Trace normal/masked/reset PIT0 IRQ0, selected PIT1 refresh and HLT observation through Core; run focused owner-local tests and complete repository-only unit suite. S2 code closure requires full unit + integration under the active T rule. |
+| Expected Markers | `T503-S2-CLOCK-ROUTE`; no selected CPU HLT/wait is terminal while a connected qualified PIT/RTC deadline is pending. |
+| Asset Needs | Existing primary-source ledgers and read-only external emulator source only if an IBM board edge remains ambiguous; no external bytes enter the repository. |
+| Reporting Requirements | Record before/after disposition of all R1/R8 state forms, retained owner and code-size result, focused/full gate results, actual-change review and any earliest-unit transfer. |
+| Stop Conditions | Stop for owner direction, an authority contradiction, unavailable source needed to classify a connection, or a gap outside R1/R8; record/transfer rather than improvise a workaround. |
+| Exit Criteria | All R1/R8 normal, masked, reset and HLT/wait forms have one evidenced Core route, focused proof and complete unit/integration success; any uncovered controller-internal gap is transferred to its earliest unit T. |
 | Original Owner Request | “可以 更新proposal 然后开始执行”; prior direction requires complete audit and repair through one Core-owned path, not patch-by-patch compatibility behavior. |
-| Similar-Issue Sweep | Normal, masked, reset, absent media/device, terminal/error and HLT/wait states for PIT/PIC/DMA, FDC/HDC, KBC, RTC/CMOS/NMI and VADP across the selected four profiles. |
+| Similar-Issue Sweep | PIT personalities and counters, PIC topology/masks/acknowledgement, XT versus AT refresh selection, reset/cancellation and Core deadline observation across 5160, 5170, Model-40 and default-at. |
 
 ## Current Technical Baseline
 
