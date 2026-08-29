@@ -18,7 +18,7 @@
 | Reporting Requirements | Record before/after disposition of all R1/R8 state forms, retained owner and code-size result, focused/full gate results, actual-change review and any earliest-unit transfer. |
 | Stop Conditions | Stop for owner direction, an authority contradiction, unavailable source needed to classify a connection, or a gap outside R1/R8; record/transfer rather than improvise a workaround. |
 | Exit Criteria | All R1/R8 normal, masked, reset and HLT/wait forms have one evidenced Core route, focused proof and complete unit/integration success; any uncovered controller-internal gap is transferred to its earliest unit T. |
-| Original Owner Request | “可以 更新proposal 然后开始执行”; prior direction requires complete audit and repair through one Core-owned path, not patch-by-patch compatibility behavior. |
+| Original Owner Request | Owner approved updating the proposal and beginning execution; prior direction requires complete audit and repair through one Core-owned path, not patch-by-patch compatibility behavior. |
 | Similar-Issue Sweep | PIT personalities and counters, PIC topology/masks/acknowledgement, XT versus AT refresh selection, reset/cancellation and Core deadline observation across 5160, 5170, Model-40 and default-at. |
 
 ## Current Technical Baseline
