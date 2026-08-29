@@ -8,6 +8,7 @@
 | S4 | Accepted: moved all retained test sources to the single `test/` root, split the CTest registry into 287 unit and 15 integration tests, and moved timing-runner output into the build tree; unit 287/287 and static route checks pass. |
 | S5 | Accepted: retained only seven narrow host-thread serial exceptions, proved four-way execution, and ran the owner-managed integration route 15/15 without tracking assets or generated output. |
 | S6 | Accepted: restored the completed-proposal index after the first closure record exposed the mandatory documentation-link rule; governance then passed without re-queuing T500. |
+| S7 | Accepted: corrected the false closure, dispositioned all 43 unregistered targets plus the two shared EGA scenarios, and proved the existing repository-only route 287/287 without tracked execution output. |
 
 The active [proposal](../proposals/m5-current-gate-execution-tiering.md)
 defines the complete test inventory, component-owned test design, migration and
@@ -24,5 +25,5 @@ was the exclusive implementation plan for the completed migration.
 
 The prior closure record was incomplete: route migration retained, but did not
 dispose of, its frozen 43 unregistered targets and two shared EGA scenarios.
-T500 therefore continues at S7; it cannot close until that finite ledger is
+T500 therefore continues at S8; it cannot close until that finite ledger is
 implemented without weakening coverage or restoring a second test tree.

@@ -2,24 +2,24 @@
 
 ## Current Work
 
-## M5 T500 S7 Packet
+## M5 T500 S8 Packet
 
 | Field | Required record |
 | --- | --- |
 | Identifier Mode | Continuation |
-| Admission And Approval | Continuation of the owner's approved single-person dual-role test-refactor objective; the prior route migration left this finite residual unclosed. |
-| Objective | Reconcile every unregistered test target and the shared EGA scenarios into a durable register, removal proof, or platform-conditioned disposition. |
-| Non-goals | No product behavior change, external asset import, bulk registration, coverage reduction or new test framework. |
+| Admission And Approval | Continuation of the owner's approved single-person dual-role test-refactor objective; S7 establishes the finite, evidence-backed unit-corpus disposition. |
+| Objective | Complete the repository-only portion: register distinct passing unit targets, remove four empty assertions, and repair each retained failing unit contract before registration. |
+| Non-goals | No product behavior change, external asset import, integration relocation, EGA split, bulk registration, coverage reduction or new test framework. |
 | Reference Baseline | `da1b01d0`; [T500 S2 inventory](../etc/evidence/t500-s2-test-inventory.json) and [T500 architecture](../etc/evidence/t500-s3-component-test-architecture.md). |
 | Candidate Proposal | [M5 unit and integration test convergence](../proposals/m5-current-gate-execution-tiering.md). |
 | Files And ABI Surface | Test-only sources, CMake test membership and test evidence; no product ABI. |
 | Applicable Rules | One owner-local test tree; one route per retained target; unit no external input; integration BYOB only; no duplicate scenario source. |
-| Verification | Produce the finite disposition ledger, run every candidate independently where host-available, then run the complete unit route. |
-| Expected Markers | `TEST-CORPUS-FINITE`, `TEST-CORPUS-DISPOSITION`, and `TEST-NO-BULK-REGISTRATION`. |
-| Asset Needs | None for S7. |
-| Reporting Requirements | Report every target's observed result, asserted surface, existing replacement if removed, and next owner batch. |
-| Stop Conditions | Stop if a target's intended assertion cannot be determined from source and existing coverage, or registration needs product behavior changes. |
-| Exit Criteria | All 43 entries and the two EGA scenarios have an evidence-backed disposition and the full unit route passes. |
+| Verification | Run each repaired retained candidate directly, prove every registered unit target has exactly one unit CTest route, then run the complete unit route. |
+| Expected Markers | `TEST-CORPUS-UNIT-ROUTE`, `TEST-CORPUS-EMPTY-ASSERTION-REMOVED`, and `TEST-NO-BULK-REGISTRATION`. |
+| Asset Needs | None. |
+| Reporting Requirements | Report each registration, test repair and deletion with its asserted surface or replacement coverage. |
+| Stop Conditions | Stop if repairing an assertion needs a product behavior change or reveals a source-ownership ambiguity. |
+| Exit Criteria | The 31 repository-only candidates have their S7 disposition implemented, all retained tests have exactly one unit route, and the full unit route passes. |
 | Original Owner Request | Implement the testing refactor completely, organize tests by source ownership, and do not leave unexamined or redundant test paths. |
 | Similar-Issue Sweep | Compare target source, CTest registration, input contract, platform guard and assertion overlap for every inventory row. |
 
