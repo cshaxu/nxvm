@@ -2,8 +2,24 @@
 
 ## Current Work
 
-No implementation subtask is active.  T501 is closed; its next candidate is
-selected only through a new approved packet.
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New `T503 S1`; next numeric implementation task after closed T501 and withdrawn T502. |
+| Admission And Approval | Owner approved proposal update and execution on 2026-08-29. Scope is the complete selected controller-to-consumer signal-route ledger and owner-local repairs; normal commits and non-force remote pushes are permanently approved. |
+| Objective | Freeze the finite controller signal-chain matrix and reconcile each route against its primary source, existing List 1/List 2 evidence and one independently inspected emulator where board wiring is ambiguous. |
+| Non-goals | No profile-side emulation, firmware/VM workaround, polling loop, synthetic device status, second scheduler, new physical-timing claim, or controller-internal implementation batch before S1 establishes the affected complete route class. |
+| Reference Baseline | `33c07939` (`M5 T501 S5 P1 close Model 40 DOS boot`), with 312/312 unit and 20/20 integration passing; T501 repairs are evidence, not a pre-accepted disposition. |
+| Candidate Proposal | [M5 controller signal-chain convergence](../proposals/m5-controller-signal-chain-convergence.md). S1 consumes its complete frozen route/state universe. |
+| Files And ABI Surface | Documentation/evidence only: proposal, `states/CURRENT.md`, indexed `docs/etc/evidence/`, and task history if created. No production ABI or source change is authorized in S1. |
+| Applicable Rules | `docs/README.md` Task Reading Set; `rules/EXECUTION.md` coverage-bearing, packet, P, review and test rules; `rules/DOCUMENT.md`; source policy; `rules/ARCHITECTURE.md` sole-owner/bounded-interface invariants; `rules/CODING.md` simplicity/test-boundary rules. |
+| Verification | Review every frozen route/state form; trace current owner/consumer route in source; cross-check primary material and external emulator behavior only where primary sources leave board wiring ambiguous; run complete repository-only unit suite before S1 closure. |
+| Expected Markers | `T503-S1-SIGNAL-CHAIN-LEDGER`; one disposition per route/state form; each unresolved item names its earliest hardware-T receiver. |
+| Asset Needs | Read-only owner-managed manuals and external emulator source only; no firmware, media, source text or third-party artifact enters the repository. |
+| Reporting Requirements | Report the frozen universe, every discovered owner/connection defect or transferred receiver, evidence path, complete unit result, and actual-change review. Do not claim a route repaired until its owner-local repair S passes proof. |
+| Stop Conditions | Stop for owner direction, authority contradiction, unavailable source necessary to classify a route, or a defect outside the frozen universe; record/transfer rather than improvise a workaround. |
+| Exit Criteria | Every S1 row is directly evidenced, explicitly unsupported/deferred with named earliest receiver, or a bounded connection-defect batch for S2--S4; no implementation is hidden in the audit; complete unit gate passes. |
+| Original Owner Request | “可以 更新proposal 然后开始执行”; prior direction requires complete audit and repair through one Core-owned path, not patch-by-patch compatibility behavior. |
+| Similar-Issue Sweep | Normal, masked, reset, absent media/device, terminal/error and HLT/wait states for PIT/PIC/DMA, FDC/HDC, KBC, RTC/CMOS/NMI and VADP across the selected four profiles. |
 
 ## Current Technical Baseline
 

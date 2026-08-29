@@ -13,6 +13,16 @@ external-ROM consumer.  It precedes the Turbo L1 compatibility escape: a
 missing signal chain must be repaired at its owner, never hidden by generic
 time progression.
 
+The admission is based on concrete prior failures, not speculative
+refactoring: the XT could reach CPU wait while a device event path was not
+published as progress; FDC result acknowledgement once retained IRQ6 beyond
+its normal firmware-consumption boundary; DMA verify risked bypassing the DMA
+mode owner; and Model-40 firmware reached a duplicate D4 ROM mapping instead
+of immutable firmware during a legal protected-mode descriptor write. The
+latter is not itself an IRQ route, but proves why the whole owner-to-consumer
+route, rather than isolated register behavior, is the unit of audit. T501
+repairs are baseline evidence; they do not pre-accept any other route.
+
 ## Frozen coverage universe
 
 The ledger records one disposition for each of these routes and their normal,
@@ -52,8 +62,10 @@ or parallel scheduler.
 ## S decomposition
 
 1. **Ledger and source reconciliation.** Freeze the route/state matrix;
-   classify every row as direct proof, explicit unsupported/deferred receiver,
-   or connection defect with its source basis.
+   record state owner, board edge, trigger, earliest observable deadline,
+   consumer, acknowledgement/removal point, reset/error behavior and source
+   basis. Classify every row as direct proof, explicit unsupported/deferred
+   receiver, or connection defect.
 2. **Clock, interrupt and refresh routes.** Repair any PIT/PIC/CPU and
    PIT/DMA refresh connection defects through the existing Core owners.
 3. **DMA/controller service routes.** Repair FDC/HDC DMA, DRQ, terminal/error

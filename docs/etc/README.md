@@ -14,6 +14,7 @@ principal documents named in [docs/README.md](../README.md).
 | `architecture/vm-profile-resolution-design.md` | Architecture owner | Supporting target design for two-root built-in VM profiles, profile resolution, the copied Core machine plan, and the custom `nxvm-session` YAML grammar. It does not change current runtime architecture, Queue, or ABI. |
 | `requirements/` | Product and profile owners | Future DOS, NXVDM, and profile admissions. |
 | `evidence/` | Verification owner | Capability, verification, baseline, and fixture evidence. |
+| `evidence/t503-s1-controller-signal-chain-ledger.md` | Core route owner | T503 S1's finite controller-to-consumer route/state matrix, current sole-owner trace, and S2--S5 repair partition. |
 | `evidence/t500-s2-test-audit.md` | Verification owner | T500 S2's complete configured-test and test-target classification, resource findings and explicit non-registration dispositions; its generated inventory retains no owner-managed asset path. |
 | `evidence/t500-s3-component-test-architecture.md` | Verification owner | T500 S3's one-tree component/route architecture and finite migration/resource decisions consuming the S2 test inventory. |
 | `evidence/t500-s7-test-corpus-disposition.md` | Verification owner | T500 S7's complete disposition of the task's finite unregistered test targets and shared EGA scenarios; CMake remains the sole route registry. |
