@@ -2,9 +2,26 @@
 
 ## Current Work
 
-No active packet. T500 closed at `a82ae862`: unit 287/287 and integration
-15/15 pass with the single `test/` tree and exclusive routes. See the
-[T500 history](../history/M5-T500-unit-and-integration-test-convergence.md).
+## M5 T500 S7 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Continuation of the owner's approved single-person dual-role test-refactor objective; the prior route migration left this finite residual unclosed. |
+| Objective | Reconcile every unregistered test target and the shared EGA scenarios into a durable register, removal proof, or platform-conditioned disposition. |
+| Non-goals | No product behavior change, external asset import, bulk registration, coverage reduction or new test framework. |
+| Reference Baseline | `da1b01d0`; [T500 S2 inventory](../etc/evidence/t500-s2-test-inventory.json) and [T500 architecture](../etc/evidence/t500-s3-component-test-architecture.md). |
+| Candidate Proposal | [M5 unit and integration test convergence](../proposals/m5-current-gate-execution-tiering.md). |
+| Files And ABI Surface | Test-only sources, CMake test membership and test evidence; no product ABI. |
+| Applicable Rules | One owner-local test tree; one route per retained target; unit no external input; integration BYOB only; no duplicate scenario source. |
+| Verification | Produce the finite disposition ledger, run every candidate independently where host-available, then run the complete unit route. |
+| Expected Markers | `TEST-CORPUS-FINITE`, `TEST-CORPUS-DISPOSITION`, and `TEST-NO-BULK-REGISTRATION`. |
+| Asset Needs | None for S7. |
+| Reporting Requirements | Report every target's observed result, asserted surface, existing replacement if removed, and next owner batch. |
+| Stop Conditions | Stop if a target's intended assertion cannot be determined from source and existing coverage, or registration needs product behavior changes. |
+| Exit Criteria | All 43 entries and the two EGA scenarios have an evidence-backed disposition and the full unit route passes. |
+| Original Owner Request | Implement the testing refactor completely, organize tests by source ownership, and do not leave unexamined or redundant test paths. |
+| Similar-Issue Sweep | Compare target source, CTest registration, input contract, platform guard and assertion overlap for every inventory row. |
 
 ## Current Technical Baseline
 

@@ -22,8 +22,7 @@ work.
 The [S3 architecture](../etc/evidence/t500-s3-component-test-architecture.md)
 was the exclusive implementation plan for the completed migration.
 
-Closure audit: all 302 original registrations remain in exactly one route;
-unit and integration verification passed; `test/` is the only live test source
-root; and the worktree was clean after both routes. The task adds no production
-behavior or external assets. The next queued work is the four-profile media
-closure.
+The prior closure record was incomplete: route migration retained, but did not
+dispose of, its frozen 43 unregistered targets and two shared EGA scenarios.
+T500 therefore continues at S7; it cannot close until that finite ledger is
+implemented without weakening coverage or restoring a second test tree.

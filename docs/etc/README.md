@@ -16,6 +16,7 @@ principal documents named in [docs/README.md](../README.md).
 | `evidence/` | Verification owner | Capability, verification, baseline, and fixture evidence. |
 | `evidence/t500-s2-test-audit.md` | Verification owner | T500 S2's complete configured-test and test-target classification, resource findings and explicit non-registration dispositions; its generated inventory retains no owner-managed asset path. |
 | `evidence/t500-s3-component-test-architecture.md` | Verification owner | T500 S3's one-tree component/route architecture and finite migration/resource decisions consuming the S2 test inventory. |
+| `evidence/t500-s7-test-corpus-disposition.md` | Verification owner | T500 S7's complete disposition of the task's finite unregistered test targets and shared EGA scenarios; CMake remains the sole route registry. |
 | `evidence/t487-s1-5160-original-source-ledger.md` | Core board/timing owner | T487 S1's visually verified IBM 5160 publication ledger, OCR boundary and finite board-source basis for the complete List 1. |
 | `evidence/t487-s2-5160-board-function-timing-list-1.md` | Core board/timing owner | T487 S2's complete IBM 5160 board-only function/timing List 1, with each manual fact separated from chip-local and host-time boundaries. |
 | `evidence/t487-s3-5160-board-current-code-gap-list-2.md` | Core board/timing owner | T487 S3's complete board List-2 owner/path audit and one coherent Core/XT-board implementation boundary. |
