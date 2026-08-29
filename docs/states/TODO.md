@@ -74,6 +74,20 @@ adopts them.
   port/memory/frame plus DOS-fixture evidence; it may not use this debt entry
   to leave an exposed CGA mode incomplete.
 - [ ] **Compaq CECG physical, firmware and board behavior (`TODO(Medium)`).** T386 S6/S9/S10/S11/S12/S13 establish the selected Compaq Enhanced Color Graphics digital personality, 64-colour capture mapping, static configuration reads, source-backed `3C6h` state/reset, Feature-Control-to-Environment state, the selected no-light-pen latch/status, `3C2h` bit-1 CPU-video-memory decode gating, bit-0 `3Bxh`/`3Dxh` CRTC/status/Feature/light-pen routing, and bits 2--3 SW1/Input-Status-0 observability for the selected no-Special-Features/no-vertical-IRQ declaration. T386 S28 closes `3C2h` bit-5 Odd/Even page selection through the shared VADP state, memory and copied-snapshot receiver. Before DeskPro board/device timing or final Model-40 acceptance, admit the remaining source-backed physical/firmware effects: Special-Features selection, monitor blanking/selection, sync polarity, multiplexed live-video status, option-ROM/BIOS mode programming, physical monitor signalling, raster/service duration, ISA availability/waits and board memory availability through the selected DeskPro composition/firmware and board receiver. Do not infer these from generic/IBM EGA, expose an incomplete profile, or call the captured palette an analog-monitor model.
+- [ ] **DeskPro 386/16 ROM diskette diagnostic relation (`TODO(High)`).** T501 S2
+  proves the selected one-drive composition, lawful unready unit-1 `ST3` path,
+  continuous Core progression, Core-owned input and copied POST display.  The
+  Compaq Maintenance and Service Guide defines `601` and F1 `RESUME`, but the
+  available original material does not define the ROM's unit-1 test order,
+  expected FDC/drive-change observation, or the board electrical/timing
+  relation that distinguishes its `601` path.  Re-admit this one indivisible
+  board/FDD/ROM relation only after original schematic, service timing, or a
+  source-backed ROM diagnostic description supplies that missing relation.
+  Preserve one FDD/media owner and the existing Core FDC/VM composition; do
+  not add a second drive, fake ready/change state, alter CMOS, patch firmware,
+  bypass F1, infer a delay, or reopen scheduler/keyboard/display owners.  See
+  [T501 List 1](../etc/evidence/t501-s2-model40-diagnostic-list-1.md) and
+  [List 2](../etc/evidence/t501-s2-model40-diagnostic-list-2.md).
 - [ ] **Broaden digital EGA and admit VGA compatibility (TODO(Medium)).** T352
   closes only direct planar `320x200x16` and mode-10 `640x350x16` through one
   VADP owner. The completed T386 shared-VADP receiver consumes only the CECG-required Odd/Even page mechanism; admit all remaining adapter breadth only with a complete IBM EGA/VGA

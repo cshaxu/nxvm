@@ -35,4 +35,4 @@ the task boundary.
 Empty by design.  A repair must wait for a source that relates the exact Model
 40 ROM diagnostic expectation to a real board/FDC/drive signal.  This is a
 finite transfer, not an abandoned ambiguity: its receiver is the D11--D12
-relation named in List 1.
+relation named in List 1 and its [bounded debt entry](../../states/TODO.md#hardware-and-compatibility-debt).

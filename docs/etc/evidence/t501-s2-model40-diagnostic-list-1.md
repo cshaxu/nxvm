@@ -65,4 +65,5 @@ Rows D1--D10 already have the stated owners.  D11--D12 are one indivisible
 source-gated **Model-40 FDD/ROM diagnostic relation**: acquire original board
 schematic/service timing or a source-backed ROM diagnostic description before
 admitting any owner-local repair.  It is not a Core FDC, VM, keyboard, display,
-or scheduler repair batch under the present evidence.
+or scheduler repair batch under the present evidence.  T501 S3 transfers that
+exact class to [the bounded debt entry](../../states/TODO.md#hardware-and-compatibility-debt).
