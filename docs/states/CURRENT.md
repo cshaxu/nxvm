@@ -2,12 +2,26 @@
 
 ## Current Work
 
-- **M5 T501 progress:** S1 accepted the fresh nine-row Release matrix: seven semantic terminals, one
-  named external-input boundary and one Model-40 diagnostic receiver.
-- S2 accepted the complete Model-40 diagnostic List 1/List 2: the original
-  material defines `601`/F1 but not the ROM's unit-1 board relation.  The sole
-  remaining class is explicitly source-gated; no Core, VM, FDC, keyboard,
-  display or scheduler repair was fabricated.  [Evidence](../etc/evidence/t501-s2-model40-diagnostic-list-1.md).
+## M5 T501 S3 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner approved T501's complete four-profile closure; S2 P2 accepted its finite diagnostic List 1/List 2 and selected the proposal's explicit-transfer branch. |
+| Objective | Transfer the indivisible source-underdetermined Model-40 FDD/ROM board diagnostic relation to one bounded future admission record, without changing behavior or claiming an unproven repair. |
+| Non-goals | No Core/FDC/VM/RTC/CMOS/keyboard/display/scheduler change, second drive, fake readiness, firmware modification, timing estimate, external-source import, or new product path. |
+| Reference Baseline | `c46e9661`; [S2 List 1](../etc/evidence/t501-s2-model40-diagnostic-list-1.md), [S2 List 2](../etc/evidence/t501-s2-model40-diagnostic-list-2.md), and [proposal](../proposals/m5-four-profile-post-scheduler-media-closure.md). |
+| Candidate Proposal | [M5 four-profile post-scheduler media closure](../proposals/m5-four-profile-post-scheduler-media-closure.md). |
+| Files And ABI Surface | `docs/states/TODO.md`, T501 evidence/status only; no source, ABI, firmware, artifact or runtime behavior. |
+| Applicable Rules | Original documentation remains normative; a source gap is a transfer, not permission to infer an electrical relation.  Core and VM ownership remains unchanged. |
+| Verification | Review the whole D11--D12 class against both ledgers; documentation governance and complete Debug unit gate. |
+| Expected Markers | `T501-S3-MODEL40-DIAGNOSTIC-TRANSFER`. |
+| Asset Needs | No new asset; current source citations only. |
+| Reporting Requirements | Name the exact missing source relation, prohibited substitutions, priority/risk, receiver admission condition and all excluded apparent owners. |
+| Stop Conditions | Stop before implementation if no original board/ROM relation is available; do not split the class into speculative controller or profile fragments. |
+| Exit Criteria | One finite deferred-admission record owns all and only D11--D12, is linked from List 1/List 2/status, and leaves no active unclassified Model-40 symptom. |
+| Original Owner Request | Single-person dual-role execution of the four-profile post-scheduler media closure, including correct Model-40 diagnosis or source-gated transfer. |
+| Similar-Issue Sweep | Recheck every apparent shortcut: FDD count/readiness, CMOS, FDC result, IRQ/DMA, keyboard/F1, ROM mapping, display and scheduler; none may become a surrogate receiver. |
 
 ## Current Technical Baseline
 
@@ -45,7 +59,8 @@
 
 | Task | Compact result |
 | --- | --- |
-| T501 S1--S2 | Accepted: fresh stripped-Release replay records seven semantic terminals and one named external-input boundary; complete Model-40 List 1/List 2 transfers only its source-underdetermined FDD/ROM board relation. [Evidence](../etc/evidence/t501-s2-model40-diagnostic-list-1.md). |
+| T501 S1 | Accepted: fresh stripped-Release replay records seven semantic terminals and one named external-input boundary. [Evidence](../etc/evidence/t501-s1-release-matrix-baseline.md). |
+| T501 S2 | Accepted: complete Model-40 List 1/List 2 transfers only its source-underdetermined FDD/ROM board relation. [Evidence](../etc/evidence/t501-s2-model40-diagnostic-list-1.md). |
 | T500 | Closed: existing tests now have one `test/` tree, one unit/integration route, narrow fixture ownership, one product input path, and recovered safe integration parallelism; unit 312/312 and integration 20/20 pass. [Closure](../history/M5-T500-unit-and-integration-test-convergence.md). |
 | T499 | Closed: one Core deadline seam owns the current scheduler clients and the selected Model-40 D4 controller; the configured suite passes 302/302 and stripped Release 0499 is recorded. [Closure](../history/M5-T499-core-event-deadline-scheduler-convergence.md). |
 | T498 | Closed: the supported-media matrix has semantic terminals or an explicit external-input boundary for every non-Model-40 row, and its Model-40 predecessor transfers to the sole Core scheduler receiver without accepting a shortcut. [Closure](../history/M5-T498-four-profile-supported-media-matrix.md). |
