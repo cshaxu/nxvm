@@ -119,6 +119,20 @@ static type_unsigned_8 dma_page_channel(type_unsigned_16 port_id)
     }
 }
 
+static type_unsigned_8 dma_page_spare_index(type_unsigned_16 port_id)
+{
+    switch (port_id) {
+    case 0x0084: return 0u;
+    case 0x0085: return 1u;
+    case 0x0086: return 2u;
+    case 0x0088: return 3u;
+    case 0x008c: return 4u;
+    case 0x008d: return 5u;
+    case 0x008e: return 6u;
+    default: return 7u;
+    }
+}
+
 static C_VOID dma_port_read(t_port *port, type_unsigned_16 port_id, C_VOID *owner)
 {
     t_dma *primary = (t_dma *)owner;
@@ -139,6 +153,12 @@ static C_VOID dma_port_read(t_port *port, type_unsigned_16 port_id, C_VOID *owne
     }
     if (port_id == 0x000du) {
         port->data.ioByte = primary->data.temp;
+        return;
+    }
+    if (port_id == 0x0080u || port_id == 0x0084u || port_id == 0x0085u ||
+        port_id == 0x0086u || port_id == 0x0088u ||
+        (port_id >= 0x008cu && port_id <= 0x008eu)) {
+        port->data.ioByte = primary->data.page_spare[dma_page_spare_index(port_id)];
         return;
     }
     if (port_id >= 0x0081u && port_id <= 0x008fu) {
@@ -176,6 +196,12 @@ static C_VOID dma_port_write(t_port *port, type_unsigned_16 port_id, C_VOID *own
         channel = (type_unsigned_8)(port_id >> 1);
         if ((port_id & 1u) == 0u) dma_write_address(primary, port, channel);
         else dma_write_count(primary, port, channel);
+        return;
+    }
+    if (port_id == 0x0080u || port_id == 0x0084u || port_id == 0x0085u ||
+        port_id == 0x0086u || port_id == 0x0088u ||
+        (port_id >= 0x008cu && port_id <= 0x008eu)) {
+        primary->data.page_spare[dma_page_spare_index(port_id)] = port->data.ioByte;
         return;
     }
     if (port_id >= 0x0081u && port_id <= 0x008fu) {
@@ -285,8 +311,12 @@ static type_bool Transmission(t_dma *rdma, t_latch *latch, t_ram *ram,
 
     switch (VDMA_GetMODE_TT(rdma->data.mode[id])) {
     case 0x00:
-        /* verify */
-        /* do nothing */
+        /* Verify consumes the peripheral byte without accessing memory.  The
+         * device must still see the service cycle: an FDC can thereby report
+         * an invalid sector instead of letting DMA silently count past it. */
+        if (rdma->connect.read_provider[id] != STD_NULL) {
+            rdma->connect.read_provider[id](rdma->connect.device_owner[id], latch);
+        }
         rdma->data.currCount[id]--;
         if (TYPE_GET_BIT(rdma->data.mode[id], VDMA_MODE_AIDS)) {
             DecreaseCurrAddr(rdma, id);
@@ -702,6 +732,9 @@ C_VOID core_machine_dma_initialize(t_latch *latch, t_dma *primary,
     static const type_unsigned_16 secondary_page_ports[] = {
         0x0087, 0x0089, 0x008a, 0x008b, 0x008f
     };
+    static const type_unsigned_16 spare_page_ports[] = {
+        0x0080, 0x0084, 0x0085, 0x0086, 0x0088, 0x008c, 0x008d, 0x008e
+    };
     static const type_unsigned_16 secondary_reads[] = {
         0x00c0, 0x00c2, 0x00c4, 0x00c6, 0x00c8, 0x00ca, 0x00cc, 0x00ce,
         0x00d0, 0x00da
@@ -735,6 +768,13 @@ C_VOID core_machine_dma_initialize(t_latch *latch, t_dma *primary,
             primary);
     }
     if (controller_count == 2u) {
+        for (index = 0; index < sizeof(spare_page_ports) /
+            sizeof(spare_page_ports[0]); ++index) {
+            core_machine_port_add_read(port, spare_page_ports[index], dma_port_read,
+                primary);
+            core_machine_port_add_write(port, spare_page_ports[index], dma_port_write,
+                primary);
+        }
         for (index = 0; index < sizeof(secondary_page_ports) /
                 sizeof(secondary_page_ports[0]); ++index) {
             core_machine_port_add_read(port, secondary_page_ports[index], dma_port_read,

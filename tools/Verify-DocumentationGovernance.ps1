@@ -312,7 +312,7 @@ function Require-ActiveIdentifier([pscustomobject]$packet, [string]$repositoryRo
     if ($null -ne $openTask) {
         Require (-not ($closureRows | Where-Object { -not $_.HasSubtask -and $_.Task -eq $openTask })) `
             "CURRENT.md must replace closed-task subtask progress with one task-level summary."
-        Require ($openTask -eq $latestTask) `
+        Require (($openTask -eq $latestTask) -or $mode -eq 'Owner-Reopen') `
             "CURRENT.md subtask progress must belong to the latest open numeric task."
     }
     if ($mode -eq 'New') {
@@ -344,7 +344,17 @@ function Require-ActiveIdentifier([pscustomobject]$packet, [string]$repositoryRo
             "A corrective packet must use T$($packet.Task) S$expectedSubtask."
         return
     }
-    throw "Numeric task packet Identifier Mode must be New, Continuation, or Corrective."
+    if ($mode -eq 'Owner-Reopen') {
+        Require ($openTask -eq $packet.Task) "An owner-reopen packet must retain progress only for its reopened task."
+        Require ($latestTask -gt 1 -and $packet.Task -eq ($latestTask - 1) -and
+            ($closureRows | Where-Object { -not $_.HasSubtask -and $_.Task -eq $latestTask })) `
+            "An owner-reopen packet requires the immediately prior task and a withdrawn successor."
+        $taskRecords = @($numeric | Where-Object { $_.Task -eq $packet.Task })
+        $expectedSubtask = ($taskRecords | Measure-Object -Property Subtask -Maximum).Maximum + 1
+        Require ($packet.Subtask -eq $expectedSubtask) "An owner-reopen packet must use T$($packet.Task) S$expectedSubtask."
+        return
+    }
+    throw "Numeric task packet Identifier Mode must be New, Continuation, Corrective, or Owner-Reopen."
 }
 
 function Require-NoTaskIdentifier([string]$path, [string]$text) {
@@ -983,7 +993,8 @@ if ($subtaskProgressRows.Count -gt 0) {
     $progressTask = $progressTaskNumbers[0]
     $closedNumericRecords = @(Get-ClosedIdentifierRecords $RepositoryRoot | Where-Object { -not $_.IsDocumentation })
     $latestNumericTask = ($closedNumericRecords | Measure-Object -Property Task -Maximum).Maximum
-    Require ($progressTask -eq $latestNumericTask) `
+    Require (($progressTask -eq $latestNumericTask) -or
+        $status -match '(?m)^\|\s*Identifier Mode\s*\|\s*Owner-Reopen\s*\|\s*$') `
         "CURRENT.md subtask progress must belong to the latest open numeric task."
     Require (-not ($closureRows | Where-Object { -not $_.HasSubtask -and $_.Task -eq $progressTask })) `
         "CURRENT.md must replace closed-task subtask progress with one task-level summary."

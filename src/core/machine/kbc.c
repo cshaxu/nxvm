@@ -268,8 +268,7 @@ static type_status core_machine_kbc_publish_native_byte(t_kbc *controller,
 {
     if (controller == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
     if (controller->data.scan_set == CORE_MACHINE_KEYBOARD_SCAN_SET_2 &&
-        (controller->data.command_byte & CORE_MACHINE_KBC_COMMAND_TRANSLATION) != 0u &&
-        (controller->data.command_byte & CORE_MACHINE_KBC_COMMAND_PC_MODE) == 0u) {
+        (controller->data.command_byte & CORE_MACHINE_KBC_COMMAND_TRANSLATION) != 0u) {
         return core_machine_kbc_translate_set2_byte(controller, native_byte);
     }
     return core_machine_kbc_enqueue(controller, native_byte,

@@ -119,6 +119,24 @@ static C_INT transaction_has_provenance_pair(const transaction_probe *probe,
     return 0;
 }
 
+static C_INT transaction_has_port_write_value(const transaction_probe *probe,
+    type_unsigned_16 port, type_unsigned_8 value)
+{
+    type_unsigned_32 index;
+
+    if (probe == STD_NULL) return 0;
+    for (index = 0u; index < probe->count; ++index) {
+        const core_machine_trace_event *event = &probe->events[index];
+
+        if (event->type == CORE_MACHINE_TRACE_TRANSACTION_BEGIN &&
+            (event->detail & 0xffu) == CORE_MACHINE_TRANSACTION_OWNER_CPU &&
+            ((event->detail >> 8u) & 0xffu) ==
+                CORE_MACHINE_TRANSACTION_CPU_PORT_WRITE &&
+            event->address == port && event->value == value) return 1;
+    }
+    return 0;
+}
+
 static C_INT transaction_find_external_cycle(const transaction_probe *probe,
     core_machine_trace_event_type type,
     core_machine_cpu_memory_access_provenance provenance,
@@ -222,6 +240,7 @@ C_INT main(C_VOID)
         CORE_MACHINE_TRACE_TRANSACTION_COMMIT,
         CORE_MACHINE_TRANSACTION_OWNER_CPU,
         CORE_MACHINE_TRANSACTION_CPU_PORT_WRITE);
+    failed |= !transaction_has_port_write_value(&probe, 0x00e0u, 0x5au);
     failed |= !transaction_find_external_cycle(&probe,
         CORE_MACHINE_TRACE_CPU_EXTERNAL_CYCLE_BEGIN,
         CORE_MACHINE_CPU_MEMORY_ACCESS_INSTRUCTION_PREFETCH, &external_begin);

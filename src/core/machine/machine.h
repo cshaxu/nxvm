@@ -183,6 +183,7 @@ struct core_machine {
     type_bool source_repeat_address_size;
     core_machine_clock_domain dma_clock;
     core_machine_clock_domain pit_clock;
+    core_machine_clock_domain auxiliary_pit_clock;
     core_machine_clock_domain rtc_clock;
     core_machine_clock_domain vadp_clock;
     core_machine_clock_domain kbc_clock;
@@ -192,6 +193,8 @@ struct core_machine {
     type_unsigned_32 kbc_typematic_repeat_ticks;
     type_unsigned_32 kbc_command_response_ticks;
     type_unsigned_32 kbc_serial_delivery_ticks;
+    type_bool kbc_input_port_configured;
+    type_unsigned_8 kbc_input_port;
     core_machine_keyboard_topology keyboard_topology;
     core_machine_display_port_topology display_ports;
     type_bool display_configured;

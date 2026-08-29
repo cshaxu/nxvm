@@ -113,6 +113,15 @@ C_INT main(C_VOID)
         !read_first_sector(session, 0x30u, 0x1234u));
     vm_session_destroy(session);
     session = STD_NULL;
+    config.hdd_image = STD_NULL;
+    config.hdd_slave_image = STD_NULL;
+    failed |= !failed && (vm_session_create(&config, &session) != TYPE_STATUS_OK ||
+        session == STD_NULL);
+    if (!failed) core_machine_port_write(&session->core_machine->executor_port, 0x01f6u, 0x20u);
+    failed |= !failed && (
+        core_machine_port_read(&session->core_machine->executor_port, 0x03f6u) != 0u);
+    vm_session_destroy(session);
+    session = STD_NULL;
     if (!write_short_hdd("t386-s26-bad-hdd.img")) failed = 1;
     config.hdd_image = "t386-s26-bad-hdd.img";
     failed |= !failed && (vm_session_create(&config, &session) != TYPE_STATUS_FAULT ||

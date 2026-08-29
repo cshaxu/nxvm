@@ -9,7 +9,7 @@ static C_INT core_machine_rtc_cmos_config_is_valid(
 
     if (config == STD_NULL || config->data_port !=
         (type_unsigned_16)(config->index_port + 1u) || config->nmi_mask_bit == 0u ||
-        config->ticks_per_second == 0u || config->default_count > CORE_MACHINE_RTC_DEFAULT_COUNT ||
+        config->ticks_per_second == 0u || config->default_count > CORE_MACHINE_RTC_DEFAULT_CAPACITY ||
         (config->timing.provenance != CORE_MACHINE_RTC_TIMING_L2_RATIO &&
          config->timing.provenance != CORE_MACHINE_RTC_TIMING_L3_SOURCE) ||
         (config->timing.provenance == CORE_MACHINE_RTC_TIMING_L3_SOURCE &&
@@ -536,6 +536,21 @@ type_status core_machine_configure_rtc_cmos(core_machine *machine,
     for (index = 0u; index < config->default_count; ++index) {
         core_machine_rtc_write_nvram(&machine->shared_rtc,
             config->defaults[index].index, config->defaults[index].value);
+    }
+    {
+        type_unsigned_16 checksum = 0u;
+
+        /* The selected board owns a frozen CMOS image.  MC146818-compatible
+         * firmware validates the complete configuration range, so derive its
+         * checksum here after every configured byte has its sole owner value. */
+        for (index = 0x10u; index < 0x2eu; ++index) {
+            checksum = (type_unsigned_16)(checksum +
+                machine->shared_rtc.registers[index]);
+        }
+        core_machine_rtc_write_nvram(&machine->shared_rtc, 0x2eu,
+            TYPE_MASK_UNSIGNED_8(checksum >> 8u));
+        core_machine_rtc_write_nvram(&machine->shared_rtc, 0x2fu,
+            TYPE_MASK_UNSIGNED_8(checksum));
     }
     machine->rtc_cmos_config = *config;
     machine->rtc_cmos_configured = TYPE_TRUE;

@@ -108,7 +108,8 @@ type_status vm_profile_xt_5160_268_resolve(
     out_profile->topology.fdc_present = TYPE_TRUE;
     out_profile->topology.fdc_drives = (core_machine_fdc_drive_bindings) {{
         VM_PROFILE_XT_5160_268_FDD_MEDIA_ID, CORE_MACHINE_MEDIA_ID_INVALID,
-        CORE_MACHINE_MEDIA_ID_INVALID, CORE_MACHINE_MEDIA_ID_INVALID}};
+        CORE_MACHINE_MEDIA_ID_INVALID, CORE_MACHINE_MEDIA_ID_INVALID}, 0x01u, 0x01u,
+        {40u, 0u, 0u, 0u}, 0u};
     out_profile->topology.fdc = (core_machine_fdc_config) {0x03f2u, 0x03f4u,
         0x03f5u, 0u, 0u, 6u, 2u, CORE_MACHINE_FDC_UNREADY_READ_GENERIC, 0u};
     out_profile->topology.hdc_present = TYPE_TRUE;

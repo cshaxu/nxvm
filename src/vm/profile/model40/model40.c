@@ -40,11 +40,25 @@ C_VOID vm_profile_model40_core_config_initialize(core_machine_config *out_config
         .pic_topology = CORE_MACHINE_PIC_TOPOLOGY_CASCADED,
         .dma_controller_count = CORE_MACHINE_DMA_CONTROLLER_COUNT,
         .kbc_serial_delivery_ticks = 1u,
-        .clock_plan = {{1u, 1u, 0u}, {1u, 1u, 0u}, {1u, 1u, 0u},
-            {1u, 1u, 0u}, {1u, 1u, 0u}, {1u, 1u, 0u}},
+        .clock_plan = {
+            .dma = {1u, 1u, 0u},
+            .pit = {1u, 1u, 0u},
+            /* The second 8254 is driven by DCLK.  The selected board derives
+             * DCLK by dividing its approximately 10 MHz BCLK twice, while
+             * the processor/memory interface is 16 MHz: 5/16. */
+            .auxiliary_pit = {5u, 16u, 0u},
+            .rtc = {1u, 1u, 0u},
+            .vadp = {1u, 1u, 0u},
+            .kbc = {1u, 1u, 0u},
+            .provider = {1u, 1u, 0u}},
         .auxiliary_pit_present = TYPE_TRUE,
         .auxiliary_pit_base_port = 0x0048u,
-        .kbc_aux_absent = TYPE_TRUE
+        .kbc_aux_absent = TYPE_TRUE,
+        /* 86Box's DeskPro P1 mask is 0xf4. Its Compaq handler resolves the
+         * selected colour display to 0xb0 and sets bit 2 without an 80287,
+         * so this frozen colour/no-FPU board reads 0xb4. */
+        .kbc_input_port_configured = TYPE_TRUE,
+        .kbc_input_port = 0xb4u
     };
 }
 

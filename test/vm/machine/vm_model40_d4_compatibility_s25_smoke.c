@@ -58,10 +58,13 @@ C_INT main(C_VOID)
         !vm_model40_d4_read(session->core_machine,
             VM_PROFILE_MODEL40_ROM_LOW_PHYSICAL_START, 0x11u) ||
         core_machine_set_a20(session->core_machine, TYPE_TRUE) != TYPE_STATUS_OK ||
-        !vm_model40_d4_read(session->core_machine, 0xffee0000u, 0x11u) ||
-        core_machine_memory_write(session->core_machine, 0xffee0000u, &write,
+        !vm_model40_d4_read(session->core_machine,
+            VM_PROFILE_MODEL40_ROM_HIGH_ALIAS_START, 0x11u) ||
+        core_machine_memory_write(session->core_machine,
+            VM_PROFILE_MODEL40_ROM_HIGH_ALIAS_START, &write,
             sizeof(write)) != TYPE_STATUS_OK ||
-        !vm_model40_d4_read(session->core_machine, 0xffee0000u, 0u) ||
+        !vm_model40_d4_read(session->core_machine,
+            VM_PROFILE_MODEL40_ROM_HIGH_ALIAS_START, 0x11u) ||
         core_machine_reset(session->core_machine) != TYPE_STATUS_OK ||
         core_machine_bus_read(session->core_machine, CORE_MACHINE_PC_AT_PORT_B,
             &port_b) != TYPE_STATUS_OK || (port_b & 0x10u) == 0u;
@@ -69,7 +72,7 @@ C_INT main(C_VOID)
         (core_machine_run_budget) {1u, 0u}, &result) != TYPE_STATUS_OK ||
         result.executed != 1u ||
         result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
-    if (!failed) STD_PRINTF("M5:T386:S25:D4-COMPATIBILITY-MAP:OK\n");
+    if (!failed) STD_PRINTF("M5:T386:S25:D4-SOLE-ROM-MAP:OK\n");
     if (!failed) STD_PRINTF("M5:T386:S25:D4-COMPATIBILITY-RESET:OK\n");
     if (!failed) STD_PRINTF("M5:T386:S25:AT-REFRESH-CLOCK:OK\n");
     vm_session_destroy(session);

@@ -1949,6 +1949,9 @@ static C_VOID _p_input(core_machine_cpu_execution_context *context, type_unsigne
             portid, byte, TYPE_FALSE);
         TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(portid));
     }
+    core_machine_transaction_set_value(context->transaction,
+        byte == 1u ? context->port->data.ioByte :
+        (byte == 2u ? context->port->data.ioWord : context->port->data.ioDWord));
     switch (byte)
     {
     case 1:
@@ -2015,7 +2018,10 @@ static C_VOID _p_output(core_machine_cpu_execution_context *context, type_unsign
         portid, byte, TYPE_TRUE);
     if (context->transaction != STD_NULL && core_machine_transaction_begin(
             context->transaction, CORE_MACHINE_TRANSACTION_OWNER_CPU,
-            CORE_MACHINE_TRANSACTION_CPU_PORT_WRITE, portid, byte, 0u) !=
+            CORE_MACHINE_TRANSACTION_CPU_PORT_WRITE, portid,
+            byte == 1u ? context->port->data.ioByte :
+            (byte == 2u ? context->port->data.ioWord : context->port->data.ioDWord),
+            byte) !=
             TYPE_STATUS_OK) {
         _p_publish_external_cycle(context, CORE_MACHINE_CPU_EXTERNAL_CYCLE_PHASE_CANCEL,
             portid, byte, TYPE_TRUE);

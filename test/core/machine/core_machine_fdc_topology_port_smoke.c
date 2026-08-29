@@ -108,7 +108,8 @@ int main(C_VOID)
         .irq = 6u, .dma_channel = 2u, .ticks_per_microsecond = 8u
     };
     const core_machine_fdc_drive_bindings drives = {
-        {11u, 12u, CORE_MACHINE_MEDIA_ID_INVALID, CORE_MACHINE_MEDIA_ID_INVALID}
+        {11u, 12u, CORE_MACHINE_MEDIA_ID_INVALID, CORE_MACHINE_MEDIA_ID_INVALID}, 0x03u, 0x03u,
+        {0u, 0u, 0u, 0u}, 0u
     };
     const core_machine_dma_wiring dma_wiring = { .fdc_channel = 2u,
         .controller_count = CORE_MACHINE_DMA_CONTROLLER_COUNT,
@@ -156,7 +157,7 @@ int main(C_VOID)
                 failed |= fdc->connect.irq_source.asserted ? 0x08 : 0;
                 core_machine_fdc_advance_at(fdc, fdc->data.reset_due_tick);
                 failed |= !fdc->connect.irq_source.asserted ? 0x08 : 0;
-                for (reset_drive = 0u; reset_drive < 2u;
+                for (reset_drive = 0u; reset_drive < CORE_MACHINE_FDC_DRIVE_COUNT;
                     ++reset_drive) {
                     core_machine_fdc_topology_command(fdc, port,
                         (const type_unsigned_8[]){0x08u}, 1u);
@@ -175,7 +176,7 @@ int main(C_VOID)
                 core_machine_fdc_topology_command(fdc, port, sense_drive,
                     sizeof(sense_drive));
                 failed |= (!core_machine_fdc_topology_result(fdc, port, result, 1u) ||
-                    result[0] != 0x30u ||
+                    result[0] != 0x38u ||
                     !core_machine_fdc_topology_read_sector(fdc, port, 0u, 0xa1u, result) ||
                     drive0.read_count != 512u || drive1.read_count != 0u) ? 0x10 : 0;
 
@@ -184,7 +185,7 @@ int main(C_VOID)
                 core_machine_fdc_topology_command(fdc, port, sense_drive,
                     sizeof(sense_drive));
                 failed |= (!core_machine_fdc_topology_result(fdc, port, result, 1u) ||
-                    result[0] != 0x31u ||
+                    result[0] != 0x39u ||
                     !core_machine_fdc_topology_read_sector(fdc, port, 1u, 0xb2u, result) ||
                     drive0.read_count != 512u || drive1.read_count != 512u) ? 0x20 : 0;
 
@@ -199,11 +200,28 @@ int main(C_VOID)
                 core_machine_fdc_topology_command(fdc, port, sense_drive,
                     sizeof(sense_drive));
                 failed |= (!core_machine_fdc_topology_result(fdc, port, result, 1u) ||
-                    result[0] != 0x12u) ? 0x80 : 0;
+                    result[0] != 0x22u) ? 0x80 : 0;
+                core_machine_fdc_topology_command(fdc, port,
+                    (const type_unsigned_8[]){0x07u, 2u}, 2u);
+                core_machine_fdc_advance_at(fdc, fdc->data.seek_due_tick[2u]);
+                core_machine_fdc_topology_command(fdc, port,
+                    (const type_unsigned_8[]){0x08u}, 1u);
+                failed |= (!core_machine_fdc_topology_result(fdc, port, result, 2u) ||
+                    result[0] != (core_machine_fdc_ST0_ABNORMAL |
+                        VFDC_ST0_SEEK_END | VFDC_ST0_EQUIPMENT_CHECK | 2u) ||
+                    result[1] != 0u) ? 0x100 : 0;
+                core_machine_fdc_topology_command(fdc, port,
+                    (const type_unsigned_8[]){0x0fu, 2u, 1u}, 3u);
+                core_machine_fdc_advance_at(fdc, fdc->data.seek_due_tick[2u]);
+                core_machine_fdc_topology_command(fdc, port,
+                    (const type_unsigned_8[]){0x08u}, 1u);
+                failed |= (!core_machine_fdc_topology_result(fdc, port, result, 2u) ||
+                    result[0] != (core_machine_fdc_ST0_NORMAL | 2u) ||
+                    result[1] != 1u) ? 0x200 : 0;
                 core_machine_fdc_topology_command(fdc, port, read_absent, sizeof(read_absent));
                 failed |= (!core_machine_fdc_topology_result(fdc, port, result, 7u) ||
                     result[0] != core_machine_fdc_ST0_ABNORMAL || result[1] != 0x04u ||
-                    drive0.read_count != 512u || drive1.read_count != 512u) ? 0x100 : 0;
+                    drive0.read_count != 512u || drive1.read_count != 512u) ? 0x400 : 0;
             }
         }
     }

@@ -511,6 +511,7 @@ C_INT core_machine_clock_plan_is_valid(
     return plan != STD_NULL &&
         core_machine_clock_ratio_is_valid(&plan->dma) &&
         core_machine_clock_ratio_is_valid(&plan->pit) &&
+        core_machine_clock_ratio_is_valid(&plan->auxiliary_pit) &&
         core_machine_clock_ratio_is_valid(&plan->rtc) &&
         core_machine_clock_ratio_is_valid(&plan->vadp) &&
         core_machine_clock_ratio_is_valid(&plan->kbc) &&

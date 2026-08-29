@@ -82,6 +82,7 @@ typedef struct {
     type_unsigned_64 observed_media_generation[CORE_MACHINE_FDC_DRIVE_COUNT];
     type_bool media_changed[CORE_MACHINE_FDC_DRIVE_COUNT];
     type_bool observed_ready[CORE_MACHINE_FDC_DRIVE_COUNT];
+    type_bool initial_media_baseline_pending;
     type_bool ready_poll_enabled;
     type_bool dma_byte_gate_pending;
     type_bool ndma_byte_gate_pending;
@@ -151,6 +152,7 @@ typedef struct {
 /* status register 0 bits */
 #define VFDC_ST0_DS       0x03 /* drive select */
 #define VFDC_ST0_SEEK_END 0x20
+#define VFDC_ST0_EQUIPMENT_CHECK 0x10
 #define core_machine_fdc_ST0_NORMAL 0x20
 #define core_machine_fdc_ST0_ABNORMAL 0x40
 #define core_machine_fdc_ST0_READY_CHANGE 0xc0

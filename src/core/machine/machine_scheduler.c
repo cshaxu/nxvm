@@ -117,7 +117,7 @@ C_VOID core_machine_capture_time_observation_private(const core_machine *machine
             &machine->pit_clock, &source_ticks);
         if (machine->auxiliary_pit_configured) {
             core_machine_deadline_consider_pit(&machine->auxiliary_pit,
-                &machine->pit_clock, &source_ticks);
+                &machine->auxiliary_pit_clock, &source_ticks);
         }
     }
     if (machine->timing_plan_copied && machine->rtc_cmos_configured &&
@@ -196,11 +196,14 @@ static C_VOID core_machine_arbitration_advance(core_machine *machine,
 {
     type_unsigned_64 dma_ticks;
     type_unsigned_64 pit_ticks;
+    type_unsigned_64 auxiliary_pit_ticks;
     type_bool refresh_pending;
 
     if (machine == STD_NULL || source_ticks == 0u) return;
     dma_ticks = core_machine_clock_domain_advance(&machine->dma_clock, source_ticks);
     pit_ticks = core_machine_clock_domain_advance(&machine->pit_clock, source_ticks);
+    auxiliary_pit_ticks = core_machine_clock_domain_advance(
+        &machine->auxiliary_pit_clock, source_ticks);
     refresh_pending = machine->d4_refresh_hold_pending;
     core_machine_d4_refresh_hold_advance(machine);
     if (machine->transaction_contract.dma_cycle_wait_quanta != 0u && dma_ticks != 0u) {
@@ -256,7 +259,7 @@ static C_VOID core_machine_arbitration_advance(core_machine *machine,
     }
     core_machine_pit_advance(&machine->shared_pit, pit_ticks);
     if (machine->auxiliary_pit_configured) {
-        core_machine_pit_advance(&machine->auxiliary_pit, pit_ticks);
+        core_machine_pit_advance(&machine->auxiliary_pit, auxiliary_pit_ticks);
     }
     if (pit_ticks != 0u) {
         core_machine_trace_record(machine, CORE_MACHINE_TRACE_PIT_ADVANCE,

@@ -243,6 +243,23 @@ C_INT main(C_VOID)
     if (fixture.next != 1u || primary.data.isr != 0u) {
         failed = 1;
     }
+    /* Verify is a real peripheral service cycle, but never touches RAM. */
+    core_machine_dma_reset(&latch, &primary, &secondary);
+    fixture.next = 0u;
+    bytes[0] = 0u;
+    if (core_machine_memory_write_physical(&memory, 0x11200u,
+            (type_virtual_address)bytes, sizeof(bytes[0])) != TYPE_STATUS_OK) {
+        failed = 1;
+    }
+    core_machine_dma_write_channel2(&port, 0x1200u, 0u, 0u, 0x82u);
+    core_machine_port_write(&port, 0x000au, 0x02u);
+    core_machine_dma_request_assert(&primary, &secondary, &binding);
+    core_machine_dma_advance_phases(&latch, &primary, &secondary, &memory, 5u);
+    if (fixture.next != 1u || core_machine_memory_read_physical(&memory, 0x11200u,
+            (type_virtual_address)bytes, sizeof(bytes[0])) != TYPE_STATUS_OK ||
+        bytes[0] != 0u) {
+        failed = 1;
+    }
     core_machine_dma_reset(&latch, &primary, &secondary);
     fixture.next = 0u;
     core_machine_dma_write_channel2(&port, 0x1200u, 0u, 0u, 0x86u);

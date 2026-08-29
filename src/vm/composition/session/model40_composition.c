@@ -34,9 +34,14 @@ static C_VOID vm_session_model40_storage_rollback(vm_session *session)
 static type_status vm_session_model40_materialize_controllers(vm_session *session,
     core_machine_plan *plan)
 {
-    const core_machine_fdc_drive_bindings drives = {{VM_SESSION_MEDIA_FDD_ID,
-        CORE_MACHINE_MEDIA_ID_INVALID, CORE_MACHINE_MEDIA_ID_INVALID,
-        CORE_MACHINE_MEDIA_ID_INVALID}};
+    const core_machine_fdc_drive_bindings drives = {
+        .media_id = { VM_SESSION_MEDIA_FDD_ID, CORE_MACHINE_MEDIA_ID_INVALID,
+            CORE_MACHINE_MEDIA_ID_INVALID, CORE_MACHINE_MEDIA_ID_INVALID },
+        .installed_mask = 0x03u,
+        .double_sided_mask = 0x03u,
+        .track_zero_active_low_mask = 0x03u,
+        .cylinder_count = {80u, 80u, 0u, 0u}
+    };
     core_machine_fdc_config fdc = {0};
     core_machine_hdc_config hdc = {0};
 
@@ -97,9 +102,7 @@ type_status vm_session_model40_storage_initialize(vm_session *session)
         vm_session_model40_storage_rollback(session);
         return status;
     }
-    d4_memory = (core_machine_d4_memory_config) { TYPE_TRUE,
-        session->model40_rom.even_bytes, session->model40_rom.odd_bytes,
-        session->model40_rom.chip_byte_count, 0xfdu, 0xfc42u };
+    d4_memory = (core_machine_d4_memory_config) { TYPE_TRUE, 0x8fu, 0xc1u, 0xfc42u };
     status = core_machine_plan_configure_d4_memory(session->core_machine_plan,
         &d4_memory);
     if (status != TYPE_STATUS_OK) {
@@ -131,21 +134,27 @@ type_status vm_session_model40_storage_initialize(vm_session *session)
     rtc.ticks_per_second = 32768u;
     rtc.timing = (core_machine_rtc_timing_plan) {8u, 65u,
         CORE_MACHINE_RTC_TIMING_L3_SOURCE};
-    rtc.defaults[0] = (core_machine_rtc_default_byte) { CORE_MACHINE_RTC_TYPE_DISK_FLOPPY, 0x20u };
-    rtc.defaults[1] = (core_machine_rtc_default_byte) { CORE_MACHINE_RTC_TYPE_DISK_FIXED, 0x2fu };
+    rtc.defaults[0] = (core_machine_rtc_default_byte) { CORE_MACHINE_RTC_TYPE_DISK_FLOPPY, 0x22u };
+    rtc.defaults[1] = (core_machine_rtc_default_byte) { CORE_MACHINE_RTC_TYPE_DISK_FIXED,
+        session->retained_config.hdd_image == STD_NULL ? 0u : 0x2fu };
     rtc.defaults[2] = (core_machine_rtc_default_byte) { CORE_MACHINE_RTC_TYPE_DISK_FIXED_EXTENDED_0, 0u };
-    rtc.defaults[3] = (core_machine_rtc_default_byte) { CORE_MACHINE_RTC_EQUIPMENT, 0x21u };
-    rtc.defaults[4] = (core_machine_rtc_default_byte) { CORE_MACHINE_RTC_BASEMEM_LSB, 0u };
-    rtc.defaults[5] = (core_machine_rtc_default_byte) { CORE_MACHINE_RTC_BASEMEM_MSB, 0x04u };
-    rtc.default_count = CORE_MACHINE_RTC_DEFAULT_COUNT;
+    /* The selected board has two 1.2 MiB mechanisms; only A: is initially
+     * supplied with media. Presence remains solely an FDC concern. */
+    rtc.defaults[3] = (core_machine_rtc_default_byte) { CORE_MACHINE_RTC_EQUIPMENT, 0x41u };
+    rtc.defaults[4] = (core_machine_rtc_default_byte) { CORE_MACHINE_RTC_BASEMEM_LSB, 0x80u };
+    rtc.defaults[5] = (core_machine_rtc_default_byte) { CORE_MACHINE_RTC_BASEMEM_MSB, 0x02u };
+    rtc.defaults[6] = (core_machine_rtc_default_byte) { CORE_MACHINE_RTC_EXTMEM_LSB, 0u };
+    rtc.defaults[7] = (core_machine_rtc_default_byte) { CORE_MACHINE_RTC_EXTMEM_MSB, 0x04u };
+    rtc.default_count = CORE_MACHINE_RTC_DEFAULT_CAPACITY;
     topology.d4_platform_present = TYPE_TRUE;
     topology.d4_platform = d4;
-    /* The selected two-MiB D4 setup decodes only FA0000h--FDFFFFh as the
-     * relocated A0000h--DFFFFh backing.  The profile supplies this frozen
-     * reset topology; Core remains the RAM and address-decode owner. */
+    /* The selected D4 setup has 640 KiB conventional RAM and relocates the
+     * remaining 384 KiB of the built-in first MiB to FA0000h--FFFFFFh.
+     * Core owns the single RAM backing; the frozen profile declares only the
+     * board decode. */
     topology.memory_alias_count = 1u;
     topology.memory_alias[0] = (core_machine_memory_alias_config) {
-        0x00fa0000u, 0x000a0000u, 0x00040000u };
+        0x00fa0000u, 0x000a0000u, 0x00060000u };
     /* D4 decodes the installed 1 MiB upgrade through 1FFFFFh; the option
      * board range and the unselected F00000h--F9FFFFh bank decode open bus. */
     topology.absent_memory_count = 2u;

@@ -7,12 +7,9 @@
 typedef struct core_machine core_machine;
 typedef struct core_machine_d4_memory_config core_machine_d4_memory_config;
 
-#define CORE_MACHINE_D4_MEMORY_BYTES (128u * 1024u)
-#define CORE_MACHINE_D4_MEMORY_ROM_CHIP_BYTES (16u * 1024u)
-
 typedef struct core_machine_d4_memory {
-    type_unsigned_8 compatibility[CORE_MACHINE_D4_MEMORY_BYTES];
     type_unsigned_8 control;
+    type_unsigned_8 diagnostic_low;
     type_unsigned_8 diagnostic_high;
     type_unsigned_16 reset_ram_setup;
     type_unsigned_16 ram_setup;

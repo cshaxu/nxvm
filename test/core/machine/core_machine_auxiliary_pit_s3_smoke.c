@@ -18,6 +18,7 @@ C_INT main(C_VOID)
     C_INT failed = 0;
 
     config.cpu_profile = CORE_MACHINE_CPU_PROFILE_80286;
+    config.clock_plan.auxiliary_pit = (core_machine_clock_ratio) {1u, 4u, 0u};
     config.auxiliary_pit_present = TYPE_TRUE;
     config.auxiliary_pit_base_port = 0x0048u;
     failed |= core_machine_create(&config, &machine) != TYPE_STATUS_OK;
@@ -36,13 +37,19 @@ C_INT main(C_VOID)
             machine->auxiliary_pit.data.count[0u] != 0u;
         failed |= core_machine_advance_time(machine, 1u) != TYPE_STATUS_OK;
         failed |= machine->shared_pit.data.count[0u] != 3u ||
+            machine->auxiliary_pit.data.count[0u] != 0u;
+        failed |= core_machine_advance_time(machine, 3u) != TYPE_STATUS_OK;
+        failed |= machine->shared_pit.data.count[0u] != 0u ||
             machine->auxiliary_pit.data.count[0u] != 2u;
-        failed |= core_machine_advance_time(machine, 1u) != TYPE_STATUS_OK;
-        failed |= machine->shared_pit.data.count[0u] != 2u ||
-            machine->auxiliary_pit.data.count[0u] != 1u;
         core_machine_port_write(&machine->executor_port, 0x004bu, 0x00u);
-        failed |= core_machine_port_read(&machine->executor_port, 0x0048u) != 1u ||
+        failed |= core_machine_port_read(&machine->executor_port, 0x0048u) != 2u ||
             core_machine_port_read(&machine->executor_port, 0x0048u) != 0u;
+        core_machine_port_write(&machine->executor_port, 0x004bu, 0x12u);
+        core_machine_port_write(&machine->executor_port, 0x0048u, 0x22u);
+        failed |= core_machine_advance_time(machine, 4u) != TYPE_STATUS_OK;
+        core_machine_port_write(&machine->executor_port, 0x004bu, 0x00u);
+        failed |= core_machine_port_read(&machine->executor_port, 0x0048u) != 0x22u ||
+            core_machine_port_read(&machine->executor_port, 0x0048u) != 0x22u;
         failed |= core_machine_reset(machine) != TYPE_STATUS_OK;
         failed |= machine->shared_pit.data.count[0u] != 0u ||
             machine->auxiliary_pit.data.count[0u] != 0u ||

@@ -37,6 +37,10 @@ extern "C"
         type_unsigned_16 currCount[VDMA_CHANNEL_COUNT]; /* current word count */
         type_unsigned_8 mode[VDMA_CHANNEL_COUNT];       /* mode register */
         t_page page[VDMA_CHANNEL_COUNT];                /* page register */
+        /* The AT page-register block also decodes eight spare, readable
+         * latches.  They do not select a DMA channel, but firmware uses
+         * them as ordinary board-visible reset state. */
+        t_page page_spare[8];
 
         type_unsigned_8 command; /* command register */
         type_unsigned_8 status;  /* status register */

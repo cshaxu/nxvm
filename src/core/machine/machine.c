@@ -467,6 +467,8 @@ static type_status core_machine_create_internal(
             &config->clock_plan.dma) != TYPE_STATUS_OK ||
         core_machine_clock_domain_initialize(&machine->pit_clock,
             &config->clock_plan.pit) != TYPE_STATUS_OK ||
+        core_machine_clock_domain_initialize(&machine->auxiliary_pit_clock,
+            &config->clock_plan.auxiliary_pit) != TYPE_STATUS_OK ||
         core_machine_clock_domain_initialize(&machine->rtc_clock,
             &config->clock_plan.rtc) != TYPE_STATUS_OK ||
         core_machine_clock_domain_initialize(&machine->vadp_clock,
@@ -484,6 +486,8 @@ static type_status core_machine_create_internal(
     machine->kbc_typematic_repeat_ticks = config->kbc_typematic_repeat_ticks;
     machine->kbc_command_response_ticks = config->kbc_command_response_ticks;
     machine->kbc_serial_delivery_ticks = config->kbc_serial_delivery_ticks;
+    machine->kbc_input_port_configured = config->kbc_input_port_configured;
+    machine->kbc_input_port = config->kbc_input_port;
     core_machine_fpu_initialize(&machine->fpu, config->fpu_profile);
     STD_ATOMIC_INIT(&machine->stop_requested, 0);
     core_machine_trace_initialize(machine);
@@ -720,7 +724,13 @@ static type_status core_machine_cold_reset(core_machine *machine)
             CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI) {
         core_machine_xt_ppi_keyboard_reset(&machine->xt_ppi_keyboard);
         core_machine_xt_keyboard_reset(&machine->xt_keyboard);
-    } else core_machine_kbc_reset(&machine->shared_kbc);
+    } else {
+        core_machine_kbc_reset(&machine->shared_kbc);
+        if (machine->kbc_input_port_configured) {
+            core_machine_kbc_set_input_port(&machine->shared_kbc,
+                machine->kbc_input_port);
+        }
+    }
     core_machine_dma_reset(&machine->shared_dma_latch,
         &machine->shared_dma_primary, &machine->shared_dma_secondary);
     if (machine->rtc_cmos_configured) core_machine_rtc_reset(&machine->shared_rtc);
@@ -774,6 +784,7 @@ static type_status core_machine_cold_reset(core_machine *machine)
     core_machine_timeline_reset(&machine->timeline);
     core_machine_clock_domain_reset(&machine->dma_clock);
     core_machine_clock_domain_reset(&machine->pit_clock);
+    core_machine_clock_domain_reset(&machine->auxiliary_pit_clock);
     core_machine_clock_domain_reset(&machine->rtc_clock);
     core_machine_clock_domain_reset(&machine->vadp_clock);
     core_machine_clock_domain_reset(&machine->kbc_clock);

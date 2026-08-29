@@ -23,8 +23,11 @@ C_INT main(C_VOID)
     core_machine_d4_platform_observation d4;
     type_unsigned_32 value = 0u;
     type_unsigned_8 rom_byte = 0u;
-    type_unsigned_8 sense_status;
+    type_unsigned_8 sense_status = 0u;
+    type_unsigned_8 sense_cylinder = 0u;
+    type_unsigned_8 reset_status[CORE_MACHINE_FDC_DRIVE_COUNT] = {0};
     C_INT failed = 0;
+    C_INT stage = 0;
     type_unsigned_8 fifo_count;
 
     even[0x3ff8u] = 0xa5u;
@@ -56,9 +59,10 @@ C_INT main(C_VOID)
         core_machine_memory_read(session->core_machine, 0x000ffff0u, &rom_byte,
             sizeof(rom_byte)) != TYPE_STATUS_OK || rom_byte != 0xa5u ||
         session->core_machine->shared_kbc.connect.aux_present ||
-        session->core_machine->shared_kbc.data.aux_enabled ||
+            session->core_machine->shared_kbc.data.aux_enabled ||
         (session->core_machine->shared_kbc.data.command_byte &
             CORE_MACHINE_KBC_COMMAND_DISABLE_AUX) == 0u;
+    if (failed) stage = 1;
     if (!failed) {
         core_platform_input_event event = {0};
 
@@ -76,6 +80,13 @@ C_INT main(C_VOID)
         failed |= session->core_machine->shared_kbc.data.aux_enabled ||
             (session->core_machine->shared_kbc.data.command_byte &
                 CORE_MACHINE_KBC_COMMAND_DISABLE_AUX) == 0u;
+    failed |= !failed && (session->core_machine->fdc_topology.drives.installed_mask !=
+        0x03u || session->core_machine->fdc_topology.drives.double_sided_mask != 0x03u ||
+        session->core_machine->fdc_topology.drives.cylinder_count[0u] != 80u ||
+        session->core_machine->fdc_topology.drives.cylinder_count[1u] != 80u ||
+        session->core_machine->fdc_topology.drives.track_zero_active_low_mask != 0u ||
+        session->core_machine->shared_rtc.registers[CORE_MACHINE_RTC_TYPE_DISK_FLOPPY] !=
+            0x22u);
         core_machine_port_write(&session->core_machine->executor_port,
             0x0060u, 0xf5u);
         core_machine_port_write(&session->core_machine->executor_port,
@@ -85,6 +96,7 @@ C_INT main(C_VOID)
         failed |= session->core_machine->shared_kbc.data.scanning_enabled ||
             session->core_machine->shared_kbc.data.pending_write !=
                 CORE_MACHINE_KBC_PENDING_NONE;
+        if (failed) stage = 2;
     }
     if (!failed) {
         vm_session_reset(session);
@@ -109,13 +121,28 @@ C_INT main(C_VOID)
             0x03f2u, 0x1cu);
         core_machine_fdc_advance_at(&session->core_machine->fdc,
             session->core_machine->fdc.data.reset_due_tick);
-        failed |= session->core_machine->fdc.connect.irq_source.asserted;
-        core_machine_port_write(&session->core_machine->executor_port,
-            0x03f5u, 0x08u);
+        failed |= !session->core_machine->fdc.connect.irq_source.asserted;
+        for (sense_status = 0u; sense_status < CORE_MACHINE_FDC_DRIVE_COUNT;
+            ++sense_status) {
+            core_machine_port_write(&session->core_machine->executor_port,
+                0x03f5u, 0x08u);
+            core_machine_fdc_advance(&session->core_machine->fdc);
+            reset_status[sense_status] = (type_unsigned_8)core_machine_port_read(
+                &session->core_machine->executor_port, 0x03f5u);
+            sense_cylinder = (type_unsigned_8)core_machine_port_read(
+                &session->core_machine->executor_port, 0x03f5u);
+            failed |= reset_status[sense_status] !=
+                (core_machine_fdc_ST0_READY_CHANGE | sense_status) ||
+                sense_cylinder != 0u;
+        }
+        core_machine_port_write(&session->core_machine->executor_port, 0x03f5u, 0x08u);
         core_machine_fdc_advance(&session->core_machine->fdc);
         sense_status = (type_unsigned_8)core_machine_port_read(
             &session->core_machine->executor_port, 0x03f5u);
-        failed |= sense_status != 0x80u;
+        sense_cylinder = (type_unsigned_8)core_machine_port_read(
+            &session->core_machine->executor_port, 0x03f5u);
+        failed |= sense_status != 0x80u || sense_cylinder != 0u;
+        if (failed) stage = 4;
     }
     if (!failed) {
         core_machine_port_write(&session->core_machine->executor_port,
@@ -135,6 +162,17 @@ C_INT main(C_VOID)
             0x01f7u) & CORE_MACHINE_HDC_STATUS_ERR) == 0u ||
             core_machine_port_read(&session->core_machine->executor_port,
                 0x01f1u) != CORE_MACHINE_HDC_ERROR_ABORT;
+        if (failed) stage = 5;
+    }
+    if (failed && session != STD_NULL) {
+        STD_PRINTF("M5:T386:S8:MODEL40-INTEGRATION:FAILED-stage=%u-fdc=%02X/%02X-cmos=%02X-reset=%02X,%02X,%02X,%02X-final=%02X\n",
+            (unsigned int)stage,
+            (unsigned int)session->core_machine->fdc_topology.drives.installed_mask,
+            (unsigned int)session->core_machine->fdc_topology.drives.track_zero_active_low_mask,
+            (unsigned int)session->core_machine->shared_rtc.registers[
+                CORE_MACHINE_RTC_TYPE_DISK_FLOPPY], (unsigned int)reset_status[0u],
+            (unsigned int)reset_status[1u], (unsigned int)reset_status[2u],
+            (unsigned int)reset_status[3u], (unsigned int)sense_status);
     }
     if (!failed) STD_PRINTF("M5:T386:S8:MODEL40-INTEGRATION:OK\n");
     if (!failed) STD_PRINTF("M5:T386:S8:MODEL40-CONTROLS:OK\n");

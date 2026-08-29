@@ -342,7 +342,8 @@ and main record according to the documented retention decision. Reordering,
 withdrawing, or refining an unapproved candidate consumes no identifier.
 Numeric tasks therefore exist only while active and after closure in
 implementation history. Allocate them in strict ascending order; never skip an
-identifier and never reopen a closed task or subtask identifier.
+identifier and never reuse a closed subtask identifier. An owner-reopen is the
+sole task-level exception and is governed below.
 
 Allocate implementation subtask (`S`) and standalone documentation (`Td S`)
 identifiers strictly after the latest used identifier in their own sequence.
@@ -358,7 +359,7 @@ machine-readable forms. It never infers task state from free prose or from the
 mere existence of an implementation commit.
 
 The packet's `Identifier Mode` explicitly declares `New`, `Continuation`,
-`Corrective`, or `Governance` so allocation is inspectable before code changes
+`Corrective`, `Owner-Reopen`, or `Governance` so allocation is inspectable before code changes
 begin:
 
 - `New` requires the latest numeric task to have a task-level closure row (or
@@ -367,6 +368,9 @@ begin:
   uses that same `T`, and allocates exactly its next unused `S`.
 - `Corrective` requires no open numeric task and may use only the most recently
   closed numeric `T` with that task's next unused `S`.
+- `Owner-Reopen` requires an owner rejection of the immediately prior closure
+  after its successor was admitted then withdrawn before implementation; it
+  uses only the rejected task's next unused `S`.
 - `Governance` allocates the next milestone-local `Td S` and never allocates a
   numeric implementation task.
 

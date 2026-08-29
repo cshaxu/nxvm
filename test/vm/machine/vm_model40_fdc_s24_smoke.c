@@ -61,8 +61,8 @@ C_INT main(C_INT argc, C_CHAR **argv)
     static const type_unsigned_8 read_last[] = {0xe6u, 0u, 0u, 0u, 15u, 2u, 15u, 0x1bu, 0xffu};
     static const type_unsigned_8 read_oob[] = {0xe6u, 0u, 0u, 0u, 16u, 2u, 16u, 0x1bu, 0xffu};
     vm_session *session = STD_NULL;
-    core_machine_fdc *fdc;
-    t_port *port;
+    core_machine_fdc *fdc = STD_NULL;
+    t_port *port = STD_NULL;
     type_unsigned_8 result[7] = {0};
     type_unsigned_32 index;
     core_machine_run_result run;
@@ -94,17 +94,43 @@ C_INT main(C_INT argc, C_CHAR **argv)
     if (!failed) {
         fdc = &session->core_machine->fdc;
         port = &session->core_machine->executor_port;
+        core_machine_port_write(port, 0x0064u, 0xc0u);
+        core_machine_kbc_advance(&session->core_machine->shared_kbc, 1u);
+        failed |= core_machine_port_read(port, 0x0060u) != 0xb4u;
         failed |= fdc->connect.config.irq != 6u || fdc->connect.config.dma_channel != 2u ||
             fdc->connect.config.unready_read_policy !=
                 CORE_MACHINE_FDC_UNREADY_READ_DESKPRO_REFERENCE ||
             fdc->connect.config.ticks_per_microsecond != 8u ||
+            fdc->connect.drives.installed_mask != 0x03u ||
+            fdc->connect.drives.track_zero_active_low_mask != 0x03u ||
             session->floppy_kind != VM_PROFILE_FLOPPY_525_1200K;
+        core_machine_port_write(port, 0x0070u, 0x14u);
+        failed |= core_machine_port_read(port, 0x0071u) != 0x41u;
+        core_machine_port_write(port, 0x0070u, 0x10u);
+        failed |= core_machine_port_read(port, 0x0071u) != 0x22u;
+        core_machine_port_write(port, 0x0070u, 0x12u);
+        failed |= core_machine_port_read(port, 0x0071u) != 0u;
+        core_machine_port_write(port, 0x0070u, 0x17u);
+        failed |= core_machine_port_read(port, 0x0071u) != 0u;
+        core_machine_port_write(port, 0x0070u, 0x18u);
+        failed |= core_machine_port_read(port, 0x0071u) != 0x04u;
         core_machine_port_write(port, 0x03f2u, 0x1cu);
         core_machine_fdc_advance_at(fdc, fdc->data.reset_due_tick);
         failed |= !fdc->connect.irq_source.asserted;
         model40_fdc_command(fdc, port, (const type_unsigned_8[]){0x08u}, 1u);
         failed |= !model40_fdc_result(fdc, port, result, 2u) ||
             result[0] != core_machine_fdc_ST0_READY_CHANGE;
+        model40_fdc_command(fdc, port, (const type_unsigned_8[]){0x08u}, 1u);
+        failed |= !model40_fdc_result(fdc, port, result, 2u) ||
+            result[0] != (core_machine_fdc_ST0_READY_CHANGE | 1u);
+        model40_fdc_command(fdc, port, (const type_unsigned_8[]){0x08u}, 1u);
+        failed |= !model40_fdc_result(fdc, port, result, 2u) ||
+            result[0] != (core_machine_fdc_ST0_READY_CHANGE | 2u);
+        model40_fdc_command(fdc, port, (const type_unsigned_8[]){0x08u}, 1u);
+        failed |= !model40_fdc_result(fdc, port, result, 2u) ||
+            result[0] != (core_machine_fdc_ST0_READY_CHANGE | 3u);
+        model40_fdc_command(fdc, port, (const type_unsigned_8[]){0x04u, 0x01u}, 2u);
+        failed |= !model40_fdc_result(fdc, port, result, 1u) || result[0] != 0x29u;
         core_machine_port_write(port, 0x03f7u, 0u);
         model40_fdc_command(fdc, port, specify, sizeof(specify));
         model40_fdc_command(fdc, port, read_last, sizeof(read_last));
@@ -159,7 +185,12 @@ C_INT main(C_INT argc, C_CHAR **argv)
             fdc->connect.irq_source.asserted;
         core_machine_port_write(port, 0x03f2u, 0x1cu);
         core_machine_fdc_advance_at(fdc, fdc->data.reset_due_tick);
-        failed |= fdc->connect.irq_source.asserted;
+        failed |= !fdc->connect.irq_source.asserted;
+        for (index = 0u; index < 4u; ++index) {
+            model40_fdc_command(fdc, port, (const type_unsigned_8[]){0x08u}, 1u);
+            failed |= !model40_fdc_result(fdc, port, result, 2u) ||
+                result[0] != (core_machine_fdc_ST0_READY_CHANGE | index);
+        }
         model40_fdc_command(fdc, port, (const type_unsigned_8[]){0x08u}, 1u);
         failed |= !model40_fdc_result(fdc, port, result, 2u) || result[0] != 0x80u;
         model40_fdc_command(fdc, port, read_last, sizeof(read_last));

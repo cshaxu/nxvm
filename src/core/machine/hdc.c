@@ -166,6 +166,17 @@ static C_INT core_machine_hdc_media_info(const core_machine_hdc *hdc,
         *out_result == CORE_MACHINE_MEDIA_RESULT_OK;
 }
 
+static C_VOID core_machine_hdc_refresh_compaq_selection_status(core_machine_hdc *hdc)
+{
+    core_machine_media_info info;
+    core_machine_media_result result;
+
+    if (!core_machine_hdc_is_compaq_wd_40mb(hdc) ||
+        hdc->data.phase != CORE_MACHINE_HDC_PHASE_IDLE) return;
+    hdc->data.status = core_machine_hdc_media_info(hdc, &info, &result) ?
+        CORE_MACHINE_HDC_STATUS_DRDY | CORE_MACHINE_HDC_STATUS_DSC : 0u;
+}
+
 static STD_SIZE_T core_machine_hdc_sector_capacity(
     const core_machine_media_info *info)
 {
@@ -893,6 +904,7 @@ static type_status core_machine_hdc_port_write(C_VOID *opaque, type_unsigned_16 
         hdc->data.cylinder_high = (type_unsigned_8)value;
     } else if (port == hdc->connect.config.bus.task_file.drive_head_port) {
         hdc->data.drive_head = (type_unsigned_8)value;
+        core_machine_hdc_refresh_compaq_selection_status(hdc);
     } else if (port == hdc->connect.config.bus.task_file.status_command_port) {
         core_machine_hdc_capture_command(hdc, (type_unsigned_8)value);
     } else if (port == hdc->connect.config.bus.task_file.alternate_status_device_control_port &&

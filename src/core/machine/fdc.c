@@ -128,7 +128,12 @@ static C_VOID core_machine_fdc_update_dir(core_machine_fdc *fdc)
 
     if (fdc == STD_NULL) return;
     drive = fdc->data.dor & VFDC_DOR_DS;
-    if (fdc->data.media_changed[drive]) {
+    /* Disk Change is a signal from an installed mechanical unit.  An empty
+     * fitted drive asserts it; an unpopulated select line cannot. */
+    if ((fdc->data.dor & VFDC_DOR_ME(drive)) != 0u &&
+        (fdc->connect.drives.installed_mask & (1u << drive)) != 0u &&
+        (fdc->data.media_changed[drive] ||
+         !core_machine_fdc_drive_media_ready(fdc, drive))) {
         fdc->data.dir |= VFDC_DIR_DC;
     } else {
         fdc->data.dir &= (type_unsigned_8)~VFDC_DIR_DC;
@@ -378,9 +383,16 @@ static C_VOID core_machine_fdc_begin_seek(core_machine_fdc *fdc, type_unsigned_1
 {
     type_unsigned_8 drive = fdc->data.selected_drive;
     type_unsigned_16 current = fdc->data.drive_cylinder[drive];
-    type_unsigned_16 distance = current > target ? current - target : target - current;
+    type_unsigned_16 cylinder_count = fdc->connect.drives.cylinder_count[drive];
+    type_unsigned_16 physical;
+    type_unsigned_16 distance;
 
-    fdc->data.seek_target[drive] = target;
+    if (cylinder_count != 0u && target >= cylinder_count)
+        physical = (type_unsigned_16)(cylinder_count - 1u);
+    else physical = target;
+
+    distance = current > physical ? current - physical : physical - current;
+    fdc->data.seek_target[drive] = physical;
     fdc->data.seek_due_tick[drive] = fdc->data.elapsed_ticks +
         (type_unsigned_64)distance * core_machine_fdc_timing_ticks(fdc,
             (type_unsigned_64)(16u - fdc->data.srt) * 1000u);
@@ -395,6 +407,28 @@ static C_INT core_machine_fdc_drive_ready_for(const core_machine_fdc *fdc,
         (fdc->data.dor & VFDC_DOR_NRS) != 0u &&
         (fdc->data.dor & VFDC_DOR_ME(drive)) != 0u &&
         core_machine_fdc_drive_media_ready(fdc, drive);
+}
+
+/* A mounted medium is required for data transfer, but not for head motion.
+ * The 8272A's seek completion reports the selected mechanical unit, whose
+ * ready path is determined by its wiring and motor state. */
+static C_INT core_machine_fdc_drive_mechanical_ready_for(const core_machine_fdc *fdc,
+    type_unsigned_8 drive)
+{
+    return fdc != STD_NULL && drive < CORE_MACHINE_FDC_DRIVE_COUNT &&
+        drive == (fdc->data.dor & VFDC_DOR_DS) &&
+        (fdc->data.dor & VFDC_DOR_NRS) != 0u &&
+        (fdc->connect.drives.installed_mask & (1u << drive)) != 0u;
+}
+
+static C_INT core_machine_fdc_drive_status_ready(const core_machine_fdc *fdc,
+    type_unsigned_8 drive)
+{
+    /* The ordinary PC FDC's Sense Drive Status samples the board READY line,
+     * which is pulled ready for every unit select; media availability remains
+     * exclusively a transfer-path condition.  Board personalities with a
+     * different electrical READY source require an explicit topology input. */
+    return fdc != STD_NULL && drive < CORE_MACHINE_FDC_DRIVE_COUNT;
 }
 
 static C_INT core_machine_fdc_drive_ready(const core_machine_fdc *fdc)
@@ -763,6 +797,16 @@ static C_VOID core_machine_fdc_execute(core_machine_fdc *fdc)
     core_machine_media_info info;
     core_machine_media_result media_result;
     C_INT media_ok;
+
+    /* A command that changes controller activity supersedes reset's stale
+     * Sense Interrupt notifications.  Sense Interrupt itself is the sole
+     * command allowed to drain them. */
+    if (opcode != core_machine_fdc_CMD_SENSE_INTERRUPT &&
+        fdc->data.reset_sense_mask != 0u) {
+        fdc->data.reset_sense_mask = 0u;
+        fdc->data.reset_pending = TYPE_FALSE;
+        core_machine_pic_irq_source_deassert(&fdc->connect.irq_source);
+    }
     switch (opcode) {
     case core_machine_fdc_CMD_SPECIFY:
         fdc->data.hut = fdc->data.cmd[1] & 0x0fu;
@@ -778,8 +822,15 @@ static C_VOID core_machine_fdc_execute(core_machine_fdc *fdc)
         media_ok = core_machine_fdc_media_info(fdc, &info, &media_result);
         fdc->data.st3 = (fdc->data.selected_drive & 3u) |
             (fdc->data.head << 2u) | (media_ok &&
-            (info.capabilities & CORE_MACHINE_MEDIA_CAPABILITY_READ_ONLY) != 0u ? 0x40u : 0u) | (core_machine_fdc_drive_ready(fdc) ?
-            0x20u : 0u) | (fdc->data.cylinder == 0u ? 0x10u : 0u);
+            (info.capabilities & CORE_MACHINE_MEDIA_CAPABILITY_READ_ONLY) != 0u ? 0x40u : 0u) | (core_machine_fdc_drive_status_ready(fdc,
+                fdc->data.selected_drive) ?
+            0x20u : 0u) | ((fdc->connect.drives.double_sided_mask &
+            (1u << fdc->data.selected_drive)) != 0u ? 0x08u : 0u) |
+            ((fdc->connect.drives.installed_mask &
+                (1u << fdc->data.selected_drive)) != 0u &&
+            fdc->data.drive_cylinder[fdc->data.selected_drive] == 0u &&
+            (fdc->connect.drives.track_zero_active_low_mask &
+                (1u << fdc->data.selected_drive)) == 0u ? 0x10u : 0u);
         fdc->data.ret[0] = fdc->data.st3;
         core_machine_fdc_result_phase(fdc, 1u);
         break;
@@ -906,6 +957,7 @@ static C_VOID core_machine_fdc_reset_controller(core_machine_fdc *fdc)
     type_unsigned_4 hlt = fdc->data.hlt;
     type_unsigned_8 srt = fdc->data.srt;
     type_unsigned_64 elapsed_ticks = fdc->data.elapsed_ticks;
+    type_bool initial_media_baseline_pending = fdc->data.initial_media_baseline_pending;
     type_unsigned_64 observed_media_generation[CORE_MACHINE_FDC_DRIVE_COUNT];
     STD_MEMCPY(observed_media_generation, fdc->data.observed_media_generation,
         sizeof(observed_media_generation));
@@ -916,6 +968,7 @@ static C_VOID core_machine_fdc_reset_controller(core_machine_fdc *fdc)
     fdc->data.hlt = hlt;
     fdc->data.srt = srt;
     fdc->data.elapsed_ticks = elapsed_ticks;
+    fdc->data.initial_media_baseline_pending = initial_media_baseline_pending;
     STD_MEMCPY(fdc->data.observed_media_generation, observed_media_generation,
         sizeof(observed_media_generation));
     core_machine_fdc_sample_ready(fdc);
@@ -932,12 +985,12 @@ static C_VOID core_machine_fdc_publish_due_reset(core_machine_fdc *fdc)
 
 static C_VOID core_machine_fdc_schedule_reset_completion(core_machine_fdc *fdc)
 {
-    type_unsigned_8 drive;
-
-    for (drive = 0u; drive < CORE_MACHINE_FDC_DRIVE_COUNT; ++drive) {
-        if (fdc->data.observed_ready[drive])
-            fdc->data.reset_sense_mask |= (type_unsigned_8)(1u << drive);
-    }
+    /* Reset completion queues one Sense Interrupt Status result for every
+     * controller drive select.  This is controller state, not a sample of
+     * the board READY inputs: system firmware drains all four results even
+     * when fewer mechanical drives are fitted. */
+    fdc->data.reset_sense_mask = (type_unsigned_8)
+        ((1u << CORE_MACHINE_FDC_DRIVE_COUNT) - 1u);
     fdc->data.reset_due_tick = fdc->data.elapsed_ticks +
         core_machine_fdc_timing_ticks(fdc, 1024u);
     fdc->data.reset_pending = TYPE_TRUE;
@@ -1087,6 +1140,7 @@ C_VOID core_machine_fdc_initialize(core_machine_fdc *fdc)
     fdc->data.ccr = VFDC_CCR_DRC;
     core_machine_fdc_observe_all_drives(fdc);
     core_machine_fdc_sample_ready(fdc);
+    fdc->data.initial_media_baseline_pending = TYPE_TRUE;
     core_machine_fdc_update_dir(fdc);
     core_machine_fdc_command_phase(fdc);
     core_machine_port_add_read(fdc->connect.port, fdc->connect.config.status_port,
@@ -1113,6 +1167,12 @@ C_VOID core_machine_fdc_reset(core_machine_fdc *fdc)
     core_machine_fdc_deassert_dma(fdc);
     core_machine_pic_irq_source_deassert(&fdc->connect.irq_source);
     core_machine_fdc_reset_controller(fdc);
+    if (fdc->data.initial_media_baseline_pending) {
+        /* A session attaches its selected boot medium before its first
+         * machine reset.  That construction-time state is not a hot swap. */
+        core_machine_fdc_observe_all_drives(fdc);
+        fdc->data.initial_media_baseline_pending = TYPE_FALSE;
+    }
 }
 
 C_VOID core_machine_fdc_advance(core_machine_fdc *fdc)
@@ -1144,10 +1204,17 @@ C_VOID core_machine_fdc_advance_at(core_machine_fdc *fdc,
             fdc->data.drive_cylinder[drive] = fdc->data.seek_target[drive];
             fdc->data.cylinder = fdc->data.seek_target[drive];
             core_machine_fdc_observe_drive(fdc, drive);
+            /* uPD765 ST0 reserves Not Ready for Read/Write.  A SEEK still
+             * completes with SEEK END when its selected unit is absent; the
+             * controller records the requested PCN rather than inventing an
+             * abnormal completion.  RECALIBRATE is the mechanical check
+             * path: a missing Track 0 signal is Equipment Check. */
             fdc->data.seek_result_st0[fdc->data.seek_result_count] =
-                core_machine_fdc_drive_ready_for(fdc, drive) ? core_machine_fdc_ST0_NORMAL |
+                ((fdc->data.cmd[0] & 0x1fu) == core_machine_fdc_CMD_SEEK ||
+                core_machine_fdc_drive_mechanical_ready_for(fdc, drive)) ?
+                core_machine_fdc_ST0_NORMAL |
                 VFDC_ST0_SEEK_END | drive : core_machine_fdc_ST0_ABNORMAL |
-                VFDC_ST0_SEEK_END | drive;
+                VFDC_ST0_SEEK_END | VFDC_ST0_EQUIPMENT_CHECK | drive;
             fdc->data.seek_result_cylinder[fdc->data.seek_result_count++] =
                 (type_unsigned_8)fdc->data.drive_cylinder[drive];
             core_machine_fdc_raise_irq(fdc);

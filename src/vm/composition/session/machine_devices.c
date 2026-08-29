@@ -31,7 +31,8 @@ static type_status vm_session_machine_devices_materialize_fdc(vm_session *sessio
     const vm_profile_default_pc_at_route *route;
     const core_machine_fdc_drive_bindings drives = {
         {VM_SESSION_MEDIA_FDD_ID, CORE_MACHINE_MEDIA_ID_INVALID,
-            CORE_MACHINE_MEDIA_ID_INVALID, CORE_MACHINE_MEDIA_ID_INVALID}
+            CORE_MACHINE_MEDIA_ID_INVALID, CORE_MACHINE_MEDIA_ID_INVALID}, 0x01u, 0x01u,
+        {0u, 0u, 0u, 0u}, 0u
     };
     core_machine_fdc_config config = {0};
 

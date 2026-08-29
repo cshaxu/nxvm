@@ -2,32 +2,14 @@
 
 ## Current Work
 
-## M5 T502 S1 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | New |
-| Admission And Approval | Owner requested admission of the next ordered candidate after T501 closure. |
-| Objective | Inventory and classify every reachable internal Core L1 no-deadline wait before any Turbo compatibility implementation. |
-| Non-goals | No timing promotion, deadline guess, device-specific shim, host-to-guest time path, source import, behavior repair, or production artifact change. |
-| Reference Baseline | `5145b366`; [proposal](../proposals/m5-turbo-l1-compatibility-escape.md). |
-| Candidate Proposal | [M5 Turbo L1 compatibility escape](../proposals/m5-turbo-l1-compatibility-escape.md). |
-| Files And ABI Surface | Ledger/evidence/history/status only; no product source or ABI change in S1. |
-| Applicable Rules | Core remains sole guest-time, wait, controller and ordering owner; VM only selects mode and observes copied status. |
-| Verification | Complete current source/ledger sweep, classify reset/cancel/input/interrupt rules, and run complete Debug unit route. |
-| Expected Markers | `T502-S1-L1-NO-DEADLINE-UNIVERSE` and `T502-S1-L1-DISPOSITION`. |
-| Asset Needs | None. |
-| Reporting Requirements | Record every reachable candidate state, owner, wake condition, known-deadline ordering, lifecycle interaction, evidence class and disposition without claiming L2/L3. |
-| Stop Conditions | Stop before changing a state that has no complete source/owner disposition; transfer it rather than guessing timing. |
-| Exit Criteria | The finite reachable L1 no-deadline universe and every row's safe/blocker disposition are recorded; unit passes and no implementation path is added. |
-| Original Owner Request | Admit and execute the next queued task after the four-profile Release matrix closure. |
-| Similar-Issue Sweep | Include CPU wait, controller wait, reset/cancel, input/interrupt, debugger and known-deadline states; reject duplicate guest-clock or VM-side progression paths. |
+No implementation subtask is active.  T501 is closed; its next candidate is
+selected only through a new approved packet.
 
 ## Current Technical Baseline
 
 - **Current developer artifact:** CMake target `vm-0-5-0501` emitted
   `nxvm_0_5_0501.exe` in a stripped Release build, SHA-256
-  `3651CD9245D11374F6089199E83A15F1F4C67B43E6A27F2751F74D3B57B89297`.
+  `502D12BE1E30EDBCBE609F424F778A97F665210CA2B3F8B50C88636F8377B2CC`.
   It retains the runtime debugger and contains no compiler debug information.
   Debug uses the repository-only unit route. T471 preserves Core-owned progression:
   a verified axis is Standard-paced only by host waiting against completed
@@ -59,14 +41,14 @@
 
 | Task | Compact result |
 | --- | --- |
-| T501 | Closed: the 0501 stripped Release replays the entire nine-row matrix with seven semantic terminals and only the named 80286 input and Model-40 source-gated boundaries; unit 312/312 and integration 20/20 pass. [Closure](../history/M5-T501-four-profile-post-scheduler-media-closure.md). |
+| T502 | Withdrawn before execution by owner direction; no implementation, evidence, test, or artifact change was produced. |
+| T501 | Closed: all frozen four-profile media rows have their recorded terminal or external boundary; the Model-40 80386/1.2-MB row reaches `A:\>` through its sole Core/firmware path. [History](../history/M5-T501-four-profile-post-scheduler-media-closure.md). |
 | T500 | Closed: existing tests now have one `test/` tree, one unit/integration route, narrow fixture ownership, one product input path, and recovered safe integration parallelism; unit 312/312 and integration 20/20 pass. [Closure](../history/M5-T500-unit-and-integration-test-convergence.md). |
 | T499 | Closed: one Core deadline seam owns the current scheduler clients and the selected Model-40 D4 controller; the configured suite passes 302/302 and stripped Release 0499 is recorded. [Closure](../history/M5-T499-core-event-deadline-scheduler-convergence.md). |
 | T498 | Closed: the supported-media matrix has semantic terminals or an explicit external-input boundary for every non-Model-40 row, and its Model-40 predecessor transfers to the sole Core scheduler receiver without accepting a shortcut. [Closure](../history/M5-T498-four-profile-supported-media-matrix.md). |
 | T497 | Closed: original Model-339 factory 1.2-MB/compatible-360-KB media behavior now has one descriptor/session/FDD path, and the 360-KB DOS installer replay closes its one missing monochrome-aperture mapping; a 286-compatible 1.2-MB external replay transfers to T498. [Closure](../history/M5-T497-ibm-5170-native-floppy-contract.md). |
 | T496 | Closed: one Core FDC result/IRQ lifecycle now releases IRQ6 at normal-result acknowledgement, and the selected IBM 5160 DOS terminal plus focused FDC regressions pass without a BIOS/VM/media workaround. [Closure](../history/M5-T496-xt-keyboard-device.md). |
 | T495 | Closed: the selected IBM 5160-268 is functionally ready with source-backed L3 relations and explicit L2 limits; 13/13 focused, 300/300 fresh current and specialized gates pass, without a physical/wall-clock overclaim. [Decision](../etc/evidence/t495-s2-xt-final-model-decision.md). |
-| T494 | Closed: the complete IBM 5160 Xebec source/List-1/List-2/sole-owner chain corrects Read block-count progression without a second controller/media path; full current gate passes 300/300 and stripped Release 0494 is recorded. [Closure audit](../etc/evidence/t494-s5-xebec-closure-audit.md). |
 
 ## Recent Governance
 

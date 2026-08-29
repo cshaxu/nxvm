@@ -1,9 +1,9 @@
-# M5 T502 Turbo L1 Compatibility Escape
+# M5 T502 Turbo L1 Compatibility Escape - Withdrawn Before Execution
 
-This active task owns the bounded Core-only Turbo compatibility escape for the
-complete reachable internal L1 no-deadline wait universe. It must inventory the
-universe before implementation, preserve known deadlines and normal state
-transitions, and leave Standard without host-to-guest time injection.
+The owner withdrew this admission before S1 execution because the preceding
+Model-40 usability work was not genuinely closed. No source, test, artifact,
+or evidence implementation was produced; the original candidate remains in
+the unnumbered queue for later readmission.
 
 The active [proposal](../proposals/m5-turbo-l1-compatibility-escape.md)
 defines its frozen universe, sole ownership and acceptance requirements.

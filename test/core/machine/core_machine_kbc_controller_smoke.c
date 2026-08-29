@@ -109,6 +109,11 @@ static C_INT core_machine_kbc_set2_translation(C_VOID)
 
     core_machine_port_initialize(&port);
     core_machine_kbc_initialize(&kbc, &port);
+    kbc.connect.aux_present = TYPE_FALSE;
+    core_machine_kbc_reset(&kbc);
+    failed |= (kbc.data.command_byte & CORE_MACHINE_KBC_COMMAND_DISABLE_AUX) == 0u ||
+        core_machine_kbc_submit_native_byte(&kbc, 0x05u) != TYPE_STATUS_OK ||
+        core_machine_kbc_read_byte(&port, 0x0060u) != 0x3bu;
     core_machine_port_write(&port, 0x0064u, 0x60u);
     core_machine_port_write(&port, 0x0060u, 0x01u);
     failed |= core_machine_kbc_submit_native_byte(&kbc, 0x1cu) != TYPE_STATUS_OK ||

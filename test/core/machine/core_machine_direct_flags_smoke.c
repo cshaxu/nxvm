@@ -498,8 +498,8 @@ static C_INT direct_flags_test_real_identity(C_VOID)
 
     for (index = 0u; index != sizeof(cases) / sizeof(cases[0]); ++index) {
         direct_flags_machine state;
-        core_machine_run_result result;
-        t_cpu after;
+        core_machine_run_result result = {0};
+        t_cpu after = {0};
         type_status status = TYPE_STATUS_OK;
         C_INT eax_matches = 0;
         C_INT flags_match = 0;

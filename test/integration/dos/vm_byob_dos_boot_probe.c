@@ -14,10 +14,12 @@
 #define VM_BYOB_BOOT_WALL_LIMIT_MILLISECONDS 60000u
 #define VM_BYOB_BOOT_NO_PROGRESS_LIMIT_MILLISECONDS 15000u
 #define VM_BYOB_BOOT_DISPLAY_CADENCE_MILLISECONDS 16u
-#define VM_BYOB_FDC_PORT_HISTORY 24u
+#define VM_BYOB_FDC_PORT_HISTORY 256u
 #define VM_BYOB_NEAR_UD_HISTORY 16u
+#define VM_BYOB_CMOS_BYTES 128u
 
 typedef struct vm_byob_fdc_port_event {
+    type_unsigned_32 linear_pc;
     type_unsigned_16 port;
     type_unsigned_8 value;
     type_bool write;
@@ -33,6 +35,11 @@ typedef struct vm_byob_boot_trace {
     type_unsigned_64 rom_memory_reads;
     type_unsigned_64 fdc_port_accesses;
     vm_byob_fdc_port_event fdc_port_history[VM_BYOB_FDC_PORT_HISTORY];
+    type_unsigned_8 cmos_index;
+    type_unsigned_64 cmos_reads[VM_BYOB_CMOS_BYTES];
+    type_unsigned_64 cmos_writes[VM_BYOB_CMOS_BYTES];
+    type_unsigned_8 cmos_last_values[VM_BYOB_CMOS_BYTES];
+    type_unsigned_32 cmos_last_write_pc[VM_BYOB_CMOS_BYTES];
     type_unsigned_64 xt_ppi_port_accesses;
     type_unsigned_64 pic_port_accesses;
     type_unsigned_64 pit_port_accesses;
@@ -93,6 +100,7 @@ static C_VOID vm_byob_fdc_port_record(vm_byob_boot_trace *trace,
     if (trace == STD_NULL || event == STD_NULL) return;
     index = (STD_SIZE_T)(trace->fdc_port_accesses % VM_BYOB_FDC_PORT_HISTORY);
     record = &trace->fdc_port_history[index];
+    record->linear_pc = event->linear_pc;
     record->port = (type_unsigned_16)event->address;
     record->value = (type_unsigned_8)event->value;
     record->write = event->type == CORE_MACHINE_TRACE_PORT_WRITE;
@@ -109,12 +117,56 @@ static C_VOID vm_byob_fdc_terminal_observe(C_VOID *context,
     trace->last_fdc_terminal = *observation;
 }
 
+static C_VOID vm_byob_fdc_retirement_record(vm_byob_boot_trace *trace,
+    const core_machine_retirement_observation *observation)
+{
+    vm_byob_fdc_port_event *record;
+    STD_SIZE_T index;
+
+    if (trace == STD_NULL || observation == STD_NULL ||
+        observation->io_direction == CORE_MACHINE_RETIREMENT_IO_NONE ||
+        observation->io_port < 0x03f0u || observation->io_port > 0x03f7u ||
+        observation->io_port == 0x03f4u) return;
+    index = (STD_SIZE_T)(trace->fdc_port_accesses % VM_BYOB_FDC_PORT_HISTORY);
+    record = &trace->fdc_port_history[index];
+    record->linear_pc = observation->point.linear_pc;
+    record->port = observation->io_port;
+    record->value = (type_unsigned_8)observation->io_value;
+    record->write = observation->io_direction == CORE_MACHINE_RETIREMENT_IO_WRITE;
+    ++trace->fdc_port_accesses;
+}
+
+static C_VOID vm_byob_cmos_retirement_record(vm_byob_boot_trace *trace,
+    const core_machine_retirement_observation *observation)
+{
+    type_unsigned_8 index;
+
+    if (trace == STD_NULL || observation == STD_NULL ||
+        observation->io_direction == CORE_MACHINE_RETIREMENT_IO_NONE) return;
+    if (observation->io_port == 0x0070u &&
+        observation->io_direction == CORE_MACHINE_RETIREMENT_IO_WRITE) {
+        trace->cmos_index = (type_unsigned_8)observation->io_value & 0x7fu;
+        return;
+    }
+    if (observation->io_port != 0x0071u) return;
+    index = trace->cmos_index;
+    trace->cmos_last_values[index] = (type_unsigned_8)observation->io_value;
+    if (observation->io_direction == CORE_MACHINE_RETIREMENT_IO_READ)
+        ++trace->cmos_reads[index];
+    else {
+        ++trace->cmos_writes[index];
+        trace->cmos_last_write_pc[index] = observation->point.linear_pc;
+    }
+}
+
 static C_VOID vm_byob_retirement_observe(C_VOID *context,
     const core_machine_retirement_observation *observation)
 {
     vm_byob_boot_trace *trace = context;
 
     if (trace == STD_NULL || observation == STD_NULL) return;
+    vm_byob_fdc_retirement_record(trace, observation);
+    vm_byob_cmos_retirement_record(trace, observation);
     if (!trace->real_286_high_flags_observed && trace->machine != STD_NULL &&
         trace->machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 &&
         (trace->machine->executor_cpu.data.cr0 & VCPU_CR0_PE) == 0u &&
@@ -237,6 +289,30 @@ static C_VOID vm_byob_trace(C_VOID *context, const core_machine_trace_event *eve
             ++trace->irq0_retires;
         return;
     }
+    if (event->type == CORE_MACHINE_TRACE_TRANSACTION_BEGIN &&
+        (event->detail & 0xffu) == CORE_MACHINE_TRANSACTION_OWNER_CPU &&
+        ((event->detail >> 8u) & 0xffu) ==
+            CORE_MACHINE_TRANSACTION_CPU_PORT_WRITE &&
+        event->address >= 0x03f0u && event->address <= 0x03f7u) {
+        core_machine_trace_event write = *event;
+
+        write.type = CORE_MACHINE_TRACE_PORT_WRITE;
+        vm_byob_fdc_port_record(trace, &write);
+        ++trace->fdc_port_accesses;
+        return;
+    }
+    if (event->type == CORE_MACHINE_TRACE_TRANSACTION_COMMIT &&
+        (event->detail & 0xffu) == CORE_MACHINE_TRANSACTION_OWNER_CPU &&
+        ((event->detail >> 8u) & 0xffu) ==
+            CORE_MACHINE_TRANSACTION_CPU_PORT_READ &&
+        event->address >= 0x03f0u && event->address <= 0x03f7u) {
+        core_machine_trace_event read = *event;
+
+        read.type = CORE_MACHINE_TRACE_PORT_READ;
+        vm_byob_fdc_port_record(trace, &read);
+        ++trace->fdc_port_accesses;
+        return;
+    }
     if (event->type != CORE_MACHINE_TRACE_PORT_READ &&
         event->type != CORE_MACHINE_TRACE_PORT_WRITE) return;
     if (event->address >= 0x03f0u && event->address <= 0x03f7u) {
@@ -285,10 +361,13 @@ static C_INT vm_byob_snapshot_has_prompt(const core_machine_display_snapshot *sn
     return 0;
 }
 
-static C_INT vm_byob_send_f1(core_machine *machine, type_unsigned_8 *out_scan_set)
+static C_INT vm_byob_send_f1(core_machine *machine, C_INT pressed,
+    type_unsigned_8 *out_scan_set)
 {
-    static const type_unsigned_8 f1_set_1[] = {0x3bu,0xbbu};
-    static const type_unsigned_8 f1_set_2[] = {0x05u,0xf0u,0x05u};
+    static const type_unsigned_8 f1_set_1_make[] = {0x3bu};
+    static const type_unsigned_8 f1_set_1_break[] = {0xbbu};
+    static const type_unsigned_8 f1_set_2_make[] = {0x05u};
+    static const type_unsigned_8 f1_set_2_break[] = {0xf0u,0x05u};
     const type_unsigned_8 *f1 = STD_NULL;
     STD_SIZE_T f1_bytes = 0u;
     type_unsigned_8 scan_set = 0u;
@@ -297,11 +376,11 @@ static C_INT vm_byob_send_f1(core_machine *machine, type_unsigned_8 *out_scan_se
         core_machine_keyboard_get_native_scan_set(machine, &scan_set) !=
             TYPE_STATUS_OK) return 0;
     if (scan_set == CORE_MACHINE_KEYBOARD_SCAN_SET_1) {
-        f1 = f1_set_1;
-        f1_bytes = sizeof(f1_set_1);
+        f1 = pressed ? f1_set_1_make : f1_set_1_break;
+        f1_bytes = pressed ? sizeof(f1_set_1_make) : sizeof(f1_set_1_break);
     } else if (scan_set == CORE_MACHINE_KEYBOARD_SCAN_SET_2) {
-        f1 = f1_set_2;
-        f1_bytes = sizeof(f1_set_2);
+        f1 = pressed ? f1_set_2_make : f1_set_2_break;
+        f1_bytes = pressed ? sizeof(f1_set_2_make) : sizeof(f1_set_2_break);
     } else return 0;
     *out_scan_set = scan_set;
     return core_machine_keyboard_receive_native_bytes(machine, f1, f1_bytes) ==
@@ -326,6 +405,31 @@ static C_INT vm_byob_text_memory_has(core_machine *machine, const C_CHAR *text)
         if (index == length) return 1;
     }
     return 0;
+}
+
+static C_VOID vm_byob_print_text_rows(core_machine *machine)
+{
+    type_unsigned_8 bytes[80u * 25u * 2u];
+    type_unsigned_32 row;
+
+    if (machine == STD_NULL || core_machine_memory_read(machine, 0x000b8000u,
+            bytes, sizeof(bytes)) != TYPE_STATUS_OK) return;
+    for (row = 0u; row < 25u; ++row) {
+        C_CHAR line[81];
+        type_unsigned_32 column;
+        C_INT nonblank = 0;
+
+        for (column = 0u; column < 80u; ++column) {
+            type_unsigned_8 character = bytes[(row * 80u + column) * 2u];
+
+            line[column] = character >= 0x20u && character < 0x7fu ?
+                (C_CHAR)character : ' ';
+            if (line[column] != ' ') nonblank = 1;
+        }
+        line[80u] = '\0';
+        if (nonblank) STD_PRINTF("BOOT-PROBE=text-row-%u=%s\n",
+            (unsigned int)row, line);
+    }
 }
 
 static C_INT vm_byob_memory_has(core_machine *machine, type_unsigned_32 address,
@@ -487,6 +591,8 @@ int main(C_INT argc, C_CHAR **argv)
     C_INT last_wait_advanced = 0;
     type_unsigned_32 wall_limit = VM_BYOB_BOOT_WALL_LIMIT_MILLISECONDS;
     type_unsigned_32 no_progress_limit = VM_BYOB_BOOT_NO_PROGRESS_LIMIT_MILLISECONDS;
+    ULONGLONG resume_f1_prompt_at = 0u;
+    ULONGLONG resume_f1_make_at = 0u;
     C_INT have_checksum = 0;
     C_INT have_linear_pc = 0;
     C_INT waiting_for_interrupt = 0;
@@ -505,30 +611,42 @@ int main(C_INT argc, C_CHAR **argv)
     C_INT turbo;
     C_INT no_retirement_observation;
     C_INT press_resume_f1;
+    const C_CHAR *hdd_image = STD_NULL;
     C_INT exit_code = 1;
 
-    stop_at_first_exception = argc > 1 &&
-        !STD_STRCMP(argv[argc - 1], "--first-exception");
-    if (stop_at_first_exception) --argc;
-    short_budget = argc > 1 && !STD_STRCMP(argv[argc - 1], "--short");
-    if (short_budget) {
+    stop_at_first_exception = 0;
+    short_budget = 0;
+    trace_enabled = 0;
+    no_retirement_observation = 0;
+    press_resume_f1 = 0;
+    turbo = 0;
+    while (argc > 1) {
+        const C_CHAR *option = argv[argc - 1];
+
+        if (argc > 2 && !STD_STRCMP(argv[argc - 2], "--hdd")) {
+            hdd_image = option;
+            argc -= 2;
+            continue;
+        }
+        else if (!STD_STRCMP(option, "--first-exception")) stop_at_first_exception = 1;
+        else if (!STD_STRCMP(option, "--short")) short_budget = 1;
+        else if (!STD_STRCMP(option, "--trace")) trace_enabled = 1;
+        else if (!STD_STRCMP(option, "--no-retirement-observation"))
+            no_retirement_observation = 1;
+        else if (!STD_STRCMP(option, "--resume-f1")) press_resume_f1 = 1;
+        else if (!STD_STRCMP(option, "--turbo")) turbo = 1;
+        else break;
         --argc;
+    }
+    if (short_budget) {
         wall_limit = 25000u;
         no_progress_limit = 7500u;
     }
-    trace_enabled = argc > 1 && !STD_STRCMP(argv[argc - 1], "--trace");
-    if (trace_enabled) --argc;
-    no_retirement_observation = argc > 1 &&
-        !STD_STRCMP(argv[argc - 1], "--no-retirement-observation");
-    if (no_retirement_observation) --argc;
-    press_resume_f1 = argc > 1 && !STD_STRCMP(argv[argc - 1], "--resume-f1");
-    if (press_resume_f1) --argc;
-    turbo = argc > 1 && !STD_STRCMP(argv[argc - 1], "--turbo");
-    if (turbo) --argc;
     if (!vm_byob_configure(argc, argv, &config)) {
         STD_PRINTF("BOOT-PROBE=invalid-arguments\n");
         goto done;
     }
+    config.hdd_image = hdd_image;
     status = vm_session_create(&config, &session);
     if (status != TYPE_STATUS_OK || session == STD_NULL) {
         STD_PRINTF("BOOT-PROBE=session-create-failed-status=%u\n",
@@ -587,11 +705,11 @@ int main(C_INT argc, C_CHAR **argv)
         goto done;
     }
     if (turbo) {
-        /* The probe has no interactive command/display loop.  A larger
-         * bounded Core quantum keeps its diagnostic wall budget from being
-         * dominated by host-side observation between ordinary instructions. */
+        /* The probe has no interactive command/display loop.  A larger,
+         * equally bounded instruction/tick quantum avoids redundant host
+         * re-entry while Core still performs every instruction and deadline. */
         budget.instructions = 4096u;
-        budget.ticks = 256u;
+        budget.ticks = 4096u;
     }
     if (!no_retirement_observation &&
         core_machine_set_retirement_observation_provider(session->core_machine,
@@ -636,15 +754,42 @@ int main(C_INT argc, C_CHAR **argv)
         }
         if (core_machine_run(session->core_machine, run_budget, &result) != TYPE_STATUS_OK) {
             type_unsigned_8 fault_bytes[4] = {0u};
+            type_unsigned_8 far_pointer[6] = {0u};
+            type_unsigned_8 descriptor[8] = {0u};
+            const t_cpu *fault_cpu = &session->core_machine->executor_cpu;
 
-            (C_VOID)core_machine_memory_read(session->core_machine, result.linear_pc,
-                fault_bytes, sizeof(fault_bytes));
+            (C_VOID)core_machine_memory_read_physical(&session->core_machine->executor_memory,
+                result.linear_pc, (type_virtual_address)fault_bytes, sizeof(fault_bytes));
+            (C_VOID)core_machine_memory_read_physical(&session->core_machine->executor_memory,
+                0x000f8a1fu, (type_virtual_address)far_pointer, sizeof(far_pointer));
+            (C_VOID)core_machine_memory_read_physical(&session->core_machine->executor_memory,
+                0x000f0a0bu, (type_virtual_address)descriptor, sizeof(descriptor));
             STD_PRINTF("BOOT-PROBE=run-failed-reason=%u-detail=%08X-pc=%05X\n",
                 (unsigned int)result.reason, (unsigned int)result.detail,
                 (unsigned int)result.linear_pc);
             STD_PRINTF("BOOT-PROBE=fault-bytes=%02X,%02X,%02X,%02X\n",
                 (unsigned int)fault_bytes[0u], (unsigned int)fault_bytes[1u],
                 (unsigned int)fault_bytes[2u], (unsigned int)fault_bytes[3u]);
+            STD_PRINTF("BOOT-PROBE=cpu-cr0=%08X-cs=%04X-base=%08X-eip=%08X-gdt=%08X/%08X\n",
+                (unsigned int)fault_cpu->data.cr0, (unsigned int)fault_cpu->data.cs.selector,
+                (unsigned int)fault_cpu->data.cs.base, (unsigned int)fault_cpu->data.eip,
+                (unsigned int)fault_cpu->data.gdtr.base, (unsigned int)fault_cpu->data.gdtr.limit);
+            STD_PRINTF("BOOT-PROBE=d4-control=%02X-ram-setup=%04X\n",
+                (unsigned int)session->core_machine->d4_memory.control,
+                (unsigned int)session->core_machine->d4_memory.ram_setup);
+            STD_PRINTF("BOOT-PROBE=transaction-owner=%u-hold-owner=%u-hold-ack=%u-refresh-pending=%u\n",
+                (unsigned int)session->core_machine->transaction.owner,
+                (unsigned int)session->core_machine->transaction.hold_owner,
+                (unsigned int)session->core_machine->transaction.hold_acknowledged,
+                (unsigned int)session->core_machine->d4_refresh_hold_pending);
+            STD_PRINTF("BOOT-PROBE=far-pointer=%02X,%02X,%02X,%02X,%02X,%02X-gdt-entry=%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X\n",
+                (unsigned int)far_pointer[0u], (unsigned int)far_pointer[1u],
+                (unsigned int)far_pointer[2u], (unsigned int)far_pointer[3u],
+                (unsigned int)far_pointer[4u], (unsigned int)far_pointer[5u],
+                (unsigned int)descriptor[0u], (unsigned int)descriptor[1u],
+                (unsigned int)descriptor[2u], (unsigned int)descriptor[3u],
+                (unsigned int)descriptor[4u], (unsigned int)descriptor[5u],
+                (unsigned int)descriptor[6u], (unsigned int)descriptor[7u]);
             goto done;
         }
         ++run_count;
@@ -730,6 +875,10 @@ int main(C_INT argc, C_CHAR **argv)
                     (unsigned int)display_status);
                 goto done;
             }
+            if (press_resume_f1 && !resume_f1_sent && resume_f1_prompt_at == 0u &&
+                vm_byob_text_memory_has(session->core_machine, "RESUME")) {
+                resume_f1_prompt_at = now;
+            }
             if (display_status == TYPE_STATUS_OK) {
                 if (vm_byob_snapshot_has_prompt(&snapshot)) {
                     STD_PRINTF("BOOT-PROBE=dos-prompt\n");
@@ -759,19 +908,30 @@ int main(C_INT argc, C_CHAR **argv)
                 }
             }
         }
-        if (press_resume_f1 && !resume_f1_sent &&
-            vm_byob_text_memory_has(session->core_machine, "RESUME")) {
+        if (press_resume_f1 && !resume_f1_sent && resume_f1_prompt_at != 0u &&
+            now - resume_f1_prompt_at >= 100u) {
             type_unsigned_8 scan_set = 0u;
 
-            if (!vm_byob_send_f1(session->core_machine, &scan_set)) {
+            if (!vm_byob_send_f1(session->core_machine, 1, &scan_set)) {
                 STD_PRINTF("BOOT-PROBE=resume-f1-input-failed\n");
                 goto done;
             }
             resume_f1_sent = 1;
+            resume_f1_make_at = now;
             started = GetTickCount64();
             progress = started;
             STD_PRINTF("BOOT-PROBE=resume-f1-sent-scan-set=%u\n",
                 (unsigned int)scan_set);
+        }
+        if (resume_f1_sent && resume_f1_make_at != 0u &&
+            now - resume_f1_make_at >= 25u) {
+            type_unsigned_8 scan_set = 0u;
+
+            if (!vm_byob_send_f1(session->core_machine, 0, &scan_set)) {
+                STD_PRINTF("BOOT-PROBE=resume-f1-release-failed\n");
+                goto done;
+            }
+            resume_f1_make_at = 0u;
         }
         if (!have_linear_pc || result.linear_pc != linear_pc) {
             linear_pc = result.linear_pc;
@@ -930,12 +1090,15 @@ done:
         type_unsigned_16 bda_equipment = 0u;
         type_unsigned_16 bda_keyboard_head = 0u;
         type_unsigned_16 bda_keyboard_tail = 0u;
+        type_unsigned_8 bda_wait_state[16] = {0};
         type_unsigned_16 stack_words[8] = {0};
         type_unsigned_8 bda_post_status = 0u;
         type_unsigned_8 bda_diskette_status = 0u;
         type_unsigned_8 bda_motor_status = 0u;
         type_unsigned_16 int13_offset = 0u;
         type_unsigned_16 int13_segment = 0u;
+        type_unsigned_16 int15_offset = 0u;
+        type_unsigned_16 int15_segment = 0u;
         type_unsigned_8 int13_state[5] = {0u};
         type_unsigned_8 next_instruction_bytes[8] = {0u};
 
@@ -1033,8 +1196,9 @@ done:
                 (unsigned int)next_instruction_bytes[6u],
                 (unsigned int)next_instruction_bytes[7u]);
         }
-        STD_PRINTF("BOOT-PROBE=final-cx=%04X-di=%04X-ds=%04X-es=%04X-ax=%04X-bp=%04X\n",
+        STD_PRINTF("BOOT-PROBE=final-cx=%04X-dx=%04X-di=%04X-ds=%04X-es=%04X-ax=%04X-bp=%04X\n",
             (unsigned int)(session->core_machine->executor_cpu.data.ecx & 0xffffu),
+            (unsigned int)(session->core_machine->executor_cpu.data.edx & 0xffffu),
             (unsigned int)(session->core_machine->executor_cpu.data.edi & 0xffffu),
             (unsigned int)session->core_machine->executor_cpu.data.ds.selector,
             (unsigned int)session->core_machine->executor_cpu.data.es.selector,
@@ -1088,9 +1252,24 @@ done:
                     entry) % VM_BYOB_FDC_PORT_HISTORY);
                 const vm_byob_fdc_port_event *record = &trace.fdc_port_history[index];
 
-                STD_PRINTF("BOOT-PROBE=fdc-port-%c-%04X-%02X\n",
-                    record->write ? 'w' : 'r', (unsigned int)record->port,
+                STD_PRINTF("BOOT-PROBE=fdc-port-%05X-%c-%04X-%02X\n",
+                    (unsigned int)record->linear_pc, record->write ? 'w' : 'r',
+                    (unsigned int)record->port,
                     (unsigned int)record->value);
+            }
+        }
+        {
+            type_unsigned_8 index;
+
+            for (index = 0u; index < VM_BYOB_CMOS_BYTES; ++index) {
+                if (trace.cmos_reads[index] != 0u || trace.cmos_writes[index] != 0u) {
+                    STD_PRINTF("BOOT-PROBE=cmos-%02X-r=%llu-w=%llu-last=%02X-write-pc=%05X\n",
+                        (unsigned int)index,
+                        (unsigned long long)trace.cmos_reads[index],
+                        (unsigned long long)trace.cmos_writes[index],
+                        (unsigned int)trace.cmos_last_values[index],
+                        (unsigned int)trace.cmos_last_write_pc[index]);
+                }
             }
         }
         STD_PRINTF("BOOT-PROBE=pic-imr=%02X-irr=%02X-isr=%02X-fdc-irq=%u\n",
@@ -1115,12 +1294,38 @@ done:
             &bda_motor_status, sizeof(bda_motor_status));
         STD_PRINTF("BOOT-PROBE=bda-diskette-status=%02X-motor-status=%02X\n",
             (unsigned int)bda_diskette_status, (unsigned int)bda_motor_status);
+        if (core_machine_memory_read(session->core_machine, 0x0480u,
+                bda_wait_state, sizeof(bda_wait_state)) == TYPE_STATUS_OK) {
+            STD_PRINTF("BOOT-PROBE=bda-80=%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X,"
+                "%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X\n",
+                (unsigned int)bda_wait_state[0u], (unsigned int)bda_wait_state[1u],
+                (unsigned int)bda_wait_state[2u], (unsigned int)bda_wait_state[3u],
+                (unsigned int)bda_wait_state[4u], (unsigned int)bda_wait_state[5u],
+                (unsigned int)bda_wait_state[6u], (unsigned int)bda_wait_state[7u],
+                (unsigned int)bda_wait_state[8u], (unsigned int)bda_wait_state[9u],
+                (unsigned int)bda_wait_state[10u], (unsigned int)bda_wait_state[11u],
+                (unsigned int)bda_wait_state[12u], (unsigned int)bda_wait_state[13u],
+                (unsigned int)bda_wait_state[14u], (unsigned int)bda_wait_state[15u]);
+        }
+        if (core_machine_memory_read(session->core_machine, 0x0490u,
+                bda_wait_state, 4u) == TYPE_STATUS_OK) {
+            STD_PRINTF("BOOT-PROBE=bda-fdc-post=%02X,%02X,%02X,%02X\n",
+                (unsigned int)bda_wait_state[0u], (unsigned int)bda_wait_state[1u],
+                (unsigned int)bda_wait_state[2u], (unsigned int)bda_wait_state[3u]);
+        }
         if (core_machine_memory_read(session->core_machine, 0x004cu, &int13_offset,
                 sizeof(int13_offset)) == TYPE_STATUS_OK &&
             core_machine_memory_read(session->core_machine, 0x004eu, &int13_segment,
                 sizeof(int13_segment)) == TYPE_STATUS_OK) {
             STD_PRINTF("BOOT-PROBE=int13-vector=%04X:%04X\n",
                 (unsigned int)int13_segment, (unsigned int)int13_offset);
+        }
+        if (core_machine_memory_read(session->core_machine, 0x0054u, &int15_offset,
+                sizeof(int15_offset)) == TYPE_STATUS_OK &&
+            core_machine_memory_read(session->core_machine, 0x0056u, &int15_segment,
+                sizeof(int15_segment)) == TYPE_STATUS_OK) {
+            STD_PRINTF("BOOT-PROBE=int15-vector=%04X:%04X\n",
+                (unsigned int)int15_segment, (unsigned int)int15_offset);
         }
         if (core_machine_memory_read(session->core_machine, 0x0018u, &int6_offset,
                 sizeof(int6_offset)) == TYPE_STATUS_OK &&
@@ -1179,6 +1384,7 @@ done:
             STD_PRINTF("BOOT-PROBE=text-keyboard-error\n");
         if (vm_byob_text_memory_has(session->core_machine, "601"))
             STD_PRINTF("BOOT-PROBE=text-diskette-error\n");
+        vm_byob_print_text_rows(session->core_machine);
         if (vm_byob_text_memory_has(session->core_machine, "RESUME"))
             STD_PRINTF("BOOT-PROBE=text-resume-required\n");
         if (vm_byob_text_memory_has(session->core_machine, "MS-DOS"))

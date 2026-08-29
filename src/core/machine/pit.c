@@ -243,14 +243,17 @@ static C_VOID core_machine_pit_tick_mode0(t_pit *pit, type_unsigned_8 id)
 
 static C_VOID core_machine_pit_tick_mode1(t_pit *pit, type_unsigned_8 id)
 {
+    /* Mode 1 loads CE on the clock following a completed count write.  The
+     * later gate trigger starts the one-shot; it does not defer that load. */
+    if (pit->data.flagLoadPending[id]) {
+        core_machine_pit_commit_pending(pit, id);
+        return;
+    }
     if (pit->data.flagTrigger[id]) {
         pit->data.flagTrigger[id] = TYPE_FALSE;
-        if (pit->data.flagLoadPending[id]) core_machine_pit_commit_pending(pit, id);
-        else {
-            pit->data.remaining[id] = pit->data.reload[id];
-            pit->data.flagPulseLow[id] = TYPE_FALSE;
-            core_machine_pit_sync_count(pit, id);
-        }
+        pit->data.remaining[id] = pit->data.reload[id];
+        pit->data.flagPulseLow[id] = TYPE_FALSE;
+        core_machine_pit_sync_count(pit, id);
         pit->data.flagActive[id] = TYPE_TRUE;
         core_machine_pit_set_output_level(pit, id, TYPE_FALSE, TYPE_TRUE);
         return;

@@ -24,8 +24,7 @@ C_INT main(C_VOID)
     static type_unsigned_8 even[VM_PROFILE_MODEL40_ROM_CHIP_BYTES];
     static type_unsigned_8 odd[VM_PROFILE_MODEL40_ROM_CHIP_BYTES];
     vm_session *session = STD_NULL;
-    type_unsigned_8 replacement_enabled = 0xfeu;
-    type_unsigned_8 replacement_protected = 0xfcu;
+    type_unsigned_32 port_value = 0u;
     C_INT failed = 0;
 
     even[0u] = 0x11u;
@@ -63,6 +62,11 @@ C_INT main(C_VOID)
         CHECK(write_byte(session->core_machine, 0x00fa0000u, 0x3cu,
             TYPE_STATUS_OK));
         CHECK(read_byte(session->core_machine, 0x00fa0000u, 0x3cu));
+        CHECK(write_byte(session->core_machine,
+            VM_PROFILE_MODEL40_ROM_COMPATIBILITY_ALIAS_START, 0x5au,
+            TYPE_STATUS_OK));
+        CHECK(read_byte(session->core_machine,
+            VM_PROFILE_MODEL40_ROM_COMPATIBILITY_ALIAS_START, 0x11u));
         CHECK(write_byte(session->core_machine, 0x00000020u, 0xa5u,
             TYPE_STATUS_OK));
         CHECK(read_byte(session->core_machine, 0x00100020u, 0xa5u));
@@ -72,10 +76,19 @@ C_INT main(C_VOID)
         CHECK(read_byte(session->core_machine, 0x00100020u, 0x5au));
         CHECK(core_machine_set_a20(session->core_machine, TYPE_FALSE) == TYPE_STATUS_OK);
 
+        /* AT spare DMA page latches are board-visible state, not unknown
+         * ports.  DeskPro firmware uses 86h during POST. */
+        CHECK(core_machine_bus_write(session->core_machine, 0x0086u, 0x5au) == TYPE_STATUS_OK);
+        CHECK(core_machine_bus_read(session->core_machine, 0x0086u, &port_value) == TYPE_STATUS_OK &&
+            port_value == 0x5au);
+        CHECK(core_machine_bus_write(session->core_machine, 0x0080u, 0xa5u) == TYPE_STATUS_OK);
+        CHECK(core_machine_bus_read(session->core_machine, 0x0080u, &port_value) == TYPE_STATUS_OK &&
+            port_value == 0xa5u);
+
         CHECK(read_byte(session->core_machine, VM_PROFILE_MODEL40_D4_CONTROL_PHYSICAL,
-            0xbfu));
+            0x8fu));
         CHECK(read_byte(session->core_machine, VM_PROFILE_MODEL40_D4_CONTROL_PHYSICAL + 1u,
-            0xfdu));
+            0xc1u));
         CHECK(read_byte(session->core_machine, VM_PROFILE_MODEL40_D4_CONTROL_PHYSICAL + 2u,
             0x42u));
         CHECK(read_byte(session->core_machine, VM_PROFILE_MODEL40_D4_CONTROL_PHYSICAL + 3u,
@@ -101,31 +114,17 @@ C_INT main(C_VOID)
         CHECK(write_byte(session->core_machine, VM_PROFILE_MODEL40_D4_CONTROL_PHYSICAL + 2u,
             0x42u, TYPE_STATUS_OK));
         CHECK(read_byte(session->core_machine, 0x00100020u, 0x96u));
-        CHECK(write_byte(session->core_machine, 0x000e0000u, 0xa5u,
+        CHECK(write_byte(session->core_machine, 0x000f0000u, 0xa5u,
             TYPE_STATUS_OK));
-        CHECK(read_byte(session->core_machine, 0x000e0000u, 0xa5u));
-        CHECK(write_byte(session->core_machine, VM_PROFILE_MODEL40_D4_COMPATIBILITY_START,
-            0xa5u, TYPE_STATUS_OK));
-        CHECK(write_byte(session->core_machine, VM_PROFILE_MODEL40_D4_COMPATIBILITY_START +
-            0x10000u, 0x5au, TYPE_STATUS_OK));
-        CHECK(read_byte(session->core_machine, VM_PROFILE_MODEL40_D4_COMPATIBILITY_START,
-            0xa5u));
-        CHECK(read_byte(session->core_machine, 0x000e0000u, 0xa5u));
-        CHECK(write_byte(session->core_machine, VM_PROFILE_MODEL40_D4_CONTROL_PHYSICAL,
-            replacement_enabled, TYPE_STATUS_OK));
-        CHECK(read_byte(session->core_machine, 0x000e0000u, 0xa5u));
-        CHECK(read_byte(session->core_machine, 0x000f0000u, 0x5au));
-        CHECK(write_byte(session->core_machine, VM_PROFILE_MODEL40_D4_CONTROL_PHYSICAL,
-            replacement_protected, TYPE_STATUS_OK));
-        CHECK(write_byte(session->core_machine, VM_PROFILE_MODEL40_D4_COMPATIBILITY_START,
-            0u, TYPE_STATUS_FAULT));
-        CHECK(write_byte(session->core_machine, 0x000e0000u, 0u, TYPE_STATUS_FAULT));
+        CHECK(read_byte(session->core_machine, 0x000f0000u, 0x11u));
         CHECK(core_machine_reset(session->core_machine) == TYPE_STATUS_OK);
+        CHECK(core_machine_bus_read(session->core_machine, 0x0086u, &port_value) == TYPE_STATUS_OK &&
+            port_value == 0u);
         CHECK(read_byte(session->core_machine, 0x000f0000u, 0x11u));
         CHECK(read_byte(session->core_machine, VM_PROFILE_MODEL40_D4_CONTROL_PHYSICAL,
-            0xbfu));
+            0x8fu));
         CHECK(read_byte(session->core_machine, VM_PROFILE_MODEL40_D4_CONTROL_PHYSICAL + 1u,
-            0xfdu));
+            0xc1u));
         CHECK(read_byte(session->core_machine, VM_PROFILE_MODEL40_D4_CONTROL_PHYSICAL + 2u,
             0x42u));
         CHECK(read_byte(session->core_machine, VM_PROFILE_MODEL40_D4_CONTROL_PHYSICAL + 3u,
@@ -141,12 +140,10 @@ C_INT main(C_VOID)
         CHECK(read_byte(session->core_machine, VM_PROFILE_MODEL40_D4_CONTROL_PHYSICAL + 2u,
             0x4au));
         CHECK(core_machine_set_a20(session->core_machine, 1) == TYPE_STATUS_OK);
-        CHECK(write_byte(session->core_machine, VM_PROFILE_MODEL40_D4_COMPATIBILITY_START,
-            0x3cu, TYPE_STATUS_OK));
     }
 #undef CHECK
     if (!failed) STD_PRINTF("M5:T386:S16:D4-ROM-MAP:OK\n");
-    if (!failed) STD_PRINTF("M5:T386:S16:D4-REPLACEMENT:OK\n");
+    if (!failed) STD_PRINTF("M5:T386:S16:D4-SOLE-ROM-OWNER:OK\n");
     if (!failed) STD_PRINTF("M5:T386:S16:D4-RESET-ALIAS:OK\n");
     if (!failed) STD_PRINTF("M5:T390:S29:MODEL40-ROM-DECODE:OK\n");
     vm_session_destroy(session);

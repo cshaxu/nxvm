@@ -33,6 +33,8 @@ typedef struct core_machine core_machine;
 #define CORE_MACHINE_RTC_EQUIPMENT 0x14u
 #define CORE_MACHINE_RTC_BASEMEM_LSB 0x15u
 #define CORE_MACHINE_RTC_BASEMEM_MSB 0x16u
+#define CORE_MACHINE_RTC_EXTMEM_LSB 0x17u
+#define CORE_MACHINE_RTC_EXTMEM_MSB 0x18u
 #define CORE_MACHINE_RTC_TYPE_DISK_FIXED_EXTENDED_0 0x19u
 #define CORE_MACHINE_PC_AT_PORT_B 0x0061u
 
@@ -48,6 +50,8 @@ typedef struct core_machine_clock_ratio {
 typedef struct core_machine_clock_plan {
     core_machine_clock_ratio dma;
     core_machine_clock_ratio pit;
+    /* An optional second PIT chip is a distinct board clock consumer. */
+    core_machine_clock_ratio auxiliary_pit;
     core_machine_clock_ratio rtc;
     core_machine_clock_ratio vadp;
     core_machine_clock_ratio kbc;
@@ -188,6 +192,10 @@ typedef struct core_machine_config {
     type_unsigned_16 auxiliary_pit_base_port;
     /* False preserves PC/AT AUX; true selects a keyboard-only 8042 topology. */
     type_bool kbc_aux_absent;
+    /* A board may freeze the electrical 8042 input pins observed by command
+     * C0h.  Unconfigured machines retain the controller's AT default. */
+    type_bool kbc_input_port_configured;
+    type_unsigned_8 kbc_input_port;
     core_machine_keyboard_topology keyboard_topology;
     core_machine_xt_ppi_keyboard_config xt_ppi_keyboard;
 } core_machine_config;
@@ -292,6 +300,7 @@ typedef struct core_machine_display_config {
 } core_machine_display_config;
 
 #define CORE_MACHINE_RTC_DEFAULT_COUNT 6u
+#define CORE_MACHINE_RTC_DEFAULT_CAPACITY 8u
 
 /* Board composition supplies a copied RTC phase scale.  L3 means the values
  * are a direct selected-board conversion; L2 means a board ratio estimate.
@@ -319,7 +328,7 @@ typedef struct core_machine_rtc_cmos_config {
     type_unsigned_8 nmi_mask_bit;
     type_unsigned_32 ticks_per_second;
     core_machine_rtc_timing_plan timing;
-    core_machine_rtc_default_byte defaults[CORE_MACHINE_RTC_DEFAULT_COUNT];
+    core_machine_rtc_default_byte defaults[CORE_MACHINE_RTC_DEFAULT_CAPACITY];
     STD_SIZE_T default_count;
 } core_machine_rtc_cmos_config;
 
@@ -353,14 +362,11 @@ typedef struct core_machine_d4_platform_observation {
     C_INT nmi_signaled;
 } core_machine_d4_platform_observation;
 
-/* Construction-only input for the selected DeskPro D4 RAM controller. The
- * Core copies both ROM lanes while creating the machine and retains no caller
- * memory pointer. */
+/* Construction-only input for the selected DeskPro D4 RAM controller.  ROM
+ * decoding remains owned by the immutable firmware mapping. */
 typedef struct core_machine_d4_memory_config {
     type_bool present;
-    const type_unsigned_8 *even_rom;
-    const type_unsigned_8 *odd_rom;
-    STD_SIZE_T rom_chip_bytes;
+    type_unsigned_8 diagnostic_low;
     type_unsigned_8 diagnostic_high;
     type_unsigned_16 ram_setup;
 } core_machine_d4_memory_config;

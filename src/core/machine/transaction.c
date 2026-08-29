@@ -73,6 +73,14 @@ type_status core_machine_transaction_begin(core_machine_transaction_state *state
     return TYPE_STATUS_OK;
 }
 
+C_VOID core_machine_transaction_set_value(core_machine_transaction_state *state,
+    type_unsigned_32 value)
+{
+    if (state != STD_NULL && state->owner != CORE_MACHINE_TRANSACTION_OWNER_NONE) {
+        state->value = value;
+    }
+}
+
 C_VOID core_machine_transaction_commit(core_machine_transaction_state *state)
 {
     if (state == STD_NULL || state->owner == CORE_MACHINE_TRANSACTION_OWNER_NONE) {

@@ -141,8 +141,9 @@ static const vm_profile_default_pc_at_descriptor default_pc_at_descriptor = {
     { 1u, 0u, 0u, 0u, 0u, 0u },
     { { 0u, 0u, 0u, CORE_MACHINE_EXTERNAL_CYCLE_OVERLAP_DISABLED, 0u, 0u },
         {{0}}, 0u, TYPE_FALSE, TYPE_FALSE, TYPE_FALSE },
-    { { 1u, 1u, 0u }, { 1u, 4u, 0u }, { 1u, 1u, 0u }, { 1u, 1u, 0u },
-        { 1u, 1u, 0u }, { 1u, 1u, 0u } },
+    { { 1u, 1u, 0u }, { 1u, 4u, 0u }, { 1u, 1u, 0u },
+        { 1u, 1u, 0u }, { 1u, 1u, 0u }, { 1u, 1u, 0u },
+        { 1u, 1u, 0u } },
     { CORE_MACHINE_TIME_AXIS_UNQUALIFIED, 0u },
     { CORE_MACHINE_CONTROLLER_TIMING_RULE_L2_FALLBACK,
         CORE_MACHINE_CONTROLLER_TIMING_RULE_L2_FALLBACK,
@@ -203,8 +204,9 @@ static const vm_profile_default_pc_at_descriptor ibm_5170_model_339_descriptor =
      * 86Box IBM-CGA reference rate 157500000/88 Hz. Ratios are to this
      * profile's nominal 8 MHz CPU source; they do not model availability,
      * waits, monitor output, or host elapsed time. */
-    { { 3u, 8u, 0u }, { 596591u, 4000000u, 0u }, { 64u, 15625u, 0u },
-        { 315u, 1408u, 0u }, { 1u, 1u, 0u }, { 1u, 1u, 0u } },
+    { { 3u, 8u, 0u }, { 596591u, 4000000u, 0u }, { 1u, 1u, 0u },
+        { 64u, 15625u, 0u }, { 315u, 1408u, 0u }, { 1u, 1u, 0u },
+        { 1u, 1u, 0u } },
     { CORE_MACHINE_TIME_AXIS_MACRO_PROPORTIONAL, 8000000u },
     { CORE_MACHINE_CONTROLLER_TIMING_RULE_L2_FALLBACK,
         CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_RATIONAL_CLOCK,

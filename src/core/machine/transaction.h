@@ -68,6 +68,8 @@ C_VOID core_machine_transaction_bind_trace(core_machine_transaction_state *state
 type_status core_machine_transaction_begin(core_machine_transaction_state *state,
     core_machine_transaction_owner owner, core_machine_transaction_kind kind,
     type_unsigned_32 address, type_unsigned_32 value, type_unsigned_32 detail);
+C_VOID core_machine_transaction_set_value(core_machine_transaction_state *state,
+    type_unsigned_32 value);
 C_VOID core_machine_transaction_commit(core_machine_transaction_state *state);
 C_VOID core_machine_transaction_cancel(core_machine_transaction_state *state);
 type_status core_machine_transaction_hold_request(

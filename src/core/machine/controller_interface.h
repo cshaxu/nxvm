@@ -48,6 +48,18 @@ typedef struct core_machine_fdc_config {
 
 typedef struct core_machine_fdc_drive_bindings {
     core_machine_media_id media_id[CORE_MACHINE_FDC_DRIVE_COUNT];
+    /* Physical units are not inferred from inserted media.  The 8272A status
+     * input can observe an installed but empty drive. */
+    type_unsigned_8 installed_mask;
+    /* ST3 TS is a physical drive property, not a property of removable media. */
+    type_unsigned_8 double_sided_mask;
+    /* A profile may declare the mechanical cylinder count independently of
+     * a mounted medium.  Zero retains the controller's unbounded fallback. */
+    type_unsigned_16 cylinder_count[CORE_MACHINE_FDC_DRIVE_COUNT];
+    /* Board wiring may invert a drive's raw Track 0 input before it reaches
+     * the controller.  Unset preserves the 8272A's ordinary active-high ST3
+     * representation. */
+    type_unsigned_8 track_zero_active_low_mask;
 } core_machine_fdc_drive_bindings;
 
 typedef enum core_machine_hdc_protocol {

@@ -226,7 +226,7 @@ C_INT main(C_VOID)
     };
     const core_machine_fdc_drive_bindings drives = {
         {1u, CORE_MACHINE_MEDIA_ID_INVALID, CORE_MACHINE_MEDIA_ID_INVALID,
-            CORE_MACHINE_MEDIA_ID_INVALID}
+            CORE_MACHINE_MEDIA_ID_INVALID}, 0x01u, 0x01u, {0u, 0u, 0u, 0u}, 0u
     };
     const core_machine_dma_wiring dma_wiring = { .fdc_channel = 2u,
         .controller_count = CORE_MACHINE_DMA_CONTROLLER_COUNT,
@@ -282,13 +282,26 @@ C_INT main(C_VOID)
                 core_machine_fdc_advance_at(fdc, 8192u);
                 failed |= !fdc->connect.irq_source.asserted;
                 for (type_unsigned_8 reset_drive = 0u;
-                    reset_drive < 1u; ++reset_drive) {
+                    reset_drive < CORE_MACHINE_FDC_DRIVE_COUNT; ++reset_drive) {
                     core_machine_fdc_command(fdc, port,
                         (const type_unsigned_8[]){0x08u}, 1u);
                     failed |= !core_machine_fdc_read_result(fdc, port, result, 2u) ||
                         result[0] != (core_machine_fdc_ST0_READY_CHANGE | reset_drive) ||
                         result[1] != 0u || fdc->connect.irq_source.asserted;
                 }
+                /* A new Recalibrate supersedes an undrained reset notice;
+                   Sense Interrupt must report the completed operation. */
+                core_machine_port_write(port, fdc_config.dor_port, 0u);
+                core_machine_port_write(port, fdc_config.dor_port, 0x1cu);
+                core_machine_fdc_advance_at(fdc, fdc->data.reset_due_tick);
+                core_machine_fdc_command(fdc, port,
+                    (const type_unsigned_8[]){0x07u, 0u}, 2u);
+                core_machine_fdc_advance(fdc);
+                core_machine_fdc_command(fdc, port,
+                    (const type_unsigned_8[]){0x08u}, 1u);
+                failed |= fdc->data.reset_sense_mask != 0u ||
+                    !core_machine_fdc_read_result(fdc, port, result, 2u) ||
+                    result[0] != core_machine_fdc_ST0_NORMAL || result[1] != 0u;
                 core_machine_fdc_command(fdc, port, specify_non_dma,
                     sizeof(specify_non_dma));
                 core_machine_port_write(port, fdc_config.control_port, VFDC_CCR_DRC);
@@ -310,7 +323,7 @@ C_INT main(C_VOID)
                 failed |= fdc->data.srt != 0x0du || fdc->data.hut != 0x0fu ||
                     fdc->data.hlt != 0x01u;
                 for (type_unsigned_8 reset_drive = 0u;
-                    reset_drive < 1u; ++reset_drive) {
+                    reset_drive < CORE_MACHINE_FDC_DRIVE_COUNT; ++reset_drive) {
                     core_machine_fdc_command(fdc, port,
                         (const type_unsigned_8[]){0x08u}, 1u);
                     failed |= !core_machine_fdc_read_result(fdc, port, result, 2u) ||
@@ -365,6 +378,27 @@ C_INT main(C_VOID)
                 core_machine_fdc_advance_at(fdc, 168102u);
                 failed |= !core_machine_fdc_read_result(fdc, port, result, 2u) ||
                     (result[0] & 3u) != 0u || result[1] != 7u;
+
+                /* An installed empty drive can seek: media availability
+                   controls sector transfer, not the mechanical completion. */
+                fdc->connect.drives.installed_mask |= 0x02u;
+                core_machine_port_write(port, fdc_config.dor_port, 0x2du);
+                core_machine_fdc_command(fdc, port,
+                    (const type_unsigned_8[]){0x0fu, 0x01u, 0x01u}, 3u);
+                core_machine_fdc_command(fdc, port, (const type_unsigned_8[]){0x08u}, 1u);
+                if (!core_machine_fdc_read_result(fdc, port, result, 2u) ||
+                    result[0] != (core_machine_fdc_ST0_NORMAL |
+                    VFDC_ST0_SEEK_END | 1u) || result[1] != 1u) failed |= 0x100;
+                /* ST3 observes the selected drive's Track-0 input, not the
+                   controller's most recently completed seek. */
+                fdc->data.drive_cylinder[0u] = 0u;
+                fdc->data.cylinder = 0u;
+                core_machine_port_write(port, fdc_config.dor_port, 0x2du);
+                core_machine_fdc_command(fdc, port,
+                    (const type_unsigned_8[]){0x04u, 0x01u}, 2u);
+                if (!core_machine_fdc_read_result(fdc, port, result, 1u) ||
+                    result[0] != 0x21u) failed |= 0x200;
+                core_machine_port_write(port, fdc_config.dor_port, 0x1cu);
 
                 for (type_unsigned_32 index = 0u; index < sizeof(read_sector); ++index) {
                     core_machine_port_write(port, fdc_config.data_port, read_sector[index]);
@@ -585,7 +619,7 @@ C_INT main(C_VOID)
                 core_machine_port_write(port, fdc_config.dor_port, 0x1cu);
                 core_machine_fdc_advance_at(fdc, fdc->data.reset_due_tick);
                 for (type_unsigned_8 reset_drive = 0u;
-                    reset_drive < 1u; ++reset_drive) {
+                    reset_drive < CORE_MACHINE_FDC_DRIVE_COUNT; ++reset_drive) {
                     core_machine_fdc_command(fdc, port,
                         (const type_unsigned_8[]){0x08u}, 1u);
                     failed |= !core_machine_fdc_read_result(fdc, port, result, 2u) ||
@@ -642,7 +676,7 @@ C_INT main(C_VOID)
                 core_machine_port_write(port, fdc_config.dor_port, 0x1cu);
                 core_machine_fdc_advance_at(fdc, fdc->data.reset_due_tick);
                 for (type_unsigned_8 reset_drive = 0u;
-                    reset_drive < 1u; ++reset_drive) {
+                    reset_drive < CORE_MACHINE_FDC_DRIVE_COUNT; ++reset_drive) {
                     core_machine_fdc_command(fdc, port,
                         (const type_unsigned_8[]){0x08u}, 1u);
                     failed |= !core_machine_fdc_read_result(fdc, port, result, 2u) ||
