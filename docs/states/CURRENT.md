@@ -2,10 +2,24 @@
 
 ## Current Work
 
-No subtask is active. T505 S1 is accepted: its complete C1--C10
-[cascade convergence ledger](../etc/evidence/t505-s1-pic-cascade-observable-progress-ledger.md)
-classifies slave-to-master publication and withdrawal as immediate ordered
-PIC work, not a deadline. The next bounded receiver is PIC-local S2.
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation T505 S2. |
+| Admission And Approval | Owner approved T505 on 2026-08-29; accepted S1 ledger `d0f510fa` selects this sole PIC-local correction. |
+| Objective | Make a bound slave PIC source and PIC command-state transition immediately publish or withdraw the existing derived master cascade request, before any scheduler time observation or CPU delivery. |
+| Non-goals | Do not add a tick/deadline, mutate VM or profile behavior, duplicate PIC state, add a dispatcher, alter electrical timing, import external source, or change unselected topologies. |
+| Reference Baseline | `65d470a3`; [T505 S1 cascade ledger](../etc/evidence/t505-s1-pic-cascade-observable-progress-ledger.md). |
+| Candidate Proposal | [M5 PIC cascade observable-progress closure](../proposals/m5-pic-cascade-observable-progress-closure.md). |
+| Files And ABI Surface | `src/core/machine/pic.[ch]`, owner-local PIC smoke coverage, T505 evidence and current state; no public cross-module ABI or VM/profile surface. |
+| Applicable Rules | `ARCHITECTURE.md` sole Core/PIC owner and one-way boundary; `CODING.md` one owner-local path and no forwarding wrapper; `EXECUTION.md` complete S/P review; source policy boundaries retained by S1. |
+| Verification | Prove assertion, level withdrawal, edge retention, mask/unmask, acknowledge/EOI, reset and single-PIC non-participation without Core time advance; run affected PIC tests, complete repository-only unit and documentation governance. |
+| Expected Markers | `M5:T505:S2:PIC-CASCADE-IMMEDIATE:OK`; no scheduler `L1_COMPATIBILITY` classification for this PIC route; full unit and documentation-governance pass. |
+| Asset Needs | No new asset or source input. |
+| Reporting Requirements | Record retained owner, state route, source/command sweep, exact code-size result, focused and complete gate results, and any remaining receiver. |
+| Stop Conditions | Stop if direct publication requires a profile/VM route, source evidence implies a numerical delay, or the existing PIC owner cannot retain all state. |
+| Exit Criteria | Every C3/C4/C6/C7/C8/C9 S1 receiver is proven through the existing PIC owner with no guessed time, obsolete scheduler L1 candidate, duplicate state or untested selected transition. |
+| Original Owner Request | Continue the admitted controller receiver program with a complete, non-additive PIC correction before DMA, HDC, Model-40 D4 and the five CPU profile re-audit. |
+| Similar-Issue Sweep | All source assert/deassert callers, master and slave command writes, selection, acknowledgement, EOI, reset, cascaded AT consumers and XT single-PIC construction. |
 
 ## Current Technical Baseline
 

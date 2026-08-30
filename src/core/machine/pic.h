@@ -29,6 +29,9 @@ typedef struct {
 
 typedef struct t_pic {
     t_pic_data data;
+    /* Construction-fixed pair for immediate refresh of the one cascade state. */
+    struct t_pic *cascade_master;
+    struct t_pic *cascade_slave;
 } t_pic;
 
 typedef struct core_machine_pic_irq_source {

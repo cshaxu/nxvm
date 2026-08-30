@@ -254,6 +254,40 @@ static C_INT pic_command_priority_test_programmed_cascade(C_VOID)
     return failed;
 }
 
+static C_INT pic_command_priority_test_immediate_cascade(C_VOID)
+{
+    pic_command_priority_fixture fixture;
+    core_machine_pic_irq_source irq14;
+    C_INT failed = 0;
+
+    pic_command_priority_initialize(&fixture, 0x01u, 0x01u);
+    pic_command_priority_raise(&fixture, &irq14, 14u);
+    failed |= fixture.master.data.cascade_irr != VPIC_IRR_IRQ(2u) ||
+        !core_machine_pic_scan_interrupt(&fixture.master, &fixture.slave);
+    core_machine_port_write(&fixture.port, 0x00a1u, VPIC_OCW1_IMR(6u));
+    failed |= fixture.master.data.cascade_irr != 0u ||
+        core_machine_pic_scan_interrupt(&fixture.master, &fixture.slave);
+    core_machine_port_write(&fixture.port, 0x00a1u, 0u);
+    failed |= fixture.master.data.cascade_irr != VPIC_IRR_IRQ(2u) ||
+        !core_machine_pic_scan_interrupt(&fixture.master, &fixture.slave);
+    core_machine_pic_reset(&fixture.master, &fixture.slave);
+    failed |= fixture.master.data.cascade_irr != 0u ||
+        fixture.slave.data.irr != 0u;
+    pic_command_priority_finalize(&fixture);
+
+    pic_command_priority_initialize(&fixture, 0x01u, 0x01u);
+    pic_command_priority_program(&fixture.port, 0x19u, 0x04u, 0x01u,
+        0x19u, 0x02u, 0x01u);
+    core_machine_pic_irq_source_bind(&irq14, &fixture.master, &fixture.slave, 14u);
+    core_machine_pic_irq_source_assert(&irq14);
+    failed |= fixture.master.data.cascade_irr != VPIC_IRR_IRQ(2u);
+    core_machine_pic_irq_source_deassert(&irq14);
+    failed |= fixture.master.data.cascade_irr != 0u ||
+        core_machine_pic_scan_interrupt(&fixture.master, &fixture.slave);
+    pic_command_priority_finalize(&fixture);
+    return failed;
+}
+
 C_INT main(C_VOID)
 {
     C_INT failed = 0;
@@ -263,6 +297,7 @@ C_INT main(C_VOID)
     failed |= pic_command_priority_test_aeoi();
     failed |= pic_command_priority_test_cascade_selection();
     failed |= pic_command_priority_test_programmed_cascade();
+    failed |= pic_command_priority_test_immediate_cascade();
     if (failed != 0) return 1;
     STD_PRINTF("M5:T349:S2:PIC-COMMAND-PRIORITY:OK\n");
     return 0;

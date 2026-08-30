@@ -11,6 +11,8 @@
 #include "core/machine/port.h"
 #include "core/machine/pic.h"
 
+static C_VOID core_machine_pic_refresh_bound(t_pic *pic);
+
 /*
  * GetRegTopId: Internal function
  * Returns id of highest priority interrupt
@@ -374,6 +376,7 @@ static C_VOID io_write_00x0(t_pic *rpic, t_port *port) {
             }
         }
     }
+    core_machine_pic_refresh_bound(rpic);
 }
 /*
  * io_read_00x1
@@ -446,6 +449,7 @@ static C_VOID io_write_00x1(t_pic *rpic, t_port *port) {
     default:
         break;
     }
+    core_machine_pic_refresh_bound(rpic);
 }
 
 /* The provider owner is the composition-owned PIC selected for this port. */
@@ -509,6 +513,7 @@ C_VOID core_machine_pic_irq_source_assert(core_machine_pic_irq_source *source)
     source->asserted = TYPE_TRUE;
     if (controller->data.asserted[line] != 0xffu) ++controller->data.asserted[line];
     TYPE_SET_BIT(controller->data.irr, VPIC_IRR_IRQ(line));
+    core_machine_pic_refresh_bound(controller);
 }
 
 C_VOID core_machine_pic_irq_source_deassert(core_machine_pic_irq_source *source)
@@ -524,6 +529,7 @@ C_VOID core_machine_pic_irq_source_deassert(core_machine_pic_irq_source *source)
     if (core_machine_pic_is_level(controller) && controller->data.asserted[line] == 0u) {
         TYPE_CLEAR_BIT(controller->data.irr, VPIC_IRR_IRQ(line));
     }
+    core_machine_pic_refresh_bound(controller);
 }
 
 C_VOID core_machine_pic_timer_output(C_VOID *owner, type_bool asserted) {
@@ -580,6 +586,10 @@ C_VOID core_machine_pic_initialize(t_pic *master, t_pic *slave, t_port *port,
         topology != CORE_MACHINE_PIC_TOPOLOGY_SINGLE)) return;
     STD_MEMSET((C_VOID *)master, TYPE_ZERO_8, sizeof(*master));
     STD_MEMSET((C_VOID *)slave, TYPE_ZERO_8, sizeof(*slave));
+    master->cascade_master = master;
+    master->cascade_slave = slave;
+    slave->cascade_master = master;
+    slave->cascade_slave = slave;
     core_machine_port_add_read(port, 0x0020, io_read_0020, master);
     core_machine_port_add_read(port, 0x0021, io_read_0021, master);
     core_machine_port_add_write(port, 0x0020, io_write_0020, master);
@@ -621,6 +631,11 @@ C_VOID core_machine_pic_refresh(t_pic *master, t_pic *slave) {
         core_machine_pic_select_controller(slave, &id)) {
         TYPE_SET_BIT(master->data.cascade_irr, VPIC_IRR_IRQ(cascade_line));
     }
+}
+static C_VOID core_machine_pic_refresh_bound(t_pic *pic)
+{
+    if (pic == STD_NULL) return;
+    core_machine_pic_refresh(pic->cascade_master, pic->cascade_slave);
 }
 C_VOID core_machine_pic_finalize(t_pic *master, t_pic *slave) {
     (C_VOID)master;
