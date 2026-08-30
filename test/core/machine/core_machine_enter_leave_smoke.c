@@ -126,7 +126,7 @@ static C_INT enter_leave_test_enter(core_machine_cpu_profile profile,
     type_unsigned_32 final_stack;
     type_unsigned_32 display0 = 0x11112222u;
     type_unsigned_32 display1 = 0x33334444u;
-    type_unsigned_8 effective_level = level & 31u;
+    type_unsigned_8 effective_level = level;
     C_INT failed = !enter_leave_prepare(profile, &state);
 
     if (!failed)
@@ -253,6 +253,7 @@ static C_INT enter_leave_test_defaults(C_VOID)
     static const type_unsigned_8 enter1[] = {0xc8u, 0x00u, 0x00u, 0x01u};
     static const type_unsigned_8 enter3[] = {0xc8u, 0x04u, 0x00u, 0x03u};
     static const type_unsigned_8 enter33[] = {0xc8u, 0x02u, 0x00u, 0x21u};
+    static const type_unsigned_8 enter255[] = {0xc8u, 0x00u, 0x00u, 0xffu};
     static const type_unsigned_8 leave[] = {0xc9u};
     type_unsigned_8 profile;
 
@@ -269,7 +270,12 @@ static C_INT enter_leave_test_defaults(C_VOID)
             2u, 4u, 3u, 0))
             return 0;
         if (!enter_leave_test_enter(supported[profile], enter33, sizeof(enter33),
-            2u, 2u, 1u, 0))
+            2u, 2u, supported[profile] == CORE_MACHINE_CPU_PROFILE_80186 ?
+            33u : 1u, 0))
+            return 0;
+        if (supported[profile] == CORE_MACHINE_CPU_PROFILE_80186 &&
+            !enter_leave_test_enter(supported[profile], enter255,
+                sizeof(enter255), 2u, 0u, 255u, 0))
             return 0;
         if (!enter_leave_test_leave(supported[profile], leave, sizeof(leave),
             2u, 0))

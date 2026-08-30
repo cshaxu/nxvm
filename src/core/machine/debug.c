@@ -102,7 +102,9 @@ type_status core_machine_debug_capture_instruction_observation(
     out_observation->instruction_byte_count = instructions->oplen;
     STD_MEMCPY(out_observation->instruction_bytes, instructions->opcodes,
         sizeof(out_observation->instruction_bytes));
-    out_observation->memory_access_count = instructions->msize;
+    out_observation->memory_access_count = instructions->msize <
+        CORE_MACHINE_DEBUG_MEMORY_ACCESS_CAPACITY ? instructions->msize :
+        CORE_MACHINE_DEBUG_MEMORY_ACCESS_CAPACITY;
     for (index = 0u; index < out_observation->memory_access_count; ++index) {
         out_observation->memory_accesses[index].write =
             instructions->mem[index].flagWrite;

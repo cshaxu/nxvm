@@ -683,7 +683,8 @@ static C_VOID _kma_read_logical(core_machine_cpu_execution_context *context, t_c
     TYPE_TRACE_CALL_BEGIN("_kma_read_logical");
     TYPE_TRACE_CHECK_RETURN(linear = _kma_linear_logical(context, rsreg, offset, byte, 0, vpl, force));
     TYPE_TRACE_CHECK_RETURN(_kma_read_linear(context, linear, rdata, byte, vpl, force));
-    if (!force)
+    if (!force && instruction_state.data.msize <
+        CORE_MACHINE_CPU_INSTRUCTION_MEMORY_ACCESS_CAPACITY)
     {
         TYPE_TRACE_BLOCK_BEGIN("!force");
         instruction_state.data.mem[instruction_state.data.msize].flagWrite = TYPE_FALSE;
@@ -711,8 +712,6 @@ static C_VOID _kma_read_logical(core_machine_cpu_execution_context *context, t_c
             }
         } */
         instruction_state.data.msize++;
-        if (instruction_state.data.msize == 0x20)
-            TYPE_TRACE_IMPOSSIBLE_RETURN;
         TYPE_TRACE_BLOCK_END;
     }
     TYPE_TRACE_CALL_END;
@@ -725,7 +724,8 @@ static C_VOID _kma_write_logical(core_machine_cpu_execution_context *context, t_
     TYPE_TRACE_CALL_BEGIN("_kma_write_logical");
     TYPE_TRACE_CHECK_RETURN(linear = _kma_linear_logical(context, rsreg, offset, byte, 1, vpl, force));
     TYPE_TRACE_CHECK_RETURN(_kma_write_linear(context, linear, rdata, byte, vpl, force));
-    if (!force)
+    if (!force && instruction_state.data.msize <
+        CORE_MACHINE_CPU_INSTRUCTION_MEMORY_ACCESS_CAPACITY)
     {
         TYPE_TRACE_BLOCK_BEGIN("!force");
         instruction_state.data.mem[instruction_state.data.msize].flagWrite = TYPE_TRUE;
@@ -753,8 +753,6 @@ static C_VOID _kma_write_logical(core_machine_cpu_execution_context *context, t_
             }
         } */
         instruction_state.data.msize++;
-        if (instruction_state.data.msize == 0x20)
-            TYPE_TRACE_IMPOSSIBLE_RETURN;
         TYPE_TRACE_BLOCK_END;
     }
     TYPE_TRACE_CALL_END;
@@ -14302,7 +14300,10 @@ static C_VOID ENTER(core_machine_cpu_execution_context *context)
         size = (type_unsigned_16)instruction_state.data.cimm;
         TYPE_TRACE_CHECK_RETURN(_d_imm(context, 1));
         level = (type_unsigned_8)instruction_state.data.cimm;
-        level %= 32;
+        /* The 80186 defines the byte as an unsigned lexical level through
+         * 255.  The later 80286/80386 architecture limits it to 0--31. */
+        if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80286)
+            level %= 32;
         switch (_GetOperandSize)
         {
         case 2:
@@ -18221,7 +18222,7 @@ static type_unsigned_32 _debug_match_data_breakpoint(
 {
     type_unsigned_32 enabled = TYPE_ZERO_32;
     type_unsigned_8 index;
-    type_unsigned_8 access_index;
+    type_unsigned_16 access_index;
 
     if (context->cpu_profile < CORE_MACHINE_CPU_PROFILE_80386) return TYPE_ZERO_32;
     for (access_index = 0u; access_index < instruction_state.data.msize;

@@ -11,6 +11,8 @@ extern "C" {
 
 #include "type.h"
 
+#define CORE_MACHINE_CPU_INSTRUCTION_MEMORY_ACCESS_CAPACITY 512u
+
 #include "core/machine/cpu.h"
 #include "core/machine/firmware_interface.h"
 #include "core/machine/fpu.h"
@@ -93,8 +95,11 @@ typedef struct {
 
     /* cpu recorder */
     type_bool flagIgnore;
-    t_cpuins_data_memory mem[0x20];
-    type_unsigned_8 msize;
+    /* ENTER accepts an 80186 lexical level up to 255 and performs at most 510
+     * recorded stack accesses. This is executor bookkeeping for CPU debug
+     * breakpoints, not the copied debugger-observation limit. */
+    t_cpuins_data_memory mem[CORE_MACHINE_CPU_INSTRUCTION_MEMORY_ACCESS_CAPACITY];
+    type_unsigned_16 msize;
     type_unsigned_8 oplen;
     type_unsigned_8 opcodes[15];
     type_unsigned_16 reccs;
