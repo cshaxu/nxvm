@@ -9,7 +9,7 @@ Core progress; Turbo removes that wait and nothing else.
 
 | Subtask | Accepted result |
 | --- | --- |
-| S1 | Pending coordinator acceptance: freezes C1--C13 and V1--V4, including same-tick order, cancellation and explicit L1/L2 receivers. |
+| S1 | Accepted: freezes C1--C13 and V1--V4, including same-tick order, cancellation and explicit L1/L2 receivers. Documentation governance and unit 312/312 pass. |
 
 The next implementation batch may consume only this finite matrix. It must
 not create a VM/profile scheduler, device-local queue, host-to-Core tick
