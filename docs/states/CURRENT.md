@@ -5,19 +5,19 @@
 | Field | Required record |
 | --- | --- |
 | Identifier Mode | Continuation |
-| Admission And Approval | Owner explicitly directed single-person dual-role implementation of the complete integration test suite on 2026-08-30. S2 was accepted at `d0c5c684`; this S3 consumes the same 20-row ledger under the approved T513 proposal. |
-| Objective | Register every T513 row as an isolated external-asset `integration` CTest case with cache-only owner inputs, truthful unavailable-input skip behavior, parallel-safe resources and no second matrix/configuration owner. |
-| Non-goals | Do not execute external rows or repair runtime behavior yet, alter profile/FDC/CPU/Core ownership, embed asset paths/hashes/media, change production APIs, or modify `build/output` YAML. |
-| Reference Baseline | T513 S1 lists, the S2 normal runner at `d0c5c684`, existing CTest partition/registration checks and integration resource-isolation evidence. |
+| Admission And Approval | Owner explicitly directed single-person dual-role implementation of the complete integration test suite on 2026-08-30. S3 was independently accepted at `b7627cac`; this S4 consumes the same 20-row ledger under the approved T513 proposal. |
+| Objective | Execute every available T513 row against owner-managed ROM/media, repair any discovered sole-owner defect, then rerun the complete matrix. |
+| Non-goals | Do not embed asset paths/hashes/media, create a second profile/FDD/terminal owner, add synthetic passes, modify `build/output` YAML, or change a product interface unless a reproduced row requires its sole-owner repair. |
+| Reference Baseline | T513 S1 list, S2 normal runner at `d0c5c684`, S3 isolated registration at `b7627cac`, and the existing profile/session/controller ownership rules. |
 | Candidate Proposal | [M5 profile/CPU/floppy integration matrix](../proposals/m5-profile-cpu-floppy-integration-matrix.md). |
-| Files And ABI Surface | CMake cache/CTest declarations, the existing S2 runner only where needed for registration semantics, T513 history/evidence. No production source/public ABI/profile contract/session-construction/media-owner change. |
-| Applicable Rules | Task Reading Set; execution, architecture, coding, documentation and source-policy authorities. CMake is the sole CTest registry; runner remains the sole matrix/configuration/terminal owner; external BIOS/ROM/DOS inputs remain owner-managed. |
-| Verification | Configure and build the CTest graph; inspect all registered T513 names, labels, timeouts, skip semantics and working-directory/resource isolation; run the runner validation, complete repository-only Debug unit suite and documentation governance. S4 performs actual external execution. |
-| Expected Markers | Exactly 20 `integration` matrix cases, each invoking one runner row; empty owner inputs return only skip 77; rows have independent working directories and no blanket serialization; existing canonical partition check understands this one multi-case runner without relaxing one-owner registration for all other targets. |
+| Files And ABI Surface | The S2 runner, its CTest cache wiring and the sole owner of any reproduced defect; T513 history/evidence. No asset bytes, path, hash or new parallel session/profile/controller state. |
+| Applicable Rules | Task Reading Set; execution, architecture, coding, documentation and source-policy authorities. CMake remains the sole registry; runner remains sole matrix/configuration/terminal owner; Core/VM/controller ownership remains unchanged unless repair evidence identifies one owner. |
+| Verification | Configure with owner-local cache values, run all 20 matrix cases, classify terminal/unavailable/failure, apply owner-local repairs, then rerun the whole matrix and complete Debug unit plus documentation governance. |
+| Expected Markers | Every available row reaches `dos-prompt`, `date-input` or `installer-ready`; missing inputs only skip 77; the 20 cases retain isolated workspaces and no artificial serialization. |
 | Asset Needs | Read-only owner-managed firmware and DOS images; no bytes, hashes or machine-local paths are committed. |
-| Reporting Requirements | Record all 20 CTest names and input-variable classes, runner/CTest ownership split, isolation disposition, source/test code-size delta, validation output and complete unit result. |
-| Stop Conditions | Stop for owner direction if CMake cannot register all 20 rows without reconstructing matrix semantics, a required asset metadata value would be committed, a row needs shared writable input, or canonical test partition rules would need a general weakening. |
-| Exit Criteria | The configured graph registers exactly the S1 20 rows under `integration`; every row has isolated working state and cache-only inputs; unavailable assets skip honestly; the canonical registry remains strict for other targets; no external input is executed or recorded. |
+| Reporting Requirements | Record row IDs, image/firmware class, terminal or unavailable disposition, owner of each repair and before/after complete-matrix results, without recording local paths or hashes. |
+| Stop Conditions | Stop for owner direction if a required input cannot be safely used read-only, a repair would require duplicating profile/FDD/controller state, or external material would need to enter version control. |
+| Exit Criteria | Every available row is actually exercised and reaches a declared terminal; unavailable rows name their missing input class; any defect is repaired at its sole owner; complete rerun, unit and documentation gates pass. |
 | Original Owner Request | Single-person dual-role implementation of the complete integration test suite. |
 | Similar-Issue Sweep | Inspect every existing multi-case runner, integration registration, cache asset variable and resource/working-directory declaration for an equivalent one-target/many-cases assumption or hidden shared writable input. |
 
