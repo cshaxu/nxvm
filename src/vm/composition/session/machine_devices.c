@@ -60,6 +60,7 @@ static type_status vm_session_machine_devices_materialize_fdc(vm_session *sessio
     config.control_port = control_port->port;
     config.irq = route->irq;
     config.dma_channel = route->dma_channel;
+    config.ready_mask = 0x0fu;
     return core_machine_plan_configure_fdc(plan, &drives, &config);
 }
 

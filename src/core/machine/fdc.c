@@ -428,7 +428,8 @@ static C_INT core_machine_fdc_drive_status_ready(const core_machine_fdc *fdc,
      * which is pulled ready for every unit select; media availability remains
      * exclusively a transfer-path condition.  Board personalities with a
      * different electrical READY source require an explicit topology input. */
-    return fdc != STD_NULL && drive < CORE_MACHINE_FDC_DRIVE_COUNT;
+    return fdc != STD_NULL && drive < CORE_MACHINE_FDC_DRIVE_COUNT &&
+        (fdc->connect.config.ready_mask & (1u << drive)) != 0u;
 }
 
 static C_INT core_machine_fdc_drive_ready(const core_machine_fdc *fdc)
@@ -989,11 +990,11 @@ static C_VOID core_machine_fdc_schedule_reset_completion(core_machine_fdc *fdc)
      * controller drive select.  This is controller state, not a sample of
      * the board READY inputs: system firmware drains all four results even
      * when fewer mechanical drives are fitted. */
-    fdc->data.reset_sense_mask = (type_unsigned_8)
-        ((1u << CORE_MACHINE_FDC_DRIVE_COUNT) - 1u);
+    fdc->data.reset_sense_mask = fdc->connect.config.ready_mask == 0u ? 0u :
+        (type_unsigned_8)((1u << CORE_MACHINE_FDC_DRIVE_COUNT) - 1u);
     fdc->data.reset_due_tick = fdc->data.elapsed_ticks +
         core_machine_fdc_timing_ticks(fdc, 1024u);
-    fdc->data.reset_pending = TYPE_TRUE;
+    fdc->data.reset_pending = fdc->data.reset_sense_mask != 0u;
     core_machine_fdc_publish_due_reset(fdc);
 }
 

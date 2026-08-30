@@ -52,8 +52,9 @@ behavior and host-file policy are outside the selected capability.
 
 ## Simplicity result
 
-The result replaces two FDC-wide fixed timing constants and the fabricated
-four-slot reset queue with one copied scalar and owner-local deadline state.
-Model-40's pre-existing proportional behavior is now an explicit copied value,
-not a hidden dependency on a global FDC constant.  Obsolete four-slot test
-expectations and their unused helper were removed.
+The result replaces two FDC-wide fixed timing constants with one copied scalar
+and owner-local deadline state.  T503 S6 supersedes the historical
+reset-report-cardinality conclusion; it retains the controller-owned four-slot
+sequence after a fresh manual and external-reference audit.  Model-40's
+pre-existing proportional behavior is now an explicit copied value, not a
+hidden dependency on a global FDC constant.

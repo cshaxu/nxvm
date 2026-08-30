@@ -222,7 +222,7 @@ C_INT main(C_VOID)
     const core_machine_fdc_config fdc_config = {
         .dor_port = 0x03f2u, .status_port = 0x03f4u, .data_port = 0x03f5u,
         .direction_port = 0x03f7u, .control_port = 0x03f7u,
-        .irq = 6u, .dma_channel = 2u, .ticks_per_microsecond = 8u
+        .irq = 6u, .dma_channel = 2u, .ready_mask = 0x0fu, .ticks_per_microsecond = 8u
     };
     const core_machine_fdc_drive_bindings drives = {
         {1u, CORE_MACHINE_MEDIA_ID_INVALID, CORE_MACHINE_MEDIA_ID_INVALID,

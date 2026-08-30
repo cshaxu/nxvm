@@ -40,6 +40,9 @@ typedef struct core_machine_fdc_config {
     type_unsigned_8 irq;
     type_unsigned_8 dma_channel;
     core_machine_fdc_unready_read_policy unready_read_policy;
+    /* Frozen board READY inputs, one bit per controller drive select.  They
+     * are mechanical wiring facts, never inferred from inserted media. */
+    type_unsigned_8 ready_mask;
     /* Frozen conversion into the Core virtual axis.  Zero explicitly retains
      * the no-delay L2 fallback; a selected source-qualified plan supplies the
      * nonzero value used by the 8272A timing formulas. */

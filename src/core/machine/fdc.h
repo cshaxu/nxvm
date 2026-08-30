@@ -75,7 +75,7 @@ typedef struct {
     type_unsigned_8 format_id[4];
     type_unsigned_8 format_id_index;
     type_unsigned_8 selected_drive;
-    /* A reset release reports only the ready inputs sampled at that edge. */
+    /* Reset queues the controller's pending Sense-Interrupt drive reports. */
     type_unsigned_8 reset_sense_mask;
     type_unsigned_64 reset_due_tick;
     type_bool reset_pending;

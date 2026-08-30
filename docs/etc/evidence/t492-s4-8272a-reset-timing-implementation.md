@@ -5,16 +5,18 @@
 ## Retained owner and data flow
 
 `core_machine_fdc` remains the only owner of FDC command phase, DOR reset,
-ready sampling, deadline, DRQ and IRQ state.  A profile supplies the copied
+deadline, DRQ and IRQ state.  A profile supplies the copied
 `core_machine_fdc_config.ticks_per_microsecond` value during plan construction;
 the FDC owns every later conversion and transition.  No VM callback, host
 clock, media mirror or second controller state was added.
 
 ## Corrected behavior
 
-- DOR reset release samples only ready drive inputs, queues only those Sense
-  Interrupt responses, and publishes their IRQ at the uPD765A 1.024-ms reset
-  deadline.
+- This record's original claim that DOR reset release sampled only ready drive
+  inputs was superseded by T503 S6.  The NEC source defines the RESET/READY
+  interrupt condition but not the selected PC-compatible four-report sequence;
+  the current controller-owned sequence is cross-checked against Bochs, 86Box
+  and PCjs and is documented in `t503-s6-fdc-firmware-route-audit.md`.
 - The prior fixed three-ms seek and 128-tick byte constants are deleted.
   The FDC derives Specify SRT as `(16 - SRT) * 1 ms` and CCR=0 byte cadence as
   16 us through the frozen conversion value.
@@ -37,7 +39,7 @@ clock, media mirror or second controller state was added.
 
 ## Simplicity result
 
-The implementation removes two production timing constants and the fabricated
-four-slot reset queue.  It adds one copied scalar, one local conversion helper,
-and reset-deadline state to the existing FDC owner; no source or runtime path
-is duplicated.
+The implementation removes two production timing constants.  It adds one
+copied scalar, one local conversion helper, and reset-deadline state to the
+existing FDC owner; no source or runtime path is duplicated.  The historical
+reset-report-cardinality conclusion is superseded by T503 S6.

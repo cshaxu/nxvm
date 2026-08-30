@@ -801,7 +801,9 @@ static C_INT core_machine_fdc_topology_is_valid(
     if (topology == STD_NULL || topology->media_registry == STD_NULL ||
         topology->config.dma_channel != topology->dma_request.channel ||
         topology->config.unready_read_policy >
-            CORE_MACHINE_FDC_UNREADY_READ_DESKPRO_REFERENCE) {
+            CORE_MACHINE_FDC_UNREADY_READ_DESKPRO_REFERENCE ||
+        (topology->config.ready_mask & (type_unsigned_8)~((1u <<
+            CORE_MACHINE_FDC_DRIVE_COUNT) - 1u)) != 0u) {
         return 0;
     }
     for (first = 0u; first < CORE_MACHINE_FDC_DRIVE_COUNT; ++first) {

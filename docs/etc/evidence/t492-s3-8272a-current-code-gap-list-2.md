@@ -18,15 +18,15 @@ unchanged and T3 belongs to the existing `Specify` timing obligation.
 | F17--F19 | `xt_5160_268.c` freezes `3F2h/3F4h/3F5h`, no selected `3F7h`, IRQ6 and DMA2; XT profile smoke proves the single route. | Complete |
 | F20 | Core binding accepts four immutable media IDs; selected XT currently supplies one ID, leaving additional attached drives as a valid external frozen-profile input, not a second controller or media cache. | External-input L3 interface |
 | F21--F22 | Core FDC plus immutable media registry owns MFM/logical geometry, sectors, CHRN, format and address-mark semantics. | Complete logical route |
-| F23 | DOR remains the sole reset owner. Reset release samples ready inputs, queues Sense Interrupt only for those drives and publishes IRQ after the configured 1.024-ms deadline; zero conversion is the explicit immediate L2 fallback. | Complete for represented ready inputs |
+| F23 | DOR remains the sole reset owner. Reset release queues the controller's four ordered Sense Interrupt reports and publishes IRQ after the configured 1.024-ms deadline; the NEC READY condition governs whether the interrupt is produced. Zero conversion is the explicit immediate L2 fallback. T503 S6 reconciles the earlier ready-sampling claim. | Complete controller route; selected reset-report cardinality is Other L3 |
 | T1, T7--T8 | Physical electrical/mechanical and host-file behavior are outside the logical controller owner. | Retained L4/external boundary |
 | T2--T3, T5--T6 | The sole FDC owner receives one copied `ticks_per_microsecond` value. A nonzero source-qualified value converts reset (1.024 ms), Specify SRT (1--16 ms per step) and the 500-kbit/s CCR=0 byte interval (16 us) into Core deadlines; zero is explicit L2 no-delay fallback. No controller, profile callback or host clock owns a second time axis. | L3-capable interface; selected XT explicitly remains L2 |
 | T4 | HLT/HUT fields remain command state, but current logical-media FDC has no head-load/unload signal or media rotation state to which their manual intervals could attach. They are an explicit external L3 board/media-provider boundary, not an invented controller delay. | External-input L3 boundary |
 
 ## One coherent implementation batch
 
-S4 consumes all and only the FDC/media-owner gaps: make reset completion
-reflect sampled ready inputs; replace fixed timing literals with one immutable
+S4 consumed all and only the FDC/media-owner gaps: make reset completion
+use a controller-owned pending report state; replace fixed timing literals with one immutable
 FDC timing conversion for the represented reset/SRT/byte-rate transitions; and
 record HLT/HUT against their actual absent board/media signal boundary rather
 than inventing delay. Raw media status remains an external L3 provider
