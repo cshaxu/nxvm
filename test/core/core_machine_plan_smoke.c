@@ -349,6 +349,56 @@ static C_INT plan_l2_pit_deadline_remains_schedulable(C_VOID)
     return failed;
 }
 
+static C_INT plan_source_dma_deadline_is_schedulable(C_VOID)
+{
+    static const core_machine_dma_channel_provider provider = {0};
+    const core_machine_controller_timing_rules rules = {
+        CORE_MACHINE_CONTROLLER_TIMING_RULE_L2_FALLBACK,
+        CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_RATIONAL_CLOCK,
+        CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_DMA_SERVICE_PHASES,
+        CORE_MACHINE_CONTROLLER_TIMING_RULE_L2_FALLBACK,
+        CORE_MACHINE_CONTROLLER_TIMING_RULE_L2_FALLBACK
+    };
+    core_machine_config configuration = {
+        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .clock_plan.dma = {3u, 8u, 0u}
+    };
+    core_machine_plan *plan = STD_NULL;
+    core_machine *machine = STD_NULL;
+    core_machine_dma_request_binding binding = {0};
+    core_machine_time_observation observation;
+    type_bool advanced = TYPE_FALSE;
+    C_INT failed = 0;
+
+    failed |= core_machine_plan_create(&configuration, &plan) != TYPE_STATUS_OK;
+    failed |= !failed && core_machine_plan_set_controller_timing_rules(plan,
+        &rules) != TYPE_STATUS_OK;
+    failed |= !failed && core_machine_create_from_plan(plan, &machine) != TYPE_STATUS_OK;
+    failed |= !failed && core_machine_dma_bind_channel(&machine->shared_dma_latch,
+        &machine->shared_dma_primary, &machine->shared_dma_secondary, 2u, &provider,
+        STD_NULL, &binding) != TYPE_STATUS_OK;
+    failed |= !failed && core_machine_freeze_execution_providers(machine) !=
+        TYPE_STATUS_OK;
+    failed |= !failed && core_machine_reset(machine) != TYPE_STATUS_OK;
+    core_machine_port_write(&machine->executor_port, 0x000bu, 0x46u);
+    core_machine_port_write(&machine->executor_port, 0x000au, 0x02u);
+    core_machine_dma_request_assert(&machine->shared_dma_primary,
+        &machine->shared_dma_secondary, &binding);
+    failed |= !failed && core_machine_capture_time_observation(machine, &observation) !=
+        TYPE_STATUS_OK;
+    failed |= !failed && (!observation.next_deadline_valid ||
+        observation.next_deadline_tick != 3u ||
+        observation.progress_disposition != CORE_MACHINE_TIME_PROGRESS_DEADLINE);
+    failed |= !failed && core_machine_advance_to_next_deadline(machine, &advanced) !=
+        TYPE_STATUS_OK;
+    failed |= !failed && (!advanced || machine->elapsed_ticks != 3u);
+    core_machine_dma_request_deassert(&machine->shared_dma_primary,
+        &machine->shared_dma_secondary, &binding);
+    core_machine_destroy(machine);
+    core_machine_plan_destroy(plan);
+    return failed;
+}
+
 C_INT main(C_VOID)
 {
     if (plan_default_and_copy() || plan_rejects_incomplete_or_unavailable() ||
@@ -357,7 +407,8 @@ C_INT main(C_VOID)
         plan_controller_timing_rules_are_copied_and_validated() ||
         plan_rejects_invalid_controller_timing_rules() ||
         plan_selects_single_controller_xt_board() ||
-        plan_l2_pit_deadline_remains_schedulable()) {
+        plan_l2_pit_deadline_remains_schedulable() ||
+        plan_source_dma_deadline_is_schedulable()) {
         return 1;
     }
     puts("M5:T434:S1:PLAN-DECLARATIONS:OK");

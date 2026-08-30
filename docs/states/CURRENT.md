@@ -2,12 +2,24 @@
 
 ## Current Work
 
-No subtask is active. T506 S1 has accepted the finite selected 8237A
-request/arbitration/service ledger: PIT1 refresh, FDC DMA2, XT Xebec DMA3 and
-the selected cascade topology. D1--D9 are sourced owner relations; D10 is the
-single unqualified service-deadline receiver. S2 must evaluate that whole
-receiver through the existing DMA/Core clock and deadline owners without
-inventing a service duration or a provider-local timer.
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation T506 S2. |
+| Admission And Approval | Owner authorized continuous single-role execution of the ordered queue on 2026-08-29; accepted T506 S1 ledger admits the D10 whole-owner deadline evaluation. |
+| Objective | Resolve the complete D10 batch: determine whether the existing DMA clock and Core deadline composition express a source-qualified selected 8237A service deadline; implement one DMA/Core-owner correction only if that evidence exists. |
+| Non-goals | Do not infer a duration, create provider-local timers, change FDC/HDC command timing, move state to VM/profile, add a second DMA service path, or model pin waveforms. |
+| Reference Baseline | `97309c6d`; [T506 S1 ledger](../etc/evidence/t506-s1-dma-service-arbitration-ledger.md), [DMA proposal](../proposals/m5-dma-service-arbitration-deadline-closure.md), and retained T504 L1 inventory. |
+| Candidate Proposal | [M5 DMA service and arbitration deadline closure](../proposals/m5-dma-service-arbitration-deadline-closure.md). |
+| Files And ABI Surface | Expected owner-local review of `src/core/machine/dma.[ch]`, `machine_scheduler.c`, existing board-clock/deadline composition, their existing tests, and indexed T506 evidence; no public ABI or VM/profile surface without a packet revision. |
+| Applicable Rules | `EXECUTION.md` D1--D10 ledger-batch and complete-unit rule; `ARCHITECTURE.md` sole Core/DMA owner and no mutable layout exposure; `CODING.md` one production service path and subtractive cleanup; `DOCUMENT.md` packet/evidence boundary; source policy for reference-only manual/model use. |
+| Verification | Reconcile all selected board-clock callers and Core deadline consumers; use a transient DMA-focused selection only for diagnosis; run complete repository-only unit before S closure, documentation governance, and record code line delta and every D1--D10 final disposition. |
+| Expected Markers | `M5:T506:S2:DMA-DEADLINE-BATCH:OK`; no selected pending DMA request is advanced by an invented delay; either one sourced DMA/Core deadline route proves D10 or an explicit lower-tier disposition retains it. |
+| Asset Needs | Existing read-only Intel/IBM material and external source checkouts only; no firmware, guest media, external code, machine-local path, or generated trace enters the repository. |
+| Reporting Requirements | Record each selected board clock/caller, candidate deadline conversion, reset/withdrawal effect, chosen owner and rejected duplicate paths; if code changes, record added/removed/net tracked source/test lines and the retained production path. |
+| Stop Conditions | Stop and revise if a source-qualified conversion needs a new profile contract or cannot preserve all D1--D9 lifecycle relations; retain D10 lower-tier rather than guessing. |
+| Exit Criteria | D1--D10 have an after-disposition; any implementation is one owner-local DMA/Core batch with no private provider timer or duplicated state; complete unit and documentation governance pass. |
+| Original Owner Request | Continue the source-first controller queue in solo mode and eliminate whole-owner defects without additive compatibility paths or unproven timing. |
+| Similar-Issue Sweep | Primary/secondary cascade, PIT1 refresh, FDC DMA2, Xebec DMA3, DMA clock/transaction phases, deadline query, reset/master-clear, DREQ withdrawal, HLT/no-deadline behavior, and every selected XT/AT board topology. |
 
 ## Current Technical Baseline
 

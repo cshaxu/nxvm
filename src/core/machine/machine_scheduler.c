@@ -37,6 +37,16 @@ static C_INT core_machine_l1_compatibility_is_eligible(const core_machine *machi
         core_machine_slave_irq_publication_is_pending(machine));
 }
 
+static C_INT core_machine_dma_deadline_is_qualified(const core_machine *machine)
+{
+    return machine != STD_NULL && machine->timing_plan_copied &&
+        machine->timing_plan.controller_timing.dma_clock ==
+            CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_RATIONAL_CLOCK &&
+        machine->timing_plan.controller_timing.dma_service ==
+            CORE_MACHINE_CONTROLLER_TIMING_RULE_SOURCE_DMA_SERVICE_PHASES &&
+        machine->transaction_contract.dma_cycle_wait_quanta == 0u;
+}
+
 static type_bool core_machine_deadline_consider_clock(const core_machine_clock_domain *clock,
     type_unsigned_64 device_ticks, type_unsigned_64 *io_source_ticks)
 {
@@ -134,6 +144,12 @@ C_VOID core_machine_capture_time_observation_private(const core_machine *machine
         core_machine_rtc_ticks_until_irq(&machine->shared_rtc, &device_ticks) ==
             TYPE_STATUS_OK) {
         if (core_machine_deadline_consider_clock(&machine->rtc_clock, device_ticks,
+                &source_ticks)) immediate_due = TYPE_TRUE;
+    }
+    if (core_machine_dma_has_pending_request(&machine->shared_dma_primary,
+            &machine->shared_dma_secondary) &&
+        core_machine_dma_deadline_is_qualified(machine)) {
+        if (core_machine_deadline_consider_clock(&machine->dma_clock, 1u,
                 &source_ticks)) immediate_due = TYPE_TRUE;
     }
     if (core_machine_fdc_next_due_tick(&machine->fdc, &fdc_due_tick) ==
