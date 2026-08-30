@@ -23,3 +23,13 @@ and unpublished slave-PIC cascade), separates already-due FDC work and external
 HLT, and confirms the owner-local baseline corrections. Focused 4/4, complete
 unit 312/312, and documentation governance pass. S2 owns only the copied Core
 disposition boundary.
+
+## S2 accepted copied boundary
+
+S2 P1 `548fe25b` adds the copied `IDLE`, `DEADLINE`, `IMMEDIATE`, and
+`L1_COMPATIBILITY` disposition documented in the
+[indexed evidence](../etc/evidence/t504-s2-copied-time-progress-disposition.md).
+Coordinator P2 review confirms that this is an observation-only public value:
+it carries no device identity, pointer, or tick request, and it changes neither
+the scheduler nor the VM runner. Focused 4/4, complete unit 312/312, and
+documentation governance pass. S3 owns the sole Core progression action.

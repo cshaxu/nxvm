@@ -4,22 +4,22 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation T504 S2. |
-| Admission And Approval | Owner approved solo execution of T504 on 2026-08-29. Coordinator accepted S1 P1 `3a39c7a8` after actual-diff review, complete unit pass, and documentation-governance pass; this S admits only the copied Core result boundary. |
-| Objective | Define the smallest copied Core observation that distinguishes a source-qualified next deadline, already-due Core work, an eligible L1 no-deadline compatibility wait, and an external/no-progress wait, without exposing owner pointers or advancing time. |
-| Non-goals | Do not implement compatibility progression or policy, change Standard pacing, inject host time, promote L1 evidence, disclose controller state, add a scheduler, or guess controller timing. |
-| Reference Baseline | `3a39c7a8` (T504 S1 P1 inventory and green baseline); current stripped Release artifact remains `0503`. |
+| Identifier Mode | Continuation T504 S3. |
+| Admission And Approval | Owner approved solo execution of T504 on 2026-08-29. Coordinator accepted S2 P1 `548fe25b` after actual-diff review, complete unit pass, and documentation-governance pass; this S admits the one Core-owned Turbo compatibility progression and its immutable profile construction policy. |
+| Objective | Implement one bounded Core progression request for S1's L1 candidates: it must settle already-due work and known deadlines first, then make only normal owner transitions under frozen profile policy, and return a copied outcome to Turbo without accepting ticks from VM. |
+| Non-goals | Do not change Standard pacing, inject host time, promote L1 evidence, expose controller state, add a scheduler, add device-specific VM/BIOS paths, use arbitrary large tick batches, or clear a wait outside its normal owner transition. |
+| Reference Baseline | `548fe25b` (T504 S2 P1 copied disposition boundary); current stripped Release artifact remains `0503`. |
 | Candidate Proposal | [M5 Turbo L1 compatibility escape](../proposals/m5-turbo-l1-compatibility-escape.md). |
-| Files And ABI Surface | `src/core/machine/machine_interface.h` copied time observation, `machine_scheduler.c` private classifier, `machine.c` public query boundary, and `src/vm/composition/session/{runner,waiting}.c` observation consumer; focused Core/VM tests and T504 evidence. Any public field is a value-only disposition, not a machine/device pointer or tick request. |
-| Applicable Rules | `docs/rules/EXECUTION.md` packet/P-review/closure rules; `ARCHITECTURE.md` sole Core owner and one-way VM observation; `CODING.md` smallest value boundary and no duplicate state; `DOCUMENT.md` state/history/evidence boundaries; source policy is not applicable because no source is imported or derived. |
-| Verification | Trace each disposition from private classifier to copied observation and every VM consumer; compile focused Core/VM tests, then run `ctest --test-dir build/mingw-gcc-x64 -L unit -j 8` and documentation governance before S closure. |
-| Expected Markers | `M5:T504:S2:COPIED-WAIT-DISPOSITION:OK`; full unit summary; documentation-governance pass. |
-| Asset Needs | None. S2 uses repository source and S1 evidence only; no ROM, media, manual, emulator, or protected asset is imported. |
-| Reporting Requirements | Record the exact finite disposition values, producer precedence, and consumer behavior in indexed evidence. P1 states the actual value boundary and full-unit result; P2 independently checks that no pointer, tick injection, or second truth escaped Core. |
-| Stop Conditions | Stop and revise the packet if the minimal distinction cannot be represented as a copied value, requires a timing claim, a new owner/scheduler, an external asset, or a VM mutation of Core state. |
-| Exit Criteria | The copied observation is sufficient to select later Turbo eligibility while preserving known-work precedence and external wait distinction; no value exposes device identity, permits VM tick selection, or changes runtime behavior; evidence is indexed and full unit/docs gates pass. |
+| Files And ABI Surface | Core config/plan freeze path, `machine_interface.h`, `machine.c`, `machine_scheduler.c`, and VM `waiting.c` only; profile declarations/resolver carry immutable policy. The request accepts no tick count and returns only a copied progressed/not-progressed result. |
+| Applicable Rules | `docs/rules/EXECUTION.md` packet/P-review/closure rules; `ARCHITECTURE.md` Core time/controller ownership and VM-to-Core command boundary; `CODING.md` one shared path/no device receiver; `DOCUMENT.md` state/history/evidence boundaries; source policy is not applicable because no source is imported or derived. |
+| Verification | Prove known-deadline and immediate precedence, all four S1 L1 owners through one Core path, profile freeze/rejection, Standard non-use, Turbo-only invocation, reset/stop/pause/input/interrupt boundaries, then run full `ctest --test-dir build/mingw-gcc-x64 -L unit -j 8` and documentation governance. |
+| Expected Markers | `M5:T504:S3:CORE-L1-COMPATIBILITY:OK`; full unit summary; documentation-governance pass. |
+| Asset Needs | None. S3 uses repository source and T504 evidence only; no ROM, media, manual, emulator, or protected asset is imported. |
+| Reporting Requirements | Record the frozen-policy provenance, exact bounded transition condition, known-work precedence, per-owner result, and Standard/Turbo call distinction in indexed evidence. P1 states actual implementation and full-unit result; P2 independently verifies no tick injection, duplicated scheduler, or device-specific VM path. |
+| Stop Conditions | Stop and revise the packet if one shared Core action cannot preserve any candidate's normal lifecycle, needs an unbounded batch or guessed timing, requires a second owner/scheduler, an external asset, or VM mutation of Core state. |
+| Exit Criteria | Turbo can request one bounded Core-owned compatibility progression only when S2 reports eligibility; known/immediate work wins, Standard never invokes it, every candidate preserves normal owner lifecycle, immutable profile policy is enforced, evidence is indexed, and full unit/docs gates pass. |
 | Original Owner Request | Complete L1 Turbo efficiency in solo mode: make Turbo useful without violating Core ownership, Standard semantics, or the established L-level evidence discipline. |
-| Similar-Issue Sweep | Sweep every exported Core time/status structure and every VM session consumer, plus all scheduler early-return branches and FDC current-due handling; eliminate a broad boolean or pointer escape rather than fixing a single runner branch. |
+| Similar-Issue Sweep | Sweep all profile declaration/resolver construction paths, every VM waiting caller, Core progression public entry point, and each S1 owner; consolidate them into one action rather than separate DMA/HDC/D4/PIC Turbo paths. |
 
 ## Current Technical Baseline
 
@@ -74,6 +74,13 @@
   owner paths required for a green baseline. Focused 4/4, full unit 312/312,
   and documentation governance pass. S2 is admitted for the copied Core
   disposition boundary.
+
+- **M5 T504 S2 P2:** coordinator actual-diff review accepts `548fe25b`:
+  one copied enum distinguishes idle, future source deadline, already-due work,
+  and the finite L1 candidate set without a Core pointer, controller identity,
+  tick input, runner change, or scheduler change. Focused 4/4, full unit
+  312/312, and documentation governance pass. S3 is admitted for one
+  Core-owned Turbo progression under immutable profile policy.
 
 - **M5 T503 S7 P1:** direct IBM/ATA/code/external reconciliation removes the
   inert Xebec `323h` mask cache: one existing HDC owner now gates its existing
