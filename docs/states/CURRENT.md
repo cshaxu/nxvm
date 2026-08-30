@@ -4,22 +4,9 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation T507 S13. |
-| Admission And Approval | Owner approved continuous solo execution and the controller-by-controller source/List 1/List 2/owner-repair structure on 2026-08-29. S1--S12 are accepted; this is the T507 product/performance closure batch. |
-| Objective | Verify the one Core progression path across Standard/Turbo and the selected profile/CPU/media corpus; establish functional event-order and host-cost evidence, run full unit/integration, and publish the stripped Release artifact. |
-| Non-goals | Do not add a parallel fast path, use host elapsed time to write guest ticks, claim physical pacing without a qualified axis, weaken integration terminals, suppress a failure, or remove the runtime debugger. |
-| Reference Baseline | ec49af11; T507 S1/S12 progression evidence and current integration corpus. |
-| Candidate Proposal | [M5 Core scheduler Standard/Turbo performance closure](../proposals/m5-core-scheduler-standard-turbo-performance-closure.md). |
-| Files And ABI Surface | Existing Core/VM progression, performance observation and release composition only; no new scheduler/public ABI or product-debugger removal. |
-| Applicable Rules | EXECUTION.md complete finite batch/review; ARCHITECTURE.md one owner per topology and publication route; CODING.md direct owner-local repair; source policy before manual/external research; DOCUMENT.md evidence boundary. |
-| Verification | Run focused Standard/Turbo, scheduler and supported profile/media probes; record terminal/event/host-cost observations; run complete unit plus external-asset integration; build/inspect a stripped Release executable; recheck the final C1--C13/V1--V4 matrix. |
-| Expected Markers | A T507 S13 product/performance marker, full test results, stripped Release name/hash/debug-section proof and T507 closure evidence. |
-| Asset Needs | Existing local manual/external-reference copies only; no import of source, firmware or media. |
-| Reporting Requirements | Record source/OCR qualification, List 1/List 2 rows, accepted/rejected external lessons, every changed owner/downstream path, focused proof, full-unit result and code-size accounting. |
-| Stop Conditions | Stop and revise if a result needs a synthetic terminal, unsourced timing, host-to-guest progression, altered profile contract, externally committed asset, hidden failure or duplicate execution path. |
-| Exit Criteria | Standard/Turbo have the same Core event ordering; every live L1 row is explicit; eligible polling is absent; full unit and integration pass; a stripped Release artifact retaining the runtime debugger is published with evidence. |
-| Original Owner Request | Complete the global scheduler/Standard--Turbo performance closure without fast-pathing or violating Core as sole guest-clock owner. |
-| Similar-Issue Sweep | profile/CPU/media terminals, HLT waiting, timeline/PIT/RTC/DMA/FDC/HDC/KBC/XT/VADP/D4/provider paths, Standard/Turbo host waits, build flags, runtime debugger and Release packaging. |
+| Identifier Mode | No active packet. |
+| Last Closure | T507 closed at S13 P2: one Core progression path serves Standard and Turbo; focused 4/4, unit 312/312, integration 20/20 and stripped Release 0507 pass. [History](../history/M5-T507-core-scheduler-standard-turbo-performance-closure.md). |
+| Next Candidate | HDC personality service-deadline closure, admitted only on owner direction. |
 
 ## Current Technical Baseline
 
@@ -57,6 +44,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T507 | Closed: all C1--C13/V1--V4 scheduler rows have an immediate, deadline or explicit L1/L2 disposition; Standard/Turbo share one Core path. Unit 312/312, integration 20/20 and stripped Release 0507 pass. [History](../history/M5-T507-core-scheduler-standard-turbo-performance-closure.md). |
 | T506 | Closed: selected 8237A D1--D10 relations are reconciled; Model-339 can advance to the next sourced DMA phase through the existing Core scheduler while unqualified contracts remain isolated. Unit 312/312, integration 20/20 and stripped Release 0506 pass. [History](../history/M5-T506-dma-service-arbitration-deadline-closure.md). |
 | T505 | Closed: Intel-backed cascade publication and withdrawal are immediate PIC-owner work, not a scheduled L1 tick. One construction-fixed PIC pair reuses the existing refresh calculation after source and command transitions; full unit 312/312 and integration 20/20 pass. [History](../history/M5-T505-pic-cascade-observable-progress-closure.md). |
 | T504 | Closed: one Core-owned bounded Turbo fallback advances only copied L1 no-deadline waits; Standard receives no compatibility progression or host-to-guest ticks. Same-input external DOS replays reach `A:\>` in both modes; formal Release output ships selectable strict-grammar templates; the four controller-specific timing receivers are queued. [History](../history/M5-T504-turbo-l1-compatibility-escape.md). |
@@ -64,9 +52,14 @@
 | T501 | Closed: all frozen four-profile media rows have their recorded terminal or external boundary; the Model-40 80386/1.2-MB row reaches `A:\>` through its sole Core/firmware path. [History](../history/M5-T501-four-profile-post-scheduler-media-closure.md). |
 | T500 | Closed: existing tests now have one `test/` tree, one unit/integration route, narrow fixture ownership, one product input path, and recovered safe integration parallelism; unit 312/312 and integration 20/20 pass. [Closure](../history/M5-T500-unit-and-integration-test-convergence.md). |
 | T499 | Closed: one Core deadline seam owns the current scheduler clients and the selected Model-40 D4 controller; the configured suite passes 302/302 and stripped Release 0499 is recorded. [Closure](../history/M5-T499-core-event-deadline-scheduler-convergence.md). |
-| T498 | Closed: the supported-media matrix has semantic terminals or an explicit external-input boundary for every non-Model-40 row, and its Model-40 predecessor transfers to the sole Core scheduler receiver without accepting a shortcut. [Closure](../history/M5-T498-four-profile-supported-media-matrix.md). |
 
 ## Recent Governance
+
+- **M5 T507 S13 P2:** coordinator actual-diff review accepts `a3574918` and
+  closes T507.  The complete C1--C13/V1--V4 matrix, the Core-only L1/deadline
+  composition, 312/312 unit, 20/20 integration and stripped 0507 artifact are
+  recorded in the T507 history; HDC L1 service timing transfers to the next
+  independent candidate.
 
 - **M5 T507 S13 P1:** one Core progression path is verified across Standard
   and Turbo: focused scheduler/speed 4/4, unit 312/312 and external-asset

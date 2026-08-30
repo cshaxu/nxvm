@@ -18,7 +18,6 @@ They retire the finite L1 no-deadline owners one controller at a time; each is
 source-first and may leave an unsupported timing relation explicit rather than
 infer it.
 
-1. [M5 Core scheduler Standard/Turbo performance closure](../proposals/m5-core-scheduler-standard-turbo-performance-closure.md) - consolidates the completed controller deadline contracts into one event-driven Core scheduler path, removing eligible per-tick polling without creating a second time line or scheduler.
 1. [M5 HDC personality service-deadline closure](../proposals/m5-hdc-personality-service-deadline-closure.md) - audits and implements only sourced deadline relations for the selected ATA, WD1003, Compaq/WD and Xebec personalities through one HDC owner.
 1. [M5 Model-40 D4 refresh-hold deadline closure](../proposals/m5-model40-d4-refresh-hold-deadline-closure.md) - closes the selected DeskPro board refresh-hold timing relation in the existing D4 owner, without leaking board state into generic DMA or VM.
 1. [M5 five-CPU complete instruction re-audit and repair](../proposals/m5-five-cpu-complete-instruction-reaudit.md) - follows the active scheduler-convergence work; freezes the complete 8086, 8088, 80186, 80286 and 80386DX instruction/state/timing universe before any repair.

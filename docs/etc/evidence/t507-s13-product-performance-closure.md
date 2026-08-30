@@ -37,3 +37,12 @@ runtime debugger product path.
 No debug trace was enabled in the Release Core (`CORE_MACHINE_RUNTIME_TRACE_ENABLED=0`).
 The runtime debugger is intentionally retained and was covered by the
 integration debugger boundary tests.
+
+## Coordinator Acceptance
+
+Actual-diff review accepted `a3574918`: it changes only the current artifact
+target/preset and this release evidence.  The preceding T507 implementation
+range keeps one existing Core scheduler and VM wait consumer; its complete
+matrix and line accounting are recorded in the
+[T507 closure history](../../history/M5-T507-core-scheduler-standard-turbo-performance-closure.md).
+No source change followed the final unit and integration runs.
