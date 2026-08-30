@@ -68,6 +68,12 @@
 
 ## Recent Governance
 
+- **M5 T507 S8 P2:** coordinator actual-diff review accepts `c9a7af52`.
+  Intel's explicit FM 31-us/MFM 15-us service bounds now select one existing
+  FDC byte gate through the command MFM bit; FDC, DMA2, IRQ6, reset and the
+  Core deadline receiver remain sole-owner paths. Focused FDC proof, full unit
+  312/312 and documentation governance pass.
+
 - **M5 T507 S6 P2:** coordinator actual-diff review accepts `81cad8c2`.
   Motorola RESET semantics are repaired in the sole RTC owner by preserving
   its existing calendar/divider phase; no host time, second calendar, profile

@@ -16,6 +16,7 @@ Core progress; Turbo removes that wait and nothing else.
 | S5 | Accepted: complete 8253/8254/List 1/List 2 re-audit confirms one PIT owner and direct IRQ0, DMA0-refresh, speaker and D4-consumer route. No new PIT defect is confirmed; focused 9/9, full unit 312/312 and documentation governance pass. |
 | S6 | Accepted: MC146818A RESET retains the sole calendar/divider phase instead of moving the next update deadline; focused RTC 9/9, full unit 312/312 and documentation governance pass. |
 | S7 | Accepted: rendered Intel/IBM and external-reference reconciliation retains distinct 8042 and XT PPI owners, removes the false IBM 5170 AUX/IRQ12 profile route, and retains generic default-AT AUX in the same KBC owner. Focused 9/9, full unit 312/312 and documentation governance pass. |
+| S8 | Accepted: rendered Intel 8272A and available-local external reconciliation corrects the sole FDC byte-service formula to its explicit FM/MFM values, retaining one controller, DMA2/IRQ6 path and Core deadline receiver. Focused FDC proof, full unit 312/312 and documentation governance pass. |
 
 The next implementation batch may consume only this finite matrix. It must
 not create a VM/profile scheduler, device-local queue, host-to-Core tick
