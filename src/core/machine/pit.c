@@ -438,7 +438,6 @@ C_VOID core_machine_pit_set_output(t_pit *pit, type_unsigned_8 id,
     if (pit == STD_NULL || id >= 3u) return;
     pit->connect.output[id] = provider;
     pit->connect.output_owner[id] = owner;
-    pit->connect.flagGate[id] = TYPE_TRUE;
 }
 
 C_VOID core_machine_pit_set_gate(t_pit *pit, type_unsigned_8 id,

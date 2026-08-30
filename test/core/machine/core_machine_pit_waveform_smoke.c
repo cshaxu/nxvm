@@ -115,6 +115,13 @@ C_INT main(C_VOID)
     core_machine_pit_set_output(&pit, 0u, core_machine_pit_waveform_output,
         &probe);
 
+    /* The output consumer observes OUT; it is not the counter's GATE source. */
+    core_machine_pit_set_gate(&pit, 0u, TYPE_FALSE);
+    core_machine_pit_set_output(&pit, 0u, core_machine_pit_waveform_output,
+        &probe);
+    failed |= pit.connect.flagGate[0u];
+    core_machine_pit_set_gate(&pit, 0u, TYPE_TRUE);
+
     /* Mode 0: a low GATE pauses the terminal-count transition. */
     core_machine_pit_waveform_write(&pit, &port, 0x30u, 3u);
     core_machine_pit_advance(&pit, 1u);

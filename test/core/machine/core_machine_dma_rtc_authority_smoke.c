@@ -32,6 +32,35 @@ static type_unsigned_8 core_machine_dma_rtc_cmos_read(core_machine *machine,
     return (type_unsigned_8)value;
 }
 
+static C_INT core_machine_dma_refresh_follows_pit_channel_1(C_VOID)
+{
+    core_machine_config configuration = {0};
+    core_machine_dma_wiring wiring = { .fdc_channel = 2u,
+        .controller_count = CORE_MACHINE_DMA_CONTROLLER_COUNT,
+        .cascade_channel = CORE_MACHINE_DMA_CASCADE_CHANNEL };
+    core_machine_dma_request_binding fdc_request = {0};
+    core_machine *machine = STD_NULL;
+    C_INT failed = 0;
+
+    failed |= core_machine_create(&configuration, &machine) != TYPE_STATUS_OK ||
+        core_machine_configure_dma(machine, &wiring, &fdc_request) != TYPE_STATUS_OK ||
+        test_core_machine_fixture_register_reset_mapping(machine, 0x00fffff0u,
+            0x000ffff0u, 16u) != TYPE_STATUS_OK ||
+        core_machine_freeze_execution_providers(machine) != TYPE_STATUS_OK ||
+        core_machine_reset(machine) != TYPE_STATUS_OK ||
+        core_machine_bus_write(machine, 0x0043u, 0x74u) != TYPE_STATUS_OK ||
+        core_machine_bus_write(machine, 0x0041u, 2u) != TYPE_STATUS_OK ||
+        core_machine_bus_write(machine, 0x0041u, 0u) != TYPE_STATUS_OK ||
+        core_machine_advance_time(machine, 3u) != TYPE_STATUS_OK ||
+        core_machine_pit_get_output(&machine->shared_pit, 1u) ||
+        (machine->shared_dma_primary.data.request & VDMA_REQUEST_DRQ(0u)) == 0u ||
+        core_machine_advance_time(machine, 1u) != TYPE_STATUS_OK ||
+        !core_machine_pit_get_output(&machine->shared_pit, 1u) ||
+        (machine->shared_dma_primary.data.request & VDMA_REQUEST_DRQ(0u)) != 0u;
+    core_machine_destroy(machine);
+    return failed;
+}
+
 int main(C_VOID)
 {
     core_machine_config machine_config = {0};
@@ -51,6 +80,7 @@ int main(C_VOID)
     C_INT failed = 0;
     C_INT stage = 1;
 
+    failed |= core_machine_dma_refresh_follows_pit_channel_1();
     machine_config.ticks_per_instruction = 1u;
     machine_config.cpu_profile = CORE_MACHINE_CPU_PROFILE_80286;
     rtc_config.index_port = 0x0070u;
