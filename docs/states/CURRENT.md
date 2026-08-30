@@ -5,21 +5,21 @@
 | Field | Required record |
 | --- | --- |
 | Identifier Mode | Continuation |
-| Admission And Approval | Owner explicitly directed single-person dual-role implementation of the complete integration test suite on 2026-08-30. S1 was accepted at `73a0505d`; this S2 consumes its finite 20-row ledger under the approved T513 proposal. |
-| Objective | Replace the diagnostic-only BYOB DOS boot probe policy with one table-driven normal integration runner that owns T513 row lookup, public session configuration, terminal recognition and concise diagnostics without recreating profile, FDD or BIOS logic. |
-| Non-goals | Do not register CTest rows yet, change production CPU/profile/FDC behavior, execute or catalogue external images/firmware, retain trace-heavy diagnostic policy in the normal runner, import protected material, or modify `build/output` YAML. |
-| Reference Baseline | T513 S1 List 1/List 2, the existing session/BYOB composition APIs, current normal DOS component integration tests, and the diagnostic-only BYOB boot probe. |
+| Admission And Approval | Owner explicitly directed single-person dual-role implementation of the complete integration test suite on 2026-08-30. S2 was accepted at `d0c5c684`; this S3 consumes the same 20-row ledger under the approved T513 proposal. |
+| Objective | Register every T513 row as an isolated external-asset `integration` CTest case with cache-only owner inputs, truthful unavailable-input skip behavior, parallel-safe resources and no second matrix/configuration owner. |
+| Non-goals | Do not execute external rows or repair runtime behavior yet, alter profile/FDC/CPU/Core ownership, embed asset paths/hashes/media, change production APIs, or modify `build/output` YAML. |
+| Reference Baseline | T513 S1 lists, the S2 normal runner at `d0c5c684`, existing CTest partition/registration checks and integration resource-isolation evidence. |
 | Candidate Proposal | [M5 profile/CPU/floppy integration matrix](../proposals/m5-profile-cpu-floppy-integration-matrix.md). |
-| Files And ABI Surface | New owner-local source beneath `test/integration/dos/` and its CMake executable declaration; T513 history/evidence. No production/public ABI, CTest registration, profile contract, session-construction or media-owner change. |
-| Applicable Rules | Task Reading Set; execution, architecture, coding, documentation and source-policy authorities. The runner calls the public session/Core route only; external BIOS/ROM/DOS inputs remain owner-managed and never enter the repository. |
-| Verification | Compile the runner, exercise its no-asset table validation path, run the complete repository-only Debug unit suite and documentation governance. Actual external rows begin in S3/S4 only. |
-| Expected Markers | One finite descriptor table covers S1's 20 rows; one public configuration factory consumes each descriptor; terminal recognition observes only copied display/session results; invalid row/configuration errors are concise; no trace provider, private Core layout or duplicate profile/FDD selector appears. |
+| Files And ABI Surface | CMake cache/CTest declarations, the existing S2 runner only where needed for registration semantics, T513 history/evidence. No production source/public ABI/profile contract/session-construction/media-owner change. |
+| Applicable Rules | Task Reading Set; execution, architecture, coding, documentation and source-policy authorities. CMake is the sole CTest registry; runner remains the sole matrix/configuration/terminal owner; external BIOS/ROM/DOS inputs remain owner-managed. |
+| Verification | Configure and build the CTest graph; inspect all registered T513 names, labels, timeouts, skip semantics and working-directory/resource isolation; run the runner validation, complete repository-only Debug unit suite and documentation governance. S4 performs actual external execution. |
+| Expected Markers | Exactly 20 `integration` matrix cases, each invoking one runner row; empty owner inputs return only skip 77; rows have independent working directories and no blanket serialization; existing canonical partition check understands this one multi-case runner without relaxing one-owner registration for all other targets. |
 | Asset Needs | Read-only owner-managed firmware and DOS images; no bytes, hashes or machine-local paths are committed. |
-| Reporting Requirements | Record retained execution owner, removed diagnostic duplication, source/test code-size delta, descriptor count, validation output, full-unit result and any configuration mismatch discovered before external execution. |
-| Stop Conditions | Stop for owner direction if one of the 20 rows cannot be represented through the public session configuration without recreating a profile/BYOB parser, terminal recognition requires a private Core pointer, or a requested contract change exceeds the identified Model-40 rejection repair. |
-| Exit Criteria | A single normal runner is compiled and validates all 20 S1 descriptors without external files; it has one public session construction route and one display-terminal observer, while CTest registration/external execution remain explicitly deferred to S3/S4. |
+| Reporting Requirements | Record all 20 CTest names and input-variable classes, runner/CTest ownership split, isolation disposition, source/test code-size delta, validation output and complete unit result. |
+| Stop Conditions | Stop for owner direction if CMake cannot register all 20 rows without reconstructing matrix semantics, a required asset metadata value would be committed, a row needs shared writable input, or canonical test partition rules would need a general weakening. |
+| Exit Criteria | The configured graph registers exactly the S1 20 rows under `integration`; every row has isolated working state and cache-only inputs; unavailable assets skip honestly; the canonical registry remains strict for other targets; no external input is executed or recorded. |
 | Original Owner Request | Single-person dual-role implementation of the complete integration test suite. |
-| Similar-Issue Sweep | Inspect every existing integration DOS/boot probe for duplicate profile parsing, private Core access, trace-only state or separate terminal detection. Retain distinct diagnostic probes only if they remain unregistered diagnosis, not normal matrix policy. |
+| Similar-Issue Sweep | Inspect every existing multi-case runner, integration registration, cache asset variable and resource/working-directory declaration for an equivalent one-target/many-cases assumption or hidden shared writable input. |
 
 ## Current Technical Baseline
 

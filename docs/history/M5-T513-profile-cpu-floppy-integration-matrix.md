@@ -11,3 +11,4 @@ the complete matrix outcome.
 | Subtask | Result | Implementation P |
 | --- | --- | --- |
 | S1 | Frozen the 20 supported rows, construction rejections and complete current-test receiver map; Model-40 silent FDD-format substitution is assigned to this T's session-owner repair. Debug unit 315/315 and documentation governance pass. | `73a0505d` |
+| S2 | Added the single normal 20-row runner with one session-config factory, copied-display terminal recognition, explicit unavailable-input skip and no Core trace/private-state policy. Debug unit 315/315 and documentation governance pass. | `d0c5c684` |
