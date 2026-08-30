@@ -5,6 +5,7 @@
 #include "core/machine/machine_interface.h"
 #include "vm/composition/session/session_interface.h"
 #include "vm/composition/session/session_private.h"
+#include "vm/composition/session/waiting.h"
 #include "vm/profile/default_profile/firmware/bios.h"
 
 #define VM_INT13_HDD_FDD_BYTES (1440u * 1024u)
@@ -175,6 +176,12 @@ C_INT main(C_VOID)
     for (instruction = 0u; instruction < VM_INT13_HDD_BOOT_BUDGET; ++instruction) {
         if (core_machine_run(session->core_machine, budget, &result) != TYPE_STATUS_OK ||
             result.reason == CORE_MACHINE_STOP_FAULT) goto done;
+        if (result.reason == CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) {
+            C_INT advanced = 0;
+
+            if (vm_session_waiting_advance(session, &result, &advanced) != TYPE_STATUS_OK ||
+                !advanced) goto done;
+        }
         if (core_machine_memory_read(session->core_machine, 0x0500u, &result_ax,
                 sizeof(result_ax)) != TYPE_STATUS_OK || result_ax == 0u) continue;
         if (core_machine_memory_read(session->core_machine, 0x0502u, &flags,

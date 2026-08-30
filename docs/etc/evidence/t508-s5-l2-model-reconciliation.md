@@ -37,4 +37,18 @@ real status port while BSY is set, then preserves its existing ERR/DRQ checks
 and PIO transfer. Successful poll instructions publish time through Core's
 existing retirement path; the HDC alone reaches its deadline and publishes
 DRQ/IRQ. The ATA PIO DOS, HDD boot, and Windows INT 13 trace integration tests
-cover that complete consumer path.
+cover that complete consumer path. The ROM INT 13 type-47 unit fixture now
+uses the same existing session waiting helper on HLT, so it observes that
+deadline through the product boundary instead of asserting an obsolete
+immediate-completion model.
+
+## Profile-Neutral Core Boundary Check
+
+`src/core` contains generic time-axis, controller-timing and deadline types
+only; it neither includes VM profile descriptors nor selects `default-at`, IBM
+5170, Model 339, or Model 40. VM resolves the selected profile, then copies
+one immutable generic plan into Core during construction. Core hardware
+personality names (for example a Compaq controller behavior) describe the
+behavior that Core owns; they do not encode machine selection, timing values,
+or source provenance. No product path has a runtime timing setter: Core alone
+advances guest time and VM only requests advancement to a published deadline.

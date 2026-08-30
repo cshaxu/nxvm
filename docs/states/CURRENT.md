@@ -2,30 +2,15 @@
 
 ## Current Work
 
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Corrective T508 S5. The owner rejected T508's retained unqualified generic-ATA service and Model-40 macro-axis boundaries; T508 is the latest closed numeric task. |
-| Admission And Approval | Owner approval in this thread on 2026-08-30: reopen and attain a correctly owned, externally corroborated L2 implementation. No exception permits a VM clock, host-to-Core tick injection, a second controller owner, or invented Manual-L3 provenance. |
-| Objective | Replace each rejected boundary with one sourced Other-L2 construction input where the available emulator models support it: generic ATA service and Model-40 macro pacing axis. Core remains the sole guest-time and controller-deadline owner. |
-| Non-goals | Do not claim physical/L3 timing, import third-party code, alter controller personalities, expose live timing setters, or implement a VM scheduler/second guest clock. |
-| Reference Baseline | T508 S1 ledger and S3 disposition; `1fa4c35b`; current stripped Release 0508. Re-read ATA-3/Compaq source material and available-local 86Box, MAME, PCjs and Bochs implementations under the source policy. |
-| Candidate Proposal | [T508 proposal](../history/M5-T508-core-timing-input-qualification-closure-proposal.md), extended only with Corrective S5 after source reconciliation establishes the selected L2 values and their units. |
-| Files And ABI Surface | Core HDC construction/scheduling and Core time-axis plan plus the default-PC/AT and Model-40 frozen profile constructors; default-PC/AT INT 13h HDC firmware, owner-local Core/VM tests, affected HDC integration harnesses, and T508 evidence/history/status. No public mutable ABI. |
-| Applicable Rules | Task Reading Set; execution, architecture, coding, documentation and source-policy authorities. Evidence records exact source/version/path and the distinction between Other-L2 and Manual-L3. |
-| Verification | First establish a line-addressed reconciliation ledger. Then run focused owner tests, full repository-only unit suite after S5, documentation governance, and on task closure full unit plus external-asset integration and a stripped Release 0509 build/hash. |
-| Expected Markers | Default ATA publishes a nonzero, profile-frozen Other-L2 service deadline and INT 13h waits for its BSY-to-DRQ transition through real ports; Model-40 publishes a nonphysical macro pacing axis; Standard limits only completed Core progress, Turbo omits only host waiting; physical availability remains false. |
-| Asset Needs | Read-only local manual and emulator source trees only; no guest-media or third-party source import. |
-| Reporting Requirements | Report the selected model, its source basis, unit conversion, rejected alternatives, exact owner path, tests, and any remaining lower-tier relation. |
-| Stop Conditions | Stop before implementation only if the available models give no unit-preserving, profile-applicable relation; record the contradiction and request a decision rather than guess. Stop if a required change would create a second clock/owner. |
-| Exit Criteria | Both inputs are evidenced as Other-L2 and implemented through the sole Core/profile construction route; tests prove deadlines/pacing and no physical claim; S5 and T508 closure gates and release artifact pass. |
-| Original Owner Request | Owner's 2026-08-30 request: reopen and analyze a correct Core-or-VM architecture that uses reasonable external-emulator practice to reach L2. |
-| Similar-Issue Sweep | Audit all HDC personalities and all profile time axes for the same unqualified-to-L2 opportunity; change only variants with comparable source and unit semantics, otherwise retain their explicit boundary. |
+No active packet. Corrective T508 S5 is awaiting only its coordinator closure
+commit after full verification; it adds no live timing setter or profile branch
+to Core.
 
 ## Current Technical Baseline
 
 - **Current developer artifact:** CMake target `vm-0-5-0508` emitted
   `nxvm_0_5_0508.exe` in a stripped Release build, SHA-256
-  `98B8BAE5DD009E1A2954A7698545C37E044365999C023440B52E79A1CE65E9D8`.
+  `7350EF960A3C611F0A74696E153F23BE73D1824A8E7FED1486A3995206F8DE30`.
   It retains the runtime debugger and contains no compiler debug information.
   Debug uses the repository-only unit route. T471 preserves Core-owned progression:
   a verified axis is Standard-paced only by host waiting against completed
@@ -57,7 +42,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T508 | Closed: Core accepts one provenance-neutral copied timing plan; the four-profile pending-DMA matrix reaches only Core deadlines, never the L1 escape. Unit 313/313, integration 20/20, governance and stripped Release 0508 pass. [History](../history/M5-T508-core-timing-input-qualification-closure.md). |
+| T508 | Reclosed: Core accepts one provenance-neutral copied timing plan; default ATA has an Other-L2 controller quantum and Model-40 an Other-L2 macro pacing axis. The four-profile matrix reaches only Core deadlines, never the L1 escape. Unit 313/313, integration 20/20, governance and stripped Release 0508 pass. [History](../history/M5-T508-core-timing-input-qualification-closure.md). |
 | T507 | Corrective S14 closed: copied DMA ratios publish deadlines; FDC, HDC and D4 retain one Core-owned deadline/owner route without a VM clock or controller mirror. Unit 312/312, integration 20/20, governance and stripped Release 0507 pass. [History](../history/M5-T507-core-scheduler-standard-turbo-performance-closure.md). |
 | T506 | Closed: selected 8237A D1--D10 relations are reconciled; Model-339 can advance to the next sourced DMA phase through the existing Core scheduler while unqualified contracts remain isolated. Unit 312/312, integration 20/20 and stripped Release 0506 pass. [History](../history/M5-T506-dma-service-arbitration-deadline-closure.md). |
 | T505 | Closed: Intel-backed cascade publication and withdrawal are immediate PIC-owner work, not a scheduled L1 tick. One construction-fixed PIC pair reuses the existing refresh calculation after source and command transitions; full unit 312/312 and integration 20/20 pass. [History](../history/M5-T505-pic-cascade-observable-progress-closure.md). |
