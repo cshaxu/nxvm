@@ -29,7 +29,7 @@ qualification.
 | Device clocks | `core_machine_clock_plan` ratios for DMA, PIT, auxiliary PIT, RTC, VADP, KBC and provider; scheduler converts each owner-local due value. | L3-capable rational input; all-zero is a legacy identity shorthand, not a second clock. |
 | Controller relation claims | `core_machine_controller_timing_rules` validates sourced rational/phase relations where represented. | Provenance is currently partial and applies only to selected relations; ledger/evidence remains the authority for L3 versus L2. |
 | FDC byte service | `core_machine_fdc_config.clock_ticks_per_second`; FDC converts NEC/Intel microsecond bounds through its sole deadline. | L3-capable formula input. |
-| HDC service | `core_machine_hdc_config.l2_service_ticks`, copied by the HDC owner. | Semantic defect: the name incorrectly excludes a possible manual L3 value. S2 must rename it without adding a new route. |
+| HDC service | `core_machine_hdc_config.service_ticks`, copied by the HDC owner. | Source-neutral input; Manual-L3 or Other-L2 provenance remains construction evidence. |
 | PIC/D4 | PIC publishes immediate state; D4 publishes one ordered next-Core-step transaction. | Neither has a missing duration to fill; both are non-duration owner relations. |
 
 ## Product Profile Disposition

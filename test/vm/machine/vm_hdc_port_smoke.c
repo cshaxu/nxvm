@@ -102,7 +102,7 @@ static C_INT vm_hdc_profile_contract_is_valid(C_VOID)
         hdc->bus.task_file.drive_head_port == HDC_DRIVE_HEAD_PORT &&
         hdc->bus.task_file.status_command_port == HDC_STATUS_COMMAND_PORT &&
         hdc->bus.task_file.alternate_status_device_control_port == HDC_ALT_STATUS_CONTROL_PORT &&
-        hdc->irq == 14u && hdc->l2_service_ticks == 0u &&
+        hdc->irq == 14u && hdc->service_ticks == 0u &&
         hdc->bus.task_file.lba28_supported;
 }
 

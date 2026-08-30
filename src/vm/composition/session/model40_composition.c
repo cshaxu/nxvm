@@ -53,7 +53,7 @@ static type_status vm_session_model40_materialize_controllers(vm_session *sessio
         0x0fu, 8000000u };
     hdc = (core_machine_hdc_config) {
         .protocol = CORE_MACHINE_HDC_PROTOCOL_COMPAQ_WD_40MB,
-        .irq = 14u, .l2_service_ticks = 16000u, .bus.task_file = {
+        .irq = 14u, .service_ticks = 16000u, .bus.task_file = {
             .data_port = 0x01f0u, .error_features_port = 0x01f1u,
             .sector_count_port = 0x01f2u, .sector_number_port = 0x01f3u,
             .cylinder_low_port = 0x01f4u, .cylinder_high_port = 0x01f5u,

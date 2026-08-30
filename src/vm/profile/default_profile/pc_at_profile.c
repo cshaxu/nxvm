@@ -188,7 +188,7 @@ static const vm_profile_default_pc_at_descriptor default_pc_at_descriptor = {
     default_pc_at_routes,
     sizeof(default_pc_at_routes) / sizeof(default_pc_at_routes[0]),
     { .protocol = CORE_MACHINE_HDC_PROTOCOL_ATA_PIO, .irq = 14u,
-        .l2_service_ticks = 0u,
+        .service_ticks = 0u,
         .bus.task_file = {
             .data_port = 0x01f0u, .error_features_port = 0x01f1u,
             .sector_count_port = 0x01f2u, .sector_number_port = 0x01f3u,
@@ -254,7 +254,7 @@ static const vm_profile_default_pc_at_descriptor ibm_5170_model_339_descriptor =
     ibm_5170_model_339_routes,
     sizeof(ibm_5170_model_339_routes) / sizeof(ibm_5170_model_339_routes[0]),
     { .protocol = CORE_MACHINE_HDC_PROTOCOL_IBM_WD1003_ST506, .irq = 14u,
-        .l2_service_ticks = 16000u,
+        .service_ticks = 16000u,
         .bus.task_file = {
             .data_port = 0x01f0u, .error_features_port = 0x01f1u,
             .sector_count_port = 0x01f2u, .sector_number_port = 0x01f3u,

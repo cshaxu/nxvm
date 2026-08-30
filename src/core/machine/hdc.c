@@ -433,7 +433,7 @@ static C_VOID core_machine_hdc_schedule_service(core_machine_hdc *hdc)
     type_unsigned_64 service_ticks;
 
     if (hdc == STD_NULL) return;
-    service_ticks = hdc->connect.config.l2_service_ticks;
+    service_ticks = hdc->connect.config.service_ticks;
     hdc->data.next_service_tick = service_ticks == 0u ? hdc->data.elapsed_ticks :
         hdc->data.elapsed_ticks + service_ticks;
 }

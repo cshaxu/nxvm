@@ -4,22 +4,22 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation T508 S2. |
+| Identifier Mode | Continuation T508 S3. |
 | Admission And Approval | Owner approved this new highest-priority implementation task on 2026-08-30: Core must accept sourced L3 inputs, built-in VM profiles must seek L2 or better, and L1 must remain only an explicit fallback. |
-| Objective | Remove the demonstrated L2-only naming impediment from the copied HDC service input while retaining one Core HDC owner and no provenance runtime branch. |
+| Objective | Decide the complete default-PC/AT and Model-40 unqualified-axis class from source and available emulator evidence; implement only a justified profile contract or retain one explicit unqualified boundary. |
 | Non-goals | Do not import external code; invent physical duration; create host-to-Core tick injection, runtime controller setters, a second scheduler/guest clock, controller mirror, profile-side controller, provenance-dependent Core branch, or per-personality fast path. |
 | Reference Baseline | `67cd07a6`; [T508 proposal](../history/M5-T508-core-timing-input-qualification-closure-proposal.md), [S1 ledger](../etc/evidence/t508-s1-timing-input-qualification-ledger.md), [T507 closure](../history/M5-T507-core-scheduler-standard-turbo-performance-closure.md), and its S14 deadline evidence. |
 | Candidate Proposal | [M5 T508 Core timing-input qualification closure](../history/M5-T508-core-timing-input-qualification-closure-proposal.md), placed first in the candidate queue and immediately admitted by owner direction. |
-| Files And ABI Surface | Core HDC configuration declaration/owner, its VM profile construction call sites, direct owner-local tests, and timing evidence. No public ABI change is presumed. |
+| Files And ABI Surface | Default-PC/AT and Model-40 profile construction, FDC/HDC timing inputs, Core copied time axis, profile/owner-local tests and timing evidence. No public ABI change is presumed. |
 | Applicable Rules | EXECUTION.md coverage-bearing ledger, S/T full-test and artifact lifecycle; ARCHITECTURE.md one Core time writer and opaque/copy boundary; CODING.md direct owner-local consolidation; source policy for manuals/external references; DOCUMENT.md evidence boundary. |
-| Verification | Update every in-repository initializer and assertion for the renamed copied input; run direct HDC/profile checks, complete unit, and documentation governance. |
-| Expected Markers | One source-neutral service input name appears at every HDC construction/consumption site; no L2-only name, compatibility shim, or duplicate field remains. |
-| Asset Needs | None beyond the accepted S1 ledger. |
-| Reporting Requirements | Report source/test line delta, every updated construction route, and confirmation that the HDC remains the sole deadline owner. |
-| Stop Conditions | Stop if the rename exposes a real distinct service semantic requiring a new config shape or public ABI; do not use a compatibility alias. |
-| Exit Criteria | S2 closes only after the obsolete L2-only term is absent, all construction routes use one copied field, direct checks and complete unit pass, and S3 receives the entire unqualified-axis class. |
+| Verification | Reconcile ATA-3, IBM/Compaq board material where available, current profile code, and retained external implementations; test all choices through direct profile/FDC/HDC/scheduler proof, complete unit, and documentation governance. |
+| Expected Markers | Every profile-axis row is either a source-backed L2-or-better contract or one explicit generic/unqualified boundary; ATA service timing is never selected independently from its Core axis. |
+| Asset Needs | Owner-managed ATA/IBM/Compaq sources and read-only 86Box, Bochs, PCjs and QEMU implementations; no external bytes are imported. |
+| Reporting Requirements | Report the exact source conclusion, all profile rows affected, the disposition of default ATA service, and why no number is inferred when evidence is insufficient. |
+| Stop Conditions | Stop if a candidate rate applies only to a different named board/device or requires a host/generated-time route; retain the whole class instead of applying that value to one controller. |
+| Exit Criteria | S3 closes only with a complete, source-honest disposition for both profiles and their FDC/HDC consumers, focused evidence, complete unit, and a bounded S4 matrix plan. |
 | Original Owner Request | Owner requires manual L3 or emulator-derived L2 inputs, explicit L1 fallback only, a Core seam capable of L3 values, and VM profile inputs that seek L2 or better; proposal, queue priority, and immediate implementation are approved. |
-| Similar-Issue Sweep | Update all Core, VM, test and documentation references to the HDC field; do not change FDC, DMA, D4 or generic-profile time qualification in this S. |
+| Similar-Issue Sweep | Include default-PC/AT and Model-40 time axis, clock ratios, FDC microsecond conversion and HDC service; do not use an ATA delay to conceal an otherwise unqualified profile. |
 
 ## Current Technical Baseline
 

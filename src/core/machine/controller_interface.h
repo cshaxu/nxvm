@@ -113,9 +113,10 @@ typedef struct core_machine_hdc_xebec_config {
 typedef struct core_machine_hdc_config {
     core_machine_hdc_protocol protocol;
     type_unsigned_8 irq;
-    /* Frozen reference-derived macro service quantum in Core elapsed ticks.
+    /* Frozen service quantum in Core elapsed ticks.  Its Manual-L3 or
+     * Other-L2 provenance belongs to the construction evidence, not Core.
      * Zero publishes the owner's immediate deadline without inventing a duration. */
-    type_unsigned_32 l2_service_ticks;
+    type_unsigned_32 service_ticks;
     union {
         core_machine_hdc_task_file_config task_file;
         core_machine_hdc_xebec_config xebec;
