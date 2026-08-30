@@ -41,8 +41,7 @@ static type_unsigned_32 iret_s51_real_flags_load(
     core_machine_cpu_profile profile, type_unsigned_32 flags)
 {
     const type_unsigned_16 known_mask = profile < CORE_MACHINE_CPU_PROFILE_80286 ?
-        0x0fd5u : (profile == CORE_MACHINE_CPU_PROFILE_80286 ? 0x7fd5u :
-            0xffd5u);
+        0x0fd5u : 0x7fd5u;
 
     return (flags & known_mask) | 0x02u;
 }
@@ -103,7 +102,8 @@ static C_INT iret_s51_real_case(core_machine_cpu_profile profile,
         failed |= after.data.cs.limit != before.data.cs.limit;
         failed |= after.data.cs.flagValid != before.data.cs.flagValid;
         failed |= after.data.cs.sregtype != before.data.cs.sregtype;
-        failed |= after.data.eflags != expected_flags;
+        failed |= (after.data.eflags & iret_s51_real_flags_load(profile,
+            0xffffu)) != expected_flags;
         failed |= after.data.eax != before.data.eax;
         failed |= after.data.ecx != before.data.ecx;
         failed |= after.data.edx != before.data.edx;

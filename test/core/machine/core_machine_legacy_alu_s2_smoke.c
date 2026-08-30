@@ -113,8 +113,7 @@ static type_unsigned_16 legacy_alu_real_flags_image(type_unsigned_32 flags)
 static type_unsigned_16 legacy_alu_real_flags_known_mask(
     core_machine_cpu_profile profile)
 {
-    return profile < CORE_MACHINE_CPU_PROFILE_80286 ? 0x0fd5u :
-        (profile == CORE_MACHINE_CPU_PROFILE_80286 ? 0x7fd5u : 0xffd5u);
+    return profile < CORE_MACHINE_CPU_PROFILE_80286 ? 0x0fd5u : 0x7fd5u;
 }
 
 static type_unsigned_32 legacy_alu_parity(type_unsigned_32 value)

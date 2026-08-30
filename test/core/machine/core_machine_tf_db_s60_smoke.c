@@ -168,8 +168,7 @@ static C_INT tf_db_s60_frame_real(tf_db_s60_machine *state, const t_cpu *after,
 {
     type_unsigned_16 frame[3u] = { 0u, 0u, 0u };
     const type_unsigned_16 known_mask = profile < CORE_MACHINE_CPU_PROFILE_80286 ?
-        0x0fd5u : (profile == CORE_MACHINE_CPU_PROFILE_80286 ? 0x7fd5u :
-            0xffd5u);
+        0x0fd5u : 0x7fd5u;
     const type_unsigned_16 expected_image = TYPE_MASK_UNSIGNED_16(
         (expected_flags & ~VCPU_EFLAGS_RESERVED) | 0x02u);
 
@@ -177,7 +176,8 @@ static C_INT tf_db_s60_frame_real(tf_db_s60_machine *state, const t_cpu *after,
         after->data.ss.base + (type_unsigned_16)after->data.esp,
         (type_virtual_address)frame, sizeof(frame)) == TYPE_STATUS_OK &&
         frame[0] == expected_ip && frame[1] == 0u &&
-        (frame[2] & known_mask) == (expected_image & known_mask);
+        (frame[2] & known_mask) == (expected_image & known_mask) &&
+        (profile != CORE_MACHINE_CPU_PROFILE_80386 || (frame[2] & 0x8000u) == 0u);
 }
 
 static C_INT tf_db_s60_test_real(C_VOID)
@@ -194,7 +194,7 @@ static C_INT tf_db_s60_test_real(C_VOID)
     if (!failed) {
         state.machine->executor_cpu.data.esp = 0x8000u;
         state.machine->executor_cpu.data.eflags = VCPU_EFLAGS_TF | VCPU_EFLAGS_IF |
-            VCPU_EFLAGS_CF;
+            VCPU_EFLAGS_CF | 0x8000u;
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= !tf_db_s60_run(&state, code, sizeof(code), 0u, &result, &after,
             &diagnostic);

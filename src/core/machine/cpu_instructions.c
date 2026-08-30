@@ -71,10 +71,7 @@ static type_unsigned_16 _e_real_flags_defined_mask(
         context->cpu_profile < CORE_MACHINE_CPU_PROFILE_80286) {
         return 0x0fd5u;
     }
-    if (context->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286) {
-        return 0x7fd5u;
-    }
-    return 0xffd5u;
+    return 0x7fd5u;
 }
 
 static type_unsigned_16 _e_real_flags_load_16(

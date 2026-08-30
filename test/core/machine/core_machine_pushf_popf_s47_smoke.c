@@ -43,8 +43,7 @@ static type_unsigned_16 pushf_popf_s47_real_flags_known_mask(
     core_machine_cpu_profile profile)
 {
     if (profile < CORE_MACHINE_CPU_PROFILE_80286) return 0x0fd5u;
-    if (profile == CORE_MACHINE_CPU_PROFILE_80286) return 0x7fd5u;
-    return 0xffffu;
+    return 0x7fd5u;
 }
 
 static C_INT pushf_popf_s47_prepare(core_machine_cpu_profile profile,
@@ -107,7 +106,7 @@ static C_INT pushf_popf_s47_test_defaults(C_VOID)
     static const type_unsigned_8 opcodes[] = {0x9cu, 0x9du};
     const type_unsigned_32 flags = VCPU_EFLAGS_CF | VCPU_EFLAGS_PF | VCPU_EFLAGS_AF |
         VCPU_EFLAGS_ZF | VCPU_EFLAGS_SF | VCPU_EFLAGS_IF | VCPU_EFLAGS_DF |
-        VCPU_EFLAGS_OF | 0x02u;
+        VCPU_EFLAGS_OF | 0x8002u;
     type_unsigned_8 profile;
 
     for (profile = 0u; profile != sizeof(profiles) / sizeof(profiles[0]); ++profile)
@@ -146,7 +145,9 @@ static C_INT pushf_popf_s47_test_defaults(C_VOID)
                         (observed & pushf_popf_s47_real_flags_known_mask(profiles[profile])) !=
                         (pushf_popf_s47_real_flags_image(profiles[profile],
                             (type_unsigned_16)flags) &
-                            pushf_popf_s47_real_flags_known_mask(profiles[profile]));
+                            pushf_popf_s47_real_flags_known_mask(profiles[profile])) ||
+                        (profiles[profile] == CORE_MACHINE_CPU_PROFILE_80386 &&
+                            (observed & 0x8000u) != 0u);
                 else
                     failed |= (after.data.eflags &
                         pushf_popf_s47_real_flags_known_mask(profiles[profile])) !=

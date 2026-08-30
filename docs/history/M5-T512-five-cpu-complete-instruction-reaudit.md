@@ -79,3 +79,16 @@ conflict: 80386 real/V86 stack images must clear bit 15, while the current
 16-bit helper retains it. Full repository-only unit is 313/313 and
 documentation governance passes. S4 is the sole shared-mechanism receiver;
 S5--S8 remain the profile-specific form and timing sweeps.
+
+## S4: Shared FLAGS Image, Load And Frame Repair
+
+Repair the one shared Core 16-bit FLAGS **image** mechanism found by S3. Intel 386 DX
+Programmer's Reference Manual 230985-003, printed page 14-7, states that
+real-address `PUSHF`, interrupt and exception stack images keep bit 15 clear;
+the virtual-8086 rule states the same result. The current 80386 branch instead
+includes bit 15 in its shared `FFD5h` image mask. S4 changes this one Core
+owner and its finite image/test-oracle callers. The shared helper's firmware
+load is examined but no 32-bit EFLAGS load or protected-frame contract is
+changed. It does not alter decoder admission, timing, VM profile or any value
+the manual leaves undefined. Full repository-only unit and documentation
+governance are required before its implementation P may close.

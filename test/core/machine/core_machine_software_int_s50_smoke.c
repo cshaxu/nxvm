@@ -69,8 +69,7 @@ static type_unsigned_16 software_int_s50_real_flags_known_mask(
     core_machine_cpu_profile profile)
 {
     if (profile < CORE_MACHINE_CPU_PROFILE_80286) return 0x0fd5u;
-    if (profile == CORE_MACHINE_CPU_PROFILE_80286) return 0x7fd5u;
-    return 0xffffu;
+    return 0x7fd5u;
 }
 
 static C_INT software_int_s50_prepare_real(cli_sti_machine *state,
@@ -109,7 +108,9 @@ static C_INT software_int_s50_check_real_frame(cli_sti_machine *state,
             (frame[2] & software_int_s50_real_flags_known_mask(profile)) ==
             (software_int_s50_real_flags_image(profile,
                 (type_unsigned_16)before->data.eflags) &
-                software_int_s50_real_flags_known_mask(profile));
+                software_int_s50_real_flags_known_mask(profile)) &&
+            (profile != CORE_MACHINE_CPU_PROFILE_80386 ||
+                (frame[2] & 0x8000u) == 0u);
     }
     {
         type_unsigned_32 frame[3] = { 0u, 0u, 0u };
@@ -121,7 +122,9 @@ static C_INT software_int_s50_check_real_frame(cli_sti_machine *state,
             (frame[2] & software_int_s50_real_flags_known_mask(profile)) ==
             (software_int_s50_real_flags_image(profile,
                 (type_unsigned_16)before->data.eflags) &
-                software_int_s50_real_flags_known_mask(profile));
+                software_int_s50_real_flags_known_mask(profile)) &&
+            (profile != CORE_MACHINE_CPU_PROFILE_80386 ||
+                (frame[2] & 0x8000u) == 0u);
     }
 }
 
@@ -129,7 +132,7 @@ static C_INT software_int_s50_real_transfer(core_machine_cpu_profile profile,
     const software_int_form *form, const type_unsigned_8 *prefix, type_unsigned_8 prefix_bytes)
 {
     const type_unsigned_32 flags = VCPU_EFLAGS_CF | VCPU_EFLAGS_PF | VCPU_EFLAGS_IF |
-        VCPU_EFLAGS_TF | VCPU_EFLAGS_DF | VCPU_EFLAGS_OF;
+        VCPU_EFLAGS_TF | VCPU_EFLAGS_DF | VCPU_EFLAGS_OF | 0x8000u;
     const type_unsigned_8 width = prefix_bytes != 0u && prefix[0] == 0x66u ? 4u : 2u;
     cli_sti_machine state;
     core_machine_cpu_diagnostic diagnostic;

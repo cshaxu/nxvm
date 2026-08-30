@@ -69,8 +69,7 @@ static type_unsigned_32 scas_real_flags_known_mask(
     core_machine_cpu_profile profile)
 {
     if (profile < CORE_MACHINE_CPU_PROFILE_80286) return 0x0fd5u;
-    if (profile == CORE_MACHINE_CPU_PROFILE_80286) return 0x7fd5u;
-    return 0xffd5u;
+    return 0x7fd5u;
 }
 
 static C_INT scas_run(scas_machine *state, const type_unsigned_8 *code, type_unsigned_8 bytes,

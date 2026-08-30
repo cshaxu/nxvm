@@ -4,22 +4,22 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | T512 S3 accepted; no implementation S is active. S4 is next. |
+| Identifier Mode | Continuation T512; S1--S3 accepted, S4 is active. |
 | Admission And Approval | Owner approved the five-CPU complete audit after Td S157 removed the already-completed D4 candidate. |
-| Objective | Re-establish a complete, source-backed conformance result for the supported 8086, 8088, 80186, 80286 and 80386DX profiles before any repair. |
-| Non-goals | Do not repair an isolated FLAGS symptom first, create profile-side CPU behavior, duplicate state/retirement paths, import third-party source, or change `build/output` YAML. |
+| Objective | Repair the one proven shared Core 80386 real/V86 16-bit FLAGS stack-image conflict before the independent full instruction sweeps. |
+| Non-goals | Do not alter the distinct 32-bit EFLAGS load or protected-frame paths, add profile-side CPU behavior, alter the decoder/timing selector, assert a value for any remaining undefined bit, import third-party source, or change `build/output` YAML. |
 | Reference Baseline | Current Core decode/execution, existing per-CPU ledgers, T499 CPU/profile audit history, and stripped Release 0511 baseline. |
 | Candidate Proposal | [Five-CPU complete instruction re-audit and repair](../proposals/m5-five-cpu-complete-instruction-reaudit.md). |
-| Files And ABI Surface | S3 accepted the corrected 80286 Appendix-B locator and complete List-1-to-Core owner map. S4 must declare any Core-only shared FLAGS/test surface before implementation. |
+| Files And ABI Surface | `src/core/machine/cpu_instructions.c` plus the bounded Core FLAGS image and test-oracle owners: PUSHF/POPF, software-INT, IRET, TF/DB, SCAS and legacy-ALU smokes. No public ABI, VM profile, decoder, timing selector, 32-bit EFLAGS path or artifact template changes. |
 | Applicable Rules | Task Reading Set; execution, architecture, coding, source-policy and documentation authorities. Intel originals are normative; external emulator code is read-only corroboration only. |
 | Verification | Every S closes with the complete repository-only unit suite and documentation governance; T closure also runs external-ROM/disk integration and builds stripped Release 0512. |
-| Expected Markers | S3 records the rendered 80286 `Clocks`-column locator correction and complete per-profile owner partition. S4 is not admitted until its exact shared FLAGS image/load/frame batch is recorded. |
-| Asset Needs | Read-only owner-managed manuals under `assets/manuals`; no manual, ROM, guest media or third-party source import. |
-| Reporting Requirements | Record each manual rule, complete current-code disposition, source tier and exact receiver for any nonconformance; undefined state must never receive a fabricated exact value. |
-| Stop Conditions | S2--S3 are accepted. Stop before any implementation not confined to the shared Core FLAGS image/load/frame batch; stop and report any source/license conflict or missing normative manual. |
-| Exit Criteria | Every decoder-admitted row obtains a manual locator and current-code disposition; defects are repaired once at the Core owner, swept across profiles, and verified by full gates. |
+| Expected Markers | One 80386 16-bit FLAGS image canonicalization rule has bit 15 clear for real/V86 stack images; all listed test oracles exclude other undefined bits, and no 32-bit EFLAGS path changes. |
+| Asset Needs | Read-only owner-managed Intel 386 DX manual under `assets/manuals`; rendered printed page 14-7 is the source rule. No manual, ROM, guest media or third-party source import. |
+| Reporting Requirements | Record the source quotation locator, exact shared image-caller/test sweep, source/test code-size delta, retained owner path and full unit result. |
+| Stop Conditions | Stop if the source distinguishes an unrepresented real/V86 image behavior; do not infer a new value or broaden the change to any 32-bit load or protected-frame path without a revised S brief. |
+| Exit Criteria | The shared Core mechanism produces a bit-15-clear 16-bit image for 80386 real/V86 paths, deterministic zero canonicalization remains confined to reserved state, all equivalent test oracles are swept, documentation governance and complete unit pass. |
 | Original Owner Request | Audit and correctly repair all supported five-CPU instruction, architectural-state and timing behavior using manual-first evidence and minimal single-owner design. |
-| Similar-Issue Sweep | S1 covers all five profiles, Core decoder/execution/state/delivery/retirement paths, existing ledgers and repository tests; later repair S tasks sweep every equivalent form and profile. |
+| Similar-Issue Sweep | Sweep every `_e_real_flags_image_16()` caller plus every test profile-mask helper; inspect `_e_real_flags_load_16()` and all 32-bit EFLAGS paths only to prove their distinct, unchanged contract. |
 
 ## Current Technical Baseline
 
