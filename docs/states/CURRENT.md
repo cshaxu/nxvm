@@ -4,22 +4,22 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation T507 S9. |
-| Admission And Approval | Owner approved continuous solo execution and the controller-by-controller source/List 1/List 2/owner-repair structure on 2026-08-29. S1--S8 are accepted; this is the selected VADP CGA/EGA and copied-presentation batch. |
-| Objective | Re-audit CGA/EGA port, VRAM, CRTC, planar, text-fallback, display-enable, snapshot and presentation routes through the one Core VADP owner; repair every confirmed owner or direct-consumer defect without creating a parallel video path. |
-| Non-goals | Do not create a renderer-owned guest mode/frame state, merge CGA/EGA/VGA personalities, alter PIC/DMA/PIT/RTC/KBC/FDC/HDC/D4 ownership, expose raw VADP state, or create a VM/profile video scheduler. |
-| Reference Baseline | e9426be3; T503 FDC evidence and T507 S1 progression matrix. |
+| Identifier Mode | Continuation T507 S10. |
+| Admission And Approval | Owner approved continuous solo execution and the controller-by-controller source/List 1/List 2/owner-repair structure on 2026-08-29. S1--S9 are accepted; this is the selected ATA, WD1003, Compaq/WD and Xebec HDC-personality batch. |
+| Objective | Re-audit every selected HDC personality's command phase, media, DRQ, IRQ, DMA/PIO, reset and scheduler-consumer route through one Core HDC owner; repair every confirmed owner or direct-consumer defect without merging personalities. |
+| Non-goals | Do not make ATA a generic AT fixed-disk alias, merge ATA/WD1003/Compaq/Xebec state, invent mechanical service delays, add a second media cache/controller, expose raw HDC state, or create VM/profile/firmware completion paths. |
+| Reference Baseline | 4b188f2f; T468 ATA, T479 personality, T494 Xebec and T503 HDC route evidence. |
 | Candidate Proposal | [M5 Core scheduler Standard/Turbo performance closure](../proposals/m5-core-scheduler-standard-turbo-performance-closure.md). |
-| Files And ABI Surface | VADP CGA/EGA, copied display snapshot and direct presentation consumers, owner-local tests/evidence/history only; no renderer guest-state cache, raw-device pointer or parallel frame path. |
+| Files And ABI Surface | Core HDC personalities, typed DMA/IRQ bindings, media provider, scheduler observation and direct firmware/VM consumers, owner-local tests/evidence/history only; no raw controller pointer, shared task-file mirror or duplicate media/cache. |
 | Applicable Rules | EXECUTION.md complete finite batch/review; ARCHITECTURE.md one owner per topology and publication route; CODING.md direct owner-local repair; source policy before manual/external research; DOCUMENT.md evidence boundary. |
-| Verification | Render/read selected IBM CGA/EGA and CRTC sources; inspect VADP/VRAM/snapshot/VM presentation and every direct consumer; cross-check available 86Box/MAME/PCjs/Bochs/QEMU logic; freeze List 1/List 2; add focused regression for each repair; run complete unit before S closure. |
-| Expected Markers | A T507 S9 VADP evidence marker; every finite CGA/EGA/CRTC/VRAM/snapshot/presentation row has a Manual-L3/Other-L3/L2/L1 disposition, owner, receiver and regression or explicit boundary. |
+| Verification | Render/read selected ATA/IBM/Compaq/Xebec sources; inspect HDC/media/DMA/PIC/scheduler and every direct consumer; cross-check available 86Box/MAME/PCjs/Bochs/QEMU logic; freeze List 1/List 2; add focused regression for each repair; run complete unit before S closure. |
+| Expected Markers | A T507 S10 HDC evidence marker; every selected personality command/phase/media/IRQ/DMA/reset/deadline row has a Manual-L3/Other-L3/L2/L1 disposition, owner, receiver and regression or explicit boundary. |
 | Asset Needs | Existing local manual/external-reference copies only; no import of source, firmware or media. |
 | Reporting Requirements | Record source/OCR qualification, List 1/List 2 rows, accepted/rejected external lessons, every changed owner/downstream path, focused proof, full-unit result and code-size accounting. |
-| Stop Conditions | Stop and revise if a repair needs an unsourced delay, host input time, unapproved public contract, mutable state outside Core, profile/VM workaround, topology merge or second scheduler. |
-| Exit Criteria | Every frozen VADP/video-publication row is fixed or explicitly retained at its supported level; no duplicate port, VRAM, snapshot or presentation route remains; direct consumers and full unit pass. |
+| Stop Conditions | Stop and revise if a repair needs an unsourced delay, host input time, unapproved public contract, mutable state outside Core, profile/VM workaround, personality merge or second scheduler. |
+| Exit Criteria | Every frozen HDC-personality/publication/timing row is fixed or explicitly retained at its supported level; no duplicate task-file, media, DRQ/DMA, IRQ, reset or deadline route remains; direct consumers and full unit pass. |
 | Original Owner Request | Complete the global scheduler/Standard--Turbo performance closure without fast-pathing or violating Core as sole guest-clock owner. |
-| Similar-Issue Sweep | CGA/EGA port and memory maps, CRTC geometry, mode/enable state, planar access, text fallback, copied snapshot lifetime, presentation, reset/finalize and direct VM consumers. |
+| Similar-Issue Sweep | ATA, WD1003, Compaq/WD and Xebec command/status phases; media/CHS state; DRQ, DMA, IRQ and reset; scheduler observation; board wiring; firmware acknowledgment; and direct VM consumers. |
 
 ## Current Technical Baseline
 
