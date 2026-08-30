@@ -4,22 +4,22 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | T510 S2 accepted; task-level closure S3 is not yet admitted. |
-| Admission And Approval | Owner approved the complete HDC-personality implementation task on 2026-08-30; S1 `09a83060`/`ce4d685b` established this bounded batch and S2 P1 is `53698062`. |
-| Objective | Complete the one-owner HDC deadline batch: distinguish task-file command and inter-sector service, route Xebec DCB completion through that same Core deadline, and remove the unqualified Model-40 duration. |
-| Non-goals | Do not add physical seek/MFM/ECC/media simulation, infer a Compaq duration, create a profile-specific Core branch, VM scheduler, controller copy or mutable runtime timing setter. |
-| Reference Baseline | T510 S1 List 1/List 2, T508 ATA deadline, T479/T494 HDC protocol evidence and `ce4d685b`. |
+| Identifier Mode | Continuation T510 S3. |
+| Admission And Approval | Owner approved the complete HDC-personality implementation task on 2026-08-30. S1 `09a83060`/`ce4d685b` froze the ledger; S2 `53698062`/`0eb318eb` implements and accepts the complete owner-local batch. |
+| Objective | Close the complete HDC-personality task: audit the four final ledger dispositions against actual code, run repository unit plus external-asset integration, and reproduce the current stripped Release artifact. |
+| Non-goals | Do not change HDC behavior or evidence tiers, add physical seek/MFM/ECC/media simulation, infer a Compaq duration, create a profile-specific Core branch, VM scheduler, controller copy or mutable runtime timing setter. |
+| Reference Baseline | T510 S1 List 1/List 2, accepted S2 evidence, T508 ATA deadline, T479/T494 HDC protocol evidence and `0eb318eb`. |
 | Candidate Proposal | [HDC personality service-deadline proposal](../proposals/m5-hdc-personality-service-deadline-closure.md). |
-| Files And ABI Surface | `controller_interface.h`, HDC owner, selected VM compositions/profiles and existing HDC/profile tests. Generic immutable config only; no public mutable ABI. |
+| Files And ABI Surface | Closure evidence, task history and status/queue records only unless audit proves a specific defect; no public mutable ABI. |
 | Applicable Rules | Task Reading Set; architecture/coding/source-policy rules. Core owns HDC phase, elapsed tick and completion; VM selects frozen generic values only. |
-| Verification | Focused ATA/WD1003/Compaq/Xebec and profile tests 8/8; complete repository-only unit 313/313; documentation governance passes. Evidence records source values, owner sweep and code-size result. |
+| Verification | Re-run complete repository-only unit, all integration tests using external assets, documentation governance and current stripped Release build; record the artifact hash and full four-personality ledger audit. |
 | Expected Markers | ATA 200/200, Model-339 16000/7840, Model-40 0/0 and XT 250/0 become explicit construction values; Xebec has no instant DCB-to-DMA/result path. |
-| Asset Needs | Read-only T510 sources and local emulator references only; no import. |
-| Reporting Requirements | Record every changed personality, retained zero boundary, HDC-only data flow, test result, actual line count and obsolete path removal. |
-| Stop Conditions | Stop if generic phase separation cannot retain the one HDC owner, or if a source requires a physical media model rather than the admitted L2 quantum. |
-| Exit Criteria | All four personality routes have the List-2 disposition implemented and tested, with one deadline owner and no unqualified service value presented as sourced. |
+| Asset Needs | Existing integration assets only; no source, firmware or guest-media import. |
+| Reporting Requirements | Record every final ledger disposition, gate result, stripped artifact hash, HDC-only data flow and any explicit transfer. |
+| Stop Conditions | Stop if audit finds a ledger row not mapped to the accepted one-owner route, an integration failure attributable to T510, or a Release artifact that contains compiler debug information. |
+| Exit Criteria | All four personality routes have the List-2 disposition implemented and tested, with one deadline owner and no unqualified service value presented as sourced; unit, integration, governance and stripped Release all pass. |
 | Original Owner Request | Owner requested single-session complete HDC personality coverage. |
-| Similar-Issue Sweep | Every `service_ticks` construction, every HDC completion phase, Core deadline query/advance, HDC port/DMA/IRQ consumer and all four profile tests. |
+| Similar-Issue Sweep | Every `service` construction, every HDC completion phase, Core deadline query/advance, HDC port/DMA/IRQ consumer, four profile tests, integration tests and current Release target. |
 
 ## Current Technical Baseline
 
