@@ -629,11 +629,6 @@ static C_VOID core_machine_dma_set_drq(t_dma *primary, t_dma *secondary,
     default:
         break;
     }
-    if (primary->data.status & VDMA_STATUS_DRQS) {
-        TYPE_SET_BIT(secondary->data.status, VDMA_STATUS_DRQ(0));
-    } else {
-        TYPE_CLEAR_BIT(secondary->data.status, VDMA_STATUS_DRQ(0));
-    }
 }
 
 type_status core_machine_dma_bind_channel(t_latch *latch, t_dma *primary,
@@ -853,9 +848,6 @@ static C_VOID core_machine_dma_advance_one(t_latch *latch, t_dma *primary,
                 secondary->data.drx = 1u;
             }
             dma_service_begin(primary, id);
-            if (!VDMA_GetSTATUS_DRQS(primary->data.status)) {
-                TYPE_CLEAR_BIT(secondary->data.status, VDMA_STATUS_DRQ(0));
-            }
             if (!primary->data.request) {
                 TYPE_CLEAR_BIT(secondary->data.request, VDMA_REQUEST_DRQ(0));
             }

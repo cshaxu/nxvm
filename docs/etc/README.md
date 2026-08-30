@@ -18,6 +18,7 @@ principal documents named in [docs/README.md](../README.md).
 | `evidence/t503-s2-clock-route-reconciliation.md` | Core route owner | T503 S2's PIT/PIC/refresh/HLT route reconciliation, focused proof and no-duplicate-path disposition. |
 | `evidence/t503-s3-pic-cpu-direct-audit.md` | Core PIC owner | T503 S3's fresh 8259A-to-CPU manual, code and external-reference reconciliation; it records the complete route matrix and any retained timing boundary. |
 | `evidence/t503-s4-pit-consumer-direct-audit.md` | Core PIT owner | T503 S4's direct Intel/IBM/D3PE PIT-to-IRQ0, refresh, speaker and D4 consumer audit; it records the one Gate/OUT repair and complete focused proof. |
+| `evidence/t503-s5-dma-provider-direct-audit.md` | Core DMA owner | T503 S5's direct Intel/IBM/selected-external 8237A-to-provider audit; it records the removed cascade-state mirror, selected provider routes and focused proof. |
 | `evidence/t500-s2-test-audit.md` | Verification owner | T500 S2's complete configured-test and test-target classification, resource findings and explicit non-registration dispositions; its generated inventory retains no owner-managed asset path. |
 | `evidence/t500-s3-component-test-architecture.md` | Verification owner | T500 S3's one-tree component/route architecture and finite migration/resource decisions consuming the S2 test inventory. |
 | `evidence/t500-s7-test-corpus-disposition.md` | Verification owner | T500 S7's complete disposition of the task's finite unregistered test targets and shared EGA scenarios; CMake remains the sole route registry. |

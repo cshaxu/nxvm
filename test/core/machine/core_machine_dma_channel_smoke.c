@@ -755,6 +755,26 @@ C_INT main(C_VOID)
         failed = 1;
     }
 
+    /* A masked primary DREQ must not become a real secondary cascade request
+     * and starve an unrelated unmasked secondary channel. */
+    core_machine_dma_reset(&latch, &primary, &secondary);
+    words[0] = 0u;
+    word_fixture.words[0] = 0xd357u;
+    word_fixture.next = 0u;
+    core_machine_dma_write_channel2(&port, 0x1a20u, 0u, 0u, 0x86u);
+    core_machine_dma_write_secondary_channel(&port, 1u, 0x0b20u, 0u, 0u,
+        0x85u);
+    core_machine_port_write(&port, 0x00dcu, 0u);
+    core_machine_dma_request_assert(&primary, &secondary, &binding);
+    core_machine_dma_request_assert(&primary, &secondary, &word_bindings[0]);
+    core_machine_dma_advance(&latch, &primary, &secondary, &memory, 1u);
+    if (core_machine_memory_read_physical(&memory, 0x1640u,
+            (type_virtual_address)words, sizeof(words[0])) != TYPE_STATUS_OK ||
+        words[0] != 0xd357u || fixture.next != 0u ||
+        !VDMA_GetSTATUS_DRQ(primary.data.status, 2u)) {
+        failed = 1;
+    }
+
     /* Either controller disable gate prevents a pending bound request from
      * publishing a device or memory transfer until software reenables it. */
     core_machine_dma_reset(&latch, &primary, &secondary);
