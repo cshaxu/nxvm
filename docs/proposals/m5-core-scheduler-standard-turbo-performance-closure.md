@@ -77,31 +77,31 @@ List 1/List 2 for its deadline or immediate-action surface. It then fixes the
 complete discovered owner-local batch, including affected downstream devices,
 or retains each unsupported relation with a truthful L1/L2 receiver.
 
-1. **S3 — PIC 8259A.** Re-audit source/command/EOI/cascade publication and
+1. **S3 - PIC 8259A.** Re-audit source/command/EOI/cascade publication and
    every scheduler refresh/blocker. Repair every real late or duplicate
    publication path; retain no fictional PIC delay.
-2. **S4 — DMA 8237A.** Re-audit request, arbitration, phase, DMA clock,
+2. **S4 - DMA 8237A.** Re-audit request, arbitration, phase, DMA clock,
    refresh, FDC DMA2 and Xebec DMA3 publication through the present scheduler.
-3. **S5 — PIT 8253/8254.** Re-audit counter/output deadlines and IRQ0,
+3. **S5 - PIT 8253/8254.** Re-audit counter/output deadlines and IRQ0,
    refresh, speaker and board-consumer ordering.
-4. **S6 — RTC/CMOS.** Re-audit periodic/update/alarm deadlines, IRQ8 and
+4. **S6 - RTC/CMOS.** Re-audit periodic/update/alarm deadlines, IRQ8 and
    NMI/firmware-facing board effects.
-5. **S7 — KBC 8042 and XT PPI keyboard.** Re-audit command, serial, typematic,
+5. **S7 - KBC 8042 and XT PPI keyboard.** Re-audit command, serial, typematic,
    A20/reset and IRQ1 deadlines or immediate transitions for both topologies.
-6. **S8 — Intel 8272A FDC and media/DMA2 consumer.** Re-audit command, seek,
+6. **S8 - Intel 8272A FDC and media/DMA2 consumer.** Re-audit command, seek,
    byte gate, DRQ, TC, IRQ6, cancellation and reset without inventing rotation
    or mechanics timing.
-7. **S9 — VADP CGA/EGA.** Re-audit that video advancement is either a sourced
+7. **S9 - VADP CGA/EGA.** Re-audit that video advancement is either a sourced
    owner-local deadline or an explicitly non-wakeup/presentation relation;
    preserve VADP as the sole port/VRAM/snapshot owner.
-8. **S10 — HDC personalities.** Re-check ATA, WD1003, Compaq/WD and Xebec
+8. **S10 - HDC personalities.** Re-check ATA, WD1003, Compaq/WD and Xebec
    phase, DRQ/IRQ/DMA or PIO consumers against the current scheduler.
-9. **S11 — Model-40 D4 refresh-hold.** Re-audit the board-specific immediate,
+9. **S11 - Model-40 D4 refresh-hold.** Re-audit the board-specific immediate,
    hold and reset boundary separately from generic DMA.
-10. **S12 — Core scheduler composition.** Only after S3--S11 have accepted
+10. **S12 - Core scheduler composition.** Only after S3--S11 have accepted
     dispositions, freeze the complete owner matrix; remove eligible global
     per-tick scans and compose one earliest-deadline/same-tick order path.
-11. **S13 — Standard/Turbo product and performance closure.** Verify the one
+11. **S13 - Standard/Turbo product and performance closure.** Verify the one
     Core path across the profile/CPU/media corpus, compare functional event
     observations and host cost, run full unit/integration, and publish the
     stripped Release artifact.
