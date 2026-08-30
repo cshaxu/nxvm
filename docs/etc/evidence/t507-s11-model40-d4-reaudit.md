@@ -1,6 +1,6 @@
 # T507 S11 Model-40 D4 Refresh-Hold Re-Audit
 
-`M5:T507:S11:D4-REFRESH-HOLD:P1`
+`M5:T507:S11:D4-REFRESH-HOLD:P2`
 
 ## Source And Scope
 
@@ -29,5 +29,14 @@ The source-to-code route is complete and has no duplicate owner: D4 owns the
 pending bit, Core transaction owns the hold lifecycle, scheduler owns its
 single L1 disposition, and DMA remains a later consumer at the same existing
 arbitration boundary.  No code repair is warranted.  Focused D4 and adjacent
-transaction/DMA tests and the complete repository-only unit replay are
-recorded at P2.
+transaction/DMA tests pass 5/5; the complete repository-only unit replay
+passes 312/312 in 14.11 seconds.
+
+## P2 Actual-Diff Review
+
+P1 `bbe134aa` is documentation only.  Review of the D4 callback, the existing
+transaction hold and the arbitration order confirms a single board request,
+one transaction owner and one subsequent DMA route.  No source-qualified
+duration exists, so no production change, public contract, generic-DMA state,
+VM/profile path or extra scheduler was added.  The unrelated working-tree
+proposal change was neither staged nor reviewed as S11 work.
