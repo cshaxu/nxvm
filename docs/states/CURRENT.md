@@ -68,6 +68,10 @@
 
 ## Recent Governance
 
+- **M5 Td S156 P1:** removes all Release post-build YAML copying. `build/output`
+  configuration is user-managed and no executable build may overwrite it; no
+  YAML restoration or mutation is attempted.
+
 - **M5 T510 S3 P5:** coordinator actual-diff review accepts `5182e2c6` and
   closes T510. The 0508 regression was a sole firmware multi-sector PIO
   consumer defect, not an HDC timing defect: every sector now observes the
