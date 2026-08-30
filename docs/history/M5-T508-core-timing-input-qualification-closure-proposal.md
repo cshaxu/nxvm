@@ -52,6 +52,13 @@ not permission to manufacture a duration.
    injects guest ticks.  Run complete repository-only unit, external-asset
    integration, governance, and the stripped `nxvm_0_5_0508.exe` release
    build.
+5. **Corrective S5 - L2 model reconciliation.** The owner rejected the two
+   retained unqualified product boundaries. Reconcile the available original
+   Compaq material and external emulator timing models, then supply only the
+   unit-preserving Other-L2 inputs they support: default ATA's frozen Core
+   service quantum and Model-40 macro pacing rate. Reuse the existing HDC
+   deadline and Core observation routes; do not create a VM tick writer or a
+   physical-time claim.
 
 ## Exit Criteria
 

@@ -47,8 +47,8 @@ C_INT main(C_VOID)
         session->core_machine_config.fpu_profile != CORE_MACHINE_FPU_PROFILE_NONE ||
         !session->core_machine_config.cpu_80386_cr_mov_ignores_mod ||
         core_machine_capture_time_observation(session->core_machine,
-            &time_observation) != TYPE_STATUS_OK || time_observation.pacing_time_available ||
-        time_observation.pacing_ticks_per_second != 0u || time_observation.physical_time_available ||
+            &time_observation) != TYPE_STATUS_OK || !time_observation.pacing_time_available ||
+        time_observation.pacing_ticks_per_second != 16000000u || time_observation.physical_time_available ||
         time_observation.physical_ticks_per_second != 0u ||
         session->fdd.data.nsector != 15u || session->model40_rom.even_bytes[0] != 0u ||
         session->model40_rom.odd_bytes[0] != 1u;

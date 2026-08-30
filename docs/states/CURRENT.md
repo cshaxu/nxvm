@@ -2,10 +2,24 @@
 
 ## Current Work
 
-No active packet. T508 closed after its four-profile Core plan-copy matrix,
-complete unit/integration suite, documentation governance and stripped Release
-0508 verification. Its history and indexed evidence record the remaining
-unqualified ATA and Model-40 axis boundaries.
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Corrective T508 S5. The owner rejected T508's retained unqualified generic-ATA service and Model-40 macro-axis boundaries; T508 is the latest closed numeric task. |
+| Admission And Approval | Owner approval in this thread on 2026-08-30: reopen and attain a correctly owned, externally corroborated L2 implementation. No exception permits a VM clock, host-to-Core tick injection, a second controller owner, or invented Manual-L3 provenance. |
+| Objective | Replace each rejected boundary with one sourced Other-L2 construction input where the available emulator models support it: generic ATA service and Model-40 macro pacing axis. Core remains the sole guest-time and controller-deadline owner. |
+| Non-goals | Do not claim physical/L3 timing, import third-party code, alter controller personalities, expose live timing setters, or implement a VM scheduler/second guest clock. |
+| Reference Baseline | T508 S1 ledger and S3 disposition; `1fa4c35b`; current stripped Release 0508. Re-read ATA-3/Compaq source material and available-local 86Box, MAME, PCjs and Bochs implementations under the source policy. |
+| Candidate Proposal | [T508 proposal](../history/M5-T508-core-timing-input-qualification-closure-proposal.md), extended only with Corrective S5 after source reconciliation establishes the selected L2 values and their units. |
+| Files And ABI Surface | Core HDC construction/scheduling and Core time-axis plan plus the default-PC/AT and Model-40 frozen profile constructors; owner-local Core/VM tests and T508 evidence/history/status. No public mutable ABI. |
+| Applicable Rules | Task Reading Set; execution, architecture, coding, documentation and source-policy authorities. Evidence records exact source/version/path and the distinction between Other-L2 and Manual-L3. |
+| Verification | First establish a line-addressed reconciliation ledger. Then run focused owner tests, full repository-only unit suite after S5, documentation governance, and on task closure full unit plus external-asset integration and a stripped Release 0509 build/hash. |
+| Expected Markers | Default ATA publishes a nonzero, profile-frozen Other-L2 service deadline; Model-40 publishes a nonphysical macro pacing axis; Standard limits only completed Core progress, Turbo omits only host waiting; physical availability remains false. |
+| Asset Needs | Read-only local manual and emulator source trees only; no guest-media or third-party source import. |
+| Reporting Requirements | Report the selected model, its source basis, unit conversion, rejected alternatives, exact owner path, tests, and any remaining lower-tier relation. |
+| Stop Conditions | Stop before implementation only if the available models give no unit-preserving, profile-applicable relation; record the contradiction and request a decision rather than guess. Stop if a required change would create a second clock/owner. |
+| Exit Criteria | Both inputs are evidenced as Other-L2 and implemented through the sole Core/profile construction route; tests prove deadlines/pacing and no physical claim; S5 and T508 closure gates and release artifact pass. |
+| Original Owner Request | Owner's 2026-08-30 request: reopen and analyze a correct Core-or-VM architecture that uses reasonable external-emulator practice to reach L2. |
+| Similar-Issue Sweep | Audit all HDC personalities and all profile time axes for the same unqualified-to-L2 opportunity; change only variants with comparable source and unit semantics, otherwise retain their explicit boundary. |
 
 ## Current Technical Baseline
 

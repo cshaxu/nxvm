@@ -102,7 +102,7 @@ static C_INT vm_hdc_profile_contract_is_valid(C_VOID)
         hdc->bus.task_file.drive_head_port == HDC_DRIVE_HEAD_PORT &&
         hdc->bus.task_file.status_command_port == HDC_STATUS_COMMAND_PORT &&
         hdc->bus.task_file.alternate_status_device_control_port == HDC_ALT_STATUS_CONTROL_PORT &&
-        hdc->irq == 14u && hdc->service_ticks == 0u &&
+        hdc->irq == 14u && hdc->service_ticks == 16000u &&
         hdc->bus.task_file.lba28_supported;
 }
 
@@ -114,6 +114,8 @@ static C_INT vm_hdc_progress_probe(vm_session *session)
     if (!vm_hdc_program_lba(session, 0u, 2u) ||
         !vm_hdc_write(session->core_machine, HDC_STATUS_COMMAND_PORT, 0x20u) ||
         session->core_machine->hdc.data.phase != CORE_MACHINE_HDC_PHASE_PENDING_COMMAND ||
+        session->core_machine->hdc.data.next_service_tick !=
+            session->core_machine->hdc.data.elapsed_ticks + 16000u ||
         !vm_hdc_complete_command(session->core_machine) ||
         !vm_hdc_drain_data(session->core_machine, &word) ||
         !vm_hdc_read(session->core_machine, HDC_SECTOR_COUNT_PORT, &value) ||

@@ -188,7 +188,11 @@ static const vm_profile_default_pc_at_descriptor default_pc_at_descriptor = {
     default_pc_at_routes,
     sizeof(default_pc_at_routes) / sizeof(default_pc_at_routes[0]),
     { .protocol = CORE_MACHINE_HDC_PROTOCOL_ATA_PIO, .irq = 14u,
-        .service_ticks = 0u,
+        /* 86Box's generic ATA fallback completes through a controller timer,
+         * rather than at command issue.  16000 is this profile's frozen
+         * Other-L2 service quantum in the existing Core elapsed axis; it is
+         * not a universal ATA mechanical-time or wall-clock assertion. */
+        .service_ticks = 16000u,
         .bus.task_file = {
             .data_port = 0x01f0u, .error_features_port = 0x01f1u,
             .sector_count_port = 0x01f2u, .sector_number_port = 0x01f3u,
