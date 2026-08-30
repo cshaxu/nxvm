@@ -178,7 +178,9 @@ static C_VOID core_machine_vadp_graphics_palette(const t_vadp *adapter,
         (intensified ? 8u : 0u));
     palette[3] = core_machine_vadp_rgbi_color((alternate ? 7u : 6u) |
         (intensified ? 8u : 0u));
-    if ((adapter->data.mode_control & CORE_MACHINE_VADP_MODE_VIDEO_ENABLE) == 0u) {
+    if ((adapter->data.mode_control & CORE_MACHINE_VADP_MODE_VIDEO_ENABLE) == 0u ||
+        (adapter->data.ega_controller_configured &&
+        !core_machine_vadp_ega_output_active(adapter))) {
         palette[0] = 0u;
         palette[1] = 0u;
         palette[2] = 0u;
@@ -2116,8 +2118,9 @@ C_INT core_machine_vadp_capture_snapshot(t_vadp *adapter, t_ram *memory,
     core_machine_display_snapshot *out_snapshot)
 {
     if (adapter != STD_NULL && adapter->data.ega_planar_enabled &&
-        !core_machine_vadp_ega_output_active(adapter)) {
-        return core_machine_vadp_capture_blank_ega_snapshot(adapter, out_snapshot);
+        !core_machine_vadp_ega_output_active(adapter) &&
+        core_machine_vadp_capture_blank_ega_snapshot(adapter, out_snapshot)) {
+        return TYPE_TRUE;
     }
     if (core_machine_vadp_vga_mode13_active(adapter)) {
         return core_machine_vadp_capture_vga_mode13_snapshot(adapter, out_snapshot);
