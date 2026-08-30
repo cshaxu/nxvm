@@ -18,7 +18,6 @@ They retire the finite L1 no-deadline owners one controller at a time; each is
 source-first and may leave an unsupported timing relation explicit rather than
 infer it.
 
-1. [M5 PIC cascade observable-progress closure](../proposals/m5-pic-cascade-observable-progress-closure.md) - determines whether the selected cascade publication is immediate ordered Core work or has a sourced board deadline, then closes that one 8259A-to-CPU receiver without a second interrupt path.
 1. [M5 DMA service and arbitration deadline closure](../proposals/m5-dma-service-arbitration-deadline-closure.md) - establishes the selected 8237A service/deadline relations for bound refresh, FDC and Xebec paths through the sole DMA owner.
 1. [M5 HDC personality service-deadline closure](../proposals/m5-hdc-personality-service-deadline-closure.md) - audits and implements only sourced deadline relations for the selected ATA, WD1003, Compaq/WD and Xebec personalities through one HDC owner.
 1. [M5 Model-40 D4 refresh-hold deadline closure](../proposals/m5-model40-d4-refresh-hold-deadline-closure.md) - closes the selected DeskPro board refresh-hold timing relation in the existing D4 owner, without leaking board state into generic DMA or VM.

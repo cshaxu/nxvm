@@ -2,24 +2,10 @@
 
 ## Current Work
 
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation T505 S2. |
-| Admission And Approval | Owner approved T505 on 2026-08-29; accepted S1 ledger `d0f510fa` selects this sole PIC-local correction. |
-| Objective | Make a bound slave PIC source and PIC command-state transition immediately publish or withdraw the existing derived master cascade request, before any scheduler time observation or CPU delivery. |
-| Non-goals | Do not add a tick/deadline, mutate VM or profile behavior, duplicate PIC state, add a dispatcher, alter electrical timing, import external source, or change unselected topologies. |
-| Reference Baseline | `65d470a3`; [T505 S1 cascade ledger](../etc/evidence/t505-s1-pic-cascade-observable-progress-ledger.md). |
-| Candidate Proposal | [M5 PIC cascade observable-progress closure](../proposals/m5-pic-cascade-observable-progress-closure.md). |
-| Files And ABI Surface | `src/core/machine/pic.[ch]`, owner-local PIC smoke coverage, T505 evidence and current state; no public cross-module ABI or VM/profile surface. |
-| Applicable Rules | `ARCHITECTURE.md` sole Core/PIC owner and one-way boundary; `CODING.md` one owner-local path and no forwarding wrapper; `EXECUTION.md` complete S/P review; source policy boundaries retained by S1. |
-| Verification | Prove assertion, level withdrawal, edge retention, mask/unmask, acknowledge/EOI, reset and single-PIC non-participation without Core time advance; run affected PIC tests, complete repository-only unit and documentation governance. |
-| Expected Markers | `M5:T505:S2:PIC-CASCADE-IMMEDIATE:OK`; no scheduler `L1_COMPATIBILITY` classification for this PIC route; full unit and documentation-governance pass. |
-| Asset Needs | No new asset or source input. |
-| Reporting Requirements | Record retained owner, state route, source/command sweep, exact code-size result, focused and complete gate results, and any remaining receiver. |
-| Stop Conditions | Stop if direct publication requires a profile/VM route, source evidence implies a numerical delay, or the existing PIC owner cannot retain all state. |
-| Exit Criteria | Every C3/C4/C6/C7/C8/C9 S1 receiver is proven through the existing PIC owner with no guessed time, obsolete scheduler L1 candidate, duplicate state or untested selected transition. |
-| Original Owner Request | Continue the admitted controller receiver program with a complete, non-additive PIC correction before DMA, HDC, Model-40 D4 and the five CPU profile re-audit. |
-| Similar-Issue Sweep | All source assert/deassert callers, master and slave command writes, selection, acknowledgement, EOI, reset, cascaded AT consumers and XT single-PIC construction. |
+No subtask is active. T505 is closed; its PIC owner immediately publishes or
+withdraws the single derived cascade request after a source or command
+transition. The first candidate is the DMA service/arbitration deadline
+closure.
 
 ## Current Technical Baseline
 
@@ -56,6 +42,7 @@
 ## Recent M5 Closures
 
 | Task | Compact result |
+| T505 | Closed: Intel-backed cascade publication and withdrawal are immediate PIC-owner work, not a scheduled L1 tick. One construction-fixed PIC pair reuses the existing refresh calculation after source and command transitions; full unit 312/312 and integration 20/20 pass. [History](../history/M5-T505-pic-cascade-observable-progress-closure.md). |
 | --- | --- |
 | T504 | Closed: one Core-owned bounded Turbo fallback advances only copied L1 no-deadline waits; Standard receives no compatibility progression or host-to-guest ticks. Same-input external DOS replays reach `A:\>` in both modes; formal Release output ships selectable strict-grammar templates; the four controller-specific timing receivers are queued. [History](../history/M5-T504-turbo-l1-compatibility-escape.md). |
 | T502 | Withdrawn before execution by owner direction; no implementation, evidence, test, or artifact change was produced. |
@@ -64,9 +51,14 @@
 | T499 | Closed: one Core deadline seam owns the current scheduler clients and the selected Model-40 D4 controller; the configured suite passes 302/302 and stripped Release 0499 is recorded. [Closure](../history/M5-T499-core-event-deadline-scheduler-convergence.md). |
 | T498 | Closed: the supported-media matrix has semantic terminals or an explicit external-input boundary for every non-Model-40 row, and its Model-40 predecessor transfers to the sole Core scheduler receiver without accepting a shortcut. [Closure](../history/M5-T498-four-profile-supported-media-matrix.md). |
 | T497 | Closed: original Model-339 factory 1.2-MB/compatible-360-KB media behavior now has one descriptor/session/FDD path, and the 360-KB DOS installer replay closes its one missing monochrome-aperture mapping; a 286-compatible 1.2-MB external replay transfers to T498. [Closure](../history/M5-T497-ibm-5170-native-floppy-contract.md). |
-| T496 | Closed: one Core FDC result/IRQ lifecycle now releases IRQ6 at normal-result acknowledgement, and the selected IBM 5160 DOS terminal plus focused FDC regressions pass without a BIOS/VM/media workaround. [Closure](../history/M5-T496-xt-keyboard-device.md). |
 
 ## Recent Governance
+
+- **M5 T505 S2 P2:** coordinator actual-diff review accepts `afc1d540` and
+  closes T505. The sole PIC owner refreshes the existing derived cascade state
+  at existing source and command mutation points; no timer, VM/profile route,
+  second dispatcher, or duplicated state exists. Complete unit 312/312,
+  integration 20/20 and documentation governance pass.
 
 - **M5 T505 S1 P2:** coordinator actual-diff review accepts `d0f510fa`.
   Intel 8259A logic and available 86Box/Bochs/PCjs corroboration select one
