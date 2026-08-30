@@ -75,13 +75,10 @@ C_INT main(C_VOID)
         const core_machine_trace_event *boundary = input_display_find_event(&probe,
             CORE_MACHINE_TRACE_RUN_BOUNDARY);
 
-        failed |= !failed && (retire == STD_NULL || fdc == STD_NULL ||
-            hdc == STD_NULL || kbc == STD_NULL || vadp == STD_NULL ||
-            boundary == STD_NULL || fdc->timeline_ticks != 3u ||
-            hdc->timeline_ticks != 3u ||
-            kbc->timeline_ticks != 3u || vadp->timeline_ticks != 3u ||
-            retire->sequence >= fdc->sequence || fdc->sequence >= hdc->sequence ||
-            hdc->sequence >= kbc->sequence ||
+        failed |= !failed && (retire == STD_NULL || fdc != STD_NULL ||
+            hdc != STD_NULL || kbc == STD_NULL || vadp == STD_NULL ||
+            boundary == STD_NULL || kbc->timeline_ticks != 3u ||
+            vadp->timeline_ticks != 3u || retire->sequence >= kbc->sequence ||
             kbc->sequence >= vadp->sequence || vadp->sequence >= boundary->sequence);
     }
     failed |= !failed && core_machine_reset(machine) != TYPE_STATUS_OK;

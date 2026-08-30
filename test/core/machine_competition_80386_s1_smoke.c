@@ -187,10 +187,10 @@ C_INT main(C_VOID)
         dma_advance, &pit_advance);
     failed |= !competition_find_event_after(&probe, CORE_MACHINE_TRACE_PIC_REFRESH,
         pit_advance, &pic_refresh);
-    failed |= !competition_find_event_after(&probe, CORE_MACHINE_TRACE_FDC_ADVANCE,
-        pic_refresh, &fdc_advance);
-    failed |= !competition_find_event_after(&probe, CORE_MACHINE_TRACE_HDC_ADVANCE,
-        fdc_advance, &hdc_advance);
+    failed |= competition_find_event(&probe, CORE_MACHINE_TRACE_FDC_ADVANCE,
+        &fdc_advance);
+    failed |= competition_find_event(&probe, CORE_MACHINE_TRACE_HDC_ADVANCE,
+        &hdc_advance);
     failed |= !competition_find_event(&probe,
         CORE_MACHINE_TRACE_TRANSACTION_HOLD_REQUEST, &hold_request);
     failed |= !competition_find_event(&probe,
@@ -200,8 +200,7 @@ C_INT main(C_VOID)
     failed |= cpu_begin >= cpu_commit || cpu_commit >= cpu_retire ||
         cpu_retire >= dma_begin || dma_begin >= dma_commit ||
         dma_commit >= dma_advance || dma_advance >= pit_advance ||
-        pit_advance >= pic_refresh || pic_refresh >= fdc_advance ||
-        fdc_advance >= hdc_advance;
+        pit_advance >= pic_refresh;
     reset_hold_start = probe.count;
     failed |= core_machine_transaction_hold_request(&machine->transaction,
         CORE_MACHINE_TRANSACTION_OWNER_DMA, 0u) != TYPE_STATUS_OK;

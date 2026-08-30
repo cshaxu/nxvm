@@ -19,34 +19,22 @@ static C_VOID readiness_trace(C_VOID *opaque,
     }
 }
 
-static C_INT readiness_expect_chain(const readiness_trace_probe *probe)
+static C_INT readiness_expect_rtc(const readiness_trace_probe *probe)
 {
     type_unsigned_32 index;
-    type_unsigned_64 selected_tick = 3u;
-    type_unsigned_32 phase = 0u;
-    type_unsigned_32 groups = 0u;
+    type_bool found = TYPE_FALSE;
 
     for (index = 0u; index < probe->count; ++index) {
         const core_machine_trace_event *event = &probe->events[index];
 
         if (event->type == CORE_MACHINE_TRACE_FDC_ADVANCE ||
-            event->type == CORE_MACHINE_TRACE_HDC_ADVANCE ||
-            event->type == CORE_MACHINE_TRACE_RTC_ADVANCE) {
-            core_machine_trace_event_type expected = phase == 0u ?
-                CORE_MACHINE_TRACE_FDC_ADVANCE : phase == 1u ?
-                CORE_MACHINE_TRACE_HDC_ADVANCE : CORE_MACHINE_TRACE_RTC_ADVANCE;
-
-            if (event->type != expected || event->timeline_ticks != selected_tick) {
-                return 1;
-            }
-            ++phase;
-            if (phase == 3u) {
-                phase = 0u;
-                ++groups;
-            }
+            event->type == CORE_MACHINE_TRACE_HDC_ADVANCE) return 1;
+        if (event->type == CORE_MACHINE_TRACE_RTC_ADVANCE) {
+            if (event->timeline_ticks != 3u) return 1;
+            found = TYPE_TRUE;
         }
     }
-    return groups != 1u || phase != 0u;
+    return !found;
 }
 
 static C_INT readiness_has_event(const readiness_trace_probe *probe,
@@ -110,7 +98,7 @@ C_INT main(C_VOID)
         observation.next_sequence != 0u);
     failed |= !failed && (probe.count < 5u ||
         !readiness_has_event(&probe, CORE_MACHINE_TRACE_CPU_RETIRE) ||
-        readiness_expect_chain(&probe) ||
+        readiness_expect_rtc(&probe) ||
         probe.events[probe.count - 1u].type != CORE_MACHINE_TRACE_RUN_BOUNDARY);
     failed |= !failed && core_machine_reset(machine) != TYPE_STATUS_OK;
     failed |= !failed && core_machine_get_timeline_observation(machine,

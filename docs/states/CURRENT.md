@@ -2,9 +2,24 @@
 
 ## Current Work
 
-No subtask is active. T507 S1 freezes the C1--C13 Core and V1--V4 VM
-progression matrix: every current callback has one deadline, immediate action
-or named L1/L2 receiver; implementation is limited to that finite surface.
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation T507 S2. |
+| Admission And Approval | Owner approved continuous solo execution of T507 on 2026-08-29; accepted S1 matrix bounds this one Core scheduler implementation batch. |
+| Objective | Replace unconditional controller-group polling with the sole Core scheduler's earliest-event settlement while preserving the C1--C13 order, lifecycle and named L1/L2 receivers. |
+| Non-goals | Do not add a second clock/scheduler, new public VM/Core ABI, host-generated tick route, guessed HDC/D4/CPU-wait duration, controller-local queue, profile workaround or product speed semantic. |
+| Reference Baseline | `2517bd25`; [T507 progression matrix](../etc/evidence/t507-s1-core-scheduler-progression-matrix.md), T499 scheduler evidence, T504 L1 inventory and T505/T506 PIC/DMA closures. |
+| Candidate Proposal | [M5 Core scheduler Standard/Turbo performance closure](../proposals/m5-core-scheduler-standard-turbo-performance-closure.md). |
+| Files And ABI Surface | `src/core/machine/machine_scheduler.c` and the smallest owner-local helper/test surface required by C3--C13; no public interface or VM/profile source change. |
+| Applicable Rules | `EXECUTION.md` matrix batch and actual-diff review; `ARCHITECTURE.md` Core is sole guest-time/deadline owner; `CODING.md` one retained path/no forwarding fast path; `DOCUMENT.md` evidence boundary. |
+| Verification | Focused scheduler/time/timeline/PIT/RTC/DMA/FDC/KBC/XT/PIC/D4/HDC/VADP tests, complete unit, event-order and reset/withdrawal tests; record source/test delta and before/after scheduler path. |
+| Expected Markers | `M5:T507:S2:CORE-EARLIEST-SETTLEMENT:OK`; known deadlines settle once at their earliest tick, irrelevant owner maintenance is skipped, and C2/C9/C12 remain explicit Core receivers. |
+| Asset Needs | Repository-only source/tests; no external ROM/media/source import or machine-local trace. |
+| Reporting Requirements | Map every changed matrix row to one code path and regression, state retained same-tick order, enumerate every skipped owner class, and report source/test added/removed/net lines. |
+| Stop Conditions | Stop and revise if an owner cannot advance/cancel exactly without a new contract, a simultaneous deadline loses established order, a lower-tier row would need a guessed duration, or a public ABI becomes necessary. |
+| Exit Criteria | C3--C13 consume one Core event-driven progression path with all changed rows proven; no eligible deadline remains hidden by unconditional group polling; no VM pacing behavior has changed. |
+| Original Owner Request | Perform the global Core scheduler performance closure rather than a VM-side shortcut, keeping Core the sole owner and preserving minimal, one-way design. |
+| Similar-Issue Sweep | All clock-domain advances, deadline queries, immediate due handling, timeline cancellation/order, provider delta, CPU HLT/external wait, DMA/HDC/D4 L1 handling, controller reset/withdrawal and every scheduler-focused test. |
 
 ## Current Technical Baseline
 

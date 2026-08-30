@@ -332,12 +332,17 @@ static C_VOID core_machine_readiness_advance(core_machine *machine,
     type_unsigned_64 rtc_ticks;
 
     if (machine == STD_NULL || source_ticks == 0u) return;
-    core_machine_fdc_advance_at(&machine->fdc, due_tick);
-    core_machine_trace_record(machine, CORE_MACHINE_TRACE_FDC_ADVANCE,
-        0u, 0u, 0u);
-    core_machine_hdc_advance(&machine->hdc);
-    core_machine_trace_record(machine, CORE_MACHINE_TRACE_HDC_ADVANCE,
-        0u, 0u, 0u);
+    if (machine->fdc_configured) {
+        core_machine_fdc_advance_at(&machine->fdc, due_tick);
+        core_machine_trace_record(machine, CORE_MACHINE_TRACE_FDC_ADVANCE,
+            0u, 0u, 0u);
+    }
+    if (machine->hdc_configured &&
+        machine->hdc.data.phase != CORE_MACHINE_HDC_PHASE_IDLE) {
+        core_machine_hdc_advance(&machine->hdc);
+        core_machine_trace_record(machine, CORE_MACHINE_TRACE_HDC_ADVANCE,
+            0u, 0u, 0u);
+    }
     rtc_ticks = core_machine_clock_domain_advance(&machine->rtc_clock, source_ticks);
     if (machine->rtc_cmos_configured) {
         core_machine_rtc_advance(&machine->shared_rtc, rtc_ticks);
