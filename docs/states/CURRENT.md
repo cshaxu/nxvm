@@ -2,25 +2,11 @@
 
 ## Current Work
 
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation `T503 S10`; S9 is accepted at `80d17881` after direct 8042/XT-PPI source reconciliation and a 312/312 complete unit replay. |
-| Admission And Approval | Owner approved the controller-by-controller audit/repair program and requires no unfinished causal tail. S10 consumes the VADP port/memory -> sole state -> copied display snapshot route; normal commits and non-force pushes are permanently approved. |
-| Objective | Read selected video primary sources, VADP List 1/List 2 and current code; cross-check available local emulator logic; trace every selected CGA/EGA port, memory mapping, output-disable/text fallback, timing and snapshot/presentation route; repair every demonstrable downstream defect in the same S. |
-| Non-goals | No renderer- or VM-owned guest video state, no second mode/frame/VRAM state, no BIOS/profile workaround, no parallel VGA path, no guessed physical timing, and no framework or wrapper that does not remove a real duplicate. VGA-only DAC/chain-4/256-colour work remains a later VADP extension. |
-| Reference Baseline | `80d17881` (`M5 T503 S9 P2 accept KBC XT route audit`); T285/T386 VADP records and retained controller ledgers are evidence, not a substitute for this fresh direct audit. |
-| Candidate Proposal | [M5 controller signal-chain convergence](../proposals/m5-controller-signal-chain-convergence.md), VADP -> copied display consumer route S. |
-| Files And ABI Surface | Expected `src/core/machine/vadp*`, port/memory registration and copied presentation snapshot boundary with owner-local `test/core/machine` and `test/vm` tests. Public change, if necessary, must be a bounded copied observation or typed operation; no mutable video/CPU/RAM/VM pointer crosses owners. |
-| Applicable Rules | `docs/README.md` Task Reading Set; `rules/EXECUTION.md` coverage, packet, P and review rules; `rules/DOCUMENT.md`; source policy; `design/ARCHITECTURE.md`/`rules/ARCHITECTURE.md` one-owner/copy boundary; `design/CODING.md`/`rules/CODING.md` simplicity and test-boundary rules. |
-| Verification | Visually inspect cited IBM/MC6845/CGA/EGA sources; compare actual 86Box/MAME/PCjs/Bochs/QEMU VADP logic where locally available; trace ingress, mapping, CRTC geometry, output disable, text fallback, copied snapshot and presentation across selected profiles; run focused owner tests and complete repository-only unit suite. |
-| Expected Markers | `T503-S10-VADP-PRESENTATION-ROUTE`; every selected guest-visible video observable has one VADP owner, one copied presentation consumer and a source-qualified timing/mapping disposition. |
-| Asset Needs | Existing manual ledger and read-only external sources only; do not import firmware, ROM, protected media, images, generated trace or third-party code. |
-| Reporting Requirements | Record each selected VADP form's source fact, NXVM owner route, external comparison, disposition, retained state owner, exact code-size result and focused/full-unit proof. |
-| P1 Progress | `8d0692a2` delivered the direct audit and the first two fixes. Its independent review found and immediately corrected the same output-disable route's text fallback; focused 4/4 and final complete unit 312/312 (14.60 seconds) pass. Corrective P1 commit precedes P2 review. |
-| Stop Conditions | Stop for owner direction, authority contradiction, source insufficiency required for a selected claim, or a defect independently owned outside VADP; do not create a renderer, VM, BIOS or profile workaround. |
-| Exit Criteria | Every selected CGA/EGA port/memory/mode/output/snapshot/deadline form is source- and code-traced, externally compared where available, proved by focused/full unit evidence, and every demonstrable downstream route defect is repaired here or shown independent and transferred. |
-| Original Owner Request | Each S owns one controller audit and repair, but must also repair affected controllers/devices in that S; no known causal tail remains. VADP is the sole guest state/port/VRAM/snapshot owner; internal CGA/EGA/VGA responsibilities may split only without a second truth. |
-| Similar-Issue Sweep | CGA and EGA port registers; CPU memory aperture/mapping; CRTC geometry; text and planar frame construction; mode/output disable; reset; timing/deadline; snapshot copy lifetime; presentation consumers; 5160, 5170, Model-40 and default-at topology; renderer/VM state duplication and future-VGA shared mechanism boundary. |
+T503 remains open with no active packet between accepted subtasks. S3--S10
+accepted the PIC, PIT, DMA, FDC, HDC, RTC, KBC/XT keyboard and VADP routes.
+S10 P1 `8d0692a2`/`e9184464` corrects CGA `3D9h` RGBI and the complete EGA
+display-disable path in the sole VADP owner; focused 12/12 and complete unit
+312/312 pass. The next admission is S11's cross-profile controller closure.
 
 ## Current Technical Baseline
 
@@ -104,7 +90,13 @@
   phase-consuming loop retains the single XT keyboard/PPI/PIC route and makes
   BAT expiry followed by the sourced first serial-edge delay observable; no
   KBC/XT alias, duplicate state, profile workaround or scheduler was added.
-  S10 is the next VADP route batch.
+
+- **M5 T503 S10 P2:** coordinator actual-diff review accepts `8d0692a2` and
+  `e9184464`: direct IBM/available-local model reconciliation corrects CGA
+  `3D9h` RGBI foreground and VADP-owned EGA display-disable publication,
+  including the text fallback. The result retains one VADP port/VRAM/frame
+  state and one copied VM presentation consumer; focused 12/12 and complete
+  unit 312/312 pass. S11 is the cross-profile closure batch.
 
 - **M5 T503 S6 P2:** coordinator review accepts `8aac1fb0`: direct
   NEC/IBM/code/external reconciliation adds the sole frozen READY-board input,
