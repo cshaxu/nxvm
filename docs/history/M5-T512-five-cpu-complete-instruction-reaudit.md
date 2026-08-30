@@ -68,3 +68,14 @@ source-unavailable, including a precise receiver for every nonconforming
 batch. This is an audit only: do not modify CPU execution or create a
 profile-side behavior path. It closes only after the full repository-only unit
 suite and documentation governance pass.
+
+## S3 Result
+
+S3 accepts the complete current-owner partition in
+[its evidence](../etc/evidence/t512-s3-five-cpu-current-code-gap-list-2.md).
+It corrects the 80286 Appendix-B `Clocks` locator, confirms one Core-only
+decode/state/delivery/retirement path, and finds one bounded shared FLAGS
+conflict: 80386 real/V86 stack images must clear bit 15, while the current
+16-bit helper retains it. Full repository-only unit is 313/313 and
+documentation governance passes. S4 is the sole shared-mechanism receiver;
+S5--S8 remain the profile-specific form and timing sweeps.

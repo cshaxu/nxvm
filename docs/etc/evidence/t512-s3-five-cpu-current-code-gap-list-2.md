@@ -1,6 +1,6 @@
 # T512 S3 Five-CPU Current-Code Gap List 2
 
-`M5:T512:S3:FIVE-CPU-LIST-2:COMPLETE-PENDING-REVIEW`
+`M5:T512:S3:FIVE-CPU-LIST-2:ACCEPTED`
 
 ## Scope And Disposition Rule
 
@@ -94,3 +94,11 @@ make a test oracle define a reserved bit value.
 - Complete repository-only unit suite: 313/313 passed with
   `ctest --test-dir build\\mingw-gcc-x64 -L unit -j 8 --output-on-failure`
   (27.07 seconds real time).
+
+## Coordinator Review
+
+The actual S3 diff is evidence-only: it adds the finite owner partition,
+corrects the 80286 original-manual locator, and updates the active record. It
+does not alter a CPU decoder, test oracle, VM profile, build output, or guest
+asset. The rendered source rule, direct shared-mask trace and full unit result
+accept the List 2 partition. S4 is the next eligible receiver.
