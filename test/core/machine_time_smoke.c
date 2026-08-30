@@ -59,6 +59,7 @@ C_INT main(C_VOID)
         TYPE_STATUS_OK || time_observation.elapsed_ticks != 0u ||
         time_observation.next_deadline_tick != 0u ||
         time_observation.next_deadline_valid || !time_observation.pacing_time_available ||
+        time_observation.progress_disposition != CORE_MACHINE_TIME_PROGRESS_IDLE ||
         time_observation.pacing_ticks_per_second != 8000000u ||
         !time_observation.physical_time_available ||
         time_observation.physical_ticks_per_second != 8000000u;
@@ -76,7 +77,8 @@ C_INT main(C_VOID)
     failed |= core_machine_capture_time_observation(machine, &time_observation) !=
         TYPE_STATUS_OK || time_observation.elapsed_ticks != 6u ||
         time_observation.next_deadline_tick != 0u ||
-        time_observation.next_deadline_valid;
+        time_observation.next_deadline_valid ||
+        time_observation.progress_disposition != CORE_MACHINE_TIME_PROGRESS_IDLE;
     budget.instructions = 1u;
     budget.ticks = 28u;
     failed |= core_machine_run(machine, budget, &result) != TYPE_STATUS_OK;
@@ -88,7 +90,8 @@ C_INT main(C_VOID)
     failed |= core_machine_capture_time_observation(machine, &time_observation) !=
         TYPE_STATUS_OK || time_observation.elapsed_ticks != 0u ||
         time_observation.next_deadline_tick != 0u ||
-        time_observation.next_deadline_valid;
+        time_observation.next_deadline_valid ||
+        time_observation.progress_disposition != CORE_MACHINE_TIME_PROGRESS_IDLE;
     core_machine_destroy(machine);
     core_machine_destroy(rejected);
     if (failed) return 1;

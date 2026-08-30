@@ -1,5 +1,6 @@
 #include "type.h"
 
+#include "core/machine/machine.h"
 #include "core/machine/machine_interface.h"
 #include "core/machine/timeline.h"
 #include "support/core_machine_cpu_fixture.h"
@@ -83,6 +84,8 @@ static C_INT timeline_machine_contract(C_VOID)
     core_machine_run_budget budget = { 1u, 0u };
     core_machine_run_result result;
     core_machine_timeline_observation observation;
+    core_machine_time_observation time_observation;
+    core_machine_timeline_token immediate;
 #if CORE_MACHINE_RUNTIME_TRACE_ENABLED
     core_machine_trace_provider trace = { timeline_trace, STD_NULL };
     timeline_trace_probe trace_probe = { { { 0 } }, 0u };
@@ -101,6 +104,11 @@ static C_INT timeline_machine_contract(C_VOID)
     failed |= core_machine_reset(machine) != TYPE_STATUS_OK;
     failed |= core_machine_memory_write(machine, 0x00fffff0u, &nop, 1u) !=
         TYPE_STATUS_OK;
+    failed |= core_machine_timeline_schedule(&machine->timeline, 0u, timeline_a,
+        STD_NULL, &immediate) != TYPE_STATUS_OK;
+    failed |= core_machine_capture_time_observation(machine, &time_observation) !=
+        TYPE_STATUS_OK || time_observation.next_deadline_valid ||
+        time_observation.progress_disposition != CORE_MACHINE_TIME_PROGRESS_IMMEDIATE;
 #if CORE_MACHINE_RUNTIME_TRACE_ENABLED
     failed |= core_machine_set_trace_provider(machine, &trace) != TYPE_STATUS_OK;
 #endif
@@ -109,7 +117,7 @@ static C_INT timeline_machine_contract(C_VOID)
     failed |= core_machine_get_timeline_observation(machine, &observation) !=
         TYPE_STATUS_OK;
     failed |= observation.now != 3u || observation.pending_events != 0u ||
-        observation.next_sequence != 0u;
+        observation.next_sequence != 1u;
     /* Release intentionally omits development trace recording; the state and
      * ordering contract below remains a Debug-only observation. */
 #if CORE_MACHINE_RUNTIME_TRACE_ENABLED

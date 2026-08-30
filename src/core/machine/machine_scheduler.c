@@ -27,50 +27,63 @@ static C_INT core_machine_fast_advance_is_blocked(const core_machine *machine)
         core_machine_slave_irq_publication_is_pending(machine);
 }
 
-static C_VOID core_machine_deadline_consider_clock(const core_machine_clock_domain *clock,
+static C_INT core_machine_l1_compatibility_is_eligible(const core_machine *machine)
+{
+    return machine != STD_NULL &&
+        (core_machine_dma_has_pending_request(&machine->shared_dma_primary,
+            &machine->shared_dma_secondary) ||
+        machine->hdc.data.phase != CORE_MACHINE_HDC_PHASE_IDLE ||
+        machine->d4_refresh_hold_pending ||
+        core_machine_slave_irq_publication_is_pending(machine));
+}
+
+static type_bool core_machine_deadline_consider_clock(const core_machine_clock_domain *clock,
     type_unsigned_64 device_ticks, type_unsigned_64 *io_source_ticks)
 {
     type_unsigned_64 source_ticks;
 
+    if (device_ticks == 0u) return TYPE_TRUE;
     if (io_source_ticks == STD_NULL ||
         core_machine_clock_domain_source_ticks_until(clock, device_ticks,
             &source_ticks) != TYPE_STATUS_OK) {
-        return;
+        return TYPE_FALSE;
     }
     if (*io_source_ticks == 0u || source_ticks < *io_source_ticks) {
         *io_source_ticks = source_ticks;
     }
+    return TYPE_FALSE;
 }
 
-static C_VOID core_machine_deadline_consider_absolute(const core_machine *machine,
+static type_bool core_machine_deadline_consider_absolute(const core_machine *machine,
     type_unsigned_64 due_tick, type_unsigned_64 *io_source_ticks)
 {
     type_unsigned_64 source_ticks;
 
-    if (machine == STD_NULL || io_source_ticks == STD_NULL ||
-        due_tick < machine->elapsed_ticks) {
-        return;
-    }
+    if (machine == STD_NULL || io_source_ticks == STD_NULL) return TYPE_FALSE;
+    if (due_tick <= machine->elapsed_ticks) return TYPE_TRUE;
     source_ticks = due_tick - machine->elapsed_ticks;
     if (*io_source_ticks == 0u || source_ticks < *io_source_ticks) {
         *io_source_ticks = source_ticks;
     }
+    return TYPE_FALSE;
 }
 
-static C_VOID core_machine_deadline_consider_pit(const t_pit *pit,
+static type_bool core_machine_deadline_consider_pit(const t_pit *pit,
     const core_machine_clock_domain *clock, type_unsigned_64 *io_source_ticks)
 {
     type_unsigned_8 counter;
+    type_bool immediate_due = TYPE_FALSE;
 
     for (counter = 0u; counter < 3u; ++counter) {
         type_unsigned_64 device_ticks;
 
         if (core_machine_pit_ticks_until_output(pit, counter, &device_ticks) ==
             TYPE_STATUS_OK) {
-            core_machine_deadline_consider_clock(clock, device_ticks,
-                io_source_ticks);
+            if (core_machine_deadline_consider_clock(clock, device_ticks,
+                    io_source_ticks)) immediate_due = TYPE_TRUE;
         }
     }
+    return immediate_due;
 }
 
 C_VOID core_machine_capture_time_observation_private(const core_machine *machine,
@@ -80,6 +93,7 @@ C_VOID core_machine_capture_time_observation_private(const core_machine *machine
     type_unsigned_64 device_ticks;
     type_unsigned_64 fdc_due_tick;
     type_unsigned_64 timeline_due_tick;
+    type_bool immediate_due = TYPE_FALSE;
 
     if (machine == STD_NULL || out_observation == STD_NULL) return;
     out_observation->elapsed_ticks = machine->elapsed_ticks;
@@ -89,6 +103,7 @@ C_VOID core_machine_capture_time_observation_private(const core_machine *machine
     out_observation->next_deadline_valid = TYPE_FALSE;
     out_observation->pacing_time_available = TYPE_FALSE;
     out_observation->physical_time_available = TYPE_FALSE;
+    out_observation->progress_disposition = CORE_MACHINE_TIME_PROGRESS_IDLE;
     if (machine->time_axis.kind == CORE_MACHINE_TIME_AXIS_MACRO_PROPORTIONAL ||
         machine->time_axis.kind == CORE_MACHINE_TIME_AXIS_VERIFIED_PHYSICAL) {
         out_observation->pacing_ticks_per_second = machine->time_axis.ticks_per_second;
@@ -100,47 +115,62 @@ C_VOID core_machine_capture_time_observation_private(const core_machine *machine
     }
     if (core_machine_timeline_next_due(&machine->timeline, &timeline_due_tick) ==
         TYPE_STATUS_OK) {
-        core_machine_deadline_consider_absolute(machine, timeline_due_tick,
-            &source_ticks);
-    }
-    if (core_machine_fast_advance_is_blocked(machine)) {
-        /* An active causal owner intentionally blocks HLT fast advance.  Its
-         * normal CPU-retirement path advances one source tick at a time; no
-         * fabricated delay becomes a guest-observable deadline. */
-        return;
+        if (core_machine_deadline_consider_absolute(machine, timeline_due_tick,
+                &source_ticks)) immediate_due = TYPE_TRUE;
     }
     /* A frozen fallback ratio remains an L2 timing claim, but it is still a
      * usable Core-local conversion.  Provenance decides what we promise about
      * the edge, not whether a programmed PIT may wake a halted guest. */
     if (machine->timing_plan_copied) {
-        core_machine_deadline_consider_pit(&machine->shared_pit,
-            &machine->pit_clock, &source_ticks);
+        if (core_machine_deadline_consider_pit(&machine->shared_pit,
+                &machine->pit_clock, &source_ticks)) immediate_due = TYPE_TRUE;
         if (machine->auxiliary_pit_configured) {
-            core_machine_deadline_consider_pit(&machine->auxiliary_pit,
-                &machine->auxiliary_pit_clock, &source_ticks);
+            if (core_machine_deadline_consider_pit(&machine->auxiliary_pit,
+                    &machine->auxiliary_pit_clock, &source_ticks)) immediate_due =
+                TYPE_TRUE;
         }
     }
     if (machine->timing_plan_copied && machine->rtc_cmos_configured &&
         core_machine_rtc_ticks_until_irq(&machine->shared_rtc, &device_ticks) ==
             TYPE_STATUS_OK) {
-        core_machine_deadline_consider_clock(&machine->rtc_clock, device_ticks,
-            &source_ticks);
+        if (core_machine_deadline_consider_clock(&machine->rtc_clock, device_ticks,
+                &source_ticks)) immediate_due = TYPE_TRUE;
     }
     if (core_machine_fdc_next_due_tick(&machine->fdc, &fdc_due_tick) ==
         TYPE_STATUS_OK) {
-        core_machine_deadline_consider_absolute(machine, fdc_due_tick,
-            &source_ticks);
+        if (core_machine_deadline_consider_absolute(machine, fdc_due_tick,
+                &source_ticks)) immediate_due = TYPE_TRUE;
     }
     if (core_machine_kbc_ticks_until_event(&machine->shared_kbc, &device_ticks) ==
         TYPE_STATUS_OK) {
-        core_machine_deadline_consider_clock(&machine->kbc_clock, device_ticks,
-            &source_ticks);
+        if (core_machine_deadline_consider_clock(&machine->kbc_clock, device_ticks,
+                &source_ticks)) immediate_due = TYPE_TRUE;
     }
     if (machine->keyboard_topology == CORE_MACHINE_KEYBOARD_TOPOLOGY_XT_PPI &&
         core_machine_xt_keyboard_ticks_until_event(&machine->xt_keyboard,
-            &device_ticks) == TYPE_STATUS_OK &&
-        (source_ticks == 0u || device_ticks < source_ticks)) {
-        source_ticks = device_ticks;
+            &device_ticks) == TYPE_STATUS_OK) {
+        if (device_ticks == 0u) immediate_due = TYPE_TRUE;
+        else if (source_ticks == 0u || device_ticks < source_ticks) {
+            source_ticks = device_ticks;
+        }
+    }
+    if (immediate_due) {
+        out_observation->progress_disposition = CORE_MACHINE_TIME_PROGRESS_IMMEDIATE;
+        return;
+    }
+    if (source_ticks != 0u) {
+        out_observation->progress_disposition = CORE_MACHINE_TIME_PROGRESS_DEADLINE;
+    }
+    if (core_machine_fast_advance_is_blocked(machine)) {
+        if (out_observation->progress_disposition == CORE_MACHINE_TIME_PROGRESS_IDLE &&
+            core_machine_l1_compatibility_is_eligible(machine)) {
+            out_observation->progress_disposition =
+                CORE_MACHINE_TIME_PROGRESS_L1_COMPATIBILITY;
+        }
+        /* An active causal owner intentionally blocks existing HLT fast
+         * advance.  The copied disposition explains why without fabricating
+         * a deadline or changing the current progression policy. */
+        return;
     }
     if (source_ticks != 0u && source_ticks <= UINT64_MAX - machine->elapsed_ticks) {
         out_observation->next_deadline_tick = machine->elapsed_ticks + source_ticks;

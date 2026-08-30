@@ -477,6 +477,15 @@ typedef struct core_machine_observation {
     core_machine_cpu_diagnostic diagnostic;
 } core_machine_observation;
 
+/* A copied classification of the next Core-owned time-progress opportunity.
+ * It contains no controller identity, pointer, or requested tick quantity. */
+typedef enum core_machine_time_progress_disposition {
+    CORE_MACHINE_TIME_PROGRESS_IDLE = 0,
+    CORE_MACHINE_TIME_PROGRESS_DEADLINE,
+    CORE_MACHINE_TIME_PROGRESS_IMMEDIATE,
+    CORE_MACHINE_TIME_PROGRESS_L1_COMPATIBILITY
+} core_machine_time_progress_disposition;
+
 /* A copied guest-time observation. `next_deadline_valid` is true only when
  * Core has composed an earliest source-qualified guest-observable deadline.
  * Recurring scheduler maintenance is deliberately not such a deadline. */
@@ -488,6 +497,7 @@ typedef struct core_machine_time_observation {
     type_bool next_deadline_valid;
     type_bool pacing_time_available;
     type_bool physical_time_available;
+    core_machine_time_progress_disposition progress_disposition;
 } core_machine_time_observation;
 
 typedef struct core_machine_timeline_observation {

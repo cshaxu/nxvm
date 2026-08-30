@@ -339,7 +339,8 @@ static C_INT plan_l2_pit_deadline_remains_schedulable(C_VOID)
     failed |= !failed && core_machine_capture_time_observation(machine, &observation) !=
         TYPE_STATUS_OK;
     failed |= !failed && (!observation.next_deadline_valid ||
-        observation.next_deadline_tick != 1u);
+        observation.next_deadline_tick != 1u ||
+        observation.progress_disposition != CORE_MACHINE_TIME_PROGRESS_DEADLINE);
     failed |= !failed && core_machine_advance_to_next_deadline(machine, &advanced) !=
         TYPE_STATUS_OK;
     failed |= !failed && (!advanced || machine->elapsed_ticks != 1u);
