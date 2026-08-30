@@ -32,7 +32,17 @@ The prior short Debug probe did not reach the Model-40 terminal, while the
 required stripped Release replay did. Release is the product verification
 surface; Debug remains a development/unit-gate configuration.
 
+## Release session templates
+
+The retained strict root-only `nxvm-session` parser correctly rejected the
+legacy templates that had been left in the output directory. The Release target
+now copies the two versioned, media-free session templates beside its executable
+on every build: default PC/AT and IBM 5170 Model 339. A direct `0504` console
+replay lists both files and opens the first selected session. This is artifact
+delivery only: it adds no legacy grammar, profile authoring, firmware, or media
+input.
+
 ## Artifact
 
 The local stripped Release artifact is `nxvm_0_5_0504.exe`, SHA-256
-`6B4C9D047473488807242674DE479151B74BE1DD72625F0F9AC31F3378527443`.
+`06536E49F4D36E39EC53F9F29C157AE789EE9280E9B4B30BA1AF3A7323A882BF`.

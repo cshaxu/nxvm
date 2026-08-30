@@ -1,0 +1,7 @@
+schema: nxvm-session
+profile: ibm-5170-model-339
+display: console
+boot: rom
+media:
+  floppy: null
+  hard_disk: null

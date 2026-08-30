@@ -6,26 +6,26 @@
 | --- | --- |
 | Identifier Mode | Continuation T504 S5. |
 | Admission And Approval | Owner approved solo execution of T504 on 2026-08-29. Coordinator accepted S4 P1 `28235d06` after actual-diff review, complete unit pass, and documentation-governance pass; this S admits the required external ROM/DOS integration closure. |
-| Objective | Run the selected external-ROM/DOS workloads in Standard and Turbo, compare their same semantic terminal and record real elapsed-wall-clock evidence without converting host elapsed time into guest ticks. |
-| Non-goals | Do not import or commit ROM, guest media, traces, or protected data; do not claim physical pacing; do not change controller timing merely to improve a benchmark; do not make a terminal budget into success. |
+| Objective | Run the selected external-ROM/DOS workloads in Standard and Turbo, compare their same semantic terminal without converting host elapsed time into guest ticks, and ensure the stripped Release artifact ships selectable current-grammar session templates. |
+| Non-goals | Do not import or commit ROM, guest media, traces, or protected data; do not claim physical pacing; do not change controller timing merely to improve a benchmark; do not make a terminal budget into success; do not restore rejected YAML grammar. |
 | Reference Baseline | `28235d06` (T504 S4 P1 mode/lifecycle evidence); current stripped Release artifact is `0504`. |
 | Candidate Proposal | [M5 Turbo L1 compatibility escape](../proposals/m5-turbo-l1-compatibility-escape.md). |
-| Files And ABI Surface | `test/integration/` harnesses, ignored local logs, indexed evidence, and only an owner-local code repair if a reproducible integration failure proves one is required. |
+| Files And ABI Surface | Release-artifact CMake copy rules, versioned session-template inputs, `test/vm/product/` product-catalog proof, ignored local logs, and indexed evidence. No public ABI or YAML grammar change. |
 | Applicable Rules | `docs/rules/EXECUTION.md` packet/P-review/closure rules; `ARCHITECTURE.md` Core time/controller ownership and VM-to-Core command boundary; `CODING.md` one shared path/no device receiver; `DOCUMENT.md` state/history/evidence boundaries; source policy is not applicable because no source is imported or derived. |
-| Verification | Execute the registered external integration probe in both modes with identical allowed assets and semantic terminal; record invocation, terminal, duration, and cleanup; then run unit, integration, and documentation gates. |
-| Expected Markers | `M5:T504:S5:INTEGRATION:OK`; full unit/integration summaries; documentation-governance pass. |
+| Verification | Execute the registered external integration probe in both modes with identical allowed assets and semantic terminal; rebuild the Release artifact and prove its console discovers selectable session templates; then run unit, integration, and documentation gates. |
+| Expected Markers | `M5:T504:S5:INTEGRATION:OK`; Release Console profile list; full unit/integration summaries; documentation-governance pass. |
 | Asset Needs | Owner-managed local BYOB ROM and DOS media only; read source policy before access and never copy them into repository or evidence. |
-| Reporting Requirements | Record asset class rather than machine-local path, both-mode terminal/duration, source-policy handling, and any failure disposition in indexed evidence. P1 states actual replay result; P2 independently verifies no asset/log crossed the repository boundary. |
-| Stop Conditions | Stop and revise the packet if no registered compatible external workload exists, a protected asset would be committed, the two modes reach different semantics, a trace exceeds its approved containment, or repair needs a new timing claim. |
-| Exit Criteria | At least one selected external ROM/DOS workload reaches the same semantic terminal in Standard and Turbo; Turbo has measured no host waiting on its Core deadline path; assets/logs are contained; unit/integration/docs gates pass. |
+| Reporting Requirements | Record asset class rather than machine-local path, both-mode terminal/duration, template-only artifact contents, and any failure disposition in indexed evidence. P1 states actual replay result; P2 independently verifies no asset/log crossed the repository boundary. |
+| Stop Conditions | Stop and revise the packet if no registered compatible external workload exists, a protected asset would be committed, the two modes reach different semantics, a trace exceeds its approved containment, a template needs product-owned media, or repair needs a new timing claim. |
+| Exit Criteria | At least one selected external ROM/DOS workload reaches the same semantic terminal in Standard and Turbo; the Release executable discovers selectable current-grammar templates beside itself; Turbo has measured no host waiting on its Core deadline path; assets/logs are contained; unit/integration/docs gates pass. |
 | Original Owner Request | Complete L1 Turbo efficiency in solo mode: make Turbo useful without violating Core ownership, Standard semantics, or the established L-level evidence discipline. |
-| Similar-Issue Sweep | Sweep registered DOS/ROM integration probes and all speed selectors they expose; run both modes with one immutable asset set and retain no benchmark-only product path. |
+| Similar-Issue Sweep | Sweep registered DOS/ROM integration probes and all speed selectors they expose; inspect every shipped template and both artifact output directories; retain no benchmark-only product path or legacy grammar. |
 
 ## Current Technical Baseline
 
 - **Current developer artifact:** CMake target `vm-0-5-0504` emitted
   `nxvm_0_5_0504.exe` in a stripped Release build, SHA-256
-  `6B4C9D047473488807242674DE479151B74BE1DD72625F0F9AC31F3378527443`.
+  `06536E49F4D36E39EC53F9F29C157AE789EE9280E9B4B30BA1AF3A7323A882BF`.
   It retains the runtime debugger and contains no compiler debug information.
   Debug uses the repository-only unit route. T471 preserves Core-owned progression:
   a verified axis is Standard-paced only by host waiting against completed
