@@ -13,7 +13,6 @@ architecture and deliberately prefer direct owner-local corrections over new
 layers; each implementation admission must still establish its own finite
 sweep and regression evidence.
 
-1. [M5 controller signal-chain convergence](../proposals/m5-controller-signal-chain-convergence.md) - follows the active Model-40 repair and precedes Turbo compatibility work; audits and repairs every selected controller-to-consumer signal route through one Core-owned path, rather than masking a disconnected device with polling or time shortcuts.
 1. [M5 Turbo L1 compatibility escape](../proposals/m5-turbo-l1-compatibility-escape.md) - follows active scheduler-convergence work; gives Turbo a Core-owned, bounded compatibility progression for active L1 waits with no source-qualified deadline, without creating a second time path or overstating timing fidelity.
 1. [M5 five-CPU complete instruction re-audit and repair](../proposals/m5-five-cpu-complete-instruction-reaudit.md) - follows the active scheduler-convergence work; freezes the complete 8086, 8088, 80186, 80286 and 80386DX instruction/state/timing universe before any repair.
 1. [M5 external asset-bundle governance](../proposals/m5-external-asset-bundle-governance.md) - follows the five-CPU re-audit; owner-governed design and inventory of the external `nxvm-assets` bundle for machine firmware, CMOS defaults and integration media, without admitting protected bytes or machine-local paths into the repository.
@@ -71,7 +70,7 @@ Retained non-candidate proposal index: [Core controller and device phase program
 
 Retained historical context: [Core L3 integration closure and VM contract export](../proposals/m5-core-l3-integration-vm-contract-export.md), the closed IBM PC/XT profile/capability audit, and the withdrawn profile-first admission remain outside candidate ordering. The closed 5170 root normalization is the first Core-axis profile consumer.
 
-Closed retained proposal: [IBM 5170 native floppy contract](../proposals/m5-ibm-5170-native-floppy-contract.md), [Core HDC ATA phase contract](../proposals/m5-core-hdc-ata-phase-contract.md), [Four-profile supported DOS media matrix](../proposals/m5-four-profile-supported-media-matrix.md), [Four-profile post-scheduler media closure](../proposals/m5-four-profile-post-scheduler-media-closure.md), and [Unit and integration test convergence](../proposals/m5-current-gate-execution-tiering.md).
+Closed retained proposal: [controller signal-chain convergence](../proposals/m5-controller-signal-chain-convergence.md), [IBM 5170 native floppy contract](../proposals/m5-ibm-5170-native-floppy-contract.md), [Core HDC ATA phase contract](../proposals/m5-core-hdc-ata-phase-contract.md), [Four-profile supported DOS media matrix](../proposals/m5-four-profile-supported-media-matrix.md), [Four-profile post-scheduler media closure](../proposals/m5-four-profile-post-scheduler-media-closure.md), and [Unit and integration test convergence](../proposals/m5-current-gate-execution-tiering.md).
 
 ## M6 Candidates
 
