@@ -104,3 +104,23 @@ lines, with no 32-bit EFLAGS, protected-frame, decoder, VM-profile or artifact
 path changed. The complete repository-only unit suite passes 313/313 in 14.64
 seconds, documentation governance passes, and independent actual-diff review
 accepts `3b514e50`. S5 is now the active 8086/8088 full sweep.
+
+## S5: 8086/8088 Full Repair And Sweep
+
+S5 first rechecks the distinct 8088 rule from Intel Table 2-21: four clocks
+per listed 16-bit word transfer, not a value inferred from the 8086. It then
+uses one table-driven current retirement executor for the 8086 and 8088 finite
+recipe universe. Any defect is repaired at the existing Core decoder,
+execution, delivery or timing owner; no VM profile, secondary opcode runner or
+hardware-time claim is allowed. Group-3 ranges, WAIT's external iteration,
+non-string REP and non-instruction interrupt rows retain their documented
+lower-tier/non-instruction dispositions unless a source-qualified owner exists.
+
+## S5 Audit Result
+
+The initial current-owner audit is recorded in
+[its evidence](../etc/evidence/t512-s5-8086-8088-current-owner-audit.md).
+It confirms one production 8088 timing chain and finds no duplicate production
+path, but it rejects the old focused 8088 smoke as complete-sweep proof. The
+sole receiver is a table-driven generalization of the existing manifest
+executor; implementation and its full-unit proof remain active.
