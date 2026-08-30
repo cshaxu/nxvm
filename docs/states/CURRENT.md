@@ -2,11 +2,24 @@
 
 ## Current Work
 
-No subtask is active. T506 is closed: the finite selected 8237A D1--D10
-universe retains its sole Core DMA owner, and Model-339's already qualified
-`3/8` clock now supplies the next logical service-phase deadline. Default,
-XT and Model-40 contracts remain explicitly lower-tier; no fixed DMA duration,
-provider timer, VM/profile route or duplicate DMA state was introduced.
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New T507 S1. |
+| Admission And Approval | Owner approved a new global Core scheduler and Standard/Turbo performance closure on 2026-08-29, to run before the remaining controller receivers. |
+| Objective | Freeze the finite complete owner/deadline/progression matrix consumed by the Core scheduler and the sole VM pacing boundary, including every current per-tick callback and no-deadline receiver. |
+| Non-goals | Do not generate guest time from the host, add a VM/profile scheduler, add a device-local timer queue, import external code, invent controller durations, or implement dynamic recompilation. |
+| Reference Baseline | `13aa47d7`; [scheduler proposal](../proposals/m5-core-scheduler-standard-turbo-performance-closure.md), T499 scheduler seam, T504 bounded L1 fallback, and T505/T506 PIC/DMA deadline closures. |
+| Candidate Proposal | [M5 Core scheduler Standard/Turbo performance closure](../proposals/m5-core-scheduler-standard-turbo-performance-closure.md). |
+| Files And ABI Surface | One indexed T507 matrix/evidence record, this packet and T507 history; no production code, public ABI, profile, test, artifact or wall-clock behavior changes in S1. |
+| Applicable Rules | `EXECUTION.md` coverage ledger and acceptance lifecycle; `ARCHITECTURE.md` one Core guest clock/state owner and opaque VM boundary; `CODING.md` one retained progression path; `DOCUMENT.md` authority boundaries. |
+| Verification | Trace all Core progression and deadline routes, every VM Standard/Turbo pacing call, reset/cancellation and same-tick ordering; inspect available original evidence and external emulator architecture only as corroboration; run complete unit and documentation governance. |
+| Expected Markers | `M5:T507:S1:SCHEDULER-PROGRESSION-MATRIX:OK`; every frozen callback/receiver has one owner and one disposition: deadline, immediate same-tick action, or explicit L1/L2 receiver. |
+| Asset Needs | Read-only existing evidence and optional local external source checkouts only; no source, firmware, media, machine path or trace enters the repository. |
+| Reporting Requirements | Record the coverage universe, owner, event source, reset/cancel withdrawal behavior, same-tick order, current cost, proposed receiver and regression owner for every row; distinguish original-source fact from external architectural corroboration. |
+| Stop Conditions | Stop and revise if a row requires a new Core/VM contract, a source-unqualified duration, a second progression path, an unbounded callback set, or a product-visible speed-semantic change beyond Standard wait versus Turbo no-wait. |
+| Exit Criteria | The finite matrix covers all present scheduler callbacks, eligible deadlines, immediate actions, L1/L2 receivers and VM pacing entrypoints; no implementation has begun and the implementation batch is objectively bounded. |
+| Original Owner Request | Implement the queue task to global Core scheduler / Standard--Turbo performance closure in solo mode, preserving Core as the only guest-time writer and eliminating eligible per-tick polling rather than adding a fast side path. |
+| Similar-Issue Sweep | Core scheduler/timeline/deadline composition; CPU retirement and HLT paths; PIT, RTC, PIC, DMA, FDC, HDC, KBC/XT keyboard, VADP and Model-40 D4 callbacks; reset/cancel/withdrawal; CPU/IRQ same-tick order; VM runner/session speed parsing, pacing and host sleep. |
 
 ## Current Technical Baseline
 
