@@ -2,17 +2,31 @@
 
 ## Current Work
 
-T503 remains open with no active packet between accepted subtasks. S3--S10
-accepted the PIC, PIT, DMA, FDC, HDC, RTC, KBC/XT keyboard and VADP routes.
-S10 P1 `8d0692a2`/`e9184464` corrects CGA `3D9h` RGBI and the complete EGA
-display-disable path in the sole VADP owner; focused 12/12 and complete unit
-312/312 pass. The next admission is S11's cross-profile controller closure.
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation `T503 S11`; S10 is accepted at `b2eace4b` after direct IBM VADP reconciliation and a 312/312 complete-unit replay. |
+| Admission And Approval | The owner approved T503's controller-by-controller repair program and requires no unfinished causal tail. S11 consumes the proposal's final cross-profile closure batch; normal commits and non-force pushes are permanently approved. |
+| Objective | Reconcile the completed T503 route ledger against IBM 5160, IBM 5170, DeskPro 386 Model-40 and default-at construction/topology; run all owner-managed unit and integration gates; repair every demonstrated cross-device or profile signal-chain regression in this S. |
+| Non-goals | No new controller capability, no profile/firmware/VM compatibility shim, no guessed physical timing, no duplicate controller state/scheduler, and no acceptance merely because one DOS or Windows checkpoint reaches a screen. |
+| Reference Baseline | `b2eace4b` (`M5 T503 S10 P2 accept VADP presentation route`); the T503 route ledger and S3--S10 evidence are the finite per-owner inputs, not substitutes for this cross-profile replay. |
+| Candidate Proposal | [M5 controller signal-chain convergence](../proposals/m5-controller-signal-chain-convergence.md), cross-profile closure S. |
+| Files And ABI Surface | Expected test/evidence/status/history and, only if a reproduced defect requires it, the earliest owning Core controller and its owner-local regression. No cross-owner pointer, profile shim or parallel timing route may be introduced. |
+| Applicable Rules | `docs/README.md` Task Reading Set; `rules/EXECUTION.md` T-level closure, integration, artifact and P rules; source policy; `rules/DOCUMENT.md`; `design/ARCHITECTURE.md`/`rules/ARCHITECTURE.md` one-owner and copied-boundary rules; `design/CODING.md`/`rules/CODING.md` simplicity and test-boundary rules. |
+| Verification | Re-read each T503 evidence route disposition; inspect all four profile construction paths and route tests; run a transient focused cross-profile cohort, complete repository-only unit suite, and complete owner-managed integration suite. Build and record the required task-numbered stripped Release artifact if this T closes. |
+| Expected Markers | `T503-S11-CROSS-PROFILE-CLOSURE`; every T503 frozen route has an explicit accepted or earliest-receiver disposition under every selected topology, and all required gates pass. |
+| Asset Needs | Approved BYOB integration inputs only through their configured test routes; no source, firmware, ROM, guest media, trace or third-party code is imported. |
+| Reporting Requirements | Record the four-profile route matrix, every failing test's owner/causal disposition, full unit/integration results, source/test line accounting, artifact identity/hash if produced, and the T-level closure or named transfer. |
+| P1 Progress | Cross-profile cohort 27/27, rebuilt complete unit 312/312 and integration 20/20 pass. The actual Release compile found and repaired one VADP-private declaration-order error; `0503` is built and hashed. Pending P1 commit and P2 T-level audit only. |
+| Stop Conditions | Stop for an authority contradiction, an integration dependency outside approved BYOB inputs, an unclassified defect outside T503's route boundary, or a required artifact/build failure that cannot be safely diagnosed. Do not hide a failure by skipping a profile or changing an expectation. |
+| Exit Criteria | All four profiles receive the completed route-ledger audit; unit and integration gates pass; every demonstrated defect is repaired at its earliest owner with a regression; no T503 route is left as an undocumented causal tail; T-level code/doc/debt/evidence audit and stripped artifact record are complete. |
+| Original Owner Request | Each controller S owns its complete downstream causal effect, including other impacted controllers/devices; no known causal tail may be deferred. The final task result must be minimalist: one owner, one production route, no layered workaround. |
+| Similar-Issue Sweep | All selected profile constructors; PIC/PIT/DMA/FDC/HDC/RTC/KBC/XT/VADP ingress and consumers; HLT/deadline/wake-up, reset, absent-device/media, IRQ/DMA acknowledgement and terminal/error paths; unit/integration resource isolation; stale profile or presentation state. |
 
 ## Current Technical Baseline
 
-- **Current developer artifact:** CMake target `vm-0-5-0501` emitted
-  `nxvm_0_5_0501.exe` in a stripped Release build, SHA-256
-  `502D12BE1E30EDBCBE609F424F778A97F665210CA2B3F8B50C88636F8377B2CC`.
+- **Current developer artifact:** CMake target `vm-0-5-0503` emitted
+  `nxvm_0_5_0503.exe` in a stripped Release build, SHA-256
+  `3AF1408F5E1C3760CF2A3D38D0EA8B7A739122BD2F4B7FBB49A527566E7A8373`.
   It retains the runtime debugger and contains no compiler debug information.
   Debug uses the repository-only unit route. T471 preserves Core-owned progression:
   a verified axis is Standard-paced only by host waiting against completed

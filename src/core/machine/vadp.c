@@ -161,6 +161,8 @@ static type_unsigned_32 core_machine_vadp_ega_palette_color(const t_vadp *adapte
     return core_machine_vadp_rgbi_color(value & 0x0fu);
 }
 
+static C_INT core_machine_vadp_ega_output_active(const t_vadp *adapter);
+
 static C_VOID core_machine_vadp_graphics_palette(const t_vadp *adapter,
     type_unsigned_32 palette[4])
 {
