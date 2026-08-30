@@ -1,6 +1,6 @@
 # T507 S10 HDC Personality Re-Audit
 
-`M5:T507:S10:HDC-PERSONALITIES:P1`
+`M5:T507:S10:HDC-PERSONALITIES:P2`
 
 ## Sources And Boundaries
 
@@ -55,7 +55,17 @@ unless a source-qualified personality deadline is admitted.
 
 ## Verification
 
-The focused HDC, Compaq wiring, Xebec wiring and VM HDC/profile tests pass;
-the complete repository-only unit replay and P2 actual-diff review are
-recorded at closure.  This audit makes no code change because no source-backed
-defect or timing value was found.
+The focused HDC, Compaq wiring, Xebec wiring and VM HDC/profile tests pass
+6/6.  The complete repository-only unit replay passes 312/312 in 15.60
+seconds.  This audit makes no code change because no source-backed defect or
+timing value was found.
+
+## P2 Actual-Diff Review
+
+P1 `6f4718c9` is documentation only: it records the complete four-personality
+source/List-1/List-2 and scheduler audit.  Review of `hdc.c`,
+`machine_board.c`, `machine_scheduler.c` and the direct VM consumers confirms
+one HDC object, one media boundary and one PIC/DMA binding per selected
+personality.  It accepts no guessed duration, controller merge, VM/profile
+workaround or unreviewed external implementation.  The unrelated working-tree
+proposal change was neither staged nor reviewed as S10 work.

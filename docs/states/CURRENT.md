@@ -68,6 +68,11 @@
 
 ## Recent Governance
 
+- **M5 T507 S10 P2:** coordinator actual-diff review accepts `6f4718c9`.
+  ATA, WD1003, Compaq/WD and Xebec retain distinct sole-owner routes and one
+  shared explicit L1 service boundary; focused HDC 6/6 and full unit 312/312
+  pass with no guessed delay or profile-side progression.
+
 - **M5 T507 S9 P2:** coordinator actual-diff review accepts `e704100f`.
   IBM EGA Attribute display-enable now gates its existing text fallback and
   recognized planar frame paths through one VADP predicate; focused proof and
