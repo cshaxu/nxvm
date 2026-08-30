@@ -44,6 +44,7 @@ principal documents named in [docs/README.md](../README.md).
 | `evidence/t511-s2-pic-phase-consumer-audit.md` | PIC owner | T511 S2's manual-led PIC acknowledgement/IRR/ISR consumer audit; no ATA-style repeated-phase consumer exists. |
 | `evidence/t511-s3-dma-phase-consumer-audit.md` | DMA owner | T511 S3's manual-led DMA/FDC/Xebec request, grant, terminal and block-consumer audit; no stale ready observation exists. |
 | `evidence/t511-s4-pit-phase-consumer-audit.md` | PIT owner | T511 S4's manual-led PIT counter/output, IRQ0, refresh and speaker consumer audit; no stale transition observation exists. |
+| `evidence/t511-s5-rtc-phase-consumer-audit.md` | RTC owner | T511 S5's manual-led RTC update/periodic/alarm, Register-C and IRQ8 consumer audit; no stale event observation exists. |
 | `evidence/t503-s10-vadp-presentation-route-audit.md` | Core VADP owner | T503 S10's direct IBM/video-model reconciliation; it repairs selected CGA RGBI and EGA display-disable snapshot publication in the one VADP-to-copied-presentation route. |
 | `evidence/t503-s11-cross-profile-closure.md` | Core route owner | T503 S11's four-profile controller-route matrix, complete unit/integration proof, corrected Release artifact and T-level route closure. |
 | `evidence/t504-s1-l1-no-deadline-inventory.md` | Core scheduler owner | T504 S1's finite blocked/no-deadline owner inventory, its normal wake/lifecycle paths, and the L1 versus already-due/deadline disposition for the Turbo compatibility receiver. |
