@@ -2,12 +2,24 @@
 
 ## Current Work
 
-T503 remains open with no active packet between accepted subtasks.  S3--S8
-accepted the PIC, PIT, DMA, FDC, HDC and RTC route batches.  S8 P1
-`caba86b2` repairs the former AIE-only alarm-deadline omission in the sole RTC
-owner; its focused 4/4 and complete unit 312/312 replay pass.  The next
-admission is the selected KBC/XT-keyboard -> PIC/A20/reset route batch under
-the retained no-tail requirement.
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation `T503 S9`; S8 is accepted at `caba86b2` after direct MC146818A/IBM-to-IRQ8/NMI/firmware reconciliation and a 312/312 complete unit replay. |
+| Admission And Approval | Owner approved controller-by-controller audit/repair and explicitly requires every S to repair demonstrable downstream effects without a tail. S9 consumes the selected 8042 or XT-PPI keyboard -> PIC/A20/reset route; normal commits and non-force pushes are permanently approved. |
+| Objective | Directly read selected 8042 and XT keyboard/PPI primary sources, trace command/FIFO/serial/IRQ1/A20/reset/NMI routes through Core and selected firmware consumers, cross-check available local emulator logic, then repair the complete KBC/XT route gap batch. |
+| Non-goals | No profile/firmware/VM workaround, polling loop, duplicate FIFO/keyboard state, second clock/scheduler, XT-as-8042 alias, AT port `64h` on XT, or speculative physical serial timing. A genuinely independent controller-internal fault transfers only after its causal boundary is proved. |
+| Reference Baseline | `e0eced87` (`M5 T503 S8 P2 accept RTC route audit`); the T503 route ledger and T464/T484/T496 owner records remain evidence, not a substitute for this direct audit. |
+| Candidate Proposal | [M5 controller signal-chain convergence](../proposals/m5-controller-signal-chain-convergence.md), controller-specific KBC/XT keyboard route S. |
+| Files And ABI Surface | Expected `src/core/machine/kbc.[ch]`, `xt_ppi_keyboard.[ch]`, `xt_keyboard.[ch]`, existing immutable board bindings and owner-local `test/core/`/`test/vm/` paths. Public interface changes require a bounded typed operation; no CPU/RAM/port/controller pointer or mutable state crosses owners. |
+| Applicable Rules | `docs/README.md` Task Reading Set; `rules/EXECUTION.md` coverage-bearing, packet, P, review and test rules; `rules/DOCUMENT.md`; source policy; `rules/ARCHITECTURE.md` sole-owner/bounded-interface invariants; `rules/CODING.md` simplicity/test-boundary rules. |
+| Verification | Visually inspect and cite selected Intel/IBM pages; contrast actual 86Box/MAME/PCjs/Bochs/QEMU KBC/XT logic where locally available; trace normal, inhibited/masked, reset, empty-FIFO/serial, A20, IRQ1 acknowledgement and HLT/deadline paths across XT and AT forms; run focused owner-local and complete repository-only unit tests. |
+| Expected Markers | `T503-S9-KBC-XT-FIRMWARE-ROUTE`; every selected keyboard/KBC observable has one Core state owner, one stated PIC/A20/reset/firmware consumer route and a source-qualified timing disposition. |
+| Asset Needs | Existing direct-source ledgers and read-only external emulator source only if a board edge remains ambiguous; no external code, firmware, media or generated trace enters the repository. |
+| Reporting Requirements | Record every selected KBC/XT form's manual fact, NXVM route, external comparison, disposition, retained owner and code-size result; report focused/full-unit proof and any earliest-unit transfer. |
+| Stop Conditions | Stop for owner direction, authority contradiction, unavailable source needed to classify a selected connection, or a gap independent of the KBC/XT route; do not improvise a workaround. |
+| Exit Criteria | Every selected 8042/PPI command, FIFO/serial, IRQ1, A20, reset, NMI and deadline form has primary-source evidence, NXVM trace, external comparison or stated lack thereof, and focused/full-unit proof; every demonstrable downstream effect is repaired in S9 or explicitly shown independent and transferred. |
+| Original Owner Request | Each S owns one controller audit and repair, but must also repair affected controllers/devices in the same S; no known causal tail remains. |
+| Similar-Issue Sweep | 8042 ports `60h/64h`, command byte/output port, OBF/IBF, reset/self-test, keyboard command/reply/typematic, translated/native input, AUX absence, IRQ1/IRQ12, A20/reset, NMI separation, XT PPI `60h`--`63h`, PB6/PB7 inhibit/clear, serial/BAT, no-AT-alias, reset and HLT/deadline behavior across 5160, 5170, Model-40 and default-at. |
 
 ## Current Technical Baseline
 
@@ -79,6 +91,13 @@ the retained no-tail requirement.
   one RTC-local alarm-deadline helper reuses the sole calendar and alarm
   predicate, so AIE no longer leaves HLT with an omitted connected IRQ8 event.
   No other S8 batch member requires a second path or corrective receiver.
+
+- **M5 T503 S9 P1:** direct Intel/IBM and available-local-emulator reconciliation
+  finds one XT keyboard-route defect: BAT completion reused its already spent
+  ticks to consume the first serial edge.  The sole XT keyboard owner now
+  consumes each phase once, retaining the PPI byte/IRQ1 path and all existing
+  8042/XT topology separation.  Focused 6/6 and complete repository-only unit
+  312/312 proof are required for this implementation delivery.
 
 - **M5 T503 S6 P2:** coordinator review accepts `8aac1fb0`: direct
   NEC/IBM/code/external reconciliation adds the sole frozen READY-board input,

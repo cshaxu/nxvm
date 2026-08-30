@@ -212,7 +212,13 @@ static C_INT core_machine_xt_keyboard_reset_bat_path(C_VOID)
     failed |= !failed && core_machine_capture_time_observation(machine,
         &time_observation) != TYPE_STATUS_OK;
     failed |= !failed && !time_observation.next_deadline_valid;
-    failed |= !failed && core_machine_advance_time(machine, 300300u) != TYPE_STATUS_OK;
+    failed |= !failed && core_machine_advance_time(machine, 300000u) != TYPE_STATUS_OK;
+    failed |= !failed && machine->xt_ppi_keyboard.byte_ready;
+    failed |= !failed && core_machine_capture_time_observation(machine,
+        &time_observation) != TYPE_STATUS_OK;
+    failed |= !failed && (!time_observation.next_deadline_valid ||
+        time_observation.next_deadline_tick != machine->elapsed_ticks + 60u);
+    failed |= !failed && core_machine_advance_time(machine, 300u) != TYPE_STATUS_OK;
     failed |= !failed && !machine->xt_ppi_keyboard.byte_ready;
     failed |= !failed && !machine->xt_ppi_keyboard.irq1_asserted;
     failed |= !failed && core_machine_bus_read(machine, 0x0060u, &value) !=

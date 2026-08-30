@@ -154,36 +154,40 @@ C_VOID core_machine_xt_keyboard_advance(core_machine_xt_keyboard *keyboard,
     if (keyboard->clock_held && !keyboard->bat_active) {
         keyboard->clock_low_ticks = UINT64_MAX - keyboard->clock_low_ticks < ticks ?
             UINT64_MAX : keyboard->clock_low_ticks + ticks;
-    }
-    if (keyboard->bat_active) {
-        if (ticks < keyboard->bat_remaining_ticks) {
-            keyboard->bat_remaining_ticks -= ticks;
-            return;
-        }
-        keyboard->bat_active = TYPE_FALSE;
-        keyboard->bat_remaining_ticks = 0u;
-        keyboard->bat_result_pending = TYPE_TRUE;
-    }
-    if (keyboard->bat_result_pending && !keyboard->clock_held && !keyboard->clear_asserted &&
-        !keyboard->serial_active) {
-        keyboard->serial_byte = 0xaau;
-        keyboard->serial_bits_remaining = 9u;
-        keyboard->serial_remaining_ticks = core_machine_xt_keyboard_us_to_ticks(keyboard,
-            CORE_MACHINE_XT_KEYBOARD_FIRST_EDGE_US);
-        keyboard->serial_active = TYPE_TRUE;
-        keyboard->serial_response = TYPE_TRUE;
-        keyboard->bat_result_pending = TYPE_FALSE;
-    }
-    if (!keyboard->serial_active) return;
-    if (ticks < keyboard->serial_remaining_ticks) {
-        keyboard->serial_remaining_ticks -= ticks;
         return;
     }
-    if (--keyboard->serial_bits_remaining == 0u) {
-        core_machine_xt_keyboard_finish_serial(keyboard);
-    } else {
-        keyboard->serial_remaining_ticks = core_machine_xt_keyboard_us_to_ticks(keyboard,
-            CORE_MACHINE_XT_KEYBOARD_CLOCK_US);
+    while (ticks != 0u) {
+        if (keyboard->bat_active) {
+            if (ticks < keyboard->bat_remaining_ticks) {
+                keyboard->bat_remaining_ticks -= ticks;
+                return;
+            }
+            ticks -= keyboard->bat_remaining_ticks;
+            keyboard->bat_active = TYPE_FALSE;
+            keyboard->bat_remaining_ticks = 0u;
+            keyboard->bat_result_pending = TYPE_TRUE;
+        }
+        if (keyboard->bat_result_pending && !keyboard->clock_held &&
+            !keyboard->clear_asserted && !keyboard->serial_active) {
+            keyboard->serial_byte = 0xaau;
+            keyboard->serial_bits_remaining = 9u;
+            keyboard->serial_remaining_ticks = core_machine_xt_keyboard_us_to_ticks(keyboard,
+                CORE_MACHINE_XT_KEYBOARD_FIRST_EDGE_US);
+            keyboard->serial_active = TYPE_TRUE;
+            keyboard->serial_response = TYPE_TRUE;
+            keyboard->bat_result_pending = TYPE_FALSE;
+        }
+        if (!keyboard->serial_active || ticks < keyboard->serial_remaining_ticks) {
+            if (keyboard->serial_active) keyboard->serial_remaining_ticks -= ticks;
+            return;
+        }
+        ticks -= keyboard->serial_remaining_ticks;
+        if (--keyboard->serial_bits_remaining == 0u) {
+            core_machine_xt_keyboard_finish_serial(keyboard);
+        } else {
+            keyboard->serial_remaining_ticks = core_machine_xt_keyboard_us_to_ticks(keyboard,
+                CORE_MACHINE_XT_KEYBOARD_CLOCK_US);
+        }
     }
 }
 
