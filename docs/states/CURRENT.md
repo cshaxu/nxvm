@@ -4,22 +4,22 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation T507 S8. |
-| Admission And Approval | Owner approved continuous solo execution and the controller-by-controller source/List 1/List 2/owner-repair structure on 2026-08-29. S1--S7 are accepted; this is the selected Intel 8272A FDC and media/DMA2 batch. |
-| Objective | Re-audit 8272A command, seek, byte gate, DRQ, TC, IRQ6, cancellation and reset through the one Core FDC owner; repair every confirmed owner or direct-receiver defect without inventing rotation or mechanics timing. |
-| Non-goals | Do not create a second FDC/media cache, merge profile mechanics into the controller, alter PIC/DMA/PIT/RTC/KBC/HDC/VADP/D4 ownership, expose raw controller state, or create a VM/profile FDC scheduler. |
+| Identifier Mode | Continuation T507 S9. |
+| Admission And Approval | Owner approved continuous solo execution and the controller-by-controller source/List 1/List 2/owner-repair structure on 2026-08-29. S1--S8 are accepted; this is the selected VADP CGA/EGA and copied-presentation batch. |
+| Objective | Re-audit CGA/EGA port, VRAM, CRTC, planar, text-fallback, display-enable, snapshot and presentation routes through the one Core VADP owner; repair every confirmed owner or direct-consumer defect without creating a parallel video path. |
+| Non-goals | Do not create a renderer-owned guest mode/frame state, merge CGA/EGA/VGA personalities, alter PIC/DMA/PIT/RTC/KBC/FDC/HDC/D4 ownership, expose raw VADP state, or create a VM/profile video scheduler. |
 | Reference Baseline | e9426be3; T503 FDC evidence and T507 S1 progression matrix. |
 | Candidate Proposal | [M5 Core scheduler Standard/Turbo performance closure](../proposals/m5-core-scheduler-standard-turbo-performance-closure.md). |
-| Files And ABI Surface | 8272A FDC, media/DMA2/PIC consumers, owner-local tests/evidence/history only; no VM/profile timing state, raw-device pointer or parallel delayed-delivery path. |
+| Files And ABI Surface | VADP CGA/EGA, copied display snapshot and direct presentation consumers, owner-local tests/evidence/history only; no renderer guest-state cache, raw-device pointer or parallel frame path. |
 | Applicable Rules | EXECUTION.md complete finite batch/review; ARCHITECTURE.md one owner per topology and publication route; CODING.md direct owner-local repair; source policy before manual/external research; DOCUMENT.md evidence boundary. |
-| Verification | Render/read Intel 8272A and applicable IBM XT/AT board sources; inspect FDC/media/DMA2/PIC and every direct consumer; cross-check available 86Box/MAME/PCjs/Bochs/QEMU logic; freeze List 1/List 2; add focused regression for each repair; run complete unit before S closure. |
-| Expected Markers | A T507 S8 FDC evidence marker; every finite command/seek/byte-gate/DRQ/TC/IRQ/reset/deadline row has a Manual-L3/Other-L3/L2/L1 disposition, owner, receiver and regression or explicit boundary. |
+| Verification | Render/read selected IBM CGA/EGA and CRTC sources; inspect VADP/VRAM/snapshot/VM presentation and every direct consumer; cross-check available 86Box/MAME/PCjs/Bochs/QEMU logic; freeze List 1/List 2; add focused regression for each repair; run complete unit before S closure. |
+| Expected Markers | A T507 S9 VADP evidence marker; every finite CGA/EGA/CRTC/VRAM/snapshot/presentation row has a Manual-L3/Other-L3/L2/L1 disposition, owner, receiver and regression or explicit boundary. |
 | Asset Needs | Existing local manual/external-reference copies only; no import of source, firmware or media. |
 | Reporting Requirements | Record source/OCR qualification, List 1/List 2 rows, accepted/rejected external lessons, every changed owner/downstream path, focused proof, full-unit result and code-size accounting. |
 | Stop Conditions | Stop and revise if a repair needs an unsourced delay, host input time, unapproved public contract, mutable state outside Core, profile/VM workaround, topology merge or second scheduler. |
 | Exit Criteria | Every frozen FDC/controller-publication/timing row is fixed or explicitly retained at its supported level; no duplicate or late DRQ/TC/IRQ6/reset/deadline route remains; direct consumers and full unit pass. |
 | Original Owner Request | Complete the global scheduler/Standard--Turbo performance closure without fast-pathing or violating Core as sole guest-clock owner. |
-| Similar-Issue Sweep | FDC command/result/FIFO/MSR, drive selection, seek/recalibrate, byte gate/DRQ, DMA2 TC, IRQ6, media attach/detach, reset/cancellation/finalize and scheduler/PIC/DMA consumers. |
+| Similar-Issue Sweep | CGA/EGA port and memory maps, CRTC geometry, mode/enable state, planar access, text fallback, copied snapshot lifetime, presentation, reset/finalize and direct VM consumers. |
 
 ## Current Technical Baseline
 
