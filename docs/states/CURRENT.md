@@ -4,13 +4,13 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation `T503 S6`; S5 is accepted after direct 8237A-to-provider reconciliation and a 312/312 complete unit replay. |
-| Admission And Approval | Owner approved controller-by-controller audit/repair and explicitly requires every S to repair its demonstrable downstream effects without a tail. S6 consumes 8272A FDC -> DMA2/PIC/firmware, including selected drive/media/reset/error states; normal commits and non-force pushes are permanently approved. |
-| Objective | Directly read the selected NEC 8272A/uPD765 and applicable IBM board sources, trace command/DRQ/DMA2/TC/result/IRQ6/firmware consumption, cross-check external emulator logic, then repair the complete FDC-route gap batch. |
-| Non-goals | No invented spindle/stepper physics, profile/firmware/VM workaround, polling loop, second FDC/media state, ATA/HDC change or parallel scheduler. A genuinely independent controller-internal fault transfers only after its causal boundary is proved. |
-| Reference Baseline | `9e3b33ba` (`M5 T503 S5 P1 reconcile DMA provider routes`); S1/S2 remain preliminary route inventory only. |
-| Candidate Proposal | [M5 controller signal-chain convergence](../proposals/m5-controller-signal-chain-convergence.md), controller-specific FDC route S. |
-| Files And ABI Surface | Expected `src/core/machine/fdc.[ch]`, immutable FDC/DMA/PIC board bindings, owner-local `test/core/` paths and evidence/state/history. Public interface changes require an opaque copied operation; no controller pointer, mutable media state or mutable layout crosses owners. |
+| Identifier Mode | Continuation `T503 S7`; S6 is accepted after direct 8272A-to-DMA2/PIC/firmware reconciliation and a 312/312 complete unit replay. |
+| Admission And Approval | Owner approved controller-by-controller audit/repair and explicitly requires every S to repair its demonstrable downstream effects without a tail. S7 consumes the selected HDC -> media/PIC/firmware route; normal commits and non-force pushes are permanently approved. |
+| Objective | Directly read the selected HDC sources, trace command/DRQ or PIO/result/IRQ/firmware consumption, cross-check local external emulator logic, then repair the complete HDC-route gap batch. |
+| Non-goals | No ATA universalization, profile/firmware/VM workaround, polling loop, second HDC/media state or parallel scheduler. A genuinely independent controller-internal fault transfers only after its causal boundary is proved. |
+| Reference Baseline | `8aac1fb0` (`M5 T503 S6 P1 reconcile FDC firmware routes`); S1/S2 remain preliminary route inventory only. |
+| Candidate Proposal | [M5 controller signal-chain convergence](../proposals/m5-controller-signal-chain-convergence.md), controller-specific HDC route S. |
+| Files And ABI Surface | Expected `src/core/machine/hdc.[ch]`, immutable HDC/media/PIC board bindings, owner-local `test/core/` paths and evidence/state/history. Public interface changes require an opaque copied operation; no controller pointer, mutable media state or mutable layout crosses owners. |
 | Applicable Rules | `docs/README.md` Task Reading Set; `rules/EXECUTION.md` coverage-bearing, packet, P, review and test rules; `rules/DOCUMENT.md`; source policy; `rules/ARCHITECTURE.md` sole-owner/bounded-interface invariants; `rules/CODING.md` simplicity/test-boundary rules. |
 | Verification | Visually inspect and cite applicable NEC/IBM pages; contrast actual 86Box/MAME/PCjs/Bochs/QEMU FDC logic where available; trace commands, drive selection, DRQ/DMA2/TC, result/IRQ6 acknowledgement, reset, no-media and media-change forms; run focused owner-local and complete repository-only unit tests. |
 | Expected Markers | `T503-S6-FDC-FIRMWARE-ROUTE`; every selected FDC command completion has one Core state owner, one stated DMA/IRQ consumer route and a source-qualified timing disposition. |
@@ -67,6 +67,12 @@
 | T495 | Closed: the selected IBM 5160-268 is functionally ready with source-backed L3 relations and explicit L2 limits; 13/13 focused, 300/300 fresh current and specialized gates pass, without a physical/wall-clock overclaim. [Decision](../etc/evidence/t495-s2-xt-final-model-decision.md). |
 
 ## Recent Governance
+
+- **M5 T503 S6 P2:** coordinator review accepts `8aac1fb0`: direct
+  NEC/IBM/code/external reconciliation adds the sole frozen READY-board input,
+  retains one controller-owned reset/DRQ/DMA2/IRQ6 route and corrects the stale
+  ready-sampling records; focused 8/8 and complete repository-only unit
+  312/312 pass. S7 is admitted for the complete selected HDC route.
 
 - **M5 T503 S5 P2:** coordinator review accepts `9e3b33ba`: direct
   8237A/IBM/code/external reconciliation removes the duplicate raw-primary
