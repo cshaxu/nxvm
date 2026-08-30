@@ -4,29 +4,29 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation T512; S1--S8 accepted, S9 active. |
+| Identifier Mode | T512 closed after S1--S9 acceptance. |
 | Admission And Approval | Owner approved the five-CPU complete audit after Td S157 removed the already-completed D4 candidate, and directed that every newly discovered L1 or downgrade receive a full same-class sweep and repair. This revision covers the shared Core FPU/WAIT L1 found by that sweep. |
-| Objective | Reconcile all five CPU ledgers against their source and existing sole Core owners; record every remaining lower-tier timing disposition and its receiver. S8 has replaced the shared FPU/WAIT false-completion path for every supported CPU/FPU pairing with one source-qualified Core deadline path. |
+| Objective | Closed: all five CPU ledgers are reconciled against their source and existing sole Core owners, with every lower-tier timing disposition assigned a receiver. S8 replaced the shared FPU/WAIT false-completion path for every supported CPU/FPU pairing with one source-qualified Core deadline path. |
 | Non-goals | Do not add profile-side CPU behavior, assert a value for undefined state, import third-party source, alter x87 arithmetic semantics outside the existing supported subset, or change `build/output` YAML. |
-| Reference Baseline | S7 80286 closure evidence, current Core decode/execution, existing 80386 ledger/result material, T499 CPU/profile audit history, stripped Release 0511 baseline, and `t512-s8-fpu-wait-global-sweep.md`. |
+| Reference Baseline | S7 80286 closure evidence, current Core decode/execution, existing 80386 ledger/result material, T499 CPU/profile audit history, the preceding stripped Release 0511 baseline, and `t512-s8-fpu-wait-global-sweep.md`. |
 | Candidate Proposal | [Five-CPU complete instruction re-audit and repair](../proposals/m5-five-cpu-complete-instruction-reaudit.md). |
 | Files And ABI Surface | Decoder, execution, 32-bit/VM86/paging/debug/system-state delivery, retirement and timing-selector owners reached by the finite 80386 List-2 rows; the private Core FPU owner and existing elapsed-tick scheduler; and their owner-local Core tests. No public ABI, VM/profile execution path or artifact-template change. |
 | Applicable Rules | Task Reading Set; execution, architecture, coding, source-policy and documentation authorities. Intel originals are normative; external emulator code is read-only corroboration only. |
-| Verification | Every S closes with the complete repository-only unit suite and documentation governance; the revised S8 also runs every CPU/FPU pairing and no-FPU control through the FPU deadline path. T closure also runs external-ROM/disk integration and builds stripped Release 0512. |
+| Verification | S9 result contracts verify every profile; unit 315/315, integration 20/20, documentation governance and stripped Release 0512 pass. |
 | Expected Markers | Every 80386 List-2 row has a Manual-L3, explicit lower-tier, unsupported or single-owner repair disposition; every supported FPU pairing reaches BUSY completion only through Core time advancement; 32-bit and VM86 behavior stays one Core path. |
 | Asset Needs | Read-only owner-managed Intel 80286/80287 and 80386 manuals under `assets/manuals`, plus read-only 86Box/PCjs/Bochs corroboration; no manual, ROM, guest media or third-party source import. |
 | Reporting Requirements | Record each source locator, exact row/owner sweep, any removed duplicate path, source/test code-size delta, FPU pairing matrix and full unit result. |
 | T-Wide Tier Rule | Each CPU-profile S inventories all L1 rows and upgrades every source-supported one to Manual-L3 or External-L2. A newly found L1 or proposed lower reclassification first triggers a five-profile same-class sweep across ledger, manifest, result artifact and verifier; an unupgradeable L1, or a downgrade not proven false, stops for owner review. |
 | Stop Conditions | Stop if a source-distinct 80386 or shared-FPU behavior lacks a representable Core owner, a discovered L1 cannot be upgraded, a tier downgrade is proposed, or the repair requires unsupported x87 arithmetic semantics rather than the completion contract. |
-| Exit Criteria | All 80386 List-2 rows are reconciled against source and current owners; no FPU/WAIT completion L1 remains in a supported pairing; each proven repair is sole-owner and swept across equivalent forms; full unit and documentation governance pass. |
+| Exit Criteria | Met.  The five final timing contracts contain no L1 instruction row; every L2 is named and Core-owned; FPU/WAIT completion has one swept owner; unit, integration, governance and stripped Release artifact pass. |
 | Original Owner Request | Audit and correctly repair all supported five-CPU instruction, architectural-state and timing behavior using manual-first evidence and minimal single-owner design. |
 | Similar-Issue Sweep | Sweep every 80386 decoder-admitted form and its prefix, 32-bit/VM86/paging/debug/system-state delivery, retirement and timing selector owner; additionally sweep 8086/8088+8087, 80186+8087, 80286+80287, 80386+80287/80387 and all no-FPU controls through the one shared FPU completion owner. |
 
 ## Current Technical Baseline
 
-- **Current developer artifact:** CMake target `vm-0-5-0511` emitted
-  `nxvm_0_5_0511.exe` in a stripped Release build, SHA-256
-  `3A5F62DF4CF4F790829C6D26AEBA12DBF9D434129D9DC17855DEF9099DBEE1A4`.
+- **Current developer artifact:** CMake target `vm-0-5-0512` emitted
+  `nxvm_0_5_0512.exe` in a stripped Release build, SHA-256
+  `45CA2B2167F64342B65371294BB2CF05DF11C167A79F666B925510FFE1049D14`.
   It retains the runtime debugger and contains no compiler debug information.
   Debug uses the repository-only unit route. T471 preserves Core-owned progression:
   a verified axis is Standard-paced only by host waiting against completed
@@ -58,6 +58,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T512 | Closed: five CPU timing contracts contain no L1 instruction row; ranges and coprocessor completion are explicit Core-owned L2, exact rules remain L3, and every valid FPU pairing reaches one Core deadline completion path. Unit 315/315, integration 20/20, governance and stripped Release 0512 pass. [History](../history/M5-T512-five-cpu-complete-instruction-reaudit-closure.md). |
 | T510 | Closed: ATA, WD1003, Compaq/WD and Xebec retain one HDC/media owner with explicit `200/200`, `16000/7840`, `0/0` and `250/0` service dispositions. The 0508 ATA PIO consumer regression is repaired; actual HDD Windows Setup reaches Welcome. Unit 313/313, integration 20/20, governance and stripped Release 0508 pass. [History](../history/M5-T510-hdc-personality-service-deadline-closure.md). |
 | T509 | Closed: all 33 session-backed test runners and the production runner have a deadline-consumer, explicit-HLT, or bounded non-continuation disposition. Seven long-running runners now reuse the existing VM waiting boundary; unit 313/313, integration 20/20, governance and stripped Release 0508 pass. [History](../history/M5-T509-session-deadline-consumer-convergence.md). |
 | T508 | Reclosed: Core accepts one provenance-neutral copied timing plan; default ATA has an Other-L2 controller quantum and Model-40 an Other-L2 macro pacing axis. The four-profile matrix reaches only Core deadlines, never the L1 escape. Unit 313/313, integration 20/20, governance and stripped Release 0508 pass. [History](../history/M5-T508-core-timing-input-qualification-closure.md). |
@@ -65,7 +66,6 @@
 | T506 | Closed: selected 8237A D1--D10 relations are reconciled; Model-339 can advance to the next sourced DMA phase through the existing Core scheduler while unqualified contracts remain isolated. Unit 312/312, integration 20/20 and stripped Release 0506 pass. [History](../history/M5-T506-dma-service-arbitration-deadline-closure.md). |
 | T505 | Closed: Intel-backed cascade publication and withdrawal are immediate PIC-owner work, not a scheduled L1 tick. One construction-fixed PIC pair reuses the existing refresh calculation after source and command transitions; full unit 312/312 and integration 20/20 pass. [History](../history/M5-T505-pic-cascade-observable-progress-closure.md). |
 | T504 | Closed: one Core-owned bounded Turbo fallback advances only copied L1 no-deadline waits; Standard receives no compatibility progression or host-to-guest ticks. Same-input external DOS replays reach `A:\>` in both modes; formal Release output ships selectable strict-grammar templates; the four controller-specific timing receivers are queued. [History](../history/M5-T504-turbo-l1-compatibility-escape.md). |
-| T502 | Withdrawn before execution by owner direction; no implementation, evidence, test, or artifact change was produced. |
 
 ## Recent Governance
 
