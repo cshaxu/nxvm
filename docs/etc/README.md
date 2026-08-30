@@ -52,6 +52,7 @@ principal documents named in [docs/README.md](../README.md).
 | `evidence/t511-s10-vadp-phase-consumer-audit.md` | VADP owner | T511 S10's CGA/EGA port/VRAM/snapshot/presentation-consumer audit; no stale frame or parallel video state exists. |
 | `evidence/t511-s11-d4-phase-consumer-audit.md` | Model-40 D4 route | T511 S11's PIT-refresh/hold/DMA/transaction consumer audit; no stale board assertion exists. |
 | `evidence/t511-s12-global-phase-consumer-closure.md` | Whole controller sweep | T511's complete no-tail audit, all-gate result and stripped Release 0511 artifact record. |
+| `evidence/t512-s1-five-cpu-source-cross-validation.md` | CPU conformance owner | T512 S1's manual-first five-CPU source corpus, scan/OCR qualification, external-model cross-validation boundary, and discovered 80286 timing-source correction. |
 | `evidence/td-s157-d4-candidate-reconciliation.md` | Governance owner | Td S157 reconciles the obsolete D4 refresh-hold candidate with T419 and T507 S14 closure evidence; physical D4 timing remains separately deferred. |
 | `evidence/td-s156-output-yaml-preservation.md` | Output boundary | Td S156 removes Release-build YAML copying so `build/output` configuration remains user-managed. |
 | `evidence/t503-s10-vadp-presentation-route-audit.md` | Core VADP owner | T503 S10's direct IBM/video-model reconciliation; it repairs selected CGA RGBI and EGA display-disable snapshot publication in the one VADP-to-copied-presentation route. |

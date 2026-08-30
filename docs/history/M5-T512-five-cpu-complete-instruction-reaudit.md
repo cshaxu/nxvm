@@ -25,3 +25,13 @@ state.
 S1 closes only after its source record is complete, documentation governance
 passes, and the complete repository-only unit suite passes. S2--S3 must accept
 the complete List 1 and List 2 before any repair S begins.
+
+## S1 Result
+
+S1 accepts the five-profile source corpus in
+[its evidence](../etc/evidence/t512-s1-five-cpu-source-cross-validation.md).
+It confirms original manual coverage for every supported semantic universe and
+the available 8086/8088, 80186 and 80386DX instruction-time tables. It also
+corrects a material provenance error: the previously cited 80286 Appendix B is
+an encoding dictionary, not an instruction-time table. No CPU behavior changes
+in S1; S2 must carry that timing-source boundary into every 80286 row.

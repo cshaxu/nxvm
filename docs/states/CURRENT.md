@@ -14,7 +14,7 @@
 | Applicable Rules | Task Reading Set; execution, architecture, coding, source-policy and documentation authorities. Intel originals are normative; external emulator code is read-only corroboration only. |
 | Verification | Every S closes with the complete repository-only unit suite and documentation governance; T closure also runs external-ROM/disk integration and builds stripped Release 0512. |
 | Expected Markers | S1 records original-manual locators, edition/OCR quality and external-model agreement/conflict for each CPU. |
-| Asset Needs | Read-only owner-managed manuals under `O:\assets`; no manual, ROM, guest media or third-party source import. |
+| Asset Needs | Read-only owner-managed manuals under `assets/manuals`; no manual, ROM, guest media or third-party source import. |
 | Reporting Requirements | Record each manual rule, complete current-code disposition, source tier and exact receiver for any nonconformance; undefined state must never receive a fabricated exact value. |
 | Stop Conditions | Stop before implementation until S1--S3 accept the whole coverage universe; stop and report any source/license conflict or missing normative manual. |
 | Exit Criteria | Every decoder-admitted row obtains a manual locator and current-code disposition; defects are repaired once at the Core owner, swept across profiles, and verified by full gates. |
