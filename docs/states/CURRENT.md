@@ -54,6 +54,11 @@ unqualified ATA and Model-40 axis boundaries.
 
 ## Recent Governance
 
+- **M5 T508 S4 P2:** coordinator actual-diff review accepts `f9373778`.
+  The provenance-neutral HDC input, sole plan-copy construction path and
+  four-profile pending-DMA deadline matrix are accepted; unit 313/313,
+  integration 20/20, governance and stripped Release 0508 pass.
+
 - **M5 T507 S14 P2:** corrective closure accepts the finite DMA/FDC/HDC/D4
   sweep after independent diff review: unit 312/312, integration 20/20,
   documentation governance and stripped Release 0507 pass.
