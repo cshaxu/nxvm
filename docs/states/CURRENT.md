@@ -2,24 +2,11 @@
 
 ## Current Work
 
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation T507 S5. |
-| Admission And Approval | Owner approved continuous solo execution and the controller-by-controller source/List 1/List 2/owner-repair structure on 2026-08-29. S1--S4 are accepted; this is the selected 8253/8254 PIT batch. |
-| Objective | Re-audit PIT counter, control/read-back, output, deadline, reset and all direct IRQ0, refresh, speaker and board-consumer relations, then repair every confirmed PIT-owner or direct downstream defect without a second timer path. |
-| Non-goals | Do not invent oscillator values or physical board delay, alter PIC/DMA/FDC/HDC/KBC/VADP/D4 ownership, inject host ticks, add host audio policy, or create a VM/profile PIT scheduler. |
-| Reference Baseline | aeed1f29; T461/T490 PIT evidence and T507 S1 progression matrix. |
-| Candidate Proposal | [M5 Core scheduler Standard/Turbo performance closure](../proposals/m5-core-scheduler-standard-turbo-performance-closure.md). |
-| Files And ABI Surface | PIT owner, its existing Core consumers, owner-local tests/evidence/history only; no VM/profile timer state, public raw-device pointer or second deadline composition path. |
-| Applicable Rules | EXECUTION.md complete finite batch/review; ARCHITECTURE.md one Core PIT state and publication route; CODING.md direct owner-local repair; source policy before manual/external research; DOCUMENT.md evidence boundary. |
-| Verification | Render/read Intel 8253/8254 and applicable IBM board source; inspect PIT and every direct consumer; cross-check available 86Box/MAME/PCjs/Bochs/QEMU logic; freeze List 1/List 2; add focused regression for each repair; run complete unit before S closure. |
-| Expected Markers | A T507 S5 PIT evidence marker; every finite counter/output/consumer/timing row has a Manual-L3/Other-L3/L2/L1 disposition, code owner, direct consumer and regression or explicit receiver. |
-| Asset Needs | Existing local manual/external-reference copies only; no import of source, firmware or media. |
-| Reporting Requirements | Record source/OCR qualification, List 1/List 2 rows, accepted/rejected external lessons, every changed owner/downstream path, focused proof, full-unit result and code-size accounting. |
-| Stop Conditions | Stop and revise if a repair needs unsourced PIT timing, an unapproved public contract, mutable state outside Core, a profile/VM workaround, a second timer dispatcher or host audio policy. |
-| Exit Criteria | Every frozen PIT function/publication/timing row is fixed or explicitly retained at its supported level; no duplicate or late output/consumer publication remains; direct consumers and full unit pass. |
-| Original Owner Request | Complete the global scheduler/Standard--Turbo performance closure without fast-pathing or violating Core as sole guest-clock owner. |
-| Similar-Issue Sweep | Control/mode/count/read-back state, output waveform and gate transitions, IRQ0, PIT1 refresh DMA0, speaker/PPI, auxiliary PIT, reset, cancellation and all scheduler/CPU/PIC/DMA consumers. |
+No subtask is active. T507 S1 freezes the progression matrix, S2 removes idle
+FDC/HDC settlement work, accepted S3 completes the PIC re-audit, accepted S4
+confirms the sole 8237A request/service/deadline route, and accepted S5 confirms
+the sole 8253/8254 owner and its IRQ0, DMA0-refresh, speaker and D4 consumer
+routes. The next controller batch is S6 RTC/CMOS.
 
 ## Current Technical Baseline
 
@@ -67,6 +54,12 @@
 | T498 | Closed: the supported-media matrix has semantic terminals or an explicit external-input boundary for every non-Model-40 row, and its Model-40 predecessor transfers to the sole Core scheduler receiver without accepting a shortcut. [Closure](../history/M5-T498-four-profile-supported-media-matrix.md). |
 
 ## Recent Governance
+
+- **M5 T507 S5 P2:** coordinator actual-diff review accepts `723477c8`.
+  Original Intel and IBM sources, current code and available local references
+  confirm one PIT state/output/deadline owner and direct consumer routes; no
+  redundant timer, speaker, refresh or scheduler path was added. Focused PIT
+  9/9, full unit 312/312 and documentation governance pass.
 
 - **M5 T507 S4 P2:** coordinator actual-diff review accepts `8f13d08d`.
   The Intel/IBM and available-local implementation reconciliation confirms one
