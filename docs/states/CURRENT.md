@@ -23,9 +23,9 @@
 
 ## Current Technical Baseline
 
-- **Current developer artifact:** CMake target `vm-0-5-0506` emitted
-  `nxvm_0_5_0506.exe` in a stripped Release build, SHA-256
-  `E93BD212891464F03E8FD912589C5F2490D9F6B4E5EBCE3EF1C537319E3DB116`.
+- **Current developer artifact:** CMake target `vm-0-5-0507` emitted
+  `nxvm_0_5_0507.exe` in a stripped Release build, SHA-256
+  `5975E348032644A29C3876EA072B7C3DB5D7A9ED438842DBA4797CE6FC5CEFDF`.
   It retains the runtime debugger and contains no compiler debug information.
   Debug uses the repository-only unit route. T471 preserves Core-owned progression:
   a verified axis is Standard-paced only by host waiting against completed
@@ -67,6 +67,11 @@
 | T498 | Closed: the supported-media matrix has semantic terminals or an explicit external-input boundary for every non-Model-40 row, and its Model-40 predecessor transfers to the sole Core scheduler receiver without accepting a shortcut. [Closure](../history/M5-T498-four-profile-supported-media-matrix.md). |
 
 ## Recent Governance
+
+- **M5 T507 S13 P1:** one Core progression path is verified across Standard
+  and Turbo: focused scheduler/speed 4/4, unit 312/312 and external-asset
+  integration 20/20 pass.  Release 0507 is `-O3`/`-DNDEBUG`, stripped of
+  compiler debug sections and retains the runtime debugger.
 
 - **M5 T507 S12 P2:** coordinator actual-diff review accepts `41254f67`.
   Core now gives explicit L1 owners the existing bounded progression before an
