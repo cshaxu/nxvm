@@ -122,6 +122,7 @@ type_status vm_profile_xt_5160_268_resolve(
     out_profile->topology.hdc_slave_media_id = CORE_MACHINE_MEDIA_ID_INVALID;
     out_profile->topology.hdc = (core_machine_hdc_config) {
         .protocol = CORE_MACHINE_HDC_PROTOCOL_XEBEC_XT, .irq = 5u,
+        .service = {250u, 0u},
         .bus.xebec = {0x0320u, 0x0321u, 0x0322u, 0x0323u, 3u,
             CORE_MACHINE_XEBEC_DRIVE_TYPE_2,
             {CORE_MACHINE_XEBEC_TYPE_2_LOGICAL_SECTOR_COUNT,

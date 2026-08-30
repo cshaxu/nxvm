@@ -192,7 +192,7 @@ static const vm_profile_default_pc_at_descriptor default_pc_at_descriptor = {
          * rather than at command issue.  200 is this profile's frozen
          * Other-L2 service quantum in the existing Core elapsed axis; it is
          * not a universal ATA mechanical-time or wall-clock assertion. */
-        .service_ticks = 200u,
+        .service = {200u, 200u},
         .bus.task_file = {
             .data_port = 0x01f0u, .error_features_port = 0x01f1u,
             .sector_count_port = 0x01f2u, .sector_number_port = 0x01f3u,
@@ -258,7 +258,7 @@ static const vm_profile_default_pc_at_descriptor ibm_5170_model_339_descriptor =
     ibm_5170_model_339_routes,
     sizeof(ibm_5170_model_339_routes) / sizeof(ibm_5170_model_339_routes[0]),
     { .protocol = CORE_MACHINE_HDC_PROTOCOL_IBM_WD1003_ST506, .irq = 14u,
-        .service_ticks = 16000u,
+        .service = {16000u, 7840u},
         .bus.task_file = {
             .data_port = 0x01f0u, .error_features_port = 0x01f1u,
             .sector_count_port = 0x01f2u, .sector_number_port = 0x01f3u,

@@ -2,11 +2,24 @@
 
 ## Current Work
 
-No active packet. T510 S1 accepted its four-personality List 1/List 2 at
-`09a83060`: ATA's existing L2 deadline is retained; WD1003's command and
-inter-sector durations must be separated; Model-40's unqualified duration must
-be removed; and Xebec must enter the existing HDC deadline path before it
-publishes DMA or a result. The next S consumes that one owner-local batch.
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation T510 S2. |
+| Admission And Approval | Owner approved the complete HDC-personality implementation task on 2026-08-30; S1 `09a83060`/`ce4d685b` established this bounded batch. |
+| Objective | Complete the one-owner HDC deadline batch: distinguish task-file command and inter-sector service, route Xebec DCB completion through that same Core deadline, and remove the unqualified Model-40 duration. |
+| Non-goals | Do not add physical seek/MFM/ECC/media simulation, infer a Compaq duration, create a profile-specific Core branch, VM scheduler, controller copy or mutable runtime timing setter. |
+| Reference Baseline | T510 S1 List 1/List 2, T508 ATA deadline, T479/T494 HDC protocol evidence and `ce4d685b`. |
+| Candidate Proposal | [HDC personality service-deadline proposal](../proposals/m5-hdc-personality-service-deadline-closure.md). |
+| Files And ABI Surface | `controller_interface.h`, HDC owner, selected VM compositions/profiles and existing HDC/profile tests. Generic immutable config only; no public mutable ABI. |
+| Applicable Rules | Task Reading Set; architecture/coding/source-policy rules. Core owns HDC phase, elapsed tick and completion; VM selects frozen generic values only. |
+| Verification | Focused ATA/WD1003/Compaq/Xebec and profile tests; complete repository-only unit after S; evidence records source values, owner sweep and code-size result. |
+| Expected Markers | ATA 200/200, Model-339 16000/7840, Model-40 0/0 and XT 250/0 become explicit construction values; Xebec has no instant DCB-to-DMA/result path. |
+| Asset Needs | Read-only T510 sources and local emulator references only; no import. |
+| Reporting Requirements | Record every changed personality, retained zero boundary, HDC-only data flow, test result, actual line count and obsolete path removal. |
+| Stop Conditions | Stop if generic phase separation cannot retain the one HDC owner, or if a source requires a physical media model rather than the admitted L2 quantum. |
+| Exit Criteria | All four personality routes have the List-2 disposition implemented and tested, with one deadline owner and no unqualified service value presented as sourced. |
+| Original Owner Request | Owner requested single-session complete HDC personality coverage. |
+| Similar-Issue Sweep | Every `service_ticks` construction, every HDC completion phase, Core deadline query/advance, HDC port/DMA/IRQ consumer and all four profile tests. |
 
 ## Current Technical Baseline
 

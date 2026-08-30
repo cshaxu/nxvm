@@ -104,6 +104,8 @@ C_INT main(C_VOID)
         "project-owned synthetic test input" };
     failed |= !failed && (vm_session_create(&config, &session) != TYPE_STATUS_OK || session == STD_NULL);
     failed |= !failed && (session == STD_NULL || !session->hdd.connect.flagDiskExist ||
+        session->core_machine->hdc.connect.config.service.command_ticks != 0u ||
+        session->core_machine->hdc.connect.config.service.next_sector_ticks != 0u ||
         session->hdd.data.ncyl != 925u || session->hdd.data.nhead != 5u ||
         session->hdd.data.nsector != 17u || session->hdd.data.nbyte != 512u ||
         !session->hdd_slave.connect.flagDiskExist ||

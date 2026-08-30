@@ -165,7 +165,9 @@ static C_INT vm_model_339_accepts_hdd_boot(C_VOID)
     };
     vm_session *session = STD_NULL;
     C_INT failed = vm_session_create(&boot_config, &session) != TYPE_STATUS_OK ||
-        session == STD_NULL;
+        session == STD_NULL || session->core_machine->hdc.connect.config.service.command_ticks !=
+            16000u || session->core_machine->hdc.connect.config.service.next_sector_ticks !=
+            7840u;
     vm_session_destroy(session);
     return failed;
 }

@@ -30,8 +30,9 @@ delay, second CHS state or media cache participates.
    existing HDC elapsed tick, deadline query and advance path.  It must not
    create an XT scheduler, VM callback or duplicate timer.
 3. Configure only source-qualified external-L2 inputs in VM: ATA remains its
-   200-step model; Model-339 receives 16000/7840; XT receives 250/250.
-   Model-40 supplies zero service values pending its own qualified model.
+   200-step model; Model-339 receives 16000/7840; XT receives 250/0 because
+   only DCB completion has an observable timer phase.  Model-40 supplies zero
+   service values pending its own qualified model.
 4. Extend the owner-local HDC tests and the three profile tests to prove that
    each supported nonzero relation publishes and consumes the Core deadline,
    while the Compaq zero relation remains explicitly immediate/non-qualified.

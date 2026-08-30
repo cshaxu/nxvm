@@ -249,7 +249,7 @@ C_INT main(C_VOID)
     };
     const core_machine_hdc_config hdc_plan = {
         .protocol = CORE_MACHINE_HDC_PROTOCOL_ATA_PIO,
-        .irq = 14u, .bus.task_file = hdc_config
+        .irq = 14u, .service = {7u, 3u}, .bus.task_file = hdc_config
     };
     core_machine_hdc_fixture_media media = {
         .generation = 1u, .present = TYPE_TRUE,
@@ -375,6 +375,7 @@ C_INT main(C_VOID)
                     !core_machine_hdc_write(machine, hdc_config.status_command_port, 0x20u) ||
                     hdc->data.phase != CORE_MACHINE_HDC_PHASE_PENDING_COMMAND ||
                     hdc->data.status != CORE_MACHINE_HDC_STATUS_BSY ||
+                    hdc->data.next_service_tick != hdc->data.elapsed_ticks + 7u ||
                     core_machine_hdc_irq_pending(hdc) ||
                     !core_machine_hdc_write(machine, hdc_config.sector_number_port, 0u) ||
                     hdc->data.sector_number != 1u) {
@@ -397,6 +398,7 @@ C_INT main(C_VOID)
                 }
                 failed |= hdc->data.phase != CORE_MACHINE_HDC_PHASE_PENDING_READ_SECTOR ||
                     hdc->data.status != CORE_MACHINE_HDC_STATUS_BSY ||
+                    hdc->data.next_service_tick != hdc->data.elapsed_ticks + 3u ||
                     core_machine_hdc_irq_pending(hdc);
                 core_machine_hdc_advance(hdc);
                 failed |= hdc->data.phase != CORE_MACHINE_HDC_PHASE_IDLE ||
@@ -416,6 +418,7 @@ C_INT main(C_VOID)
                 }
                 failed |= hdc->data.phase != CORE_MACHINE_HDC_PHASE_PENDING_WRITE_SECTOR ||
                     hdc->data.status != CORE_MACHINE_HDC_STATUS_BSY ||
+                    hdc->data.next_service_tick != hdc->data.elapsed_ticks + 3u ||
                     core_machine_hdc_irq_pending(hdc);
                 core_machine_hdc_advance(hdc);
                 failed |= hdc->data.phase != CORE_MACHINE_HDC_PHASE_IDLE ||

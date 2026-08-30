@@ -87,6 +87,8 @@ static C_INT vm_xt_5160_268_declaration_is_fixed(C_VOID)
         profile.topology.hdc_slave_media_id != CORE_MACHINE_MEDIA_ID_INVALID ||
         profile.topology.hdc.protocol != CORE_MACHINE_HDC_PROTOCOL_XEBEC_XT ||
         profile.topology.hdc.irq != 5u ||
+        profile.topology.hdc.service.command_ticks != 250u ||
+        profile.topology.hdc.service.next_sector_ticks != 0u ||
         profile.topology.hdc.bus.xebec.data_port != 0x0320u ||
         profile.topology.hdc.bus.xebec.hardware_status_reset_port != 0x0321u ||
         profile.topology.hdc.bus.xebec.jumpers_select_port != 0x0322u ||

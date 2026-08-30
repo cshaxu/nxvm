@@ -110,13 +110,22 @@ typedef struct core_machine_hdc_xebec_config {
     core_machine_media_geometry expected_media_geometry;
 } core_machine_hdc_xebec_config;
 
+/* Construction-time Core elapsed-tick deadlines.  Command and task-file
+ * next-sector are the only separately scheduled logical transitions; a
+ * personality without one selects zero.  Core owns scheduling and never
+ * interprets these values as host time. */
+typedef struct core_machine_hdc_service_config {
+    type_unsigned_32 command_ticks;
+    type_unsigned_32 next_sector_ticks;
+} core_machine_hdc_service_config;
+
 typedef struct core_machine_hdc_config {
     core_machine_hdc_protocol protocol;
     type_unsigned_8 irq;
-    /* Frozen service quantum in Core elapsed ticks.  Its Manual-L3 or
-     * Other-L2 provenance belongs to the construction evidence, not Core.
-     * Zero publishes the owner's immediate deadline without inventing a duration. */
-    type_unsigned_32 service_ticks;
+    /* Frozen Core elapsed-tick deadlines.  Their Manual-L3 or Other-L2
+     * provenance belongs to construction evidence, not Core.  Zero remains an
+     * immediate owner deadline without inventing a duration. */
+    core_machine_hdc_service_config service;
     union {
         core_machine_hdc_task_file_config task_file;
         core_machine_hdc_xebec_config xebec;

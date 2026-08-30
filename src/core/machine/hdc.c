@@ -428,12 +428,10 @@ static C_VOID core_machine_hdc_next_write_sector(core_machine_hdc *hdc)
     core_machine_hdc_raise_irq(hdc);
 }
 
-static C_VOID core_machine_hdc_schedule_service(core_machine_hdc *hdc)
+static C_VOID core_machine_hdc_schedule_service(core_machine_hdc *hdc,
+    type_unsigned_32 service_ticks)
 {
-    type_unsigned_64 service_ticks;
-
     if (hdc == STD_NULL) return;
-    service_ticks = hdc->connect.config.service_ticks;
     hdc->data.next_service_tick = service_ticks == 0u ? hdc->data.elapsed_ticks :
         hdc->data.elapsed_ticks + service_ticks;
 }
@@ -454,7 +452,7 @@ static C_VOID core_machine_hdc_capture_command(core_machine_hdc *hdc,
     core_machine_hdc_clear_irq(hdc);
     hdc->data.phase = CORE_MACHINE_HDC_PHASE_PENDING_COMMAND;
     hdc->data.status = CORE_MACHINE_HDC_STATUS_BSY;
-    core_machine_hdc_schedule_service(hdc);
+    core_machine_hdc_schedule_service(hdc, hdc->connect.config.service.command_ticks);
 }
 
 static C_VOID core_machine_hdc_begin_read(core_machine_hdc *hdc)
@@ -790,6 +788,13 @@ static C_VOID core_machine_xebec_complete_dcb(core_machine_hdc *hdc)
     core_machine_xebec_response(hdc, 0x02u, sense);
 }
 
+static C_VOID core_machine_xebec_schedule_dcb_completion(core_machine_hdc *hdc)
+{
+    if (hdc == STD_NULL) return;
+    hdc->xebec.phase = CORE_MACHINE_XEBEC_PHASE_PENDING_COMMAND;
+    core_machine_hdc_schedule_service(hdc, hdc->connect.config.service.command_ticks);
+}
+
 static type_status core_machine_xebec_port_read(core_machine_hdc *hdc,
     type_unsigned_16 port, type_unsigned_32 *out_value)
 {
@@ -836,12 +841,12 @@ static type_status core_machine_xebec_port_write(core_machine_hdc *hdc,
         hdc->xebec.dcb[hdc->xebec.dcb_count++] = (type_unsigned_8)value;
         if (hdc->xebec.dcb_count == sizeof(hdc->xebec.dcb)) {
             if (hdc->xebec.dcb[0] == 0x0cu) hdc->xebec.phase = CORE_MACHINE_XEBEC_PHASE_INITIALIZE;
-            else core_machine_xebec_complete_dcb(hdc);
+            else core_machine_xebec_schedule_dcb_completion(hdc);
         }
     } else if (hdc->xebec.phase == CORE_MACHINE_XEBEC_PHASE_INITIALIZE) {
         hdc->xebec.initialize[hdc->xebec.initialize_count++] = (type_unsigned_8)value;
         if (hdc->xebec.initialize_count == sizeof(hdc->xebec.initialize))
-            core_machine_xebec_complete_dcb(hdc);
+            core_machine_xebec_schedule_dcb_completion(hdc);
     }
     return TYPE_STATUS_OK;
 }
@@ -866,7 +871,8 @@ static type_status core_machine_hdc_port_read(C_VOID *opaque, type_unsigned_16 p
         if (hdc->data.data_index == sizeof(hdc->data.data)) {
             hdc->data.phase = CORE_MACHINE_HDC_PHASE_PENDING_READ_SECTOR;
             hdc->data.status = CORE_MACHINE_HDC_STATUS_BSY;
-            core_machine_hdc_schedule_service(hdc);
+            core_machine_hdc_schedule_service(hdc,
+                hdc->connect.config.service.next_sector_ticks);
         }
         return TYPE_STATUS_OK;
     }
@@ -915,7 +921,8 @@ static type_status core_machine_hdc_port_write(C_VOID *opaque, type_unsigned_16 
         if (hdc->data.data_index == sizeof(hdc->data.data)) {
             hdc->data.phase = CORE_MACHINE_HDC_PHASE_PENDING_WRITE_SECTOR;
             hdc->data.status = CORE_MACHINE_HDC_STATUS_BSY;
-            core_machine_hdc_schedule_service(hdc);
+            core_machine_hdc_schedule_service(hdc,
+                hdc->connect.config.service.next_sector_ticks);
         }
         return TYPE_STATUS_OK;
     }
@@ -1113,7 +1120,10 @@ C_VOID core_machine_hdc_advance_elapsed(core_machine_hdc *hdc,
     if (hdc->data.next_service_tick != 0u &&
         hdc->data.elapsed_ticks < hdc->data.next_service_tick) return;
     hdc->data.next_service_tick = 0u;
-    if (hdc->data.phase == CORE_MACHINE_HDC_PHASE_PENDING_COMMAND) {
+    if (core_machine_hdc_is_xebec_xt(hdc) &&
+        hdc->xebec.phase == CORE_MACHINE_XEBEC_PHASE_PENDING_COMMAND) {
+        core_machine_xebec_complete_dcb(hdc);
+    } else if (hdc->data.phase == CORE_MACHINE_HDC_PHASE_PENDING_COMMAND) {
         hdc->data.features = hdc->data.pending_features;
         hdc->data.sector_count = hdc->data.pending_sector_count;
         hdc->data.sector_number = hdc->data.pending_sector_number;
@@ -1143,8 +1153,13 @@ type_status core_machine_hdc_next_due_tick(const core_machine_hdc *hdc,
     type_unsigned_64 *out_due_tick)
 {
     if (hdc == STD_NULL || out_due_tick == STD_NULL ||
-        hdc->data.phase == CORE_MACHINE_HDC_PHASE_IDLE ||
         hdc->data.next_service_tick == 0u) return TYPE_STATUS_INVALID_STATE;
+    if (core_machine_hdc_is_xebec_xt(hdc)) {
+        if (hdc->xebec.phase != CORE_MACHINE_XEBEC_PHASE_PENDING_COMMAND)
+            return TYPE_STATUS_INVALID_STATE;
+    } else if (hdc->data.phase == CORE_MACHINE_HDC_PHASE_IDLE) {
+        return TYPE_STATUS_INVALID_STATE;
+    }
     *out_due_tick = hdc->data.next_service_tick;
     return TYPE_STATUS_OK;
 }
