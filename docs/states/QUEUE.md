@@ -13,8 +13,6 @@ architecture and deliberately prefer direct owner-local corrections over new
 layers; each implementation admission must still establish its own finite
 sweep and regression evidence.
 
-1. [M5 session deadline-consumer convergence](../proposals/m5-session-deadline-consumer-convergence.md) - audits every session-backed runner for a hidden immediate-completion or HLT-deadline bypass, then repairs the complete finite set through the existing VM waiting boundary.
-
 The following three complete controller receivers precede the CPU re-audit.
 They retire the finite L1 no-deadline owners one controller at a time; each is
 source-first and may leave an unsupported timing relation explicit rather than
