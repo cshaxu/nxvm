@@ -2,18 +2,30 @@
 
 ## Current Work
 
-No subtask is active. T506 S1 accepted the finite 8237A D1--D11 ledger.
-T506 S2 resolved D10 through the existing Core deadline path: only a copied
-source-qualified DMA clock plus source DMA-phase rule may publish the next
-phase; Model-339 is the selected qualified profile. All other selected board
-contracts retain their declared lower-tier boundary. S3 must perform T-level
-integration, stripped Release `0506` artifact, and closure reconciliation.
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation T506 S3. |
+| Admission And Approval | Owner authorized continuous single-role execution of the ordered queue on 2026-08-29; accepted T506 S1/S2 results admit T-level DMA closure and artifact verification. |
+| Objective | Close the selected DMA task by reconciling D1--D10 with production tests, running the owner-managed external integration suite, and producing the stripped Release `nxvm_0_5_0506.exe` developer artifact. |
+| Non-goals | Do not add behavior, broaden controller scope, alter profiles, source timing values, public ABI, firmware/media defaults, or use an integration outcome to conceal an unresolved ledger row. |
+| Reference Baseline | `5df3564c`; [S1 ledger](../etc/evidence/t506-s1-dma-service-arbitration-ledger.md), [S2 batch result](../etc/evidence/t506-s2-dma-deadline-batch.md), and [DMA proposal](../proposals/m5-dma-service-arbitration-deadline-closure.md). |
+| Candidate Proposal | [M5 DMA service and arbitration deadline closure](../proposals/m5-dma-service-arbitration-deadline-closure.md). |
+| Files And ABI Surface | Expected completion changes are T506 evidence/history/current state plus ignored `build/output/nxvm_0_5_0506.exe`; no production source, test, ABI or profile change unless a verified defect requires a new packet. |
+| Applicable Rules | `EXECUTION.md` task-level unit/integration/artifact closure and actual-diff review; `ARCHITECTURE.md` sole Core DMA owner; `CODING.md` no retained duplicate path; `DOCUMENT.md` history/evidence/current boundaries; source policy for owner-managed external integration assets. |
+| Verification | Run complete repository-only unit, complete owner-managed integration, documentation governance, the selected DMA-focused regression, build stripped Release artifact `0506`, verify its banner/debug-information policy and SHA-256, then reconcile every D1--D10 disposition. |
+| Expected Markers | `M5:T506:S3:DMA-CLOSURE:OK`; unit 312/312 or current full count, all integration cases pass, artifact is stripped Release and records its source commit/hash, with no unresolved selected row. |
+| Asset Needs | Owner-managed local BIOS/ROM/disk inputs used only by registered integration tests; no asset bytes, vendor paths, hashes or external code are committed. |
+| Reporting Requirements | Record exact suite outcomes, artifact target/banner/hash, D1--D10 closure mapping, retained lower-tier boundaries, source/test delta from S2, and any external-input limitation or failure. |
+| Stop Conditions | Stop and report if any integration failure is attributable to DMA, a ledger row lacks a truthful final disposition, or the Release artifact cannot be produced without unrelated change. |
+| Exit Criteria | Full unit, full integration, documentation gate and stripped Release artifact pass; D1--D10 are reconciled with no unclassified selected relation; task history/proposal/state are closed and Queue no longer lists DMA. |
+| Original Owner Request | Continue the source-first controller queue in solo mode and eliminate whole-owner defects without additive compatibility paths or unproven timing. |
+| Similar-Issue Sweep | DREQ lifecycle, clock-domain reset/remainder, Model-339 DMA selection, default/XT/Model-40 lower-tier isolation, PIT refresh, FDC DMA2, Xebec DMA3, primary/secondary cascade, HLT deadline advancement, Runtime debugger retention and Release stripping. |
 
 ## Current Technical Baseline
 
-- **Current developer artifact:** CMake target `vm-0-5-0504` emitted
-  `nxvm_0_5_0504.exe` in a stripped Release build, SHA-256
-  `06536E49F4D36E39EC53F9F29C157AE789EE9280E9B4B30BA1AF3A7323A882BF`.
+- **Current developer artifact:** CMake target `vm-0-5-0506` emitted
+  `nxvm_0_5_0506.exe` in a stripped Release build, SHA-256
+  `E93BD212891464F03E8FD912589C5F2490D9F6B4E5EBCE3EF1C537319E3DB116`.
   It retains the runtime debugger and contains no compiler debug information.
   Debug uses the repository-only unit route. T471 preserves Core-owned progression:
   a verified axis is Standard-paced only by host waiting against completed
