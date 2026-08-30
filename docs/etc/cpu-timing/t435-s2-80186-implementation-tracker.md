@@ -111,7 +111,7 @@ in that phase, so the manual's transfer-dependent term is absent.
 | `I186-DIV-*` | L3 exact | every base scalar has real retirement proof; legal transfer contexts remain open | B0+B1+B3+B4 |
 | `I186-{ROL,ROR,RCL,RCR,SHL,SHR,SAR}-*` | L3 formula; count modulo 32 | every base form has real retirement proof; count boundary and prefix/transfer contexts remain open | B1+B3+B4 |
 | `I186-STRING-*`, `I186-REP-*` | L3 primitive/repeat formula | every primitive base and all REP phases have real retirement proof; legal prefix/transfer contexts remain open | B0+B1+B3+B4 |
-| `I186-BOUND` | L2:midpoint, Table 2-9 range 33--35 | successful in-range result proves the fixed midpoint; prefix contexts remain open | B0+B2+B4 |
+| `I186-BOUND` | L3, Table 2-9 exact 35 | successful result proves the exact source row; prefix contexts remain open | B0+B4 |
 | `I186-{ENTER-*,LEAVE}`, `I186-FLAG-*` | L3 exact/formula | every base form has real retirement proof; no independent legal context is admitted | B0+B1+B3+B4 |
 | generated `-ODD-WORD` (87 legal single-axis keys) | S1 Table 1-16 `+4` odd-addressed 16-bit transfer | every key has a real successful-retirement observation | B3+B4 |
 | generated `-SEGMENT` (88 legal single-axis keys) | S1 Table 1-16 segment-prefix `+2` | every key has a real successful-retirement observation | B3+B4 |

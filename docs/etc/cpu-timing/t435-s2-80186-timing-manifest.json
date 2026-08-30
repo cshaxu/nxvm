@@ -35,7 +35,7 @@
     {"id":"I186-{op}-{form}","op":["ROL","ROR","RCL","RCR","SHL","SHR","SAR"],"form":["R1","RCL","M1","MCL","RIMM8","MIMM8"],"level":"L3","source_rule":"Table 2-9 formula; low-five-bit count","route":"80186 sole selector","status":"missing-test","batch":"B1+B3+B4","test":"i186_timing_{id}"},
     {"id":"I186-STRING-{op}-{width}","op":["MOVS","CMPS","STOS","LODS","SCAS","INS","OUTS"],"width":["B","W"],"level":"L3","source_rule":"Table 2-9 primitive exact","route":"string-io","status":"missing-test","batch":"B0+B3+B4","test":"i186_timing_{id}"},
     {"id":"I186-REP-{op}-{width}","op":["MOVS","CMPS-REPE","CMPS-REPNE","STOS","LODS","SCAS-REPE","SCAS-REPNE","INS","OUTS"],"width":["B","W"],"level":"L3","source_rule":"Table 1-16 repeat formula","route":"string-io","status":"missing-test","batch":"B0+B3+B4","test":"i186_timing_{id}"},
-    {"id":"I186-BOUND","level":"L2:midpoint","source_rule":"Table 2-9 range 33--35; fixed midpoint 34","route":"mixed","status":"missing-test","batch":"B0+B2+B4","test":"i186_timing_{id}"},
+    {"id":"I186-BOUND","level":"L3","source_rule":"I186-UM-1985 Table 2-9 exact 35","route":"mixed","status":"missing-test","batch":"B0+B4","test":"i186_timing_{id}"},
     {"id":"I186-{op}","op":["ENTER-L0","ENTER-L1","ENTER-LN","LEAVE"],"level":"L3","source_rule":"Table 2-9 exact/formula","route":"mixed","status":"missing-test","batch":"B0+B4","test":"i186_timing_{id}"},
     {"id":"I186-FLAG-{op}","op":["CLC","CLD","CLI","CMC","STC","STD","STI","LAHF","SAHF","NOP"],"level":"L3","source_rule":"Table 2-9 exact","route":"mixed","status":"missing-test","batch":"B0+B4","test":"i186_timing_{id}"}
   ],

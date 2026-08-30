@@ -29,16 +29,16 @@ the selected result for each affected form.
 | `PUSH-IMM16`, `PUSH-IMM8` | 14, inherited from Table 1-16 parenthetical column | Table 2-9: 10, 10 | L3 target corrected; current route remains unproven |
 | `CALL-NEAR`; `JMP-{SHORT,NEAR,FAR}` | 14; 13 | Table 2-9: 15; 14 | L3 target corrected; a later per-key source scan must mark the old 80186 selector values wrong where selected |
 | `IMUL-IMM8` | range 22--24, midpoint 23 | Table 2-9 range 22--25, midpoint 24 | L2 target corrected |
-| `BOUND` | scalar L3 35 | Table 2-9 range 33--35, midpoint 34 | converted to explicit L2 key; no L1 fallback |
+| `BOUND` | scalar L3 35 | Table 2-9 exact 35 | retained as an exact L3 key |
 | `LAHF` | 4 due to transposed Table 1-16 reading | Table 2-9 and Table 1-16 parenthetical: 2 | L3 target corrected |
 | `NEG-M`, `NOT-M` | grouped sequence made `NOT-R` appear to be 17 | Table 2-9: both register/memory forms 3 | S1 row made unambiguous |
 | `XLAT` | absent from S1 and S2 | Table 2-9: 11 | added as an L3 key; static source inspection shows 80186 currently falls to `source_timing_unallocated` |
 
 ## Resulting controlled denominator
 
-The manifest now expands 279 base keys: 253 L3 and 26 named L2 midpoint keys.
-The new `XLAT` key is included in the denominator.  `BOUND` has moved from L3
-to L2; it is not silently treated as a one-tick or unspecified range.  The
+The manifest now expands 279 base keys: 254 L3 and 25 named L2 midpoint keys.
+The new `XLAT` key is included in the denominator. `BOUND` remains an exact
+L3 row; it is not silently treated as a one-tick or unspecified range. The
 manifest gate reports 14 wrong-value, 43 unallocated, and 222 missing-test
 base keys.  These are deficits, not passes.
 
