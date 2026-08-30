@@ -2,24 +2,12 @@
 
 ## Current Work
 
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation `T503 S8`; S7 is accepted after direct IBM/ATA-to-media/DMA/PIC/firmware reconciliation and a 312/312 complete unit replay. |
-| Admission And Approval | Owner approved controller-by-controller audit/repair and explicitly requires every S to repair its demonstrable downstream effects without a tail. S8 consumes the selected RTC/CMOS -> PIC/NMI/firmware route; normal commits and non-force pushes are permanently approved. |
-| Objective | Directly read the selected RTC/CMOS sources, trace periodic/alarm/update/CMOS/NMI/IRQ8 observation and firmware consumption, cross-check local external emulator logic, then repair the complete RTC-route gap batch. |
-| Non-goals | No host-clock injection, profile/firmware/VM workaround, polling loop, second RTC/CMOS state or parallel scheduler. A genuinely independent controller-internal fault transfers only after its causal boundary is proved. |
-| Reference Baseline | `0019a65d` (`M5 T503 S7 P2 accept HDC route audit`); S1/S2 remain preliminary route inventory only. |
-| Candidate Proposal | [M5 controller signal-chain convergence](../proposals/m5-controller-signal-chain-convergence.md), controller-specific RTC/CMOS route S. |
-| Files And ABI Surface | Expected `src/core/machine/rtc.[ch]`, immutable RTC/CMOS/PIC/NMI board bindings, owner-local `test/core/` paths and evidence/state/history. Public interface changes require an opaque copied operation; no controller pointer, mutable CMOS state or mutable layout crosses owners. |
-| Applicable Rules | `docs/README.md` Task Reading Set; `rules/EXECUTION.md` coverage-bearing, packet, P, review and test rules; `rules/DOCUMENT.md`; source policy; `rules/ARCHITECTURE.md` sole-owner/bounded-interface invariants; `rules/CODING.md` simplicity/test-boundary rules. |
-| Verification | Visually inspect and cite applicable Motorola/IBM pages; contrast actual 86Box/MAME/PCjs/Bochs/QEMU RTC logic where available; trace periodic, alarm and update transitions, register-C IRQ acknowledgement, port-70 NMI mask, reset, CMOS reads/writes and firmware-visible forms; run focused owner-local and complete repository-only unit tests. |
-| Expected Markers | `T503-S8-RTC-FIRMWARE-ROUTE`; every selected RTC/CMOS observable has one Core state owner, one stated PIC/NMI/firmware consumer route and a source-qualified timing disposition. |
-| Asset Needs | Existing primary-source ledgers and read-only external emulator source only if a board edge remains ambiguous; no external bytes enter the repository. |
-| Reporting Requirements | Record every selected RTC/CMOS form's manual fact, NXVM route, external comparison, disposition, retained owner and code-size result; report focused/full-unit proof and any earliest-unit transfer. |
-| Stop Conditions | Stop for owner direction, authority contradiction, unavailable source needed to classify an RTC/CMOS connection, or a gap independent of the RTC route; do not improvise a workaround. |
-| Exit Criteria | Every selected periodic/alarm/update/CMOS/NMI/IRQ8/reset form has primary-source evidence, NXVM trace, external comparison or stated lack thereof, and focused/full-unit proof; every demonstrable downstream effect is repaired in S8 or explicitly shown independent and transferred. |
-| Original Owner Request | Each S owns one controller audit and repair, but must also repair affected controllers/devices in the same S; no known causal tail remains. |
-| Similar-Issue Sweep | MC146818A register A/B/C/D forms, periodic/alarm/update IRQ flags, port `70h` NMI mask and `71h` CMOS data path, IRQ8 and PIC acknowledgement, reset, invalid CMOS/RAM access, no-host-clock startup and deadline/HLT behavior across 5160, 5170, Model-40 and default-at. |
+T503 remains open with no active packet between accepted subtasks.  S3--S8
+accepted the PIC, PIT, DMA, FDC, HDC and RTC route batches.  S8 P1
+`caba86b2` repairs the former AIE-only alarm-deadline omission in the sole RTC
+owner; its focused 4/4 and complete unit 312/312 replay pass.  The next
+admission is the selected KBC/XT-keyboard -> PIC/A20/reset route batch under
+the retained no-tail requirement.
 
 ## Current Technical Baseline
 
@@ -85,7 +73,12 @@
   calculates that one alarm deadline through its existing calendar predicate;
   no second calendar, scheduler, NMI route, profile workaround or host clock
   path is added.  The rebuilt RTC-focused cohort passes 4/4 and the complete
-  repository-only unit replay passes 312/312; independent acceptance follows.
+  repository-only unit replay passes 312/312.
+
+- **M5 T503 S8 P2:** coordinator actual-diff review accepts `caba86b2`.  Its
+  one RTC-local alarm-deadline helper reuses the sole calendar and alarm
+  predicate, so AIE no longer leaves HLT with an omitted connected IRQ8 event.
+  No other S8 batch member requires a second path or corrective receiver.
 
 - **M5 T503 S6 P2:** coordinator review accepts `8aac1fb0`: direct
   NEC/IBM/code/external reconciliation adds the sole frozen READY-board input,
