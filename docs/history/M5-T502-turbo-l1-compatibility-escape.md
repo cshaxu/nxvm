@@ -5,5 +5,5 @@ Model-40 usability work was not genuinely closed. No source, test, artifact,
 or evidence implementation was produced; the original candidate remains in
 the unnumbered queue for later readmission.
 
-The active [proposal](../proposals/m5-turbo-l1-compatibility-escape.md)
+The retained [proposal](M5-T504-turbo-l1-compatibility-escape-proposal.md)
 defines its frozen universe, sole ownership and acceptance requirements.

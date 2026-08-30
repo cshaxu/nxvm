@@ -2,24 +2,8 @@
 
 ## Current Work
 
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation T504 S5. |
-| Admission And Approval | Owner approved solo execution of T504 on 2026-08-29. Coordinator accepted S4 P1 `28235d06` after actual-diff review, complete unit pass, and documentation-governance pass; this S admits the required external ROM/DOS integration closure. |
-| Objective | Run the selected external-ROM/DOS workloads in Standard and Turbo, compare their same semantic terminal without converting host elapsed time into guest ticks, and ensure the stripped Release artifact ships selectable current-grammar session templates. |
-| Non-goals | Do not import or commit ROM, guest media, traces, or protected data; do not claim physical pacing; do not change controller timing merely to improve a benchmark; do not make a terminal budget into success; do not restore rejected YAML grammar. |
-| Reference Baseline | `28235d06` (T504 S4 P1 mode/lifecycle evidence); current stripped Release artifact is `0504`. |
-| Candidate Proposal | [M5 Turbo L1 compatibility escape](../proposals/m5-turbo-l1-compatibility-escape.md). |
-| Files And ABI Surface | Release-artifact CMake copy rules, versioned session-template inputs, `test/vm/product/` product-catalog proof, ignored local logs, and indexed evidence. No public ABI or YAML grammar change. |
-| Applicable Rules | `docs/rules/EXECUTION.md` packet/P-review/closure rules; `ARCHITECTURE.md` Core time/controller ownership and VM-to-Core command boundary; `CODING.md` one shared path/no device receiver; `DOCUMENT.md` state/history/evidence boundaries; source policy is not applicable because no source is imported or derived. |
-| Verification | Execute the registered external integration probe in both modes with identical allowed assets and semantic terminal; rebuild the Release artifact and prove its console discovers selectable session templates; then run unit, integration, and documentation gates. |
-| Expected Markers | `M5:T504:S5:INTEGRATION:OK`; Release Console profile list; full unit/integration summaries; documentation-governance pass. |
-| Asset Needs | Owner-managed local BYOB ROM and DOS media only; read source policy before access and never copy them into repository or evidence. |
-| Reporting Requirements | Record asset class rather than machine-local path, both-mode terminal/duration, template-only artifact contents, and any failure disposition in indexed evidence. P1 states actual replay result; P2 independently verifies no asset/log crossed the repository boundary. |
-| Stop Conditions | Stop and revise the packet if no registered compatible external workload exists, a protected asset would be committed, the two modes reach different semantics, a trace exceeds its approved containment, a template needs product-owned media, or repair needs a new timing claim. |
-| Exit Criteria | At least one selected external ROM/DOS workload reaches the same semantic terminal in Standard and Turbo; the Release executable discovers selectable current-grammar templates beside itself; Turbo has measured no host waiting on its Core deadline path; assets/logs are contained; unit/integration/docs gates pass. |
-| Original Owner Request | Complete L1 Turbo efficiency in solo mode: make Turbo useful without violating Core ownership, Standard semantics, or the established L-level evidence discipline. |
-| Similar-Issue Sweep | Sweep registered DOS/ROM integration probes and all speed selectors they expose; inspect every shipped template and both artifact output directories; retain no benchmark-only product path or legacy grammar. |
+No task is active. T504 is closed; the first queued receiver is the PIC
+cascade observable-progress closure.
 
 ## Current Technical Baseline
 
@@ -57,6 +41,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T504 | Closed: one Core-owned bounded Turbo fallback advances only copied L1 no-deadline waits; Standard receives no compatibility progression or host-to-guest ticks. Same-input external DOS replays reach `A:\>` in both modes; formal Release output ships selectable strict-grammar templates; the four controller-specific timing receivers are queued. [History](../history/M5-T504-turbo-l1-compatibility-escape.md). |
 | T502 | Withdrawn before execution by owner direction; no implementation, evidence, test, or artifact change was produced. |
 | T501 | Closed: all frozen four-profile media rows have their recorded terminal or external boundary; the Model-40 80386/1.2-MB row reaches `A:\>` through its sole Core/firmware path. [History](../history/M5-T501-four-profile-post-scheduler-media-closure.md). |
 | T500 | Closed: existing tests now have one `test/` tree, one unit/integration route, narrow fixture ownership, one product input path, and recovered safe integration parallelism; unit 312/312 and integration 20/20 pass. [Closure](../history/M5-T500-unit-and-integration-test-convergence.md). |
@@ -64,38 +49,15 @@
 | T498 | Closed: the supported-media matrix has semantic terminals or an explicit external-input boundary for every non-Model-40 row, and its Model-40 predecessor transfers to the sole Core scheduler receiver without accepting a shortcut. [Closure](../history/M5-T498-four-profile-supported-media-matrix.md). |
 | T497 | Closed: original Model-339 factory 1.2-MB/compatible-360-KB media behavior now has one descriptor/session/FDD path, and the 360-KB DOS installer replay closes its one missing monochrome-aperture mapping; a 286-compatible 1.2-MB external replay transfers to T498. [Closure](../history/M5-T497-ibm-5170-native-floppy-contract.md). |
 | T496 | Closed: one Core FDC result/IRQ lifecycle now releases IRQ6 at normal-result acknowledgement, and the selected IBM 5160 DOS terminal plus focused FDC regressions pass without a BIOS/VM/media workaround. [Closure](../history/M5-T496-xt-keyboard-device.md). |
-| T495 | Closed: the selected IBM 5160-268 is functionally ready with source-backed L3 relations and explicit L2 limits; 13/13 focused, 300/300 fresh current and specialized gates pass, without a physical/wall-clock overclaim. [Decision](../etc/evidence/t495-s2-xt-final-model-decision.md). |
 
 ## Recent Governance
 
-- **M5 T504 S1 P2:** coordinator actual-diff review accepts `3a39c7a8`:
-  the finite inventory retains four L1 candidates, separates already-due FDC
-  work and external HLT, and restores only the existing PIT1-to-DMA0 and VADP
-  owner paths required for a green baseline. Focused 4/4, full unit 312/312,
-  and documentation governance pass. S2 is admitted for the copied Core
-  disposition boundary.
-
-- **M5 T504 S2 P2:** coordinator actual-diff review accepts `548fe25b`:
-  one copied enum distinguishes idle, future source deadline, already-due work,
-  and the finite L1 candidate set without a Core pointer, controller identity,
-  tick input, runner change, or scheduler change. Focused 4/4, full unit
-  312/312, and documentation governance pass. S3 is admitted for one
-  Core-owned Turbo progression under immutable profile policy.
-
-- **M5 T504 S3 P2:** coordinator actual-diff review accepts `2c19117d`:
-  one construction-frozen policy permits a value-only Turbo request to one
-  Core-owned bounded progression action. Core reconsiders known work before
-  each normal owner transition; no VM tick, controller choice, pointer,
-  host-time injection, duplicate scheduler, or device shim was introduced.
-  Focused proof, full unit 312/312, and documentation governance pass. S4 is
-  admitted for mode/lifecycle verification.
-
-- **M5 T504 S4 P2:** coordinator actual-diff review accepts `28235d06`:
-  supported profiles correctly retain sourced PIT deadlines over an L1
-  compatibility classification, while the Core-only source-less fixture proves
-  the bounded action's normal owner transition. Standard and Turbo retain one
-  waiting boundary with no host-to-guest tick input. Full unit 312/312 and
-  documentation governance pass. S5 is admitted for external integration.
+- **M5 T504 S5 P3:** coordinator actual-diff review accepts `939dfce1` and
+  `79e6b2c0`, then closes T504. The stripped Release same-input DOS replays
+  reach `A:\>` in Standard and Turbo, and current session templates are
+  delivered beside the executable. Core remains the sole time/owner path; PIC,
+  DMA, HDC and Model-40 D4 receive their unresolved owner timing relations as
+  distinct queued tasks.
 
 - **M5 T503 S7 P1:** direct IBM/ATA/code/external reconciliation removes the
   inert Xebec `323h` mask cache: one existing HDC owner now gates its existing

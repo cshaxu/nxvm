@@ -1,4 +1,4 @@
-# M5 Turbo L1 Compatibility Escape
+# M5 T504 Turbo L1 Compatibility Escape Proposal
 
 ## Purpose
 

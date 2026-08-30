@@ -13,7 +13,15 @@ architecture and deliberately prefer direct owner-local corrections over new
 layers; each implementation admission must still establish its own finite
 sweep and regression evidence.
 
-1. [M5 Turbo L1 compatibility escape](../proposals/m5-turbo-l1-compatibility-escape.md) - follows active scheduler-convergence work; gives Turbo a Core-owned, bounded compatibility progression for active L1 waits with no source-qualified deadline, without creating a second time path or overstating timing fidelity.
+The following four complete controller receivers precede the CPU re-audit.
+They retire the finite L1 no-deadline owners one controller at a time; each is
+source-first and may leave an unsupported timing relation explicit rather than
+infer it.
+
+1. [M5 PIC cascade observable-progress closure](../proposals/m5-pic-cascade-observable-progress-closure.md) - determines whether the selected cascade publication is immediate ordered Core work or has a sourced board deadline, then closes that one 8259A-to-CPU receiver without a second interrupt path.
+1. [M5 DMA service and arbitration deadline closure](../proposals/m5-dma-service-arbitration-deadline-closure.md) - establishes the selected 8237A service/deadline relations for bound refresh, FDC and Xebec paths through the sole DMA owner.
+1. [M5 HDC personality service-deadline closure](../proposals/m5-hdc-personality-service-deadline-closure.md) - audits and implements only sourced deadline relations for the selected ATA, WD1003, Compaq/WD and Xebec personalities through one HDC owner.
+1. [M5 Model-40 D4 refresh-hold deadline closure](../proposals/m5-model40-d4-refresh-hold-deadline-closure.md) - closes the selected DeskPro board refresh-hold timing relation in the existing D4 owner, without leaking board state into generic DMA or VM.
 1. [M5 five-CPU complete instruction re-audit and repair](../proposals/m5-five-cpu-complete-instruction-reaudit.md) - follows the active scheduler-convergence work; freezes the complete 8086, 8088, 80186, 80286 and 80386DX instruction/state/timing universe before any repair.
 1. [M5 external asset-bundle governance](../proposals/m5-external-asset-bundle-governance.md) - follows the five-CPU re-audit; owner-governed design and inventory of the external `nxvm-assets` bundle for machine firmware, CMOS defaults and integration media, without admitting protected bytes or machine-local paths into the repository.
 
