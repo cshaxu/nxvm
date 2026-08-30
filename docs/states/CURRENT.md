@@ -4,23 +4,23 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation T512; S1--S7 accepted, S8 is active. |
-| Admission And Approval | Owner approved the five-CPU complete audit after Td S157 removed the already-completed D4 candidate. |
-| Objective | Reconcile every decoder-admitted 80386DX form, legal prefix, 32-bit/VM86/paging/debug/system-state effect and source-backed timing row at its existing sole Core owner. |
-| Non-goals | Do not alter 8086/8088/80186/80286 semantics, add profile-side CPU behavior, assert a value for undefined state, import third-party source, or change `build/output` YAML. |
-| Reference Baseline | S7 80286 closure evidence, current Core decode/execution, existing 80386 ledger/result material, T499 CPU/profile audit history, and stripped Release 0511 baseline. |
+| Identifier Mode | Continuation T512; S1--S8 accepted, S9 active. |
+| Admission And Approval | Owner approved the five-CPU complete audit after Td S157 removed the already-completed D4 candidate, and directed that every newly discovered L1 or downgrade receive a full same-class sweep and repair. This revision covers the shared Core FPU/WAIT L1 found by that sweep. |
+| Objective | Reconcile all five CPU ledgers against their source and existing sole Core owners; record every remaining lower-tier timing disposition and its receiver. S8 has replaced the shared FPU/WAIT false-completion path for every supported CPU/FPU pairing with one source-qualified Core deadline path. |
+| Non-goals | Do not add profile-side CPU behavior, assert a value for undefined state, import third-party source, alter x87 arithmetic semantics outside the existing supported subset, or change `build/output` YAML. |
+| Reference Baseline | S7 80286 closure evidence, current Core decode/execution, existing 80386 ledger/result material, T499 CPU/profile audit history, stripped Release 0511 baseline, and `t512-s8-fpu-wait-global-sweep.md`. |
 | Candidate Proposal | [Five-CPU complete instruction re-audit and repair](../proposals/m5-five-cpu-complete-instruction-reaudit.md). |
-| Files And ABI Surface | Decoder, execution, 32-bit/VM86/paging/debug/system-state delivery, retirement and timing-selector owners reached by the finite 80386 List-2 rows, plus their owner-local test modules. No public ABI, VM profile, legacy CPU path or artifact-template change. |
+| Files And ABI Surface | Decoder, execution, 32-bit/VM86/paging/debug/system-state delivery, retirement and timing-selector owners reached by the finite 80386 List-2 rows; the private Core FPU owner and existing elapsed-tick scheduler; and their owner-local Core tests. No public ABI, VM/profile execution path or artifact-template change. |
 | Applicable Rules | Task Reading Set; execution, architecture, coding, source-policy and documentation authorities. Intel originals are normative; external emulator code is read-only corroboration only. |
-| Verification | Every S closes with the complete repository-only unit suite and documentation governance; T closure also runs external-ROM/disk integration and builds stripped Release 0512. |
-| Expected Markers | Every 80386 List-2 row has a Manual-L3, explicit lower-tier, unsupported or single-owner repair disposition; 32-bit and VM86 behavior stays one Core path. |
-| Asset Needs | Read-only owner-managed Intel 80386 manual under `assets/manuals`; no manual, ROM, guest media or third-party source import. |
-| Reporting Requirements | Record each source locator, exact row/owner sweep, any removed duplicate path, source/test code-size delta and full unit result. |
-| T-Wide Tier Rule | Each CPU-profile S inventories all L1 rows and upgrades every source-supported one to Manual-L3 or External-L2. An unupgradeable L1, or any proposed L3-to-lower or L2-to-L1 reclassification, stops for owner review unless the earlier tier is proven false. |
-| Stop Conditions | Stop if a source-distinct 80386 behavior lacks a represented Core owner, a discovered L1 cannot be upgraded, a tier downgrade is proposed, or a candidate repair crosses a CPU-generation boundary; revise the S brief rather than infer or broaden it. |
-| Exit Criteria | All 80386 List-2 rows are reconciled against source and current owners; no L1 row remains without an owner-reviewed block; each proven repair is sole-owner and swept across equivalent forms; full unit and documentation governance pass. |
+| Verification | Every S closes with the complete repository-only unit suite and documentation governance; the revised S8 also runs every CPU/FPU pairing and no-FPU control through the FPU deadline path. T closure also runs external-ROM/disk integration and builds stripped Release 0512. |
+| Expected Markers | Every 80386 List-2 row has a Manual-L3, explicit lower-tier, unsupported or single-owner repair disposition; every supported FPU pairing reaches BUSY completion only through Core time advancement; 32-bit and VM86 behavior stays one Core path. |
+| Asset Needs | Read-only owner-managed Intel 80286/80287 and 80386 manuals under `assets/manuals`, plus read-only 86Box/PCjs/Bochs corroboration; no manual, ROM, guest media or third-party source import. |
+| Reporting Requirements | Record each source locator, exact row/owner sweep, any removed duplicate path, source/test code-size delta, FPU pairing matrix and full unit result. |
+| T-Wide Tier Rule | Each CPU-profile S inventories all L1 rows and upgrades every source-supported one to Manual-L3 or External-L2. A newly found L1 or proposed lower reclassification first triggers a five-profile same-class sweep across ledger, manifest, result artifact and verifier; an unupgradeable L1, or a downgrade not proven false, stops for owner review. |
+| Stop Conditions | Stop if a source-distinct 80386 or shared-FPU behavior lacks a representable Core owner, a discovered L1 cannot be upgraded, a tier downgrade is proposed, or the repair requires unsupported x87 arithmetic semantics rather than the completion contract. |
+| Exit Criteria | All 80386 List-2 rows are reconciled against source and current owners; no FPU/WAIT completion L1 remains in a supported pairing; each proven repair is sole-owner and swept across equivalent forms; full unit and documentation governance pass. |
 | Original Owner Request | Audit and correctly repair all supported five-CPU instruction, architectural-state and timing behavior using manual-first evidence and minimal single-owner design. |
-| Similar-Issue Sweep | Sweep every 80386 decoder-admitted form and its prefix, 32-bit/VM86/paging/debug/system-state delivery, retirement and timing selector owner; trace shared owners once and distinguish generation-specific behavior from shared protected-mode paths. |
+| Similar-Issue Sweep | Sweep every 80386 decoder-admitted form and its prefix, 32-bit/VM86/paging/debug/system-state delivery, retirement and timing selector owner; additionally sweep 8086/8088+8087, 80186+8087, 80286+80287, 80386+80287/80387 and all no-FPU controls through the one shared FPU completion owner. |
 
 ## Current Technical Baseline
 
@@ -68,6 +68,13 @@
 | T502 | Withdrawn before execution by owner direction; no implementation, evidence, test, or artifact change was produced. |
 
 ## Recent Governance
+
+- **M5 T512 S8 P2:** independent actual-diff review accepts the global
+  `WAIT`/FPU sweep: the two false 80386 Manual-L3 timing claims are External-L2,
+  and every valid CPU/FPU pairing now reaches BUSY completion through one
+  Core-owned External-L2 countdown/deadline path.  No VM/profile execution
+  path, direct false completion, or new unresolved L1 remains.  Focused
+  pairing proof, full unit 315/315 and documentation governance pass.
 
 - **M5 Td S157 P1:** removes the obsolete Model-40 D4 refresh-hold candidate:
   T419 already closes PIT1-to-D4-to-DMA ordering and T507 S14 publishes its

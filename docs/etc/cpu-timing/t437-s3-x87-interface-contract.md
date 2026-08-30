@@ -18,23 +18,28 @@ claim complete arithmetic semantics for an x87 implementation.
   accepts only its physical CPU pairing: 8087 with 8086/80186; 80287 with
   80286/80386; 80387 with 80386.  An incompatible configured pair is diagnosed
   as the existing internal unsupported-model condition, never as `#UD`.
-- BUSY and unmasked ERROR are separate states.  `WAIT` first retains the
-  existing `#MF` path for ERROR, while its successful path completes the
-  outstanding BUSY handoff.  BUSY is therefore never converted into a pending
+- BUSY and unmasked ERROR are separate states. `ESC` registers one Core-owned
+  completion interval; every ordinary elapsed-tick publication advances that
+  interval, and `WAIT` first retains the existing `#MF` path for ERROR before
+  consuming only its remaining ticks. A `WAIT` instruction never clears BUSY
+  merely because it decoded. BUSY is therefore never converted into a pending
   floating-point exception.
 - 80287/80387 operand movement remains CPU-owned.  The MCP requests transfer
   through PEREQ; it is not a HOLD/HLDA bus owner.  This task records only the
   command handoff, leaving a later physical-cycle owner to publish requested
   PEREQ transfers against the ordinary CPU memory rules.
 - A selected 80387 operation records its published MCP-clock interval without
-  adding that interval to ESC retirement.  Unknown or not-yet-semantic 8087 /
-  80287 forms remain valid handoffs with no invented interval.
+  adding that interval to ESC retirement. Its current projection onto the
+  unqualified Core elapsed axis is External-L2. Unknown or not-yet-semantic
+  valid ESC forms use the named External-L2 proportional completion quantum;
+  they no longer have an implicit L1 immediate-completion path.
 
 ## Derived 80387 interval inputs
 
 The following are direct inputs for the selected semantic subset.  They are
-MCP clock-count ranges, assume the data-sheet conditions (prefetched/decoded,
-no bus wait states, no HOLD delay, no detected exception), and are not CPU
+MCP clock-count ranges, so they are External-L2 timing evidence under the
+CPU-tier rule; they assume the data-sheet conditions (prefetched/decoded, no
+bus wait states, no HOLD delay, no detected exception), and are not CPU
 retirement ticks.
 
 | ESC operation | range |
@@ -59,6 +64,18 @@ retirement ticks.
 
 The source material was consulted as behavioral evidence only; no third-party
 source, firmware, or guest media was imported into this repository.
+
+## Completion model
+
+The private FPU owner selects 85 Core ticks for pre-387 unclassified commands
+and 28 for 80387 unclassified commands. These are not claims of hardware clock
+identity: they are the 86Box-style External-L2 concurrent macro quanta, chosen
+from the corresponding FADD class while a full FPU arithmetic/timing owner is
+outside this CPU-interface scope. Selected 8087/80287 values use the 80287
+table's typical values; selected 80387 ranges use their midpoint. Exact MCP
+rows remain source facts, but their unverified conversion to the Core elapsed
+axis remains L2. The sole Core scheduler publishes completion and exposes its
+deadline; VM profiles neither clear BUSY nor supply a second clock.
 
 ## Closure record
 

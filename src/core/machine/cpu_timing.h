@@ -34,7 +34,7 @@ typedef struct core_machine_cpu_timing_result {
 #define CORE_MACHINE_CPU_TIMING_INPUT_ODD_WORD   (1u << 8)
 #define CORE_MACHINE_CPU_TIMING_INPUT_REPEAT_PHASE (1u << 9)
 #define CORE_MACHINE_CPU_TIMING_INPUT_GROUP3_OPERAND (1u << 10)
-#define CORE_MACHINE_CPU_TIMING_INPUT_WAIT_ITERATIONS (1u << 11)
+#define CORE_MACHINE_CPU_TIMING_INPUT_WAIT_TICKS      (1u << 11)
 
 /* B0's only successful-retirement CPU timing selection entry. */
 C_INT core_machine_cpu_timing_select(core_machine *machine,

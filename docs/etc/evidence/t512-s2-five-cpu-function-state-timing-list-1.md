@@ -12,7 +12,7 @@ opcode/ModR/M pair; no prose range may silently widen them.
 
 | Profile | Exact inventory producer and current cardinality | Manual source for form/state | Timing source disposition |
 | --- | --- | --- | --- |
-| 8086 | `core_machine_8086_timing_manifest_runner.c`; 57,926 opcode/ModR/M candidates | Intel 1981, Tables 2-20/2-21 and instruction chapters | Table 2-21 exact/formula/range entries are Manual-L3 facts. |
+| 8086 | `core_machine_8086_timing_manifest_runner.c`; 57,926 opcode/ModR/M candidates | Intel 1981, Tables 2-20/2-21 and instruction chapters | Exact/formula entries are Manual-L3; manual ranges require a named L2 selection or model. |
 | 8088 | Same base opcode set; distinct profile row | Intel 1981, Tables 2-20/2-21 | Base fact plus explicit Table 2-21 `+4` clocks per word transfer; never inferred from 8086. |
 | 80186 | `core_machine_80186_decoder_inventory_runner.c`; 247 primary opcodes, 61,530 candidates | Intel 1985, Table 1-16 and instruction chapters | A stated range remains a range, not an invented exact value. |
 | 80286 | `core_machine_80286_decoder_inventory_runner.c`; primary inventory plus `0F {00,01,02,03,06}` masks | Intel 1987 Programmer's Reference Manual, Appendix B printed page B-6 onward; Hardware Reference Manual for external bus boundary | Semantics/forms and the Appendix-B `Clocks` rows/formulae are Manual-L3 candidates. S3--S7 must reconcile each selector value and qualifier; the hardware manual is not a replacement instruction-time table. |
@@ -75,12 +75,13 @@ is 8086-only; from 80286 onward `0F` is escaped opcode space.
 
 ## Timing Classification
 
-`Manual-L3` means only that the original manual supplies a number, formula,
-bounded range, or stated unavailable condition. It is not a claim current Core
-realizes that value. Exact arithmetic from a manual formula stays Manual-L3; a
-manual range stays a range. Prefetch, READY, HOLD, arbitration, device response
-and physical board cycles remain outside CPU instruction fields unless an
-original source explicitly composes them.
+`Manual-L3` means only that the original manual supplies an exact number or
+an executable formula. A manual range, stated unavailable condition, external
+model, or proportional selection is L2 unless a later source supplies the
+missing exact rule. It is not a claim current Core realizes an external board
+or device duration. Prefetch, READY, HOLD, arbitration, device response and
+physical board cycles remain outside CPU instruction fields unless an original
+source explicitly composes them.
 
 S3's rendered correction establishes that `210498-005` Appendix B has a
 per-form `Clocks` column and stated qualifiers. Every F01-F14 80286 time field

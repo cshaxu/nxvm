@@ -1,9 +1,9 @@
 {
   "schema":"nxvm.cpu-timing-manifest.v1", "profile":"80386DX", "source_ledger":"t435-s1-80386-ledger.md",
-  "expected":{"base":451,"L3":451,"L2":0,"contexts":962,"combinations":0},
+  "expected":{"base":451,"L3":449,"L2":2,"contexts":962,"combinations":0},
   "status_values":["conforming","wrong-value","unallocated","missing-input","missing-test"],
   "legal_context_contract":"t435-s2-context-legality.md",
-  "key_rule":"Each successful Intel386 DX Chapter 17 form has one L3 key. Operand/address size, r/m, mode, privilege/path, dynamic multiplier, next instruction components, repeat phase and legal LOCK state are semantic inputs; prefixes never retire alone; external waits, bus ownership and events are excluded.",
+  "key_rule":"Each successful Intel386 DX Chapter 17 form has one source-classified key. Operand/address size, r/m, mode, privilege/path, dynamic multiplier, next instruction components, repeat phase and legal LOCK state are semantic inputs; prefixes never retire alone; external waits, bus ownership and events are excluded. The delegated ESC coprocessor interval is L2.",
   "base_templates":[
     {"id":"I386-ADJ-{op}","op":["AAA","AAS","DAA","DAS","AAD","AAM","CBW","CWDE","CWD","CDQ"],"level":"L3","source_rule":"I386DX-PRM-1990 Ch.17 exact","route":"primary","status":"missing-test","batch":"B0+B1+B4","test":"i386_timing_{id}"},
     {"id":"I386-FLAG-{op}","op":["CLC","CLD","CLI","CMC","LAHF","NOP","SAHF","STC","STD","STI"],"level":"L3","source_rule":"I386DX-PRM-1990 Ch.17 exact flag/control row","route":"primary","status":"missing-test","batch":"B0+B1+B4","test":"i386_timing_{id}"},
@@ -27,7 +27,9 @@
     {"id":"I386-JCC-{condition}-{outcome}","condition":["JO","JNO","JB","JAE","JE","JNE","JBE","JA","JS","JNS","JP","JNP","JL","JGE","JLE","JG","JCXZ","JECXZ","LOOP","LOOPE","LOOPNE"],"outcome":["TAKEN","NOT"],"level":"L3","source_rule":"Ch.17 outcome/context row","route":"80386-secondary","status":"missing-input","batch":"B0+B1+B3+B4","test":"i386_timing_{id}"},
     {"id":"I386-SETCC-{form}","form":["R8","M8"],"level":"L3","source_rule":"I386DX-PRM-1990 Ch.17 exact r/m8 SETcc row","route":"80386-secondary","status":"missing-input","batch":"B0+B1+B3+B4","test":"i386_timing_{id}"},
     {"id":"I386-{op}-{port}-{width}","op":["IN","OUT"],"port":["IMM","DX"],"width":["B","W","D"],"level":"L3","source_rule":"I386DX-PRM-1990 Ch.17 printed pp. 17-69, 17-128 exact real/PM IOPL-permission row","route":"mixed","status":"missing-input","batch":"B0+B1+B3+B4","test":"i386_timing_{id}"},
-    {"id":"I386-{op}","op":["ESC","WAIT","HLT"],"level":"L3","source_rule":"I386DX-PRM-1990 Ch.17 processor-extension row; 80287/80387 data sheet clocks","route":"mixed","status":"missing-test","batch":"B0+B1+B3+B4","test":"i386_timing_{id}"},
+    {"id":"I386-WAIT","level":"L2","source_rule":"I386DX-PRM-1990 Ch.17 WAIT row: 7 minimum; BUSY# deassertion is external","route":"mixed","status":"missing-test","batch":"B0+B1+B3+B4","test":"i386_timing_{id}"},
+    {"id":"I386-HLT","level":"L3","source_rule":"I386DX-PRM-1990 Ch.17 exact CPU HLT row","route":"mixed","status":"missing-test","batch":"B0+B1+B3+B4","test":"i386_timing_{id}"},
+    {"id":"I386-ESC","level":"L2","source_rule":"I386DX-PRM-1990 Ch.17 delegates completion clocks to 80287/80387 data sheets; selected 80387 operation is a range","route":"mixed","status":"missing-test","batch":"B0+B1+B3+B4","test":"i386_timing_{id}"},
     {"id":"I386-ARPL-{form}","form":["R","M"],"level":"L3","source_rule":"I386DX-PRM-1990 Ch.17 printed p. 17-25 exact protected r/m16,r16 row","route":"80386-privileged","status":"missing-input","batch":"B0+B1+B3+B4","test":"i386_timing_{id}"},
     {"id":"I386-BOUND-M{width}","width":["16","32"],"level":"L3","source_rule":"I386DX-PRM-1990 Ch.17 printed p. 17-27 exact r16,m16&16 / r32,m32&32 row","route":"primary","status":"missing-test","batch":"B0+B1+B3+B4","test":"i386_timing_{id}"},
     {"id":"I386-{op}-{form}","op":["BSF","BSR"],"form":["R16","M16","R32","M32"],"level":"L3","source_rule":"I386DX-PRM-1990 Ch.17 printed pp. 17-29, 17-31 exact r/m row plus documented bit-position formula","route":"80386-secondary","status":"missing-input","batch":"B0+B1+B3+B4","test":"i386_timing_{id}"},

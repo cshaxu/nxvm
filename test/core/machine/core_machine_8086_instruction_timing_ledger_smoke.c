@@ -396,7 +396,7 @@ static C_INT timing_8086_test_segment_and_pointer_transfers(C_VOID)
     return failed;
 }
 
-static C_INT timing_8086_test_wait_iterations(C_VOID)
+static C_INT timing_8086_test_wait_ticks(C_VOID)
 {
     static const type_unsigned_8 wait[] = { 0x9bu };
     timing_8086_state state = { 0u, 0u, 0u };
@@ -405,10 +405,11 @@ static C_INT timing_8086_test_wait_iterations(C_VOID)
 
     if (!failed) {
         failed |= !timing_8086_load(machine, wait, sizeof(wait)) ||
-            ((machine->fpu.wait_iterations = 3u), 0) ||
-            !timing_8086_execute(machine, 1u, 18u, &state) ||
-            machine->fpu.wait_iterations != 0u ||
-            machine->fpu.last_wait_iterations != 3u;
+            ((machine->fpu.busy = TYPE_TRUE), 0) ||
+            ((machine->fpu.completion_remaining_ticks = 3u), 0) ||
+            !timing_8086_execute(machine, 1u, 6u, &state) ||
+            machine->fpu.completion_remaining_ticks != 0u ||
+            machine->fpu.last_wait_ticks != 3u;
     }
     core_machine_destroy(machine);
     return failed;
@@ -715,7 +716,7 @@ C_INT main(C_VOID)
         timing_8086_test_alu_and_cmp_forms() ? 3 :
         timing_8086_test_primary_remaining_forms() ? 4 :
         timing_8086_test_segment_and_pointer_transfers() ? 5 :
-        timing_8086_test_wait_iterations() ? 6 :
+        timing_8086_test_wait_ticks() ? 6 :
         timing_8086_test_group3_operand_model() ? 7 :
         timing_8086_test_group2_forms() ? 8 :
         timing_8086_test_control_repeat_and_ports() ? 9 :

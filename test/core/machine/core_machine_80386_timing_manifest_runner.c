@@ -38,8 +38,8 @@ typedef struct timing_80386_manifest_capture {
 } timing_80386_manifest_capture;
 
 /* Chapter 17 explicitly directs ESC clock accounting to the selected 80287
- * or 80387 data sheet.  Preserve that non-CPU result as a verified handoff,
- * rather than manufacturing a scalar source_ticks observation. */
+ * or 80387 data sheet.  Preserve that L2 non-CPU range handoff rather than
+ * manufacturing a scalar source_ticks observation. */
 typedef struct timing_80386_manifest_esc_handoff {
     C_INT verified;
     type_unsigned_8 opcode;
@@ -488,8 +488,8 @@ static C_INT timing_80386_manifest_write_results(const C_CHAR *path,
     }
     if ((written != 0u && STD_FPRINTF(file, ",\n") < 0) ||
         STD_FPRINTF(file, "    {\"key_id\":\"I386-ESC\","
-            "\"profile\":\"80386DX\",\"level\":\"L3\","
-            "\"source_rule\":\"I386DX-PRM-1990 Ch.17 processor-extension row; 80287/80387 data sheet clocks\","
+            "\"profile\":\"80386DX\",\"level\":\"L2\","
+            "\"source_rule\":\"I386DX-PRM-1990 Ch.17 delegates completion clocks to 80287/80387 data sheets; selected 80387 operation is a range\","
             "\"context\":\"BASE\",\"timing_domain\":\"mcp\","
             "\"ticks\":null,\"formula_inputs\":0,\"form_id\":4294967295,"
             "\"retirement_origin\":0,\"source_timing_unallocated\":false,"

@@ -85,7 +85,11 @@ false and the owner approves that correction before it is made.
 7. **S7 - 80286 full repair and sweep.** Reconcile 16-bit protected mode,
    descriptor/gate/task/stack delivery and documented timing.
 8. **S8 - 80386DX full repair and sweep.** Reconcile 32-bit forms, VM86,
-   paging, debug/system state, delivery and documented timing.
+   paging, debug/system state, delivery and documented timing.  If its sweep
+   exposes a shared CPU/FPU owner defect, repair that owner across all valid
+   CPU/FPU pairings in the same revised S: one Core deadline/Busy path, no
+   profile-side execution path, and an explicit Manual-L3 or External-L2
+   duration disposition for every completion source.
 9. **S9 - cross-profile closure.** Reconcile all five ledgers against source
    and code, run focused/profile gates and the full configured suite, and
    record every remaining non-L3 row with its named receiver.

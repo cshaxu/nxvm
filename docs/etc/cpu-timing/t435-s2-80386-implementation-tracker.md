@@ -1,7 +1,8 @@
 # T435 S2 - 80386DX L3 Implementation Tracker
 
 The [80386DX manifest](t435-s2-80386-timing-manifest.json) is the sole
-closure ledger. It expands 450 S1 successful-retirement base forms, plus
+closure ledger. It expands 451 S1 successful-retirement base forms (449
+Manual-L3 and two External-L2), plus
 960 finite legal size, REP-phase, multiplier, segment and LOCK contexts under the
 shared [context-legality contract](t435-s2-context-legality.md). Each key retains one Chapter
 17 rule, route, status, batch and regression identity.
@@ -10,7 +11,7 @@ Run `powershell -NoProfile -ExecutionPolicy Bypass -File
 tools/Verify-80386TimingManifest.ps1` before any tracker P. The current
 baseline is deliberately strict: no aggregate smoke or selector presence can
 make a key conforming. Closure requires every generated key to emit its ticks,
-formula inputs, origin and `unallocated=false`, then be marked L3 conforming
+formula inputs, origin and `unallocated=false`, then be marked conforming
 under the shared [manifest result contract](t435-s2-manifest-result-contract.md).
 
 | batch | required result |

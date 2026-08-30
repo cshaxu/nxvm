@@ -2,7 +2,9 @@
 
 S8 publishes the complete 1,413-key 80386DX result artifact from the accepted
 S3--S7 partitions.  The normal 1,412 keys are real classified CPU retirement
-observations.  `I386-ESC` is the one explicit non-CPU clock-domain record.
+observations. `I386-ESC` and `I386-WAIT` are the two explicit External-L2
+records: the selected 80387 duration is a range, and the WAIT table gives only
+a seven-clock minimum before external BUSY# deassertion.
 
 The retained Intel *80386DX Microprocessor Programmer's Reference Manual*
 (230985-003, 1990), Chapter 17 processor-extension row states that ESC clock

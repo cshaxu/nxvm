@@ -8254,6 +8254,9 @@ static C_VOID FPU_ESCAPE(core_machine_cpu_execution_context *context)
              * outside that semantic subset remains a valid coprocessor
              * command handoff; it is not a CPU #UD or model-only fault. */
         }
+        if (action != CORE_MACHINE_FPU_ESCAPE_CONSUME_NONE) {
+            core_machine_fpu_begin_command(context->fpu, escape_opcode, modrm);
+        }
     }
     TYPE_TRACE_CALL_END;
 }

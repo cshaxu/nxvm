@@ -258,8 +258,8 @@ C_VOID core_machine_fpu_reset(core_machine_fpu *fpu)
     fpu->last_escape_modrm = 0u;
     fpu->operation_ticks_min = 0u;
     fpu->operation_ticks_max = 0u;
-    fpu->wait_iterations = 0u;
-    fpu->last_wait_iterations = 0u;
+    fpu->completion_remaining_ticks = 0u;
+    fpu->last_wait_ticks = 0u;
     for (index = 0u; index < 8u; ++index) {
         fpu->tags[index] = CORE_MACHINE_FPU_TAG_EMPTY;
         fpu->registers[index].kind = CORE_MACHINE_FPU_VALUE_ZERO;
@@ -316,17 +316,52 @@ type_bool core_machine_fpu_profile_allows_cpu(core_machine_cpu_profile cpu,
         cpu == CORE_MACHINE_CPU_PROFILE_80386;
 }
 
-static C_VOID core_machine_fpu_record_handoff(core_machine_fpu *fpu,
+static type_unsigned_32 core_machine_fpu_external_l2_ticks(
+    core_machine_fpu_profile profile, core_machine_fpu_operation operation)
+{
+    /* Intel's 80287 table supplies typical/range values; the 8087 and 80387
+     * selections are corroborated by the same operation classes in 86Box.
+     * These are intentionally L2 model choices on the existing Core axis. */
+    if (profile == CORE_MACHINE_FPU_PROFILE_80387) {
+        switch (operation) {
+        case CORE_MACHINE_FPU_OPERATION_FNINIT: return 33u;
+        case CORE_MACHINE_FPU_OPERATION_FLD_M32: return 14u;
+        case CORE_MACHINE_FPU_OPERATION_FSTP_M32: return 34u;
+        case CORE_MACHINE_FPU_OPERATION_FLDCW_M16: return 19u;
+        case CORE_MACHINE_FPU_OPERATION_FADD_ST0_STI: return 19u;
+        case CORE_MACHINE_FPU_OPERATION_FMUL_ST0_STI: return 34u;
+        case CORE_MACHINE_FPU_OPERATION_FSUB_ST0_STI: return 22u;
+        case CORE_MACHINE_FPU_OPERATION_FDIV_ST0_STI: return 79u;
+        default: return 28u;
+        }
+    }
+    switch (operation) {
+    case CORE_MACHINE_FPU_OPERATION_FNINIT: return 5u;
+    case CORE_MACHINE_FPU_OPERATION_FLD_M32: return 47u;
+    case CORE_MACHINE_FPU_OPERATION_FSTP_M32: return 87u;
+    case CORE_MACHINE_FPU_OPERATION_FLDCW_M16: return 11u;
+    case CORE_MACHINE_FPU_OPERATION_FADD_ST0_STI:
+    case CORE_MACHINE_FPU_OPERATION_FSUB_ST0_STI: return 85u;
+    case CORE_MACHINE_FPU_OPERATION_FMUL_ST0_STI: return 117u;
+    case CORE_MACHINE_FPU_OPERATION_FDIV_ST0_STI: return 198u;
+    default: return 85u;
+    }
+}
+
+C_VOID core_machine_fpu_begin_command(core_machine_fpu *fpu,
     C_UCHAR escape_opcode, C_UCHAR modrm)
 {
     core_machine_fpu_operation_metadata metadata =
         core_machine_fpu_operation_metadata_get(escape_opcode, modrm);
 
+    if (fpu == STD_NULL || fpu->profile == CORE_MACHINE_FPU_PROFILE_NONE) return;
     fpu->busy = TYPE_TRUE;
     fpu->last_escape_opcode = escape_opcode;
     fpu->last_escape_modrm = modrm;
     fpu->operation_ticks_min = 0u;
     fpu->operation_ticks_max = 0u;
+    fpu->completion_remaining_ticks = core_machine_fpu_external_l2_ticks(
+        fpu->profile, metadata.operation);
     if (fpu->profile != CORE_MACHINE_FPU_PROFILE_80387) return;
     switch (metadata.operation) {
     case CORE_MACHINE_FPU_OPERATION_FNINIT:
@@ -371,7 +406,6 @@ core_machine_fpu_escape_action core_machine_fpu_escape_dispatch(
     if (!core_machine_fpu_profile_allows_cpu(cpu, fpu->profile)) {
         return CORE_MACHINE_FPU_ESCAPE_UNSUPPORTED;
     }
-    core_machine_fpu_record_handoff(fpu, escape_opcode, modrm);
     return fpu->profile == CORE_MACHINE_FPU_PROFILE_8087 &&
         core_machine_fpu_operation_metadata_get(escape_opcode, modrm).valid ?
         CORE_MACHINE_FPU_ESCAPE_EXECUTE_8087 : CORE_MACHINE_FPU_ESCAPE_HANDOFF;
@@ -380,6 +414,29 @@ core_machine_fpu_escape_action core_machine_fpu_escape_dispatch(
 type_bool core_machine_fpu_busy(const core_machine_fpu *fpu)
 {
     return fpu != STD_NULL && fpu->busy;
+}
+
+C_VOID core_machine_fpu_advance(core_machine_fpu *fpu,
+    type_unsigned_64 elapsed_ticks)
+{
+    if (fpu == STD_NULL || !fpu->busy || elapsed_ticks == 0u) return;
+    if (elapsed_ticks >= fpu->completion_remaining_ticks) {
+        fpu->busy = TYPE_FALSE;
+        fpu->completion_remaining_ticks = 0u;
+    } else {
+        fpu->completion_remaining_ticks -= elapsed_ticks;
+    }
+}
+
+type_status core_machine_fpu_ticks_until_completion(const core_machine_fpu *fpu,
+    type_unsigned_64 *out_ticks)
+{
+    if (fpu == STD_NULL || out_ticks == STD_NULL || !fpu->busy ||
+        fpu->completion_remaining_ticks == 0u) {
+        return TYPE_STATUS_INVALID_STATE;
+    }
+    *out_ticks = fpu->completion_remaining_ticks;
+    return TYPE_STATUS_OK;
 }
 
 C_VOID core_machine_fpu_get_state(const core_machine_fpu *fpu,
@@ -475,19 +532,19 @@ type_bool core_machine_fpu_wait_pending(const core_machine_fpu *fpu)
     return fpu != STD_NULL && fpu->pending_unmasked_exception;
 }
 
-type_unsigned_32 core_machine_fpu_complete_wait(core_machine_fpu *fpu)
+type_unsigned_64 core_machine_fpu_complete_wait(core_machine_fpu *fpu)
 {
-    type_unsigned_32 iterations;
+    type_unsigned_64 ticks;
 
     if (fpu == STD_NULL) return 0u;
-    iterations = fpu->wait_iterations;
+    ticks = fpu->completion_remaining_ticks;
     fpu->busy = TYPE_FALSE;
-    fpu->wait_iterations = 0u;
-    fpu->last_wait_iterations = iterations;
-    return iterations;
+    fpu->completion_remaining_ticks = 0u;
+    fpu->last_wait_ticks = ticks;
+    return ticks;
 }
 
-type_unsigned_32 core_machine_fpu_last_wait_iterations(const core_machine_fpu *fpu)
+type_unsigned_64 core_machine_fpu_last_wait_ticks(const core_machine_fpu *fpu)
 {
-    return fpu == STD_NULL ? 0u : fpu->last_wait_iterations;
+    return fpu == STD_NULL ? 0u : fpu->last_wait_ticks;
 }

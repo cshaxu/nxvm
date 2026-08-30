@@ -11,8 +11,9 @@ retirements, with every present gap retained as a nonconforming key for B0--B4.
 
 Each profile's S1 ledger supplies the sole timing source: Intel manual exact
 constant/formula rows are L3; 8086's 16 Group-3 keys retain the named
-`L2-86BOX-8086-G3` model; 80186's 25 range-only keys retain the named fixed
-midpoint; 80286 and 80386DX have no L2 or L1 row. The S1 ledgers separately
+`L2-86BOX-8086-G3` model; 80186's 26 range-only keys retain the named fixed
+midpoint; 80286 has no L2 or L1 base row; 80386DX has two explicit External-L2
+rows (`WAIT` and `ESC`). The S1 ledgers separately
 exclude external waits, arbitration, prefetch availability and event delivery.
 
 | profile | base | legal contexts | legal combinations | total canonical keys | S1 level decision |
@@ -20,8 +21,8 @@ exclude external waits, arbitration, prefetch availability and event delivery.
 | 8086 | 246 | 406 | 401 | 1,053 | 230 L3, 16 L2:G3 base keys |
 | 80186 | 279 | 235 | 89 | 603 | 253 L3, 26 L2:midpoint base keys |
 | 80286 | 286 | 459 | 62 | 807 | all L3 |
-| 80386DX | 450 | 961 | 0 | 1,411 | all L3 |
-| **all profiles** | **1,261** | **2,061** | **552** | **3,874** | no anonymous L1 |
+| 80386DX | 451 | 962 | 0 | 1,413 | 449 L3, 2 L2 |
+| **all profiles** | **1,262** | **2,062** | **552** | **3,876** | no anonymous L1 |
 
 The profile verifiers and the shared
 `tools/Verify-CpuTimingManifestContract.ps1` derive these figures directly

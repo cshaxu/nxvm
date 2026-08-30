@@ -228,6 +228,31 @@ static C_INT fpu_interface_s65_handoff(core_machine_cpu_profile cpu,
     return !failed;
 }
 
+static C_INT fpu_interface_s65_deadline(core_machine_cpu_profile cpu,
+    core_machine_fpu_profile profile)
+{
+    static const type_unsigned_8 fadd[] = { 0xd8u, 0xc0u };
+    fpu_interface_s65_machine state;
+    core_machine_time_observation observation;
+    type_bool advanced = TYPE_FALSE;
+    C_INT failed = !fpu_interface_s65_prepare(cpu, profile, &state);
+
+    if (!failed) {
+        failed |= core_machine_memory_write(state.machine, 0u, fadd,
+            sizeof(fadd)) != TYPE_STATUS_OK ||
+            core_machine_run(state.machine, (core_machine_run_budget){1u, 0u},
+                &(core_machine_run_result){0}) != TYPE_STATUS_OK ||
+            !state.machine->fpu.busy ||
+            core_machine_capture_time_observation(state.machine, &observation) !=
+                TYPE_STATUS_OK || !observation.next_deadline_valid ||
+            observation.next_deadline_tick <= observation.elapsed_ticks ||
+            core_machine_advance_to_next_deadline(state.machine, &advanced) !=
+                TYPE_STATUS_OK || !advanced || state.machine->fpu.busy;
+    }
+    core_machine_destroy(state.machine);
+    return !failed;
+}
+
 static C_INT fpu_interface_s65_incompatible(C_VOID)
 {
     static const type_unsigned_8 fninit[] = { 0xdbu, 0xe3u };
@@ -555,6 +580,16 @@ C_INT main(C_VOID)
         CORE_MACHINE_FPU_PROFILE_80287, 0u, 0u);
     failed |= !fpu_interface_s65_handoff(CORE_MACHINE_CPU_PROFILE_80386,
         CORE_MACHINE_FPU_PROFILE_80387, 12u, 26u);
+    failed |= !fpu_interface_s65_deadline(CORE_MACHINE_CPU_PROFILE_8086,
+        CORE_MACHINE_FPU_PROFILE_8087);
+    failed |= !fpu_interface_s65_deadline(CORE_MACHINE_CPU_PROFILE_80186,
+        CORE_MACHINE_FPU_PROFILE_8087);
+    failed |= !fpu_interface_s65_deadline(CORE_MACHINE_CPU_PROFILE_80286,
+        CORE_MACHINE_FPU_PROFILE_80287);
+    failed |= !fpu_interface_s65_deadline(CORE_MACHINE_CPU_PROFILE_80386,
+        CORE_MACHINE_FPU_PROFILE_80287);
+    failed |= !fpu_interface_s65_deadline(CORE_MACHINE_CPU_PROFILE_80386,
+        CORE_MACHINE_FPU_PROFILE_80387);
     failed |= !fpu_interface_s65_incompatible();
     failed |= !fpu_interface_s65_success(attr_wait, sizeof(attr_wait),
         CORE_MACHINE_CPU_PROFILE_80386, CORE_MACHINE_FPU_PROFILE_NONE, 0u);

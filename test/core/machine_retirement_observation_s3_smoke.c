@@ -203,16 +203,17 @@ static C_INT retirement_8086_context_formula_case(C_VOID)
             core_machine_set_a20(machine, 1) != TYPE_STATUS_OK ||
             core_machine_memory_write(machine, 0xfffffff0u, wait,
                 sizeof(wait)) != TYPE_STATUS_OK ||
-            ((machine->fpu.wait_iterations = 3u), 0) ||
+            ((machine->fpu.busy = TYPE_TRUE), 0) ||
+            ((machine->fpu.completion_remaining_ticks = 3u), 0) ||
             core_machine_run(machine, budget, &result) != TYPE_STATUS_OK ||
             result.executed != 1u || probe.count != 3u ||
-            probe.records[2].source_ticks != 18u ||
+            probe.records[2].source_ticks != 6u ||
             probe.records[2].timing_disposition !=
                 CORE_MACHINE_RETIREMENT_TIMING_CLASSIFIED ||
             probe.records[2].timing_origin !=
                 CORE_MACHINE_RETIREMENT_TIMING_ORIGIN_PRIMARY ||
             (probe.records[2].formula_inputs &
-                CORE_MACHINE_CPU_TIMING_INPUT_WAIT_ITERATIONS) == 0u;
+                CORE_MACHINE_CPU_TIMING_INPUT_WAIT_TICKS) == 0u;
     }
     core_machine_destroy(machine);
     return failed;
