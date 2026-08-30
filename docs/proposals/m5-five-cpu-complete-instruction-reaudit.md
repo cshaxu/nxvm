@@ -17,11 +17,14 @@ once at its Core owner and sweeps every affected form/profile.
 
 Intel's original manuals are normative for every instruction, defined state
 bit, exception, delivery and timing claim.  Existing project ledgers are a
-crosswalk, not proof.  86Box, MAME, PCjs, Bochs and QEMU are read-only
-cross-checks: matching manual-supported behavior may corroborate a Manual-L3
-row; an external-only reproducible behavior is External-L2; neither can
-override a manual conflict.  Reserved or architecturally undefined state is
-never asserted as a fabricated exact value.
+crosswalk, not proof.  Manual-L3 means that the manual itself gives the exact
+number or an executable formula.  A documented range whose implementation
+selects a value is L2, never Manual-L3.  86Box, MAME, PCjs, Bochs and QEMU are
+read-only cross-checks: any timing model selected from them is L2, even when it
+agrees with the manual; a proportional macro model is likewise L2.  They may
+corroborate the provenance of a manual result but neither can override a
+manual conflict.  Reserved or architecturally undefined state is never
+asserted as a fabricated exact value.
 
 ## Frozen Coverage Universe
 
@@ -54,11 +57,12 @@ retirement path or external-model runtime dependency is permitted.
 ## Timing-Tier Closure Rule
 
 For every CPU profile, the audit must enumerate every L1 disposition and
-repair it to Manual-L3 or External-L2 whenever the admitted sources support
-that result. A row that cannot be upgraded is a stop-and-report item, not a
-closure exception. A Manual-L3 row must not be lowered, nor an External-L2 row
-to L1, unless the prior classification is demonstrated false and the owner
-approves that correction before it is made.
+repair it to Manual-L3 or a named L2 model whenever the admitted sources
+support that result.  L2 includes a manual range selection, an external-model
+selection and a proportional macro model. A row that cannot be upgraded is a
+stop-and-report item, not a closure exception. A Manual-L3 row must not be
+lowered, nor an L2 row to L1, unless the prior classification is demonstrated
+false and the owner approves that correction before it is made.
 
 ## S Decomposition
 
