@@ -31,10 +31,11 @@ the complete List 1 and List 2 before any repair S begins.
 S1 accepts the five-profile source corpus in
 [its evidence](../etc/evidence/t512-s1-five-cpu-source-cross-validation.md).
 It confirms original manual coverage for every supported semantic universe and
-the available 8086/8088, 80186 and 80386DX instruction-time tables. It also
-corrects a material provenance error: the previously cited 80286 Appendix B is
-an encoding dictionary, not an instruction-time table. No CPU behavior changes
-in S1; S2 must carry that timing-source boundary into every 80286 row.
+the available five-CPU instruction-time tables. S3's rendered correction makes
+the 80286 locator precise: Appendix B is an instruction dictionary whose
+printed B-6 onward also defines its per-form `Clocks` column and qualifiers.
+No CPU behavior changes in S1; S3--S7 must map those source rows to current
+selectors before any value is called conforming.
 
 ## S2: Complete List 1
 
@@ -52,7 +53,18 @@ S2 accepts the finite five-CPU List 1 in
 [its evidence](../etc/evidence/t512-s2-five-cpu-function-state-timing-list-1.md).
 The decoder-inventory producers are the exact opcode/ModR/M expansion, while
 the ledger assigns every expansion a manual form, prefix, state/delivery and
-timing-source category. It corrects the old 80286 provenance claim: semantics
-remain Manual-L3, but each per-instruction timing field is source-unavailable
-until a valid original Intel timing source is admitted. S3 must make every
-List-1 expansion's current Core disposition explicit before repair begins.
+timing-source category. S3 corrects the initial 80286 timing classification:
+the Intel Appendix-B `Clocks` column is a Manual-L3 candidate, while each
+current value remains unverified until S3--S7 map its exact source qualifier.
+S3 must make every List-1 expansion's current Core disposition explicit before
+repair begins.
+
+## S3: Complete List 2
+
+Trace every List-1 inventory expansion through the current Core decoder,
+state construction, commit/rollback, delivery, retirement and regression
+owner. Classify it as conforming, missing, conflicting, unsupported or
+source-unavailable, including a precise receiver for every nonconforming
+batch. This is an audit only: do not modify CPU execution or create a
+profile-side behavior path. It closes only after the full repository-only unit
+suite and documentation governance pass.

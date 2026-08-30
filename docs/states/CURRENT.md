@@ -4,16 +4,16 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | New T512; S1--S2 accepted; S3 is next. |
+| Identifier Mode | Continuation T512; S1--S2 accepted, S3 is active. |
 | Admission And Approval | Owner approved the five-CPU complete audit after Td S157 removed the already-completed D4 candidate. |
 | Objective | Re-establish a complete, source-backed conformance result for the supported 8086, 8088, 80186, 80286 and 80386DX profiles before any repair. |
 | Non-goals | Do not repair an isolated FLAGS symptom first, create profile-side CPU behavior, duplicate state/retirement paths, import third-party source, or change `build/output` YAML. |
 | Reference Baseline | Current Core decode/execution, existing per-CPU ledgers, T499 CPU/profile audit history, and stripped Release 0511 baseline. |
 | Candidate Proposal | [Five-CPU complete instruction re-audit and repair](../proposals/m5-five-cpu-complete-instruction-reaudit.md). |
-| Files And ABI Surface | S2 added the complete List 1 and source dispositions; no CPU, public ABI, VM profile or artifact changed. S3 will trace it through current Core owners only. |
+| Files And ABI Surface | S3 corrects the already-admitted 80286 Appendix-B locator and adds the complete List-1-to-Core owner map only. It changes no CPU behavior, public ABI, VM profile or artifact. |
 | Applicable Rules | Task Reading Set; execution, architecture, coding, source-policy and documentation authorities. Intel originals are normative; external emulator code is read-only corroboration only. |
 | Verification | Every S closes with the complete repository-only unit suite and documentation governance; T closure also runs external-ROM/disk integration and builds stripped Release 0512. |
-| Expected Markers | S2 records one complete opcode/form, state, delivery and timing List 1 for all five profiles, including the corrected 80286 timing-source disposition. S3 must create complete List 2 before any repair. |
+| Expected Markers | S3 records the rendered 80286 `Clocks`-column locator correction plus complete per-profile decoder, state, delivery, retirement and regression dispositions, including a finite repair partition before any repair. |
 | Asset Needs | Read-only owner-managed manuals under `assets/manuals`; no manual, ROM, guest media or third-party source import. |
 | Reporting Requirements | Record each manual rule, complete current-code disposition, source tier and exact receiver for any nonconformance; undefined state must never receive a fabricated exact value. |
 | Stop Conditions | Stop before implementation until S2--S3 accept the whole coverage universe; stop and report any source/license conflict or missing normative manual. |

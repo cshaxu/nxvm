@@ -15,7 +15,7 @@ opcode/ModR/M pair; no prose range may silently widen them.
 | 8086 | `core_machine_8086_timing_manifest_runner.c`; 57,926 opcode/ModR/M candidates | Intel 1981, Tables 2-20/2-21 and instruction chapters | Table 2-21 exact/formula/range entries are Manual-L3 facts. |
 | 8088 | Same base opcode set; distinct profile row | Intel 1981, Tables 2-20/2-21 | Base fact plus explicit Table 2-21 `+4` clocks per word transfer; never inferred from 8086. |
 | 80186 | `core_machine_80186_decoder_inventory_runner.c`; 247 primary opcodes, 61,530 candidates | Intel 1985, Table 1-16 and instruction chapters | A stated range remains a range, not an invented exact value. |
-| 80286 | `core_machine_80286_decoder_inventory_runner.c`; primary inventory plus `0F {00,01,02,03,06}` masks | Intel 1987 Programmer's and Hardware Reference Manuals | Semantics/forms are Manual-L3. Available originals contain **no per-instruction clock table**; all time fields are `SOURCE-UNAVAILABLE`. |
+| 80286 | `core_machine_80286_decoder_inventory_runner.c`; primary inventory plus `0F {00,01,02,03,06}` masks | Intel 1987 Programmer's Reference Manual, Appendix B printed page B-6 onward; Hardware Reference Manual for external bus boundary | Semantics/forms and the Appendix-B `Clocks` rows/formulae are Manual-L3 candidates. S3--S7 must reconcile each selector value and qualifier; the hardware manual is not a replacement instruction-time table. |
 | 80386DX | `core_machine_80386_decoder_inventory_runner.c`; 253 primary opcodes, 63,021 candidates, and recorded `0F` masks | Intel 1990, Chapters 2-12 and 17 | Chapter 17 exact/formula/context fields are Manual-L3 facts. |
 
 Each producer tests its accepted ModR/M masks. Its generated JSON is a test
@@ -82,11 +82,11 @@ manual range stays a range. Prefetch, READY, HOLD, arbitration, device response
 and physical board cycles remain outside CPU instruction fields unless an
 original source explicitly composes them.
 
-The S1 corpus proves that the available 80286 originals contain no execution
-time table. Every F01-F14 80286 time field is therefore `SOURCE-UNAVAILABLE`,
-with receiver **T512 S3 source/code disposition**. It must not be relabelled
-Manual-L3 from `210498-005` Appendix B; an emulator literal would be Other-L2
-at most.
+S3's rendered correction establishes that `210498-005` Appendix B has a
+per-form `Clocks` column and stated qualifiers. Every F01-F14 80286 time field
+is therefore a Manual-L3 candidate, not `SOURCE-UNAVAILABLE`; S3--S7 must
+still establish the exact source-to-selector mapping before treating a current
+literal as conforming. An emulator literal remains Other-L2 at most.
 
 ## S3 Consumption Predicate
 
