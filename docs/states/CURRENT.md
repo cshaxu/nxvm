@@ -4,20 +4,20 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation T511 S6 KBC phase-consumer audit. |
-| Admission And Approval | Owner requested a global check and complete repair of the class exposed by 0508; S1 `a0cfc3e4` freezes the finite owner/consumer inventory and S2--S5 find no PIC/DMA/PIT/RTC hit. |
-| Objective | Prove that every KBC command response, FIFO byte, serial/typematic deadline, IRQ and firmware consumer observes the appropriate new KBC event; repair any stale-observation class at the KBC owner or its sole downstream consumer. |
+| Identifier Mode | Continuation T511 S7 XT keyboard/PPI phase-consumer audit. |
+| Admission And Approval | Owner requested a global check and complete repair of the class exposed by 0508; S1 `a0cfc3e4` freezes the finite owner/consumer inventory and S2--S6 find no PIC/DMA/PIT/RTC/KBC hit. |
+| Objective | Prove that every XT serial edge, reset/BAT deadline, PPI acknowledgement, IRQ and firmware consumer observes the appropriate new XT keyboard event; repair any stale-observation class at the XT owner or its sole downstream consumer. |
 | Non-goals | Do not add a generic polling framework, a VM scheduler, duplicate controller state, profile-specific Core branch, or change `build/output` YAML. |
 | Reference Baseline | T510 ATA PIO repair `5182e2c6`, T510 closure `3ff89134`, existing controller ledgers and the current Core scheduler. |
 | Candidate Proposal | [Controller phase-consumer convergence proposal](../proposals/m5-controller-phase-consumer-convergence.md). |
-| Files And ABI Surface | Existing Core KBC, keyboard/firmware and owner tests only if a proven defect exists; no public ABI, VM state or new scheduler. |
+| Files And ABI Surface | Existing Core XT keyboard/PPI, firmware and owner tests only if a proven defect exists; no public ABI, VM state or new scheduler. |
 | Applicable Rules | Task Reading Set; execution, architecture, coding, source-policy and documentation authorities. Core retains every controller's state/time owner; VM consumes copied observations only. |
 | Verification | Complete repository-only unit suite and documentation governance. Every later S repeats unit; T closure also runs external-ROM/disk integration and builds stripped Release 0511. |
-| Expected Markers | One KBC row for command input, output-buffer publication, IRQ1/AUX, serial/typematic deadline and firmware consumer, each with a manual/code/test disposition. |
-| Asset Needs | Existing owner-managed 8042 manual only; no asset import. |
+| Expected Markers | One XT row for reset/BAT, serial edge, PPI lines, IRQ1 and firmware consumer, each with a manual/code/test disposition. |
+| Asset Needs | Existing owner-managed IBM 5160 and keyboard sources only; no asset import. |
 | Reporting Requirements | Record the manual rule, every production consumer, no-hit rationale or repair, and focused proof. |
-| Stop Conditions | Stop if the KBC model conflicts with the manual or a repair would require a second owner or undeclared profile policy. |
-| Exit Criteria | Every KBC consumer is classified and no ATA-style stale observation remains; S7 XT keyboard/PPI is then admitted. |
+| Stop Conditions | Stop if the XT topology conflicts with the IBM sources or a repair would require a second owner or undeclared profile policy. |
+| Exit Criteria | Every XT keyboard/PPI consumer is classified and no ATA-style stale observation remains; S8 FDC is then admitted. |
 | Original Owner Request | Globally check other hardware/controllers/internal and external devices for the ATA-style missing repeated-transition observation and repair every proven instance. |
 | Similar-Issue Sweep | All tracked production controller, firmware, DMA, IRQ, scheduler, profile and test paths; no source, build or external asset is excluded from the static inventory without a reason. |
 
