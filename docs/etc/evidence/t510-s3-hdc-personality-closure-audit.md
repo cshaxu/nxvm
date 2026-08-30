@@ -1,6 +1,6 @@
-# T510 S3 HDC Personality Closure Audit
+# T510 S3 HDC Personality Pre-Setup Verification
 
-`M5:T510:S3:HDC-PERSONALITY-CLOSURE:OK`
+`M5:T510:S3:HDC-PERSONALITY-PRE-SETUP:PARTIAL`
 
 ## Final Ledger Disposition
 
@@ -17,7 +17,7 @@ All four configurations enter `core_machine_hdc`; only
 The sweep finds no `service_ticks` construction, VM time writer, HDC-specific
 scheduler, controller alias, media cache or profile-specific Core branch.
 
-## Closure Verification
+## Pre-Setup Verification
 
 | Check | Result |
 | --- | --- |
@@ -30,3 +30,7 @@ scheduler, controller alias, media cache or profile-specific Core branch.
 
 The release preserves the runtime debugger. Stripped concerns compiler
 debug information only; it does not remove that product feature.
+
+This evidence does not cover the owner-reported current-HDD
+`EWIN31\\SETUP.EXE` path. Its reported freeze keeps T510 open; the next
+reproduction/repair result supersedes this incomplete closure attempt.

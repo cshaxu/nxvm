@@ -4,28 +4,28 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation T510 S3. |
-| Admission And Approval | Owner approved the complete HDC-personality implementation task on 2026-08-30. S1 `09a83060`/`ce4d685b` froze the ledger; S2 `53698062`/`0eb318eb` implements and accepts the complete owner-local batch. |
-| Objective | Close the complete HDC-personality task: audit the four final ledger dispositions against actual code, run repository unit plus external-asset integration, and reproduce the current stripped Release artifact. |
-| Non-goals | Do not change HDC behavior or evidence tiers, add physical seek/MFM/ECC/media simulation, infer a Compaq duration, create a profile-specific Core branch, VM scheduler, controller copy or mutable runtime timing setter. |
-| Reference Baseline | T510 S1 List 1/List 2, accepted S2 evidence, T508 ATA deadline, T479/T494 HDC protocol evidence and `0eb318eb`. |
+| Identifier Mode | Continuation T510 S3 corrective closure. |
+| Admission And Approval | Owner-approved T510 remains open after the reported current-HDD `EWIN31\\SETUP.EXE` freeze exposed a missing integration checkpoint. S1 `09a83060`/`ce4d685b` froze the ledger; S2 `53698062`/`0eb318eb` implements and accepts the owner-local batch. |
+| Objective | Reproduce the reported HDD Windows Setup freeze through the selected current configuration, locate its sole failing owner/transition, repair the full proven class, and rerun all T510 closure gates. |
+| Non-goals | Do not reintroduce immediate controller completion, a profile-specific Core branch, VM scheduler, controller copy, mutable runtime timing setter, or an unproven physical-media duration. |
+| Reference Baseline | T510 S1 List 1/List 2, S2 implementation evidence, provisional S3 verification `148e9f46`/`ddfe094f`, and the owner-reported HDD path. |
 | Candidate Proposal | [HDC personality service-deadline proposal](../proposals/m5-hdc-personality-service-deadline-closure.md). |
-| Files And ABI Surface | Closure evidence, task history and status/queue records only unless audit proves a specific defect; no public mutable ABI. |
-| Applicable Rules | Task Reading Set; architecture/coding/source-policy rules. Core owns HDC phase, elapsed tick and completion; VM selects frozen generic values only. |
-| Verification | Re-run complete repository-only unit, all integration tests using external assets, documentation governance and current stripped Release build; record the artifact hash and full four-personality ledger audit. |
-| Expected Markers | ATA 200/200, Model-339 16000/7840, Model-40 0/0 and XT 250/0 become explicit construction values; Xebec has no instant DCB-to-DMA/result path. |
-| Asset Needs | Existing integration assets only; no source, firmware or guest-media import. |
-| Reporting Requirements | Record every final ledger disposition, gate result, stripped artifact hash, HDC-only data flow and any explicit transfer. |
-| Stop Conditions | Stop if audit finds a ledger row not mapped to the accepted one-owner route, an integration failure attributable to T510, or a Release artifact that contains compiler debug information. |
-| Exit Criteria | All four personality routes have the List-2 disposition implemented and tested, with one deadline owner and no unqualified service value presented as sourced; unit, integration, governance and stripped Release all pass. |
-| Original Owner Request | Owner requested single-session complete HDC personality coverage. |
-| Similar-Issue Sweep | Every `service` construction, every HDC completion phase, Core deadline query/advance, HDC port/DMA/IRQ consumer, four profile tests, integration tests and current Release target. |
+| Files And ABI Surface | HDC, its existing consumer and selected external-asset integration harness only if the reproduced trace proves a defect; no public mutable ABI. |
+| Applicable Rules | Task Reading Set; execution, architecture, coding, source-policy and documentation authorities. Core remains the sole HDC/time owner; VM consumes observations only. |
+| Verification | A deterministic external-HDD Setup checkpoint that distinguishes entry, progress and completion/terminal fault; focused owner regression; complete unit, integration, governance and current stripped Release after any repair. |
+| Expected Markers | The reported command either reaches its defined Setup checkpoint or produces a bounded evidence trace identifying a non-HDC owner. No HDC phase may be assumed complete without its sole deadline path. |
+| Asset Needs | Owner-provided current `hdd.img` only through the existing external-asset policy; no source, firmware or guest-media import. |
+| Reporting Requirements | Record the exact selected configuration, checkpoint/trace, owner-path disposition, every repair and the final complete gate result. |
+| Stop Conditions | Stop if the supplied image/configuration cannot be identified, reproduction needs an unapproved external asset route, or the fault proves outside T510's HDC-consumer boundary; record the evidence and transfer it explicitly. |
+| Exit Criteria | The reported HDD Setup path has a reproducible terminal disposition; all four personality routes retain their List-2 disposition with one deadline owner; all T-level gates pass. |
+| Original Owner Request | Owner requested single-session complete HDC personality coverage, now including the reported HDD Setup usability regression. |
+| Similar-Issue Sweep | Every HDC completion phase and consumer on the reproduced path, all four profile constructions, the current HDD integration route and the existing Windows checkpoints. |
 
 ## Current Technical Baseline
 
 - **Current developer artifact:** CMake target `vm-0-5-0508` emitted
   `nxvm_0_5_0508.exe` in a stripped Release build, SHA-256
-  `7350EF960A3C611F0A74696E153F23BE73D1824A8E7FED1486A3995206F8DE30`.
+  `1CD6A4ED85A4AC71EB3074274B487F7C6FBC93E4A832D20949079DAB50554550`.
   It retains the runtime debugger and contains no compiler debug information.
   Debug uses the repository-only unit route. T471 preserves Core-owned progression:
   a verified axis is Standard-paced only by host waiting against completed
