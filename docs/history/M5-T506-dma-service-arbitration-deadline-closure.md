@@ -12,6 +12,8 @@ copied construction values.
 | --- | --- |
 | S1 | The finite D1--D11 Intel/IBM ledger maps every selected request, arbitration, service, route and reset relation to its current owner. |
 | S2 | The existing qualified Model-339 `3/8` DMA clock now publishes the next logical service-phase deadline through the sole Core scheduler; unqualified profiles retain their lower-tier boundary. |
+| S3 | Focused proof, unit 312/312, integration 20/20, documentation governance and stripped Release `nxvm_0_5_0506.exe` all pass; the D1--D10 closure audit retains the source/test delta and artifact SHA-256. |
 
-S3 records the task-level regression, artifact and closure audit before the
-task may close.
+The task closes with no unclassified selected DMA relation. The retained
+proposal records the bounded source-first admission; later HDC, Model-40 D4
+and CPU work remain separate queue candidates.

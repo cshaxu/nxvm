@@ -2,24 +2,11 @@
 
 ## Current Work
 
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation T506 S3. |
-| Admission And Approval | Owner authorized continuous single-role execution of the ordered queue on 2026-08-29; accepted T506 S1/S2 results admit T-level DMA closure and artifact verification. |
-| Objective | Close the selected DMA task by reconciling D1--D10 with production tests, running the owner-managed external integration suite, and producing the stripped Release `nxvm_0_5_0506.exe` developer artifact. |
-| Non-goals | Do not add behavior, broaden controller scope, alter profiles, source timing values, public ABI, firmware/media defaults, or use an integration outcome to conceal an unresolved ledger row. |
-| Reference Baseline | `5df3564c`; [S1 ledger](../etc/evidence/t506-s1-dma-service-arbitration-ledger.md), [S2 batch result](../etc/evidence/t506-s2-dma-deadline-batch.md), and [DMA proposal](../proposals/m5-dma-service-arbitration-deadline-closure.md). |
-| Candidate Proposal | [M5 DMA service and arbitration deadline closure](../proposals/m5-dma-service-arbitration-deadline-closure.md). |
-| Files And ABI Surface | Expected completion changes are T506 evidence/history/current state plus ignored `build/output/nxvm_0_5_0506.exe`; no production source, test, ABI or profile change unless a verified defect requires a new packet. |
-| Applicable Rules | `EXECUTION.md` task-level unit/integration/artifact closure and actual-diff review; `ARCHITECTURE.md` sole Core DMA owner; `CODING.md` no retained duplicate path; `DOCUMENT.md` history/evidence/current boundaries; source policy for owner-managed external integration assets. |
-| Verification | Run complete repository-only unit, complete owner-managed integration, documentation governance, the selected DMA-focused regression, build stripped Release artifact `0506`, verify its banner/debug-information policy and SHA-256, then reconcile every D1--D10 disposition. |
-| Expected Markers | `M5:T506:S3:DMA-CLOSURE:OK`; unit 312/312 or current full count, all integration cases pass, artifact is stripped Release and records its source commit/hash, with no unresolved selected row. |
-| Asset Needs | Owner-managed local BIOS/ROM/disk inputs used only by registered integration tests; no asset bytes, vendor paths, hashes or external code are committed. |
-| Reporting Requirements | Record exact suite outcomes, artifact target/banner/hash, D1--D10 closure mapping, retained lower-tier boundaries, source/test delta from S2, and any external-input limitation or failure. |
-| Stop Conditions | Stop and report if any integration failure is attributable to DMA, a ledger row lacks a truthful final disposition, or the Release artifact cannot be produced without unrelated change. |
-| Exit Criteria | Full unit, full integration, documentation gate and stripped Release artifact pass; D1--D10 are reconciled with no unclassified selected relation; task history/proposal/state are closed and Queue no longer lists DMA. |
-| Original Owner Request | Continue the source-first controller queue in solo mode and eliminate whole-owner defects without additive compatibility paths or unproven timing. |
-| Similar-Issue Sweep | DREQ lifecycle, clock-domain reset/remainder, Model-339 DMA selection, default/XT/Model-40 lower-tier isolation, PIT refresh, FDC DMA2, Xebec DMA3, primary/secondary cascade, HLT deadline advancement, Runtime debugger retention and Release stripping. |
+No subtask is active. T506 is closed: the finite selected 8237A D1--D10
+universe retains its sole Core DMA owner, and Model-339's already qualified
+`3/8` clock now supplies the next logical service-phase deadline. Default,
+XT and Model-40 contracts remain explicitly lower-tier; no fixed DMA duration,
+provider timer, VM/profile route or duplicate DMA state was introduced.
 
 ## Current Technical Baseline
 
@@ -57,6 +44,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T506 | Closed: selected 8237A D1--D10 relations are reconciled; Model-339 can advance to the next sourced DMA phase through the existing Core scheduler while unqualified contracts remain isolated. Unit 312/312, integration 20/20 and stripped Release 0506 pass. [History](../history/M5-T506-dma-service-arbitration-deadline-closure.md). |
 | T505 | Closed: Intel-backed cascade publication and withdrawal are immediate PIC-owner work, not a scheduled L1 tick. One construction-fixed PIC pair reuses the existing refresh calculation after source and command transitions; full unit 312/312 and integration 20/20 pass. [History](../history/M5-T505-pic-cascade-observable-progress-closure.md). |
 | T504 | Closed: one Core-owned bounded Turbo fallback advances only copied L1 no-deadline waits; Standard receives no compatibility progression or host-to-guest ticks. Same-input external DOS replays reach `A:\>` in both modes; formal Release output ships selectable strict-grammar templates; the four controller-specific timing receivers are queued. [History](../history/M5-T504-turbo-l1-compatibility-escape.md). |
 | T502 | Withdrawn before execution by owner direction; no implementation, evidence, test, or artifact change was produced. |
@@ -64,9 +52,13 @@
 | T500 | Closed: existing tests now have one `test/` tree, one unit/integration route, narrow fixture ownership, one product input path, and recovered safe integration parallelism; unit 312/312 and integration 20/20 pass. [Closure](../history/M5-T500-unit-and-integration-test-convergence.md). |
 | T499 | Closed: one Core deadline seam owns the current scheduler clients and the selected Model-40 D4 controller; the configured suite passes 302/302 and stripped Release 0499 is recorded. [Closure](../history/M5-T499-core-event-deadline-scheduler-convergence.md). |
 | T498 | Closed: the supported-media matrix has semantic terminals or an explicit external-input boundary for every non-Model-40 row, and its Model-40 predecessor transfers to the sole Core scheduler receiver without accepting a shortcut. [Closure](../history/M5-T498-four-profile-supported-media-matrix.md). |
-| T497 | Closed: original Model-339 factory 1.2-MB/compatible-360-KB media behavior now has one descriptor/session/FDD path, and the 360-KB DOS installer replay closes its one missing monochrome-aperture mapping; a 286-compatible 1.2-MB external replay transfers to T498. [Closure](../history/M5-T497-ibm-5170-native-floppy-contract.md). |
 
 ## Recent Governance
+
+- **M5 T506 S3 P2:** coordinator actual-diff review accepts `7d197d3f` and
+  closes T506. All selected D1--D10 rows map to the sole DMA/Core path or their
+  stated lower-tier boundary; unit 312/312, integration 20/20, documentation
+  governance and stripped Release 0506 pass. The next candidate is HDC.
 
 - **M5 T506 S2 P2:** coordinator actual-diff review accepts `521085bd`.
   The repair adds one scheduler predicate and one deadline consideration for
