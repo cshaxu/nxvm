@@ -4,20 +4,20 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation T511 S4 PIT phase-consumer audit. |
-| Admission And Approval | Owner requested a global check and complete repair of the class exposed by 0508; S1 `a0cfc3e4` freezes the finite owner/consumer inventory and S2--S3 find no PIC/DMA hit. |
-| Objective | Prove that every PIT output, gate, reload and IRQ/refresh consumer observes the appropriate new waveform transition; repair any stale-observation class at the PIT owner or its sole downstream consumer. |
+| Identifier Mode | Continuation T511 S5 RTC phase-consumer audit. |
+| Admission And Approval | Owner requested a global check and complete repair of the class exposed by 0508; S1 `a0cfc3e4` freezes the finite owner/consumer inventory and S2--S4 find no PIC/DMA/PIT hit. |
+| Objective | Prove that every RTC update, periodic/alarm flag, IRQ and CMOS-data consumer observes the appropriate new RTC event; repair any stale-observation class at the RTC owner or its sole downstream consumer. |
 | Non-goals | Do not add a generic polling framework, a VM scheduler, duplicate controller state, profile-specific Core branch, or change `build/output` YAML. |
 | Reference Baseline | T510 ATA PIO repair `5182e2c6`, T510 closure `3ff89134`, existing controller ledgers and the current Core scheduler. |
 | Candidate Proposal | [Controller phase-consumer convergence proposal](../proposals/m5-controller-phase-consumer-convergence.md). |
-| Files And ABI Surface | Existing Core PIT, IRQ/refresh wiring and owner tests only if a proven defect exists; no public ABI, VM state or new scheduler. |
+| Files And ABI Surface | Existing Core RTC/CMOS, IRQ and owner tests only if a proven defect exists; no public ABI, VM state or new scheduler. |
 | Applicable Rules | Task Reading Set; execution, architecture, coding, source-policy and documentation authorities. Core retains every controller's state/time owner; VM consumes copied observations only. |
 | Verification | Complete repository-only unit suite and documentation governance. Every later S repeats unit; T closure also runs external-ROM/disk integration and builds stripped Release 0511. |
-| Expected Markers | One PIT row for programming, reload, gate, output transition, IRQ0, refresh and speaker consumers, each with a manual/code/test disposition. |
-| Asset Needs | Existing owner-managed Intel 8254 manual only; no asset import. |
+| Expected Markers | One RTC row for update, periodic/alarm flag, register-C acknowledgement, IRQ8 and CMOS/firmware consumers, each with a manual/code/test disposition. |
+| Asset Needs | Existing owner-managed MC146818A manual only; no asset import. |
 | Reporting Requirements | Record the manual rule, every production consumer, no-hit rationale or repair, and focused proof. |
-| Stop Conditions | Stop if the PIT model conflicts with the manual or a repair would require a second owner or undeclared profile policy. |
-| Exit Criteria | Every PIT consumer is classified and no ATA-style stale observation remains; S5 RTC is then admitted. |
+| Stop Conditions | Stop if the RTC model conflicts with the manual or a repair would require a second owner or undeclared profile policy. |
+| Exit Criteria | Every RTC consumer is classified and no ATA-style stale observation remains; S6 KBC is then admitted. |
 | Original Owner Request | Globally check other hardware/controllers/internal and external devices for the ATA-style missing repeated-transition observation and repair every proven instance. |
 | Similar-Issue Sweep | All tracked production controller, firmware, DMA, IRQ, scheduler, profile and test paths; no source, build or external asset is excluded from the static inventory without a reason. |
 
