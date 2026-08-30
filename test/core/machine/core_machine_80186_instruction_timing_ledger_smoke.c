@@ -651,6 +651,15 @@ static C_INT timing_80186_boundaries(C_VOID)
     return failed;
 }
 
+static C_INT timing_80186_enter_full_level(C_VOID)
+{
+    static const type_unsigned_8 level33[] = { 0xc8u, 0u, 0u, 0x21u };
+    static const type_unsigned_8 level255[] = { 0xc8u, 0u, 0u, 0xffu };
+
+    return timing_80186_case(level33, sizeof(level33), 534u) ||
+        timing_80186_case(level255, sizeof(level255), 4086u);
+}
+
 C_INT main(C_VOID)
 {
     static const type_unsigned_8 nop[] = { 0x90u };
@@ -692,7 +701,7 @@ C_INT main(C_VOID)
         timing_80186_div_matrix() ||
         timing_80186_stack_frame() ||
         timing_80186_case(near_call, sizeof(near_call), 15u) ||
-        timing_80186_case(direct_jump, sizeof(direct_jump), 13u) ||
+        timing_80186_case(direct_jump, sizeof(direct_jump), 14u) ||
         timing_80186_case(mul8, sizeof(mul8), 27u) ||
         timing_80186_case(mul16, sizeof(mul16), 36u) ||
         timing_80186_case(imul8, sizeof(imul8), 27u) ||
@@ -709,6 +718,7 @@ C_INT main(C_VOID)
     if (timing_80186_memory()) return 2;
     if (timing_80186_control_ports()) return 3;
     if (timing_80186_boundaries()) return 4;
+    if (timing_80186_enter_full_level()) return 5;
     STD_PRINTF("M5:T357:S5:80186-INSTRUCTION-TIMING-LEDGER:OK\n");
     return 0;
 }

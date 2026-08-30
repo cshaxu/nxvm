@@ -3160,7 +3160,9 @@ C_INT core_machine_control_stack_source_instruction_cost(
     case 0xc8u:
         if (machine->cpu_profile < CORE_MACHINE_CPU_PROFILE_80186) return 0;
         if (prefixes + 3u >= data->oplen) return 0;
-        extension = data->opcodes[prefixes + 3u] & 0x1fu;
+        extension = data->opcodes[prefixes + 3u];
+        if (machine->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80286)
+            extension &= 0x1fu;
         if (extension == 0u) {
             *out_ticks = core_machine_control_stack_source_lookup(machine,
                 CORE_MACHINE_SOURCE_TIMING_ENTER_LEVEL_ZERO);
