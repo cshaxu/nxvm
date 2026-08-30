@@ -4,22 +4,22 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation T512; S1--S3 accepted, S4 is active. |
+| Identifier Mode | Continuation T512; S1--S4 accepted, S5 is active. |
 | Admission And Approval | Owner approved the five-CPU complete audit after Td S157 removed the already-completed D4 candidate. |
-| Objective | Repair the one proven shared Core 80386 real/V86 16-bit FLAGS stack-image conflict before the independent full instruction sweeps. |
-| Non-goals | Do not alter the distinct 32-bit EFLAGS load or protected-frame paths, add profile-side CPU behavior, alter the decoder/timing selector, assert a value for any remaining undefined bit, import third-party source, or change `build/output` YAML. |
+| Objective | Reconcile every decoder-admitted 8086 and 8088 real-mode form, legal prefix, FLAGS/frame effect and source-backed timing row at its existing sole Core owner. |
+| Non-goals | Do not derive 8088 bus behavior from 8086, alter 80186-or-later semantics, add profile-side CPU behavior, assert a value for undefined state, import third-party source, or change `build/output` YAML. |
 | Reference Baseline | Current Core decode/execution, existing per-CPU ledgers, T499 CPU/profile audit history, and stripped Release 0511 baseline. |
 | Candidate Proposal | [Five-CPU complete instruction re-audit and repair](../proposals/m5-five-cpu-complete-instruction-reaudit.md). |
-| Files And ABI Surface | `src/core/machine/cpu_instructions.c` plus the bounded Core FLAGS image and test-oracle owners: PUSHF/POPF, software-INT, IRET, TF/DB, SCAS and legacy-ALU smokes. No public ABI, VM profile, decoder, timing selector, 32-bit EFLAGS path or artifact template changes. |
+| Files And ABI Surface | Decoder, execution, FLAGS/frame, retirement and timing-selector owners reached by the finite 8086/8088 List-2 rows, plus their owner-local test modules. No public ABI, VM profile, 80186-or-later path or artifact-template change. |
 | Applicable Rules | Task Reading Set; execution, architecture, coding, source-policy and documentation authorities. Intel originals are normative; external emulator code is read-only corroboration only. |
 | Verification | Every S closes with the complete repository-only unit suite and documentation governance; T closure also runs external-ROM/disk integration and builds stripped Release 0512. |
-| Expected Markers | One 80386 16-bit FLAGS image canonicalization rule has bit 15 clear for real/V86 stack images; all listed test oracles exclude other undefined bits, and no 32-bit EFLAGS path changes. |
-| Asset Needs | Read-only owner-managed Intel 386 DX manual under `assets/manuals`; rendered printed page 14-7 is the source rule. No manual, ROM, guest media or third-party source import. |
-| Reporting Requirements | Record the source quotation locator, exact shared image-caller/test sweep, source/test code-size delta, retained owner path and full unit result. |
-| Stop Conditions | Stop if the source distinguishes an unrepresented real/V86 image behavior; do not infer a new value or broaden the change to any 32-bit load or protected-frame path without a revised S brief. |
-| Exit Criteria | The shared Core mechanism produces a bit-15-clear 16-bit image for 80386 real/V86 paths, deterministic zero canonicalization remains confined to reserved state, all equivalent test oracles are swept, documentation governance and complete unit pass. |
+| Expected Markers | Every 8086/8088 List-2 row has a Manual-L3, explicit lower-tier, unsupported or single-owner repair disposition; shared real-mode behavior stays one Core path and 8088 bus/timing remains source-distinct. |
+| Asset Needs | Read-only owner-managed Intel 8086 and 8088 manuals under `assets/manuals`; no manual, ROM, guest media or third-party source import. |
+| Reporting Requirements | Record each source locator, exact row/owner sweep, any removed duplicate path, source/test code-size delta and full unit result. |
+| Stop Conditions | Stop if a source-distinct 8088 timing/bus behavior lacks a represented Core owner, or a candidate repair crosses an 80186-or-later boundary; revise the S brief rather than infer or broaden it. |
+| Exit Criteria | All 8086/8088 List-2 rows are reconciled against source and current owners; each proven repair is sole-owner and swept across equivalent forms; full unit and documentation governance pass. |
 | Original Owner Request | Audit and correctly repair all supported five-CPU instruction, architectural-state and timing behavior using manual-first evidence and minimal single-owner design. |
-| Similar-Issue Sweep | Sweep every `_e_real_flags_image_16()` caller plus every test profile-mask helper; inspect `_e_real_flags_load_16()` and all 32-bit EFLAGS paths only to prove their distinct, unchanged contract. |
+| Similar-Issue Sweep | Sweep every 8086/8088 decoder-admitted form and its prefix, state/frame, delivery, retirement and timing selector owner; trace shared owners once and distinguish the 8088 bus/timing rule from the 8086 rule. |
 
 ## Current Technical Baseline
 

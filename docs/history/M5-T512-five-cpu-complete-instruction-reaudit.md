@@ -92,3 +92,15 @@ load is examined but no 32-bit EFLAGS load or protected-frame contract is
 changed. It does not alter decoder admission, timing, VM profile or any value
 the manual leaves undefined. Full repository-only unit and documentation
 governance are required before its implementation P may close.
+
+## S4 Result
+
+S4 accepts the one-owner repair recorded in
+[its evidence](../etc/evidence/t512-s4-shared-flags-image-repair.md): the
+shared 80386 real/V86 16-bit FLAGS-image mask is now `7FD5h`, so bit 15 is
+clear in PUSHF and real-mode interrupt/exception frames. The production change
+is one replacement; the finite six-owner test sweep adds 23 and removes 15
+lines, with no 32-bit EFLAGS, protected-frame, decoder, VM-profile or artifact
+path changed. The complete repository-only unit suite passes 313/313 in 14.64
+seconds, documentation governance passes, and independent actual-diff review
+accepts `3b514e50`. S5 is now the active 8086/8088 full sweep.
