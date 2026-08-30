@@ -2949,22 +2949,10 @@ function(add_current_vm_artifact target version)
             COMMAND ${CMAKE_COMMAND} -E copy_if_different
                 "$<TARGET_FILE:${target}>"
                 "${CMAKE_BINARY_DIR}/output/${task_artifact_filename}"
-            COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                "${CMAKE_SOURCE_DIR}/assets/sessions/default-pc-at.yaml"
-                "${CMAKE_BINARY_DIR}/output/default-pc-at.yaml"
-            COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                "${CMAKE_SOURCE_DIR}/assets/sessions/ibm-5170-model-339.yaml"
-                "${CMAKE_BINARY_DIR}/output/ibm-5170-model-339.yaml"
             COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_SOURCE_DIR}/build/output"
             COMMAND ${CMAKE_COMMAND} -E copy_if_different
                 "$<TARGET_FILE:${target}>"
-                "${CMAKE_SOURCE_DIR}/build/output/${task_artifact_filename}"
-            COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                "${CMAKE_SOURCE_DIR}/assets/sessions/default-pc-at.yaml"
-                "${CMAKE_SOURCE_DIR}/build/output/default-pc-at.yaml"
-            COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                "${CMAKE_SOURCE_DIR}/assets/sessions/ibm-5170-model-339.yaml"
-                "${CMAKE_SOURCE_DIR}/build/output/ibm-5170-model-339.yaml")
+                "${CMAKE_SOURCE_DIR}/build/output/${task_artifact_filename}")
     endif()
 endfunction()
 
