@@ -57,6 +57,8 @@ principal documents named in [docs/README.md](../README.md).
 | `evidence/t512-s3-five-cpu-current-code-gap-list-2.md` | CPU conformance owner | T512 S3's complete List-1-to-Core owner map, bounded shared FLAGS conflict, 80286 timing-locator correction, and per-profile repair partition. |
 | `evidence/t512-s4-shared-flags-image-repair.md` | CPU conformance owner | T512 S4's Manual-L3 80386 real/V86 FLAGS-image repair, sole Core owner, test-oracle sweep and distinct 32-bit-path boundary. |
 | `evidence/t512-s5-8086-8088-current-owner-audit.md` | CPU conformance owner | T512 S5's manual-first 8086/8088 sole-owner audit and one table-driven complete-retirement verification receiver. |
+| `evidence/t513-s1-profile-cpu-floppy-list-1.md` | Integration-matrix owner | T513 S1's finite 20-row supported profile/CPU/FDD boot universe, construction rejections, source owners and external-input boundary. |
+| `evidence/t513-s1-profile-cpu-floppy-list-2.md` | Integration-matrix owner | T513 S1's matching existing-test inventory and all-row receiver map, including the Model-40 silent-format-selection repair. |
 | `evidence/td-s157-d4-candidate-reconciliation.md` | Governance owner | Td S157 reconciles the obsolete D4 refresh-hold candidate with T419 and T507 S14 closure evidence; physical D4 timing remains separately deferred. |
 | `evidence/td-s156-output-yaml-preservation.md` | Output boundary | Td S156 removes Release-build YAML copying so `build/output` configuration remains user-managed. |
 | `evidence/t503-s10-vadp-presentation-route-audit.md` | Core VADP owner | T503 S10's direct IBM/video-model reconciliation; it repairs selected CGA RGBI and EGA display-disable snapshot publication in the one VADP-to-copied-presentation route. |

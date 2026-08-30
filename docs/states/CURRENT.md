@@ -4,23 +4,22 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | T512 closed after S1--S9 acceptance. |
-| Admission And Approval | Owner approved the five-CPU complete audit after Td S157 removed the already-completed D4 candidate, and directed that every newly discovered L1 or downgrade receive a full same-class sweep and repair. This revision covers the shared Core FPU/WAIT L1 found by that sweep. |
-| Objective | Closed: all five CPU ledgers are reconciled against their source and existing sole Core owners, with every lower-tier timing disposition assigned a receiver. S8 replaced the shared FPU/WAIT false-completion path for every supported CPU/FPU pairing with one source-qualified Core deadline path. |
-| Non-goals | Do not add profile-side CPU behavior, assert a value for undefined state, import third-party source, alter x87 arithmetic semantics outside the existing supported subset, or change `build/output` YAML. |
-| Reference Baseline | S7 80286 closure evidence, current Core decode/execution, existing 80386 ledger/result material, T499 CPU/profile audit history, the preceding stripped Release 0511 baseline, and `t512-s8-fpu-wait-global-sweep.md`. |
-| Candidate Proposal | [Five-CPU complete instruction re-audit and repair](../proposals/m5-five-cpu-complete-instruction-reaudit.md). |
-| Files And ABI Surface | Decoder, execution, 32-bit/VM86/paging/debug/system-state delivery, retirement and timing-selector owners reached by the finite 80386 List-2 rows; the private Core FPU owner and existing elapsed-tick scheduler; and their owner-local Core tests. No public ABI, VM/profile execution path or artifact-template change. |
-| Applicable Rules | Task Reading Set; execution, architecture, coding, source-policy and documentation authorities. Intel originals are normative; external emulator code is read-only corroboration only. |
-| Verification | S9 result contracts verify every profile; unit 315/315, integration 20/20, documentation governance and stripped Release 0512 pass. |
-| Expected Markers | Every 80386 List-2 row has a Manual-L3, explicit lower-tier, unsupported or single-owner repair disposition; every supported FPU pairing reaches BUSY completion only through Core time advancement; 32-bit and VM86 behavior stays one Core path. |
-| Asset Needs | Read-only owner-managed Intel 80286/80287 and 80386 manuals under `assets/manuals`, plus read-only 86Box/PCjs/Bochs corroboration; no manual, ROM, guest media or third-party source import. |
-| Reporting Requirements | Record each source locator, exact row/owner sweep, any removed duplicate path, source/test code-size delta, FPU pairing matrix and full unit result. |
-| T-Wide Tier Rule | Each CPU-profile S inventories all L1 rows and upgrades every source-supported one to Manual-L3 or External-L2. A newly found L1 or proposed lower reclassification first triggers a five-profile same-class sweep across ledger, manifest, result artifact and verifier; an unupgradeable L1, or a downgrade not proven false, stops for owner review. |
-| Stop Conditions | Stop if a source-distinct 80386 or shared-FPU behavior lacks a representable Core owner, a discovered L1 cannot be upgraded, a tier downgrade is proposed, or the repair requires unsupported x87 arithmetic semantics rather than the completion contract. |
-| Exit Criteria | Met.  The five final timing contracts contain no L1 instruction row; every L2 is named and Core-owned; FPU/WAIT completion has one swept owner; unit, integration, governance and stripped Release artifact pass. |
-| Original Owner Request | Audit and correctly repair all supported five-CPU instruction, architectural-state and timing behavior using manual-first evidence and minimal single-owner design. |
-| Similar-Issue Sweep | Sweep every 80386 decoder-admitted form and its prefix, 32-bit/VM86/paging/debug/system-state delivery, retirement and timing selector owner; additionally sweep 8086/8088+8087, 80186+8087, 80286+80287, 80386+80287/80387 and all no-FPU controls through the one shared FPU completion owner. |
+| Identifier Mode | New |
+| Admission And Approval | Owner explicitly directed single-person dual-role implementation of the complete integration test suite on 2026-08-30; T512 is closed and the queued profile/CPU/floppy matrix is the next candidate. |
+| Objective | Freeze the complete supported profile x CPU identity x FDD geometry x owner-provided DOS-image matrix from live contracts, including every explicit rejection; do not yet add a runner or alter production behavior. |
+| Non-goals | Do not add test scenarios before the finite matrix is admitted, alter profile/FDC/CPU behavior, import or catalogue ROM/DOS bytes, commit machine-local asset paths, or modify `build/output` YAML. |
+| Reference Baseline | T512 closure, current profile descriptors and FDD media parser, existing external-asset integration tests, and the candidate matrix proposal. |
+| Candidate Proposal | [M5 profile/CPU/floppy integration matrix](../proposals/m5-profile-cpu-floppy-integration-matrix.md). |
+| Files And ABI Surface | `docs/etc/evidence/` matrix ledger and owner-local profile/FDD/test inventories only. No production source, public ABI, CTest registration or profile contract changes in S1. |
+| Applicable Rules | Task Reading Set; execution, documentation, source-policy, architecture and coding authorities. External BIOS/ROM/DOS inputs remain owner-managed and never enter the repository. |
+| Verification | S1 runs the current complete repository-only unit suite and documentation governance. It verifies each declared row directly against live profile/FDD/parser code and records unavailable external inputs without a synthetic pass. |
+| Expected Markers | One finite List 1 names each supported boot row, its expected terminal and input geometry; List 2 maps every row to its current integration owner or an explicit missing-test disposition; each forbidden profile/FDD pairing has a named rejection. |
+| Asset Needs | Read-only owner-managed firmware and DOS images; no bytes, hashes or machine-local paths are committed. |
+| Reporting Requirements | Record the coverage count, profile contract source, media geometry/parser source, existing test reuse candidate, rejection list, asset availability boundary and zero-code delta. |
+| Stop Conditions | Stop for owner direction if a profile's allowed CPU/FDD set is ambiguous, an external image must be copied or catalogued to continue, or S1 reveals an unsupported combination whose correct product contract requires a production change. |
+| Exit Criteria | Every current supported profile/CPU/FDD choice and expected rejection is finite, sourced and mapped to an existing test owner or a later S receiver; no scenario has been invented from asset availability alone. |
+| Original Owner Request | Single-person dual-role implementation of the complete integration test suite. |
+| Similar-Issue Sweep | Search all tracked profile descriptors, FDD geometry/parser paths, CTest integration registrations and BYOB boot probes; record each production/test route as matrix input, existing reuse, rejection or later-S receiver. |
 
 ## Current Technical Baseline
 
