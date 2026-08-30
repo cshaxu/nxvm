@@ -12,14 +12,14 @@
 | Candidate Proposal | [M5 controller signal-chain convergence](../proposals/m5-controller-signal-chain-convergence.md), controller-specific HDC route S. |
 | Files And ABI Surface | Expected `src/core/machine/hdc.[ch]`, immutable HDC/media/PIC board bindings, owner-local `test/core/` paths and evidence/state/history. Public interface changes require an opaque copied operation; no controller pointer, mutable media state or mutable layout crosses owners. |
 | Applicable Rules | `docs/README.md` Task Reading Set; `rules/EXECUTION.md` coverage-bearing, packet, P, review and test rules; `rules/DOCUMENT.md`; source policy; `rules/ARCHITECTURE.md` sole-owner/bounded-interface invariants; `rules/CODING.md` simplicity/test-boundary rules. |
-| Verification | Visually inspect and cite applicable NEC/IBM pages; contrast actual 86Box/MAME/PCjs/Bochs/QEMU FDC logic where available; trace commands, drive selection, DRQ/DMA2/TC, result/IRQ6 acknowledgement, reset, no-media and media-change forms; run focused owner-local and complete repository-only unit tests. |
-| Expected Markers | `T503-S6-FDC-FIRMWARE-ROUTE`; every selected FDC command completion has one Core state owner, one stated DMA/IRQ consumer route and a source-qualified timing disposition. |
+| Verification | Visually inspect and cite applicable IBM/ATA pages; contrast actual 86Box/MAME/PCjs/Bochs/QEMU HDC logic where available; trace each selected personality's command, DRQ or PIO/DMA, result/IRQ acknowledgement, reset, error/no-media and firmware-consumption forms; run focused owner-local and complete repository-only unit tests. |
+| Expected Markers | `T503-S7-HDC-FIRMWARE-ROUTE`; every selected HDC completion has one Core state owner, one stated DMA/PIO/IRQ consumer route and a source-qualified timing disposition. |
 | Asset Needs | Existing primary-source ledgers and read-only external emulator source only if a board edge remains ambiguous; no external bytes enter the repository. |
-| Reporting Requirements | Record every selected FDC form's manual fact, NXVM route, external comparison, disposition, retained owner and code-size result; report focused/full-unit proof and any earliest-unit transfer. |
-| Stop Conditions | Stop for owner direction, authority contradiction, unavailable source needed to classify an FDC connection, or a gap independent of the FDC route; do not improvise a workaround. |
-| Exit Criteria | Every selected command/drive/DMA2/TC/result/IRQ6/reset/media form has primary-source evidence, NXVM trace, external comparison or stated lack thereof, and focused/full-unit proof; every demonstrable downstream effect is repaired in S6 or explicitly shown independent and transferred. |
+| Reporting Requirements | Record every selected HDC personality/form's manual fact, NXVM route, external comparison, disposition, retained owner and code-size result; report focused/full-unit proof and any earliest-unit transfer. |
+| Stop Conditions | Stop for owner direction, authority contradiction, unavailable source needed to classify an HDC connection, or a gap independent of the HDC route; do not improvise a workaround. |
+| Exit Criteria | Every selected personality's command/DRQ-or-PIO/DMA/result/IRQ/reset/error/media form has primary-source evidence, NXVM trace, external comparison or stated lack thereof, and focused/full-unit proof; every demonstrable downstream effect is repaired in S7 or explicitly shown independent and transferred. |
 | Original Owner Request | Each S owns one controller audit and repair, but must also repair affected controllers/devices in the same S; no known causal tail remains. |
-| Similar-Issue Sweep | 8272A/uPD765 command/result forms, selected 360-KB and 1.2-MB drive geometry, DMA versus non-DMA path, DOR/reset, drive selection, read/write/format/read-track, terminal count, result FIFO/IRQ6 acknowledgement, no-media/write-protect/media-change and deadline/HLT behavior across 5160, 5170, Model-40 and default-at. |
+| Similar-Issue Sweep | ATA PIO, Compaq WD 40MB, IBM WD1003/ST-506 and Xebec-XT command/result forms; selected PIO versus DMA3 routes; status/alternate-status IRQ acknowledgement; reset, nIEN/AEN/mask, no-media/error, terminal count, option-ROM observation and deadline/HLT behavior across 5160, 5170, Model-40 and default-at. |
 
 ## Current Technical Baseline
 
@@ -67,6 +67,12 @@
 | T495 | Closed: the selected IBM 5160-268 is functionally ready with source-backed L3 relations and explicit L2 limits; 13/13 focused, 300/300 fresh current and specialized gates pass, without a physical/wall-clock overclaim. [Decision](../etc/evidence/t495-s2-xt-final-model-decision.md). |
 
 ## Recent Governance
+
+- **M5 T503 S7 P1:** direct IBM/ATA/code/external reconciliation removes the
+  inert Xebec `323h` mask cache: one existing HDC owner now gates its existing
+  DMA3 request and IRQ5 completion publication, and result consumption clears
+  the same IRQ source. The four selected personalities retain separate PIO or
+  DMA semantics; focused 7/7 and complete repository-only unit 312/312 pass.
 
 - **M5 T503 S6 P2:** coordinator review accepts `8aac1fb0`: direct
   NEC/IBM/code/external reconciliation adds the sole frozen READY-board input,

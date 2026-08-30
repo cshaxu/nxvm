@@ -16,6 +16,8 @@
 #define CORE_MACHINE_HDC_COMMAND_SEEK_MASK 0xf0u
 #define CORE_MACHINE_HDC_COMMAND_SEEK_VALUE 0x70u
 #define CORE_MACHINE_HDC_IBM_RESTORE_STEP_LIMIT 1023u
+#define CORE_MACHINE_XEBEC_MASK_DMA_ENABLE 0x01u
+#define CORE_MACHINE_XEBEC_MASK_IRQ_ENABLE 0x02u
 static C_INT core_machine_hdc_is_compaq_wd_40mb(const core_machine_hdc *hdc)
 {
     return hdc != STD_NULL && hdc->connect.config.protocol ==
@@ -566,6 +568,9 @@ static C_VOID core_machine_xebec_response(core_machine_hdc *hdc,
         STD_MEMCPY(hdc->xebec.last_sense, sense, sizeof(hdc->xebec.last_sense));
     }
     hdc->xebec.phase = CORE_MACHINE_XEBEC_PHASE_RESPONSE;
+    if ((hdc->xebec.mask_pattern & CORE_MACHINE_XEBEC_MASK_IRQ_ENABLE) != 0u) {
+        core_machine_hdc_raise_irq(hdc);
+    }
 }
 
 static C_VOID core_machine_xebec_request_dma(core_machine_hdc *hdc)
@@ -581,6 +586,18 @@ static C_VOID core_machine_xebec_release_dma(core_machine_hdc *hdc)
     if (hdc != STD_NULL && hdc->connect.dma_request_deassert != STD_NULL) {
         hdc->connect.dma_request_deassert(hdc->connect.dma_request_owner,
             &hdc->connect.dma_request);
+    }
+}
+
+static C_VOID core_machine_xebec_sync_dma_request(core_machine_hdc *hdc)
+{
+    if (hdc == STD_NULL) return;
+    if ((hdc->xebec.mask_pattern & CORE_MACHINE_XEBEC_MASK_DMA_ENABLE) != 0u &&
+        (hdc->xebec.phase == CORE_MACHINE_XEBEC_PHASE_DMA_READ ||
+            hdc->xebec.phase == CORE_MACHINE_XEBEC_PHASE_DMA_WRITE)) {
+        core_machine_xebec_request_dma(hdc);
+    } else {
+        core_machine_xebec_release_dma(hdc);
     }
 }
 
@@ -718,7 +735,7 @@ static C_VOID core_machine_xebec_start_transfer(core_machine_hdc *hdc)
         hdc->xebec.sectors_remaining = hdc->xebec.dcb[4];
         hdc->xebec.phase = CORE_MACHINE_XEBEC_PHASE_DMA_WRITE;
     }
-    core_machine_xebec_request_dma(hdc);
+    core_machine_xebec_sync_dma_request(hdc);
 }
 
 static C_INT core_machine_xebec_command_is_defined(type_unsigned_8 command)
@@ -768,6 +785,7 @@ static type_status core_machine_xebec_port_read(core_machine_hdc *hdc,
         if (hdc->xebec.phase != CORE_MACHINE_XEBEC_PHASE_RESPONSE ||
             hdc->xebec.response_index >= hdc->xebec.response_count) return TYPE_STATUS_OK;
         *out_value = hdc->xebec.response[hdc->xebec.response_index++];
+        core_machine_hdc_clear_irq(hdc);
         if (hdc->xebec.response_index == hdc->xebec.response_count) {
             if (hdc->xebec.dcb[0] == 0x03u)
                 STD_MEMSET(hdc->xebec.last_sense, 0, sizeof(hdc->xebec.last_sense));
@@ -789,6 +807,7 @@ static type_status core_machine_xebec_port_write(core_machine_hdc *hdc,
     }
     if (port == hdc->connect.config.bus.xebec.dma_irq_mask_port) {
         hdc->xebec.mask_pattern = (type_unsigned_8)value;
+        core_machine_xebec_sync_dma_request(hdc);
         return TYPE_STATUS_OK;
     }
     if (port == hdc->connect.config.bus.xebec.jumpers_select_port) {
