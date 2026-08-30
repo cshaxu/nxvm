@@ -4,6 +4,7 @@
 #include "core/machine/machine_interface.h"
 #include "core/machine/machine.h"
 #include "vm/composition/session/lifecycle.h"
+#include "vm/composition/session/waiting.h"
 #include "vm/composition/session/session_interface.h"
 #include "vm/composition/session/session_private.h"
 
@@ -114,6 +115,12 @@ C_INT main(C_INT argc, C_CHAR **argv)
                     session->core_machine->hdc.data.command_count);
             }
             goto fail;
+        }
+        if (result.reason == CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) {
+            C_INT advanced = 0;
+
+            if (vm_session_waiting_advance(session, &result, &advanced) != TYPE_STATUS_OK ||
+                !advanced) goto fail;
         }
         executed += VM_HDC_HDD_BOOT_QUANTUM;
         if (session->core_machine->hdc.data.command_count >= 2u &&

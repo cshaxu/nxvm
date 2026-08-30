@@ -4,6 +4,7 @@
 
 #include "core/machine/machine_interface.h"
 #include "core/machine/hdc.h"
+#include "vm/composition/session/waiting.h"
 #include "vm/composition/session/session_interface.h"
 #include "vm/composition/session/session_private.h"
 
@@ -329,6 +330,12 @@ static C_INT vm_ata253_run_until(vm_session *session, type_unsigned_32 limit,
             result.reason == CORE_MACHINE_STOP_FAULT ||
             core_machine_capture_display_snapshot(session->core_machine,
                 &snapshot) != TYPE_STATUS_OK) return 0;
+        if (result.reason == CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) {
+            C_INT advanced = 0;
+
+            if (vm_session_waiting_advance(session, &result, &advanced) != TYPE_STATUS_OK ||
+                !advanced) return 0;
+        }
         if (marker != 0u ? snapshot.kind == CORE_MACHINE_DISPLAY_KIND_TEXT &&
                 snapshot.characters[VM_ATA253_MARKER_CELL] == marker :
             vm_ata253_has_prompt(&snapshot)) return 1;
